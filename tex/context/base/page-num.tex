@@ -1,5 +1,5 @@
 %D \module
-%D   [       filefile=page-num, % moved here from main-001
+%D   [       file=page-num, % moved here from main-001
 %D        version=1997.03.31,
 %D          title=\CONTEXT\ Core Macros,
 %D       subtitle=Numbering,
@@ -144,20 +144,20 @@
      \bgroup
      \ifnum\realpageno=\firstsubpage\relax
        \global\let\prevsubpage\firstsubpage
-       \setglobalsystemreference\rt!page{\v!sub\v!backward}\lastsubpage
+       \setglobalsystemreference\rt!page\v!subbackward\lastsubpage
      \else
        \xdef\prevsubpage{\realfolio}%
        \doglobal\decrement\prevsubpage
-       \setglobalsystemreference\rt!page{\v!sub\v!backward}\prevsubpage
+       \setglobalsystemreference\rt!page\v!subbackward\prevsubpage
      \fi
      \setglobalsystemreference\rt!page\v!previoussubpage\prevsubpage
      \ifnum\realpageno=\lastsubpage\relax
        \global\let\nextsubpage\lastsubpage
-       \setglobalsystemreference\rt!page{\v!sub\v!forward}\firstsubpage
+       \setglobalsystemreference\rt!page\v!subforward\firstsubpage
      \else
        \xdef\nextsubpage{\realfolio}%
        \doglobal\increment\nextsubpage
-       \setglobalsystemreference\rt!page{\v!sub\v!forward}\nextsubpage
+       \setglobalsystemreference\rt!page\v!subforward\nextsubpage
      \fi
      \setglobalsystemreference\rt!page\v!nextsubpage\nextsubpage
      \egroup

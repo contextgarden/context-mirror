@@ -1,5 +1,5 @@
 %D \module
-%D   [       filefile=core-spa,
+%D   [       file=core-spa,
 %D        version=1997.03.31,
 %D          title=\CONTEXT\ Core Macros,
 %D       subtitle=Spacing,
@@ -1958,10 +1958,10 @@
   {\processaction
      [#1]
      [     \v!yes=>\setstrut,
-          \v!no=>\setnostrut,
+            \v!no=>\setnostrut,
           \v!cap=>\setcapstrut,
-      \v!fit=>\setfontstrut,
-        \v!line=>\setstrut,
+          \v!fit=>\setfontstrut,
+         \v!line=>\setstrut,
       \s!default=>\setstrut,
       \s!unknown=>\setcharstrut\commalistelement]}
 
@@ -2325,77 +2325,35 @@
 \def\dosetraggedvbox#1%
   {\processaction
      [#1]
-     [  \v!left=>\let\raggedbox\lbox,
-       \v!right=>\let\raggedbox\rbox,
+     [   \v!left=>\let\raggedbox\lbox,
+        \v!right=>\let\raggedbox\rbox,
        \v!middle=>\let\raggedbox\cbox,
-       \v!inner=>\let\raggedbox\ibox,
-       \v!outer=>\let\raggedbox\obox,
-          \v!no=>\def\raggedbox{\vbox\bgroup\raggedright\let\next=},
+        \v!inner=>\let\raggedbox\ibox,
+        \v!outer=>\let\raggedbox\obox,
+    \v!flushleft=>\let\raggedbox\rbox,
+   \v!flushright=>\let\raggedbox\lbox,
+       \v!center=>\let\raggedbox\cbox,
+           \v!no=>\def\raggedbox{\vbox\bgroup\raggedright\let\next=},
       \s!default=>\let\raggedbox\vbox,
       \s!unknown=>\let\raggedbox\vbox]}
 
 \def\dosetraggedhbox#1%
   {\processaction % slow
      [#1]
-     [  \v!left=>\def\raggedbox{\doregelplaats\v!left },
-       \v!right=>\def\raggedbox{\doregelplaats\v!right},
+     [   \v!left=>\def\raggedbox{\doregelplaats\v!left  },
+        \v!right=>\def\raggedbox{\doregelplaats\v!right },
        \v!middle=>\def\raggedbox{\doregelplaats\v!middle},
-       \v!inner=>\def\raggedbox{\doregelplaats\v!inner},
-       \v!outer=>\def\raggedbox{\doregelplaats\v!outer},
-      \v!normal=>\let\raggedbox\hbox,
+        \v!inner=>\def\raggedbox{\doregelplaats\v!inner },
+        \v!outer=>\def\raggedbox{\doregelplaats\v!outer },
+    \v!flushleft=>\def\raggedbox{\doregelplaats\v!right },
+   \v!flushright=>\def\raggedbox{\doregelplaats\v!left  },
+       \v!center=>\def\raggedbox{\doregelplaats\v!middle},
+       \v!normal=>\let\raggedbox\hbox,
       \s!default=>\let\raggedbox\hbox,
       \s!unknown=>\let\raggedbox\hbox]}
 
-% \def\dosetraggedcommand#1% ook ruim,rechts en zo
-%   {\processaction
-%      [#1]
-%      [  \v!links=>\def\raggedcommand{\raggedleft},
-%        \v!rechts=>\def\raggedcommand{\raggedright},
-%        \v!midden=>\def\raggedcommand{\raggedcenter},
-%           \v!nee=>\def\raggedcommand{\raggedright},
-%       \v!normaal=>\let\raggedcommand\relax,
-%       \s!default=>\def\raggedcommand{\raggedcenter},
-%       \s!unknown=>\let\raggedcommand\relax]}
-
 \def\dosetraggedcommand#1%
   {\expanded{\dodosetraggedcommand{#1}}}
-
-% \def\dodosetraggedcommand#1%
-%   {\doifinsetelse{\v!ruim} {#1}{\!!doneatrue}{\!!doneafalse}%
-%    \doifinsetelse{\v!breed}{#1}{\!!donebtrue}{\!!donebfalse}%
-%    \let\raggedcommand\relax
-%    \let\raggedtopcommand\empty
-%    \let\raggedbottomcommand\empty
-%    \!!donectrue
-%    \ExpandFirstAfter\processallactionsinset
-%      [#1]
-%      [  \v!links=>\if!!donea      \def\raggedcommand{\veryraggedleft}%
-%                   \else           \def\raggedcommand{\raggedleft}%
-%                   \fi
-%                   \!!donecfalse,                    % {\v!links,\v!midden}
-%        \v!rechts=>\if!!donea      \def\raggedcommand{\veryraggedright}%
-%                   \else           \def\raggedcommand{\raggedright}%
-%                   \fi
-%                   \!!donecfalse,                    % {\v!rechts,\v!midden}
-%        \v!midden=>\if!!donec
-%                     \if!!doneb      \def\raggedcommand{\raggedwidecenter}%
-%                     \else\if!!donea \def\raggedcommand{\veryraggedcenter}%
-%                     \else           \def\raggedcommand{\raggedcenter}%
-%                     \fi\fi
-%                     \!!donecfalse                   % {\v!midden,\v!midden}
-%                   \else
-%                     \let\raggedbottomcommand\vfilll % bonus, pretty strong
-%                     \let\raggedtopcommand   \vfilll % used with \framed for
-%                   \fi,                              % instance in tables
-%          \v!hoog=>\let\raggedbottomcommand\vfilll,  % and since we lack a
-%          \v!laag=>\let\raggedtopcommand   \vfilll,  % proper keyword, but
-%          \v!laho=>\let\raggedbottomcommand\vfilll   % we do support the
-%                   \let\raggedtopcommand   \vfilll,  % ugly laho (lohi)
-%           \v!nee=>\def\raggedcommand{\raggedright},
-%            \v!ja=>\let\raggedcommand\notragged,  % was \relax
-%       \v!normaal=>\let\raggedcommand\notragged]} % was \relax
-%
-% much faster and important since TABLE uses them a lot:
 
 \def\dodosetraggedcommand#1% beware: #1=empty is ignored, keep that!
   {\let\raggedcommand\relax
@@ -2403,8 +2361,8 @@
    \let\raggedbottomcommand\empty
    \chardef\raggedoneliner\zerocount
    \doifsomething{#1}
-     {\doifinsetelse\v!broad {#1}\!!doneatrue\!!doneafalse
-      \doifinsetelse\v!wide{#1}\!!donebtrue\!!donebfalse
+     {\doifinsetelse\v!broad{#1}\!!doneatrue\!!doneafalse
+      \doifinsetelse\v!wide {#1}\!!donebtrue\!!donebfalse
       \!!donectrue
       \rawprocesscommalist[#1]\dododosetraggedcommand}}
 
@@ -2436,6 +2394,10 @@
      \let\raggedbottomcommand\vfilll % bonus, pretty strong
      \let\raggedtopcommand   \vfilll % used with \framed for
    \fi}                              % instance in tables
+
+\setvalue{\@@ragged@@command\v!flushleft }{\getvalue{\@@ragged@@command\v!right }}
+\setvalue{\@@ragged@@command\v!flushright}{\getvalue{\@@ragged@@command\v!left  }}
+\setvalue{\@@ragged@@command\v!center    }{\getvalue{\@@ragged@@command\v!middle}}
 
 \setvalue{\@@ragged@@command\v!high}%
   {\let\raggedbottomcommand\vfilll}  % and since we lack a
@@ -2513,7 +2475,7 @@
 % Om ongewenste witruimte te voorkomen kan met \dosomebreak{\break}
 % een \penalty v¢¢r witruimte worden geplaatst.
 
-\def\removelastskip% a redefinition of plain
+\def\removelastskip % a redefinition of plain
   {\ifvmode\ifdim\lastskip=\zeropoint\else\vskip-\lastskip\fi\fi}
 
 % first version:
@@ -3376,7 +3338,6 @@
 
 \newif\if@@asragged \@@asraggedtrue % old method
 
-
 % todo
 %
 % \setuplayout[grid=yes,lines=44] \showgrid
@@ -3384,42 +3345,108 @@
 % test \vfill test \endgraf \strut \endgraf \vskip-\lineheight \removedepth \pagina test
 % \stoptext
 
-\def\dodosetupalign[#1]%
-  {\doifinsetelse\v!broad {#1}\!!doneatrue\!!doneafalse
-   \doifinsetelse\v!wide{#1}\!!donebtrue\!!donebfalse
-   \ExpandFirstAfter\processallactionsinset
-     [#1]
-     [   \v!line=>\baselinebottom,
-         \v!bottom=>\raggedbottom,
-        \v!height=>\normalbottom,
-       \v!width=>\notragged,
-       \v!normal=>\notragged,
-            \v!yes=>\notragged,
-           \v!no=>\raggedright,
-\if@@asragged\v!inner\else\v!outer\fi
-                 =>\setraggedparagraphmode\raggedleft\raggedright,
-\if@@asragged\v!outer\else\v!inner\fi
-                 =>\setraggedparagraphmode\raggedright\raggedleft,
-\if@@asragged\v!left\else\v!right\fi
-                 =>\if!!donea\veryraggedleft  \else\raggedleft  \fi,
-\if@@asragged\v!right\else\v!left\fi
-                 =>\if!!donea\veryraggedright \else\raggedright \fi,
-        \v!middle=>\if!!doneb\raggedwidecenter\else
-                   \if!!donea\veryraggedcenter\else\raggedcenter\fi\fi,
-       \v!hanging=>\enableprotruding,
-   \v!nothanging=>\disableprotruding,
-            \v!hz=>\enableadjusting,
-        \v!nohz=>\disableadjusting,
-    \v!hyphenated=>\dohyphens,
-\v!nothyphenated=>\nohyphens,
-         \v!new=>\@@asraggedfalse, % so new will give you consistency
-         \v!reset=>\notragged\normalbottom]}
+% Keep this one:
+%
+% \def\setupalign
+%   {\dosingleargument\dosetupalign}
+%
+% \def\dosetupalign[#1]%
+%   {\expanded{\dodosetupalign[#1]}}
+%
+% \def\dodosetupalign[#1]%
+%   {\doifinsetelse\v!broad {#1}\!!doneatrue\!!doneafalse
+%    \doifinsetelse\v!wide{#1}\!!donebtrue\!!donebfalse
+%    \ExpandFirstAfter\processallactionsinset % expansion redundant
+%      [#1]
+%      [                        \v!line=>\baselinebottom,
+%                             \v!bottom=>\raggedbottom,
+%                             \v!height=>\normalbottom,
+%                              \v!width=>\notragged,
+%                             \v!normal=>\notragged,
+%                                \v!yes=>\notragged,
+%                                 \v!no=>\raggedright,
+% \if@@asragged\v!inner\else\v!outer\fi=>\setraggedparagraphmode\raggedleft\raggedright,
+% \if@@asragged\v!outer\else\v!inner\fi=>\setraggedparagraphmode\raggedright\raggedleft,
+% \if@@asragged\v!left \else\v!right\fi=>\if!!donea\veryraggedleft  \else\raggedleft  \fi,
+% \if@@asragged\v!right\else\v!left \fi=>\if!!donea\veryraggedright \else\raggedright \fi,
+%                             \v!middle=>\if!!doneb\raggedwidecenter\else\if!!donea\veryraggedcenter\else\raggedcenter\fi\fi,
+%                          \v!flushleft=>\if!!donea\veryraggedright \else\raggedright \fi,
+%                         \v!flushright=>\if!!donea\veryraggedleft  \else\raggedleft  \fi,
+%                             \v!center=>\if!!doneb\raggedwidecenter\else\if!!donea\veryraggedcenter\else\raggedcenter\fi\fi,
+%                            \v!hanging=>\enableprotruding,
+%                         \v!nothanging=>\disableprotruding,
+%                                 \v!hz=>\enableadjusting,
+%                               \v!nohz=>\disableadjusting,
+%                         \v!hyphenated=>\dohyphens,
+%                      \v!nothyphenated=>\nohyphens,
+%                                \v!new=>\@@asraggedfalse, % so new will give you consistency
+%                              \v!reset=>\notragged\normalbottom]}
+%
+% The next one is more than three times faster:
 
-\def\dosetupalign[#1]%
-  {\expanded{\dodosetupalign[#1]}}
+\setvalue{@@align@@\v!line         }{\baselinebottom}
+\setvalue{@@align@@\v!bottom       }{\raggedbottom}
+\setvalue{@@align@@\v!height       }{\normalbottom}
+\setvalue{@@align@@\v!width        }{\notragged}
+\setvalue{@@align@@\v!normal       }{\notragged}
+\setvalue{@@align@@\v!yes          }{\notragged}
+\setvalue{@@align@@\v!no           }{\raggedright}
+\setvalue{@@align@@\v!inner        }{\if@@asragged
+                                       \setraggedparagraphmode\raggedleft\raggedright
+                                     \else
+                                       \setraggedparagraphmode\raggedright\raggedleft
+                                     \fi}
+\setvalue{@@align@@\v!outer        }{\if@@asragged
+                                       \setraggedparagraphmode\raggedright\raggedleft
+                                     \else
+                                       \setraggedparagraphmode\raggedleft\raggedright
+                                     \fi}
+\setvalue{@@align@@\v!left         }{\if@@asragged
+                                       \if!!donea\veryraggedleft\else\raggedleft\fi
+                                     \else
+                                       \if!!donea\veryraggedright\else\raggedright\fi
+                                     \fi}
+\setvalue{@@align@@\v!right        }{\if@@asragged
+                                       \if!!donea\veryraggedright\else\raggedright\fi
+                                     \else
+                                       \if!!donea\veryraggedleft\else\raggedleft\fi
+                                     \fi}
+\setvalue{@@align@@\v!middle       }{\if!!doneb\raggedwidecenter\else\if!!donea\veryraggedcenter\else\raggedcenter\fi\fi}
+\setvalue{@@align@@\v!flushleft    }{\if!!donea\veryraggedright \else\raggedright \fi}
+\setvalue{@@align@@\v!flushright   }{\if!!donea\veryraggedleft  \else\raggedleft  \fi}
+\setvalue{@@align@@\v!center       }{\if!!doneb\raggedwidecenter\else\if!!donea\veryraggedcenter\else\raggedcenter\fi\fi}
+\setvalue{@@align@@\v!hanging      }{\enableprotruding}
+\setvalue{@@align@@\v!nothanging   }{\disableprotruding}
+\setvalue{@@align@@\v!hz           }{\enableadjusting}
+\setvalue{@@align@@\v!nohz         }{\disableadjusting}
+\setvalue{@@align@@\v!hyphenated   }{\dohyphens}
+\setvalue{@@align@@\v!nothyphenated}{\nohyphens}
+\setvalue{@@align@@\v!new          }{\@@asraggedfalse} % so new will give you consistency
+\setvalue{@@align@@\v!reset        }{\notragged\normalbottom}
+
+\setvalue{@@ngila@@\v!broad        }{\!!doneatrue}
+\setvalue{@@ngila@@\v!wide         }{\!!donebtrue}
+
+\def\dodosetupalign#1{\getvalue{@@align@@#1}}
+\def\dodosetupngila#1{\getvalue{@@ngila@@#1}}
 
 \def\setupalign
   {\dosingleargument\dosetupalign}
+
+\def\dosetupalign[#1]%
+  {\!!doneafalse
+   \!!donebfalse
+   \processcommacommand[#1]\dodosetupngila
+   \processcommacommand[#1]\dodosetupalign}
+
+% \setupalign[flushleft]  \input ward \par % lijnlinks
+% \setupalign[right]      \input ward \par
+
+% \setupalign[flushright] \input ward \par % lijnrechts
+% \setupalign[left]       \input ward \par
+
+% \setupalign[middle]     \input ward \par % centreer
+% \setupalign[center]     \input ward \par
 
 \def\startalignment
   {\bgroup
@@ -3447,16 +3474,20 @@
 % directe commando's
 
 \def\leftaligned {\doalignline \relax \hss  }
-\def\midaligned{\doalignline \hss   \hss  }
+\def\midaligned  {\doalignline \hss   \hss  }
 \def\rightaligned{\doalignline \hss   \relax}
 
-\def\regelbegrensd#1{\limitatetext{#1}{\hsize}{\unknown}}
+\def\regelbegrensd#1{\limitatetext{#1}{\hsize}{\unknown}} % to be translated
 
 % indirecte commando's
 
-\setvalue{\s!do\v!line\v!left }{\doalignline \relax \hss  }
-\setvalue{\s!do\v!line\v!right}{\doalignline \hss   \relax}
-\setvalue{\s!do\v!line\v!middle}{\doalignline \hss   \hss  }
+\letvalue{\s!do\v!line\v!left  }\leftaligned
+\letvalue{\s!do\v!line\v!right }\rightaligned
+\letvalue{\s!do\v!line\v!middle}\midaligned
+
+\letvalue{\s!do\v!line\v!flushleft }\rightaligned
+\letvalue{\s!do\v!line\v!flushright}\leftaligned
+\letvalue{\s!do\v!line\v!center    }\midaligned
 
 \def\doregelplaats#1{\csname\s!do\v!line#1\endcsname}
 
@@ -3501,17 +3532,17 @@
 
 \setvalue{\s!do\v!line\v!inner      }{\doxalignline\doxcheckline++\zeropoint       \relax\hss  }
 \setvalue{\s!do\v!line\v!outer      }{\doxalignline\doxcheckline++\zeropoint       \hss  \relax}
-\setvalue{\s!do\v!line\v!innermargin }{\doxalignline\doxcheckline-+\innermargintotal\relax\hss  }
-\setvalue{\s!do\v!line\v!outermargin }{\doxalignline\doxcheckline+-\outermargintotal\hss  \relax}
+\setvalue{\s!do\v!line\v!innermargin}{\doxalignline\doxcheckline-+\innermargintotal\relax\hss  }
+\setvalue{\s!do\v!line\v!outermargin}{\doxalignline\doxcheckline+-\outermargintotal\hss  \relax}
 \setvalue{\s!do\v!line\v!inneredge  }{\doxalignline\doxcheckline-+\inneredgetotal  \relax\hss  }
 \setvalue{\s!do\v!line\v!outeredge  }{\doxalignline\doxcheckline+-\outeredgetotal  \hss  \relax}
-\setvalue{\s!do\v!line\v!backspace      }{\doxalignline\doxcheckline-+\backspace          \relax\hss  }
-\setvalue{\s!do\v!line\v!cutspace     }{\doxalignline\doxcheckline+-\cutspace         \hss  \relax}
+\setvalue{\s!do\v!line\v!backspace  }{\doxalignline\doxcheckline-+\backspace       \relax\hss  }
+\setvalue{\s!do\v!line\v!cutspace   }{\doxalignline\doxcheckline+-\cutspace        \hss  \relax}
 
 \setvalue{\s!do\v!line\v!leftmargin }{\doxalignline\donefalse   --\leftmargintotal \hss  \relax}
 \setvalue{\s!do\v!line\v!rightmargin}{\doxalignline\donefalse   ++\rightmargintotal\relax\hss  }
-\setvalue{\s!do\v!line\v!leftedge  }{\doxalignline\donefalse   --\leftedgetotal   \hss  \relax}
-\setvalue{\s!do\v!line\v!rightedge }{\doxalignline\donefalse   ++\rightedgetotal  \relax\hss  }
+\setvalue{\s!do\v!line\v!leftedge   }{\doxalignline\donefalse   --\leftedgetotal   \hss  \relax}
+\setvalue{\s!do\v!line\v!rightedge  }{\doxalignline\donefalse   ++\rightedgetotal  \relax\hss  }
 
 % ! ! ! beware, redefining \doalignline gives the wrong results ! ! !
 %
@@ -3536,16 +3567,16 @@
   {\doifinsetelse\v!vertical{#1}%
      {\ExpandFirstAfter\processallactionsinset
         [#1]
-        [\v!verystrict=>\def\bottomtolerance{},
-             \v!strict=>\def\bottomtolerance{.050},
+        [  \v!verystrict=>\def\bottomtolerance{},
+               \v!strict=>\def\bottomtolerance{.050},
              \v!tolerant=>\def\bottomtolerance{.075},
          \v!verytolerant=>\def\bottomtolerance{.100}]}%
      {\ExpandFirstAfter\processallactionsinset
         [#1]
-        [       \v!stretch=>\emergencystretch\bodyfontsize,
-             \v!space=>\spaceskip.5em\!!plus.25em\!!minus.25em\relax,
-         \v!verystrict=>\tolerance 200,
-             \v!strict=>\tolerance1500,
+        [     \v!stretch=>\emergencystretch\bodyfontsize,
+                \v!space=>\spaceskip.5em\!!plus.25em\!!minus.25em\relax,
+           \v!verystrict=>\tolerance 200,
+               \v!strict=>\tolerance1500,
              \v!tolerant=>\tolerance3000,
          \v!verytolerant=>\tolerance4500]}}
 
@@ -3790,6 +3821,8 @@
 % \hrule width10cm \endgraf
 %   \vskip10pt
 % \hrule width10cm \endgraf
+
+% etex only, evt splitskip macro gebruiken (syst-new)
 
 \newskip\simplifiedskip
 \newskip\simplifiedcounter

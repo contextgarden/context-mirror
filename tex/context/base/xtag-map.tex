@@ -1,5 +1,5 @@
 %D \module
-%D   [       filefile=xtag-map,
+%D   [       file=xtag-map,
 %D        version=2000.12.20,
 %D          title=\CONTEXT\ XML Support,
 %D       subtitle=Remapping,
@@ -13,8 +13,8 @@
 
 %D There is a more versatile mapper available in \type {xtag-rem.tex}!
 
-%D We also need something that lets content as-is, like for 
-%D instance XML embedded in a chemical caption. 
+%D We also need something that lets content as-is, like for
+%D instance XML embedded in a chemical caption.
 
 \beginTEX
   \endinput
@@ -46,15 +46,15 @@
 \let\normalparseXMLprocess\parseXMLprocess
 
 \let\normaldoXMLelement   \doXMLelement
-\let\normaldoXMLentity    \doXMLentity    
+\let\normaldoXMLentity    \doXMLentity
 
 \def\setnormalXMLhandler
   {\let\doXMLelement   \normaldoXMLelement
    \let\parseXMLelement\normalparseXMLelement
-   \let\parseXMLescape \normalparseXMLescape 
+   \let\parseXMLescape \normalparseXMLescape
    \let\parseXMLprocess\normalparseXMLprocess
-   \let\doXMLentity    \normaldoXMLentity}    
- 
+   \let\doXMLentity    \normaldoXMLentity}
+
 %D A careful reader will notice that we do a full expansion of
 %D the content of the element, although commands that are
 %D protected will stay untouched. In this stage we also
@@ -124,13 +124,13 @@
 
 % \def\remapXMLunknownONE#1#2% name args
 %   {\ifremapXMLunknown\remapXMLone{\s!unknown}{#1 #2}\fi}
-% 
+%
 % \def\remapXMLunknownTWO#1#2% name args
 %   {\ifremapXMLunknown\remapXMLtwo{\s!unknown}{#1 #2}\fi}
-% 
+%
 % \def\remapXMLunknownTHREE#1#2% name args
 %   {\ifremapXMLunknown\remapXMLthree{\s!unknown/}{#1 #2}\fi}
-% 
+%
 % \long\def\remapXMLelement#1#2 #3>#4% todo: we need to get rid of the end /
 %   {\ifcase\findendofXMLelement#2#3>%
 %      \if#1/%
@@ -373,7 +373,7 @@
 \def\remapXMLentity#1;#2%
   {\doremapXMLentity{#1}#2}%
 
-\def\doremapXMLentity%
+\def\doremapXMLentity
   {\xmlrent}
 
 \unexpanded\def\xmlrent#1%
@@ -417,15 +417,15 @@
 \long\def\XMLremapdata%
   {\dosingleempty\doXMLremapdata}
 
-\long\def\doXMLremapdata[#1]#2#3#4% 
+\long\def\doXMLremapdata[#1]#2#3#4%
   {\bgroup
    \startXMLmapping[#1]%
    % enable unknown elements (should be macro)
    \doifsomething{#1}
-     {\doifdefinedelse{\@@XML#1:\s!unknown:M} 
-        {\remapXMLunknowntrue}{\remapXMLunknownfalse}}% 
-   % 
-   \pushmacro\doXMLentity % needed ?   
+     {\doifdefinedelse{\@@XML#1:\s!unknown:M}
+        {\remapXMLunknowntrue}{\remapXMLunknownfalse}}%
+   %
+   \pushmacro\doXMLentity % needed ?
    % this will change, proper split in element itself
    \ifx\currentXMLnamespace\empty
      \let\parseXMLelement\remapXMLelement
@@ -453,7 +453,7 @@
    \catcode`\^^Z=\@@space
    \xdef\remappedXMLdata{#4\empty}%
    \let\par\endgraf
-   \popmacro\doXMLentity % needed ? 
+   \popmacro\doXMLentity % needed ?
    \disableXMLexpansion
    \catcode`\{=\@@begingroup
    \catcode`\}=\@@endgroup
@@ -692,12 +692,12 @@
 \gdef\unmapXMLdata#1#2% todo: singular, evt ##2 space ervoor en ##1##2
   {\bgroup
    \revertXMLremapping
-   \expandXMLremapping      % now we can roll back 
-   \setnormalXMLhandler     % using the normal parser 
+   \expandXMLremapping      % now we can roll back
+   \setnormalXMLhandler     % using the normal parser
    \resetXMLmapping         % and leaving the mapping namespace
-   \xdef\unmappedXMLdata{#2}% recreate the original 
-   \enableXMLelements       % enable normal handler 
-   \unmappedXMLdata         % off we go ... 
+   \xdef\unmappedXMLdata{#2}% recreate the original
+   \enableXMLelements       % enable normal handler
+   \unmappedXMLdata         % off we go ...
    \egroup}
 
 \egroup

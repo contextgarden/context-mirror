@@ -1,5 +1,5 @@
 %D \module
-%D   [       filefile=page-flt,
+%D   [       file=page-flt,
 %D        version=2000.10.20,
 %D          title=\CONTEXT\ OTR Macros,
 %D       subtitle=Floating Bodies,
@@ -827,13 +827,6 @@
       \global\savednoffloats\the\savednoffloats}}
 
 \let\dorestorefloatstatus\relax
-
-%\def\checkwaitingfloats#1%
-%  {\ifsomefloatwaiting
-%     \doifinsetelse{\v!altijd}{#1}
-%       {\showmessage{\m!floatblocks}{5}{}}
-%       {\doflushfloats}%
-%   \fi}
 
 \ifx\doflushfloats\undefined \let\doflushfloats\relax \fi
 \ifx\flushfloatbox\undefined \let\flushfloatbox\relax \fi

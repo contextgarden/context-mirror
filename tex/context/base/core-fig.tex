@@ -1,5 +1,5 @@
 %D \module
-%D   [       filefile=core-fig,
+%D   [       file=core-fig,
 %D        version=1997.03.31,
 %D          title=\CONTEXT\ Core Macros,
 %D       subtitle=Figure Inclusion,
@@ -1276,6 +1276,7 @@
       \fi\fi
       \global\let\appliedfigurexscale\scax
       \global\let\appliedfigureyscale\scay}%
+\doresetobjects % clean up driver left overs
    \global\wd\foundexternalfigure\figwid
    \finalizeexternalfigure{#2}{\expandedfigurename}}
 

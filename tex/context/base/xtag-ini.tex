@@ -1,5 +1,5 @@
 %D \module
-%D   [       filefile=xtag-ini,
+%D   [       file=xtag-ini,
 %D        version=2000.12.20,
 %D          title=\CONTEXT\ XML Support,
 %D       subtitle=Initialization,
@@ -2456,8 +2456,8 @@
       \expandafter#3\!!XMLattr#6}%
    \processcommalist[#1]\dodefineXMLhandlers}
 
-\def\XMLpav#1#2#3#4% #4 useless
-  {\XMLval{#1}{\XMLpar{#2}{#3}{}}{\XMLpar{#2}{#3}{#4}}}
+\def\XMLpav#1#2#3#4%
+  {\XMLval{#1}{\XMLpar{#2}{#3}{}}{#4}}
 
 %D A few weird ones:
 

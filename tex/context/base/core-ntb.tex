@@ -1,5 +1,5 @@
 %D \module
-%D   [       filefile=core-ntb,
+%D   [       file=core-ntb,
 %D        version=2000.04.18,
 %D          title=\CONTEXT\ Core Macros,
 %D       subtitle=Natural Tables,
@@ -172,25 +172,25 @@
      \processaction
        [#1]
        [  \v!row=>{\dosetupTABLExy[\c!y][#2][#3]},%
-        \v!column=>{\dosetupTABLExy[\c!x][#2][#3]},%
+       \v!column=>{\dosetupTABLExy[\c!x][#2][#3]},%
                r=>{\dosetupTABLExy[\c!y][#2][#3]},%
                c=>{\dosetupTABLExy[\c!x][#2][#3]},%
                y=>{\dosetupTABLExy[\c!y][#2][#3]},%
                x=>{\dosetupTABLExy[\c!x][#2][#3]},%
         \v!start=>{\dosetupTABLExy[#1][#2][#3]},%
-        \v!header=>{\dosetupTABLExy[#1][#2][#3]},%
+       \v!header=>{\dosetupTABLExy[#1][#2][#3]},%
       \s!unknown=>{\dosetupTABLEzz[#1][#2][#3]}]%
    \else\ifsecondargument
      \processaction
        [#1]
        [  \v!row=>{\dosetupTABLExy[\c!y][\v!each][#2]},%
-        \v!column=>{\dosetupTABLExy[\c!x][\v!each][#2]},%
+       \v!column=>{\dosetupTABLExy[\c!x][\v!each][#2]},%
                r=>{\dosetupTABLExy[\c!y][\v!each][#2]},%
                c=>{\dosetupTABLExy[\c!x][\v!each][#2]},%
                y=>{\dosetupTABLExy[\c!y][\v!each][#2]},%
                x=>{\dosetupTABLExy[\c!x][\v!each][#2]},%
         \v!start=>{\dosetupTABLExy[#1][\v!each][#2]},%
-        \v!header=>{\dosetupTABLExy[#1][\v!each][#2]},%
+       \v!header=>{\dosetupTABLExy[#1][\v!each][#2]},%
       \s!unknown=>{\dosetupTABLEzz[\c!x][#1][#2]}]%
    \else
      \getparameters[\@@tbl\@@tbl][#1]%
@@ -379,7 +379,7 @@
    \processaction
      [\tbltblsplit]
      [     \v!yes=>\enableTBLbreaktrue,
-      \v!repeat=>\enableTBLbreaktrue\multipleTBLheadstrue]%
+        \v!repeat=>\enableTBLbreaktrue\multipleTBLheadstrue]%
    \processaction
      [\tbltblheader]
      [\v!repeat=>\multipleTBLheadstrue]%
@@ -840,7 +840,8 @@
 \let\extratblsplitheight\zeropoint % additional space taken by before/afterTABLEsplitbox
 
 \def\splittblboxb#1%
-  {\setbox\TABLEsplitbox\vbox{#1}%
+  {\testpage[2]% quite save since a row is > 1 lineheight and we don't want one-liners
+   \setbox\TABLEsplitbox\vbox{#1}%
    \setbox8\vbox{\doifsomething\tbltblspaceinbetween{\blank[\tbltblspaceinbetween]}}%
    \ifmultipleTBLheads
      \setbox2\vbox{}%
@@ -852,7 +853,6 @@
        {\setbox0\vsplit\TABLEsplitbox to \lineheight
         \setbox4\vbox{\unvcopy4\unvcopy0}}%
    \fi
-   \testpage[2]% quite save since a row is > 1 lineheight and we don't want one-liners
    \!!doneafalse
    \doloop
      {\ifdim\pagegoal<\maxdimen
@@ -871,7 +871,7 @@
       \ifdim\noflines\lineheight>\scratchdimen
         \advance\scratchdimen-\lineheight
       \fi
-\advance\scratchdimen-\extratblsplitheight
+      \advance\scratchdimen-\extratblsplitheight
       \setbox\finaltblbox\vbox
         {\ifmultipleTBLheads
            \ifcase\noftblheadlines\else
@@ -1163,10 +1163,11 @@
    \c!aligncharacter=\v!no,
    \c!alignmentcharacter={,},
    \c!option=, % \v!stretch
-   \c!split=\v!no,
    \c!header=,
    \c!spaceinbetween=,
    \c!maxwidth=8em,
+   \c!split=\v!no,
+   \c!splitoffset=0pt,
    \c!splitmethod=a]
 
 %D We have already prepared the previous macros for nesting,

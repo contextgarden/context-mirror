@@ -1,5 +1,5 @@
 %D \module
-%D   [       filefile=core-var,
+%D   [       file=core-var,
 %D        version=1998.02.21,
 %D          title=\CONTEXT\ Core Macros,
 %D       subtitle=Variables,
@@ -43,6 +43,13 @@
 \newevery \everyendoftextbody      \relax
 \newevery \everybeginofpar         \relax
 \newevery \everyendofpar           \relax
+
+%D For shared \type {\everymath} and \type {\everydisplay}:
+
+\newevery \everymathematics        \relax
+
+\prependtoks \the\everymathematics \to \everymath
+\prependtoks \the\everymathematics \to \everydisplay
 
 % \newevery \everyparflush           \relax % collected nodes
 

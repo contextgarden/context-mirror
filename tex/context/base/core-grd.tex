@@ -1,5 +1,5 @@
 %D \module
-%D   [       filefile=core-grd,
+%D   [       file=core-grd,
 %D        version=1998.03.10,
 %D          title=\CONTEXT\ Core Macros,
 %D       subtitle=Grid Snapping (Experimental),
@@ -443,7 +443,7 @@
               \advance\scratchdimen-\strutheight % fit (text)
             \or
               \advance\scratchdimen-\strutheight % tolerant
-              \advance\scratchdimen-10sp
+              \advance\scratchdimen-\roundingeps
             \fi
             \getnoflines\scratchdimen
             \ifnum\noflines>0
@@ -481,7 +481,7 @@
               \advance\scratchdimen-\strutdepth % fit (text)
             \or
               \advance\scratchdimen-\strutdepth % tolerant
-              \advance\scratchdimen-10sp
+              \advance\scratchdimen-\roundingeps
             \fi
             \getnoflines\scratchdimen
             \ifnum\noflines>0

@@ -1,5 +1,5 @@
 %D \module
-%D   [       filefile=page-ini,
+%D   [       file=page-ini,
 %D        version=2000.10.20,
 %D          title=\CONTEXT\ Page Macros,
 %D       subtitle=Initializations,
@@ -1354,46 +1354,58 @@
 
 \newif\ifpaginageblokkeerd \paginageblokkeerdfalse
 
-\chardef\testpagemethod=0
+\def\testpage     {\dotripleempty\dotestpage[\plusone]}
+\def\testpageonly {\dotripleempty\dotestpage[\plustwo]}
 
-\def\testpage
-  {\dodoubleempty\dotestpage}
+\chardef\testpagemethod=0 % todo: \testnewpage[method=,lines=,voffset=]
 
-\def\dotestpage[#1][#2]%
+\def\dotestpage[#1][#2][#3]%
   {%\relax % needed  before \if
    \endgraf
-   \ifpaginageblokkeerd \else \ifdim\pagegoal<\maxdimen
-     \ifdim\pagetotal<\pagegoal % \relax
-       \scratchdimen\lineheight
-       \multiply\scratchdimen#1\relax
-       \advance\scratchdimen \pagetotal
-       \ifdim\lastskip<\parskip
-         \advance\scratchdimen \parskip
-       \fi
-       \ifsecondargument
-         \advance\scratchdimen#2\relax
-       \fi
-       % quite inaccurate, better pagegoal 1pt or so
-       \ifcase\testpagemethod
-         \ifdim\scratchdimen>.99\pagegoal
-           \penalty-\!!tenthousand\relax
-         \fi
-       \or
-         \advance\scratchdimen-\pagegoal
-         \ifdim\scratchdimen>-\lineheight
-           \penalty-\!!tenthousand\relax
-         \fi
-       \or
-         \getnoflines\pagegoal
-         \advance\scratchdimen-\noflines\lineheight \relax
-         \ifdim\scratchdimen>-\lineheight
-           \penalty-\!!tenthousand\relax
-         \fi
-       \fi
-     \fi
+   \ifpaginageblokkeerd
+     % do nothing
    \else
-     \goodbreak
-   \fi \fi}
+%      \ifnum#1=\plusone\synchronizeoutput\fi
+     \ifdim\pagegoal<\maxdimen \relax
+       \ifdim\pagetotal<\pagegoal \relax
+         \scratchdimen\lineheight
+         \multiply\scratchdimen#2\relax
+         \advance\scratchdimen \pagetotal
+         \ifdim\lastskip<\parskip
+           \advance\scratchdimen \parskip
+         \fi
+         \ifthirdargument
+           \advance\scratchdimen#3\relax
+         \fi
+         \ifcase\testpagemethod
+           \ifdim\scratchdimen>.99\pagegoal
+             \vfill\eject % \penalty-\!!tenthousand\relax
+           \fi
+         \or
+           \advance\scratchdimen-\pagegoal
+           \ifdim\scratchdimen>-\lineheight
+             \vfill\eject % \penalty-\!!tenthousand\relax
+           \fi
+         \or
+           \getnoflines\pagegoal
+           \advance\scratchdimen-\noflines\lineheight \relax
+           \ifdim\scratchdimen>-\lineheight
+             \vfill\eject % \penalty-\!!tenthousand\relax
+           \fi
+         \or % same as 0 but more accurate
+           \advance\scratchdimen-10\s!sp\relax
+           \ifdim\scratchdimen>\pagegoal
+             \vfill\eject % \penalty-\!!tenthousand\relax
+           \fi
+         \fi
+       \else
+         % force page break / new
+         % \vfill\eject % \penalty-\!!tenthousand\relax
+       \fi
+     \else
+       \ifnum#1=\plusone\goodbreak\fi
+     \fi
+   \fi}
 
 \def\testcolumn
   {\dodoubleempty\dotestcolumn}

@@ -1,5 +1,5 @@
 %D \module
-%D   [       filefile=syst-etx,
+%D   [       file=syst-etx,
 %D        version=1999.03.17, % some time ...
 %D          title=\CONTEXT\ System Macros,
 %D       subtitle=Efficient \PLAIN\ \TEX\ loading,
@@ -25,6 +25,13 @@
 %D you encounter unexpected behaviour let me know.
 
 \unprotect
+
+%D \ETEX\ has a not so handy way of telling you the version number,
+%D i.e. the revision number has a period in it:
+
+\long\def\gobbleoneargument#1{}
+
+\mathchardef\etexversion=\numexpr(\eTeXversion*100+\expandafter\gobbleoneargument\eTeXrevision)
 
 %D Constants to be used with \type {\grouptype}.
 
@@ -202,16 +209,15 @@
 \mathchardef\@@maxallocation = 32767
 
 %D I cannot imagine that more than~8 extra insert classes
-%D are needed, so we say:
+%D are needed, but, for critical editions, we may need many
+%D more, so:
 
-\chardef\@@insallocation=8
+\chardef\@@insallocation=32
 
-%D But, for critical editions, we may need many more, so
-%D here we go again:
+%D However, there's a bug in \ETEX\ versions smaller that 2.2,
+%D so we need to play safe:
 
-\chardef\@@insallocation=24
-\chardef\@@insallocation=16
-\chardef\@@insallocation=8
+\ifnum\etexversion<202 \chardef\@@insallocation=8 \fi
 
 %D My low level allocation macro now comes down to:
 

@@ -1,5 +1,5 @@
 %D \module
-%D   [       filefile=core-num,
+%D   [       file=core-num,
 %D        version=1997.03.31,
 %D          title=\CONTEXT\ Core Macros,
 %D       subtitle=Numbering,
@@ -36,12 +36,16 @@
 
 \def\@@thenumber#1{\s!number\csname\s!number#1\c!number\endcsname}
 
+% this will be the new (public) one: \let\numberparameterprefix\@@thenumber
+
+\def\numberparameter#1#2{\csname\@@thenumber{#1}#2\endcsname} % sort of public
+
 \def\dosetupnumber[#1][#2]%
   {\@EA\let\@EA\savedstartnumber\csname\@@thenumber{#1}\c!start\endcsname
    \getparameters[\@@thenumber{#1}][\c!start=,#2]%
-   \doifelsevaluenothing{\@@thenumber{#1}\c!start}
+   \doifelsenothing{\numberparameter{#1}\c!start}
      {\letvalue{\@@thenumber{#1}\c!start}\savedstartnumber}
-     {\setcounter{\@@thenumber{#1}}{\getvalue{\@@thenumber{#1}\c!start}}}}
+     {\setcounter{\@@thenumber{#1}}{\numberparameter{#1}\c!start}}}
 
 \def\setupnumber
   {\dodoubleargument\dosetupnumber}
@@ -62,41 +66,39 @@
      [\c!number=#1,
       \s!check=,
       \c!way=\@@nrway,
-      \c!way\c!local=\getvalue{\@@thenumber{#1}\c!way},
+      \c!way\c!local=\numberparameter{#1}\c!way,
       \c!sectionnumber=\v!yes,
-      \c!text=,  % weg hier
-      \c!location=, % weg hier, was trouwens \c!zetwijze
+      \c!text=,     % no longer used here, will go away
+      \c!location=, % no longer used here, will go away (was ooit \c!zetwijze)
       \c!conversion=\v!numbers,
       \c!start=0,
       #2]%
     \makecounter{\@@thenumber{#1}}%
-    \setcounter{\@@thenumber{#1}}{\getvalue{\@@thenumber{#1}\c!start}}}
+    \setcounter{\@@thenumber{#1}}{\numberparameter{#1}\c!start}}
 
 \def\setnumber[#1]#2%
   {\setcounter{\@@thenumber{#1}}{#2}}
 
 \def\resetnumber[#1]%
-  {\setcounter{\@@thenumber{#1}}{0\csname\@@thenumber{#1}\c!start\endcsname}}
+  {\setcounter{\@@thenumber{#1}}{0\numberparameter{#1}\c!start}}
 
 \def\dodoreset#1%
   {\getvalue{\s!reset#1}}%
-
-\def\doreset[#1]%
-  {\processcommalist[#1]\dodoreset}
-
-\def\reset
-  {\dosingleargument\doreset}
-
-%\def\incrementnumber[#1]%
-%  {\checknummer{#1}%
-%   \doifnot\@@nrstatus\v!start{\resetcounter{\@@thenumber{#1}}}%
-%   \pluscounter{\@@thenumber{#1}}}
 
 \def\savenumber[#1]%
   {\savecounter{\@@thenumber{#1}}}
 
 \def\restorenumber[#1]%
   {\restorecounter{\@@thenumber{#1}}}
+
+%D Bonus macro (we need to keep this one for downward
+%D compatibility reasons).
+
+\def\doreset[#1]%
+  {\processcommalist[#1]\dodoreset}
+
+\def\reset
+  {\dosingleargument\doreset}
 
 % nieuw, maar kan dit (i.v.m. (sub)page?)
 
@@ -107,13 +109,13 @@
 %      {\setcounter{\@@thenumber{#1}}{0\csname\@@thenumber{#1}\c!start\endcsname}}}
 
 \def\incrementnumber[#1]% bypage tricky: needs a
-  {\doifelsevalue{\@@thenumber{#1}\c!way}{\v!by\v!page}
+  {\doifelse{\numberparameter{#1}\c!way}{\v!by\v!page}
      {\checkpagechange{#1}%
       \ifpagechanged\resetcounter{\@@thenumber{#1}}\fi}
      {\checknummer{#1}}%
    \doifelse\@@nrstate\v!start % only here
      {\pluscounter{\@@thenumber{#1}}}
-     {\setcounter{\@@thenumber{#1}}{0\getvalue{\@@thenumber{#1}\c!start}}}}
+     {\setcounter{\@@thenumber{#1}}{0\numberparameter{#1}\c!start}}}
 
 % \defineenumeration [test] [way=bypage,text=\lastchangedpage]
 %
@@ -124,7 +126,7 @@
 
 \def\convertednumber[#1]%
   {\convertnumber
-     {\getvalue{\@@thenumber{#1}\c!conversion}}
+     {\numberparameter{#1}\c!conversion}
      {\countervalue{\@@thenumber{#1}}}}
 
 \def\rawnumber[#1]%

@@ -1,5 +1,5 @@
 %D \module
-%D   [       filefile=mult-con,
+%D   [       file=mult-con,
 %D        version=2000.09.12,
 %D          title=\CONTEXT\ Multilingual Macros,
 %D       subtitle=Constants,
@@ -131,7 +131,7 @@
                            german                    czech
                            italian                   romanian
 
-                 atpage: oppagina                  atpage
+                   atpage: oppagina                  atpage
                            aufseite                  nastrance
                            apagina                   lapagina
                 hencefore: hierboven                 hencefore
@@ -212,6 +212,72 @@
                    system: systeem                   system
                            systeme                   system
                            sistema                   sistem
+
+\stopvariables
+
+%D For Taco:
+
+\startvariables         dutch                                    english
+                        german                                   czech
+                        italian                                  romanian
+
+            subsection: subparagraaf                             subsection
+                        unterabsatz                              podsekce
+                        sottocapoverso                           subsectiune
+
+         subsubsection: subsubparagraaf                          subsubsection
+                        unterunterabsatz                         podpodsekce
+                        sottosottocapoverso                      subsubsectiune
+
+      subsubsubsection: subsubsubparagraaf                       subsubsubsection
+                        unterunterunterabsatz                    podpodpodsekce
+                        sottosottosottocapoverso                 subsubsubsectiune
+
+   subsubsubsubsection: subsubsubsubparagraaf                    subsubsubsubsection
+                        unterunterunterunterabsatz               podpodpodpodsekce
+                        sottosottosottosottocapoverso            subsubsubsubsectiune
+
+subsubsubsubsubsection: subsubsubsubsubparagraaf                 subsubsubsubsubsection
+                        unterunterunterunterunterabsatz          podpodpodpodpodsekce
+                        sottosottosottosottosottocapoverso       subsubsubsubsubsectiune
+
+            subsubject: subonderwerp                             subsubject
+                        unterthema                               podtema
+                        sottoargomento                           subsubiect
+
+         subsubsubject: subsubonderwerp                          subsubsubject
+                        unterunterthema                          podpodtema
+                        sottosottoargomento                      subsubsubiect
+
+      subsubsubsubject: subsubsubonderwerp                       subsubsubsubject
+                        unterunterunterthema                     podpodpodtema
+                        sottosottosottoargomento                 subsubsubsubiect
+
+   subsubsubsubsubject: subsubsubsubonderwerp                    subsubsubsubsubject
+                        unterunterunterunterthema                podpodpodpodtema
+                        sottosottosottosottoargomento            subsubsubsubsubiect
+
+subsubsubsubsubsubject: subsubsubsubsubonderwerp                 subsubsubsubsubsubject
+                        unterunterunterunterunterthema           podpodpodpodpodtema
+                        sottosottosottosottosottoargomento       subsubsubsubsubsubiect
+
+\stopvariables
+
+%D For the confused (to be translated):
+
+\startvariables            dutch                     english
+                           german                    czech
+                           italian                   romanian
+
+                flushleft: lijnlinks                 flushleft
+                           flushleft                 flushleft
+                           flushleft                 flushleft
+               flushright: lijnrechts                flushright
+                           flushright                flushright
+                           flushright                flushright
+                   center: centreer                  center
+                           center                    center
+                           center                    center
 
 \stopvariables
 
@@ -1102,6 +1168,9 @@ setups: setups setups
                     split: splitsen                  split
                            split                     split
                            separa                    split % TB TH
+splitoffset: splitsoffset        splitoffset
+             splitoffset         splitoffset
+             splitoffset         splitoffset % TB TH
                indentnext: springvolgendein          indentnext
                            ziehefolgendeein          odsadpristi
                            rientrasuccessivo         aliniaturmator
@@ -1420,6 +1489,9 @@ textlayer: tekstlaag                 textlayer
                  backward: achteruit                 backward
                            rueckwaerts               zpet
                            indietro                  inapoi
+              subbackward: subachteruit              subbackward
+                           unterrueckwaerts          podzpet
+                           sottoindietro             subinapoi
                    action: actie                     action
                            aktion                    akce
                            azione                    actiune
@@ -1468,7 +1540,7 @@ textlayer: tekstlaag                 textlayer
                   numbers: cijfers                   numbers
                            ziffern                   cisla
                            numeri                    numere
-                  Cijfers: Cijfers                   Numbers
+                  Numbers: Cijfers                   Numbers
                            Ziffern                   Cisla
                            Numeri                    Numere
                   command: commando                  command
@@ -1717,13 +1789,13 @@ textlayer: tekstlaag                 textlayer
                     empty: leeg                      empty
                            leer                      prazdne
                            vuoto                     gol
-                   Letter: Letter                    Character
+                Character: Letter                    Character
                            Buchstabe                 Pismeno
                            Lettera                   Caracter
                 character: letter                    character
                            buchstabe                 pismeno
                            lettera                   caracter
-                  Letters: Letters                   Characters
+               Characters: Letters                   Characters
                            Buchstaben                Pismena
                            Lettere                   Caractere
                characters: letters                   characters
@@ -1756,7 +1828,7 @@ textlayer: tekstlaag                 textlayer
                       new: nieuw                     new
                            neu                       novy
                            nuovo                     nou
-                    MAAND: MAAND                     MONTH
+                    MONTH: MAAND                     MONTH
                            MONAT                     MESIC
                            MESE                      LUNA
                     month: maand                     month
@@ -1912,7 +1984,7 @@ process: proces   process
                     reset: reset                     reset
                            zuruecksetzten            reset
                            reimposta                 reset
-                  Romeins: Romeins                   Romannumerals
+            Romannumerals: Romeins                   Romannumerals
                            Roemischezahlen           Rimskecislice
                            Numeriromani              Numereromane
             romannumerals: romeins                   romannumerals
@@ -1921,7 +1993,7 @@ process: proces   process
                     greek: grieks                    greek
                            griechisch                recky
                            greco                     grec
-                   Grieks: Grieks                    Greek
+                    Greek: Grieks                    Greek
                            Griechisch                Recky
                            Greco                     Grec
                     round: rond                      round
@@ -2062,6 +2134,9 @@ process: proces   process
                   forward: vooruit                   forward
                            vorwaerts                 vpred
                            avanti                    avans
+               subforward: subvooruit                subforward
+                           untervorwaerts            podvpred
+                           sottoavanti               subavans
                  previous: vorige                    previous
                            vorig                     predchozi
                            precedente                precedent
@@ -2074,7 +2149,7 @@ process: proces   process
                   weekday: weekdag                   weekday
                            wochentag                 vsedniden
                            giornosettimana           zisaptamana
-                  WEEKDAG: WEEKDAG                   WEEKDAY
+                  WEEKDAY: WEEKDAG                   WEEKDAY
                            WOCHENTAG                 VSEDNIDEN
                            GIORNOSETTIMANA           ZISAPTAMANA
                    random: willekeurig               random
@@ -2098,7 +2173,7 @@ process: proces   process
                 smallcaps: smallcaps                 smallcaps
                            smallcaps                 kapitalky
                            maiuscoletto              majusculemici
-                    WOORD: WOORD                     WORD
+                     WORD: WOORD                     WORD
                            WORT                      SLOVO
                            PAROLA                    CUVANT
                 firstpage: eerstepagina              firstpage
@@ -2122,6 +2197,9 @@ process: proces   process
            lastpagenumber: laatstepaginanummer       lastpagenumber
                            lastpagenumber            lastpagenumber
                            lastpagenumber            lastpagenumber
+                  subpage: subpagina                 subpage
+                           unterseite                podstranka
+                           sottopagina               subpagina
              firstsubpage: eerstesubpagina           firstsubpage
                            ersteunterseite           prvnipodstranka
                            primasottopagina          primasubpagina
@@ -2405,6 +2483,9 @@ process: proces   process
                   formula: formule                   formula
                            formel                    rovnice
                            formula                   formula
+               subformula: subformule                subformula
+                           unterformel               podrovnice
+                           sottoformula              subformula
                  tabulate: tabulatie                 tabulate
                            tabulator                 tabelator
                            tabulato                  tabulate

@@ -1,5 +1,5 @@
 %D \module
-%D   [       filefile=setupb,
+%D   [       file=setupb,
 %D        version=1998.07.20,
 %D          title=\CONTEXT\ Setup Definitions,
 %D       subtitle=Command Specifications,
@@ -14,7 +14,7 @@
 % nieuw: oncomment plaatssamengesteldelijst
 
 % placeheadtext placeheadnumber  placefloatnumber
-% setupinitial placeinitial \c!status \c!plaats \c!n \s!font=initial (Initial)
+% setupinitial placeinitial \c!state \c!location \c!n \s!font=initial (Initial)
 
 % nog 'reductie=ja/nee' in \setupcolors
 
@@ -756,7 +756,7 @@
     [\c!vars!]
   \variable
     [\c!conversion]
-    [\v!numbers,\v!characters,\v!Letters,\v!romannumerals,\v!Romeins]
+    [\v!numbers,\v!characters,\v!Characters,\v!romannumerals,\v!Romannumerals]
     [\v!numbers]
   \variable
     [\c!way]
@@ -2264,13 +2264,13 @@
 \stopsetup
 
 \startsetup
-  \command[\v!sub\v!section]
+  \command[\v!subsection]
   \type[\c!opt!\c!refs!\c!arg!]
   \value[\c!text!][]
 \stopsetup
 
 \startsetup
-  \command[\v!sub\v!sub\v!section]
+  \command[\v!subsubsection]
   \type[\c!opt!\c!refs!\c!arg!]
   \value[\c!text!][]
 \stopsetup
@@ -2282,13 +2282,13 @@
 \stopsetup
 
 \startsetup
-  \command[\v!sub\v!subject]
+  \command[\v!subsubject]
   \type[\c!opt!\c!refs!\c!arg!]
   \value[\c!text!][]
 \stopsetup
 
 \startsetup
-  \command[\v!sub\v!sub\v!subject]
+  \command[\v!subsubsubject]
   \type[\c!opt!\c!refs!\c!arg!]
   \value[\c!text!][]
 \stopsetup
@@ -2570,7 +2570,7 @@
     [3]
   \variable
     [\c!conversion]
-    [\v!numbers,\v!characters,\v!Letters,\v!romannumerals,\v!Romeins]
+    [\v!numbers,\v!characters,\v!Characters,\v!romannumerals,\v!Romannumerals]
     [\v!numbers]
   \variable
     [\c!way]
@@ -3508,7 +3508,7 @@
     [\v!middle]
   \variable
     [\c!conversion]
-    [\v!numbers,\v!characters,\v!Letters,\v!romannumerals,\v!Romeins]
+    [\v!numbers,\v!characters,\v!Characters,\v!romannumerals,\v!Romannumerals]
     [\v!numbers]
   \variable
     [\c!style]
@@ -3716,7 +3716,7 @@
     []
   \variable
     [\c!conversion]
-    [\v!numbers,\v!characters,\v!Letters,\v!romannumerals,\v!Romeins]
+    [\v!numbers,\v!characters,\v!Characters,\v!romannumerals,\v!Romannumerals]
     [\v!numbers]
   \variable
     [\c!way]
@@ -3838,7 +3838,7 @@
     [\c!vars!]
   \variable
     [\c!conversion]
-    [\v!numbers,\v!characters,\v!Letters,\v!romannumerals,\v!Romeins]
+    [\v!numbers,\v!characters,\v!Characters,\v!romannumerals,\v!Romannumerals]
     [\v!character]
   \variable
     [\c!lines]
@@ -4617,7 +4617,7 @@
     [\c!vars!]
   \variable
     [\c!conversion]
-    [\v!numbers,\v!characters,\v!Letters,\v!romannumerals,\v!Romeins,
+    [\v!numbers,\v!characters,\v!Characters,\v!romannumerals,\v!Romannumerals,
      \v!text]
     [\v!numbers]
   \variable
@@ -5029,7 +5029,7 @@
     [\v!frontpart,\v!bodypart,\v!appendix,\v!backpart]
   \variable
     [\c!conversion]
-    [\v!numbers,\v!characters,\v!Letters,\v!romannumerals,\v!Romeins]
+    [\v!numbers,\v!characters,\v!Characters,\v!romannumerals,\v!Romannumerals]
     [\v!numbers]
   \variable
     [\c!previousnumber]
@@ -5933,7 +5933,7 @@
     [\c!number!]
     []
   \value
-    [\v!day,\v!day+,\v!month,\v!weekday,\v!year, % \v!WEEKDAG,\v!MAAND,
+    [\v!day,\v!day+,\v!month,\v!weekday,\v!year, % \v!WEEKDAY,\v!MONTH,
      dd,dd+,mm,jj,yy,d,d+,m,j,y,\v!referral]
     [\v!day,\v!month,\v!year]
 \stopsetup

@@ -1,5 +1,5 @@
 %D \module
-%D   [       filefile=core-int,
+%D   [       file=core-int,
 %D        version=1995.01.01,
 %D          title=\CONTEXT\ Core Macros,
 %D       subtitle=Interaction,
@@ -387,9 +387,9 @@
 \def\dosetupinteractionscreens % met a, b en \number
   {\doifnot\@@pcstate\v!start\dodosetupinteractionscreens}
 
-\setvalue{\??sc\c!option\v!max         }{1} % tzt share with driver
-\setvalue{\??sc\c!option\v!bookmark    }{2} % tzt share with driver
-\setvalue{\??sc\c!option\v!fit     }{3} % tzt share with driver
+\setvalue{\??sc\c!option\v!max        }{1} % tzt share with driver
+\setvalue{\??sc\c!option\v!bookmark   }{2} % tzt share with driver
+\setvalue{\??sc\c!option\v!fit        }{3} % tzt share with driver
 \setvalue{\??sc\c!option\v!doublesided}{4} % tzt share with driver
 
 \def\dodosetupinteractionscreens % met a, b en \number
@@ -413,7 +413,8 @@
      \let\setupinteractionscreens\dosetupinteractionscreens
    \fi}
 
-\appendtoks \setupinteractionscreens \to \everyshipout
+\appendtoks \setupinteractionscreens \to \everyfirstshipout % needed to get option=max etc working
+\appendtoks \setupinteractionscreens \to \everyshipout      % needed for page/screen dimensions
 
 \def\setupinteractionscreen
   {\dosingleempty\dosetupinteractionscreen}

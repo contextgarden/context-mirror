@@ -1,5 +1,5 @@
 %D \module
-%D   [       filefile=supp-box,
+%D   [       file=supp-box,
 %D        version=1995.10.10,
 %D          title=\CONTEXT\ Support Macros,
 %D       subtitle=Boxes,
@@ -2712,7 +2712,10 @@
    \dowithnextbox{\normalhbox{$\verynormalvcenter{\flushnextbox}$}\egroup}
    \normalvbox}
 
+% could be \everymathematics
+
 \prependtoks \let\vcenter\normalvcenter \to \everymath
+\prependtoks \let\vcenter\normalvcenter \to \everydisplay
 
 %D \macros
 %D   {frozenhbox}

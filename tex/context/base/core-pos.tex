@@ -1,5 +1,5 @@
 %D \module
-%D   [       filefile=core-pos,
+%D   [       file=core-pos,
 %D        version=1999.08.01,
 %D          title=\CONTEXT\ Core Macros,
 %D       subtitle=Positioning Support,
@@ -616,7 +616,7 @@
 
 \def\doifpositionaction#1%
   {\ifundefined{\POSactionprefix#1::}%
-     \@EA\gobblefirstargument
+     \@EA\gobbleoneargument
    \else
      \@EA\firstofoneargument
    \fi}

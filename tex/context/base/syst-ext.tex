@@ -1,5 +1,5 @@
 %D \module
-%D   [       filefile=syst-ext,
+%D   [       file=syst-ext,
 %D        version=1995.10.10,
 %D          title=\CONTEXT\ System Macros,
 %D       subtitle=Extras,
@@ -895,8 +895,9 @@
   {\csname\@@arecurse\recursedepth\endcsname\endofloop}
 
 \def\nodoloop#1%
-  {\@EA\let\@EA\recurselevel\csname\@@irecurse\recursedepth\endcsname
-   \global\advance\outerrecurse \minusone }
+  {\let\endofloop\dodoloop % new, permits nested \doloop's
+   \@EA\let\@EA\recurselevel\csname\@@irecurse\recursedepth\endcsname
+   \global\advance\outerrecurse\minusone}
 
 \def\exitloop                     % \exitloop quits at end
   {\let\endofloop\nodoloop}
@@ -3826,10 +3827,10 @@
 %D
 %D the first argument may be a \type{\macro}.
 
-\def\uppercasestring#1\to#2%
+\def\uppercasestring#1\to#2% first @EA redundant
   {\edef#2{#1}\@EA\uppercase\@EA{\@EA\dodoglobal\@EA\edef\@EA#2\@EA{#2}}}
 
-\def\lowercasestring#1\to#2%
+\def\lowercasestring#1\to#2% first @EA redundant
   {\edef#2{#1}\@EA\lowercase\@EA{\@EA\dodoglobal\@EA\edef\@EA#2\@EA{#2}}}
 
 %D \macros
@@ -4576,5 +4577,57 @@
    \else % #1=p ... t\relax
      \expandafter\thirdoffourarguments
    \fi}
+
+%D \macros
+%D   {comparedimension,comparedimensioneps}
+%D
+%D This is a dirty one: we simply append a unit and discard it when needed.
+
+\newdimen\roundingeps \roundingeps=10sp
+
+\def\comparedimension#1#2%
+  {\chardef\compresult
+     \ifdim#1<#2%
+       \zerocount
+     \else\ifdim#1<#2%
+       \plusone
+     \else
+       \plustwo
+     \fi\fi}
+
+\beginETEX
+
+\def\comparedimensioneps#1#2%
+  {\chardef\compresult
+     \ifdim\dimexpr(#1-#2)<\roudingeps
+       \zerocount
+     \else\ifdim\dimexpr(#2-#1)<\roudingeps
+       \zerocount
+     \else\ifdim#1<#2%
+       \plusone
+     \else
+       \plustwo
+     \fi\fi\fi}
+
+\endETEX
+
+\beginTEX
+
+\newdimen\comparedimen
+
+\def\comparedimensioneps#1#2%
+  {\comparedimen#1\advance\comparedimen-#2\relax
+   \chardef\compresult
+     \ifdim\comparedimen<\roudingeps
+       \zerocount
+     \else\ifdim-\comparedimen<\roudingeps
+       \zerocount
+     \else\ifdim#1<#2%
+       \plusone
+     \else
+       \plustwo
+     \fi\fi\fi}
+
+\endTEX
 
 \protect \endinput

@@ -1,5 +1,5 @@
 %D \module
-%D   [       filefile=supp-pdf,
+%D   [       file=supp-pdf,
 %D        version=2004.03.26,
 %D          title=\CONTEXT\ Support Macros,
 %D       subtitle=\METAPOST\ to \PDF\ conversion,
@@ -1847,14 +1847,16 @@
 
 \newtoks\everyMPtoPDFconversion
 
-\def\convertMPtoPDF#1#2#3%
+\def\convertMPtoPDF % #1#2#3%
   {\bgroup
    \ifx\pdfdecimaldigits\undefined\else \pdfdecimaldigits=5 \fi % new
    \setbox\scratchbox\vbox\bgroup
      \forgetall
      \offinterlineskip
      \startMPresources
-     \doprocessMPtoPDFfile{#1}{#2}{#3}} % {#1}{0#2}{0#3} would be saver
+     \doprocessMPtoPDFfile} % {#1}{#2}{#3}} % {#1}{0#2}{0#3} would be saver
+
+%D The next one is kind of private and probably will become obsolete):
 
 \def\processMPtoPDFfile % file xscale yscale
   {\bgroup

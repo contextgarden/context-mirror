@@ -1,5 +1,5 @@
 %D \module
-%D   [       filefile=font-bfm,
+%D   [       file=font-bfm,
 %D        version=2003.11.25,
 %D          title=\CONTEXT\ Font Macros,
 %D       subtitle=Mixed Normal and Bold Math,
@@ -169,7 +169,7 @@
 
 \def\boldfacemath    {\ifcase\boldfacemathmethod\else\the\everyboldfacemath\fi}
 \def\bfm             {\boldfacemath} % no \let, so that we can redefine
-\def\autoboldfacemath{\appendtoks\ifcase\boldfacemathmethod\else\let\bf\boldfacemath\fi\to\everymath}
+\def\autoboldfacemath{\appendtoks\ifcase\boldfacemathmethod\else\let\bf\boldfacemath\fi\to\everymathematics}
 
 %D We hook this feature into the formula mechanism.
 

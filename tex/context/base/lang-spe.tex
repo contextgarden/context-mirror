@@ -1,5 +1,5 @@
 %D \module
-%D   [       file=tall-spe,
+%D   [       file=lang-spe,
 %D        version=2002.05.07, % 1996.01.25,
 %D          title=\CONTEXT\ Language Macros,
 %D       subtitle=Specifics,
@@ -106,11 +106,11 @@
 %          \getvalue{\??la\languageencoding##1\??la}{#3}}
 %         {\setvalue{\??la\languageencoding##1\??la}{\do{##1}{#3}}}%
 %       \bgroup
-%       \setbox0=\hbox{\enablelanguagespecifics[##1]}%
-%       \ifdim\wd0>\!!zeropoint
-%         \showmessage{\m!linguals}{7}{\currentencoding-##1,\the\wd0\space}\wait
+%       \setbox0\hbox{\enablelanguagespecifics[##1]}%
+%       \ifdim\wd0>\zeropoint
+%         \showmessage\m!linguals7{\currentencoding-##1,\the\wd0\space}\wait
 %       \else
-%         \showmessage{\m!linguals}{8}{\currentencoding-##1}%
+%         \showmessage\m!linguals8{\currentencoding-##1}%
 %       \fi
 %       \egroup
 %       \doif{##1}{\currentmainlanguage}
@@ -227,6 +227,12 @@
 \deactivatelanguagespecific !
 
 \unprotect
+
+% yes or no (taco wins: no)
+
+% \startlanguagespecifics[nl,cz,sk,fr]
+%   \lccode`\'=`\'
+% \stoplanguagespecifics
 
 %D \macros
 %D   {ordinaldaynumber, highordinalstr, ordinalstr}

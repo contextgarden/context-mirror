@@ -1,5 +1,5 @@
 %D \module
-%D   [       filefile=core-job, % copied from main-001,
+%D   [       file=core-job, % copied from main-001,
 %D        version=1997.03.31,
 %D          title=\CONTEXT\ Core Macros,
 %D       subtitle=Job Handling,
@@ -165,8 +165,6 @@
 
 % \newevery \everyjob \EveryJob
 % \appendtoks ... \to \everyjob
-
-\prependtoks \showcontextbanner   \to \everyjob
 
 \appendtoks \loadsystemfiles      \to \everyjob
 \appendtoks \preloadfonts         \to \everyjob
@@ -364,6 +362,22 @@
 %D Better here than in supp-mps:
 
 \def\executesystemcommand{\immediate\write18}
+
+\ifnum\etexversion<202
+  \prependtoks
+     \writestatus\m!systems{eTeX version \number\etexversion\space -> too old (bugs)}%
+     \writeline
+  \to \everyjob
+\fi
+
+\ifnum\number\pdftexversion<120
+  \prependtoks
+     \writestatus\m!systems{pdfTeX version \number\pdftexversion\space -> please update}%
+     \writeline
+  \to \everyjob
+\fi
+
+\prependtoks \showcontextbanner \to \everyjob
 
 % Default-instellingen (verborgen)
 

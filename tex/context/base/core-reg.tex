@@ -1,5 +1,5 @@
 %D \module
-%D   [       filefile=core-reg,
+%D   [       file=core-reg,
 %D        version=1999.12.27,
 %D          title=\CONTEXT\ Core Macros,
 %D       subtitle=Register Management,
@@ -923,7 +923,7 @@
    \fi}
 
 \def\completeregister
-  {\dodoubleempty\doplaceregister}
+  {\dodoubleempty\docompleteregister}
 
 \def\docompleteregister[#1][#2]%
   {\iffirstargument
@@ -975,9 +975,9 @@
    \setvalue{\e!see#1}%
      {\dozieregister{#1}}%
    \setvalue{\e!place#1}%
-     {\doplaceregister[#1]}%
+     {\placeregister[#1]}%
    \setvalue{\e!complete#1}%
-     {\docompleteregister[#1]}%
+     {\completeregister[#1]}%
    \setvalue{\e!setup#1\e!in}[##1]%
      {\getparameters[\??id#1][##1]}}
 

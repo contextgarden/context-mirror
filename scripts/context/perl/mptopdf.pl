@@ -35,16 +35,16 @@ my $PassOn = '' ;
     "passon" => \$PassOn,
     "latex"  => \$Latex ) ;
 
-my $program = "MPtoPDF 1.2" ;
+my $program = "MPtoPDF 1.3" ;
 my $pattern = $ARGV[0] ;
 my $done    = 0 ;
 my $report  = '' ;
-my $latexswitch = " --tex=latex --format=latex " ;
+my $texlatexswitch = " --tex=latex --format=latex " ;
+my $mplatexswitch = " --tex=latex " ;
 
-## $dosish = ($Config{'osname'} =~ /dos|mswin/i) ;
-my $dosish = ($Config{'osname'} =~ /^(ms)?dos|^os\/2|^(ms|cyg)win/i) ;
-
-my $miktex = ($ENV{"TEXSYSTEM"} =~ /miktex/io);
+my $dosish      = ($Config{'osname'} =~ /^(ms)?dos|^os\/2|^(ms|cyg)win/i) ;
+my $miktex      = ($ENV{"TEXSYSTEM"} =~ /miktex/io);
+my $escapeshell = ( ($ENV{'SHELL'}) && ($ENV{'SHELL'} =~ m/sh/i ));
 
 my @files ;
 my $command = my $mpbin = ''  ;
@@ -67,12 +67,14 @@ elsif ($pattern =~ /\.mp$/io)
           { if (/(documentstyle|documentclass|begin\{document\})/io)
               { $Latex = 1 ; last } }
         close (INP) }
-    if ($Latex)
-      { $rest .= " $latexswitch" }
     if ($RawMP)
-      { $mpbin = 'mpost' }
+      { if ($Latex)
+          { $rest .= " $mplatexswitch" }
+        $mpbin = 'mpost' }
     else
-      { $mpbin = 'texexec --mptex $PassOn' }
+      { if ($Latex)
+          { $rest .= " $texlatexswitch" }
+        $mpbin = 'texexec --mptex $PassOn' }
     my $error =  system ("$mpbin $rest $pattern") ;
     if ($error)
       { print "\n$program : error while processing mp file\n" ; exit }
@@ -96,8 +98,10 @@ foreach my $file (@files)
             else
               { $command = "pdfetex \\&mptopdf" } }
         else
-#         { $command = "pdfetex -progname=pdfetex -efmt=mptopdf" }
-          { $command = "pdfetex -progname=context \&mptopdf" }
+          { if ($dosish)
+              { $command = "pdfetex -progname=context &mptopdf" }
+            else
+              { $command = "pdfetex -progname=context \\&mptopdf" } }
         if ($dosish)
           { system ("$command   \\relax $file") }
         else

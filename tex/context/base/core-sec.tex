@@ -1,5 +1,5 @@
 %D \module
-%D   [       filefile=core-sec,
+%D   [       file=core-sec,
 %D        version=1997.03.31,
 %D          title=\CONTEXT\ Core Macros,
 %D       subtitle=Sectioning,
@@ -1053,23 +1053,14 @@
      {\doifvaluesomething{\??ko#1#3}
         {\setuplayouttext[#2][\c!state=\getvalue{\??ko#1#3}]}}}
 
-% \def\dohandelpaginaafB#1%
-%   {\doifinset{\getvalue{\??ko#1\c!pagina}}{\v!ja,\v!rechts,\v!links}
-%      {\def\resetcurrentsectionmarks% toegevoegd, zie \page
-%         {\resetsectionmarks{\previoussection\@@sectie}}%
-%       \page[\getvalue{\??ko#1\c!pagina}]%
-%       \dohandelpaginaafBB{#1}\v!hoofd\c!hoofd
-%       \dohandelpaginaafBB{#1}\v!tekst\c!tekst
-%       \dohandelpaginaafBB{#1}\v!voet \c!voet}}
-
 \def\dohandelpaginaafB#1%
   {\doifvaluesomething{\??ko#1\c!page}
      {\def\resetcurrentsectionmarks% toegevoegd, zie \page
         {\resetsectionmarks{\previoussection\@@sectie}}%
       \page[\getvalue{\??ko#1\c!page}]%
       \dohandelpaginaafBB{#1}\v!header\c!header
-      \dohandelpaginaafBB{#1}\v!text\c!text
-      \dohandelpaginaafBB{#1}\v!footer \c!footer}}
+      \dohandelpaginaafBB{#1}\v!text  \c!text
+      \dohandelpaginaafBB{#1}\v!footer\c!footer}}
 
 \def\dohandelpaginaafX#1% zie doordefinieren / boven
   {\bgroup
@@ -1087,8 +1078,7 @@
      \ifnum\countervalue{\??se\@@sectie}>\zerocount
        \dohandelpaginaafB{#1}%
      \else
-       \doifnotvalue{\??ko#1\c!continue}\v!yes
-         {\dohandelpaginaafB{#1}}%
+       \doifnotvalue{\??ko#1\c!continue}\v!yes{\dohandelpaginaafB{#1}}%
      \fi
    \else
      \dohandelpaginaafB{#1}%
@@ -2232,27 +2222,27 @@
   [\c!section=\v!sectionlevel-3]
 
 \definehead
-  [\v!sub\v!section]
+  [\v!subsection]
   [\c!section=\v!sectionlevel-4,
    \c!default=\v!section]
 
 \definehead
-  [\v!sub\v!sub\v!section]
+  [\v!subsubsection]
   [\c!section=\v!sectionlevel-5,
   %\c!default=\v!section]
-   \c!default=\v!sub\v!section]             % nieuw
+   \c!default=\v!subsection]             % nieuw
 
 \definehead
-  [\v!sub\v!sub\v!sub\v!section]
+  [\v!subsubsubsection]
   [\c!section=\v!sectionlevel-6,
   %\c!default=\v!section]
-   \c!default=\v!sub\v!sub\v!section]       % nieuw
+   \c!default=\v!subsubsection]       % nieuw
 
 \definehead
-  [\v!sub\v!sub\v!sub\v!sub\v!section]
+  [\v!subsubsubsubsection]
   [\c!section=\v!sectionlevel-7,
   %\c!default=\v!section]
-   \c!default=\v!sub\v!sub\v!sub\v!section] % nieuw
+   \c!default=\v!subsubsubsection] % nieuw
 
 \definehead
   [\v!title]
@@ -2267,32 +2257,32 @@
    \c!incrementnumber=\v!no]
 
 \definehead
-  [\v!sub\v!subject]
-  [\c!coupling=\v!sub\v!section,
-   \c!default=\v!sub\v!section,
+  [\v!subsubject]
+  [\c!coupling=\v!subsection,
+   \c!default=\v!subsection,
    \c!incrementnumber=\v!no]
 
 \definehead
-  [\v!sub\v!sub\v!subject]
-  [\c!coupling=\v!sub\v!sub\v!section,
-   \c!default=\v!sub\v!sub\v!section,
+  [\v!subsubsubject]
+  [\c!coupling=\v!subsubsection,
+   \c!default=\v!subsubsection,
    \c!incrementnumber=\v!no]
 
 \definehead
-  [\v!sub\v!sub\v!sub\v!subject]
-  [\c!coupling=\v!sub\v!sub\v!sub\v!section,
-   \c!default=\v!sub\v!sub\v!sub\v!section,
+  [\v!subsubsubsubject]
+  [\c!coupling=\v!subsubsubsection,
+   \c!default=\v!subsubsubsection,
    \c!incrementnumber=\v!no]
 
 \definehead
-  [\v!sub\v!sub\v!sub\v!sub\v!subject]
-  [\c!coupling=\v!sub\v!sub\v!sub\v!sub\v!section,
-   \c!default=\v!sub\v!sub\v!sub\v!sub\v!section,
+  [\v!subsubsubsubsubject]
+  [\c!coupling=\v!subsubsubsubsection,
+   \c!default=\v!subsubsubsubsection,
    \c!incrementnumber=\v!no]
 
 \setupsection
   [\v!sectionlevel-2]
-  [\v!appendix\c!conversion=\v!Letter,
+  [\v!appendix\c!conversion=\v!Character,
    \c!previousnumber=\v!no]
 
 \setuphead
@@ -2302,22 +2292,22 @@
 \setuphead
   [\v!chapter]
   [\v!appendix\c!label=\v!appendix,
-   \v!bodypart\c!label=\v!chapter]             %   bijlageconversie=\Character
+   \v!bodypart\c!label=\v!chapter]       %   bijlageconversie=\Character
 
 \setuphead
   [\v!section]
   [\v!appendix\c!label=\v!section,
-   \v!bodypart\c!label=\v!section]             %   bijlageconversie=\Character
+   \v!bodypart\c!label=\v!section]       %   bijlageconversie=\Character
 
 \setuphead
-  [\v!sub\v!section]
-  [\v!appendix\c!label=\v!sub\v!section,
-   \v!bodypart\c!label=\v!sub\v!section]       %   bijlageconversie=\Character
+  [\v!subsection]
+  [\v!appendix\c!label=\v!subsection,
+   \v!bodypart\c!label=\v!subsection]    %   bijlageconversie=\Character
 
 \setuphead
-  [\v!sub\v!sub\v!section]
-  [\v!appendix\c!label=\v!sub\v!sub\v!section,
-   \v!bodypart\c!label=\v!sub\v!sub\v!section] %   bijlageconversie=\Character
+  [\v!subsubsection]
+  [\v!appendix\c!label=\v!subsubsection,
+   \v!bodypart\c!label=\v!subsubsection] %   bijlageconversie=\Character
 
 \setuphead
   [\v!part,\v!chapter]
@@ -2341,7 +2331,7 @@
    \c!after=\blank]
 
 \setuphead                 % nieuw
-  [\v!sub\v!section]
+  [\v!subsection]
   [\c!page=]
 
 \definecombinedlist
@@ -2349,11 +2339,11 @@
   [\v!part,
    \v!chapter,
    \v!section,
-   \v!sub\v!section,
-   \v!sub\v!sub\v!section,
-   \v!sub\v!sub\v!sub\v!section,
-   \v!sub\v!sub\v!sub\v!sub\v!section]
-  [\c!level=\v!sub\v!sub\v!sub\v!sub\v!section,
+   \v!subsection,
+   \v!subsubsection,
+   \v!subsubsubsection,
+   \v!subsubsubsubsection]
+  [\c!level=\v!subsubsubsubsection,
    \c!criterium=\v!local]
 
 \setuplist
@@ -2369,13 +2359,13 @@
   [\c!before={\blank\page[\v!preference]},
    \c!after=]
 
-\setuplist [\v!part]                              [\c!width=0em]
-\setuplist [\v!chapter]                         [\c!width=2em]
-\setuplist [\v!section]                         [\c!width=3em]
-\setuplist [\v!sub\v!section]                   [\c!width=4em]
-\setuplist [\v!sub\v!sub\v!section]             [\c!width=5em]
-\setuplist [\v!sub\v!sub\v!sub\v!section]       [\c!width=6em]
-\setuplist [\v!sub\v!sub\v!sub\v!sub\v!section] [\c!width=7em]
+\setuplist [\v!part]                [\c!width=0em]
+\setuplist [\v!chapter]             [\c!width=2em]
+\setuplist [\v!section]             [\c!width=3em]
+\setuplist [\v!subsection]          [\c!width=4em]
+\setuplist [\v!subsubsection]      [\c!width=5em]
+\setuplist [\v!subsubsubsection]    [\c!width=6em]
+\setuplist [\v!subsubsubsubsection] [\c!width=7em]
 
 % hm
 

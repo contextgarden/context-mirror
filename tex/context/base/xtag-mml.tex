@@ -1,5 +1,5 @@
 %D \module
-%D   [       filefile=xtag-mml,
+%D   [       file=xtag-mml,
 %D        version=2000.12.20,
 %D          title=\CONTEXT\ XML Support,
 %D       subtitle=Math ML,
@@ -96,7 +96,7 @@
 
 \bgroup \obeylines
 
-\gdef\defineMMLentity
+\gdef\defineMMLentity% % needed !
   {\bgroup\obeylines\xdefineMMLentity}
 
 \gdef\xdefineMMLentity #1 #2 #3 #4
@@ -104,7 +104,7 @@
 
 \global\let\dodefineMMLentity\gobblefourarguments
 
-\gdef\defineMMLsynonym
+\gdef\defineMMLsynonym% % needed !
   {\bgroup\obeylines\xdefineMMLsynonym}
 
 \gdef\xdefineMMLsynonym #1 #2
@@ -124,7 +124,7 @@
    \egroup}
 
 \newbox\unknownXMLentity
-\setbox\unknownXMLentity\hbox{\inframed[strut=no,offset=1pt]{\ttx ?}}
+\setbox\unknownXMLentity\hbox{\inframed[\c!strut=\v!no,\c!offset=1pt]{\ttx ?}}
 
 \defineXMLentity [unknown] {\copy\unknownXMLentity}
 

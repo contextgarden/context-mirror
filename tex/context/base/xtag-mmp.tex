@@ -1,5 +1,5 @@
 %D \module
-%D   [       filefile=xtag-mmp,
+%D   [       file=xtag-mmp,
 %D        version=2000.12.20,
 %D          title=\CONTEXT\ XML Support,
 %D       subtitle=Math ML,
@@ -226,7 +226,7 @@
 
 \def\MMLpSUBP#1#2%
   {\withnexttwoXMLRelements
-     {\doifelse\@@MMLscriptsvariant\v!a
+     {\doifelse\@@MMLscriptsalternative\v!a
         {{\firstXMLRelement}#1{\secondXMLRelement}} % both {} essential
         {\firstXMLRelement#1{\secondXMLRelement}}}%
    #2}
@@ -360,7 +360,7 @@
 \setupMMLappearance[mtable][\c!alternative=\v!a]
 
 \def\MMLpTABLE
-  {\doifelse\@@MMLmtablevariant\v!a
+  {\doifelse\@@MMLmtablealternative\v!a
      {\expandafter\MMLpTABLEa}
      {\expandafter\MMLpTABLEb}}
 

@@ -1,5 +1,5 @@
 %D \module
-%D   [       filefile=core-fnt,
+%D   [       file=core-fnt,
 %D        version=1995.10.10,
 %D          title=\CONTEXT\ Core Macros,
 %D       subtitle=Font Support,
@@ -139,7 +139,7 @@
 
 %D Sure:
 
-\let\kap\smallcapped
+\def\kap{\smallcapped} % for old times sake
 
 %D Some precautions for a \PLAIN\ \TEX\ definition.
 
@@ -160,18 +160,20 @@
 %D
 %D \showsetup{setupcapitals}
 
+\let\normalsmallcapped\smallcapped
+
 \def\setupcapitals
   {\dosingleempty\dosetupcapitals}
 
 \def\dosetupcapitals[#1]%
   {\getparameters[\??kk][#1]%
    \doifelse\@@kktitle\v!yes
-     {\definealternativestyle[\v!capital][\smallcapped][\smallcapped]%
+     {\definealternativestyle[\v!capital][\normalsmallcapped][\normalsmallcapped]%
       \definealternativestyle[\v!smallcaps][\sc][\sc]%
-      \let\kap\normalkap}
-     {\definealternativestyle[\v!capital][\smallcapped][\uppercased]%
+      \let\smallcapped\normalsmallcapped}
+     {\definealternativestyle[\v!capital][\normalsmallcapped][\uppercased]%
       \definealternativestyle[\v!smallcaps][\sc][\uppercased]%
-      \def\kap{\doconvertfont\v!capital}}%
+      \def\smallcapped{\doconvertfont\v!capital}}%
    \doifelse\@@kksc\v!yes
      \userealcaps
      \usepseudocaps}
@@ -248,9 +250,7 @@
 \unexpanded\def\WORD#1%
   {\bgroup
    \the\everyuppercase
-   %\def\kap##1{##1}%
-   %\def\WORD##1{##1}%
-   \let\kap\firstofoneargument
+   \let\smallcapped\firstofoneargument
    \let\WORD\firstofoneargument
    \uppercase{#1}% No expansion here, otherwise \getvalue problems!
    %\edef\next{#1}% keep this to prevent roll back

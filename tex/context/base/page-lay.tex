@@ -1,5 +1,5 @@
 %D \module
-%D   [       filefile=page-lay,
+%D   [       file=page-lay,
 %D        version=2000.10.20, % copied from main-001
 %D          title=\CONTEXT\ Page Macros,
 %D       subtitle=Layout Specification,
@@ -38,42 +38,42 @@
 %D The dimensions related to layout areas are represented by
 %D real dimensions.
 
-\newdimen\paperheight       \paperheight         = 297mm
-\newdimen\paperwidth      \paperwidth        = 210mm
+\newdimen\paperheight          \paperheight          = 297mm
+\newdimen\paperwidth           \paperwidth           = 210mm
 
-\newdimen\printpaperheight  \printpaperheight    = \paperheight
-\newdimen\printpaperwidth \printpaperwidth   = \paperwidth
+\newdimen\printpaperheight     \printpaperheight     = \paperheight
+\newdimen\printpaperwidth      \printpaperwidth      = \paperwidth
 
-\newdimen\makeupheight                                % calculated
-\newdimen\makeupwidth                               % calculated
+\newdimen\makeupheight                               % calculated
+\newdimen\makeupwidth                                % calculated
 
-\newdimen\textheight                              % calculated
-\newdimen\textwidth                             % calculated
+\newdimen\textheight                                 % calculated
+\newdimen\textwidth                                  % calculated
 
-\newdimen\topspace              \topspace              = 2cm
-\newdimen\backspace              \backspace              = \topspace
+\newdimen\topspace             \topspace             = 2cm
+\newdimen\backspace            \backspace            = \topspace
 \newdimen\cutspace             \cutspace             = 0pt
-\newdimen\bottomspace            \bottomspace            = 0pt
+\newdimen\bottomspace          \bottomspace          = 0pt
 
 \newdimen\headerheight         \headerheight         = 2cm
-\newdimen\footerheight          \footerheight          = \headerheight
+\newdimen\footerheight         \footerheight         = \headerheight
 
-\newdimen\kopoffset           \kopoffset           = 0pt
-\newdimen\rugoffset           \rugoffset           = \kopoffset
+\newdimen\kopoffset            \kopoffset            = 0pt
+\newdimen\rugoffset            \rugoffset            = \kopoffset
 
-\newdimen\leftmarginwidth  \leftmarginwidth  = 3cm
-\newdimen\rightmarginwidth \rightmarginwidth = \leftmarginwidth
+\newdimen\leftmarginwidth      \leftmarginwidth      = 3cm
+\newdimen\rightmarginwidth     \rightmarginwidth     = \leftmarginwidth
 
-\newdimen\leftedgewidth   \leftedgewidth   = 3cm
-\newdimen\rightedgewidth  \rightedgewidth  = \leftedgewidth
+\newdimen\leftedgewidth        \leftedgewidth        = 3cm
+\newdimen\rightedgewidth       \rightedgewidth       = \leftedgewidth
 
-\newdimen\topheight         \topheight         = 0cm
+\newdimen\topheight            \topheight            = 0cm
 \newdimen\bottomheight         \bottomheight         = \topheight
 
-\newcount\layoutlines         \layoutlines         = 0
-\newcount\layoutcolumns       \layoutcolumns       = 0
-\newdimen\layoutcolumndistance\layoutcolumndistance= 0pt
-\newdimen\layoutcolumnwidth   \layoutcolumnwidth   = 0pt
+\newcount\layoutlines          \layoutlines          = 0
+\newcount\layoutcolumns        \layoutcolumns        = 0
+\newdimen\layoutcolumndistance \layoutcolumndistance = 0pt
+\newdimen\layoutcolumnwidth    \layoutcolumnwidth    = 0pt
 
 %D We can save some tokens and fuzzy parameters by using a
 %D symbolic name for the current set of layout parameters.
@@ -178,22 +178,77 @@
 %D We need to calculate the extra distances:
 
 \def\setlayoutdimensions
-  {\global\marginwidth       \layoutparameter\c!margin
-   \global\edgewidth        \layoutparameter\c!edge
-   \global\margindistance       \layoutparameter\c!margindistance
-   \global\edgedistance        \layoutparameter\c!edgedistance
-   \global\leftedgedistance  \layoutdistance \leftedgewidth  \c!leftedgedistance
-   \global\rightedgedistance \layoutdistance \rightedgewidth \c!rightedgedistance
-   \global\leftmargindistance \layoutdistance \leftmarginwidth \c!leftmargindistance
-   \global\rightmargindistance\layoutdistance \rightmarginwidth\c!rightmargindistance
-   \global\topdistance       \layoutdistance \topheight        \c!topdistance
-   \global\headerdistance       \layoutdistance \headerheight        \c!headerdistance
-   \global\footerdistance        \layoutdistance \footerheight         \c!footerdistance
-   \global\bottomdistance       \layoutdistance \bottomheight        \c!bottomdistance}
+  {\global\marginwidth        \layoutparameter\c!margin
+   \global\edgewidth          \layoutparameter\c!edge
+   \global\margindistance     \layoutparameter\c!margindistance
+   \global\edgedistance       \layoutparameter\c!edgedistance
+   \global\leftedgedistance   \layoutdistance \leftedgewidth    \c!leftedgedistance
+   \global\rightedgedistance  \layoutdistance \rightedgewidth   \c!rightedgedistance
+   \global\leftmargindistance \layoutdistance \leftmarginwidth  \c!leftmargindistance
+   \global\rightmargindistance\layoutdistance \rightmarginwidth \c!rightmargindistance
+   \global\topdistance        \layoutdistance \topheight        \c!topdistance
+   \global\headerdistance     \layoutdistance \headerheight     \c!headerdistance
+   \global\footerdistance     \layoutdistance \footerheight     \c!footerdistance
+   \global\bottomdistance     \layoutdistance \bottomheight     \c!bottomdistance}
 
 \def\setlayoutdistances % local in \setreducedvsize
   {\headerdistance\layoutdistance\headerheight\c!headerdistance
    \footerdistance \layoutdistance\footerheight \c!footerdistance}
+
+\def\outermarginwidth   {\rightorleftpageaction\rightmarginwidth   \leftmarginwidth }
+\def\innermarginwidth   {\rightorleftpageaction\leftmarginwidth    \rightmarginwidth}
+\def\outermargindistance{\rightorleftpageaction\rightmargindistance\leftmargindistance }
+\def\innermargindistance{\rightorleftpageaction\leftmargindistance \rightmargindistance}
+
+\def\outeredgewidth     {\rightorleftpageaction\rightedgewidth   \leftedgewidth }
+\def\inneredgewidth     {\rightorleftpageaction\leftedgewidth    \rightedgewidth}
+\def\outeredgedistance  {\rightorleftpageaction\rightedgedistance\leftedgedistance }
+\def\inneredgedistance  {\rightorleftpageaction\leftedgedistance \rightedgedistance}
+
+\def\outerspacewidth    {\rightorleftpageaction\cutspace\backspace}
+\def\innerspacewidth    {\rightorleftpageaction\backspace\cutspace}
+
+\newtoks\extralayoutcalculations \def\calculatelayoutextras{\the\extralayoutcalculations}
+
+\appendtoks
+  \scratchdimen\leftmarginwidth  \advance\scratchdimen\leftmargindistance  \xdef\leftmargintotal {\the\scratchdimen}%
+  \scratchdimen\rightmarginwidth \advance\scratchdimen\rightmargindistance \xdef\rightmargintotal{\the\scratchdimen}%
+  \scratchdimen\leftedgewidth    \advance\scratchdimen\leftedgedistance    \xdef\leftedgetotal   {\the\scratchdimen}%
+  \scratchdimen\rightedgewidth   \advance\scratchdimen\rightedgedistance   \xdef\rightedgetotal  {\the\scratchdimen}%
+  \scratchdimen\leftmarginwidth  \advance\scratchdimen\leftedgetotal       \xdef\leftsidetotal   {\the\scratchdimen}%
+  \scratchdimen\rightmarginwidth \advance\scratchdimen\rightedgetotal      \xdef\rightsidetotal  {\the\scratchdimen}%
+  \scratchdimen\leftmargintotal  \advance\scratchdimen\leftedgetotal       \xdef\leftcombitotal  {\the\scratchdimen}%
+  \scratchdimen\rightmargintotal \advance\scratchdimen\rightedgetotal      \xdef\rightcombitotal {\the\scratchdimen}%
+  %
+  \scratchdimen\innermarginwidth \advance\scratchdimen\innermargindistance \xdef\innermargintotal{\the\scratchdimen}%
+  \scratchdimen\outermarginwidth \advance\scratchdimen\outermargindistance \xdef\outermargintotal{\the\scratchdimen}%
+  \scratchdimen\inneredgewidth   \advance\scratchdimen\inneredgedistance   \xdef\inneredgetotal  {\the\scratchdimen}%
+  \scratchdimen\outeredgewidth   \advance\scratchdimen\outeredgedistance   \xdef\outeredgetotal  {\the\scratchdimen}%
+  \scratchdimen\innermargintotal \advance\scratchdimen\inneredgetotal      \xdef\innercombitotal {\the\scratchdimen}%
+  \scratchdimen\outermargintotal \advance\scratchdimen\outeredgetotal      \xdef\outercombitotal {\the\scratchdimen}%
+  \scratchdimen\innermarginwidth \advance\scratchdimen\inneredgetotal      \xdef\innersidetotal  {\the\scratchdimen}%
+  \scratchdimen\outermarginwidth \advance\scratchdimen\outeredgetotal      \xdef\outersidetotal  {\the\scratchdimen}%
+\to \extralayoutcalculations
+
+\newtoks\everyswapmargins % watch the order !
+
+\appendtoks
+   \swapdimens\leftmargindistance\rightmargindistance
+   \swapdimens\leftedgedistance  \rightedgedistance
+   \swapdimens\leftmarginwidth   \rightmarginwidth
+   \swapdimens\leftedgewidth     \rightedgewidth
+\to \everyswapmargins
+
+\appendtoks
+  \swapmacros\leftmargintotal \rightmargintotal
+  \swapmacros\leftedgetotal   \rightedgetotal
+  \swapmacros\leftsidetotal   \rightsidetotal
+  \swapmacros\leftcombitotal  \rightcombitotal
+  \swapmacros\innermargintotal\outermargintotal
+  \swapmacros\inneredgetotal  \outeredgetotal
+  \swapmacros\innercombitotal \outercombitotal
+  \swapmacros\innersidetotal  \outersidetotal
+\to \everyswapmargins
 
 %D \macros
 %D   {definepapersize}
@@ -521,10 +576,6 @@
    \checkgridsnapping
    \recalculatelogos
    \recalculatebackgrounds}
-
-\newtoks\extralayoutcalculations
-
-\def\calculatelayoutextras{\the\extralayoutcalculations}
 
 \def\calculatepseudocolumns
   {\global\layoutcolumns\layoutparameter\c!columns
@@ -1007,15 +1058,6 @@
    \hskip-\leftmarginwidth
    \hskip-\leftedgedistance
    \hskip-\leftedgewidth}
-
-\newtoks\everyswapmargins
-
-\appendtoks
-   \swapdimens\leftmargindistance\rightmargindistance
-   \swapdimens\leftedgedistance \rightedgedistance
-   \swapdimens\leftmarginwidth\rightmarginwidth
-   \swapdimens\leftedgewidth \rightedgewidth
-\to \everyswapmargins
 
 \def\doifmarginswapelse#1#2%
   {\doifbothsides#1\orsideone#1\orsidetwo#2\od}

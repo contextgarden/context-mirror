@@ -1,5 +1,5 @@
 %D \module
-%D   [       filefile=page-mar, % moved here from main-001
+%D   [       file=page-mar, % moved here from main-001
 %D        version=1997.03.31,
 %D          title=\CONTEXT\ Core Macros,
 %D       subtitle=Marginal Things
@@ -55,7 +55,7 @@
      [\c!location=\v!left,
       \c!distance=\zeropoint,
       \c!width=\leftmarginwidth,
-      \c!offset=\leftmargindistance,
+      \c!hoffset=\leftmargindistance,
       \c!command=,
       #2]%
    \setvalue{#1}{\domarginline{#1}}}
@@ -70,7 +70,7 @@
       \hsize\getvalue{\??im\??im#1\c!width}\relax
       \executeifdefined{\??im\??im#1\c!command}\firstofoneargument{#2}\relax
       \hskip\leftskip
-      \hskip\getvalue{\??im\??im#1\c!offset }\relax
+      \hskip\getvalue{\??im\??im#1\c!hoffset }\relax
       \hskip\getvalue{\??im\??im#1\c!distance}}%
    \popindentation
    \ignorespaces}
@@ -81,9 +81,9 @@
      {\postsignalrightpage
       \hskip\hsize
       \hskip-\rightskip
-      \hskip\getvalue{\??im\??im#1\c!offset }\relax
+      \hskip\getvalue{\??im\??im#1\c!hoffset }\relax
       \hskip\getvalue{\??im\??im#1\c!distance}\relax
-      \hsize\getvalue{\??im\??im#1\c!width}\relax
+      \hsize\getvalue{\??im\??im#1\c!width   }\relax
       \executeifdefined{\??im\??im#1\c!command}\firstofoneargument{#2}}%
    \popindentation
    \ignorespaces}
@@ -93,18 +93,18 @@
 \setvalue{\s!do\??im\??im\v!inner}{\presignalrightpage\doifrightpageelse\doleftmarginline \dorightmarginline}
 \setvalue{\s!do\??im\??im\v!outer}{\presignalrightpage\doifrightpageelse\dorightmarginline\doleftmarginline }
 
-\definemarginline[inleftmargin] [\c!location=\v!left, \c!width=\leftmarginwidth, \c!offset=\leftmargindistance]
-\definemarginline[inrightmargin][\c!location=\v!right,\c!width=\rightmarginwidth,\c!offset=\rightmargindistance]
-\definemarginline[inleftedge]   [\c!location=\v!left, \c!width=\leftedgewidth,  \c!offset=\leftedgedistance, \c!distance=\leftmargintotal]
-\definemarginline[inrightedge]  [\c!location=\v!right,\c!width=\rightedgewidth, \c!offset=\rightedgedistance,\c!distance=\rightmargintotal]
+\definemarginline[inleftmargin] [\c!location=\v!left, \c!width=\leftmarginwidth, \c!distance=\leftmargindistance]
+\definemarginline[inrightmargin][\c!location=\v!right,\c!width=\rightmarginwidth,\c!distance=\rightmargindistance]
+\definemarginline[inleftedge]   [\c!location=\v!left, \c!width=\leftedgewidth,   \c!distance=\leftedgedistance, \c!hoffset=\leftmargintotal]
+\definemarginline[inrightedge]  [\c!location=\v!right,\c!width=\rightedgewidth,  \c!distance=\rightedgedistance,\c!hoffset=\rightmargintotal]
 
-\definemarginline[inoutermargin][\c!location=\v!outer,\c!width=\outermarginwidth,\c!offset=\outermargindistance]
-\definemarginline[ininnermargin][\c!location=\v!inner,\c!width=\innermarginwidth,\c!offset=\innermargindistance]
-\definemarginline[inouteredge]  [\c!location=\v!outer,\c!width=\outeredgewidth,  \c!offset=\outeredgedistance,\c!distance=\outermargintotal]
-\definemarginline[ininneredge]  [\c!location=\v!inner,\c!width=\inneredgewidth,  \c!offset=\inneredgedistance,\c!distance=\innermargintotal]
+\definemarginline[inoutermargin][\c!location=\v!outer,\c!width=\outermarginwidth,\c!distance=\outermargindistance]
+\definemarginline[ininnermargin][\c!location=\v!inner,\c!width=\innermarginwidth,\c!distance=\innermargindistance]
+\definemarginline[inouteredge]  [\c!location=\v!outer,\c!width=\outeredgewidth,  \c!distance=\outeredgedistance,\c!hoffset=\outermargintotal]
+\definemarginline[ininneredge]  [\c!location=\v!inner,\c!width=\inneredgewidth,  \c!distance=\inneredgedistance,\c!hoffset=\innermargintotal]
 
-\definemarginline[atleftmargin] [\c!location=\v!left, \c!command=\lrlap,\c!distance=\zeropoint,\c!width=\zeropoint,\c!offset=\zeropoint]
-\definemarginline[atrightmargin][\c!location=\v!right,\c!command=\rllap,\c!distance=\zeropoint,\c!width=\zeropoint,\c!offset=\zeropoint]
+\definemarginline[atleftmargin] [\c!location=\v!left, \c!command=\lrlap,\c!width=\zeropoint,\c!distance=\zeropoint,\c!hoffset=\zeropoint]
+\definemarginline[atrightmargin][\c!location=\v!right,\c!command=\rllap,\c!width=\zeropoint,\c!distance=\zeropoint,\c!hoffset=\zeropoint]
 
 \ifx\lrlap\undefined \def\lrlap#1{\llap{\rlap{#1}\hskip\leftskip}}               \fi
 \ifx\rllap\undefined \def\rllap#1{\rlap{\hskip\hsize\hskip-\rightskip\llap{#1}}} \fi
@@ -170,6 +170,7 @@
 
 \chardef\margincontentdisplacement \zerocount
 \let    \margincontentdistance     \!!zeropoint
+\let    \margincontenthoffset      \!!zeropoint
 \def    \margincontentlines        {1}
 \def    \margincontenttag          {0}
 \let    \margincontentseparator    \empty
@@ -193,7 +194,7 @@
    \getparameters[\??im#2][#1]}
 
 \def\checkinmargin[#1]%
-  {\ifundefined{\??im#1\c!offset}%
+  {\ifundefined{\??im#1\c!offset}% this offset is related to framed !
      \addtocommalist{#1}\inmargintaglist
      \presetmargintext[#1]%
    \fi}
@@ -208,7 +209,8 @@
       \c!line=1,
       \c!separator=,
       \c!width=\v!broad,
-      \c!distance=\zeropoint,
+      \c!distance=, % empty = signal
+      \c!hoffset=\zeropoint,
       \c!style=\@@imstyle,
       \c!color=\@@imcolor,
       \c!location=\@@imlocation,
@@ -218,14 +220,14 @@
 
 \newdimen\naturalmargincontentheight
 
-\def\makemargintextblock#1#2#3#4% width l r content
+\def\makemargintextblock#1#2#3% width l r content
   {\bgroup
    \forgetall % added, else problems with 'center' and nested itemize
    \dontcomplain
-   \hsize#1\relax
+   \hsize\getvalue{\??im#1\c!width}\relax
    \doifnumberelse\margincontenttag
      {\ifcase\margincontenttag\relax
-        \def\margincontenttag{#2}% first one is setups id as well
+        \let\margincontenttag#1% first one is setups id as well
       \fi}
      \donothing
    \doifnumberelse\margincontenttag
@@ -234,16 +236,16 @@
       \fi}
      \donothing
    % we need to preserve {a,b,c} kind of settings
-   \let\margincontentalign#2%
+   \let\margincontentalign#1%
    \processallactionsinset
      [\getvalue{\??im\margincontenttag\c!align}]
-     [     \v!yes=>\let\margincontentalign#2,
-          \v!no=>\let\margincontentalign\v!normal,
-       \v!inner=>\let\margincontentalign#2,
-       \v!outer=>\let\margincontentalign#3,
-        \v!left=>\let\margincontentalign\v!left,
-       \v!middle=>\let\margincontentalign\v!middle,
-       \v!right=>\let\margincontentalign\v!right]%
+     [     \v!yes=>\let\margincontentalign#1,
+            \v!no=>\let\margincontentalign\v!normal,
+         \v!inner=>\let\margincontentalign#1,
+         \v!outer=>\let\margincontentalign#2,
+          \v!left=>\let\margincontentalign\v!left,
+        \v!middle=>\let\margincontentalign\v!middle,
+         \v!right=>\let\margincontentalign\v!right]%
    \doifvaluesomething{\??im\margincontenttag\c!align} % watch {} around set
      {\edef\margincontentalign{{\getvalue{\??im\margincontenttag\c!align},\margincontentalign}}}%
    %
@@ -259,7 +261,7 @@
       \@@imbefore
       \dostartattributes{\??im\margincontenttag}\c!style\c!color\empty
         \setstrut % yes or no
-        \begstrut#4\endstrut\endgraf
+        \begstrut#3\endstrut\endgraf
         \xdef\margincontentstrutheight{\the\strutht}% so that it's known outside the framed
       \dostopattributes
       \@@imafter}%
@@ -269,7 +271,7 @@
      {\def\overlappingmargin{-20\scaledpoint}% test value, maybe .25\strutboxdp, maybe configurable
       \setbox\scratchbox\vbox{\stackeddown\vbox{\box\scratchbox}}}% new
    \ht\scratchbox\strutht
-\dp\scratchbox\strutdp % nieuw
+   \dp\scratchbox\strutdp % nieuw
    \box\scratchbox
    \egroup}
 
@@ -324,30 +326,39 @@
 % 2 only natural height
 % 3 also stack height
 
-\chardef\margincontentmethod\plusthree % beware: 1 = old method
+\chardef\margincontentmethod  \plusthree % beware: 1 = old method
+\chardef\marginpagecheckmethod\plusone
+
+\beginOMEGA \vadjust
+  \chardef\marginpagecheckmethod\plustwo
+\endOMEGA
+
 \def\margincontentextralines{1}        % old method, play safe
+\def\nofmargincontentlines  {0}
 
 \def\doplacemargintext#1#2#3#4%
   {\strut
    \doifsomething{#1}
      {\def\margincontenttag{#1}}%
    \doifinsetelse{\margincontenttag}{\v!left,\v!right} % ugly hack
-     {\let \margincontentdistance                                                      \zeropoint}
-     {\edef\margincontentdistance {\executeifdefined{\??im\margincontenttag\c!distance }\zeropoint}}%
-   \edef\margincontentlines    {\executeifdefined{\??im\margincontenttag\c!line   }\plusone  }%
-   \edef\margincontentseparator{\executeifdefined{\??im\margincontenttag\c!separator}\donothing}%
+     {\let \margincontentdistance                                                      \empty     % signal
+      \let \margincontenthoffset                                                       \zeropoint}
+     {\edef\margincontentdistance{\executeifdefined{\??im\margincontenttag\c!distance }\empty    }% signal
+      \edef\margincontenthoffset {\executeifdefined{\??im\margincontenttag\c!hoffset  }\zeropoint}}%
+   \edef\margincontentlines      {\executeifdefined{\??im\margincontenttag\c!line     }\plusone  }%
+   \edef\margincontentseparator  {\executeifdefined{\??im\margincontenttag\c!separator}\donothing}%
    \setbox\scratchbox\hbox{#4}% % todo: make sure that color stack works
-\ifcase\margincontentmethod
-  \scratchdimen\zeropoint
-\or % old method
-  \scratchdimen\ht\scratchbox
-  \advance\scratchdimen\dp\scratchbox
-\or
-  \scratchdimen\naturalmargincontentheight
-\or
-  \scratchdimen\naturalmargincontentheight
-  \ifx\laststackvmove\undefined\else\global\advance\scratchdimen\laststackvmove\fi
-\fi
+   \ifcase\margincontentmethod
+     \scratchdimen\zeropoint
+   \or % old method
+     \scratchdimen\ht\scratchbox
+     \advance\scratchdimen\dp\scratchbox
+   \or
+     \scratchdimen\naturalmargincontentheight
+   \or
+     \scratchdimen\naturalmargincontentheight
+     \ifx\laststackvmove\undefined\else\global\advance\scratchdimen\laststackvmove\fi
+   \fi
    \ifdim\scratchdimen>\margincontentheight
      \global\margincontentheight\scratchdimen
    \fi
@@ -370,25 +381,24 @@
   %\hbox{\lower\strutdp\box\scratchbox}} % alas, wrong lapping, therefore useless
    \dopositionmarginbox\scratchbox}
 
-\def\leftmargintextdistance {\getvalue{\??im\v!left \c!distance}}
-\def\rightmargintextdistance{\getvalue{\??im\v!right\c!distance}}
-
-\def\leftmargintextwidth    {\getvalue{\??im\v!left \c!width}}
-\def\rightmargintextwidth   {\getvalue{\??im\v!right\c!width}}
+\def\domarginblockskip#1%
+  {\hskip\margincontenthoffset
+   \doifelsenothing\margincontentdistance
+     {\hskip\getvalue{\??im#1\c!distance}}
+     {\hskip\margincontentdistance}%
+   \relax}
 
 \def\doleftmarginblock#1#2%
   {\doplacemargintext{#1}\llap\zeropoint
      {\llap{\placemargincontentseparator}%
-      \makemargintextblock\leftmargintextwidth\v!left\v!right{#2}%
-      \hskip\margincontentdistance
-      \hskip\leftmargintextdistance}}
+      \makemargintextblock\v!left\v!right{#2}%
+      \domarginblockskip\v!left}}
 
 \def\dorightmarginblock#1#2%
   {\doplacemargintext{#1}\rlap\hsize
-     {\hskip\rightmargintextdistance
-      \hskip\margincontentdistance
-      \hskip\textwidth\hskip-\hsize % new: hsize correction
-      \makemargintextblock\rightmargintextwidth\v!right\v!left{#2}%
+     {\hskip\textwidth\hskip-\hsize % new: hsize correction
+      \domarginblockskip\v!right
+      \makemargintextblock\v!right\v!left{#2}%
       \rlap{\placemargincontentseparator}}}
 
 \def\placemargincontentseparator
@@ -402,21 +412,7 @@
      \fi
    \fi}
 
-%
-
 \newbox\marginconstructbox
-
-% \def\doinmarginswapped#1#2#3#4%
-%   {\iffirstsidefloatparagraph\geenwitruimte\fi % zo laat mogelijk
-%    \setbox\marginconstructbox\hbox\bgroup % prevents page break in the middle of construction
-%      \signalrightpage
-%      \doifswappedrightpageelse
-%        {\rightmargintrue \freezepagestate#2}
-%        {\rightmarginfalse\freezepagestate#1}
-%        {#3}% setups
-%        {\freezepagestate#4}% content
-%    \egroup
-%    \unhbox\marginconstructbox}
 
 \def\doinmarginswapped#1#2#3#4%
   {\iffirstsidefloatparagraph\nowhitespace\fi % zo laat mogelijk
@@ -430,7 +426,6 @@
      \stopsignalrightpage
    \egroup
    \unhbox\marginconstructbox}
-
 
 % history made this a bit complicated, the +/- was needed before
 % we had enough mem/hash to do the page correction
@@ -457,7 +452,7 @@
 %         {\dodoinmargin[#1][#2][#3][#4][#5]}
 %         {\dodoinmargin[#1][#2][#3][][#4]}}}
 %
-% the problem is that we ned to keep downward compatibility
+% the problem is that we need to keep downward compatibility
 % with respect to the first argument thing a reference or a
 % directive; the alternative is to force users to pass a
 % directive along with a reference; anyhow, as long as one
@@ -465,7 +460,6 @@
 % directive we can use the (slow) alternative
 
 \def\doinmargin[#1][#2][#3][#4][#5]% #6 #7
-% {\expanded{\doifcommonels{#4}{\inmargintaglist}}
   {\expanded{\doifinsetelse{#4}{\inmargintaglist}}
      {\dodoinmargin[#1][#2][#3][#4][#5]}
      {\dodoinmargin[#1][#2][#3][][#4]}}
@@ -479,12 +473,12 @@
       \setvalue{#1}{\indentation\doquintupleempty\doinmargin[#2][#3][#1]}}
      {\setvalue{#1}{\indentation\doquintupleempty\doinmargin[#2][#3][#4]}}}
 
-\defineinmargin[inleft]  [\v!left]    [\v!normal]    % takes left settings
-\defineinmargin[inright] [\v!right]   [\v!normal]    % takes right settings
-\defineinmargin[ininner] [\v!inner]   [\v!normal]    % takes left/right settings
-\defineinmargin[inouter] [\v!outer]   [\v!normal]    % takes left/right settings
-\defineinmargin[inmargin][\@@imlocation] [\v!normal]    % takes left/right settings
-\defineinmargin[inother] [\@@imlocation] [\v!reverse]  % takes left/right settings
+\defineinmargin [inleft]   [\v!left]       [\v!normal]   % takes left settings
+\defineinmargin [inright]  [\v!right]      [\v!normal]   % takes right settings
+\defineinmargin [ininner]  [\v!inner]      [\v!normal]   % takes left/right settings
+\defineinmargin [inouter]  [\v!outer]      [\v!normal]   % takes left/right settings
+\defineinmargin [inmargin] [\@@imlocation] [\v!normal]   % takes left/right settings
+\defineinmargin [inother]  [\@@imlocation] [\v!reverse]  % takes left/right settings
 
 \def\inothermargin{\inother}
 
@@ -567,10 +561,10 @@
      {\swapmacros\dorightmarginblock\doleftmarginblock}%
    \processaction
      [#1]
-     [  \v!left=>\let\next\doleftmarginblock,  % no swapping
-       \v!right=>\let\next\dorightmarginblock, % no swapping
-       \v!inner=>\def\next{\doinmarginswapped\dorightmarginblock\doleftmarginblock },
-       \v!outer=>\def\next{\doinmarginswapped\doleftmarginblock \dorightmarginblock},
+     [   \v!left=>\let\next\doleftmarginblock,  % no swapping
+        \v!right=>\let\next\dorightmarginblock, % no swapping
+        \v!inner=>\def\next{\doinmarginswapped\dorightmarginblock\doleftmarginblock },
+        \v!outer=>\def\next{\doinmarginswapped\doleftmarginblock \dorightmarginblock},
       \s!unknown=>\ifdubbelzijdig
                     \doifcommonelse{+,-}{#4}
                       {\def\next{\doinmarginswapped\dorightmarginblock\doleftmarginblock }}
@@ -653,13 +647,18 @@
    \else
      \donefalse % how needed
    \fi\fi\fi
+   \savemargincontentlines
    \ifdone
      \advance\margincontentheight \margincontentextralines\lineheight
      \bgroup % preserve \margincontentheight
      \advance\margincontentheight \pagetotal
      \ifdim\margincontentheight>\pagegoal
        \egroup
-       \setmargincontentpenalties
+       \ifcase\marginpagecheckmethod\or
+         \vadjust pre {\page}%
+       \or
+         \setmargincontentpenalties
+       \fi
      \else
        \egroup
      \fi
@@ -667,6 +666,22 @@
      \vadjust{\nobreak}%
    \fi
    \egroup}
+
+\def\savemargincontentlines
+  {\bgroup
+   \advance\margincontentheight \margincontentextralines\lineheight % 1 by default
+   \getnoflines\margincontentheight
+   \xdef\nofmargincontentlines{\the\noflines}%
+   \egroup}
+
+\def\fillupmargincontentlines
+  {\endgraf
+   \begingroup
+   \scratchcounter\numexpr(\nofmargincontentlines-\prevgraf)\relax
+   \ifnum\scratchcounter>\zerocount
+     \forgetall\dorecurse\scratchcounter{\nobreak\crlf}%
+   \fi
+   \endgroup}
 
 \beginETEX
 

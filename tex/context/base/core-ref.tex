@@ -1,5 +1,5 @@
 %D \module
-%D   [       filefile=core-ref,
+%D   [       file=core-ref,
 %D        version=1998.01.15,
 %D          title=\CONTEXT\ Core Macros,
 %D       subtitle=Cross Referencing,
@@ -314,18 +314,18 @@
 %D In practice this comes to giving \type {\mainreference} a
 %D appropriate meaning and loading the utility file.
 
-% \def\setreferences%
+% \def\setreferences
 %   {\def\mainreference##1##2##3##4##5%
 %      {\doifundefinedelse{\r!cross\fileprefix##1##2}
 %         {\setglobalcrossreference{##1##2}{##3}{##4}{##5}}
-%         {\showmessage{\m!references}{2}{[##1][##2],##4}}}}
+%         {\showmessage\m!references{2}{[##1][##2],##4}}}}
 
-% \def\setreferences%
+% \def\setreferences
 %   {\the\everyreference % we're grouped anyway
 %    \def\mainreference##1##2##3##4##5%
 %      {\doifundefinedelse{\r!cross\fileprefix##1##2}
 %         {\setglobalcrossreference{##1##2}{##3}{##4}{##5}}
-%         {\ifcase0##4\else\showmessage{\m!references}{2}{[##1][##2],##4}\fi}}}
+%         {\ifcase0##4\else\showmessage\m!references{2}{[##1][##2],##4}\fi}}}
 
 %D For a long time the only way to access an external file was
 %D to use the file prefix (\type {somefile::}. However, when
@@ -344,7 +344,7 @@
 
 \chardef\autocrossfilereferences=0
 
-% \def\setreferences% some day, filename will be stored in ref record
+% \def\setreferences % some day, filename will be stored in ref record
 %   {\the\everyreference % we're grouped anyway
 %    \def\mainreference##1##2##3##4##5%
 %      {\doifundefinedelse{\r!cross\fileprefix##1##2}
@@ -354,14 +354,14 @@
 %            \setglobalcrossreference{##1##2}{##3}{##4}{##5}%
 %            \doifundefinedelse{\r!cross##1##2}
 %              {\expanded{\definereference[##1##2][\fileprefix##1##2]}}
-%              {\showmessage{\m!references}{2}{[##1][##2],##4 (auto \currentutilityfilename)}}%
+%              {\showmessage\m!references2{[##1][##2],##4 (auto \currentutilityfilename)}}%
 %          \or
 %            \doifundefinedelse{\r!cross##1##2}
 %              {\expanded{\definereference[##1##2][\noexpand\v!pagina(\fileprefix##4)]}}
-%              {\showmessage{\m!references}{2}{[##1][##2],##4 (auto \currentutilityfilename)}}%
+%              {\showmessage\m!references2{[##1][##2],##4 (auto \currentutilityfilename)}}%
 %          \fi}
 %         {\ifcase0##4\else
-%            \showmessage{\m!references}{2}{[##1][##2],##4 (\currentutilityfilename)}%
+%            \showmessage\m!references2{[##1][##2],##4 (\currentutilityfilename)}%
 %          \fi}}}
 
 % optimizing this one makes sense when we have docs with 10K
@@ -2621,11 +2621,47 @@
        {\leftofreference#1\rightofreference}{#2#3}[#4]%
    \fi}
 
+% \def\dododododoinatreference#1#2[#3]%
+%   {\bgroup
+%    \forgetall
+%    \postponefootnotes
+%    \leaveoutervmode
+%    \doifreferencefoundelse{#3}
+%      {\bgroup
+%       \let\ignorespaces    \empty % rather dirty trick, but ok
+%       \let\leftofreference \empty % the same, again ok
+%       \let\rightofreference\empty % and once more
+%       \def\textofreference {#2}%  % temporary value
+%       \ifx\textofreference\empty  % simple expansion
+%        %\doifelsenothing{#1}
+%        %  {\egroup\dosymbolreference{#1}{\textofreference}[#3]}
+%        %  {\egroup\dowantedreference{#1}{\textofreference}[#3]}%
+%         \doifelsenothing{#1}%
+%           {\egroup\dosymbolreference}%
+%           {\egroup\dowantedreference}%
+%           {#1}{\textofreference}[#3]%
+%       \else
+%        %\doifelsenothing{#1}
+%        %  {\egroup\dosymbolreference{#1}{#2}[#3]}
+%        %  {\egroup\dowantedreference{#1}{#2}[#3]}%
+%         \doifelsenothing{#1}%
+%           {\egroup\dosymbolreference}%
+%           {\egroup\dowantedreference}%
+%           {#1}{#2}[#3]%
+%       \fi}
+%      {\dounknownreference{#1}{#2}[#3]}%
+%    \referentieinfo<{#3}%
+%    \global\let\leftofreference \empty
+%    \global\let\rightofreference\empty
+%    \global\let\textofreference \empty
+%    \egroup}
+
 \def\dododododoinatreference#1#2[#3]%
-  {\bgroup
+  {\dontleavehmode   % replaces \leaveoutervmode
+   \bgroup
    \forgetall
-\postponefootnotes
-   \leaveoutervmode
+   \postponefootnotes
+   %\leaveoutervmode % replaced by \dontleavehmode
    \doifreferencefoundelse{#3}
      {\bgroup
       \let\ignorespaces    \empty % rather dirty trick, but ok
@@ -3498,7 +3534,7 @@
          \processallactionsinset
            [#2]
            [       \v!page=>\advance\!!counta 4,
-             \v!sub\v!page=>\advance\!!counta 4,
+                \v!subpage=>\advance\!!counta 4,
                   \s!unknown=>\advance\!!counta 1]%
          \ifdim\@@ibwidth=\!!zeropoint\relax
            \!!widtha2em
@@ -3530,7 +3566,7 @@
                               \goto\v!nextpage
                               \goto\v!previouspage
                               \goto\v!lastpage,
-             \v!sub\v!page=>\goto\v!firstsubpage
+                \v!subpage=>\goto\v!firstsubpage
                               \goto\v!nextsubpage
                               \goto\v!previoussubpage
                               \goto\v!lastsubpage,

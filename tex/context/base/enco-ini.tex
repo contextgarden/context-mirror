@@ -1,5 +1,5 @@
 %D \module
-%D   [       filefile=enco-ini,
+%D   [       file=enco-ini,
 %D        version=2000.12.27, % 1998.12.03,
 %D          title=\CONTEXT\ Encoding Macros,
 %D       subtitle=Initialization,
@@ -1124,7 +1124,7 @@
    \@EA\appendtoks\csname#1\endcsname\to\everyULmap
    \@EA\appendtoks\csname#2\endcsname\to\everyULmap}
 
-% slightly faster with \kap's but far more hash and stringspace
+% slightly faster with \smallcapped's but far more hash and stringspace
 %
 % \newif\ifuppercase \appendtoks\uppercasetrue\to\everyuppercase
 % \newif\iflowercase \appendtoks\lowercasetrue\to\everylowercase
@@ -1153,20 +1153,20 @@
 
 \ifx\obeylccodes\undefined
 
-\def\obeylccodes
-  {\scratchcounter32
-   \loop
-     \ifnum\scratchcounter<127
-       \lccode\scratchcounter\scratchcounter
-       \advance\scratchcounter \plusone
-   \repeat
-   \ifeightbitcharacters
-     \scratchcounter128
+  \def\obeylccodes
+    {\scratchcounter32
      \loop
-       \ifnum\scratchcounter<255
-         \lccode\scratchcounter`.
+       \ifnum\scratchcounter<127
+         \lccode\scratchcounter\scratchcounter
          \advance\scratchcounter \plusone
      \repeat
+     \ifeightbitcharacters
+       \scratchcounter128
+       \loop
+         \ifnum\scratchcounter<255
+           \lccode\scratchcounter`.
+           \advance\scratchcounter \plusone
+       \repeat
    \fi}
 
 \fi

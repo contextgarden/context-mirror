@@ -1,5 +1,5 @@
 %D \module
-%D   [       filefile=cont-new,
+%D   [       file=cont-new,
 %D        version=1995.10.10,
 %D          title=\CONTEXT\ Miscellaneous Macros,
 %D       subtitle=New Macros,
@@ -19,60 +19,256 @@
 
 \unprotect
 
-% \tracingall
-
 \writestatus{\m!systems}{beware: some patches loaded from cont-new.tex!}
 
-\def\outermarginwidth   {\rightorleftpageaction\rightmarginwidth   \leftmarginwidth }
-\def\innermarginwidth   {\rightorleftpageaction\leftmarginwidth    \rightmarginwidth}
-\def\outermargindistance{\rightorleftpageaction\rightmargindistance\leftmargindistance }
-\def\innermargindistance{\rightorleftpageaction\leftmargindistance \rightmargindistance}
+\def\resetsetups[#1]%
+  {\ifundefined{\??su\ifgridsnapping\v!grid\fi:#1}%
+     \letbeundefined{\??su:#1}%
+   \else
+     \letbeundefined{\??su\ifgridsnapping\v!grid\fi:#1}%
+   \fi}
 
-\def\outeredgewidth     {\rightorleftpageaction\rightedgewidth   \leftedgewidth }
-\def\inneredgewidth     {\rightorleftpageaction\leftedgewidth    \rightedgewidth}
-\def\outeredgedistance  {\rightorleftpageaction\rightedgedistance\leftedgedistance }
-\def\inneredgedistance  {\rightorleftpageaction\leftedgedistance \rightedgedistance}
-
-\def\outerspacewidth    {\rightorleftpageaction\cutspace\backspace }
-\def\innerspacewidth    {\rightorleftpageaction\backspace \cutspace}
-
-\appendtoks
-  \scratchdimen\leftmarginwidth  \advance\scratchdimen\leftmargindistance  \xdef\leftmargintotal {\the\scratchdimen}%
-  \scratchdimen\rightmarginwidth \advance\scratchdimen\rightmargindistance \xdef\rightmargintotal{\the\scratchdimen}%
-  \scratchdimen\leftedgewidth    \advance\scratchdimen\leftedgedistance    \xdef\leftedgetotal   {\the\scratchdimen}%
-  \scratchdimen\rightedgewidth   \advance\scratchdimen\rightedgedistance   \xdef\rightedgetotal  {\the\scratchdimen}%
-  \scratchdimen\leftmarginwidth  \advance\scratchdimen\leftedgetotal       \xdef\leftsidetotal   {\the\scratchdimen}%
-  \scratchdimen\rightmarginwidth \advance\scratchdimen\rightedgetotal      \xdef\rightsidetotal  {\the\scratchdimen}%
-  \scratchdimen\leftmargintotal  \advance\scratchdimen\leftedgetotal       \xdef\leftcombitotal  {\the\scratchdimen}%
-  \scratchdimen\rightmargintotal \advance\scratchdimen\rightedgetotal      \xdef\rightcombitotal {\the\scratchdimen}%
-  %
-  \scratchdimen\innermarginwidth \advance\scratchdimen\innermargindistance \xdef\innermargintotal{\the\scratchdimen}%
-  \scratchdimen\outermarginwidth \advance\scratchdimen\outermargindistance \xdef\outermargintotal{\the\scratchdimen}%
-  \scratchdimen\inneredgewidth   \advance\scratchdimen\inneredgedistance   \xdef\inneredgetotal  {\the\scratchdimen}%
-  \scratchdimen\outeredgewidth   \advance\scratchdimen\outeredgedistance   \xdef\outeredgetotal  {\the\scratchdimen}%
-  \scratchdimen\innermargintotal \advance\scratchdimen\inneredgetotal      \xdef\innercombitotal {\the\scratchdimen}%
-  \scratchdimen\outermargintotal \advance\scratchdimen\outeredgetotal      \xdef\outercombitotal {\the\scratchdimen}%
-  \scratchdimen\innermarginwidth \advance\scratchdimen\inneredgetotal      \xdef\innersidetotal  {\the\scratchdimen}%
-  \scratchdimen\outermarginwidth \advance\scratchdimen\outeredgetotal      \xdef\outersidetotal  {\the\scratchdimen}%
-\to \extralayoutcalculations
-
-\appendtoks
-  \swapmacros\leftmargintotal \rightmargintotal
-  \swapmacros\leftedgetotal   \rightedgetotal
-  \swapmacros\leftsidetotal   \rightsidetotal
-  \swapmacros\leftcombitotal  \rightcombitotal
-  \swapmacros\innermargintotal\outermargintotal
-  \swapmacros\inneredgetotal  \outeredgetotal
-  \swapmacros\innercombitotal \outercombitotal
-  \swapmacros\innersidetotal  \outersidetotal
-\to \everyswapmargins
+% \def\resetsetups[#1]%
+%   {\letbeundefined
+%      {\??su:%
+%       \ifundefined{\??su\ifgridsnapping\v!grid\fi:#1}#1\else\ifgridsnapping\v!grid\fi%
+%       #1}}
 
-% for taco: you may need to patch modules that have low level dutch
+\ifx\pagediscards\undefined \let\pagediscards\relax \fi
 
-\ifx\definieernummer\undefined \let\definieernummer\definenumber    \fi
-\ifx\verhoognummer  \undefined \let\verhoognummer  \incrementnumber \fi
-\ifx\verlaagnummer  \undefined \let\verhoognummer  \decrementnumber \fi
-\ifx\stelnummerin   \undefined \let\stelnummerin   \setupnumber     \fi
+\installoutput\synchronizeoutput % maybe add pagediscards
+  {\ifvoid\normalpagebox\else
+     \unvbox\normalpagebox
+     \pagediscards
+   \fi}
+
+\def\testpage     {\dotripleempty\dotestpage[\plusone]}
+\def\testpageonly {\dotripleempty\dotestpage[\plustwo]}
+
+\chardef\testpagetrigger=0
+
+\def\dotestpage[#1][#2][#3]%
+  {%\relax % needed before \if
+   \ifpaginageblokkeerd
+     \endgraf
+   \else
+     % new from here
+     \ifcase\testpagetrigger
+       \endgraf
+     \or
+       \ifvmode
+         \dosomebreak\allowbreak
+       \else % indeed?
+         \vadjust{\allowbreak}%
+         \endgraf
+       \fi
+     \fi
+     % till here
+     \ifdim\pagegoal<\maxdimen \relax
+       \ifdim\pagetotal<\pagegoal \relax
+         \scratchdimen\lineheight
+         \multiply\scratchdimen#2\relax
+         \advance\scratchdimen \pagetotal
+         \ifdim\lastskip<\parskip
+           \advance\scratchdimen \parskip
+         \fi
+         \ifthirdargument
+           \advance\scratchdimen#3\relax
+         \fi
+         \ifcase\testpagemethod
+           \ifdim\scratchdimen>.99\pagegoal
+             \penalty-\!!tenthousand\relax
+           \fi
+         \or
+           \advance\scratchdimen-\pagegoal
+           \ifdim\scratchdimen>-\lineheight
+             \penalty-\!!tenthousand\relax
+           \fi
+         \or
+           \getnoflines\pagegoal
+           \advance\scratchdimen-\noflines\lineheight \relax
+           \ifdim\scratchdimen>-\lineheight
+             \penalty-\!!tenthousand\relax
+           \fi
+         \or % same as 0 but more accurate
+           \advance\scratchdimen-10\s!sp\relax
+           \ifdim\scratchdimen>\pagegoal
+             \penalty-\!!tenthousand\relax
+           \fi
+         \fi
+       \else
+         % force page break / new / does not work as expected
+         % never: \penalty-\!!tenthousand\relax
+       \fi
+     \else
+       \ifnum#1=\plusone\goodbreak\fi
+     \fi
+   \fi}
+
+% temp hack, else no proper default fall back (like \textmultiply); todo: sync encoding
+
+\appendtoks
+   \let\characterencoding\nocharacterencoding
+\to \everymathematics
+
+% \separatestring123 456\to\test [\test]
+
+% \def\separatestring#1\to#2%
+%   {\let#2\empty
+%    \def\docommand##1{\edef#2{\ifx#2\empty\else#2,\fi##1}}%
+%    \processseparatedlist[#1][ ]\docommand}
+%
+% \processseparatedlist[aap noot][]\ruledhbox
+
+% \startbuffer
+% \scratchdimen\dimexpr(3pt)               \getnoflines\scratchdimen  1=\the\noflines \endgraf
+% \scratchdimen\dimexpr(10\lineheight)     \getnoflines\scratchdimen 10=\the\noflines \endgraf
+% \scratchdimen\dimexpr(10.1\lineheight)   \getnoflines\scratchdimen 11=\the\noflines \endgraf
+% \scratchdimen\dimexpr(10.5\lineheight)   \getnoflines\scratchdimen 11=\the\noflines \endgraf
+% \scratchdimen\dimexpr(10.9\lineheight)   \getnoflines\scratchdimen 11=\the\noflines \endgraf
+% \scratchdimen\dimexpr(10\lineheight+3pt) \getnoflines\scratchdimen 11=\the\noflines \endgraf
+% \scratchdimen\dimexpr(10\lineheight+3sp) \getnoflines\scratchdimen 10=\the\noflines \endgraf
+% \scratchdimen\dimexpr(10\lineheight-3sp) \getnoflines\scratchdimen 10=\the\noflines \endgraf
+%
+% \scratchdimen\dimexpr(3pt)               \getrawnoflines\scratchdimen  0=\the\noflines \endgraf
+% \scratchdimen\dimexpr(10\lineheight)     \getrawnoflines\scratchdimen 10=\the\noflines \endgraf
+% \scratchdimen\dimexpr(10.1\lineheight)   \getrawnoflines\scratchdimen 10=\the\noflines \endgraf
+% \scratchdimen\dimexpr(10.5\lineheight)   \getrawnoflines\scratchdimen 11=\the\noflines \endgraf
+% \scratchdimen\dimexpr(10.9\lineheight)   \getrawnoflines\scratchdimen 11=\the\noflines \endgraf
+% \scratchdimen\dimexpr(10\lineheight+3pt) \getrawnoflines\scratchdimen 10=\the\noflines \endgraf
+% \scratchdimen\dimexpr(10\lineheight+3sp) \getrawnoflines\scratchdimen 10=\the\noflines \endgraf
+% \scratchdimen\dimexpr(10\lineheight-3sp) \getrawnoflines\scratchdimen 10=\the\noflines \endgraf
+% \stopbuffer
+%
+% \typebuffer \getbuffer
+
+\ifx\roundingeps\undefined \newdimen\roundingeps \roundingeps=10sp \fi
+
+\def\getnoflines       {\xdogetnoflines\plusone  } % compensated
+\def\getroundednoflines{\xdogetnoflines\plustwo  } % rounded
+\def\getrawnoflines    {\xdogetnoflines\plusthree} % truncated
+
+\def\xdogetnoflines#1#2%
+  {\noflinesheight#2\relax
+   \ifzeropt\noflinesheight
+     \noflines\zerocount
+   \else\ifdim#2>\zeropoint
+     \ifcase#1\or
+       \advance\noflinesheight-\roundingeps
+       \divide\noflinesheight\openlineheight
+       \noflines\noflinesheight
+       \advance\noflines\plusone
+     \or
+       \advance\noflinesheight\roundingeps
+       \divide\noflinesheight\openlineheight
+       \noflines\noflinesheight
+     \or
+       \advance\noflinesheight\roundingeps
+       \advance\noflinesheight.5\openlineheight
+       \divide\noflinesheight\openlineheight
+       \noflines\noflinesheight
+     \fi
+   \else
+     \ifcase#1\or
+       \advance\noflinesheight\roundingeps
+       \divide\noflinesheight\openlineheight
+       \noflines\noflinesheight
+       \advance\noflines\minusone
+     \or
+       \advance\noflinesheight-\roundingeps
+       \divide\noflinesheight\openlineheight
+       \noflines\noflinesheight
+     \or
+       \advance\noflinesheight-\roundingeps
+       \advance\noflinesheight-.5\openlineheight
+       \divide\noflinesheight\openlineheight
+       \noflines\noflinesheight
+     \fi
+   \fi\fi}
+
+\def\splittblboxb#1%
+  {\scratchdimen-\extratblsplitheight
+   \advance\scratchdimen-\tbltblsplitoffset
+   \expanded{\testpage[2][\the\scratchdimen]}% quite save since a row is > 1 lineheight and we don't want one-liners
+   \setbox\TABLEsplitbox\vbox{#1}%
+   \setbox8\vbox{\doifsomething\tbltblspaceinbetween{\blanko[\tbltblspaceinbetween]}}%
+   \dimen8\ht8\advance\dimen8\dp8
+   \ifmultipleTBLheads
+     \setbox2\vbox{}%
+     \setbox4\vbox{}%
+     \dorecurse\noftblheadlines
+       {\setbox0\vsplit\TABLEsplitbox to \lineheight
+        \setbox2\vbox{\unvcopy2\unvcopy0}}%
+     \dorecurse\noftblnextlines
+       {\setbox0\vsplit\TABLEsplitbox to \lineheight
+        \setbox4\vbox{\unvcopy4\unvcopy0}}%
+   \fi
+   \!!doneafalse
+   \doloop
+     {\ifdim\pagegoal<\maxdimen
+        \scratchdimen\pagegoal
+        \advance\scratchdimen-\pagetotal
+      \else
+        \scratchdimen\textheight
+      \fi
+      \advance\scratchdimen-\dimen8
+      \advance\scratchdimen-\extratblsplitheight
+      \advance\scratchdimen-\tbltblsplitoffset
+      \setbox\finaltblbox\vbox
+        {\ifmultipleTBLheads
+           \ifcase\noftblheadlines\else
+             \unvcopy2 \doifsomething\tbltblspaceinbetween{\blank[\tbltblspaceinbetween]}%
+           \fi
+         \fi}%
+      \if!!donea\else\ifcase\noftblnextlines\else
+        \setbox2\box4
+      \fi\fi
+      \!!doneatrue
+      % alternatively we could use a kind of balancing like splitter
+      % first to scratchdimen and then smaller etc; more code and copy -)
+      \doloop
+        {\setbox\scratchbox\vsplit\TABLEsplitbox to \onepoint
+         \setbox\scratchbox\vbox{\unvbox\scratchbox}%
+         \bgroup
+         \advance\scratchdimen-\ht\scratchbox
+         \advance\scratchdimen-\dp\scratchbox
+         \advance\scratchdimen-\ht\finaltblbox
+         \advance\scratchdimen-\dp\finaltblbox\relax
+         \ifdim\scratchdimen>\zeropoint
+           \egroup
+           \setbox\finaltblbox\vbox
+              {\unvbox\finaltblbox
+               \unvbox\scratchbox}%
+           \ifvoid\TABLEsplitbox \exitloop \fi
+         \else
+           \egroup
+           \setbox\TABLEsplitbox\vbox
+              {\unvbox\scratchbox
+               \ifvoid\TABLEsplitbox\else\unvbox\TABLEsplitbox\allowbreak\fi}%
+           \exitloop
+         \fi}%
+      %
+      \postprocessTABLEsplitbox\finaltblbox
+      \ifvoid\TABLEsplitbox
+        \beforeTABLEsplitbox
+        \box\finaltblbox
+        \afterTABLEsplitbox
+        \@@tblsplitafter
+        \exitloop
+      \else
+        % hack
+        \ifdim\pagegoal<\maxdimen
+          \scratchdimen\pagegoal
+          \advance\scratchdimen \lineheight
+          \global\pagegoal\scratchdimen
+        \fi
+        % brrr
+        \beforeTABLEsplitbox
+        \box\finaltblbox
+        \afterTABLEsplitbox
+        \@@tblsplitafter
+        \pagina
+      \fi}}
 
 % this will be activated when
 

@@ -1,5 +1,5 @@
 %D \module
-%D   [       filefile=core-mat,
+%D   [       file=core-mat,
 %D        version=1998.12.07,
 %D          title=\CONTEXT\ Core Macros,
 %D       subtitle=Math Fundamentals,
@@ -52,7 +52,7 @@
      \bgroup
      \forgetdisplayskips
      \displaywidowpenalty\widowpenalty % brrr, else widowpenalty does not work
-     \everymath\emptytoks
+     \everymath   \emptytoks
      \everydisplay\emptytoks
      $$\strut\global\lastlinewidth\predisplaysize$$
      \vskip-\lineheight
@@ -1418,7 +1418,7 @@
 %D Because we may overload \type {\text} in other (structuring)
 %D macros, we say:
 
-\appendtoks \let\text\mathtext \to \everymath
+\appendtoks \let\text\mathtext \to \everymathematics
 
 %D \macros
 %D   {frac, xfrac, xxfrac}
@@ -1539,7 +1539,7 @@
 \bgroup
 
 \catcode`\/=\@@other    \global           \let\normalforwardslash/
-\catcode`\/=\@@active \doglobal\appendtoks\let/\normalforwardslash\to\everymath
+\catcode`\/=\@@active \doglobal\appendtoks\let/\normalforwardslash\to\everymathematics
 
 \egroup
 

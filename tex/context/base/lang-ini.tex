@@ -1,5 +1,5 @@
 %D \module
-%D   [       file=tall-ini,
+%D   [       file=lang-ini,
 %D        version=1996.01.25,
 %D          title=\CONTEXT\ Language Macros,
 %D       subtitle=Initialization,
@@ -138,13 +138,36 @@
 %D patterns, first of all because I like to start numbering
 %D at one. It may come in handy for special purposes as well.
 
-\normallanguage\zerocount \patterns{} \def\loadedlanguage{1}
+\normallanguage\zerocount
+
+\beginETEX
+
+    \begingroup
+      \obeylccodes
+      \patterns{}
+    \endgroup
+
+\endETEX
+
+\def\loadedlanguage{1}
 
 %D Let's start with setting the lowercase code of quotes, so
 %D that we get proper hyphenation in languages like Dutch,
 %D French and Czech.
 
-\lccode`\'=`\'
+% elsewhere: \lccode`\'=`\'
+
+% \def\showlccodes
+%   {\currentlanguage:\space
+%    \dostepwiserecurse{0}{255}{1}
+%      {\ifnum\lccode\recurselevel>0
+%         \char\recurselevel:\the\lccode\recurselevel\relax\space
+%       \fi}
+%    \endgraf}
+
+% \de \hyphenatedword{Works''} \showlccodes
+% \nl \hyphenatedword{Works''} \showlccodes
+% \uk \hyphenatedword{Works''} \showlccodes
 
 %D \macros
 %D   {currentlanguage, setupcurrentlanguage}

@@ -1,5 +1,5 @@
 %D \module
-%D   [       filefile=core-uti,
+%D   [       file=core-uti,
 %D        version=1997.03.31,
 %D          title=\CONTEXT\ Core Macros,
 %D       subtitle=Utility File Handling,
@@ -223,8 +223,8 @@
 
 % no longer needed, since texutil is now multi platform
 %
-% \def\utilitycheckmessage%
-%   {\showmessage{\m!systems}{12}{}%
+% \def\utilitycheckmessage
+%   {\showmessage\m!systems{12}{}%
 %    \globallet\utilitycheckmessage=\relax}
 %
 % \def\saveutilityline#1 #2\txen% tricky maar ok, want achter \command
@@ -236,12 +236,12 @@
 %      \utilitycheckmessage
 %    \fi\fi\fi}
 %
-% \def\checkutilityfile%
+% \def\checkutilityfile
 %   {\doiflocfileelse{\jobname.\f!outputextension}
 %      {}
 %      {\doiflocfileelse{\jobname.\f!inputextension}
 %         {\bgroup
-%          \showmessage{\m!systems}{11}{}%
+%          \showmessage\m!systems{11}{}%
 %          \openout\scratchwrite=\jobname.\f!outputextension
 %          \openlocin\scratchread{\jobname.\f!inputextension}%
 %          \def\doprocessline%

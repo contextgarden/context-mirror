@@ -1,5 +1,5 @@
 %D \module
-%D   [       filefile=font-ini,
+%D   [       file=font-ini,
 %D        version=1998.09.11, % (second)
 %D        version=2001.02.20, % (third)
 %D          title=\CONTEXT\ Font Macros,
@@ -737,7 +737,7 @@
   {\appendtoks
      \ifx\normalhbox\undefined\let\normalhbox\hbox\fi
      \let\hbox\mbox
-   \to\everymath}
+   \to\everymathematics}
 
 %D So in fact one can enable this feature if needed. I would say:
 %D go along, but use grouping if needed!
@@ -1421,7 +1421,7 @@
 %  \errorstopmode
 %  \edef\lastfontname{\fontname\lastloadedfont}%
 %  \ifx\lastfontname\nullfontname
-%    \showmessage{\m!fonts}{10}{\fontfile}%
+%    \showmessage\m!fonts{10}{\fontfile}%
 %    \expandafter\font\csname#1\endcsname=\defaultfontfile\somefontspec\relax
 %  \else
 %    \expandafter\let\csname#1\endcsname\lastloadedfont
@@ -2767,7 +2767,7 @@
 
 % 0=never 1=everymath 2=always
 
-\chardef\synchronizebigmathflag  =1
+\chardef\synchronizebigmathflag=1
 
 \appendtoks
   \ifcase\synchronizebigmathflag
@@ -2777,7 +2777,7 @@
   \or
     % always
   \fi
-\to \everymath
+\to \everymathematics
 
 \def\nobigmath{\chardef\synchronizebigmathflag 0 }
 \def\bigmath  {\chardef\synchronizebigmathflag 2 \synchronizebigmath}
@@ -4363,8 +4363,8 @@
 %D different. We also provide an \WORD {uppercase} style.
 
 \definealternativestyle [\v!cap,\v!capital] [\smallcapped] [\smallcapped]
-\definealternativestyle [\v!smallcaps]       [\sc]          [\sc]
-\definealternativestyle [\v!WOORD]           [\WORD]        [\WORD]
+\definealternativestyle [\v!smallcaps]      [\sc]          [\sc]
+\definealternativestyle [\v!WORD]           [\WORD]        [\WORD]
 
 %D \macros
 %D   {...math}
@@ -4438,5 +4438,5 @@
 %D    \ifx\lastfontname\nullfontname\egroup#3\else\egroup#2\fi}
 %D
 %D \def\abortiffontnotfound#1%
-%D   {\doiffontpresentelse{#1}{}{\showmessage{\m!fonts}{10}{\truefontname{#1}}\endinput}}
+%D   {\doiffontpresentelse{#1}{}{\showmessage\m!fonts{10}{\truefontname{#1}}\endinput}}
 %D \stoptyping

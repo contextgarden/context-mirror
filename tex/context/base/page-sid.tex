@@ -1,5 +1,5 @@
 %D \module
-%D   [       filefile=page-sid,
+%D   [       file=page-sid,
 %D        version=2000.10.20,
 %D          title=\CONTEXT\ OTR Macros,
 %D       subtitle=Side Floats,
@@ -664,7 +664,7 @@
    \fi
    \relax % really needed ! ! ! !
    \ifdim\dimen0>\dimen2
-     \roomforfloatfalse
+     \global\roomforfloatfalse
    \else
      \dimen0=\pagegoal
      \advance\dimen0 -\sidefloatvsize
@@ -677,7 +677,7 @@
        \global\advance\sidefloatvsize \sidefloatbottomskip
        \global\floatshortfalse
      \fi
-     \roomforfloattrue
+     \global\roomforfloattrue
    \fi}
 
 \def\setsidefloat% nilling everypar saves time and redudant pos's
@@ -735,7 +735,7 @@
 %    %\!!counta\sidefloatprogress
 %    \scratchdimen\sidefloatprogress
 %    \advance\scratchdimen \strutht
-%    \advance\scratchdimen -10sp % new, needed in prikkels, prevent rounding errors
+%    \advance\scratchdimen -\roundingeps % new, needed in prikkels, prevent rounding errors
 %    \!!counta\scratchdimen
 %    \divide\!!counta \baselineskip
 %    \ifnum\!!counta>0
@@ -756,7 +756,7 @@
    %\!!counta\sidefloatprogress
    \scratchdimen\sidefloatprogress
    \advance\scratchdimen \strutht
-   \advance\scratchdimen -10sp % new, needed in prikkels, prevent rounding errors
+   \advance\scratchdimen -\roundingeps % new, needed in prikkels, prevent rounding errors
    \!!counta\scratchdimen
    \divide\!!counta \baselineskip\relax
    \ifnum\!!counta>0
