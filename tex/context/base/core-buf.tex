@@ -213,7 +213,7 @@
      {\letbeundefined{#4}% \letvalue{#4}=\relax     % \undefined
       \@EA\convertargument\csname#3\endcsname\to\beginofblock
       \@EA\convertargument\csname#4\endcsname\to\endofblock}%
-   \def\closeblock%
+   \def\closeblock
      {\ifsegmentatebuffer 
         \immediate\write\tmpblocks{\string\stopbufferparagraph}%
       \fi

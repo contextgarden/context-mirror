@@ -271,15 +271,15 @@
         \hsize\@@mbbreedte}%
    \fi
    \global\insidefloattrue
-\begingroup 
-\the\everyinsidefloat
+   \begingroup % ** 
+   \the\everyinsidefloat
    \let\@@extrafloat\empty
    \presetmorefloatvariables{#2}%
    \dowithnextboxcontent % better a \the\everyfloattoks
      {\setlocalfloathsize
       \postponefootnotes} % new
      {\xdocompletefloat{#1}{#3}{#1}{#2}{#1}{#4}%
-\endgroup} 
+      \doifnotinset\v!tekst{#2}\endgroup} % ** not yet done 
      \vbox}
 
 \def\xxdocompletefloat#1#2%
@@ -790,6 +790,7 @@
      {\dp\floatbox\openstrutdepth}% dp\strutbox}%      % toegevoegd
    \box\floatbox
    \blanko[\@@bknawit]%
+   \endgroup % ** 
    \doinsertfloatinfo}
 
 \def\somefacefloat[#1]%  links, rechts, midden, hoog, midden, laag

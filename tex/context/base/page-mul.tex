@@ -1356,7 +1356,7 @@
           \else
             \dogetfloat
             \ifdim\wd\floatbox>\finalcolumntextwidth % better somewhere else too 
-              \global\setbox\floatbox=\hbox to \finalcolumntextwidth{\hss\box\floatbox\hss}%
+              \global\setbox\floatbox\hbox to \finalcolumntextwidth{\hss\box\floatbox\hss}%
             \fi % otherwise the graphic may disappear
             \ifdim\wd\floatbox>\hsize
               \dimen0\wd\floatbox

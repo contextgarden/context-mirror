@@ -163,7 +163,7 @@
    \c!breedte=\v!midden]
 
 \def\moduletitel%
-  {\stellayoutin[titlepage]
+  {\setuplayout[titlepage]
    \ifx\ModuleNumber\undefined \else
      \ifnum\ModuleNumber<10
        \edef\ModuleNumber{00\ModuleNumber}
@@ -209,7 +209,7 @@
        [\v!pagina]
        [\c!achtergrond=]
    \fi
-   \stellayoutin}
+   \setuplayout}
 
 \let\stopdocumentation=\relax
 

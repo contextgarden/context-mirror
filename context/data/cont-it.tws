@@ -1870,7 +1870,7 @@ stopsetup
 startsetup
 com:impostasegnosillabazione:
 typ:var/:
-var:segno:--,---,-,~,),(,=,/::
+var:segno:--,---,-,\penalty 10000\ ,),(,=,/::
 stopsetup
 
 startsetup

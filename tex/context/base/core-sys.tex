@@ -18,10 +18,11 @@
 \def\outputfilename{\@@svfile} 
 \def\inputfilename {\@@svinputfile} 
 
+\let\jobfilesuffix\c!tex
+
 \def\splitjobfilename
-  {\edef\ascii{\inputfilename}\convertcommand\ascii\to\ascii
-  %\beforesplitstring\ascii\at.\to\jobfilename
-  %\aftersplitstring \ascii\at.\to\jobfilesuffix
+  {\resetsystemmode{suffix-\jobfilesuffix}%
+   \edef\ascii{\inputfilename}\convertcommand\ascii\to\ascii
    \splitstring\ascii\at.\to\jobfilename\and\jobfilesuffix
    \lowercasestring\jobfilesuffix\to\jobfilesuffix
    \doifnothing\jobfilename  {\let\jobfilename  \jobname}%

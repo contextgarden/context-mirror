@@ -127,10 +127,10 @@
      \immediate\closein#1\relax
    \else
      \fileprocessedtrue
-     \gdef\dofinishfile% 
+     \gdef\dofinishfile
        {\immediate\closein#1\relax
         \global\let\doprocessline\relax}%
-     \gdef\doprocessline%
+     \gdef\doprocessline
        {\ifeof#1%
           \expandafter\dofinishfile
         \else
@@ -184,11 +184,11 @@
 \chardef\kindoffile=0 % 0=normal 1=http
 
 \def\checkfilename#1%
-  {\ifinstringelse{http://}{#1}%
-     \chardef\kindoffile1
-   \else
-     \chardef\kindoffile0
-   \fi}
+  {\doifinstringelse{@@/}{@@#1}%    unix: /full/path 
+     {\chardef\kindoffile\plusone}
+     {\doifinstringelse{:/}{#1}%  windows: e:/full/path or http://
+        {\chardef\kindoffile\plusone}
+        {\chardef\kindoffile\zerocount}}}
 
 %D \macros
 %D   {readfile,ReadFile,maxreadlevel,
@@ -256,23 +256,30 @@
 
 \def\maxreadlevel{3}
 
-\def\doreadfile#1#2#3%
-  {\sanitizefilename#1\to\readfilename
+\def\doreadfile#1#2#3#4%
+  {\sanitizefilename#2\to\readfilename
    \checkfilename\readfilename
    \ifcase\kindoffile
-     \immediate\openin\scratchread=\readfilename\relax
-     \ifeof\scratchread
-       \immediate\closein\scratchread
-       \decrement\readlevel\relax
-       \ifnum\readlevel>0
-         \def\next{\doreadfile{\pathplusfile{\f!parentpath}{#1}}{#2}{#3}}%
-       \else
-         \def\next{#3}%
-       \fi
+     % not a full path or url, check for existence 
+     \def\next{\redoreadfile{\pathplusfile{#1}{\readfilename}}{#3}{#4}}%
+   \else
+     % a full path or url, no further checking done  
+     \def\next{#3\dodoreadfile}%
+   \fi
+   \next}
+
+\def\redoreadfile#1#2#3%
+  {\immediate\openin\scratchread=\readfilename\relax
+   \ifeof\scratchread
+     \immediate\closein\scratchread
+     \decrement\readlevel\relax
+     \ifnum\readlevel>\zerocount
+       \def\next{\redoreadfile{\pathplusfile{\f!parentpath}{#1}}{#2}{#3}}%
      \else
-       \def\next{\immediate\closein\scratchread#2\dodoreadfile}%
+       \def\next{#3}%
      \fi
    \else
+     \immediate\closein\scratchread 
      \def\next{#2\dodoreadfile}%
    \fi
    \next}               
@@ -284,7 +291,8 @@
 
 \def\readfile% #1%
   {\let\readlevel\maxreadlevel
-   \doreadfile} % {#1}
+  %\doreadfile} % {#1}
+   \doreadfile\empty} % {#1}
 
 \def\ReadFile#1%
   {\readfile{#1}\donothing\donothing}
@@ -305,11 +313,13 @@
 
 \def\readjobfile#1% current path, no backtracking 
   {\newcounter\readlevel
-   \doreadfile{\pathplusfile{\f!currentpath}{#1}}}
+  %\doreadfile{\pathplusfile{\f!currentpath}{#1}}}
+   \doreadfile\f!currentpath{#1}}
 
 \def\readlocfile#1% current path, backtracking 
   {\let\readlevel\maxreadlevel
-   \doreadfile{\pathplusfile{\f!currentpath}{#1}}}
+  %\doreadfile{\pathplusfile{\f!currentpath}{#1}}}
+   \doreadfile\f!currentpath{#1}}
 
 %D System files can be anywhere and therefore
 %D \type{\readsysfile} is not bound to the current directory
@@ -317,7 +327,8 @@
 
 \def\readsysfile#1% current path, obeys tex search 
   {\let\readlevel\maxreadlevel
-   \doreadfile{#1}}
+  %\doreadfile{#1}}
+   \doreadfile\empty{#1}}
 
 %D Of the last two, \type{\readfixfile} searches on the
 %D directory specified and backtracks too, while
@@ -325,11 +336,13 @@
 
 \def\readfixfile#1#2% specified path, backtracking 
   {\let\readlevel\maxreadlevel
-   \doreadfile{\pathplusfile{#1}{#2}}}
+  %\doreadfile{\pathplusfile{#1}{#2}}}
+   \doreadfile{#1}{#2}}
 
 \def\readsetfile#1#2% specified path, no backtracking 
   {\newcounter\readlevel
-   \doreadfile{\pathplusfile{#1}{#2}}}
+  %\doreadfile{\pathplusfile{#1}{#2}}}
+   \doreadfile{#1}{#2}}
 
 %D After having defined this commands, we reconsidered the
 %D previously defined \type{\readfile}. This time we more or
@@ -408,15 +421,27 @@
 %D \doiflocfileelse {filename} {before loading} {not found}
 %D \stoptypen
 
-\def\doiffileelse#1#2#3%
-  {\immediate\openin\scratchread=#1\relax
-   \ifeof\scratchread
-     \def\next{#3}%
-   \else
-     \def\next{#2}%
-   \fi
-   \immediate\closein\scratchread
-   \next}
+% \def\doiffileelse#1#2#3%
+%   {\immediate\openin\scratchread=#1\relax
+%    \ifeof\scratchread
+%      \def\next{#3}%
+%    \else
+%      \def\next{#2}%
+%    \fi
+%    \immediate\closein\scratchread
+%    \next}
+
+\def\doiffileelse#1%
+  {\doifelsenothing{#1}
+     {\secondoftwoarguments}
+     {\immediate\openin\scratchread=#1\relax
+      \ifeof\scratchread
+        \immediate\closein\scratchread
+        \expandafter\secondoftwoarguments
+      \else
+        \immediate\closein\scratchread
+        \expandafter\firstoftwoarguments
+      \fi}}
 
 % \def\doiflocfileelse#1%
 %   {\doiffileelse{\pathplusfile\f!currentpath{#1}}}

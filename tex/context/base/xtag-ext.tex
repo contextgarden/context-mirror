@@ -87,16 +87,43 @@
    \edef\@@XMLmapping{\@@XMLmapping+#1}%
    \edef\@@XMLelement{\@@XMLelement+#1}}
 
-\def\stopXMLmapping%
+\def\stopXMLmapping
   {\protect
    \popmacro\@@XMLmapping
    \popmacro\@@XMLelement}
- 
+
+%D \macros 
+%D  {startXMLmappinggroup}
+%D 
+%D Imagine something: 
+%D
+%D \starttypen  
+%D \defineXMLenvironment [something]
+%D   {\startXMLmapping[whatever]}
+%D   {\stopXMLmapping}
+%D \stoptypen  
+%D 
+%D Here the \type {\stopXMLmapping} will never be reached 
+%D because we are in a mapping. Therefore we need: 
+
+\def\startXMLmappinggroup 
+  {\dodoubleempty\dostartXMLmappinggroup}
+
+\def\dostartXMLmappinggroup[#1][#2]%
+  {\bgroup
+   \letcscsname\savedXMLmeaning\csname\@@XMLelement:/\currentXMLelement\endcsname
+   \dostartXMLmapping[#1][#2]% do ! else wrong ! 
+   \letcsnamecs\csname\@@XMLelement:/\currentXMLelement\endcsname\savedXMLmeaning}
+
+\def\stopXMLmappinggroup 
+  {\stopXMLmapping
+   \egroup}
+
 %D Context Directives: 
 
 \def\@@CTXML{@@CTXML}
 
-\def\defineXMLdirective%
+\def\defineXMLdirective
   {\dodoubleempty\dodefineXMLdirective}
 
 \long\def\dodefineXMLdirective[#1][#2]#3%

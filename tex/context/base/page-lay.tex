@@ -611,7 +611,7 @@
 
 \newif\ifdoublesidedprint
 
-\def\presetcenterpagebox % in \stellayoutin !!!!!!!!!!!!!!!!
+\def\presetcenterpagebox % in \setuplayout !!!!!!!!!!!!!!!!
   {\doublesidedprintfalse
    \ExpandFirstAfter\processallactionsinset
      [\@@lyplaats]
@@ -629,26 +629,26 @@
 \def\dodefinelayout[#1][#2]%
   {\getparameters[\??ly#1][\c!status=\v!start,#2]}
 
-\def\dodostellayoutin[#1][#2]%
+\def\dodosetuplayout[#1][#2]%
   {\ConvertToConstant\doifnot{#2}{\v!reset}
      {\getparameters[\??ly#1][#2]%
       \checkforems[#2]}}
 
-\def\dostellayoutin[#1][#2]%
+\def\dosetuplayout[#1][#2]%
   {\let\currentlayout\empty
    \ifsecondargument
-     \dodostellayoutin[#1][#2]%
+     \dodosetuplayout[#1][#2]%
    \else\iffirstargument
      \doifassignmentelse{#1}
-       {\dodostellayoutin[][#1]}
+       {\dodosetuplayout[][#1]}
        {\doifnot{#1}\v!reset{\def\currentlayout{#1}}}%
    \fi\fi
    \recalculatelayout
 \checkcurrentlayout % here ? 
    \presetcenterpagebox}
 
-\def\stellayoutin
-  {\dodoubleempty\dostellayoutin}
+\def\setuplayout
+  {\dodoubleempty\dosetuplayout}
 
 \let\@@zahoogte=\!!zeropoint
 
@@ -1091,7 +1091,7 @@
   {\popmacro\currentlayout
    \popmacro\restorepapersize
    \restorepapersize
-   \stellayoutin} % \setuplayout}
+   \setuplayout} 
 
 %D \macros
 %D   {showprint, showframe, showlayout, showsetups}
@@ -1122,7 +1122,7 @@
 %D since they could change while going to a new page,
 %D depending on the current font setting.
 
-\stellayoutin
+\setuplayout
   [             \c!kopwit=.08417508418\papierhoogte,  %  2.5cm
                  \c!boven=\!!zeropoint,
           \c!bovenafstand=\!!zeropoint,

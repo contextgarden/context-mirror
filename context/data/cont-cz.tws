@@ -1870,7 +1870,7 @@ stopsetup
 startsetup
 com:nastavdelitko:
 typ:var/:
-var:znak:--,---,-,~,),(,=,/::
+var:znak:--,---,-,\penalty 10000\ ,),(,=,/::
 stopsetup
 
 startsetup

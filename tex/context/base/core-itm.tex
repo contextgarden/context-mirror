@@ -666,7 +666,7 @@
    \hskip\itemsignal        % new, concat
    \ignorespaces}
 
-\def\complexitem[#1]#2\par% todo: no two pass data
+\def\complexitem[#1]#2\par % todo: no two pass data
   {\startitemgroup[#1]
    \complexdoitemgroupitem[]\ignorespaces\begstrut#2\unskip\endstrut\par
    \stopitemgroup}
@@ -759,12 +759,15 @@
       \dorecurse{\getvalue{\??ig#1\c!niveaus}}{\initializeitemgrouplevel\recurselevel}%
       \popmacro\currentitemgroup}}
 
-% efficient default itemize as well as upward compatible definition 
-
-% \def\startitemize {\startitemgroup[]} 
-% \def\stopitemize  {\stopitemgroup}
-% \def\setupitemize {\setupitemgroup[]}
+% efficient default itemize as well as upward compatible 
+% definition: 
 
 \defineitemgroup [\e!itemize] [\c!niveaus=6]
+
+% keep these, needed for styles: 
+
+\def\startitemize {\startitemgroup[]} 
+\def\stopitemize  {\stopitemgroup}
+\def\setupitemize {\setupitemgroup[]}
 
 \protect \endinput

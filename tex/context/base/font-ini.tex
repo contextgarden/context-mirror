@@ -3744,12 +3744,14 @@
 \unexpanded\def\getglyph#1#2% slow, faster, much faster
   %{{\definefont[\s!dummy][\glyphfontfile{#1} sa \currentfontscale]\dummy#2}}
   %{{\definefont[\s!dummy][\glyphfontfile{#1} sa *]\dummy#2}}
-   {{\symbolicfont{#1}#2}}
+  %{{\symbolicfont{#1}#2}}
+   {{\symbolicfont{#1}\doifnumberelse{#2}\char\donothing#2}}
 
 \unexpanded\def\getrawglyph#1#2% for simple symbols
   {{\scaledfont\fontbody
     \font\definedfont=#1 at \currentfontbodyscale\scaledfont
-    \definedfont#2}}
+   %\definedfont#2}}
+    \definedfont\doifnumberelse{#2}\char\donothing#2}}
 
 %D The last implementation of \type {\getglyph} permits
 %D definitions like:

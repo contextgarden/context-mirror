@@ -1687,8 +1687,8 @@
         \c!linkeroffset,\c!rechteroffset,\c!bovenoffset,\c!onderoffset]%
      \getparameters[\??td#1][#2]%
      \doifvalue{\??td#1\c!status}\v!start\checktextbackgrounds
-     \unexpanded\setvalue{#1}%
-       {\groupedcommand{\starttextbackground[#1]}{\stoptextbackground}}%
+    \unexpanded\setvalue{#1}%
+      {\groupedcommand{\starttextbackground[#1]}{\stoptextbackground}}%
      \setvalue{\e!start#1}{\starttextbackground[#1]}%
      \setvalue{\e!stop #1}{\stoptextbackground}%
    \fi}
@@ -1757,6 +1757,8 @@
    \c!kaderkleur=red,
    \c!achtergrond=,
    \c!variant=1]
+
+\ifx\basegrid\undefined \else \letvalue\v!grid=\basegrid \fi 
 
 % lelijk, aanpassen, opties
 

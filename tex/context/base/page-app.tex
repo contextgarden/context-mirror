@@ -17,8 +17,8 @@
 \unprotect 
 
 \def\dostartfittingpage[#1][#2]%
-  {\pagina
-   \bgroup
+  {\pagina % this is kind of tricky! there can be preceding page refs 
+   \bgroup % resulting in a zero height page; test fig-make ! 
    \dontcomplain
    \setbox\scratchbox\hbox
      \bgroup
@@ -50,7 +50,7 @@
    \fi
    \setuppapersize
      [\??fp\s!dummy][\??fp\s!dummy]%
-   \stellayoutin
+   \setuplayout
      [\??fp\s!dummy]%
    \startmakeup[\v!standaard][\c!tekststatus=\v!leeg,\c!dubbelzijdig=\v!nee,\c!pagina=]%
      \centerbox{\box\scratchbox}%

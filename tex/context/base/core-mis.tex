@@ -1068,10 +1068,10 @@
 
 % seldom used, move from kernel to run time module 
 
-\def\rooster
-  {\dosingleempty\dorooster}
+\def\basegrid 
+  {\dosingleempty\dobasegrid} 
 
-\def\dorooster[#1]%
+\def\dobasegrid[#1]%
   {\begingroup
    \getparameters[\??rt]
      [\c!x=0,\c!y=0,
@@ -1104,38 +1104,38 @@
           \!!width \linewidth
           \!!height \dimen2
           \!!depth \!!zeropoint}%
-     \doglobal\newcounter\@@roosterc
-     \doglobal\newcounter\@@roosterd
-     \doglobal\newcounter\@@roostere
+     \doglobal\newcounter\@@gridc
+     \doglobal\newcounter\@@gridd
+     \doglobal\newcounter\@@gride
      \def\setlegend##1##2##3%
-       {\gdef\@@roosterc{0}%
+       {\gdef\@@gridc{0}%
         \dimen0=2em\relax
         \dimen2=##2\@@rteenheid\relax
         \dimen2=\@@rtschaal\dimen2\relax
         \dimen2=\@@rtfactor\dimen2\relax
         \divide\dimen0 \dimen2\relax
-        \xdef\@@roostere{\number\dimen0}%
-        \ifnum\@@roostere>50
-          \gdef\@@roostere{100}%
-        \else\ifnum\@@roostere>10
-          \gdef\@@roostere{50}%
-        \else\ifnum\@@roostere>5
-          \gdef\@@roostere{10}%
-        \else\ifnum\@@roostere>1
-          \gdef\@@roostere{5}%
+        \xdef\@@gride{\number\dimen0}%
+        \ifnum\@@gride>50
+          \gdef\@@gride{100}%
+        \else\ifnum\@@gride>10
+          \gdef\@@gride{50}%
+        \else\ifnum\@@gride>5
+          \gdef\@@gride{10}%
+        \else\ifnum\@@gride>1
+          \gdef\@@gride{5}%
         \else
-          \gdef\@@roostere{1}%
+          \gdef\@@gride{1}%
         \fi\fi\fi\fi
-        \gdef\@@roosterd{0}%
+        \gdef\@@gridd{0}%
         \def\legend
-          {\ifnum\@@roosterd=\zerocount
+          {\ifnum\@@gridd=\zerocount
              \vbox
-               {\increment(\@@roosterc,##1)%
-                \hbox to 2em{\hss\@@roosterc\hss}}%
-             \global\let\@@roosterd=\@@roostere
+               {\increment(\@@gridc,##1)%
+                \hbox to 2em{\hss\@@gridc\hss}}%
+             \global\let\@@gridd=\@@gride
            \fi
-             \doglobal\decrement\@@roosterd
-             \doglobal\increment(\@@roosterc,##1)}}%
+             \doglobal\decrement\@@gridd
+             \doglobal\increment(\@@gridc,##1)}}%
      \def\draw##1##2##3##4##5##6##7##8##9%
        {\setuppositioning
           [\c!status=##8,
@@ -1178,6 +1178,8 @@
         \draw\legend\@@rtny0\@@rtdy\legend{-2em}{-.75ex}\v!overlay\@@rtplaats}%
   \stoppositioning
   \endgroup}
+
+\let\grid\basegrid
 
 % Dit wordt:
 %

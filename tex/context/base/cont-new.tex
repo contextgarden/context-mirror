@@ -19,6 +19,170 @@
 
 \unprotect
 
+\setupclipping
+  [\c!linkeroffset=\zeropoint,
+   \c!rechteroffset=\zeropoint,
+   \c!bovenoffset=\zeropoint,
+   \c!onderoffset=\zeropoint]
+
+\def\doclip[#1]% nb top->bottom left->right
+  {\bgroup
+   \getparameters[\??cp][#1]%
+   \dowithnextbox
+     {\ifdim\@@cpbreedte>\zeropoint
+        \dimen0=\@@cpbreedte
+        \dimen4=\@@cphoffset
+      \else
+        \dimen0=\wd\nextbox
+        \divide\dimen0 \@@cpnx
+        \dimen4=\@@cpx\dimen0
+        \advance\dimen4 -\dimen0
+        \dimen0=\@@cpsx\dimen0
+      \fi
+      \relax % sure
+      \ifdim\@@cphoogte>\zeropoint
+        \dimen2=\@@cphoogte
+        \dimen6=\ht\nextbox
+        \advance\dimen6 -\@@cpvoffset
+        \advance\dimen6 -\dimen2
+      \else
+        \dimen2=\ht\nextbox
+        \divide\dimen2 \@@cpny
+        \dimen6=-\@@cpy\dimen2
+        \advance\dimen6 -\@@cpsy\dimen2
+        \advance\dimen6 \dimen2
+        \dimen2=\@@cpsy\dimen2
+        \advance\dimen6 \ht\nextbox
+      \fi
+      \setbox\nextbox\hbox                       % old 
+        {\advance\dimen4 -\@@cplinkeroffset      % new !
+         \advance\dimen6  \@@cpbovenoffset       % new !
+         \hskip-\dimen4\lower\dimen6\box\nextbox}% old 
+      \wd\nextbox\zeropoint
+      \ht\nextbox\zeropoint
+      \dp\nextbox\zeropoint
+      \setbox\nextbox\hbox
+        {\advance\dimen0 \@@cplinkeroffset        % new !
+         \advance\dimen0 \@@cprechteroffset       % new !
+         \advance\dimen2 \@@cpbovenoffset         % new !
+         \advance\dimen2 \@@cponderoffset         % new !
+         \dostartclipping\@@cpmp{\dimen0}{\dimen2}% old
+           \box\nextbox
+         \dostopclipping}%
+      \setbox\nextbox\hbox                      % new !
+        {\dimen0-\@@cplinkeroffset              % new !
+         \dimen2-\@@cpbovenoffset               % new !
+         \hskip\dimen0\lower\dimen2\box\nextbox}% new !
+      \wd\nextbox\dimen0
+      \ht\nextbox\dimen2
+      \dp\nextbox\zeropoint
+      \box\nextbox
+      \egroup}%
+   \hbox}
+
+% beware, we have clipping offsets of 2\lineheight by default 
+
+\def\columntextareaparameter#1%
+  {\csname\??mt\currentcolumntestarea#1\endcsname}
+
+\def\dodoplacecolumntextareas#1#2%
+  {\def\currentcolumntestarea{#1#2}%
+   \!!counta\columntextareaparameter\c!x
+   \!!countb\columntextareaparameter\c!nx
+   \docalculatecolumnsetspan
+   \!!heighta\columntextareaparameter\c!ny\lineheight
+   % to do: met/zonder ht/dp
+   \ifnum\columntextareaparameter\c!y=\zerocount
+     \advance\!!heighta -\lineheight
+     \advance\!!heighta \topskip
+   \fi
+   \advance\!!heighta -\lineheight % option
+   \setbox\scratchbox\vbox
+     {\donetrue\localframed
+        [\??mt\currentcolumntestarea] 
+        [\c!breedte=\!!widtha,\c!hoogte=\!!heighta,\c!regels=]
+        {\columntextareaparameter\empty}}%
+   \!!counta\columntextareaparameter\c!x
+   \!!countb\columntextareaparameter\c!y
+   \advance\!!countb \columntextareaparameter\c!ny
+   \advance\!!countb \minusone
+   \OTRSETsetgridcell
+     \!!counta\!!countb
+     \hbox{\clip
+       [\c!bovenoffset=\columntextareaparameter\c!clipoffset,%
+        \c!onderoffset=\columntextareaparameter\c!clipoffset,%
+        \c!linkeroffset=\columntextareaparameter\c!clipoffset,%
+        \c!breedte=\!!widthb,%
+        \c!hoogte=\!!heighta]%
+       {\copy\scratchbox}}%
+   \ifcase\!!countc\else
+     \advance\!!counta \columntextareaparameter\c!nx
+     \advance\!!counta -\!!countc
+     \advance\!!widtha -\!!widthb
+     \OTRSETsetgridcell
+       \!!counta\!!countb
+       \hbox
+         {\hskip-\namedlayoutparameter\v!oneven\c!rugwit
+          \clip
+            [\c!bovenoffset=\columntextareaparameter\c!clipoffset,%
+             \c!onderoffset=\columntextareaparameter\c!clipoffset,%
+             \c!rechteroffset=\columntextareaparameter\c!clipoffset,%
+             \c!breedte=\!!widtha,%
+             \c!hoogte=\!!heighta,%
+             \c!hoffset=\!!widthb]%
+            {\copy\scratchbox}}%
+   \fi}
+
+\def\NormalizeFontSize#1#2#3#4#5% the normal struggle with accuracy 
+  {\bgroup
+   \dimen0=#4% #4 can be \ht0 or so
+   \setbox0\hbox{\definedfont[#5 at 5pt]#3}% 10pt 
+   \ifdim\wd0>\zeropoint
+     \dimen2=#10 % #1 is \wd or \ht
+     \dimen4=\maxdimen % 10000pt
+     \divide\dimen4 \dimen2
+     \divide\dimen0 1638 % 1000
+     \dimen0=\number\dimen4\dimen0
+     \divide \dimen0 \plustwo % ... 
+     \xdef\TheNormalizedFontSize{\the\dimen0}%
+   \else
+     \dimen0\bodyfontsize
+   \fi
+   \definedfont[#5 at \the\dimen0]%
+   \expandafter
+   \egroup
+   \expandafter\font\expandafter#2\fontname\font\relax}
+
+
+
+% todo namespace \@@meta:#1:... ! ! ! ! ! !
+
+\def\presetMPvariable  
+  {\dodoubleargument\dopresetMPvariable}
+
+\def\dopresetMPvariable[#1][#2=#3]% 
+  {\doifundefined{#1:#2}{\setvalue{#1:#2}{#3}}}
+
+\def\complexcolumnbreak[#1]% if empty, do nothing and avoid processing
+  {\doifsomething{#1}{\executecolumnbreakhandlers{#1}}}   
+
+\def\OTRSETsethsize
+  {%\OTRSETassignwidth\OTRSETidentifier\to\localcolumnwidth
+   \localcolumnwidth\OTRSETlocalwidth\mofcolumns
+   \tekstbreedte\localcolumnwidth
+   \hsize\localcolumnwidth}
+
+\def\OTRSETsynchronizehsize  
+  {\ifcase0\getvalue{\??mc\??mc\c!breedte}\else % some width set  
+     \bgroup
+     \scratchdimen\OTRSETlocalwidth\mofcolumns
+     \ifdim\scratchdimen=\tekstbreedte
+       \egroup 
+     \else
+       \egroup \OTRSETsethsize % only if change in width and \column/\break 
+     \fi
+   \fi } 
+
 \def\filluparrangedpages % beware: \realpageno is 1 ahead
   {\ifarrangingpages
      \scratchcounter\realpageno 
@@ -30,6 +194,23 @@
          {\noheaderandfooterlines\ejectdummypage}%
      \fi
    \fi}
+
+\def\substituteincommalist#1#2#3% old, new, list (slooow) 
+  {\edef\!!stringb{#1}%
+   \edef\!!stringd{#2}%
+   \let\!!stringa#3%
+   \let#3\empty
+   \def\dosubstituteincommalist##1%
+     {\edef\!!stringc{##1}%
+      \ifx\!!stringb\!!stringc
+        \ifx\!!stringd\empty\else
+          \edef#3{#3\ifx#3\empty\else,\fi\!!stringd}%
+        \fi
+        \def\docommando####1{\edef#3{#3,####1}}%
+      \else
+        \edef#3{#3\ifx#3\empty\else,\fi##1}%
+      \fi}%
+   \@EA\rawprocesscommacommand\@EA[\!!stringa]\dosubstituteincommalist}
 
 % experiment, not yet to be used 
 
@@ -62,6 +243,25 @@
 
 \def\@@nmpre{\@@nmprepos\empty\tfskip\relax\hss}
 \def\@@nmpos{\@@nmprepos\tfskip\empty\hss\relax}
+
+\def\startpagefigure
+  {\dodoubleempty\dostartpagefigure}
+
+\def\dostartpagefigure[#1][#2]%
+  {\bgroup
+   \getparameters[\??ex][\c!offset=\!!zeropoint,#2]%
+   \startTEXpage[\c!offset=\@@exoffset]%
+     \externalfigure[#1][#2]\ignorespaces}
+
+\def\stoppagefigure
+  {\stopTEXpage
+   \egroup}
+
+\def\pagefigure
+  {\dodoubleempty\dopagefigure}
+
+\def\dopagefigure[#1][#2]%
+  {\dostartpagefigure[#1][#2]\stoppagefigure}
 
 \def\doprocesstabskipline#1%
   {\bgroup
@@ -263,8 +463,8 @@
 \installcolumnbreakhandler {SET} \v!lokaal
   {\columnhbreak
    \ejectinsert
-   \ejectpage} % brrr
-   % no \OTRSETsethsize, can be mid smaller (like tabulate)
+   \ejectpage % brrr
+   \OTRSETsynchronizehsize} % no \OTRSETsethsize, can be mid smaller (like tabulate)
 
 % We need to make sure that we really leave the column; mid 
 % column we may end up in an empty gap, and we don;t want to 
@@ -286,7 +486,8 @@
         \fi 
       \else      
         \exitloop
-      \fi}} 
+      \fi}%
+   \OTRSETsynchronizehsize} 
 
 % testcase : pascal demo-bbi, paragraaf/aanduiding koppen 
 
@@ -1273,16 +1474,34 @@
 \def\??vars{@@vars}
 
 \def\setvariables
-  {\dodoubleargument\dosetvariables}
+  {\dotripleargument\dosetvariables[\getrawparameters]}
 
-\def\dosetvariables[#1][#2]%
+\def\globalsetvariables
+  {\dotripleargument\dosetvariables[\globalgetrawparameters]}
+
+\def\dosetvariables[#1][#2][#3]%
   {\errorisfataltrue
-   \def\currentvariableclass{#1}%
-   \getrawparameters[\??vars:#1:][#2]%
+   \def\currentvariableclass{#2}%
+   #1[\??vars:#2:][#3]%
    \errorisfatalfalse}
 
+\beginTEX
+
 \def\getvariable#1#2% to be sped up
-  {\csname\ifundefined{\??vars:#1:#2}\s!empty\else\??vars:#1:#2\fi\endcsname}
+  {\csname
+     \ifundefined{\??vars:#1:#2}\s!empty\else\??vars:#1:#2\fi
+   \endcsname}
+
+\endTEX
+
+\beginETEX \ifcsname
+
+\def\getvariable#1#2% to be sped up
+  {\csname
+     \ifcsname\??vars:#1:#2\endcsname\??vars:#1:#2\else\s!empty\fi
+   \endcsname}
+
+\endETEX
 
 \def\showvariable#1#2%
   {\showvalue{\ifundefined{\??vars:#1:#2}\s!empty\else\??vars:#1:#2\fi}}
@@ -1509,12 +1728,12 @@
 
 \def\plaatsexterndocument[#1]%
   {\def\doexternaldocument[##1][##2][##3]%
-     {\readlocfile{##2}{}{}}%
+     {\readlocfile{##2}\donothing\donothing}%
    \getvalue{\v!file:::#1}}
 
 %D Far from complete.
 
-\def\startgeheel%
+\def\startgeheel
   {\startregelcorrectie
    \insidefloattrue}
 

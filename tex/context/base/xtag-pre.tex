@@ -207,11 +207,17 @@
 \setvalue{XMLdoctype>}{}
 \setvalue{XMLdoctype[}{\processuntil{]>}}
 
-\def\XMLdoctypeS YSTEM %
-  {\dowithgrabbedstring\dodohandleXMLdoctype}
+%\def\XMLdoctypeS YSTEM %
+%  {\dowithgrabbedstring\dodohandleXMLdoctype}
 
-\def\XMLdoctypeP UBLIC %
-  {\dowithgrabbedstring{\dowithgrabbedstring\dodohandleXMLdoctype}}
+%\def\XMLdoctypeP UBLIC %
+%  {\dowithgrabbedstring{\dowithgrabbedstring\dodohandleXMLdoctype}}
+
+\def\XMLdoctypeS YSTEM {\XMLgrabstring}
+\def\XMLdoctypeP UBLIC {\XMLgrabstring}
+
+\def\XMLgrabstring
+  {\doifnextcharelse>{\gobbleuntil>}{\dowithgrabbedstring\XMLgrabstring}}
 
 %D Some day we may need to support entities within a
 %D document type namespace.

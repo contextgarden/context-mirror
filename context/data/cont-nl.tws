@@ -1870,7 +1870,7 @@ stopsetup
 startsetup
 com:stelkoppeltekenin:
 typ:var/:
-var:teken:--,---,-,~,),(,=,/::
+var:teken:--,---,-,\penalty 10000\ ,),(,=,/::
 stopsetup
 
 startsetup

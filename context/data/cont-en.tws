@@ -1870,7 +1870,7 @@ stopsetup
 startsetup
 com:setuphyphenmark:
 typ:var/:
-var:sign:--,---,-,~,),(,=,/::
+var:sign:--,---,-,\penalty 10000\ ,),(,=,/::
 stopsetup
 
 startsetup

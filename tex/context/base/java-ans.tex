@@ -16,6 +16,7 @@
   function Do_Check_Answer (field, value) 
    { if (event.value.toLowerCase()==value.toLowerCase())
        { event.target.hidden = true }
+     % { event.target.display = display.hidden }
      return("\040") } // funny, "" does not work
 
 \stopJSpreamble

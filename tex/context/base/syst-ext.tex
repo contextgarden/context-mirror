@@ -3667,7 +3667,7 @@
 %D      \expandafter\dohandletokens
 %D    \fi}
 %D 
-%D \def\dohandletokens%
+%D \def\dohandletokens
 %D   {\afterassignment\dodohandletokens\let\next= }
 %D 
 %D \long\def\handletokens#1\with#2%
@@ -3686,13 +3686,14 @@
 %D \stoptypen 
 
 %D \macros
-%D   {counttoken}
+%D   {counttoken,counttokens}
 %D
 %D For the few occasions that we want to know the number of 
 %D specific tokens in a string, we can use: 
 %D 
 %D \starttypen
-%D \counttoken token\in string\to \count
+%D \counttoken  token\in string\to \count
+%D \counttokens          string\to \count
 %D \stoptypen
 %D 
 %D This macro, that for instance is used in \type{cont-tab}, 
@@ -3712,6 +3713,23 @@
         \expandafter\docounttoken
       \fi}%
    \docounttoken#2\end
+   \resetglobal}
+
+% \def\counttoken#1\in#2\to#3%
+%   {\redoglobal#3\zerocount
+%    \def\!!stringa{#1}%
+%    \def\docounttoken##1% obeys {}
+%      {\def\!!stringb{##1}%
+%       \ifx\!!stringa\!!stringb
+%         \dodoglobal\advance#3\plusone
+%       \fi}%
+%    \handletokens#1\with\docounttoken
+%    \resetglobal}
+
+\def\counttokens#1\to#2% 
+  {\redoglobal#2\zerocount
+   \def\docounttoken##1{\dodoglobal\advance#2\plusone}%
+   \handletokens#1\with\docounttoken
    \resetglobal}
 
 %D \macros

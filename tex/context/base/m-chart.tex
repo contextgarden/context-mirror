@@ -545,7 +545,7 @@
      end_chart ;
    \stopMPdrawing
    \MPdrawingdonetrue
-   \setbox0=\hbox
+   \setbox0\hbox
      {\MPstaticgraphictrue
       \MPshiftdrawingfalse
       \getMPdrawing}%
@@ -562,33 +562,33 @@
    \getMPdata 
    \doglobal\newcounter\FLOWcomment
    \let\startFLOWcell\startFLOWcellD
-   \setbox2=\vbox to \ht0
+   \setbox2\vbox to \ht0
      {\forgetall % \offinterlineskip
       \resetFLOWlocation
       \processFLOWbuffer\currentFLOWnumber\vss}%
-   \setbox2=\hbox
+   \setbox2\hbox
      {\hskip\@@FLOW@@offset\lower\@@FLOW@@offset\box2}%
-   \wd2=\wd0\ht2=\ht0\dp2=\dp0
+   \wd2\wd0\ht2\ht0\dp2\dp0
    \let\startFLOWcell\startFLOWcellE
-   \setbox4=\vbox to \ht0
+   \setbox4\vbox to \ht0
      {\forgetall % \offinterlineskip
       \resetFLOWlocation
       \processFLOWbuffer\currentFLOWnumber\vss}%
-   \setbox4=\hbox
+   \setbox4\hbox
      {\hskip\@@FLOW@@offset\lower\@@FLOW@@offset\box4}%
-   \wd4=\wd0\ht4=\ht0\dp4=\dp0
+   \wd4\wd0\ht4\ht0\dp4\dp0
    \doifelse\@@FLOWoptie\v!test
-     {\setbox6=\vbox
+     {\setbox6\vbox
         {\forgetall
          \vskip\@@FLOW@@offset
          \hskip\@@FLOW@@offset
-         \rooster
+         \basegrid
            [\c!x=\@@FLOWx,\c!nx=\@@FLOWnx,\c!dx=\withoutpt\FLOWgridwidth,
             \c!y=\@@FLOWy,\c!ny=\@@FLOWny,\c!dy=\withoutpt\FLOWgridheight,
             \c!xstap=1,\c!ystap=1,
             \c!eenheid=pt,\c!plaats=\v!midden]}%
-      \wd6=\wd0\ht6=\ht0\dp6=\dp0
-      \setbox8=\vbox
+      \wd6\wd0\ht6\ht0\dp6\dp0
+      \setbox8\vbox
         {\forgetall\offinterlineskip
          \vskip\@@FLOW@@offset
          \dostepwiserecurse\@@FLOWy\@@FLOWny\plusone
@@ -606,7 +606,7 @@
                           {}%
                         \hfill}}}
                \vfill}}}%
-      \wd8=\wd0\ht8=\ht0\dp8=\dp0
+      \wd8\wd0\ht8\ht0\dp8\dp0
       \framed
         [\c!offset=\v!overlay,\c!kaderkleur=green]
         {\hbox{\box4\hskip-\wd0\box0\hskip-\wd2\box2\hskip-\wd6\box6\hskip-\wd8\box8}}}

@@ -131,16 +131,21 @@
 
 \startJSpreamble {Field} used now
 
+function PresetFields () 
+  { this.syncAnnotScan() } 
+
 var visible_field  = new Array() ; % no garbage collection !
 var visible_fields = 0 ;
 
 function Hide_When_Down ()
   { event.target.hidden = true }
+% { event.target.display = display.hidden }
 
 function Hide_Field ( Name )
   { var v = this.getField(Name) ;
     if (v)
       { v.hidden = true ;
+    % { v.display = display.hidden ;
         v.readonly = true ; 
         this.dirty = false } }
 
@@ -150,6 +155,7 @@ function Do_Vide_Field ( Name, Closable )
       { ++visible_fields ;
         visible_field[visible_fields] = Name ;
         v.hidden = false ;
+      % v.display = display.visible ;
         if (Closable)  
           { v.readonly = false ; 
             v.value = "On" } 
@@ -176,7 +182,13 @@ function Vide_Hide_Fields ( Name ) % show only one field
 
 function Toggle_Hide ( Name )
   { var v = this.getField(Name) ;
-    if (v) { v.hidden = !v.hidden ; this.dirty = false } }
+    if (v) 
+      { v.hidden = !v.hidden ; 
+      % if v.display == display.hidden
+      %   { v.display = display.visible } 
+      % else 
+      %   { v.display = display.hidden } 
+        this.dirty = false } }
 
 function Field_On ( Name )
   { v = this.getField(Name) ;
@@ -205,6 +217,10 @@ function Flip_Fields ( Name )
       { v = this.getField(Names[i]) ;
         if (v)
           { v.hidden = !v.hidden ;
+          % if v.display == display.hidden
+          %   { v.display = display.visible } 
+          % else 
+          %   { v.display = display.hidden } 
             v.value = "On" } } }
 
 function Forget_Changes ()

@@ -250,7 +250,7 @@
 \def\OTRSETdomakegridbox#1#2#3%
   {\hbox\bgroup
    \dontcomplain
-   \forgetall % can go once in flush
+   \forgetall % can go once in \flush
    \ifbalancecolumns
      \ifnum\realpageno=\balancingpageno\relax
        \!!heighta \localcolumnmaxcells\lineheight
@@ -424,6 +424,10 @@
    \tekstbreedte\localcolumnwidth
    \hsize\localcolumnwidth}
 
+\def\OTRSETsynchronizehsize
+  {\doifnotvalue{\??mc\OTRSETidentifier\the\mofcolumns\c!breedte}\v!passend
+     \OTRSETsethsize} 
+
 \def\OTRSETcheckfreelines
   {\OTRSETsetvsize}
 
@@ -447,7 +451,8 @@
    \fi
    % brrr:
    \ejectinsert
-   \ejectpage} % no \OTRSETsethsize, can be mid smaller (like tabulate)
+   \ejectpage 
+   \OTRSETsynchronizehsize} % no \OTRSETsethsize, can be mid smaller (like tabulate)
 
 % \installcolumnbreakhandler {SET} \v!forceer
 %   {\OTRSETgotocolumn[\v!forceer]}
@@ -605,7 +610,10 @@
    \fi
    \OTRSETfindnextgap
    % \message{\the\mofcolumns,\the\columnfirstcell,\the\columnfreecells}\wait
-   % \OTRSETsethsize % no, can be mid smaller (like tabulate)
+   % we cannot adapt the hsize since it may have changed (like 
+   % inside a tabulate) so we only change it when there is a
+   % reason to do so 
+   \OTRSETsynchronizehsize 
    \OTRSETsetvsize}
 
 \def\OTRSETfindnextgap
@@ -626,7 +634,7 @@
      \fi
    \fi}
 
-\def\OTRSETcheckfreelines{}
+\let\OTRSETcheckfreelines\donothing
 
 \def\OTRSETfillgapsbetweencells#1#2% col
   {\ifnum\columngaplimit>\zerocount
@@ -1356,9 +1364,9 @@
      \binnenkolommentrue % will be different flag
     %\let\redofloatorder\gobbleoneargument % will also be a flag
      \activateotr{SET}{ONE}% andere naam, activate or so
-\doifelsenothing{#1}
-  {\globallet\OTRSETlist\s!default}
-  {\xdef\OTRSETlist{#1}}%
+     \doifelsenothing{#1}
+       {\globallet\OTRSETlist\s!default}
+       {\xdef\OTRSETlist{#1}}%
      \OTRSETstartnextpage
      \OTRSETgetmanualbalance % here
      \OTRSETassignwidths
@@ -1526,7 +1534,7 @@
    \OTRSETcheckinsert
    \OTRSETcheckgrid
    \OTRSETsetvsize
-   \OTRSETsethsize
+   \OTRSETsethsize % or local ? 
    \OTRSETsetplaceholders
    \OTRSEThandlepreposttext
    \initializecolumntextareas % name !
@@ -1676,11 +1684,15 @@
         {\advance\scratchcounter \plusone }
         {\advance\scratchdimen -\getvalue{\??mc\OTRSETidentifier\recurselevel\c!breedte}}%
       \advance\scratchdimen -\getvalue{\??mc\OTRSETidentifier\recurselevel\c!afstand}}%
-   \divide\scratchdimen \scratchcounter
+   \ifcase\scratchcounter\else
+     \divide\scratchdimen \scratchcounter
+   \fi
+   \setgvalue{\??mc\??mc\c!breedte}{0}%
    \dorecurse\nofcolumns
      {\doifelsevalue{\??mc\OTRSETidentifier\recurselevel\c!breedte}\v!passend
         {\dimen0=\scratchdimen}
-        {\dimen0=\getvalue{\??mc\OTRSETidentifier\recurselevel\c!breedte}}%
+        {\setgvalue{\??mc\??mc\c!breedte}{1}%
+         \dimen0=\getvalue{\??mc\OTRSETidentifier\recurselevel\c!breedte}}%
       \setxvalue{\??mc\recurselevel\??mc\c!breedte}{\the\dimen0}}}
 
 \def\OTRSETlocalwidth#1%
@@ -1697,7 +1709,7 @@
   {\hbox
      {\localcolortrue
       \setbox\scratchbox\hbox to \hsize
-        {\iftracecolumnset
+        {\iftracecolumnset \incolortrue \localcolortrue 
            #2\hskip-.5ex\vrule\!!width1ex\!!height.5ex\!!depth.5ex\hss
          \fi
          \hss}%
@@ -1721,7 +1733,7 @@
    \global\setbox\placeholderboxf\columnplaceholder1\darkgray}
 
 \def\doOTRSETshowstatus
-  {\llap{\tt\tfxx\blue
+  {\llap{\incolortrue \localcolortrue \tt\tfxx\blue
      (\the\vsize->\number\columnfirstcell\#\number\columnfreecells)%
      \hskip\leftskip}}
 
@@ -1914,7 +1926,7 @@
              [ \v!links=>\doglobal\addtocommalist{#1}\columnleftareas,
               \v!rechts=>\doglobal\addtocommalist{#1}\columnrightareas]%
            \getparameters[\??mt#1#2]
-             [\c!x=1,\c!y=1,\c!nx=1,\c!ny=1,
+             [\c!x=1,\c!y=1,\c!nx=1,\c!ny=1,\c!clipoffset=2\lineheight,
               \c!offset=\v!overlay,\c!strut=\v!nee,\c!kader=\v!uit,
               \c!status=\v!stop,#3]}}%
    \else
@@ -2187,8 +2199,8 @@
      \box\scratchbox
    \else
      % we only set \columnsetspacing when asked for, else bottom problems 
-     \scratchcounter\framedtextparameter{cs:#1}\c!nregels\relax
-     \ifcase\scratchcounter\else\chardef\columnslotspacing\scratchcounter\fi
+     % don't change this any more (test naw) 
+     \chardef\columnslotspacing\framedtextparameter{cs:#1}\c!nregels\relax
      % todo: nboven/onder & \chardef\columnslotlocation2
      %\OTRSETstoreincolumnslotHERE\scratchbox
      \edef\floatmethod{\framedtextparameter{cs:#1}\c!default}%

@@ -47,7 +47,7 @@
   [verytolerant]   
 
 \setupalign
-  [right]
+  [broad,right]
 
 \lowercasestring \inputfilename \to \lcinputfilename
 
@@ -57,8 +57,14 @@
 \setupfootertexts
   [\currentdate\space\string| \currenttime\space \string| \pagenumber]
 
+% let's have a look at the type of content: 
+
 \setupXMLfile
   [level=2]
+
+\startmode[*suffix-xml]
+  % ok 
+\stopmode 
 
 \startmode[*suffix-rng]
   \showXMLlin[value]

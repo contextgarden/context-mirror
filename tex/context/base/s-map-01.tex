@@ -111,7 +111,7 @@
 \stelkolommenin
   [\c!afstand=1pc]
 
-%D Later zullen we zonodig nog instelleb dat de \MAPS\ op een
+%D Later zullen we zonodig nog instellen dat de \MAPS\ op een
 %D grid wordt gezet. Het zetten op een grid is voor \TEX\ niet
 %D triviaal, en de ondersteuning in \CONTEXT\ is dan ook
 %D enigzins experimenteel. De \MAPS\ is in die zin een soort
@@ -419,7 +419,7 @@
    \fi
    \setupheader[\c!status=\v!leeg]
    \stelpaginanummerin[\c!nummer=\MapsPagina]
-   \stellayoutin[\c!grid=\MapsGrid]
+   \setuplayout[\c!grid=\MapsGrid]
    \ifgridsnapping                           % nog controleren
      \stelblankoin[\v!regel]
      \definieerblanko[mapsvoor][\v!halveregel]
@@ -586,7 +586,7 @@
 %D In kolom||mode gebruiken we geen marge en hebben dus wat
 %D meer breedte ter beschikking.
 
-\stellayoutin
+\setuplayout
   [\c!breedte=38pc]
 
 \setupheadertexts

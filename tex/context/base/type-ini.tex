@@ -344,9 +344,9 @@
   {\dododefinetypeface[#1][#2]
    \iffifthargument % sixth is optional
    % \getparameters[\??ts][rscale=1,\s!encoding=\defaultencoding,#6]
-   % we need to expand since iin #6 there can be a \typescripttwo 
-   %\expanded{\getparameters[\??ts][\s!rscale=1,\s!encoding=\defaultencoding,#6]}%
-\expanded{\getparameters[\??ts][\s!rscale=1,\s!encoding=\s!default,#6]}%
+   % we need to expand since in #6 there can be a \typescripttwo 
+\expanded{\getparameters[\??ts][\s!rscale=1,\s!encoding=\defaultencoding,#6]}%
+% toch niet \expanded{\getparameters[\??ts][\s!rscale=1,\s!encoding=\s!default,#6]}%
      \pushmacro\relativefontsize
      \pushmacro\typefaceencoding
      \pushmacro\fontclass
@@ -356,11 +356,6 @@
      \saverelativefontsize{#2}{\relativefontsize}% fall back 
      \writestatus{typeface}{[#1] [#2] [#3] [#4]}
      \usetypescript[map][\typefaceencoding]
-   % \usetypescript[#3][#4][name]
-   % \usetypescript[#3][#4][default]
-   % \usetypescript[#3][#4][\typefaceencoding]
-   % \usetypescript[#3][#4][special]
-   % save some file loading and run time 
      \usetypescript[#3][#4][name,default,\typefaceencoding,special]
      \usetypescript[#3][#5][size]
      \popmacro\fontclass

@@ -186,14 +186,17 @@
 \def\defaultsymbolfactor{10}
 \def\defaultsymbolheight{1.25ex}
 
-\def\dohandlefiguresymbol#1#2% 
+\def\figuresymbol
+  {\dodoubleempty\dofiguresymbol}
+
+\def\dofiguresymbol[#1][% #2]% 
   {\externalfigure
      [#1]
      [\c!reset=\v!ja,
       \c!symbool=\v!ja,
+     %\c!hfactor=\defaultsymbolfactor,
       \c!hoogte=\defaultsymbolheight,
-      %\c!hfactor=\defaultsymbolfactor,
-      #2]}
+      }% #2]}
 
 \appendtoks \resetexternalfigures \to \everysymbol
 
@@ -202,7 +205,7 @@
 
 \def\dodefinefiguresymbol[#1][#2][#3]%
   {\ifsecondargument
-     \definesymbol[#1][\dohandlefiguresymbol{#2}{#3}]%
+     \definesymbol[#1][{\dofiguresymbol[#2][#3]}]%
    \fi}
 
 % but for the moment we keep it here

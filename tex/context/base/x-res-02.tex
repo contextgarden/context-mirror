@@ -11,8 +11,6 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-\readfile {x-res-02} \donothing \donothing \endinput 
-
 %D This module enables non||\ConTeXt\  users to access the 
 %D database. For this, you need to run  
 %D 
@@ -34,14 +32,14 @@
 %D \includefigurefile width 10cm {label}
 %D \stoptypen
 
-\usemodule[fig-00]
+\usemodule[res-00]
 
 \doifnothing  {\jobfilename}        {\end}
 \doiffileelse {\jobfilename.xml} {} {\end}
 
-\defineXMLenvironment [figurelibrary] \StartLibrary \StopLibrary
-\defineXMLignore      [description]
-\defineXMLenvironment [figure]        \StartFigure \StopFigure
+\defineXMLenvironment [rl:figurelibrary] \StartLibrary \StopLibrary
+\defineXMLenvironment [rl:library]       \StartLibrary \StopLibrary
+\defineXMLenvironment [rl:figure]        \StartFigure  \StopFigure
 
 \def\StartLibrary
   {\immediate\openout \scratchwrite=\jobfilename.fig 
@@ -54,20 +52,16 @@
    \immediate\closeout\scratchwrite}
 
 \def\StartFigure
-  {\defineXMLpush[file]
-   \defineXMLpush[dummy]
-   \defineXMLpush[label]
-   \defineXMLpush[copyright]
-   \defineXMLpush[comment]
-   \defineXMLpush[status]}
+  {\bgroup}
 
 \def\StopFigure
   {\doglobal\increment\CurrentPage
    \immediate\write\scratchwrite
      {\string\setfiguredata\space
-        {\XMLpop{label}}
+        {\XMLpop{rl:label}}
         {\jobfilename}
-        {\CurrentPage}}}
+        {\CurrentPage}}
+   \egroup}
 
 \doglobal\newcounter\CurrentPage
 

@@ -81,9 +81,12 @@
         \startTEXpage[#1]\box\scratchbox\stopTEXpage
       \endbuffer
       % Here we go!
-      \immediate\write18{texexec \bufferprefix pstricks.tmp --once --batch}%
-      \immediate\write18{dvips   \bufferprefix pstricks}%
-      \immediate\write18{ps2pdf  \bufferprefix pstricks.ps \bufferprefix pstricks.pdf}%
+      %\immediate\write18{texexec \bufferprefix pstricks.tmp --once --batch}%
+      %\immediate\write18{dvips -G0 -Ppdf \bufferprefix pstricks -o}%
+      %\immediate\write18{ps2pdf  \bufferprefix pstricks.ps \bufferprefix pstricks.pdf}%
+      \executesystemcommand{texexec \bufferprefix pstricks.tmp --once --batch}%
+      \executesystemcommand{dvips -G0 -Ppdf \bufferprefix pstricks -o}%
+      \executesystemcommand{ps2pdf  \bufferprefix pstricks.ps \bufferprefix pstricks.pdf}%
       % We pick up the dimensions from the scratch file.
       \readlocfile{\bufferprefix pstricks-dim.tmp}{}{}%
       % Since the graphic is put on a page (sigh) by dvips/gs

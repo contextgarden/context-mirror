@@ -97,6 +97,7 @@
       var v = this.getField("presentation:"+dummy) ;   
       if (v) 
         { v.hidden = true } 
+      % { v.display = display.hidden } 
       else
         { ++pagenumber ;
           if (pagenumber<=\lastpage) 
@@ -104,6 +105,7 @@
               dummy = 100*(pagenumber) + presentation[pagenumber] ;
               v = this.getField("presentation:"+dummy) ;   
               if (v) { v.hidden = true } 
+            % if (v) { v.display = display.hidden } 
               ++this.pageNum } }
       this.dirty = false } 
 \stopJSpreamble

@@ -1870,7 +1870,7 @@ stopsetup
 startsetup
 com:stellebindestrichein:
 typ:var/:
-var:zeichen:--,---,-,~,),(,=,/::
+var:zeichen:--,---,-,\penalty 10000\ ,),(,=,/::
 stopsetup
 
 startsetup

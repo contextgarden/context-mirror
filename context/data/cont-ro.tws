@@ -1870,7 +1870,7 @@ stopsetup
 startsetup
 com:seteazaliniesilabe:
 typ:var/:
-var:semn:--,---,-,~,),(,=,/::
+var:semn:--,---,-,\penalty 10000\ ,),(,=,/::
 stopsetup
 
 startsetup

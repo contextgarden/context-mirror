@@ -225,11 +225,11 @@
 
 % here ? 
 
-\def\dosetrawvalue#1#2#3%
-  {\@EA\def\csname#1#2\endcsname{#3}}
+\def\dosetrawvalue #1#2#3{\@EA \def\csname#1#2\endcsname{#3}}
+\def\dosetrawgvalue#1#2#3{\@EA\gdef\csname#1#2\endcsname{#3}}
 
-\def\getrawparameters%
-  {\dogetparameters\dosetrawvalue}
+\def\getrawparameters      {\dogetparameters\dosetrawvalue }
+\def\globalgetrawparameters{\dogetparameters\dosetrawgvalue}
 
 \def\splitskip#1%
   {\scratchskip\zeropoint \!!plus 1pt \!!minus 1pt
@@ -500,15 +500,15 @@
 
 % The following macros are used in XML handling. 
 
-\def\dowithstringed#1#2#3#4% " ' space 
+\long\def\dowithstringed#1#2#3#4% " ' space 
   {\if#4"\@EA#1\else\if#4'\@EAEAEA#2\else\@EAEAEA#3\fi\fi#4} 
 
 \def\unstringed
   {\dowithstringed\unstringdouble\unstringsingle\unstringnothing}
 
-\def\unstringdouble"#1"{#1}
-\def\unstringsingle'#1'{#1}
-\def\unstringspaced #1 {#1}
+\long\def\unstringdouble"#1"{#1}
+\long\def\unstringsingle'#1'{#1}
+\long\def\unstringspaced #1 {#1}
 
 \def\grabstring
   {\dowithstringed\grabstringdouble\grabstringsingle\grabstringspaced}
@@ -517,9 +517,9 @@
   {\def\@@dowithgrabbedstring{#1}%
    \afterassignment\@@dowithgrabbedstring\grabstring}
 
-\def\grabstringdouble"#1"{\scratchtoks{#1}}
-\def\grabstringsingle'#1'{\scratchtoks{#1}}
-\def\grabstringspaced #1 {\scratchtoks{#1}}
+\long\def\grabstringdouble"#1"{\scratchtoks{#1}}
+\long\def\grabstringsingle'#1'{\scratchtoks{#1}}
+\long\def\grabstringspaced #1 {\scratchtoks{#1}}
 
 \def\expifequalelse#1#2%
   {\@@ifequal#1\relax\relax\@@and#2\relax\relax\@@then}

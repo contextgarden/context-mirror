@@ -126,7 +126,7 @@
 
 \def\dosetupMPvariables[#1][#2]%
   {\ifsecondargument
-     \getrawparameters[#1:][#2]%
+     \getrawparameters[#1:][#2]% brr, todo: [\@@meta#1:]
    \else
      \getrawparameters[\@@meta][#1]%
    \fi}
@@ -155,6 +155,8 @@
 \endETEX
 
 \let\MPvar\MPvariable
+
+\let\setMPvariables\setupMPvariables
 
 %D \macros 
 %D   {startuniqueMPgraphic, uniqueMPgraphic}

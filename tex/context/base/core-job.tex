@@ -60,14 +60,19 @@
 %   \readlocfile{#1}{}{}
 %   \doglobal\decrement\fileprocesslevel}
 
-\def\processlocalfile#1#2%
+\def\dostarttextfile#1%
   {\doglobal\increment\fileprocesslevel
-   \setxvalue{\c!file::\fileprocesslevel}{#2}%
-   \@EA\doglobal\@EA\addtocommalist\@EA{#2}\processedfiles
-   % #1=\readlocfile|\readsetfile{dir} #2=filename
-   #1{#2}\donothing\donothing  
-   \doglobal\decrement\fileprocesslevel}
+   \setxvalue{\c!file::\fileprocesslevel}{#1}%
+   \@EA\doglobal\@EA\addtocommalist\@EA{#1}\processedfiles}
 
+\def\dostoptextfile  
+  {\doglobal\decrement\fileprocesslevel}
+
+\def\processlocalfile#1#2%
+  {% #1=\readlocfile|\readsetfile{dir} #2=filename
+   % #1{#2}\donothing\donothing  
+   #1{#2}\donothing{\readfile{#2}\donothing\donothing}}  
+
 \def\processfile#1%
   {\ifx\allinputpaths\empty
      \def\next{\processlocalfile\readlocfile}%
@@ -257,7 +262,9 @@
 
 \def\doexecutefile#1%
   {\registreerfileinfo[begin]{#1}%
+   \dostarttextfile{#1}%
    \processfile{#1}%
+   \dostoptextfile
    \registreerfileinfo[end]{#1}}
 
 \def\donotexecutefile#1%
@@ -269,12 +276,16 @@
 \def\omgeving #1 % at outermost level only
   {\def\startomgeving ##1 {}%
    \let\stopomgeving\relax
+   \dostarttextfile{#1}%
    \startreadingfile
    \processfile{#1}% was : \readlocfile{#1}{}{}
-   \stopreadingfile}
+   \stopreadingfile
+   \dostoptextfile}
 
 \def\onderdeel #1 % at outermost level only
-  {\processfile{#1}}
+  {\dostarttextfile{#1}%   
+   \processfile{#1}%
+   \dostoptextfile}
 
 \def\environment{\omgeving} % for the moment, no \let !  
 
@@ -399,6 +410,10 @@
 
 \appendtoks \flushnotes                     \to \everydisplay
 \appendtoks \adjustsidefloatdisplaylines    \to \everydisplay
+
+%D Better here than in supp-mps: 
+
+\def\executesystemcommand{\immediate\write18}
 
 % Default-instellingen (verborgen)
 

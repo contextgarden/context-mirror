@@ -801,11 +801,12 @@ stelnummerin: stelnummerin setupnumber
                  setupitemgroups: stelitemgroepenin                setupitemgroups
                                   setupitemgroups                  setupitemgroups
                                   setupitemgroups                  setupitemgroups
-% downward compatible
+
+                                  % downward compatible definitions 
+
                  setupitemgroups: stelopsommingenin                setupitemizations
                                   stelleaufzaehlungenein           nastavvycty
                                   impostaelencazioni               setareitemization
-% will be replaced / generatated 
                     startitemize: startopsomming                   startitemize
                                   startaufzaehlung                 startvycet
                                   iniziaelenco                     startenumerare
@@ -815,7 +816,9 @@ stelnummerin: stelnummerin setupnumber
                      stopitemize: stopopsomming                    stopitemize
                                   stopaufzaehlung                  stopvycet
                                   terminaelenco                    stopenumerare
-%
+
+                                  % so far 
+
                     definieerkop: definieerkop                     definehead
                                   definiereueberschrift            definujnadpis
                                   definiscitesta                   definesteantet
@@ -864,7 +867,7 @@ stelnummerin: stelnummerin setupnumber
                     definelayout: definieerlayout                  definelayout
                                   definelayout                     definelayout
                                   definiscilayout                  definelayout %%%
-                    stellayoutin: stellayoutin                     setuplayout
+                     setuplayout: stellayoutin                     setuplayout
                                   stellelayoutein                  nastavvzhled
                                   impostalayout                    seteazaaspect
                     paslayoutaan: paslayoutaan                     adaptlayout
@@ -1326,7 +1329,7 @@ movesidefloat: verplaatszijblok  movesidefloat
                         colorbar: kleurenbalk                      colorbar
                                   farbbalken                       barevnalista
                                   barracolori                      baraculoare
-                         rooster: rooster                          grid
+                            grid: rooster                          grid
                                   gitter                           mrizka
                                   griglia                          grid
                           button: button                           button

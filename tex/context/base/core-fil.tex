@@ -167,7 +167,8 @@
       \dododousemodules\f!privateprefix{#2}%
       \dododousemodules\f!styleprefix  {#2}%
       \dododousemodules\f!xstyleprefix {#2}%
-      \dododousemodules\f!thirdprefix  {#2}}
+      \dododousemodules\f!thirdprefix  {#2}%
+      \dododousemodules\empty          {#2}}% new, fall back on raw name  
      {\dododousemodules{#1-}{#2}}%
    \ifconditional\moduleisloaded\else
      \showmessage\m!systems6{#2}%

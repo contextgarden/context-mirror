@@ -103,6 +103,7 @@ my $NoDuplex         = 0 ;
 my $NOfRuns          = 7 ;
 my $NoMPMode         = 0 ;
 my $NoMPRun          = 0 ;
+my $NoBanner         = 0 ; 
 my $AutoMPRun        = 0 ;
 my $OutputFormat     = 'standard' ;
 my $Pages            = '' ;
@@ -179,6 +180,7 @@ my $ForceXML         = 0 ;
     "noarrange"     => \$NoArrange        ,
     "nomp"          => \$NoMPMode         ,
     "nomprun"       => \$NoMPRun          ,
+    "nobanner"      => \$NoBanner         , 
     "automprun"     => \$AutoMPRun        ,
     "once"          => \$RunOnce          ,
     "output=s"      => \$OutputFormat     ,
@@ -1028,7 +1030,9 @@ sub MakeOptionFile
     elsif ($Suffix)
       { print OPT "\\setupsystem[file=$JobName$Suffix]\n" }
     if ($RunPath ne "")
-      { $RunPath =~ s/\\/\//go ; print OPT "\\usepath[$RunPath]\n" }
+      { $RunPath =~ s/\\/\//go ;
+        $RunPath =~ s/\/$//go ; 
+        print OPT "\\usepath[$RunPath]\n" }
     $MainLanguage = lc $MainLanguage ;
     unless ($MainLanguage eq "standard")
       { print OPT "\\setuplanguage[$MainLanguage]\n" }
@@ -1449,7 +1453,8 @@ sub RunConTeXtFile
     $RunPath =~ s/\\/\//goi ;
     my $OriSuffix = $JobSuffix ;
     if (-e "$JobName.$JobSuffix")
-      { $DummyFile = (($JobSuffix =~ /(xml|xsd|exa|rng)/io)||($ForceXML)) }
+    # { $DummyFile = (($JobSuffix =~ /(xml|xsd|exa|rng)/io)||($ForceXML)) }
+      { $DummyFile = (($JobSuffix =~ /xml/io)||($ForceXML)) }
     elsif ($RunPath ne "")
       { my @RunPaths = split(/,/,$RunPath) ; 
         foreach my $rp (@RunPaths) 
@@ -1457,7 +1462,8 @@ sub RunConTeXtFile
               { $DummyFile = 1 ; last } } }
     if ($DummyFile)
       { open (TMP,">$JobName.run") ;
-        if ($JobSuffix =~ /(xml|xsd|exa)/io)
+      # if ($JobSuffix =~ /(xml|xsd|exa|rng)/io)
+        if ($JobSuffix =~ /xml/io)
           { if ($Filters ne "")
               { print "     using xml filters : $Filters\n" }
             print TMP "\\starttext\n" ;
@@ -1480,13 +1486,6 @@ sub RunConTeXtFile
           { $ConTeXtInterface = "en" }
         if ($ConTeXtInterface eq "")
           { $ConTeXtInterface = "en" }
-       # unless ($JobSuffix eq "tex") # hack, preprocessing will change
-       #  { if (lc $Convert eq "xml")
-       #      { print "             xml input : $JobName.xml\n" ;
-       #        ConvertXMLFile ($JobName) }
-       #    elsif (lc $Convert eq "sgml")
-       #      { print "            sgml input : $JobName.sgm\n" ;
-       #        ConvertSGMLFile ($JobName) } }
         CheckOutputFormat ;
         my $StopRunning = 0 ;
         my $MPrundone = 0 ;
@@ -1891,6 +1890,9 @@ sub RunCombine
     print COM "   footer=1cm,\n" ;
     print COM "   width=middle,\n" ;
     print COM "   height=middle]\n" ;
+    if ($NoBanner) 
+      { print COM "\\setuplayout\n" ;
+        print COM "  [footer=0cm]\n" }
     print COM "\\setupfootertexts\n" ;
     print COM "  [$CleanFileName\\space---\\space\\currentdate\\space---\\space\\pagenumber]\n" ;
     print COM "\\setupexternalfigures\n" ;
@@ -1933,7 +1935,8 @@ sub RunOneFormat
     else
       { $Problems = 1 }
     if ($Problems)
-      { if ($TeXExecutable =~ /etex|eetex|pdfetex|pdfeetex/io)
+      { $Problems = 0 ; 
+        if ($TeXExecutable =~ /etex|eetex|pdfetex|pdfeetex|eomega/io)
           {$TeXPrefix = "*" }
         my $CurrentPath = cwd() ;
         $TeXFormatPath = LocatedFormatPath($TeXFormatPath) ;
@@ -1944,7 +1947,7 @@ sub RunOneFormat
         my $cmd = "$TeXProgramPath$TeXExecutable $TeXVirginFlag " .
                   "$TeXPassString $PassOn ${TeXPrefix}$FormatName" ;
         if ($Verbose) { print "\n$cmd\n\n" }
-        system ( $cmd ) ;
+        $Problems = system ( $cmd ) ;
         RemoveResponseFile ;
         RestoreUserFile ;
         if (($TeXFormatPath ne '')&&($CurrentPath ne ''))
@@ -2425,6 +2428,7 @@ pdfcombine combine pages to one page
 paperformat paper format
 combination n*m pages per page
 paperoffset room left at paper border
+nobanner no footerline 
 -----------
 pdfcopy scale pages down/up
 scale new page scale
