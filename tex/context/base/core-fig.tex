@@ -272,7 +272,7 @@
      \processcommacommand[\figurepathlist]\dododoanalyzefigurefiles
    \fi}
 
-\def\dododoanalyzefigurefiles#1%
+\def\dododoanalyzefigurefiles#1% todo: use the \applied ones, less messy
   {\ifcase\figurestatus
      \def\@@efcurrentpath{#1}%
      \sanitizefilename#1\to\@@efcurrentpath
@@ -718,7 +718,7 @@
   {\setupexternalfigures
      [\c!option=,\c!maxwidth=,\c!maxheight=,
      %\c!splitcolor=,% needed ?
-      \c!foregroundcolor=,
+      \c!foregroundcolor=,\c!color=,
       \c!frame=\v!off,\c!background=]}
 
 %D Since we only need to reset some parameters, we can
@@ -728,7 +728,7 @@
   {\getparameters[\??ef]
      [\c!option=,\c!maxwidth=,\c!maxheight=,
      %\c!splitcolor=,% needed ?
-      \c!foregroundcolor=,
+      \c!foregroundcolor=,\c!color=,
       \c!frame=\v!off,\c!background=]}
 
 %D This one dropped the runtime of the \MAPS\ bibliography
@@ -740,6 +740,7 @@
    \let\@@efmaxwidth       \empty
    \let\@@efmaxheight      \empty
    \let\@@efframe          \v!off
+   \let\@@efcolor          \empty
    \let\@@efforegroundcolor\empty
    \let\@@efbackground     \empty}
 
@@ -1403,6 +1404,8 @@
 \def\appliedfigurefullname  {\@@efcurrentfile}
 \def\appliedfigureidentifier{\@@efobjectname}
 \def\appliedfigureoptions   {\@@efoption}
+
+\def\appliedfigurefilesuffix{\figureextension{\@@efcurrenttype}}
 
 %D In \PDF\ one can specify an alternative graphic. This means
 %D that for instance a low resolution graphic can be used for

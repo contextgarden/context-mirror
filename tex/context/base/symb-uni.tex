@@ -36,9 +36,9 @@
   {\def\USymbChar    #1#2{\bgroup\UnicodeSymbolFont    \uchar{#1}{#2}\relax\egroup}
    \def\USymbCharTwo #1#2{\bgroup\UnicodeSymbolFontTwo \uchar{#1}{#2}\relax\egroup}
    \def\USymbCharZapf#1#2{\bgroup\UnicodeSymbolFontZapf\uchar{#1}{#2}\relax\egroup}
-   \doifundefined{UnicodeSymbolFont}    {\definefont[UnicodeSymbolFont]    [{"Apple Symbols"} sa 1]}
-   \doifundefined{UnicodeSymbolFontTwo} {\definefont[UnicodeSymbolFontTwo] [{"Lucida Grande"} sa 1]}
-   \doifundefined{UnicodeSymbolFontZapf}{\definefont[UnicodeSymbolFontZapf][{"Zapf Dingbats"} sa 1]}}
+   \doifundefined{UnicodeSymbolFont}    {\definefont[UnicodeSymbolFont]    ["Apple Symbols" sa *]}
+   \doifundefined{UnicodeSymbolFontTwo} {\definefont[UnicodeSymbolFontTwo] ["Lucida Grande" sa *]}
+   \doifundefined{UnicodeSymbolFontZapf}{\definefont[UnicodeSymbolFontZapf]["Zapf Dingbats" sa *]}}
 
 \startsymbolset[Unicode Additional Punctuation] % 0x2000: Requires UnicodeRegular20
 

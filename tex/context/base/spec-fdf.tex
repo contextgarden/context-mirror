@@ -2792,22 +2792,6 @@
 
 \definespecial\doregisterspotcolorname{\doPDFregisterspotcolorname}
 
-% \def\doPDFregisterrgbspotcolor#1#2#3#4%
-%   {\doPDFregistersomespotcolor
-%      {#1}{RGB}{[0.0 1.0 0.0 1.0 0.0 1.0]}%
-%      {{dup #2 mul exch dup #3 mul exch #4 mul}}}
-%
-% \def\doPDFregistercmykspotcolor#1#2#3#4#5%
-%   {\doPDFregistersomespotcolor
-%      {#1}{CMYK}{[0.0 1.0 0.0 1.0 0.0 1.0 0.0 1.0]}%
-%      {{dup #2 mul exch dup #3 mul exch dup #4 mul exch #5 mul}}}
-%
-% \def\doPDFregistergrayspotcolor#1#2%
-%   {\doPDFregistersomespotcolor
-%      {#1}{Gray}{[0.0 1.0]}%
-%      {{pop}}}
-
-
 \def\doPDFregisterrgbspotcolor#1#2#3#4#5#6#7% name noffractions names p's r g b
   {\doPDFregistersomespotcolor{#1}{#2}{#3}{#4}{RGB}{0.0 1.0 0.0 1.0 0.0 1.0}%
      {\ifcase#2\or dup #5 mul exch dup #6 mul exch #7 mul\else#5 #6 #7\fi}}

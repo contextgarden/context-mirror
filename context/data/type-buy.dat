@@ -3,13 +3,13 @@
 --en=? --ve=itc --co=officina --re
 --en=? --ve=itc --co=officina --so=itc/officina --ma --in
 
---en=? --ve=itc --co=officina --so=itc/officina --ca=* ovbk_*
---en=? --ve=itc --co=officina --so=itc/officina --sl=* ovbk_*
---en=? --ve=itc --co=officina --so=itc/officina --sl=* ovb_*
+--en=? --ve=itc --co=officina --so=itc/officina --ca=* --pattern=ovbk_*
+--en=? --ve=itc --co=officina --so=itc/officina --sl=* --pattern=ovbk_*
+--en=? --ve=itc --co=officina --so=itc/officina --sl=* --pattern=ovb_*
 
---en=? --ve=itc --co=officina --so=itc/officina --ca=* owbk_*
---en=? --ve=itc --co=officina --so=itc/officina --sl=* owbk_*
---en=? --ve=itc --co=officina --so=itc/officina --sl=* owb_*
+--en=? --ve=itc --co=officina --so=itc/officina --ca=* --pattern=owbk_*
+--en=? --ve=itc --co=officina --so=itc/officina --sl=* --pattern=owbk_*
+--en=? --ve=itc --co=officina --so=itc/officina --sl=* --pattern=owb_*
 
 # bh lucida
 
@@ -22,8 +22,8 @@
 --en=? --ve=fontfont --co=meta --so=fontfont/meta-1 --ma --in --expert
 --en=? --ve=fontfont --co=meta --so=fontfont/meta-2 --ma --in --expert
 
---en=? --ve=fontfont --co=meta --so=fontfont/meta-1 --sl=* mtbk_*
---en=? --ve=fontfont --co=meta --so=fontfont/meta-1 --sl=* mtbd_*
+--en=? --ve=fontfont --co=meta --so=fontfont/meta-1 --sl=* --pattern=mtbk_*
+--en=? --ve=fontfont --co=meta --so=fontfont/meta-1 --sl=* --pattern=mtbd_*
 
 # lucas sun
 
@@ -68,11 +68,11 @@
 --en=? --so=adobe/myriad --weight=400 --width=600 MyriadMM-It
 --en=? --so=adobe/myriad --weight=700 --width=600 MyriadMM-It
 
---en=? --ve=adobe --co=myriad --so=adobe/myriad --ma --in MyriadMM-we*
---en=? --ve=adobe --co=myriad --so=adobe/myriad --ma --in MyriadMM-It-we*
+--en=? --ve=adobe --co=myriad --so=adobe/myriad --ma --in --pattern=MyriadMM-we*
+--en=? --ve=adobe --co=myriad --so=adobe/myriad --ma --in --pattern=MyriadMM-It-we*
 
---en=? --ve=adobe --co=myriad --so=adobe/myriad --sl=* MyriadMM-we*
---en=? --ve=adobe --co=myriad --so=adobe/myriad --ca=* MyriadMM-we*
+--en=? --ve=adobe --co=myriad --so=adobe/myriad --sl=* --pattern=MyriadMM-we*
+--en=? --ve=adobe --co=myriad --so=adobe/myriad --ca=* --pattern=MyriadMM-we*
 
 # adobe frutiger
 

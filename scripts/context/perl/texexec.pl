@@ -81,7 +81,7 @@ my $TotalTime = time;
 # if ( $RandomSeed > 1440 ) { $RandomSeed -= 1440 }
 
 my ($sec, $min) = gmtime;
-my $RandomSeed = ($min * 60 + $sec) % 1440;
+my $RandomSeed = ($min * 60 + $sec) % 2880; # else still overflow
 
 # See usage of $Random and $RandomSeed later on.
 #
@@ -2758,37 +2758,12 @@ if ( $SetFile ne "" ) { load_set_file( $SetFile, $Verbose ) }
 sub check_texmf_root { }
 sub check_texmf_tree { }
 
-#~ sub AnalyzeVersion
-  #~ { my ($texengine,$type);
-	#~ open (LOG, "<texvers.log") ;
-    #~ while (<LOG>)
-	  #~ { /^\s*This is (.*pdf(|e)TeX.*?) \(format.*$/o and $texengine = $1 ;
-	    #~ /^\s*ConTeXt  (.*int: ([a-z]+).*?)\s*$/o and  $type   = $1; }
-	#~ $type =~ s/  int: ([a-z]+)//;
-	#~ $texengine =~ s/ Version//;
-    #~ close (LOG);
-    #~ return ($texengine,$type) }
-
-#~ sub AnalyzeVersion
-  #~ { my $str = join("\n", @_) ;
-    #~ my ($texengine,$type);
-    #~ if ($str =~ /^\s*This is (.*pdf(|e)TeX.*?) \(format.*$/mos) {
-        #~ $texengine = $1 ;
-    #~ }
-    #~ if ($str =~ /^\s*ConTeXt  (.*int: ([a-z]+).*?)\s*$/mos) {
-        #~ $type   = $1 ;
-    #~ }
-	#~ $type =~ s/  int: ([a-z]+)//;
-	#~ $texengine =~ s/ Version//;
-    #~ return ($texengine,$type) }
-
-
 sub AnalyzeVersion
   { my $str = join("\n", @_) ;
     my ($texengine,$type) = ('unknown', 'unknown');
     open (LOG, "<texvers.log") ;
     while (<LOG>)
-	   { /^\s*This is (.*pdf(|e)TeX.*?)$/o and $texengine = $1 ;
+       { /^\s*This is (.*pdf(|e|x)TeX.*?)$/o and $texengine = $1 ;
 	    /^\s*ConTeXt  (.*int: ([a-z]+).*?)\s*$/o and  $type   = $1; }
 	 $type =~ s/  int: ([a-z]+)//;
 	 $texengine =~ s/ Version//;

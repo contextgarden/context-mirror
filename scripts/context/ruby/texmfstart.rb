@@ -2,7 +2,7 @@
 
 # program   : texmfstart
 # copyright : PRAGMA Advanced Document Engineering
-# version   : 1.04 - 2003/2004
+# version   : 1.05 - 2003/2004
 # author    : Hans Hagen
 #
 # project   : ConTeXt / eXaMpLe
@@ -20,10 +20,15 @@
 
 # turning this into a service would be nice, so some day ...
 
+# --locate        => provides location
+# --exec          => exec instead of system
+# --iftouched=a,b => only if timestamp a<>b
+
 require "rbconfig"
 
 $mswindows = Config::CONFIG['host_os'] =~ /mswin/
 $separator = File::PATH_SEPARATOR
+$version   = "1.05"
 
 if $mswindows then
 
@@ -83,6 +88,27 @@ else
 
 end
 
+
+class File
+
+    def File.needsupdate(oldname,newname)
+        begin
+            return File.stat(oldname).mtime != File.stat(newname).mtime
+        rescue
+            return true
+        end
+    end
+
+    def File.syncmtimes(oldname,newname)
+        begin
+            t = File.mtime(oldname) # i'm not sure if the time is frozen, so we do it here
+            File.utime(0,t,newname)
+        rescue
+        end
+    end
+
+end
+
 $applications = Hash.new
 $suffixinputs = Hash.new
 $predefined   = Hash.new
@@ -99,9 +125,11 @@ $predefined['texfont']  = 'texfont.pl'
 $predefined['examplex'] = 'examplex.rb'
 $predefined['concheck'] = 'concheck.rb'
 $predefined['textools'] = 'textools.rb'
+$predefined['ctxtools'] = 'ctxtools.rb'
 $predefined['pdftools'] = 'pdftools.rb'
 $predefined['exatools'] = 'exatools.rb'
 $predefined['xmltools'] = 'xmltools.rb'
+$predefined['pstopdf']  = 'pstopdf.rb'
 
 $scriptlist   = 'rb|pl|py|jar'
 $documentlist = 'pdf|ps|eps|htm|html'
@@ -163,7 +191,9 @@ def expanded(arg)
 end
 
 def runcommand(command)
-    if $execute then
+    if $locate then
+        print(command)
+    elsif $execute then
         report("using 'exec' instead of 'system' call") if $verbose
         exec(command)
     else
@@ -213,15 +243,17 @@ def report(str)
 end
 
 def usage
-    print "version  : 1.05 - 2003/2004 - www.pragma-ade.com\n"
+    print "version  : #{$version} - 2003/2004 - www.pragma-ade.com\n"
     print("\n")
     print("usage    : texmfstart [switches] filename [optional arguments]\n")
     print("\n")
-    print("switches : --verbose --report --browser --direct --execute\n")
+    print("switches : --verbose --report --browser --direct --execute --locate\n")
     print("           --program --file   --page    --arguments\n")
     print("           --make    --lmake  --wmake\n")
     print("\n")
     print("example  : texmfstart pstopdf.rb cow.eps\n")
+    print("           texmfstart --locate examplex.rb\n")
+    print("           texmfstart --execute examplex.rb\n")
     print("           texmfstart --browser examplap.pdf\n")
     print("           texmfstart showcase.pdf\n")
     print("           texmfstart --page=2 --file=showcase.pdf\n")
@@ -496,12 +528,15 @@ $report      = $directives['report']    || false
 $verbose     = $directives['verbose']   || false
 $arguments   = $directives['arguments'] || ''
 $execute     = $directives['execute']   || $directives['exec'] || false
+$locate      = $directives['locate']    || false
 
 $make        = $directives['make']      || false
 $unix        = $directives['unix']      || false
 $windows     = $directives['windows']   || false
 $stubpath    = $directives['stubpath']  || ''
 $indirect    = $directives['indirect']  || false
+
+$iftouched   = $directives['iftouched'] || false
 
 $applications['unknown']  = ''
 $applications['perl']     = $applications['pl']  = 'perl'
@@ -522,20 +557,44 @@ end
 $applications['htm']      = $applications['html']
 $applications['eps']      = $applications['ps']
 
+def process(&block)
+
+    if $iftouched then
+        files = $directives['iftouched'].split(',')
+        oldname, newname = files[0], files[1]
+        if oldname && newname && File.needsupdate(oldname,newname) then
+            yield
+            File.syncmtimes(oldname,newname)
+        end
+    else
+        yield
+    end
+
+end
+
+# system("perl -V")
+
 if $help || ! $filename || $filename.empty? then
     usage
-elsif $make then
-    if $windows then
-        make($filename,true,false)
-    elsif $unix then
-        make($filename,false,true)
-    else
-        make($filename,$mswindows,!$mswindows)
-    end
-elsif $browser && $filename =~ /^http\:\/\// then
-    launch($filename)
-elsif $direct || $filename =~ /^bin\:/ then
-    direct($filename)
 else
-    run(find(shortpathname($filename),$program))
+    report("texmfstart version #{$version}") if $verbose
+    if $make then
+        if $windows then
+            make($filename,true,false)
+        elsif $unix then
+            make($filename,false,true)
+        else
+            make($filename,$mswindows,!$mswindows)
+        end
+    elsif $browser && $filename =~ /^http\:\/\// then
+        launch($filename)
+    else
+        process do
+            if $direct || $filename =~ /^bin\:/ then
+                direct($filename)
+            else
+                run(find(shortpathname($filename),$program))
+            end
+        end
+    end
 end

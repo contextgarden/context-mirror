@@ -2994,7 +2994,8 @@
        \edef\otherfile{#1}%
      \fi
    \else
-     \let\doexternaldocument\setouterfilelocation
+     \let\doexternaldocument\setouterfilelocation % will change
+     \let\doexternalurl     \setouterfilelocation % will change
      \csname\v!file:::#1\endcsname
    \fi
    \setfalse\forceURLlocation

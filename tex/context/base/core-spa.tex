@@ -446,33 +446,33 @@
 
 \defineblankmethod       [\v!big] {\addblankskip+\bigskipamount      \openlineheight}
 \defineblankmethod      [-\v!big] {\addblankskip-\bigskipamount      \openlineheight}
-\defineblankmethod      [\v!medium] {\addblankskip+\medskipamount   {.5\openlineheight}}
-\defineblankmethod     [-\v!medium] {\addblankskip-\medskipamount   {.5\openlineheight}}
-\defineblankmethod       [\v!small] {\addblankskip+\smallskipamount{.25\openlineheight}}
-\defineblankmethod      [-\v!small] {\addblankskip-\smallskipamount{.25\openlineheight}}
-\defineblankmethod         [\v!white] {\addblankskip+\parskip            \openlineheight}
-\defineblankmethod        [-\v!white] {\addblankskip-\parskip            \openlineheight}
-\defineblankmethod       [\v!line] {\addblankskip+\openlineheight     \openlineheight}
-\defineblankmethod      [-\v!line] {\addblankskip-\openlineheight     \openlineheight}
+\defineblankmethod    [\v!medium] {\addblankskip+\medskipamount   {.5\openlineheight}}
+\defineblankmethod   [-\v!medium] {\addblankskip-\medskipamount   {.5\openlineheight}}
+\defineblankmethod     [\v!small] {\addblankskip+\smallskipamount{.25\openlineheight}}
+\defineblankmethod    [-\v!small] {\addblankskip-\smallskipamount{.25\openlineheight}}
+\defineblankmethod     [\v!white] {\addblankskip+\parskip            \openlineheight}
+\defineblankmethod    [-\v!white] {\addblankskip-\parskip            \openlineheight}
+\defineblankmethod      [\v!line] {\addblankskip+\openlineheight     \openlineheight}
+\defineblankmethod     [-\v!line] {\addblankskip-\openlineheight     \openlineheight}
 
-\defineblankmethod     [\v!formula] {\global\advance\blankoskip\medskipamount}
-\defineblankmethod     [\v!nowhite] {\global\blankogeenwittrue}
-\defineblankmethod    [\v!disable] {\global\blankoblokkeertrue}
+\defineblankmethod   [\v!formula] {\global\advance\blankoskip\medskipamount}
+\defineblankmethod   [\v!nowhite] {\global\blankogeenwittrue}
+\defineblankmethod   [\v!disable] {\global\blankoblokkeertrue}
 \defineblankmethod     [\v!force] {\global\blankoforceertrue}
-\defineblankmethod      [\v!outer] {\ifvmode\ifinner\blankobuitentrue\fi\fi}
-\defineblankmethod       [\v!reset] {\global\blankoresettrue}
-\defineblankmethod    [\v!flexible] {\global\lokaalblankoflexibeltrue}
-\defineblankmethod        [\v!fixed] {\global\lokaalblankovasttrue}
-\defineblankmethod        [\v!back] {\global\blankogobacktrue} % {\geenblanko}
+\defineblankmethod     [\v!outer] {\ifvmode\ifinner\blankobuitentrue\fi\fi}
+\defineblankmethod     [\v!reset] {\global\blankoresettrue}
+\defineblankmethod  [\v!flexible] {\global\lokaalblankoflexibeltrue}
+\defineblankmethod     [\v!fixed] {\global\lokaalblankovasttrue}
+\defineblankmethod      [\v!back] {\global\blankogobacktrue} % {\geenblanko}
 \defineblankmethod  [\v!halfline] {\ifgridsnapping\global\fuzzyvskiptrue\fi
                                      \global\advance\blankoskip .5\lineheight}
 
-\defineblankmethod        [\v!none] {\global\blankoresettrue}
-\defineblankmethod [\v!joinedup] {\ifvmode\nointerlineskip\fi}
+\defineblankmethod      [\v!none] {\global\blankoresettrue}
+\defineblankmethod  [\v!joinedup] {\ifvmode\nointerlineskip\fi}
 
 % happens often, so we speed this up:
 
-\defineblankmethod     [2*\v!line] {\addblankskip+{2\openlineheight}{2\openlineheight}}
+\defineblankmethod    [2*\v!line] {\addblankskip+{2\openlineheight}{2\openlineheight}}
 \defineblankmethod     [2*\v!big] {\addblankskip+{2\bigskipamount }{2\openlineheight}}
 
 % ETEX ! ! !

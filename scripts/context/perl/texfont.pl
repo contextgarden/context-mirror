@@ -8,6 +8,10 @@ eval '(exit $?0)' && eval 'exec perl -S $0 ${1+"$@"}' && eval 'exec perl -S $0 $
 
 # todo : ttf (partially doen already)
 
+# added: $pattern in order to avoid fuzzy shelle expansion of
+# filenames (not consistent over perl and shells); i hate that
+# kind of out of control features.
+
 #D \module
 #D   [       file=texfont.pl,
 #D        version=2004.02.06, % 2000.12.14
@@ -141,6 +145,7 @@ my $expert          = 0 ;
 my $trace           = 0 ;
 my $afmpl           = 0 ;
 my $trees           = 'TEXMFFONTS,TEXMFLOCAL,TEXMFEXTRA,TEXMFMAIN' ;
+my $pattern         = '' ;
 
 my $fontsuffix  = "" ;
 my $namesuffix  = "" ;
@@ -194,6 +199,7 @@ my @cleanup         = () ;    # atl: build list of generated files to delete
     "afmpl"        => \$afmpl,
     "afm2pl"       => \$afmpl,
     "rootlist=s"   => \$trees,
+    "pattern=s"    => \$pattern,
     "trace"        => \$trace,    # --verbose conflicts with --ve
     "preproc"      => \$preproc,  # atl: trigger conversion to pfb
     "lcdf"         => \$lcdf ) ;  # atl: trigger use of lcdf fonttoools
@@ -249,7 +255,7 @@ sub error {
 # The banner.
 
 print "\n" ;
-report ("TeXFont 2.2.0 - ConTeXt / PRAGMA ADE 2000-2004") ;
+report ("TeXFont 2.2.1 - ConTeXt / PRAGMA ADE 2000-2004") ;
 print "\n" ;
 
 # Handy for scripts: one can provide a preferred path, if it
@@ -629,7 +635,7 @@ if ($variant) { report "encoding variant : $variant" }
 
 if ($install)        { report "source path : $sourcepath" }
 
-my $fntlist = my $pattern = "" ;
+my $fntlist = "" ;
 
 my $runpath = $sourcepath ;
 
@@ -691,9 +697,10 @@ sub globafmfiles
        }
     return @files }
 
-if ($ARGV[0])
-  { $pattern = $ARGV[0] ;
-    report ("processing files : all in pattern $ARGV[0]") ;
+if ($pattern eq '') { if ($ARGV[0]) { $pattern = $ARGV[0] } }
+
+if ($pattern ne '')
+  { report ("processing files : all in pattern $pattern") ;
     @files = globafmfiles($runpath,$pattern) }
 elsif ("$extend$narrow$slant$spaced$caps" ne "")
   { error ("transformation needs file spec") }

@@ -1,23 +1,25 @@
+# Please use the originals instead ! ! ! ! !
+
 # fontsite opus
 
 --en=? --ve=fontsite --co=opus --re
---en=? --ve=fontsite --co=opus --so=fsf/all --ma --in opus*
+--en=? --ve=fontsite --co=opus --so=fsf/all --ma --in --pattern=opus*
 
---en=? --ve=fontsite --co=opus --so=fsf/all --sl=* opusrg_*
---en=? --ve=fontsite --co=opus --so=fsf/all --sl=* opusb_*
+--en=? --ve=fontsite --co=opus --so=fsf/all --sl=* --pattern=opusrg_*
+--en=? --ve=fontsite --co=opus --so=fsf/all --sl=* --pattern=opusb_*
 
 # fontsite typewriter
 
 --en=? --ve=fontsite --co=typewriter --re
---en=? --ve=fontsite --co=typewriter --so=fsf/all --ma --in type*
+--en=? --ve=fontsite --co=typewriter --so=fsf/all --ma --in --pattern=type*
 
---en=? --ve=fontsite --co=typewriter --so=fsf/all --sl=* typerg_*
---en=? --ve=fontsite --co=typewriter --so=fsf/all --sl=* typeb_*
+--en=? --ve=fontsite --co=typewriter --so=fsf/all --sl=* --pattern=typerg_*
+--en=? --ve=fontsite --co=typewriter --so=fsf/all --sl=* --pattern=typeb_*
 
 # fontsite garamond
 
 --en=? --ve=fontsite --co=garamond --re
---en=? --ve=fontsite --co=garamond --so=fsf/all --ma --in gara*
+--en=? --ve=fontsite --co=garamond --so=fsf/all --ma --in --pattern=gara*
 
---en=? --ve=fontsite --co=garamond --so=fsf/all --sl=* garamond*
---en=? --ve=fontsite --co=garamond --so=fsf/all --sl=* garab_*
+--en=? --ve=fontsite --co=garamond --so=fsf/all --sl=* --pattern=garamond*
+--en=? --ve=fontsite --co=garamond --so=fsf/all --sl=* --pattern=garab_*

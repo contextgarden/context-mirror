@@ -92,9 +92,9 @@
 \def\dosetpairhandling#1#2#3 #4 #5 % no define since directly set
   {\ifskiphandlingdef \else
      \doifnumberelse{\string#2}
-       {#1{#2#3}{#4}}
+       {#1{#2#3}{#4}{#5}}
        {\doifelsenothing{#3}
-          {#1{`#2}{#4}}
+          {#1{`#2}{#4}{#5}}
           {\let\char\empty
            \doifnumberelse{\csname#2#3\endcsname}{#1{\csname#2#3\endcsname}{#4}{#5}}\donothing
            \let\char\normalchar}}%
@@ -103,9 +103,7 @@
 \def\doinhsomehandling#1#2 #3 %
   {\ifskiphandlingdef \else
      \let\char\empty
-     \doifnumberelse{\csname#2\endcsname}
-       {#1{\csname#2\endcsname}{`#3}}
-       \donothing
+     \doifnumberelse{\csname#2\endcsname}{#1{\csname#2\endcsname}{`#3}}\donothing
      \let\char\normalchar
    \fi}
 
@@ -292,7 +290,7 @@
 
     \def\protrudethreshold{36\onepoint}
 
-    \def\redodefineprotrudefactor#1%
+    \def\redodefineprotrudefactor
       {\ifdim\fontdimen6\font>\protrudethreshold
          \divide\scratchdimen\fontdimen6\font
          \multiply\scratchdimen\wd\charbox

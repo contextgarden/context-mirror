@@ -8,6 +8,8 @@
 # This script will harbor some handy manipulations on context
 # related files.
 
+# todo: move scite here
+
 banner = ['CtxTools', 'version 1.0', '2004', 'PRAGMA ADE/POD']
 
 unless defined? ownpath
@@ -98,9 +100,61 @@ class Commands
 
     end
 
+    def jeditinterface
+
+        return unless FileTest.file?("cont-en.xml")
+
+        interfaces = @commandline.arguments
+
+        if interfaces.empty? then
+            interfaces = ['en', 'cz','de','it','nl','ro']
+        end
+
+        interfaces.each do |interface|
+            begin
+                collection = Hash.new
+                mappings   = Hash.new
+                if f = open("keys-#{interface}.xml") then
+                    while str = f.gets do
+                        if str =~ /\<cd\:command\s+name=\"(.*?)\"\s+value=\"(.*?)\".*?\>/o then
+                            mappings[$1] = $2
+                        end
+                    end
+                    f.close
+                    if f = open("cont-en.xml") then
+                        while str = f.gets do
+                            if str =~ /\<cd\:command\s+name=\"(.*?)\"\s+type=\"environment\".*?\>/o then
+                                collection["start#{mappings[$1]}"] = ''
+                                collection["stop#{mappings[$1]}"]  = ''
+                            elsif str =~ /\<cd\:command\s+name=\"(.*?)\".*?\>/o then
+                                collection["#{mappings[$1]}"] = ''
+                            end
+                        end
+                        f.close
+                        if f = open("context-jedit-#{interface}.xml", 'w') then
+                            f.puts("<?xml version='1.0'?>\n\n")
+                            f.puts("<!DOCTYPE MODE SYSTEM 'xmode.dtd'>\n\n")
+                            f.puts("<MODE>\n")
+                            f.puts("  <RULES>\n")
+                            f.puts("    <KEYWORDS>\n")
+                            collection.keys.sort.each do |name|
+                                f.puts("      <KEYWORD2>\\#{name}</KEYWORD2>\n") unless name.empty?
+                            end
+                            f.puts("    </KEYWORDS>\n")
+                            f.puts("  </RULES>\n")
+                            f.puts("</MODE>\n")
+                            f.close
+                        end
+                    end
+                end
+            end
+        end
+
+    end
+
     def translateinterface
 
-        # since we know what kind of file we're dealign with,
+        # since we know what kind of file we're dealing with,
         # we do it quick and dirty instead of using rexml or
         # xslt
 
@@ -200,6 +254,7 @@ commandline = CommandLine.new
 
 commandline.registeraction('touchcontextfile', '')
 commandline.registeraction('translateinterface', '')
+commandline.registeraction('jeditinterface', '')
 
 commandline.registeraction('help')
 commandline.registeraction('version')

@@ -597,8 +597,7 @@
      \let\PDFspotcolornames \empty
      \let\PDFspotcolordomain\empty
      \def\dospotcolorcommand##1%
-       {%\edef\PDFspotcolornames {\PDFspotcolornames/##1\space}%
-        \edef\PDFspotcolornames {\PDFspotcolornames/\executeifdefined{@@pdf@@scn@@##1}{##1}\space}%
+       {\edef\PDFspotcolornames {\PDFspotcolornames/\executeifdefined{@@pdf@@scn@@##1}{##1}\space}%
         \edef\PDFspotcolordomain{\PDFspotcolordomain 0.0 1.0\space}}%
      \processcommacommand[#3]\dospotcolorcommand
      \edef\PDFspotcolornames{/DeviceN [\PDFspotcolornames]}%
@@ -620,8 +619,7 @@
    \let\PDFspotcolornames \empty
    \let\PDFspotcolordomain\empty
    \def\docommand##1%
-     {%\edef\PDFspotcolornames {\PDFspotcolornames/##1\space}%
-      \edef\PDFspotcolornames{\PDFspotcolornames/\executeifdefined{@@pdf@@scn@@##1}{##1}\space}%
+     {\edef\PDFspotcolornames{\PDFspotcolornames/\executeifdefined{@@pdf@@scn@@##1}{##1}\space}%
       \edef\PDFspotcolordomain{\PDFspotcolordomain 0.0 1.0\space}}%
    \processcommacommand[#3,None]\docommand
    \let\PDFcolorindexvector\empty

@@ -1035,15 +1035,6 @@
 %D We need to register spot colors (i.e.\ resources need to
 %D be created.
 
-% \def\registerspotcolor#1:%
-%   {\ifundefined{\??cl:\c!p:\@@cl@@n}%
-%      \letgvalue{\??cl:\c!p:\@@cl@@n}\empty
-%      %\@EA\@EA\csname registerspotcolor#1\endcsname
-%      \csname registerspotcolor#1\@EA\endcsname
-%    \else
-%      \@EA\dontregisterspotcolor
-%    \fi}
-
 \def\registerspotcolor#1:%
   {\ifundefined{\??cl:\c!p:\@@cl@@n}%
      \letgvalue{\??cl:\c!p:\@@cl@@n}\empty
@@ -1052,12 +1043,6 @@
    \else
      \@EA\dontregisterspotcolor
    \fi}
-
-% \def\dontregisterspotcolor         #1\od{}
-% \def\registerspotcolorR   #1:#2:#3:#4\od{\doregisterrgbspotcolor \@@cl@@n{#1}{#2}{#3}}
-% \def\registerspotcolorC#1:#2:#3:#4:#5\od{\doregistercmykspotcolor\@@cl@@n{#1}{#2}{#3}{#4}}
-% \def\registerspotcolorS         #1:#2\od{\doregistergrayspotcolor\@@cl@@n{#1}}
-% \def\registerspotcolorP      #1:#2:#3\od{\doregistergrayspotcolor\@@cl@@n{#2}}
 
 \def\dontregisterspotcolor         #1\od{}
 \def\registerspotcolorR   #1:#2:#3:#4\od{\doregisterrgbspotcolor \@@cl@@n\@@cl@@f\@@cl@@d\@@cl@@p{#1}{#2}{#3}}

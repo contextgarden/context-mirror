@@ -47,7 +47,8 @@
 \setupalign
   [broad,right]
 
-\lowercasestring \inputfilename \to \lcinputfilename
+\lowercasestring \inputfilename   \to \lcinputfilename
+\convertcommand  \lcinputfilename \to \lcinputfilename % make _ safe
 
 \setupheadertexts
   [\lcinputfilename]

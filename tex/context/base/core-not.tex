@@ -872,10 +872,10 @@
 %D \stoptyping
 
 \def\dosynchronizenotes
-  {\insert\currentnoteins{\unvbox\currentnoteins}}
+  {\ifvoid\currentnoteins\else\insert\currentnoteins{\unvbox\currentnoteins}\fi}
 
 \def\synchronizenotes
-  {\ifvoid\currentnoteins\else\processnotes\dosynchronizenotes\fi}
+  {\processnotes\dosynchronizenotes}
 
 %D There are several placement alternatives.
 

@@ -409,24 +409,12 @@
 \setvalue{\@@dodolijstelement f}{\let\dosomelijstelement\dodofixdlijstelementF}
 \setvalue{\@@dodolijstelement g}{\let\dosomelijstelement\dodofixdlijstelementG}
 
-\setvalue{\@@dodolijstelement\v!none}%
-  {\def\dosomelijstelement{\dodofreevlijstelement}}
+\setvalue{\@@dodolijstelement\v!none      }{\def\dosomelijstelement{\dodofreevlijstelement}}
+\setvalue{\@@dodolijstelement\v!vertical  }{\def\dosomelijstelement{\dodofreevlijstelement}}
+\setvalue{\@@dodolijstelement\v!horizontal}{\def\dosomelijstelement{\dodofreehlijstelement}}
+\setvalue{\@@dodolijstelement\v!command   }{\let\dosomelijstelement\dodocommandlijstelement}
 
-\setvalue{\@@dodolijstelement\v!vertical}%
-  {\def\dosomelijstelement{\dodofreevlijstelement}}
-
-\setvalue{\@@dodolijstelement\v!horizontal}%
-  {\def\dosomelijstelement{\dodofreehlijstelement}}
-
-\setvalue{\@@dodolijstelement\v!command}%
-  {\let\dosomelijstelement\dodocommandlijstelement}
-
-% Here I learned something new: \leftskip can be changed
-% within a paragraph and the last one counts. Therefore we
-% cannot use \bgroup's! The placement of the \leftskip
-% assignment and the \endgraf's may not be changed. We have to
-% end the preceding paragraph before changing \leftskip. This is
-% because every listelement sets the \leftskip.
+% don't mess arround with endgraf/grouping else we loose leftskip
 
 % \strippedcsname\dodolijstelement
 
@@ -546,9 +534,12 @@
         {\hbox{##2}}}%
    \doifvalue{\??li#1\c!interaction}\v!text % not supported
      {\setlistparameter{#1}\c!interaction\v!all}%
+%    \makelijstelement\v!all
+%      {\hbox to \hsize
    \makelijstelement\v!all
-     {\hbox to \hsize
-        {\dostartattributes{\??li#1}\c!style\c!color\empty
+     {\setlocalhsize \hsize\localhsize \hbox to \hsize
+        {\forgetall
+         \dostartattributes{\??li#1}\c!style\c!color\empty
          \!!widthb\hsize
          \setbox2\hbox \ifdim\!!widtha>\zeropoint to \!!widtha \fi
            {\makelijstelement\v!sectionnumber
@@ -610,6 +601,28 @@
    \endgraf
    \allowbreak
    \getvalue{\??li#1\c!after}}
+
+% % example from the context list
+%
+% \setuphead [part]    [page=right,placehead=yes]
+% \setuplist [chapter] [alternative=d,before=\blank,after=\blank]
+% \setuplist [part]    [before=\blank,after=\blank]
+%
+% \starttext
+%   \startnarrower[2*right] \placecontent \stopnarrower
+%   \blank[4*big]
+%   \startsetups chapter
+%     \blank \startnarrower[3*middle] \placecontent[criterium=local] \stopnarrower
+%   \stopsetups
+%   \placelist[part][criterium=text,after=\setups{chapter}]
+%
+%   \part{First part}       \chapter{Chapter one}  \chapter{Chapter two}
+%   \chapter{Chapter three} \chapter{Chapter four} \chapter{Chapter five}
+%   \part{Second part}      \chapter{Chapter one}  \chapter{Chapter two}
+%   \chapter{Chapter three} \chapter{Chapter four} \chapter{Chapter five}
+%   \part{Third part}       \chapter{Chapter one}  \chapter{Chapter two}
+%   \chapter{Chapter three} \chapter{Chapter four} \chapter{Chapter five}
+% \stoptext
 
 % overrulen interactie kan sneller, bv door hulpconstanten
 % te gebruiken en die te letten
