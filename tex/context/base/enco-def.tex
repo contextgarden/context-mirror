@@ -19,7 +19,7 @@
 %D usage of the the original \TEX\ fonts, where composed
 %D characters were not part of the design. So, occasionally
 %D we have to revert to hacks. Thanks to all those users who
-%D helped me to fill in the details!
+%D helped me to fill in the details.
 
 \startencoding[default]
 
@@ -59,11 +59,11 @@
 \definecharacter ssharp           {\char25 } % "19
 \definecharacter Ssharp           {SS}
 
-\definecharacter thorn            {\missingglyph}
-\definecharacter Thorn            {\missingglyph}
+\definecharacter thorn            {\unknownchar}
+\definecharacter Thorn            {\unknownchar}
 
-\definecharacter eth              {\missingglyph}
-\definecharacter Eth              {\missingglyph}
+\definecharacter eth              {\unknownchar}
+\definecharacter Eth              {\unknownchar}
 
 \definecharacter exclamdown        60
 \definecharacter questiondown      62
@@ -84,7 +84,7 @@
 \definecharacter threesuperior    {\high{3}}
 
 \definecharacter textcent         {c}
-\definecharacter textcurrency     {\missingglyph}
+\definecharacter textcurrency     {\unknownchar}
 \definecharacter textdollar       {\fakedollar}
 \definecharacter texteuro         {E}
 \definecharacter textflorin       {\fakeflorin}
@@ -101,9 +101,9 @@
 \definecharacter periodcentered   {\mathematics\cdot}
 \definecharacter compoundwordmark  23
 
-\definecharacter textasciicircum    94
-\definecharacter textasciitilde    126
-\definecharacter textslash          47
+\definecharacter textasciicircum   94
+\definecharacter textasciitilde   126
+\definecharacter textslash         47
 \definecharacter textbackslash    {\tex{}} % todo
 \definecharacter textbraceleft    {\mathematics\{}
 \definecharacter textbraceright   {\mathematics\}}
@@ -448,6 +448,247 @@
 \definecharacter uhornacute          {\uacute}
 \definecharacter uhorntilde          {\utilde}
 \definecharacter uhornhook           {u}
+
+\stopencoding
+
+%D Greek (moved to here):
+
+\startencoding[default]
+
+% Uppercase Greek letters
+
+\definecharacter greekAlpha   {\Alpha}
+\definecharacter greekBeta    {\Beta}
+\definecharacter greekGamma   {\Gamma}
+\definecharacter greekDelta   {\Delta}
+\definecharacter greekEpsilon {\Epsilon}
+\definecharacter greekZeta    {\Zeta}
+\definecharacter greekEta     {\Eta}
+\definecharacter greekTheta   {\Theta}
+\definecharacter greekIota    {\Iota}
+\definecharacter greekKappa   {\Kappa}
+\definecharacter greekLamda   {\Lamba}
+\definecharacter greekMu      {\Mu}
+\definecharacter greekNu      {\Nu}
+\definecharacter greekXi      {\Xi}
+\definecharacter greekOmicron {\Omicron}
+\definecharacter greekPi      {\Pi}
+\definecharacter greekRho     {\Rho}
+\definecharacter greekSigma   {\Sigma}
+\definecharacter greekTau     {\Tau}
+\definecharacter greekUpsilon {\Upsilon}
+\definecharacter greekPhi     {\Phi}
+\definecharacter greekChi     {\Chi}
+\definecharacter greekPsi     {\Psi}
+\definecharacter greekOmega   {\Omega}
+
+% Lowercase Greek letters
+
+\definecharacter greekalpha      {\alpha}
+\definecharacter greekbeta       {\beta}
+\definecharacter greekgamma      {\gamma}
+\definecharacter greekdelta      {\delta}
+\definecharacter greekepsilon    {\epsilon}
+\definecharacter greekzeta       {\zeta}
+\definecharacter greeketa        {\eta}
+\definecharacter greektheta      {\theta}
+\definecharacter greekiota       {\iota}
+\definecharacter greekkappa      {\kappa}
+\definecharacter greeklamda      {\lambda}
+\definecharacter greekmu         {\mu}
+\definecharacter greeknu         {\nu}
+\definecharacter greekxi         {\xi}
+\definecharacter greekomicron    {\omicron}
+\definecharacter greekpi         {\pi}
+\definecharacter greekrho        {\rho}
+\definecharacter greekfinalsigma {\sigma}
+\definecharacter greeksigma      {\sigma}
+\definecharacter greektau        {\tau}
+\definecharacter greekupsilon    {\upsilon}
+\definecharacter greekphi        {\phi}
+\definecharacter greekchi        {\chi}
+\definecharacter greekpsi        {\psi}
+\definecharacter greekomega      {\omega}
+
+% Accented Uppercase Greek letters
+
+\definecharacter greekAlphatonos       {'A}
+\definecharacter greekEpsilontonos     {'E}
+\definecharacter greekEtatonos         {'H}
+\definecharacter greekIotatonos        {'I}
+\definecharacter greekOmicrontonos     {'O}
+\definecharacter greekUpsilontonos     {'U}
+\definecharacter greekOmegatonos       {'W}
+\definecharacter greekIotadialytika    {"I}
+\definecharacter greekUpsilondialytika {"U}
+
+% Accented Lowercase Greek letters
+
+\definecharacter greekalphatonos            {'a}
+\definecharacter greekepsilontonos          {'e}
+\definecharacter greeketatonos              {'h}
+\definecharacter greekiotatonos             {'i}
+\definecharacter greekomicrontonos          {'o}
+\definecharacter greekupsilontonos          {'u}
+\definecharacter greekomegatonos            {'w}
+\definecharacter greekiotadialytika         {"i}
+\definecharacter greekupsilondialytika      {"u}
+\definecharacter greekiotadialytikatonos    {'"i}
+\definecharacter greekupsilondialytikatonos {'"u}
+
+% Miscellaneous Greek symbols
+
+\definecharacter greekleftquot       {((}
+\definecharacter greekrightquot      {))}
+\definecharacter greektonos          {'}
+\definecharacter greekdialytikatonos {'"}
+\definecharacter greekapostrophos    {''}
+
+\stopencoding
+
+%D Cyrillic (moved to here):
+
+\startencoding[default]
+
+\definecharacter cyrillicA      {A}
+\definecharacter cyrillicB      {B}
+\definecharacter cyrillicV      {V}
+\definecharacter cyrillicG      {G}
+\definecharacter cyrillicD      {D}
+\definecharacter cyrillicE      {E}
+\definecharacter cyrillicZH     {ZH}
+\definecharacter cyrillicZ      {Z}
+\definecharacter cyrillicI      {I}
+\definecharacter cyrillicISHRT  {ISHRT}
+\definecharacter cyrillicK      {K}
+\definecharacter cyrillicL      {L}
+\definecharacter cyrillicM      {M}
+\definecharacter cyrillicN      {N}
+\definecharacter cyrillicO      {O}
+\definecharacter cyrillicP      {P}
+\definecharacter cyrillicR      {R}
+\definecharacter cyrillicS      {S}
+\definecharacter cyrillicT      {T}
+\definecharacter cyrillicU      {U}
+\definecharacter cyrillicF      {F}
+\definecharacter cyrillicH      {H}
+\definecharacter cyrillicC      {C}
+\definecharacter cyrillicCH     {CH}
+\definecharacter cyrillicSH     {SH}
+\definecharacter cyrillicSHCH   {SHCH}
+\definecharacter cyrillicHRDSN  {HRDSN}
+\definecharacter cyrillicERY    {ERY}
+\definecharacter cyrillicSFTSN  {SFTSN}
+\definecharacter cyrillicEREV   {EREV}
+\definecharacter cyrillicYU     {YU}
+\definecharacter cyrillicYA     {YA}
+\definecharacter cyrillicGUP    {GUP}
+\definecharacter cyrillicGHCRS  {GHCRS}
+\definecharacter cyrillicDJE    {DJE}
+\definecharacter cyrillicTSHE   {TSHE}
+\definecharacter cyrillicSHHA   {SHHA}
+\definecharacter cyrillicZHDSC  {ZHDSC}
+\definecharacter cyrillicZDSC   {ZDSC}
+\definecharacter cyrillicLJE    {LJE}
+\definecharacter cyrillicYI     {YI}
+\definecharacter cyrillicKDSC   {KDSC}
+\definecharacter cyrillicKBEAK  {KBEAK}
+\definecharacter cyrillicKVCRS  {KVCRS}
+\definecharacter cyrillicAE     {AE}
+\definecharacter cyrillicNDSC   {NDSC}
+\definecharacter cyrillicNG     {NG}
+\definecharacter cyrillicDZE    {DZE}
+\definecharacter cyrillicOTLD   {OTLD}
+\definecharacter cyrillicSDSC   {SDSC}
+\definecharacter cyrillicUSHRT  {USHRT}
+\definecharacter cyrillicY      {Y}
+\definecharacter cyrillicYHCRS  {YHCRS}
+\definecharacter cyrillicHDSC   {HDSC}
+\definecharacter cyrillicDZHE   {DZHE}
+\definecharacter cyrillicCHVCRS {CHVCRS}
+\definecharacter cyrillicCHRDSC {CHRDSC}
+\definecharacter cyrillicIE     {IE}
+\definecharacter cyrillicSCHWA  {SCHWA}
+\definecharacter cyrillicNJE    {NJE}
+\definecharacter cyrillicYO     {YO}
+\definecharacter cyrillicII     {II}
+\definecharacter cyrillicJE     {JE}
+\definecharacter cyrillicQ      {Q}
+\definecharacter cyrillicW      {W}
+
+\definecharacter cyrillica      {a}
+\definecharacter cyrillicb      {b}
+\definecharacter cyrillicv      {v}
+\definecharacter cyrillicg      {g}
+\definecharacter cyrillicd      {d}
+\definecharacter cyrillice      {e}
+\definecharacter cyrilliczh     {zh}
+\definecharacter cyrillicz      {z}
+\definecharacter cyrillici      {i}
+\definecharacter cyrillicishrt  {ishrt}
+\definecharacter cyrillick      {k}
+\definecharacter cyrillicl      {l}
+\definecharacter cyrillicm      {m}
+\definecharacter cyrillicn      {n}
+\definecharacter cyrillico      {o}
+\definecharacter cyrillicp      {p}
+\definecharacter cyrillicr      {r}
+\definecharacter cyrillics      {s}
+\definecharacter cyrillict      {t}
+\definecharacter cyrillicu      {u}
+\definecharacter cyrillicf      {f}
+\definecharacter cyrillich      {h}
+\definecharacter cyrillicc      {c}
+\definecharacter cyrillicch     {ch}
+\definecharacter cyrillicsh     {sh}
+\definecharacter cyrillicshch   {shch}
+\definecharacter cyrillichrdsn  {hrdsn}
+\definecharacter cyrillicery    {ery}
+\definecharacter cyrillicsftsn  {sftsn}
+\definecharacter cyrillicerev   {erev}
+\definecharacter cyrillicyu     {yu}
+\definecharacter cyrillicya     {ya}
+\definecharacter cyrillicgup    {gup}
+\definecharacter cyrillicghcrs  {ghcrs}
+\definecharacter cyrillicdje    {dje}
+\definecharacter cyrillictshe   {tshe}
+\definecharacter cyrillicshha   {shha}
+\definecharacter cyrilliczhdsc  {zhdsc}
+\definecharacter cyrilliczdsc   {zdsc}
+\definecharacter cyrilliclje    {lje}
+\definecharacter cyrillicyi     {yi}
+\definecharacter cyrillickdsc   {kdsc}
+\definecharacter cyrillickbeak  {kbeak}
+\definecharacter cyrillickvcrs  {kvcrs}
+\definecharacter cyrillicae     {ae}
+\definecharacter cyrillicndsc   {ndsc}
+\definecharacter cyrillicng     {ng}
+\definecharacter cyrillicdze    {dze}
+\definecharacter cyrillicotld   {otld}
+\definecharacter cyrillicsdsc   {sdsc}
+\definecharacter cyrillicushrt  {ushrt}
+\definecharacter cyrillicy      {y}
+\definecharacter cyrillicyhcrs  {yhcrs}
+\definecharacter cyrillichdsc   {hdsc}
+\definecharacter cyrillicdzhe   {dzhe}
+\definecharacter cyrillicchvcrs {chvcrs}
+\definecharacter cyrillicchrdsc {chrdsc}
+\definecharacter cyrillicie     {ie}
+\definecharacter cyrillicschwa  {schwa}
+\definecharacter cyrillicnje    {nje}
+\definecharacter cyrillicyo     {yo}
+\definecharacter cyrillicii     {ii}
+\definecharacter cyrillicje     {je}
+\definecharacter cyrillicq      {q}
+\definecharacter cyrillicw      {w}
+
+\stopencoding
+
+%D Hebrew:
+
+\startencoding[default]
+
+\definecharacter hebrewAlef       {'}\definecharacter hebrewBet        {b}\definecharacter hebrewGimel      {g}\definecharacter hebrewDalet      {d}\definecharacter hebrewHe         {h}\definecharacter hebrewVav        {w}\definecharacter hebrewZayin      {z}\definecharacter hebrewHet        {\hstroke}\definecharacter hebrewTet        {\tcedilla}\definecharacter hebrewYod        {y}\definecharacter hebrewKaffinal   {k}\definecharacter hebrewKaf        {k}\definecharacter hebrewLamed      {l}\definecharacter hebrewMemfinal   {m}\definecharacter hebrewMem        {m}\definecharacter hebrewNunfinal   {n}\definecharacter hebrewNun        {n}\definecharacter hebrewSamekh     {s}\definecharacter hebrewAyin       {\gdotaccent}\definecharacter hebrewPefinal    {p}\definecharacter hebrewPe         {p}\definecharacter hebrewTsadifinal {\scedilla}\definecharacter hebrewTsadi      {\scedilla}\definecharacter hebrewQof        {q}\definecharacter hebrewResh       {r}\definecharacter hebrewShin       {\scaron}\definecharacter hebrewTav        {th}
 
 \stopencoding
 

@@ -86,7 +86,11 @@
 
 \def\@@itemcounter{\s!itemcount\currentitemgroup}
 
-\def\doitembreak#1{\iftextitems\else\dosomebreak#1\fi}
+% \def\doitembreak#1{\iftextitems\else\dosomebreak#1\fi}
+%
+% s-pre-61 / pre-dis, test extensively, 2004/5
+
+\def\doitembreak#1{\ifoptimizeitems\iftextitems\else\dosomebreak#1\fi\fi}
 
 \def\dolistreference
   {\immediatewriteutilitycommand
@@ -200,9 +204,14 @@
    \letitemparameter{#1}\c!after     \empty
    \letitemparameter{#1}\c!inbetween \empty}
 
+% \def\dosetupitemgroupconstant[#1][#2]%
+%   {\def\dodosetupitemgroupconstant##1%
+%      {\dododosetupitemgroupconstant[#1][##1*]}%
+%    \processcommacommand[#2]\dodosetupitemgroupconstant} % expansion of #2 is handy for xml
+
 \def\dosetupitemgroupconstant[#1][#2]%
-  {\def\dodosetupitemgroupconstant##1%
-     {\dododosetupitemgroupconstant[#1][##1*]}%
+  {\def\dodosetupitemgroupconstant##1% catches empty in [a,b,] handy for xml
+     {\doifsomething{##1}{\dododosetupitemgroupconstant[#1][##1*]}}%
    \processcommacommand[#2]\dodosetupitemgroupconstant} % expansion of #2 is handy for xml
 
 %\def\dododododosetupitemgroup[#1][#2]%

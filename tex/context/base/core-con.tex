@@ -136,6 +136,8 @@
 %D \showsetup{\y!characters}
 %D \showsetup{\y!Characters}
 
+\beginTEX
+
 \def\doconvertcharacters#1#2%
   {\ifnum#2>26
      \bgroup
@@ -155,6 +157,24 @@
    \else
      #1{#2}% pure expansion, used in references
    \fi}
+
+\endTEX
+
+%D A fully expandable alternative:
+
+\beginETEX \numexpr
+
+\def\doconvertcharacters#1#2%
+  {\ifcase#2\else
+     \ifnum#2>26
+       \expandafter\doconvertcharacters\expandafter#1\expandafter{\the\numexpr(#2+12)/26-1\relax}%
+       \expandafter#1\expandafter{\the\numexpr#2-((#2+12)/26-)*26\relax}%
+     \else
+       \expandafter#1\expandafter{\number#2}%
+     \fi
+   \fi}
+
+\endETEX
 
 \def\characters{\doconvertcharacters\character}
 \def\Characters{\doconvertcharacters\Character}

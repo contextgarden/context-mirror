@@ -39,58 +39,6 @@
 %    \egroup
 %    \convertcommand\@@globalexpanded\to}
 
-% twice as fast in #1=5 #2=40 situations, only gains some speed when
-% multiple runs of large docs are done; fully expandable, no
-% statuscounter needed, no restore (due to grouping) needed etc
-
-\beginETEX \numexpr
-
-\def\writestatus#1#2%
-  {\writestring{\expandafter\dosplitstatus\expandafter\statuswidth#1%
-     \space\space\space\space\space\space\space
-     \space\space\space\space\space\space\space
-     \space\space\space\space\space\space\end
-     \space:\space#2}}
-
-\def\dosplitstatus#1#2%
-  {\ifcase#1 \expandafter\nosplitstatus\fi#2%
-   \expandafter\dosplitstatus\expandafter{\the\numexpr#1+\minusone\relax}}
-
-\endETEX
-
-\beginETEX
-
-% fallback to math when in text mode (handy for unicode vectors)
-
-\def\dohandlemathtoken#1%
-  {\csname
-     \ifmmode
-       \ifcsname\@mt@\mathcollection#1\endcsname
-         \@mt@\mathcollection
-       \else\ifcsname\@mt@\nomathcollection#1\endcsname
-         \@mt@\nomathcollection
-       \else\ifcsname\characterencoding#1\endcsname
-         \characterencoding
-       \else
-         \nocharacterencoding
-       \fi\fi\fi
-     \else
-       \ifcsname\characterencoding#1\endcsname
-         \characterencoding
-       \else\ifcsname\nocharacterencoding#1\endcsname
-         \nocharacterencoding
-       \else\ifcsname\@mt@\mathcollection#1\endcsname
-         \strippedcsname\mathematics\expandafter\endcsname\csname\@mt@\mathcollection
-       \else\ifcsname\@mt@\nomathcollection#1\endcsname
-         \strippedcsname\mathematics\expandafter\endcsname\csname\@mt@\nomathcollection
-       \else
-         \nocharacterencoding
-       \fi\fi\fi\fi
-     \fi
-   #1\endcsname}
-
-\endETEX
-
 \def\defXMLattributestring#1#2#3#4%
   {\ifcsname\@@XMLvariable:#2:#3\endcsname
      \@EA\convertcommand\csname\@@XMLvariable:#2:#3\endcsname\to#1%
@@ -110,11 +58,6 @@
 % in xtag-map:
 
 \unexpanded\def\xmlrent#1{\doXMLentity#1;}
-
-\def\dosetupitemgroupconstant[#1][#2]%
-  {\def\dodosetupitemgroupconstant##1% catches empty in [a,b,] handy for xml
-     {\doifsomething{##1}{\dododosetupitemgroupconstant[#1][##1*]}}%
-   \processcommacommand[#2]\dodosetupitemgroupconstant} % expansion of #2 is handy for xml
 
 % \page[left]
 % \definecolumntextarea[intro][left][x=1,y=1,nx=4,ny=20,state=start,background=introlayer]

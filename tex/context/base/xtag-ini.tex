@@ -1151,6 +1151,18 @@
 % \stopXMLdata
 %
 % so we need an ifless implementation
+%
+% also .. this should work:
+%
+% \defineXMLentity[ctx-var-textwidth] {\textwidth}
+%
+% \defineXMLcommand[test][width=\textwidth]
+%   {\the\dimexpr\XMLop{width}\relax}
+%
+% \startXMLdata
+% <test width=".45&ctx-var-textwidth;"/>
+% <test width="&ctx-var-textwidth;"/>
+% \stopXMLdata
 
 % \eacute -> simplified -> e (via raw encoding)
 %         -> raw        -> eacute (via handler)

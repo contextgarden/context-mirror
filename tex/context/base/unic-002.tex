@@ -13,23 +13,6 @@
 
 \unprotect
 
-% \startunicodevector 2
-%   \ifcase\numexpr(#1-198)
-%     textcircumflex\or
-%     textcaron\else
-%   \ifcase\numexpr(#1-216)
-%     textbreve\or
-%     textdotaccent\or
-%     \@@unknownchar\or
-%     textogonek\or
-%     texttilde\or
-%     texthungarumlaut\else
-%     \@@unknownchar
-%   \fi\fi
-% \stopunicodevector
-
-% ugly but faster
-
 \startunicodevector 2
   \ifcase\numexpr(#1-198)
     \strippedcsname \textcircumflex   \or

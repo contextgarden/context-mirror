@@ -688,7 +688,7 @@
 
 \def\docompletepublications[#1]%
   {\preinitializepubslist
-   \ifcase\bibcounter\or
+   \ifcase\bibcounter\else % HERE it said "\or" instead of "\else"
      \initializepubslist
      \let\bibcounter\!!zerocount
      \completelist[pubs][\c!criterium=all,#1]%
@@ -701,7 +701,7 @@
 
 \def\doplacepublications[#1]%
   {\preinitializepubslist
-   \ifcase\bibcounter\or
+   \ifcase\bibcounter\else % HERE it said "\or" instead of "\else"
      \initializepubslist
      \let\bibcounter\!!zerocount
      \placelist[pubs][\c!criterium=\v!all,#1]%

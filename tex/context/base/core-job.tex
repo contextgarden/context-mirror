@@ -76,19 +76,43 @@
 
 \let\allinputpaths\empty
 
+% \def\usepath[#1]%
+%   {\def\docommando##1%
+%      {\doifelse{##1}\v!reset
+%         {\let\allinputpaths\empty}
+%         {\addtocommalist{##1}\allinputpaths}}%
+%    \processcommalist[#1]\docommando}
+%
+% \def\usesubpath[#1]% new, see webschrift for usage
+%   {\ifx\allinputpaths\empty
+%      \edef\allinputpaths{#1}%
+%    \else
+%      \def\docommando##1%
+%        {\def\dodocommando####1{\addtocommalist{##1/####1}\allinputpaths}%
+%         \processcommalist[#1]\dodocommando}%
+%      \processcommacommand[\allinputpaths]\docommando
+%    \fi}
+%
+% the following alternatives permit ../{name} i.e. braces
+
 \def\usepath[#1]%
   {\def\docommando##1%
      {\doifelse{##1}\v!reset
         {\let\allinputpaths\empty}
-        {\addtocommalist{##1}\allinputpaths}}%
+        {\sanitizefilename#1\to\ascii
+         \convertcommand\ascii\to\ascii
+         \addtocommalist\ascii\allinputpaths}}%
    \processcommalist[#1]\docommando}
 
-\def\usesubpath[#1]% new, see webschrift for usage
+\def\usesubpath[#1]% test for a real long time, permits ../{name} i.e. braces
   {\ifx\allinputpaths\empty
-     \edef\allinputpaths{#1}%
+     \sanitizefilename#1\to\allinputpaths
    \else
      \def\docommando##1%
-       {\def\dodocommando####1{\addtocommalist{##1/####1}\allinputpaths}%
+       {\def\dodocommando####1%
+          {\sanitizefilename####1\to\ascii
+           \convertcommand\ascii\to\ascii
+           \addtocommalist{##1/\ascii}\allinputpaths}%
         \processcommalist[#1]\dodocommando}%
      \processcommacommand[\allinputpaths]\docommando
    \fi}
@@ -180,7 +204,7 @@
 \appendtoks \checknotes           \to \everyjob % depends on bodyfont
 \appendtoks \initializeMPgraphics \to \everyjob % after loading system files
 
-\appendtoks \page[\v!last] \page           \to \everybye
+\appendtoks \page[\v!last] \page                  \to \everybye
 \appendtoks \ifarrangingpages\poparrangedpages\fi \to \everybye
 \appendtoks \registerfileinfo[end]\jobname        \to \everybye
 
@@ -362,6 +386,25 @@
 %D Better here than in supp-mps:
 
 \def\executesystemcommand{\immediate\write18}
+
+% soon, when pdftex 1.22 is out in the field:
+%
+% \chardef\systemcommandmode\zerocount % 0=unknown 1=disabled 2=enabled
+%
+% \ifx\pdftexversion\undefined \else \ifnum\number\pdftexversion>122
+%   \prependtoks
+%     \chardef\systemcommandmode \ifeof18 \plusone \else \plustwo \fi
+%   \to \everyjob
+% \fi
+%
+% maybe in meta-ini
+%
+% \appendtoks
+%   \ifrunMPgraphics \ifcase\systemcommandmode \or
+%     \writestatus\m!systems{system commands are disabled}%
+%     \runMPgraphicsfalse
+%   \fi \fi
+% \to \everyjob
 
 \ifx\etexversion\undefined \else \ifnum\etexversion<202
   \prependtoks

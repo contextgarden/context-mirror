@@ -3459,6 +3459,8 @@
 %D Just for fun I times the next alternative: it was roughly
 %D timed about 15\% faster than the default (10+ sec to 9 sec)!
 
+\beginTEX
+
 \def\executeifdefined#1% #2 / never change this one again
   {\ifundefined{#1}%
      \expandafter\secondoftwoarguments
@@ -3466,6 +3468,8 @@
      \expandafter\firstoftwoarguments
    \fi
    {\csname#1\endcsname}}
+
+\endTEX
 
 \beginETEX
 

@@ -469,10 +469,19 @@
 %
 % so we need a two step approach
 
-\long\def\dodowriteMPgraphicline#1tex %
-  {\doifnextcharelse\relax
-     {\nododowriteMPgraphicline{#1}}
-     {\redodowriteMPgraphicline{#1}}}
+% \long\def\dodowriteMPgraphicline#1tex %
+%   {\doifnextcharelse\relax
+%      {\nododowriteMPgraphicline{#1}}
+%      {\redodowriteMPgraphicline{#1}}}
+%
+% better and faster
+
+\long\def\dodowriteMPgraphicline#1tex #2%
+  {\ifx#2\relax
+     \expandafter\nododowriteMPgraphicline
+   \else
+     \expandafter\redodowriteMPgraphicline
+   \fi{#1} #2}
 
 \long\def\redodowriteMPgraphicline#1#2etex#3\MPend
   {\ifx\next\empty\else\ifx\next\relax\else

@@ -546,10 +546,15 @@
 
 \ifx\outputfilename\undefined \def\outputfilename{\jobname} \fi
 
-\def\doifparentfileelse#1#2#3%
-  {\doifsamestringelse{#1}{\jobname       }{#2}
-  {\doifsamestringelse{#1}{\jobname.\c!tex}{#2}
-  {\doifsamestringelse{#1}{\outputfilename}{#2}{#3}}}}
+% \def\doifparentfileelse#1#2#3%
+%   {\doifsamestringelse{#1}{\jobname       }{#2}
+%   {\doifsamestringelse{#1}{\jobname.\c!tex}{#2}
+%   {\doifsamestringelse{#1}{\outputfilename}{#2}{#3}}}}
+
+\def\doifparentfileelse#1%
+  {\doifsamestringelse{#1}{\jobname       }\firstoftwoarguments
+  {\doifsamestringelse{#1}{\jobname.\c!tex}\firstoftwoarguments
+  {\doifsamestringelse{#1}{\outputfilename}\firstoftwoarguments\secondoftwoarguments}}}
 
 \def\normalless    {<} % geen \let !
 \def\normalmore    {>} % geen \let !

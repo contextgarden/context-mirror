@@ -388,9 +388,9 @@
   {\ifx\allspotcolors\empty \else
      \bgroup
      \let\usedspotcolors\empty
-     \def\docommando##1%
+     \def\docommand##1%
        {\doifdefined{\??cs##1}{\addtocommalist{##1}\usedspotcolors}}%
-     \processcommacommand[\allspotcolors]\docommando
+     \processcommacommand[\allspotcolors]\docommand
      \savecurrentvalue\usedspotcolors\usedspotcolors
      \egroup
    \fi}

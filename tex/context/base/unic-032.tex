@@ -13,183 +13,107 @@
 
 \unprotect
 
-% \startunicodevector 32
-%   \ifcase\numexpr(#1-19)
-%     endash\or
-%     emdash\or
-%     \@@unknownchar\or
-%     \@@unknownchar\or
-%     \@@unknownchar\or
-%     quoteleft\or
-%     quoteright\or
-%     quotesinglebase\or
-%     \@@unknownchar\or
-%     quotedblleft\or
-%     quotedblright\or
-%     quotedblbase\or
-%     \@@unknownchar\or
-%     textdag\or
-%     textddag\or
-%     textbullet\or
-%     \@@unknownchar\or
-%     \@@unknownchar\or
-%     \@@unknownchar\or
-%     textellipsis\else
-%   \ifcase\numexpr(#1-48)
-%     perthousand\else
-%   \ifcase\numexpr(#1-57)
-%     \@@unknownchar\or   % SINGLE LEFT-POINTING ANGLE QUOTATION MARK
-%     \@@unknownchar\else % SINGLE RIGHT-POINTING ANGLE QUOTATION MARK
-%   \ifcase\numexpr(#1-172)
-%     texteuro\else
-%     \@@unknownchar
-%   \fi\fi\fi\fi
-% \stopunicodevector
+% U+2027 HYPHENATION POINT
+% U+2028 LINE SEPARATOR
+% U+2029 PARAGRAPH SEPARATOR
+% U+202A LEFT-TO-RIGHT EMBEDDING
+% U+202B RIGHT-TO-LEFT EMBEDDING
+% U+202C POP DIRECTIONAL FORMATTING
+% U+202D LEFT-TO-RIGHT OVERRIDE
+% U+202E RIGHT-TO-LEFT OVERRIDE
+% U+202F NARROW NO-BREAK SPACE
+% U+2030 PER MILLE SIGN
+% U+2031 PER TEN THOUSAND SIGN
+% U+2032 PRIME
+% U+2033 DOUBLE PRIME
+% U+2034 TRIPLE PRIME
+% U+2035 REVERSED PRIME
+% U+2036 REVERSED DOUBLE PRIME
+% U+2037 REVERSED TRIPLE PRIME
+% U+2038 CARET
 
-%D More efficient:
-
-% U+2001 	EM QUAD
-% U+2002 	EN SPACE
-% U+2003 	EM SPACE
-% U+2004 	THREE-PER-EM SPACE
-% U+2005 	FOUR-PER-EM SPACE
-% U+2006 	SIX-PER-EM SPACE
-% U+2007 	FIGURE SPACE
-% U+2008 	PUNCTUATION SPACE
-% U+2009 	THIN SPACE
-% U+200A 	HAIR SPACE
-% U+200B 	ZERO WIDTH SPACE
-% U+200C 	ZERO WIDTH NON-JOINER
-% U+200D 	ZERO WIDTH JOINER
-% U+200E 	LEFT-TO-RIGHT MARK
-% U+200F 	RIGHT-TO-LEFT MARK
-% U+2010 	HYPHEN
-% U+2011 	NON-BREAKING HYPHEN
-% U+2012 	FIGURE DASH
-% U+2013 	EN DASH
-% U+2014 	EM DASH
-% U+2015 	HORIZONTAL BAR
-% U+2016 	DOUBLE VERTICAL LINE
-% U+2017 	DOUBLE LOW LINE
-% U+2018 	LEFT SINGLE QUOTATION MARK
-% U+2019 	RIGHT SINGLE QUOTATION MARK
-% U+201A 	SINGLE LOW-9 QUOTATION MARK
-% U+201B 	SINGLE HIGH-REVERSED-9 QUOTATION MARK
-% U+201C 	LEFT DOUBLE QUOTATION MARK
-% U+201D 	RIGHT DOUBLE QUOTATION MARK
-% U+201E 	DOUBLE LOW-9 QUOTATION MARK
-% U+201F 	DOUBLE HIGH-REVERSED-9 QUOTATION MARK
-% U+2020 	DAGGER
-% U+2021 	DOUBLE DAGGER
-% U+2022 	BULLET
-% U+2023 	TRIANGULAR BULLET
-% U+2024 	ONE DOT LEADER
-% U+2025 	TWO DOT LEADER
-% U+2026 	HORIZONTAL ELLIPSIS
-% U+2027 	HYPHENATION POINT
-% U+2028 	LINE SEPARATOR
-% U+2029 	PARAGRAPH SEPARATOR
-% U+202A 	LEFT-TO-RIGHT EMBEDDING
-% U+202B 	RIGHT-TO-LEFT EMBEDDING
-% U+202C 	POP DIRECTIONAL FORMATTING
-% U+202D 	LEFT-TO-RIGHT OVERRIDE
-% U+202E 	RIGHT-TO-LEFT OVERRIDE
-% U+202F 	NARROW NO-BREAK SPACE
-% U+2030 	PER MILLE SIGN
-% U+2031 	PER TEN THOUSAND SIGN
-% U+2032 	PRIME
-% U+2033 	DOUBLE PRIME
-% U+2034 	TRIPLE PRIME
-% U+2035 	REVERSED PRIME
-% U+2036 	REVERSED DOUBLE PRIME
-% U+2037 	REVERSED TRIPLE PRIME
-% U+2038 	CARET
-% U+2039 	SINGLE LEFT-POINTING ANGLE QUOTATION MARK
-% U+203A 	SINGLE RIGHT-POINTING ANGLE QUOTATION MARK
-% U+203B 	REFERENCE MARK
-% U+203C 	DOUBLE EXCLAMATION MARK
-% U+203D 	INTERROBANG
-% U+203E 	OVERLINE
-% U+203F 	UNDERTIE
-% U+2040 	CHARACTER TIE
-% U+2041 	CARET INSERTION POINT
-% U+2042 	ASTERISM
-% U+2043 	HYPHEN BULLET
-% U+2044 	FRACTION SLASH
-% U+2045 	LEFT SQUARE BRACKET WITH QUILL
-% U+2046 	RIGHT SQUARE BRACKET WITH QUILL
-% U+2047 	DOUBLE QUESTION MARK
-% U+2048 	QUESTION EXCLAMATION MARK
-% U+2049 	EXCLAMATION QUESTION MARK
-% U+204A 	TIRONIAN SIGN ET
-% U+204B 	REVERSED PILCROW SIGN
-% U+204C 	BLACK LEFTWARDS BULLET
-% U+204D 	BLACK RIGHTWARDS BULLET
-% U+204E 	LOW ASTERISK
-% U+204F 	REVERSED SEMICOLON
-% U+2050 	CLOSE UP
-% U+2051 	TWO ASTERISKS ALIGNED VERTICALLY
-% U+2052 	COMMERCIAL MINUS SIGN
-% U+2053 	SWUNG DASH
-% U+2054 	INVERTED UNDERTIE
-% U+2057 	QUADRUPLE PRIME
-% U+205F 	MEDIUM MATHEMATICAL SPACE
-% U+2060 	WORD JOINER
-% U+2061 	FUNCTION APPLICATION
-% U+2062 	INVISIBLE TIMES
-% U+2063 	INVISIBLE SEPARATOR
-% U+206A 	INHIBIT SYMMETRIC SWAPPING
-% U+206B 	ACTIVATE SYMMETRIC SWAPPING
-% U+206C 	INHIBIT ARABIC FORM SHAPING
-% U+206D 	ACTIVATE ARABIC FORM SHAPING
-% U+206E 	NATIONAL DIGIT SHAPES
-% U+206F 	NOMINAL DIGIT SHAPES
+% U+203B REFERENCE MARK
+% U+203C DOUBLE EXCLAMATION MARK
+% U+203D INTERROBANG
+% U+203E OVERLINE
+% U+203F UNDERTIE
+% U+2040 CHARACTER TIE
+% U+2041 CARET INSERTION POINT
+% U+2042 ASTERISM
+% U+2043 HYPHEN BULLET
+% U+2044 FRACTION SLASH
+% U+2045 LEFT SQUARE BRACKET WITH QUILL
+% U+2046 RIGHT SQUARE BRACKET WITH QUILL
+% U+2047 DOUBLE QUESTION MARK
+% U+2048 QUESTION EXCLAMATION MARK
+% U+2049 EXCLAMATION QUESTION MARK
+% U+204A TIRONIAN SIGN ET
+% U+204B REVERSED PILCROW SIGN
+% U+204C BLACK LEFTWARDS BULLET
+% U+204D BLACK RIGHTWARDS BULLET
+% U+204E LOW ASTERISK
+% U+204F REVERSED SEMICOLON
+% U+2050 CLOSE UP
+% U+2051 TWO ASTERISKS ALIGNED VERTICALLY
+% U+2052 COMMERCIAL MINUS SIGN
+% U+2053 SWUNG DASH
+% U+2054 INVERTED UNDERTIE
+% U+2057 QUADRUPLE PRIME
+% U+205F MEDIUM MATHEMATICAL SPACE
+% U+2060 WORD JOINER
+% U+2061 FUNCTION APPLICATION
+% U+2062 INVISIBLE TIMES
+% U+2063 INVISIBLE SEPARATOR
+% U+206A INHIBIT SYMMETRIC SWAPPING
+% U+206B ACTIVATE SYMMETRIC SWAPPING
+% U+206C INHIBIT ARABIC FORM SHAPING
+% U+206D ACTIVATE ARABIC FORM SHAPING
+% U+206E NATIONAL DIGIT SHAPES
+% U+206F NOMINAL DIGIT SHAPES
 
 \ifx\undefined\zerowidthspace \unexpanded\def\zerowidthspace{\kern\zeropoint} \fi
 
-% will be made more efficient
-
 \startunicodevector 32
   \ifcase\numexpr(#1)
-    \strippedcsname \enspace          \or % U+2000  	EN QUAD
-    \strippedcsname \emspace          \or % U+2001 	EM QUAD
-    \strippedcsname \enspace          \or % U+2002 	EN SPACE
-    \strippedcsname \emspace          \or % U+2003 	EM SPACE
-    \strippedcsname \unknownchar      \or % U+2004 	THREE-PER-EM SPACE
-    \strippedcsname \unknownchar      \or % U+2005 	FOUR-PER-EM SPACE
-    \strippedcsname \unknownchar      \or % U+2006 	SIX-PER-EM SPACE
-    \strippedcsname \unknownchar      \or % U+2007 	FIGURE SPACE
-    \strippedcsname \unknownchar      \or % U+2008 	PUNCTUATION SPACE
-    \strippedcsname \unknownchar      \or % U+2009 	THIN SPACE
-    \strippedcsname \unknownchar      \or % U+200A 	HAIR SPACE
-    \strippedcsname \zerowidthspace   \or % U+200B 	ZERO WIDTH SPACE
-    \strippedcsname \unknownchar      \or % U+200C 	ZERO WIDTH NON-JOINER
-    \strippedcsname \unknownchar      \or % U+200D 	ZERO WIDTH JOINER
-    \strippedcsname \unknownchar      \or % U+200E 	LEFT-TO-RIGHT MARK
-    \strippedcsname \unknownchar      \or % U+200F 	RIGHT-TO-LEFT MARK
-    \strippedcsname \breakinghyphen   \or % U+2010 	HYPHEN
-    \strippedcsname \nonbreakinghyphen\or % U+2011 	NON-BREAKING HYPHEN
-    \strippedcsname \textminus        \or % U+2012 	FIGURE DASH
-    \strippedcsname \endash           \or % U+2013 	EN DASH
-    \strippedcsname \emdash           \or % U+2014 	EM DASH
-    \strippedcsname \unknownchar      \or % U+2015 	HORIZONTAL BAR
-    \strippedcsname \unknownchar      \or % U+2016 	DOUBLE VERTICAL LINE
-    \strippedcsname \unknownchar      \or % U+2017 	DOUBLE LOW LINE
-    \strippedcsname \quoteleft        \or
-    \strippedcsname \quoteright       \or
-    \strippedcsname \quotesinglebase  \or
-    \strippedcsname \unknownchar      \or
-    \strippedcsname \quotedblleft     \or
-    \strippedcsname \quotedblright    \or
-    \strippedcsname \quotedblbase     \or
-    \strippedcsname \unknownchar      \or
-    \strippedcsname \textdag          \or
-    \strippedcsname \textddag         \or
-    \strippedcsname \textbullet       \or
-    \strippedcsname \unknownchar      \or
-    \strippedcsname \unknownchar      \or
-    \strippedcsname \unknownchar      \or
-    \strippedcsname \textellipsis     \else
+    \strippedcsname \enspace          \or   % U+2000 EN QUAD
+    \strippedcsname \emspace          \or   % U+2001 EM QUAD
+    \strippedcsname \enspace          \or   % U+2002 EN SPACE
+    \strippedcsname \emspace          \or   % U+2003 EM SPACE
+    \strippedcsname \unknownchar      \or   % U+2004 THREE-PER-EM SPACE
+    \strippedcsname \unknownchar      \or   % U+2005 FOUR-PER-EM SPACE
+    \strippedcsname \unknownchar      \or   % U+2006 SIX-PER-EM SPACE
+    \strippedcsname \unknownchar      \or   % U+2007 FIGURE SPACE
+    \strippedcsname \unknownchar      \or   % U+2008 PUNCTUATION SPACE
+    \strippedcsname \unknownchar      \or   % U+2009 THIN SPACE
+    \strippedcsname \unknownchar      \or   % U+200A HAIR SPACE
+    \strippedcsname \zerowidthspace   \or   % U+200B ZERO WIDTH SPACE
+    \strippedcsname \unknownchar      \or   % U+200C ZERO WIDTH NON-JOINER
+    \strippedcsname \unknownchar      \or   % U+200D ZERO WIDTH JOINER
+    \strippedcsname \unknownchar      \or   % U+200E LEFT-TO-RIGHT MARK
+    \strippedcsname \unknownchar      \or   % U+200F RIGHT-TO-LEFT MARK
+    \strippedcsname \breakinghyphen   \or   % U+2010 HYPHEN
+    \strippedcsname \nonbreakinghyphen\or   % U+2011 NON-BREAKING HYPHEN
+    \strippedcsname \textminus        \or   % U+2012 FIGURE DASH
+    \strippedcsname \endash           \or   % U+2013 EN DASH
+    \strippedcsname \emdash           \or   % U+2014 EM DASH
+    \strippedcsname \unknownchar      \or   % U+2015 HORIZONTAL BAR
+    \strippedcsname \unknownchar      \or   % U+2016 DOUBLE VERTICAL LINE
+    \strippedcsname \unknownchar      \or   % U+2017 DOUBLE LOW LINE
+    \strippedcsname \quoteleft        \or   % U+2018 LEFT SINGLE QUOTATION MARK
+    \strippedcsname \quoteright       \or   % U+2019 RIGHT SINGLE QUOTATION MARK
+    \strippedcsname \quotesinglebase  \or   % U+201A SINGLE LOW-9 QUOTATION MARK
+    \strippedcsname \unknownchar      \or   % U+201B SINGLE HIGH-REVERSED-9 QUOTATION MARK
+    \strippedcsname \quotedblleft     \or   % U+201C LEFT DOUBLE QUOTATION MARK
+    \strippedcsname \quotedblright    \or   % U+201D RIGHT DOUBLE QUOTATION MARK
+    \strippedcsname \quotedblbase     \or   % U+201E DOUBLE LOW-9 QUOTATION MARK
+    \strippedcsname \unknownchar      \or   % U+201F DOUBLE HIGH-REVERSED-9 QUOTATION MARK
+    \strippedcsname \textdag          \or   % U+2020 DAGGER
+    \strippedcsname \textddag         \or   % U+2021 DOUBLE DAGGER
+    \strippedcsname \textbullet       \or   % U+2022 BULLET
+    \strippedcsname \unknownchar      \or   % U+2023 TRIANGULAR BULLET
+    \strippedcsname \unknownchar      \or   % U+2024 ONE DOT LEADER
+    \strippedcsname \unknownchar      \or   % U+2025 TWO DOT LEADER
+    \strippedcsname \textellipsis     \else % U+2026 HORIZONTAL ELLIPSIS
   \ifcase\numexpr(#1-48)
     \strippedcsname \perthousand      \or   % U+2030 PER MILLE SIGN
     \strippedcsname \unknownchar      \or   % U+2031 PER TEN THOUSAND SIGN
@@ -197,8 +121,8 @@
     \strippedcsname \doubleprime      \or   % U+2033 DOUBLE PRIME
     \strippedcsname \tripleprime      \else % U+2034 TRIPLE PRIME
   \ifcase\numexpr(#1-57)
-    \strippedcsname \guilsingleleft   \or   % SINGLE LEFT-POINTING ANGLE QUOTATION MARK
-    \strippedcsname \guilsingleright  \else % SINGLE RIGHT-POINTING ANGLE QUOTATION MARK
+    \strippedcsname \guilsingleleft   \or   % U+2039 SINGLE LEFT-POINTING ANGLE QUOTATION MARK
+    \strippedcsname \guilsingleright  \else % U+203A SINGLE RIGHT-POINTING ANGLE QUOTATION MARK
   \ifcase\numexpr(#1-172)
     \strippedcsname \texteuro         \else
     \strippedcsname \unknownchar

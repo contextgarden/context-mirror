@@ -14,6 +14,8 @@
 %D An alternative approach would be to misuse the utf vectors, but they
 %D don't carry enough info around.
 
+% todo : \defineucharacter hebrewAlef 5 "D0
+
 \startencoding[uc]
 
 \definecharacter Agrave        {\uchar0{192}}
@@ -31,7 +33,7 @@
 \definecharacter Iacute        {\uchar0{205}}
 \definecharacter Icircumflex   {\uchar0{206}}
 \definecharacter Idiaeresis    {\uchar0{207}}
-%\definecharacter Dstroke       {\uchar0{208}}
+%\definecharacter Dstroke      {\uchar0{208}}
 \definecharacter Ntilde        {\uchar0{209}}
 \definecharacter Ograve        {\uchar0{210}}
 \definecharacter Oacute        {\uchar0{211}}
@@ -63,7 +65,7 @@
 \definecharacter iacute        {\uchar0{237}}
 \definecharacter icircumflex   {\uchar0{238}}
 \definecharacter idiaeresis    {\uchar0{239}}
-%\definecharacter dmacron       {\uchar0{240}}
+%\definecharacter dmacron      {\uchar0{240}}
 \definecharacter ntilde        {\uchar0{241}}
 \definecharacter ograve        {\uchar0{242}}
 \definecharacter oacute        {\uchar0{243}}
@@ -225,17 +227,9 @@
 
 \definecharacter leftguillemot   {\uchar0{171}}
 \definecharacter rightguillemot  {\uchar0{187}}
+
 \definecharacter guilsingleleft  {\uchar{32}{57}}
 \definecharacter guilsingleright {\uchar{32}{58}}
-
-\stopencoding
-
-%D a temporary guess:
-
-\startencoding[default]
-
-\definecommand Greekleftquot  {\leftguillemot}
-\definecommand Greekrightquot {\rightguillemot}
 
 \stopencoding
 
@@ -243,30 +237,30 @@
 
 \startencoding[uc]
 
-\definecharacter exclamdown     {\uchar0{161}}
-\definecharacter textcent       {\uchar0{162}}
-\definecharacter textsterling   {\uchar0{163}}
-\definecharacter textcurrency   {\uchar0{164}}
-\definecharacter textyen        {\uchar0{165}}
-\definecharacter textbrokenbar  {\uchar0{166}}
-\definecharacter sectionmark    {\uchar0{167}}
-\definecharacter textdiaresis   {\uchar0{168}}
-\definecharacter copyright      {\uchar0{169}}
+\definecharacter exclamdown       {\uchar0{161}}
+\definecharacter textcent         {\uchar0{162}}
+\definecharacter textsterling     {\uchar0{163}}
+\definecharacter textcurrency     {\uchar0{164}}
+\definecharacter textyen          {\uchar0{165}}
+\definecharacter textbrokenbar    {\uchar0{166}}
+\definecharacter sectionmark      {\uchar0{167}}
+\definecharacter textdiaresis     {\uchar0{168}}
+\definecharacter copyright        {\uchar0{169}}
 
-\definecharacter textlognot     {\uchar0{172}}
-\definecharacter softhyphen     {\uchar0{173}}
-\definecharacter registered     {\uchar0{174}}
-\definecharacter textmacron     {\uchar0{175}}
-\definecharacter textdegree     {\uchar0{176}}
-\definecharacter textpm         {\uchar0{177}}
-\definecharacter twosuperior    {\uchar0{178}}
-\definecharacter threesuperior  {\uchar0{179}}
-\definecharacter textacute      {\uchar0{180}}
-\definecharacter textmu         {\uchar0{181}}
-\definecharacter paragraphmark  {\uchar0{182}}
-\definecharacter periodcentered {\uchar0{183}}
-\definecharacter textcedilla    {\uchar0{184}}
-\definecharacter onesuperior    {\uchar0{185}}
+\definecharacter textlognot       {\uchar0{172}}
+\definecharacter softhyphen       {\uchar0{173}}
+\definecharacter registered       {\uchar0{174}}
+\definecharacter textmacron       {\uchar0{175}}
+\definecharacter textdegree       {\uchar0{176}}
+\definecharacter textpm           {\uchar0{177}}
+\definecharacter twosuperior      {\uchar0{178}}
+\definecharacter threesuperior    {\uchar0{179}}
+\definecharacter textacute        {\uchar0{180}}
+\definecharacter textmu           {\uchar0{181}}
+\definecharacter paragraphmark    {\uchar0{182}}
+\definecharacter periodcentered   {\uchar0{183}}
+\definecharacter textcedilla      {\uchar0{184}}
+\definecharacter onesuperior      {\uchar0{185}}
 
 \definecharacter textgrave        {\uchar3{0}}
 \definecharacter textacute        {\uchar3{1}}
@@ -300,211 +294,11 @@
 \definecharacter Eth              {\uchar0{208}}
 \definecharacter eth              {\uchar0{240}}
 
-%D semi-automatic conversion meant it was easier to use
-%D hex numbers here:
+\stopencoding
 
-\definecharacter GreekAlphatonos         {\uchar3{"86}}
-\definecharacter GreekEpsilontonos       {\uchar3{"88}}
-\definecharacter GreekEtatonos           {\uchar3{"89}}
-\definecharacter GreekIotatonos          {\uchar3{"8A}}
-\definecharacter GreekOmicrontonos       {\uchar3{"8C}}
-\definecharacter GreekUpsilontonos       {\uchar3{"8E}}
-\definecharacter GreekOmegatonos         {\uchar3{"8F}}
-\definecharacter Greekiotadialytikatonos {\uchar3{"90}}
-\definecharacter GreekAlpha              {\uchar3{"91}}
-\definecharacter GreekBeta               {\uchar3{"92}}
-\definecharacter GreekGamma              {\uchar3{"93}}
-\definecharacter GreekDelta              {\uchar3{"94}}
-\definecharacter GreekEpsilon            {\uchar3{"95}}
-\definecharacter GreekZeta               {\uchar3{"96}}
-\definecharacter GreekEta                {\uchar3{"97}}
-\definecharacter GreekTheta              {\uchar3{"98}}
-\definecharacter GreekIota               {\uchar3{"99}}
-\definecharacter GreekKappa              {\uchar3{"9A}}
-\definecharacter GreekLamda              {\uchar3{"9B}}
-\definecharacter GreekMu                 {\uchar3{"9C}}
-\definecharacter GreekNu                 {\uchar3{"9D}}
-\definecharacter GreekXi                 {\uchar3{"9E}}
-\definecharacter GreekOmicron            {\uchar3{"9F}}
-\definecharacter GreekPi                 {\uchar3{"A0}}
-\definecharacter GreekRho                {\uchar3{"A1}}
-\definecharacter GreekSigma              {\uchar3{"A3}}
-\definecharacter GreekTau                {\uchar3{"A4}}
-\definecharacter GreekUpsilon            {\uchar3{"A5}}
-\definecharacter GreekPhi                {\uchar3{"A6}}
-\definecharacter GreekChi                {\uchar3{"A7}}
-\definecharacter GreekPsi                {\uchar3{"A8}}
-\definecharacter GreekOmega              {\uchar3{"A9}}
+%D Vietnamese:
 
-\definecharacter GreekIotadialytika      {\uchar3{"AA}}
-\definecharacter GreekUpsilondialytika   {\uchar3{"AB}}
-
-\definecharacter Greekalphatonos         {\uchar3{"AC}}
-\definecharacter Greekepsilontonos       {\uchar3{"AD}}
-\definecharacter Greeketatonos           {\uchar3{"AE}}
-\definecharacter Greekiotatonos          {\uchar3{"AF}}
-\definecharacter Greekupsilondialytikatonos    {\uchar3{"B0}}
-
-\definecharacter Greekalpha              {\uchar3{"B1}}
-\definecharacter Greekbeta               {\uchar3{"B2}}
-\definecharacter Greekgamma              {\uchar3{"B3}}
-\definecharacter Greekdelta              {\uchar3{"B4}}
-\definecharacter Greekepsilon            {\uchar3{"B5}}
-\definecharacter Greekzeta               {\uchar3{"B6}}
-\definecharacter Greeketa                {\uchar3{"B7}}
-\definecharacter Greektheta              {\uchar3{"B8}}
-\definecharacter Greekiota               {\uchar3{"B9}}
-\definecharacter Greekkappa              {\uchar3{"BA}}
-\definecharacter Greeklamda              {\uchar3{"BB}}
-\definecharacter Greekmu                 {\uchar3{"BC}}
-\definecharacter Greeknu                 {\uchar3{"BD}}
-\definecharacter Greekxi                 {\uchar3{"BE}}
-\definecharacter Greekomicron            {\uchar3{"BF}}
-\definecharacter Greekpi                 {\uchar3{"C0}}
-\definecharacter Greekrho                {\uchar3{"C1}}
-\definecharacter Greekfinalsigma         {\uchar3{"C2}}
-\definecharacter Greeksigma              {\uchar3{"C3}}
-\definecharacter Greektau                {\uchar3{"C4}}
-\definecharacter Greekupsilon            {\uchar3{"C5}}
-\definecharacter Greekphi                {\uchar3{"C6}}
-\definecharacter Greekchi                {\uchar3{"C7}}
-\definecharacter Greekpsi                {\uchar3{"C8}}
-\definecharacter Greekomega              {\uchar3{"C9}}
-\definecharacter Greekiotadialytika      {\uchar3{"CA}}
-\definecharacter Greekupsilondialytika   {\uchar3{"CB}}
-\definecharacter Greekomicrontonos       {\uchar3{"CC}}
-\definecharacter Greekupsilontonos       {\uchar3{"CD}}
-\definecharacter Greekomegatonos         {\uchar3{"CE}}
-
-\definecharacter cyrillicA     {\uchar4{"10}}
-\definecharacter cyrillicB     {\uchar4{"11}}
-\definecharacter cyrillicV     {\uchar4{"12}}
-\definecharacter cyrillicG     {\uchar4{"13}}
-\definecharacter cyrillicD     {\uchar4{"14}}
-\definecharacter cyrillicE     {\uchar4{"15}}
-\definecharacter cyrillicZH    {\uchar4{"16}}
-\definecharacter cyrillicZ     {\uchar4{"17}}
-\definecharacter cyrillicI     {\uchar4{"18}}
-\definecharacter cyrillicISHRT {\uchar4{"19}}
-\definecharacter cyrillicK     {\uchar4{"1A}}
-\definecharacter cyrillicL     {\uchar4{"1B}}
-\definecharacter cyrillicM     {\uchar4{"1C}}
-\definecharacter cyrillicN     {\uchar4{"1D}}
-\definecharacter cyrillicO     {\uchar4{"1E}}
-\definecharacter cyrillicP     {\uchar4{"1F}}
-\definecharacter cyrillicR     {\uchar4{"20}}
-\definecharacter cyrillicS     {\uchar4{"21}}
-\definecharacter cyrillicT     {\uchar4{"22}}
-\definecharacter cyrillicU     {\uchar4{"23}}
-\definecharacter cyrillicF     {\uchar4{"24}}
-\definecharacter cyrillicH     {\uchar4{"25}}
-\definecharacter cyrillicC     {\uchar4{"26}}
-\definecharacter cyrillicCH    {\uchar4{"27}}
-\definecharacter cyrillicSH    {\uchar4{"28}}
-\definecharacter cyrillicSHCH  {\uchar4{"29}}
-\definecharacter cyrillicHRDSN {\uchar4{"2A}}
-\definecharacter cyrillicERY   {\uchar4{"2B}}
-\definecharacter cyrillicSFTSN {\uchar4{"2C}}
-\definecharacter cyrillicEREV  {\uchar4{"2D}}
-\definecharacter cyrillicYU    {\uchar4{"2E}}
-\definecharacter cyrillicYA    {\uchar4{"2F}}
-
-\definecharacter cyrillica     {\uchar4{"30}}
-\definecharacter cyrillicb     {\uchar4{"31}}
-\definecharacter cyrillicv     {\uchar4{"32}}
-\definecharacter cyrillicg     {\uchar4{"33}}
-\definecharacter cyrillicd     {\uchar4{"34}}
-\definecharacter cyrillice     {\uchar4{"35}}
-\definecharacter cyrilliczh    {\uchar4{"36}}
-\definecharacter cyrillicz     {\uchar4{"37}}
-\definecharacter cyrillici     {\uchar4{"38}}
-\definecharacter cyrillicishrt {\uchar4{"39}}
-\definecharacter cyrillick     {\uchar4{"3A}}
-\definecharacter cyrillicl     {\uchar4{"3B}}
-\definecharacter cyrillicm     {\uchar4{"3C}}
-\definecharacter cyrillicn     {\uchar4{"3D}}
-\definecharacter cyrillico     {\uchar4{"3E}}
-\definecharacter cyrillicp     {\uchar4{"3F}}
-\definecharacter cyrillicr     {\uchar4{"40}}
-\definecharacter cyrillics     {\uchar4{"41}}
-\definecharacter cyrillict     {\uchar4{"42}}
-\definecharacter cyrillicu     {\uchar4{"43}}
-\definecharacter cyrillicf     {\uchar4{"44}}
-\definecharacter cyrillich     {\uchar4{"45}}
-\definecharacter cyrillicc     {\uchar4{"46}}
-\definecharacter cyrillicch    {\uchar4{"47}}
-\definecharacter cyrillicsh    {\uchar4{"48}}
-\definecharacter cyrillicshch  {\uchar4{"49}}
-\definecharacter cyrillichrdsn {\uchar4{"4A}}
-\definecharacter cyrillicery   {\uchar4{"4B}}
-\definecharacter cyrillicsftsn {\uchar4{"4C}}
-\definecharacter cyrillicerev  {\uchar4{"4D}}
-\definecharacter cyrillicyu    {\uchar4{"4E}}
-\definecharacter cyrillicya    {\uchar4{"4F}}
-
-%D For victor:
-
-%D I tried to figure out what these were, but the unicode
-%D tables suggested they were the same as cyrillici, which was
-%D already defined! So, a temporary definition:
-
-% \def\cyrillicII{\cyrillicI}
-% \def\cyrillicii{\cyrillici}
-
-%D a guess derived from looking at enco-cyr suggests that this is
-%D identical to the Roman I/i pair. To me, that sounds like
-%D CYRILLIC CAPITAL LETTER BYELORUSSIAN-UKRAINIAN I in the UC tables!
-
-\definecharacter cyrillicII    {\uchar4{"06}}
-\definecharacter cyrillicii    {\uchar4{"56}}
-
-%D Guessing that tlir6a corresponds with t2a encoding as advertised,
-%D here are some more, cos I had some spare time:
-
-\definecharacter cyrillicDJE    {\uchar4{"02}}
-\definecharacter cyrillicdje    {\uchar4{"52}}
-\definecharacter cyrillicTSHE   {\uchar4{"0B}}
-\definecharacter cyrillictshe   {\uchar4{"5B}}
-%definecharacter cyrillicSHHA   132
-%definecharacter cyrillicshha   164
-%definecharacter cyrillicZHDSC  133
-%definecharacter cyrilliczhdsc  165
-\definecharacter cyrillicZDSC   {\uchar4{"98}}
-\definecharacter cyrilliczdsc   {\uchar4{"99}}
-\definecharacter cyrillicLJE    {\uchar4{"09}}
-\definecharacter cyrilliclje    {\uchar4{"59}}
-\definecharacter cyrillicYI     {\uchar4{"07}}
-\definecharacter cyrillicyi     {\uchar4{"57}}
-\definecharacter cyrillicAE     {\uchar4{"D4}}
-\definecharacter cyrillicae     {\uchar4{"D5}}
-%definecharacter cyrillicNDSC   141
-%definecharacter cyrillicndsc   173
-%definecharacter cyrillicNG     142
-%definecharacter cyrillicng     174
-\definecharacter cyrillicDZE    {\uchar4{"05}}
-\definecharacter cyrillicdze    {\uchar4{"55}}
-%definecharacter cyrillicOTLD   144
-%definecharacter cyrillicotld   176
-\definecharacter cyrillicSDSC   {\uchar4{"AA}}
-\definecharacter cyrillicsdsc   {\uchar4{"AB}}
-\definecharacter cyrillicUSHRT  {\uchar4{"0E}}
-\definecharacter cyrillicushrt  {\uchar4{"5E}}
-%definecharacter cyrillicY      147
-%definecharacter cyrillicy      179
-%definecharacter cyrillicYHCRS  148
-%definecharacter cyrillicyhcrs  180
-%definecharacter cyrillicHDSC   149
-%definecharacter cyrillichdsc   181
-\definecharacter cyrillicDZHE   {\uchar4{"0F}}
-\definecharacter cyrillicdzhe   {\uchar4{"5F}}
-\definecharacter cyrillicIE     {\uchar4{"04}}
-\definecharacter cyrillicie     {\uchar4{"54}}
-\definecharacter cyrillicNJE    {\uchar4{"0A}}
-\definecharacter cyrillicnje    {\uchar4{"5A}}
-\definecharacter cyrillicYO     {\uchar4{"01}}
-\definecharacter cyrillicyo     {\uchar4{"51}}
-
-%D Some Vietnamese characters finally:
+\startencoding[uc]
 
 \definecharacter   Ohorn                {\uchar1{"A0}}
 \definecharacter   ohorn                {\uchar1{"A1}}
@@ -602,6 +396,386 @@
 \definecharacter   etilde               {\uchar{"1E}{"BD}}
 \definecharacter   Ygrave               {\uchar{"1E}{"F2}}
 \definecharacter   ygrave               {\uchar{"1E}{"F3}}
+
+\stopencoding
+
+% Greek:
+
+\startencoding[uc]
+
+\definecharacter greekAlphatonos         {\uchar3{"86}}
+\definecharacter greekEpsilontonos       {\uchar3{"88}}
+\definecharacter greekEtatonos           {\uchar3{"89}}
+\definecharacter greekIotatonos          {\uchar3{"8A}}
+\definecharacter greekOmicrontonos       {\uchar3{"8C}}
+\definecharacter greekUpsilontonos       {\uchar3{"8E}}
+\definecharacter greekOmegatonos         {\uchar3{"8F}}
+\definecharacter greekiotadialytikatonos {\uchar3{"90}}
+\definecharacter greekAlpha              {\uchar3{"91}}
+\definecharacter greekBeta               {\uchar3{"92}}
+\definecharacter greekGamma              {\uchar3{"93}}
+\definecharacter greekDelta              {\uchar3{"94}}
+\definecharacter greekEpsilon            {\uchar3{"95}}
+\definecharacter greekZeta               {\uchar3{"96}}
+\definecharacter greekEta                {\uchar3{"97}}
+\definecharacter greekTheta              {\uchar3{"98}}
+\definecharacter greekIota               {\uchar3{"99}}
+\definecharacter greekKappa              {\uchar3{"9A}}
+\definecharacter greekLamda              {\uchar3{"9B}}
+\definecharacter greekMu                 {\uchar3{"9C}}
+\definecharacter greekNu                 {\uchar3{"9D}}
+\definecharacter greekXi                 {\uchar3{"9E}}
+\definecharacter greekOmicron            {\uchar3{"9F}}
+\definecharacter greekPi                 {\uchar3{"A0}}
+\definecharacter greekRho                {\uchar3{"A1}}
+\definecharacter greekSigma              {\uchar3{"A3}}
+\definecharacter greekTau                {\uchar3{"A4}}
+\definecharacter greekUpsilon            {\uchar3{"A5}}
+\definecharacter greekPhi                {\uchar3{"A6}}
+\definecharacter greekChi                {\uchar3{"A7}}
+\definecharacter greekPsi                {\uchar3{"A8}}
+\definecharacter greekOmega              {\uchar3{"A9}}
+
+\definecharacter greekalpha              {\uchar3{"B1}}
+\definecharacter greekbeta               {\uchar3{"B2}}
+\definecharacter greekgamma              {\uchar3{"B3}}
+\definecharacter greekdelta              {\uchar3{"B4}}
+\definecharacter greekepsilon            {\uchar3{"B5}}
+\definecharacter greekzeta               {\uchar3{"B6}}
+\definecharacter greeketa                {\uchar3{"B7}}
+\definecharacter greektheta              {\uchar3{"B8}}
+\definecharacter greekiota               {\uchar3{"B9}}
+\definecharacter greekkappa              {\uchar3{"BA}}
+\definecharacter greeklamda              {\uchar3{"BB}}
+\definecharacter greekmu                 {\uchar3{"BC}}
+\definecharacter greeknu                 {\uchar3{"BD}}
+\definecharacter greekxi                 {\uchar3{"BE}}
+\definecharacter greekomicron            {\uchar3{"BF}}
+\definecharacter greekpi                 {\uchar3{"C0}}
+\definecharacter greekrho                {\uchar3{"C1}}
+\definecharacter greekfinalsigma         {\uchar3{"C2}}
+\definecharacter greeksigma              {\uchar3{"C3}}
+\definecharacter greektau                {\uchar3{"C4}}
+\definecharacter greekupsilon            {\uchar3{"C5}}
+\definecharacter greekphi                {\uchar3{"C6}}
+\definecharacter greekchi                {\uchar3{"C7}}
+\definecharacter greekpsi                {\uchar3{"C8}}
+\definecharacter greekomega              {\uchar3{"C9}}
+\definecharacter greekiotadialytika      {\uchar3{"CA}}
+\definecharacter greekupsilondialytika   {\uchar3{"CB}}
+\definecharacter greekomicrontonos       {\uchar3{"CC}}
+\definecharacter greekupsilontonos       {\uchar3{"CD}}
+\definecharacter greekomegatonos         {\uchar3{"CE}}
+
+\definecharacter greekIotadialytika          {\uchar3{"AA}}
+\definecharacter greekUpsilondialytika       {\uchar3{"AB}}
+
+\definecharacter greekalphatonos             {\uchar3{"AC}}
+\definecharacter greekepsilontonos           {\uchar3{"AD}}
+\definecharacter greeketatonos               {\uchar3{"AE}}
+\definecharacter greekiotatonos              {\uchar3{"AF}}
+\definecharacter greekupsilondialytikatonos  {\uchar3{"B0}}
+
+\stopencoding
+
+% Cyrillic:
+
+\startencoding[uc]
+
+\definecharacter cyrillicA     {\uchar4{"10}}
+\definecharacter cyrillicB     {\uchar4{"11}}
+\definecharacter cyrillicV     {\uchar4{"12}}
+\definecharacter cyrillicG     {\uchar4{"13}}
+\definecharacter cyrillicD     {\uchar4{"14}}
+\definecharacter cyrillicE     {\uchar4{"15}}
+\definecharacter cyrillicZH    {\uchar4{"16}}
+\definecharacter cyrillicZ     {\uchar4{"17}}
+\definecharacter cyrillicI     {\uchar4{"18}}
+\definecharacter cyrillicISHRT {\uchar4{"19}}
+\definecharacter cyrillicK     {\uchar4{"1A}}
+\definecharacter cyrillicL     {\uchar4{"1B}}
+\definecharacter cyrillicM     {\uchar4{"1C}}
+\definecharacter cyrillicN     {\uchar4{"1D}}
+\definecharacter cyrillicO     {\uchar4{"1E}}
+\definecharacter cyrillicP     {\uchar4{"1F}}
+\definecharacter cyrillicR     {\uchar4{"20}}
+\definecharacter cyrillicS     {\uchar4{"21}}
+\definecharacter cyrillicT     {\uchar4{"22}}
+\definecharacter cyrillicU     {\uchar4{"23}}
+\definecharacter cyrillicF     {\uchar4{"24}}
+\definecharacter cyrillicH     {\uchar4{"25}}
+\definecharacter cyrillicC     {\uchar4{"26}}
+\definecharacter cyrillicCH    {\uchar4{"27}}
+\definecharacter cyrillicSH    {\uchar4{"28}}
+\definecharacter cyrillicSHCH  {\uchar4{"29}}
+\definecharacter cyrillicHRDSN {\uchar4{"2A}}
+\definecharacter cyrillicERY   {\uchar4{"2B}}
+\definecharacter cyrillicSFTSN {\uchar4{"2C}}
+\definecharacter cyrillicEREV  {\uchar4{"2D}}
+\definecharacter cyrillicYU    {\uchar4{"2E}}
+\definecharacter cyrillicYA    {\uchar4{"2F}}
+
+\definecharacter cyrillica     {\uchar4{"30}}
+\definecharacter cyrillicb     {\uchar4{"31}}
+\definecharacter cyrillicv     {\uchar4{"32}}
+\definecharacter cyrillicg     {\uchar4{"33}}
+\definecharacter cyrillicd     {\uchar4{"34}}
+\definecharacter cyrillice     {\uchar4{"35}}
+\definecharacter cyrilliczh    {\uchar4{"36}}
+\definecharacter cyrillicz     {\uchar4{"37}}
+\definecharacter cyrillici     {\uchar4{"38}}
+\definecharacter cyrillicishrt {\uchar4{"39}}
+\definecharacter cyrillick     {\uchar4{"3A}}
+\definecharacter cyrillicl     {\uchar4{"3B}}
+\definecharacter cyrillicm     {\uchar4{"3C}}
+\definecharacter cyrillicn     {\uchar4{"3D}}
+\definecharacter cyrillico     {\uchar4{"3E}}
+\definecharacter cyrillicp     {\uchar4{"3F}}
+\definecharacter cyrillicr     {\uchar4{"40}}
+\definecharacter cyrillics     {\uchar4{"41}}
+\definecharacter cyrillict     {\uchar4{"42}}
+\definecharacter cyrillicu     {\uchar4{"43}}
+\definecharacter cyrillicf     {\uchar4{"44}}
+\definecharacter cyrillich     {\uchar4{"45}}
+\definecharacter cyrillicc     {\uchar4{"46}}
+\definecharacter cyrillicch    {\uchar4{"47}}
+\definecharacter cyrillicsh    {\uchar4{"48}}
+\definecharacter cyrillicshch  {\uchar4{"49}}
+\definecharacter cyrillichrdsn {\uchar4{"4A}}
+\definecharacter cyrillicery   {\uchar4{"4B}}
+\definecharacter cyrillicsftsn {\uchar4{"4C}}
+\definecharacter cyrillicerev  {\uchar4{"4D}}
+\definecharacter cyrillicyu    {\uchar4{"4E}}
+\definecharacter cyrillicya    {\uchar4{"4F}}
+
+%D I tried to figure out what these were, but the unicode
+%D tables suggested they were the same as cyrillici, which was
+%D already defined! So, a temporary definition:
+
+% \def\cyrillicII{\cyrillicI}
+% \def\cyrillicii{\cyrillici}
+
+%D a guess derived from looking at enco-cyr suggests that this is
+%D identical to the Roman I/i pair. To me, that sounds like
+%D CYRILLIC CAPITAL LETTER BYELORUSSIAN-UKRAINIAN I in the UC tables!
+
+\definecharacter cyrillicII    {\uchar4{"06}}
+\definecharacter cyrillicii    {\uchar4{"56}}
+
+%D Guessing that tlir6a corresponds with t2a encoding as advertised,
+%D here are some more, cos I had some spare time: (AL)
+
+\definecharacter cyrillicDJE    {\uchar4{"02}}
+\definecharacter cyrillicTSHE   {\uchar4{"0B}}
+%definecharacter cyrillicSHHA   132
+%definecharacter cyrillicZHDSC  133
+\definecharacter cyrillicZDSC   {\uchar4{"98}}
+\definecharacter cyrillicLJE    {\uchar4{"09}}
+\definecharacter cyrillicYI     {\uchar4{"07}}
+\definecharacter cyrillicAE     {\uchar4{"D4}}
+%definecharacter cyrillicNDSC   141
+%definecharacter cyrillicNG     142
+\definecharacter cyrillicDZE    {\uchar4{"05}}
+%definecharacter cyrillicOTLD   144
+\definecharacter cyrillicSDSC   {\uchar4{"AA}}
+\definecharacter cyrillicUSHRT  {\uchar4{"0E}}
+%definecharacter cyrillicY      147
+%definecharacter cyrillicYHCRS  148
+%definecharacter cyrillicHDSC   149
+\definecharacter cyrillicDZHE   {\uchar4{"0F}}
+\definecharacter cyrillicIE     {\uchar4{"04}}
+\definecharacter cyrillicNJE    {\uchar4{"0A}}
+\definecharacter cyrillicYO     {\uchar4{"01}}
+
+\definecharacter cyrillicdje    {\uchar4{"52}}
+\definecharacter cyrillictshe   {\uchar4{"5B}}
+%definecharacter cyrillicshha   164
+%definecharacter cyrilliczhdsc  165
+\definecharacter cyrilliczdsc   {\uchar4{"99}}
+\definecharacter cyrilliclje    {\uchar4{"59}}
+\definecharacter cyrillicyi     {\uchar4{"57}}
+\definecharacter cyrillicae     {\uchar4{"D5}}
+%definecharacter cyrillicndsc   173
+%definecharacter cyrillicng     174
+\definecharacter cyrillicdze    {\uchar4{"55}}
+%definecharacter cyrillicotld   176
+\definecharacter cyrillicsdsc   {\uchar4{"AB}}
+\definecharacter cyrillicushrt  {\uchar4{"5E}}
+%definecharacter cyrillicy      179
+%definecharacter cyrillicyhcrs  180
+%definecharacter cyrillichdsc   181
+\definecharacter cyrillicdzhe   {\uchar4{"5F}}
+\definecharacter cyrillicie     {\uchar4{"54}}
+\definecharacter cyrillicnje    {\uchar4{"5A}}
+\definecharacter cyrillicyo     {\uchar4{"51}}
+
+\stopencoding
+
+% is there overlap with the above definitions
+
+\definecharacter cyrillicEgrave             {\uchar4{"00}}
+\definecharacter cyrillicGJE                {\uchar4{"03}}
+\definecharacter cyrillicJE                 {\uchar4{"08}}
+\definecharacter cyrillicKJE                {\uchar4{"0C}}
+\definecharacter cyrillicIgrave             {\uchar4{"0D}}
+\definecharacter cyrillicegrave             {\uchar4{"50}}
+\definecharacter cyrillicgje                {\uchar4{"53}}
+\definecharacter cyrillicje                 {\uchar4{"58}}
+\definecharacter cyrillickje                {\uchar4{"5C}}
+\definecharacter cyrillicigrave             {\uchar4{"5D}}
+\definecharacter cyrillicOMEGA              {\uchar4{"60}}
+\definecharacter cyrillicomega              {\uchar4{"61}}
+\definecharacter cyrillicYAT                {\uchar4{"62}}
+\definecharacter cyrillicyat                {\uchar4{"63}}
+\definecharacter cyrillicEiotified          {\uchar4{"64}}
+\definecharacter cyrilliceiotified          {\uchar4{"65}}
+\definecharacter cyrillicLITTLEYUS          {\uchar4{"66}}
+\definecharacter cyrilliclittleyus          {\uchar4{"67}}
+\definecharacter cyrillicLITTLEYUSiotified  {\uchar4{"68}}
+\definecharacter cyrilliclittleyusiotified  {\uchar4{"69}}
+\definecharacter cyrillicBIGYUS             {\uchar4{"6A}}
+\definecharacter cyrillicbigyus             {\uchar4{"6B}}
+\definecharacter cyrillicBIGYUSiotified     {\uchar4{"6C}}
+\definecharacter cyrillicbigyusiotified     {\uchar4{"6D}}
+\definecharacter cyrillicKSI                {\uchar4{"6E}}
+\definecharacter cyrillicksi                {\uchar4{"6F}}
+\definecharacter cyrillicPSI                {\uchar4{"70}}
+\definecharacter cyrillicpsi                {\uchar4{"71}}
+\definecharacter cyrillicFITA               {\uchar4{"72}}
+\definecharacter cyrillicfita               {\uchar4{"73}}
+\definecharacter cyrillicIZHITSA            {\uchar4{"74}}
+\definecharacter cyrillicizhitsa            {\uchar4{"75}}
+\definecharacter cyrillicIZHITSAdoublegrave {\uchar4{"76}}
+\definecharacter cyrillicizhitsadoublegrave {\uchar4{"77}}
+\definecharacter cyrillicUK                 {\uchar4{"78}}
+\definecharacter cyrillicuk                 {\uchar4{"79}}
+\definecharacter cyrillicOMEGAround         {\uchar4{"7A}}
+\definecharacter cyrillicomegaround         {\uchar4{"7B}}
+\definecharacter cyrillicOMEGAtitlo         {\uchar4{"7C}}
+\definecharacter cyrillicomegatitlo         {\uchar4{"7D}}
+\definecharacter cyrillicOT                 {\uchar4{"7E}}
+\definecharacter cyrillicot                 {\uchar4{"7F}}
+\definecharacter cyrillicKOPPA              {\uchar4{"80}}
+\definecharacter cyrillickoppa              {\uchar4{"81}}
+\definecharacter cyrillicTITLO              {\uchar4{"83}}
+\definecharacter cyrillicPALATALIZATION     {\uchar4{"84}}
+\definecharacter cyrillicDASIAPNEUMATA      {\uchar4{"85}}
+\definecharacter cyrillicPSILIPNEUMATA      {\uchar4{"86}}
+\definecharacter cyrillicISHRTtail          {\uchar4{"8A}}
+\definecharacter cyrillicishrttail          {\uchar4{"8B}}
+\definecharacter cyrillicSEMISOFT           {\uchar4{"8C}}
+\definecharacter cyrillicsemisoft           {\uchar4{"8D}}
+\definecharacter cyrillicERtick             {\uchar4{"8E}}
+\definecharacter cyrillicertick             {\uchar4{"8F}}
+\definecharacter cyrillicGHEupturn          {\uchar4{"90}}
+\definecharacter cyrillicgheupturn          {\uchar4{"91}}
+\definecharacter cyrillicGHEstroke          {\uchar4{"92}}
+\definecharacter cyrillicghestroke          {\uchar4{"93}}
+\definecharacter cyrillicGHEmidhook         {\uchar4{"94}}
+\definecharacter cyrillicghemidhook         {\uchar4{"95}}
+\definecharacter cyrillicZHEdescender       {\uchar4{"96}}
+\definecharacter cyrilliczhedescender       {\uchar4{"97}}
+\definecharacter cyrillicZDSC               {\uchar4{"98}}
+\definecharacter cyrilliczdsc               {\uchar4{"99}}
+\definecharacter cyrillicKADC               {\uchar4{"9A}}
+\definecharacter cyrillickadc               {\uchar4{"9B}}
+\definecharacter cyrillicKAvertstroke       {\uchar4{"9C}}
+\definecharacter cyrillickavertstroke       {\uchar4{"9D}}
+\definecharacter cyrillicKAstroke           {\uchar4{"9E}}
+\definecharacter cyrillickastroke           {\uchar4{"9F}}
+\definecharacter cyrillicKAbashkir          {\uchar4{"A0}}
+\definecharacter cyrillickabashkir          {\uchar4{"A1}}
+\definecharacter cyrillicENDC               {\uchar4{"A2}}
+\definecharacter cyrillicendc               {\uchar4{"A3}}
+\definecharacter cyrillicENGHE              {\uchar4{"A4}}
+\definecharacter cyrillicenghe              {\uchar4{"A5}}
+\definecharacter cyrillicPEmidhook          {\uchar4{"A6}}
+\definecharacter cyrillicpemidhook          {\uchar4{"A7}}
+\definecharacter cyrillicHA                 {\uchar4{"A8}}
+\definecharacter cyrillicha                 {\uchar4{"A9}}
+%\definecharacter cyrillicSDSC              {\uchar4{"AA}} already defined
+%\definecharacter cyrilliccdsc              {\uchar4{"AB}} already defined
+\definecharacter cyrillicTEDC               {\uchar4{"AC}}
+\definecharacter cyrillictedc               {\uchar4{"AD}}
+\definecharacter cyrillicYstr               {\uchar4{"AE}}
+\definecharacter cyrillicystr               {\uchar4{"AF}}
+\definecharacter cyrillicYstrstroke         {\uchar4{"B0}}
+\definecharacter cyrillicystrstroke         {\uchar4{"B1}}
+\definecharacter cyrillicHADC               {\uchar4{"B2}}
+\definecharacter cyrillichadc               {\uchar4{"B3}}
+\definecharacter cyrillicTETSE              {\uchar4{"B4}}
+\definecharacter cyrillictetse              {\uchar4{"B5}}
+\definecharacter cyrillicCHEDC              {\uchar4{"B6}}
+\definecharacter cyrillicchedc              {\uchar4{"B7}}
+\definecharacter cyrillicCHEvertstroke      {\uchar4{"B8}}
+\definecharacter cyrillicchevertstroke      {\uchar4{"B9}}
+\definecharacter cyrillicSHHA               {\uchar4{"BA}}
+\definecharacter cyrillicshha               {\uchar4{"BB}}
+\definecharacter cyrillicCHEabkhasian       {\uchar4{"BC}}
+\definecharacter cyrilliccheabkhasian       {\uchar4{"BD}}
+\definecharacter cyrillicCHEDCabkhasian     {\uchar4{"BE}}
+\definecharacter cyrillicchedcabkhasian     {\uchar4{"BF}}
+\definecharacter cyrillicPALOCHKA           {\uchar4{"C0}}
+\definecharacter cyrillicZHEbreve           {\uchar4{"C1}}
+\definecharacter cyrilliczhebreve           {\uchar4{"C2}}
+\definecharacter cyrillicKAhook             {\uchar4{"C3}}
+\definecharacter cyrillickahook             {\uchar4{"C4}}
+\definecharacter cyrillicELtail             {\uchar4{"C5}}
+\definecharacter cyrilliceltail             {\uchar4{"C6}}
+\definecharacter cyrillicENhook             {\uchar4{"C7}}
+\definecharacter cyrillicenhook             {\uchar4{"C8}}
+\definecharacter cyrillicENtail             {\uchar4{"C9}}
+\definecharacter cyrillicentail             {\uchar4{"CA}}
+\definecharacter cyrillicCHEkhakassian      {\uchar4{"CB}}
+\definecharacter cyrillicchekhakassian      {\uchar4{"CC}}
+\definecharacter cyrillicEMtail             {\uchar4{"CD}}
+\definecharacter cyrillicemtail             {\uchar4{"CE}}
+\definecharacter cyrillicAbreve             {\uchar4{"D0}}
+\definecharacter cyrillicabreve             {\uchar4{"D1}}
+\definecharacter cyrillicAdiaeresis         {\uchar4{"D2}}
+\definecharacter cyrillicadiaeresis         {\uchar4{"D3}}
+%\definecharacter cyrillicAE                {\uchar4{"D4}} already defined
+%\definecharacter cyrillicae                {\uchar4{"D5}} already defined
+\definecharacter cyrillicEbreve             {\uchar4{"D6}}
+\definecharacter cyrillicebreve             {\uchar4{"D7}}
+\definecharacter cyrillicSCHWA              {\uchar4{"D8}}
+\definecharacter cyrillicschwa              {\uchar4{"D9}}
+\definecharacter cyrillicSCHWAdiaeresis     {\uchar4{"DA}}
+\definecharacter cyrillicschwadiaeresis     {\uchar4{"DB}}
+\definecharacter cyrillicZHEdiaeresis       {\uchar4{"DC}}
+\definecharacter cyrilliczhediaeresis       {\uchar4{"DD}}
+\definecharacter cyrillicZEdiaeresis        {\uchar4{"DE}}
+\definecharacter cyrilliczediaeresis        {\uchar4{"DF}}
+\definecharacter cyrillicDZEabkhasian       {\uchar4{"E0}}
+\definecharacter cyrillicdzeabkhasian       {\uchar4{"E1}}
+\definecharacter cyrillicImacron            {\uchar4{"E2}}
+\definecharacter cyrillicimacron            {\uchar4{"E3}}
+\definecharacter cyrillicIdiaeresis         {\uchar4{"E4}}
+\definecharacter cyrillicidiaeresis         {\uchar4{"E5}}
+\definecharacter cyrillicOdiaeresis         {\uchar4{"E6}}
+\definecharacter cyrillicodiaeresis         {\uchar4{"E7}}
+\definecharacter cyrillicObarred            {\uchar4{"E8}}
+\definecharacter cyrillicobarred            {\uchar4{"E9}}
+\definecharacter cyrillicObarreddiaeresis   {\uchar4{"EA}}
+\definecharacter cyrillicobarreddiaeresis   {\uchar4{"EB}}
+\definecharacter cyrillicEdiaeresis         {\uchar4{"EC}}
+\definecharacter cyrillicediaeresis         {\uchar4{"ED}}
+\definecharacter cyrillicUmacron            {\uchar4{"EE}}
+\definecharacter cyrillicumacron            {\uchar4{"EF}}
+\definecharacter cyrillicUdiaeresis         {\uchar4{"F0}}
+\definecharacter cyrillicudiaeresis         {\uchar4{"F1}}
+\definecharacter cyrillicUdoubleacute       {\uchar4{"F2}}
+\definecharacter cyrillicudoubleacute       {\uchar4{"F3}}
+\definecharacter cyrillicCHEdiaeresis       {\uchar4{"F4}}
+\definecharacter cyrillicchediaeresis       {\uchar4{"F5}}
+\definecharacter cyrillicYERUdiaeresis      {\uchar4{"F8}}
+\definecharacter cyrillicyerudiaeresis      {\uchar4{"F9}}
+
+% Hebrew:
+
+\startencoding[uc]
+
+\definecharacter hebrewAlef       {\uchar5{"D0}} %  05D0\definecharacter hebrewBet        {\uchar5{"D1}}\definecharacter hebrewGimel      {\uchar5{"D2}}\definecharacter hebrewDalet      {\uchar5{"D3}}\definecharacter hebrewHe         {\uchar5{"D4}}\definecharacter hebrewVav        {\uchar5{"D5}}\definecharacter hebrewZayin      {\uchar5{"D6}}\definecharacter hebrewHet        {\uchar5{"D7}}\definecharacter hebrewTet        {\uchar5{"D8}}\definecharacter hebrewYod        {\uchar5{"D9}}\definecharacter hebrewKaffinal   {\uchar5{"DA}}\definecharacter hebrewKaf        {\uchar5{"DB}}\definecharacter hebrewLamed      {\uchar5{"DC}}\definecharacter hebrewMemfinal   {\uchar5{"DD}}\definecharacter hebrewMem        {\uchar5{"DE}}\definecharacter hebrewNunfinal   {\uchar5{"DF}}\definecharacter hebrewNun        {\uchar5{"E0}}\definecharacter hebrewSamekh     {\uchar5{"E1}}\definecharacter hebrewAyin       {\uchar5{"E2}}\definecharacter hebrewPefinal    {\uchar5{"E3}}\definecharacter hebrewPe         {\uchar5{"E4}}\definecharacter hebrewTsadifinal {\uchar5{"E5}}\definecharacter hebrewTsadi      {\uchar5{"E6}}\definecharacter hebrewQof        {\uchar5{"E7}}\definecharacter hebrewResh       {\uchar5{"E8}}\definecharacter hebrewShin       {\uchar5{"E9}}\definecharacter hebrewTav        {\uchar5{"EA}} % 05EA
 
 \stopencoding
 

@@ -1779,8 +1779,15 @@
   {\writestatus\m!systems{ignoring further shipouts}%
    \dowithnextbox{\deadcycles\zerocount}}
 
+% \def\doignorerestoftext
+%   {\ifarrangingpages \else \ifnum\textlevel>\zerocount \else
+%      \globallet\shipout\noshipout
+%    \fi \fi}
+%
+% better:
+
 \def\doignorerestoftext
-  {\ifarrangingpages \else \ifnum\textlevel>\zerocount \else
+  {\ifarrangingpages \else \ifnum\textlevel=\plusone
      \globallet\shipout\noshipout
    \fi \fi}
 

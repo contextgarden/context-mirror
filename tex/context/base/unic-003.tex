@@ -1,0 +1,73 @@
+%D \module
+%D   [       file=unic-003,
+%D        version=2005.01.26,
+%D          title=\CONTEXT\ \UNICODE\ Macros,
+%D       subtitle=Vector 3,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\unprotect
+
+\startunicodevector 3
+  \ifcase\numexpr(#1-145)
+    \strippedcsname \greekAlpha     \or
+    \strippedcsname \greekBeta      \or
+    \strippedcsname \greekGamma     \or
+    \strippedcsname \greekDelta     \or
+    \strippedcsname \greekEpsilon   \or
+    \strippedcsname \greekZeta      \or
+    \strippedcsname \greekEta       \or
+    \strippedcsname \greekTheta     \or
+    \strippedcsname \greekIota      \or
+    \strippedcsname \greekKappa     \or
+    \strippedcsname \greekLambda    \or
+    \strippedcsname \greekMu        \or
+    \strippedcsname \greekNu        \or
+    \strippedcsname \greekXi        \or
+    \strippedcsname \greekOmicron   \or
+    \strippedcsname \greekPi        \or
+    \strippedcsname \greekRho       \or
+    \strippedcsname \greekFinalSigma\or
+    \strippedcsname \greekSigma     \or
+    \strippedcsname \greekTau       \or
+    \strippedcsname \greekUpsilon   \or
+    \strippedcsname \greekPhi       \or
+    \strippedcsname \greekChi       \or
+    \strippedcsname \greekPsi       \or
+    \strippedcsname \greekOmega     \else
+  \ifcase\numexpr(#1-177)
+    \strippedcsname \greekalpha     \or
+    \strippedcsname \greekbeta      \or
+    \strippedcsname \greekgamma     \or
+    \strippedcsname \greekdelta     \or
+    \strippedcsname \greekepsilon   \or
+    \strippedcsname \greekzeta      \or
+    \strippedcsname \greeketa       \or
+    \strippedcsname \greektheta     \or
+    \strippedcsname \greekiota      \or
+    \strippedcsname \greekkappa     \or
+    \strippedcsname \greeklambda    \or
+    \strippedcsname \greekmu        \or
+    \strippedcsname \greeknu        \or
+    \strippedcsname \greekxi        \or
+    \strippedcsname \greekomicron   \or
+    \strippedcsname \greekpi        \or
+    \strippedcsname \greekrho       \or
+    \strippedcsname \unknownchar    \or
+    \strippedcsname \greeksigma     \or
+    \strippedcsname \greektau       \or
+    \strippedcsname \greekupsilon   \or
+    \strippedcsname \greekphi       \or
+    \strippedcsname \greekchi       \or
+    \strippedcsname \greekpsi       \or
+    \strippedcsname \greekomega     \else
+    \strippedcsname \unknownchar
+  \fi\fi
+\stopunicodevector
+
+\protect \endinput

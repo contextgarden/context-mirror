@@ -3624,8 +3624,26 @@
 % \def\woordrechts
 %   {\groupedcommand{\hfill\hbox}{\parfillskip\zeropoint}}
 
-\def\wordright % zie naw
-  {\groupedcommand
+% beware: \wordright{whatever\kern-\rightskip} should work!
+% so, no funny boxing here
+
+% \def\wordright % zie naw
+%   {% don't change
+%    \groupedcommand
+%      {\removeunwantedspaces
+%       \hfill
+%       \hskip\zeropoint % permit break, \allowbreak fails here
+%       \strut
+%       \hfill
+%       \quad % decent spacing
+%       \hbox}
+%      {% there can be \hskip-\rightskip here
+%       \parfillskip\zeropoint
+%       \par}}
+
+\def\dowordright[#1]%
+  {% don't change
+   \groupedcommand
      {\removeunwantedspaces
       \hfill
       \hskip\zeropoint % permit break, \allowbreak fails here
@@ -3633,8 +3651,14 @@
       \hfill
       \quad % decent spacing
       \hbox}
-     {\parfillskip\zeropoint
+     {\doifelse{#1}\v!right{\kern-\rightskip}{\doifsomething{#1}{\kern-#1}}%
+      \parfillskip\zeropoint
       \par}}
+
+\def\wordright
+  {\dosingleempty\dowordright}
+
+% \wordright[\rightskip]{whatever}
 
 %D \macros
 %D   {pushindentation,popindentation}

@@ -4285,6 +4285,11 @@
 \def\writeline
   {\writestring{}}
 
+%D First we present the normal \TEX\ variant, later we will
+%D show the \ETEX-way.
+
+\beginTEX
+
 \newcount\statuscounter
 
 \def\dosplitstatus#1%
@@ -4311,12 +4316,14 @@
    \@EA\writestring\@EA{\the\scratchtoks\space:\space#2}%
    \endgroup}
 
+\endTEX
+
 %D Because we're grouped, we could have initialized at forehand:
 %D
 %D \starttyping
 %D \statuscounter\statuswidth
 %D \stoptyping
-
+%D
 %D The next implementation saves only some 10 words of format
 %D memory, but we hardly gain any speed.
 %D
@@ -4336,9 +4343,11 @@
 %D         \space:\space#2}}
 %D \stoptyping
 
-%D Okay then. More obscure but slightly faster: no split grabs
+%D Okay then, more obscure but slightly faster: no split grabs
 %D the do split part and skipping the else branch has to happen
 %D anyway, so:
+
+\beginTEX
 
 \def\dosplitstatus#1%
   {\advance\statuscounter \minusone
@@ -4347,6 +4356,31 @@
    \fi
    \scratchtoks\@EA{\the\scratchtoks#1}%
    \dosplitstatus}
+
+\endTEX
+
+%D The next (\ETEX\ specific) variant is twice as fast in 5/40
+%D situations, only gains some speed when multiple runs of large docs
+%D are done; fully expandable, no statuscounter needed, no restore (due
+%D to grouping) needed etc.
+
+\beginETEX \numexpr
+
+\def\writestatus#1#2%
+  {\writestring{\expandafter\dosplitstatus\expandafter\statuswidth#1%
+     \space\space\space\space\space\space\space
+     \space\space\space\space\space\space\space
+     \space\space\space\space\space\space\end
+     \space:\space#2}}
+
+\def\dosplitstatus#1#2%
+  {\ifcase#1 \expandafter\nosplitstatus\fi#2%
+   \expandafter\dosplitstatus\expandafter{\the\numexpr#1+\minusone\relax}}
+
+\def\nosplitstatus#1\end
+  {}
+
+\endETEX
 
 %D \macros
 %D   {emptytoks}

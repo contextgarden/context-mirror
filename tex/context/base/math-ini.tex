@@ -62,34 +62,36 @@
 
 \newif\iftracemathcollection
 
-\beginETEX \ifcsname
-
-\def\dohandlemathtoken#1%
-  {\csname\@mt@
-     \ifcsname\@mt@\mathcollection#1\endcsname
-       \mathcollection
-     \else\ifcsname\@mt@\nomathcollection#1\endcsname
-       \nomathcollection
-     \fi\fi
-   #1\endcsname}
-
-\endETEX
-
-\beginTEX
-
-\def\dohandlemathtoken#1%
-  {\csname\@mt@
-     \@EA\ifx\csname\@mt@\mathcollection#1\endcsname\relax
-       \@EA\ifx\csname\@mt@\nomathcollection#1\endcsname\relax
-       \else
-         \nomathcollection
-       \fi
-     \else
-       \mathcollection
-     \fi
-   #1\endcsname}
-
-\endTEX
+% Simple variant:
+%
+% \beginETEX \ifcsname
+%
+% \def\dohandlemathtoken#1%
+%   {\csname\@mt@
+%      \ifcsname\@mt@\mathcollection#1\endcsname
+%        \mathcollection
+%      \else\ifcsname\@mt@\nomathcollection#1\endcsname
+%        \nomathcollection
+%      \fi\fi
+%    #1\endcsname}
+%
+% \endETEX
+%
+% \beginTEX
+%
+% \def\dohandlemathtoken#1%
+%   {\csname\@mt@
+%      \@EA\ifx\csname\@mt@\mathcollection#1\endcsname\relax
+%        \@EA\ifx\csname\@mt@\nomathcollection#1\endcsname\relax
+%        \else
+%          \nomathcollection
+%        \fi
+%      \else
+%        \mathcollection
+%      \fi
+%    #1\endcsname}
+%
+% \endTEX
 
 %D Because a command can have a different meaning in math
 %D and in text mode, we provide a selector. We also provide
@@ -101,7 +103,65 @@
 \let\mathcharacter\dohandlemathtoken
 \let\textcharacter\dohandlecommand % better \dohandletexttoken
 
-\beginETEX \ifcsname
+% More clever layout:
+%
+% \beginETEX \ifcsname
+%
+% \def\dohandlemathtoken#1%
+%   {\csname
+%      \ifmmode
+%        \ifcsname\@mt@\mathcollection#1\endcsname
+%          \@mt@\mathcollection
+%        \else\ifcsname\@mt@\nomathcollection#1\endcsname
+%          \@mt@\nomathcollection
+%        \else\ifcsname\characterencoding#1\endcsname
+%          \characterencoding
+%        \else
+%          \nocharacterencoding
+%        \fi\fi\fi
+%      \else
+%        \ifcsname\characterencoding#1\endcsname
+%          \characterencoding
+%        \else
+%          \nocharacterencoding
+%        \fi
+%      \fi
+%    #1\endcsname}
+%
+% \endETEX
+%
+% \beginTEX
+%
+% \def\dohandlemathtoken#1%
+%   {\csname
+%      \ifmmode
+%        \@EA\ifx\csname\@mt@\mathcollection#1\endcsname\relax
+%          \@EA\ifx\csname\@mt@\nomathcollection#1\endcsname\relax
+%            \@EA\ifx\csname\characterencoding#1\endcsname\relax
+%              \nocharacterencoding
+%            \else
+%              \characterencoding
+%            \fi
+%          \else
+%            \@mt@\nomathcollection
+%          \fi
+%        \else
+%          \@mt@\mathcollection
+%        \fi
+%      \else
+%        \@EA\ifx\csname\characterencoding#1\endcsname\relax
+%          \nocharacterencoding
+%        \else
+%          \characterencoding
+%        \fi
+%      \fi
+%    #1\endcsname}
+%
+% \endTEX
+%
+% fallback to math when in text mode (handy for unicode vectors)
+
+\beginETEX
 
 \def\dohandlemathtoken#1%
   {\csname
@@ -118,9 +178,15 @@
      \else
        \ifcsname\characterencoding#1\endcsname
          \characterencoding
+       \else\ifcsname\nocharacterencoding#1\endcsname
+         \nocharacterencoding
+       \else\ifcsname\@mt@\mathcollection#1\endcsname
+         \strippedcsname\mathematics\expandafter\endcsname\csname\@mt@\mathcollection
+       \else\ifcsname\@mt@\nomathcollection#1\endcsname
+         \strippedcsname\mathematics\expandafter\endcsname\csname\@mt@\nomathcollection
        \else
          \nocharacterencoding
-       \fi
+       \fi\fi\fi\fi
      \fi
    #1\endcsname}
 
@@ -133,7 +199,7 @@
      \ifmmode
        \@EA\ifx\csname\@mt@\mathcollection#1\endcsname\relax
          \@EA\ifx\csname\@mt@\nomathcollection#1\endcsname\relax
-           \@EA\ifx\csname\characterencoding#1\endcsname
+           \@EA\ifx\csname\characterencoding#1\endcsname\relax
              \nocharacterencoding
            \else
              \characterencoding
@@ -145,8 +211,20 @@
          \@mt@\mathcollection
        \fi
      \else
-       \@EA\ifx\csname\characterencoding#1\endcsname
-         \nocharacterencoding
+       \@EA\ifx\csname\characterencoding#1\endcsname\relax
+         \@EA\ifx\csname\nocharacterencoding#1\endcsname\relax
+           \@EA\ifx\csname\@mt@\mathcollection#1\endcsname\relax
+             \@EA\ifx\csname\@mt@\nomathcollection#1\endcsname\relax
+               \nocharacterencoding
+             \else
+                \strippedcsname\mathematics\expandafter\endcsname\csname\@mt@\nomathcollection
+             \fi
+           \else
+             \strippedcsname\mathematics\expandafter\endcsname\csname\@mt@\mathcollection
+          \fi
+         \else
+           \nocharacterencoding
+         \fi
        \else
          \characterencoding
        \fi

@@ -350,11 +350,32 @@
 %D This command may be used more that once, but always before
 %D the first page is shipped out.
 
-\newif\ifoneJSpreamble \oneJSpreambletrue
+\newif\ifoneJSpreamble \oneJSpreamblefalse
 
-\let\allJSpreambles=\empty
+\let\allJSpreambles\empty
 \newcounter\nofJSpreambles
 \newcounter\currentJSpreamble
+
+% \long\def\startJSpreamble#1 #2 %
+%   {\bgroup       % we need to restore the catcodes
+%    \popendofline % just in case it happens while reading lists
+%    \doifelse{#2}{used}
+%      {\dostartJSpreamble#1 }
+%      {\dostartJSpreamble#1 now #2 }}
+%
+% \long\def\dostartJSpreamble#1 #2 #3\stopJSpreamble
+%   {\processaction
+%      [#2]
+%      [     later=>\chardef\JSstatus\zerocount,%
+%              now=>\chardef\JSstatus\plusone  ,%
+%       \s!default=>\chardef\JSstatus\plustwo  ,%
+%       \s!unknown=>\chardef\JSstatus\plustwo  ]%
+%    \presetJSfunctions #3function ()\end
+%    \long\setgvalue{\r!java\r!java#1}{#3}%
+%    \ifcase\JSstatus \else
+%      \useJSpreamblenow{#1}%
+%    \fi
+%    \egroup}
 
 \long\def\startJSpreamble#1 #2 %
   {\bgroup       % we need to restore the catcodes
@@ -363,15 +384,22 @@
      {\dostartJSpreamble#1 }
      {\dostartJSpreamble#1 now #2 }}
 
-\long\def\dostartJSpreamble#1 #2 #3\stopJSpreamble
+\long\def\dostartJSpreamble#1 #2 %
   {\processaction
      [#2]
      [     later=>\chardef\JSstatus\zerocount,%
              now=>\chardef\JSstatus\plusone  ,%
       \s!default=>\chardef\JSstatus\plustwo  ,%
       \s!unknown=>\chardef\JSstatus\plustwo  ]%
-   \presetJSfunctions #3function ()\end
-   \long\setgvalue{\r!java\r!java#1}{#3}%
+    \ifaddJSlinebreaks
+      \obeylines  \let\obeyedline \normalpar
+      \obeyspaces \let\obeyedspace\normalspace
+    \fi
+    \dodostartJSpreamble{#1}}
+
+\long\def\dodostartJSpreamble#1#2\stopJSpreamble
+  {\presetJSfunctions #2function ()\end
+   \long\setgvalue{\r!java\r!java#1}{#2}%
    \ifcase\JSstatus \else
      \useJSpreamblenow{#1}%
    \fi
@@ -411,8 +439,15 @@
 %D functions. This means that we can call them directly as
 %D well as indirectly when defined by \type {\startJScode} etc.
 
-\long\def\presetJSfunctions#1function #2(#3)%
-  {\doifelsenothing{#2}
+% \long\def\presetJSfunctions#1function #2(#3)%
+%   {\doifelsenothing{#2}
+%      {\long\def\presetJSfunctions##1\end{}}
+%      {\stripspaces\from#2\to\ascii
+%       \doifundefined{\r!java\ascii}{\setgvalue{\r!java\ascii}{\do{}{!}}}}%
+%    \presetJSfunctions}
+
+\long\def\presetJSfunctions#1function#2(#3)%
+  {\doifelse{#2}\space
      {\long\def\presetJSfunctions##1\end{}}
      {\stripspaces\from#2\to\ascii
       \doifundefined{\r!java\ascii}{\setgvalue{\r!java\ascii}{\do{}{!}}}}%
@@ -516,10 +551,10 @@
 %D \type{TEX}. When followed by a space, this keyword is
 %D ignored, that is, filtered from the stream. Now we have:
 
-\chardef\JSisTEX  =0
-\chardef\JScomment=0
+\chardef\JSisTEX  \zerocount
+\chardef\JScomment\zerocount
 
-\newif\ifaddJSlinebreaks
+\newif\ifaddJSlinebreaks \addJSlinebreakstrue
 
 \def\flushJSisTEX
   {\ifcase\JSisTEX
@@ -529,36 +564,102 @@
    \fi
    \chardef\JSisTEX\zerocount}
 
+% \def\doJSlinebreak
+%  {\ifaddJSlinebreaks
+%     \aftergroup\string\aftergroup\n%
+%   \fi}
+%
+% \def\dodoPSsanitizeJScode#1%  % input stack>500 & TEX check
+%   {\if#1/%
+%      \ifnum\JScomment=0
+%        \chardef\JScomment\plusone
+%      \else\ifnum\JScomment=1
+%        \chardef\JScomment\plustwo
+%      \fi\fi
+%    \else
+%      \ifnum\JScomment=1
+%        \aftergroup/%
+%        \chardef\JScomment\zerocount
+%      \fi
+%      \ifnum\JScomment=2
+%        \if#1\delcharacter
+%          \chardef\JScomment\zerocount
+%        \fi
+%      \else
+%        \if#1\delcharacter
+%          \flushJSisTEX\doJSlinebreak
+%        \else\if#1(%
+%          \flushJSisTEX\aftergroup\string\expandafter\aftergroup\csname#1\endcsname
+%        \else\if#1)%
+%          \flushJSisTEX\aftergroup\string\expandafter\aftergroup\csname#1\endcsname
+%        \else\if#1;%
+%          \flushJSisTEX\aftergroup;\doJSlinebreak
+%        \else\if#1T%
+%          \ifnum\JSisTEX=0 \chardef\JSisTEX\plusone   \else\flushJSisTEX\aftergroup T\fi
+%        \else\if#1E%
+%          \ifnum\JSisTEX=1 \chardef\JSisTEX\plustwo   \else\flushJSisTEX\aftergroup E\fi
+%        \else\if#1X%
+%          \ifnum\JSisTEX=2 \chardef\JSisTEX\plusthree \else\flushJSisTEX\aftergroup X\fi
+%        \else\if#1\normalspace
+%          \ifnum\JSisTEX=3 \chardef\JSisTEX\zerocount \else\flushJSisTEX\aftergroup#1\fi
+%        \else
+%          \flushJSisTEX\aftergroup\string\expandafter\aftergroup#1%
+%        \fi\fi\fi\fi\fi\fi\fi\fi
+%      \fi
+%    \fi
+%    \dododoPSsanitizeJScode}
+
+% todo: "http:\\" -> simple. maar wel \" afvangen
+%
+% use new pdftex escape mechanism or make fully expandable version, not used that often btw
+
+\chardef\JSstring\zerocount
+
 \def\doJSlinebreak
- {\ifaddJSlinebreaks
+ {\chardef\JScomment\zerocount
+  \chardef\JSstring\zerocount
+  \ifaddJSlinebreaks
     \aftergroup\string\aftergroup\n%
   \fi}
 
 \def\dodoPSsanitizeJScode#1%  % input stack>500 & TEX check
   {\if#1/%
-     \ifnum\JScomment=0
-       \chardef\JScomment\plusone
-     \else\ifnum\JScomment=1
-       \chardef\JScomment\plustwo
-     \fi\fi
+     \ifnum\JSstring=0
+       \ifnum\JScomment=0
+         \chardef\JScomment\plusone
+       \else\ifnum\JScomment=1
+         \chardef\JScomment\plustwo
+       \fi\fi
+     \else
+       \aftergroup/%
+     \fi
    \else
      \ifnum\JScomment=1
        \aftergroup/%
        \chardef\JScomment\zerocount
      \fi
+     % is the delchar trick still needed?
      \ifnum\JScomment=2
-       \if#1\delcharacter
-         \chardef\JScomment\zerocount
-       \fi
+       \ifnum`#1=13 % brrr
+         \doJSlinebreak
+       \else\if#1\par
+         \doJSlinebreak
+       \else\if#1\delcharacter
+         \doJSlinebreak
+       \fi\fi\fi
      \else
-       \if#1\delcharacter
+       \ifnum`#1=13 % brrr
+         \flushJSisTEX\doJSlinebreak
+       \else\if#1\par
+         \flushJSisTEX\doJSlinebreak
+       \else\if#1\delcharacter
          \flushJSisTEX\doJSlinebreak
        \else\if#1(%
          \flushJSisTEX\aftergroup\string\expandafter\aftergroup\csname#1\endcsname
        \else\if#1)%
          \flushJSisTEX\aftergroup\string\expandafter\aftergroup\csname#1\endcsname
-       \else\if#1;%
-         \flushJSisTEX\aftergroup;\doJSlinebreak
+       %\else\if#1;%
+       %  \flushJSisTEX\aftergroup;\doJSlinebreak
        \else\if#1T%
          \ifnum\JSisTEX=0 \chardef\JSisTEX\plusone   \else\flushJSisTEX\aftergroup T\fi
        \else\if#1E%
@@ -568,8 +669,16 @@
        \else\if#1\normalspace
          \ifnum\JSisTEX=3 \chardef\JSisTEX\zerocount \else\flushJSisTEX\aftergroup#1\fi
        \else
+          % todo: "test\"test"
+         \if#1"%
+           \ifcase\JSstring
+             \chardef\JSstring\plusone
+           \else
+             \chardef\JSstring\zerocount
+           \fi
+         \fi
          \flushJSisTEX\aftergroup\string\expandafter\aftergroup#1%
-       \fi\fi\fi\fi\fi\fi\fi\fi
+       \fi\fi\fi\fi\fi\fi\fi\fi\fi % \fi
      \fi
    \fi
    \dododoPSsanitizeJScode}

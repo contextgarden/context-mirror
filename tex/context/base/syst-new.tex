@@ -91,15 +91,17 @@
 
 \chardef\obeyedlccode=`. % so <32 and >127 chars become .
 
-%\def\obeylccodes
-%  {\def\withcharacter##1{\lccode##1##1}%
-%   \the\withlowercharacters
-%   \def\withcharacter##1{\lccode##1\obeyedlccode}%
-%   \the\withminorcharacters
-%   \ifeightbitcharacters\the\withuppercharacters\fi}
+% \def\obeylccodes
+%   {\def\withcharacter##1{\lccode##1##1}%
+%    \the\withlowercharacters
+%    \def\withcharacter##1{\lccode##1\obeyedlccode}%
+%    \the\withminorcharacters
+%    \ifeightbitcharacters\the\withuppercharacters\fi}
 
 \def\setownlccode   #1{\lccode#1#1}
 \def\setobeyedlccode#1{\lccode#1\obeyedlccode}
+
+\beginTEX
 
 \def\obeylccodes
   {\let\withcharacter\setownlccode
@@ -107,6 +109,16 @@
    \let\withcharacter\setobeyedlccode
    \the\withminorcharacters
    \ifeightbitcharacters\the\withuppercharacters\fi}
+
+\endTEX
+
+%D This one is much faster in \ETEX:
+
+\beginETEX \lccode
+
+  \def\obeylccodes{\language\zerocount}
+
+\endETEX
 
 \def\unspaced#1%
   {\dounspaced#1\end}

@@ -191,19 +191,35 @@
 %D
 %D We can rewrite these macros to faster alternatives: the
 %D less arguments we pass, the faster the conversion will be,
-%D but at the price of readability.
+%D but at the price of readability. So we have:
+%D
+%D \starttyping
+%D \def\utftwouniglph#1#2%
+%D   {\@EA\unicodechar\@EA{\the\numexpr(\utf@a*(#1-\utf@d)+%
+%D      `#2-\utf@g)}}
+%D
+%D \def\utfthreeuniglph#1#2#3%
+%D   {\@EA\unicodechar\@EA{\the\numexpr(\utf@b*(#1-\utf@e)+%
+%D      \utf@a*(`#2-\utf@g)+`#3-\utf@g)}}
+%D
+%D \def\utffouruniglph#1#2#3#4%
+%D   {\@EA\unicodechar\@EA{\the\numexpr(\utf@c*(#1-\utf@f)+%
+%D       \utf@b*(`#2-\utf@g)+\utf@a*(`#3-\utf@g)+`#4-\utf@g)}}
+%D \stoptyping
+%D
+%D Less parsing, and therefore faster:
 
 \def\utftwouniglph#1#2%
-  {\@EA\unicodechar\@EA{\the\numexpr(\utf@a*(#1-\utf@d)+%
-     `#2-\utf@g)}}
+  {\@EA\unicodechar\@EA{\the\numexpr\utf@a*(#1-\utf@d)+%
+     `#2-\utf@g\relax}}
 
 \def\utfthreeuniglph#1#2#3%
-  {\@EA\unicodechar\@EA{\the\numexpr(\utf@b*(#1-\utf@e)+%
-     \utf@a*(`#2-\utf@g)+`#3-\utf@g)}}
+  {\@EA\unicodechar\@EA{\the\numexpr\utf@b*(#1-\utf@e)+%
+     \utf@a*(`#2-\utf@g)+`#3-\utf@g\relax}}
 
 \def\utffouruniglph#1#2#3#4%
-  {\@EA\unicodechar\@EA{\the\numexpr(\utf@c*(#1-\utf@f)+%
-      \utf@b*(`#2-\utf@g)+\utf@a*(`#3-\utf@g)+`#4-\utf@g)}}
+  {\@EA\unicodechar\@EA{\the\numexpr\utf@c*(#1-\utf@f)+%
+      \utf@b*(`#2-\utf@g)+\utf@a*(`#3-\utf@g)+`#4-\utf@g\relax}}
 
 %D Now we come to the unicode handler itself. We will use a few
 %D constants, which saves us (at least at the time of writing
@@ -565,6 +581,6 @@
 %D Well, let's at least preload a few familiar ones. Here we
 %D also load the \UTF\ regime.
 
-\useunicodevector[0,1,2,30,32,33] \useregime[utf]
+\useunicodevector[0,1,2,3,4,5,30,32,33] \useregime[utf]
 
 \protect  \endinput

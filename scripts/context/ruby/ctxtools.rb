@@ -26,12 +26,12 @@ class String
     def i_translate(element, attribute, category)
         self.gsub!(/(<#{element}.*?#{attribute}=)([\"\'])(.*?)\2/) do
             if category.key?($3) then
-                puts "#{element} #{$3} -> #{category[$3]}\n" if element == 'cd:inherit'
-                puts "#{element} #{$3} => #{category[$3]}\n" if element == 'cd:command'
+                # puts "#{element} #{$3} -> #{category[$3]}\n" if element == 'cd:inherit'
+                # puts "#{element} #{$3} => #{category[$3]}\n" if element == 'cd:command'
                 "#{$1}#{$2}#{category[$3]}#{$2}"
             else
-                puts "#{element} #{$3} -> ?\n" if element == 'cd:inherit'
-                puts "#{element} #{$3} => ?\n" if element == 'cd:command'
+                # puts "#{element} #{$3} -> ?\n" if element == 'cd:inherit'
+                # puts "#{element} #{$3} => ?\n" if element == 'cd:command'
                 "#{$1}#{$2}#{$3}#{$2}" # unchanged
             end
         end
