@@ -1,6 +1,6 @@
 %D \module
 %D   [       file=core-rul,
-%D        version=1997.09.05,
+%D        version=1998.10.16,
 %D          title=\CONTEXT\ Core Macros,
 %D       subtitle=Ruled Stuff Handling,
 %D         author=Hans Hagen,
@@ -189,7 +189,7 @@
   {\vrule\!!width#1\!!height#2\!!depth#3}%
 
 \def\dofilledroundbox\width#1\height#2\depth#3\radius#4\\%
-  {\ovalbox{#1}{#2}{#3}{\linewidth}{#4}{\v!nee}{\v!ja}}
+  {\ovalbox{#1}{#2}{#3}{\linewidth}{#4}{\v!uit}{\v!aan}}
 
 \def\ovalbox#1#2#3#4#5#6#7%
   {\bgroup
@@ -198,10 +198,10 @@
    \scratchdimen=#3\edef\ovaldep{\number\scratchdimen}%
    \scratchdimen=#4\edef\ovallin{\number\scratchdimen}%
    \scratchdimen=#5\edef\ovalrad{\number\scratchdimen}%
-   \doifelse{#6}{\v!ja}  % will be a macro that handles
+   \doifelse{#6}{\v!aan}  % will be a macro that handles
      {\def\ovalstr{1}}   % start, stop, ja, nee, aan, uit
      {\def\ovalstr{0}}%  % and something \doif
-   \doifelse{#7}{\v!ja}
+   \doifelse{#7}{\v!aan}
      {\def\ovalfil{1}}
      {\def\ovalfil{0}}%
    \doovalbox
@@ -244,8 +244,7 @@
 %D   [fancy]
 %D   [{\externfiguur
 %D       [gene-011]
-%D       [type=eps,methode=mps,
-%D        breedte=\overlaywidth, 
+%D       [breedte=\overlaywidth, 
 %D        hoogte=\overlayheight]}]
 %D \stopbuffer
 %D 
@@ -288,6 +287,10 @@
 %D 
 %D The resulting box is lowered to the right depth. 
   
+\def\overlaywidth {\the\vsize}    % We preset the variables 
+\def\overlayheight{\the\hsize}    % to some reasonable default
+\def\overlaydepth {\!!zeropoint}  % values. 
+
 \def\defineoverlay%
   {\dodoubleargument\dodefineoverlay}
 
@@ -311,7 +314,7 @@
    %  {#1\space w=\overlaywidth/h+d=\overlayheight/d=\overlaydepth]}%
    \setbox0=\hbox{\lower\overlaydepth\hbox{#2}}% 
    \dimen0=\wd0 \advance\dimen0 by -\overlaywidth
-   \dimen2=\ht0 \advance\dimen2 by -\overlayheight
+   \dimen2=\ht0 \advance\dimen2 by -#4% not \overlayheight
    \wd0=\overlaywidth
    \ht0=\overlayheight
    \dp0=\overlaydepth
@@ -366,7 +369,8 @@
 \def\dobackgroundbox#1\background#2\color#3\raster#4\offset#5\corner
     #6\radius#7\depth#8\\%
   {\vbox
-     {\dimen0=#5\relax
+     {\forgetall\boxmaxdepth\maxdimen
+      \dimen0=#5\relax
       \dimen2=\wd#1\advance\dimen2 by 2\dimen0
       \dimen4=\ht#1\advance\dimen4 by  \dimen0
       \dimen6=\dp#1\advance\dimen6 by  \dimen0\advance\dimen6 by #8\relax
@@ -411,13 +415,13 @@
       \ifdim\dimen0=\!!zeropoint
         \dostrokedlinedbox\width#1\height#2\depth#3\toggle#6\\%
       \else
-        \dostrokedroundbox\width#1\height#2\depth#3\radius#5\\%
+        \dostrokedroundbox\width#1\height#2\depth#3\radius#5\toggle#6\\%
       \fi}
      {\dostrokedlinedbox\width#1\height#2\depth#3\toggle#6\\}%
    \egroup}
 
 %D The toggle argument in these calls concern the individual
-%D rules: left, right, top and bottom. Each cna be turned on,
+%D rules: left, right, top and bottom. Each can be turned on,
 %D depending on the general state (\type{#4}) or the individual
 %D ones (\type{#5}, \type{#6}, \type{#7} and \type{#8}). 
 
@@ -460,8 +464,8 @@
 %D hard because it uses the previously defined macro \type 
 %D {\ovalbox}. 
 
-\def\dostrokedroundbox\width#1\height#2\depth#3\radius#4\\%
-  {\ovalbox{#1}{#2}{#3}{\linewidth}{#4}{\v!ja}{\v!nee}}
+\def\dostrokedroundbox\width#1\height#2\depth#3\radius#4\toggle#5\left#6\\%
+  {\doif{#5}{\v!aan}{\ovalbox{#1}{#2}{#3}{\linewidth}{#4}{\v!aan}{\v!uit}}}
 
 %D The next few macros are probably the most misused ones in
 %D \CONTEXT. They deal with putting rules around boxes, provide
@@ -550,10 +554,15 @@
 %D dimensions and specific settings concerning aligment and
 %D offsets.
 
+%\let\backgroundcolor\empty
+%\let\framecolor     \empty
+
 \def\startlocalframed[#1][#2]%
   {\bgroup
    \edef\@@framed{#1}%
    \getparameters[\@@framed][#2]%
+  %\edef\backgroundcolor{\getvalue{\@@framed\c!achtergrondkleur}}% 
+  %\edef\framecolor     {\getvalue{\@@framed\c!kaderkleur}}%
    \edef\localoffset{\getvalue{\@@framed\c!offset}}%
    \edef\localwidth{\getvalue{\@@framed\c!breedte}}%
    \edef\localheight{\getvalue{\@@framed\c!hoogte}}%
@@ -615,9 +624,9 @@
      \let\localendstrut=\endstrut
      \let\localstrut   =\strut
    \else
-     \let\localbegstrut=\relax
+     \let\localbegstrut=\pseudostrut % was: \relax
      \let\localendstrut=\relax
-     \let\localstrut   =\relax
+     \let\localstrut   =\pseudostrut % was: \relax
    \fi
    \ifboxhasheight
      \let\\=\vboxednewline
@@ -653,7 +662,12 @@
        \let\next=\doformatboxNoSize
      \fi
    \fi
-   \def\dowithframedbox{\aftergroup\stoplocalframed}%
+   \def\dowithframedbox%
+     {\aftergroup\stoplocalframed}%
+   \edef\framedwidth % a new feature  
+     {\ifdim\!!widtha >\!!zeropoint\the\!!widtha \else\!!zeropoint\fi}%  
+   \edef\framedheight% a new feature  
+     {\ifdim\!!heighta>\!!zeropoint\the\!!heighta\else\!!zeropoint\fi}% 
    \afterassignment\dowithframedbox
    \setbox\framebox=\next}
 
@@ -662,6 +676,9 @@
 %D is, some assignments to \type{\next} will never occur.
 %D Nevertheless we implement the whole scheme, if not for
 %D future extensions. 
+
+%D \macros
+%D   {ifreshapeframebox} 
 %D
 %D The last few lines tell what to do after the content of the
 %D box is collected and passed to the next macro. In the case
@@ -669,11 +686,13 @@
 %D evaluated and used to determine the most natural width. The
 %D rest of the code deals with backgrounds and frames.
 
+\newif\ifreshapeframebox \reshapeframeboxtrue
+
 \def\stoplocalframed%
   {\dontshowcomposition
    \ifboxhasformat
      \doif{\localwidth}{\v!passend}
-       {\doreshapeframedbox
+       {\ifreshapeframebox\doreshapeframedbox\fi
         \boxhaswidthfalse}%
    \fi
    \ifboxhaswidth
@@ -695,15 +714,17 @@
    \doframedbox
    \doifvaluesomething{\@@framed\c!achtergrond}
      {\dobackedbox}%
-   \doifvalue{\@@framed\c!plaats}{\v!laag}
-     {\doinlineframedbox}%
+   \doifelsevalue{\@@framed\c!plaats}{\v!laag}
+     {\doinlineframedbox}
+     {\doifvalue{\@@framed\c!plaats}{\v!diepte}
+        {\doloweredframedbox}}%
    \box\framebox
    \egroup
    \egroup}
 
 %D The last conditional takes care of the special situation of
 %D in||line \inframed[hoogte=3cm]{framed} boxes. Such boxes have
-%D to be \inframed{aligned} with the running text.
+%D to be \inframed{aligned} with the running text. 
 
 \def\doinframed[#1]% we could omit #1] but readibility ...
   {\framed[\c!plaats=\v!laag,#1]}
@@ -714,6 +735,138 @@
 %D When we set \type{\c!leeg} to \type{\v!ja}, we get 
 %D ourselves a frame and/or background, but no content, so 
 %D actually we have a sort of phantom framed box. 
+
+%D \macros
+%D   {mframed, minframed}
+%D
+%D When Tobias asked how to frame mathematical elements in
+%D formulas, Taco's posted the next macro:
+%D 
+%D \starttypen
+%D \def\mframed#1%
+%D   {\relax
+%D    \ifmmode
+%D      \vcenter{\hbox{\framed{$\ifinner\else\displaystyle\fi#1$}}}%
+%D    \else
+%D      \framed{$#1$}%
+%D    \fi}
+%D \stoptypen
+%D 
+%D Because \type {\ifinner} does not (always) reports what
+%D one would expect, we move the test to the outer level. We
+%D also want to pass arguments,
+%D 
+%D \starttypen
+%D \def\mframed%
+%D   {\dosingleempty\domframed}
+%D 
+%D \def\domframed[#1]#2% % tzt \dowithnextmathbox ?
+%D   {\relax
+%D    \ifmmode
+%D      \ifinner
+%D        \inframed[#1]{$#2$}%
+%D      \else
+%D        \vcenter{\hbox{\framed[#1]{$\displaystyle#2$}}}%
+%D      \fi
+%D    \else
+%D      \inframed[#1]{$#2$}%
+%D    \fi}
+%D \stoptypen
+%D 
+%D Still better is the next alternative, if only because it
+%D takes care of setting the super- and subscripts styles
+
+\ifx\restoremathstyle\undefined \let\restoremathstyle\relax \fi
+
+\def\domframed[#1][#2]#3% 
+  {\begingroup
+   \ifmmode
+     \ifinner
+       \let\mframedstyle\relax
+     \else
+       \let\mframedstyle\displaystyle
+     \fi
+   \else
+     \let\mframedstyle\relax
+   \fi
+   #1\ifdone
+     \def\normalstrut{$\mframedstyle\restoremathstyle\vphantom($}%
+     \framed
+      %[\c!kaderoffset=.25ex,\c!offset=\v!overlay,#2]
+       [\c!kaderoffset=\@@oioffset,\c!offset=\v!overlay,#2]
+       {$\mframedstyle\restoremathstyle#3$}%
+   \else
+     \inframed
+       [#2]
+       {$\mframedstyle\restoremathstyle#3$}%
+   \fi
+   \endgroup}
+
+\def\mframed%
+  {\dodoubleempty\domframed[\donetrue]}
+
+\def\minframed%
+  {\dodoubleempty\domframed[\donefalse]}
+
+%D So instead of the rather versatile \type {\framed}, we ue
+%D the \type {\mframed}.
+%D 
+%D \startbuffer
+%D \startformule
+%D   x \times \mframed{y} \times y^{z_z}
+%D \stopformule
+%D \stopbuffer
+%D 
+%D \typebuffer
+%D 
+%D \haalbuffer
+%D 
+%D However, we got into troubles when we want to nest sub- and
+%D superscripts, like in
+%D 
+%D \startbuffer
+%D \startformule
+%D   x \times \mframed{y} \times y^{\mframed{z}_{\mframed{z}}}
+%D \stopformule
+%D \stopbuffer
+%D 
+%D \typebuffer
+%D 
+%D \haalbuffer
+%D 
+%D Therefore, we can best use \type {\super} and \type {\sub}
+%D instead of \type {^} and \type {_}. Both commands take care
+%D of proper font switching.
+%D 
+%D \startbuffer
+%D \startformule
+%D   x \times \mframed{y} \times y\super{\mframed{z}\sub{\mframed{z}}}
+%D \stopformule
+%D \stopbuffer
+%D 
+%D \typebuffer
+%D 
+%D \haalbuffer
+%D 
+%D As usual, one can specify in what way the text should be
+%D framed. One should be aware of the fact that, inorder to
+%D preserve the proper spacing, the \type {offset} is set to
+%D \type {overlay} and \type {frameoffset} is used used 
+%D instead.
+%D 
+%D \startbuffer
+%D \startformule
+%D   x \times y\super{\mframed[kaderkleur=rood]{z}\sub{z}}
+%D \stopformule
+%D \stopbuffer
+%D 
+%D \typebuffer
+%D 
+%D \haalbuffer
+%D 
+%D For inline use, we also provide the \type {\minframed}
+%D alternative: we want $x \times \minframed{y}$ in inline 
+%D math, right?
 
 %D This previous framing macros needs a lot of alternatives for
 %D putting rules around boxes, inserting offsets and aligning
@@ -982,17 +1135,25 @@
    \endofshapebox
    \global\@@globalwidth=\!!zeropoint
    \reshapebox
-     {\setbox0=\hbox{\unhbox\shapebox}%
+     {\setbox0=\hbox
+        {\strut\ifhbox\shapebox\unhbox\else\box\fi\shapebox}%
       \ifdim\wd0>\@@globalwidth
         \global\@@globalwidth=\wd0
       \fi}%
    \dosetraggedcommand{\localformat}%
    \raggedcommand
-   \setbox\framebox=\vbox
-     {\hsize\@@globalwidth
-      \reshapebox{\hbox to \hsize{\unhbox\shapebox}}%
-      \flushshapebox}%
-   \ifboxhasheight \else
+   \ifboxhasheight
+     \setbox\framebox=\vbox to \localheight
+       {\hsize\@@globalwidth
+        \reshapebox{\hbox to \hsize{\ifhbox\shapebox\unhbox\else\box\fi\shapebox}}%
+        \beforeframedbox
+        \innerflushshapebox
+        \afterframedbox}%
+   \else
+     \setbox\framebox=\vbox
+       {\hsize\@@globalwidth
+        \reshapebox{\hbox to \hsize{\ifhbox\shapebox\unhbox\else\box\fi\shapebox}}%
+        \innerflushshapebox}%
      \dp\framebox=\dp\strutbox
    \fi}
 
@@ -1065,6 +1226,16 @@
    \advance\dimen0 by 2\linewidth
    \setbox\framebox=\hbox{\lower\dimen0\box\framebox}%
    \ht\framebox\ht\strutbox
+   \dp\framebox\dp\strutbox
+   \box\framebox}
+
+%D We can also lower the box over the natural depth of the 
+%D line. 
+
+\def\doloweredframedbox%
+  {\getboxheight\dimen2\of\box\framebox
+   \advance\dimen2 by -\dp\strutbox
+   \ht\framebox\dimen2
    \dp\framebox\dp\strutbox
    \box\framebox}
 
@@ -1690,7 +1861,7 @@
          \blanko[\v!blokkeer]%
          \let\\=\endgraf
          \getvalue{\??kd#1\c!binnen}%
-         \dostartattributes{\??kd}{}}
+         \dostartattributes\??kd\c!letter\c!kleur{}}
 
 \def\dostopframedtext[#1]%
   {\endgraf
@@ -1720,7 +1891,7 @@
        \blanko[\v!blokkeer]%
        \let\\=\endgraf
        \getvalue{\??kd#1\c!binnen}%
-       \dostartattributes{\??kd}{}%
+       \dostartattributes\??kd\c!letter\c!kleur{}%
        \bgroup
        \aftergroup\docloseframedtext
        \let\next=}
@@ -1730,6 +1901,24 @@
    \dostopattributes
    \egroup
    \egroup}
+
+%D \macros
+%D   {defineframed}
+%D
+%D One can also define simple framed texts, using: 
+%D
+%D \showsetup{\y!defineframed}
+
+\def\defineframed%
+  {\dodoubleempty\dodefineframed}
+
+\def\dodefineframed[#1][#2]%
+  {\iffirstargument
+     \setvalue{#1}{\dodoubleempty\doframed[#2]}%
+   \fi}
+
+\def\doframed[#1][#2]%
+  {\framed[#1,#2]}
 
 %D \macros
 %D   {textrule, starttextrule, setuptextrules}
@@ -1809,10 +1998,11 @@
       \doifnothing{#1}{\firstargumentfalse}%
       \iffirstargument
         \doifelse{\@@tlplaats}{\v!inmarge}%
-          {\llap{\doattributes{\??tl}{#1}\hskip\linkermargeafstand}}
+          {\llap{\doattributes\??tl\c!letter\c!kleur{#1}\hskip\linkermargeafstand}}
           {\color[\@@tllijnkleur]
              {\vrule\!!height\dimen4\!!depth\dimen6\!!width\@@tlbreedte}%
-           \hbox spread 2\dimen8{\hss\doattributes{\??tl}{\strut#1}\hss}}%
+           \hbox spread 2\dimen8
+             {\hss\doattributes\??tl\c!letter\c!kleur{\strut#1}\hss}}%
       \fi
       \color[\@@tllijnkleur]
         {\leaders\hrule\!!height\dimen4\!!depth\dimen6\hfill}}%
@@ -1820,33 +2010,6 @@
    \dp0=\dp\strutbox
    \noindent\box0
    \egroup}
-
-\def\dobottomtextrule#1%
-  {\ifhmode
-     \endgraf
-   \fi
-   \dimen0=\dp\strutbox
-   \ifdim\prevdepth<\dp\strutbox
-     \ifdim\prevdepth>\!!zeropoint
-       \advance\dimen0 by -\prevdepth
-     \fi
-   \fi
-   \advance\dimen0 by .5ex
-   \vskip\dimen0
-   \@@tltussen
-   \doifelsenothing{#1}
-     {\bgroup
-      \advance\hsize by -\rightskip
-      \advance\hsize by -\leftskip
-      \nointerlineskip   
-      \moveleft-\leftskip\vbox
-        {\color[\@@tllijnkleur]
-           {\hrule\!!depth\linewidth\!!height\!!zeropoint\!!width\hsize}}%
-      \egroup}
-     {\docomplextextrule{#1}}% 
-   \prevdepth\!!zeropoint  % look at this
-   \@@tlna  
-   \pagina[\v!voorkeur]}
 
 \def\dotoptextrule#1%
   {\pagina[\v!voorkeur]
@@ -1857,7 +2020,7 @@
    \@@tltussen
    \endgraf}
 
-\def\dobottomtextrule#1%
+\def\dodobottomtextrule#1%
   {\ifhmode
      \endgraf
    \fi
@@ -1880,8 +2043,16 @@
            {\hrule\!!depth\linewidth\!!height\!!zeropoint\!!width\hsize}}%
       \egroup}
      {\docomplextextrule{#1}}% 
-   \prevdepth\!!zeropoint  % look at this
+   \prevdepth\!!zeropoint}  % look at this
+
+\def\dobottomtextrule#1%
+  {\dodobottomtextrule{#1}%
    \@@tlna  
+   \pagina[\v!voorkeur]}
+
+\def\domiddletextrule#1%
+  {\dodobottomtextrule{#1}%
+   \@@tltussen
    \pagina[\v!voorkeur]}
 
 \def\dounknowntextrule%
@@ -1896,11 +2067,15 @@
   
 \def\starttextrule#1%
   {\bgroup
+   \def\dounknowntextrule{\domiddletextrule}
    \dotoptextrule{#1}
+   \bgroup
    \switchtobodyfont[\@@tlkorps]}
 
 \def\stoptextrule%
-  {\dobottomtextrule{}%
+  {\par
+   \egroup
+   \dobottomtextrule{}%
    \egroup}
 
 %D \macros
@@ -1949,7 +2124,7 @@
         {\setbox0=\hbox}                                
         {\setbox0=\hbox to \@@ilbreedte}}
      \bgroup 
-       \doattributes{\??il}{\strut#2\hfill\@@ilscheider}%
+       \doattributes\??il\c!letter\c!kleur{\strut#2\hfill\@@ilscheider}%
        \hskip\@@ilafstand
      \egroup
    \hangindent=\wd0\relax
@@ -1961,7 +2136,7 @@
    \doifsomething{#3}
      {\doifnot{\@@ilbreedte}{\v!passend}
         {\kern\@@ilafstand}
-      \doattributes{\??il}{#3\strut}}%
+      \doattributes\??il\c!letter\c!kleur{#3\strut}}%
    \endgroup
    \endgraf
    \@@ilna}
@@ -2326,4 +2501,3 @@
 \protect
 
 \endinput
-

@@ -52,11 +52,9 @@
 
 \gdef\PLverbosecorrection%
   {\ifnum\PLverboseskipped>0
-     \loop
-       \obeyedspace
-       \advance\PLverboseskipped by -1
-       \ifnum\PLverboseskipped>0
-     \repeat
+     \obeyedspace
+     \advance\PLverboseskipped by -1
+     \@EA\PLverbosecorrection  
    \fi}
 
 \gdef\PLsetcontrols%
@@ -144,14 +142,17 @@
 \gdef\PLtypeone#1%
   {\ifinPLdouble
      \PLverbosefalse
-     \ifx\PLprefix\empty
+     \ifinPLcomment
+       \endPLtypesix
+       \getpretty{#1}%
+     \else\ifx\PLprefix\empty
        \endPLtypesix
        \getpretty{#1}%
      \else
        \endPLtypesix
        \xdef\PLprefix{\getpretty{#1}}%
        \beginofpretty[\!!prettyone]\getpretty{#1}\endofpretty
-     \fi
+     \fi\fi
    \else
      \endPLtypesix
      \ifinPLcomment
@@ -263,7 +264,9 @@
 
 \gdef\endPLtypesix%
   {\ifx\PLsequence\empty\else
-     \ifinPLsingle
+     \ifinPLcomment
+       \PLsequence
+     \else\ifinPLsingle
        \PLsequence
      \else\ifinPLdouble
        \PLsequence
@@ -294,7 +297,7 @@
          {\PLsequence}%
      \else
        \PLsequence
-     \fi\fi\fi\fi\fi
+     \fi\fi\fi\fi\fi\fi
      \global\let\PLsequence=\empty
      \global\let\PLprefix=\empty
    \fi}
@@ -450,4 +453,3 @@
 \protect 
 
 \endinput 
-

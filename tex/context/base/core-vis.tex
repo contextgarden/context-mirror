@@ -33,7 +33,6 @@
 %D   {indent, noindent,
 %D    leavevmode,
 %D    par}
-%D   {}
 %D 
 %D \TeX\ acts upon paragraphs. In mosts documents paragraphs 
 %D are separated by empty lines, which internally are handled as
@@ -231,6 +230,23 @@
    \EveryPar{\ruledbaseline}}
 
 %D \macros 
+%D   {showpagebuilder}
+%D
+%D The next tracing option probaly is only of use to me and a
+%D few \CONTEXT\ hackers. 
+
+\def\showpagebuilder%
+  {\EveryPar{\doshowpagebuilder}}
+
+\def\doshowpagebuilder%
+  {\strut
+   \llap
+     {\ttxx           \vl 
+      v:\the\vsize    \vl
+      g:\the\pagegoal \vl 
+      t:\the\pagetotal\vl}}
+
+%D \macros 
 %D   {makecutbox, cuthbox, cutvbox, cutvtop}
 %D 
 %D Although mainly used for marking the page, these macros can 
@@ -404,7 +420,7 @@
       \divide\scratchdimen by 21
       \def\docommando##1%
         {\vbox
-           {\hsize\scratchdimen
+           {\hsize3em % \scratchdimen
             \definecolor 
               [\s!dummy]
               [\c!c=#2##1\else0\fi, 
@@ -413,7 +429,7 @@
                \c!k=0]%
             \localstartcolor[\s!dummy]%
             \hrule 
-              \!!width  3em 
+              \!!width 3em 
               \!!height \scratchdimen 
               \!!depth  \!!zeropoint
             \localstopcolor
@@ -421,7 +437,7 @@
               \vskip-\scratchdimen 
               \vbox to \scratchdimen 
                 {\vss 
-                 \hbox to \hsize
+                 \hbox to 3em 
                    {\hss\ifdim##1pt=0pt#1\else##1\fi\hss}%
                  \vss}%
             \fi}}%
@@ -540,6 +556,133 @@
      \docolormarkbox{#1}%
    \fi}
 
+%D \macros
+%D   {showwhatsits, dontshowwhatsits}
+%D
+%D \TEX\ has three so called whatsits: \type {\mark}, \type 
+%D {\write} and \type {\special}. The first one keeps track of 
+%D the current state at page boundaries, the last two are used 
+%D to communicate to the outside world. Due to fact that 
+%D especially \type {\write} is often used in conjunction with 
+%D \type {\edef}, we can only savely support that one in \ETEX. 
+%D
+%D \bgroup \showwhatsits \stelkleurenin[status=start]
+%D 
+%D Whatsits show up \color[blue]{in color} and are 
+%D characterized bij their first character.\voetnoot [some note]
+%D {So we may encounter \type {w}, \type {m} and \type{s}.} 
+%D They are \writestatus{dummy}{demo}\color[yellow]{stacked}.
+%D 
+%D \egroup
+
+\newif\ifimmediatewrite 
+
+\ifx\eTeXversion\undefined
+
+  \let\showwhatsits\relax
+  \let\dontshowwhatsits\relax
+
+\else
+
+  \let\supernormalmark  \normalmark  % mark is already superseded
+  \let\supernormalmarks \normalmarks % mark is already superseded
+
+  \def\showwhatsits%
+    {\protected\def\normalmark {\visualwhatsit100+m\supernormalmark }%
+     \protected\def\normalmarks{\visualwhatsit100+m\supernormalmarks}%
+     \protected\def\special    {\visualwhatsit0100s\normalspecial   }%
+     \protected\def\write      {\visualwhatsit001-w\normalwrite     }%
+     \let\immediate=\immediatewhatsit
+     \appendtoks\dontshowwhatsits\to\everystoptext}
+
+  \def\immediatewhatsit% 
+    {\bgroup\futurelet\next\doimmediatewhatsit}% 
+ 
+  \def\doimmediatewhatsit%
+    {\ifx\next\write
+       \egroup\immediatewritetrue
+     \else
+       \egroup\expandafter\normalimmediate
+     \fi}
+
+  \def\dontshowwhatsits%
+    {\let\immediate \normalimmediate
+     \let\normalmark\supernormalmark 
+     \let\special   \normalspecial
+     \let\write     \normalwrite}
+      
+  \def\visualwhatsit#1#2#3#4#5%
+    {\bgroup
+     \pushwhatsit
+     \dontinterfere
+     \dontcomplain
+     \dontshowcomposition
+     \dontshowwhatsits
+     \ttx
+     \ifvmode\donetrue\else\donefalse\fi
+     \setbox\scratchbox=\hbox
+       {\ifdone\dostartgraycolormode0\else\dostartrgbcolormode#1#2#3\fi
+        #5\dostopcolormode}%
+     \setbox\scratchbox=\hbox
+       {\ifdone\dostartrgbcolormode#1#2#3\else\dostartgraycolormode0\fi
+        \vrule\!!width\wd\scratchbox\dostopcolormode
+        \hskip-\wd\scratchbox\box\scratchbox}%
+     \scratchdimen=1ex
+     \ifdone
+       \setbox\scratchbox=\hbox
+         {\hskip#4\scratchdimen\box\scratchbox}%
+     \else
+       \setbox\scratchbox=\hbox
+         {\raise#4\scratchdimen\box\scratchbox}%
+     \fi 
+     \smashbox\scratchbox
+     \ifdone\nointerlineskip\fi
+     \box\scratchbox
+     \ifvmode\nointerlineskip\fi
+     \popwhatsit
+     \egroup
+     \ifimmediatewrite
+       \immediatewritefalse
+       \expandafter\normalimmediate
+     \fi}
+
+  \def\pushwhatsit%
+    {\ifdim\lastskip=\!!zeropoint
+       \ifnum\lastpenalty=0 
+         \ifnum\lastkern=0
+           \ifhmode
+             \let\popwhatsit\relax
+           \else
+             \edef\popwhatsit{\prevdepth\the\prevdepth}%
+           \fi
+         \else
+           \ifhmode
+             \edef\popwhatsit{\kern\the\lastkern}\unkern
+           \else
+             \edef\popwhatsit{\kern\the\lastkern\prevdepth\the\prevdepth} 
+             \kern-\lastkern
+           \fi
+         \fi
+       \else
+         \ifhmode
+           \edef\popwhatsit{\the\lastpenalty}%
+           \unpenalty
+         \else
+           \edef\popwhatsit{\penalty\the\lastpenalty\prevdepth\the\prevdepth}%
+          %\nobreak
+         \fi
+       \fi
+     \else
+       \ifhmode
+         \edef\popwhatsit{\hskip\the\lastskip}\unskip
+       \else
+         \edef\popwhatsit{\vskip\the\lastskip\prevdepth\the\prevdepth} 
+         \vskip-\lastskip
+       \fi
+     \fi}
+
+\fi
+ 
 \protect
 
 \endinput

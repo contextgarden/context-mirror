@@ -22,6 +22,12 @@
 \catcode`\{=1 % left brace is begin-group character
 \catcode`\}=2 % right brace is end-group character
 \catcode`\#=6 % hash mark is macro parameter character
+\catcode`\^=7 % circumflex is for superscripts
+
+%D To prevent all kind of end||of||file problems, for the 
+%D moment we simply ignore the Control~Z token. 
+
+\catcode`\^^Z=9
 
 %D We are going to report to the user what we are skipping.
 
@@ -112,13 +118,13 @@
 %D Now we are ready for loading \PLAIN\ \TEX. Of couse we use 
 %D \type{\normalinput} and not \type{\input}.
 
-\normalinput plain.tex
+\normalinput plain.tex \let\normalfmtversion\fmtversion
 
 %D We have to take care of unwanted \PDFTEX\ 
 %D initializations. We just want to default to \DVI\ output. 
 
 \ifx\pdftexversion\undefined 
-  \chardef\pdfoutput=0 
+  \newcount\pdfoutput
 \else
   \pdfoutput=0
 \fi 
@@ -126,12 +132,47 @@
 %D When applicable, we also load the \ETEX\ source and 
 %D defintion files. 
 
-\def\gobbleETEX#1\par{}
-\def\doifETEX{\ifx\eTeXversion\undefined     \expandafter\gobbleETEX\fi}
-\def\ifnoETEX{\ifx\eTeXversion\undefined\else\expandafter\gobbleETEX\fi}
+\bgroup \obeylines 
 
-\doifETEX \normalinput     etex.src \relax 
-\doifETEX \normalinput etexdefs.lib \relax 
+\ifx\eTeXversion\undefined 
+
+  \long\gdef\beginETEX#1\endETEX%
+    {}
+
+  \gdef\beginTEX% 
+    {\bgroup\obeylines\dobeginTEX}
+
+  \gdef\dobeginTEX#1 
+    {\egroup}
+
+  \global\let\endTEX\relax
+
+\else
+
+  \long\gdef\beginTEX#1\endTEX%
+    {}
+
+  \gdef\beginETEX% 
+    {\bgroup\obeylines\dobeginETEX}
+
+  \gdef\dobeginETEX#1 
+    {\egroup\immediate\write16%
+       {line \the\inputlineno: inserting E-TEX code \detokenize{#1}}}
+
+  \global\let\endETEX\relax
+
+\fi 
+
+\egroup
+
+\beginETEX etex.src etexdefs.lib 
+
+  \normalinput     etex.src \relax 
+  \normalinput etexdefs.lib \relax 
+
+  \let\fmtversion\normalfmtversion
+
+\endETEX
 
 \let\normalprotected  = \protected
 \let\normalunexpanded = \unexpanded
@@ -164,6 +205,48 @@
 %D in the \type{log} file. 
 
 \def\wlog#1{} 
+
+%D To prevent clashes, we slightly redefine the phantom 
+%D macros: we let them hide their behaviour by grouping. 
+
+\catcode`@=11
+
+%D Somehow this one does not work ok in math mode:
+
+\def\ph@nt%
+  {\bgroup
+   \ifmmode
+     \expandafter\mathpalette\expandafter\mathph@nt
+   \else
+     \expandafter\makeph@nt
+   \fi}
+
+\def\finph@nt%
+  {\setbox\tw@\null
+   \ifv@ \ht\tw@\ht\z@ \dp\tw@\dp\z@ \fi
+   \ifh@ \wd\tw@\wd\z@ \fi 
+   \box\tw@
+   \egroup}
+
+%D But this one does work. 
+
+\def\ph@nt%
+  {\ifmmode
+     \expandafter\mathpalette\expandafter\mathph@nt
+   \else
+     \bgroup\expandafter\makeph@nt
+   \fi}
+
+\def\finph@nt%
+  {\setbox\tw@\null
+   \ifv@ \ht\tw@\ht\z@ \dp\tw@\dp\z@ \fi
+   \ifh@ \wd\tw@\wd\z@ \fi 
+   \box\tw@
+   \ifmmode\else\egroup\fi}
+
+\catcode`@=12
+
+%D Just for tracing purposes wet set:
 
 \tracingstats=1
 

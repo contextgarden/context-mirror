@@ -14,123 +14,71 @@
 %D point bodyfont is indeed never that size. The Lucida Bright 
 %D fonts come in one design size. 
 
-\startcoding[texnansi]
+\definefontsynonym [Serif]              [LucidaBright]
+\definefontsynonym [SerifBold]          [LucidaBright-Demi]
+\definefontsynonym [SerifItalic]        [LucidaBright-Italic]
+\definefontsynonym [SerifSlanted]       [LucidaBright-Oblique]
+\definefontsynonym [SerifBoldItalic]    [LucidaBright-DemiItalic]
+\definefontsynonym [SerifBoldSlanted]   [LucidaBright-DemiItalic]
+\definefontsynonym [SerifCaps]          [LucidaBrightSmallcaps]
 
-\definebodyfont [14.4pt,12pt,11pt,10pt,9pt,8pt] [rm]
-  [tf=LucidaBright sa 1, 
-   bf=LucidaBright-Demi sa 1, 
-   it=LucidaBright-Italic sa 1, 
-   sl=LucidaBright-Oblique sa 1, 
-   bi=LucidaBright-DemiItalic sa 1, 
-   bs=LucidaBright-DemiItalic sa 1, 
-  tfa=LucidaBright sa 1.200,
-  tfb=LucidaBright sa 1.440,
-  tfc=LucidaBright sa 1.728,
-  tfd=LucidaBright sa 2.074,
-   sc=LucidaBright sa 0.833]
+\definefontsynonym [Sans]               [LucidaSans]
+\definefontsynonym [SansBold]           [LucidaSans-Demi]
+\definefontsynonym [SansItalic]         [LucidaSans-Italic]
+\definefontsynonym [SansSlanted]        [LucidaSans-Italic]
+\definefontsynonym [SansBoldItalic]     [LucidaSans-DemiItalic]
+\definefontsynonym [SansBoldSlanted]    [LucidaSans-DemiItalic]
+\definefontsynonym [SansCaps]           [LucidaSans]
 
-\definebodyfont [14.4pt,12pt,11pt,10pt,9pt,8pt] [ss]
-  [tf=LucidaSans sa 1, 
-   bf=LucidaSans-Demi sa 1, 
-   it=LucidaSans-Italic sa 1, 
-   sl=LucidaSans-Italic sa 1, 
-   bi=LucidaSans-DemiItalic sa 1, 
-   bs=LucidaSans-DemiItalic sa 1, 
-  tfa=LucidaSans sa 1.200,
-  tfb=LucidaSans sa 1.440,
-  tfc=LucidaSans sa 1.728,
-  tfd=LucidaSans sa 2.074,
-   sc=LucidaSans sa 0.833]
+\definefontsynonym [Mono]               [LucidaSans-Typewriter]
+\definefontsynonym [MonoBold]           [LucidaSans-TypewriterBold]
+\definefontsynonym [MonoItalic]         [LucidaSans-TypewriterOblique]
+\definefontsynonym [MonoSlanted]        [LucidaSans-TypewriterOblique]
+\definefontsynonym [MonoBoldItalic]     [LucidaSans-TypewriterBoldOblique]
+\definefontsynonym [MonoBoldSlanted]    [LucidaSans-TypewriterBoldOblique]
+\definefontsynonym [MonoCaps]           [LucidaSans-Typewriter]
 
-\definebodyfont [14.4pt,12pt,11pt,10pt,9pt,8pt] [tt]
-  [tf=LucidaSans-Typewriter sa 1, 
-   sl=LucidaSans-TypewriterOblique sa 1, 
-   it=LucidaSans-TypewriterOblique sa 1, 
-   bf=LucidaSans-TypewriterBold sa 1, 
-   bs=LucidaSans-TypewriterBoldOblique sa 1, 
-  tfa=LucidaSans-Typewriter sa 1.200,
-  tfb=LucidaSans-Typewriter sa 1.440,
-  tfc=LucidaSans-Typewriter sa 1.728,
-  tfd=LucidaSans-Typewriter sa 2.074]
+\definefontsynonym [MathRoman]          [LucidaBright]
+\definefontsynonym [MathExtension]      [LucidaNewMath-Extension]
+\definefontsynonym [MathItalic]         [LucidaNewMath-AltItalic]
+\definefontsynonym [MathSymbol]         [LucidaNewMath-Symbol]
+\definefontsynonym [MathAlpha]          [LucidaNewMath-Arrows]
 
-\definebodyfont [14.4pt,12pt,11pt,10pt,9pt,8pt] [hw]
-  [tf=LucidaHandwriting-Italic sa 1]
+\definefontsynonym [Handwriting]        [LucidaHandwriting-Italic]
+\definefontsynonym [Calligraphy]        [LucidaCalligraphy-Italic]
 
-\definebodyfont [14.4pt,12pt,11pt,10pt,9pt,8pt] [cg]
-  [tf=LucidaCalligraphy-Italic sa 1]
+\definefontsynonym [OldStyle]           [MathItalic]
 
-\definebodyfont [14.4pt,12pt,11pt,10pt,9pt,8pt] [mm]
-  [ex=LucidaNewMath-Extension sa 1,
-   mi=LucidaNewMath-AltItalic sa 1,
-   sy=LucidaNewMath-Symbol sa 1,
-   ma=LucidaNewMath-Arrows sa 1]
+\definebodyfont 
+  [14.4pt,12pt,11pt,10pt,9pt,8pt,7pt,6pt,5pt,4pt] 
+  [rm,ss,tt,mm] 
+  [default]
 
-\definebodyfont [7pt,6pt,5pt,4pt] [rm]
-  [tf=LucidaBright sa 1,
-   bf=LucidaBright-Demi sa 1,
-   sl=LucidaBright-Italic sa 1,
-   it=LucidaBright-Italic sa 1]
+%D Some nice aditional ones.
 
-\definebodyfont [7pt,6pt,5pt,4pt] [ss]
-  [tf=LucidaSans sa 1,
-   sl=LucidaSans-Demi sa 1,
-   it=LucidaSans-Italic sa 1,
-   bf=LucidaSans-Italic sa 1]
-
-\definebodyfont [7pt,6pt,5pt,4pt] [tt]
-  [tf=LucidaSans-Typewriter sa 1,
-   sl=LucidaSans-TypewriterOblique sa 1]
-
-\definebodyfont [7pt,6pt,5pt,4pt] [mm]
-  [ex=LucidaNewMath-Extension sa 1,
-   mi=LucidaNewMath-AltItalic sa 1,
-   sy=LucidaNewMath-Symbol sa 1,
-   ma=LucidaNewMath-Arrows sa 1]
+\definebodyfont 
+  [14.4pt,12pt,11pt,10pt,9pt,8pt] 
+  [hw,cg]
+  [default]
 
 %D Defining the larger alternatives takes only a few 
 %D commands, thanks to \type{sa}. 
 
-\definebodyfont [14.4pt,12pt,11pt,10pt,9pt,8pt] [rm]
-  [bfa=LucidaBright-Demi sa 1.200,
-   bfb=LucidaBright-Demi sa 1.440,
-   bfc=LucidaBright-Demi sa 1.728,
-   bfd=LucidaBright-Demi sa 2.074,
-   sla=LucidaBright-Oblique sa 1.200,
-   slb=LucidaBright-Oblique sa 1.440,
-   slc=LucidaBright-Oblique sa 1.728,
-   sld=LucidaBright-Oblique sa 2.074,
-   bsa=LucidaBright-DemiItalic sa 1.200,
-   bsb=LucidaBright-DemiItalic sa 1.440,
-   bsc=LucidaBright-DemiItalic sa 1.728,
-   bsd=LucidaBright-DemiItalic sa 2.074]
-
-\definebodyfont [14.4pt,12pt,11pt,10pt,9pt,8pt] [ss]
-  [bfa=LucidaSans sa 1.200,
-   bfb=LucidaSans sa 1.440,
-   bfc=LucidaSans sa 1.728,
-   bfd=LucidaSans sa 2.074,
-   sla=LucidaSans-Demi sa 1.200,
-   slb=LucidaSans-Demi sa 1.440,
-   slc=LucidaSans-Demi sa 1.728,
-   sld=LucidaSans-Demi sa 2.074,
-   bsa=LucidaSans-Italic sa 1.200,
-   bsb=LucidaSans-Italic sa 1.440,
-   bsc=LucidaSans-Italic sa 1.728,
-   bsd=LucidaSans-Italic sa 2.074]
-
-\definebodyfont [14.4pt,12pt,10pt] [tt]
-  [sla=LucidaSans-TypewriterOblique sa 1.220,
-   slb=LucidaSans-TypewriterOblique sa 1.440,
-   slc=LucidaSans-TypewriterOblique sa 1.728,
-   sld=LucidaSans-TypewriterOblique sa 2.074]
-
-\stopcoding
-
 %D The Lucida Bright TeleType font does not contain \TEX's 
 %D visual space. The next definition offers an alternative.
 
-\def\controlspace%
-  {\hbox{\font\next=cmtt10 at \bodyfontsize\next\char32}}
+\def\controlspace% slow slow slow
+  {\hbox to .5em
+     {\font\next=cmtt10 at \bodyfontsize\next
+      \hss\char32\hss}}
+
+% \def\controlspace% 
+%   {\hbox to .5em
+%      {\hss
+%       \vrule\!!width .1\dp\strutbox \!!height\!!zeropoint \!!depth .7\dp\strutbox 
+%       \vrule\!!width .4em\!!height -.6\dp\strutbox\!!depth .7\dp\strutbox
+%       \vrule\!!width .1\dp\strutbox \!!height\!!zeropoint \!!depth .7\dp\strutbox
+%       \hss}}
 
 %D Next we implement some alternatives for \AMS\ symbols. 
 %D These can be overrules by loading the \AMS\ font module 
@@ -185,7 +133,9 @@
 
 %D Adjusted for LucidaNewMath||Extension at 10pt and math axis
 %D at 3.13pt Note: delimiter increments are 5.5pt (as opposed
-%D to 6pt in \kap{CM}).
+%D to 6pt in \kap{CM}). 
+
+%D Should these be adapted to \type {\bodyfontsize} ? 
 
 \def\big    #1{{\hbox{$\left#1\vbox to8.20\p@{}\right.\n@space$}}}
 \def\Big    #1{{\hbox{$\left#1\vbox to10.80\p@{}\right.\n@space$}}}
@@ -198,9 +148,9 @@
 %D Define some extra large sizes. It's always done using 
 %D extensible parts.
 
-\def\bigggl{\mathopen\biggg}
+\def\bigggl{\mathopen \biggg}
 \def\bigggr{\mathclose\biggg}
-\def\Bigggl{\mathopen\Biggg}
+\def\Bigggl{\mathopen \Biggg}
 \def\Bigggr{\mathclose\Biggg}
 
 %D The following is needed if the roman text font is {\em 
@@ -227,7 +177,9 @@
 
 %D Draw $=$ and $+$ from \kap{LBMS} instead of \kap{LBR}.
 
-\mathcode`\=="3283 \mathcode`\+="2282
+% interferes with \mf settings 
+%
+% \mathcode`\=="3283 \mathcode`\+="2282
 
 %D Make open face brackets accessible, i.e. [[ and ]].
 
@@ -285,6 +237,7 @@
 %D Some more characters.
 
 % \mathchardef\hbar           ="0\thearfam 1B
+
 \mathchardef\hbar             ="019D
 \mathchardef\neq              ="3\thearfam 94
 \mathchardef\rightleftharpoons="3\thearfam 7A
@@ -346,4 +299,3 @@
 \protect
 
 \endinput
-

@@ -110,8 +110,7 @@
 
 \def\definieerkoppeling[#1]%  % local loading ! 
   {\doifundefined{\s!link:#1:\s!list}
-     {\expanded{\definetwopasslist{\s!link:#1}}%
-      \expanded{\doloadtwopassdata{\s!link:#1}}%
+     {\expanded{\definetwopasslist{\s!link:#1}}%      \expanded{\doloadtwopassdata{\s!link:#1}}%
       \getfirsttwopassdata{\s!link:#1}%
       \let\firstlink=\twopassdata  
       \getlasttwopassdata{\s!link:#1}%
@@ -211,4 +210,3 @@
 \protect
 
 \endinput
-

@@ -88,6 +88,9 @@
 
 \gdef\TEXsetcontrols%
   {\saveprettycontrols
+   \everyprettyend
+     {\TEXendofcommand
+      \TEXendofparameter}%
    \def\obeyedspace%
      {\TEXendofcommand
       \TEXendofparameter
@@ -282,4 +285,3 @@
 \protect 
 
 \endinput 
-

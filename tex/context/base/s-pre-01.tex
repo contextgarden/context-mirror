@@ -1,0 +1,374 @@
+%D \module
+%D   [      file=s-pre-01,
+%D        version=1997.07.22,
+%D          title=\CONTEXT\ Style File,
+%D       subtitle=Presentation Environment 1,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. Non||commercial use is
+%C granted.
+
+%D This environment can be used to typeset interactive
+%D presentations. This module was first used at the 1997 \TUG\
+%D meeting.
+
+%D \macros
+%D   {language}
+%D
+%D Because this module is defined in english, we default to the
+%D english hyphenation patterns and labels too.
+
+\language
+  [en]
+
+%D \macros
+%D   {setupbodyfont,setuplayout}
+%D
+%D For screen reading, a Lucida Bright font looks nice. We use
+%D a 14.4 point bodyfont for the main text, but switch back to 
+%D 12 points for ornaments.
+
+\setupbodyfont
+  [lbr,14.4pt]
+
+\setuplayout
+  [style={\switchtobodyfont[12pt]}]
+
+%D \macros
+%D   {setupcolors,definecolor}
+%D
+%D Screen presentations without color just look dull, so we
+%D enable color support. We define ourselves a yellowish
+%D backgroundcolor and a not too dark blue interactioncolor.
+
+\setupcolors
+  [state=start]
+
+\definecolor [backgroundcolor]  [r=1,  g=1,  b=.7]
+\definecolor [interactioncolor] [r=.1, g=.5, b=.8]
+
+%D \macros
+%D   {setuppapersize,setuplayout,setupinteractionscreen}
+%D
+%D
+%D We use a nice large screen, and dedicate the right edge and
+%D bottom part to navigational tools. We automatically set
+%D the width and height of the page and start up full screen.
+
+\setuppapersize
+  [S6]
+
+\setuplayout
+  [topspace=12pt,
+   header=0pt,
+   height=fit,
+   footer=0pt,
+   bottomdistance=8pt,
+   bottom=10pt,
+   backspace=12pt,
+   margin=0pt,
+   width=fit,
+   edgedistance=12pt,
+   rightedge=96pt]
+
+\setupinteractionscreen
+  [option=max,
+   width=600pt,
+   height=450pt]
+
+%D \macros
+%D   {setupbackgrounds}
+%D
+%D We set the pagecolor to yellow except the part of the screen
+%D that is used to display the running text. By seting the
+%D offset to 3pt the text will not touch the yellow parts. We
+%D do not set the depth.
+
+\setupbackgrounds
+  [page]
+  [background=color,
+   backgroundcolor=backgroundcolor,
+   offset=3pt]
+
+\setupbackgrounds
+  [text][text]
+  [background=color,
+   backgroundcolor=white]
+
+%D I considered the next setup too, but finaly decided to
+%D comment it out.
+%D
+%D \starttypen
+%D \setupbackgrounds
+%D   [bottom][text]
+%D   [frame=on,
+%D    framecolor=white]
+%D \stoptypen
+
+%D \macros
+%D   {setupinteractions}
+%D
+%D We did not enable interactive text support yet, so let's do
+%D that now. We force page reference to circumvent problems
+%D with named destinations in buggy viewers. 
+
+\setupinteraction
+  [page=yes,
+   state=start]
+
+%D \macros
+%D   {setupbottomtexts}
+%D
+%D At the bottom of the screen we show two navigational bars.
+%D At the left we show the subpage bar, at the right we use a
+%D non default backward|/|forward bar.
+
+\setupbottomtexts
+  [\InteractionBar]
+  [\InteractionButtons]
+
+%D \macros
+%D   {interactionbar}
+%D
+%D The left bar gets a white border (on the yellow background).
+%D Because we don't want to typeset an empty frame when no
+%D subpage bar is shown, we check for the number of subpages.
+
+\def\InteractionBar%
+  {\ifnum\nofsubpages>1
+     \framed
+       [framecolor=white,linethickness=1pt,
+        height=\bottomheight,strut=no]
+       {\interactionbar[alternative=e,height=1ex]}
+   \fi}
+
+%D \macros
+%D   {setupinteractionbar, interactionbuttons}
+%D
+%D The right hand buttons enable us to jump backward and forward,
+%D as well as to the previous and next jump. We also enable to
+%D close the presentation.
+
+\setupinteractionbar
+  [framecolor=white,linethickness=1pt,
+   height=\bottomheight,strut=no]
+   
+\def\InteractionButtons%
+  {\interactionbuttons
+     [width=15em]
+     [PreviousJump,NextJump,
+      firstpage,
+      firstsubpage,previouspage,nextpage,lastsubpage,
+      lastpage,
+      CloseDocument]}
+
+%D \macros
+%D  {StartTitlePage, TitlePage}
+%D
+%D The titlepage is rather simple and can be typeset in two 
+%D ways: 
+%D
+%D \starttypen
+%D \StartTitlePage
+%D text \\ text \\ text 
+%D \StopTitlepage
+%D \stoptypen
+%D
+%D or more straightforward:
+%D
+%D \starttypen
+%D \TitlePage{text\\text\\text} 
+%D \stoptypen
+%D 
+%D The first alternative can be used for more complicated 
+%D title pages.  
+
+\def\StartTitlePage%
+  {\startstandardmakeup
+   \bfd
+   \setupalign[middle]
+   \vfil
+   \let\\=\vfil}
+
+\def\StopTitlePage%
+  {\vfil\vfil\vfil
+   \stopstandardmakeup}
+
+\def\TitlePage#1%
+  {\StartTitlePage#1\StopTitlePage}
+
+%D \macros
+%D   {TitlePage, Topics, Topic, Subject}
+%D
+%D A presentation after loading this module looks like:
+%D
+%D \starttypen
+%D \TitlePage {About Whatever\\Topics}
+%D
+%D \Topics {Todays Talk}
+%D
+%D \Topic {Some topic}
+%D
+%D \Subject {Alfa}
+%D
+%D .....
+%D
+%D \Subject {Beta}
+%D
+%D .....
+%D \stoptypen
+
+%D \macros
+%D   {definehead}
+%D
+%D The commands \type{\Topic} and \type{\Subject} are defined
+%D as copies of head. We use \type{\Nopic} for internal 
+%D purposes. 
+
+\definehead [Topic]   [chapter]
+\definehead [Subject] [section]
+
+\definehead [Nopic]   [title]
+
+%D \macros
+%D   {setuphead}
+%D
+%D We use our own command for typesetting the titles. We hide
+%D sectionnumbers from viewing. Each topic is followed by a
+%D list of subjects that belong to the topic.
+
+\setuphead
+  [Topic, Nopic, Subject]
+  [command=\HeadLine,
+   page=yes,
+   style=\tfb,
+   after=\blank,
+   sectionnumber=no]
+
+\setuphead
+  [Topic]
+  [after=\PlaceSubjectList]
+
+\setuphead
+  [Subject]
+  [continue=no]
+
+%D \macros
+%D   {framed, midalined}
+%D
+%D The command used to typeset the head lines is rather simple.
+%D We just center the framed title. The frame macro optimizes
+%D the alignment and at the same time enables us to typset a
+%D nice colored rule.
+
+\def\HeadLine#1#2%
+  {\midaligned
+     {\framed
+        [framecolor=backgroundcolor,linethickness=1pt,
+         width=.8\hsize,align=middle,strut=no]
+        {#2}}}
+
+%D \macros
+%D   {setuplist}
+%D
+%D The subject list is automatically placed. We center each
+%D subject line by using one of the default alternatives (g). We
+%D could have said:
+%D
+%D \starttypen
+%D \setuplist
+%D   [Subject]
+%D   [alternative=none,
+%D    command=\SubjectListLine,
+%D    interaction=all]
+%D
+%D \def\SubjectListLine#1#2#3%
+%D   {\midaligned{#2}}
+%D \stoptypen
+%D
+%D But why should we complicate things when we can say:
+
+\def\PlaceSubjectList%
+  {\blank
+   \determinelistcharacteristics[Subject] 
+   \ifnum\utilitylistlength>0
+     \placelist[Subject]
+   \fi}
+
+\setuplist
+  [Subject, Topic]
+  [alternative=g,
+   interaction=all,
+   before=,
+   after=]
+
+%D \macros
+%D   {setuptexttexts}
+%D
+%D The topics will be listed in the right edge, using:
+
+\setuptexttexts
+  [edge]
+  [][\TopicList]
+
+%D \macros
+%D   {setuplist, placelist}
+%D
+%D The actual topic list is typeset using a \type{\vbox}. We
+%D have to specify \type{criterium=all} because otherwise no 
+%D list will be typeset. (By default lists are typeset 
+%D locally.)
+
+\def\TopicList%
+  {\vbox to \vsize
+     {\placelist
+        [Topic]
+        [alternative=none,
+         criterium=all,
+         command=\TopicLine]
+      \vss}}
+
+\def\Topics#1% temporary hack 
+  {\Nopic{#1}
+   \placelist[Topic][criterium=all]}
+
+%D \macros
+%D   {limitatetext}
+%D
+%D Because topic lines can be rather long, so we use \type 
+%D {\limitatetext} to limit their length to the width of the 
+%D right edge. This macro is part of the support macros.
+
+\def\TopicLine#1#2#3%
+  {\limitatetext{#2}{\rightedgewidth}{...}
+   \par}
+
+%D \macros
+%D   {setuptexttexts, button}
+%D 
+%D During a presentation, we want to use the cursor to point to
+%D parts of the text. Furthermore we want to be able to jump to
+%D the next page, without too much positioning on buttons.
+%D Therefore we make the text part of the screen into an
+%D invisible button. 
+
+\setuptexttexts
+  [\GotoNextPage][]
+
+\def\GotoNextPage
+  {\button[width=\hsize,height=\vsize,frame=off]{}[nextpage]}
+
+%D \macros
+%D   {setupsubpagenumber}
+%D
+%D The left bottom navigation bar shows the subpages, which will
+%D be counted by topic.
+
+\setupsubpagenumber
+  [way=byTopic,
+   state=start]
+
+\endinput

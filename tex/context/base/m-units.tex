@@ -1,0 +1,692 @@
+%D \module
+%D   [       file=m-units,
+%D        version=1997.03.19,
+%D          title=\CONTEXT\ Extra Modules,
+%D       subtitle=Scientific Units,
+%D         author={Hans Hagen \& Ton Otten},
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. Non||commercial use is
+%C granted.
+
+%D Scientific units can be typeset in math mode pretty well,
+%D but occasionally one has to take care of spacing.
+%D Furthermore, entering these units is not that natural as
+%D wanted. Therefore this module presents a more natural way of
+%D doing things, like:
+%D
+%D \starttypen
+%D 1.23 \Cubic \Meter \Per \Second
+%D \stoptypen
+%D
+%D This example shows that we use the order in which we say
+%D things, instead of typeset things. There is a separate 
+%D manual for this module.  
+
+%D Message number~1 deals with overruling the \type {\Degrees}
+%D macro defined in the core modules. Let's say that this is
+%D an upward compatibility issue.
+
+\startmessages  dutch  library: units
+  title: eenheden
+      1: gebruik \string\Degrees\space\string\Celsius\space in plaats van \string\Celsius !
+\stopmessages
+
+\startmessages  english  library: units
+  title: units
+      1: use \string\Degrees\space\string\Celsius\space instead of \string\Celsius !
+\stopmessages
+
+\startmessages  german  library: units
+  title: Einheiten
+      1: Verwende \string\Degrees\space\string\Celsius\space statt \string\Celsius !
+\stopmessages
+
+\unprotect
+
+%D This runtime loadable module implements a way of defining
+%D units. The core macro is \type {\dimension}, a rather clever
+%D one that is able to cooperate with some other dimension
+%D related macros. As said, this module enables user to enter:
+%D
+%D \startbuffer
+%D some 10 \Square \Meter \Per \Second or more
+%D \stopbuffer
+%D
+%D \haalbuffer
+%D
+%D as:
+%D
+%D \typebuffer
+%D
+%D The units itself are implemented as synonyms.
+%D
+%D \starttypen
+%D \definesynonyms [unit] [units] [\unitmeaning]
+%D \stelsynoniemenin [unit] [textstyle=\dimension]
+%D \stoptypen
+%D
+%D We have to use the command \type {\unitedmeaning} instead
+%D of \type {\meaning}, simply because the latter is a \TEX\
+%D primitive we don't want to loose. We use the label text 
+%D mechanism for translations. 
+%D
+%D This definition means that we can ask for the meaning of a
+%D unit using \type {\unitmeaning} and get a list of used
+%D units by saying \type {\placelistofunits}
+
+%D \macros
+%D   {dimension}
+%D
+%D The core of this module is the low level macro \type
+%D {\dimension}. Before presenting this macro, it's best to
+%D look at some applications, because it's supposed to show
+%D some intelligence that can beter be understood from the
+%D context.
+%D
+%D The next useless examples show some of the cases we want
+%D to handle in a proper way.
+%D
+%D \startbuffer
+%D ... 10 \Square \Meter \Per \Volt \
+%D ... 10 \Square \Meter \Volt \
+%D ... 10 \Meter \Volt \
+%D ... 10 \Milli \Square \Meter \Per \Volt \
+%D ... 10 \Square \Milli \Meter \Per \Volt \
+%D ... 10 \Meter \Times \Meter \
+%D ... 10 \Square \Meter \Times \Meter \
+%D ... 10 \Square \Milli \Meter \Times \Meter \
+%D \stopbuffer
+%D
+%D \typebuffer
+%D
+%D Becomes:
+%D
+%D \haalbuffer
+
+%D \macros
+%D   {mathematicstypeface, dimensiontypeface,
+%D    dimensionhalfspace, dimensionbackspace}
+%D
+%D There are some low level constants, that can be changed
+%D when needed. Some day I will write a decent setup command.
+
+\def\mathematicstypeface{\rm}
+\def\dimensiontypeface  {\tf}
+
+\def\dimensionhalfspace {\,}
+\def\dimensionbackspace {\!}
+
+%D \macros
+%D   {smashdimensionpower}
+%D
+%D Sometimes the baseline distance is not enough to provide
+%D for superscripts, so we smash their height by default.
+
+\newif\ifsmashdimensionpower \smashdimensionpowertrue
+
+%D The dimension mechanism uses a lot of signals to keep
+%D track if the current state.
+
+\newsignal\dimensionsignal
+\newsignal\dimensionpowersignal
+\newsignal\dimensionmidfixsignal
+\newsignal\dimensionaddfixsignal
+
+\let\thedimensionprefix = \empty
+\let\thedimensionpower  = \empty
+
+%D \macros
+%D   {spaceddimensions}
+%D 
+%D The actual definition of \type {\dimension} overruled the
+%D one in the core modules. The boolean can be used to 
+%D force spacing between units. Vergelijk {\Newton \Meter} 
+%D eens met {\spaceddimensionstrue \Newton \Meter}. The 
+%D rather ugly test prevents problems with nested dimensions. 
+
+\newif\ifspaceddimensions \spaceddimensionsfalse % user switch
+\newif\ifnesteddimension  \nesteddimensionfalse  % local switch
+
+\unexpanded\def\dimension#1% 
+  {\begingroup
+   \global\let\savedthedimensionprefix\thedimensionprefix
+   \global\let\savedthedimensionpower\thedimensionpower
+   \unexpanded\def\dimension##1{\global\nesteddimensiontrue}%
+   \let\dimensionprefix\dimension
+   \let\dimensionmidfix\dimension
+   \let\dimensionsuffix\dimension
+   \let\dimensionpower\dimension
+   \global\nesteddimensionfalse
+   \setbox0=\hbox{\startmathmode#1\stopmathmode}%
+   \global\let\thedimensionprefix\savedthedimensionprefix
+   \global\let\thedimensionpower\savedthedimensionpower
+   \endgroup
+   \ifnesteddimension#1\else\dodimension{#1}\fi}
+
+\def\dodimension#1%
+  {\dontbreakdimension
+   \ifdim\scratchdimen=\!!zeropoint\relax
+     \ifmmode
+       \dimensionhalfspace
+       \dimensionhalfspace
+     \fi
+     \startmathmode\dimensiontypeface
+   \else
+     \startmathmode\dimensiontypeface
+     \ifdim\scratchdimen=\dimensionsignal\relax
+       \ifspaceddimensions\dimensionhalfspace\fi
+     \fi
+   \fi
+   \mathematicstypeface\thedimensionprefix#1%
+   \ifx\thedimensionpower\empty
+   \else\ifsmashdimensionpower
+     \setbox\scratchbox=\hbox{$\scriptstyle\thedimensionpower$}%
+     \ht\scratchbox=\!!zeropoint
+     ^{\box\scratchbox}%
+   \else
+     ^{\thedimensionpower}%
+   \fi\fi
+   \stopmathmode
+   \nobreak
+   \ifx\thedimensionpower\empty
+     \hskip\dimensionsignal
+   \else
+     \hskip\dimensionpowersignal
+   \fi
+   \global\let\thedimensionprefix=\empty
+   \global\let\thedimensionpower=\empty}
+
+%D \macro
+%D   {dontbreakdimension,
+%D    dimensionprefix, dimensionaddfix,
+%D    dimensionnopfix, dimensionmidfix,
+%D    dimensionpower}
+%D
+%D Here are some auxilliary macros.
+
+\def\dontbreakdimension%
+  {\scratchdimen=\lastskip
+   \unskip
+   \nobreak
+   \hskip\scratchdimen
+   \nobreak}
+
+\def\dimensionprefix#1%
+  {\gdef\thedimensionprefix{#1}}
+
+\def\dimensionaddfix#1%
+  {\unskip
+   \mathematics{\mathematicstypeface#1}%
+   \nobreak
+   \hskip\dimensionaddfixsignal}
+
+\def\dimensionnopfix#1%
+  {\dontbreakdimension
+   \ifdim\scratchdimen=\dimensionpowersignal\relax
+     \startmathmode
+   \else
+     \startmathmode
+     \dimensionhalfspace
+     \nobreak
+   \fi
+   \mathematicstypeface#1%
+   \stopmathmode
+   \nobreak
+   \hskip\dimensionsignal}
+
+\def\dimensionmidfix#1%
+  {\dontbreakdimension
+   \ifdim\scratchdimen=\dimensionpowersignal\relax
+     \startmathmode
+     \dimensionbackspace
+     \nobreak
+   \else
+     \startmathmode
+   \fi
+   \mathematicstypeface#1%
+   \stopmathmode
+   \nobreak
+   \hskip\dimensionmidfixsignal}
+
+\def\dimensionpower#1%
+  {\gdef\thedimensionpower{#1}}
+
+%D \macro
+%D   {SIunits, noSI, doSI}
+%D
+%D Some low level unit switching macros:
+
+\newif\ifSIunits \SIunitstrue
+
+\def\noSI#1{\begingroup\SIunitsfalse#1\endgroup}
+\def\doSI#1{\begingroup\SIunitstrue#1\endgroup}
+
+%D \macros
+%D   {Degrees}
+%D
+%D We can fake the degrees symbol with:
+
+\def\Degrees%
+  {\dimensionaddfix{^\circ}}
+
+%D \macro
+%D   {Unit, NoUnit}
+%D
+%D When a dimension has no leading number, we can use \type
+%D {\Unit}, and when no unit is appended, \type {\NoUnit} is 
+%D to be used, just to prevent the prefix migrating to the 
+%D next occasion. 
+
+\def\Unit   {\hskip\dimensionsignal}
+\def\NoUnit {\dimension{}}
+
+%D The mechanism described at the top of this module, depends
+%D on several dimensional components, like prefixes:
+
+\def\Atto    {\dimensionprefix{a}}
+\def\Femto   {\dimensionprefix{f}}
+\def\Pico    {\dimensionprefix{p}}
+\def\Nano    {\dimensionprefix{n}}
+\def\Micro   {\dimensionprefix{\mu}}
+\def\Milli   {\dimensionprefix{m}}
+\def\Centi   {\dimensionprefix{c}}
+\def\Deci    {\dimensionprefix{d}}
+\def\Hecto   {\dimensionprefix{h}}
+\def\Kilo    {\dimensionprefix{k}}
+\def\Mega    {\dimensionprefix{M}}
+\def\Giga    {\dimensionprefix{G}}
+\def\Terra   {\dimensionprefix{T}} 
+\def\Peta    {\dimensionprefix{P}} 
+\def\Exa     {\dimensionprefix{E}} 
+ 
+%D and operators:
+
+\def\Times   {\dimensionnopfix{\cdot}}
+\def\Solidus {\dimensionmidfix{/}}
+\def\Per     {\dimensionmidfix{/}}
+\def\OutOf   {\dimensionnopfix{:}}
+
+%D  and suffixes:
+
+\def\Linear  {\dimensionpower{1}}
+\def\Square  {\dimensionpower{2}}
+\def\Cubic   {\dimensionpower{3}}
+
+\def\Inverse {\dimensionpower{-1}}
+\def\ILinear {\dimensionpower{-1}}
+\def\ISquare {\dimensionpower{-2}}
+\def\ICubic  {\dimensionpower{-3}}
+
+%D Apart from these components, the units themselves are
+%D defined using the synonym mechanism. First we define some
+%D length and volume related units.
+
+\getvalue{\v!eenheid} [Meter]  {m}             {meter}
+\getvalue{\v!eenheid} [pMeter] {\Pico  \Meter} {picometer}
+\getvalue{\v!eenheid} [nMeter] {\Nano  \Meter} {nanometer}
+\getvalue{\v!eenheid} [uMeter] {\Micro \Meter} {micrometer}
+\getvalue{\v!eenheid} [mMeter] {\Milli \Meter} {millimeter}
+\getvalue{\v!eenheid} [cMeter] {\Centi \Meter} {centimeter}
+\getvalue{\v!eenheid} [dMeter] {\Deci  \Meter} {decimeter}
+\getvalue{\v!eenheid} [hMeter] {\Hecto \Meter} {hectometer}
+\getvalue{\v!eenheid} [kMeter] {\Kilo  \Meter} {kilometer}
+
+\getvalue{\v!eenheid} [Liter]  {l}             {liter}
+\getvalue{\v!eenheid} [mLiter] {\Milli \Liter} {milliliter}
+\getvalue{\v!eenheid} [cLiter] {\Centi \Liter} {centiliter}
+\getvalue{\v!eenheid} [dLiter] {\Deci  \Liter} {deciliter}
+
+%D Next we define time related units (\type {\ifSI} still dutch only).
+
+\getvalue{\v!eenheid} [Sec]   {s}                       {\labeltext{u:sec}}
+\getvalue{\v!eenheid} [fSec]  {\Femto \Sec}             {\labeltext{u:fsec}}
+\getvalue{\v!eenheid} [pSec]  {\Pico \Sec}              {\labeltext{u:psec}}
+\getvalue{\v!eenheid} [nSec]  {\Nano \Sec}              {\labeltext{u:nsec}}
+\getvalue{\v!eenheid} [uSec]  {\Micro \Sec}             {\labeltext{u:usec}}
+\getvalue{\v!eenheid} [mSec]  {\Milli \Sec}             {\labeltext{u:msec}}
+\getvalue{\v!eenheid} [Year]  {\ifSIunits a \else j\fi} {\labeltext{u:year}}
+\getvalue{\v!eenheid} [Month] {m}                       {\labeltext{u:month}}
+\getvalue{\v!eenheid} [Week]  {w}                       {\labeltext{u:week}}
+\getvalue{\v!eenheid} [Day]   {d}                       {\labeltext{u:day}}
+\getvalue{\v!eenheid} [Hour]  {\ifSIunits h \else u\fi} {\labeltext{u:hour}}
+\getvalue{\v!eenheid} [Min]   {min}                     {\labeltext{u:min}}
+
+\setuplabeltext
+  [\s!nl]
+  [u:sec=seconde,
+   u:psec=picoseconde,
+   u:fsec=femtoseconde,
+   u:nsec=nanoseconde,
+   u:usec=microseconde,
+   u:msec=milliseconde,
+   u:year=jaar,
+   u:month=maand,
+   u:week=week,
+   u:day=dag,
+   u:hour=uur,
+   u:min=minuten]
+
+\setuplabeltext
+  [\s!en]
+  [u:sec=second,
+   u:fsec=femtosecond,
+   u:psec=picosecond,
+   u:nsec=nanosecond,
+   u:usec=microsecond,
+   u:msec=millisecond,
+   u:year=year,
+   u:month=month,
+   u:week=week,
+   u:day=day,
+   u:hour=hour,
+   u:min=minutes]
+
+\setuplabeltext
+  [\s!de]
+  [u:sec=Sekunde,
+   u:fsec=Femtosekunde,
+   u:psec=Picosekunde,
+   u:nsec=Nanosekunde,
+   u:usec=Microsekunde,
+   u:msec=Millisekunde,
+   u:year=Jahr,
+   u:month=Monat,
+   u:week=Woche,
+   u:day=Tag,
+   u:hour=Stunde,
+   u:min=Minuten]
+
+%D Then we define some angles.
+
+\getvalue{\v!eenheid} [Rad] {rad}      {\labeltext{u:rad}}
+\getvalue{\v!eenheid} [Deg] {{^\circ}} {\labeltext{u:deg}}
+
+\setuplabeltext
+  [\s!nl]
+  [u:rad=hoek radialen,
+   u:deg=hoek graden]
+
+\setuplabeltext
+  [\s!en]
+  [u:rad=angle radians,
+   u:deg=angle degrees]
+
+\setuplabeltext
+  [\s!de]
+  [u:rad=Bogenma\SS,
+   u:deg=Gradma\SS]
+
+%D Rotation and frequency related units are defined by:
+
+\getvalue{\v!eenheid} [Hertz]     {Hz}            {Hertz}
+\getvalue{\v!eenheid} [kHertz]    {\Kilo  \Hertz} {kilo Hertz}
+\getvalue{\v!eenheid} [MHertz]    {\Mega  \Hertz} {mega Hertz}
+\getvalue{\v!eenheid} [GHertz]    {\Giga  \Hertz} {giga Hertz}
+\getvalue{\v!eenheid} [THertz]    {\Tera  \Hertz} {tera Hertz}
+\getvalue{\v!eenheid} [mHertz]    {\Milli \Hertz} {milli Hertz}
+
+\getvalue{\v!eenheid} [RevPerSec] {RPS} {\labeltext{u:rps}}
+\getvalue{\v!eenheid} [RevPerMin] {RPM} {\labeltext{u:rpm}}
+
+\setuplabeltext
+  [\s!nl]
+  [u:rps=omwentelingen per seconde,
+   u:rpm=omwentelingen per minuut]
+
+\setuplabeltext
+  [\s!en]
+  [u:rps=revolutions per second,
+   u:rpm=revolutions per minute]
+
+\setuplabeltext
+  [\s!de]
+  [u:rps=Umdrehungen pro Sekunde,
+   u:rpm=Umdrehungen pro Minute]
+
+%D Mass and force:
+
+\getvalue{\v!eenheid} [Gram]    {g}              {gram}
+\getvalue{\v!eenheid} [uGram]   {\Micro \Gram}   {microgram}
+\getvalue{\v!eenheid} [mGram]   {\Milli \Gram}   {milligram}
+\getvalue{\v!eenheid} [kGram]   {\Kilo  \Gram}   {kilogram}
+\getvalue{\v!eenheid} [Atom]    {u}              {\labeltext{u:u}}
+
+\getvalue{\v!eenheid} [Newton]  {N}              {Newton}
+\getvalue{\v!eenheid} [kNewton] {\Kilo \Newton}  {kilo Newton}
+
+\getvalue{\v!eenheid} [Pascal]  {Pa}             {Pascal}
+\getvalue{\v!eenheid} [mPascal] {\Milli \Pascal} {milli Pascal}
+\getvalue{\v!eenheid} [kPascal] {\Kilo  \Pascal} {kilo Pascal}
+
+\setuplabeltext
+  [\s!nl]
+  [u:u=atomaire massa eenheid]
+
+\setuplabeltext
+  [\s!en]
+  [u:u=atom mass unit]
+
+\setuplabeltext
+  [\s!de]
+  [u:u=Atomare Masseneinheit]
+
+%D Energy units comes in two alternatives:
+
+\getvalue{\v!eenheid} [Joule]  {J}             {Joule}
+\getvalue{\v!eenheid} [mJoule] {\Milli \Joule} {milli Joule}
+\getvalue{\v!eenheid} [kJoule] {\Kilo  \Joule} {kilo Joule}
+\getvalue{\v!eenheid} [MJoule] {\Mega  \Joule} {mega Joule}
+\getvalue{\v!eenheid} [GJoule] {\Giga  \Joule} {giga Joule}
+
+\getvalue{\v!eenheid} [Watt]  {W}              {Watt}
+\getvalue{\v!eenheid} [mWatt] {\Milli \Watt}   {milli Watt}
+\getvalue{\v!eenheid} [kWatt] {\Kilo  \Watt}   {kilo Watt}
+\getvalue{\v!eenheid} [MWatt] {\Mega  \Watt}   {mega Watt}
+\getvalue{\v!eenheid} [GWatt] {\Giga  \Watt}   {giga Watt}
+\getvalue{\v!eenheid} [TWatt] {\Tera  \Watt}   {tera Watt}
+
+%D Although Celsius is no longer permitted, we define it by
+%D saying:
+
+\getvalue{\v!eenheid} [Celsius]    {C} {Celsius}
+\getvalue{\v!eenheid} [Kelvin]     {K} {Kelvin}
+\getvalue{\v!eenheid} [Fahrenheit] {F} {Fahrenheit} 
+
+%D Some chemic related units are:
+
+\getvalue{\v!eenheid} [Mol]         {mol}                {mol}
+\getvalue{\v!eenheid} [mMol]        {\Milli \Mol}        {millimol}
+\getvalue{\v!eenheid} [kMol]        {\Kilo  \Mol}        {kilomol}
+\getvalue{\v!eenheid} [Molair]      {M}                  {molair (\Mol \Per \Liter)}
+\getvalue{\v!eenheid} [Equivalent]  {eq}                 {equivalent}
+\getvalue{\v!eenheid} [mEquivalent] {\Milli \Equivalent} {milli equivalent}
+
+%D There are quite a lot units related to electricity and
+%D magnetism:
+
+\getvalue{\v!eenheid} [Farad]   {F}             {Farad}
+\getvalue{\v!eenheid} [pFarad]  {\Pico  \Farad} {pico Farad}
+\getvalue{\v!eenheid} [nFarad]  {\Nano  \Farad} {nano Farad}
+\getvalue{\v!eenheid} [uFarad]  {\Micro \Farad} {micro Farad}
+\getvalue{\v!eenheid} [mFarad]  {\Milli \Farad} {milli Farad}
+
+\getvalue{\v!eenheid} [Ohm]     {\Omega}        {Ohm}
+\getvalue{\v!eenheid} [kOhm]    {\Kilo \Ohm}    {kilo Ohm}
+
+\getvalue{\v!eenheid} [Siemens] {S}              {Siemens}
+
+\getvalue{\v!eenheid} [Ampere]  {A}              {Amp\`ere}
+\getvalue{\v!eenheid} [mAmpere] {\Milli \Ampere} {milli Amp\`ere}
+
+\getvalue{\v!eenheid} [Coulomb] {C}              {Coulomb}
+
+\getvalue{\v!eenheid} [Volt]    {V}              {Volt}
+\getvalue{\v!eenheid} [mVolt]   {\Milli \Volt}   {milli Volt}
+\getvalue{\v!eenheid} [kVolt]   {\Kilo  \Volt}   {kilo Volt}
+\getvalue{\v!eenheid} [eVolt]   {eV}             {electronvolt}
+\getvalue{\v!eenheid} [keVolt]  {\Kilo \eVolt}   {kilo electronvolt}
+\getvalue{\v!eenheid} [MeVolt]  {\Mega \eVolt}   {mega electronvolt}
+
+\getvalue{\v!eenheid} [Tesla]   {T}              {Tesla}
+
+\getvalue{\v!eenheid} [VoltAC]  {V_{\xbox{ac}}}  {\labeltext{u:vac}}
+\getvalue{\v!eenheid} [VoltDC]  {V_{\xbox{dc}}}  {\labeltext{u:vdc}}
+
+\setuplabeltext
+  [\s!nl]
+  [u:vac=wisselspanning,
+   u:vdc=gelijkspanning]
+
+\setuplabeltext
+  [\s!en]
+  [u:vac=alternating current,
+   u:vdc=different current]
+
+\setuplabeltext
+  [\s!de]
+  [u:vac=Wechselspannung,
+   u:vdc=Gleichspannung]
+
+%D Computer memory is specified in Bytes:
+
+\getvalue{\v!eenheid} [Baud]  {Baud}         {Baud (Bit/s)}
+\getvalue{\v!eenheid} [Bit]   {Bit}          {Bit}
+
+\getvalue{\v!eenheid} [Byte]  {Byte}         {Byte}
+\getvalue{\v!eenheid} [kByte] {\Kilo  \Byte} {kilo Byte}
+\getvalue{\v!eenheid} [MByte] {\Mega  \Byte} {mega Byte}
+\getvalue{\v!eenheid} [GByte] {\Giga  \Byte} {giga Byte}
+\getvalue{\v!eenheid} [TByte] {\Terra \Byte} {terra Byte}
+
+%D Some radiation related units:
+
+\getvalue{\v!eenheid} [Bequerel]  {Bq}              {Bequerel}
+\getvalue{\v!eenheid} [MBequerel] {\Mega \Bequerel} {Bequerel}
+\getvalue{\v!eenheid} [Sievert]   {Sv}              {Sievert}
+\getvalue{\v!eenheid} [mSievert]  {\Milli \Sievert} {milli Sievert}
+
+%D Light: 
+
+\getvalue{\v!eenheid} [Candela] {cd} {Candela}
+
+%D and some sound ones:
+
+\getvalue{\v!eenheid} [Bell]  {B}           {Bell}
+\getvalue{\v!eenheid} [dBell] {\Deci \Bell} {decibel}
+
+%D We also define some non||regular, sometimes even forbidden,
+%D units:
+
+\getvalue{\v!eenheid} [At]    {at}         {\labeltext{u:at}}
+\getvalue{\v!eenheid} [Atm]   {atm}        {\labeltext{u:atm}}
+\getvalue{\v!eenheid} [Bar]   {bar}        {bar (100 \Kilo \Pascal)}
+\getvalue{\v!eenheid} [EVolt] {eV}         {electronvolt}
+\getvalue{\v!eenheid} [Foot]  {ft}         {\labeltext{u:ft}}
+\getvalue{\v!eenheid} [Inch]  {inch}       {inch}
+\getvalue{\v!eenheid} [Cal]   {cal}        {\labeltext{u:cal}}
+\getvalue{\v!eenheid} [Force] {f}          {\labeltext{u:f}}
+\getvalue{\v!eenheid} [kCal]  {\Kilo \Cal} {\labeltext{u:kcal}}
+\getvalue{\v!eenheid} [Lux]   {lux}        {lux}
+
+%D Some more, thanks to Tobias: 
+
+\getvalue{\v!eenheid} [Gray]    {Gr}  {Gray}  
+\getvalue{\v!eenheid} [Weber]   {Wb}  {Weber} 
+\getvalue{\v!eenheid} [Henry]   {H}   {Henry} 
+\getvalue{\v!eenheid} [Sterant] {sr}  {Sterant}
+\getvalue{\v!eenheid} [Angstom] {\AA} {\AA ngstr\"om}
+\getvalue{\v!eenheid} [Gauss]   {G}   {Gauss}
+
+\setuplabeltext
+  [\s!nl]
+  [u:at=technische atmosfeer,
+   u:atm=fysische atmosfeer,
+   u:ft=voet,
+   u:cal=calorie,
+   u:f=kracht (force),
+   u:kcal=kilocalorie]
+
+\setuplabeltext
+  [\s!en]
+  [u:at=technical atmosferic pressure,
+   u:atm=physical atmosferic pressure,
+   u:ft=foot,
+   u:cal=calory,
+   u:f=force,
+   u:kcal=kilocalory]
+
+\setuplabeltext
+  [\s!de]
+  [u:at=Technischer atmosph\"arischer Druck,
+   u:atm=physkalischer atmosph\"arischer Druck
+   u:ft=Fu\SS,
+   u:cal=Kalorien,
+   u:f=Force,
+   u:kcal=Kilokalorien]
+
+%D Here are some old ones, still there for compatibility
+%D reasons. These will probably be obsolete in a few years.
+
+\def\MeterTwee    {\Square        \Meter}
+\def\mMeterTwee   {\Square \Milli \Meter}
+\def\cMeterTwee   {\Square \Centi \Meter}
+\def\dMeterTwee   {\Square \Deci  \Meter}
+\def\kMeterTwee   {\Square \Kilo  \Meter}
+
+\def\MeterDrie    {\Cubic         \Meter}
+\def\mMeterDrie   {\Cubic  \Milli \Meter}
+\def\cMeterDrie   {\Kubic  \Centi \Meter}
+\def\dMeterDrie   {\Cubic  \Deci  \Meter}
+\def\kMeterDrie   {\Cubic  \Kilo  \Meter}
+
+\def\LiterTwee    {\Square        \Liter}
+\def\SecTwee      {\Square        \Sec}
+\def\SecMinEen    {\Inverse       \Sec}
+
+%D To make ourselves happy, we define some dutch specific
+%D units:
+
+\startinterface dutch
+
+  \getvalue{\v!eenheid} [PaardenKracht] {pk}                 {paardenkracht}
+  \getvalue{\v!eenheid} [Duits]         {D}                  {duits}
+  \getvalue{\v!eenheid} [Kwik]          {Hg}                 {kwikkolom}
+  \getvalue{\v!eenheid} [Hectare]       {ha}                 {hectare}
+  \getvalue{\v!eenheid} [kGramForce]    {\Kilo \Gram \Force} {kilogramforce}
+  \getvalue{\v!eenheid} [kWattUur]      {\Kilo \Watt \Uur}   {kilowattuur}
+  \getvalue{\v!eenheid} [MeterKwik]     {\Meter \Kwik}       {meter kwikkolom}
+  \getvalue{\v!eenheid} [Waterkolom]    {WK}                 {waterkolom}
+  \getvalue{\v!eenheid} [MeterWater]    {\Meter \Waterkolom} {meter waterkolom}
+  \getvalue{\v!eenheid} [DrogeStof]     {ds}                 {droge stof}
+  \getvalue{\v!eenheid} [Normaal]       {N}                  {normaal}
+
+  \getvalue{\v!eenheid} [Ton]           {t}                  {ton}
+  \getvalue{\v!eenheid} [kTon]          {\Kilo \Ton}         {kiloton}
+
+  \let \OmwPerSec    \RevPerSec
+  \let \OmwPerMin    \RevPerMin
+  \let \Graden       \Deg
+  \let \PaardeKracht \PaardenKracht
+  \let \Atoom        \Atom
+  \let \Heure        \Hour
+  \let \Jaar         \Year
+  \let \Maand        \Month
+  \let \Dag          \Day
+  \let \Uur          \Hour
+
+\stopinterface
+
+%D Finally we define some equivalents. By using \type {\let}
+%D we can be sure that they don't end up double in the lists of
+%D units.
+
+\let \Second \Sec
+\let \Kubic  \Cubic
+\let \IKubic \ICubic
+
+\protect
+
+\endinput

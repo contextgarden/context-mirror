@@ -1,0 +1,147 @@
+%D \module
+%D   [       file=core-mat,
+%D        version=1998.12.07,
+%D          title=\CONTEXT\ Core Macros,
+%D       subtitle=Math Fundsmentals,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. Non||commercial use is
+%C granted.
+
+\writestatus{loading}{Context Core Macros / Math Fundamentals}
+
+\unprotect
+
+%D \macros 
+%D   {big..}
+%D
+%D Because they are related to the bodyfontsize, we redefine 
+%D some \PLAIN\ macros. 
+
+\def\@@dobig#1#2%
+  {{\hbox{$\left#2\vbox\!!to#1\bodyfontsize{}\right.\n@space$}}}
+
+\def\big {\@@dobig{0.85}}
+\def\Big {\@@dobig{1.15}}
+\def\bigg{\@@dobig{1.45}}
+\def\Bigg{\@@dobig{1.75}}
+
+%D \macros 
+%D   {bordermatrix}
+%D
+%D We already redefined \type {\bordermatrix} in \type 
+%D {font-ini}.
+
+%D \macros
+%D   {super, sub}
+%D
+%D \TEX\ uses \type{^} and \type{_} for entering super- and 
+%D subscript mode. We want however a bit more control than 
+%D normally provided, and therefore provide \type {\super} 
+%D and \type{sub}. 
+
+\global\let\normalsuper=^ 
+\global\let\normalsub  =_ 
+
+\newcount\supersubmode
+
+\newevery\everysupersub \EverySuperSub
+
+\appendtoks \advance\supersubmode by 1 \to \everysupersub
+
+% \def\dodosuper#1{\normalsuper{\the\everysupersub#1}}
+% \def\dodosub  #1{\normalsub  {\the\everysupersub#1}}
+% 
+% \def\dosuper{\ifx\next\bgroup\expandafter\dodosuper\else\normalsuper\fi}
+% \def\dosub  {\ifx\next\bgroup\expandafter\dodosub  \else\normalsub  \fi}
+% 
+% \def\super  {\futurelet\next\dosuper}
+% \def\sub    {\futurelet\next\dosub  }
+
+\def\super#1{\normalsuper{\the\everysupersub#1}}
+\def\sub  #1{\normalsub  {\the\everysupersub#1}}
+
+%D \macros
+%D   {enablesupersub}
+%D 
+%D We can let \type {^} and \type {_} act like \type {\super} 
+%D and \type {\sub} by saying \type {\enablesupersub}. 
+
+\bgroup
+\catcode`\^=\@@active
+\catcode`\_=\@@active
+\gdef\enablesupersub%
+  {\catcode`\^=\@@active
+   \def^{\ifmmode\expandafter\super\else\expandafter\normalsuper\fi}%
+   \catcode`\_=\@@active
+   \def_{\ifmmode\expandafter\sub  \else\expandafter\normalsub  \fi}}
+\egroup
+
+%D \macro
+%D   {restoremathstyle}
+%D
+%D We can pick up the current math style by calling \type 
+%D {\restoremathstyle}.
+
+\def\restoremathstyle%
+  {\ifmmode
+     \ifcase\supersubmode
+       \textstyle
+     \or
+       \scriptstyle
+     \else
+       \scriptscriptstyle
+     \fi
+   \fi}
+
+%D \macros
+%D   {mathstyle}
+%D
+%D If one want to be sure that something is typeset in the 
+%D appropriate style, \type {\mathstyle} can be used:
+%D
+%D \starttypen
+%D \mathstyle{something}
+%D \stoptypen
+
+\def\mathstyle#1%
+  {\mathchoice
+     {\displaystyle     #1}%
+     {\textstyle        #1}%
+     {\scriptstyle      #1}%
+     {\scriptscriptstyle#1}}
+
+%D \macros
+%D   {frac}
+%D
+%D This is another one Tobias asked for. It replaces the 
+%D primitive \type {\over}. We also take the opportunity to 
+%D handle math style restorin, which makes sure units and 
+%D chemicals come out ok. 
+
+\def\frac#1#2%
+  {{{\mathstyle{#1}}\over{\mathstyle{#2}}}}
+
+%D The next macro, \type {\ch}, is \PPCHTEX\ aware. In
+%D formulas one can therefore best use \type {\ch} instead of
+%D \type {\chemical}, especially in fractions. 
+
+\ifx\mathstyle\undefined 
+  \let\mathstyle\relax
+\fi
+
+\def\ch#1%
+  {\ifx\@@chemicalletter\undefined
+     \mathstyle{\rm#1}%
+   \else
+     \dosetsubscripts
+     \mathstyle{\@@chemicalletter{#1}}%
+     \doresetsubscripts
+   \fi}
+
+\protect
+
+\endinput 

@@ -1,0 +1,270 @@
+% TACO: wordt ook de eerste spatie weggefilterd? Het komt 
+% voor dat (om estetische redenen we hebben:
+%
+% \definieerkorps[12pt][rm]
+%   [ tf=...,
+%    tfa=...] 
+%
+% Is evt wel in macro weg te werken, maar ik denk dat het 
+% erin moet. 
+%
+% vreemd, als 1 item en dan \delitem, number reports niets 
+% ipv 0
+%
+% (dat gedoe met die expansie in commalists is niet nodig, 
+% ik maak een specials processaction, nu nog incompatible 
+% trouwens, komt wel goed.)
+
+\ifx\eeTeXversion\undefined \endinput \fi
+
+\writestatus{loading}{Context System Macros / eeTeX replacements}
+
+\unprotect
+
+%D Test loop  
+%D
+%D \starttypen
+%D \dorecurse{20}{{\switchnaarkorps[lbr,10pt]}}
+%D \stoptypen
+%D
+%D \starttabulate[|c|c|c|]
+%D \NC pdftex \NC pdfetex \NC eetex     \NC \NR
+%D \HL 
+%D \NC 64 sec \NC 54 sec  \NC 56/54 sec \NC \NR
+%D \stoptabulate
+%D 
+%D Keep in mind that the font mechanism is optimized for 
+%D \ETEX\ anyway. 
+
+%D \macros 
+%D   {listsep}
+%D
+%D The list separator is a comma, optionally followed by a 
+%D space or something similar.
+
+\listsep{, }
+
+%D \macros 
+%D   {appendtoks, prependtoks}
+%D
+%D Must deal with:
+%D
+%D \startypen
+%D \appendtoks \bgroup \to \sometoks -> \sometoks={\bgroup}
+%D \appendtoks {oeps}\to \sometoks   -> \sometoks={{oeps}}
+%D \appendtoks oeps\to \sometoks     -> \sometoks={oeps}
+%D \stoptypen
+
+\def\appendtoks%
+  {\bgroup
+   \let\bgroup\relax
+   \futurelet\scratchtoken\doappendtoks}
+
+\def\doappendtoks%
+  {\ifx\scratchtoken\normalbgroup
+     \egroup\expandafter\dodoappendtoks
+   \else
+     \egroup\expandafter\donoappendtoks
+   \fi}
+
+\def\dodoappendtoks#1\to#2{\dodoglobal\apptoks#2{{#1}}}
+\def\donoappendtoks#1\to#2{\dodoglobal\apptoks#2{#1}}
+
+\def\prependtoks%
+  {\bgroup
+   \let\bgroup\relax
+   \futurelet\scratchtoken\doprependtoks}%
+
+\def\doprependtoks%
+  {\ifx\scratchtoken\bgroup
+     \egroup\expandafter\dodoprependtoks
+   \else
+     \egroup\expandafter\donoprependtoks
+   \fi}
+
+\def\dodoprependtoks#1\to#2{\dodoglobal\pretoks#2{{#1}}}
+\def\donoprependtoks#1\to#2{\dodoglobal\pretoks#2{#1}}
+
+%D \macros
+%D   {addtocommalist,removefromcommalist}
+%D
+%D The first one is rather straightforward, but the second 
+%D one, well maybe another primitive makes sense.
+
+\def\addtocommalist#1#2%
+  {\redoglobal\einsdef#2{#1}%
+   \dodoglobal\edef#2{#2}}
+
+\def\removefromcommalist#1#2%
+  {\scratchcounter\@EA\itemnumber\@EA#2\@EA{#1}%
+   \redoglobal\delitem#2\scratchcounter to\garbage
+   \dodoglobal\edef#2{#2}}
+
+%D \macros 
+%D   {getcommalistsize,getfromcommalist}
+%D
+%D Pretty short, these ones. We don't optimize for case 1 
+%D and 2. 
+
+\def\getcommalistsize[#1]%
+  {\listdef\commalisttokens{#1}%
+   \edef\commalistsize{\number\commalisttokens}}
+
+\def\getfromcommalist[#1]#2[#3]% 
+  {\listdef\commalisttokens{#1}%
+   \getitem\commalisttokens#3to\commalistelement}
+
+%D \macros 
+%D   {dogetparameters}
+%D
+%D We skip the parameter passing. 
+
+\def\dogetparameters#1[#2]#3[#4]%
+  {\listdef\commalisttokens{#4}% 
+   \ifcase\commalisttokens\else 
+     \def\p!dogetparameter##1%
+       {\p!doassign#1[#2][##1==\relax]}%
+     \scanlist\commalisttokens\p!dogetparameter
+   \fi}
+
+% tijdelijk:
+
+\def\dogetparameters#1[#2]#3[#4]%
+  {\listdef\commalisttokens{,#4}% de comma is een hack  
+   \writestatus{assign}{\number\commalisttokens::\detokenize{#4}}%
+   \delitem\commalisttokens1to\garbage
+   \writestatus{assign}{\number\commalisttokens}% leeg als 0 
+   \ifcase\commalisttokens\else % vreemd
+     \def\p!dogetparameter##1%
+       {\writestatus{assign}{\detokenize{##1}}%
+        \p!doassign#1[#2][##1==\relax]}%
+     \scanlist\commalisttokens\p!dogetparameter
+   \fi}
+
+%D \macros 
+%D   {doifinsetelse, doifinset, doifnotinset}
+%D
+%D We limit the number of parameter passes and don't share 
+%D the common component. 
+
+\long\def\doifinsetelse#1#2#3#4%
+  {\elistdef\commalisttokens{#2}% 
+   \ifhasitem\commalisttokens{#1}#3\else#4\fi}
+
+\long\def\doifinset#1#2#3%
+  {\elistdef\commalisttokens{#2}% 
+   \ifhasitem\commalisttokens{#1}#3\fi}
+
+\long\def\doifnotinset#1#2#3%
+  {\elistdef\commalisttokens{#2}% 
+   \ifhasitem\commalisttokens{#1}\else#3\fi}
+
+%D \macros 
+%D   {doifcommonelse, doifcommon, doifnotcommon}
+%D
+%D Again, we don't share the common component. 
+
+\long\def\doifcommonelse#1#2#3#4%
+  {\listdef\commalisttokensa{#1}%
+   \ifcase\commalisttokensa
+     #4%
+   \else
+     \listdef\commalisttokensb{#2}%
+     \ifcase\commalisttokensb
+       #4%
+     \else
+       \ifnum\commalisttokensb>\commalisttokensa
+         \ifsubset\commalisttokensb{#1}#3\else#4\fi
+       \else
+         \ifsubset\commalisttokensa{#2}#3\else#4\fi
+       \fi
+     \fi
+   \fi}
+
+\long\def\doifcommon#1#2#3%
+  {\listdef\commalisttokensa{#1}%
+   \ifcase\commalisttokensa\else
+     \listdef\commalisttokensb{#2}%
+     \ifcase\commalisttokensb\else
+       \ifnum\commalisttokensb>\commalisttokensa
+         \ifsubset\commalisttokensb{#1}#3\fi
+       \else
+         \ifsubset\commalisttokensa{#2}#3\fi
+       \fi
+     \fi
+   \fi}
+
+\long\def\doifnotcommon#1#2#3%
+  {\listdef\commalisttokensa{#1}%
+   \ifcase\commalisttokensa
+     #3%
+   \else
+     \listdef\commalisttokensb{#2}%
+     \ifcase\commalisttokensb
+       #3%
+     \else
+       \ifnum\commalisttokensb>\commalisttokensa
+         \ifsubset\commalisttokensb{#1}\else#3\fi
+       \else
+         \ifsubset\commalisttokensa{#2}\else#3\fi
+       \fi
+     \fi
+   \fi}
+
+%D \macros
+%D   {quitcommalist,quitprevcommalist}
+%D
+%D Watch the extra level, needed to quit the macro itself. 
+
+%\def\quitcommalist    {\quitlist 1 }
+%\def\quitprevcommalist{\quitlist 2 }
+
+%D \macros
+%D   {processcommalist, processcommacommand}
+%D
+%D The \type {\ifcase} is needed! 
+
+%%%\def\listexpandafter{\@EA\appdef\@EA\commalisttokens\@EA}
+%%%
+%%%\long\def\processcommalist[#1]#2% 
+%%%  {\listdef\templist{#1}%
+%%%   \listdef\commalisttokens{}%
+%%%   \scanlist\templist\listexpandafter
+%%%   \scanlist\commalisttokens#2}
+%%%
+%%%\def\processcommacommand[#1]#2%
+%%%   {\elistdef\templist{#1}% 
+%%%    \listdef\commalisttokens{}%
+%%%    \scanlist\templist\listexpandafter
+%%%    \scanlist\commalisttokens#2}
+
+%\long\def\processcommalist[#1]% #2% 
+%  {\listdef\commalisttokens{#1}%
+%   \scanlist\commalisttokens}% #2}
+%
+%\long\def\processcommalist[#1]}% #2% 
+%  {\elistdef\commalisttokens{#1}% 
+%   \scanlist\commalisttokens}% #2}
+
+% \def\expandaction#1=>{}
+%
+% \def\processaction[#1]#2[#3]%
+%   {\listdef\actionstoprocess{#3}%
+%    \edef\!!stringa{#1}%
+%    \ifx\!!stringa\empty
+%      \scratchcounter=\subitemnumber\actionstoprocess{\s!default=>}%
+%    \else
+%        \scratchcounter=\subitemnumber\actionstoprocess{\!!stringa=>}%
+%      \ifcase\scratchcounter
+%        \scratchcounter=\subitemnumber\actionstoprocess{\s!unknown=>}%
+%      \fi
+%    \fi
+%    \ifcase\scratchcounter\else
+%      \getitem\actionstoprocess\scratchcounter to\actiontoprocess
+%      % wordt \lastsubitem / geen \subitem: name clash 
+%      \@EA\@EA\@EA\expandaction\@EA\actiontoprocess
+%    \fi}  
+
+\protect
+
+\endinput

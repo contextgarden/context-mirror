@@ -15,6 +15,18 @@
 % \ifalign
 % \xhrule : calls for 'special' with width
 
+% BUG: 
+% 
+% \starttabel[|l|l|]
+% \HL
+% \RL\FR \VL Head 1 \VL Head 2 \VL\FR
+% \RL\LR \VL Head A \VL Head B \VL\LR  % niet grijs ??
+% \HL
+% \VL 1 \VL 2 \VL\FR
+% \VL a \VL b \VL\LR
+% \HL
+% \stoptabel
+
 % melden als in kleur conflict, uitgestelde test op \SR\SR
 
 % verengelsen
@@ -40,7 +52,7 @@
 % \HL[n]
 % \VL[n] + remembers
 % c{colorspec} key
-% \HC[color[width]
+% \HC[color][width]
 % \VC[color]
 % meldingen row, column, use, advise
 % \AR: UITSTELLEN / EXPERIMENTEEL
@@ -68,7 +80,7 @@
 \unprotect
 
 %D \macros
-%D   {inintable, ifsplittable}
+%D   {inintable, ifsplittables}
 %D
 %D First we declare some variables. These show a bit what we
 %D are dealing with. First we introdoce some booleans that
@@ -86,6 +98,8 @@
 %D warnings, error recovery and automatic spacing.
 
 \newif\iftracetables
+
+\let\tracetables \tracetablestrue
 
 %D We show this feature in an eample that also shows some of
 %D the basic table typesetting commands.
@@ -645,7 +659,7 @@
   {\ifnum#1>\@ne
      \omit
      \scratchcounter=\currentTABLEcolumn                 % added
-     \advance\scratchcounter by #1                       % added
+     \advance\scratchcounter by #1%                      % added
      \advance\scratchcounter by -1                       % added
      \ifnum\scratchcounter>\maxTABLEcolumn               % added
        \def\next%                                        % added
@@ -653,9 +667,9 @@
           \handleTABLEerror}%                            % added
      \else                                               % added
        \def\next%                                        % added
-         {\global\advance\currentTABLEcolumn by #1       % added
+         {\global\advance\currentTABLEcolumn by #1%      % added
           \global\advance\currentTABLEcolumn by -1       % added
-          \mscount=#1 % \mscount is in Plain
+          \mscount=#1%  \mscount is in Plain
           \advance\mscount by \m@ne
           \advance\mscount by \mscount
           \!thLoop
@@ -706,15 +720,18 @@
 \def\starttabel%
   {\bgroup
    \ifinsidefloat\else
-     \startbaselinecorrection % \outer.. 
+     \startbaselinecorrection % \outer..
    \fi
    \postponefootnotes
    \firststagestartTABLE}
 
 \def\stoptabel%
-  {\finishTABLE
+  {\TABLEtail
+   \global\let\TABLEhead\empty
+   \global\let\TABLEtail\empty
+   \finishTABLE
    \ifinsidefloat\else
-     \stopbaselinecorrection % \outer.. 
+     \stopbaselinecorrection % \outer..
      \goodbreak % compensates all the nobreaks
    \fi
    \egroup}
@@ -727,7 +744,7 @@
    \global\intabletrue
    \pushouterbarandquote
    \catcode`\|=\@@other
-   \complexorsimple{secondstagestartTABLE}}
+   \complexorsimple\secondstagestartTABLE}
 
 \def\simplesecondstagestartTABLE#1%
   {\complexsecondstagestartTABLE[{#1}]}
@@ -751,15 +768,43 @@
 %D The implementation of the definition macro is not that
 %D complicated:
 
-\def\dodefinetabletemplate[#1][#2]%
-  {\setgvalue{\c!Table#1}{\complexsecondstagestartTABLE[#2]}%
+%\def\dodefinetabletemplate[#1][#2]%
+%  {\setgvalue{\c!Table#1}{\complexsecondstagestartTABLE[#2]}%
+%   \egroup}
+%
+%\def\definetabletemplate%
+%  {\bgroup
+%   \catcode`\|=\@@other
+%   \dodoubleargument\dodefinetabletemplate}
+
+\def\dodefinetabletemplate[#1][#2][#3][#4]%
+  {\ifsecondargument
+     \setgvalue{\c!Table#1}%
+       {\gdef\TABLEhead{\getvalue{@@TABLEhead#3}}%
+        \gdef\TABLEtail{\getvalue{@@TABLEtail#4}}%
+        \complexsecondstagestartTABLE[#2]}%
+   \fi
    \egroup}
 
 \def\definetabletemplate%
   {\bgroup
    \catcode`\|=\@@other
-   \dodoubleargument\dodefinetabletemplate}
+   \doquadrupleempty\dodefinetabletemplate}
 
+%D The optional third and fourth arguments define which table
+%D head and tail to use.
+%D
+%D \starttype
+%D \definetabletemplate[test][|||][before][after]
+%D \stoptypen
+%D
+%D This also means that one can define table heads and tails
+%D by name!
+%D
+%D \starttablehead[before]
+%D \HL \VL first \VL second \VL \SR \HL
+%D \stoptablehead
+%D
 %D Templates defined this way get protected names, that cannot
 %D conflict with existing commands.
 %D
@@ -768,20 +813,39 @@
 %D The second half of the next macro prepares table
 %D splitting.
 
+% \def\complexsecondstagestartTABLE#1[#2]%
+%   {\convertargument|\to\asciiA
+%    \convertargument#2\to\asciiB
+%    \doifinstringelse{\asciiA}{\asciiB}
+%      {\gdef\restartTABLE{\thirdstagestartTABLE{#2}}}
+%      {\doifdefinedelse{\c!Table#2}
+%         {\gdef\restartTABLE{\getvalue{\c!Table#2}}}
+%         {\gdef\restartTABLE{\getvalue{#2}}}}%
+%    \prepareTABLEsplitting
+%    \restartTABLE
+%    \TABLEhead}
+
 \def\complexsecondstagestartTABLE#1[#2]%
   {\convertargument|\to\asciiA
    \convertargument#2\to\asciiB
    \doifinstringelse{\asciiA}{\asciiB}
-     {\gdef\restartTABLE{\thirdstagestartTABLE{#2}}}
+     {\gdef\restartTABLE%
+        {\gdef\restartTABLE{\thirdstagestartTABLE{#2}}%
+         \prepareTABLEsplitting
+         \restartTABLE
+         \TABLEhead}}
      {\doifdefinedelse{\c!Table#2}
-        {\gdef\restartTABLE{\getvalue{\c!Table#2}}}
-        {\gdef\restartTABLE{\getvalue{#2}}}}%
-   \prepareTABLEsplitting
-   \restartTABLE
-   \TABLEhead}
+        {\gdef\restartTABLE%
+           {\getvalue{\c!Table#2}}}
+        {\gdef\restartTABLE%
+           {\gdef\restartTABLE{\getvalue{#2}}%
+            \prepareTABLEsplitting
+            \restartTABLE
+            \TABLEhead}}}%
+   \restartTABLE}
 
-%D The third stage involves a lot of (re)sets, which we will 
-%D explain later. 
+%D The third stage involves a lot of (re)sets, which we will
+%D explain later.
 
 \def\thirdstagestartTABLE#1%
   {\global\setTABLEactiontrue
@@ -817,7 +881,7 @@
    \global\intablefalse
    \egroup}
 
-%D The preparation for split columns concerns some 
+%D The preparation for split columns concerns some
 %D calculations. Although not explicitly needed, one can
 %D predefine a tablehead as well as a tail. Each table fragment
 %D is preceded by such a head and ends with a tail. This means
@@ -837,7 +901,7 @@
            \def\doEndOfTableLine##1##2##3{\normalTABLElineformat##2##3}%
            \restartTABLE\TABLEhead
          \finishTABLE
-       \global\TABLEheadheight=\ht0
+         \global\TABLEheadheight=\ht0
      \fi
      \ifx\TABLEtail\empty
        \global\TABLEtailheight=\!!zeropoint
@@ -927,8 +991,24 @@
 %D the fact that the stopcondition is interface language
 %D dependant.
 
-\let\TABLEhead   =\empty
-\let\TABLEtail=\empty
+%\let\TABLEhead=\empty
+%\let\TABLEtail=\empty
+%
+%\letvalue{\e!start   \e!tabelkop}=\undefined
+%\letvalue{\e!stop    \e!tabelkop}=\undefined
+%\letvalue{\e!start\e!tabelstaart}=\undefined
+%\letvalue{\e!stop \e!tabelstaart}=\undefined
+%
+%\expanded
+%  {\def\csname\e!start\e!tabelkop\endcsname##1\csname\e!stop\e!tabelkop\endcsname%
+%     {\noexpand\def\noexpand\TABLEhead{##1}}}
+%
+%\expanded
+%  {\def\csname\e!start\e!tabelstaart\endcsname##1\csname\e!stop\e!tabelstaart\endcsname%
+%     {\noexpand\def\noexpand\TABLEtail{##1}}}
+
+\let\@@TABLEhead\empty  \def\TABLEhead{\@@TABLEhead}
+\let\@@TABLEtail\empty  \def\TABLEtail{\@@TABLEtail}
 
 \letvalue{\e!start   \e!tabelkop}=\undefined
 \letvalue{\e!stop    \e!tabelkop}=\undefined
@@ -937,11 +1017,26 @@
 
 \expanded
   {\def\csname\e!start\e!tabelkop\endcsname##1\csname\e!stop\e!tabelkop\endcsname%
-     {\noexpand\def\noexpand\TABLEhead{##1}}}
+     {\noexpand\setTABLEhead##1\noexpand\end}}
 
 \expanded
   {\def\csname\e!start\e!tabelstaart\endcsname##1\csname\e!stop\e!tabelstaart\endcsname%
-     {\noexpand\def\noexpand\TABLEtail{##1}}}
+     {\noexpand\setTABLEtail##1\noexpand\end}}
+
+% \def\setTABLEhead{\dosingleempty\dosetTABLEhead}
+% \def\setTABLEtail{\dosingleempty\dosetTABLEtail}
+
+% \def\dosetTABLEhead[#1]#2\end{\setvalue{@@TABLEhead#1}{#2}}
+% \def\dosetTABLEtail[#1]#2\end{\setvalue{@@TABLEtail#1}{#2}}
+
+%D The second argument is a dummy one, by scanning for it, we
+%D get rid of interfering spaces. 
+
+\def\setTABLEhead{\dodoubleempty\dosetTABLEhead}
+\def\setTABLEtail{\dodoubleempty\dosetTABLEtail}
+
+\def\dosetTABLEhead[#1][#2]#3\end{\setvalue{@@TABLEhead#1}{#3}}
+\def\dosetTABLEtail[#1][#2]#3\end{\setvalue{@@TABLEtail#1}{#3}}
 
 %D Redudant \type{\HL}'s are removed automatically, so
 %D mid||lines can be used without problems.
@@ -1025,10 +1120,19 @@
 \def\complexorsimpleTable#1#2%
   {\getvalue{\if[\noexpand#2\s!complex\else\s!simple\fi\c!Table#1}#2}
 
+%D The next one is used in \type{\VL} cum suis and honours 
+%D the next grouping. 
+
+\def\docomplexorsimpleTable#1#2%
+  {\ifx\next\bgroup\@EA#2\else\@EA\dodocomplexorsimpleTable\@EA#1\@EA#2\fi}
+
+\def\dodocomplexorsimpleTable#1#2#3%
+  {\if[\noexpand#3\@EA#1\else\@EA#2\fi#3}
+
 %D The order of the next macros is more or less random. First
 %D we implement error recovery. Errors are reported to the
-%D screen and log file as well as visualized in the table in 
-%D teletype. 
+%D screen and log file as well as visualized in the table in
+%D teletype.
 
 \def\handleTABLEerror%
   {\ifTABLEgrayline \else
@@ -1119,14 +1223,14 @@
 %D \stoptypen
 %D
 %D In this example we could have used \type{\AR} without
-%D problems. 
-%D 
+%D problems.
+%D
 %D Color or gray scale backgrounds precede the content. They
 %D are passed over horizontal (division) lines when needed.
 %D Errors in the color template are traced elsewhere. Here we
 %D only check for inconsistent spacing. Due to the way \TEX\
 %D handles alignments, we cannot automate spacing for colored
-%D rows and columns. 
+%D rows and columns.
 
 \chardef\TABLErowzero=0
 
@@ -1202,7 +1306,7 @@
 %D also take care of space corrections due to table splitting
 %D when \type{\MR} and collegues are used. When tracing is
 %D enabled, the corrections as well as the values used to
-%D determine the available space are shown (in color). By default 
+%D determine the available space are shown (in color). By default
 %D checking is off.
 
 \newif\ifcheckTABLEcolumns
@@ -1237,7 +1341,7 @@
 
 \def\endTABLErow#1#2#3%
   {\setTABLEaction#1%
-   \ifTABLEgrayline 
+   \ifTABLEgrayline
      \finishTABLErow
    \else
      \ifnum\currentTABLEcolumn>\maxTABLEcolumn
@@ -1245,7 +1349,7 @@
      \else\ifcheckTABLEcolumns
        \setTABLEerror\TABLEmissingcolumn
        \handleTABLEerror
-     \else 
+     \else
        \doendTABLErow{#1}{#2}{#3}%
      \fi\fi
    \fi}
@@ -1289,7 +1393,7 @@
 \def\handleTABLEbreak#1#2%
   {\ifsplittables
      \setbox0=\hbox{\AugmentedTableStrut{#1}{#2}}%
-     \getboxheight\dimen0\of\box0%
+     \getboxheight\dimen0\of\box0\relax
      \ifTABLEgrayline \else
        \global\advance\TABLEheight by \dimen0
      \fi
@@ -1331,8 +1435,8 @@
      \gdef\afterTABLEline{\TABLEnoalign{\nobreak}}%
    \fi}
 
-%D When tables are split, the spacing before and after a 
-%D horizontal rule is corrected according to whet we expect. 
+%D When tables are split, the spacing before and after a
+%D horizontal rule is corrected according to whet we expect.
 
 \def\endofTABLEline[#1][#2->#3]#4#5%
   {\ifx#2#3\else
@@ -1369,7 +1473,7 @@
 %D number of columns. We keep track of the current column and
 %D maximum column by means of two \COUNTERS. Keep in mind that
 %D the number of \type{|}'s and \type{\VL}'s or alike is always
-%D one more than the number of columns. 
+%D one more than the number of columns.
 
 \newcount\currentTABLEcolumn
 \newcount\maxTABLEcolumn
@@ -1378,8 +1482,8 @@
 %D \type{|}. When counting the bars, we use a non active
 %D representation of the bar, simply because we cannot be sure
 %D if the bar is active or not.\voetnoot{Normally it is, but
-%D \TABLE\ changes the catcode when needed.} 
- 
+%D \TABLE\ changes the catcode when needed.}
+
 \bgroup
 \catcode`\|=\@@other
 \gdef\getTABLEnofcolumns#1%
@@ -1414,8 +1518,14 @@
      \expandafter\doTableVL
    \fi}
 
+%\def\doTableVL%
+%  {\complexorsimpleTable{VL}}
+
 \def\doTableVL%
-  {\complexorsimpleTable{VL}}
+  {\futurelet\next\dodoTableVL}
+
+\def\dodoTableVL%
+  {\docomplexorsimpleTable\complexTableVL\simpleTableVL}
 
 \def\complexTableVL[#1]%
   {\scratchcounter=0#1%
@@ -1453,8 +1563,14 @@
      \expandafter\doTableVC
    \fi}
 
+%\def\doTableVC%
+%  {\complexorsimpleTable{VC}}
+
 \def\doTableVC%
-  {\complexorsimpleTable{VC}}
+  {\futurelet\next\dodoTableVC}
+
+\def\dodoTableVC%
+  {\docomplexorsimpleTable\complexTableVC\simpleTableVC}
 
 \def\complexTableVC[#1]%
   {\global\setvalue{bVC\the\currentTABLEcolumn}%
@@ -1529,8 +1645,8 @@
 
 %D \startopsomming[3*ruim]
 %D \sym{\type{\NL}} a vertical skip
-%D \sym{\type{\NR}} goto the next row 
-%D \sym{\type{\NC}} goto the next column 
+%D \sym{\type{\NR}} goto the next row
+%D \sym{\type{\NC}} goto the next column
 %D \sym{\type{\FC}} a first column
 %D \sym{\type{\MC}} a mid column
 %D \sym{\type{\LC}} a last column
@@ -1596,6 +1712,7 @@
 
 %D \startopsomming[3*ruim]
 %D \sym{\type{\DL}}
+%D \sym{\type{\DV}} (\type{\VD})
 %D \sym{\type{\DC}}
 %D \sym{\type{\DR}}
 %D \stopopsomming
@@ -1606,6 +1723,8 @@
   {\global\TABLEdivisionfalse % in start
    \let\DL=\TableDL
    \let\DC=\TableDC
+   \let\DV=\TableDV
+   \let\VD=\TableDV
    \let\DR=\TableDR}
 
 \def\checkTABLEdivision%
@@ -1655,7 +1774,13 @@
      %\global\let\stopHLcommand =\empty
    \fi}
 
+\def\TableDV%
+  {\TableDCV\normalTABLEsimplebar}
+
 \def\TableDC%
+  {\TableDCV\normalTABLEquote}
+
+\def\TableDCV#1%
   {\checkTABLEdivision
    \checkTABLEautorow
    \ifnum\currentTABLEcolumn>\maxTABLEcolumn
@@ -1663,15 +1788,15 @@
      \handleTABLEerror
    \else
      \global\advance\currentTABLEcolumn by 1
-     \normalTABLEquote
+     #1%
    \fi}
 
 \def\TableDR%
-  {\ifnum\currentTABLEcolumn<\maxTABLEcolumn % silent recovery 
+  {\ifnum\currentTABLEcolumn<\maxTABLEcolumn % silent recovery
      \setTABLEerror\TABLEmissingcolumn       % some day warning
      \handleTABLEerror
    \else
-     \global\currentTABLEcolumn=0            % nog check 
+     \global\currentTABLEcolumn=0            % nog check
      \normalTABLElineending
    \fi
    \TABLEnoalign
@@ -1695,7 +1820,7 @@
 %D \sym{\type{\COLOR}}
 %D \stopopsomming
 
-% definieer: \BC \BL 
+% definieer: \BC \BL
 % herhaal: \BR
 % definieer: \CL \RL (eerste \CL[green] = hele row! / \CL[1,green])
 % dus: \CL en \RL mix tussen \HL en \BL
@@ -1703,7 +1828,7 @@
 \def\defineTABLEbackgrounds%
   {\let\BC        =\TableBC
    \let\BL        =\TableBL
-   \let\BR        =\TableBR  
+   \let\BR        =\TableBR
    \let\BACKGROUND=\TableBR
    \let\CL        =\TableCL
    \let\RL        =\TableRL
@@ -1759,12 +1884,12 @@
   {\doanalyzeTABLEcr[#1,,]}
 
 \def\doanalyzeTABLEcr[#1,#2,#3]%
-  {\doifnumberelse{#1x}
+  {\doifnumberelse{#1x}             % x ???????????????
      {\dodoanalyzeTABLEcr[#1,#2,#3]}
      {\dodoanalyzeTABLEcr[1,#1,#2]}}
 
 \def\dodoanalyzeTABLEcr[#1,#2,#3]%
-  {\global\chardef\TABLEn=#1\relax  
+  {\global\chardef\TABLEn=#1\relax
    \processaction
      [#2]
      [         c=>\global\chardef\TABLEcr=1,
@@ -1778,13 +1903,13 @@
    \fi}
 
 \def\handleTABLEcr%
-  {\relax % else funny side effect 
-   \ifcase\TABLEcr 
+  {\relax % else funny side effect
+   \ifcase\TABLEcr
      % Can't happen!
    \or
      \addtoTABLEgrayline{\complexTableCOLOR[\the\TABLEn,\lastTABLEc]}%
    \else
-     \addtoTABLEgrayline{\complexTableRASTER[\the\TABLEn,\lastTABLEr]}%  
+     \addtoTABLEgrayline{\complexTableRASTER[\the\TABLEn,\lastTABLEr]}%
    \fi
    \gobbleTableBCL}
 
@@ -1792,7 +1917,7 @@
   {\doanalyzeTABLEcrl#1[#2,,]}
 
 \def\doanalyzeTABLEcrl#1[#2,#3,#4]%
-  {\doifnumberelse{#2x}
+  {\doifnumberelse{#2x} % x ????????????????????
      {\dodoanalyzeTABLEcr[#2,#1,#3]}
      {\dodoanalyzeTABLEcr[\ifTABLEgrayline1\else\maxTABLEcolumn\fi,#1,#2]}}
 
@@ -1805,10 +1930,10 @@
      \let\BC=\doTableBC
      \doTableCL}
 
-\def\doTableCL% 
+\def\doTableCL%
   {\complexorsimpleTable{CL}}
 
-\def\simpleTableCL%  nog eens \"e\"en lijn van maken 
+\def\simpleTableCL%  nog eens \"e\"en lijn van maken
   {\BL[\the\maxTABLEcolumn,c,\lastTABLEc]}
 
 \def\complexTableCL[#1]%
@@ -1824,7 +1949,7 @@
      \let\BC=\doTableBC
      \doTableRL}
 
-\def\doTableRL% 
+\def\doTableRL%
   {\complexorsimpleTable{RL}}
 
 \def\simpleTableRL%
@@ -1885,7 +2010,7 @@
   {\global\LineThicknessFactor=\OldLineThicknessFactor
    \global\LineThicknessUnit  =\OldLineThicknessUnit}
 
-% kan simpeler 
+% kan simpeler
 
 \def\docomplexTableCOLOR[#1]%
   {\dodocomplexTableGL\localstartcolor\localstopcolor

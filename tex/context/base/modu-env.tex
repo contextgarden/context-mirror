@@ -1,0 +1,367 @@
+\newprettytrue
+
+\gebruikmodule[eenheid]
+
+\enableactivediscretionaries
+
+% beter:
+%
+% group    -> title
+% title    -> category
+% subtitle -> subtitle
+
+% herzien ivm fonts 
+
+% nog eens \interface \\ \\ verder doorvoeren 
+
+\unprotect
+
+\def\resetmodule%
+  {\getparameters
+     [Module]
+     [       file=\jobname,
+          version={\currentdate[jaar,{.},maand,{.},dag]},
+            title=,
+         subtitle=,
+           author=Hans Hagen,
+             date=\currentdate,
+        copyright={PRAGMA / Hans Hagen \& Ton Otten},
+      suggestions=]}
+
+\resetmodule
+
+\def\dostartmodule[#1]%
+  {\newcounter\ParagraphNumber
+   \resetmodule
+   \getparameters[Module][type=tex,#1]}
+
+\def\startmodule%
+  {\dosingleempty\dostartmodule}
+
+\def\complexmodule[#1]%
+  {\startglobaal % i.v.m. \bgroup in \startdocumentation  
+   \getparameters[Module][#1]
+   \stopglobaal  % i.v.m. \bgroup in \startdocumentation  
+   \moduletitel}
+
+\def\stopmodule%
+  {\pagina  
+   \plaatsindex
+     [balanceren=ja,
+      aanduiding=nee,
+      criterium=tekst]}
+
+\def\simplemodule#1%
+  {\type{#1}}
+
+\definecomplexorsimple\module
+
+\def\TitelPagina%
+  {\runMPgraphicstrue
+   \startMPrun
+      mpgraph := 501 ;
+      input mp-cont ; 
+   \stopMPrun
+   \naarbox
+     {\externalfigure[mprun.501][hoogte=\vsize,breedte=\hsize]}%
+     [WisselViewer]} 
+
+\def\moduletitel%
+  {\ifx\ModuleNumber\undefined \else
+     \ifnum\ModuleNumber<10
+       \edef\ModuleNumber{00\ModuleNumber}%
+     \else\ifnum\ModuleNumber<100
+       \edef\ModuleNumber{0\ModuleNumber}%
+     \fi\fi
+     \stelachtergrondenin
+       [pagina] 
+       [achtergrond=commando,commando=\TitelPagina]
+   \fi
+   \startstandaardopmaak[hoofdstatus=geen,voetstatus=geen]
+   \switchnaarkorps[cmx,14.4pt,ss] % geem cmx 
+   \stelinterliniein[1.5]
+   \font\temp=cmssbx10 at 72pt 
+   \bgroup
+   \def\CONTEXT {Con\kern-.15em\TeX t}
+   \def\TEXUTIL {\TeX Util}
+   \def\PPCHTEX {PPCH\TeX}
+   \regellinks{\temp               \CONTEXT}            \vskip24pt
+   \doifelse{\Modulesubtitle}{}
+     {\regellinks{\bfd             \Moduletitle}        \vfill}   
+     {\regellinks{\bfd             \Modulesubtitle}     \vfill
+      \doifnot{\Moduletitle}{}
+        {\regellinks{\bf category: \Moduletitle}        \vskip6pt}}
+   \regellinks{\bf        version: \Moduleversion}      \vskip6pt
+   \regellinks{\bf           date: \Moduledate}         \vskip6pt
+   \regellinks{\bf         author: \Moduleauthor}       \vskip6pt
+   \doifnot{\Modulesuggestions}{}
+     {\regellinks{\bs suggestions: \Modulesuggestions}  \vskip6pt}
+   \regellinks{\bf      copyright: \Modulecopyright}    \par
+   \egroup
+   \stopstandaardopmaak
+   \ifx\ModuleNumber\undefined \else
+     \stelachtergrondenin[pagina][achtergrond=]
+   \fi}
+
+\let\stopdocumentation=\relax
+
+\def\startdocumentation%
+  {\bgroup
+   \doglobal\newcounter\NOfMarginLines
+   \def\stopdocumentation{\par\egroup}}
+
+\newif\ifcompressdefinitions
+
+\def\startcompressdefinitions {\global\compressdefinitionstrue}
+\def\stopcompressdefinitions  {\global\compressdefinitionsfalse}
+
+\gdef\CompressDefinitions%
+  {\ifcompressdefinitions
+     \switchnaarkorps[klein]%
+   \fi}
+
+\definieertypen
+  [definition]
+
+\steltypenin
+  [definition]  
+  [voor={\pagina[voorkeur]}\blanko\PresetParagraphNumber\CompressDefinitions,
+   na=\ResetParagraphNumber\blanko,
+   optie=\Moduletype]
+
+\definieertypen
+  [PL]
+  [optie=PL,
+   marge=standaard]
+
+\definieertypen
+  [JV]
+  [optie=JV,
+   marge=standaard]
+
+\definieertypen
+  [MP]
+  [optie=MP,
+   marge=standaard]
+
+\definieertypen
+  [TEX]
+  [optie=TEX,
+   marge=standaard]
+
+\steltypenin [typen]      [marge=standaard]
+\steltypenin [file]       [marge=standaard]
+\steltypenin [definition] [marge=0pt]
+
+\newcounter\NOfMarginLines
+\newcounter\ParagraphNumber
+
+\def\ResetParagraphNumber%
+  {\egroup}
+
+\def\PresetParagraphNumber%
+  {\bgroup
+   \xdef\NOfTextLines%
+     {\the\prevgraf}%
+   \doglobal\decrement\NOfMarginLines
+   \doglobal\increment\ParagraphNumber
+   \message{.}%
+   \gdef\ShowParagraphNumber%
+     {\llap{\slx\ParagraphNumber\hskip\linkermargeafstand}}%
+   \gdef\ShowParagraphNumberA%
+     {\ifnum\NOfMarginLines>\NOfTextLines\relax
+        \doglobal\increment\NOfTextLines
+      \else
+        \ShowParagraphNumber
+        \global\let\ShowParagraphNumberA=\relax
+        \global\let\ShowParagraphNumberB=\ShowParagraphNumber
+        \doglobal\newcounter\NOfMarginLines
+      \fi}%
+   \gdef\ShowParagraphNumberB%
+     {}%
+   \EveryLine
+     {\ShowParagraphNumberA}%
+   \EveryPar 
+     {\vadjust{\nobreak}%
+      \ShowParagraphNumberB}}
+
+\EveryPar % skip one 
+  {\EveryPar 
+     {\doglobal\newcounter\NOfMarginLines}}
+
+\def\dodomargeaanduidingen[#1]#2%
+  {\def\docommando##1%
+     {\indent\hbox
+        {\ifx#2\relax 
+           \index{##1}%
+         \else
+           \index{#2{##1}}%
+         \fi
+         #2{\doboundtext{##1}{\linkermargebreedte}{..}}}%
+       \doglobal\increment\NOfMarginLines
+       \endgraf}%
+   \processcommalist[#1]\docommando}
+
+\def\margeaanduidingen#1[#2]%
+  {\def\domargeaanduidingen##1##2%
+     {\margetitel[#2]%
+        {\switchnaarkorps[klein]%
+         \doglobal\newcounter\NOfMarginLines
+         \dodomargeaanduidingen[##1]#1%
+         \scratchcounter=\NOfMarginLines
+         \multiply\scratchcounter by 10
+         \divide\scratchcounter by 12
+         \advance\scratchcounter by 1
+         \xdef\NOfMarginLines{\the\scratchcounter}%
+         \processcommalist[##2]\index}}%
+   \dodoublegroupempty\domargeaanduidingen}
+
+\def\complexmacros%
+  {\margeaanduidingen\tex}
+
+\def\complexextras%
+  {\margeaanduidingen\relax}
+
+\definecomplexorsimpleempty\macros
+\definecomplexorsimpleempty\extras
+
+% \macros{a,b}        
+% \macros{a,b}{b}     
+% \macros[a]{a,b}{b}  
+
+\definieeralineas [interface] [n=2]
+\stelalineasin    [interface] [1] [breedte=4cm]
+
+\def\startvoorbeeld{\par\startsmaller}
+\def\stopvoorbeeld {\stopsmaller}
+
+\gdef\VisualizeLastSpace%
+  {\ifdim\lastskip>0pt\unskip\tttf\char32\fi}
+\gdef\ShowHeadText#1%
+  {\tttf#1\VL\headtext{#1}\VisualizeLastSpace}%
+\gdef\ShowLabelText#1%
+  {\tttf#1\VL\labeltext{#1}\VisualizeLastSpace}
+
+\startbuffer[lang-a]
+\starttabel[|l|l|]
+  \HL
+  \VL \bf head key  \VL \bf current value \VL\SR
+  \HL
+  \VL \ShowHeadText \v!afkortingen        \VL\FR
+  \VL \ShowHeadText \v!eenheden           \VL\MR
+  \VL \ShowHeadText \v!figuren            \VL\MR
+  \VL \ShowHeadText \v!grafieken          \VL\MR
+  \VL \ShowHeadText \v!index              \VL\MR
+  \VL \ShowHeadText \v!inhoud             \VL\MR
+  \VL \ShowHeadText \v!intermezzos        \VL\MR
+  \VL \ShowHeadText \v!logos              \VL\MR
+  \VL \ShowHeadText \v!tabellen           \VL\LR
+  \HL
+\stoptabel
+\stopbuffer
+
+\startbuffer[lang-b]
+\starttabel[|l|l|]
+  \HL
+  \VL \bf label key  \VL \bf current value      \VL\SR
+  \HL
+  \VL \ShowLabelText \v!tabel                   \VL\FR
+  \VL \ShowLabelText \v!figuur                  \VL\MR
+  \VL \ShowLabelText \v!intermezzo              \VL\MR
+  \VL \ShowLabelText \v!grafiek                 \VL\MR
+  \VL \ShowLabelText \v!hoofdstuk               \VL\MR
+  \VL \ShowLabelText \v!paragraaf               \VL\MR
+  \VL \ShowLabelText {\v!sub\v!paragraaf}       \VL\MR
+  \VL \ShowLabelText {\v!sub\v!sub\v!paragraaf} \VL\MR
+  \VL \ShowLabelText \v!bijlage                 \VL\MR
+  \VL \ShowLabelText \v!deel                    \VL\MR
+  \VL \ShowLabelText \v!regel                   \VL\MR
+  \VL \ShowLabelText \v!regels                  \VL\LR
+  \HL
+\stoptabel
+\stopbuffer
+
+\startbuffer[lang-c]
+\starttabel[|l|l|]
+  \HL
+  \VL \bf label key  \VL \bf current value \VL\SR
+  \HL
+  \VL \ShowLabelText \v!january            \VL\FR
+  \VL \ShowLabelText \v!february            \VL\MR
+  \VL \ShowLabelText \v!march              \VL\MR
+  \VL \ShowLabelText \v!april              \VL\MR
+  \VL \ShowLabelText \v!may                \VL\MR
+  \VL \ShowLabelText \v!june               \VL\MR
+  \VL \ShowLabelText \v!july               \VL\MR
+  \VL \ShowLabelText \v!august             \VL\MR
+  \VL \ShowLabelText \v!september          \VL\MR
+  \VL \ShowLabelText \v!october            \VL\MR
+  \VL \ShowLabelText \v!november           \VL\MR
+  \VL \ShowLabelText \v!december           \VL\LR
+  \HL
+\stoptabel
+\stopbuffer
+ 
+\startbuffer[lang-d]
+\starttabel[|l|l|]
+  \HL
+  \VL \bf label key  \VL \bf current value \VL\SR
+  \HL
+  \VL \ShowLabelText \v!sunday             \VL\FR
+  \VL \ShowLabelText \v!monday             \VL\MR
+  \VL \ShowLabelText \v!tuesday            \VL\MR
+  \VL \ShowLabelText \v!wednesday          \VL\MR
+  \VL \ShowLabelText \v!thursday           \VL\MR
+  \VL \ShowLabelText \v!friday             \VL\MR
+  \VL \ShowLabelText \v!saturday           \VL\MR
+  \HL
+\stoptabel
+\stopbuffer
+
+\gdef\ShowTextsValues [#1] [#2]
+  {\vbox\bgroup
+   \language[#1]%
+   \setbox0=\hbox to \hsize{\hss\bfb#2 language defaults\hss}
+   \dp0=0pt
+   \box0
+   \vskip1em
+   \hrule
+   \vskip2em
+   \halign
+     {\hss##\hss&##\hskip1em&\hss##\hss\cr
+      $\vcenter{\haalbuffer[lang-a]}$&&$\vcenter{\haalbuffer[lang-b]}$\cr
+      \noalign{\vskip1em}
+      $\vcenter{\haalbuffer[lang-c]}$&&$\vcenter{\haalbuffer[lang-d]}$\cr}%
+   \egroup}
+
+\gdef\ShowLanguageValues [#1] [#2] #3 #4
+  {\hbox to \hsize
+     {\hss
+      \vbox
+        \bgroup
+        \language[#1]%
+        \let\normalbar=|
+        \starttabel[||||]
+        \HL 
+        \VL \THREE{\bf subsentence symbol and quotes} \VL\SR
+        \HL
+        \VL \citaat{#3 #4} \VL \citeer{#2} \VL \let|=\normalbar |<||<|#3|>|#4|>| \VL\SR
+        \HL 
+        \stoptabel
+        \egroup
+      \hss}}
+  
+\gdef\doShowAllLanguageValues [#1] [#2] #3 #4
+  {\vbox 
+     {\ShowTextsValues [#1] [#2]
+      \vskip2em
+      \ShowLanguageValues  [#1] [#2] #3 #4 }
+   \protect
+   \pagina}
+
+\gdef\ShowAllLanguageValues%
+  {\pagina
+   \unprotect
+   \doShowAllLanguageValues}
+
+\protect

@@ -111,7 +111,6 @@
 
 %D \macros
 %D   {controlspace,setcontrolspaces}
-%D   {}
 %D
 %D First we define \type{\obeyspaces}. When we want visible
 %D spaces (control spaces) we only have to adapt the definition
@@ -153,13 +152,13 @@
 
 \gdef\ignoretabs  {\catcode`\^^I=\@@active\def^^I{\obeyedspace}}
 \gdef\ignorelines {\catcode`\^^M=\@@active\def^^M{\obeyedspace}}
-\gdef\ignorepages {\catcode`\^^L=\@@active\def^^L{\obeyedline}}
+\gdef\ignorepages {\catcode`\^^L=\@@ignore}  % \@@active\def^^L{\obeyedline}}
+\gdef\ignoreeofs  {\catcode`\^^Z=\@@ignore}
 
 \egroup
 
 %D \macros
 %D   {obeycharacters}
-%D   {}
 %D
 %D We also predefine \type{\obeycharacters}, which will
 %D enable us to implement character||specific behavior, like
@@ -325,10 +324,10 @@
 %D \type{\goodbreaks}. And this is how it's done:
 
 \def\doverbatimnobreak%
-  {\ifoptimizeverbatim\par\penalty500\fi} 
+  {\ifoptimizeverbatim\penalty500\fi} 
 
 \def\doverbatimgoodbreak%
-  {\ifoptimizeverbatim\par\penalty100\fi} 
+  {\ifoptimizeverbatim\penalty100\fi} 
 
 \def\doflushverbatimline%
   {\expandafter\dodoverbatimline\expandafter{\savedverbatimline}}
@@ -355,6 +354,7 @@
      \doemptyverbatimline
      \global\chardef\verbatimstatus=2
    \else
+     \kern\!!zeropoint
      \doverbatimnobreak
      \doflushverbatimline
      \global\let\savedverbatimline=\empty
@@ -373,6 +373,7 @@
      \doflushverbatimline
      \global\chardef\verbatimstatus=4
    \or
+     \kern\!!zeropoint
      \doverbatimnobreak
      \doflushverbatimline
      \global\chardef\verbatimstatus=5
@@ -386,6 +387,7 @@
   {\ifcase\verbatimstatus \or \or \or
      \doflushverbatimline
    \else
+     \kern\!!zeropoint
      \doverbatimnobreak
      \doflushverbatimline
    \fi}
@@ -446,7 +448,7 @@
    \fi
    \parskip\!!zeropoint
    \processingverbatimtrue
-   \linepartrue
+   \global\linepartrue
    \expandafter\let\csname\verbatimname\endcsname=\relax
    \edef\endofverbatimcommand{\csname\verbatimname\endcsname}%
    \edef\endofverbatimcommand{\meaning\endofverbatimcommand}%
@@ -479,7 +481,8 @@
 %D \macros
 %D   {eightbitcharacters,
 %D    setcatcodes,uncatcodespecials,
-%D    uncatcodecharacters}
+%D    uncatcodecharacters,
+%D    setnaturalcatcodes}
 %D   {}
 %D
 %D As its name says, \type{\uncatcodecharacters} resets the
@@ -523,6 +526,19 @@
 \def\uncatcodecharacters%
   {\setcatcodes\@@letter}
 
+\def\setnaturalcatcodes%
+  {\catcode`\!=\@@other \catcode`\?=\@@other \catcode`\@=\@@other
+   \catcode`\#=\@@other \catcode`\&=\@@other \catcode`\|=\@@other
+   \catcode`\$=\@@other \catcode`\^=\@@other \catcode`\_=\@@other
+   \catcode`\*=\@@other \catcode`\/=\@@other
+   \catcode`\-=\@@other \catcode`\+=\@@other
+   \catcode`\==\@@other \catcode`\<=\@@other \catcode`\>=\@@other
+   \catcode`\"=\@@other \catcode`\'=\@@other \catcode`\`=\@@other
+   \catcode`\:=\@@other \catcode`\;=\@@other
+   \catcode`\,=\@@other \catcode`\.=\@@other \catcode`\~=\@@other 
+   \catcode`\(=\@@other \catcode`\)=\@@other 
+   \catcode`\{=\@@other \catcode`\}=\@@other}
+
 %D \macros
 %D   {localcatcodes,
 %D    restorecatcodes,
@@ -546,15 +562,29 @@
 
 \def\savecatcode%
   {\iflocalcatcodes \else
-     \expandafter\chardef\csname @@cc@@\the\scratchcounter\endcsname
+     \saverestoreactivecatcode
+       {\@EA\let\csname @@aa@@\the\scratchcounter\endcsname=~}%
+     \@EA\chardef\csname @@cc@@\the\scratchcounter\endcsname
        =\catcode\scratchcounter
    \fi}
 
 %D It's counterpart is:
 
 \def\restorecatcode%
-  {\expandafter\catcode\expandafter\scratchcounter\expandafter=
-     \csname @@cc@@\the\scratchcounter\endcsname}
+  {\@EA\catcode\@EA\scratchcounter\@EA=
+     \csname @@cc@@\the\scratchcounter\endcsname
+   \saverestoreactivecatcode
+     {\@EA\let\@EA~\@EA=\csname @@aa@@\the\scratchcounter\endcsname}}
+
+%D Especially when we enable pretty printing, we need to 
+%D restore the meaning of active characters too. Just think of 
+%D using \type{||} in headers and footers. 
+
+\def\saverestoreactivecatcode#1%
+  {\edef\saveduccode{\the\uccode`~}%
+   \uccode`~=\scratchcounter
+   \uppercase{#1}%
+   \uccode`~=\saveduccode}
 
 %D When we want to restore \CATCODES\ we call for
 %D \type{\restorecatcodes}, which default to \type{\relax}
@@ -628,12 +658,30 @@
 
 \let\doopenupverbatimline=\empty
 
-\long\def\dodoverbatimline#1%
-  {\leavevmode
+% \long\def\dodoverbatimline#1%
+%   {\leavevmode
+%    \doopenupverbatimline
+%    \the\everyline\strut\processverbatimline{#1\relax}%
+%    \EveryPar{}%
+%    \global\lineparfalse
+%    \obeyedline\par}
+
+\long\def\dodoverbatimline#1% we don't want to group
+  {\bgroup                  % due to pretty status 
+   \iflinepar\else\EveryPar{}\fi
+   \leavevmode
+   \xdef\dokeepverbatimlinedata%
+     {\parindent=\the\parindent
+      \hangindent=\the\hangindent
+      \hangafter=\the\hangafter
+      \leftskip =\the\leftskip
+      \rightskip=\the\rightskip}%
+   \egroup
+   \dokeepverbatimlinedata
    \doopenupverbatimline
-   \the\everyline\strut\processverbatimline{#1\relax}%
-   \EveryPar{}%
-   \lineparfalse
+   \the\everyline\strut
+   \processverbatimline{#1\relax}%
+   \global\lineparfalse
    \obeyedline\par}
 
 %D \macros
@@ -667,7 +715,7 @@
 \def\doemptyverbatimline%
   {\vskip\verbatimbaselineskip
    {\setbox0=\hbox{\the\everyline}}%
-   \linepartrue}
+   \global\linepartrue}
 
 \def\obeyemptylines%
   {\def\doemptyverbatimline{\doverbatimline}}
@@ -699,13 +747,15 @@
 %D position. This takes time, especially when we print complete
 %D files, therefore we \type{\relax} this mechanism by default.
 
+\chardef\spacespertab=7
+
 \def\doprocesstabskip%
   {\obeyedspace % \hskip.5em  or  \hbox to .5em{}
    \ifdone
      \advance\scratchcounter by 1
      \let\next=\doprocesstabskip
      \donefalse
-   \else\ifnum\scratchcounter>7
+   \else\ifnum\scratchcounter>\spacespertab
      \let\next=\relax
    \else
      \advance\scratchcounter 1
@@ -714,7 +764,7 @@
    \next}
 
 \def\dodoprocesstabskipline#1#2\endoftabskipping%
-  {\ifnum\scratchcounter>7
+  {\ifnum\scratchcounter>\spacespertab
      \scratchcounter=1
      \donetrue
    \else
@@ -740,7 +790,6 @@
 
 %D \macros
 %D   {processfileverbatim}
-%D   {}
 %D
 %D The verbatim typesetting of files is done on a bit different
 %D basis. This time we don't check for a closing command, but
@@ -765,7 +814,7 @@
    \fi
    \parskip\!!zeropoint
    \processingverbatimtrue
-   \linepartrue
+   \global\linepartrue
    \uncatcodecharacters
    \verbatimfont
    \frenchspacing
@@ -774,6 +823,7 @@
    \obeylines
    \obeypages
    \obeycharacters
+   \ignoreeofs
    \openin\verbatiminput=#1
    \skipfirstverbatimlinefalse
    \initializeverbatimline
@@ -894,7 +944,7 @@
    \def\handleprettytoken##1##2%
      {\global\chardef\prettytype=##1\relax
       \global\chardef\prettychar=##2\relax}%
-   \setbox0=\hbox{\global\chardef\prettychar=0#1}% expands #1 and ignores space
+   \setbox0=\hbox{#1}% expands #1 and ignores space
    \egroup}
 
 %D If needed the current and next token can be handled alongside:
@@ -917,8 +967,7 @@
 %D \catcode`\\=\@@active %%\\+
 %D |gdef|dohandlenewpretty#1%
 %D   {|def|dodohandlenewpretty##1%
-%D      {|getprettydata{#1}%
-%D       |let|oldprettychar=|prettychar
+%D      {|def|oldprettychar{#1}%
 %D       |getprettydata{##1}%
 %D       |ifnum|oldprettychar=|prettychar
 %D         |def|dododohandlenewpretty####1%
@@ -1014,8 +1063,12 @@
 
 %D Let's define the options we used here:
 
-\let\prettyend  =\relax
-\def\prettybegin{\bgroup\let\prettyend=\egroup}
+\newevery\everyprettyend\relax
+
+\let\prettyend=\relax
+
+\def\prettybegin%
+  {\bgroup\def\prettyend{\the\everyprettyend\egroup}}
 
 \installnewpretty B \prettybegin
 \installnewpretty E \prettyend
@@ -1079,8 +1132,7 @@
 \catcode`\\=\@@active
 |gdef|dohandlenewpretty#1%
   {|def|dodohandlenewpretty##1%
-     {|getprettydata{#1}%
-      |let|oldprettychar=|prettychar
+     {|def|oldprettychar{#1}%
       |getprettydata{##1}%
       |ifnum|oldprettychar=|prettychar
         |def|dododohandlenewpretty####1%
@@ -1499,7 +1551,6 @@
 
 %D \macros
 %D   {permitshiftedendofverbatim}
-%D   {}
 %D
 %D We did not mention one drawback of the mechanism described
 %D here. The closing command must start at the first position
@@ -1559,4 +1610,3 @@
 \protect
 
 \endinput
-

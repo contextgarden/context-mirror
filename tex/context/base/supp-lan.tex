@@ -31,6 +31,8 @@
 
 \unprotect
 
+\writestatus{loading}{Context Support Macros / Language Options}
+
 %D \CONTEXT\ originates in the wish to typeset educational
 %D materials, especially in a technical environment. In
 %D production oriented environments, a lot of compound words
@@ -121,7 +123,6 @@
 
 %D \macros
 %D   {installdiscretionaries}
-%D   {}
 %D
 %D The mechanism described here is one of the older inner parts
 %D of \CONTEXT. The most recent extensions concerns some
@@ -293,8 +294,11 @@
 %D but I decided to reserve it for future use. At least it
 %D remembers us of the symmetry.
 
-\def\installdiscretionaries#1#2#3%
-  {\setvalue{mathmodediscretionary\string#1}{\char`#1}%
+\beginTEX
+
+\def\installdiscretionaries#1#2#3% 
+  {\convertargument#1\to\ascii
+   \setevalue{mathmodediscretionary\string#1}{\ascii}% 
    \setvalue{textmodediscretionary\string#1}{#3}%
    \catcode`#1=\@@active
    \scratchcounter=\the\uccode`~
@@ -302,15 +306,76 @@
    \uppercase{\unexpanded\def~{\discretionarycommand~}}%
    \uccode`~=\scratchcounter}
 
+\endTEX
+
+\beginETEX \detokenize
+
+\def\installdiscretionaries#1#2#3% 
+  {\setevalue{mathmodediscretionary\string#1}{\detokenize{#1}}% 
+   \setvalue{textmodediscretionary\string#1}{#3}%
+   \catcode`#1=\@@active
+   \scratchcounter=\the\uccode`~
+   \uccode`~=`#1
+   \uppercase{\unexpanded\def~{\discretionarycommand~}}%
+   \uccode`~=\scratchcounter}
+
+\endETEX
+
 \def\dohandlemathmodebar#1%
   {\getvalue{mathmodediscretionary\string#1}}
 
 \def\discretionarycommand%
-  {\ifmmode
+  {\relax\ifmmode
      \expandafter\dohandlemathmodebar
    \else
      \expandafter\dotextmodediscretionary
    \fi}
+
+%D The next piece of code is a torture test for this previous
+%D macro. The \type {\relax} before the \type {\ifmmode} is
+%D needed because of the alignment scanner (in \ETEX\ this 
+%D problem is not present because there a protected macro is 
+%D not expanded. Thanks to Tobias Burnus for providing this 
+%D example. 
+%D 
+%D \startformule
+%D   \left|f(x_n)-{1\over2}\right| = 
+%D      {\cases{|{1\over2}-x_n| &for $0\le x_n < {1\over2}$\cr
+%D              |x_n-{1\over2}| &for ${1\over2}<x_n\le1$   \cr}}
+%D \stopformule
+
+%D \macros 
+%D   {defineactivecharacter}
+%D
+%D In \type {lang-ger.tex} we define some language specific 
+%D commands for german input, like:
+%D 
+%D \starttyping
+%D \startlanguagespecifics[de]
+%D   \installcompoundcharacter "a {\moveaccent{-.1ex}\"a\midworddiscretionary}
+%D \stoplanguagespecifics 
+%D \stoptyping
+%D 
+%D Occasionally we have to redefine such an active character, 
+%D like in:
+%D 
+%D \starttyping
+%D \startencoding[pdfdoc]
+%D   \startlanguagespecifics[de]
+%D     \defineactivecharacter " {\"}
+%D   \stoplanguagespecifics
+%D \stopencoding
+%D \stoptyping
+%D 
+%D Here is the command we used:
+
+\def\defineactivecharacter #1 #2%
+  {\catcode`#1=\@@active
+   \scratchcounter=\the\uccode`~
+   \uccode`~=`#1\relax
+   \def\next{#2}%
+   \uppercase{\let~\next}%
+   \uccode`~=\scratchcounter}
 
 %D Although adapting character codes and making characters
 %D active can interfere with other features of macropackages,
@@ -371,7 +436,10 @@
      \checkafterdiscretionary
      \bgroup
        \checkbeforediscretionary
-       \prewordbreak\hbox{\betweendiscretionary\nextnext}\allowbreak
+      %\prewordbreak\hbox{\betweendiscretionary\nextnext}\allowbreak
+       \prewordbreak
+       \discretionary{\hbox{\betweendiscretionary}}{}{\hbox{\betweendiscretionary}}%
+       \postwordbreak
      \egroup
    \fi\fi\fi\fi\fi\fi\fi\fi\fi
    \nextnextnext}
@@ -397,7 +465,6 @@
 
 %D \macros
 %D   {beginofsubsentencespacing,endofsubsentencespacing}
-%D   {}
 %D 
 %D In the previous macros we provided two hooks which can be 
 %D used to support nested sub||sentences. In \CONTEXT\ these 
@@ -411,6 +478,24 @@
 
 \installdiscretionaries || \compoundhyphen
 
+%D \macros 
+%D   {fakecompoundhyphen}
+%D
+%D In headers and footers as well as in active pieces of text 
+%D we need a dirty hack. Try to imagine what is needed to 
+%D savely break the next text across a line and at the same 
+%D time make the words interactive. 
+%D
+%D \starttypen
+%D \goto{Some||Long||Word}
+%D \stoptypen
+
+\def\currentspaceskip%
+  {\fontdimen2\font\!!plus\fontdimen3\font\!!minus\fontdimen4\font\relax}
+
+\def\fakecompoundhyphen%
+  {\def|##1|{\compoundhyphen\nobreak\hskip-\currentspaceskip\allowbreak}}
+
 %D One of the drawbacks of this mechanism is that characters can
 %D be made active afterwards. The next alternative can be used
 %D in such situations.  This time we don't compare the arguments
@@ -421,7 +506,6 @@
 
 %D \macros
 %D   {enableactivediscretionaries}
-%D   {}
 %D
 %D The more advanced mechanism is activated by calling:
 %D
@@ -497,7 +581,10 @@
      \checkafterdiscretionary
      \bgroup
        \checkbeforediscretionary
-       \prewordbreak\hbox{\betweendiscretionary\nextnext}\allowbreak
+      %\prewordbreak\hbox{\betweendiscretionary\nextnext}\allowbreak
+       \prewordbreak
+       \discretionary{\hbox{\betweendiscretionary}}{}{\hbox{\betweendiscretionary}}%
+       \postwordbreak
      \egroup
    \fi\fi\fi\fi\fi\fi\fi\fi\fi
    \nextnextnext}
@@ -522,7 +609,6 @@
 
 %D \macros
 %D   {installcompoundcharacter}
-%D   {}
 %D
 %D When Tobias Burnus started translating the dutch manual of
 %D \PPCHTEX\ into german, he suggested to let \CONTEXT\ support
@@ -595,12 +681,13 @@
   {\def\dohandlecompoundcharacter%
      {\ifx\next\bgroup
        %\def\next{\dodohandlecompoundcharacter#1}%    % handle "{ee} -> \"ee
-       %\let\next=\relax                              % forget "{ee} -> ee
+       %\let\next\relax                               % forget "{ee} -> ee
         \def\next{\handlecompoundcharacterone#1}%     % ignore "{ee} -> "ee
       \else\ifx\next\egroup
-        \let\next=\relax
+        \let\next\relax
       \else\ifx\next\blankspace
-        \let\next=\relax
+       %\let\next\relax
+        \def\next{\getvalue{\@nc@\string#1}}% better 
       \else
         \def\next{\dodohandlecompoundcharacter#1}%
       \fi\fi\fi
@@ -608,8 +695,8 @@
    \futurelet\next\dohandlecompoundcharacter}
 
 \def\dodohandlecompoundcharacter#1#2%
-  {\def\dododohandlecompoundcharacter%
-     {\ifx\next\bgroup
+  {\def\dododohandlecompoundcharacter% Keep it here and 
+     {\ifx\next\bgroup               % preserve spaces!
         \def\next{\handlecompoundcharacterone#1#2}%
       \else\ifx\next\egroup
         \def\next{\handlecompoundcharacterone#1#2}%
@@ -634,33 +721,59 @@
 %D
 %D In later modules we will see how these commands are used.
 
+\beginTEX
+
 \long\def\handlecompoundcharacterone#1#2%
   {\ifx#1#2%
      \def\next{\getvalue{\@nc@\string#1}\getvalue{\@nc@\string#2}}%
+   \else\expandafter\ifx\csname\@cc@\string#1\string#2\endcsname\relax
+     \def\next{\getvalue{\@nc@\string#1}#2}%
    \else
-     \expandafter\ifx\csname\@cc@\string#1\string#2\endcsname\relax
-       \def\next{\getvalue{\@nc@\string#1}#2}%
-     \else
-       \def\next{\getvalue{\@cc@\string#1\string#2}}%
-     \fi
-   \fi
+     \def\next{\getvalue{\@cc@\string#1\string#2}}%
+   \fi\fi
    \next}
 
 \long\def\handlecompoundcharactertwo#1#2#3%
   {\ifx#1#2%
      \def\next{\getvalue{\@nc@\string#1}\getvalue{\@nc@\string#2}#3}%
-   \else
-     \@EA\ifx\csname\@cs@\string#1\string#2\string#3\endcsname\relax
-       \expandafter\ifx\csname\@cc@\string#1\string#2\endcsname\relax
-         \def\next{\getvalue{\@nc@\string#1}#2#3}%
-       \else
-         \def\next{\getvalue{\@cc@\string#1\string#2}#3}%
-       \fi
+   \else\@EA\ifx\csname\@cs@\string#1\string#2\string#3\endcsname\relax
+     \expandafter\ifx\csname\@cc@\string#1\string#2\endcsname\relax
+       \def\next{\getvalue{\@nc@\string#1}#2#3}%
      \else
-       \def\next{\getvalue{\@cs@\string#1\string#2\string#3}}%
+       \def\next{\getvalue{\@cc@\string#1\string#2}#3}%
      \fi
-   \fi
+   \else
+     \def\next{\getvalue{\@cs@\string#1\string#2\string#3}}%
+   \fi\fi
    \next}
+
+\endTEX
+
+\beginETEX \ifcsname
+
+\long\def\handlecompoundcharacterone#1#2%
+  {\ifx#1#2%
+     \def\next{\getvalue{\@nc@\string#1}\getvalue{\@nc@\string#2}}%
+   \else\ifcsname\@cc@\string#1\string#2\endcsname
+     \def\next{\getvalue{\@cc@\string#1\string#2}}%
+   \else
+     \def\next{\getvalue{\@nc@\string#1}#2}%
+   \fi\fi
+   \next}
+
+\long\def\handlecompoundcharactertwo#1#2#3%
+  {\ifx#1#2%
+     \def\next{\getvalue{\@nc@\string#1}\getvalue{\@nc@\string#2}#3}%
+   \else\ifcsname\@cs@\string#1\string#2\string#3\endcsname
+     \def\next{\getvalue{\@cs@\string#1\string#2\string#3}}%
+   \else\ifcsname\@cc@\string#1\string#2\endcsname
+     \def\next{\getvalue{\@cc@\string#1\string#2}#3}%
+   \else
+     \def\next{\getvalue{\@nc@\string#1}#2#3}%
+   \fi\fi\fi
+   \next}
+
+\endETEX
 
 %D \macros
 %D  {midworddiscretionary}
@@ -681,7 +794,134 @@
 \def\midworddiscretionary%
   {\futurelet\next\domidworddiscretionary}
 
+%D \macros 
+%D   {hyphenatedurl}
+%D 
+%D For those who want to put full \URL's in a text, we offer 
+%D 
+%D \startbuffer
+%D \hyphenatedurl{http://optimist.optimist/optimist/optimist.optimist#optimist}
+%D \stopbuffer
+%D 
+%D \typebuffer
+%D 
+%D which breaks at the appropriate places. Watch the \type{#}
+%D hack. 
+%D
+%D When passed as argument, lik ein \type {\goto}, one needs 
+%D to substitute a \type {\\} for each \type{#}.
+%D
+%D \startbuffer
+%D \hyphenatedurl{http://this.is.a.rather/strange/reference#indeed}
+%D \stopbuffer
+%D
+%D \typebuffer
+
+\ifx\\\undefined \let\\\crlf \fi
+
+\chardef\urlsplitmode=1 
+
+% 0 => don't split 
+% 1 => . : na, rest voor
+% 2 => alles na
+% 3 => alles voor
+
+\unexpanded\def\hyphenatedurl#1%
+  {\bgroup
+   \obeyhyphens
+   \def\splitbefore##1%
+     {\setbox\scratchbox=\hbox{##1{}{}}%
+      \ifcase\urlsplitmode 
+        \box\scratchbox
+      \or 
+        \postwordbreak\box\scratchbox\prewordbreak
+      \or
+        \prewordbreak\discretionary{\box\scratchbox}{}{\box\scratchbox}\prewordbreak
+      \else
+        \postwordbreak\box\scratchbox\prewordbreak
+      \fi}%
+   \def\splitafter##1%
+     {\ifcase\urlsplitmode
+        ##1%
+      \or
+        \prewordbreak\discretionary{##1}{}{##1}\prewordbreak
+      \or
+        \prewordbreak\discretionary{##1}{}{##1}\prewordbreak
+      \else
+        \prewordbreak\discretionary{}{##1}{##1}\prewordbreak
+      \fi}% 
+   \def\flushurl%
+     {\savedurl\let\savedurl\empty}%
+   \def\\%
+     {\spliturl\#}%
+   \let~\~%
+   \let\savedurl\empty
+   \handletokens#1\with\scanurl
+   \egroup}
+
+\bgroup
+\catcode`\#=12\gdef\hashletter        {#}
+\catcode`\_=12\gdef\underscoreletter  {_}
+\catcode`\~=12\gdef\tildeletter       {~}
+\catcode`\%=12\gdef\percentletter     {%}
+\catcode`\?=12\gdef\questionmarkletter{?}
+\catcode`\@=12\gdef\atletter          {@}
+\egroup
+
+\def\scanurl#1%
+  {\ifx#1\~%
+     \flushurl\splitbefore{\~{}}%
+   \else\ifx#1\#%
+     \flushurl\splitbefore\#%
+   \else\ifx#1\&%
+     \flushurl\splitbefore\&%
+   \else\ifx#1\%%
+     \flushurl\splitbefore\%%
+   \else\ifx#1\_%
+     \flushurl\splitbefore\_%
+   \else\if\noexpand#1\relax
+     #1%
+   \else\ifnum\catcode`#1=8
+     \flushurl\splitbefore\_%
+   \else\ifnum\catcode`#1=6
+     \flushurl\splitbefore\#%
+   \else\if#1\tildeletter
+     \flushurl\splitbefore\~%
+   \else\if#1\percentletter
+     \flushurl\splitbefore\%%   
+   \else\if#1\underscoreletter
+     \flushurl\splitbefore\_%   
+   \else\if#1\questionmarkletter
+     \flushurl\splitafter\questionmarkletter
+   \else\if#1\atletter
+     \flushurl\splitafter\atletter
+   \else\if#1+%
+     \flushurl\splitafter+%
+   \else\if#1:%
+     \flushurl\splitafter:%
+   \else\if#1.%
+     \flushurl\splitafter.%
+   \else\if#1/%
+     \edef\savedurl{\savedurl/}%
+   \else
+     \ifx\savedurl\empty\else
+       \splitbefore\savedurl
+       \let\savedurl\empty
+     \fi
+     #1%
+   \fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi}
+
+%D \macros
+%D   {hyphenatedfile}
+%D
+%D For the moment we treat filenames in a similar way, 
+%D
+%D \starttypen
+%D \hyphenatedfile{here/there/filename.suffix}
+%D \stoptypen
+
+\let\hyphenatedfile\hyphenatedurl
+
 \protect
 
 \endinput
-

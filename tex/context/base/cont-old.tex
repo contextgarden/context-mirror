@@ -1,0 +1,98 @@
+%D \module
+%D   [       file=cont-old,
+%D        version=1995.10.10,
+%D          title=\CONTEXT\ Miscellaneous Macros,
+%D       subtitle=Old Macros,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. Non||commercial use is 
+%C granted. 
+
+\writestatus{loading}{Context Old Macros}
+
+\unprotect
+
+\def\dosubstitutecommand#1#2%
+  {\writestatus
+     {pas op}
+     {\string#1\normalspace is nu \string#2}%
+   \gdef#1{#2}%
+   #2}
+
+\def\substitutecommand#1#2%
+  {\gdef#1{\dosubstitutecommand{#1}{#2}}}
+
+\def\blockstatus#1#2#3%
+  {\writestatus{tekstblok}{sorry, nieuwe versie, tweede/andere run nodig}%
+   \endinput}
+
+\def\presetexternfiguur[#1][#2]%
+  {\writestatus{figuren}{sorry, nieuwe versie, run texutil /figures}%
+   \endinput}
+
+\def\blokstatus              {\endinput}
+\def\beginvanexternefiguren  {\thisisfigureversion{0}}
+
+\substitutecommand \stelopsomminginopniveau \stelopsommingin
+\substitutecommand \stelopsommingvolledigin \stelopsommingin
+\substitutecommand \stelsomsymboolin        \definieersymbool
+\substitutecommand \somsymbool              \symbool
+
+\substitutecommand \stelzetspiegelin        \stellayoutin
+\substitutecommand \stelmargesin            \stellayoutin
+\substitutecommand \steloffsetin            \stellayoutin
+
+              \def \randbreedte             {\rechterrandbreedte}
+
+\substitutecommand \steldoordefinitiein     \steldoordefinierenin
+\substitutecommand \steldoornummerin        \steldoornummerenin
+\substitutecommand \steldoorsprongin        \steldoorspringenin
+
+\substitutecommand \volgendehoofdstuk       {\stelkopnummerin[hoofdstuk][+1]}
+\substitutecommand \volgendeparagraaf       {\stelkopnummerin[paragraaf][+1]}
+\substitutecommand \volgendesubparagraaf    {\stelkopnummerin[subparagraaf][+1]}
+\substitutecommand \volgendesubsubparagraaf {\stelkopnummerin[subsubparagraaf][+1]}
+
+\substitutecommand \volledigeinhoudsopgave  \volledigeinhoud
+\substitutecommand \plaatsinhoudsopgave     \plaatsinhoud
+\substitutecommand \stelinhoudsopgavein     \stelinhoudin
+
+\substitutecommand \streep                  \onderstreep
+\substitutecommand \strepen                 \onderstrepen
+
+\substitutecommand \pragmakenmerk           \kenmerk
+
+\substitutecommand \definieersynoniem       \definieersynoniemen       
+
+\substitutecommand \stelvoetnootin          \stelvoetnotenin
+
+\substitutecommand \karakters               \uitgerekt
+
+\substitutecommand \diepevoetnoot           \voetnoot
+
+% english: 
+
+\substitutecommand \setupformulas           \setupformulae 
+
+\substitutecommand \useexternalfigures      \setupexternalfigures
+
+\substitutecommand \setupintermezzos        \setupintermezzi
+
+\substitutecommand \leftlined               \leftaligned
+\substitutecommand \middlelined             \midaligned
+\substitutecommand \rightlined              \rightaligned
+
+\substitutecommand \setupcorps              \setupbodyfont
+\substitutecommand \switchtocorps           \switchtobodyfont
+\substitutecommand \definecorps             \definebodyfont
+\substitutecommand \definecorpsenvironment  \definebodyfontenvironment
+\substitutecommand \showcorps               \showbodyfont
+\substitutecommand \showcorpsenvironment    \showbodyfontenvironment
+
+              \def \corpssize               {\bodyfontsize}
+\protect
+
+\endinput

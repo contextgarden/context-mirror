@@ -14,6 +14,9 @@
 %D First we extend the already defined font sets a bit. We make
 %D use of the \type{sa} option.
 
+\definefontsynonym [MathAlpha] [msam10]
+\definefontsynonym [MathBeta]  [msbm10]
+
 \definebodyfont [14.4pt,12pt,11pt,10pt,9pt] [mm]
   [ma=msam10 sa 1,
    mb=msbm10 sa 1]
@@ -31,6 +34,9 @@
 %D limited pool of \type{\fam}'s anyway.
 
 \unprotect
+
+\let\msafam=\mafam
+\let\msbfam=\mbfam
 
 \let\msafam@=\hexmafam
 \let\msbfam@=\hexmbfam
@@ -75,7 +81,7 @@
 %D %%     }
 %D \stoptypen
 
-\expandafter\ifx\csname amssym.def\endcsname\relax \else\endinput\fi
+\expandafter\ifx\csname amssym.def\endcsname\relax\else\endinput\fi
 
 %D Store the catcode of the @ in the csname so that it can be
 %D restored later.
@@ -86,7 +92,7 @@
 %D Set the catcode to 11 for use in private control sequence
 %D names.
 
-\catcode`\@=11
+\unprotect % \catcode`\@=11
 
 %D Include all definitions related to the fonts msam, msbm and
 %D eufm, so that when this file is used by itself, the results
@@ -96,8 +102,11 @@
 %D symbols that replace composites defined in plain must be
 %D defined with \type{\mathchardef}.
 
-\def\undefine#1%
-  {\let#1\undefined}
+\let\normalundefine\undefine
+\let\normalnewsymbol\newsymbol
+
+\def\undefine#1%      
+  {\let#1\undefined}   
 
 \def\newsymbol#1#2#3#4#5%
   {\let\next@\relax
@@ -134,7 +143,6 @@
 %D \textfont\msafam=\tenmsa
 %D \scriptfont\msafam=\sevenmsa
 %D \scriptscriptfont\msafam=\fivemsa
-%D
 %D \edef\msafam@%
 %D   {\hexnumber@\msafam}
 %D \stoptypen
@@ -161,7 +169,6 @@
 %D \textfont\msbfam=\tenmsb
 %D \scriptfont\msbfam=\sevenmsb
 %D \scriptscriptfont\msbfam=\fivemsb
-%D
 %D \edef\msbfam@%
 %D   {\hexnumber@\msbfam}
 %D \stoptypen
@@ -491,7 +498,9 @@
 
 %D Restore the catcode value for @ that was previously saved.
 
-\catcode`\@=\csname pre amssym.tex at\endcsname
+\let\undefine\normalundefine
+\let\newsymbol\normalnewsymbol
+
+\protect % \catcode`\@=\csname pre amssym.tex at\endcsname
 
 \endinput
-

@@ -16,7 +16,7 @@
 \unprotect
 
 %D \macros
-%D   {kap,KAP,Kap,Kaps,nokap}
+%D   {kap,KAP,Kap,Kaps,nokap,userealcaps,usepseudocaps}
 %D
 %D We already introduced \type{\kap} as way to capitalize
 %D words. This command comes in several versions:
@@ -55,17 +55,46 @@
 %D \showsetup{\y!KAP}
 %D \showsetup{\y!Kaps}
 %D \showsetup{\y!nokap}
+%D
+%D The difference between pseudo and real caps is demonstrated 
+%D below:
+%D
+%D \startbuffer
+%D \usepseudocaps \kap{Hans Hagen}
+%D \userealcaps   \kap{Hans Hagen}
+%D \stopbuffer
+%D
+%D \typebuffer
+%D 
+%D \haalbuffer
+%D
+%D The \type {\bgroup} trickery below is needed because of 
+%D \type {\groupedcommand}. 
+
+\def\usepseudocaps%
+  {\def\cap@@uppercase{\the\everyuppercase\uppercase}%
+   \def\cap@@lowercase{\the\everylowercase\lowercase}%
+   \def\cap@@visualize{\tx}}
+
+\def\userealcaps%
+  {\let\cap@@uppercase=\relax
+  %\let\cap@@lowercase=\relax % Definitely not!
+   \def\cap@@visualize{\sc}}
+
+\usepseudocaps
+
+\def\dodokap#1#2%
+  {\ifmmode\hbox\fi
+   \bgroup
+   \cap@@visualize
+   \cap@@uppercase{#1{#2}}%
+   \egroup}
+
+\def\nokap#1%
+  {\cap@@lowercase{#1}}
 
 \unexpanded\def\kap%
   {\futurelet\next\dokap}
-
-% \def\dokap%
-%   {\ifx\next\bgroup
-%      \def\next{\dodokap\relax}%
-%    \else
-%      \def\next{\dodokap}%
-%    \fi
-%    \next}
 
 \def\dokap%
   {\ifx\next\bgroup
@@ -74,26 +103,58 @@
      \expandafter\dodokap
    \fi}
 
-\def\dodokap#1#2%
-  {\ifmmode\hbox\fi
-   \bgroup
-   \tx 
-   \the\everyuppercase
-   \uppercase{#1{#2}}%
-   \egroup}
-
 \unexpanded\def\KAP#1%
   {{\def\\##1{\kap{##1}}#1}}
 
 \unexpanded\def\Kap#1%
   {\KAP{\\#1}}
 
-\def\nokap#1%
-  {\lowercase{#1}}
-
-\def\Kaps%
+\unexpanded\def\Kaps%
   {\let\processword=\Kap   
    \processwords}
+
+%D Sure:
+
+\let\normalkap\kap
+
+%D Some precautions for a \PLAIN\ \TEX\ definition. 
+
+\let\normalcap\cap
+
+\def\cap%
+  {\ifmmode
+     \expandafter\normalcap
+   \else
+     \expandafter\kap
+   \fi}
+
+%D \macros 
+%D   {setupcapitals}
+%D
+%D By default we use pseudo small caps in titles. This can be
+%D set up with:
+%D 
+%D \showsetup{setupcapitals}
+
+\def\setupcapitals%
+  {\dosingleempty\dosetupcapitals}
+
+\def\dosetupcapitals[#1]%
+  {\getparameters[\??kk][#1]%
+   \doifelse{\@@kktitel}{\v!ja}
+     {\definealternativestyle[\v!kapitaal][\normalkap][\normalkap]%
+      \definealternativestyle[\v!smallcaps][\sc][\sc]%
+      \let\kap\normalkap}
+     {\definealternativestyle[\v!kapitaal][\normalkap][\uppercase]%
+      \definealternativestyle[\v!smallcaps][\sc][\uppercase]%
+      \def\kap{\doconvertfont{\v!kapitaal}}}% 
+   \doifelse{\@@kksc}{\v!ja}
+     {\userealcaps}
+     {\usepseudocaps}}
+
+\setupcapitals
+  [\c!titel=\v!ja,
+   \c!sc=\v!nee]
 
 %D \macros
 %D   {Word, Words, WORD, WORDS, doprocesswords}
@@ -146,9 +207,9 @@
 
 \def\WORD#1%
   {\bgroup
+   \the\everyuppercase
    \def\kap#1{#1}%
    \edef\next{#1}%
-   \the\everyuppercase
    \uppercase\expandafter{\next}%
    \egroup}
 
@@ -196,7 +257,10 @@
 %D \typebuffer
 
 %D \macros
-%D   {underbar,underbars,overstrike,overstrikes,setupunderbar} 
+%D   {underbar,underbars,
+%D    overbar,overbars,
+%D    overstrike,overstrikes,
+%D    setupunderbar} 
 %D
 %D In the rare case that we need undelined words, for instance
 %D because all font alternatives are already in use, one can
@@ -205,7 +269,8 @@
 %D 
 %D \startbuffer
 %D \underbars{drawing \underbar{bars} under words is a typewriter leftover}
-%D \overstrikes{striking words makes them \overstrike{unreadable}}
+%D \overstrikes{striking words makes them \overstrike{unreadable} but 
+%D sometimes even \overbar{top lines} come into view.}
 %D \stopbuffer
 %D 
 %D \typebuffer
@@ -222,6 +287,8 @@
 %D
 %D \showsetup{\y!underbar}
 %D \showsetup{\y!underbars}
+%D \showsetup{\y!overbar}
+%D \showsetup{\y!overbars}
 %D \showsetup{\y!overstrike}
 %D \showsetup{\y!overstrikes} 
 %D
@@ -231,17 +298,16 @@
 %D \showsetup{\y!setupunderbar}
 %D
 %D The alternatives show up as 
-%D   {\setupunderbar [variant=a]{alternative a},
-%D   {\setupunderbar [variant=b]{alternative b},
-%D   {\setupunderbar [variant=c]{alternative c}
+%D   {\setupunderbar [variant=a]\underbar{alternative a},
+%D   {\setupunderbar [variant=b]\underbar{alternative b},
+%D   {\setupunderbar [variant=c]\underbar{alternative c}
 %D and 
-%D   {\setupunderbar [lijndikte=1pt]{1pt width},
-%D   {\setupunderbar [lijndikte=2pt]{2pt width}, 
+%D   {\setupunderbar [lijndikte=1pt]\underbar{1pt width},
+%D   {\setupunderbar [lijndikte=2pt]\underbar{2pt width}, 
 %D or whatever. Because \type{\overstrike} uses the same 
 %D method, the settings also apply to that macro. 
 
 \newcounter\underbarlevel
-\newbox\underbarbox
 
 \def\underbarmethoda#1#2#3% RULE 
   {\hbox to #1{\vrule\!!width#1\!!height#2\!!depth#3}}
@@ -255,66 +321,104 @@
 
 \def\underbarmethodc#1#2#3% PERIOD
   {\hbox to #1
-     {\dimen0=#3
-      \advance\dimen0 by .2ex 
+     {\dimen4=#3
+      \advance\dimen4 by .2ex 
       \hskip-.25em 
       \xleaders
-        \hbox{\hskip.25em\lower\dimen0\hbox{.}}
+        \hbox{\hskip.25em\lower\dimen4\hbox{.}}
         \hfil}}
 
-\def\dodounderbar#1#2#3% 
-  {\bmath
+\def\dododounderbar#1#2#3% 
+  {\startmathmode
    \setbox0=\hbox{#3}%
    \setbox2=\getvalue{underbarmethod\@@onvariant}{\wd0}{#1}{#2}%
    \wd0=\!!zeropoint
+   \ht2=\ht0 
+   \dp2=\dp0 
    \box0\box2
-   \emath}
+   \stopmathmode}
 
-\unexpanded\def\dounderbar#1%
+\unexpanded\def\dodounderbar#1%
+  {\bgroup
+   \dimen0=1.5\normallineskip  
+   \dimen0=\underbarlevel\dimen0
+   \ifdone \else
+     \advance\dimen0 by -\normallineskip
+     \advance\dimen0 by -\ht\strutbox 
+   \fi
+   \dimen2=\dimen0
+   \advance\dimen2 by \@@onlijndikte
+   \dododounderbar{-\dimen0}{\dimen2}{#1}%
+   \egroup}
+
+\def\betweenunderbarwords%
+  {\bgroup
+   \setbox0=\hbox
+     {\dodounderbar{\hskip\fontdimen2\font}}%
+   \nobreak
+   \hskip\!!zeropoint\!!minus\fontdimen4\font
+   \discretionary{}{}{\box0}%
+   \egroup}
+
+\def\betweenunderbarspaces%
+  {\hskip\currentspaceskip}
+
+\unexpanded\def\dounderbar#1#2%
+  {\let\betweenisolatedwords#1%
+   \processisolatedwords{#2}\dodounderbar
+   \egroup}
+
+\unexpanded\def\underbar%
   {\bgroup
    \increment\underbarlevel
-   \dimen0=1.5\normallineskip   % was \dimen0=1.5\lineskip
-   \dimen0=\underbarlevel\dimen0
+   \donetrue
+   \dounderbar\betweenunderbarwords}
+
+\unexpanded\def\underbars%
+  {\bgroup
+   \increment\underbarlevel
+   \donetrue
+   \dounderbar\betweenunderbarspaces}
+
+\unexpanded\def\overbar%
+  {\bgroup
+   \decrement\underbarlevel
+   \donefalse
+   \dounderbar\betweenunderbarwords}
+
+\unexpanded\def\overbars%
+  {\bgroup
+   \decrement\underbarlevel
+   \donefalse
+   \dounderbar\betweenunderbarspaces}
+
+\def\dooverstrike#1%
+  {\bgroup
+   \dimen0=2.5\normallineskip
    \dimen2=\dimen0
    \advance\dimen2 by \@@onlijndikte
-   \dodounderbar{-\dimen0}{\dimen2}{#1}%
+   \dododounderbar{\dimen2}{-\dimen0}{#1}%
    \egroup}
 
-\unexpanded\def\underbar#1%
+\def\betweenoverstrikewords%
   {\bgroup
-   \setbox\underbarbox=\hbox
-     {\dounderbar{\hskip\fontdimen2\font}}%
-   \def\betweenisolatedwords%
-     {\nobreak
-      \hskip\!!zeropoint\!!minus\fontdimen4\font
-      \discretionary{}{}{\copy\underbarbox}}%
-   \processisolatedwords{#1}\dounderbar
-   \egroup}
-
-\unexpanded\def\underbars#1%
-  {\processisolatedwords{#1}\dounderbar}
-
-\unexpanded\def\dooverstrike#1%
-  {\bgroup
-   \dimen0=2.5\lineskip
-   \dimen2=\dimen0
-   \advance\dimen2 by \@@onlijndikte
-   \dodounderbar{\dimen2}{-\dimen0}{#1}%
+   \setbox0=\hbox
+     {\dooverstrike{\hskip\fontdimen2\font}}%
+   \nobreak
+   \hskip\!!zeropoint\!!minus\fontdimen4\font
+   \discretionary{}{}{\box0}%
    \egroup}
 
 \unexpanded\def\overstrike#1%
   {\bgroup
-   \setbox\underbarbox=\hbox
-     {\dooverstrike{\hskip\fontdimen2\font}}%
-   \def\betweenisolatedwords%
-     {\nobreak
-      \hskip\!!zeropoint\!!minus\fontdimen4\font
-      \discretionary{}{}{\copy\underbarbox}}%
+   \let\betweenisolatedwords\betweenoverstrikewords
    \processisolatedwords{#1}\dooverstrike
    \egroup}
 
 \unexpanded\def\overstrikes#1%
-  {\processisolatedwords{#1}\dooverstrike}
+  {\bgroup
+   \processisolatedwords{#1}\dooverstrike
+   \egroup}
 
 \def\setupunderbar%
   {\dodoubleargument\getparameters[\??on]}
@@ -328,4 +432,3 @@
 \protect 
 
 \endinput
-

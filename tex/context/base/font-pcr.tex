@@ -7,40 +7,22 @@
 %D           date=\currentdate,
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
 
-%D This module defines the Standard Adobe Courier. We use
-%D the \YandY\ texnansi encoding vector. 
+%D This module defines the Standard Adobe Courier fonts.
 
-\startcoding[texnansi]
+\definefontsynonym [Mono]            [Courier]
+\definefontsynonym [MonoBold]        [Courier]
+\definefontsynonym [MonoItalic]      [Courier-Oblique]
+\definefontsynonym [MonoSlanted]     [Courier-Oblique]
+\definefontsynonym [MonoBoldItalic]  [Courier]
+\definefontsynonym [MonoBoldSlanted] [Courier]
+\definefontsynonym [MonoCaps]        [Courier]
 
-\definebodyfont [14.4pt,12pt,11pt,10pt,9pt,8pt] [tt]
-  [tf=Courier sa 1,
-   sl=Courier-Oblique sa 1,
-   tfa=Courier sa 1.200,
-   tfb=Courier sa 1.440,
-   tfc=Courier sa 1.728,
-   tfd=Courier sa 2.074]
-
-\definebodyfont [7pt,6pt,5pt] [tt]
-  [tf=Courier sa 1,
-   sl=Courier-Oblique sa 1]
-
-\definebodyfont [14.4pt,12pt,11pt,10pt,9pt,8pt,7pt,6pt,5pt] [tt]
-  [tf=Courier sa 1,
-   sl=Courier-Oblique sa 1]
-
-\definebodyfont [14.4pt,12pt,10pt] [tt]
-  [sla=Courier-Oblique sa 1.200,
-   slb=Courier-Oblique sa 1.440,
-   slc=Courier-Oblique sa 1.728,
-   sld=Courier-Oblique sa 2.074]
-
-\stopcoding
+\definebodyfont [14.4pt,12pt,11pt,10pt,9pt,8pt,7pt,6pt,5pt] [tt] [default]
 
 %D The Courier font does not contain \TEX's visual space. The
-%D next definition offers an alternative.
+%D next definition offers an alternative at bodyfont size.
 
 \def\controlspace%
   {\hbox{\font\next=cmtt10 at \bodyfontsize\next\char32}}
 
 \endinput
-

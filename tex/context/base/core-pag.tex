@@ -85,7 +85,7 @@
              \s!reset=>\global\arrangingpagesfalse,
            \s!unknown=>\global\arrangingpagesfalse,
            \s!default=>\global\arrangingpagesfalse]%
-   \doifcommonelse{#1}{90,270}
+   \doifcommonelse{#1}{90,270,\v!geroteerd}
      {\swapmacros\horizontalcutmarks\verticalcutmarks}{}% ugly solution
    \ifarrangingpages
      \abortutilitygeneration

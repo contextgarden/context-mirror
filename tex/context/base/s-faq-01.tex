@@ -1,0 +1,178 @@
+%D \module
+%D   [      file=s-faq-01,
+%D        version=1997.21.08,
+%D          title=\CONTEXT\ Style File,
+%D       subtitle=FAQ Interactive Version,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. Non||commercial use is
+%C granted.
+
+\usemodule[faq-00]
+
+\setuppapersize
+  [S6]
+
+\setuplayout
+  [topspace=.5cm,
+   backspace=.5cm,
+   margin=0pt,
+   height=fit,
+   header=0pt,
+   width=fit,
+   footer=0pt,
+   bottomdistance=12pt,
+   bottom=18pt] 
+
+\setupinteractionscreen
+  [width=fit,
+   height=fit,
+   option=max]
+
+\setupinteraction
+  [state=start,
+   page=yes,
+   color=red,
+   menu=on]
+
+\setupcolors
+  [state=start]
+
+\setupbackgrounds
+  [page]
+  [offset=3pt]
+
+\setupbackgrounds
+  [text,bottom]
+  [text]
+  [background=screen]
+
+\setupframedtexts
+  [background=color,
+   backgroundcolor=white,
+   framecolor=red]
+
+\useexternaldocument
+  [paperfaq]
+  [\PaperFAQ]
+  []
+
+\setupregister
+  [index]
+  [coupling=yes]
+
+\coupleregister
+  [index]
+
+\defineinteractionmenu [bottom 1] [bottom] [state=stop]
+\defineinteractionmenu [bottom 2] [bottom] [state=stop]
+
+\setupinteractionmenu
+  [bottom, bottom 1, bottom 2]
+  [background=color,
+   backgroundcolor=white,
+   color=black,
+   framecolor=red,
+   dummy=yes,
+   middle=\hskip1em,
+   distance=overlay]
+
+\setupinteractionmenu
+  [bottom 1]
+  [{\hfill},
+   {\labeltext{paper}[paperfaq::]},
+   {\labeltext{goback}[PreviousJump]},
+   {\labeltext{faqs}[faqs]},
+   {\labeltext{index}[index]},
+   {\gobackwardcharacter[previouspage]},
+   {\goforwardcharacter[nextpage]}]
+
+\setupinteractionmenu
+  [bottom 2]
+  [{\CurrentIndexOfFAQ},
+   {\hfill},
+   {\labeltext{paper}[paperfaq::faq:\CurrentNOfFAQ]},
+   {\labeltext{goback}[PreviousJump]},
+   {\labeltext{faqs}[faqs]},
+   {\labeltext{index}[index]},
+   {\gobackwardcharacter[previouspage]},
+   {\goforwardcharacter[nextpage]}]
+
+\def\CurrentIndexOfFAQ%
+  {\bgroup
+   \setupinteraction[color=]%
+   \menubox[bottom]{\let\index\coupledindex\IndexOfFAQ}%
+   \egroup}
+
+\setupinteractionmenu
+  [bottom 1]
+  [state=start]
+
+\def\EndAnswer%
+  {\vfill
+   \bgroup
+   \tfx\setstrut
+   \framed
+     [framecolor=red,
+      background=color,
+      backgroundcolor=white]
+     {\AuthorOfFAQ}
+    \egroup}
+
+\def\TitlePage%
+  {\startstandardmakeup
+   \blank[3*big]
+   \midaligned{\bfd \labeltext{FAQ}}
+   \blank[3*big]
+   \midaligned{\bfd \labeltext{about} \NameOfFAQ}
+   \blank[3*big]
+   \midaligned{\bfb \labeltext{version}: \currentdate}
+   \blank[3*big]
+   \midaligned{\tta \ListOfFAQ}
+   \vfill
+   \midaligned{\tta pragma@pi.net}
+   \blank[3*big]
+   \stopstandardmakeup}
+
+\def\FileWithFAQs%
+  {\setupinteractionmenu[bottom 1][state=stop]
+   \setupinteractionmenu[bottom 2][state=start]
+   \page
+   \input \FileNameOfFAQ \relax
+   \page
+   \setupinteractionmenu[bottom 2][state=stop]
+   \setupinteractionmenu[bottom 1][state=start]}
+
+\def\IndexPage%
+  {\page
+   \def\CurrentIndexOfFAQ{}
+   \def\NameOfFAQ{}
+   \pagereference[index]
+   \placeregister[index]
+   \page}
+
+\def\BeginFAQ%
+  {\doglobal\increment\CurrentNOfFAQ
+   \setbox0=\vbox\bgroup
+   \setupframedtexts[before=,after=,linecorrection=off]
+   \startframedtext}
+
+\def\EndFAQ%
+  {\stopframedtext
+   \egroup 
+   \button[frame=off,offset=overlay]{\copy0}[faq:\CurrentNOfFAQ]
+   \vskip6pt}
+
+\def\AllFAQs%
+  {\page
+   \def\CurrentIndexOfFAQ{}
+   \def\NameOfFAQ{}
+   \newcounter\CurrentNOfFAQ
+   \setupblock[question][before=\BeginFAQ,after=\EndFAQ]
+   \pagereference[faqs]
+   \useblocks[question]}
+
+\endinput

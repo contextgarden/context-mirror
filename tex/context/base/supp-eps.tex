@@ -1,0 +1,129 @@
+%D \module
+%D   [       file=supp-eps,
+%D        version=1998.05.06,
+%D          title=\CONTEXT\ Support Macros,
+%D       subtitle=\EPS\ tools,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. Non||commercial use is 
+%C granted. 
+
+\ifx \undefined \writestatus \input supp-mis.tex \relax \fi
+
+%D The macros in this module are rather old and were originally
+%D part of the figure inclusion macros. When \PDFTEX\ started
+%D to support \PDF\ inclusion, where some accompanying macros
+%D were put in \type{supp-pdf}, I considered it more suitable
+%D to give the \EPS\ macros their own module. 
+
+\writestatus{loading}{Context Support Macros / PDF}
+
+%D \macros
+%D   {dogetEPSboundingbox}
+%D
+%D The predecessors of the following macro's are derived from 
+%D Thomas Rockicky's macro's. They are rewritten to a more 
+%D compact form, made a bit more robust and also handle the 
+%D \type{HiResBoundingBox} and \type{ExactBoundingBox} that 
+%D are sometimes present.
+%D
+%D A bounding box has the form: 
+%D
+%D \starttypen
+%D %%BoundingBox: llx lly urx ury 
+%D \stoptypen
+%D
+%D Before we scan the file, we have to reset special 
+%D characters and set some others. The percentage symbol also 
+%D needs special treatment. When a bounding box is 
+%D encountered, we keep on scanning until no more directives 
+%D are found, i.e. a line is found that does not start with a 
+%D percentage symbol. We also abort scanning after finding a 
+%D high resolution bounding box. 
+%D
+%D This method also works inside verbatim mode (like when we 
+%D are typesetting sources and putting eps coded logos into 
+%D a heading. Temporary restoring the \CATCODES\ is done in 
+%D the calling routine.  
+
+\unprotect
+
+\let\EPSllx\!!zeropoint \let\MPllx\EPSllx % just in case these 
+\let\EPSlly\!!zeropoint \let\MPlly\EPSlly % are used while running 
+\let\EPSurx\!!zeropoint \let\MPurx\EPSurx % in fast mode we set
+\let\EPSury\!!zeropoint \let\MPury\EPSury % them to 0pt. 
+
+\def\dogetEPSboundingbox#1#2#3#4#5%
+  {\bgroup
+   \global\chardef\EPSfound=0
+   \global\chardef\EPScreator=0 
+   \uncatcodespecials
+   \def\doprocessEPSline%
+     {\expandafter\checkEPSboundingbox\fileline:. \end}%
+   \doprocessfile\scratchread{#1}\doprocessEPSline
+   \egroup
+   \ifnum\EPSfound>0
+     \dimen0=1bp\relax
+     #2=\EPSllx\dimen0
+     #4=\EPSurx\dimen0
+     \advance#4 by -\EPSllx\dimen0
+     #3=\EPSlly\dimen0
+     #5=\EPSury\dimen0
+     \advance#5 by -\EPSlly\dimen0
+   \else
+     #2=\!!zeropoint
+     #3=\!!zeropoint
+     #4=\!!zeropoint
+     #5=\!!zeropoint
+   \fi
+   \global\let\MPllx\EPSllx \global\let\MPlly\EPSlly
+   \global\let\MPurx\EPSurx \global\let\MPury\EPSury}
+
+\bgroup
+\catcode`\%=\@@other
+\global\let\EPSpercenttag   =%
+\gdef\EPSboundingboxtag     {%BoundingBox}  
+\gdef\EPShiresboundingboxtag{%HiResBoundingBox}  
+\gdef\EPSexactboundingboxtag{%ExactBoundingBox}  
+\gdef\EPScreatortag         {%Creator}  
+\gdef\EPSmetaposttag        { MetaPost :. }  
+\egroup  
+
+\long\def\checkEPSboundingbox#1#2:#3\end%
+  {\ifx#1\EPSpercenttag
+     \def\!!stringa{#2}%
+     \ifx\!!stringa\EPScreatortag
+       \def\!!stringa{#3}%
+       \global\chardef\EPScreator=\ifx\!!stringa\EPSmetaposttag1 \else0 \fi
+     \else\ifx\!!stringa\EPSboundingboxtag
+       \getEPSboundingbox #3 . . . \end
+       \global\chardef\EPSfound=1
+     \else\ifx\!!stringa\EPShiresboundingboxtag
+       \getEPSboundingbox #3 . . . \end
+       \global\chardef\EPSfound=2
+       \dofinishfile
+     \else\ifx\!!stringa\EPSexactboundingboxtag
+       \getEPSboundingbox #3 . . . \end
+       \global\chardef\EPSfound=2
+       \dofinishfile
+     \fi\fi\fi\fi
+   \else\ifnum\EPSfound>0
+     \dofinishfile
+   \fi\fi}
+
+\def\getEPSboundingbox #1 #2 #3 #4 #5\end%
+  {\gdef\EPSllx{#1}%
+   \ifx\EPSllx\empty
+     \getEPSboundingbox #2 #3 #4 #5 .\end
+   \else
+     \gdef\EPSlly{#2}%
+     \gdef\EPSurx{#3}%
+     \gdef\EPSury{#4}%
+   \fi}
+
+\protect 
+
+\endinput

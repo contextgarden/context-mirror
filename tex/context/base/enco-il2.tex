@@ -1,0 +1,175 @@
+%D \module
+%D   [     file=enco-il2,
+%D      version=1998.12.1,
+%D        title=\CONTEXT\ Encoding Macros,
+%D     subtitle=Czech and Slovak ISO Latin 2 Encoding,
+%D       author=J. Hagen,
+%D         date=\currentdate,
+%D    copyright=J. Hagen]
+
+%D This Czech/Slovak encoding is dedicated to Han The Thanh. 
+%D The numbers are derived from some files he sent me. This 
+%D definition file is (still) sort of beta. 
+
+\startmapping[il2]
+
+\definecasemap 165 181 165   \definecasemap 169 185 169 
+\definecasemap 171 187 171   \definecasemap 174 190 174 
+\definecasemap 181 181 165   \definecasemap 185 185 169 
+\definecasemap 187 187 171   \definecasemap 190 190 174 
+\definecasemap 192 224 192   \definecasemap 193 225 193 
+\definecasemap 196 228 196   \definecasemap 197 229 197 
+\definecasemap 200 232 200   \definecasemap 201 233 201 
+\definecasemap 204 236 204   \definecasemap 205 237 205 
+\definecasemap 207 239 207   \definecasemap 210 242 210 
+\definecasemap 211 243 211   \definecasemap 212 244 212 
+\definecasemap 214 246 214   \definecasemap 216 248 216 
+\definecasemap 217 249 217   \definecasemap 218 250 218 
+\definecasemap 220 252 220   \definecasemap 221 253 221 
+\definecasemap 224 224 192   \definecasemap 225 225 193 
+\definecasemap 228 228 196   \definecasemap 229 229 197 
+\definecasemap 232 232 200   \definecasemap 233 233 201 
+\definecasemap 236 236 204   \definecasemap 237 237 205 
+\definecasemap 239 239 207   \definecasemap 242 242 210 
+\definecasemap 243 243 211   \definecasemap 244 244 212 
+\definecasemap 246 246 214   \definecasemap 248 248 216 
+\definecasemap 249 249 217   \definecasemap 250 250 218 
+\definecasemap 252 252 220   \definecasemap 253 253 221 
+
+\stopmapping
+
+\startcoding[il2]
+
+%D Most accents are located at their normal position as set 
+%D in \PLAIN\ \TEX; only \type {\r} is new. 
+
+\defineaccentcommand " 127
+\defineaccentcommand '  19
+\defineaccentcommand .  95
+\defineaccentcommand =  22
+\defineaccentcommand ^  94
+\defineaccentcommand `  18
+\defineaccentcommand ~ 126
+\defineaccentcommand H 125
+\defineaccentcommand u  21
+\defineaccentcommand v  20
+\defineaccentcommand r  23 
+
+\defineaccent ' a    ^^e1   \defineaccent ' A    ^^c1
+\defineaccent ' e    ^^e9   \defineaccent ' E    ^^c9
+\defineaccent ' i    ^^ed   \defineaccent ' I    ^^cd
+\defineaccent ' {\i} ^^ed
+\defineaccent ' l    ^^e5   \defineaccent ' L    ^^c5
+\defineaccent ' o    ^^f3   \defineaccent ' O    ^^d3
+\defineaccent ' r    ^^e0   \defineaccent ' R    ^^c0
+\defineaccent ' u    ^^fa   \defineaccent ' U    ^^da
+\defineaccent ' y    ^^fd   \defineaccent ' Y    ^^dd
+
+\defineaccent ` a    ^^b8   \defineaccent ` A    ^^98
+
+\defineaccent ^ o    ^^f4   \defineaccent ^ O    ^^d4
+
+\defineaccent " a    ^^e4   \defineaccent " A    ^^c4
+\defineaccent " o    ^^f6   \defineaccent " O    ^^d6
+\defineaccent " u    ^^fc   \defineaccent " U    ^^dc
+
+\defineaccent v c    ^^e8    \defineaccent v C   ^^c8
+\defineaccent v d    ^^ef    \defineaccent v D   ^^cf
+\defineaccent v e    ^^ec    \defineaccent v E   ^^cc
+\defineaccent v l    ^^b5    \defineaccent v L   ^^a5
+\defineaccent v n    ^^f2    \defineaccent v N   ^^d2
+\defineaccent v r    ^^f8    \defineaccent v R   ^^d8
+\defineaccent v s    ^^b9    \defineaccent v S   ^^a9
+\defineaccent v t    ^^bb    \defineaccent v T   ^^ab
+\defineaccent v z    ^^be    \defineaccent v Z   ^^ae
+
+\defineaccent r u    ^^f9    \defineaccent r U   ^^d9
+
+\def\csencodedrA%
+   {\leavevmode\setbox0\hbox{h}\dimen@\ht0\advance\dimen@-1ex%
+    \rlap{\raise.67\dimen@\hbox{\char'27}}A}
+
+                             \defineaccent r A    {\csencodedrA}
+
+\definecharacter ae 26  \definecharacter AE 29
+\definecharacter oe 27  \definecharacter OE 30
+\definecharacter o  28  \definecharacter O  31
+\definecharacter i  16
+\definecharacter j  17
+                        \definecharacter SS 25
+
+%D Some rather \PLAIN\ \TEX\ redefinitions. 
+
+\def\csencodedb#1
+  {\oalign{\null#1\crcr\hidewidth\sh@ft{29}%
+     \vbox to.2ex{\hbox{\char22}\vss}\hidewidth}}
+
+\def\csencodedc#1
+  {\setbox\z@\hbox{#1}\ifdim\ht\z@=1ex\accent24 #1\else
+     {\ooalign{\unhbox\z@\crcr\hidewidth\char24\hidewidth}}\fi}
+
+\def\csencodedd#1%
+  {\oalign{\null#1\crcr\hidewidth\sh@ft{08}.\hidewidth}}
+
+\definecommand b {\csencodedb}
+\definecommand c {\csencodedc}
+\definecommand d {\csencodedd}
+
+%D Some less \PLAIN\ ones: 
+
+\redefinecommand l 
+\redefinecommand L 
+
+\def\csencodedl%
+  {{\char32l}}
+
+\def\csencodedL% I don't like the \leavevmode here, better \enterhmode
+  {\leavevmode\setbox0\hbox{L}\hbox to\wd0{\hss\char32L}}
+
+\definecommand l {\csencodedl}
+\definecommand L {\csencodedL}
+
+\stopcoding
+
+% \everyuppercase, font/language specifics ?
+
+% \uccode152=152 \lccode152=184
+% \uccode184=152 \lccode184=184
+% \uccode165=165 \lccode165=181
+% \uccode181=165 \lccode181=181
+% \uccode169=169 \lccode169=185
+% \uccode185=169 \lccode185=185
+% \uccode171=171 \lccode171=187
+% \uccode187=171 \lccode187=187
+% \uccode174=174 \lccode174=190
+% \uccode190=174 \lccode190=190
+% \sfcode254=0   \lccode254=0
+% \sfcode255=0   \lccode255=0
+% \sfcode158=0   \lccode158=0
+% \sfcode159=0   \lccode159=0 
+
+% \defineaccent v c    '350   \defineaccent v C    '310
+% \defineaccent v d    '357   \defineaccent v D    '317
+% \defineaccent v e    '354   \defineaccent v E    '314
+% \defineaccent v l    '265   \defineaccent v L    '245
+% \defineaccent v n    '362   \defineaccent v N    '322
+% \defineaccent v r    '370   \defineaccent v R    '330
+% \defineaccent v s    '271   \defineaccent v S    '251
+% \defineaccent v t    '273   \defineaccent v T    '253
+% \defineaccent v z    '276   \defineaccent v Z    '256
+% \defineaccent ' a    '341   \defineaccent ' A    '301
+% \defineaccent ' e    '351   \defineaccent ' E    '311
+% \defineaccent ' i    '355   \defineaccent ' I    '315
+% \defineaccent ' {\i} '355
+% \defineaccent ' l    '345   \defineaccent ' L    '305
+% \defineaccent ' o    '363   \defineaccent ' O    '323
+% \defineaccent ' r    '340   \defineaccent ' R    '300
+% \defineaccent ' u    '372   \defineaccent ' U    '332
+% \defineaccent ' y    '375   \defineaccent ' Y    '335
+% \defineaccent ` a    '270   \defineaccent ` A    '230
+% \defineaccent ^ o    '364   \defineaccent ^ O    '324
+% \defineaccent " a    '344   \defineaccent " A    '304
+% \defineaccent " o    '366   \defineaccent " O    '326
+% \defineaccent " u    '374   \defineaccent " U    '334
+% \defineaccent r u    '371   \defineaccent r U    '331
+

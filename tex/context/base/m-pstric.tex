@@ -1,0 +1,46 @@
+%D \module
+%D   [       file=m-pstricks,
+%D        version=1997.01.15,
+%D          title=\CONTEXT\ Extra Modules,
+%D       subtitle=\PSTRICKS\ Connections,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. Non||commercial use is 
+%C granted. 
+
+\edef\oldbarcode{\the\catcode`\|}  % \chardef 
+\catcode`\|=12
+
+\def\definieerkleur#1[#2]#3[#4]%
+  {%\writestatus{pstricks}{definieer kleur #2}%
+   \getparameters[pstricks][#4]%
+   \newrgbcolor{#2}{{\pstricksr} {\pstricksg} {\pstricksb}}}   
+
+\def\definieerpalet#1[#2]#3[#4]%
+  {} %{\writestatus{pstricks}{overslaan definieer palet #2}}
+
+\def\definieerkleurgroep#1[#2]#3[#4]%
+  {} %{\writestatus{pstricks}{overslaan definieer kleurgroep #2}}
+
+\def\loadpstrickscolors#1%
+  {\let\olddefinieerkleur=\definieerkleur
+   \let\olddefinieerpalet=\definieerpalet
+   \let\olddefinieerkleurgroep=\definieerkleurgroep
+   \writestatus{pstricks}{loading colors from #1}%
+   \input #1 \relax
+   \let\definieerkleur=\olddefinieerkleur
+   \let\definieerpalet=\olddefinieerpalet
+   \let\definieerkleurgroep=\olddefinieerkleurgroep} 
+
+\input multido  \relax  
+\input pstricks \relax      
+\input pst_plot \relax      
+
+\loadpstrickscolors{colo-rgb}  % nog koppelen \redef\
+
+\catcode`\|=\oldbarcode
+
+\endinput

@@ -1,0 +1,60 @@
+In this file the most important changes are reported. Some changes will 
+go unnoticed, others do influence the results slightly and/or solve real
+bugs. Changes to mechanisms under construction or revision are reported
+in the documentation or not mentioned at all. I'm quite sure that I 
+forget to mention many patches.
+
+ 1 mai 1998: depth of \underbar limited to \dp\strutbox, prevent unequal 
+             baseline distances 
+ 3 mai 1998: \splittopskip settings added in supp-box routines, else 
+             funny baselinedistances in numbered/underbared paragraphs  
+ 3 mai 1998: \parskip corrections added in shapebox routines, else empty
+             lines at top of (some) page(s)
+ 5 mai 1998: the quote optimizations didn't work out all right in fonts 
+             other than the CMR ones, therefore we revert to the default
+             ligatures  
+ 6 mai 1998: missing references were already turned into fake ones (to 
+             prevent further messages) but testing is more strict now 
+ 6 mai 1998: empty/dummy menu items repaired, this bug was introduced while   
+             extending the cross reference mechanism
+ 7 mai 1998: pretty switch in verbatim repaired
+ 7 mai 1998: center too wide floats
+ 7 mai 1998: bug removed in pagenumber prefix (unsafe optimization); non
+             dutch settings were not yet supported 
+20 mai 1998: decoupling of object reference mechanism
+20 mai 1998: restore active characters (e.g. in pretty 
+              printing mode) in the pagebody routine, just to 
+              enable || in headers and footers 
+20 mai 1998: field support added and reshufled spec-tpd/spec-pdf
+26 mai 1998: nested underbar works again
+27 mai 1998: text annotations finally supported
+27 mai 1998: \oninterlineskip corrected for negative baselinekips 
+
+12 june 1998: extended external figure mechanism 
+22 june 1998: more subtle \startoverlay..\stopoverlay 
+23 june 1998: \allowbreak added in \placelist
+24 june 1998: style= didn't work yet in english/german 
+28 june 1998: probably unnoticed glitch removed in special reset
+
+ 3 july 1998: now in \framed[width=fit,height=<dimen>,align=middle] 
+              the automatic calculation option also obeys vertical 
+              alignment
+10 july 1998: rounded corners could not be turned off (recently 
+              introduced bug)
+24 july 1998: \DV added to columns due to gaps in lines 
+31 july 1998: zero level counters now also reset at sectionblock
+              boundaries
+
+14 august 1998: some missing english/german translations added
+14 august 1998: displaymath spacing optimized and made cleaner 
+20 august 1998: again some missing translations added
+28 august 1998: unknown figures could lead to missing 
+                inclusion, (recently introduced bug) 
+28 august 1998: chained references could interfere with direct 
+                destinations (lists); extra reset added
+
+11 september 1998: flush topfloats added to forced float flushing,      
+                   else disappearing floats 
+11 september 1998: recently introduced bug in synonyms 
+                   removed, concerning style switch 
+3 october 1998: \seeindex did not flush entry level 

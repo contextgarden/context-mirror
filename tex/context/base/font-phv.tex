@@ -7,47 +7,16 @@
 %D           date=\currentdate,
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
 
-%D This module defines the Standard Adobe Helvetica. We use
-%D the \YandY\ texnansi encoding vector. 
+%D This module defines the Standard Adobe Helvetica fonts.
 
-\startcoding [texnansi]
+\definefontsynonym [Sans]            [Helvetica]
+\definefontsynonym [SansBold]        [Helvetica-Bold]
+\definefontsynonym [SansItalic]      [Helvetica-Oblique]
+\definefontsynonym [SansSlanted]     [Helvetica-Oblique]
+\definefontsynonym [SansBoldItalic]  [Helvetica-BoldOblique]
+\definefontsynonym [SansBoldSlanted] [Helvetica-BoldOblique]
+\definefontsynonym [SansCaps]        [Helvetica]
 
-\definebodyfont [14.4pt,12pt,11pt,10pt,9pt,8pt] [ss]
-  [tf=Helvetica sa 1,
-   bf=Helvetica-Bold sa 1,
-   it=Helvetica-Oblique sa 1,
-   sl=Helvetica-Oblique sa 1,
-   bs=Helvetica-BoldOblique sa 1,
-   bi=Helvetica-BoldOblique sa 1,
-  tfa=Helvetica sa 1.200,
-  tfb=Helvetica sa 1.440,
-  tfc=Helvetica sa 1.728,
-  tfd=Helvetica sa 2.074,
-   sc=Helvetica sa 0.833]
-
-\definebodyfont [7pt,6pt,5pt] [ss]
-  [tf=Helvetica sa 1, 
-   bf=Helvetica-Bold sa 1, 
-   it=Helvetica-Oblique sa 1, 
-   sl=Helvetica-Oblique sa 1, 
-   bs=Helvetica-BoldOblique sa 1, 
-   bi=Helvetica-BoldOblique sa 1]
-
-\definebodyfont [14.4pt,12pt,11pt,10pt,9pt,8pt] [tt]
-  [bfa=Helvetica-Bold sa 1.200,
-   bfb=Helvetica-Bold sa 1.440,
-   bfc=Helvetica-Bold sa 1.728,
-   bfd=Helvetica-Bold sa 2.074,
-   sla=Helvetica-Oblique sa 1.200,
-   slb=Helvetica-Oblique sa 1.440,
-   slc=Helvetica-Oblique sa 1.728,
-   sld=Helvetica-Oblique sa 2.074,
-   bsa=Helvetica-BoldOblique sa 1.200,
-   bsb=Helvetica-BoldOblique sa 1.440,
-   bsc=Helvetica-BoldOblique sa 1.728,
-   bsd=Helvetica-BoldOblique sa 2.074]
-
-\stopcoding
+\definebodyfont [14.4pt,12pt,11pt,10pt,9pt,8pt,7pt,6pt,5pt] [ss] [default]
 
 \endinput
-

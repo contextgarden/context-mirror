@@ -1,0 +1,381 @@
+%D \module
+%D   [      file=s-pre-02,
+%D        version=1998.04.21,
+%D          title=\CONTEXT\ Style File,
+%D       subtitle=Presentation Environment 2,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. Non||commercial use is
+%C granted.
+
+%D This environment can be used to typeset interactive
+%D presentations. This module was first used at the 1998 
+%D publishers conference of the European Portable Document 
+%D Association.
+
+%D \macros
+%D   {setupbodyfont, switchtobodyfont, setuplayout}
+%D
+%D At \PRAGMA\ we prefer using the Lucida Bright fonts, but 
+%D one can of course load another typeface. 
+
+\setupbodyfont
+  [lbr,14.4pt]
+
+\setuplayout
+  [style={\switchtobodyfont[12pt]}]
+
+%D \macros
+%D   {setuppapersize, setuplayout}
+%D
+%D The papersize suits the screen dimensions. The layout is 
+%D rather simple. We use the whole width of the screen and only
+%D have navigational tools at the bottom of the screen.
+
+\setuppapersize
+  [S6]
+
+\setuplayout
+  [backspace=1cm,
+   topspace=1cm,
+   margin=0pt,
+   header=0pt,
+   footer=0pt,
+   bottomdistance=.875cm,
+   bottom=1cm,
+   width=fit,
+   height=fit]
+
+%D \macros
+%D   {setupwhitespace, setuptyping}
+%D
+%D We don't have much height, so we use a more cramped 
+%D spacing. Verbatim text looks better when indented. 
+%D
+
+\setupwhitespace
+  [medium]
+
+\setuptyping
+  [margin=standard]
+
+%D \macros
+%D   {definecolor, setupcolors}
+%D
+%D Of course we enable color. We define some logical colors,
+%D of which most default to the same green shade. 
+
+\definecolor [Backgrounds] [r= 0, g=.7, b=.4]
+\definecolor [Actions]     [Backgrounds]
+\definecolor [Lines]       [Actions]
+\definecolor [Page]        [r=.8, g=.8, b=.8]
+
+%\definecolor [Actions] [r=  1, g=.9, b=.5]
+%\definecolor [Actions] [r= .1, g=.5, b=.9]
+%\definecolor [Actions] [r=  1, g=.3, b=.1]
+
+\setupcolors
+  [state=start]
+
+%D \macros
+%D   {setupinteraction, setupinteractionscreen}
+%D   
+%D We still have to enable interaction mode. We go full 
+%D screen!
+
+\setupinteraction
+  [state=start,
+   color=Actions]
+
+\setupinteractionscreen
+  [option=max,
+   width=fit,
+   height=fit]
+
+%D \macros
+%D   {setupitemize}
+%D
+%D And why not bring some color in itemizations too?
+
+\setupitemize
+  [color=Backgrounds] 
+
+%D \macros
+%D   {defineoverlay, setupbackgrounds}
+%D 
+%D The navigational elements and the backgrounds are 
+%D provided by \METAPOST. The next few macros are meant for the
+%D more experienced \CONTEXT\ user.  
+
+\MPinclusions{input mp-tool} 
+
+\def\MPpagebackground#1#2#3%
+  {\startreusableMPgraphic{pb:#1#2#3}
+     delta := #3 ;
+     fill unitsquare
+       xscaled #1 yscaled #2
+       withcolor \MPcolor{Page};
+     draw unitsquare
+       xscaled (#1-2delta) yscaled (#2-2delta)
+       shifted (delta,delta)
+       withpen pencircle scaled .5delta
+       withcolor \MPcolor{Backgrounds} ; 
+   \stopreusableMPgraphic
+   \reuseMPgraphic{pb:#1#2#3}}
+
+\defineoverlay
+  [PageBackground]
+  [\MPpagebackground{\overlaywidth}{\overlayheight}{.25cm}]
+
+\setupbackgrounds
+  [page]
+  [background=PageBackground]
+
+%D \macros
+%D   {setuptexttexts}
+%D
+%D By clicking on the text area, one goes to the next page. 
+
+\def\MPtextbackground#1#2#3%
+  {\startreusableMPgraphic{tx:#1#2#3}
+     delta := #3 ;
+     draw unitsquare
+       xscaled #1 yscaled #2
+       withpen pencircle scaled .5delta
+       withcolor \MPcolor{Backgrounds} ; 
+   \stopreusableMPgraphic
+   \reuseMPgraphic{tx:#1#2#3}}
+
+\defineoverlay
+  [TextBackground]
+  [\MPtextbackground{\overlaywidth}{\overlayheight}{.125cm}]
+
+\def\BackgroundButton%
+  {\button
+     [background=TextBackground,
+      backgroundoffset=.25cm,
+      frame=off,
+      height=\vsize,
+      width=\hsize]{}[nextpage]}
+
+\setuptexttexts
+  [\BackgroundButton]
+  []
+
+%D \macros
+%D   {setupbottomtexts}
+%D
+%D At the bottom of the screen, we show three buttons. These
+%D direct us to the previous or next jump or exit the document.
+
+\def\MPright#1#2%
+  {\startreusableMPgraphic{rt:#1#2}
+     z1 = ( 0,    0) ;
+     z2 = (#1, .5y3) ;
+     z3 = ( 0,   #2) ;
+     path p ; p := z1--z2--z3--cycle;
+     lw = #2/5 ; pickup pencircle scaled lw;
+     filldraw p withcolor \MPcolor{Backgrounds} ;
+     set_outer_boundingbox currentpicture;
+   \stopreusableMPgraphic
+   \reuseMPgraphic{rt:#1#2}}
+
+\def\MPleft#1#2%
+  {\startreusableMPgraphic{lt:#1#2}
+     z1 = (#1,    0) ;
+     z2 = ( 0, .5y3) ;
+     z3 = (#1,   #2) ;
+     path p ; p := z1--z2--z3--cycle;
+     lw = #2/5 ; pickup pencircle scaled lw;
+     filldraw p withcolor \MPcolor{Backgrounds} ;
+     set_outer_boundingbox currentpicture;
+   \stopreusableMPgraphic
+   \reuseMPgraphic{lt:#1#2}}
+
+\def\MPcircle#1#2%
+  {\startreusableMPgraphic{ci:#1#2}
+     rx = #1; ry = #2; 
+     path p ; p := fullcircle xscaled rx yscaled ry;
+     lw = #2/5 ; pickup pencircle scaled lw;
+     filldraw p withcolor \MPcolor{Backgrounds} ;
+     set_outer_boundingbox currentpicture;
+   \stopreusableMPgraphic
+   \reuseMPgraphic{ci:#1#2}}
+
+\def\MPwhat#1#2%
+  {\startreusableMPgraphic{wh:#1#2} % could be rotated unitsquare
+     z1 = (   0,  0) ;
+     z2 = (  #1,  0) ;
+     z3 = (.5x2, #2) ;
+     path p ; p := z1--z2--z3--cycle;
+     lw = #2/5 ; pickup pencircle scaled lw;
+     filldraw p withcolor \MPcolor{Backgrounds} ;
+     set_outer_boundingbox currentpicture;
+   \stopreusableMPgraphic
+   \reuseMPgraphic{wh:#1#2}}
+
+\unexpanded\def\BackwardButton%
+  {\naarbox{\MPleft{\the\bottomheight}{\the\bottomheight}}[previouspage]}
+
+\unexpanded\def\ForwardButton%
+  {\naarbox{\MPright{\the\bottomheight}{\the\bottomheight}}[nextpage]}
+
+\unexpanded\def\ExitButton%
+  {\naarbox{\MPcircle{\the\bottomheight}{\the\bottomheight}}[CloseDocument]}
+
+\unexpanded\def\WhateverButton%
+  {\doifreferencefoundelse{Whatever}
+     {\naarbox{\MPwhat{\the\bottomheight}{\the\bottomheight}}[Whatever]}
+     {}}
+
+\def\BottomButton%
+  {\button
+     [frame=off,
+      height=\bottomheight,
+      width=.3\textwidth]{}[Topics]}
+
+\setupbottomtexts
+  [\BottomButton
+   \hfill
+   \WhateverButton
+   \kern2\bottomheight
+   \BackwardButton
+   \kern.5\bottomheight
+   \ExitButton 
+   \kern.5\bottomheight
+   \ForwardButton
+   \kern.5\bottomheight]
+  []
+
+%D \macros
+%D   {TitlePage, Topics, Topic, Subject}
+%D
+%D A presentation after loading this module looks like:
+%D
+%D \starttypen
+%D \TitlePage {About Whatever\\Topics}
+%D
+%D \Topics {Todays Talk}
+%D
+%D \Topic {Some topic}
+%D
+%D .....
+%D
+%D \Topic {Next Topic}
+%D
+%D .....
+%D \stoptypen
+
+%D \macros
+%D  {StartTitlePage, TitlePage}
+%D
+%D The titlepage is rather simple and can be typeset in two 
+%D ways: 
+%D
+%D \starttypen
+%D \StartTitlePage
+%D text \\ text \\ text 
+%D \StopTitlepage
+%D \stoptypen
+%D
+%D or more straightforward:
+%D
+%D \starttypen
+%D \TitlePage{text\\text\\text} 
+%D \stoptypen
+%D 
+%D The first alternative can be used for more complicated 
+%D title pages.  
+
+\def\StartTitlePage%
+  {\startstandardmakeup
+   \bfd
+   \setupalign[middle]
+   \vfil
+   \let\\=\vfil}
+
+\def\StopTitlePage%
+  {\vfil\vfil\vfil
+   \stopstandardmakeup}
+
+\def\TitlePage#1%
+  {\StartTitlePage#1\StopTitlePage}
+
+%D \macros
+%D   {definehead}
+%D
+%D The commands \type{\Topic} and \type{\Subject} are defined
+%D as copies of head. We use \type{\Nopic} for internal 
+%D purposes. 
+
+\definehead [Topic]   [chapter]
+\definehead [Subject] [section]
+
+\definehead [Nopic]   [title]
+
+%D \macros
+%D   {setuphead}
+%D
+%D We use our own command for typesetting the titles. We hide
+%D sectionnumbers from viewing. Each topic is followed by a
+%D list of subjects that belong to the topic.
+
+\setuphead
+  [Topic, Nopic]
+  [after={\blank[3*medium]},
+   number=no,
+   style=\tfb,
+   page=yes,
+   alternative=middle]
+
+\setuphead
+  [Subject]
+  [after=\blank,
+   number=no,
+   page=yes,
+   continue=no,
+   style=\tfa]
+
+%D \macros
+%D   {setuplist}
+%D
+%D The subject list is automatically placed. We center each
+%D subject line by using one of the default alternatives (g). We
+%D could have said:
+%D
+%D \starttypen
+%D \setuplist
+%D   [Subject]
+%D   [alternative=none,
+%D    command=\SubjectListLine,
+%D    interaction=all]
+%D
+%D \def\SubjectListLine#1#2#3%
+%D   {\midaligned{#2}}
+%D \stoptypen
+%D
+%D But why should we complicate things when we can say:
+
+\setuplist
+  [Topic,Subject]
+  [alternative=g,
+   interaction=all,
+   before=,
+   after=]
+
+\def\Topics#1% 
+  {\determinelistcharacteristics[Topic]
+   \ifcase\utilitylistlength\else
+     \Nopic[Topics]{#1}
+     \startcolumns
+     \placelist[Topic][criterium=all]
+     \stopcolumns
+   \fi}
+
+\def\Subjects% 
+  {\placelist[Subject]}
+
+\endinput

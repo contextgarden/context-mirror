@@ -1,10 +1,9 @@
-#!/usr/bin/perl  
-
+#!/usr/bin/perl 
 #-w
 
 #D \module
 #D   [       file=texutil.pl,
-#D        version=1997.12.08,
+#D        version=1998.12.20,
 #D          title=pre- and postprocessing utilities,
 #D       subtitle=\TEXUTIL,
 #D         author=Hans Hagen,
@@ -16,30 +15,39 @@
 #C granted.
 
 #  Thanks to Tobias Burnus for the german translations.
-#  Thanks to Taco Hoekwater for making the file -w proof. 
+#  Thanks to Taco Hoekwater for making the file -w proof.
+#  Thanks to Sebastan Rahtz for the eps to PDF method
+#  Thanks to Alex Knowles and friend for the right JPG specs
 
 #D This is \TEXUTIL, a utility program (script) to be used
 #D alongside the \CONTEXT\ macro package. This \PERL\ script is
 #D derived from the \MODULA\ version and uses slightly better
 #D algoritms for sanitizing \TEX\ specific (sub|)|strings.
-#D This implementation is therefore not entirely compatible
-#D with the original \TEXUTIL, although most users will
-#D probably never notice. Now how was this program called?
+#D
+#D This implementation has some features not found in the
+#D binary version, like scanning illustrations other than \EPS.
+#D I would suggest to keep an eye on the version number:
 
-$Program = "TeXUtil 6.40 - ConTeXt / PRAGMA 1992-1998" ;
+$Program = "TeXUtil 6.7 - ConTeXt / PRAGMA ADE 1992-1998" ;
 
 #D By the way, this is my first \PERL\ script, which means
 #D that it will be improved as soon as I find new and/or more
 #D suitable solutions in the \PERL\ manuals. As can be seen in
-#D the definition of \type{$program}, this program is part of
+#D the definition of \type{$Program}, this program is part of
 #D the \CONTEXT\ suite, and therefore can communicate with the
 #D users in english as well as some other languages. One can
 #D set his favourite language by saying something like:
 
 #D \starttypen
-#D perl texutil.pl --interface=de --figures *.eps *.tif
+#D perl texutil.pl --int=de --fig *.eps *.tif *.pdf *.png *.jpg
 #D \stoptypen
 #D
+#D or simpler:
+#D
+#D \starttypen
+#D perl texutil.pl --fig *.*
+#D \stoptypen
+
 #D Of course one can also say \type{--interface=nl}, which
 #D happens to be my native language.
 
@@ -49,21 +57,13 @@ $Program = "TeXUtil 6.40 - ConTeXt / PRAGMA 1992-1998" ;
 #D and can serve as additional documentation.
 
 #D \TEXUTIL\ can handle different tasks; which one is active
-#D depends on the command line arguments. Most task are
-#D handled by the procedures below. The one exception is the
-#D handling of \TIFF\ files when collecting illustration
-#D files. When needed, \TEXUTIL\ calls for \TIFFINFO\ or
-#D \TIFFTAGS, but more alternatives can be added by extending
-#D \type{@TiffPrograms}.
- 
-@TiffPrograms = ("tiffinfo", "tifftags") ;
-
-#D Back to the command line arguments. These are handled by
+#D depends on the command line arguments. These are handled by
 #D a \PERL\ system module. This means that, at least for the
 #D moment, there is no external control as provided by the
 #D \PRAGMA\ environment system.
 
 use Getopt::Long ;
+#use File::DosGlob ; 
 
 #D We don't want error messages and accept partial switches,
 #D which saves users some typing.
@@ -75,7 +75,7 @@ $Getopt::Long::autoabbrev  = 1 ; # partial switch accepted
 #D that keeps track of unknown options. \voetnoot {This feature
 #D is still to be implemented.}
 
-$Interface      = "en" ;
+$UserInterface  = "en" ;
 $UnknownOptions = 0 ;
 
 #D Here come the options:
@@ -87,12 +87,14 @@ $UnknownOptions = 0 ;
       "quotes"            => \$ProcessQuotes,
    "documents"      => \$ProcessDocuments,
       "type=s"      => \$ProcessType,
+   "outputfile=s"   => \$ProcessOutputFile,
    "sources"        => \$ProcessSources,
    "setups"         => \$ProcessSetups,
    "templates"      => \$ProcessTemplates,
    "infos"          => \$ProcessInfos,
    "figures"        => \$ProcessFigures,
-      "tiff"              =>\$ProcessTiff,
+      "epspage"          =>\$ProcessEpsPage,
+      "epstopdf"         =>\$ProcessEpsToPdf,
    "logfile"        => \$ProcessLogFile,
       "box"               =>\$ProcessBox,
       "hbox"              =>\$ProcessHBox,
@@ -100,18 +102,75 @@ $UnknownOptions = 0 ;
       "criterium=f"       =>\$ProcessCriterium,
       "unknown"           =>\$ProcessUnknown,
    "help"           => \$ProcessHelp,
-   "interface=s"    => \$Interface) ;
+   "silent"         => \$ProcessSilent,
+   "verbose"        => \$ProcessVerbose,
+   "interface=s"    => \$UserInterface) ;
+
+#D We need some hacks to suppress terminal output. This
+#D piece of code is based on page~193 of "Programming Perl".
+
+$ProgramLog = "texutil.log" ;
+
+sub RedirectTerminal
+  { open SAVEDSTDOUT, ">&STDOUT" ;
+    open STDOUT, ">$ProgramLog" ;
+    select STDOUT; $| = 1 }
+
+#D And, indeed:
+
+if ($ProcessSilent)
+  { RedirectTerminal }
+else
+  { $ProcessVerbose = 0 }
+
+#D We can temporary open the terminal channel.
+
+sub OpenTerminal
+  { close STDOUT ;
+    open STDOUT, ">&SAVEDSTDOUT" }
+
+sub CloseTerminal
+  { open SAVEDSTDOUT, ">&STDOUT" ;
+    open STDOUT, ">>$ProgramLog" ;
+    select STDOUT; $| = 1 }
 
 #D By default wildcards are expanded into a list. The
 #D subroutine below is therefore only needed when no file or
 #D pattern is given.
 
-$InputFile = "@ARGV" ;
+$InputFile = "@ARGV" ; # niet waterdicht
 
 sub CheckInputFiles
-  { my ($UserSuppliedPath) = @_ ;
-    @UserSuppliedFiles = map { split " " } sort lc $UserSuppliedPath }
- 
+ { my ($UserSuppliedPath) = @_ ;
+   @UserSuppliedFiles = map { split " " } sort lc $UserSuppliedPath }
+
+sub CheckInputFiles
+ { @UserSuppliedFiles = glob @_[0] }
+
+#D The next subroutine takes care of the optional output
+#D filename (e.g. for figure dimensions).
+
+$ProcessOutputFile = "" ;
+
+sub SetOutputFile
+  { ($OutFilNam, $OutFilSuf) = split (/\./, $_[0], 2) ;
+    unless ($ProcessOutputFile eq "")
+      { $ProcessOutputFile .= "." . $OutFilSuf ;
+        ($OutFilNam, $OutFilSuf, $Rubish) = split (/\./, $ProcessOutputFile , 3)}
+    $OutputFile = $OutFilNam . "." . $OutFilSuf }
+
+#D Sometimes we need to split filenames.
+
+my ($FileName, $FileSuffix) = ("","") ; 
+
+sub SplitFileName
+ { my $Rubish = "" ; 
+   if ($_[0] =~ /^\.\//)
+     { ($Rubish, $FileName) = split ( /^\.\//, $_[0], 2) }
+   else
+     { $FileName = $_[0] }
+   return split (/\./, $FileName, 2) }
+
 #D In order to support multiple interfaces, we save the
 #D messages in a hash table. As a bonus we can get a quick
 #D overview of the messages we deal with.
@@ -131,11 +190,12 @@ sub Report
 
 #D \startcompressdefinitions
 
-if ($Interface eq "nl")
+if ($UserInterface eq "nl")
 
   { # begin of dutch section
 
     $MS{"ProcessingReferences"}    = "commando's, lijsten en indexen verwerken" ;
+    $MS{"MergingReferences"}       = "indexen samenvoegen" ;
     $MS{"GeneratingDocumentation"} = "ConTeXt documentatie file voorbereiden" ;
     $MS{"GeneratingSources"}       = "ConTeXt broncode file genereren" ;
     $MS{"FilteringDefinitions"}    = "ConTeXt definities filteren" ;
@@ -148,7 +208,13 @@ if ($Interface eq "nl")
     $MS{"ConvertingHigh"}          = "hoge ASCII waarden converteren" ;
     $MS{"ProcessingQuotes"}        = "characters met accenten afhandelen" ;
     $MS{"ForcingFileType"}         = "filetype instellen" ;
-    $MS{"UsingTiff"}               = "TIF files afhandelen" ;
+    $MS{"UsingEps"}                = "EPS files afhandelen" ;
+    $MS{"UsingTif"}                = "TIF files afhandelen" ;
+    $MS{"UsingPdf"}                = "PDF files afhandelen" ;
+    $MS{"UsingPng"}                = "PNG files afhandelen" ;
+    $MS{"UsingJpg"}                = "JPG files afhandelen" ;
+    $MS{"EpsToPdf"}                = "EPS converteren naar PDF";
+    $MS{"EpsPage"}                 = "EPS pagina instellen";
     $MS{"FilteringBoxes"}          = "overfull boxes filteren" ;
     $MS{"ApplyingCriterium"}       = "criterium toepassen" ;
     $MS{"FilteringUnknown"}        = "onbekende ... filteren" ;
@@ -174,6 +240,10 @@ if ($Interface eq "nl")
     $MS{"RegisterErrors"}          = "                fouten :" ;
     $MS{"PassedCommands"}          = "     aantal commando's :" ;
 
+    $MS{"MultiPagePdfFile"}        = "      te veel pagina's :" ;
+    $MS{"MissingMediaBox"}         = "         geen mediabox :" ;
+    $MS{"MissingBoundingBox"}      = "      geen boundingbox :" ;
+
     $MS{"NOfDocuments"}            = "  documentatie blokken :" ;
     $MS{"NOfDefinitions"}          = "     definitie blokken :" ;
     $MS{"NOfSkips"}                = "  overgeslagen blokken :" ;
@@ -188,7 +258,10 @@ if ($Interface eq "nl")
     $MS{"OutputFile"}              = "          outvoer file :" ;
     $MS{"FileType"}                = "             type file :" ;
     $MS{"EpsFile"}                 = "              eps file :" ;
+    $MS{"PdfFile"}                 = "              pdf file :" ;
     $MS{"TifFile"}                 = "              tif file :" ;
+    $MS{"PngFile"}                 = "              png file :" ;
+    $MS{"JpgFile"}                 = "              jpg file :" ;
     $MS{"MPFile"}                  = "         metapost file :" ;
 
     $MS{"Overfull"}                = "te vol" ;
@@ -197,11 +270,12 @@ if ($Interface eq "nl")
 
   } # end of dutch section
 
-elsif ($Interface eq "de")
+elsif ($UserInterface eq "de")
 
   { # begin of german section
 
     $MS{"ProcessingReferences"}    = "Verarbeiten der Befehle, Listen und Register" ;
+    $MS{"MergingReferences"}       = "Register verschmelzen" ; 
     $MS{"GeneratingDocumentation"} = "Vorbereiten der ConTeXt-Dokumentationsdatei" ;
     $MS{"GeneratingSources"}       = "Erstellen einer nur Quelltext ConTeXt-Datei" ;
     $MS{"FilteringDefinitions"}    = "Filtern der ConTeXt-Definitionen" ;
@@ -214,13 +288,20 @@ elsif ($Interface eq "de")
     $MS{"ConvertingHigh"}          = "Konvertiere hohe ASCII-Werte" ;
     $MS{"ProcessingQuotes"}        = "Verarbeiten der Akzentzeichen" ;
     $MS{"ForcingFileType"}         = "Dateityp einstellen" ;
-    $MS{"UsingTiff"}               = "TIF-Dateien verarbeite" ;
+    $MS{"UsingEps"}                = "EPS-Dateien verarbeite" ;
+    $MS{"UsingTif"}                = "TIF-Dateien verarbeite" ;
+    $MS{"UsingPdf"}                = "PDF-Dateien verarbeite" ;
+    $MS{"UsingPng"}                = "PNG-Dateien verarbeite" ;
+    $MS{"UsingJpg"}                = "JPG-Dateien verarbeite" ;
+    $MS{"EpsToPdf"}                = "convert EPS to PDF";
+    $MS{"EpsPage"}                 = "setup EPS page";
+
     $MS{"FilteringBoxes"}          = "Filtern der ueberfuellten Boxen" ;
     $MS{"ApplyingCriterium"}       = "Anwenden des uebervoll-Kriteriums" ;
     $MS{"FilteringUnknown"}        = "Filter unbekannt ..." ;
 
     $MS{"NoInputFile"}             = "Keine Eingabedatei angegeben" ;
-    $MS{"NoOutputFile"}            = "Keine Ausgabedatei generiert" ; # TOBIAS 
+    $MS{"NoOutputFile"}            = "Keine Ausgabedatei generiert" ;
     $MS{"EmptyInputFile"}          = "Leere Eingabedatei" ;
     $MS{"NotYetImplemented"}       = "Noch nicht verfuegbar" ;
 
@@ -243,6 +324,10 @@ elsif ($Interface eq "de")
     $MS{"RegisterErrors"}          = " Fehlerhafte Eintraege :" ;
     $MS{"PassedCommands"}          = "    Verarbeite Befehle :" ;
 
+    $MS{"MultiPagePdfFile"}        = "       zu viele Seiten :" ;
+    $MS{"MissingMediaBox"}         = "     fehlende mediabox :" ;
+    $MS{"MissingBoundingBox"}      = "  fehlende boundingbox :" ;
+
     $MS{"NOfDocuments"}            = "       Dokumentbloecke :" ;
     $MS{"NOfDefinitions"}          = "    Definitionsbloecke :" ;
     $MS{"NOfSkips"}                = "Uebersprungene Bloecke :" ;
@@ -255,9 +340,12 @@ elsif ($Interface eq "de")
 
     $MS{"InputFile"}               = "          Eingabedatei :" ;
     $MS{"OutputFile"}              = "          Ausgabedatei :" ;
-    $MS{"FileType"}                = "              Dateityp :" ; 
+    $MS{"FileType"}                = "              Dateityp :" ;
     $MS{"EpsFile"}                 = "             eps-Datei :" ;
+    $MS{"PdfFile"}                 = "             pdf-Datei :" ;
     $MS{"TifFile"}                 = "             tif-Datei :" ;
+    $MS{"PngFile"}                 = "             png-Datei :" ;
+    $MS{"JpgFile"}                 = "             jpg-Datei :" ;
     $MS{"MPFile"}                  = "        metapost-Datei :" ;
 
     $MS{"Overfull"}                = "zu voll" ;
@@ -271,6 +359,7 @@ else
   { # begin of english section
 
     $MS{"ProcessingReferences"}    = "processing commands, lists and registers" ;
+    $MS{"MergingReferences"}       = "merging registers" ; 
     $MS{"GeneratingDocumentation"} = "preparing ConTeXt documentation file" ;
     $MS{"GeneratingSources"}       = "generating ConTeXt source only file" ;
     $MS{"FilteringDefinitions"}    = "filtering formal ConTeXt definitions" ;
@@ -283,7 +372,14 @@ else
     $MS{"ConvertingHigh"}          = "converting high ASCII values" ;
     $MS{"ProcessingQuotes"}        = "handling accented characters" ;
     $MS{"ForcingFileType"}         = "setting up filetype" ;
-    $MS{"UsingTiff"}               = "processing TIF files" ;
+    $MS{"UsingEps"}                = "processing EPS-file" ;
+    $MS{"UsingTif"}                = "processing TIF-file" ;
+    $MS{"UsingPdf"}                = "processing PDF-file" ;
+    $MS{"UsingPng"}                = "processing PNG-file" ;
+    $MS{"UsingJpg"}                = "processing JPG-file" ;
+    $MS{"EpsToPdf"}                = "convert EPS to PDF";
+    $MS{"EpsPage"}                 = "setup EPS page";
+
     $MS{"FilteringBoxes"}          = "filtering overfull boxes" ;
     $MS{"ApplyingCriterium"}       = "applying overfull criterium" ;
     $MS{"FilteringUnknown"}        = "filtering unknown ..." ;
@@ -309,6 +405,10 @@ else
     $MS{"RegisterErrors"}          = "           bad entries :" ;
     $MS{"PassedCommands"}          = "       passed commands :" ;
 
+    $MS{"MultiPagePdfFile"}        = "        too many pages :" ;
+    $MS{"MissingMediaBox"}         = "      missing mediabox :" ;
+    $MS{"MissingBoundingBox"}      = "   missing boundingbox :" ;
+
     $MS{"NOfDocuments"}            = "       document blocks :" ;
     $MS{"NOfDefinitions"}          = "     definition blocks :" ;
     $MS{"NOfSkips"}                = "        skipped blocks :" ;
@@ -323,7 +423,10 @@ else
     $MS{"OutputFile"}              = "           output file :" ;
     $MS{"FileType"}                = "             file type :" ;
     $MS{"EpsFile"}                 = "              eps file :" ;
+    $MS{"PdfFile"}                 = "              pdf file :" ;
     $MS{"TifFile"}                 = "              tif file :" ;
+    $MS{"PngFile"}                 = "              png file :" ;
+    $MS{"JpgFile"}                 = "              jpg file :" ;
     $MS{"MPFile"}                  = "         metapost file :" ;
 
     $MS{"Overfull"}                = "overfull" ;
@@ -338,7 +441,7 @@ else
 #D offering helpinfo is rather straightforward.
 
 sub ShowBanner
-  { Report("\n$Program\n") }
+  { Report("\n $Program\n") }
 
 sub ShowHelpInfo
   { Report("HelpInfo") }
@@ -349,57 +452,59 @@ sub ShowHelpInfo
 
 #D \startcompressdefinitions
 
-if ($Interface eq "nl")
+if ($UserInterface eq "nl")
 
   { # begin of dutch section
 
     $MS{"HelpInfo"} =
 
-    "          --references   hulp file verwerken / tui->tuo                 \n" .
-    "                       --ij : IJ als Y sorteren                         \n" .
-    "                       --high : hoge ASCII waarden converteren          \n" .
-    "                       --quotes : quotes converteren                    \n" .
-    "                                                                        \n" .
-    "           --documents   documentatie file genereren / tex->ted         \n" .
-    "             --sources   broncode file genereren / tex->tes             \n" .
-    "              --setups   ConTeXt definities filteren / tex->texutil.tus \n".
-    "           --templates   TeXEdit templates filteren / tex->tud          \n" .
-    "               --infos   TeXEdit helpinfo filteren / tex->tud           \n" .
-    "                                                                        \n" .
-    "             --figures   eps figuren lijst genereren / eps->texutil.tuf \n".
-    "                       --tiff : ook tif files verwerken                 \n" .
-    "                                                                        \n" .
-    "             --logfile   logfile filteren / log->texutil.log            \n" .
-    "                       --box : overfull boxes controleren               \n" .
-    "                       --criterium : overfull criterium in pt           \n" .
-    "                       --unknown :onbekende ... controleren             \n" ;
+"          --references   hulp file verwerken / tui->tuo                 \n" .
+"                       --ij : IJ als Y sorteren                         \n" .
+"                       --high : hoge ASCII waarden converteren          \n" .
+"                       --quotes : quotes converteren                    \n" .
+"                                                                        \n" .
+"           --documents   documentatie file genereren / tex->ted         \n" .
+"             --sources   broncode file genereren / tex->tes             \n" .
+"              --setups   ConTeXt definities filteren / tex->texutil.tus \n" .
+"           --templates   TeXEdit templates filteren / tex->tud          \n" .
+"               --infos   TeXEdit helpinfo filteren / tex->tud           \n" .
+"                                                                        \n" .
+"             --figures   eps figuren lijst genereren / *->texutil.tuf   \n" .
+"                       --epspage : voorbereiden voor pdf                \n" .
+"                       --epstopdf : omzetten naar pdf                   \n" .
+"                                                                        \n" .
+"             --logfile   logfile filteren / log->$ProgramLog            \n" .
+"                       --box : overfull boxes controleren               \n" .
+"                       --criterium : overfull criterium in pt           \n" .
+"                       --unknown :onbekende ... controleren             \n" ;
 
   } # end of dutch section
 
-elsif ($Interface eq "de")
+elsif ($UserInterface eq "de")             
 
   { # begin of german section
 
     $MS{"HelpInfo"} =
 
-    "          --references   Verarbeiten der Hilfsdatei / tui->tuo          \n" .
-    "                       --ij : Sortiere IJ als Y                         \n" .
-    "                       --high : Konvertiere hohe ASCII-Werte            \n" .
-    "                       --quotes : Konvertiere akzentuierte Buchstaben   \n" .
-    "                                                                        \n" .
-    "           --documents   Erstelle Dokumentationsdatei / tex->ted        \n" .
-    "             --sources   Erstelle reine Quelltextdateien / tex->tes     \n" .
-    "              --setups   Filtere ConTeXt-Definitionen / tex->texutil.tus\n" .
-    "           --templates   Filtere TeXEdit-templates / tex->tud           \n" .
-    "               --infos   Filtere TeXEdit-helpinfo / tex->tud            \n" .
-    "                                                                        \n" .
-    "             --figures   Erstelle eps-Abbildungsliste / eps->texutil.tuf\n" .
-    "                       --tiff : Verarbeite auch tif-Dateien             \n" .
-    "                                                                        \n" .
-    "             --logfile   Filtere log-Datei / log->texutil.log           \n" .
-    "                       --box : Ueberpruefe uebervolle Boxen             \n" .
-    "                       --criterium : Uebervoll-Kriterium in pt          \n" .
-    "                       --unknown : Ueberpruefe auf unbekannte ...       \n" ;
+"          --references   Verarbeiten der Hilfsdatei / tui->tuo          \n" .
+"                       --ij : Sortiere IJ als Y                         \n" .
+"                       --high : Konvertiere hohe ASCII-Werte            \n" .
+"                       --quotes : Konvertiere akzentuierte Buchstaben   \n" .
+"                                                                        \n" .
+"           --documents   Erstelle Dokumentationsdatei / tex->ted        \n" .
+"             --sources   Erstelle reine Quelltextdateien / tex->tes     \n" .
+"              --setups   Filtere ConTeXt-Definitionen / tex->texutil.tus\n" .
+"           --templates   Filtere TeXEdit-templates / tex->tud           \n" .
+"               --infos   Filtere TeXEdit-helpinfo / tex->tud            \n" .
+"                                                                        \n" .
+"             --figures   Erstelle eps-Abbildungsliste / *->texutil.tuf  \n" .
+"                       --epspage : Bereite fuer pdf vor                 \n" .
+"                       --epstopdf : Konvertiere zu pdf                  \n" .
+"                                                                        \n" .
+"             --logfile   Filtere log-Datei / log->$ProgramLog           \n" .
+"                       --box : Ueberpruefe uebervolle Boxen             \n" .
+"                       --criterium : Uebervoll-Kriterium in pt          \n" .
+"                       --unknown : Ueberpruefe auf unbekannte ...       \n" ;
 
   } # end of german section
 
@@ -410,24 +515,25 @@ else
 
     $MS{"HelpInfo"} =
 
-    "          --references   process auxiliary file / tui->tuo             \n" .
-    "                       --ij : sort IJ as Y                             \n" .
-    "                       --high : convert high ASCII values              \n" .
-    "                       --quotes : convert quotes characters            \n" .
-    "                                                                       \n" .
-    "           --documents   generate documentation file / tex->ted        \n" .
-    "             --sources   generate source only file / tex->tes          \n" .
-    "              --setups   filter ConTeXt definitions / tex->texutil.tus \n" .
-    "           --templates   filter TeXEdit templates / tex->tud           \n" .
-    "               --infos   filter TeXEdit helpinfo / tex->tud            \n" .
-    "                                                                       \n" .
-    "             --figures   generate eps figure list / eps->texutil.tuf   \n" .
-    "                       --tiff : also process tif files                 \n" .
-    "                                                                       \n" .
-    "             --logfile   filter logfile / log->texutil.log             \n" .
-    "                       --box : check overful boxes                     \n" .
-    "                       --criterium : overfull criterium in pt          \n" .
-    "                       --unknown : check unknown ...                   \n" ;
+"          --references   process auxiliary file / tui->tuo              \n" .
+"                       --ij : sort IJ as Y                              \n" .
+"                       --high : convert high ASCII values               \n" .
+"                       --quotes : convert quotes characters             \n" .
+"                                                                        \n" .
+"           --documents   generate documentation file / tex->ted         \n" .
+"             --sources   generate source only file / tex->tes           \n" .
+"              --setups   filter ConTeXt definitions / tex->texutil.tus  \n" .
+"           --templates   filter TeXEdit templates / tex->tud            \n" .
+"               --infos   filter TeXEdit helpinfo / tex->tud             \n" .
+"                                                                        \n" .
+"             --figures   generate eps figure list / *->texutil.tuf      \n" .
+"                       --epspage : prepare for pdf                      \n" .
+"                       --epstopdf : convert to pdf                      \n" .
+"                                                                        \n" .
+"             --logfile   filter logfile / log->$ProgramLog              \n" .
+"                       --box : check overful boxes                      \n" .
+"                       --criterium : overfull criterium in pt           \n" .
+"                       --unknown : check unknown ...                    \n" ;
 
   } # end of english section
 
@@ -535,7 +641,7 @@ sub HandleFile
    ++$Files{$RestOfLine} }
 
 sub FlushFiles
-  { print TUO "%\n" . "% Files\n" . "%\n" ;
+  { print TUO "%\n" . "% $Program / Files\n" . "%\n" ;
     foreach $File (keys %Files)
       { print TUO "% $File ($Files{$File})\n" }
     print TUO "%\n" ;
@@ -554,20 +660,20 @@ sub FlushFiles
 #D c \twopassentry{class}{key}{value}
 #D c \mainreference{prefix}{entry}{pagenumber}{realpage}{tag}
 #D c \listentry{category}{tag}{number}{title}{pagenumber}{realpage}
-#D c \realnumberofpages{number}
+#D c \initializevariable\realnumberofpages{number}
 #D \stoptypen
 #D
 #D For historic reasons we check for the presense of the
 #D backslash.
 
 sub InitializeCommands
-  { print TUO "%\n" . "% Commands\n" . "%\n" ;
+  { print TUO "%\n" . "% $Program / Commands\n" . "%\n" ;
     $NOfCommands = 0 }
 
 sub HandleCommand
   { ++$NOfCommands ;
     $RestOfLine =~ s/^\\//go ;
-    print TUO  "\\$RestOfLine\n" }
+    print TUO "\\$RestOfLine\n" }
 
 sub FlushCommands
   { Report ("PassedCommands", $NOfCommands) }
@@ -623,8 +729,7 @@ sub HandleSynonym
           $Class . $JOIN .
           $Key   . $JOIN .
           $Entry . $JOIN .
-          $Meaning ;
-                $SynonymEntry[$NOfSynonyms+1] = "" ; } }
+          $Meaning } } 
 
 #D Depending on the settings\voetnoot{One can call for
 #D all defined entries, call only the used ones, change
@@ -635,15 +740,13 @@ sub HandleSynonym
 #D
 #D Watch the order in which these entries are sorted.
 
-$SynonymEntry[0] = ("") ; # TH: initalize 
-
 sub FlushSynonyms
-  { print TUO "%\n" . "% Synonyms\n" . "%\n" ;
-    @SynonymEntry = sort @SynonymEntry ;
+  { print TUO "%\n" . "% $Program / Synonyms\n" . "%\n" ;
+    @SynonymEntry = sort { lc($a) cmp lc($b) } @SynonymEntry ;
     $NOfSaneSynonyms = 0 ;
-    for ($n=1; $n<=$NOfSynonyms; ++$n)
+    for ($n=1; $n<=$NOfSynonyms; $n++)
       { # check normally not needed
-        if ($SynonymEntry[$n] ne $SynonymEntry[$n-1])  
+        if (($n==1)||($SynonymEntry[$n] ne $SynonymEntry[$n-1]))
           { ($Class, $Key, $Entry, $Meaning) =
                split(/$JOIN/, $SynonymEntry[$n]) ;
             ++$NOfSaneSynonyms ;
@@ -659,7 +762,10 @@ sub FlushSynonyms
 #D \starttypen
 #D r e {class}{tag}{sanitized key}{key}{pagenumber}{realpage}
 #D r s {class}{tag}{sanitized key}{key}{string}{pagenumber}
+#D r r {class}{tag}{sanitized key}{key}{string}{pagenumber}
 #D \stoptypen
+#D
+#D The last one indicates the start of a range. 
 
 #D The first one is the normal entry, the second one concerns
 #D {\em see this or that} entries. Keys are sanitized, unless
@@ -692,7 +798,12 @@ sub InitializeRegisters
   { $NOfEntries = 0 ;
     $NOfBadEntries = 0 }
 
-$ProcessType = "" ; # TH: initialize 
+$ProcessType = "" ; 
+
+$RegStat{"f"} = 1 ;
+$RegStat{"e"} = 2 ; # end up between from and to 
+$RegStat{"t"} = 3 ;
+$RegStat{"s"} = 4 ; 
 
 sub HandleRegister
   { ($SecondTag, $RestOfLine) = split(/ /, $RestOfLine, 2) ;
@@ -709,11 +820,23 @@ sub HandleRegister
         chop $RealPage ;
         $Class = substr $Class, 1 ;
         $SeeToo = "" }
+#
+$_ = $Key ; 
+if (/\:\:/) 
+  { ($PageHow,$Key) = split (/\:\:/) }
+else
+  { $PageHow = "" } 
+$_ = $Entry ; 
+if (/\:\:/) 
+  { ($TextHow,$Entry) = split (/\:\:/) }
+else
+  { $TextHow = "" } 
+#
     if ($Key eq "")
       { $Key = SanitizedString($Entry) }
     if ($ProcessHigh)
       { $Key = HighConverted($Key) }
-    $KeyTag = substr $Key, 0, 1 ;
+    $KeyTag = substr $Key, 0, 1 ; 
     if ($KeyTag eq "&")
       { $Key   =~ s/^\&//go ;
         $Key   =~ s/([^\\])\&/$1$SPLIT/go }
@@ -723,6 +846,7 @@ sub HandleRegister
     else
       { $Key   =~ s/([^\\])\&/$1$SPLIT/go ;
         $Key   =~ s/([^\\])\+/$1$SPLIT/go }
+    $Key .= " " ; # so, "Word" comes for "Word Another Word" 
     $EntryTag = substr $Entry, 0, 1 ;
     if ($EntryTag eq "&")
       { $Entry =~ s/^\&//go ;
@@ -730,10 +854,14 @@ sub HandleRegister
     elsif ($EntryTag eq "+")
       { $Entry =~ s/^\+//go ;
         $Entry =~ s/([^\\])\+/$1$SPLIT/go }
+    elsif ($KeyTag eq "&")
+      { $Entry =~ s/([^\\])\&/$1$SPLIT/go }
+    elsif ($KeyTag eq "+")
+      { $Entry =~ s/([^\\])\+/$1$SPLIT/go }
     else
       { $Entry =~ s/([^\\])\&/$1$SPLIT/go ;
         $Entry =~ s/([^\\])\+/$1$SPLIT/go }
-    $Key =~ s/^([^a-zA-Z])/ $1/go ;    
+    $Key =~ s/^([^a-zA-Z])/ $1/go ;
     if ($ProcessIJ)
       { $Key =~ s/ij/yy/go }
     $LCKey = lc $Key ;
@@ -741,11 +869,14 @@ sub HandleRegister
       $Class    . $JOIN .
       $LCKey    . $JOIN .
       $Key      . $JOIN .
+$TextHow . $JOIN .              # of later ? 
       $Entry    . $JOIN .
+$RegStat{$SecondTag} . $JOIN .
       $RealPage . $JOIN .
       $Location . $JOIN .
       $Page     . $JOIN .
-      $SeeToo }
+$PageHow . $JOIN .
+      $SeeToo   } 
 
 #M \definieerregister [testentry] [testentries]
 
@@ -785,6 +916,9 @@ sub HandleRegister
 #D \testentry [&betaformula] {&$a^2+b^2=c^2$}
 #D
 #D \testentry {zeta \& more}
+#D
+#D \testentry [pagehowto::key]{texthowto::entry}
+#D
 #D \stopbuffer
 #D
 #D \typebuffer
@@ -792,11 +926,14 @@ sub HandleRegister
 #D \haalbuffer After being sorted, these entries are
 #D turned into something \TEX\ using:
 
-$RegisterEntry[0] = ("") ; # TH: initialize 
+$RegisterEntry[0] = ("") ;
+
+sub How 
+  { return "$TextHow\:\:" . "@_[0]" } 
 
 sub FlushRegisters
-  { print TUO "%\n" . "% Registers\n" . "%\n" ;
-    @RegisterEntry  = sort @RegisterEntry ;
+  { print TUO "%\n" . "% $Program / Registers\n" . "%\n" ;
+    @RegisterEntry  = sort { lc($a) cmp lc($b) } @RegisterEntry ;
     $NOfSaneEntries = 0 ;
     $NOfSanePages   = 0 ;
     $LastPage       = "" ;
@@ -810,8 +947,13 @@ sub FlushRegisters
     $ActualB        = "" ;
     $ActualC        = "" ;
     for ($n=1 ; $n<=$NOfEntries ; ++$n)
-      { ($Class, $LCKey, $Key, $Entry, $RealPage, $Location, $Page, $SeeToo) =
-           split(/$JOIN/, $RegisterEntry[$n]) ;
+      { ($Class, $LCKey, $Key, 
+$TextHow,
+  $Entry, 
+$RegisterState, 
+$RealPage, $Location, $Page, 
+$PageHow, 
+           $SeeToo) = split(/$JOIN/, $RegisterEntry[$n]) ;
         if (((lc substr $Key, 0, 1) ne lc $Alfa) or ($AlfaClass ne $Class))
           { $Alfa= lc substr $Key, 0, 1 ;
             $AlfaClass = $Class ;
@@ -819,43 +961,50 @@ sub FlushRegisters
               { print TUO "\\registerentry{$Class}{$Alfa}\n" } }
         ($ActualA, $ActualB, $ActualC ) =
            split(/$SPLIT/, $Entry, 3) ;
-        unless ($ActualA) { $ActualA = "" } # TH: this would be an error
-        unless ($ActualB) { $ActualB = "" } # TH: might become undef through split()
-        unless ($ActualC) { $ActualC = "" } # TH: might become undef through split()
-        if ($ActualA eq $PreviousA)
+        unless ($ActualA) { $ActualA = "" } 
+        unless ($ActualB) { $ActualB = "" } 
+        unless ($ActualC) { $ActualC = "" } 
+        if (How($ActualA) eq $PreviousA)
           { $ActualA = "" }
         else
-          { $PreviousA = $ActualA ;
+          { $PreviousA = How($ActualA) ;
             $PreviousB = "" ;
             $PreviousC = "" }
-        if ($ActualB eq $PreviousB)
+        if (How($ActualB) eq $PreviousB)
           { $ActualB = "" }
         else
-          { $PreviousB = $ActualB ;
+          { $PreviousB = How($ActualB) ;
             $PreviousC = "" }
-        if ($ActualC eq $PreviousC)
+        if (How($ActualC) eq $PreviousC)
           { $ActualC = "" }
         else
-          { $PreviousC = $ActualC }
+          { $PreviousC = How($ActualC) }
         $Copied = 0 ;
         if ($ActualA ne "")
-           { print TUO "\\registerentrya{$Class}{$ActualA}\n" ;
-             $Copied = 1 }
+          { print TUO "\\registerentrya{$Class}{$ActualA}\n" ;
+            $Copied = 1 }
         if ($ActualB ne "")
-           { print TUO "\\registerentryb{$Class}{$ActualB}\n" ;
-             $Copied = 1 }
+          { print TUO "\\registerentryb{$Class}{$ActualB}\n" ;
+            $Copied = 1 }
         if ($ActualC ne "")
-           { print TUO "\\registerentryc{$Class}{$ActualC}\n" ;
-             $Copied = 1 }
+          { print TUO "\\registerentryc{$Class}{$ActualC}\n" ;
+            $Copied = 1 }
         if ($Copied)
           { $NOfSaneEntries++ }
         if ($RealPage eq 0)
-          { print TUO "\\registersee{$Class}{$SeeToo}{$Page}\n" ;
+#          { print TUO "\\registersee{$Class}{$SeeToo}{$Page}\n" ;
+{ print TUO "\\registersee{$Class}{$PageHow,$TextHow}{$SeeToo}{$Page}\n" ;
             $LastPage = $Page ;
             $LastRealPage = $RealPage }
         elsif (($Copied) ||
               ! (($LastPage eq $Page) and ($LastRealPage eq $RealPage)))
-          { print TUO "\\registerpage{$Class}{$Location}{$Page}{$RealPage}\n" ;
+#          { print TUO "\\registerpage{$Class}{$Location}{$Page}{$RealPage}\n" ;
+{ if ($RegisterState eq $RegStat{"f"}) 
+    { print TUO "\\registerfrom{$Class}{$PageHow,$TextHow}{$Location}{$Page}{$RealPage}\n" }
+  elsif ($RegisterState eq $RegStat{"t"})  
+    { print TUO "\\registerto  {$Class}{$PageHow,$TextHow}{$Location}{$Page}{$RealPage}\n" }
+  else 
+    { print TUO "\\registerpage{$Class}{$PageHow,$TextHow}{$Location}{$Page}{$RealPage}\n" }
             ++$NOfSanePages ;
             $LastPage = $Page ;
             $LastRealPage = $RealPage } }
@@ -874,7 +1023,6 @@ sub FlushRegisters
 
 sub FlushData
   { print TUO
-      "% This Session\n" .
       "% \n" .
       "% embedded files   : $NOfFiles ($NOfBadFiles errors)\n" .
       "% passed commands  : $NOfCommands\n" .
@@ -884,32 +1032,22 @@ sub FlushData
 #D The functionallity described on the previous few pages is
 #D called upon in the main routine:
 
-sub HandleReferences
-  { Report("Action", "ProcessingReferences") ;
-    if ($ProcessIJ  )
-      { Report("Option", "SortingIJ") }
-    if ($ProcessHigh)
-      { Report("Option", "ConvertingHigh") }
-    if ($ProcessQuotes)
-      { Report("Option", "ProcessingQuotes") }
-    if ($InputFile eq "")
+sub NormalHandleReferences
+  { if ($InputFile eq "")
       { Report("Error", "NoInputFile") }
     else
       { unless (open (TUI, "$InputFile.tui"))
           { Report("Error", "EmptyInputFile", $InputFile) }
         else
           { Report("InputFile", "$InputFile.tui" ) ;
-            InitializeCommands ;
-            InitializeRegisters ;
-            InitializeSynonyms ;
-            InitializeFiles ;
-            $ValidOutput = 1 ;
-            unlink "$InputFile.tmp" ; 
-            rename "$InputFile.tuo", "$InputFile.tmp" ; 
+            unlink "$InputFile.tmp" ;
+            rename "$InputFile.tuo", "$InputFile.tmp" ;
             Report("OutputFile", "$InputFile.tuo" ) ;
             open (TUO, ">$InputFile.tuo") ;
-            while ($SomeLine=<TUI>)
-              { chop $SomeLine ; 
+            print TUO "%\n" . "% $Program / Commands\n" . "%\n" ;
+            while (<TUI>)
+              { $SomeLine = $_ ;
+                chomp $SomeLine ;
                 ($FirstTag, $RestOfLine) = split ' ', $SomeLine, 2 ;
                 if    ($FirstTag eq "c")
                   { HandleCommand }
@@ -918,20 +1056,121 @@ sub HandleReferences
                 elsif ($FirstTag eq "r")
                   { HandleRegister }
                 elsif ($FirstTag eq "f")
-                  { HandleFile } 
+                  { HandleFile }
                 elsif ($FirstTag eq "q")
-                  { $ValidOutput = 0 ; 
+                  { $ValidOutput = 0 ;
                     last } }
-            if ($ValidOutput) 
+            if ($ValidOutput)
              { FlushCommands ; # already done during pass
                FlushRegisters ;
                FlushSynonyms ;
                FlushFiles ;
-               FlushData } 
+               FlushData ;
+               close (TUO) }
             else
-             { unlink "$InputFile.tuo" ;
-               rename "$InputFile.tmp", "$InputFile.tuo" ; 
+             { close (TUO) ;
+               unlink "$InputFile.tuo" ;
+               rename "$InputFile.tmp", "$InputFile.tuo" ;
                Report ("Error", "NoOutputFile") } } } }
+
+sub MergerHandleReferences
+  { unlink "texutil.tuo" ;
+    Report("OutputFile", "texutil.tuo" ) ;
+    open (TUO, ">texutil.tuo") ;
+    foreach $InputFile (@ARGV)
+      { ($InputFile, $Suffix) = split (/\./, $InputFile, 2) ;
+        unless (open (TUI, "$InputFile.tui"))
+          { Report("Error", "EmptyInputFile", $InputFile) }
+        else
+          { Report("InputFile", "$InputFile.tui" ) ;
+            while (<TUI>)
+              { $SomeLine = $_ ;
+                chomp $SomeLine ;
+                ($FirstTag, $RestOfLine) = split ' ', $SomeLine, 2 ;
+                if ($FirstTag eq "r")
+                  { HandleRegister } } } }
+    if ($ValidOutput)
+      { FlushRegisters ;
+        close (TUO) } 
+    else
+      { close (TUO) ; 
+        unlink "texutil.tuo" ;
+        Report ("Error", "NoOutputFile") } }
+
+# sub HandleReferences
+#   { Report("Action", "ProcessingReferences") ;
+#     if ($ProcessIJ  )
+#       { Report("Option", "SortingIJ") }
+#     if ($ProcessHigh)
+#       { Report("Option", "ConvertingHigh") }
+#     if ($ProcessQuotes)
+#       { Report("Option", "ProcessingQuotes") }
+#     if ($InputFile eq "")
+#       { Report("Error", "NoInputFile") }
+#     else
+#       { unless (open (TUI, "$InputFile.tui"))
+#           { Report("Error", "EmptyInputFile", $InputFile) }
+#         else
+#           { Report("InputFile", "$InputFile.tui" ) ;
+#             InitializeCommands ;
+#             InitializeRegisters ;
+#             InitializeSynonyms ;
+#             InitializeFiles ;
+#             $ValidOutput = 1 ;
+#             unlink "$InputFile.tmp" ;
+#             rename "$InputFile.tuo", "$InputFile.tmp" ;
+#             Report("OutputFile", "$InputFile.tuo" ) ;
+#             open (TUO, ">$InputFile.tuo") ;
+#             while (<TUI>)
+#               { $SomeLine = $_ ;
+#                 chomp $SomeLine ;
+#                 ($FirstTag, $RestOfLine) = split ' ', $SomeLine, 2 ;
+#                 if    ($FirstTag eq "c")
+#                   { HandleCommand }
+#                 elsif ($FirstTag eq "s")
+#                   { HandleSynonym }
+#                 elsif ($FirstTag eq "r")
+#                   { HandleRegister }
+#                 elsif ($FirstTag eq "f")
+#                   { HandleFile }
+#                 elsif ($FirstTag eq "q")
+#                   { $ValidOutput = 0 ;
+#                     last } }
+#             if ($ValidOutput)
+#              { FlushCommands ; # already done during pass
+#                FlushRegisters ;
+#                FlushSynonyms ;
+#                FlushFiles ;
+#                FlushData ;
+#                close (TUO) }
+#             else
+#              { close (TUO) ;
+#                unlink "$InputFile.tuo" ;
+#                rename "$InputFile.tmp", "$InputFile.tuo" ;
+#                Report ("Error", "NoOutputFile") } } } }
+
+sub HandleReferences
+  { $Merging = @ARGV ;
+    $Merging = ($Merging>1) ;
+    if ($Merging) 
+      { Report("Action", "MergingReferences") }
+    else
+      { Report("Action", "ProcessingReferences") }
+    if ($ProcessIJ  )
+      { Report("Option", "SortingIJ") }
+    if ($ProcessHigh)
+      { Report("Option", "ConvertingHigh") }
+    if ($ProcessQuotes)
+      { Report("Option", "ProcessingQuotes") }
+    InitializeCommands ;
+    InitializeRegisters ;
+    InitializeSynonyms ;
+    InitializeFiles ;
+    $ValidOutput = 1 ;
+    if ($Merging) 
+      { MergerHandleReferences }
+    else 
+      { NormalHandleReferences } }
 
 #D \extras
 #D   {documents}
@@ -969,7 +1208,7 @@ sub HandleReferences
 #D can be overruled at runtime, but defaults to the file
 #D extension. This specification can be used for language
 #D depended verbatim typesetting.
-    
+
 sub HandleDocuments
   { Report("Action", "HandlingDocuments") ;
     if ($ProcessType ne "")
@@ -979,7 +1218,7 @@ sub HandleDocuments
     else
       { CheckInputFiles ($InputFile) ;
         foreach $FullName (@UserSuppliedFiles)
-          { ($FileName, $FileSuffix) = split (/\./, $FullName, 2) ;
+          { ($FileName, $FileSuffix) = SplitFileName ($FullName) ;
             unless ($FileSuffix)
               { $FileSuffix = "tex" }
             unless (-f "$FileName.$FileSuffix")
@@ -1002,14 +1241,14 @@ sub HandleDocuments
                   { $FileType=lc $ProcessType }
                 Report("FileType", $FileType) ;
                 print TED "\\startmodule[type=$FileType]\n" ;
-                while (<TEX>) # TH: $SomeLines replaced by $_
-                  { chop;
+                while (<TEX>) 
+                  { chomp ;
                     if (/^[%\#]D/)
                       { if ($SkipLevel == 0)
-                          { if (length $_ < 3)  # TH: empty #D comment
-                              {$SomeLine = "" } 
+                          { if (length $_ < 3)  
+                              {$SomeLine = "" }
                             else                # HH: added after that
-                              {$SomeLine = substr ($_, 3) } 
+                              {$SomeLine = substr $_, 3 }
                             if ($InDocument)
                               { print TED "$SomeLine\n" }
                             else
@@ -1078,7 +1317,7 @@ sub HandleSources
     else
       { CheckInputFiles ($InputFile) ;
         foreach $FullName (@UserSuppliedFiles)
-          { ($FileName, $FileSuffix) = split (/\./, $FullName, 2) ;
+          { ($FileName, $FileSuffix) = SplitFileName ($FullName) ;
             unless ($FileSuffix)
               { $FileSuffix = "tex" }
             unless (-f "$FileName.$FileSuffix")
@@ -1091,8 +1330,9 @@ sub HandleSources
                 open (TES, ">$FileName.tes") ;
                 $EmptyLineDone = 1 ;
                 $FirstCommentDone = 0 ;
-                while ($SomeLine=<TEX>)
-                  { chop $SomeLine ; 
+                while (<TEX>)
+                  { $SomeLine = $_ ;
+                    chomp $SomeLine ;
                     if ($SomeLine eq "")
                       { unless ($FirstCommentDone)
                           { $FirstCommentDone = 1 ;
@@ -1108,8 +1348,8 @@ sub HandleSources
                             $EmptyLineDone = 0 } }
                     else
                       { print TES "$SomeLine\n" ;
-                        $EmptyLineDone = 0 } } 
-                close (TES) ; # TH: repaired                
+                        $EmptyLineDone = 0 } }
+                close (TES) ; 
                 unless ($FirstCommentDone)
                   { unlink "$FileName.tes" } } } } }
 
@@ -1126,12 +1366,13 @@ sub HandleSetups
     if ($InputFile eq "")
       { Report("Error", "NoInputFile") }
     else
-      { Report("OutputFile", "texutil.tus") ;
-        open (TUS, ">texutil.tus") ; # this file is always reset!
+      { SetOutputFile ("texutil.tus" ) ;
+        Report("OutputFile", $OutputFile) ;
+        open (TUS, ">$OutputFile") ; # always reset!
         $NOfSetups = 0 ;
         CheckInputFiles ($InputFile) ;
         foreach $FullName (@UserSuppliedFiles)
-          { ($FileName, $FileSuffix) = split (/\./, $FullName, 2) ;
+          { ($FileName, $FileSuffix) = SplitFileName ($FullName) ;
             unless ($FileSuffix)
               { $FileSuffix = "tex" }
             unless (-f "$FileName.$FileSuffix")
@@ -1141,22 +1382,21 @@ sub HandleSetups
             else
               { Report("InputFile",  "$FileName.$FileSuffix") ;
                 print TUS "%\n" . "% File : $FileName.$FileSuffix\n" . "%\n" ;
-                while ($SomeLine=<TEX>)
-                  { chomp ;
-                    chop $SomeLine ;
+                while (<TEX>)
+                  { $SomeLine = $_ ;
+                    chomp $SomeLine ;
                     ($Tag, $RestOfLine) = split(/ /, $SomeLine, 2) ;
                     if ($Tag eq "%S")
                       { ++$NOfSetups ;
                         while ($Tag eq "%S")
                           { print TUS "$RestOfLine\n" ;
                             $SomeLine = <TEX> ;
-                            chomp ;
-                            chop $SomeLine ;
+                            chomp $SomeLine ;
                             ($Tag, $RestOfLine) = split(/ /, $SomeLine, 2) }
                         print TUS "\n" } } } }
         close (TUS) ;
         unless ($NOfSetups)
-          { unlink "texutil.tus" }
+          { unlink $OutputFile }
         Report("NOfSetups", $NOfSetups) } }
 
 #D \extras
@@ -1204,7 +1444,7 @@ sub HandleEditorCues
     else
       { CheckInputFiles ($InputFile) ;
         foreach $FullName (@UserSuppliedFiles)
-          { ($FileName, $FileSuffix) = split (/\./, $FullName, 2) ;
+          { ($FileName, $FileSuffix) = SplitFileName ($FullName) ;
             if ($FileSuffix eq "")
               { $FileSuffix = "tex" }
             unless (-f "$FileName.$FileSuffix")
@@ -1217,17 +1457,16 @@ sub HandleEditorCues
                 open (TUD, ">$FileName.tud") ;
                 $NOfTemplates = 0 ;
                 $NOfInfos = 0 ;
-                while ($SomeLine=<TEX>)
-                  { chomp ;
-                    chop $SomeLine ;
+                while (<TEX>)
+                  { $SomeLine = $_ ;
+                    chomp $SomeLine ;
                     ($Tag, $RestOfLine) = split(/ /, $SomeLine, 2) ;
                     if (($Tag eq "%T") && ($ProcessTemplates))
                       { ++$NOfTemplates ;
                        while ($Tag eq "%T")
                          { print TUD "$SomeLine\n" ;
                            $SomeLine = <TEX> ;
-                           chomp ;
-                           chop $SomeLine ;
+                           chomp $SomeLine ;
                            ($Tag, $RestOfLine) = split(/ /, $SomeLine, 2) }
                            print TUD "\n" }
                     elsif (($Tag eq "%I") && ($ProcessInfos))
@@ -1235,8 +1474,7 @@ sub HandleEditorCues
                         while (($Tag eq "%I") || ($Tag eq "%P"))
                           { print TUD "$SomeLine\n" ;
                             $SomeLine = <TEX> ;
-                            chomp ;
-                            chop $SomeLine ;
+                            chomp $SomeLine ;
                             ($Tag, $RestOfLine) = split(/ /, $SomeLine, 2) }
                             print TUD "\n" } }
                 close (TUD) ;
@@ -1250,10 +1488,9 @@ sub HandleEditorCues
 #D \extras
 #D   {figures}
 #D
-#D Directories can be scanned for illustrations in \EPS\ or
-#D \TIFF\ format. The later type of graphics is prescanned by
-#D dedicated programs, whose data is used here. The resulting
-#D file \type{texutil.tuf} contains entries like:
+#D Directories can be scanned for illustrations in \EPS, \PDF,
+#D \TIFF, \PNG\ or \JPG\ format. The resulting file \type{texutil.tuf}
+#D contains entries like:
 #D
 #D \starttypen
 #D \thisisfigureversion{year.month.day}
@@ -1266,184 +1503,582 @@ sub HandleEditorCues
 #D [e=suffix,x=xoffset,y=yoffset,w=width,h=height,t=title,c=creator,s=size]
 #D \stoptypen
 #D
-#D This data can be used when determining dimensions (although
-#D \CONTEXT\ is able to scan \EPS\ illustrations directly) and
-#D to generate directories of illustrations.
+#D This data can be used when determining dimensions and
+#D generate directories of illustrations.
 
-$PTtoCM = 2.54/72.0 ;
+$DPtoCM = 2.54/72.0 ;
 $INtoCM = 2.54 ;
 
-sub HandleEpsFigure
-  { my ( $SuppliedFileName ) = @_ ;
-    ($FileName, $FileSuffix) = split ( /\./, $SuppliedFileName, 2) ;
-    $Temp = $FileSuffix;
-    $Temp =~ s/[0-9]//go;
-    if ($Temp eq "")
-      { $EpsFileName = $SuppliedFileName;
-        Report ( "MPFile", "$SuppliedFileName" ) }
-    elsif (lc $FileSuffix ne "eps")
+sub SaveFigurePresets
+  { my ($FNam, $FTyp, $FUni, $FXof, $FYof, $FWid, $FHei, $FTit, $FCre, $FSiz) = @_ ;
+    if ($ProcessVerbose)
+      { OpenTerminal ;
+        if ($FUni)
+          { print "n=$FNam t=$FTyp " .
+         (sprintf "x=%1.3fcm y=%1.3fcm ", $FXof, $FYof) .
+         (sprintf "w=%1.3fcm h=%1.3fcm\n", $FWid, $FHei) }
+        else
+          { print "n=$FNam t=$FTyp " .
+                  "x=${FXof}bp y=${FYof}bp " .
+                  "w=${FWid}bp h=${FHei}bp\n" }
+        CloseTerminal }
+    else
+      { ++$NOfFigures ;
+        $Figures[$NOfFigures] = "\\presetfigure[$FNam][e=$FTyp" ;
+        if ($FUni)
+          { $Figures[$NOfFigures] .= (sprintf ",w=%5.3fcm,h=%5.3fcm", $FWid, $FHei) }
+        else
+          { $Figures[$NOfFigures] .= ",w=${FWid}bp,h=${FHei}bp" }
+        if (($FXof!=0)||($FYof!=0))
+          { if ($FUni)
+              { $Figures[$NOfFigures] .= (sprintf ",x=%1.3fcm,y=%1.3fcm", $FXof, $FYof) }
+            else
+              { $Figures[$NOfFigures] .= ",x=${FXof}bp,y=${FYof}bp" } }
+        if ($FTit)
+          { $Figures[$NOfFigures] .= ",t=\{$FTit\}" }
+        if ($FCre)
+          { $Figures[$NOfFigures] .= ",c=\{$FCre\}" }
+        $Figures[$NOfFigures] .= ",s=$FSiz]\n" } }
+
+#D The \EPS\ to \PDF\ conversion pipe to \GHOSTSCRIPT\ is
+#D inspired by a script posted by Sebastian Ratz at the
+#D \PDFTEX\ mailing list. Watch the bounding box check, we
+#D use the values found in an earlier pass.
+
+sub ConvertEpsToEps
+  { my ( $SuppliedFileName , $LLX, $LLY, $URX, $URY ) = @_ ;
+    ($FileName, $FileSuffix) = SplitFileName ($SuppliedFileName) ;
+    if ($ProcessEpsToPdf)
+      { unlink "$FileName.pdf" ;
+        $GSCommandLine = "-q " .
+                         "-sDEVICE=pdfwrite " .
+                         "-dNOCACHE " .
+                         "-dUseFlateCompression=true " .
+                         "-sOutputFile=$FileName.pdf " .
+                         "- -c " .
+                         "quit " ;
+        open ( EPS, "| gs $GSCommandLine") }
+    elsif ($PDFReady)
       { return }
     else
-      { $EpsFileName = $FileName;
-        Report ( "EpsFile", "$SuppliedFileName" ) }
-    $HiResBBOX = "" ;
-    $LoResBBOX  = "" ;
-    $EpsTitle = "" ;
-    $EpsCreator = "" ;
-    open ( EPS , $SuppliedFileName ) ;
-    $EpsSize = -s EPS ;
-    while ( $SomeLine = <EPS> )
-      { chop ($SomeLine) ;
-        unless ($HiResBBOX)
-          { if ($SomeLine =~ /^%%BoundingBox:/i)
-              { ($Tag, $LoResBBOX) = split (/ /, $SomeLine, 2) ;
-                next }
-            elsif ($SomeLine =~ /^%%HiResBoundingBox:/i)
-              { ($Tag, $HiResBBOX) = split (/ /, $SomeLine, 2) ;
-                next }
-            elsif ($SomeLine =~ /^%%ExactBoundingBox:/i)
-              { ($Tag, $HiResBBOX) = split (/ /, $SomeLine, 2) ;
-                next } }
-        if ($SomeLine =~ /^%%Creator:/i)
-          { ($Tag, $EpsCreator) = split (/ /, $SomeLine, 2) }
-        elsif ($SomeLine =~ /^%%Title:/i)
-          { ($Tag, $EpsTitle) = split (/ /, $SomeLine, 2) } }
-    if ($HiResBBOX)
-      { $EpsBBOX = $HiResBBOX }
-    else
-      { $EpsBBOX = $LoResBBOX }
-    if ($EpsBBOX)
-      { ($LLX, $LLY, $URX, $URY, $RestOfLine) = split (/ /, $EpsBBOX, 5 ) ;
-        $EpsHeight  = ($URY-$LLY)*$PTtoCM ;
-        $EpsWidth   = ($URX-$LLX)*$PTtoCM ;
-        $EpsXOffset = $LLX*$PTtoCM ;
-        $EpsYOffset = $LLY*$PTtoCM ;
-        $Figures[++$NOfFigures] =
-          "\\presetfigure[$EpsFileName][e=eps" .
-          (sprintf  ",x=%5.3fcm,y=%5.3fcm", $EpsXOffset, $EpsYOffset)  .
-          (sprintf  ",w=%5.3fcm,h=%5.3fcm", $EpsWidth,   $EpsHeight)  .
-          ",t=$EpsTitle,c=$EpsCreator,s=$EpsSize]\n" } }
-
-sub HandleEpsFigures
-  { if ($InputFile eq "")
-      { $InputFile = "*.eps" }
-    CheckInputFiles ($InputFile) ;
-    foreach $FileName (@UserSuppliedFiles)
-      { HandleEpsFigure ( $FileName ) } }
-
-#D Here we call the programs that generate information on
-#D the \TIFF\ files. The names of the programs are defined
-#D earlier.
-
-if ($ProcessTiff)
-  { $FindTiffFigure = "" ;
-    $UsedTiffProgram = "" ;
-    unlink "tiffdata.tmp" ;
-    foreach $TiffProgram (@TiffPrograms)
-      { if ((system ("$TiffProgram *.tif > tiffdata.tmp") == 0)
-            && (-s "tiffdata.tmp"))
-          { $UsedTiffProgram = $TiffProgram ;
-            $FindTiffFigure = "FindTiffFigure_$UsedTiffProgram" ;
-            last } } }
-
-#D The scanning routines use filehandle \type{TMP} and call for
-#D \type{ReportTifFigure} with the arguments \type{Name},
-#D \type{Width} and \type{Height}.
-
-sub ReportTifFigure
-  { my ($Name, $Width, $Height) = @_ ;
-    $Name = lc $Name ;
-    #
-    # if ($InputFile ne "")
-    #   { $Ok = 0 ;
-    #     foreach $IFile (@UserSuppliedFiles)
-    #     { $Ok = ($Ok || ($IFile eq "$Name.tif" )) }
-    # else
-    #   { $Ok = 1 }
-    #
-    $Ok = 1 ;
-    #
-    if ($Ok)
-      { $Size = -s "$Name.tif" ;
-        Report ( "TifFile", "$Name.tif") ;
-        $Figures[++$NOfFigures] =
-          "\\presetfigure[$Name][e=tif" .
-          (sprintf ",w=%5.3fcm,h=%5.3fcm", $Width, $Height) .
-          ",s=$Size]\n" } }
-
-sub HandleTifFigures
-  { if ($ProcessTiff)
-      { if (-s "tiffdata.tmp")
-          { Report ( "SystemCall", "$UsedTiffProgram -> tiffdata.tmp" ) ;
-           if ((defined &$FindTiffFigure) && (open(TMP, "tiffdata.tmp")))
-              { &$FindTiffFigure }
-           else
-              { Report ( "MissingSubroutine", $FindTiffFigure ) } }
+      { open ( EPS, ">texutil.tmp" ) ;
+        binmode EPS }
+    open ( TMP , "$SuppliedFileName" ) ;
+    binmode TMP ;
+    $EpsBBOX = 0 ;
+    $EpsWidth   = $URX - $LLX ;
+    $EpsHeight  = $URY - $LLY ;
+    $EpsXOffset =    0 - $LLX ;
+    $EpsYOffset =    0 - $LLY ;
+    while (<TMP>)
+      { if (/%!PS/)
+          { s/(.*)%!PS/%!PS/o ;
+            print EPS $_ ;
+            last } }
+    while (<TMP>)
+      { if (/^%%(HiResB|ExactB|B)oundingBox:/o)
+          { unless ($EpsBBOX)
+              { print EPS "%%PDFready: $Program\n" ;
+                print EPS "%%BoundingBox: 0 0 $EpsWidth $EpsHeight\n" ;
+                print EPS "<< /PageSize [$EpsWidth $EpsHeight] >> setpagedevice\n" ;
+                print EPS "gsave $EpsXOffset $EpsYOffset translate\n" ;
+                $EpsBBOX = 1 } }
+        elsif (/^%%EOF/o)
+          { last }
+        elsif (/^%%Trailer/o)
+          { last }
         else
-          { Report ( "BadSystemCall", "@TiffPrograms" ) } } }
+          { print EPS $_ } }
+    close ( TMP ) ;
+    if ($EpsBBOX)
+      { print EPS "grestore\n%%EOF\n%%RestOfFileIgnored: $Program\n" ;
+        close ( EPS ) ;
+        Report ( "PdfFile", "$SuppliedFileName" ) ;
+        unless ($ProcessEpsToPdf)
+          { unlink "$SuppliedFileName" ;
+            rename "texutil.tmp", "$SuppliedFileName" } }
+    else
+      { close (EPS) }
+    unlink "texutil.tmp" }
 
-#D The next few routines are program specific. Let's cross our
-#D fingers on the stability off their output.  As one can
-#D see, we have to work a bit harder when we use \TIFFINFO\
-#D instead of \TIFFTAGS.
+sub HandleEpsFigure
+  { my ($SuppliedFileName) = @_ ;
+    my ($Temp) = "" ; 
+    if (-f $SuppliedFileName)
+     { ($FileName, $FileSuffix) = SplitFileName ($SuppliedFileName) ;
+       if ($FileSuffix) 
+         { $Temp = $FileSuffix ;
+           $Temp =~ s/[0-9]//go ;
+           if ($Temp eq "")
+             { $EpsFileName = $SuppliedFileName;
+               Report ( "MPFile", "$SuppliedFileName" ) }
+           elsif ((lc $FileSuffix ne "eps")&&(lc $FileSuffix ne "mps"))
+             { return }
+           else
+             { $EpsFileName = $SuppliedFileName; # $FileName
+               Report ( "EpsFile", "$SuppliedFileName" ) }
+           $EpsTitle = "" ;
+           $EpsCreator = "" ;
+           open ( EPS , $SuppliedFileName ) ;
+           binmode EPS ;
+           $EpsSize = -s EPS ;
+           $PDFReady = 0 ;
+           $MPSFound = 0 ;
+           $BBoxFound = 0 ;
+           while (<EPS>)
+             { $SomeLine = $_;
+               chomp $SomeLine ;
+               if (($BBoxFound) && ((substr $SomeLine,0,1) ne "%"))
+                 { last }
+               if ($BBoxFound<2)
+                 { if ($SomeLine =~ /^%%BoundingBox:/io)
+                     { $EpsBBox = $SomeLine ; $BBoxFound = 1 ; next }
+                   elsif ($SomeLine =~ /^%%HiResBoundingBox:/io)
+                     { $EpsBBox = $SomeLine ; $BBoxFound = 2 ; next }
+                   elsif ($SomeLine =~ /^%%ExactBoundingBox:/io)
+                     { $EpsBBox = $SomeLine ; $BBoxFound = 3 ; next } }
+               if ($SomeLine =~ /^%%PDFready:/io)
+                 { $PDFReady = 1 }
+               elsif ($SomeLine =~ /^%%Creator:/io)
+                 { ($Tag, $EpsCreator) = split (/ /, $SomeLine, 2) ;
+                   if ($EpsCreator =~ /MetaPost/io)
+                     { $MPSFound = 1 } }
+               elsif ($SomeLine =~ /^%%Title:/io)
+                 { ($Tag, $EpsTitle) = split (/ /, $SomeLine, 2) } }
+           close ( EPS ) ;
+           if ($BBoxFound)
+             { ($Tag, $LLX, $LLY, $URX, $URY, $RestOfLine) = split (/ /, $EpsBBox, 6 ) ;
+               $EpsHeight  = ($URY-$LLY)*$DPtoCM ;
+               $EpsWidth   = ($URX-$LLX)*$DPtoCM ;
+               $EpsXOffset = $LLX*$DPtoCM ;
+               $EpsYOffset = $LLY*$DPtoCM ;
+               if ($MPSFound)
+                 { $EpsType = "mps" }
+               else
+                 { $EpsType = "eps" }
+               SaveFigurePresets
+                ( $EpsFileName, $EpsType, 1,
+                  $EpsXOffset, $EpsYOffset, $EpsWidth, $EpsHeight,
+                  $EpsTitle, $EpsCreator, $EpsSize ) ;
+               if (($ProcessEpsPage) || ($ProcessEpsToPdf))
+                 { ConvertEpsToEps ( $SuppliedFileName, $LLX, $LLY, $URX, $URY ) } }
+           else
+             { Report ( "MissingBoundingBox", "$SuppliedFileName" ) } } } }
+        
+#D The \PDF\ scanning does a similar job. This time we
+#D search for a mediabox. I could have shared some lines
+#D with the previous routines, but prefer readability.
 
-sub FindTiffFigure_tiffinfo
-  { while ( $TifName = <TMP> )
-      { chomp ;
-        chop $TifName ;
-        if (($TifName =~ s/^(.*)\.tif\:.*/$1/i) &&
-            ($SomeLineA = <TMP>) && ($SomeLineA = <TMP>) &&
-            ($SomeLineA = <TMP>) && ($SomeLineB = <TMP>))
-          { chop $SomeLineA ;
-            $TifWidth  =  $SomeLineA ;
-            $TifWidth  =~ s/.*Image Width: (.*) .*/$1/i ;
-            $TifHeight =  $SomeLineA ;
-            $TifHeight =~ s/.*Image Length: (.*).*/$1/i ;
-            $TifWRes   =  $SomeLineB ;
-            $TifWRes   =~ s/.*Resolution: (.*)\,.*/$1/i ;
-            $TifHRes   =  $SomeLineB ;
-            $TifHRes   =~ s/.*Resolution: .*\, (.*).*/$1/i ;
-            $TifWidth  = ($TifWidth/$TifWRes)*$INtoCM ;
-            $TifHeight = ($TifHeight/$TifHRes)*$INtoCM ;
-            ReportTifFigure ($TifName, $TifWidth, $TifHeight) } } }
+sub HandlePdfFigure
+  { my ( $SuppliedFileName ) = @_ ;
+    ($FileName, $FileSuffix) = SplitFileName ($SuppliedFileName) ;
+    if (lc $FileSuffix ne "pdf")
+      { return }
+    else
+      { $PdfFileName = $SuppliedFileName ;
+        Report ( "PdfFile", "$SuppliedFileName" ) }
+    open ( PDF , $SuppliedFileName ) ;
+    binmode PDF ;
+    $PdfSize = -s PDF ;
+    $MediaBoxFound = 0 ;
+    $MediaBox = 0 ;
+    $PageFound = 0 ;
+    $PagesFound = 0 ;
+    while (<PDF>)
+      { $SomeLine = $_ ;
+        chomp ($SomeLine) ;
+        if ($SomeLine =~ /\/Type \/Pages/io)
+          { $PagesFound = 1 }
+        elsif ($SomeLine =~ /\/Type \/Page/io)
+          { ++$PageFound ;
+            if ($PageFound>1) { last } }
+        if ((($PageFound)||($PagesFound)) && ($SomeLine =~ /\/MediaBox /io))
+          { $MediaBox = $SomeLine ;
+            $MediaBoxFound = 1 ;
+            if ($PagesFound) { last } } }
+    close ( PDF ) ;
+    if ($PageFound>1)
+      { Report ( "MultiPagePdfFile", "$SuppliedFileName" ) }
+    elsif (($MediaBoxFound) && ($MediaBox))
+      { my $D = "[0-9\-\.]" ;
+        $MediaBox =~ /\/MediaBox\s*\[\s*($D+)\s*($D+)\s*($D+)\s*($D+)/o ;
+        $LLX = $1 ; $LLY = $2 ; $URX = $3 ; $URY = $4 ;
+        $PdfHeight = ($URY-$LLY)*$DPtoCM ;
+        $PdfWidth = ($URX-$LLX)*$DPtoCM ;
+        $PdfXOffset = $LLX*$DPtoCM ;
+        $PdfYOffset = $LLY*$DPtoCM ;
+        SaveFigurePresets
+         ( $PdfFileName, "pdf", 1,
+           $PdfXOffset, $PdfYOffset, $PdfWidth, $PdfHeight,
+           "", "", $PdfSize ) }
+    else
+      { Report ( "MissingMediaBox", "$SuppliedFileName" ) } }
 
-sub FindTiffFigure_tifftags
-  { while ( $TifName = <TMP> )
-      { chomp ;
-        chop $TifName ;
-        if (($TifName =~ s/.*\`(.*)\.tif\'.*/$1/i) &&
-            ($SomeLine = <TMP>) && ($SomeLine = <TMP>))
-          { chop $SomeLine ;
-            $TifWidth  =  $SomeLine ;
-            $TifWidth  =~ s/.*\((.*) pt.*\((.*) pt.*/$1/ ;
-            $TifHeight =  $SomeLine ;
-            $TifHeight =~ s/.*\((.*) pt.*\((.*) pt.*/$2/ ;
-            $TifWidth  =  $TifWidth*$PTtoCM ;
-            $TifHeight =  $TifHeight*$PTtoCM ;
-            ReportTifFigure ($TifName, $TifWidth, $TifHeight) } } }
+#D A previous version of \TEXUTIL\ used \type{tifftags} or
+#D \type{tiffinfo} for collecting the dimensions. However,
+#D the current implementation does this job itself.
+
+sub TifGetByte
+  { my ($B) = 0 ;
+    read TIF, $B, 1 ;
+    return ord($B) }
+
+sub TifGetShort
+  { my ($S) = 0 ;
+    read TIF, $S, 2 ;
+    if ($TifLittleEndian)
+      { return (unpack ("v", $S)) }
+    else
+      { return (unpack ("n", $S)) } }
+
+sub TifGetLong
+  { my ($L) = 0 ;
+    read TIF, $L, 4 ;
+    if ($TifLittleEndian)
+      { return (unpack ("V", $L)) }
+    else
+      { return (unpack ("N", $L)) } }
+
+sub TifGetRational
+  { my ($N, $M) = (0,0) ;
+    $N = TifGetLong ;
+    $M = TifGetLong ;
+    return $N/$M }
+
+sub TifGetAscii
+  { my ($S) = "" ;
+    --$TifValues;
+    if ($TifValues)
+      { return "" }
+    else
+      { read TIF, $S, $TifValues ;
+        return $S } }
+
+sub TifGetWhatever
+  { if ($_[0]==1)
+      { return TifGetByte }
+    elsif ($_[0]==2)
+      { return TifGetAscii }
+    elsif ($_[0]==3)
+      { return TifGetShort }
+    elsif ($_[0]==4)
+      { return TifGetLong }
+    elsif ($_[0]==5)
+      { return TifGetRational }
+    else
+      { return 0 } }
+
+sub TifGetChunk
+  { seek TIF, $TifNextChunk, 0 ;
+    $Length = TifGetShort ;
+    $TifNextChunk += 2 ;
+    for ($i=1; $i<=$Length; $i++)
+      { seek TIF, $TifNextChunk, 0 ;
+        $TifTag = TifGetShort ;
+        $TifType = TifGetShort ;
+        $TifValues = TifGetLong ;
+        if ($TifTag==256)
+          { $TifWidth = TifGetWhatever($TifType) }
+        elsif ($TifTag==257)
+          { $TifHeight = TifGetWhatever($TifType) }
+        elsif ($TifTag==296)
+          { $TifUnit = TifGetWhatever($TifType) }
+        elsif ($TifTag==282)
+          { seek TIF, TifGetLong, 0 ;
+            $TifHRes = TifGetWhatever($TifType) }
+        elsif ($TifTag==283)
+          { seek TIF, TifGetLong, 0 ;
+            $TifVRes = TifGetWhatever($TifType) }
+        elsif ($TifTag==350)
+          { seek TIF, TifGetLong, 0 ;
+            $TifCreator = TifGetWhatever($TifType) }
+        elsif ($TifTag==315)
+          { seek TIF, TifGetLong, 0 ;
+            $TifAuthor = TifGetWhatever($TifType) }
+        elsif ($TifTag==269)
+          { seek TIF, TifGetLong, 0 ;
+            $TifTitle = TifGetWhatever($TifType) }
+        $TifNextChunk += 12 }
+    seek TIF, $TifNextChunk, 0 ;
+    $TifNextChunk = TifGetLong ;
+    return ($TifNextChunk>0) }
+
+sub HandleTifFigure
+  { my ( $SuppliedFileName ) = @_ ;
+    ($FileName, $FileSuffix) = SplitFileName ($SuppliedFileName) ;
+    if (lc $FileSuffix ne "tif")
+      { return }
+    else
+      { $TifFile = $SuppliedFileName ;
+        if (open ( TIF, $TifFile )) 
+           { Report ( "TifFile", "$SuppliedFileName" ) ;
+             binmode TIF;
+             $TifWidth = 0 ;
+             $TifHeight = 0 ;
+             $TifTitle = "" ;
+             $TifAuthor = "" ;
+             $TifCreator = "" ;
+             $TifUnit = 0 ;
+             $TifHRes = 1 ;
+             $TifVRes = 1 ;
+             $TifSize = -s TIF ;
+             $TifByteOrder = "" ;  
+             seek TIF, 0, 0 ;
+             read TIF, $TifByteOrder, 2 ;
+             $TifLittleEndian = ($TifByteOrder eq "II") ;
+             $TifTag = TifGetShort;
+             unless ($TifTag == 42)
+               { close ( TIF ) ;
+                 return }
+             $TifNextChunk = TifGetLong ;
+             while (TifGetChunk) { }
+             if ($TifUnit==2)
+               { $TifMult = $INtoCM }
+             else
+               { $TifMult = 1 }
+                 $TifWidth  = ($TifWidth /$TifHRes)*$TifMult ;
+                 $TifHeight = ($TifHeight/$TifVRes)*$TifMult ;
+                 close ( TIF ) ;
+                 SaveFigurePresets
+                  ( $TifFile, "tif", $TifUnit,
+                    0, 0, $TifWidth, $TifHeight,
+                    $TifTitle, $TifCreator, $TifSize ) } } }
+
+#D I first intended to use the public utility \type{pngmeta}
+#D (many thanks to Taco for compiling it), but using this
+#D utility to analyze lots of \PNG\ files, I tried to do a
+#D similar job in \PERL. Here are the results:
+
+my ($PngSize, $PngWidth, $PngHeight) = (0,0,0) ;
+my ($PngMult, $PngHRes, $PngVRes, $PngUnit) = (0,1,1,0) ;
+my ($PngFile, $PngTitle, $PngAuthor, $PngCreator) = ("","","") ;
+my ($PngNextChunk, $PngLength, $PngType) = (0,0,0) ;
+my ($PngKeyword, $PngDummy) = ("","") ;
+
+my $PngSignature = chr(137) . chr(80) . chr(78) . chr(71) .
+                   chr (13) . chr(10) . chr(26) . chr(10) ;
+sub PngGetByte
+  { my ($B) = 0 ;
+    read PNG, $B, 1 ;
+    return (ord($B)) }
+
+sub PngGetLong
+  { my ($L) = 0 ;
+    read PNG, $L, 4 ;
+    return (unpack("N", $L)) }
+
+sub PngGetChunk
+  { if ($PngNextChunk<$PngSize) 
+      { seek PNG, $PngNextChunk, 0 ;
+        $PngLength = PngGetLong ;
+        $PngNextChunk = $PngNextChunk + $PngLength + 12 ;
+        read PNG, $PngType, 4 ;
+        if ($PngType eq "")
+          { return 0 }
+        elsif ($PngType eq "IEND")
+          { return 0 } 
+        elsif ($PngType eq "IHDR")
+          { $PngWidth = PngGetLong ;
+            $PngHeight = PngGetLong }
+        elsif ($PngType eq "pHYs")
+          { $PngHRes = PngGetLong ;
+            $PngVRes = PngGetLong ;
+            read PNG, $PngUnit, 1 }
+        elsif ($PngType eq "tEXt")
+          { read PNG, $PngKeyword, 79 ;
+            read PNG, $PngDummy, 1 ;
+            if ( $PngKeyword eq "Title")
+              { read PNG, $PngTitle, $Length }
+            elsif ( $PngKeyword eq "Author")
+              { read PNG, $PngAuthor, $PngLength }
+            elsif ( $PngKeyword eq "Software")
+              { read PNG, $PngCreator, $PngLength } }
+        return 1 } 
+    else
+      { return 0 } }
+
+sub HandlePngFigure
+  { my ( $SuppliedFileName ) = @_ ;
+    ($FileName, $FileSuffix) = SplitFileName ($SuppliedFileName) ;
+    if (lc $FileSuffix ne "png")
+      { return }
+    else
+      { $PngFile = $SuppliedFileName ;
+        if (open ( PNG, $PngFile ))
+          { Report ( "PngFile", "$SuppliedFileName" ) }
+            $PngSize = 0  ;
+            $PngWidth = 0  ;
+            $PngHeight = 0  ;
+            $PngTitle = "" ;
+            $PngAuthor = "" ;
+            $PngCreator = "" ;
+            $PngUnit = 0 ;
+            $PngVRes = 1 ;
+            $PngHRes = 1 ;
+            $PngSig = "" ; 
+            $PngSize = -s PNG ;
+            binmode PNG ;
+            seek PNG, 0, 0 ;
+            read PNG, $PngSig, 8;
+            unless ($PngSig eq $PngSignature)
+              { close ( PNG ) ;
+                return }
+            $PngNextChunk = 8 ;
+            while (PngGetChunk) { }
+            $PngWidth  = ($PngWidth /$PngVRes) ;
+            $PngHeight = ($PngHeight/$PngHRes) ;
+            close ( PNG ) ;
+            SaveFigurePresets
+             ( $PngFile, "png", $PngUnit,
+               0, 0, $PngWidth, $PngHeight,
+               $PngTitle, $PngCreator, $PngSize ) } }
+
+#D Well, we also offer \JPG\ scanning (actually \JFIF)
+#D scanning. (I can recomend David Salomon's book on Data
+#D Compression to those interested in the internals of
+#D \JPG.)
+#D
+#D It took me some time to discover that the (sort of)
+#D reference document I used had a faulty byte position table.
+#D Nevertheless, when I was finaly able to grab the header,
+#D Piet van Oostrum pointer me to the \PERL\ script of Alex
+#D Knowles (and numerous other contributers), from which I
+#D could deduce what segment contained the dimensions.
+
+my ($JpgSize, $JpgWidth, $JpgHeight) = (0,0,0) ;
+my ($JpgMult, $JpgUnit, $JpgHRes, $JpgVRes) = (1,0,1,1) ;
+my ($JpgFile, $JpgVersion, $JpgDummy) = ("",0,"") ;
+my ($JpgSig, $JpgPos, $JpgLen, $JpgSoi, $JpgApp) = ("",0,0,0,0) ;
+
+my $JpgSignature = "JFIF" . chr(0) ;
+
+sub JpgGetByte
+  { my ($B) = 0 ;
+    read JPG, $B, 1 ;
+    return ( ord($B) ) }
+
+sub JpgGetInteger
+  { my ($I) = 0 ;
+    read JPG, $I, 2 ;
+    return (unpack("n", $I)) }
+
+sub HandleJpgFigure
+  { my ($SuppliedFileName) = @_ ;
+    ($FileName, $FileSuffix) = SplitFileName ($SuppliedFileName) ;
+    if (lc $FileSuffix ne "jpg")
+     { return }
+    else
+     { $JpgFile = $SuppliedFileName ;
+       Report ( "JpgFile", "$SuppliedFileName" ) }
+    open ( JPG, $JpgFile ) ;
+    binmode JPG ;
+    $JpgSignature = "JFIF" . chr(0) ;
+    $JpgSize = -s JPG ;
+    $JpgWidth = 0 ;
+    $JpgHeight = 0 ;
+    $JpgUnit = 0 ;
+    $JpgVRes = 1 ;
+    $JpgHRes = 1 ;
+    seek JPG, 0, 0 ;
+    read JPG, $JpgSig, 4 ;
+    unless ($JpgSig eq chr(255).chr(216).chr(255).chr(224))
+      { close ( JPG ) ;
+        return }
+    $JpgLen = JpgGetInteger;
+    read JPG, $JpgSig, 5 ;
+    unless ($JpgSig eq $JpgSignature)
+      { close ( JPG ) ;
+        return }
+    $JpgUnit = JpgGetByte ;
+    $JpgVersion = JpgGetInteger ;
+    $JpgHRes = JpgGetInteger ;
+    $JpgVRes = JpgGetInteger ;
+    $JpgPos = $JpgLen + 4 ;
+    $JpgSoi = 255 ;
+    while ()
+     { seek JPG, $JpgPos, 0 ;
+       $JpgSoi = JpgGetByte ;
+       $JpgApp = JpgGetByte ;
+       $JpgLen = JpgGetInteger ;
+       if ($JpgSoi!=255)
+         { last }
+       if (($JpgApp>=192) && ($JpgApp<=195))  # Found in the perl script.
+         { $JpgDummy = JpgGetByte ;           # Found in the perl script.
+           $JpgHeight = JpgGetInteger ;       # Found in the perl script.
+           $JpgWidth = JpgGetInteger }        # Found in the perl script.
+       $JpgPos = $JpgPos + $JpgLen + 2 }
+    close ( JPG ) ;
+    if ($JpgUnit==1)
+      { $JpgMult = $INtoCM }
+    else
+      { $JpgMult = 1 }
+    $JpgWidth = ($JpgWidth/$JpgHRes)*$JpgMult ;
+    $JpgHeight = ($JpgHeight/$JpgVRes)*$JpgMult ;
+    close ( JPG ) ;
+    SaveFigurePresets
+     ( $JpgFile, "jpg", $JpgUnit,
+       0, 0, $JpgWidth, $JpgHeight,
+       "", "", $JpgSize ) }
+
+#D Now we can handle figures!
 
 sub InitializeFigures
   { $NOfFigures = 0 }
 
 sub FlushFigures
-  { $Figures = sort $Figures ;
-    open ( TUF, ">texutil.tuf" ) ;
-    print TUF "%\n" . "% Figures\n" . "%\n" ;
+  { $Figures = sort { lc ($a) cmp lc ($b) } $Figures ;
+    SetOutputFile ("texutil.tuf") ;
+    open ( TUF, ">$OutputFile" ) ;
+    print TUF "%\n" . "% $Program / Figures\n" . "%\n" ;
     print TUF "\\thisisfigureversion\{1996.06.01\}\n" . "%\n" ;
     for ($n=1 ; $n<=$NOfFigures ; ++$n)
       { print TUF $Figures[$n] }
     close (TUF) ;
-    unless ($NOfFigures)
-     { unlink "texutil.tuf" }
+    if ($NOfFigures)
+     { Report("OutputFile", $OutputFile ) }
+    else
+     { unlink $OutputFile }
     Report ( "NOfFigures", $NOfFigures ) }
+
+sub DoHandleFigures
+  { my ($FigureSuffix, $FigureMethod) = @_ ;
+    if ($InputFile eq "")
+      { $InputFile = $FigureSuffix }
+    CheckInputFiles ($InputFile) ;
+    foreach $FileName (@UserSuppliedFiles)
+      { &{$FigureMethod} ( $FileName ) } }
 
 sub HandleFigures
   { Report("Action",  "GeneratingFigures" ) ;
-    if ($ProcessTiff)
-      { Report("Option", "UsingTiff") }
+    foreach $FileType (@ARGV)
+     { if ($FileType=~/\.eps/io)
+         { Report("Option", "UsingEps") ;
+           if ($ProcessEpsToPdf) { Report("Option", "EpsToPdf") }
+           if ($ProcessEpsPage) { Report("Option", "EpsPage") }
+           last } }
+    foreach $FileType (@ARGV)
+     { if ($FileType=~/\.pdf/io)
+         { Report("Option", "UsingPdf") ;
+           last } }
+    foreach $FileType (@ARGV)
+     { if ($FileType=~/\.tif/io)
+         { Report("Option", "UsingTif") ;
+          #RunTifPrograms ;
+           last } }
+    foreach $FileType (@ARGV)
+     { if ($FileType=~/\.png/io)
+         { Report("Option", "UsingPng") ;
+           last } }
+    foreach $FileType (@ARGV)
+     { if ($FileType=~/\.jpg/io)
+         { Report("Option", "UsingJpg") ;
+           last } }
     InitializeFigures ;
-    HandleEpsFigures ;
-    HandleTifFigures ;
+    DoHandleFigures ("eps", "HandleEpsFigure") ;
+    DoHandleFigures ("pdf", "HandlePdfFigure") ;
+    DoHandleFigures ("tif", "HandleTifFigure") ;
+    DoHandleFigures ("png", "HandlePngFigure") ;
+    DoHandleFigures ("jpg", "HandleJpgFigure") ;
     FlushFigures }
 
 #D \extras
@@ -1452,7 +2087,7 @@ sub HandleFigures
 #D This (poor man's) log file scanning routine filters
 #D overfull box messages from a log file (\type{\hbox},
 #D \type{\vbox} or both). The collected problems are saved
-#D in \type{texutil.log}. One can specify a selection
+#D in \type{$ProgramLog}. One can specify a selection
 #D criterium.
 #D
 #D \CONTEXT\ reports unknown entities. These can also be
@@ -1460,7 +2095,12 @@ sub HandleFigures
 #D files in batch, one has to rely on the log files and/or
 #D this filter.
 
-$Unknown = "onbekend|unknown|unbekant" ;
+$Unknown = "onbekende verwijzing|" . 
+           "unbekannte Referenz|"  .
+           "unknown reference|"    .
+           "dubbele verwijzing|"   .  
+           "duplicate reference|"  .
+           "doppelte Referenz"     ;
 
 sub FlushLogTopic
   { unless ($TopicFound)
@@ -1493,18 +2133,20 @@ sub HandleLogFile
       { $NOfBoxes = 0 ;
         $NOfMatching = 0 ;
         $NOfUnknown = 0 ;
-        Report("OutputFile", "texutil.log") ;
+        SetOutputFile ($ProgramLog) ;
+        Report("OutputFile", $OutputFile) ;
         CheckInputFiles ($InputFile) ;
-        open ( ALL, ">texutil.log" ) ;
+        open ( ALL, ">$OutputFile" ) ;
         foreach $FullName (@UserSuppliedFiles)
-          { ($FileName, $FileSuffix) = split (/\./, $FullName, 2) ;
+          { ($FileName, $FileSuffix) = SplitFileName ($FullName) ;
             if (! open (LOG, "$FileName.log"))
               { Report("Error", "EmptyInputFile", "$FileName.$FileSuffix" ) }
             elsif (-e "$FileName.tex")
               { $TopicFound = 0 ;
                 Report("InputFile", "$FileName.log") ;
-                while ($SomeLine=<LOG>)
-                  { chomp ;
+                while (<LOG>)
+                  { $SomeLine = $_ ;
+                    chomp $SomeLine ;
                     if (($ProcessBox) && ($SomeLine =~ /Overfull \\$Key/))
                       { ++$NOfBoxes ;
                         $SomePoints = $SomeLine ;
@@ -1512,16 +2154,16 @@ sub HandleLogFile
                         if ($SomePoints>=$ProcessCriterium)
                           { ++$NOfMatching ;
                             FlushLogTopic ;
-                            print ALL "$SomeLine" ;
+                            print ALL "$SomeLine\n" ;
                             $SomeLine=<LOG> ;
                             print ALL $SomeLine } }
                     if (($ProcessUnknown) && ($SomeLine =~ /$Unknown/io))
                      { ++$NOfUnknown ;
                        FlushLogTopic ;
-                       print ALL "$SomeLine" } } } }
+                       print ALL "$SomeLine\n" } } } }
         close (ALL) ;
         unless (($NOfBoxes) ||($NOfUnknown))
-          { unlink "texutil.log" }
+          { unlink $OutputFile }
         if ($ProcessBox)
           { Report ( "NOfBoxes" , "$NOfBoxes", "->", $NOfMatching, "Overfull") }
         if ($ProcessUnknown)

@@ -1,0 +1,54 @@
+%D \module
+%D   [      file=s-faq-03,
+%D        version=1997.21.08,
+%D          title=\CONTEXT\ Style File,
+%D       subtitle=FAQ General Framework,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. Non||commercial use is
+%C granted.
+
+\def\PDFscreenFAQ \name #1 \tag #2 \language #3 \hyphenation #4 \list #5 
+  {\def\NameOfFAQ        {#1}
+   \def\TagOfFAQ         {#2}
+   \def\LanguageOfFAQ    {#3}
+   \def\HyphenationOfFAQ {#4}
+   \def\ListOfFAQ        {#5}
+   \usemodule[faq-01]
+   \starttext
+     \TitlePage
+     \FileWithFAQs
+     \IndexPage
+     \AllFAQs
+   \stoptext}
+
+\def\PDFpaperFAQ \name #1 \tag #2 \language #3 \hyphenation #4 \list #5 
+  {\def\NameOfFAQ        {#1}
+   \def\TagOfFAQ         {#2}
+   \def\LanguageOfFAQ    {#3}
+   \def\HyphenationOfFAQ {#4}
+   \def\ListOfFAQ        {#5}
+   \usemodule[faq-02]
+   \starttext
+     \TitlePage
+     \FileWithFAQs
+     \IndexPage
+   \stoptext}
+
+\def\DVIpaperFAQ \name #1 \tag #2 \language #3 \hyphenation #4 \list #5 
+  {\def\NameOfFAQ        {#1}
+   \def\TagOfFAQ         {#2}
+   \def\LanguageOfFAQ    {#3}
+   \def\HyphenationOfFAQ {#4}
+   \def\ListOfFAQ        {#5}
+   \usemodule[faq-02]
+   \starttext
+     \TitlePage
+     \FileWithFAQs
+     \IndexPage
+   \stoptext}
+
+\endinput

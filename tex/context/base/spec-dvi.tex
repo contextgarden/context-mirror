@@ -1,0 +1,67 @@
+%D \module
+%D   [       file=spec-dvi,
+%D        version=1996.01.25,
+%D          title=\CONTEXT\ Special Macros,
+%D       subtitle=Generic \TEX\ Solutions,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. Non||commercial use is 
+%C granted. 
+
+\unprotect
+
+%D \macros
+%D   {dostartobject, 
+%D    dostopobject,
+%D    doinsertobject}
+%D   {}
+%D
+%D Reuse of object is not supported by the \DVI\ format. We 
+%D therefore just duplicate them using boxes. 
+
+\startspecials[tex]
+
+\newbox\DVIobjects \newcounter\DVIobjectcounter
+
+\definespecial\dostartobject#1#2#3#4#5% 
+  {\setbox\nextbox=\vbox\bgroup
+     \def\dodostopobject%
+       {\egroup
+        \doglobal\increment\DVIobjectcounter
+        \global\setbox\DVIobjects=\vbox
+          {\offinterlineskip
+           \forgetall
+           \unvbox\DVIobjects
+           \setbox\nextbox=\hbox{\box\nextbox}
+           \wd\nextbox=\!!zeropoint
+           \dp\nextbox=\!!zeropoint
+           \ht\nextbox=\!!onepoint
+           \allowbreak
+           \box\nextbox}%
+        \dosetobjectreference{#1}{#2}{\DVIobjectcounter}}}
+
+\definespecial\dostopobject%
+  {\dodostopobject}
+
+\definespecial\doinsertobject#1#2%
+  {\bgroup
+   \dogetobjectreference{#1}{#2}\DVIobjectreference
+   \splittopskip\!!zeropoint
+   \setbox0=\copy\DVIobjects
+   \dimen0=\DVIobjectreference pt
+   \advance\dimen0 by -\!!onepoint
+   \setbox2=\vsplit0 to \dimen0
+   \ifdim\ht0>\!!onepoint
+     \setbox0=\vsplit0 to \!!onepoint
+   \fi
+   \unvbox0\setbox0=\lastbox\unhbox0
+   \egroup}
+
+\stopspecials
+
+\protect
+
+\endinput

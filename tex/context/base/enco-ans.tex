@@ -1,0 +1,165 @@
+%D \module
+%D   [     file=enco-ans,
+%D      version=1995.1.1,
+%D        title=\CONTEXT\ Encoding Macros,
+%D     subtitle=\YandY\ texnansi Encoding,
+%D       author=J. Hagen,
+%D         date=\currentdate,
+%D    copyright=J. Hagen]
+
+%D This is \YandY's texnansi encoding vector, which combines 
+%D the best of the ansi encoding vector (prebuilt accented 
+%D characters etc.) and some of \TEX's vectors. 
+
+\startmapping[texnansi] 
+
+\definecasemap 228 228 196 \definecasemap 196 228 196  
+\definecasemap 235 235 203 \definecasemap 203 235 203
+\definecasemap 239 239 207 \definecasemap 207 239 207
+\definecasemap 246 246 214 \definecasemap 214 246 214
+\definecasemap 252 252 220 \definecasemap 220 252 220
+\definecasemap 255 255 159 \definecasemap 159 255 159
+
+\definecasemap 225 225 193 \definecasemap 193 225 193
+\definecasemap 233 233 201 \definecasemap 201 233 201
+\definecasemap 237 237 205 \definecasemap 205 237 205
+\definecasemap 243 243 211 \definecasemap 211 243 211
+\definecasemap 250 250 218 \definecasemap 218 250 218
+\definecasemap 253 253 221 \definecasemap 221 253 221
+
+\definecasemap 224 224 192 \definecasemap 192 224 192
+\definecasemap 232 232 200 \definecasemap 200 232 200
+\definecasemap 236 236 204 \definecasemap 204 236 204
+\definecasemap 242 242 210 \definecasemap 210 242 210
+\definecasemap 249 249 217 \definecasemap 217 249 217
+
+\definecasemap 226 226 194 \definecasemap 194 226 194
+\definecasemap 234 234 202 \definecasemap 202 234 202
+\definecasemap 238 238 206 \definecasemap 206 238 206
+\definecasemap 244 244 212 \definecasemap 212 244 212
+\definecasemap 251 251 219 \definecasemap 219 251 219
+
+\definecasemap 227 227 195 \definecasemap 195 227 195
+\definecasemap 241 241 209 \definecasemap 209 241 209
+\definecasemap 245 245 213 \definecasemap 213 245 213
+
+\stopmapping
+
+\startencoding[texnansi]
+
+\defineaccent " a 228      
+\defineaccent " e 235      
+\defineaccent " i 239
+\defineaccent " o 246
+\defineaccent " u 252
+\defineaccent " y 255
+
+\defineaccent " A 196      
+\defineaccent " E 203
+\defineaccent " I 207
+\defineaccent " O 214
+\defineaccent " U 220
+\defineaccent " Y 159
+
+\defineaccent ' a 225
+\defineaccent ' e 233
+\defineaccent ' i 237
+\defineaccent ' o 243
+\defineaccent ' u 250
+\defineaccent ' y 253
+
+\defineaccent ' A 193
+\defineaccent ' E 201
+\defineaccent ' I 205
+\defineaccent ' O 211
+\defineaccent ' U 218
+\defineaccent ' Y 221
+
+\defineaccent ` a 224
+\defineaccent ` e 232
+\defineaccent ` i 236
+\defineaccent ` o 242
+\defineaccent ` u 249
+
+\defineaccent ` A 192
+\defineaccent ` E 200
+\defineaccent ` I 204
+\defineaccent ` O 210
+\defineaccent ` U 217
+
+\defineaccent ^ a 226
+\defineaccent ^ e 234
+\defineaccent ^ i 238
+\defineaccent ^ o 244
+\defineaccent ^ u 251
+
+\defineaccent ^ A 194
+\defineaccent ^ E 202
+\defineaccent ^ I 206
+\defineaccent ^ O 212
+\defineaccent ^ U 219
+
+\defineaccent ~ a 227
+\defineaccent ~ n 241
+\defineaccent ~ o 245
+
+\defineaccent ~ A 195
+\defineaccent ~ N 209
+\defineaccent ~ O 213
+
+\defineaccent ` {\dotlessi} 236
+\defineaccent ' {\dotlessi} 237
+\defineaccent " {\dotlessi} 239
+\defineaccent ^ {\dotlessi} 238
+
+\definecharacter ae 230
+\definecharacter oe 156
+\definecharacter o  248
+\definecharacter AE 198
+\definecharacter OE 140
+\definecharacter O  216
+\definecharacter ss 223
+
+\definecharacter aa 229
+\definecharacter AA 197
+
+\definecharacter cc 231
+\definecharacter CC 199
+
+%D The next piece of code is rather ugly: 
+
+\def\texnansiencodedb#1%
+  {\oalign{#1\crcr\hidewidth\vbox to.2ex{\hbox{\char175}\vss}\hidewidth}}
+
+\def\texnansiencodedc#1%
+  {\setbox0\hbox{#1}\ifdim\ht0=1ex\accent184 #1\else
+     {\ooalign{\hidewidth\char184\hidewidth\crcr\unhbox0}}\fi}
+
+\definecommand b {\texnansiencodedb}
+\definecommand c {\texnansiencodedc}
+
+%D We still have to take care of: 
+%D
+%D \starttypen
+%D \bgroup
+%D   \catcode146=\active 
+%D   \gdef^^92{{^\bgroup\prim@s}}
+%D \egroup
+%D
+%D \mathcode146="8000 
+%D
+%D \chardef\i=105
+%D \stoptypen
+
+%D We have to redefine some commands too: 
+
+\redefinecommand grave  \definecommand grave {\mathaccent"7060 }
+\redefinecommand acute  \definecommand acute {\mathaccent"70B4 }
+\redefinecommand hat    \definecommand hat   {\mathaccent"7088 }
+\redefinecommand tilde  \definecommand tilde {\mathaccent"7098 }
+\redefinecommand ddot   \definecommand ddot  {\mathaccent"70A8 }
+\redefinecommand bar    \definecommand bar   {\mathaccent"70AF }
+
+\stopencoding
+
+\endinput

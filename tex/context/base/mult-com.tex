@@ -22,6 +22,8 @@
 
 \writestatus{loading}{Context Multilingual Macros / Commands}
 
+\startlogginginterface context.com
+
 %D The commands are grouped according to their functionality.
 %D Although the \type{\stop} counterpart of the
 %D \type{\start}||commands could be generated automatically,
@@ -50,8 +52,15 @@
                    showmakeup:  toonopmaak                   showmakeup
                                 zeigeumbruch
 
+                  useencoding:  usecodering                  useencoding
+                                benutzekodierung
+
                   usespecials:  gebruikspecials              usespecials
                                 benutzespezielles
+                 defineoutput:  definieeruitvoer             defineoutput
+                                defineoutput
+                  setupoutput:  steluitvoerin                setupoutput
+                                stelleausgabeein
 
 % system       redefineaccent:  herdefinieeraccent           redefineaccent
 %                               redefiniereakzent
@@ -71,8 +80,18 @@
                                 stopkodierung
     definebodyfontenvironment:  definieerkorpsomgeving       definebodyfontenvironment
                                 definierefliesstextumgebung
+     setupbodyfontenvironment:  stelkorpsomgevingin          setupbodyfontenvironment
+                                stellefliesstextumgebungein
                definebodyfont:  definieerkorps               definebodyfont
                                 definierefliesstext
+                   definefont:  definieerfont                definefont
+                                definiereschrift
+            definefontsynonym:  definieerfontsynoniem        definefontsynonym
+                                defineschriftsynonym
+                  definestyle:  definieerletter              definestyle
+                                definierestil
+              definefontstyle:  definieerfontstijl           definefontstyle
+                                definierefontstil % tobias 
 
                     setuptype:  steltypein                   setuptype
                                 stelletipein
@@ -98,7 +117,7 @@
                setupfootnotes:  stelvoetnotenin              setupfootnotes
                                 stellefussnotenein
       setupfootnotedefinition:  stelvoetnootdefinitiein      setupfootnotedefinition
-                                stellefussnotendefinitioneein % TOBIAS
+                                stellefussnotendefinitionein
                          note:  noot                         note
                                 notiz
                      footnote:  voetnoot                     footnote
@@ -114,6 +133,8 @@
 
                   currentdate:  huidigedatum                 currentdate
                                 heutigesdatum
+                         date:  datum                        date
+                                datum
                       weekday:  weekdag                      weekday
                                 wochentag
                       WEEKDAY:  WEEKDAG                      WEEKDAY
@@ -127,9 +148,9 @@
                                 Ziffern
                       numbers:  cijfers                      numbers
                                 ziffern
-                romannumerals:  romeins                      romannummerals
+                romannumerals:  romeins                      romannumerals
                                 roemischezahlen
-                Romannumerals:  Romeins                      Romannummerals
+                Romannumerals:  Romeins                      Romannumerals
                                 Roemischezahlen
                     character:  letter                       character
                                 buchstabe
@@ -140,24 +161,41 @@
                    Characters:  Letters                      Characters
                                 Buchstaben
 
+                      unknown:  onbekend                     unknown
+                                unbekant
+
                  definesymbol:  definieersymbool             definesymbol
                                 definieresymbol
+           definefiguresymbol:  definieerfiguursymbool       definefiguresymbol
+                                definiereabbsymbol
                        symbol:  symbool                      symbol
                                 symbol
+               setupsymbolset:  stelsymboolsetin             setupsymbolset
+                                stellesymbolsetein
+                showsymbolset:  toonsymboolset               showsymbolset
+                                showsymbolset
+               startsymbolset:  startsymboolset              startsymbolset
+                                startsymbolset
+                   usesymbols:  gebruiksymbolen              usesymbols
+                                verwendesymbole
+
              defineconversion:  definieerconversie           defineconversion
                                 definierekonversion
                 convertnumber:  converteernummer             convertnumber
                                 konvertierezahl
 
+                setupcapitals:  stelkapitalenin              setupcapitals 
+                                setupversalien % TOBIAS 
+
                           kap:  kap                          kap
                                 kap
-                          KAP:  KAP                          KAP
+                          KAP:  KAP                          CAP
                                 KAP
-                        nokap:  nokap                        nokap
+                        nokap:  nokap                        nocap
                                 nokap
-                          Kap:  Kap                          Kap
+                          Kap:  Kap                          Cap
                                 Kap
-                         Kaps:  Kaps                         Kaps
+                         Kaps:  Kaps                         Caps
                                 Kaps
                          WORD:  WOORD                        WORD
                                 WORT
@@ -167,12 +205,16 @@
                                 Wort
                         Words:  Woorden                      Words
                                 Woerter
-                    stretched:  opgerekt                     stretched
+                    stretched:  uitgerekt                    stretched
                                 gestreckt
                    overstrike:  doorstreep                   overstrike
                                 durchgestrichen
                   overstrikes:  doorstrepen                  overstrikes
                                 durchstreichen
+                      overbar:  overstreep                   overbar
+                                ueberstrichen
+                     overbars:  overstrepen                  overbars
+                                ueberstreichen
                      underbar:  onderstreep                  underbar
                                 unterstrichen
                     underbars:  onderstrepen                 underbars
@@ -244,6 +286,9 @@
                            hl:  hl                           hl
                                 hl
 
+                 defineframed:  definieeromlijnd             defineframed
+                                definiereumrahmt
+
              defineframedtext:  definieerkadertekst          defineframedtext
                                 definiereumrahmtertext
 %             startframedtext:  startkadertekst              startframedtext
@@ -269,7 +314,7 @@
                                 gefuelltesrechteck
              setupfillinrules:  stelinvullijnenin            setupfillinrules
                                 stellegefuelltesrechteckein
-                   fillintext:  invulltekst                  fillintext
+                   fillintext:  invultekst                   fillintext
                                 ausfuelltext
 
              setupfillinlines:  stelinvulregelsin            setupfillinlines
@@ -335,6 +380,8 @@
                   woordrechts:  woordrechts                  wordright
                                 wortrechts
 
+              definieerblanko:  definieerblanko              defineblank
+                                definiereblanko
                        blanko:  blanko                       blank
                                 blanko
                  stelblankoin:  stelblankoin                 setupblank
@@ -342,7 +389,9 @@
            corrigeerwitruimte:  corrigeerwitruimte           correctwhitespace
                                 korrigierezwischenraum
                   fixedspaces:  vastespaties                 fixedspaces
-                                festesspatium
+                                festesspatium % TOBIAS 
+                   fixedspace:  vastespatie                  fixedspace 
+                                festesspatium % TOBIAS 
                       nospace:  geenspatie                   nospace
                                 keinspatium
                         space:  spatie                       space
@@ -358,7 +407,7 @@
                startvanelkaar:  startvanelkaar               startunpacked
                                 startgrosserdurchschuss
                 stopvanelkaar:  stopvanelkaar                stopunpacked
-                                stopkleinerdurchschuss
+                                stopgrosserdurchschuss
           startregelcorrectie:  startregelcorrectie          startlinecorrection
                                 startzeilenkorrektur
            stopregelcorrectie:  stopregelcorrectie           stoplinecorrection
@@ -410,14 +459,19 @@
                 stelsmallerin:  stelsmallerin                setupnarrower
                                 stelleengerein
 
+               definetabulate:  definieertabulatie           definetabulate
+                                definieretabulator
+                setuptabulate:  steltabulatiein              setuptabulate
+                                stelletabulatorein
+
                    starttabel:  starttabel                   starttable
                                 starttabelle
                     stoptabel:  stoptabel                    stoptable
                                 stoptabelle
                 starttabellen:  starttabellen                starttables
-                                starttabellen                
+                                starttabellen
                  stoptabellen:  stoptabellen                 stoptables
-                                stoptabellen                 
+                                stoptabellen
                steltabellenin:  steltabellenin               setuptables
                                 stelletabellenein
 
@@ -475,8 +529,10 @@
                                 stelletextein
            stelteksttekstenin:  stelteksttekstenin           setuptexttexts
                                 stelletexttexteein
+               definieertekst:  definieertekst               definetext
+                                definieretext
 
-                   pagenumber:  paginanummer                 pagenumber 
+                   pagenumber:  paginanummer                 pagenumber
                                 seitenummer
 
                         items:  items                        items
@@ -485,11 +541,11 @@
                                 stellepostenein
 
                    regellinks:  regellinks                   leftaligned
-                                zeilelinks  % better: linksbuendig
+                                linksbuendig
                   regelmidden:  regelmidden                  midaligned
-                                zeilemitte  % better: zentriert
+                                zentriert
                   regelrechts:  regelrechts                  rightaligned
-                                zeilerechts % better: rechtsbuendig
+                                rechtsbuendig
 
                 startkolommen:  startkolommen                startcolumns
                                 startspalten
@@ -514,23 +570,31 @@
                                 sym
                           its:  its                          its
                                 its
+                          ran:  ran                          ran
+                                ran
                startopsomming:  startopsomming               startitemize
                                 startaufzaehlung
+            stelopsommingenin:  stelopsommingenin            setupitemizations
+                                stelleaufzaehlungeein % Tobias, plural 
               stelopsommingin:  stelopsommingin              setupitemize
                                 stelleaufzaehlungein
                 stopopsomming:  stopopsomming                stopitemize
                                 stopaufzaehlung
 
                  definieerkop:  definieerkop                 definehead
-                                definierekopf
+                                definiereueberschrift
                     stelkopin:  stelkopin                    setuphead
-                                stellekopfein
+                                stelleueberschriftein
                  stelkoppenin:  stelkoppenin                 setupheads
-                                stellekoepfeein
+                                stelleueberschriftenein
               stelkopnummerin:  stelkopnummerin              setupheadnumber
                                 stellekopfzahlein
                     kopnummer:  kopnummer                    headnumber
                                 kopfnummer
+             huidigekopnummer:  huidigekopnummer             currentheadnumber
+                                heutigeskopfnummer % TOBIAS
+              bepaalkopnummer:  bepaalkopnummer              determineheadnumber
+                                bestimmekopfnummer % TOBIAS
 
                resetmarkering:  resetmarkering               resetmarking
                                 ruecksetztenbeschriftung
@@ -540,7 +604,7 @@
                                 definierebeschriftung
                 geenmarkering:  geenmarkering                nomarking
                                 keinebeschriftung
-                      markeer:  markeer                      marking
+                      marking:  markeer                      marking
                                 beschriftung
            ontkoppelmarkering:  ontkoppelmarkering           decouplemarking
                                 entknuepfebeschriftung
@@ -555,23 +619,23 @@
                                 passelayoutan
                  steloffsetin:  steloffsetin                 setupoffset
                                 stelleoffsetein
-                 plaatsopgrid:  plaatsopgrid                 snaptogrid
-                                snaptogrid % TOBIAS
-              verplaatsopgrid:  verplaatsopgrid              resnaptogrid
-                                resnaptogrid  % TOBIAS
+                 plaatsopgrid:  plaatsopgrid                 placeongrid
+                                amgitterausrichten
+              verplaatsopgrid:  verplaatsopgrid              moveongrid
+                                amgitterneuausrichten
 
              tooninstellingen:  tooninstellingen             showsetups
                                 zeigeeinstellungen
                     toonkader:  toonkader                    showframe
                                 zeigerahmen
                      toongrid:  toongrid                     showgrid
-                                zeigegrid  
+                                zeigegitter
                    toonopbouw:  toonopbouw                   showbuildup
                                 zeigeaufbau
                    toonlayout:  toonlayout                   showlayout
                                 zeigelayout
-                    toonprint:  toonprint                    showprint 
-                                zeigeabdruck % - TOBIAS 
+                    toonprint:  toonprint                    showprint
+                                zeigedruck
                    toonstruts:  toonstruts                   showstruts
                                 zeigestruts
 
@@ -580,7 +644,8 @@
           stelpapierformaatin:  stelpapierformaatin          setuppapersize
                                 stellepapierformatin
              stelarrangerenin:  stelarrangerenin             setuparranging
-                                stelarrangierenein % - TOBIAS           
+                                stelleanordnenein
+
 
                        versie:  versie                       version
                                 version
@@ -599,8 +664,8 @@
                                 stelleinteraktionsmenueein
       definieerinteractiemenu:  definieerinteractiemenu      defineinteractionmenu
                                 definiereinteraktionsmenue
-          startinteractiemenu:  startinteractiemenu          startinteractionmenu
-                                startinteraktionsmenue
+%          startinteractiemenu:  startinteractiemenu          startinteractionmenu
+%                                startinteraktionsmenue
        blokkeerinteractiemenu:  blokkeerinteractiemenu       disableinteractionmenu
                                 inaktiviereinteraktionsmenue
             interactiebuttons:  interactiebuttons            interactionbuttons
@@ -613,9 +678,9 @@
                                 stelleinteraktionsbildschirmein
 
                placebookmarks:  plaatsbookmarks              placebookmarks
-                                platzierebookmarks 
+                                platzierebookmarks
                      bookmark:  bookmark                     bookmark
-                                bookmark 
+                                bookmark
 
            definieerbeeldmerk:  definieerbeeldmerk           definelogo
                                 definierelogo
@@ -628,8 +693,8 @@
                                 definierefarbengruppe
                   definepalet:  definieerpalet               definepalet
                                 definierepalette
-                         gray:  grijs                        gray
-                                grau
+                    graycolor:  grijskleur                   graycolor
+                                graufarbe
                         color:  kleur                        color
                                 farbe
                    startcolor:  startkleur                   startcolor
@@ -654,7 +719,7 @@
                                 vergleichepalette
                    colorvalue:  kleurwaarde                  colorvalue
                                 farbewert
-                    grayvalue:  grijswaarde                  grayvalue
+                    greyvalue:  grijswaarde                  greyvalue
                                 grauwert
 
                   startraster:  startraster                  startraster
@@ -664,18 +729,20 @@
 
                 definieerblok:  definieerblok                defineblock
                                 definiereblock
+                   stelblokin:  stelblokin                   setupblock
+                                stelleblockein
                gebruikblokken:  gebruikblokken               useblocks
-                                verwendeblock
-              geenblokkenmeer:  geenblokkenmeer              nomoreblocks
-                                keinebloeckemehr
+                                verwendebloecke
+               verwerkblokken:  verwerkblokken               processblocks
+                                bearbeitebloecke
               handhaafblokken:  handhaafblokken              keepblocks
                                 behaltebloecke
              selecteerblokken:  selecteerblokken             selectblocks
                                 waehlebloeckeaus
-                   stelblokin:  stelblokin                   setupblock
-                                stelleblockein
                verbergblokken:  verbergblokken               hideblocks
                                 verbergebloecke
+              geenblokkenmeer:  geenblokkenmeer              nomoreblocks
+                                keinebloeckemehr
 
                definieerlijst:  definieerlijst               definelist
                                 definiereliste
@@ -683,6 +750,8 @@
                                 definierezusammengestellteliste
                   plaatslijst:  plaatslijst                  placelist
                                 platziereliste
+     plaatssamengesteldelijst:  plaatssamengesteldelijst     placecombinedlist
+                                platzierezusammengestellteliste
              schrijfnaarlijst:  schrijfnaarlijst             writetolist
                                 schreibezurliste
            schrijftussenlijst:  schrijftussenlijst           writebetweenlist
@@ -693,7 +762,18 @@
                                 stellezusammengestelltelisteein
 
          bepaallijstkenmerken:  bepaallijstkenmerken         determinelistcharacteristics
-                                determinelistcharacteristics % TOBIAS 
+                                bestimmelistencharakeristika
+                  lijstlengte:  lijstlengte                  listlength 
+                                listlength % TOBIAS
+                 lijstbreedte:  lijstbreedte                 listwidth
+                                listwidth  % TOBIAS
+                  lijsthoogte:  lijsthoogte                  listheight
+                                listheight % TOBIAS
+
+                    geenlijst:  geenlijst                    nolist
+                                keineliste % TOBIAS
+
+% zal vervallen 
 
      definieerreferentielijst:  definieerreferentielijst     definereferencelist
                                 definierereferenzliste
@@ -747,7 +827,7 @@
                                 platziereregister
 
       bepaalregisterkenmerken:  bepaalregisterkenmerken      determineregistercharacteristics
-                                determineregistercharacteristics % TOBIAS 
+                                bestimmeregistercharakteristika
 
             definieersorteren:  definieersorteren            definesorting
                                 definieresortieren
@@ -755,7 +835,7 @@
                                 definieresynonyme
                stelsorterenin:  stelsorterenin               setupsorting
                                 stellesortierenein
-               stelsynoniemin:  stelsynoniemin               setupsynonym
+             stelsynoniemenin:  stelsynoniemenin             setupsynonyms
                                 stellesynonymein
 
           startsynchronisatie:  startsynchronisatie          startsynchronization
@@ -775,6 +855,12 @@
                                 verwendeexteresdokument
                    gebruikURL:  gebruikURL                   useURL
                                 verwendeURL
+                   gebruikurl:  gebruikurl                   useurl
+                                verwendeurl
+                     setupurl:  stelurlin                    setupurl
+                                stelleurlein
+               coupledocument:  koppeldocument               coupledocument
+                                verknuepfedokument
 
              stelprogrammasin:  stelprogrammasin             setupprograms
                                 stelleprogrammein
@@ -833,25 +919,29 @@
                           tab:  tab                          tab
                                 tab
 
-         stelexternefigurenin:  stelexternefigurenin         setupexternalfigures
+         setupexternalfigures:  stelexternefigurenin         setupexternalfigures
                                 stelleexterneabbildungenein
-           toonexternefiguren:  toonexternefiguren           showexternalfigures
+          showexternalfigures:  toonexternefiguren           showexternalfigures
                                 zeigeexterneabbildungen
                externalfigure:  externfiguur                 externalfigure
                                 externeabbildung
-             toonexternfiguur:  toonexternfiguur             showexternalfigure
-                                zeigeexterneabbildung
-          gebruikexternfiguur:  gebruikexternfiguur          useexternalfigure
+%           showexternalfigure:  toonexternfiguur             showexternalfigure
+%                                zeigeexterneabbildung
+            useexternalfigure:  gebruikexternfiguur          useexternalfigure
                                 verwendeexterneabbildung
 
-                  startfiguur:  startfiguur                  startfigure
+                  startfigure:  startfiguur                  startfigure
                                 startabbildung
-                   stopfiguur:  stopfiguur                   stopfigure
-                                stopabbildung
-                     refereer:  refereer                     referring
+%                   stopfigure:  stopfiguur                   stopfigure
+%                                stopabbildung
+                    referring:  refereer                     referring
                                 referieren
-                      markeer:  markeer                      marking
-                                beschriftung
+%                      marking:  markeer                      marking
+%                                beschriftung
+                       remark:  toelichting                  remark
+                                bemerkung
+                     colorbar:  kleurenbalk                  colorbar
+                                farbbalken
 
                       rooster:  rooster                      grid
                                 gitter
@@ -878,6 +968,11 @@
                                 seitenreferenz
                     reference:  referentie                   reference
                                 referenz
+              definereference:  definieerreferentie          definereference
+                                definierereferenz
+
+                 useJSscripts:  gebruikJSscripts             useJSscripts
+                                verwendeJSscript
 
                           uit:  uit                          from
                                 von
@@ -885,33 +980,44 @@
                                 in
                            op:  op                           at
                                 bei
+                         over:  over                         about
+                                euber
                          naar:  naar                         goto
                                 zu
+                       atpage:  oppagina                     atpage
+                                atpage % TOBIAS
+                    somewhere:  ergens                       somewhere
+                                irgendwo
+                          ref:  ref                          ref
+                                ref
                       naarbox:  naarbox                      gotobox
                                 zurbox
                    naarpagina:  naarpagina                   gotopage
-                                zurseite % - old but forgotten 
+                                zurseite % - old but forgotten
 
-                 startformule:  startformule                 startformula
-                                startformel
-                  stopformule:  stopformule                  stopformula
-                                stopformel
+%                 startformule:  startformule                 startformula
+%                                startformel
+%                  stopformule:  stopformule                  stopformula
+%                                stopformel
                 plaatsformule:  plaatsformule                placeformula
                                 platziereformel
              plaatssubformule:  plaatssubformule             placesubformula
                                 platziereunterformel
                stelformulesin:  stelformulesin               setupformulae
                                 stelleformelnein
-                 startgegeven:  startgegeven                 startfact
-                                startgegeben
-                  stopgegeven:  stopgegeven                  stopfact
-                                stopgegeben
-                 startlegenda:  startlegenda                 startlegend
-                                startlegende
-                  stoplegenda:  stoplegenda                  stoplegend
-                                stoplegende
-leg: leg leg leg 
-geg: geg fact geg
+%                startgegeven:  startgegeven                 startfact
+%                               startgegeben
+%                 stopgegeven:  stopgegeven                  stopfact
+%                               stopgegeben
+%                startlegenda:  startlegenda                 startlegend
+%                               startlegende
+%                 stoplegenda:  stoplegenda                  stoplegend
+%                               stoplegende
+                           leg: leg                          leg 
+                                leg
+                           geg: geg                          fact 
+                                geg
+
                   mathematics:  wiskunde                     mathematics
                                 mathematik
                     dimension:  dimensie                     dimension
@@ -938,8 +1044,8 @@ geg: geg fact geg
                   stopproject:  stopproject                  stopproject
                                 stopprojekt
 
-                       setups:  instellingen                 setups    
-                                setups % -- 
+                       setups:  instellingen                 setups
+                                einstellungen
 
                       project:  project                      project
                                 projekt
@@ -953,17 +1059,19 @@ geg: geg fact geg
                                 keinedateienmehr
 
                    haalbuffer:  haalbuffer                   getbuffer
-                                holebuffer
-                  startbuffer:  startbuffer                  startbuffer
-                                startbuffer
-                   stopbuffer:  stopbuffer                   stopbuffer
-                                stopbuffer
+                                holepuffer
+%                  startbuffer:  startbuffer                  startbuffer
+%                                startbuffer
+%                   stopbuffer:  stopbuffer                   stopbuffer
+%                                stopbuffer
                  stelbufferin:  stelbufferin                 setupbuffer
-                                stellebufferein
+                                stellepufferein
                    typebuffer:  typebuffer                   typebuffer
-                                tippebuffer
+                                tippepuffer
+              definieerbuffer:  definieerbuffer              definebuffer
+                                definierepuffer % TOBIAS 
 
-                    betekenis:  betekenis                    united
+                    betekenis:  betekenis                    unitmeaning
                                 bedeutung
                        voluit:  voluit                       infull
                                 volleswort
@@ -1006,7 +1114,7 @@ geg: geg fact geg
                                 startumbruch
                    stopopmaak:  stopopmaak                   stopmakeup
                                 stopumbruch
-  
+
            gebruikexternefile:  gebruikexternefile           useexternalfile
                                 verwendeexternedatei
           gebruikexternefiles:  gebruikexternefiles          useexternalfiles
@@ -1061,9 +1169,9 @@ geg: geg fact geg
                                 stelledrehenein
 
                       spiegel:  spiegel                      mirror
-                                mirror % TOBIAS CHECK!
+                                spiegeln
                        schaal:  schaal                       scale
-                                scale  % TOBIAS CHECK!
+                                format
 
                stelnummerenin:  stelnummerenin               setupnumbering
                                 stellenummerierungein
@@ -1077,9 +1185,6 @@ geg: geg fact geg
 
                 definieerhbox:  definieerhbox                definehbox
                                 definierehbox
-
-                  toelichting:  toelichting                  remark
-                                bemerkung
 
                     toevoegen:  toevoegen                    adding
                                 zusatz
@@ -1095,8 +1200,11 @@ geg: geg fact geg
                                 stellespatiumein
              steltolerantiein:  steltolerantiein             setuptolerance
                                 stelletoleranzein
-                stelsysteemin:  stelsysteemin                setupsystem
+
+                  setupsystem:  stelsysteemin                setupsystem
                                 stellesystemein
+                      usepath:  gebruikgebied                usepath 
+                                usepath % TOBIAS
 
              definieeralineas:  definieeralineas             defineparagraphs
                                 definiereabsaetze
@@ -1105,6 +1213,42 @@ geg: geg fact geg
 
                      geentest:  geentest                     donttest
                                 keintest
+
+             stelcommentaarin:  stelcommentaarin             setupcomment
+                                stellekommentarein
+                   commentaar:  commentaar                   comment
+                                kommentar
+
+                  definefield:  definieerveld                definefield
+                                definierefeld
+              definemainfield:  definieerhoofdveld           definemainfield
+                                definemainfield % TOBIAS 
+               definesubfield:  definieersubveld             definesubfield
+                                definieresubfeld
+                   clonefield:  kloonveld                    clonefield
+                                klonierefeld
+                    copyfield:  copieerveld                  copyfield
+                                kopierefeld
+                   setupfield:  stelveldin                   setupfield
+                                stellefeldein
+                  setupfields:  stelveldenin                 setupfields
+                                stellefelderin
+                        field:  veld                         field
+                                feld
+                     fitfield:  passendveld                  fitfield
+                                passendfeld
+                    logfields:  registreervelden             logfields
+                                registrierefelder
+                   showfields:  toonvelden                   showfields
+                                zeigefelder
+                      tooltip:  suggestie                    tooltip
+                                tooltip
+                  fillinfield:  invulveld                    fillinfield
+                                ausfuellfeld
+             definefieldstack:  definieerveldstapel          definefieldstack
+                                definierefeldstapel
+                   fieldstack:  veldstapel                   fieldstack
+                                feldstapel
 
 \stopcommands
 
@@ -1146,6 +1290,10 @@ geg: geg fact geg
                                 rechtemarginalbreite
                  margeafstand:  margeafstand                 margindistance
                                 marginalafstand
+           linkermargeafstand:  linkermargeafstand           leftmargindistance
+                                linkemarginalafstand
+          rechtermargeafstand:  rechtermargeafstand          rightmargindistance
+                                rechtemarginalafstand
                   randbreedte:  randbreedte                  edgewidth
                                 randbreite
             linkerrandbreedte:  linkerrandbreedte            leftedgewidth
@@ -1154,6 +1302,10 @@ geg: geg fact geg
                                 breiterechterrand
                   randafstand:  randafstand                  edgedistance
                                 randabstand
+            linkerrandafstand:  linkerrandafstand            leftedgedistance
+                                abstandlinkerrand
+           rechterrandafstand:  rechterrandafstand           rightedgedistance
+                                abstandrechterrand
                  tekstbreedte:  tekstbreedte                 textwidth
                                 textbreite
                    zetbreedte:  zetbreedte                   makeupwidth
@@ -1165,16 +1317,22 @@ geg: geg fact geg
                        rugwit:  rugwit                       backspace
                                 rumpfweite
 
-                papierbreedte:  papierbreedte                paperwidth 
+                papierbreedte:  papierbreedte                paperwidth
                                 papierbreite
-                 papierhoogte:  papierhoogte                 paperheight 
+                 papierhoogte:  papierhoogte                 paperheight
                                 papierhoehe
-                                
-                    kopniveau:  kopniveau                    headlevel 
+           printpapierbreedte:  printpapierbreedte           printpaperwidth
+                                printpapierbreite
+            printpapierhoogte:  printpapierhoogte            printpaperheight
+                                printpapierhoehe
+                    kopniveau:  kopniveau                    headlevel
                                 kopfniveau
 
                     linewidth:  lijndikte                    linethickness
                                 liniendicke
+
+          totaalaantalpaginas:  totaalaantalpaginas          totalnumberofpages
+                                gesamtseitenanzahl
 
 \stopcommands
 
@@ -1220,5 +1378,6 @@ geg: geg fact geg
 
 %D \stopcompressdefinitions
 
+\stoplogginginterface
+
 \endinput
-

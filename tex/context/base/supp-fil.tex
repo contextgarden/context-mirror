@@ -31,6 +31,14 @@
 
 \unprotect
 
+%D \macros 
+%D   {normalwrite, normalimmediate}
+%D
+%D We save a few primitives first. 
+
+\let\normalwrite\write
+\let\normalimmediate\immediate
+
 %D \macros
 %D   {pushendofline,popendofline}
 %D   {}
@@ -66,11 +74,11 @@
 %D the number of files is limited to~16, so use this one when
 %D possible. We also define a scratch output file. 
 
-\newread  \scratchread
-\newwrite \scratchwrite
+\ifx\undefined\scratchread  \newread \scratchread  \fi
+\ifx\undefined\scratchwrite \newwrite\scratchwrite \fi
 
 %D \macros
-%D   {processfile,fileline}
+%D   {doprocessfile,fileline,fileprocessedtrue,dofinishfile}
 %D
 %D The next macro offers a framework for processing files on a 
 %D line by line basis. 
@@ -81,24 +89,50 @@
 %D 
 %D The first argument can for instance be \type{\scratchread}.
 %D The action must do something with \type{\fileline}, which
-%D holds the current line. 
+%D holds the current line. One can halfway step out using 
+%D \type{\dofinishfile} and ise \type{\iffileprocessed} to 
+%D see if indeed some content was found.
+
+\newif\iffileprocessed
 
 \def\doprocessfile#1#2#3%
   {\openin#1=#2\relax
-   \gdef\doprocessline%
-     {\ifeof#1%
-        \gdef\doprocessline{\closein#1}%
-      \else
-        \global\read#1 to \fileline
-        #3\relax
-      \fi
-      \doprocessline}%
-   \doprocessline}
-
+   \ifeof#1%
+     \fileprocessedfalse
+     \closein#1\relax
+   \else
+     \fileprocessedtrue
+     \gdef\dofinishfile% 
+       {\closein#1\relax
+        \global\let\doprocessline=\relax}%
+     \gdef\doprocessline%
+       {\ifeof#1%
+          \dofinishfile
+        \else
+          \global\read#1 to \fileline
+          #3\relax
+          \expandafter\doprocessline
+        \fi}%
+     \expandafter\doprocessline
+   \fi}
+
+%D \macros 
+%D   {pathplusfile}
+%D 
+%D Use \type{\pathplusfile} to compose a full file name, like
+%D in: 
+%D
+%D \starttypen
+%D \pathplusfile{path}{file}
+%D \stoptypen
+%D
+%D By default, this expands into {\tt \pathplusfile{path}{file}}. 
+
+\def\pathplusfile#1#2{#1/#2}
+
 %D \macros
 %D   {readfile,ReadFile,maxreadlevel,
 %D    normalinput}
-%D   {}
 %D
 %D One cannot be sure if a file exists. When no file can be
 %D found, the \type{\input} primitive gives an error message
@@ -163,7 +197,7 @@
      \immediate\closein\scratchread
      \decrement\readlevel
      \ifnum\readlevel>0\relax
-       \doreadfile{\f!parentpath/#1}{#2}{#3}%
+       \doreadfile{\pathplusfile{\f!parentpath}{#1}}{#2}{#3}%
      \else
        #3%
      \fi
@@ -181,8 +215,8 @@
   {\readfile{#1}{}{}}
 
 %D \macros
-%D   {readjobfile,readlocfile,readsysfile,readfixfile}
-%D   {}
+%D   {readjobfile,readlocfile,readsysfile,
+%D    readfixfile,readsetfile}
 %D 
 %D This implementation honnors the third situation, but we 
 %D still can get unwanted files loaded and/or can get involved
@@ -194,28 +228,33 @@
 %D backtracks~\readlevel\ directories, including the current
 %D one.
 
-\def\readjobfile#1%
+\def\readjobfile#1% current path, no backtracking 
   {\newcounter\readlevel
-   \doreadfile{\f!currentpath/#1}}
+   \doreadfile{\pathplusfile{\f!currentpath}{#1}}}
 
-\def\readlocfile#1%
+\def\readlocfile#1% current path, backtracking 
   {\let\readlevel=\maxreadlevel
-   \doreadfile{\f!currentpath/#1}}
+   \doreadfile{\pathplusfile{\f!currentpath}{#1}}}
 
 %D System files can be anywhere and therefore
 %D \type{\readsysfile} is not bound to the current directory
 %D and obeys the \TEX\ implementation.
 
-\def\readsysfile#1%
+\def\readsysfile#1% current path, obeys tex search 
   {\let\readlevel=\maxreadlevel
    \doreadfile{#1}}
 
-%D The last one, \type{\readfixfile} searches on the directory
-%D specified and backtracks too.
+%D Of the last two, \type{\readfixfile} searches on the
+%D directory specified and backtracks too, while
+%D \type{\readsetfile} does only search on the specified path. 
 
-\def\readfixfile#1#2%
+\def\readfixfile#1#2% specified path, backtracking 
   {\let\readlevel=\maxreadlevel
-   \doreadfile{#1/#2}}
+   \doreadfile{\pathplusfile{#1}{#2}}}
+
+\def\readsetfile#1#2% specified path, no backtracking 
+  {\newcounter\readlevel
+   \doreadfile{\pathplusfile{#1}{#2}}}
 
 %D After having defined this commands, we reconsidered the
 %D previously defined \type{\readfile}. This time we more or
@@ -239,7 +278,6 @@
 
 %D \macros
 %D   {readjobfile,readlocfile,readsysfile,readfixfile}
-%D   {}
 %D
 %D The next four alternatives can be used for opening files
 %D for reading on a line||by||line basis. These commands get
@@ -253,13 +291,13 @@
      \ifnum\readlevel>\maxreadlevel\relax
      \else
        \immediate\closein#1\relax
-       \doopenin{#1}{\f!parentpath/#2}%
+       \doopenin{#1}{\pathplusfile{\f!parentpath}{#2}}%
      \fi
    \fi}
 
 \def\openjobin#1#2%
   {\newcounter\readlevel
-   \doopenin{#1}{\f!currentpath/#2}}
+   \doopenin{#1}{\pathplusfile{\f!currentpath}{#2}}}
 
 \def\opensysin#1#2%
   {\let\readlevel=\maxreadlevel
@@ -267,15 +305,14 @@
 
 \def\openlocin#1#2%
   {\let\readlevel=\maxreadlevel
-   \doopenin{#1}{\f!currentpath/#2}}
+   \doopenin{#1}{\pathplusfile{\f!currentpath}{#2}}}
 
 \def\openfixin#1#2#3%
   {\let\readlevel=\maxreadlevel
-   \doopenin{#1}{#2/#3}}
+   \doopenin{#1}{\pathplusfile{#2}{#3}}}
 
 %D \macros
 %D   {doiffileelse,doiflocfileelse}
-%D   {}
 %D
 %D The next alternative only looks if a file is present. No
 %D loading is done. This one obeys the standard \TEX\
@@ -303,11 +340,10 @@
    \next}
 
 \def\doiflocfileelse#1%
-  {\doiffileelse{\f!currentpath/#1}}
+  {\doiffileelse{\pathplusfile{\f!currentpath}{#1}}}
 
 %D \macros
 %D   {doonlyonce, doinputonce}
-%D   {}
 %D   
 %D Especially macropackages need only be loaded once.
 %D Repetitive loading not only costs time, relocating registers
@@ -330,7 +366,6 @@
 
 %D \macros
 %D   {doifparentfileelse}
-%D   {}
 %D
 %D The test \type{\doifelse{\jobname}{filename}} does not give 
 %D the desired result, simply because \type{\jobname} expands 

@@ -24,12 +24,17 @@
 
 \writestatus{loading}{Context Support Macros / Fun Stuff}
 
+\ifx\definefont\undefined
+  \def\definefont[#1][#2]{\expandafter\font\csname#1\endcsname=#2\relax}
+\fi
+
 %D \macros
 %D   {DroppedCaps}
 %D     
 %D \startbuffer
 %D \DroppedCaps 
-%D   {\color[green]} {cmbx12} {2.2\baselineskip} {2pt} {\baselineskip} {2} 
+%D   {\color[green]} {cmbx12} 
+%D   {2.2\baselineskip} {2pt} {\baselineskip} {2} 
 %D   Let's start
 %D \stopbuffer
 %D
@@ -53,7 +58,8 @@
 %D
 %D \startbuffer
 %D \DroppedCaps 
-%D   {\color[red]} {cmbx12} {\baselineskip} {0pt} {0pt} {1} 
+%D   {\color[red]} {cmbx12} 
+%D   {\baselineskip} {0pt} {0pt} {1} 
 %D   This simple
 %D \stopbuffer
 %D
@@ -64,7 +70,8 @@
 %D
 %D \startbuffer
 %D \DroppedCaps 
-%D   {\color[red]} {cmbx12} {2\baselineskip} {0pt} {\baselineskip} {2} 
+%D   {\color[red]} {cmbx12} 
+%D   {2\baselineskip} {0pt} {\baselineskip} {2} 
 %D   In this ugly 
 %D \stopbuffer
 %D 
@@ -91,7 +98,8 @@
 %D \startbuffer
 %D \def\MyDroppedCaps%
 %D   {\DroppedCaps 
-%D      {\color[green]} {cmbx12} {5\baselineskip} {3pt} {3\baselineskip} {4}}
+%D      {\color[green]} {cmbx12} 
+%D      {5\baselineskip} {3pt} {3\baselineskip} {4}}
 %D
 %D \MyDroppedCaps The implementation
 %D \stopbuffer
@@ -114,7 +122,7 @@
    \penalty-200
    \vskip-#6\baselineskip
    \setbox0=\hbox
-     {\font\temp=#2 at #3%
+     {\definefont[temp][#2 at #3]%
       \temp#1{#7}\hskip#4}%
    \setbox0=\hbox
      {\lower#5\box0}%
@@ -124,13 +132,15 @@
    \hangafter-#6%
    \noindent
    \hskip-\wd0
-   \vbox{\box0}%
+   \vbox{\forgetall\box0}%
    \nobreak}
 
 %D Before we go to the next topic, we summarize this command:
 %D
 %D \starttypen
-%D \DroppedCaps {command} {font} {height} {hoffset} {voffset} {lines}
+%D \DroppedCaps 
+%D    {command} {font} 
+%D    {height} {hoffset} {voffset} {lines}
 %D \stoptypen
 
 %D \macros
@@ -160,12 +170,13 @@
 %D \typebuffer
 %D 
 %D Before we explain the third and fourth argument, we show the
-%D implementation. Those who know a bit about the way \TEX\ treats
-%D tokens, will probably see in one glance that this
+%D implementation. Those who know a bit about the way \TEX\ 
+%D treats tokens, will probably see in one glance that this
 %D alternative works all right for most text||only situations
 %D in which there is enough text available for the first line,
 %D but that more complicated things will blow. One has to live
-%D with that. 
+%D with that. A workaround is rather trivial but obscures the
+%D principles used. 
 
 \def\TreatFirstLine#1#2#3#4% before, after, first, next
   {\leavevmode
@@ -207,13 +218,14 @@
 %D    \color[FunnyColor]}
 %D 
 %D \TreatFirstLine {\bf} {} {\FunnyCommand} {\FunnyCommand}
-%D The third and fourth argument can be used to gain special effects on
-%D the individual words. Of course one needs to know 
+%D The third and fourth argument can be used to gain special 
+%D effects on the individual words. Of course one needs ...
 %D \stopbuffer
 %D 
 %D \haalbuffer 
-%D a bit more about the macro package used to get real nice effects, 
-%D but this example probably demonstrates the principles well. 
+%D to know a bit more about the macro package used to get real 
+%D nice effects, but this example probably demonstrates the 
+%D principles well. 
 %D 
 %D \typebuffer
 %D 
@@ -222,7 +234,7 @@
 %D
 %D \starttypen
 %D \def\MyTreatFirstLine%
-%D   {\TreatFirstLine {\bf} {} {\FunnyCommand} {\FunnyCommand}}
+%D   {\TreatFirstLine{\bf}{}{\FunnyCommand}{\FunnyCommand}}
 %D \stoptypen
 
 %D \macros 
@@ -230,10 +242,11 @@
 %D 
 %D \startbuffer 
 %D \beginofshapebox
-%D When using \CONTEXT, one can also apply this funny command to whole lines 
-%D by using the reshape mechanism. Describing this interesting mechanism falls
-%D outside the scope of this module, so we only show the trick. This is an
-%D example of low level \CONTEXT\ functionality: it's all there, and it's
+%D When using \CONTEXT, one can also apply this funny command 
+%D to whole lines by using the reshape mechanism. Describing 
+%D this interesting mechanism falls outside the scope of this 
+%D module, so we only show the trick. This is an example of 
+%D low level \CONTEXT\ functionality: it's all there, and it's 
 %D stable, but not entirely meant for novice users. 
 %D \endofshapebox
 %D 
@@ -252,7 +265,7 @@
 %D   {TreatFirstCharacter}
 %D
 %D \startbuffer
-%D \TreatFirstCharacter {\bf\color[green]} Just to be 
+%D \TreatFirstCharacter{\bf\color[green]} Just to be 
 %D \stopbuffer
 %D
 %D \haalbuffer complete we also offer a very simple one 
@@ -275,7 +288,9 @@
      {\forgetall
       \baselineskip0pt
       \def\StackCharacter##1{#4{##1}\cr\noalign{#3}}%
-      \halign{\hss##\hss&##\cr\handletokens#1\with\StackCharacter\cr}}}
+      \halign
+        {\hss##\hss&##\cr
+         \handletokens#1\with\StackCharacter\cr}}}
 
 %D \startbuffer
 %D \StackCharacters{CONTEXT}{}{\vskip.2ex}{\FunnyCommand}
@@ -303,7 +318,7 @@
 %D An alternative would have been
 %D
 %D \starttypen
-%D \StackCharacters{CONTEXT}{to 5cm}{\vfill}{\FunnyCommand}
+%D \StackCharacters {CONTEXT} {to 5cm} {\vfill} {\FunnyCommand}
 %D \stoptypen
 
 %D \macros
@@ -318,14 +333,14 @@
 %D
 %D \startbuffer[a]
 %D \processtokens 
-%D   {\hbox to .5\hsize\bgroup} {\hfill} {\egroup} 
-%D   {\space} {LET'S HAVE}
+%D   {\hbox to .5\hsize\bgroup} {\hfill} 
+%D   {\egroup} {\space} {LET'S HAVE}
 %D \stopbuffer
 %D  
 %D \startbuffer[b]
 %D \processtokens 
-%D   {\vbox\bgroup\raggedcenter\hsize1em} {\vskip.25ex} {\egroup} 
-%D   {\strut} {FUN}
+%D   {\vbox\bgroup\raggedcenter\hsize1em} 
+%D   {\vskip.25ex} {\egroup} {\strut} {FUN}
 %D \stopbuffer
 %D
 %D This macro is able to typeset: 
@@ -364,23 +379,27 @@
 \def\NormalizeFontWidth%
   {\NormalizeFontSize\wd} 
 
-\def\NormalizeFontSize#1#2#3#4#5% 
-  {\setbox0=\hbox{\font\temp=#5 at 10pt\temp#3}%
-   \dimen0=#10
-   \dimen2=10000pt
-   \divide\dimen2 by \dimen0
-   \dimen4=#4
-   \divide\dimen4 by 1000
-   \dimen4=\number\dimen2\dimen4
-   \edef\NormalizedFontSize{\the\dimen4}% 
-   \font#2=#5 at \NormalizedFontSize}
+\def\NormalizeFontSize#1#2#3#4#5%
+  {\bgroup
+   \dimen0=#4% #4 can be \ht0 or so
+   \setbox0=\hbox{\definefont[temp][#5 at 10pt]\temp#3}%
+   \dimen2=#10 % #1 is \wd or \ht
+   \dimen4=10000pt
+   \divide\dimen4 by \dimen2
+   \divide\dimen0 by 1000
+   \dimen0=\number\dimen4\dimen0
+   \definefont[temp][#5 at \the\dimen0]%
+   \temp
+   \expandafter
+   \egroup
+   \expandafter\font\expandafter#2\expandafter=\fontname\font\relax}
 
 %D Consider for instance:
 %D 
 %D \startbuffer
-%D \NormalizeFontHeight \temp {X} {2\baselineskip} {cmr10}
+%D \NormalizeFontHeight \tmp {X} {2\baselineskip} {cmr10}
 %D 
-%D {\temp To Be Or Not To Be}
+%D {\tmp To Be Or Not To Be}
 %D \stopbuffer
 %D 
 %D \typebuffer
@@ -392,30 +411,30 @@
 %D The horizontal counterpart is:
 %D 
 %D \startbuffer
-%D \NormalizeFontWidth \temp {This Sentence Fits} {\hsize} {cmr10}
+%D \NormalizeFontWidth \tmp {This Line Fits} {\hsize} {cmr10}
 %D 
-%D \hbox{\temp This Sentence Fits}
+%D \hbox{\tmp This Line Fits}
 %D \stopbuffer
 %D 
 %D \typebuffer
 %D 
+%D The calculated font scale is avaliable in the macro 
+%D \type{\NormalizedFontSize}. 
+%D
 %D \startregelcorrectie
 %D \ruledhbox{\haalbuffer}
 %D \stopregelcorrectie
-%D
-%D The calculated font scale is avaliable in the macro 
-%D \type{\NormalizedFontSize}. 
 %D
 %D One can of course combine these macros with the ones 
 %D described earlier, like in:
 %D 
 %D \starttypen
-%D \NormalizeFontHeight \NicelyDroppedFont {X} {2\baselineskip} {cmbx12}
+%D \NormalizeFontHeight {text} \DroppedFont {2\baselineskip} {cmbx12}
 %D 
 %D \def\NicelyDroppedCaps%
 %D   {\DroppedCaps 
 %D      {\kleur[groen]} 
-%D      {\NicelyDroppedFont} 
+%D      {\DroppedFont} 
 %D      {2pt} 
 %D      {\baselineskip} 
 %D      {2}}

@@ -30,7 +30,6 @@
    \c!leftquotation=\leftguillemot,
    \c!rightquotation=\rightguillemot,
    \c!datum={\v!dag,\ ,\v!maand,\ ,\v!jaar},
-   \c!default=\s!en,
    \c!status=\v!stop]
 
 \installlanguage
@@ -45,7 +44,6 @@
    \c!leftquotation=\upperleftdoublesixquote,
    \c!rightquotation=\upperrightdoubleninequote,
    \c!datum={\v!dag,\ ,\v!maand,\ ,\v!jaar},
-   \c!default=\s!en,
    \c!status=\v!stop]
 
 \installlanguage
@@ -60,7 +58,6 @@
    \c!leftquotation=\upperleftdoublesixquote,
    \c!rightquotation=\lowerrightdoubleninequote,
    \c!datum={\v!dag,\ ,\v!maand,\ ,\v!jaar},
-   \c!default=\s!en,
    \c!status=\v!stop]
 
 \installlanguage
@@ -75,12 +72,18 @@
    \c!leftquotation=\upperleftdoublesixquote,
    \c!rightquotation=\upperrightdoubleninequote,
    \c!datum={\v!jaar,\ ,\v!maand,\ ,\v!dag},
-   \c!default=\s!en,
    \c!status=\v!stop]
 
 %D For compatibility reasons we also define:
 
-\installlanguage [fa] [\s!fr]
+\installlanguage [fa]          [\s!fr]
+
+\installlanguage [french]      [\s!fr]
+\installlanguage [spanish]     [\s!sp]
+\installlanguage [italian]     [\s!it]
+\installlanguage [portuguese]  [\s!pt]
+
+%D Labels and header texts. 
 
 \setupheadtext [\s!fr] [\v!inhoud=Table des mati\`eres]
 \setupheadtext [\s!sp] [\v!inhoud=\'Indice]
@@ -166,6 +169,11 @@
 \setuplabeltext [\s!sp] [\v!sub\v!sub\v!paragraaf=]
 \setuplabeltext [\s!it] [\v!sub\v!sub\v!paragraaf=]
 \setuplabeltext [\s!pt] [\v!sub\v!sub\v!paragraaf=]
+
+\setuplabeltext [\s!fr] [\v!sub\v!sub\v!sub\v!paragraaf=]
+\setuplabeltext [\s!sp] [\v!sub\v!sub\v!sub\v!paragraaf=]
+\setuplabeltext [\s!it] [\v!sub\v!sub\v!sub\v!paragraaf=]
+\setuplabeltext [\s!pt] [\v!sub\v!sub\v!sub\v!paragraaf=]
 
 \setuplabeltext [\s!fr] [\v!bijlage=]
 \setuplabeltext [\s!sp] [\v!bijlage=]
@@ -279,4 +287,3 @@
 \protect
 
 \endinput
-

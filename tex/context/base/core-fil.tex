@@ -1,7 +1,6 @@
 % NOT YET DOCUMENTED !!
 %
 % overal \normalinput 
-
  
 %D \module
 %D   [       file=core-fil,
@@ -19,9 +18,24 @@
 \writestatus{loading}{Context Core Macros / File Support}
 
 \unprotect
-
+
+\startmessages  dutch  library: files
+   title: files 
+       1: file synoniem -- is al in gebruik voor --
+\stopmessages
+
+\startmessages  english  library: files
+   title: files 
+       1: file synonym -- is already used for --
+\stopmessages
+
+\startmessages  german  library: files
+   title: files
+       1: Dateisynonym -- wird bereits fuer -- benutzt
+\stopmessages
+
 %D \macros 
-%D   {definefilename}
+%D   {definefilesynonym}
 %D
 %D One of the problems with loading files is that their names 
 %D can depend on the interface language. We therefore need a 
@@ -29,9 +43,9 @@
 %D defined elsewhere, but look like:
 %D 
 %D \starttypen
-%D \definefilesynonym  [chemic]   [chemie]
-%D \definefilesynonym  [einheit]  [eenheid]
-%D \definefilesynonym  [unit]     [eenheid]
+%D \definefilesynonym [chemic]  [chemie]
+%D \definefilesynonym [einheit] [eenheid]
+%D \definefilesynonym [unit]    [eenheid]
 %D \stoptypen
 %D 
 %D So we can say in english:
@@ -49,13 +63,11 @@
 \def\definefilesynonym%
   {\dodoubleempty\dodefinefilesynonym}
 
-%\def\dodefinefilesynonym[#1][#2]%
-%  {\lowercase{\setevalue{\??fs#1}{#2}}}
-
 \def\dodefinefilesynonym[#1][#2]%
-  {\lowercase{\edef\!!stringa{#2}}%
-   \setevalue{\??fs#1}{\!!stringa}}
-
+  {\doifdefinedelse{\??fs#1}
+     {\showmessage{\m!systems}{1}{#1 (#2),\getvalue{\??fs#1}}} % alleen naar log 
+     {\setevalue{\??fs#1}{#2}}}
+    
 %D \macros 
 %D   {truefilename}
 %D
@@ -65,9 +77,15 @@
 %D \starttypen
 %D \truefilename{filename/filesynonym}
 %D \stoptypen
+%D 
+%D The implementation shows that nesting is supported. 
 
 \def\truefilename#1%
-  {\ifundefined{\??fs#1}#1\else\getvalue{\??fs#1}\fi}
+  {\ifundefined{\??fs#1}%
+     #1%
+   \else
+     \truefilename{\getvalue{\??fs#1}}%
+   \fi}
 
 %D \macros
 %D   {makeshortfilename}
@@ -102,17 +120,19 @@
      {\setgvalue{\shortfilename\v!aan}{}%
       \startreadingfile
       \readsysfile{\shortfilename}%
-        {\showmessage{\m!systems}{5}{#2}}%
-        {\showmessage{\m!systems}{6}{#2}}%
+        {\showmessage{\m!systems}{5}{#1#2}}%
+        {\showmessage{\m!systems}{6}{#1#2}}%
       \stopreadingfile}
      {\showmessage{\m!systems}{7}{#2}}}
 
 \def\dodousemodules#1%
-  {\dododousemodules\f!moduleprefix{#1}%
-   \dododousemodules\f!styleprefix {#1}}
+  {\dododousemodules\f!moduleprefix {#1}%
+   \dododousemodules\f!styleprefix  {#1}%
+   \dododousemodules\f!privateprefix{#1}}
 
 \def\dousemodules[#1]%
-  {\doifsomething{#1}{\processcommalist[#1]\dodousemodules}}
+  {\doifsomething{#1}{\processcommalist[#1]\dodousemodules}%
+   }% \enablelanguagespecifics[\currentmainlanguage]}
 
 \def\usemodules%
   {\dosingleargument\dousemodules}
@@ -121,6 +141,9 @@
 %D frustrations when we do a typo.
 
 \let\usemodule=\usemodules
+
+% %D The definition shows that the language specific settings 
+% %D are activated after loading all the modules specified. 
 
 \protect
 

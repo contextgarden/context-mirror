@@ -30,6 +30,7 @@
       4: commando -- bestaat niet
       5: definitiefile -- wordt geladen
       6: nesting is niet toegestaan
+      7: onbekende driver --
 \stopmessages
 
 \startmessages  english  library: specials
@@ -40,16 +41,18 @@
       4: command -- does not exist
       5: loading definition file --
       6: nesting is not permitted
+      7: unknown driver --
 \stopmessages
 
 \startmessages  german  library: specials
   title: spezielles
       1: -- geladen
-      2: Keine tiefere Verschachtelung erlaubt --
+      2: keine tiefere Verschachtelung erlaubt --
       3: -- ist zurueckgesetzt
       4: Befehl -- existiert nicht
-      5: Lade Definitionsdatei --
+      5: lade Definitionsdatei --
       6: Verschachtelung nicht erlaubt
+      7: unbekante Driver --
 \stopmessages
 
 \startmessages  dutch  library: interactions
@@ -63,6 +66,35 @@
 \startmessages  german  library: interactions
      21: -- Code eingefuegt
 \stopmessages
+
+%D \macros 
+%D   {everyresetspecials}
+%D
+%D Now what will this one do? We'll see in a few lines. 
+
+\newevery \everyresetspecials \relax
+
+%D \macros
+%D   {jobsuffix}
+%D
+%D By default, \TEX\ produces \DVI\ files which can be 
+%D converted to other filetypes. Sometimes it is handy to 
+%D know what the target file will be. In other driver 
+%D modules we wil set \type {\jobsuffix} to \type {pdf}.  
+
+\def\jobsuffix{dvi}
+
+\appendtoks \def\jobsuffix{dvi} \to \everyresetspecials
+
+%D A rather fundamental difference between special and direct
+%D settings is that the latter don't interfere with typesetting
+%D but must be set before the first shipout, while the specials
+%D must be packaged in the shipped out box in such a way that
+%D they don't interfere. 
+
+\newif\ifspecialbasedsettings \specialbasedsettingstrue
+
+\appendtoks \specialbasedsettingstrue \to \everyresetspecials
 
 %D Because there is no standardization in the use of specials,
 %D more than one driver or program can be supported. The
@@ -83,9 +115,9 @@
 %D \stopspecials
 %D \stoptypen
 %D
-%D Because drivers show some overlap in their support of
-%D specials, a mechanism of inheritance is implemented. The
-%D predefined libraries show this feature.
+%D Because drivers can have overlap in low level macros, a 
+%D mechanism of inheritance is implemented. The libraries 
+%D defined as second argument are loaded first. 
 %D
 %D Every special has to be predefined first. We  do this with
 %D the command:
@@ -136,9 +168,9 @@
 \def\@@specarg@@{@@specarg@@}
 \def\@@specexc@@{@@specexc@@}
 
-\def\currentspecial      {}
-\def\currentspecialfile  {}
-\def\preloadedspecials   {}
+\let\currentspecial    =\empty
+\let\currentspecialfile=\empty
+\let\preloadedspecials =\empty
 
 %D \macros
 %D   {preloadspecials}
@@ -161,36 +193,53 @@
 %D overruled. The name may differ from the file||tag.
 %D
 %D The optional second argument can consist of a list of
-%D libraries that are to be loaded first. This list can contain
-%D file||tags or names of libraries. Names are often more
-%D meaningful.
+%D libraries that are to be loaded first. 
+
+% to fuzzy and error prone 
+%
+% \def\dostartspecials[#1][#2]%
+%   {\let\mainspecialfile=\currentspecialfile
+%    \doifelsenothing{#2}
+%      {\inheritspecialsfalse}
+%      {\ifinheritspecials
+%         \showmessage{\m!specials}{2}{(#2)}%
+%       \else
+%         \inheritspecialstrue
+%         \processcommalist[#2]\dousespecials
+%         \inheritspecialsfalse
+%       \fi}%
+%    \doifelsenothing{#1}
+%      {\let\currentspecial\s!unknown}
+%      {\def\currentspecial{#1}}%
+%    \let\currentspecialfile=\mainspecialfile
+%    \setevalue{\@@specfil@@\currentspecial}{\currentspecialfile}%
+%    \unprotect
+%    \addtocommalist{\currentspecial}\preloadedspecials}
+% 
+% \def\startspecials%
+%   {\dodoubleempty\dostartspecials}
+% 
+% \def\stopspecials%
+%   {\def\currentspecial{}%
+%    \protect}
 
 \def\dostartspecials[#1][#2]%
-  {\let\mainspecialfile=\currentspecialfile
-   \doifelsenothing{#2}
-     {\inheritspecialsfalse}
-     {\ifinheritspecials
-        \showmessage{\m!specials}{2}{(#2)}%
-      \else
-        \inheritspecialstrue
-        \processcommalist[#2]\dousespecials
-        \inheritspecialsfalse
-      \fi}%
+  {\doifsomething{#2}
+     {\processcommalist[#2]\dousespecials}%
    \doifelsenothing{#1}
-     {\def\currentspecial{\s!unknown}}
+     {\let\currentspecial\s!unknown}
      {\def\currentspecial{#1}}%
-   \let\currentspecialfile=\mainspecialfile
-   \setevalue{\@@specfil@@\currentspecial}{\currentspecialfile}%
    \unprotect
    \addtocommalist{\currentspecial}\preloadedspecials}
 
 \def\startspecials%
-  {\dodoubleempty\dostartspecials}
+  {\pushmacro\currentspecial
+   \dodoubleempty\dostartspecials}
 
 \def\stopspecials%
-  {\def\currentspecial{}%
+  {\popmacro\currentspecial
    \protect}
-
+ 
 %D \macros
 %D   {installspecial,
 %D    resetspecials}
@@ -207,9 +256,11 @@
 %D takes.
 %D
 %D With \type{\resetspecials} we can unload the predefined
-%D specials.
+%D specials. Special reset actions |<|look in \type{spec-mis}
+%D for an example|>| can be assigned to the token register 
+%D \type{\everyresetspecials}.
 
-\def\@@allspecials{}
+\let\@@allspecials=\empty
 
 \def\doinstallspecial[#1][#2][#3]%
   {\setvalue{\@@speclst@@\string#1}{}%
@@ -222,16 +273,17 @@
   {\dotripleargument\doinstallspecial}
 
 \def\resetspecials%
-  {\def\docommando##1%
-     {\setvalue{\@@speclst@@##1}{}}%
+  {\the\everyresetspecials
+   \def\docommando##1%
+     {\letvalue{\@@speclst@@##1}\empty}%
    \processcommacommand[\@@allspecials]\docommando
-   \showmessage{\m!specials}{3}{\preloadedspecials}%
-   \def\preloadedspecials{}%
-   \def\@@allspecials{}}
+   \ifx\preloadedspecials\empty \else
+     \showmessage{\m!specials}{3}{\preloadedspecials}%
+     \let\preloadedspecials\empty
+   \fi}
 
 %D \macros
 %D   {definespecial}
-%D   {}
 %D
 %D The command \type{\definespecial} take the place of
 %D \type{\def} in the definition of a special. Just to be
@@ -342,9 +394,28 @@
 
 %D The \type{{{...}}} are needed because we pass all those 
 %D arguments to the specials support macro. 
-
+
 \let\openspecialfile  = \relax
 \let\closespecialfile = \relax
+
+%D \macros
+%D   {doifspecialavailableelse}
+%D 
+%D For testing purposes (this was first needed when object 
+%D support was implemented) we have: 
+%D 
+%D \starttypen
+%D \doifspecialavailableelse\specialcommand{true}{false}
+%D \stoptypen
+%D 
+%D e.g: 
+%D 
+%D \starttypen
+%D \doifspecialavailableelse\doinsertobject{...}{...}
+%D \stoptypen
+
+\def\doifspecialavailableelse#1#2#3%
+  {\doifelsevaluenothing{\@@speclst@@\string#1}{#3}{#2}}
 
 % %D This is some new, experimental code, used for testing some 
 % %D proposals of Laurent Siebenmann on behalf of the 
@@ -426,8 +497,6 @@
 %    \next}
 % 
 % %D So far for the experiment. 
-
-\protect
 
 %D The following libraries are defined. Two postscript
 %D drivers are supported, as well as two mechanisms for
@@ -447,15 +516,20 @@
 %D                          \NC
 %D     Generic \TEX\ (\DVI) \NC
 %D     (default)            \NC\FR
+%D \NC \tttf spec-tpd       \NC
+%D     \tttf \PDF           \NC
+%D                          \NC
+%D     Han The Thanh        \NC
+%D     (pdftex)             \NC\MR
 %D \NC \tttf spec-ps        \NC
 %D     \tttf postscript     \NC
 %D                          \NC
 %D     Adobe PostScript     \NC
 %D     (default)            \NC\MR
 %D \NC \tttf spec-tr        \NC
-%D     \tttf rokicky        \NC
+%D     \tttf rokicki        \NC
 %D     \tttf postscript     \NC
-%D     Thomas Rokicky       \NC
+%D     Thomas Rokicki       \NC
 %D     (dvips)              \NC\MR
 %D \NC \tttf spec-yy        \NC
 %D     \tttf yandy          \NC
@@ -527,7 +601,7 @@
 %D schemes, we pass a lot of data to it.
 %D
 %D \starttypen
-%D \doinsertfile {type,method} {file} 
+%D \doinsertfile {type,method} {file,label} 
 %D               {xscale} {yscale} {x} {y} {w} {h} 
 %D               {options}
 %D \stoptypen
@@ -683,9 +757,11 @@
 \installspecial [\dosetupprinter] [and] [5]
 
 %D \macros
-%D   {dosetuppage,
+%D   {% dosetuppage,
+%D    dosetupopenaction, dosetupclosaction,
 %D    dosetupinteraction,
-%D    dosetupscreen}
+%D    dosetupscreen,
+%D    dosetupviewmode}
 %D   {}
 %D
 %D Here come some obscure interactive commands. Probably the
@@ -699,10 +775,17 @@
 %D \stoptypen
 %D
 %D Normally this command does nothing but giving a message
-%D that some scheme is supported. Postscript prolog files
-%D can best be loaded by the printer driver program.
+%D that some scheme is supported. 
 %D
-%D The second one sets up the screen. It takes three
+%D \starttypen
+%D \dosetupstartaction
+%D \dosetupstopaction
+%D \stoptypen
+%D
+%D These two setup the actions to be executed when the document
+%D is opened and closed. 
+%D
+%D The next command sets up the screen. It takes five 
 %D arguments:
 %D
 %D \starttypen
@@ -711,9 +794,18 @@
 %D
 %D The first four arguments are in scaled points. Option~1 
 %D results in a full screen launch.
+%D
+%D \starttypen
+%D \dosetuppageview {keyword}
+%D \stoptypen
+%D
+%D For the moment we only support \type{fit}. 
 
 \installspecial [\dosetupinteraction] [and] [0]
+\installspecial [\dosetupopenaction]  [and] [0]
+\installspecial [\dosetupcloseaction] [and] [0]
 \installspecial [\dosetupscreen]      [and] [5]
+\installspecial [\dosetuppageview]    [and] [1]
 
 %D \macros
 %D   {dostarthide,
@@ -815,9 +907,15 @@
 \installspecial [\dostartthisisrealpage] [and] [1]
 \installspecial [\dostopthisisrealpage]  [and] [0]
 
+%D \macro
+%D   {doresetgotowhereever}
+%D 
+%D These and others need:
+
+\installspecial [\doresetgotowhereever] [and] [0]
+
 %D \macros
 %D   {dostartexecutecommand, dostopexecutecommand}
-%D   {}
 %D
 %D The actual behavior of the next pair of commands depends 
 %D much on the viewing engine. Therefore one cannot depend 
@@ -827,8 +925,8 @@
 %D \dostartexecutecommand {w} {h} {command} {options} 
 %D \stoptypen
 %D
-%D
-%D The next commands are supported: 
+%D At least the next commands are supported (more examples 
+%D can be found in \type {spec-fdf.tex}: 
 %D
 %D \startregelcorrectie\steluitlijnenin[midden]\leavevmode
 %D \starttabel[|l|l|] 
@@ -850,8 +948,8 @@
 %D \stoptabel
 %D \stopregelcorrectie
 %D
-%D There are no options yet. Options are to be passed as a 
-%D comma separated list of assignments.
+%D Options are to be passed as a comma separated list of 
+%D assignments.
 
 \installspecial [\dostartexecutecommand] [and] [4]
 \installspecial [\dostopexecutecommand]  [and] [0]
@@ -865,20 +963,20 @@
 %D considerably. Reusable objects are implemented with: 
 %D
 %D \starttypen
-%D \dostartobject{name}{width}{height}{depth}
+%D \dostartobject{class}{name}{width}{height}{depth}
 %D some typeset material
 %D \dostopobject
 %D \stoptypen
 %D
 %D \starttypen
-%D \doinsertobject{name}
+%D \doinsertobject{class}{name}
 %D \stoptypen
 %D
 %D The savings can be huge in interactive texts. 
 
-\installspecial [\dostartobject]  [or] [4]
+\installspecial [\dostartobject]  [or] [5]
 \installspecial [\dostopobject]   [or] [0]
-\installspecial [\doinsertobject] [or] [1]
+\installspecial [\doinsertobject] [or] [2]
 
 % %D \macros
 % %D   {dogetobjectreference} 
@@ -886,7 +984,7 @@
 % %D For very special purposes, one can ask for the internal 
 % %D reference to the object. Beware!
 % 
-% \installspecial [\dogetobjectreference] [or] [2]
+% \installspecial [\dogetobjectreference] [or] [3]
 % 
 % %D The first argument is the name, the second a macro that 
 % %D gets the assiciated value.
@@ -944,15 +1042,171 @@
 
 \installspecial [\dosetpagetransition] [or] [1]
 
-%D So far for the installation. Finally we preload our
-%D favorite set of specials.
+%D \macros
+%D   {dopresettextfield,dopresetlinefield,
+%D    dopresetchoicefield,dopresetpopupfield,dopresetcombofield,
+%D    dopresetbuttonfield,dopresetcheckfield,
+%D    dopresetradiofield,dopresetradiorecord}
+%D
+%D The special drivers are programmed independant from their
+%D calling macros are thereby use the standard \TEX\ way of
+%D passing parameters. Unfortunately fields often have more
+%D than nine characteristics, so we pack some arguments in one. 
+%D 
+%D \starttypen
+%D \dopresettextfield / \dopresetlinefield
+%D   {name} {width} {height} {default} {length} 
+%D   {style,color} {options} {alignment} {actions}
+%D 
+%D \dopresetchoicefield / \dopresetpopupfield / \dopresetcombofield
+%D   {name} {width} {height} {default} 
+%D   {style,color} {options} {values} {actions}
+%D 
+%D \dopresetpushfield 
+%D   {name} {width} {height} {default}
+%D   {options} {values} {actions}
+%D 
+%D \dopresetcheckfield 
+%D   {name} {width} {height} {default} 
+%D   {options} {values} {actions}
+%D 
+%D \dopresetradiofield
+%D   {name} {width} {height} 
+%D   {options} {parent} {values} {actions}
+%D 
+%D \dopresetradiorecord
+%D   {name} {top} {options} {kids} {actions}
+%D \stoptypen
 
-\usespecials[ps,yy,win,pdf]
+\installspecial [\dopresetlinefield]   [or] [9]
+\installspecial [\dopresettextfield]   [or] [9]
+\installspecial [\dopresetchoicefield] [or] [8]
+\installspecial [\dopresetpopupfield]  [or] [8]
+\installspecial [\dopresetcombofield]  [or] [8]
+\installspecial [\dopresetpushfield]   [or] [7]
+\installspecial [\dopresetcheckfield]  [or] [7]
+\installspecial [\dopresetradiofield]  [or] [7]
+\installspecial [\dopresetradiorecord] [or] [5]
 
-%D One can overrule this by for instance
+%D \macros
+%D   {dodefinefieldset,dogetfieldset,doiffieldset}
+%D 
+%D Field sets, used in resetting and submitting, are handled
+%D by:
+
+\installspecial [\dodefinefieldset] [or] [2]
+\installspecial [\dogetfieldset]    [or] [1]
+\installspecial [\doiffieldset]     [or] [1]
+
+%D \macros 
+%D   {dosetfieldstatus}
+%D
+%D For practical reasons we set some field characteristics 
+%D using: 
+%D
+%D \starttypen
+%D \dosetfieldstatus {mode} {parent} {kids} {root}
+%D \stoptypen
+
+\installspecial [\dosetfieldstatus] [or] [4]
+
+%D with:
+
+\def\fieldlonermode {0} % no \chardef here
+\def\fieldparentmode{1} % no \chardef here
+\def\fieldchildmode {2} % no \chardef here
+\def\fieldcopymode  {3} % no \chardef here
+
+%D \macros 
+%D   {doinsertcomment}
+%D
+%D Not so much out ot need, but to be complete, we also 
+%D implement text annotations, so called  comment:
+%D 
+%D \starttypen
+%D \doinsertcomment
+%D   {title} {width} {height} {color} {open} {data} 
+%D \stoptypen
+
+\installspecial[\doinsertcomment] [and] [6]
+
+%D So far for the installation. For quite some time the 
+%D \CONTEXT\ way of specifying the output format has been: 
+%D
+%D \starttypen
+%D \usespecials[ps,yy,win,pdf]
+%D \stoptypen
+%D
+%D Because at \PRAGMA\ we use \DVIPSONE, this was a suitable 
+%D setting, but with \CONTEXT\ going public, the next sequence 
+%D is more suitable for \DVIPS\ users: 
 %D 
 %D \starttypen
 %D \usespecials[reset,ps,tr,pdf]
 %D \stoptypen
+%D
+%D On the other hand, for \PDFTEX\ we needed: 
+%D
+%D \starttypen
+%D \usespecials[tpd]
+%D \stoptypen
+%D
+%D To simplify things, I decided to provide a higher level 
+%D command. 
+%D
+%D \starttypen
+%D \defineoutput[name][specials]
+%D \setupoutput[name,...]
+%D \stoptypen
+%D
+%D In a few lines, we will see some examples. 
+
+\def\defineoutput%
+  {\dodoubleargument\dodefineoutput}
+
+\def\dodefineoutput[#1][#2]%
+  {\setvalue{\??ui#1}{#2}} 
+
+\def\dosetupoutput#1%
+  {\doifdefinedelse{\??ui#1}
+     {\processcommacommand[\getvalue{\??ui#1}]\dousespecials}
+     {\doifdefinedelse{\@@specfil@@#1}
+        {\dousespecials{#1}}
+        {\showmessage{\m!specials}{7}{#1}}}}
+
+\def\setupoutput[#1]%
+  {\resetspecials\processcommacommand[#1]\dosetupoutput}
+
+%D Some suitable definitions are: 
+
+\defineoutput [dvipsone] [dvi,ps,yy]
+\defineoutput [dviwindo] [dvi,ps,yy,win]
+\defineoutput [dvips]    [dvi,ps,tr]
+\defineoutput [dviview]  [dvi,ps,tr,dv]
+\defineoutput [pdftex]   [tpd]   
+\defineoutput [pdf]      [tpd]   
+\defineoutput [acrobat]  [pdf,ps,tr] % use: [acrobat,dvipsone]   
+
+%D Please let me know if we need more. From now on we default
+%D to:
+
+\setupoutput [dvips]
+
+%D We don't enable \ACROBAT, because pure \POSTSCRIPT\ is not
+%D that strong on objects and \PDFTEX\ does a better job. 
+%D Some reasonable alternatives are:
+%D 
+%D \starttypen
+%D \setupoutput [dvipsone,acrobat]
+%D \setupoutput [dviwindo,acrobat]
+%D \stoptypen
+%D 
+%D Although, better is:
+%D 
+%D \starttypen
+%D \setupoutput [pdftex]
+%D \stoptypen
+
+\protect
 
 \endinput

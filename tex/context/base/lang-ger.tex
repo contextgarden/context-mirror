@@ -30,7 +30,6 @@
    \c!leftquotation=\lowerleftdoubleninequote,
    \c!rightquotation=\upperrightdoubleninequote,
    \c!datum={\v!dag,\ ,\v!maand,\ ,\v!jaar},
-   \c!default=\s!en,
    \c!status=\v!stop]
 
 \installlanguage
@@ -44,10 +43,8 @@
    \c!rightquote=\upperrightsingleninequote,
    \c!leftquotation=\upperleftdoublesixquote,
    \c!rightquotation=\upperrightdoubleninequote,
-%   \c!datum={\v!jaar,\ ,\v!maand,\ ,\v!dag},
    \c!datum={\v!maand,\ ,\v!dag,{,\ },\v!jaar},
-   \c!default=\s!en,
-   \c!status=\v!start] % always preloaded!
+   \c!status=\v!stop] % elders always preloaded!
 
 \installlanguage
   [\s!de]
@@ -61,7 +58,6 @@
    \c!leftquotation=\lowerleftdoubleninequote,
    \c!rightquotation=\upperrightdoublesixquote,
    \c!datum={\v!dag,{.},\ ,\v!maand,\ ,\v!jaar},
-   \c!default=\s!en,
    \c!status=\v!stop]
 
 \installlanguage
@@ -76,7 +72,6 @@
    \c!leftquotation=\upperleftdoublesixquote,
    \c!rightquotation=\upperrightdoubleninequote,
    \c!datum={\v!jaar,\ ,\v!maand,\ ,\v!dag},
-   \c!default=\s!en,
    \c!status=\v!stop]
 
 \installlanguage
@@ -91,7 +86,6 @@
    \c!leftquotation=\upperleftdoublesixquote,
    \c!rightquotation=\upperrightdoubleninequote,
    \c!datum={\v!jaar,\ ,\v!maand,\ ,\v!dag},
-   \c!default=\s!en,
    \c!status=\v!stop]
 
 \installlanguage
@@ -106,7 +100,6 @@
    \c!leftquotation=\upperleftdoublesixquote,
    \c!rightquotation=\upperrightdoubleninequote,
    \c!datum={\v!jaar,\ ,\v!maand,\ ,\v!dag},
-   \c!default=\s!en,
    \c!status=\v!stop]
 
 \installlanguage
@@ -121,20 +114,49 @@
    \c!leftquotation=\upperleftdoublesixquote,
    \c!rightquotation=\upperrightdoubleninequote,
    \c!datum={\v!jaar,\ ,\v!maand,\ ,\v!dag},
-   \c!default=\s!en,
    \c!status=\v!stop]
 
 %D Hey look, some experiment:
 
-\installlanguage
+\installlanguage % eight bit dutch 
   [nlx]
   [\c!spatiering=\v!opelkaar,
    \c!default=\s!nl,
    \c!status=\v!stop]
 
+\installlanguage % old german 
+  [deo]
+  [\c!spatiering=\v!opelkaar,
+   \c!default=\s!de, 
+   \c!status=\v!stop]
+
+%D And some alternative (but very real) english patterns:
+
+\installlanguage
+  [uk]
+  [\c!default=\s!en,
+   \c!status=\v!stop]
+
+\installlanguage
+  [us]
+  [\c!default=\s!en,
+   \c!status=\v!stop]
+
 %D For compatibility reasons we also define:
 
-\installlanguage [du] [\s!de]
+\installlanguage [du]          [\s!de] % old times context 
+
+\installlanguage [usenglish]   [\s!us]
+\installlanguage [ukenglish]   [\s!uk]
+\installlanguage [english]     [\s!en]
+\installlanguage [dutch]       [\s!nl]
+\installlanguage [german]      [\s!de]
+\installlanguage [danish]      [\s!da]
+\installlanguage [swedish]     [\s!sv]
+\installlanguage [afrikaans]   [\s!af]
+\installlanguage [norwegian]   [\s!no]
+
+%D The next section is dedicated to Tobias Burnus.
 
 \let\normaldoublequote="
 
@@ -198,6 +220,16 @@
   \installcompoundcharacter ">   {{\setupDElanguage|>|}}
 
 \stoplanguagespecifics
+
+%D An experimental hack:
+
+\startencoding[pdfdoc]
+  \startlanguagespecifics[de]% hm 
+    \defineactivecharacter " {\"}
+  \stoplanguagespecifics
+\stopencoding
+
+%D This hack should be perfected.  
 
 \setupheadtext [\s!en] [\v!inhoud=Contents]
 \setupheadtext [\s!nl] [\v!inhoud=Inhoud]
@@ -334,6 +366,14 @@
 \setuplabeltext [\s!sv] [\v!sub\v!sub\v!paragraaf=]
 \setuplabeltext [\s!af] [\v!sub\v!sub\v!paragraaf=]
 \setuplabeltext [\s!no] [\v!sub\v!sub\v!paragraaf=]
+
+\setuplabeltext [\s!en] [\v!sub\v!sub\v!sub\v!paragraaf=]
+\setuplabeltext [\s!nl] [\v!sub\v!sub\v!sub\v!paragraaf=]
+\setuplabeltext [\s!de] [\v!sub\v!sub\v!sub\v!paragraaf=]
+\setuplabeltext [\s!da] [\v!sub\v!sub\v!sub\v!paragraaf=]
+\setuplabeltext [\s!sv] [\v!sub\v!sub\v!sub\v!paragraaf=]
+\setuplabeltext [\s!af] [\v!sub\v!sub\v!sub\v!paragraaf=]
+\setuplabeltext [\s!no] [\v!sub\v!sub\v!sub\v!paragraaf=]
 
 \setuplabeltext [\s!en] [\v!bijlage=]
 \setuplabeltext [\s!nl] [\v!bijlage=]
@@ -519,6 +559,17 @@
 \setuplabeltext [\s!nl]  [\v!oppagina=op pagina]
 \setuplabeltext [\s!nl] [\v!hierboven=hierboven]
 \setuplabeltext [\s!nl] [\v!hieronder=hieronder]
+\setuplabeltext [\s!nl]       [\v!zie=zie]
+
+\setuplabeltext [\s!en]  [\v!oppagina=at page]
+\setuplabeltext [\s!en] [\v!hierboven=as we show above]
+\setuplabeltext [\s!en] [\v!hieronder=as we show below]
+\setuplabeltext [\s!en]       [\v!zie=see]
+
+\setuplabeltext [\s!de]  [\v!oppagina=auf Seite]
+\setuplabeltext [\s!de] [\v!hierboven=siehe oben]
+\setuplabeltext [\s!de] [\v!hieronder=siehe unten]
+\setuplabeltext [\s!de]       [\v!zie=sieh]
 
 %D ... and to be completed! 
 
@@ -533,4 +584,3 @@
 \protect
 
 \endinput
-

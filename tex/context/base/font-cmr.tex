@@ -11,45 +11,82 @@
 %D Times Roman. In this module, that is loaded by default, we 
 %D define all relevant alternatives. 
 
+%D Now watch these definitions. They permits us to generate 
+%D undefined sizes on the fly. We take 10 point as starting 
+%D point.
+
+\definefontsynonym [Serif]              [ComputerModern]
+\definefontsynonym [SerifBold]          [ComputerModern-Bold]
+\definefontsynonym [SerifItalic]        [ComputerModern-Italic]
+\definefontsynonym [SerifSlanted]       [ComputerModern-Slanted]
+\definefontsynonym [SerifBoldItalic]    [ComputerModern-BoldItalic]
+\definefontsynonym [SerifBoldSlanted]   [ComputerModern-BoldSlanted]
+\definefontsynonym [SerifCaps]          [ComputerModern-Caps]
+
+\definefontsynonym [Sans]               [ComputerModernSans]
+\definefontsynonym [SansBold]           [ComputerModernSans-Bold]
+\definefontsynonym [SansItalic]         [ComputerModernSans-Italic]
+\definefontsynonym [SansSlanted]        [ComputerModernSans-Slanted]
+\definefontsynonym [SansBoldItalic]     [ComputerModernSans-BoldItalic]
+\definefontsynonym [SansBoldSlanted]    [ComputerModernSans-BoldSlanted]
+\definefontsynonym [SansCaps]           [ComputerModernSans-Caps]
+
+\definefontsynonym [Mono]               [ComputerModernMono]
+\definefontsynonym [MonoBold]           [ComputerModernMono-Bold]
+\definefontsynonym [MonoItalic]         [ComputerModernMono-Italic]
+\definefontsynonym [MonoSlanted]        [ComputerModernMono-Slanted]
+\definefontsynonym [MonoBoldItalic]     [ComputerModernMono-BoldItalic]
+\definefontsynonym [MonoBoldSlanted]    [ComputerModernMono-BoldSlanted]
+\definefontsynonym [MonoCaps]           [ComputerModernMono-Caps]
+
+\definefontsynonym [MathRoman]          [ComputerModernMath-Roman]
+\definefontsynonym [MathExtension]      [ComputerModernMath-Extension]
+\definefontsynonym [MathItalic]         [ComputerModernMath-Italic]
+\definefontsynonym [MathSymbol]         [ComputerModernMath-Symbol]
+
+\definefontsynonym [OldStyle]           [MathItalic]         
+
+%D What follows next is the main definition part.
+
 \definebodyfont [12pt] [rm] 
-  [tf=cmr12,
-   bf=cmbx12,
-   it=cmti12,
-   sl=cmsl12,
-   bi=cmbxti10 at 12pt, 
-   bs=cmbxsl10 at 12pt, 
-  tfa=cmr12    scaled \magstep1,
-  tfb=cmr12    scaled \magstep2,   
-  tfc=cmr12    scaled \magstep3, 
-  tfd=cmr12    scaled \magstep4,
-   sc=cmcsc10  at 12pt]
+  [ tf=cmr12,
+   tfa=cmr12 scaled \magstep1,
+   tfb=cmr12 scaled \magstep2,   
+   tfc=cmr12 scaled \magstep3, 
+   tfd=cmr12 scaled \magstep4,
+    bf=cmbx12,
+    it=cmti12,
+    sl=cmsl12,
+    bi=cmbxti10 at 12pt, 
+    bs=cmbxsl10 at 12pt, 
+    sc=cmcsc10 at 12pt]
 
 \definebodyfont [12pt] [ss] 
-  [tf=cmss12,
-   bf=cmssbx10 at 12pt,
-   it=cmssi12,
-   sl=cmssi12,
-   bi=cmssbx10 at 12pt,
-   bs=cmssbx10 at 12pt,
-  tfa=cmss12   scaled \magstep1,
-  tfb=cmss12   scaled \magstep2, 
-  tfc=cmss12   scaled \magstep3, 
-  tfd=cmss12   scaled \magstep4,
-   sc=cmss10]
+  [ tf=cmss12,
+   tfa=cmss12 scaled \magstep1,
+   tfb=cmss12 scaled \magstep2, 
+   tfc=cmss12 scaled \magstep3, 
+   tfd=cmss12 scaled \magstep4,
+    bf=cmssbx10 at 12pt,
+    it=cmssi12,
+    sl=cmssi12,
+    bi=cmssbx10 at 12pt,
+    bs=cmssbx10 at 12pt,
+    sc=cmss10 at 12pt]
 
 \definebodyfont [12pt] [tt] 
-  [tf=cmtt12,
-   sl=cmsltt10 at 12pt,
-   it=cmitt10  at 12pt,
-  tfa=cmtt12   scaled \magstep1,
-  tfb=cmtt12   scaled \magstep2,   
-  tfc=cmtt12   scaled \magstep3, 
-  tfd=cmtt12   scaled \magstep4]
+  [ tf=cmtt12,
+   tfa=cmtt12 scaled \magstep1,
+   tfb=cmtt12 scaled \magstep2,   
+   tfc=cmtt12 scaled \magstep3, 
+   tfd=cmtt12 scaled \magstep4,
+    sl=cmsltt10 at 12pt,
+    it=cmitt10 at 12pt]
 
 \definebodyfont [12pt] [mm] 
-  [ex=cmex10   at 12pt,
+  [ex=cmex10 at 12pt,
    mi=cmmi12,
-   sy=cmsy10   at 12pt] 
+   sy=cmsy10 at 12pt] 
 
 \definebodyfont [12pt] [hw] 
   [tf=cmtt12]
@@ -58,81 +95,81 @@
   [tf=cmtt12]
 
 \definebodyfont [11pt] [rm] 
-  [tf=cmr10    at 11pt, 
-   bf=cmbx10   at 11pt, 
-   sl=cmsl10   at 11pt, 
-   it=cmti10   at 11pt, 
-   bi=cmbxti10 at 11pt, 
-   bs=cmbxsl10 at 11pt, 
-  tfa=cmr9     scaled \magstep2,
-  tfb=cmr9     scaled \magstep3,
-  tfc=cmr9     scaled \magstep4,
-  tfd=cmr9     scaled \magstep5,
-   sc=cmcsc10  at 11pt]
+  [ tf=cmr10 at 11pt, 
+   tfa=cmr9 scaled \magstep2,
+   tfb=cmr9 scaled \magstep3,
+   tfc=cmr9 scaled \magstep4,
+   tfd=cmr9 scaled \magstep5,
+    bf=cmbx10 at 11pt, 
+    sl=cmsl10 at 11pt, 
+    it=cmti10 at 11pt, 
+    bi=cmbxti10 at 11pt, 
+    bs=cmbxsl10 at 11pt, 
+    sc=cmcsc10 at 11pt]
 
 \definebodyfont [11pt] [ss] 
-  [tf=cmss10   at 11pt, 
-   bf=cmssbx10 at 11pt, 
-   it=cmssi10  at 11pt, 
-   sl=cmssi10  at 11pt, 
-   bi=cmssbx10 at 11pt, 
-   bs=cmssbx10 at 11pt, 
-  tfa=cmss9    scaled \magstep2,
-  tfb=cmss9    scaled \magstep3,
-  tfc=cmss9    scaled \magstep4,
-  tfd=cmss9    scaled \magstep5,
-   sc=cmss9]
+  [ tf=cmss10 at 11pt, 
+   tfa=cmss9 scaled \magstep2,
+   tfb=cmss9 scaled \magstep3,
+   tfc=cmss9 scaled \magstep4,
+   tfd=cmss9 scaled \magstep5,
+    bf=cmssbx10 at 11pt, 
+    it=cmssi10 at 11pt, 
+    sl=cmssi10 at 11pt, 
+    bi=cmssbx10 at 11pt, 
+    bs=cmssbx10 at 11pt, 
+    sc=cmss10 at 11pt]
 
 \definebodyfont [11pt] [tt] 
   [tf=cmtt10   at 11pt,
    sl=cmsltt10 at 11pt,
-   it=cmitt10  at 11pt]
+   it=cmitt10 at 11pt]
 
 \definebodyfont [11pt] [mm] 
-  [ex=cmex10   at 11pt,
-   mi=cmmi10   at 11pt,
-   sy=cmsy10   at 11pt]
+  [ex=cmex10 at 11pt,
+   mi=cmmi10 at 11pt,
+   sy=cmsy10 at 11pt]
 
 \definebodyfont [11pt] [hw] 
-  [tf=cmtt10   at 11pt]
+  [tf=cmtt10 at 11pt]
 
 \definebodyfont [11pt] [cg] 
-  [tf=cmtt10   at 11pt]
+  [tf=cmtt10 at 11pt]
 
 \definebodyfont [10pt] [rm] 
-  [tf=cmr10,
-   bf=cmbx10,
-   it=cmti10,
-   sl=cmsl10,
-   bi=cmbxti10, 
-   bs=cmbxsl10, 
-  tfa=cmr10   scaled \magstep1,
-  tfb=cmr10   scaled \magstep2,   
-  tfc=cmr10   scaled \magstep3, 
-  tfd=cmr10   scaled \magstep4,
-   sc=cmcsc10]
+  [ tf=cmr10,
+   tfa=cmr10 scaled \magstep1,
+   tfb=cmr10 scaled \magstep2,   
+   tfc=cmr10 scaled \magstep3, 
+   tfd=cmr10 scaled \magstep4,
+    bf=cmbx10,
+    it=cmti10,
+    sl=cmsl10,
+    bi=cmbxti10, 
+    bs=cmbxsl10, 
+    sc=cmcsc10]
 
 \definebodyfont [10pt] [ss] 
-  [tf=cmss10,
-   bf=cmssbx10, 
-   it=cmssi10,
-   sl=cmssi10,
-   bi=cmssbx10, 
-   bs=cmssbx10, 
-  tfa=cmss10   scaled \magstep1,
-  tfb=cmss10   scaled \magstep2, 
-  tfc=cmss10   scaled \magstep3, 
-  tfd=cmss10   scaled \magstep4,
-   sc=cmss8]
+  [ tf=cmss10,
+   tfa=cmss10 scaled \magstep1,
+   tfb=cmss10 scaled \magstep2, 
+   tfc=cmss10 scaled \magstep3, 
+   tfd=cmss10 scaled \magstep4,
+    bf=cmssbx10, 
+    it=cmssi10,
+    sl=cmssi10,
+    bi=cmssbx10, 
+    bs=cmssbx10, 
+    sc=cmss10]
 
 \definebodyfont [10pt] [tt] 
-  [tf=cmtt10,
-   sl=cmsltt10,
-   it=cmitt10,
-  tfa=cmtt10   scaled \magstep1,
-  tfb=cmtt10   scaled \magstep2,   
-  tfc=cmtt10   scaled \magstep3, 
-  tfd=cmtt10   scaled \magstep4]
+  [ tf=cmtt10,
+   tfa=cmtt10 scaled \magstep1,
+   tfb=cmtt10 scaled \magstep2,   
+   tfc=cmtt10 scaled \magstep3, 
+   tfd=cmtt10 scaled \magstep4,
+    sl=cmsltt10,
+    it=cmitt10]
 
 \definebodyfont [10pt] [mm] 
   [ex=cmex10,   
@@ -146,38 +183,38 @@
   [tf=cmtt10]
 
 \definebodyfont [9pt] [rm] 
-  [tf=cmr9,
-   bf=cmbx9,
-   it=cmti9,
-   sl=cmsl9,
-   bi=cmbxti10 at 9pt,          
-   bs=cmbxsl10 at 9pt,          
-  tfa=cmr9     scaled \magstep1,
-  tfb=cmr9     scaled \magstep2,   
-  tfc=cmr9     scaled \magstep3, 
-  tfd=cmr9     scaled \magstep4,
-   sc=cmcsc10  at 9pt]
+  [ tf=cmr9,
+   tfa=cmr9 scaled \magstep1,
+   tfb=cmr9 scaled \magstep2,   
+   tfc=cmr9 scaled \magstep3, 
+   tfd=cmr9 scaled \magstep4,
+    bf=cmbx9,
+    it=cmti9,
+    sl=cmsl9,
+    bi=cmbxti10 at 9pt,          
+    bs=cmbxsl10 at 9pt,          
+    sc=cmcsc10 at 9pt]
 
 \definebodyfont [9pt] [ss] 
-  [tf=cmss9,
-   bf=cmssbx10 at 9pt, 
-   it=cmssi9,
-   sl=cmssi9,
-   bi=cmssbx10 at 9pt, 
-   bs=cmssbx10 at 9pt, 
-  tfa=cmss9    scaled \magstep1,
-  tfb=cmss9    scaled \magstep2, 
-  tfc=cmss9    scaled \magstep3, 
-  tfd=cmss9    scaled \magstep4,
-   sc=cmss10   at 7pt]
+  [ tf=cmss9,
+   tfa=cmss9 scaled \magstep1,
+   tfb=cmss9 scaled \magstep2, 
+   tfc=cmss9 scaled \magstep3, 
+   tfd=cmss9 scaled \magstep4,
+    bf=cmssbx10 at 9pt, 
+    it=cmssi9,
+    sl=cmssi9,
+    bi=cmssbx10 at 9pt, 
+    bs=cmssbx10 at 9pt, 
+    sc=cmss9]
 
 \definebodyfont [9pt] [tt] 
   [tf=cmtt9,
    sl=cmsltt10 at 9pt,
-   it=cmitt10  at 9pt]
+   it=cmitt10 at 9pt]
 
 \definebodyfont [9pt] [mm] 
-  [ex=cmex10   at 9pt,   
+  [ex=cmex10 at 9pt,   
    mi=cmmi9,
    sy=cmsy9]   
 
@@ -188,38 +225,38 @@
   [tf=cmtt9]
 
 \definebodyfont [8pt] [rm] 
-  [tf=cmr8,
-   bf=cmbx8,
-   it=cmti8,
-   sl=cmsl8,
-   bi=cmbxti10 at 8pt,         
-   bs=cmbxsl10 at 8pt,         
-  tfa=cmr8     scaled \magstep1,
-  tfb=cmr8     scaled \magstep2,   
-  tfc=cmr8     scaled \magstep3, 
-  tfd=cmr8     scaled \magstep4,
-   sc=cmcsc10  at 8pt]
+  [ tf=cmr8,
+   tfa=cmr8 scaled \magstep1,
+   tfb=cmr8 scaled \magstep2,   
+   tfc=cmr8 scaled \magstep3, 
+   tfd=cmr8 scaled \magstep4,
+    bf=cmbx8,
+    it=cmti8,
+    sl=cmsl8,
+    bi=cmbxti10 at 8pt,         
+    bs=cmbxsl10 at 8pt,         
+    sc=cmcsc10 at 8pt]
 
 \definebodyfont [8pt] [ss] 
-  [tf=cmss8,
-   bf=cmssbx10 at 8pt, 
-   it=cmssi8,
-   sl=cmssi8,
-   bi=cmssbx10 at 8pt, 
-   bs=cmssbx10 at 8pt, 
-  tfa=cmss8   scaled \magstep1,
-  tfb=cmss8   scaled \magstep2, 
-  tfc=cmss8   scaled \magstep3, 
-  tfd=cmss8   scaled \magstep4,
-   sc=cmss10   at 6pt]
+  [ tf=cmss8,
+   tfa=cmss8 scaled \magstep1,
+   tfb=cmss8 scaled \magstep2, 
+   tfc=cmss8 scaled \magstep3, 
+   tfd=cmss8 scaled \magstep4,
+    bf=cmssbx10 at 8pt, 
+    it=cmssi8,
+    sl=cmssi8,
+    bi=cmssbx10 at 8pt, 
+    bs=cmssbx10 at 8pt, 
+    sc=cmss8]
 
 \definebodyfont [8pt] [tt] 
   [tf=cmtt8,
    sl=cmsltt10 at 8pt,
-   it=cmitt10  at 8pt]
+   it=cmitt10 at 8pt]
 
 \definebodyfont [8pt] [mm] 
-  [ex=cmex10   at 8pt,   
+  [ex=cmex10 at 8pt,   
    mi=cmmi8,
    sy=cmsy8]   
 
@@ -230,132 +267,132 @@
   [tf=cmtt8]
 
 \definebodyfont [7pt] [rm] 
-  [tf=cmr7,
-   bf=cmbx7,
-   it=cmti10   at 7pt,
-   sl=cmsl10   at 7pt,
-   bi=cmbxti10 at 7pt,           
-   bs=cmbxsl10 at 7pt,           
-  tfa=cmr7     scaled \magstep1,
-  tfb=cmr7     scaled \magstep2,   
-  tfc=cmr7     scaled \magstep3, 
-  tfd=cmr7     scaled \magstep4,
-   sc=cmcsc10  at 7pt]
+  [ tf=cmr7,
+   tfa=cmr7 scaled \magstep1,
+   tfb=cmr7 scaled \magstep2,   
+   tfc=cmr7 scaled \magstep3, 
+   tfd=cmr7 scaled \magstep4,
+    bf=cmbx7,
+    it=cmti10 at 7pt,
+    sl=cmsl10 at 7pt,
+    bi=cmbxti10 at 7pt,           
+    bs=cmbxsl10 at 7pt,           
+    sc=cmcsc10 at 7pt]
 
 \definebodyfont [7pt] [ss] 
-  [tf=cmss10   at 7pt,
-   bf=cmssbx10 at 7pt, 
-   it=cmssi10  at 7pt,
-   sl=cmssi10  at 7pt,
-   bs=cmssbx10 at 7pt,
-   bi=cmssbx10 at 7pt,
-  tfa=cmss8, % scaled 1000,
-  tfb=cmss8    scaled \magstep1, 
-  tfc=cmss8    scaled \magstep2, 
-  tfd=cmss8    scaled \magstep3,
-   sc=cmss10   at 5pt]
+  [ tf=cmss10 at 7pt,
+   tfa=cmss8, % scaled 1000,
+   tfb=cmss8 scaled \magstep1, 
+   tfc=cmss8 scaled \magstep2, 
+   tfd=cmss8 scaled \magstep3,
+    bf=cmssbx10 at 7pt, 
+    it=cmssi10 at 7pt,
+    sl=cmssi10 at 7pt,
+    bs=cmssbx10 at 7pt,
+    bi=cmssbx10 at 7pt,
+    sc=cmss10 at 7pt]
 
 \definebodyfont [7pt] [tt] 
-  [tf=cmtt10   at 7pt,
+  [tf=cmtt10 at 7pt,
    sl=cmsltt10 at 7pt,
-   it=cmitt10  at 7pt]
+   it=cmitt10 at 7pt]
 
 \definebodyfont [7pt] [mm] 
-  [ex=cmex10   at 7pt,   
+  [ex=cmex10 at 7pt,   
    mi=cmmi7,
    sy=cmsy7]   
 
 \definebodyfont [6pt] [rm] 
-  [tf=cmr6,
-   bf=cmbx6,
-   it=cmti10   at 6pt,
-   sl=cmsl10   at 6pt,
-   bi=cmbxti10 at 6pt,           
-   bs=cmbxsl10 at 6pt,           
-  tfa=cmr6     scaled \magstep1,
-  tfb=cmr6     scaled \magstep2,   
-  tfc=cmr6     scaled \magstep3, 
-  tfd=cmr6     scaled \magstep4,
-   sc=cmcsc10  at 6pt]
+  [ tf=cmr6,
+   tfa=cmr6 scaled \magstep1,
+   tfb=cmr6 scaled \magstep2,   
+   tfc=cmr6 scaled \magstep3, 
+   tfd=cmr6 scaled \magstep4,
+    bf=cmbx6,
+    it=cmti10 at 6pt,
+    sl=cmsl10 at 6pt,
+    bi=cmbxti10 at 6pt,           
+    bs=cmbxsl10 at 6pt,           
+    sc=cmcsc10 at 6pt]
 
 \definebodyfont [6pt] [ss] 
-  [tf=cmss10   at 6pt,
+  [tf=cmss10 at 6pt,
    bf=cmssbx10 at 6pt, 
-   it=cmssi10  at 6pt,
-   sl=cmssi10  at 6pt,
+   it=cmssi10 at 6pt,
+   sl=cmssi10 at 6pt,
    bs=cmssbx10 at 6pt,
    bi=cmssbx10 at 6pt,
-   sc=cmss10   at 4pt]
+   sc=cmss10 at 6pt]
 
 \definebodyfont [6pt] [tt] 
-  [tf=cmtt10   at 6pt,
+  [tf=cmtt10 at 6pt,
    sl=cmsltt10 at 6pt,
-   it=cmitt10  at 6pt]
+   it=cmitt10 at 6pt]
 
 \definebodyfont [6pt] [mm] 
-  [ex=cmex10   at 6pt,   
+  [ex=cmex10 at 6pt,   
    mi=cmmi6,
    sy=cmsy6]   
 
 \definebodyfont [5pt] [rm] 
-  [tf=cmr5,
-   bf=cmbx5,
-   it=cmti10   at 5pt,
-   sl=cmsl10   at 5pt,
-   bi=cmbxti10 at 5pt,           
-   bs=cmbxsl10 at 5pt,           
-  tfa=cmr5     scaled \magstep1,
-  tfb=cmr5     scaled \magstep2,   
-  tfc=cmr5     scaled \magstep3, 
-  tfd=cmr5     scaled \magstep4,
-   sc=cmcsc10  at 5pt]
+  [ tf=cmr5,
+   tfa=cmr5 scaled \magstep1,
+   tfb=cmr5 scaled \magstep2,   
+   tfc=cmr5 scaled \magstep3, 
+   tfd=cmr5 scaled \magstep4,
+    bf=cmbx5,
+    it=cmti10 at 5pt,
+    sl=cmsl10 at 5pt,
+    bi=cmbxti10 at 5pt,           
+    bs=cmbxsl10 at 5pt,           
+    sc=cmcsc10 at 5pt]
 
 \definebodyfont [5pt] [ss] 
-  [tf=cmss10   at 5pt,
+  [tf=cmss10 at 5pt,
    bf=cmssbx10 at 5pt, 
-   it=cmssi10  at 5pt,
-   sl=cmssi10  at 5pt,
+   it=cmssi10 at 5pt,
+   sl=cmssi10 at 5pt,
    bs=cmssbx10 at 5pt,
    bi=cmssbx10 at 5pt,
-   sc=cmss10   at 3pt]
+   sc=cmss10 at 5pt]
 
 \definebodyfont [5pt] [tt] 
-  [tf=cmtt10   at 5pt,
+  [tf=cmtt10 at 5pt,
    sl=cmsltt10 at 5pt,
-   it=cmitt10  at 5pt]
+   it=cmitt10 at 5pt]
 
 \definebodyfont [5pt] [mm] 
-  [ex=cmex10   at 5pt,   
+  [ex=cmex10 at 5pt,   
    mi=cmmi5,
    sy=cmsy5]   
 
 \definebodyfont [4pt] [rm] 
-  [tf=cmr10    at 4pt,
-   bf=cmbx10   at 4pt,
-   it=cmti10   at 4pt,
-   sl=cmsl10   at 4pt,
+  [tf=cmr10 at 4pt,
+   bf=cmbx10 at 4pt,
+   it=cmti10 at 4pt,
+   sl=cmsl10 at 4pt,
    bi=cmbxti10 at 4pt,           
    bs=cmbxsl10 at 4pt,
-   sc=cmr10    at 4pt]           
+   sc=cmr10 at 4pt]           
 
 \definebodyfont [4pt] [ss] 
-  [tf=cmss10   at 4pt,
+  [tf=cmss10 at 4pt,
    bf=cmssbx10 at 4pt, 
-   it=cmssi10  at 4pt,
-   sl=cmssi10  at 4pt,
+   it=cmssi10 at 4pt,
+   sl=cmssi10 at 4pt,
    bs=cmssbx10 at 4pt,
    bi=cmssbx10 at 4pt,
-   sc=cmss10   at 4pt]
+   sc=cmss10 at 4pt]
 
 \definebodyfont [4pt] [tt] 
-  [tf=cmtt10   at 4pt,
+  [tf=cmtt10 at 4pt,
    sl=cmsltt10 at 4pt,
-   it=cmitt10  at 4pt]
+   it=cmitt10 at 4pt]
 
 \definebodyfont [4pt] [mm] 
-  [ex=cmex10   at 4pt,   
-   mi=cmmi10   at 4pt,
-   sy=cmsy10   at 4pt]   
+  [ex=cmex10 at 4pt,   
+   mi=cmmi10 at 4pt,
+   sy=cmsy10 at 4pt]   
 
 %D We also define some large alternatives that can be used for 
 %D titlepages and section headings. 
@@ -499,4 +536,3 @@
    sld=cmsltt10 scaled \magstep4]
 
 \endinput
-

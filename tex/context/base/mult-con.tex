@@ -1,4 +1,3 @@
-
 %D \module
 %D   [       file=mult-con,
 %D        version=1996.06.01,
@@ -16,6 +15,8 @@
 %D \CONTEXT\ which constants, variables and elements we use.
 
 \writestatus{loading}{Context Multilingual Macros / Constants}
+
+\startlogginginterface context.con
 
 %D First come some variables. These are used as keywords and
 %D therefore need a different treatment.
@@ -71,9 +72,9 @@
 
 \startvariables  dutch       english     german
 
-      oppagina:  oppagina    atpage      oppagina   % TOBIAS/SEBASTIAN
-     hierboven:  hierboven   hencefore   hierboven  % TOBIAS/SEBASTIAN
-     hieronder:  hieronder   hereafter   hieronder  % TOBIAS/SEBASTIAN
+      oppagina:  oppagina    atpage      aufseite
+     hierboven:  hierboven   hencefore   vorher
+     hieronder:  hieronder   hereafter   nachher
 
 \stopvariables
 
@@ -87,7 +88,7 @@
 
 \startvariables       dutch                english             german
 
-             sectie:  sectie               section             abschnitt
+       sectionlevel:  sectie               section             abschnitt
 
                deel:  deel                 part                teil
           hoofdstuk:  hoofdstuk            chapter             kapitel
@@ -168,274 +169,293 @@
 
 %D \startcompressdefinitions
 
-\startconstants       dutch                english             german
+\startconstants        dutch                english              german
 
-      leftquotation:  linkercitaat         leftquotation       linkerzitat
-     rightquotation:  rechtercitaat        rightquotation      rechterzitat
-          leftquote:  linkerciteer         leftquote           linkerzitieren
-         rightquote:  rechterciteer        rightquote          rechterzitieren
-       leftsentence:  linkerzin            leftsentence        linkersatz
-      rightsentence:  rechterzin           rightsentence       rechtersatz
-    leftsubsentence:  linkersubzin         leftsubsentence     linkersubsatz
-   rightsubsentence:  rechtersubzin        rightsubsentence    rechtersubsatz
+       leftquotation:  linkercitaat         leftquotation        linkerzitat
+      rightquotation:  rechtercitaat        rightquotation       rechterzitat
+           leftquote:  linkerciteer         leftquote            linkerzitieren
+          rightquote:  rechterciteer        rightquote           rechterzitieren
+        leftsentence:  linkerzin            leftsentence         linkersatz
+       rightsentence:  rechterzin           rightsentence        rechtersatz
+     leftsubsentence:  linkersubzin         leftsubsentence      linkersubsatz
+    rightsubsentence:  rechtersubzin        rightsubsentence     rechtersubsatz
 
-              datum:  datum                date                datum
+               datum:  datum                date                 datum
 
-                aan:  aan                  to                  zu
-         aanduiding:  aanduiding           indicator           indikator
-        achtergrond:  achtergrond          background          hintergrund
-  achtergronddiepte:  achtergronddiepte    backgrounddepth     hintergrundtiefe
-    achtergrondhoek:  achtergrondhoek      backgroundcorner    hintergrundwinkel
-   achtergrondkleur:  achtergrondkleur     backgroundcolor     hintergrundfarbe
-  achtergrondoffset:  achtergrondoffset    backgroundoffset    hintergrundoffset
-  achtergrondraster:  achtergrondraster    backgroundscreen    hintergrundraster
-  achtergrondstraal:  achtergrondstraal    backgroundradius    hintergrundradius
-              adres:  adres                address             adresse
-           afmeting:  afmeting             size                abmessung
-          afsluiter:  afsluiter            stopper             abschnitttrenner
-            afstand:  afstand              distance            abstand
-       assenstelsel:  assenstelsel         axis                achsen
-             auteur:  auteur               author              autor
-         balanceren:  balanceren           balance             ausgleichen
-            bfactor:  bfactor              wfactor             bfaktor
-             binnen:  binnen               inner               innen
-          bladzijde:  bladzijde            page                seite
-             blanko:  blanko               blank               blanko
-           blokkade:  blokkade             obstruction         gesperrt
-          blokwijze:  blokwijze            blockway            blockauf
-              boven:  boven                top                 oben
-       bovenafstand:  bovenafstand         topdistance         obenabstand
-         bovenkader:  bovenkader           topframe            obenrahmen
-        bovenoffset:  bovenoffset          topoffset           obenoffset
-        bovenstatus:  bovenstatus          topstatus           statusoben
-            breedte:  breedte              width               breite
-               bron:  bron                 source              quelle
-           commando:  commando             command             befehl
-          commandos:  commandos            commands            befehle
-      contrastkleur:  contrastkleur        contrastcolor       kontrastfarbe
-          conversie:  conversie            conversion          konversion
-          criterium:  criterium            criterium           kriterium
-              datum:  datum                date                datum
-            default:  default              default             norm
-             diepte:  diepte               depth               tiefe
-    dieptecorrectie:  dieptecorrectie      depthcorrection     tiefekorrektur
-              dikte:  dikte                thickness           dicke
-           doorgaan:  doorgaan             continue            fortsetzen
-       dubbelzijdig:  dubbelzijdig         doublesided         doppelseitig
-              dummy:  dummy                dummy               dummy
-            eenheid:  eenheid              unit                einheit
-        eigennummer:  eigennummer          ownnumber           eigenenummer
-          evenmarge:  evenmarge            evenmargin          geraderand
-           expansie:  expansie             expansion           expansion
-             factor:  factor               factor              faktor
-               file:  file                 file                datei
-            formaat:  formaat              size                groesse
-             gebied:  gebied               directory           verzeichnis
-               grid:  grid                 grid                grid % TOBIAS
-              groot:  groot                big                 gross
-               haal:  haal                 get                 hole
-               hang:  hang                 hang                haengend
-            hfactor:  hfactor              hfactor             hfaktor
-               hoek:  hoek                 corner              winkel
-            hoffset:  hoffset              hoffset             hoffset
-             hokjes:  hokjes               frames              umrahmen
-              hoofd:  hoofd                header              kopfzeile
-       hoofdafstand:  hoofdafstand         headerdistance      kopfzeilenabstand
-        hoofdstatus:  hoofdstatus          headerstatus        kopfzeilenstatus
-             hoogte:  hoogte               height              hoehe
-            huidige:  huidige              current             aktuell
-                 in:  in                   in                  in
-         inspringen:  inspringen           indenting           einziehen
-         interactie:  interactie           interaction         interaktion
-         interlinie:  interlinie           interlinespace      zeilenabstande
-              items:  items                items               posten
-              kader:  kader                frame               rahmen
-        kaderdiepte:  kaderdiepte          framedepth          rahmentiefe
-          kaderhoek:  kaderhoek            framecorner         rahmenwinkel
-         kaderkleur:  kaderkleur           framecolor          rahmenfarbe
-        kaderoffset:  kaderoffset          frameoffset         rahmenoffset
-        kaderstraal:  kaderstraal          frameradius         rahmenradius
-           kantlijn:  kantlijn             marginedge          marginal
-      kantlijntekst:  kantlijntekst        marginedgetext      marginaltext
-              klein:  klein                small               klein
-              kleur:  kleur                color               farbe
-              kolom:  kolom                column              spalte
-       kolomafstand:  kolom                columndistance      spaltenabstand
-           kopkleur:  kopkleur             headcolor           kopffarbe
-          kopletter:  kopletter            headstyle           kopfschrift
-              kopna:  kopna                afterhead           nachkopf
-          kopoffset:  kopoffset            topoffset           kopfoffset
-          koppeling:  koppeling            coupling            verknuepfung
-            kopvoor:  kopvoor              beforehead          vorkopf
-             kopwit:  kopwit               topspace            kopfspatium
-              korps:  korps                bodyfont            fliesstext
-              label:  label                label               label
-               leeg:  leeg                 empty               leer
-             letter:  letter               style               schrift
-               lijn:  lijn                 line                linie
-          lijndikte:  lijndikte            linethickness       liniendicke
-          lijnkleur:  lijnkleur            linecolor           linienfarbe
-              lijst:  lijst                list                liste
-             linker:  linker               left                linker
-      linkerbreedte:  linkerbreedte        leftwidth           linkerbreite
-        linkerkader:  linkerkader          leftframe           linkerrahmen
-        linkerkleur:  linkerkleur          leftcolor           linkerfarbe
-       linkerletter:  linkerletter         leftstyle           linkerschrift
-        linkermarge:  linkermarge          leftmargin          linkerrand
- linkermargeafstand:  linkermargeafstand   leftmargindistance  linkerrandabstand
-       linkeroffset:  linkeroffset         leftoffset          linkeroffset
-         linkerrand:  linkerrand           leftedge            linkekante
-  linkerrandafstand:  linkerrandafstand    leftedgedistance    linkerkantenabstand
-        linkertekst:  linkertekst          lefttext            linkertext
-              links:  links                left                links
-               logo:  logo                 logo                logo
-              logos:  logos                logos               logos
-             lokaal:  lokaal               local               lokal
-             lokale:  lokale               local               lokal
-            lokatie:  lokatie              location            position
-              marge:  marge                margin              marginalie
-       margeafstand:  margeafstand         margindistance      marginalabstand
-         margetekst:  margetekst           margintext          marginaltext
-          markering:  markering            marking             beschriftung
-           markleur:  markleur             marcolor            beschrfarbe
-          marletter:  marletter            marstyle            beschrschrift
-               menu:  menu                 menu                menue
-            methode:  methode              method              methode
-             midden:  midden               middle              mittig
-        middentekst:  middentekst          middletext          mittigertext
-                min:  min                  min                 min
-            monster:  monster              sample              muster
-                 na:  na                   after               nach
-               naam:  naam                 name                name
-         nacommando:  nacommando           commandafter        zumbefehl
-             nboven:  nboven               ntop                noben
-             niveau:  niveau               level               niveau
-            niveaus:  niveaus              levels              niveaus
-             nonder:  nonder               nbottom             nunten
-               norm:  norm                 norm                norm
-            nregels:  nregels              nlines              zzeile
-             nummer:  nummer               number              nummer
-     nummercommando:  nummercommando       numbercommand       nummerbefehl
-           nummeren:  nummeren             numbering           nummerierung
-        nummerkleur:  nummerkleur          numbercolor         nummernfarbe
-       nummerletter:  nummerletter         numberstyle         nummernschrift
-     nummerscheider:  nummerscheider       numberseparator     nummernseperator
-             offset:  offset               offset              offset
-             omvang:  omvang               size                umfang
-              onder:  onder                bottom              unten
-       onderafstand:  onderafstand         bottomdistance      abstandunten
-         onderkader:  onderkader           bottomframe         untenrahmen
-        onderoffset:  onderoffset          bottomoffset        untenoffset
-        onderstatus:  onderstatus          bottomstatus        untenstatus
-        onevenmarge:  onevenmarge          oddmargin           ungeraderand
-                 op:  op                   at                  bei
-              optie:  optie                option              option
-             pagina:  pagina               page                seite
-     paginacommando:  paginacommando       pagecommand         seitenbefehl
-        paginakleur:  paginakleur          pagecolor           seitenfarbe
-       paginaletter:  paginaletter         pagestyle           seitenschrift
-       paginanummer:  paginanummer         pagenumber          seitennummer
-   paginaovergangen:  paginaovergangen     pageboundaries      seitenbegrenzung
-              palet:  palet                palet               palette
-             papier:  papier               paper               papier
-             plaats:  plaats               location            platz
-    plaatsafsluiter:  plaatsafsluiter      placestopper        setzetrenner
-           plaatsen:  plaatsen             place               platziere
-          plaatskop:  plaatskop            placehead           setzekopf
-             prefix:  prefix               prefix              prefix
-             preset:  preset               preset              voreinstellung
-            preview:  preview              preview             preview
-               punt:  punt                 period              punkt
-               rand:  rand                 edge                kante
-        randafstand:  randafstand          edgedistance        kantenabstand
-             raster:  raster               screen              raster
-            rechter:  rechter              right               rechter
-     rechterbreedte:  rechterbreedte       rightwidth          rechterbreite
-       rechterkader:  rechterkader         rightframe          rechterrahmen
-       rechterkleur:  rechterkleur         rightcolor          rechterfarbe
-      rechterletter:  rechterletter        rightstyle          rechterschrift
-       rechtermarge:  rechtermarge         rightmargin         rechterrand
-rechtermargeafstand:  rechtermargeafstand  rightmargindistance rechterrandabstand
-      rechteroffset:  rechteroffset        rightoffset         rechterabstand
-        rechterrand:  rechterrand          rightedge           rechtekante
- rechterrandafstand:  rechterrandafstand   rightedgedistance   rechterkantenabstand
-       rechtertekst:  rechtertekst         righttext           rechtertext
-             rechts:  rechts               right               rechts
-           reductie:  reductie             reduction           reduktion % --
-          refereren:  refereren            referencing         referieren
-              regel:  regel                line                zeile
-     regelcorrectie:  regelcorrectie       linecorrection      zeilekorrektur
-             regels:  regels               lines               zeilen
-          resolutie:  resolutie            resolution          aufloesung
-            rotatie:  rotatie              rotation            rotation
-          rugoffset:  rugoffset            backoffset          rumpfabstand
-             rugwit:  rugwit               backspace           rumpfspatium
-             schaal:  schaal               scale               format
-           scheider:  scheider             separator           seperator
-              scope:  scope                scope               bereich
-             sectie:  sectie               section             abschnitt
-       sectienummer:  sectienummer         sectionnumber       abschnittsnummer
-              soort:  soort                family              familie
-             spatie:  spatie               space               spatium
-         spatiering:  spatiering           spacing             spatiumausgleich
-   springvolgendein:  springvolgendein     indentnext          ziehefolgendeein % TOBIAS
-               stap:  stap                 step                schritt
-              start:  start                start               start
-             status:  status               state               status
-               stop:  stop                 stop                stop
-             straal:  straal               radius              radius
-                sub:  sub                  sub                 unter
-           subtitel:  subtitel             subtitle            untertitel
-            symbool:  symbool              symbol              symbol
-           symkleur:  symkleur             symcolor            symfarbe
-          symletter:  symletter            symstyle            symschrift
-           synoniem:  synoniem             synonym             synonym
-      synoniemkleur:  synoniemkleur        synonymcolor        synonymfarbe
-     synoniemletter:  synoniemletter       synonymstyle        synonymschrift
-                tab:  tab                  tab                 tab
-              teken:  teken                sign                zeichen
-              tekst:  tekst                text                text
-      tekstcommando:  tekstcommando        textcommand         textbefehl
-       tekstformaat:  tekstformaat         textsize            textgroesse
-         tekstkleur:  tekstkleur           textcolor           textfarbe
-        tekstletter:  tekstletter          textstyle           textschrift
-      tekstscheider:  tekstscheider        textseparator       textseparator
-        tekststatus:  tekststatus          textstatus          textstatus
-              titel:  titel                title               titel
-     titeluitlijnen:  titeluitlijnen       aligntitle          titelausrichten
-         tolerantie:  tolerantie           tolerance           toleranz
-             tussen:  tussen               inbetween           zwischen
-               type:  type                 type                typ
-          uitlijnen:  uitlijnen            align               ausrichtung
-                van:  van                  from                von
-            variant:  variant              alternative         alternative
-            verhoog:  verhoog              increment           erhoehen
-      verhoognummer:  verhoognummer        incrementnumber     nummererhoehen
-         verwijzing:  verwijzing           reference           referenz
-onbekendeverwijzing:  verwijzing           unknownreference    unbekantereferenz
-               voet:  voet                 footer              fusszeile
-        voetafstand:  voetafstand          footerdistance      fusszeilenabstand
-         voetstatus:  voetstatus           footerstatus        fusszeilenstatus
-            voffset:  voffset              voffset             voffset
-           volgende:  volgende             next                folgende
-               voor:  voor                 before              vor
-       voorcommando:  voorcommando         commandbefore       vorigerbefehl
-             vorige:  vorige               previous            vorige
-       vorigenummer:  vorigenummer         previousnumber      vorigenummer
-              wijze:  wijze                way                 art
-                wit:  wit                  white               weiss
-            xfactor:  xfactor              xfactor             xfaktor
-               xmax:  xmax                 xmax                xmax
-            xoffset:  xoffset              xoffset             xoffset
-            xschaal:  xschaal              xscale              xformat
-              xstap:  xstap                xstep               xschritt
-            yfactor:  yfactor              yfactor             yfaktor
-               ymax:  ymax                 ymax                ymax
-            yoffset:  yoffset              yoffset             yoffset
-            yschaal:  yschaal              yscale              yformat
-              ystap:  ystap                ystep               yschritt
-       zelfdepagina:  zelfdepagina         samepage            selbeseite
-                zij:  zij                  side                objektabstand
+             voorwit:  voorwit              spacebefore          vorspatium
+               nawit:  nawit                spaceafter           nachspatium
+          zijvoorwit:  zijvoorwit           sidespacebefore      nebenvorspatium
+            zijnawit:  zijnawit             sidespaceafter       nebennachspatium
+
+                 aan:  aan                  to                   zu
+          aanduiding:  aanduiding           indicator            indikator
+         achtergrond:  achtergrond          background           hintergrund
+   achtergronddiepte:  achtergronddiepte    backgrounddepth      hintergrundtiefe
+     achtergrondhoek:  achtergrondhoek      backgroundcorner     hintergrundwinkel
+    achtergrondkleur:  achtergrondkleur     backgroundcolor      hintergrundfarbe
+   achtergrondoffset:  achtergrondoffset    backgroundoffset     hintergrundoffset
+   achtergrondraster:  achtergrondraster    backgroundscreen     hintergrundraster
+   achtergrondstraal:  achtergrondstraal    backgroundradius     hintergrundradius
+               adres:  adres                address              adresse
+           afsluiter:  afsluiter            stopper              abschnitttrenner
+             afstand:  afstand              distance             abstand
+        assenstelsel:  assenstelsel         axis                 achsen
+              auteur:  auteur               author               autor
+          balanceren:  balanceren           balance              ausgleichen
+             bfactor:  bfactor              wfactor              bfaktor
+              binnen:  binnen               inner                innen
+              blanko:  blanko               blank                blanko
+            blokkade:  blokkade             obstruction          gesperrt
+           blokwijze:  blokwijze            blockway             blockauf
+               boven:  boven                top                  oben
+        bovenafstand:  bovenafstand         topdistance          obenabstand
+          bovenkader:  bovenkader           topframe             obenrahmen
+         bovenoffset:  bovenoffset          topoffset            obenoffset
+         bovenstatus:  bovenstatus          topstate             statusoben
+             breedte:  breedte              width                breite
+                bron:  bron                 source               quelle
+            commando:  commando             command              befehl
+           commandos:  commandos            commands             befehle
+       contrastkleur:  contrastkleur        contrastcolor        kontrastfarbe
+           conversie:  conversie            conversion           konversion
+           criterium:  criterium            criterium            kriterium
+               datum:  datum                date                 datum
+             default:  default              default              norm
+              diepte:  diepte               depth                tiefe
+     dieptecorrectie:  dieptecorrectie      depthcorrection      tiefekorrektur
+               dikte:  dikte                thickness            dicke
+            doorgaan:  doorgaan             continue             fortsetzen
+        dubbelzijdig:  dubbelzijdig         doublesided          doppelseitig
+               dummy:  dummy                dummy                dummy
+             eenheid:  eenheid              unit                 einheit
+         eigennummer:  eigennummer          ownnumber            eigenenummer
+           evenmarge:  evenmarge            evenmargin           geraderand
+            expansie:  expansie             expansion            expansion
+              factor:  factor               factor               faktor
+                file:  file                 file                 datei
+             formaat:  formaat              size                 groesse
+              gebied:  gebied               directory            verzeichnis
+                grid:  grid                 grid                 gritter
+               groot:  groot                big                  gross
+                haal:  haal                 get                  hole
+                hang:  hang                 hang                 haengend
+             hfactor:  hfactor              hfactor              hfaktor
+                hoek:  hoek                 corner               winkel
+             hoffset:  hoffset              hoffset              hoffset
+              hokjes:  hokjes               frames               umrahmen
+               hoofd:  hoofd                header               kopfzeile
+        hoofdafstand:  hoofdafstand         headerdistance       kopfzeilenabstand
+         hoofdstatus:  hoofdstatus          headerstate         kopfzeilenstatus
+              hoogte:  hoogte               height               hoehe
+             huidige:  huidige              current              aktuell
+                  in:  in                   in                   in
+          inspringen:  inspringen           indenting            einziehen
+          interactie:  interactie           interaction          interaktion
+          interlinie:  interlinie           interlinespace       zeilenabstande
+               items:  items                items                posten
+               kader:  kader                frame                rahmen
+         kaderdiepte:  kaderdiepte          framedepth           rahmentiefe
+           kaderhoek:  kaderhoek            framecorner          rahmenwinkel
+          kaderkleur:  kaderkleur           framecolor           rahmenfarbe
+         kaderoffset:  kaderoffset          frameoffset          rahmenoffset
+         kaderstraal:  kaderstraal          frameradius          rahmenradius
+            kantlijn:  kantlijn             marginedge           marginalkante
+       kantlijntekst:  kantlijntekst        marginedgetext       marginalkantetext
+               klein:  klein                small                klein
+               kleur:  kleur                color                farbe
+               kolom:  kolom                column               spalte
+        kolomafstand:  kolomafstand         columndistance       spaltenabstand
+            kopkleur:  kopkleur             headcolor            kopffarbe
+           kopletter:  kopletter            headstyle            kopfstil
+               kopna:  kopna                afterhead            nachkopf
+           kopoffset:  kopoffset            veroffset            kopfoffset
+           koppeling:  koppeling            coupling             verknuepfung
+             kopvoor:  kopvoor              beforehead           vorkopf
+              kopwit:  kopwit               topspace             kopfspatium
+               korps:  korps                bodyfont             fliesstext
+               label:  label                label                label
+                leeg:  leeg                 empty                leer
+              letter:  letter               style                stil
+                lijn:  lijn                 rule                 linie
+           lijndikte:  lijndikte            rulethickness        liniendicke
+           lijnkleur:  lijnkleur            rulecolor            linienfarbe
+               lijst:  lijst                list                 liste
+       linkerbreedte:  linkerbreedte        leftwidth            linkerbreite
+         linkerkader:  linkerkader          leftframe            linkerrahmen
+         linkerkleur:  linkerkleur          leftcolor            linkerfarbe
+        linkerletter:  linkerletter         leftstyle            linkerstil
+         linkermarge:  linkermarge          leftmargin           linkerrand
+  linkermargeafstand:  linkermargeafstand   leftmargindistance   linkerrandabstand
+        linkeroffset:  linkeroffset         leftoffset           linkeroffset
+          linkerrand:  linkerrand           leftedge             linkekante
+   linkerrandafstand:  linkerrandafstand    leftedgedistance     linkerkantenabstand
+         linkertekst:  linkertekst          lefttext             linkertext
+               links:  links                left                 links
+                logo:  logo                 logo                 logo
+               logos:  logos                logos                logos
+              lokaal:  lokaal               local                lokal
+               marge:  marge                margin               marginalie
+        margeafstand:  margeafstand         margindistance       marginalabstand
+          margetekst:  margetekst           margintext           marginaltext
+           markering:  markering            marking              beschriftung
+            markleur:  markleur             marcolor             beschrfarbe
+           marletter:  marletter            marstyle             beschrstil
+                menu:  menu                 menu                 menue
+             methode:  methode              method               methode
+              midden:  midden               middle               mittig
+         middentekst:  middentekst          middletext           mittigertext
+                 min:  min                  min                  min
+             monster:  monster              sample               muster
+                  na:  na                   after                nach
+                naam:  naam                 name                 name
+          nacommando:  nacommando           commandafter         zumbefehl
+              nboven:  nboven               ntop                 noben
+              niveau:  niveau               level                niveau
+             niveaus:  niveaus              levels               niveaus
+              nonder:  nonder               nbottom              nunten
+                norm:  norm                 norm                 norm
+             nregels:  nregels              nlines               zzeile
+              nummer:  nummer               number               nummer
+      nummercommando:  nummercommando       numbercommand        nummerbefehl
+            nummeren:  nummeren             numbering            nummerierung
+         nummerkleur:  nummerkleur          numbercolor          nummernfarbe
+        nummerletter:  nummerletter         numberstyle          nummernstil
+      nummerscheider:  nummerscheider       numberseparator      nummernseperator
+              object:  object               object               objekt
+              offset:  offset               offset               offset
+               onder:  onder                bottom               unten
+        onderafstand:  onderafstand         bottomdistance       abstandunten
+          onderkader:  onderkader           bottomframe          untenrahmen
+         onderoffset:  onderoffset          bottomoffset         untenoffset
+         onderstatus:  onderstatus          bottomstate          untenstatus
+         onevenmarge:  onevenmarge          oddmargin            ungeraderand
+                  op:  op                   at                   bei
+               optie:  optie                option               option
+              pagina:  pagina               page                 seite
+      paginacommando:  paginacommando       pagecommand          seitenbefehl
+         paginakleur:  paginakleur          pagecolor            seitenfarbe
+        paginaletter:  paginaletter         pagestyle            seitenstil
+        paginanummer:  paginanummer         pagenumber           seitennummer
+    paginaovergangen:  paginaovergangen     pageboundaries       seitenbegrenzung
+               palet:  palet                palet                palette
+              papier:  papier               paper                papier
+              plaats:  plaats               location             platz
+     plaatsafsluiter:  plaatsafsluiter      placestopper         setzetrenner
+            plaatsen:  plaatsen             place                platziere
+           plaatskop:  plaatskop            placehead            setzekopf
+              prefix:  prefix               prefix               prefix
+              preset:  preset               preset               voreinstellung
+             preview:  preview              preview              preview
+                punt:  punt                 period               punkt
+                rand:  rand                 edge                 kante
+         randafstand:  randafstand          edgedistance         kantenabstand
+              raster:  raster               screen               raster
+      rechterbreedte:  rechterbreedte       rightwidth           rechterbreite
+        rechterkader:  rechterkader         rightframe           rechterrahmen
+        rechterkleur:  rechterkleur         rightcolor           rechterfarbe
+       rechterletter:  rechterletter        rightstyle           rechterstil
+        rechtermarge:  rechtermarge         rightmargin          rechterrand
+ rechtermargeafstand:  rechtermargeafstand  rightmargindistance  rechterrandabstand
+       rechteroffset:  rechteroffset        rightoffset          rechterabstand
+         rechterrand:  rechterrand          rightedge            rechtekante
+  rechterrandafstand:  rechterrandafstand   rightedgedistance    rechterkantenabstand
+        rechtertekst:  rechtertekst         righttext            rechtertext
+              rechts:  rechts               right                rechts
+            reductie:  reductie             reduction            reduktion
+           refereren:  refereren            referencing          referieren
+               regel:  regel                line                 zeile
+      regelcorrectie:  regelcorrectie       linecorrection       zeilekorrektur
+              regels:  regels               lines                zeilen
+           resolutie:  resolutie            resolution           aufloesung
+             rotatie:  rotatie              rotation             rotation
+           rugoffset:  rugoffset            horoffset            rumpfabstand
+              rugwit:  rugwit               backspace            rumpfspatium
+              schaal:  schaal               scale                format
+            scheider:  scheider             separator            seperator
+              scherm:  scherm               display              bildschirm
+               scope:  scope                scope                bereich
+              sectie:  sectie               section              abschnitt
+        sectienummer:  sectienummer         sectionnumber        abschnittsnummer
+               soort:  soort                family               familie
+              spatie:  spatie               space                spatium
+          spatiering:  spatiering           spacing              spatiumausgleich
+    springvolgendein:  springvolgendein     indentnext           ziehefolgendeein
+                stap:  stap                 step                 schritt
+               start:  start                start                start
+              status:  status               state                status
+                stop:  stop                 stop                 stop
+              straal:  straal               radius               radius
+                 sub:  sub                  sub                  unter
+            subtitel:  subtitel             subtitle             untertitel
+             symbool:  symbool              symbol               symbol
+          symboolset:  symboolset           symbolset            symbolset 
+            symkleur:  symkleur             symcolor             symfarbe
+           symletter:  symletter            symstyle             symstil
+            synoniem:  synoniem             synonym              synonym
+       synoniemkleur:  synoniemkleur        synonymcolor         synonymfarbe
+      synoniemletter:  synoniemletter       synonymstyle         synonymstil
+                 tab:  tab                  tab                  tab
+               teken:  teken                sign                 zeichen
+               tekst:  tekst                text                 text
+       tekstcommando:  tekstcommando        textcommand          textbefehl
+        tekstformaat:  tekstformaat         textsize             textgroesse
+          tekstkleur:  tekstkleur           textcolor            textfarbe
+         tekstletter:  tekstletter          textstyle            textstil
+       tekstscheider:  tekstscheider        textseparator        textseparator
+         tekststatus:  tekststatus          textstate            textstatus
+               titel:  titel                title                titel
+      titeluitlijnen:  titeluitlijnen       aligntitle           titelausrichten
+          tolerantie:  tolerantie           tolerance            toleranz
+              tussen:  tussen               inbetween            zwischen
+                type:  type                 type                 typ
+           uitlijnen:  uitlijnen            align                ausrichtung
+           urlspatie:  urlspatie            urlspace             urlspatium
+          urlvariant:  urlvariant           urlalternative       urlalternative
+                 van:  van                  from                 von
+             variant:  variant              alternative          alternative
+             verhoog:  verhoog              increment            erhoehen
+       verhoognummer:  verhoognummer        incrementnumber      nummererhoehen
+          verwijzing:  verwijzing           reference            referenz
+ onbekendeverwijzing:  onbekendeverwijzing  unknownreference     unbekantereferenz
+                voet:  voet                 footer               fusszeile
+         voetafstand:  voetafstand          footerdistance       fusszeilenabstand
+          voetstatus:  voetstatus           footerstate          fusszeilenstatus
+             voffset:  voffset              voffset              voffset
+            volgende:  volgende             next                 folgende
+                voor:  voor                 before               vor
+        voorcommando:  voorcommando         commandbefore        vorbefehl
+              vorige:  vorige               previous             vorige
+        vorigenummer:  vorigenummer         previousnumber       vorigenummer
+               wijze:  wijze                way                  art
+                 wit:  wit                  white                weiss
+             xfactor:  xfactor              xfactor              xfaktor
+                xmax:  xmax                 xmax                 xmax
+             xoffset:  xoffset              xoffset              xoffset
+             xschaal:  xschaal              xscale               xformat
+               xstap:  xstap                xstep                xschritt
+             yfactor:  yfactor              yfactor              yfaktor
+                ymax:  ymax                 ymax                 ymax
+             yoffset:  yoffset              yoffset              yoffset
+             yschaal:  yschaal              yscale               yformat
+               ystap:  ystap                ystep                yschritt
+        zelfdepagina:  zelfdepagina         samepage             selbeseite
+                 zij:  zij                  side                 objektabstand
+
+veldachtergrondkleur:  veldachtergrondkleur fieldbackgroundcolor feldhintergrundfarbe
+      veldkaderkleur:  veldkaderkleur       fieldframecolor      feldrahmenfarbe
+          veldoffset:  veldoffset           fieldoffset          feldoffset
+
+           openactie:  openactie            openaction           oeffenaktion 
+          sluitactie:  sluitactie           closeaction          schliessenaktion
+
+              klikin:  klikin               clickin              klickin
+             klikuit:  klikuit              clickout             klickaus
+            gebiedin:  gebiedin             regionin             regionin
+           gebieduit:  gebieduit            regionout            regionaus
+             natoets:  natoets              afterkey             nachtaste
+          formatteer:  formatteer           format               formatieren
+            valideer:  valideer             validate             validieren
+             bereken:  bereken              calculate            berechnen
 
 \stopconstants
 
@@ -454,8 +474,8 @@ onbekendeverwijzing:  verwijzing           unknownreference    unbekantereferenz
         aansluitend:  aansluitend          joinedup            keinabstand
            absoluut:  absoluut             absolute            absolut
         achtergrond:  achtergrond          background          hintergrund
-          achteruit:  achteruit            backward            backward % TOBIAS
-              actie:  actie                action              aktion % TOBIAS
+          achteruit:  achteruit            backward            rueckwaerts
+              actie:  actie                action              aktion
           afsluiter:  afsluiter            stopper             trenner
               alles:  alles                all                 alles
              altijd:  altijd               always              immer
@@ -475,12 +495,15 @@ onbekendeverwijzing:  verwijzing           unknownreference    unbekantereferenz
             concept:  concept              concept             konzept
                 dag:  dag                  day                 tag
               datum:  datum                date                datum
+            default:  default              default             default
          definitief:  definitief           final               endfassung
              diepte:  diepte               depth               tiefe
        dubbelzijdig:  dubbelzijdig         doublesided         doppelseitig
              eerste:  eerste               first               erste
                 elk:  elk                  each                jede
         enkelzijdig:  enkelzijdig          singlesided         einzelseitig
+             ergens:  ergens               somewhere           irgendwo
+            nergens:  nergens              nowhere             nirgens
                even:  even                 even                gerade
              extern:  extern               external            extern
                file:  file                 file                datei
@@ -490,13 +513,14 @@ onbekendeverwijzing:  verwijzing           unknownreference    unbekantereferenz
                geen:  geen                 none                kein
       geenmarkering:  geenmarkering        nomarking           keinebeschriftung
             geenwit:  geenwit              nowhite             keinweiss
-          geroteerd:  geroteerd            rotated             rotated  % - TOBIAS
-         gespiegeld:  gespiegeld           mirrored            mirrored % - TOBIAS
+          geroteerd:  geroteerd            rotated             gedreht
+         gespiegeld:  gespiegeld           mirrored            gespiegelt
             globaal:  globaal              global              global
-               grid:  grid                 grid                grid % TOBIAS
+               grid:  grid                 grid                gritter
               groot:  groot                big                 gross
       grotevoorkeur:  grotevoorkeur        bigpreference       grosszuegig
-         halveregel:  halveregel           halfline            halbezeile % TOBIAS
+              grijs:  grijs                gray                grau
+         halveregel:  halveregel           halfline            halbezeile
            handhaaf:  handhaaf             keep                behalte
             hangend:  hangend              hanging             haengend
             herhaal:  herhaal              repeat              wiederholen
@@ -507,6 +531,7 @@ onbekendeverwijzing:  verwijzing           unknownreference    unbekantereferenz
              hoogte:  hoogte               height              hoehe
         horizontaal:  horizontaal          horizontal          horizontal
             huidige:  huidige              current             aktuell
+             italic:  italic               italic              italic 
            inlinker:  inlinker             inleft              imlinken
             inmarge:  inmarge              inmargin            imrand
           inrechter:  inrechter            inright             imrechten
@@ -516,17 +541,20 @@ onbekendeverwijzing:  verwijzing           unknownreference    unbekantereferenz
                  ja:  ja                   yes                 ja
                jaar:  jaar                 year                jahr
               kader:  kader                frame               rahmen
-           kantlijn:  kantlijn             marginedge          marginal
+           kantlijn:  kantlijn             marginedge          marginalkante
                 kap:  kap                  cap                 kap
-           kapitaal:  kapitaal             capital             grossbuchstabe
+           kapitaal:  kapitaal             capital             versalien
             kenmerk:  kenmerk              referral            merkmal
               klein:  klein                small               klein
        kleinnormaal:  kleinnormaal         smallnormal         kleinnormal
         kleinschuin:  kleinschuin          smallslanted        kleingeneigt
      kleinschuinvet:  kleinschuinvet       smallslantedbold    kleingeneigtfett
+        kleinitalic:  kleinitalic          smallitalic         kleinitalic
+     kleinitalicvet:  kleinitalicvet       smallitalicbold     kleinitalicfett
           kleintype:  kleintype            smalltype           kleintippen
            kleinvet:  kleinvet             smallbold           kleinfett
      kleinvetschuin:  kleinvetschuin       smallboldslanted    kleinfettgeneigt
+     kleinvetitalic:  kleinvetitalic       smallbolditalic     kleinfettitalic
               kleur:  kleur                color               farbe
            kolommen:  kolommen             columns             spalten
                 kop:  kop                  head                kopf
@@ -535,19 +563,17 @@ onbekendeverwijzing:  verwijzing           unknownreference    unbekantereferenz
               label:  label                label               label
                lang:  lang                 tall                lang
                leeg:  leeg                 empty               leer
-             letter:  letter               character           buchstabe
              Letter:  Letter               Character           Buchstabe
+             letter:  letter               character           buchstabe
             Letters:  Letters              Characters          Buchstaben
             letters:  letters              characters          buchstaben
-            liggend:  liggend              landscape           landscape % - TOBIAS
-               lijn:  lijn                 line                linie
-             linker:  linker               left                linker
+            liggend:  liggend              landscape           querformat
+               lijn:  lijn                 rule                linie
         linkermarge:  linkermarge          leftmargin          linkerrand
        linkerpagina:  linkerpagina         leftpage            linkerseite
          linkerrand:  linkerrand           leftedge            linkekante
               links:  links                left                links
              lokaal:  lokaal               local               lokal
-             lokale:  lokale               local               lokal
               MAAND:  MAAND                MONTH               MONAT
               maand:  maand                month               monat
                 mar:  mar                  mar                 mar
@@ -556,10 +582,11 @@ onbekendeverwijzing:  verwijzing           unknownreference    unbekantereferenz
           mediaeval:  mediaeval            mediaeval           mittelalterlich
              middel:  middel               medium              mittel
              midden:  midden               middle              mittig
+                 na:  na                   after               nach
                naam:  naam                 name                name
               naast:  naast                opposite            gegenueber
                 nee:  nee                  no                  nein
-           negatief:  negatief             negative            negativ % - TOBIAS
+           negatief:  negatief             negative            negativ
                niet:  niet                 not                 nicht
               nooit:  nooit                never               nie
             normaal:  normaal              normal              normal
@@ -568,75 +595,103 @@ onbekendeverwijzing:  verwijzing           unknownreference    unbekantereferenz
            onbekend:  onbekend             unknown             unbekannt
               onder:  onder                bottom              unten
              oneven:  oneven               odd                 ungerade
-           opelkaar:  opelkaar             packed              kleinerdurchschuss
+           opelkaar:  opelkaar             packed              gepackt
              opmaak:  opmaak               markup              umbruch
             opmarge:  opmarge              atmargin            amrand
             overlay:  overlay              overlay             overlay
              pagina:  pagina               page                seite
        paginanummer:  paginanummer         pagenumber          seitennummer
-             papier:  papier               paper               papier     % - TOBIAS
-             scherm:  papier               screen              bildschirm % - TOBIAS
+             papier:  papier               paper               papier
+             scherm:  scherm               display             bildschirm
             passend:  passend              fit                 passend
                 per:  per                  by                  pro
          postscript:  postscript           postscript          postscript
           programma:  programma            program             programm
                punt:  punt                 dot                 punkt
+                ran:  ran                  ran                 ran
                rand:  rand                 edge                kante
              raster:  raster               screen              raster
-              recht:  recht                right               rechts
-            rechter:  rechter              right               rechter
+              recht:  recht                rectangular         rechteckig    
        rechtermarge:  rechtermarge         rightmargin         rechterrand
       rechterpagina:  rechterpagina        rightpage           rechterseite
-        rechterrand:  rechterrand          rechterrand         rechterkante
+        rechterrand:  rechterrand          rightedge           rechterkante
              rechts:  rechts               right               rechts
               regel:  regel                line                zeile
            relatief:  relatief             relative            relativ
               reset:  reset                reset               zuruecksetzten
             Romeins:  Romeins              Romannumerals       Roemischezahlen
             romeins:  romeins              romannumerals       roemischezahlen
+             grieks:  grieks               greek               greek 
+             Grieks:  Grieks               Greek               Greek 
                rond:  rond                 round               rund
              roteer:  roteer               rotate              drehe
                ruim:  ruim                 broad               breit
              schuin:  schuin               slanted             geneigt
           schuinvet:  schuinvet            slantedbold         geneigtfett
+          italicvet:  italicvet            italicbold          italicfett
        sectienummer:  sectienummer         sectionnumber       abschnittsnummer
-               smal:  smal                 tall                schmall
+               smal:  smal                 narrow              schmall
              soepel:  soepel               tolerant            tolerant
           standaard:  standaard            standard            standard
               start:  start                start               start
                stop:  stop                 stop                stop
              streng:  streng               strict              streng
-                sub:  sub                  sub                 sub
+                sub:  sub                  sub                 unter
                 sym:  sym                  sym                 sym
             symbool:  symbool              symbol              symbol
               tekst:  tekst                text                text
-              terug:  terug                backward            rueckwaerts
+               back:  terug                back                zurueck
                test:  test                 test                test
+             tussen:  tussen               inbetween           zwischen
                type:  type                 type                tippen
                 uit:  uit                  off                 aus
-                URL:  URL                  URL                 URL 
+                url:  url                  url                 url
+                URL:  URL                  URL                 URL
                vast:  vast                 fixed               fest
+                los:  los                  loose               lose 
              verder:  verder               continue            fortsetzten
           vertikaal:  vertikaal            vertical            vertikal
                 vet:  vet                  bold                fett
           vetschuin:  vetschuin            boldslanted         fettgeneigt
+          vetitalic:  vetitalic            bolditalic          fettitalic
             viertal:  viertal              quadruple           viertel
                voet:  voet                 footer              fusszeile
            volgende:  volgende             next                folgende
+               voor:  voor                 before              vor
            voorkeur:  voorkeur             preference          einstellung
           voorlopig:  voorlopig            temporary           temporaer
-            vooruit:  vooruit              forward             forward % TOBIAS
+            vooruit:  vooruit              forward             vorwaerts
              vorige:  vorige               previous            vorig
              waarde:  waarde               value               wert
                week:  week                 week                woche
-            WEEKDAG:  WEEKDAG              WEEKDAY             WOCHENTAG
             weekdag:  weekdag              weekday             wochentag
-        willekeurig:  willekeurig          random              random % - TOBIAS
+            WEEKDAG:  WEEKDAG              WEEKDAY             WOCHENTAG
+        willekeurig:  willekeurig          random              zufaellig
                 wit:  wit                  white               weiss
                zeer:  zeer                 very                sehr
          zeersoepel:  zeersoepel           verytolerant        sehrtolerant
          zeerstreng:  zeerstreng           verystrict          sehrstreng
+                zie:  zie                  see                 sieh
 
+          smallcaps:  smallcaps            smallcaps           smallcaps 
+
+       eerstepagina:  eerstepagina         firstpage           ersteseite
+       vorigepagina:  vorigepagina         previouspage        vorigeseite
+     volgendepagina:  volgendepagina       nextpage            folgendeseite
+      laatstepagina:  laatstepagina        lastpage            letzteseite
+    eerstesubpagina:  eerstesubpagina      firstsubpage        ersteunterseite
+    vorigesubpagina:  vorigesubpagina      previoussubpage     vorigeunterseite
+  volgendesubpagina:  volgendesubpagina    nextsubpage         folgendeunterseite
+   laatstesubpagina:  laatstesubpagina     lastsubpage         letzteunterseite
+
+     alleenleesbaar:  alleenleesbaar       readonly            nurlesbar
+          verplicht:  verplicht            required            obligatorisch
+          beschermd:  beschermd            protected           geschuetzt
+         gesorteerd:  gesorteerd           sorted              sortiert
+    nietbeschikbaar:  nietbeschikbaar      unavailable         nichtverfuegbar
+          verborgen:  verborgen            hidden              versteckt
+          printbaar:  printbaar            printable           druckbar
+ 
 \stopvariables
 
 %D \stopcompressdefinitions
@@ -674,25 +729,21 @@ onbekendeverwijzing:  verwijzing           unknownreference    unbekantereferenz
 
 %D \startcompressdefinitions
 
-\startconstants       dutch                english             german
-
-        calligrafie:  calligrafie          calligraphic        kalligraphie
-        handschrift:  handschrift          handwritten         handschrift
-        schreefloos:  schreefloos          sansserif           grotesk
-             romaan:  romaan               roman               antiqua
-           teletype:  teletype             teletype            fernschreiber
-               type:  type                 type                tippen
-
-\stopconstants
-
 \startvariables       dutch                english             german
 
-        calligrafie:  calligrafie          calligraphic        kalligraphie
-        handschrift:  handschrift          handwritten         handschrift
-        schreefloos:  schreefloos          sansserif           grotesk
-             romaan:  romaan               roman               antiqua
+       calligraphic:  calligrafie          calligraphic        kalligraphie
+        handwritten:  handschrift          handwritten         handschrift
+          sansserif:  schreefloos          sansserif           grotesk
+              roman:  romaan               roman               antiqua
            teletype:  teletype             teletype            fernschreiber
+
                type:  type                 type                tippen
+
+              serif:  serif                serif               serif 
+            regular:  regular              regular             regular 
+            support:  support              support             support
+               sans:  sans                 sans                sans  
+               mono:  mono                 mono                mono
 
 \stopvariables
 
@@ -738,34 +789,45 @@ onbekendeverwijzing:  verwijzing           unknownreference    unbekantereferenz
 \startelements        dutch                english             german
 
            beginvan:  beginvan             begin               anfang
+             buffer:  buffer               buffer              puffer
+         commentaar:  commentaar           comment             kommentar
             eindvan:  eindvan              end                 ende
-
+            formule:  formule              formula             formel
          gekoppelde:  gekoppelde           coupled             verknuepft
+               haal:  haal                 get                 get
+      huidigelokale:  huidigelokale        currentlocal        aktuelllokal
                  in:  in                   -                   ein
-       instellingen:  instellingen         setups              setups % -
+       instellingen:  instellingen         setups              einstellungen
+     interactiemenu:  interactiemenu       interactionmenu     interaktionsmenue
+               laad:  laad                 load                laden
                leeg:  leeg                 empty               leer
                lege:  lege                 empty               leer
-               laad:  laad                 load                laden
+% TOBIAS, what does this auf in auflisten mean? 
               lijst:  lijst                list                auflisten
            lijstmet:  lijstmet             listof              auflistenvon
+             lokale:  lokale               local               lokal
              opmaak:  opmaak               makeup              umbruch
              plaats:  plaats               place               platziere
           reserveer:  reserveer            reserve             reservieren
               start:  start                start               start
                stel:  stel                 setup               stelle
                stop:  stop                 stop                stop
+           tabelkop:  tabelkop             tablehead           tabellenueberschrift
+        tabelstaart:  tabelstaart          tabletail           tabellenende
+           tabulate:  tabulatie            tabulate            tabulator
               tekst:  tekst                text                text
+               type:  type                 type                type
+         uitstellen:  uitstellen           postponing          verschieben
+          verbergen:  verbergen            hiding              verbergen
             verhoog:  verhoog              increment           erhoehen
            volgende:  volgende             next                folgende
           volledige:  volledige            complete            vollende
              vorige:  vorige               previous            vorige
+       vorigelokale:  vorigelokale         previouslocal       voriglokal
                 zie:  zie                  see                 sieh
-           tabelkop:  tabelkop             tablehead           tabellenueberschrift
-        tabelstaart:  tabelstaart          tabletail           tabellenende
-            formule:  formule              formula             formel
 
-         uitstellen:  uitstellen           postponing          verschieben
-          verbergen:  verbergen            hiding              verbergen
+            gegeven:  gegeven              fact                gegeben
+            legenda:  legenda              legend              legende
 
 \stopelements
 
@@ -788,19 +850,24 @@ onbekendeverwijzing:  verwijzing           unknownreference    unbekantereferenz
         SwapViewer:  WisselViewer      SwapViewer           WechseleViewer
         ExitViewer:  VerlaatViewer     ExitViewer           BeendeViewer
      CloseDocument:  SluitDocument     CloseDocument        SchliesseDokument
-      SaveDocument:  BewaarDocument    SaveDocument         SaveDocument % TOBIAS         
+      SaveDocument:  BewaarDocument    SaveDocument         SpeichereDokument
         ViewerHelp:  ViewerHelp        ViewerHelp           ViewerHilfe
      PrintDocument:  PrintDocument     PrintDocument        DruckeDokument
     SearchDocument:  DoorzoekDocument  SearchDocument       DokumentDurchsuchen
        SearchAgain:  HerhaalZoeken     SearchAgain          WeiterSuchen
 
-        StartMovie:  StartFilm         StartMovie           StartMovie
-         StopMovie:  StopFilm          StopMovie            StopMovie
-        PauseMovie:  PauzeerFilm       PauseMovie           PauseMovie
-       ResumeMovie:  HervatFilm        ResumeMovie          ResumeMovie
+        StartMovie:  StartFilm         StartMovie           StartFilm
+         StopMovie:  StopFilm          StopMovie            StopFilm
+        PauseMovie:  PauzeerFilm       PauseMovie           PauseFilm
+       ResumeMovie:  HervatFilm        ResumeMovie          FortsetzenFilm
 
-         ResetForm:  ResetFormulier    ResetForm            ResetForm   % TOBIAS
-        SubmitForm:  VerzendFormulier  SubmitForm           SubmitForm  % TOBIAS
+          SaveForm:  BewaarFormulier   SaveForm             SpeicheFormular
+          LoadForm:  LaadFormulier     LoadForm             LadeFormular
+         ResetForm:  ResetFormulier    ResetForm            ZuruecksetzenFormular
+        SubmitForm:  VerzendFormulier  SubmitForm           VersendeFormular
+
+         HideField:  VerbergVeld       HideField            VerbergeFeld
+         ShowField:  ToonVeld          ShowField            ZeigeFeld
 
 \stopvariables
 
@@ -826,10 +893,10 @@ onbekendeverwijzing:  verwijzing           unknownreference    unbekantereferenz
               sheet:  sheet
               brief:  brief
                  ls:  ls
-              avery:  avery
 \stopvariables
 
 %D \stopcompressdefinitions
 
+\stoplogginginterface
+
 \endinput
-

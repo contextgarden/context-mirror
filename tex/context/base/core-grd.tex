@@ -37,7 +37,7 @@
 %D \haalbuffer[1]
 %D
 %D A simple alternative is \type {\baselinecorrection}, which
-%D only looks at the previous line. 
+%D only looks at the previous line.
 %D
 %D \startbuffer[2]
 %D \baselinecorrection
@@ -48,15 +48,15 @@
 %D \typebuffer[2]
 %D
 %D This time the last preceding line gets a correction,%
-%D dependant on the depth. 
+%D dependant on the depth.
 %D
 %D \haalbuffer[2]
 %D
 %D One can make the correction visible by saying \type
 %D {\showbaselinecorrection}. Part of the correction is
 %D calculated from the dimensions of a~(. One can disble the
-%D correction by calling \type {\offbaselinecorrection}. 
-%D 
+%D correction by calling \type {\offbaselinecorrection}.
+%D
 %D When visulaize the first example looks like:
 %D
 %D {\showbaselinecorrection\haalbuffer[1]}
@@ -76,10 +76,10 @@
    \edef\thebotbaselinecorrection{\the\dimen2}}
 
 \def\dotopbaselinecorrection%
-  {\kern\thetopbaselinecorrection}  
+  {\kern\thetopbaselinecorrection}
 
 \def\dobotbaselinecorrection%
-  {\kern\thebotbaselinecorrection}  
+  {\kern\thebotbaselinecorrection}
 
 \def\showbaselinecorrection%
   {\def\dobaselinecorrection% visualization is not watertight!
@@ -87,7 +87,7 @@
       \kern-\prevdepth
       \setbox0=\null
       \wd0=\hsize\dp0=\dp\strutbox
-      \nointerlineskip 
+      \nointerlineskip
       \ruledvbox{\box0}%
       \egroup
       \prevdepth=\dp\strutbox}%
@@ -125,7 +125,7 @@
    \fi}
 
 %D We do a bit more checking than needed. The pageborder check
-%D is not needed, but I want to look the visualization as good 
+%D is not needed, but I want to look the visualization as good
 %D as possible too.
 
 \def\dostopbaselinecorrection% I have to check columns yet.
@@ -149,7 +149,7 @@
 %D The actual top and bottom corrections are implemented as:
 
 \def\topbaselinecorrection%
-  {\ifvmode 
+  {\ifvmode
      \bgroup
      \setbaselinecorrections
      \ifdim\pagegoal<\maxdimen
@@ -161,27 +161,30 @@
          \advance\dimen2 by \thebotbaselinecorrection
          \dimen0=\pagetotal
          \advance\dimen0 by \dimen2
-         \ifdim\dimen0<\pagegoal
+%        \ifdim\dimen0<\pagegoal % does more harm than good
            \witruimte
            \nointerlineskip
            \dotopbaselinecorrection
-         \else
-           \ifbinnenkolommen           % should be supp-status
-             \vskip\dimen2             % this could definitely
-             \penalty\outputpenalty    % be improved
-           \else  
-             %                         % should be supp-control
-             % \vfill\eject            % old 
-             %
-             \nobreak                  % needed for headings 
-             \vskip\parskip            % cross your fingers
-             \vskip\dimen2             % anyhow
-             \penalty\outputpenalty  
-             \vskip-\dimen2
-           \fi   
-         \fi
-       \else                           % probably a preceding 
-         \witruimte                    % one-liner 
+%        \else
+%          \ifbinnenkolommen      
+%            % \vskip\dimen2           % this could definitely
+%            % \penalty\outputpenalty  % be improved
+%          \else
+%            %                         % 
+%            % \vfill\eject            % pretty old and wrong
+%            %
+%            % \nobreak                % needed for headings
+%            % \vskip\parskip          % but often splits 
+%            % \vskip\dimen2           % normal paragraphs
+%            % \penalty\outputpenalty  % and therefore 
+%            % \vskip-\dimen2          % obsolete
+%            %
+%            % do nothing, sub optimal spacing after headings 
+%            % still to be sorted out; use manuals as test case
+%          \fi
+%        \fi
+       \else                           % probably a preceding
+         \witruimte                    % one-liner
          \nointerlineskip
          \dotopbaselinecorrection
        \fi
@@ -194,6 +197,7 @@
      \bgroup
      \setbaselinecorrections
      \dobotbaselinecorrection
+     \allowbreak % new, otherwise problems when many in a row
      \prevdepth\dp\strutbox
      \egroup
    \fi}
@@ -233,12 +237,14 @@
 %D Still very experimental and therefore undocumented.
 
 \newif\ifgridsnapping  % UNDER DEVELOPMENT, USE WITH CARE
+\newif\ifforcepresnap  \forcepresnaptrue  % false in mixed single/double
+\newif\ifstrutsnapping \strutsnappingtrue % sometimes handy to be false
 
 \def\positiveextrasnap {\gdef\extrasnapsign{+}}
 \def\negativeextrasnap {\gdef\extrasnapsign{-}}
 
-\def\extrasnapreset  {\global\chardef\@@extrasnap=0 
-                      \positiveextrasnap} 
+\def\extrasnapreset  {\global\chardef\@@extrasnap=0
+                      \positiveextrasnap}
 \def\extrasnapbefore {\global\chardef\@@extrasnap=1 }
 \def\extrasnaparound {\global\chardef\@@extrasnap=2 }
 \def\extrasnapafter  {\global\chardef\@@extrasnap=3 }
@@ -246,9 +252,10 @@
 \def\enablepresnapcorrection  {\global\chardef\@@presnap=0 }
 \def\disablepresnapcorrection {\global\chardef\@@presnap=1 }
 
-\extrasnapreset \enablepresnapcorrection  
+\extrasnapreset \enablepresnapcorrection
 
-\newif\iftracegridsnapping 
+\newif\iftracegridsnapping
+\newif\ifshowfuzzyskips
 
 \def\snaptogrid#1% #1 == \hbox or \vbox
   {\ifgridsnapping\expandafter\dosnaptogrid\expandafter#1\fi}
@@ -279,10 +286,18 @@
       \fi
       \scratchskip=\lastskip
       \edef\presnapskip{\the\lastskip}%
-      \vbox{\strut}\nobreak\vskip-\openlineheight
+      % mixing single/double columns sometimes goes wrong,
+      % check 'som' document
+      \ifbinnenkolommen
+        \forcepresnaptrue
+      \fi
+      \ifforcepresnap
+        \vbox{\strut}\nobreak\vskip-\openlineheight
+      \fi
+      %
       \ifdim\ht\nextbox>\ht\strutbox
         \scratchdimen=\ht\nextbox
-        \ifcase\@@presnap 
+        \ifcase\@@presnap
           \ifdim\scratchskip>\!!zeropoint\relax
             \scratchcounter=\scratchskip
             \advance\scratchcounter by -\openlineheight
@@ -291,8 +306,8 @@
             \fi
             \ifnum\scratchcounter<10 % \lastkip is about \openlineheight
               \advance\scratchdimen by -\openstrutdepth
-               \edef\presnapskip{*\presnapskip}%
-            \else\ifdim\scratchskip>\openlineheight 
+              \edef\presnapskip{*\presnapskip}%
+            \else\ifdim\scratchskip>\openlineheight
                                   %<\openlineheight \else
               \advance\scratchdimen by -\openstrutdepth
               \edef\presnapskip{*\presnapskip}%
@@ -312,7 +327,9 @@
       \ifnum\@@extrasnap=1 \advance\scratchdimen by \extrasnapsign\lineheight \fi
       \ifnum\@@extrasnap=2 \advance\scratchdimen by \extrasnapsign.5\lineheight \fi
       \edef\presnap{\the\scratchdimen}%
-      \ifdim\scratchdimen=\!!zeropoint\else\vskip\scratchdimen\fi
+      \ifstrutsnapping
+        \ifdim\scratchdimen=\!!zeropoint\else\vskip\scratchdimen\fi
+      \fi
       \ifdim\dp\nextbox>\dp\strutbox
         \getnoflines{\dp\nextbox}%
         \advance\noflines by -1
@@ -327,18 +344,29 @@
       \ifnum\@@extrasnap=2 \advance\scratchdimen by \extrasnapsign.5\lineheight \fi
       \ifnum\@@extrasnap=3 \advance\scratchdimen by \extrasnapsign\lineheight \fi
       \edef\postsnap{\the\scratchdimen}%
-      \ht\nextbox=\ht\strutbox
-      \dp\nextbox=\dp\strutbox
+      \ifstrutsnapping
+        \ht\nextbox=\ht\strutbox
+        \dp\nextbox=\dp\strutbox
+      \else
+        \scratchdimen=\presnap
+        \advance\scratchdimen by \ht\strutbox
+        \ht\nextbox=\scratchdimen
+        \scratchdimen=\postsnap
+        \advance\scratchdimen by \dp\strutbox
+        \dp\nextbox=\scratchdimen
+      \fi
       \hbox{\tracesnapping\box\nextbox}%
-      \ifdim\scratchdimen=\!!zeropoint\else\vskip\scratchdimen\fi
-      \extrasnapreset 
-      \enablepresnapcorrection  
+      \ifstrutsnapping
+        \ifdim\scratchdimen=\!!zeropoint\else\vskip\scratchdimen\fi
+      \fi
+      \extrasnapreset
+      \enablepresnapcorrection
       \egroup}}
 
-\def\snaptomathgrid%
+\def\snaptomathgrid% probably not working ok
   {\ifgridsnapping
      \dowithnextbox
-       {\blanko[\v!regel] 
+       {\blanko[\v!regel]
         \snaptogrid\vbox{\box\nextbox}
         \blanko[\v!regel]}
      \vbox\bgroup
@@ -350,7 +378,7 @@
        \@EA\let\@EA\next
    \fi}
 
-\def\topsnaptogrid% 
+\def\topsnaptogrid%
   {\ifgridsnapping
      \dowithnextbox
        {\scratchdimen=\ht\nextbox
@@ -361,7 +389,7 @@
         \box\nextbox
         \kern\lineheight
         \kern-\topskip
-        \nointerlineskip} 
+        \nointerlineskip}
        \hbox
    \fi}
 
@@ -374,10 +402,10 @@
         \advance\scratchdimen by \dp\nextbox
         \getnoflines\scratchdimen
         \setbox\nextbox=\vbox to \noflines\lineheight
-          {\forgetall  
+          {\forgetall
            \vskip\!!zeropoint plus \ht\nextbox
            \copy\nextbox
-           \kern.5\dp\strutbox % VOORLOPIGE WAARDE 
+           \kern.5\dp\strutbox % VOORLOPIGE WAARDE
            \vskip\!!zeropoint plus \dp\nextbox}
         \noindent\snaptogrid\vbox{\box\nextbox}%
         \egroup}
@@ -421,17 +449,21 @@
 
 %D Some intervention macros:
 
+\def\gridwarning#1{\message{[beware of #1 extra snap]}}
+
 \def\doverplaatsopgrid[#1]%
-  {\processaction
-     [#1]
-     [  \v!boven=>\positiveextrasnap\extrasnapbefore,
-        \v!onder=>\positiveextrasnap\extrasnapafter,
-        \v!beide=>\positiveextrasnap\extrasnaparound,
-       -\v!boven=>\negativeextrasnap\extrasnapbefore,
-       -\v!onder=>\negativeextrasnap\extrasnapafter,
-       -\v!beide=>\negativeextrasnap\extrasnaparound,
-      \s!default=>\positiveextrasnap\extrasnaparound,
-      \s!unknown=>\positiveextrasnap\extrasnapreset]}
+  {\ifgridsnapping
+     \processaction
+       [#1]
+       [  \v!boven=>\gridwarning+\positiveextrasnap\extrasnapbefore,
+          \v!onder=>\gridwarning+\positiveextrasnap\extrasnapafter,
+          \v!beide=>\positiveextrasnap\extrasnaparound,
+         -\v!boven=>\gridwarning-\negativeextrasnap\extrasnapbefore,
+         -\v!onder=>\gridwarning-\negativeextrasnap\extrasnapafter,
+         -\v!beide=>\negativeextrasnap\extrasnaparound,
+        \s!default=>\positiveextrasnap\extrasnaparound,
+        \s!unknown=>\positiveextrasnap\extrasnapreset]%
+   \fi}
 
 \def\verplaatsopgrid%
   {\dosingleempty\doverplaatsopgrid}
@@ -448,8 +480,8 @@
 %D boundaries in the middle of such a pair, are handled by
 %D macros that are (named) sort of fuzzy. This fuzzy mechanism
 %D was written as an extension to the grid typesetting needed
-%D for typesetting (part of) the \MAPS. 
-%D 
+%D for typesetting (part of) the \MAPS.
+%D
 %D \starttypen
 %D \setuptyping
 %D   [before={\blank[halfline]},
@@ -460,44 +492,61 @@
 \newif\iffuzzysnapping
 \newif\iffuzzysnapped
 
-\newsignal\fuzzysnapbegin
-\newsignal\fuzzysnapend
+\chardef\fuzzysnappedleft=0 % ==1 when fuzzybegin still open
 
-\chardef\fuzzysnappedleft=0 % =1 when fuzzybegin still open
+\newpersistentmark\fuzzymark % (!)
+\newcount\fuzzymarker
+\newbox\fuzzysnapbox
+\newbox\fuzzysnapsplit
 
-\def\beginfuzzysnapping%
-  {\ifgridsnapping
-     \global\fuzzysnappingtrue 
-     \iffuzzysnapping
-       \kern\fuzzysnapbegin
-       \kern-\fuzzysnapbegin
-     \fi
-   \fi}
-
-\def\endfuzzysnapping%
-  {\ifgridsnapping
-     \global\fuzzysnappingtrue
-     \iffuzzysnapping
-       \kern\fuzzysnapend
-       \kern-\fuzzysnapend
-     \fi
-   \fi}
+\def\dosyncfuzzyvskip%
+  {\ifvmode\ifdim\lastskip<\lineheight\ifdim\lastskip>\!!zeropoint
+     \hbox{\strut}
+%     \nobreak
+     \kern-2\lineheight
+     \nobreak
+     \vskip\lineheight % on behalf of testing
+   \fi\fi\fi}
 
 \def\fuzzyvskip#1%
   {\iffuzzysnapdone
-     \vskip#1\relax
      \endfuzzysnapping
+     \vskip#1\relax
+     \dosyncfuzzyvskip  % NEW
      \global\fuzzysnapdonefalse
    \else
-     \beginfuzzysnapping
      \vskip#1\relax
+     \beginfuzzysnapping
      \global\fuzzysnapdonetrue
    \fi}
 
+\def\setfuzzymark#1#2#3% #1/#2 => error recovery
+  {\ifgridsnapping
+     \global\fuzzysnappingtrue
+     \global\advance\fuzzymarker by \ifodd\fuzzymarker#1\else#2\fi
+     \nobreak
+     \ifshowfuzzyskips
+       \hbox{\color[blue]
+         {\llap{\infofont#3\vl\the\fuzzymarker}\nobreak
+          \vrule\!!width\hsize\!!height.1\lineheight}}
+       \nobreak
+     \fi
+    %[\the\fuzzymarker]
+    %\expandafter\fuzzymark\expandafter{\the\fuzzymarker}%
+     \expandafter\setmark\expandafter\fuzzymark\expandafter{\the\fuzzymarker}%
+     \nobreak
+  \fi}
+
+\def\beginfuzzysnapping% odd
+  {\setfuzzymark21\v!start}
+
+\def\endfuzzysnapping% even
+  {\setfuzzymark12\v!stop}
+
 \def\removelastfuzzyvskip%
-  {\ifgridsnapping 
+  {\ifgridsnapping
      \iffuzzysnapping
-       \ifdim\lastskip<\openlineheight 
+       \ifdim\lastskip<\openlineheight
        \else
          \removelastskip
        \fi
@@ -508,26 +557,47 @@
      \removelastskip
    \fi}
 
-\def\dodocheckfuzzysnap%
-  {\ifdim\shapekern=\fuzzysnapbegin
-     \ifcase\fuzzysnappedleft
-       \global\chardef\fuzzysnappedleft=1
-     \fi
-     \global\fuzzysnappedfalse
-   \else\ifdim\shapekern=\fuzzysnapend
-     \ifcase\fuzzysnappedleft
-       \global\chardef\fuzzysnappedleft=2
-     \fi
-     \global\fuzzysnappedtrue 
-   \fi\fi}
-
 \def\docheckfuzzysnap#1%
-  {\beginofshapebox
-   \unvcopy#1\relax
-   \endofshapebox
-   \global\fuzzysnappedfalse
-   \global\chardef\fuzzysnappedleft=0
-   \doreshapebox{}{}{\dodocheckfuzzysnap}{}}
+  {\bgroup
+   \mindermeldingen
+   \setbox\fuzzysnapbox=\copy#1\relax
+   \setbox\fuzzysnapsplit=\vsplit\fuzzysnapbox to 1\lineheight
+   \let\topfuzzymark=\empty % indeed here ... no real mark
+   \getsplitmarks\fuzzymark
+%   \ifcase0\topfuzzymark
+   \ifcase0\getsplittopmark\fuzzymark
+     \global\chardef\fuzzysnappedleft=0
+     \global\fuzzysnappedfalse
+%   \else\ifodd\topfuzzymark
+   \else\ifodd\getsplittopmark\fuzzymark
+     \global\chardef\fuzzysnappedleft=1
+      \global\fuzzysnappedtrue
+   \else
+     \global\chardef\fuzzysnappedleft=2
+      \global\fuzzysnappedtrue
+   \fi\fi
+   \iffuzzysnapped \else
+     \doloop
+       {\ifvoid\fuzzysnapbox
+          \exitloop
+        \else
+          \setbox\fuzzysnapsplit=\vsplit\fuzzysnapbox to \lineheight
+         %\let\topfuzzymark=\empty % ... but not here
+          \getsplitmarks\fuzzymark
+%          \ifcase0\topfuzzymark
+          \ifcase0\getsplittopmark\fuzzymark
+            % continue
+%          \else\ifodd\topfuzzymark
+          \else\ifodd\getsplittopmark\fuzzymark
+            \exitloop
+          \else
+            \global\chardef\fuzzysnappedleft=1
+            \global\fuzzysnappedtrue
+            \exitloop
+          \fi\fi
+        \fi}%
+   \fi
+   \egroup}
 
 \def\getfuzzysnapcorrection#1%
   {\global\let\presnapcorrection =\relax
@@ -536,15 +606,16 @@
      \docheckfuzzysnap{#1}%
      \iffuzzysnapped
        \iftracegridsnapping
-         \gdef\presnapcorrection{\color[red]{\hrule\!!height.5\openlineheight}}%
+         \gdef\presnapcorrection%
+           {\color[red]{\hrule\!!height.5\openlineheight\!!width\hsize}}%
        \else
          \gdef\presnapcorrection{\kern.5\openlineheight}%
        \fi
-       \gdef\postsnapcorrection{\kern.5\openlineheight}%
+       \gdef\postsnapcorrection{\kern-.5\openlineheight}% get the height ok
      \fi
    \fi\fi}
 
-\def\fuzzysnappedbox#1#2% \box<n> \unvbox<n> 
+\def\fuzzysnappedbox#1#2% \box<n> \unvbox<n>
   {\getfuzzysnapcorrection{#2}%
    \presnapcorrection
    #1#2%
@@ -552,14 +623,13 @@
 
 \def\adaptfuzzypagegoal%
   {\ifgridsnapping\iffuzzysnapping\ifcase\fuzzysnappedleft\or % see dopagecontents
-     \scratchdimen=\pagegoal  
-     \advance\scratchdimen by -.5\openlineheight 
+     \scratchdimen=\pagegoal
+     \advance\scratchdimen by -.5\openlineheight
      \global\pagegoal=\scratchdimen
-     \global\advance\vsize by -.5\openlineheight 
+     \global\advance\vsize by -.5\openlineheight
      \global\chardef\fuzzysnappedleft=0
    \fi\fi\fi}
 
 \protect
 
-\endinput 
-
+\endinput

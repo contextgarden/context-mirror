@@ -1,0 +1,157 @@
+%D \module
+%D   [       file=supp-mat,
+%D        version=1998.09.10,
+%D          title=\CONTEXT\ Support Macros,
+%D       subtitle=Math,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. Non||commercial use is
+%C granted.
+
+%D For practical reasons, I decided to move some math things to 
+%D a support module. There is nothing spectacular here. 
+
+\writestatus{loading}{Context Support Macros / Math}
+
+\unprotect
+
+%D \macros
+%D   {mathematics, startmathmode}
+%D 
+%D The \type{$} can be both an begin and end math character.
+%D This can lead to confusing and errorprone situations when
+%D macros insert \type{$}. When for instance we have defined: 
+%D 
+%D \starttypen
+%D \def\MyPlus{$\,+\,$}
+%D \stoptypen
+%D 
+%D the sequence \type{$x^2 \MyPlus y^2 = r^2$} will expand to:
+%D 
+%D \starttypen
+%D $x^2 $\,+\,$ y^2 = r^2$
+%D \stoptypen
+%D 
+%D Here the \type{\,} are given outside math mode and \TEX\ will
+%D definitely complain about this. A more save definition would 
+%D have been: 
+%D 
+%D \starttypen
+%D \def\MyPlus{\mathematics{\,+\,}}
+%D \stoptypen
+%D 
+%D Which is implemented as:
+
+\def\mathematics#1%
+  {\ifmmode#1\else$#1$\fi}
+
+\def\startmathmode%
+  {\ifmmode
+     \let\stopmathmode=\relax
+   \else
+     $\def\stopmathmode{$}%  \let\stopmathmode=$
+   \fi}
+
+%D \macros
+%D   {dimension, nodimension}
+%D
+%D The next few macros are used for typesetting dimensions in
+%D such a way that spacing is acceptable. I won't spend much 
+%D words on these macros, because they will be overloaded in 
+%D the units module.
+
+\newsignal\dimensionsignal 
+
+\def\dimensiontypeface  {\tf}
+\def\dimensionhalfspace {\,}
+
+\unexpanded\def\dimension#1%
+  {\def\dodimensionsignal{\kern\dimensionsignal}%
+   \ifdim\lastskip=\!!zeropoint\relax
+     \ifdim\lastkern=\!!zeropoint\relax
+       \ifmmode
+         \mathematics{\dimensionhalfspace\dimensionhalfspace\dimensiontypeface#1}%
+       \else
+         \mathematics{\dimensiontypeface#1}%
+       \fi
+     \else\ifdim\lastkern=\dimensionsignal
+       \mathematics{\dimensionhalfspace\dimensiontypeface#1}%
+     \else
+       \unkern\mathematics{\dimensionhalfspace\dimensionhalfspace\dimensiontypeface#1}%
+     \fi\fi
+   \else
+     \unskip\mathematics{\dimensionhalfspace\dimensionhalfspace\dimensiontypeface#1}%
+   \fi
+   \dodimensionsignal}
+
+\unexpanded\def\nodimension#1%
+  {\unskip#1\global\let\dodimensionsignal\relax}
+
+%D \macros
+%D   {super, suber}
+%D
+%D \TEX\ uses \type{^} and \type{_} for entering super- and 
+%D subscript mode. We want however a bit more control than 
+%D normally provided, and therefore provide \type {\super} 
+%D and \type{suber}. 
+
+\global\let\normalsuper=^ 
+\global\let\normalsuber=_ 
+
+\newcount\supsubmode
+
+\newevery\everysupsub \EverySupSub
+
+\appendtoks \advance\supsubmode by 1\relax \to \everysupsub
+
+% \def\dodosuper#1{\normalsuper{\the\everysupsub#1}}
+% \def\dodosuber#1{\normalsuber{\the\everysupsub#1}}
+% 
+% \def\dosuper{\ifx\next\bgroup\expandafter\dodosuper\else\normalsuper\fi}
+% \def\dosuber{\ifx\next\bgroup\expandafter\dodosuber\else\normalsuber\fi}
+% 
+% \def\super{\futurelet\next\dosuper}
+% \def\suber{\futurelet\next\dosuber}
+
+\def\super#1{\normalsuper{\the\everysupsub#1}}
+\def\suber#1{\normalsuber{\the\everysupsub#1}}
+
+%D \macros
+%D   {enablesupsub}
+%D 
+%D We can let \type {^} and \type {_} act like \type {\super} 
+%D and \type {\suber} by saying \type {\enablesupsub}. 
+
+\bgroup
+\catcode`\^=\@@active
+\catcode`\_=\@@active
+\gdef\enablesupsub%
+  {\catcode`\^=\@@active
+   \def^{\ifmmode\expandafter\super\else\expandafter\normalsuper\fi}%
+   \catcode`\_=\@@active
+   \def_{\ifmmode\expandafter\suber\else\expandafter\normalsuber\fi}}
+\egroup
+
+%D \macro
+%D   {restoremathstyle}
+%D
+%D We can pick up the current math style by calling \type 
+%D {\restoremathstyle}.
+
+\def\restoremathstyle%
+  {\ifmmode
+     \ifcase\supsubmode
+       \textstyle
+     \or
+       \scriptstyle
+     \else
+       \scriptscriptstyle
+     \fi
+   \fi}
+
+\protect
+
+\endinput

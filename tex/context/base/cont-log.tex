@@ -39,13 +39,16 @@
 
 \def\ConTeXt%
   {C%
-   \CMRkern-.0333emO%
-   \CMRkern-.0333emN%
+   \CMRkern-.0333emo%
+   \CMRkern-.0333emn%
    \CMRkern-.0333em\TeX%
-   \CMRkern-.0333emT}
+   \CMRkern-.0333emt}
 
 \def\PPCHTeX%
   {PPCH\TeX}
+
+\def\PRAGMA%
+  {PRAGMA}
 
 \def\LaTeX%
   {L%
@@ -81,18 +84,31 @@
    \kern-.1em{\AMSswitch S}%
    -\TeX}
 
-\def\MetaFont% \hbox prevents missing - warning in YandYTEX
-  {\hbox{\font\logofont=logo10 at \korpsgrootte\logofont METAFONT}}
+%D The \METAFONT\ and \METAPOST\ logos adapt themselves to the
+%D current fontsize, an ugly but usefull hack. 
 
-\def\MetaPost% \hbox prevents missing - warning in YandYTEX
-  {\hbox{\font\logofont=cmss10 at \korpsgrootte\logofont METAPOST}}
+\def\setMFPfont%
+  {\font\logofont=logo%
+     \ifnum\fam=\bffam bf\else
+     \ifnum\fam=\slfam sl\else
+     \ifnum\fam=\itfam sl\else
+     \ifnum\fam=\bsfam bf\else
+     \ifnum\fam=\bifam bf\else
+     \fi\fi\fi\fi\fi
+     10 at \currentfontscale\bodyfontsize
+   \logofont}
+
+\def\MetaFont% 
+ {{\setMFPfont METAFONT}}
+
+\def\MetaPost% 
+ {{\setMFPfont METAPOST}}
 
 %D \macros
 %D  {TEX, METAFONT, METAPOST,
 %D   PICTEX, TABLE,      
 %D   CONTEXT, PPCHTEX, 
 %D   AMSTEX, LATEX, LAMSTEX}
-%D  {}    
 %D 
 %D We define the funny written ones as well as th eless 
 %D error prone upper case names (in \CONTEXT\ we tend to 
@@ -115,15 +131,25 @@
 %D \PiCTeX, \TaBlE, \ConTeXt, \PPCHTeX, \AmSTeX, \LaTeX,
 %D \LamSTeX. We also define some logos for the programs that
 %D we wrote and use at \PRAGMA: \TeX EDIT, \TeX FORM, \TeX
-%D ADRES, \TeX SPELL, \TeX UTIL. 
+%D ADRES, \TeX SPELL, \TeX UTIL and \TeX.  
 
 \def\TEXEDIT  {\TeX EDIT}
 \def\TEXFORM  {\TeX FORM}
 \def\TEXADRES {\TeX ADRES}
 \def\TEXSPELL {\TeX SPELL}
 \def\TEXUTIL  {\TeX UTIL}
+\def\TEXEXEC  {\TeX EXEC}
+
+%D Some placeholders: 
+
+\def\eTeX     {e-\TEX}
+\def\pdfTeX   {pdf\TEX}
+\def\pdfeTeX  {pdfe-\TEX}
+
+\let\ETEX     \eTeX
+\let\PDFTEX   \pdfTeX
+\let\PDFETEX  \pdfeTeX
 
 \protect
 
 \endinput
-

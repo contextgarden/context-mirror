@@ -160,27 +160,29 @@
    \edef\dostroke{#6}%
    \edef\dofill{#7}% 
    \setbox0=\hbox
-     {\special 
-        {\@@insertpostscriptretain
-           gsave
-             newpath
-             \xmin\space \radius\space add \ymin\space moveto
-             \xmax\space \ymin\space \xmax\space \ymax\space \radius\space arcto
-             \xmax\space \ymax\space \xmin\space \ymax\space \radius\space arcto
-             \xmin\space \ymax\space \xmin\space \ymin\space \radius\space arcto
-             \xmin\space \ymin\space \xmax\space \ymin\space \radius\space arcto 
-             \xmin\space \radius\space add \ymin\space moveto
-             16 {pop} repeat
-             closepath
-             (\dostroke) (1) eq 
-               {\stroke\space 0 ne 
-                 {gsave 
-                   \stroke\space setlinewidth 
-                    stroke 
-                  grestore} if} if
-             (\dofill) (1) eq 
-               {fill} if
-           grestore}}% 
+     {\ifnum\dostroke\dofill>0
+        \special 
+          {\@@insertpostscriptretain
+             gsave
+               newpath
+               \xmin\space \radius\space add \ymin\space moveto
+               \xmax\space \ymin\space \xmax\space \ymax\space \radius\space arcto
+               \xmax\space \ymax\space \xmin\space \ymax\space \radius\space arcto
+               \xmin\space \ymax\space \xmin\space \ymin\space \radius\space arcto
+               \xmin\space \ymin\space \xmax\space \ymin\space \radius\space arcto 
+               \xmin\space \radius\space add \ymin\space moveto
+               16 {pop} repeat
+               closepath
+               (\dostroke) (1) eq 
+                 {\stroke\space 0 ne 
+                   {gsave 
+                     \stroke\space setlinewidth 
+                      stroke 
+                    grestore} if} if
+               (\dofill) (1) eq 
+                 {fill} if
+             grestore}%
+      \fi}% 
    \wd0=#1sp\ht0=#2sp\dp0=#3sp\box0
    \egroup}
 
@@ -193,4 +195,3 @@
 \stopspecials
 
 \endinput
-

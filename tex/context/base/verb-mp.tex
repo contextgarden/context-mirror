@@ -47,6 +47,9 @@
 
 \gdef\MPsetcontrols%
   {\saveprettycontrols
+   \everyprettyend
+     {\global\inMPcommentfalse
+      \endMPtypesix}%
    \def\obeyedspace%
      {\endMPtypesix
       \oldobeyedspace}%
@@ -334,7 +337,7 @@
 
 \useprettyidentifiers \MPvariables \MPsetspecials
   buildcycle dashpattern decr dotlabel dotlabels drawoptions
-  incr label labels max, min thelabel z
+  incr label labels max min thelabel z
 
 %D More \METAPOST:
 
@@ -344,8 +347,8 @@
   endfig def vardef enddef epxr suffix text primary secondary 
   tertiary primarydef secondarydef tertiarydef top bottom 
   ulft urt llft lrt randomseed also contour doublepath 
-  withcolor withpen dashed if else elseif fi for forsuffixes
-  forever downto upto step until 
+  withcolor withpen dashed if else elseif fi for endfor 
+  forsuffixes forever downto upto step until end
 
 %D \METAFONT\ stuff:
 

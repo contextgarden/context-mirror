@@ -1,0 +1,13 @@
+% This is texexec.ini, the file used by texexec to determine
+% where to find files, what tex to use, what flags to pass, 
+% etc. These settings are based on web2c. 
+
+set UsedInterfaces  to nl,en
+set UserInterface   to nl
+set TeXExecutable   to pdfetex
+set TeXFormatFlag   to & 
+set TeXVirginFlag   to -ini
+set TeXFormatPath   to t:/tex/web2c/fmt/
+set ConTeXtPath     to t:/pragma/sources/
+set SetupPath       to t:/pragma/sources/
+set TeXScriptsPath  to t:/pragma/programs/

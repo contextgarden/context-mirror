@@ -7,47 +7,16 @@
 %D           date=\currentdate,
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
 
-%D This module defines the Standard Adobe Times Roman. We use
-%D the \YandY\ texnansi encoding vector. 
+%D This module defines the Standard Adobe Times Roman.
 
-\startcoding [texnansi]
+\definefontsynonym [Serif]            [Times-Roman]
+\definefontsynonym [SerifBold]        [Times-Bold]
+\definefontsynonym [SerifItalic]      [Times-Italic]
+\definefontsynonym [SerifSlanted]     [Times-Italic]
+\definefontsynonym [SerifBoldItalic]  [Times-BoldItalic]
+\definefontsynonym [SerifBoldSlanted] [Times-BoldItalic]
+\definefontsynonym [SerifCaps]        [Times-Roman]
 
-\definebodyfont [14.4pt,12pt,11pt,10pt,9pt,8pt] [rm]
-  [tf=Times-Roman sa 1, 
-   bf=Times-Bold sa 1, 
-   it=Times-Italic sa 1, 
-   sl=Times-Italic sa 1,   
-   bi=Times-BoldItalic sa 1, 
-   bs=Times-Bold sa 1,     
-  tfa=Times-Roman sa 1.200,
-  tfb=Times-Roman sa 1.440,
-  tfc=Times-Roman sa 1.728,
-  tfd=Times-Roman sa 2.074,
-   sc=Times-Roman sa 0.833]
-
-\definebodyfont [7pt,6pt,5pt] [rm]
-  [tf=Times-Roman  sa 1, 
-   bf=Times-Bold sa 1, 
-   it=Times-Italic sa 1, 
-   sl=Times-Italic sa 1,   
-   bi=Times-BoldItalic sa 1,
-   bs=Times-Bold sa 1]        
- 
-\definebodyfont [14.4pt,12pt,11pt,10pt,9pt,8pt] [rm]
-  [bfa=Times-Bold sa 1.200,
-   bfb=Times-Bold sa 1.440,
-   bfc=Times-Bold sa 1.728,
-   bfd=Times-Bold sa 2.074,
-   sla=Times-Italic sa 1.200,   
-   slb=Times-Italic sa 1.440,   
-   slc=Times-Italic sa 1.728,   
-   sld=Times-Italic sa 2.074,   
-   bsa=Times-Bold sa 1.200,   
-   bsb=Times-Bold sa 1.440,   
-   bsc=Times-Bold sa 1.728,   
-   bsd=Times-Bold sa 2.074]   
-
-\stopcoding
+\definebodyfont [14.4pt,12pt,11pt,10pt,9pt,8pt,7pt,6pt,5pt] [rm] [default]
 
 \endinput
-

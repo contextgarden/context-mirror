@@ -1,0 +1,40 @@
+%D \module
+%D   [       file=core-01a,
+%D        version=1998.01.29,
+%D          title=\CONTEXT\ Core Macros,
+%D       subtitle=Miscelaneous,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. Non||commercial use is
+%C granted.
+
+\writestatus{loading}{Context Core Macros / Misc Commands}
+
+\unprotect
+
+%D \macros 
+%D   {simplifiedcommands, simplifycommands}
+%D
+%D I first needed this simplification in bookmarks. Users can
+%D add their own if needed. 
+
+\newtoks\simplifiedcommands
+
+\def\simplifycommands{\the\simplifiedcommands}
+
+%D A possibly growing list: 
+
+\appendtoks        \def\executesynonym#1#2#3#4{#3}\to\simplifiedcommands
+\appendtoks                              \def\ { }\to\simplifiedcommands
+\appendtoks\def\type#1{\string\\\strippedcsname#1}\to\simplifiedcommands
+\appendtoks                          \def\TeX{TeX}\to\simplifiedcommands
+\appendtoks                \def\MetaPost{MetaPost}\to\simplifiedcommands
+\appendtoks                \def\MetaPost{MetaFont}\to\simplifiedcommands
+\appendtoks                              \def||{-}\to\simplifiedcommands
+
+\protect
+
+\endinput

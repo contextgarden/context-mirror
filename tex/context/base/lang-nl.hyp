@@ -1,5 +1,12 @@
 % additional hyphenations
 
-\hyphenation{vrije-tijds-be-ste-ding}
+\hyphenation
+  {klank-im-pro-vi-sa-ties
+   vrije-tijds-be-ste-ding
+   docu-ment-over-stij-gen-de}
+
+% due to bug in patterns
+
+\lccode`\'=0 
 
 \endinput

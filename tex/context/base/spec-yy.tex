@@ -21,7 +21,7 @@
 %D and make use of \YandY's color specials. Otherwise \DVIWINDO\
 %D would not show colors.
 
-\startspecials[yandy]   % [postscript]
+\startspecials[yandy]
 
 \def\@@insertpostscriptliteral {ps: }
 \def\@@insertpostscriptretain  {" } % this was: {postscript} 
@@ -44,23 +44,24 @@
 \definespecial\dostopcolormode%
   {\special{color gray 0}}
 
-\def\doyyinserteps#1#2#3#4#5#6#7#8%  equals rockiky
-  {\ScaledPointsToBigPoints{#4}\width 
-   \ScaledPointsToBigPoints{#5}\height 
+\definefileinsertion{yy}{eps}#1#2#3#4#5#6#7#8#9%  
+  {\ScaledPointsToBigPoints{#5}\width 
+   \ScaledPointsToBigPoints{#6}\height 
    \special 
      {psfile=#1
-        hscale=#2\space
-        vscale=#3\space
-        hoffset=\width \space
-        voffset=\height}} 
+      hscale=#3\space
+      vscale=#4\space
+      hoffset=\width \space
+      voffset=\height}} 
 
-\def\doyyinsertmps#1#2#3#4#5#6#7#8%  
+\definefileinsertion{yy}{mps}#1#2#3#4#5#6#7#8#9%  
   {\hbox
-     {\UseMetaPostGraphic{#1}%
-      \doyyinserteps{#1}{#2}{#3}{#4}{#5}{#6}{#7}{#8}}}
+     {\includeMPfonts{#1}%
+      \convertMPcolors{#1}%
+      \dofileinsertion{yy}{eps}{#1}{#2}{#3}{#4}{#5}{#6}{#7}{#8}{#9}}}
 
-\def\doyyinserttif#1#2#3#4#5#6#7#8%
-  {\special{insertimage: #1 #6 #7}}
+\definefileinsertion{yy}{tif}#1#2#3#4#5#6#7#8#9%
+  {\special{insertimage: #1 #7 #8}}
 
 \definespecial\doinsertfile#1#2#3#4#5#6#7#8#9%
   {\bgroup
@@ -70,4 +71,3 @@
 \stopspecials
 
 \endinput
-

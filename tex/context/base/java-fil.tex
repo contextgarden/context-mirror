@@ -1,0 +1,33 @@
+\startJSpreamble{Auxiliary} used now 
+
+  function DocumentFileName ()
+    { var Paths = this.path.split("/") ;
+      Paths = Paths[Paths.length-1].split(".") ;
+      return(Paths[0]) }
+
+  function Print_Page_Range(From, To) % gaat mis, nog geen args mogelijk
+    { if ((From>0)&&(To>=From)) 
+        { this.print(false,From,To,true) } }
+
+  function Print_This_Page () 
+    { this.print(false,this.pageNum,this.pageNum,true) } 
+
+\stopJSpreamble
+
+\definereference 
+  [PrintSubPaginas] 
+  [JS(Print_Page_Range{\firstsubpage,\lastsubpage})] 
+
+\definereference
+  [PrintSubPages]
+  [JS(Print_Page_Range{\firstsubpage,\lastsubpage})]
+
+\definereference
+  [PrintDezePagina]
+  [JS(Print_This_Page)]
+
+\definereference
+  [PrintThisPage]
+  [JS(Print_This_Page)]
+
+\endinput

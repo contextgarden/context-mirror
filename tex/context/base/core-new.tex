@@ -24,25 +24,51 @@
 % \doifmodeelse {paper}        {this} {that}
 % \doifmode     {paper,screen} {this}
 % \doifnotmode  {paper,bound}  {that} 
+%
+% \startmode [list]
+% \stopmode
+%
+% \startnotmode [list]
+% \stopnotmode
 
 \let\currentmode=\empty
 
 \def\enablemode[#1]%
-  {\addtocommalist{#1}\currentmode}
+  {\expandafter\addtocommalist\expandafter{#1}\currentmode}
 
 \def\disablemode[#1]%
-  {\removefromcommalist{#1}\currentmode}
+  {\expandafter\removefromcommalist\expandafter{#1}\currentmode}
 
-\long\def\doifmodeelse#1#2#3%
-  {\expandafter\doifcommonelse\expandafter{\currentmode}{#1}{#2}{#3}}
+\def\doifmodeelse%
+  {\unprotect\dodoifmodeelse}
 
-\long\def\doifmode#1#2%
-  {\expandafter\doifcommonelse\expandafter{\currentmode}{#1}{#2}{}}
+\long\def\dodoifmodeelse#1#2#3%
+  {\protect\ExpandBothAfter\doifcommonelse{\currentmode}{#1}{#2}{#3}}
 
-\long\def\doifnotmode#1#2%
-  {\expandafter\doifcommonelse\expandafter{\currentmode}{#1}{}{#2}}
+\def\doifmode%
+  {\unprotect\dodoifmode}
+
+\long\def\dodoifmode#1#2%
+  {\protect\ExpandBothAfter\doifcommonelse{\currentmode}{#1}{#2}{}}
+
+\def\doifnotmode%
+  {\unprotect\dodoifnotmode}
+
+\long\def\dodoifnotmode#1#2%
+  {\protect\ExpandBothAfter\doifcommonelse{\currentmode}{#1}{}{#2}}
+
+\def\startmode%
+  {\unprotect\dostartmode}
+
+\long\def\dostartmode[#1]#2\stopmode%
+  {\dodoifmode{#1}{#2}}
+
+\def\startnotmode%
+  {\unprotect\dostartnotmode}
+
+\long\def\dostartnotmode[#1]#2\stopnotmode%
+  {\dodoifnotmode{#1}{#2}}
 
 \protect 
 
 \endinput
-

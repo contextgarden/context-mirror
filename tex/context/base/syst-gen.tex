@@ -1,3 +1,6 @@
+% nagaan : \ifinstringelse in syst-ext.tex
+% do => p! dodo pp! dododo ppp!
+
 %D \module 
 %D   [       file=syst-gen,
 %D        version=1996.3.20,
@@ -20,11 +23,6 @@
 %D mainly because we don't want to forget them and start doing 
 %D things over and over again. If showing them has a learing 
 %D effect for others too, we've surved another purpose too.  
-
-%D First we make sure that some important prefix is defined:
-
-\ifx\doifETEX\undefined \long\def\doifETEX#1\par{} \fi
-\ifx\ifnoETEX\undefined \let\ifnoETEX=\empty       \fi
 
 %D \macros
 %D   {abortinputifdefined}
@@ -153,17 +151,17 @@
 %D to put it there as a reminder. I only mention this once. 
 
 \def\unprotect%
-  {\ifnum\protectionlevel=0
+  {\ifcase\protectionlevel
      \edef\doprotectcharacters%
-       {\catcode`@=\the\catcode`@\relax
-        \catcode`!=\the\catcode`!\relax
-        \catcode`?=\the\catcode`?\relax}%
+       {\catcode`\noexpand @=\the\catcode`@\relax
+        \catcode`\noexpand !=\the\catcode`!\relax
+        \catcode`\noexpand ?=\the\catcode`?\relax}%
      \catcode`@=11
      \catcode`!=11
      \catcode`?=11
-     \let\protect=\doprotect
+     \let\protect\doprotect
    \fi
-   \advance\protectionlevel by 1
+   \advance\protectionlevel 1
    \ifnum\protectionlevel>1
      \message{<unprotect \the\protectionlevel>}%
    \fi}
@@ -171,12 +169,12 @@
 \def\doprotect%
   {\ifnum\protectionlevel=1
      \doprotectcharacters
-     \let\protect=\normalprotect
+     \let\protect\normalprotect
    \fi
    \ifnum\protectionlevel>1
      \message{<protect \the\protectionlevel>}%
    \fi
-   \advance\protectionlevel by -1\relax}
+   \advance\protectionlevel -1\relax}
 
 %D Now it is defined, we can make use of this very useful
 %D macro.
@@ -220,7 +218,7 @@
 %D   {scratchcounter,
 %D    scratchdimen,scratchskip,scratchmuskip,
 %D    scratchbox,
-%D    scratchtoks
+%D    scratchtoks,
 %D    ifdone}
 %D
 %D Because we often need counters on a temporary basis, we
@@ -264,8 +262,10 @@
 \let\!!stringa=\empty \let\!!stringb=\empty \let\!!stringc=\empty
 \let\!!stringd=\empty \let\!!stringe=\empty \let\!!stringf=\empty
 
-\newdimen\!!widtha \newdimen\!!heighta \newdimen\!!deptha \newif\if!!donea
-\newdimen\!!widthb \newdimen\!!heightb \newdimen\!!depthb \newif\if!!doneb
+\newdimen\!!widtha \newdimen\!!heighta \newdimen\!!deptha 
+\newdimen\!!widthb \newdimen\!!heightb \newdimen\!!depthb 
+
+\newif\if!!donea   \newif\if!!doneb    \newif\if!!donec
 
 %D \macros
 %D   {s!,c!,e!,p!,v!,@@,??}
@@ -447,7 +447,7 @@
   {\expandafter\let\csname#1\endcsname}
 
 \def\resetvalue#1%
-  {\expandafter\let\csname#1\endcsname=\empty}
+  {\expandafter\let\csname#1\endcsname\empty}
 
 %D \macros
 %D   {donottest,unexpanded}
@@ -474,6 +474,8 @@
 %D 
 %D The protection mechanism uses:
 
+\beginTEX
+
 \def\dontprocesstest#1% 
   {==}
 
@@ -481,6 +483,14 @@
   {#1}
 
 \let\donottest=\doprocesstest
+
+\endTEX
+
+\beginETEX \detokenize
+
+\def\donottest#1{#1}%       \detokenize{#1}}
+
+\endETEX
 
 %D By the way, we use a placeholder because we don't want 
 %D interference when testing on empty strings. Using a 
@@ -499,18 +509,20 @@
 %D    \@EA#1\csname\s!do\string#2\endcsname}
 %D \stoptypen
 %D 
-%D Well, in fact we use the bit more versaatile alternative: 
+%D Well, in fact we use the bit more versatile alternative: 
 
-\ifnoETEX \def\dosetunexpanded#1#2%
+\beginTEX
+
+\def\dosetunexpanded#1#2%
   {\@EA#1\@EA{\@EA#2\@EA}%
      \@EA{\@EA\donottest\csname\s!do\@EA\string\csname#2\endcsname\endcsname}%
    \@EA#1{\s!do\@EA\string\csname#2\endcsname}}
 
-\ifnoETEX \def\docomunexpanded#1#2%
+\def\docomunexpanded#1#2%
   {\@EA#1\@EA#2\@EA{\@EA\donottest\csname\s!do\string#2\endcsname}%
    \@EA#1\csname\s!do\string#2\endcsname}
 
-\ifnoETEX \def\unexpanded#1%
+\def\unexpanded#1%
   {\def\dounexpanded%
      {\ifx\next\bgroup
         \@EA\dosetunexpanded
@@ -519,7 +531,13 @@
       \fi#1}%
    \futurelet\next\dounexpanded}
 
-\doifETEX \let\unexpanded=\normalprotected
+\endTEX
+
+\beginETEX \protected
+
+\let\unexpanded\normalprotected
+
+\endETEX
 
 %D This one accepts the more direct \type{\def} and cousins 
 %D as well as the \CONTEXT\ specific \type{\setvalue} ones. 
@@ -638,6 +656,8 @@
 %D next alternative can be upto twice as fast, especially when
 %D longer arguments are used.
 
+\beginTEX
+
 \def\ifundefined#1%
   {\expandafter\ifx\csname#1\endcsname\relax}
 
@@ -645,7 +665,7 @@
   {\let\donottest\dontprocesstest
    \expandafter\ifx\csname#1\endcsname\relax}
 
-\def\doifundefinedelse#1#2#3%
+\def\doifundefinedelse#1#2#3%  
   {\p!doifundefined{#1}%
      \let\donottest\doprocesstest#2%
    \else
@@ -673,14 +693,58 @@
      \let\donottest\doprocesstest#2%
    \fi}
 
-% NEW: 
+\endTEX
 
-\doifETEX \def\ifundefined#1%
+\beginETEX \ifcsname
+
+\def\ifundefined#1% ongelukkige naam 
   {\unless\ifcsname#1\endcsname}
 
-\doifETEX \def\p!doifundefined#1%
-  {\let\donottest\dontprocesstest
-   \unless\ifcsname#1\endcsname}
+\def\p!doifundefined#1%
+  {\edef\p!defined{#1}% 
+   \@EA\unless\@EA\ifcsname\@EA\detokenize\@EA{\p!defined}\endcsname}
+
+\def\doifundefinedelse#1#2#3%  
+  {\edef\p!defined{#1}%
+   \@EA\ifcsname\@EA\detokenize\@EA{\p!defined}\endcsname#3\else#2\fi}
+
+\def\doifdefinedelse#1#2#3%
+  {\edef\p!defined{#1}%
+   \@EA\ifcsname\@EA\detokenize\@EA{\p!defined}\endcsname#2\else#3\fi}
+
+\def\doifundefined#1#2%  
+  {\edef\p!defined{#1}%
+   \@EA\ifcsname\@EA\detokenize\@EA{\p!defined}\endcsname\else#2\fi}
+
+\def\doifdefined#1#2%
+  {\edef\p!defined{#1}%
+   \@EA\ifcsname\@EA\detokenize\@EA{\p!defined}\endcsname#2\fi}
+
+\endETEX
+
+%D \macros 
+%D   {letbeundefined}
+%D 
+%D Testing for being undefined comes down to testing on \type
+%D {\relax} when we use \type {\csname}, but when using \type
+%D {\ifx}, we test on being \type {\undefined}! In \ETEX\ we
+%D have \type {\ifcsname} and that way of testing on existance
+%D is not the same as the one described here. Therefore we 
+%D introduce: 
+
+\beginTEX
+
+\def\letbeundefined#1% 
+  {\expandafter\let\csname#1\endcsname\relax}
+
+\endTEX
+
+\beginETEX
+
+\def\letbeundefined#1% 
+  {\expandafter\let\csname#1\endcsname\undefined}
+
+\endETEX
 
 %D Before we start using this variant, we used another one, 
 %D which is even a bit faster. This one looked like: 
@@ -722,6 +786,8 @@
 %D the use of grouping, which garantees local use of the 
 %D boolean \type{\ifdone}.
 
+\beginTEX
+
 \def\docheckonedefined#1%
   {\ifundefined{#1}%
      \donefalse
@@ -737,6 +803,27 @@
    \else
      \endgroup\let\donottest\doprocesstest#3%
    \fi}
+
+\endTEX
+
+\beginETEX \ifcsname
+
+\def\docheckonedefined#1%
+  {\unless\ifcsname#1\endcsname
+     \donefalse
+   \fi}
+
+\def\doifalldefinedelse#1#2#3%
+  {\begingroup
+   \donetrue
+   \processcommalist[#1]\docheckonedefined
+   \ifdone
+     \endgroup#2%
+   \else
+     \endgroup#3%
+   \fi}
+
+\endETEX
 
 %D \macros
 %D   {doif,doifelse,doifnot,
@@ -778,6 +865,8 @@
 %D really need the \type{\next} construction, often need some
 %D other precautions and or adaptions too.
 
+\beginTEX
+
 \long\def\doif#1#2#3%
   {\let\donottest\dontprocesstest
    \edef\!!stringa{#1}%
@@ -807,6 +896,24 @@
    \else
      #4%
    \fi}
+
+\endTEX
+
+\beginETEX \protected
+
+\long\def\doif#1#2#3%
+  {\edef\!!stringa{#1}\edef\!!stringb{#2}%
+   \ifx\!!stringa\!!stringb#3\fi}
+
+\long\def\doifnot#1#2#3%
+  {\edef\!!stringa{#1}\edef\!!stringb{#2}%
+   \unless\ifx\!!stringa\!!stringb#3\fi}
+
+\long\def\doifelse#1#2#3#4%
+  {\edef\!!stringa{#1}\edef\!!stringb{#2}%
+   \ifx\!!stringa\!!stringb#3\else#4\fi}
+
+\endETEX
 
 %D One could wonder why we don't follow the the same approach
 %D as in \type{\doifdefined} c.s.\ and use \type{\begingroup} 
@@ -894,11 +1001,11 @@
 %D   {\doifelse{#1}{}
 %D      {#4}
 %D      {\donefalse
-%D       \def\v!checkiteminset##1%
+%D       \def\p!checkiteminset##1%
 %D         {\doif{#1}{##1}
 %D            {\donetrue
-%D             \let\v!checkiteminset=\gobbleoneargument}}%
-%D       \processcommalist[#2]\v!checkiteminset
+%D             \let\p!checkiteminset=\gobbleoneargument}}%
+%D       \processcommalist[#2]\p!checkiteminset
 %D       \ifdone
 %D         #3%
 %D       \else
@@ -918,12 +1025,51 @@
 %D any other macros and (3)~minimizing the passing of
 %D arguments. The gain in speed is impressive.
 
-\def\p!dodocheckiteminset#1%
+% \def\p!dodocheckiteminset#1%
+%   {\edef\!!stringb{#1}%
+%    \ifx\!!stringa\!!stringb
+%      \donetrue
+%      \let\p!docheckiteminset\gobbleoneargument
+%    \fi}
+% 
+% \beginTEX
+% 
+% \def\p!doifinsetelse#1#2%
+%   {\let\donottest\dontprocesstest
+%    \donefalse
+%    \edef\!!stringa{#1}%
+%    \ifx\!!stringa\empty
+%    \else
+%      \let\p!docheckiteminset\p!dodocheckiteminset
+%      \processcommalist[#2]\p!docheckiteminset
+%    \fi
+%    \let\donottest\doprocesstest
+%    \ifdone}
+% 
+% \endTEX
+% 
+% \beginETEX \protected
+% 
+% \def\p!doifinsetelse#1#2%
+%   {\donefalse
+%    \edef\!!stringa{#1}%
+%    \ifx\!!stringa\empty
+%    \else
+%      \let\p!docheckiteminset\p!dodocheckiteminset
+%      \processcommalist[#2]\p!docheckiteminset
+%    \fi
+%    \ifdone}
+% 
+% \endETEX
+
+\def\p!docheckiteminset#1%
   {\edef\!!stringb{#1}%
    \ifx\!!stringa\!!stringb
      \donetrue
-     \let\p!docheckiteminset\gobbleoneargument
+     \expandafter\quitcommalist
    \fi}
+
+\beginTEX
 
 \def\p!doifinsetelse#1#2%
   {\let\donottest\dontprocesstest
@@ -931,29 +1077,34 @@
    \edef\!!stringa{#1}%
    \ifx\!!stringa\empty
    \else
-     \let\p!docheckiteminset=\p!dodocheckiteminset
      \processcommalist[#2]\p!docheckiteminset
    \fi
    \let\donottest\doprocesstest
    \ifdone}
 
-\long\def\doifinsetelse#1#2#3#4%
-  {\p!doifinsetelse{#1}{#2}%
-     #3%
+\endTEX
+
+\beginETEX \protected
+
+\def\p!doifinsetelse#1#2%
+  {\donefalse
+   \edef\!!stringa{#1}%
+   \ifx\!!stringa\empty
    \else
-     #4%
-   \fi}
+     \processcommalist[#2]\p!docheckiteminset
+   \fi
+   \ifdone}
+
+\endETEX
+
+\long\def\doifinsetelse#1#2#3#4%
+  {\p!doifinsetelse{#1}{#2}#3\else#4\fi}
 
 \long\def\doifinset#1#2#3%
-  {\p!doifinsetelse{#1}{#2}%
-     #3%
-   \fi}
+  {\p!doifinsetelse{#1}{#2}#3\fi}
 
 \long\def\doifnotinset#1#2#3%
-  {\p!doifinsetelse{#1}{#2}%
-   \else
-     #3%
-   \fi}
+  {\p!doifinsetelse{#1}{#2}\else#3\fi}
 
 %D \macros
 %D   {doifcommon,doifnotcommon,doifcommonelse}
@@ -1004,18 +1155,56 @@
 %D save us bytes and processing time. In interpreted languages
 %D like \TEX\ it nearly always slows down processing.
 
-\def\p!dododocommoncheck#1%
+% \def\p!dododocommoncheck#1%
+%   {\edef\!!stringb{#1}%
+%    \ifx\!!stringa\!!stringb
+%      \donetrue
+%      \let\p!docommoncheck\gobbleoneargument
+%      \let\p!dodocommoncheck\gobbleoneargument
+%    \fi}
+% 
+% \beginTEX
+% 
+% \def\p!doifcommonelse#1#2%
+%   {\donefalse
+%    \let\donottest\dontprocesstest
+%    \let\p!dodocommoncheck\p!dododocommoncheck
+%    \def\p!docommoncheck##1%
+%      {\edef\!!stringa{##1}%
+%       \def\commalistelement{##1}%
+%       \processcommalist[#2]\p!dodocommoncheck}%
+%    \processcommalist[#1]\p!docommoncheck
+%    \let\donottest\doprocesstest
+%    \ifdone}
+% 
+% \endTEX
+% 
+% \beginETEX \protected
+% 
+% \def\p!doifcommonelse#1#2%
+%   {\donefalse
+%    \let\p!dodocommoncheck\p!dododocommoncheck
+%    \def\p!docommoncheck##1%
+%      {\edef\!!stringa{##1}%
+%       \def\commalistelement{##1}%
+%       \processcommalist[#2]\p!dodocommoncheck}%
+%    \processcommalist[#1]\p!docommoncheck
+%    \ifdone}
+% 
+% \endETEX
+
+\def\p!dodocommoncheck#1%
   {\edef\!!stringb{#1}%
    \ifx\!!stringa\!!stringb
      \donetrue
-     \let\p!docommoncheck\gobbleoneargument
-     \let\p!dodocommoncheck\gobbleoneargument
+     \expandafter\quitprevcommalist
    \fi}
+
+\beginTEX
 
 \def\p!doifcommonelse#1#2%
   {\donefalse
    \let\donottest\dontprocesstest
-   \let\p!dodocommoncheck\p!dododocommoncheck
    \def\p!docommoncheck##1%
      {\edef\!!stringa{##1}%
       \def\commalistelement{##1}%
@@ -1024,26 +1213,32 @@
    \let\donottest\doprocesstest
    \ifdone}
 
+\endTEX
+
+\beginETEX \protected
+
+\def\p!doifcommonelse#1#2%
+  {\donefalse
+   \def\p!docommoncheck##1%
+     {\edef\!!stringa{##1}%
+      \def\commalistelement{##1}%
+      \processcommalist[#2]\p!dodocommoncheck}%
+   \processcommalist[#1]\p!docommoncheck
+   \ifdone}
+
+\endETEX
+
 \long\def\doifcommonelse#1#2#3#4%
-  {\p!doifcommonelse{#1}{#2}%
-     #3%
-   \else
-     #4%
-   \fi}
+  {\p!doifcommonelse{#1}{#2}#3\else#4\fi}
 
 \long\def\doifcommon#1#2#3%
-  {\p!doifcommonelse{#1}{#2}%
-     #3%
-   \fi}
+  {\p!doifcommonelse{#1}{#2}#3\fi}
 
 \long\def\doifnotcommon#1#2#3%
-  {\p!doifcommonelse{#1}{#2}%
-   \else
-     #3%
-   \fi}
+  {\p!doifcommonelse{#1}{#2}\else#3\fi}
 
 %D \macros
-%D   {processcommalist,processcommacommand,
+%D   {processcommalist,processcommacommand,quitcommalist,
 %D    processcommalistwithparameters}
 %D
 %D We've already seen some macros that take care of comma
@@ -1082,41 +1277,66 @@
 \def\dodoprocesscommaitem%
   {\ifx\nexttoken\blankspace
      \let\nextcommaitem\redoprocesscommaitem
-  %\else\ifx\nexttoken\endoflinetoken
-    %\let\nextcommaitem\redoprocesscommaitem
    \else\ifx\nexttoken]%
      \let\nextcommaitem\gobbleoneargument
    \else
      \let\nextcommaitem\dododoprocesscommaitem
-   \fi\fi%\fi
+   \fi\fi
    \nextcommaitem}
 
 \def\doprocesscommaitem%
   {\futurelet\nexttoken\dodoprocesscommaitem}
 
-\def\doprocesscommalist#1]#2%
-  {\advance\commalevel by 1\relax
+\def\doprocesscommalistA#1#2]#3%
+  {\global\advance\commalevel 1
+   \long\expandafter\def\csname\s!next\the\commalevel\endcsname##1,%
+     {#3{##1}\doprocesscommaitem}%
+   \doprocesscommaitem{#1}#2,]\relax
+   \global\advance\commalevel -1 }
+
+\def\doprocesscommalistB#1]#2%
+  {\global\advance\commalevel 1
    \long\expandafter\def\csname\s!next\the\commalevel\endcsname##1,%
      {#2{##1}\doprocesscommaitem}%
    \doprocesscommaitem#1,]\relax
-   \advance\commalevel by -1\relax}
+   \global\advance\commalevel -1 }
 
 %D Empty arguments are not processed. Empty items (\type{,,})
-%D however are treated. 
+%D however are treated. We have to check for the special case
+%D \type{[{a,b,c}]}.
 
 \def\docheckcommaitem%
   {\ifx\nexttoken]%
      \let\nextcommaitem\gobbletwoarguments
+   \else\ifx\nexttoken\bgroup
+     \let\nextcommaitem\doprocesscommalistA
    \else
-     \let\nextcommaitem\doprocesscommalist
-   \fi
+     \let\nextcommaitem\doprocesscommalistB
+   \fi\fi
    \nextcommaitem}
 
 \def\processcommalist[%
   {\futurelet\nexttoken\docheckcommaitem}
 
-%D We use the same hack for checking the next character, that
-%D we use in \type{\doifnextcharelse}. 
+%D One way of quitting a commalist halfway is:
+
+% \def\quitcommalist%
+%   {\@EA\let\csname\s!next\the\commalevel\endcsname\gobbleoneargument}
+
+\def\quitcommalist%
+  {\bgroup\let\doprocesscommaitem\doquitcommalist}
+
+\def\doquitcommalist#1]%
+  {\egroup}
+
+\def\quitprevcommalist%
+  {\bgroup\let\doprocesscommaitem\doquitprevcommalist}
+
+\def\doquitprevcommalist#1]%
+  {\let\doprocesscommaitem\doquitcommalist}
+
+%D The hack we used for checking the next character
+%D \type {\doifnextcharelse} is also used here. 
 
 \def\:{\redoprocesscommaitem}
 
@@ -1152,10 +1372,12 @@
 %D \stoptypen
 %D
 %D Commands that are part of the list are expanded, so the
-%D use of this macro has it slimits.
+%D use of this macro has its limits.
+
+% why the \toks0? still needed? 
 
 \def\processcommacommand[#1]%
-  {\edef\commacommand{#1}%
+  {\edef\commacommand{#1}% 
    \toks0=\expandafter{\expandafter[\commacommand]}%
    \expandafter\processcommalist\the\toks0 }
 
@@ -1229,7 +1451,7 @@
 %D
 %D \def\processaction[#1]#2[#3]%
 %D   {\doifelse{#1}{}
-%D      {\def\c!compareprocessaction[##1=>##2]%
+%D      {\def\p!compareprocessaction[##1=>##2]%
 %D         {\edef\!!stringa{##1}%
 %D          \ifx\!!stringa\s!default
 %D            \def\commalistelement{#1}%
@@ -1238,82 +1460,98 @@
 %D      {\let\donottest=\dontprocesstest
 %D       \edef\!!stringb{#1}%
 %D       \let\donottest=\doprocesstest
-%D       \def\c!compareprocessaction[##1=>##2]%
+%D       \def\p!compareprocessaction[##1=>##2]%
 %D         {\edef\!!stringa{##1}%
 %D          \ifx\!!stringa\!!stringb
 %D            \def\commalistelement{#1}%
 %D            ##2%
-%D            \let\c!doprocessaction=\gobbleoneargument
+%D            \let\p!doprocessaction=\gobbleoneargument
 %D          \else\ifx\!!stringa\s!unknown
 %D            \def\commalistelement{#1}%
 %D            ##2%
 %D          \fi\fi}}%
-%D    \def\c!doprocessaction##1%
-%D      {\c!compareprocessaction[##1]}%
-%D    \processcommalist[#3]\c!doprocessaction}
+%D    \def\p!doprocessaction##1%
+%D      {\p!compareprocessaction[##1]}%
+%D    \processcommalist[#3]\p!doprocessaction}
 %D
 %D \def\processfirstactioninset[#1]#2[#3]%
 %D   {\doifelse{#1}{}
 %D      {\processaction[][#3]}
-%D      {\def\c!compareprocessaction[##1=>##2][##3]%
+%D      {\def\p!compareprocessaction[##1=>##2][##3]%
 %D         {\edef\!!stringa{##1}%
 %D          \edef\!!stringb{##3}%
 %D          \ifx\!!stringa\!!stringb
 %D            \def\commalistelement{##3}%
 %D            ##2%
-%D            \let\c!doprocessaction=\gobbleoneargument
-%D            \let\c!dodoprocessaction=\gobbleoneargument
+%D            \let\p!doprocessaction=\gobbleoneargument
+%D            \let\p!dodoprocessaction=\gobbleoneargument
 %D          \else\ifx\!!stringa\s!unknown
 %D            \def\commalistelement{##3}%
 %D            ##2%
 %D          \fi\fi}%
-%D       \def\c!doprocessaction##1%
-%D         {\def\c!dodoprocessaction####1%
-%D            {\c!compareprocessaction[####1][##1]}%
-%D          \processcommalist[#3]\c!dodoprocessaction}%
-%D       \processcommalist[#1]\c!doprocessaction}}
+%D       \def\p!doprocessaction##1%
+%D         {\def\p!dodoprocessaction####1%
+%D            {\p!compareprocessaction[####1][##1]}%
+%D          \processcommalist[#3]\p!dodoprocessaction}%
+%D       \processcommalist[#1]\p!doprocessaction}}
 %D
 %D \def\processallactionsinset[#1]#2[#3]%
 %D   {\doifelse{#1}{}
 %D      {\processaction[][#3]}
 %D      {\advance\processlevel by 1\relax
-%D       \def\c!compareprocessaction[##1=>##2][##3]%
+%D       \def\p!compareprocessaction[##1=>##2][##3]%
 %D         {\edef\!!stringa{##1}%
 %D          \edef\!!stringb{##3}%
 %D          \ifx\!!stringa\!!stringb
 %D            \def\commalistelement{##3}%
 %D            ##2%
-%D            \let\c!dodoprocessaction=\gobbleoneargument
+%D            \let\p!dodoprocessaction=\gobbleoneargument
 %D          \else\ifx\!!stringa\s!unknown
 %D            \def\commalistelement{##3}%
 %D            ##2%
 %D          \fi\fi}%
 %D       \setvalue{\s!do\the\processlevel}##1%
-%D         {\def\c!dodoprocessaction####1%
-%D            {\c!compareprocessaction[####1][##1]}%
-%D          \processcommalist[#3]\c!dodoprocessaction}%
+%D         {\def\p!dodoprocessaction####1%
+%D            {\p!compareprocessaction[####1][##1]}%
+%D          \processcommalist[#3]\p!dodoprocessaction}%
 %D       \processcommalist[#1]{\getvalue{\s!do\the\processlevel}}%
 %D       \advance\processlevel by -1\relax}}
 %D \stoptypen
 %D
-%D The gain of speed in the final implementation is around
+%D The gain of speed in the (again) next implementation is around
 %D 20\%, depending on the application.
 
 \newcount\processlevel
 
-\def\v!compareprocessactionA[#1=>#2][#3]%
+\def\p!compareprocessactionA[#1=>#2][#3]%
   {\edef\!!stringb{#1}%
    \ifx\!!stringb\s!default
      \let\commalistelement\empty
      #2%
    \fi}
 
-\def\v!compareprocessactionB[#1=>#2][#3]%
+% \def\p!compareprocessactionB[#1=>#2][#3]%
+%   {\expandedaction\!!stringb{#1}%
+%    \ifx\!!stringa\!!stringb
+%      \def\commalistelement{#3}%
+%      #2%
+%      \let\p!doprocessaction\gobbleoneargument
+%    \else
+%      \edef\!!stringb{#1}%
+%      \ifx\!!stringb\s!unknown
+%        \def\commalistelement{#3}% beware of loops 
+%        #2%
+%      \fi
+%    \fi}
+
+% met \quitcommalist tot meer dan 25\% sneller 
+
+\def\p!compareprocessactionB[#1=>#2][#3]%
   {\expandedaction\!!stringb{#1}%
    \ifx\!!stringa\!!stringb
      \def\commalistelement{#3}%
      #2%
-     \let\p!doprocessaction\gobbleoneargument
+     \expandafter\quitcommalist
    \else
      \edef\!!stringb{#1}%
      \ifx\!!stringb\s!unknown
@@ -1322,28 +1560,63 @@
      \fi
    \fi}
 
+\beginTEX
+
 \def\processaction[#1]#2[#3]%
   {\let\donottest\dontprocesstest
    \expandedaction\!!stringa{#1}%
    \let\donottest\doprocesstest
    \ifx\!!stringa\empty
-     \let\v!compareprocessaction=\v!compareprocessactionA
+     \let\p!compareprocessaction\p!compareprocessactionA
    \else
-     \let\v!compareprocessaction=\v!compareprocessactionB
+     \let\p!compareprocessaction\p!compareprocessactionB
    \fi
    \def\p!doprocessaction##1%
-     {\v!compareprocessaction[##1][#1]}%
+     {\p!compareprocessaction[##1][#1]}%
    \processcommalist[#3]\p!doprocessaction
    \expandactions}
 
-\def\v!compareprocessactionC[#1=>#2][#3]%
+\endTEX
+
+\beginETEX \protected
+
+\def\processaction[#1]#2[#3]%
+  {\expandedaction\!!stringa{#1}%
+   \ifx\!!stringa\empty
+     \let\p!compareprocessaction\p!compareprocessactionA
+   \else
+     \let\p!compareprocessaction\p!compareprocessactionB
+   \fi
+   \def\p!doprocessaction##1%
+     {\p!compareprocessaction[##1][#1]}%
+   \processcommalist[#3]\p!doprocessaction
+   \expandactions}
+
+\endETEX
+
+% \def\p!compareprocessactionC[#1=>#2][#3]%
+%   {\expandedaction\!!stringa{#1}%
+%    \expandedaction\!!stringb{#3}%
+%    \ifx\!!stringa\!!stringb
+%      \def\commalistelement{#3}%
+%      #2%
+%      \let\p!doprocessaction\gobbleoneargument
+%      \let\p!dodoprocessaction\gobbleoneargument
+%    \else
+%      \edef\!!stringa{#1}%
+%      \ifx\!!stringa\s!unknown
+%        \def\commalistelement{#3}%
+%        #2%
+%      \fi
+%    \fi}
+
+\def\p!compareprocessactionC[#1=>#2][#3]%
   {\expandedaction\!!stringa{#1}%
    \expandedaction\!!stringb{#3}%
    \ifx\!!stringa\!!stringb
      \def\commalistelement{#3}%
      #2%
-     \let\p!doprocessaction=\gobbleoneargument
-     \let\p!dodoprocessaction=\gobbleoneargument
+     \expandafter\quitprevcommalist
    \else
      \edef\!!stringa{#1}%
      \ifx\!!stringa\s!unknown
@@ -1359,19 +1632,34 @@
    \else
      \def\p!doprocessaction##1%
        {\def\p!dodoprocessaction####1%
-          {\v!compareprocessactionC[####1][##1]}%
+          {\p!compareprocessactionC[####1][##1]}%
         \processcommalist[#3]\p!dodoprocessaction}%
      \processcommalist[#1]\p!doprocessaction
    \fi
    \expandactions}
 
-\def\v!compareprocessactionD[#1=>#2][#3]%
+% \def\p!compareprocessactionD[#1=>#2][#3]%
+%   {\expandedaction\!!stringa{#1}%
+%    \expandedaction\!!stringb{#3}%
+%    \ifx\!!stringa\!!stringb
+%      \def\commalistelement{#3}%
+%      #2%
+%      \let\p!dodoprocessaction\gobbleoneargument
+%    \else
+%      \edef\!!stringa{#1}%
+%      \ifx\!!stringa\s!unknown
+%        \def\commalistelement{#3}%
+%        #2%
+%      \fi
+%    \fi}
+
+\def\p!compareprocessactionD[#1=>#2][#3]%
   {\expandedaction\!!stringa{#1}%
    \expandedaction\!!stringb{#3}%
    \ifx\!!stringa\!!stringb
      \def\commalistelement{#3}%
      #2%
-     \let\p!dodoprocessaction=\gobbleoneargument
+     \expandafter\quitcommalist
    \else
      \edef\!!stringa{#1}%
      \ifx\!!stringa\s!unknown
@@ -1380,18 +1668,21 @@
      \fi
    \fi}
 
+\def\doprocessallactionsinset%
+  {\csname\s!do\the\processlevel\endcsname}
+
 \def\processallactionsinset[#1]#2[#3]%
   {\expandedaction\!!stringa{#1}%
    \ifx\!!stringa\empty
      \processaction[][#3]%
    \else
-     \advance\processlevel by 1
-     \setvalue{\s!do\the\processlevel}##1%
+     \advance\processlevel 1
+     \expandafter\def\csname\s!do\the\processlevel\endcsname##1%
        {\def\p!dodoprocessaction####1%
-          {\v!compareprocessactionD[####1][##1]}%
+          {\p!compareprocessactionD[####1][##1]}%
         \processcommalist[#3]\p!dodoprocessaction}%
-     \processcommalist[#1]{\getvalue{\s!do\the\processlevel}}%
-     \advance\processlevel by -1
+     \processcommalist[#1]\doprocessallactionsinset
+     \advance\processlevel -1
    \fi 
    \expandactions}
 
@@ -1466,13 +1757,13 @@
 %D
 %D \starttypen
 %D \long\def\p!doifinstringelse#1#2#3#4%
-%D   {\def\c!doifinstringelse##1#1##2##3\war%
+%D   {\def\pp!doifinstringelse##1#1##2##3\war%
 %D      {\if##2@%
 %D         #4%
 %D       \else
 %D         #3%
 %D       \fi}%
-%D    \c!doifinstringelse#2#1@@\war}
+%D    \pp!doifinstringelse#2#1@@\war}
 %D
 %D \def\doifinstringelse%
 %D   {\ExpandBothAfter\p!doifinstringelse}
@@ -1482,9 +1773,9 @@
 %D
 %D \starttypen
 %D \def\p!doifinstringelse#1#2%
-%D   {\def\c!doifinstringelse##1#1##2##3\war%
+%D   {\def\pp!doifinstringelse##1#1##2##3\war%
 %D      {\if##2@}%
-%D    \c!doifinstringelse#2#1@@\war}
+%D    \pp!doifinstringelse#2#1@@\war}
 %D
 %D \def\doifinstringelse#1#2#3#4%
 %D   {\ExpandBothAfter\p!doifinstringelse{#1}{#2}%
@@ -1499,14 +1790,15 @@
 %D run time, simply because the less tokens we pass, the faster
 %D \TEX\ runs. So finally the definition became: 
 
-\def\v!ifinstringelse#1#2%
-  {\def\c!ifinstringelse##1#1##2##3\war%
-     {\csname\if##2@iffalse\else iftrue\fi\endcsname}%
-   \expanded{\c!ifinstringelse#2#1@@\noexpand\war}} % expand #2 here
+\def\p!doifinstringelse#1#2%
+  {\def\pp!doifinstringelse##1#1##2##3\war%
+    %{\csname\if##2@iffalse\else iftrue\fi\endcsname}%
+     {\csname if\if##2@fals\else tru\fi e\endcsname}%
+   \expanded{\pp!doifinstringelse#2#1@@\noexpand\war}} % expand #2 here
 
 \long\def\doifinstringelse#1#2#3#4%
-  {\edef\@@instring{#1}% expand #1 here 
-   \@EA\v!ifinstringelse\@EA{\@@instring}{#2}% 
+  {\edef\@@@instring{#1}% expand #1 here 
+   \@EA\p!doifinstringelse\@EA{\@@@instring}{#2}% 
      #3%
    \else
      #4%
@@ -1525,14 +1817,14 @@
 %D possible, the latter alternative does minimal (one level) 
 %D expansion. 
 
-\def\v!ifincsnameelse#1#2%
-  {\def\c!ifincsnameelse##1#1##2##3\war%
+\def\p!doifincsnameelse#1#2%
+  {\def\pp!doifincsnameelse##1#1##2##3\war%
      {\csname\if##2@iffalse\else iftrue\fi\endcsname}%
-   \@EA\c!ifincsnameelse#2#1@@\war}
+   \@EA\pp!doifincsnameelse#2#1@@\war}
 
 \long\def\doifincsnameelse#1#2#3#4%
-  {\edef\@@instring{#1}%
-   \@EA\v!ifincsnameelse\@EA{\@@instring}{#2}%
+  {\edef\@@@instring{#1}%
+   \@EA\p!doifincsnameelse\@EA{\@@@instring}{#2}%
      #3%
    \else
      #4%
@@ -1551,43 +1843,34 @@
 %D \stoptypen
 %D
 %D The macro accepts \type{123}, \type{abc}, \type{{}},
-%D \type{\getal} and \type{\the\count...}.
+%D \type{\getal} and \type{\the\count...}. This macro is a 
+%D reather dirty one.
 
 \long\def\doifnumberelse#1#2#3%
-  {\getfirstcharacter{#1}%
-   \@EA\v!ifinstringelse\@EA{\firstcharacter}{1234567890}%
-     #2%
-   \else
-     #3%
-   \fi}
+  {\bgroup\donefalse\ifcase1#1\or\or\or\or\or\or\or\or\or\else\donetrue\fi
+   \ifdone\egroup#2\else\egroup#3\fi}
 
-%D Before we had \type{\v!ifinstringelse} available, we used:
+%D The previous implementation was:
+%D 
+%D \starttypen
+%D \long\def\doifnumberelse#1#2#3%
+%D   {\getfirstcharacter{#1}%
+%D    \@EA\p!doifinstringelse\@EA{\firstcharacter}{1234567890}%
+%D      #2%
+%D    \else
+%D      #3%
+%D    \fi}
+%D \starttypen
+%D 
+%D Before we had \type{\p!doifinstringelse} available, we used:
 %D
 %D \starttypen
 %D \def\doifnumberelse#1%
 %D   {\getfirstcharacter{#1}%
 %D    \rawdoifinsetelse{\firstcharacter}{1,2,3,4,5,6,7,8,9,0}}
 %D \stoptypen
-
-%D A faster but less fail safe alternative is: 
 %D
-%D \starttypen
-%D \dostepwiserecurse{0}{9}{1}
-%D   {\@EA\uccode\@EA`\recurselevel=1}
-%D 
-%D \long\def\doifnumberelse#1#2#3%
-%D   {\getfirstcharacter{#1}%
-%D    \@EA\ifnum\@EA\uccode\@EA`\firstcharacter=1
-%D      #2%
-%D    \else
-%D      #3%
-%D    \fi}
-%D \stoptypen 
-%D
-%D This one only works when the \type{\firstcharacter} is 
-%D indeed a character. Numbers and strings of characters go 
-%D all right, but arguments like \type{\relax} let things 
-%D go wrong. 
+%D The current implementation is much faster. 
 
 %D \macros
 %D   {makerawcommalist,
@@ -1644,36 +1927,36 @@
    \fi}
 
 \def\rawprocesscommalist[#1]#2%
-  {\advance\commalevel by 1\relax
+  {\global\advance\commalevel 1
    \expandafter\let\csname\s!next\the\commalevel\endcsname#2%
    \expandafter\rawprocesscommaitem#1,],% \relax
-   \advance\commalevel by -1\relax}
+   \global\advance\commalevel -1 }
 
 \def\rawdoifinsetelse#1#2%
   {\doifinstringelse{,#1,}{,#2,}}
 
-\def\v!rawprocessaction[#1][#2]%
-  {\def\c!rawprocessaction##1,#1=>##2,##3\war%
+\def\p!rawprocessaction[#1][#2]%
+  {\def\pp!rawprocessaction##1,#1=>##2,##3\war%
      {\if##3@\else
-        \def\v!processaction{##2}%
+        \def\!!processaction{##2}%
       \fi}%
-   \c!rawprocessaction,#2,#1=>,@\war}
+   \pp!rawprocessaction,#2,#1=>,@\war}
 
 \def\rawprocessaction[#1]#2[#3]%
   {\edef\!!stringa{#1}%
    \edef\!!stringb{undefined}%
-   \let\v!processaction=\!!stringb
+   \let\!!processaction\!!stringb
    \ifx\!!stringa\empty
-     \@EA\v!rawprocessaction\@EA[\s!default][#3]%
+     \@EA\p!rawprocessaction\@EA[\s!default][#3]%
    \else
-      \expandafter\v!rawprocessaction\expandafter[\!!stringa][#3]%
-      \ifx\v!processaction\!!stringb
-        \@EA\v!rawprocessaction\@EA[\s!unknown][#3]%
+      \expandafter\p!rawprocessaction\expandafter[\!!stringa][#3]%
+      \ifx\!!processaction\!!stringb
+        \@EA\p!rawprocessaction\@EA[\s!unknown][#3]%
       \fi
    \fi
-   \ifx\v!processaction\!!stringb
+   \ifx\!!processaction\!!stringb
    \else
-     \v!processaction
+     \!!processaction
    \fi}
 
 %D When we process the list \type{a,b,c,d,e}, the raw routine 
@@ -1682,42 +1965,50 @@
 %D \type{\futurelet} perform worse. Part of the speedup is 
 %D due to the \type{\let} and \type{\expandafter} in the test. 
 
-%D \macros
-%D   {processunexpandedcommalist}
-%D
-%D When processing commalists, the arguments are expanded. The
-%D main reason for doing so lays in the fact that these 
-%D macros are used for interfacing. The next alternative can be used 
-%D for 
-%D
-%D \starttypen
-%D \processunexpandedcommalist
-%D   [\alfa\beta,\gamma,\delta\epsilon]
-%D   \handleitem
-%D \stoptypen
-%D
-%D This time nesting is not supported. 
-
-\def\processunexpandedcommaitem#1,%
-  {\if]\noexpand#1%
-     \let\nextcommaitem\relax
-   \else
-     \handleunexpandedcommaitem{#1}%
-     \let\nextcommaitem\processunexpandedcommaitem
-   \fi
-   \nextcommaitem}
-
-\def\processunexpandedcommalist[#1]#2%
-  {\def\handleunexpandedcommaitem{#2}%
-   \processunexpandedcommaitem#1,],}% \relax}
-
-%D Or faster: 
-
-\def\processunexpandedcommaitem#1,%
-  {\if]\noexpand#1\else
-     \handleunexpandedcommaitem{#1}%
-     \expandafter\processunexpandedcommaitem
-   \fi}
+% %D \macros
+% %D   {processunexpandedcommalist}
+% %D
+% %D When processing commalists, the arguments are expanded. The
+% %D main reason for doing so lays in the fact that these 
+% %D macros are used for interfacing. The next alternative can be used 
+% %D for 
+% %D
+% %D \starttypen
+% %D \processunexpandedcommalist
+% %D   [\alfa\beta,\gamma,\delta\epsilon]
+% %D   \handleitem
+% %D \stoptypen
+% %D
+% %D This time nesting is not supported. 
+% 
+% %\def\processunexpandedcommaitem#1,%
+% %  {\if]\noexpand#1%
+% %     \let\nextcommaitem\relax
+% %   \else
+% %     \handleunexpandedcommaitem{#1}%
+% %     \let\nextcommaitem\processunexpandedcommaitem
+%   \fi
+%   \nextcommaitem}
+%
+% faster:
+% 
+% \def\processunexpandedcommaitem#1,%
+%   {\if]\noexpand#1\else
+%      \handleunexpandedcommaitem{#1}%
+%      \expandafter\processunexpandedcommaitem
+%    \fi}
+% 
+% \def\processunexpandedcommalist[#1]#2%
+%   {\def\handleunexpandedcommaitem{#2}%
+%    \processunexpandedcommaitem#1,],}% \relax}
+% 
+% %D Or faster: 
+% 
+% \def\processunexpandedcommaitem#1,%
+%   {\if]\noexpand#1\else
+%      \handleunexpandedcommaitem{#1}%
+%      \expandafter\processunexpandedcommaitem
+%    \fi}
 
 %D \macros
 %D   {dosetvalue,dosetevalue,docopyvalue,doresetvalue,
@@ -1821,7 +2112,7 @@
      {\dosetvalue{#1}{#2}{#3}}}
 
 %D \macros
-%D   {getparameters,geteparameters,forgetparameters}
+%D   {getparameters,geteparameters} % ,forgetparameters}
 %D
 %D Using the assignment commands directly is not our
 %D ideal of user friendly interfacing, so we take some further
@@ -1829,7 +2120,7 @@
 %D
 %D \starttypen
 %D \getparameters    [label] [...=...,...=...]
-%D \forgetparameters [label] [...=...,...=...]
+% %D \forgetparameters [label] [...=...,...=...]
 %D \stoptypen
 %D
 %D Again, the label identifies the category a variable
@@ -1902,8 +2193,8 @@
 \def\geteparameters%
   {\dogetparameters\dosetevalue}
 
-\def\forgetparameters%
-  {\dogetparameters\doresetvalue}
+% \def\forgetparameters%
+%   {\dogetparameters\doresetvalue}
 
 \let\getexpandedparameters=\geteparameters
 
@@ -1998,11 +2289,11 @@
 
 \newif\ifparameters
 
-\def\c!checkparameters#1=#2#3\war%
+\def\p!checkparameters#1=#2#3\war%
   {\if#2@\parametersfalse\else\parameterstrue\fi}
 
 \def\checkparameters[#1]%
-  {\c!checkparameters#1=@@\war}
+  {\p!checkparameters#1=@@\war}
 
 %D \macros
 %D   {getfromcommalist,getfromcommacommand,
@@ -2032,41 +2323,65 @@
 %D Afterwards, the length is available in the macro
 %D \type{\commalistsize} (not a \COUNTER).
 
+\newcount\commalistcounter
+
 \def\commalistsize{0}
 
-\def\p!dogetcommalistsize#1[#2]%
-  {\scratchcounter=0
-   \def\p!dodogetcommalistsize##1%
-     {\advance\scratchcounter by 1 }%
-   #1[#2]\p!dodogetcommalistsize   % was [{#2}]
-   \edef\commalistsize{\the\scratchcounter}}
+\def\p!dogetcommalistsize#1%
+  {\advance\commalistcounter 1 }
 
-\def\getcommalistsize%
-  {\p!dogetcommalistsize\processcommalist}
+\def\getcommalistsize[#1]%
+  {\commalistcounter=0
+   \processcommalist[#1]\p!dogetcommalistsize   % was [{#1}]
+   \edef\commalistsize{\the\commalistcounter}}
 
-\def\getcommacommandsize%
-  {\p!dogetcommalistsize\processcommacommand}
+\def\getcommacommandsize[#1]%
+  {\edef\commacommand{#1}%
+   \toks0=\expandafter{\expandafter[\commacommand]}%
+   \expandafter\getcommalistsize\the\toks0 }
 
-\def\p!dodogetfromcommalist#1%
-  {\advance\scratchcounter by -1
-   \ifnum\scratchcounter=0\relax
-     \gdef\globalcommalistelement{#1}%
-     \def\doprocesscommaitem##1]{}%
+% \def\p!dogetfromcommalist#1%
+%   {\advance\commalistcounter -1
+%    \ifcase\commalistcounter
+%      \def\commalistelement{#1}%
+%      \bgroup\def\doprocesscommaitem##1]{\egroup}%
+%    \fi}
+
+\def\p!dogetfromcommalist#1%
+  {\advance\commalistcounter -1
+   \ifcase\commalistcounter
+     \def\commalistelement{#1}%
+     \expandafter\quitcommalist
    \fi}
 
-\def\p!dogetfromcommalist#1[#2]#3[#4]%
-  {\global\let\globalcommalistelement\empty
-   \bgroup
-   \scratchcounter=#4\relax
-   #1[#2]\p!dodogetfromcommalist
-   \egroup
-   \let\commalistelement\globalcommalistelement} 
+\def\getfromcommalist[#1]#2[#3]%
+  {\let\commalistelement\empty
+   \commalistcounter=#3\relax
+   \processcommalist[#1]\p!dogetfromcommalist}
 
-\def\getfromcommalist%
-  {\p!dogetfromcommalist\processcommalist}
+\def\getfromcommacommand[#1]%
+  {\edef\commacommand{#1}%
+   \toks0=\expandafter{\expandafter[\commacommand]}%
+   \expandafter\getfromcommalist\the\toks0 }
 
-\def\getfromcommacommand%
-  {\p!dogetfromcommalist\processcommacommand}
+%D Because 0, 1 and~2 are often asked for, we optimize this 
+%D macro for those cases. The indirect call however slows 
+%D down the other cases. 
+
+\def\p!dogetfirstfromcommalist    [#1,#2]{\def\commalistelement{#1}}
+\def\p!dogetsecondfromcommalist[#1,#2,#3]{\def\commalistelement{#2}}
+\let\p!dogetotherfromcommalist=\getfromcommalist
+
+\def\getfromcommalist[#1]#2[#3]% optimized for 0,1,2 
+  {\ifcase#3\relax
+     \let\commalistelement\empty
+   \or
+     \p!dogetfirstfromcommalist[#1,]%    
+   \or
+     \p!dogetsecondfromcommalist[#1,,]%    
+   \else
+     \p!dogetotherfromcommalist[#1][#3]%
+   \fi}
 
 %D Watertight (and efficient) solutions are hard to find, due
 %D to the handling of braces during parameters passing and 
@@ -2092,13 +2407,33 @@
 %D \haalbuffer
 
 %D \macros
+%D   {dogetcommalistelement,dogetcommacommandelement}
+%D 
+%D For low level (fast) purposes, we can also use the next 
+%D alternative, which can handle 8~elements at most. 
+%D 
+%D \starttypen
+%D \dogetcommalistelement1\from a,b,c\to\commalistelement
+%D \stoptypen
+
+\def\dodogetcommalistelement#1\from#2,#3,#4,#5,#6,#7,#8\to#9%
+  {\edef#9{\ifcase#1\relax\or#2\or#3\or#4\or#5\or#6\or#7\or#8\fi}}
+
+\def\dogetcommalistelement#1\from#2\to%
+  {\dodogetcommalistelement#1\from#2,,,,,,\to}
+
+\def\dogetcommacommandelement#1\from#2\to%
+  {\@EA\dodogetcommalistelement\@EA#1\@EA\from#2,,,,,,\to}
+
+%D \macros
 %D   {dosingleargument,dodoubleargument,dotripleargument,
-%D    doquadrupleargument,doquintupleargument,dosixtupleargument}
+%D    doquadrupleargument,doquintupleargument,dosixtupleargument,
+%D    doseventupleargument}
 %D
 %D When working with delimited arguments, spaces and
 %D lineendings can interfere. The next set of macros uses
 %D \TEX' internal scanner for grabbing everything between
-%D arguments.
+%D arguments. Forgive me the funny names. 
 %D
 %D \starttypen
 %D \dosingleargument\commando    = \commando[#1]
@@ -2107,6 +2442,7 @@
 %D \doquadrupleargument\commando = \commando[#1][#2][#3][#4]
 %D \doquintupleargument\commando = \commando[#1][#2][#3][#4][#5]
 %D \dosixtupleargument\commando  = \commando[#1][#2][#3][#4][#5][#6]
+%D \doseventupleargument\commando= \commando[#1][#2][#3][#4][#5][#6][#7]
 %D \stoptypen
 %D
 %D These macros are used in the following way:
@@ -2163,13 +2499,18 @@
   {\chardef\expectedarguments=5
    \doquintupleempty}
 
-\def\doquintupleargument%
+\def\dosixtupleargument%
   {\chardef\expectedarguments=6
    \dosixtupleempty}
 
+\def\doseventupleargument%
+  {\chardef\expectedarguments=7
+   \doseventupleempty}
+
 %D \macros
 %D   {iffirstagument,ifsecondargument,ifthirdargument,
-%D    iffourthargument,iffifthargument,ifsixthargument}
+%D    iffourthargument,iffifthargument,ifsixthargument,
+%D    ifseventhargument}
 %D
 %D We use some signals for telling the calling macros if all
 %D wanted arguments are indeed supplied by the user.
@@ -2180,10 +2521,12 @@
 \newif\iffourthargument
 \newif\iffifthargument
 \newif\ifsixthargument
+\newif\ifseventhargument
 
 %D \macros
 %D   {dosingleempty,dodoubleempty,dotripleempty,
-%D    doquadrupleempty,doquintupleempty}
+%D    doquadrupleempty,doquintupleempty,dosixtupeempty,
+%D    doseventupleempty}
 %D
 %D The empty argument supplying macros mentioned before, look
 %D like:
@@ -2195,6 +2538,7 @@
 %D \doquadrupleempty \command
 %D \doquintupleempty \command
 %D \dosixtupleempty  \command
+%D \doseventupleempty\command
 %D \stoptypen
 %D
 %D So \type{\dodoubleempty} leades to:
@@ -2208,6 +2552,8 @@
 %D Depending of the generousity of the user. Afterwards one can
 %D use the \type{\if...argument} boolean. For novice: watch
 %D the stepwise doubling of \type{#}'s
+
+% idea: \ignorespaces afterwards
 
 \chardef\noexpectedarguments=0
 \chardef\expectedarguments  =0
@@ -2225,6 +2571,100 @@
       \let\expectedarguments\noexpectedarguments
       #4\dodogetargument#1#2}}
 
+%\def\getsingleempty#1#2#3%
+%  {\def\dodogetargument%
+%     {#3}%
+%   \dogetargument#1#2\firstargumenttrue\firstargumentfalse}
+%
+%\def\getdoubleempty#1#2#3%
+%  {\def\dodogetargument#1##1#2%
+%     {\def\dodogetargument%
+%        {#3#1##1#2}%
+%      \dogetargument#1#2\secondargumenttrue\secondargumentfalse}%
+%   \dogetargument#1#2\firstargumenttrue\firstargumentfalse}
+%
+%\def\gettripleempty#1#2#3%
+%  {\def\dodogetargument#1##1#2%
+%     {\def\dodogetargument#1####1#2%
+%        {\def\dodogetargument%
+%           {#3#1##1#2%
+%              #1####1#2}%
+%         \dogetargument#1#2\thirdargumenttrue\thirdargumentfalse}%
+%      \dogetargument#1#2\secondargumenttrue\secondargumentfalse}%
+%   \dogetargument#1#2\firstargumenttrue\firstargumentfalse}
+%
+%\def\getquadrupleempty#1#2#3%
+%  {\def\dodogetargument#1##1#2%
+%     {\def\dodogetargument#1####1#2%
+%        {\def\dodogetargument#1########1#2%
+%           {\def\dodogetargument%
+%              {#3#1##1#2%
+%                 #1####1#2%
+%                 #1########1#2}%
+%            \dogetargument#1#2\fourthargumenttrue\fourthargumentfalse}%
+%         \dogetargument#1#2\thirdargumenttrue\thirdargumentfalse}%
+%      \dogetargument#1#2\secondargumenttrue\secondargumentfalse}%
+%   \dogetargument#1#2\firstargumenttrue\firstargumentfalse}
+%
+%\def\getquintupleempty#1#2#3%
+%  {\def\dodogetargument#1##1#2%
+%     {\def\dodogetargument#1####1#2%
+%        {\def\dodogetargument#1########1#2%
+%           {\def\dodogetargument#1################1#2%
+%              {\def\dodogetargument%
+%                 {#3#1##1#2%
+%                    #1####1#2%
+%                    #1########1#2%
+%                    #1################1#2}%
+%               \dogetargument#1#2\fifthargumenttrue\fifthargumentfalse}%
+%            \dogetargument#1#2\fourthargumenttrue\fourthargumentfalse}%
+%         \dogetargument#1#2\thirdargumenttrue\thirdargumentfalse}%
+%      \dogetargument#1#2\secondargumenttrue\secondargumentfalse}%
+%   \dogetargument#1#2\firstargumenttrue\firstargumentfalse}
+%
+%\def\getsixtupleempty#1#2#3%
+%  {\def\dodogetargument#1##1#2%
+%     {\def\dodogetargument#1####1#2%
+%        {\def\dodogetargument#1########1#2%
+%           {\def\dodogetargument#1################1#2%
+%              {\def\dodogetargument#1################################1#2%
+%                 {\def\dodogetargument%
+%                    {#3#1##1#2%
+%                       #1####1#2%
+%                       #1########1#2%
+%                       #1################1#2%
+%                       #1################################1#2}%
+%                 \dogetargument#1#2\sixthargumenttrue\sixthargumentfalse}%
+%               \dogetargument#1#2\fifthargumenttrue\fifthargumentfalse}%
+%            \dogetargument#1#2\fourthargumenttrue\fourthargumentfalse}%
+%         \dogetargument#1#2\thirdargumenttrue\thirdargumentfalse}%
+%      \dogetargument#1#2\secondargumenttrue\secondargumentfalse}%
+%   \dogetargument#1#2\firstargumenttrue\firstargumentfalse}
+%
+%\def\getseventupleempty#1#2#3%
+%  {\def\dodogetargument#1##1#2%
+%     {\def\dodogetargument#1####1#2%
+%        {\def\dodogetargument#1########1#2%
+%           {\def\dodogetargument#1################1#2%
+%              {\def\dodogetargument#1################################1#2%
+%                 {\def\dodogetargument#1###############################%
+%                                        ################################1#2%
+%                    {\def\dodogetargument%
+%                       {#3#1##1#2%
+%                          #1####1#2%
+%                          #1########1#2%
+%                          #1################1#2%
+%                          #1################################1#2%
+%                          #1###############################%
+%                            ################################1#2}%
+%                   \dogetargument#1#2\seventhargumenttrue\seventhargumentfalse}%
+%                 \dogetargument#1#2\sixthargumenttrue\sixthargumentfalse}%
+%               \dogetargument#1#2\fifthargumenttrue\fifthargumentfalse}%
+%            \dogetargument#1#2\fourthargumenttrue\fourthargumentfalse}%
+%         \dogetargument#1#2\thirdargumenttrue\thirdargumentfalse}%
+%      \dogetargument#1#2\secondargumenttrue\secondargumentfalse}%
+%   \dogetargument#1#2\firstargumenttrue\firstargumentfalse}
+
 \def\getsingleempty#1#2#3%
   {\def\dodogetargument%
      {#3}%
@@ -2233,7 +2673,7 @@
 \def\getdoubleempty#1#2#3%
   {\def\dodogetargument#1##1#2%
      {\def\dodogetargument%
-        {#3#1##1#2}%
+        {#3#1{##1}#2}%
       \dogetargument#1#2\secondargumenttrue\secondargumentfalse}%
    \dogetargument#1#2\firstargumenttrue\firstargumentfalse}
 
@@ -2241,7 +2681,8 @@
   {\def\dodogetargument#1##1#2%
      {\def\dodogetargument#1####1#2%
         {\def\dodogetargument%
-           {#3#1##1#2#1####1#2}%
+           {#3#1{##1}#2%
+              #1{####1}#2}%
          \dogetargument#1#2\thirdargumenttrue\thirdargumentfalse}%
       \dogetargument#1#2\secondargumenttrue\secondargumentfalse}%
    \dogetargument#1#2\firstargumenttrue\firstargumentfalse}
@@ -2251,7 +2692,9 @@
      {\def\dodogetargument#1####1#2%
         {\def\dodogetargument#1########1#2%
            {\def\dodogetargument%
-              {#3#1##1#2#1####1#2#1########1#2}%
+              {#3#1{##1}#2%
+                 #1{####1}#2%
+                 #1{########1}#2}%
             \dogetargument#1#2\fourthargumenttrue\fourthargumentfalse}%
          \dogetargument#1#2\thirdargumenttrue\thirdargumentfalse}%
       \dogetargument#1#2\secondargumenttrue\secondargumentfalse}%
@@ -2263,7 +2706,10 @@
         {\def\dodogetargument#1########1#2%
            {\def\dodogetargument#1################1#2%
               {\def\dodogetargument%
-                 {#3#1##1#2#1####1#2#1########1#2#1################1#2}%
+                 {#3#1{##1}#2%
+                    #1{####1}#2%
+                    #1{########1}#2%
+                    #1{################1}#2}%
                \dogetargument#1#2\fifthargumenttrue\fifthargumentfalse}%
             \dogetargument#1#2\fourthargumenttrue\fourthargumentfalse}%
          \dogetargument#1#2\thirdargumenttrue\thirdargumentfalse}%
@@ -2277,8 +2723,35 @@
            {\def\dodogetargument#1################1#2%
               {\def\dodogetargument#1################################1#2%
                  {\def\dodogetargument%
-                    {#3#1##1#2#1####1#2#1########1#2#1################1%
-                            #2#1################################1#2}%
+                    {#3#1{##1}#2%
+                       #1{####1}#2%
+                       #1{########1}#2%
+                       #1{################1}#2%
+                       #1{################################1}#2}%
+                 \dogetargument#1#2\sixthargumenttrue\sixthargumentfalse}%
+               \dogetargument#1#2\fifthargumenttrue\fifthargumentfalse}%
+            \dogetargument#1#2\fourthargumenttrue\fourthargumentfalse}%
+         \dogetargument#1#2\thirdargumenttrue\thirdargumentfalse}%
+      \dogetargument#1#2\secondargumenttrue\secondargumentfalse}%
+   \dogetargument#1#2\firstargumenttrue\firstargumentfalse}
+
+\def\getseventupleempty#1#2#3%
+  {\def\dodogetargument#1##1#2%
+     {\def\dodogetargument#1####1#2%
+        {\def\dodogetargument#1########1#2%
+           {\def\dodogetargument#1################1#2%
+              {\def\dodogetargument#1################################1#2%
+                 {\def\dodogetargument#1###############################%
+                                        ################################1#2%
+                    {\def\dodogetargument%
+                       {#3#1{##1}#2%
+                          #1{####1}#2%
+                          #1{########1}#2%
+                          #1{################1}#2%
+                          #1{################################1}#2%
+                          #1{###############################%
+                             ################################1}#2}%
+                   \dogetargument#1#2\seventhargumenttrue\seventhargumentfalse}%
                  \dogetargument#1#2\sixthargumenttrue\sixthargumentfalse}%
                \dogetargument#1#2\fifthargumenttrue\fifthargumentfalse}%
             \dogetargument#1#2\fourthargumenttrue\fourthargumentfalse}%
@@ -2292,6 +2765,7 @@
 \def\doquadrupleempty {\getquadrupleempty []}
 \def\doquintupleempty {\getquintupleempty []}
 \def\dosixtupleempty  {\getsixtupleempty  []}
+\def\doseventupleempty{\getseventupleempty[]}
 
 %D \macros
 %D   {dosingleargumentwithset,
@@ -2374,7 +2848,7 @@
 %D prefix \type{\simple}. Commands like this can be defined by:
 %D
 %D \starttypen
-%D \complexorsimple {command}
+%D \complexorsimple\command
 %D \stoptypen
 %D
 %D When \type{\command} is followed by a \type{[setup]}, then
@@ -2406,30 +2880,36 @@
 %D Many \CONTEXT\ commands started as complex or simple ones, 
 %D but changed into more versatile (more object oriented) ones
 %D using the \type{\get..argument} commands. 
- 
+
 \def\complexorsimple#1%
-  {\doifnextcharelse{[}
-     {\firstargumenttrue\getvalue{\s!complex#1}}
-     {\firstargumentfalse\getvalue{\s!simple#1}}}
+  {\setnameofcommand{#1}%
+   \doifnextcharelse{[}
+     {\firstargumenttrue\getvalue{\s!complex\nameofcommand}}
+     {\firstargumentfalse\getvalue{\s!simple\nameofcommand}}}
 
 \def\complexorsimpleempty#1%
-  {\doifnextcharelse{[}
-     {\firstargumenttrue\getvalue{\s!complex#1}}
-     {\firstargumentfalse\getvalue{\s!complex#1}[]}}
+  {\setnameofcommand{#1}%
+   \doifnextcharelse{[}
+     {\firstargumenttrue\getvalue{\s!complex\nameofcommand}}
+     {\firstargumentfalse\getvalue{\s!complex\nameofcommand}[]}}
+
+\def\setnameofcommand#1%
+  {\bgroup
+   \escapechar=-1
+   \globaldefs=0 % pretty important! 
+   \xdef\nameofcommand{\string#1}%
+   \egroup}
 
 %D \macros
 %D   {definecomplexorsimple,definecomplexorsimpleempty}
 %D
 %D The previous commands are used that often that we found it
-%D worthwile to offer two more alternatives.
+%D worthwile to offer two more alternatives. Watch the build
+%D in protection. 
 
-\def\setnameofcommand#1%
-  {\bgroup
-   \escapechar=-1\relax
-   \xdef\nameofcommand{\string#1}%
-   \egroup}
+\beginTEX
 
-\def\definewithnameofcommand#1#2% watch the \donottest
+\def\definewithnameofcommand#1#2% 
   {\setnameofcommand{#2}%
    \@EA\def\@EA#2\@EA{\@EA\donottest\@EA#1\@EA{\nameofcommand}}}
 
@@ -2438,6 +2918,18 @@
 
 \def\definecomplexorsimpleempty%
   {\definewithnameofcommand\complexorsimpleempty}
+
+\endTEX
+
+\beginETEX \protected
+
+\def\definecomplexorsimple#1%
+  {\normalprotected\def#1{\complexorsimple#1}}
+
+\def\definecomplexorsimpleempty#1%
+  {\normalprotected\def#1{\complexorsimpleempty#1}}
+
+\endETEX
 
 %D These commands are called as:
 %D
@@ -2466,7 +2958,7 @@
 %D this using this command is: 
 %D
 %D \starttypen
-%D \definestartstopcommand\somecommand\v!specifier{arg}{arg}%
+%D \definestartstopcommand\somecommand\e!specifier{arg}{arg}%
 %D   {do something with arg} 
 %D \stoptypen
 %D
@@ -2481,7 +2973,7 @@
 %D \type{#}'s are needed in the specification part, like:
 %D
 %D \starttypen
-%D \definestartstopcommand\somecommand\v!specifier{[##1][##2]}{##3}%
+%D \definestartstopcommand\somecommand\e!specifier{[##1][##2]}{##3}%
 %D   {do #1 something #2 with #3 arg} 
 %D \stoptypen
 %D
@@ -2672,7 +3164,7 @@
   {\writestring{}}
 
 \def\dosplitstatus#1%
-  {\advance\scratchcounter by 1
+  {\advance\scratchcounter 1
    \ifnum\scratchcounter<\statuswidth
      \edef\messagecontentA{\messagecontentA#1}%
      \expandafter\dosplitstatus
@@ -2685,7 +3177,7 @@
 
 \gdef\writestatus#1#2%
   {\bgroup
-   \let\messagecontentA=\empty
+   \let\messagecontentA\empty
    \edef\messagecontentB{#2}%  maybe it's \the\scratchcounter
    \scratchcounter=0
    \expandafter\dosplitstatus#1%

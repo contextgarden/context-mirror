@@ -15,9 +15,46 @@
 
 \unprotect
 
-\newtoks\everyshipout
+\newevery \everyshipout       \relax
+\newevery \everybeforeshipout \relax
+\newevery \everyaftershipout  \relax
+\newevery \everylastshipout   \relax
+\newevery \everybye           \relax   
+\newevery \everystarttext     \relax
+\newevery \everystoptext      \relax
+\newevery \everypagebody      \relax
+
+%D \macros 
+%D   {fastmode}
+%D
+%D The command \type {\fastmode} disables some time consuming 
+%D typesetting. 
+
+\newevery \everyfastmode \relax
+
+\newif\iffastmode 
+
+\def\fastmode%
+  {\fastmodetrue 
+   \the\everyfastmode}
+
+%D \macros 
+%D   {pdfoutput}
+%D
+%D There are some fundamental differences between producing
+%D \DVI\ and \PDF\ output, especially when we use \PDFTEX, like
+%D object reuse, one pass graphic inclusion and the lack of a
+%D postprocessing stage. Because we must make sure that
+%D \CONTEXT\ knows what it's up to, we always default to \DVI\
+%D mode, even when users explicitly ask for \PDF\ output in the
+%D \PDFTEX\ configuration file. 
+
+\ifx\pdfoutput\undefined \else
+
+  \prependtoks \pdfoutput=0 \to \everyjob 
+
+\fi
 
 \protect 
 
 \endinput
-

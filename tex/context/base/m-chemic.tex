@@ -1,0 +1,21 @@
+%D \module
+%D   [       file=ppchtex (m-chemic),
+%D        version=1997.03.19,
+%D          title=\CONTEXT\ Extra Modules,
+%D       subtitle=\PPCHTEX\ (Plain Pictex Context cHemie \TEX),
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten},
+%D    suggestions={Tobias Burnus, Dirk Kuypers \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. Non||commercial use is 
+%C granted. 
+
+\ifx\beginpicture\undefined
+  \input pictex.tex \relax
+\fi
+
+\input ppchtex.tex \relax
+
+\endinput

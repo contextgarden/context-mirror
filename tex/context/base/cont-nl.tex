@@ -11,11 +11,26 @@
 %C therefore copyrighted by \PRAGMA. Non||commercial use is 
 %C granted. 
 
-\catcode`\{=1 
-\catcode`\}=2 
-
-\def\defaultinterface{dutch} 
+\catcode`\{=1 \catcode`\}=2 \def\defaultinterface{dutch} 
 
 \input context.tex 
+
+\unprotect
+
+\installlanguage [\s!en] [\c!status=\v!start] 
+\installlanguage [\s!uk] [\c!status=\v!start] 
+\installlanguage [\s!de] [\c!status=\v!start] 
+\installlanguage [\s!fr] [\c!status=\v!start] 
+\installlanguage [\s!sp] [\c!status=\v!start] 
+\installlanguage [\s!nl] [\c!status=\v!start] 
+
+\appendtoks \language     [\s!nl] \to \everyjob
+\appendtoks \mainlanguage [\s!nl] \to \everyjob
+
+\setupbodyfont [cmr,rm,12pt]
+
+\protect
+
+\dump
 
 \endinput

@@ -1,0 +1,36 @@
+%D \module
+%D   [       file=cont-en,
+%D        version=1997.08.19,
+%D          title=\CONTEXT,
+%D       subtitle=\CONTEXT\ English Format Generation, 
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. Non||commercial use is 
+%C granted. 
+
+\catcode`\{=1 \catcode`\}=2 \def\defaultinterface{english} 
+
+\input context.tex 
+
+\unprotect
+
+\installlanguage [\s!en] [\c!status=\v!start] 
+\installlanguage [\s!uk] [\c!status=\v!start] 
+\installlanguage [\s!de] [\c!status=\v!start] 
+\installlanguage [\s!fr] [\c!status=\v!start] 
+\installlanguage [\s!sp] [\c!status=\v!start] 
+\installlanguage [\s!nl] [\c!status=\v!start] 
+
+\appendtoks \language     [\s!uk] \to \everyjob
+\appendtoks \mainlanguage [\s!uk] \to \everyjob
+
+\setupbodyfont [cmr,rm,12pt]
+
+\protect
+
+\dump
+
+\endinput

@@ -13,6 +13,8 @@
 
 \unprotect
 
+%D Remark: chained references are not yet implemented.
+
 %D \macros
 %D   {dosetupinteraction,
 %D    dostartthisislocation,
@@ -40,6 +42,7 @@
         {\doifparentfileelse{#4}
            {\!!doneafalse}
            {\!!doneatrue}}%
+      %\hsmash{[l:#5]}%
       \special
         {button: 
            #1 #2
@@ -58,6 +61,7 @@
         {\doifparentfileelse{#4}
            {\!!doneafalse}
            {\!!doneatrue}}%
+      %\hsmash{[p:#5]}%
       \special
         {button: 
            #1 #2
@@ -71,7 +75,8 @@
    \egroup}
 
 \definespecial\dostartthisislocation#1%
-  {\special{mark: "#1"}}
+  {%\hsmash{[m:#1]}%
+   \special{mark: "#1"}}
 
 \definespecial\dostartthisisrealpage#1%
   {}
@@ -87,4 +92,3 @@
 \protect
 
 \endinput
-

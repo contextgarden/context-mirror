@@ -17,7 +17,6 @@
 
 %D \macros
 %D   {assigndimension,assignalfadimension}
-%D   {}
 %D
 %D Hieronder worden enkele commando's gedefinieerd rond
 %D toekenningen. Allereerst een commando om waarden aan
@@ -104,10 +103,9 @@
 %D      {#2=\getvalue{\@@dimension#1}}
 %D      {#2=#1}}
 %D \stoptypen
-
+
 %D \macros
 %D   {assignvalue}
-%D   {}
 %D
 %D Een variant hierop is het commando:
 %D
@@ -141,10 +139,9 @@
         \v!middel=>\def#2{#4},
          \v!groot=>\def#2{#5},
      \s!unknown=>\def#2{#1}]}
-
+
 %D \macros
 %D   {assignwidth}
-%D   {}
 %D
 %D Een breedte van een opgegeven tekst kan worden berekend en
 %D toegekend aan een \DIMENSION\ met:
@@ -172,8 +169,7 @@
          \doif{#2}{\v!ruim}
            {\advance#1 by #4}}%
         {#1=#2}}}%
-
+
 \protect
 
 \endinput
-

@@ -89,7 +89,7 @@
 
 \def\!!width   {width}        \def\!!plus    {plus}
 \def\!!height  {height}       \def\!!minus   {minus}
-\def\!!depth   {depth}
+\def\!!depth   {depth}        \def\!!to      {to}
 
 %D \macros
 %D   {defineinterfaceconstant,
@@ -163,12 +163,11 @@
 %D \definesystemvariable    {name}
 %D \stoptypen
 
-\def\definesystemvariable    #1{\setevalue{\??prefix#1}{\@@prefix#1}}
+\def\definesystemvariable #1{\setevalue{\??prefix#1}{\@@prefix#1}}
 
 %D \macros
 %D   {selectinterface, 
 %D    defaultinterface, currentinterface, currentresponses}
-%D   {}
 %D
 %D With \type{\selectinterface} we specify the language we are
 %D going to use. The system asks for the language wanted, and
@@ -183,7 +182,7 @@
 
 \ifx\defaultinterface\undefined
 
-  \def\defaultinterface{dutch}
+  \def\defaultinterface{english}
 
   \def\selectinterface%
     {\def\docommando##1##2%
@@ -198,7 +197,8 @@
      \writeline
      \docommando\currentresponses\currentinterface
      \writestatus{interface}{using \currentresponses\space messages}%
-     \writeline}
+     \writeline
+     \let\selectinterface\relax}
 
 \else
 
@@ -206,7 +206,8 @@
     {\writestatus{interface}{defining \currentinterface\space interface}%
      \writeline
      \writestatus{interface}{using \currentresponses\space messages}%
-     \writeline}
+     \writeline
+     \let\selectinterface\relax}
 
 \fi
 
@@ -215,7 +216,6 @@
 
 %D \macros
 %D   {startinterface}
-%D   {}
 %D
 %D Sometimes we want to define things only for specific
 %D interface languages. This can be done by means of the
@@ -229,14 +229,8 @@
 %D \stopinterface
 %D \stoptypen
 
-%\long\def\startinterface #1 #2\stopinterface%
-%  {\doifelse{#1}{\currentinterface}
-%     {\long\def\next{#2}}
-%     {\let\next=\relax}%
-%   \next}
-
 \def\startinterface #1 
-  {\doifelse{#1}{\currentinterface}
+  {\doifinsetelse{\currentinterface}{#1}
      {\let\next\relax}
      {\long\def\next##1\stopinterface{}}%
    \next}
@@ -386,7 +380,8 @@
    \next}
 
 \gdef\startmessages #1 library: #2
-  {\bgroup
+  {\definemessageconstant{#2}% handy for modules 
+   \bgroup
    \obeylines
    \doifinsetelse{#1}{\currentresponses,all}
      {\def\next%
@@ -497,7 +492,7 @@
 \def\dogetvalue#1#2%
   {\csname#1\csname\c!prefix!#2\endcsname\endcsname}
 
-%D Although maybe bot clearly visible, there is a
+%D Although maybe not clearly visible, there is a
 %D considerable profit in further optimalization. By expanding
 %D the embedded \type{\csname} we can reduce the format file
 %D by about 5\% (60~KB out of 1.9~MB).
@@ -505,16 +500,75 @@
 \def\docopyvalue#1#2#3%
   {\p!doifundefined{\c!prefix!#3}%
      \let\donottest\doprocesstest
-     \@EA\@EA\@EA\def\@EA\csname\@EA#1\@EA#3\@EA\endcsname
-       \@EA{\csname#2#3\endcsname}%
+     \@EA\@EA\@EA\def\@EA
+       \csname\@EA#1\@EA#3\@EA
+       \endcsname\@EA{\csname#2#3\endcsname}%
    \else
      \let\donottest\doprocesstest
      \@EA\@EA\@EA\def\@EA
-         \csname
-           \@EA#1\@EA\csname\@EA\c!prefix!\@EA#3\@EA\endcsname\@EA
-         \endcsname
-       \@EA{\csname#2\csname\c!prefix!#3\endcsname\endcsname}%
+       \csname\@EA#1\@EA\csname\@EA\c!prefix!\@EA#3\@EA\endcsname\@EA
+       \endcsname\@EA{\csname#2\csname\c!prefix!#3\endcsname\endcsname}%
    \fi}
+
+%D A slightly faster alternative: 
+
+\beginTEX
+
+\def\dosetvalue#1#2#3%
+  {\@EA\ifx\csname\c!prefix!#2\endcsname\relax
+     \@EA\def\csname#1#2\endcsname{#3}%
+   \else
+     \@EA\def\csname#1\csname\c!prefix!#2\endcsname\endcsname{#3}%
+   \fi}
+
+\def\dosetevalue#1#2#3%
+  {\@EA\ifx\csname\c!prefix!#2\endcsname\relax
+     \@EA\edef\csname#1#2\endcsname{#3}%
+   \else
+     \@EA\edef\csname#1\csname\c!prefix!#2\endcsname\endcsname{#3}%
+   \fi}
+
+\def\docopyvalue#1#2#3%
+  {\@EA\ifx\csname\c!prefix!#3\endcsname\relax
+     \@EA\@EA\@EA\def\@EA
+        \csname\@EA#1\@EA#3\@EA
+        \endcsname\@EA{\csname#2#3\endcsname}%
+   \else
+     \@EA\@EA\@EA\def\@EA
+       \csname\@EA#1\@EA\csname\@EA\c!prefix!\@EA#3\@EA\endcsname\@EA
+       \endcsname\@EA{\csname#2\csname\c!prefix!#3\endcsname\endcsname}%
+   \fi}
+
+\endTEX
+
+\beginETEX \protected
+
+\def\dosetvalue#1#2#3%
+  {\ifcsname\c!prefix!#2\endcsname
+     \@EA\def\csname#1\csname\c!prefix!#2\endcsname\endcsname{#3}%
+   \else
+     \@EA\def\csname#1#2\endcsname{#3}%
+   \fi}
+
+\def\dosetevalue#1#2#3%
+  {\ifcsname\c!prefix!#2\endcsname
+     \@EA\edef\csname#1\csname\c!prefix!#2\endcsname\endcsname{#3}%
+   \else
+     \@EA\edef\csname#1#2\endcsname{#3}%
+   \fi}
+
+\def\docopyvalue#1#2#3%
+  {\ifcsname\c!prefix!#3\endcsname
+     \@EA\@EA\@EA\def\@EA
+       \csname\@EA#1\@EA\csname\@EA\c!prefix!\@EA#3\@EA\endcsname\@EA
+       \endcsname\@EA{\csname#2\csname\c!prefix!#3\endcsname\endcsname}%
+   \else
+     \@EA\@EA\@EA\def\@EA
+        \csname\@EA#1\@EA#3\@EA
+        \endcsname\@EA{\csname#2#3\endcsname}%
+   \fi}
+
+\endETEX
 
 %D We take this opportunity of redefining to adapt an
 %D assignment macro. The change has to do with the fact that the
@@ -860,6 +914,41 @@
 %D less free format. All setups accept the keyword \type{all}
 %D which equals every language.
 
+%D The next few macros come into action when we generate 
+%D interface log files: 
+
+\ifx\undefined\scratchwrite \newwrite\scratchwrite \fi
+
+\newif\iflogginginterface 
+
+\def\flushinterfaceelementline%
+  {\iflogginginterface 
+     \immediate\write\scratchwrite{\interfaceelementline}%
+     \let\interfaceelementline\empty
+   \fi}
+
+\def\saveinterfaceelementline#1%
+  {\iflogginginterface 
+     \edef\interfaceelementline{\interfaceelementline#1\space}%
+   \fi}
+
+\def\startlogginginterface #1 %
+  {\logginginterfacetrue
+   \let\interfaceelementline\empty
+   \immediate\openout\scratchwrite=./#1\relax}
+
+\def\stoplogginginterface%
+  {\flushinterfaceelementline  
+   \immediate\closeout\scratchwrite
+   \logginginterfacefalse}
+
+%D By default we don't log at all. 
+
+\def\startlogginginterface #1 {}
+\def\stoplogginginterface     {}
+
+%D These logging commands are used in the next macros. 
+
 \def\nointerfaceobject{-}
 
 \def\startinterfaceobjects#1#2%
@@ -868,8 +957,9 @@
    \let\dowithinterfaceelement#1%
    \def\dodogetinterfaceobjects%
       {\ifx\next#2%
-         \def\next####1%
-           {}%
+         \flushinterfaceelementline
+         \flushinterfaceelementline
+         \let\next\gobbleoneargument
        \else\ifx\next\par
          \long\def\next####1%
            {\dogetinterfaceobjects}%
@@ -887,7 +977,8 @@
    \dogetinterfaceobjects}
 
 \def\dogetinterfacetemplate[#1:#2]%
-  {\doifinsetelse{#1}{\currentinterface,all}
+  {\saveinterfaceelementline{#1}%
+   \doifinsetelse{#1}{\currentinterface,all}
      {\let\dogetinterfaceobject\doskipinterfaceobject}
      {\advance\!!counta by 1\relax}}
 
@@ -895,14 +986,20 @@
   {\if#2:%
      \let\dogetinterfaceobject\dogetinterfaceelement
      \dogetinterfaceobject[#1:#2#3]%
+   \else
+     \saveinterfaceelementline{#1}%
    \fi}
+
+\let\interfaceelementline\empty
 
 \def\dogetinterfaceelement[#1:#2#3]%
   {\ifx#2:%
      \!!countb=0
      \def\!!stringa{#1}%
+     \flushinterfaceelementline
    \else
      \advance\!!countb by 1
+     \saveinterfaceelementline{#1}%
      \ifnum\!!countb=\!!counta
        \@EA\dowithinterfaceelement\@EA{\!!stringa}{#1}%
        \let\dogetinterfaceobject\doskipinterfaceobject
@@ -927,14 +1024,23 @@
       \ifinterfacetranslation
         \setvalue{\x!prefix!#1}{#2}%
       \fi
-      \setvalue{\c!prefix!#2}{#1}}}
+      \doifnot{#1}{#2}
+        {\checksetvalue{\c!prefix!#2}{#1}%
+         \setvalue{\c!prefix!#2}{#1}}}}
 
 \def\setinterfacevariable#1#2%
   {\doifelse{#2}{\nointerfaceobject}
      {\debuggerinfo{variable}{#1 defined as #1 by default}%
+      \checksetvalue{\v!prefix!#1}{#1}%
       \setvalue{\v!prefix!#1}{#1}}
      {\debuggerinfo{variable}{#1 defined as #2}%
+      \checksetvalue{\v!prefix!#1}{#2}%
       \setvalue{\v!prefix!#1}{#2}}}
+
+\def\checksetvalue#1#2%
+  {\doifdefined{#1}{\doifvaluesomething{#1}{\doifnotvalue{#1}{#2} 
+     {\writestatus{problems}{set #1 to #2 overloads \getvalue{#1}}%
+      \wait}}}}
 
 \def\startvariables%
   {\startinterfaceobjects\setinterfacevariable\stopvariables}
@@ -1132,6 +1238,8 @@
 %D Giving \type{\interfaced{breedte}} results in \type{width}
 %D or, when not defined, in \type{breedte} itself.
 
+\beginTEX
+
 \def\interfaced#1%
   {\expandafter\ifx\csname\c!prefix!#1\endcsname\relax
      #1%
@@ -1139,11 +1247,46 @@
      \csname\c!prefix!#1\endcsname
    \fi}
 
+\endTEX
+
+\beginETEX \ifcsname
+
+\def\interfaced#1%
+  {\ifcsname\c!prefix!#1\endcsname
+     \csname\c!prefix!#1\endcsname
+   \else
+     #1%
+   \fi}
+
+\endETEX
+
 %D So much for the basic multi||lingual interface commands. The
 %D macro's can be enhanced with more testing facilities, but
 %D for the moment they suffice.
 
+%D Out of convenience we define the banners here. 
+
+\def\contextbanner%
+  {ConTeXt                
+   ver: \contextversion  \space 
+   fmt: \formatversion   \space
+   int: \currentinterface\space 
+   mes: \currentresponses}
+
+\def\showcontextbanner%
+  {\writeline\writestring{\contextbanner}\writeline}
+
+\edef\formatversion% 
+  {\ifx\normalyear \undefined\the\year \else\the\normalyear \fi.%
+   \ifx\normalmonth\undefined\the\month\else\the\normalmonth\fi.%
+   \ifx\normalday  \undefined\the\day  \else\the\normalday  \fi}
+
+\ifx\contextversion\undefined \def\contextversion{unknown} \fi
+
+\ifx\undefined\normaldump 
+  \let\normaldump\dump \def\dump{\showcontextbanner\normaldump}
+\fi
+
 \protect
 
 \endinput
-

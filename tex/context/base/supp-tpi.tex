@@ -19,9 +19,10 @@
 %D \type{supp-spe} as well as the \METAPOST\ run||time support
 %D implemented in \type{supp-mps}.
 
-\ifx\undefined\writestatus     \input supp-mis \relax \fi
-\ifx\undefined\mimmickspecials \input supp-spe \relax \fi
-\ifx\undefined\MPgraphicbox    \input supp-mps \relax \fi
+\ifx\undefined\writestatus         \input supp-mis \relax \fi
+\ifx\undefined\mimmickspecials     \input supp-spe \relax \fi
+\ifx\undefined\MPgraphicbox        \input supp-mps \relax \fi
+\ifx\undefined\dogetEPSboundingbox \input supp-eps \relax \fi
 
 \writestatus{loading}{Context Support Macros / TPIC Conversion}
 
@@ -105,11 +106,14 @@
 %D Now we can savely use the egroup that closes the box to also
 %D end the picture.
 
+% BETER: check for context and include mp-tool.mp
+
 \def\startTPICspecials%
   {\bgroup
    \let\startTPICspecials=\relax
    \aftergroup\stopTPICspecials
    \startwritingMPgraphic
+   \writeMPgraphic{input mp-tool.mp;}%
    \writeMPgraphic{pair p[];}}
 
 %D As soon as we begin a picture, we inhibit nesting by
@@ -336,4 +340,3 @@
 \protect 
 
 \endinput
-

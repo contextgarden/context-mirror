@@ -1,0 +1,648 @@
+%D \module
+%D   [       file=enco-ini,
+%D        version=1998.12.03,
+%D          title=\CONTEXT\ Encoding Macros,
+%D       subtitle=Initialization,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. Non||commercial use is
+%C granted.
+
+% \everyuppercase
+% \dotlessi
+% single/double quotes 
+% hyphens 
+% characterencoding  => encoding 
+% charactermapping => mapping 
+
+%D Most of this module used to be part of the font and language
+%D modules. While implementing Czech support, I decided to
+%D isolate this code.
+
+%D While dealing with input (the text source) and output (the
+%D glyphs), encoding comes into view. To summarize a few:
+%D
+%D \startopsomming
+%D \som  Bytes in the input file are mapped to an internal
+%D       representation. An~\type {a} often stays an~\type {a},
+%D       but~\type {\"e} can become either one code or become
+%D       two codes (ending in overlapping glyphs).
+%D \som  Characters can be made active and mapped onto another
+%D       character.
+%D \som  When changing case, characters are mapped onto
+%D       themselves, their case||counterpart or a reasonable
+%D       alternative, like~\"e onto~e.
+%D \som  Single character representations in a \DVI\ file can 
+%D       be mapped onto one or more characters, either of not
+%D       in more than one font file (virtual fonts).
+%D \som  In the final format, fonts collections can be 
+%D       partially embedded, thereby losing the one||to||one 
+%D       relation between several instances of one font.
+%D \som  For special purposes, individual characters should be
+%D       mapped onto a dedicated encoding vector, for instance
+%D       \PDF\ document encoding.
+%D \stopopsomming
+%D
+%D These and other kind of mappings are to be dealt with, and
+%D the exact way of dealing often depends on the language to be
+%D typeset.
+
+\writestatus{loading}{Context Encoding Macros (ini)}
+
+\unprotect 
+
+\startmessages  dutch  library: encodings
+  title: encoding
+      1: codering --
+      2: codering -- wordt geladen
+      3: onbekende codering --
+\stopmessages
+
+\startmessages  english  library: encodings
+  title: encoding
+      1: coding --
+      2: coding -- is loaded
+      3: unknown coding --
+\stopmessages
+
+\startmessages  german  library: encodings
+  title: Kodierung
+      1: Kodierung --
+      2: Kodierung -- ist geladen
+      3: Unbekannte Kodierung --
+\stopmessages
+
+%D First we define a few local constants. 
+
+\def\@map@   {@m@ap@} % mapping prefix 
+\def\@plain@ {@e@pl@} % plain TeX encoding vector
+
+%D \macro 
+%D   {useencoding}
+%D
+%D Encodings things are defined in separate files and are 
+%D loaded only once, using: 
+%D
+%D \showsetup{\y!useencoding}
+
+\def\douseencoding#1%
+  {\doifundefined{\c!file\f!encodingprefix#1}%
+     {\setvalue{\c!file\f!encodingprefix#1}{}%
+      \makeshortfilename[\f!encodingprefix#1]%
+      \startreadingfile
+      \readsysfile{\shortfilename}
+        {\showmessage{\m!encodings}{2}{#1}}
+        {\showmessage{\m!encodings}{3}{#1}}%
+      \stopreadingfile}}
+
+\def\useencoding[#1]%
+  {\processcommalist[#1]\douseencoding}
+
+%D \macros
+%D   {startmapping,usemapping}
+%D
+%D In order to process patterns, convert from lower to
+%D uppercase and vise versa and some more, we provide a
+%D mechanism to define mappings. The first real application
+%D of this command was:
+%D
+%D \starttypen
+%D \startmapping [something]
+%D   \definecasemap 165 181 165   
+%D   \definecasemap 171 187 171   
+%D   ...
+%D   \defineuppercasecom \i  {I} 
+%D   \defineuppercasecom \l  \L 
+%D   \definelowercasecom \AE \ae
+%D   ...
+%D \stopmapping
+%D \stoptypen
+%D
+%D So, character 165 becomes 181 in uppercase and 165 in 
+%D lowercase. A mapping is activated with \type {\usemapping}.
+
+\def\startmapping[#1]%
+  {\pushmacro\charactermapping
+   \def\charactermapping{#1}%
+   \doifundefined{\@map@\charactermapping}
+     {\expanded{\newtoks\csname\@map@\charactermapping\endcsname}}}
+
+\def\stopmapping%
+  {\popmacro\charactermapping}
+
+\def\setmappingtoks%
+  {\@EA\let\@EA\mappingtoks\csname\@map@\charactermapping\endcsname}
+
+\def\definecasemap #1 #2 #3 % code lower upper
+  {\setmappingtoks
+   \appendtoks\setcasemap #1 #2 #3 \to\mappingtoks
+   \ignorespaces}
+
+\def\setcasemap #1 #2 #3 %
+  {\catcode#1=\@@letter 
+   \lccode #1=#2 
+   \uccode #1=#3 }
+
+\def\definespacemap #1 #2 % code sfcode
+  {\setmappingtoks
+   \appendtoks\setspacemap #1 #2 \to\mappingtoks
+   \ignorespaces}
+
+\def\setspacemap #1 #2 %
+  {\catcode#1=\@@other  
+   \lccode #1=0 
+   \uccode #1=0 
+   \sfcode #1=#2 } 
+
+\def\defineuppercasecom#1#2% 
+  {\setmappingtoks
+   \appendtoks\setuppercasecom#1{#2}\to\mappingtoks
+   \ignorespaces}
+
+\def\definelowercasecom#1#2% 
+  {\setmappingtoks
+   \appendtoks\setlowercasecom#1{#2}\to\mappingtoks
+   \ignorespaces}
+
+\let\setuppercasecom\gobbletwoarguments
+\let\setlowercasecom\gobbletwoarguments
+
+\def\setcasecom#1#2{\def#1{#2}}
+
+\def\usemapping[#1]%
+  {\doifdefined{\@map@#1}{\the\csname\@map@#1\endcsname}}
+
+%D Further on we have to take some precautions when dealing
+%D with special characters like~\type{~}, \type{_}
+%D and~\type{^}, so let us define ourselve some handy macros
+%D first.
+
+\def\protectfontcharacters%
+  {\edef\unprotectfontcharacters%
+     {\catcode`\noexpand ~=\the\catcode`~\relax
+      \catcode`\noexpand _=\the\catcode`_\relax
+      \catcode`\noexpand ^=\the\catcode`^\relax}%
+   \catcode`~=\@@letter
+   \catcode`_=\@@letter
+   \catcode`^=\@@letter\relax}
+
+% \def\unprotectfontcharacters%
+%   {\catcode`\~=\@@active
+%    \catcode`\_=\@@subscript
+%    \catcode`\^=\@@superscript\relax}}
+
+%D The completeness of the Computer Modern Roman typefaces
+%D makes clear how incomplete other faces are. To honour 7~bit
+%D \ASCII, these fonts were designed using only the first 127
+%D values of the 256 ones that can be presented by one byte.
+%D Nowadays 8~bit character codings are more common, mainly
+%D because they permit us to predefine some composed
+%D characters, which are needed in most european languages.
+%D
+%D Supporting more than the standard \TEX\ encoding vector
+%D |<|which in itself is far from standard and differs per
+%D font|>| puts a burden on the fonts mechanism. The \CONTEXT\
+%D mechanism is far from complete, but can handle several
+%D schemes at once. The main problem lays in the accented
+%D characters and ligatures like~ff, although handling
+%D ligatures is not the responsibility of this module.
+%D
+%D By default, we use \PLAIN\ \TEX's approach of placing
+%D accents. All other schemes sooner or later give problems
+%D when we distribute \DVI||files are distributed across
+%D machines and platforms. Nevertheless, we have to take care
+%D of different encoding vectors, which tell us where to find
+%D the characters we need. This means that all kind of
+%D character placement macro's like \type{\"} and \type{\ae}
+%D have to be implemented  and adapted in a way that suits
+%D these vectors.
+%D
+%D The main difference between different vector is the way
+%D accents are ordered and/or the availability of prebuilt
+%D accented characters. Accented characters can for instance be
+%D called for by sequences like \type{\"e}. Here the \type{\"}
+%D is defined as:
+%D
+%D \starttypen
+%D \def\"#1{{\accent"7F #1}}
+%D \stoptypen
+%D
+%D This macro places the accent \accent"7F {} on top of an~e
+%D gives \"e. Some fonts however can have prebuild accents and
+%D use a more direct approach like
+%D
+%D \starttypen
+%D \def\"#1{\if#1e\char 235\else ... \fi}
+%D \stoptypen
+%D
+%D The latter approach is not used in \CONTEXT, because we
+%D store relevant combinations of accents and characters in
+%D individual macros.
+
+%D We define character substitutes and commands with definition
+%D commands like:
+%D
+%D \starttypen
+%D \startcoding[texnansi]
+%D
+%D \defineaccent " a           228
+%D \defineaccent ^ e           234
+%D \defineaccent ' {\dotlessi} 237
+%D
+%D \definecharacter ae 230
+%D \definecharacter oe 156
+%D
+%D \definecommand b \texnansiencodedb
+%D \definecommand c \texnansiencodedc
+%D
+%D \stopcoding
+%D \stoptypen
+%D
+%D The last argument of \type{\defineaccent} and
+%D \type{\definecharacter} tells \TEX\ the position of the
+%D accented character in the encoding vector. In order to
+%D complish this, we tag each implementation with the character
+%D coding identifier. We therefore need two auxiliary variables
+%D \type{\characterencoding} and \type{\nocharacterencoding}. These
+%D contain the current and default encoding vectors and both
+%D default to the \PLAIN\ one.
+
+\let\characterencoding   = \@plain@
+\let\nocharacterencoding = \@plain@
+\let\charactermapping    = \@plain@
+
+%D \macros
+%D   {startcoding, setcoding}
+%D
+%D Before we can redefine accents and special characters, we
+%D have to tell \CONTEXT\ what encoding is in force. The next
+%D command is responsible for doing this and also takes care of
+%D the definition of the recoding commands. We use the \type 
+%D {\start}||\type {\stop}||commands for definitions and the 
+%D \type {\set}||command for local switching. 
+
+\def\donthandleaccent#1#2%
+  {\getvalue{\characterencoding#1\string#2}}
+
+\def\startcoding[#1]%
+  {\doifelsenothing{#1}
+     {\let\stopcoding\relax}
+     {%\protectfontcharacters % problematic in language loading
+      \showmessage{\m!encodings}{1}{#1}%
+      \pushmacro\dohandleaccent
+      \let\dohandleaccent\donthandleaccent
+      \def\characterencoding{@#1@}%
+      \def\stopcoding%
+        {\popmacro\dohandleaccent
+         \let\characterencoding=\@plain@
+         \unprotectfontcharacters}}} % ?? 
+
+\def\setcoding[#1]% use grouped! 
+  {\doifsomething{#1}
+     {\let\dohandleaccent\donthandleaccent
+      \def\characterencoding{@#1@}%
+      \enablelanguagespecifics[\currentlanguage]}}
+
+\def\startencoding{\startcoding}
+\def\stopencoding {\stopcoding}
+\def\setencoding  {\setcoding}
+
+%D The use of these macros are not limited to font 
+%D definition files, but may also be used when loading 
+%D patterns. 
+
+%D \macros
+%D   {defineaccent, definecharacter, definecommand}
+%D
+%D The actual definition of accents, special characters and
+%D commands is done with the next three commands.
+
+\def\defineaccent%
+  {\protectfontcharacters
+   \dodefineaccent}
+
+\def\dodefineaccent#1 #2 %
+  {\unprotectfontcharacters
+   \dododefineaccent#1 #2 }
+
+\def\dododefineaccent#1 #2 #3 %
+  {\doifnumberelse{#3}
+     {\setvalue{\characterencoding#1\string#2}{\char#3}}
+     {\setvalue{\characterencoding#1\string#2}{#3}}%
+   \unprotectfontcharacters}
+
+\def\definecharacter#1 #2 %
+  {\doifnumberelse{#2}
+     {\setvalue{\characterencoding\string#1}{\char#2}}
+     {\setvalue{\characterencoding\string#1}{#2}}}
+
+%D Instead of numbers, a command may be entered.
+
+\def\definecommand#1 #2 %
+  {\setvalue{\characterencoding\string#1}{#2}}
+ 
+%D Here we see that redefining accents is characters is more
+%D or less the same as redefining commands. We also could have
+%D said:
+%D
+%D \starttypen
+%D \def\defineaccent#1 #2 {\definecommand#1\string#2 \char}
+%D \def\definecharacter#1 {\definecommand#1 \char}
+%D \stoptypen
+
+%D \macros
+%D   {redefineaccent}
+%D
+%D Telling \CONTEXT\ how to treat accents and special
+%D characters is a two stage process. First we signal the
+%D system which commands are to be adapted, after which we can
+%D redefine their behavior when needed. We showed this in the
+%D previous paragraphs. These redefinitions are grouped at the
+%D end of this file, but we show some examples here.
+%D
+%D Accents or accent generating commands are redefined by:
+%D
+%D \starttypen
+%D \redefineaccent  '  % grave
+%D \redefineaccent  "  % dieresis
+%D \redefineaccent  ^  % circumflex
+%D \redefineaccent  v  % caron
+%D \stoptypen
+%D
+%D The original \PLAIN\ \TEX\ meaning of each accent generating
+%D command is saved first. Next these commands are redefined to
+%D do an indirect call to a macro that acts according to the
+%D encoding vector in use.
+
+\def\redefineaccent%
+  {\protectfontcharacters
+   \doredefineaccent}
+
+\def\doredefineaccent#1 %
+  {\def\!!stringa{\nocharacterencoding\string#1}%
+   \doifundefined{\!!stringa}
+     {\@EA\letvalue\@EA\!!stringa\@EA=\csname\string#1\endcsname}%
+   \setvalue{\string#1}{\dohandleaccent#1}%
+   \unprotectfontcharacters}
+
+%D \macros
+%D   {defineaccentcommand}
+%D
+%D When needed, one can overload the default positions of the
+%D accents. The \PLAIN\ \TEX\ defaults are: 
+%D
+%D \starttypen
+%D \defineaccentcommand `  18
+%D \defineaccentcommand '  19
+%D \defineaccentcommand v  20
+%D \defineaccentcommand u  21
+%D \defineaccentcommand =  22
+%D \defineaccentcommand ^  94
+%D \defineaccentcommand .  95
+%D \defineaccentcommand H 125  % "7D 
+%D \defineaccentcommand ~ 126  % "7E 
+%D \defineaccentcommand " 127  % "7F 
+%D \stoptypen
+
+\def\defineaccentcommand%
+  {\protectfontcharacters
+   \dodefineaccentcommand}
+
+\def\dodefineaccentcommand#1 #2 %
+  {\doifnumberelse{#2}
+     {\setvalue{\characterencoding\string#1}##1{{\accent#2 ##1}}}
+     {\setvalue{\characterencoding\string#1}##1{{#2##1}}}%
+   \unprotectfontcharacters}
+
+%D We don't have to define them for the default \PLAIN\ case. Commands 
+%D may be used instead of character codes. 
+
+%D \macros
+%D   {normalaccent}
+%D
+%D The next (in fact three) macros to take care of \type{\"e}
+%D as well as \type{\"{e}} situations. The latter one is always
+%D handled by \TEX's \type{\accent} primitive, but the former
+%D one can put the accents on top of characters as well as use
+%D \type{\char} to call for a character directly.
+
+% kan met minder def's en \expandafter...
+
+\let\normalaccent=\accent
+
+\unexpanded\def\dohandleaccent#1%
+  {\def\dodohandleaccent%
+     {\ifx\next\bgroup
+        \def\next{\getvalue{\nocharacterencoding#1}}%
+      \else
+        \def\next{\dododohandleaccent#1}%
+      \fi
+      \next}%
+   \futurelet\next\dodohandleaccent}
+
+\def\dododohandleaccent#1#2%
+  {\bgroup
+   \ifundefined{\characterencoding#1\string#2}%
+     \def\\{\getvalue{\nocharacterencoding#1}#2\egroup}%
+   \else
+     \def\\{\getvalue{\characterencoding#1\string#2}\egroup}%
+   \fi
+   \\}
+
+%D The trick with \type{\\} is needed to prevent spaces from
+%D being gobbled after the accented character, should we have
+%D \type{\next}, we should have ended up with gobbled spaces.
+
+%D \macros
+%D   {redefinecommand}
+%D
+%D Redefinition of encoding dependant commands like \type{\b}
+%D and \type{\c} can be triggered by:
+%D
+%D \starttypen
+%D \redefinecommand  b  % something math
+%D \redefinecommand  c  % something math
+%D \stoptypen
+%D
+%D Handling of characters is easier than handling accents
+%D because here we don't have to take care of arguments. We
+%D just call for the right glyph in the right place.
+%D
+%D The \type{\next} construction permits handling of commands
+%D that take arguments. This means that we can use this
+%D command to redefine accent handling commands too.
+
+\def\redefinecommand#1 %
+  {\def\!!stringa{\nocharacterencoding#1}%
+   \doifundefined{\!!stringa}
+     {\@EA\letvalue\@EA\!!stringa\@EA=\csname#1\endcsname}%
+   \setvalue{#1}{\dohandlecommand{#1}}}%
+
+\unexpanded\def\dohandlecommand#1%
+  {\doifdefinedelse{\characterencoding#1}
+     {\def\next{\getvalue{\characterencoding#1}}}
+     {\def\next{\getvalue{\nocharacterencoding#1}}}%
+   \next}
+
+%D \macros
+%D   {redefinecharacter}
+%D
+%D Special characters, which differ from accented characters
+%D in that they are to be presented as they are, are redefined
+%D by
+%D
+%D \starttypen
+%D \redefinecharacter  ae  % ae
+%D \redefinecharacter  cc  % ccedilla
+%D \stoptypen
+%D
+%D To keep things simple, we just copy this command:
+
+\let\redefinecharacter=\redefinecommand
+
+%D \macros
+%D   {everyuppercase, EveryUppercase,
+%D    everyuppercase, EveryUppercase}
+%D
+%D When we want to uppercase strings of characters, we have to
+%D take care of those characters that have a special meaning or
+%D are only accessible by means of macros. The next hack was
+%D introduced when Tobias Burnus started translating head and
+%D label texts into spanish and italian. The first application
+%D of this token register therefore can be found in the module
+%D that deals with these texts.
+
+\newevery \everyuppercase \EveryUppercase
+\newevery \everylowercase \EveryLowercase
+
+%\appendtoks     \def\i{I}\to \everyuppercase
+%\appendtoks     \def\j{J}\to \everyuppercase
+%\appendtoks   \def\SS{SS}\to \everyuppercase % \SS <= \ss
+%
+%\appendtoks  \let\l=\L   \to \everyuppercase
+%\appendtoks \let\ae=\AE  \to \everyuppercase
+%\appendtoks \let\aa=\AA  \to \everyuppercase
+%\appendtoks  \let\o=\O   \to \everyuppercase
+%\appendtoks \let\oe=\OE  \to \everyuppercase
+
+%D This magic trick maps takes care of mapping from lower to 
+%D upper case and reverse. 
+
+\appendtoks\let\setuppercasecom\setcasecom\to\everyuppercase
+\appendtoks\let\setlowercasecom\setcasecom\to\everylowercase
+
+\appendtoks\usemapping[\charactermapping]\to\everyuppercase
+\appendtoks\usemapping[\charactermapping]\to\everylowercase
+
+%D \macros
+%D   {everysanitize, EverySanitize}
+%D
+%D Whenever we are sanitizing strings, like we sometimes do
+%D when we deal with specials, the next token register can be
+%D called.
+
+\newevery \everysanitize \EverySanitize
+
+%D \macros
+%D   {obeylccodes}
+%D
+%D One way of manipulating characters is changing the their
+%D \type{\lccode} and applying \type{\lowcase}. An example of
+%D this can be found in \type{spec-mis}.
+
+\def\obeylccodes%
+  {\scratchcounter=32
+   \loop
+     \ifnum\scratchcounter<127
+       \lccode\scratchcounter=\scratchcounter
+       \advance\scratchcounter by 1
+   \repeat
+   \ifeightbitcharacters
+     \scratchcounter=128
+     \loop
+       \ifnum\scratchcounter<255
+         \lccode\scratchcounter=`.
+         \advance\scratchcounter by 1
+     \repeat
+   \fi}
+
+%D \macros
+%D   {dotlessi,dotlessj}
+%D
+%D We also save both dotless~\dotlessi\ and~\dotlessj. This
+%D way we still have them were we expect them, even when
+%D macros of font providers redefine them.
+
+\let\dotlessi=\i
+\let\dotlessj=\j
+
+%D Here come the definitions.
+
+\redefineaccent    '   % grave
+\redefineaccent    `   % acute
+\redefineaccent    "   % dieresis
+\redefineaccent    ^   % circumflex
+\redefineaccent    ~   % tilde
+\redefineaccent    v   % caron
+\redefineaccent    u   % breve
+\redefineaccent    .   % dotaccent
+\redefineaccent    H   % hungarumlaut
+\redefineaccent    t   % ........
+\redefineaccent    r   % ........
+
+\redefinecharacter ae  % ae
+\redefinecharacter AE  % AE
+\redefinecharacter oe  % oe
+\redefinecharacter OE  % OE
+\redefinecharacter o   % oslash
+\redefinecharacter O   % Oslash
+\redefinecharacter ss  % germandbls
+\redefinecharacter SS  % germandbls
+\redefinecharacter aa  % aring
+\redefinecharacter AA  % Aring
+\redefinecharacter cc  % ccedilla
+\redefinecharacter CC  % Ccedilla
+
+\redefinecommand b
+\redefinecommand c
+\redefinecommand d
+
+\redefinecommand i % \definecharacter i "10
+\redefinecommand j % \definecharacter j "11
+
+\defineaccent " i {\"\i}  \defineaccent " j {\"\j}
+\defineaccent ^ i {\^\i}  \defineaccent ^ j {\^\j}
+\defineaccent ` i {\`\i}  \defineaccent ` j {\`\j}
+\defineaccent ' i {\'\i}  \defineaccent ' j {\'\j}
+\defineaccent ~ i {\~\i}  \defineaccent ~ j {\~\j}
+
+%D Some more:
+
+\startmapping[\nocharacterencoding] 
+
+\defineuppercasecom \i  {I}
+\defineuppercasecom \j  {J}
+\defineuppercasecom \SS {SS}
+\defineuppercasecom \l  \L 
+\defineuppercasecom \ae \AE
+\defineuppercasecom \aa \AA
+\defineuppercasecom \o  \O 
+\defineuppercasecom \oe \OE
+\definelowercasecom \L  \l 
+\definelowercasecom \AE \ae
+\definelowercasecom \AA \aa
+\definelowercasecom \O  \o 
+\definelowercasecom \OE \oe
+
+\stopmapping
+
+%D We preload several encodings: 
+
+\useencoding[ans,il2,pdf]
+
+\protect 
+
+\endinput 

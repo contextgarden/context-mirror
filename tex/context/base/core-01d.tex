@@ -127,8 +127,8 @@
 %I \raw tekst      \\  : ongeformatteerde tekst
 %I \but[ref] tekst \\  : interactief menu item
 %I \nop            \\  : dummy menu item
-%I \txt tekst      \\  : niet interactief menu item (omlijnd)
-%I \rul tekst      \\  : niet interactief menu item
+%I \txt tekst      \\  : niet interactief menu item 
+%I \rul tekst      \\  : niet interactief menu item (omlijnd)
 %I \com commandos  \\  : commando's
 %P
 %I Instellingen kunnen ook apart plaatsvinden met:
@@ -198,44 +198,74 @@
 \def\setupinteractionscreens%
   {}
 
+%\def\initializepaper%
+%  {\iflocation % without screen settings 
+%     \dosetuppaper
+%       {\papierformaat}
+%       {\the\papierbreedte}
+%       {\the\papierhoogte}%
+%   \else
+%     \dosetuppaper
+%       {\printpapierformaat}
+%       {\the\printpapierbreedte}
+%       {\the\printpapierhoogte}%
+%   \fi}
+
+\def\berekeninteractiescherm%
+  {\doifelse{\@@scbreedte}{\v!passend}
+     {\!!widtha=\linkerrandbreedte
+      \advance\!!widtha by \linkerrandafstand
+      \advance\!!widtha by \paginascheiding
+      \advance\!!widtha by \linkermargebreedte
+      \advance\!!widtha by \linkermargeafstand
+      \ifdim\rugwit>\!!widtha\ifdim\rugwit>\!!zeropoint\relax
+        \advance\rugwit by -\!!widtha
+      \fi\fi
+      \advance\!!widtha by \zetbreedte
+      \advance\!!widtha by \rechtermargeafstand
+      \advance\!!widtha by \rechtermargebreedte
+      \advance\!!widtha by \paginascheiding
+      \advance\!!widtha by \rechterrandafstand
+      \advance\!!widtha by \rechterrandbreedte
+      \scratchdimen=\@@scrugwit
+      \advance\scratchdimen by \@@scrugoffset
+      \advance\!!widtha by 2\scratchdimen}
+     {\doifelse{\@@scbreedte}{\v!max}
+        {\!!widtha=\printpapierbreedte}
+        {\!!widtha=\@@scbreedte}}%
+   \doifelse{\@@schoogte}{\v!passend}
+     {\!!heighta=\bovenhoogte
+      \advance\!!heighta by \bovenafstand
+      \ifdim\kopwit>\!!heighta\ifdim\kopwit>\!!zeropoint\relax
+        \advance\kopwit by -\!!heighta
+      \fi\fi
+      \advance\!!heighta by \zethoogte
+      \advance\!!heighta by \onderafstand
+      \advance\!!heighta by \onderhoogte
+      \scratchdimen=\@@sckopwit
+      \advance\scratchdimen by \@@sckopoffset
+      \advance\!!heighta by 2\scratchdimen}
+     {\doifelse{\@@schoogte}{\v!max}
+        {\!!heighta=\printpapierhoogte}
+        {\!!heighta=\@@schoogte}}}
+
 \def\complexstelinteractieschermin[#1]%
   {\getparameters[\??sc][#1]%
+   \def\initializepaper%
+     {\bgroup 
+      \berekeninteractiescherm
+\ifdim \!!widtha>\papierbreedte \papierbreedte=\!!widtha \fi
+\ifdim \!!heighta>\papierhoogte \papierhoogte=\!!heighta \fi
+      \dosetuppaper
+        {\printpapierformaat}
+        {\the\papierbreedte}
+        {\the\papierhoogte}%
+      \egroup}%
    \def\setupinteractionscreens% met a, b en \number
      {\bgroup
-      \doifelse{\@@scbreedte}{\v!passend}
-        {\!!widtha=\linkerrandbreedte
-         \advance\!!widtha by \linkerrandafstand
-         \advance\!!widtha by \paginascheiding
-         \advance\!!widtha by \linkermargebreedte
-         \advance\!!widtha by \linkermargeafstand
-         \ifdim\rugwit>\!!widtha\ifdim\rugwit>\!!zeropoint\relax
-           \advance\rugwit by -\!!widtha
-         \fi\fi
-         \advance\!!widtha by \zetbreedte
-         \advance\!!widtha by \rechtermargeafstand
-         \advance\!!widtha by \rechtermargebreedte
-         \advance\!!widtha by \paginascheiding
-         \advance\!!widtha by \rechterrandafstand
-         \advance\!!widtha by \rechterrandbreedte
-         \scratchdimen=\@@scrugwit
-         \advance\scratchdimen by \@@scrugoffset
-         \advance\!!widtha by 2\scratchdimen}
-        {\!!widtha=\@@scbreedte}%
-      \doifelse{\@@schoogte}{\v!passend}
-        {\!!heighta=\bovenhoogte
-         \advance\!!heighta by \bovenafstand
-         \ifdim\kopwit>\!!heighta\ifdim\kopwit>\!!zeropoint\relax
-           \advance\kopwit by -\!!heighta
-         \fi\fi
-         \advance\!!heighta by \zethoogte
-         \advance\!!heighta by \onderafstand
-         \advance\!!heighta by \onderhoogte
-         \scratchdimen=\@@sckopwit
-         \advance\scratchdimen by \@@sckopoffset
-         \advance\!!heighta by 2\scratchdimen}
-        {\!!heighta=\@@schoogte}%
+      \berekeninteractiescherm
       \doifelse{\@@scoptie}{\v!max}
-        {\doif{\@@lyplaats}{\v!midden}
+        {\doif{\@@lyplaats}{\v!midden} % werkt niet goed 
            {\scratchdimen=\printpapierhoogte
             \advance\scratchdimen by -\papierhoogte
             \divide\scratchdimen by 2
@@ -255,16 +285,15 @@
       \dosetupidentity
         {\@@iatitel}
         {\@@iasubtitel}
-        {\@@iaauteur}
-        {CONTEXT / PRAGMA ADE / HASSELT NL / pragma@pi.net / \jobname.tex}
+        {\@@iaauteur} % The next line is not to be removed. Copyright!
+        {CONTEXT / PRAGMA ADE / HASSELT NL / pragma@wxs.nl / \jobname.tex}
         {\@@iadatum}
       \egroup}}
 
 \def\simplestelinteractieschermin%
   {\setupinteractionscreens}
 
-\def\stelinteractieschermin%
-  {\complexorsimple{stelinteractieschermin}}
+\definecomplexorsimple\stelinteractieschermin
 
 %D Due to requests I finally decided to support bookmarks, a
 %D driver dependant way of showing tables of content. The most
@@ -321,6 +350,8 @@
 
 \newif\iftracebookmarks \tracebookmarksfalse
 
+\let\tracebookmarks\tracebookmarkstrue
+
 \def\placebookmarks%
   {\dodoubleempty\doplacebookmarks}
 
@@ -361,12 +392,12 @@
 
 \def\dodogetbookmarkelement#1#2#3#4#5#6%
   {%\doifsomething{#1}
-   %  {\global\chardef\currentbookmarklevel=\getvalue{\@@booklevel#1}\relax}%
+   %  {\global\chardef\currentbookmarklevel=\getvalue{\@@booklevel#1}}%
    \doifelsenothing{#1}
      {\global\chardef\currentbookmarklevel=0\relax}
      {\global\chardef\currentbookmarklevel=\getvalue{\@@booklevel#1}\relax}%
    \ifnum\currentbookmarklevel>\previousbookmarklevel
-     \setxvalue{\@@bookcount\the\currentbookmarklevel}{1}\relax
+     \setxvalue{\@@bookcount\the\currentbookmarklevel}{1}%
    \else\ifnum\currentbookmarklevel<\previousbookmarklevel
      \bgroup
      \!!counta=\previousbookmarklevel
@@ -390,6 +421,7 @@
    \else
      \@EA\doglobal\@EA\increment\csname \@@bookcount\the\previousbookmarklevel\endcsname\relax
    \fi\fi
+   \global\utilitydonetrue
    \global\chardef\previousbookmarklevel=\currentbookmarklevel}
 
 \def\getbookmarklevelcount%
@@ -399,12 +431,12 @@
 
 \def\dodoputbookmarkelement#1#2#3#4#5#6%
   {%\doifsomething{#1}
-   %  {\global\chardef\currentbookmarklevel=\getvalue{\@@booklevel#1}\relax}%
+   %  {\global\chardef\currentbookmarklevel=\getvalue{\@@booklevel#1}}%
    \doifelsenothing{#1}
      {\global\chardef\currentbookmarklevel=0\relax}
      {\global\chardef\currentbookmarklevel=\getvalue{\@@booklevel#1}\relax}%
    \ifnum\currentbookmarklevel>\previousbookmarklevel
-     \setxvalue{\@@bookcount\the\currentbookmarklevel}{1}\relax
+     \setxvalue{\@@bookcount\the\currentbookmarklevel}{1}%
    \else\ifnum\currentbookmarklevel<\previousbookmarklevel
      \@EA\doglobal\@EA\increment\csname \@@bookcount\the\currentbookmarklevel\endcsname\relax
    \else
@@ -425,7 +457,13 @@
      \egroup
    \fi
    \global\chardef\previousbookmarklevel=\currentbookmarklevel
-   \insertsomebookmark{#1}{\the\currentbookmarklevel}{\bookmarklevelcount}{#4}{#6}}
+   \global\utilitydonetrue
+   \insertsomebookmark
+     {#1}
+     {\the\currentbookmarklevel}
+     {\bookmarklevelcount}
+     {#4}
+     {#6}}
 
 \def\dogetbookmarkelement#1#2#3#4#5#6%
   {\doifnot{#1}{\@@bookmark}
@@ -522,61 +560,68 @@
       \fi
       \localframed[#1]
         [\c!kader=\locationboxborder,\c!achtergrond=\locationboxbackground,#2]
-        {\dolocationattributes{#1}{#3}}}%
+        {\dolocationattributes{#1}\c!letter\c!kleur{#3}}}%
    \hbox{#4{\copy\locationbox}}}
 
 \def\setlocationboxyes#1[#2]#3[#4]%
   {\ifx\currentouterreference\empty 
-     \doifelse{\currentrealreference}{\realfolio}
-       {\!!doneafalse}
-       {\!!doneatrue}%
+     \ifrealreferencepage\!!doneatrue\else\!!doneafalse\fi
+     %\doifelse{\currentrealreference}{\realfolio}
+     %  {\!!doneatrue}{\!!doneafalse}%
    \else
-     \!!doneatrue
+     \!!doneafalse
    \fi
    \if!!donea
-     \ifcase\getvalue{#1\c!zelfdepagina}
+     \ifcase\getvalue{#1\c!zelfdepagina}\relax
        \bgroup
        \locationdummytrue
-       \setvalue{#1\c!kleur}{}%
-       \dosetlocationbox{#1}[#2,\c!dummy=\v!nee]{#3}{\gotolocation{#4}}%
+       \setevalue{#1\c!kleur}{\getvalue{#1\c!contrastkleur}}%
+       \dosetlocationbox{#1}[#2,\c!leeg=\v!nee]{#3}{\gotolocation{#4}}%
        \egroup
      \or
        \locationdummytrue
-       \dosetlocationbox{#1}[#2,\c!dummy=\v!ja]{#3}{\gotolocation{#4}}%
+       \dosetlocationbox{#1}[#2,\c!leeg=\v!ja]{#3}{\gotolocation{#4}}%
      \or
        \locationdummyfalse
-       \dosetlocationbox{#1}[#2,\c!dummy=\v!ja]{#3}{\gotolocation{#4}}%
+       \dosetlocationbox{#1}[#2,\c!leeg=\v!ja]{#3}{\gotolocation{#4}}%
      \or
        \locationdummyfalse
        \global\skippedmenuitemtrue
      \fi
    \else
      \locationdummytrue
-     \dosetlocationbox{#1}[#2,\c!dummy=\v!nee]{#3}{\gotolocation{#4}}%
+     \dosetlocationbox{#1}[#2,\c!leeg=\v!nee]{#3}{\gotolocation{#4}}%
    \fi}
 
 \def\setlocationboxnop#1[#2]#3[#4]%
-  {\ifcase\getvalue{#1\c!onbekendeverwijzing}
+  {\ifcase\getvalue{#1\c!onbekendeverwijzing}\relax
      \locationdummytrue
-     \dosetlocationbox{#1}[#2,\c!dummy=\v!nee]{#3}{}%
+     \dosetlocationbox{#1}[#2,\c!leeg=\v!nee]{#3}{}%
    \or
      \locationdummytrue
-     \dosetlocationbox{#1}[#2,\c!dummy=\v!ja]{#3}{}%
+     \dosetlocationbox{#1}[#2,\c!leeg=\v!ja]{#3}{}%
    \or
      \locationdummyfalse
-     \dosetlocationbox{#1}[#2,\c!dummy=\v!ja]{#3}{}%
+     \dosetlocationbox{#1}[#2,\c!leeg=\v!ja]{#3}{}%
    \or
      \locationdummyfalse
      \global\skippedmenuitemtrue
    \fi}
 
+%\def\setlocationbox#1[#2]#3[#4]%
+%  {\doifinstringelse{#4}{\getvalue{#1\c!blokkade}}
+%     {\setlocationboxnop{#1}[#2]{#3}[#4]}
+%     {\doifreferencefoundelse{#4}
+%        {\setlocationboxyes{#1}[#2]{#3}[#4]}
+%        {\setlocationboxnop{#1}[#2]{#3}[#4]%
+%         \unknownreference{#4}}}}
+
 \def\setlocationbox#1[#2]#3[#4]%
-  {\doifinstringelse{#4}{\getvalue{#1\c!blokkade}}
-     {\setlocationboxnop{#1}[#2]{#3}[#4]}
-     {\doifreferencefoundelse{#4}
-        {\setlocationboxyes{#1}[#2]{#3}[#4]}
-        {\setlocationboxnop{#1}[#2]{#3}[#4]%
-         \unknownreference{#4}}}}
+  {\doifreferencepermitedelse{#4}{\getvalue{#1\c!blokkade}}
+     {\setlocationboxyes{#1}[#2]{#3}[#4]}
+     {\setlocationboxnop{#1}[#2]{#3}[#4]}}
+
+%\dolocationattributes{#1}\c!letter\c!kleur{#3}}}%
 
 \def\dodosetlocationcommanditem#1#2#3[#4]#5\\%
   {\bgroup
@@ -603,42 +648,50 @@
      [  \v!ja=>\chardef\handleunknownmenuitem=0\relax,
       \v!leeg=>\chardef\handleunknownmenuitem=1\relax,
        \v!nee=>\chardef\handleunknownmenuitem=2\relax]%
-   \getvalue{\??am#1#3}%
+   \getvalue{\??am#1#3}\relax
    \ifextendedmenu
      \setamboxcommands{#1}{#4}%
-     #2%
+     \def\next%
+       {\ignorespaces#2}%
    \else
      \def\dolocationcommand##1%
        {\dosetlocationcommanditem{#1}{#4}{##1}}%
-     \processcommalist[#2]\dolocationcommand
+     \def\next%
+       {\processcommalist[#2]\dolocationcommand}%
    \fi
+   \next
    \unskip
    \getvalue{\??am#1#5}}
 
 \def\setamboxcommands#1#2%
-  {\def\raw##1\\%
+  {\def\@@amboxcommand##1\\%
      {\bgroup
-      \leavevmode
-      ##1%
+      \leavevmode\ignorespaces##1\unskip\relax
       \ifskippedmenuitem \else
         \getvalue{\??am#1#2}%
       \fi
-      \egroup}%
+      \egroup 
+      \ignorespaces}%
+   \def\raw[##1]##2\\%
+     {\@@amboxcommand\naarbox{\ignorespaces##2\unskip}[##1]\\}%
    \def\but[##1]##2\\%
-     {\raw\setlocationbox{\??am#1}[]{##2}[##1]\\}%
+     {\@@amboxcommand\setlocationbox{\??am#1}[]{\ignorespaces##2\unskip}[##1]\\}%
+   \def\got[##1]##2\\%
+     {\@@amboxcommand\setlocationbox{\??am#1}[\c!kader=\v!uit,\c!achtergrond=]{\ignorespaces##2\unskip}[##1]\\}%
    \def\nop##1\\%
-     {\raw\phantom{\localframed[\??am#1][]{}}\\}%
+     {\@@amboxcommand\phantom{\localframed[\??am#1][]{}}\\}%
    \def\txt##1\\%
-     {\raw\localframed[\??am#1][\c!kader=\v!uit]{##1\unskip}\\}%
+     {\@@amboxcommand\localframed[\??am#1][\c!kader=\v!uit,\c!achtergrond=]{\ignorespaces##1\unskip}\\}%
    \def\rul##1\\%
-     {\raw\localframed[\??am#1][]{##1\unskip}\\}%
+     {\@@amboxcommand\localframed[\??am#1][]{\ignorespaces##1\unskip}\\}%
    \def\com##1\\%
-     {##1}}
+     {\ignorespaces##1\unskip}}
 
 \def\@@amhbox#1#2#3#4%
   {\testinteractiemenu{#3}%
    \iflocationmenupermitted
      \bgroup
+\showcomposition
      \def\dolocationcommand##1%
        {\dosetlocationcommanditem{#3}{##1}}%
      \dimen0=\zetbreedte
@@ -663,6 +716,7 @@
   {\testinteractiemenu{#3}%
    \iflocationmenupermitted
      \bgroup
+\showcomposition
      \dimen0=\teksthoogte
      \advance\dimen0 by \pagebackgroundvoffset
      \advance\dimen0 by \pagebackgroundvoffset
@@ -676,7 +730,7 @@
         \executeamboxcommands{#3}{#4}\c!voor\c!tussen\c!na}%
      \setbox0=\vbox
        {\vskip-\pagebackgroundvoffset
-     \vskip\getvalue{\??am#3\c!bovenoffset}%
+        \vskip\getvalue{\??am#3\c!bovenoffset}%
         \ht0=\!!zeropoint
         \box0
         \vskip\pagebackgroundvoffset}% overbodig 
@@ -703,8 +757,8 @@
 \def\dointeractiemenu#1#2%
   {\getvalue{\??am\s!do\getvalue{\??am#1\c!plaats}}{#1}{#2}}
 
-\def\interactiemenu[#1]%
-  {\donottest\getvalue{\??am\c!menu#1}}
+\unexpanded\def\interactiemenu[#1]%
+  {\getvalue{\??am\c!menu#1}}
 
 \def\horizontaalinteractiemenu#1#2#3#4%
   {\dimen2=\!!zeropoint
@@ -759,10 +813,10 @@
      \dodummypageskip{#1}%
    \fi}
 
-\setvalue{\??am\v!links}{}
+\setvalue{\??am\v!links }{}
 \setvalue{\??am\v!rechts}{}
-\setvalue{\??am\v!boven}{}
-\setvalue{\??am\v!onder}{}
+\setvalue{\??am\v!boven }{}
+\setvalue{\??am\v!onder }{}
 
 \newif\ifextendedmenu
 
@@ -773,7 +827,7 @@
      {\setvalue{\??am\c!menu#1}%
         {\extendedmenufalse\dointeractiemenu{#1}{}}%
       \presetlocalframed[\??am#1]%
-      \setvalue{\??am#1\c!blokkade}{}%
+      \letvalue{\??am#1\c!blokkade}\empty
       \edef\!!stringe{\getvalue{\??am#2}}%
       \addtocommalist{#1}\!!stringe
       \letvalue{\??am#2}=\!!stringe
@@ -782,7 +836,7 @@
            [\c!links,\c!midden,\c!rechts,\c!voor,\c!na,\c!tussen,
             \c!breedte,\c!hoogte,\c!afstand,\c!offset,\c!kader,
             \c!achtergrond,\c!achtergrondkleur,\c!achtergrondraster,
-            \c!letter,\c!kleur,\c!zelfdepagina,\c!onbekendeverwijzing,
+            \c!letter,\c!kleur,\c!contrastkleur,\c!zelfdepagina,\c!onbekendeverwijzing,
             \c!linkeroffset,\c!rechteroffset,\c!bovenoffset,\c!onderoffset]}%
       \ConvertToConstant\doifinstringelse{=}{#3}
         {\getparameters[\??am#1][\c!plaats=#2,#3]}%
@@ -798,9 +852,13 @@
 \def\definieerinteractiemenu%
   {\dotripleempty\dodefinieerinteractiemenu}
 
-\def\startinteractiemenu[#1]#2\stopinteractiemenu%
-  {\setvalue{\??am\c!menu#1}%
-     {\extendedmenutrue\dointeractiemenu{#1}{#2}}}
+\processbetween{\e!interactiemenu}\dostartinteractiemenu
+
+\def\dostartinteractiemenu#1%
+  {\dodostartinteractiemenu#1\dodostopinteractiemenu}
+
+\def\dodostartinteractiemenu[#1]#2\dodostopinteractiemenu%
+  {\setvalue{\??am\c!menu#1}{\extendedmenutrue\dointeractiemenu{#1}{#2}}}
 
 \def\dododostelinteractiemenuin#1%
   {\processaction
@@ -813,7 +871,7 @@
 
 \def\dodostelinteractiemenuin[#1][#2]%
   {\def\docommando##1%
-     {\getparameters[\??am##1][#2]
+     {\getparameters[\??am##1][#2]%
       \dododostelinteractiemenuin{\??am##1\c!onbekendeverwijzing}%
       \dododostelinteractiemenuin{\??am##1\c!zelfdepagina}}%
    \processcommalist[#1]\docommando}
@@ -838,270 +896,7 @@
      \pagina[#1]%
    \fi}
 
-\def\scherm%
-  {\complexorsimple{scherm}}
-
-%I n=Figuren++
-%I c=\startfiguur,\refereer,\markeer,\toelichting
-%I
-%I Het is mogelijk naar een plaats in een figuur te verwijzen.
-%I Het commando \gebruikfiguur[][][] wordt in dat geval vervangen
-%I door het commando:
-%I
-%I   \startfiguur[naam][file][factor=]%
-%I     ...
-%I     \refereer(x1,y1)(h1,b1)[referentie1]%
-%I     ...
-%I     \markeer(xn,yn)(hn,bn)[referentien]%
-%I     ...
-%I   \stopfiguur
-%P
-%I Wanneer als optie bij \gebruikexternefiguren 'test' wordt
-%I meegegegeven, wordt een testpagina met een rasterverdeling
-%I gegenereerd. Met x en y wordt de linkerbovenhoek ingesteld,
-%I met h en b de hoogte en de breedte van het te markeren deel
-%I van de figuur.
-%I
-%I Standaard is de hoogte verdeeld in 24 stukken. Wil men een
-%I andere indeling, dan kan men met \gebruikexternefiguren
-%I de 'xmax' of 'ymax' instellen (aanbevolen: 10 - 50).
-%I
-%I De hokjes waarop geklikt kan worden kunnen zichtbaar worden
-%I gemaakt met 'hokjes=aan'.
-%P
-%I Om duidelijk te kunnen maken achter welke delen van een
-%I figuur iets zit, kan een kleurenbalk worden opgenomen.
-%I
-%I    ...
-%I    \kleurenbalk[...,...,...]
-%I    ...
-%I
-%I (deze tekst moet nog worden aangevuld)
-%P
-%I Het is mogelijk in een tekst toelichtingen op te nemen.
-%I
-%I    ...
-%I     \toelichting(x1,y1)(h1,b1)[instellingen]{tekst}
-%I    ...
-%I
-%I De instellingen zijn optioneel en komen overeen met die van
-%I het commando \omlijnd.
-
-\newcount\efreference
-\newdimen\efxsteps
-\newdimen\efysteps
-
-\def\calculateefsteps%
-  {\ifnum0\@@exxmax=0
-     \ifnum0\@@exymax=0
-       \def\@@exymax{24}%
-     \fi
-     \efysteps=\fighei \divide\efysteps by \@@exymax
-     \efxsteps=\efysteps
-     \dimen0=\figwid
-     \advance\dimen0 by \efysteps
-     \divide\dimen0 by \efysteps
-     \edef\@@exxmax{\number\dimen0}%
-   \else
-     \efxsteps=\figwid \divide\efxsteps by \@@exxmax    
-     \efysteps=\fighei \divide\efysteps by \@@exymax
-   \fi}
-
-\def\efcomment#1(#2,#3)#4(#5,#6)%    {kader}(x,y)(h,b)[...]{tekst}
-  {\def\complexefdocomment[##1]##2%
-     {\positioneer(#2,#3)%
-        {\setnostrut
-         \framed
-           [\c!breedte=#5\efxsteps,
-            \c!hoogte=#6\exysteps,
-            \c!offset=\v!geen,
-            \c!kader=#1,
-            ##1]%
-           {##2}}}%
-   \complexorsimpleempty{efdocomment}}
-
-\def\efnocomment(#1,#2)#3(#4,#5)%    (x,y)(h,b)[...]{tekst}
-  {\def\complexefdonocomment[##1]##2{}%
-   \complexorsimpleempty{efdonocomment}}
-
-\def\efdomarker(#1,#2)#3#4%    (h,b){kader}{tekst}
-  {\framed
-     [\c!breedte=#1\efxsteps,
-      \c!hoogte=#2\efysteps,
-      \c!offset=\v!geen,
-      \c!kader=#3]%
-     {#4}}
-
-\def\effiguur#1%
-  {\positioneer(0,0){\naam{#1}}}
-
-\def\efdoarea(#1,#2)#3#4%    (h,b){kader}{tekst}
-  {\start
-     \setnostrut
-     \framed
-       [\c!breedte=#1\efxsteps,
-        \c!hoogte=#2\efysteps,     
-        \c!offset=\!!zeropoint,
-        \c!kader=#3]
-       {#4}%
-   \stop}
-
-\def\efgoto(#1,#2)#3[#4]%    (h,b)kader[ref]
-  {\setbox0=\vbox{\efdoarea(#1,#2)#3{}}%
-   \naarbox{\copy0}[#4]}
-
-\def\efmark(#1,#2)#3(#4,#5)#6[#7]%
-  {\advance\efreference by 1
-   \positioneer(#1,#2)
-     {\hbox{\the\efreference}}%
-   \positioneer(#1,#2)
-     {\gotosomeinternal
-        {\s!vwb}{#7}{\realfolio}
-        {\efdomarker(#4,#5){\v!aan}{\thisissomeinternal{\s!vwa}{#7}}}}}
-
-\def\eftext#1(#2,#3)#4(#5,#6)#7[#8]%
-  {\advance\efreference by 1
-   \hbox
-     {\quad
-      \thisissomeinternal{\s!vwb}{#8}% 
-      \gotosomeinternal
-        {\s!vwa}{#8}{\realfolio}
-        {\hbox to 1.5em{\the\efreference\presetgoto\hfill}}%
-      \quad#1 (#2,#3) (#5,#6) [#8]\hfill}%
-   \endgraf}
-
-\def\efthisis(#1,#2)#3[#4]%
-  {\efdoarea(#1,#2){#3}{\pagereference[#4]}}
-
-\newbox\colorbarbox
-
-\def\makecolorbar[#1]%
-  {\def\docommando##1%
-     {\color[##1]
-        {\blackrule
-           [\c!breedte=2em,
-            \c!hoogte=1ex,
-            \c!diepte=\!!zeropoint]}%
-      \endgraf}%
-   \global\setbox\colorbarbox=\vbox
-     {\forgetall
-      \processcommalist[#1]\docommando}%
-   \global\setbox\colorbarbox=\vbox
-     {\hskip2em\box\colorbarbox}%
-   \global\wd\colorbarbox=\!!zeropoint}
-
-\def\plaatsstartfiguur[#1][#2][#3]#4\plaatsstopfiguur%
-  {\hbox
-     {\gebruikexternfiguur[#1][#2][#3]%
-      \berekenexternfiguur[#1][#2]%
-      \calculateefsteps  
-      \startpositioneren
-        \def\refereer(##1,##2)##3(##4,##5)##6[##7]%
-          {\positioneer(##1,##2)
-             {\efgoto(##4,##5){\@@exhokjes}[##7]}}%
-        \def\markeer(##1,##2)##3(##4,##5)##6[##7]%
-          {\positioneer(##1,##2)
-             {\efthisis(##4,##5){\@@exhokjes}[##7]}}%
-        \def\toelichting%
-          {\efnocomment}%
-        \def\kleurenbalk##1[##2]%
-          {}%
-        \positioneer(0,0){\effiguur{#1}}%
-        \linewidth=1pt
-        \stelpositionerenin
-          [\c!eenheid=pt,
-           \c!xschaal=\withoutpt{\the\efxsteps},
-           \c!yschaal=\withoutpt{\the\efysteps},
-           \c!factor=1]%
-        \ignorespaces#4%
-        \def\refereer(##1,##2)##3(##4,##5)##6[##7]%
-          {}%
-        \let\markeer=\refereer
-        \def\toelichting%
-          {\efcomment\v!nee}%
-        \def\kleurenbalk##1[##2]%
-          {\makecolorbar[##2]}%
-        \ignorespaces#4%
-      \stoppositioneren
-      \box\colorbarbox}}
-
-% De onderstaande macro mag niet zondermeer worden aangepast
-% en is afgestemd op gebruik in de handleiding.
-
-\def\teststartfiguur[#1][#2][#3]#4\teststopfiguur%
-  {\begingroup
-     \gebruikexternfiguur[#1][#2][\c!bfactor=\v!max]%
-     \def\refereer%
-       {\efmark}%
-     \def\markeer%
-       {\efmark}%
-     \def\toelichting%
-       {\efcomment\v!ja}%
-     \def\kleurenbalk##1[##2]%
-       {}%
-     \efreference=0
-     \setbox0=\vbox
-       {\hsize240pt
-        \startpositioneren
-          \berekenexternfiguur[#1][#2]%
-          \calculateefsteps
-          \positioneer(0,0)
-            {\effiguur{#1}}%
-          \positioneer(0,0)
-            {\rooster
-               [\c!nx=\@@exxmax, 
-                \c!dx=\withoutpt{\the\efxsteps}, 
-                \c!ny=\@@exymax, 
-                \c!dy=\withoutpt{\the\efysteps}, 
-                \c!xstap=1,
-                \c!ystap=1,
-                \c!schaal=1,
-                \c!offset=\v!nee,
-                \c!eenheid=pt]}%
-          \stelpositionerenin%
-            [\c!eenheid=pt,
-             \c!xschaal=\withoutpt{\the\efxsteps},
-             \c!yschaal=\withoutpt{\the\efysteps},            
-             \c!factor=1]%
-          \linewidth=1pt
-          \ignorespaces#4\relax
-        \stoppositioneren
-        \vfill}%
-     \efreference=0
-     \def\refereer%
-       {\eftext{$\rightarrow$}}%
-     \def\markeer%
-       {\eftext{$\leftarrow$}}%
-     \def\toelichting%
-       {\efnocomment}%
-     \def\kleurenbalk##1[##2]%
-       {}%
-     \setbox2=\vbox
-       {{\tfa\doifelsenothing{#1}{#2}{#1}}
-        \blanko
-        \tfxx#4
-        \vfilll}%
-     \ifdim\ht0>\ht2
-       \ht2=\ht0
-     \else
-       \ht0=\ht2
-     \fi
-     \hbox
-       {\hskip3em 
-        \vtop{\vskip12pt\box0\vskip6pt}%
-        \vtop{\vskip12pt\box2\vskip6pt}}%
-   \endgroup}
-
-\def\dostartfiguur[#1][#2][#3]#4\stopfiguur%
-  {\doifelse{\@@exoptie}{\v!test}
-     {\teststartfiguur[#1][#2][#3]#4\teststopfiguur%
-      \def\@@exhokjes{\v!aan}}
-     {\def\@@exhokjes{\v!uit}}%
-   \setvalue{#1}%
-     {\plaatsstartfiguur[#1][#2][#3]#4\plaatsstopfiguur}}
-
-\def\startfiguur%
-  {\dotripleargument\dostartfiguur}
+\definecomplexorsimple\scherm
 
 %I n=Springen
 %I c=\naar,\button,\menubutton,\stelbuttonsin
@@ -1160,7 +955,8 @@
 \def\domenubox[#1][#2]#3%
   {\bgroup
    \def\setlocationbox##1[##2]##3[##4]%
-     {\localframed[##1][##2]{\dolocationattributes{##1}{##3}}}%
+     {\localframed[##1][##2]%
+        {\dolocationattributes{##1}\c!letter\c!kleur{##3}}}%
    \domenubutton[#1][#2]#3[]%
    \egroup}
 
@@ -1235,8 +1031,10 @@
 \def\syncprefix{sync}
 \def\syncmarker{syncmark}
 
-\definieermarkering[\syncmarker]
-\stelmarkeringin[\syncmarker][\c!expansie=\v!ja]
+%\definieermarkering[\syncmarker]
+%\stelmarkeringin[\syncmarker][\c!expansie=\v!ja]
+
+\newmark\syncmarker
 
 \newcounter\synccounter
 
@@ -1252,7 +1050,7 @@
      %\thisisdestination{\syncprefix:\synccounter}%
      \paginareferentie[\syncprefix:\synccounter]%
      \ifvmode
-       \markeer[\syncmarker]{\synccounter}%
+       \@EA\setmark\@EA\syncmarker\@EA{\synccounter} % \marking[\syncmarker]{\synccounter}%
      \else
        \showmessage{\m!interactions}{4}{\synccounter}%
      \fi
@@ -1284,16 +1082,16 @@
    \stelinteractiein[\c!breedte=\!!zeropoint]%
    \setbox0=\hbox
      {\localframed[\??ba][]%
-        {\dolocationattributes{\??ba}{\strut\@@batekst}}}%
+        {\dolocationattributes\??ba\c!letter\c!kleur{\strut\@@batekst}}}%
    \mindermeldingen
    \def\onder%
      {\leaders\hrule\!!depth1ex\!!height-.5ex\hfil}%
    \def\boven##1##2##3%
-     {\dimen0=\wd0\relax
-      \divide\dimen0 by 3\relax
+     {\dimen0=\wd0
+      \divide\dimen0 by 3
       \multiply\dimen0 by ##2\relax
-      \dimen2=.25em\relax
-      \advance\dimen0 by -##3\dimen2\relax
+      \dimen2=.25em
+      \advance\dimen0 by -##3\dimen2
       %\gotodestination
       %  {}{#1}{\syncprefix:##1}{}
       %  {\hbox to \dimen0{\color[\locationcolor\@@bakleur]{\onder}}}}%
@@ -1301,13 +1099,12 @@
         {\hbox to \dimen0{\color[\locationcolor\@@bakleur]{\onder}}}%
         [#1::\syncprefix:##1]}%
    \hbox
-     {\prefetchmark[\syncmarker]%
-      \def\check##1##2%
-        {\edef##2{\fetchmark[\syncmarker][##1]}%
+     {\def\check##1##2%
+        {\edef##2{0##1\syncmarker}%
          \ifnum0##2=0 \def##2{1}\fi}%
-      \check\v!vorige\top
-      \check\v!eerste\first
-      \check\v!laatste\bot
+      \check\gettopmark\top
+      \check\getfirstmark\first
+      \check\getbotmark\bot
       \setbox2=\hbox to \wd0
         {\ifnum\top=\first\relax
            \ifnum\first=\bot\relax
@@ -1382,11 +1179,13 @@
   {\checkreferences  % nodig ??
    \iflocation
      \ifnum#3=\realpageno
-       {#2}
+       {#2}%
      \else
        \doifelsenothing{#1}
-         {\hbox{\gotorealpage{}{}{#3}{#2}}}
-         {\hbox{\gotorealpage{}{}{#3}{\dolocationattributes{#1}{#2}}}}%
+         {\hbox{\gotorealpage{}{}{#3}
+            {#2}}}
+         {\hbox{\gotorealpage{}{}{#3}
+            {\dolocationattributes{#1}\c!letter\c!kleur{#2}}}}%
      \fi
    \else
      {#2}%
@@ -1396,7 +1195,7 @@
   {\iflocation
      \bgroup
      \stelinteractiein[\c!breedte=\!!zeropoint]%
-     \setupblackrules[\c!hoogte=\v!max,\c!diepte=\v!max]%
+     \setupblackrules[\c!hoogte=\v!max,\c!diepte=\v!max]% maten ??
      \!!widthb=\@@ibbreedte\relax
      \advance\!!widthb by -2.75em\relax
      \!!widtha=\!!widthb\relax
@@ -1465,44 +1264,45 @@
 
 \def\interactiebalkc%
   {\iflocation
-     \ifnum\lastpage>1\relax
+     \ifnum\lastpage>1
        \hbox to \@@ibbreedte
-         {\setupblackrules[\c!hoogte=\v!max,\c!diepte=\v!max]%
-          \def\goto##1%
+         {\setupblackrules[\c!hoogte=\@@ibhoogte,\c!diepte=\@@ibdiepte]%
+          \def\gotox##1%
             {\doganaareenpagina{}{\blackrule[\c!breedte=##1]}}%
           \dimen0=\@@ibbreedte\relax
-          \advance\dimen0 by -4em\relax
+          \advance\dimen0 by -4em
           \!!counta=\lastpage
           \advance\!!counta by -1
           \divide\dimen0 by \!!counta
           \!!counta=\realpageno
-          \advance\!!counta by -1\relax
+          \advance\!!counta by -1
           \!!widtha=\!!counta\dimen0\relax
           \!!countb=\lastpage
           \advance\!!countb by -\realpageno
-          \!!widthb=\!!countb\dimen0\relax
+          \!!widthb=\!!countb\dimen0
           \startcolor[\locationcolor\@@ibkleur]%
-          \goto{1em}\firstpage
+          \gotox{1em}\firstpage
           \hss
-          \goto{\!!widtha}\prevpage
+          \gotox{\!!widtha}\prevpage
           \color[\@@ibcontrastkleur]{\blackrule[\c!breedte=1em]}%
-          \goto{\!!widthb}\nextpage
+          \gotox{\!!widthb}\nextpage
           \hss
-          \goto{1em}\lastpage
+          \gotox{1em}\lastpage
           \stopcolor}%
      \fi
    \fi}
 
 \def\interactiebalkd%
   {\iflocation\ifshowingsubpage
-     \ifnum\nofsubpages>1\relax
+     \ifnum\nofsubpages>1
        \hbox
        \bgroup
        \stelinteractiein[\c!breedte=\!!zeropoint]%
        \ifbalksymbool % beter: 3 chars assign en 3*box
-         \setbox0=\hbox{\gobackwardcharacter}%
-         \setbox2=\hbox{\gotosomewherecharacter}%
-         \setbox4=\hbox{\goforwardcharacter}%
+         \setupsymbolset[\@@iasymboolset]%
+         \setbox0=\hbox{\symbol[\v!vorige]}%
+         \setbox2=\hbox{\symbol[\v!ergens]}%
+         \setbox4=\hbox{\symbol[\v!volgende]}%
        \else
          \setbox0=\hbox
            {\vrule
@@ -1536,7 +1336,7 @@
 
 \def\interactiebalke%  KAN WORDEN GECOMBINEERD MET D
   {\iflocation\ifshowingsubpage
-     \ifnum\nofsubpages>1\relax
+     \ifnum\nofsubpages>1
        \bgroup
        \!!widthb=\@@ibafstand
        \multiply\!!widthb by \nofsubpages
@@ -1552,9 +1352,10 @@
          \hbox to \@@ibbreedte
            \bgroup
              \ifbalksymbool
-               \setbox0=\hbox{\gobackwardcharacter}%
-               \setbox2=\hbox{\gotosomewherecharacter}%
-               \setbox4=\hbox{\goforwardcharacter}%
+               \setupsymbolset[\@@iasymboolset]%
+               \setbox0=\hbox{\symbol[\v!vorige]}%
+               \setbox2=\hbox{\symbol[\v!ergens]}%
+               \setbox4=\hbox{\symbol[\v!volgende]}%
              \else
                \setbox0=\hbox
                   {\vrule
@@ -1590,14 +1391,14 @@
 
 \def\interactiebalkf%  !! KAN WORDEN GECOMBINEERD MET D !!
   {\iflocation\ifshowingsubpage
-     \ifnum\nofsubpages>1\relax
+     \ifnum\nofsubpages>1
        \stelinteractiein[\c!breedte=\!!zeropoint]%
        \noindent
        \hbox to \@@ibbreedte
        \bgroup
        \!!countb=0
        \loop
-         \advance\!!countb by 1\relax
+         \advance\!!countb by 1
          \!!countc=\nofsubpages
          \divide\!!countc by \!!countb
          \advance\!!countc by 1
@@ -1609,60 +1410,72 @@
          \divide\!!widtha by \!!countc
          \ifdim\!!widtha<\@@ibafstand\relax
        \repeat
+\advance\!!countc by -2
+\!!widtha=-\@@ibafstand
+\!!widtha=\!!countc\!!widtha
+\advance\!!widtha by \@@ibbreedte 
+\advance\!!countc by 1
+\divide\!!widtha by \!!countc
        \ifbalksymbool
-         \setbox0=\hbox{\gobackwardcharacter}%
-         \setbox2=\hbox{\gotosomewherecharacter}%
-         \setbox4=\hbox{\goforwardcharacter}%
+         \setupsymbolset[\@@iasymboolset]%
+         \setbox0=\hbox{\symbol[\v!vorige]}%
+         \setbox4=\hbox{\symbol[\v!ergens]}%
+         \setbox8=\hbox{\symbol[\v!volgende]}%
+         \setbox2=\copy4
+         \setbox6=\copy4
        \else
          \setbox0=\hbox
            {\vrule
               \!!height\@@ibhoogte
               \!!depth\@@ibdiepte
               \!!width\!!widtha}%
+         \setbox4=\copy0
+         \setbox8=\copy0
          \setbox2=\hbox
-           {\dimen0=\@@ibhoogte
-            \dimen2=\@@ibdiepte
-            \vrule
-              \!!height.5\dimen0
-              \!!depth.5\dimen2
+           {\vrule
+              \!!height.5\ht0
+              \!!depth.5\dp0
               \!!width\!!widtha}%
          \ht2=\ht0
          \dp2=\dp0
-         \setbox4=\copy0
+         \setbox6=\copy2
        \fi
-       \def\goto##1##2%
-         {\ifnum##1=\realpageno\relax
+       \def\gotox##1%
+         {\ifnum\teller=\realpageno
             \color
               [\@@ibcontrastkleur]
-              {\gotorealpage{}{}{##1}{##2}}%
+              {\gotorealpage{}{}{\teller}{\copy##1}}%
           \else
-            \gotorealpage{}{}{##1}{##2}\relax
-          \fi}%
+            \gotorealpage{}{}{\teller}{\copy##1}%
+          \fi
+          \!!countf=0
+          \hss}%
        \startcolor[\locationcolor\@@ibkleur]%
-       \!!countc=\realpageno \advance\!!countc by -2\relax
-       \!!countd=\realpageno \advance\!!countd by 2\relax
+       \!!countc=\realpageno \advance\!!countc by -2
+       \!!countd=\realpageno \advance\!!countd by 2
+       \!!countf=0
        \for\teller=\firstsubpage\to\lastsubpage\step1\do
          {\!!doneafalse
-          \!!donebfalse
+          \advance\!!countf by 1
           \ifnum\teller=\firstsubpage\relax \!!doneatrue \fi
           \ifnum\teller=\lastsubpage\relax  \!!doneatrue \fi
           \ifnum\teller>\!!countc \ifnum\teller<\!!countd \!!doneatrue \fi\fi
-          \advance\!!countf by 1\relax
-          \ifnum\!!countf=\!!countb\relax \!!donebtrue \fi
-          \if!!donea   % nog eens checken
-            \!!countf=0
-            \goto\teller{\copy2}%
-            \hss
-          \else\if!!doneb
-            \!!countf=0
-            \ifnum\teller<\realpageno\relax
-              \goto\teller{\copy0}%
-            \else\ifnum\teller>\realpageno\relax
-              \goto\teller{\copy2}%
+          \if!!donea   
+            \ifnum\teller<\realpageno
+              \gotox0%
+            \else\ifnum\teller>\realpageno
+              \gotox4%
             \else
-              \goto\teller{\copy4}%
+              \gotox8%
             \fi\fi
-            \hss
+          \else\ifnum\!!countf=\!!countb
+            \ifnum\teller<\realpageno
+              \gotox2%
+            \else\ifnum\teller>\realpageno
+              \gotox6%
+            \else
+              \gotox4%
+            \fi\fi
           \fi\fi}%
        \unskip
        \stopcolor
@@ -1673,23 +1486,27 @@
 \def\interactiebalkb%
   {\ifnum\lastpage>\firstpage\relax
      \interactiebuttons
-       [\v!eerste  \v!pagina,
-        \v!vorige  \v!pagina,
-        \v!volgende\v!pagina,
-        \v!laatste \v!pagina]%
+       [\v!eerstepagina,
+        \v!vorigepagina,
+        \v!volgendepagina,
+        \v!laatstepagina]%
    \fi}
 
 \def\interactiebalkg%
   {\ifnum\lastsubpage>\firstsubpage\relax
      \interactiebuttons
-       [\v!eerste  \v!sub\v!pagina,
-        \v!vorige  \v!sub\v!pagina,
-        \v!volgende\v!sub\v!pagina,
-        \v!laatste \v!sub\v!pagina]%
+       [\v!eerstesubpagina,
+        \v!vorigesubpagina,
+        \v!volgendesubpagina,
+        \v!laatstesubpagina]%
    \fi}
 
+\def\checkinteractiebalk#1#2%
+  {\doifnothing{\@@ibhoogte}{\def\@@ibhoogte{#1}}%
+   \doifnothing{\@@ibdiepte}{\def\@@ibdiepte{#2}}}
+
 \def\complexinteractiebalk[#1]%
-  {\doifelse{#1}{\v!reset}%
+  {\doifelse{#1}{\v!reset}
     {\global\setbox\meterbox=\box\voidb@x}%
     {\bgroup
        \iflocation
@@ -1699,19 +1516,20 @@
            {\startinteractie
             \processaction
               [\@@ibvariant]
-              [d=>{\getparameters[\??ib][\c!breedte=.5em,\c!hoogte=.5em,#1]},
-               e=>{\getparameters[\??ib][\c!hoogte=.5em,\c!afstand=.2em,#1]},
-               f=>{\getparameters[\??ib][\c!hoogte=.5em,\c!afstand=.2em,#1]}]%
+              [         c=>\checkinteractiebalk\v!max\v!max, 
+                        d=>\checkinteractiebalk{.5em}\!!zeropoint,
+                        e=>\checkinteractiebalk{.5em}\!!zeropoint,
+                        f=>\checkinteractiebalk{.5em}\!!zeropoint,
+               \s!default=>\checkinteractiebalk\v!ruim\!!zeropoint,
+               \s!unknown=>\checkinteractiebalk\v!ruim\!!zeropoint]%
             \doifelse{\@@ibsymbool}{\v!ja}
-              {\balksymbooltrue}
-              {\balksymboolfalse}%
+              {\balksymbooltrue}{\balksymboolfalse}%
             \getvalue{interactiebalk\@@ibvariant}%
             \stopinteractie}%
        \fi
      \egroup}}
 
-\unexpanded\def\interactiebalk%
-  {\complexorsimpleempty{interactiebalk}}
+\definecomplexorsimpleempty\interactiebalk
 
 \def\stelinteractiebalkin%
   {\dodoubleargument\getparameters[\??ib]}
@@ -1767,6 +1585,8 @@
   {\dodoubleargument\dodefinieerprofiel}
 
 % Als met \getpar wordt gewerkt, dan moet \next worden toegepast.
+
+% TZT initialisatie! 
 
 \def\profilepage{}
 
@@ -1827,7 +1647,7 @@
      \hbox
        {\dostartgoto
           \data
-            {\dolocationattributes{\??ia}{#1\presetgoto}}%
+            {\dolocationattributes\??ia\c!letter\c!kleur{#1\presetgoto}}%
           \start
             \dostartgotoprofile
               {\number\buttonwidth}{\number\buttonheight}
@@ -2034,8 +1854,7 @@
      {\docomplexstartversie{0}}%
      {\processcommalist[#1]\docomplexstartversie}}
 
-\def\startversie%
-  {\complexorsimpleempty{startversie}}
+\definecomplexorsimpleempty\startversie
 
 \def\stopversie%
   {\stopprofiel
@@ -2093,29 +1912,43 @@
 
 \newcounter\currentpagetransition
 
-\definecomplexorsimple\stelpaginaovergangenin
+\newif\ifrandomtransitions
 
-\def\simplestelpaginaovergangenin%
-  {\complexstelpaginaovergangenin[\pagetransitions]}
+\def\stelpaginaovergangenin%
+  {\dosingleempty\dostelpaginaovergangenin} 
 
-\def\complexstelpaginaovergangenin[#1]%  
-  {\doifsomething{#1}
-     {\doifelse{#1}{\v!reset}
-        {\let\setpagetransition=\relax}
-        {\def\setpagetransition%
-           {\doifelse{#1}{\v!willekeurig}
-              {\expanded{\getcommalistsize[\pagetransitions]}% 
-               \getrandomnumber{\currentpagetransition}{1}{\commalistsize}%
-               \expanded{\getfromcommalist[\pagetransitions][\currentpagetransition]}}
-              {\doglobal\increment\currentpagetransition
-               \expanded{\getfromcommalist[#1][\currentpagetransition]}}%
-            \ifx\commalistelement\empty
-              \doglobal\newcounter\currentpagetransition 
-              \setpagetransition
-            \else\iflocation
-              %\message{[\commalistelement]}\wait
-              \expanded{\dosetpagetransition{\commalistelement}}% 
-            \fi\fi}}}}
+\def\dostelpaginaovergangenin[#1]%  
+  {\doglobal\newcounter\currentpagetransition 
+   \doifelse{#1}{\v!reset}
+     {\let\setpagetransition\relax}
+     {\let\setpagetransition\setsomepagetransition
+      \doifinsetelse{\v!willekeurig}{#1}
+        {\randomtransitionstrue}{\randomtransitionsfalse}% 
+      \edef\userpagetransitions{#1}%
+      \@EA\removefromcommalist\@EA{\v!willekeurig}\userpagetransitions
+      \ifx\userpagetransitions\empty
+        \let\userpagetransitions\pagetransitions 
+      \fi}}
+
+\def\setsomepagetransition%
+  {\iflocation
+     \ifrandomtransitions
+       \expanded{\getcommalistsize[\userpagetransitions]}% 
+       \getrandomnumber{\currentpagetransition}{1}{\commalistsize}%
+     \else
+       \doglobal\increment\currentpagetransition
+     \fi
+     \expanded{\getfromcommalist[\userpagetransitions][\currentpagetransition]}%
+     \doifnumberelse{\commalistelement}
+       {\expanded{\getfromcommalist[\pagetransitions][\commalistelement]}}
+       {}%
+     \ifx\commalistelement\empty
+       \doglobal\newcounter\currentpagetransition 
+       \setsomepagetransition
+     \else
+       \expanded{\dosetpagetransition{\commalistelement}}% 
+     \fi
+   \fi}
 
 \prependtoks \setpagetransition \to \everyshipout
 
@@ -2171,13 +2004,81 @@
       \vskip\!!zeropoint\!!plus #3\!!fill
       \vskip\!!zeropoint\!!plus-#1\!!fill}}
 
+\newbox\commentbox
+
+\def\flushcomments%
+  {\ifvoid\commentbox\else
+     \inmarge{\hbox{\raise\ht\strutbox\box\commentbox}}%
+   \fi}
+
+\def\stelcommentaarin%
+  {\dodoubleargument\getparameters[\??cc]}
+
+\setvalue{\e!start\e!commentaar}% the dummy triple gobbles trailing spaces
+  {\dotripleempty\dostartcommentaar}
+
+\def\dostartcommentaar[#1][#2][#3]% 
+  {\bgroup
+   \obeylines
+   \long\def\docommando##1%
+     {\egroup 
+      \global\setbox\commentbox=\hbox
+        {\getparameters[\??cc][#2]%
+         \!!widtha=\@@ccbreedte
+         \!!heighta=\@@cchoogte
+         \doinsertcomment
+           {#1}{\number\!!widtha}{\number\!!heighta}{\@@cckleur}{0}{##1}%
+        \hskip\ifvoid\commentbox\@@ccmarge\else\@@ccafstand\fi
+        \box\commentbox}}%
+   \grabuntil{\e!stop\e!commentaar}\docommando}
+
+\def\commentaar% 
+  {\dodoubleempty\docommentaar}
+
+\def\docommentaar[#1][#2]#3%
+  {\bgroup
+   \getparameters[\??cc][#2]%
+   \!!widtha=\@@ccbreedte
+   \!!heighta=\@@cchoogte
+   \hbox to \!!zeropoint
+     {\hskip-\@@ccmarge
+      \raise\ht\strutbox\hbox
+        {\doPDFinsertcomment
+           {#1}{\number\!!widtha}{\number\!!heighta}{\@@cckleur}{0}{#3}}}%
+   \egroup
+   \ignorespaces}
+
+% \startcommentaar
+%   hello beautiful\\world
+% \stopcommentaar
+% 
+% \startcommentaar[hallo]
+%   hello \<< \'e\'erste \>>
+%   beautiful
+%   world
+% \stopcommentaar
+%
+% \startcommentaar[hallo][kleur=groen,breedte=4cm,hoogte=3cm]
+%   hello \<< \'e\'erste \>>
+%   beautiful
+%   world
+% \stopcommentaar
+% 
+% \startcommentaar[hallo][kleur=groen,breedte=4cm,hoogte=3cm]
+%   hello \<< \'e\'erste \>>
+% 
+%   beautiful
+% 
+%   world
+% \stopcommentaar
+
 \definieerinteractiemenu
   [\v!rechts]
   [\v!rechts]
   [\c!voor=,
    \c!na=\vfil,
    \c!tussen=\blanko,
-   \c!afstand=12pt,
+   \c!afstand=\bodyfontsize, % 12pt 
    \c!links=\hss,
    \c!rechts=\hss,
    \c!breedte=\rechterrandbreedte,
@@ -2189,7 +2090,7 @@
   [\c!voor=,
    \c!na=\vfil,
    \c!tussen=\blanko,
-   \c!afstand=12pt,
+   \c!afstand=\bodyfontsize, % 12pt 
    \c!links=\hss,
    \c!rechts=\hss,
    \c!breedte=\linkerrandbreedte,
@@ -2201,7 +2102,7 @@
   [\c!voor=\vss,
    \c!na=\vss,
    \c!midden=\hfil,
-   \c!afstand=12pt,
+   \c!afstand=\bodyfontsize, % 12pt 
    \c!breedte=\v!passend,
    \c!hoogte=\v!ruim]
 
@@ -2211,7 +2112,7 @@
   [\c!voor=\vss,
    \c!na=\vss,
    \c!midden=\hfil,
-   \c!afstand=12pt,
+   \c!afstand=\bodyfontsize, % 12pt 
    \c!breedte=\v!passend,
    \c!hoogte=\v!ruim]
 
@@ -2224,6 +2125,7 @@
    \c!achtergrondraster=\@@rsraster,
    \c!letter=\@@ialetter,
    \c!kleur=\@@iakleur,
+   \c!contrastkleur=\@@iacontrastkleur,
    \c!status=\v!start,
    \c!zelfdepagina=\v!ja,
    \c!onbekendeverwijzing=\v!leeg,
@@ -2232,11 +2134,27 @@
    \c!linkeroffset=\!!zeropoint,
    \c!rechteroffset=\!!zeropoint]
 
-\stelbovenin [\v!tekst] [\c!middentekst={\interactiemenus[\v!boven]}]
-\stelonderin [\v!tekst] [\c!middentekst={\interactiemenus[\v!onder]}]
+%\stelbovenin [\v!tekst] [\c!middentekst={\interactiemenus[\v!boven]}]
+%\stelonderin [\v!tekst] [\c!middentekst={\interactiemenus[\v!onder]}]
 
 \def\plaatsrechterrandblok {\interactiemenus[\v!rechts]}
 \def\plaatslinkerrandblok  {\interactiemenus[\v!links]}
+\def\plaatsboventekstblok  {\interactiemenus[\v!boven]}
+\def\plaatsondertekstblok  {\interactiemenus[\v!onder]}
+
+\def\plaatsboventekstblok%
+  {\vbox to \bovenhoogte
+     {\getvalue{\??tk\v!boven\v!tekst\c!voor}
+      \interactiemenus[\v!boven]
+      \getvalue{\??tk\v!boven\v!tekst\c!na}
+      \kern\!!zeropoint}}
+
+\def\plaatsondertekstblok%
+  {\vbox to \onderhoogte
+     {\getvalue{\??tk\v!onder\v!tekst\c!voor}
+      \interactiemenus[\v!onder]
+      \getvalue{\??tk\v!onder\v!tekst\c!na}
+      \kern\!!zeropoint}}
 
 \stelinteractieschermin
   [\c!breedte=\printpapierbreedte,
@@ -2247,13 +2165,9 @@
    \c!kopwit=\kopwit,
    \c!optie=\c!min]
 
-\stelexternefigurenin
-  [\c!hokjes=\v!uit,
-   \c!ymax=24,
-   \c!xmax=]
-
 \stelbuttonsin
-  [\c!breedte=\v!passend,
+  [\c!status=\v!start,  
+   \c!breedte=\v!passend,
    \c!hoogte=\v!ruim,
    \c!offset=0.25em,
    \c!kader=\v!aan,
@@ -2270,9 +2184,9 @@
    \c!variant=a,
    \c!symbool=\v!nee,
    \c!breedte=\rechterrandbreedte,
-   \c!hoogte=\v!ruim,
-   \c!diepte=\!!zeropoint,
-   \c!afstand=1em,
+   \c!hoogte=, % these are taken care
+   \c!diepte=, % of at calling time
+   \c!afstand=.5em, % beter relateren aan breedte 
    \c!stap=1,
    \c!kleur=\@@iakleur,
    \c!contrastkleur=\@@iacontrastkleur,
@@ -2293,11 +2207,6 @@
 \stelsynchronisatiein
   [\c!status=\v!stop]
 
-\stelversiesin
-  [\c!nummer=1,
-   \c!letter=\ss,
-   \c!kleur=]
-
 \stelprofielenin
   [\c!optie=]
 
@@ -2307,7 +2216,18 @@
 \stelpaginaovergangenin
   [\v!reset]
 
+\stelcommentaarin
+  [\c!marge=2.5em,
+   \c!afstand=1em,
+   \c!breedte=.3\tekstbreedte,
+   \c!hoogte=.2\teksthoogte, 
+   \c!kleur=\@@iakleur]
+
+\stelversiesin    % beware, @ is made active here, 
+  [\c!nummer=1,   % therefore we set this one at the end
+   \c!letter=\ss,
+   \c!kleur=]
+
 \protect
 
 \endinput
-

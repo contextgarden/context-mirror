@@ -13,6 +13,36 @@
 
 \unprotect
 
+% \buildarray[test][aa,bb,cc,dd,ee,ff]
+% \setarrayelement{test}{1}{qq}
+% \arrayelement{test}{1}
+% \arraylength{test}
+% 
+% \def\buildarray[#1][#2]%
+%   {\scratchcounter=0  
+%    \def\docommando##1%
+%      {\advance\scratchcounter by 1   
+%       \setvalue{@@aa#1\the\scratchcounter}{##1}}%
+%    \processcommalist[#2]\docommando
+%    \setevalue{@@aa#1}{\the\scratchcounter}}%
+% 
+% \def\setarrayelement#1#2{\setvalue{@@aa#1#2}}
+% \def\arrayelement   #1#2{\getvalue{@@aa#1#2}}
+% \def\arraylength      #1{\getvalue{@@aa#1}}
+
+% \newsignal\junksignal
+% 
+% \def\setjunksignal%
+%   {\ifhmode
+%      \hskip\junksignal
+%      \let\removejunkspaces\doremovejunkspaces
+%    \else
+%      \let\removejunkspaces\relax
+%    \fi}
+% 
+% \def\doremovejunkspaces%
+%   {\doloop{\ifdim\lastskip=\junksignal\unskip\else\exitloop\fi}}
+
 % \def\doifnonzeropositiveelse#1#2#3%
 %   {\bgroup
 %    \setbox\scratchbox=\hbox{\scratchcounter=0#1}%
@@ -75,12 +105,14 @@
 %    \maximizeskip\medskipamount
 %    \maximizeskip\smallskipamount}
 
+\newcount\modcounter
+
 \def\DoMod #1by#2to#3%
-  {\scratchcounter=#1\relax
-   \divide\scratchcounter by #2\relax
-   \multiply\scratchcounter by #2\relax
+  {\modcounter=#1\relax
+   \divide\modcounter by #2\relax
+   \multiply\modcounter by #2\relax
    #3=#1\relax
-   \advance#3 by -\scratchcounter}
+   \advance#3 by -\modcounter}
 
 \def\DoDiv #1by#2to#3%
   {#3=#1\relax
@@ -91,15 +123,6 @@
 
 \def\unprotected%
   {\unprotect\dounprotected}
-
-%D \pagina
-%D \starttypen
-%D \def\obeyhyphens% % after fontswitch
-%D   {\def\obeyedspace%
-%D      {\hyphenchar\font=45
-%D       \spaceskip.5em\!!plus.25em\!!minus.25em\relax%
-%D       \def\obeyedspace{ }}}
-%D \stoptypen
 
 %D Standaard kan een spatie (zoals ~) uitrekken. Dit is in
 %D overzichten niet altijd de bedoeling, vandaar:
@@ -150,8 +173,20 @@
 %   \fi
 %   \readfile{#2\usersetup}{}{}%
 %   \writestatus{setup}{loading #1 setupfile #2\usersetup}}
+
+\newcount\featuretest
 
+\def\testfeature#1#2%
+  {\def\dotestfeature%
+     {\advance\featuretest 1
+      \ifnum\featuretest<#1\relax#2\expandafter\dotestfeature\fi}%
+   \retestfeature}
+
+\def\retestfeature%
+  {\message{starting feature test}\wait
+   \featuretest=-1 \dotestfeature
+   \message{feature test done}\wait}
+
 \protect
 
 \endinput
-

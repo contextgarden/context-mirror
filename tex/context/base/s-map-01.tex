@@ -1,0 +1,613 @@
+%D \module
+%D   [      file=s-map-01,
+%D        version=1998.05.05,
+%D          title=\CONTEXT\ Style File,
+%D       subtitle=\MAPS\ basis stijl,
+%D         author={Taco Hoekwater \& Hans Hagen},
+%D           date=\currentdate,
+%D      copyright={NTG / MAPS}]
+
+%D In deze file wordt zowel de dubbelzijdig als de enkelzijdige
+%D layout van de \MAPS\ gedefinieerd. Naast deze file
+%D zijn|/|komen wat aanvullende stijlen voor specifieke
+%D doeleinden beschikbaar.
+
+%D Normaal gesproken wordt met \type{\stelinterliniein} de
+%D interlinie voor het gehele document ingesteld op een
+%D zodanige wijze dat deze voor elk korps vergelijkbaar is. In
+%D de \MAPS\ gebruiken we echter per korps een verschillende
+%D specificatie. De daadwerkelijke definities gebeuren in de
+%D file \type{font-map.tex}.
+
+\unprotect
+
+\definebodyfontenvironment
+  [7pt]
+  [\c!interlinie=8pt,
+   \c!groot=8pt,
+   \c!klein=6pt]
+
+\definebodyfontenvironment
+  [8pt]
+  [\c!interlinie=9pt,
+   \c!groot=9pt,
+   \c!klein=7pt]
+
+\definebodyfontenvironment
+  [9pt]
+  [\c!interlinie=11pt,
+   \c!groot=10pt,
+   \c!klein=8pt]
+
+\definebodyfontenvironment
+  [22pt]
+  [\c!interlinie=22pt,
+   \c!groot=22pt,
+   \c!klein=17pt,
+   \c!x=17pt]
+
+%D Met de instellingen \type{groot} en \type{klein} leggen we
+%D vast naar welk korps wordt overgegaan als we aan
+%D \type{\switchnaarkorps} de trefwoorden \type{klein} of
+%D \type{groot} meegeven. Met \type{x} geven we de maat aan van
+%D de pseudo klein||kapitalen. De \MAPS\ wordt gezet in 9pt.
+
+\setupbodyfont
+  [map,mty,9pt]
+
+%D We gebruiken echte small caps: 
+
+\stelsorterenin
+  [logo]
+  [\c!letter=\v!smallcaps]
+
+\setupcapitals
+  [\c!titel=\v!nee]
+
+%D De \MAPS\ heeft de breedte van een A4||tje maar is iets
+%D minder hoog. We definieren daarom een wat afwijkend
+%D papierformaat en projecteren dat op A4.
+
+\definieerpapierformaat % \definepapersize
+  [maps]
+  [\c!breedte=21cm,
+   \c!hoogte=26.4cm]
+
+\stelpapierformaatin % \setuppapersize
+  [maps]
+  [a4]
+
+%D Artikelen in de \MAPS\ worden breed danwel in twee kolommen
+%D gezet. Vooralsnog beperken we de definitie van de layout tot
+%D de een||koloms opmaak.
+
+\stellayoutin
+  [\c!breedte=28pc,
+   \c!marge=9pc,
+   \c!margeafstand=1pc,
+   \c!rugwit=1in,
+   \c!kopwit=1.8cm,
+   \c!regels=53,
+   \c!hoofd=35pt,
+   \c!voet=35pt]
+
+\stelkolommenin
+  [\c!afstand=1pc]
+
+%D Later zullen we zonodig nog instelleb dat de \MAPS\ op een
+%D grid wordt gezet. Het zetten op een grid is voor \TEX\ niet
+%D triviaal, en de ondersteuning in \CONTEXT\ is dan ook
+%D enigzins experimenteel. De \MAPS\ is in die zin een soort
+%D continue testcase.
+
+%D De \MAPS\ wordt vanzelfsprekend dubbelzijdig gezet. Verderop
+%D gaan het paginanummer expliciet plaatsen, vandaar dat we
+%D hier de plaats niet specificeren.
+
+\stelnummeringin
+  [\c!plaats=,
+   \c!variant=\v!dubbelzijdig]
+
+%D De hoofd- en voetregels worden gezet in een sans serif.
+%D Het instellen op layout niveau is efficienter dan op elk
+%D regel niveau.
+
+\stellayoutin
+  [\c!letter=\ss]
+
+%D In principe hebben we 4 verschillende soorten witruimte,
+%D afhankelijk van het al dan niet op grid en/of in
+%D kolommen zetten. We definieren daarom drie soorten wit:
+
+\definieerblanko [mapsvoor]   [groot]
+\definieerblanko [mapstussen] [groot]
+\definieerblanko [mapsna]     [mapsvoor]
+
+%D Waar nodig springen we in. We willen echter niet inspringen
+%D na een witruimte, vandaar het trefwoord \type{volgende}.
+
+\stelinspringenin
+  [\v!volgende,9.5pt]
+
+%D Hoewel niet strikt noodzakelijk, definities en dergelijke
+%D worden namelijk omgeven door witruimte, stellen we ook hier
+%D in dat we na zo'n definitie niet willen inspringen.
+
+\steldoordefinierenin
+  [\c!springvolgendein=\v!nee]
+
+\steldoornummerenin
+  [\c!springvolgendein=\v!nee]
+
+%D We lijnen netjes uit, behalve in opsommingen, waar we
+%D rechts raffelen. Ook hier springen we niet in na een
+%D opsomming.
+
+\stelopsommingin
+  [\v!elk]
+  [\c!springvolgendein=\v!nee,
+   \c!uitlijnen=\v!rechts]
+
+%D Nu we toch met opsommingen bezig zijn, introduceren we
+%D meteen een nieuw symbool, een vierkantje. We tekenen dit
+%D symbool met behulp van de macros van de visuele debugger.
+
+\def\MapsSymbool%
+  {\hbox
+     {\boxrulewidth=.4pt
+      \raise.2ex\ruledvbox
+        {\phantom{\vrule width .75ex height .75ex}}}}
+
+%D Vervolgens definieren we dit stukje zetwerk als symbool:
+
+\definesymbol
+  [MapsSymbool]
+  [\MapsSymbool]
+
+%D en koppelen het aan de opsommingen op het eerste niveau.
+
+\stelopsommingin
+  [1]
+  [\c!symbool=MapsSymbool]
+
+%D Ook passen we de breedte aan het inspringen aan en
+%D plaatsen we de verschillende items op elkaar. De afstand
+%D speelt vooral een rol als we ruimer willen zetten.
+
+\stelopsommingin
+  [\v!elk]
+  [\c!breedte=9.5pt,
+   \c!afstand=0pt]
+
+\stelopsommingin
+  [1]
+  [\v!opelkaar]
+
+%M % Nodig voor documenteren:
+%M
+%M \unprotect
+%M
+%M \doordefinieren
+%M   [MapsBegrip]
+%M   [\c!plaats=\v!hangend,
+%M    \c!afstand=.75em,
+%M    \c!marge=\v!standaard]
+%M
+%M \protect
+
+%D Hoewel auteurs zelf nieuwe begrippen en dergelijke kunnen
+%D definieren, introduceren we een klasse standaard begrippen,
+%D namelijk \type{\MapsBegrip}. Men kan dus een begrip als
+%D volgt definieren:
+%D
+%D \startbuffer
+%D \MapsBegrip {MAPS} Het periodiek van de \NTG\ dat twee maal
+%D per jaar verschijnt.
+%D \stopbuffer
+%D
+%D \typebuffer
+%D
+%D en krijgt dan:
+%D
+%D \haalbuffer
+
+\doordefinieren
+  [MapsBegrip]
+  [\c!plaats=\v!hangend,
+   \c!afstand=.75em,
+   \c!marge=\v!standaard]
+
+%D Om ruimte te sparen, omringen we verbatim niet met hele lege
+%D regels, maar met halve.
+
+\setuptyping
+  [\c!optie=\v!kleur,
+   \c!blanko=mapstussen,
+   \c!voor={\blanko[mapsvoor]},
+   \c!na={\blanko[mapsna]}]
+
+%D Speciaal voor erg brede verbatim teksten, definieren we
+%D een brede variant. Deze steekt alleen op de linkerbladzijden
+%D in de marge.
+
+\definetyping
+  [breedtypen]
+
+\setuptyping
+  [breedtypen]
+  [\c!onevenmarge=-6pc]
+
+%D En dan nu wat echte macro definities. Samenvattingen en
+%D trefwoorden worden links danwel rechts uitgelijnd gezet.
+%D Omdat sommige artikelen ook nog andere introducerende toeters
+%D en bellen hebben, definieren we een algemene macro.
+
+\def\startWhatever#1%
+  {\witruimte
+   \snaptogrid\vbox\bgroup
+     \forgetall
+     \steluitlijnenin[\v!rechts]
+     \parfillskip 0pt plus 1 fill
+     \steltolerantiein[\v!zeersoepel]
+     \stelinspringenin[\v!geen]
+     {\ssbf#1}\par
+     \switchtobodyfont[8pt]
+     \ss\tf
+     \ignorespaces}
+
+\def\stopWhatever%
+  {\par
+   \egroup
+   \blanko[\v!regel]}
+
+%D De macro \type{\snaptogrid} is hier essentieel en zorgt
+%D ervoor dat de tekst op het grid wordt gezet, ondanks de
+%D afwijkende spatiering.
+
+\def\Whatever#1#2%
+  {\startWhatever{#1}#2\stopWhatever}
+
+\def\defineWhatever#1#2%
+  {\setvalue{\e!start#1}{\startWhatever{#2}}
+   \setvalue {\e!stop#1}{\stopWhatever}
+   \setvalue        {#1}{\Whatever{#2}}}
+
+\defineWhatever{Abstract}{abstract}
+\defineWhatever{Keywords}{keywords}
+
+%D Een samenvatting ziet er nu als volgt uit:
+%D
+%D \starttypen
+%D \startAbstract ..... \stopAbstract
+%D \stoptypen
+%D
+%D of korter:
+%D
+%D \starttypen
+%D \Abstract{...}
+%D \stoptypen
+%D
+%D Ook hebben we de beschikking over:
+%D
+%D \starttypen
+%D \startWhatever{....} ..... \stopWhatever
+%D \stoptypen
+
+%D We zullen de artikelen per stuk verwerken. Elk artikel heeft
+%D z'n eigen kenmerken, die, zoals we later zullen zien, worden
+%D ingesteld aan heb begin van een artikel:
+%D
+%D \starttypen
+%D \startBijdrage[instellingen]
+%D .....
+%D .....
+%D \stopBijdrage
+%D \stoptypen
+%D
+%D Hieronder is te zien wat de standaard instellingen zijn:
+
+\def\MapsTypering[#1]%
+  {\getparameters
+     [Maps]
+     [Jaar=1999,
+      Periode=Voorjaar,
+      Categorie=Bijlage,
+      Nummer=F,
+      Pagina=43,
+      Titel=Publish or Perish,
+      Subtitel=,
+      Auteur=M.A.P.S. Auteur,
+      Adres=,
+      Email=maps@ntg.nl,
+      Kolommen=\v!nee,
+      Grid=\v!ja,
+      #1]}
+
+%D In het adres en bij de auteur kan men \type{\\} gebruiken
+%D om naar een nieuwe regel over te gaan. Voor de zekerheid
+%D initialiseren we deze instellingen met:
+
+\MapsTypering[Categorie=Voorbeeld]
+
+%D De instellingen zijn beschikbaar als \type{\MapsVariabele}.
+%D In de onderstaande definities van de hoofd- en voetregels
+%D zien we de instellingen terug (de prefix \type{\unexpanded}
+%D zorgt ervoor dat we straffeloos kunnen testen):
+
+\unexpanded\def\LinkerKolomTekst#1%
+  {\rlap{\hbox to 10pc{\hfill#1}}}
+
+\unexpanded\def\RechterKolomTekst#1%
+  {\llap{\hbox to 10pc{#1\hfill}}}
+
+\edef\AuteurScheider{, }
+
+\unexpanded\def\AuteurNamen#1%
+  {{\let\\=\AuteurScheider#1}}
+
+\stelhoofdtekstenin
+  [\MapsTitel]
+  [\LinkerKolomTekst{\MapsCategorie\ \MapsNummer}]
+  [\RechterKolomTekst{\MapsCategorie\ \MapsNummer}]
+  [\AuteurNamen{\MapsAuteur}]
+
+\stelvoettekstenin
+  [\MapsPeriode\ \MapsJaar]
+  [\LinkerKolomTekst{\pagenumber}]
+  [\RechterKolomTekst{\pagenumber}]
+  [MAPS]
+
+%D Voetnoten worden onderaan de bladzijde gezet, of, in geval
+%D van kolommen, in de tweede kolom. We definieren een wat
+%D afwijkende lijn als scheider:
+
+\def\VoetNootLijn%
+  {\strut\vrule height .4pt depth 0pt width 9.25pc
+   \vskip0pt}
+
+\setupfootnotes
+  [\c!korps=8pt,
+   \c!plaats=\v!kolommen,
+   \c!lijn=\VoetNootLijn,
+   \c!voor=\blanko,
+   \c!letter=\v!schuin,
+   \c!nummercommando=]
+
+%D De voetnoot zelf stellen we in met:
+
+\setupfootnotedefinition
+  [\c!plaats=\v!aansluitend,
+   \c!breedte=\v!passend,
+   \c!kopletter=\v!normaal,
+   \c!afstand=.5em]
+
+%D We komen nu aan de wat lastiger macros. Het eerste dat een
+%D bijdrage definitie doet, is nagaan of we in kolommen zetten.
+%D Afhankelijk van de situatie, laden we wat aanvullende
+%D definities. De titelpgina heeft geen hoofdregels en de
+%D titel wordt automatisch gezet.
+
+\def\Bericht{Bericht}
+
+\newif\ifMapsInKolommen
+
+\def\dostartBijdrage[#1]%
+  {\pagina
+   \MapsTypering[#1]
+   \doifelse{\MapsKolommen}{\v!nee}
+     {\MapsInKolommenfalse}
+     {\MapsInKolommentrue}
+   \ifMapsInKolommen
+     \haalbuffer[s-maps-1] % see later on
+   \fi
+   \stelhoofdin[\c!status=\v!leeg]
+   \stelpaginanummerin[\c!nummer=\MapsPagina]
+   \stellayoutin[\c!grid=\MapsGrid]
+   \ifgridsnapping                           % nog controleren
+     \stelblankoin[\v!regel]
+     \definieerblanko[mapsvoor][\v!halveregel]
+     \definieerblanko[mapstussen][\v!regel]
+   \else
+     \stelblankoin[\v!halveregel]
+     \definieerblanko[\v!middel][\v!halveregel]
+     \definieerblanko[mapsvoor][\v!halveregel]
+     \definieerblanko[mapstussen][\v!halveregel]
+   \fi
+   \snaptogrid\vbox
+     \bgroup
+       \switchtobodyfont[ss,22pt]%\ss
+       \bgroup
+         \topskip 0pt
+         \forgetall
+         \ifMapsInKolommen \steluitlijnenin[\v!links] \fi
+         \noindent\tf\MapsAffiliatieA
+         \ifx\MapsCategorie\Bericht
+            ~\strut
+         \else
+            \MapsCategorie~\MapsNummer
+         \fi
+         \par \kern -.5pt
+       \egroup
+       \bgroup
+         \forgetall
+         \kern 7.5pt
+         \ifMapsInKolommen \steluitlijnenin[\v!links] \fi
+         {\bf\MapsTitel\par}
+         {\bfx\MapsSubtitel\par}
+         \blanko[\v!regel]
+         \kern 3.5pt
+       \egroup
+     \egroup
+   \ifMapsInKolommen\startkolommen\fi
+   \MapsAffiliatieB}
+
+\def\startBijdrage%
+  {\starttekst
+   \dosingleempty\dostartBijdrage}
+
+\def\stopBijdrage%
+  {\ifMapsInKolommen\stopkolommen\fi
+   \stoptekst}
+
+%D De affiliatie wordt in de marge gezet. De wat gecompliceerde
+%D definitie zorgt er voor dat de bovenkant van de eerste
+%D regels uitlijnen. Met \type{\getpagestatus} kunnen we
+%D vaststellen of we op een rechterbladzijde zitten.
+
+\unexpanded\def\MapsAffiliatieA%
+  {\ifMapsInKolommen \else
+     \snaptogrid\vbox\bgroup
+     \setbox0=\hbox{X}%
+     \dimen0=\ht0
+     \switchtobodyfont[9pt,\v!reset]%
+     \setbox0=\hbox{X}%
+     \advance\dimen0 by -\ht0
+     \getpagestatus
+     \ifodd\MapsPagina \rightpagetrue \fi
+     \setbox0=\vtop
+       {\hsize\margebreedte
+        \forgetall
+        \let\\=\par
+        \ifrightpage\raggedright\else\raggedleft\fi
+        \parfillskip 0pt plus \margebreedte
+        \strut\MapsAuteur\\
+        \MapsAdres\\ % kan leeg zijn
+        \strut\tttf\MapsEmail}%
+     \ht0=\ht\strutbox
+     \dp0=\dp\strutbox
+     \ifrightpage
+       \rlap{\kern\zetbreedte\kern\margeafstand\raise\dimen0\box0}%
+     \else
+       \llap{\raise\dimen0\box0\kern\margeafstand}%
+     \fi
+     \global\let\Affiliatie=\relax
+     \egroup
+   \fi}
+
+\unexpanded\def\MapsAffiliatieB%
+  {\ifMapsInKolommen
+     \snaptogrid\vbox\bgroup
+     \forgetall
+     \ss
+     \let\\=\par
+     \strut\MapsAuteur\\
+     \MapsAdres\\ % kan leeg zijn
+     \strut\tttf\MapsEmail\\
+     \egroup
+   \fi}
+
+%D De verschillende koppen worden zo efficient mogelijk gezet.
+%D Let ook hier weer op de halve regels, waardoor gridsnapping
+%D eenvoudiger is.
+
+\stelkopin
+  [\v!paragraaf]
+  [\c!letter=\bfa,
+   \c!voor={\blanko[\v!halveregel]},
+   \c!na={\blanko[\v!halveregel]}]
+
+\stelkopin
+  [\v!sub\v!paragraaf]
+  [\c!letter=\bf,
+   \c!voor=\blanko,
+   \c!na=]
+
+\stelkopin
+  [\v!sub\v!sub\v!paragraaf]
+  [\c!letter=\bf,
+   \c!variant=\v!tekst,
+   \c!voor=\blanko,
+   \c!na=]
+
+%D De plaats van de figuren en het lettertype waarin de
+%D bijschriften worden gezet stellen we in met:
+
+\stelplaatsblokkenin
+  [\c!plaats=\v!links]
+
+\stelblokkopjesin
+  [\c!letter=\sstf,
+   \c!tussen=]
+
+%D Gezien het brede karakter van de \MAPS\ gebruiken we andere
+%D waarden voor links geraffeld uitlijnen.
+
+\def\raggedleft%
+  {\setraggedness\leftraggedness
+   \setraggedskips{1fill}{0em}{.3333em}{.5em}{1fil}{\parindent}}
+
+%D Standaard gebruikt \CONTEXT\ kleur bij pretty verbatim
+%D printing. In the \MAPS\ gebruiken we echter fonts:
+
+\def\beginofpretty[#1]%
+  {\bgroup
+   \def\COMMONprettyone  {\ttsl}%
+   \def\COMMONprettytwo  {\ttbf}%
+   \def\COMMONprettythree{}%
+   \def\COMMONprettyfour {}%
+   \getvalue{COMMON#1}}
+
+\def\endofpretty%
+  {\egroup}
+
+%D We zijn (heel) wat toleranter in het uitlijnen:
+
+\steltolerantiein
+  [\v!zeersoepel]
+
+%D We misbruiken het buffer mechanisme om enkele eerder
+%D gedefinieerde instellingen te veranderen in geval van zetten
+%D in kolommen.
+
+\startbuffer[s-maps-1]
+
+%D In kolom||mode gebruiken we geen marge en hebben dus wat
+%D meer breedte ter beschikking.
+
+\stellayoutin
+  [\c!breedte=38pc]
+
+\stelhoofdtekstenin
+  [\MapsTitel]
+  [\MapsCategorie\ \MapsNummer]
+  [\MapsCategorie\ \MapsNummer]
+  [\MapsAuteur]
+
+\stelvoettekstenin
+  [\MapsPeriode\ \MapsJaar]
+  [\pagenumber]
+  [\pagenumber]
+  [MAPS]
+
+%D In kolom||mode plaatsen we de inleidingen rechts met een
+%D raffelige linkerkantlijn.
+
+\def\startWhatever#1%
+  {\witruimte
+   \snaptogrid\vbox\bgroup
+   \forgetall
+   \steluitlijnenin[\v!links]
+   \steltolerantiein[\v!zeersoepel]
+   \stelinspringenin[\v!geen]
+   \switchtobodyfont[8pt]
+   \noindent{\ssbf#1}\par
+   \ss\tf
+   \ignorespaces}
+
+\def\stopWhatever%
+  {\par
+   \egroup
+   \vbox{\strut}
+   \noindentation}
+
+%D Tot zover de twee||koloms instelingen.
+
+\stopbuffer
+
+%D Enkele \LATEX\ conversie macro's:
+
+\let\verb=\type
+
+\def\mailadres#1{{\tt#1}}
+
+\endinput

@@ -2,14 +2,16 @@
 %D   [       file=context,
 %D        version=1995.10.10,
 %D          title=\CONTEXT,
-%D       subtitle=\CONTEXT\ Format Generation, 
+%D       subtitle=\CONTEXT\ Format Generation,
 %D         author=Hans Hagen,
 %D           date=\currentdate,
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
-%C therefore copyrighted by \PRAGMA. Non||commercial use is 
-%C granted. 
+%C therefore copyrighted by \PRAGMA. Non||commercial use is
+%C granted.
+
+\def\contextversion{1999.2.17}
 
 %D Welcome to the main module. When this module is ran through
 %D \type{initex} or \type{tex -i} or \type{whatevertex} using
@@ -17,14 +19,14 @@
 %D generated. During this process the user is asked for an
 %D interface language. Supplying \type{dutch} will generate a
 %D dutch version of \CONTEXT, supplying \type{english} will of
-%D course end op in a english version. 
-%D 
-%D First we load the system modules. These implement a lot of 
-%D manipulation macros. The first one loads \PLAIN\ \TEX, as 
-%D minimal as possible. 
+%D course end op in a english version.
+%D
+%D First we load the system modules. These implement a lot of
+%D manipulation macros. The first one loads \PLAIN\ \TEX, as
+%D minimal as possible.
 
 \input syst-tex.tex  
-\input syst-gen.tex 
+\input syst-gen.tex
 \input syst-ext.tex
 \input syst-new.tex
 
@@ -32,16 +34,16 @@
 
 \CONTEXTtrue
 
-%D After this we're ready for the multi||lingual interface 
-%D modules. 
+%D After this we're ready for the multi||lingual interface
+%D modules.
 
 \input mult-ini.tex
 \input mult-sys.tex
 \input mult-con.tex
 \input mult-com.tex
 
-%D Now we're ready for some general support modules. These 
-%D modules implement some basic typesetting functionality.  
+%D Now we're ready for some general support modules. These
+%D modules implement some basic typesetting functionality.
 
 \input supp-ini.tex
 \input supp-fil.tex
@@ -49,50 +51,57 @@
 \input supp-mrk.tex
 \input supp-vis.tex
 \input supp-fun.tex
+\input supp-eps.tex
 \input supp-pdf.tex
 \input supp-spe.tex
 \input supp-mps.tex
 \input supp-tpi.tex
+\input supp-mat.tex
 
-%D Verbatim typestting is implemented in a separate class of 
-%D modules. The pretty typesetting modules are loaded at run 
-%D time. 
+%D Verbatim typestting is implemented in a separate class of
+%D modules. The pretty typesetting modules are loaded at run
+%D time.
 
 \input verb-ini.tex  % replaces supp-ver
 
-%D We also use some third party macros. These are loaded by 
+%D We also use some third party macros. These are loaded by
 %D saying:
 
 \input thrd-ran
 
 %D When loading the font, color and special modules, we need a
-%D bit more advanced file handling, so next we load:
+%D bit more advanced file handling as well as some general
+%D variables, so next we load:
 
+\input core-var.tex
 \input core-fil.tex
 
-%D \CONTEXT\ does not implement its own table handling. We 
-%D just go for the best there is and load \TABLE. Just to be 
-%D sure we do it here, before we redefine \type{|}. 
+%D \CONTEXT\ does not implement its own table handling. We
+%D just go for the best there is and load \TABLE. Just to be
+%D sure we do it here, before we redefine \type{|}.
 
-\doinputonce{table}       
+\doinputonce{table}
 
-%D Here comes the last support module. 
+%D Here comes the last support modules. They take care of
+%D some language specific things.
 
 \input supp-lan.tex
+\input supp-num.tex
 
-%D The next three modules do what their names state. They 
-%D load additional definition modules when needed. 
+%D The next few modules do what their names state. They
+%D load additional definition modules when needed.
+
+\input enco-ini.tex 
 
 \input lang-ini.tex
-\input colo-ini.tex
-\input spec-ini.tex
 
-%D The special modules need some additional macro's: 
+\input colo-ini.tex
 
 \input spec-mis.tex
+\input spec-ini.tex
 
-%D For the moment we load a lot of languages. In the future 
-%D we'll have to be more space conservative. 
+%D For the moment we load a lot of languages. In the future
+%D we'll have to be more space conservative.
 
 \input lang-lab.tex
 
@@ -109,42 +118,54 @@
 \input lang-sla.tex
 \input lang-ura.tex
 
-%D Next we load some core macro's. These implement the 
-%D macros' that are seen by the users. 
+%D All kind of symbols are handles in:
 
-\input core-var.tex
+\input symb-ini.tex
+
+%D Next we load some core macro's. These implement the
+%D macros' that are seen by the users.
+
 \input core-gen.tex
 \input core-mak.tex
+\input core-mat.tex
 \input core-grd.tex
 \input core-ver.tex
 \input core-vis.tex
 \input core-con.tex
 \input core-rul.tex
 \input core-tab.tex
-\input core-fil.tex
 \input core-new.tex
-\input core-nav.tex 
-\input core-ref.tex 
+\input core-nav.tex
+\input core-ref.tex
 \input core-obj.tex
-\input core-01a.tex 
-\input core-mul.tex 
-\input core-pag.tex 
+\input core-01a.tex
+\input core-mul.tex
+\input core-pag.tex
+\input core-tbl.tex
+\input core-mis.tex
 
-%D Of course we do need fonts. There are no \TFM\ files 
-%D loaded yet, so the format file is independant of their 
-%D content. Here we also redefine \type{\it} as {\it italic} 
-%D instead of italian. 
+%D How about fill||in fields?
+
+\input java-ini.tex
+\input core-fld.tex
+
+%D Of course we do need fonts. There are no \TFM\ files
+%D loaded yet, so the format file is independant of their
+%D content. Here we also redefine \type{\it} as {\it italic}
+%D instead of italian.
 
 \input font-ini.tex
 
-%D Now we're ready for more core modules. 
+%D Now we're ready for more core modules.
 
 \input core-fnt.tex
 \input core-not.tex
-% \input core-jav.tex % still experimental and loaded at runtime
 
 \input core-01b.tex
 \input core-01c.tex
+
+\input core-fig.tex
+
 \input core-01d.tex
 \input core-01e.tex
 
@@ -153,32 +174,126 @@
 %      core-02c.tex
 \input core-02d.tex
 
-%D Except from english, no hyphenation pattersn are loaded 
-%D yet. Users can specify their needs in the next module: 
-
-\input cont-usr.tex
-
-%D The next two modules implement some additional 
-%D functionality concenring classes of documents and output.  
-%D These modules probably will be replaced some day. 
+%D The next two modules implement some additional
+%D functionality concenring classes of documents and output.
+%D These modules probably will be replaced some day.
 
 \input docs-ini.tex
 \input list-ini.tex
 
-%D \TEX\ related logo's are always typeset in a special way. 
-%D Here they come: 
+%D \TEX\ related logo's are always typeset in a special way.
+%D Here they come:
 
 \input cont-log.tex
 
 %D At run time, a few more files are loaded, like:
-%D 
+%D
 %D \startopsomming[opelkaar]
 %D \som \type{cont-sys}: local (system dependant) defaults
 %D \som \type{cont-old}: substitutes for old (obsolete) macros
 %D \som \type{cont-new}: new macro implementations (for testing)
 %D \som \type{cont-fil}: filename and module synonyms
 %D \stopopsomming
- 
-%D Dumping the format is all that's left to be done. 
+
+%D Just to keep the user busy for a while, we say:  
+
+\startinterface english
+
+\writestring{This package is based on Plain TeX. It uses an adapted version of the}
+\writestring{extended mark mechanism of J. Fox (1987) and a few parts of the sidefloat}
+\writestring{mechanism of D. Comenetz (1993). Most of D.E. Knuth's Plain TeX}
+\writestring{(\fmtversion) is available and can be used without problems. This package}
+\writestring{uses TaBlE, a package designed and copyrighted by M.J. Wichura (1988).}
+\writestring{Only a few auxiliary files are generated, of which some must be processed}
+\writestring{by TeXUtil (\utilityversion). The current blockversion is \blockversion.}
+
+\stopinterface
+
+\startinterface dutch
+
+\writestring{Dit pakket is gebaseerd op Plain TeX. Er wordt gebruik gemaakt van een}
+\writestring{aangepaste versie van het mark mechanisme van J. Fox (1987) en onderdelen}
+\writestring{van het sidefloat mechanisme van D. Comenetz (1993). De functionaliteit}
+\writestring{van D.E. Knuth's Plain TeX (\fmtversion) is grotendeels beschikbaar en}
+\writestring{kan zonder problemen worden gebruikt. Dit pakket gebruikt TaBlE, ontworpen door}
+\writestring{M.J. Wichura (1988), die ook het auteursrecht bezit. Er worden slechts een}
+\writestring{paar hulpfiles gegenereerd, waarvan er enkele moeten worden bewerkt door}
+\writestring{TeXUtil (\utilityversion). Het blokmechanisme heeft versienummer \blockversion.}
+
+\stopinterface
+
+\startinterface german
+
+\writestring{Dieses Paket basiert auf Plain-TeX und benutzt eine angepasste Version}
+\writestring{des erweiterten mark-Mechanismus von J. Fox (1987) und einige Teile des}
+\writestring{sidefloat-Mechanismus von D. Comenetz (1993). Ein Grossteil D.E. Knuths}
+\writestring{Plain-TeX (\fmtversion) ist verfuegbar und kann ohne Probleme benutzt werden.}
+\writestring{Dieses Paket benutzt TaBlE, ein von M.J. Wichura (1988) erstelltes und}
+\writestring{geschuetztes Paket. Nur einige Hilfsdateien werden erstellt; einige davon}
+\writestring{muessen von TeXUtil (\utilityversion) bearbeitet werden. Die aktuelle Block-}
+\writestring{version ist \blockversion.}
+
+\stopinterface
+
+\edef\copyrightversion%
+  {Copyright 1990-\the\normalyear\normalspace / 
+   PRAGMA ADE / J. Hagen - A.F. Otten}
+
+\writeline\writestring{\copyrightversion}\writeline
+
+%D Except from english, no hyphenation patterns are loaded
+%D yet. Users can specify their needs in the next module:
+
+\input cont-usr.tex
+
+%D Let's quit this file when doing a \type {cont-..} generation.
+
+\doifparentfileelse{context}
+  {\let\next\relax}
+  {\let\next\endinput}
+
+\next 
+
+%D Unless we're generating a \type {cont-..} format, we also 
+%D set:
+
+\unprotect
+
+\installlanguage [\s!en] [\c!status=\v!start] 
+
+\startinterface english 
+
+  \installlanguage [\s!uk] [\c!status=\v!start]
+
+\stopinterface 
+
+\appendtoks \language     [\s!en] \to \everyjob
+\appendtoks \mainlanguage [\s!en] \to \everyjob
+
+\startinterface german
+
+  \installlanguage [\s!de] [\c!status=\v!start]
+
+  \appendtoks \language     [\s!de] \to \everyjob
+  \appendtoks \mainlanguage [\s!de] \to \everyjob
+
+\stopinterface 
+
+\startinterface dutch
+
+  \installlanguage [\s!nl] [\c!status=\v!start]
+
+  \appendtoks \language     [\s!nl] \to \everyjob
+  \appendtoks \mainlanguage [\s!nl] \to \everyjob
+
+\stopinterface 
+
+\setupbodyfont [cmr,rm,12pt]
+
+\protect
+
+%D Now dumping the format is all that's left to be done.
 
 \dump
+
+\endinput

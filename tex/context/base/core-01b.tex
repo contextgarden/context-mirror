@@ -127,7 +127,7 @@
   {\@@isna
    \egroup}
 
-\def\doitemsboven#1%
+\setvalue{doitems\v!boven}#1%
   {\dostartitems{#1}\horitems\@@isbreedte
    \noindent\vbox
      {\forgetall
@@ -139,7 +139,7 @@
       \box0}%
    \dostopitems}
 
-\def\doitemsonder#1%
+\setvalue{doitems\v!onder}#1%
   {\dostartitems{#1}\horitems\@@isbreedte
    \noindent\vbox
      {\forgetall
@@ -150,18 +150,18 @@
          \box2}}%
    \dostopitems}
 
-\def\doitemsinmarge#1%
+\setvalue{doitems\v!inmarge}#1%
   {\dostartitems{#1}{\veritems}{-1.5em}%  - is a signal 
    \noindent\hbox{\llap{\box2\hskip\linkermargeafstand}\box0}%
    \dostopitems}
 
-\def\doitemslinks#1%
+\setvalue{doitems\v!links}#1%
   {\advance\hsize by -1.5em\relax
    \dostartitems{#1}{\veritems}{1.5em}%  
    \noindent\hbox{\box2\box0}%
    \dostopitems}
 
-\def\doitemsrechts#1%
+\setvalue{doitems\v!rechts}#1%
   {\dostartitems{#1}{\veritems}{0em}%  
    \noindent\hbox{\box0\hskip-\wd2\box2}%
    \dostopitems}
@@ -176,6 +176,8 @@
    \setlocalhsize
    \hsize=\localhsize
    \mindermeldingen
+   \doifundefined{doitems\@@isplaats}%
+     {\let\@@isplaats\v!links}%
    \getvalue{doitems\@@isplaats}}
 
 \definecomplexorsimpleempty\items 
@@ -210,8 +212,6 @@
 %I   \stelalineasin[naam][kolomnummer][afstand=,breedte=,
 %I     hoogte=,boven=,onder=,letter=,binnen=,lijn=,
 %I     uitlijnen=,tolerantie=]
-%I
-%I Standaard is \tabulatie gedefinieerd.
 
 % Te zijner tijd [plaats=boven,onder,midden] implementeren,
 % in dat geval moet eerst de maximale hoogte worden bepaald.
@@ -266,6 +266,18 @@
           \c!afstand=\getvalue{\??al#1\c!afstand}]}%
    \stelalineasin[#1][1][\c!afstand=0em]}
 
+% nog monster 
+%
+%\assignwidth
+%  {\!!widtha}
+%  {\getvalue{\??dd#1\c!breedte}}
+%  {\doifelsevaluenothing{\??dd#1\c!monster}
+%     {\hskip
+%     {\doattributes
+%        {\??al#1}\c!letter\c!kleur
+%        {\getvalue{\??dd#1\c!monster}}}}
+%  {0pt}
+
 \def\definieeralineas%
   {\dodoubleargument\dodefinieeralineas}
 
@@ -301,7 +313,9 @@
      {\!!widtha=\alhsize\relax
       \divide\!!widtha by \alnsize}
      {\!!widtha=\getvalue{\??al#1\the\alteller\c!breedte}\relax}%
-   \dostartattributes{\??al#1\the\alteller}{}%
+   \dostartattributes
+     {\??al#1\the\alteller}\c!letter\c!kleur
+     {}%
    \doifelsevalue{\??al#1\the\alteller\c!hoogte}{\v!passend}
      {\setbox0=\vtop}
      {\setbox0=\vtop to \getvalue{\??al#1\the\alteller\c!hoogte}}%
@@ -524,8 +538,46 @@
 \def\breuk#1#2%
   {\mathematics{#1\over#2}}
 
+%\def\bedrag#1%
+%  {\mathematics{f~}\hbox{#1}}
+
+\def\bedragprefix{\mathematics{f\normalfixedspace}}
+\def\bedragsuffix{}
+
 \def\bedrag#1%
-  {\mathematics{f~}\hbox{#1}}
+  {\strut\hbox\bgroup
+   \let\normalfixedspace~%
+   \def~{\futurelet\next\dofixedspace}%
+   \def\dofixedspace%
+     {\hskip.5em\relax
+      \ifx\next,%
+        \hphantom,\let\next\gobbleoneargument
+      \else\ifx\next.%
+        \hphantom.\let\next\gobbleoneargument
+      \else
+        \let\next\relax
+      \fi\fi
+      \next}%
+   \bedragprefix#1\bedragsuffix
+   \egroup}
+
+% \definieeralineas[test][n=3]
+% 
+% \stelalineasin[test][3][breedte=4cm,uitlijnen=links]
+% 
+% \startopelkaar
+% \test hans \\ ton \\ \bedrag{1.000,--} \\
+% \test hans \\ ton \\ \bedrag{~.~~1,--} \\
+% \test hans \\ ton \\ \bedrag{~.~~1,~~} \\
+% \test hans \\ ton \\ \bedrag{~.100,--} \\
+% \test hans \\ ton \\ \subtot{1.000,--} \\
+% \test hans \\ ton \\ \bedrag{1.000,--} \\
+% \test hans \\ ton \\ \bedrag{1.000,--} \\
+% \test hans \\ ton \\ \totaal{1.000,--} \\
+% \test hans \\ ton \\ \bedrag{nihil,--} \\
+% \test hans \\ ton \\ \totaal{nihil,--} \\
+% \test hans \\ ton \\ \subtot{nihil,--} \\
+% \stopopelkaar
 
 \def\doorsnede%
   {\hbox{\rlap/$\circ$} }
@@ -539,8 +591,7 @@
 \def\simplepunten%
   {\complexpunten[5]}
 
-\def\punten%
-  {\complexorsimple{punten}}
+\definecomplexorsimple\punten
 
 \def\ongeveer%
   {\mathematics{\pm}}
@@ -554,10 +605,21 @@
 \let\promille=\permille
 \let\procent =\percent
 
+\def\permine%
+  {\dontleavehmode
+   \bgroup
+   \setbox0=\hbox
+     {\mathematics{+}}%
+   \hbox to \wd0
+     {\hss
+      \mathematics{^{\scriptscriptstyle-}\kern-.4em/\kern-.3em_{\scriptscriptstyle-}}%
+      \hss}%
+   \egroup}
+
 % for compatibility
 
-\def\onbekend%
-  {\mathematics{\ldots}}
+\def\unknown%
+  {\punten[3]}
 
 % currency 
 
@@ -628,10 +690,7 @@
 %I worden ingesteld met:
 %I
 %I   \stelciterenin
-%I     [variant=,letter=]
-%I
-%I Variant 1 levert 'ziezo'  of ''ziezo'' en variant 2 
-%I levert `ziezo' of ``ziezo''. 
+%I     [letter=]
 
 \newsignal\quotationsignal
 \def\quotationskip{.125em}
@@ -649,7 +708,7 @@
      {\let\dostopcitaat=\relax}
      {\startsmaller[#1]
       \let\dostopcitaat=\stopsmaller}%
-   \dostartattributes\??ci{}%
+   \dostartattributes\??ci\c!letter\c!kleur{}%
    \setbox0=\hbox{\getvalue{\??la\currentlanguage\c!leftquotation}}%
    \hskip-\wd0
    \box0\relax
@@ -691,7 +750,7 @@
 
 \def\doattributedcite%
   {\groupedcommand
-     {\dostartattributes\??ci}
+     {\dostartattributes\??ci\c!letter\c!kleur}
      {\dostopattributes}}
 
 % Tijden horen hier niet thuis en zullen in een aparte 
@@ -757,8 +816,7 @@
      \s!unknown=>\dotoevoegen{#1}]
    \blanko}
 
-\def\toevoegen%
-  {\complexorsimpleempty{toevoegen}}
+\definecomplexorsimpleempty\toevoegen
 
 %I n=Tekstlijn
 %I c=\tekstlijn,\starttekstlijn,\steltekstlijnenin
@@ -803,9 +861,9 @@
       \advance\dimen6 by .5\linewidth
       \doifsomething{#1}
         {\doifelse{\@@tlplaats}{\v!inmarge}%
-           {\llap{\doattributes{\??tl}{#1}\hskip\linkermargeafstand}}
+           {\llap{\doattributes\??tl\c!letter\c!kleur{#1}\hskip\linkermargeafstand}}
            {\vrule\!!height\dimen4\!!depth\dimen6\!!width\@@tlbreedte
-            \hbox spread 1em{\hss\doattributes{\??tl}{\strut#1}\hss}}}%
+            \hbox spread 1em{\hss\doattributes\??tl\c!letter\c!kleur{\strut#1}\hss}}}%
       \leaders\hrule\!!height\dimen4\!!depth\dimen6\hfill}
    \ht0=\ht\strutbox
    \dp0=\dp\strutbox
@@ -850,8 +908,7 @@
 \def\simpletekstlijn%
   {\dobottomtekstlijn{}}
 
-\def\tekstlijn%
-  {\complexorsimple{tekstlijn}}
+\definecomplexorsimple\tekstlijn
 
 \def\starttekstlijn#1%
   {\bgroup
@@ -907,7 +964,7 @@
      {\setbox0=\hbox}
      {\setbox0=\hbox to \@@ilbreedte}
         {\doattributes
-           {\??il}
+           \??il\c!letter\c!kleur
            {\strut#3\hfill   
             \doifsomething{\@@ilscheider}
               {\hbox spread \@@ilafstand{\@@ilscheider\hss}}}}%
@@ -926,14 +983,12 @@
      {\dodocomplexinvullijnen[#1]{\thinrules[\c!n=\@@iln]}}%
    \dodoublegroupempty\docomplexinvullijnen}
 
-\def\invullijnen%
-  {\complexorsimpleempty{invullijnen}}
+\definecomplexorsimpleempty\invullijnen
 
 \def\complexinvultekst[#1]#2#3\par%
   {\dodocomplexinvullijnen[#1]{\ignorespaces#3\endgraf}{#2}{}}
 
-\def\invultekst%
-  {\complexorsimpleempty{invultekst}}
+\definecomplexorsimpleempty\invultekst
 
 %I n=Invulregels
 %I c=\invulregel,\stelinvulregelin,\invultekst
@@ -979,8 +1034,7 @@
    \par % ! 
    \@@ilna}
 
-\def\invulregel%
-  {\complexorsimpleempty{invulregel}}
+\definecomplexorsimpleempty\invulregel
 
 %I n=Roosters
 %I c=\rooster
@@ -1005,13 +1059,15 @@
 \def\dorooster[#1]%
   {\begingroup
    \getparameters[\??rt]
-     [\c!nx=10,\c!ny=10,
+     [\c!x=0,\c!y=0,
+      \c!nx=10,\c!ny=10,
       \c!dx=.5,\c!dy=.5,
       \c!xstap=0,\c!ystap=0,
       \c!eenheid=\s!cm,
       \c!schaal=1,
       \c!factor=1,
       \c!offset=\v!ja,
+      \c!plaats=\v!links,
       #1]%
    \startpositioneren
      \dimen0=\@@rtdx\@@rteenheid\relax
@@ -1033,37 +1089,42 @@
           \!!width \linewidth
           \!!height \dimen2
           \!!depth \!!zeropoint}%
-     \def\setlegend##1##2%
-       {\global\!!countc=0\relax
+     \doglobal\newcounter\@@roosterc
+     \doglobal\newcounter\@@roosterd
+     \doglobal\newcounter\@@roostere
+     \def\setlegend##1##2##3%
+       {\gdef\@@roosterc{0}%
         \dimen0=2em\relax
         \dimen2=##2\@@rteenheid\relax
         \dimen2=\@@rtschaal\dimen2\relax
         \dimen2=\@@rtfactor\dimen2\relax
         \divide\dimen0 by \dimen2\relax
-        \global\!!counte=\dimen0\relax
-        \ifnum\!!counte>50\relax
-          \global\!!counte=100\relax
-        \else\ifnum\!!counte>10\relax
-          \global\!!counte=50\relax
-        \else\ifnum\!!counte>5\relax
-          \global\!!counte=10\relax
-        \else\ifnum\!!counte>1\relax
-          \global\!!counte=5\relax
+        \xdef\@@roostere{\number\dimen0}%
+        \ifnum\@@roostere>50
+          \gdef\@@roostere{100}%
+        \else\ifnum\@@roostere>10
+          \gdef\@@roostere{50}%
+        \else\ifnum\@@roostere>5
+          \gdef\@@roostere{10}%
+        \else\ifnum\@@roostere>1
+          \gdef\@@roostere{5}%
         \else
-          \global\!!counte=1\relax
+          \gdef\@@roostere{1}%
         \fi\fi\fi\fi
-        \global\!!countd=0\relax
+        \gdef\@@roosterd{0}%
         \def\legend%
-          {\ifnum\!!countd=0\relax
+          {\ifnum\@@roosterd=0\relax
              \vbox
-               {\hbox to 2em{\hss\the\!!countc\hss}}%
-             \global\!!countd=\!!counte
+               {\increment(\@@roosterc,##1)%
+                \hbox to 2em{\hss\@@roosterc\hss}}%
+             \global\let\@@roosterd=\@@roostere
            \fi
-           \global\advance\!!countd by -1\relax
-           \global\advance\!!countc by ##1\relax}}%
-     \def\draw##1##2##3##4##5##6##7%
+             \doglobal\decrement\@@roosterd
+             \doglobal\increment(\@@roosterc,##1)}}%
+     \def\draw##1##2##3##4##5##6##7##8##9%
        {\stelpositionerenin
-          [\c!xstap=\v!absoluut,
+          [\c!status=##8,
+           \c!xstap=\v!absoluut,
            \c!ystap=\v!absoluut,
            \c!eenheid=\@@rteenheid,
            \c!schaal=\@@rtschaal,
@@ -1071,29 +1132,40 @@
            \c!offset=\@@rtoffset,
            \c!xoffset=##6,
            \c!yoffset=##7]%
-        \positioneer(0,0){##1}%
+        \doifelse{##9}{\v!midden}
+          {\scratchdimen=##3pt\scratchdimen=.5\scratchdimen
+           \edef\@@psxx{\withoutpt\the\scratchdimen}%
+           \scratchdimen=##4pt\scratchdimen=.5\scratchdimen
+           \edef\@@psyy{\withoutpt\the\scratchdimen}%
+           \scratchcounter=##2\advance\scratchcounter by -1
+           \edef\@@pszz{\the\scratchcounter}}
+          {\edef\@@psxx{0}\edef\@@psyy{0}\edef\@@pszz{##2}}%
+        \positioneer(\@@psxx,\@@psyy){##1}%
         \stelpositionerenin
-          [\c!xstap=\v!relatief,
+          [\c!status=##8,
+           \c!xstap=\v!relatief,
            \c!ystap=\v!relatief,
            \c!schaal=\@@rtschaal,
            \c!factor=\@@rtfactor,
            \c!offset=\@@rtoffset,
            \c!eenheid=\@@rteenheid]%
-        \herhaal[##2*{\positioneer(##3,##4){##5}}]}%
-     \draw{\verline}{\@@rtnx}{\@@rtdx}{0}{\verline}{\!!zeropoint}{\!!zeropoint}%
-     \draw{\horline}{\@@rtny}{0}{\@@rtdy}{\horline}{\!!zeropoint}{\!!zeropoint}%
+        \dorecurse{\@@pszz}{\positioneer(##3,##4){##5}}}%
+     \draw
+       \verline\@@rtnx\@@rtdx0\verline\!!zeropoint\!!zeropoint\v!start\empty
+     \draw
+       \horline\@@rtny0\@@rtdy\horline\!!zeropoint\!!zeropoint\v!start\empty
      \tfx
      \doifnot{\@@rtxstap}{0}
-       {\setlegend{\@@rtxstap}{\@@rtdx}%
-        \draw{\legend}{\@@rtnx}{\@@rtdx}{0}{\legend}{-1em}{-1.5em}}%
+       {\setlegend\@@rtxstap\@@rtdx\@@rtx
+        \draw\legend\@@rtnx\@@rtdx0\legend{-1em}{-1.5em}\v!overlay\@@rtplaats}%
      \doifnot{\@@rtystap}{0}
-       {\setlegend{\@@rtystap}{\@@rtdy}%
-        \draw{\legend}{\@@rtny}{0}{\@@rtdy}{\legend}{-2em}{-.75ex}}%
+       {\setlegend\@@rtystap\@@rtdy\@@rty
+        \draw\legend\@@rtny0\@@rtdy\legend{-2em}{-.75ex}\v!overlay\@@rtplaats}%
   \stoppositioneren
   \endgroup}
 
 \def\rooster%
-  {\dosingleargument\dorooster}
+  {\dosingleempty\dorooster}
 
 %I n=Literatuurlijsten
 %I c=\stelpublicatiesin,\startpublicatie,\publicatie
@@ -1185,8 +1257,7 @@
        \@@pbna}%
    \egroup}
 
-\def\startpublicatie%
-  {\complexorsimpleempty{startpublicatie}}
+\definecomplexorsimpleempty\startpublicatie
 
 \def\publicatie#1[#2]%
   {\@@pblinks\in{#1}[#2]\@@pbrechts}
@@ -1290,8 +1361,7 @@
    \bgroup
    \rij}
 
-\def\startrijen%
-  {\complexorsimpleempty{startrijen}}
+\definecomplexorsimpleempty\startrijen
 
 \def\stoprijen%
   {\do@@rionder
@@ -1346,12 +1416,12 @@
 \steltabin
   [\c!plaats=\v!links]
 
-\definieeralineas
-  [tabulatie]
-  [\c!n=3,
-   \c!voor=\blanko,
-   \c!na=\blanko,
-   \c!afstand=1em]
+%\definieeralineas
+%  [tabulatie]
+%  [\c!n=3,
+%   \c!voor=\blanko,
+%   \c!na=\blanko,
+%   \c!afstand=1em]
 
 \stelpublicatiesin
   [\c!nummeren=\v!ja,
@@ -1373,8 +1443,7 @@
    \c!rechts={]}]
 
 \stelciterenin
-  [\c!variant=1,
-   \c!letter=\v!normaal,
+  [\c!letter=\v!normaal,
    \c!kleur=,
    \c!voor=\startsmaller,
    \c!na=\stopsmaller]
@@ -1382,4 +1451,3 @@
 \protect
 
 \endinput
-

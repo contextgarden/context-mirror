@@ -1,0 +1,54 @@
+%D \module
+%D   [      file=s-faq-02,
+%D        version=1997.21.08,
+%D          title=\CONTEXT\ Style File,
+%D       subtitle=FAQ Paper Version,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. Non||commercial use is
+%C granted.
+
+\usemodule[faq-00]
+
+\setuplayout
+  [header=0pt]
+
+\setuppagenumbering
+  [location=]
+
+\setupfootertexts
+  [\labeltext{FAQ}: \NameOfFAQ\IndexOfFAQ][pagenumber]
+
+\def\EndAnswer%
+  {\blank[2*big]
+   \page[no]
+   (\AuthorOfFAQ)}
+
+\def\TitlePage%
+  {\startstandardmakeup
+   \midaligned{\bfd \labeltext{FAQ}}
+   \blank[3*big]
+   \midaligned{\bfd \labeltext{about} \NameOfFAQ}
+   \blank[3*big]
+   \midaligned{\bfb \labeltext{version}: \currentdate}
+   \blank[3*big]
+   \midaligned{\tta \ListOfFAQ}
+   \vfill
+   \midaligned{\tta pragma@pi.net}
+   \blank[3*big]
+   \stopstandardmakeup}
+
+\def\FileWithFAQs%
+  {\page
+   \input \FileNameOfFAQ \relax
+   \page}
+
+\def\IndexPage%
+  {\page
+   \setupfootertexts[\labeltext{index}][]
+   \placeregister[index]}
+
+\endinput

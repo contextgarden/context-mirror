@@ -69,13 +69,13 @@
 \def\resetparagraphlines%
   {\global\linenumber=1\relax}
 
-\def\numberparagraphs% 
+\def\numberparagraphs% instelbaar maken en slimmer ivm breedte regelnummer !!!!!
   {\processpreviousparagraphstrue
    \def\dosetparagraph%
      {\bgroup   
       \resetparagraphlines
       \EveryPar
-        {\strut\inlinkermarge{\tx\paragraphnumber\kern2em}%
+        {\strut\inlinkermarge{\tf{\tx\paragraphnumber}\kern2em}%
          \ignorespaces}}
    \def\doresetparagraph%
      {\resetparagraphlines
@@ -160,7 +160,7 @@
 \def\processpreviousparagraphs[#1]% process previous ones
   {\ifprocesspreviousparagraphs
      \bgroup
-     \getfromcommacommand[#1][1]%
+     \getfromcommacommand[#1][1]% tzt snelle \..command.. testen 
      \let\totalnofparagraphs=\commalistelement
      \decrement\totalnofparagraphs
      \let\dodopopparagraph=\dodoprocessparagraph
@@ -420,4 +420,3 @@
 \protect
 
 \endinput
-

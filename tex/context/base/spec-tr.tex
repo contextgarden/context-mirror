@@ -2,7 +2,7 @@
 %D   [       file=spec-tr,
 %D        version=1996.01.25,
 %D          title=\CONTEXT\ Special Macros,
-%D       subtitle=Thomas Rokicky's \DVIPS,
+%D       subtitle=Thomas Rokicki's \DVIPS,
 %D         author=Hans Hagen,
 %D           date=\currentdate,
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
@@ -22,20 +22,40 @@
 %D We overrule the figure||insertion special. Things should 
 %D be more accurate, but maybe someday \onbekend
 
-\startspecials[rokicky]  % [postscript]
+\startspecials[rokicki] 
 
 \def\@@insertpostscriptliteral {ps: }
 \def\@@insertpostscriptretain  {" }  
 
-\def\dotrinserteps#1#2#3#4#5#6#7#8% 
-  {\ScaledPointsToBigPoints{#4}\width 
-   \ScaledPointsToBigPoints{#5}\height 
-   \special 
-     {psfile=#1
-        hscale=#2\space
-        vscale=#3\space
-        hoffset=\width \space
-        voffset=\height}}
+%\definefileinsertion{tr}{eps}#1#2#3#4#5#6#7#8#9%
+%  {\ScaledPointsToBigPoints{#5}\width 
+%   \ScaledPointsToBigPoints{#6}\height 
+%   \special 
+%     {psfile=#1
+%      hscale=#3\space
+%      vscale=#4\space
+%      hoffset=\width\space
+%      voffset=\height}}
+
+%D Ugly but useful:
+
+\definefileinsertion{tr}{eps}#1#2#3#4#5#6#7#8#9%
+  {\ScaledPointsToWholeBigPoints{#7}\width
+   \ScaledPointsToWholeBigPoints{#8}\height
+   \special
+     {PSfile="#1"\space
+      llx=\EPSllx\space
+      lly=\EPSlly\space
+      urx=\EPSurx\space
+      ury=\EPSury\space
+      rwi=\width0\space
+      rhi=\height0}}
+
+\definefileinsertion{tr}{mps}#1#2#3#4#5#6#7#8#9%  
+  {\hbox
+     {\includeMPfonts{#1}%
+      \convertMPcolors{#1}%
+      \dofileinsertion{tr}{eps}{#1}{#2}{#3}{#4}{#5}{#6}{#7}{#8}{#9}}}
 
 \definespecial\doinsertfile#1#2#3#4#5#6#7#8#9%
   {\bgroup
@@ -79,4 +99,3 @@
 \stopspecials
 
 \endinput
-

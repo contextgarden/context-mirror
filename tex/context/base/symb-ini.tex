@@ -1,0 +1,336 @@
+%D \module
+%D   [       file=symb-nav,
+%D        version=1998.07.20,
+%D          title=\CONTEXT\ Symbol Libraries,
+%D       subtitle=Navigational Symbols,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. Non||commercial use is
+%C granted.
+
+%D The macros described here used to be part of the \type
+%D {core-con} module. I decided to move them here when 
+%D symbolsets saw the light. Let their light shine.  
+
+\writestatus{loading}{Context Symbol Libraries / Initialization}
+
+\unprotect
+
+% TOBIAS 
+
+\startmessages  dutch  library: symbols
+  title: symbolen
+      1: symboolset -- wordt geladen
+\stopmessages
+
+\startmessages  english  library: symbols
+  title: symbols
+      1: loading symbolset --
+\stopmessages
+
+\startmessages  german  library: symbols
+  title: symbole
+      1: Lade Symboldatei --    
+\stopmessages
+
+%D \macros
+%D   {definesymbol, symbol}
+%D 
+%D Converting numbers or levels into a character, romannumeral,
+%D symbol or something else, is supported by many \CONTEXT\
+%D commands. Therefore we need a mechanism for linking such
+%D numbers to their counterparts. 
+%D 
+%D First we take care of symbols. These are for instance used
+%D in enumerations and itemizations. We have: 
+%D 
+%D \showsetup{\y!definesymbol} 
+%D \showsetup{\y!symbol} 
+%D 
+%D Symbols are simply linked to a tag. Such tags can be numbers
+%D or strings. 
+%D 
+%D \starttypen
+%D \definesymbol [1]       [$\bullet$]
+%D \definesymbol [level 5] [$\star$]
+%D \stoptypen
+
+\def\dodefinesymbol[#1][#2]%
+  {\ifx\currentsymbolset\empty
+     \setvalue{\??ss#1}{#2}%
+   \else
+     \doifundefinedelse{\??ss:\currentsymbolset}
+       {\let\currentsymbollist\empty}
+       {\edef\currentsymbollist{\csname\??ss:\currentsymbolset\endcsname}}%
+     \addtocommalist{#1}\currentsymbollist
+     \setvalue{\??ss\currentsymbolset#1}{#2}%
+     \letvalue{\??ss:\currentsymbolset}\currentsymbollist
+   \fi}
+
+\def\definesymbol%
+  {\dodoubleargument\dodefinesymbol}
+
+\def\dosymbol[#1][#2]%
+  {\ifsecondargument
+     \doifdefinedelse{\??ss#1#2}
+       {\getvalue{\??ss#1#2}}
+       {\doifdefinedelse{\??ss#2}{\getvalue{\??ss#2}}{#2}}%
+   \else
+     \doifdefinedelse{\??ss\currentsymbolset#1}
+       {\getvalue{\??ss\currentsymbolset#1}}
+       {\doifdefinedelse{\??ss#1}{\getvalue{\??ss#1}}{#1}}%
+   \fi}
+
+\unexpanded\def\symbol%
+  {\dodoubleempty\dosymbol}
+
+%D \macros
+%D   {definefiguresymbol}
+%D
+%D To simplify defining figure symbols, we offer:
+%D
+%D \showsetup{\y!definesymbol} 
+%D
+%D By default, such symbols scale along the current bodyfont
+%D size.
+
+\def\defaultsymbolfactor{10}
+
+\def\dodefinefiguresymbol[#1][#2][#3]%
+  {\ifsecondargument
+     \definesymbol[#1][{\externalfigure[#2][\c!symbool=\v!ja,\c!hfactor=\defaultsymbolfactor,#3]}]%
+   \fi}
+  
+\def\definefiguresymbol%
+  {\dotripleempty\dodefinefiguresymbol}
+
+%\def\objectsymbol[#1]%
+%  {\dopresetfieldsymbol{#1}\dogetfieldsymbol{#1}}
+
+%D \macros
+%D   {doifsymboldefinedelse}
+%D
+%D A handy private one: 
+
+\def\doifsymboldefinedelse#1#2#3%
+  {\doifdefinedelse{\??ss\currentsymbolset#1}
+      {#2}{\doifdefinedelse{\??ss#1}{#2}{#3}}}    
+
+%D \macros
+%D   {setupsymbolset,startsymbolset}
+%D 
+%D From these macro definitions one can deduce that symbols can
+%D be grouped in symbol sets: 
+%D 
+%D \starttypen
+%D \startsymbolset [navigation 1]
+%D   \definefiguresymbol [Next] [mp-symb.1] 
+%D   \definefiguresymbol [Prev] [mp-symb.2]
+%D \stopsymbolset
+%D \stoptypen
+%D 
+%D Such a symbol can be typeset with:
+%D 
+%D \starttypen
+%D \setupsymbolset[navigation 1]\symbol[Next]
+%D \stoptypen
+%D 
+%D or simply:
+%D 
+%D \starttypen
+%D \symbol[navigation 1][Next]
+%D \stoptypen
+%D 
+%D Formally:
+%D 
+%D \showsetup{\y!setupsymbolset} 
+%D \showsetup{\y!startsymbolset} 
+
+\let\currentsymbolset\empty
+
+\def\startsymbolset[#1]%
+  {\def\currentsymbolset{:#1:}} 
+
+\def\stopsymbolset%
+  {\let\currentsymbolset\empty}
+
+\let\setupsymbolset\startsymbolset
+
+%D \macros
+%D   {showsymbolset}
+%D
+%D \showsetup{\y!showsymbolset} 
+
+\def\doshowsymbolset[#1][#2]% looks like \showexternalfigureb
+  {\vbox\bgroup
+   \blanko
+   \getparameters[\??ss][\c!n=5,#2]%
+   \setupsymbolset[#1]%
+   \doifdefined{\??ss:\currentsymbolset}
+     {\global\let\allfigures=\empty
+      \doglobal\newcounter\figurecounter
+      \setupcolors[\c!status=\v!start]% to prevent mps color conversion 
+      \mindermeldingen
+      \def\doshowsymbols%
+        {\expanded{\globalprocesscommalist[\getvalue{\??ss:\currentsymbolset}]\noexpand\docommando}}%
+      \def\docommando##1%
+        {\vbox
+           {\forgetall
+            \tttf 
+            \halign
+              {\hss\quad####\strut\quad\hss\cr
+               \symbol[##1]\quad{\red\ruledhbox{\black\symbol[##1]}}\cr
+               \tfx##1\cr}}%
+         \doglobal\increment\figurecounter
+         \ifnum\figurecounter=\@@ssn
+           \doglobal\newcounter\figurecounter
+           \def\next{\crcr\noalign{\vskip1ex}}%
+         \else
+           \def\next{&}%
+         \fi
+         \next}%
+      \tabskip=\!!zeropoint \!!plus 1fill
+      \halign to \hsize
+        {&\hss##\hss\cr\doshowsymbols\crcr}}%
+   \blanko
+   \egroup}
+
+\def\showsymbolset%
+  {\dodoubleempty\doshowsymbolset}
+
+%D \macros 
+%D   {usesymbols}
+%D
+%D \showsetup{\y!usesymbols}
+
+\def\dousesymbols#1%
+  {\makeshortfilename[\f!symbolprefix#1]%
+   \showmessage{\m!symbols}{1}{#1}%
+   \startreadingfile
+   \readsysfile{\shortfilename}{}{}%
+   \stopreadingfile}
+
+\def\usesymbols[#1]%
+  {\processcommalist[#1]\dousesymbols}
+
+%D As longs as symbols are linked to levels or numbers, we can 
+%D also use the conversion mechanism, but in for instance the 
+%D itemization macros, we prefer symbols because they can more 
+%D easier be (partially) redefined. 
+
+%D We predefine some common symbols and conversions that will
+%D be understood by many commands. 
+
+% \definesymbol [1] [$\bullet$]
+% \definesymbol [2] [$-$]
+%  \definesymbol [3] [$\star$]
+% \definesymbol [4] [$\triangleright$]
+% \definesymbol [5] [$\circ$]
+% \definesymbol [6] [\hbox{\setsmallbodyfont\raise\!!onepoint\hbox{$\bigcirc$}}]
+% \definesymbol [7] [$\bigcirc$]
+% \definesymbol [8] [\hbox{\hsmash{$\sqcup$}$\sqcap$}]
+
+\definesymbol [\v!geen]   []
+\definesymbol [bullet]    [$\bullet$]
+\definesymbol [dash]      [$-$]
+\definesymbol [star]      [$\star$]
+\definesymbol [triangle]  [$\triangleright$]
+\definesymbol [circle]    [$\circ$]
+\definesymbol [medcircle] [\hbox{\setsmallbodyfont\raise\!!onepoint\hbox{$\bigcirc$}}]
+\definesymbol [bigcircle] [$\bigcirc$]
+\definesymbol [square]    [\hbox{\hsmash{$\sqcup$}$\sqcap$}]
+
+\definesymbol [1] [{\symbol[bullet]}]
+\definesymbol [2] [{\symbol[dash]}]
+\definesymbol [3] [{\symbol[star]}]
+\definesymbol [4] [{\symbol[triangle]}]
+\definesymbol [5] [{\symbol[circle]}]
+\definesymbol [6] [{\symbol[medcircle]}]
+\definesymbol [7] [{\symbol[bigcircle]}]
+\definesymbol [8] [{\symbol[square]}]
+
+%D Special hyperlinks, namely those to pages or navigational 
+%D properties, are associated with symbols. 
+
+\definesymbol [\v!eerstepagina]      [\gotobegincharacter]
+\definesymbol [\v!vorigepagina]      [\gobackwardcharacter]
+\definesymbol [\v!volgendepagina]    [\goforwardcharacter]
+\definesymbol [\v!laatstepagina]     [\gotoendcharacter]
+\definesymbol [\v!eerstesubpagina]   [\gotobegincharacter]
+\definesymbol [\v!vorigesubpagina]   [\gobackwardcharacter]
+\definesymbol [\v!volgendesubpagina] [\goforwardcharacter]
+\definesymbol [\v!laatstesubpagina]  [\gotoendcharacter]
+\definesymbol [\v!PreviousJump]      [\gobackjumpcharacter]
+\definesymbol [\v!NextJump]          [\goforjumpcharacter]
+\definesymbol [\v!CloseDocument]     [\closecharacter]
+
+\definesymbol [\v!eerste]   [{\symbol[\v!eerstepagina]}]
+\definesymbol [\v!vorige]   [{\symbol[\v!vorigepagina]}]
+\definesymbol [\v!volgende] [{\symbol[\v!volgendepagina]}]
+\definesymbol [\v!laatste]  [{\symbol[\v!laatstepagina]}]
+\definesymbol [\v!ergens]   [\gotosomewherecharacter]
+\definesymbol [\v!nergens]  [\gonowherecharacter]
+
+\definesymbol [\v!achteruit] [{\symbol[\v!vorigepagina]}]
+\definesymbol [\v!vooruit]   [{\symbol[\v!volgendepagina]}]
+
+%D These symbols are taken from the Computer Moders Roman
+%D symbol set or, when present, from the additional symbols of
+%D the American Mathematical Society. Of course one can use 
+%D his or her own symbols by redefining them. 
+
+\def\dogotocharacter#1#2#3%
+  {\ifx#1\undefined#2\else#3\fi}
+
+\def\gotobegincharacter%
+  {\hbox
+     {\dogotocharacter\blacktriangleleft
+        {\setbox0=\hbox{$\triangleleft$}%
+         \vrule\!!width.085ex\!!height1.075\ht0\!!depth\dp0
+         \kern-.11ex\box0} 
+        {\setbox0=\hbox{$\blacktriangleleft$}%
+         \setbox2=\hbox{\vrule\!!height\ht0\!!depth\dp0\!!width.25ex}%
+         \hbox{\lower.03ex\box2\kern-.35ex\box0}}}}
+
+\def\gotoendcharacter%
+  {\hbox
+     {\dogotocharacter\blacktriangleright
+        {\setbox0=\hbox{\mathematics{\triangleright}}%
+         \copy0\kern-.11ex 
+         \vrule\!!width.085ex\!!height1.075\ht0\!!depth\dp0}  
+        {\setbox0=\hbox{$\blacktriangleright$}%
+         \setbox2=\hbox{\vrule\!!height\ht0\!!depth\dp0\!!width.25ex}%
+         \hbox{\box0\kern-.35ex\lower.03ex\box2}}}}
+
+\def\gobackwardcharacter%
+  {\mathematics{\dogotocharacter\blacktriangleright\triangleleft\blacktriangleleft}}
+
+\def\goforwardcharacter%
+  {\mathematics{\dogotocharacter\blacktriangleleft\triangleright\blacktriangleright}}
+
+\def\gonowherecharacter%
+  {\mathematics{\bullet}}
+
+%\def\gotosomewherecharacter% {} permits ^\...
+%  {{\hbox{\hsmash{\gobackwardcharacter}\goforwardcharacter}}}
+
+\def\gotosomewherecharacter%
+  {{\hbox{\hsmash{\symbol[\v!vorige]}\symbol[\v!volgende]}}}
+
+\unexpanded\def\closecharacter%
+  {\dogotocharacter\boxtimes
+     {\ruledhbox{\mathematics{\times}}}
+     {\mathematics{\boxtimes}}}
+
+\def\goforjumpcharacter%
+  {\hbox{\goforwardcharacter \kern-.5em\goforwardcharacter}}
+
+\def\gobackjumpcharacter%
+  {\hbox{\gobackwardcharacter\kern-.5em\gobackwardcharacter}}
+
+\protect 
+
+\endinput

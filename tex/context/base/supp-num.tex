@@ -1,0 +1,201 @@
+%D \module
+%D   [       file=supp-lan,
+%D        version=1998.05.15,
+%D          title=\CONTEXT\ Support Macros,
+%D       subtitle=Number (Digit) Handling, 
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. Non||commercial use is
+%C granted.
+
+\writestatus{loading}{Context Support Macros / Number (Digit) Handling}
+
+\unprotect
+
+%D \macros
+%D   {digitmode, digits} 
+%D
+%D Depending on \type{\digitmode} the command \type{\digits} 
+%D normalizes number patterns depending on the language set.
+%D
+%D \starttypen
+%D This will never be a \digits{1.000.000} seller. 
+%D \stoptypen
+%D
+%D or
+%D
+%D \starttypen
+%D I will never grow longer than \digits 1.86 \Meter. 
+%D \stoptypen
+%D
+%D The different modes are shown in:
+%D
+%D \startbuffer
+%D / \setdigitmode 1 / \digits 12.345,90 / \digits 12.345.000 / \digits 1,23 /
+%D / \setdigitmode 2 / \digits 12.345,90 / \digits 12.345.000 / \digits 1,23 /
+%D / \setdigitmode 3 / \digits 12.345,90 / \digits 12.345.000 / \digits 1,23 /
+%D / \setdigitmode 4 / \digits 12.345,90 / \digits 12.345.000 / \digits 1,23 /
+%D / \setdigitmode 5 / \digits 12.345,90 / \digits 12.345.000 / \digits 1,23 /
+%D / \setdigitmode 6 / \digits 12.345,90 / \digits 12.345.000 / \digits 1,23 /
+%D \stopbuffer
+%D
+%D \typebuffer
+%D
+%D This is typset as: 
+%D
+%D \startregels
+%D \haalbuffer
+%D \stopregels
+
+\chardef\digitinputmode =1
+\chardef\digitoutputmode=1 
+
+\def\setdigitmode#1%
+  {\chardef\digitoutputmode#1}
+
+%D The digit modes are:
+%D 
+%D \startopsomming[opelkaar]
+%D \som periods      \& comma
+%D \som commas       \& period 
+%D \som thinmuskips  \& comma
+%D \som thinmuskips  \& period
+%D \som thickmuskips \& comma
+%D \som thickmuskips \& period
+%D \stopopsomming
+
+\let\collecteddigits \empty
+\let\saveddigits     \empty
+\let\savedpowerdigits\empty
+\chardef\powerdigits=0
+
+\def\digits%
+  {\bgroup\grabdigit}
+
+\def\grabdigit%
+  {\futurelet\next\scandigit}
+
+\let\normalmath$
+
+\def\scandigit%
+  {\ifx\next\blankspace 
+     \let\next\handledigits
+   \else\ifx\next\bgroup
+     \let\next\handledigits
+   \else\ifx\next\egroup
+     \let\next\handledigits
+   \else\ifx\next\normalmath
+     \let\next\handledigits
+   \else
+     \let\next\collectdigit
+   \fi\fi\fi\fi
+   \next}
+
+\long\def\collectdigit#1%
+  {\if\noexpand#1\relax
+     \let\grabdigit\handledigits
+   \else\ifcase\powerdigits
+     \if#1^%
+       \chardef\powerdigits=1
+     \else
+       \doifnumberelse{#1}
+         {\edef\collecteddigits{\collecteddigits\saveddigits#1}%
+          \let\saveddigits\empty}
+         {\def\saveddigits{#1}}%
+     \fi
+   \else
+     \doifnumberelse{#1}
+       {\edef\savedpowerdigits{\savedpowerdigits\saveddigits#1}%
+        \let\saveddigits\empty}
+       {\def\saveddigits{#1}}%
+   \fi\fi
+   \grabdigit}
+  
+\def\handledigits%  
+  {\ifmmode
+     \dohandledigits
+   \else
+     \dontleavehmode\hbox{$\dohandledigits$}%
+   \fi
+   \saveddigits
+   \egroup}
+
+\def\dohandledigits%
+  {\mathcode`\,="013B
+   \mathcode`\.="013A
+   \expandafter\handletokens\collecteddigits\with\scandigits
+   \ifcase\powerdigits\else\digitpowerseperator^{\savedpowerdigits}\fi}
+
+\def\scandigits#1%
+  {\if#1.\doscandigit1\else
+   \if#1,\doscandigit2\else
+   #1\fi\fi}
+
+\def\doscandigit#1%
+  {\ifnum\digitinputmode=#1\relax
+     \ifcase\digitoutputmode
+     \or .%
+     \or ,%
+     \or \mskip\thinmuskip
+     \or \mskip\thinmuskip
+     \or \mskip\thickmuskip
+     \or \mskip\thickmuskip
+     \fi
+   \else
+     \ifodd\digitoutputmode,\else.\fi
+   \fi}
+
+%D We also permit:
+
+\let\Digits=\digits
+
+%D These macros are complicated by the fact that we also 
+%D have to support cases like:
+%D
+%D \starttypen
+%D {\digits1234}
+%D \digits{1234}
+%D \digits 1234\whatever
+%D $\digits 123.222,00$
+%D \digits 123.222,00.
+%D \stoptypen
+%D
+%D The latter case shows us that trailing non digits are to
+%D be passed untreated. 
+%D
+%D Another interesting case is: 
+%D
+%D \starttypen
+%D \digits 123.222,00^10
+%D \stoptypen
+%D
+%D The seperator is defined as:
+
+\def\digitpowerseperator%
+  {\cdot10}
+
+%D \macros
+%D   {digittemplate}
+%D
+%D Users can specify the way they enter those digits by sayon
+%D something like:
+%D
+%D \starttypen
+%D \digittemplate 12.000.000,00 % \digittemplate .,
+%D \stoptypen
+
+\def\digittemplate #1 %
+  {\chardef\digitinputmode=0
+   \handletokens#1\with\scandigittemplate}  
+
+\def\scandigittemplate#1%
+  {\if     #1.\ifcase\digitinputmode\chardef\digitinputmode=1 \fi% period
+   \else\if#1,\ifcase\digitinputmode\chardef\digitinputmode=2 \fi% comma
+   \fi\fi}
+
+\protect
+
+\endinput

@@ -8,12 +8,19 @@
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
-%C therefore copyrighted by \PRAGMA. Non||commercial use is 
-%C granted. 
+%C therefore copyrighted by \PRAGMA. Non||commercial use is
+%C granted.
 
-% new (or test) commands
+\readfile{syst-eet}{}{} % temporary here 
 
 \unprotect
+
+%\writestatus{\m!systems}{BEWARE: SOMETHING NEW INSERTED!}
+
+\def\presetfieldreferences%
+  {\ifnum\totalnumberoffields>0
+     \definereference[AtOpenInitializeForm][\v!ResetForm]%
+   \fi}
 
 \protect
 

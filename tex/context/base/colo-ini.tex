@@ -110,7 +110,6 @@
 
 %D \macros
 %D   {definecolor}
-%D   {}
 %D
 %D We will enable users to specify colors in \kap{RGB} and 
 %D \kap{CMYK} color spaces or gray scales using 
@@ -185,7 +184,6 @@
 
 %D \macros
 %D   {setupcolor}
-%D   {}
 %D
 %D Color definitions can be grouped in files with the name: 
 %D
@@ -247,6 +245,11 @@
 \newif\ifpreferGRAY
 \newif\ifGRAYprefered
 \newif\ifreduceCMYK
+
+%D needs: 
+
+% \newif\ifMPgraphics
+% \newif\ifinpagebody
 
 %D The last boolean controls reduction of \kap{CMYK} to 
 %D \kap{CMY} colors. When set to true, the black component 
@@ -539,7 +542,6 @@
 
 %D \macros
 %D   {doifcolorelse}
-%D   {}
 %D
 %D Switching to a color is done by means of the following 
 %D command. Later on we will explain the use of palets.  We 
@@ -555,7 +557,6 @@
 
 %D \macros
 %D   {localstartcolor,localstopcolor}
-%D   {}
 %D
 %D Simple color support, that is without nesting, is provided 
 %D by:
@@ -567,13 +568,12 @@
    \fi}
 
 \def\localstopcolor%
- {\ifincolor
-    \doglobalstopcolor
-  \fi}
+  {\ifincolor
+     \doglobalstopcolor
+   \fi}
 
 %D \macros
 %D   {startcolor,stopcolor}
-%D   {}
 %D
 %D The more save method, the one that saves the current color 
 %D state and returns to this state afterward, is activated by: 
@@ -599,9 +599,17 @@
 \setvalue{\??cl0C}{}  % saved color 
 \setvalue{\??cl0S}{}  % stop command
 
+%D We keep a positive color stack for foreground colors, and 
+%D a negative one for backgrounds. Not that brilliant a 
+%D solution, but it suits. The signs are swapped when the 
+%D page ornaments are typeset. 
+
+\def\@@colorplus {+}  
+\def\@@colorminus{-}
+
 \def\dodoglobalstartcolor[#1]%
   {\xdef\currentcolor{\getvalue{\??cl\the\colorlevel C}}%
-   \global\advance\colorlevel by 1
+   \global\advance\colorlevel by \@@colorplus1
    \setxvalue{\??cl\the\colorlevel C}{#1}%
    \debuggerinfo{\m!colors}
      {start #1 at level \the\colorlevel}%
@@ -614,8 +622,8 @@
            {\docolormark{#1}%
             \setgvalue{\??cl\the\colorlevel S}{\dodoglobalstopcolor}%
             \startcolormode{#1}}
-        {\setgvalue{\??cl\the\colorlevel S}{\donoglobalstopcolor}%
-         \showmessage{\m!colors}{3}{#1}}}}}
+           {\setgvalue{\??cl\the\colorlevel S}{\donoglobalstopcolor}%
+            \showmessage{\m!colors}{3}{#1}}}}}
 
 \def\doglobalstartcolor[#1]%
   {\ifnum\colorlevel=0
@@ -628,15 +636,15 @@
    \ignorespaces}
 
 \def\donoglobalstopcolor%
-  {\ifnum\colorlevel>0
+  {\ifnum\colorlevel=0 \else
      \xdef\currentcolor{\getvalue{\??cl\the\colorlevel C}}%
      \debuggerinfo{\m!colors}
        {stop \currentcolor\normalspace at level \the\colorlevel}%
-     \global\advance\colorlevel by -1
+     \global\advance\colorlevel by \@@colorminus1
    \fi}
 
 \def\dodoglobalstopcolor%
-  {\ifnum\colorlevel>0
+  {\ifnum\colorlevel=0 \else
      \donoglobalstopcolor
      \xdef\previouscolor{\getvalue{\??cl\the\colorlevel C}}%
      \ifnum\colorlevel=0
@@ -719,8 +727,6 @@
 %D This macro uses the boolean \type{\ifinpagebody}, which can 
 %D be defined and set in the module that handles the pagebody. 
 
-\ifx\ifinpagebody\undefined \newif\ifinpagebodytrue \fi
-
 \def\docolormark#1%
   {\ifinpagebody \else
      \iflocalcolor \else
@@ -732,12 +738,12 @@
 
 \def\dodocolormark#1%
   {\doifnot{#1}{\lastcolormark}
-     {\colormark{#1}%
-      \xdef\lastcolormark{#1}}}
+     {\xdef\lastcolormark{#1}%
+     %\expandafter\colormark\expandafter{\lastcolormark}}}
+      \expandafter\setmark\expandafter\colormark\expandafter{\lastcolormark}}}
 
 %D \macros
 %D   {pushcolor, popcolor}
-%D   {}
 %D
 %D Pushing the current state in the output routine simply comes 
 %D to resetting the color to black, while popping restores the 
@@ -746,20 +752,30 @@
 \def\pushcolor%
   {\stopcolormode} 
 
+%\def\popcolor%
+%  {\doifsomething{\botcolormark}
+%     {\debuggerinfo{\m!colors}{popping \botcolormark}%
+%      \startcolormode{\botcolormark}}}
+%
+%\def\popsplitcolor% 
+%  {\getsplitmarks\colormark  % hier wel 
+%   \doifsomething{\botcolormark}
+%     {\debuggerinfo{\m!colors}{split popping \botcolormark}%
+%      \startcolormode{\botcolormark}}}
+
 \def\popcolor%
-  {\doifsomething{\botcolormark}
-     {\debuggerinfo{\m!colors}{popping \botcolormark}%
-      \startcolormode{\botcolormark}}}
+  {\doifsomething{\getbotmark\colormark}
+     {\debuggerinfo{\m!colors}{popping \getbotmark\colormark}%
+      \startcolormode{\getbotmark\colormark}}}
 
 \def\popsplitcolor% 
   {\getsplitmarks\colormark  % hier wel 
-   \doifsomething{\botcolormark}
-     {\debuggerinfo{\m!colors}{split popping \botcolormark}%
-      \startcolormode{\botcolormark}}}
+   \doifsomething{\getsplitbotmark\colormark}
+     {\debuggerinfo{\m!colors}{split popping \getsplitbotmark\colormark}%
+      \startcolormode{\getsplitbotmark\colormark}}}
 
 %D \macros
 %D   {startcolorpage, stopcolorpage}
-%D   {}
 %D
 %D Local use can be forced with the next two macros. Nesting 
 %D is still supported but colors are no longer marked. 
@@ -772,7 +788,7 @@
 %D    \ifnum\colorlevel>0
 %D      \stopcolormode
 %D    \fi
-%D    \global\colorlevel=0\relax}
+%D    \global\colorlevel=1000\relax} % a save offset 
 %D 
 %D \def\stopcolorpage%
 %D   {\global\colorlevel=\savedcolorlevel\relax
@@ -780,14 +796,17 @@
 %D \stoptypen
 
 %D The next alternative makes (simple) color separation more 
-%D easy: 
+%D easy. It also supports nested colors in page backgrounds 
+%D and texts. 
 
 \def\startcolorpage%    
   {\bgroup
+   \def\@@colorplus{-}%
+   \def\@@colorminus{+}%
    \let\docolormark=\gobbleoneargument
    \edef\savedcolorlevel{\the\colorlevel}%
    \localstartcolor[black]%
-   \global\colorlevel=0\relax}
+   \global\colorlevel=0 }
 
 \def\stopcolorpage%
   {\localstopcolor
@@ -795,13 +814,12 @@
    \egroup}
 
 %D \macros
-%D   {color,gray}
-%D   {}
+%D   {color,graycolor}
 %D 
 %D This leaves the simple color command: 
 %D
 %D \showsetup{\y!color}
-%D \showsetup{\y!gray}
+%D \showsetup{\y!graycolor}
 %D
 %D Which can be used straightforward: \color[groen]{green as gras}. 
 %D We want color support to be similar to font support and 
@@ -812,10 +830,12 @@
      {\startcolor[#1]} 
      {\stopcolor}}
 
-\unexpanded\def\gray[#1]%
+\unexpanded\def\graycolor[#1]% not \gray because this is a color
   {\groupedcommand
      {\RGBsupportedfalse\CMYKsupportedfalse\startcolor[#1]}
      {\stopcolor}}
+
+\let\grey\graycolor
 
 %D This implementation enables use of defined colors like:
 %D
@@ -826,7 +846,6 @@
 
 %D \macros 
 %D   {colorvalue, grayvalue}
-%D   {}
 %D 
 %D We can typeset the color components using \type{\colorvalue} and 
 %D \type{\grayvalue}. The commands: 
@@ -907,9 +926,8 @@
      {}}
 
 %D \macros
-%D   {locatstartraster,localstopraster,
+%D   {localstartraster,localstopraster,
 %D    startraster,stopraster}   
-%D   {}
 %D 
 %D The previous conversions are not linear and treat each color
 %D component according to human perception curves. Pure gray
@@ -920,9 +938,10 @@
 %D color support we offer both 'global' and 'local' commands.  
 
 \def\localstartraster[#1]%       
-  {\doifinstringelse{.}{#1}
-     {\dostartgraymode{#1}}
-     {\dostartgraymode{\@@rsraster}}}
+ %{\doifinstringelse{.}{#1} % no, we also want 0 and 1  
+  {\doifelsenothing{#1}
+     {\dostartgraymode{\@@rsraster}}
+     {\dostartgraymode{#1}}}
 
 \def\localstopraster%        
   {\dostopgraymode}
@@ -952,7 +971,6 @@
 
 %D \macros
 %D   {definepalet}
-%D   {}
 %D 
 %D Colors are grouped in palets. The colors in such a palet can
 %D have colorful names, but best is to use names that specify
@@ -1022,7 +1040,6 @@
 
 %D \macros 
 %D   {setuppalet}
-%D   {}
 %D
 %D Colors are taken from the current palet, if defined. 
 %D Setting the current palet is done by:
@@ -1044,7 +1061,6 @@
 
 %D \macros 
 %D   {showpalet}
-%D   {}
 %D 
 %D The previous visualization was typeset with: 
 %D 
@@ -1072,7 +1088,7 @@
       \tabskip\!!zeropoint
       \def\doshowpalet##1%
         {\doifinsetelse{\v!nummer}{#2}{##1\hskip.5em}{}&
-         \color[##1]{\rule}\gray[##1]{\rule}&
+         \color[##1]{\rule}\graycolor[##1]{\rule}&
          \doifinset{\v!waarde}{#2}{\hskip.5em\colorvalue{##1}}\crcr}
       \halign
         {\hss##&\hss##\hss&##\cr
@@ -1104,7 +1120,7 @@
            {&\color[##1]{\vrule\!!width\!!widtha\!!height\ht\strutbox\!!depth\!!zeropoint}}%
          \processpalet[#1]\doshowpalet\crcr
          \def\doshowpalet##1%
-           {&\gray[##1]{\vrule\!!width\!!widtha\!!height\!!zeropoint\!!depth\dp\strutbox}}%
+           {&\graycolor[##1]{\vrule\!!width\!!widtha\!!height\!!zeropoint\!!depth\dp\strutbox}}%
          \processpalet[#1]\doshowpalet\crcr
          \doifinset{\v!waarde}{#2}
            {\def\doshowpalet##1%
@@ -1123,7 +1139,6 @@
 
 %D \macros
 %D   {definecolorgroup}
-%D   {}
 %D
 %D The naming of the colors in this palet suggests some 
 %D ordening, which in turn is suported by color grouping. 
@@ -1159,6 +1174,7 @@
        [    \v!cmyk=>\edef\currentcolorspace{C},
              \v!rgb=>\edef\currentcolorspace{R},
             \v!gray=>\edef\currentcolorspace{S},
+               \v!s=>\edef\currentcolorspace{S},
          \s!unknown=>\edef\currentcolorspace{R}]%
      \scratchcounter=0
      \def\dododefinecolorgroup##1%
@@ -1177,7 +1193,6 @@
 
 %D \macros
 %D   {showcolorgroup}
-%D   {}
 %D 
 %D We can show the group by:
 %D 
@@ -1219,7 +1234,7 @@
            {\hss####\hss\cr
             \doifinset{\v!nummer}{#2}{\strut##1}\cr
             \color[#1:##1]{\vrule\!!width4em\!!height\ht\strutbox\!!depth\!!zeropoint}\cr
-            \gray[#1:##1]{\vrule\!!width4em\!!height\!!zeropoint\!!depth\dp\strutbox}\cr
+            \graycolor[#1:##1]{\vrule\!!width4em\!!height\!!zeropoint\!!depth\dp\strutbox}\cr
             \doifinset{\v!waarde}{#2}{\colorvalue{#1:##1}\strut}\crcr}}
       \def\doshowgroup##1%
         {\doifdefined{\??cr#1:##1}
@@ -1244,7 +1259,7 @@
       \def\doshowgroup##1%
         {\doifdefined{\??cr#1:##1}
            {\doifinset{\v!nummer}{#2}{##1\hskip.5em}&
-            \color[#1:##1]{\rule}\gray[#1:##1]{\rule}&
+            \color[#1:##1]{\rule}\graycolor[#1:##1]{\rule}&
             \doifinset{\v!waarde}{#2}{\hskip.5em\colorvalue{#1:##1}}\crcr}}
       \halign
         {\hss##&\hss##\hss&##\hss\cr
@@ -1290,7 +1305,6 @@
 
 %D \macros
 %D   {comparepalet}
-%D   {}
 %D 
 %D There are some more testing macros available:
 %D 
@@ -1318,7 +1332,7 @@
      {\hbox
         {\dodocomparepalet\color[#1]%
          \quad
-         \dodocomparepalet\gray[#1]}}}
+         \dodocomparepalet\graycolor[#1]}}}
 
 \def\dodocomparepalet#1[#2]%
   {\localvbox
@@ -1344,7 +1358,6 @@
 
 %D \macros
 %D   {comparecolorgroup}
-%D   {}
 %D
 %D The similar command: 
 %D
@@ -1372,7 +1385,7 @@
      {\hbox
         {\dodocomparecolorgroup\color[#1]%
          \quad
-         \dodocomparecolorgroup\gray[#1]}}}
+         \dodocomparecolorgroup\graycolor[#1]}}}
 
 \def\dodocomparecolorgroup#1[#2]%
   {\localvbox
@@ -1395,7 +1408,6 @@
 
 %D \macros 
 %D   {showcolor}
-%D   {}
 %D 
 %D But let's not forget that we also have the more traditional 
 %D non||related colors. These show up after: 
@@ -1416,7 +1428,7 @@
        {\vrule\!!width4em\!!height\ht\strutbox\!!depth\dp\strutbox}
      \def\docommand##1%
        {\hbox 
-          {\gray[##1]{\rule}\quad
+          {\graycolor[##1]{\rule}\quad
            \color[##1]{\rule}\quad
            \grayvalue{##1}\quad
            \hbox to 12em{\colorvalue{##1}\hss}%
@@ -1461,10 +1473,6 @@
 %D This macro returns a \METAPOST\ triplet \type{(R,G,B)}. 
 %D Only \kap{RGB} colors and gray scales are supported. 
 
-\ifx\MPgraphicstrue\undefined
-  \newif\ifMPgraphics\MPgraphicstrue
-\fi
-
 \def\MPcolor#1%
   {\ifMPgraphics
      \@EA\@EA\@EA\doMPcolor\csname\??cr#1\endcsname::::\end
@@ -1473,7 +1481,36 @@
    \fi}
 
 \def\doMPcolor#1:#2:#3:#4:#5\end%
-  {\if#1R(#2,#3,#4)\else\if#2G(#2,#2,#3)\else(1,1,1)\fi\fi}
+  {\if     #1R(#2,#3,#4)%
+   \else\if#1C(1-#2+#5,1-#3+#5,1-#4+#5)%
+   \else\if#1S(#2,#2,#2)% 
+   \else      (0,0,0)%
+   \fi\fi\fi}
+
+%D \macros 
+%D   {PDFcolor,FDFcolor}
+%D 
+%D Similar alternatives are avaliable for \PDF:
+
+\def\PDFcolor#1%
+  {\@EA\@EA\@EA\doPDFcolor\csname\??cr#1\endcsname::::\end}
+   
+\def\doPDFcolor#1:#2:#3:#4:#5\end%
+  {\if     #1R#2 #3 #4 rg%
+   \else\if#1C#2 #3 #4 #5 k%
+   \else\if#1S#2 g%
+   \else      0 g%
+   \fi\fi\fi}
+
+\def\FDFcolor#1%
+  {\@EA\@EA\@EA\doFDFcolor\csname\??cr#1\endcsname::::\end}
+   
+\def\doFDFcolor#1:#2:#3:#4:#5\end%
+  {[\if     #1R#2 #3 #4%
+    \else\if#1C#2 #3 #4 #5%
+    \else\if#1S#2%
+    \else      0%
+    \fi\fi\fi]}
 
 %D We default to the colors defined in \module{colo-rgb} and
 %D support both \kap{RGB} and \kap{CMYK} output. 

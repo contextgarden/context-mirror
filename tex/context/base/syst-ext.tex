@@ -18,6 +18,22 @@
 
 \unprotect
 
+%D \macros 
+%D   {rawgetparameters}
+%D
+%D A raw and dirty alternative for \type {\getparameters}; no
+%D checking is done!
+
+\def\rawgetparameters[#1][#2]% scheelt 5\%
+  {\def\rawparameterprefix{#1}%
+   \expandafter\rawsetparameter#2,]=,}
+
+\def\rawsetparameter#1=#2,%
+  {\if]#1\else
+     \expandafter\def\csname\rawparameterprefix#1\endcsname{#2}%
+     \expandafter\rawsetparameter
+   \fi}%
+
 %D \macros
 %D   {doglobal,
 %D    redoglobal,dodoglobal,resetglobal}
@@ -90,6 +106,26 @@
    \dodoglobal\@if#1{false}%
    \escapechar\count@} 
 
+%D Also new: 
+
+\def\define#1%
+  {\ifx#1\undefined
+     \expandafter\def
+   \else
+     \message{[\noexpand#1is already defined]}%
+     \expandafter\def\expandafter\gobbleddefinition
+   \fi#1}
+
+\def\redefine#1%
+  {\ifx#1\undefined\else
+     \message{[\noexpand#1is redefined]}%
+   \fi
+   \def#1}
+
+% \define\hans{hans}
+% \redefine\hans{hans}
+% \define\hans#1[]#2#3{hans}
+
 %D \macros
 %D   {newcounter,
 %D    increment,decrement}
@@ -147,16 +183,20 @@
 %D can give unexpected results, for instance execution
 %D of \type{\doif} even if both numbers are unequal.
 
+\def\zerocountervalue{0}
+
 \def\newcounter#1%
-  {\dodoglobal\def#1{0}}
+  {\dodoglobal\let#1\zerocountervalue}
 
 \def\dodododoincrement(#1,#2)%
   {\ifx#1\undefined
-     \redoglobal\def#1{0}%
-   \fi
+     \redoglobal\let#1\zerocountervalue
+   \else\ifx#1\relax % \csname...\endcsname
+     \redoglobal\let#1\zerocountervalue
+   \fi\fi
    \scratchcounter=#2\relax
    \scratchcounter=\incrementsign\scratchcounter
-   \advance\scratchcounter by #1\relax
+   \advance\scratchcounter #1\relax
    \dodoglobal\edef#1{\the\scratchcounter}}
 
 \def\dododoincrement#1%
@@ -199,14 +239,16 @@
 \newdimen\currentsignal
 
 \def\newsignal#1%
-  {\advance\currentsignal by 0.00025pt 
-   \edef#1{\the\currentsignal}}
+  {\ifx#1\undefined
+     \advance\currentsignal by 0.00025pt 
+     \edef#1{\the\currentsignal}%
+   \fi}
 
 %D \macros
 %D   {newskimen}
 %D 
 %D \TEX\ offers 256 \DIMENSIONS\ and \SKIPS. Unfortunately this
-%D amount is too small to suit certain packages. Therfore when
+%D amount is too small to suit certain packages. Therefore when
 %D possible one should use 
 %D 
 %D \starttypen
@@ -295,7 +337,7 @@
 \let\ifconditional  = \ifcase
 
 %D \macros
-%D   {dorecurse,recurselevel,recursedepth
+%D   {dorecurse,recurselevel,recursedepth,
 %D    dostepwiserecurse,
 %D    for}
 %D
@@ -350,14 +392,17 @@
   {\the\outerrecurse}
 
 \long\def\dostepwiserecurse#1#2#3#4%
-  {\ifnum#2=0
-     \def\recurselevel{0}% 
+  {\ifcase#2\relax
+     \let\recurselevel\zerocountervalue
      \let\next\relax
    \else
      \global\advance\outerrecurse by 1
-     \innerrecurse=#1\setevalue{\@@irecurse\recursedepth}{\the\innerrecurse}%
-     \innerrecurse=#2\setevalue{\@@nrecurse\recursedepth}{\the\innerrecurse}%
-     \innerrecurse=#3\setevalue{\@@srecurse\recursedepth}{\the\innerrecurse}%
+%     \innerrecurse=#1\setevalue{\@@irecurse\recursedepth}{\the\innerrecurse}%
+%     \innerrecurse=#2\setevalue{\@@nrecurse\recursedepth}{\the\innerrecurse}%
+%     \innerrecurse=#3\setevalue{\@@srecurse\recursedepth}{\the\innerrecurse}%
+     \setevalue{\@@irecurse\recursedepth}{\number#1}%
+     \setevalue{\@@nrecurse\recursedepth}{\number#2}%
+     \setevalue{\@@srecurse\recursedepth}{\number#3}%
      \ifnum#3>0\relax\ifnum#2<#1\relax
      \else
        \setevalue{\@@drecurse\recursedepth}{>}%
@@ -376,15 +421,12 @@
 \def\donorecurse%
   {}
 
-\def\dodonorecurse%
-  {\global\advance\outerrecurse by -1\relax}
-
 \def\dododorecurse%
   {\edef\recurselevel{\getvalue{\@@irecurse\recursedepth}}%
    \getvalue{\@@arecurse\recursedepth}%
-   \edef\recurselevel{\getvalue{\@@irecurse\recursedepth}}%
+\edef\recurselevel{\getvalue{\@@irecurse\recursedepth}}%
    \innerrecurse=\recurselevel
-   \advance\innerrecurse  by \getvalue{\@@srecurse\recursedepth}\relax
+   \advance\innerrecurse by \getvalue{\@@srecurse\recursedepth}\relax
    \setevalue{\@@irecurse\recursedepth}{\the\innerrecurse}%
    \dodorecurse}
 
@@ -392,26 +434,14 @@
   {\ifnum\getvalue{\@@irecurse\recursedepth}
          \getvalue{\@@drecurse\recursedepth}
          \getvalue{\@@nrecurse\recursedepth}\relax
-     \expandafter\dodonorecurse
+     \global\advance\outerrecurse by -1
+     \edef\recurselevel{\getvalue{\@@irecurse\recursedepth}}%
    \else
      \expandafter\dododorecurse
    \fi}
 
 \def\dorecurse#1%
   {\dostepwiserecurse{1}{#1}{1}}
-
-%D For those we like to offer visual beauty for efficiency we 
-%D say however:\voetnoot{In this kind of macro's we tend to 
-%D minimalize the overhead.}
-
-\def\dodorecurse%
-  {\ifnum\getvalue{\@@irecurse\recursedepth}
-         \getvalue{\@@drecurse\recursedepth}
-         \getvalue{\@@nrecurse\recursedepth}\relax
-     \global\advance\outerrecurse by -1
-   \else
-     \expandafter\dododorecurse
-   \fi}
 
 %D As we can see here, the simple command \type{\dorecurse} is
 %D a special case of the more general:
@@ -455,7 +485,6 @@
 
 %D \macros
 %D   {doloop,exitloop}
-%D   {}
 %D
 %D Sometimes loops are not determined by counters, but by 
 %D (a combinations of) conditions. We therefore implement a 
@@ -608,13 +637,13 @@
   {\@EA\afterassignment\csname do\strippedcsname#1\endcsname\scratchtoks}
 
 \def\newevery#1#2%
-  {\ifx#2\undefined
-     \ifx#1\undefined\newtoks#1\fi
+  {\ifx#1\undefined\newtoks#1\fi
+   \ifx#2\relax\else\ifx#2\undefined
      \@EA\newtoks\csname old\strippedcsname#1\endcsname
      \@EA\newif  \csname  if\strippedcsname#1\endcsname
      \@EA\def    \csname  do\strippedcsname#2\endcsname{\DoWithEvery#1}%
      \def#2{\dowithevery#2}%
-   \fi}
+   \fi\fi}
 
 %D This one permits definitions like: 
 
@@ -625,7 +654,9 @@
 
 \newevery \neverypar  \NeveryPar
 
-%D Which indeed we're going to use indeed!
+%D Which we're going to use indeed! When the second argument 
+%D equals \type {\relax}, the first token list is created 
+%D unless it is already defined. 
 
 %D Technically spoken we could have used the method we are 
 %D going to present in the visual debugger. First we save 
@@ -665,7 +696,6 @@
 
 %D \macros
 %D   {convertargument,convertcommand}
-%D   {}
 %D
 %D Some persistent experimenting led us to the next macro. This
 %D macro converts a parameter or an expanded macro to it's
@@ -694,6 +724,8 @@
 %D Both commands accept the prefix \type{\doglobal} for global
 %D assignments.
 
+\beginTEX
+
 \def\doconvertargument#1>{}
 
 \def\convertedcommand%
@@ -707,6 +739,22 @@
 \long\def\convertcommand#1\to#2%
   {\dodoglobal\edef#2%
      {\convertedcommand#1}}
+
+\endTEX
+
+%D In \ETEX\ we can use \type {\detokenize} and gain some
+%D speed, but in general far less that 1\% for \type
+%D {\convertargument} and nil for \type {\convertcommand}. 
+
+\beginETEX \detokenize 
+
+\def\convertargument#1\to#2%
+  {\dodoglobal\edef#2{\detokenize{#1}}}
+
+\def\convertcommand#1\to#2% 
+  {\@EA\dodoglobal\@EA\edef\@EA#2\@EA{\@EA\detokenize\@EA{#1}}}
+
+\endETEX
 
 %D This is typically a macro that one comes to after reading
 %D the \TEX book carefully. Even then, the definite solution
@@ -758,8 +806,7 @@
    \@EA\ExpandCommand\@EA[\!!stringa]}
 
 \def\ExpandFirstAfter#1%
-  {\def\ExpandCommand{#1}%
-   \complexorsimple{ExpandFirstAfter}}
+  {\let\ExpandCommand#1\complexorsimple\ExpandFirstAfter}
 
 \def\ExpandSecondAfter#1#2#3%
   {\def\!!stringa{#2}%
@@ -783,7 +830,7 @@
 %D Now we can for instance redefine \type{\ifinstringelse} as:
 
 \def\ifinstringelse%
-  {\ExpandBothAfter\v!ifinstringelse}
+  {\ExpandBothAfter\p!doifinstringelse}
 
 %D \macros
 %D   {ConvertToConstant,ConvertConstantAfter}
@@ -812,10 +859,23 @@
 %D In examples~2 and~3 both arguments equal, in~1 and~4
 %D they differ.
 
+\beginTEX
+
 \def\ConvertToConstant#1#2#3%
   {\expandafter\convertargument\expandafter{#2}\to\!!stringa
    \expandafter\convertargument\expandafter{#3}\to\!!stringb
    #1{\!!stringa}{\!!stringb}}
+
+\endTEX
+
+\beginETEX \detokenize
+
+\def\ConvertToConstant#1#2#3%
+  {\edef\!!stringa{\expandafter\detokenize\expandafter{#2}}%
+   \edef\!!stringb{\expandafter\detokenize\expandafter{#3}}%
+   #1{\!!stringa}{\!!stringb}}
+
+\endETEX
 
 %D When the argument \type{#1} consists of commands, we had
 %D better use
@@ -833,7 +893,7 @@
 %D \hbox to \hsize{\rubish}
 %D \stoptypen
 %D
-%D As we will see in the core moudles, this macro permits 
+%D As we will see in the core modules, this macro permits 
 %D constructions like:
 %D
 %D \starttypen
@@ -861,12 +921,10 @@
    \@EA\ConvertCommand\@EA[\!!stringa]}
 
 \def\ConvertConstantAfter#1%
-  {\def\ConvertCommand{#1}%
-   \complexorsimple{ConvertConstantAfter}}
+  {\let\ConvertCommand#1\complexorsimple\ConvertConstantAfter}
 
 %D \macros
 %D   {assignifempty}
-%D   {}
 %D
 %D We can assign a default value to an empty macro using:
 %D
@@ -882,7 +940,6 @@
 
 %D \macros
 %D   {gobbleuntil,grabuntil,processbetween}
-%D   {}
 %D
 %D In \TEX\ gobbling usually stand for skipping arguments, so
 %D here are our gobbling macros.
@@ -958,7 +1015,6 @@
 
 %D \macros
 %D   {groupedcommand}
-%D   {}
 %D
 %D Commands often manipulate argument as in:
 %D
@@ -1403,9 +1459,16 @@
      {\doifnumberelse{#1}{\p!dorepeatyes[#1]}{\p!dorepeatnot}}%
      {\p!dorepeatnot}}
 
+%D \macros 
+%D   {normalbgroup,normalgroup}
+%D
+%D No comment. 
+
+\let\normalbgroup\bgroup
+\let\normalegroup\egroup
+
 %D \macros
 %D   {appendtoks,prependtoks,flushtoks,dotoks}
-%D   {}
 %D
 %D We use \TOKENLISTS\ sparsely within \CONTEXT, because the
 %D comma separated lists are more suitable for the user
@@ -1421,18 +1484,69 @@
 %D Er worden eerst enkele klad||registers gedefinieerd. These
 %D macros are clones of the ones implemented in page~378 of
 %D Knuth's \TeX book.
+%D
+%D A simple implementation, one that does not handle braces 
+%D at the outer level, is: 
+%D 
+%D \starttypen
+%D \def\appendtoks#1\to#2%
+%D   {\scratchtoks={#1}%
+%D    \edef\next{\noexpand#2={\the#2\the\scratchtoks}}%
+%D    \next
+%D    \dodoglobal#2=#2} 
+%D 
+%D \def\prependtoks#1\to#2%
+%D   {\scratchtoks={#1}%
+%D    \edef\next{\noexpand#2={\the\scratchtoks\the#2}}%
+%D    \next
+%D    \dodoglobal#2=#2} 
+%D \stoptypen
+%D
+%D But here we prefer: 
 
-\def\appendtoks#1\to#2%
-  {\scratchtoks={#1}%
-   \edef\next{\noexpand#2={\the#2\the\scratchtoks}}%
-   \next
-   \dodoglobal#2=#2} 
+\def\appendtoks%
+  {\bgroup
+   \let\bgroup\relax
+   \futurelet\scratchtoken\doappendtoks}
 
-\def\prependtoks#1\to#2%
+\def\doappendtoks%
+  {\ifx\scratchtoken\normalbgroup
+     \egroup\expandafter\dodoappendtoks
+   \else
+     \egroup\expandafter\dododoappendtoks
+   \fi}
+
+\def\dodoappendtoks#1%
+  {\dododoappendtoks{{#1}}}
+
+\def\dododoappendtoks#1\to#2%
   {\scratchtoks={#1}%
-   \edef\next{\noexpand#2={\the\scratchtoks\the#2}}%
-   \next
-   \dodoglobal#2=#2} 
+   \edef\scratchtoken{\noexpand#2={\the#2\the\scratchtoks}}%
+   \scratchtoken
+   \dodoglobal#2=#2}
+
+\def\prependtoks%
+  {\bgroup
+   \let\bgroup\relax
+   \futurelet\scratchtoken\doprependtoks}
+
+\def\doprependtoks%
+  {\ifx\scratchtoken\normalbgroup
+     \egroup\expandafter\dodoprependtoks
+   \else
+     \egroup\expandafter\dododoprependtoks
+   \fi}
+
+\def\dodoprependtoks#1%
+  {\dododoprependtoks{{#1}}}
+
+\def\dododoprependtoks#1\to#2%
+  {\scratchtoks={#1}%
+   \edef\scratchtoken{\noexpand#2={\the\scratchtoks\the#2}}%
+   \scratchtoken
+   \dodoglobal#2=#2}
+
+%D Hm. 
 
 \def\flushtoks#1%
   {\scratchtoks=#1\relax
@@ -1499,20 +1613,20 @@
 %D here:
 
 \def\makecounter#1%
-  {\setxvalue{#1}{0}}
+  {\global\letvalue{#1}\zerocountervalue} % see earlier
 
 \def\pluscounter#1%
   {\scratchcounter=\getvalue{#1}\relax
-   \advance\scratchcounter by 1\relax
+   \advance\scratchcounter 1
    \setxvalue{#1}{\the\scratchcounter}}
 
 \def\minuscounter#1%
   {\scratchcounter=\getvalue{#1}\relax
-   \advance\scratchcounter by -1\relax
+   \advance\scratchcounter -1
    \setxvalue{#1}{\the\scratchcounter}}
 
 \def\resetcounter#1%
-  {\setxvalue{#1}{0}}
+  {\global\letvalue{#1}\zerocountervalue} 
 
 \def\setcounter#1#2%
   {\scratchcounter=#2\relax
@@ -1586,7 +1700,7 @@
 %D   {addtocommalist,removefromcommalist}
 %D   {}
 %D
-%D When working with comma separated lists, oen sooner or
+%D When working with comma separated lists, one sooner or
 %D later want the tools to append or remove items from such a
 %D list. When we add an item, we first check if it's already
 %D there. This means that every item in the list is unique.
@@ -1601,7 +1715,7 @@
 %D These commands can be prefixed with \type{\doglobal}. The
 %D implementation of the second command is more complecated,
 %D because we have to take leading spaces into account. Keep in
-%D mind that useres may provide lists with spaces after the
+%D mind that users may provide lists with spaces after the
 %D commas. When one item is left, we also have to get rid of
 %D trailing spaces.
 %D
@@ -1672,7 +1786,6 @@
 %D   {withoutunit,withoutpt,
 %D    PtToCm,
 %D    numberofpoints,dimensiontocount}
-%D   {}
 %D
 %D We can convert point into centimeters with:
 %D
@@ -1734,12 +1847,12 @@
 
 \def\numberofpoints#1%
   {\scratchdimen=#1\relax
-   \advance\scratchdimen by .5pt\relax
+   \advance\scratchdimen by .5pt
    \withoutpt{\the\scratchdimen}}
 
 \def\dimensiontocount#1#2%
   {\scratchdimen=#1\relax
-   \advance\scratchdimen by .5pt\relax
+   \advance\scratchdimen by .5pt
    #2=\scratchdimen
    \divide#2 by \!!maxcard\relax}
 
@@ -1763,8 +1876,27 @@
    \let#2=\!!stringa\relax}
 
 %D \macros
+%D   {pushmacro,popmacro}
+%D
+%D Premature and a bit of beta, we offer:
+%D
+%D \starttypen
+%D \pushmacro\macro
+%D \popmacro\macro
+%D \stoptypen
+
+\def\@s@{@s@}
+
+\def\pushmacro#1% across groups ! 
+  {\@EA\doglobal\@EA\increment\csname\@s@:\string#1\endcsname
+   \global\@EA\let\csname\csname\@s@:\string#1\endcsname:\string#1\endcsname#1}
+
+\def\popmacro#1%
+  {\global\@EA\let\@EA#1\csname\csname\@s@:\string#1\endcsname:\string#1\endcsname
+   \@EA\doglobal\@EA\decrement\csname\@s@:\string#1\endcsname}
+
+%D \macros
 %D   {setlocalhsize}
-%D   {}
 %D
 %D Sometimes we need to work with the \type{\hsize} that is
 %D corrected for indentation and left and right skips. The
@@ -1782,9 +1914,9 @@
 
 \newdimen\localhsize
 
-\def\complexsetlocalhsize[#1]%
+\def\complexsetlocalhsize[#1]% don't change !
   {\localhsize=\hsize
-   \advance\localhsize by -\parindent
+   \advance\localhsize by -\parindent 
    \advance\localhsize by -\leftskip
    \advance\localhsize by -\rightskip
    \advance\localhsize by #1\relax}
@@ -1884,6 +2016,17 @@
   \def\doifvaluesomething#1{\doifnot{\getvalue{#1}}{}}
 \def\doifelsevaluenothing#1{\doifelse{\getvalue{#1}}{}}
 
+%D Faster:
+
+\def\doifelsevaluesomething#1#2#3%
+  {\expandafter\ifx\csname#1\endcsname\empty#3\else#2\fi}
+
+\def\doifvaluesomething#1#2%
+  {\expandafter\ifx\csname#1\endcsname\empty\else#2\fi}
+
+\def\doifvaluenothing#1#2%
+  {\expandafter\ifx\csname#1\endcsname\empty#2\fi}
+
 %D \macros
 %D   {DOIF,DOIFELSE,DOIFNOT}
 %D   {}
@@ -1920,9 +2063,17 @@
      #4%
    \fi}
 
-\def\DOIF     {\ExpandBothAfter\p!DOIF}
-\def\DOIFNOT  {\ExpandBothAfter\p!DOIFNOT}
-\def\DOIFELSE {\ExpandBothAfter\p!DOIFELSE}
+\def\p!DOIFINSTRINGELSE#1#2#3#4%
+  {\uppercase{\ifinstringelse{#1}{#2}}%
+     #3%
+   \else
+     #4%
+   \fi}
+
+\def\DOIF             {\ExpandBothAfter\p!DOIF}
+\def\DOIFNOT          {\ExpandBothAfter\p!DOIFNOT}
+\def\DOIFELSE         {\ExpandBothAfter\p!DOIFELSE}
+\def\DOIFINSTRINGELSE {\ExpandBothAfter\p!DOIFINSTRINGELSE}
 
 %D \macros
 %D   {stripcharacters,stripspaces}
@@ -1952,15 +2103,15 @@
 
 \def\stripcharacter#1\from#2\to#3%
   {\def\dostripcharacter##1#1##2\end%
-     {\edef\p!strippedstring{\p!strippedstring##1}%
+     {\edef\!!strippedstring{\!!strippedstring##1}%
       \doifemptyelse{##2}
         {\let\next=\relax}
         {\def\next{\dostripcharacter##2\end}}%
       \next}%
-   \let\p!strippedstring=\empty
+   \let\!!strippedstring=\empty
    \edef\!!stringa{#2}%
    \@EA\dostripcharacter\!!stringa#1\end
-   \let#3=\p!strippedstring}
+   \let#3=\!!strippedstring}
 
 \def\stripspaces\from#1\to#2%
   {\stripcharacter{ }\from#1\to#2}
@@ -1986,10 +2137,14 @@
 %D We can of course globble more arguments using the
 %D appropriate globbling command.
 
+\newif\ifexecuted
+
 \def\executeifdefined#1#2%
   {\ifundefined{#1}%
+     \executedfalse
      \def\next{#2}%
    \else
+     \executedtrue
      \def\next{\getvalue{#1}}%
    \fi
    \next}
@@ -2007,13 +2162,15 @@
 %D \starttypen
 %D \def\executeifdefined#1#2%
 %D   {\setnameofcommand{#1}%
-%D    \@EA\ifundefined\@EA{\nameofcommand}
+%D    \@EA\ifundefined\@EA{\nameofcommand}%
 %D      \def\next{#2}%
 %D    \else
 %D      \def\next{\getvalue{\nameofcommand}}%
 %D    \fi
 %D    \next}
 %D \stoptypen
+
+% ISN'T THE NEXT ONE OBSOLETE? 
 
 %D \macros
 %D   {doifsomespaceelse}
@@ -2031,13 +2188,13 @@
 %D Watch the use of \type{\noexpand}.
 
 \long\def\doifsomespaceelse#1#2#3%
-  {\def\c!doifsomespaceelse##1 ##2##3\war%
+  {\def\p!doifsomespaceelse##1 ##2##3\war%
      {\if\noexpand##2@%
         #3%
       \else
         #2%
       \fi}%
-   \c!doifsomespaceelse#1 @ @\war}
+   \p!doifsomespaceelse#1 @ @\war}
 
 %D \macros
 %D   {adaptdimension,balancedimensions}
@@ -2213,12 +2370,12 @@
 %D related books. 
 
 \def\ScaledPointsToBigPoints#1#2%       
-  {\scratchdimen=#1sp\relax
+  {\scratchdimen=#1sp
    \scratchdimen=.996264\scratchdimen    
    \edef#2{\withoutpt{\the\scratchdimen}}}
 
 \def\ScaledPointsToWholeBigPoints#1#2%  
-  {\scratchdimen=#1sp\relax
+  {\scratchdimen=#1sp
    \scratchdimen=.996264\scratchdimen    
    \scratchcounter=\scratchdimen
    \advance\scratchcounter by \!!medcard
@@ -2254,6 +2411,24 @@
 %D \type{lang-ini}.
 
 \def\dontleavehmode{\ifmmode\else$ $\fi}
+
+%D \macros
+%D   {uppercasestring,lowercasestring}
+%D
+%D The names tell what they do:
+%D
+%D \starttypen
+%D \uppercasestring somestring\to\somestring
+%D \lowercasestring somestring\to\somestring
+%D \stoptypen
+%D
+%D the first argument may be a \type{\macro}. 
+
+\def\uppercasestring#1\to#2%
+  {\edef#2{#1}\@EA\uppercase\@EA{\@EA\dodoglobal\@EA\edef\@EA#2\@EA{#2}}}
+
+\def\lowercasestring#1\to#2%
+  {\edef#2{#1}\@EA\lowercase\@EA{\@EA\dodoglobal\@EA\edef\@EA#2\@EA{#2}}}
 
 %D \macros
 %D   {handletokens}
@@ -2310,7 +2485,7 @@
 %D \macros
 %D   {counttoken}
 %D
-%D For the few occasion sthat we want to know the number of 
+%D For the few occasions that we want to know the number of 
 %D specific tokens in a string, we can use: 
 %D 
 %D \starttypen
@@ -2461,7 +2636,68 @@
 \def\startglobal {\dostartglobaldefs<+}
 \def\stopglobal  {\dostopglobaldefs}
 
+%D \macros
+%D   {twodigitrounding}
+%D
+%D When using \type {\special}s or \type {\pdfliteral}s, it 
+%D sometimes makes sense to limit the precission. The next 
+%D macro rounds a real number to two digits. It takes one 
+%D argument and only works in \ETEX. 
+
+\beginTEX
+
+\def\twodigitrounding#1{#1}
+
+\endTEX
+
+\beginETEX
+
+\def\dotwodigitrounding#1.#2#3#4\relax%
+  {\ifx#2*#1\else#1.#2#3\fi}
+
+\def\twodigitrounding#1%
+  {\@EA\@EA\@EA\dotwodigitrounding\@EA\WITHOUTPT
+      \the\dimexpr#1pt+.005pt\relax000.*00\relax}
+
+\endETEX
+
+%D \macros
+%D   {processcontent}
+%D
+%D This is the first occasion where \TEX\ and \ETEX\ are no
+%D longer compatible, although in many cases things go ok.
+%D Beware of verbatim, i.e. catcode changes.
+%D
+%D \starttypen
+%D \def\starthans%
+%D   {\processcontent{stophans}\test{\message{\test}\wait}}
+%D \stoptypen
+%D 
+%D This macro is first used in the tabulation macros. 
+
+\def\processcontent#1%
+  {\bgroup\@EA\doprocesscontent\csname#1\endcsname}
+
+%\beginTEX
+
+\def\doprocesscontent#1#2#3%
+  {\long\def\doprocesscontent##1#1%
+     {\egroup\long\def#2{##1}#3}%
+   \doprocesscontent}
+
+%\endTEX
+
+% Hm. Side effect, spaces after \type{\test} in verbatim.  
+
+%\beginETEX \scantokens
+%
+%\def\doprocesscontent#1#2#3%
+%  {\long\def\doprocesscontent##1#1%
+%     {\egroup\long\def#2{\scantokens{##1}}#3}%
+%   \doprocesscontent}
+%
+%\endETEX
+
 \protect
 
 \endinput
-

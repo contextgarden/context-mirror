@@ -11,13 +11,17 @@
 %C therefore copyrighted by \PRAGMA. Non||commercial use is
 %C granted.
 
-\unprotect
 
 %D This module implements some \type{\special} manipulation 
 %D macros. I needed these when I implemented the code that 
 %D handles the conversion of \TPIC\ specials to \PDF\ code. 
 
+\ifx \undefined \writestatus           \input supp-mis.tex \relax \fi
+\ifx \undefined \redefinespecial \else \expandafter \endinput     \fi
+
 \writestatus{loading}{Context Support Macros / Specials}
+
+\unprotect
 
 %D When interpreting specials we need to do some basic scanning.
 %D For the moment we distinguish between three cases. We need 
@@ -163,4 +167,3 @@
 \protect 
 
 \endinput 
-

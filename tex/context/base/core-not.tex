@@ -115,7 +115,7 @@
         \scratchcounter=1
       \else
         \scratchcounter=\@@vnn\relax
-        \divide\count\footins by \scratchcounter
+       %\divide\count\footins by \scratchcounter
       \fi
       \global\endnotesfalse
       \setcleverfootnotes}
@@ -136,25 +136,33 @@
    \multiply\dimen\footins by \scratchcounter}
 
 \def\setcleverfootnotes%
-  {\def\startpushfootnote  {\getvalue{\e!start\??vn\??vn}}%
-   \def\stoppushfootnote   {\getvalue{\e!stop\??vn\??vn}}%
+  {\def\startpushfootnote  {\bgroup % wellicht ooit kopuitlijnen 
+                            \stelinmargein[\c!uitlijnen=\v!links]%
+                            \getvalue{\e!start\??vn\??vn}}%
+   \def\stoppushfootnote   {\getvalue{\e!stop\??vn\??vn}%
+                            \egroup}%
    \def\startpopfootnotes  {}%
    \def\stoppopfootnotes   {}}
 
 \def\setcolumnfootnotes% 
   {\def\startpushfootnote  {\setrigidcolumnhsize\@@vnbreedte\@@vnkolomafstand\@@vnn
+                            \bgroup
+                            \stelinmargein[\c!uitlijnen=\v!links]%
                             \getvalue{\e!start\??vn\??vn}}%
-   \def\stoppushfootnote   {\getvalue{\e!stop\??vn\??vn}}%
+   \def\stoppushfootnote   {\getvalue{\e!stop\??vn\??vn}%
+                            \egroup}%
    \def\startpopfootnotes  {\setbox0=\vbox\bgroup}%
-   \def\stoppopfootnotes   {\egroup\rigidcolumnbalance0\@@vnn}}
+   \def\stoppopfootnotes   {\egroup\rigidcolumnbalance0}}
 
 \def\settextfootnotes%
   {\def\startpushfootnote  {\startvboxtohbox 
-                            \dostartattributes\??vn\relax}%
+                            \dostartattributes\??vn\c!letter\c!kleur{}}%
    \def\stoppushfootnote   {\hskip\@@vnkolomafstand % plus.5em minus.5em
                             \dostopattributes
                             \stopvboxtohbox}%
-   \def\startpopfootnotes  {\vbox\bgroup\hsize=\@@vnbreedte}% \setvboxtohbox}%
+   \def\startpopfootnotes  {\vbox\bgroup % \doifdimenelse
+                            \doifnotinset{\@@vnbreedte}{\v!passend,\v!ruim}
+                              {\hsize=\@@vnbreedte}}% 
    \def\stoppopfootnotes   {\convertvboxtohbox\egroup}}
 
 %D The numbers that accompany a footnote are generated using
@@ -451,15 +459,24 @@
    \fi\fi}
 
 \def\placefootnotesintext#1%
-  {\par
-   \witruimte
-   \@@vnvoor
+  {\endgraf
+   \ifvmode
+     \witruimte
+     \@@vnvoor
+   \fi
    \snaptogrid\hbox  
      {\setfootnotebodyfont
       \setbox0=\hbox
         {\startpopfootnotes
-         \unvbox#1\par\relax
+         \unvbox#1\endgraf\relax
          \stoppopfootnotes}%
+      \doif{\@@vnbreedte}{\v!passend} % new, auto width 
+        {\setbox0=\hbox               % uggly but ok. 
+           {\beginofshapebox          
+            \unhbox0\setbox0=\lastbox\unvbox0
+            \endofshapebox
+            \reshapebox{\hbox{\unhbox\shapebox}}%
+            \vbox{\flushshapebox}}}%
        \localframed 
         [\??vn]
         [\c!breedte=\v!passend,
@@ -471,7 +488,9 @@
          \else                   % hides the (always) present depth
            \box0
          \fi}}%
-   \@@vnna}
+   \ifvmode
+     \@@vnna
+   \fi}
 
 %D \macros
 %D   {startlocalfootnotes,placelocalfootnotes}
@@ -626,4 +645,3 @@
 \protect
 
 \endinput
-

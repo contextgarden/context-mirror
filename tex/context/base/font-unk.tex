@@ -1,0 +1,211 @@
+%D \module
+%D   [       file=font-unk,
+%D        version=1998.09.10,
+%D          title=\CONTEXT\ Font Macros,
+%D       subtitle=Unknown Defaults,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. Non||commercial use is
+%C granted.
+
+%D This module is rather important, because it enables us to 
+%D define and call for not yet defined fonts in a way 
+%D completely independant of real font names. First we map 
+%D some meaningful names onto unknown filenames. 
+
+\definefontsynonym [Serif]              [unknown]
+\definefontsynonym [SerifBold]          [unknown]
+\definefontsynonym [SerifItalic]        [unknown]
+\definefontsynonym [SerifSlanted]       [unknown]
+\definefontsynonym [SerifBoldItalic]    [unknown]
+\definefontsynonym [SerifBoldSlanted]   [unknown]
+\definefontsynonym [SerifCaps]          [unknown]
+
+\definefontsynonym [Sans]               
+\definefontsynonym [SansBold]           [unknown]
+\definefontsynonym [SansItalic]         [unknown]
+\definefontsynonym [SansSlanted]        [unknown]
+\definefontsynonym [SansBoldItalic]     [unknown]
+\definefontsynonym [SansBoldSlanted]    [unknown]
+\definefontsynonym [SansCaps]           [unknown]
+
+\definefontsynonym [Mono]               [unknown]
+\definefontsynonym [MonoBold]           [unknown]
+\definefontsynonym [MonoItalic]         [unknown]
+\definefontsynonym [MonoSlanted]        [unknown]
+\definefontsynonym [MonoBoldItalic]     [unknown]
+\definefontsynonym [MonoBoldSlanted]    [unknown]
+\definefontsynonym [MonoCaps]           [unknown]
+
+\definefontsynonym [MathRoman]          [unknown]
+\definefontsynonym [MathExtension]      [unknown]
+\definefontsynonym [MathItalic]         [unknown]
+\definefontsynonym [MathSymbol]         [unknown]
+
+\definefontsynonym [MathAlpha]          [unknown]
+\definefontsynonym [MathBeta]           [unknown]
+
+\definefontsynonym [Handwriting]        [unknown]
+\definefontsynonym [Calligraphic]       [unknown]
+
+%D Also handy: 
+
+\definefontsynonym [Regular]            [Serif]
+\definefontsynonym [RegularBold]        [SerifBold]
+\definefontsynonym [RegularItalic]      [SerifItalic]
+\definefontsynonym [RegularSlanted]     [SerifSlanted]
+\definefontsynonym [RegularBoldItalic]  [SerifBoldItalic]
+\definefontsynonym [RegularBoldSlanted] [SerifBoldSlanted]
+\definefontsynonym [RegularCaps]        [SerifCaps]
+
+\definefontsynonym [Support]            [Sans]
+\definefontsynonym [SupportBold]        [SansBold]
+\definefontsynonym [SupportItalic]      [SansItalic]
+\definefontsynonym [SupportSlanted]     [SansSlanted]
+\definefontsynonym [SupportBoldItalic]  [SansBoldItalic]
+\definefontsynonym [SupportBoldSlanted] [SansBoldSlanted]
+\definefontsynonym [SupportCaps]        [SansCaps]
+
+%D Well, not that good an idea: 
+
+\definefontsynonym [Roman]              [Serif]
+\definefontsynonym [RomanBold]          [SerifBold]        
+\definefontsynonym [RomanItalic]        [SerifItalic]      
+\definefontsynonym [RomanSlanted]       [SerifSlanted]     
+\definefontsynonym [RomanBoldItalic]    [SerifBoldItalic]  
+\definefontsynonym [RomanBoldSlanted]   [SerifBoldSlanted] 
+\definefontsynonym [RomanCaps]          [SerifCaps]        
+
+\definefontsynonym [Type]               [Mono]               
+\definefontsynonym [TypeBold]           [MonoBold]           
+\definefontsynonym [TypeItalic]         [MonoItalic]         
+\definefontsynonym [TypeSlanted]        [MonoSlanted]        
+\definefontsynonym [TypeBoldItalic]     [MonoBoldItalic]     
+\definefontsynonym [TypeBoldSlanted]    [MonoBoldSlanted]    
+\definefontsynonym [TypeCaps]           [MonoCaps]           
+
+% To be added: Handwriting, Calligraphic
+
+%D Next we define roman, sans and monospaced font sets. 
+
+\definebodyfont [default] [rm]
+  [ tf=Serif            sa 1,
+   tfa=Serif            sa a,
+   tfb=Serif            sa b,
+   tfc=Serif            sa c,
+   tfd=Serif            sa d,
+    bf=SerifBold        sa 1,
+   bfa=SerifBold        sa a,
+   bfb=SerifBold        sa b,
+   bfc=SerifBold        sa c,
+   bfd=SerifBold        sa d,
+    it=SerifItalic      sa 1,
+   ita=SerifItalic      sa a,
+   itb=SerifItalic      sa b,
+   itc=SerifItalic      sa c,
+   itd=SerifItalic      sa d,
+    sl=SerifSlanted     sa 1,
+   sla=SerifSlanted     sa a,
+   slb=SerifSlanted     sa b,
+   slc=SerifSlanted     sa c,
+   sld=SerifSlanted     sa d,
+    bi=SerifBoldItalic  sa 1,
+   bia=SerifBoldItalic  sa a,
+   bib=SerifBoldItalic  sa b,
+   bic=SerifBoldItalic  sa c,
+   bid=SerifBoldItalic  sa d,
+    bs=SerifBoldSlanted sa 1,
+   bsa=SerifBoldSlanted sa a,
+   bsb=SerifBoldSlanted sa b,
+   bsc=SerifBoldSlanted sa c,
+   bsd=SerifBoldSlanted sa d,
+    sc=SerifCaps        sa 1,
+   sca=SerifCaps        sa a,
+   scb=SerifCaps        sa b,
+   scc=SerifCaps        sa c,
+   scd=SerifCaps        sa d]
+
+\definebodyfont [default] [ss]
+  [ tf=Sans sa 1,
+   tfa=Sans sa a,
+   tfb=Sans sa b,
+   tfc=Sans sa c,
+   tfd=Sans sa d,
+    bf=SansBold sa 1,
+   bfa=SansBold sa a,
+   bfb=SansBold sa b,
+   bfc=SansBold sa c,
+   bfd=SansBold sa d,
+    it=SansItalic sa 1,
+   ita=SansItalic sa a,
+   itb=SansItalic sa b,
+   itc=SansItalic sa c,
+   itd=SansItalic sa d,
+    sl=SansSlanted sa 1,
+   ita=SansSlanted sa a,
+   itb=SansSlanted sa b,
+   itc=SansSlanted sa c,
+   itd=SansSlanted sa d,
+    bi=SansBoldItalic sa 1,
+   ita=SansBoldItalic sa a,
+   itb=SansBoldItalic sa b,
+   itc=SansBoldItalic sa c,
+   itd=SansBoldItalic  sa d,
+    bs=SansBoldSlanted sa 1,
+   ita=SansBoldSlanted sa a,
+   itb=SansBoldSlanted sa b,
+   itc=SansBoldSlanted sa c,
+   itd=SansBoldSlanted sa d,
+    sc=SansCaps sa 1,
+   sca=SansCaps sa a,
+   scb=SansCaps sa b,
+   scc=SansCaps sa c,
+   scd=SansCaps sa d]
+
+\definebodyfont [default] [tt]
+  [ tf=Mono sa 1,
+   tfa=Mono sa a,
+   tfb=Mono sa b,
+   tfc=Mono sa c,
+   tfd=Mono sa d,
+    sl=MonoSlanted sa 1,
+   sla=MonoSlanted sa a,
+   slb=MonoSlanted sa b,
+   slc=MonoSlanted sa c,
+   sld=MonoSlanted sa d,
+    it=MonoItalic sa 1,
+   ita=MonoItalic sa a,
+   itb=MonoItalic sa b,
+   itc=MonoItalic sa c,
+   itd=MonoItalic sa d]
+
+\definebodyfont [default] [mm]
+  [mr=MathRoman sa 1,
+   ex=MathExtension sa 1,
+   mi=MathItalic sa 1,
+   sy=MathSymbol sa 1,
+   ma=MathAlpha sa 1,
+   mb=MathBeta sa 1]
+
+\definebodyfont [default] [hw]
+  [ tf=Handwriting sa 1,
+   tfa=Handwriting sa a,
+   tfb=Handwriting sa b
+   tfc=Handwriting sa c,
+   tfd=Handwriting sa d]
+
+\definebodyfont [default] [cg]
+  [ tf=Calligraphy sa 1,
+   tfa=Calligraphy sa a,
+   tfb=Calligraphy sa b
+   tfc=Calligraphy sa c,
+   tfd=Calligraphy sa d]
+
+%D These definitions come into action as soon as names are 
+%D mapped onto real file names (or names that themselves are 
+%D mapped). 
+
+\endinput

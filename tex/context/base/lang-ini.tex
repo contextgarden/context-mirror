@@ -22,10 +22,10 @@
 
 \startmessages  dutch  library: linguals
   title: taal
-      1: afbreekpatronen voor -- geladen
-      2: geen afbreekpatronen voor --
-      3: afbreekdefinities voor -- geladen
-      4: geen afbreekdefinities voor --
+      1: afbreekpatronen -- voor -- geladen (n=--)
+      2: geen afbreekpatronen -- voor -- (n=--)
+      3: afbreekdefinities -- voor -- geladen (n=--)
+      4: geen afbreekdefinities -- voor -- (n=--)
       5: afbreekpatronen voor -- niet geladen
       6: taal -- is niet gedefinieerd
       7: taal specifieke opties [--] introduceren een skip van --
@@ -34,10 +34,10 @@
 
 \startmessages  english  library: linguals
   title: language
-      1: patterns for -- loaded
-      2: no patterns for --
-      3: hyphenations for -- loaded
-      4: no hyphenations for --
+      1: patterns -- for -- loaded (n=--)
+      2: no patterns -- for -- (n=--)
+      3: hyphenations -- for -- loaded (n=--)
+      4: no hyphenations -- for -- (n=--)
       5: patterns for -- not loaded
       6: language -- is undefined
       7: language specific options [--] introduce a -- skip
@@ -46,10 +46,10 @@
 
 \startmessages  german  library: linguals
   title: Sprache
-      1: Trennmuster fuer -- geladen
-      2: Keine Trennmuster fuer --
-      3: Trenndefinitionen fuer -- geladen
-      4: Keine Trenndefinitionen fuer --
+      1: Trennmuster -- fuer -- geladen (n=--)
+      2: Keine Trennmuster -- fuer -- (n=--)
+      3: Trenndefinitionen -- fuer -- geladen (n=--)
+      4: Keine Trenndefinitionen -- fuer -- (n=--)
       5: Trennmuster fuer -- nicht geladen
       6: Sprache -- ist undefiniert
       7: Sprachenspezifische Option [--] fuegt eine Luecke von -- ein
@@ -79,7 +79,6 @@
 
 %D \macros
 %D   {currentlanguage}
-%D   {}
 %D
 %D Instead of numbers,we are going to use symbolic names for
 %D the languages. The current langage is saved in the macro
@@ -89,7 +88,6 @@
 
 %D \macros
 %D   {installlanguage}
-%D   {}
 %D
 %D Hyphenation patterns can only be loaded when the format file
 %D is prepared. The next macro takes care of this loading. A
@@ -120,19 +118,17 @@
 %D implementations support run time addition of patterns to a
 %D preloaded format).
 
-\def\dodoinstalllanguage#1%
-  {\doifundefined{#1}{\setvalue{#1}{\language[#1]}}%
+\def\dodoinstalllanguage#1#2% #2 added 
+  {\doifundefined{#1}{\setvalue{#1}{\language[#2]}}%
    \expanded{\noexpand\uppercase{\noexpand\edef\noexpand\ascii{#1}}}%
-   \doifundefined{\ascii}{\setvalue{\ascii}{\language[#1]}}}      
+   \doifundefined{\ascii}{\setvalue{\ascii}{\language[#2]}}}      
 
 \def\doinstalllanguage[#1][#2]%
   {\doifinstringelse{=}{#2}
-     {\doifdefinedelse{\??la#1\c!nummer}%
+     {\doifdefinedelse{\??la#1\c!status}
         {\getparameters[\??la#1][#2]}
         {\setvalue{\l!prefix!#1}{#1}%
-         \setevalue{\??la#1\c!nummer}{\loadedlanguage}%
-         \increment\loadedlanguage
-         \dodoinstalllanguage{#1}%
+         \dodoinstalllanguage{#1}{#1}%
          \getparameters
            [\??la#1]
            [\s!lefthyphenmin=2,
@@ -148,25 +144,62 @@
             \c!rightquotation=\upperrightdoubleninequote,
             \c!datum={\v!jaar,\ ,\v!maand,\ ,\v!dag},
             \c!status=\v!stop,
-            \s!done=\v!nee,
-            \c!default=#1,
-            #2]}%
-      \language=\getvalue{\??la#1\c!nummer}\relax
+            \c!default=,
+            \s!patterns=,
+            \s!mapping=,
+            \s!encoding=,
+            #2]%
+         \doifvaluesomething{\??la#1\c!default}
+           {\doifnotvalue{\??la#1\c!default}{#1}
+              {\getparameters
+                 [\??la#1]
+                 [\s!lefthyphenmin=\languagedefault{#1}\s!lefthyphenmin,
+                  \s!righthyphenmin=\languagedefault{#1}\s!righthyphenmin,
+                  \c!spatiering=\languagedefault{#1}\c!spatiering,
+                  \c!leftsentence=\languagedefault{#1}\c!leftsentence,
+                  \c!rightsentence=\languagedefault{#1}\c!rightsentence,
+                  \c!leftsubsentence=\languagedefault{#1}\c!leftsubsentence,
+                  \c!rightsubsentence=\languagedefault{#1}\c!rightsubsentence,
+                  \c!leftquote=\languagedefault{#1}\c!leftquote,
+                  \c!rightquote=\languagedefault{#1}\c!rightquote,
+                  \c!leftquotation=\languagedefault{#1}\c!leftquotation,
+                  \c!rightquotation=\languagedefault{#1}\c!rightquotation,
+                  \c!datum=\languagedefault{#1}\c!datum,
+                  \s!mapping=\languagedefault{#1}\s!mapping,
+                  \s!encoding=\languagedefault{#1}\s!encoding,
+                  #2]}}}%
+      \doifvalue{\??la#1\c!default}{#1} {\letvalue{\??la#1\c!default}\empty}%
+      \doifvalue{\??la#1\s!patterns}{#1}{\letvalue{\??la#1\c!default}\empty}%
       \doifelsevalue{\??la#1\c!status}{\v!start}
-        {\doifelsevalue{\??la#1\s!done}{\v!nee}
-           {\readsysfile{\f!languageprefix#1.\f!patternsextension}
-              {\getparameters[\??la#1][\s!done=\v!ja,\c!default=#1]%
-               \showmessage{\m!linguals}{1}{#1}}
-              {\showmessage{\m!linguals}{2}{#1}}%
-            \readsysfile{\f!languageprefix#1.\f!hyphensextension}
-              {\showmessage{\m!linguals}{3}{#1}}
-              {\showmessage{\m!linguals}{4}{#1}}}
-           {\showmessage{\m!linguals}{1}{#1}%
-            \showmessage{\m!linguals}{3}{#1}}}
+        {\doifelsevaluenothing{\??la#1\s!patterns}
+           {\edef\languagesuffix{#1}}
+           {\edef\languagesuffix{\getvalue{\??la#1\s!patterns}}}%
+         \doifundefinedelse{\??la\??la\languagesuffix}
+           {\normallanguage=\loadedlanguage
+            \letvalue{\??la\??la\languagesuffix}=\loadedlanguage
+            \bgroup
+            \startencoding[\getvalue{\??la\languagesuffix\s!encoding}]%
+            \usemapping[\getvalue{\??la\languagesuffix\s!mapping}]%
+            \readsysfile{\f!languageprefix\languagesuffix.\f!patternsextension}
+              {\setxvalue{\??la#1\s!patterns}{\languagesuffix}%
+               \showmessage{\m!linguals}{1}{\languagesuffix,#1,\loadedlanguage}}
+              {\showmessage{\m!linguals}{2}{\languagesuffix,#1,\loadedlanguage}}%
+            \readsysfile{\f!languageprefix\languagesuffix.\f!hyphensextension}
+              {\showmessage{\m!linguals}{3}{\languagesuffix,#1,\loadedlanguage}}
+              {\showmessage{\m!linguals}{4}{\languagesuffix,#1,\loadedlanguage}}%
+            \stopencoding
+            \egroup
+            \increment\loadedlanguage}
+           {\bgroup
+            \edef\loadedlanguage{\getvalue{\??la\??la\languagesuffix}}%
+            \showmessage{\m!linguals}{1}{\languagesuffix,#1,\loadedlanguage}%
+            \showmessage{\m!linguals}{3}{\languagesuffix,#1,\loadedlanguage}%
+            \egroup}}
         {\showmessage{\m!linguals}{5}{#1}}}
-     {\setvalue{\l!prefix!#1}{#2}%
-      \dodoinstalllanguage{#1}}%
-   }% \language[#1]} gave unwanted side effect of loading language specifics 
+     {\setvalue{\l!prefix!#1}{#2}% 
+      \dodoinstalllanguage{#1}{#2}}} 
+
+% ^^ \language[#1] gave unwanted side effect of loading language specifics 
 
 \def\installlanguage%
   {\dodoubleargument\doinstalllanguage}
@@ -209,12 +242,11 @@
 %D say
 %D
 %D \starttypen
-%D \installlanguage [du ] [de]
+%D \installlanguage [du] [de]
 %D \stoptypen
 
 %D \macros
 %D   {language,mainlanguage}
-%D   {}
 %D
 %D Switching to another language (actually another hyphenation
 %D pattern) is done with:
@@ -230,7 +262,8 @@
 %D \language=1
 %D \stoptypen
 %D
-%D is a valid operation.
+%D is a valid operation, where the relation between number
+%D and language depends on the order in installing languages. 
 %D
 %D \showsetup{\y!language}
 %D \showsetup{\y!mainlanguage}
@@ -244,14 +277,28 @@
 %D We take care of local as well as standardized language
 %D switching (fr and fa, de and du, but nl and nl).
 
+\def\setnormallanguage#1#2%
+  {\doifdefined{\??la\??la#2}{\doifvaluesomething{\??la\??la#2}
+     {\donetrue
+      \setxvalue{\??la#1\s!patterns}{#2}%
+      \normallanguage=\getvalue{\??la\??la#2}}}} 
+    
 \def\docomplexlanguage[#1]%
-  {\processaction
-     [\getvalue{\??la#1\c!default}]
-     [        #1=>\normallanguage=\getvalue{\??la#1\c!nummer},
-      \s!default=>\normallanguage=\getvalue{\??la#1\c!nummer},
-      \s!unknown=>\expanded{\language[\getvalue{\??la#1\c!default}]}]%
+  {\donefalse
+   \setnormallanguage{#1}{\getvalue{\??la#1\s!patterns}}%
+   \ifdone\else
+     \setnormallanguage{#1}{#1}%
+     \ifdone\else
+       \doifvaluesomething{\??la#1\c!default}
+         {\setnormallanguage{#1}{\getvalue{\??la\defaultlanguage{#1}\s!patterns}}%
+          \ifdone\else
+            \setnormallanguage{#1}{\defaultlanguage{#1}}%
+          \fi}%
+     \fi
+   \fi          
    \edef\currentlanguage{#1}%
    \enablelanguagespecifics[#1]%
+   \usemapping[\getvalue{\??la#1\s!mapping}]%
    \lefthyphenmin =0\getvalue{\??la#1\s!lefthyphenmin}\relax
    \righthyphenmin=0\getvalue{\??la#1\s!righthyphenmin}\relax
    \processaction
@@ -272,12 +319,33 @@
 
 \let\currentmainlanguage=\empty
 
+%\def\mainlanguage[#1]%
+%  {\edef\currentmainlanguage{#1}} % We expand indeed!
+
 \def\mainlanguage[#1]%
-  {\edef\currentmainlanguage{#1}} % We expand indeed!
+  {\@EA\let\@EA\currentmainlanguage\csname\l!prefix!#1\endcsname
+   \language[#1]}
+
+%D \macros
+%D   {defaultlanguage,languagedefault}
+%D
+%D The macro \type {\defaultlanguage{id}} expands into the 
+%D default language, when defined, while \type 
+%D {\languagedefault{id}\c!parameter} returns the default's 
+%D parameter. 
+
+\def\defaultlanguage#1%
+  {\@EA\ifx\csname\??la#1\c!default\endcsname\empty
+     #1%
+   \else
+     \@EA\defaultlanguage\@EA{\csname\??la#1\c!default\endcsname}%
+   \fi}
+
+\def\languagedefault#1#2% 
+  {\csname\??la\defaultlanguage{#1}#2\endcsname}
 
 %D \macros
 %D   {startlanguagespecifics,enablelanguagespecifics}
-%D   {}
 %D
 %D Each language has its own typographic pecularities. Some of
 %D those can be influenced by parameters, others are handled by
@@ -303,26 +371,31 @@
 %D precautions that will prevent spurious spaces to creep into
 %D the list.
 
-\def\startlanguagespecifics%
+\def\startlanguagespecifics%                % we use double to 
   {\bgroup
    \catcode`\^^I=\@@ignore
    \catcode`\^^M=\@@ignore
    \catcode`\^^L=\@@ignore
-   \dostartlanguagespecifics}
+   \dodoubleempty\dostartlanguagespecifics} % get rid of spaces
 
 %D The main macro looks quite complicated but actually does
 %D nothing special. By embedding \type{\do} we can easily
 %D append to the lists and also execute them at will. Just to
 %D be sure, we check on spurious spaces.
 
-\long\def\dostartlanguagespecifics[#1]#2\stoplanguagespecifics%
+\def\languageencoding%
+  {\ifx\characterencoding\@plain@\else
+     \characterencoding-%
+   \fi}
+
+\long\def\dostartlanguagespecifics[#1][#2]#3\stoplanguagespecifics%
   {\egroup
    \long\def\docommando##1%
-     {\doifdefinedelse{\??la##1\??la}
+     {\doifdefinedelse{\??la\languageencoding##1\??la}
         {\long\def\do####1####2####3%
-           {\setvalue{\??la####1\??la}{\do{####1}{####2####3}}}%
-         \getvalue{\??la##1\??la}{#2}}
-        {\setvalue{\??la##1\??la}{\do{##1}{#2}}}%
+           {\setvalue{\??la\languageencoding####1\??la}{\do{####1}{####2####3}}}%
+         \getvalue{\??la\languageencoding##1\??la}{#3}}
+        {\setvalue{\??la\languageencoding##1\??la}{\do{##1}{#3}}}%
       \bgroup
       \setbox0=\hbox{\enablelanguagespecifics[##1]}%
       \ifdim\wd0>\!!zeropoint
@@ -330,38 +403,68 @@
       \else
         \showmessage{\m!linguals}{8}{##1}%
       \fi
-      \egroup}%
+      \egroup
+      \doif{##1}{\currentmainlanguage}
+        {\enablelanguagespecifics[##1]}}%
    \processcommalist[#1]\docommando}
 
 %D Enabling them is rather straightforward. We only have to
 %D define \type{\do} in such a way that \type{{ }} is removed
 %D and the language key is gobbled.
 
+%\def\enablelanguagespecifics[#1]%
+%  {\long\def\do##1##2{##2}%
+%   \getvalue{\??la#1\??la}}
+
 \def\enablelanguagespecifics[#1]%
   {\long\def\do##1##2{##2}%
-   \getvalue{\??la#1\??la}}
+   \getvalue{\??la#1\??la}%
+   \getvalue{\??la\languageencoding#1\??la}}
 
 %D \macros
 %D   {leftguillemot,rightguillemot,leftsubguillemot,rightsubguillemot,
 %D    ...single...quote,...double...quote}
-%D   {}
 %D
 %D We assign logical names to all kind of quote and sentence
 %D boundary characters.
+%D
+%D When using Computer Modern Roman, the next definitions 
+%D looks a bit better than the default ligatures. 
+%D 
+%D \starttypen
+%D \def\lowerleftsingleninequote  {,}
+%D \def\lowerleftdoubleninequote  {,\kern-.1em,}
+%D \def\upperleftsingleninequote  {'}
+%D \def\upperleftdoubleninequote  {''\kern-.1em}
+%D \def\upperleftsinglesixquote   {`}
+%D \def\upperleftdoublesixquote   {`\kern-.1em`}
+%D 
+%D \def\lowerrightsingleninequote {,}
+%D \def\lowerrightdoubleninequote {,\kern-.1em,}
+%D \def\upperrightsingleninequote {'}
+%D \def\upperrightdoubleninequote {''}
+%D \def\upperrightsinglesixquote  {`}
+%D \def\upperrightdoublesixquote  {\kern-.125em``}
+%D \stoptypen
+%D
+%D But in other fonts, these definitions can give problems, so
+%D we just say:
 
-\def\lowerleftsingleninequote  {\char44 }
-\def\lowerleftdoubleninequote  {\char44\kern-.1em\char44 }
-\def\upperleftsingleninequote  {\char39 }
-\def\upperleftdoubleninequote  {\char34\kern-.1em}
-\def\upperleftsinglesixquote   {\char96 }
-\def\upperleftdoublesixquote   {\char96\kern-.1em\char96 }
+\def\lowerleftsingleninequote  {,}
+\def\lowerleftdoubleninequote  {,,}
+\def\upperleftsingleninequote  {'}
+\def\upperleftdoubleninequote  {''}
+\def\upperleftsinglesixquote   {`}
+\def\upperleftdoublesixquote   {``}
 
-\def\lowerrightsingleninequote {\char44 }
-\def\lowerrightdoubleninequote {\char44\kern-.1em\char44 }
-\def\upperrightsingleninequote {\char39 }
-\def\upperrightdoubleninequote {\char34 }
-\def\upperrightsinglesixquote  {\char96 }
-\def\upperrightdoublesixquote  {\kern-.125em\char92 }
+\def\lowerrightsingleninequote {,}
+\def\lowerrightdoubleninequote {,,}
+\def\upperrightsingleninequote {'}
+\def\upperrightdoubleninequote {''}
+\def\upperrightsinglesixquote  {`}
+\def\upperrightdoublesixquote  {``}
+
+%D Yes I know, they are ugly: 
 
 \unexpanded\def\leftguillemot%
   {\dontleavehmode\hbox{\raise.25ex\hbox{$\scriptscriptstyle\ll$}}}
@@ -412,6 +515,8 @@
 %D \ShowLanguageValues [af] [afrikaans]  afrikaanse ...
 %D \ShowLanguageValues [no] [norwegian]  noorse ...
 %D \ShowLanguageValues [tr] [turkish]    turks fruit
+%D \ShowLanguageValues [cz] [czech]      tjechisch tex  
+%D \ShowLanguageValues [cz] [slovak]     slowaakse ... 
 
 %D We support a lot of languages. These are specified and 
 %D loaded in separate files, according to their roots. Here 
@@ -453,9 +558,11 @@
 %D \plaatstabel{The slavic languages (\type{lang-sla})}
 %D \starttabel[||||]
 %D \HL 
-%D \NC \bf mnemonic \NC \bf language \NC \bf group \NC \bf file \NC\SR
+%D \NC \bf mnemonic \NC \bf language \NC \bf group \NC\SR
 %D \HL 
-%D \NC \s!pl        \NC polish       \NC slavic    \NC lang-sla \NC\SR    
+%D \NC \s!pl        \NC polish       \NC slavic    \NC\FR    
+%D \NC \s!cz        \NC czech        \NC slavic    \NC\MR    
+%D \NC \s!sk        \NC slavik       \NC slavic    \NC\LR    
 %D \HL 
 %D \stoptabel
 %D \protect
@@ -486,22 +593,25 @@
 
 %  \language[\s!en] \mainlanguage[\currentlanguage]
 
-\startinterface dutch      \appendtoks \language[\s!nl]\to \everyjob \stopinterface
-\startinterface english    \appendtoks \language[\s!en]\to \everyjob \stopinterface
-\startinterface german     \appendtoks \language[\s!de]\to \everyjob \stopinterface
-\startinterface french     \appendtoks \language[\s!fr]\to \everyjob \stopinterface
-\startinterface spanish    \appendtoks \language[\s!sp]\to \everyjob \stopinterface
-\startinterface italian    \appendtoks \language[\s!it]\to \everyjob \stopinterface
-\startinterface danish     \appendtoks \language[\s!da]\to \everyjob \stopinterface
-\startinterface portuguese \appendtoks \language[\s!pt]\to \everyjob \stopinterface
-\startinterface swedish    \appendtoks \language[\s!sv]\to \everyjob \stopinterface
-\startinterface polish     \appendtoks \language[\s!pl]\to \everyjob \stopinterface
-\startinterface finish     \appendtoks \language[\s!fi]\to \everyjob \stopinterface
-\startinterface afrikaans  \appendtoks \language[\s!af]\to \everyjob \stopinterface
-\startinterface norwegian  \appendtoks \language[\s!no]\to \everyjob \stopinterface
-\startinterface turkish    \appendtoks \language[\s!tr]\to \everyjob \stopinterface
-
-\appendtoks \mainlanguage[\currentlanguage] \to \everyjob
+% \startinterface dutch      \appendtoks \language[\s!nl]\to \everyjob \stopinterface
+% \startinterface english    \appendtoks \language[\s!en]\to \everyjob \stopinterface
+% \startinterface german     \appendtoks \language[\s!de]\to \everyjob \stopinterface
+% 
+% \startinterface czech      \appendtoks \language[\s!cz]\to \everyjob \stopinterface
+% 
+% \startinterface french     \appendtoks \language[\s!fr]\to \everyjob \stopinterface
+% \startinterface spanish    \appendtoks \language[\s!sp]\to \everyjob \stopinterface
+% \startinterface italian    \appendtoks \language[\s!it]\to \everyjob \stopinterface
+% \startinterface danish     \appendtoks \language[\s!da]\to \everyjob \stopinterface
+% \startinterface portuguese \appendtoks \language[\s!pt]\to \everyjob \stopinterface
+% \startinterface swedish    \appendtoks \language[\s!sv]\to \everyjob \stopinterface
+% \startinterface polish     \appendtoks \language[\s!pl]\to \everyjob \stopinterface
+% \startinterface finish     \appendtoks \language[\s!fi]\to \everyjob \stopinterface
+% \startinterface afrikaans  \appendtoks \language[\s!af]\to \everyjob \stopinterface
+% \startinterface norwegian  \appendtoks \language[\s!no]\to \everyjob \stopinterface
+% \startinterface turkish    \appendtoks \language[\s!tr]\to \everyjob \stopinterface
+ 
+% \appendtoks \mainlanguage[\currentlanguage] \to \everyjob
 
 \protect
 

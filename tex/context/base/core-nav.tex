@@ -51,6 +51,7 @@
 
 \def\dostelinteractiein[#1]%
   {\getparameters[\??ia][#1]%
+   \dosetuppageview{\@@iascherm}%     
    \doifelse{\@@iastatus}{\v!start}
      {\iflocation\else
         \showmessage{\m!interactions}{2}{\ifusepagedestinations\space(PAGE)\fi}%
@@ -72,6 +73,8 @@
 \def\dolocationstartup%
   {\iflocation
      \dosetupinteraction
+     \handlereferenceactions\@@iaopenactie\dosetupopenaction
+     \handlereferenceactions\@@iasluitactie\dosetupcloseaction
      \setupinteractionscreens
      \global\let\dolocationstartup=\relax
    \fi}
@@ -119,39 +122,46 @@
    \fi}
 
 %D In the macros that deal with making areas into hyperlinks, 
-%D we use: 
+%D we use:
 
 \def\dostartgoto\data#1\start#2\stop#3\dostopgoto% 
-  {\hbox
-     {\setbox0=\hbox{#1}%
-      \ifdim\wd0<\@@iabreedte\relax
-        \buttonwidth=\@@iabreedte\relax
-      \else
-        \buttonwidth=\wd0\relax
-      \fi
-      \ifdim\ht0<\@@ia@@hoogte\relax
-        \buttonheight=\@@ia@@hoogte\relax
-      \else
-        \buttonheight=\ht0
-      \fi
-      \ifdim\dp0<\@@ia@@diepte\relax
-        \dimen0=\@@ia@@diepte\relax
-      \else
-        \dimen0=\dp0\relax
-      \fi
-      \advance\buttonheight by \dimen0
-      \setbox2=\hbox
-        {\lower\dimen0\hbox
-           {\mindermeldingen
-            \dimen0=.5\wd0
-            \advance\dimen0 by -.5\buttonwidth
-            \hskip\dimen0#2#3}}%
-      \ifreversegoto
-        \dimen0=\wd0\box0\kern-\dimen0\smashbox2\box2\kern\dimen0
-      \else 
-        \smashbox2\box2\box0
-      \fi
-      \resetgoto}}
+  {\ifsecondaryreference
+     \bgroup\setbox0=\hbox{#2#3}\egroup
+   \else
+     \hbox
+       {\setbox0=\hbox{#1}%
+        \ifdim\wd0<\@@iabreedte\relax
+          \buttonwidth=\@@iabreedte\relax
+        \else
+          \buttonwidth=\wd0\relax
+        \fi
+        \ifdim\ht0<\@@ia@@hoogte\relax
+          \buttonheight=\@@ia@@hoogte\relax
+        \else
+          \buttonheight=\ht0
+        \fi
+        \ifdim\dp0<\@@ia@@diepte\relax
+          \dimen0=\@@ia@@diepte\relax
+        \else
+          \dimen0=\dp0\relax
+        \fi
+        \advance\buttonheight by \dimen0
+        \setbox2=\hbox
+          {\lower\dimen0\hbox
+             {\mindermeldingen
+              \dimen0=.5\wd0 % direct skipping is faster of course
+              \advance\dimen0 by -.5\buttonwidth % buts this is nicer 
+              \hskip\dimen0#2#3}}% when visualizing things
+        \ifreversegoto
+          \dimen0=\wd0\box0\kern-\dimen0\smashbox2\box2\kern\dimen0
+        \else 
+          \smashbox2\box2\box0
+        \fi
+        \resetgoto}%
+   \fi}
+
+%D The secondary references are processed but not typeset. The 
+%D special driver must collect the data needed. 
 
 %D The width of the active area depends on the dimensions
 %D preset, the actual dimens and/or the height and depth of the
@@ -185,6 +195,15 @@
 %D links. The first one, \type{\showlocation}, is used in those
 %D situations where the typeface is handled by the calling
 %D macro. 
+
+\def\interactioncolor%
+  {\iflocation
+     \ifrealreferencepage
+       \@@iacontrastkleur
+     \else
+       \@@iakleur
+     \fi
+   \fi}
 
 %D CHECK WHERE USED / CONSISTENCY
 
@@ -227,91 +246,22 @@
 %D More tokens are spend when we want both typeface and color 
 %D highlighting. 
 
-\def\dolocationattributes#1#2% 
+\def\dolocationattributes#1#2#3#4% 
   {\bgroup
+   \doifdefinedelse{#1#2}
+     {\def\fontattribute{\getvalue{#1#2}}}
+     {\let\fontattribute\empty}%
    \iflocation
-     \doifdefinedelse{#1\c!kleur}
-       {\edef\colorattribute{\getvalue{#1\c!kleur}}}
+     \doifdefinedelse{#1#3}
+       {\def\colorattribute{\getvalue{#1#3}}}
        {\let\colorattribute\empty}%
    \else
      \let\colorattribute\empty
    \fi
-   \doifdefinedelse{#1\c!letter}
-     {\edef\fontattribute{\getvalue{#1\c!letter}}}
-     {\let\fontattribute\empty}%
    \startcolor[\colorattribute]%
-   \doconvertfont{\fontattribute}{#2}%
+   \@EA\doconvertfont\@EA{\fontattribute}{#4}% no \edef, but \@EA here
    \stopcolor
    \egroup}
-
-%D Special hyperlinks, namely those to pages or navigational 
-%D properties, are associated with symbols. 
-
-\definesymbol [\v!eerste\v!pagina]         [\gotobegincharacter]
-\definesymbol [\v!vorige\v!pagina]         [\gobackwardcharacter]
-\definesymbol [\v!volgende\v!pagina]       [\goforwardcharacter]
-\definesymbol [\v!laatste\v!pagina]        [\gotoendcharacter]
-\definesymbol [\v!eerste\v!sub\v!pagina]   [\gotobegincharacter]
-\definesymbol [\v!vorige\v!sub\v!pagina]   [\gobackwardcharacter]
-\definesymbol [\v!volgende\v!sub\v!pagina] [\goforwardcharacter]
-\definesymbol [\v!laatste\v!sub\v!pagina]  [\gotoendcharacter]
-\definesymbol [\v!PreviousJump]            [\gobackjumpcharacter]
-\definesymbol [\v!NextJump]                [\goforjumpcharacter]
-\definesymbol [\v!CloseDocument]           [\closecharacter]
-
-%D These symbols are taken from the Computer Moders Roman
-%D symbol set or, when present, from the additional symbols of
-%D the American Mathematical Society. Of course one can use 
-%D his or her own symbols by redefining them. 
-
-\def\dogotocharacter#1#2#3%
-  {\ifx#1\undefined#2\else#3\fi}
-
-\def\gotobegincharacter%
-  {\hbox
-     {\dogotocharacter\blacktriangleleft
-        {\setbox0=\hbox{$\triangleleft$}%
-         \vrule\!!width.085ex\!!height1.075\ht0\!!depth\dp0
-         \kern-.11ex\box0} 
-        {\setbox0=\hbox{$\blacktriangleleft$}%
-         \setbox2=\hbox{\vrule\!!height\ht0\!!depth\dp0\!!width.25ex}%
-         \hbox{\lower.03ex\box2\kern-.35ex\box0}}}}
-
-\def\gotoendcharacter%
-  {\hbox
-     {\dogotocharacter\blacktriangleright
-        {\setbox0=\hbox{\mathematics{\triangleright}}%
-         \copy0\kern-.11ex 
-         \vrule\!!width.085ex\!!height1.075\ht0\!!depth\dp0}  
-        {\setbox0=\hbox{$\blacktriangleright$}%
-         \setbox2=\hbox{\vrule\!!height\ht0\!!depth\dp0\!!width.25ex}%
-         \hbox{\box0\kern-.35ex\lower.03ex\box2}}}}
-
-\def\gobackwardcharacter%
-  {\mathematics{\dogotocharacter\blacktriangleright\triangleleft\blacktriangleleft}}
-
-\def\goforwardcharacter%
-  {\mathematics{\dogotocharacter\blacktriangleleft\triangleright\blacktriangleright}}
-
-\def\gonowherecharacter%
-  {\mathematics{\bullet}}
-
-\def\gotosomewherecharacter% {} permits ^\...
-  {{\hbox{\hsmash{\gobackwardcharacter}\goforwardcharacter}}}
-
-\unexpanded\def\closecharacter%
-  {\dogotocharacter\boxtimes
-     {\ruledhbox{\mathematics{\times}}}
-     {\mathematics{\boxtimes}}}
-
-\def\goforjumpcharacter%
-  {\hbox{\goforwardcharacter \kern-.5em\goforwardcharacter}}
-
-\def\gobackjumpcharacter%
-  {\hbox{\gobackwardcharacter\kern-.5em\gobackwardcharacter}}
-
-%D We have already seen some of the next values in action, 
-%D others will be applied in other modules. 
 
 %D Although not decently supported in current viewers, a 
 %D provisory hiding mechanims is implemented. Areas marked as
@@ -338,14 +288,23 @@
    \ifnum\normalmonth<10 0\fi\the\normalmonth
    \ifnum\normalday  <10 0\fi\the\normalday}
 
-\stelinteractiein
+% happens in core-fld 
+%
+% \definereference [AtOpenInitializeForm] [\v!geen] 
+
+\stelinteractiein % start fit page and reset form 
   [\c!status=\v!stop,
    \c!pagina=\v!nee,
+  %\c!openactie={\v!eerstepagina,AtOpenInitializeForm},
+   \c!openactie={\v!eerstepagina,\v!ResetForm},
+   \c!sluitactie=,
+   \c!scherm=\v!passend,
    \c!menu=\v!uit,
    \c!letter=\v!vet,
    \c!strut=\v!ja,
    \c!kleur=interactioncolor,
    \c!contrastkleur=interactioncontrastcolor,  
+   \c!symboolset=,
    \c!breedte=1em,
    \c!hoogte=\!!zeropoint,
    \c!diepte=\!!zeropoint,
@@ -357,4 +316,3 @@
 \protect 
 
 \endinput 
-

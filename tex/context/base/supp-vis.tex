@@ -54,11 +54,15 @@
 %D commands in the margin, use bit more advanced way of
 %D numbering, and typeset the source in \TEX nicolored
 %D verbatim. Sorry for this inconvenience.\fi 
-
-%D This module is still in development. Depending on my 
-%D personal need and those of whoever uses it, the macros will
-%D be improved in terms of visualization, efficiency and 
-%D compatibility.  
+%D 
+%D Depending on my personal needs and those of whoever uses it,
+%D the macros will be improved in terms of visualization,
+%D efficiency and compatibility. These rather low level
+%D visualization macros are supplemented by ones that can
+%D visualize baselines, the page layout and whatever deserves
+%D attention. Most of those macros can be found in \type
+%D {core-vis} and other core modules. Their integration in
+%D \CONTEXT\ prohibits generic applications. 
 
 \ifx \undefined \writestatus \input supp-mis.tex \fi
 
@@ -86,9 +90,11 @@
 
 \unprotect
 
+\let\visualvrule\vrule
+\let\visualhrule\hrule
+
 %D \macros
 %D   {dontinterfere}
-%D   {}
 %D
 %D Indentation, left and/or right skips, redefinition of
 %D \type{\par} and assignments to \type{\everypar} can lead to
@@ -106,7 +112,6 @@
 
 %D \macros
 %D   {dontcomplain}
-%D   {}
 %D
 %D In this module we do a lot of box manipulations. Because we
 %D don't want to be confronted with to many over- and underfull
@@ -120,7 +125,6 @@
 
 %D \macros
 %D   {normaloffinterlineskip}
-%D   {}
 %D
 %D The next hack is needed because in \CONTEXT\ we redefine 
 %D \type{\offinterlineskip}.  
@@ -132,7 +136,6 @@
 %D \macros
 %D   {normalhbox,
 %D    normalvbox,normalvtop}
-%D   {}
 %D
 %D There are three types of boxes, one horizontal and two
 %D vertical in nature. As we will see later on, all three types
@@ -148,7 +151,6 @@
 %D \macros
 %D   {normalhskip,
 %D    normalvskip}
-%D   {}
 %D
 %D Next come the flexible skips, which come in two flavors
 %D too. Like boxes these are handled with \TEX\ primitives.
@@ -159,7 +161,6 @@
 %D \macros
 %D   {normalpenalty,
 %D    normalkern}
-%D   {}
 %D
 %D Both penalties and kerns are taken care of by mode sensitive
 %D primitives. This means that when making them visible, we
@@ -171,7 +172,6 @@
 %D \macros
 %D   {normalhglue,
 %D    normalvglue}
-%D   {}
 %D
 %D Glues on the other hand are macro's defined in \PLAIN\ \TEX.
 %D As we will see, their definitions make the implementation of
@@ -183,7 +183,6 @@
 %D \macros
 %D   {normalmkern,
 %D    normalmskip}
-%D   {}
 %D
 %D Math mode has its own spacing primitives, preceded by
 %D \type{m}. Due to the relation with the current font and the
@@ -191,13 +190,12 @@
 %D with other dimensions. As a result, the visual appearance
 %D of these primitives is kept primitive too.
 
-\let\normalmkern    = \mkern
-\let\normalmskip    = \mskip
+\let\normalmkern = \mkern
+\let\normalmskip = \mskip
 
 %D \macros
 %D   {hfilneg,
 %D    vfilneg}
-%D   {}
 %D
 %D Fills can be made visible quite easy. We only need some
 %D additional negation macros. Because \PLAIN\ \TEX\ only
@@ -213,22 +211,20 @@
 %D \macros
 %D   {normalhss,normalhfil,normalhfill,
 %D    normalvss,normalvfil,normalvfill}
-%D   {}
 %D
 %D The positive stretch primitives are used independant and in
 %D combination with \type{\leaders}.
 
-\let\normalhss      = \hss
-\let\normalhfil     = \hfil
-\let\normalhfill    = \hfill
-\let\normalvss      = \vss
-\let\normalvfil     = \vfil
-\let\normalvfill    = \vfill
+\let\normalhss   = \hss
+\let\normalhfil  = \hfil
+\let\normalhfill = \hfill
+\let\normalvss   = \vss
+\let\normalvfil  = \vfil
+\let\normalvfill = \vfill
 
 %D \macros
 %D   {normalhfilneg,normalhfillneg,
 %D    normalvfilneg,normalvfillneg}
-%D   {}
 %D
 %D Keep in mind that both \type{\hfillneg} and \type{\vfillneg}
 %D are not part of \PLAIN\ \TEX\ and therefore not documented
@@ -251,7 +247,6 @@
 
 %D \macros
 %D   {makeruledbox}
-%D   {}
 %D
 %D Ruled boxes can be typeset is many ways. Here we present
 %D just one alternative. This implementation may be a little 
@@ -264,8 +259,7 @@
 
 %D \macros
 %D   {baselinerule,baselinefill}
-%D   {}
-%D
+%D  
 %D We can make the baseline of a box visible, both dashed and
 %D as a rule. The line is drawn on top of the baseline. All 
 %D we have to say is:
@@ -283,8 +277,7 @@
 
 %D \macros
 %D   {iftoprule,ifbottomrule,ifleftrule,ifrightrule}
-%D   {}
-%D
+%D  
 %D Rules can be turned on and off, but by default we have:
 %D
 %D \starttypen
@@ -296,15 +289,14 @@
 %D
 %D As we see below:
 
-\newif\iftoprule       \topruletrue
-\newif\ifbottomrule    \bottomruletrue
-\newif\ifleftrule      \leftruletrue
-\newif\ifrightrule     \rightruletrue
+\newif\iftoprule     \topruletrue
+\newif\ifbottomrule  \bottomruletrue
+\newif\ifleftrule    \leftruletrue
+\newif\ifrightrule   \rightruletrue
 
 %D \macros
 %D   {boxrulewidth}
-%D   {}
-%D
+%D  
 %D The width in the surrounding rules can be specified by
 %D assigning an apropriate value to the dimension used. This
 %D module defaults the width to:
@@ -344,12 +336,12 @@
    \setbox\scratchbox=\normalvbox
      {\dontcomplain
       \normaloffinterlineskip
-      \hrule
+      \visualhrule
         \!!height\boxrulewidth
         \iftoprule\else\!!width\!!zeropoint\fi
       \normalvskip-\boxrulewidth
       \normalhbox to \ruledwidth
-        {\vrule
+        {\visualvrule
            \!!height\ruledheight
            \!!depth\ruleddepth
            \!!width\ifleftrule\else0\fi\boxrulewidth
@@ -361,22 +353,22 @@
            \fi
            \cleaders
              \ifbaselinefill
-               \hrule
+               \visualhrule
                  \!!height\boxrulewidth
              \else
                \normalhbox
                  {\normalhskip2.5\boxrulewidth
-                  \vrule
+                  \visualvrule
                     \!!height\boxrulewidth
                     \!!width5\boxrulewidth
                   \normalhskip2.5\boxrulewidth}%
              \fi
          \fi
          \normalhfill
-         \vrule
+         \visualvrule
            \!!width\ifrightrule\else0\fi\boxrulewidth}%
        \normalvskip-\boxrulewidth
-       \hrule
+       \visualhrule
          \!!height\boxrulewidth
          \ifbottomrule\else\!!width\!!zeropoint\fi}%
    \wd#1=\!!zeropoint
@@ -397,7 +389,6 @@
 %D   {ruledhbox,
 %D    ruledvbox,ruledvtop,
 %D    ruledvcenter}
-%D   {}
 %D 
 %D These macro's can be used instead of \type{\hbox},
 %D \type{\vbox}, \type{\vtop} and, when in math mode,
@@ -485,7 +476,6 @@
 %D \macros
 %D   {ruledbox,
 %D    setruledbox}
-%D   {}
 %D
 %D Of the next two macros the first can be used to precede a
 %D box of ones own choice. One can for instance prefix boxes
@@ -516,7 +506,6 @@
 %D   {investigateskip,
 %D    investigatecount,
 %D    investigatemuskip}
-%D   {}
 %D
 %D Before we meet the visualizing macro's, we first implement
 %D ourselves some handy utility ones. Just for the sake of
@@ -612,7 +601,6 @@
 
 %D \macros
 %D   {ifcenteredvcue,normalvcue}
-%D   {}
 %D
 %D Depending on the context, one can force visual vertical cues 
 %D being centered along \type{\hsize} or being put at the 
@@ -666,7 +654,6 @@
 
 %D \macros
 %D   {testrulewidth}
-%D   {}
 %D
 %D We build our visual cues out of rules. At the cost of a much
 %D bigger \DVI\ file, this is to be prefered over using
@@ -686,7 +673,6 @@
 
 %D \macros
 %D   {visiblestretch}
-%D   {}
 %D 
 %D A second variable is introduced because of the stretch
 %D components of \SKIPS. At the cost of some accuracy we can
@@ -703,7 +689,6 @@
 %D   {ruledhss,
 %D    ruledhfil,ruledhfilneg,
 %D    ruledhfill,ruledhfillneg}
-%D   {}
 %D
 %D We start with the easiest part, the fills. The scheme we
 %D follow is {\em visual filling -- going back -- normal
@@ -715,7 +700,7 @@
 
 \def\setvisiblehfilbox#1\to#2#3#4%
   {\setbox#1=\normalhbox
-     {\vrule
+     {\visualvrule
         \!!width#2\testrulewidth
         \!!height#3\testrulewidth
         \!!depth#4\testrulewidth}%
@@ -819,14 +804,13 @@
 %D   {ruledvss,
 %D    ruledvfil,ruledvfilneg,
 %D    ruledvfill,ruledvfillneg}
-%D   {}
 %D
 %D The vertical mode commands adopt the same visualization
 %D scheme, but are implemented in a slightly different way.
 
 \def\setvisiblevfilbox#1\to#2#3#4%
   {\setbox#1=\normalhbox
-     {\vrule
+     {\visualvrule
         \!!width#2\testrulewidth
         \!!height#3\testrulewidth
         \!!depth#4\testrulewidth}%
@@ -905,7 +889,6 @@
 
 %D \macros
 %D   {ruledhskip}
-%D   {}
 %D
 %D Skips differ from kerns in two important aspects:
 %D
@@ -949,17 +932,17 @@
    \ifzero
      \setbox0=\normalhbox
        {\normalhskip-\testrulewidth
-        \vrule
+        \visualvrule
           \!!width4\testrulewidth
           \!!height16\testrulewidth
           \!!depth16\testrulewidth}%
    \else
      \setbox0=\normalhbox to \ifnegative-\fi\scratchskip
-       {\vrule
+       {\visualvrule
           \!!width2\testrulewidth
           \ifnegative\!!depth\else\!!height\fi16\testrulewidth
         \cleaders
-          \hrule
+          \visualhrule
             \ifnegative
               \!!depth2\testrulewidth
               \!!height\!!zeropoint
@@ -974,14 +957,14 @@
           \cleaders
             \normalhbox
               {\normalhskip 2\testrulewidth
-               \vrule
+               \visualvrule
                  \!!width2\testrulewidth
                  \!!height\ifnegative-7\else9\fi\testrulewidth
                  \!!depth\ifnegative9\else-7\fi\testrulewidth
                \normalhskip 2\testrulewidth}%
             \normalhfill
         \fi
-        \vrule
+        \visualvrule
           \!!width2\testrulewidth
           \ifnegative\!!depth\else\!!height\fi16\testrulewidth}%
      \setbox0=\normalhbox
@@ -1044,7 +1027,6 @@
 
 %D \macros
 %D   {ruledvskip}
-%D   {}
 %D
 %D We are less fortunate when implementing the vertical skips.
 %D This is a direct result of interference between the boxes that
@@ -1086,13 +1068,13 @@
    \investigateskip\scratchskip
    \ifzero
      \setbox0=\normalvcue
-       {\vrule
+       {\visualvrule
           \!!width32\testrulewidth
           \!!height2\testrulewidth
           \!!depth2\testrulewidth}%
    \else
      \setbox0=\normalvbox to \ifnegative-\fi\scratchskip
-       {\hrule
+       {\visualhrule
           \!!width16\testrulewidth
           \!!height2\testrulewidth
         \ifflexible
@@ -1101,7 +1083,7 @@
               {\normalhss
                \normalvbox
                  {\normalvskip 2\testrulewidth
-                  \hrule
+                  \visualhrule
                   \!!width2\testrulewidth
                   \!!height2\testrulewidth
                   \normalvskip 2\testrulewidth}%
@@ -1110,11 +1092,11 @@
         \else
           \normalvfill
         \fi
-        \hrule
+        \visualhrule
           \!!width16\testrulewidth
           \!!height2\testrulewidth}%
      \setbox2=\normalvbox to \ht0
-       {\hrule
+       {\visualhrule
           \!!width2\testrulewidth
           \!!height\ht0}%
      \ifnegative
@@ -1166,7 +1148,6 @@
 
 %D \macros
 %D   {ruledkern}
-%D   {}
 %D
 %D The macros that implement the kerns are a bit more
 %D complicated than needed, because they also serve the
@@ -1203,7 +1184,7 @@
    \boxrulewidth=2\testrulewidth
    \ifzero
      \setbox0=\ruledhbox to 8\testrulewidth
-       {\vrule
+       {\visualvrule
           \!!width\!!zeropoint
           \!!height16\testrulewidth
           \!!depth16\testrulewidth}%
@@ -1211,7 +1192,7 @@
        {\normalhskip-4\testrulewidth\box0}%
    \else
      \setbox0=\ruledhbox to \ifnegative-\fi\scratchskip
-       {\vrule
+       {\visualvrule
           \!!width\!!zeropoint
           \ifnegative\!!depth\else\!!height\fi16\testrulewidth
         \ifflexible
@@ -1219,7 +1200,7 @@
           \cleaders
             \normalhbox
               {\normalhskip 2\testrulewidth
-               \vrule
+               \visualvrule
                  \!!width2\testrulewidth
                  \!!height\ifnegative-7\else9\fi\testrulewidth
                  \!!depth\ifnegative9\else-7\fi\testrulewidth
@@ -1279,7 +1260,7 @@
    \boxrulewidth=2\testrulewidth
    \ifzero
      \setbox0=\ruledhbox to 32\testrulewidth
-       {\vrule
+       {\visualvrule
           \!!width\!!zeropoint
           \!!height4\testrulewidth
           \!!depth4\testrulewidth}%
@@ -1292,14 +1273,14 @@
               {\normalhss
                \normalvbox
                  {\normalvskip 2\testrulewidth
-                  \hrule
+                  \visualhrule
                     \!!width2\testrulewidth
                     \!!height2\testrulewidth
                   \normalvskip 2\testrulewidth}%
                \normalhss}%
             \normalvfill
         \else
-          \vrule
+          \visualvrule
             \!!width\!!zeropoint
             \!!height\ifnegative-\fi\scratchskip
           \normalhfill
@@ -1351,7 +1332,6 @@
 
 %D \macros
 %D   {ruledhglue,ruledvglue}
-%D   {}
 %D
 %D The non-primitive glue commands are treated as kerns with
 %D stretch. This stretch is presented as a dashed line. I
@@ -1376,7 +1356,7 @@
 \def\doruledhglue%
   {\leavevmode
    \scratchcounter=\spacefactor
-   \vrule\!!width\!!zeropoint
+   \visualvrule\!!width\!!zeropoint
    \normalpenalty\!!tenthousand
    \ruledhkern\normalhskip\scratchskip
    \spacefactor=\scratchcounter
@@ -1406,7 +1386,7 @@
 \def\doruledvglue%
   {\endgraf % \par
    \nextdepth=\prevdepth 
-   \hrule\!!height\!!zeropoint
+   \visualhrule\!!height\!!zeropoint
    \normalpenalty\!!tenthousand
    \ruledvkern\normalvskip\scratchskip
    \prevdepth=\nextdepth
@@ -1418,7 +1398,6 @@
 
 %D \macros
 %D   {ruledmkern,ruledmskip}
-%D   {}
 %D
 %D Mathematical kerns and skips are specified in mu. This
 %D font related unit is incompatible with those of \DIMENSIONS\
@@ -1432,24 +1411,24 @@
    \setbox0=\normalhbox
      {$\normalmkern\ifnegative-\fi\scratchmuskip$}%
    \setbox0=\normalhbox to \wd0
-     {\vrule
+     {\visualvrule
         \!!height16\testrulewidth
         \!!depth16\testrulewidth
         \!!width\testrulewidth
       \leaders
-        \hrule
+        \visualhrule
           \!!height\ifpositive16\else-14\fi\testrulewidth
           \!!depth\ifpositive-14\else16\fi\testrulewidth
         \normalhfill
       \ifflexible
         \normalhskip-\wd0
         \leaders
-          \hrule
+          \visualhrule
             \!!height\testrulewidth
             \!!depth\testrulewidth
           \normalhfill
       \fi
-      \vrule
+      \visualvrule
         \!!height16\testrulewidth
         \!!depth16\testrulewidth
         \!!width\testrulewidth}%
@@ -1501,7 +1480,6 @@
 
 %D \macros
 %D   {penalty}
-%D   {}
 %D
 %D After presenting fills, skip, kerns and glue we've come to
 %D see penalties. In the first implementation --- most of the
@@ -1589,17 +1567,17 @@
         \ifnum#2<0
           \normalhskip-\dimen0
           \normalhskip-2\testrulewidth
-          \vrule
+          \visualvrule
             \!!width2\testrulewidth
             \!!height#3\testrulewidth
             \!!depth#4\testrulewidth
         \fi
-        \vrule
+        \visualvrule
           \!!width\dimen0
           \!!height#5\testrulewidth
           \!!depth#6\testrulewidth
         \ifnum#2>0
-          \vrule
+          \visualvrule
             \!!width2\testrulewidth
             \!!height#3\testrulewidth
             \!!depth#4\testrulewidth
@@ -1615,7 +1593,7 @@
    \boxrulewidth=\testrulewidth
    \setbox0=\ruledhbox to 8\testrulewidth
      {\ifnegative\else\normalhss\fi
-      \vrule
+      \visualvrule
         \!!depth8\testrulewidth
         \!!width\ifzero0\else4\fi\testrulewidth
       \ifpositive\else\normalhss\fi}%
@@ -1667,11 +1645,11 @@
      \testrulewidth=2\testrulewidth
      \boxrulewidth=\testrulewidth
      \setbox0=\ruledhbox
-       {\vrule
+       {\visualvrule
           \!!height4\testrulewidth
           \!!depth4\testrulewidth
           \!!width\!!zeropoint
-        \vrule
+        \visualvrule
           \!!height\ifnegative.5\else4\fi\testrulewidth
           \!!depth\ifpositive.5\else4\fi\testrulewidth
           \!!width8\testrulewidth}%
@@ -1719,7 +1697,6 @@
 %D    showboxes,dontshowboxes,
 %D    showskips,dontshowskips,
 %D    showpenalties,dontshowpenalties}
-%D   {}
 %D
 %D For those who want to manipulate the visual cues in detail,
 %D we have grouped them.
@@ -1787,8 +1764,7 @@
 
 %D \macros
 %D   {showingcomposition,
-%D    showcomposition,dontshowcomposition,}
-%D   {}
+%D    showcomposition,dontshowcomposition}
 %D
 %D All these nice options come together in two macros. The
 %D first one turns the options on, the second turnes them off.
@@ -1828,7 +1804,6 @@
 %D \macros
 %D   {showmakeup,
 %D    defaulttestrulewidth}
-%D   {}
 %D
 %D Just to make things even more easy, we have defined:
 %D

@@ -1,0 +1,75 @@
+\unprotect
+
+\newcounter\CurrentArgument 
+\newif\ifInsideArgument
+
+\def\TypeSetCharacteristic%
+  {\bgroup
+   \doglobal\newcounter\CurrentArgument % also every \setup
+   \global\InsideArgumentfalse
+   \def\\{\par\egroup}
+   {\bs\translate[nl=doel,de=Zweck,en=purpose]\unskip}\par
+   \nobreak
+   \hangindent1em
+   \hangafter-100
+   \ignorespaces}
+
+\def\ShowArgument%
+  {\InsideArgumentfalse
+   \doglobal\increment\CurrentArgument
+   {\bf..\CurrentArgument..}}
+
+\def\DummyArgument%
+  {\InsideArgumentfalse
+   \doglobal\increment\CurrentArgument}
+
+\def\doTypeSetParameter#1\\%
+  {\bgroup
+   \ifInsideArgument \else
+     \InsideArgumenttrue
+     \doglobal\increment\CurrentArgument
+     \blanko
+   \fi
+   {\bf#1\unskip}\par
+   \nobreak
+   \hangindent1em
+   \hangafter-100
+   \def\\{\par\egroup\protect}%
+   \ignorespaces}
+
+\def\TypeSetParameter%
+  {\unprotect
+   \doTypeSetParameter}
+
+\def\TypeSetArgument%
+  {\InsideArgumentfalse
+   \doglobal\increment\CurrentArgument
+   \blanko
+   \bgroup
+   {\bf\ifv!numberingdots!.\CurrentArgument.\else...\fi}\par
+   \nobreak
+   \hangindent1em
+   \hangafter-100
+   \def\\{\par\egroup}%
+   \ignorespaces}
+
+\def\TypeSetInheritance%
+  {\TypeSetArgument % we can use label, message, interface ...
+   \indent\getmessage{setup}{see} \tttf\texescape\ignorespaces}
+ 
+\def\TypeSetValue#1%
+  {\unprotect{\tttf#1}\protect}
+
+\startcommands           dutch            english           german 
+
+  TypeSetCharacteristic: functie          function          funktion
+       TypeSetParameter: parameter        parameter         parameter
+           ShowArgument: toonargument     showargument      umargument
+          DummyAgrument: dummyargument    dummyargument     dummyargument
+        TypeSetArgument: argument         argument          argument
+     TypeSetInheritance: erfenis          inheritance       inheritance
+           TypeSetValue: waarde           value             wert
+
+\stopcommands
+
+\protect
