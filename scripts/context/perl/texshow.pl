@@ -273,7 +273,7 @@ sub change_part {
 sub setups_found {
   # find the setup files
   my ($primary) = @_;
-  $setup_path = `kpsewhich --format="other text files" --progname=context cont-en.xml` ;
+  $setup_path = `kpsewhich --progname=context cont-en.xml` ;
   chomp $setup_path;
   show ('debug', "path = '$setup_path'");
   if ($setup_path) {

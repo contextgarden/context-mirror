@@ -206,6 +206,11 @@
 \long\def\dostarttypescriptC#1\stoptypescript
   {}
 
+% not faster (and demands leading spaces at each line)
+%
+% \def\dostarttypescriptC
+%   {\bgroup \catcode32=\@@comment \let\stoptypescript\egroup}
+
 \def\stoptypescript
   {\popmacro\fontclass}
 

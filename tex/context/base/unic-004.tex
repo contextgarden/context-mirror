@@ -15,7 +15,7 @@
 
 \startunicodevector 4
   \expandafter\strippedcsname
-  \ifcase\numexpr(#1+1)             % space needed, terminates expr
+  \ifcase\numexpr(#1)               % space needed, terminates expr
     \cyrillicEgrave             \or % 04-00 \uchar0{200} aswell
     \cyrillicYO                 \or % 04-01 Capital YO (or IO)
     \cyrillicDJE                \or % 04-02
@@ -270,3 +270,21 @@
 \stopunicodevector
 
 \protect \endinput
+
+% \enableregime[utf]
+%
+% \definetypeface [russian] [rm] [serif] [computer-modern] [default] [encoding=t2a]
+%
+% \setupbodyfont[russian]
+%
+% \starttext
+%
+% \startbuffer
+% Мама и Папа % Some russian characters
+% \stopbuffer
+%
+% \chardef\utfunicodetracer=0 \blank \getbuffer \blank
+% \chardef\utfunicodetracer=2 \blank \getbuffer \blank
+% \chardef\utfunicodetracer=7 \blank \getbuffer \blank
+%
+% \stoptext

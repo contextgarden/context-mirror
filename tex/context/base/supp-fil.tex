@@ -298,34 +298,38 @@
 
 \def\doreadfile#1#2#3#4%
   {\sanitizefilename#2\to\readfilename
-   \let\trackedfilename\readfilename
-   \ifconditional\trackfilenames
-     \doifundefinedelse{fn..\trackedfilename}\donetrue\donefalse
+   \ifx\readfilename\empty
+     % silently ignore
    \else
-     \donetrue
-   \fi
-   \ifdone
-     \checkfilename\readfilename
-     \ifcase\kindoffile
-       \iftracefiles\writestatus\m!systems{searching for \readfilename\space on #1}\fi
-       % not a full path or url, check for existence
-       \doifelsenothing{#1}
-         {\def\next{\redoreadfile\readfilename{#3}{#4}}}%
-         {\def\next{\redoreadfile{\pathplusfile{#1}{\readfilename}}{#3}{#4}}}%
+     \let\trackedfilename\readfilename
+     \ifconditional\trackfilenames
+       \doifundefinedelse{fn..\trackedfilename}\donetrue\donefalse
      \else
-       % a full path or url, no further checking done
-       \doiffileexistselse\readfilename
-         {\iftracefiles\writestatus\m!systems{located \readfilename}\fi
-          \def\next{#3\dodoreadfile}}%
-         {\iftracefiles\writestatus\m!systems{not found \readfilename}\fi
-          \def\next{#4}}%
+       \donetrue
      \fi
-   \else
-     \edef\readfilename{\getvalue{fn..\readfilename}}%
-     \iftracefiles\writestatus\m!systems{already located \readfilename}\fi
-     \def\next{#3\dodoreadfile}%
-   \fi
-   \next}
+     \ifdone
+       \checkfilename\readfilename
+       \ifcase\kindoffile
+         \iftracefiles\writestatus\m!systems{searching for \readfilename\space on #1}\fi
+         % not a full path or url, check for existence
+         \doifelsenothing{#1}
+           {\def\next{\redoreadfile\readfilename{#3}{#4}}}%
+           {\def\next{\redoreadfile{\pathplusfile{#1}{\readfilename}}{#3}{#4}}}%
+       \else
+         % a full path or url, no further checking done
+         \doiffileexistselse\readfilename
+           {\iftracefiles\writestatus\m!systems{located \readfilename}\fi
+            \def\next{#3\dodoreadfile}}%
+           {\iftracefiles\writestatus\m!systems{not found \readfilename}\fi
+            \def\next{#4}}%
+       \fi
+     \else
+       \edef\readfilename{\getvalue{fn..\readfilename}}%
+       \iftracefiles\writestatus\m!systems{already located \readfilename}\fi
+       \def\next{#3\dodoreadfile}%
+     \fi
+     \expandafter\next
+   \fi}
 
 \def\redoreadfile#1#2#3%
   {\doiffileexistselse{#1}%

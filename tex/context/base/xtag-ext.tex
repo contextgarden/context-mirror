@@ -233,6 +233,9 @@
 \gdef\eraseXMLelement#1%
   {\dodoglobal\letbeundefined{\@@XMLsave:#1}}
 
+\gdef\geraseXMLelement
+  {\doglobal\eraseXMLelement}
+
 \gdef\processXMLelement#1%
   {\bgroup
    \enableXMLelements
