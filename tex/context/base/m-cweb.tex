@@ -1,5 +1,5 @@
 %D \module
-%D   [       file=m-cweb,
+%D   [       filefile=m-cweb,
 %D        version=1997.01.15,
 %D          title=\CONTEXT\ Extra Modules,
 %D       subtitle=\CWEB\ Pretty Printing Macros,
@@ -71,10 +71,10 @@
 %D Instead of using \type{\def} and \type{\let} for defining
 %D macros, we use:
 %D
-%D \starttypen
+%D \starttyping
 %D \defCEBmacro arguments {meaning}
 %D \letCEBmacro arguments {meaning}
-%D \stoptypen
+%D \stoptyping
 %D
 %D \CWEB files contain implicit calls to macros that generate
 %D the table of contents, the lists of sections and the index.
@@ -83,9 +83,9 @@
 %D ones. The next macro is used for defining these obsolete
 %D \CWEB\ macros. The dummies take care of arguments.
 %D
-%D \starttypen
+%D \starttyping
 %D \defCEBdummy arguments {meaning}
-%D \stoptypen
+%D \stoptyping
 %D
 %D The list of \CWEB\ specific macro names is saved in a
 %D \TOKENLIST. This serves two purposes. First it enables us to
@@ -98,10 +98,10 @@
 
 %D Activating and deactivating is done by means of:
 %D
-%D \starttypen
+%D \starttyping
 %D \activateCWEB
 %D \deactivateCWEB
-%D \stoptypen
+%D \stoptyping
 %D
 %D Which are implemented as:
 
@@ -638,8 +638,8 @@
 
 \unprotect
 
-\def\theCWEByskip {\blanko[\v!klein]}
-\def\theCWEBvskip {\blanko[\v!groot]}
+\def\theCWEByskip {\blank[\v!small]}
+\def\theCWEBvskip {\blank[\v!big]}
 
 \protect
 
@@ -1043,7 +1043,7 @@
       \def\[####1]{####1}%
       \xdef\CWEBreference{##1}%
       \egroup
-      \CWEBcomma{\localcolortrue\naar{\donottest{##1}}[web:\CWEBreference]}}%
+      \CWEBcomma{\localcolortrue\goto{\donottest{##1}}[web:\CWEBreference]}}%
    \processlist{(}{)}{,}\docommando(#1)
    \egroup}
 
@@ -1056,13 +1056,13 @@
      \def\next##1\ET##2##3.%
        {\processCWEBsectionnumbers[##1]%
         \if##2s%
-          {, and~\naar{##3}[web:##3]}%
+          {, and~\goto{##3}[web:##3]}%
         \else
-          { and~\naar{##2##3}[web:##2##3]}%
+          { and~\goto{##2##3}[web:##2##3]}%
         \fi}%
       \next#1.%
    \else
-     \naar{#1}[web:#1]%
+     \goto{#1}[web:#1]%
    \fi
    \afterCWEBnote % inside group!
    \egroup}
@@ -1172,10 +1172,10 @@
 \def\gotoCWEBsection#1[#2]%
   {\iflinktoCWEBfile
      \bgroup
-       \setupinteraction[\c!kleur=,\c!letter=]%
+       \setupinteraction[\c!color=,\c!style=]%
        \let\savedreferenceprefix=\referenceprefix
        \localcolortrue
-       \naar{#1}[\otherCWEBfile::\savedreferenceprefix web:#2]%
+       \goto{#1}[\otherCWEBfile::\savedreferenceprefix web:#2]%
      \egroup
    \else
      #1%
@@ -1355,11 +1355,11 @@
    \line{\consetup{#2}#1
    \rm
    \leaders\hbox to .5em{.\hfil}\hfil\
-   {\localcolortrue\naar{#3}[web:#3]}%  below: \gotorealpage ? should be changed
+   {\localcolortrue\goto{#3}[web:#3]}%  below: \gotorealpage ? should be changed
    \hbox to3em{\localcolortrue\hss\gotorealpage{}{}{#5}{\translatednumber[#4]\presetgoto}}}}
 
 %D A last hack, needed because a file can overload of the
-%D above. (Some day: a check like \ifx#1\CWEBdefined.)
+%D above. (Some day: a check like \type{\ifx#1\CWEBdefined}.)
 
 \def\outer#1#2%
   {\ifx#2\undefined

@@ -1,5 +1,5 @@
 %D \module
-%D   [       file=m-visual,
+%D   [       filefile=m-visual,
 %D        version=2000.01.10,
 %D          title=\CONTEXT\ Extra Modules,
 %D       subtitle=Visualization and Faking,
@@ -162,26 +162,26 @@
        \hss}
      \endgraf
    \fi
-   \getvalue{\e!plaats\v!figuur}
+   \getvalue{\e!place\v!figure}
      [#1][#2]%
      {\freezerandomseed
       \let\endstrut\relax
       \let\begstrut\relax
-      \doifinsetelse{#1}{\v!links,\v!rechts}
+      \doifinsetelse{#1}{\v!left,\v!right}
         {\fakewords{2}{4}}
         {\fakewords{4}{10}}}%
      {\getrandomdimen{\dimen0}{#3}{#4}%
       \getrandomdimen{\dimen2}{#5}{#6}%
-      \doifinset{#1}{\v!links,\v!rechts}
+      \doifinset{#1}{\v!left,\v!right}
         {\dimen0=.75\dimen0
          \ifdim\dimen0>.6\hsize \dimen0=.5\hsize\fi
          \ifdim\dimen0<.3\hsize \dimen0=.3\hsize\fi}%
       \framed
-        [\c!breedte=\dimen0,
-         \c!hoogte=\dimen2,
-         \c!kader=\ifincolor\v!uit\else\v!aan\fi,
-         \c!achtergrond=\v!kleur,
-         \c!achtergrondkleur=fakeparindentcolor]
+        [\c!width=\dimen0,
+         \c!height=\dimen2,
+         \c!frame=\ifincolor\v!off\else\v!on\fi,
+         \c!background=\v!color,
+         \c!backgroundcolor=fakeparindentcolor]
         {\bf\white#1}}%
    \defrostrandomseed}
 
@@ -209,7 +209,7 @@
      {\setbox\scratchbox=\hbox
         {\basegrid
            [\c!nx=10,\c!ny=10,\c!dx=1,\c!dy=1,
-            \c!eenheid=\bodyfontsize,#1]}%
+            \c!unit=\bodyfontsize,#1]}%
       \hbox to \zeropoint
         {\hss\lower.5\ht\scratchbox\box\scratchbox\hss}%
       \hbox to \zeropoint
@@ -219,14 +219,14 @@
 
 \def\bodyfontgrid
   {\hbox
-     {{\linewidth.1pt\yellow\smashedgrid[\c!nx=30,\c!ny=30,\c!schaal=.3333]}%
-      {\linewidth.2pt\green \smashedgrid[\c!nx=20,\c!ny=20,\c!schaal=.5]}%
-      {\linewidth.3pt\red   \smashedgrid[\c!nx=10,\c!ny=10,\c!schaal=1]}}}
+     {{\linewidth.1pt\yellow\smashedgrid[\c!nx=30,\c!ny=30,\c!scale=.3333]}%
+      {\linewidth.2pt\green \smashedgrid[\c!nx=20,\c!ny=20,\c!scale=.5]}%
+      {\linewidth.3pt\red   \smashedgrid[\c!nx=10,\c!ny=10,\c!scale=1]}}}
 
 \def\emexgrid
   {\hbox
-     {{\linewidth.15pt\green\smashedgrid[\c!nx=20,\c!ny=20,\c!eenheid=ex]}%
-      {\linewidth.15pt\red  \smashedgrid[\c!nx=10,\c!ny=10,\c!eenheid=em]}}}
+     {{\linewidth.15pt\green\smashedgrid[\c!nx=20,\c!ny=20,\c!unit=ex]}%
+      {\linewidth.15pt\red  \smashedgrid[\c!nx=10,\c!ny=10,\c!unit=em]}}}
 
 %D The next few macros are not really public and kind of low
 %D level. They are obscure and a bit perverse.

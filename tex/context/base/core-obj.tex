@@ -1,5 +1,5 @@
 %D \module
-%D   [       file=core-obj,
+%D   [       filefile=core-obj,
 %D        version=1998.01.15,
 %D          title=\CONTEXT\ Core Macros,
 %D       subtitle=Object Handling,
@@ -71,10 +71,10 @@
 %D application can save lots of bytes, while the latter use is
 %D more a necessity than byte saving.
 %D
-%D \starttypen
+%D \starttyping
 %D \setobject{class}{name}\somebox{}
 %D \getobject{class}{name}
-%D \stoptypen
+%D \stoptyping
 %D
 %D Here \type{\somebox} can be whatever box specification suits
 %D \TEX. We save the dimensions of an object, although some
@@ -219,9 +219,9 @@
 
 %D If needed one can ask for the dimensions of an object with:
 %D
-%D \starttypen
+%D \starttyping
 %D \getobjectdimensions{class}{name}
-%D \stoptypen
+%D \stoptyping
 %D
 %D The results are reported in \type {\objectwidth}, \type
 %D {\objectheight} and \type {\objectdepth}.
@@ -252,10 +252,10 @@
 %D defined before they are used, but forward referencing
 %D sometimes occurs.
 %D
-%D \starttypen
+%D \starttyping
 %D \dosetobjectreference {class} {identifier} {reference value} {page}
 %D \dogetobjectreference {class} {identifier} \csname
-%D \stoptypen
+%D \stoptyping
 %D
 %D These commands are to be called by the \type{\startobject},
 %D \type{\stopobject} and \type{\insertobject} specials.
@@ -332,10 +332,10 @@
 %D To prevent redundant definition of objects, one can use
 %D the next tests:
 %D
-%D \starttypen
+%D \starttyping
 %D \doifobjectfoundelse{class}{object}{do then}{do else}
 %D \doifobjectreferencefoundelse{class}{object}{do then}{do else}
-%D \stoptypen
+%D \stoptyping
 
 \beginTEX
 
@@ -382,9 +382,9 @@
 %D reuse when possible. To enable mechanisms to determine
 %D what method to use, we provide:
 %D
-%D \starttypen
+%D \starttyping
 %D \doifobjectssupportedelse{true action}{false action}
-%D \stoptypen
+%D \stoptyping
 %D
 %D As we can see, currently objects depend on the special
 %D driver.

@@ -109,15 +109,22 @@ class Commands
 
     def findfile
 
-        report('locating file in texmf tree (> used by kpse)')
+        report('locating file in texmf tree')
+
+        # ! not in tree
+        # ? fuzzy
+        # . in tree
+        # > in tree and used
 
         if filename = @commandline.argument('first') then
             if filename && ! filename.empty? then
                 report
-                used = kpsefile(filename)
+                used = kpsefile(filename) || pathfile(filename)
                 if paths = texmfroots then
+                    found = false
                     paths.each do |p|
                         if files = texmffiles(p,filename) then
+                            found = true
                             files.each do |f|
                                 # unreadable: report("#{if f == used then '>' else '.' end} #{f}")
                                 if f == used then
@@ -128,6 +135,7 @@ class Commands
                             end
                         end
                     end
+                    report("! #{used}") unless found
                 elsif used then
                     report("? #{used}")
                 else
@@ -397,7 +405,29 @@ class Commands
         return nil
     end
 
+    def pathfile(filename)
+        used = nil
+        begin
+            if ! filename || filename.empty? then
+                return nil
+            else
+                ENV['PATH'].split(File::PATH_SEPARATOR).each do |path|
+                    if FileTest.file?(File.join(path,filename)) then
+                        used = File.join(path,filename)
+                        break
+                    end
+                end
+            end
+        rescue
+            used = nil
+        else
+            used = nil if used && used.empty?
+        end
+        return used
+    end
+
     def kpsefile(filename)
+        used = nil
         begin
             if ! filename || filename.empty? then
                 return nil

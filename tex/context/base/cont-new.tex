@@ -1,5 +1,5 @@
 %D \module
-%D   [       file=cont-new,
+%D   [       filefile=cont-new,
 %D        version=1995.10.10,
 %D          title=\CONTEXT\ Miscellaneous Macros,
 %D       subtitle=New Macros,
@@ -19,7 +19,73 @@
 
 \unprotect
 
+% \tracingall
+
 \writestatus{\m!systems}{beware: some patches loaded from cont-new.tex!}
+
+\def\outermarginwidth   {\rightorleftpageaction\rightmarginwidth   \leftmarginwidth }
+\def\innermarginwidth   {\rightorleftpageaction\leftmarginwidth    \rightmarginwidth}
+\def\outermargindistance{\rightorleftpageaction\rightmargindistance\leftmargindistance }
+\def\innermargindistance{\rightorleftpageaction\leftmargindistance \rightmargindistance}
+
+\def\outeredgewidth     {\rightorleftpageaction\rightedgewidth   \leftedgewidth }
+\def\inneredgewidth     {\rightorleftpageaction\leftedgewidth    \rightedgewidth}
+\def\outeredgedistance  {\rightorleftpageaction\rightedgedistance\leftedgedistance }
+\def\inneredgedistance  {\rightorleftpageaction\leftedgedistance \rightedgedistance}
+
+\def\outerspacewidth    {\rightorleftpageaction\cutspace\backspace }
+\def\innerspacewidth    {\rightorleftpageaction\backspace \cutspace}
+
+\appendtoks
+  \scratchdimen\leftmarginwidth  \advance\scratchdimen\leftmargindistance  \xdef\leftmargintotal {\the\scratchdimen}%
+  \scratchdimen\rightmarginwidth \advance\scratchdimen\rightmargindistance \xdef\rightmargintotal{\the\scratchdimen}%
+  \scratchdimen\leftedgewidth    \advance\scratchdimen\leftedgedistance    \xdef\leftedgetotal   {\the\scratchdimen}%
+  \scratchdimen\rightedgewidth   \advance\scratchdimen\rightedgedistance   \xdef\rightedgetotal  {\the\scratchdimen}%
+  \scratchdimen\leftmarginwidth  \advance\scratchdimen\leftedgetotal       \xdef\leftsidetotal   {\the\scratchdimen}%
+  \scratchdimen\rightmarginwidth \advance\scratchdimen\rightedgetotal      \xdef\rightsidetotal  {\the\scratchdimen}%
+  \scratchdimen\leftmargintotal  \advance\scratchdimen\leftedgetotal       \xdef\leftcombitotal  {\the\scratchdimen}%
+  \scratchdimen\rightmargintotal \advance\scratchdimen\rightedgetotal      \xdef\rightcombitotal {\the\scratchdimen}%
+  %
+  \scratchdimen\innermarginwidth \advance\scratchdimen\innermargindistance \xdef\innermargintotal{\the\scratchdimen}%
+  \scratchdimen\outermarginwidth \advance\scratchdimen\outermargindistance \xdef\outermargintotal{\the\scratchdimen}%
+  \scratchdimen\inneredgewidth   \advance\scratchdimen\inneredgedistance   \xdef\inneredgetotal  {\the\scratchdimen}%
+  \scratchdimen\outeredgewidth   \advance\scratchdimen\outeredgedistance   \xdef\outeredgetotal  {\the\scratchdimen}%
+  \scratchdimen\innermargintotal \advance\scratchdimen\inneredgetotal      \xdef\innercombitotal {\the\scratchdimen}%
+  \scratchdimen\outermargintotal \advance\scratchdimen\outeredgetotal      \xdef\outercombitotal {\the\scratchdimen}%
+  \scratchdimen\innermarginwidth \advance\scratchdimen\inneredgetotal      \xdef\innersidetotal  {\the\scratchdimen}%
+  \scratchdimen\outermarginwidth \advance\scratchdimen\outeredgetotal      \xdef\outersidetotal  {\the\scratchdimen}%
+\to \extralayoutcalculations
+
+\appendtoks
+  \swapmacros\leftmargintotal \rightmargintotal
+  \swapmacros\leftedgetotal   \rightedgetotal
+  \swapmacros\leftsidetotal   \rightsidetotal
+  \swapmacros\leftcombitotal  \rightcombitotal
+  \swapmacros\innermargintotal\outermargintotal
+  \swapmacros\inneredgetotal  \outeredgetotal
+  \swapmacros\innercombitotal \outercombitotal
+  \swapmacros\innersidetotal  \outersidetotal
+\to \everyswapmargins
+
+% for taco: you may need to patch modules that have low level dutch
+
+\ifx\definieernummer\undefined \let\definieernummer\definenumber    \fi
+\ifx\verhoognummer  \undefined \let\verhoognummer  \incrementnumber \fi
+\ifx\verlaagnummer  \undefined \let\verhoognummer  \decrementnumber \fi
+\ifx\stelnummerin   \undefined \let\stelnummerin   \setupnumber     \fi
+
+% this will be activated when
+
+% \newinsert\thispageinsert % <- installinsertion
+
+% \def\flushatthispage
+%   {\bgroup
+%    \dowithnextbox{\insert\thispageinsert{\box\nextbox}\egroup}%
+%    \hbox}
+
+% \appendtoks
+%     \ifvoid\thispageinsert\else\hbox{\smashedbox\thispageinsert}\fi
+% \to \everyshipout
 
 % \definemarkedpage[nobackgrounds]
 % \markpage[nobackgrounds]
@@ -33,7 +99,7 @@
 \newcounter\nofmarkedpages
 
 \def\definemarkedpage[#1]%
-  {\definetwopasslist{\v!pagina:#1}}
+  {\definetwopasslist{\v!page:#1}}
 
 \def\markpage[#1]% looks very much like domarginreference and doparagraphreference
   {\iftrialtypesetting\else
@@ -41,14 +107,14 @@
      \edef\writeparref%
        {\writeutilitycommand%
           {\twopassentry%
-             {\v!pagina:#1}%
+             {\v!page:#1}%
              {\nofmarkedpages}%
              {\noexpand\realfolio}}}%
      \writeparref
    \fi}
 
 \def\doifmarkedpageelse#1%
-  {\gettwopassdatalist{\v!pagina:#1}%
+  {\gettwopassdatalist{\v!page:#1}%
    \expanded{\doifinsetelse{\realfolio}{\twopassdatalist}}}
 
 % Just a simple and fast hanger, for usage in macros.
@@ -57,12 +123,12 @@
   {\dodoubleempty\getparameters[\??ha]}
 
 \setuphanging
-  [\c!afstand=.5em]
+  [\c!distance=.5em]
 
 \def\starthanging
   {\noindent\bgroup
    \dowithnextbox
-     {\setbox\nextbox\hbox{\flushnextbox\hskip\@@haafstand}%
+     {\setbox\nextbox\hbox{\flushnextbox\hskip\@@hadistance}%
       \hangindent\nextboxwd
       \hangafter\plusone
       \flushnextbox\ignorespaces}
@@ -80,15 +146,6 @@
 
 % \getmulticolumnlines -> now in cont-loc, to be tested and really needed
 
-\def\naturaltextext#1\relax
-  {\bgroup
-   \prettynaturalfont
-   \def\ascii{#1}%
-   \setnormalcatcodes
-   \restorecatcodes
-   \scantokens\expandafter{\ascii}\ifhmode\unskip\fi
-   \egroup}
-
 \long\def\startprocesscommalist[#1]#2\stopprocesscommalist
   {\long\def\currentcommalistcommand##1{\def\currentcommalistitem{##1}#2}%
    \processcommalist[#1]\currentcommalistcommand}
@@ -102,7 +159,7 @@
   {\def\currentcol{0}\increment\maximumrow
    \let\currentcolpos\currentcol
    \let\eTR\relax
-   \setupTABLE[\v!rij][\maximumrow][#1]}
+   \setupTABLE[\v!row][\maximumrow][#1]}
 
 \long\def\parseTD[#1][#2]#3\eTD % [#2] is dummy that kills spaces
   {\getparameters[\@@tbl][\c!ny=\tblnr,\c!nx=\tblnc,nc=1,nr=1,\c!n=\currentcol,#1]%
@@ -432,10 +489,10 @@
    \unexpanded\def\dosetlocationbox[##1]##2[##3]%
      {\getparameters[##1][##3]%
       \definecolor[rollover][rollover:##2]%
-      \doifelse{##2}{n}{\doifelsevalue{##1\c!variant}\v!verborgen\phantom\hbox}\hbox
+      \doifelse{##2}{n}{\doifelsevalue{##1\c!alternative}\v!hidden\phantom\hbox}\hbox
         {\localframed[##1]
-           [\c!kaderkleur=rollover,\c!achtergrondkleur=rollover,\c!kleur=rollover]%
-           {\dolocationattributes{##1}\c!letter\c!kleur{#3}}}}%
+           [\c!framecolor=rollover,\c!backgroundcolor=rollover,\c!color=rollover]%
+           {\dolocationattributes{##1}\c!style\c!color{#3}}}}%
    \iffirstargument
      \ifsecondargument
        \def\setlocationbox##1{\dosetlocationbox[\??am#1]{##1}[#2]}%
@@ -453,9 +510,9 @@
    \definesymbol[rsym:\nofrollovers:d][\setlocationbox d]%
    \setupfield
      [rollbutton]
-     [\c!kader=\v!uit,
+     [\c!frame=\v!off,
       \c!offset=\v!overlay,
-      \c!klikuit={#4}]%
+      \c!clickout={#4}]%
    \definefield
      [roll:\nofrollbuttons][push][rollbutton]
      [rsym:\nofrollovers:n,%
@@ -501,10 +558,10 @@
    \nextsystemfield
    \setupfield
      [overlayrollbutton]
-     [\c!kader=\v!uit,\c!offset=\v!overlay,\c!gebiedin={#1},\c!gebieduit={#2}]%
+     [\c!frame=\v!off,\c!offset=\v!overlay,\c!regionin={#1},\c!regionout={#2}]%
    \definesymbol
      [\currentsystemfield]
-     [{\framed[\c!kader=\v!uit,\c!breedte=\overlaywidth,\c!hoogte=\overlayheight]{}}]%
+     [{\framed[\c!frame=\v!off,\c!width=\overlaywidth,\c!height=\overlayheight]{}}]%
    \definefield
      [\currentsystemfield][push][overlayrollbutton][\currentsystemfield][\currentsystemfield]%
    \fitfield[\currentsystemfield]%
@@ -661,7 +718,7 @@
    \fi \fi
    \advance\boislevel\minusone}
 
-\defineblankmethod [\v!synchroniseer] {\verticalstrut\vskip-2\lineheight\verticalstrut}
+\defineblankmethod [\v!synchronize] {\verticalstrut\vskip-2\lineheight\verticalstrut}
 
 % \vtop{\blank[synchronize]\blank[line]test}
 
@@ -861,8 +918,8 @@
   {\presetlocalframed[\??rw#1]%
    \getparameters%
      [\??rw#1]%
-     [\c!openpaginaactie=,\c!sluitpaginaactie=,%
-      \c!breedte=\renderingwidth,\c!hoogte=\renderingheight,%
+     [\c!openpageaction=,\c!closepageaction=,%
+      \c!width=\renderingwidth,\c!height=\renderingheight,%
       #2]}
 
 \def\setuprenderingwindow
@@ -888,13 +945,13 @@
      \edef\renderingwidth{\objectwidth}%
    \fi
    % create fall back if needed
-   \doifdefinedelse{\??rw#1\c!breedte}
+   \doifdefinedelse{\??rw#1\c!width}
      {\def\currentrenderingwindow{#1}}
      {\let\currentrenderingwindow\s!default
       \definerenderingwindow[\currentrenderingwindow]}%
    \checkrendering\currentrendering
-   \handlereferenceactions{\getvalue{\??rw\currentrenderingwindow\c!openpaginaactie }}\dosetuprenderingopenpageaction
-   \handlereferenceactions{\getvalue{\??rw\currentrenderingwindow\c!sluitpaginaactie}}\dosetuprenderingclosepageaction
+   \handlereferenceactions{\getvalue{\??rw\currentrenderingwindow\c!openpageaction }}\dosetuprenderingopenpageaction
+   \handlereferenceactions{\getvalue{\??rw\currentrenderingwindow\c!closepageaction}}\dosetuprenderingclosepageaction
    \localframed
      [\??rw\currentrenderingwindow][\c!offset=\v!overlay]%
      {\expanded{\doinsertrenderingwindow
@@ -1068,9 +1125,9 @@
    \nextsystemfield
    \setupfield
      [pushbutton]
-     [\c!kader=\v!overlay,
+     [\c!frame=\v!overlay,
       \c!offset=\v!overlay,
-      \c!klikuit=#3,#2]%
+      \c!clickout=#3,#2]%
    \definefield
      [\currentsystemfield]
      [push]
@@ -1104,7 +1161,7 @@
 \def\tabulaterule % to be redone, not correct
   {\dotabulaterule
      {\hrule\!!height.5\scratchdimen\!!depth.5\scratchdimen\relax
-      \doifvalue{\??tt\currenttabulate\c!afstand}\v!grid
+      \doifvalue{\??tt\currenttabulate\c!distance}\v!grid
         {\kern-\scratchdimen}}} % experimental tm-prikkels
 
 % todo: \setupinterlinespace[\c!regel=\v!vast] => ==\the\baselineskip
@@ -1140,8 +1197,8 @@
    \vskip-\lineheight
    \nointerlineskip
    % top of text
-   \scratchdimen\MPy{\v!tekst:\MPp\gridsynctag}%
-   \advance\scratchdimen\MPh{\v!tekst:\MPp\gridsynctag}%
+   \scratchdimen\MPy{\v!text:\MPp\gridsynctag}%
+   \advance\scratchdimen\MPh{\v!text:\MPp\gridsynctag}%
    % move to first baseline
    \advance\scratchdimen-\topskip
    % subtract wrong baseline
@@ -1177,15 +1234,15 @@
       \processaction
         [#2]
         [% first test true, rest depends
-         \v!volgende=>\setgvalue{\??ie#1}{\setgvalue{\??ie#1}{#3}\firstoftwoarguments},
+         \v!next=>\setgvalue{\??ie#1}{\setgvalue{\??ie#1}{#3}\firstoftwoarguments},
          % rest true if first true
-         % \v!eerste=>\setgvalue{\??ie#1}{#3{\letgvalue{\??ie#1}%
+         % \v!first=>\setgvalue{\??ie#1}{#3{\letgvalue{\??ie#1}%
          %              \firstoftwoarguments\firstoftwoarguments}%
          %              \secondoftwoarguments},
          % always true
-               \v!ja=>\letgvalue{\??ie#1}\firstoftwoarguments,
+               \v!yes=>\letgvalue{\??ie#1}\firstoftwoarguments,
          % always false
-              \v!nee=>\letgvalue{\??ie#1}\secondoftwoarguments]%
+              \v!no=>\letgvalue{\??ie#1}\secondoftwoarguments]%
    \fi}
 
 \def\doperformtest#1%
@@ -1242,10 +1299,10 @@
    {\csname#1\endcsname}}
 
 \def\@@sectiekoppeling#1%
-  {\expandifnonempty{\??ko#1\c!koppeling}{#1}}
+  {\expandifnonempty{\??ko#1\c!coupling}{#1}}
 
 \def\@@sectiesectie#1%
-  {\expandifnonempty{\??ko#1\c!sectie}{\@@sectiekoppeling{#1}}}
+  {\expandifnonempty{\??ko#1\c!section}{\@@sectiekoppeling{#1}}}
 
 \def\sectioncountervalue#1%
   {\@@sectionvalue{\@@sectiesectie{#1}}}
@@ -1267,8 +1324,8 @@
      \strut\penalty-9999 % \break fails on case (3)
    \fi}
 
-\def\startdisplay{\displaybreak\ignorespaces\startopelkaar}
-\def\stopdisplay {\stopopelkaar\displaybreak\ignorespaces}
+\def\startdisplay{\displaybreak\ignorespaces\startpacked}
+\def\stopdisplay {\stoppacked\displaybreak\ignorespaces}
 
 \def\tightvbox
   {\dowithnextbox{\nextboxdp\zeropoint\flushnextbox}\vbox}
@@ -1366,7 +1423,7 @@
 
 \def\dostartgridcorrection[#1]%
   {\ifgridsnapping
-     \iffirstargument\doifsomething{#1}{\verplaatsopgrid[#1]}\fi
+     \iffirstargument\doifsomething{#1}{\moveongrid[#1]}\fi
      \snaptogrid\vbox\bgroup
    \else
      \startbaselinecorrection
@@ -1390,10 +1447,10 @@
    \noindent\bgroup
    \setlocalhsize
    \hbox to \localhsize\bgroup
-     \doifnot{#1}\v!links\hss
+     \doifnot{#1}\v!left\hss
      \def\stopplaatsen
        {\unskip\unskip\unskip
-        \doifnot{#1}\v!rechts\hss
+        \doifnot{#1}\v!right\hss
         \egroup
         \egroup
         \endgraf}%
@@ -1419,7 +1476,7 @@
 \def\dosetrastercolor#1%
   {\edef\@@cl@@s{#1}%
    \ifx\@@cl@@s\empty
-     \let\@@cl@@s\@@rsraster
+     \let\@@cl@@s\@@rsscreen
    \fi
    \setevalue{\??cr\??rs}{\colorSpattern}}
 
@@ -1456,7 +1513,7 @@
 
 \def\startcolumnmakeup % don't change
   {\bgroup
-   \getrawnoflines\teksthoogte % teksthoogte kan topskip hebben, dus raw
+   \getrawnoflines\textheight % teksthoogte kan topskip hebben, dus raw
    \scratchdimen\noflines\lineheight
    \advance\scratchdimen-\lineheight
    \advance\scratchdimen\topskip
@@ -1467,7 +1524,7 @@
 \def\stopcolumnmakeup
   {\egroup
    \dp\scratchbox\zeropoint
-   \wd\scratchbox\tekstbreedte
+   \wd\scratchbox\textwidth
    \box\scratchbox
    \egroup
    \synchronizehsize}
@@ -1483,90 +1540,6 @@
    \globallet\figuredescription\empty}
 
 \let\figuredescription\empty
-
-% beware, changing this will break some code (like pos/backgrounds)
-
-\newtoks\everyfirstparagraphintro
-\newtoks\everynextparagraphintro
-\newtoks\@@everyparagraphtoks
-
-\chardef\everyparagraphintro\zerocount
-
-\def\setupparagraphintro
-  {\dodoubleempty\dosetupparagraphintro}
-
-\def\dosetupparagraphintro[#1][#2]%
-  {\processallactionsinset
-     [#1]
-     [   \v!reset=>\global\chardef\everyparagraphintro\zerocount
-                   \global\everyfirstparagraphintro\emptytoks
-                   \global\everynextparagraphintro \emptytoks,
-        \v!eerste=>\global\chardef\everyparagraphintro\plusone
-                   \doglobal\appendtoks#2\to\everyfirstparagraphintro,
-      \v!volgende=>\ifcase\everyparagraphintro\global\chardef\everyparagraphintro\plusone\fi
-                   \doglobal\appendtoks#2\to\everynextparagraphintro,
-           \v!elk=>\ifcase\everyparagraphintro\global\chardef\everyparagraphintro\plustwo\fi
-                   \doglobal\appendtoks#2\to\everyfirstparagraphintro
-                   \doglobal\appendtoks#2\to\everynextparagraphintro]}
-
-% \def\doinsertparagraphintro
-%   {\ifcase\everyparagraphintro\relax
-%      % no data
-%      \@@everyparagraphtoks\emptytoks
-%    \or
-%      % first data
-%      \global\chardef\everyparagraphintro\plustwo
-%      \@@everyparagraphtoks\everyfirstparagraphintro
-%      \global\everyfirstparagraphintro\emptytoks
-%    \or
-%      % next data
-%      \@@everyparagraphtoks\everynextparagraphintro
-%    \fi
-%    \the\@@everyparagraphtoks}
-
-\def\doinsertparagraphintro
-  {\begingroup
-   \everypar\emptytoks
-   \ifcase\everyparagraphintro\relax
-     % no data
-     \@@everyparagraphtoks\emptytoks
-   \or
-     % first data
-     \global\chardef\everyparagraphintro\plustwo
-     \@@everyparagraphtoks\everyfirstparagraphintro
-     \global\everyfirstparagraphintro\emptytoks
-   \or
-     % next data
-     \@@everyparagraphtoks\everynextparagraphintro
-   \fi
-   \the\@@everyparagraphtoks
-   \endgroup}
-
-\def\insertparagraphintro
-  {\ifcase\everyparagraphintro\else\@EA\doinsertparagraphintro\fi}
-
-\appendtoksonce\insertparagraphintro\to\everypar
-
-%D \starttypen
-%D \setupparagraphintro[first][\hbox to 3.5em{\tt FIRST \hss}]
-%D \setupparagraphintro[first][\hbox to 3.5em{\tt TSRIF \hss}]
-%D \setupparagraphintro[next] [\hbox to 3.5em{\tt NEXT  \hss}]
-%D \setupparagraphintro[next] [\hbox to 3.5em{\tt TXEN  \hss}]
-%D \setupparagraphintro[each] [\hbox to 3.0em{\tt EACH  \hss}]
-%D \setupparagraphintro[each] [\hbox to 3.0em{\tt HCEA  \hss}]
-%D
-%D some paragraph \par
-%D some paragraph \par
-%D some paragraph \par
-%D
-%D \definelabel[parnumber]
-%D
-%D \setupparagraphintro[reset,each][\inleft{\slxx\parnumber}]
-%D
-%D some paragraph \par
-%D some paragraph \par
-%D some paragraph \par
-%D \stoptypen
 
 % wrong names
 
@@ -1595,7 +1568,7 @@
 
 \def\startfixed{\dosingleempty\dostartfixed}
 
-\long\def\dostartfixed[#1]%
+\def\dostartfixed[#1]%
   {\expanded{\dowithnextbox{\noexpand\dodofixed{\ifhmode0\else1\fi}{#1}}}%
    \vbox\bgroup
    \setlocalhsize}
@@ -1607,15 +1580,15 @@
   {\ifcase#1\relax
      \processaction
        [#2]
-       [   \v!hoog=>\bbox   {\flushnextbox},
-           \v!laag=>\tbox   {\flushnextbox},
-         \v!midden=>\vcenter{\flushnextbox},
-           \v!laho=>\vcenter{\flushnextbox},
+       [   \v!high=>\bbox   {\flushnextbox},
+           \v!low=>\tbox   {\flushnextbox},
+         \v!middle=>\vcenter{\flushnextbox},
+           \v!lohi=>\vcenter{\flushnextbox},
         \s!unknown=>\tbox   {\flushnextbox},
         \s!default=>\tbox   {\flushnextbox}]%
    \else
      \startbaselinecorrection
-     \noindent\flushnextbox
+       \noindent\flushnextbox
      \stopbaselinecorrection
    \fi}
 
@@ -1648,31 +1621,6 @@
 % \item test \par \startfixed[lohi]\externalfigure[koe][height=2cm]\stopfixed
 %
 % \stopitemize
-
-% \def\docalculatefigurenorm#1#2%
-%   {\dodocalculatefigurenorm{#1}[#2\empty\empty]}
-%
-% \def\dodocalculatefigurenorm#1[#2#3#4]#5#6#7%
-%   {\ExpandFirstAfter\processaction
-%       [#2#3#4]
-%       [     \v!max=>\global#1=#6\relax,
-%           \v!kolom=>\global#1=#6\relax,
-%           \v!tekst=>\global#1=#6\relax,
-%         \v!passend=>\global#1=#7\relax,
-%            \v!ruim=>\global#1=#7\relax
-%                     \global\advance #1 -4\@@exkorps\relax,
-%        #2*\v!kolom=>\global#1=#6\relax
-%                     \ifbinnenkolommen
-%                       \global\advance#1 \intercolumnwidth
-%                       \global\multiply#1 #2\relax
-%                       \global\advance#1 -\intercolumnwidth
-%                     \fi,
-%        #2*\v!tekst=>\global#1=\zetbreedte
-%                     \global\advance#1 \papierbreedte,
-%         \s!default=>\doifsomething{#5}{\global#1=#5\relax},
-%         \s!unknown=>\global#1=\@@exkorps\relax
-%                     \global\divide#1 \!!ten\relax
-%                     \global\multiply#1 #2#3#4\relax]}
 
 % still needed for uguide
 
@@ -1771,7 +1719,7 @@
 \setupcolumnspan
   [\c!n=2,
    \c!offset=\v!overlay,
-   \c!kader=\v!uit]
+   \c!frame=\v!off]
 
 \newbox\columnspanbox \let\postprocesscolumnspanbox\gobbleoneargument
 
@@ -1779,14 +1727,14 @@
   {\bgroup
    \setupcolumnspan[#1]%
    \forgetall
-   \ifbinnenkolommen
+   \ifinsidecolumns
      \advance\hsize \intercolumnwidth
      \hsize\@@ksn\hsize
      \advance\hsize -\intercolumnwidth
    \fi
    \dowithnextbox
      {\setbox\columnspanbox\flushnextbox
-      \ifbinnenkolommen\wd\columnspanbox\hsize\fi
+      \ifinsidecolumns\wd\columnspanbox\hsize\fi
       \postprocesscolumnspanbox\columnspanbox
       \scratchdimen\ht\columnspanbox
       \setbox\columnspanbox\hbox % depth to be checked, probably option!
@@ -1794,7 +1742,7 @@
       \ht\columnspanbox\scratchdimen
       \dp\columnspanbox\strutdp
       \wd\columnspanbox\hsize
-      \ifbinnenkolommen
+      \ifinsidecolumns
         \ifnum\@@ksn>1
           \setvsize
           \dohandleallcolumns
@@ -1838,18 +1786,21 @@
 %D Far from complete.
 
 \def\startgeheel
-  {\startregelcorrectie
+  {\startlinecorrection
    \insidefloattrue}
 
 \def\stopgeheel
-  {\stopregelcorrectie}
+  {\stoplinecorrection}
 
 %D No more news.
 
 \protect
 
-%D A few local optimizations and new features, if defined:
+%D Next we load a few local optimizations and new features. They
+%D live on on my machine and are not distributed, but they may end
+%D up in the distributed files.
 
-\readfile {cont-loc} {} {}
+\readfile {cont-loc} {} {} % local improvements, patches, new features
+\readfile {cont-exp} {} {} % experimental features (e.g. local speed-ups)
 
 \endinput

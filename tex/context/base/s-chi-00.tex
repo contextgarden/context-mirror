@@ -1,5 +1,5 @@
 %D \module
-%D   [      file=s-chi-00,
+%D   [      filefile=s-chi-00,
 %D        version=1999.12.21,
 %D          title=\CONTEXT\ Style File,
 %D       subtitle=Basic Chinese Style,
@@ -18,36 +18,36 @@
 
 \unprotect
 
-\stelsectiein [\v!sectionlevel-1] [\c!kopconversie=\s!chinese]
-\stelsectiein [\v!sectionlevel-2] [\c!kopconversie=\s!chinese]
-\stelsectiein [\v!sectionlevel-3] [\c!kopconversie=\s!chinese]
+\setupsection [\v!sectionlevel-1] [\c!headconversion=\s!chinese]
+\setupsection [\v!sectionlevel-2] [\c!headconversion=\s!chinese]
+\setupsection [\v!sectionlevel-3] [\c!headconversion=\s!chinese]
 
-\stelsectiein [\v!sectionlevel-2] [\v!bijlage\c!conversie=]
+\setupsection [\v!sectionlevel-2] [\v!appendix\c!conversion=]
 
-\stelkopin [\v!hoofdstuk]       [\c!afstand=1.25em]
-\stelkopin [\v!paragraaf]       [\c!afstand=1.25em]
-\stelkopin [\v!sub\v!paragraaf] [\c!afstand=1.00em]
+\setuphead [\v!chapter]       [\c!distance=1.25em]
+\setuphead [\v!section]       [\c!distance=1.25em]
+\setuphead [\v!sub\v!section] [\c!distance=1.00em]
 
-\stellijstin [\v!hoofdstuk] [\c!koplabel=\v!ja,\c!kopconversie=\v!ja,\c!breedte=5em]
-\stellijstin [\v!paragraaf] [\c!koplabel=\v!ja,\c!kopconversie=\v!ja,\c!breedte=5em]
+\setuplist [\v!chapter] [\c!headlabel=\v!yes,\c!headconversion=\v!yes,\c!width=5em]
+\setuplist [\v!section] [\c!headlabel=\v!yes,\c!headconversion=\v!yes,\c!width=5em]
 
-\setupmarking [\v!hoofdstuk\v!nummer] [\c!koplabel=\v!ja,\c!kopconversie=\v!ja]
-\setupmarking [\v!paragraaf\v!nummer] [\c!koplabel=\v!ja,\c!kopconversie=\v!ja]
+\setupmarking [\v!chapter\v!number] [\c!headlabel=\v!yes,\c!headconversion=\v!yes]
+\setupmarking [\v!section\v!number] [\c!headlabel=\v!yes,\c!headconversion=\v!yes]
 
-\setuplabeltext[cn][\v!sub\v!paragraaf={\symbol[S]\kern.25em}]
-\setuplabeltext[cn][\v!sub\v!sub\v!paragraaf={\symbol[S]\kern.25em}]
-\setuplabeltext[cn][\v!sub\v!sub\v!sub\v!paragraaf={\symbol[S]\kern.25em}]
-\setuplabeltext[cn][\v!sub\v!sub\v!sub\v!sub\v!paragraaf={\symbol[S]\kern.25em}]
+\setuplabeltext[cn][\v!sub\v!section={\symbol[S]\kern.25em}]
+\setuplabeltext[cn][\v!sub\v!sub\v!section={\symbol[S]\kern.25em}]
+\setuplabeltext[cn][\v!sub\v!sub\v!sub\v!section={\symbol[S]\kern.25em}]
+\setuplabeltext[cn][\v!sub\v!sub\v!sub\v!sub\v!section={\symbol[S]\kern.25em}]
 
 % nog taalonafhankelijk maken -> \e!tabel enz
 
-\definereferenceformat [intable]   [\c!label=\v!tabel]
-\definereferenceformat [infigure]  [\c!label=\v!figuur]
-\definereferenceformat [inchapter] [\c!label=\v!hoofdstuk]
-\definereferenceformat [insection] [\c!label=\v!paragraaf]
+\definereferenceformat [intable]   [\c!label=\v!table]
+\definereferenceformat [infigure]  [\c!label=\v!figure]
+\definereferenceformat [inchapter] [\c!label=\v!chapter]
+\definereferenceformat [insection] [\c!label=\v!section]
 
 % important
 
-\setuptyping[\c!tab=\v!nee]
+\setuptyping[\c!tab=\v!no]
 
 \protect \endinput

@@ -1,5 +1,5 @@
 %D \module
-%D   [       file=page-bck, % copied from main-001
+%D   [       filefile=page-bck, % copied from main-001
 %D        version=1997.03.31,
 %D          title=\CONTEXT\ Page Macros,
 %D       subtitle=Backgrounds,
@@ -50,9 +50,9 @@
 %D amount of background calculations. The main switch is set
 %D by the recalculate directive.
 %D
-%D \starttypen
+%D \starttyping
 %D \recalculatebackgrounds
-%D \stoptypen
+%D \stoptyping
 %D
 %D Other modules may not directly set the switches
 %D themselves.
@@ -64,12 +64,12 @@
 %D {*background} mode. This mode is only available when
 %D typesetting the pagebody.
 %D
-%D \starttypen
+%D \starttyping
 %D \startmode[*background] ...
-%D \stoptypen
+%D \stoptyping
 
 \appendtoks
-  \ifsomebackground \ifnewbackground \setsystemmode\v!achtergrond \fi \fi
+  \ifsomebackground \ifnewbackground \setsystemmode\v!background \fi \fi
 \to \everybeforepagebody
 
 %D \macros
@@ -81,12 +81,12 @@
 %D is made up by four macros that add background to parts of
 %D the layout.
 %D
-%D \starttypen
+%D \starttyping
 %D \addmainbackground  <box>
 %D \addtextbackground  <box>
 %D \addpagebackground  <box>
 %D \addprintbackground <box>
-%D \stoptypen
+%D \stoptyping
 
 %D To minimize calculations, we keep track of the state of the
 %D background of each area. A previous implementation did
@@ -114,13 +114,13 @@
 
 \def\checkbackground#1%
   {\edef\!!stringe{\??ma#1}%
-   \doifelsevaluenothing{\!!stringe\c!achtergrond   }
-  {\doifelsevaluenothing{\!!stringe\c!voorgrondkleur}
-         {\doifelsevalue{\!!stringe\c!kader       }\v!aan\!!doneatrue
-         {\doifelsevalue{\!!stringe\c!linkerkader }\v!aan\!!doneatrue
-         {\doifelsevalue{\!!stringe\c!rechterkader}\v!aan\!!doneatrue
-         {\doifelsevalue{\!!stringe\c!bovenkader  }\v!aan\!!doneatrue
-         {\doifelsevalue{\!!stringe\c!onderkader  }\v!aan\!!doneatrue
+   \doifelsevaluenothing{\!!stringe\c!background   }
+  {\doifelsevaluenothing{\!!stringe\c!foregroundcolor}
+         {\doifelsevalue{\!!stringe\c!frame       }\v!on\!!doneatrue
+         {\doifelsevalue{\!!stringe\c!leftframe }\v!on\!!doneatrue
+         {\doifelsevalue{\!!stringe\c!rightframe}\v!on\!!doneatrue
+         {\doifelsevalue{\!!stringe\c!topframe  }\v!on\!!doneatrue
+         {\doifelsevalue{\!!stringe\c!bottomframe  }\v!on\!!doneatrue
                                                          \!!doneafalse}}}}}
                                                          \!!doneatrue}
                                                          \!!doneatrue
@@ -151,8 +151,8 @@
   {\ifsomebackgroundfound#1\ifdim#3>\zeropoint\ifdim#4>\zeropoint
      \setbox#2\vbox\fastlocalframed
        [\??ma#1]
-       [\c!component=#1,\c!strut=\v!nee,\c!offset=\v!overlay,%
-        \c!breedte=#3,\c!hoogte=#4]
+       [\c!component=#1,\c!strut=\v!no,\c!offset=\v!overlay,%
+        \c!width=#3,\c!height=#4]
        {\dp#2\zeropoint\box#2}%
    \fi\fi\fi}
 
@@ -162,7 +162,7 @@
 
 \def\addprintbackground#1%
   {\addsomebackground
-     \v!papier#1\printpapierbreedte\printpapierhoogte}
+     \v!paper#1\printpaperwidth\printpaperheight}
 
 %D The page backgrounds can be put behind the {\em left
 %D page}, the {\em right page} or {\em each page}. As with
@@ -170,13 +170,13 @@
 
 \def\addpagebackground#1%
   {\doifbothsidesoverruled
-     \addsomebackground\v!rechterpagina#1\papierbreedte\papierhoogte
+     \addsomebackground\v!rightpage#1\paperwidth\paperheight
    \orsideone
-     \addsomebackground\v!rechterpagina#1\papierbreedte\papierhoogte
+     \addsomebackground\v!rightpage#1\paperwidth\paperheight
    \orsidetwo
-     \addsomebackground\v!linkerpagina #1\papierbreedte\papierhoogte
+     \addsomebackground\v!leftpage #1\paperwidth\paperheight
    \od
-     \addsomebackground\v!pagina       #1\papierbreedte\papierhoogte}
+     \addsomebackground\v!page       #1\paperwidth\paperheight}
 
 %D Then there are the 25 areas that make up the layout: {\em
 %D top, header, text, footer, bottom} times {\em left edge,
@@ -205,9 +205,9 @@
 
 \def\addtextbackground#1%
   {\ifconditional\hiddenbackgroundenabled
-     \addsomebackground\v!verborgen#1\zetbreedte\teksthoogte % mine !
+     \addsomebackground\v!hidden#1\makeupwidth\textheight % mine !
    \fi
-   \addsomebackground\v!tekst#1\zetbreedte\teksthoogte}
+   \addsomebackground\v!text#1\makeupwidth\textheight}
 
 % \def\addtextbackground#1%
 %   {\ifconditional\hiddenbackgroundenabled
@@ -280,7 +280,7 @@
        \global\chardef\newrightbackground\zerocount
      \fi
    \od
-   \ifx\@@mastatus\v!herhaal\else\global\newbackgroundfalse\fi}
+   \ifx\@@mastate\v!repeat\else\global\newbackgroundfalse\fi}
 
 \def\addmainbackground#1% todo: dimension spec
   {\ifsomebackground
@@ -298,44 +298,24 @@
      \global\let\pagebackgroundhoffset\!!zeropoint
      \global\let\pagebackgroundvoffset\!!zeropoint
      \global\let\pagebackgrounddepth  \!!zeropoint
-     \doifsomebackgroundelse{\v!tekst\v!tekst}\donetrue\donefalse
-     \ifdone\else\doifsomebackgroundelse\v!tekst\donetrue\donothing\fi
+     \doifsomebackgroundelse{\v!text\v!text}\donetrue\donefalse
+     \ifdone\else\doifsomebackgroundelse\v!text\donetrue\donothing\fi
      \ifdone
        \bgroup
-       \scratchdimen\getvalue{\??ma\v!pagina\c!offset}%
-       \doifsomebackgroundelse{\v!boven\v!tekst}\donothing
-         {\doifsomebackgroundelse{\v!onder\v!tekst}\donothing
+       \scratchdimen\getvalue{\??ma\v!page\c!offset}%
+       \doifsomebackgroundelse{\v!top\v!text}\donothing
+         {\doifsomebackgroundelse{\v!bottom\v!text}\donothing
             {\xdef\pagebackgroundhoffset{\the\scratchdimen}}}%
-       \doifsomebackgroundelse{\v!tekst\v!rechterrand}\donothing
-         {\doifsomebackgroundelse{\v!tekst\v!linkerrand}\donothing
+       \doifsomebackgroundelse{\v!text\v!rightedge}\donothing
+         {\doifsomebackgroundelse{\v!text\v!leftedge}\donothing
             {\xdef\pagebackgroundvoffset{\the\scratchdimen}%
-             \scratchdimen\getvalue{\??ma\v!pagina\c!diepte}%
+             \scratchdimen\getvalue{\??ma\v!page\c!depth}%
              \xdef\pagebackgrounddepth{\the\scratchdimen}}}%
        \egroup
      \fi
    \fi \fi}
 
 \appendtoks \setbackgroundoffsets \to \everybeforepagebody
-
-% \def\setbackgroundbox#1#2%
-%   {\global\setbox#1\vbox
-%      {\dontcomplain
-%       \calculatereducedvsizes
-%       \offinterlineskip
-%       #2\relax
-%       \vskip-\bovenhoogte
-%       \vskip-\bovenafstand
-%       \dodopagebodybackground\v!boven\bovenhoogte
-%       \vskip\bovenafstand
-%       \dodopagebodybackground\v!hoofd\hoofdhoogte
-%       \vskip\hoofdafstand
-%       \dodopagebodybackground\v!tekst\teksthoogte
-%       \vskip\voetafstand
-%       \dodopagebodybackground\v!voet\voethoogte
-%       \vskip\onderafstand
-%       \dodopagebodybackground\v!onder\onderhoogte
-%       \vfilll}%
-%   \smashbox#1}
 
 \newconditional\swapbackgroundmargins \settrue\swapbackgroundmargins
 
@@ -345,23 +325,23 @@
       \swapmargins
       \ifconditional\swapbackgroundmargins
         \doifmarginswapelse \donothing
-          {\swapmacros\v!rechtermarge\v!linkermarge
-           \swapmacros\v!rechterrand \v!linkerrand}%
+          {\swapmacros\v!rightmargin\v!leftmargin
+           \swapmacros\v!rightedge \v!leftedge}%
       \fi
       \calculatereducedvsizes
       \offinterlineskip
       #2\relax
-      \vskip-\bovenhoogte
-      \vskip-\bovenafstand
-      \dodopagebodybackground\v!boven\bovenhoogte
-      \vskip\bovenafstand
-      \dodopagebodybackground\v!hoofd\hoofdhoogte
-      \vskip\hoofdafstand
-      \dodopagebodybackground\v!tekst\teksthoogte
-      \vskip\voetafstand
-      \dodopagebodybackground\v!voet\voethoogte
-      \vskip\onderafstand
-      \dodopagebodybackground\v!onder\onderhoogte
+      \vskip-\topheight
+      \vskip-\topdistance
+      \dodopagebodybackground\v!top\topheight
+      \vskip\topdistance
+      \dodopagebodybackground\v!header\headerheight
+      \vskip\headerdistance
+      \dodopagebodybackground\v!text\textheight
+      \vskip\footerdistance
+      \dodopagebodybackground\v!footer\footerheight
+      \vskip\bottomdistance
+      \dodopagebodybackground\v!bottom\bottomheight
       \vfilll}%
   \smashbox#1}
 
@@ -391,15 +371,15 @@
        \bgroup\hbox\bgroup
        % \swapmargins
          \goleftonpage
-         \dododopagebodybackground\linkerrandbreedte  #2#1\v!linkerrand
-         \hskip\linkerrandafstand
-         \dododopagebodybackground\linkermargebreedte #2#1\v!linkermarge
-         \hskip\linkermargeafstand
-         \dododopagebodybackground\zetbreedte         #2#1\v!tekst
-         \hskip\rechtermargeafstand
-         \dododopagebodybackground\rechtermargebreedte#2#1\v!rechtermarge
-         \hskip\rechterrandafstand
-         \dododopagebodybackground\rechterrandbreedte #2#1\v!rechterrand
+         \dododopagebodybackground\leftedgewidth  #2#1\v!leftedge
+         \hskip\leftedgedistance
+         \dododopagebodybackground\leftmarginwidth #2#1\v!leftmargin
+         \hskip\leftmargindistance
+         \dododopagebodybackground\makeupwidth         #2#1\v!text
+         \hskip\rightmargindistance
+         \dododopagebodybackground\rightmarginwidth#2#1\v!rightmargin
+         \hskip\rightedgedistance
+         \dododopagebodybackground\rightedgewidth #2#1\v!rightedge
        \egroup\egroup
      \wd\scratchbox\zeropoint
      \box\scratchbox\relax
@@ -411,8 +391,8 @@
        \ifdim#1>\zeropoint\relax
          \fastlocalframed
            [\??ma#3#4]
-           [\c!component=#3-#4,\c!breedte=#1,\c!hoogte=#2,\c!offset=\v!overlay]
-           {\getvalue{\??ma#3#4\c!commando}}% {\hsize=#1\vsize=#2....}
+           [\c!component=#3-#4,\c!width=#1,\c!height=#2,\c!offset=\v!overlay]
+           {\getvalue{\??ma#3#4\c!command}}% {\hsize=#1\vsize=#2....}
        \else
          \hskip#1%
        \fi
@@ -428,11 +408,11 @@
 %D usage, but since today's \TEX's are large, we now do the
 %D work on forehand.
 %D
-%D \starttypen
+%D \starttyping
 %D \setupbackgrounds [settings]
 %D \setupbackgrounds [paper,page,text,..] [settings]
 %D \setupbackgrounds [top,...] [leftedge,...] [settings]
-%D \stoptypen
+%D \stoptyping
 %D
 %D \showsetup{\y!setupbackgrounds}
 %D
@@ -446,7 +426,7 @@
   {\ifthirdargument
      \global\somebackgroundtrue
      \def\docommando##1%
-       {\doifinsetelse{##1}{\v!papier,\v!pagina,\v!linkerpagina,\v!rechterpagina}
+       {\doifinsetelse{##1}{\v!paper,\v!page,\v!leftpage,\v!rightpage}
           {\getparameters[\??ma##1][#3]\checkbackground{##1}}
           {\def\dodocommando####1%
              {\getparameters[\??ma##1####1][#3]\checkbackground{##1####1}}%
@@ -454,26 +434,26 @@
      \processcommalist[#1]\docommando
    \else\ifsecondargument
      \global\somebackgroundtrue
-     \doifcommonelse{#1}{\v!tekst,\v!verborgen,%
+     \doifcommonelse{#1}{\v!text,\v!hidden,%
                         %\v!linkertekst,\v!rechtertekst,%
-                         \v!papier,\v!pagina,\v!linkerpagina,\v!rechterpagina}
+                         \v!paper,\v!page,\v!leftpage,\v!rightpage}
        {\def\docommando##1%
           {\getparameters[\??ma##1][#2]\checkbackground{##1}}%
         \processcommalist[#1]\docommando}%
        {\setupbackgrounds
           [#1]%
-          [\v!linkerrand,\v!linkermarge,\v!tekst,\v!rechtermarge,\v!rechterrand]%
+          [\v!leftedge,\v!leftmargin,\v!text,\v!rightmargin,\v!rightedge]%
           [#2]}%
    \else\iffirstargument
      \getparameters[\??ma][#1]%
    \fi\fi\fi
-   \doifelsevalue{\??ma\v!pagina\c!offset}\v!overlay
+   \doifelsevalue{\??ma\v!page\c!offset}\v!overlay
      {\global\pageoffset\zeropoint}
-     {\global\pageoffset\getvalue{\??ma\v!pagina\c!offset}}%
-   \global\pagedepth\getvalue{\??ma\v!pagina\c!diepte}%
+     {\global\pageoffset\getvalue{\??ma\v!page\c!offset}}%
+   \global\pagedepth\getvalue{\??ma\v!page\c!depth}%
    \xdef\pagebackgroundoffset{\the\pageoffset}%
    \xdef\pagebackgrounddepth {\the\pagedepth }%
-   \doifelse\@@mastatus\v!stop
+   \doifelse\@@mastate\v!stop
      {\global\newbackgroundfalse}
      {\global\newbackgroundtrue }}
 
@@ -485,42 +465,42 @@
 %D Each areas (currently there are $1+3+25+1=30$ of them)
 %D has its own low level framed object associated.
 
-\presetlocalframed [\??ma\v!papier]
-\presetlocalframed [\??ma\v!pagina]
-\presetlocalframed [\??ma\v!linkerpagina]
-\presetlocalframed [\??ma\v!rechterpagina]
+\presetlocalframed [\??ma\v!paper]
+\presetlocalframed [\??ma\v!page]
+\presetlocalframed [\??ma\v!leftpage]
+\presetlocalframed [\??ma\v!rightpage]
 
 \copyparameters
-  [\??ma\v!papier\c!kader][\??ma\v!pagina]
-  [\c!offset,\c!diepte,\c!straal,\c!hoek,\c!kleur,\c!raster]
+  [\??ma\v!paper\c!frame][\??ma\v!page]
+  [\c!offset,\c!depth,\c!radius,\c!corner,\c!color,\c!screen]
 
 \copyparameters
-  [\??ma\v!papier\c!achtergrond][\??ma\v!pagina]
-  [\c!offset,\c!diepte,\c!straal,\c!hoek,\c!kleur,\c!raster]
+  [\??ma\v!paper\c!background][\??ma\v!page]
+  [\c!offset,\c!depth,\c!radius,\c!corner,\c!color,\c!screen]
 
 \copyparameters
-  [\??ma\v!pagina\c!kader][\??ma\v!pagina]
-  [\c!offset,\c!diepte,\c!straal,\c!hoek,\c!kleur,\c!raster]
+  [\??ma\v!page\c!frame][\??ma\v!page]
+  [\c!offset,\c!depth,\c!radius,\c!corner,\c!color,\c!screen]
 
 \copyparameters
-  [\??ma\v!pagina\c!achtergrond][\??ma\v!pagina]
-  [\c!offset,\c!diepte,\c!straal,\c!hoek,\c!kleur,\c!raster]
+  [\??ma\v!page\c!background][\??ma\v!page]
+  [\c!offset,\c!depth,\c!radius,\c!corner,\c!color,\c!screen]
 
 \copyparameters
-  [\??ma\v!linkerpagina\c!kader][\??ma\v!linkerpagina]
-  [\c!offset,\c!diepte,\c!straal,\c!hoek,\c!kleur,\c!raster]
+  [\??ma\v!leftpage\c!frame][\??ma\v!leftpage]
+  [\c!offset,\c!depth,\c!radius,\c!corner,\c!color,\c!screen]
 
 \copyparameters
-  [\??ma\v!linkerpagina\c!achtergrond][\??ma\v!linkerpagina]
-  [\c!offset,\c!diepte,\c!straal,\c!hoek,\c!kleur,\c!raster]
+  [\??ma\v!leftpage\c!background][\??ma\v!leftpage]
+  [\c!offset,\c!depth,\c!radius,\c!corner,\c!color,\c!screen]
 
 \copyparameters
-  [\??ma\v!rechterpagina\c!kader][\??ma\v!rechterpagina]
-  [\c!offset,\c!diepte,\c!straal,\c!hoek,\c!kleur,\c!raster]
+  [\??ma\v!rightpage\c!frame][\??ma\v!rightpage]
+  [\c!offset,\c!depth,\c!radius,\c!corner,\c!color,\c!screen]
 
 \copyparameters
-  [\??ma\v!rechterpagina\c!achtergrond][\??ma\v!rechterpagina]
-  [\c!offset,\c!diepte,\c!straal,\c!hoek,\c!kleur,\c!raster]
+  [\??ma\v!rightpage\c!background][\??ma\v!rightpage]
+  [\c!offset,\c!depth,\c!radius,\c!corner,\c!color,\c!screen]
 
 %D We save some keying by defining the areas using
 %D intermediate commands. The inheritance macro makes sure
@@ -528,38 +508,38 @@
 
 \def\dodocommando#1#2%
   {\copylocalframed
-     [\??ma#1#2][\??ma\v!pagina]%
+     [\??ma#1#2][\??ma\v!page]%
    \getparameters
      [\??ma#1#2]
-     [\c!achtergrond=,\c!kader=,\c!kleur=,\c!raster=\@@rsraster,
-      \c!onderkader=,\c!bovenkader=,\c!linkerkader=,\c!rechterkader=]%
-   \inheritparameter[\??ma][#1#2\c!kleur][\v!pagina\c!kleur]%
-   \inheritparameter[\??ma][#1#2\c!raster][\v!pagina\c!raster]%
-   \inheritparameter[\??ma][#1#2\c!kaderkleur][\v!pagina\c!kaderkleur]%
-   \inheritparameter[\??ma][#1#2\c!achtergrondkleur][\v!pagina\c!achtergrondkleur]%
-   \inheritparameter[\??ma][#1#2\c!achtergrondraster][\v!pagina\c!achtergrondraster]}
+     [\c!background=,\c!frame=,\c!color=,\c!screen=\@@rsscreen,
+      \c!bottomframe=,\c!topframe=,\c!leftframe=,\c!rightframe=]%
+   \inheritparameter[\??ma][#1#2\c!color][\v!page\c!color]%
+   \inheritparameter[\??ma][#1#2\c!screen][\v!page\c!screen]%
+   \inheritparameter[\??ma][#1#2\c!framecolor][\v!page\c!framecolor]%
+   \inheritparameter[\??ma][#1#2\c!backgroundcolor][\v!page\c!backgroundcolor]%
+   \inheritparameter[\??ma][#1#2\c!backgroundscreen][\v!page\c!backgroundscreen]}
 
 %D The stand alone text area inherits from the page too.
 
-\dodocommando\v!tekst       \empty
+\dodocommando\v!text       \empty
 %dodocommando\v!linkertekst \empty
 %dodocommando\v!rechtertekst\empty
-\dodocommando\v!verborgen   \empty
+\dodocommando\v!hidden   \empty
 
 %D We now define all 25 main areas in a row.
 
 \def\docommando#1%
-  {\dodocommando#1\v!linkerrand
-   \dodocommando#1\v!linkermarge
-   \dodocommando#1\v!tekst
-   \dodocommando#1\v!rechtermarge
-   \dodocommando#1\v!rechterrand}
+  {\dodocommando#1\v!leftedge
+   \dodocommando#1\v!leftmargin
+   \dodocommando#1\v!text
+   \dodocommando#1\v!rightmargin
+   \dodocommando#1\v!rightedge}
 
-\docommando\v!boven
-\docommando\v!hoofd
-\docommando\v!tekst
-\docommando\v!voet
-\docommando\v!onder
+\docommando\v!top
+\docommando\v!header
+\docommando\v!text
+\docommando\v!footer
+\docommando\v!bottom
 
 %D We need some cleanup now.
 
@@ -569,29 +549,29 @@
 %D defaults.
 
 \setupbackgrounds
-  [\c!status=\c!start]
+  [\c!state=\c!start]
 
 \setupbackgrounds
-  [\v!papier,\v!pagina,\v!linkerpagina,\v!rechterpagina]
-  [\c!kader=\v!uit,
-   \c!straal=.5\korpsgrootte,
-   \c!hoek=\v!recht,
-   \c!achtergrond=,
-   \c!raster=\@@rsraster,
-   \c!kleur=,
-  %\c!kaderoffset=\getvalue{\??ma\v!pagina\c!offset},
-  %\c!achtergrondoffset=\getvalue{\??ma\v!pagina\c!offset},
+  [\v!paper,\v!page,\v!leftpage,\v!rightpage]
+  [\c!frame=\v!off,
+   \c!radius=.5\korpsgrootte,
+   \c!corner=\v!rectangular,
+   \c!background=,
+   \c!screen=\@@rsscreen,
+   \c!color=,
+  %\c!frameoffset=\getvalue{\??ma\v!page\c!offset},
+  %\c!backgroundoffset=\getvalue{\??ma\v!page\c!offset},
    \c!offset=\!!zeropoint, % later set to \v!overlay, watch out !
-   \c!diepte=\!!zeropoint]
+   \c!depth=\!!zeropoint]
 
 \def\docommando#1%
-  {\inheritparameter[\??ma][#1\c!kaderoffset][\v!pagina\c!offset]%
-   \inheritparameter[\??ma][#1\c!achtergrondoffset][\v!pagina\c!offset]}
+  {\inheritparameter[\??ma][#1\c!frameoffset][\v!page\c!offset]%
+   \inheritparameter[\??ma][#1\c!backgroundoffset][\v!page\c!offset]}
 
-\docommando\v!papier
-\docommando\v!pagina
-\docommando\v!linkerpagina
-\docommando\v!rechterpagina
+\docommando\v!paper
+\docommando\v!page
+\docommando\v!leftpage
+\docommando\v!rightpage
 
 %D Again we clean up temporary macros.
 
@@ -613,25 +593,25 @@
   {\global\setfalse\hiddenbackgroundenabled}
 
 \def\hiddenbackground
-  {\v!tekst-2,\v!tekst-1,\v!voorgrond,\v!tekst+1,\v!tekst+2}
+  {\v!text-2,\v!text-1,\v!foreground,\v!text+1,\v!text+2}
 
 \setupbackgrounds
-  [\v!verborgen]
-  [\c!achtergrond=\hiddenbackground]
+  [\v!hidden]
+  [\c!background=\hiddenbackground]
 
 % The next series is used in local (for instance floating)
 % backgrounds.
 
 \presetlocalframed
-  [\??ma\v!lokaal]
+  [\??ma\v!local]
 
 \def\localbackground
-  {\v!lokaal-2,\v!lokaal-1,\v!voorgrond,\v!lokaal+1,\v!lokaal+2}
+  {\v!local-2,\v!local-1,\v!foreground,\v!local+1,\v!local+2}
 
-\defineoverlay[\v!lokaal-2][\positionoverlay{\v!lokaal-2}]
-\defineoverlay[\v!lokaal-1][\positionoverlay{\v!lokaal-1}]
-\defineoverlay[\v!lokaal+1][\positionoverlay{\v!lokaal+1}]
-\defineoverlay[\v!lokaal+2][\positionoverlay{\v!lokaal+2}]
+\defineoverlay[\v!local-2][\positionoverlay{\v!local-2}]
+\defineoverlay[\v!local-1][\positionoverlay{\v!local-1}]
+\defineoverlay[\v!local+1][\positionoverlay{\v!local+1}]
+\defineoverlay[\v!local+2][\positionoverlay{\v!local+2}]
 
 \def\addlocalbackgroundtobox
   {\ifconditional\hiddenbackgroundenabled
@@ -660,19 +640,19 @@
 %    \doglobal\increment\localpositionnumber % afterwards !
 %    \next}
 
-\def\doaddlocalbackground#1%
-  {\edef\next
-     {\noexpand\redoglobal\wd#1\the\wd#1%
-      \noexpand\redoglobal\ht#1\the\ht#1%
-      \noexpand\dodoglobal\dp#1\the\dp#1}%
-   \dodoglobal\setbox#1\hbox
-     {\fastlocalframed
-        [\??ma\v!lokaal]
-        [\c!component=local,\c!kader=\v!uit,\c!offset=\v!overlay,%
-         \c!achtergrond=\localbackground]%
-        {\registerMPlocaltextarea{\box#1}}}%
-   \next
-   \doglobal\increment\localpositionnumber\relax} % afterwards !
+% \def\doaddlocalbackground#1%
+%   {\edef\next
+%      {\noexpand\redoglobal\wd#1\the\wd#1%
+%       \noexpand\redoglobal\ht#1\the\ht#1%
+%       \noexpand\dodoglobal\dp#1\the\dp#1}%
+%    \dodoglobal\setbox#1\hbox
+%      {\fastlocalframed
+%         [\??ma\v!lokaal]
+%         [\c!component=local,\c!kader=\v!uit,\c!offset=\v!overlay,%
+%          \c!achtergrond=\localbackground]%
+%         {\registerMPlocaltextarea{\box#1}}}%
+%    \next
+%    \doglobal\increment\localpositionnumber\relax} % afterwards !
 
 \def\doaddlocalbackground#1%
   {\edef\next
@@ -681,14 +661,13 @@
       \noexpand\dodoglobal\dp#1\the\dp#1}%
    \dodoglobal\setbox#1\hbox
      {\fastlocalframed
-        [\??ma\v!lokaal]
-        [\c!component=local,\c!kader=\v!uit,\c!offset=\v!overlay,%
-         \c!breedte=\wd#1,\c!hoogte=\ht#1,\c!diepte=\dp#1,%
-         \c!achtergrond=\localbackground]%
+        [\??ma\v!local]
+        [\c!component=local,\c!frame=\v!off,\c!offset=\v!overlay,%
+         \c!width=\wd#1,hoogte=\ht#1,% no diepte=\dp#1 in cont-exp.tex, to be checked !
+         \c!background=\localbackground]%
         {\registerMPlocaltextarea{\box#1}}}%
    \next
    \doglobal\increment\localpositionnumber\relax} % afterwards !
-
 
 % Test how previous macro behaves with depth:
 %
@@ -707,19 +686,19 @@
 
 \protect \endinput
 
-%D Removed \citeer {features}:
+%D Removed \quote {features}:
 %D
-%D \starttypen
-%D \startinteractie
+%D \starttyping
+%D \startinteraction
 %D \doifmarginswapelse
 %D   {\copy\leftbackground}
 %D   {\copy\rightbackground}%
-%D \stopinteractie
-%D \stoptypen
+%D \stopinteraction
+%D \stoptyping
 %D
-%D \starttypen
+%D \starttyping
 %D \edef\setpagebackgrounddepth%
 %D   {\dp#2=\the\dp#2}%
 %D \setbox#2=\vbox\localframed[\??ma#1]{...}
 %D \setpagebackgrounddepth
-%D \stoptypen
+%D \stoptyping

@@ -1,5 +1,5 @@
 %D \module
-%D   [       file=core-reg,
+%D   [       filefile=core-reg,
 %D        version=1999.12.27,
 %D          title=\CONTEXT\ Core Macros,
 %D       subtitle=Register Management,
@@ -51,22 +51,22 @@
 %
 %    \registerentry  {tag} {letter}
 
-\def\dostelregisterin[#1][#2][#3]%
+\def\dosetupregister[#1][#2][#3]%
   {\ifthirdargument
-     \def\dodostelregisterin##1%
+     \def\dodosetupregister##1%
        {\getparameters[\??id##1#2][#3]%
-        \preparepaginaprefix{\??id##1}}%
+        \preparepageprefix{\??id##1}}%
    \else
-     \def\dodostelregisterin##1%
+     \def\dodosetupregister##1%
        {\getparameters[\??id##1][#2]%
-        \doifvalue{\??id##1\c!koppeling}\v!ja
-          {\appendtoks\koppelregister[##1][#2]\to\everystarttext}%
-        \preparepaginaprefix{\??id##1}}%
+        \doifvalue{\??id##1\c!coupling}\v!yes
+          {\appendtoks\coupleregister[##1][#2]\to\everystarttext}%
+        \preparepageprefix{\??id##1}}%
    \fi
-   \processcommalist[#1]\dodostelregisterin}
+   \processcommalist[#1]\dodosetupregister}
 
-\def\stelregisterin
-  {\dotripleempty\dostelregisterin}
+\def\setupregister
+  {\dotripleempty\dosetupregister}
 
 \def\getlastregisterentry#1%
   {\def\docommando##1%
@@ -80,7 +80,7 @@
    \ifduplicate\getlastregisterentry{#3}\fi
    \convertexpanded{\??id\currentregister}{#3}\asciiregisterentry
    \makesectionformat
-   \doifelsevalue{\??id\currentregister\c!eigennummer}\v!ja
+   \doifelsevalue{\??id\currentregister\c!ownnumber}\v!yes
      \donetrue\donefalse
    % the spaces between } { are essential for texutil's split
    \edef\schrijfwegnaarregister%
@@ -101,7 +101,7 @@
 \def\doregister#1%
   {\chardef\registerpagestatus\plusone
    \def\currentregister{#1}%
-   \doifelsevalue{\??id\currentregister\c!eigennummer}\v!ja
+   \doifelsevalue{\??id\currentregister\c!ownnumber}\v!yes
      {\dosingleempty\dodoregister}
      {\dosingleempty\donoregister}}
 
@@ -200,12 +200,12 @@
 %  {\edef\currentregister{#1}%    % om gebruik van \ExpandBothAfter
 %   \doprocesspageregister}       % mogelijk te maken
 
-\def\doschrijfnaarregister[#1]%  % de twee-traps-aanroep is nodig
+\def\dowritetoregister[#1]%  % de twee-traps-aanroep is nodig
   {\edef\currentregister{#1}%    % om gebruik van \ExpandBothAfter
    \doprocesspageregister{}}     % mogelijk te maken
 
-\def\schrijfnaarregister
-  {\dodoubleempty\doschrijfnaarregister}
+\def\writetoregister
+  {\dodoubleempty\dowritetoregister}
 
 \def\ifregistergeplaatst{\ifutilitydone}
 
@@ -229,7 +229,7 @@
 \def\setregisterpage#1%
   {\let\registerpageseparator\empty
    \processaction
-     [\getvalue{\??id#1\c!symbool}]
+     [\getvalue{\??id#1\c!symbol}]
      [      \c!n=>{\def\doregisterpage##1[##2]%
                      {\doregisterpagelocation{#1}{\registerpagenumber}\/}},
             \c!a=>{\def\doregisterpage##1[##2]%
@@ -238,8 +238,8 @@
                      {\doregisterpagelocation{#1}{$\bullet$}}},
                2=>{\def\doregisterpage##1[##2]%
                      {\doregisterpagelocation{#1}{\vrule\!!width1em\!!height1ex\!!depth\!!zeropoint}}},
-         \v!geen=>{\def\doregisterpage##1[##2]{}},%
-      \s!unknown=>{\def\registerpagesymbol{\getvalue{\??id#1\c!symbool}}%
+         \v!none=>{\def\doregisterpage##1[##2]{}},%
+      \s!unknown=>{\def\registerpagesymbol{\getvalue{\??id#1\c!symbol}}%
                    \def\doregisterpage##1[##2]%
                      {\doregisterpagelocation{#1}{\registerpagesymbol}}},
       \s!default=>{\def\registerpageseparator%
@@ -247,7 +247,7 @@
                    \def\doregisterpage##1[##2]%
                      {\doregisterpagehowto{##1}
                         {\strut
-                         \paginaprefix{\??id##1}[##2]%
+                         \pageprefix{\??id##1}[##2]%
                          \translatednumber[##2]}}}]}
 
 \let\registerpagehowto\empty
@@ -258,13 +258,13 @@
    \def\registertexthowto{#2}}%
 
 \def\doregistertexthowto#1#2%
-  {\dostartattributes{\??id#1\registertexthowto}\c!tekstletter\c!tekstkleur{}%
-   \getvalue{\??id#1\c!tekstcommando}{#2}%
+  {\dostartattributes{\??id#1\registertexthowto}\c!textstyle\c!textcolor{}%
+   \getvalue{\??id#1\c!textcommand}{#2}%
    \dostopattributes}
 
 \def\doregisterpagehowto#1#2%
-  {\dostartattributes{\??id#1\registerpagehowto}\c!paginaletter\c!paginakleur{}%
-   \getvalue{\??id#1\c!paginacommando}{#2}%
+  {\dostartattributes{\??id#1\registerpagehowto}\c!pagestyle\c!pagecolor{}%
+   \getvalue{\??id#1\c!pagecommand}{#2}%
    \dostopattributes}
 
 \def\registerentry #1{\executeifdefined{#1\s!entry }\gobbleoneargument  }
@@ -300,10 +300,10 @@
 \chardef\lastregisterpagestatus=0
 
 \def\limitedregisterentry#1#2%
-  {\getvalue{\??id#1\c!tekstcommando}%
-     {\doifelsenothing{\??id#1\c!maxbreedte}
+  {\getvalue{\??id#1\c!textcommand}%
+     {\doifelsenothing{\??id#1\c!maxwidth}
         {#2}
-        {\limitatetext{#2}{\getvalue{\??id#1\c!maxbreedte}}{\unknown}}}}
+        {\limitatetext{#2}{\getvalue{\??id#1\c!maxwidth}}{\unknown}}}}
 
 \def\dosetpageregisterpage#1#2#3#4#5#6%
   {\doifreglevelelse[#5]{\dodosetpageregisterpage{#1}{#2}{#3}{#4}{#5}{#6}}{}}
@@ -347,7 +347,7 @@
 %       \donefalse % waiting for "to" pagenumber
 %     \else
 %       \registerpageseparator
-%       |\spatie|\relax % \relax needed because | looks ahead
+%       |\space|\relax % \relax needed because | looks ahead
 %       \donetrue
 %     \fi\fi\fi
 %     \ifdone
@@ -384,7 +384,7 @@
        \egroup
        \!!doneafalse}%
     \!!doneafalse
-    \doifelsevalue{\??id#2\c!interactie}\v!tekst
+    \doifelsevalue{\??id#2\c!interaction}\v!text
       {\ifcase\currententrylevel                 \or
          \!!doneatrue\c!entrya\c!entryb\c!entryc \or
          \c!entrya\!!doneatrue\c!entryb\c!entryc \or
@@ -398,7 +398,7 @@
    % \global\firstregisterentrytrue
     \iffirstregisterpage
       \global\chardef\lastregisterpagestatus\zerocount
-      \expandafter\hskip\getvalue{\??id#2\c!afstand}\relax
+      \expandafter\hskip\getvalue{\??id#2\c!distance}\relax
       \donetrue
     \else\ifnum#1=3
       |--|\relax % -- !
@@ -407,11 +407,11 @@
       \donefalse % waiting for "to" pagenumber
     \else
       \registerpageseparator
-      |\spatie|\relax % \relax needed because | looks ahead
+      |\space|\relax % \relax needed because | looks ahead
       \donetrue
     \fi\fi\fi
     \ifdone
-      \doifelsevalue{\??id#2\c!interactie}\v!paginanummer
+      \doifelsevalue{\??id#2\c!interaction}\v!pagenumber
         {\bgroup
          \setbox0\hbox
            {\showlocation{\doregisterpage{#2}[#5]\ifnum#1=2\/\fi}}%
@@ -431,7 +431,7 @@
          {\doregistertexthowto{#1}{\strut\limitedregisterentry{#1}{##1}}}%
        \getvalue
          {#1\ifcase\currententrylevel\s!entrya\or\s!entryb\else\s!entryc\fi}%
-         {\doregisterpagehowto{#1}{\labeltexts\v!zie{#3}}}%
+         {\doregisterpagehowto{#1}{\labeltexts\v!see{#3}}}%
        \c!entryletter\c!entrya\c!entryb\c!entryc
        \global\let\c!entrya\relax
        \global\let\c!entryb\relax
@@ -447,35 +447,35 @@
 
 \def\doregistercharacter[#1]#2%
   {\global\firstregisterentrytrue
-   \doifelsevalue{\??id#1\c!aanduiding}\v!ja
+   \doifelsevalue{\??id#1\c!indicator}\v!yes
      {\executeifdefined
-        {\strippedcsname\doregistercharacter\getvalue{\??id#1\c!variant}}%
+        {\strippedcsname\doregistercharacter\getvalue{\??id#1\c!alternative}}%
         \doregistercharactera
         [#1]{#2}}
      {\noregistercharacter[#1]{#2}}}
 
 \def\noregistercharacter[#1]#2%
-  {\getvalue{\??id#1\c!voor}%
+  {\getvalue{\??id#1\c!before}%
    \goodbreak}
 
 % a = <before> <goodbreak> <character> <par> <after> <nobreak>
 
 \def\doregistercharactera[#1]#2%
-  {\getvalue{\??id#1\c!voor}%
+  {\getvalue{\??id#1\c!before}%
    \vskip\lineheight\goodbreak\vskip-\lineheight
    \ifhmode\unskip\else\noindent\fi % brrr
-   \getvalue{\??id#1\c!commando}{\doattributes{\??id#1}\c!letter\c!kleur{\strut\ignorespaces#2}}%
-   \getvalue{\??id#1\c!na}%
+   \getvalue{\??id#1\c!command}{\doattributes{\??id#1}\c!style\c!color{\strut\ignorespaces#2}}%
+   \getvalue{\??id#1\c!after}%
    \par\nobreak}
 
 % b = <goodbreak> <before> <character> <after> <nobreak>
 
 \def\doregistercharacterb[#1]#2% here no lineheight hackery ! ! !
-  {\getvalue{\??id#1\c!voor}%
+  {\getvalue{\??id#1\c!before}%
    \ifhmode\unskip\else\noindent\fi % brrr
-   \getvalue{\??id#1\c!commando}%
-     {\doattributes{\??id#1}\c!letter\c!kleur{\strut\ignorespaces#2}}%
-   \getvalue{\??id#1\c!na}%
+   \getvalue{\??id#1\c!command}%
+     {\doattributes{\??id#1}\c!style\c!color{\strut\ignorespaces#2}}%
+   \getvalue{\??id#1\c!after}%
    \nobreak}
 
 \def\doregistercharacterA[#1]#2{\doregistercharactera[#1]{\WORD{#2}}}
@@ -485,7 +485,7 @@
 %D \type {#2} can be \type {\string} itself.
 
 \def\doregisterreference[#1]#2%
-  {\doifvalue{\??id#1\c!refereren}\v!aan
+  {\doifvalue{\??id#1\c!referencing}\v!on
      {\pagereference[#1:#2]}}
 
 \def\dosetpageregisterletter#1#2%
@@ -609,7 +609,7 @@
       % aangepast
       \def\dodocommando[##1-##2]%
         {\gotonextinternal{\s!ind}{##1}{##2}{\box0}}%
-      \doifelsevalue{\??id#1\c!interactie}\v!paginanummer
+      \doifelsevalue{\??id#1\c!interaction}\v!pagenumber
         {\limitedregisterentry{#1}{#2}} % paginanummer
         {{\setbox0\hbox{\limitedregisterentry{#1}{\begstrut#2}}%
           \ifx\firstlistreference\empty  % tekst,alles
@@ -621,9 +621,9 @@
           \else
             \expandafter\dodocommando\expandafter[\firstlistreference]%
           \fi}}%
-      \doifvalue{\??id#1\c!nummer}\v!ja
-        {\hskip\getvalue{\??id#1\c!afstand}(\commalistsize)}%
-      \doifnotvalue{\??id#1\c!interactie}\v!tekst % paginanummer,alles
+      \doifvalue{\??id#1\c!number}\v!yes
+        {\hskip\getvalue{\??id#1\c!distance}(\commalistsize)}%
+      \doifnotvalue{\??id#1\c!interaction}\v!text % paginanummer,alles
         {\def\docommando##1##2%
            {{\setbox0\hbox{\showlocation{\hbox to 1em{\hss\symbol[##2]\hss}}}%
              \ifx##1\empty
@@ -631,10 +631,10 @@
              \else
                \expandafter\dodocommando\expandafter[##1]%
              \fi}}%
-         \hskip\getvalue{\??id#1\c!afstand}%
-         \docommando\firstlistreference\v!vorige
-         \docommando\midlistreference\v!ergens
-         \docommando\lastlistreference\v!volgende}%
+         \hskip\getvalue{\??id#1\c!distance}%
+         \docommando\firstlistreference\v!previous
+         \docommando\midlistreference\v!somewhere
+         \docommando\lastlistreference\v!next}%
       % tot hier
     \else
 % \endgraf
@@ -644,7 +644,7 @@
 \endgraf}
 
 \def\dosetregister#1%
-  {\doifelsevalue{\??id#1\c!koppeling}\v!ja
+  {\doifelsevalue{\??id#1\c!coupling}\v!yes
      {\ifautoregisterhack
         \dosetautoregister{#1}%
       \else
@@ -696,12 +696,12 @@
         {}}%
 \fi}
 
-\def\dokoppelregister[#1][#2]%
+\def\docoupleregister[#1][#2]%
   {\iflocation
      \ifcase0\countervalue{autolink:#1}\relax % only once
        \begingroup
        \let\dosetregister\doloadregisterlinks
-       \stelregisterin[#1][#2]%
+       \setupregister[#1][#2]%
        \doutilities{#1}\jobname{#1}\relax\relax
        \endgroup
        \ifautoregisterhack
@@ -712,8 +712,8 @@
      \fi
    \fi}
 
-\def\koppelregister
-  {\dodoubleempty\dokoppelregister}
+\def\coupleregister
+  {\dodoubleempty\docoupleregister}
 
 \def\dodocommandoprolinrefAA[#1-#2]%
   {\def\lastlistreference{#1-#2}}
@@ -741,7 +741,7 @@
 \def\docommandoprolinrefB#1#2#3%
   {\bgroup
    \ifx#2\empty
-     \doifvalue{\??id#1\c!onbekendeverwijzing}\v!leeg{\hskip1em}%
+     \doifvalue{\??id#1\c!unknownreference}\v!empty{\hskip1em}%
    \else
      \setbox0\hbox to 1em{\hss\showlocation{\symbol[#3]}\hss}%
      \expandafter\dodocommandoprolinrefB\expandafter[#2]%
@@ -770,14 +770,14 @@
          \let\prevlistreference\empty
          \let\nextlistreference\empty
        \fi
-       \setalignmentswitch{\getvalue{\??id#1\c!plaats}}%
+       \setalignmentswitch{\getvalue{\??id#1\c!location}}%
        \ifcase\alignmentswitch
          % links
-         \docommandoprolinrefB{#1}\prevlistreference\v!vorige
-         \docommandoprolinrefB{#1}\nextlistreference\v!volgende
+         \docommandoprolinrefB{#1}\prevlistreference\v!previous
+         \docommandoprolinrefB{#1}\nextlistreference\v!next
        \or
          % midden
-         \docommandoprolinrefB{#1}\prevlistreference\v!vorige
+         \docommandoprolinrefB{#1}\prevlistreference\v!previous
        \or
          % rechts
        \fi
@@ -790,11 +790,11 @@
          % links
        \or
          % midden
-         \docommandoprolinrefB{#1}\nextlistreference\v!volgende
+         \docommandoprolinrefB{#1}\nextlistreference\v!next
        \or
          % rechts
-         \docommandoprolinrefB{#1}\prevlistreference\v!vorige
-         \docommandoprolinrefB{#1}\nextlistreference\v!volgende
+         \docommandoprolinrefB{#1}\prevlistreference\v!previous
+         \docommandoprolinrefB{#1}\nextlistreference\v!next
        \fi}}
 
 \def\dodolinkedregister[#1][#2]#3% page auto link
@@ -839,11 +839,11 @@
      \pagereference[-:\s!lin:\internallistreference]%
      \pluscounter{autolink:#1}%
      \bgroup
-    %\setupinteraction[\c!kleur=,\c!contrastkleur=,\c!letter=]% kan sneller
-     \resetinteractionparameter\c!kleur
-     \resetinteractionparameter\c!contrastkleur
-     \resetinteractionparameter\c!letter
-     \naarbox
+    %\setupinteraction[\c!color=,\c!contrastcolor=,\c!style=]% kan sneller
+     \resetinteractionparameter\c!color
+     \resetinteractionparameter\c!contrastcolor
+     \resetinteractionparameter\c!style
+     \gotobox
        {\limitedregisterentry{#1}{\begstrut#2}}%
        [JS(SetRegisterEntry{\v!register,\countervalue{autolink:#1},#2,{\alllistreferences}})]%
      \egroup
@@ -865,8 +865,8 @@
 
 %D The first implementation used one main field with clones.
 %D In a 2500 page document this resulted in a rather (anoying)
-%D long start||up time. This \citeer {every page its own field}
-%D solution, combined with a \citeer {page open action}, works
+%D long start||up time. This \quote {every page its own field}
+%D solution, combined with a \quote {page open action}, works
 %D much faster, but is conceptually pretty weak.
 
 \def\complexregisterfield[#1]%
@@ -880,123 +880,117 @@
 
 \setupfield
   [\v!register]
-  [\c!breedte=10em,
-   \c!hoogte=3ex,
-   \c!uitlijnen=\v!midden,
-   \c!optie=\v!alleenleesbaar,
-   \c!plaats=\v!laag]
+  [\c!width=10em,
+   \c!height=3ex,
+   \c!align=\v!middle,
+   \c!option=\v!readonly,
+   \c!location=\v!low]
 
 \def\doinitializeautoregister#1%
   {\useJSscripts[reg]%
    \useJSpreamblenow{LinkedRegisters}%
-   \setupinteraction[\c!openpaginaactie=JS(UpdateRegisterField{\v!register})]%
+   \setupinteraction[\c!openpageaction=JS(UpdateRegisterField{\v!register})]%
    \definereference[\v!reset   \v!register][JS(ResetRegisterEntry{\v!register})]%
-   \definereference[\v!eerste  \v!register][JS(GotoFirstRegisterEntry{\v!register})]%
-   \definereference[\v!vorige  \v!register][JS(GotoPreviousRegisterEntry{\v!register})]%
-   \definereference[\v!volgende\v!register][JS(GotoNextRegisterEntry{\v!register})]%
-   \definereference[\v!laatste \v!register][JS(GotoLastRegisterEntry{\v!register})]}
+   \definereference[\v!first  \v!register][JS(GotoFirstRegisterEntry{\v!register})]%
+   \definereference[\v!previous  \v!register][JS(GotoPreviousRegisterEntry{\v!register})]%
+   \definereference[\v!next\v!register][JS(GotoNextRegisterEntry{\v!register})]%
+   \definereference[\v!last \v!register][JS(GotoLastRegisterEntry{\v!register})]}
 
 \def\doinitializelinkregister#1%
   {}
 
 % todo ruwe register
 
-\def\plaatsregister
-  {\dosingleargument\doplaatsregister}
+\def\placeregister
+  {\dodoubleempty\doplaceregister}
 
-\def\doplaatsregister[#1]%
-  {\def\currentregister{#1}%
-   \complexorsimpleempty\doplaatsregister}
+\def\doplaceregister[#1][#2]%
+  {\iffirstargument
+     \begingroup
+     \def\currentregister{#1}%
+     \setupregister[\currentregister][#2]%
+     \raggedright
+     \startcolumns
+       [\c!n=\getvalue{\??id\currentregister\c!n},
+        \c!balance=\getvalue{\??id\currentregister\c!balance},
+        \c!align=\getvalue{\??id\currentregister\c!align}]%
+     \dontcomplain
+     \startpacked[\v!blank]%
+     \doutilities\currentregister\jobname\currentregister\relax\par
+     \stoppacked
+     \stopcolumns
+     \endgroup
+   \fi}
 
-\def\complexdoplaatsregister[#1]%
-  {\begingroup
-   \stelregisterin[\currentregister][#1]%
-   \raggedright
-   \startcolumns
-     [\c!n=\getvalue{\??id\currentregister\c!n},
-      \c!balanceren=\getvalue{\??id\currentregister\c!balanceren},
-      \c!uitlijnen=\getvalue{\??id\currentregister\c!uitlijnen}]%
-   \mindermeldingen
-   \startopelkaar[\v!blanko]%
-   \doutilities\currentregister\jobname\currentregister\relax\par
-   \stopopelkaar
-   \stopcolumns
-   \endgroup}
+\def\completeregister
+  {\dodoubleempty\doplaceregister}
 
-% \def\complexdovolledigregister[#1]% \@EA's kunnen weg
-%   {\@EA\plaatsvolledig\@EA{\@EA\systemsuppliedchapter\@EA}%
-%      \@EA{\@EA\currentregister\@EA}%
-%      \@EA{\@EA\headtext\@EA{\currentregister}}%
-%      {\complexdoplaatsregister[#1]}}
+\def\docompleteregister[#1][#2]%
+  {\iffirstargument
+     \begingroup
+     \def\currentregister{#1}%
+     \expanded % the expansion is needed because we don't want \v!'s in the tuo file (french)
+       {\plaatsvolledig
+          {\noexpand\systemsuppliedchapter}%
+          {\currentregister}%
+          {\noexpand\headtext{\currentregister}}%
+          {\noexpand\placeregister[\currentregister][#2]}}%
+     \endgroup
+   \fi}
 
-\def\complexdovolledigregister[#1]% the expansion is needed because we don't want
-   {\expanded                     % \v!'s in the tuo file (french)
-      {\plaatsvolledig
-         {\noexpand\systemsuppliedchapter}%
-         {\currentregister}%
-         {\noexpand\headtext{\currentregister}}%
-         {\noexpand\complexdoplaatsregister[#1]}}}
-
-\def\dovolledigregister[#1]%
-  {\def\currentregister{#1}%
-   \complexorsimpleempty\dovolledigregister}
-
-\def\volledigregister
-  {\dosingleargument\doplaatsregister}
-
-\def\dodefinieerregister[#1][#2]%
-  {\stelregisterin[#1]%
+\def\dodefineregister[#1][#2]%
+  {\setupregister[#1]%
      [\c!n=2,
-      \c!balanceren=\v!ja,  % \v!nee komt niet zo vaak voor
-      \c!uitlijnen=\v!nee,
-      \c!voor=\blanko,      % binnen kolommen: \blanko[\v!regel]
-      \c!na=,
-      \c!symbool=,
-      \c!interactie=\v!paginanummer,
-      \c!variant=\v!a,
-      \c!afstand=1em,
-      \c!letter=\v!vet,
-      \c!paginaletter=\v!schuin,
-      \c!aanduiding=\v!ja,
-      \v!deel\v!nummer=\v!ja, % v
-      \v!hoofdstuk\c!nummer=\v!nee,
-      \c!criterium=\v!alles,
-      \c!commando=,
-      \c!refereren=\v!aan,
-      \c!plaats=\v!midden,
-      \c!maxbreedte=,
-      \c!nummer=\v!nee,
-      \c!onbekendeverwijzing=\v!leeg,
-      \c!expansie=]%
+      \c!balance=\v!yes,  % \v!no komt niet zo vaak voor
+      \c!align=\v!no,
+      \c!before=\blank,      % binnen kolommen: \blank[\v!line]
+      \c!after=,
+      \c!symbol=,
+      \c!interaction=\v!pagenumber,
+      \c!alternative=\v!a,
+      \c!distance=1em,
+      \c!style=\v!bold,
+      \c!pagestyle=\v!slanted,
+      \c!indicator=\v!yes,
+      \v!part\v!number=\v!yes, % v
+      \v!chapter\c!number=\v!no,
+      \c!criterium=\v!all,
+      \c!command=,
+      \c!referencing=\v!on,
+      \c!location=\v!middle,
+      \c!maxwidth=,
+      \c!number=\v!no,
+      \c!unknownreference=\v!empty,
+      \c!expansion=]%
    \presetheadtext[#1=\Word{#1}]%
    \setvalue{#1}%
      {\doregister{#1}}%
-   \setvalue{\e!gekoppelde#1}%
+   \setvalue{\e!coupled#1}%
      {\dolinkedregister{#1}}%
    \setvalue{\s!set#1}%
      {\dosetregister{#1}}%
    \setvalue{\s!reset#1}%
      {\doresetregister{#1}}%
    \addutilityreset{#1}%
-   \setvalue{\e!zie#1}%
+   \setvalue{\e!see#1}%
      {\dozieregister{#1}}%
-   \setvalue{\e!plaats#1}%
-     {\doplaatsregister[#1]}%
-   \setvalue{\e!volledige#1}%
-     {\dovolledigregister[#1]}%
-   \setvalue{\e!stel#1\e!in}[##1]%
+   \setvalue{\e!place#1}%
+     {\doplaceregister[#1]}%
+   \setvalue{\e!complete#1}%
+     {\docompleteregister[#1]}%
+   \setvalue{\e!setup#1\e!in}[##1]%
      {\getparameters[\??id#1][##1]}}
 
-\def\definieerregister%
-  {\dodoubleargument\dodefinieerregister}
+\def\defineregister%
+  {\dodoubleargument\dodefineregister}
 
 \def\registerlengte{\utilityregisterlength}
 
 \def\utilityregisterlength{0}
 
-\def\dobepaalregisterkenmerken[#1][#2]%
+\def\dodetermineregistercharacteristics[#1][#2]%
   {\begingroup
-   \stelregisterin[#1][#2]%
+   \setupregister[#1][#2]%
    \dosetreglevel{#1}%
    \setvalue{#1\s!from}%
      {\getvalue{#1\s!page}}%
@@ -1015,14 +1009,14 @@
      \resetsystemmode\v!register
    \fi}
 
-\def\bepaalregisterkenmerken
-  {\dodoubleempty\dobepaalregisterkenmerken}
+\def\determineregistercharacteristics
+  {\dodoubleempty\dodetermineregistercharacteristics}
 
-\definieerregister
+\defineregister
   [\v!index]
   [\v!indices]
 
-% \stelregisterin[index][koppeling=ja]
+% \setupregister[index][koppeling=ja]
 %
 % \stelveldenin
 %   [register][achtergrond=raster,kader=uit]

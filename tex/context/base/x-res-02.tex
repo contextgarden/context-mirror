@@ -1,5 +1,5 @@
 %D \module
-%D   [      file=x-res-02,
+%D   [      filefile=x-res-02,
 %D        version=2001.03.21,
 %D          title=\CONTEXT\ Style File,
 %D       subtitle=Figure Base Inclusion (I),
@@ -14,23 +14,23 @@
 %D This module enables non||\ConTeXt\  users to access the
 %D database. For this, you need to run
 %D
-%D \starttypen
+%D \starttyping
 %D texexec --pdf --use=fig-fake yourfile.xml
-%D \stoptypen
+%D \stoptyping
 %D
 %D The resulting file, \type {yourfile.fig}, can be loaded
 %D in the normal way. The figures can be accessed with:
 %D
-%D \starttypen
+%D \starttyping
 %D \getfigurefile{label}
 %D \getfigurepage{label}
-%D \stoptypen
+%D \stoptyping
 %D
 %D A a bonus, the following macro is defined:
 %D
-%D \starttypen
+%D \starttyping
 %D \includefigurefile width 10cm {label}
-%D \stoptypen
+%D \stoptyping
 
 \usemodule[res-00]
 

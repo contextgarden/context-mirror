@@ -614,9 +614,12 @@ vardef transparent(expr n, t, c) =
        elseif is_spot : spotcolorpattern[bluepart cc]
        else           : dddecimal cc fi ;
   % check if this one is already used
-%   ss := "tr_" & s ;
-%   ss := cleanstring(ss) ;
   ss := cleanstring("tr_" & s) ;
+  % we now have rather unique names, i.e. a color spec of .234 becomes
+  % tr..._234.... and metapost gives a number overflow (parse error)
+  % for variables like tr_12345678 which may result from many decimal
+  % positions (imo mp bug)
+  ss := asciistring(ss) ;
   % efficiency hack
   if expandafter unknown scantokens(ss) :
     ok := false ; % not yet defined

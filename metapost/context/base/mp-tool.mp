@@ -2130,21 +2130,34 @@ enddef ;
 % obscure macros: create var from string and replace - and :
 % (needed for process color id's)
 
-string _clean_ascii[] ;
+string _clean_ascii_[] ;
 
 def register_dirty_chars(expr str) =
     for i = 0 upto length(str)-1 :
-        _clean_ascii[ASCII substring(i,i+1) of str] := "_" ;
+        _clean_ascii_[ASCII substring(i,i+1) of str] := "_" ;
     endfor ;
 enddef ;
 
-register_dirty_chars("+-*/:;.,") ;
+register_dirty_chars("+-*/:;., ") ;
 
 vardef cleanstring (expr s) =
-  save ss ; string ss, si ; ss = "" ;
+  save ss ; string ss, si ; ss = "" ; save i ;
   for i=0 upto length(s) :
     si := substring(i,i+1) of s ;
-    ss := ss & if known _clean_ascii[ASCII si] : _clean_ascii[ASCII si] else : si fi ;
+    ss := ss & if known _clean_ascii_[ASCII si] : _clean_ascii_[ASCII si] else : si fi ;
+  endfor ;
+  ss
+enddef ;
+
+vardef asciistring (expr s) =
+  save ss ; string ss, si ; ss = "" ; save i ;
+  for i=0 upto length(s) :
+    si := substring(i,i+1) of s ;
+    if (ASCII si >= ASCII "0") and (ASCII si <= ASCII "9") :
+        ss := ss & char(scantokens(si) + ASCII "A") ;
+    else :
+        ss := ss & si ;
+    fi ;
   endfor ;
   ss
 enddef ;

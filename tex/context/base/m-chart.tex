@@ -1,5 +1,5 @@
 %D \module
-%D   [       file=m-chart,
+%D   [       filefile=m-chart,
 %D        version=1998.10.10,
 %D          title=\CONTEXT\ Modules,
 %D       subtitle=Flow Charts,
@@ -60,8 +60,8 @@
 
 \unprotect
 
-\definieersorteren [flowchart] [flowcharts] [\v!geen] % no access
-\stelsorterenin    [flowchart] [\c!status=\v!stop]    % off by default
+\definesorting [flowchart] [flowcharts] [\v!none] % no access
+\setupsorting    [flowchart] [\c!state=\v!stop]    % off by default
 
 \def\@FLOW@{@FLOW@}
 \def\@FLOC@{@FLOC@}
@@ -79,7 +79,7 @@
 
 \def\FLOWbufferprefix{flw-}
 
-\def\processFLOWbuffer#1{\haalbuffer[\FLOWbufferprefix#1]}
+\def\processFLOWbuffer#1{\getbuffer[\FLOWbufferprefix#1]}
 \def\typeFLOWbuffer   #1{\typebuffer[\FLOWbufferprefix#1]}
 
 \def\setFLOWname#1#2% funny hack that makes sure that we get
@@ -157,8 +157,8 @@
      [\s!dummy]
      [{\externalfigure
          [#1]
-         [\c!breedte=\overlaywidth,
-          \c!hoogte=\overlayheight]}]%
+         [\c!width=\overlaywidth,
+          \c!height=\overlayheight]}]%
    \overlay{\s!dummy}}
 
 \def\doFLOWtext
@@ -221,14 +221,14 @@
 \def\setupFLOWsets  {\dodoubleargument\getparameters[\@@FLOX]}
 
 \setupFLOWcharts
-  [\c!optie=,
-   \c!korps=,
-   \c!punt=,  % private option
-   \c!breedte=12\bodyfontsize,
-   \c!hoogte=7\bodyfontsize,
-   \c!maxbreedte=,
-   \c!maxhoogte=,
-   \c!offset=\v!standaard, % == auto offset
+  [\c!option=,
+   \c!bodyfont=,
+   \c!dot=,  % private option
+   \c!width=12\bodyfontsize,
+   \c!height=7\bodyfontsize,
+   \c!maxwidth=,
+   \c!maxheight=,
+   \c!offset=\v!standard, % == auto offset
    \c!dx=2\bodyfontsize,
    \c!dy=2\bodyfontsize,
    \c!nx=0, % 1,
@@ -237,36 +237,36 @@
    \c!y=1,
    \c!autofocus=,
    \c!focus=,
-   \c!achtergrond=,      % \v!kleur,
-   \c!achtergrondkleur=\s!white,
-   \c!lijndikte=\linewidth,
-   \c!kader=\v!uit,
-   \c!kaderkleur=]
+   \c!background=,      % \v!color,
+   \c!backgroundcolor=\s!white,
+   \c!rulethickness=\linewidth,
+   \c!frame=\v!off,
+   \c!framecolor=]
 
 \setupFLOWlines
-  [\c!hoek=\v!rond,
-   \c!pijl=\v!ja,
-   \c!streep=\v!nee,
-   \c!straal=.375\bodyfontsize,      % 2.5\c!lijndikte
-   \c!kleur=FLOWlinecolor,
-   \c!lijndikte=.15\bodyfontsize,  % 2pt,
-   \c!offset=\v!geen]
+  [\c!corner=\v!round,
+   \c!arrow=\v!yes,
+   \c!dash=\v!no,
+   \c!radius=.375\bodyfontsize,      % 2.5\c!rulethickness
+   \c!color=FLOWlinecolor,
+   \c!rulethickness=.15\bodyfontsize,  % 2pt,
+   \c!offset=\v!none]
 
 \setupFLOWshapes
   [\c!default=action,
-   \c!kaderkleur=FLOWframecolor,
-   \c!achtergrond=\v!kleur,
-   \c!achtergrondkleur=FLOWbackgroundcolor,
-   \c!achtergrondraster=\@@rsraster,
-   \c!lijndikte=.15\bodyfontsize,  % 2pt,
+   \c!framecolor=FLOWframecolor,
+   \c!background=\v!color,
+   \c!backgroundcolor=FLOWbackgroundcolor,
+   \c!backgroundscreen=\@@rsscreen,
+   \c!rulethickness=.15\bodyfontsize,  % 2pt,
    \c!offset=.5\bodyfontsize]
 
 \setupFLOWfocus
-  [\c!kaderkleur=FLOWfocuscolor,
-   \c!achtergrond=\@@FLOSachtergrond,
-   \c!achtergrondkleur=\@@FLOSachtergrondkleur,
-   \c!achtergrondraster=\@@FLOSachtergrondraster,
-   \c!lijndikte=\@@FLOSlijndikte,
+  [\c!framecolor=FLOWfocuscolor,
+   \c!background=\@@FLOSbackground,
+   \c!backgroundcolor=\@@FLOSbackgroundcolor,
+   \c!backgroundscreen=\@@FLOSbackgroundscreen,
+   \c!rulethickness=\@@FLOSrulethickness,
    \c!offset=\@@FLOSoffset]
 
 \definecolor [FLOWfocuscolor]      [s=.2]
@@ -373,7 +373,7 @@
   {\doifundefinedelse{\@FLOW@-#1}
      {\writestatus{FLOW}{unknown chart #1}%
       \framed
-        [\c!breedte=12\bodyfontsize,\c!hoogte=8\bodyfontsize]
+        [\c!width=12\bodyfontsize,\c!height=8\bodyfontsize]
         {\tttf [chart #1]}}
      {\dodogetFLOWchart[#1][#2]}}
 
@@ -398,16 +398,16 @@
    \processFLOWbuffer\currentFLOWnumber
    \ifcase\@@FLOWnx\relax \let\@@FLOWnx\FLOWwidth  \fi
    \ifcase\@@FLOWny\relax \let\@@FLOWny\FLOWheight \fi
-   \doifnothing{\@@FLOWmaxbreedte\@@FLOWmaxhoogte}{\FLOWscalingfalse}%
+   \doifnothing{\@@FLOWmaxwidth\@@FLOWmaxheight}{\FLOWscalingfalse}%
    \ifFLOWscaling
-     \doifnothing{\@@FLOWmaxbreedte}{\let\@@FLOWmaxbreedte\maxdimen}%
-     \doifnothing{\@@FLOWmaxhoogte} {\let\@@FLOWmaxhoogte \maxdimen}%
+     \doifnothing{\@@FLOWmaxwidth}{\let\@@FLOWmaxwidth\maxdimen}%
+     \doifnothing{\@@FLOWmaxheight} {\let\@@FLOWmaxheight \maxdimen}%
      \scratchcounter=\bodyfontpoints
      \doloop  % NOG FONTSWITCH OM EX EN EM TE LATEN WERKEN
        {\ifnum\scratchcounter>1 % NU DIMENSIONS IN TERMS OF BODYFONTSIZE
           \bodyfontsize=\the\scratchcounter pt
-          \dimen0=\@@FLOWmaxbreedte
-          \dimen2=\@@FLOWbreedte
+          \dimen0=\@@FLOWmaxwidth
+          \dimen2=\@@FLOWwidth
           \dimen4=\@@FLOWdx
           \advance\dimen2 2\dimen4
           \dimen2=\@@FLOWnx\dimen2
@@ -415,8 +415,8 @@
           \ifdim\dimen2>\dimen0
             \advance\scratchcounter \minusone
           \else
-            \dimen0=\@@FLOWmaxhoogte
-            \dimen2=\@@FLOWhoogte
+            \dimen0=\@@FLOWmaxheight
+            \dimen2=\@@FLOWheight
             \dimen4=\@@FLOWdy
             \advance\dimen2 2\dimen4
             \dimen2=\@@FLOWny\dimen2
@@ -433,46 +433,46 @@
      \expanded{\switchtobodyfont[\the\scratchcounter pt]}%
      \forgetall
      \offinterlineskip
-   \else\ifx\@@FLOWkorps\empty\else
-     \expanded{\switchtobodyfont[\@@FLOWkorps]}% \expanded ?
+   \else\ifx\@@FLOWbodyfont\empty\else
+     \expanded{\switchtobodyfont[\@@FLOWbodyfont]}% \expanded ?
    \fi\fi
    \global\let\FLOWcells\empty
-   \dimen0=\@@FLOWbreedte
+   \dimen0=\@@FLOWwidth
    \edef\FLOWshapewidth{\the\dimen0}%
    \dimen2=\@@FLOWdx
    \advance\dimen0 2\dimen2
    \edef\FLOWgridwidth{\the\dimen0}%
-   \dimen0=\@@FLOWhoogte
+   \dimen0=\@@FLOWheight
    \edef\FLOWshapeheight{\the\dimen0}%
    \dimen2=\@@FLOWdy
    \advance\dimen0 2\dimen2
    \edef\FLOWgridheight{\the\dimen0}%
-   \scratchdimen=\@@FLOSlijndikte
-   \edef\@@FLOSlijndikte{\the\scratchdimen}%
-   \scratchdimen=\@@FLOFlijndikte
-   \edef\@@FLOFlijndikte{\the\scratchdimen}%
-   \scratchdimen=\@@FLOLlijndikte
-   \edef\@@FLOLlijndikte{\the\scratchdimen}%
-   \ifdim\@@FLOLstraal<2.5\scratchdimen
+   \scratchdimen=\@@FLOSrulethickness
+   \edef\@@FLOSrulethickness{\the\scratchdimen}%
+   \scratchdimen=\@@FLOFrulethickness
+   \edef\@@FLOFrulethickness{\the\scratchdimen}%
+   \scratchdimen=\@@FLOLrulethickness
+   \edef\@@FLOLrulethickness{\the\scratchdimen}%
+   \ifdim\@@FLOLradius<2.5\scratchdimen
      \scratchdimen=2.5\scratchdimen
-     \edef\@@FLOLstraal{\the\scratchdimen}%
-     \ifdim\@@FLOLstraal>\@@FLOWdx
+     \edef\@@FLOLradius{\the\scratchdimen}%
+     \ifdim\@@FLOLradius>\@@FLOWdx
        \scratchdimen=\@@FLOWdx
-       \edef\@@FLOLstraal{\the\scratchdimen}%
+       \edef\@@FLOLradius{\the\scratchdimen}%
      \fi
-     \ifdim\@@FLOLstraal>\@@FLOWdy
+     \ifdim\@@FLOLradius>\@@FLOWdy
        \scratchdimen=\@@FLOWdy
-       \edef\@@FLOLstraal{\the\scratchdimen}%
+       \edef\@@FLOLradius{\the\scratchdimen}%
      \fi
    \else
-     \scratchdimen=\@@FLOLstraal
-     \edef\@@FLOLstraal{\the\scratchdimen}%
+     \scratchdimen=\@@FLOLradius
+     \edef\@@FLOLradius{\the\scratchdimen}%
    \fi
    \processaction % magic 2.5
      [\@@FLOWoffset]
-     [      \v!geen=>\scratchdimen=-2.5\scratchdimen,
+     [      \v!none=>\scratchdimen=-2.5\scratchdimen,
          \v!overlay=>\scratchdimen=-2.5\scratchdimen,
-       \v!standaard=>\scratchdimen=\scratchdimen,
+       \v!standard=>\scratchdimen=\scratchdimen,
          \s!unknown=>\scratchdimen=\@@FLOWoffset,
          \s!default=>\scratchdimen=-2.5\scratchdimen]%
    \edef\@@FLOW@@offset{\the\scratchdimen}%
@@ -486,10 +486,10 @@
      grid_height            := \FLOWgridheight ;
      shape_width            := \FLOWshapewidth ;
      shape_height           := \FLOWshapeheight ;
-     connection_line_width  := \@@FLOLlijndikte ;
-     connection_smooth_size := \@@FLOLstraal ;
-     connection_arrow_size  := \@@FLOLstraal ;
-     connection_dash_size   := \@@FLOLstraal ;
+     connection_line_width  := \@@FLOLrulethickness ;
+     connection_smooth_size := \@@FLOLradius ;
+     connection_arrow_size  := \@@FLOLradius ;
+     connection_dash_size   := \@@FLOLradius ;
 %  \stopMPdrawing
 %  \def\getFLOWlocationX##1,##2\end%
 %    {\ifnum0##1>\FLOWwidth \xdef\FLOWwidth {##1}\fi
@@ -511,28 +511,28 @@
      reverse_y := true ;
      chart_offset := \@@FLOW@@offset ;
    \stopMPdrawing
-   \doifelsenothing\@@FLOWachtergrondkleur
+   \doifelsenothing\@@FLOWbackgroundcolor
      {\startMPdrawing
       chart_background_color := white ;
       \stopMPdrawing}
      {\startMPdrawing
-      chart_background_color := \MPcolor{\@@FLOWachtergrondkleur} ;
+      chart_background_color := \MPcolor{\@@FLOWbackgroundcolor} ;
       \stopMPdrawing}%
-   \doif\@@FLOWoptie\v!test
+   \doif\@@FLOWoption\v!test
      {\startMPdrawing
         show_con_points := true ;
         show_mid_points := true ;
         show_all_points := true ;
       \stopMPdrawing}%
    \processaction % private
-     [\@@FLOWpunt]
-     [     \v!ja=>\startMPdrawing
+     [\@@FLOWdot]
+     [     \v!yes=>\startMPdrawing
                     show_con_points := true ;
                     show_mid_points := true ;
                     show_all_points := true ;
                   \stopMPdrawing,
       \s!unknown=>\startMPdrawing
-                    show_\@@FLOWpunt_points := true ;
+                    show_\@@FLOWdot_points := true ;
                   \stopMPdrawing]%
    \let\startFLOWcell\startFLOWcellB
    \resetFLOWlocation
@@ -577,7 +577,7 @@
    \setbox4\hbox
      {\hskip\@@FLOW@@offset\lower\@@FLOW@@offset\box4}%
    \wd4\wd0\ht4\ht0\dp4\dp0
-   \doifelse\@@FLOWoptie\v!test
+   \doifelse\@@FLOWoption\v!test
      {\setbox6\vbox
         {\forgetall
          \vskip\@@FLOW@@offset
@@ -585,8 +585,8 @@
          \basegrid
            [\c!x=\@@FLOWx,\c!nx=\@@FLOWnx,\c!dx=\withoutpt\FLOWgridwidth,
             \c!y=\@@FLOWy,\c!ny=\@@FLOWny,\c!dy=\withoutpt\FLOWgridheight,
-            \c!xstap=1,\c!ystap=1,
-            \c!eenheid=pt,\c!plaats=\v!midden]}%
+            \c!xstep=1,\c!ystep=1,
+            \c!unit=pt,\c!location=\v!middle]}%
       \wd6\wd0\ht6\ht0\dp6\dp0
       \setbox8\vbox
         {\forgetall\offinterlineskip
@@ -600,23 +600,23 @@
                     {\hbox to \FLOWgridwidth
                        {\hfill
                         \framed
-                          [\c!kaderkleur=red,
-                           \c!breedte=\FLOWshapewidth,
-                           \c!hoogte=\FLOWshapeheight]
+                          [\c!framecolor=red,
+                           \c!width=\FLOWshapewidth,
+                           \c!height=\FLOWshapeheight]
                           {}%
                         \hfill}}}
                \vfill}}}%
       \wd8\wd0\ht8\ht0\dp8\dp0
       \framed
-        [\c!offset=\v!overlay,\c!kaderkleur=green]
+        [\c!offset=\v!overlay,\c!framecolor=green]
         {\hbox{\box4\hskip-\wd0\box0\hskip-\wd2\box2\hskip-\wd6\box6\hskip-\wd8\box8}}}
      {\framed
         [\c!offset=\v!overlay,
-         \c!kader=\@@FLOWkader,
-         \c!lijndikte=\@@FLOWlijndikte,
-         \c!kaderkleur=\@@FLOWkaderkleur,
-         \c!achtergrond=\@@FLOWachtergrond,
-         \c!achtergrondkleur=\@@FLOWachtergrondkleur]
+         \c!frame=\@@FLOWframe,
+         \c!rulethickness=\@@FLOWrulethickness,
+         \c!framecolor=\@@FLOWframecolor,
+         \c!background=\@@FLOWbackground,
+         \c!backgroundcolor=\@@FLOWbackgroundcolor]
         {\hbox{\box4\hskip-\wd0\box0\hskip-\wd2\box2}}}%
   %\message{[\FLOWcells]}\wait
    \egroup}
@@ -645,7 +645,7 @@
    \ifx\FLOWshape\empty
      \global\let\FLOWshape\@@FLOSdefault
    \fi
-   \doifnot\FLOWshape{none} % {\v!geen}
+   \doifnot\FLOWshape{none} % {\v!none}
      {\ExpandBothAfter\doifinsetelse{\FLOWshape}{\FLOWshapes}
         {\edef\FLOWshapetag{shape_\FLOWshape}% beter \expanded
          \@EA\setFLOWname\@EA\FLOWshapetag\@EA{\FLOWshapetag}}
@@ -661,17 +661,17 @@
         \startMPdrawing
           begin_sub_chart ;
           \ifcase\FLOWstate
-            shape_line_color := \MPcolor{\@@FLOLkleur} ;
-            shape_fill_color := \MPcolor{\@@FLOLkleur} ;
-            shape_line_width := \@@FLOLlijndikte ;
+            shape_line_color := \MPcolor{\@@FLOLcolor} ;
+            shape_fill_color := \MPcolor{\@@FLOLcolor} ;
+            shape_line_width := \@@FLOLrulethickness ;
           \or
-            shape_line_color := \MPcolor{\@@FLOFkaderkleur} ;
-            shape_fill_color := \MPcolor{\@@FLOFachtergrondkleur} ;
-            shape_line_width := \@@FLOFlijndikte ;
+            shape_line_color := \MPcolor{\@@FLOFframecolor} ;
+            shape_fill_color := \MPcolor{\@@FLOFbackgroundcolor} ;
+            shape_line_width := \@@FLOFrulethickness ;
           \or
-            shape_line_color := \MPcolor{\@@FLOSkaderkleur} ;
-            shape_fill_color := \MPcolor{\@@FLOSachtergrondkleur} ;
-            shape_line_width := \@@FLOSlijndikte ;
+            shape_line_color := \MPcolor{\@@FLOSframecolor} ;
+            shape_fill_color := \MPcolor{\@@FLOSbackgroundcolor} ;
+            shape_line_width := \@@FLOSrulethickness ;
           \fi
          %\ifx\FLOWoverlay\empty
          %  peepshape := false ;
@@ -718,16 +718,16 @@
      \ifx\FLOWto\FLOWorigin \else
        \FLOWsetconnect{#1}%
        \ifx\cFLOWfrom\empty \else
-         \doifelse\@@FLOLhoek\v!rond
+         \doifelse\@@FLOLcorner\v!round
            {\startMPdrawing smooth     := true  ; \stopMPdrawing}
            {\startMPdrawing smooth     := false ; \stopMPdrawing}%
-         \doifelse\@@FLOLstreep\v!ja
+         \doifelse\@@FLOLdash\v!yes
            {\startMPdrawing dashline   := true  ; \stopMPdrawing}
            {\startMPdrawing dashline   := false ; \stopMPdrawing}%
-         \doifelse\@@FLOLpijl\v!ja
+         \doifelse\@@FLOLarrow\v!yes
            {\startMPdrawing arrowtip   := true  ; \stopMPdrawing}
            {\startMPdrawing arrowtip   := false ; \stopMPdrawing}%
-         \doifelse\@@FLOLoffset\v!geen
+         \doifelse\@@FLOLoffset\v!none
            {\startMPdrawing touchshape := true  ; \stopMPdrawing}
            {\startMPdrawing touchshape := false ; \stopMPdrawing}%
 %\doifsomething{#2}
@@ -736,8 +736,8 @@
 %   \stopMPdrawing}%
          \startMPdrawing
 \doFLOWdisplace[0#2,0,0]%
-           connection_line_color := \MPcolor{\@@FLOLkleur} ;
-           connection_line_width := \@@FLOLlijndikte ;
+           connection_line_color := \MPcolor{\@@FLOLcolor} ;
+           connection_line_width := \@@FLOLrulethickness ;
            connect_\cFLOWfrom_\cFLOWto (\FLOWfrom,\zFLOWfrom) (\FLOWto,\zFLOWto) ;
 \doFLOWdisplace[0,0,0]%
          \stopMPdrawing
@@ -839,29 +839,29 @@
      \setbox0=\hbox
        {\ifx\FLOWalign\empty\else
           \setupframed
-            [\c!uitlijnen=\v!normaal,\c!onder=\vfill,\c!boven=\vfill]%
+            [\c!align=\v!normal,\c!bottom=\vfill,\c!top=\vfill]%
           \@EA\processallactionsinset\@EA
             [\FLOWalign]
-            [t=>{\setupframed[\c!onder=\vfill,\c!boven=]},
-             b=>{\setupframed[\c!onder=,\c!boven=\vfill]},
-             l=>{\setupframed[\c!uitlijnen=\v!rechts]},
-             r=>{\setupframed[\c!uitlijnen=\v!links]},
-             m=>{\setupframed[\c!uitlijnen=\v!midden]},
-             c=>{\setupframed[\c!uitlijnen=\v!midden]}]%
+            [t=>{\setupframed[\c!bottom=\vfill,\c!top=]},
+             b=>{\setupframed[\c!bottom=,\c!top=\vfill]},
+             l=>{\setupframed[\c!align=\v!right]},
+             r=>{\setupframed[\c!align=\v!left]},
+             m=>{\setupframed[\c!align=\v!middle]},
+             c=>{\setupframed[\c!align=\v!middle]}]%
         \fi
-        \doifelse\FLOWshape{none} % {\v!geen}
+        \doifelse\FLOWshape{none} % {\v!none}
           {\setupframed[\c!offset=\v!overlay]}
          %{\setupframed[\c!offset=.5\bodyfontsize]}%
           {\setupframed[\c!offset=\@@FLOSoffset]}%
         \framed
-          [\c!kader=\v!uit,
-           \c!breedte=\FLOWshapewidth,\c!hoogte=\FLOWshapeheight]
+          [\c!frame=\v!off,
+           \c!width=\FLOWshapewidth,\c!height=\FLOWshapeheight]
           {\FLOWtext}}%
      \showFLOWhelp0
      \ifx\FLOWdestination\empty\else
        \setbox0=\hbox
-         {\setupinteraction[\c!kleur=,\c!contrastkleur=]%
-          \naarbox{\box0}[\FLOWdestination]}%
+         {\setupinteraction[\c!color=,\c!contrastcolor=]%
+          \gotobox{\box0}[\FLOWdestination]}%
      \fi
      \edef\FLOWdx{\the\dimen0}%
      \edef\FLOWdy{\the\dimen2}%
@@ -949,10 +949,10 @@
      \edef\FLOWdy{\the\dimen2}%
      \setbox0=\hbox
        {\framed
-          [\c!kader=\v!uit,
-           \c!achtergrond={\@@FLOWachtergrond,\FLOWoverlay},
-           \c!achtergrondkleur=\@@FLOSachtergrondkleur,
-           \c!breedte=\FLOWshapewidth,\c!hoogte=\FLOWshapeheight]
+          [\c!frame=\v!off,
+           \c!background={\@@FLOWbackground,\FLOWoverlay},
+           \c!backgroundcolor=\@@FLOSbackgroundcolor,
+           \c!width=\FLOWshapewidth,\c!height=\FLOWshapeheight]
           {}}%
      \setbox0=\hbox{\hskip\FLOWdx\lower\FLOWdy\box0}%
      \smashbox0
@@ -1055,7 +1055,7 @@
      {\setbox#1=\hbox
         {\setbox\scratchbox=\hbox{\lower\@@FLOWdy\hbox
            {\helpbutton
-              [\c!breedte=\wd0,\c!kleur=,\c!hoogte=\@@FLOWdy,\c!kader=\v!nee]%
+              [\c!width=\wd0,\c!color=,\c!height=\@@FLOWdy,\c!frame=\v!no]%
               [\FLOWhelp]}}%
          \smashbox\scratchbox
          \setbox#1=\vbox
@@ -1088,9 +1088,9 @@
 \setupFLOWsplit%
   [\c!nx=3,\c!ny=3,
    \c!dx=1,\c!dy=1,
-   \c!commando=,
-   \c!markering=\v!aan,
-   \c!voor=,\c!na=]
+   \c!command=,
+   \c!marking=\v!on,
+   \c!before=,\c!after=]
 
 \def\FLOWsplitx {1}
 \def\FLOWsplity {1}
@@ -1102,9 +1102,9 @@
 
 %D While splitting, the following variables are available:
 %D
-%D \starttypen
+%D \starttyping
 %D \FLOWsplitnx \FLOWsplitny \FLOWsplitx \FLOWsplity
-%D \stoptypen
+%D \stoptyping
 
 \def\doFLOWcharts[#1][#2]%
   {\bgroup
@@ -1150,35 +1150,35 @@
 
 \def\dododoFLOWcharts[#1][#2]%
   {\bgroup
-   \@@FLOTvoor
-   \doifnot\@@FLOTmarkering\v!aan{\let\cuthbox\hbox}%
+   \@@FLOTbefore
+   \doifnot\@@FLOTmarking\v!on{\let\cuthbox\hbox}%
    \cuthbox
-     {\@@FLOTcommando
+     {\@@FLOTcommand
         {\FLOWchart[#1][#2,
            \c!x=\@@FLOTx,\c!nx=\@@FLOTnx,
            \c!y=\@@FLOTy,\c!ny=\@@FLOTny]}}%
-   \@@FLOTna
+   \@@FLOTafter
    \egroup}
 
 %D An example of splitting is given below:
 %D
-%D \starttypen
+%D \starttyping
 %D \setupFLOWsplit
 %D   [nx=5,ny=10,
 %D    dx=0,dy=0,
 %D    before=,
-%D    after=\pagina]
+%D    after=\page]
 %D
 %D \FLOWcharts[mybigflow]
-%D \stoptypen
+%D \stoptyping
 %D
 %D Or, one can say:
 %D
-%D \starttypen
-%D \splitsplaatsblok
-%D   {\plaatsfiguur{What a big flowchart this is!}}
+%D \starttyping
+%D \splitfloat
+%D   {\placefigure{What a big flowchart this is!}}
 %D   {\FLOWcharts[mybigflow]}
-%D \stoptypen
+%D \stoptyping
 
 %D \macros
 %D   {typeFLOWchart}
@@ -1198,7 +1198,7 @@
 
 %D New:
 %D
-%D \starttypen
+%D \starttyping
 %D \setupFLOWcharts[command=\Whow]
 %D
 %D \startFLOWset[convert-en] % [tag][convert-en]
@@ -1213,13 +1213,13 @@
 %D \FLOWset[convert-en] % [tag]
 %D
 %D \def\Whow#1%
-%D   {\setuphead[status=hoog]
+%D   {\setuphead[state=high]
 %D    \startstandardmakeup
 %D    \centerbox{#1}
 %D    \stopstandardmakeup}
 %D
 %D \FLOWset[convert-en] % [tag]
-%D \stoptypen
+%D \stoptyping
 
 \def\startFLOWset
   {\dodoubleempty\dostartFLOWset}
@@ -1247,7 +1247,7 @@
 \def\dodohandleFLOWset#1#2#3#4% tag subtag name settings
   {\increment\currentFLOWset
    \bgroup
-   \@@FLOXcommando
+   \@@FLOXcommand
      {\ifnum\currentFLOWset=1 \pagereference[#1]\fi
       \doifsomething{#2}
         {\setupreferencing[\c!prefix=]%
@@ -1265,7 +1265,7 @@
 \newcounter\currentFLOWset
 
 \setupFLOWsets
-  [\c!commando=]
+  [\c!command=]
 
 %D This will be an option:
 

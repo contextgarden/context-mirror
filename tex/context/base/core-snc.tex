@@ -1,5 +1,5 @@
 %D \module
-%D   [       file=core-snc,
+%D   [       filefile=core-snc,
 %D        version=2003.12.01,
 %D          title=\CONTEXT\ Core Macros,
 %D       subtitle=Synchronization Support,
@@ -112,24 +112,19 @@
 \def\dodoresyncposition #1#2{\dodosyncposition{#1}{#2}\s!reset}
 \def\dodopresyncposition#1#2{\dodosyncposition{#1}{#2}\s!preset}
 
-\def\doresyncposition [#1][#2]{\setxvalue{\s!reset:\s!syncpos:#1}{\noexpand\dodoresyncposition{#1}{#2}}}
+\def\doresyncposition [#1][#2]{\setxvalue{\s!reset :\s!syncpos:#1}{\noexpand\dodoresyncposition{#1}{#2}}}
 \def\dopresyncposition[#1][#2]{\setxvalue{\s!preset:\s!syncpos:#1}{\noexpand\dodopresyncposition{#1}{#2}}}
 
-% \appendtoks \the \resetsyncpositions \to \everypar
-% \appendtoks \the\presetsyncpositions \to \everypar
+\def\flushsyncpositions % this order !
+  {\the\presetsyncpositions
+   \the\resetsyncpositions}
 
-\appendtoks \the \presetsyncpositions \to \everypar
-\appendtoks \the \resetsyncpositions  \to \everypar
+% \appendtoks \flushsyncpositions \to \everypar
+% \appendtoks \flushsyncpositions \to \everyheadstart
 
 % \explicitneverypar -> in grid snapper, eerst testen
 %
-% \appendtoks \the\resetsyncpositions  \to \neverypar
-% \appendtoks \the\presetsyncpositions \to \neverypar
-
-\appendtoks
-  \the\presetsyncpositions
-  \the\resetsyncpositions
-\to \everyheadstart
+% \appendtoks \flushsyncpositions \to \neverypar
 
 \def\flushsyncxxsets#1#2%
   {\setbox\scratchbox\hbox{\the#1}%

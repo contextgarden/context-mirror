@@ -1,5 +1,5 @@
 %D \module
-%D   [       file=core-uti,
+%D   [       filefile=core-uti,
 %D        version=1997.03.31,
 %D          title=\CONTEXT\ Core Macros,
 %D       subtitle=Utility File Handling,
@@ -17,6 +17,7 @@
 
 % todo : safe lan etc too
 % todo : load all commands at once (tok)
+% todo : merge status info patch into tui file (language, encoding, etc),
 
 % Utility-file
 %
@@ -299,9 +300,9 @@
      \doifsomething{#3}
        {\showmessage\m!systems9{{#3}}%
         \ifvoorlopig
-          \blanko
+          \blank
           \type{[\currentmessagetext]}%
-          \blanko
+          \blank
         \fi}%
    \fi
    \disableinitializevariables
@@ -578,7 +579,7 @@
 % left over
 
 \def\plaatsvolledig#1#2#3#4%   kop, ref, tit, do
-  {#1[#2]{#3}#4\pagina[\v!ja]}
+  {#1[#2]{#3}#4\page[\v!yes]}
 
 % Experiment
 %

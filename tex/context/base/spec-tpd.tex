@@ -1,5 +1,5 @@
 %D \module
-%D   [       file=spec-tpd,
+%D   [       filefile=spec-tpd,
 %D        version=1996.01.25,
 %D          title=\CONTEXT\ Special Macros,
 %D       subtitle=\PDFTEX,
@@ -146,9 +146,9 @@
 
 %D This means that by saying
 %D
-%D \starttypen
+%D \starttyping
 %D \usespecials[tpd]
-%D \stoptypen
+%D \stoptyping
 %D
 %D we get ourselves full \PDF\ output.
 
@@ -262,13 +262,13 @@
 
 %D The old, \TEX\ base \PDF\ insertion macro:
 %D
-%D \starttypen
+%D \starttyping
 %D \def\dotpdinsertpdf#1#2#3#4#5#6#7#8#9%
 %D   {\beforesplitstring#1\at.\to\filename
 %D    \scratchdimen=#3pt \PointsToReal{.01\scratchdimen}\xscale
 %D    \scratchdimen=#4pt \PointsToReal{.01\scratchdimen}\yscale
 %D    \convertPDFtoPDF{\filename.pdf}\xscale\yscale{#5}{#6}{#7}{#8}}
-%D \stoptypen
+%D \stoptyping
 %D
 %D superseded by the next macros.
 
@@ -327,7 +327,7 @@
       \xdef\PDFimagereference{\the\pdflastximage}%
       \xdef\nofinsertpages{\the\pdflastximagepages}%
       \pdfrefximage\pdflastximage}
-     {\framed[\c!breedte=#7,\c!hoogte=#8]{#1}}%
+     {\framed[\c!width=#7,\c!height=#8]{#1}}%
    \egroup}
 
 \else
@@ -339,7 +339,7 @@
         \ifdim#7>\zeropoint \!!width  #7\fi
         \ifdim#8>\zeropoint \!!height #8\fi
         {#1}}%
-     {\framed[\c!breedte=#7,\c!hoogte=#8]{#1}}%
+     {\framed[\c!width=#7,\c!height=#8]{#1}}%
    \egroup}
 
 \fi

@@ -1,5 +1,5 @@
 %D \module
-%D   [       file=verb-ini,
+%D   [       filefile=verb-ini,
 %D        version=1997.12.22,
 %D          title=\CONTEXT\ Verbatim Macros,
 %D       subtitle=Initialization,
@@ -58,18 +58,18 @@
 %D verbatim mode with some strange active character, we will
 %D use the following construction for display verbatim:
 %D
-%D \starttypen
+%D \starttyping
 %D \starttyping
 %D The Dutch word 'typen' stands for 'typing', therefore in the Dutch version
 %D one will not find the word 'verbatim'.
 %D \stoptyping
-%D \stoptypen
+%D \stoptyping
 %D
 %D In \CONTEXT\ files can be typed with \type{\typefile} and
 %D inline verbatim can be accomplished with \type{\type}. This
 %D last command comes in many flavors:
 %D
-%D \starttypen
+%D \starttyping
 %D We can say \type<<something>> or \type{something}. The first one is a bit
 %D longer but also supports slanted typing, which accomplished by typing
 %D \type<<a <<slanted>> word>>. We can also use commands to enhance the text
@@ -77,7 +77,7 @@
 %D to accept also \LaTeX\ alike verbatim, which means that \type+something+
 %D and \type|something| are valid commands too. Of course we want the grouped
 %D alternatives to process \type{hello {\bf big} world} with braces.
-%D \stoptypen
+%D \stoptyping
 %D
 %D In the core modules, we will build this support on top of
 %D this module. There these commands can be tuned with
@@ -220,25 +220,25 @@
 %D braces are implemented in the core module. This commands
 %D takes one argument: the closing command.
 %D
-%D \starttypen
+%D \starttyping
 %D \processinlineverbatim{\closingcommand}
-%D \stoptypen
+%D \stoptyping
 %D
 %D One can define his own verbatim commands, which can be very
 %D simple:
 %D
-%D \starttypen
+%D \starttyping
 %D \def\Verbatim {\processinlineverbatim\relax}
-%D \stoptypen
+%D \stoptyping
 %D
 %D or a bit more more complex:
 %D
-%D \starttypen
+%D \starttyping
 %D \def\GroupedVerbatim%
 %D   {\bgroup
 %D    \dosomeusefullthings
 %D    \processinlineverbatim\egroup}
-%D \stoptypen
+%D \stoptyping
 %D
 %D Before entering inline verbatim mode, we take care of the
 %D unwanted \TAB, \NEWLINE\ and \NEWPAGE\ characters and
@@ -310,29 +310,29 @@
 %D \def\doverbatimgoodbreak
 %D   {\nobreak\hrule width 3cm \par\penalty\linepenalty}
 %D
-%D \starttypen
+%D \starttyping
 %D test
 %D test
-%D \stoptypen
+%D \stoptyping
 %D
 %D or
 %D
-%D \starttypen
+%D \starttyping
 %D test
 %D test
 %D test
 %D test
-%D \stoptypen
+%D \stoptyping
 %D
 %D or
 %D
-%D \starttypen
+%D \starttyping
 %D test
 %D
 %D test
 %D test
 %D test
-%D \stoptypen
+%D \stoptyping
 %D
 %D \egroup
 %D
@@ -424,9 +424,9 @@
 %D By default the rest of the first line is ignored. We can
 %D turn this feature off by saying:
 %D
-%D \starttypen
+%D \starttyping
 %D \skipfirstverbatimlinefalse
-%D \stoptypen
+%D \stoptyping
 
 \newif\ifskipfirstverbatimline \skipfirstverbatimlinetrue
 
@@ -436,22 +436,22 @@
 %D We can define a display verbatim environment with the
 %D command \type{\processdisplayverbatim} in the following way:
 %D
-%D \starttypen
+%D \starttyping
 %D \processdisplayverbatim{\closingcommand}
-%D \stoptypen
+%D \stoptyping
 %D
 %D \noindent For instance, we can define a simple command like:
 %D
-%D \starttypen
+%D \starttyping
 %D \def\BeginVerbatim {\processdisplayverbatim{EndVerbatim}}
-%D \stoptypen
+%D \stoptyping
 %D
 %D \noindent But we can also do more advance things like:
 %D
-%D \starttypen
+%D \starttyping
 %D \def\BeginVerbatim {\bigskip \processdisplayverbatim{\EndVerbatim}}
 %D \def\EndVerbatim   {\bigskip}
-%D \stoptypen
+%D \stoptyping
 %D
 %D When we compare these examples, we see that the backslash in
 %D the closing command is optional. One is free in actually
@@ -686,10 +686,10 @@
 %D
 %D The next alternative was okay when memory was still low.
 %D
-%D \starttypen
+%D \starttyping
 %D \def\makeallother
 %D   {\dorecurse{255}{\catcode\recurselevel=\@@other}}
-%D \stoptypen
+%D \stoptyping
 %D
 %D Today we prebuild a token list:
 
@@ -798,9 +798,9 @@
 %D them into vertical skips. This default behavior can be
 %D overruled by:
 %D
-%D \starttypen
+%D \starttyping
 %D \obeyemptylines
-%D \stoptypen
+%D \stoptyping
 %D
 %D Although it would cost us only a few lines of code, we
 %D decided not to take care of multiple empty lines. When a
@@ -947,9 +947,9 @@
 %D look for \EOF\ and when we've met, we make sure it does not
 %D turn into an empty line.
 %D
-%D \starttypen
+%D \starttyping
 %D \processfileverbatim{filename}
-%D \stoptypen
+%D \stoptyping
 %D
 %D We reserve a dedicated file handle.
 
@@ -1052,10 +1052,10 @@
 %D The following two macros can be set to achieve special
 %D effects, like:
 %D
-%D \starttypen
+%D \starttyping
 %D \convertargument\StartFake{something}\to\firstverbatimfileline
 %D \convertargument\StopFake\to\firstverbatimfileline
-%D \stoptypen
+%D \stoptyping
 %D
 %D These hooks were needed for typesetting flowchart
 %D definitions verbatim, since the temporary files does not
@@ -1099,9 +1099,9 @@
 %D The first step in defining a pretty interpreter is to assign
 %D each character that needs special attention a number, like:
 %D
-%D \starttypen
+%D \starttyping
 %D \setpretty \`A 21
-%D \stoptypen
+%D \stoptyping
 %D
 %D Here the macro \type{\setpretty} makes the character
 %D \type{A} active, and sets it meaning to the auxiliary macro
@@ -1128,18 +1128,18 @@
 
 %D This interpreter is installed by saying
 %D
-%D \starttypen
+%D \starttyping
 %D \installprettyhandler 21 \SOMEprettyone
-%D \stoptypen
+%D \stoptyping
 
 \def\installprettyhandler#1 #2%
   {\letvalue{\!!PRETTY#1}#2}
 
 %D Such an interpreter gets the character number:
 %D
-%D \starttypen
+%D \starttyping
 %D \def\SOMEprettyone#1{...\getpretty{#1}...}
-%D \stoptypen
+%D \stoptyping
 %D
 %D where \type{\getpretty} equals \type{\char}. We can't
 %D use \type{\let} here because we have to get rid of the
@@ -1177,7 +1177,7 @@
 %D \type{\newpretty} and its associates.
 %D
 %D \bgroup
-%D \steltypenin[file][optie=tex,palet=colorpretty]
+%D \setuptyping[file][optionoptie=tex,paletpalet=colorpretty]
 %D
 %D \startbuffer
 %D \bgroup
@@ -1225,7 +1225,7 @@
 %D \installnewpretty b \blue
 %D \stopbuffer
 %D
-%D \haalbuffer[pretty]
+%D \getbuffer[pretty]
 %D
 %D \startbuffer
 %D %%\ r{Red
@@ -1334,16 +1334,13 @@
    \prettynaturalfont{\restorecatcodes\scantokens{\ignorespaces#1}}%
    \egroup}
 
-% new, test first
-%
-% \def\naturaltextext#1\relax
-%   {\bgroup
-%    \prettynaturalfont
-%    \def\ascii{#1}%
-%    \setnormalcatcodes
-%    \restorecatcodes
-%    \scantokens\expandafter{\ascii}\ifhmode\unskip\fi
-%    \egroup}
+\def\naturaltextext#1\relax
+  {\bgroup
+   \def\ascii{#1}%
+   \setnormalcatcodes
+   \restorecatcodes
+   \prettynaturalfont{\scantokens\expandafter{\ascii}\ifhmode\unskip\fi}%
+   \egroup}
 
 \endETEX
 
@@ -1365,7 +1362,7 @@
 %D \stopTEX
 %D \stopbuffer
 %D
-%D \haalbuffer
+%D \getbuffer
 %D
 %D This is keyed in as:
 %D
@@ -1400,10 +1397,10 @@
 %D When implementing new pretty macros, one only needs to
 %D define something like:
 %D
-%D \starttypen
+%D \starttyping
 %D \def\TEXtypezero%
 %D   {\handlenewpretty\TEXtypethree}
-%D \stoptypen
+%D \stoptyping
 %D
 %D Here the number states the category (in our examples the
 %D backslash). The second argument takes care of normal
@@ -1496,10 +1493,10 @@
 %D The \PERL\ and \METAPOST\ interpreters will also handle
 %D reserved words. Sets of identifiers are defined like:
 %D
-%D \starttypen
+%D \starttyping
 %D \useprettyidentifiers \MODULAidentifiers \MODULAsetspecials
 %D   if then else elsif case while do repeat until ...
-%D \stoptypen
+%D \stoptyping
 %D
 %D New entries can be added to existing sets by repeatedly
 %D using this command.
@@ -1538,12 +1535,12 @@
 %D repetitive loading, one should load the modules before the
 %D first call to the macros.
 %D
-%D \starttypen
+%D \starttyping
 %D \input verb-tex.tex
 %D \input verb-pl.tex
 %D \input verb-mp.tex
 %D \input verb-jv.tex
-%D \stoptypen
+%D \stoptyping
 %D
 %D In \CONTEXT\ we follow a different thread, and therefore all
 %D macros in the additional modules use \type {\gdef}'s and
@@ -1611,7 +1608,7 @@
 %D text and files verbatim. The inline alternative also accepts
 %D user supplied delimiters.
 %D
-%D \starttypen
+%D \starttyping
 %D \type{text}
 %D
 %D \starttyping
@@ -1619,15 +1616,15 @@
 %D \stoptyping
 %D
 %D \typefile{filename}
-%D \stoptypen
+%D \stoptyping
 %D
 %D We can turn on the options by:
 %D
-%D \starttypen
+%D \starttyping
 %D \controlspacetrue
 %D \verbatimtabstrue
 %D \prettyverbatimtrue
-%D \stoptypen
+%D \stoptyping
 %D
 %D Here is the implementation:
 
@@ -1667,18 +1664,18 @@
 
 %D In \CONTEXT\ users say things like:
 %D
-%D \starttypen
+%D \starttyping
 %D \definetyping [TEX]  [option=TEX]
 %D \definetyping [MP]   [option=MP]
 %D \definetyping [PL]   [option=PL]
 %D \definetyping [JV]   [option=JV]
-%D \stoptypen
+%D \stoptyping
 %D
 %D or
 %D
-%D \starttypen
+%D \starttyping
 %D \setuptyping[file][option=color]
-%D \stoptypen
+%D \stoptyping
 %D
 %D That way \CONTEXT\ selects the appropriate interpreter
 %D itself, but more on that in another module. In other
@@ -1769,19 +1766,19 @@
 %D the verbatim part of the text was typeset with the following
 %D commands for the examples:
 %D
-%D \starttypen
-%D \def\starttypen% We simplify the \ConTeXt\ macro.
+%D \starttyping
+%D \def\starttyping% We simplify the \ConTeXt\ macro.
 %D   {\bgroup
 %D    \everypar{} % We disable some troublesome mechanisms.
 %D    \advance\leftskip by 1em
-%D    \processdisplayverbatim{\stoptypen}}
+%D    \processdisplayverbatim{\stoptyping}}
 %D
-%D \let\stoptypen=\egroup
-%D \stoptypen
+%D \let\stoptyping=\egroup
+%D \stoptyping
 %D
 %D We also used:
 %D
-%D \starttypen
+%D \starttyping
 %D \def\startdefinition%
 %D   {\bgroup
 %D    \everypar{} % Again we disable some troublesome mechanisms.
@@ -1793,13 +1790,13 @@
 %D
 %D \def\stopdefinition%
 %D   {\egroup}
-%D \stoptypen
+%D \stoptyping
 %D
 %D And because we have both \type{\EveryPar} and
 %D \type{\EveryLine} available, we can implement a dual
 %D numbering mechanism:
 %D
-%D \starttypen
+%D \starttyping
 %D \newcount\paragraphcounter
 %D \newcount\linecounter
 %D
@@ -1822,20 +1819,20 @@
 %D          \hss \the\linecounter}%
 %D       \egroup
 %D       \hskip1em}}
-%D \stoptypen
+%D \stoptyping
 %D
 %D One may have noticed that the \type{\EveryPar} is only
 %D executed once, because we consider each piece of verbatim
 %D as one paragraph. When one wants to take the empty lines
 %D into account, the following assignments are appropriate:
 %D
-%D \starttypen
+%D \starttyping
 %D \EveryLine
 %D   {\iflinepar
 %D      \showparagraphcounter
 %D    \fi
 %D    \showlinecounter}
-%D \stoptypen
+%D \stoptyping
 %D
 %D In this case, nothing has to be assigned to \type{\EveryPar},
 %D maybe except of just another extra numbering scheme. The
@@ -1851,49 +1848,49 @@
 %D
 %D Now let's summarize the most important commands.
 %D
-%D \starttypen
+%D \starttyping
 %D \processinlineverbatim{\closingcommand}
 %D \processdisplayverbatim{\closingcommand}
 %D \processfileverbatim{filename}
-%D \stoptypen
+%D \stoptyping
 %D
 %D We can satisfy our own specific needs with the following
 %D interfacing macro's:
 %D
-%D \starttypen
+%D \starttyping
 %D \obeyspaces  \obeytabs  \obeylines  \obeypages  \obeycharacters
-%D \stoptypen
+%D \stoptyping
 %D
 %D We can influence the verbatim environment with the following
 %D macro:
 %D
-%D \starttypen
+%D \starttyping
 %D \obeyemptylines
-%D \stoptypen
+%D \stoptyping
 %D
 %D Some needs are fulfilled already with:
 %D
-%D \starttypen
+%D \starttyping
 %D \setcontrolspace  \settabskips
-%D \stoptypen
+%D \stoptyping
 %D
 %D lines can be enhanced with ornaments using:
 %D
-%D \starttypen
+%D \starttyping
 %D \everypar  \everyline  \iflinepar
-%D \stoptypen
+%D \stoptyping
 %D
 %D and pretty verbatim support is implemented by:
 %D
-%D \starttypen
+%D \starttyping
 %D \beginofpretty[#1] ... \endofpretty
-%D \stoptypen
+%D \stoptyping
 %D
 %D and some setup macro, like:
 %D
-%D \starttypen
+%D \starttyping
 %D \setupprettyIDENTIFIERtype
-%D \stoptypen
+%D \stoptyping
 %D
 %D The color support macro can be redefined by the user. The
 %D parameter \type{#1} can be one of the four 'fixed'
@@ -1903,9 +1900,9 @@
 %D using \type{specials}. One can toggle between color and
 %D grayscale with:
 %D
-%D \starttypen
+%D \starttyping
 %D \setgrayverbatim  \setcolorverbatim
-%D \stoptypen
+%D \stoptyping
 
 %D \macros
 %D   {permitshiftedendofverbatim}

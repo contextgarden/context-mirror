@@ -1,5 +1,5 @@
 %D \module
-%D   [       file=core-grd,
+%D   [       filefile=core-grd,
 %D        version=1998.03.10,
 %D          title=\CONTEXT\ Core Macros,
 %D       subtitle=Grid Snapping (Experimental),
@@ -34,7 +34,7 @@
 %D
 %D The macros put some white space around the box:
 %D
-%D \haalbuffer[1]
+%D \getbuffer[1]
 %D
 %D A simple alternative is \type {\baselinecorrection}, which
 %D only looks at the previous line.
@@ -50,7 +50,7 @@
 %D This time the last preceding line gets a correction,%
 %D dependant on the depth.
 %D
-%D \haalbuffer[2]
+%D \getbuffer[2]
 %D
 %D One can make the correction visible by saying \type
 %D {\showbaselinecorrection}. Part of the correction is
@@ -59,11 +59,11 @@
 %D
 %D When visualize the first example looks like:
 %D
-%D {\showbaselinecorrection\haalbuffer[1]}
+%D {\showbaselinecorrection\getbuffer[1]}
 %D
 %D and the second one comes out as:
 %D
-%D {\showbaselinecorrection\haalbuffer[2]}
+%D {\showbaselinecorrection\getbuffer[2]}
 
 % \definecolor[GridLineColor][red]
 % \definecolor[GridTextColor][blue]
@@ -206,7 +206,7 @@
 %            \nointerlineskip
 %            \dotopbaselinecorrection
 % %        \else
-% %          \ifbinnenkolommen
+% %          \ifinsidecolumns
 % %            % \vskip\dimen2           % this could definitely
 % %            % \penalty\outputpenalty  % be improved
 % %          \else
@@ -236,7 +236,7 @@
   {\ifvmode \ifdim\pagegoal<\maxdimen
      \bgroup
      \setbaselinecorrections
-     \witruimte
+     \whitespace
      \nointerlineskip
      \dotopbaselinecorrection
      \egroup
@@ -321,7 +321,7 @@
 \def\dosnaptogrid[#1]%
   {\resetlastlinewidth % maybe in more places, otherwise spacing gets messed up
    \ifgridsnapping
-     \iffirstargument\doifsomething{#1}{\verplaatsopgrid[#1]}\fi
+     \iffirstargument\doifsomething{#1}{\moveongrid[#1]}\fi
      \expandafter\dodosnaptogrid
    \fi}
 
@@ -384,7 +384,7 @@
         \chardef\depthsnapmethod \plustwo
         \chardef\heightsnapmethod\plustwo
       \fi
-      \ifdim\nextboxht<\teksthoogte % handle special case (like page fig)
+      \ifdim\nextboxht<\textheight % handle special case (like page fig)
         \ifcase\@@alignsnapbox\relax
           \ifcase\@@alignsnap\else % 1=top 2=high 3=middle 4=low
             \ifshowgridboxes
@@ -410,7 +410,7 @@
           \edef\presnapskip{\the\lastskip}%
           % mixing single/double columns sometimes goes wrong,
           % check 'som' document
-          \ifbinnenkolommen
+          \ifinsidecolumns
             \forcepresnaptrue
           \fi
           \forcedpresnapcorrection
@@ -589,7 +589,7 @@
           \flushnextbox
         \fi
       \else
-        \setbox\nextbox\vbox to \teksthoogte
+        \setbox\nextbox\vbox to \textheight
           {\ifdim\nextboxdp=\zeropoint
              \hbox{\lower\strutdepth\flushnextbox}
            \else % this branch is yet untested
@@ -614,7 +614,7 @@
 \def\snaptomathgrid % probably not working ok, also kind of obsolete
   {\ifgridsnapping
      \dowithnextbox
-       {\blanko[\v!regel]\snaptogrid\vbox{\flushnextbox}\blanko[\v!regel]}
+       {\blank[\v!line]\snaptogrid\vbox{\flushnextbox}\blank[\v!line]}
      \vbox\bgroup
        \let\setdisplayskips\relax
        \abovedisplayskip\zeropoint
@@ -790,11 +790,11 @@
   {\global\chardef\@@alignsnapbox3
    \global\let\@@alignsnapamount\commalistelement}
 
-\def\doverplaatsopgrid[#1]%
-  {\ifgridsnapping\doifsomething{#1}{\dodoverplaatsopgrid[#1]}\fi}
+\def\domoveongrid[#1]%
+  {\ifgridsnapping\doifsomething{#1}{\dodomoveongrid[#1]}\fi}
 
 
-\def\dodoverplaatsopgrid[#1]% some day : speed up
+\def\dodomoveongrid[#1]% some day : speed up
   {\global\chardef\@@alignsnap\zerocount
    \global\chardef\@@alignsnapbox\zerocount
    \global\chardef\@@alignsnapdepth\zerocount
@@ -802,40 +802,40 @@
    \global\let\@@alignsnapamount\!!zeropoint
    \donefalse
    \expanded{\processallactionsinset[#1]}
-     [\v!standaard=>,
-        \v!normaal=>, % to be sure
-             \v!ja=>, % to be sure
-          \v!boven=>\gridwarning+\positiveextrasnap\extrasnapbefore,
-          \v!onder=>\gridwarning+\positiveextrasnap\extrasnapafter,
-          \v!beide=>\positiveextrasnap\extrasnaparound,
-         -\v!boven=>\gridwarning-\negativeextrasnap\extrasnapbefore,
-         -\v!onder=>\gridwarning-\negativeextrasnap\extrasnapafter,
-         -\v!beide=>\negativeextrasnap\extrasnaparound,
-          \v!tekst=>\global\chardef\@@alignsnapmethod\plusone, % accurate calculations
-         \v!pagina=>\global\chardef\@@alignsnap1, % topskip
-           \v!hoog=>\global\chardef\@@alignsnap2,
-         \v!midden=>\global\chardef\@@alignsnap3,
-           \v!laag=>\global\chardef\@@alignsnap4,
-        \v!passend=>\global\chardef\@@alignsnapbox1, % new
-           \v!ruim=>\global\chardef\@@alignsnapbox2, % new
-         \v!diepte=>\global\chardef\@@alignsnapdepth1, % new
-          \v!regel=>\global\chardef\@@alignsnapbox3
+     [\v!standard=>,
+        \v!normal=>, % to be sure
+             \v!yes=>, % to be sure
+          \v!top=>\gridwarning+\positiveextrasnap\extrasnapbefore,
+          \v!bottom=>\gridwarning+\positiveextrasnap\extrasnapafter,
+          \v!both=>\positiveextrasnap\extrasnaparound,
+         -\v!top=>\gridwarning-\negativeextrasnap\extrasnapbefore,
+         -\v!bottom=>\gridwarning-\negativeextrasnap\extrasnapafter,
+         -\v!both=>\negativeextrasnap\extrasnaparound,
+          \v!text=>\global\chardef\@@alignsnapmethod\plusone, % accurate calculations
+         \v!page=>\global\chardef\@@alignsnap1, % topskip
+           \v!high=>\global\chardef\@@alignsnap2,
+         \v!middle=>\global\chardef\@@alignsnap3,
+           \v!low=>\global\chardef\@@alignsnap4,
+        \v!fit=>\global\chardef\@@alignsnapbox1, % new
+           \v!broad=>\global\chardef\@@alignsnapbox2, % new
+         \v!depth=>\global\chardef\@@alignsnapdepth1, % new
+          \v!line=>\global\chardef\@@alignsnapbox3
 %                   \global\chardef\@@alignsnapdepth1
                     \global\chardef\@@alignsnap4,
           \v!reset=>\positiveextrasnap\extrasnapreset,
-           \v!geen=>\global\chardef\@@alignsnap0
+           \v!none=>\global\chardef\@@alignsnap0
                     \global\chardef\@@alignsnapbox0,
         \s!default=>,
         \s!unknown=>\@@unknowngriddisplacement]}
 
-\def\verplaatsopgrid
-  {\dosingleempty\doverplaatsopgrid}
+\def\moveongrid
+  {\dosingleempty\domoveongrid}
 
-\def\doplaatsopgrid[#1]%
-  {\doverplaatsopgrid[#1]\snaptogrid\vbox}
+\def\doplaceongrid[#1]%
+  {\domoveongrid[#1]\snaptogrid\vbox}
 
-\def\plaatsopgrid
-  {\dosingleempty\doplaatsopgrid}
+\def\placeongrid
+  {\dosingleempty\doplaceongrid}
 
 %D Snapping is rather robust as long as we use whole lines.
 %D Half lines of white space can however be handled when they
@@ -845,11 +845,11 @@
 %D was written as an extension to the grid typesetting needed
 %D for typesetting (part of) the \MAPS.
 %D
-%D \starttypen
+%D \starttyping
 %D \setuptyping
 %D   [before={\blank[halfline]},
 %D    after={\blank[halfline]}]
-%D \stoptypen
+%D \stoptyping
 
 \newif\iffuzzysnapdone
 \newif\iffuzzysnapping
@@ -942,7 +942,7 @@
 
 \def\docheckfuzzysnap#1%
   {\bgroup
-   \mindermeldingen
+   \dontcomplain
    \setbox\fuzzysnapbox\copy#1\relax
    \setbox\fuzzysnapsplit\vsplit\fuzzysnapbox to 1\lineheight
    \let\topfuzzymark\empty % indeed here ... no real mark

@@ -1,5 +1,5 @@
 %D \module
-%D   [       file=supp-spe,
+%D   [       filefile=supp-spe,
 %D        version=1997.07.05,
 %D          title=\CONTEXT\ Support Macros,
 %D       subtitle=Specials,
@@ -25,17 +25,17 @@
 %D When interpreting specials we need to do some basic scanning.
 %D For the moment we distinguish between three cases. We need 
 %D 
-%D \starttypen
+%D \starttyping
 %D \special{tag: arguments}
 %D \special{tag arguments}
 %D \special{tag}
-%D \stoptypen
+%D \stoptyping
 %D 
 %D We cannot be sure that the first case isn't 
 %D 
-%D \starttypen
+%D \starttyping
 %D \special{tag:arguments}
-%D \stoptypen
+%D \stoptyping
 %D 
 %D So we have to take care of that one too. 
 
@@ -72,9 +72,9 @@
 %D
 %D Mimmicking specials is activated by saying: 
 %D
-%D \starttypen
+%D \starttyping
 %D \mimmickspecials
-%D \stoptypen
+%D \stoptyping
 %D
 %D This commands redefines the \PLAIN\ \TEX\ primitive 
 %D \type{\special}. 
@@ -126,10 +126,10 @@
 %D 
 %D Which results in:
 %D 
-%D \startregels
-%D \haalbuffer[tmp-1]
-%D \haalbuffer[tmp-2]
-%D \stopregels
+%D \startlines
+%D \getbuffer[tmp-1]
+%D \getbuffer[tmp-2]
+%D \stoplines
 
 %D \macros
 %D   {mimmickspecial}
@@ -137,9 +137,9 @@
 %D When needed, one can call a mimmicked special directly by 
 %D saying for instance: 
 %D 
-%D \starttypen 
+%D \starttyping 
 %D \mimmickspecial a: \using...\endspecial
-%D \stoptypen
+%D \stoptyping
 %D
 %D This can be handy when specials have much in common.
 
@@ -152,9 +152,9 @@
 %D One can for instance ignore all further specials by saying
 %D \type{\normalspecial}:
 %D 
-%D \starttypen
+%D \starttyping
 %D \def\defaultspecial#1{}
-%D \stoptypen
+%D \stoptyping
 %D 
 %D But here we default to idle. 
 

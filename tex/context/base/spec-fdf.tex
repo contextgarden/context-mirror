@@ -1,5 +1,5 @@
 %D \module
-%D   [       file=spec-fdf,
+%D   [       filefile=spec-fdf,
 %D        version=1998.05.18,
 %D          title=\CONTEXT\ \PDF\ Macros,
 %D       subtitle=Adobe \PDF/\FDF\ version 2.1,
@@ -217,7 +217,7 @@
 %D interface macros. These must be provided by the special
 %D drivers \type{pdf} (\ACROBAT) and \type{tpd} (\PDFTEX).
 %D
-%D \starttypen
+%D \starttyping
 %D \doPDFdestination        name #1
 %D \doPDFaction             width #1 height #2 action #3
 %D \doPDFannotation         width #1 height #2 data #3
@@ -234,7 +234,7 @@
 %D \defaultobjectreference      #1#2   % class name
 %D \doPDFgetobjectreference     #1#2#3 % class name \PDFobjectreference
 %D \doPDFgetobjectpagereference #1#2#3 % class name \PDFobjectreference
-%D \stoptypen
+%D \stoptyping
 %D
 %D The keywords reflect their use. For the moment we stick to
 %D keywords, because that way at we get an indication of what
@@ -957,8 +957,8 @@
    \donefalse
    \@EA\processallactionsinset\@EA
      [#9]
-     [\v!sturing=>\donetrue,
-      \v!herhaal=>\edef\pdf@@actions{\pdf@@actions /Mode /Repeat },
+     [\v!controls=>\donetrue,
+      \v!repeat=>\edef\pdf@@actions{\pdf@@actions /Mode /Repeat },
       \v!preview=>\edef\pdf@@options{\pdf@@options /Poster true  }]%
    \edef\pdf@@actions{\pdf@@actions /ShowControls \ifdone true\else false\fi}%
    \doPDFannotation width #7 height #8 data
@@ -982,7 +982,7 @@
    \let\pdf@@actions\empty
    \@EA\processallactionsinset\@EA
      [#3]
-     [\v!herhaal=>\edef\pdf@@actions{\pdf@@actions /Mode /Repeat }]%
+     [\v!repeat=>\edef\pdf@@actions{\pdf@@actions /Mode /Repeat }]%
    \flushatshipout % since it can be buried in a chained box
      {\doPDFannotation width 0pt height 0pt data
         {/Subtype /Movie
@@ -1324,17 +1324,17 @@
 \def\@@FDFflag{FDFflag}
 \def\@@FDFplus{FDFplus}
 
-\letvalue  {\@@FDFflag\v!alleenleesbaar}=\FDFflagReadOnly
-\letvalue       {\@@FDFflag\v!verplicht}=\FDFflagRequired
-\letvalue       {\@@FDFflag\v!beschermd}=\FDFflagPassword
-\letvalue      {\@@FDFflag\v!gesorteerd}=\FDFflagSort
-\letvalue {\@@FDFflag\v!nietbeschikbaar}=\FDFflagNoExport
-\letvalue    {\@@FDFflag\v!geencontrole}=\FDFflagDoNotSpellCheck
-\letvalue            {\@@FDFflag\v!vast}=\FDFflagDoNotScroll
+\letvalue  {\@@FDFflag\v!readonly}=\FDFflagReadOnly
+\letvalue       {\@@FDFflag\v!required}=\FDFflagRequired
+\letvalue       {\@@FDFflag\v!protected}=\FDFflagPassword
+\letvalue      {\@@FDFflag\v!sorted}=\FDFflagSort
+\letvalue {\@@FDFflag\v!unavailable}=\FDFflagNoExport
+\letvalue    {\@@FDFflag\v!nocheck}=\FDFflagDoNotSpellCheck
+\letvalue            {\@@FDFflag\v!fixed}=\FDFflagDoNotScroll
 \letvalue            {\@@FDFflag\v!file}=\FDFflagFileSelect
 
-\letvalue       {\@@FDFplus\v!verborgen}=\FDFplusHidden
-\letvalue       {\@@FDFplus\v!printbaar}=\FDFplusPrintable
+\letvalue       {\@@FDFplus\v!hidden}=\FDFplusHidden
+\letvalue       {\@@FDFplus\v!printable}=\FDFplusPrintable
 
 \letvalue            {\@@FDFplus\v!auto}=\FDFplusAutoView
 
@@ -1412,9 +1412,9 @@
 \def\setFDFalignment[#1]%
   {\processaction
      [#1]
-     [ \v!links=>\edef\FDFalign{2},    % raggedleft
-      \v!midden=>\edef\FDFalign{1},    % raggedcenter
-      \v!rechts=>\edef\FDFalign{0}]}   % raggedright
+     [ \v!left=>\edef\FDFalign{2},    % raggedleft
+      \v!middle=>\edef\FDFalign{1},    % raggedcenter
+      \v!right=>\edef\FDFalign{0}]}   % raggedright
 
 %D \macros
 %D   {setFDFattributes}
@@ -1539,10 +1539,10 @@
 
 %D The event handler becomes something:
 %D
-%D \starttypen
+%D \starttyping
 %D /AA << /D << /S ... >> ... /C << /S ... >>
 %D /A << /S /JavaScript /JS (...) >>
-%D \stoptypen
+%D \stoptyping
 
 % \def\setFDFaction#1#2%
 %   {\bgroup
@@ -1578,9 +1578,9 @@
 %D This rather confusion prone series of script can be tested
 %D with:
 %D
-%D \starttypen
+%D \starttyping
 %D \testFDFactions
-%D \stoptypen
+%D \stoptyping
 %D
 %D which simply redefined the previous macro to one that prints
 %D a message to the console.
@@ -1767,12 +1767,12 @@
 \def\dosetuppageview#1% watch the v-h swapping here
   {\processaction
      [#1]
-     [\v!passend=>\def\PDFpageviewkey  {fit}\def\PDFpageviewwrd{/Fit},
-      \v!breedte=>\def\PDFpageviewkey {fith}\def\PDFpageviewwrd{/FitH},
-       \v!hoogte=>\def\PDFpageviewkey {fitv}\def\PDFpageviewwrd{/FitV},
+     [\v!fit=>\def\PDFpageviewkey  {fit}\def\PDFpageviewwrd{/Fit},
+      \v!width=>\def\PDFpageviewkey {fith}\def\PDFpageviewwrd{/FitH},
+       \v!height=>\def\PDFpageviewkey {fitv}\def\PDFpageviewwrd{/FitV},
    \v!minbreedte=>\def\PDFpageviewkey{fitbh}\def\PDFpageviewwrd{/FitBH},
     \v!minhoogte=>\def\PDFpageviewkey{fitbv}\def\PDFpageviewwrd{/FitBV},
-    \v!standaard=>\def\PDFpageviewkey{xyz \PDFpagexyzspec}\def\PDFpageviewwrd{/XYZ \PDFpagexyzspec},
+    \v!standard=>\def\PDFpageviewkey{xyz \PDFpagexyzspec}\def\PDFpageviewwrd{/XYZ \PDFpagexyzspec},
       \s!unknown=>\def\PDFpageviewkey  {fit}\def\PDFpageviewwrd{/Fit}]%
    \edef\PDFpageview{/View [\PDFpageviewwrd]}}
 
@@ -2191,9 +2191,9 @@
 %D \type{push down} are passed as comma separated triplets,
 %D that is, the second argument can look like:
 %D
-%D \starttypen
+%D \starttyping
 %D {yes,ok,fine},{no,rubish,awful}
-%D \stoptypen
+%D \stoptyping
 
 %D \macros
 %D   {doFDFdefinefieldset,doFDFgetfieldset,doFDFiffieldset}
@@ -2201,11 +2201,11 @@
 %D Field sets, the ones we use in submitting and resetting
 %D fields, are implemented using the next low level specials:
 %D
-%D \starttypen
+%D \starttyping
 %D \doFDFdefinefieldset{TAG}{name,name,...}
 %D \doFDFgetfieldset{TAG}
 %D \doFDFiffieldset{TAG}{sequence}
-%D \stoptypen
+%D \stoptyping
 
 \def\doFDFdefinefieldset#1#2% tag commalist
   {\let\FDFfieldset\empty
@@ -2287,22 +2287,22 @@
 %D Once filled in, we can export or submit the field in the
 %D \FDF\ file format. Such a file can be loaded by
 %D
-%D \starttypen
+%D \starttyping
 %D \loadFDFfields{fiel-ini}
-%D \stoptypen
+%D \stoptyping
 %D
 %D or inspected by
 %D
-%D \starttypen
+%D \starttyping
 %D \showFDFfields{fiel-ini}
-%D \stoptypen
+%D \stoptyping
 %D
 %D After both commands, one can use
 %D
-%D \starttypen
+%D \starttyping
 %D \getFDFfield{name}
 %D \setFDFfield{name}{value}
-%D \stoptypen
+%D \stoptyping
 %D
 %D to inspect and overrule the data.
 %D
@@ -2311,9 +2311,9 @@
 %D named \type{filename.fdt}. If one disables the call to this
 %D script, by saying:
 %D
-%D \starttypen
+%D \starttyping
 %D \runFDFconverterfalse
-%D \stoptypen
+%D \stoptyping
 %D
 %D or when \CONTEXT\ cannot find the \type{fdt} file, it tries
 %D to interpret the \type{fdf} file directly. Both mechanisms
@@ -2323,7 +2323,7 @@
 
 %D The \PERL\ script produces a file formatted as:
 %D
-%D \starttypen
+%D \starttyping
 %D \beginFDFobject
 %D \beginFDFdata
 %D \beginFDFfields
@@ -2331,7 +2331,7 @@
 %D \endFDFfields
 %D \endFDFdata
 %D \endFDFobject
-%D \stoptypen
+%D \stoptyping
 %D
 %D One reason for using key value pairs is that we cannot be
 %D sure or the order in which the name and value are given
@@ -2642,7 +2642,7 @@
 
 %D Hooked into \CONTEXT, this special supports
 %D
-%D \starttypen
+%D \starttyping
 %D \startcomment
 %D   hello beautiful\\world
 %D \stopcomment
@@ -2652,12 +2652,12 @@
 %D   the f\'irst time
 %D \stopcommen
 %D
-%D \startcommentaar[hallo][kleur=groen,breedte=4cm,hoogte=3cm]
+%D \startcommentaar[hallo][color=green,width=4cm,height=3cm]
 %D   first
 %D
 %D   second
 %D \stopcommentaar
-%D \stoptypen
+%D \stoptyping
 %D
 %D So, special characters, forced linebreaks using \type{\\}
 %D and \type{\par} are handled in the appropriate way.

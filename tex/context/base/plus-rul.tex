@@ -1,5 +1,5 @@
 %D \module
-%D   [       file=plus-rul,
+%D   [       filefile=plus-rul,
 %D        version=2003.03.16,
 %D          title=\CONTEXT\ Plus Macros,
 %D       subtitle=Ruled Stuff Handling,
@@ -17,8 +17,6 @@
 
 %D \definesidebar[whow][rulecolor=green,distance=]
 %D
-%D \starttext
-%D
 %D \input tufte \par
 %D \startsidebar
 %D   \input tufte \par
@@ -26,9 +24,11 @@
 %D   \startsidebar[whow]
 %D     \input tufte \par
 %D     \input tufte \par
-%D     \input tufte \stopsidebar \par
+%D     \input tufte
+%D   \stopsidebar \par
 %D   \input tufte \par
-%D   \input tufte \stopsidebar \par
+%D   \input tufte
+%D \stopsidebar \par
 %D \input tufte \par
 %D \input tufte \par
 %D \startsidebar
@@ -36,7 +36,8 @@
 %D   \input tufte \par
 %D   \input tufte \par
 %D   \input tufte \par
-%D   \input tufte \stopsidebar \par
+%D   \input tufte
+%D \stopsidebar \par
 %D \input tufte \par
 %D \input tufte \par
 %D \startsidebar
@@ -69,9 +70,9 @@
 %    distance=5pt]
 
 \setupsidebars
-  [\c!lijndikte=2pt,
-   \c!lijnkleur=red,
-   \c!afstand=.5\bodyfontsize]
+  [\c!rulethickness=2pt,
+   \c!rulecolor=red,
+   \c!distance=.5\bodyfontsize]
 
 \def\definesidebar
   {\dodoubleempty\dodefinesidebar}
@@ -79,7 +80,7 @@
 \def\dodefinesidebar[#1][#2]%
   {\copyparameters
      [\??sr#1][\??sr]
-     [\c!lijndikte,\c!lijnkleur,\c!afstand]%
+     [\c!rulethickness,\c!rulecolor,\c!distance]%
    \getparameters
      [\??sr#1][#2]}
 
@@ -92,18 +93,18 @@
    \checktextbackgrounds
    \doglobal\increment\currentsidebar
    \doifelsenothing{#1}
-     {\advance\sidebardistance\@@srafstand}
-     {\doifelsevaluenothing{\??sr#1\c!afstand}
-        {\advance\sidebardistance\@@srafstand}
-        {\sidebardistance\getvalue{\??sr#1\c!afstand}}}%
+     {\advance\sidebardistance\@@srdistance}
+     {\doifelsevaluenothing{\??sr#1\c!distance}
+        {\advance\sidebardistance\@@srdistance}
+        {\sidebardistance\getvalue{\??sr#1\c!distance}}}%
    \startpositionoverlay{text-1}%
      \expanded{\setMPpositiongraphicrange
        {b:side:\currentsidebar}%
        {e:side:\currentsidebar}%
        {mpos:bar}%
        {self=side:\currentsidebar,
-        linewidth=\getvalue{\??sr#1\c!lijndikte},
-        linecolor=\getvalue{\??sr#1\c!lijnkleur},
+        linewidth=\getvalue{\??sr#1\c!rulethickness},
+        linecolor=\getvalue{\??sr#1\c!rulecolor},
         distance=\the\sidebardistance}}%
    \stoppositionoverlay
    \edef\stopsidebar{\noexpand\dostopsidebar{\currentsidebar}}%
@@ -161,19 +162,19 @@
 %D \stopmarginrule
 
 \definesidebar
-  [\v!marge]
-  [\c!lijnkleur=\s!black,
-   \c!lijndikte=\@@kalijndikte,
-   \c!afstand=\dimexpr(\linkermargeafstand-\@@kalijndikte/2)]
+  [\v!margin]
+  [\c!rulecolor=\s!black,
+   \c!rulethickness=\@@karulethickness,
+   \c!distance=\dimexpr(\leftmargindistance-\@@karulethickness/2)]
 
 \def\complexstartmarginrule[#1]%
   {\bgroup
-   \ifnum#1<\@@kaniveau\relax
+   \ifnum#1<\@@kalevel\relax
      \let\stopmarginrule\egroup
    \else
      \def\@@kadefaultwidth{#1}%
      \let\stopmarginrule\dostopmarginrule
-     \@EA\startsidebar\@EA[\@EA\v!marge\@EA]%
+     \@EA\startsidebar\@EA[\@EA\v!margin\@EA]%
    \fi}
 
 \def\dostopmarginrule

@@ -1,5 +1,5 @@
 %D \module
-%D   [       file=xtag-run,
+%D   [       filefile=xtag-run,
 %D        version=2001.01.10,
 %D          title=\CONTEXT\ XML Support,
 %D       subtitle=Visualization,
@@ -94,10 +94,10 @@
 \doglobal\newif\ifXMLunspacepretty
 
 \gdef\@XMLelement#1%
-  {\ifnum\XMLlevel<\@@xfniveau\relax
+  {\ifnum\XMLlevel<\@@xflevel\relax
      \ifnum\kindofXMLelement=2\else
        \doglobal\increment\@XMLnofelements\relax
-       \ifcase\@XMLnofelements\else\@@xftussen\fi
+       \ifcase\@XMLnofelements\else\@@xfinbetween\fi
      \fi
    \fi
    % no, too fragile: \hangindent2em
@@ -131,10 +131,10 @@
    \ifcase\kindofXMLelement\or
      \getvalue{\@@XMLshow::\currentXMLelement}\relax
    \fi
-   \ifnum\XMLlevel<\@@xfniveau\relax
+   \ifnum\XMLlevel<\@@xflevel\relax
      \ifnum\kindofXMLelement=1\else
        \doglobal\increment\@XMLnofelements\relax
-       \ifcase\@XMLnofelements\else\@@xftussen\fi
+       \ifcase\@XMLnofelements\else\@@xfinbetween\fi
      \fi
    \fi
    \ifXMLunspacepretty\ignorespaces\fi}
@@ -222,9 +222,9 @@
    \nohyphens
    \dontcomplain
    \XMLlevel\zerocount
-   \increment\@@xfniveau % hack
+   \increment\@@xflevel % hack
    \tttf
-   \startopelkaar[\v!blanko]
+   \startpacked[\v!blank]
      \ifautoXMLshow \let\executeXMLelement\autoshowXMLelement \fi
      \let\executeXMLentity\@XMLentity
      \enableXML\verbatimXML
@@ -233,7 +233,7 @@
      \veryraggedright
      \readfile{\truefilename{#1}}\donothing\donothing\endgraf
      \removelastskip % really needed
-   \stopopelkaar
+   \stoppacked
    \egroup}
 
 \gdef\showXMLtext#1%
@@ -243,7 +243,7 @@
    % so far for hack
    \dontcomplain
    \XMLlevel\maxcard
-   \increment\@@xfniveau % hack
+   \increment\@@xflevel % hack
    \tttf
    \ifautoXMLshow \let\executeXMLelement\autoshowXMLelement \fi
    \let\executeXMLentity\@XMLentity

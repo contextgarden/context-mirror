@@ -1,5 +1,5 @@
 %D \module
-%D   [       file=core-num,
+%D   [       filefile=core-num,
 %D        version=1997.03.31,
 %D          title=\CONTEXT\ Core Macros,
 %D       subtitle=Numbering,
@@ -17,57 +17,60 @@
 
 %  Commando's ten behoeve van nummeren:
 %
-%    \definieernummer[naam]
-%    \stelnummerin[naam][wijze=,blok=,tekst=,plaats=,conversie=,start=]
-%    \setnumber[naam]{waarde}
-%    \resetnumber[naam]
-%    \verhoognummer[naam]
-%    \verlaagnummer[naam]
-%    \volgendenummer[naam][tag][referentie]
-%    \nummer[naam]
-%    \huidigenummer[naam]
-%    \savenumber[naam]
-%    \restorenumber[naam]
+%    \definenumber[name]
+%    \setupnumber[name][wijze=,blok=,tekst=,plaats=,conversie=,start=]
+%    \setnumber[name]{value}
+%    \resetnumber[name]
+%    \incrementnumber[name]
+%    \decrementnumber[name]
+%    \convertednumber[name] % getnumber
+%    \savenumber[name]
+%    \restorenumber[name]
+%    \convertednumner[name]
+%    \rawnumber[name]
 
-\newif\ifnummeren
+% private (defined in core-sec.tex)
+%
+%    \nextnumber[name][tag][reference]
+%    \currentnumber[name]
 
-\def\@@thenumber#1{\s!number\csname\s!number#1\c!nummer\endcsname}
+\def\@@thenumber#1{\s!number\csname\s!number#1\c!number\endcsname}
 
-\def\dostelnummerin[#1][#2]%
+\def\dosetupnumber[#1][#2]%
   {\@EA\let\@EA\savedstartnumber\csname\@@thenumber{#1}\c!start\endcsname
    \getparameters[\@@thenumber{#1}][\c!start=,#2]%
    \doifelsevaluenothing{\@@thenumber{#1}\c!start}
      {\letvalue{\@@thenumber{#1}\c!start}\savedstartnumber}
      {\setcounter{\@@thenumber{#1}}{\getvalue{\@@thenumber{#1}\c!start}}}}
 
-\def\stelnummerin
-  {\dodoubleargument\dostelnummerin}
+\def\setupnumber
+  {\dodoubleargument\dosetupnumber}
 
-\def\dodefinieernummer[#1][#2]% ook overal class als localframed
+\def\definenumber
+  {\dodoubleempty\dodefinenumber}
+
+\def\dodefinenumber[#1][#2]% ook overal class als localframed
   {\doifassignmentelse{#2}
-     {\dododefinieernummer[#1][#2]}
+     {\dododefinenumber[#1][#2]}
      {\doifelsenothing{#2} % can break on not yet defined macros in #2
-        {\dododefinieernummer[#1][#2]}
-        {\setvalue{\s!number#1\c!nummer}{#2}}}}
+        {\dododefinenumber[#1][#2]}
+        {\setvalue{\s!number#1\c!number}{#2}}}}
 
-\def\dododefinieernummer[#1][#2]%
+\def\dododefinenumber[#1][#2]%
   {\getparameters
      [\s!number#1]
-     [\c!nummer=#1,
+     [\c!number=#1,
       \s!check=,
-      \c!wijze=\@@nrwijze,
-      \c!wijze\c!lokaal=\getvalue{\@@thenumber{#1}\c!wijze},
-      \c!sectienummer=\v!ja,
-      \c!tekst=,  % weg hier
-      \c!plaats=, % weg hier, was trouwens \c!zetwijze
-      \c!conversie=\v!cijfers,
+      \c!way=\@@nrway,
+      \c!way\c!local=\getvalue{\@@thenumber{#1}\c!way},
+      \c!sectionnumber=\v!yes,
+      \c!text=,  % weg hier
+      \c!location=, % weg hier, was trouwens \c!zetwijze
+      \c!conversion=\v!numbers,
       \c!start=0,
       #2]%
     \makecounter{\@@thenumber{#1}}%
     \setcounter{\@@thenumber{#1}}{\getvalue{\@@thenumber{#1}\c!start}}}
-
-\def\definieernummer
-  {\dodoubleempty\dodefinieernummer}
 
 \def\setnumber[#1]#2%
   {\setcounter{\@@thenumber{#1}}{#2}}
@@ -84,12 +87,9 @@
 \def\reset
   {\dosingleargument\doreset}
 
-%\def\verhoognummer[#1]%
+%\def\incrementnumber[#1]%
 %  {\checknummer{#1}%
-%   \ifnummeren
-%   \else
-%     \resetcounter{\@@thenumber{#1}}%
-%   \fi
+%   \doifnot\@@nrstatus\v!start{\resetcounter{\@@thenumber{#1}}}%
 %   \pluscounter{\@@thenumber{#1}}}
 
 \def\savenumber[#1]%
@@ -100,57 +100,49 @@
 
 % nieuw, maar kan dit (i.v.m. (sub)page?)
 
-% \def\verhoognummer[#1]%
+% \def\incrementnumber[#1]%
 %   {\checknummer{#1}%
-%    \ifnummeren
-%      \pluscounter{\@@thenumber{#1}}%
-%    \else
-%      \setcounter{\@@thenumber{#1}}{0\csname\@@thenumber{#1}\c!start\endcsname}%
-%    \fi}
+%    \doifelse\@@nrstatus\v!start
+%      {\pluscounter{\@@thenumber{#1}}}
+%      {\setcounter{\@@thenumber{#1}}{0\csname\@@thenumber{#1}\c!start\endcsname}}}
 
-\def\verhoognummer[#1]%
-  {\doifelsevalue{\@@thenumber{#1}\c!wijze}{\v!per\v!pagina}
+\def\incrementnumber[#1]% bypage tricky: needs a
+  {\doifelsevalue{\@@thenumber{#1}\c!way}{\v!by\v!page}
      {\checkpagechange{#1}%
       \ifpagechanged\resetcounter{\@@thenumber{#1}}\fi}
      {\checknummer{#1}}%
-   \ifnummeren
-     \pluscounter{\@@thenumber{#1}}%
-   \else
-     \setcounter{\@@thenumber{#1}}{0\getvalue{\@@thenumber{#1}\c!start}}%
-   \fi}
+   \doifelse\@@nrstate\v!start % only here
+     {\pluscounter{\@@thenumber{#1}}}
+     {\setcounter{\@@thenumber{#1}}{0\getvalue{\@@thenumber{#1}\c!start}}}}
 
 % \defineenumeration [test] [way=bypage,text=\lastchangedpage]
 %
 % \starttext \dorecurse{10}{\test \input tufte \par} \stoptext
 
-\def\verlaagnummer[#1]%
+\def\decrementnumber[#1]%
   {\minuscounter{\@@thenumber{#1}}}
 
-\def\nummer[#1]%
+\def\convertednumber[#1]%
   {\convertnumber
-     {\getvalue{\@@thenumber{#1}\c!conversie}}
+     {\getvalue{\@@thenumber{#1}\c!conversion}}
      {\countervalue{\@@thenumber{#1}}}}
 
-\def\ruwenummer[#1]%
+\def\rawnumber[#1]%
   {\countervalue{\@@thenumber{#1}}}
+
+\let\getnumber\convertednumber
 
 \ifx\checknummer\undefined \let\checknummer\gobbleoneargument \fi
 
 % ook de pag nummers hierheen halen ivm \@@nrwijze
 
-\def\dostelnummerenin[#1]%                 globaal
-  {\getparameters[\??nr][#1]%
-   \doifelse\@@nrstatus\v!start
-     {\global\nummerentrue}
-     {\global\nummerenfalse}}%
-
-\def\stelnummerenin
-  {\dosingleargument\dostelnummerenin}
+\def\setupnumbering
+  {\dodoubleempty\getparameters[\??nr]}
 
-\stelnummerenin
-  [\c!wijze=\v!per\v!hoofdstuk,
-   \c!blokwijze=,
-   \c!sectienummer=\v!ja,
-   \c!status=\v!start]
+\setupnumbering
+  [\c!way=\v!by\v!chapter,
+   \c!blockway=,
+   \c!sectionnumber=\v!yes,
+   \c!state=\v!start]
 
 \protect \endinput

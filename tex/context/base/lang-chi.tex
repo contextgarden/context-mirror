@@ -1,5 +1,5 @@
 %D \module
-%D   [       file=lang-chi,
+%D   [       file=tall-chi,
 %D        version=2002.06.25, % 1998.10.10,
 %D          title=\CONTEXT\ Language Macros,
 %D       subtitle=Chinese,
@@ -31,33 +31,33 @@
    \c!rightquote=\cnencoding\cnupperrightsinglequote,
    \c!leftquotation=\cnencoding\cnupperleftdoublequote,
    \c!rightquotation=\cnencoding\cnupperrightdoublequote,
-   \c!datum={\v!maand,\ ,\v!dag,{,\ },\v!jaar},
-   \c!status=\v!start]
+   \c!date={\v!month,\ ,\v!day,{,\ },\v!year},
+   \c!state=\v!stop]
 
-\setupheadtext [\s!cn]      [\v!inhoud={\cnencoding\cnencodedcontents}]
-\setupheadtext [\s!cn]    [\v!tabellen={\cnencoding\cnencodedtables}]
-\setupheadtext [\s!cn]     [\v!figuren={\cnencoding\cnencodedfigures}]
-\setupheadtext [\s!cn]   [\v!grafieken=Graphics]
-\setupheadtext [\s!cn] [\v!intermezzos=Intermezzos]
+\setupheadtext [\s!cn]      [\v!content={\cnencoding\cnencodedcontents}]
+\setupheadtext [\s!cn]    [\v!tables={\cnencoding\cnencodedtables}]
+\setupheadtext [\s!cn]     [\v!figures={\cnencoding\cnencodedfigures}]
+\setupheadtext [\s!cn]   [\v!graphics=Graphics]
+\setupheadtext [\s!cn] [\v!intermezzi=Intermezzos]
 \setupheadtext [\s!cn]       [\v!index={\cnencoding\cnencodedindex}]
-\setupheadtext [\s!cn] [\v!afkortingen={\cnencoding\cnencodedabbreviations}]
+\setupheadtext [\s!cn] [\v!abbreviations={\cnencoding\cnencodedabbreviations}]
 \setupheadtext [\s!cn]       [\v!logos={\cnencoding\cnencodedlogos}]
-\setupheadtext [\s!cn]    [\v!eenheden={\cnencoding\cnencodedunits}]
+\setupheadtext [\s!cn]    [\v!units={\cnencoding\cnencodedunits}]
 
-\setuplabeltext [\s!cn]      [\v!tabel={\cnencoding\cnencodedtable}]
-\setuplabeltext [\s!cn]     [\v!figuur={\cnencoding\cnencodedfigure}]
+\setuplabeltext [\s!cn]      [\v!table={\cnencoding\cnencodedtable}]
+\setuplabeltext [\s!cn]     [\v!figure={\cnencoding\cnencodedfigure}]
 \setuplabeltext [\s!cn] [\v!intermezzo=Intermezzo ]
-\setuplabeltext [\s!cn]    [\v!grafiek=Illustration ]
-\setuplabeltext [\s!cn]    [\v!bijlage=]
-\setuplabeltext [\s!cn]       [\v!deel={\cnencoding\cnencodedintro,\cnencoding\cnencodedpart}]
-\setuplabeltext [\s!cn]  [\v!hoofdstuk={\cnencoding\cnencodedintro,\cnencoding\cnencodedchapter}]
-\setuplabeltext [\s!cn]  [\v!paragraaf={\cnencoding\cnencodedintro,\cnencoding\cnencodedsection}]
-\setuplabeltext [\s!cn]      [\v!regel=line ]
-\setuplabeltext [\s!cn]     [\v!regels=lines ]
+\setuplabeltext [\s!cn]    [\v!graphic=Illustration ]
+\setuplabeltext [\s!cn]    [\v!appendix=]
+\setuplabeltext [\s!cn]       [\v!part={\cnencoding\cnencodedintro,\cnencoding\cnencodedpart}]
+\setuplabeltext [\s!cn]  [\v!chapter={\cnencoding\cnencodedintro,\cnencoding\cnencodedchapter}]
+\setuplabeltext [\s!cn]  [\v!section={\cnencoding\cnencodedintro,\cnencoding\cnencodedsection}]
+\setuplabeltext [\s!cn]      [\v!line=line ]
+\setuplabeltext [\s!cn]     [\v!lines=lines ]
 
-\setuplabeltext [\s!cn]             [\v!sub\v!paragraaf=]
-\setuplabeltext [\s!cn]       [\v!sub\v!sub\v!paragraaf=]
-\setuplabeltext [\s!cn] [\v!sub\v!sub\v!sub\v!paragraaf=]
+\setuplabeltext [\s!cn]             [\v!sub\v!section=]
+\setuplabeltext [\s!cn]       [\v!sub\v!sub\v!section=]
+\setuplabeltext [\s!cn] [\v!sub\v!sub\v!sub\v!section=]
 
 %D From this definition one can deduce that language, input
 %D encoding, font encoding, and glyph meaning form a pretty

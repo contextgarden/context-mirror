@@ -1,5 +1,5 @@
 %D \module
-%D   [       file=supp-ran,
+%D   [       filefile=supp-ran,
 %D        version=1998.01.21,
 %D          title=\CONTEXT\ Support Macros,
 %D       subtitle=Random Number Generation,
@@ -23,12 +23,12 @@
 %D redefine some \TEX\ primitives. We also use different names
 %D for the two generators and add an extra one.
 %D
-%D \starttypen
+%D \starttyping
 %D \getrandomcount  \countregister {minimum} {maximum}
 %D \getrandomdimen  \dimenregister {minimum} {maximum}
 %D \getrandomnumber \macroname     {minimum} {maximum}
 %D \getrandomfloat  \macroname     {minimum} {maximum}
-%D \stoptypen
+%D \stoptyping
 %D
 %D Of course the file \type{random.tex} needs to be present.
 %D To prevent name clashes, the \CONTEXT\ distribution
@@ -36,15 +36,15 @@
 %D
 %D The randomseed can be set by:
 %D
-%D \starttypen
+%D \starttyping
 %d \setrandomseed{number>0}
-%D \stoptypen
+%D \stoptyping
 %D
 %D and get by:
 %D
-%D \starttypen
+%D \starttyping
 %D \getrandomseed\randomseed
-%D \stoptypen
+%D \stoptyping
 
 \ifx\nextrandom\undefined
 

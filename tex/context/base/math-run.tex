@@ -1,5 +1,5 @@
 %D \module
-%D   [     file=math-run,
+%D   [     filefile=math-run,
 %D      version=2001.23.04,
 %D        title=\CONTEXT\ Math Macros,
 %D     subtitle=Runtime Macros,
@@ -16,9 +16,9 @@
 \gdef\showmathcharacters% nearly \showcharacters
   {\par
    \bgroup
-   \setuptextrules[\c!korps=,\c!letter=]
+   \setuptextrules[\c!bodyfont=,\c!style=]
    \starttextrule{math characters}
-   \witruimte
+   \whitespace
    \dontcomplain
    \forgetall
    \def\startmathcollection[##1]{}
@@ -48,7 +48,7 @@
    \advance\dimen2 2em
    \divide \dimen0 by \dimen2 \advance\dimen0 1sp
    \edef\enccols{\number\dimen0}
-   \startcolumns[\c!n=\enccols,\c!afstand=2em]
+   \startcolumns[\c!n=\enccols,\c!distance=2em]
    \def\dodefinemathsymbol[##1][##2][##3][##4][##5][##6]%
      {%\localcolortrue
       %\color

@@ -1,5 +1,5 @@
 %D \module
-%D   [       file=m-pictex,
+%D   [       filefile=m-pictex,
 %D        version=1997.01.15,
 %D          title=\CONTEXT\ Extra Modules,
 %D       subtitle=\PICTEX\ Loading Macros,
@@ -70,9 +70,9 @@
 %D Therefore we can use \SKIPS\ as \DIMENSIONS. However, some
 %D incompatibility can result from assignments that look like:
 %D
-%D \starttypen
+%D \starttyping
 %D \somedimen=\someskip
-%D \stoptypen
+%D \stoptyping
 %D
 %D In such cases the \DIMENSION\ equals the fixed part of the
 %D \SKIP\ or in other words: this assignment strips off the
@@ -101,7 +101,7 @@
 %D and 71 \SKIPS\ are allocated. Indeed, \PICTEX\ needs 110
 %D \DIMENSIONS !
 %D 
-%D \starttypen 
+%D \starttyping 
 %D \def\newdimen
 %D   {\ifnum\count11>\count12
 %D      \let\next\temporarynewskip
@@ -109,7 +109,7 @@
 %D      \let\next\temporarynewdimen
 %D    \fi
 %D    \next}
-%D \stoptypen
+%D \stoptyping
 %D 
 %D When I was testing a new version of \PPCHTEX\ in \PLAIN\
 %D \TEX\ I had to find out that this exchange of registers
@@ -117,23 +117,23 @@
 %D to find out that the source of errors originated in
 %D constructions like:
 %D
-%D \starttypen
+%D \starttyping
 %D \ifdim\DimenOne<\DimenTwo whatever you want \else or not \fi
-%D \stoptypen
+%D \stoptyping
 %D
 %D When \type{\DimenOne} is a \SKIP\ and \type{\DimenTwo} is a
 %D \DIMENSION, \TEX\ scans for some optional glue component,
 %D like in:
 %D
-%D \starttypen
+%D \starttyping
 %D \skip0=\dimen0 plus 10pt minus 5pt
-%D \stoptypen
+%D \stoptyping
 %D
 %D The most robust solution to this problem is:
 %D
-%D \starttypen
+%D \starttyping
 %D \ifdim\DimenOne<\DimenTwo\relax right \else wrong \fi
-%D \stoptypen
+%D \stoptyping
 %D 
 %D Some close reading of the \PICTEX\ source however learned me
 %D that this problem could be solved best by just honoring the

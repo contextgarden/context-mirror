@@ -1,5 +1,5 @@
 %D \module
-%D   [       file=mult-sys,
+%D   [       filefile=mult-sys,
 %D        version=1996.06.01,
 %D          title=\CONTEXT\ Multilingual Macros,
 %D       subtitle=System,
@@ -22,10 +22,10 @@
 %D The constants are grouped in such a way that there is a
 %D minimal change of conflicts.
 %D
-%D \starttypen
+%D \starttyping
 %D \definesystemconstants {word}
 %D \definemessageconstant {word}
-%D \stoptypen
+%D \stoptyping
 %D
 %D This commands generate \type{\s!word} and \type{\m!word}.
 
@@ -51,6 +51,8 @@
 \definesystemconstant {romanian}    \definesystemconstant {ro}
 \definesystemconstant {russian}     \definesystemconstant {ru}
 \definesystemconstant {slovak}      \definesystemconstant {sk}
+\definesystemconstant {slovenian}   \definesystemconstant {sl}
+\definesystemconstant {slovene}
 \definesystemconstant {spanish}     \definesystemconstant {es}
 \definesystemconstant {swedish}     \definesystemconstant {sv}
 \definesystemconstant {turkish}     \definesystemconstant {tr}
@@ -107,10 +109,10 @@
 %D Where in the \ASCII\ file the second lines takes nine extra
 %D characters, \TEX\ saves us 13~tokens.
 %D
-%D \starttypen
+%D \starttyping
 %D \hrule width 10pt height 2pt depth 1pt
 %D \hrule \!!width 10pt \!!height 2pt \!!depth 1pt
-%D \stoptypen
+%D \stoptyping
 %D
 %D One condition is that we have defined \type{\!!height},
 %D \type{\!!width} and \type{\!!depth} as respectively
@@ -357,7 +359,7 @@
 
 %D A rough test is:
 %D
-%D \starttypen
+%D \starttyping
 %D \def\TestMe % 7.75 sec on a P4/2G
 %D   {\dimen0=10\points\dimen0=10\points\dimen0=10\points\dimen0=10\points\dimen0=10\points
 %D    \dimen0=10\points\dimen0=10\points\dimen0=10\points\dimen0=10\points\dimen0=10\points}
@@ -371,7 +373,7 @@
 %D    \dimen0=10\s!pt\dimen0=10\s!pt\dimen0=10\s!pt\dimen0=10\s!pt\dimen0=10\s!pt}
 %D
 %D \testfeatureonce {500000}{\TestMe}
-%D \stoptypen
+%D \stoptyping
 
 %D Variables are composed of a command specific tag and a user
 %D supplied variable (system constant). The first tag \type{ag}

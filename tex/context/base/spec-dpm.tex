@@ -1,5 +1,5 @@
 %D \module
-%D   [       file=spec-dpm,
+%D   [       filefile=spec-dpm,
 %D        version=1998.11.24,
 %D          title=\CONTEXT\ Special Macros,
 %D       subtitle=DVIPDFM support,
@@ -177,12 +177,12 @@
 %D \macros
 %D   {dosetupscreen}
 
-\definespecial\dosetupscreen  {\doPDFsetupscreen  \printpapierhoogte}
+\definespecial\dosetupscreen  {\doPDFsetupscreen  \printpaperheight}
 
-\definespecial\dosetupartbox  {\doPDFsetupartbox  \printpapierhoogte}
-\definespecial\dosetupcropbox {\doPDFsetupcropbox \printpapierhoogte}
-\definespecial\dosetupbleedbox{\doPDFsetupbleedbox\printpapierhoogte}
-\definespecial\dosetuptrimbox {\doPDFsetuptrimbox \printpapierhoogte}
+\definespecial\dosetupartbox  {\doPDFsetupartbox  \printpaperheight}
+\definespecial\dosetupcropbox {\doPDFsetupcropbox \printpaperheight}
+\definespecial\dosetupbleedbox{\doPDFsetupbleedbox\printpaperheight}
+\definespecial\dosetuptrimbox {\doPDFsetuptrimbox \printpaperheight}
 
 %D \macros
 %D   {dostartexecutecommand}

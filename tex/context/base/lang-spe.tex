@@ -1,5 +1,5 @@
 %D \module
-%D   [       file=lang-spe,
+%D   [       file=tall-spe,
 %D        version=2002.05.07, % 1996.01.25,
 %D          title=\CONTEXT\ Language Macros,
 %D       subtitle=Specifics,
@@ -11,24 +11,40 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-%D This code was originally placed in the language 
-%D initialization module, but isolating it is clearer.
+%D This code was originally placed in the language
+%D initialization module, but isolating it is clearer. Language
+%D specifics evolved out of user demands for special features,
+%D like the german active quote. After a while I decided to
+%D associate them to languages in a more general way so that we
+%D could associate all kind of things with language switching.
+%D
+%D This is a typical example of functionality that occasionally
+%D gets improved based on user input and experience. Much of the
+%D code is pretty old and could probabbly be done in better ways.
+%D It's probably also the kind of code that has been and will be
+%D written over and over again by \TEX\ users around the world,
+%D so there are probably better implementations of similar
+%D functionality around. Therefore, users are invited to pop in
+%D their own handling as long as it does not interfere with
+%D existing code. Writing the more obscure macros that deal with
+%D this is a good learning experience (catcodes, lccodes, token
+%D lists, expansion, \unknown).
 
 \writestatus{loading}{Context Language Macros / Specifics}
 
 \unprotect
 
-%D \macros 
+%D \macros
 %D   {everyresetlanguagespecifics,resetlanguagespecifics}
-%D 
-%D Cleanup macros. 
+%D
+%D Cleanup macros.
 
 \newevery \everyresetlanguagespecifics \relax
 
 \def\resetlanguagespecifics
   {\ifcase\protectionlevel
      \the\everyresetlanguagespecifics
-   \else % to be translated 
+   \else % to be translated
      \writestatus\m!systems{don't change language in unprotected mode!}%
    \fi}
 
@@ -47,13 +63,13 @@
 %D macro in return calls for the setup of language specific
 %D macros. Such specifics are defined as:
 %D
-%D \starttypen
+%D \starttyping
 %D \startlanguagespecifics[de]
 %D   \installcompoundcharacter "a {\"a}
 %D   \installcompoundcharacter "e {\"e}
 %D   \installcompoundcharacter "s {\SS}
 %D \stoplanguagespecifics
-%D \stoptypen
+%D \stoptyping
 %D
 %D Instead of \type{[du]} we can pass a comma separated
 %D list, like \type{[du,nl]}. Next calls to this macro add the
@@ -76,7 +92,7 @@
 %D be sure, we check on spurious spaces. The second dummy
 %D argument gobbles spaces.
 
-\def\languageencoding%
+\def\languageencoding
   {\ifx\characterencoding\nocharacterencoding \else
      \characterencoding-%
    \fi}
@@ -103,26 +119,45 @@
 
 % This saves 3K in the fmt file.
 
-\long\def\dostartlanguagespecifics[#1][#2]#3\stoplanguagespecifics%
+% This should be a token register, but alas, we run out of them and
+% \ETEX\ has a bug.
+
+\long\def\dostartlanguagespecifics[#1][#2]#3\stoplanguagespecifics
   {\egroup
    \processcommalist[#1]{\dosetlanguagespecifics{#3}}}
 
+% \long\def\dosetlanguagespecifics#1#2%
+%   {\doifdefinedelse{\??la\languageencoding#2\??la}
+%      {\long\def\do##1##2##3{\setvalue{\??la\languageencoding##1\??la}{\do{##1}{##2##3}}}%
+%       \getvalue{\??la\languageencoding#2\??la}{#1}}
+%      {\setvalue{\??la\languageencoding#2\??la}{\do{#2}{#1}}}%
+%    \bgroup
+%    \setbox\scratchbox\hbox{\enablelanguagespecifics[#2]}%
+%    \ifdim\wd\scratchbox>\zeropoint
+%      \showmessage\m!linguals7{\currentencoding-#2,\the\wd\scratchbox\space}\wait
+%    \else
+%      \showmessage\m!linguals8{\currentencoding-#2}%
+%    \fi
+%    \egroup
+%    \doif{#2}\currentmainlanguage
+%      {\enablelanguagespecifics[#2]}}
+
 \long\def\dosetlanguagespecifics#1#2%
-  {\doifdefinedelse{\??la\languageencoding#2\??la}
-     {\long\def\do##1##2##3%
-        {\setvalue{\??la\languageencoding##1\??la}{\do{##1}{##2##3}}}%
-      \getvalue{\??la\languageencoding#2\??la}{#1}}
-     {\setvalue{\??la\languageencoding#2\??la}{\do{#2}{#1}}}%
+  {%ifundefined{\??la\languageencoding#2\??la}\letvalue{\??la\languageencoding#2\??la}\empty\fi
+   \ifundefined{\??la\languageencoding#2\??la}\forgetlanguagespecifics[#2]\fi
+   \appendvalue{\??la\languageencoding#2\??la}{#1}%
    \bgroup
-   \setbox0=\hbox{\enablelanguagespecifics[#2]}%
-   \ifdim\wd0>\zeropoint
-     \showmessage{\m!linguals}{7}{\currentencoding-#2,\the\wd0\space}\wait
+   \setbox\scratchbox\hbox{\enablelanguagespecifics[#2]}%
+   \ifdim\wd\scratchbox>\zeropoint
+     \showmessage\m!linguals7{\currentencoding-#2,\the\wd\scratchbox\space}\wait
    \else
-     \showmessage{\m!linguals}{8}{\currentencoding-#2}%
+     \showmessage\m!linguals8{\currentencoding-#2}%
    \fi
    \egroup
-   \doif{#2}{\currentmainlanguage}
-     {\enablelanguagespecifics[#2]}}
+   \doif{#2}\currentmainlanguage{\enablelanguagespecifics[#2]}}
+
+\def\forgetlanguagespecifics[#1]%
+  {\letvalue{\??la\languageencoding#1\??la}\empty}
 
 %D Enabling them is rather straightforward. We only have to
 %D define \type{\do} in such a way that \type{{ }} is removed
@@ -139,7 +174,7 @@
 % sped up since used often:
 
 \def\enablelanguagespecifics[#1]%
-  {\let\do\secondoftwoarguments
+  {%\let\do\secondoftwoarguments
    \csname
      \??la
      \@EA\ifx\csname\??la#1\c!default\endcsname\relax
@@ -152,14 +187,14 @@
    \csname\??la#1\??la\endcsname
    \csname\??la\languageencoding#1\??la\endcsname} % dup ?
 
-%D \macros 
+%D \macros
 %D   {deactivatelanguagespecific}
-%D 
+%D
 %D The next code makes it possible to disable the specifics.
 
 \def\deactivatelanguagespecific#1%
   {\ifundefined{l g s \string#1}%
-     \letgvalueempty{l g s \string#1}% signal to prevent dup def 
+     \letgvalueempty{l g s \string#1}% signal to prevent dup def
      \bgroup
      \catcode`#1=\@@active
      \uccode`~=`#1
@@ -171,18 +206,18 @@
 % \def\dodeactivatetoken#1#2#3%
 %   {\def#1{#2}\catcode`#2=#3\relax}
 
-\def\dodeactivatetoken#1#2#3% tets needed to avoid clash with \unprotect 
+\def\dodeactivatetoken#1#2#3% test needed to avoid clash with \unprotect
   {\def#1{#2}\ifnum\catcode`#2=\@@active\catcode`#2=#3\relax\fi}
 
-%D We cannot hook this into the installer since language 
-%D specifics can be anything. So far, we have the following 
-%D potentially active characters. 
+%D We cannot hook this into the installer since language
+%D specifics can be anything. So far, we have the following
+%D potentially active characters.
 
-%D Beware, this should happen under an unprotected regime; 
-%D thanks to Giuseppe Oblomov Bilotta, who first noticed 
-%D that something was wrong. 
+%D Beware, this should happen under an unprotected regime;
+%D thanks to Giuseppe Oblomov Bilotta, who first noticed
+%D that something was wrong.
 
-\protect 
+\protect
 
 \deactivatelanguagespecific "
 \deactivatelanguagespecific /
@@ -191,13 +226,13 @@
 \deactivatelanguagespecific ?
 \deactivatelanguagespecific !
 
-\unprotect 
+\unprotect
 
-%D \macros 
-%D   {ordinaldaynumber, highordinalstr, ordinalstr}    
-%D 
-%D Efficient general ordinal number converters are sometimes 
-%D difficult to implement. Fortunately dates never exceed the 
+%D \macros
+%D   {ordinaldaynumber, highordinalstr, ordinalstr}
+%D
+%D Efficient general ordinal number converters are sometimes
+%D difficult to implement. Fortunately dates never exceed the
 %D number~31.
 
 \def\highordinalstr#1{\high{\nocap{#1}}}
@@ -208,17 +243,17 @@
      \noexpand\firstofoneargument{\number#1}}}
 
 %D Language specific converters have definitions like:
-%D 
-%D \starttypen
-%D \def\enordinaldaynumber#1{...} 
-%D \stoptypen
-%D 
+%D
+%D \starttyping
+%D \def\enordinaldaynumber#1{...}
+%D \stoptyping
+%D
 %D Examples can be found in the other \type {lang} modules.
 
-% \ifprocessingXML is a nasty dependency 
+% \ifprocessingXML is a nasty dependency
 
 \appendtoks
   \ifprocessingXML \else \resetlanguagespecifics \fi
 \to \everylanguage
 
-\protect \endinput 
+\protect \endinput

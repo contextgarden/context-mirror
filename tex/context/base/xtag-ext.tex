@@ -1,5 +1,5 @@
 %D \module
-%D   [       file=xtag-ext,
+%D   [       filefile=xtag-ext,
 %D        version=2001.03.21,
 %D          title=\CONTEXT\ XML Support,
 %D       subtitle=Extra Macros,
@@ -27,11 +27,11 @@
 %D will not conflict (don't confuse this with \XML\
 %D namespaces.)
 %D
-%D \starttypen
+%D \starttyping
 %D \startXMLmapping [tag] | [-] [tag] | [+] [tag]
 %D   definitions
 %D \stopXMLmapping
-%D \stoptypen
+%D \stoptyping
 %D
 %D When a \type {[+]} is specified, the mappings will
 %D nest.
@@ -97,11 +97,11 @@
 %D
 %D Imagine something:
 %D
-%D \starttypen
+%D \starttyping
 %D \defineXMLenvironment [something]
 %D   {\startXMLmapping[whatever]}
 %D   {\stopXMLmapping}
-%D \stoptypen
+%D \stoptyping
 %D
 %D Here the \type {\stopXMLmapping} will never be reached
 %D because we are in a mapping. Therefore we need:

@@ -1,5 +1,5 @@
 %D \module
-%D   [       file=font-bfm,
+%D   [       filefile=font-bfm,
 %D        version=2003.11.25,
 %D          title=\CONTEXT\ Font Macros,
 %D       subtitle=Mixed Normal and Bold Math,
@@ -174,10 +174,10 @@
 %D We hook this feature into the formula mechanism.
 
 \setupformulas
-  [\c!methode=\v!normaal]
+  [\c!method=\v!normal]
 
 \appendtoks
-  \doifelse{\formulaparameter\c!methode}\v!vet
+  \doifelse{\formulaparameter\c!method}\v!bold
     {\chardef\boldfacemathmethod\plusone}
     {\chardef\boldfacemathmethod\zerocount}%
 \to \everysetupformulas

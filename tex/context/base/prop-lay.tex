@@ -1,5 +1,5 @@
 %D \module
-%D   [       file=prop-lay,
+%D   [       filefile=prop-lay,
 %D        version=2003.04.20,
 %D          title=\CONTEXT\ Property Macros,
 %D       subtitle=Layers,
@@ -20,8 +20,8 @@
 \def\checklayerproperty
   {\dodefineviewerlayer
      \currentproperty % tag
-     {\checkedpropertyparameter\c!titel\currentproperty}%
-     {\checkedpropertyparameter\c!status\v!start}% visible or hidden
+     {\checkedpropertyparameter\c!title\currentproperty}%
+     {\checkedpropertyparameter\c!state\v!start}% visible or hidden
      {0}% type (1=frozen)
      {0}}% printable
 
@@ -56,8 +56,8 @@
 %D \setupcolors[state=start]
 %D \setupinteraction[state=start,color=,contrastcolor=]
 %D
-%D \defineproperty [L1] [\s!layer] [title=layer 1]
-%D \defineproperty [L2] [\s!layer] [title=layer 2]
+%D \defineproperty [L1] [layer] [title=layer 1]
+%D \defineproperty [L2] [layer] [title=layer 2]
 %D
 %D \button{HIDE   L1}[HideLayer{L1}]
 %D \button{VIDE   L1}[VideLayer{L1}]

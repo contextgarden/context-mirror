@@ -1,5 +1,5 @@
 %D \module
-%D   [       file=java-ini,
+%D   [       filefile=java-ini,
 %D        version=1998.01.30,
 %D          title=\CONTEXT\ JavaScript Macros,
 %D       subtitle=Initialization,
@@ -102,59 +102,59 @@
 %D related to the referencing mechanism. Integration takes
 %D place by
 %D
-%D \starttypen
-%D \naar{calculate total}[Sum()]
-%D \stoptypen
+%D \starttyping
+%D \goto{calculate total}[Sum()]
+%D \stoptyping
 %D
 %D The \type{()} classify this as a script. If they are absent,
 %D the keyword is treated as a normal reference.
 %D
 %D One can pass arguments to such a script by saying:
 %D
-%D \starttypen
-%D \naar{calculate total}[Sum(1.5,2.3)]
-%D \stoptypen
+%D \starttyping
+%D \goto{calculate total}[Sum(1.5,2.3)]
+%D \stoptyping
 %D
 %D References are passed by using the \type{R{}} classifier.
 %D
-%D \starttypen
-%D \naar{calculate total}[Sum(1.5,2.3,R{overflow})]
-%D \stoptypen
+%D \starttyping
+%D \goto{calculate total}[Sum(1.5,2.3,R{overflow})]
+%D \stoptyping
 %D
 %D The last call calls the script \type{Sum} and passes the
 %D next set of variables:
 %D
-%D \starttypen
+%D \starttyping
 %D JS_S_1="1.5";
 %D JS_S_2="2.3";
 %D JS_R_3="overflow";
 %D JS_P_3=3;
-%D \stoptypen
+%D \stoptyping
 %D
 %D The first two parameters are just strings, the third one
 %D however is treated as a reference and results in passing the
 %D reference (if needed this references is prefixed) and the
 %D (real) page number. The alternative:
 %D
-%D \starttypen
-%D \naar{calculate total}[JS(Sum{V{1.5},V{2.3},R{overflow}})]
-%D \stoptypen
+%D \starttyping
+%D \goto{calculate total}[JS(Sum{V{1.5},V{2.3},R{overflow}})]
+%D \stoptyping
 %D
 %D does a verbose passing:
 %D
-%D \starttypen
+%D \starttyping
 %D JS_V_1=1.5;
 %D JS_V_2=2.3;
 %D JS_R_3="overflow";
 %D JS_P_3=3;
-%D \stoptypen
+%D \stoptyping
 % %D
 % %D Finally we have a counter that tells\JAVA\ how many
 % %D arguments were passed,
 % %D
-% %D \starttypen
+% %D \starttyping
 % %D JS_N
-% %D \stoptypen
+% %D \stoptyping
 
 %D We will also support direct function calls. In that case
 %D no intermediate variables are used.
@@ -164,7 +164,7 @@
 %D
 %D A piece of \JAVASCRIPT\ code is defined by saying:
 %D
-%D \starttypen
+%D \starttyping
 %D \startJScode{SomeScript}
 %D   var Item=this.getField("item");
 %D          N=Item.getArray();
@@ -176,7 +176,7 @@
 %D   if ((JS_N>0) && (JS_R_1!=""))
 %D     { gotoNamedDest(JS_R_1) };
 %D \stopJScode
-%D \stoptypen
+%D \stoptyping
 %D
 %D Such a piece of code is closely related to the interpreter
 %D used. Watch the last two lines, here the script adapts
@@ -184,21 +184,21 @@
 %D
 %D While
 %D
-%D \starttypen
+%D \starttyping
 %D \startJScode{name}
 %D   name = 4 ;
 %D \stopJScode
-%D \stoptypen
+%D \stoptyping
 %D
 %D assumes uses no preamble or presumes that the preamble is
 %D always loaded, the next definition also tells \CONTEXT\ to
 %D actually include the preamble needed.
 %D
-%D \starttypen
+%D \starttyping
 %D \startJScode{uses} uses {later}
 %D   uses = 6 ;
 %D \stopJScode
-%D \stoptypen
+%D \stoptyping
 
 \long\def\startJScode#1 #2
   {\doifelse{#2}{uses}
@@ -218,9 +218,9 @@
 %D
 %D The code can be retrieved by saying
 %D
-%D \starttypen
+%D \starttyping
 %D \presetJScode{SomeScript}{template}
-%D \stoptypen
+%D \stoptyping
 %D
 %D Such a template is a comma separated list, where
 %D individual entries can optionally be transformed by
@@ -324,28 +324,28 @@
 %D One can define insert \JAVASCRIPT\ code at the document level
 %D by using:
 %D
-%D \starttypen
+%D \starttyping
 %D \startJSpreamble{oeps}
 %D   oeps = 1 ;
 %D \stopJSpreamble
-%D \stoptypen
+%D \stoptyping
 %D
 %D which is the same as:
 %D
-%D \starttypen
+%D \starttyping
 %D \startJSpreamble{now} used now
 %D   now = 2 ;
 %D \stopJSpreamble
-%D \stoptypen
+%D \stoptyping
 %D
 %D while the next definition is only included when actually
 %D used.
 %D
-%D \starttypen
+%D \starttyping
 %D \startJSpreamble{later} used later
 %D   later = 3 ;
 %D \stopJSpreamble
-%D \stoptypen
+%D \stoptyping
 %D
 %D This command may be used more that once, but always before
 %D the first page is shipped out.
@@ -381,7 +381,7 @@
 %D   {setJSpreamble, addtoJSpreamble}
 %D
 %D In addition to the previous preamble definitions, we can
-%D set a preamble \citeer {in||line} and add tokens to a
+%D set a preamble \quote {in||line} and add tokens to a
 %D preamble.
 
 \def\setJSpreamble#1#2%
@@ -493,7 +493,7 @@
 
 %D I started with:
 %D
-%D \starttypen
+%D \starttyping
 %D \def\dodoPSsanitizeJScode#1%
 %D   {\aftergroup\string
 %D    \if#1(%
@@ -509,7 +509,7 @@
 %D    \ifnum\scratchcounter=500
 %D      \expandafter\dododoPSsanitizeJScode
 %D    \fi}
-%D \stoptypen
+%D \stoptyping
 %D
 %D For pretty printing purposes, we need some way to signal
 %D \TEX\ macros. Therefore we introduce a special keyword
@@ -653,9 +653,9 @@
 %D collected in files with names like \type{java-...}. One can
 %D load these scripts with \type{\useJSscripts}, like:
 %D
-%D \starttypen
+%D \starttyping
 %D \useJSscripts[fld]
-%D \stoptypen
+%D \stoptyping
 %D
 %D The not so complicated implementation of this macro is:
 

@@ -1,5 +1,5 @@
 %D \module
-%D   [       file=supp-mps,
+%D   [       filefile=supp-mps,
 %D        version=1997.07.05,
 %D          title=\CONTEXT\ Support Macros,
 %D       subtitle=\METAPOST\ Inclusion,
@@ -16,13 +16,13 @@
 %D integrate \METAPOST\ support int \CONTEXT.  We offer two
 %D tracks:
 %D
-%D \startopsomming
-%D \som generating \METAPOST\ code, running this program from
+%D \startitemize
+%D \item generating \METAPOST\ code, running this program from
 %D      within \TEX\ using \type{\write18}, and importing the
 %D      result
-%D \som generating \METAPOST\ code, processing the code
+%D \item generating \METAPOST\ code, processing the code
 %D      afterward, and importing the result in a second pass
-%D \stopopsomming
+%D \stopitemize
 %D
 %D The first approach uses a non standard \TEX\ feature,
 %D implemented in Web2c. I'm not going to discuss the pros and
@@ -30,9 +30,9 @@
 %D arguments against this can be overcome by implementing a
 %D \TEX\ worthy primitive:
 %D
-%D \starttypen
+%D \starttyping
 %D \excuteMetaPost filename
-%D \stoptypen
+%D \stoptyping
 %D
 %D Ok then, let's start:
 
@@ -56,10 +56,10 @@
 %D From within \TEX\ one can execute \METAPOST\ code by putting
 %D it between the two commands
 %D
-%D \starttypen
+%D \starttyping
 %D \startMPgraphic
 %D \stopMPgraphic
-%D \stoptypen
+%D \stoptyping
 %D
 %D This is implemented as:
 
@@ -75,15 +75,15 @@
 %D explictly generate a figure in terms of \type{beginfig} and
 %D \type{endfig}, we can use:
 %D
-%D \starttypen
+%D \starttyping
 %D \startMPgraphic
 %D \stopMPgraphic
-%D \stoptypen
+%D \stoptyping
 %D
-%D \starttypen
+%D \starttyping
 %D \startMPrun
 %D \stopMPrun
-%D \stoptypen
+%D \stoptyping
 %D
 %D The next booleans are for internal purposes only.
 
@@ -129,7 +129,7 @@
 %D If the writing process is divided into more steps, one can
 %D use the components of this macro directly.
 %D
-%D \starttypen
+%D \starttyping
 %D \startwritingMPgraphic
 %D ...
 %D \writeMPgraphic{...}
@@ -137,7 +137,7 @@
 %D \writeMPgraphic{...}
 %D ...
 %D \stopwritingMPgraphic
-%D \stoptypen
+%D \stoptyping
 
 %D \macros
 %D   {ifrunMPgraphics,ifrunMPTEXgraphics,ifinsertMPgraphics}
@@ -195,9 +195,9 @@
 %D One can include for instance common input commands by
 %D passing them to \type{\MPinclusions}:
 %D
-%D \starttypen
+%D \starttyping
 %D \MPinclusions{input mp-mine}
-%D \stoptypen
+%D \stoptyping
 %D
 %D The token register \type {\MPinitializations} is expanded
 %D before all other inclusions, the extensions are expanded
@@ -337,7 +337,7 @@
 
 %D A first version:
 %D
-%D \starttypen
+%D \starttyping
 %D \long\def\dodowriteMPgraphicline#1tex #2#3etex#4\MPend%
 %D   {\ifx\next\empty\else\ifx\next\relax\else
 %D      \bgroup
@@ -353,7 +353,7 @@
 %D        \dowriteMPgraphicline#4tex \relax etex\MPend
 %D      \fi
 %D    \fi\fi}
-%D \stoptypen
+%D \stoptyping
 
 %D The next alternative also handles inclusions well.
 
@@ -363,7 +363,7 @@
 
 %D Before we supported the graph module, we had:
 %D
-%D \starttypen
+%D \starttyping
 %D \convertargument        etex\to\MPasciiB
 %D \convertargument     textext\to\MPasciiC % geen "text"
 %D \convertargument graphictext\to\MPasciiD % geen "text"
@@ -378,7 +378,7 @@
 %D     {\doifstringinstringelse\MPasciiD\MPasciiA{\global\MPTEXgraphictrue}
 %D                                               {\global\MPTEXgraphicfalse}}}%
 %D    \fi}
-%D \stoptypen
+%D \stoptyping
 %D
 %D The next alternative permits extensions in other modules
 %D without the need to know the details of testing.
@@ -422,7 +422,7 @@
 \forceMPTEXcheck{textext}
 \forceMPTEXcheck{graphictext}
 
-%D \starttypen
+%D \starttyping
 %D \forceMPTEXgraphictrue
 %D
 %D \forceMPTEXcheck{lintext}
@@ -432,7 +432,7 @@
 %D draw hlintext.lft(0, 20,  5, 20cm, "@3e") ;
 %D draw vlogtext.bot(0, 10,  9, 10cm, "@3e") ;
 %D \stopMPcode
-%D \stoptypen
+%D \stoptyping
 
 \def\flushMPTEXgraphic
   {\ifMPTEXgraphic
@@ -708,7 +708,7 @@
 %D
 %D For my polish friends:
 %D
-%D \starttypen
+%D \starttyping
 %D % translate=il2-pl
 %D
 %D \translateMPinput{il2-pl}
@@ -722,7 +722,7 @@
 %D \startMPcode
 %D draw btex MetaPost: ± ¶ etex scaled 5 ;
 %D \stopMPcode
-%D \stoptypen
+%D \stoptyping
 
 \def\translateMPinput#1%
   {\xdef\MPinputtranslation{\letterpercent -translate-file=#1\space}}
@@ -754,9 +754,9 @@
 %D one file. This means that we cannot close this file after
 %D every \type{\stopMPgraphic}. Therefore we need to say:
 %D
-%D \starttypen
+%D \starttyping
 %D \flushMPgraphics
-%D \stoptypen
+%D \stoptyping
 %D
 %D else the file is closed without writing the \METAPOST\ end
 %D command. One will notice this fast enough when in indirect
@@ -770,10 +770,10 @@
 %D
 %D Once defined, we can call for this graphic by saying:
 %D
-%D \starttypen
+%D \starttyping
 %D \loadcurrentMPgraphic{setups}
 %D \placeMPgraphic
-%D \stoptypen
+%D \stoptyping
 %D
 %D This two stage insert permits some intermediate manipulations
 %D of the graphic, which temporary saved in:
@@ -828,7 +828,7 @@
 
 %D We assume that one can set objects:
 %D
-%D \starttypen
+%D \starttyping
 %D \def\douseMPbox#1%
 %D   {\setobject{MP}{#1}\vbox
 %D      {\forgetall
@@ -836,9 +836,9 @@
 %D       \deallocateMPslot\currentMPgraphic
 %D       \placeMPgraphic}%
 %D    \setgvalue{#1}{\getobject{MP}{#1}}}
-%D \stoptypen
+%D \stoptyping
 %D
-%D More save is to use a number for {MP}{#1} which permits
+%D More save is to use a number for \type {{MP}{#1}} which permits
 %D redefinition.
 
 \newcount\MPobjectcounter
@@ -925,7 +925,7 @@
 
 \let\useMPgraphic=\reuseMPgraphic
 
-%D \macro
+%D \macros
 %D   {doifMPgraphicelse}
 %D
 %D For (mainly internal) purposes we provide a test macro.
@@ -945,7 +945,7 @@
 %D In a graphic one can call up another (predefined one)
 %D like:
 %D
-%D \starttypen
+%D \starttyping
 %D \startuseMPgraphic{a}
 %D   fill fullcircle scaled 100 ;
 %D \stopuseMPgraphic
@@ -956,7 +956,7 @@
 %D \stopuseMPgraphic
 %D
 %D \useMPgraphic{b}
-%D \stoptypen
+%D \stoptyping
 
 \def\includeMPgraphic#1%
   {\csname\@@MPG#1\endcsname}
@@ -980,9 +980,9 @@
 %D
 %D For faster running, one can generate a format, saying
 %D
-%D \starttypen
+%D \starttyping
 %D mpost -ini context
-%D \stoptypen
+%D \stoptyping
 %D
 %D (The resulting \type {mem} file should be moved to the
 %D right location. Watch out for misatching \type {progname}
@@ -1057,10 +1057,10 @@
      \else
        \externalfigure
          [#1]
-         [\c!type=\c!mps,\c!object=\v!nee,
-          \c!symbool=\v!ja,\c!reset=\v!ja,
-          \c!maxbreedte=,\c!maxhoogte=,
-          \c!kader=\v!uit,\c!achtergrond=,
+         [\c!type=\c!mps,\c!object=\v!no,
+          \c!symbol=\v!yes,\c!reset=\v!yes,
+          \c!maxwidth=,\c!maxheight=,
+          \c!frame=\v!off,\c!background=,
           #2]%
      \fi}
 
@@ -1074,7 +1074,7 @@
 %D This module can be used in \PLAIN\ \TEX too. When using
 %D \DVIPS, just try to process:
 %D
-%D \starttypen
+%D \starttyping
 %D \input supp-mps
 %D
 %D \runMPgraphicstrue
@@ -1088,15 +1088,15 @@
 %D \stopuseMPgraphic
 %D
 %D \useMPgraphic{1}
-%D \stoptypen
+%D \stoptyping
 %D
 %D Don't forget to enable \type{\write18}. When does not say
 %D \type{\runMPgraphicstrue}, the \METAPOST\ scratch file
 %D must be closed by saying
 %D
-%D \starttypen
+%D \starttyping
 %D \flushMPgraphics
-%D \stoptypen
+%D \stoptyping
 %D
 %D When using the indirect method, one has to process the file
 %D \type{mpgraph.mp} between two successive \TEX\ runs.
@@ -1124,15 +1124,15 @@
 %D The method we use is both robust and simple: one can do
 %D with calling the next macro with the filename as argument:
 %D
-%D \starttypen
+%D \starttyping
 %D \includeMPfonts{filename}
-%D \stoptypen
+%D \stoptyping
 %D
 %D We can turn of this mechanism with:
 %D
-%D \starttypen
+%D \starttyping
 %D \includeMPfontsfalse
-%D \stoptypen
+%D \stoptyping
 %D
 %D {\em Currently this method fails for situations where the
 %D font definition is not on one line, which is he case when
@@ -1170,7 +1170,7 @@
 %D In \CONTEXT\ font handling is intergrated in the figure
 %D inclusion macros. A decent plain \TEX\ alternative is:
 %D
-%D \starttypen
+%D \starttyping
 %D \def\includeMPgraphic#1%
 %D   {\hbox\bgroup
 %D    \includeMPfonts{#1}%
@@ -1188,28 +1188,28 @@
 %D          urx=\EPSurx\space
 %D          ury=\EPSury\space}}%
 %D    \egroup}
-%D \stoptypen
+%D \stoptyping
 %D
 %D This macro needs \type {supp-eps.tex} and provided no
 %D scaling. For \LATEX\ users the next one will do:
 %D
-%D \starttypen
+%D \starttyping
 %D \def\includeMPgraphic#1#%
 %D   {\hbox\bgroup
 %D    \def\includeMPgraphics##1%
 %D      {\includeMPfonts{##1}%
-%D       \includegraphics[type=mps,#1]{##1}%  or whatever type they use
+%D       \includegraphics[typetype=mps,#1]{##1}%  or whatever type they use
 %D       \egroup}%
 %D    \includeMPgraphics}
-%D \stoptypen
+%D \stoptyping
 
 %D We scan the graphics file for the \type{fshow} operator,
 %D that is, lines that start with \type{(}. If found it
 %D interprets the line, which looks like:
 %D
-%D \starttypen
+%D \starttyping
 %D (string ... string) font size fshow
-%D \stoptypen
+%D \stoptyping
 %D
 %D Font definitions specified in the preamble are simply
 %D ignored. Only lines starting with \type{(} are interpreted.
@@ -1277,18 +1277,18 @@
 %D The lines starting with \type{(} are interpreted and
 %D handled by
 %D
-%D \starttypen
+%D \starttyping
 %D \def\includeMPcharacters(#1) #2 #3 #4\relax%
 %D   {\font\temp=#2 at #3bp\temp#1}
-%D \stoptypen
+%D \stoptyping
 %D
 %D While processing some \TUG~98 proceedings, I also had to
 %D deal with:
 %D
-%D \starttypen
+%D \starttyping
 %D /nfont {10 div dup scale 10} def
 %D (T) ANTTB 7.13086 nfont fshow
-%D \stoptypen
+%D \stoptyping
 %D
 %D which comes to rounding sizes. This is something
 %D experimental. (The macro in supp-pdf.tex is more
@@ -1321,27 +1321,27 @@
 %D Now let's see if things work all right and show the example
 %D files that are part of the \METAPOST\ distribution:
 %D
-%D \startregelcorrectie
-%D \steluitlijnenin[midden]
+%D \startlinecorrection
+%D \setupalign[middle]
 %D \leavevmode
-%D \startcombinatie[3*3]
-%D   {\externfiguur[mp-exa-1][kader=aan,breedte=.2\hsize]} {}
-%D   {\externfiguur[mp-exa-2][kader=aan,breedte=.2\hsize]} {}
-%D   {\externfiguur[mp-exa-3][kader=aan,breedte=.2\hsize]} {}
-%D   {\externfiguur[mp-exa-4][kader=aan,breedte=.2\hsize]} {}
-%D   {\externfiguur[mp-exa-5][kader=aan,breedte=.2\hsize]} {}
-%D   {\externfiguur[mp-exa-6][kader=aan,breedte=.2\hsize]} {}
-%D   {\externfiguur[mp-exa-7][kader=aan,breedte=.2\hsize]} {}
-%D   {\externfiguur[mp-exa-8][kader=aan,breedte=.2\hsize]} {}
-%D   {\externfiguur[mp-exa-9][kader=aan,breedte=.2\hsize]} {}
-%D \stopcombinatie
-%D \stopregelcorrectie
+%D \startcombination[3*3]
+%D   {\externalfigure[mp-exa-1][frame=on,width=.2\hsize]} {}
+%D   {\externalfigure[mp-exa-2][frame=on,width=.2\hsize]} {}
+%D   {\externalfigure[mp-exa-3][frame=on,width=.2\hsize]} {}
+%D   {\externalfigure[mp-exa-4][frame=on,width=.2\hsize]} {}
+%D   {\externalfigure[mp-exa-5][frame=on,width=.2\hsize]} {}
+%D   {\externalfigure[mp-exa-6][frame=on,width=.2\hsize]} {}
+%D   {\externalfigure[mp-exa-7][frame=on,width=.2\hsize]} {}
+%D   {\externalfigure[mp-exa-8][frame=on,width=.2\hsize]} {}
+%D   {\externalfigure[mp-exa-9][frame=on,width=.2\hsize]} {}
+%D \stopcombination
+%D \stoplinecorrection
 %D
 %D Here we used calls like:
 %D
-%D \starttypen
-%D \externfiguur[mp-exa-1][methode-mps,kader=aan,breedte=.2\hsize]
-%D \stoptypen
+%D \starttyping
+%D \externalfigure[mp-exa-1][methode-mps,frame=on,width=.2\hsize]
+%D \stoptyping
 
 %D \macros
 %D   {convertMPcolors,
@@ -1349,8 +1349,8 @@
 %D
 %D When I told the editors that I wanted to use colored
 %D \METAPOST\ graphics in the color issue of the \MAPS, I was
-%D asked to use the \kap{CMYK} colorspace instead of \kap{RGB}
-%D one. However, \METAPOST\ only supports \kap{RGB} colors. I
+%D asked to use the \cap{CMYK} colorspace instead of \cap{RGB}
+%D one. However, \METAPOST\ only supports \cap{RGB} colors. I
 %D decided to write a utility to convert the \type
 %D {setrgbcolor} operators into \type {setcmykcolor} ones, and
 %D some experiments showed me that I could best let \TEX\ do it
@@ -1365,9 +1365,9 @@
 
 %D The main macro is called as:
 %D
-%D \starttypen
+%D \starttyping
 %D \convertMPcolors{filename}
-%D \stoptypen
+%D \stoptyping
 %D
 %D When active, this macro returns a message saying if indeed
 %D conversion took place. The old file is overwritten! This
@@ -1494,37 +1494,37 @@
 %D By setting both \type{rgb} and \type{cmyk} to off, we force
 %D conversion to gray scales using:
 %D
-%D \plaatsformule[-]
-%D   \startformule
+%D \placeformula[-]
+%D   \startformula
 %D   G = .30r + .59g + .11b
-%D   \stopformule
+%D   \stopformula
 %D
 %D By using buffers, we keep the \ASCII\ layout clean:
 %D
 %D \startbuffer
 %D \startbuffer[rgb]
-%D   \stelkleurenin[rgb=ja,cmyk=nee,reductie=nee,conversie=nee]
+%D   \setupcolors[rgb=ja,cmyk=nee,reduction=no,conversion=no]
 %D   \useMPgraphic{hans}
 %D \stopbuffer
 %D
 %D \startbuffer[cmyk]
-%D   \stelkleurenin[rgb=nee,cmyk=ja,reductie=nee,conversie=nee]
+%D   \setupcolors[rgb=nee,cmyk=ja,reduction=no,conversion=no]
 %D   \useMPgraphic{hans}
 %D \stopbuffer
 %D
 %D \startbuffer[cmy]
-%D   \stelkleurenin[rgb=nee,cmyk=ja,reductie=ja,conversie=nee]
+%D   \setupcolors[rgb=nee,cmyk=ja,reduction=yes,conversion=no]
 %D   \useMPgraphic{hans}
 %D \stopbuffer
 %D
 %D \startbuffer[gray]
-%D   \stelkleurenin[rgb=nee,cmyk=nee,reductie=nee,conversie=nee]
+%D   \setupcolors[rgb=nee,cmyk=nee,reduction=no,conversion=no]
 %D   \useMPgraphic{hans}
 %D \stopbuffer
 %D \stopbuffer
 %D
 %D \typebuffer
-%D \haalbuffer
+%D \getbuffer
 %D
 %D The graphic is rather simple and is generated each time
 %D it's called:
@@ -1534,7 +1534,7 @@
 %D \startbuffer
 %D \startbuffer[graphic]
 %D   \startuseMPgraphic{hans}
-%D     width  :=\the\tekstbreedte/5;
+%D     width  :=\the\textwidth/5;
 %D     height := width/4;
 %D     fill fullcircle
 %D       xscaled width
@@ -1545,40 +1545,40 @@
 %D \stopbuffer
 %D
 %D \typebuffer
-%D \haalbuffer
+%D \getbuffer
 %D
 %D Next we combine the four alternative interpretations in a
 %D combination:
 %D
 %D \startbuffer
 %D \startbuffer[result]
-%D   \startcombinatie[4]
-%D     {\haalbuffer[rgb]}  {\tfxx original}
-%D     {\haalbuffer[cmyk]} {\ttxx\string\convertMPcolorstrue}
-%D     {\haalbuffer[cmy]}  {\ttxx\string\reduceMPcolorstrue}
-%D     {\haalbuffer[gray]} {\ttxx\string\forcegrayMPcolorstrue}
-%D   \stopcombinatie
+%D   \startcombination[4]
+%D     {\getbuffer[rgb]}  {\tfxx original}
+%D     {\getbuffer[cmyk]} {\ttxx\string\convertMPcolorstrue}
+%D     {\getbuffer[cmy]}  {\ttxx\string\reduceMPcolorstrue}
+%D     {\getbuffer[gray]} {\ttxx\string\forcegrayMPcolorstrue}
+%D   \stopcombination
 %D \stopbuffer
 %D \stopbuffer
 %D
 %D \typebuffer
-%D \haalbuffer
+%D \getbuffer
 %D
 %D Finally we call the buffers, using different setting:
 %D
 %D \startbuffer
-%D \plaatsfiguur
+%D \placefigure
 %D   {\METAPOST\ color conversions}
-%D   {\def\RedGreenBlue{.1,.4,.6}\haalbuffer[graphic]\haalbuffer[result]\vskip6pt
-%D    \def\RedGreenBlue{.1,.6,.4}\haalbuffer[graphic]\haalbuffer[result]\vskip6pt
-%D    \def\RedGreenBlue{.4,.1,.6}\haalbuffer[graphic]\haalbuffer[result]\vskip6pt
-%D    \def\RedGreenBlue{.4,.6,.1}\haalbuffer[graphic]\haalbuffer[result]\vskip6pt
-%D    \def\RedGreenBlue{.6,.1,.4}\haalbuffer[graphic]\haalbuffer[result]\vskip6pt
-%D    \def\RedGreenBlue{.6,.4,.1}\haalbuffer[graphic]\haalbuffer[result]}
+%D   {\def\RedGreenBlue{.1,.4,.6}\getbuffer[graphic]\getbuffer[result]\vskip6pt
+%D    \def\RedGreenBlue{.1,.6,.4}\getbuffer[graphic]\getbuffer[result]\vskip6pt
+%D    \def\RedGreenBlue{.4,.1,.6}\getbuffer[graphic]\getbuffer[result]\vskip6pt
+%D    \def\RedGreenBlue{.4,.6,.1}\getbuffer[graphic]\getbuffer[result]\vskip6pt
+%D    \def\RedGreenBlue{.6,.1,.4}\getbuffer[graphic]\getbuffer[result]\vskip6pt
+%D    \def\RedGreenBlue{.6,.4,.1}\getbuffer[graphic]\getbuffer[result]}
 %D \stopbuffer
 %D
 %D \typebuffer
-%D \haalbuffer
+%D \getbuffer
 %D
 %D By the way, when the \POSTSCRIPT\ file resulting from
 %D this input is converted into \PDF\ and viewed in Acrobat
@@ -1591,7 +1591,7 @@
 %D
 %D Some experimental macros:
 %D
-%D \starttypen
+%D \starttyping
 %D \startMPdrawing
 %D \stopMPdrawing
 %D \pushMPdrawing
@@ -1600,7 +1600,7 @@
 %D \ifMPdrawingdone
 %D \getMPdrawing
 %D \MPdivten[number]
-%D \stoptypen
+%D \stoptyping
 %D
 %D These macros are used in \PPCHTEX.
 
@@ -1673,17 +1673,17 @@
 %D We can use \METAPOST\ to calculate arbitrary clipping
 %D paths. Such a path is defined by (for instance):
 %D
-%D \starttypen
+%D \starttyping
 %D \startMPclip{window}
 %D    clip currentpicture to fullcircle xscaled \width yscaled \height ;
 %D \stopMPclip
-%D \stoptypen
+%D \stoptyping
 %D
 %D Such a path can be extracted (processed) by:
 %D
-%D \starttypen
+%D \starttyping
 %D \grabMPclippath{window}{method}{width}{height}{default path}
-%D \stoptypen
+%D \stoptyping
 %D
 %D Currently only method 1 makes sense; it produces \PDF\
 %D code. This macro only makes sense when hooked into a
@@ -1839,9 +1839,9 @@
 %D
 %D We can save some typing with:
 %D
-%D \starttypen
+%D \starttyping
 %D \startMPcode whatever \stopMPcode
-%D \stoptypen
+%D \stoptyping
 %D
 %D this automatically places the graphic
 

@@ -1,5 +1,5 @@
 %D \module
-%D   [       file=supp-fil,
+%D   [       filefile=supp-fil,
 %D        version=1995.10.10,
 %D          title=\CONTEXT\ Support Macros,
 %D       subtitle=Files,
@@ -15,12 +15,12 @@
 %D is a separate module for file support. In \CONTEXT\ files
 %D are used for several purposes:
 %D
-%D \startopsomming[opelkaar]
-%D \som  general textual input
-%D \som  logging status information
-%D \som  saving registers, lists and references
-%D \som  buffering defered textual input
-%D \stopopsomming
+%D \startitemize[packed]
+%D \item  general textual input
+%D \item  logging status information
+%D \item  saving registers, lists and references
+%D \item  buffering defered textual input
+%D \stopitemize
 %D
 %D When dealing with files we can load them as a whole, using
 %D the \type{\input} primitive or load them on a line||by||line
@@ -55,11 +55,11 @@
 %D line ending character the \CATCODE\ comment. This is
 %D accomplished by
 %D
-%D \starttypen
+%D \starttyping
 %D \pushendofline
 %D ... reading ...
 %D \popendofline
-%D \stoptypen
+%D \stoptyping
 %D
 %D Just to be sure, we save the current meaning of \type{^^M}
 %D in \type{\poppedendofline}.
@@ -118,9 +118,9 @@
 %D The next macro offers a framework for processing files on a
 %D line by line basis.
 %D
-%D \starttypen
+%D \starttyping
 %D \doprocessfile \identifier {name} \action
-%D \stoptypen
+%D \stoptyping
 %D
 %D The first argument can for instance be \type{\scratchread}.
 %D The action must do something with \type{\fileline}, which
@@ -159,9 +159,9 @@
 %D Use \type{\pathplusfile} to compose a full file name, like
 %D in:
 %D
-%D \starttypen
+%D \starttyping
 %D \pathplusfile{path}{file}
-%D \stoptypen
+%D \stoptyping
 %D
 %D By default, this expands into {\tt \pathplusfile{path}{file}}.
 
@@ -230,10 +230,10 @@
 %D and switches to interactive mode. The macro \type{\readfile}
 %D takes care of non||existing files. This macro has two faces.
 %D
-%D \starttypen
+%D \starttyping
 %D \ReadFile {filename}
 %D \readfile {filename} {before loading} {not found}
-%D \stoptypen
+%D \stoptyping
 %D
 %D Many \TEX\ implementations have laid out some strategy for
 %D locating files. This can lead to unexpected results,
@@ -267,9 +267,9 @@
 %D directories, upto a predefined level. Users can change this
 %D level, but we default to~3.
 %D
-%D \starttypen
+%D \starttyping
 %D \def\maxreadlevel {3}
-%D \stoptypen
+%D \stoptyping
 %D
 %D This is a pseudo \COUNTER.
 %D
@@ -426,14 +426,14 @@
 
 %D So now we've got ourselves five file loading commands:
 %D
-%D \starttypen
+%D \starttyping
 %D \readfile                {filename} {before loading} {not found}
 %D
 %D \readjobfile             {filename} {before loading} {not found}
 %D \readlocfile             {filename} {before loading} {not found}
 %D \readfixfile             {filename} {before loading} {not found}
 %D \readsysfile {directory} {filename} {before loading} {not found}
-%D \stoptypen
+%D \stoptyping
 
 %D \macros
 %D   {readjobfile,readlocfile,readsysfile,readfixfile}
@@ -481,16 +481,16 @@
 %D loading is done. This one obeys the standard \TEX\
 %D implementation method.
 %D
-%D \starttypen
+%D \starttyping
 %D \doiffileelse {filename} {before loading} {not found}
-%D \stoptypen
+%D \stoptyping
 %D
 %D We use \type{\next} here, because we want to close the
 %D file first. We also provide the alternatives:
 %D
-%D \starttypen
+%D \starttyping
 %D \doiflocfileelse {filename} {before loading} {not found}
-%D \stoptypen
+%D \stoptyping
 
 \def\doiffileelse#1%
   {\doifelsenothing{#1}
@@ -524,11 +524,11 @@
 %D capacity is limited. One can prevent multiple execution and
 %D loading by using one of both:
 %D
-%D \starttypen
+%D \starttyping
 %D \doonlyonce{actions}
 %D \doinputonce{filename}
 %D \doendinputonce{filename}
-%D \stoptypen
+%D \stoptyping
 %D
 %D This command obeys the standard method for locating files.
 
@@ -552,9 +552,9 @@
 %D to characters with \CATCODE~12, while the characters in
 %D \type{filename} have \CATCODE~11. So we can better use:
 %D
-%D \starttypen
+%D \starttyping
 %D \doifparentfileelse{filename}{yes}{no}
-%D \stoptypen
+%D \stoptyping
 %D
 %D Since \TEXEXEC\ (and thereby \CONTEXT) supports renaming of
 %D the outputfile, we also need to check on that alternative

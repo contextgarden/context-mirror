@@ -1,5 +1,5 @@
 %D \module
-%D   [       file=typo-ini,
+%D   [       filefile=typo-ini,
 %D        version=2000.16.09,
 %D          title=\CONTEXT\ Typographic Macros,
 %D       subtitle=Initialization,
@@ -8,33 +8,33 @@
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
-%C therefore copyrighted by \PRAGMA. See mreadme.pdf for 
-%C details. 
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
 
 %D Since \CONTEXT\ is dealing with typographics, isn't
 %D September 2000 a bit late to start writing this module? It
 %D may seem so, but since more and more languages are
 %D supported, we think it is time to isolate language specific
 %D typographic extensions in modules. The first language that
-%D demands this is Chinese, and more will follow.  
+%D demands this is Chinese, and more will follow.
 
 \writestatus{loading}{Context Typographic Macros (ini)}
 
-\unprotect 
+\unprotect
 
-%D \macros 
+%D \macros
 %D   {ifvertical}
-%D 
+%D
 %D The following switch can be used to signal macros that they
-%D should adapt their behaviour. 
+%D should adapt their behaviour.
 
-\newif\ifvertical
+\newif\ifvertical % maybe also ifreverse
 
-%D \macros 
+%D \macros
 %D   {vhbox}
 %D
-%D A stupid but useful macro. 
+%D A stupid but useful macro.
 
 \def\vhbox{\ifvertical\vbox\else\hbox\fi}
 
-\protect \endinput 
+\protect \endinput

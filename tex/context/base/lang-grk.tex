@@ -1,5 +1,5 @@
 %D \module
-%D   [       file=lang-grk,
+%D   [       file=tall-grk,
 %D        version=2003.04.01,
 %D          title=\CONTEXT\ Language Macros,
 %D       subtitle=Uralic Languages,
@@ -8,8 +8,8 @@
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
-%C therefore copyrighted by \PRAGMA. See mreadme.pdf for 
-%C details. 
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
 
 
 \writestatus{loading}{Greek Language}
@@ -21,7 +21,7 @@
 
 \installlanguage
   [\s!gr]
-  [\c!spatiering=\v!opelkaar,
+  [\c!spacing=\v!packed,
    \c!leftsentence=---,
    \c!rightsentence=---,
    \c!leftsubsentence=---,
@@ -30,35 +30,35 @@
    \c!rightquote=\Greekrightquot,
    \c!leftquotation=\Greekleftquot,
    \c!rightquotation=\Greekrightquot,
-   \c!datum={\v!dag\ \v!maand\ \v!jaar},
-   \c!status=\v!stop]
+   \c!date={\v!day\ \v!month\ \v!year},
+   \c!state=\v!stop]
 
 \installlanguage [greek]    [\s!gr]
 
-\setupheadtext  [\s!fi] [\v!inhoud=\GreekPi\Greekepsilon\Greekrho\Greekiota\Greekepsilon\Greekchi\Greekomicrontonos\Greekmu\Greekepsilon\Greeknu\Greekalpha]
-\setupheadtext  [\s!fi] [\v!tabellen=\GreekPi\Greekiotatonos\Greeknu\Greekalpha\Greekkappa\Greekepsilon\Greekfinalsigma]
-\setupheadtext  [\s!fi] [\v!figuren=\GreekSigma\Greekchi\Greeketatonos\Greekmu\Greekalpha\Greektau\Greekalpha]
-\setupheadtext  [\s!fi] [\v!grafieken=\GreekGamma\Greekrho\Greekalpha\Greekphi\Greekiota\Greekkappa\Greekalphatonos]
-\setupheadtext  [\s!fi] [\v!intermezzos=\GreekPi\Greekalpha\Greekupsilontonos\Greeksigma\Greekepsilon\Greekiota\Greekfinalsigma]
+\setupheadtext  [\s!fi] [\v!content=\GreekPi\Greekepsilon\Greekrho\Greekiota\Greekepsilon\Greekchi\Greekomicrontonos\Greekmu\Greekepsilon\Greeknu\Greekalpha]
+\setupheadtext  [\s!fi] [\v!tables=\GreekPi\Greekiotatonos\Greeknu\Greekalpha\Greekkappa\Greekepsilon\Greekfinalsigma]
+\setupheadtext  [\s!fi] [\v!figures=\GreekSigma\Greekchi\Greeketatonos\Greekmu\Greekalpha\Greektau\Greekalpha]
+\setupheadtext  [\s!fi] [\v!graphics=\GreekGamma\Greekrho\Greekalpha\Greekphi\Greekiota\Greekkappa\Greekalphatonos]
+\setupheadtext  [\s!fi] [\v!intermezzi=\GreekPi\Greekalpha\Greekupsilontonos\Greeksigma\Greekepsilon\Greekiota\Greekfinalsigma]
 \setupheadtext  [\s!fi] [\v!index=\GreekEpsilon\Greekupsilon\Greekrho\Greekepsilon\Greektau\Greeketatonos\Greekrho\Greekiota\Greekomicron]
-\setupheadtext  [\s!fi] [\v!afkortingen=\GreekSigma\Greekupsilon\Greeknu\Greektau\Greekomicron\Greekmu\Greekomicron\Greekgamma\Greekrho\Greekalpha\Greekphi\Greekiotatonos\Greekepsilon\Greekfinalsigma]
+\setupheadtext  [\s!fi] [\v!abbreviations=\GreekSigma\Greekupsilon\Greeknu\Greektau\Greekomicron\Greekmu\Greekomicron\Greekgamma\Greekrho\Greekalpha\Greekphi\Greekiotatonos\Greekepsilon\Greekfinalsigma]
 \setupheadtext  [\s!fi] [\v!logos=\GreekLamda\Greekomicron\Greekgamma\Greekomicrontonos\Greektau\Greekupsilon\Greekpi\Greekalpha]
-\setupheadtext  [\s!fi] [\v!eenheden=\GreekMu\Greekomicron\Greeknu\Greekalphatonos\Greekdelta\Greekepsilon\Greekfinalsigma]
+\setupheadtext  [\s!fi] [\v!units=\GreekMu\Greekomicron\Greeknu\Greekalphatonos\Greekdelta\Greekepsilon\Greekfinalsigma]
 
 
-\setuplabeltext [\s!fi] [\v!tabel=\GreekPi\Greekiotatonos\Greeknu\Greekalpha\Greekkappa\Greekalpha\Greekfinalsigma]
-\setuplabeltext [\s!fi] [\v!figuur=\GreekSigma\Greekchi\Greeketatonos\Greekmu\Greekalpha]
+\setuplabeltext [\s!fi] [\v!table=\GreekPi\Greekiotatonos\Greeknu\Greekalpha\Greekkappa\Greekalpha\Greekfinalsigma]
+\setuplabeltext [\s!fi] [\v!figure=\GreekSigma\Greekchi\Greeketatonos\Greekmu\Greekalpha]
 \setuplabeltext [\s!fi] [\v!intermezzo=\GreekPi\Greekalpha\Greekupsilontonos\Greeksigma\Greeketa]
-\setuplabeltext [\s!fi] [\v!grafiek=\GreekGamma\Greekrho\Greekalpha\Greekphi\Greekiota\Greekkappa\Greekomicrontonos]
-\setuplabeltext [\s!fi] [\v!hoofdstuk=\GreekKappa\Greekepsilon\Greekphi\Greekalphatonos\Greeklamda\Greekalpha\Greekiota\Greekomicron]
-\setuplabeltext [\s!fi] [\v!paragraaf=\GreekEpsilon\Greeknu\Greekomicrontonos\Greektau\Greeketa\Greektau\Greekalpha]
-\setuplabeltext [\s!fi] [\v!sub\v!paragraaf=\GreekUpsilon\Greekpi\Greekomicrontonos\Greekepsilon\Greeknu\Greekomicrontonos\Greektau\Greeketa\Greektau\Greekalpha]
-\setuplabeltext [\s!fi] [\v!sub\v!sub\v!paragraaf=]
-\setuplabeltext [\s!fi] [\v!sub\v!sub\v!sub\v!paragraaf=]
-\setuplabeltext [\s!fi] [\v!bijlage=\GreekPi\Greekalpha\Greekrho\Greekalphatonos\Greekrho\Greektau\Greeketa\Greekmu\Greekalpha]
-\setuplabeltext [\s!fi] [\v!deel=\GreekMu\Greekepsilontonos\Greekrho\Greekomicron\Greekfinalsigma]
-\setuplabeltext [\s!fi] [\v!regel=\GreekGamma\Greekrho\Greekalpha\Greekmu\Greekmu\Greeketatonos]
-\setuplabeltext [\s!fi] [\v!regels=\GreekGamma\Greekrho\Greekalpha\Greekmu\Greekmu\Greekepsilontonos\Greekfinalsigma]
+\setuplabeltext [\s!fi] [\v!graphic=\GreekGamma\Greekrho\Greekalpha\Greekphi\Greekiota\Greekkappa\Greekomicrontonos]
+\setuplabeltext [\s!fi] [\v!chapter=\GreekKappa\Greekepsilon\Greekphi\Greekalphatonos\Greeklamda\Greekalpha\Greekiota\Greekomicron]
+\setuplabeltext [\s!fi] [\v!section=\GreekEpsilon\Greeknu\Greekomicrontonos\Greektau\Greeketa\Greektau\Greekalpha]
+\setuplabeltext [\s!fi] [\v!sub\v!section=\GreekUpsilon\Greekpi\Greekomicrontonos\Greekepsilon\Greeknu\Greekomicrontonos\Greektau\Greeketa\Greektau\Greekalpha]
+\setuplabeltext [\s!fi] [\v!sub\v!sub\v!section=]
+\setuplabeltext [\s!fi] [\v!sub\v!sub\v!sub\v!section=]
+\setuplabeltext [\s!fi] [\v!appendix=\GreekPi\Greekalpha\Greekrho\Greekalphatonos\Greekrho\Greektau\Greeketa\Greekmu\Greekalpha]
+\setuplabeltext [\s!fi] [\v!part=\GreekMu\Greekepsilontonos\Greekrho\Greekomicron\Greekfinalsigma]
+\setuplabeltext [\s!fi] [\v!line=\GreekGamma\Greekrho\Greekalpha\Greekmu\Greekmu\Greeketatonos]
+\setuplabeltext [\s!fi] [\v!lines=\GreekGamma\Greekrho\Greekalpha\Greekmu\Greekmu\Greekepsilontonos\Greekfinalsigma]
 
 \setuplabeltext [\s!fi] [\v!january=\GreekIota\Greekalpha\Greeknu\Greekomicron\Greekupsilon\Greekalphatonos\Greekrho\Greekiota\Greekomicron\Greekfinalsigma]
 \setuplabeltext [\s!fi] [\v!february=\GreekPhi\Greekepsilon\Greekbeta\Greekrho\Greekomicron\Greekupsilon\Greekalphatonos\Greekrho\Greekiota\Greekomicron\Greekfinalsigma]
@@ -82,8 +82,6 @@
 \setuplabeltext [\s!fi] [\v!friday=\GreekPi\Greekalpha\Greekrho\Greekalpha\Greeksigma\Greekkappa\Greekepsilon\Greekupsilon\Greeketatonos]
 \setuplabeltext [\s!fi] [\v!saturday=\GreekSigma\Greekalphatonos\Greekbeta\Greekbeta\Greekalpha\Greektau\Greekomicron]
 
-%D \ShowAllLanguageValues [\s!gr] [\GreekEpsilon\Greeklamda\Greeklamda\Greeketa\Greeknu\Greekiota\Greekkappa\Greekalphatonos]
+%D % \ShowAllLanguageValues [\s!gr] [\GreekEpsilon\Greeklamda\Greeklamda\Greeketa\Greeknu\Greekiota\Greekkappa\Greekalphatonos] Greek ...
 
-\protect 
-
-\endinput 
+\protect \endinput

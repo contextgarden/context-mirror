@@ -1,5 +1,5 @@
 %D \module
-%D   [       file=page-app, % from meta-fig
+%D   [       filefile=page-app, % from meta-fig
 %D        version=1998.01.15,
 %D          title=\CONTEXT\ Core Macros,
 %D       subtitle=Independent page building,
@@ -20,20 +20,20 @@
 
 \definepapersize
   [\??fp\s!dummy]
-  [\c!breedte=\fittingwd,
-   \c!hoogte=\fittinght]
+  [\c!width=\fittingwd,
+   \c!height=\fittinght]
 
 \definelayout
   [\??fp\s!dummy]
-  [\c!breedte=\fittingwd,\c!hoogte=\fittinght,\c!plaats=\v!midden,
-   \c!kopwit=\!!zeropoint,\c!rugwit=\!!zeropoint,
-   \c!snijwit=\!!zeropoint,\c!bodemwit=\!!zeropoint,
-   \c!tekstafstand=\!!zeropoint,\c!regels=0,\c!grid=\v!nee,
-   \c!boven=\!!zeropoint,\c!onder=\!!zeropoint,
-   \c!marge=\!!zeropoint,\c!rand=\!!zeropoint,
-   \c!linkermarge=\!!zeropoint,\c!linkerrand=\!!zeropoint,
-   \c!rechtermarge=\!!zeropoint,\c!rechterrand=\!!zeropoint,
-   \c!hoofd=\!!zeropoint,\c!voet=\!!zeropoint]
+  [\c!width=\fittingwd,\c!height=\fittinght,\c!location=\v!middle,
+   \c!topspace=\!!zeropoint,\c!backspace=\!!zeropoint,
+   \c!cutspace=\!!zeropoint,\c!bottomspace=\!!zeropoint,
+   \c!textdistance=\!!zeropoint,\c!lines=0,\c!grid=\v!no,
+   \c!top=\!!zeropoint,\c!bottom=\!!zeropoint,
+   \c!margin=\!!zeropoint,\c!edge=\!!zeropoint,
+   \c!leftmargin=\!!zeropoint,\c!leftedge=\!!zeropoint,
+   \c!rightmargin=\!!zeropoint,\c!rightedge=\!!zeropoint,
+   \c!header=\!!zeropoint,\c!footer=\!!zeropoint]
 
 % \def\dostartfittingpage[#1][#2]%
 %   {\pagina % this is kind of tricky! there can be preceding page refs
@@ -72,23 +72,23 @@
 %    \egroup}
 
 \def\dostartfittingpage[#1][#2]%
-  {\pagina % this is kind of tricky! there can be preceding page refs
+  {\page % this is kind of tricky! there can be preceding page refs
    \bgroup % resulting in a zero height page; test fig-make !
    \def\currentfittingpage{#1}%
    \dontcomplain
    % runs under current page regime, i.e. page variables passed to mp
-   \getparameters[\currentfittingpage][\c!papier=,#2]% auto or size or nothing
+   \getparameters[\currentfittingpage][\c!paper=,#2]% auto or size or nothing
    \setbox\scratchbox\hbox
      \bgroup
-     % needed later \getparameters[\currentfittingpage][\c!papier=,#2]% auto or size or nothing
-     \doifvalue{\currentfittingpage\c!marge}\v!pagina % undocumented
+     % needed later \getparameters[\currentfittingpage][\c!paper=,#2]% auto or size or nothing
+     \doifvalue{\currentfittingpage\c!margin}\v!page % undocumented
        {\offsetbox
-          [\c!linkeroffset=\rugwit,
-           \c!rechteroffset=\snijwit,
-           \c!bovenoffset=\kopwit,
-           \c!onderoffset=\bodemwit]\hbox}%
+          [\c!leftoffset=\backspace,
+           \c!rightoffset=\cutspace,
+           \c!topoffset=\topspace,
+           \c!bottomoffset=\bottomspace]\hbox}%
      \bgroup
-     \schaal[\c!schaal=\getvalue{\currentfittingpage\c!schaal}]%
+     \scale[\c!scale=\getvalue{\currentfittingpage\c!scale}]%
      \bgroup\localframed[\currentfittingpage]%
      \bgroup}
 
@@ -107,19 +107,19 @@
    \fi
    \let\checkcurrentlayout\relax % else interference with odd/even layout
    \processaction
-     [\getvalue{\currentfittingpage\c!papier}]
+     [\getvalue{\currentfittingpage\c!paper}]
      [   \v!auto=>\let\fittingpapersize\printpapersize,
       \s!unknown=>\let\fittingpapersize\commalistelement,
       \s!default=>\def\fittingpapersize{\??fp\s!dummy}]%
    \expanded{\setuppapersize[\??fp\s!dummy][\fittingpapersize]}%
    \definelayout
-     [\v!pagina]%
-     [\c!plaats=\v!midden,
-      \c!breedte=\fittingwd,
-      \c!hoogte=\fittinght]%
+     [\v!page]%
+     [\c!location=\v!middle,
+      \c!width=\fittingwd,
+      \c!height=\fittinght]%
    \setuplayout
-     [\v!pagina]%
-   \startmakeup[\v!standaard][\c!tekststatus=\v!leeg,\c!dubbelzijdig=\v!nee,\c!pagina=]%
+     [\v!page]%
+   \startmakeup[\v!standard][\c!textstate=\v!empty,\c!doublesided=\v!no,\c!page=]%
      \centerbox{\box\scratchbox}%
    \stopmakeup
    \stoplocallayout
@@ -143,13 +143,13 @@
    \dostopfittingpage}
 
 \setupTEXpage
-  [\c!schaal=1000,
-   \c!strut=\v!nee,
-   \c!uitlijnen=\v!normaal, % needed, else problems !
+  [\c!scale=1000,
+   \c!strut=\v!no,
+   \c!align=\v!normal, % needed, else problems !
    \c!offset=\v!overlay,
-   \c!breedte=\v!passend,
-   \c!hoogte=\v!passend,
-   \c!kader=\v!uit]
+   \c!width=\v!fit,
+   \c!height=\v!fit,
+   \c!frame=\v!off]
 
 %D Application pages (for an example, see \type {m-pstric}):
 
@@ -196,7 +196,7 @@
    \setbox\scratchbox\hbox
      {\expanded{\externalfigure
         [\bufferprefix\@@texapp.\ifdone eps\else pdf\fi]
-        [\c!object=\v!nee]}}%
+        [\c!object=\v!no]}}%
    \setbox\scratchbox\hbox
      {\lower\ht\scratchbox\hbox{\raise\dimen2\box\scratchbox}}%
    \wd\scratchbox\dimen0

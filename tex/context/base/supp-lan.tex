@@ -1,5 +1,5 @@
 %D \module
-%D   [       file=supp-lan,
+%D   [       filefile=supp-lan,
 %D        version=1997.03.20,
 %D          title=\CONTEXT\ Support Macros,
 %D       subtitle=Language Options,
@@ -18,13 +18,13 @@
 %D some memory.
 
 %D \gdef\starttest
-%D   {\blanko
+%D   {\blank
 %D    \noindent
 %D    \halign\bgroup\tt##\hskip2em&##\hskip2em&##\cr}
 %D
 %D \gdef\stoptest
 %D   {\egroup
-%D    \blanko}
+%D    \blank}
 %D
 %D \gdef\test#1%
 %D   {\convertargument#1\to\ascii\ascii&\hyphenatedword{#1}&#1\cr}
@@ -101,7 +101,7 @@
 %D The next special case (concerning quotes) was brought to my
 %D attention by Piet Tutelaers, one of the driving forces
 %D behind rebuilding hyphenation patterns for the dutch
-%D language.\voetnoot{In 1996 the spelling of the dutch
+%D language.\footnote{In 1996 the spelling of the dutch
 %D language has been slightly reformed which made this topic
 %D actual again.} We'll also take care of this case.
 %D
@@ -136,9 +136,9 @@
 %D characters as delimiters. The prefered way of specifying
 %D compound words is using \type{||}, which is installed by:
 %D
-%D \starttypen
+%D \starttyping
 %D \installdiscretionaries || -
-%D \stoptypen
+%D \stoptyping
 %D
 %D Some alternative definitions are:
 %D
@@ -154,7 +154,7 @@
 %D after which we can say:
 %D
 %D \bgroup
-%D \haalbuffer
+%D \getbuffer
 %D \starttest
 %D \test {test**test**test}
 %D \test {test++test++test}
@@ -191,13 +191,13 @@
 %D supports \type{|} as command and delimiter. Before
 %D activating \type{|} we save it's value:
 %D
-%D \starttypen
+%D \starttyping
 %D \edef\domathmodediscretionary{\string|}
-%D \stoptypen
+%D \stoptyping
 %D
 %D after which we're ready to define it's meaning to:
 %D
-%D \starttypen
+%D \starttyping
 %D \catcode`\|=\@@active
 %D
 %D \unexpanded\def|%
@@ -206,7 +206,7 @@
 %D    \else
 %D      \expandafter\dotextmodediscretionary
 %D    \fi}
-%D \stoptypen
+%D \stoptyping
 %D
 %D We need a two stage \type{\futurelet} because we want to
 %D look ahead for both the compound character definition and
@@ -217,7 +217,7 @@
 %D also save the character following the \type{|#1|} in
 %D \type{\nextnext}.
 %D
-%D \starttypen
+%D \starttyping
 %D \def\dotextmodediscretionary%
 %D   {\bgroup
 %D    \futurelet\next\dodotextmodediscretionary}
@@ -225,13 +225,13 @@
 %D \def\dodotextmodediscretionary#1|%
 %D   {\def\betweendiscretionaries{#1}%
 %D    \futurelet\nextnext\dododotextmodediscretionary}
-%D \stoptypen
+%D \stoptyping
 %D
 %D The main macro consists of quite some \type{\ifx} tests
 %D while \type{\checkafterdiscretionary} handles the commas.
 %D We show the simplified version here:
 %D
-%D \starttypen
+%D \starttyping
 %D \def\dododotextmodediscretionary%
 %D   {\let\nextnextnext=\egroup
 %D    \ifx     |\next
@@ -259,7 +259,7 @@
 %D    \else
 %D      \let\nextnext=\relax
 %D    \fi}
-%D \stoptypen
+%D \stoptyping
 %D
 %D Handling \type{(} and \type{)} is a a bit special, because
 %D \TEX\ sees them as decent hyphenation points, according to
@@ -270,16 +270,16 @@
 %D The most recent implementation is more advanced. As
 %D demonstrated we can install delimiters, like:
 %D
-%D \starttypen
+%D \starttyping
 %D \installdiscretionaries || \compoundhyphen
-%D \stoptypen
+%D \stoptyping
 %D
 %D This time we have to use a bit more clever way of saving the
 %D math mode specification of the character we're going to
 %D make active. We also save the user supplied compound hyphen.
 %D We show the a bit more traditional implementation first.
 %D
-%D \starttypen
+%D \starttyping
 %D \def\installdiscretionaries#1%
 %D   {\catcode`#1\@@other
 %D    \expandafter\doinstalldiscretionaries\string#1}
@@ -292,7 +292,7 @@
 %D \def\dodoinstalldiscretionaries#1#2%
 %D   {\setvalue{textmodediscretionary\string#1}{#2}%
 %D    \unexpanded\def#1{\discretionarycommand#1}}
-%D \stoptypen
+%D \stoptyping
 %D
 %D A bit more \CATCODE\ and character trickery enables us to
 %D discard the two intermediate steps. This trick originates
@@ -345,11 +345,11 @@
 %D not expanded. Thanks to Tobias Burnus for providing this
 %D example.
 %D
-%D \startformule
+%D \startformula
 %D   \left|f(x_n)-{1\over2}\right| =
 %D      {\cases{|{1\over2}-x_n| &for $0\le x_n < {1\over2}$\cr
 %D              |x_n-{1\over2}| &for ${1\over2}<x_n\le1$   \cr}}
-%D \stopformule
+%D \stopformula
 
 %D \macros
 %D   {defineactivecharacter}
@@ -357,22 +357,22 @@
 %D In \type {lang-ger.tex} we define some language specific
 %D commands for german input, like:
 %D
-%D \starttypen
+%D \starttyping
 %D \startlanguagespecifics[de]
 %D   \installcompoundcharacter "a {\moveaccent{-.1ex}\"a\midworddiscretionary}
 %D \stoplanguagespecifics
-%D \stoptypen
+%D \stoptyping
 %D
 %D Occasionally we have to redefine such an active character,
 %D like in:
 %D
-%D \starttypen
+%D \starttyping
 %D \startencoding[pdfdoc]
 %D   \startlanguagespecifics[de]
 %D     \defineactivecharacter " {\"}
 %D   \stoplanguagespecifics
 %D \stopencoding
-%D \stoptypen
+%D \stoptyping
 %D
 %D Here is the command we used:
 
@@ -427,10 +427,10 @@
 %D active can interfere with other features of macropackages,
 %D normally there should be no problems with things like:
 %D
-%D \starttypen
+%D \starttyping
 %D \installdiscretionary || +
 %D \installdiscretionary ++ =
-%D \stoptypen
+%D \stoptyping
 %D
 %D The real work is done by the next set of macros. We have
 %D to use a double \type{\futurelet} because we have to take
@@ -532,9 +532,9 @@
 %D savely break the next text across a line and at the same
 %D time make the words interactive.
 %D
-%D \starttypen
+%D \starttyping
 %D \goto{Some||Long||Word}
-%D \stoptypen
+%D \stoptyping
 
 \def\currentspaceskip
   {\fontdimen2\font\!!plus\fontdimen3\font\!!minus\fontdimen4\font\relax}
@@ -578,9 +578,9 @@
 %D
 %D The more advanced mechanism is activated by calling:
 %D
-%D \starttypen
+%D \starttyping
 %D \enableactivediscretionaries
-%D \stoptypen
+%D \stoptyping
 %D
 %D which is defined as:
 
@@ -661,15 +661,15 @@
 
 %D Now we can safely do things like: \enableactivediscretionaries
 %D
-%D \starttypen
+%D \starttyping
 %D \catcode`<=\@@active  \def<{hello there}
 %D \catcode`>=\@@active  \def>{hello there}
 %D \catcode`(=\@@active  \def({hello there}
 %D \catcode`)=\@@active  \def){hello there}
-%D \stoptypen
+%D \stoptyping
 %D
 %D In normal day||to||day production of texts this kind of
-%D activation is seldom used.\voetnoot{In the \CONTEXT\ manual
+%D activation is seldom used.\footnote{In the \CONTEXT\ manual
 %D the \type{<} and \type{>} are made active and used for some
 %D cross||reference trickery.} If so, we have to take care of
 %D the math mode explicitly, just like we did when making
@@ -899,28 +899,28 @@
 %D versatile as possible. As a result one can define his own
 %D compound character support, like:
 %D
-%D \starttypen
+%D \starttyping
 %D \installcompoundcharacter "a {\"a}
 %D \installcompoundcharacter "e {\"e}
 %D \installcompoundcharacter "i {\"i}
 %D \installcompoundcharacter "u {\"u}
 %D \installcompoundcharacter "o {\"o}
 %D \installcompoundcharacter "s {\SS}
-%D \stoptypen
+%D \stoptyping
 %D
 %D or even
 %D
-%D \starttypen
+%D \starttyping
 %D \installcompoundcharacter "ck {\discretionary {k-}{k}{ck}}
 %D \installcompoundcharacter "ff {\discretionary{ff-}{f}{ff}}
-%D \stoptypen
+%D \stoptyping
 %D
 %D The support is not limited to alphabetic characters, so the
 %D next definition is also valid.
 %D
-%D \starttypen
+%D \starttyping
 %D \installcompoundcharacter ". {.\doifnextcharelse{\spacetoken}{}{\kern.125em}}
-%D \stoptypen
+%D \stoptyping
 %D
 %D The implementation looks familiar and uses the same tricks as
 %D mentioned earlier in this module. We take care of two
@@ -971,9 +971,9 @@
 %D A compound character can be reset with the following
 %D command.
 %D
-%D \starttypen
+%D \starttyping
 %D \restorecompoundcharacter /
-%D \stoptypen
+%D \stoptyping
 
 \def\restorecompoundcharacter#1% new
   {\catcode`#1=\csname\@nn@\string#1\endcsname\relax}
@@ -1067,9 +1067,9 @@
 %D defined. We either execute the compound character or just
 %D insert the first. So we have
 %D
-%D \starttypen
+%D \starttyping
 %D <key><key>  <key><known>  <key><unknown>
-%D \stoptypen
+%D \stoptyping
 %D
 %D In later modules we will see how these commands are used.
 
@@ -1348,10 +1348,10 @@
 
 %D This would be better, but it spoils \type {\~} and so:
 %D
-%D \starttypen
+%D \starttyping
 %D \convertargument#1\to\ascii
 %D \expandafter\handletokens\ascii\with\scanurl
-%D \stoptypen
+%D \stoptyping
 
 % \def\scanurl#1%
 %   {\ifx#1\~%
@@ -1475,7 +1475,7 @@
 %D to handle url's passed as argument, the following solutions
 %D came to my mind:
 %D
-%D \starttypen
+%D \starttyping
 %D \def\whateverurl#1%
 %D   {{\def~{\string~}\useURL[dummy][#1]\goto{\url[dummy]}[URL(dummy)]}}
 %D
@@ -1485,16 +1485,16 @@
 %D \def\whateverurl#1%
 %D   {\convertargument#1\to\ascii
 %D    \expanded{\useURL[dummy][\ascii]}\goto{\url[dummy]}[URL(dummy)]}
-%D \stoptypen
+%D \stoptyping
 
 %D \macros
 %D   {hyphenatedfile}
 %D
 %D For the moment we treat filenames in a similar way,
 %D
-%D \starttypen
+%D \starttyping
 %D \hyphenatedfile{here/there/filename.suffix}
-%D \stoptypen
+%D \stoptyping
 
 \let\hyphenatedfile\hyphenatedurl
 

@@ -1,5 +1,5 @@
 %D \module
-%D   [       file=core-job, % copied from main-001,
+%D   [       filefile=core-job, % copied from main-001,
 %D        version=1997.03.31,
 %D          title=\CONTEXT\ Core Macros,
 %D       subtitle=Job Handling,
@@ -15,24 +15,6 @@
 
 \writestatus{loading}{Context Core Macros / Job Handling}
 
-%S InputFile     \input
-%S InputFile     \omgeving    \environment
-%S InputFile     \projekt     \project
-%S InputFile     \produkt     \product
-%S InputFile     \onderdeel   \component
-%S
-%S CheckStrings  \start  \stop
-%S CheckStrings  \begin  \end
-%S CheckStrings  \begin  \eind
-%S
-%S CheckChars    { }
-%S CheckChars    [ ]
-%S CheckChars    ( )
-%S
-%S CheckChar     $
-
-% \appendtoks \reportprotectionstate \to \everydump
-
 \unprotect
 
 \let \currentproject     \empty
@@ -43,7 +25,7 @@
 \let \loadedfiles        \empty
 \let \processedfiles     \empty
 
-\let \geenfilesmeer      \relax
+\let \nomorefiles        \relax
 
 \newcounter\textlevel
 \newcounter\fileprocesslevel
@@ -133,12 +115,12 @@
 % test \@@svgebied
 
 \def\loadallsystemfiles#1#2%
-  {\ifx\@@svgebied\empty
+  {\ifx\@@svdirectory\empty
      \readsysfile{#1}{\showmessage\m!systems2{#1}}{#2}%
    \else% yet undocumented
      \def\doloadsystemfile##1%
        {\readsetfile{##1}{#1}{\showmessage\m!systems2{#1}}{#2}}%
-     \processcommacommand[\@@svgebied]\doloadsystemfile
+     \processcommacommand[\@@svdirectory]\doloadsystemfile
    \fi}
 
 \def\loadsystemfiles
@@ -199,7 +181,7 @@
 \appendtoks \checknotes           \to \everyjob % depends on bodyfont
 \appendtoks \initializeMPgraphics \to \everyjob % after loading system files
 
-\appendtoks \pagina[\v!laatste] \pagina           \to \everybye
+\appendtoks \page[\v!last] \page           \to \everybye
 \appendtoks \ifarrangingpages\poparrangedpages\fi \to \everybye
 \appendtoks \registerfileinfo[end]\jobname        \to \everybye
 
@@ -229,7 +211,7 @@
   {\the\everystarttext
    \global\everystarttext\emptytoks}
 
-\def\starttekst
+\def\starttext
   {\doateverystarttext
    \ifnum\textlevel=\zerocount
      \registerfileinfo[begin]\jobname
@@ -237,7 +219,7 @@
    \fi
    \doglobal\increment\textlevel\relax}
 
-\def\stoptekst
+\def\stoptext
   {\doglobal\decrement\textlevel\relax
    \ifnum\textlevel>\zerocount \else
      \the\everystoptext
@@ -246,9 +228,6 @@
     %\expandafter\normalend   %
      \expandafter\end
    \fi}
-
-\let\starttext\starttekst
-\let\stoptext \stoptekst
 
 \let\normalend=\end
 
@@ -282,79 +261,72 @@
 \def\verwerkfile#1 %
   {\doexecutefile{#1}}
 
-\def\omgeving #1 % at outermost level only
-  {\def\startomgeving ##1 {}%
-   \let\stopomgeving\relax
+\def\environment #1 % at outermost level only
+  {\def\startenvironment ##1 {}%
+   \let\stopenvironment\relax
    \dostarttextfile{#1}%
    \startreadingfile
    \processfile{#1}% was : \readlocfile{#1}{}{}
    \stopreadingfile
    \dostoptextfile}
 
-\def\onderdeel #1 % at outermost level only
+\def\component #1 % at outermost level only
   {\dostarttextfile{#1}%
    \processfile{#1}%
    \dostoptextfile}
 
-\def\environment{\omgeving} % for the moment, no \let !
-
 \newcounter\filelevel
 
-\def\!!donextlevel#1#2#3#4#5#6\\%
+\def\donextlevel#1#2#3#4#5#6\\%
   {\beforesplitstring#6\at.\to#1
    \ifcase\filelevel\relax
-     \starttekst
-     \def\projekt   ##1 {#2{##1}}%
-     \def\omgeving  ##1 {#3{##1}}%
-     \def\produkt   ##1 {#4{##1}}%
-     \def\onderdeel ##1 {#5{##1}}%
+     \starttext
+     \def\project   ##1 {#2{##1}}%
+     \def\environment  ##1 {#3{##1}}%
+     \def\product   ##1 {#4{##1}}%
+     \def\component ##1 {#5{##1}}%
    \fi
    \increment\filelevel\relax
    \fullexpandoneargafter\addtocommalist{#1}\loadedfiles}
 
 \def\doprevlevel
   {\ifnum\filelevel=\plusone
-     \expandafter\stoptekst
+     \expandafter\stoptext
    \else
      \decrement\filelevel\relax
      \expandafter\endinput
    \fi}
 
-\def\startprojekt #1 %
-  {\!!donextlevel\currentproject
+\def\startproject #1 %
+  {\donextlevel\currentproject
      \donotexecutefile\doexecutefileonce
      \doexecutefileonce\doexecutefile#1\\}
 
-\def\stopprojekt
-  {\doprevlevel}
-
-\def\startprodukt #1 %
+\def\startproduct #1 %
   {\doateverystarttext
-   \!!donextlevel\currentproduct
+   \donextlevel\currentproduct
      \doexecutefileonce\doexecutefileonce
      \donotexecutefile\doexecutefile#1\\}
 
-\def\stopprodukt
-  {\doprevlevel}
-
-\def\startonderdeel #1 %
+\def\startcomponent #1 %
   {\doateverystarttext
-   \!!donextlevel\currentcomponent
+   \donextlevel\currentcomponent
      \doexecutefileonce\doexecutefileonce
      \donotexecutefile\doexecutefile#1\\}
 
-\def\stoponderdeel
-  {\doprevlevel}
-
-\def\startomgeving #1 %
-  {\!!donextlevel\currentenvironment
+\def\startenvironment #1 %
+  {\donextlevel\currentenvironment
      \donotexecutefile\doexecutefileonce
      \donotexecutefile\donotexecutefile#1\\}
 
-\def\stopomgeving
-  {\doprevlevel}
+\def\stopproject    {\doprevlevel}
+\def\stopproduct    {\doprevlevel}
+\def\stopcomponent  {\doprevlevel}
+\def\stopenvironment{\doprevlevel}
 
-\def\startdeelomgeving[#1]%
+% more or less replaced by modes
+
+\setvalue{\e!start\v!localenvironment}[#1]%
   {\let\loadedlocalenvironments\empty
    \def\docommando##1%
      {\beforesplitstring##1\at.\to\someevironment
@@ -364,18 +336,10 @@
        {\currentproject,\currentproduct,%
         \currentcomponent,\currentenvironment}
        {\loadedlocalenvironments}
-     {\letvalue{\e!stop\v!deelomgeving}\relax}
-     {\grabuntil{\e!stop\v!deelomgeving}\relax}}
+     {\letvalue{\e!stop\v!localenvironment}\relax}
+     {\grabuntil{\e!stop\v!localenvironment}\relax}}
 
-\def\startproduct{\startprodukt}
-\def\stopproduct {\stopprodukt}
-\def\startproject{\startprojekt}
-\def\stopproject {\stopprojekt}
-
-\def\project{\projekt}
-\def\product{\produkt}
-
-\def\deelomgeving #1 %
+\setvalue{\v!localenvironment} #1 %
   {\doexecutefileonce{#1}}
 
 % Het <pagina>-karakter (FormFeed), wordt omgezet in \par
@@ -386,16 +350,16 @@
 
 \neverypar=\emptytoks
 
-\appendtoks \flushnotes                     \to \everypar
-\appendtoks \ifinner\else\checksidefloat\fi \to \everypar
-\appendtoks \checkindentation               \to \everypar
-\appendtoks \showparagraphnumber            \to \everypar
-\appendtoks \flushmargincontents            \to \everypar
-\appendtoks \flushcommentanchors            \to \everypar
-\appendtoks \synchronizenotes               \to \everypar
+% \appendtoks \flushnotes                     \to \everypar
+% \appendtoks \synchronizesidefloats          \to \everypar
+% \appendtoks \checkindentation               \to \everypar
+% \appendtoks \showparagraphnumber            \to \everypar
+% \appendtoks \flushmargincontents            \to \everypar
+% \appendtoks \flushcommentanchors            \to \everypar
+% \appendtoks \synchronizenotes               \to \everypar
 
-\appendtoks \flushnotes                     \to \everydisplay
-\appendtoks \adjustsidefloatdisplaylines    \to \everydisplay
+% \appendtoks \flushnotes                     \to \everydisplay
+% \appendtoks \adjustsidefloatdisplaylines    \to \everydisplay
 
 %D Better here than in supp-mps:
 

@@ -1,5 +1,5 @@
 %D \module
-%D   [       file=core-sys, % moved from main-001
+%D   [       filefile=core-sys, % moved from main-001
 %D        version=1997.03.31,
 %D          title=\CONTEXT\ Core Macros,
 %D       subtitle=System,
@@ -47,19 +47,19 @@
 
 \def\dosetupsystem[#1]%
   {\getparameters[\??sv][#1]%
-   \setuprandomize[\@@svwillekeur]%
-   \beforesplitstring\@@svresolutie\at dpi\to\@@svresolutie
-   \let\outputresolution\@@svresolutie
+   \setuprandomize[\@@svrandom]%
+   \beforesplitstring\@@svresolution\at dpi\to\@@svresolution
+   \let\outputresolution\@@svresolution
    \ifcase\@@svn
      %                        % 0 : unknown
    \or
-     \setsystemmode\v!eerste  % 1 : first run
+     \setsystemmode\v!first  % 1 : first run
    \or
      %                        % 2 : successive run
    \or
-     \setsystemmode\v!eerste  % 3 : first and only run
+     \setsystemmode\v!first  % 3 : first and only run
    \or
-     \setsystemmode\v!laatste % 4 : extra last run
+     \setsystemmode\v!last % 4 : extra last run
    \fi
    \splitjobfilename}
 
@@ -69,7 +69,7 @@
 %D The system modes set by the setup command can be used in
 %D situations like:
 %D
-%D \starttypen
+%D \starttyping
 %D \startmode[*first]
 %D   \executesystemcommand{cleanupxml text.xml clean-text.xml}
 %D \stopmode
@@ -77,7 +77,7 @@
 %D \starttext
 %D   \typefile{clean-text.xml}
 %D \stoptext
-%D \stoptypen
+%D \stoptyping
 
 \def\setuprandomize[#1]%
   {\doifsomething{#1}
@@ -86,23 +86,23 @@
       % tex's time is in minutes
       \processaction
         [#1]
-        [  \v!klein=>\divide\normaltime 15, %  900,
-          \v!middel=>\divide\normaltime 30, % 1800,
-           \v!groot=>\divide\normaltime 60, % 3600,
-         \v!normaal=>,
+        [  \v!small=>\divide\normaltime 15, %  900,
+          \v!medium=>\divide\normaltime 30, % 1800,
+           \v!big=>\divide\normaltime 60, % 3600,
+         \v!normal=>,
          \s!default=>,
          \s!unknown=>\normaltime=#1]%
       \nextrandom
       \egroup}}
 
 \setupsystem
-  [\c!gebied=,
+  [\c!directory=,
    \c!n=0, % 0:unknown 1: one run 2: first 3: successive 4: final run
-   \c!resolutie=600dpi,
-   \c!willekeur=,
+   \c!resolution=600dpi,
+   \c!random=,
    \c!file=\jobname,
    \c!inputfile=\outputfilename,
-   \c!korps=\normalizedlocalbodyfontsize] % of iets anders
+   \c!bodyfont=\normalizedlocalbodyfontsize] % of iets anders
 
 %D
 
@@ -136,27 +136,27 @@
 \def\dododefinestartstop[#1][#2]% todo: use indirect commands
   {\getparameters
      [\??be#1]
-     [\c!voor=,
-      \c!na=,
-      \c!tussen=,
-      \c!commandos=,
-      \c!letter=,
+     [\c!before=,
+      \c!after=,
+      \c!inbetween=,
+      \c!commands=,
+      \c!style=,
       #2]%
    \unexpanded\setvalue{#1}%
      {\groupedcommand
-        {\getvalue{\??be#1\c!commandos}%
-         \dostartattributes{\??be#1}\c!letter\c!kleur}
+        {\getvalue{\??be#1\c!commands}%
+         \dostartattributes{\??be#1}\c!style\c!color}
         {\dostopattributes
-         \getvalue{\??be#1\c!tussen}}}%
+         \getvalue{\??be#1\c!inbetween}}}%
    \setvalue{\e!start#1}%
-     {\getvalue{\??be#1\c!voor}%
+     {\getvalue{\??be#1\c!before}%
       \bgroup
-      \getvalue{\??be#1\c!commandos}%
-      \dostartattributes{\??be#1}\c!letter\c!kleur\empty}%
+      \getvalue{\??be#1\c!commands}%
+      \dostartattributes{\??be#1}\c!style\c!color\empty}%
    \setvalue{\e!stop#1}%
      {\dostopattributes
       \egroup
-      \getvalue{\??be#1\c!na}}}
+      \getvalue{\??be#1\c!after}}}
 
 \def\dodefinestartstop[#1][#2]%
   {\def\docommando##1{\dododefinestartstop[##1][#2]}%
@@ -203,7 +203,7 @@
 %
 % \unexpanded\ziezo
 
-\def\complexdefinieer[#1]#2#3%
+\def\complexdefine[#1]#2#3%
   {\ifx#2\undefined
    \else
      \showmessage\m!systems4{\string#2}%
@@ -221,12 +221,12 @@
    \else\def#2{#3}%
    \fi}
 
-\definecomplexorsimpleempty\definieer
+\definecomplexorsimpleempty\define
 
-\unexpanded\def\naam#1% brrr
-  {\getvalue{#1}}
+\unexpanded\def\macroname#1% brrr
+  {\executeifdefined{#1}\empty}
 
-\def\gebruikcommandos#1%
+\def\usecommands#1%
   {\bgroup
    \def\docommando##1{\setbox0\hbox{\getvalue{\string##1}##1}}%
    \processcommalist[#1]\docommando
@@ -251,26 +251,26 @@
 %D XML processing, it made sense to support this faster
 %D alternative.
 
-\def\installexpander#1{\setvalue{\s!do\c!expansie#1}}
+\def\installexpander#1{\setvalue{\s!do\c!expansion#1}}
 
 \long\def\convertexpanded#1#2#3% hm, first we need to make sure
   {\csname   % that we assign all exp a value
-     \s!do\c!expansie
+     \s!do\c!expansion
      \ifforcefileexpansion
-       \v!ja
-     \else\@EA\ifx\csname\s!do\c!expansie\csname#1\c!expansie\endcsname\endcsname\relax
+       \v!yes
+     \else\@EA\ifx\csname\s!do\c!expansion\csname#1\c!expansion\endcsname\endcsname\relax
        \s!default
      \else
-       \csname#1\c!expansie\endcsname
+       \csname#1\c!expansion\endcsname
      \fi\fi
    \endcsname#2\to#3}
 
-\installexpander\v!ja      {\convertmeaning }
-\installexpander\v!ja      {\convertmeaning }
-\installexpander\v!commando{\convertcommand }
+\installexpander\v!yes      {\convertmeaning }
+\installexpander\v!yes      {\convertmeaning }
+\installexpander\v!command{\convertcommand }
 \installexpander\s!default {\convertargument}
 \installexpander\empty     {\convertargument}
-\installexpander\v!nee     {\convertargument}
+\installexpander\v!no     {\convertargument}
 
 \def\convertmeaning#1\to % watch the double expansion !
   {\bgroup
@@ -288,12 +288,15 @@
 % \setvalue{statevalue\v!geen   }{4}
 %
 % \def\setcurrentstate#1%
-%   {\chardef\currentstate=0\getvalue{statevalue\getvalue{#1\c!status}\relax}
+%   {\chardef\currentstate=0\getvalue{statevalue\getvalue{#1\c!state}\relax}
 %
 % \ifcase\currentstate ...
 
-\def\herhaal            {\dorepeat}
-\def\herhaler           {\repeater}
-\def\herhaalmetcommando {\dorepeatwithcommand}
+\def\redo{\dorepeat} % [n*10], kind of obsolete
+
+% obsolete, use \dorecurse instead
+%
+% \def\herhaler           {\repeater}
+% \def\herhaalmetcommando {\dorepeatwithcommand}
 
 \protect \endinput

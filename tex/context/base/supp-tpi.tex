@@ -1,5 +1,5 @@
 %D \module
-%D   [       file=supp-tpi,
+%D   [       filefile=supp-tpi,
 %D        version=1997.07.05,
 %D          title=\CONTEXT\ Support Macros,
 %D       subtitle=\TPIC\ Conversion,
@@ -46,9 +46,9 @@
 %D offers some rather discutable, but nevertheless handy
 %D feature:
 %D
-%D \starttypen
+%D \starttyping
 %D \write18{execute program with arguments}
-%D \stoptypen
+%D \stoptyping
 %D
 %D Knowing this, I immediatelly decided to throw away the old
 %D conversion macros and use the marvelous \METAPOST, \TEX\
@@ -66,8 +66,8 @@
 %D because we don't know in advance what actions to apply on
 %D it.
 %D
-%D \plaatstabel[hier][tab:TPIC specials]{The \TPIC\ special syntax.}
-%D \starttabel[|||l|]
+%D \placetable[here][tab:TPIC specials]{The \TPIC\ special syntax.}
+%D \starttable[|||l|]
 %D \HL
 %D \NC \bf tag \NC \bf arguments               \NC \bf meaning        \NC\SR
 %D \HL
@@ -82,7 +82,7 @@
 %D \NC ia      \NC $x$ $y$ $r_x$ $r_y$ $b$ $e$ \NC fill (partial) arc \NC\MR
 %D \NC sh      \NC $s$                         \NC fill next path     \NC\LR
 %D \HL
-%D \stoptabel
+%D \stoptable
 
 %D The first problem we have to take care of is the fact that
 %D there is no decent begin or end of the drawing process
@@ -91,16 +91,16 @@
 %D simply because else this is the most common used way to
 %D treat something \TEX\ as as a whole, like:
 %D
-%D \starttypen
+%D \starttyping
 %D \hbox{\special{}\special{}...}
-%D \stoptypen
+%D \stoptyping
 %D
 %D We just start a picture as soon as the first special is
 %D encountered, so this becomes:
 %D
-%D \starttypen
+%D \starttyping
 %D \hbox{\openpicture\newspecial{}\newspecial{}...
-%D \stoptypen
+%D \stoptyping
 
 %D The first step in opening the picture is to start a group.
 %D Now we can savely use the egroup that closes the box to also
@@ -325,14 +325,14 @@
 %D then most \DVI\ drivers do using the \TPIC\ prescribed
 %D b-splines. Take for instance the sequence:
 %D
-%D \starttypen
+%D \starttyping
 %D \special{pa 2000 1000}
 %D \special{pa 1000 2000}
 %D \special{pa 0000 1000}
 %D \special{pa 1000 0000}
 %D \special{pa 2000 1000}
 %D \special{sp}
-%D \stoptypen
+%D \stoptyping
 %D
 %D One would expect that this code produced a closed circle,
 %D but the curve that comes out using b-splines is far from

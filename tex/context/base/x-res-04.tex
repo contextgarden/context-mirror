@@ -14,7 +14,7 @@
 % application
 
 %D \module
-%D   [      file=x-fig-04,
+%D   [      filefile=x-fig-04,
 %D        version=2001.03.21,
 %D          title=\CONTEXT\ Style File,
 %D       subtitle=Figure Base Loading,
@@ -36,7 +36,7 @@
 %D
 %D A figure base coded this way looks like:
 %D
-%D \starttypen
+%D \starttyping
 %D <!-- texexec --pdf --use=fig-01 figtest.xml -->
 %D
 %D <figurelibrary language="nl">
@@ -63,28 +63,28 @@
 %D   </figure>
 %D
 %D </figurelibrary>
-%D \stoptypen
+%D \stoptyping
 %D
 %D You can convert this base into a \PDF\ file using
 %D \TEXEXEC\ and another module in this suite.
 %D
-%D \starttypen
+%D \starttyping
 %D texexec --pdf --use=fig-make yourfile.xml
-%D \stoptypen
+%D \stoptyping
 %D
 %D You can now select a graphic from this file using the
 %D
-%D \starttypen
+%D \starttyping
 %D \externalfigure[a dutch cow][width=4cm]
-%D \stoptypen
+%D \stoptyping
 %D
 %D This module overloads this command so that a figure is
 %D it first searched in the list of databases.
 %D
-%D \starttypen
+%D \starttyping
 %D \usemodule     [fig-base]
 %D \usefigurebases[yourfile]
-%D \stoptypen
+%D \stoptyping
 %D
 %D The special keyword \type {reset} can be used to reset
 %D this list.

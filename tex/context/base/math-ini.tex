@@ -1,5 +1,5 @@
 %D \module
-%D   [       file=math-ini,
+%D   [       filefile=math-ini,
 %D        version=2001.04.12,
 %D          title=\CONTEXT\ Math Macros,
 %D       subtitle=Basic Macros,
@@ -367,10 +367,10 @@
 %D   {ifmathpunctuation, enablemathpunctuation,
 %D    definemathpunctuation}
 %D
-%D \starttypen
+%D \starttyping
 %D \definemathpunctuation . mathperiod textperiod
 %D \definemathpunctuation , mathcomma  textcomma
-%D \stoptypen
+%D \stoptyping
 
 \newif\ifmathpunctuation
 
@@ -392,12 +392,12 @@
    \futurelet\nexttoken\next}
 
 %D \startbuffer
-%D \enablemathpunctuationtrue$(1,2) (1, 2) (1{,}2) \hbox{foo, not bar}$
+%D \enablemathpunctuation$(1,2) (1, 2) (1{,}2) \hbox{foo, not bar}$
 %D \stopbuffer
 %D
 %D \typebuffer
 %D
-%D \blanko{\getbuffer}\blanko
+%D \blank{\getbuffer}\blank
 
 %D needed for sin, cos etc
 
@@ -435,7 +435,7 @@
 
 %D Bold math:
 %D
-%D \starttypen
+%D \starttyping
 %D \usetypescript [lucida] [texnansi]
 %D
 %D \definetypeface [boldmath] [rm] [serif]
@@ -454,7 +454,7 @@
 %D \switchtobodyfont[boldmath,10pt]
 %D
 %D \showmathtoken{Gamma} $\Gamma \Delta \alpha \delta \zeta$
-%D \stoptypen
+%D \stoptyping
 
 \protect \endinput
 

@@ -1,5 +1,5 @@
 %D \module
-%D   [       file=syst-etx,
+%D   [       filefile=syst-etx,
 %D        version=1999.03.17, % some time ...
 %D          title=\CONTEXT\ System Macros,
 %D       subtitle=Efficient \PLAIN\ \TEX\ loading,
@@ -14,6 +14,15 @@
 %D This module prepares \CONTEXT\ for \ETEX. We don't use
 %D the definition files that come with this useful \TEX\
 %D extension, but implement our own alternatives.
+
+%D \CONTEXT\ was one of the first systems that had support for \ETEX\
+%D built in. In the process we found out that the extensions were not
+%D as bug free as the rest of \TEX. Especially the bugs in \type
+%D {lastnode}, flushing of token lists with an index in the extension
+%D range, and spurious box behaviour of boxes adressed in the extended
+%D box space made us a bit careful. It's hard to to track down such
+%D bugs, especially if one has a mind set of \TEX\ being bug free. If
+%D you encounter unexpected behaviour let me know.
 
 \unprotect
 
@@ -227,9 +236,9 @@
 
 %D These macros can be checked by tests like:
 %D
-%D \starttypen
+%D \starttyping
 %D \let\wlog\message \dorecurse{1000}{\newcount\dummy}
-%D \stoptypen
+%D \stoptyping
 
 %D A few bonus bindings.
 

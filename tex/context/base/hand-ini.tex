@@ -1,5 +1,5 @@
 %D \module
-%D   [       file=hand-ini, % moved from enco-ini / pro
+%D   [       filefile=hand-ini, % moved from enco-ini / pro
 %D        version=2000.12.27, % 1998.12.03,
 %D          title=\CONTEXT\ Handling Macros,
 %D       subtitle=Initialization,
@@ -143,14 +143,14 @@
      \pdffontexpand\handledfont
        \csname\@fha@\@fha@#1\c!min \endcsname\space
        \csname\@fha@\@fha@#1\c!max \endcsname\space
-       \csname\@fha@\@fha@#1\c!stap\endcsname\space
+       \csname\@fha@\@fha@#1\c!step\endcsname\space
        \@@pdfexpandbonus\relax}
 
   \def\showfontadjusting#1%
     {\writestatus\m!handlings{[adjust]\space#1\space
        \csname\@fha@\@fha@#1\c!min \endcsname/%
        \csname\@fha@\@fha@#1\c!max \endcsname/%
-       \csname\@fha@\@fha@#1\c!stap\endcsname\space
+       \csname\@fha@\@fha@#1\c!step\endcsname\space
        \fontname\handledfont}}
 \fi
 
@@ -178,19 +178,19 @@
   \rproddimen1000\onepoint \divide\rproddimen\maxcard
 
   \def\setprotrudingfactor#1%
-    {\doifvalue{\@fha@\@fha@#1\c!type}\v!hangend{\dosetprotrudingfactor{#1}}}
+    {\doifvalue{\@fha@\@fha@#1\c!type}\v!hanging{\dosetprotrudingfactor{#1}}}
 
   \def\dosetprotrudingfactor#1% mo \onepoint instead of pt
-    {\lproddimen\csname\@fha@\@fha@#1\c!links\endcsname\s!pt
+    {\lproddimen\csname\@fha@\@fha@#1\c!left\endcsname\s!pt
      \multiply\lproddimen\plusthousand\divide\lproddimen\maxcard\relax
-     \rproddimen\csname\@fha@\@fha@#1\c!rechts\endcsname\s!pt
+     \rproddimen\csname\@fha@\@fha@#1\c!right\endcsname\s!pt
      \multiply\rproddimen\plusthousand\divide\rproddimen\maxcard\relax
      \iftracefonthandling\showprotrudingfactor{#1}\fi}
 
   \def\showprotrudingfactor#1%
     {\writestatus\m!handlings{[protrude]\space#1\space
-       \csname\@fha@\@fha@#1\c!links \endcsname\space
-       \csname\@fha@\@fha@#1\c!rechts\endcsname\space
+       \csname\@fha@\@fha@#1\c!left \endcsname\space
+       \csname\@fha@\@fha@#1\c!right\endcsname\space
        \fontname\handledfont}}
 
   \def\dodefineprotrudefactor#1#2 #3 #4 %
@@ -250,7 +250,7 @@
 
     \def\protrudethreshold{36\onepoint}
 
-    \def\redodefineprotrudefactor
+    \def\redodefineprotrudefactor#1%
       {\ifdim\fontdimen6\font>\protrudethreshold
          \divide\scratchdimen\fontdimen6\font
          \multiply\scratchdimen\wd\charbox
@@ -325,7 +325,7 @@
 \def\dodefinefonthandling[#1][#2][#3]%
   {\ifthirdargument
      \setvalue{\@fha@\@fha@#1}{#2}%
-     \getparameters[\@fha@\@fha@#1][\c!type=\v!hangend,\c!links=1,\c!rechts=1,\c!min=20,\c!max=20,\c!stap=5,#3]%
+     \getparameters[\@fha@\@fha@#1][\c!type=\v!hanging,\c!left=1,\c!right=1,\c!min=20,\c!max=20,\c!step=5,#3]%
    \else
      \setvalue{\@fha@\@fha@\@fha@#1}{#2}%
    \fi}
@@ -344,8 +344,9 @@
 
 \beginTEX
 
-\def\fastenablehandling#1%
+\def\fastenablehandling#1#2%
   {\edef\askedfonthandling{#1}%
+   \edef\filoffonthandling{#2}%
    \@EA\ifx\csname\@fha@\@fha@\@fha@\askedfonthandling\endcsname\relax
      \@EA\ifx\csname\@fha@\@fha@\askedfonthandling\endcsname\relax
        \@EAEAEA\nofastenablehandling

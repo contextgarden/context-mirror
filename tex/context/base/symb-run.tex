@@ -1,5 +1,5 @@
 %D \module
-%D   [       file=symb-run, % code moved from symb-ini 
+%D   [       filefile=symb-run, % code moved from symb-ini
 %D        version=1998.07.20,
 %D          title=\CONTEXT\ Symbol Libraries,
 %D       subtitle=Runtime Macros,
@@ -11,24 +11,24 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-\unprotect 
+\unprotect
 
 \gdef\doshowsymbolset[#1][#2]% looks like \showexternalfigureb
   {\vbox\bgroup
-   \blanko
+   \blank
    \getparameters[\??ss][\c!n=5,#2]%
    \forcesymbolset[#1]%
    \doifdefined{\??ss#1}
      {\global\let\allfigures\empty
       \doglobal\newcounter\figurecounter
-      \setupcolors[\c!status=\v!start]% to prevent mps color conversion 
-      \mindermeldingen
+      \setupcolors[\c!state=\v!start]% to prevent mps color conversion
+      \dontcomplain
       \def\doshowsymbols% global needed due to grouping in alignment
         {\expanded{\globalprocesscommalist[\getvalue{\??ss#1}]\noexpand\docommando}}%
       \def\docommando##1%
         {\vbox
            {\forgetall
-            \tttf 
+            \tttf
             \halign
               {\hss\quad####\strut\quad\hss\cr
                \symbol[##1]\quad{\red\ruledhbox{\black\symbol[##1]}}\cr
@@ -44,7 +44,7 @@
       \tabskip\zeropoint \!!plus 1fill
       \halign to \hsize
         {&\hss##\hss\cr\doshowsymbols\crcr}}%
-   \blanko
+   \blank
    \egroup}
 
 \gdef\showsymbolset%

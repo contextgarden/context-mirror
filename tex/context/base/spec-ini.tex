@@ -1,5 +1,5 @@
 %D \module
-%D   [       file=spec-ini,
+%D   [       filefile=spec-ini,
 %D        version=1996.01.25,
 %D          title=\CONTEXT\ Special Macros,
 %D       subtitle=Initialization,
@@ -147,15 +147,15 @@
 %D channel to the outside world. This channel is activated by
 %D the \TEX\ primitive \type {\special}. The sequence
 %D
-%D \starttypen
+%D \starttyping
 %D \special{Hello here I am.}
-%D \stoptypen
+%D \stoptyping
 %D
 %D results in \DVI||codes:
 %D
-%D \starttypen
+%D \starttyping
 %D xxx1 16 Hello here I am.
-%D \stoptypen
+%D \stoptyping
 %D
 %D The \type {xxx1} is represented in byte code 239 and the
 %D number of following bytes in a~1, 2, 3 or~4 byte number. So
@@ -208,7 +208,7 @@
 %D the \type{yandy} library. A library is build with the
 %D commands:
 %D
-%D \starttypen
+%D \starttyping
 %D \startspecials[name][inheritance]
 %D
 %D \definespecial\none{...}
@@ -216,7 +216,7 @@
 %D \definespecial\alot#1#2#3#4{...}
 %D
 %D \stopspecials
-%D \stoptypen
+%D \stoptyping
 %D
 %D Because drivers can have overlap in low level macros, a
 %D mechanism of inheritance is implemented. The libraries
@@ -225,11 +225,11 @@
 %D Every special has to be predefined first. We  do this with
 %D the command:
 %D
-%D \starttypen
+%D \starttyping
 %D \installspecial [\none]    [and] [0]
 %D \installspecial [\onlyone] [and] [1]
 %D \installspecial [\alot]    [or]  [4]
-%D \stoptypen
+%D \stoptyping
 %D
 %D This means as much as: there is a special names
 %D \type{\none} which has no arguments and has more than one
@@ -246,9 +246,9 @@
 %D A library is defined in a file with the name
 %D \type{spec-...}. We load a library with the command:
 %D
-%D \starttypen
+%D \starttyping
 %D \usespecials [list]
-%D \stoptypen
+%D \stoptyping
 %D
 %D where the list can contain one or more file tags, the
 %D \type{...} in the filename. The keyword \type{reset}
@@ -429,7 +429,7 @@
 %D additions however |<|like the specials that implement object
 %D handling|>| asked for non||grouped execution.
 
-%D \starttypen
+%D \starttyping
 %D \def\executespecials#1#2%
 %D   {\def\doonespecial##1%
 %D      {\getvalue{##1\string#1}#2\relax}%
@@ -472,7 +472,7 @@
 %D        {\message{illegal special: \string#1}}%
 %D    \fi
 %D    \next}
-%D \stoptypen
+%D \stoptyping
 %D
 %D Because specials happen quite often, we will use a bit more
 %D brute force. Keep in mind that we have to collect the
@@ -481,9 +481,9 @@
 %D I tested this on the next test. Where the previous alternative
 %D took about 32 seconds, the new alternative takes 25 seconds.
 %D
-%D \starttypen
+%D \starttyping
 %D \testfeature{10000}{\setbox0=\hbox{test \color[red]{oeps} test}}
-%D \stoptypen
+%D \stoptyping
 
 \def\@@exsp{exsp}
 
@@ -498,7 +498,7 @@
 \setvalue{\@@exsp8}#1#2#3#4#5#6#7#8{{{#1}{#2}{#3}{#4}{#5}{#6}{#7}{#8}}}
 \setvalue{\@@exsp9}#1#2#3#4#5#6#7#8#9{{{#1}{#2}{#3}{#4}{#5}{#6}{#7}{#8}{#9}}}
 
-%D \starttypen
+%D \starttyping
 %D \def\executespecials#1%
 %D   {\def\doonespecial##1%
 %D      {\csname##1\xspecialcommand\endcsname#1\relax}%
@@ -508,7 +508,7 @@
 %D \def\executespecial#1%
 %D   {\def\xspecialcommand{\string#1}%
 %D    \@EA\@EA\@EA\executespecials\csname\@@exsp\csname\@@specarg@@\xspecialcommand\endcsname\endcsname}
-%D \stoptypen
+%D \stoptyping
 
 %D Some more speed can be gained by using a dedicated string
 %D processing routine. Now we can bring down the execution
@@ -551,15 +551,15 @@
 %D For testing purposes (this was first needed when object
 %D support was implemented) we have:
 %D
-%D \starttypen
+%D \starttyping
 %D \doifspecialavailableelse\specialcommand{true}{false}
-%D \stoptypen
+%D \stoptyping
 %D
 %D e.g:
 %D
-%D \starttypen
+%D \starttyping
 %D \doifspecialavailableelse\doinsertobject{...}{...}
-%D \stoptypen
+%D \stoptyping
 
 \def\doifspecialavailableelse#1#2#3%
   {\doifelsevaluenothing{\@@speclst@@\string#1}{#3}{#2}}
@@ -613,31 +613,31 @@
 %D For quite some time the \CONTEXT\ way of specifying the
 %D output format has been:
 %D
-%D \starttypen
+%D \starttyping
 %D \usespecials[ps,yy,win,pdf]
-%D \stoptypen
+%D \stoptyping
 %D
 %D Because at \PRAGMA\ we use \DVIPSONE, this was a suitable
 %D setting, but with \CONTEXT\ going public, the next sequence
 %D is more suitable for \DVIPS\ users:
 %D
-%D \starttypen
+%D \starttyping
 %D \usespecials[reset,ps,tr,pdf]
-%D \stoptypen
+%D \stoptyping
 %D
 %D On the other hand, for \PDFTEX\ we needed:
 %D
-%D \starttypen
+%D \starttyping
 %D \usespecials[tpd]
-%D \stoptypen
+%D \stoptyping
 %D
 %D To simplify things, I decided to provide a higher level
 %D command.
 %D
-%D \starttypen
+%D \starttyping
 %D \defineoutput[name][specials]
 %D \setupoutput[name,...]
-%D \stoptypen
+%D \stoptyping
 %D
 %D In a \type {spec-def} you can find some examples.
 

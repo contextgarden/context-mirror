@@ -1,5 +1,5 @@
 %D \module
-%D   [       file=core-nav,
+%D   [       filefile=core-nav,
 %D        version=1995.01.01,
 %D          title=\CONTEXT\ Core Macros,
 %D       subtitle=New ones,
@@ -272,12 +272,12 @@
 % todo : \startsetups[name][XML] \setups[name][XML]
 
 \expanded
-  {\long\def\@EA\noexpand\csname\e!start\v!instellingen\endcsname
+  {\long\def\@EA\noexpand\csname\e!start\v!setups\endcsname
      {\bgroup\noexpand\doifnextcharelse[%
-        {\noexpand\startsetupsA\@EA\noexpand\csname\e!stop\v!instellingen\endcsname}
-        {\noexpand\startsetupsB\@EA\noexpand\csname\e!stop\v!instellingen\endcsname}}}
+        {\noexpand\startsetupsA\@EA\noexpand\csname\e!stop\v!setups\endcsname}
+        {\noexpand\startsetupsB\@EA\noexpand\csname\e!stop\v!setups\endcsname}}}
 
-\letvalue{\e!stop\v!instellingen}\relax
+\letvalue{\e!stop\v!setups}\relax
 
 \unexpanded \def\setups % {..} or [..]
   {\doifnextcharelse\bgroup\dosetupsA\dosetupsB}
@@ -412,7 +412,7 @@
    \defineactivecharacter #1 {\@EA\doshortcut\string#2} %
    \getparameters
      [\??te\string#2#3]
-     [\c!commandos=,\c!commando=,\c!letter=,\c!kleur=,#4]}
+     [\c!commands=,\c!command=,\c!style=,\c!color=,#4]}
 
 \def\doshortcut#1%
   {\ifmmode
@@ -429,27 +429,27 @@
 
 \def\dododoshortcut#1:#2\end
   {\doifelsenothing{#2}
-     {\doifundefinedelse{\shorttag\c!commandos}
+     {\doifundefinedelse{\shorttag\c!commands}
         {\shortcut}
         {\@EA\dodododoshortcut\@EA\shorttag\@EA:\shortcut:\end}}
-     {\doifundefinedelse{\shorttag#1\c!commandos}
+     {\doifundefinedelse{\shorttag#1\c!commands}
         {\shortcut}
         {\dodododoshortcut\shorttag#1:#2\end}}%
    \egroup}
 
 \def\dodododoshortcut#1:#2:\end
-  {\getvalue{#1\c!commandos}%
-   \doattributes{#1}\c!letter\c!kleur{\getvalue{#1\c!commando}{#2}}}
+  {\getvalue{#1\c!commands}%
+   \doattributes{#1}\c!style\c!color{\getvalue{#1\c!command}{#2}}}
 
-%D \defineshortcut     [\c!letter=\v!type]
-%D \defineshortcut [b] [\c!letter=\v!vet]
-%D \defineshortcut [e] [\c!letter=\em]
-%D \defineshortcut [t] [\c!letter=\v!type]
-%D \defineshortcut [c] [\c!letter=\v!kap]
-%D \defineshortcut [k] [\c!letter=\v!kap]
-%D \defineshortcut [u] [\c!letter=\v!type,\c!commando=\hyphenatedurl]
+%D \defineshortcut     [style=type]
+%D \defineshortcut [b] [style=bold]
+%D \defineshortcut [e] [style=\em]
+%D \defineshortcut [t] [style=type]
+%D \defineshortcut [c] [style=cap]
+%D \defineshortcut [k] [style=cap]
+%D \defineshortcut [u] [style=type,command=\hyphenatedurl]
 %D
-%D \startregels
+%D \startlines
 %D test <ziezo> test
 %D test test <t:ziezo>
 %D test test <b:ziezo>
@@ -461,21 +461,21 @@
 %D test test <t:zi:ezo:> dat (zi:ezo:)
 %D well, <u:http://www.pragma-ade.nl> looks fuzzy
 %D $10<20$
-%D \stopregels
+%D \stoplines
 %D
-%D \defineshortcut [<>] [i] [\c!letter=\it]
-%D \defineshortcut [()] [b] [\c!letter=\bf]
-%D \defineshortcut [++] [s] [\c!letter=\sl]
-%D \defineshortcut [//] [u] [\c!letter=\underbars]
-%D \defineshortcut [--] [a] [\c!letter=\overstrike]
+%D \defineshortcut [<>] [i] [style=\it]
+%D \defineshortcut [()] [b] [style=\bf]
+%D \defineshortcut [++] [s] [style=\sl]
+%D \defineshortcut [//] [u] [style=\underbars]
+%D \defineshortcut [--] [a] [style=\overstrike]
 %D
-%D \startregels
+%D \startlines
 %D it seems <i:to work> well
 %D it seems (b:to work) well
 %D it seems +s:to work+ well
 %D it seems /u:to work/ well
 %D it seems -a:to work- well
-%D \stopregels
+%D \stoplines
 
 % \def\setupenv{\dodoubleargument\rawgetparameters[\??en]}
 %

@@ -1,5 +1,5 @@
 %D \module
-%D   [       file=supp-new,
+%D   [       filefile=supp-new,
 %D        version=1997.01.03,
 %D          title=\CONTEXT\ Support Macros,
 %D       subtitle=New Ones,
@@ -18,7 +18,7 @@
 
 % moved from core-ntb
 
-\def\v!oddeven#1{\ifodd#1\v!oneven\else\v!even\fi}
+\def\v!oddeven#1{\ifodd#1\v!odd\else\v!even\fi}
 
 % For myself
 
@@ -274,7 +274,7 @@
 % \def\maximizespacing%
 %   {\maximizeskip\blankoskipamount
 %    \maximizeskip\parskip
-%    \maximizeskip\tussenwit
+%    \maximizeskip\ctxparskip
 %    \maximizeskip\baselineskip
 %    \maximizeskip\bigskipamount
 %    \maximizeskip\medskipamount
@@ -381,10 +381,10 @@
 %D the next macros to add|/|subtract a series of dimensions
 %D to a register or macro.
 %D
-%D \starttypen
-%D \adddimenregister 10pt 5pt \papierbreedte \to \somedimen
-%D \adddimenmacro    10pt 5pt \papierbreedte \to \bagger
-%D \stoptypen
+%D \starttyping
+%D \adddimenregister 10pt 5pt \paperwidth \to \somedimen
+%D \adddimenmacro    10pt 5pt \paperwidth \to \bagger
+%D \stoptyping
 
 \newdimen\dimentoaddto
 
@@ -412,18 +412,18 @@
 %D
 %D This macro is use as:
 %D
-%D \starttypen
-%D \freezedimenmacro\linkermargeafstand
-%D \stoptypen
+%D \starttyping
+%D \freezedimenmacro\leftmargindistance
+%D \stoptyping
 
 \def\freezedimenmacro#1%
   {\scratchdimen#1\edef#1{\the\scratchdimen}}
 
 %D The next one is slower:
 %D
-%D \starttypen
+%D \starttyping
 %D \def\freezedimenmacro#1{\edef#1{\the\dimexpr(#1)}}
-%D \stoptypen
+%D \stoptyping
 
 % \newcount\rawrecursecounter
 %
@@ -443,12 +443,12 @@
 %    \dodorawrecurse}
 
 %D The next macro negates a macro (dimension or number, or actually, whatever.
-%D It's a typical example of \if usage:
+%D It's a typical example of \type {\if} usage:
 %D
-%D \starttypen
+%D \starttyping
 %D \if-\whatever \else-\whatever\fi => else => -whatever
 %D \if--\whatever\else-\whatever\fi => then =>  whatever
-%D \stoptypen
+%D \stoptyping
 
 \def\negated#1{\if-#1\else-#1\fi} % does only work in macros or text
 

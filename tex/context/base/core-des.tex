@@ -1,5 +1,5 @@
 %D \module
-%D   [       file=core-des,
+%D   [       filefile=core-des,
 %D        version=1997.03.31,
 %D          title=\CONTEXT\ Core Macros,
 %D       subtitle=Descriptions,
@@ -30,14 +30,14 @@
 % \doornummeren en \doordefinieren. Deze constructie is nodig
 % omdat doornummeren geen argument heeft en omdat subnummers
 % niet worden genest binnen het hogere niveau. Het commando
-% \??dd#1\s!do\c!status moet in dat geval \v!start zijn.
+% \??dd#1\s!do\c!state moet in dat geval \v!start zijn.
 %
 % herimplementeren met \nextbox en \unhbox\unvbox
 
 \newbox\@@definitiebox
 
 \def\@@definitiewoord#1%
-  {\getvalue{\??dd#1\s!do\c!commando}{#1}}
+  {\getvalue{\??dd#1\s!do\c!command}{#1}}
 
 % \def\normal@@definitiewoord#1[#2]#3#4%
 %   {\doattributes
@@ -48,20 +48,20 @@
 
 \def\normal@@definitiewoord#1[#2]#3#4%
   {\doattributes
-     {\??dd#1}\c!kopletter\c!kopkleur
-     {\getvalue{\??dd#1\c!commando}{#4}}% NAAR BUITENSTE NIVEAU !
+     {\??dd#1}\c!headstyle\c!headcolor
+     {\getvalue{\??dd#1\c!command}{#4}}% NAAR BUITENSTE NIVEAU !
    \rawreference\s!def{#2}{#3}} % brrr moet in #4
 
-\setvalue{@@definitie\v!links}#1%
+\setvalue{@@definitie\v!left}#1%
   {\@@definitiehang{#1}\@@definitielinkspure\@@definitielinkshang}
 
-\setvalue{@@definitie\v!rechts}#1%
+\setvalue{@@definitie\v!right}#1%
   {\@@definitiehang{#1}\@@definitierechtspure\@@definitierechtshang}
 
 \def\@@definitiehang#1#2#3%
   {\processaction
      [\getvalue{\??dd#1\c!hang}]
-     [   \v!geen=>\let\next#2,%
+     [   \v!none=>\let\next#2,%
                0=>\let\next#2,%
       \s!unknown=>\let\next#3,%
       \s!default=>\let\next#2]%
@@ -99,18 +99,18 @@
 
 \def\@@makedefinitiepurebox#1#2%
   {\setbox\@@definitiebox\vtop
-     {\mindermeldingen
+     {\dontcomplain
       \hsize\!!widtha
       \leftskip\zeropoint
       \rightskip\zeropoint
-      #2\setupalign[\getvalue{\??dd#1\c!uitlijnen}]%
+      #2\setupalign[\getvalue{\??dd#1\c!align}]%
       \ifhbox\@@definitiebox\unhcopy\else\copy\fi\@@definitiebox}%
    \ht\@@definitiebox\strutht
    \dp\@@definitiebox\strutdp}
 
 \def\@@definitielinkshang#1[#2]#3%
   {\@@dostartdefinitie{#1}[#2]{#3}%
-   \mindermeldingen
+   \dontcomplain
    \advance\!!widtha \!!widthb
    \hangindent\!!widtha
    \@@makedefinitiehangbox{#1}\raggedright{\advance\rightskip \!!widthb}%
@@ -122,13 +122,13 @@
 
 \def\@@definitierechtshang#1[#2]#3%
   {\@@dostartdefinitie{#1}[#2]{#3}%
-   \mindermeldingen
+   \dontcomplain
    \advance\!!widtha \!!widthb
    \hangindent-\!!widtha
    \@@makedefinitiehangbox{#1}\raggedleft{\advance\leftskip \!!widthb}%
    \noindent\ignorespaces
    \rlap
-     {\mindermeldingen
+     {\dontcomplain
       \dontshowcomposition
       \dimen0=\hsize
       \advance\dimen0 -\leftskip
@@ -140,49 +140,49 @@
 \def\@@makedefinitiehangbox#1#2#3%
   {\setbox\@@definitiebox\vtop % \vbox gaat fout in hang
      {\forgetall
-      \mindermeldingen
+      \dontcomplain
       \hsize\!!widtha
-      #2\setupalign[\getvalue{\??dd#1\c!uitlijnen}]#3%
+      #2\setupalign[\getvalue{\??dd#1\c!align}]#3%
       \ifhbox\@@definitiebox\unhcopy\else\copy\fi\@@definitiebox}%
    \ht\@@definitiebox\strutht
    \dp\@@definitiebox\strutdp
-   \doifinsetelse{\getvalue{\??dd#1\c!hang}}{\v!passend,\v!ruim}
+   \doifinsetelse{\getvalue{\??dd#1\c!hang}}{\v!fit,\v!broad}
      {\dimen0=\ht\@@definitiebox
       \advance\dimen0 \dp\@@definitiebox
-      \doifvalue{\??dd#1\c!hang}\v!ruim
+      \doifvalue{\??dd#1\c!hang}\v!broad
         {\advance\dimen0 .5\strutht}%
       \getnoflines{\dimen0}%
       \hangafter-\noflines}
      {\hangafter-\getvalue{\??dd#1\c!hang}}}%
 
-\setvalue{@@definitie\v!boven}#1[#2]#3%
-  {%\pagina[\v!voorkeur]%       % Weg ermee!
+\setvalue{@@definitie\v!top}#1[#2]#3%
+  {%\page[\v!preference]%       % Weg ermee!
    %\dosomebreak{\goodbreak}%   % Dit is beter en nodig!
    \dohandelpaginaafX1          % En dit moet het maar worden.
    \@@dostartdefinitie{#1}[#2]{\let\\=\space#3}%
    \noindent\ignorespaces
    \copy\@@definitiebox\par
    \nobreak
-   \getvalue{\??dd#1\c!tussen}%
+   \getvalue{\??dd#1\c!inbetween}%
    \nobreak
    \@@dodefinitie{#1}}
 
 % \setvalue{@@definitie\v!inmarge}#1[#2]#3%
 %   {\@@dostartdefinitie{#1}[#2]{#3}%
 %    \noindent\ignorespaces
-%    \inmarge{\ifhbox\@@definitiebox\unhcopy\else\copy\fi\@@definitiebox}%
+%    \inmargin{\ifhbox\@@definitiebox\unhcopy\else\copy\fi\@@definitiebox}%
 %    \@@dodefinitie{#1}}
 %
 % \setvalue{@@definitie\v!inlinker}#1[#2]#3%
 %   {\@@dostartdefinitie{#1}[#2]{#3}%
 %    \noindent\ignorespaces
-%    \inlinker{\ifhbox\@@definitiebox\unhcopy\else\copy\fi\@@definitiebox}%
+%    \inleft{\ifhbox\@@definitiebox\unhcopy\else\copy\fi\@@definitiebox}%
 %    \@@dodefinitie{#1}}
 %
 % \setvalue{@@definitie\v!inrechter}#1[#2]#3%
 %   {\@@dostartdefinitie{#1}[#2]{#3}%
 %    \noindent\ignorespaces
-%    \inrechter{\ifhbox\@@definitiebox\unhcopy\else\copy\fi\@@definitiebox}%
+%    \inright{\ifhbox\@@definitiebox\unhcopy\else\copy\fi\@@definitiebox}%
 %    \@@dodefinitie{#1}}
 
 \def\do@@definitie#1#2[#3]#4%
@@ -191,30 +191,30 @@
    #1{\ifhbox\@@definitiebox\unhcopy\else\copy\fi\@@definitiebox}%
    \@@dodefinitie{#2}}
 
-\setvalue{@@definitie\v!inmarge     }{\do@@definitie\inmarge  }
-\setvalue{@@definitie\v!inlinker    }{\do@@definitie\inlinker }
-\setvalue{@@definitie\v!inrechter   }{\do@@definitie\inrechter}
-\setvalue{@@definitie\v!marge       }{\do@@definitie\inmarge  }
-\setvalue{@@definitie\v!linkermarge }{\do@@definitie\inlinker }
-\setvalue{@@definitie\v!rechtermarge}{\do@@definitie\inrechter}
-\setvalue{@@definitie\v!binnenmarge }{\do@@definitie\inbinnen }
-\setvalue{@@definitie\v!buitenmarge }{\do@@definitie\inbuiten }
+\setvalue{@@definitie\v!inmargin     }{\do@@definitie\inmargin}
+\setvalue{@@definitie\v!inleft    }{\do@@definitie\inleft  }
+\setvalue{@@definitie\v!inright   }{\do@@definitie\inright }
+\setvalue{@@definitie\v!margin       }{\do@@definitie\inmargin}
+\setvalue{@@definitie\v!leftmargin }{\do@@definitie\inleft  }
+\setvalue{@@definitie\v!rightmargin}{\do@@definitie\inright }
+\setvalue{@@definitie\v!innermargin }{\do@@definitie\ininner}
+\setvalue{@@definitie\v!outermargin }{\do@@definitie\inouter}
 
-\def\@@definitieaanelkaarpassend#1[#2]#3%
+\setvalue{@@definitie\v!serried\v!fit}#1[#2]#3%
   {\@@dostartdefinitie{#1}[#2]{#3}%
    \noindent\ignorespaces
    \ifhbox\@@definitiebox\unhcopy\else\copy\fi\@@definitiebox
    \hskip\!!widthb % toegevoegd
    \@@dodefinitie{#1}}
 
-\def\@@definitieaanelkaarruim#1[#2]#3%
+\setvalue{@@definitie\v!serried\v!broad}#1[#2]#3%
   {\@@dostartdefinitie{#1}[#2]{#3}%
    \noindent\ignorespaces
    \ifhbox\@@definitiebox\unhcopy\else\copy\fi\@@definitiebox
    \hskip\!!widthb \!!plus .5\!!widthb \!!minus .25\!!widthb
    \@@dodefinitie{#1}}
 
-\def\@@definitieaanelkaarbreed#1[#2]#3%
+\setvalue{@@definitie\v!serried\v!wide}#1[#2]#3%
   {\@@dostartdefinitie{#1}[#2]{#3}%
    \noindent\ignorespaces
    \hbox to \!!widtha
@@ -223,17 +223,17 @@
    \ignorespaces
    \@@dodefinitie{#1}}
 
-\setvalue{@@definitie\v!aanelkaar}#1[#2]#3%
+\setvalue{@@definitie\v!serried}#1[#2]#3%
   {\processaction
-      [\getvalue{\??dd#1\c!breedte}]
-      [\v!passend=>\let\next\@@definitieaanelkaarpassend,
-          \v!ruim=>\let\next\@@definitieaanelkaarruim,
-       \s!unknown=>\let\next\@@definitieaanelkaarbreed,
-       \s!default=>\let\next\@@definitieaanelkaarruim]%
-   \next{#1}[#2]{#3}}
+      [\getvalue{\??dd#1\c!width}]
+      [\v!fit=>\let\next\v!fit,
+          \v!broad=>\let\next\v!broad,
+       \s!unknown=>\let\next\v!wide,
+       \s!default=>\let\next\v!broad]%
+   \getvalue{@@definitie\v!serried\next}{#1}[#2]{#3}}
 
-\setvalue{@@definitie\v!hangend}#1[#2]#3%
-  {\@@dostartdefinitie{#1}[#2]{#3}% % adds \c!marge to \leftskip
+\setvalue{@@definitie\v!hanging}#1[#2]#3%
+  {\@@dostartdefinitie{#1}[#2]{#3}% % adds \c!margin to \leftskip
    \noindent\ignorespaces
    \advance\leftskip -\leftskipadaption \relax
    \ifdim\leftskipadaption=\zeropoint
@@ -257,6 +257,15 @@
    \ignorespaces
    \@@dodefinitie{#1}}
 
+%D A bonus definition
+%D
+%D \starttyping
+%D \setupfootnotedefinition[location=command,headcommand=\llap]
+%D \stoptyping
+
+\setvalue{@@definitie\v!command}#1%
+  {\do@@definitie{\executeifdefined{\??dd#1\c!headcommand}\framed}{#1}}
+
 %D A new key 'titeluitlijnen' in definitions.
 
 \chardef\insidedefinition=0
@@ -265,50 +274,50 @@
 \let\@@rightdefinitieskip\!!zeropoint
 
 \def\@@dostartdefinitie#1[#2]#3%
-  {\getvalue{\??dd#1\c!voor}%
+  {\getvalue{\??dd#1\c!before}%
    \begingroup
-   \doadaptleftskip{\getvalue{\??dd#1\c!marge}}%
+   \doadaptleftskip{\getvalue{\??dd#1\c!margin}}%
    \showcomposition
-   \!!widthb\getvalue{\??dd#1\c!afstand}\relax
+   \!!widthb\getvalue{\??dd#1\c!distance}\relax
    \ifdim\!!widthb=\zeropoint\relax
-     \doifvalue{\??dd#1\c!breedte}\v!ruim{\!!widthb=1em}%
+     \doifvalue{\??dd#1\c!width}\v!broad{\!!widthb=1em}%
    \fi
    % temp hack, we need to avoid this kind of preprocessing
    \setbox\@@definitiebox\hbox % preroll
      {\forgetall
       \trialtypesettingtrue
-      \mindermeldingen
-      \def\\{\crcr}%
+      \dontcomplain
+      \def\\{\crlf}%
       \@@definitiewoord{#1}[#2]{#3}%
-        {\begstrut\getvalue{\??dd#1\c!tekst}\ignorespaces#3\endstrut}}%
+        {\begstrut\getvalue{\??dd#1\c!text}\ignorespaces#3\endstrut}}%
    % so far
    \assignwidth
      {\!!widtha}%
-     {\getvalue{\??dd#1\c!breedte}}%
-     {\doifelsevaluenothing{\??dd#1\c!monster}%
+     {\getvalue{\??dd#1\c!width}}%
+     {\doifelsevaluenothing{\??dd#1\c!sample}%
         {% preroll can move here (test first)
          \ifhbox\@@definitiebox\unhcopy\else\copy\fi \@@definitiebox}%
         {\@@definitiewoord{#1}[#2]{#3}%
-           {\getvalue{\??dd#1\c!tekst}\getvalue{\??dd#1\c!monster}}}}
+           {\getvalue{\??dd#1\c!text}\getvalue{\??dd#1\c!sample}}}}
      {\!!widthb}%
    \setbox\@@definitiebox\hbox
      {\forgetall
-      \mindermeldingen
+      \dontcomplain
       \let\\\endgraf
-      \doifelsevalue{\??dd#1\c!plaats}\v!aanelkaar
+      \doifelsevalue{\??dd#1\c!location}\v!serried
         {\@@definitiewoord{#1}[#2]{#3}%
-           {\begstrut\getvalue{\??dd#1\c!tekst}#3\endstrut}}
+           {\begstrut\getvalue{\??dd#1\c!text}#3\endstrut}}
         {\@@definitiewoord{#1}[#2]{#3}%
            {\vtop{\hsize\!!widtha\advance\hsize-\!!widthb
-            \begstrut\getvalue{\??dd#1\c!tekst}\ignorespaces#3\endstrut}}}}%
-   \doifelsevalue{\??dd#1\c!titeluitlijnen}\v!nee
+            \begstrut\getvalue{\??dd#1\c!text}\ignorespaces#3\endstrut}}}}%
+   \doifelsevalue{\??dd#1\c!aligntitle}\v!no
      {\edef\@@leftdefinitieskip {\the\leftskip }%
       \edef\@@rightdefinitieskip{\the\rightskip}}
      {\ifcase\insidedefinition
         \edef\@@leftdefinitieskip {\the\leftskip }%
         \edef\@@rightdefinitieskip{\the\rightskip}%
       \fi}%
-   \expanded{\inspringen[\getvalue{\??dd#1\c!inspringen}]}%
+   \expanded{\indenting[\getvalue{\??dd#1\c!indenting}]}%
    \ifcase\insidedefinition % better a system mode
      \chardef\insidedefinition\plusone
    \or
@@ -319,12 +328,12 @@
   {\par % maybe better after \dostopattributes
    \dostopattributes
    \endgroup
-   \getvalue{\??dd#1\c!na}%
+   \getvalue{\??dd#1\c!after}%
    \egroup % temporary hack
    \dochecknextindentation{\??dd#1}}
 
 \def\@@dodefinitie#1%
-  {\dostartattributes{\??dd#1}\c!letter\c!kleur\empty
+  {\dostartattributes{\??dd#1}\c!style\c!color\empty
    \ignorespaces}
 
 % \def\@@somedefinitie#1[#2]#3%
@@ -345,34 +354,34 @@
    \BeforePar{\executedoordefinitie{#1}[#2]{#3}}%
    \GotoPar}
 
-\def\dodosteldoordefinierenin[#1][#2]%
+\def\dodosetupdescriptions[#1][#2]%
   {\getparameters[\??dd#1][#2]}
 
-\def\dosteldoordefinierenin[#1][#2]% % beter: \iffirstargument
+\def\dosetupdescriptions[#1][#2]% % beter: \iffirstargument
   {\ConvertToConstant\doifelse{#2}{}
-     {\dodosteldoordefinierenin[][#1]}
-     {\dodoubleargumentwithset\dodosteldoordefinierenin[#1][#2]}}
+     {\dodosetupdescriptions[][#1]}
+     {\dodoubleargumentwithset\dodosetupdescriptions[#1][#2]}}
 
-\def\steldoordefinierenin%
-  {\dodoubleempty\dosteldoordefinierenin}
+\def\setupdescriptions%
+  {\dodoubleempty\dosetupdescriptions}
 
 \def\executedoordefinitie#1[#2]%
-  {\ExpandAfter\doifundefined{@@definitie\getvalue{\??dd#1\c!plaats}}
-     {\setvalue{\??dd#1\c!plaats}{\v!links}}%
-   \getvalue{@@definitie\getvalue{\??dd#1\c!plaats}}{#1}[#2]}
+  {\ExpandAfter\doifundefined{@@definitie\getvalue{\??dd#1\c!location}}
+     {\setvalue{\??dd#1\c!location}{\v!left}}%
+   \getvalue{@@definitie\getvalue{\??dd#1\c!location}}{#1}[#2]}
 
-\def\dodoordefinieren[#1][#2]%
+\def\dodefinedescription[#1][#2]%
   {\copyparameters[\??dd#1][\??dd]
-     [\c!plaats,\c!kopletter,\c!letter,\c!kleur,\c!kopkleur,
-      \c!breedte,\c!hang,\c!monster,\c!voor,\c!tussen,\c!na,\c!marge,
-      \c!inspringen,\c!springvolgendein,\c!uitlijnen,
-      \c!tekst,\c!afstand,\c!commando]%
+     [\c!location,\c!headstyle,\c!style,\c!color,\c!headcolor,
+      \c!width,\c!hang,\c!sample,\c!before,\c!inbetween,\c!after,\c!margin,
+      \c!indenting,\c!indentnext,\c!align,
+      \c!text,\c!distance,\c!command]%
    \getparameters[\??dd#1]
-     [\s!do\c!status=\v!stop,
-      \s!do\c!commando=\normal@@definitiewoord,
+     [\s!do\c!state=\v!stop,
+      \s!do\c!command=\normal@@definitiewoord,
       #2]%
-   \doifvalue{\??dd#1\c!plaats}\v!boven
-     {\doassign[\??dd#1][\c!tussen={\blanko}]}%
+   \doifvalue{\??dd#1\c!location}\v!top
+     {\doassign[\??dd#1][\c!inbetween={\blank}]}%
    \setvalue{#1}%
      {\dodoubleempty\@@definitie[#1]}%
    \setvalue{\e!start#1}%
@@ -381,20 +390,20 @@
      {\@@stopdefinitie{#1}}}%
 
 \def\@@startdefinitie[#1][#2]%
-  {\doifelsevalue{\??dd#1\s!do\c!status}\v!start
+  {\doifelsevalue{\??dd#1\s!do\c!state}\v!start
      {\@@startsomedefinitie{#1}[#2]{}}
      {\dowithwargument{\@@startsomedefinitie{#1}[#2]}}}
 
 \def\@@definitie[#1][#2]%
-  {\doifelsevalue{\??dd#1\s!do\c!status}\v!start
+  {\doifelsevalue{\??dd#1\s!do\c!state}\v!start
      {\@@somedefinitie{#1}[#2]{}}
      {\dowithwargument{\@@somedefinitie{#1}[#2]}}}
 
-\def\doordefinieren%
-  {\dodoubleemptywithset\dodoordefinieren}
+\def\definedescription%
+  {\dodoubleemptywithset\dodefinedescription}
 
 \def\showdnpuretext#1%
-  {\strut\getvalue{\??dd#1\c!tekst}} % geen spatie
+  {\strut\getvalue{\??dd#1\c!text}} % geen spatie
 
 % \def\showdntext#1%
 %   {\doifelsevaluenothing{\??dd#1\c!tekst}
@@ -402,160 +411,102 @@
 %      {\strut\getvalue{\??dd#1\c!tekst}\fixedspace}}
 
 \def\showdntext#1%
-  {\doifelsevaluenothing{\??dd#1\c!tekst}
+  {\doifelsevaluenothing{\??dd#1\c!text}
      {\ignorespaces}
      {\strut
-      \getvalue{\??dd#1\c!tekst}%
+      \getvalue{\??dd#1\c!text}%
       \removeunwantedspaces\fixedspace}}
 
 % \def\showdnnummer#1%
 %   {\voorafgaandenummer
-%    \nummer[\getvalue{\??dd#1\??dd\c!nummer}]}
+%    \convertednumber[\getvalue{\??dd#1\??dd\c!nummer}]}
 
 \def\showdnnummer#1%
   {%\preparethenumber{\??dd#1}\voorafgaandenummer\preparednumber
    \preparednumber
-   \nummer[\getvalue{\??dd#1\??dd\c!nummer}]}
+   \convertednumber[\getvalue{\??dd#1\??dd\c!number}]}
 
 \def\showdnsubnummer#1%
   {\showdnnummer{#1}%
-   \getvalue{\??dd#1\c!scheider}%
-   \nummer[\v!sub\getvalue{\??dd#1\??dd\c!nummer}]}
+   \getvalue{\??dd#1\c!separator}%
+   \convertednumber[\v!sub\getvalue{\??dd#1\??dd\c!number}]}
 
 \def\showdnsubsubnummer#1%
   {\showdnsubnummer{#1}%
-   \getvalue{\??dd#1\c!scheider}%
-   \nummer[\v!sub\v!sub\getvalue{\??dd#1\??dd\c!nummer}]}
+   \getvalue{\??dd#1\c!separator}%
+   \convertednumber[\v!sub\v!sub\getvalue{\??dd#1\??dd\c!number}]}
 
 \def\showdnsubsubsubnummer#1%
   {\showdnsubsubnummer{#1}%
-   \getvalue{\??dd#1\c!scheider}%
-   \nummer[\v!sub\v!sub\v!sub\getvalue{\??dd#1\??dd\c!nummer}]}
+   \getvalue{\??dd#1\c!separator}%
+   \convertednumber[\v!sub\v!sub\v!sub\getvalue{\??dd#1\??dd\c!number}]}
 
 \def\domakednnummer#1#2#3%
-  {\getvalue{\??dd#2#1\c!links}%
+  {\getvalue{\??dd#2#1\c!left}%
    \strut#3{#1}%
-   \getvalue{\??dd#2#1\c!afsluiter}%
-   \getvalue{\??dd#2#1\c!rechts}}
+   \getvalue{\??dd#2#1\c!stopper}%
+   \getvalue{\??dd#2#1\c!right}}
 
 % #1=name  #2=level #3=\show  #4[#5]#6#7=#1[#2]#3#4 van definitie
 
-% \def\special@@definitiewoord#1#2#3#4[#5]#6#7%
-%   {\strut
-%    \doifelsevalue{\??dd#1\c!nummer}\v!nee
-%      \!!doneafalse
-%      {\doifelse{#5}{-}
-%         \!!doneafalse
-%         \!!doneatrue}%
-%    \chardef\definitiekoppeling\zerocount
-%    \iflocation
-%      \doifvaluesomething{\??dd#1\c!koppeling}
-%        {\processaction % genereert > of <
-%           [\getvalue{\??dd#1\c!koppelwijze}]
-%           [ \v!lokaal=>\chardef\definitiekoppeling1, % old: default
-%            \v!globaal=>\chardef\definitiekoppeling2]}% new: global crosslinking
-%    \fi
-%    \stelnummerin % the number is called indirectly
-%      [\getvalue{\??dd#1\??dd\c!nummer}]
-%      [\c!sectienummer=\getvalue{\??dd#1\c!sectienummer}]%
-%    \if!!donea
-%      \getvalue{\e!volgende#2#1}%
-%      \iflocation
-%        \bgroup
-%        \letvalue{\??dd#1\c!sectienummer}\v!ja
-%        \protectconversion
-%        \maakvoorafgaandenummer[\getvalue{\??dd#1\??dd\c!nummer}]%
-%        \preparethenumber{\??dd#1}\voorafgaandenummer\preparednumber
-%        \ifcase\definitiekoppeling \or
-%          \xdef\internaldoornummer{#3{#1}}%
-%          \rawreference\s!num{#1:\internaldoornummer}{}%
-%        \or
-%          \xdef\internaldoornummer{\countervalue{\??dd\c!koppeling#1}}%
-%          \rawreference\s!num{#1:\internaldoornummer}{}%
-%        \fi
-%        \egroup
-%      \fi
-%      \maakvoorafgaandenummer[\getvalue{\??dd#1\??dd\c!nummer}]%
-%      \preparethenumber{\??dd#1}\voorafgaandenummer\preparednumber
-%      \hbox
-%        {\let\normalkap\relax % sorry, uppercase causes troubles
-%         \doattributes        % \nocase primitive needed
-%           {\??dd#2#1}\c!kopletter\c!kopkleur
-%           {\getvalue{\??dd#1\c!commando}% hook for taco
-%              {\showdntext{#2#1}%
-%               \domakednnummer{#1}{#2}{#3}}}%
-%         \iflocation\ifcase\definitiekoppeling \else
-%           \edef\localconnection{\getvalue{\??dd#1\c!koppeling}:\internaldoornummer}%
-%           \doifreferencefoundelse\localconnection
-% %             {\in[\localconnection]}{}% genereert > of <
-%         \fi\fi}%
-%      \doifnot{#5}{-}{\rawreference\s!num{#5}{#3{#1}}}%
-%    \else % Why was this strange expansion needed?
-%      \hbox
-%        {\edef\!!stringa{\showdnpuretext{#2#1}}% nog eens testen binnen \expanded
-%         \expanded{\doattributes{\??dd#1}\noexpand\c!kopletter\noexpand\c!kopkleur
-%           {\noexpand\getvalue{\??dd#1\c!commando}{\!!stringa}}}%
-%         \doifnot{#5}{-}{\rawreference\s!num{#5}{}}}%
-%    \fi}
-
 \def\special@@definitiewoord#1#2#3#4[#5]#6#7%
   {\strut
-   \doifelsevalue{\??dd#1\c!nummer}\v!nee
+   \doifelsevalue{\??dd#1\c!number}\v!no
      \!!doneafalse{\doifelse{#5}{-}\!!doneafalse\!!doneatrue}%
    \chardef\definitiekoppeling\zerocount
    \iflocation
-     \doifvaluesomething{\??dd#1\c!koppeling}
+     \doifvaluesomething{\??dd#1\c!coupling}
        {\processaction % genereert > of <
-          [\getvalue{\??dd#1\c!koppelwijze}]
-          [ \v!lokaal=>\chardef\definitiekoppeling1, % old: default
-           \v!globaal=>\chardef\definitiekoppeling2]}% new: global crosslinking
+          [\getvalue{\??dd#1\c!couplingway}]
+          [ \v!local=>\chardef\definitiekoppeling1, % old: default
+           \v!global=>\chardef\definitiekoppeling2]}% new: global crosslinking
    \fi
-   \stelnummerin % the number is called indirectly
-     [\getvalue{\??dd#1\??dd\c!nummer}]
-     [\c!sectienummer=\getvalue{\??dd#1\c!sectienummer}]%
+   \setupnumber % the number is called indirectly
+     [\getvalue{\??dd#1\??dd\c!number}]
+     [\c!sectionnumber=\getvalue{\??dd#1\c!sectionnumber}]%
    \if!!donea
 \iftrialtypesetting\startlocal\fi
-     \getvalue{\e!volgende#2#1}% tricky but we need the preroll
+     \getvalue{\e!next#2#1}% tricky but we need the preroll
 \iftrialtypesetting\stoplocal\fi
-     % \getvalue{\e!volgende#2#1}%
+     % \getvalue{\e!next#2#1}%
      \iflocation
        \bgroup
-       \letvalue{\??dd#1\c!sectienummer}\v!ja
+       \letvalue{\??dd#1\c!sectionnumber}\v!yes
        \protectconversion
-       \maakvoorafgaandenummer[\getvalue{\??dd#1\??dd\c!nummer}]%
+       \maakvoorafgaandenummer[\getvalue{\??dd#1\??dd\c!number}]%
        \preparethenumber{\??dd#1}\voorafgaandenummer\preparednumber
        \ifcase\definitiekoppeling \or
          \xdef\internaldoornummer{#3{#1}}%
          \rawreference\s!num{#1:\internaldoornummer}{}%
        \or
-         \xdef\internaldoornummer{\countervalue{\??dd\c!koppeling#1}}%
+         \xdef\internaldoornummer{\countervalue{\??dd\c!coupling#1}}%
          \rawreference\s!num{#1:\internaldoornummer}{}%
        \fi
        \egroup
      \fi
-     \maakvoorafgaandenummer[\getvalue{\??dd#1\??dd\c!nummer}]%
+     \maakvoorafgaandenummer[\getvalue{\??dd#1\??dd\c!number}]%
      \preparethenumber{\??dd#1}\voorafgaandenummer\preparednumber
-     \let\normalkap\relax % sorry, uppercase causes troubles
+     \disablepseudocaps      % sorry, uppercase causes troubles
      \doattributes        % \nocase primitive needed
-       {\??dd#1}\c!kopletter\c!kopkleur
-       {\getvalue{\??dd#1\c!commando}% hook for taco
+       {\??dd#1}\c!headstyle\c!headcolor
+       {\getvalue{\??dd#1\c!command}% hook for taco
           {\showdntext{#2#1}%
            \domakednnummer{#1}{#2}{#3}}}%
      \iflocation\ifcase\definitiekoppeling \else
-       \edef\localconnection{\getvalue{\??dd#1\c!koppeling}:\internaldoornummer}%
+       \edef\localconnection{\getvalue{\??dd#1\c!coupling}:\internaldoornummer}%
        \doifreferencefoundelse\localconnection
          {\in[\localconnection]}\donothing % genereert > of <
      \fi\fi
      \doifnot{#5}{-}{\rawreference\s!num{#5}{#3{#1}}}%
    \else % Why was this strange expansion needed?
      \edef\!!stringa{\showdnpuretext{#2#1}}% nog eens testen binnen \expanded
-     \expanded{\doattributes{\??dd#1}\noexpand\c!kopletter\noexpand\c!kopkleur
-       {\noexpand\getvalue{\??dd#1\c!commando}{\!!stringa}}}%
+     \expanded{\doattributes{\??dd#1}\noexpand\c!headstyle\noexpand\c!headcolor
+       {\noexpand\getvalue{\??dd#1\c!command}{\!!stringa}}}%
      \doifnot{#5}{-}{\rawreference\s!num{#5}{}}%
    \fi}
 
 \def\@@ddsetsubsubsubnummer#1%
-  {\edef\doornummer{\getvalue{\??dd#1\??dd\c!nummer}}%
+  {\edef\doornummer{\getvalue{\??dd#1\??dd\c!number}}%
    \setnumber[\v!sub\v!sub\v!sub\doornummer]}
 
 \def\@@ddsetsubsubnummer#1%
@@ -571,7 +522,7 @@
    \setnumber[\doornummer]}
 
 \def\@@ddresetsubsubsubnummer#1%
-  {\edef\doornummer{\getvalue{\??dd#1\??dd\c!nummer}}%
+  {\edef\doornummer{\getvalue{\??dd#1\??dd\c!number}}%
    \resetnumber[\v!sub\v!sub\v!sub\doornummer]}
 
 \def\@@ddresetsubsubnummer#1%
@@ -582,181 +533,178 @@
   {\@@ddresetsubsubnummer{#1}%
    \resetnumber[\v!sub\doornummer]}
 
-\def\@@ddresetnummer#1%
+\def\@@ddresetnumber#1%
   {\@@ddresetsubnummer{#1}%
    \resetnumber[\doornummer]}
 
 \def\@@ddvolgendesubsubsubnummer#1[#2]%
-  {\edef\doornummer{\getvalue{\??dd#1\??dd\c!nummer}}%
-   \verhoognummer[\v!sub\v!sub\v!sub\doornummer]%
+  {\edef\doornummer{\getvalue{\??dd#1\??dd\c!number}}%
+   \incrementnumber[\v!sub\v!sub\v!sub\doornummer]%
    \rawreference\s!num{#2}{\showdnsubsubsubnummer{\doornummer}}}%
 
 \def\@@ddvolgendesubsubnummer#1[#2]%
   {\@@ddresetsubsubsubnummer{#1}%
-   \verhoognummer[\v!sub\v!sub\doornummer]%
+   \incrementnumber[\v!sub\v!sub\doornummer]%
    \rawreference\s!num{#2}{\showdnsubsubnummer{\doornummer}}}
 
 \def\@@ddvolgendesubnummer#1[#2]%
   {\@@ddresetsubsubnummer{#1}%
-   \verhoognummer[\v!sub\doornummer]%
+   \incrementnumber[\v!sub\doornummer]%
    \rawreference\s!num{#2}{\showdnsubnummer{\doornummer}}}
 
 \def\@@ddvolgendenummer#1[#2]%
   {\@@ddresetsubnummer{#1}%
-   \verhoognummer[\doornummer]%
+   \incrementnumber[\doornummer]%
    \rawreference\s!num{#2}{\showdnnummer{\doornummer}}}
 
-\def\dodosteldoornummerenin[#1][#2]%
+\def\dodosetupenumerations[#1][#2]%
   {\getparameters[\??dd#1][#2]%
    \doifdefined{\??dd#1\c!start}
-     {\stelnummerin[#1][\c!start=\getvalue{\??dd#1\c!start}]}%
-   \stelnummerin[#1][\c!conversie=\getvalue{\??dd#1\c!conversie}]}
+     {\setupnumber[#1][\c!start=\getvalue{\??dd#1\c!start}]}%
+   \setupnumber[#1][\c!conversion=\getvalue{\??dd#1\c!conversion}]}
 
-\def\dosteldoornummerenin[#1][#2]%
+\def\dosetupenumerations[#1][#2]%
   {\ConvertToConstant\doifelse{#2}{}
      {\getparameters[\??dn][#1]}
-     {\dodoubleargumentwithset\dodosteldoornummerenin[#1][#2]}}
+     {\dodoubleargumentwithset\dodosetupenumerations[#1][#2]}}
 
-\def\steldoornummerenin%
-  {\dodoubleempty\dosteldoornummerenin}
+\def\setupenumerations%
+  {\dodoubleempty\dosetupenumerations}
 
-\def\dododoornummeren#1#2#3[#4][#5]#6%
-  {\makecounter{\??dd\c!koppeling#1}% new: global cross linking
-   \dodoordefinieren[#3#1]%
-     [\s!do\c!status=\v!start,
-      \s!do\c!commando=\special@@definitiewoord{#1}{#3}{#6}]%
+\def\dododefineenumeration#1#2#3[#4][#5]#6%
+  {\makecounter{\??dd\c!coupling#1}% new: global cross linking
+   \dodefinedescription[#3#1]%
+     [\s!do\c!state=\v!start,
+      \s!do\c!command=\special@@definitiewoord{#1}{#3}{#6}]%
    \copyparameters[\??dd#3#1][\??dn]
-     [\c!plaats,\c!kopletter,\c!letter,\c!kleur,\c!kopkleur,
-      \c!breedte,\c!nummer,\c!afstand,\c!commando,
-      \c!monster,\c!hang,\c!uitlijnen,\c!voor,\c!tussen,\c!na,
-      \c!niveaus,\c!wijze,\c!blokwijze,\c!scheider,\c!marge,
-      \c!inspringen,\c!springvolgendein,\c!afsluiter,\c!sectienummer,
-      \c!nummer]%
+     [\c!location,\c!headstyle,\c!style,\c!color,\c!headcolor,
+      \c!width,\c!number,\c!distance,\c!command,
+      \c!sample,\c!hang,\c!align,\c!before,\c!inbetween,\c!after,
+      \c!levels,\c!way,\c!blockway,\c!separator,\c!margin,
+      \c!indenting,\c!indentnext,\c!stopper,\c!sectionnumber,
+      \c!number]%
    \doifassignmentelse{#4}
      {\getparameters[\??dd#3#1]%
-        [\c!tekst=#1,\??dd\c!nummer=#1,\c!conversie=,
-         \c!links=,\c!rechts=,\c!koppeling=,\c!koppelwijze=\v!lokaal,#4]}%
+        [\c!text=#1,\??dd\c!number=#1,\c!conversion=,
+         \c!left=,\c!right=,\c!coupling=,\c!couplingway=\v!local,#4]}%
      {\doifelsenothing{#4}
         {\getparameters[\??dd#3#1]%
-           [\c!tekst=#1,\??dd\c!nummer=#1,\c!conversie=,
-            \c!afsluiter=,
-            \c!links=,\c!rechts=,\c!koppeling=,\c!koppelwijze=,#4]}%
+           [\c!text=#1,\??dd\c!number=#1,\c!conversion=,
+            \c!stopper=,
+            \c!left=,\c!right=,\c!coupling=,\c!couplingway=,#4]}%
         {\copyparameters[\??dd#3#1][\??dd#3#4]
-           [\c!plaats,\c!kopletter,\c!letter,\c!kleur,\c!kopkleur,
-            \c!breedte,\c!nummer,\c!afstand,\c!commando,\c!marge,
-            \c!monster,\c!hang,\c!uitlijnen,\c!voor,\c!tussen,\c!na,
-            \c!afsluiter,\c!inspringen,\c!springvolgendein,\c!links,\c!rechts,
-            \c!koppeling,\c!koppelwijze]%
+           [\c!location,\c!headstyle,\c!style,\c!color,\c!headcolor,
+            \c!width,\c!number,\c!distance,\c!command,\c!margin,
+            \c!sample,\c!hang,\c!align,\c!before,\c!inbetween,\c!after,
+            \c!stopper,\c!indenting,\c!indentnext,\c!left,\c!right,
+            \c!coupling,\c!couplingway]%
          \getparameters[\??dd#3#1]
-           [\c!tekst=#1,\??dd\c!nummer=#4,\c!conversie=,#5]}}%
-   \ExpandBothAfter\doif{\getvalue{\??dd#3#1\??dd\c!nummer}}{#1}
-     {\definieernummer
+           [\c!text=#1,\??dd\c!number=#4,\c!conversion=,#5]}}%
+   \ExpandBothAfter\doif{\getvalue{\??dd#3#1\??dd\c!number}}{#1}
+     {\definenumber
         [#3#1]
-        [\c!wijze=\getvalue{\??dd#1\c!wijze},
-         \c!blokwijze=\getvalue{\??dd#1\c!blokwijze},
-         \c!sectienummer=\getvalue{\??dd#1\c!sectienummer}]%
-      \doifvalue{\??dd#1\c!niveaus}{#2}%                           % for
-        {\doifsomething{\getvalue{\??dd#1\c!conversie}}%           % old
-           {\stelnummerin[#3#1]                                    % times
-              [\c!conversie=\getvalue{\??dd#1\c!conversie}]}}}%    % sake
+        [\c!way=\getvalue{\??dd#1\c!way},
+         \c!blockway=\getvalue{\??dd#1\c!blockway},
+         \c!sectionnumber=\getvalue{\??dd#1\c!sectionnumber}]%
+      \doifvalue{\??dd#1\c!levels}{#2}%                           % for
+        {\doifsomething{\getvalue{\??dd#1\c!conversion}}%           % old
+           {\setupnumber[#3#1]                                    % times
+              [\c!conversion=\getvalue{\??dd#1\c!conversion}]}}}%    % sake
    \setvalue{\s!set#3#1}%
      {\dosetdoornummer[#1][#3]}%
    \setvalue{\s!reset#3#1}%
      {\doresetdoornummer[#1][#3]}%
-   \setvalue{\e!volgende#3#1}%
+   \setvalue{\e!next#3#1}%
      {\dotripleempty\dovolgendedoornummer[#1][#3]}}
 
 \def\dovolgendedoornummer[#1][#2]%
-  {\pluscounter{\??dd\c!koppeling#1}% new: global crosslinking
-   \getvalue{\??dd\c!volgende#2\c!nummer}{#1}}%
+  {\pluscounter{\??dd\c!coupling#1}% new: global crosslinking
+   \getvalue{\??dd\c!next#2\c!number}{#1}}%
 
 \def\doresetdoornummer[#1][#2]%
-  {\getvalue{\??dd\s!reset#2\c!nummer}{#1}}%
+  {\getvalue{\??dd\s!reset#2\c!number}{#1}}%
 
 \def\dosetdoornummer[#1][#2]%
-  {\getvalue{\??dd\s!set#2\c!nummer}{#1}}%
+  {\getvalue{\??dd\s!set#2\c!number}{#1}}%
 
-\def\dodoornummeren[#1][#2][#3]%
-  {\dododoornummeren{#1}{1}{}[#2][#3]\showdnnummer
-   \dododoornummeren{#1}{2}{\v!sub}[#2][#3]\showdnsubnummer
-   \dododoornummeren{#1}{3}{\v!sub\v!sub}[#2][#3]\showdnsubsubnummer
-   \dododoornummeren{#1}{4}{\v!sub\v!sub\v!sub}[#2][#3]\showdnsubsubsubnummer}
+\def\dodefineenumeration[#1][#2][#3]%
+  {\dododefineenumeration{#1}{1}{}[#2][#3]\showdnnummer
+   \dododefineenumeration{#1}{2}{\v!sub}[#2][#3]\showdnsubnummer
+   \dododefineenumeration{#1}{3}{\v!sub\v!sub}[#2][#3]\showdnsubsubnummer
+   \dododefineenumeration{#1}{4}{\v!sub\v!sub\v!sub}[#2][#3]\showdnsubsubsubnummer}
 
-\def\doornummeren%
-  {\dotripleemptywithset\dodoornummeren}
+\def\defineenumeration%
+  {\dotripleemptywithset\dodefineenumeration}
 
 %  Het default-mechanisme kan mooier: leegtest, enz.
 %
 %  Werkprocedure buiten definitie
 
-\def\dodosteldoorspringenin[#1][#2]%
+\def\dodosetupindentations[#1][#2]%
   {\getparameters[\??ds#1][#2]}
 
-\def\dosteldoorspringenin[#1][#2]%
+\def\dosetupindentations[#1][#2]%
   {\ConvertToConstant\doifelse{#2}{}
-     {\dodosteldoorspringenin[][#1]}
-     {\dodoubleargumentwithset\dodosteldoorspringenin[#1][#2]}}
+     {\dodosetupindentations[][#1]}
+     {\dodoubleargumentwithset\dodosetupindentations[#1][#2]}}
 
-\def\steldoorspringenin
-  {\dodoubleempty\dosteldoorspringenin}
+\def\setupindentations
+  {\dodoubleempty\dosetupindentations}
 
 \def\startdoorspringen
-  {\witruimte
-   \@@dsvoor
-   \dosomebreak{\goodbreak}% \pagina[\v!voorkeur]
+  {\whitespace
+   \@@dsbefore
+   \dosomebreak{\goodbreak}% \page[\v!preference]
    \begingroup
    \parskip\zeropoint\relax}
 
 \def\stopdoorspringen
   {\endgroup
-   \@@dsna}
+   \@@dsafter}
 
-\def\dododoorspringen#1#2#3%
+\def\dododefineindenting#1#2#3%
   {\par
-   \getvalue{\??ds#1\c!voor}%
+   \getvalue{\??ds#1\c!before}%
    \begingroup
-   \doifvaluenothing{\??ds#1\c!monster}
-     {\setvalue{\??ds#1\c!monster}%
-        {\getvalue{\??ds#1\c!tekst}}}%
+   \doifvaluenothing{\??ds#1\c!sample}
+     {\setvalue{\??ds#1\c!sample}%
+        {\getvalue{\??ds#1\c!text}}}%
    \assignwidth
      {\!!widtha}
-     {\getvalue{\??ds#1\c!breedte}}
+     {\getvalue{\??ds#1\c!width}}
      {\doattributes
-        {\??ds#1}\c!kopletter\c!kopkleur
-        {\getvalue{\??ds#1\c!monster}\getvalue{\??ds#1\c!scheider}}}
-     {\getvalue{\??ds#1\c!afstand}}%
-   \advance\!!widtha \getvalue{\??ds#1\c!afstand}%
+        {\??ds#1}\c!headstyle\c!headcolor
+        {\getvalue{\??ds#1\c!sample}\getvalue{\??ds#1\c!separator}}}
+     {\getvalue{\??ds#1\c!distance}}%
+   \advance\!!widtha \getvalue{\??ds#1\c!distance}%
    \setbox2\hbox to \!!widtha
      {\doattributes
-        {\??ds#1}\c!kopletter\c!kopkleur
+        {\??ds#1}\c!headstyle\c!headcolor
         {\strut
-         \getvalue{\??ds#1\c!tekst}%
+         \getvalue{\??ds#1\c!text}%
          \hss
-         \getvalue{\??ds#1\c!scheider}%
-         \hskip\getvalue{\??ds#1\c!afstand}}}%
+         \getvalue{\??ds#1\c!separator}%
+         \hskip\getvalue{\??ds#1\c!distance}}}%
    \parindent\zeropoint
    \hskip#2\!!widtha\indent\box2%
    \hangindent#3\!!widtha
-   \doattributes{\??ds#1}\c!letter\c!kleur\empty
+   \doattributes{\??ds#1}\c!style\c!color\empty
    \AfterPar% must be redone
      {\endgroup
-      \getvalue{\??ds#1\c!na}}%
+      \getvalue{\??ds#1\c!after}}%
    \GetPar}
 
-\def\dodoorspringen[#1][#2]%
+\def\dodefineindenting[#1][#2]%
   {\copyparameters[\??ds#1][\??ds]
-      [\c!tekst,\c!scheider,\c!breedte,\c!letter,\c!kleur,
-       \c!kopletter,\c!monster,\c!voor,\c!na,\c!afstand]%
+      [\c!text,\c!separator,\c!width,\c!style,\c!color,
+       \c!headstyle,\c!sample,\c!before,\c!after,\c!distance]%
    \getparameters[\??ds#1][#2]%
-   \setvalue{#1}%
-     {\dododoorspringen{#1}{0}{1}}%
-   \setvalue{\v!sub#1}%
-     {\dododoorspringen{#1}{1}{2}}%
-   \setvalue{\v!sub\v!sub#1}%
-     {\dododoorspringen{#1}{2}{3}}}
+   \setvalue            {#1}{\dododefineindenting{#1}{0}{1}}%
+   \setvalue      {\v!sub#1}{\dododefineindenting{#1}{1}{2}}%
+   \setvalue{\v!sub\v!sub#1}{\dododefineindenting{#1}{2}{3}}}
 
-\def\doorspringen%
-  {\dodoubleargumentwithset\dodoorspringen}
+\def\defineindenting%
+  {\dodoubleargumentwithset\dodefineindenting}
 
 % \def\dodoorlabel[#1][#2]%
 %   {\getvalue{\s!number#1\c!voor}%
@@ -769,113 +717,113 @@
 %    \getvalue{\s!number#1\c!na}}%
 %
 % \def\dovolgendedoorlabel[#1][#2]%
-%   {\volgendenummer[#1][\s!lab][#2]}
+%   {\nextnumber[#1][\s!lab][#2]}
 %
 % \def\dodoorlabelen[#1][#2]%
-%   {\definieernummer
+%   {\definenumber
 %      [#1][\c!voor=,\c!na=,\c!kopletter=,\c!wijze=\@@nrwijze,#2]%
 %    \setvalue           {#1}{\dodoubleempty\dodoorlabel[#1]}%
 %    \setvalue{\s!reset   #1}{\resetnumber[#1]}%
-%    \setvalue{\e!verhoog #1}{\verhoognummer[#1]}%
+%    \setvalue{\e!verhoog #1}{\incrementnumber[#1]}%
 %    \setvalue{\e!volgende#1}{\dodoubleempty\dovolgendedoorlabel[#1]}%
-%    \setvalue{\c!huidige #1}{\huidigenummer[#1]}}
+%    \setvalue{\c!huidige #1}{\currentnumber[#1]}}
 %
 % \def\doorlabelen%
 %   {\dodoubleargumentwithset\dodoorlabelen}
 
 \def\dodoorlabel[#1][#2]%
-  {\getvalue{\??lb#1\c!voor}%
-   \getvalue{\??lb#1\c!commando}%
-     {\doattributes{\??lb#1}\c!kopletter\c!kopkleur
-        {\dotextprefix{\getvalue{\??lb#1\c!tekst}}%
-         \getvalue{\e!volgende#1}[#2]}}%
-   \getvalue{\??lb#1\c!na}}%
+  {\getvalue{\??lb#1\c!before}%
+   \getvalue{\??lb#1\c!command}%
+     {\doattributes{\??lb#1}\c!headstyle\c!headcolor
+        {\dotextprefix{\getvalue{\??lb#1\c!text}}%
+         \getvalue{\e!next#1}[#2]}}%
+   \getvalue{\??lb#1\c!after}}%
 
 \def\dovolgendedoorlabel[#1][#2]%
-  {\volgendenummer[#1][\s!lab][#2]}
+  {\nextnumber[#1][\s!lab][#2]}
 
-\def\dodoorlabelen[#1][#2]%
+\def\dodefinelabel[#1][#2]%
   {\getparameters
      [\??lb#1]
-     [\c!wijze=\@@nrwijze,\c!commando=,\c!plaats=,#2]%
+     [\c!way=\@@nrway,\c!command=,\c!location=,#2]%
    % downward compatible
    \processaction
-     [\getvalue{\??lb#1\c!plaats}]
-     [  \v!inmarge=>\setvalue{\??lb#1\c!commando}{\inmarge  },
-       \v!inlinker=>\setvalue{\??lb#1\c!commando}{\inlinker },
-      \v!inrechter=>\setvalue{\??lb#1\c!commando}{\inrechter},
-          \v!marge=>\setvalue{\??lb#1\c!commando}{\inmarge  }]%
+     [\getvalue{\??lb#1\c!location}]
+     [  \v!inmargin=>\setvalue{\??lb#1\c!command}{\inmargin},
+       \v!inleft=>\setvalue{\??lb#1\c!command}{\inleft  },
+      \v!inright=>\setvalue{\??lb#1\c!command}{\inright },
+          \v!margin=>\setvalue{\??lb#1\c!command}{\inmargin}]%
    % inefficient, we need to redesign this command
-   \definieernummer
+   \definenumber
      [#1]
-     [\c!wijze=\getvalue{\??lb#1\c!wijze}]%
+     [\c!way=\getvalue{\??lb#1\c!way}]%
    % generated commands
    \setvalue           {#1}{\dodoubleempty\dodoorlabel[#1]}%
    \setvalue{\s!reset   #1}{\resetnumber[#1]}%
-   \setvalue{\e!verhoog #1}{\verhoognummer[#1]}%
-   \setvalue{\e!volgende#1}{\dodoubleempty\dovolgendedoorlabel[#1]}%
-   \setvalue{\c!huidige #1}{\huidigenummer[#1]}}
+   \setvalue{\e!increment #1}{\incrementnumber[#1]}%
+   \setvalue{\e!next#1}{\dodoubleempty\dovolgendedoorlabel[#1]}%
+   \setvalue{\c!current #1}{\currentnumber[#1]}}
 
-\def\doorlabelen
-  {\dodoubleargumentwithset\dodoorlabelen}
+\def\definelabel
+  {\dodoubleargumentwithset\dodefinelabel}
 
-\steldoordefinierenin
-  [\c!plaats=\v!links,
-   \c!kopletter=\v!vet,
-   \c!letter=\v!normaal,
-   \c!kleur=,
-   \c!kopkleur=,
-   \c!breedte=8em,
-   \c!afstand=0pt,
+\setupdescriptions
+  [\c!location=\v!left,
+   \c!headstyle=\v!bold,
+   \c!style=\v!normal,
+   \c!color=,
+   \c!headcolor=,
+   \c!width=8em,
+   \c!distance=0pt,
    \c!hang=,
-   \c!monster=,
-   \c!uitlijnen=,
-   \c!marge=\v!nee,
-   \c!voor=\blanko,
-   \c!tussen=\blanko,
-   \c!na=\blanko,
-   \c!springvolgendein=\v!ja,
-   \c!inspringen=\v!nooit,
-   \c!commando=]
+   \c!sample=,
+   \c!align=,
+   \c!margin=\v!no,
+   \c!before=\blank,
+   \c!inbetween=\blank,
+   \c!after=\blank,
+   \c!indentnext=\v!yes,
+   \c!indenting=\v!never,
+   \c!command=]
 
-\steldoornummerenin
-  [\c!plaats=\v!boven,
-   \c!kopletter=\v!vet,
-   \c!kopkleur=,
-   \c!letter=\v!normaal,
-   \c!kleur=,
-   \c!breedte=8em,
-   \c!afstand=0pt,
+\setupenumerations
+  [\c!location=\v!top,
+   \c!headstyle=\v!bold,
+   \c!headcolor=,
+   \c!style=\v!normal,
+   \c!color=,
+   \c!width=8em,
+   \c!distance=0pt,
    \c!hang=,
-   \c!monster=,
-   \c!uitlijnen=,
-   \c!marge=\v!nee,
-   \c!voor=\blanko,
-   \c!tussen=\blanko,
-   \c!na=\blanko,
-   \c!springvolgendein=\v!ja,
-   \c!inspringen=\v!nooit,
-   \c!tekst=,
-   \c!niveaus=3,                % to be upward compatible
-   \c!conversie=,               % to be upward compatible
-   \c!wijze=\v!per\v!tekst,
-   \c!sectienummer=\v!ja,
-   \c!scheider=.,
-   \c!afsluiter=,
-   \c!nummer=,
-   \c!commando=]
+   \c!sample=,
+   \c!align=,
+   \c!margin=\v!no,
+   \c!before=\blank,
+   \c!inbetween=\blank,
+   \c!after=\blank,
+   \c!indentnext=\v!yes,
+   \c!indenting=\v!never,
+   \c!text=,
+   \c!levels=3,                % to be upward compatible
+   \c!conversion=,               % to be upward compatible
+   \c!way=\v!by\v!text,
+   \c!sectionnumber=\v!yes,
+   \c!separator=.,
+   \c!stopper=,
+   \c!number=,
+   \c!command=]
 
-\steldoorspringenin
-  [\c!letter=\v!normaal,
-   \c!kopletter=\v!normaal,
-   \c!kleur=,
-   \c!kopkleur=,
-   \c!breedte=\v!passend,
-   \c!tekst=\unknown,
-   \c!monster=,
-   \c!voor=\blanko,
-   \c!na=\blanko,
-   \c!afstand=1em,
-   \c!scheider={ :}]
+\setupindentations
+  [\c!style=\v!normal,
+   \c!headstyle=\v!normal,
+   \c!color=,
+   \c!headcolor=,
+   \c!width=\v!fit,
+   \c!text=\unknown,
+   \c!sample=,
+   \c!before=\blank,
+   \c!after=\blank,
+   \c!distance=1em,
+   \c!separator={ :}]
 
 \protect \endinput

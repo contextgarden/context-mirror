@@ -1,5 +1,5 @@
 %D \module
-%D   [       file=supp-mpe,
+%D   [       filefile=supp-mpe,
 %D        version=1999.07.10,
 %D          title=\CONTEXT\ Support Macros,
 %D       subtitle=METAPOST Special Extensions,
@@ -40,24 +40,24 @@
 %D specification of the speciality can have two forms,
 %D determined by the setting of a boolean variable:
 %D
-%D \starttypen
+%D \starttyping
 %D _inline_specials_ := false ; % comment like code (default)
 %D _inline_specials_ := true  ; % command like code
-%D \stoptypen
+%D \stoptyping
 %D
 %D When the specification is embedded as comment, it looks
 %D like:
 %D
-%D \starttypen
+%D \starttyping
 %D %%MetaPostSpecial <size> <data> <number> <identifier>
-%D \stoptypen
+%D \stoptyping
 %D
 %D The in||line alternative is more tuned for \POSTSCRIPT,
 %D since it permits us to define a macro \type {special}.
 %D
-%D \starttypen
+%D \starttyping
 %D inline  : <data> <number> <identifier> <size> special
-%D \stoptypen
+%D \stoptyping
 %D
 %D The \type {identifier} determines what to do, and the data
 %D can be used to accomplish this. A type~2 shading function
@@ -68,15 +68,15 @@
 
 %D data:
 %D
-%D \starttypen
+%D \starttyping
 %D from to n inner_r g b x y        outer_r g b x y
 %D from to n inner_r g b x y radius outer_r g b x y radius
-%D \stoptypen
+%D \stoptyping
 %D
 %D The implementation below saves the data on the stack in
 %D a way similar to the macros in \type {supp-pdf.tex}, and
 %D just overload a few already defined handlers. That way,
-%D the existing macros are still generic. \voetnoot {Actually,
+%D the existing macros are still generic. \footnote {Actually,
 %D the macros here are just as generic.}
 %D
 %D Currently the only extension concerns shading, which is
@@ -250,7 +250,7 @@
 
 %D The naive case looks like:
 %D
-%D \starttypen
+%D \starttyping
 %D \def\handleMPrgbcolor%
 %D   {\setMPcolor
 %D    \ifcase\MPspecialversion
@@ -260,7 +260,7 @@
 %D    \else
 %D      \resetMPcolor\normalhandleMPrgbcolor
 %D    \fi\fi}
-%D \stoptypen
+%D \stoptyping
 %D
 %D However, since we want \CMYK\ support, we will use the
 %D following implementation:
@@ -430,7 +430,7 @@
 %D
 %D \typebuffer
 %D
-%D \haalbuffer
+%D \getbuffer
 %D
 %D These graphics can be hooked into the overlay mechanism,
 %D which is available in many commands.
@@ -443,25 +443,25 @@
 %D
 %D \typebuffer
 %D
-%D \haalbuffer
+%D \getbuffer
 %D
 %D These backgrounds can for instance be applied to \type
 %D {\framed}:
 %D
 %D \startbuffer
-%D \setupframed[breedte=3cm,hoogte=2cm,kader=uit]
-%D \startcombinatie[3*1]
-%D   {\framed[achtergrond=demo 1]{\bfd \white Demo 1}} {}
-%D   {\framed[achtergrond=demo 2]{\bfd \white Demo 2}} {}
-%D   {\framed[achtergrond=demo 3]{\bfd \white Demo 3}} {}
-%D \stopcombinatie
+%D \setupframed[width=3cm,height=2cm,frame=off]
+%D \startcombination[3*1]
+%D   {\framed[backgroundachtergrond=demo 1]{\bfd \white Demo 1}} {}
+%D   {\framed[backgroundachtergrond=demo 2]{\bfd \white Demo 2}} {}
+%D   {\framed[backgroundachtergrond=demo 3]{\bfd \white Demo 3}} {}
+%D \stopcombination
 %D \stopbuffer
 %D
 %D \typebuffer
 %D
-%D \startregelcorrectie
-%D \haalbuffer
-%D \stopregelcorrectie
+%D \startlinecorrection
+%D \getbuffer
+%D \stoplinecorrection
 %D
 %D There are a few more alternatives, determined by the second
 %D parameter passed to \type {circular_shade} and alike.
@@ -474,40 +474,40 @@
 %D      #2_shade(p,#3,#4,#5) ;
 %D    \stopuniqueMPgraphic
 %D    \defineoverlay[Shade-#1][\uniqueMPgraphic{Shade-#1}]%
-%D    \framed[achtergrond=Shade-#1,breedte=2cm,hoogte=2cm,kader=uit]{}}
+%D    \framed[backgroundachtergrond=Shade-#1,width=2cm,height=2cm,frame=off]{}}
 %D
-%D \startregelcorrectie
-%D \startcombinatie[5*1]
+%D \startlinecorrection
+%D \startcombination[5*1]
 %D   {\SomeShade{10}{circular}{0}{.3blue}{.9blue}} {circular 0}
 %D   {\SomeShade{11}{circular}{1}{.3blue}{.9blue}} {circular 1}
 %D   {\SomeShade{12}{circular}{2}{.3blue}{.9blue}} {circular 2}
 %D   {\SomeShade{13}{circular}{3}{.3blue}{.9blue}} {circular 3}
 %D   {\SomeShade{14}{circular}{4}{.3blue}{.9blue}} {circular 4}
-%D \stopcombinatie
-%D \stopregelcorrectie
+%D \stopcombination
+%D \stoplinecorrection
 %D
-%D \blanko
+%D \blank
 %D
-%D \startregelcorrectie
-%D \startcombinatie[5*1]
+%D \startlinecorrection
+%D \startcombination[5*1]
 %D   {\SomeShade{20}{circular}{0}{.9green}{.3green}} {circular 0}
 %D   {\SomeShade{21}{circular}{1}{.9green}{.3green}} {circular 1}
 %D   {\SomeShade{22}{circular}{2}{.9green}{.3green}} {circular 2}
 %D   {\SomeShade{23}{circular}{3}{.9green}{.3green}} {circular 3}
 %D   {\SomeShade{24}{circular}{4}{.9green}{.3green}} {circular 4}
-%D \stopcombinatie
-%D \stopregelcorrectie
+%D \stopcombination
+%D \stoplinecorrection
 %D
-%D \blanko
+%D \blank
 %D
-%D \startregelcorrectie
-%D \startcombinatie[4*1]
+%D \startlinecorrection
+%D \startcombination[4*1]
 %D   {\SomeShade{30}{linear}{0}{.3red}{.9red}} {linear 0}
 %D   {\SomeShade{31}{linear}{1}{.3red}{.9red}} {linear 1}
 %D   {\SomeShade{32}{linear}{2}{.3red}{.9red}} {linear 2}
 %D   {\SomeShade{33}{linear}{3}{.3red}{.9red}} {linear 3}
-%D \stopcombinatie
-%D \stopregelcorrectie
+%D \stopcombination
+%D \stoplinecorrection
 %D
 %D These macros closely cooperate with the \METAPOST\ module
 %D \type {mp-spec.mp}, which is part of the \CONTEXT\
@@ -519,12 +519,12 @@
 %D earlier. In \PDF\ type~2 and~3 shading functions are
 %D specified in terms of:
 %D
-%D \starttabulatie[|Tl|l|]
+%D \starttabulate[|Tl|l|]
 %D \NC /Domain \NC sort of meeting range \NC \NR
 %D \NC /C0     \NC inner shade \NC \NR
 %D \NC /C1     \NC outer shade \NC \NR
 %D \NC /N      \NC smaller values, bigger inner circles \NC \NR
-%D \stoptabulatie
+%D \stoptabulate
 
 \newcount\currentPDFshade  % 0  % global (document wide) counter
 \let\currentMPshades\empty
@@ -751,7 +751,7 @@
 %D An example of using both special features is the
 %D following.
 %D
-%D \starttypen
+%D \starttyping
 %D \startMPpage
 %D   externalfigure "hakker1b.png" scaled 22cm rotated  10 shifted (-2cm,0cm);
 %D   externalfigure "hakker1b.png" scaled 10cm rotated -10 ;
@@ -764,7 +764,7 @@
 %D   circular_shade(s,0,.2red,.9red) ;
 %D   addto currentpicture also c ;
 %D \stopMPpage
-%D \stoptypen
+%D \stoptyping
 
 %D This is some experimental hyperlink driver that I wrote
 %D for Mark Wicks.
@@ -809,29 +809,29 @@
 %D \stopbuffer
 %D
 %D \startbuffer[cmyk]
-%D \startcombinatie[4*1]
+%D \startcombination[4*1]
 %D   {\definecolor[test][c=1,y=.3,k=.3] \processMPbuffer[mp]} {c=1 y=.3 k=.3}
 %D   {\definecolor[test][c=.9,y=.15]    \processMPbuffer[mp]} {c=.9 y=.15}
 %D   {\definecolor[test][c=.25,y=.8]    \processMPbuffer[mp]} {c=.25 y=.8}
 %D   {\definecolor[test][c=.45,y=.1]    \processMPbuffer[mp]} {c=.45 y=.1}
-%D \stopcombinatie
+%D \stopcombination
 %D \stopbuffer
 %D
-%D \plaatsfiguur
+%D \placefigure
 %D   {\CMYK\ support disabled,
 %D    conversion to \RGB.}
-%D   {\setupcolors[cmyk=nee,status=start]\haalbuffer[cmyk]}
+%D   {\setupcolors[cmyk=nee,state=start]\getbuffer[cmyk]}
 %D
-%D \plaatsfiguur
+%D \placefigure
 %D   {\CMYK\ support enabled,
 %D    no support in \METAPOST.}
-%D   {\setupcolors[cmyk=ja,mpcmyk=nee,status=start]\haalbuffer[cmyk]}
+%D   {\setupcolors[cmyk=ja,mpcmyk=nee,state=start]\getbuffer[cmyk]}
 %D
-%D \plaatsfiguur
+%D \placefigure
 %D   {\CMYK\ support enabled,
 %D    no conversion to \RGB,
 %D    support in \METAPOST}
-%D   {\setupcolors[cmyk=ja,status=start]\haalbuffer[cmyk]}
+%D   {\setupcolors[cmyk=ja,state=start]\getbuffer[cmyk]}
 
 \defineMPspecial{1}
   {\ifMPcmykcolors
@@ -920,16 +920,16 @@
 %D imagine situations where tex has to work with values
 %D calculated by \METAPOST.
 %D
-%D \startregelcorrectie
+%D \startlinecorrection
 %D \getbuffer
-%D \stopregelcorrectie
+%D \stoplinecorrection
 %D
 %D Later we will implement a more convenient macro:
 %D
-%D \starttypen
+%D \starttyping
 %D \setMPlayer [test] [somepos-1] {Whatever we want here!}
 %D \setMPlayer [test] [somepos-2] {Whatever we need there!}
-%D \stoptypen
+%D \stoptyping
 
 \ifx\dosavepositionwhd\undefined
   \let\dosavepositionwhd\gobblesevenarguments
@@ -965,7 +965,7 @@
 %D
 %D \typebuffer
 %D
-%D \startregelcorrectie \processMPbuffer \stopregelcorrectie
+%D \startlinecorrection \processMPbuffer \stoplinecorrection
 %D
 %D One can also communicate colors between \CONTEXT\ and
 %D \METAPOST:
@@ -986,7 +986,7 @@
 %D fill p rotated 330 withcolor \MPcolor{tyellow} ;
 %D \stopbuffer
 %D
-%D \startregelcorrectie \processMPbuffer \stopregelcorrectie
+%D \startlinecorrection \processMPbuffer \stoplinecorrection
 %D
 %D We save all the three components needed in one macro,
 %D just to save hash space.

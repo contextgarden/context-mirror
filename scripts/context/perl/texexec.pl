@@ -3,7 +3,7 @@ eval '(exit $?0)' && eval 'exec perl -w -S $0 ${1+"$@"}' && eval 'exec perl -w -
 
 #D \module
 #D   [       file=texexec.pl,
-#D        version=2003.09.16,
+#D        version=2004.08.29,
 #D          title=running \ConTeXt,
 #D       subtitle=\TEXEXEC,
 #D         author=Hans Hagen,
@@ -33,6 +33,7 @@ eval '(exit $?0)' && eval 'exec perl -w -S $0 ${1+"$@"}' && eval 'exec perl -w -
 #D everything. Well, the result is a messy script like this ... Sorry.
 
 use strict ;
+use warnings ;
 
 # todo: second run of checksum of mp file with --nomprun changes
 # todo: warning if no args
@@ -117,6 +118,7 @@ my $FinalMode        = 0;
 my $Format           = '';
 my $MpDoFormat       = '';
 my $HelpAsked        = 0;
+my $Version          = 0;
 my $MainBodyFont     = 'standard';
 my $MainLanguage     = 'standard';
 my $MainResponse     = 'standard';
@@ -184,7 +186,7 @@ my $Random           = 0;
 my $Filters          = '';
 my $NoMapFiles       = 0 ;
 my $Foxet            = 0 ;
-my $UseEnginePath    = 0 ;
+my $TheEnginePath    = 0 ;
 
 my $StartLine        = 0 ;
 my $StartColumn      = 0 ;
@@ -211,6 +213,7 @@ my $MakeMpy = '';
     "format=s"       => \$Format,
     "mpformat=s"     => \$MpDoFormat,
     "help"           => \$HelpAsked,
+    "version"        => \$Version,
     "interface=s"    => \$ConTeXtInterface,
     "language=s"     => \$MainLanguage,
     "bodyfont=s"     => \$MainBodyFont,
@@ -286,7 +289,7 @@ my $MakeMpy = '';
     "globalfile"     => \$GlobalFile,
     "nomapfiles"     => \$NoMapFiles,
     "foxet"          => \$Foxet,
-    "engine"         => \$UseEnginePath,
+    "engine"         => \$TheEnginePath,
     #### exxperiment
     "startline=s"    => \$StartLine,
     "startcolumn=s"  => \$StartColumn,
@@ -349,7 +352,7 @@ if ( ( $LogFile ne '' ) && ( $LogFile =~ /\w+\.log$/io ) ) {
     *STDERR = *LOGFILE;
 }
 
-my $Program = " TeXExec 4.4 - ConTeXt / PRAGMA ADE 1997-2004";
+my $Program = " TeXExec 5.0 - ConTeXt / PRAGMA ADE 1997-2004";
 
 print "\n$Program\n\n";
 
@@ -671,10 +674,10 @@ my $TeXScriptsPath    = IniValue( 'TeXScriptsPath',    '' );
 my $TeXHashExecutable = IniValue( 'TeXHashExecutable', '' );
 my $TeXExecutable     = IniValue( 'TeXExecutable',     'tex' );
 my $TeXVirginFlag     = IniValue( 'TeXVirginFlag',     '-ini' );
-my $TeXBatchFlag      = IniValue( 'TeXBatchFlag',      '-int=batchmode' );
-my $TeXNonStopFlag    = IniValue( 'TeXNonStopFlag',    '-int=nonstopmode' );
-my $MpBatchFlag       = IniValue( 'MpBatchFlag',       '-int=batchmode' );
-my $MpNonStopFlag     = IniValue( 'MpNonStopFlag',     '-int=nonstopmode' );
+my $TeXBatchFlag      = IniValue( 'TeXBatchFlag',      '-interaction=batchmode' );
+my $TeXNonStopFlag    = IniValue( 'TeXNonStopFlag',    '-interaction=nonstopmode' );
+my $MpBatchFlag       = IniValue( 'MpBatchFlag',       '-interaction=batchmode' );
+my $MpNonStopFlag     = IniValue( 'MpNonStopFlag',     '-interaction=nonstopmode' );
 my $TeXPassString     = IniValue( 'TeXPassString',     '' );
 my $TeXFormatFlag     = IniValue( 'TeXFormatFlag',     '' );
 my $MpFormatFlag      = IniValue( 'MpFormatFlag',      '' );
@@ -682,8 +685,7 @@ my $MpVirginFlag      = IniValue( 'MpVirginFlag',      '-ini' );
 my $MpPassString      = IniValue( 'MpPassString',      '' );
 my $MpFormat          = IniValue( 'MpFormat',          $MetaFun );
 my $MpFormatPath      = IniValue( 'MpFormatPath',      $TeXFormatPath );
-
-my $UseEnginePath     = IniValue( 'UseEnginePath',     $UseEnginePath);
+my $UseEnginePath     = IniValue( 'UseEnginePath',     $TheEnginePath);
 
 my $FmtLanguage = IniValue( 'FmtLanguage', '' );
 my $FmtBodyFont = IniValue( 'FmtBodyFont', '' );
@@ -1042,7 +1044,7 @@ sub CheckOutputFormat {
         if ( !$Ok ) {
             print $Help{'output'};
         } elsif ($FullFormat) {
-            print OPT "\\setupoutput[$FullFormat]\n";
+            # print OPT "\\setupoutput[$FullFormat]\n";
         }
     }
     unless ($FullFormat) { $FullFormat = $OutputFormat }
@@ -1077,16 +1079,16 @@ sub MakeOptionFile {
     }
     if ($EnterBatchMode)   { print OPT "\\batchmode\n" }
     if ($EnterNonStopMode) { print OPT "\\nonstopmode\n" }
-    if ($UseColor)         { print OPT "\\setupcolors[\\c!status=\\v!start]\n" }
+    if ($UseColor)         { print OPT "\\setupcolors[\\c!state=\\v!start]\n" }
     if ( $NoMPMode || $NoMPRun || $AutoMPRun ) {
         print OPT "\\runMPgraphicsfalse\n";
     }
     if ( ($FastMode) && ( !$FastDisabled ) ) { print OPT "\\fastmode\n" }
     if ($SilentMode) { print OPT "\\silentmode\n" }
     if ( $Separation ne "" ) {
-        print OPT "\\setupcolors[\\c!splitsen=$Separation]\n";
+        print OPT "\\setupcolors[\\c!split=$Separation]\n";
     }
-    if ($SetupPath) { print OPT "\\setupsystem[\\c!gebied=\{$SetupPath\}]\n" }
+    if ($SetupPath) { print OPT "\\setupsystem[\\c!directory=\{$SetupPath\}]\n" }
     print OPT "\\setupsystem[\\c!n=$KindOfRun]\n";
     $_ = $PaperFormat;
     #unless (($PdfArrange)||($PdfSelect)||($PdfCombine)||($PdfCopy))
@@ -1106,41 +1108,41 @@ sub MakeOptionFile {
     {
         print "    background graphic : $Background\n";
         print OPT "\\defineoverlay[whatever][{\\externalfigure[$Background][\\c!factor=\\v!max]}]\n";
-        print OPT "\\setupbackgrounds[\\v!pagina][\\c!achtergrond=whatever]\n";
+        print OPT "\\setupbackgrounds[\\v!page][\\c!background=whatever]\n";
     }
     if ($CenterPage) {
         print OPT
-          "\\setuplayout[\\c!plaats=\\v!midden,\\c!markering=\\v!aan]\n";
+          "\\setuplayout[\\c!location=\\v!middle,\\c!marking=\\v!on]\n";
     }
     if ($NoMapFiles) {
         print OPT "\\disablemapfiles\n";
     }
-    if ($NoArrange) { print OPT "\\setuparranging[\\v!blokkeer]\n" }
+    if ($NoArrange) { print OPT "\\setuparranging[\\v!disable]\n" }
     elsif ( $Arrange || $PdfArrange ) {
         $FinalRunNeeded = 1;
         if ($FinalRun) {
             my $DupStr;
             if ($NoDuplex) { $DupStr = "" }
-            else { $DupStr = ",\\v!dubbelzijdig" }
+            else { $DupStr = ",\\v!doublesided" }
             if ( $PrintFormat eq '' ) {
-                print OPT "\\setuparranging[\\v!normaal]\n";
+                print OPT "\\setuparranging[\\v!normal]\n";
             } elsif ( $PrintFormat =~ /.*up/goi ) {
-                print OPT "\\setuparranging[2UP,\\v!geroteerd$DupStr]\n";
+                print OPT "\\setuparranging[2UP,\\v!rotated$DupStr]\n";
             } elsif ( $PrintFormat =~ /.*down/goi ) {
-                print OPT "\\setuparranging[2DOWN,\\v!geroteerd$DupStr]\n";
+                print OPT "\\setuparranging[2DOWN,\\v!rotated$DupStr]\n";
             } elsif ( $PrintFormat =~ /.*side/goi ) {
-                print OPT "\\setuparranging[2SIDE,\\v!geroteerd$DupStr]\n";
+                print OPT "\\setuparranging[2SIDE,\\v!rotated$DupStr]\n";
             } else {
                 print OPT "\\setuparranging[$PrintFormat]\n";
             }
         } else {
-            print OPT "\\setuparranging[\\v!blokkeer]\n";
+            print OPT "\\setuparranging[\\v!disable]\n";
         }
     }
     if ($Arguments) { print OPT "\\setupenv[$Arguments]\n" }
     if ($Input)     { print OPT "\\setupsystem[inputfile=$Input]\n" }
     else { print OPT "\\setupsystem[inputfile=$JobName.$JobSuffix]\n" }
-    if ($Random) { print OPT "\\setupsystem[\\c!willekeur=$RandomSeed]\n" }
+    if ($Random) { print OPT "\\setupsystem[\\c!random=$RandomSeed]\n" }
     if ($Mode)   { print OPT "\\enablemode[$Mode]\n" }
     if ($Pages)  {
         if ( lc $Pages eq "odd" ) {
@@ -1203,7 +1205,7 @@ sub MakeUserFile {
         if ( $MainLanguage ne 'standard' ) {
             @MainLanguages = split( /\,/, $MainLanguage );
             foreach (@MainLanguages) {
-                print USR "\\installlanguage[\\s!$_][\\c!status=\\v!start]\n";
+                print USR "\\installlanguage[\\s!$_][\\c!state=\\v!start]\n";
             }
             $MainLanguage = $MainLanguages[0];
             print USR "\\setupcurrentlanguage[\\s!$MainLanguage]\n";
@@ -1342,9 +1344,65 @@ if ( $ConTeXtInterfaces{$ConTeXtInterface} ) {
 
 my $Problems = my $Ok = 0;
 
-sub RunTeX {
-    my ( $JobName, $JobSuffix ) = @_;
-    my $StartTime = time;
+#~ sub RunTeX {
+    #~ my ( $JobName, $JobSuffix ) = @_;
+    #~ my $StartTime = time;
+    #~ my $cmd;
+    #~ my $TeXProgNameFlag = '';
+    #~ if ( !$dosish )    # we assume tetex on linux
+    #~ {
+        #~ $TeXProgramPath = '';
+        #~ $TeXFormatPath  = '';
+        #~ if (   !$TeXProgNameFlag
+            #~ && ( $Format =~ /^cont/ )
+            #~ && ( $TeXPassString !~ /progname/io ) )
+        #~ {
+            #~ $TeXProgNameFlag = "-progname=context";
+        #~ }
+    #~ }
+    #~ $own_quote = ($TeXProgramPath =~ m/^[^\"].* / ? "\"" : "") ;
+    #~ $cmd = join( ' ',
+        #~ "$own_quote$TeXProgramPath$TeXExecutable$own_quote",
+        #~ $TeXProgNameFlag, $TeXPassString, $PassOn, "" );
+    #~ if ($EnterBatchMode)   { $cmd .= "$TeXBatchFlag " }
+    #~ if ($EnterNonStopMode) { $cmd .= "$TeXNonStopFlag " }
+    #~ if ( $TeXTranslation ne '' ) { $cmd .= "-translate-file=$TeXTranslation " }
+    #~ $cmd .= "$TeXFormatFlag$TeXFormatPath$Format $JobName.$JobSuffix";
+    #~ if ($Verbose)        { print "\n$cmd\n\n" }
+    #~ if ($EnterBatchMode) {
+        #~ $Problems = system("$cmd");
+    #~ } else {
+        #~ $Problems = system("$cmd");
+    #~ }
+    #~ # generate formats if needed and retry
+    #~ #
+    #~ # well, this used to work ok, until a engines started to use the same suffix
+    #~ # and no robust check was possible any more
+    #~ #
+    #~ # if ($Problems) {
+    #~ #     my $efmt = `$kpsewhich cont-en.efmt` ;
+    #~ #     chomp $efmt ;
+    #~ #     if ($efmt eq "") {
+    #~ #         print "\n";
+    #~ #         print "      emergency action : generate all formats\n";
+    #~ #         system("texexec --make --alone --all") ;
+    #~ #         print "\n";
+    #~ #         print "      emergency action : retry processing file\n";
+    #~ #         if ($EnterBatchMode) {
+    #~ #             $Problems = system("$cmd");
+    #~ #         } else {
+    #~ #             $Problems = system("$cmd");
+    #~ #         }
+    #~ #     }
+    #~ # }
+    #~ my $StopTime = time - $StartTime;
+    #~ print "\n           return code : $Problems";
+    #~ print "\n              run time : $StopTime seconds\n";
+    #~ return $Problems;
+#~ }
+
+sub PrepRunTeX {
+    my ( $JobName, $JobSuffix, $PipeString ) = @_;
     my $cmd;
     my $TeXProgNameFlag = '';
     if ( !$dosish )    # we assume tetex on linux
@@ -1365,8 +1423,15 @@ sub RunTeX {
     if ($EnterBatchMode)   { $cmd .= "$TeXBatchFlag " }
     if ($EnterNonStopMode) { $cmd .= "$TeXNonStopFlag " }
     if ( $TeXTranslation ne '' ) { $cmd .= "-translate-file=$TeXTranslation " }
-    $cmd .= "$TeXFormatFlag$TeXFormatPath$Format $JobName.$JobSuffix";
+    $cmd .= "$TeXFormatFlag$TeXFormatPath$Format $JobName.$JobSuffix $PipeString";
     if ($Verbose)        { print "\n$cmd\n\n" }
+	return $cmd;
+}
+
+sub RunTeX {
+    my ( $JobName, $JobSuffix ) = @_;
+    my $StartTime = time;
+    my $cmd = PrepRunTeX($JobName, $JobSuffix, '');
     if ($EnterBatchMode) {
         $Problems = system("$cmd");
     } else {
@@ -1393,6 +1458,7 @@ sub RunTeX {
     #         }
     #     }
     # }
+
     my $StopTime = time - $StartTime;
     print "\n           return code : $Problems";
     print "\n              run time : $StopTime seconds\n";
@@ -1780,15 +1846,19 @@ my $CombineFile = "texexec";
 
 sub RunModule {
     my @FileNames = sort @_;
-    unless ( -e $FileNames[0] ) {
-        my $Name = $FileNames[0];
-        @FileNames = ( "$Name.tex", "$Name.mp", "$Name.pl", "$Name.pm" );
-    }
-    foreach my $FileName (@FileNames) {
-        next unless -e $FileName;
-        my ( $Name, $Suffix ) = split( /\./, $FileName );
-        next unless $Suffix =~ /(tex|mp|pl|pm)/io;
-        DoRunModule( $Name, $Suffix );
+    if ($FileNames[0]) {
+        unless ( -e $FileNames[0] ) {
+            my $Name = $FileNames[0];
+            @FileNames = ( "$Name.tex", "$Name.mp", "$Name.pl", "$Name.pm" );
+        }
+        foreach my $FileName (@FileNames) {
+            next unless -e $FileName;
+            my ( $Name, $Suffix ) = split( /\./, $FileName );
+            next unless $Suffix =~ /(tex|mp|pl|pm)/io;
+            DoRunModule( $Name, $Suffix );
+        }
+    } else {
+        print "                module : no modules found\n\n";
     }
 }
 
@@ -1804,14 +1874,17 @@ sub DoRunModule {
     open( TED, "$FileName.ted" );
     my $firstline = <TED>;
     close(TED);
-    if ( $firstline =~ /interface=en/ ) { print MOD $firstline }
-    else { print MOD "% interface=nl\n" }
+    if ( $firstline =~ /interface=/ ) {
+        print MOD $firstline ;
+    } else {
+        print MOD "% interface=en\n" ;
+    }
     # so far
     print MOD "\\usemodule[abr-01,mod-01]\n";
     print MOD "\\def\\ModuleNumber{1}\n";
-    print MOD "\\starttekst\n";
+    print MOD "\\starttext\n";
     print MOD "\\readlocfile{$FileName.ted}{}{}\n";
-    print MOD "\\stoptekst\n";
+    print MOD "\\stoptext\n";
     close(MOD);
     RunConTeXtFile( $ModuleFile, "tex" );
 
@@ -2354,7 +2427,7 @@ sub checkMPgraphics {    # also see makempy
 
 sub checkMPlabels {
     my $MpName = shift;
-    return 0 unless ( -s "$MpName.mpt" > 10 );
+    return 0 unless ((-f "$MpName.mpt") && ((-s "$MpName.mpt")>10) );
     return 0 unless open( MP, "$MpName.mpt" );
     my $n = 0;
     my $t = "" ;
@@ -2422,7 +2495,11 @@ sub doRunMP {    ###########
                 # i hate this indirect (sub regexp) mess
                 s/beginfig\s*\((\d+)\)\s*\;(.*?)endfig\s*\;/doMergeMP($1,$2)/gems ;
             }
-            unless (/beginfig\s*\(\s*0\s*\)/gmois) { print MP $mpbetex{0} }
+            unless (/beginfig\s*\(\s*0\s*\)/gmois) {
+                if (defined($mpbetex{0})) { # test added, warning
+                    print MP $mpbetex{0} ;
+                }
+            }
             print MP $_;
             print MP "\n" . "end" . "\n";
             close(MP);
@@ -2471,6 +2548,7 @@ sub doRunMP {    ###########
                 print " error in metapost run : $MpName.mp:$1\n";
             }
         }
+        close(MPL) ;
         unlink "mptrace.tmp";
         rename( $MpFile, "mptrace.tmp" );
         if ( -e $MpKep ) {
@@ -2596,10 +2674,92 @@ if ( $SetFile ne "" ) { load_set_file( $SetFile, $Verbose ) }
 sub check_texmf_root { }
 sub check_texmf_tree { }
 
+#~ sub AnalyzeVersion
+  #~ { my ($texengine,$type);
+	#~ open (LOG, "<texvers.log") ;
+    #~ while (<LOG>)
+	  #~ { /^\s*This is (.*pdf(|e)TeX.*?) \(format.*$/o and $texengine = $1 ;
+	    #~ /^\s*ConTeXt  (.*int: ([a-z]+).*?)\s*$/o and  $type   = $1; }
+	#~ $type =~ s/  int: ([a-z]+)//;
+	#~ $texengine =~ s/ Version//;
+    #~ close (LOG);
+    #~ return ($texengine,$type) }
+
+#~ sub AnalyzeVersion
+  #~ { my $str = join("\n", @_) ;
+    #~ my ($texengine,$type);
+    #~ if ($str =~ /^\s*This is (.*pdf(|e)TeX.*?) \(format.*$/mos) {
+        #~ $texengine = $1 ;
+    #~ }
+    #~ if ($str =~ /^\s*ConTeXt  (.*int: ([a-z]+).*?)\s*$/mos) {
+        #~ $type   = $1 ;
+    #~ }
+	#~ $type =~ s/  int: ([a-z]+)//;
+	#~ $texengine =~ s/ Version//;
+    #~ return ($texengine,$type) }
+
+
+sub AnalyzeVersion
+  { my $str = join("\n", @_) ;
+    my ($texengine,$type) = ('unknown', 'unknown');
+    open (LOG, "<texvers.log") ;
+    while (<LOG>)
+	   { /^\s*This is (.*pdf(|e)TeX.*?)$/o and $texengine = $1 ;
+	    /^\s*ConTeXt  (.*int: ([a-z]+).*?)\s*$/o and  $type   = $1; }
+	 $type =~ s/  int: ([a-z]+)//;
+	 $texengine =~ s/ Version//;
+	 $texengine =~ s/ \(format.*$//;
+     close (LOG);
+    return ($texengine,$type) }
+
+sub show_version_info {
+  my ($texengine,$type);
+  open (TEX,">texvers.tex") ;
+  print TEX "\\bye " ;
+  close (TEX) ;
+  my $texutil = `$TeXUtil --help`;
+  $texutil =~ s/.*(TeXUtil[^\n]+)\n.*?$/$1/s;
+  print "               texexec :$Program\n" ;
+  print "               texutil : $texutil" ;
+  my $contexttext =  `$kpsewhich context.tex`;
+  my $contextversion = "<not found>";
+  if ($contexttext) {
+	chop $contexttext;
+	{ local $/;
+	  open (IN,"<$contexttext");
+	  $contextversion = <IN>;
+	  close IN;
+	}
+	$contextversion =~ s/.*contextversion\{([0-9.]+)\}.*/$1/s;
+  }
+  $EnterBatchMode = 1;
+  $Format = 'cont-en';
+  my $cmd = PrepRunTeX("texvers","tex",'') ;
+  #~ my $ok = system("$cmd");
+  ($texengine,$type) = AnalyzeVersion(`$cmd`) ;
+  print "                   tex : $texengine\n" ;
+  print "               context : ver: $contextversion\n" ;
+  print "               cont-en : $type\n" ;
+  foreach my $a (qw(cz de it nl ro uk)) {
+	my $test = `$kpsewhich -format='fmt' cont-$a`;
+	if (defined $test && $test) {
+	  $Format = 'cont-' . $a;
+	  $cmd = PrepRunTeX("texvers","tex",'');
+	  #~ my $ok = system("$cmd");
+	  ($texengine,$type) = AnalyzeVersion(`$cmd`) ;
+	  print "               cont-$a : $type\n" ;
+	}
+  }
+  unlink <texvers.*>;
+}
+
 # the main thing
 
-if    ($HelpAsked)      { show_help_info }
-elsif ($TypesetListing) {
+if ($HelpAsked) {
+    show_help_info
+} elsif ($Version) {
+    show_version_info
+} elsif ($TypesetListing) {
     check_texmf_root;
     check_texmf_tree;
     RunListing(@ARGV);
@@ -2618,8 +2778,12 @@ elsif ($TypesetListing) {
 } elsif ($MakeFormats) {
     check_texmf_root;
     check_texmf_tree;
-    if ( $MpDoFormat ne '' ) { RunMpFormat($MpDoFormat) }
-    else { RunFormats }
+    if ( $MpDoFormat ne '' ) {
+        RunMpFormat($MpDoFormat) ;
+    }
+    else {
+        RunFormats ;
+    }
 } elsif (@ARGV) {
     check_texmf_root;
     check_texmf_tree;
@@ -2816,5 +2980,7 @@ help show this or more, e.g. '--help interface'
 alone bypass utilities (e.g. fmtutil for non-standard fmt's)
 -----------
 texutil force TeXUtil run
+-----------
+version display various version information
 -----------
 setfile load environment (batch) file

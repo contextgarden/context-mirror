@@ -1,5 +1,5 @@
 %D \module
-%D   [       file=supp-vis,
+%D   [       filefile=supp-vis,
 %D        version=1996.10.21,
 %D          title=\CONTEXT\ Support Macros,
 %D       subtitle=Visualization,
@@ -12,9 +12,9 @@
 %C details.
 
 %D \gdef\ShowBufferedExample% private typeseting macro
-%D   {\startregelcorrectie
+%D   {\startlinecorrection
 %D    \bgroup
-%D    \steltypenin[marge=0pt,optie=kleur]
+%D    \setuptyping[margin=0pt,option=color]
 %D    \showmakeup
 %D    \centeredvcuetrue
 %D    \dontinterfere
@@ -23,15 +23,15 @@
 %D      {\normalhbox to \hsize
 %D         {$\hsize=.5\hsize
 %D          \advance\hsize by -.5em
-%D          \normalvcenter{\vbox{\haalbuffer}}\normalhss
+%D          \normalvcenter{\vbox{\getbuffer}}\normalhss
 %D          \normalvcenter{\vbox{\dontshowcomposition\typebuffer}}$}}
 %D    \egroup
-%D    \stopregelcorrectie}
+%D    \stoplinecorrection}
 %D
 %D \gdef\ShowBufferedExampleBox% private typeseting macro
-%D   {\startregelcorrectie
+%D   {\startlinecorrection
 %D    \bgroup
-%D    \steltypenin[marge=0pt,optie=kleur]
+%D    \setuptyping[margin=0pt,option=color]
 %D    \showmakeup
 %D    \centeredvcuetrue
 %D    \dontinterfere
@@ -40,10 +40,10 @@
 %D      {\normalhbox to \hsize
 %D         {$\hsize=.5\hsize
 %D          \advance\hsize by -.5em
-%D          \normalvcenter{\baselineruletrue\vbox{\haalbuffer}}\normalhss
+%D          \normalvcenter{\baselineruletrue\vbox{\getbuffer}}\normalhss
 %D          \normalvcenter{\vbox{\dontshowcomposition\typebuffer}}$}}
 %D    \egroup
-%D    \stopregelcorrectie}
+%D    \stoplinecorrection}
 
 %D Although an integral part of \CONTEXT, this module is one
 %D of the support modules. Its stand alone character permits
@@ -120,6 +120,11 @@
 \def\dontcomplain
   {\hbadness\!!tenthousand \vbadness\hbadness
    \hfuzz   \maxdimen      \vfuzz   \hfuzz}
+
+% This obsolete dutch name is sometimes uses in manual styles; when
+% cleaning up the codebase I decided to move this definition here.
+
+\let\mindermeldingen\dontcomplain
 
 %D \macros
 %D   {normaloffinterlineskip}
@@ -257,9 +262,9 @@
 %D complicated, but it supports all three kind of boxes. The
 %D next command expects a \BOX\ specification, like:
 %D
-%D \starttypen
+%D \starttyping
 %D \makeruledbox0
-%D \stoptypen
+%D \stoptyping
 
 %D \macros
 %D   {baselinerule,baselinefill}
@@ -268,10 +273,10 @@
 %D as a rule. The line is drawn on top of the baseline. All
 %D we have to say is:
 %D
-%D \starttypen
+%D \starttyping
 %D \baselineruletrue
 %D \baselinefilltrue
-%D \stoptypen
+%D \stoptyping
 %D
 %D At the cost of some overhead these alternatives are
 %D implemented using \type{\if}'s:
@@ -284,12 +289,12 @@
 %D
 %D Rules can be turned on and off, but by default we have:
 %D
-%D \starttypen
+%D \starttyping
 %D \topruletrue
 %D \bottomruletrue
 %D \leftruletrue
 %D \rightruletrue
-%D \stoptypen
+%D \stoptyping
 %D
 %D As we see below:
 
@@ -305,9 +310,9 @@
 %D assigning an apropriate value to the dimension used. This
 %D module defaults the width to:
 %D
-%D \starttypen
+%D \starttyping
 %D \boxrulewidth=.2pt
-%D \stoptypen
+%D \stoptyping
 %D
 %D Although we are already low on \DIMENSIONS\ it's best to
 %D spend one here, mainly because it enables easy manipulation,
@@ -321,12 +326,12 @@
 %D \type{\vtop}'s and \type{\vbox}'es behave the way we expect
 %D them to do.
 %D
-%D \startregelcorrectie
+%D \startlinecorrection
 %D \hbox
 %D   {\ruledhbox to 5em{\strut test\normalhss}\hskip1em
 %D    \ruledvbox{\hsize 5em\strut test \par test\strut}\hskip1em
 %D    \ruledvtop{\hsize 5em\strut test \par test\strut}}
-%D \stopregelcorrectie
+%D \stoplinecorrection
 %D
 %D The \type{\cleaders} part of the macro is responsible for
 %D the visual baseline. The \type{\normalhfill} belongs to this
@@ -490,16 +495,16 @@
 %D with \type{\ruledbox} and afterwards --- when the macro
 %D satisfy the needs --- let it to \type{\relax}.
 %D
-%D \starttypen
+%D \starttyping
 %D \ruledbox\hbox{What rules do you mean?}
-%D \stoptypen
+%D \stoptyping
 %D
 %D The macro \type{\setruledbox} can be used to directly
 %D rule a box.
 %D
-%D \starttypen
+%D \starttyping
 %D \setruledbox12=\hbox{Who's talking about rules here?}
-%D \stoptypen
+%D \stoptyping
 %D
 %D At the cost of some extra macros we can implement a
 %D variant that does not need the~\type{=}, but we stick to:
@@ -521,19 +526,19 @@
 %D variables, that tell us a bit more about the registers we
 %D use:
 %D
-%D \starttypen
+%D \starttyping
 %D \ifflexible
 %D \ifzero
 %D \ifnegative
 %D \ifpositive
-%D \stoptypen
+%D \stoptyping
 %D
 %D These status variables are set when we call for one of the
 %D investigation macros, e.g.
 %D
-%D \starttypen
+%D \starttyping
 %D \investigateskip\scratchskip
-%D \stoptypen
+%D \stoptyping
 %D
 %D We use some dirty trick to check stretchability of \SKIPS.
 %D Users of these macros are invited to study their exact
@@ -650,9 +655,9 @@
 %D auxiliary macro, which behavior can be influenced by the
 %D boolean \type{\centeredvcue}. By saying
 %D
-%D \starttypen
+%D \starttyping
 %D \centeredvcuetrue
-%D \stoptypen
+%D \stoptyping
 %D
 %D one turns centering on. As said, we turn it off.
 
@@ -663,17 +668,17 @@
 
 %D We could have used the more robust version
 %D
-%D \starttypen
+%D \starttyping
 %D \def\normalvcue%
 %D   {\normalhbox \ifcenteredvcue to \hsize \fi
 %D    \bgroup\bgroup\normalhss
 %D    \aftergroup\normalhss\aftergroup\egroup
 %D    \let\next=}
-%D \stoptypen
+%D \stoptyping
 %D
 %D or the probably best one:
 %D
-%D \starttypen
+%D \starttyping
 %D \def\normalvcue%
 %D   {\hbox \ifcenteredvcue to \hsize
 %D      \bgroup\bgroup\normalhss
@@ -682,7 +687,7 @@
 %D      \bgroup
 %D    \fi
 %D    \let\next=}
-%D \stoptypen
+%D \stoptyping
 %D
 %D Because we don't have to preserve \CATCODES\ and only use
 %D small arguments, we stick to the first alternative.
@@ -698,9 +703,9 @@
 %D As with ruled boxes, we use a \DIMENSION\ to specify the
 %D width of the ruled elements. This dimension defaults to:
 %D
-%D \starttypen
+%D \starttyping
 %D \testrulewidth=\boxrulewidth
-%D \stoptypen
+%D \stoptyping
 %D
 %D Because we prefer whole numbers for specifying the
 %D dimensions, we often use even multiples of
@@ -713,9 +718,9 @@
 %D components of \SKIPS. At the cost of some accuracy we can
 %D make this stretch visible.
 %D
-%D \starttypen
+%D \starttyping
 %D \visiblestretchtrue
-%D \stoptypen
+%D \stoptyping
 
 \newdimen\testrulewidth  \testrulewidth=\boxrulewidth
 \newif\ifvisiblestretch  \visiblestretchfalse
@@ -766,56 +771,56 @@
 %D visualization. Watch the small dots. Fillers can be
 %D combined within reasonable margins.
 %D
-%D \startregelcorrectie
+%D \startlinecorrection
 %D \baselinerulefalse
 %D \ruledhbox to \hsize
 %D   {\strut\type{\hss}\ruledhss test}
-%D \stopregelcorrectie
+%D \stoplinecorrection
 %D
-%D \startregelcorrectie
+%D \startlinecorrection
 %D \baselinerulefalse
 %D \ruledhbox to \hsize
 %D   {\strut\type{\hfil}\ruledhfil test}
-%D \stopregelcorrectie
+%D \stoplinecorrection
 %D
-%D \startregelcorrectie
+%D \startlinecorrection
 %D \baselinerulefalse
 %D \ruledhbox to \hsize
 %D   {\strut\type{\hfill}\ruledhfill test}
-%D \stopregelcorrectie
+%D \stoplinecorrection
 %D
-%D \startregelcorrectie
+%D \startlinecorrection
 %D \baselinerulefalse
 %D \ruledhbox to \hsize
 %D   {\strut
 %D    \type{\hfil}\type{\hfil}\ruledhfil\ruledhfil
 %D    test%
 %D    \ruledhfil\type{\hfil}}
-%D \stopregelcorrectie
+%D \stoplinecorrection
 %D
 %D The negative counterparts are visualizes, but seldom
 %D become visible, apart from their boundaries.
 %D
-%D \startregelcorrectie
+%D \startlinecorrection
 %D \baselinerulefalse
 %D \ruledhbox to \hsize
 %D   {\strut\type{\hfilneg}\ruledhfilneg test}
-%D \stopregelcorrectie
+%D \stoplinecorrection
 %D
-%D \startregelcorrectie
+%D \startlinecorrection
 %D \baselinerulefalse
 %D \ruledhbox to \hsize
 %D   {\strut\type{\hfillneg}\ruledhfillneg test}
-%D \stopregelcorrectie
+%D \stoplinecorrection
 %D
 %D Although leaders are used for visualizing, they are
 %D visualized themselves correctly as the next example shows.
 %D
-%D \startregelcorrectie
+%D \startlinecorrection
 %D \baselinerulefalse
 %D \ruledhbox to \hsize
 %D   {\strut\cleaders\normalhbox to 2em{\normalhss$\circ$\normalhss}\ruledhfill}
-%D \stopregelcorrectie
+%D \stoplinecorrection
 %D
 %D All five substitutions use the same auxiliary macro. Watch
 %D the positive first -- negative next approach.
@@ -882,7 +887,7 @@
 %D Because they act the same as their horizontal counterparts
 %D we only show a few examples.
 %D
-%D \startregelcorrectie
+%D \startlinecorrection
 %D \hbox to \hsize
 %D   {\dontinterfere
 %D    \baselinerulefalse
@@ -902,7 +907,7 @@
 %D    \ruledvbox to 10ex
 %D      {\hsize.18\hsize
 %D       \type{\vfillneg}\ruledvfillneg last line}}
-%D \stopregelcorrectie
+%D \stoplinecorrection
 %D
 %D Keep in mind that \type{\vfillneg} is not part of \PLAIN\
 %D \TEX, but are mimmicked by a macro.
@@ -918,11 +923,11 @@
 %D
 %D Skips differ from kerns in two important aspects:
 %D
-%D \startopsomming[opelkaar]
-%D \som  line and pagebreaks are allowed at a skip
-%D \som  skips can have a positive and/or negative
+%D \startitemize[packed]
+%D \item  line and pagebreaks are allowed at a skip
+%D \item  skips can have a positive and/or negative
 %D       stretchcomponent
-%D \stopopsomming
+%D \stopitemize
 %D
 %D Stated a bit different: kerns are fixed skips at which no
 %D line or pagebreak can occur. Because skips have a more open
@@ -1036,20 +1041,20 @@
 %D    test}
 %D \stopbuffer
 %D
-%D \startregelcorrectie
+%D \startlinecorrection
 %D \showmakeup
-%D \haalbuffer
-%D \stopregelcorrectie
+%D \getbuffer
+%D \stoplinecorrection
 %D
-%D \startregelcorrectie
+%D \startlinecorrection
 %D \showmakeup
 %D \visiblestretchtrue
-%D \haalbuffer
-%D \stopregelcorrectie
+%D \getbuffer
+%D \stoplinecorrection
 %D
-%D \startregelcorrectie
-%D \haalbuffer
-%D \stopregelcorrectie
+%D \startlinecorrection
+%D \getbuffer
+%D \stoplinecorrection
 
 %D \macros
 %D   {ruledvskip}
@@ -1351,10 +1356,10 @@
 
 %D A a bit more \TEX nice solution is:
 %D
-%D \starttypen
+%D \starttyping
 %D \unexpanded\def\ruledkern%
 %D   {\csname ruled\ifvmode v\else h\fi kern\endcsname\normalkern}
-%D \stoptypen
+%D \stoptyping
 
 %D \macros
 %D   {ruledhglue,ruledvglue}
@@ -1538,7 +1543,7 @@
 %D size. The next example shows the positive and negative
 %D penalties of 0, 1, 10, 100, 1000 and 10000.
 %D
-%D \startregelcorrectie
+%D \startlinecorrection
 %D \hbox
 %D   {test \ruledhpenalty0
 %D    test \ruledhpenalty1
@@ -1547,11 +1552,11 @@
 %D    test \ruledhpenalty1000
 %D    test \ruledhpenalty10000
 %D    test}
-%D \stopregelcorrectie
+%D \stoplinecorrection
 %D
-%D \blanko
+%D \blank
 %D
-%D \startregelcorrectie
+%D \startlinecorrection
 %D \hbox
 %D   {test \ruledhpenalty0
 %D    test \ruledhpenalty-1
@@ -1560,9 +1565,9 @@
 %D    test \ruledhpenalty-1000
 %D    test \ruledhpenalty-10000
 %D    test}
-%D \stopregelcorrectie
+%D \stoplinecorrection
 %D
-%D \blanko
+%D \blank
 %D
 %D This way stacked penalties of different severance can be
 %D shown in combination.
@@ -1710,10 +1715,10 @@
 %D At the cost of some more tokens, a bit more clever
 %D implementation would be:
 %D
-%D \starttypen
+%D \starttyping
 %D \unexpanded\def\ruledpenalty%
 %D   {\csname ruled\ifvmode v\else h\fi penalty\endcsname}
-%D \stoptypen
+%D \stoptyping
 
 %D \macros
 %D   {showfils,dontshowfils,
@@ -1795,10 +1800,10 @@
 %D user. The first two macros only do their job when we are
 %D actually showing the composition.
 %D
-%D \starttypen
+%D \starttyping
 %D \showingcompositiontrue
 %D \showcomposition
-%D \stoptypen
+%D \stoptyping
 %D
 %D Because the output routine can do tricky things, like
 %D multiple column typesetting and manipulation of the
@@ -1831,17 +1836,17 @@
 %D
 %D Just to make things even more easy, we have defined:
 %D
-%D \starttypen
+%D \starttyping
 %D \showmakeup
-%D \stoptypen
+%D \stoptyping
 %D
 %D For the sake of those who don't (yet) use \CONTEXT\ we
 %D preset \type{\defaulttestrulewidth} to the already set
 %D value. Otherwise we default to a bodyfontsize related value.
 %D
-%D \starttypen
+%D \starttyping
 %D \def\defaulttestrulewidth{.2pt}
-%D \stoptypen
+%D \stoptyping
 %D
 %D Beware, it's a macro not a \DIMENSION.
 
@@ -1865,24 +1870,19 @@
 %D table of contents and a local register.
 %D \fi \next
 
-% %D Lets end with some more advanced examples. When visualized,
-% %D the table of contents of the outer level is typeset as:
-% %D
-% %D {\showmakeup\plaatsinhoud[criterium=vorige]}
-% %D
 %D Lets end with some more advanced examples.
 %D Definitions and enumerations come in many flavors. The
 %D next one for instance is defined as:
 %D
-%D \starttypen
+%D \starttyping
 %D \definedescription[test][place=left,hang=3,width=6em]
-%D \stoptypen
+%D \stoptyping
 %D
 %D When applied to some text, this would look like:
 %D
 %D \bgroup
 %D \showmakeup
-%D \doordefinieren[test][plaats=links,hang=3,breedte=6em]
+%D \definedescription[test][location=left,hang=3,width=6em]
 %D
 %D \test{visual\\debugger} I would be very pleased if \TEX\
 %D had two more primitives: \type{\vnop} and \type{\hnop}. Both
@@ -1897,7 +1897,7 @@
 %D
 %D The index to this section looks like:
 %D
-%D {\stelrefererenin[prefix=dummy]\showmakeup\plaatsindex[criterium=lokaal]}
+%D {\setupreferencing[prefixprefix=dummy]\showmakeup\placeindex[criterium=local]}
 %D
 %D Although not impressive examples or typesetting, both
 %D show us how and where things happen. When somehow the last

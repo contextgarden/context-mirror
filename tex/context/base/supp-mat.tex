@@ -1,5 +1,5 @@
 %D \module
-%D   [       file=supp-mat,
+%D   [       filefile=supp-mat,
 %D        version=1998.09.10,
 %D          title=\CONTEXT\ Support Macros,
 %D       subtitle=Math,
@@ -25,23 +25,23 @@
 %D This can lead to confusing and errorprone situations when
 %D macros insert \type{$}. When for instance we have defined:
 %D
-%D \starttypen
+%D \starttyping
 %D \def\MyPlus{$\,+\,$}
-%D \stoptypen
+%D \stoptyping
 %D
 %D the sequence \type{$x^2 \MyPlus y^2 = r^2$} will expand to:
 %D
-%D \starttypen
+%D \starttyping
 %D $x^2 $\,+\,$ y^2 = r^2$
-%D \stoptypen
+%D \stoptyping
 %D
 %D Here the \type{\,} are given outside math mode and \TEX\ will
 %D definitely complain about this. A more save definition would
 %D have been:
 %D
-%D \starttypen
+%D \starttyping
 %D \def\MyPlus{\mathematics{\,+\,}}
-%D \stoptypen
+%D \stoptyping
 %D
 %D Which is implemented as:
 
@@ -139,7 +139,7 @@
    \def_{\ifmmode\expandafter\suber\else\expandafter\normalsuber\fi}}
 \egroup
 
-%D \macro
+%D \macros
 %D   {restoremathstyle}
 %D
 %D We can pick up the current math style by calling \type

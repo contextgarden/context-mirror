@@ -1,5 +1,5 @@
 %D \module
-%D   [       file=m-newmat,
+%D   [       filefile=m-newmat,
 %D        version=2000.11.16,
 %D          title=\CONTEXT\ Math Module,
 %D       subtitle=AMS-like math extensions,
@@ -140,7 +140,7 @@
 %D [HH] This macro is now also moved to the core, but we
 %D keep it here as well for completeness.
 %D
-%D \startypen
+%D \starttyping
 %D \unexpanded\def\mathtext
 %D   {\mathortext\domathtext\hbox} % {\ifmmode\@EA\dotext\else\@EA\hbox\fi}
 %D
@@ -154,15 +154,15 @@
 %D \def\dodomathtext#1#2#3% no \everymath !
 %D  %{\hbox{\everymath{#1}\switchtobodyfont  [#2]#3}} % 15 sec
 %D   {\hbox{\everymath{#1}\setcurrentfontbody{#2}#3}} %  3 sec (no math)
-%D \stoptypen
+%D \stoptyping
 
 %D [HH] We use the following indirectness because \type {\text}
 %D is a natural candidate for user macros (actually, it is
 %D used in some modules).
 %D
-%D \starttypen
+%D \starttyping
 %D \let\text\mathtext
-%D \stoptypen
+%D \stoptyping
 
 %D [HH] Actually, the font switch is not that slow when
 %D typefaces are used. If needed this macro can be sped up.

@@ -1,5 +1,5 @@
 %D \module
-%D   [       file=page-txt, % copied from main-001,
+%D   [       filefile=page-txt, % copied from main-001,
 %D        version=1997.03.31,
 %D          title=\CONTEXT\ Page Macros,
 %D       subtitle=Texts,
@@ -23,21 +23,21 @@
 %D the following macros. The current state of a text line
 %D (header, footer, etc.) is checked by:
 %D
-%D \starttypen
+%D \starttyping
 %D \resetlayouttextlines
-%D \stoptypen
+%D \stoptyping
 %D
 %D The main text box is finished by the following macro:
 %D
-%D \starttypen
+%D \starttyping
 %D \getmainbox <box> <\vbox|\unvbox>
-%D \stoptypen
+%D \stoptyping
 %D
 %D The text lines are collected with:
 %D
-%D \starttypen
+%D \starttyping
 %D \gettextboxes
-%D \stoptypen
+%D \stoptyping
 %D
 %D It is possible to extens the default content of the text
 %D areas by appending content to the following token list
@@ -71,17 +71,17 @@
   {\ifthirdargument
      \getparameters[\??tk#1#2][#3]%
    \else
-    %\getparameters[\??tk#1\v!tekst][#2]%
+    %\getparameters[\??tk#1\v!text][#2]%
      \getparameters[\??tk#1][#2]%
    \fi
   %\checkcurrentlayout % no
    \calculatevsizes}
 
-\def\setuptop    {\dotripleempty\dosetuplayouttext[\v!boven]}
-\def\setupheader {\dotripleempty\dosetuplayouttext[\v!hoofd]}
-\def\setuptext   {\dotripleempty\dosetuplayouttext[\v!tekst]}
-\def\setupfooter {\dotripleempty\dosetuplayouttext[\v!voet]}
-\def\setupbottom {\dotripleempty\dosetuplayouttext[\v!onder]}
+\def\setuptop    {\dotripleempty\dosetuplayouttext[\v!top]}
+\def\setupheader {\dotripleempty\dosetuplayouttext[\v!header]}
+\def\setuptext   {\dotripleempty\dosetuplayouttext[\v!text]}
+\def\setupfooter {\dotripleempty\dosetuplayouttext[\v!footer]}
+\def\setupbottom {\dotripleempty\dosetuplayouttext[\v!bottom]}
 
 %D \macros
 %D  {noheaderandfooterlines,notopandbottomlines}
@@ -93,12 +93,12 @@
 %D \showsetup{\y!notopandbottomlines}
 
 \def\noheaderandfooterlines
-  {\setupheader[\c!status=\v!leeg]%
-   \setupfooter[\c!status=\v!leeg]}
+  {\setupheader[\c!state=\v!empty]%
+   \setupfooter[\c!state=\v!empty]}
 
 \def\notopandbottomlines
-  {\setuptop   [\c!status=\v!leeg]%
-   \setupbottom[\c!status=\v!leeg]}
+  {\setuptop   [\c!state=\v!empty]%
+   \setupbottom[\c!state=\v!empty]}
 
 %D \macros
 %D  {setuptoptexts, setupheadertexts, setuptexttexts,
@@ -116,61 +116,61 @@
 %D \showsetup{\y!setupfootertexts}
 %D \showsetup{\y!setupbottomtexts}
 
-\def\setuptoptexts    {\dosixtupleempty\dosetuptexts[\v!boven]}
-\def\setupheadertexts {\dosixtupleempty\dosetuptexts[\v!hoofd]}
-\def\setuptexttexts   {\dosixtupleempty\dosetuptexts[\v!tekst]}
-\def\setupfootertexts {\dosixtupleempty\dosetuptexts[\v!voet ]}
-\def\setupbottomtexts {\dosixtupleempty\dosetuptexts[\v!onder]}
+\def\setuptoptexts    {\dosixtupleempty\dosetuptexts[\v!top]}
+\def\setupheadertexts {\dosixtupleempty\dosetuptexts[\v!header]}
+\def\setuptexttexts   {\dosixtupleempty\dosetuptexts[\v!text]}
+\def\setupfootertexts {\dosixtupleempty\dosetuptexts[\v!footer ]}
+\def\setupbottomtexts {\dosixtupleempty\dosetuptexts[\v!bottom]}
 
 %D The left, right and center variables can also be set
 %D directly using the previously discussed macros.
 
 \def\dosetuptexts[#1][#2][#3][#4][#5][#6]%
   {\ifsixthargument
-     \setvalue{\??tk#1#2\c!linkertekst}%
+     \setvalue{\??tk#1#2\c!lefttext}%
        {\dodoubletexts{\??tk#1}{#2}%
-          {\c!linkerletter \c!linkerkleur \c!linkerbreedte }{#3}%
-          {\c!rechterletter\c!rechterkleur\c!rechterbreedte}{#6}}%
-     \setvalue{\??tk#1#2\c!rechtertekst}%
+          {\c!leftstyle \c!leftcolor \c!leftwidth }{#3}%
+          {\c!rightstyle\c!rightcolor\c!rightwidth}{#6}}%
+     \setvalue{\??tk#1#2\c!righttext}%
        {\dodoubletexts{\??tk#1}{#2}%
-          {\c!rechterletter\c!rechterkleur\c!rechterbreedte}{#4}%
-          {\c!linkerletter \c!linkerkleur \c!linkerbreedte }{#5}}%
+          {\c!rightstyle\c!rightcolor\c!rightwidth}{#4}%
+          {\c!leftstyle \c!leftcolor \c!leftwidth }{#5}}%
    \else\iffifthargument
-     \setvalue{\??tk#1\v!tekst\c!linkertekst}%
-       {\dodoubletexts{\??tk#1}\v!tekst
-          {\c!linkerletter \c!linkerkleur \c!linkerbreedte }{#2}%
-          {\c!rechterletter\c!rechterkleur\c!rechterbreedte}{#5}}%
-     \setvalue{\??tk#1\v!tekst\c!rechtertekst}%
-       {\dodoubletexts{\??tk#1}\v!tekst
-          {\c!rechterletter\c!rechterkleur\c!rechterbreedte}{#3}%
-          {\c!linkerletter \c!linkerkleur \c!linkerbreedte }{#4}}%
+     \setvalue{\??tk#1\v!text\c!lefttext}%
+       {\dodoubletexts{\??tk#1}\v!text
+          {\c!leftstyle \c!leftcolor \c!leftwidth }{#2}%
+          {\c!rightstyle\c!rightcolor\c!rightwidth}{#5}}%
+     \setvalue{\??tk#1\v!text\c!righttext}%
+       {\dodoubletexts{\??tk#1}\v!text
+          {\c!rightstyle\c!rightcolor\c!rightwidth}{#3}%
+          {\c!leftstyle \c!leftcolor \c!leftwidth }{#4}}%
    \else\iffourthargument
-     \setvalue{\??tk#1#2\c!linkertekst}%
+     \setvalue{\??tk#1#2\c!lefttext}%
        {\dodoubletexts{\??tk#1}{#2}
-          {\c!linkerletter\c!linkerkleur\c!linkerbreedte}{#3}%
-          {\c!linkerletter\c!linkerkleur\c!linkerbreedte}{#3}}%
-     \setvalue{\??tk#1#2\c!rechtertekst}%
+          {\c!leftstyle\c!leftcolor\c!leftwidth}{#3}%
+          {\c!leftstyle\c!leftcolor\c!leftwidth}{#3}}%
+     \setvalue{\??tk#1#2\c!righttext}%
        {\dodoubletexts{\??tk#1}{#2}
-          {\c!rechterletter\c!rechterkleur\c!rechterbreedte}{#4}%
-          {\c!rechterletter\c!rechterkleur\c!rechterbreedte}{#4}}%
+          {\c!rightstyle\c!rightcolor\c!rightwidth}{#4}%
+          {\c!rightstyle\c!rightcolor\c!rightwidth}{#4}}%
    \else\ifthirdargument
-     \setvalue{\??tk#1\v!tekst\c!linkertekst}%
-       {\dodoubletexts{\??tk#1}\v!tekst
-          {\c!linkerletter\c!linkerkleur\c!linkerbreedte}{#2}%
-          {\c!linkerletter\c!linkerkleur\c!linkerbreedte}{#2}}%
-     \setvalue{\??tk#1\v!tekst\c!rechtertekst}%
-       {\dodoubletexts{\??tk#1}\v!tekst
-          {\c!rechterletter\c!rechterkleur\c!rechterbreedte}{#3}%
-          {\c!rechterletter\c!rechterkleur\c!rechterbreedte}{#3}}%
+     \setvalue{\??tk#1\v!text\c!lefttext}%
+       {\dodoubletexts{\??tk#1}\v!text
+          {\c!leftstyle\c!leftcolor\c!leftwidth}{#2}%
+          {\c!leftstyle\c!leftcolor\c!leftwidth}{#2}}%
+     \setvalue{\??tk#1\v!text\c!righttext}%
+       {\dodoubletexts{\??tk#1}\v!text
+          {\c!rightstyle\c!rightcolor\c!rightwidth}{#3}%
+          {\c!rightstyle\c!rightcolor\c!rightwidth}{#3}}%
    \else\ifsecondargument % new
-     \letvalue{\??tk#1\v!tekst\c!linkertekst }\empty
-     \letvalue{\??tk#1\v!tekst\c!rechtertekst}\empty
-     \setvalue{\??tk#1\v!tekst\c!middentekst }%
-       {\dosingletexts{\??tk#1}\v!tekst\c!letter\c!kleur\c!breedte{#2}}%
+     \letvalue{\??tk#1\v!text\c!lefttext }\empty
+     \letvalue{\??tk#1\v!text\c!righttext}\empty
+     \setvalue{\??tk#1\v!text\c!middletext }%
+       {\dosingletexts{\??tk#1}\v!text\c!style\c!color\c!width{#2}}%
    \else
-     \dosixtupleempty\dosetuptexts[#1][\v!tekst][][][][]%
-     \dosixtupleempty\dosetuptexts[#1][\v!marge][][][][]%
-     \dosixtupleempty\dosetuptexts[#1][\v!rand ][][][][]%
+     \dosixtupleempty\dosetuptexts[#1][\v!text][][][][]%
+     \dosixtupleempty\dosetuptexts[#1][\v!margin][][][][]%
+     \dosixtupleempty\dosetuptexts[#1][\v!edge ][][][][]%
    \fi\fi\fi\fi\fi}
 
 %D Left and right texts are swapped on odd and even pages, but
@@ -185,7 +185,7 @@
 %D dependent.
 
 \def\placetextlinestrut#1%
-  {\doifvalue{#1\c!strut}\v!ja{\setstrut\strut}}
+  {\doifvalue{#1\c!strut}\v!yes{\setstrut\strut}}
 
 % \def\dosingletexts#1#2#3#4#5#6%
 %   {\bgroup
@@ -211,12 +211,12 @@
    \doifsomething\ascii
      {\doattributes{#1#2}#3#4%
         {\placetextlinestrut{#1}% here !
-        %\doifdefinedelse{\??mk\ascii\c!koppeling} % brrr
+        %\doifdefinedelse{\??mk\ascii\c!coupling} % brrr
          \doifelsemarking\ascii
-           {\dolimitatetexts{#1#2#5}{\getmarking[\ascii][\v!eerste]}}
-           {\ConvertConstantAfter\doifelse\v!paginanummer{#6}
+           {\dolimitatetexts{#1#2#5}{\getmarking[\ascii][\v!first]}}
+           {\ConvertConstantAfter\doifelse\v!pagenumber{#6}
                \@@plaatspaginanummer
-              {\ConvertConstantAfter\doifelse\v!datum{#6}
+              {\ConvertConstantAfter\doifelse\v!date{#6}
                  {\currentdate}
                  {% #6{}{}{} -> {} needed for macros that look
                   % ahead, like \uniqueMPgraphic
@@ -232,62 +232,18 @@
 %D The placement of text is hooked into the token lists
 %D associated to the area at hand.
 
-\appendtoks \placelayouttextline\v!boven\bovenhoogte \to    \toptextcontent
-\appendtoks \placelayouttextline\v!hoofd\hoofdhoogte \to \headertextcontent
-\appendtoks \placelayouttextline\v!tekst\teksthoogte \to   \texttextcontent
-\appendtoks \placelayouttextline\v!voet  \voethoogte \to \footertextcontent
-\appendtoks \placelayouttextline\v!onder\onderhoogte \to \bottomtextcontent
+\appendtoks \placelayouttextline\v!top   \topheight    \to \toptextcontent
+\appendtoks \placelayouttextline\v!header\headerheight \to \headertextcontent
+\appendtoks \placelayouttextline\v!text  \textheight   \to \texttextcontent
+\appendtoks \placelayouttextline\v!footer\footerheight \to \footertextcontent
+\appendtoks \placelayouttextline\v!bottom\bottomheight \to \bottomtextcontent
 
 %D Texts can be disables, moved up and ignored, depending in
 %D the \type {status} variable. This is handled by the next
-%D couple of macros. They look less readable then the original
-%D implementation, but because they are expanded quite often,
-%D we will not use:
-%D
-%D \starttypen
-%D \def\plaatslayoutregel#1#2%  % handelt o.b.v. tekst
-%D   {\ExpandFirstAfter\processaction
-%D      [\getvalue{\??tk#1\v!tekst\c!status}]
-%D      [        \v!geen=>,
-%D                   ......
-%D              \v!start=>...]}
-%D \stoptypen
-%D
-%D Instead we will map the values of status onto macro
-%D expansions.
+%D couple of macros.
 
-%\def\settextlinestatus#1%
-%  {\edef\textlinestatus{\csname\??tk#1\v!tekst\c!status\endcsname}}
-
-\def\settextlinestatus#1%
-  {\edef\textlinestatus{\csname\??tk#1\c!status\endcsname}}
-
-%\def\resettextlinestatus#1%
-%  {\letgvalue{\??tk#1\v!tekst\c!status}\v!normaal}
-
-\def\resettextlinestatus#1%
-  {\letgvalue{\??tk#1\c!status}\v!normaal}
-
-%\def\placelayouttextline#1#2%  % handelt o.b.v. tekst
-%  {\settextlinestatus{#1}%
-%   \doifdefinedelse{\string\placelayouttextline\textlinestatus}
-%     {\getvalue{\string\placelayouttextline\textlinestatus}{#1}{#2}}
-%     {\getvalue{\string\placelayouttextline\s!unknown}{#1}{#2}}}
-%
-%\def\placelayouttextline#1% #2
-%  {\settextlinestatus{#1}%
-%   \doifundefined{\string\placelayouttextline\textlinestatus}
-%     {\let\textlinestatus\s!unknown}%
-%   \getvalue{\string\placelayouttextline\textlinestatus}{#1}} % {#2}
-
-% recently bugged
-%
-% \def\placelayouttextline#1% #2
-%   {\settextlinestatus{#1}%
-%    \ifundefined{\string\placelayouttextline\textlinestatus}%
-%      \let\textlinestatus\s!unknown
-%    \fi
-%    \csname\string\placelayouttextline\textlinestatus\endcsname{#1}} % {#2}
+\def\settextlinestatus  #1{\edef\textlinestatus{\csname\??tk#1\c!state\endcsname}}
+\def\resettextlinestatus#1{\letgvalue{\??tk#1\c!state}\v!normal}
 
 \def\placelayouttextline#1% #2
   {\settextlinestatus{#1}%
@@ -299,12 +255,12 @@
      \fi
    \endcsname{#1}} % {#2}
 
-\setvalue{\string\placelayouttextline\v!normaal}{\doplacelayouttextline}
+\setvalue{\string\placelayouttextline\v!normal}{\doplacelayouttextline}
 \setvalue{\string\placelayouttextline          }{\doplacelayouttextline}
-\letvalue{\string\placelayouttextline\v!geen   }\gobbletwoarguments
-\letvalue{\string\placelayouttextline\v!hoog   }\gobbletwoarguments
+\letvalue{\string\placelayouttextline\v!none   }\gobbletwoarguments
+\letvalue{\string\placelayouttextline\v!high   }\gobbletwoarguments
 
-\setvalue{\string\placelayouttextline\v!leeg}#1#2%
+\setvalue{\string\placelayouttextline\v!empty}#1#2%
   {\resettextlinestatus{#1}}
 
 \setvalue{\string\placelayouttextline\v!start}#1#2%
@@ -314,7 +270,7 @@
 \setvalue{\string\placelayouttextline\v!stop}#1#2%
   {}
 
-\setvalue{\string\placelayouttextline\v!geenmarkering}#1#2%
+\setvalue{\string\placelayouttextline\v!nomarking}#1#2%
   {\bgroup
    \resettextlinestatus{#1}%
    \let\dogetmarking\nogetmarking
@@ -325,9 +281,9 @@
   {\bgroup % new
    \resettextlinestatus{#1}%
    \getvalue{\??tk#1\textlinestatus}%
-   \getvalue{\??tk#1\v!tekst\textlinestatus}%
-   \getvalue{\??tk#1\v!marge\textlinestatus}%
-   \getvalue{\??tk#1\v!rand\textlinestatus}%
+   \getvalue{\??tk#1\v!text\textlinestatus}%
+   \getvalue{\??tk#1\v!margin\textlinestatus}%
+   \getvalue{\??tk#1\v!edge\textlinestatus}%
    \doplacelayouttextline{#1}{#2}%
    \egroup}
 
@@ -335,17 +291,17 @@
 %D is flushed.
 
 \def\resetlayouttextline#1% beware: global assignment
-  {\doifvalue{\??tk#1\c!status}\v!hoog
+  {\doifvalue{\??tk#1\c!state}\v!high
      {\resettextlinestatus{#1}%
       \donetrue}}
 
 \def\resetlayouttextlines
   {\donefalse
-   \resetlayouttextline\v!boven
-   \resetlayouttextline\v!hoofd
-   \resetlayouttextline\v!tekst
-   \resetlayouttextline\v!voet
-   \resetlayouttextline\v!onder
+   \resetlayouttextline\v!top
+   \resetlayouttextline\v!header
+   \resetlayouttextline\v!text
+   \resetlayouttextline\v!footer
+   \resetlayouttextline\v!bottom
    \ifdone
      \doglobal\calculatevsizes
      \recalculatebackgrounds
@@ -361,36 +317,36 @@
 
 \def\gettextboxes
   {\setbox\scratchpagebox\vbox
-     {\mindermeldingen
+     {\dontcomplain
       \calculatereducedvsizes
       \swapmargins
       \offinterlineskip
-      \vskip-\bovenhoogte
-      \vskip-\bovenafstand
-      \ifdim\bovenhoogte>\zeropoint
+      \vskip-\topheight
+      \vskip-\topdistance
+      \ifdim\topheight>\zeropoint
         \the\toptextcontent
-        \vskip\bovenhoogte
+        \vskip\topheight
       \fi
-      \vskip\bovenafstand
-      \ifdim\hoofdhoogte>\zeropoint
+      \vskip\topdistance
+      \ifdim\headerheight>\zeropoint
         \the\headertextcontent
-        \vskip\hoofdhoogte
+        \vskip\headerheight
       \fi
-      \vskip\hoofdafstand
+      \vskip\headerdistance
       \placepositionanchors
-      \vskip-\teksthoogte
+      \vskip-\textheight
       \the\texttextcontent
-      \vskip\teksthoogte
+      \vskip\textheight
       \the\everyendoftextbody
-      \vskip\voetafstand
-      \ifdim\voethoogte>\zeropoint
+      \vskip\footerdistance
+      \ifdim\footerheight>\zeropoint
         \the\footertextcontent
-        \vskip\voethoogte
+        \vskip\footerheight
       \fi
-      \vskip\onderafstand
-      \ifdim\onderhoogte>\zeropoint
+      \vskip\bottomdistance
+      \ifdim\bottomheight>\zeropoint
         \the\bottomtextcontent
-        \vskip\onderhoogte
+        \vskip\bottomheight
       \fi
       \vfilll}%
   \smashbox\scratchpagebox
@@ -402,23 +358,23 @@
       \calculatereducedvsizes
       \calculatehsizes
       \swapmargins
-      \vskip\hoofdhoogte
-      \vskip\hoofdafstand
-      \vskip\layoutparameter\c!tekstafstand
-      \hbox to \zetbreedte
+      \vskip\headerheight
+      \vskip\headerdistance
+      \vskip\layoutparameter\c!textdistance
+      \hbox to \makeupwidth
         {\bgroup
            \swapmargins
            \goleftonpage
-           \ifdim\linkerrandbreedte>\zeropoint
+           \ifdim\leftedgewidth>\zeropoint
              \the\leftedgetextcontent
-             \hskip\linkerrandbreedte
+             \hskip\leftedgewidth
            \fi
-           \hskip\linkerrandafstand
-           \ifdim\linkermargebreedte>\zeropoint
+           \hskip\leftedgedistance
+           \ifdim\leftmarginwidth>\zeropoint
              \the\leftmargintextcontent
-             \hskip\linkermargebreedte
+             \hskip\leftmarginwidth
            \fi
-           \hskip\linkermargeafstand
+           \hskip\leftmargindistance
          \egroup
          \settextpagecontent\scratchpagebox{#1}{#2}%
 \setbox\scratchpagebox\vbox
@@ -431,15 +387,15 @@
          \box\scratchpagebox
          \localstoptextcolor
          \bgroup
-           \hskip\rechtermargeafstand
-           \ifdim\rechtermargebreedte>\zeropoint
+           \hskip\rightmargindistance
+           \ifdim\rightmarginwidth>\zeropoint
              \the\rightmargintextcontent
-             \hskip\rechtermargebreedte
+             \hskip\rightmarginwidth
            \fi
-           \hskip\rechterrandafstand
-           \ifdim\rechterrandbreedte>\zeropoint
+           \hskip\rightedgedistance
+           \ifdim\rightedgewidth>\zeropoint
              \the\rightedgetextcontent
-             \hskip\rechterrandbreedte
+             \hskip\rightedgewidth
            \fi
          \egroup
          \hss}}%
@@ -452,12 +408,12 @@
 % will be overloaded in page-lyr
 
 \def\settextpagecontent#1#2#3% #2 and #3 will disappear
-  {\setbox#1\hbox to \zetbreedte
+  {\setbox#1\hbox to \makeupwidth
      {\hss                        % so don't change this
-      \vbox to \teksthoogte
+      \vbox to \textheight
         {\offinterlineskip
          \freezetextwidth
-         \hsize\tekstbreedte      % local variant of \sethsize
+         \hsize\textwidth      % local variant of \sethsize
          \boxmaxdepth\maxdepth
          \noindent                % content can be < \hsize
          \dopagecontents#2#3}%
@@ -471,15 +427,15 @@
 
 \def\addtextgridlayer#1% tzt run time
   {\ifcase\showgridstate\else % 1=bottom 2=top
-     \setgridbox\scratchbox\zetbreedte\teksthoogte
+     \setgridbox\scratchbox\makeupwidth\textheight
      \setbox#1\hbox
-       {\ifcase\showgridstate\or\or\box#1\hskip-\zetbreedte\fi
+       {\ifcase\showgridstate\or\or\box#1\hskip-\makeupwidth\fi
         \bgroup % color
         \startlayoutcomponent{gridcolumns}{grid columns}%
         \incolortrue
         \ifcase\layoutcolumns\else
           \gray
-          \hbox to \zetbreedte
+          \hbox to \makeupwidth
             {\dorecurse\layoutcolumns
                {\hskip\layoutcolumnwidth
                 \ifnum\recurselevel<\layoutcolumns
@@ -488,14 +444,14 @@
                   \!!depth\dp\scratchbox
                   \!!width\layoutcolumndistance
               \fi}}%
-          \hskip-\zetbreedte
+          \hskip-\makeupwidth
         \fi
         \stoplayoutcomponent
         \startlayoutcomponent{gridlines}{grid lines}%
         \startcolor[layout:grid]\box\scratchbox\stopcolor
         \stoplayoutcomponent
         \egroup
-        \ifcase\showgridstate\or\hskip-\zetbreedte\box#1\fi}%
+        \ifcase\showgridstate\or\hskip-\makeupwidth\box#1\fi}%
    \fi}
 
 %D The placement of a whole line is handled by the next two
@@ -514,20 +470,20 @@
            \normalbaselines
            \let\\\ignoredlinebreak
            \let\crlf\ignoredlinebreak
-          %\getvalue{\??tk#1\v!tekst\c!voor}%
-           \getvalue{\??tk#1\c!voor}%
+          %\getvalue{\??tk#1\v!text\c!before}%
+           \getvalue{\??tk#1\c!before}%
            \doifbothsidesoverruled
-             \dodoplacelayouttextline#1\c!linkertekst\c!middentekst\c!rechtertekst
+             \dodoplacelayouttextline#1\c!lefttext\c!middletext\c!righttext
                \gobbleoneargument\getvalue
            \orsideone
-             \dodoplacelayouttextline#1\c!linkertekst\c!middentekst\c!rechtertekst
+             \dodoplacelayouttextline#1\c!lefttext\c!middletext\c!righttext
                \gobbleoneargument\getvalue
            \orsidetwo
-             \dodoplacelayouttextline#1\c!rechtertekst\c!middentekst\c!linkertekst
+             \dodoplacelayouttextline#1\c!righttext\c!middletext\c!lefttext
                \getvalue\gobbleoneargument
            \od
-          %\getvalue{\??tk#1\v!tekst\c!na}%
-           \getvalue{\??tk#1\c!na}%
+          %\getvalue{\??tk#1\v!text\c!after}%
+           \getvalue{\??tk#1\c!after}%
            \kern\zeropoint}% keep the \dp, beware of \vtops, never change this!
         \dp\scratchpagebox\zeropoint
         \box\scratchpagebox}%
@@ -536,46 +492,46 @@
 
 \def\dodoplacelayouttextline#1#2#3#4#5#6% \hsize toegevoegd, \hss's niet meer wijzigen
   {\hbox
-     {\ifdim\linkerrandbreedte>\zeropoint
-        \dododoplacelayouttextline\linkerrandbreedte{#1}\v!rand
-          {\hss\getvalue{\??tk#1\v!rand#2}}%
-        \hskip\linkerrandafstand
+     {\ifdim\leftedgewidth>\zeropoint
+        \dododoplacelayouttextline\leftedgewidth{#1}\v!edge
+          {\hss\getvalue{\??tk#1\v!edge#2}}%
+        \hskip\leftedgedistance
       \fi
-      \ifdim\linkermargebreedte>\zeropoint
-        \dododoplacelayouttextline\linkermargebreedte{#1}\v!marge
-          {\hbox to \linkermargebreedte
-             {\hss\getvalue{\??tk#1\v!marge#2}}%
-           \hskip-\linkermargebreedte
-           \hbox to \linkermargebreedte
-             {\hss#5{\??tk#1\v!marge\c!margetekst}}}%
-        \hskip\linkermargeafstand
+      \ifdim\leftmarginwidth>\zeropoint
+        \dododoplacelayouttextline\leftmarginwidth{#1}\v!margin
+          {\hbox to \leftmarginwidth
+             {\hss\getvalue{\??tk#1\v!margin#2}}%
+           \hskip-\leftmarginwidth
+           \hbox to \leftmarginwidth
+             {\hss#5{\??tk#1\v!margin\c!margintext}}}%
+        \hskip\leftmargindistance
       \fi
-      \ifdim\zetbreedte>\zeropoint
-        \dododoplacelayouttextline\zetbreedte{#1}\v!tekst
-          {\hbox to \zetbreedte
-             {\@@nmpre{#5{\??tk#1\v!tekst\c!kantlijntekst}}%
-              \getvalue{\??tk#1\v!tekst#2}\hss}%
-           \hskip-\zetbreedte
-           \hbox to \zetbreedte
-             {\hss\getvalue{\??tk#1\v!tekst#3}\hss}%
-           \hskip-\zetbreedte
-           \hbox to \zetbreedte
-             {\hss\getvalue{\??tk#1\v!tekst#4}%
-              \@@nmpos{#6{\??tk#1\v!tekst\c!kantlijntekst}}}}%
+      \ifdim\makeupwidth>\zeropoint
+        \dododoplacelayouttextline\makeupwidth{#1}\v!text
+          {\hbox to \makeupwidth
+             {\@@nmpre{#5{\??tk#1\v!text\c!marginedgetext}}%
+              \getvalue{\??tk#1\v!text#2}\hss}%
+           \hskip-\makeupwidth
+           \hbox to \makeupwidth
+             {\hss\getvalue{\??tk#1\v!text#3}\hss}%
+           \hskip-\makeupwidth
+           \hbox to \makeupwidth
+             {\hss\getvalue{\??tk#1\v!text#4}%
+              \@@nmpos{#6{\??tk#1\v!text\c!marginedgetext}}}}%
       \fi
-      \ifdim\rechtermargebreedte>\zeropoint
-        \hskip\rechtermargeafstand
-        \dododoplacelayouttextline\rechtermargebreedte{#1}\v!marge
-          {\hbox to \rechtermargebreedte
-             {\getvalue{\??tk#1\v!marge#4}\hss}%
-           \hskip-\rechtermargebreedte
-           \hbox to \rechtermargebreedte
-             {#6{\??tk#1\v!marge\c!margetekst}\hss}}%
+      \ifdim\rightmarginwidth>\zeropoint
+        \hskip\rightmargindistance
+        \dododoplacelayouttextline\rightmarginwidth{#1}\v!margin
+          {\hbox to \rightmarginwidth
+             {\getvalue{\??tk#1\v!margin#4}\hss}%
+           \hskip-\rightmarginwidth
+           \hbox to \rightmarginwidth
+             {#6{\??tk#1\v!margin\c!margintext}\hss}}%
       \fi
-      \ifdim\rechterrandbreedte>\zeropoint
-        \hskip\rechterrandafstand
-        \dododoplacelayouttextline\rechterrandbreedte{#1}\v!rand
-          {\getvalue{\??tk#1\v!rand#4}\hss}%
+      \ifdim\rightedgewidth>\zeropoint
+        \hskip\rightedgedistance
+        \dododoplacelayouttextline\rightedgewidth{#1}\v!edge
+          {\getvalue{\??tk#1\v!edge#4}\hss}%
       \fi}}
 
 % \def\dododoplacelayouttextline#1#2#3#4%
@@ -588,18 +544,18 @@
 \def\dododoplacelayouttextline#1#2#3#4%
   {\vbox % to \vsize
      {\hsize#1\relax
-      \getvalue{\??tk#2#3\c!voor}%
+      \getvalue{\??tk#2#3\c!before}%
       \startlayoutcomponent{t:#2:#3}{area #2 #3}%
         \hbox to #1{#4}%
       \stoplayoutcomponent
-      \getvalue{\??tk#2#3\c!na}}}
+      \getvalue{\??tk#2#3\c!after}}}
 
 %D Although it is far better to use backgrounds for this
 %D purpose, one can add a rule in the following way. This
 %D method makes the rules disappear in case of an empty text
 %D line. Consider this a feature.
 %D
-%D \starttypen
+%D \starttyping
 %D \setupheadertexts[left][right]
 %D
 %D \setupheader[text][after=\hrule,style=bold]
@@ -609,7 +565,7 @@
 %D   \setupheader[state=empty]
 %D   \input tufte \page
 %D \stoptext
-%D \stoptypen
+%D \stoptyping
 
 %D The next twosome will be done differently (using an
 %D existing auxiliary macro).
@@ -625,9 +581,9 @@
 % newer
 
 \def\@@nmprepos#1#2#3#4#5%
-  {\doifelsenothing\@@nmbreedte
+  {\doifelsenothing\@@nmwidth
      {\doiftext{#5}{#1{#5}#2}}
-     {\doiftext{#5}{\hbox to \@@nmbreedte{#3{#5}#4}}}}
+     {\doiftext{#5}{\hbox to \@@nmwidth{#3{#5}#4}}}}
 
 \def\@@nmpre{\@@nmprepos\empty\tfskip\relax\hss}
 \def\@@nmpos{\@@nmprepos\tfskip\empty\hss\relax}
@@ -635,11 +591,11 @@
 %D This code will move to \type {page-flt.tex}.
 
 \appendtoks
-  \plaatsrechtermargeblok \hskip-\rechtermargebreedte
+  \plaatsrechtermargeblok \hskip-\rightmarginwidth
 \to \rightmargintextcontent
 
 \appendtoks
-  \plaatslinkermargeblok \hskip-\linkermargebreedte
+  \plaatslinkermargeblok \hskip-\leftmarginwidth
 \to \leftmargintextcontent
 
 %D The next hook will later be used for keeping track of
@@ -647,7 +603,7 @@
 %D dependent) reference point.
 
 \ifx\undefined\placepositionanchors
-  \def\placepositionanchors{\vskip\teksthoogte}
+  \def\placepositionanchors{\vskip\textheight}
 \fi
 
 %D \macros
@@ -662,14 +618,14 @@
 %D The next example demonstrates how we can use this
 %D mechanism to provide page (event) dependent text lines.
 %D
-%D \starttypen
-%D \definetext[hoofdstuk][voet][paginanummer]
-%D \stelkopin[hoofdstuk][hoofd=hoog,voet=hoofdstuk]
-%D \setupheadertexts[paginanummer]
-%D \setupfootertexts[links][rechts]
-%D \hoofdstuk{eerste} \dorecurse{20}{\input tufte \relax}
-%D \hoofdstuk{tweede} \dorecurse{20}{\input tufte \relax}
-%D \stoptypen
+%D \starttyping
+%D \definetext[chapter][footer][pagenumber]
+%D \setuphead[chapter][header=high,footer=chapter]
+%D \setupheadertexts[pagenumber]
+%D \setupfootertexts[left][right]
+%D \chapter{eerste} \dorecurse{20}{\input tufte \relax}
+%D \chapter{tweede} \dorecurse{20}{\input tufte \relax}
+%D \stoptyping
 
 \def\definetext
   {\doseventupleempty\dodefinetext}
@@ -690,25 +646,25 @@
 %D The rest of this file is dedicated to setting up the
 %D texts. This code is not that impressive.
 
-\setupheadertexts [\v!tekst] [] []
-\setupheadertexts [\v!marge] [] []
-\setupheadertexts [\v!rand]  [] []
+\setupheadertexts [\v!text] [] []
+\setupheadertexts [\v!margin] [] []
+\setupheadertexts [\v!edge]  [] []
 
-\setupfootertexts [\v!tekst] [] []
-\setupfootertexts [\v!marge] [] []
-\setupfootertexts [\v!rand]  [] []
+\setupfootertexts [\v!text] [] []
+\setupfootertexts [\v!margin] [] []
+\setupfootertexts [\v!edge]  [] []
 
-\setuptexttexts   [\v!tekst] [] []
-\setuptexttexts   [\v!marge] [] []
-\setuptexttexts   [\v!rand]  [] []
+\setuptexttexts   [\v!text] [] []
+\setuptexttexts   [\v!margin] [] []
+\setuptexttexts   [\v!edge]  [] []
 
-\setupbottomtexts [\v!tekst] [] []
-\setupbottomtexts [\v!marge] [] []
-\setupbottomtexts [\v!rand]  [] []
+\setupbottomtexts [\v!text] [] []
+\setupbottomtexts [\v!margin] [] []
+\setupbottomtexts [\v!edge]  [] []
 
-\setuptoptexts    [\v!tekst] [] []
-\setuptoptexts    [\v!marge] [] []
-\setuptoptexts    [\v!rand]  [] []
+\setuptoptexts    [\v!text] [] []
+\setuptoptexts    [\v!margin] [] []
+\setuptoptexts    [\v!edge]  [] []
 
 % alternative
 %
@@ -736,35 +692,35 @@
 \def\dodocommando[#1][#2]%
   {\getparameters
      [\??tk#1#2]
-     [%\c!status=\v!normaal, % moved
-      \c!voor=,  % both global and local are used
-      \c!na=,    % both global and local are used
+     [%\c!state=\v!normal, % moved
+      \c!before=,  % both global and local are used
+      \c!after=,    % both global and local are used
       \c!strut=, % the local one, not (yet) used
-      \c!letter=\getvalue{\??tk#1\c!letter},% hm, got lost
-      \c!kleur=\getvalue{\??tk#1\c!kleur},  % hm, got lost
-      \c!linkertekst=,
-      \c!middentekst=,
-      \c!rechtertekst=,
-      \c!kantlijntekst=,
-      \c!margetekst=,
-      \c!breedte=]%
-   \inheritparameter[\??tk#1#2][\c!linkerletter  ][\c!letter ]%
-   \inheritparameter[\??tk#1#2][\c!rechterletter ][\c!letter ]%
-   \inheritparameter[\??tk#1#2][\c!linkerkleur   ][\c!kleur  ]%
-   \inheritparameter[\??tk#1#2][\c!rechterkleur  ][\c!kleur  ]%
-   \inheritparameter[\??tk#1#2][\c!linkerbreedte ][\c!breedte]%
-   \inheritparameter[\??tk#1#2][\c!rechterbreedte][\c!breedte]}
+      \c!style=\getvalue{\??tk#1\c!style},% hm, got lost
+      \c!color=\getvalue{\??tk#1\c!color},  % hm, got lost
+      \c!lefttext=,
+      \c!middletext=,
+      \c!righttext=,
+      \c!marginedgetext=,
+      \c!margintext=,
+      \c!width=]%
+   \inheritparameter[\??tk#1#2][\c!leftstyle  ][\c!style ]%
+   \inheritparameter[\??tk#1#2][\c!rightstyle ][\c!style ]%
+   \inheritparameter[\??tk#1#2][\c!leftcolor   ][\c!color  ]%
+   \inheritparameter[\??tk#1#2][\c!rightcolor  ][\c!color  ]%
+   \inheritparameter[\??tk#1#2][\c!leftwidth ][\c!width]%
+   \inheritparameter[\??tk#1#2][\c!rightwidth][\c!width]}
 
 \def\docommando#1%
-  {\dodocommando[#1][\v!tekst]%
-   \dodocommando[#1][\v!marge]%
-   \dodocommando[#1][\v!rand]}
+  {\dodocommando[#1][\v!text]%
+   \dodocommando[#1][\v!margin]%
+   \dodocommando[#1][\v!edge]}
 
-\docommando\v!boven
-\docommando\v!hoofd
-\docommando\v!voet
-\docommando\v!tekst
-\docommando\v!onder
+\docommando\v!top
+\docommando\v!header
+\docommando\v!footer
+\docommando\v!text
+\docommando\v!bottom
 
 \let\docommando  \relax
 \let\dodocommando\relax
@@ -772,16 +728,16 @@
 %D While the header and footer lines are moved away from the
 %D main text, the top and bottom lines are centered.
 
-\setuptop   [\c!status=\v!normaal,\c!voor=\vss,\c!na=\vss,\c!strut=]
-\setupheader[\c!status=\v!normaal,\c!voor=,    \c!na=\vss,\c!strut=\v!ja]
-\setuptext  [\c!status=\v!normaal,\c!voor=\vss,\c!na=\vss,\c!strut=]
-\setupfooter[\c!status=\v!normaal,\c!voor=\vss,\c!na=,    \c!strut=\v!ja]
-\setupbottom[\c!status=\v!normaal,\c!voor=\vss,\c!na=\vss,\c!strut=]
+\setuptop   [\c!state=\v!normal,\c!before=\vss,\c!after=\vss,\c!strut=]
+\setupheader[\c!state=\v!normal,\c!before=,    \c!after=\vss,\c!strut=\v!yes]
+\setuptext  [\c!state=\v!normal,\c!before=\vss,\c!after=\vss,\c!strut=]
+\setupfooter[\c!state=\v!normal,\c!before=\vss,\c!after=,    \c!strut=\v!yes]
+\setupbottom[\c!state=\v!normal,\c!before=\vss,\c!after=\vss,\c!strut=]
 
-\setuptop   [\c!letter=,\c!kleur=]
-\setupheader[\c!letter=,\c!kleur=]
-\setuptext  [\c!letter=,\c!kleur=]
-\setupfooter[\c!letter=,\c!kleur=]
-\setupbottom[\c!letter=,\c!kleur=]
+\setuptop   [\c!style=,\c!color=]
+\setupheader[\c!style=,\c!color=]
+\setuptext  [\c!style=,\c!color=]
+\setupfooter[\c!style=,\c!color=]
+\setupbottom[\c!style=,\c!color=]
 
 \protect \endinput

@@ -1,5 +1,5 @@
 %D \module
-%D   [       file=font-ini,
+%D   [       filefile=font-ini,
 %D        version=1998.09.11, % (second)
 %D        version=2001.02.20, % (third)
 %D          title=\CONTEXT\ Font Macros,
@@ -255,7 +255,7 @@
 %D means one doesn't have to take care of all kind of relations
 %D between fonts.
 %D
-%D \pagina[grotevoorkeur]
+%D \page[bigpreference]
 
 %D \macros
 %D   {rm,ss,tt,hw,cg}
@@ -264,73 +264,73 @@
 %D we distinguish between several styles. In most cases we will
 %D use:
 %D
-%D \startregelcorrectie
-%D \starttabel[|l||]
+%D \startlinecorrection
+%D \starttable[|l||]
 %D \HL
 %D \NC roman regular serif    \NC \type{\rm} \NC\FR
 %D \NC sansserif sans support \NC \type{\ss} \NC\MR
 %D \NC type teletype mono     \NC \type{\tt} \NC\LR
 %D \HL
-%D \stoptabel
-%D \stopregelcorrectie
+%D \stoptable
+%D \stoplinecorrection
 %D
 %D The number of styles is not limited to these three. When
 %D using Lucida Bright we can for instance also define:
 %D
-%D \startregelcorrectie
-%D \starttabel[|l||]
+%D \startlinecorrection
+%D \starttable[|l||]
 %D \HL
 %D \NC handwritten  \NC \type{\hw} \NC\FR
 %D \NC calligraphic \NC \type{\cg} \NC\LR
 %D \HL
-%D \stoptabel
-%D \stopregelcorrectie
+%D \stoptable
+%D \stoplinecorrection
 %D
 %D Anyone who feels the need, can define additional ones, like
 %D
-%D \startregelcorrectie
-%D \starttabel[|l||]
+%D \startlinecorrection
+%D \starttable[|l||]
 %D \HL
 %D \NC faxfont    \NC \type{\ff} \NC\FR
 %D \NC blackboard \NC \type{\bb} \NC\LR
 %D \HL
-%D \stoptabel
-%D \stopregelcorrectie
+%D \stoptable
+%D \stoplinecorrection
 %D
 %D Or even
 %D
-%D \startregelcorrectie
-%D \starttabel[|l||]
+%D \startlinecorrection
+%D \starttable[|l||]
 %D \HL
 %D \NC hebrew \NC \type{\hb} \NC\SR
 %D \HL
-%D \stoptabel
-%D \stopregelcorrectie
+%D \stoptable
+%D \stoplinecorrection
 %D
 %D Styles are grouped in font sets. At the moment there are
 %D three main sets defined:
 %D
-%D \startregelcorrectie
-%D \starttabel[|l|l||]
+%D \startlinecorrection
+%D \starttable[|l|l||]
 %D \HL
 %D \NC Computer Modern Roman     \NC Knuth             \NC \type{cmr} \NC\FR
 %D \NC Lucida Bright             \NC Bigelow \& Holmes \NC \type{lbr} \NC\MR
 %D \NC Standard Postscript Fonts \NC Adobe             \NC \type{pos} \NC\LR
 %D \HL
-%D \stoptabel
-%D \stopregelcorrectie
+%D \stoptable
+%D \stoplinecorrection
 %D
 %D There are also some Computer Modern Roman alternatives:
 %D
-%D \startregelcorrectie
-%D \starttabel[|l|l||]
+%D \startlinecorrection
+%D \starttable[|l|l||]
 %D \HL
 %D \NC Computer Modern Roman    \NC Knuth \& Sauter \NC \type{sau} \NC\FR
 %D \NC Euler fonts              \NC Zapf            \NC \type{eul} \NC\MR
 %D \NC Computer Modern Concrete \NC Knuth \& Zapf   \NC \type{con} \NC\LR
 %D \HL
-%D \stoptabel
-%D \stopregelcorrectie
+%D \stoptable
+%D \stoplinecorrection
 %D
 %D All these definitions are ordered in files with names like
 %D \type{font-cmr} and \type{font-pos}, where the last three
@@ -339,8 +339,8 @@
 %D Within such a font set (\type{cmr}) and style (\type{\rm})
 %D we can define a number of text font alternatives:
 %D
-%D \startregelcorrectie
-%D \starttabel[|l||]
+%D \startlinecorrection
+%D \starttable[|l||]
 %D \HL
 %D \NC typeface    \NC \type{\tf} \NC\FR
 %D \NC boldface    \NC \type{\bf} \NC\MR
@@ -350,18 +350,18 @@
 %D \NC bolditalic  \NC \type{\bi} \NC\MR
 %D \NC smallcaps   \NC \type{\sc} \NC\LR
 %D \HL
-%D \stoptabel
-%D \stopregelcorrectie
+%D \stoptable
+%D \stoplinecorrection
 
 %D For old stylish Frans Goddijn we have:
 %D
-%D \startregelcorrectie
-%D \starttabel[|l||]
+%D \startlinecorrection
+%D \starttable[|l||]
 %D \HL
 %D \NC oldstyle \NC \type{\os} \NC\SR
 %D \HL
-%D \stoptabel
-%D \stopregelcorrectie
+%D \stoptable
+%D \stoplinecorrection
 %D
 %D The availability of these alternatives depends on the
 %D completeness of a font family and of course the definitions
@@ -370,8 +370,8 @@
 %D But let's not forget math. In addition to the previous \TEX\
 %D families (the mysterious \type{\fam}'s) we've got some more:
 %D
-%D \startregelcorrectie
-%D \starttabel[|l||]
+%D \startlinecorrection
+%D \starttable[|l||]
 %D \HL
 %D \NC Math Roman  \NC \type{\mr} \NC\FR
 %D \NC Math Italic \NC \type{\mi} \NC\MR
@@ -381,8 +381,8 @@
 %D \NC Math B      \NC \type{\mb} \NC\MR
 %D \NC Math C      \NC \type{\mc} \NC\LR
 %D \HL
-%D \stoptabel
-%D \stopregelcorrectie
+%D \stoptable
+%D \stoplinecorrection
 %D
 %D Users can call for specific fonts in many ways. Switches to
 %D other typefaces, like the switch from normal to bold, are as
@@ -398,20 +398,20 @@
 %D During the definition of a bodyfont one can also declare the
 %D available larger alternatives:
 %D
-%D \starttypen
+%D \starttyping
 %D \tf \tfa \tfb \tfc ...
 %D \bf \bfa \bfb \bfc ...
 %D \sl \sla \slb \slc ...
-%D \stoptypen
+%D \stoptyping
 %D
 %D The smaller ones are automatically supplied and derived from
 %D the the bodyfont environment.
 %D
-%D \starttypen
+%D \starttyping
 %D \tfx \tfxx
 %D \bfx \bfxx
 %D \slx \slxx
-%D \stoptypen
+%D \stoptyping
 %D
 %D There are only two smaller alternatives per style. The
 %D larger alternatives on the other hand have no limitations.
@@ -425,14 +425,14 @@
 %D \tfd Hi \bf there\sl, here \tfb I \bf am
 %D \stopbuffer
 %D
-%S \startsmaller
+%S \startnarrower
 %D \typebuffer
-%S \stopsmaller
+%S \stopnarrower
 %D
 %D therefore becomes:
 %D
 %D \startvoorbeeld
-%D \haalbuffer
+%D \getbuffer
 %D \stopvoorbeeld
 %D
 %D Maybe this mechanism isn't always as logic, but as said
@@ -440,9 +440,9 @@
 %D
 %D So a specific kind of glyph can be characterized by:
 %D
-%D \startsmaller
+%D \startnarrower
 %D family (cmr) + bodyfont (12pt) + style (rm) + alternative (bf) + size (a)
-%D \stopsmaller
+%D \stopnarrower
 %D
 %D The last component (the size) is optional.
 %D
@@ -454,9 +454,9 @@
 %D workaround for this: we can call fonts directly by means of
 %D commands like:
 %D
-%D \starttypen
+%D \starttyping
 %D \rmtf \sssl \tttf \rmbsa
-%D \stoptypen
+%D \stoptyping
 %D
 %D One should realize that this fast calls have limitations,
 %D they lack for instance automatic super- and subscript
@@ -476,16 +476,16 @@
 %D lays in the fact that we often want a bit bigger characters
 %D than in math mode. In \CONTEXT\ for instance the \type{\tx}
 %D and \type{\txx} commands are used for surrogate
-%D \kap{smallcaps} which support both nesting and alternatives,
-%D like in {\bf\kap{a \kap{small} world}}, which was typeset by
+%D \cap{smallcaps} which support both nesting and alternatives,
+%D like in {\bf\cap{a \cap{small} world}}, which was typeset by
 %D
-%D \starttypen
-%D \bf\kap{a \kap{small} world}
-%D \stoptypen
+%D \starttyping
+%D \bf\cap{a \cap{small} world}
+%D \stoptyping
 %D
 %D And compare $\rm \scriptstyle THIS$ with the slightly larger
-%D \kap{THIS}: \ruledhbox{$\rm \scriptstyle scriptstyle: THIS$}
-%D or \ruledhbox{\kap{x style: THIS}} makes a big difference.
+%D \cap{THIS}: \ruledhbox{$\rm \scriptstyle scriptstyle: THIS$}
+%D or \ruledhbox{\cap{x style: THIS}} makes a big difference.
 
 %D The \type{x..d} sizes should be used grouped. If you
 %D don't group them, i.e. call them in a row, \CONTEXT\ will
@@ -495,7 +495,7 @@
 %D
 %D \def\FontState{\setstrut\ruledhbox{\strut Hello}}
 %D
-%D \starttabulatie[|||||]
+%D \starttabulate[|||||]
 %D \HL
 %D \NC \rlap{\quad\bf grouped} \NC \NC \type {\tx} \NC \type {\txx} \NC \NR
 %D \HL
@@ -509,11 +509,11 @@
 %D \NC \type{\tfx}  \NC \tfx  \FontState \NC \tfx \tx \FontState \NC \tfx \txx \FontState  \NC \NR
 %D \NC \type{\tfxx} \NC \tfxx \FontState \NC \tfxx\tx \FontState \NC \tfxx\txx \FontState  \NC \NR
 %D \HL
-%D \stoptabulatie
+%D \stoptabulate
 %D
-%D \blanko
+%D \blank
 %D
-%D \starttabulatie[|||||]
+%D \starttabulate[|||||]
 %D \HL
 %D \NC \rlap{\quad\bf stacked} \NC \NC \type {\tx} \NC \type {\txx} \NC \NR
 %D \HL
@@ -563,7 +563,7 @@
 %D \NC \tfx\tfxx\tf\tfa\tfb\tfc\tfx\tfxx \txx \FontState
 %D \NC \NR
 %D \HL
-%D \stoptabulatie
+%D \stoptabulate
 
 %D \macros
 %D   {mf}
@@ -589,9 +589,9 @@
 %D Gives both an expected and unexpected result:
 %D
 %D \startvoorbeeld
-%D \startregels
-%D \haalbuffer
-%D \stopregels
+%D \startlines
+%D \getbuffer
+%D \stoplines
 %D \stopvoorbeeld
 %D
 %D We see here that the character shapes change accordingly to
@@ -608,9 +608,9 @@
 %D \stopbuffer
 %D
 %D \startvoorbeeld
-%D \startregels
-%D \haalbuffer
-%D \stopregels
+%D \startlines
+%D \getbuffer
+%D \stoplines
 %D \stopvoorbeeld
 %D
 %D In this example we see a new command \type{\mf} surface
@@ -656,14 +656,14 @@
 %D It won't!
 %D
 %D \startvoorbeeld
-%D \let\mathop=\normalmathop \haalbuffer
+%D \let\mathop=\normalmathop \getbuffer
 %D \stopvoorbeeld
 %D
 %D The reason for this is that \type{\sin} is defined as:
 %D
-%D \starttypen
+%D \starttyping
 %D \def\sin{\mathop{\rm sin}\nolimits}
-%D \stoptypen
+%D \stoptyping
 %D
 %D We can fix this by defining
 
@@ -678,27 +678,27 @@
 %D We can fix arbitrary horizontal boxes by redefining the
 %D \TEX\ primitive \type{\hbox}:
 %D
-%D \starttypen
+%D \starttyping
 %D \let\normalhbox=\hbox
 %D
 %D \def\hbox{\ifmmode\mbox\else\normalhbox\fi}
-%D \stoptypen
+%D \stoptyping
 %D
 %D with
 %D
-%D \starttypen
+%D \starttyping
 %D \def\mbox#1#%
 %D   {\normalhbox#1\bgroup\mf\let\next=}
-%D \stoptypen
+%D \stoptyping
 %D
 %D or more robust, that is, also accepting \type{\hbox\bgroup}:
 %D
-%D \starttypen
+%D \starttyping
 %D \def\mbox%
 %D   {\normalhbox\bgroup\mf
 %D    \dowithnextbox{\flushnextbox\egroup}%
 %D    \normalhbox}
-%D \stoptypen
+%D \stoptyping
 %D
 %D And now:
 %D
@@ -711,7 +711,7 @@
 %D Indeed gives:
 %D
 %D \startvoorbeeld
-%D \enablembox\haalbuffer
+%D \enablembox\getbuffer
 %D \stopvoorbeeld
 %D
 %D But, do we want this kind of trickery to be activated? No,
@@ -1162,12 +1162,12 @@
 %D There are several ways to specify a font. Three of them are
 %D pure \TeX\ ones, the fourth one is new:
 %D
-%D \starttypen
+%D \starttyping
 %D \font\name=cmr12
 %D \font\name=cmr12 at 10pt
 %D \font\name=cmr12 scaled \magstep2
 %D \font\name=cmr12 sa 1.440
-%D \stoptypen
+%D \stoptyping
 %D
 %D The non||\TEX\ alternative \type{sa} stands for {\em scaled
 %D at}. This means as much as: scale the bodyfontsize with this
@@ -1176,9 +1176,9 @@
 %D \in{table}[tab:magstep]. We therefore introduce
 %D \type{\magfactor} as an alternative for \type{\magstep}.
 %D
-%D \plaatstabel[hier][tab:magstep]
+%D \placetable[here][tab:magstep]
 %D   {Factors to be used with \type{sa.}}
-%D \starttabel[|c|c|c|]
+%D \starttable[|c|c|c|]
 %D \HL
 %D \NC \bf magstep \NC \bf equivalent     \NC \bf factor \NC\SR
 %D \HL
@@ -1188,7 +1188,7 @@
 %D \NC 4           \NC \type{\magfactor4} \NC 2.074      \NC\MR
 %D \NC 5           \NC \type{\magfactor5} \NC 2.488      \NC\LR
 %D \HL
-%D \stoptabel
+%D \stoptable
 
 \def\magstep#1% \relax removed, otherwise space after it sticks, else added
   {\ifcase#1 \@m\or1200\or1440\or1728\or2074\or2488\or\@m\fi}
@@ -1395,9 +1395,9 @@
 %D An additional the second \type {\font} definition can
 %D prevent fuzzy font refs
 %D
-%D \starttypen
+%D \starttyping
 %D \expandafter\font\csname\dummyfontname\endcsname\lastfontname
-%D \stoptypen
+%D \stoptyping
 %D
 %D but somehow they changed \TEX\ so that it does not matter
 %D any more.
@@ -1462,17 +1462,17 @@
 %D While looking for fonts, fontsynonyms are used for accessing
 %D the files!
 %D
-%D \starttypen
+%D \starttyping
 %D \definefontsynonym[Serif][Lucida-Bright]
 %D \definefontsynonym[Lucida-Bright][lbr][encoding=texnansi]
-%D \stoptypen
+%D \stoptyping
 %D
 %D The definitions can be accessed by:
 %D
-%D \startregels
+%D \startlines
 %D name: \type {\truefontname{Lucida-Bright}}
 %D data: \type {\truefontdata{\truefontname{Lucida-Bright}}}
-%D \stopregels
+%D \stoplines
 
 \def\definefontsynonym
   {\dotripleempty\dodefinefontsynonym}
@@ -1650,15 +1650,15 @@
 %D For special purposes, one can use the next macro to
 %D access font file characteristics, for instance:
 %D
-%D \starttypen
+%D \starttyping
 %D \getfontfileparameters{Regular}
-%D \stoptypen
+%D \stoptyping
 %D
 %D can result in:
 %D
-%D \starttypen
+%D \starttyping
 %D \def\currentfontfileencoding{texnansi}
-%D \stoptypen
+%D \stoptyping
 
 % \def\@@currentfontfile{currentfontfile}
 %
@@ -1678,12 +1678,12 @@
 %D Before we implement the main definition macro, we first show
 %D one for local use:
 %D
-%D \starttypen
+%D \starttyping
 %D \definefont[Some][LucidaBright at 100pt]    \Some some
 %D \definefont[More][LucidaBright scaled 3000] \More more
 %D \definefont[Nice][LucidaBright mp 2]        \Nice nice
 %D \definefont[Text][LucidaBright sa 5.4]      \Text last
-%D \stoptypen
+%D \stoptyping
 %D
 %D The implementation one looks familiar:
 
@@ -1827,9 +1827,9 @@
 %D
 %D \typebuffer
 %D
-%D \startopelkaar
-%D \haalbuffer
-%D \stopopelkaar
+%D \startpacked
+%D \getbuffer
+%D \stoppacked
 
 \def\mapfontsize
   {\dodoubleargument\domapfontsize}
@@ -1953,20 +1953,20 @@
 %D A typical use of this command is in commands that switch
 %D to another font bypassing the font mechanism:
 %D
-%D \starttypen
+%D \starttyping
 %D \font\myfont=\truefontname{MyFont} at \currentfontscale\bodyfontsize
-%D \stoptypen
+%D \stoptyping
 
 %D Now we enter the area of font switching. The switching
 %D mechanism has to take care of several situations, like:
 %D
-%D \startopsomming[opelkaar]
-%D \som  changing the overal document fonts (including margins,
+%D \startitemize[packed]
+%D \item  changing the overal document fonts (including margins,
 %D       headers and footers)
-%D \som  changing local fonts (only the running text)
-%D \som  smaller and even more smaller alternatives (super-
+%D \item  changing local fonts (only the running text)
+%D \item  smaller and even more smaller alternatives (super-
 %D       and subscripts)
-%D \stopopsomming
+%D \stopitemize
 %D
 %D \TEX\ offers a powerfull family mechanism for super- and
 %D subscripts in math mode. In text mode however, we don't use
@@ -1984,7 +1984,7 @@
 %D Later on we will see how these parameters are used, so for
 %D the moment we stick with an example:
 %D
-%D \starttypen
+%D \starttyping
 %D \definebodyfontenvironment
 %D   [12pt]
 %D   [        text=12pt,
@@ -1994,7 +1994,7 @@
 %D              xx=8pt,
 %D             big=12pt,
 %D           small=10pt]
-%D \stoptypen
+%D \stoptyping
 %D
 %D The first argument specifies the bodyfont size to which the
 %D settings apply. All second parameters are specified in
@@ -2061,11 +2061,11 @@
          \normalizebodyfontsize\scratchdimen\to\tempbodyfontsize
          \setevalue{\??ft#2#1##1}{\tempbodyfontsize}}%
      \processcommalist
-       [\s!text,\s!script,\s!scriptscript,\c!x,\c!xx,\c!groot,\c!klein]
+       [\s!text,\s!script,\s!scriptscript,\c!x,\c!xx,\c!big,\c!small]
        \docommando
      \copyparameters
        [\??ft#2#1][\??ft\s!default]
-       [\c!interlinie,\c!em]}%
+       [\c!interlinespace,\c!em]}%
    \getparameters[\??ft#2#1][#3]%
    \@@endfontdef
    % new code, see remark
@@ -2080,7 +2080,7 @@
 %D {\bf Remark:} We need to cover the following cases,
 %D otherwise users can get confused:
 %D
-%D \starttypen
+%D \starttyping
 %D \setupbodyfont[23pt]
 %D
 %D \definebodyfontenvironment[23pt]
@@ -2089,7 +2089,7 @@
 %D \definebodyfontenvironment[23pt]
 %D \definebodyfont[23pt][rm,ss,tt][default]
 %D \setupbodyfont[23pt]
-%D \stoptypen
+%D \stoptyping
 
 %D Beware: while some font defs can be global, the bodyfont
 %D environment checks local. This means that multiple local
@@ -2155,7 +2155,7 @@
   {\csname\bodyfontvariable}
 
 \def\bodyfontinterlinespecs
-  {\bodyfontvariable{\normalizedbodyfontsize\c!interlinie}}
+  {\bodyfontvariable{\normalizedbodyfontsize\c!interlinespace}}
 
 \def\bodyfontinterlinespace
   {\csname\bodyfontinterlinespecs\endcsname}
@@ -2163,9 +2163,9 @@
 %D We default all parameters to the main bodyfont size (begin
 %D \type{#1}), so the next setup is valid too:
 %D
-%D \starttypen
+%D \starttyping
 %D \definebodyfontenvironment[24pt]
-%D \stoptypen
+%D \stoptyping
 %D
 %D All parameters can be redefined when needed, so one does
 %D not have to stick to the default ones.
@@ -2190,7 +2190,7 @@
 %D extended with \type{\bfa}, \type{\slb}, etc. or even
 %D \type{e} and higher alternatives.
 %D
-%D \starttypen
+%D \starttyping
 %D \definebodyfont [12pt] [rm]
 %D   [tf=cmr12,
 %D    bf=cmbx12,
@@ -2216,7 +2216,7 @@
 %D   tfc=lbr  sa 1.728,
 %D   tfd=lbr  sa 2.074,
 %D    sc=lbr  sa 0.833]
-%D \stoptypen
+%D \stoptyping
 %D
 %D The second example shows that we can define more sizes at
 %D once. The main difference between these examples is that the
@@ -2370,7 +2370,7 @@
          \normalizebodyfontsize\scratchdimen\to\!!stringa
          \letvalue{\??ft#1##1}\!!stringa}}%
    \processcommalist
-     [\s!text,\s!script,\s!scriptscript,\c!x,\c!xx,\c!groot,\c!klein]
+     [\s!text,\s!script,\s!scriptscript,\c!x,\c!xx,\c!big,\c!small]
      \docommando
    \let\c!text\c!savedtext
    \ifdone
@@ -2391,7 +2391,7 @@
            {\doifundefined{\@size@\getvalue{\??ft#1##1}}
               {\defineunknownfont{\getvalue{\??ft#1##1}}}}%
          \processcommalist
-           [\s!text,\s!script,\s!scriptscript,\c!x,\c!xx,\c!groot,\c!klein]
+           [\s!text,\s!script,\s!scriptscript,\c!x,\c!xx,\c!big,\c!small]
            \defineunknownsubfont
          \definingunknownfontfalse
        \fi
@@ -2412,15 +2412,15 @@
 
 %D A previous implementation used:
 %D
-%D \starttypen
+%D \starttyping
 %D \type {\setvalue{name}{\donottest...}}
-%D \stoptypen
+%D \stoptyping
 %D
 %D instead of the more memory hungry:
 %D
-%D \starttypen
+%D \starttyping
 %D \unexpanded\setvalue{name}{...}
-%D \stoptypen
+%D \stoptyping
 %D
 %D The first alternative saves about 500 hash entries (about
 %D 2.5\% of the total number of entries used. The second
@@ -2441,15 +2441,15 @@
 
 %D At the system level one can initialize thing like:
 %D
-%D \starttypen
+%D \starttyping
 %D \appendtoks \setupspacing \to \everybodyfont
-%D \stoptypen
+%D \stoptyping
 %D
 %D While users can add their own non standard commands like:
 %D
-%D \starttypen
+%D \starttyping
 %D \Everybodyfont{\message{changing to bodyfont \the\bodyfontsize}}
-%D \stoptypen
+%D \stoptyping
 %D
 %D Personnaly I never felt the need for such extensions, but
 %D at least its possible.
@@ -2621,9 +2621,9 @@
 %D loaded, but not accessible yet by name. This is accomplished
 %D by saying:
 %D
-%D \starttypen
+%D \starttyping
 %D \font\preloaded=cmr10 at 11pt
-%D \stoptypen
+%D \stoptyping
 %D
 %D and using the name \type{\preloaded} again and again, so
 %D fonts are indeed loaded, but unnamed, and therefore
@@ -2679,7 +2679,7 @@
 %D bodyfont size.
 
 \def\dosetfont#1#2%  #1 = set/switch state
-  {\doifelse{#2}\v!globaal
+  {\doifelse{#2}\v!global
      {\restoreglobalbodyfont}
      {\processcommacommand[#2]{\dodosetfont{#1}}% ##1 get also passed
       \ifloadingfonts\else
@@ -3057,9 +3057,9 @@
 %D result in:
 %D
 %D \startvoorbeeld
-%D \startregels
-%D \haalbuffer
-%D \stopregels
+%D \startlines
+%D \getbuffer
+%D \stoplines
 %D \stopvoorbeeld
 %D
 %D Setting the main size involves the style list and therefore
@@ -3080,10 +3080,10 @@
 %D also use more verbose names like roman or sansserif. Such
 %D names are defined by:
 %D
-%D \starttypen
-%D \definefontstyle [serif, rm] [rm]
-%D \definefontstyle [sansserif, ss] [ss]
-%D \stoptypen
+%D \starttyping
+%D \definefontstyle [serif,rm] [rm]
+%D \definefontstyle [sansserif,ss] [ss]
+%D \stoptyping
 
 \def\dodefinefontstyle[#1][#2]%
   {\rawdoifinsetelse{#2}{\stylelist}
@@ -3115,7 +3115,7 @@
 %D neccessary to define the whole bunch of fonts, take for
 %D instance the sequence:
 %D
-%D \starttypen
+%D \starttyping
 %D \setupbodyfont
 %D   [ams]
 %D
@@ -3127,7 +3127,7 @@
 %D   [24pt]
 %D
 %D This is a 24pt $\blacktriangleleft$
-%D \stoptypen
+%D \stoptyping
 %D
 %D Here we didn't define the 24 point bodyfont environment, so
 %D it's defined automatically. Of course one can always use the
@@ -3163,16 +3163,16 @@
 %D one can set the document bodyfont size, font family, style
 %D and/or options defined in files, for example:
 %D
-%D \starttypen
+%D \starttyping
 %D \setupbodyfont[cmr,ams,12pt,roman]
-%D \stoptypen
+%D \stoptyping
 %D
 %D This command affects the document as a whole: text, headers
 %D and footers. The second macro however affects only the text:
 %D
-%D \starttypen
+%D \starttyping
 %D \switchtobodyfont[10pt]
-%D \stoptypen
+%D \stoptyping
 %D
 %D So we've got:
 %D
@@ -3317,11 +3317,11 @@
 %D For switching a style but keeping the alternative, there
 %D is:
 %D
-%D \starttypen
+%D \starttyping
 %D {\bf text \switchstyleonly\ss text}
 %D {\bf text \switchstyleonly[ss]text}
 %D {\sl text \switchstyleonly[sansserif]text}
-%D \stoptypen
+%D \stoptyping
 
 \definecomplexorsimple\switchstyleonly
 
@@ -3384,9 +3384,9 @@
 %D to switch to a specific bodyfontsize. Just for the sake of
 %D compatibility we can define them like:
 %D
-%D \starttypen
+%D \starttyping
 %D \definebodyfontswitch [twelvepoint] [12pt]
-%D \stoptypen
+%D \stoptyping
 %D
 %D We don't support language specific synonyms here, mainly
 %D because \PLAIN\ \TEX\ is english anyway.
@@ -3415,8 +3415,8 @@
    \doswitchpoints[\fontstep]%
    \doswitchstyle[\fontstyle]}
 
-\unexpanded\def\setsmallbodyfont{\setbodyfontstep\v!klein\the\everybodyfont}
-\unexpanded\def\setbigbodyfont  {\setbodyfontstep\v!groot\the\everybodyfont}
+\unexpanded\def\setsmallbodyfont{\setbodyfontstep\v!small\the\everybodyfont}
+\unexpanded\def\setbigbodyfont  {\setbodyfontstep\v!big\the\everybodyfont}
 
 \unexpanded\def\setmainbodyfont
   {\doswitchpoints[\normalizedbodyfontsize]%
@@ -3509,24 +3509,24 @@
 %D here implement a mechanism for defining the keywords that
 %D present a particular style or alternative.
 %D
-%D \starttypen
+%D \starttyping
 %D \definealternativestyle [keywords] [\style] [\nostyle]
-%D \stoptypen
+%D \stoptyping
 %D
 %D The first command is used in the normal textflow, while the
 %D second command takes care of headings and alike. Consider
 %D the next two definitions:
 %D
-%D \starttypen
+%D \starttyping
 %D \definealternativestyle [bold] [\bf]  []
-%D \definealternativestyle [cap]  [\kap] [\kap]
-%D \stoptypen
+%D \definealternativestyle [cap]  [\cap] [\cap]
+%D \stoptyping
 %D
 %D A change \type{\bf} in a heading which is to be set in
 %D \type{\tfd} does not look that well, so therefore we leave
 %D the second argument of \type{\definealternativestyle} empty.
 %D When we capatalize characters using the pseudo small cap
-%D command \type{\kap}, we want this to take effect in both
+%D command \type{\cap}, we want this to take effect in both
 %D text and headings, which is accomplished by assigning both
 %D arguments.
 
@@ -3556,10 +3556,10 @@
 %D or
 %D
 %D \startvoorbeeld
-%D \definealternativestyle[bold][\bf][]\haalbuffer
+%D \definealternativestyle[bold][\bf][]\getbuffer
 %D \stopvoorbeeld
 %D
-%D Such definitions are of course unwanted for \type{\kap}
+%D Such definitions are of course unwanted for \type{\cap}
 %D because this would result in an endless recursive call.
 %D Therefore we check on the existance of both the command and
 %D the substitution. The latter is needed because for instance
@@ -3575,13 +3575,13 @@
 %D After having defined such keywords, we can call for them by
 %D using
 %D
-%D \starttypen
+%D \starttyping
 %D \doconvertfont{keyword}{text}
-%D \stoptypen
+%D \stoptyping
 %D
 %D We deliberately pass an argument. This enables us to
 %D assign converters that handle one agrument, like
-%D \type{\kap}.
+%D \type{\cap}.
 %D
 %D By default the first specification is used to set the style,
 %D exept when we say \type{\dontconvertfont}, after which the
@@ -3629,10 +3629,10 @@
 %D {\sl slanted} type over {\it italic}, we made the emphasis
 %D adaptable, for instance:
 %D
-%D \starttypen
+%D \starttyping
 %D \def\emphasistypeface {\it}
 %D \def\emphasisboldface {\bi}
-%D \stoptypen
+%D \stoptyping
 %D
 %D But we prefer:
 
@@ -3642,9 +3642,9 @@
 %D or even better:
 
 \def\doemphasistypeface#1#2%
-  {\doifelsevalue{\??ft\fontclass\normalizedbodyfontsize\c!em}\v!schuin#1%
+  {\doifelsevalue{\??ft\fontclass\normalizedbodyfontsize\c!em}\v!slanted#1%
   {\doifelsevalue{\??ft\fontclass\normalizedbodyfontsize\c!em}\v!italic#2%
-  {\doifelsevalue{\??ft          \normalizedbodyfontsize\c!em}\v!schuin#1%
+  {\doifelsevalue{\??ft          \normalizedbodyfontsize\c!em}\v!slanted#1%
   {\doifvalue    {\??ft          \normalizedbodyfontsize\c!em}\v!italic#2}}}}
 
 \def\emphasistypeface{\doemphasistypeface\sl\it}
@@ -3768,9 +3768,9 @@
 %D We get:
 %D
 %D \startvoorbeeld
-%D \startopelkaar
-%D \haalbuffer
-%D \stopopelkaar
+%D \startpacked
+%D \getbuffer
+%D \stoppacked
 %D \stopvoorbeeld
 
 %D \macros
@@ -3790,9 +3790,9 @@
 %D \stopbuffer
 %D
 %D \typebuffer
-%D \startregels
-%D \haalbuffer
-%D \stopregels
+%D \startlines
+%D \getbuffer
+%D \stoplines
 
 %D \macros
 %D   {setfont}
@@ -3807,9 +3807,9 @@
 
 %D One can call this macro as:
 %D
-%D \starttypen
+%D \starttyping
 %D \setfont cmr10 at 60pt
-%D \stoptypen
+%D \stoptyping
 %D
 %D After which the font is active and the baselines and
 %D struts are set.
@@ -3838,7 +3838,7 @@
 %D different fonts into a collection (typeface) and
 %D determining optimal baseline distances.
 %D
-%D \showfontstrip \blanko \showminimalbaseline
+%D \showfontstrip \blank \showminimalbaseline
 
 \fetchruntimecommand \showfontstrip       {\f!fontprefix\s!run}
 \fetchruntimecommand \testminimalbaseline {\f!fontprefix\s!run}
@@ -3881,7 +3881,7 @@
 %D shown. Special characters like the \type {\skewchar} and
 %D \type {\hyphenchar} als marked.
 %D
-%D \haalbuffer
+%D \getbuffer
 
 % to be internationalized
 
@@ -3896,9 +3896,9 @@
 %D
 %D Individual glyphs can be accessed by using
 %D
-%D \starttypen
+%D \starttyping
 %D \getglyph{fontname}{character}
-%D \stoptypen
+%D \stoptyping
 %D
 %D This macro is used in for instance the symbol modules and
 %D as one can see, it does obey the small and even smaller
@@ -3972,10 +3972,10 @@
 %D For an example of usage of the following command,
 %D see \type {cont-log.tex}.
 %D
-%D \starttypen
+%D \starttyping
 %D \def\symbolicfont#1%
 %D   {\definedfont[\glyphfontfile{#1} sa *]}
-%D \stoptypen
+%D \stoptyping
 %D
 %D Since we know what scaling it to be applied, we can
 %D implement a much faster alternative:
@@ -4008,7 +4008,7 @@
 %D The last implementation of \type {\getglyph} permits
 %D definitions like:
 %D
-%D \starttypen
+%D \starttyping
 %D \definefontsynonym [EuroSans]            [eurose]
 %D \definefontsynonym [EuroSansBold]        [euroseb]
 %D \definefontsynonym [EuroSansItalic]      [eurosei]
@@ -4019,13 +4019,13 @@
 %D \definesymbol [euro] [\getglyph{Euro}{\char160}]
 %D
 %D \def\euro{\symbol[euro]}
-%D \stoptypen
+%D \stoptyping
 %D
 %D These definitions guarantee that the next calls work okay:
 %D
-%D \starttypen
+%D \starttyping
 %D \ss \tf\euro \bf\euro \sla\euro \itd\euro \bs\euro \bic\euro
-%D \stoptypen
+%D \stoptyping
 %D
 %D The shape as well as the size is adapted to the current
 %D environment.
@@ -4117,9 +4117,9 @@
 
 %D For instance we can say:
 %D
-%D \starttypen
+%D \starttyping
 %D \smashaccent{\"Uberhaupt}
-%D \stoptypen
+%D \stoptyping
 %D
 %D But normally one will use it as a prefix in definitions.
 %D The difference is in the height:
@@ -4127,16 +4127,16 @@
 %D \leavevmode\ruledhbox
 %D   {\ruledhbox{\smashaccent{\"U}berhaupt}\quad
 %D    oder\quad
-%D    \ruledhbox{\"Uberhaupt}
+%D    \ruledhbox{\"Uberhaupt}}
 
 %D \macros
 %D   {moveaccent}
 %D
 %D Exact positioning of accents can be realized by saying:
 %D
-%D \starttypen
+%D \starttyping
 %D \moveaccent{-.1ex}{\"u}berhaupt
-%D \stoptypen
+%D \stoptyping
 %D
 %D Again, this one will mostly used as a prefix in definitions.
 %D Here the difference is in the position:
@@ -4160,15 +4160,15 @@
 %D also deal with different naming schemes. Confronted with
 %D this problem, I decided to change the definitions into:
 %D
-%D \starttypen
+%D \starttyping
 %D \definebodyfont [12pt] [rm] [tf=Times-Roman at 12pt]
-%D \stoptypen
+%D \stoptyping
 %D
 %D combined with for instance:
 %D
-%D \starttypen
+%D \starttyping
 %D \definefontsynonym [Times-Roman] [tir]
-%D \stoptypen
+%D \stoptyping
 
 %D Now we're up to some definitions.
 
@@ -4184,10 +4184,10 @@
                  *=\currentfontscale, % wildcard
               \c!x=0.8,
              \c!xx=0.6,
-          \c!groot=1.2,
-          \c!klein=0.8,
-     \c!interlinie=,
-             \c!em=\v!schuin]
+          \c!big=1.2,
+          \c!small=0.8,
+     \c!interlinespace=,
+             \c!em=\v!slanted]
 
 \definebodyfontenvironment
   [20.7pt]
@@ -4196,8 +4196,8 @@
    \s!scriptscript=\!!twelvepoint,
               \c!x=17.3pt,
              \c!xx=\!!fourteenpointfour,
-          \c!groot=20.7pt,    % !!!!
-          \c!klein=17.3pt]
+          \c!big=20.7pt,    % !!!!
+          \c!small=17.3pt]
 
 \definebodyfontenvironment
   [17.3pt]
@@ -4206,8 +4206,8 @@
    \s!scriptscript=\!!tenpoint,
               \c!x=\!!fourteenpointfour,
              \c!xx=\!!twelvepoint,
-          \c!groot=20.7pt,
-          \c!klein=\!!fourteenpointfour]
+          \c!big=20.7pt,
+          \c!small=\!!fourteenpointfour]
 
 \definebodyfontenvironment
   [\!!fourteenpointfour]
@@ -4216,8 +4216,8 @@
    \s!scriptscript=\!!ninepoint,
               \c!x=\!!twelvepoint,
              \c!xx=\!!tenpoint,
-          \c!groot=17.3pt,
-          \c!klein=\!!twelvepoint]
+          \c!big=17.3pt,
+          \c!small=\!!twelvepoint]
 
 \definebodyfontenvironment
   [\!!twelvepoint]
@@ -4226,8 +4226,8 @@
    \s!scriptscript=\!!sevenpoint,
               \c!x=\!!tenpoint,
              \c!xx=\!!eightpoint,
-          \c!groot=\!!fourteenpointfour,
-          \c!klein=\!!tenpoint]
+          \c!big=\!!fourteenpointfour,
+          \c!small=\!!tenpoint]
 
 \definebodyfontenvironment
   [\!!elevenpoint]
@@ -4236,8 +4236,8 @@
    \s!scriptscript=\!!sixpoint,
               \c!x=\!!ninepoint,
              \c!xx=\!!sevenpoint,
-          \c!groot=\!!twelvepoint,
-          \c!klein=\!!ninepoint]
+          \c!big=\!!twelvepoint,
+          \c!small=\!!ninepoint]
 
 \definebodyfontenvironment
   [\!!tenpoint]
@@ -4246,8 +4246,8 @@
    \s!scriptscript=\!!fivepoint,
               \c!x=\!!eightpoint,
              \c!xx=\!!sixpoint,
-          \c!groot=\!!twelvepoint,
-          \c!klein=\!!eightpoint]
+          \c!big=\!!twelvepoint,
+          \c!small=\!!eightpoint]
 
 \definebodyfontenvironment
   [\!!ninepoint]
@@ -4256,8 +4256,8 @@
    \s!scriptscript=\!!fivepoint,
               \c!x=\!!sevenpoint,
              \c!xx=\!!fivepoint,
-          \c!groot=\!!elevenpoint,
-          \c!klein=\!!sevenpoint]
+          \c!big=\!!elevenpoint,
+          \c!small=\!!sevenpoint]
 
 \definebodyfontenvironment
   [\!!eightpoint]
@@ -4266,8 +4266,8 @@
    \s!scriptscript=\!!fivepoint,
               \c!x=\!!sixpoint,
              \c!xx=\!!fivepoint,
-          \c!groot=\!!tenpoint,
-          \c!klein=\!!sixpoint]
+          \c!big=\!!tenpoint,
+          \c!small=\!!sixpoint]
 
 \definebodyfontenvironment
   [\!!sevenpoint]
@@ -4276,8 +4276,8 @@
    \s!scriptscript=\!!fivepoint,
               \c!x=\!!sixpoint,
              \c!xx=\!!fivepoint,
-          \c!groot=\!!ninepoint,
-          \c!klein=\!!fivepoint]
+          \c!big=\!!ninepoint,
+          \c!small=\!!fivepoint]
 
 \definebodyfontenvironment
   [\!!sixpoint]
@@ -4286,8 +4286,8 @@
    \s!scriptscript=\!!fivepoint,
               \c!x=\!!fivepoint,
              \c!xx=\!!fivepoint,
-          \c!groot=\!!eightpoint,
-          \c!klein=\!!fivepoint]
+          \c!big=\!!eightpoint,
+          \c!small=\!!fivepoint]
 
 \definebodyfontenvironment
   [\!!fivepoint]
@@ -4296,8 +4296,8 @@
    \s!scriptscript=\!!fivepoint,
               \c!x=\!!fivepoint,
              \c!xx=\!!fivepoint,
-          \c!groot=\!!sevenpoint,
-          \c!klein=\!!fivepoint]
+          \c!big=\!!sevenpoint,
+          \c!small=\!!fivepoint]
 
 \definebodyfontenvironment
   [\!!fourpoint]
@@ -4306,8 +4306,8 @@
    \s!scriptscript=\!!fourpoint,
               \c!x=\!!fourpoint,
              \c!xx=\!!fourpoint,
-          \c!groot=\!!sixpoint,
-          \c!klein=\!!fourpoint]
+          \c!big=\!!sixpoint,
+          \c!small=\!!fourpoint]
 
 \definebodyfontswitch [fourteenpointfour] [\!!fourteenpointfour]
 \definebodyfontswitch [twelvepoint]       [\!!twelvepoint]
@@ -4340,29 +4340,31 @@
 \definefontsize[\c!c] \definefontsize[\c!d]
 
 \definealternativestyle [\v!mediaeval]                        [\os]  []
-\definealternativestyle [\v!normaal]                          [\tf]  []
-\definealternativestyle [\v!vet]                              [\bf]  []
+\definealternativestyle [\v!normal]                          [\tf]  []
+\definealternativestyle [\v!bold]                              [\bf]  []
 \definealternativestyle [\v!type]                             [\tt]  []
-\definealternativestyle [\v!schuin]                           [\sl]  []
+\definealternativestyle [\v!slanted]                           [\sl]  []
 \definealternativestyle [\v!italic]                           [\it]  []
-\definealternativestyle [\v!vetschuin,\v!schuinvet]           [\bs]  []
-\definealternativestyle [\v!vetitalic,\v!italicvet]           [\bi]  []
-\definealternativestyle [\v!klein,\v!kleinnormaal]            [\tfx] []
-\definealternativestyle [\v!kleinvet]                         [\bfx] []
-\definealternativestyle [\v!kleintype]                        [\ttx] []
-\definealternativestyle [\v!kleinschuin]                      [\slx] []
-\definealternativestyle [\v!kleinvetschuin,\v!kleinschuinvet] [\bsx] []
-\definealternativestyle [\v!kleinvetitalic,\v!kleinitalicvet] [\bix] []
+\definealternativestyle [\v!boldslanted,\v!slantedbold]           [\bs]  []
+\definealternativestyle [\v!bolditalic,\v!italicbold]           [\bi]  []
+\definealternativestyle [\v!small,\v!smallnormal]            [\tfx] []
+\definealternativestyle [\v!smallbold]                         [\bfx] []
+\definealternativestyle [\v!smalltype]                        [\ttx] []
+\definealternativestyle [\v!smallslanted]                      [\slx] []
+\definealternativestyle [\v!smallboldslanted,\v!smallslantedbold] [\bsx] []
+\definealternativestyle [\v!smallbolditalic,\v!smallitalicbold] [\bix] []
 
-\definealternativestyle [\v!kleinkorps] [\setsmallbodyfont] []
-\definealternativestyle [\v!grootkorps] [\setbigbodyfont]   []
+%D Slow but handy:
 
-%D We treat {\sc Small Caps} and \kap {Pseudo Caps} a bit
-%D different. We also provide an \WOORD {uppercase} style.
+\definealternativestyle [\v!smallbodyfont] [\setsmallbodyfont] []
+\definealternativestyle [\v!bigbodyfont] [\setbigbodyfont]   []
 
-\definealternativestyle [\v!kap,\v!kapitaal] [\normalkap] [\normalkap]
-\definealternativestyle [\v!smallcaps]       [\sc]        [\sc]
-\definealternativestyle [\v!WOORD]           [\WORD]      [\WORD]
+%D We treat {\sc Small Caps} and \cap {Pseudo Caps} a bit
+%D different. We also provide an \WORD {uppercase} style.
+
+\definealternativestyle [\v!cap,\v!capital] [\smallcapped] [\smallcapped]
+\definealternativestyle [\v!smallcaps]       [\sc]          [\sc]
+\definealternativestyle [\v!WOORD]           [\WORD]        [\WORD]
 
 %D \macros
 %D   {...math}
@@ -4428,7 +4430,7 @@
 
 %D Some unused left||overs:
 %D
-%D \starttypen
+%D \starttyping
 %D \def\doiffontpresentelse#1#2#3%
 %D   {\bgroup
 %D    \batchmode\font\dummy=\truefontname{#1}\errorstopmode
@@ -4437,4 +4439,4 @@
 %D
 %D \def\abortiffontnotfound#1%
 %D   {\doiffontpresentelse{#1}{}{\showmessage{\m!fonts}{10}{\truefontname{#1}}\endinput}}
-%D \stoptypen
+%D \stoptyping

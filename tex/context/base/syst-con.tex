@@ -1,5 +1,5 @@
 %D \module
-%D   [       file=syst-con,
+%D   [       filefile=syst-con,
 %D        version=2000.12.10, % actually very old -)
 %D          title=\CONTEXT\ System Macros,
 %D       subtitle=Conversions,
@@ -32,7 +32,7 @@
 %D The ugly indirectness is needed to get rid of \TEX\
 %D induced spaces and \type {\relax}'s.
 %D
-%D \starttypen
+%D \starttyping
 %D [\uchexnumber{0}]
 %D [\uchexnumber\scratchcounter]
 %D [\uchexnumber\zerocount]
@@ -46,7 +46,7 @@
 %D [\expandafter\uchexnumber\expandafter{\number\zerocount}]
 %D [\expandafter\uchexnumber\expandafter{\the\scratchcounter}]
 %D [\expandafter\uchexnumber\expandafter{\the\zerocount}]
-%D \stoptypen
+%D \stoptyping
 
 \def\lchexnumber#1%
   {\@EA\dolchexnumber\number#1\relax}

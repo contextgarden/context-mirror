@@ -1,5 +1,5 @@
 %D \module
-%D   [       file=m-graph,
+%D   [       filefile=m-graph,
 %D        version=2000.08.06,
 %D          title=\CONTEXT\ Extra Modules,
 %D       subtitle=\METAPOST\ graph module support,
@@ -41,22 +41,22 @@
    
 %D If you run into troubles, try: 
 %D 
-%D \starttypen 
+%D \starttyping 
 %D \forceMPTEXgraphictrue 
-%D \stoptypen 
+%D \stoptyping 
 %D
 %D A demo can be run with:
 %D
-%D \starttypen
+%D \starttyping
 %D texexec --mode=demo --pdf m-graph
-%D \stoptypen 
+%D \stoptyping 
 
 % No longer needed, since John will fix it. 
 % 
 % %D For the moment we need the following patch. Adam T. Lindsay 
 % %D found out that the following code produced an error: 
 % %D 
-% %D \starttypen 
+% %D \starttyping 
 % %D \startMPcode
 % %D draw begingraph(130mm,35mm);
 % %D   setrange(0,0,10,22000);
@@ -80,15 +80,15 @@
 % %D    autogrid(itick.bot,grid.lft) withcolor .75white ;
 % %D   endgraph;
 % %D \stopMPcode
-% %D \stoptypen 
+% %D \stoptyping 
 % %D
 % %D The bug is a rather nasty one and needs some tweaking in 
 % %D the low level graph code. John Hobby suggested for the 
 % %D moment to initialize \type {setrange} as follows: 
 % %D 
-% %D \starttypen  
+% %D \starttyping  
 % %D  setrange(0,0,"22000","22000")
-% %D \stoptypen 
+% %D \stoptyping 
 % %D 
 % %D Folowing this suggesion, I provide the following 
 % %D extension: 

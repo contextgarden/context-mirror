@@ -1,5 +1,5 @@
 %D \module
-%D   [       file=xtag-ini,
+%D   [       filefile=xtag-ini,
 %D        version=2000.12.20,
 %D          title=\CONTEXT\ XML Support,
 %D       subtitle=Initialization,
@@ -372,9 +372,9 @@
 %D called an empty element. The following definitions are
 %D equivalent:
 %D
-%D \starttypen
+%D \starttyping
 %D <eerste></eerste>  <eerste/>  <eerste />
-%D \stoptypen
+%D \stoptyping
 %D
 %D Empty elements can have arguments too. Conforming the
 %D standard, each key must have a value. These are separated
@@ -382,15 +382,15 @@
 %D \type {"} or \type {'}. There may be spaces around the
 %D equal sign.
 %D
-%D \starttypen
+%D \starttyping
 %D <eerste a= "b" c ="d" />  <eerste a = "b" c="d"/>
-%D \stoptypen
+%D \stoptyping
 %D
 %D Officially the following definition is not valid:
 %D
-%D \starttypen
+%D \starttyping
 %D <eerste>some text</eerste>  <eerste/>  <eerste />
-%D \stoptypen
+%D \stoptyping
 %D
 %D Although we can handle both cases independently, this is
 %D seldom needed.
@@ -398,27 +398,27 @@
 %D Processing instructions are identified by a~\type {?} and are
 %D like empty elements.
 %D
-%D \starttypen
+%D \starttyping
 %D <?doel a="b" c="d"?> <?doel a="b" c="d" ?>
-%D \stoptypen
+%D \stoptyping
 %D
 %D Comment is formatted as follows.
 %D
-%D \starttypen
+%D \starttyping
 %D <!-- comment -->
-%D \stoptypen
+%D \stoptyping
 %D
 %D Verbatim code inits purest form is called \type {CDATA} and
 %D is embedded in the following ugly and therefore recognizable
 %D way:
 %D
-%D \starttypen
+%D \starttyping
 %D <![CDATA[
 %D Dit is nogal verbatim !
 %D Dit is nogal verbatim !
 %D Dit is nogal verbatim !
 %D ]]>
-%D \stoptypen
+%D \stoptyping
 
 %D The parser is implemented as a multi||step macro. Because
 %D \type {!} and \type {?} should be picked up correctly, we
@@ -875,6 +875,11 @@
      \csname\@@XMLdepth:\the\numexpr(\XMLdepth-#1)\endcsname
    \fi}
 
+% \def\XMLpureancestor#1% test for relax insertion
+%   {\ifcase\numexpr(\XMLdepth-#1)\or
+%      \csname\@@XMLdepth:\the\numexpr(\XMLdepth-#1)\endcsname
+%    \fi}
+
 \def\XMLparent{\XMLancestor\plusone}
 \def\XMLself  {\XMLancestor\zerocount}
 
@@ -980,12 +985,12 @@
 %
 % \defineXMLenvironment[two]
 %   {\beginXMLelement
-%    \starttabulate
+%    \starttabulatie
 %    \NC ancestor 1 \NC \XMLancestor{1} \NC \NR
 %    \NC ancestor 2 \NC \XMLancestor{2} \NC \NR
 %    \NC ancestor 3 \NC \XMLancestor{3} \NC \NR
 %    \NC ancestor 4 \NC \XMLancestor{4} \NC \NR
-%    \stoptabulate}
+%    \stoptabulatie}
 %   {\endXMLelement}
 %
 % \startbuffer
@@ -1029,14 +1034,14 @@
 %D   <x:one> <x:two> <one> <two> </two> </one> </x:two> </x:one>
 %D   \stopbuffer
 %D
-%D   fallback A: \setXMLfallbacklevel0 \processXMLbuffer
-%D   fallback B: \setXMLfallbacklevel1 \processXMLbuffer
-%D   fallback C: \setXMLfallbacklevel2 \processXMLbuffer
+%D   fallback A: \setXMLfallbackmode0 \processXMLbuffer
+%D   fallback B: \setXMLfallbackmode1 \processXMLbuffer
+%D   fallback C: \setXMLfallbackmode2 \processXMLbuffer
 
 %D Here we do the namespace (re)mapping. More examples are
 %D provided in the manual.
 %D
-%D \starttypen
+%D \starttyping
 %D \supportXMLnamespace  [test] % needed to get a namespace working
 %D \skipXMLnamespace     [test] % slow
 %D \ignoreXMLnamespace   [test] % faster
@@ -1047,7 +1052,7 @@
 %D \remapXMLurlspace     [http://www.pragma-ade.com/dtd/context]  [context]
 %D \autoXMLnamespace     [context] % fallback
 %D \autoXMLnamespace     [whatever] % second fall back
-%D \stoptypen
+%D \stoptyping
 
 \newtoks\autoXMLnamespaces
 
@@ -1861,12 +1866,12 @@
 
 %D This is equivalent to:
 %D
-%D \starttypen
+%D \starttyping
 %D \def\resetXMLelement[#1]% handy in case only singular
 %D   {\@EA\let\csname\@@XMLelement:#1\endcsname \donothing
 %D    \@EA\let\csname\@@XMLelement:/#1\endcsname\donothing
 %D    \@EA\let\csname\@@XMLelement:#1/\endcsname\donothing}
-%D \stoptypen
+%D \stoptyping
 
 % push is (not yet) a real push, so:
 
@@ -1966,8 +1971,101 @@
   \presetXMLarguments\rawXMLidentifier
 \to \everyXMLelement
 
+%D We now overload the previously defined argument setter by one
+%D that is faster when definitions are surrounded by
+%D
+%D \starttyping
+%D \startXMLcompiling ... \stopXMLcompiling
+%D \stoptyping
+%D
+%D This method is twice as fast on (for instance) 100K calls to
+%D an empty element with 10 arguments.
+
+% \long\def\prepareXMLargument#1#2#3%
+%   {\scratchtoks\expandafter{\the\scratchtoks\@EA\def\csname#1#2\endcsname{#3}}}
+
+% \long\def\prepareXMLargument#1#2#3%
+%   {\scratchtoks\@EA\@EA\@EA{\@EA\the\@EA\scratchtoks\@EA\def\csname\@@XMLvariable:#1:#2\endcsname{#3}}}
+
+\let\@@globalprefix\empty
+
+\long\def\prepareXMLargument#1#2#3%
+  {\expanded{\scratchtoks
+     {\the\scratchtoks
+      \def\@EA\noexpand\csname\@@XMLvariable:#1:#2\endcsname{#3}%
+      \ifx\@@globalprefix\empty\else
+        \let\@EA\noexpand\csname\@@XMLvariable:\@@globalprefix:#2\endcsname
+            \@EA\noexpand\csname\@@XMLvariable:#1:#2\endcsname
+      \fi}}}
+
+\long\def\setXMLargumentsN#1#2#3% element [tag] settings
+  {\doifassignmentelse{#2}
+     {\letbeundefined{\@@XMLmap:#1}%
+      \long\setvalue{\@@XMLpars:#1}{\getrawparameters[\@@XMLvariable:#1:][#2]}}
+     {\long\setvalue{\@@XMLmap:#1}{#2}% later we can init vars by this name
+      \doifsomething{#3}{\long\setvalue{\@@XMLpars:#1}{\getrawparameters[#2][#3]}}}}
+
+\long\def\setXMLargumentsP#1#2#3% element settings empty (we cannot test for assignment)
+  {\letbeundefined{\@@XMLmap:#1}%
+   \ifx\@@globalprefix\empty\else
+     \@EA\let\csname\@@XMLglobal:#1\endcsname\@@globalprefix
+   \fi
+   \bgroup
+%     \def\XMLinheritance{\noexpand\XMLinheritance}
+     \def\XMLop##1{\noexpand\XMLpar{#1}{##1}{}}%
+     \def\XMLpar{\noexpand\XMLpar}%
+     \def\XMLanc{\noexpand\XMLanc}%
+     \def\XMLinh{\noexpand\XMLinh}%
+     \xdef\!!XMLattr{[#1][#2]}%
+     \scratchtoks\emptytoks
+     \@EA\dogetparameters\@EA\prepareXMLargument\!!XMLattr
+     \xdef\globalnext{\the\scratchtoks}%
+   \egroup
+   \letvalue{\@@XMLpars:#1}\globalnext
+   \globallet\globalnext\relax}
+
+\def\defineXMLattributeset{\dodoubleargument\dodefineXMLattributeset}
+\def\extendXMLattributeset{\dodoubleargument\doextendXMLattributeset}
+
+\def\dodefineXMLattributeset[#1][#2]{\setvalue   {\@@XMLpars::#1}{#2}}
+\def\doextendXMLattributeset[#1][#2]{\appendvalue{\@@XMLpars::#1}{,#2}}
+
+\def\XMLattributeset  #1{\executeifdefined{\@@XMLpars::#1}\empty}
+%def\XMLinheritance   #1{\executeifdefined{\@@XMLpars:#1}\empty}
+\def\showXMLattributes#1{\showvalue{\@@XMLpars:#1}}
+
+\chardef\@@precompile\zerocount
+
+\def\setXMLarguments
+  {\ifcase\@@precompile
+     \expandafter\setXMLargumentsN
+   \else
+     \expandafter\setXMLargumentsP
+   \fi}
+
+\def\docopyXMLargument
+  {\@EA\@EA\@EA\let\@EA\@EA
+     \csname\@@XMLvariable:\csname\@@XMLglobal:\currentXMLelement\endcsname:\@@XMLname\endcsname
+     \csname\@@XMLvariable:\@@XMLclass                                     :\@@XMLname\endcsname}
+
+\def\startXMLcompiling
+  {\dosingleargument\dostartXMLcompiling}
+
+\def\dostartXMLcompiling[#1]%
+  {\iffirstargument
+     \copyXMLargumentindeed % when needed, from now on -)
+     \def\@@globalprefix{#1}%
+   \fi
+   \chardef\@@precompile\plusone}
+
+\def\stopXMLcompiling
+  {\chardef\@@precompile\zerocount
+   \let\@@globalprefix\empty}
+
+%D Interesting what kind of things are needed \unknown
+
 \appendtoks
-  \disablelanguagespecifics % interesting what kind of things are needed ...
+  \disablelanguagespecifics
 \to \everyenableXML
 
 \long\def\longempty{}
@@ -2179,6 +2277,190 @@
 \def\setXMLpar#1#2%
   {\@EA\def\csname\@@XMLvariable:#1:#2\endcsname}
 
+% ancestor arguments:
+%
+% \defineXMLenvironment
+%   [fo:root]
+%   [test=unset]
+%   {\beginXMLelement}
+%   {\endXMLelement}
+%
+% \defineXMLenvironment
+%   [fo:block-container]
+%   [test=oeps]
+%   {\beginXMLelement}
+%   {\endXMLelement}
+%
+% \defineXMLenvironment
+%   [fo:block]
+%   {\beginXMLelement
+%    \begingroup}
+%   {\endgroup
+%    \XMLanc{test}{}
+%    \endXMLelement}
+%
+% \startXMLdata
+% <fo:root>
+%     <fo:block-container test='first'><fo:block test='second'>second:</fo:block></fo:block-container>
+%     <fo:block>unset:</fo:block>
+%     <fo:block test='outer'><fo:block test='nested'><fo:block>deep:</fo:block>nested:</fo:block>outer:</fo:block>
+%     <fo:block test='last'>last:</fo:block>
+% </fo:root>
+% \stopXMLdata
+%
+% \startXMLdata
+% <fo:root>
+%     <fo:block-container test='first'><fo:block>second:</fo:block></fo:block-container>
+%     <fo:block>unset:</fo:block>
+%     <fo:block test='second'><fo:block><fo:block>deep:</fo:block>nested:</fo:block>outer:</fo:block>
+%     <fo:block>last:</fo:block>
+% </fo:root>
+% \stopXMLdata
+%
+% \startXMLdata
+% <fo:root>
+%     <fo:block-container test='first'><fo:block>second:</fo:block></fo:block-container>
+%     <fo:block>unset:</fo:block>
+%     <fo:block><fo:block><fo:block>deep:</fo:block>nested:</fo:block>outer:</fo:block>
+%     <fo:block>last:</fo:block>
+% </fo:root>
+% \stopXMLdata
+
+% dit werkt alleen ok in niet <a> <b> <b> ... situaties omdat anders
+% de laatste b de attributen van de vorige heeft:
+
+\def\XMLanc#1%
+  {\ifcsname\@@XMLvariable:\currentXMLelement:#1\endcsname % \ownXMLelement
+     \csname\@@XMLvariable:\currentXMLelement:#1\endcsname % \ownXMLelement
+     \@EA\gobblethreearguments
+   \else
+     \@EA\pXMLanc
+   \fi\XMLdepth{#1}}
+
+\def\pXMLanc#1%
+  {\@EA\ppXMLanc\@EA{\the\numexpr(#1-\plusone)}}
+
+\def\ppXMLanc#1#2#3%
+  {\ifcsname\@@XMLdepth:#1\endcsname % is er altijd dus redundant
+     \ifcsname\@@XMLvariable:\csname\@@XMLdepth:#1\endcsname:#2\endcsname
+       \csname\@@XMLvariable:\csname\@@XMLdepth:#1\endcsname:#2\endcsname
+       \@EAEAEA\gobblethreearguments
+     \else
+       \@EAEAEA\pppXMLanc
+     \fi
+   \else
+     \@EA\pppXMLanc
+   \fi{#1}{#2}{#3}}
+
+\def\pppXMLanc#1%
+  {\ifnum#1>\zerocount
+     \@EA\pXMLanc
+   \else
+     \@EA\thirdofthreearguments
+   \fi{#1}}
+
+%D Experimental: local and global attributes, don't ask -)
+%D
+%D \starttyping
+%D \gXMLpar{element}{global}{attribute}{default}
+%D \gXMLatt{element}{attribute}
+%D \lXMLatt{element}{attribute}
+%D \lcXMLatt{atribute}
+%D \gcXMLatt{atribute}
+%D \stoptyping
+
+\def\gXMLpar#1#2#3#4% #2 can be auto: \csname\@@XMLglobal:#1\endcsname
+  {\ifcsname\@@XMLvariable:#1:#3\endcsname
+     \csname\@@XMLvariable:#1:#3\endcsname
+   \else\ifcsname\@@XMLvariable:#2:#3\endcsname
+     \csname\@@XMLvariable:#2:#3\endcsname
+   \else
+     #4%
+   \fi\fi}
+
+\def\gXMLatt#1#2% element tag
+  {\csname
+     \ifcsname\@@XMLvariable:#1:#2\endcsname
+       \@@XMLvariable:#1:#2%
+     \else\ifcsname\@@XMLglobal:#1\endcsname
+       \ifcsname\@@XMLvariable:\csname\@@XMLglobal:#1\endcsname:#2\endcsname
+         \@@XMLvariable:\csname\@@XMLglobal:#1\endcsname:#2%
+       \else
+         \s!empty
+       \fi
+     \else
+       \s!empty
+     \fi\fi
+   \endcsname}
+
+\def\lXMLatt#1#2% element tag
+  {\ifcsname\@@XMLvariable:#1:#2\endcsname
+     \csname\@@XMLvariable:#1:#2\endcsname
+   \else
+     \s!empty
+   \fi}
+
+\def\gcXMLatt{\gXMLatt\currentXMLelement} % tag
+\def\lcXMLatt{\lXMLatt\currentXMLelement} % tag
+
+%D Experimental (not sure if this will stay):
+%D
+%D \starttyping
+%D \startdefineXMLhandlers[one,two]
+%D
+%D   \defineXMLenvironment[a=b,c=\XMLop{a}]
+%D     {}{}
+%D
+%D \stopdefineXMLhandlers
+%D \stoptyping
+
+\long\def\startdefineXMLhandlers
+  {\bgroup\catcode`\^^M=\@@space
+   \dodoubleempty\dostartdefineXMLhandlers}
+
+\long\def\dostartdefineXMLhandlers[#1][#2]#3#4\stopdefineXMLhandlers % #2 is dummy
+  {\egroup
+   \long\def\dodefineXMLhandlers##1{#3[##1]#4}%
+   \processcommalist[#1]\dodefineXMLhandlers}
+
+\let\currentXMLhandler\s!unknown
+
+% \long\def\dostartdefineXMLhandlers[#1][#2]#3#4[#5]#6\stopdefineXMLhandlers % #2 is dummy
+%   {\egroup
+%    \pushmacro\XMLop
+%    \pushmacro\XMLpar
+%    \pushmacro\currentXMLhandler
+%    \long\def\dodefineXMLhandlers##1%
+%      {\edef\currentXMLhandler{##1}%
+%       \def\XMLop####1{\noexpand\XMLpar{##1}{####1}{}}%
+%       \def\XMLpar{\noexpand\XMLpar}%
+%       \def\XMLanc{\noexpand\XMLanc}%
+%       \edef\!!stringa{[##1][#5]}%
+%       \expandafter#3\!!stringa#6}%
+%    \processcommalist[#1]\dodefineXMLhandlers
+%    \popmacro\currentXMLhandler
+%    \popmacro\XMLpar
+%    \popmacro\XMLop}
+
+\long\def\dostartdefineXMLhandlers[#1][#2]#3#4[#5]#6\stopdefineXMLhandlers % #2 is dummy
+  {\egroup
+   \long\def\dodefineXMLhandlers##1%
+     {\bgroup
+        \edef\currentXMLhandler{##1}%
+        \def\XMLop####1{\noexpand\XMLpar{##1}{####1}{}}%
+        \def\XMLpar{\noexpand\XMLpar}%
+        \def\XMLanc{\noexpand\XMLanc}%
+        \def\XMLinh{\noexpand\XMLinh}%
+        \xdef\!!XMLattr{[##1][#5]}%
+      \egroup
+      \expandafter#3\!!XMLattr#6}%
+   \processcommalist[#1]\dodefineXMLhandlers}
+
+\def\XMLpav#1#2#3#4% #4 useless
+  {\XMLval{#1}{\XMLpar{#2}{#3}{}}{\XMLpar{#2}{#3}{#4}}}
+
+%D A few weird ones:
+
 \def\TEXpar#1#2%
   {\csname#1\interfaced{#2}\endcsname}
 
@@ -2281,7 +2563,7 @@
 \def\XMLtp#1% texpar
   {\csname\ifcsname\@@XMLmapmap\interfaced{#1}\endcsname
      \@@XMLmapmap\interfaced{#1}\else\s!empty
-   \endcsname\fi}
+   \fi\endcsname}
 
 \def\doifelseXMLop#1{\doifelse{\XMLop{#1}}}
 \def\doifXMLop    #1{\doif    {\XMLop{#1}}}
@@ -2538,7 +2820,7 @@
 \def\doXMLifequalelse#1#2%
   {\@EA\@@ifequal#1\relax\@@and#2\relax\@@then}
 
-%D \starttypen
+%D \starttyping
 %D \defineXMLenvironment[test][a=1]
 %D   {\XMLownifequalelse{a}{2}{YES}{NO}}
 %D   {}
@@ -2550,7 +2832,7 @@
 %D \startXMLdata
 %D <test a="1">test</test>
 %D \stopXMLdata
-%D \stoptypen
+%D \stoptyping
 
 \def\XMLyes#1{\XMLownifequalelse{#1}{yes}{#1}{}}
 

@@ -1,5 +1,5 @@
 %D \module
-%D   [       file=supp-mrk,
+%D   [       filefile=supp-mrk,
 %D        version=1995.10.10,
 %D          title=\CONTEXT\ Support Macros,
 %D       subtitle=Marks,
@@ -55,13 +55,13 @@
 
 %D We start with the presetting the interface macros.
 %D
-%D \starttabulatie[|||]
+%D \starttabulate[|||]
 %D \NC \type{\getmarks}          \NC sets the marks to their values \NC \NR
 %D \NC \type{\getallmarks}       \NC sets all marks to their values \NC \NR
 %D \NC \type{\getsplitmarks}     \NC sets the splitmarks to their values\NC \NR
 %D \NC \type{\getallsplitmarks}  \NC sets all splitmarks to their values\NC \NR
 %D \NC \type{\setmarks}          \NC synchronizes topmarks (\ETEX) \NC \NR
-%D \stoptabulatie
+%D \stoptabulate
 %D
 %D Later we will overload these, dependent of the brand of
 %D \TEX\ that we use.
@@ -90,46 +90,46 @@
 %D other \type {\new} macros in \PLAIN\ \TEX. A mark is
 %D defined by:
 %D
-%D \starttypen
+%D \starttyping
 %D \newmark\name
-%D \stoptypen
+%D \stoptyping
 %D
 %D and can be called upon with:
 %D
-%D \starttypen
+%D \starttyping
 %D \gettopmark  \name  % or \topname
 %D \getbotmark  \name  % or \botname
 %D \getfirstmark\name  % or \firstname
-%D \stoptypen
+%D \stoptyping
 %D
 %D The only drawback of his approach is that the marks must be
 %D preloaded in the output routine. This is accomplished by
 %D means of:
 %D
-%D \starttypen
+%D \starttyping
 %D \getmarks\name
-%D \stoptypen
+%D \stoptyping
 %D
 %D The macros presented here are in most aspects copies of
 %D those presented by Jim Fox. We've taken the freedom to
 %D change a few things for more or less obvious reasons:
 %D
-%D \startopsomming
-%D \som  Because the original macros look quite complicated,
+%D \startitemize
+%D \item  Because the original macros look quite complicated,
 %D       which is mainly due to extensive use of
 %D       \type{\expandafter}'s and \type{\csname}'s, we changed
 %D       those in favor of \type{\getvalue}.
-%D \som  To be more in line with the rest of \CONTEXT, we've
+%D \item  To be more in line with the rest of \CONTEXT, we've
 %D       changed some of the names of macros.
-%D \som  Because we are already short on \COUNTERS\ we use
+%D \item  Because we are already short on \COUNTERS\ we use
 %D       macros when possible.
-%D \som  We maintain a list of defined marks and use one
+%D \item  We maintain a list of defined marks and use one
 %D       call for getting them all at once.
-%D \som  We have extended the mechanism to splitmarks (not
+%D \item  We have extended the mechanism to splitmarks (not
 %D       perfected yet).
-%D \som  We've introduced optional expansion of the contents
+%D \item  We've introduced optional expansion of the contents
 %D       of marks.
-%D \stopopsomming
+%D \stopitemize
 %D
 %D Whatever changes we've made, the credits still go to Jim,
 %D whatever goes wrong is due to me. The method is described
@@ -139,17 +139,17 @@
 %D be defined at will and a number concerning the position at
 %D which it was defined.
 %D
-%D \starttypen
+%D \starttyping
 %D \def\somelist{... \domark5{this} ... \domark31{that} ...}
-%D \stoptypen
+%D \stoptyping
 %D
 %D The original \type{\mark} keeps track of the number and
 %D \type{\topmark} and \type{\botmark} are used to extract the
 %D actual marks from the list. The counting is done by
 %D
-%D \starttypen
+%D \starttyping
 %D \currentmarker
-%D \stoptypen
+%D \stoptyping
 %D
 %D In \CONTEXT\ we use the mark mechanism to keep track of
 %D colors. In a complicated documents with many colors per
@@ -163,11 +163,11 @@
 %D have been substituted by macros, one has been replaced by
 %D our scratch counter.
 %D
-%D \starttypen
+%D \starttyping
 %D \newcount\topmarker
 %D \newcount\botmarker
 %D \newcount\foundmarker
-%D \stoptypen
+%D \stoptyping
 %D
 %D We've also introduced some constants, one for the lists and
 %D three for composing the mark commands.
@@ -246,9 +246,9 @@
 %D list is done by \type{\addmarker}. This is an internal
 %D command, the user set a marks bij calling it's name:
 %D
-%D \starttypen
+%D \starttyping
 %D \setmark\mymark{some text} % or \mymark{some text}
-%D \stoptypen
+%D \stoptyping
 %D
 %D Where \type{\mymark} is previously defined by
 %D \type{\newmark}.
@@ -476,10 +476,10 @@
 
 %D In \type {page-ini} or \type {core-mar} we should say:
 %D
-%D \starttypen
+%D \starttyping
 %D \appendtoks \getallmarks \to \everybeforepagebody
 %D \appendtoks \setallmarks \to \everyafterpagebody
-%D \stoptypen
+%D \stoptyping
 
 \let\getcurrentmark     \thecurrentmarks
 \let\gettopmark         \checkedtopmarks
@@ -529,9 +529,9 @@
 %D Here a node is inserted, which can interfere badly. In
 %D fact, a real \type {\clearmarks\name} is needed.
 %D
-%D \starttypen
+%D \starttyping
 %D \def\resetmark#1{\marks#1{}}
-%D \stoptypen
+%D \stoptyping
 %D
 %D A possible macro solution is presented here. When discussing
 %D \type {\clearmarks} on the \ETEX\ discussion list, Chris
@@ -552,7 +552,7 @@
 %D \ruledhbox{\unhbox0}
 %D \stopbuffer
 %D
-%D \typebuffer\blanko\haalbuffer\blanko
+%D \typebuffer\blank\getbuffer\blank
 %D
 %D \startbuffer
 %D \setbox0=\vbox{test\normalmark{}}
@@ -560,7 +560,7 @@
 %D \ruledhbox{\unhbox0}
 %D \stopbuffer
 %D
-%D \typebuffer\blanko\haalbuffer\blanko
+%D \typebuffer\blank\getbuffer\blank
 %D
 %D \startbuffer
 %D \setbox0=\vbox{test\hbox{\normalmark{}}}
@@ -568,7 +568,7 @@
 %D \ruledhbox{\unhbox0}
 %D \stopbuffer
 %D
-%D \typebuffer\blanko\haalbuffer\blanko
+%D \typebuffer\blank\getbuffer\blank
 %D
 %D \startbuffer
 %D \setbox0=\vbox{test\vbox{\normalmark{}}}
@@ -576,7 +576,7 @@
 %D \ruledhbox{\unhbox0}
 %D \stopbuffer
 %D
-%D \typebuffer\blanko\haalbuffer\blanko
+%D \typebuffer\blank\getbuffer\blank
 
 %D One final advice. Use marks with care. When used in globally
 %D assigned boxes, the list can grow quite big, and processing

@@ -1,5 +1,5 @@
 %D \module
-%D   [       file=core-ntb,
+%D   [       filefile=core-ntb,
 %D        version=2000.04.18,
 %D          title=\CONTEXT\ Core Macros,
 %D       subtitle=Natural Tables,
@@ -25,11 +25,13 @@
 
 %D To Do:
 %D
+%D \starttyping
 %D splitsen = ja | herhaal => als nofTH>1 then ja als herhaal
+%D \stoptyping
 
 %D To Do:
 %D
-%D \starttypen
+%D \starttyping
 %D break over pagina
 %D kop herhalen
 %D reset settings
@@ -41,7 +43,7 @@
 %D \setupTABLE                                                 [a=b]
 %D
 %D \bTH \eTH
-%D \stoptypen
+%D \stoptyping
 
 % the section setup does not work yet, data needs to be stored,
 % i.e.each row should know if it's a head/body/foot, and there
@@ -51,16 +53,16 @@
 
 %D A simple way to force equal line spacing is to say:
 %D
-%D \starttypen
+%D \starttyping
 %D \def\bTBLCELL{\begstrut}
 %D \def\eTBLCELL{\endstrut}
-%D \stoptypen
+%D \stoptyping
 
 %D However, the next alternative also takes care of preceding
 %D and following white space.
 
 \def\bTBLCELL % why not \doinhibitblank
-  {\inhibitblank\doconvertfont\tbltblletter\empty\everypar{\begstrut}}
+  {\inhibitblank\doconvertfont\tbltblstyle\empty\everypar{\begstrut}}
 
 \def\eTBLCELL
   {\ifhmode
@@ -169,26 +171,26 @@
   {\ifthirdargument
      \processaction
        [#1]
-       [  \v!rij=>{\dosetupTABLExy[\c!y][#2][#3]},%
-        \v!kolom=>{\dosetupTABLExy[\c!x][#2][#3]},%
+       [  \v!row=>{\dosetupTABLExy[\c!y][#2][#3]},%
+        \v!column=>{\dosetupTABLExy[\c!x][#2][#3]},%
                r=>{\dosetupTABLExy[\c!y][#2][#3]},%
                c=>{\dosetupTABLExy[\c!x][#2][#3]},%
                y=>{\dosetupTABLExy[\c!y][#2][#3]},%
                x=>{\dosetupTABLExy[\c!x][#2][#3]},%
         \v!start=>{\dosetupTABLExy[#1][#2][#3]},%
-        \v!hoofd=>{\dosetupTABLExy[#1][#2][#3]},%
+        \v!header=>{\dosetupTABLExy[#1][#2][#3]},%
       \s!unknown=>{\dosetupTABLEzz[#1][#2][#3]}]%
    \else\ifsecondargument
      \processaction
        [#1]
-       [  \v!rij=>{\dosetupTABLExy[\c!y][\v!elk][#2]},%
-        \v!kolom=>{\dosetupTABLExy[\c!x][\v!elk][#2]},%
-               r=>{\dosetupTABLExy[\c!y][\v!elk][#2]},%
-               c=>{\dosetupTABLExy[\c!x][\v!elk][#2]},%
-               y=>{\dosetupTABLExy[\c!y][\v!elk][#2]},%
-               x=>{\dosetupTABLExy[\c!x][\v!elk][#2]},%
-        \v!start=>{\dosetupTABLExy[#1][\v!elk][#2]},%
-        \v!hoofd=>{\dosetupTABLExy[#1][\v!elk][#2]},%
+       [  \v!row=>{\dosetupTABLExy[\c!y][\v!each][#2]},%
+        \v!column=>{\dosetupTABLExy[\c!x][\v!each][#2]},%
+               r=>{\dosetupTABLExy[\c!y][\v!each][#2]},%
+               c=>{\dosetupTABLExy[\c!x][\v!each][#2]},%
+               y=>{\dosetupTABLExy[\c!y][\v!each][#2]},%
+               x=>{\dosetupTABLExy[\c!x][\v!each][#2]},%
+        \v!start=>{\dosetupTABLExy[#1][\v!each][#2]},%
+        \v!header=>{\dosetupTABLExy[#1][\v!each][#2]},%
       \s!unknown=>{\dosetupTABLEzz[\c!x][#1][#2]}]%
    \else
      \getparameters[\@@tbl\@@tbl][#1]%
@@ -225,41 +227,41 @@
 
 \def\setupTBLcell#1#2% cell over col over row
   {\setupTBLsection % already forgotten
-   \getvalue{\@@tblprefix\c!y\v!elk}%
-   \getvalue{\@@tblprefix\c!x\v!elk}%
+   \getvalue{\@@tblprefix\c!y\v!each}%
+   \getvalue{\@@tblprefix\c!x\v!each}%
    \getvalue{\@@tblprefix\c!y\v!oddeven{#1}}%
    \getvalue{\@@tblprefix\c!x\v!oddeven{#2}}%
    \getvalue{\@@tblprefix\c!x\v!oddeven{#2}\c!y\v!oddeven{#1}}%
    \ifnum#1=\plusone
-     \getvalue{\@@tblprefix\c!y\v!eerste}%
-     \executeifdefined{\@@tblprefix\c!x#2\c!y\v!eerste}\donothing
+     \getvalue{\@@tblprefix\c!y\v!first}%
+     \executeifdefined{\@@tblprefix\c!x#2\c!y\v!first}\donothing
    \fi
    \ifnum#2=\plusone
-     \getvalue{\@@tblprefix\c!x\v!eerste}%
-     \executeifdefined{\@@tblprefix\c!x\v!eerste\c!y#1}\donothing
+     \getvalue{\@@tblprefix\c!x\v!first}%
+     \executeifdefined{\@@tblprefix\c!x\v!first\c!y#1}\donothing
    \fi
    \ifnum#1=\maximumrow\relax
-     \getvalue{\@@tblprefix\c!y\v!laatste}%
-     \executeifdefined{\@@tblprefix\c!x#2\c!y\v!laatste}\donothing
+     \getvalue{\@@tblprefix\c!y\v!last}%
+     \executeifdefined{\@@tblprefix\c!x#2\c!y\v!last}\donothing
    \fi
    \ifnum#2=\maximumcol\relax
-     \getvalue{\@@tblprefix\c!x\v!laatste}%
-     \executeifdefined{\@@tblprefix\c!x\v!laatste\c!y#1}\donothing
+     \getvalue{\@@tblprefix\c!x\v!last}%
+     \executeifdefined{\@@tblprefix\c!x\v!last\c!y#1}\donothing
    \fi
    \ifnum#1=\maximumrow\relax\ifnum#2=\maximumcol\relax
-     \getvalue{\@@tblprefix\c!x\v!laatste\c!y\v!laatste}%
+     \getvalue{\@@tblprefix\c!x\v!last\c!y\v!last}%
    \fi\fi
    \ifnum#1=\plusone \ifnum#2=\plusone
-     \getvalue{\@@tblprefix\c!x\v!eerste\c!y\v!eerste}%
+     \getvalue{\@@tblprefix\c!x\v!first\c!y\v!first}%
    \fi\fi
    \ifnum#1>\noftblhdnxlines\else
-     \executeifdefined{\@@tblprefix\v!hoofd\v!elk}\donothing
-     \executeifdefined{\@@tblprefix\v!hoofd#2}\donothing
+     \executeifdefined{\@@tblprefix\v!header\v!each}\donothing
+     \executeifdefined{\@@tblprefix\v!header#2}\donothing
    \fi
    \executeifdefined{\@@tblprefix\c!y#1}\donothing
    \executeifdefined{\@@tblprefix\c!x#2}\donothing
    \executeifdefined{\@@tblprefix\c!x#2\c!y#1}\donothing
-   \global\letcscsname\@@tblsplitafter\csname\@@tbl\@@tbl\c!na\endcsname
+   \global\letcscsname\@@tblsplitafter\csname\@@tbl\@@tbl\c!after\endcsname
    \relax}
 
 \globallet\@@tblsplitafter\relax
@@ -268,7 +270,7 @@
 %
 % \bTABLE[split=yes]
 % \bTR \bTD left \eTD\bTD right \eTD\eTR
-% \bTR[after=\pagina] \bTD left \eTD\bTD right \eTD\eTR
+% \bTR[after=\page] \bTD left \eTD\bTD right \eTD\eTR
 % \bTR \bTD left \eTD\bTD right \eTD\eTR
 % \eTABLE
 
@@ -278,7 +280,7 @@
 \long\def\parseTR[#1][#2]#3\eTR% [#2] is dummy that kills spaces
   {\def\currentcol{0}\increment\maximumrow
    \let\currentcolpos\currentcol
-   \setupTABLE[\v!rij][\maximumrow][#1]#3}
+   \setupTABLE[\v!row][\maximumrow][#1]#3}
 
 \long\def\parseTD[#1][#2]#3\eTD % [#2] is dummy that kills spaces
   {\getparameters[\@@tbl][\c!ny=\tblnr,\c!nx=\tblnc,nc=1,nr=1,#1]%
@@ -315,8 +317,8 @@
 
 \long\def\parseTH[#1]#2\eTH
   {\parseTD
-     [#1,\c!kleur=\tbltblkopkleur,\c!letter=\tbltblkopletter,%
-      \c!karakteruitlijnen=\v!nee]#2\eTD}
+     [#1,\c!color=\tbltblheadcolor,\c!style=\tbltblheadstyle,%
+      \c!aligncharacter=\v!no]#2\eTD}
 
 %D new
 
@@ -358,84 +360,12 @@
 \chardef\TBLpass=0
 
 \def\presetallTABLEparameters% each odd|even level
-  {\executeifdefined{\@@rawtblprefix\v!start\v!elk}\relax
+  {\executeifdefined{\@@rawtblprefix\v!start\v!each}\relax
    \executeifdefined{\@@rawtblprefix\v!start\v!oddeven\TBLlevel}\relax
    \executeifdefined{\@@rawtblprefix\v!start\number\TBLlevel}\relax}
 
 \def\bTABLE
   {\dosingleempty\dobTABLE}
-
-% \def\dobTABLE[#1]%
-%   {\pushTBL
-%    % box not here
-%    \bgroup
-%    \resetcharacteralign % new
-%    \getparameters
-%      [\@@tbl\@@tbl]
-%      [\c!uitlijnen={\v!rechts,\v!ruim,\v!hoog},#1]%
-%    \processaction
-%      [\tbltblsplitsen]
-%      [     \v!ja=>\enableTBLbreaktrue,
-%       \v!herhaal=>\enableTBLbreaktrue\multipleTBLheadstrue]%
-%    \processaction
-%      [\tbltblhoofd]
-%      [\v!herhaal=>\multipleTBLheadstrue]%
-%    \ifnum\TBLlevel>\plusone
-%      \vbox
-%    \else\ifenableTBLbreak
-%      % no \vbox
-%    \else
-%      \vbox
-%    \fi\fi
-%    \bgroup
-%    \localcolortrue
-%    \presetallTABLEparameters
-%    \ExpandFirstAfter\processallactionsinset
-%      [\tbltbloptie]
-%      [\v!rek=>\autoTBLspreadtrue]%
-%    \linewidth\tbltbllijndikte % needs to be frozen
-%    \dontcomplain
-%    \let\currentcol\!!zerocount
-%    \let\maximumrowspan\!!plusone
-%    \let\maximumcol\currentcol
-%    \let\maximumrow\currentcol
-%    \def\bTR{\dodoubleempty\parseTR}%
-%    \def\bTD{\dodoubleempty\parseTD}%
-%    \def\bTH{\dodoubleempty\parseTH}%
-%    \def\bTN{\dodoubleempty\parseTN}%
-%    \endgraf}
-
-% \def\dobTABLE[#1]%
-%   {\pushTBL
-%    % box not here
-%    \bgroup
-%    \resetcharacteralign % new
-%    \getparameters
-%      [\@@tbl\@@tbl]
-%      [\c!uitlijnen={\v!rechts,\v!ruim,\v!hoog},#1]%
-%    \processaction
-%      [\tbltblsplitsen]
-%      [     \v!ja=>\enableTBLbreaktrue,
-%       \v!herhaal=>\enableTBLbreaktrue\multipleTBLheadstrue]%
-%    \processaction
-%      [\tbltblhoofd]
-%      [\v!herhaal=>\multipleTBLheadstrue]%
-%    \localcolortrue
-%    \presetallTABLEparameters
-%    \ExpandFirstAfter\processallactionsinset
-%      [\tbltbloptie]
-%      [\v!rek=>\autoTBLspreadtrue]%
-%    \linewidth\tbltbllijndikte % needs to be frozen
-%    \dontcomplain
-%    \let\currentcol\!!zerocount
-%    \let\maximumrowspan\!!plusone
-%    \let\maximumcol\currentcol
-%    \let\maximumrow\currentcol
-%    \def\bTR{\dodoubleempty\parseTR}%
-%    \def\bTD{\dodoubleempty\parseTD}%
-%    \def\bTH{\dodoubleempty\parseTH}%
-%    \def\bTN{\dodoubleempty\parseTN}%
-%    \endgraf}
 
 \def\dobTABLE[#1]%
   {\pushTBL
@@ -445,14 +375,14 @@
    \resetcharacteralign % new
    \getparameters
      [\@@tbl\@@tbl]
-     [\c!uitlijnen={\v!rechts,\v!ruim,\v!hoog},#1]%
+     [\c!align={\v!right,\v!broad,\v!high},#1]%
    \processaction
-     [\tbltblsplitsen]
-     [     \v!ja=>\enableTBLbreaktrue,
-      \v!herhaal=>\enableTBLbreaktrue\multipleTBLheadstrue]%
+     [\tbltblsplit]
+     [     \v!yes=>\enableTBLbreaktrue,
+      \v!repeat=>\enableTBLbreaktrue\multipleTBLheadstrue]%
    \processaction
-     [\tbltblhoofd]
-     [\v!herhaal=>\multipleTBLheadstrue]%
+     [\tbltblheader]
+     [\v!repeat=>\multipleTBLheadstrue]%
 %    \ifnum\TBLlevel>\plusone
 %      \vbox
 %    \else\ifenableTBLbreak
@@ -464,9 +394,9 @@
    \localcolortrue
    \presetallTABLEparameters
    \ExpandFirstAfter\processallactionsinset
-     [\tbltbloptie]
-     [\v!rek=>\autoTBLspreadtrue]%
-   \linewidth\tbltbllijndikte % needs to be frozen
+     [\tbltbloption]
+     [\v!stretch=>\autoTBLspreadtrue]%
+   \linewidth\tbltblrulethickness % needs to be frozen
    \dontcomplain
    \let\currentcol\!!zerocount
    \let\maximumrowspan\!!plusone
@@ -631,7 +561,7 @@
         \increment\rowTBL\relax
         \ifnum\rowTBL>\noftblhdnxlines\relax
           \ifnum\rowTBL<\maximumrow\relax
-            \doifsomething\tbltbltussenwit{\blank[\tbltbltussenwit]}%
+            \doifsomething\tbltblspaceinbetween{\blank[\tbltblspaceinbetween]}%
           \fi
         \fi
       \egroup}}
@@ -683,7 +613,7 @@
    \setbox\scratchbox\hbox
      {\localframed
         [\@@tbl\@@tbl]
-        [\c!kader=\v!uit,\c!achtergrond=,\c!uitlijnen=\v!nee]
+        [\c!frame=\v!off,\c!background=,\c!align=\v!no]
         {\strut}}%
    \edef\minimalcellheight{\the\ht\scratchbox}%
    \dorecurse\maximumcol
@@ -702,7 +632,7 @@
    \def\makeTBL##1##2%
      {\gettbltxt{##1}{##2}}%
    \def\inTBLcell##1##2%
-     {\ExpandBothAfter\doifinsetelse\localwidth{\v!passend,\v!ruim} % user set
+     {\ExpandBothAfter\doifinsetelse\localwidth{\v!fit,\v!broad} % user set
         {}
         {\scratchdimen\gettblaut\colTBL\relax
          \ifdim\localwidth>\scratchdimen
@@ -813,103 +743,6 @@
         \settblwid\recurselevel{\the\scratchdimen}}%
    \fi}
 
-% \def\splittblbox#1% #1 <> 0/2
-%   {\unvbox#1}
-
-% \def\splittblbox#1% #1 <> 0/2
-%   {\ifinsidefloat
-%      \unvbox#1%
-%    \else
-%      % spacing between rows gets lost in split
-%      \setbox4\vbox
-%        {\doifsomething\tbltbltussenwit{\blank[\tbltbltussenwit]}}%
-%      \setbox2\vbox
-%        {}%
-%      \dorecurse\noftblheadlines
-%        {\setbox0\vsplit#1 to \lineheight
-%         \setbox2\vbox{\unvcopy2\unvcopy0}}%
-%      \ifcase\noftblheadlines\else\unvcopy2\fi
-%      \donefalse
-%      \doloop
-%        {\setbox0\vsplit#1 to \lineheight
-%         \ifdim\pagegoal<\maxdimen
-%           \setbox0\vbox{\unvbox0}%
-%           \dimen0\ht0
-%           \advance\dimen0\ht4
-%           \advance\dimen0\pagetotal
-%           \ifdim\dimen0>\pagegoal
-%             \bgroup \pagina \egroup % make sure that local vars are kept
-%             \ifcase\noftblheadlines\else\unvcopy2\fi
-%           \fi
-%         \fi
-%         \ifdone
-%           \doifsomething\tbltbltussenwit{\blank[\tbltbltussenwit]}%
-%         \fi
-%         \unvbox0
-%         \allowbreak
-%         \ifvoid#1 \exitloop \else \donetrue \fi}%
-%    \fi}
-
-% \bTABLE[split=repeat]
-%   \bTABLEhead
-%     \bTR \bTH lxxxeft \eTH\bTD right \eTD\eTR
-%   \eTABLEhead
-%   \bTABLEbody
-%     \dorecurse{100}{\bTR[after={\pagina[bigpreference]}] \bTD left \eTD\bTD right \eTD\eTR}
-%     \dorecurse{100}{\bTR\bTD left \eTD\bTD right \eTD\eTR}
-%   \eTABLEbody
-% \eTABLE
-
-% \def\splittblbox#1% #1 <> 0/2
-%   {\ifinsidefloat
-%      \unvbox#1%
-%    \else
-%      % spacing between rows gets lost in split
-%      \setbox4\vbox
-%        {\doifsomething\tbltbltussenwit{\blank[\tbltbltussenwit]}}%
-%      \setbox2\vbox
-%        {}%
-%      \dorecurse\noftblheadlines
-%        {\setbox0\vsplit#1 to \lineheight
-%         \setbox2\vbox{\unvcopy2\unvcopy0}}%
-%      \ifcase\noftblheadlines\else\unvcopy2\fi
-%      \donefalse
-%      \doloop
-%        {\setbox0\vsplit#1 to \lineheight
-%         \ifdim\pagegoal<\maxdimen
-%           \setbox0\vbox{\unvbox0}%
-%           \dimen0\ht0
-%           \advance\dimen0\ht4
-%           \advance\dimen0\pagetotal
-%           \ifdim\dimen0>\pagegoal
-%             \bgroup \pagina \egroup % make sure that local vars are kept
-%             \ifcase\noftblheadlines\else\unvcopy2\fi
-%           \fi
-%         \fi
-%         \ifdone
-%           \doifsomething\tbltbltussenwit{\blank[\tbltbltussenwit]}%
-%         \fi
-%         \unvbox0
-%         %\allowbreak
-%         \bgroup
-%           \scratchcounter\recurselevel
-%           \advance\scratchcounter\noftblheadlines
-%           \setupTBLcell{\number\scratchcounter}1
-%           \ifx\@@tblsplitafter\relax
-%             \allowbreak
-%           \else
-%             \doifelsenothing\@@tblsplitafter
-%                \allowbreak
-%               {\scratchcounter\realpageno
-%                \@@tblsplitafter
-%                \ifnum\scratchcounter<\realpageno
-%                  \ifcase\noftblheadlines\else\unvcopy2\fi
-%                \fi}%
-%           \fi
-%         \egroup
-%         \ifvoid#1 \exitloop \else \donetrue \fi}%
-%    \fi}
-
 \newbox\finaltblbox
 
 \def\notsplittblbox#1%
@@ -923,86 +756,14 @@
   {\ifinsidefloat
      \notsplittblbox{#1}%
    \else
-     \executeifdefined{splittblbox\tbltblsplitsmethode}\splittblboxa{#1}%
+     \executeifdefined{splittblbox\tbltblsplitmethod}\splittblboxa{#1}%
    \fi}
-
-% \def\splittblboxa#1% spacing between rows gets lost in split
-%   {\ifmultipleTBLheads
-%      \setbox\scratchbox\vbox{#1}%
-%      \setbox8\vbox{\doifsomething\tbltbltussenwit{\blank[\tbltbltussenwit]}}%
-%      \setbox2\vbox{}%
-%      \setbox4\vbox{}%
-%      \dorecurse\noftblheadlines
-%        {\setbox0\vsplit\scratchbox to \lineheight
-%         \setbox2\vbox{\unvcopy2\unvcopy0}}%
-%      \dorecurse\noftblnextlines
-%        {\setbox0\vsplit\scratchbox to \lineheight
-%         \setbox4\vbox{\unvcopy4\unvcopy0}}%
-%      \ifcase\noftblheadlines\else
-%        \ifdim\pagegoal<\maxdimen
-%          \dimen0\ht2
-%          \advance\dimen0\ht8
-%          \advance\dimen0\pagetotal\relax
-%          \ifdim\dimen0>\pagegoal
-%            \bgroup\pagina\egroup % make sure that local vars are kept
-%          \fi
-%        \fi
-%        \unvcopy2
-%        \ifcase\noftblnextlines\else
-%          \setbox2\box4
-%        \fi
-%      \fi
-%      \donefalse
-%      \!!doneafalse
-%      \doloop
-%        {\setbox0\vsplit\scratchbox to \lineheight
-%         \if!!donea
-%           \ifdim\pagegoal<\maxdimen
-%             \setbox0\vbox{\unvbox0}%
-%             \ifdim\ht0>\zeropoint
-%               \dimen0\ht0
-%               \advance\dimen0\ht8
-%               \advance\dimen0\pagetotal\relax
-%               \ifdim\dimen0>\pagegoal
-%                 \bgroup\pagina\egroup % make sure that local vars are kept
-%                 \ifcase\noftblheadlines\else\unvcopy2\fi
-%               \fi
-%             \fi
-%           \fi
-%         \fi
-%         \!!doneatrue
-%         \ifdone
-%           \doifsomething\tbltbltussenwit{\blank[\tbltbltussenwit]}%
-%         \fi
-%         \unvbox0
-%         %\allowbreak
-%         \bgroup
-%           % todo: what if tblnextlines ?
-%           \scratchcounter\recurselevel
-%           \advance\scratchcounter\noftblheadlines
-%           \setupTBLcell{\number\scratchcounter}1
-%           \ifx\@@tblsplitafter\relax
-%             \allowbreak
-%           \else
-%             \doifelsenothing\@@tblsplitafter
-%                \allowbreak
-%               {\scratchcounter\realpageno
-%                \@@tblsplitafter
-%                \ifnum\scratchcounter<\realpageno
-%                  \ifcase\noftblheadlines\else\unvcopy2\fi
-%                \fi}%
-%           \fi
-%         \egroup
-%         \ifvoid\scratchbox \exitloop \else \donetrue \fi}%
-%    \else
-%      \notsplittblbox{#1}%
-%    \fi}
 
 \newbox\TABLEsplitbox
 
 \def\splittblboxa#1% spacing between rows gets lost in split
   {\setbox\TABLEsplitbox\vbox{#1}%
-   \setbox8\vbox{\doifsomething\tbltbltussenwit{\blank[\tbltbltussenwit]}}%
+   \setbox8\vbox{\doifsomething\tbltblspaceinbetween{\blank[\tbltblspaceinbetween]}}%
    \ifmultipleTBLheads
      \setbox2\vbox{}%
      \setbox4\vbox{}%
@@ -1018,7 +779,7 @@
          \advance\dimen0\ht8
          \advance\dimen0\pagetotal\relax
          \ifdim\dimen0>\pagegoal
-           \bgroup\pagina\egroup % make sure that local vars are kept
+           \bgroup\page\egroup % make sure that local vars are kept
          \fi
        \fi
        \unvcopy2
@@ -1039,7 +800,7 @@
             \advance\dimen0\ht8
             \advance\dimen0\pagetotal\relax
             \ifdim\dimen0>\pagegoal
-              \bgroup\pagina\egroup % make sure that local vars are kept
+              \bgroup\page\egroup % make sure that local vars are kept
               \ifmultipleTBLheads
                 \ifcase\noftblheadlines\else\unvcopy2\fi
               \fi
@@ -1049,7 +810,7 @@
       \fi
       \!!doneatrue
       \ifdone
-        \doifsomething\tbltbltussenwit{\blank[\tbltbltussenwit]}%
+        \doifsomething\tbltblspaceinbetween{\blank[\tbltblspaceinbetween]}%
       \fi
       \unvbox0
       %\allowbreak
@@ -1076,63 +837,11 @@
       \egroup
       \ifvoid\TABLEsplitbox \exitloop \else \donetrue \fi}}
 
-% \def\splittblboxb#1%
-%   {\setbox\scratchbox\vbox{#1}%
-%    \setbox8\vbox{\doifsomething\tbltbltussenwit{\blank[\tbltbltussenwit]}}%
-%    \ifmultipleTBLheads
-%      \setbox2\vbox{}%
-%      \setbox4\vbox{}%
-%      \dorecurse\noftblheadlines
-%        {\setbox0\vsplit\scratchbox to \lineheight
-%         \setbox2\vbox{\unvcopy2\unvcopy0}}%
-%      \dorecurse\noftblnextlines
-%        {\setbox0\vsplit\scratchbox to \lineheight
-%         \setbox4\vbox{\unvcopy4\unvcopy0}}%
-%    \fi
-%    \!!doneafalse
-%    \doloop
-%      {\ifdim\pagegoal<\maxdimen
-%         \scratchdimen\pagegoal
-%         \advance\scratchdimen-\pagetotal
-%       \else
-%         \scratchdimen\teksthoogte
-%       \fi
-%       \ifmultipleTBLheads
-%         \ifcase\noftblheadlines\else
-%           \advance\scratchdimen-\ht2
-%         \fi
-%       \fi
-%       \advance\scratchdimen-\ht8
-%       \setbox\finaltblbox\vbox
-%         {\ifmultipleTBLheads
-%            \ifcase\noftblheadlines\else
-%              \unvcopy2
-%              \doifsomething\tbltbltussenwit{\blank[\tbltbltussenwit]}%
-%            \fi
-%          \fi
-%          \setbox0\vsplit\scratchbox to\scratchdimen
-%          \unvbox0}%
-%       \if!!donea\else\ifcase\noftblnextlines\else
-%         \setbox2\box4
-%       \fi\fi
-%       \!!doneatrue
-%       \postprocessTABLEsplitbox\finaltblbox
-%       \beforeTABLEsplitbox
-%       \box\finaltblbox
-%       \afterTABLEsplitbox
-%       \setupTBLcell{\number\scratchcounter}1
-%       \@@tblsplitafter
-%       \ifvoid\scratchbox
-%         \exitloop
-%       \else
-%         \pagina
-%       \fi}}
-
 \let\extratblsplitheight\zeropoint % additional space taken by before/afterTABLEsplitbox
 
 \def\splittblboxb#1%
   {\setbox\TABLEsplitbox\vbox{#1}%
-   \setbox8\vbox{\doifsomething\tbltbltussenwit{\blank[\tbltbltussenwit]}}%
+   \setbox8\vbox{\doifsomething\tbltblspaceinbetween{\blank[\tbltblspaceinbetween]}}%
    \ifmultipleTBLheads
      \setbox2\vbox{}%
      \setbox4\vbox{}%
@@ -1150,7 +859,7 @@
         \scratchdimen\pagegoal
         \advance\scratchdimen-\pagetotal
       \else
-        \scratchdimen\teksthoogte
+        \scratchdimen\textheight
       \fi
       \ifmultipleTBLheads
         \ifcase\noftblheadlines\else
@@ -1167,7 +876,7 @@
         {\ifmultipleTBLheads
            \ifcase\noftblheadlines\else
              \unvcopy2
-             \doifsomething\tbltbltussenwit{\blank[\tbltbltussenwit]}%
+             \doifsomething\tbltblspaceinbetween{\blank[\tbltblspaceinbetween]}%
            \fi
          \fi
          \setbox0\vsplit\TABLEsplitbox to\scratchdimen
@@ -1195,7 +904,7 @@
         \box\finaltblbox
         \afterTABLEsplitbox
         \@@tblsplitafter
-        \pagina
+        \page
       \fi}}
 
 % ! ! ! ! TODO: naast \postprocessTABLEsplitbox ook evt \postprocessTABLEbox voor niet split
@@ -1221,7 +930,7 @@
         \advance\!!dimena -\scratchdimen
       \else
         \scratchdimen\gettblwid\recurselevel\relax
-        \ifdim\scratchdimen>\tbltblmaxbreedte\relax
+        \ifdim\scratchdimen>\tbltblmaxwidth\relax
           \ifcase#1\else\settblwid\recurselevel\!!zeropoint\fi
           \advance\!!counta \plusone
         \else
@@ -1319,12 +1028,12 @@
       \the\tbltoks}}
 
 \def\TBLcharalign
-  {\doifelse\tbltblkarakteruitlijnen\v!ja
+  {\doifelse\tbltblaligncharacter\v!yes
      \doTBLcharalign\gobbleoneargument}
 
 \long\def\doTBLcharalign#1#2% column data
   {\edef\alignmentclass{#1}%
-   \edef\alignmentcharacter{\tbltbluitlijnkarakter}%
+   \edef\alignmentcharacter{\tbltblaligncharacter}%
    \ifcase\TBLpass\or
      \setfirstpasscharacteralign\checkalignment{#2}% {\strut#2\unskip}%
    \fi % force hsize, so always a second
@@ -1338,7 +1047,7 @@
      {\setupTBLcell{#1}{#2}%
       \localframed
         [\@@tbl\@@tbl]
-        [#3,\c!achtergrond=,\c!kader=\v!uit]% 25% faster
+        [#3,\c!background=,\c!frame=\v!off]% 25% faster
         {\bTBLCELL\TBLcharalign{#2}{#4}\eTBLCELL\inTBLcell{#1}{#2}}}%
    \scratchdimen\gettblwid\colTBL\relax
    \ifdim\wd\scratchbox>\scratchdimen
@@ -1381,7 +1090,7 @@
      {\setupTBLcell{#2}{#3}%
       \localframed
         [\@@tbl\@@tbl]
-        [#4,#1,\c!kader=\v!uit,\c!achtergrond=]
+        [#4,#1,\c!frame=\v!off,\c!background=]
         {\bTBLCELL#5\eTBLCELL}}%
    \setbox2\null
    \wd2\wd\scratchbox \ht2\ht\scratchbox \dp2\dp\scratchbox
@@ -1398,14 +1107,14 @@
 \long\def\dohandleTBLcellB#1#2[#3]#4%
    {\scratchdimen\gettblaut\colTBL\relax
     \ifdim\scratchdimen>\zeropoint\relax
-      \let\tblwidthkey\c!breedte \edef\tblwidth{\the\scratchdimen}%
+      \let\tblwidthkey\c!width \edef\tblwidth{\the\scratchdimen}%
     \else
       \scratchdimen\gettblwid\colTBL\relax
       \ifdim\scratchdimen>\zeropoint\relax
         \ifnum\gettblcol{#1}{#2}=\maximumcol\relax
           \scratchdimen\hsize
         \fi
-        \let\tblwidthkey\c!breedte \edef\tblwidth{\the\scratchdimen}%
+        \let\tblwidthkey\c!width \edef\tblwidth{\the\scratchdimen}%
       \else
         \let\tblwidthkey\s!unknown \let \tblwidth \!!zeropoint
       \fi
@@ -1420,8 +1129,8 @@
    \bgroup
    \localframed
      [\@@tbl\@@tbl]
-     [#3,\c!breedte=\widthTBL,
-      \c!achtergrond=,\c!kader=\v!uit]% 25% faster
+     [#3,\c!width=\widthTBL,
+      \c!background=,\c!frame=\v!off]% 25% faster
      {\bTBLCELL\TBLcharalign{#2}{#4}\eTBLCELL}%
    \egroup}
 
@@ -1429,36 +1138,36 @@
   {\setupTBLcell{#1}{#2}%
    \getparameters[\@@tbl\@@tbl][#3]% to get the color right, the way we
    \color % handle color here prevents interference due to whatsit nodes
-     [\tbltblkleur] % as well as permits local colors to take precedence
+     [\tbltblcolor] % as well as permits local colors to take precedence
      {\ifdim\heightTBL=\zeropoint\relax % case: nc=maxcolumns
         \localframed
           [\@@tbl\@@tbl]
-          [\c!kleur=,\c!breedte=\widthTBL]
+          [\c!color=,\c!width=\widthTBL]
           {\bTBLCELL\TBLcharalign{#2}{#4}\eTBLCELL}%
       \else
         \localframed
           [\@@tbl\@@tbl]
-          [\c!kleur=,\c!breedte=\widthTBL,\c!hoogte=\heightTBL]
+          [\c!color=,\c!width=\widthTBL,\c!height=\heightTBL]
           {\bTBLCELL\TBLcharalign{#2}{#4}\eTBLCELL}%
       \fi}}
 
 \setupTABLE
-  [\c!kaderoffset=.5\linewidth,
-   \c!achtergrondoffset=\v!kader,
-   \c!kaderkleur=\s!black,
-   \c!kleur=,
-   \c!letter=,
-   \c!kopletter=\v!vet,
-   \c!kopkleur=,
-   \c!strut=\v!nee,
-   \c!karakteruitlijnen=\v!nee,
-   \c!uitlijnkarakter={,},
-   \c!optie=, % \v!rek
-   \c!splitsen=\v!nee,
-   \c!hoofd=,
-   \c!tussenwit=,
-   \c!maxbreedte=8em,
-   \c!splitsmethode=a]
+  [\c!frameoffset=.5\linewidth,
+   \c!backgroundoffset=\v!frame,
+   \c!framecolor=\s!black,
+   \c!color=,
+   \c!style=,
+   \c!headstyle=\v!bold,
+   \c!headcolor=,
+   \c!strut=\v!no,
+   \c!aligncharacter=\v!no,
+   \c!alignmentcharacter={,},
+   \c!option=, % \v!stretch
+   \c!split=\v!no,
+   \c!header=,
+   \c!spaceinbetween=,
+   \c!maxwidth=8em,
+   \c!splitmethod=a]
 
 %D We have already prepared the previous macros for nesting,
 %D so we only have to pop in the right ones:
@@ -1523,21 +1232,21 @@
          [\@@tbl\@@tbl]%    % achtergrond, achtergrondraster, achtergrondkleur
        % not ok yet
        \setupTABLE
-         [\c!kaderoffset=.5\linewidth,
-          \c!achtergrondoffset=\v!kader,
-          \c!kaderkleur=\s!black,
-          \c!kleur=,
-          \c!letter=,
-          \c!kopletter=,
-          \c!kopkleur=,
-          \c!strut=\v!nee,
-          \c!karakteruitlijnen=\v!nee,
-          \c!uitlijnkarakter={,},
-          \c!maxbreedte=8em]%
+         [\c!frameoffset=.5\linewidth,
+          \c!backgroundoffset=\v!frame,
+          \c!framecolor=\s!black,
+          \c!color=,
+          \c!style=,
+          \c!headstyle=,
+          \c!headcolor=,
+          \c!strut=\v!no,
+          \c!aligncharacter=\v!no,
+          \c!alignmentcharacter={,},
+          \c!maxwidth=8em]%
      \else
        \setupTABLE
-         [\c!breedte=\v!passend,
-          \c!hoogte=\v!passend]%
+         [\c!width=\v!fit,
+          \c!height=\v!fit]%
      \fi
   \fi}
 
@@ -1559,8 +1268,8 @@
 % \VL text \VL text \VL \AR
 % \stoptable
 
-\def\complexTableTB[#1]{\TABLEnoalign{\blanko[#1]}}
-\def\simpleTableTB     {\TABLEnoalign{\blanko}}
+\def\complexTableTB[#1]{\TABLEnoalign{\blank[#1]}}
+\def\simpleTableTB     {\TABLEnoalign{\blank}}
 
 \def\TabulateTB
   {\complexorsimpleTable{TB}}

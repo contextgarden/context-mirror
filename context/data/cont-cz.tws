@@ -1072,6 +1072,20 @@ val:*text::
 stopsetup
 
 startsetup
+com:ininner:
+typ:val/ref/arg/:
+val:+,-,nizko::
+val:*text::
+stopsetup
+
+startsetup
+com:inouter:
+typ:val/ref/arg/:
+val:+,-,nizko::
+val:*text::
+stopsetup
+
+startsetup
 com:sloupec:
 typ::
 stopsetup
@@ -1314,12 +1328,6 @@ typ::
 stopsetup
 
 startsetup
-com:opakovat:
-typ:val/:
-val:repeat/*text::
-stopsetup
-
-startsetup
 com:nastavpopisy:
 typ:vals/vars/:
 val:*jmeno::
@@ -1332,7 +1340,8 @@ var:vzor:*text::
 var:text:*text::
 var:zarovnani:vlevo,nastred,vpravo::
 var:marginalie:standardni,ano,ne,*dimenze::
-var:misto:vlevo,vpravo,vrsek,semknuto, naokraji,vlevo,vpravo,visici::
+var:misto:vlevo,vpravo,vrsek,semknuto,command, naokraji,vlevo,vpravo,visici::
+var:headcommand:::
 var:zaveseni:prizpusobive,siroky,*cislo::
 var:pred:*prikaz::
 var:mezi:*prikaz::
@@ -1874,6 +1883,9 @@ startsetup
 com:nastavumisteniprotejsku:
 typ:var/:
 var:status:start,stop::
+var:pred:*prikaz::
+var:mezi:*prikaz::
+var:po:*prikaz::
 stopsetup
 
 startsetup
@@ -2019,6 +2031,13 @@ com:stanovcharakteristickuseznamu:
 typ:vals/vars/:
 val:*jmeno::
 ivr:nastavseznam::
+stopsetup
+
+startsetup
+com:umistikombinovanyseznam:
+typ:val/vars/:
+val:*jmeno::
+ivr:nastavkombinovanyseznam::
 stopsetup
 
 startsetup
@@ -2569,6 +2588,13 @@ val:*jmeno::
 stopsetup
 
 startsetup
+com:umistirejstrik:
+typ:val/vars/:
+val:*jmeno::
+ivr:nastavrejstrik::
+stopsetup
+
+startsetup
 com:viz<<rejstrik>>:
 typ:val/arg/idxs/:
 val:*text::
@@ -2947,6 +2973,20 @@ val:*jmeno::
 stopsetup
 
 startsetup
+com:bypassblocks:
+typ:vals/vals/:
+val:*jmeno::
+val:*jmeno::
+stopsetup
+
+startsetup
+com:forceblocks:
+typ:vals/vals/:
+val:*jmeno::
+val:*jmeno::
+stopsetup
+
+startsetup
 com:vyberbloky:
 typ:vals/vals/var/:
 val:*jmeno::
@@ -2994,7 +3034,7 @@ stopsetup
 startsetup
 com:umisti<<plvouciobjekt>>:
 typ:val/refs/arg/arg/:
-val:vlevo,vpravo,zde,vrsek,spodek, vlevo,vpravo,naokraji,marginalie, levyokraj,pravyokraj,levahrana,pravahrana, innermargin,outermargin,inneredge,outeredge, uvnitr,vnejsi,regel,vysoko,nizko,prizpusobive, stranka,naproti,vzdy,sila,vysoko,reset, radek,vyska,podlehloubky:zde:
+val:vlevo,vpravo,zde,vrsek,spodek, vlevo,vpravo,naokraji,marginalie, levyokraj,pravyokraj,levahrana,pravahrana, innermargin,outermargin,inneredge,outeredge, uvnitr,vnejsi,line,vysoko,nizko,prizpusobive, stranka,naproti,vzdy,sila,vysoko,reset, radek,vyska,podlehloubky:zde:
 val:*text::
 val:*text::
 stopsetup
@@ -3058,8 +3098,8 @@ typ:vars/:
 var:bet:*text::
 var:ken:*text::
 var:dat:*text::
-var:z:*text::
-var:na:*text::
+var:van:*text::
+var:aan:*text::
 var:ref:*text::
 stopsetup
 
@@ -3221,45 +3261,9 @@ val:*jmeno::
 stopsetup
 
 startsetup
-com:dopisy:
-typ:val/:
-val:*jmeno::
-stopsetup
-
-startsetup
 com:popisky:
 typ:val/:
 val:*jmeno::
-stopsetup
-
-startsetup
-com:nastavkorespondenci:
-typ:vals/:
-val:formeel,informeel,rekening,ls, vysoko,nastred,nizko:formeel,nizko:
-stopsetup
-
-startsetup
-com:nastavlisty:
-typ:vars/:
-var:alternativa:*cislo::
-var:text:*text::
-var:velikost:male,stredni,velke::
-var:pismeno:normalni,tucne,sklonene,tucnesklonene,opis,kap,male...,*prikaz::
-var:cislo:*cislo,spojeno::
-stopsetup
-
-startsetup
-com:list:
-typ:val/:
-val:*text::
-stopsetup
-
-startsetup
-com:nastavetikety:
-typ:vars/:
-var:alternativa:a::
-var:n:*cislo,vse::
-var:misto:marginalie,vlevo,vpravo,nastred::
 stopsetup
 
 startsetup
@@ -3461,13 +3465,13 @@ stopsetup
 startsetup
 com:nastavspojeni:
 typ:vars/:
-var:pred:commando::
-var:mezi:commando::
-var:po:commando::
+var:pred:command::
+var:mezi:command::
+var:po:command::
 var:vzdalenost:*dimenze::
 var:vyska:*dimenze,prizpusobive::
 var:sirka:*dimenze,prizpusobive::
-var:misto:boven,midden,onder,links,rechts::
+var:misto:top,middle,bottom,left,right::
 var:zarovnani:ne,vlevo,vpravo,nastred,normalni::
 var:pismeno:normalni,tucne,sklonene,tucnesklonene,opis,kap,male...*prikaz::
 var:barva:*jmeno::
@@ -3560,7 +3564,7 @@ var:keyword:*text::
 stopsetup
 
 startsetup
-com:nastavinterakcnimenu:
+com:definujinterakcnimenu:
 typ:vals/vars/:
 val:vlevo,vpravo,vrsek,spodek,*jmeno::
 var:pred:*prikaz::
@@ -3654,8 +3658,8 @@ typ:vars/:
 var:status:start,stop::
 var:alternativa:a,b,c,d,e,f,g::
 var:symbol:ano,ne::
-var:sirka:*dimenze,hoogte,prizpusobive::
-var:vyska:*dimenze,hoogte,prizpusobive::
+var:sirka:*dimenze,height,prizpusobive::
+var:vyska:*dimenze,height,prizpusobive::
 var:hloubka:*dimenze::
 var:barva:*jmeno::
 var:krok:*cislo,male,stredni,velke::
@@ -3676,7 +3680,7 @@ startsetup
 com:nastavsynchronizacnilistu:
 typ:vars/:
 var:alternativa:stranka,lokalne::
-var:sirka:*dimenze,hoogte,prizpusobive::
+var:sirka:*dimenze,height,prizpusobive::
 var:vyska:*dimenze::
 var:pismeno:normalni,tucne,sklonene,tucnesklonene,opis,kap,male...,*prikaz::
 var:barva:*jmeno::

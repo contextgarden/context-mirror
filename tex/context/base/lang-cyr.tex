@@ -1,5 +1,5 @@
 %D \module
-%D   [       file=lang-cyr,
+%D   [       file=tall-cyr,
 %D        version=2003.01.24,
 %D          title=\CONTEXT\ Language Macros,
 %D       subtitle=Cyrillic Languages,
@@ -8,8 +8,8 @@
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
-%C therefore copyrighted by \PRAGMA. See mreadme.pdf for 
-%C details. 
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
 
 \writestatus{loading}{Cyrillic Languages}
 
@@ -17,9 +17,9 @@
 %D Therefore we define the labels using symbolic names.
 %D Support for cyrillic is initiated by Olga Briginets who
 %D also layed the base for the language, encoding and font
-%D definition. Later Alexander Bokovoy and Victor Figurnov 
-%D improved things. I (Hans Hagen) mainly cleaned things up 
-%D a bit. 
+%D definition. Later Alexander Bokovoy and Victor Figurnov
+%D improved things. I (Hans Hagen) mainly cleaned things up
+%D a bit.
 
 \unprotect
 
@@ -27,7 +27,7 @@
   [\s!ru]
   [\s!lefthyphenmin=2,
    \s!righthyphenmin=2,
-   \c!spatiering=\v!opelkaar,
+   \c!spacing=\v!packed,
    \c!leftsentence=\leftguillemot,
    \c!rightsentence=\rightguillemot,
    \c!leftsubsentence=\lowerleftdoubleninequote,
@@ -36,14 +36,14 @@
    \c!rightquote=\upperrightdoubleninequote,
    \c!leftquotation=\leftguillemot,
    \c!rightquotation=\rightguillemot,
-   \c!datum={\v!dag,\ ,\v!maand,\ ,\v!jaar},
-   \c!status=\v!stop]
+   \c!date={\v!day,\ ,\v!month,\ ,\v!year},
+   \c!state=\v!stop]
 
 \installlanguage
   [\s!ua]
   [\s!lefthyphenmin=2,
    \s!righthyphenmin=2,
-   \c!spatiering=\v!opelkaar,
+   \c!spacing=\v!packed,
    \c!leftsentence=\leftguillemot,
    \c!rightsentence=\rightguillemot,
    \c!leftsubsentence=\lowerleftdoubleninequote,
@@ -52,8 +52,8 @@
    \c!rightquote=\upperrightdoubleninequote,
    \c!leftquotation=\leftguillemot,
    \c!rightquotation=\rightguillemot,
-   \c!datum={\v!dag,\ ,\v!maand,\ ,\v!jaar},
-   \c!status=\v!stop]
+   \c!date={\v!day,\ ,\v!month,\ ,\v!year},
+   \c!state=\v!stop]
 
 \installlanguage [russian]      [\s!ru]
 \installlanguage [ukrainian]    [\s!ua]
@@ -61,55 +61,55 @@
 
 %D Labels and header texts.
 
-\setupheadtext [\s!ru]     [ \v!inhoud=\cyrillicS \cyrillico \cyrillicd
+\setupheadtext [\s!ru]     [ \v!content=\cyrillicS \cyrillico \cyrillicd
                                        \cyrillice \cyrillicr \cyrilliczh
                                        \cyrillica \cyrillicn \cyrillici
                                        \cyrillice]
-\setupheadtext [\s!ua]      [\v!inhoud=\cyrillicZ \cyrillicm \cyrillicii
+\setupheadtext [\s!ua]      [\v!content=\cyrillicZ \cyrillicm \cyrillicii
                                        \cyrillics \cyrillict]
 
-\setupheadtext [\s!ru]    [\v!tabellen=\cyrillicS \cyrillicp \cyrillici
+\setupheadtext [\s!ru]    [\v!tables=\cyrillicS \cyrillicp \cyrillici
                                        \cyrillics \cyrillico \cyrillick
                                        \space     \cyrillict \cyrillica
                                        \cyrillicb \cyrillicl \cyrillici
                                        \cyrillicc]
-\setupheadtext [\s!ua]    [\v!tabellen=\cyrillicP \cyrillice \cyrillicr
+\setupheadtext [\s!ua]    [\v!tables=\cyrillicP \cyrillice \cyrillicr
                                        \cyrillice \cyrillicl \cyrillicii
                                        \cyrillick \space     \cyrillict
                                        \cyrillica \cyrillicb \cyrillicl
                                        \cyrillici \cyrillicc \cyrillicsftsn]
 
-\setupheadtext [\s!ru]     [\v!figuren=\cyrillicS \cyrillicp \cyrillici
+\setupheadtext [\s!ru]     [\v!figures=\cyrillicS \cyrillicp \cyrillici
                                        \cyrillics \cyrillico \cyrillick
                                        \space     \cyrillici \cyrillicl
                                        \cyrillicl \cyrillicyu\cyrillics
                                        \cyrillict \cyrillicr \cyrillica
                                        \cyrillicc \cyrillici \cyrillicishrt]
-\setupheadtext [\s!ua]     [\v!figuren=\cyrillicP \cyrillice \cyrillicr
+\setupheadtext [\s!ua]     [\v!figures=\cyrillicP \cyrillice \cyrillicr
                                        \cyrillice \cyrillicl \cyrillicii
                                        \cyrillick \space     \cyrillicii
                                        \cyrillicl \cyrillicyu\cyrillics
                                        \cyrillict \cyrillicr \cyrillica
                                        \cyrillicc \cyrillicii\cyrillicishrt]
 
-\setupheadtext [\s!ru]   [\v!grafieken=\cyrillicS \cyrillicp \cyrillici
+\setupheadtext [\s!ru]   [\v!graphics=\cyrillicS \cyrillicp \cyrillici
                                        \cyrillics \cyrillico \cyrillick
                                        \space     \cyrillicg \cyrillicr
                                        \cyrillica \cyrillicf \cyrillici
                                        \cyrillick \cyrillico \cyrillicv]
-\setupheadtext [\s!ua]   [\v!grafieken=\cyrillicP \cyrillice \cyrillicr
+\setupheadtext [\s!ua]   [\v!graphics=\cyrillicP \cyrillice \cyrillicr
                                        \cyrillice \cyrillicl \cyrillicii
                                        \cyrillick \space     \cyrillicg
                                        \cyrillicr \cyrillica \cyrillicf
                                        \cyrillicii\cyrillick \cyrillico
                                        \cyrillicv]
 
-\setupheadtext [\s!ru] [\v!intermezzos=\cyrillicS \cyrillicp \cyrillici
+\setupheadtext [\s!ru] [\v!intermezzi=\cyrillicS \cyrillicp \cyrillici
                                        \cyrillics \cyrillico \cyrillick
                                        \space     \cyrillicv \cyrillics
                                        \cyrillict \cyrillica \cyrillicv
                                        \cyrillico \cyrillick]
-\setupheadtext [\s!ua] [\v!intermezzos=\cyrillicP \cyrillice \cyrillicr
+\setupheadtext [\s!ua] [\v!intermezzi=\cyrillicP \cyrillice \cyrillicr
                                        \cyrillice \cyrillicl \cyrillicii
                                        \cyrillick \space     \cyrillicv
                                        \cyrillics \cyrillict \cyrillica
@@ -126,14 +126,14 @@
                                        \cyrillica  \cyrilliczh\cyrillicch
                                        \cyrillici  \cyrillick]
 
-\setupheadtext [\s!ru] [\v!afkortingen=\cyrillicS \cyrillicp \cyrillici
+\setupheadtext [\s!ru] [\v!abbreviations=\cyrillicS \cyrillicp \cyrillici
                                        \cyrillics \cyrillico \cyrillick
                                        \space     \cyrillics \cyrillico
                                        \cyrillick \cyrillicr \cyrillica
                                        \cyrillicshch         \cyrillice
                                        \cyrillicn
                                        \cyrillici \cyrillicishrt]
-\setupheadtext [\s!ua] [\v!afkortingen=\cyrillicP \cyrillice \cyrillicr
+\setupheadtext [\s!ua] [\v!abbreviations=\cyrillicP \cyrillice \cyrillicr
                                        \cyrillice \cyrillicl \cyrillicii
                                        \cyrillick \space     \cyrillics
                                        \cyrillick \cyrillico \cyrillicr
@@ -147,29 +147,29 @@
                                        \cyrillico \cyrillict \cyrillici
                                        \cyrillicp \cyrillici]
 
-\setupheadtext [\s!ru]    [\v!eenheden=\cyrillicE \cyrillicd \cyrillici
+\setupheadtext [\s!ru]    [\v!units=\cyrillicE \cyrillicd \cyrillici
                                        \cyrillicn \cyrillici \cyrillicc
                                        \cyrillicery \space   \cyrillici
                                        \cyrillicz \cyrillicm \cyrillice
                                        \cyrillicr \cyrillice \cyrillicn
                                        \cyrillici \cyrillicya]
-\setupheadtext [\s!ua]    [\v!eenheden=\cyrillicO \cyrillicd \cyrillici
+\setupheadtext [\s!ua]    [\v!units=\cyrillicO \cyrillicd \cyrillici
                                        \cyrillicn \cyrillici \cyrillicc
                                        \cyrillicii\space     \cyrillicv
                                        \cyrillici \cyrillicm \cyrillicii
                                        \cyrillicr \cyrillicu]
 
-\setuplabeltext [\s!ru]      [\v!tabel=\cyrillicT \cyrillica \cyrillicb
+\setuplabeltext [\s!ru]      [\v!table=\cyrillicT \cyrillica \cyrillicb
                                        \cyrillicl \cyrillici \cyrillicc
                                        \cyrillica \space]
-\setuplabeltext [\s!ua]      [\v!tabel=\cyrillicT \cyrillica \cyrillicb
+\setuplabeltext [\s!ua]      [\v!table=\cyrillicT \cyrillica \cyrillicb
                                        \cyrillicl \cyrillici \cyrillicc
                                        \cyrillicya\space]
 
-\setuplabeltext [\s!ru]     [\v!figuur=\cyrillicR \cyrillici \cyrillics
+\setuplabeltext [\s!ru]     [\v!figure=\cyrillicR \cyrillici \cyrillics
                                        \cyrillicu \cyrillicn \cyrillico
                                        \cyrillick \space]
-\setuplabeltext [\s!ua]     [\v!figuur=\cyrillicM \cyrillica \cyrillicl
+\setuplabeltext [\s!ua]     [\v!figure=\cyrillicM \cyrillica \cyrillicl
                                        \cyrillicyu\cyrillicn \cyrillico
                                        \cyrillick \space]
 
@@ -180,88 +180,88 @@
                                        \cyrillica \cyrillicv \cyrillick
                                        \cyrillica \space]
 
-\setuplabeltext [\s!ru]    [\v!grafiek=\cyrillicG \cyrillicr \cyrillica
+\setuplabeltext [\s!ru]    [\v!graphic=\cyrillicG \cyrillicr \cyrillica
                                        \cyrillicf \cyrillici \cyrillick
                                        \space]
-\setuplabeltext [\s!ua]    [\v!grafiek=\cyrillicG \cyrillicr \cyrillica
+\setuplabeltext [\s!ua]    [\v!graphic=\cyrillicG \cyrillicr \cyrillica
                                        \cyrillicf \cyrillici \cyrillick
                                        \space]
 
-\setuplabeltext [\s!ru]                    [\v!hoofdstuk=]
-\setuplabeltext [\s!ua]                    [\v!hoofdstuk=]
+\setuplabeltext [\s!ru]                    [\v!chapter=]
+\setuplabeltext [\s!ua]                    [\v!chapter=]
 
-\setuplabeltext [\s!ru]                    [\v!paragraaf=]
-\setuplabeltext [\s!ua]                    [\v!paragraaf=]
+\setuplabeltext [\s!ru]                    [\v!section=]
+\setuplabeltext [\s!ua]                    [\v!section=]
 
-\setuplabeltext [\s!ru]              [\v!sub\v!paragraaf=]
-\setuplabeltext [\s!ua]              [\v!sub\v!paragraaf=]
+\setuplabeltext [\s!ru]              [\v!sub\v!section=]
+\setuplabeltext [\s!ua]              [\v!sub\v!section=]
 
-\setuplabeltext [\s!ru]        [\v!sub\v!sub\v!paragraaf=]
-\setuplabeltext [\s!ua]        [\v!sub\v!sub\v!paragraaf=]
+\setuplabeltext [\s!ru]        [\v!sub\v!sub\v!section=]
+\setuplabeltext [\s!ua]        [\v!sub\v!sub\v!section=]
 
-\setuplabeltext [\s!ru]  [\v!sub\v!sub\v!sub\v!paragraaf=]
-\setuplabeltext [\s!ua]  [\v!sub\v!sub\v!sub\v!paragraaf=]
+\setuplabeltext [\s!ru]  [\v!sub\v!sub\v!sub\v!section=]
+\setuplabeltext [\s!ua]  [\v!sub\v!sub\v!sub\v!section=]
 
-\setuplabeltext [\s!ru]                      [\v!bijlage=]
-\setuplabeltext [\s!ua]                      [\v!bijlage=]
+\setuplabeltext [\s!ru]                      [\v!appendix=]
+\setuplabeltext [\s!ua]                      [\v!appendix=]
 
-\setuplabeltext [\s!ru]      [\v!deel=\cyrillicCH\cyrillica \cyrillics
+\setuplabeltext [\s!ru]      [\v!part=\cyrillicCH\cyrillica \cyrillics
                                       \cyrillict \cyrillicsftsn
                                       \space]
-\setuplabeltext [\s!ua]      [\v!deel=\cyrillicCH\cyrillica \cyrillics
+\setuplabeltext [\s!ua]      [\v!part=\cyrillicCH\cyrillica \cyrillics
                                       \cyrillict \cyrillici \cyrillicn
                                       \cyrillica \space]
 
-\setuplabeltext [\s!ru]     [\v!regel=\cyrillics \cyrillict \cyrillicr
+\setuplabeltext [\s!ru]     [\v!line=\cyrillics \cyrillict \cyrillicr
                                       \cyrillico \cyrillick \cyrillica
                                       \space]
-\setuplabeltext [\s!ua]     [\v!regel=\cyrillicr \cyrillicya\cyrillicd
+\setuplabeltext [\s!ua]     [\v!line=\cyrillicr \cyrillicya\cyrillicd
                                       \cyrillico \cyrillick \space]
 
-\setuplabeltext [\s!ru]    [\v!regels=\cyrillics \cyrillict \cyrillicr
+\setuplabeltext [\s!ru]    [\v!lines=\cyrillics \cyrillict \cyrillicr
                                       \cyrillico \cyrillick \cyrillici
                                       \space]
-\setuplabeltext [\s!ua]    [\v!regels=\cyrillicr \cyrillicya\cyrillicd
+\setuplabeltext [\s!ua]    [\v!lines=\cyrillicr \cyrillicya\cyrillicd
                                       \cyrillick \cyrillici \space]
 
-\setuplabeltext [\s!ru]    [\v!pagina=\cyrillics \cyrillict \cyrillicr
+\setuplabeltext [\s!ru]    [\v!page=\cyrillics \cyrillict \cyrillicr
                                       \cyrillica \cyrillicn \cyrillici
                                       \cyrillicc \cyrillica \space]
-\setuplabeltext [\s!ua]    [\v!pagina=\cyrillics \cyrillict \cyrillico
+\setuplabeltext [\s!ua]    [\v!page=\cyrillics \cyrillict \cyrillico
                                       \cyrillicr \cyrillicii\cyrillicn
                                       \cyrillick \cyrillica \space ]
 
-\setuplabeltext [\s!ru]  [\v!oppagina=\cyrillicn \cyrillica \space
+\setuplabeltext [\s!ru]  [\v!atpage=\cyrillicn \cyrillica \space
                                       \cyrillics \cyrillict \cyrillicr
                                       \cyrillica \cyrillicn \cyrillici
                                       \cyrillicc \cyrillice \space]
-\setuplabeltext [\s!ua]  [\v!oppagina=\cyrillicn \cyrillica \space
+\setuplabeltext [\s!ua]  [\v!atpage=\cyrillicn \cyrillica \space
                                       \cyrillics \cyrillict \cyrillico
                                       \cyrillicr \cyrillicii\cyrillicn
                                       \cyrillicc \cyrillicii\space ]
 
-\setuplabeltext [\s!ru] [\v!hierboven=\cyrillics \cyrillicm.\space
+\setuplabeltext [\s!ru] [\v!hencefore=\cyrillics \cyrillicm.\space
                                       \cyrillicv \cyrillicery \cyrillicsh
                                       \cyrillice]
-\setuplabeltext [\s!ua] [\v!hierboven=\cyrillicya\cyrillick \space
+\setuplabeltext [\s!ua] [\v!hencefore=\cyrillicya\cyrillick \space
                                       \cyrillicp \cyrillico \cyrillick
                                       \cyrillica \cyrillicz \cyrillica
                                       \cyrillicn \cyrillico \space
                                       \cyrillicv \cyrillici \cyrillicshch
                                       \cyrillice]
 
-\setuplabeltext [\s!ru] [\v!hieronder=\cyrillics \cyrillicm.\space
+\setuplabeltext [\s!ru] [\v!hereafter=\cyrillics \cyrillicm.\space
                                       \cyrillicn \cyrillici \cyrilliczh
                                       \cyrillice]
-\setuplabeltext [\s!ua] [\v!hieronder=\cyrillicya\cyrillick \space
+\setuplabeltext [\s!ua] [\v!hereafter=\cyrillicya\cyrillick \space
                                       \cyrillicp \cyrillico \cyrillick
                                       \cyrillica \cyrillicz \cyrillica
                                       \cyrillicn \cyrillico \space
                                       \cyrillicn \cyrillici \cyrilliczh
                                       \cyrillicch\cyrillice]
 
-\setuplabeltext [\s!ru]       [\v!zie=\cyrillics \cyrillicm.\space]
-\setuplabeltext [\s!ua]       [\v!zie=\cyrillicd \cyrillici 
+\setuplabeltext [\s!ru]       [\v!see=\cyrillics \cyrillicm.\space]
+\setuplabeltext [\s!ua]       [\v!see=\cyrillicd \cyrillici
                                       \cyrillicv.\space ]
 
 \setuplabeltext [\s!ru]   [\v!january=\cyrillicya\cyrillicn \cyrillicv

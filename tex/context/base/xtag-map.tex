@@ -1,5 +1,5 @@
 %D \module
-%D   [       file=xtag-map,
+%D   [       filefile=xtag-map,
 %D        version=2000.12.20,
 %D          title=\CONTEXT\ XML Support,
 %D       subtitle=Remapping,
@@ -298,22 +298,22 @@
 %D macros, that both deal with elements. We distinguish
 %D between normal and empty elements.
 %D
-%D \starttypen
+%D \starttyping
 %D \remapXMLsequence [name] [result map] \unexpandablecommand
 %D \remapXMLsequence [name] [result map] \unexpandablecommand
-%D \stoptypen
+%D \stoptyping
 %D
 %D The \MATHML\ module demonstrates how these can be used.
 %D The element is converted into a sequence with one or more
 %D of the following components.
 %D
-%D \starttypen
+%D \starttyping
 %D { \command {parameters} {argument} }
-%D \stoptypen
+%D \stoptyping
 %D
 %D The following combinations are supported.
 %D
-%D \starttabulatie[|c|c|c|c|c|]
+%D \starttabulate[|c|c|c|c|c|]
 %D \NC GCPA \NC grouped \NC command \NC parameters \NC argument \NC \NR
 %D \NC GCP  \NC grouped \NC command \NC parameters \NC          \NC \NR
 %D \NC GCA  \NC grouped \NC command \NC            \NC argument \NC \NR
@@ -323,7 +323,7 @@
 %D \NC CA   \NC         \NC command \NC            \NC argument \NC \NR
 %D \NC C    \NC         \NC command \NC            \NC          \NC \NR
 %D \NC G    \NC grouped \NC         \NC            \NC          \NC \NR
-%D \stoptabulatie
+%D \stoptabulate
 %D
 %D Empty elements (singular ones) never get an argument,
 %D which makes sense, since they have at most parameters.
@@ -382,9 +382,9 @@
 %D The remapping is taken care of by the following macro,
 %D which takes three arguments.
 %D
-%D \starttypen
+%D \starttyping
 %D \XMLremapdata{before}{after}{content}
-%D \stoptypen
+%D \stoptyping
 %D
 %D After the remapping, the content is executed (expanded)
 %D under the normal \TEX\ catcode regime. The intermediate

@@ -1,5 +1,5 @@
 %D \module
-%D   [       file=meta-fig,
+%D   [       filefile=meta-fig,
 %D        version=2000.09.07,
 %D          title=\METAPOST\ Graphics,
 %D       subtitle=Stand Alone Graphics,
@@ -22,7 +22,7 @@
 %D whole \CONTEXT\ machinery is available, you can also add
 %D page backgrounds.
 %D
-%D \starttypen
+%D \starttyping
 %D \setupMPpage
 %D   [offset=1pt,
 %D    background=color,
@@ -35,7 +35,7 @@
 %D \startMPpage
 %D   fill fullsquare rotated 45 scaled 8cm withcolor blue ;
 %D \stopMPpage
-%D \stoptypen
+%D \stoptyping
 %D
 %D Although this is hardly of any use, you can mix these
 %D definitions with the text flow, since all settings are
@@ -55,13 +55,13 @@
    \dostopfittingpage}
 
 \setupMPpage
-  [\c!schaal=1000,
-   \c!strut=\v!nee,
-   \c!uitlijnen=,
+  [\c!scale=1000,
+   \c!strut=\v!no,
+   \c!align=,
    \c!offset=\v!overlay,
-   \c!breedte=\v!passend,
-   \c!hoogte=\v!passend,
-   \c!kader=\v!uit]
+   \c!width=\v!fit,
+   \c!height=\v!fit,
+   \c!frame=\v!off]
 
 %D \macros 
 %D  {MPfigure}
@@ -70,7 +70,7 @@
 
 \def\MPfigure#1#2% test for dup figure
   {\bgroup
-   \getfiguredimensionsonly[#1]% [\c!object=\v!nee] already set 
+   \getfiguredimensionsonly[#1]% [\c!object=\v!no] already set 
    \freezedimenmacro\naturalfigurewidth
    \freezedimenmacro\naturalfigureheight
    \startMPcode

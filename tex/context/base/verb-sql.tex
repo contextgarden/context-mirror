@@ -1,5 +1,5 @@
 %D \module
-%D   [       file=verb-sql,
+%D   [       filefile=verb-sql,
 %D        version=2000.05.09,
 %D          title=\CONTEXT\ Verbatim Macros,
 %D       subtitle=Pretty \SQL\ Verbatim,
@@ -13,8 +13,8 @@
 
 \writestatus{loading}{Context Support Macros / Pretty SQL Verbatim}
 
-%D \citaat {He, I want pretty pretting too!}, Berend cried out
-%D one day, \citaat {But now for \SQL.}. This query language 
+%D \quotation {He, I want pretty pretting too!}, Berend cried out
+%D one day, \quotation {But now for \SQL.}. This query language 
 %D shows code like: 
 %D 
 %D \startbuffer
@@ -29,18 +29,18 @@
 %D
 %D and this should become something pretty like:
 %D
-%D \haalbuffer
+%D \getbuffer
 %D
 %D or, with Berend's preferences: 
 %D
 %D \startbuffer[setup]
-%D \steltypenin
+%D \setuptyping
 %D   [SQL]
-%D   [tekst=ja,palet=,icommando=\bf,vcommando=,ccommando=\it]
+%D   [text=yes,palet=,icommand=\bf,vcommand=,ccommand=\it]
 %D \stopbuffer 
 %D
-%D \haalbuffer[setup]
-%D \haalbuffer
+%D \getbuffer[setup]
+%D \getbuffer
 %D
 %D This kind of pretty printing is accomplished by: 
 %D
