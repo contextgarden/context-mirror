@@ -362,6 +362,7 @@ var:separa:tollerante,rigido,moltorigido,*numero::
 var:stiletesto:normale,grassetto,inclinato,grassettoinclinato,type,cap,piccolo...,*comando::
 var:coloretesto:*nome::
 var:interazione:si,no::
+var:fattore:*numero::
 ivr:incorniciato::
 stopsetup
 

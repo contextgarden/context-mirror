@@ -954,6 +954,9 @@
         <cd:constant type="ja"/>
         <cd:constant type="nee"/>
       </cd:parameter>
+      <cd:parameter name="factor">
+        <cd:constant type="cd:number"/>
+      </cd:parameter>
       <cd:inherit name="omlijnd"/>
     </cd:assignments>
   </cd:arguments>

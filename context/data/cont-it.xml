@@ -952,6 +952,9 @@
         <cd:constant type="si"/>
         <cd:constant type="no"/>
       </cd:parameter>
+      <cd:parameter name="fattore">
+        <cd:constant type="cd:number"/>
+      </cd:parameter>
       <cd:inherit name="incorniciato"/>
     </cd:assignments>
   </cd:arguments>

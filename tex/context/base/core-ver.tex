@@ -140,11 +140,11 @@
    \def\prettyvariablefont  {\getvalue{#1\c!vcommand}}%
    \def\prettynaturalfont   {\getvalue{#1\c!ccommand}}%
    %
-   \doifvalue{#1\c!space}\v!on{\def\obeyspaces{\setcontrolspaces}}%
-   %doifvalue{#1\c!tab}   \v!on{\def\obeytabs  {\settabskips}}%
-   \doifnotvalue{#1\c!tab}\v!off{\def\obeytabs  {\settabskips}}%
-   \doifvalue{#1\c!tab} \s!ascii{\chardef\tabskipmode\plustwo}% quit on >127
-   \doifvalue{#1\c!page}\v!no{\def\obeypages {\ignorepages}}%
+   \doifvalue{#1\c!space }\v!on   {\def\obeyspaces{\setcontrolspaces}}%
+   %doifvalue{#1\c!tab   }\v!on   {\def\obeytabs  {\settabskips}}%
+   \doifnotvalue{#1\c!tab}\v!off  {\def\obeytabs  {\settabskips}}%
+   \doifvalue{#1\c!tab   }\s!ascii{\chardef\tabskipmode\plustwo}% quit on >127
+   \doifvalue{#1\c!page  }\v!no   {\def\obeypages {\ignorepages}}%
    %
    \ignorehyphens % default
    \ExpandFirstAfter\processaction
@@ -1173,7 +1173,7 @@
               {\getvalue{\??tp#1\c!stop }}}}%
       \stopverbatimcolor
       \stoppacked}  % includes \egroup
-     {\bgroup
+     {\ifmmode\hbox\fi\bgroup
       \expanded{\convertargument#3}\to\ascii
       \tttf[\makemessage\m!verbatims1\ascii]%
       \showmessage\m!verbatims1\ascii

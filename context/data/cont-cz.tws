@@ -362,6 +362,7 @@ var:split:tolerantni,striktni,velmistriktni,*cislo::
 var:styltextu:normalni,tucne,sklonene,tucnesklonene,opis,kap,male...,*prikaz::
 var:barvatextu:*jmeno::
 var:interakce:ano,ne::
+var:faktor:*cislo::
 ivr:oramovani::
 stopsetup
 

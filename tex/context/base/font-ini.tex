@@ -998,15 +998,18 @@
 \appendtoks
   \dosetmathfamily\mrfam\textface\scriptface\scriptscriptface\c!mr\mrfallback
   \dosetmathfamily\mifam\textface\scriptface\scriptscriptface\c!mi\empty
-  \dosetskewchar\defaultskewcharmi % implemented later on
   \dosetmathfamily\syfam\textface\scriptface\scriptscriptface\c!sy\empty
-  \dosetskewchar\defaultskewcharsy % implemented later on
   \dosetmathfamily\exfam\textface\textface  \textface        \c!ex\empty
   \dosetmathfamily\mafam\textface\scriptface\scriptscriptface\c!ma\empty
   \dosetmathfamily\mbfam\textface\scriptface\scriptscriptface\c!mb\empty
   \dosetmathfamily\mcfam\textface\scriptface\scriptscriptface\c!mc\empty
 % \dosetmathfamily\mdfam\textface\scriptface\scriptscriptface\c!md\empty
   \dosetmathfamily\nnfam\textface\scriptface\scriptscriptface\c!nn\empty
+\to \mathstrategies
+
+\appendtoks
+  \dosetskewchar\mifam\defaultskewcharmi % implemented later on
+  \dosetskewchar\syfam\defaultskewcharsy % implemented later on
 \to \mathstrategies
 
 \def\dosetmathfamily#1#2#3#4#5#6%
@@ -3106,10 +3109,19 @@
 \chardef\defaultskewcharmi='177
 \chardef\defaultskewcharsy='60
 
-\def\dosetskewchar#1%
- %{\skewchar\font\ifundefined{\purefontname\font\s!skewchar}%
- %   #1\else\csname\purefontname\font\s!skewchar\endcsname\fi}
-  {\skewchar\font\ifx\@@fontskewchar\empty#1\else\@@fontskewchar\fi}
+% \def\dosetskewchar#1%
+%   {\skewchar\font\ifx\@@fontskewchar\empty#1\else\@@fontskewchar\fi}
+
+\def\dosetskewchar#1#2%
+  {\ifx\@@fontskewchar\empty
+     \skewchar\textfont        #1#2%
+     \skewchar\scriptfont      #1#2%
+     \skewchar\scriptscriptfont#1#2%
+   \else
+     \skewchar\textfont        #1\@@fontskewchar
+     \skewchar\scriptfont      #1\@@fontskewchar
+     \skewchar\scriptscriptfont#1\@@fontskewchar
+   \fi}
 
 %D The previous macros show that it's is not always
 %D neccessary to define the whole bunch of fonts, take for

@@ -362,6 +362,7 @@ var:splitsen:soepel,streng,zeerstreng,*getal::
 var:tekstletter:normaal,vet,schuin,vetschuin,type,kap,klein...,*commando::
 var:tekstkleur:*naam::
 var:interactie:ja,nee::
+var:factor:*getal::
 ivr:omlijnd::
 stopsetup
 

@@ -954,6 +954,9 @@
         <cd:constant type="ja"/>
         <cd:constant type="nein"/>
       </cd:parameter>
+      <cd:parameter name="faktor">
+        <cd:constant type="cd:number"/>
+      </cd:parameter>
       <cd:inherit name="umrahmt"/>
     </cd:assignments>
   </cd:arguments>

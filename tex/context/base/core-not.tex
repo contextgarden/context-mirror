@@ -151,6 +151,8 @@
 \def\definenote
   {\dodoubleempty\dodefinenote}
 
+% maybe we should inherit
+
 \def\dodefinenote[#1][#2]%
   {\def\currentnote{#1}%
    \ifundefined{\??vn:\currentnote}%
@@ -202,6 +204,7 @@
         \c!textstyle=\tx,
         \c!textcolor=,
         \c!interaction=\v!yes,
+        \c!factor=,
         \c!n=1]%
     \definenumber
       [\currentnote]
@@ -233,7 +236,7 @@
         \s!unknown=>\setvalue{\??vn\c!rule:\currentnote}{\noteparameter\c!rule}]%
      \processaction % todo
        [\noteparameter\c!split]
-       [    \v!tolerant=>\notepenalty\zeropoint,
+       [  \v!tolerant=>\notepenalty\zeropoint,
             \v!strict=>\notepenalty9999,
         \v!verystrict=>\notepenalty\maxdimen,
            \s!default=>\notepenalty\zeropoint,
@@ -271,9 +274,9 @@
        \scratchcounter\noteparameter\c!n\relax
        \divide\count\currentnoteins \scratchcounter
      \fi
-     \ExpandBothAfter\doifinsetelse\v!page{\footnoteparameter\c!location} % **
+     \ExpandBothAfter\doifinsetelse\v!page{\footnoteparameter\c!location}% **
        {\global\endnotesfalse
-        \ExpandBothAfter\doifinsetelse\v!high{\footnoteparameter\c!location} % **
+        \ExpandBothAfter\doifinsetelse\v!high{\footnoteparameter\c!location}% **
           {\global\bottomnotesfalse}
           {\global\bottomnotestrue}}
        {\global\endnotestrue
@@ -290,6 +293,10 @@
       \global\bottomnotestrue
       \setclevernotes
    \fi
+   \doifsomething{\noteparameter\c!factor}
+     {\ifnum\noteparameter\c!factor<\zerocount\else
+        \count\currentnoteins\noteparameter\c!factor
+      \fi}%
    \ifnotelimit
      \dimen\currentnoteins\noteparameter\c!height
      \multiply\dimen\currentnoteins \scratchcounter
@@ -297,6 +304,15 @@
 
 \def\checknotes
   {\processnotes\dochecknote}
+
+% Example of using factor:
+%
+% \definenote[mynote][way=bypage,location=text,width=\marginwidth,rule=,before=,factor=0]
+% \setuplayout[backspace=5cm,margin=3cm,margindistance=.5cm,width=middle]
+% \setuptexttexts[margin][\vbox to \textheight{\placenotes[mynote]\vfill}][]
+% \starttext
+% \dorecurse{10}{test \mynote{one one one one one one} \input zapf \mynote{one one one one one one} }
+% \stoptext
 
 %D The noterule can be a graphic and therefore calling this
 %D setup macro at every skipswitch is tricky (many many MP

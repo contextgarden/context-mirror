@@ -249,7 +249,7 @@ sub error {
 # The banner.
 
 print "\n" ;
-report ("TeXFont 2.2 - ConTeXt / PRAGMA ADE 2000-2004") ;
+report ("TeXFont 2.2.0 - ConTeXt / PRAGMA ADE 2000-2004") ;
 print "\n" ;
 
 # Handy for scripts: one can provide a preferred path, if it

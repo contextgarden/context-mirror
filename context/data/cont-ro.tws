@@ -362,6 +362,7 @@ var:split:tolerant,strict,foartestrict,*numar::
 var:stiltext:normal,aldin,inclinat,aldininclinat,type,cap,mic...,*comanda::
 var:culoaretext:*nume::
 var:interactiune:da,nu::
+var:factor:*numar::
 ivr:framed::
 stopsetup
 

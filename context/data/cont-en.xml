@@ -954,6 +954,9 @@
         <cd:constant type="yes"/>
         <cd:constant type="no"/>
       </cd:parameter>
+      <cd:parameter name="factor">
+        <cd:constant type="cd:number"/>
+      </cd:parameter>
       <cd:inherit name="framed"/>
     </cd:assignments>
   </cd:arguments>

@@ -42,15 +42,15 @@
 \definesymbol [xguilsingleleft]  [\getglyph{Guil}{\char14}]
 \definesymbol [xguilsingleright] [\getglyph{Guil}{\char15}]
 
-%D A strange place, but okay:
+%D A strange place, but okay (the \type {\relax} prevents space gobbling)
 
 \startencoding [default]
 
-  \definecharacter leftguillemot     {\symbol[xleftguillemot]}
-  \definecharacter rightguillemot    {\symbol[xrightguillemot]}
+  \definecharacter leftguillemot     {\symbol[xleftguillemot]\relax}
+  \definecharacter rightguillemot    {\symbol[xrightguillemot]\relax}
 
-  \definecharacter guilsingleleft    {\symbol[xguilsingleleft]}
-  \definecharacter guilsingleright   {\symbol[xguilsingleright]}
+  \definecharacter guilsingleleft    {\symbol[xguilsingleleft]\relax}
+  \definecharacter guilsingleright   {\symbol[xguilsingleright]\relax}
 
 \stopencoding
 

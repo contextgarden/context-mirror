@@ -188,6 +188,7 @@ my $Filters          = '';
 my $NoMapFiles       = 0 ;
 my $Foxet            = 0 ;
 my $TheEnginePath    = 0 ;
+my $Paranoid         = 0 ;
 
 my $StartLine        = 0 ;
 my $StartColumn      = 0 ;
@@ -292,7 +293,8 @@ my $MakeMpy = '';
     "nomapfiles"     => \$NoMapFiles,
     "foxet"          => \$Foxet,
     "engine"         => \$TheEnginePath,
-    #### exxperiment
+    "paranoid"       => \$Paranoid,
+    #### experiment
     "startline=s"    => \$StartLine,
     "startcolumn=s"  => \$StartColumn,
     "endline=s"      => \$EndLine,
@@ -318,6 +320,22 @@ if ( $ARGV[0] && $ARGV[0] =~ /\.mpx$/io ) {    # catch -tex=.... bug in mpost
     $TeXProgram = '';
     $DoMPXTeX   = 1;
     $NoMPMode   = 1;
+}
+
+####
+
+if ($Paranoid) {
+    $ENV{shell_escape} = 'f' ;
+    $ENV{openout_any}  = 'p' ;
+    $ENV{openin_any}   = 'p' ;
+}
+
+if (($ENV{openout_any} eq 'p') || ($ENV{openin_any} eq 'p')) {
+    $Paranoid = 1 ; # extra test in order to set readlevel
+}
+
+if (($ENV{shell_escape} eq 'f') || ($ENV{SHELL_ESCAPE} eq 'f')) {
+    $AutoMPRun = 1 ;
 }
 
 if ($ScreenSaver) {
@@ -347,6 +365,21 @@ if ($AutoPdf) {
     $PdfOpen = $PdfClose = 1 ;
 }
 
+# this is our hook into paranoid path extensions, assumes that
+# these three vars are part of path specs in texmf.cnf
+
+foreach my $i ('TXRESOURCES','MPRESOURCES','MFRESOURCES') {
+    foreach my $j ($RunPath,$InpPath) {
+        if ($j ne '') {
+            if ($ENV{$i} ne '') {
+                $ENV{$i} = $ENV{$i} . ',' . $j ;
+            } else {
+                $ENV{$i} = $j ;
+            }
+        }
+    }
+}
+
 if ( $RunOnce || $Pages || $TypesetFigures || $TypesetListing ) { $NOfRuns = 1 }
 
 if ( ( $LogFile ne '' ) && ( $LogFile =~ /\w+\.log$/io ) ) {
@@ -355,7 +388,7 @@ if ( ( $LogFile ne '' ) && ( $LogFile =~ /\w+\.log$/io ) ) {
     *STDERR = *LOGFILE;
 }
 
-my $Program = " TeXExec 5.0 - ConTeXt / PRAGMA ADE 1997-2004";
+my $Program = " TeXExec 5.2.2 - ConTeXt / PRAGMA ADE 1997-2004";
 
 print "\n$Program\n\n";
 
@@ -1058,6 +1091,12 @@ sub MakeOptionFile {
     open( OPT, ">$JobName.top" );
     print OPT "\% $JobName.top\n";
     print OPT "\\unprotect\n";
+    if ($EnterBatchMode)   { print OPT "\\batchmode\n" }
+    if ($EnterNonStopMode) { print OPT "\\nonstopmode\n" }
+    if ($Paranoid)         {
+        print "    paranoid file mode : very true\n";
+        print OPT "\\def\\maxreadlevel{1}\n" ;
+    }
     $ModeFile =~ s/\\/\//gio ; # do this at top of file
     $Result =~ s/\\/\//gio ; # do this at top of file
     if ( $ModeFile ne '' ) { print OPT "\\readlocfile{$ModeFile}{}{}" }
@@ -1082,8 +1121,6 @@ sub MakeOptionFile {
     if ( $FullFormat ne 'standard' ) {
         print OPT "\\setupoutput[$FullFormat]\n";
     }
-    if ($EnterBatchMode)   { print OPT "\\batchmode\n" }
-    if ($EnterNonStopMode) { print OPT "\\nonstopmode\n" }
     if ($UseColor)         { print OPT "\\setupcolors[\\c!state=\\v!start]\n" }
     if ( $NoMPMode || $NoMPRun || $AutoMPRun ) {
         print OPT "\\runMPgraphicsfalse\n";
@@ -2814,6 +2851,18 @@ if ($HelpAsked) {
     check_texmf_tree;
     @ARGV = <@ARGV>;
     RunFiles;
+#~ } else {
+    #~ if ($Modules ne "") { # kind of fall back: texexec --use=set-02 --pdf
+        #~ my @tmp = split(',', $Modules) ;
+        #~ @ARGV[0] = @tmp[0] ;
+    #~ }
+    #~ if (@ARGV) {
+        #~ check_texmf_root;
+        #~ check_texmf_tree;
+        #~ RunFiles;
+    #~ } elsif ( !$HelpAsked ) {
+        #~ show_help_options;
+#~ } }
 } elsif ( !$HelpAsked ) {
     show_help_options;
 }

@@ -31,6 +31,11 @@
 
 \unexpanded\def\xmlrent#1{\doXMLentity#1;}
 
+\def\dosetupitemgroupconstant[#1][#2]%
+  {\def\dodosetupitemgroupconstant##1% catches empty in [a,b,] handy for xml
+     {\doifsomething{##1}{\dododosetupitemgroupconstant[#1][##1*]}}%
+   \processcommacommand[#2]\dodosetupitemgroupconstant} % expansion of #2 is handy for xml
+
 % \page[left]
 % \definecolumntextarea[intro][left][x=1,y=1,nx=4,ny=20,state=start,background=introlayer]
 % \setupcolumntextareatext[intro][left][\setups{intro}]
@@ -469,7 +474,7 @@
 \def\definemarkedpage[#1]%
   {\definetwopasslist{\v!page:#1}}
 
-\def\markpage[#1]% looks very much like domarginreference and doparagraphreference
+\def\markpage[#1]% looks very much like domarginreference
   {\iftrialtypesetting\else
      \doglobal\increment\nofmarkedpages\relax
      \edef\writeparref%
@@ -1938,28 +1943,29 @@
 
 \let\figuredescription\empty
 
-% wrong names
-
-\newif\ifpagechanged \let\lastchangedpage\empty
-
-\def\checkpagechange#1%
-  {\gettwopassdata\s!paragraph
-   \pagechangedfalse
-   \iftwopassdatafound
-     \ifnum\twopassdata>0\getvalue{\s!paragraph:p:#1}\relax
-       \pagechangedtrue
-     \fi
-   \fi
-   \ifpagechanged
-     \letgvalue{\s!paragraph:p:#1}\twopassdata
-     \globallet\lastchangedpage\twopassdata
-   \else
-     \globallet\lastchangedpage\realfolio
-   \fi
-   \doparagraphreference}
-
-\def\changedpage#1%
-  {\getvalue{\s!paragraph:p:#1}}
+%% where does this come from, old code probably
+%%
+%%
+%% \newif\ifpagechanged \let\lastchangedpage\empty
+%%
+%% \def\checkpagechange#1%
+%%   {\gettwopassdata\s!paragraph
+%%    \pagechangedfalse
+%%    \iftwopassdatafound
+%%      \ifnum\twopassdata>0\getvalue{\s!paragraph:p:#1}\relax
+%%        \pagechangedtrue
+%%      \fi
+%%    \fi
+%%    \ifpagechanged
+%%      \letgvalue{\s!paragraph:p:#1}\twopassdata
+%%      \globallet\lastchangedpage\twopassdata
+%%    \else
+%%      \globallet\lastchangedpage\realfolio
+%%    \fi
+%%    \doparagraphreference}
+%%
+%% \def\changedpage#1%
+%%   {\getvalue{\s!paragraph:p:#1}}
 
 % incomplete, will be a special case of float placement
 
@@ -2197,7 +2203,7 @@
 %D live on on my machine and are not distributed, but they may end
 %D up in the distributed files.
 
-\readfile {cont-loc} {} {} % local improvements, patches, new features
-\readfile {cont-exp} {} {} % experimental features (e.g. local speed-ups)
+\readsysfile {cont-loc} {} {} % local improvements, patches, new features
+\readsysfile {cont-exp} {} {} % experimental features (e.g. local speed-ups)
 
 \endinput

@@ -272,7 +272,7 @@
 \def\doloadfontmapfile#1%
   {\ifundefined{#1 \c!state}%
      \writestatus\m!fonts{using map file: #1}%
-     \doloadmapfile{+}{#1}%
+     \doloadmapfile{=}{#1}% +/add =/replace -/remove
      \setxvalue{#1 \c!state}{1}%
    \fi}
 

@@ -362,6 +362,7 @@ var:split:tolerant,streng,sehrstreng,*Nummer::
 var:textstil:normal,fett,geneigt,fettgeneigt,tippen,kap,klein...,*Befehl::
 var:textfarbe:*Name::
 var:interaktion:ja,nein::
+var:faktor:*Nummer::
 ivr:umrahmt::
 stopsetup
 

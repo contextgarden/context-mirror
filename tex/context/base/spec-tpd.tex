@@ -206,8 +206,19 @@
 \ifx\pdfmapline\undefined \let\pdfmapline\gobbletwoarguments \fi
 
 \definespecial\doresetmapfilelist{\pdfmapfile{original-empty.map}}
-\definespecial\doloadmapfile #1#2{\pdfmapfile{#1#2}}
-\definespecial\doloadmapline #1#2{\pdfmapline{#1#2}}
+
+\ifnum\pdftexversion<120
+
+  \definespecial\doloadmapfile #1#2{\pdfmapfile{+#2}}
+  \definespecial\doloadmapline #1#2{}
+
+\else
+
+  \definespecial\doloadmapfile #1#2{\pdfmapfile{#1#2}}
+  \definespecial\doloadmapline #1#2{\pdfmapline{#1#2}}
+
+\fi
+
 
 %D nasty but needed
 
