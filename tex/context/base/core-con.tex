@@ -219,7 +219,7 @@
 \def\defineconversionvector#1#2% name base
   {\bgroup
    % dirty trick
-   \uccode`\!=`\1
+   \uccode`\*=`\1
    % plain:
    % \uccode`\0=\numexpr#2+0\relax \uccode`\1=\numexpr#2+1\relax
    % \uccode`\2=\numexpr#2+2\relax \uccode`\3=\numexpr#2+3\relax
@@ -229,8 +229,8 @@
    % context:
    \dostepwiserecurse091{\expandafter\uccode\expandafter`\recurselevel=\numexpr#2+\recurselevel}%
    % prepared macro
-   \uppercase\expandafter{\expandafter\gdef\csname::cvn::#1::\endcsname##!%
-     {\ifcase##! 0\or1\or2\or3\or4\or5\or6\or7\or8\or9\fi}}%
+   \uppercase\expandafter{\expandafter\gdef\csname::cvn::#1::\endcsname##*%
+     {\ifcase##* 0\or1\or2\or3\or4\or5\or6\or7\or8\or9\fi}}%
    \egroup}
 
 \def\conversionnumber#1#2%

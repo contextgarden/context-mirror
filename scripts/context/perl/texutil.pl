@@ -2816,34 +2816,40 @@ sub FilterPages # temp feature / no reporting
        close(TUO) } }
 
 sub GenerateSciteApi # ugly, not generic, but fast, will become xsltproc based
-  { my $filename = $ARGV[0] ;
+  { my $interface = $ARGV[0] ;
     my $commands = 0 ;
     my $environments = 0 ;
     my %collection ;
-    return unless -f "$filename.xml" ;
-    print "        scite api file : $filename-scite.api\n" ;
-    print "      scite lexer file : $filename-scite.properties\n" ;
-    if (open(XML,"<$filename.xml"))
+    my %mappings ;
+    return unless -f "cont-en.xml" ;
+    print "        scite api file : cont-$interface-scite.api\n" ;
+    print "      scite lexer file : cont-$interface-scite.properties\n" ;
+    if (open(XML,"<keys-$interface.xml"))
+      { while (<XML>)
+          { if (/\<cd\:command\s+name=\"(.*?)\"\s+value=\"(.*?)\".*?\>/o)
+              { $mappings{"$1"} = $2 } }
+        close(XML) }
+    else
+      { print "          missing file : keys-$interface.xml\n" ;
+        return }
+    if (open(XML,"<cont-en.xml"))
       { while (<XML>)
           { chomp ;
             if (/\<cd\:command\s+name=\"(.*?)\"\s+type=\"environment\".*?\>/o)
               { $environments++ ;
-                $collection{"start$1"} = '' ;
-                $collection{"stop$1"} = '' }
+                $collection{"start$mappings{$1}"} = '' ;
+                $collection{"stop$mappings{$1}"} = '' }
             elsif (/\<cd\:command\s+name=\"(.*?)\".*?\>/o)
               { $commands++ ;
-                $collection{"$1"} = '' } }
+                $collection{"$mappings{$1}"} = '' } }
        close(XML) ;
-       if (open(API,">$filename-scite.api"))
+       if (open(API,">cont-$interface-scite.api"))
          { foreach $name (keys %collection)
              { print API "\\$name\n" }
            print API "\n" ;
            close(API) }
-       if (open(API,">$filename-scite.properties"))
+       if (open(API,">cont-$interface-scite.properties"))
          { my $i = 0 ;
-           my $interface = 'en' ;
-           if ($filename =~ /cont\-(..)/o)
-             { $interface = $1 }
            print API "keywordclass.macros.context.$interface=" ;
            foreach $name (keys %collection)
              { if ($i==0)

@@ -437,7 +437,7 @@
 \stoptable
 \stopbuffer
 
-\gdef\ShowTextsValues [#1] [#2]
+\gdef\ShowTextsValues[#1][#2]%
   {\vbox\bgroup
    \language[#1]%
    \setbox\scratchbox\hbox to \hsize{\hss\bfb#2 language defaults\hss}
@@ -453,7 +453,7 @@
       $\vcenter{\getbuffer[lang-c]}$&&$\vcenter{\getbuffer[lang-d]}$\cr}%
    \egroup}
 
-\gdef\ShowLanguageValues [#1] [#2] #3 #4
+\gdef\ShowLanguageValues[#1][#2]#3#4%
   {\hbox to \hsize
      {\hss
       \vbox
@@ -464,25 +464,25 @@
         \HL
         \VL \THREE{\bf subsentence symbol and quotes} \VL\SR
         \HL
-        \VL \quotation{#3 #4} \VL \quote{#2} \VL \let|=\normalbar |<||<|#3|>|#4|>| \VL\SR
-        \VL \quotation{#3 #4} \VL \quote{#2} \VL |<||<|#3|>|#4|>| \VL\SR
+        \VL \quotation{#3 #4} \VL \quote{#2} \VL \let|=\normalbar |<||<|#3|>|#4|>| \VL\FR
+        \VL \quotation{#3 #4} \VL \quote{#2} \VL |<||<|#3|>|#4|>| \VL\LR
         \HL
         \stoptable
         \egroup
       \hss}}
 
-\gdef\doShowAllLanguageValues [#1] [#2] #3 #4
+\gdef\doShowAllLanguageValues[#1][#2]#3#4%
   {\vbox
-     {\ShowTextsValues [#1] [#2]
+     {\ShowTextsValues[#1][#2]
       \vskip2em
-      \ShowLanguageValues  [#1] [#2] #3 #4 }
+      \ShowLanguageValues[#1][#2]{#3}{#4}}
    \protect
    \page}
 
-\gdef\ShowAllLanguageValues%
+\gdef\ShowAllLanguageValues
   {\page
    \unprotect
-   \doShowAllLanguageValues}
+   \dodoubleargument\doShowAllLanguageValues}
 
 \protect
 

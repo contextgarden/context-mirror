@@ -67,11 +67,11 @@
 % The following two macros are used to compensate for a switch in body fonts
 % as in:
 %
-% \definecolumnset [twee]  [n=2,balanceren=ja]
-% \definecolumnset [three] [n=3,balanceren=ja]
+% \definecolumnset [two]  [n=2,balancing=yes]
+% \definecolumnset [three] [n=3,balancing=yes]
 %
-% \setupcolumnsetlines[twee][1][1][7]
-% \setupcolumnsetlines[twee][1][2][10]
+% \setupcolumnsetlines[two][1][1][7]
+% \setupcolumnsetlines[two][1][2][10]
 %
 % \setupcolumnsetlines[three][1][1][40]
 % \setupcolumnsetlines[three][1][2][40]
@@ -82,8 +82,8 @@
 % \setupcolumnsetstart[three][1][3][20]
 %
 % \starttext
-%   \startcolumnset [twee] \dorecurse {1}{\input tufte \par} \stopcolumnset
-%   \switchnaarkorps[klein]
+%   \startcolumnset [two] \dorecurse {1}{\input tufte \par} \stopcolumnset
+%   \switchtobodyfont[small]
 %   \startcolumnset [three] \dorecurse {1}{\input tufte \par} \stopcolumnset
 % \stoptext
 
@@ -1618,11 +1618,11 @@
 \def\doOTRSETgotocolumn[#1]% yes|force|first|last|<number>|<number>*<number>
   {\processallactionsinset
      [#1]
-     [     \v!yes=>\OTRSETdummycolumn,
-          \v!no=>,% not supported
-      \v!force=>\OTRSETdummycolumn,
-       \v!first=>\expanded{\doOTRSETgotoCOLUMN{1}},
-      \v!last=>\expanded{\doOTRSETgotoCOLUMN{\the\nofcolumns}},
+     [    \v!yes=>\OTRSETdummycolumn,
+           \v!no=>,% not supported
+        \v!force=>\OTRSETdummycolumn,
+        \v!first=>\expanded{\doOTRSETgotoCOLUMN{1}},
+         \v!last=>\expanded{\doOTRSETgotoCOLUMN{\the\nofcolumns}},
       \s!default=>\OTRSETdummycolumn,
       \s!unknown=>\expanded{\doOTRSETgotoCOLROW{\commalistelement}}]}
 
@@ -1909,7 +1909,7 @@
    \processaction
      [\getvalue{\??mc\OTRSETidentifier\c!balance}]
      [    \v!yes=>\chardef\OTRSETbalancemethod\plusone,
-       \v!top=>\chardef\OTRSETbalancemethod\plustwo,
+          \v!top=>\chardef\OTRSETbalancemethod\plustwo,
        \v!bottom=>\chardef\OTRSETbalancemethod\plusthree]}
 
 % keep 'm for a while
@@ -2415,7 +2415,7 @@
         \processaction
           [\getvalue{\??mt##1#2\c!state}]
           [  \v!start=>\donetrue\doglobal\removefromcommalist{##1}#1,
-           \v!repeat=>\donetrue,
+            \v!repeat=>\donetrue,
            \s!unknown=>\doperformtest\commalistelement\donetrue\donefalse]%
         \ifdone
           \dodoplacecolumntextareas{##1}{#2}
@@ -2454,7 +2454,7 @@
      {\donetrue\localframed
         [\??mt\currentcolumntestarea]
         [\c!location=,% new (*)
-         \c!width=\!!widtha,\c!height=\!!heighta,\c!lines=]
+            \c!width=\!!widtha,\c!height=\!!heighta,\c!lines=]
         {\columntextareaparameter\empty}}%
    \!!counta\columntextareaparameter\c!x
    \!!countb\columntextareaparameter\c!y
@@ -2471,13 +2471,13 @@
         \copy\scratchbox % \box
       \else
         \clip
-          [%\c!topoffset=\columntextareaparameter\c!clipoffset,%
+          [   %\c!topoffset=\columntextareaparameter\c!clipoffset,%
            %\c!bottomoffset=\columntextareaparameter\c!clipoffset,%
-           %\c!leftoffset=\columntextareaparameter\c!clipoffset,%
-           \c!offset=\columntextareaparameter\c!clipoffset,%
-           \c!rightoffset=\zeropoint,%
-           \c!width=\!!widthb,%
-           \c!height=\!!heighta]%
+             %\c!leftoffset=\columntextareaparameter\c!clipoffset,%
+                  \c!offset=\columntextareaparameter\c!clipoffset,%
+             \c!rightoffset=\zeropoint,%
+                   \c!width=\!!widthb,%
+                  \c!height=\!!heighta]%
           {\copy\scratchbox}%
       \fi}%
    \OTRSETsetgridcell\!!counta\!!countb\box0
@@ -2488,14 +2488,14 @@
      \setbox0\hbox
        {\hskip-\namedlayoutparameter\v!odd\c!backspace
         \clip
-          [%\c!topoffset=\columntextareaparameter\c!clipoffset,%
+          [   %\c!topoffset=\columntextareaparameter\c!clipoffset,%
            %\c!bottomoffset=\columntextareaparameter\c!clipoffset,%
-           %\c!rightoffset=\columntextareaparameter\c!clipoffset,%
-           \c!offset=\columntextareaparameter\c!clipoffset,%
-           \c!leftoffset=\zeropoint,%
-           \c!width=\!!widtha,%
-           \c!height=\!!heighta,%
-           \c!hoffset=\!!widthb]%
+            %\c!rightoffset=\columntextareaparameter\c!clipoffset,%
+                  \c!offset=\columntextareaparameter\c!clipoffset,%
+              \c!leftoffset=\zeropoint,%
+                   \c!width=\!!widtha,%
+                  \c!height=\!!heighta,%
+                 \c!hoffset=\!!widthb]%
           {\copy\scratchbox}}%
      \OTRSETsetgridcell\!!counta\!!countb\box0%
    \fi}
@@ -2541,9 +2541,9 @@
    \ifodd\realpageno \else % tricky, assumes that we keep there
      \ifcase\!!countc\else
        % nog niet ok voor enkel/dubbelzijdig
-       \advance\!!widtha \namedlayoutparameter\v!even  \c!backspace
-       \advance\!!widtha \namedlayoutparameter\v!odd\c!backspace
-       \advance\!!widthb \namedlayoutparameter\v!even  \c!backspace
+       \advance\!!widtha \namedlayoutparameter\v!even\c!backspace
+       \advance\!!widtha \namedlayoutparameter\v!odd \c!backspace
+       \advance\!!widthb \namedlayoutparameter\v!even\c!backspace
        \dorecurse\!!countc
          {\advance\!!widtha\OTRSETgetparameter\c!distance\recurselevel}%
      \fi
