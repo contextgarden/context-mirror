@@ -3,6 +3,7 @@ eval '(exit $?0)' && eval 'exec perl -S $0 ${1+"$@"}' && eval 'exec perl -S $0 $
 
 # todo: second run of checksum of mp file with --nomprun changes
 # todo: merge wybo's enhanced help function [along with updating manual]
+# todo: warning if no args
 
 #D \module
 #D   [       file=texexec.pl,
@@ -1974,6 +1975,14 @@ sub load_set_file
 if ($SetFile ne "")
   { load_set_file ($SetFile,$Verbose) }
 
+# todo : more consistent argv handling
+# 
+# sub ifargs 
+#   { $problems = (@ARGV==0) ;  
+#     if ($problems)
+#       { print "               warning : nothing to do\n" }
+#     return $problems } 
+
 if ($TypesetListing)
   { RunListing (@ARGV) }
 elsif ($TypesetFigures)
@@ -1988,8 +1997,7 @@ elsif ($MakeFormats)
     else
       { RunFormats } }
 elsif (@ARGV)
-  { #foreach (@ARGV) { $_ =~ s/\.tex//io }
-    @ARGV = <@ARGV> ; RunFiles }
+  { @ARGV = <@ARGV> ; RunFiles }
 else
   { print $Help{HELP} ;
     unless ($Verbose) { print $Help{VERBOSE} } }

@@ -1242,13 +1242,14 @@
    \egroup}
 
 \def\externalfigurereplacement#1%
-  {\localframed
+  {\expanded{\localframed
      [\??ef]
      [\c!breedte=\figurewidth,
       \c!hoogte=\figureheight,
       \c!achtergrond=\v!raster, 
       \c!achtergrondraster=.5, 
-      \c!kader=\ifincolor\v!uit\else\v!aan\fi]
+     %\c!kader=\ifincolor\v!uit\else\v!aan\fi]
+      \c!kader=\ifincolor\@@efkader\else\v!aan\fi]}%
      {\ttx#1}}
 
 \def\getexternalfigure#1%

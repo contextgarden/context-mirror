@@ -1311,12 +1311,12 @@
 
 %D On the next page we show some examples of how these macros
 %D come into action. The examples show us how
-%D \type{\v!passend}, \type{\v!ruim} dimensions influence the
+%D \type {\v!passend}, \type {\v!ruim} dimensions influence the
 %D formatting. Watch the visualized struts. \voetnoot {Here we
-%D used \type{\toonstruts}.}
+%D used \type {\toonstruts}.}
 %D
 %D \startuitstellen
-%D \bgroup
+%D \bgroup 
 %D \toonstruts
 %D \mindermeldingen
 %D \startregelcorrectie
@@ -1474,7 +1474,7 @@
 %D         \hsize=300pt
 %D         \setupframed
 %D           [\c!achtergrond=\v!kleur,
-%D            \c!achtergrondkleur=DemoRed,
+%D            \c!achtergrondkleur=donkerrood,
 %D            \c!breedte=300pt,
 %D            \c!hoogte=60pt,
 %D            \c!kaderkleur=DemoBlue,
@@ -1500,9 +1500,9 @@
 %D     \egroup
 %D \stopbuffer
 %D
-%D \haalbuffer
+%D \haalbuffer \pagina 
 %D
-%D {\setupframed[diepte=4pt]\haalbuffer}
+%D {\setupframed[diepte=4pt]\haalbuffer} \pagina 
 %D
 %D \protect
 %D \egroup
@@ -1633,32 +1633,32 @@
 %D \steltypenin[marge=0pt]
 %D \startregelcorrectie
 %D \startbuffer
-%D \omlijnd[offset=overlay,kader=aan]               {\DemoRed\blokje}
+%D \omlijnd[offset=overlay,kader=aan]               {\donkerrood\blokje}
 %D \stopbuffer
 %D \hbox{\haalbuffer\vbox{\typebuffer}}
 %D
 %D \startbuffer
-%D \omlijnd[offset=overlay,kader=aan,onderkader=uit]{\DemoRed\blokje}
+%D \omlijnd[offset=overlay,kader=aan,onderkader=uit]{\donkerrood\blokje}
 %D \stopbuffer
 %D \hbox{\haalbuffer\vbox{\typebuffer}}
 %D
 %D \startbuffer
-%D \omlijnd[offset=overlay,kader=aan,onderkader=aan]{\DemoRed\blokje}
+%D \omlijnd[offset=overlay,kader=aan,onderkader=aan]{\donkerrood\blokje}
 %D \stopbuffer
 %D \hbox{\haalbuffer\vbox{\typebuffer}}
 %D
 %D \startbuffer
-%D \omlijnd[offset=overlay,kader=uit]               {\DemoRed\blokje}
+%D \omlijnd[offset=overlay,kader=uit]               {\donkerrood\blokje}
 %D \stopbuffer
 %D \hbox{\haalbuffer\vbox{\typebuffer}}
 %D
 %D \startbuffer
-%D \omlijnd[offset=overlay,kader=uit,onderkader=uit]{\DemoRed\blokje}
+%D \omlijnd[offset=overlay,kader=uit,onderkader=uit]{\donkerrood\blokje}
 %D \stopbuffer
 %D \hbox{\haalbuffer\vbox{\typebuffer}}
 %D
 %D \startbuffer
-%D \omlijnd[offset=overlay,kader=uit,onderkader=aan]{\DemoRed\blokje}
+%D \omlijnd[offset=overlay,kader=uit,onderkader=aan]{\donkerrood\blokje}
 %D \stopbuffer
 %D \hbox{\haalbuffer\vbox{\typebuffer}}
 %D \stopregelcorrectie
@@ -1977,33 +1977,96 @@
 %      \hfill
 %    \strut}
 
+% \def\thinrule%
+%   {\strut
+%    \bgroup
+%    \startcolor[\@@dlkleur]%
+%    \doif{\@@dlhoogte}{\v!max}{\def\@@dlhoogte{1}}%
+%    \doif{\@@dldiepte}{\v!max}{\def\@@dldiepte{1}}%
+%    \freezedimensionwithunit\@@dlhoogte{\ht\strutbox}%
+%    \freezedimensionwithunit\@@dldiepte{\dp\strutbox}%
+%    \leaders
+%      \hrule\!!height\@@dlhoogte\!!depth\@@dldiepte
+%      \hfill
+%    \stopcolor
+%    \donefalse
+%    \processaction
+%      [\@@dlvariant]
+%      [\v!a=>,
+%       \v!b=>\dimen0=.5\linewidth\dimen2=\dimen0\donetrue,
+%       \v!c=>\dimen2=\@@dldiepte\dimen0=-\dimen2\donetrue
+%             \advance\dimen0\linewidth]%
+%    \ifdone
+%      \hfillneg
+%      \leaders
+%        \hrule\!!height\dimen0\!!depth\dimen2
+%        \hfill
+%    \fi
+%    \egroup
+%    \strut}
+
 \def\thinrule%
   {\strut
    \bgroup
-   \startcolor[\@@dlkleur]%
-   \doif{\@@dlhoogte}{\v!max}{\def\@@dlhoogte{1}}%
-   \doif{\@@dldiepte}{\v!max}{\def\@@dldiepte{1}}%
-   \freezedimensionwithunit\@@dlhoogte{\ht\strutbox}%
-   \freezedimensionwithunit\@@dldiepte{\dp\strutbox}%
-   \leaders
-     \hrule\!!height\@@dlhoogte\!!depth\@@dldiepte
-     \hfill
-   \stopcolor
-   \donefalse
+   \chardef\ruletype=1
    \processaction
      [\@@dlvariant]
-     [\v!a=>,
-      \v!b=>\dimen0=.5\linewidth\dimen2=\dimen0\donetrue,
-      \v!c=>\dimen2=\@@dldiepte\dimen0=-\dimen2\donetrue
-            \advance\dimen0\linewidth]%
-   \ifdone
-     \hfillneg
-     \leaders
-       \hrule\!!height\dimen0\!!depth\dimen2
-       \hfill
+     [ \v!a=>\chardef\ruletype=0,% no line
+      %\v!b=>\chardef\ruletype=1,% height/depth
+       \v!c=>\chardef\ruletype=2,% topheight/botdepth
+      %  11=>\chardef\ruletype=1,% fallback for  backgrounds
+          0=>\chardef\ruletype=0,% compatible with backgrounds
+      %   1=>\chardef\ruletype=1,% compatible with backgrounds
+          2=>\chardef\ruletype=2]% compatible with backgrounds
+   \doifsomething{\@@dllijndikte}
+     {\linewidth=\@@dllijndikte}%
+   \ifdim\linewidth=\zeropoint
+     \chardef\ruletype=0
+   \else
+     \doifnot{\@@dlkader}{\v!aan}{\chardef\ruletype=0\relax}%
    \fi
-   \egroup
-   \strut}
+   \ifnum\ruletype=1
+     \doif{\@@dlhoogte}{\v!max}{\def\@@dlhoogte{1}}%
+     \doif{\@@dldiepte}{\v!max}{\def\@@dldiepte{1}}%
+   \else
+     \def\@@dlhoogte{1}%
+     \def\@@dldiepte{1}%
+   \fi
+   \freezedimensionwithunit\@@dlhoogte{\ht\strutbox}%
+   \freezedimensionwithunit\@@dldiepte{\dp\strutbox}%
+   \divide\linewidth 2
+   \doifelse{\@@dlachtergrond}{\v!kleur}
+     {\startcolor[\@@dlachtergrondkleur]%
+      \dimen0=\@@dlhoogte
+      \dimen2=\@@dldiepte
+      \ifnum\ruletype=2 % prevent overshoot due to rounding
+        \advance\dimen0 by -.5\linewidth
+        \advance\dimen2 by -.5\linewidth
+      \fi
+      \leaders\hrule\!!height\dimen0\!!depth\dimen2\hfill
+      \stopcolor
+      \ifcase\ruletype
+        % no rule
+      \or
+        \startcolor[\@@dlkleur]%
+        \hfillneg
+        \leaders\hrule\!!height\linewidth\!!depth\linewidth\hfill
+        \stopcolor
+      \or
+        \startcolor[\@@dlkleur]%
+        \dimen2=\@@dldiepte\dimen0=-\dimen2 \advance\dimen0 \linewidth
+        \hfillneg\leaders\hrule\!!height\dimen0\!!depth\dimen2\hfill
+        \dimen2=\@@dlhoogte\dimen0=-\dimen2 \advance\dimen0 \linewidth
+        \hfillneg\leaders\hrule\!!height\dimen2\!!depth\dimen0\hfill
+        \stopcolor
+      \fi}
+     {\ifcase\ruletype \else
+        \startcolor[\@@dlkleur]%
+        \leaders\hrule\!!height\@@dlhoogte\!!depth\@@dldiepte\hfill
+        \stopcolor
+      \fi}%
+   \strut
+   \carryoverpar\egroup}
 
 \def\hairline%
   {\endgraf
@@ -2031,6 +2094,22 @@
 %    \@@dlna
 %    \egroup}
 
+% \def\dothinrules[#1]%
+%   {\bgroup
+%    \dosetupthinrules[#1]%
+%    \@@dlvoor
+%    \assignvalue{\@@dlinterlinie}{\@@dlinterlinie}{1.0}{1.5}{2.0}%
+%    \spacing\@@dlinterlinie
+%    \dorecurse
+%      {\@@dln}
+%      {\ifnum\recurselevel=\@@dln \dothinrulesnobreak \else
+%       \ifnum\recurselevel=2      \dothinrulesnobreak \fi\fi
+%                                  \thinrule
+%      %\ifnum\recurselevel<\@@dln \endgraf \fi}%
+%       \ifnum\recurselevel<\@@dln \endgraf \geenwitruimte \@@dltussen \fi}%
+%    \@@dlna
+%    \egroup}
+
 \def\dothinrules[#1]%
   {\bgroup
    \dosetupthinrules[#1]%
@@ -2044,8 +2123,11 @@
                                  \thinrule
      %\ifnum\recurselevel<\@@dln \endgraf \fi}%
       \ifnum\recurselevel<\@@dln \endgraf \geenwitruimte \@@dltussen \fi}%
-   \@@dlna
-   \egroup}
+%  \@@dlna
+%  \egroup}
+   \doifelsenothing{\@@dlna}
+     {\carryoverpar\egroup}
+     {\@@dlna\egroup}}
 
 \def\thinrules%
   {\dosingleempty\dothinrules}
@@ -2068,6 +2150,48 @@
 %D \stopbuffer
 %D
 %D \typebuffer {\haalbuffer}
+%D 
+%D There are a couple of alternative ways to visualize rules
+%D using backgrounds. At first sight these may look strange,
+%D but they make sense in educational settings. The
+%D alternatives are more or less compatible with the more
+%D advanced \METAPOST\ based implementation. 
+%D 
+%D \startbuffer[a]
+%D \steldunnelijnenin
+%D   [n=2,
+%D    achtergrondkleur=grijs,
+%D    lijndikte=1pt,
+%D    kleur=donkerblauw, 
+%D    na=\blanko,
+%D    voor=\blanko] 
+%D \stopbuffer
+%D 
+%D \typebuffer[a]
+%D 
+%D \startbuffer[b]
+%D \dunnelijnen[variant=a] 
+%D \dunnelijnen[variant=b] 
+%D \dunnelijnen[variant=c] 
+%D \stopbuffer
+%D 
+%D \typebuffer[b] \haalbuffer[a,b]
+%D 
+%D \startbuffer[b]
+%D \dunnelijnen[variant=a,achtergrond=kleur]
+%D \dunnelijnen[variant=b,achtergrond=kleur]
+%D \dunnelijnen[variant=c,achtergrond=kleur]
+%D \stopbuffer
+%D 
+%D \typebuffer[b] \haalbuffer[a,b]
+%D 
+%D \startbuffer[b]
+%D \dunnelijnen[variant=a,hoogte=.8,diepte=.8,achtergrond=kleur] 
+%D \dunnelijnen[variant=b,hoogte=.8,diepte=.8,achtergrond=kleur] 
+%D \dunnelijnen[variant=c,hoogte=.8,diepte=.8,achtergrond=kleur] 
+%D \stopbuffer
+%D 
+%D \typebuffer[b] \haalbuffer[a,b]
 
 %D \macros
 %D   {optimizethinrules}
@@ -2874,7 +2998,11 @@
    \c!kleur=,
    \c!hoogte=.5\linewidth,
    \c!diepte=.5\linewidth,
-   \c!variant=\v!a]
+   \c!kader=\v!aan, % compatible with textbackgrounds
+   \c!variant=\v!b,
+   \c!achtergrondkleur=,
+   \c!achtergrond=,
+   \c!lijndikte=]
 
 \setuptextrules
   [\c!plaats=\v!links,

@@ -568,17 +568,50 @@
 
 \let\maintextcolor\empty
 
-\def\starttextcolor[#1]% to be translated 
-  {\bgroup
-   \let\starttextcolor\relax
-   \let\stoptextcolor \relax
-   \startregistercolor[#1]%
-   \def\maintextcolor{#1}}
+\def\starttextcolor[#1]% 
+  {\doifsomething{#1}
+     {\bgroup
+      \def\stoptextcolor          % also goes ok with \page after 
+        {\let\maintextcolor\empty % this one because the top of 
+         \stopregistercolor       % page sets the color right (side 
+         \egroup}%                % effect)   
+      \def\starttextcolor[##1]%
+        {\bgroup
+         \let\stoptextcolor\egroup}% 
+      \startregistercolor[#1]%
+      \def\maintextcolor{#1}}}
 
-\def\stoptextcolor          % also goes ok with \page after 
-  {\let\maintextcolor\empty % this one because the top of 
-   \stopregistercolor       % page sets the color right (side 
-   \egroup}                 % effect)   
+\let\stoptextcolor\relax          
+
+%D The following hook permits proper support at the text 
+%D level. This definition actually belongs in another 
+%D module. 
+
+\ifx\initializemaintextcolor\undefined
+
+  % \let\initializemaintextcolor\relax
+
+  \def\initializemaintextcolor
+    {\doifsomething{\@@cltekstkleur}
+       {\appendtoks\starttextcolor[\@@cltekstkleur]\to\everystarttext 
+        \appendtoks\stoptextcolor                  \to\everystoptext 
+        \let\initializemaintextcolor\relax}}
+
+\fi 
+
+%D The next macro can be used to return to the (normal)
+%D page color. This macro is used in the same way as 
+%D \type {\color}. 
+
+\def\restoretextcolor
+  {\ifx\maintextcolor\empty
+     \expandafter\dorestoretextcolor
+   \else
+     % obey main text color 
+   \fi}
+
+\def\dorestoretextcolor
+  {\color[black]}
 
 %D We use some reserved names for local color components.
 %D Consistent use of these scratch variables saves us
@@ -780,7 +813,8 @@
                  \incolortrue\localcolorfalse
                  \let\@@clstatus\v!globaal,
         \v!stop=>\incolorfalse\localcolorfalse
-                 \forcegrayMPcolorstrue]}
+                 \forcegrayMPcolorstrue]%
+  \initializemaintextcolor}
 
 %D \macros
 %D   {doifcolorelse}
@@ -1700,7 +1734,8 @@
    \c!reductie=\v!nee,
    \c!rgb=\v!ja,
    \c!cmyk=\v!ja,
-   \c!mp\c!cmyk=\@@clcmyk]
+   \c!mp\c!cmyk=\@@clcmyk,
+   \c!tekstkleur=]
 
 \setupcolor
   [\v!rgb]

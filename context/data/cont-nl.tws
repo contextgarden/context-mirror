@@ -159,6 +159,7 @@ var:reductie:ja,nee::
 var:rgb:ja,nee::
 var:cmyk:ja,nee::
 var:mpcmyk:ja,nee::
+var:tekstkleur:*naam::
 stopsetup
 
 startsetup
@@ -765,6 +766,9 @@ var:hoogte:*maat,max::
 var:diepte:*maat,max::
 var:variant:a,b,c,d::
 var:lijndikte:*maat::
+var:kleur:*naam::
+var:achtergrond:kleur::
+var:achtergrondkleur:*naam::
 stopsetup
 
 startsetup

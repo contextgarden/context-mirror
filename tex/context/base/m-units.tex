@@ -183,7 +183,7 @@
 
 \def\dodimension#1%
   {\dontbreakdimension
-   \ifdim\scratchdimen=\!!zeropoint\relax
+   \ifdim\scratchdimen=\zeropoint\relax
      \ifmmode
        \dimensionhalfspace
        \dimensionhalfspace
@@ -199,20 +199,22 @@
    \ifx\thedimensionpower\empty
    \else\ifsmashdimensionpower
      \setbox\scratchbox=\hbox{$\scriptstyle\thedimensionpower$}%
-     \ht\scratchbox=\!!zeropoint
+     \ht\scratchbox=\zeropoint
      ^{\box\scratchbox}%
    \else
      ^{\thedimensionpower}%
    \fi\fi
    \stopmathmode
-   \nobreak
+   % otherwise nobreak before space in 2 \Milli \Meter\ blabla
+   \doifnotmode{atpragma}{\nobreak}% this was always \nobreak   
+   % only test this at pragma 
    \ifx\thedimensionpower\empty
      \hskip\dimensionsignal
    \else
      \hskip\dimensionpowersignal
    \fi
-   \global\let\thedimensionprefix=\empty
-   \global\let\thedimensionpower=\empty}
+   \global\let\thedimensionprefix\empty
+   \global\let\thedimensionpower\empty}
 
 %D \macro
 %D   {dontbreakdimension,

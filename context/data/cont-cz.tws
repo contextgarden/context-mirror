@@ -159,6 +159,7 @@ var:redukce:ano,ne::
 var:rgb:ano,ne::
 var:cmyk:ano,ne::
 var:mpcmyk:ano,ne::
+var:barvatextu:*jmeno::
 stopsetup
 
 startsetup
@@ -765,6 +766,9 @@ var:vyska:*dimenze,max::
 var:hloubka:*dimenze,max::
 var:alternativa:a,b,c,d::
 var:tloustkalinky:*dimenze::
+var:barva:*jmeno::
+var:pozadi:barevne::
+var:barvapozadi:*jmeno::
 stopsetup
 
 startsetup

@@ -555,7 +555,7 @@
    \setbox\columnpagebox=\hbox
      {\box\columnpagebox
       \hskip-\columntextwidth
-      \color[black]{\box\scratchbox}}%
+      \restoretextcolor{\box\scratchbox}}%
    \postprocesscolumnpagebox % new, acts upon \box\columnpagebox
    \ifvoid\precolumnbox \else
      \ifgridsnapping % do you believe this junk?
@@ -817,7 +817,7 @@
      \global\setbox\lastcolumnbox=\vbox to \scratchdimen
        {\box\lastcolumnbox
         \vskip-\scratchdimen
-        \color[black]{\box0}}%
+        \restoretextcolor{\box0}}%
      \egroup
    \fi\fi}
 

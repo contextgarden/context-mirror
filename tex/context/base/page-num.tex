@@ -502,7 +502,7 @@
   {\doif{\@@nmstatus\@@pnstatus}{\v!start\v!start}
      {{\doif{\@@nmstrut}{\v!ja}{\strut}%
        \@@nmcommando{\doattributes\??nm\c!letter\c!kleur
-         {\volledigepaginanummer}}}}}
+         {\completepagenumber}}}}}
 
 \def\@@plaatspaginascheider% still used ? 
   {\doif{\@@nmstatus\@@pnstatus}{\v!start\v!start}
@@ -525,7 +525,7 @@
        \donexttracklevel{##1}}%
     \donexttrackcommando{\firstsection}}
 
-\unexpanded\def\volledigepaginanummer%  
+\unexpanded\def\completepagenumber%  
   {\doif{\@@nmstatus\@@pnstatus}{\v!start\v!start} 
      {\@@nmlinks\labeltexts{\v!paginanummer}{\pageprefixes\pagenumber}\@@nmrechts}}
 

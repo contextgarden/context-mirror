@@ -52,6 +52,7 @@
 
 \newdimen\kopwit              \kopwit              = 2cm
 \newdimen\rugwit              \rugwit              = \kopwit
+\newdimen\snijwit             \snijwit             = 0pt
 
 \newdimen\hoofdhoogte         \hoofdhoogte         = 2cm
 \newdimen\voethoogte          \voethoogte          = \hoofdhoogte
@@ -405,23 +406,20 @@
    \fi
    \simplestelwitruimtein
    \simplestelblankoin
-   \scratchdimen\layoutparameter\c!snijwit\relax
-   \ifdim\scratchdimen=\zeropoint
-     \scratchdimen\rugwit
-   \fi
+   \global\snijwit\layoutparameter\c!snijwit\relax
    \doifelse{\layoutparameter\c!breedte}\v!midden
-     {\global\zetbreedte\papierbreedte
+     {\ifdim\snijwit=\zeropoint 
+        \global\snijwit\rugwit 
+      \fi 
+      \global\zetbreedte\papierbreedte
       \global\advance\zetbreedte -\rugwit
-     %\scratchdimen\layoutparameter\c!snijwit\relax
-     %\ifdim\scratchdimen=\zeropoint
-     %  \scratchdimen\rugwit
-     %\fi
-      \global\advance\zetbreedte -\scratchdimen}
+      \global\advance\zetbreedte -\snijwit}
      {\doifelse{\layoutparameter\c!breedte}\v!passend
-        {\global\zetbreedte\papierbreedte
-        %\global\advance\zetbreedte -\rugwit
-         \global\advance\zetbreedte -\scratchdimen
-        %
+        {\ifdim\snijwit=\zeropoint 
+           \global\snijwit\rugwit 
+         \fi 
+         \global\zetbreedte\papierbreedte
+         \global\advance\zetbreedte -\snijwit
          \scratchdimen\rugwit
          \advance\scratchdimen -\linkerrandbreedte
          \advance\scratchdimen -\linkerrandafstand
@@ -435,7 +433,14 @@
          \global\advance\zetbreedte -\rechterrandafstand
          \global\advance\zetbreedte -\rechterrandbreedte
          \global\advance\zetbreedte -\scratchdimen}
-        {\global\zetbreedte\layoutparameter\c!breedte}}%
+        {\global\zetbreedte\layoutparameter\c!breedte
+         \ifdim\snijwit=\zeropoint 
+           \global\snijwit\papierbreedte
+           \global\advance\snijwit-\zetbreedte
+           \global\advance\snijwit-\rugwit
+         \else 
+           % inconsistent specification 
+         \fi}}%
    \scratchdimen\layoutparameter\c!bodemwit\relax
    \ifdim\scratchdimen=\zeropoint
      \scratchdimen\kopwit
@@ -447,9 +452,7 @@
          \global\advance\zethoogte -\scratchdimen}
         {\doifelse{\layoutparameter\c!hoogte}\v!passend
            {\global\zethoogte\papierhoogte
-           %\global\advance\zethoogte -\kopwit
             \global\advance\zethoogte -\scratchdimen
-           %
             \scratchdimen\kopwit
             \advance\scratchdimen -\bovenhoogte
             \advance\scratchdimen -\bovenafstand

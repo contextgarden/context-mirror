@@ -12,7 +12,8 @@
 %C details. 
 
 %D Today I would implement the pretty handler slightly 
-%D different, using stack and intermediate flushing. 
+%D different, using stack and intermediate flushing. Maybe 
+%D even without active chars.  
 
 %D Because this module is quite independant of system macros,
 %D it can be used as a stand||alone verbatim environment.
@@ -491,7 +492,7 @@
 %D it assigns all characters \CATCODE~11. Next we switch to
 %D french spacing and call for obeyance.
 
-\def\setupcopyverbatim%
+\def\setupcopyverbatim
   {\uncatcodecharacters
    \frenchspacing
    \obeyspaces
@@ -526,14 +527,14 @@
    \let\savecatcode\relax
    \let\restorecatcodes\dorestorecatcodes}
 
-\def\uncatcodespecials%
+\def\uncatcodespecials
   {\doprocesscatcodes
      {\ifnum\catcode\scratchcounter=\@@letter\relax\else
         \catcode\scratchcounter=\@@other
       \fi}%
    \uncatcodespacetokens}
 
-\def\uncatcodespacetokens%
+\def\uncatcodespacetokens
   {\catcode`\   =\@@space
    \catcode`\^^L=\@@ignore
    \catcode`\^^M=\@@endofline
@@ -542,17 +543,17 @@
 \def\setcatcodes#1%
   {\doprocesscatcodes{\catcode\scratchcounter=#1}}
 
-% \def\uncatcodecharacters%
-%   {\setcatcodes\@@letter}
+\def\uncatcodeallcharacters % slow one, with restore 
+  {\setcatcodes\@@letter}
 
-\def\uncatcodecharacters%
+\def\uncatcodecharacters % quick one 
   {\setnaturalcatcodes}
 
 \newtoks\everycommoncatcodes
 \newtoks\everynaturalcatcodes
 \newtoks\everynormalcatcodes
 
-\def\setcommoncatcodes%
+\def\setcommoncatcodes
   {\catcode`\!\@@other \catcode`\?\@@other \catcode`\@\@@other
    \catcode`\=\@@other \catcode`\<\@@other \catcode`\>\@@other
    \catcode`\*\@@other \catcode`\/\@@other 
@@ -563,7 +564,7 @@
    \catcode`\(\@@other \catcode`\)\@@other
    \the\everycommoncatcodes}
 
-\def\setnaturalcatcodes% see elsewhere, merge 'm 
+\def\setnaturalcatcodes % see elsewhere, merge 'm 
   {\setcommoncatcodes
    \uncatcodespacetokens
    \catcode`\#\@@other 
@@ -649,7 +650,7 @@
 
 \let\restorecatcodes=\relax
 
-%D or when we've saves things calls for:
+%D or when we've saved things calls for:
 
 \def\dorestorecatcodes%
   {\iflocalcatcodes \else
@@ -845,21 +846,34 @@
 
 \chardef\spacespertab=7
 
-\def\doprocesstabskip%
+%\def\doprocesstabskip%
+%  {\obeyedspace % \hskip.5em  or  \hbox to .5em{}
+%   \ifdone
+%     \advance\scratchcounter 1
+%     \let\next\doprocesstabskip
+%     \donefalse
+%   \else\ifnum\scratchcounter>\spacespertab
+%     \let\next\relax
+%   \else
+%     \advance\scratchcounter 1
+%     \let\next\doprocesstabskip
+%   \fi\fi
+%   \next}
+
+\def\doprocesstabskip
   {\obeyedspace % \hskip.5em  or  \hbox to .5em{}
    \ifdone
-     \advance\scratchcounter by 1
-     \let\next=\doprocesstabskip
      \donefalse
+     \advance\scratchcounter 1
+     \@EA\doprocesstabskip
    \else\ifnum\scratchcounter>\spacespertab
-     \let\next=\relax
+     % nothing 
    \else
      \advance\scratchcounter 1
-     \let\next=\doprocesstabskip
-   \fi\fi
-   \next}
+     \@EAEAEA\doprocesstabskip
+   \fi\fi}
 
-\def\dodoprocesstabskipline#1#2\endoftabskipping%
+\def\dodoprocesstabskipline#1#2\endoftabskipping
   {\ifnum\scratchcounter>\spacespertab
      \scratchcounter=1
      \donetrue
@@ -868,7 +882,7 @@
      \donefalse
    \fi
    \ifx#1\relax
-     \let\next=\relax
+     \let\next\relax
    \else
      \def\next{#1\dodoprocesstabskipline#2\endoftabskipping}%
    \fi
@@ -1025,15 +1039,15 @@
 %D character code (a number) and the interpretation number. The
 %D three step implementation uses the \TEX book \type{~} trick.
 
-\def\dodosetpretty%
+\def\dodosetpretty
   {\!!countb=\uccode`~\relax
    \catcode\!!countb=\@@active
    \uppercase{\edef~{\noexpand\handleprettytoken{\the\!!counta}{\the\!!countb}}}}
 
-\def\dosetpretty%
+\def\dosetpretty
   {\afterassignment\dodosetpretty\!!counta}
 
-\def\setpretty%
+\def\setpretty
   {\afterassignment\dosetpretty\uccode`~=}
 
 %D The macro \type{\handleprettytoken} is rather trivial and
@@ -1069,13 +1083,15 @@
 %D \type{\prettytype} to the interpreter code. The character
 %D code is saved in \type{\prettychar}.
 
+\def\setprettydata#1#2%
+  {\global\chardef\prettytype#1%
+   \global\chardef\prettychar#2\relax}
+
 \def\getprettydata#1%
-  {\bgroup
-   \global\chardef\prettytype=0
-   \global\chardef\prettychar=0
-   \def\handleprettytoken##1##2%
-     {\global\chardef\prettytype=##1\relax
-      \global\chardef\prettychar=##2\relax}%
+  {\global\chardef\prettytype0
+   \global\chardef\prettychar0
+   \bgroup
+   \let\handleprettytoken\setprettydata
    \setbox0=\hbox{#1}% expands #1 and ignores space
    \egroup}
 
@@ -1234,10 +1250,10 @@
 
 \beginETEX \scantokens
 
-%\def\naturaltextext#1#2\relax%
+%\def\naturaltextext#1#2\relax
 %  {\bgroup\prettynaturalfont{\restorecatcodes\scantokens{\ignorespaces#2}}\egroup}
 
-\def\naturaltextext#1\relax%
+\def\naturaltextext#1\relax
   {\bgroup
    \prettynaturalfont{\restorecatcodes\scantokens{\ignorespaces#1}}%
    \egroup}
@@ -1246,10 +1262,7 @@
 
 \beginTEX
 
-%\def\naturaltextext#1%
-%  {\disableprettynow}
-
-\def\naturaltextext%
+\def\naturaltextext
   {\disableprettynow}
 
 \endTEX
@@ -1276,7 +1289,7 @@
 
 \def\newpretty#1%
   {\getprettydata{#1}%
-   \ifnum\prettytype=0
+   \ifcase\prettytype
      \expandafter\nonewpretty
    \else
      \expandafter\donewpretty
@@ -1292,7 +1305,7 @@
    \def\handleprettytoken##1##2##3%
      {\getprettydata{##3}%
       \egroup
-      \ifnum\prettytype>0
+      \ifcase\prettytype\else
         \setpretty##2=\prettytype\relax
       \fi}%
    #1}
@@ -1375,11 +1388,11 @@
 %D their meanings and to enable nesting we permit this only
 %D once.
 
-\def\saveprettycontrols%
-  {\global\let\oldobeyedspace = \obeyedspace
-   \global\let\oldobeyedline  = \obeyedline
-   \global\let\oldobeyedpage  = \obeyedpage
-   \let\saveprettycontrols    = \relax}
+\def\saveprettycontrols
+  {\global\let\oldobeyedspace \obeyedspace
+   \global\let\oldobeyedline  \obeyedline
+   \global\let\oldobeyedpage  \obeyedpage
+   \let\saveprettycontrols    \relax}
 
 %D The \PERL\ and \METAPOST\ interpreters will also handle
 %D reserved words. Sets of identifiers are defined like:
@@ -1400,7 +1413,7 @@
    \def\handleprettytoken##1##2{\char##2}%
    #2\relax
    \def\douseprettyidentifiers##1\par%
-     {\xdef#1{\space#1\space ##1}%
+     {\xdef#1{\space#1\space##1}%
       \egroup}%
    \douseprettyidentifiers}
 
@@ -1443,13 +1456,13 @@
 %D
 %D Although for pretty printing \PERL\ and \JAVASCRIPT\ code
 %D one has to implement a bit more clever mechanism, the next
-%D switches can be used to turn off prety printing. The 
+%D switches can be used to turn off pretty printing. The 
 %D boolean turns on this feature. 
 
 \newif\ifdisablepretty  \disableprettyfalse
 \newif\ifprettydisabled \prettydisabledfalse
 
-\def\disableprettynow%
+\def\disableprettynow
   {\ifdisablepretty\ifprettydisabled\else 
      \let\prettyidentifierfont\relax
      \let\prettyvariablefont\relax
@@ -1459,12 +1472,12 @@
      \prettydisabledtrue
    \fi\fi}
 
-\def\disableprettyafterwards%
+\def\disableprettyafterwards
   {\ifdisablepretty\ifprettydisabled\else
      \def\endofpretty{\normalendofpretty\disableprettynow}%
    \fi\fi}
 
-\def\enableprettynow%
+\def\enableprettynow
   {\prettydisabledfalse
    \let\prettyidentifierfont\normalprettyidentifierfont
    \let\prettyvariablefont  \normalprettyvariablefont  
@@ -1475,7 +1488,7 @@
 %D This feature is hooked into the verbatim line handling 
 %D routine with:
 
-\def\beginverbatimline%
+\def\beginverbatimline
   {\prettydisabledfalse
    \ifnewpretty\else\let\handlenewpretty\empty\fi % moved 
    \let\normalprettyidentifierfont\prettyidentifierfont
@@ -1484,7 +1497,7 @@
    \let\normalbeginofpretty       \beginofpretty
    \let\normalendofpretty         \endofpretty}
 
-\def\endverbatimline%
+\def\endverbatimline
   {\enableprettynow}
 
 %D The rest of this module is dedicated to non \CONTEXT\ users
@@ -1525,30 +1538,24 @@
 
 \ifCONTEXT \else 
 
-  \def\presettyping%
-    {\ifcontrolspace
-       \let\obeyspace=\setcontrolspace
-     \fi
-     \ifverbatimtabs
-       \let\obeytabs=\settabskips
-     \fi
-     \ifprettyverbatim
-       \let\obeycharacters=\setupprettytype
-     \fi}
+  \def\presettyping
+    {\ifcontrolspace   \let\obeyspace     \setcontrolspace \fi
+     \ifverbatimtabs   \let\obeytabs      \settabskips     \fi
+     \ifprettyverbatim \let\obeycharacters\setupprettytype \fi}
 
-  \def\type%
+  \def\type
     {\bgroup
      \def\_{\string_}%
      \def\^{\string^}%
      \presettyping
      \processinlineverbatim{\egroup}}
 
-  \def\starttyping%
+  \def\starttyping
     {\bgroup
      \presettyping
      \processdisplayverbatim{\stoptyping}}
 
-  \def\stoptyping%
+  \def\stoptyping
     {\egroup}
 
   \def\typefile#1%
@@ -1586,27 +1593,27 @@
   \input verb-jv
   \input verb-sql
 
-  \def\startTEX%
+  \def\startTEX
     {\bgroup \everypar{}%
      \let\obeycharacters=\setupprettyTEXtype
      \processdisplayverbatim{\stopTEX}}
 
-  \def\startMP%
+  \def\startMP
     {\bgroup \everypar{}%
      \let\obeycharacters=\setupprettyMPtype
      \processdisplayverbatim{\stopMP}}
 
-  \def\startPL%
+  \def\startPL
     {\bgroup \everypar{}%
      \let\obeycharacters=\setupprettyPLtype
      \processdisplayverbatim{\stopPL}}
 
-  \def\startJV%
+  \def\startJV
     {\bgroup \everypar{}%
      \let\obeycharacters=\setupprettyJVtype
      \processdisplayverbatim{\stopJV}}
 
-  \def\startSQL%
+  \def\startSQL
     {\bgroup \everypar{}%
      \let\obeycharacters=\setupprettySQLtype
      \processdisplayverbatim{\stopSQL}}
@@ -1626,7 +1633,7 @@
 
 \ifCONTEXT \else
 
-  \def\setcolorverbatim%
+  \def\setcolorverbatim
     {\def\prettyone   {.9 .0 .0 }       % red
      \def\prettytwo   {.0 .8 .0 }       % green
      \def\prettythree {.0 .0 .9 }       % blue
@@ -1636,7 +1643,7 @@
      \def\endofpretty%
        {\special{ps:: 0 0 0 setrgbcolor}}} % black
 
-  \def\setgrayverbatim%
+  \def\setgrayverbatim
     {\def\prettyone   {.30 }            % gray
      \def\prettytwo   {.45 }            % gray
      \def\prettythree {.60 }            % gray
@@ -1919,6 +1926,4 @@
 
 \fi
 
-\protect
-
-\endinput
+\protect \endinput

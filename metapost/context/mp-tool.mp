@@ -225,42 +225,43 @@ enddef;
 
 numeric Pi ; Pi := 3.1415926 ;
 
-def sqr  (expr x) = (x*x)                                 enddef ;
-def log  (expr x) = (if x=0: 0 else: mlog(x)/mlog(10) fi) enddef ;
-def ln   (expr x) = (if x=0: 0 else: mlog(x)/256 fi)      enddef ;
-def exp  (expr x) = ((mexp 256)**x)                       enddef ;
-def inv  (expr x) = (if x=0: 0 else: x**-1 fi)            enddef ;
+vardef sqr  primary x = (x*x)                                 enddef ;
+vardef log  primary x = (if x=0: 0 else: mlog(x)/mlog(10) fi) enddef ;
+vardef ln   primary x = (if x=0: 0 else: mlog(x)/256 fi)      enddef ;
+vardef exp  primary x = ((mexp 256)**x)                       enddef ;
+vardef inv  primary x = (if x=0: 0 else: x**-1 fi)            enddef ;
 
-def pow  (expr x,p) = (x**p)                              enddef ;
+vardef pow (expr x,p) = (x**p)                              enddef ;
 
-def asin (expr x) = (x+(x**3)/6+3(x**5)/40)               enddef ;
-def acos (expr x) = (asin(-x))                            enddef ;
-def atan (expr x) = (x-(x**3)/3+(x**5)/5-(x**7)/7)        enddef ;
-def tand (expr x) = (sind(x)/cosd(x))                     enddef ;
+vardef asin primary x = (x+(x**3)/6+3(x**5)/40)               enddef ;
+vardef acos primary x = (asin(-x))                            enddef ;
+vardef atan primary x = (x-(x**3)/3+(x**5)/5-(x**7)/7)        enddef ;
+vardef tand primary x = (sind(x)/cosd(x))                     enddef ;
 
-%D Here are Taco Hoekwater's alternatives: 
+%D Here are Taco Hoekwater's alternatives (but 
+%D vardef'd and primaried). 
 
 pi := 3.1415926 ; radian := 180/pi ; % 2pi*radian = 360 ; 
 
-def tand   (expr x) = (sind(x)/cosd(x))  enddef ;
-def cotd   (expr x) = (cosd(x)/sind(x))  enddef ;
+vardef tand   primary x = (sind(x)/cosd(x))  enddef ;
+vardef cotd   primary x = (cosd(x)/sind(x))  enddef ;
 
-def sin    (expr x) = (sind(x*radian))   enddef ;
-def cos    (expr x) = (cosd(x*radian))   enddef ;
-def tan    (expr x) = (sin(x)/cos(x))    enddef ;
-def cot    (expr x) = (cos(x)/sin(x))    enddef ;
+vardef sin    primary x = (sind(x*radian))   enddef ;
+vardef cos    primary x = (cosd(x*radian))   enddef ;
+vardef tan    primary x = (sin(x)/cos(x))    enddef ;
+vardef cot    primary x = (cos(x)/sin(x))    enddef ;
 
-def asin   (expr x) = angle((1+-+x,x))   enddef ;
-def acos   (expr x) = angle((x,1+-+x))   enddef ;
+vardef asin   primary x = angle((1+-+x,x))   enddef ;
+vardef acos   primary x = angle((x,1+-+x))   enddef ;
 
-def invsin (expr x) = ((asin(x))/radian) enddef ;
-def invcos (expr x) = ((acos(x))/radian) enddef ;
+vardef invsin primary x = ((asin(x))/radian) enddef ;
+vardef invcos primary x = ((acos(x))/radian) enddef ;
 
-def acosh  (expr x) = ln(x+(x+-+1))      enddef ; 
-def asinh  (expr x) = ln(x+(x++1))       enddef ; 
+vardef acosh  primary x = ln(x+(x+-+1))      enddef ; 
+vardef asinh  primary x = ln(x+(x++1))       enddef ; 
 
-vardef sinh primary x = save xx ; xx = exp xx ; (xx-1/xx)/2 enddef ;
-vardef cosh primary x = save xx ; xx = exp xx ; (xx+1/xx)/2 enddef ;
+vardef sinh   primary x = save xx ; xx = exp xx ; (xx-1/xx)/2 enddef ;
+vardef cosh   primary x = save xx ; xx = exp xx ; (xx+1/xx)/2 enddef ;
 
 %D We provide two macros for drawing stripes across a shape.
 %D The first method (with the n suffix) uses another method,

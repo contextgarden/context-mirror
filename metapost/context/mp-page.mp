@@ -38,6 +38,7 @@ PrintPaperHeight    := 845.04684pt  ;
 PrintPaperWidth     := 597.50787pt  ;
 TopSpace            :=  71.12546pt  ;
 BackSpace           :=  71.13275pt  ;
+CutSpace            :=   0.0pt      ;
 MakeupHeight        := 711.3191pt   ; 
 MakeupWidth         := 426.78743pt  ;
 TopHeight           :=   0.0pt      ;
@@ -101,6 +102,7 @@ endfor ;
 def SwapPageState = 
   if not OnRightPage :
            BackSpace := PaperWidth-MakeupWidth-BackSpace ;
+            CutSpace := PaperWidth-MakeupWidth-CutSpace ;
                    i := LeftMarginWidth ;
      LeftMarginWidth := RightMarginWidth ;
     RightMarginWidth := i ;

@@ -454,13 +454,8 @@
      \fi\fi
    \fi}
 
-\def\blanko % the \relax is definitely needed due to the many \if's
+\unexpanded\def\blanko % the \relax is definitely needed due to the many \if's
   {\relax\complexorsimple\doblanko}
-
-\def\simpledoblanko % ... 
-  {\doifelse\currentwitruimte\v!geen
-     {\blanko[\currentblanko]}
-     {\blanko[\s!default]}}
 
 \def\complexdoblanko
   {\flushfootnotes
@@ -581,8 +576,8 @@
 %D
 %D But Berend de Boer wanted more control, so now we have:  
 
-\def\simpledoblanko%
-  {\doifelse{\currentwitruimte}{\v!geen}
+\def\simpledoblanko % ... 
+  {\doifelse\currentwitruimte\v!geen
      {\blanko[\currentblanko]}
      {\blanko[\s!default]}}
 
@@ -593,9 +588,6 @@
 %D   [\s!default]
 %D   [\v!groot]
 %D \stoptypen
-
-\def\blanko% the \relax is definitely needed due to the many \if's
-  {\relax\complexorsimple\doblanko}
 
 \def\dostelblankoin#1% amount are an plain inheritance
   {\bigskipamount=#1\relax

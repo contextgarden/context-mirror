@@ -76,34 +76,83 @@ extra_endfig :=
   " reset_extra_specials ; "  & 
   " insidefigure := false ; " ;
 
-def _current_specials_ = 
-  if insidefigure : _local_specials_ else : _global_specials_ fi 
+def set_extra_special (expr s) = 
+  if insidefigure : 
+    _local_specials_  := _local_specials_  & s ; 
+  else : 
+    _global_specials_ := _global_specials_ & s ; 
+  fi 
 enddef ; 
 
 def flush_special (expr typ, siz, dat) =
   _special_counter_ := _special_counter_ + 1 ;
   if _inline_specials_ :
-    _current_specials_ := _current_specials_
-      & "special "
+    set_extra_special
+      ( "special "
       & "(" & ditto
       & dat & " "
       & decimal _special_counter_ & " "
       & decimal typ & " "
       & decimal siz
       & " special"
-      & ditto & ");" ;
+      & ditto & ");" ) ; 
   else :
-    _current_specials_ := _current_specials_
-      & "special "
+    set_extra_special
+      ( "special "
       & "(" & ditto
       & "%%MetaPostSpecial: "
       & decimal siz & " "
       & dat & " "
       & decimal _special_counter_ & " "
       & decimal typ
-      & ditto & ");" ;
+      & ditto & ");" ) ;
   fi ;
 enddef ;
+
+%D The next hack is needed in case you use a version of
+%D \METAPOST\ that does not provide you the means to configure
+%D the buffer size. Patrick Gundlach suggested to use arrays 
+%D in this case. 
+
+boolean bufferhack ; bufferhack := false ; % true ; 
+
+if bufferhack : 
+
+  string _global_specials_[] ; numeric _nof_global_specials_ ;
+  string _local_specials_[]  ; numeric _nof_local_specials_ ;
+
+  _nof_global_specials_ := _nof_local_specials_ := 0 ;
+
+  vardef add_special_signal = % write the version number
+    if (_nof_global_specials_>0) or (_nof_local_specials_>0) : 
+      special ("%%MetaPostSpecials: 1.0 " & decimal _special_signal_ ) ;
+    fi ;
+  enddef ;
+ 
+  vardef add_extra_specials =
+    for i=1 upto _nof_global_specials_ : 
+      scantokens _global_specials_[i] ; 
+    endfor;
+    for i=1 upto _nof_local_specials_ : 
+      scantokens _local_specials_[i] ;   
+    endfor;
+  enddef ;
+
+  vardef reset_extra_specials =
+    string _local_specials_[]  ; _nof_local_specials_ := 0 ;
+  enddef ;
+
+  def set_extra_special (expr s) = 
+    if insidefigure : 
+      _local_specials_[incr(_nof_local_specials_)]   := s ;   
+    else : 
+      _global_specials_[incr(_nof_global_specials_)] := s ;
+    fi 
+  enddef ; 
+
+fi ; 
+
+%D So far for this hack. 
 
 %D Shade allocation.
 

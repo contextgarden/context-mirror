@@ -159,6 +159,7 @@ var:riduzione:si,no::
 var:rgb:si,no::
 var:cmyk:si,no::
 var:mpcmyk:si,no::
+var:coloretesto:*name::
 stopsetup
 
 startsetup
@@ -765,6 +766,9 @@ var:altezza:*dimension,max::
 var:profondita:*dimension,max::
 var:alternativa:a,b,c,d::
 var:spessorelinea:*dimension::
+var:colore:*name::
+var:sfondo:colore::
+var:coloresfondo:*name::
 stopsetup
 
 startsetup

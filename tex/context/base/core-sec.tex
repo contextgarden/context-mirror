@@ -1071,23 +1071,7 @@
      \def\next{\dodododosomekop{#1}[#2]{\finalsectionnumber}{#3}}%
    \fi
    \next}
-
-% clearer 
 
-\def\dodosomekop#1[#2]#3% [ref] {title}
-  {\doifelsevalue{\??ko#1\c!eigennummer}{\v!ja}
-     {\doquadruplegroupempty\dododosomekop{#1}[#2]{#3}}
-    %{\fourthargumentfalse  \dododosomekop{#1}[#2]{#3}{}}}
-     {\dodododosomekop{#1}[#2]{\finalsectionnumber}{#3}}}
-
-\def\dododosomekop#1[#2]#3#4% [ref] {own} {title}
-  {\iffourthargument
-     \def\next{\dodododosomekop{#1}[#2]{#3}{#4}}%
-   \else % normal head or no own number given 
-     \def\next{\dodododosomekop{#1}[#2]{\finalsectionnumber}{#3}}%
-   \fi
-   \next}
-
 % pas met \ExpandFirstAfter op bij twee||taligheid
 
 \ifx\dohandleheadnumber\undefined

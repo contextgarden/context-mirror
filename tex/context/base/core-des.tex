@@ -420,7 +420,7 @@
 %    \nummer[\getvalue{\??dd#1\??dd\c!nummer}]}
 
 \def\showdnnummer#1%
-  {\preparethenumber{\??dd#1}\voorafgaandenummer\preparednumber
+  {%\preparethenumber{\??dd#1}\voorafgaandenummer\preparednumber
    \preparednumber
    \nummer[\getvalue{\??dd#1\??dd\c!nummer}]}
 
@@ -473,6 +473,7 @@
        \protectconversion
       %\maakvoorafgaandenummer[#1]%
        \maakvoorafgaandenummer[\getvalue{\??dd#1\??dd\c!nummer}]%
+\preparethenumber{\??dd#1}\voorafgaandenummer\preparednumber
        \ifcase\definitiekoppeling \or
          \xdef\internaldoornummer{#3{#1}}%
          \rawreference{\s!num}{#1:\internaldoornummer}{}%
@@ -484,6 +485,7 @@
      \fi
     %\maakvoorafgaandenummer[#1]%
      \maakvoorafgaandenummer[\getvalue{\??dd#1\??dd\c!nummer}]%
+\preparethenumber{\??dd#1}\voorafgaandenummer\preparednumber
      \hbox
        {\let\normalkap\relax % sorry, uppercase causes troubles
         \doattributes        % \nocase primitive needed

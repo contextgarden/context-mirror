@@ -2359,11 +2359,11 @@
    \let#2\empty
    \processcommalist[#1]\domakerawcommalist}
 
-\def\rawprocesscommaitem#1,%
+\def\rawprocesscommaitem#1,#2% #2 eats up preceding space 
   {\if]#1\else
      \csname\s!next\the\commalevel\endcsname{#1}%
      \expandafter\rawprocesscommaitem
-   \fi}
+   \fi#2}
 
 \def\rawprocesscommalist[#1]#2% accepteert ook [\cs] 
   {\global\advance\commalevel \plusone
@@ -2712,18 +2712,31 @@
 \def\xdogetparameters#1]%
   {\xprocesscommaitem#1,],\@relax@}
 
+% \long\def\xprocesscommaitem#1,#2% #2 takes space before ,
+%   {\if]#1%
+%      \expandafter\gobbleoneargument
+%    \else
+%      \p!dogetparameter\@relax@#1==\@relax@
+%      \expandafter\xprocesscommaitem
+%    \fi#2}
+
 \long\def\xprocesscommaitem#1,#2% #2 takes space before ,
-  {\if]#1%
-     \expandafter\gobbleoneargument
+  {\if,#1,% dirty trick for testing #1=empty 
+     \@EA\xprocesscommaitem
+   \else\if]#1%
+     \@EAEAEA\gobbleoneargument
    \else
-     \p!dogetparameter\@relax@#1==\@relax@
-     \expandafter\xprocesscommaitem
-   \fi#2}
+     \p!dogetparameter\@relax@#1==\empty\@relax@
+     \@EAEAEA\xprocesscommaitem
+   \fi\fi#2}
 
 %D Here we use a slightly different assignment macro:
 
+% \def\p!doassign#1#2\@relax@#3=#4=#5\@relax@
+%   {\ifx\@relax@#5\@EA\xshowassignerror\else\@EA#1\fi{#2}{#3}{#4}}
+
 \def\p!doassign#1#2\@relax@#3=#4=#5\@relax@
-  {\ifx\@relax@#5\@EA\xshowassignerror\else\@EA#1\fi{#2}{#3}{#4}}
+  {\ifx#5\empty\@EA\xshowassignerror\else\@EA#1\fi{#2}{#3}{#4}}
 
 \def\xshowassignerror#1#2#3%
   {\showassignerror{#2}{\the\inputlineno\space(#1)}}
@@ -2731,9 +2744,13 @@
 %D Now we also have to change the other macros that depend 
 %D on this low level one. 
 
-\def\doassign  [#1][#2]{\p!doassign\dosetvalue  #1\@relax@#2==\@relax@}
-\def\doeassign [#1][#2]{\p!doassign\dosetevalue #1\@relax@#2==\@relax@}
-\def\undoassign[#1][#2]{\p!doassign\doresetvalue#1\@relax@#2==\@relax@}
+% \def\doassign  [#1][#2]{\p!doassign\dosetvalue  #1\@relax@#2==\@relax@}
+% \def\doeassign [#1][#2]{\p!doassign\dosetevalue #1\@relax@#2==\@relax@}
+% \def\undoassign[#1][#2]{\p!doassign\doresetvalue#1\@relax@#2==\@relax@}
+
+\def\doassign  [#1][#2]{\p!doassign\dosetvalue  #1\@relax@#2==\empty\@relax@}
+\def\doeassign [#1][#2]{\p!doassign\dosetevalue #1\@relax@#2==\empty\@relax@}
+\def\undoassign[#1][#2]{\p!doassign\doresetvalue#1\@relax@#2==\empty\@relax@}
 
 %D \macros
 %D   {getemptyparameters}

@@ -1243,7 +1243,7 @@
 
 \newif\ifparfloat
 
-\long\def\dosetfloatbox#1#2#3#4%
+\long\def\dosetfloatbox#1#2#3#4% todo : \global\setbox
   {\ifvisible
      \par
      \doifcommonelse
@@ -1255,17 +1255,17 @@
      \ifbinnenkolommen
        \global\parfloatfalse
      \fi
-     \edef\@@kjkjbreedte  {\getvalue{\??kj#4\c!breedte}}%
-     \def \@@kjkjtussen   {\getvalue{\??kj#4\c!tussen}}%  geen \edef
-     \edef\@@kjkjplaats   {\getvalue{\??kj#4\c!plaats}}%
+     \edef\@@kjkjbreedte  {\getvalue{\??kj#4\c!breedte  }}%
+     \def \@@kjkjtussen   {\getvalue{\??kj#4\c!tussen   }}%  no \edef
+     \edef\@@kjkjplaats   {\getvalue{\??kj#4\c!plaats   }}%
      \edef\@@kjkjuitlijnen{\getvalue{\??kj#4\c!uitlijnen}}%
-     \edef\@@flflplaats   {\getvalue{\??fl#4\c!plaats}}%
+     \edef\@@flflplaats   {\getvalue{\??fl#4\c!plaats   }}%
      \ifparfloat
        \dosetparfloat{#1}{#2}{#3}{#4}%
      \else
        \dosetpagfloat{#1}{#2}{#3}{#4}%
      \fi
-     \setbox\floatbox=\hbox{\black\box\floatbox}%
+     \setbox\floatbox=\hbox{\restoretextcolor{\box\floatbox}}%
      \global\floatheight=\ht\floatbox
      \global\advance\floatheight by \dp\floatbox
      \global\floatwidth=\wd\floatbox

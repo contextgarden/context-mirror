@@ -159,6 +159,7 @@ var:reduction:yes,no::
 var:rgb:yes,no::
 var:cmyk:yes,no::
 var:mpcmyk:yes,no::
+var:textcolor:*name::
 stopsetup
 
 startsetup
@@ -765,6 +766,9 @@ var:height:*dimension,max::
 var:depth:*dimension,max::
 var:alternative:a,b,c,d::
 var:rulethickness:*dimension::
+var:color:*name::
+var:background:color::
+var:backgroundcolor:*name::
 stopsetup
 
 startsetup

@@ -159,6 +159,7 @@ var:reducere:da,nu::
 var:rgb:da,nu::
 var:cmyk:da,nu::
 var:mpcmyk:da,nu::
+var:culoaretext:*nume::
 stopsetup
 
 startsetup
@@ -765,6 +766,9 @@ var:inaltime:*dimensiune,max::
 var:inaltime:*dimensiune,max::
 var:alternativ:a,b,c,d::
 var:grosimerigla:*dimensiune::
+var:culoare:*nume::
+var:fundal:culoare::
+var:culoarefundal:*nume::
 stopsetup
 
 startsetup

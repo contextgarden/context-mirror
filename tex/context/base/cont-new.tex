@@ -20,6 +20,61 @@
 
 \writestatus{\m!systems}{beware: some patches loaded from cont-new.tex!}
 
+% \layered[layer id][layer settings][framed setting]{data}
+% \layered[layer id][combined settings]{data}
+
+\def\layered
+  {\dotripleempty\dolayered}
+
+\def\dolayered
+  {\ifthirdargument
+     \expandafter\dolayeredT
+   \else
+     \expandafter\dolayeredS
+   \fi}  
+
+\def\dolayeredT[#1][#2][#3]%
+  {\dowithnextbox{\setlayer[#1][#2]{\box\nextbox}}%
+   \hbox\framed[#3]}        
+
+\def\dolayeredS[#1][#2][#3]%
+  {\dowithnextbox
+     {\setlayer
+        [#1]
+        [\c!breedte=\wd\nextbox,\c!hoogte=\ht\nextbox,
+         \c!offset=\!!zeropoint,#2]
+        {\box\nextbox}}%
+   \hbox\framed[\c!plaats=\v!normaal,#2]}        
+
+\def\@@themaintextcolor{themaintextcolor}
+
+\def\starttextcolor[#1]% 
+  {\doifsomething{#1}
+     {\bgroup
+      \def\stoptextcolor          % also goes ok with \page after 
+        {\let\maintextcolor\empty % this one because the top of 
+         \stopregistercolor       % page sets the color right (side 
+         \egroup}%                % effect)   
+      \def\starttextcolor[##1]%
+        {\bgroup
+         \definecolor[\@@themaintextcolor][##1]%
+         \let\stoptextcolor\relax\egroup}% 
+      \startregistercolor[\@@themaintextcolor]%
+      \definecolor[\@@themaintextcolor][#1]%
+      \let\maintextcolor\@@themaintextcolor}}
+
+\def\initializemaintextcolor
+  {\doifelsenothing\@@cltekstkleur
+     {\let\maintextcolor\empty}
+     {\let\maintextcolor\@@themaintextcolor
+      \definecolor[\@@themaintextcolor][\@@cltekstkleur]%
+      \doinitializemaintextcolor}}
+
+\def\doinitializemaintextcolor
+  {\appendtoks\starttextcolor[\@@themaintextcolor]\to\everystarttext 
+   \appendtoks\stoptextcolor                      \to\everystoptext
+   \let\doinitializemaintextcolor\relax}
+
 % wrong names
 
 \newif\ifpagechanged \let\lastchangedpage\empty
@@ -123,102 +178,6 @@
 %         \s!unknown=>\global#1=\@@exkorps\relax
 %                     \global\divide#1 \!!ten\relax
 %                     \global\multiply#1 #2#3#4\relax]}
-
-\def\thinrule%
-  {\strut
-   \bgroup
-   \chardef\ruletype=1
-   \processaction
-     [\@@dlvariant]
-     [ \v!a=>\chardef\ruletype=0,% no line
-      %\v!b=>\chardef\ruletype=1,% height/depth
-       \v!c=>\chardef\ruletype=2,% topheight/botdepth
-      %  11=>\chardef\ruletype=1,% fallback for  backgrounds
-          0=>\chardef\ruletype=0,% compatible with backgrounds
-      %   1=>\chardef\ruletype=1,% compatible with backgrounds
-          2=>\chardef\ruletype=2]% compatible with backgrounds
-   \doifsomething{\@@dllijndikte}
-     {\linewidth=\@@dllijndikte}%
-   \ifdim\linewidth=\zeropoint
-     \chardef\ruletype=0
-   \else
-     \doifnot{\@@dlkader}{\v!aan}{\chardef\ruletype=0\relax}%
-   \fi
-   \ifnum\ruletype=1
-     \doif{\@@dlhoogte}{\v!max}{\def\@@dlhoogte{1}}%
-     \doif{\@@dldiepte}{\v!max}{\def\@@dldiepte{1}}%
-   \else
-     \def\@@dlhoogte{1}%
-     \def\@@dldiepte{1}%
-   \fi
-   \freezedimensionwithunit\@@dlhoogte{\ht\strutbox}%
-   \freezedimensionwithunit\@@dldiepte{\dp\strutbox}%
-   \divide\linewidth 2
-   \doifelse{\@@dlachtergrond}{\v!kleur}
-     {\startcolor[\@@dlachtergrondkleur]%
-      \dimen0=\@@dlhoogte
-      \dimen2=\@@dldiepte
-      \ifnum\ruletype=2 % prevent overshoot due to rounding
-        \advance\dimen0 by -.5\linewidth
-        \advance\dimen2 by -.5\linewidth
-      \fi
-      \leaders\hrule\!!height\dimen0\!!depth\dimen2\hfill
-      \stopcolor
-      \ifcase\ruletype
-        % no rule
-      \or
-        \startcolor[\@@dlkleur]%
-        \hfillneg
-        \leaders\hrule\!!height\linewidth\!!depth\linewidth\hfill
-        \stopcolor
-      \or
-        \startcolor[\@@dlkleur]%
-        \dimen2=\@@dldiepte\dimen0=-\dimen2 \advance\dimen0 \linewidth
-        \hfillneg\leaders\hrule\!!height\dimen0\!!depth\dimen2\hfill
-        \dimen2=\@@dlhoogte\dimen0=-\dimen2 \advance\dimen0 \linewidth
-        \hfillneg\leaders\hrule\!!height\dimen2\!!depth\dimen0\hfill
-        \stopcolor
-      \fi}
-     {\ifcase\ruletype \else
-        \startcolor[\@@dlkleur]%
-        \leaders\hrule\!!height\@@dlhoogte\!!depth\@@dldiepte\hfill
-        \stopcolor
-      \fi}%
-   \strut
-   \carryoverpar\egroup}
-
-\setupthinrules
-  [\c!kader=\v!aan, % compatible with textbackgrounds
-   \c!variant=\v!b,
-   \c!achtergrondkleur=,
-   \c!achtergrond=,
-   \c!lijndikte=]
-
-% \thinruled[n=3,alternative=a]
-% \thinruled[n=3,alternative=b]
-% \thinruled[n=3,alternative=c]
-% \thinruled[n=3,alternative=a,background=color]
-% \thinruled[n=3,alternative=b,background=color]
-% \thinruled[n=3,alternative=c,background=color]
-
-\def\dothinrules[#1]%
-  {\bgroup
-   \dosetupthinrules[#1]%
-   \@@dlvoor
-   \assignvalue{\@@dlinterlinie}{\@@dlinterlinie}{1.0}{1.5}{2.0}%
-   \spacing\@@dlinterlinie
-   \dorecurse
-     {\@@dln}
-     {\ifnum\recurselevel=\@@dln \dothinrulesnobreak \else
-      \ifnum\recurselevel=2      \dothinrulesnobreak \fi\fi
-                                 \thinrule
-     %\ifnum\recurselevel<\@@dln \endgraf \fi}%
-      \ifnum\recurselevel<\@@dln \endgraf \geenwitruimte \@@dltussen \fi}%
-%  \@@dlna
-%  \egroup}
-   \doifelsenothing{\@@dlna}
-     {\carryoverpar\egroup}
-     {\@@dlna\egroup}}
 
 \def\complexTableTB[#1]{\TABLEnoalign{\blanko[#1]}}
 \def\simpleTableTB     {\TABLEnoalign{\blanko}}
