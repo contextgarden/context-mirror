@@ -4045,6 +4045,21 @@
 \def\stopstrictinspectnextcharacter
   {\let\inspectnextcharacter\normalinspectnextcharacter}
 
-\protect
+%D \macros
+%D   {gobblespacetokens} 
+%D
+%D This macro needs a speed-up!
 
-\endinput
+\def\gobblespacetokens % will go to syst-ext.tex + speed up
+  {\doifnextcharelse\empty\donothing\donothing} % no {}\do\do ! 
+
+%D \macros
+%D   {verbatimargument}
+%D
+%D As the name says, this macro converts its argument to a 
+%D (rather safe) string. 
+
+\def\verbatimstring#1%
+  {\convertargument#1\to\ascii\ascii}
+
+\protect \endinput

@@ -430,6 +430,8 @@
 
 % ETEX ! ! !
 
+\beginETEX \ifcsname
+
 \def\doblanko#1%
   {\edef\ascii{#1}\convertcommand\ascii\to\ascii
    \ifx\ascii\empty\else
@@ -453,6 +455,40 @@
        \global\advance\blankoskip#1\relax
      \fi\fi
    \fi}
+
+\endETEX
+
+\beginTEX 
+
+\def\doblanko#1%
+  {\edef\ascii{#1}\convertcommand\ascii\to\ascii
+   \ifx\ascii\empty\else
+     \@EA\ifx\csname\??bo\??bo\ascii\endcsname\relax
+       \@EA\ifx\csname\??bo\ascii\endcsname\relax
+         \dorepeatwithcommand[#1]\redoblanko
+       \else
+         \@EA\rawprocesscommalist\@EA[\csname\??bo\ascii\endcsname]\doblanko\relax
+       \fi
+     \else 
+       \csname\??bo\??bo\ascii\endcsname 
+     \fi
+   \fi}
+
+\def\redoblanko#1%
+  {\edef\ascii{#1}\convertcommand\ascii\to\ascii
+   \ifx\ascii\empty\else
+     \@EA\ifx\csname\??bo\??bo\ascii\endcsname\relax
+       \@EA\ifx\csname\??bo\ascii\endcsname\relax
+         \global\advance\blankoskip#1\relax
+       \else
+         \@EA\rawprocesscommalist\@EA[\csname\??bo\ascii\endcsname]\doblanko\relax
+       \fi
+     \else
+       \csname\??bo\??bo\ascii\endcsname 
+     \fi
+   \fi}
+
+\endTEX
 
 \unexpanded\def\blanko % the \relax is definitely needed due to the many \if's
   {\relax\complexorsimple\doblanko}
@@ -770,6 +806,15 @@
 \def\removelastspace     {\ifhmode\unskip\fi}
 \def\nospace             {\removelastspace\ignorespaces}
 \def\removeunwantedspaces{\ifhmode\unskip\unskip\unskip\unskip\fi}
+
+% better, but not done:  
+% 
+% \def\removelastspace
+%   {\ifhmode \ifdim\lastskip=\spaceamount\relax
+%      \unskip
+%    \fi \fi}
+%
+% due to backward compability 
 
 \let\spatie     \space
 \let\hardespatie\fixedspace

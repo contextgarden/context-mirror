@@ -26,9 +26,6 @@
 %D This module is highly optimized for speed, which sometimes 
 %D reads to rather unreadable code. Sorry for this. 
 
-\def\gobblespacetokens % will go to syst-ext.tex + speed up
-  {\doifnextcharelse\empty\donothing\donothing} % no {}\do\do ! 
-
 \beginETEX XML
 
   \bgroup \obeylines
@@ -382,6 +379,17 @@
 %D constructs. Unfortunately, we need to catch \type {<--text} 
 %D too, so we need another handler: 
 
+% \long\def\xparseXMLescape !#1#2%
+%   {\if#1-%
+%      \if#2-%
+%        \expandafter\expandafter\expandafter\xxparseXMLescape
+%      \else
+%        \expandafter\expandafter\expandafter\xyparseXMLescape
+%      \fi
+%    \else
+%      \expandafter\xyparseXMLescape
+%    \fi#1#2}
+
 \long\def\xparseXMLescape !#1#2%
   {\if#1-%
      \if#2-%
@@ -390,11 +398,17 @@
        \expandafter\expandafter\expandafter\xyparseXMLescape
      \fi
    \else
-     \expandafter\xyparseXMLescape
+     \if#1[%
+       \expandafter\expandafter\expandafter\xzparseXMLescape
+     \else
+       \expandafter\expandafter\expandafter\xyparseXMLescape
+     \fi
    \fi#1#2}
 
-\long\def\xxparseXMLescape --#1{\parseXMLescape{--}#1}
-\long\def\xyparseXMLescape #1  {\parseXMLescape{#1}}
+
+\long\def\xxparseXMLescape--#1{\parseXMLescape{--}#1}
+\long\def\xyparseXMLescape#1  {\parseXMLescape{#1}}
+\long\def\xzparseXMLescape[#1[{\parseXMLescape{#1}}
 
 %D Now the real work can begin.
 

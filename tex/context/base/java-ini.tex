@@ -203,7 +203,7 @@
 \long\gdef\startJScode#1 #2 
   {\doifelse{#2}{uses}  
      {\def\next{\dostartJScodeA{#1}}}
-     {\def\next{\dostartJScodeB{#1} #2}}%
+     {\def\next{\dostartJScodeB{#1} #2 }}%
    \next}
 
 \long\gdef\dostartJScodeA#1#2 #3\stopJScode%
@@ -211,6 +211,8 @@
 
 \long\gdef\dostartJScodeB#1#2\stopJScode%
   {\long\setgvalue{\r!java#1}{\do{}{#2}}}
+
+\let\stopJScode\relax
 
 %D \macros
 %D   {presetJScode}

@@ -188,7 +188,7 @@
 \def\dohandledigits%
   {\mathcode`\,="013B \mathcode`\.="013A % pretty hard coded
    \expandafter\handletokens\collecteddigits\with\scandigits
-   \ifcase\powerdigits\else\digitpowerseperator^{\savedpowerdigits}\fi}
+   \ifcase\powerdigits\else\digitpowerseparator^{\savedpowerdigits}\fi}
 
 \def\doscandigit#1%
   {\ifcase\skipdigit\else\hphantom{\fi

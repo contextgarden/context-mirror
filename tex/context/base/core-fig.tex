@@ -218,7 +218,7 @@
 \let\@@efcurrentpath\empty
 \let\@@efcurrentfile\empty
 
-\def\analyzefigurefiles%
+\def\analyzefigurefiles
   {\let\externalfigurelog\empty
    \let\@@efcurrenttype\empty
    \let\@@efcurrentpath\empty
@@ -657,9 +657,9 @@
         {\scratchcounter=3 }
         {\scratchcounter=0
          \ExpandBothAfter\doifinset{\v!lokaal}{\@@explaats}
-           {\advance\scratchcounter by 1 }%
+           {\advance\scratchcounter 1 }%
          \ExpandBothAfter\doifinset{\v!globaal}{\@@explaats}
-           {\advance\scratchcounter by 2 }}}%
+           {\advance\scratchcounter 2 }}}%
    \chardef\figurefilemode=\scratchcounter
    \ifcase\figurefilemode
      \let\@@ex@@gebied\f!currentpath
@@ -1003,7 +1003,8 @@
        {\let\@@efkader=\v!aan}%
    \fi
    \ifcase\figurestatus
-     \def\@@efkader{\v!aan}%
+     \let\@@efkader\v!aan
+     \let\@@efobject\v!nee
      \showmessage{\m!figures}{1}{\@@effilename}%
    \or
      \showmessage{\m!figures}{2}{\@@effullname}%
@@ -1220,28 +1221,28 @@
    \else
      \settrue\externalfigurelevel
      \ifskipexternalfigures
-       \externalfigurereplacement{name: #2 \\ file: #3 \\ skipped}%
+       \externalfigurereplacement{#2}{#3}{skipped}% {name: #2 \\ file: #3 \\ skipped}%
      \else\ifcase\figurestatus
-       \externalfigurereplacement{name: #2 \\ file: #3 \\ unknown}%
+       \externalfigurereplacement{#2}{#3}{unknown}% {name: #2 \\ file: #3 \\ unknown}%
      \else
-\doifelse{\@@efreset}{\v!ja}
-  {\ht\foundexternalfigure\figureheight
-   \dp\foundexternalfigure\zeropoint
-   \wd\foundexternalfigure\figurewidth
-   \box\foundexternalfigure}
-       {\localframed
-         [\??ef]
-         [\c!breedte=\figurewidth,
-          \c!hoogte=\figureheight,
-          \c!offset=\v!overlay]
-         {\vfilll\box\foundexternalfigure}}%
+       \doifelse\@@efreset\v!ja
+         {\ht\foundexternalfigure\figureheight
+          \dp\foundexternalfigure\zeropoint
+          \wd\foundexternalfigure\figurewidth
+          \box\foundexternalfigure}
+         {\localframed
+            [\??ef]
+            [\c!breedte=\figurewidth,
+             \c!hoogte=\figureheight,
+             \c!offset=\v!overlay]
+            {\vfilll\box\foundexternalfigure}}%
      \fi\fi
    \fi
 \popmacro\figureheight
 \popmacro\figurewidth
    \egroup}
 
-\def\externalfigurereplacement#1%
+\def\externalfigurereplacement#1#2#3%
   {\expanded{\localframed
      [\??ef]
      [\c!breedte=\figurewidth,
@@ -1250,7 +1251,9 @@
       \c!achtergrondraster=.5, 
      %\c!kader=\ifincolor\v!uit\else\v!aan\fi]
       \c!kader=\ifincolor\@@efkader\else\v!aan\fi]}%
-     {\ttx#1}}
+     {\ttx name:  \expanded{\verbatimstring{#1}}\\%
+           file:  \expanded{\verbatimstring{#2}}\\%
+           state: \expanded{\verbatimstring{#3}}}}
 
 \def\getexternalfigure#1%
   {\getvalue{\??ef\??ef#1}}

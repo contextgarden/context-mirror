@@ -1063,7 +1063,8 @@
 
 \def\complextypefile[#1]#2%
   {\getvalue{\??tp#1\c!voor}%
-   \doiflocfileelse{\pathplusfile\f!currentpath{#2}}
+%   \doiflocfileelse{\pathplusfile\f!currentpath{#2}}
+   \doiflocfileelse{#2}
      {\startopelkaar % includes \bgroup
       \doifinset{\getvalue{\??tp#1\c!optie}}{\v!commandos,\v!schuin,\v!normaal}
         {\setuptyping[#1][\c!optie=\v!geen]}%

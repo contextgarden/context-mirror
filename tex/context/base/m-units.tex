@@ -354,7 +354,7 @@
 \def\Femto   {\dimensionprefix{f}}
 \def\Pico    {\dimensionprefix{p}}
 \def\Nano    {\dimensionprefix{n}}
-\def\Micro   {\dimensionprefix{\iftextunits u\else\mu\fi}}
+\def\Micro   {\dimensionprefix{\iftextdimensions u\else\mu\fi}}
 \def\Milli   {\dimensionprefix{m}}
 \def\Centi   {\dimensionprefix{c}}
 \def\Deci    {\dimensionprefix{d}}
@@ -368,7 +368,7 @@
 
 %D and operators:
 
-\def\Times   {\dimensionnopfix{\iftextunits.\else\cdot\fi}}
+\def\Times   {\dimensionnopfix{\iftextdimensions.\else\cdot\fi}}
 \def\Solidus {\dimensionmidfix{/}}
 \def\Per     {\dimensionmidfix{/}}
 \def\OutOf   {\dimensionnopfix{:}}

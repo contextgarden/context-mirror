@@ -303,7 +303,7 @@
 \def\convertsetupdata#1#2% only accept #1=\v!whatever
   {\doifsystemconstantelse{#1}{\edef#2{#1}}{\let#2\empty}}
 
-\input setupb 
+{\catcode`\<=\active \input setupb }
 
 \protect
 

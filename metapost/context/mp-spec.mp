@@ -176,14 +176,38 @@ enddef ;
 
 boolean trace_shades ; trace_shades := false ;
 
+%  if     (n=1) : a := llcorner p ; b := urcorner p ;
+%  elseif (n=2) : a := llcorner p ; b := ulcorner p ;
+%  elseif (n=3) : a := lrcorner p ; b := ulcorner p ;
+%  else         : a := llcorner p ; b := lrcorner p ;
+%  fi ;
+
+def set_linear_vector (suffix a,b)(expr p,n) = 
+  if     (n=1) : a := llcorner p ; 
+                 b := urcorner p ;
+  elseif (n=2) : a := lrcorner p ; 
+                 b := ulcorner p ;
+  elseif (n=3) : a := urcorner p ; 
+                 b := llcorner p ;
+  elseif (n=4) : a := ulcorner p ; 
+                 b := lrcorner p ;
+  elseif (n=5) : a := .5[ulcorner p,llcorner p] ; 
+                 b := .5[urcorner p,lrcorner p] ; 
+  elseif (n=6) : a := .5[llcorner p,lrcorner p] ; 
+                 b := .5[ulcorner p,urcorner p] ; 
+  elseif (n=7) : a := .5[lrcorner p,urcorner p] ; 
+                 b := .5[llcorner p,ulcorner p] ; 
+  elseif (n=8) : a := .5[urcorner p,ulcorner p] ; 
+                 b := .5[lrcorner p,llcorner p] ; 
+  else         : a := .5[ulcorner p,llcorner p] ; 
+                 b := .5[urcorner p,lrcorner p] ; 
+  fi ;
+enddef ; 
+
 def linear_shade (expr p, n, ca, cb) =
   begingroup ;
   save a, b, sh ; pair a, b ;
-  if     (n=1) : a := llcorner p ; b := urcorner p ;
-  elseif (n=2) : a := llcorner p ; b := ulcorner p ;
-  elseif (n=3) : a := lrcorner p ; b := ulcorner p ;
-  else         : a := llcorner p ; b := lrcorner p ;
-  fi ;
+  set_linear_vector(a,b)(p,n) ; 
   fill p withshade define_linear_shade (a,b,ca,cb) ;
   if trace_shades :
     drawarrow a -- b withpen pencircle scaled 1pt ;
@@ -193,25 +217,26 @@ enddef ;
 
 vardef predefined_linear_shade (expr p, n, ca, cb) =
   save a, b, sh ; pair a, b ;
-  if     (n=1) : a := llcorner p ; b := urcorner p ;
-  elseif (n=2) : a := llcorner p ; b := ulcorner p ;
-  elseif (n=3) : a := lrcorner p ; b := ulcorner p ;
-  else         : a := llcorner p ; b := lrcorner p ;
-  fi ;
+  set_linear_vector(a,b)(p,n) ; 
+  set_shade_vector(a,b)(p,n) ;
   define_linear_shade (a,b,ca,cb) 
 enddef ;
+
+def set_circular_vector (suffix ab, r)(expr p,n) = 
+  if     (n=1) : ab := llcorner p ;
+  elseif (n=2) : ab := lrcorner p ;
+  elseif (n=3) : ab := urcorner p ;
+  elseif (n=4) : ab := ulcorner p ;
+  else         : ab := center   p ; r := .5r ;
+  fi ;
+enddef ; 
 
 def circular_shade (expr p, n, ca, cb) =
   begingroup ;
   save ab, r ; pair ab ; numeric r ;
   r := (xpart lrcorner p - xpart llcorner p) ++
        (ypart urcorner p - ypart lrcorner p) ;
-  if     (n=1) : ab := llcorner p ;
-  elseif (n=2) : ab := lrcorner p ;
-  elseif (n=3) : ab := urcorner p ;
-  elseif (n=4) : ab := ulcorner p ;
-  else         : ab := center p ; r := .5r ;
-  fi ;
+  set_circular_vector(ab,r)(p,n) ; 
   fill p withshade define_circular_shade(ab,ab,0,r,ca,cb) ;
   if trace_shades :
     drawarrow ab -- ab shifted (0,r) withpen pencircle scaled 1pt ;
@@ -223,12 +248,7 @@ vardef predefined_circular_shade (expr p, n, ca, cb) =
   save ab, r ; pair ab ; numeric r ;
   r := (xpart lrcorner p - xpart llcorner p) ++
        (ypart urcorner p - ypart lrcorner p) ;
-  if     (n=1) : ab := llcorner p ;
-  elseif (n=2) : ab := lrcorner p ;
-  elseif (n=3) : ab := urcorner p ;
-  elseif (n=4) : ab := ulcorner p ;
-  else         : ab := center p ; r := .5r ;
-  fi ;
+  set_circular_vector(ab,r)(p,n) ; 
   define_circular_shade(ab,ab,0,r,ca,cb) 
 enddef ;
 

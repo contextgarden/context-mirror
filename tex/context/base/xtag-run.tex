@@ -86,6 +86,7 @@
 \ifx\XMLprettycycle\undefined \gdef\XMLprettycycle{3} \fi 
 
 \doglobal\newcounter\@XMLnofelements
+\doglobal\newif\ifXMLunspacepretty
 
 \gdef\@XMLelement#1%
   {\ifnum\XMLlevel<\@@xfniveau\relax
@@ -102,6 +103,7 @@
       \DoMod\XMLlevel by\XMLprettycycle to\scratchcounter
       \advance\scratchcounter 1
       \startcolor[xtag:\ifnum\scratchcounter<0 0\else\number\scratchcounter\fi]%
+\ifXMLunspacepretty\unskip\fi
         \string<%
         \ifnum\kindofXMLelement=2\string/\fi
         \currentXMLelement
@@ -121,7 +123,7 @@
        \ifcase\@XMLnofelements\else\@@xftussen\fi 
      \fi 
    \fi
-   \ignorespaces}
+   \ifXMLunspacepretty\ignorespaces\fi} 
 
 \gdef\nextXMLtext{\blank\@XMLlevel+\@XMLelement1\par}
 \gdef\prevXMLtext{\par\@XMLelement0\par\@XMLlevel-\blank}

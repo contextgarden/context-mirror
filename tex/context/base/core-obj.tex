@@ -90,6 +90,7 @@
 
 \def\presetobject#1#2%
   {\ifundefined{\r!object#1::#2}%   
+\global % added 
      \@EA\let\csname\r!object#1::#2\endcsname\objectplaceholder
    \fi}
 

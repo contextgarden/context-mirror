@@ -303,23 +303,18 @@
 \def\stopomgeving%
   {\doprevlevel}
 
-\long\def\skipdeelomgeving#1\stopdeelomgeving%
-  {}
-
 \def\startdeelomgeving[#1]%
-  {\def\partialenvironments{}%
+  {\let\loadedlocalenvironments\empty
    \def\docommando##1%
      {\beforesplitstring##1\at.\to\someevironment
-      \fullexpandoneargafter\addtocommalist{\someevironment}\partialenvironments}%
+      \fullexpandoneargafter\addtocommalist{\someevironment}\loadedlocalenvironments}%
    \processcommalist[#1]\docommando
    \fullexpandtwoargsafter\doifcommonelse % no longer next needed
        {\currentproject,\currentproduct,
         \currentcomponent,\currentenvironment}
-       {\partialenvironments}
-     {\let\stopdeelomgeving\relax
-      \let\next\relax}
-     {\let\next\skipdeelomgeving}%
-   \next}
+       {\loadedlocalenvironments}
+     {\letvalue{\e!stop\e!deelomgeving}\relax}
+     {\grabuntil{\e!stop\e!deelomgeving}\relax}}
 
 \def\startproduct{\startprodukt}
 \def\stopproduct {\stopprodukt}

@@ -165,6 +165,8 @@
 
 \newevery\everysetfield\relax
 
+\def\doiffieldelse#1{\doifdefinedelse{fielddata#1}}
+
 \def\setfield#1#2#3#4#5#6#7#8#9%  
   {\bgroup 
    \doglobal\increment\numberoffields
@@ -172,7 +174,7 @@
      \doglobal\addtocommalist{#1}\collectedfields
    \fi
    \the\everysetfield
-   \setxvalue{fielddata#1}%
+   \setxvalue{fielddata#1}% kortere tag 
      {\noexpand\dosetfield{#1}{#2}{#3}{#4}{#5}{#6}{#7}{#8}{#9}}%
    \egroup}
 

@@ -115,7 +115,7 @@
    \ifregelnummersinmarge
      \llap{\hbox{\box0\hskip\linkermargeafstand}}%
    \else
-     \llap{\hbox to \@@rnbreedte{\box0\hss}}%
+     \rlap{\hbox to \@@rnbreedte{\box0\hss}}% was \llap, nog testen !! 
    \fi}
 
 \def\complexstartregelnummeren[#1]%

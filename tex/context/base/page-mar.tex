@@ -19,32 +19,37 @@
 
 \newif\iflowinmargin
 
-\def\stelinmargein%
+\def\stelinmargein
   {\dodoubleempty\dostelinmargein}
 
 \def\dostelinmargein[#1][#2]%
   {\ifsecondargument
-     \doifundefinedelse{\??im#1\c!offset}
-       {\presetlocalframed
-          [\??im#1]%
-        \getparameters
-          [\??im#1]
-          [\c!kader=\v!uit,
-           \c!offset=\v!overlay,
-           \c!regel=1,
-           \c!scheider=,
-           \c!breedte=\v!ruim,
-           \c!afstand=\!!zeropoint,
-           \c!letter=\@@imletter,
-           \c!kleur=\@@imkleur,
-           \c!plaats=\@@implaats,
-           \c!uitlijnen=\@@imuitlijnen,
-           \c!voor=\@@imvoor,
-           \c!na=\@@imna,
-           #2]}
-       {\getparameters[\??im#1][#2]}%
+     \processcommalist[#1]{\dodostelinmargein[#2]}% becomes [#2]{##1}
    \else
      \getparameters[\??im][#1]%
+   \fi}
+
+\def\dodostelinmargein[#1]#2% [settings]{class}
+  {\ifundefined{\??im#2\c!offset}%
+     \presetlocalframed
+       [\??im#2]%
+     \getparameters
+       [\??im#2]
+       [\c!kader=\v!uit,
+        \c!offset=\v!overlay,
+        \c!regel=1,
+        \c!scheider=,
+        \c!breedte=\v!ruim,
+        \c!afstand=\!!zeropoint,
+        \c!letter=\@@imletter,
+        \c!kleur=\@@imkleur,
+        \c!plaats=\@@implaats,
+        \c!uitlijnen=\@@imuitlijnen,
+        \c!voor=\@@imvoor,
+        \c!na=\@@imna,
+        #1]%
+   \else
+     \getparameters[\??im#2][#1]%
    \fi}
 
 \let\margetekstafstand  = \!!zeropoint

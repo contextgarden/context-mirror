@@ -28,8 +28,9 @@
 \defineXMLsingular [fdf:field] [name=,value=]
   {\doglobal\saveasXMLdata{fdf:\XMLop{name}}{\XMLop{value}}}
 
-\def\flushFDFfield  #1{\flushXMLelement  {fdf:#1}}
-\def\processFDFfield#1{\processXMLelement{fdf:#1}}   
+\def\doifelseFDFfield#1{\doifelseXMLelement{fdf:#1}}
+\def\flushFDFfield   #1{\flushXMLelement   {fdf:#1}}
+\def\processFDFfield #1{\processXMLelement {fdf:#1}}   
    
 \def\loadFDFfile#1%
   {\bgroup

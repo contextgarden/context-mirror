@@ -428,20 +428,6 @@
    \def\!!stringb{#3}%
    \futurelet\nexttoken\inspectnextcharacter}
 
-% \def\inspectnextcharacter%
-%   {\ifx\nexttoken\blankspace
-%      \let\localnext\reinspectnextcharacter
-%   %\else\ifx\nexttoken\endoflinetoken
-%   %  \let\localnext\reinspectaftercharacter
-%    \else\ifx\nexttoken\charactertoken
-%      \let\localnext\!!stringa
-%    \else
-%      \let\localnext\!!stringb
-%    \fi\fi%\fi
-%    \localnext}
-%
-% faster ?
-
 \def\inspectnextcharacter% 
   {\ifx\nexttoken\blankspace
      \@EA\reinspectnextcharacter

@@ -383,7 +383,7 @@
 %D efficient in \ETEX\ since there testing for an undefined 
 %D macro does not takes hash space. 
 
-\def\flushlayer[#1]%
+\unexpanded\def\flushlayer[#1]%
   {\doifnotvalue{\??ll#1\c!status}{\v!stop}
      {\startoverlay
         {\doflushlayer1{#1}{#1}}

@@ -26,6 +26,30 @@
 
 \def\@@itemcounter {\s!itemcount\currentitemgroup}
 
+% very experimental 
+
+\def\redoanalyzefigurefiles#1%
+  {\ifcase\figurestatus
+     \def\@@efcurrenttype{#1}%
+     \dododoanalyzefigurefiles\empty
+   \fi}
+
+\def\analyzefigurefiles
+  {\let\externalfigurelog\empty
+   \let\@@efcurrenttype\empty
+   \let\@@efcurrentpath\empty
+   \let\@@efcurrentfile\empty
+   \doanalyzefigurefiles\doanalyzefigurefilesA
+   \doanalyzefigurefiles\doanalyzefigurefilesB
+   \doanalyzefigurefiles\doanalyzefigurefilesC
+   % new, permits rather raw names like e:/....
+   \let\dodoanalyzefigurefiles\redoanalyzefigurefiles
+   \doanalyzefigurefiles\doanalyzefigurefilesA
+   \doanalyzefigurefiles\doanalyzefigurefilesB
+   \doanalyzefigurefiles\doanalyzefigurefilesC}
+
+
+
 \def\OTRSETgotocell#1#2% not that robust 
   {\endgraf
    \gdef\gotocellcounter{0}%
@@ -339,7 +363,7 @@
         {\box\nextbox}}%
    \hbox\framed[\c!plaats=\v!normaal,#2]}
 
-\beginETEX
+\beginETEX \dimexpr
 
 \definepapersize
   [oversized]
@@ -488,8 +512,6 @@
    \else
      \writestatus{\m!fields}{pass parent field and copies}%
    \fi}
-
-
 
 \newtoks\everyfirstparagraphintro
 \newtoks\everynextparagraphintro

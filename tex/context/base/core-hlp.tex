@@ -39,6 +39,8 @@
 
 % will be proper state variable 
 
+\let\pagehelpdata\empty
+
 \def\dontresetpagedata%
   {\let\synchronizepagehelpdata\relax}
 
@@ -151,7 +153,7 @@
 \def\donohelpbutton[#1][#2]% 
   {\dodohelpbutton[#1][]{}[#2]} 
 
-\def\dohelpbutton[#1][#2]%
+\def\dohelpbutton
   {\ifsecondargument
      \expandafter\donohelpbutton
    \else
@@ -159,11 +161,9 @@
    \fi}
 
 \def\helpbutton% also gobble spaces between [][]
-  {\dodoublempty\dohelpbutton}
+  {\dodoubleempty\dohelpbutton}
 
 \def\doifhelpinfo#1#2%
   {\iflocation\doifsymboldefinedelse{helpinfo:#1}{#2}{}\fi}
 
-\protect 
-
-\endinput 
+\protect \endinput 

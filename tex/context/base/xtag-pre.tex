@@ -111,15 +111,19 @@
 %D strange syntax.
 %D
 %D \starttypen
-%D <!CDATA[
+%D <!CDATA[it starts here 
 %D whatever you like to be shown verbatim
-%D ]]>
+%D and ends here]]>
 %D \stoptypen
 %D
 %D Watch this rather obscure definition (we need to pass an
 %D \type {[} to the macro.
 
-\defineXMLescape [{CDATA[}]
+% \defineXMLescape [{CDATA[}]
+%   {\skipfirstverbatimlinefalse
+%    \processtaggeddisplayverbatim{]]>}}
+
+\defineXMLescape [CDATA]
   {\skipfirstverbatimlinefalse
    \processtaggeddisplayverbatim{]]>}}
 

@@ -841,6 +841,15 @@
 \def\rightsubfakeguillemot
   {\hbox{\raise.25ex\hbox{$\scriptscriptstyle>$}}}
 
+%D Pretty Plain: 
+
+\def\fakeunderscore{\leavevmode\kern.06em\vbox{\hrule\!!width.3em}} 
+
+\ifx\mathunderscore\undefined \let\mathunderscore\fakeunderscore \fi
+\ifx\textunderscore\undefined \let\textunderscore\fakeunderscore \fi
+
+\def\_{\ifmmode\mathunderscore\else\textunderscore\fi}
+
 %D Just like with subsentence boundary symbols, quotes
 %D placement depends on the current language, therefore we show
 %D the defaults here.

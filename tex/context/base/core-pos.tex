@@ -611,7 +611,7 @@
 %D   {action when not on this page}
 %D \stoptypen
 
-\def\doifpositionsonsamepageelse#1#2#3#4%
+\def\dodoifpositionsonsamepageelse#1#2#3#4%
   {\bgroup
    \scratchcounter=#1\donefalse
    \def\docommando##1%
@@ -624,10 +624,10 @@
    \ifdone\egroup#3\else\egroup#4\fi}
 
 \def\doifpositionsonsamepageelse%
-  {\doifpositionsonsamepageelse{0}}
+  {\dodoifpositionsonsamepageelse{0}}
 
 \def\doifpositionsonthispageelse#1#2#3%
-  {\doifpositionsonsamepageelse\realfolio}
+  {\dodoifpositionsonsamepageelse\realfolio}
 
 %D Before we come to graphics support, we have to make sure of
 %D the reference point on the page. The next macro does so and
