@@ -52,7 +52,7 @@
    \appendtoks  \forcefileexpansiontrue \to \everyenableXML
    \let\enableXMLfiledata\relax}
 
-\setupXMLprocessing[\c!state=\v!start]
+\setupXMLprocessing[\c!status=\v!start]
 
 \appendtoks
   \ifproductionrun \enableXMLfiledata \fi
@@ -64,7 +64,7 @@
   {\bgroup
    \honorunexpanded
    \dontexpandencoding
-   \xdef\@@globalexpanded{\noexpand#1}% why \noexpand?
+   \xdef\@@globalexpanded{\noexpand#1}%
    \egroup
    \@@globalexpanded}
 

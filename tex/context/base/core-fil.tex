@@ -62,40 +62,34 @@
 %D method to define filesynonyms. The actual synonyms are
 %D defined elsewhere, but look like:
 %D
-%D \starttyping
+%D \starttypen
 %D \definefilesynonym [chemic]  [chemie]
-%D \definefilesynonym [einheit] [unit]
-%D \definefilesynonym [unit]    [unit]
-%D \stoptyping
+%D \definefilesynonym [einheit] [eenheid]
+%D \definefilesynonym [unit]    [eenheid]
+%D \stoptypen
 %D
 %D So we can say in english:
 %D
-%D \starttyping
+%D \starttypen
 %D \usemodules[pictex,chemic,unit]
-%D \stoptyping
+%D \stoptypen
 %D
 %D and in dutch:
 %D
-%D \starttyping
-%D \usemodules[pictex,chemie,unit]
-%D \stoptyping
+%D \starttypen
+%D \usemodules[pictex,chemie,eenheid]
+%D \stoptypen
 
 \def\definefilesynonym
   {\dodoubleempty\dodefinefilesynonym}
 
-% \def\dodefinefilesynonym[#1][#2]%
-%   {\doifdefined{\??fs#1}
-%      {\doifnotvalue{\??fs#1}{#2}
-%         {\showmessage\m!files1{#1 (#2),\getvalue{\??fs#1}}}}%
-%    \doifelse{#1}{#2}
-%      {\letbeundefined{\??fs#1}{#2}}
-%      {\setevalue{\??fs#1}{#2}}}
-
 \def\dodefinefilesynonym[#1][#2]%
-  {\ifundefined{\??fs#1}\else
-     \doifnotvalue{\??fs#1}{#2}{\showmessage\m!files1{#1 (#2),\getvalue{\??fs#1}}}%
-   \fi
-   \doifelse{#1}{#2}{\letbeundefined{\??fs#1}{#2}}{\setevalue{\??fs#1}{#2}}}
+  {\doifdefined{\??fs#1}
+     {\doifnotvalue{\??fs#1}{#2}
+        {\showmessage\m!files1{#1 (#2),\getvalue{\??fs#1}}}}%
+   \doifelse{#1}{#2}
+     {\letbeundefined{\??fs#1}{#2}}
+     {\setevalue{\??fs#1}{#2}}}
 
 %D \macros
 %D   {truefilename}
@@ -103,14 +97,18 @@
 %D At the system level such a filename can be called upon by
 %D saying:
 %D
-%D \starttyping
+%D \starttypen
 %D \truefilename{filename/filesynonym}
-%D \stoptyping
+%D \stoptypen
 %D
 %D The implementation shows that nesting is supported.
 
 \def\truefilename#1%
-  {\ifundefined{\??fs#1}#1\else\truefilename{\csname\??fs#1\endcsname}\fi}
+  {\ifundefined{\??fs#1}%
+     #1%
+   \else
+     \truefilename{\getvalue{\??fs#1}}%
+   \fi}
 
 %D \macros
 %D   {makeshortfilename}
@@ -223,9 +221,9 @@
 %D in a lazy way. Nota bene: such runtime definitions are
 %D global.
 %D
-%D \starttyping
+%D \starttypen
 %D \fetchruntimecommand\showaccents{\f!encodingprefix ...}
-%D \stoptyping
+%D \stoptypen
 
 \def\fetchruntimecommand#1#2%
   {\def#1{\dofetchruntimecommand#1{#2}}}
@@ -241,20 +239,19 @@
       \stopreadingfile
       \doglobal\setflag{#2}}%
    \ifx#1\undefined
-     \writestatus\m!systems{command \string#1 not found in file #2}%
+     \writestatus{\m!systems}{command \string#1 not found in file #2}%
      \def#1{{\infofont[unknown command \string#1]}}%
    \fi
    #1}
 
 %D To be documented and probably moved
 
-\def\documentresources{\@@erurl}
-
-\def\setupexternalresources
+\def\stelexternebronnenin
   {\dodoubleargument\getparameters[\??er]}
 
-\setupexternalresources
-  [url=]
+\def\documentresources{\@@erurl}
+
+\stelexternebronnenin[url=]
 
 %D This module will be perfected / changed / weeded.
 

@@ -29,11 +29,11 @@
 %D
 %D Therefore, \PDFTEX\ provides just these three primitives:
 %D
-%D \starttabulate[|l|l|]
+%D \starttabulatie[|l|l|]
 %D \NC \type {\pdfsavepos}  \NC marks the current position          \NC \NR
 %D \NC \type {\pdflastxpos} \NC the last marked horizontal position \NC \NR
 %D \NC \type {\pdflastypos} \NC the last marked vertical position   \NC \NR
-%D \stoptabulate
+%D \stoptabulatie
 %D
 %D Based on these three primitives, very advanced systems can
 %D be build, and for some time now, \CONTEXT\ has such a
@@ -45,7 +45,7 @@
 %D {\special} fail when producing \PDF\ code directly. Take for
 %D instance \EMTEX\ specials. When someone sent me a mail
 %D asking if \PDFTEX\ did support those specials, the original
-%D answer was \quotation {no}, but in the last few years I have learned
+%D answer was \citaat {no}, but in the last few years I have learned
 %D that you must never underestimate \TEX's capabilities.
 %D
 %D I must admit that I never use those specials myself, but
@@ -62,10 +62,10 @@
 %D into the macros \type {\EMmoveto} and \type {\EMlineto},
 %D like:
 %D
-%D \starttyping
+%D \starttypen
 %D \def\EMmoveto{\special{em:moveto}}
 %D \def\EMlineto{\special{em:lineto}}
-%D \stoptyping
+%D \stoptypen
 %D
 %D They are used in macro packages to draw lines, and the
 %D results are often boxes with content like the following:
@@ -83,11 +83,9 @@
 %D This box will contain a triangle, and when typeset, it should
 %D look like:
 %D
-%D \startlinecorrection[blank]
-%D \getbuffer
-%D \stoplinecorrection
-
-\def\EMlinewd{.4}
+%D \startregelcorrectie[blanko]
+%D \haalbuffer
+%D \stopregelcorrectie
 
 \ifx\dosetpositionpt\undefined % non context part
 
@@ -107,10 +105,12 @@
 %D length. We need to convert this number into base points as
 %D used by \POSTSCRIPT\ and \PDF. When done, we insert some
 %D literal \PDF\ code into the text using \type {\pdfliteral}.
-%D Here, the \type {m} means \quote {moveto}, the \type {l}
-%D means \quote {lineto} and the \type {S} operator \quote
+%D Here, the \type {m} means \citeer {moveto}, the \type {l}
+%D means \citeer {lineto} and the \type {S} operator \citeer
 %D {strokes} (draws) the line. The macro \type {\EMlinewd}
 %D holds the linewidth in basepoints.
+
+\def\EMlinewd{.4}
 
 \def\EMlineto
   {\bgroup
@@ -119,7 +119,7 @@
    \count2=\EMlastmovey \advance\count2 -\EMlastliney
    \divide\count0 65536
    \divide\count2 65536
-   \PDFcode{\EMlinewd\space w 0 0 m \the\count0 \space\the\count2 \space l S}%
+   \pdfliteral{\EMlinewd\space w 0 0 m \the\count0 \space\the\count2 \space l S}%
    \global\let\EMlastmovex\EMlastlinex
    \global\let\EMlastmovey\EMlastliney
    \egroup}
@@ -136,21 +136,21 @@
 %D shipped out, since \type {\write} postpones its action
 %D until that moment. The file has entries like:
 %D
-%D \starttyping
+%D \starttypen
 %D \EMsetpos 1 4661756 46651918
 %D \EMsetpos 2 5000359 46990521
 %D \EMsetpos 3 4661756 46313315
 %D \EMsetpos 4 5338962 46990521
 %D \EMsetpos 5 4661756 45974712
-%D \stoptyping
+%D \stoptypen
 %D
 %D These lines are written with the command:
 %D
-%D \starttyping
+%D \starttypen
 %D \write\EMfile
 %D   {\EMsetpos\number\EMcounter
 %D    \space\number\pdflastxpos\space\number\pdflastypos}%
-%D \stoptyping
+%D \stoptypen
 %D
 %D In reality the argument to \type {\write} looks slightly
 %D more complicated, because we have to make sure that the
@@ -231,12 +231,12 @@
 %D \stopbuffer
 %D
 %D \startbuffer[pos-nl]
-%D \setuppositioning[uniteenheid=ex]
-%D \startpositioning
+%D \stelpositionerenin[eenheid=ex]
+%D \startpositioneren
 %D   \dostepwiserecurse{-10}{10}{1}
-%D     {\position(0,\recurselevel){\EMmoveto}
-%D      \position(\recurselevel,0){\EMlineto}}
-%D \stoppositioning
+%D     {\positioneer(0,\recurselevel){\EMmoveto}
+%D      \positioneer(\recurselevel,0){\EMlineto}}
+%D \stoppositioneren
 %D \stopbuffer
 %D
 %D \typebuffer[pos-en]
@@ -245,22 +245,22 @@
 %D positioning mechanism, which positions the commands
 %D using \TEX's skips and kerns.
 %D
-%D \startlinecorrection[blank]
-%D \getbuffer[pos-nl]
-%D \stoplinecorrection
+%D \startregelcorrectie[blanko]
+%D \haalbuffer[pos-nl]
+%D \stopregelcorrectie
 %D
 %D Of course one should start and end the file with:
 %D
-%D \starttyping
+%D \starttypen
 %D \startEMspecials
 %D \stopEMspecials
-%D \stoptyping
+%D \stoptypen
 %D
 %D and, if needed, reset the begin position at each page using:
 %D
-%D \starttyping
+%D \starttypen
 %D \resetEMspecials
-%D \stoptyping
+%D \stoptypen
 
 \fi % end of non context part
 
@@ -309,7 +309,7 @@
    \global\advance\EMlastmovey -\EMlastliney
    \ScaledPointsToBigPoints{\number\EMlastmovex}\EMx
    \ScaledPointsToBigPoints{\number\EMlastmovey}\EMy
-   \PDFcode{\EMlinewd\space w 0 0 m \EMx \space \EMy \space l S}%
+   \pdfliteral{\EMlinewd\space w 0 0 m \EMx \space \EMy \space l S}%
    \global\EMlastmovex\EMlastlinex
    \global\EMlastmovey\EMlastliney}
 
@@ -333,15 +333,7 @@
 %D this mechanism transparant to \DVI\ as well as \PDF\
 %D output. We will use \type {\pdfiteral} as trigger.
 
-\ifx\PDFcode\undefined
-  \ifx\pdfliteral\undefined
-    \def\PDFcode#1{\special{PDF: #1}}
-  \else
-    \let\PDFcode\pdfliteral
-  \fi
-\fi
-
-\ifx\PDFcode\undefined
+\ifx\pdfliteral\undefined
   \def\EMpdfordvi#1#2{#2}
 \else\ifx\pdfoutput\undefined
   \def\EMpdfordvi#1#2{#2}
@@ -371,9 +363,9 @@
 %D macro does the job. Beware of the fact that \type
 %D {\special}'s may interfere with the typesetting process.
 %D
-%D \starttyping
+%D \starttypen
 %D \setEMlinewidth{1pt}
-%D \stoptyping
+%D \stoptypen
 
 \def\setEMlinewidth#1% this could be done more efficient for
   {\bgroup           % context alone, but it's a hack anyway

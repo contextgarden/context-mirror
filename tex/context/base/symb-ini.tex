@@ -73,10 +73,10 @@
 %D Symbols are simply linked to a tag. Such tags can be numbers
 %D or strings.
 %D
-%D \starttyping
+%D \starttypen
 %D \definesymbol [1]       [$\bullet$]
 %D \definesymbol [level 5] [$\star$]
-%D \stoptyping
+%D \stoptypen
 
 % ss:tag     -> symbol
 % ss:set:tag -> symbol out of set
@@ -190,7 +190,13 @@
   {\dodoubleempty\dofiguresymbol}
 
 \def\dofiguresymbol[#1][% #2]%
-  {\externalfigure[#1][\c!reset=\v!yes,\c!symbol=\v!yes,\c!height=\defaultsymbolheight,}% #2]}
+  {\externalfigure
+     [#1]
+     [\c!reset=\v!ja,
+      \c!symbool=\v!ja,
+     %\c!hfactor=\defaultsymbolfactor,
+      \c!hoogte=\defaultsymbolheight,
+      }% #2]}
 
 \appendtoks \resetexternalfigures \to \everysymbol
 
@@ -217,7 +223,9 @@
 
 \def\xfetchsymbol#1%
   {\ifnosymbol
-     \@EA\ifx\csname\??ss:#1:\currentsymbol\endcsname\relax\else\nosymbolfalse\fi
+     \@EA\ifx\csname\??ss:#1:\currentsymbol\endcsname\relax\else
+       \nosymbolfalse
+     \fi
    \fi}
 
 \def\xredosymbol#1%
@@ -262,24 +270,24 @@
 %D From these macro definitions one can deduce that symbols can
 %D be grouped in symbol sets:
 %D
-%D \starttyping
+%D \starttypen
 %D \startsymbolset [navigation 1]
 %D   \definefiguresymbol [Next] [mp-symb.1]
 %D   \definefiguresymbol [Prev] [mp-symb.2]
 %D \stopsymbolset
-%D \stoptyping
+%D \stoptypen
 %D
 %D Such a symbol can be typeset with:
 %D
-%D \starttyping
+%D \starttypen
 %D \setupsymbolset[navigation 1]\symbol[Next]
-%D \stoptyping
+%D \stoptypen
 %D
 %D or simply:
 %D
-%D \starttyping
+%D \starttypen
 %D \symbol[navigation 1][Next]
-%D \stoptyping
+%D \stoptypen
 %D
 %D Formally:
 %D

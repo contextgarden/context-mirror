@@ -135,7 +135,7 @@
 %D    dosetupopenaction,dosetupcloseaction}
 
 \definespecial\dosetupinteraction%
-  {\showmessage\m!interactions{21}{DVIPDFM}}
+  {\showmessage{\m!interactions}{21}{DVIPDFM}}
 
 \definespecial\dosetupopenaction {\doPDFsetupopenaction}
 \definespecial\dosetupcloseaction{\doPDFsetupcloseaction}
@@ -177,12 +177,12 @@
 %D \macros
 %D   {dosetupscreen}
 
-\definespecial\dosetupscreen  {\doPDFsetupscreen  \printpaperheight}
+\definespecial\dosetupscreen  {\doPDFsetupscreen  \printpapierhoogte}
 
-\definespecial\dosetupartbox  {\doPDFsetupartbox  \printpaperheight}
-\definespecial\dosetupcropbox {\doPDFsetupcropbox \printpaperheight}
-\definespecial\dosetupbleedbox{\doPDFsetupbleedbox\printpaperheight}
-\definespecial\dosetuptrimbox {\doPDFsetuptrimbox \printpaperheight}
+\definespecial\dosetupartbox  {\doPDFsetupartbox  \printpapierhoogte}
+\definespecial\dosetupcropbox {\doPDFsetupcropbox \printpapierhoogte}
+\definespecial\dosetupbleedbox{\doPDFsetupbleedbox\printpapierhoogte}
+\definespecial\dosetuptrimbox {\doPDFsetuptrimbox \printpapierhoogte}
 
 %D \macros
 %D   {dostartexecutecommand}
@@ -228,52 +228,26 @@
 %D \macros
 %D  {dostartobject,dostopobject,doinsertobject}
 
-% \definespecial\dostartobject#1#2#3#4#5%
-%   {\bgroup
-%    \setbox\nextbox=\hbox\bgroup
-%      \dosetobjectreference{#1}{#2}{#1::#2}%
-%      \scratchdimen#3\edef\width {\the\scratchdimen\space}%
-%      \scratchdimen#4\edef\height{\the\scratchdimen\space}%
-%      \special{pdf: bxobj @#1::#2 width \width height \height}}
-
-% \definespecial\dostopobject%
-%   {\special{pdf: exobj}%
-%    \egroup
-%    \smashbox\nextbox
-%    \flushatshipout{\box\nextbox}%
-%    \egroup}
-
 \definespecial\dostartobject#1#2#3#4#5%
   {\bgroup
-   \dowithnextbox
-     {\dosetobjectreference{#1}{#2}{#1::#2}%
-      \scratchdimen#3\edef\width {\the\scratchdimen\space}%
-      \scratchdimen#4\edef\height{\the\scratchdimen\space}%
-      \setbox\nextbox\vbox
-        {\special{pdf: bxobj @#1::#2 width \width height \height}%
-         % we need to compensate for the box offset (ugly, sigh)
-         \scratchdimen\nextboxht
-         \advance\scratchdimen\nextboxdp
-         \advance\scratchdimen-#4\relax
-         \nextboxdp\zeropoint
-         \nextboxht\zeropoint
-         \hbox to #3{\hss\lower.5\scratchdimen\box\nextbox\hss}%
-         \special{pdf: exobj}%
-         \global\let\currentPDFresources\empty}%
-      \smashbox\nextbox
-      \flushatshipout{\box\nextbox}%
-      \egroup}%
-    \hbox\bgroup}
+   \setbox\nextbox=\hbox\bgroup
+     \dosetobjectreference{#1}{#2}{#1::#2}%
+     \scratchdimen#3\edef\width {\the\scratchdimen\space}%
+     \scratchdimen#4\edef\height{\the\scratchdimen\space}%
+     \special{pdf: bxobj @#1::#2 width \width height \height}}
 
-\definespecial\dostopobject
-  {\egroup}
-
+\definespecial\dostopobject%
+  {\special{pdf: exobj}%
+   \egroup
+   \smashbox\nextbox
+   \flushatshipout{\box\nextbox}%
+   \egroup}
 
 \definespecial\doinsertobject#1#2%
   {\hbox
      {\dogetobjectreference{#1}{#2}\PDFobjectreference
       \ifx\PDFobjectreference\empty \else
-        \special{pdf: usexobj @#1::#2}%
+        \special{pdf: usexobj @\PDFobjectreference}%
       \fi}}
 
 %D \macros

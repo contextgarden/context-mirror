@@ -13,10 +13,10 @@
 
 \writestatus{loading}{Context Language Macros / Spacing}
 
-%D This module was created in the process of enhancing
+%D This module was created in the process of enhancing 
 %D support for French (with the help of Daniel Flipo).
 
-\unprotect
+\unprotect 
 
 \definehspace [\s!fr] [quotation]      [\flexiblespaceamount{.8}{.3}{.8}]
 \definehspace [\s!fr] [sentence]       [\fixedspaceamount{1}]
@@ -37,9 +37,9 @@
 \definehspace [\s!fr] [\string !] [.16667em]
 \definehspace [\s!fr] [\string ?] [.16667em]
 
-\protect
+\protect 
 
-%D Alternative discretionary handlers:
+%D Alternative discretionary handlers: 
 
 \definetextmodediscretionary :
   {\removeunwantedspaces\prewordbreak\kern\hspaceamount\currentlanguage{:}:}
@@ -57,15 +57,15 @@
 %D \mainlanguage[en] \quotation{test \quotation{test} test}\par
 %D \mainlanguage[nl] \quotation{test \quotation{test} test}\par
 %D \mainlanguage[fr] \quotation{test \quotation{test} test}\par
-%D
+%D 
 %D \mainlanguage[en] \quotation{\quotation{test} test}\par
 %D \mainlanguage[nl] \quotation{\quotation{test} test}\par
 %D \mainlanguage[fr] \quotation{\quotation{test} test}\par
-%D
+%D 
 %D \mainlanguage[en] |<|test |<|test|>| test|>| \par
 %D \mainlanguage[nl] |<|test |<|test|>| test|>| \par
 %D \mainlanguage[fr] |<|test |<|test|>| test|>| \par
-%D
+%D 
 %D \mainlanguage[en] |<||<|test|>| test|>| \par
 %D \mainlanguage[nl] |<||<|test|>| test|>| \par
 %D \mainlanguage[fr] |<||<|test|>| test|>| \par

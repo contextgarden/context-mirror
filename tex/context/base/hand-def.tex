@@ -357,26 +357,23 @@
 \unprotect
 
 % beware: extended extends the preceding vector (both protruding and
-% adjusting) but as long as the normal ascii characters are not set
+% adjusting) but as loign as the normal ascii characters are not set
 % beforehand, they default to normal
 
 % protruding variants -- slanted/italic is yet incomplete
 
-\definefonthandling [pure]        [pure]                       [\c!type=\v!hanging]
-\definefonthandling [normal]      [punctuation,alpha,extended] [\c!type=\v!hanging]
-\definefonthandling [bold]        [punctuation,alpha,extended] [\c!type=\v!hanging]
-\definefonthandling [slanted]     [punctuation]                [\c!type=\v!hanging,\c!right=1.5]
-\definefonthandling [italic]      [punctuation]                [\c!type=\v!hanging,\c!right=1.5]
-\definefonthandling [boldslanted] [punctuation]                [\c!type=\v!hanging,\c!right=1.5]
-\definefonthandling [bolditalic]  [punctuation]                [\c!type=\v!hanging,\c!right=1.5]
+\definefonthandling [pure]        [pure]
+\definefonthandling [normal]      [punctuation,alpha,extended]
+\definefonthandling [bold]        [punctuation,alpha,extended]
+\definefonthandling [slanted]     [punctuation] [\c!rechts=1.5]
+\definefonthandling [italic]      [punctuation] [\c!rechts=1.5]
+\definefonthandling [boldslanted] [punctuation] [\c!rechts=1.5]
+\definefonthandling [bolditalic]  [punctuation] [\c!rechts=1.5]
 
 % hz variants
 
-\definefonthandling [hz]          [hz,extended]                [\c!type=\v!hz]
-
-% combined variants
-
-\definefonthandling [quality]     [hz,pure]
+\definefonthandling [hz]          [hz,extended]
+\definefonthandling [quality]     [hz,extended,pure]
 
 % A special case of guillemots, beware: when used ungrouped,
 % it overloads all successive (current) encoding vector

@@ -1,3 +1,15 @@
+% NOT YET ADAPTED TO THE NEW FONT MACROS 
+
+% I still need to hook in some features into the setup 
+% macro. I also have to (re)define farsi etc. in ways 
+% similar to arab, so that we have dedicated environments. 
+%
+% keywords needed: vocalize transscribe 
+%
+% \startarabic[option=vocalize] % or vocalize=yes
+% ......
+% \stoparabic
+
 %D \module
 %D   [       file=font-arb,
 %D        version=1999.11.06,
@@ -8,25 +20,12 @@
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
-%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
-%C details.
-
-% NOT YET ADAPTED TO THE NEW FONT MACROS
-
-% I still need to hook in some features into the setup
-% macro. I also have to (re)define farsi etc. in ways
-% similar to arab, so that we have dedicated environments.
-%
-% keywords needed: vocalize transscribe
-%
-% \startarabic[option=vocalize] % or vocalize=yes
-% ......
-% \stoparabic
-
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for 
+%C details. 
 
 \writestatus{loading}{Context Font Macros / ArabTeX support}
 
-%D At the \NTG\ 10\high{th} anniversary meeting Klaus Lagally
+%D At the \NTG\ 10\hoog{th} anniversary meeting Klaus Lagally
 %D introduced the audience to arabic typesetting, and after
 %D that I knew that some day I really had to look into his
 %D generic package. And then, sort of simultaniously Maarten
@@ -36,40 +35,40 @@
 %D Having implemented support for chinese a few weeks before,
 %D I could not resist to build in support for arab and hebrew
 %D too. Writing support for languages that don't give me any
-%D cue on how to pronounce their script, is kind of special.
+%D cue on how to pronounce their script, is kind of special. 
 
-%D This is a beta version, since I still have to take care of some
-%D macros that conflict with existing stuff.
+%D This is a beta version, since I still have to take care of some 
+%D macros that conflict with existing stuff. 
 
-\unprotect
+\unprotect 
 
 \definesystemvariable{ARABTEX}
 
 %D A few (maybe too) simple hooks into the font mechanism. The
-%D hook into the language module is not yet done.
+%D hook into the language module is not yet done.  
 
 \unexpanded\def\setarabicfont#1%
   {\scratchdimen=1.2\bodyfontsize
    \font\arbfont=\truefontname{Arabic#1} at \currentfontscale\scratchdimen
-   \setx@skels
-   \newfonttrue
+\setx@skels
+\newfonttrue 
    \arbfont}
 
-%D Just to be compatible with Arab\TEX\ we define:
+%D Just to be compatible with Arab\TEX\ we define: 
 
 \unexpanded\def\nash    {\setarabicfont\s!Regular}
-\unexpanded\def\nashbf  {\setarabicfont\s!Bold   }
+\unexpanded\def\nashbf  {\setarabicfont\s!Bold   } 
 \unexpanded\def\pnash   {\setarabicfont\s!Regular}
-\unexpanded\def\pnashbf {\setarabicfont\s!Bold   }
+\unexpanded\def\pnashbf {\setarabicfont\s!Bold   } 
 \unexpanded\def\xnash   {\setarabicfont\s!Regular}
-\unexpanded\def\xnashbf {\setarabicfont\s!Bold   }
+\unexpanded\def\xnashbf {\setarabicfont\s!Bold   } 
 
-%D The display arabic environment (will be an installable
-%D object) uses a few conditionals. Let's do it the
+%D The display arabic environment (will be an installable 
+%D object) uses a few conditionals. Let's do it the 
 %D \CONTEXT\ way and define an anvironment that we later can
-%D adapt.
+%D adapt. 
 
-\newif\if@ignore
+\newif\if@ignore 
 \newif\if@endpe
 
 \def\setupARABTEXalternative[#1]%
@@ -82,24 +81,24 @@
   {\iffirstargument % \startarab is defined but used already
      \getparameters
        [\??ARABTEX#1]
-       [\c!before=,\c!after=,\c!inner=\setarab,
-        \c!style=\setarabfont{Arabic\fontstylesuffix}, % evt ArabicRegular
+       [\c!voor=,\c!na=,\c!binnen=\setarab,
+        \c!letter=\setarabfont{Arabic\fontstylesuffix}, % evt ArabicRegular
         #2]%
      \expandafter\all@wcmd\csname\e!stop#1\endcsname
      \setvalue{\e!start#1}%
        {\dodoubleempty\dostartARABTEXalternative[#1]}%
      \unexpanded\setvalue{#1}##1%
-       {{\initializeARABTEXinternals{#1}\a@RL{##1}}}%
+       {{\initializeARABTEXinternals{#1}\a@RL{##1}}}% 
      \unexpanded\def\RL{\getvalue{#1}}%
      \unexpanded\def\LR{\a@LR}%
-     \let\R=\RL
+     \let\R=\RL  
      \let\L=\LR
   \else
      \defineARABTEXalternative[arabic]%
    \fi}
 
 \def\initializeARABTEXinternals#1%
-  {\getvalue{\??ARABTEX#1\c!inner}%
+  {\getvalue{\??ARABTEX#1\c!binnen}%
    \let      \\=\ARABTEXbreakA
    \let      \|=\ARABTEXbreakB
    \let    \cap=\ARABTEXcap
@@ -108,17 +107,17 @@
    \let      \d=\ARABTEXd
    \let       |=\ARABTEXbar
    \let      \,=\ARABTEXcomma
-   \let\protect=\ARABTEXprotect
+   \let\protect=\ARABTEXprotect 
    \let\normaltx \tx \def\tx {\normaltx \setarabicfont\fontstylesuffix}%
    \let\normaltxx\txx\def\txx{\normaltxx\setarabicfont\fontstylesuffix}}
 
-\def\dostartARABTEXalternative[#1][#2]%
+\def\dostartARABTEXalternative[#1][#2]% 
   {\begingroup
    \getparameters[\??ARABTEX#1][#2]%
    \ifnum1<0\getvalue{\??ARABTEX#1\c!n}\relax
-     \startcolumns
+     \startkolommen
    \else
-     \getvalue{\??ARABTEX#1\c!before}%
+     \getvalue{\??ARABTEX#1\c!voor}%
    \fi
    \initializeARABTEXinternals{#1}%
    \initializeARABTEXend{#1}%
@@ -126,44 +125,44 @@
    \initializeARABTEXalternative{#1}}
 
 \def\initializeARABTEXalternative#1%
-  {\getvalue{\??ARABTEX#1\c!style}}
+  {\getvalue{\??ARABTEX#1\c!letter}}
 
-\def\initializeARABTEXend#1% \CONTEXT\ does use \end quite differently
+\def\initializeARABTEXend#1% \CONTEXT\ does use \end quite differently 
   {\long\def\end##1%
      {\endarabtext
       \ifnum1<0\getvalue{\??ARABTEX#1\c!n}\relax
-        \stopcolumns
+        \stopkolommen
       \else
-        \getvalue{\??ARABTEX#1\c!after}%
+        \getvalue{\??ARABTEX#1\c!na}%
       \fi
       \endgroup}%
-   \let\a@l@end\end
+   \let\a@l@end\end 
    \letvalue{\e!stop#1}=\end
    \long\def\end##1%
      {\endarabtext
       \endgroup
       \if@ignore\global\@ignorefalse\expandafter\ignorespaces\fi}}
 
-%D Arabic verbatim.
+%D Arabic verbatim. 
 
-\def\typearab{\a@@verb}
+\def\typearab{\a@@verb} 
 
 %D Some \LATEX\ macros.
 
 \def \makeatletter  {\unprotect}
-\def \makeatother   {\protect}
+\def \makeatother   {\protect} 
 \def \typeout     #1{\writestatus{arabtex}{#1}}
 
 %D We have to save some macros.
 
 \let\ARABTEXversion=\empty
 
-\def\startloadingARABTEX% ugly hacks
-  {\catcode`!=12
-   \catcode`?=12
+\def\startloadingARABTEX% ugly hacks 
+  {\catcode`!=12  
+   \catcode`?=12 
    \pushmacro\output        \let \output        \scratchtokens
-   \pushmacro\LaTeX         \let \LaTeX         \undefined
-   \pushmacro\CJK           \let \CJK           \undefined
+   \pushmacro\LaTeX         \let \LaTeX         \undefined 
+   \pushmacro\CJK           \let \CJK           \undefined 
    \pushmacro\year          \let \year          \normalyear
    \pushmacro\month         \let \month         \normalmonth
    \pushmacro\day           \let \day           \normalday
@@ -176,11 +175,11 @@
    \pushmacro\cap}
 
 \def\stoploadingARABTEX%
-  {\catcode`!=11
-   \catcode`?=11
+  {\catcode`!=11 
+   \catcode`?=11 
    \popmacro\cap
    \popmacro\emphasize
-   \popmacro\theversion
+   \popmacro\theversion   
    \popmacro\version
    \popmacro\datum
    \popmacro\linewidth
@@ -188,25 +187,25 @@
    \popmacro\day
    \popmacro\month
    \popmacro\year
-   \popmacro\CJK
+   \popmacro\CJK            
    \popmacro\LaTeX
-   \popmacro\output}
+   \popmacro\output}         
 
-%D We save some macros:
+%D We save some macros: 
 
 \startloadingARABTEX
 
-%D When loading \ARABTEX\ we have to set back the~! and~?.
+%D When loading \ARABTEX\ we have to set back the~! and~?. 
 
-\input arabtex.sty
+\input arabtex.sty 
 
-%D Since \ARABTEX\ has its own \type {\cap}, we save the
-%D new meaning. We also redefine some \PLAIN\ macros, which
-%D happen to have a different meaning in \LATEX.
+%D Since \ARABTEX\ has its own \type {\cap}, we save the 
+%D new meaning. We also redefine some \PLAIN\ macros, which 
+%D happen to have a different meaning in \LATEX. 
 
-\let\ARABTEXversion=\theversion
+\let\ARABTEXversion=\theversion     
 
-\let\ARABTEXcap=\cap
+\let\ARABTEXcap=\cap 
 
 \def\ARABTEXsh@ft#1%
   {\dimen@.00#1ex
@@ -221,7 +220,7 @@
   {{\o@lign{\relax#1\crcr\hidewidth\sh@ft{29}%
     \vbox to.2ex{\hbox{\char22}\vss}\hidewidth}}}
 
-%D A few internals:
+%D A few internals: 
 
 \def \ARABTEXcomma  {\relax\ifmmode\mskip\thinmuskip\else\thinspace\fi}
 \def \ARABTEXbreakA {\hfill\break}
@@ -229,62 +228,62 @@
 \edef\ARABTEXbar    {\string|}
 \let \ARABTEXprotect \relax
 
-%D Now we can pop the saved macros.
+%D Now we can pop the saved macros. 
 
 \stoploadingARABTEX
 
 %D Ah, we have to get rid of some \type {\protect} stuff but
-%D to permit testing we add it in the \CONTEXT\ way.
+%D to permit testing we add it in the \CONTEXT\ way. 
 
 \bgroup
-\catcode`\<=\@other
+\catcode`\<=\@other  
 \unexpanded\gdef\a@ins%
-  {\ifmmode
+  {\ifmmode 
      \expandafter<%
-   \else
-     \leavevmode \bgroup
+   \else 
+     \leavevmode \bgroup 
      \arab@codes \set@arabfont \@waslafalse \@wasfalse
-     \expandafter\arab@insert
+     \expandafter\arab@insert 
    \fi}
-\unexpanded\gdef\<{\a@ins}
+\unexpanded\gdef\<{\a@ins} 
 \catcode`\<=\active
 \global\let<=\a@ins
 \egroup
 
-%D We also need to register a few macros:
+%D We also need to register a few macros: 
 
 \all@w@ne\initializeARABTEXalternative % one argument, internal command
-\all@wcmd\tx                           % no argument, small font
-\all@wcmd\txx                          % no argument, smaller font
+\all@wcmd\tx                           % no argument, small font  
+\all@wcmd\txx                          % no argument, smaller font 
 
-%D The main definitions are:
+%D The main definitions are: 
 
-\definefontsynonym [ArabicRegular] [xnsh14]
-\definefontsynonym [ArabicBold]    [xnsh14bf]
+\definefontsynonym [ArabicRegular] [xnsh14]   
+\definefontsynonym [ArabicBold]    [xnsh14bf] 
 
 \defineARABTEXalternative
   [arabic]
-  [\c!inner=\setarab,
-   \c!style=\setarabfont\fontstylesuffix]
+  [\c!binnen=\setarab,
+   \c!letter=\setarabfont\fontstylesuffix]
 
 \defineARABTEXalternative
   [farsi]
-  [\c!inner=\setfarsi,
-   \c!style=\setarabfont\fontstylesuffix]
+  [\c!binnen=\setfarsi,
+   \c!letter=\setarabfont\fontstylesuffix]
 
 \defineARABTEXalternative
   [urdu]
-  [\c!inner=\seturdu,
-   \c!style=\setarabfont\fontstylesuffix]
+  [\c!binnen=\seturdu,
+   \c!letter=\setarabfont\fontstylesuffix]
 
 \defineARABTEXalternative
   [maghribi]
-  [\c!inner=\setmaghribi,
-   \c!style=\setarabfont\fontstylesuffix]
+  [\c!binnen=\setmaghribi,
+   \c!letter=\setarabfont\fontstylesuffix]
 
-%D Apart from such definitions, one can adapt the settings
-%D using \type {\setupARABTEXalternative}.
-%D
+%D Apart from such definitions, one can adapt the settings 
+%D using \type {\setupARABTEXalternative}. 
+%D 
 %D A few years ago at the Holland Festivities, I attended {\em
 %D The Cave}, one of the most impressive combinations of music
 %D and video I know. This composition of Steve Reich (music)
@@ -295,25 +294,25 @@
 %D interviews, music, and |<|believe it or not|>| rhythmic
 %D typography are the cornerstones. Remembering those big
 %D screens, it strikes me that like music, \TEX\ too is a
-%D perfect instrument to cross cultural and linguistic
-%D borders. So, let's:
+%D perfect instrument to cross cultural and linguistic 
+%D borders. So, let's: 
 
-\protect
+\protect 
 
 %D those macros,
 
-\endinput
+\endinput 
 
 %D and use them!
 
 % \defineconversion [abjad] [\abj@d]
 %
 % voetnoten verbatim lijsten indexen tabellen uitlijnen
-%
+% 
 % \v!hoofdstuk=al-fa.slu
 %    \v!inhoud=al-mu.htawayAtu
 %   \v!figuren=qA'imaTu al-.suwaru
 %  \v!tabellen=qA'imaTu al-^gadAwilu
 % \v!grafieken=qA'imaTu al-rusUmu
-%     \v!index=al-fihrisu
+%     \v!index=al-fihrisu 
 %   \v!bijlage=al-mul.haqu

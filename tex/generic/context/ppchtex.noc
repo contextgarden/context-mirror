@@ -9,37 +9,38 @@
 %D    suggestions={Tobias Burnus, Dirk Kuypers \& Ton Otten}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
-%C therefore copyrighted by \PRAGMA. See licen-en.pdf for
-%C details.
+%C therefore copyrighted by \PRAGMA. See licen-en.pdf for 
+%C details. 
 
-%D This module facilitates the use of \PPCHTEX\ in macro
-%D packages other than \CONTEXT. One of the features of
-%D \CONTEXT\ is that the user interface can be in any
-%D language. This language is defined at loading time.
-%D
-%D This module is indeed a surrogate one and is only a poor
-%D man's alternative to the more extensive \type{mult-***}
-%D modules of \CONTEXT. The extra overhead in terms of macros
-%D and functionality that these modules offer is only useful
-%D in \CONTEXT.
-%D
-%D Two interfaces are supported here, but others can easily be
+%D This module facilitates the use of \PPCHTEX\ in macro 
+%D packages other than \CONTEXT. One of the features of 
+%D \CONTEXT\ is that the user interface can be in any 
+%D language. This language is defined at loading time. 
+%D 
+%D This module is indeed a surrogate one and is only a poor 
+%D man's alternative to the more extensive \type{mult-***} 
+%D modules of \CONTEXT. The extra overhead in terms of macros 
+%D and functionality that these modules offer is only useful 
+%D in \CONTEXT. 
+%D 
+%D Two interfaces are supported here, but others can easily be 
 %D defined. This module expects the general system macros to be
-%D loaded as wel as a interface switch \type{\ifalternativeinterface}
-%D to be set.
+%D loaded as wel as a interface switch \type{\ifalternativeinterface} 
+%D to be set. 
 
 %D First we load some auxiliary macro's:
 
 \input supp-mis.tex  \let\writestatus\undefined
-\input syst-gen.tex
+\input syst-gen.tex 
 
-%D after which we can go on with:
+%D after which we can go on with: 
 
 \unprotect
 
-%D 0 = english
-%D 1 = dutch
-%D 2 = german
+%D 0 = english 
+%D 1 = dutch 
+%D 2 = german 
+%D 3 = czech (not yet implemented here)
 
 \ifx\interfacenumber\undefined
   \chardef\interfacenumber=0
@@ -51,40 +52,40 @@
 \def\definesystemconstant #1 %
   {\setvalue{s!#1}{#1}}
 
-\def\definevariable #1 #2 #3 % en nl de
+\def\definevariable #1 #2 #3 %
   {\ifcase\interfacenumber
-     \setvalue{v!#1}{#1}
+     \setvalue{v!#2}{#1}
    \or
-     \setvalue{v!#1}{#2}
+     \setvalue{v!#2}{#2}
    \or
-     \setvalue{v!#1}{#3}
+     \setvalue{v!#2}{#3}
    \fi}
 
-\def\defineconstant #1 #2 #3 % en nl de
+\def\defineconstant #1 #2 #3 %
   {\ifcase\interfacenumber
+     \setvalue{c!#2}{#2} 
      \setvalue{c!#1}{#2}
+   \or
      \setvalue{c!#2}{#2}
    \or
-     \setvalue{c!#1}{#2}
-   \or
-     \setvalue{c!#1}{#2}
+     \setvalue{c!#2}{#2} 
      \setvalue{c!#3}{#2}
    \fi}
 
 \def\definecommand #1 #2 #3 %
   {\ifcase\interfacenumber
-     % core commands are english
+     % core commands are english 
    \or
      \doifnot{#1}{#2}{\setvalue{#2}{\getvalue{#1}}}
    \or
      \doifnot{#1}{#3}{\setvalue{#3}{\getvalue{#1}}}
    \fi}
 
-\long\def\startcommands#1\stopcommands
+\long\def\startcommands#1\stopcommands%
   {}
 
 \def\dosetvalue#1#2#3%
-  {\p!doifundefined{\c!prefix!#2}%
+  {\p!doifundefined{\c!prefix!#2}% 
      \let\donottest=\doprocesstest
      \@EA\def\csname#1#2\endcsname{#3}%
    \else
@@ -123,7 +124,7 @@
 \defineconstant width           breedte          breite
 \defineconstant size            formaat          groesse
 \defineconstant number          getal            nummer
-\defineconstant height          hoogte           hoehe
+\defineconstant height          hoogte           hoehe   
 \defineconstant frame           kader            rahmen
 %defineconstant framecolor      kaderkleur       rahmenfarbe
 \defineconstant color           kleur            farbe
@@ -131,24 +132,24 @@
 \defineconstant style           letter           schriftstil
 \defineconstant rulethickness   lijndikte        liniendicke
 \defineconstant rulecolor       lijnkleur        linienfarbe
-\defineconstant left            links            links
+\defineconstant left            links            links 
 \defineconstant offset          offset           offset
 \defineconstant bottom          onder            unten
 \defineconstant option          optie            option
 \defineconstant location        plaats           platz
 \defineconstant right           rechts           rechts
 \defineconstant resolution      resolutie        aufloesung
-\defineconstant scale           schaal           format
+\defineconstant scale           schaal           format 
 \defineconstant status          status           status
 \defineconstant text            tekst            text
 \defineconstant textcolor       tekstkleur       tekstfarbe
-\defineconstant textsize        tekstformaat     textgroesse
+\defineconstant textsize        tekstformaat     textgroesse       
 \defineconstant alternative     variant          alternative
 \defineconstant x               x                x
 \defineconstant y               y                y
 
 \definevariable on              aan              an
-\definevariable big             groot            gross
+\definevariable big             groot            gross 
 \definevariable intext          intekst          imtext
 \definevariable small           klein            klein
 \definevariable medium          middel           mittel
@@ -158,51 +159,53 @@
 \definevariable test            test             test
 \definevariable off             uit              aus
 
-\definecommand  definechemical  definieerchemie  definierechemie
-\definecommand  setupchemical   stelchemiein     stellechemieein
-\definecommand  chemical        chemie           chemie
-\definecommand  tochemical      naarchemie       zurchemie
-\definecommand  startchemical   startchemie      startchemie
-\definecommand  stopchemical    stopchemie       stopchemie
-\definecommand  toptext         boventekst       textueber
+\definecommand  definechemical  definieerchemie  definierechemie 
+\definecommand  setupchemical   stelchemiein     stellechemieein 
+\definecommand  chemical        chemie           chemie          
+\definecommand  tochemical      naarchemie       zurchemie        
+\definecommand  startchemical   startchemie      startchemie     
+\definecommand  stopchemical    stopchemie       stopchemie      
+\definecommand  toptext         boventekst       textueber 
 \definecommand  bottext         ondertekst       textunter
 \definecommand  midtext         middentekst      textmitte
 
 \protect
 
-%D After those definitions we actually load \PPCHTEX:
+%D After those definitions we actually load \PPCHTEX: 
 
 \input ppchtex.tex
 
-%D We also change some setup values. Let's hope that the next
-%D setups forever suits \LATEX.
+%D We also change some setup values. Let's hope that the next 
+%D setups forever suits \LATEX. 
 
 \unprotect
 
 \ifx\bodyfontsize\undefined
   \ifx\f@size\undefined
     \ifx\@ptsize\undefined
-      \setupchemical[\c!bodyfont=11pt]
+      \setupchemical[\c!korps=11pt]
     \else
-      \setupchemical[\c!bodyfont=1\@ptsize pt]
+      \setupchemical[\c!korps=1\@ptsize pt]
     \fi
   \else
-    \setupchemical[\c!bodyfont=\f@size pt]
+    \setupchemical[\c!korps=\f@size pt]
   \fi
 \else
-  \setupchemical[\c!bodyfont=\bodyfontsize]
+  \setupchemical[\c!korps=\bodyfontsize]
 \fi
 
 \ifx\mathrm\undefined
-  \setupchemical[\c!style=\rm]
+  \setupchemical[\c!letter=\rm]
 \else
-  \setupchemical[\c!style=\mathrm]
+  \setupchemical[\c!letter=\mathrm]
 \fi
 
 \ifx\outputresolution\undefined
-  \setupchemical[\c!resolution=300]
+  \setupchemical[\c!resolutie=300]
 \else
-  \setupchemical[\c!resolution=\outputresolution]
+  \setupchemical[\c!resolutie=\outputresolution]
 \fi
 
-\protect \endinput
+\protect 
+
+\endinput

@@ -196,9 +196,9 @@
 \def\doMMPpbackground#1#2%
   {\doifXMLparelse{#1}{background}
      {\inframed
-        [\c!frame=\v!off,
-         \c!background=\v!color,
-         \c!backgroundcolor=\XMLpar{#1}{background}{}]
+        [\c!kader=\v!uit,
+         \c!achtergrond=\v!kleur,
+         \c!achtergrondkleur=\XMLpar{#1}{background}{}]
         {#2}}
      {#2}}
 
@@ -222,11 +222,11 @@
 \remapXMLsequence [msup] [CPA] \MMLpSUP
 \remapXMLsequence [msub] [CPA] \MMLpSUB
 
-\setupMMLappearance[scripts][\c!alternative=\v!a]
+\setupMMLappearance[scripts][\c!variant=\v!a]
 
 \def\MMLpSUBP#1#2%
   {\withnexttwoXMLRelements
-     {\doifelse\@@MMLscriptsalternative\v!a
+     {\doifelse\@@MMLscriptsvariant\v!a
         {{\firstXMLRelement}#1{\secondXMLRelement}} % both {} essential
         {\firstXMLRelement#1{\secondXMLRelement}}}%
    #2}
@@ -323,12 +323,12 @@
    \getXMLarguments{mtable}
      {columnalign="" columnspacing=".25ex" rowspacing=".25ex"
       frame="" color="" background="" #1}%
-   \setupTABLE[\c!frame=\v!off]%
-   \MMLpTABLEmapper{background}{\c!backgroundcolor}{}%
-   \MMLpTABLEmapper{color}{\c!color}{}%
-   \MMLpTABLEmapper{frame}{\c!frame}
+   \setupTABLE[\c!kader=\v!uit]%
+   \MMLpTABLEmapper{background}{\c!achtergrondkleur}{}%
+   \MMLpTABLEmapper{color}{\c!kleur}{}%
+   \MMLpTABLEmapper{frame}{\c!kader}
      {\MMLpREMAP{none}{off}\MMLpREMAP{solid}{on}}%
-   \MMLpTABLEmapper{columnalign}{\c!align}
+   \MMLpTABLEmapper{columnalign}{\c!uitlijnen}
      {\MMLpREMAP{left}{right}%
       \MMLpREMAP{right}{left}%
       \MMLpREMAP{center}{middle}}%
@@ -336,7 +336,7 @@
    \let\MMLpTABLEoffset\MMLpunit
    \let\MMLpTR\doMMLpTR
    \let\MMLpTD\doMMLpTD
-   \bTABLE[\c!background=\v!color,\c!offset=\MMLpTABLEoffset]#2\eTABLE
+   \bTABLE[\c!achtergrond=\v!kleur,\c!offset=\MMLpTABLEoffset]#2\eTABLE
    \endgroup}
 
 \def\doMMLpTR#1#2%
@@ -349,18 +349,18 @@
      {columnalign="" columnspacing="" rowspacing=""
       frame="" color="" background="" #1}%
    \let\theMMLpTABLEmap\empty
-   \MMLpTABLEmap{background}{\c!backgroundcolor}{}%
-   \MMLpTABLEmap{color}{\c!color}{}%
-   \MMLpTABLEmap{frame}{\c!frame}
+   \MMLpTABLEmap{background}{\c!achtergrondkleur}{}%
+   \MMLpTABLEmap{color}{\c!kleur}{}%
+   \MMLpTABLEmap{frame}{\c!kader}
      {\MMLpREMAP{none}{off}\MMLpREMAP{solid}{on}}%
-   \MMLpTABLEmap{columnalign}{\c!align}
+   \MMLpTABLEmap{columnalign}{\c!uitlijnen}
      {\MMLpREMAP{left}{right}\MMLpREMAP{right}{left}}%
    \@EA\bTD\@EA[\theMMLpTABLEmap]$\ignorespaces#2\unskip$\eTD}
 
-\setupMMLappearance[mtable][\c!alternative=\v!a]
+\setupMMLappearance[mtable][\c!variant=\v!a]
 
 \def\MMLpTABLE
-  {\doifelse\@@MMLmtablealternative\v!a
+  {\doifelse\@@MMLmtablevariant\v!a
      {\expandafter\MMLpTABLEa}
      {\expandafter\MMLpTABLEb}}
 

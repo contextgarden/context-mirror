@@ -23,18 +23,18 @@
 \unprotect
 
 \def\checkbegincolumnfootnotes % should happen inside otr
-  {\ifcase\clevernotes
-     \erasenotebackup
-   \else
+  {\ifclevernotes
      \doflushnotes
      \savenotecontent
+   \else
+     \erasenotebackup
    \fi
    \savenotedata
    \checknotes}
 
 \def\checkendcolumnfootnotes
   {\restorenotedata % maybe better just \checknotes
-   \ifcase\clevernotes\else
+   \ifclevernotes
      \restorenotecontent
    \fi}
 
@@ -52,21 +52,19 @@
 % hm
 
 \def\checkbegincolumnfootnotes % should happen inside otr
-  {\ifcase\clevernotes
-     \erasenotebackup
-   \else
+  {\ifclevernotes
      \doflushnotes
      \savenotecontent
+   \else
+     \erasenotebackup
    \fi
    \savenotedata
    \checknotes}
 
 \def\checkendcolumnfootnotes
   {\restorenotedata
-   \ifinsidecolumns
-     \ifcase\clevernotes\else
-       \restorenotecontent
-     \fi
+   \ifclevernotes
+     \restorenotecontent
    \fi}
 
 \protect \endinput

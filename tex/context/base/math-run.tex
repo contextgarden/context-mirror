@@ -16,9 +16,9 @@
 \gdef\showmathcharacters% nearly \showcharacters
   {\par
    \bgroup
-   \setuptextrules[\c!bodyfont=,\c!style=]
+   \setuptextrules[\c!korps=,\c!letter=]
    \starttextrule{math characters}
-   \whitespace
+   \witruimte
    \dontcomplain
    \forgetall
    \def\startmathcollection[##1]{}
@@ -48,7 +48,7 @@
    \advance\dimen2 2em
    \divide \dimen0 by \dimen2 \advance\dimen0 1sp
    \edef\enccols{\number\dimen0}
-   \startcolumns[\c!n=\enccols,\c!distance=2em]
+   \startcolumns[\c!n=\enccols,\c!afstand=2em]
    \def\dodefinemathsymbol[##1][##2][##3][##4][##5][##6]%
      {%\localcolortrue
       %\color

@@ -17,9 +17,9 @@
 %D wanted. Therefore this module presents a more natural way of
 %D doing things, like:
 %D
-%D \starttyping
+%D \starttypen
 %D 1.23 \Cubic \Meter \Per \Second
-%D \stoptyping
+%D \stoptypen
 %D
 %D This example shows that we use the order in which we say
 %D things, instead of typeset things. There is a separate
@@ -70,7 +70,7 @@
 %D some 10 \Square \Meter \Per \Second or more
 %D \stopbuffer
 %D
-%D \getbuffer
+%D \haalbuffer
 %D
 %D as:
 %D
@@ -78,10 +78,10 @@
 %D
 %D The units itself are implemented as synonyms.
 %D
-%D \starttyping
+%D \starttypen
 %D \definesynonyms [unit] [units] [\unitmeaning]
-%D \setupsynonyms [unit] [textstyle=\dimension]
-%D \stoptyping
+%D \stelsynoniemenin [unit] [textstyle=\dimension]
+%D \stoptypen
 %D
 %D This definition means that we can ask for the meaning of a
 %D unit using \type {\unitmeaning} and get a list of used
@@ -119,7 +119,7 @@
 %D
 %D Becomes:
 %D
-%D \getbuffer
+%D \haalbuffer
 
 %D \macros
 %D   {mathematicstypeface, dimensiontypeface,
@@ -165,19 +165,19 @@
 \newif\ifspaceddimensions \spaceddimensionsfalse % user switch
 \newif\iftextdimensions   \textdimensionsfalse   % user switch
 
-%D You can see the consequence of forcing text dimensions
-%D when you compare the following code:
+%D You can see the consequence of forcing text dimensions 
+%D when you compare the following code: 
 %D
 %D \starttyping
-%D {\rm test \Square \Meter \Per \Second\ ziezo\Degrees} \par
-%D {\ss test \Square \Meter \Per \Second\ ziezo} \par
-%D {\tt test \Square \Meter \Per \Second\ ziezo}
-%D
+%D {\rm test \Square \Meter \Per \Second\ ziezo\Degrees} \par 
+%D {\ss test \Square \Meter \Per \Second\ ziezo} \par 
+%D {\tt test \Square \Meter \Per \Second\ ziezo}  
+%D 
 %D \textdimensionstrue
-%D
-%D {\rm test \Square \Meter \Per \Second\ ziezo} \par
-%D {\ss test \Square \Meter \Per \Second\ ziezo} \par
-%D {\tt test \Square \Meter \Per \Second\ ziezo}
+%D 
+%D {\rm test \Square \Meter \Per \Second\ ziezo} \par 
+%D {\ss test \Square \Meter \Per \Second\ ziezo} \par 
+%D {\tt test \Square \Meter \Per \Second\ ziezo}  
 %D \stoptyping
 
 \newif\ifnesteddimension  \nesteddimensionfalse  % local switch
@@ -194,8 +194,8 @@
 \def\udimensionhalfspace {\dodimensionspace\dimensionhalfspace}
 \def\udimensionbackspace {\dodimensionspace\dimensionbackspace}
 
-\def\dodimensionspace
-  {\iftextdimensions
+\def\dodimensionspace 
+  {\iftextdimensions 
      \begingroup
      \setbox0=\hbox{i}%
      \setbox2=\hbox{m}%
@@ -263,7 +263,7 @@
    \global\let\thedimensionprefix\empty
    \global\let\thedimensionpower\empty}
 
-%D \macros
+%D \macro
 %D   {dontbreakdimension,
 %D    dimensionprefix, dimensionaddfix,
 %D    dimensionnopfix, dimensionmidfix,
@@ -319,7 +319,7 @@
 \def\dimensionpower#1%
   {\gdef\thedimensionpower{#1}}
 
-%D \macros
+%D \macro
 %D   {SIunits, noSI, doSI}
 %D
 %D Some low level unit switching macros:
@@ -336,7 +336,7 @@
 
 \def\Degrees{\dimensionaddfix{\mathematics{^\circ}}}
 
-%D \macros
+%D \macro
 %D   {Unit, NoUnit}
 %D
 %D When a dimension has no leading number, we can use \type
@@ -362,7 +362,7 @@
 \def\Kilo    {\dimensionprefix{k}}
 \def\Mega    {\dimensionprefix{M}}
 \def\Giga    {\dimensionprefix{G}}
-\def\Terra   {\dimensionprefix{T}} % for old times sake
+\def\Terra   {\dimensionprefix{T}} % for old times sake 
 \def\Tera    {\dimensionprefix{T}}
 \def\Peta    {\dimensionprefix{P}}
 \def\Exa     {\dimensionprefix{E}}
@@ -389,39 +389,39 @@
 %D defined using the synonym mechanism. First we define some
 %D length and volume related units.
 
-\getvalue{\v!unit} [Meter]  {m}             {meter}
-\getvalue{\v!unit} [pMeter] {\Pico  \Meter} {picometer}
-\getvalue{\v!unit} [nMeter] {\Nano  \Meter} {nanometer}
-\getvalue{\v!unit} [uMeter] {\Micro \Meter} {micrometer}
-\getvalue{\v!unit} [mMeter] {\Milli \Meter} {millimeter}
-\getvalue{\v!unit} [cMeter] {\Centi \Meter} {centimeter}
-\getvalue{\v!unit} [dMeter] {\Deci  \Meter} {decimeter}
-\getvalue{\v!unit} [hMeter] {\Hecto \Meter} {hectometer}
-\getvalue{\v!unit} [kMeter] {\Kilo  \Meter} {kilometer}
+\getvalue{\v!eenheid} [Meter]  {m}             {meter}
+\getvalue{\v!eenheid} [pMeter] {\Pico  \Meter} {picometer}
+\getvalue{\v!eenheid} [nMeter] {\Nano  \Meter} {nanometer}
+\getvalue{\v!eenheid} [uMeter] {\Micro \Meter} {micrometer}
+\getvalue{\v!eenheid} [mMeter] {\Milli \Meter} {millimeter}
+\getvalue{\v!eenheid} [cMeter] {\Centi \Meter} {centimeter}
+\getvalue{\v!eenheid} [dMeter] {\Deci  \Meter} {decimeter}
+\getvalue{\v!eenheid} [hMeter] {\Hecto \Meter} {hectometer}
+\getvalue{\v!eenheid} [kMeter] {\Kilo  \Meter} {kilometer}
 
 %D After some discussion on the \CONTEXT\ mailing list in
 %D february 2002 it was decided to go from L to l for liters
 %D (Karel Wesselings alternative: \mathematics{\ell}).
 
-\getvalue{\v!unit} [Liter]  {l}             {liter}
-\getvalue{\v!unit} [mLiter] {\Milli \Liter} {milliliter}
-\getvalue{\v!unit} [cLiter] {\Centi \Liter} {centiliter}
-\getvalue{\v!unit} [dLiter] {\Deci  \Liter} {deciliter}
+\getvalue{\v!eenheid} [Liter]  {l}             {liter}
+\getvalue{\v!eenheid} [mLiter] {\Milli \Liter} {milliliter}
+\getvalue{\v!eenheid} [cLiter] {\Centi \Liter} {centiliter}
+\getvalue{\v!eenheid} [dLiter] {\Deci  \Liter} {deciliter}
 
 %D Next we define time related units (\type {\ifSI} still dutch only).
 
-\getvalue{\v!unit} [Sec]   {s}                       {\labeltext{u:sec}}
-\getvalue{\v!unit} [fSec]  {\Femto \Sec}             {\labeltext{u:fsec}}
-\getvalue{\v!unit} [pSec]  {\Pico \Sec}              {\labeltext{u:psec}}
-\getvalue{\v!unit} [nSec]  {\Nano \Sec}              {\labeltext{u:nsec}}
-\getvalue{\v!unit} [uSec]  {\Micro \Sec}             {\labeltext{u:usec}}
-\getvalue{\v!unit} [mSec]  {\Milli \Sec}             {\labeltext{u:msec}}
-\getvalue{\v!unit} [Year]  {\ifSIunits a \else j\fi} {\labeltext{u:year}}
-\getvalue{\v!unit} [Month] {m}                       {\labeltext{u:month}}
-\getvalue{\v!unit} [Week]  {w}                       {\labeltext{u:week}}
-\getvalue{\v!unit} [Day]   {d}                       {\labeltext{u:day}}
-\getvalue{\v!unit} [Hour]  {\ifSIunits h \else u\fi} {\labeltext{u:hour}}
-\getvalue{\v!unit} [Min]   {min}                     {\labeltext{u:min}}
+\getvalue{\v!eenheid} [Sec]   {s}                       {\labeltext{u:sec}}
+\getvalue{\v!eenheid} [fSec]  {\Femto \Sec}             {\labeltext{u:fsec}}
+\getvalue{\v!eenheid} [pSec]  {\Pico \Sec}              {\labeltext{u:psec}}
+\getvalue{\v!eenheid} [nSec]  {\Nano \Sec}              {\labeltext{u:nsec}}
+\getvalue{\v!eenheid} [uSec]  {\Micro \Sec}             {\labeltext{u:usec}}
+\getvalue{\v!eenheid} [mSec]  {\Milli \Sec}             {\labeltext{u:msec}}
+\getvalue{\v!eenheid} [Year]  {\ifSIunits a \else j\fi} {\labeltext{u:year}}
+\getvalue{\v!eenheid} [Month] {m}                       {\labeltext{u:month}}
+\getvalue{\v!eenheid} [Week]  {w}                       {\labeltext{u:week}}
+\getvalue{\v!eenheid} [Day]   {d}                       {\labeltext{u:day}}
+\getvalue{\v!eenheid} [Hour]  {\ifSIunits h \else u\fi} {\labeltext{u:hour}}
+\getvalue{\v!eenheid} [Min]   {min}                     {\labeltext{u:min}}
 
 \setuplabeltext
   [\s!nl]
@@ -485,8 +485,8 @@
 
 %D Then we define some angles.
 
-\getvalue{\v!unit} [Rad] {rad}                    {\labeltext{u:rad}}
-\getvalue{\v!unit} [Deg] {{\mathematics{^\circ}}} {\labeltext{u:deg}}
+\getvalue{\v!eenheid} [Rad] {rad}                    {\labeltext{u:rad}}
+\getvalue{\v!eenheid} [Deg] {{\mathematics{^\circ}}} {\labeltext{u:deg}}
 
 \setuplabeltext
   [\s!nl]
@@ -510,15 +510,15 @@
 
 %D Rotation and frequency related units are defined by:
 
-\getvalue{\v!unit} [Hertz]     {Hz}            {Hertz}
-\getvalue{\v!unit} [kHertz]    {\Kilo  \Hertz} {kilo Hertz}
-\getvalue{\v!unit} [MHertz]    {\Mega  \Hertz} {mega Hertz}
-\getvalue{\v!unit} [GHertz]    {\Giga  \Hertz} {giga Hertz}
-\getvalue{\v!unit} [THertz]    {\Tera  \Hertz} {tera Hertz}
-\getvalue{\v!unit} [mHertz]    {\Milli \Hertz} {milli Hertz}
+\getvalue{\v!eenheid} [Hertz]     {Hz}            {Hertz}
+\getvalue{\v!eenheid} [kHertz]    {\Kilo  \Hertz} {kilo Hertz}
+\getvalue{\v!eenheid} [MHertz]    {\Mega  \Hertz} {mega Hertz}
+\getvalue{\v!eenheid} [GHertz]    {\Giga  \Hertz} {giga Hertz}
+\getvalue{\v!eenheid} [THertz]    {\Tera  \Hertz} {tera Hertz}
+\getvalue{\v!eenheid} [mHertz]    {\Milli \Hertz} {milli Hertz}
 
-\getvalue{\v!unit} [RevPerSec] {RPS} {\labeltext{u:rps}}
-\getvalue{\v!unit} [RevPerMin] {RPM} {\labeltext{u:rpm}}
+\getvalue{\v!eenheid} [RevPerSec] {RPS} {\labeltext{u:rps}}
+\getvalue{\v!eenheid} [RevPerMin] {RPM} {\labeltext{u:rpm}}
 
 \setuplabeltext
   [\s!nl]
@@ -542,18 +542,18 @@
 
 %D Mass and force:
 
-\getvalue{\v!unit} [Gram]    {g}              {gram}
-\getvalue{\v!unit} [uGram]   {\Micro \Gram}   {microgram}
-\getvalue{\v!unit} [mGram]   {\Milli \Gram}   {milligram}
-\getvalue{\v!unit} [kGram]   {\Kilo  \Gram}   {kilogram}
-\getvalue{\v!unit} [Atom]    {u}              {\labeltext{u:u}}
+\getvalue{\v!eenheid} [Gram]    {g}              {gram}
+\getvalue{\v!eenheid} [uGram]   {\Micro \Gram}   {microgram}
+\getvalue{\v!eenheid} [mGram]   {\Milli \Gram}   {milligram}
+\getvalue{\v!eenheid} [kGram]   {\Kilo  \Gram}   {kilogram}
+\getvalue{\v!eenheid} [Atom]    {u}              {\labeltext{u:u}}
 
-\getvalue{\v!unit} [Newton]  {N}              {Newton}
-\getvalue{\v!unit} [kNewton] {\Kilo \Newton}  {kilo Newton}
+\getvalue{\v!eenheid} [Newton]  {N}              {Newton}
+\getvalue{\v!eenheid} [kNewton] {\Kilo \Newton}  {kilo Newton}
 
-\getvalue{\v!unit} [Pascal]  {Pa}             {Pascal}
-\getvalue{\v!unit} [mPascal] {\Milli \Pascal} {milli Pascal}
-\getvalue{\v!unit} [kPascal] {\Kilo  \Pascal} {kilo Pascal}
+\getvalue{\v!eenheid} [Pascal]  {Pa}             {Pascal}
+\getvalue{\v!eenheid} [mPascal] {\Milli \Pascal} {milli Pascal}
+\getvalue{\v!eenheid} [kPascal] {\Kilo  \Pascal} {kilo Pascal}
 
 \setuplabeltext
   [\s!nl]
@@ -573,65 +573,65 @@
 
 %D Energy units comes in two alternatives:
 
-\getvalue{\v!unit} [Joule]  {J}             {Joule}
-\getvalue{\v!unit} [mJoule] {\Milli \Joule} {milli Joule}
-\getvalue{\v!unit} [kJoule] {\Kilo  \Joule} {kilo Joule}
-\getvalue{\v!unit} [MJoule] {\Mega  \Joule} {mega Joule}
-\getvalue{\v!unit} [GJoule] {\Giga  \Joule} {giga Joule}
+\getvalue{\v!eenheid} [Joule]  {J}             {Joule}
+\getvalue{\v!eenheid} [mJoule] {\Milli \Joule} {milli Joule}
+\getvalue{\v!eenheid} [kJoule] {\Kilo  \Joule} {kilo Joule}
+\getvalue{\v!eenheid} [MJoule] {\Mega  \Joule} {mega Joule}
+\getvalue{\v!eenheid} [GJoule] {\Giga  \Joule} {giga Joule}
 
-\getvalue{\v!unit} [Watt]  {W}              {Watt}
-\getvalue{\v!unit} [mWatt] {\Milli \Watt}   {milli Watt}
-\getvalue{\v!unit} [kWatt] {\Kilo  \Watt}   {kilo Watt}
-\getvalue{\v!unit} [MWatt] {\Mega  \Watt}   {mega Watt}
-\getvalue{\v!unit} [GWatt] {\Giga  \Watt}   {giga Watt}
-\getvalue{\v!unit} [TWatt] {\Tera  \Watt}   {tera Watt}
+\getvalue{\v!eenheid} [Watt]  {W}              {Watt}
+\getvalue{\v!eenheid} [mWatt] {\Milli \Watt}   {milli Watt}
+\getvalue{\v!eenheid} [kWatt] {\Kilo  \Watt}   {kilo Watt}
+\getvalue{\v!eenheid} [MWatt] {\Mega  \Watt}   {mega Watt}
+\getvalue{\v!eenheid} [GWatt] {\Giga  \Watt}   {giga Watt}
+\getvalue{\v!eenheid} [TWatt] {\Tera  \Watt}   {tera Watt}
 
 %D Although Celsius is no longer permitted, we define it by
 %D saying:
 
-\getvalue{\v!unit} [Celsius]    {C} {Celsius}
-\getvalue{\v!unit} [Kelvin]     {K} {Kelvin}
-\getvalue{\v!unit} [Fahrenheit] {F} {Fahrenheit}
+\getvalue{\v!eenheid} [Celsius]    {C} {Celsius}
+\getvalue{\v!eenheid} [Kelvin]     {K} {Kelvin}
+\getvalue{\v!eenheid} [Fahrenheit] {F} {Fahrenheit}
 
 %D Some chemic related units are:
 
-\getvalue{\v!unit} [Mol]         {mol}                {mol}
-\getvalue{\v!unit} [mMol]        {\Milli \Mol}        {millimol}
-\getvalue{\v!unit} [kMol]        {\Kilo  \Mol}        {kilomol}
-\getvalue{\v!unit} [Molair]      {M}                  {molair (\Mol \Per \Liter)}
-\getvalue{\v!unit} [Equivalent]  {eq}                 {equivalent}
-\getvalue{\v!unit} [mEquivalent] {\Milli \Equivalent} {milli equivalent}
+\getvalue{\v!eenheid} [Mol]         {mol}                {mol}
+\getvalue{\v!eenheid} [mMol]        {\Milli \Mol}        {millimol}
+\getvalue{\v!eenheid} [kMol]        {\Kilo  \Mol}        {kilomol}
+\getvalue{\v!eenheid} [Molair]      {M}                  {molair (\Mol \Per \Liter)}
+\getvalue{\v!eenheid} [Equivalent]  {eq}                 {equivalent}
+\getvalue{\v!eenheid} [mEquivalent] {\Milli \Equivalent} {milli equivalent}
 
 %D There are quite a lot units related to electricity and
 %D magnetism:
 
-\getvalue{\v!unit} [Farad]   {F}             {Farad}
-\getvalue{\v!unit} [pFarad]  {\Pico  \Farad} {pico Farad}
-\getvalue{\v!unit} [nFarad]  {\Nano  \Farad} {nano Farad}
-\getvalue{\v!unit} [uFarad]  {\Micro \Farad} {micro Farad}
-\getvalue{\v!unit} [mFarad]  {\Milli \Farad} {milli Farad}
+\getvalue{\v!eenheid} [Farad]   {F}             {Farad}
+\getvalue{\v!eenheid} [pFarad]  {\Pico  \Farad} {pico Farad}
+\getvalue{\v!eenheid} [nFarad]  {\Nano  \Farad} {nano Farad}
+\getvalue{\v!eenheid} [uFarad]  {\Micro \Farad} {micro Farad}
+\getvalue{\v!eenheid} [mFarad]  {\Milli \Farad} {milli Farad}
 
-\getvalue{\v!unit} [Ohm]     {\Omega}        {Ohm}
-\getvalue{\v!unit} [kOhm]    {\Kilo \Ohm}    {kilo Ohm}
+\getvalue{\v!eenheid} [Ohm]     {\Omega}        {Ohm}
+\getvalue{\v!eenheid} [kOhm]    {\Kilo \Ohm}    {kilo Ohm}
 
-\getvalue{\v!unit} [Siemens] {S}              {Siemens}
+\getvalue{\v!eenheid} [Siemens] {S}              {Siemens}
 
-\getvalue{\v!unit} [Ampere]  {A}              {Amp\`ere}
-\getvalue{\v!unit} [mAmpere] {\Milli \Ampere} {milli Amp\`ere}
+\getvalue{\v!eenheid} [Ampere]  {A}              {Amp\`ere}
+\getvalue{\v!eenheid} [mAmpere] {\Milli \Ampere} {milli Amp\`ere}
 
-\getvalue{\v!unit} [Coulomb] {C}              {Coulomb}
+\getvalue{\v!eenheid} [Coulomb] {C}              {Coulomb}
 
-\getvalue{\v!unit} [Volt]    {V}              {Volt}
-\getvalue{\v!unit} [mVolt]   {\Milli \Volt}   {milli Volt}
-\getvalue{\v!unit} [kVolt]   {\Kilo  \Volt}   {kilo Volt}
-\getvalue{\v!unit} [eVolt]   {eV}             {electronvolt}
-\getvalue{\v!unit} [keVolt]  {\Kilo \eVolt}   {kilo electronvolt}
-\getvalue{\v!unit} [MeVolt]  {\Mega \eVolt}   {mega electronvolt}
+\getvalue{\v!eenheid} [Volt]    {V}              {Volt}
+\getvalue{\v!eenheid} [mVolt]   {\Milli \Volt}   {milli Volt}
+\getvalue{\v!eenheid} [kVolt]   {\Kilo  \Volt}   {kilo Volt}
+\getvalue{\v!eenheid} [eVolt]   {eV}             {electronvolt}
+\getvalue{\v!eenheid} [keVolt]  {\Kilo \eVolt}   {kilo electronvolt}
+\getvalue{\v!eenheid} [MeVolt]  {\Mega \eVolt}   {mega electronvolt}
 
-\getvalue{\v!unit} [Tesla]   {T}              {Tesla}
+\getvalue{\v!eenheid} [Tesla]   {T}              {Tesla}
 
-\getvalue{\v!unit} [VoltAC]  {V_{\xbox{ac}}}  {\labeltext{u:vac}}
-\getvalue{\v!unit} [VoltDC]  {V_{\xbox{dc}}}  {\labeltext{u:vdc}}
+\getvalue{\v!eenheid} [VoltAC]  {V_{\xbox{ac}}}  {\labeltext{u:vac}}
+\getvalue{\v!eenheid} [VoltDC]  {V_{\xbox{dc}}}  {\labeltext{u:vdc}}
 
 \setuplabeltext
   [\s!nl]
@@ -655,61 +655,61 @@
 
 %D Computer memory is specified in Bytes:
 
-\getvalue{\v!unit} [Baud]  {Baud}        {Baud (Bit/s)}
-\getvalue{\v!unit} [Bit]   {Bit}         {Bit}
+\getvalue{\v!eenheid} [Baud]  {Baud}        {Baud (Bit/s)}
+\getvalue{\v!eenheid} [Bit]   {Bit}         {Bit}
 
-\getvalue{\v!unit} [Byte]  {Byte}        {Byte}
-\getvalue{\v!unit} [kByte] {\Kilo \Byte} {kilo Byte}
-\getvalue{\v!unit} [MByte] {\Mega \Byte} {mega Byte}
-\getvalue{\v!unit} [GByte] {\Giga \Byte} {giga Byte}
-\getvalue{\v!unit} [TByte] {\Tera \Byte} {tera Byte}
+\getvalue{\v!eenheid} [Byte]  {Byte}        {Byte}
+\getvalue{\v!eenheid} [kByte] {\Kilo \Byte} {kilo Byte}
+\getvalue{\v!eenheid} [MByte] {\Mega \Byte} {mega Byte}
+\getvalue{\v!eenheid} [GByte] {\Giga \Byte} {giga Byte}
+\getvalue{\v!eenheid} [TByte] {\Tera \Byte} {tera Byte}
 
 %D Some radiation related units:
 
-\getvalue{\v!unit} [Bequerel]  {Bq}              {Bequerel}
-\getvalue{\v!unit} [MBequerel] {\Mega \Bequerel} {Bequerel}
-\getvalue{\v!unit} [Sievert]   {Sv}              {Sievert}
-\getvalue{\v!unit} [mSievert]  {\Milli \Sievert} {milli Sievert}
+\getvalue{\v!eenheid} [Bequerel]  {Bq}              {Bequerel}
+\getvalue{\v!eenheid} [MBequerel] {\Mega \Bequerel} {Bequerel}
+\getvalue{\v!eenheid} [Sievert]   {Sv}              {Sievert}
+\getvalue{\v!eenheid} [mSievert]  {\Milli \Sievert} {milli Sievert}
 
 %D Light:
 
-\getvalue{\v!unit} [Candela] {cd} {Candela}
+\getvalue{\v!eenheid} [Candela] {cd} {Candela}
 
 %D and some sound ones:
 
-\getvalue{\v!unit} [Bell]  {B}           {Bell}
-\getvalue{\v!unit} [dBell] {\Deci \Bell} {decibel}
+\getvalue{\v!eenheid} [Bell]  {B}           {Bell}
+\getvalue{\v!eenheid} [dBell] {\Deci \Bell} {decibel}
 
 %D We also define some non||regular, sometimes even forbidden,
 %D units:
 
-\getvalue{\v!unit} [At]    {at}         {\labeltext{u:at}}
-\getvalue{\v!unit} [Atm]   {atm}        {\labeltext{u:atm}}
-\getvalue{\v!unit} [Bar]   {bar}        {bar (100 \Kilo \Pascal)}
-\getvalue{\v!unit} [EVolt] {eV}         {electronvolt}
-\getvalue{\v!unit} [Foot]  {ft}         {\labeltext{u:ft}}
-\getvalue{\v!unit} [Inch]  {inch}       {inch}
-\getvalue{\v!unit} [Cal]   {cal}        {\labeltext{u:cal}}
-\getvalue{\v!unit} [Force] {f}          {\labeltext{u:f}}
-\getvalue{\v!unit} [kCal]  {\Kilo \Cal} {\labeltext{u:kcal}}
-\getvalue{\v!unit} [Lux]   {lux}        {lux}
+\getvalue{\v!eenheid} [At]    {at}         {\labeltext{u:at}}
+\getvalue{\v!eenheid} [Atm]   {atm}        {\labeltext{u:atm}}
+\getvalue{\v!eenheid} [Bar]   {bar}        {bar (100 \Kilo \Pascal)}
+\getvalue{\v!eenheid} [EVolt] {eV}         {electronvolt}
+\getvalue{\v!eenheid} [Foot]  {ft}         {\labeltext{u:ft}}
+\getvalue{\v!eenheid} [Inch]  {inch}       {inch}
+\getvalue{\v!eenheid} [Cal]   {cal}        {\labeltext{u:cal}}
+\getvalue{\v!eenheid} [Force] {f}          {\labeltext{u:f}}
+\getvalue{\v!eenheid} [kCal]  {\Kilo \Cal} {\labeltext{u:kcal}}
+\getvalue{\v!eenheid} [Lux]   {lux}        {lux}
 
 
 \def\xPercent {\dimensionaddfix{\percent }}
 \def\xPromille{\dimensionaddfix{\promille}}
 
-\getvalue{\v!unit} [Percent]  {\xPercent } {percent}
-\getvalue{\v!unit} [Permille] {\xPromille} {promille}
-\getvalue{\v!unit} [Promille] {\xPromille} {promille}
+\getvalue{\v!eenheid} [Percent]  {\xPercent } {percent}
+\getvalue{\v!eenheid} [Permille] {\xPromille} {promille}
+\getvalue{\v!eenheid} [Promille] {\xPromille} {promille}
 
 %D Some more, thanks to Tobias:
 
-\getvalue{\v!unit} [Gray]     {Gr}  {Gray}
-\getvalue{\v!unit} [Weber]    {Wb}  {Weber}
-\getvalue{\v!unit} [Henry]    {H}   {Henry}
-\getvalue{\v!unit} [Sterant]  {sr}  {Sterant}
-\getvalue{\v!unit} [Angstrom] {\hbox{\Aring}} {\Aring ngstr\"om}
-\getvalue{\v!unit} [Gauss]    {G}   {Gauss}
+\getvalue{\v!eenheid} [Gray]     {Gr}  {Gray}
+\getvalue{\v!eenheid} [Weber]    {Wb}  {Weber}
+\getvalue{\v!eenheid} [Henry]    {H}   {Henry}
+\getvalue{\v!eenheid} [Sterant]  {sr}  {Sterant}
+\getvalue{\v!eenheid} [Angstrom] {\hbox{\Aring}} {\Aring ngstr\"om}
+\getvalue{\v!eenheid} [Gauss]    {G}   {Gauss}
 
 \setuplabeltext
   [\s!nl]
@@ -771,20 +771,20 @@
 
 \startinterface dutch
 
-  \getvalue{\v!unit} [PaardenKracht] {pk}                 {paardenkracht}
-  \getvalue{\v!unit} [Duits]         {D}                  {duits}
-  \getvalue{\v!unit} [Kwik]          {Hg}                 {kwikkolom}
-  \getvalue{\v!unit} [Hectare]       {ha}                 {hectare}
-  \getvalue{\v!unit} [kGramForce]    {\Kilo \Gram \Force} {kilogramforce}
-  \getvalue{\v!unit} [kWattUur]      {\Kilo \Watt \Uur}   {kilowattuur}
-  \getvalue{\v!unit} [MeterKwik]     {\Meter \Kwik}       {meter kwikkolom}
-  \getvalue{\v!unit} [Waterkolom]    {WK}                 {waterkolom}
-  \getvalue{\v!unit} [MeterWater]    {\Meter \Waterkolom} {meter waterkolom}
-  \getvalue{\v!unit} [DrogeStof]     {ds}                 {droge stof}
-  \getvalue{\v!unit} [Normaal]       {N}                  {normaal}
+  \getvalue{\v!eenheid} [PaardenKracht] {pk}                 {paardenkracht}
+  \getvalue{\v!eenheid} [Duits]         {D}                  {duits}
+  \getvalue{\v!eenheid} [Kwik]          {Hg}                 {kwikkolom}
+  \getvalue{\v!eenheid} [Hectare]       {ha}                 {hectare}
+  \getvalue{\v!eenheid} [kGramForce]    {\Kilo \Gram \Force} {kilogramforce}
+  \getvalue{\v!eenheid} [kWattUur]      {\Kilo \Watt \Uur}   {kilowattuur}
+  \getvalue{\v!eenheid} [MeterKwik]     {\Meter \Kwik}       {meter kwikkolom}
+  \getvalue{\v!eenheid} [Waterkolom]    {WK}                 {waterkolom}
+  \getvalue{\v!eenheid} [MeterWater]    {\Meter \Waterkolom} {meter waterkolom}
+  \getvalue{\v!eenheid} [DrogeStof]     {ds}                 {droge stof}
+  \getvalue{\v!eenheid} [Normaal]       {N}                  {normaal}
 
-  \getvalue{\v!unit} [Ton]           {t}                  {ton}
-  \getvalue{\v!unit} [kTon]          {\Kilo \Ton}         {kiloton}
+  \getvalue{\v!eenheid} [Ton]           {t}                  {ton}
+  \getvalue{\v!eenheid} [kTon]          {\Kilo \Ton}         {kiloton}
 
   \let \OmwPerSec    \RevPerSec
   \let \OmwPerMin    \RevPerMin
@@ -807,7 +807,7 @@
 \let \Kubic  \Cubic
 \let \IKubic \ICubic
 
-%D Option:
+%D Option: 
 
 % \def\Micro{\dimensionprefix{\iftextdimensions\mathematics\mu  \else\mu  \fi}}
 % \def\Times{\dimensionnopfix{\iftextdimensions\mathematics\cdot\else\cdot\fi}}

@@ -1,3 +1,5 @@
+% output=pdftex modes=packed
+
 %D \module
 %D   [      file=x-xml-01,
 %D        version=2001.10.10,
@@ -49,23 +51,39 @@
 
 \unprotect
 
+% \setuplayout
+%   [backspace=0cm,
+%    topspace=0cm,
+%   %width=40em,
+%    width=middle,
+%    height=middle,
+%    header=0cm,
+%    footer=0cm]
+
 \setuplayout
-  [\c!backspace=0cm,
-   \c!topspace=0cm,
-  %\c!width=40em,
-   \c!width=\v!middle,
-   \c!height=\v!middle,
-   \c!header=0cm,
-   \c!footer=0cm]
+  [\c!rugwit=0cm,
+   \c!kopwit=0cm,
+  %\c!breedte=40em,
+   \c!breedte=\v!midden,
+   \c!hoogte=\v!midden,
+   \c!hoofd=0cm,
+   \c!voet=0cm]
+
+% \setupbodyfont  [tt,10pt]
+% \setuptolerance [verytolerant]
+% \setupalign     [broad,right]
+% \setupXMLfile   [level=2]
+
 
 \setupbodyfont  [tt,10pt]
-\setuptolerance [\v!verytolerant]
-\setupalign     [\v!broad,\v!right]
-\setupXMLfile   [\c!level=2]
+\setuptolerance [\v!zeersoepel]
+\setupalign     [\v!ruim,\v!rechts]
+\setupXMLfile   [\c!niveau=2]
 
 \startmode[wide]
 
-  \setuplayout [\c!width=250cm]
+% \setuplayout [width=250cm]
+  \setuplayout [\c!breedte=250cm]
 
 \stopmode
 

@@ -20,8 +20,8 @@
 %D drivers are supported, as well as two mechanisms for
 %D interactive texts.
 %D
-%D \startlinecorrection
-%D \starttable[|l|l|l|l|l|]
+%D \startregelcorrectie
+%D \starttabel[|l|l|l|l|l|]
 %D \HL
 %D \NC \bf file             \NC
 %D     \bf name             \NC
@@ -69,8 +69,8 @@
 %D     HTML V 2.0           \NC
 %D     (dvips)              \NC\LR
 %D \HL
-%D \stoptable
-%D \stoplinecorrection
+%D \stoptabel
+%D \stopregelcorrectie
 
 %D \macros
 %D   {dostartgraymode,dostopgraymode,
@@ -78,10 +78,10 @@
 %D
 %D Switching to and from color can be done in two ways:
 %D
-%D \startitemize[packed,n]
-%D \item  insert driver specific commands
-%D \item  pass instructions to the output device
-%D \stopitemize
+%D \startopsomming[opelkaar,n]
+%D \som  insert driver specific commands
+%D \som  pass instructions to the output device
+%D \stopopsomming
 %D
 %D The first approach is more general and lays the
 %D responsibility at the driver side. Probably due to the fact
@@ -91,10 +91,10 @@
 %D package handles colored text that crosses the page boundary.
 %D Again, there are two approaches.
 %D
-%D \startitemize[packed,n]
-%D \item  let \TEX\ do the job
-%D \item  let the driver handle things
-%D \stopitemize
+%D \startopsomming[opelkaar,n]
+%D \som  let \TEX\ do the job
+%D \som  let the driver handle things
+%D \stopopsomming
 %D
 %D The first approach is as driver independant as possible and
 %D can easily be accomplished by using \TEX's mark mechanism.
@@ -105,9 +105,9 @@
 %D from~0 to~1. When drivers use values in the range 0..255,
 %D this value has to be adapted in the translation process.
 %D Technically it's possible to get a grayscale from combining
-%D colors. In the \cap{RGB} color system, a color with Red,
+%D colors. In the \kap{RGB} color system, a color with Red,
 %D Green and Blue components of 0.80 show the same gray as a
-%D Gray Scale specified 0.80. The \cap{CMYK} color system
+%D Gray Scale specified 0.80. The \kap{CMYK} color system
 %D supports a Black component apart from Cyan, Magenta and
 %D Yellow.
 %D
@@ -122,7 +122,7 @@
 %D in black and white, still can be distinguished. This
 %D approach enables us to serve both printed and electronic
 %D versions, using colored text and illustrations. More on the
-%D fundamentals of this topic can be found in the \cap{MAPS} of
+%D fundamentals of this topic can be found in the \kap{MAPS} of
 %D the Dutch User Group, 14 (95.1).
 %D
 %D To satisfy all those needs, we define four specials which
@@ -134,12 +134,12 @@
 %D We start with the installation of color and grayscale
 %D specials. The values are in the range 0..1 (e.g. 0.25).
 %D
-%D \starttyping
+%D \starttypen
 %D \dostartgraymode      {gray} ... \dostopgraymode
 %D \dostartrgbcolormode  {red} {green} {blue} ... \dostopcolormode
 %D \dostartcmykcolormode {cyan} {magenta} {yellow} {black} ... \dostopcolormode
 %D \dostartgraycolormode {gray} ... \dostopcolormode
-%D \stoptyping
+%D \stoptypen
 %D
 %D Because we can expect conflicts between drivers, we
 %D implement them as category \type{or}. In previous versions
@@ -158,15 +158,9 @@
 
 \installspecial [\dostartspotcolormode]    [or] [2]
 
-\installspecial [\doregisterrgbspotcolor]  [or] [7]
-\installspecial [\doregistercmykspotcolor] [or] [8]
-\installspecial [\doregistergrayspotcolor] [or] [5]
-
-\installspecial [\doregisterrgbindexcolor]  [or] [7]
-\installspecial [\doregistercmykindexcolor] [or] [8]
-\installspecial [\doregistergrayindexcolor] [or] [5]
-
-\installspecial [\doregisterspotcolorname] [or] [2]
+\installspecial [\doregistercmykspotcolor] [or] [5]
+\installspecial [\doregisterrgbspotcolor]  [or] [4]
+\installspecial [\doregistergrayspotcolor] [or] [2]
 
 \installspecial [\dostartnonecolormode]    [or] [0]
 \installspecial [\doregisternonecolor]     [or] [0]
@@ -175,7 +169,7 @@
 %D simply call the start one with zero arguments.
 
 %D \macros
-%D   {doinsertfile,doinsertMPfile}
+%D   {doinsertfile}
 %D
 %D Probably the most problematic special is the following
 %D one. Because we want to be able to support different
@@ -188,11 +182,11 @@
 %D specials for different formats sometimes are more clear, we
 %D decided to combine them all in one:
 %D
-%D \starttyping
+%D \starttypen
 %D \doinsertfile {type,method} {file,label}
 %D               {xscale} {yscale} {x} {y} {w} {h}
 %D               {options}
-%D \stoptyping
+%D \stoptypen
 %D
 %D The scale is given percents, the other values are base
 %D points.
@@ -204,8 +198,7 @@
 %D When option 1 is passed, the viewers is asked to present a
 %D preview, like the first frame of a movie.
 
-\installspecial [\doinsertfile]   [or] [9]
-\installspecial [\doinsertMPfile] [or] [1] % speed up
+\installspecial [\doinsertfile] [or] [9]
 
 %D No start||stop construction is needed here, because there in
 %D no further interference of \TEX. All dimensions are output
@@ -218,9 +211,9 @@
 %D Sounds are (for the moment) just files with
 %D associated options.
 %D
-%D \starttyping
+%D \starttypen
 %D \doinsertsoundtrack {file} {label} {options}
-%D \stoptyping
+%D \stoptypen
 
 \installspecial [\doinsertsoundtrack] [or] [3]
 
@@ -231,9 +224,9 @@
 %D and for special applications, one may want to have access
 %D to the total number of pages.
 %D
-%D \starttyping
+%D \starttypen
 %D \dogetnofinsertpages{filename}
-%D \stoptyping
+%D \stoptypen
 %D
 %D The number is also available after the insert is placed,
 %D since inclusion may take place immediate when an insert is
@@ -249,9 +242,9 @@
 %D
 %D We support rotation with the special:
 %D
-%D \starttyping
+%D \starttypen
 %D \dostartrotation {angle} ... \dostoprotation
-%D \stoptyping
+%D \stoptypen
 %D
 %D For the moment these specials are installed as
 %D category \type{or}.
@@ -265,9 +258,9 @@
 %D
 %D Scaling is also supported:
 %D
-%D \starttyping
+%D \starttypen
 %D \dostartscaling {x} {y} ... \dostopscaling
-%D \stoptyping
+%D \stoptypen
 %D
 %D Like the previous one, these specials are of category
 %D \type{or}.
@@ -281,9 +274,9 @@
 %D
 %D And indeed, mirroring is there too:
 %D
-%D \starttyping
+%D \starttypen
 %D \dostartmirroring {x} {y} ... \dostopmirroring
-%D \stoptyping
+%D \stoptypen
 %D
 %D Again these specials are installed as category \type{or}.
 
@@ -332,9 +325,9 @@
 %D When we look at the implementation, this is a complicated
 %D one. There are seven arguments.
 %D
-%D \starttyping
+%D \starttypen
 %D \doovalbox {w} {h} {d} {linewidth} {radius} {stroke} {fill}
-%D \stoptyping
+%D \stoptypen
 %D
 %D This command has to return a \type{\vbox} which can be used
 %D to lay over another one (with text). The radius is in
@@ -349,7 +342,7 @@
 %D Clipping is implemented in such a way that an arbitrary
 %D can be fed.
 %D
-%D \starttyping
+%D \starttypen
 %D \dostartclipping {pathname}{width} {height}
 %D \dostopclipping
 %D \stoptyping
@@ -364,9 +357,9 @@
 %D
 %D We can declare some characteristics of the document with
 %D
-%D \starttyping
+%D \starttypen
 %D \dosetupidentity {title} {subject} {author} {creator} {date} {keys}
-%D \stoptyping
+%D \stoptypen
 %D
 %D All data is in string format.
 
@@ -378,9 +371,9 @@
 %D This special can be used to tell the driver what page size
 %D to use. The special takes three arguments.
 %D
-%D \starttyping
+%D \starttypen
 %D \dosetuppaper {type} {width} {height}
-%D \stoptyping
+%D \stoptypen
 %D
 %D The type is one of the common identifiers, like A4, A5 or
 %D B2.
@@ -393,9 +386,9 @@
 %D Some drivers enable the user to specify the paper type
 %D used and/or page dimensions to be taken into account.
 %D
-%D \starttyping
+%D \starttypen
 %D \dosetupprinter {type} {hoffset} {voffset} {width} {height}
-%D \stoptyping
+%D \stoptypen
 %D
 %D The first argument is one of \type{letter}, \type{legal},
 %D \type{A4}, \type{A5} etc. The dimensions are in
@@ -416,17 +409,17 @@
 %D
 %D The first ones can be used to set up the interaction.
 %D
-%D \starttyping
+%D \starttypen
 %D \dosetupinteraction
-%D \stoptyping
+%D \stoptypen
 %D
 %D Normally this command does nothing but giving a message
 %D that some scheme is supported.
 %D
-%D \starttyping
+%D \starttypen
 %D \dosetupstartaction
 %D \dosetupstopaction
-%D \stoptyping
+%D \stoptypen
 %D
 %D These two setup the actions to be executed when the document
 %D is opened and closed.
@@ -434,17 +427,17 @@
 %D The next commands sets up the page and screen. They are
 %D kind of related.
 %D
-%D \starttyping
+%D \starttypen
 %D \dosetuppage   {hoffset} {voffset} {width} {height} {options}
 %D \dosetupscreen {hoffset} {voffset} {width} {height} {options}
-%D \stoptyping
+%D \stoptypen
 %D
 %D The first four arguments are in points. Option~1 results in a
 %D full screen launch.
 %D
-%D \starttyping
+%D \starttypen
 %D \dosetuppageview {keyword}
-%D \stoptyping
+%D \stoptypen
 %D
 %D For the moment we only support \type{fit}.
 
@@ -475,10 +468,10 @@
 %D for instance have no meaning on an non||interactive medium.
 %D These elements are hidden by means of:
 %D
-%D \starttyping
+%D \starttypen
 %D \dostarthide
 %D \dostophide
-%D \stoptyping
+%D \stoptypen
 
 \installspecial [\dostarthide] [or] [0]
 \installspecial [\dostophide]  [or] [0]
@@ -490,10 +483,10 @@
 %D When we want to support hypertext buttons, again we have
 %D to deal with two concepts.
 %D
-%D \startitemize[packed,n]
-%D \item let \TEX\ highlight the text
-%D \item let the driver show us where to click
-%D \stopitemize
+%D \startopsomming[opelkaar,n]
+%D \som let \TEX\ highlight the text
+%D \som let the driver show us where to click
+%D \stopopsomming
 %D
 %D The first approach is the most secure one. It gives us
 %D complete control over the visual appearance of hyper
@@ -530,17 +523,17 @@
 %D destination, we had to provide both labels (\DVIWINDO) and
 %D pagenumbers (\PDF). Some drivers use start stop pairs.
 %D
-%D \starttyping
+%D \starttypen
 %D \dostartgotolocation {w} {h} {url} {file} {label} {page}
 %D \dostartgotorealpage {w} {h} {url} {file}         {page}
-%D \stoptyping
+%D \stoptypen
 %D
 %D Their counterparts are:
 %D
-%D \starttyping
+%D \starttypen
 %D \dostopgotolocation
 %D \dostopgotorealpage
-%D \stoptyping
+%D \stoptypen
 %D
 %D The internal alternative is used for system||generated
 %D links, the external one for user||generated links. The
@@ -563,9 +556,9 @@
 %D Rather special is the option to include and execute
 %D JavaScript code. This is a typical \PDF\ option.
 %D
-%D \starttyping
+%D \starttypen
 %D \dostartgotoJS {w} {h} {script}
-%D \stoptyping
+%D \stoptypen
 %D
 %D This not so standard \TEX\ feature should be used with
 %D care. Preamble scripts are flushed by
@@ -589,17 +582,17 @@
 %D The opposite commands of \type{\dogotosomething} have only
 %D one argument:
 %D
-%D \starttyping
+%D \starttypen
 %D \dostartthisislocation {label}
 %D \dostartthisisrealpage {page}
-%D \stoptyping
+%D \stoptypen
 %D
 %D These commands are accompanied by:
 %D
-%D \starttyping
+%D \starttypen
 %D \dostopthisislocation
 %D \dostopthisisrealpage
-%D \stoptyping
+%D \stoptypen
 %D
 %D As with all interactive commands's they are installed as
 %D \type{and} category specials.
@@ -627,15 +620,15 @@
 %D much on the viewing engine. Therefore one cannot depend
 %D too much on their support.
 %D
-%D \starttyping
+%D \starttypen
 %D \dostartexecutecommand {w} {h} {command} {options}
-%D \stoptyping
+%D \stoptypen
 %D
 %D At least the next commands are supported (more examples
 %D can be found in \type {spec-fdf.tex}:
 %D
-%D \startlinecorrection\setupalign[middle]\leavevmode
-%D \starttable[|l|l|]
+%D \startregelcorrectie\steluitlijnenin[midden]\leavevmode
+%D \starttabel[|l|l|]
 %D \HL
 %D \NC \bf command  \NC \bf action                  \NC\SR
 %D \HL
@@ -651,8 +644,8 @@
 %D \NC enter        \NC enter viewer                \NC\MR
 %D \NC help         \NC show help on the viewer     \NC\LR
 %D \HL
-%D \stoptable
-%D \stoplinecorrection
+%D \stoptabel
+%D \stopregelcorrectie
 %D
 %D Options are to be passed as a comma separated list of
 %D assignments.
@@ -669,23 +662,21 @@
 %D Reuse of object can reduce the output filesize
 %D considerably. Reusable objects are implemented with:
 %D
-%D \starttyping
+%D \starttypen
 %D \dostartobject{class}{name}{width}{height}{depth}
 %D some typeset material
 %D \dostopobject
-%D \stoptyping
+%D \stoptypen
 %D
-%D \starttyping
+%D \starttypen
 %D \doinsertobject{class}{name}
-%D \stoptyping
+%D \stoptypen
 %D
-%D The savings can be huge in interactive texts. The next macro needs
-%D to be called after a graphic is inserted (in order to clean up
-%D global references).
+%D The savings can be huge in interactive texts.
 %D
-%D \starttyping
+%D \starttypen
 %D \doresetobjects
-%D \stoptyping
+%D \stoptypen
 
 \installspecial [\dostartobject]  [or] [5]
 \installspecial [\dostopobject]   [or] [0]
@@ -745,9 +736,9 @@
 
 %D This special is called as:
 %D
-%D \starttyping
+%D \starttypen
 %D \doinstallbookmark {level} {nofsubentries} {text} {page} {open}
-%D \stoptyping
+%D \stoptypen
 %D
 %D This definition is very \PDF\ oriented, so for more
 %D information we kindly refer to the \PDF\ manuals.
@@ -759,9 +750,9 @@
 %D short moment, let the audience focus at the screen. Like the
 %D previous one, this special is very \PDF.
 %D
-%D \starttyping
+%D \starttypen
 %D \dosetpagetransition{dissolve}{0}
-%D \stoptyping
+%D \stoptypen
 %D
 %D Transitions have symbolic names, like dissolve, box, split,
 %D blinds, wipe and glitter. The second argument determines
@@ -780,7 +771,7 @@
 %D passing parameters. Unfortunately fields often have more
 %D than nine characteristics, so we pack some arguments in one.
 %D
-%D \starttyping
+%D \starttypen
 %D \dopresettextfield / \dopresetlinefield
 %D   {name} {width} {height} {default} {length}
 %D   {style,color} {options} {alignment} {actions}
@@ -803,7 +794,7 @@
 %D
 %D \dopresetradiorecord
 %D   {name} {top} {options} {kids} {actions}
-%D \stoptyping
+%D \stoptypen
 
 \installspecial [\dopresetlinefield]   [or] [9]
 \installspecial [\dopresettextfield]   [or] [9]
@@ -831,9 +822,9 @@
 %D For practical reasons we set some field characteristics
 %D using:
 %D
-%D \starttyping
+%D \starttypen
 %D \dosetfieldstatus {mode} {parent} {kids} {root}
-%D \stoptyping
+%D \stoptypen
 
 \installspecial [\dosetfieldstatus] [or] [4]
 
@@ -849,9 +840,9 @@
 %D
 %D We can define a calculation order list with:
 %D
-%D \starttyping
+%D \starttypen
 %D \doregistercalculationset {set identifier}
-%D \stoptyping
+%D \stoptypen
 
 \installspecial [\doregistercalculationset] [or] [1]
 
@@ -861,16 +852,16 @@
 %D Not so much out of need, but to be complete, we also
 %D implement text annotations, so called  comment:
 %D
-%D \starttyping
+%D \starttypen
 %D \doinsertcomment
 %D   {title} {width} {height} {color} {open} {symbol} {collect} {data}
-%D \stoptyping
+%D \stoptypen
 %D
 %D When enables, comments can be collected and flushed:
 %D
-%D \starttyping
+%D \starttypen
 %D \doflushcomments
-%D \stoptyping
+%D \stoptypen
 
 \installspecial[\doinsertcomment] [and] [8]
 \installspecial[\doflushcomments] [and] [0]
@@ -883,12 +874,12 @@
 %D means of postprocessed \DVI, we can save and call upon
 %D positions.
 %D
-%D \starttyping
+%D \starttypen
 %D \dosetposition          {identifier}
 %D \dosetpositionwhd       {identifier} {width} {height} {depth}
 %D \dosetpositionplus      {identifier} {width} {height} {depth} {list}
 %D \dosetpositionpapersize {width} {height}
-%D \stoptyping
+%D \stoptypen
 %D
 %D This is one of the few specials where when using \PDFTEX\
 %D the driver directly deals with the utility file.
@@ -901,10 +892,10 @@
 %D \macros
 %D   {dostarttransparency,dostoptransparency}
 %D
-%D \starttyping
+%D \starttypen
 %D \dostarttransparency{fraction}{type}
 %D \dostoptransparency
-%D \stoptyping
+%D \stoptypen
 %D
 %D Although in \CONTEXT\ transparency is closely integrated
 %D in the color drivers, in the end it is an independent
@@ -916,9 +907,9 @@
 %D \macros
 %D   {doattachfile}
 %D
-%D \starttyping
+%D \starttypen
 %D \doattachfile{title}{width}{height}{depth}{color}{symbol}{filename}{source}
-%D \stoptyping
+%D \stoptypen
 
 \installspecial [\doattachfile] [or] [8]
 
@@ -969,15 +960,15 @@
 %D that strong on objects and \PDFTEX\ does a better job.
 %D Some reasonable alternatives are:
 %D
-%D \starttyping
+%D \starttypen
 %D \setupoutput [dvipsone,acrobat]
 %D \setupoutput [dviwindo,acrobat]
-%D \stoptyping
+%D \stoptypen
 %D
 %D Although, better is:
 %D
-%D \starttyping
+%D \starttypen
 %D \setupoutput [pdftex]
-%D \stoptyping
+%D \stoptypen
 
 \protect \endinput

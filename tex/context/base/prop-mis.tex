@@ -23,8 +23,8 @@
 
 %D Stream based overprint and knockout:
 
-\defineproperty[\v!overprint][\s!overprint] [\c!method=\v!command]
-\defineproperty[\v!knockout] [\s!overprint] [\c!method=\v!command]
+\defineproperty[\v!overprint][\s!overprint] [\c!methode=\v!commando]
+\defineproperty[\v!knockout] [\s!overprint] [\c!methode=\v!commando]
 
 \definepropertyhandler \v!overprint {\dostartoverprint}
 \definepropertyhandler \v!knockout  {\dostopoverprint }
@@ -71,11 +71,11 @@
 
 %D Negation.
 
-\defineproperty [\v!negative] [\s!negative] [\c!method=\v!command]
-\defineproperty [\v!positive] [\s!negative] [\c!method=\v!command]
+\defineproperty [\v!negatief] [\s!negative] [\c!methode=\v!commando]
+\defineproperty [\v!positief] [\s!negative] [\c!methode=\v!commando]
 
-\definepropertyhandler \v!negative {\dostartnegative}
-\definepropertyhandler \v!positive {\dostopnegative }
+\definepropertyhandler \v!negatief {\dostartnegative}
+\definepropertyhandler \v!positief {\dostopnegative }
 
 \def\startnegativeproperty
   {\ifincolor
@@ -108,7 +108,7 @@
   {\doifsomething{\rawgetbotmark\overprintmark}%
      {\propertyhandler{\rawgetbotmark\negativemark}}}
 
-\def\popsplitnegativeproperty
+\def\popsplitoverprintproperty
   {\getsplitmarks\negativemark  % hier wel
    \doifsomething{\rawgetsplitbotmark\negativemark}%
      {\propertyhandler{\rawgetsplitbotmark\negativemark}}}
@@ -121,20 +121,20 @@
 
 \setupproperty
   [\s!effect]
-  [\c!rulethickness=.25pt,
-   \c!stretch=1]
+  [\c!lijndikte=.25pt,
+   \c!rek=1]
 
-\defineproperty [\v!inner]  [\s!effect]
-\defineproperty [\v!outer]  [\s!effect]
-\defineproperty [\v!both]   [\s!effect]
-\defineproperty [\v!normal] [\s!effect]
-\defineproperty [\v!hidden] [\s!effect]
+\defineproperty [\v!binnen]    [\s!effect]
+\defineproperty [\v!buiten]    [\s!effect]
+\defineproperty [\v!beide]     [\s!effect]
+\defineproperty [\v!normaal]   [\s!effect]
+\defineproperty [\v!verborgen] [\s!effect]
 
-\definepropertyhandler \v!normal {0}
-\definepropertyhandler \v!inner  {0}
-\definepropertyhandler \v!outer  {1}
-\definepropertyhandler \v!both   {2}
-\definepropertyhandler \v!hidden {3}
+\definepropertyhandler \v!normaal   {0}
+\definepropertyhandler \v!binnen    {0}
+\definepropertyhandler \v!buiten    {1}
+\definepropertyhandler \v!beide     {2}
+\definepropertyhandler \v!verborgen {3}
 
 % \def\handleeffectproperty#1%
 %   {\expanded{\dostartfonteffect
@@ -182,8 +182,8 @@
 
 \def\effectpropertydata#1%
   {{\propertyhandler{#1}}%
-   {\propertyparameter{#1}\c!rulethickness}%
-   {\propertyparameter{#1}\c!stretch}}
+   {\propertyparameter{#1}\c!lijndikte}%
+   {\propertyparameter{#1}\c!rek}}
 
 \def\starteffectproperty
   {\expanded{\dostartfonteffect\effectpropertydata\currentproperty}%

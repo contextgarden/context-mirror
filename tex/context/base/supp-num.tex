@@ -21,15 +21,15 @@
 %D Depending on the digit mode the command \type {\digits}
 %D normalizes number patterns depending on the language set.
 %D
-%D \starttyping
+%D \starttypen
 %D This will never be a \digits{1.000.000} seller.
-%D \stoptyping
+%D \stoptypen
 %D
 %D or
 %D
-%D \starttyping
+%D \starttypen
 %D I will never grow longer than \digits 1.86 \Meter.
-%D \stoptyping
+%D \stoptypen
 %D
 %D The different modes are shown in:
 %D
@@ -46,9 +46,9 @@
 %D
 %D This is typset as:
 %D
-%D \startlines
-%D \getbuffer
-%D \stoplines
+%D \startregels
+%D \haalbuffer
+%D \stopregels
 %D
 %D The sign can be typeset as is or within the space of a
 %D digit.
@@ -64,9 +64,9 @@
 %D
 %D This is typset as:
 %D
-%D \startlines
-%D \getbuffer
-%D \stoplines
+%D \startregels
+%D \haalbuffer
+%D \stopregels
 
 \chardef\digitoutputmode=1 % 0..6
 \chardef\digitsignmode  =0 % 0..3
@@ -76,14 +76,14 @@
 
 %D The digit modes are:
 %D
-%D \startitemize[packed]
-%D \item periods      \& comma
-%D \item commas       \& period
-%D \item thinmuskips  \& comma
-%D \item thinmuskips  \& period
-%D \item thickmuskips \& comma
-%D \item thickmuskips \& period
-%D \stopitemize
+%D \startopsomming[opelkaar]
+%D \som periods      \& comma
+%D \som commas       \& period
+%D \som thinmuskips  \& comma
+%D \som thinmuskips  \& period
+%D \som thickmuskips \& comma
+%D \som thickmuskips \& period
+%D \stopopsomming
 
 \let\collecteddigits \empty \chardef\digitinputmode =1
 \let\saveddigits     \empty \chardef\skipdigit      =0
@@ -117,10 +117,10 @@
 %D we need to do an indirect test (see \type {verb-ini.tex})
 %D for details.
 %D
-%D \starttyping
+%D \starttypen
 %D \def           ^^M{\obeyedline}
 %D \def\nextbeyedline{\obeyedline}
-%D \stoptyping
+%D \stoptypen
 
 \ifx\normalmathshift\undefined \let\normalmathshift=$ \fi
 
@@ -323,7 +323,7 @@
 %D well as different formats. We strongly suggest you to use
 %D the grouped call.
 %D
-%D \starttabulate[|l|l|l|]
+%D \starttabulatie[|l|l|l|]
 %D \NC \type{.} \NC , . \NC comma or period \NC \NR
 %D \NC \type{,} \NC , . \NC comma or period \NC \NR
 %D \NC \type{@} \NC \NC invisible space \NC \NR
@@ -336,7 +336,7 @@
 %D \NC \type{m} \NC $\negative$ \NC high minus sign \NC \NR
 %D \NC \type{n} \NC $\negative$ \NC high minus (negative) sign \NC \NR
 %D \NC \type{=} \NC $\zeroamount$ \NC zero padding \NC \NR
-%D \stoptabulate
+%D \stoptabulatie
 %D
 %D These triggers are used in the following examples.
 %D
@@ -368,9 +368,9 @@
 %D
 %D \typebuffer
 %D
-%D \startlines
-%D \getbuffer
-%D \stoplines
+%D \startregels
+%D \haalbuffer
+%D \stopregels
 
 %D \macros
 %D   {Digits}
@@ -382,22 +382,22 @@
 %D These macros are complicated by the fact that we also
 %D have to support cases like:
 %D
-%D \starttyping
+%D \starttypen
 %D {\digits1234}
 %D \digits{1234}
 %D \digits 1234\whatever
 %D $\digits 123.222,00$
 %D \digits 123.222,00.
-%D \stoptyping
+%D \stoptypen
 %D
 %D The latter case shows us that trailing non digits are to
 %D be passed untreated.
 %D
 %D Another interesting case is:
 %D
-%D \starttyping
+%D \starttypen
 %D \digits 123.222,00^10
-%D \stoptyping
+%D \stoptypen
 %D
 %D The separator is defined as:
 
@@ -410,9 +410,9 @@
 %D Users can specify the way they enter those digits by saying
 %D something like:
 %D
-%D \starttyping
+%D \starttypen
 %D \digittemplate 12.000.000,00 % \digittemplate .,
-%D \stoptyping
+%D \stoptypen
 
 \def\digittemplate #1 %
   {\chardef\digitinputmode\zerocount

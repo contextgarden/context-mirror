@@ -11,34 +11,455 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-%D Support for margin words is one of the reasons for writing
-%D \CONTEXT. Over time support for marginal content has been
-%D extended en enhanced. Therefore it's always good to watch
-%D out for unexpected side effects.
+%D This module is still to be split and documented.
 
 \writestatus{loading}{Context Core Macros / Maginal Things}
 
+% todo: compensate distance when setuplayout[textwidth=..]
+% todo: generalize margin/edge model, now too much duplication
+
 \unprotect
 
-%D There are three categories and their historically grown meaning is
-%D as follows:
-%D
-%D marginlines: these are flushed relative to the start of a line and
-%D need to be invoked there.
-%D
-%D marginwords: these can be issued in the text flow and will migrate
-%D sidewards; in spite of the name, it can be a paragraph of text as
-%D well, but normally it's words.
-%D
-%D margintexts: these can be set beforehand and are flushed at the
-%D next paragraph of text (of header)
-%D
-%D While these mechanisms were rather separated, they now are slightly
-%D more integrated. Instead of low level instances we now have a mechanism
-%D for defining additional ones.
+\newif\iflowinmargin
 
+\def\stelinmargein
+  {\dodoubleempty\dostelinmargein}
+
+\def\dostelinmargein[#1][#2]%
+  {\ifsecondargument
+     \processcommalist[#1]{\dodostelinmargein[#2]}% becomes [#2]{##1}
+   \else
+     \getparameters[\??im][#1]%
+   \fi}
+
+\def\dodostelinmargein[#1]#2% [settings]{class}
+  {\ifundefined{\??im#2\c!offset}%
+     \presetlocalframed
+       [\??im#2]%
+     \getparameters
+       [\??im#2]
+       [\c!kader=\v!uit,
+        \c!offset=\v!overlay,
+        \c!regel=1,
+        \c!scheider=,
+        \c!breedte=\v!ruim,
+        \c!afstand=\!!zeropoint,
+        \c!letter=\@@imletter,
+        \c!kleur=\@@imkleur,
+        \c!plaats=\@@implaats,
+        \c!uitlijnen=\@@imuitlijnen,
+        \c!voor=\@@imvoor,
+        \c!na=\@@imna,
+        #1]%
+   \else
+     \getparameters[\??im#2][#1]%
+   \fi}
+
+\let\margetekstafstand  = \!!zeropoint
+\def\margetekstregels     {1}
+\def\margetekstnummer     {0}
+\let\margetekstscheider = \empty
+
+\def\margestrutheight{\strutht}
+
+\def\maakmargetekstblok#1#2#3#4#5#6%
+  {#4\relax
+   \bgroup
+   \forgetall % added, else problems with 'center' and nested itemize
+   \mindermeldingen
+   \hsize#1\relax
+   \doifnumberelse\margetekstnummer
+     {\ifcase\margetekstnummer\relax
+        \def\margetekstnummer{#2}%
+      \fi}
+     \donothing
+   \doifnumberelse\margetekstnummer
+     {\ifnum\margetekstnummer>25 % to be translated
+        \writestatus\m!systems{potential margin stack overflow (\margetekstnummer)}%
+      \fi}
+     \donothing
+   % todo
+   \processallactionsinset
+     [\getvalue{\??im\margetekstnummer\c!uitlijnen}]
+     [     \v!ja=>\setvalue{\??im\margetekstnummer\c!uitlijnen}{#2},
+          \v!nee=>\setvalue{\??im\margetekstnummer\c!uitlijnen}{\v!normaal},
+       \v!binnen=>\setvalue{\??im\margetekstnummer\c!uitlijnen}{#2},
+       \v!buiten=>\setvalue{\??im\margetekstnummer\c!uitlijnen}{#3},
+        \v!links=>\setvalue{\??im\margetekstnummer\c!uitlijnen}{\v!links},
+       \v!midden=>\setvalue{\??im\margetekstnummer\c!uitlijnen}{\v!midden},
+       \v!rechts=>\setvalue{\??im\margetekstnummer\c!uitlijnen}{\v!rechts},
+      \s!default=>\setvalue{\??im\margetekstnummer\c!uitlijnen}{#2}]%
+   \setbox0\vbox\localframed
+     [\??im\margetekstnummer]
+     [\c!strut=\v!nee]
+     {\decrement\margetekstregels
+      \@@imvoor
+      \dostartattributes{\??im\margetekstnummer}\c!letter\c!kleur\empty
+        \dorecurse\margetekstregels{\strut\\}%
+        \xdef\margestrutheight{\the\strutht}%
+        \begstrut#6\endstrut\endgraf
+      \dostopattributes
+      \@@imna}%
+   \doif\@@imstapel\v!ja
+     {\def\overlappingmargin{-20\scaledpoint}% test value, maybe .25\strutboxdp, maybe configurable
+      \setbox0\vbox{\stackeddown\vbox{\box0}}}% new
+   \ht0\strutht
+   \box0
+   \egroup
+   #5\relax}
+
+%D The stacker permits constructs like:
+%D
+%D \starttypen
+%D \stelinmargein[stapel=ja]
+%D
+%D \inlinker{test 1}test\break
+%D \inlinker{test 2}test\break
+%D \inlinker{test 1}
+%D \input tufte
+%D \inlinker{test 1}
+%D \inlinker{test 2}
+%D \inlinker{test 3}
+%D \input tufte
+%D \inlinker{test 1}
+%D \inlinker{test 2\endgraf test 3}
+%D \inlinker{test 4}
+%D \input tufte
+%D \inlinker{test 1}
+%D \inlinker{test 2\endgraf test 3}
+%D \inlinker{test 4\endgraf test 5\endgraf test 6}
+%D \inlinker{test 7\endgraf test 8\endgraf test 9}
+%D \input tufte
+%D \stoptypen
+
+\def\plaatsmargetekstscheider
+  {\ifnum\margincontent>\zerocount
+     \bgroup
+     \dimen0=\margetekstregels\lineheight
+     \advance\dimen0 -\lineheight
+     \lower\dimen0\hbox{\margetekstscheider}%
+     \egroup
+   \fi}
+
+\def\linkermargetekstblok#1%
+  {\maakmargetekstblok \leftmargintextwidth \v!links \v!rechts
+     {\llap{\plaatsmargetekstscheider}}{\hskip\margetekstafstand}
+     {#1}}
+
+% \def\rechtermargetekstblok#1%
+%   {\maakmargetekstblok \rightmargintextwidth \v!rechts \v!links
+%      {\hskip\margetekstafstand}{\rlap{\plaatsmargetekstscheider}}
+%      {#1}}
+
+\def\rechtermargetekstblok#1% new: hsize correction
+  {\maakmargetekstblok \rightmargintextwidth \v!rechts \v!links
+     {\hskip\margetekstafstand\hskip\tekstbreedte\hskip-\hsize }{\rlap{\plaatsmargetekstscheider}}
+     {#1}}
+
+\def\doplacemargintext#1#2#3%
+  {\strut
+   \setbox0\hbox{#1}% % todo: make sure that color stack works
+   \dimen0\ht0
+   \advance\dimen0 \dp0
+   \ifdim\dimen0>\marginheight
+     \global\marginheight\dimen0
+   \fi
+   \setbox0\hbox
+     {#2{\hskip#3\strut
+         \iflowinmargin\else
+           \dimen0\strutdp
+           \advance\dimen0 \margestrutheight
+           \advance\dimen0 -\strutht
+           \raise\dimen0
+         \fi
+         \box0}}%
+   \ht0\zeropoint
+   \dp0\zeropoint
+   \gdef\margestrutheight{\the\strutht}%
+  %\graphicvadjust{\box0}} % fails in high math lines, let it be
+  %\hbox{\lower\strutdp\box0}} % alas, wrong lapping, therefore useless
+   \dopositionmarginbox0}
+
+%D This approach permits us to implement a better mechanism
+%D later. We need the \type {\graphicvadjust} in order to
+%D handle:
+%D
+%D \starttypen
+%D \inlinker{test} {\red \dorecurse{40}{test }\par}
+%D {\red \inlinker{test} \dorecurse{40}{test }\par}
+%D \stoptypen
+%D
+%D The outer margin color is either black or color set as
+%D main text color.
+
+\ifx\dopositionmarginbox\undefined
+  \def\dopositionmarginbox#1{\graphicvadjust{\box#1}}
+\fi
+
+\def\leftmargintextdistance  {\getvalue{\??im\v!links \c!afstand}}
+\def\rightmargintextdistance {\getvalue{\??im\v!rechts\c!afstand}}
+
+\def\leftmargintextwidth     {\getvalue{\??im\v!links \c!breedte}}
+\def\rightmargintextwidth    {\getvalue{\??im\v!rechts\c!breedte}}
+
+\def\doinlinker#1%
+  {\doplacemargintext
+     {\linkermargetekstblok{#1}\hskip\leftmargintextdistance}
+     \llap\zeropoint}
+
+\def\doinrechter#1%
+  {\doplacemargintext
+     {\hskip\rightmargintextdistance\rechtermargetekstblok{#1}}
+     \rlap\hsize}
+
+\newcounter \nofmarginnotes
+\newif      \iftrackingmarginnotes
+\newif      \ifrightmargin            % documenteren
+
+\definetwopasslist\s!margin
+
+\def\domarginreference % todo: use doonrightpage
+  {\doglobal\increment\nofmarginnotes\relax
+   \edef\writemarref
+     {\writeutilitycommand%
+        {\twopassentry%
+           {\s!margin}%
+           {\nofmarginnotes}%
+           {\noexpand\realfolio}}}%
+   \writemarref}
+
+\def\dodoinmargenormal#1#2#3#4%
+  {\iffirstsidefloatparagraph\geenwitruimte\fi % zo laat mogelijk
+   \ifodd#1\relax
+     \rightmargintrue
+     #3{#4}%
+   \else
+     \rightmarginfalse
+     #2{#4}%
+   \fi}
+
+\def\doinmargenormal#1#2#3%
+  {\bgroup
+   \iftrackingmarginnotes
+     \gettwopassdata\s!margin
+     \iftwopassdatafound
+       \dodoinmargenormal\twopassdata#1#2{#3}%
+     \else
+       \dodoinmargenormal\realfolio#1#2{#3}%
+     \fi
+     \domarginreference
+   \else
+     \dodoinmargenormal\realfolio#1#2{#3}%
+   \fi
+   \egroup}
+
+\def\doinmargereverse#1#2#3%
+  {\dodoinmargenormal\realfolio#2#1{#3}}
+
+\def\doinmarge[#1][#2][#3][#4][#5]#6%
+  {\doifcommonelse{+,-,\v!laag}{#4}
+     {\dodoinmarge[#1][#2][#3][#4][#5]{#6}}
+     {\dodoinmarge[#1][#2][#3][][#4]{#6}}%
+   \ignorespaces}
+
+\def\dodoinmarge[#1][#2][#3][#4][#5]#6%
+  {\ignorespaces
+   \bgroup\postponefootnotes % group is (somehow) needed
+   \doifinsetelse\v!laag{#4}
+     \lowinmargintrue
+     \lowinmarginfalse
+   \processaction
+     [#1]
+     [  \v!links=>#2{#6},
+       \v!rechts=>#3{#6},
+      \s!unknown=>\ifdubbelzijdig
+                    \doifcommonelse{+,-}{#4}
+                      \doinmargereverse\doinmargenormal#2#3{#6}%
+                  \else
+                    #2{#6}%
+                  \fi]%
+   \rawpagereference\s!mar{#5}%
+   \flushnotes\egroup % don't forget the group
+   \ignorespaces}
+
+\def\inlinker
+  {\indentation\doquintupleempty\doinmarge
+     [\v!links][\doinlinker][\doinrechter]}
+
+\def\inrechter
+  {\indentation\doquintupleempty\doinmarge
+     [\v!rechts][\doinlinker][\doinrechter]}
+
+\def\inmarge
+  { \doquintupleempty\doinmarge
+     [\@@implaats][\doinlinker][\doinrechter]}
+
+\def\inanderemarge
+  {\doquintupleempty\doinmarge
+     [\@@implaats][\doinrechter][\doinlinker]}
+
+\newcounter\margincontent
+
+\def\doflushmargincontent % [#1][#2]#3% hier plaats 'globaal' (geen 1,2 enz)
+  {\doinmarge[\@@implaats][\doinlinker][\doinrechter]} % [#1][#2]{#3}}
+
+\newdimen\marginheight
+
+\let\restoreinterlinepenalty=\relax
+
+\def\flushmargincontents % plural
+  {\restoreinterlinepenalty  % here?
+   \ifcase\margincontent\else           % called quite often, so we
+     \expandafter\doflushmargincontents % speed up the \fi scan by
+   \fi}                                 % using a \do..
+
+% for a manual flush in for instance headers
+
+% \def\placemargintexts % to be documented and translated
+%   {\ifcase\margincontent\else
+%      \bgroup
+%        \let\normalvadjust\fakedvadjust
+%        \doflushmargincontents
+%      \egroup
+%    \fi}
+
+\def\placemargintexts % to be documented and translated
+  {\ifcase\margincontent\else
+     \bgroup
+       \chardef\graphicvadjustmode\zerocount
+       \doflushmargincontents
+     \egroup
+   \fi}
+
+% \def\doflushmargincontents% % links + rechts
+%   {\bgroup
+%    \forgetall
+%    \global\marginheight\!!zeropoint
+%    \dorecurse{\margincontent}
+%      {\bgroup
+%       \edef\margetekstafstand {\getvalue{\??im\recurselevel\c!afstand}}%
+%       \edef\margetekstregels  {\getvalue{\??im\recurselevel\c!regel}}%
+%       \edef\margetekstscheider{\getvalue{\??im\recurselevel\c!scheider}}%
+%       \let\margetekstnummer=\recurselevel
+%       \getvalue{\??im\recurselevel}%
+%       \global\setvalue{\??im\recurselevel}{}%
+%       \egroup}%
+%    \ifdim\marginheight>\lineheight % This is something real dirty!
+%      \advance\marginheight by \pagetotal
+%      \advance\marginheight by \lineheight  % a sort of bonus
+%      \ifdim\marginheight>\pagegoal
+%        \xdef\restoreinterlinepenalty%
+%          {\global\let\restoreinterlinepenalty\relax
+%           \global\interlinepenalty=\the\interlinepenalty}%
+%        \global\interlinepenalty=10000
+%      \fi
+%    \else % We need the above because interlinepenalties overrule vadjusted \nobreaks.
+%      %\vadjust
+%      %  {\forgetall
+%      %   \global\advance\marginheight by \lineheight
+%      %   \global\divide\marginheight by \lineheight
+%      %   \dorecurse{\number\marginheight}
+%      %     {\nobreak\vskip\lineheight}%
+%      %   \kern-\number\marginheight\lineheight}%
+%      \vadjust{\nobreak}%
+%    \fi
+%    \doglobal\newcounter\margincontent
+%    \egroup}
+
+\def\doflushmargincontents % links + rechts
+  {\bgroup
+   \forgetall
+   \global\marginheight\zeropoint
+   \dorecurse\margincontent
+     {\bgroup
+      \edef\margetekstafstand {\getvalue{\??im\recurselevel\c!afstand }}%
+      \edef\margetekstregels  {\getvalue{\??im\recurselevel\c!regel   }}%
+      \edef\margetekstscheider{\getvalue{\??im\recurselevel\c!scheider}}%
+      \let\margetekstnummer\recurselevel
+      \getvalue{\??im\recurselevel}%
+      \letgvalue{\??im\recurselevel}\empty
+      \egroup}%
+\ifbinnenkolommen
+  \donetrue  % how fuzzy
+\else\ifdim\marginheight>\lineheight\relax
+  \donetrue  % how dirty
+\else
+  \donefalse % how needed
+\fi\fi
+\ifdone
+     \advance\marginheight \pagetotal
+     \advance\marginheight \lineheight  % a sort of bonus
+     \ifdim\marginheight>\pagegoal
+       \xdef\restoreinterlinepenalty
+         {\global\let\restoreinterlinepenalty\relax
+          \global\interlinepenalty=\the\interlinepenalty}% keep = here
+       \global\interlinepenalty10000
+     \fi
+   \else % We need the above because interlinepenalties overrule vadjusted \nobreaks.
+     %\vadjust
+     %  {\forgetall
+     %   \global\advance\marginheight by \lineheight
+     %   \global\divide\marginheight by \lineheight
+     %   \dorecurse{\number\marginheight}
+     %     {\nobreak\vskip\lineheight}%
+     %   \kern-\number\marginheight\lineheight}%
+     \vadjust{\nobreak}%
+   \fi
+   \doglobal\newcounter\margincontent
+   \egroup}
+
+% Some day: \definieermarkering[\v!margetitel]
+
+\def\docomplexmargewoord#1#2#3%
+  {\@EA\setgvalue\@EA{\@EA\??im\@EA\margincontent\@EA}\@EA
+     {\@EA\stelinmargein\@EA[\margincontent][]%  see next macro
+      \doflushmargincontent[#1][#2]{#3}}}
+
+\def\complexmargewoord[#1][#2]#3%
+  {\doglobal\increment\margincontent
+   \stelinmargein[\margincontent][]% see next macro
+   \ifsecondargument
+     \doifnumberelse{#1} % only one #3 (after test)
+       {\docomplexmargewoord{#2}{#1}{#3}}
+       {\docomplexmargewoord{#1}{#2}{#3}}%
+   \else
+     \doifnumberelse{#1}
+       {\docomplexmargewoord{}{#1}{#3}}
+       {\docomplexmargewoord{#1}{}{#3}}%
+   \fi}
+
+\def\margewoordpositie[#1]#2%
+  {\ifnum#1>\margincontent
+     \xdef\margincontent{#1}%
+   \fi
+   \stelinmargein[#1][]% when at outer level, saves local settings
+   \setgvalue{\??im#1}%
+     {\stelinmargein[#1][]% needed when par start outside group
+      \doflushmargincontent[][]{#2}}}
+
+\def\margewoord
+  {\dodoubleempty\complexmargewoord}
+
+\def\margetitel{\margewoord}
+\def\margetekst{\margewoord}
+
+\def\oplinker#1%
+  {\strut
+   \graphicvadjust
+     {\mindermeldingen
+      \setbox0\vtop{\forgetall\strut#1}%
+      \getboxheight\dimen0\of\box0
+      \vskip-\dimen0 % waarom stond hier een \ ?
+      \box0}}
+
+\def\resetmargincontent % quick hack
+  {\doglobal\newcounter\margincontent}
+
+\def\resetmargetitels
+  {\resetmargincontent}
+
 %D \macros
-%D   {inleftedge,inleftmargin,inrightmargin,inrightedge}
+%D   {inleftside,inleftmargin,inrightmargin,inrightside}
 %D
 %D The fast and clean way of putting things in the margin is
 %D using \type{\rlap} or \type{\llap}. Unfortunately these
@@ -46,77 +467,94 @@
 %D therefore embed them in some macro's that (force and)
 %D remove the indentation and restore it afterwards.
 
-\def\definemarginline
-  {\dodoubleargument\dodefinemarginline}
+% beware: no \hsize is set (yet)!
 
-\def\dodefinemarginline[#1][#2]%
-  {\getparameters
-     [\??im\??im#1]
-     [\c!location=\v!left,
-      \c!distance=\zeropoint,
-      \c!width=\leftmarginwidth,
-      \c!hoffset=\leftmargindistance,
-      \c!command=,
-      #2]%
-   \setvalue{#1}{\domarginline{#1}}}
+% \def\inleftmargin#1%
+%   {\pushindentation
+%    \llap{#1\hskip\leftskip\hskip\leftmargintextdistance}%
+%    \popindentation
+%    \ignorespaces}
 
-\def\domarginline#1% #2
-  {\getvalue{\s!do\??im\??im\executeifdefined{\??im\??im#1\c!location}\v!left}{#1}} % {#2}
+% \def\inrightmargin#1%
+%   {\pushindentation
+%    \rlap{\hskip\hsize\hskip-\rightskip\hskip\rightmargintextdistance#1}%
+%    \popindentation
+%    \ignorespaces}
 
-\def\doleftmarginline#1#2%
+% \def\inleftedge#1%
+%   {\inleftmargin
+%      {#1\relax
+%       \hskip\linkermargebreedte
+%       \hskip\linkerrandafstand}}
+
+% \def\inrightedge#1%
+%   {\inrightmargin
+%      {\hskip\rechtermargebreedte
+%       \hskip\rechterrandafstand
+%       #1}}
+
+% \hsize added per August 2003:
+
+\def\inleftmargin#1%
   {\pushindentation
    \llap
-     {\postsignalrightpage
-      \hsize\getvalue{\??im\??im#1\c!width}\relax
-      \executeifdefined{\??im\??im#1\c!command}\firstofoneargument{#2}\relax
+     {\hsize\linkermargebreedte
+      #1\relax
       \hskip\leftskip
-      \hskip\getvalue{\??im\??im#1\c!hoffset }\relax
-      \hskip\getvalue{\??im\??im#1\c!distance}}%
+      \hskip\linkermargeafstand}%
    \popindentation
    \ignorespaces}
 
-\def\dorightmarginline#1#2%
+% \def\inrightmargin#1%
+%   {\pushindentation
+%    \rlap
+%      {\hskip\hsize
+%       \hskip-\rightskip
+%       \hskip\rechtermargeafstand
+%       \hsize\rechtermargebreedte
+%       #1}%
+%    \popindentation
+%    \ignorespaces}
+
+
+\def\inrightmargin#1% new: hsize correction
   {\pushindentation
    \rlap
-     {\postsignalrightpage
-      \hskip\hsize
+     {\hskip\tekstbreedte
+      %\hskip-\hsize
+      %\hskip\hsize
       \hskip-\rightskip
-      \hskip\getvalue{\??im\??im#1\c!hoffset }\relax
-      \hskip\getvalue{\??im\??im#1\c!distance}\relax
-      \hsize\getvalue{\??im\??im#1\c!width   }\relax
-      \executeifdefined{\??im\??im#1\c!command}\firstofoneargument{#2}}%
+      \hskip\rechtermargeafstand
+      \hsize\rechtermargebreedte
+      #1}%
    \popindentation
    \ignorespaces}
 
-\setvalue{\s!do\??im\??im\v!left }{\doleftmarginline}
-\setvalue{\s!do\??im\??im\v!right}{\dorightmarginline}
-\setvalue{\s!do\??im\??im\v!inner}{\presignalrightpage\doifrightpageelse\doleftmarginline \dorightmarginline}
-\setvalue{\s!do\??im\??im\v!outer}{\presignalrightpage\doifrightpageelse\dorightmarginline\doleftmarginline }
+\def\inleftedge#1%
+  {\inleftmargin
+     {\hsize\linkermargebreedte
+      #1\relax
+      \hskip\linkermargebreedte
+      \hskip\linkerrandafstand}}
 
-\definemarginline[inleftmargin] [\c!location=\v!left, \c!width=\leftmarginwidth, \c!distance=\leftmargindistance]
-\definemarginline[inrightmargin][\c!location=\v!right,\c!width=\rightmarginwidth,\c!distance=\rightmargindistance]
-\definemarginline[inleftedge]   [\c!location=\v!left, \c!width=\leftedgewidth,   \c!distance=\leftedgedistance, \c!hoffset=\leftmargintotal]
-\definemarginline[inrightedge]  [\c!location=\v!right,\c!width=\rightedgewidth,  \c!distance=\rightedgedistance,\c!hoffset=\rightmargintotal]
+\def\inrightedge#1%
+  {\inrightmargin
+     {\hskip\rechtermargebreedte
+      \hskip\rechterrandafstand
+      \hsize\rechtermargebreedte
+      #1}}
 
-\definemarginline[inoutermargin][\c!location=\v!outer,\c!width=\outermarginwidth,\c!distance=\outermargindistance]
-\definemarginline[ininnermargin][\c!location=\v!inner,\c!width=\innermarginwidth,\c!distance=\innermargindistance]
-\definemarginline[inouteredge]  [\c!location=\v!outer,\c!width=\outeredgewidth,  \c!distance=\outeredgedistance,\c!hoffset=\outermargintotal]
-\definemarginline[ininneredge]  [\c!location=\v!inner,\c!width=\inneredgewidth,  \c!distance=\inneredgedistance,\c!hoffset=\innermargintotal]
-
-\definemarginline[atleftmargin] [\c!location=\v!left, \c!command=\lrlap,\c!width=\zeropoint,\c!distance=\zeropoint,\c!hoffset=\zeropoint]
-\definemarginline[atrightmargin][\c!location=\v!right,\c!command=\rllap,\c!width=\zeropoint,\c!distance=\zeropoint,\c!hoffset=\zeropoint]
-
-\ifx\lrlap\undefined \def\lrlap#1{\llap{\rlap{#1}\hskip\leftskip}}               \fi
-\ifx\rllap\undefined \def\rllap#1{\rlap{\hskip\hsize\hskip-\rightskip\llap{#1}}} \fi
+\let\inleftside \inleftedge
+\let\inrightside\inrightedge
 
 %D We want to keep things efficient and therefore only handle
 %D situations like:
 %D
 %D \startbuffer
-%D                  \inleftedge    {fine} some text \par
+%D                  \inleftside    {fine} some text \par
 %D \strut           \inleftmargin  {fine} some text \par
 %D \noindent        \inrightmargin {fine} some text \par
-%D \noindent \strut \inrightedge   {fine} some text \par
+%D \noindent \strut \inrightside   {fine} some text \par
 %D \stopbuffer
 %D
 %D \typebuffer
@@ -124,651 +562,124 @@
 %D which looks like:
 %D
 %D \bgroup
-%D \getbuffer
+%D \haalbuffer
 %D \parindent 30pt
-%D \getbuffer
+%D \haalbuffer
 %D \egroup
-%D
-%D A torture test:
-%D
-%D \starttyping
-%D \def\TestLine#1#2{\backgroundline[#1]{\strut\white\tttf#2~\recurselevel}}
-%D
-%D \startbuffer
-%D \inleftmargin {\TestLine{red}   {lm}}  test test test \par
-%D \inrightmargin{\TestLine{green} {rm}}  test test test \par
-%D \inleftedge   {\TestLine{red}   {le}}  test test test \par
-%D \inrightedge  {\TestLine{green} {re}}  test test test \par
-%D \inoutermargin{\TestLine{blue}  {om}}  test test test \par
-%D \ininnermargin{\TestLine{yellow}{im}}  test test test \par
-%D \inouteredge  {\TestLine{blue}  {oe}}  test test test \par
-%D \ininneredge  {\TestLine{yellow}{ie}}  test test test \par
-%D \atleftmargin {\TestLine{red}   {alm}} \hfill test    \par
-%D \atrightmargin{\TestLine{green} {arm}} test \hfill    \par
-%D \stopbuffer
-%D
-%D \dorecurse{40}\getbuffer \page
-%D \stoptyping
 
 %D New, yet undocumented:
 %D
 %D used for pascal:
 %D
-%D \starttyping
+%D \starttypen
 %D \index {test} test \index {west} west \index {rest} rest
 %D
 %D \startnarrower
 %D \placeregister[index][alternative=b,command=\atleftmargin]
 %D \stopnarrower
-%D \stoptyping
+%D \stoptypen
 
-% todo: compensate distance when setuplayout[textwidth=..]
-% todo: generalize margin/edge model, now too much duplication
-
-%D The next bunch of macros looks messy which is due to its
-%D multi-purpose character.
-
-\chardef\margincontentdisplacement \zerocount
-\let    \margincontentdistance     \!!zeropoint
-\let    \margincontenthoffset      \!!zeropoint
-\def    \margincontentlines        {1}
-\def    \margincontenttag          {0}
-\let    \margincontentseparator    \empty
-\def    \margincontentstrutheight  {\strutht}
-
-\newcounter\margincontentlevel
-\newdimen  \margincontentheight
-
-\def\setupinmargin
-  {\dodoubleempty\dosetupinmargin}
-
-\def\dosetupinmargin[#1][#2]%
-  {\ifsecondargument
-     \processcommalist[#1]{\dodosetupinmargin[#2]}% becomes [#2]{##1}
-   \else
-     \getparameters[\??im][#1]%
-   \fi}
-
-\def\dodosetupinmargin[#1]#2% [settings]{class}
-  {\checkinmargin[#2]%
-   \getparameters[\??im#2][#1]}
-
-\def\checkinmargin[#1]%
-  {\ifundefined{\??im#1\c!offset}% this offset is related to framed !
-     \addtocommalist{#1}\inmargintaglist
-     \presetmargintext[#1]%
-   \fi}
-
-\def\presetmargintext[#1]%
-  {\presetlocalframed
-     [\??im#1]%
-   \getparameters
-     [\??im#1]
-     [\c!frame=\v!off,
-      \c!offset=\v!overlay,
-      \c!line=1,
-      \c!separator=,
-      \c!width=\v!broad,
-      \c!distance=, % empty = signal
-      \c!hoffset=\zeropoint,
-      \c!style=\@@imstyle,
-      \c!color=\@@imcolor,
-      \c!location=\@@imlocation,
-      \c!align=\@@imalign,
-      \c!before=\@@imbefore,
-      \c!after=\@@imafter]}
-
-\newdimen\naturalmargincontentheight
-
-\def\makemargintextblock#1#2#3% width l r content
-  {\bgroup
-   \forgetall % added, else problems with 'center' and nested itemize
-   \dontcomplain
-   \hsize\getvalue{\??im#1\c!width}\relax
-   \doifnumberelse\margincontenttag
-     {\ifcase\margincontenttag\relax
-        \let\margincontenttag#1% first one is setups id as well
-      \fi}
-     \donothing
-   \doifnumberelse\margincontenttag
-     {\ifnum\margincontenttag>25 % to be translated
-        \writestatus\m!systems{potential margin stack overflow (\margincontenttag)}%
-      \fi}
-     \donothing
-   % we need to preserve {a,b,c} kind of settings
-   \let\margincontentalign#1%
-   \processallactionsinset
-     [\getvalue{\??im\margincontenttag\c!align}]
-     [     \v!yes=>\let\margincontentalign#1,
-            \v!no=>\let\margincontentalign\v!normal,
-         \v!inner=>\let\margincontentalign#1,
-         \v!outer=>\let\margincontentalign#2,
-          \v!left=>\let\margincontentalign\v!left,
-        \v!middle=>\let\margincontentalign\v!middle,
-         \v!right=>\let\margincontentalign\v!right]%
-   \doifvaluesomething{\??im\margincontenttag\c!align} % watch {} around set
-     {\edef\margincontentalign{{\getvalue{\??im\margincontenttag\c!align},\margincontentalign}}}%
-   %
-   \expanded{\getparameters
-     [\??im\margincontenttag]
-     [\c!strut=\v!no,\c!offset=\v!overlay,\c!align=\margincontentalign]}%
-   %
-   \savestrut %
-   \setbox\scratchbox\vbox\localframed
-     [\??im\margincontenttag]
-     {\decrement\margincontentlines
-      \dorecurse\margincontentlines{\savedstrut\endgraf\nointerlineskip}% ! savedstrut
-      \@@imbefore
-      \dostartattributes{\??im\margincontenttag}\c!style\c!color\empty
-        \setstrut % yes or no
-        \begstrut#3\endstrut\endgraf
-        \xdef\margincontentstrutheight{\the\strutht}% so that it's known outside the framed
-      \dostopattributes
-      \@@imafter}%
-   \global        \naturalmargincontentheight\ht\scratchbox
-   \global\advance\naturalmargincontentheight\dp\scratchbox
-   \doif\@@imstack\v!yes
-     {\def\overlappingmargin{-20\scaledpoint}% test value, maybe .25\strutboxdp, maybe configurable
-      \setbox\scratchbox\vbox{\stackeddown\vbox{\box\scratchbox}}}% new
-   \ht\scratchbox\strutht
-   \dp\scratchbox\strutdp % nieuw
-   \box\scratchbox
-   \egroup}
-
-%D The stacker permits constructs like:
-%D
-%D \starttyping
-%D \setupinmargin[stack=yes]
-%D
-%D \inleft{test 1}test\break
-%D \inleft{test 2}test\break
-%D \inleft{test 1}
-%D \input tufte
-%D \inleft{test 1}
-%D \inleft{test 2}
-%D \inleft{test 3}
-%D \input tufte
-%D \inleft{test 1}
-%D \inleft{test 2\endgraf test 3}
-%D \inleft{test 4}
-%D \input tufte
-%D \inleft{test 1}
-%D \inleft{test 2\endgraf test 3}
-%D \inleft{test 4\endgraf test 5\endgraf test 6}
-%D \inleft{test 7\endgraf test 8\endgraf test 9}
-%D \input tufte
-%D \stoptyping
-
-%D This approach permits us to implement a better mechanism
-%D later. We need the \type {\graphicvadjust} in order to
-%D handle:
-%D
-%D \starttyping
-%D \inleft{test} {\red \dorecurse{40}{test }\par}
-%D {\red \inleft{test} \dorecurse{40}{test }\par}
-%D \stoptyping
-%D
-%D The outer margin color is either black or color set as
-%D main text color.
-
-\newif\ifrightmargin % documenteren
-
-\ifx\dopositionmarginbox\undefined
-  \def\dopositionmarginbox#1{\graphicvadjust{\box#1}}
-\fi
-
-% watch out, margin dimensions are swapped locally (\swapmargins)
-
-% with \margincontentmethod one can control pagebreaks
-%
-% 0 no break
-% 1 each entry is one line
-% 2 only natural height
-% 3 also stack height
-
-\chardef\margincontentmethod  \plusthree % beware: 1 = old method
-\chardef\marginpagecheckmethod\plusone
-
-\def\margincontentextralines{1}        % old method, play safe
-\def\nofmargincontentlines  {0}
-
-\def\doplacemargintext#1#2#3#4%
-  {\strut
-   \doifsomething{#1}
-     {\def\margincontenttag{#1}}%
-   \doifinsetelse{\margincontenttag}{\v!left,\v!right} % ugly hack
-     {\let \margincontentdistance                                                      \empty     % signal
-      \let \margincontenthoffset                                                       \zeropoint}
-     {\edef\margincontentdistance{\executeifdefined{\??im\margincontenttag\c!distance }\empty    }% signal
-      \edef\margincontenthoffset {\executeifdefined{\??im\margincontenttag\c!hoffset  }\zeropoint}}%
-   \edef\margincontentlines      {\executeifdefined{\??im\margincontenttag\c!line     }\plusone  }%
-   \edef\margincontentseparator  {\executeifdefined{\??im\margincontenttag\c!separator}\donothing}%
-   \setbox\scratchbox\hbox{#4}% % todo: make sure that color stack works
-   \ifcase\margincontentmethod
-     \scratchdimen\zeropoint
-   \or % old method
-     \scratchdimen\ht\scratchbox
-     \advance\scratchdimen\dp\scratchbox
-   \or
-     \scratchdimen\naturalmargincontentheight
-   \or
-     \scratchdimen\naturalmargincontentheight
-     \ifx\laststackvmove\undefined\else\global\advance\scratchdimen\laststackvmove\fi
-   \fi
-   \ifdim\scratchdimen>\margincontentheight
-     \global\margincontentheight\scratchdimen
-   \fi
-   \setbox\scratchbox\hbox
-     {#2{\hskip#3\strut
-         \ifcase\margincontentdisplacement
-           % normal, move strutheight up
-           \scratchdimen\strutdp
-           \advance\scratchdimen \margincontentstrutheight
-           \advance\scratchdimen -\strutht
-           \raise\scratchdimen
-         \or
-           % low, obey vadjust
-         \fi
-         \box\scratchbox}}%
-   \ht\scratchbox\zeropoint
-   \dp\scratchbox\zeropoint
-   \gdef\margincontentstrutheight{\the\strutht}%
-  %\graphicvadjust{\box\scratchbox}}     % fails in high math lines, let it be
-  %\hbox{\lower\strutdp\box\scratchbox}} % alas, wrong lapping, therefore useless
-   \dopositionmarginbox\scratchbox}
-
-\def\domarginblockskip#1%
-  {\hskip\margincontenthoffset
-   \doifelsenothing\margincontentdistance
-     {\hskip\getvalue{\??im#1\c!distance}}
-     {\hskip\margincontentdistance}%
-   \relax}
-
-\def\doleftmarginblock#1#2%
-  {\doplacemargintext{#1}\llap\zeropoint
-     {\llap{\placemargincontentseparator}%
-      \makemargintextblock\v!left\v!right{#2}%
-      \domarginblockskip\v!left}}
-
-\def\dorightmarginblock#1#2%
-  {\doplacemargintext{#1}\rlap\hsize
-     {\hskip\textwidth\hskip-\hsize % new: hsize correction
-      \domarginblockskip\v!right
-      \makemargintextblock\v!right\v!left{#2}%
-      \rlap{\placemargincontentseparator}}}
-
-\def\placemargincontentseparator
-  {\ifnum\margincontentlevel>\zerocount
-     \ifx\margincontentseparator\empty\else
-       \bgroup
-       \scratchdimen\margincontentlines\lineheight
-       \advance\scratchdimen -\lineheight
-       \lower\scratchdimen\hbox{\margincontentseparator}%
-       \egroup
-     \fi
-   \fi}
-
-\newbox\marginconstructbox
-
-\def\doinmarginswapped#1#2#3#4%
-  {\iffirstsidefloatparagraph\nowhitespace\fi % zo laat mogelijk
-   \setbox\marginconstructbox\hbox\bgroup % prevents page break in the middle of construction
-     \startsignalrightpage
-       \doifswappedrightpageelse
-         {\rightmargintrue #2}
-         {\rightmarginfalse#1}
-         {#3}% setups
-         {#4}% content
-     \stopsignalrightpage
-   \egroup
-   \unhbox\marginconstructbox}
-
-% history made this a bit complicated, the +/- was needed before
-% we had enough mem/hash to do the page correction
-
-\edef\inmargintaglist{+,-,\v!low,\v!left,\v!right,\v!inner,\v!outer}
-
-% the old one:
-%
-% \def\doinmargin[#1][#2][#3][#4][#5]% #6 #7
-%   {\doifcommonelse{+,-,\v!laag}{#4}
-%      {\dodoinmargin[#1][#2][#3][#4][#5]}
-%      {\dodoinmargin[#1][#2][#3][][#4]}}
-%
-% an alternative:
-%
-% \letvalue{\??im\v!laag\c!offset}\empty
-% \letvalue{\??im      +\c!offset}\empty
-% \letvalue{\??im      -\c!offset}\empty
-%
-% \def\doinmargin[#1][#2][#3][#4][#5]% #6 #7
-%   {\doifnumberelse{#4}
-%      {\dodoinmargin[#1][#2][#3][#4][#5]}
-%      {\doifdefinedelse{\??im#4\c!offset}
-%         {\dodoinmargin[#1][#2][#3][#4][#5]}
-%         {\dodoinmargin[#1][#2][#3][][#4]}}}
-%
-% the problem is that we need to keep downward compatibility
-% with respect to the first argument thing a reference or a
-% directive; the alternative is to force users to pass a
-% directive along with a reference; anyhow, as long as one
-% does not use references that have the same name as a
-% directive we can use the (slow) alternative
-
-\def\doinmargin[#1][#2][#3][#4][#5]% #6 #7
-  {\expanded{\doifinsetelse{#4}{\inmargintaglist}}
-     {\dodoinmargin[#1][#2][#3][#4][#5]}
-     {\dodoinmargin[#1][#2][#3][][#4]}}
-
-\def\defineinmargin
-  {\doquadrupleempty\dodefineinmargin}
-
-\def\dodefineinmargin[#1][#2][#3][#4]%
-  {\doifassignmentelse{#4}
-     {\setupinmargin[#1][#4]%
-      \setvalue{#1}{\indentation\doquintupleempty\doinmargin[#2][#3][#1]}}
-     {\setvalue{#1}{\indentation\doquintupleempty\doinmargin[#2][#3][#4]}}}
-
-\defineinmargin [inleft]   [\v!left]       [\v!normal]   % takes left settings
-\defineinmargin [inright]  [\v!right]      [\v!normal]   % takes right settings
-\defineinmargin [ininner]  [\v!inner]      [\v!normal]   % takes left/right settings
-\defineinmargin [inouter]  [\v!outer]      [\v!normal]   % takes left/right settings
-\defineinmargin [inmargin] [\@@imlocation] [\v!normal]   % takes left/right settings
-\defineinmargin [inother]  [\@@imlocation] [\v!reverse]  % takes left/right settings
-
-\def\inothermargin{\inother}
-
-%D This permits definitions like:
-%D
-%D \starttyping
-%D \defineinmargins[SomePlace] [inner] [normal] [distance=1cm]
-%D \defineinmargins[SomePlace] [inner] [normal] [SomePlace]    \setupinmargin[SomePlace][distance=1cm]
-%D \defineinmargins[MyPlace]   [inner] [normal] [SomePlace]
-%D \defineinmargins[YourPlace] [inner] [normal] [SomePlace]
-%D \stoptyping
-%D
-%D A torture test:
-%D
-%D \starttyping
-%D \startbuffer
-%D \inleft       {\TestLine{red}    {l}} test test test \par
-%D \inright      {\TestLine{green}  {r}} test test test \par
-%D \inmargin     {\TestLine{blue}   {m}} test test test \par
-%D \inothermargin{\TestLine{yellow} {x}} test test test \par
-%D \ininner      {\TestLine{cyan}   {i}} test test test \par
-%D \inouter      {\TestLine{magenta}{o}} test test test \par
-%D \stopbuffer
-%D
-%D \dorecurse{80}\getbuffer \page
-%D stoptypen
-%D
-%D and
-%D
-%D \starttyping
-%D \defineinmargin[InOuterA] [outer] [normal] [distance=0cm]
-%D \defineinmargin[InOuterB] [outer] [normal] [distance=1cm]
-%D \defineinmargin[InOuterC] [outer] [normal] [distance=2cm,line=2]
-%D
-%D \startbuffer
-%D \InOuterA{\TestLine{red}  {A}} test test test \par
-%D \InOuterB{\TestLine{green}{B}} test test test \par
-%D \InOuterC{\TestLine{blue} {C}} test test test \par
-%D \stopbuffer
-%D
-%D \dorecurse{80}\getbuffer \page
-%D
-%D \dorecurse{10}{\inleft {one} test \inleft {two} test } \page
-%D
-%D \start
-%D   \margintext {one} \margintext {two} \input thuan \par
-%D   \setupinmargin[1][line=3,distance=1cm]
-%D   \margintext [1]{one}
-%D   \margintext [2]{two}
-%D   \input thuan \page
-%D \stop
-%D
-%D \setupinmargin[3][location=inner,distance=1cm]
-%D \setupinmargin[4][location=outer,distance=2cm]
-%D
-%D % \setupinmargin[left] [line=2]
-%D % \setupinmargin[right][line=2]
-%D
-%D \dorecurse
-%D   {10}
-%D   {\margintext       {\kern3cm\TestLine{blue}{none}}
-%D    \margintext[3]    {\TestLine{darkgray}{3}}
-%D    \margintext[4]    {\TestLine{darkgray}{4}}
-%D    \margintext[left] {\TestLine{red}     {left}}
-%D    \margintext[right]{\TestLine{green}   {right}}
-%D    \margintext[inner]{\TestLine{cyan}    {inner}}
-%D    \margintext[outer]{\TestLine{magenta} {outer}}
-%D    \input thuan \endgraf}
-%D
-%D \dorecurse{10}{\margintext{test\\test\\test} \input thuan \endgraf}
-%D \stoptyping
-
-\def\dodoinmargin[#1][#2][#3][#4][#5]#6%
-  {\bgroup
-   \postponefootnotes % group is (somehow) needed
-   \doifinsetelse\v!low{#4}
-     {\chardef\margincontentdisplacement\plusone}
-     {\chardef\margincontentdisplacement\zerocount}%
-   \doif\v!reverse{#2}
-     {\swapmacros\dorightmarginblock\doleftmarginblock}%
-   \processaction
-     [#1]
-     [   \v!left=>\let\next\doleftmarginblock,  % no swapping
-        \v!right=>\let\next\dorightmarginblock, % no swapping
-        \v!inner=>\def\next{\doinmarginswapped\dorightmarginblock\doleftmarginblock },
-        \v!outer=>\def\next{\doinmarginswapped\doleftmarginblock \dorightmarginblock},
-      \s!unknown=>\ifdubbelzijdig
-                    \doifcommonelse{+,-}{#4}
-                      {\def\next{\doinmarginswapped\dorightmarginblock\doleftmarginblock }}
-                      {\def\next{\doinmarginswapped\doleftmarginblock \dorightmarginblock}}%
-                  \else
-                    \let\next\doleftmarginblock
-                  \fi]%
-   \next{#3}{#6}%
-   \rawpagereference\s!mar{#5}% naar binnen ! ! ! !
-   \flushnotes
-   \egroup % don't forget the group
+\def\atleftmargin#1%
+  {\pushindentation
+   \llap{\rlap{#1}\hskip\leftskip}%
+   \popindentation
    \ignorespaces}
 
-% dit zijn voorlopig lokale commando's / vervallen
+\def\atrightmargin#1%
+  {\pushindentation
+   \rlap{\hskip\hsize\hskip-\rightskip\llap{#1}}%
+   \popindentation
+   \ignorespaces}
+
+% dit zijn voorlopig lokale commando's
+
+\def\woordinlinker {\inleftmargin}  % vervallen
+\def\woordinrechter{\inrechtermarge} % vervallen
+
+\def\woordinmarge
+  {\doquintupleempty\doinmarge
+     [\@@implaats][\woordinlinker][\woordinrechter]}
+
 %
-% \def\woordinmarge {\indentation\doquintupleempty\doinmargin[\@@implaats][\inleftmargin][\inrightmarge]}
-%
-% \def\woordinlinker {\inleftmargin  } % vervallen
-% \def\woordinrechter{\inrechtermarge} % vervallen
 
-% Some day: \definemarking[\v!margetitel]
+\stelinmargein
+  [\c!letter=\v!vet,
+   \c!kleur=,
+   \c!plaats=\v!beide,
+   \c!uitlijnen=\v!binnen,
+   \c!stapel=\v!nee,
+   \c!voor=,
+   \c!na=]
 
-%D Now come the margin text collectors. The collected content is
-%D flushed at every paragraph by the following macro. Note for
-%D myself: here the location (plaats) is no longer a tag (number).
+\stelinmargein
+  [\v!links]
+  [\c!afstand=\linkermargeafstand,
+   \c!breedte=\linkermargebreedte,
+  %\c!uitlijnen=\v!links, % njet
+   \c!plaats=\v!links]
 
-% gone: \def\doflushmargincontent{\doinmargin[\@@implaats][\v!normaal][]} % + [#1][#2]{#3}}
+\stelinmargein
+  [\v!rechts]
+  [\c!afstand=\rechtermargeafstand,
+   \c!breedte=\rechtermargebreedte,
+  %\c!uitlijnen=\v!rechts, % njet
+   \c!plaats=\v!rechts]
+
+\newbox\facingbox
+\newbox\facingpage
 
-%D These are now all the same (long ago they had different
-%D implementations, somewhere in Sork time if I remember
-%D right).
+\newif\iffacingpages \facingpagesfalse
 
-\def\margintext {\dodoubleempty\domargincontent}
-\def\marginword {\margintext}
-\def\margintitle{\margintext} % txt mark as well
-
-\newtoks\collectedmargintexts
-\chardef\margintextcollected  \zerocount
-
-\def\domargincontent[#1][#2]#3% we used to check for #2/#1 being number, no longer now
-  {\global\chardef\margintextcollected\plusone
-   \edef\margincontenttag{#1}%
-   \ifx\margincontenttag\empty
-     \doglobal\increment\margincontentlevel
-     \let\margincontenttag\margincontentlevel
-   \fi
-   \checkinmargin[\margincontenttag]%
-   \doglobal \appendetoks
-     \noexpand \checkinmargin[\margincontenttag]%
-     \noexpand \doinmargin[\executeifdefined{\??im\margincontenttag\c!location}\@@imlocation][\v!normal][\margincontenttag][\margincontenttag][#2]%
-   \to \collectedmargintexts
-   \doglobal \appendtoks
-     {#3}%
-   \to \collectedmargintexts}
-
-\let\restoreinterlinepenalty\relax
-
-\def\flushmargincontents % plural
-  {\restoreinterlinepenalty % here?
-   \ifcase\margintextcollected\else     % called quite often, so we
-     \expandafter\doflushmargincontents % speed up the \fi scan by
-   \fi}                                 % using a \do..
-
-\def\doflushmargincontents % links + rechts
-  {\bgroup
-   \forgetall
-   \global\margincontentheight\zeropoint
-   \startsignalrightpage
-     \the\collectedmargintexts
-     \signalrightpage
-   \stopsignalrightpage
-   \resetmargincontent
-   % dirty tricks
-   \ifcase\margincontentmethod
-     \donefalse
-   \else\ifinsidecolumns % brrrr
-     \donetrue  % how fuzzy
-   \else\ifdim\margincontentheight>\lineheight\relax
-     \donetrue  % how dirty
-   \else
-     \donefalse % how needed
-   \fi\fi\fi
-   \savemargincontentlines
-   \ifdone
-     \advance\margincontentheight \margincontentextralines\lineheight
-     \ifdim\pagegoal>\pagetotal
-       \bgroup % preserve \margincontentheight
-       \advance\margincontentheight \pagetotal
-       \ifdim\margincontentheight>\pagegoal
-         \egroup
-         \ifcase\marginpagecheckmethod
-           % disabled
-         \or
-           \setmargincontentpenalties
-         \or
-           % potentially dangerous, maybe better a \goodbreak; the problem is that
-           % there can be a penalty there, which we then overload and we also introduce
-           % nasty side effects, so, we drop this option
-           % \vadjust pre {\page}%
-         \fi
-       \else
-         \egroup
-       \fi
+\def\shipoutfacingpage
+  {\iffacingpages
+     \ifnum\realpageno>\plusone
+       \bgroup
+       \chardef\pageornamentstate\plusone
+       \setbox\facingpage\vbox to \zethoogte
+         {\unvbox\facingpage\vfil}%
+       \myshipout{\buildpagebody\box\facingpage}%
+       \egroup
+     \else
+       \global\setbox\facingpage\emptybox
      \fi
-   \else % We need the above because interlinepenalties overrule vadjusted \nobreaks.
-     % a  bit dangerous
-     \vadjust{\nobreak}%
-   \fi
-   \egroup}
-
-\def\savemargincontentlines
-  {\bgroup
-   \advance\margincontentheight \margincontentextralines\lineheight % 1 by default
-   \getnoflines\margincontentheight
-   \xdef\nofmargincontentlines{\the\noflines}%
-   \egroup}
-
-\def\fillupmargincontentlines
-  {\endgraf
-   \begingroup
-   \scratchcounter\numexpr(\nofmargincontentlines-\prevgraf)\relax
-   \ifnum\scratchcounter>\zerocount
-     \forgetall\dorecurse\scratchcounter{\nobreak\crlf}%
-   \fi
-   \endgroup}
-
-\beginETEX
-
-  \def\setmargincontentpenalties
-    {\xdef\restoreinterlinepenalty{\global\resetpenalties\interlinepenalties}%
-     \getnoflines\margincontentheight
-     \global\setpenalties\interlinepenalties\noflines\!!tenthousand}
-
-\endETEX
-
-\beginTEX
-
-  \def\setmargincontentpenalties
-    {\xdef\restoreinterlinepenalty
-       {\global\let\restoreinterlinepenalty\relax
-        \global\interlinepenalty=\the\interlinepenalty}% keep = here
-     \global\interlinepenalty\!!tenthousand}
-
-\endTEX
-
-% Yet undocumented, for a manual flush in for instance headers.
-
-\def\resetmargincontent
-  {\doglobal\newcounter\margincontentlevel
-   \global\chardef\margintextcollected\zerocount
-   \global\collectedmargintexts\emptytoks}
-
-\def\placemargincontent
-  {\ifcase\margintextcollected\else
-     \bgroup
-       \chardef\graphicvadjustmode\zerocount
-       \doflushmargincontents
-     \egroup
    \fi}
 
-% For old times sake (i use it in project styles) we provide
+\def\naastpagina
+  {\shipoutfacingpage}
 
-\def\placemargintexts {\placemargincontent}
-\def\resetmargetitels {\resetmargincontent}
-\def\margewoordpositie{\margewoord} % obsolete, now no longer range
+\def\facefloat % redefined
+  {\startnaast\box\floatbox\stopnaast}
 
-% but never use them yourself since they may disappear.
+\def\startnaast % beter: \dowithnextbox
+  {\iffacingpages
+     \global\setbox\facingbox\vbox
+       \bgroup
+       \hsize\zetbreedte
+   \else
+     \@EA\gobbleuntil\@EA\stopnaast
+   \fi}
 
-\def\oplinker#1%
-  {\strut
-   \graphicvadjust
-     {\dontcomplain
-      \setbox\scratchbox\vtop{\forgetall\strut#1}%
-      \getboxheight\scratchdimen\of\box\scratchbox
-      \vskip-\scratchdimen % waarom stond hier een \ ?
-      \box\scratchbox}}
-
-\setupinmargin
-  [\c!style=\v!bold,
-   \c!color=,
-   \c!location=\v!both,
-   \c!align=\v!inner,
-   \c!stack=\v!no,
-   \c!before=,
-   \c!after=]
+\def\stopnaast
+  {\egroup
+   \global\setbox\facingpage\vbox
+     {\ifvoid\facingpage
+        \vskip\openstrutdepth % \strutdp
+      \else
+        \unvbox\facingpage
+      \fi
+      \box\facingbox
+      \blanko}}
 
-\setupinmargin
-  [\v!left]
-  [\c!distance=\leftmargindistance,
-   \c!width=\leftmarginwidth,
-  %\c!align=\v!left, % no
-   \c!location=\v!left]
+\def\dostelnaastplaatsenin[#1]%
+  {\getparameters[\??np][#1]%
+   \doifelse\@@npstatus\v!start
+     {\global\facingpagestrue}
+     {\global\facingpagesfalse}}
 
-\setupinmargin
-  [\v!right]
-  [\c!distance=\rightmargindistance,
-   \c!width=\rightmarginwidth,
-  %\c!align=\v!right, % no
-   \c!location=\v!right]
+\def\stelnaastplaatsenin
+  {\dosingleargument\dostelnaastplaatsenin}
 
-% bonus needed when [inner/outer] is used as tag
+\stelnaastplaatsenin
+  [\c!status=\v!stop]
 
-\setupinmargin[\v!inner][\c!location=\v!inner,\c!align=\v!inner]
-\setupinmargin[\v!outer][\c!location=\v!outer,\c!align=\v!inner]
-
-% more efficient (5K less fotmat file)
-%
-% \letvalue{\??im\v!inner\c!location}\v!inner \letvalue{\??im\v!inner\c!align}\v!inner
-% \letvalue{\??im\v!outer\c!location}\v!outer \letvalue{\??im\v!outer\c!align}\v!inner
-
 \protect \endinput

@@ -414,106 +414,34 @@ resetspotcolors ; boolean spotcolors ; spotcolors := false ; % true
 
 string spotcolorpattern[] ; % needed for transparancies
 
-% vardef spotcolor(expr p, s) =
-%   if spotcolors :
-%     save ok, pc_tag ; boolean ok ; string pc_tag ;
-%     pc_tag := "_pct_"&p ;
-%     if not unstringed(pc_tag) :
-%       _spotcolor_number_ := _spotcolor_number_ + 1 ;
-%       setunstringed(pc_tag,_spotcolor_number_) ;
-%     fi ;
-%     pp := getunstringed(pc_tag) ;
-%     if unknown spotcolorhash[pp][s] :
-%       ok := false ; % not yet defined
-%     elseif spotcolorhash[pp][s] = -1 :
-%       ok := false ; % locally defined and undefined
-%     else :
-%       ok := true ;  % globally already defined
-%     fi ;
-%     if not ok :
-%       save ss ; string ss ; ss := p & " " & decimal s ;
-%       _spotcolor_counter_ := _spotcolor_counter_ + 1 ;
-%       spotcolorpattern[_spotcolor_counter_/1000] := ss ;
-%       spotcolorhash[pp][s] := _spotcolor_counter_ ;
-%       flush_special(2, 5, decimal _spotcolor_counter_ & " " & ss) ;
-%       _local_specials_ := _local_specials_ &
-%         "spotcolorhash["&decimal pp&"]["&decimal s&"]:=-1;" ;
-%     fi ;
-%     (_special_signal_/1000,2/1000,spotcolorhash[pp][s]/1000)
-%   else :
-%     (1-s,1-s,1-s)
-%   fi
-% enddef ;
-
-% vardef spotcolor(expr p, s) =
-%   if spotcolors :
-%     save ok, pc_tag ; boolean ok ; string pc_tag ;
-%     pc_tag := "_pct_"&p ;
-%     if not unstringed(pc_tag) :
-%       _spotcolor_number_ := _spotcolor_number_ + 1 ;
-%       setunstringed(pc_tag,_spotcolor_number_) ;
-%     fi ;
-%     pp := getunstringed(pc_tag) ;
-%     if unknown spotcolorhash[pp][s] :
-%       ok := false ; % not yet defined
-%     elseif spotcolorhash[pp][s] = -1 :
-%       ok := false ; % locally defined and undefined
-%     else :
-%       ok := true ;  % globally already defined
-%     fi ;
-%     if not ok :
-%       save ss ; string ss ; ss := p & " " & decimal s ;
-%       _spotcolor_counter_ := _spotcolor_counter_ + 1 ;
-%       spotcolorpattern[_spotcolor_counter_/1000] := ss ;
-%       spotcolorhash[pp][s] := _spotcolor_counter_ ;
-%       flush_special(2, 5, decimal _spotcolor_counter_ & " " & ss) ;
-%       _local_specials_ := _local_specials_ &
-%         "spotcolorhash["&decimal pp&"]["&decimal s&"]:=-1;" ;
-%     fi ;
-%     (_special_signal_/1000,2/1000,spotcolorhash[pp][s]/1000)
-%   else :
-%     (1-s,1-s,1-s)
-%   fi
-% enddef ;
-
 vardef spotcolor(expr p, s) =
-  multitonecolor(p, 1, "", decimal s)
-enddef ;
-
-vardef multitonecolor(expr n, f, d, p) = % name fractions names factors
   if spotcolors :
     save ok, pc_tag ; boolean ok ; string pc_tag ;
-    pc_tag := "_pct_" & n ;
+    pc_tag := "_pct_"&p ;
     if not unstringed(pc_tag) :
       _spotcolor_number_ := _spotcolor_number_ + 1 ;
       setunstringed(pc_tag,_spotcolor_number_) ;
     fi ;
     pp := getunstringed(pc_tag) ;
-    pc_tag := "_pct_"& decimal f & "_" & if d = "" : n else : d fi & "_" & p ; % check for d empty
-    if not unstringed(pc_tag) :
-      _spotcolor_number_ := _spotcolor_number_ + 1 ;
-      setunstringed(pc_tag,_spotcolor_number_) ;
-    fi ;
-    ps := getunstringed(pc_tag) ;
-    if unknown spotcolorhash[pp][ps] :
+    if unknown spotcolorhash[pp][s] :
       ok := false ; % not yet defined
-    elseif spotcolorhash[pp][ps] = -1 :
+    elseif spotcolorhash[pp][s] = -1 :
       ok := false ; % locally defined and undefined
     else :
       ok := true ;  % globally already defined
     fi ;
     if not ok :
-      save ss ; string ss ; ss := n & " " & decimal f & " " & if d = "" : n else : d fi & " " & p ;
+      save ss ; string ss ; ss := p & " " & decimal s ;
       _spotcolor_counter_ := _spotcolor_counter_ + 1 ;
       spotcolorpattern[_spotcolor_counter_/1000] := ss ;
-      spotcolorhash[pp][ps] := _spotcolor_counter_ ;
-      flush_special(2, 7, decimal _spotcolor_counter_ & " " & ss) ;
+      spotcolorhash[pp][s] := _spotcolor_counter_ ;
+      flush_special(2, 5, decimal _spotcolor_counter_ & " " & ss) ;
       _local_specials_ := _local_specials_ &
-        "spotcolorhash["&decimal pp&"]["&decimal ps&"]:=-1;" ;
+        "spotcolorhash["&decimal pp&"]["&decimal s&"]:=-1;" ;
     fi ;
-    (_special_signal_/1000,2/1000,spotcolorhash[pp][ps]/1000)
+    (_special_signal_/1000,2/1000,spotcolorhash[pp][s]/1000)
   else :
-   .5white
+    (1-s,1-s,1-s)
   fi
 enddef ;
 
@@ -530,63 +458,6 @@ differencetransparent := 11 ; exclusiontransparent  := 12 ;
 % compatibletransparent := 99 ;
 
 % fill fullcircle scaled 10cm withcolor transparant(.8,3,color) ;
-
-% vardef transparent(expr n, t, c) =
-%   save s, ss, nn, cc, is_cmyk, is_spot, ok ;
-%   string s, ss ; numeric nn ; color cc ; boolean is_cmyk, is_spot, ok ;
-%   % transparancy type
-%   if string n :
-%     if expandafter known scantokens(n&"transparent") :
-%       nn := scantokens(n&"transparent") ;
-%     else :
-%       nn := 0 ;
-%     fi
-%   else : % nn := min(n,13)
-%     nn := if n<13 : n else : nn := 0 fi ;
-%   fi ;
-%   % we need to expand the color (can be cmyk(..) or predefined)
-%   cc := c ; % expand color
-%   % check for cmyk special
-%   is_cmyk := (redpart   cc = _special_signal_/1000)
-%          and (greenpart cc = 1/1000) ;
-%   is_spot := (redpart   cc = _special_signal_/1000)
-%          and (greenpart cc = 2/1000) ;
-%   % build special string, fetch cmyk components
-%   s := decimal nn & " " & decimal t & " " &
-%        if     is_cmyk : cmykcolorpattern[bluepart cc]
-%        elseif is_spot : spotcolorpattern[bluepart cc]
-%        else           : dddecimal cc fi ;
-%   % check if this one is already used
-%   ss := "tr_" & s ;
-%   % efficiency hack
-%   if expandafter unknown scantokens(ss) :
-%     ok := false ; % not yet defined
-%   elseif scantokens(ss) < 0  :
-%     ok := false ; % locally defined and undefined
-%   else :
-%     ok := true ;  % globally already defined
-%   fi ;
-%   if not ok :
-%     if is_spot  :
-%       flush_special(5, 6, s) ;
-%     elseif is_cmyk :
-%       flush_special(4, 8, s) ;
-%     else :
-%       flush_special(3, 7, s) ;
-%     fi ;
-%     scantokens(ss) := _special_counter_ ;
-%     _local_specials_ := _local_specials_ &
-%       "scantokens(" & ditto & ss & ditto & ") := -1 ;" ;
-%   fi ;
-%   % go ahead
-%   if is_spot :
-%     (_special_signal_/1000,5/1000,scantokens(ss)/1000)
-%   elseif is_cmyk :
-%     (_special_signal_/1000,4/1000,scantokens(ss)/1000)
-%   else :
-%     (_special_signal_/1000,3/1000,scantokens(ss)/1000)
-%   fi
-% enddef ;
 
 vardef transparent(expr n, t, c) =
   save s, ss, nn, cc, is_cmyk, is_spot, ok ;
@@ -614,12 +485,7 @@ vardef transparent(expr n, t, c) =
        elseif is_spot : spotcolorpattern[bluepart cc]
        else           : dddecimal cc fi ;
   % check if this one is already used
-  ss := cleanstring("tr_" & s) ;
-  % we now have rather unique names, i.e. a color spec of .234 becomes
-  % tr..._234.... and metapost gives a number overflow (parse error)
-  % for variables like tr_12345678 which may result from many decimal
-  % positions (imo mp bug)
-  ss := asciistring(ss) ;
+  ss := "tr_" & s ;
   % efficiency hack
   if expandafter unknown scantokens(ss) :
     ok := false ; % not yet defined
@@ -630,7 +496,7 @@ vardef transparent(expr n, t, c) =
   fi ;
   if not ok :
     if is_spot  :
-      flush_special(5, 8, s) ;
+      flush_special(5, 6, s) ;
     elseif is_cmyk :
       flush_special(4, 8, s) ;
     else :

@@ -20,7 +20,7 @@
 %D   {doinsertfile}
 %D
 %D We overrule the figure||insertion special. Things should
-%D be more accurate, but maybe someday \unknown
+%D be more accurate, but maybe someday \onbekend
 
 \startspecials[rokicki]
 
@@ -61,11 +61,6 @@
   {\bgroup
    \dodoinsertfile{tr}{#1}{#2}{#3}{#4}{#5}{#6}{#7}{#8}{#9}%
    \egroup}
-
-%D Some MP stuff:
-
-\definespecial\doinsertMPfile#1%
-  {\doiffileelse{./#1}{\includeMPasEPS{./#1}}{\message{[MP #1]}}}
 
 %D \macros
 %D   {dostartrotation}

@@ -27,11 +27,11 @@
 %D will not conflict (don't confuse this with \XML\
 %D namespaces.)
 %D
-%D \starttyping
+%D \starttypen
 %D \startXMLmapping [tag] | [-] [tag] | [+] [tag]
 %D   definitions
 %D \stopXMLmapping
-%D \stoptyping
+%D \stoptypen
 %D
 %D When a \type {[+]} is specified, the mappings will
 %D nest.
@@ -97,11 +97,11 @@
 %D
 %D Imagine something:
 %D
-%D \starttyping
+%D \starttypen
 %D \defineXMLenvironment [something]
 %D   {\startXMLmapping[whatever]}
 %D   {\stopXMLmapping}
-%D \stoptyping
+%D \stoptypen
 %D
 %D Here the \type {\stopXMLmapping} will never be reached
 %D because we are in a mapping. Therefore we need:
@@ -147,8 +147,8 @@
 % \defineXMLdirective [flowchart] [shapes] \setupFLOWshapes % [#2=#3]
 % \defineXMLdirective [flowchart] [lines] \setupFLOWlines % [#2=#3]
 
-\defineXMLprocessor [context-begin-group] {\bgroup\gobbleoneargument}
-\defineXMLprocessor [context-end-group]   {\egroup\gobbleoneargument}
+\defineXMLprocessor [context-begin-group] {\begingroup\gobbleoneargument}
+\defineXMLprocessor [context-end-group]   {\endgroup  \gobbleoneargument}
 
 % \def\XMLnspart#1:#2\empty{#1} % call ...:\empty\empty
 % \def\XMLidpart#1:#2#3\empty{\ifx#2\empty#1\else\XMLidpart#2#3\empty\empty\fi}
@@ -206,12 +206,6 @@
    \else
      \@EA\secondoftwoarguments
    \fi}
-
-\gdef\doifXMLtextelse#1% new
-  {\doiftextelse{\simplifyXMLelements#1}}
-
-\gdef\doifXMLtext#1#2% new
-  {\doiftextelse{\simplifyXMLelements#1}{#2}\donothing}
 
 \gdef\convertXMLelement#1\to#2%
   {\ifcsname\@@XMLsave:#1\endcsname

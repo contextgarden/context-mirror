@@ -52,7 +52,7 @@
      \bgroup
      \forgetdisplayskips
      \displaywidowpenalty\widowpenalty % brrr, else widowpenalty does not work
-     \everymath   \emptytoks
+     \everymath\emptytoks
      \everydisplay\emptytoks
      $$\strut\global\lastlinewidth\predisplaysize$$
      \vskip-\lineheight
@@ -82,8 +82,8 @@
 % we don't use the skip's
 
 \def\displayskipsize#1#2% obsolete
-  {\ifdim\ctxparskip>\zeropoint
-     #1\ctxparskip\!!plus#2\ctxparskip\!!minus#2\ctxparskip\relax
+  {\ifdim\tussenwit>\zeropoint
+     #1\tussenwit\!!plus#2\tussenwit\!!minus#2\tussenwit\relax
    \else
      #1\lineheight\!!plus#2\lineheight\!!minus#2\lineheight\relax
    \fi}
@@ -124,12 +124,12 @@
    \abovedisplayshortskip\zeropoint
    \belowdisplayshortskip\zeropoint}
 
-\definenumber % \definelabel
-  [\v!formula]
-  [\c!text=\v!formula,
-   \c!way=\@@fmway,
-   \c!blockway=\@@fmblockway,
-   \c!location=\v!intext]
+\definieernummer % \doorlabelen
+  [\v!formule]
+  [\c!tekst=\v!formule,
+   \c!wijze=\@@fmwijze,
+   \c!blokwijze=\@@fmblokwijze,
+   \c!plaats=\v!intekst]
 
 \def\setupformulas
   {\dodoubleargument\getparameters[\??fm]}
@@ -137,13 +137,13 @@
 \newconditional\handleformulanumber
 \newconditional\incrementformulanumber
 
-\def\dododoformulanumber#1#2#3#4% (#1,#2)=outer(ref,sub) (#3,#4)=inner(ref,sub)
+\def\dododoformulenummer#1#2#3#4% (#1,#2)=outer(ref,sub) (#3,#4)=inner(ref,sub)
   {\hbox\bgroup
    \ifconditional\handleformulanumber
      \ifconditional\incrementformulanumber
-       \incrementnumber[\v!formula]%
+       \verhoognummer[\v!formule]%
      \fi
-     \maakhetnummer[\v!formula]%
+     \maakhetnummer[\v!formule]%
      \setbox0\hbox{\ignorespaces#2\unskip}%
      \ifdim\wd0>\zeropoint
        \edef\hetsubnummer{#2}%
@@ -157,26 +157,26 @@
      \fi
      \doifsomething{#3}{\rawreference\s!for{#3}{\hetnummer\hetsubnummer}}%
      \rm % nodig ?
-     \@@fmnumbercommand
-       {\dostartattributes\??fm\c!numberstyle\c!numbercolor
+     \@@fmnummercommando
+       {\dostartattributes\??fm\c!nummerletter\c!nummerkleur
         \strut
-        \@@fmleft
+        \@@fmlinks
         \preparethenumber\??fm\hetnummer\preparednumber
-        \labeltexts\v!formula
+        \labeltexts\v!formule
           {\ignorespaces\preparednumber\ignorespaces\hetsubnummer\unskip}%
-        \@@fmright
+        \@@fmrechts
         \dostopattributes}%
    \fi
    \egroup}
 
-\def\dodoformulanumber[#1][#2][#3]%
-  {\doquadruplegroupempty\dododoformulanumber{#1}{#2}{#3}}
+\def\dodoformulenummer[#1][#2][#3]%
+  {\doquadruplegroupempty\dododoformulenummer{#1}{#2}{#3}}
 
-\def\doformulanumber
-  {\dotripleempty\dodoformulanumber}
+\def\doformulenummer
+  {\dotripleempty\dodoformulenummer}
 
-\setvalue{\e!start\v!formula}{\dostartformula{}}
-\setvalue{\e!stop \v!formula}{\dostopformula}
+\setvalue{\e!start\v!formule}{\dostartformula{}}
+\setvalue{\e!stop \v!formule}{\dostopformula}
 
 \def\definieerformule
   {\dodoubleempty\dodefinieerformule}
@@ -185,13 +185,13 @@
   {\doifsomething{#1}
      {\copyparameters
         [\??fm#1][\??fm]
-        [\c!spacebefore,\c!spaceafter,\c!grid,
-         \c!leftmargin,\c!rightmargin,\c!margin,
-         \c!indentnext,\c!alternative,
-         \c!strut,\c!align,\c!distance]%
+        [\c!voorwit,\c!nawit,\c!grid,
+         \c!linkermarge,\c!rechtermarge,\c!marge,
+         \c!springvolgendein,\c!variant,
+         \c!strut,\c!uitlijnen,\c!afstand]%
       \setupformulas[#1][#2]%
-      \setvalue{\e!start#1\v!formula}{\dostartformula{#1}}%
-      \setvalue{\e!stop #1\v!formula}{\dostopformula}}}
+      \setvalue{\e!start#1\v!formule}{\dostartformula{#1}}%
+      \setvalue{\e!stop #1\v!formule}{\dostopformula}}}
 
 \newtoks \everysetupformulas \relax % we need a hook for extensions in modules
 
@@ -210,38 +210,38 @@
   {\csname\??fm\currentformula#1\endcsname}
 
 \setupformulas
-  [\c!way=\@@nrway,
-   \c!blockway=,
-   \c!sectionnumber=\@@nrsectionnumber,
-   \c!location=\v!right,
-   \c!left=(,
-   \c!right=),
-   \c!spacebefore=,
-   \c!spaceafter=\@@fmspacebefore,
-   \c!leftmargin=\!!zeropoint,
-   \c!rightmargin=\!!zeropoint,
-   \c!margin=,
-   \c!indentnext=\v!no,
-   \c!alternative=\s!default,
-   \c!align=,
-   \c!strut=\v!no,
-   \c!separator=\@@koseparator,
-   \c!distance=1em]
+  [\c!wijze=\@@nrwijze,
+   \c!blokwijze=,
+   \c!sectienummer=\@@nrsectienummer,
+   \c!plaats=\v!rechts,
+   \c!links=(,
+   \c!rechts=),
+   \c!voorwit=,
+   \c!nawit=\@@fmvoorwit,
+   \c!linkermarge=\!!zeropoint,
+   \c!rechtermarge=\!!zeropoint,
+   \c!marge=,
+   \c!springvolgendein=\v!nee,
+   \c!variant=\s!default,
+   \c!uitlijnen=,
+   \c!strut=\v!nee,
+   \c!scheider=\@@koscheider,
+   \c!afstand=1em]
 
 \def\currentformula          {}
 \def\predisplaysizethreshhold{2em} % was 3em
 
 \def\leftdisplayskip    {\leftskip}
 \def\rightdisplayskip   {\rightskip}
-\def\leftdisplaymargin  {\formulaparameter\c!leftmargin}
-\def\rightdisplaymargin {\formulaparameter\c!rightmargin}
+\def\leftdisplaymargin  {\formulaparameter\c!linkermarge}
+\def\rightdisplaymargin {\formulaparameter\c!rechtermarge}
 \def\displaygridsnapping{\formulaparameter\c!grid}
 
 \def\beforedisplayspace
-  {\doifnot{\formulaparameter\c!spacebefore}\v!none{\blank[\formulaparameter\c!spacebefore]}}
+  {\doifnot{\formulaparameter\c!voorwit}\v!geen{\blanko[\formulaparameter\c!voorwit]}}
 
 \def\afterdisplayspace
-  {\doifnot{\formulaparameter\c!spaceafter  }\v!none{\blank[\formulaparameter\c!spaceafter  ]}}
+  {\doifnot{\formulaparameter\c!nawit  }\v!geen{\blanko[\formulaparameter\c!nawit  ]}}
 
 \def\setpredisplaysize#1%
   {\predisplaysize#1\relax
@@ -294,8 +294,8 @@
    \switchtoformulabodyfont[#2]%
    \parskip\formulaparskip
    \def\currentformula{#1}%
-   \doifsomething{\formulaparameter\c!margin}% so we test first
-     {\dosetleftskipadaption{\formulaparameter\c!margin}%
+   \doifsomething{\formulaparameter\c!marge}% so we test first
+     {\dosetleftskipadaption{\formulaparameter\c!marge}%
       \edef\leftdisplaymargin{\the\leftskipadaption}}% overloaded
    \long\def\dostartformula##1{\bgroup\let\dostopformula\egroup}%
    \freezedimenmacro\leftdisplayskip
@@ -312,11 +312,11 @@
    \else
      \resetlastlinewidth
    \fi
-   \getvalue{\e!start\formulaparameter\c!alternative\v!formula}}
+   \getvalue{\e!start\formulaparameter\c!variant\v!formule}}
 
 \def\switchtoformulabodyfont{\switchtobodyfont}
 
-\setvalue{\v!formula}{\dosingleempty\doformula}
+\setvalue{\v!formule}{\dosingleempty\doformula}
 
 \def\doformula[#1]#2%
   {\begingroup
@@ -329,7 +329,7 @@
 
 \def\dostopformula
   {\doplaceformulanumber
-   \getvalue{\e!stop\formulaparameter\c!alternative\v!formula}%
+   \getvalue{\e!stop\formulaparameter\c!variant\v!formule}%
    \resetlastlinewidth
    \nonoindentation
    \dochecknextindentation{\??fm\currentformula}%
@@ -396,10 +396,10 @@
      \ifdim\lastskip<\zeropoint\else
        \par
          \ifvmode \ifdim\parskip>\zeropoint\relax
-           \whitespace \vskip-\parskip % kind of forces and cancels again
+           \witruimte \vskip-\parskip % kind of forces and cancels again
          \fi \fi
      \fi
-     \doif\displaygridcorrection{-\v!top}{\kern-\strutht}% new, currently only option/default
+     \doif\displaygridcorrection{-\v!boven}{\kern-\strutht}% new, currently only option/default
      \beforedisplayspace
      \par
      \ifvmode
@@ -419,7 +419,7 @@
      \egroup
      \afterdisplayspace
    \else
-     \par\ifvmode\ifdim\parskip>\zeropoint\whitespace\vskip-\parskip\fi\fi
+     \par\ifvmode\ifdim\parskip>\zeropoint\witruimte\vskip-\parskip\fi\fi
      \afterdisplayspace
      \egroup
    \fi
@@ -470,7 +470,7 @@
   {\iffirstargument
      \xdef\displaygridcorrection{#1}%
    \else
-     \gdef\displaygridcorrection{-\v!top}% handy with short preline
+     \gdef\displaygridcorrection{-\v!boven}% handy with short preline
    \fi
    \globallet\displaylinecorrection\displaygridcorrection}
 
@@ -481,8 +481,8 @@
   {\dotripleargument\dodefineformulaalternative}
 
 \def\dodefineformulaalternative[#1][#2][#3]%
-  {\setvalue{\e!start#1\v!formula}{#2}%
-   \setvalue{\e!stop #1\v!formula}{#3}}
+  {\setvalue{\e!start#1\v!formule}{#2}%
+   \setvalue{\e!stop #1\v!formule}{#3}}
 
 \defineformulaalternative[\s!default][\startdisplaymath][\stopdisplaymath]
 
@@ -494,25 +494,25 @@
 
 \definieerformule
   [sp]
-  [\c!spacebefore=\v!none,\c!spaceafter=\v!none,
-   \c!indentnext=\v!no,
-   \c!alternative=single]
+  [\c!voorwit=\v!geen,\c!nawit=\v!geen,
+   \c!springvolgendein=\v!nee,
+   \c!variant=single]
 
 \definieerformule
   [sd]
-  [\c!spacebefore=\v!none,\c!spaceafter=\v!none,
-   \c!indentnext=\v!yes,
-   \c!alternative=single]
+  [\c!voorwit=\v!geen,\c!nawit=\v!geen,
+   \c!springvolgendein=\v!ja,
+   \c!variant=single]
 
 \definieerformule
   [mp]
-  [\c!indentnext=\v!no,
-   \c!alternative=multi]
+  [\c!springvolgendein=\v!nee,
+   \c!variant=multi]
 
 \definieerformule
   [md]
-  [\c!indentnext=\v!yes,
-   \c!alternative=multi]
+  [\c!springvolgendein=\v!ja,
+   \c!variant=multi]
 
 % in m-math
 %
@@ -540,15 +540,15 @@
 % \convertcommand\next\to\ascii \getfirstcharacter\ascii
 % \ifx\firstcharacter\letterbackslash % a \cs
 
-\def\placeformula
+\def\plaatsformule
   {\settrue\incrementformulanumber
-   \dodoubleempty\doplaceformula}
+   \dodoubleempty\doplaatsformule}
 
-\def\placesubformula
+\def\plaatssubformule
   {\setfalse\incrementformulanumber
-   \dodoubleempty\doplaceformula}
+   \dodoubleempty\doplaatsformule}
 
-\def\doplaceformula[#1][#2]% #2 = dummy, gobbles spaces
+\def\doplaatsformule[#1][#2]% #2 = dummy, gobbles spaces
   {\def\redoplaatsformule
      {\bgroup\def\dostartformula####1{\relax}%
       \ifx\next\bgroup
@@ -557,7 +557,7 @@
         \expandafter\convertargument\e!start\to\asciiA
         \expandafter\convertargument\next   \to\asciiB
         \ExpandBothAfter\doifincsnameelse\asciiA\asciiB
-          {\egroup \@EA\dodoplaceformula}% [ref]\start
+          {\egroup \@EA\dodoplaatsformule}% [ref]\start
           {\egroup \@EA\dispplaatsformule}% [ref]$$
       \fi[#1]{}}%
    \futurelet\next\redoplaatsformule}
@@ -567,48 +567,48 @@
      {\expandafter\convertargument\e!start\to\asciiA
       \expandafter\convertargument\next   \to\asciiB
       \ExpandBothAfter\doifincsnameelse\asciiA\asciiB
-        {\egroup \dodoplaceformula}% [ref]\start
+        {\egroup \dodoplaatsformule}% [ref]\start
         {\egroup \dispplaatsformule}% [ref]$$
       [#1]{#3}}%
    \futurelet\next\redoplaatsformule#4}
 
 \def\dispplaatsformule[#1]#2$$#3$$%
-  {\dodoplaceformula[#1]{#2}\dostartformula{}#3\dostopformula}
+  {\dodoplaatsformule[#1]{#2}\dostartformula{}#3\dostopformula}
 
 \let\normalreqno\eqno
 \let\normalleqno\leqno
 
-\def\dodoplaceformula[#1]#2% messy, needs a clean up
+\def\dodoplaatsformule[#1]#2% messy, needs a clean up
   {\doifelse{#1}{-}
      {\setfalse\handleformulanumber}
      {\doifelse{#2}{-}
         {\setfalse\handleformulanumber}
         {\settrue\handleformulanumber}}%
    \ifconditional\handleformulanumber
-     \def\formulanumber
-       {%\global\let\subformulanumber\doformulanumber % no, bug
-        \doformulanumber[#1][#2]}%
-     \def\subformulanumber
+     \def\formulenummer
+       {%\global\let\subformulenummer\doformulenummer % no, bug
+        \doformulenummer[#1][#2]}%
+     \def\subformulenummer
        {\setfalse\incrementformulanumber
-        \formulanumber}%
+        \formulenummer}%
      \gdef\doplaceformulanumber
        {\global\let\doplaceformulanumber\empty
-        \doifelse\@@fmlocation\v!left
-          {\normalleqno{\doformulanumber[#1][#2][]{}}}
-          {\normalreqno{\doformulanumber[#1][#2][]{}}}}%
+        \doifelse\@@fmplaats\v!links
+          {\normalleqno{\doformulenummer[#1][#2][]{}}}
+          {\normalreqno{\doformulenummer[#1][#2][]{}}}}%
    \else
-     \def\formulanumber{\doformulanumber[#1][#2]}%
-     \global\let\subformulanumber\doformulanumber
+     \def\formulenummer{\doformulenummer[#1][#2]}%
+     \global\let\subformulenummer\doformulenummer
      \global\let\doplaceformulanumber\empty
    \fi}
 
 %D We need a hook into the plain math alignment macros
 %D
-%D \starttyping
+%D \starttypen
 %D \displaylines
 %D \eqalignno
 %D \eqalignno
-%D \stoptyping
+%D \stoptypen
 %D
 %D Otherwise we get a missing \type {$$} error reported.
 
@@ -627,13 +627,13 @@
 %D modules.
 
 \def\startinnermath
-  {\getvalue{\e!start\??fm\formulaparameter\c!align}}
+  {\getvalue{\e!start\??fm\formulaparameter\c!uitlijnen}}
 
 \def\stopinnermath
-  {\getvalue{\e!stop \??fm\formulaparameter\c!align}}
+  {\getvalue{\e!stop \??fm\formulaparameter\c!uitlijnen}}
 
 \def\mathinnerstrut
-  {\doif{\formulaparameter\c!strut}\v!yes\strut}
+  {\doif{\formulaparameter\c!strut}\v!ja\strut}
 
 \long\def\defineinnermathhandler#1#2#3%
   {\setvalue{\e!start\??fm#1}{#2}%
@@ -659,7 +659,7 @@
      \ifx\@leqno\empty\else \ifcase#2
        \rlap{\@leqno}%
      \else
-       \@leqno\hskip\formulaparameter\c!distance
+       \@leqno\hskip\formulaparameter\c!afstand
      \fi \fi
      #1}
 
@@ -668,13 +668,13 @@
    \ifx\@eqno\empty\else \ifcase#2
      \llap{\@eqno}%
    \else
-     \hskip\formulaparameter\c!distance\@eqno
+     \hskip\formulaparameter\c!afstand\@eqno
    \fi \fi
    \egroup}
 
-\defineinnermathhandler\v!right{\startmathbox\empty1}{\stopmathbox\hfill0}
-\defineinnermathhandler\v!left {\startmathbox\hfill0}{\stopmathbox\empty1}
-\defineinnermathhandler\v!middle{\startmathbox\hfill0}{\stopmathbox\hfill0}
+\defineinnermathhandler\v!rechts{\startmathbox\empty1}{\stopmathbox\hfill0}
+\defineinnermathhandler\v!links {\startmathbox\hfill0}{\stopmathbox\empty1}
+\defineinnermathhandler\v!midden{\startmathbox\hfill0}{\stopmathbox\hfill0}
 
 %D [The examples below are in english and don't process in the
 %D  documentation style, which will be english some day.]
@@ -867,7 +867,7 @@
 \to \everysupersub
 
 \appendtoks
-  \doifelse\@@mtsize\v!small
+  \doifelse\@@mtformaat\v!klein
     {\let\gridsupsubstyle    \scriptscriptstyle
      \let\gridsupsubbodyfont \setsmallbodyfont}%
     {\let\gridsupsubstyle    \scriptstyle
@@ -875,7 +875,7 @@
 \to \everysetuptextformulas
 
 \setuptextformulas
-  [\c!size=\v!normal]
+  [\c!formaat=\v!normaal]
 
 \def\dogridsupsub#1#2%
   {\begingroup
@@ -1005,13 +1005,13 @@
 % \to \everysetuptextformulas
 
 \appendtoks
- \doifelse\@@mtgrid\v!yes        \settrue\setfalse\crazymathsnapping
- \doifelse\@@mtstep\v!halfline\settrue\setfalse\halfcrazymathlines
+ \doifelse\@@mtgrid\v!ja        \settrue\setfalse\crazymathsnapping
+ \doifelse\@@mtstap\v!halveregel\settrue\setfalse\halfcrazymathlines
 \to \everysetuptextformulas
 
 \setuptextformulas
-  [\c!grid=\v!yes,
-   \c!step=\v!line]
+  [\c!grid=\v!ja,
+   \c!stap=\v!regel]
 
 \newcount\crazymathhack
 
@@ -1021,7 +1021,7 @@
 \let\lastcrazymathpostlines\!!zerocount
 
 \def\crazymathtag{amh:\the\crazymathhack}
-\def\crazytexttag{\v!text:\lastcrazymathpage}
+\def\crazytexttag{\v!tekst:\lastcrazymathpage}
 
 \def\crazymathindent{\hskip\MPx\crazymathtag\hskip-\MPx\crazytexttag}
 
@@ -1040,13 +1040,13 @@
 \def\snappedinlineformula
   {\dosingleempty\dosnappedinlineformula}
 
-%D \starttabulate[|Tl|l|]
+%D \starttabulatie[|Tl|l|]
 %D \NC - \NC half lines        \NC \NR
 %D \NC + \NC full lines        \NC \NR
 %D \NC = \NC force             \NC \NR
 %D \NC < \NC force, minus pre  \NC \NR
 %D \NC > \NC force, minus post \NC \NR
-%D \stoptabulate
+%D \stoptabulatie
 
 \newif\if!!donee
 \newif\if!!donef
@@ -1362,7 +1362,7 @@
 % \gform{\frac{1200}{k+12} - 42 = 6}
 % \stopregels
 
-%D \macros
+%D \macro
 %D   {restoremathstyle}
 %D
 %D We can pick up the current math style by calling \type
@@ -1385,9 +1385,9 @@
 %D If one want to be sure that something is typeset in the
 %D appropriate style, \type {\mathstyle} can be used:
 %D
-%D \starttyping
+%D \starttypen
 %D \mathstyle{something}
-%D \stoptyping
+%D \stoptypen
 
 \def\mathstyle#1%
   {\mathchoice
@@ -1418,7 +1418,7 @@
 %D Because we may overload \type {\text} in other (structuring)
 %D macros, we say:
 
-\appendtoks \let\text\mathtext \to \everymathematics
+\appendtoks \let\text\mathtext \to \everymath
 
 %D \macros
 %D   {frac, xfrac, xxfrac}
@@ -1428,7 +1428,7 @@
 %D handle math style restoring, which makes sure units and
 %D chemicals come out ok.
 %D
-%D \starttyping
+%D \starttypen
 %D \def\frac#1#2%
 %D   {\relax
 %D    \ifmmode
@@ -1436,14 +1436,14 @@
 %D    \else
 %D       $\frac{#1}{#2}$%
 %D    \fi}
-%D \stoptyping
+%D \stoptypen
 %D
 %D Better is:
 %D
-%D \starttyping
+%D \starttypen
 %D \def\frac#1#2%
 %D   {\relax\mathematics{{{\mathstyle{#1}}\over{\mathstyle{#2}}}}}
-%D \stoptyping
+%D \stoptypen
 %D
 %D The \type {\frac} macro kind of replaces the awkward \type
 %D {\over} primitive. Say that we have the following formulas:
@@ -1539,7 +1539,7 @@
 \bgroup
 
 \catcode`\/=\@@other    \global           \let\normalforwardslash/
-\catcode`\/=\@@active \doglobal\appendtoks\let/\normalforwardslash\to\everymathematics
+\catcode`\/=\@@active \doglobal\appendtoks\let/\normalforwardslash\to\everymath
 
 \egroup
 
@@ -1599,17 +1599,17 @@
 %D $\negative 10^{\negative 10^{\negative 10}}$.
 
 \setupformulas
-  [\c!way=\@@nrway,
-   \c!blockway=,
-   \c!sectionnumber=\@@nrsectionnumber,
-   \c!location=\v!right,
-   \c!left=(,
-   \c!right=),
-   \c!numberstyle=,
-   \c!numbercolor=,
-   \c!numbercommand=,
-   \c!spacebefore=\v!big,
-   \c!spaceafter=\@@fmspacebefore,
+  [\c!wijze=\@@nrwijze,
+   \c!blokwijze=,
+   \c!sectienummer=\@@nrsectienummer,
+   \c!plaats=\v!rechts,
+   \c!links=(,
+   \c!rechts=),
+   \c!nummerletter=,
+   \c!nummerkleur=,
+   \c!nummercommando=,
+   \c!voorwit=\v!groot,
+   \c!nawit=\@@fmvoorwit,
    \c!grid=]
 
 \protect \endinput

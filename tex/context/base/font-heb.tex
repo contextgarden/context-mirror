@@ -1,41 +1,28 @@
-%D \module
-%D   [       file=font-heb,
-%D        version=1999.11.06,
-%D          title=\CONTEXT\ Font Macros,
-%D       subtitle=Hebrew,
-%D         author=Hans Hagen,
-%D           date=\currentdate,
-%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
-%C
-%C This module is part of the \CONTEXT\ macro||package and is
-%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
-%C details.
+% NOT YET ADAPTED TO THE NEW FONT MACROS 
 
 \input font-arb.tex
 
 \writestatus{loading}{Context Font Macros / Hebrew (ArabTeX) support}
 
-% NOT YET ADAPTED TO THE NEW FONT MACROS
-
-%D This module is build on top of \ARABTEX\ and arabic
-%D support. I dedicate this module to my father Hein Hagen,
-%D who did not live long enough to become a user. His huge
-%D library contains math, science, history, english literature,
-%D philisophy and theology books, but his most favoured ones
-%D were those traditional hebrew printings. I must admit
-%D that some of those make clear that traditonal typesetting
-%D can still beat \TEX. Those nested multicolumn documents with
-%D complicated can give even the experienced macro writer a
+%D This module is build on top of \ARABTEX\ and arabic 
+%D support. I dedicate this module to my father Hein Hagen, 
+%D who did not live long enough to become a user. His huge  
+%D library contains math, science, history, english literature, 
+%D philisophy and theology books, but his most favoured ones 
+%D were those traditional hebrew printings. I must admit 
+%D that some of those make clear that traditonal typesetting 
+%D can still beat \TEX. Those nested multicolumn documents with 
+%D complicated can give even the experienced macro writer a 
 %D rather persistent headache.
 
-\unprotect
+\unprotect 
 
 %D A few fonts.
 
 \unexpanded\def\sethebrewfont#1% strange font dimensions / scale
   {\scratchdimen=10\bodyfontsize
    \font\hebfont=\truefontname{Hebrew#1} at \currentfontscale\scratchdimen
-   \fontdimen5\hebfont=.8\fontdimen2\hebfont
+   \fontdimen5\hebfont=.8\fontdimen2\hebfont 
    \fontdimen6\hebfont=3\fontdimen5\hebfont
    \hebfont}
 
@@ -46,20 +33,20 @@
 
 \startloadingARABTEX
 
-\input hebtex.sty
-\input apatch.sty
+\input hebtex.sty 
+\input apatch.sty 
 \input hepatch.sty
 
 \stoploadingARABTEX
 
-%D The main definition is:
+%D The main definition is: 
 
 \definefontsynonym [HebrewRegular] [hclassic]
 \definefontsynonym [HebrewBold]    [hcaption]
 
 \defineARABTEXalternative
   [hebrew]
-  [\c!inner=\sethebrew,
-   \c!style=\sethebrewfont{\fontstylesuffix}]
+  [\c!binnen=\sethebrew,
+   \c!letter=\sethebrewfont{\fontstylesuffix}]
 
 \protect \endinput

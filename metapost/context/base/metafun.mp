@@ -1,15 +1,15 @@
 %D \module
 %D   [       file=metafun.mp,
 %D        version=2000.07.15,
-%D          title=\CONTEXT\ \METAPOST\ graphics,
-%D       subtitle=format generation file,
+%D          title=\CONTEXT\ \METAPOST\ graphics, 
+%D       subtitle=format generation file, 
 %D         author=Hans Hagen,
 %D           date=\currentdate,
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
-%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
-%C details.
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for 
+%C details. 
 
 %D When generating many graphics at runtime, it can save run
 %D time to use a format file. We could have named this file
@@ -21,29 +21,28 @@
 %D (and as a result in buggy boundingbox and special
 %D handling). By using the name \type {metatex} we make sure
 %D that we use (unless overloaded) the settings of \type
-%D {mpost}.
+%D {mpost}. 
 
-if unknown ahangle :
-  input plain.mp ; % John Hobby's file
-else :
-  let dump = relax ;
-fi ;
+if unknown ahangle : 
+  input plain.mp ; % John Hobby's file 
+else : 
+  let dump = relax ; 
+fi ; 
 
-input mp-tool.mp ;
-input mp-spec.mp ;
-input mp-core.mp ;
-input mp-page.mp ;
-input mp-text.mp ;
-input mp-shap.mp ;
-input mp-butt.mp ;
-input mp-char.mp ;
-input mp-step.mp ;
-input mp-grph.mp ;
-input mp-figs.mp ;
+input mp-tool.mp ; 
+input mp-spec.mp ; 
+input mp-core.mp ; 
+input mp-page.mp ; 
+input mp-text.mp ; 
+input mp-shap.mp ; 
+input mp-butt.mp ; 
+input mp-char.mp ; 
+input mp-step.mp ; 
+input mp-grph.mp ; 
 
-%     mp-form.mp ;
-input mp-grid.mp ;
-input mp-func.mp ;
+%     mp-form.mp ; 
+input mp-grid.mp ; 
+input mp-func.mp ; 
 
 string metafunversion ;
 
@@ -57,7 +56,7 @@ metafunversion = "metafun"                       & " " &
 let normalend = end ;
 
 def end =
-  ; message "" ; message metafunversion ; message "" ; normalend ;
+  message "" ; message metafunversion ; message "" ; normalend ;
 enddef ;
 
 dump ; endinput .

@@ -63,10 +63,10 @@
 
 %D For some years we had \unknown
 %D
-%D \starttyping
+%D \starttypen
 %D \def\Romannumerals#1%
 %D   {\uppercase\expandafter{\romannumeral#1}}
-%D \stoptyping
+%D \stoptypen
 %D
 %D \unknown but we need to be fully expandable in order to get
 %D the utility output file right, so now we have the following
@@ -99,9 +99,9 @@
 %D be done with numbers less or equal to~26. At the cost of
 %D much more macros a faster conversion is possible, using:
 %D
-%D \starttyping
+%D \starttypen
 %D \setvalue{char1}{a} \def\character#1{\getvalue{char#1}}
-%D \stoptyping
+%D \stoptypen
 %D
 %D But we prefer a simpel \type{\case}.
 %D
@@ -165,27 +165,22 @@
 %D Why should we only honour the romans, and not the greek?
 
 \def\greeknumerals#1% watch the \normalxi
-  {\mathematics
-     {\ifcase#1\unknowncharacter\or
-        \alpha      \or \beta  \or \gamma   \or \delta   \or
-        \varepsilon \or \zeta  \or \eta     \or \theta   \or
-        \iota       \or \kappa \or \lambda  \or \mu      \or
-        \nu         \or \xi    \or \omicron \or \pi      \or
-        \varrho     \or \sigma \or \tau     \or \upsilon \or
-        \phi        \or \chi   \or \psi     \or \omega
-      \else
-        \unknowncharacter
-      \fi}}
+   {\mathematics
+      {\ifcase#1\unknowncharacter\or
+         \alpha\or\beta\or\gamma\or\delta\or\varepsilon\or
+         \zeta\or\eta\or\theta\or\iota\or\kappa\or\lambda\or
+         \mu\or\nu\or\normalxi\or o\or\pi\or\varrho\or\sigma\or
+         \tau\or\upsilon\or\phi\or\chi\or\psi\or\omega
+       \else
+         \unknowncharacter
+       \fi}}
 
 \def\Greeknumerals#1%
   {\mathematics
      {\ifcase#1\unknowncharacter \or
-        \Alpha   \or \Beta  \or \Gamma   \or \Delta   \or
-        \Epsilon \or \Zeta  \or \Eta     \or \Theta   \or
-        \Iota    \or \Kappa \or \Lambda  \or \Mu      \or
-        \Nu      \or \Xi    \or \Omicron \or \Pi      \or
-        \Rho     \or \Sigma \or \Tau     \or \Upsilon \or
-        \Phi     \or \Xi    \or \Psi     \or \Omega
+        A\or B\or\Gamma\or\Delta\or E\or Z\or H\or\Theta\or
+        I\or K\or\Lambda\or M\or N\or\Xi\or O\or\Pi\or P\or
+        \Sigma\or T\or\Upsilon\or\Phi\or X\or\Psi\or\Omega
       \else
         \unknowncharacter
       \fi}}
@@ -234,9 +229,9 @@
 %D mechanism. This way users can easily redefine a label from
 %D for instance german into austrian.
 %D
-%D \starttyping
+%D \starttypen
 %D \setuplabeltext [de] [january=J\"anner]
-%D \stoptyping
+%D \stoptypen
 %D
 %D Anyhow, the conversion looks like:
 
@@ -265,11 +260,11 @@
 %D days, taking leapyears into account. For those who are
 %D curious:
 %D
-%D \startitemize[packed]
-%D \item  years that can be divided by 4 are leapyears
-%D \item  exept years that can be divided by 100
-%D \item  unless years can be divided by 400
-%D \stopitemize
+%D \startopsomming[opelkaar]
+%D \som  years that can be divided by 4 are leapyears
+%D \som  exept years that can be divided by 100
+%D \som  unless years can be divided by 400
+%D \stopopsomming
 %D
 %D This makes the year 1900 into a normal year and 1996 and
 %D 2000 into leap years, right? Well, converting to string
@@ -343,9 +338,9 @@
 %D gives
 %D
 %D \startvoorbeeld
-%D \startlines
-%D \getbuffer
-%D \stoplines
+%D \startregels
+%D \haalbuffer
+%D \stopregels
 %D \stopvoorbeeld
 %D
 %D The macro \type {\getdayoftheweek} can be used to calculate
@@ -371,10 +366,10 @@
 %D
 %D {\em not yet implemented:}
 %D
-%D \starttyping
+%D \starttypen
 %D \def\weekoftheday#1#2#3%
 %D  {}
-%D \stoptyping
+%D \stoptypen
 
 %D \macros
 %D   {doifleapyearelse,
@@ -383,15 +378,15 @@
 %D Sometimes we need to know if we're dealing with a
 %D leapyear, so here is a testmacro:
 %D
-%D \starttyping
+%D \starttypen
 %D \doifleapyearelse{year}{yes}{no}
-%D \stoptyping
+%D \stoptypen
 %D
 %D An example of its use can be seen in the macro
 %D
-%D \starttyping
+%D \starttypen
 %D \getdayspermonth{year}{month}
-%D \stoptyping
+%D \stoptypen
 %D
 %D The number of days is available in the macro \type
 %D {\numberofdays}.
@@ -436,14 +431,14 @@
 %D instance:
 %D
 %D \startbuffer
-%D \currentdate[weekday,day,month,year] % still dutch example
-%D \currentdate[WEEKDAY,day,MONTH,year] % still dutch example
+%D \currentdate[weekdag,dag,maand,jaar] % still dutch example
+%D \currentdate[WEEKDAG,dag,MAAND,jaar] % still dutch example
 %D \stopbuffer
 %D
 %D \startvoorbeeld
-%D \startlines
-%D \getbuffer
-%D \stoplines
+%D \startregels
+%D \haalbuffer
+%D \stopregels
 %D \stopvoorbeeld
 %D
 %D depending of course on the keywords. Here we gave:
@@ -458,7 +453,7 @@
 %D
 %D \typebuffer
 %D
-%D or typeset: \getbuffer.
+%D or typeset: \haalbuffer.
 %D
 %D When no argument is passed, the current date is given as
 %D specified per language (using \type{\installlanguage}).
@@ -467,7 +462,7 @@
 %D
 %D \startbuffer
 %D \date
-%D \date[d=12,m=12,y=1998][weekday]
+%D \date[d=12,m=12,y=1998][weekdag]
 %D \date[d=12,m=12,y=1998]
 %D \stopbuffer
 %D
@@ -479,9 +474,9 @@
 %D The date is specified by one character keys. When no date
 %D is given, we get the current date.
 %D
-%D \startlines
-%D \getbuffer
-%D \stoplines
+%D \startregels
+%D \haalbuffer
+%D \stopregels
 
 \def\kenmerkdatumpatroon{j,mm,dd} % jj,mm,dd changed at januari 1-1-2000
 
@@ -493,35 +488,102 @@
      \hskip\datesignal\relax
    \fi}
 
+% \def\complexcurrentdate[#1]%
+%   {\bgroup
+%    \let\labellanguage\currentlanguage
+%    \def\betweendates{\let\betweendates\dobetweendates}%
+%    \lowercase{\edef\!!stringa{#1}}% permits usage in \kap
+%    \@EA\processallactionsinset\@EA
+%      [\!!stringa]
+%      [    \v!dag=>\betweendates\the\normalday,
+%         \v!maand=>\betweendates\month\normalmonth,
+%          \v!jaar=>\betweendates\the\normalyear,
+%           \space=>\unskip\ \hskip\datesignal,% optimization -)
+%               \ =>\unskip\ \hskip\datesignal,% optimization -)
+%                d=>\the\normalday,
+%                m=>\the\normalmonth,
+%                j=>\the\normalyear,
+%                y=>\the\normalyear,
+%                w=>\betweendates\dayoftheweek\normalday\normalmonth\normalyear,
+%               dd=>\ifnum\normalday  >9 \else0\fi\the\normalday,
+%               mm=>\ifnum\normalmonth>9 \else0\fi\the\normalmonth,
+%               jj=>\expandafter\gobbletwoarguments\the\normalyear,
+%               yy=>\expandafter\gobbletwoarguments\the\normalyear,
+%       \v!weekdag=>\betweendates\dayoftheweek\normalday\normalmonth\normalyear,
+%       \v!kenmerk=>\expanded{\complexcurrentdate[\kenmerkdatumpatroon]},
+%       \s!unknown=>\unskip
+%                   \commalistelement
+%                   \hskip\datesignal
+%                   \def\betweendates{\let\betweendates\dobetweendates}]%
+%    \ifdim\lastskip=\datesignal\relax
+%      \unskip
+%    \fi
+%    \egroup}
+
+% \def\complexcurrentdate[#1]%
+%   {\bgroup
+%    \let\labellanguage\currentlanguage
+%    \def\betweendates{\let\betweendates\dobetweendates}%
+%    \lowercase{\edef\!!stringa{#1}}% permits usage in \kap
+%    \@EA\processallactionsinset\@EA
+%      [\!!stringa]
+%      [    \v!dag=>\betweendates\the\normalday,
+%          \v!dag+=>\betweendates\ordinaldaynumber\normalday,
+%         \v!maand=>\betweendates\month\normalmonth,
+%          \v!jaar=>\betweendates\the\normalyear,
+%        \v!spatie=>\unskip\ \hskip\datesignal,% optimization -)
+%               \ =>\unskip\ \hskip\datesignal,% optimization -)
+%                d=>\the\normalday,
+%               d+=>\ordinaldaynumber\normalday,
+%                m=>\the\normalmonth,
+%                j=>\the\normalyear,
+%                y=>\the\normalyear,
+%                w=>\betweendates\dayoftheweek\normalday\normalmonth\normalyear,
+%               dd=>\ifnum\normalday  >9 \else0\fi\the\normalday,
+%              dd+=>\ordinaldaynumber{\ifnum\normalday  >9 \else0\fi\the\normalday},
+%               mm=>\ifnum\normalmonth>9 \else0\fi\the\normalmonth,
+%               jj=>\expandafter\gobbletwoarguments\the\normalyear,
+%               yy=>\expandafter\gobbletwoarguments\the\normalyear,
+%       \v!weekdag=>\betweendates\dayoftheweek\normalday\normalmonth\normalyear,
+%       \v!kenmerk=>\expanded{\complexcurrentdate[\kenmerkdatumpatroon]},
+%       \s!unknown=>\unskip
+%                   \commalistelement
+%                   \hskip\datesignal
+%                   \def\betweendates{\let\betweendates\dobetweendates}]%
+%    \ifdim\lastskip=\datesignal\relax
+%      \unskip
+%    \fi
+%    \egroup}
+
 \def\complexcurrentdate[#1]%
   {\bgroup
    \let\labellanguage\currentlanguage
    \def\betweendates{\let\betweendates\dobetweendates}%
-   \lowercase{\edef\!!stringa{#1}}% permits usage in \smallcapped
+   \lowercase{\edef\!!stringa{#1}}% permits usage in \kap
    \@EA\processallactionsinset\@EA
      [\!!stringa]
-     [    \v!day=>\betweendates\the\normalday,
-        %\v!day+=>\betweendates\ordinaldaynumber\normalday,
-         \v!day+=>\betweendates\convertnumber{\v!day+}\normalday,
-        \v!month=>\betweendates\month\normalmonth,
-         \v!year=>\betweendates\the\normalyear,
-       \v!space=>\unskip\ \hskip\datesignal,% optimization -)
+     [    \v!dag=>\betweendates\the\normalday,
+        %\v!dag+=>\betweendates\ordinaldaynumber\normalday,
+         \v!dag+=>\betweendates\convertnumber{\v!dag+}\normalday,
+        \v!maand=>\betweendates\month\normalmonth,
+         \v!jaar=>\betweendates\the\normalyear,
+       \v!spatie=>\unskip\ \hskip\datesignal,% optimization -)
               \ =>\unskip\ \hskip\datesignal,% optimization -)
-               d=>\convertnumber\v!day\normalday,
+               d=>\convertnumber\v!dag\normalday,
              %d+=>\ordinaldaynumber\normalday,
-              d+=>\convertnumber{\v!day+}\normalday,
-               m=>\convertnumber\v!month\normalmonth,
-               j=>\convertnumber\v!year\normalyear,
-               y=>\convertnumber\v!year\normalyear,
+              d+=>\convertnumber{\v!dag+}\normalday,
+               m=>\convertnumber\v!maand\normalmonth,
+               j=>\convertnumber\v!jaar\normalyear,
+               y=>\convertnumber\v!jaar\normalyear,
                w=>\betweendates\dayoftheweek\normalday\normalmonth\normalyear,
               dd=>\ifnum\normalday  >9 \else0\fi\the\normalday,
             %dd+=>\ordinaldaynumber{\ifnum\normalday >9 \else0\fi\the\normalday},
-             dd+=>\convertnumber{\v!day+}{\ifnum\normalday >9 \else0\fi\the\normalday},
+             dd+=>\convertnumber{\v!dag+}{\ifnum\normalday >9 \else0\fi\the\normalday},
               mm=>\ifnum\normalmonth>9 \else0\fi\the\normalmonth,
               jj=>\expandafter\gobbletwoarguments\the\normalyear,
               yy=>\expandafter\gobbletwoarguments\the\normalyear,
-      \v!weekday=>\betweendates\dayoftheweek\normalday\normalmonth\normalyear,
-      \v!referral=>\expanded{\complexcurrentdate[\kenmerkdatumpatroon]},
+      \v!weekdag=>\betweendates\dayoftheweek\normalday\normalmonth\normalyear,
+      \v!kenmerk=>\expanded{\complexcurrentdate[\kenmerkdatumpatroon]},
       \s!unknown=>\unskip
                   \commalistelement
                   \hskip\datesignal
@@ -588,10 +650,10 @@
 %D Because we're dealing with dates, we also introduce a few
 %D day loops:
 %D
-%D \starttyping
+%D \starttypen
 %D \processmonth{year}{month}{command}
 %D \processyear{year}{command}{before}{after}
-%D \stoptyping
+%D \stoptypen
 %D
 %D The counters \type {\normalyear}, \type {\normalmonth} and
 %D \type{\normalday} can be used for for date manipulations.
@@ -629,16 +691,16 @@
 %D a set of conversion symbols. Both need a bit different
 %D treatment.
 %D
-%D \starttyping
+%D \starttypen
 %D \defineconversion [roman] [\romannumerals]
 %D \defineconversion [set 1] [$\star$,$\bullet$,$\ast$]
-%D \stoptyping
+%D \stoptypen
 %D
 %D You can define a language dependent conversion with:
 %D
-%D \starttyping
+%D \starttypen
 %D \defineconversion [en] [whatever] [\something]
-%D \stoptyping
+%D \stoptypen
 
 % \def\dodefineconversion[#1][#2]%
 %   {\ConvertConstantAfter\doifinstringelse{,}{#2}
@@ -759,47 +821,44 @@
 
 \defineconversion [a]  [\characters]
 \defineconversion [A]  [\Characters]
-\defineconversion [AK] [\smallcapped\characters]
-\defineconversion [KA] [\smallcapped\characters]
+\defineconversion [AK] [\kap\characters]
+\defineconversion [KA] [\kap\characters]
 
 \defineconversion [n]  [\numbers]
 \defineconversion [N]  [\Numbers]
 \defineconversion [m]  [\mediaeval]
 
-\defineconversion [i]  [\romannumerals]
-\defineconversion [I]  [\Romannumerals]
 \defineconversion [r]  [\romannumerals]
 \defineconversion [R]  [\Romannumerals]
-\defineconversion [KR] [\smallcapped\romannumerals]
-\defineconversion [RK] [\smallcapped\romannumerals]
+\defineconversion [KR] [\kap\romannumerals]
+\defineconversion [RK] [\kap\romannumerals]
 
 \defineconversion [g]  [\greeknumerals]
 \defineconversion [G]  [\Greeknumerals]
 
 \defineconversion [o]  [\oldstylenumerals]
-\defineconversion [O]  [\oldstylenumerals]
 \defineconversion [or] [\oldstyleromannumerals]
 
-\defineconversion [\v!character]     [\character]
-\defineconversion [\v!Character]     [\Character]
+\defineconversion [\v!letter]    [\character]
+\defineconversion [\v!Letter]    [\Character]
 
-\defineconversion [\v!characters]    [\characters]
-\defineconversion [\v!Characters]    [\Characters]
+\defineconversion [\v!letters]   [\characters]
+\defineconversion [\v!Letters]   [\Characters]
 
-\defineconversion [\v!numbers]       [\numbers]
-\defineconversion [\v!Numbers]       [\Numbers]
-\defineconversion [\v!mediaeval]     [\mediaeval]
+\defineconversion [\v!cijfers]   [\numbers]
+\defineconversion [\v!Cijfers]   [\Numbers]
+\defineconversion [\v!mediaeval] [\mediaeval]
 
-\defineconversion [\v!romannumerals] [\romannumerals]
-\defineconversion [\v!Romannumerals] [\Romannumerals]
+\defineconversion [\v!romeins]   [\romannumerals]
+\defineconversion [\v!Romeins]   [\Romannumerals]
 
-\defineconversion [\v!greek]         [\greeknumerals]
-\defineconversion [\v!Greek]         [\Greeknumerals]
+\defineconversion [\v!grieks]    [\greeknumerals]
+\defineconversion [\v!Grieks]    [\Greeknumerals]
 
 % Some bonus ones:
 
-\defineconversion [\v!empty]         [\gobbleoneargument]
-\defineconversion [\v!none]          [\numbers]
+\defineconversion [\v!leeg]      [\gobbleoneargument]
+\defineconversion [\v!geen]      [\numbers]
 
 \defineconversion
   [set 0]

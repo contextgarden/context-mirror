@@ -43,41 +43,41 @@
     RealPageNumber:=\the\realpageno;
     PageNumber:=\the\pageno;
     NOfPages:=\lastpage;
-    PaperHeight:=\the\paperheight;
-    PaperWidth:=\the\paperwidth;
-    PrintPaperHeight:=\the\printpaperheight;
-    PrintPaperWidth:=\the\printpaperwidth;
-    TopSpace:=\the\topspace;
-    BottomSpace:=\the\bottomspace;
-    BackSpace:=\the\backspace;
-    CutSpace:=\the\cutspace;
-    MakeupHeight:=\the\makeupheight;
-    MakeupWidth:=\the\makeupwidth;
-    TopHeight:=\the\topheight;
-    TopDistance:=\the\topdistance;
-    HeaderHeight:=\the\headerheight;
-    HeaderDistance:=\the\headerdistance;
-    TextHeight:=\the\textheight;
-    FooterDistance:=\the\footerdistance;
-    FooterHeight:=\the\footerheight;
-    BottomDistance:=\the\bottomdistance;
-    BottomHeight:=\the\bottomheight;
-    LeftEdgeWidth:=\the\leftedgewidth;
-    LeftEdgeDistance:=\the\leftedgedistance;
-    LeftMarginWidth:=\the\leftmarginwidth;
-    LeftMarginDistance:=\the\leftmargindistance;
-    TextWidth:=\the\textwidth ;
-    RightMarginDistance:=\the\rightmargindistance;
-    RightMarginWidth:=\the\rightmarginwidth;
-    RightEdgeDistance:=\the\rightedgedistance;
-    RightEdgeWidth:=\the\rightedgewidth;
-    InnerMarginDistance:=\the\innermargindistance;
+    PaperHeight:=\the\papierhoogte;
+    PaperWidth:=\the\papierbreedte;
+    PrintPaperHeight:=\the\printpapierhoogte;
+    PrintPaperWidth:=\the\printpapierbreedte;
+    TopSpace:=\the\kopwit;
+    BottomSpace:=\the\bodemwit;
+    BackSpace:=\the\rugwit;
+    CutSpace:=\the\snijwit;
+    MakeupHeight:=\the\zethoogte;
+    MakeupWidth:=\the\zetbreedte;
+    TopHeight:=\the\bovenhoogte;
+    TopDistance:=\@the\bovenafstand;
+    HeaderHeight:=\the\hoofdhoogte;
+    HeaderDistance:=\@the\hoofdafstand;
+    TextHeight:=\the\teksthoogte;
+    FooterDistance:=\@the\voetafstand;
+    FooterHeight:=\the\voethoogte;
+    BottomDistance:=\@the\onderafstand;
+    BottomHeight:=\the\onderhoogte;
+    LeftEdgeWidth:=\the\linkerrandbreedte;
+    LeftEdgeDistance:=\@the\linkerrandafstand;
+    LeftMarginWidth:=\the\linkermargebreedte;
+    LeftMarginDistance:=\@the\linkermargeafstand;
+    TextWidth:=\the\tekstbreedte ;
+    RightMarginDistance:=\@the\rechtermargeafstand;
+    RightMarginWidth:=\the\rechtermargebreedte;
+    RightEdgeDistance:=\@the\rechterrandafstand;
+    RightEdgeWidth:=\the\rechterrandbreedte;
+    InnerMarginDistance:=\@the\innermargindistance;
     InnerMarginWidth:=\the\innermarginwidth;
-    OuterMarginDistance:=\the\outermargindistance;
+    OuterMarginDistance:=\@the\outermargindistance;
     OuterMarginWidth:=\the\outermarginwidth;
-    InnerEdgeDistance:=\the\inneredgedistance;
+    InnerEdgeDistance:=\@the\inneredgedistance;
     InnerEdgeWidth:=\the\inneredgewidth;
-    OuterEdgeDistance:=\the\outeredgedistance;
+    OuterEdgeDistance:=\@the\outeredgedistance;
     OuterEdgeWidth:=\the\outeredgewidth;
     PageOffset:=\the\pageoffset;
     PageDepth:=\the\pagedepth;
@@ -100,7 +100,23 @@
    \od
    \edef\MPonoddpage{\doifoddpageelse{true}{false}}}
 
-\let\freezeMPlayout\relax % obsolete
+\iffixedlayoutdimensions
+
+  \let\freezeMPlayout\relax
+
+\else
+
+  \def\freezeMPlayout% must be done more efficient
+    {\freezedimenmacro\bovenafstand
+     \freezedimenmacro\hoofdafstand
+     \freezedimenmacro\voetafstand
+     \freezedimenmacro\onderafstand
+     \freezedimenmacro\linkerrandafstand
+     \freezedimenmacro\linkermargeafstand
+     \freezedimenmacro\rechtermargeafstand
+     \freezedimenmacro\rechterrandafstand}
+
+\fi
 
 %D We need to freeze the pagelayout before the backgrounds
 %D are build, because the overlay will temporarily become
@@ -127,14 +143,14 @@
 %D
 %D See \type {mp-page.mp} for the definition of the macros:
 %D
-%D \starttabulate[|tl|l|p|]
+%D \startabulatie[|tl|l|p|]
 %D \NC ResetTextAreas        \NC no arguments \NC
 %D     reset areas on page                    \NC \NR
 %D \NC RegisterTextArea      \NC x, y, w, h   \NC
 %D     adds area to the list                  \NC \NR
 %D \NC TextAreaX,Y,W,H,XY,WH \NC x and/or y   \NC
 %D     reports offsets and dimensions         \NC \NR
-%D \stoptabulate
+%D \stoptabulatie
 %D
 %D The \type {TextArea*} macros can be used to determine
 %D overlap.

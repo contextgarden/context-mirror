@@ -11,7 +11,7 @@
 banner = ['TeXTools', 'version 1.2', '2002/2004', 'PRAGMA ADE/POD']
 
 unless defined? ownpath
-    ownpath = $0.sub(/[\\\/][a-z0-9\-]*?\.rb/i,'')
+    ownpath = $0.sub(/[\\\/]\w*?\.rb/i,'')
     $: << ownpath
 end
 
@@ -109,37 +109,24 @@ class Commands
 
     def findfile
 
-        report('locating file in texmf tree')
-
-        # ! not in tree
-        # ? fuzzy
-        # . in tree
-        # > in tree and used
+        report('locating file in texmf tree (> used by kpse)')
 
         if filename = @commandline.argument('first') then
             if filename && ! filename.empty? then
                 report
-                used = kpsefile(filename) || pathfile(filename)
+                used = kpsefile(filename)
                 if paths = texmfroots then
-                    found, prefered = false, false
                     paths.each do |p|
                         if files = texmffiles(p,filename) then
-                            found = true
                             files.each do |f|
                                 # unreadable: report("#{if f == used then '>' else '.' end} #{f}")
                                 if f == used then
-                                    prefered = true
                                     report("> #{f}")
                                 else
                                     report(". #{f}")
                                 end
                             end
                         end
-                    end
-                    if prefered then
-                        report("! #{used}") unless found
-                    else
-                        report("> #{used}")
                     end
                 elsif used then
                     report("? #{used}")
@@ -410,29 +397,7 @@ class Commands
         return nil
     end
 
-    def pathfile(filename)
-        used = nil
-        begin
-            if ! filename || filename.empty? then
-                return nil
-            else
-                ENV['PATH'].split(File::PATH_SEPARATOR).each do |path|
-                    if FileTest.file?(File.join(path,filename)) then
-                        used = File.join(path,filename)
-                        break
-                    end
-                end
-            end
-        rescue
-            used = nil
-        else
-            used = nil if used && used.empty?
-        end
-        return used
-    end
-
     def kpsefile(filename)
-        used = nil
         begin
             if ! filename || filename.empty? then
                 return nil
@@ -462,78 +427,7 @@ class Commands
         return used
     end
 
-    def touchcontextfile
-        maincontextfile = 'context.tex'
-        unless FileTest.file?(maincontextfile) then
-            begin
-                maincontextfile = `kpsewhich -progname=context #{maincontextfile}`.chomp
-            rescue
-                maincontextfile = ''
-            end
-        end
-        touchfile(maincontextfile) unless maincontextfile.empty?
-    end
-
-    def downcasefilenames
-        if @commandline.option('recurse') then
-            files = Dir.glob('**/*')
-        else
-            files = Dir.glob('*')
-        end
-        if files && files.length>0 then
-            files.each do |oldname|
-                if FileTest.file?(oldname) then
-                    newname = oldname.downcase
-                    if oldname != newname then
-                        begin
-                            File.rename(oldname,newname)
-                        rescue
-                            report("#{oldname} == #{oldname}\n")
-                        else
-                            report("#{oldname} => #{newname}\n")
-                        end
-                    end
-                end
-            end
-        end
-    end
-
     private # specific
-
-    def touchfile(filename)
-
-        if FileTest.file?(filename) then
-            if data = IO.read(filename) then
-                timestamp = Time.now.strftime('%Y.%d.%m')
-                begin
-                    data.gsub!(/\\contextversion\{(\d+)\.(\d+)\.(\d+)\}/) do
-                        "\\contextversion{#{timestamp}}"
-                    end
-                rescue
-                else
-                    begin
-                        File.delete(filename+'.old')
-                    rescue
-                    end
-                    begin
-                        File.copy(filename,filename+'.old')
-                    rescue
-                    end
-                    begin
-                        if f = File.open(filename,'w') then
-                            f.puts(data)
-                            f.close
-                        end
-                    rescue
-                    end
-                end
-                report("#{filename} is touched as #{timestamp}")
-            end
-        else
-            report("#{filename} is not found")
-        end
-
-    end
 
     def movefiles(from_path,to_path,suffix,&block)
         obsolete = 'obsolete'
@@ -642,19 +536,16 @@ end
 logger      = EXA::ExaLogger.new(banner.shift)
 commandline = CommandLine.new
 
-commandline.registeraction('touchcontextfile', '') # private
-commandline.registeraction('downcasefilenames', '') # private
-
-commandline.registeraction('removemapnames'  , '[pattern]   [--recurse]')
-commandline.registeraction('restoremapnames' , '[pattern]   [--recurse]')
-commandline.registeraction('hidemapnames'    , '[pattern]   [--recurse]')
-commandline.registeraction('videmapnames'    , '[pattern]   [--recurse]')
-commandline.registeraction('findfile'        , 'filename    [--recurse]')
-commandline.registeraction('unzipfiles'      , '[pattern]   [--recurse]')
-commandline.registeraction('fixafmfiles'     , '[pattern]   [--recurse]')
-commandline.registeraction('mactodos'        , '[pattern]   [--recurse]')
-commandline.registeraction('fixtexmftrees'   , '[texmfroot] [--force]')
-commandline.registeraction('replace'         , 'filename    [--force]')
+commandline.registeraction('removemapnames' , '[pattern]   [--recurse]')
+commandline.registeraction('restoremapnames', '[pattern]   [--recurse]')
+commandline.registeraction('hidemapnames'   , '[pattern]   [--recurse]')
+commandline.registeraction('videmapnames'   , '[pattern]   [--recurse]')
+commandline.registeraction('findfile'       , 'filename    [--recurse]')
+commandline.registeraction('unzipfiles'     , '[pattern]   [--recurse]')
+commandline.registeraction('fixafmfiles'    , '[pattern]   [--recurse]')
+commandline.registeraction('mactodos'       , '[pattern]   [--recurse]')
+commandline.registeraction('fixtexmftrees'  , '[texmfroot] [--force]')
+commandline.registeraction('replace'        , 'filename    [--force]')
 commandline.registeraction('help')
 commandline.registeraction('version')
 

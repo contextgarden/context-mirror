@@ -88,14 +88,14 @@
    \def\doresetparagraph
      {\resetparagraphlines}%
    \def\dobeforeparagraph
-     {\startlinenumbering[\v!continue]}%
+     {\startregelnummeren[\v!verder]}%
    \def\doafterparagraph
-     {\stoplinenumbering}%
+     {\stopregelnummeren}%
    \def\dobeforeskipparagraph
-     {\stoplinenumbering
+     {\stopregelnummeren
       \let\paragraphnumber\relax}%
    \def\doafterskipparagraph
-     {\startlinenumbering[\v!continue]}}
+     {\startregelnummeren[\v!verder]}}
 
 \long\def\directpushparagraph#1%
   {\doglobal\increment\totalnofparagraphs
@@ -173,7 +173,7 @@
    \fi}
 
 \def\dopopparagraphs[#1]%
-  {\doifnotinset{#1}{\v!none,0}
+  {\doifnotinset{#1}{\v!geen,0}
      {\dosetparagraph
       \doglobal\newcounter\globalparagraphnumber
       \doglobal\newcounter\discardedparagraphs

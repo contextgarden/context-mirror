@@ -17,15 +17,15 @@
 %D
 %D First generate a format, which in \WEBC\ looks like:
 %D
-%D \starttyping 
+%D \starttypen 
 %D pdftex --ini mptopdf 
-%D \stoptyping 
+%D \stoptypen 
 %D
 %D or: 
 %D
-%D \starttyping 
+%D \starttypen 
 %D texexec --make --tex=pdftex --format=mptopdf --alone 
-%D \stoptyping 
+%D \stoptypen 
 %D
 %D Since this conversion only works with \PDFTEX\ or \PDFETEX, 
 %D the session is aborted when another \TEX\ is used. When 
@@ -34,9 +34,9 @@
 %D
 %D The conversion itself is accomplished by: 
 %D
-%D \starttyping 
+%D \starttypen 
 %D pdftex &mptopdf \relax filename.number 
-%D \stoptyping 
+%D \stoptypen 
 %D 
 %D The \type {\relax} is needed since we don't want to process
 %D the file directly. Instead we pick up the filename using
@@ -46,20 +46,20 @@
 %D available in the file \type {filename.pdf}. This conversion
 %D process is roughly compatible with: 
 %D
-%D \starttyping 
+%D \starttypen 
 %D texexec --pdf --fig=c --result=filename filename.number
-%D \stoptyping 
+%D \stoptypen 
 %D
 %D This uses \CONTEXT, and is therefore slower. Therefore, 
 %D we provide a small \PERL\ script that does a faster job, 
 %D using the minimal format. Given that a format is 
 %D generated, one can say: 
 %D
-%D \starttyping 
+%D \starttypen 
 %D mptopdf somefile  
 %D mptopdf somefile.123
 %D mptopdf mp*.* 
-%D \stoptyping 
+%D \stoptypen 
 %D 
 %D The results are copied into files named \type 
 %D {somefile-number}. This mechanism will also be available 

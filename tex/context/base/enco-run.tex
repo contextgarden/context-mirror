@@ -34,9 +34,9 @@
 \gdef\showaccents
   {\bgroup
    \savefont
-   \setuptextrules[\c!bodyfont=,\c!style=]
+   \setuptextrules[\c!korps=,\c!letter=]
    \starttextrule{\visualizecharacterslegend}
-   \whitespace
+   \witruimte
    \restorefont\setupinterlinespace
    \visualizecharacters
    \def\do##1%
@@ -62,9 +62,9 @@
 \gdef\showcharacters
   {\bgroup
    \savefont
-   \setuptextrules[\c!bodyfont=,\c!style=]
+   \setuptextrules[\c!korps=,\c!letter=]
    \starttextrule{\visualizecharacterslegend}
-   \whitespace
+   \witruimte
    \dontcomplain
    \forgetall
    \def\startencoding[##1]{}
@@ -84,7 +84,7 @@
    \divide \dimen0 by \dimen2 \advance\dimen0 1sp
    \edef\enccols{\number\dimen0}
    \visualizecharacters
-   \startcolumns[\c!n=\enccols,\c!distance=2em]
+   \startcolumns[\c!n=\enccols,\c!afstand=2em]
    \restorefont\setupinterlinespace
    \def\definecharacter ##1 ##2 %
      {\setbox0=\hbox to \hsize{\localcolortrue\hbox to \encwidth{\getvalue{##1}\hss}\tttf##1}%

@@ -2,182 +2,165 @@
 %D   [       file=mp-text.mp,
 %D        version=2000.07.10,
 %D          title=\CONTEXT\ \METAPOST\ graphics,
-%D       subtitle=text support,
+%D       subtitle=text support, 
 %D         author=Hans Hagen,
 %D           date=\currentdate,
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
-%C therefore copyrighted by \PRAGMA. See licen-en.pdf for
-%C details.
+%C therefore copyrighted by \PRAGMA. See licen-en.pdf for 
+%C details. 
 
 %D Under construction.
 
-if unknown context_tool :    input mp-tool ; fi ;
-if   known context_text : endinput         ; fi ;
+if unknown context_tool :    input mp-tool ; fi ; 
+if   known context_text : endinput         ; fi ; 
 
-boolean context_text ; context_text := true ;
+boolean context_text ; context_text := true ; 
 
-if unknown noftexpictures :
-  numeric noftexpictures ; noftexpictures := 0 ;
-fi ;
+if unknown noftexpictures : 
+  numeric noftexpictures ; noftexpictures := 0 ; 
+fi ; 
 
-if unknown texpictures[1] :
-  picture texpictures[] ;
-fi ;
+if unknown texpictures[1] : 
+  picture texpictures[] ; 
+fi ; 
 
-numeric textextoffset ; textextoffset := 0 ;
+numeric textextoffset ; textextoffset := 0 ; 
 
-% vardef textext@#(expr txt) =
-%   interim labeloffset := textextoffset ;
-%   noftexpictures := noftexpictures + 1 ;
-%   if string txt :
-%     write "% figure " & decimal charcode & " : " &
-%       "texpictures[" & decimal noftexpictures & "] := btex " &
-%       txt & " etex ;" to jobname & ".mpt" ;
-%     if unknown texpictures[noftexpictures] :
-%       thelabel@#("unknown",origin)
+% vardef textext@#(expr txt) = 
+%   interim labeloffset := textextoffset ; 
+%   noftexpictures := noftexpictures + 1 ; 
+%   if string txt : 
+%     write "% figure " & decimal charcode & " : " &  
+%       "texpictures[" & decimal noftexpictures & "] := btex " & 
+%       txt & " etex ;" to jobname & ".mpt" ; 
+%     if unknown texpictures[noftexpictures] : 
+%       thelabel@#("unknown",origin)   
 %     else :
-%       thelabel@#(texpictures[noftexpictures],origin)
-%     fi
+%       thelabel@#(texpictures[noftexpictures],origin) 
+%     fi 
 %   else :
-%     thelabel@#(txt,origin)
-%   fi
-% enddef ;
+%     thelabel@#(txt,origin)   
+%   fi 
+% enddef ; 
 
-boolean hobbiestextext ; hobbiestextext := false ;
-% string  textextstring  ; textextstring  := "" ;
+boolean hobbiestextext ; hobbiestextext := false ; 
 
-% def resettextextdirective =
-%   textextstring := "" ;
-% enddef ;
-
-% def textextdirective text t =
-%   textextstring := textextstring & t ;
-% enddef ;
-
-vardef textext@#(expr txt) =
-  save _s_ ; string _s_ ;
-  interim labeloffset := textextoffset ;
-  noftexpictures := noftexpictures + 1 ;
-  if string txt :
-%     if textextstring <> "" :
-%       _s_ := "verbatimtex " & textextstring & " etex ;" ;
-%     else :
-%       _s_ := "" ;
-%     fi ;
+vardef textext@#(expr txt) = 
+  interim labeloffset := textextoffset ; 
+  noftexpictures := noftexpictures + 1 ; 
+  if string txt : 
     if hobbiestextext : % the tex.mp method as fallback (see tex.mp)
-%       write _s_ to "mptextmp.mp" ;
-      write _s_ & "btex " & txt & " etex" to "mptextmp.mp" ;
+      write "btex " & txt & " etex" to "mptextmp.mp" ;
       write EOF to "mptextmp.mp" ;
       scantokens "input mptextmp"
     else :
-%       write "% setup : " & _s_ to jobname & ".mpt" ;
-      write "% figure " & decimal charcode & " : " &
-        "texpictures[" & decimal noftexpictures & "] := btex " &
-        txt & " etex ;" to jobname & ".mpt" ;
-      if unknown texpictures[noftexpictures] :
-        thelabel@#("unknown",origin)
+      write "% figure " & decimal charcode & " : " &  
+        "texpictures[" & decimal noftexpictures & "] := btex " & 
+        txt & " etex ;" to jobname & ".mpt" ; 
+      if unknown texpictures[noftexpictures] : 
+        thelabel@#("unknown",origin)   
       else :
-        thelabel@#(texpictures[noftexpictures],origin)
+        thelabel@#(texpictures[noftexpictures],origin) 
       fi
-    fi
+    fi  
   else :
-    thelabel@#(txt,origin)
-  fi
-enddef ;
+    thelabel@#(txt,origin)   
+  fi 
+enddef ; 
 
-string laboff_   ; laboff_   := ""      ;
-string laboff_c  ; laboff_c  := ""      ;
-string laboff_l  ; laboff_l  := ".lft"  ;
-string laboff_r  ; laboff_r  := ".rt"   ;
-string laboff_b  ; laboff_b  := ".bot"  ;
-string laboff_t  ; laboff_t  := ".top"  ;
-string laboff_lt ; laboff_lt := ".ulft" ;
-string laboff_rt ; laboff_rt := ".urt"  ;
-string laboff_lb ; laboff_lb := ".llft" ;
-string laboff_rb ; laboff_rb := ".lrt"  ;
-string laboff_tl ; laboff_tl := ".ulft" ;
-string laboff_tr ; laboff_tr := ".urt"  ;
-string laboff_bl ; laboff_bl := ".llft" ;
-string laboff_br ; laboff_br := ".lrt"  ;
+string laboff_   ; laboff_   := ""      ; 
+string laboff_c  ; laboff_c  := ""      ; 
+string laboff_l  ; laboff_l  := ".lft"  ;  
+string laboff_r  ; laboff_r  := ".rt"   ;   
+string laboff_b  ; laboff_b  := ".bot"  ;   
+string laboff_t  ; laboff_t  := ".top"  ;   
+string laboff_lt ; laboff_lt := ".ulft" ;   
+string laboff_rt ; laboff_rt := ".urt"  ;   
+string laboff_lb ; laboff_lb := ".llft" ;   
+string laboff_rb ; laboff_rb := ".lrt"  ;   
+string laboff_tl ; laboff_tl := ".ulft" ;   
+string laboff_tr ; laboff_tr := ".urt"  ;  
+string laboff_bl ; laboff_bl := ".llft" ;   
+string laboff_br ; laboff_br := ".lrt"  ;   
 
-vardef textextstr(expr s, a) =
-  save ss ; string ss ;
-  ss := "laboff_" & a  ;
-  ss := scantokens ss ;
+vardef textextstr(expr s, a) = 
+  save ss ; string ss ; 
+  ss := "laboff_" & a  ;  
+  ss := scantokens ss ;  
   ss := "textext" & ss & "(" & ditto & s & ditto & ")" ;
-  scantokens ss
-enddef ;
+  scantokens ss  
+enddef ; 
 
-pair laboff.origin ; laboff.origin = (infinity,infinity) ;
-pair laboff.raw    ; laboff.raw    = (infinity,infinity) ;
+pair laboff.origin ; laboff.origin = (infinity,infinity) ; 
+pair laboff.raw    ; laboff.raw    = (infinity,infinity) ; 
 
-vardef thelabel@#(expr s, z) =
+vardef thelabel@#(expr s, z) = 
   save p ; picture p ;
   p = s if not picture s : infont defaultfont scaled defaultscale fi ;
-  if laboff@#<>laboff.origin :
-    (p shifted (z + labeloffset*laboff@# - (labxf@#*lrcorner p +
+  if laboff@#<>laboff.origin : 
+    (p shifted (z + labeloffset*laboff@# - (labxf@#*lrcorner p + 
          labyf@#*ulcorner p + (1-labxf@#-labyf@#)*llcorner p)))
   else :
     (p shifted z)
   fi
 enddef;
 
-def build_parshape (expr p, offset_or_path, dx, dy,
+def build_parshape (expr p, offset_or_path, dx, dy, 
   baselineskip, strutheight, strutdepth, topskip) =
-
-  if unknown trace_parshape :
-    boolean trace_parshape ; trace_parshape := false ;
+ 
+  if unknown trace_parshape : 
+    boolean trace_parshape ; trace_parshape := false ; 
   fi ;
 
   begingroup ;
 
-  save    q, l, r, line, tt, bb,
-          n, hsize, vsize, vvsize, voffset, hoffset, width, indent,
-          ll, lll, rr, rrr, cp, cq, t, b ;
+  save    q, l, r, line, tt, bb, 
+          n, hsize, vsize, vvsize, voffset, hoffset, width, indent, 
+          ll, lll, rr, rrr, cp, cq, t, b ; 
 
-  path    q, l, r, line, tt, bb ;
+  path    q, l, r, line, tt, bb ; 
   numeric n, hsize, vsize, vvsize, voffset, hoffset, width[], indent[] ;
-  pair    ll, lll, rr, rrr, cp, cq, t, b ;
+  pair    ll, lll, rr, rrr, cp, cq, t, b ; 
 
-  n := 0 ; cp := center p ;
+  n := 0 ; cp := center p ; 
 
-  if path offset_or_path :
-    q := offset_or_path ; cq := center q ;
-    voffset := dy ;
-    hoffset := dx ;
-  else :
-    q := p ; cq := center q ;
+  if path offset_or_path : 
+    q := offset_or_path ; cq := center q ; 
+    voffset := dy ; 
+    hoffset := dx ; 
+  else : 
+    q := p ; cq := center q ; 
     hoffset := offset_or_path + dx ;
-    voffset := offset_or_path + dy ;
-  fi ;
+    voffset := offset_or_path + dy ; 
+  fi ; 
 
-  hsize := xpart lrcorner q - xpart llcorner q ;
-  vsize := ypart urcorner q - ypart lrcorner q ;
+  hsize := xpart lrcorner q - xpart llcorner q ; 
+  vsize := ypart urcorner q - ypart lrcorner q ; 
 
-  q := p shifted - cp ;
+  q := p shifted - cp ; 
 
-  startsavingdata ;
+  startsavingdata ; 
 
-  savedata "\global\parvoffset " & decimal voffset&"bp " ;
-  savedata "\global\parhoffset " & decimal hoffset&"bp " ;
-  savedata "\global\parwidth   " & decimal   hsize&"bp " ;
-  savedata "\global\parheight  " & decimal   vsize&"bp " ;
+  savedata "\global\parvoffset " & decimal voffset&"bp " ; 
+  savedata "\global\parhoffset " & decimal hoffset&"bp " ; 
+  savedata "\global\parwidth   " & decimal   hsize&"bp " ; 
+  savedata "\global\parheight  " & decimal   vsize&"bp " ; 
 
-  if not path offset_or_path :
-    q := q xscaled ((hsize-2hoffset)/hsize)
-           yscaled ((vsize-2voffset)/vsize) ;
-  fi ;
+  if not path offset_or_path : 
+    q := q xscaled ((hsize-2hoffset)/hsize) 
+           yscaled ((vsize-2voffset)/vsize) ; 
+  fi ; 
 
-  hsize := xpart lrcorner q - xpart llcorner q ;
-  vsize := ypart urcorner q - ypart lrcorner q ;
+  hsize := xpart lrcorner q - xpart llcorner q ; 
+  vsize := ypart urcorner q - ypart lrcorner q ; 
 
-  t := (ulcorner q -- urcorner q) intersection_point q ;
-  b := (llcorner q -- lrcorner q) intersection_point q ;
+  t := (ulcorner q -- urcorner q) intersection_point q ; 
+  b := (llcorner q -- lrcorner q) intersection_point q ; 
 
-  if xpart directionpoint t of q < 0 :
-    q := reverse q ;
+  if xpart directionpoint t of q < 0 : 
+    q := reverse q ; 
   fi ;
 
   l := q cutbefore t ;
@@ -186,82 +169,82 @@ def build_parshape (expr p, offset_or_path, dx, dy,
   r := q cutbefore b ;
   r := r if xpart point 0 of q > 0 : & q fi cutafter t ;
 
-%  tt := (ulcorner q -- urcorner q) shifted (0,-topskip) ;
-%  bb := (llcorner q -- lrcorner q) shifted (0,strutdepth) ;
+%  tt := (ulcorner q -- urcorner q) shifted (0,-topskip) ; 
+%  bb := (llcorner q -- lrcorner q) shifted (0,strutdepth) ; 
 %
-%  l := l cutbefore (l intersection_point tt) ;
-%  l := l cutafter  (l intersection_point bb) ;
-%  r := r cutbefore (r intersection_point bb) ;
-%  r := r cutafter  (r intersection_point tt) ;
+%  l := l cutbefore (l intersection_point tt) ; 
+%  l := l cutafter  (l intersection_point bb) ; 
+%  r := r cutbefore (r intersection_point bb) ; 
+%  r := r cutafter  (r intersection_point tt) ; 
 
-  if trace_parshape :
+  if trace_parshape : 
     drawarrow p            withpen pencircle scaled 2pt withcolor red ;
     drawarrow l shifted cp withpen pencircle scaled 1pt withcolor green ;
     drawarrow r shifted cp withpen pencircle scaled 1pt withcolor blue ;
-  fi ;
+  fi ; 
 
-  vardef found_point (expr lin, pat, sig) =
+  vardef found_point (expr lin, pat, sig) = 
     pair a, b ;
     a := pat intersection_point (lin shifted (0,strutheight)) ;
-    if intersection_found :
+    if intersection_found : 
       a := a shifted (0,-strutheight) ;
     else :
       a := pat intersection_point lin ;
     fi ;
     b := pat intersection_point (lin shifted (0,-strutdepth)) ;
-    if intersection_found :
-      if sig :
-        if xpart b > xpart a : a := b shifted (0,strutdepth) fi ;
-      else :
-        if xpart b < xpart a : a := b shifted (0,strutdepth) fi ;
-      fi ;
-    fi ;
-    a
+    if intersection_found : 
+      if sig : 
+        if xpart b > xpart a : a := b shifted (0,strutdepth) fi ; 
+      else : 
+        if xpart b < xpart a : a := b shifted (0,strutdepth) fi ; 
+      fi ; 
+    fi ; 
+    a 
   enddef ;
 
-  if (strutheight+strutdepth<baselineskip) :
-    vvsize := vsize ;
-  else :
-    vvsize := (vsize div baselineskip) * baselineskip ;
-  fi ;
+  if (strutheight+strutdepth<baselineskip) : 
+    vvsize := vsize ; 
+  else : 
+    vvsize := (vsize div baselineskip) * baselineskip ; 
+  fi ; 
 
-  for i=topskip step baselineskip until vvsize :
+  for i=topskip step baselineskip until vvsize : 
 
-    line := (ulcorner q -- urcorner q) shifted (0,-i-eps) ;
+    line := (ulcorner q -- urcorner q) shifted (0,-i-eps) ;  
 
     ll := found_point(line,l,true ) ;
     rr := found_point(line,r,false) ;
 
-    if trace_parshape :
-      fill (ll--rr--rr shifted (0,strutheight)--ll
+    if trace_parshape : 
+      fill (ll--rr--rr shifted (0,strutheight)--ll 
         shifted (0,strutheight)--cycle) shifted cp withcolor .5white ;
-      fill (ll--rr--rr shifted (0,-strutdepth)--ll
+      fill (ll--rr--rr shifted (0,-strutdepth)--ll 
         shifted (0,-strutdepth)--cycle) shifted cp withcolor .7white ;
-      draw ll shifted cp withpen pencircle scaled 2pt ;
-      draw rr shifted cp withpen pencircle scaled 2pt ;
+      draw ll shifted cp withpen pencircle scaled 2pt ;  
+      draw rr shifted cp withpen pencircle scaled 2pt ;    
       draw (ll--rr) shifted cp  withpen pencircle scaled .5pt ;
-    fi ;
+    fi ; 
 
-    n := n + 1 ;
+    n := n + 1 ; 
     indent[n] := abs(xpart ll - xpart llcorner q) ;
     width[n]  := abs(xpart rr - xpart ll) ;
 
-    if (i=strutheight) and (width[n]<baselineskip) :
-      n := n - 1 ;
-      savedata "\global\chardef\parfirst=1 " ;
+    if (i=strutheight) and (width[n]<baselineskip) : 
+      n := n - 1 ; 
+      savedata "\global\chardef\parfirst=1 " ; 
     fi ;
 
-  endfor ;
+  endfor ; 
 
-  savedata "\global\parlines  " & decimal n ;
-  savedata "\global\partoks{  " ;
-  for i=1 upto n:
-    savedata decimal indent[i]&"bp " & decimal width[i]&"bp " ;
-  endfor ;
+  savedata "\global\parlines  " & decimal n ; 
+  savedata "\global\partoks{  " ; 
+  for i=1 upto n: 
+    savedata decimal indent[i]&"bp " & decimal width[i]&"bp " ;  
+  endfor ; 
   savedata "}" ;
-
-  stopsavingdata ;
+  
+  stopsavingdata ; 
 
   endgroup ;
 
-enddef ;
+enddef ; 

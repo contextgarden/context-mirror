@@ -23,9 +23,9 @@
 %D recalculating all those colors, we use a quick and dirty
 %D approach:
 %D
-%D \starttyping
+%D \starttypen
 %D \negativecolorbox0
-%D \stoptyping
+%D \stoptypen
 %D
 %D will negate the colors in box zero.
 
@@ -47,10 +47,10 @@
 %D handling. Here we deal with a per-document setting.
 
 \setupcolors
-  [\c!overprint=\v!no]
+  [\c!overprint=\v!nee]
 
 \def\starttextoverprint
-  {\doifelse\@@cloverprint\v!yes
+  {\doifelse\@@cloverprint\v!ja
      {\let\stoptextoverprint\dostopoverprint\dostartoverprint}
      {\let\stoptextoverprint\donothing}}
 

@@ -104,10 +104,10 @@
 %D In plain \TEX\ the following explanation about the register
 %D allocation mechanism is given:
 %D
-%D \startnarrower
+%D \startsmaller
 %D The following counters are reserved:
 %D
-%D \starttabulate
+%D \starttabulatie
 %D \NC 0--9 \NC page numbering \NC \NR
 %D \NC 10   \NC count allocation \NC \NR
 %D \NC 11   \NC dimen allocation \NC \NR
@@ -122,7 +122,7 @@
 %D \NC 20   \NC insert allocation \NC \NR
 %D \NC 21   \NC the most recently allocated number \NC \NR
 %D \NC 22   \NC constant $-1$ \NC \NR
-%D \stoptabulate
+%D \stoptabulatie
 %D
 %D New counters are allocated starting with 23, 24, etc. Other
 %D registers are allocated starting with 10. This leaves 0
@@ -146,7 +146,7 @@
 %D with respect to registers 0, 2, 4, 6, 8, 255. This will
 %D prevent \quote {save stack buildup} that might otherwise
 %D occur.
-%D \stopnarrower
+%D \stopsmaller
 %D
 %D We well overload some macros in \ETEX\ mode.
 
@@ -169,10 +169,10 @@
 
 \def\wlog{\immediate\write\m@ne} % write on log file (only)
 
-%D \startnarrower
+%D \startsmaller
 %D Here are abbreviations for the names of scratch registers
 %D that don't need to be allocated.
-%D \stopnarrower
+%D \stopsmaller
 
 \countdef \count@   = 255
 \dimendef \dimen@   =   0
@@ -181,7 +181,7 @@
 \skipdef  \skip@    =   0
 \toksdef  \toks@    =   0
 
-%D \startnarrower
+%D \startsmaller
 %D Now, we define \type {\newcount}, \type {\newbox}, etc. so
 %D that you can say \newcount\foo and \type {\foo} will be
 %D defined (with \type {\countdef}) to be the next counter. To
@@ -189,7 +189,7 @@
 %D \type {\allocationnumber}. Since there's no \type {\boxdef}
 %D command, \type {\chardef} is used to define a \type
 %D {\newbox}, \type {\newinsert}, \type {\newfam}, and so on.
-%D \stopnarrower
+%D \stopsmaller
 
 \def\newcount   {\alloc@0\count   \countdef \insc@unt}
 \def\newdimen   {\alloc@1\dimen   \dimendef \insc@unt}
@@ -237,16 +237,16 @@
 %D We define \type {\newif} a la plain \TEX, but will
 %D redefine it later. As Knuth says:
 %D
-%D \startnarrower
+%D \startsmaller
 %D And here's a different sort of allocation: for example,
 %D
-%D \starttyping
+%D \starttypen
 %D \newif\iffoo
-%D \stoptyping
+%D \stoptypen
 %D
 %D creates \type {\footrue}, \type {\foofalse} to go
 %D with \type {\iffoo}.
-%D \stopnarrower
+%D \stopsmaller
 
 \def\newif#1%
   {\count@\escapechar

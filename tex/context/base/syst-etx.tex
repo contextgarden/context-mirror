@@ -15,23 +15,7 @@
 %D the definition files that come with this useful \TEX\
 %D extension, but implement our own alternatives.
 
-%D \CONTEXT\ was one of the first systems that had support for \ETEX\
-%D built in. In the process we found out that the extensions were not
-%D as bug free as the rest of \TEX. Especially the bugs in \type
-%D {lastnode}, flushing of token lists with an index in the extension
-%D range, and spurious box behaviour of boxes adressed in the extended
-%D box space made us a bit careful. It's hard to to track down such
-%D bugs, especially if one has a mind set of \TEX\ being bug free. If
-%D you encounter unexpected behaviour let me know.
-
 \unprotect
-
-%D \ETEX\ has a not so handy way of telling you the version number,
-%D i.e. the revision number has a period in it:
-
-\long\def\gobbleoneargument#1{}
-
-\mathchardef\etexversion=\numexpr(\eTeXversion*100+\expandafter\gobbleoneargument\eTeXrevision)
 
 %D Constants to be used with \type {\grouptype}.
 
@@ -209,15 +193,14 @@
 \mathchardef\@@maxallocation = 32767
 
 %D I cannot imagine that more than~8 extra insert classes
-%D are needed, but, for critical editions, we may need many
-%D more, so:
+%D are needed, so we say:
 
-\chardef\@@insallocation=32
+\chardef\@@insallocation=8
 
-%D However, there's a bug in \ETEX\ versions smaller that 2.2,
-%D so we need to play safe:
+%D But, for critical editions, we may need many more, so
+%D here we go again:
 
-\ifnum\etexversion<202 \chardef\@@insallocation=8 \fi
+\chardef\@@insallocation=24
 
 %D My low level allocation macro now comes down to:
 
@@ -242,9 +225,9 @@
 
 %D These macros can be checked by tests like:
 %D
-%D \starttyping
+%D \starttypen
 %D \let\wlog\message \dorecurse{1000}{\newcount\dummy}
-%D \stoptyping
+%D \stoptypen
 
 %D A few bonus bindings.
 

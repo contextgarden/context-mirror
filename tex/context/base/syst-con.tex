@@ -32,7 +32,7 @@
 %D The ugly indirectness is needed to get rid of \TEX\
 %D induced spaces and \type {\relax}'s.
 %D
-%D \starttyping
+%D \starttypen
 %D [\uchexnumber{0}]
 %D [\uchexnumber\scratchcounter]
 %D [\uchexnumber\zerocount]
@@ -46,7 +46,7 @@
 %D [\expandafter\uchexnumber\expandafter{\number\zerocount}]
 %D [\expandafter\uchexnumber\expandafter{\the\scratchcounter}]
 %D [\expandafter\uchexnumber\expandafter{\the\zerocount}]
-%D \stoptyping
+%D \stoptypen
 
 \def\lchexnumber#1%
   {\@EA\dolchexnumber\number#1\relax}
@@ -150,28 +150,6 @@
      350\or 351\or 352\or 353\or 354\or 355\or 356\or 357\or
      360\or 361\or 362\or 363\or 364\or 365\or 366\or 367\or
      370\or 371\or 372\or 373\or 374\or 375\or 376\or 377\fi}
-
-%D \macros
-%D   {hexstringtonumber}
-%D
-%D This macro converts a two character hexadecimal number into
-%D a decimal number, thereby taking care of lowercase characters
-%D as well.
-
-\dostepwiserecurse{0}{9}{1}{\setevalue{@@uc@@\recurselevel}{\recurselevel}}
-
-\setvalue{@@uc@@a}{A} \setvalue{@@uc@@A}{A}
-\setvalue{@@uc@@b}{B} \setvalue{@@uc@@B}{B}
-\setvalue{@@uc@@c}{C} \setvalue{@@uc@@C}{C}
-\setvalue{@@uc@@d}{D} \setvalue{@@uc@@D}{D}
-\setvalue{@@uc@@e}{E} \setvalue{@@uc@@E}{E}
-\setvalue{@@uc@@f}{F} \setvalue{@@uc@@F}{F}
-
-\def\hexstringtonumber#1% {FF}
-  {\dohexstringtonumber#1}
-
-\def\dohexstringtonumber#1#2% FF
-  {"\csname @@uc@@#1\endcsname\csname @@uc@@#2\endcsname}
 
 %D \macros
 %D   {rawcharacter}

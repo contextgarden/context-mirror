@@ -74,19 +74,19 @@
 \def\dodefinelayer[#1][#2]%
   {\setuplayer
      [#1]
-     [\c!doublesided=,\c!preset=,
-      \c!state=\v!start,\c!direction=\v!normal,\c!option=,
-      \c!x=\!!zeropoint,\c!y=\!!zeropoint,\c!position=\v!no,
-      \c!line=0,\c!column=0,
-      \c!width=\nextboxwd,\c!height=\nextboxht,
-      \c!offset=\!!zeropoint,\c!rotation=, % geen 0 !
+     [\c!dubbelzijdig=,\c!preset=,
+      \c!status=\v!start,\c!richting=\v!normaal,\c!optie=,
+      \c!x=\!!zeropoint,\c!y=\!!zeropoint,\c!positie=\v!nee,
+      \c!regel=0,\c!kolom=0,
+      \c!breedte=\nextboxwd,\c!hoogte=\nextboxht,
+      \c!offset=\!!zeropoint,\c!rotatie=, % geen 0 !
       \c!hoffset=\!!zeropoint,\c!voffset=\!!zeropoint,
-      \c!location=rb,\c!position=\v!no,\c!page=,
-      \c!method=\v!overlay,
-      \c!sx=1,\c!sy=1,\c!corner=,#2]%
-   \doifvalue{\??ll#1\c!doublesided}\v!yes
-     {\dopresetlayerbox{\v!left #1}%
-      \dopresetlayerbox{\v!right#1}}%
+      \c!plaats=rb,\c!positie=\v!nee,\c!pagina=,
+      \c!methode=\v!overlay,
+      \c!sx=1,\c!sy=1,\c!hoek=,#2]%
+   \doifvalue{\??ll#1\c!dubbelzijdig}\v!ja
+     {\dopresetlayerbox{\v!links #1}%
+      \dopresetlayerbox{\v!rechts#1}}%
    \dopresetlayerbox{#1}%
    \defineoverlay[#1][\composedlayer{#1}]}
 
@@ -118,9 +118,9 @@
 %D the current point as reference point. Otherwise the topleft
 %D corner is used as reference point.
 %D
-%D \starttyping
+%D \starttypen
 %D \setlayer [identifier] [optional parameters] {data}
-%D \stoptyping
+%D \stoptypen
 
 \def\currentlayerdata{0}
 
@@ -128,7 +128,7 @@
   {\dotripleempty\dosetlayer}
 
 \def\dosetlayer[#1][#2][#3]% #4 == box do \fi is ok
-  {\doifelsevalue{\??ll#1\c!state}\v!stop
+  {\doifelsevalue{\??ll#1\c!status}\v!stop
      {\dowithnextbox\donothing\hbox}
      {\ifthirdargument
         \dodosetlayer[#1][#2][#3]%
@@ -143,7 +143,7 @@
    \doglobal\increment\currentlayerdata
    \forgetall
    \dontcomplain
-   \doifvalue{\??ll#1\c!option}\v!test\tracelayerstrue
+   \doifvalue{\??ll#1\c!optie}\v!test\tracelayerstrue
    \iftracelayers\traceboxplacementtrue\fi
    \dowithnextbox % sneller als aparte macro
      {\ifundefined{\@@layerbox#1}%
@@ -153,11 +153,11 @@
           {\ifodd\realpageno
           %  discard nextbox
            \else
-             \dododosetlayer[#1][\v!left][#3]%
+             \dododosetlayer[#1][\v!links][#3]%
            \fi}%
-          {\doifelse{#2}\v!odd
+          {\doifelse{#2}\v!oneven
              {\ifodd\realpageno
-                \dododosetlayer[#1][\v!right][#3]%
+                \dododosetlayer[#1][\v!rechts][#3]%
              %\else
              %  discard nextbox
               \fi}%
@@ -210,8 +210,8 @@
 \def\dododosetlayer[#1][#2][#3]% will be sped up
   {% we use the global width, never change this
    \def\currentlayer{#1}%
-   \@@layerxsiz\layerparameter\c!width
-   \@@layerysiz\layerparameter\c!height
+   \@@layerxsiz\layerparameter\c!breedte
+   \@@layerysiz\layerparameter\c!hoogte
    \layerwidth \@@layerxsiz
    \layerheight\@@layerysiz
    % preroll
@@ -219,16 +219,16 @@
    % presets and real roll
    \executeifdefined{\??ll\??ll\layerparameter\c!preset}\gobbletwoarguments\currentlayer{#3}%
    % that was real slow
-   \doif{\layerparameter\c!position}\v!overlay  % slow
-     {\getparameters[\??ll\currentlayer][\c!width=\zeropoint,\c!height=\zeropoint,\c!position=\v!yes]}%
-   \doifsomething{\layerparameter\c!rotation}
+   \doif{\layerparameter\c!positie}\v!overlay  % slow
+     {\getparameters[\??ll\currentlayer][\c!breedte=\zeropoint,\c!hoogte=\zeropoint,\c!positie=\v!ja]}%
+   \doifsomething{\layerparameter\c!rotatie}
      {\setbox\nextbox\hbox
         {\rotate % to be checked with new rotation
-           [\c!location=\v!high,\c!rotation=\layerparameter\c!rotation]
+           [\c!plaats=\v!hoog,\c!rotatie=\layerparameter\c!rotatie]
            {\flushnextbox}}}%
    % no, not local
-   % \@@layerxsiz\layerparameter\c!width
-   % \@@layerysiz\layerparameter\c!height
+   % \@@layerxsiz\layerparameter\c!breedte
+   % \@@layerysiz\layerparameter\c!hoogte
    % never change that
    \@@layerxpos\layerparameter\c!x
    \@@layerypos\layerparameter\c!y
@@ -242,51 +242,51 @@
    \@@layerypos\layerparameter\c!sy\@@layerypos
    \@@layerxoff\layerparameter\c!sx\@@layerxoff
    \@@layeryoff\layerparameter\c!sy\@@layeryoff
-   \doifelse{\layerparameter\c!position}\v!yes   % combine ^
+   \doifelse{\layerparameter\c!positie}\v!ja   % combine ^
      {\setlastlayerpos{#2\currentlayer}% todo l/r %%%%%%%%%%%%
       \@@layerxpos\lastlayerxpos
       \@@layerypos\lastlayerypos
-      \letgvalue{\??ll\currentlayer\layerpage\c!position}\v!yes
-      \letgvalue{\??ll\currentlayer\c!state}\v!start % needed ?
+      \letgvalue{\??ll\currentlayer\layerpage\c!positie}\v!ja
+      \letgvalue{\??ll\currentlayer\c!status}\v!start % needed ?
       \setbox\layerbox\vbox to \@@layerysiz
         {\hbox to \@@layerxsiz{\xypos{lyr:\currentlayerdata}\hss}\vss}}
      {\setbox\layerbox\emptybox
       \globallet\lastlayerxpos\!!zeropoint
       \globallet\lastlayerypos\!!zeropoint
-      \ExpandBothAfter\doifinset\v!bottom{\layerparameter\c!corner}
-        {\ifnum\layerparameter\c!line=\zerocount\else % can be < 0
-           \scratchcounter\layerparameter\c!line
+      \ExpandBothAfter\doifinset\v!onder{\layerparameter\c!hoek}
+        {\ifnum\layerparameter\c!regel=\zerocount\else % can be < 0
+           \scratchcounter\layerparameter\c!regel
            \scratchcounter-\scratchcounter
            \advance\scratchcounter\layoutlines
            \advance\scratchcounter\plusone
-           \setevalue{\??ll\currentlayer\c!line}{\the\scratchcounter}%
+           \setevalue{\??ll\currentlayer\c!regel}{\the\scratchcounter}%
          \fi
          \ifdim\@@layerysiz>\zeropoint
            \advance\@@layerypos-\@@layerysiz
            \@@layerypos-\@@layerypos
            \@@layeryoff-\@@layeryoff
          \fi}%
-      \ExpandBothAfter\doifinset\v!right{\layerparameter\c!corner}
-        {\ifnum\layerparameter\c!column=\zerocount\else % can be < 0
-           \scratchcounter\layerparameter\c!column
+      \ExpandBothAfter\doifinset\v!rechts{\layerparameter\c!hoek}
+        {\ifnum\layerparameter\c!kolom=\zerocount\else % can be < 0
+           \scratchcounter\layerparameter\c!kolom
            \scratchcounter-\scratchcounter
            \advance\scratchcounter \layoutcolumns
            \advance\scratchcounter \plusone
-           \setevalue{\??ll\currentlayer\c!column}{\the\scratchcounter}%
+           \setevalue{\??ll\currentlayer\c!kolom}{\the\scratchcounter}%
          \fi
          \ifdim\@@layerxsiz>\zeropoint
            \advance\@@layerxpos-\@@layerxsiz
            \@@layerxpos-\@@layerxpos
            \@@layerxoff-\@@layerxoff
          \fi}%
-      \ExpandBothAfter\doif\v!middle{\layerparameter\c!corner}
+      \ExpandBothAfter\doif\v!midden{\layerparameter\c!hoek}
         {\ifdim\@@layerxsiz>\zeropoint
            \advance\@@layerxpos.5\@@layerxsiz
          \fi
          \ifdim\@@layerysiz>\zeropoint
            \advance\@@layerypos.5\@@layerysiz
          \fi}%
-      \edef\layerpage{\layerparameter\c!page}}%
+      \edef\layerpage{\layerparameter\c!pagina}}%
    \doifsomething\layerpage
      {\edef\layerpage{:\layerpage}%
       \doifundefined{\@@layerbox#2\currentlayer\layerpage}
@@ -297,9 +297,9 @@
      \gsetboxllx\layerpagebox\zeropoint
      \gsetboxlly\layerpagebox\zeropoint
    \fi
-   \global\setbox\layerpagebox\vbox %to \layerparameter\c!height % new, otherwise no negative y possible
+   \global\setbox\layerpagebox\vbox %to \layerparameter\c!hoogte % new, otherwise no negative y possible
      {\offinterlineskip
-     %postpone, to after nextboxwd correction % \hsize\layerparameter\c!width % new, keep box small
+     %postpone, to after nextboxwd correction % \hsize\layerparameter\c!breedte % new, keep box small
      %\ifvoid\csname\@@layerbox\currentlayer\layerpage\endcsname\else % why not #2#1
       \ifvoid\layerpagebox
         \let\lastlayerwidth \zeropoint
@@ -310,28 +310,28 @@
         \ht\layerpagebox\zeropoint
         \dp\layerpagebox\zeropoint
         \wd\layerpagebox\zeropoint
-        \doifnotvalue{\layerparameter\c!direction}\v!reverse{\box\layerpagebox}%
+        \doifnotvalue{\layerparameter\c!richting}\v!omgekeerd{\box\layerpagebox}%
       \fi
       % don't move
       \xdef\lastlayerwd{\the\nextboxwd}%
       \xdef\lastlayerht{\the\nextboxht}% % not entirely ok when grid !
       \xdef\lastlayerdp{\the\nextboxdp}% % not entirely ok when grid !
       % this code
-      \doifelse{\layerparameter\c!location}\v!grid\donetrue\donefalse
+      \doifelse{\layerparameter\c!plaats}\v!grid\donetrue\donefalse
       \ifdone
         \nextboxht\strutheight
         \nextboxdp\strutdepth
       \else
-        \setbox\nextbox\hbox{\alignedbox[\layerparameter\c!location]\vbox{\flushnextbox}}%
+        \setbox\nextbox\hbox{\alignedbox[\layerparameter\c!plaats]\vbox{\flushnextbox}}%
       \fi
-      \ifnum\layerparameter\c!line=\zerocount\else % no \ifcase, can be negative
-        \advance\@@layerypos \layerparameter\c!line\lineheight
+      \ifnum\layerparameter\c!regel=\zerocount\else % no \ifcase, can be negative
+        \advance\@@layerypos \layerparameter\c!regel\lineheight
         \advance\@@layerypos \topskip
         \advance\@@layerypos-\lineheight
         \advance\@@layerypos-\nextboxht
       \fi
-      \ifnum\layerparameter\c!column=\zerocount\else % no \ifcase, can be negative
-        \advance\@@layerxpos \layoutcolumnoffset{\layerparameter\c!column}%
+      \ifnum\layerparameter\c!kolom=\zerocount\else % no \ifcase, can be negative
+        \advance\@@layerxpos \layoutcolumnoffset{\layerparameter\c!kolom}%
       \fi
       \ifdone
         \setbox\nextbox\hbox{\alignedbox[rb]\vbox{\flushnextbox}}%
@@ -359,8 +359,8 @@
         \nextboxdp\zeropoint
       \fi
       % placement
-      \hsize\layerparameter\c!width % new, keep box small
-      \vbox to \layerparameter\c!height \bgroup
+      \hsize\layerparameter\c!breedte % new, keep box small
+      \vbox to \layerparameter\c!hoogte \bgroup
         \smashbox\nextbox
         \vskip\@@layerypos
         \vskip\@@layeryoff
@@ -408,35 +408,87 @@
 %D macro does not takes hash space.
 
 \unexpanded\def\flushlayer[#1]%
-  {\doifelsevalue{\??ll#1\c!state}\v!next
-      {\global\letvalue{\??ll#1\c!state}\v!start} % dangerous, stack-built-up
-      {\doifelsevalue{\??ll#1\c!doublesided}\v!yes
+  {\doifelsevalue{\??ll#1\c!status}\v!volgende
+      {\global\letvalue{\??ll#1\c!status}\v!start} % dangerous, stack-built-up
+      {\doifelsevalue{\??ll#1\c!dubbelzijdig}\v!ja
          {\doifundefinedelse{\@@layerbox#1}%
             {\dodoflushlayerA[#1]}
             {\doifbothsidesoverruled
-               \dodoflushlayerB\v!left [#1]%  left
+               \dodoflushlayerB\v!links [#1]%  left
              \orsideone
-               \dodoflushlayerB\v!right[#1]% right
+               \dodoflushlayerB\v!rechts[#1]% right
              \orsidetwo
-               \dodoflushlayerB\v!left [#1]%  left
+               \dodoflushlayerB\v!links [#1]%  left
              \od}}
          {\dodoflushlayerA[#1]}}}
 
 \def\dodoflushlayerA[#1]%
-  {\doifnotvalue{\??ll#1\c!state}\v!stop
+  {\doifnotvalue{\??ll#1\c!status}\v!stop
      {\startoverlay
         {\dodoflushlayer1{#1}{#1}}
         {\dodoflushlayer0{#1}{#1:\realfolio}}
       \stopoverlay}}
 
 \def\dodoflushlayerB#1[#2]%
-  {\doifnotvalue{\??ll#2\c!state}\v!stop
+  {\doifnotvalue{\??ll#2\c!status}\v!stop
      {\startoverlay
         {\dodoflushlayer1{#2}{#2}}
         {\dodoflushlayer0{#2}{#2:\realfolio}}
         {\dodoflushlayer1{#2}{#1#2}}
         {\dodoflushlayer0{#2}{#1#2:\realfolio}}
       \stopoverlay}}
+
+% \def\dodoflushlayer#1#2#3%
+%   {\ifundefined{\@@layerbox#3}%
+%      \ifcase#1\else\writestatus{layer}{unknown layer #3}\fi
+%    \else
+%      \bgroup
+%      \forgetall
+%      \offinterlineskip
+%      \doifvalue{\??ll#2\c!optie}\v!test\tracelayerstrue
+%      \iftracelayers\traceboxplacementtrue\fi
+%      \!!doneafalse
+%      \!!donebfalse
+%      \doifvalue{\??ll#2\c!methode}\v!overlay\!!doneatrue
+%      \doifvalue{\??ll#2\c!methode}\v!passend\!!donebtrue
+%      \!!donectrue
+%      \ifcase#1\else
+%        \doifnotvalue{\??ll#2\c!positie}\v!ja
+%          {\doifvalue{\??ll#2\c!herhaal}\v!ja\!!donecfalse
+%           \doifvalue{\??ll#2\c!status}\v!herhaal\!!donecfalse}% old method
+%      \fi
+%      \chardef\layerbox\csname\@@layerbox#3\endcsname
+%      % we need to copy in order to retain the negative offsets for a next
+%      % stage of additions, i.e. llx/lly accumulate in repeat mode and the
+%      % compensation is may differ each flush depending on added content
+%      \setbox\nextbox \if!!doneb
+%        \vbox
+%          {\scratchdimen\getboxlly\layerbox
+%           \vskip-\scratchdimen
+%           \scratchdimen\getboxllx\layerbox
+%           \hskip-\scratchdimen
+%           \advance\scratchdimen-\wd\layerbox
+%           \hsize-\scratchdimen
+%           \if!!donec\box\else\copy\fi\layerbox}%
+%      \else
+%         \if!!donec\box\else\copy\fi\layerbox % sorry for the delay due to copying
+%      \fi
+%      \iftracelayers \ruledvbox \else \vbox \fi \if!!donea to \overlayheight \fi
+%        {\hbox \if!!donea to \overlaywidth \fi
+%           {% klopt dit? #3 en niet #2 ?
+%            \doifvalue{\??ll#3\realfolio\c!positie}\v!ja
+%              {\xypos{lyr:#3:\realfolio}}%
+%            \doifoverlayelse{#3}
+%              {\box\nextbox}
+%              {\startlayoutcomponent{l:#3}{layer #3}\box\nextbox\stoplayoutcomponent}%
+%            \hss}%
+%         \vss}%
+%      \if!!donec
+%        \gsetboxllx\layerbox\zeropoint
+%        \gsetboxlly\layerbox\zeropoint
+%      \fi
+%      \egroup
+%    \fi}
 
 \def\dodoflushlayer#1#2#3%
   {\ifundefined{\@@layerbox#3}%
@@ -448,17 +500,17 @@
      % needed because we need to handle method
      \executeifdefined{\??ll\??ll\getvalue{\??ll#2\c!preset}}\gobbletwoarguments{#2}{}%
      %
-     \doifvalue{\??ll#2\c!option}\v!test\tracelayerstrue
+     \doifvalue{\??ll#2\c!optie}\v!test\tracelayerstrue
      \iftracelayers\traceboxplacementtrue\fi
      \!!doneafalse
      \!!donebfalse
-     \doifvalue{\??ll#2\c!method}\v!overlay\!!doneatrue
-     \doifvalue{\??ll#2\c!method}\v!fit\!!donebtrue
+     \doifvalue{\??ll#2\c!methode}\v!overlay\!!doneatrue
+     \doifvalue{\??ll#2\c!methode}\v!passend\!!donebtrue
      \!!donectrue
      \ifcase#1\else
-       \doifnotvalue{\??ll#2\c!position}\v!yes
-         {\doifvalue{\??ll#2\c!repeat}\v!yes\!!donecfalse
-          \doifvalue{\??ll#2\c!state}\v!repeat\!!donecfalse}%
+       \doifnotvalue{\??ll#2\c!positie}\v!ja
+         {\doifvalue{\??ll#2\c!herhaal}\v!ja\!!donecfalse
+          \doifvalue{\??ll#2\c!status}\v!herhaal\!!donecfalse}%
      \fi
      \chardef\layerbox\csname\@@layerbox#3\endcsname
      % we need to copy in order to retain the negative offsets for a next
@@ -479,7 +531,7 @@
      \iftracelayers \ruledvbox \else \vbox \fi \if!!donea to \overlayheight \fi
        {\hbox \if!!donea to \overlaywidth \fi
           {% klopt dit? #3 en niet #2 ?
-           \doifvalue{\??ll#3\realfolio\c!position}\v!yes     {\xypos{lyr:#3:\realfolio}}%
+           \doifvalue{\??ll#3\realfolio\c!positie}\v!ja     {\xypos{lyr:#3:\realfolio}}%
            \doifoverlayelse{#3}
              {\box\nextbox}
              {\startlayoutcomponent{l:#3}{layer #3}\box\nextbox\stoplayoutcomponent}%
@@ -510,12 +562,19 @@
 
 \let\placelayer\flushlayer
 
+% \def\tightlayer[#1]%
+%   {\hbox
+%      {\def\currentlayer{#1}% todo: left/right
+%       \hsize\layerparameter\c!breedte
+%       \vsize\layerparameter\c!hoogte
+%       \composedlayer{#1}}}
+
 \def\tightlayer[#1]%
   {\hbox
      {\def\currentlayer{#1}% todo: left/right
-      \setbox\nextbox\emptybox       % hoogte/breedte are \wd\nextbox/\ht\nextbox
-      \hsize\layerparameter\c!width  % \overlaywidth   = \hsize
-      \vsize\layerparameter\c!height % \overlaywheight = \vsize
+      \setbox\nextbox\emptybox        % hoogte/breedte are \wd\nextbox/\ht\nextbox
+      \hsize\layerparameter\c!breedte % \overlaywidth   = \hsize
+      \vsize\layerparameter\c!hoogte  % \overlaywheight = \vsize
       \composedlayer{#1}}}
 
 %D \macros
@@ -531,9 +590,9 @@
 
 \def\resetlayer[#1]%
   {\doresetlayer{#1}%
-   \doifvalue{\??ll#1\c!doublesided}\v!yes % kind of redundant test
-     {\doresetlayer{\v!left #1}%
-      \doresetlayer{\v!right#1}}%
+   \doifvalue{\??ll#1\c!dubbelzijdig}\v!ja % kind of redundant test
+     {\doresetlayer{\v!links #1}%
+      \doresetlayer{\v!rechts#1}}%
    \doresetlayer{#1:\realfolio}}
 
 %D \macros
@@ -542,7 +601,7 @@
 %D The following layer macro uses the positions that are
 %D registered by \METAPOST.
 %D
-%D \starttyping
+%D \starttypen
 %D \definelayer[test]
 %D
 %D \setMPlayer [test] [somepos-1] {Whatever we want here!}
@@ -557,15 +616,15 @@
 %D \stopuseMPgraphic
 %D
 %D \getMPlayer[test]{\useMPgraphic{oeps}}
-%D \stoptyping
+%D \stoptypen
 %D
 %D The last line is equivalent to
 %D
-%D \starttyping
+%D \starttypen
 %D \framed
 %D   [background={foreground,test},offset=overlay]
 %D   {\useMPgraphic{oeps}}
-%D \stoptyping
+%D \stoptypen
 
 \def\setMPlayer
   {\dotripleempty\dosetMPlayer}
@@ -576,15 +635,15 @@
 \def\dosetMPlayer[#1][#2][#3]%
   {\edef\MPlayerwidth {\MPw{#2}}%
    \edef\MPlayerheight{\MPh{#2}}%
-   \setlayer[#1][\c!x=\MPx{#2},\c!y=\MPy{#2},\c!position=\v!no,#3]}
+   \setlayer[#1][\c!x=\MPx{#2},\c!y=\MPy{#2},\c!positie=\v!nee,#3]}
 
 \def\getMPlayer
   {\dodoubleempty\dogetMPlayer}
 
 \def\dogetMPlayer[#1][#2]%
   {\framed
-     [\c!background={\v!foreground,#1},
-      \c!frame=\v!off,
+     [\c!achtergrond={\v!voorgrond,#1},
+      \c!kader=\v!uit,
       \c!offset=\v!overlay,#2]}
 
 % Some day this (old) mechanism will be combined/integrated
@@ -601,11 +660,11 @@
    \xposition \zeropoint     \yposition \zeropoint
    \xdimension\zeropoint     \ydimension\zeropoint
    \xoffset   \zeropoint     \yoffset   \zeropoint
-   \hfuzz     \paperwidth \vfuzz     \paperheight
+   \hfuzz     \papierbreedte \vfuzz     \papierhoogte
    \setbox\positionbox\hbox\bgroup}
 
 \def\stoppositioning
-  {\doifnot\@@psoffset\v!yes
+  {\doifnot\@@psoffset\v!ja
      {\global\xoffset\zeropoint
       \global\yoffset\zeropoint}%
    \global\advance\xdimension \xoffset
@@ -622,16 +681,16 @@
 
 \def\resetpositioning
   {\getparameters[\??ps]
-     [\c!state=\v!start,%
-      \c!unit=\s!cm,%
+     [\c!status=\v!start,%
+      \c!eenheid=\s!cm,%
       \c!factor=1,%
-      \c!scale=1,%
+      \c!schaal=1,%
       \c!xfactor=\@@psfactor,%
       \c!yfactor=\@@psfactor,%
-      \c!xscale=\@@psscale,%
-      \c!yscale=\@@psscale,%
-      \c!xstep=\v!absolute,%
-      \c!ystep=\v!absolute,%
+      \c!xschaal=\@@psschaal,%
+      \c!yschaal=\@@psschaal,%
+      \c!xstap=\v!absoluut,%
+      \c!ystap=\v!absoluut,%
       \c!xoffset=\!!zeropoint,%
       \c!yoffset=\!!zeropoint]}
 
@@ -640,15 +699,15 @@
    \dodoubleargument\getparameters[\??ps]}
 
 \def\calculateposition#1#2#3#4#5#6#7#8#9%
-  {\setdimensionwithunit\scratchskip{#1}\@@psunit
+  {\setdimensionwithunit\scratchskip{#1}\@@pseenheid
    \scratchskip#8\scratchskip
    \scratchskip#9\scratchskip
    \advance\scratchskip #4\relax
-   \doif{#2}\v!relative
+   \doif{#2}\v!relatief
      {\advance\scratchskip #3%
       \let#4\!!zeropoint}%
    #3\scratchskip\relax
-   \doifnot\@@psstate\v!overlay
+   \doifnot\@@psstatus\v!overlay
      {\scratchskip#5\relax
       \advance\scratchskip #3\relax
       \ifdim#3<-#7\relax          \global#7-#3\relax          \fi
@@ -662,13 +721,13 @@
      {\bgroup
       \getparameters[\??ps][#1]%
       \dontcomplain
-      \calculateposition{#3}\@@psxstep\xposition
+      \calculateposition{#3}\@@psxstap\xposition
         \@@psxoffset{\nextboxwd}\xdimension\xoffset
-        \@@psxscale\@@psxfactor
+        \@@psxschaal\@@psxfactor
       \scratchdimen\nextboxht \advance\scratchdimen \nextboxdp
-      \calculateposition{#4}\@@psystep\yposition
+      \calculateposition{#4}\@@psystap\yposition
         \@@psyoffset\scratchdimen\ydimension\yoffset
-        \@@psyscale\@@psyfactor
+        \@@psyschaal\@@psyfactor
       \vbox to \zeropoint % kan beter.
         {\vskip\yposition
          \hbox to \zeropoint
@@ -689,12 +748,12 @@
 \resetpositioning
 
 \setuppositioning
-  [\c!unit=\s!cm,
+  [\c!eenheid=\s!cm,
    \c!factor=1,
-   \c!scale=1,
-   \c!xstep=\v!absolute,
-   \c!ystep=\v!absolute,
-   \c!offset=\v!yes,
+   \c!schaal=1,
+   \c!xstap=\v!absoluut,
+   \c!ystap=\v!absoluut,
+   \c!offset=\v!ja,
    \c!xoffset=\!!zeropoint,
    \c!yoffset=\!!zeropoint]
 
@@ -704,13 +763,13 @@
 
 \let\normalsettextpagecontent\settextpagecontent
 
-\definelayer[OTRTEXT] \setuplayer[OTRTEXT][\c!width=\makeupwidth,\c!height=\textheight]
+\definelayer[OTRTEXT] \setuplayer[OTRTEXT][\c!breedte=\zetbreedte,\c!hoogte=\teksthoogte]
 
 % will be overloaded in page-spr
 
 \def\settextpagecontent#1#2#3% #2 and #3 will disappear
   {\doifelselayerdata{OTRTEXT}
-     {\setbox#1\hbox to \makeupwidth
+     {\setbox#1\hbox to \zetbreedte
         {\startoverlay
            {\normalsettextpagecontent{#1}{#2}{#3}\box#1}
            {\tightlayer[OTRTEXT]}

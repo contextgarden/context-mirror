@@ -71,10 +71,10 @@
 %D application can save lots of bytes, while the latter use is
 %D more a necessity than byte saving.
 %D
-%D \starttyping
+%D \starttypen
 %D \setobject{class}{name}\somebox{}
 %D \getobject{class}{name}
-%D \stoptyping
+%D \stoptypen
 %D
 %D Here \type{\somebox} can be whatever box specification suits
 %D \TEX. We save the dimensions of an object, although some
@@ -115,6 +115,7 @@
 %D clip.
 
 \def\objectoffset{1cm}
+  {}
 
 % \def\dodosetobject#1#2#3%
 %   {\bgroup
@@ -176,30 +177,7 @@
 %    \box\scratchbox
 %    \elabelgroup}
 
-% \def\dogetobject#1#2#3#4#5#6#7%
-%   {\initializepaper
-%    \forgetall
-%    \dontshowcomposition
-%    \setbox\scratchbox\vbox
-%      {\doinsertobject{#1}{#2}}%
-%    \setbox\scratchbox#3%
-%      {\vbox to #5\scaledpoint
-%         {\ifdim\ht\scratchbox>#5\scaledpoint
-%     % or \ifdim\wd\scratchbox>#4\scaledpoint
-%            \vss\hbox to #4\scaledpoint{\hss\box\scratchbox\hss}\vss
-%          \else
-%            \vss\box\scratchbox
-%          \fi}}%
-%    \scratchdimen#7\scaledpoint
-%    \setbox\nextbox\hbox
-%      {\hskip-\scratchdimen\lower\scratchdimen\flushnextbox}%
-%    \wd\scratchbox#4\scaledpoint
-%    \ht\scratchbox#5\scaledpoint
-%    \dp\scratchbox#6\scaledpoint
-%    \box\scratchbox
-%    \elabelgroup}
-
-\def\dogetobject#1#2#3#4#5#6#7% don't change this, should work for dvi & pdf
+\def\dogetobject#1#2#3#4#5#6#7%
   {\initializepaper
    \forgetall
    \dontshowcomposition
@@ -208,20 +186,25 @@
    \setbox\scratchbox#3%
      {\vbox to #5\scaledpoint
         {\ifdim\ht\scratchbox>#5\scaledpoint
-           \vss\hbox to #4\scaledpoint{\hss\box\scratchbox\hss}\vss
-         \else\ifdim\wd\scratchbox>#4\scaledpoint
+    % or \ifdim\wd\scratchbox>#4\scaledpoint
            \vss\hbox to #4\scaledpoint{\hss\box\scratchbox\hss}\vss
          \else
            \vss\box\scratchbox
-         \fi\fi}}%
+         \fi}}%
+   \scratchdimen#7\scaledpoint
+   \setbox\nextbox\hbox
+     {\hskip-\scratchdimen\lower\scratchdimen\flushnextbox}%
+   \wd\scratchbox#4\scaledpoint
+   \ht\scratchbox#5\scaledpoint
+   \dp\scratchbox#6\scaledpoint
    \box\scratchbox
    \elabelgroup}
 
 %D If needed one can ask for the dimensions of an object with:
 %D
-%D \starttyping
+%D \starttypen
 %D \getobjectdimensions{class}{name}
-%D \stoptyping
+%D \stoptypen
 %D
 %D The results are reported in \type {\objectwidth}, \type
 %D {\objectheight} and \type {\objectdepth}.
@@ -252,13 +235,14 @@
 %D defined before they are used, but forward referencing
 %D sometimes occurs.
 %D
-%D \starttyping
+%D \starttypen
 %D \dosetobjectreference {class} {identifier} {reference value} {page}
 %D \dogetobjectreference {class} {identifier} \csname
-%D \stoptyping
+%D \stoptypen
 %D
 %D These commands are to be called by the \type{\startobject},
 %D \type{\stopobject} and \type{\insertobject} specials.
+
 
 \def\objectreferenced{\global\chardef\crossreferenceobject\plusone}
 \def\driverreferenced{\global\chardef\crossreferenceobject\zerocount}
@@ -332,10 +316,10 @@
 %D To prevent redundant definition of objects, one can use
 %D the next tests:
 %D
-%D \starttyping
+%D \starttypen
 %D \doifobjectfoundelse{class}{object}{do then}{do else}
 %D \doifobjectreferencefoundelse{class}{object}{do then}{do else}
-%D \stoptyping
+%D \stoptypen
 
 \beginTEX
 
@@ -382,9 +366,9 @@
 %D reuse when possible. To enable mechanisms to determine
 %D what method to use, we provide:
 %D
-%D \starttyping
+%D \starttypen
 %D \doifobjectssupportedelse{true action}{false action}
-%D \stoptyping
+%D \stoptypen
 %D
 %D As we can see, currently objects depend on the special
 %D driver.

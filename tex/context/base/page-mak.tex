@@ -22,11 +22,11 @@
 %D There is one standard makeup page, but you can define more
 %D if needed.
 %D
-%D \starttyping
+%D \starttypen
 %D \startstandardmakeup
 %D   My Fancy Title
 %D \stopstandardmakeup
-%D \stoptyping
+%D \stoptypen
 %D
 %D The associated commands are:
 %D
@@ -40,29 +40,29 @@
 \def\dodefinemakeup[#1][#2]%
   {\getparameters
      [\??do#1]%
-     [\c!width=\makeupwidth,  % example in manual
-      \c!height=\textheight,  % example in manual
+     [\c!breedte=\zetbreedte,  % example in manual
+      \c!hoogte=\teksthoogte,  % example in manual
       \c!voffset=\!!zeropoint, % example in manual
       \c!hoffset=\!!zeropoint, % example in manual
-      \c!commands=,
+      \c!commandos=,
       \c!setups=,
-      \c!page=\v!right,
-      \c!doublesided=\v!empty,
-      \c!before=,
-      \c!top=\vss,
-      \c!bottom=\vss,
-      \c!after=,
-      \c!bottomstate=\v!normal,
-      \c!topstate=\v!normal,
-      \c!textstate=\v!normal,
-      \c!headerstate=\v!stop,
-      \c!footerstate=\v!stop,
-      \c!pagestate=\v!stop, % in manual ! ! !
-      \c!color=,
-      \c!align=,
+      \c!pagina=\v!rechts,
+      \c!dubbelzijdig=\v!leeg,
+      \c!voor=,
+      \c!boven=\vss,
+      \c!onder=\vss,
+      \c!na=,
+      \c!onderstatus=\v!normaal,
+      \c!bovenstatus=\v!normaal,
+      \c!tekststatus=\v!normaal,
+      \c!hoofdstatus=\v!stop,
+      \c!voetstatus=\v!stop,
+      \c!paginastatus=\v!stop, % in manual ! ! !
+      \c!kleur=,
+      \c!uitlijnen=,
       #2]%
-   \setvalue{\e!start#1\e!makeup}{\startmakeup[#1]}%
-   \setvalue{\e!stop #1\e!makeup}{\stopmakeup}}
+   \setvalue{\e!start#1\e!opmaak}{\startmakeup[#1]}%
+   \setvalue{\e!stop #1\e!opmaak}{\stopmakeup}}
 
 \def\setupmakeup
   {\dodoubleargument\dosetupmakeup}
@@ -103,16 +103,16 @@
 %D The simple case:
 
 \def\donostartmakeup
-  {\page
-   \setupheader[\c!state=\v!empty]%
-   \setupfooter[\c!state=\v!empty]%
-   \setsystemmode\v!makeup
-   \vbox to \textheight\bgroup\hsize\textwidth}
+  {\pagina
+   \setupheader[\c!status=\v!leeg]%
+   \setupfooter[\c!status=\v!leeg]%
+   \setsystemmode\v!opmaak
+   \vbox to \teksthoogte\bgroup\hsize\tekstbreedte}
 
 \def\donostopmakeup
   {\egroup
    \flushmarks % new, here, else empty pages
-   \page
+   \pagina
    \egroup}
 
 %D The normal one:
@@ -120,25 +120,25 @@
 \newbox\makeupbox
 
 \def\dodostartmakeup
-  {\doifvaluesomething{\??do\currentmakeup\c!page}
-     {\ExpandFirstAfter\page[\makeupparameter\c!page]}%
-   \pagetype[\currentmakeup]%
-   \setsystemmode\v!makeup
+  {\doifvaluesomething{\??do\currentmakeup\c!pagina}
+     {\ExpandFirstAfter\pagina[\makeupparameter\c!pagina]}%
+   \soortpagina[\currentmakeup]%
+   \setsystemmode\v!opmaak
    \setupmakeuplayout
-   \makeupparameter\c!commands % hm, what is this one doing here ?
-   \startregistercolor[\makeupparameter\c!color]%
-   \global\setbox\makeupbox\vbox to \makeupparameter\c!height
+   \makeupparameter\c!commandos % hm, what is this one doing here ?
+   \startregistercolor[\makeupparameter\c!kleur]%
+   \global\setbox\makeupbox\vbox to \makeupparameter\c!hoogte
      \bgroup
        \forgetall
        \setups[\makeupparameter\c!setups]%
-       \hsize\makeupparameter\c!width
-       \doifsomething{\makeupparameter\c!align}
-         {\setupalign[\makeupparameter\c!align]}%
-       \makeupparameter\c!top}
+       \hsize\makeupparameter\c!breedte
+       \doifsomething{\makeupparameter\c!uitlijnen}
+         {\setupalign[\makeupparameter\c!uitlijnen]}%
+       \makeupparameter\c!boven}
 
 \def\dodostopmakeup
   {\endgraf
-   \makeupparameter\c!bottom
+   \makeupparameter\c!onder
    \egroup
    \flushmarks % new, here, else empty pages
 \stopregistercolor
@@ -164,63 +164,63 @@
    \fi}
 
 \def\doshipoutmakeup
-  {\globalpushmacro\@@pnstate % new
-   \makeupparameter\c!before
-   \vbox{\hbox{\color[\makeupparameter\c!color]{\box\makeupbox}}}%
-   \setuppagenumber[\c!state=\makeupparameter\c!pagestate]%
+  {\globalpushmacro\@@pnstatus % new
+   \makeupparameter\c!voor
+   \vbox{\hbox{\color[\makeupparameter\c!kleur]{\box\makeupbox}}}%
+   \stelpaginanummerin[\c!status=\makeupparameter\c!paginastatus]%
    \setupmakeuplayout
-   \page
-   \makeupparameter\c!after
+   \pagina
+   \makeupparameter\c!na
    \relax % voor fi
    \ifdubbelzijdig \ifodd\realpageno\else
      \processaction
-       [\makeupparameter\c!doublesided]
-       [  \v!yes=>\null
-                 \page,
+       [\makeupparameter\c!dubbelzijdig]
+       [  \v!ja=>\null
+                 \pagina,
                % \verlaagpaginanummer, % new
-        \v!empty=>{\setupmakeuplayout
-                  \page[\v!blank]%
+        \v!leeg=>{\setupmakeuplayout
+                  \pagina[\v!blanko]%
                   \null
-                  \page}]%
+                  \pagina}]%
                % \verlaagpaginanummer]% % new
    \fi \fi
  % \verlaagpaginanummer % new
-   \globalpopmacro\@@pnstate} % new
+   \globalpopmacro\@@pnstatus} % new
 
 %D The text surrounding the main body text can be influenced
 %D by setting their associated status variables. The
 %D connection between them is made by the following macro
 
 \def\setupmakeuplayout
-  {\setupfooter[\c!state=\makeupparameter\c!footerstate ]%
-   \setupheader[\c!state=\makeupparameter\c!headerstate]%
-   \setuptext  [\c!state=\makeupparameter\c!textstate]%
-   \setupbottom[\c!state=\makeupparameter\c!bottomstate]%
-   \setuptop   [\c!state=\makeupparameter\c!topstate]%
+  {\setupfooter[\c!status=\makeupparameter\c!voetstatus ]%
+   \setupheader[\c!status=\makeupparameter\c!hoofdstatus]%
+   \setuptext  [\c!status=\makeupparameter\c!tekststatus]%
+   \setupbottom[\c!status=\makeupparameter\c!onderstatus]%
+   \setuptop   [\c!status=\makeupparameter\c!bovenstatus]%
    % this is needed, but no \setuplayout here; fails in texexec --fig=c
    \recalculatelayout}
 
 %D The standard page template is defined as follows:
 
 \definemakeup
-  [\v!standard]
-  [\c!width=\makeupwidth,
-   \c!height=\textheight,
+  [\v!standaard]
+  [\c!breedte=\zetbreedte,
+   \c!hoogte=\teksthoogte,
    \c!voffset=\!!zeropoint,
    \c!hoffset=\!!zeropoint,
-   \c!page=\v!right,
-   \c!doublesided=\v!empty]
+   \c!pagina=\v!rechts,
+   \c!dubbelzijdig=\v!leeg]
 
 \definemakeup
-  [\v!text]
-  [\c!topstate=\v!start,
-   \c!headerstate=\v!start,
-   \c!textstate=\v!start,
-   \c!footerstate=\v!start,
-   \c!bottomstate=\v!start,
-   \c!doublesided=\v!no,
-   \c!page=\v!yes,
-   \c!top=\pseudostrut\ignorespaces,
-   \c!bottom=\obeydepth\vss]
+  [\v!tekst]
+  [\c!bovenstatus=\v!start,
+   \c!hoofdstatus=\v!start,
+   \c!tekststatus=\v!start,
+   \c!voetstatus=\v!start,
+   \c!onderstatus=\v!start,
+   \c!dubbelzijdig=\v!nee,
+   \c!pagina=\v!ja,
+   \c!boven=\pseudostrut\ignorespaces,
+   \c!onder=\obeydepth\vss]
 
 \protect \endinput

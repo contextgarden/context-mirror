@@ -143,8 +143,7 @@
         if (example_file != "") {
             url = url + "/" + example_file ;
         }
-        % we need the bFDF for acrobat 5
-        this.submitForm({cURL : url, bFDF : false, cSubmitAs : example_method}) ;
+        this.submitForm({cURL : url, cSubmitAs : example_method}) ;
     }
 
     function submit_example_form ( ) {
@@ -187,15 +186,13 @@
 
     function set_request (command,option) {
         exa_command = command ;
-        if (exa_command == "") {
-            exa_option = option ;
-        } else { if (option == "") {
+        if (option == "") {
             exa_option = "" ;
         } else { if (option.indexOf("--")<0) {
             exa_option = "--action=" + option ;
         } else {
             exa_option = option ;
-        } } }
+        } }
     }
 
     function assemble_request ( ) {
@@ -233,7 +230,7 @@
             }
         } else { if (exa_multiple) {
             for (i=1;i<=100;i++) {
-                % console.println("file field "+i) ;
+console.println("file field "+i) ;
                 f = this.getField("filename-"+ i) ;
 %                 if (f) { if (f.value != "") {
 %                     if (g) { if (g.value == "") {
@@ -248,13 +245,13 @@
                     fls = fls + "<exa:entry" ;
                     g = this.getField("dataname-"+ i) ;
                     if (g) { if (g.value == "") {
-                        % console.println("a") ;
+console.println("a") ;
                         fls = fls + ">" ;
                     } else {
-                        % console.println("b") ;
+console.println("b") ;
                         fls = fls + " label='" + g.value + "'>" ;
                     } } else {
-                        % console.println("c") ;
+console.println("c") ;
                         fls = fls + ">" ;
                     }
                     fls = fls + f.value + "</exa:entry>" ;

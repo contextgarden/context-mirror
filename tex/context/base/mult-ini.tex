@@ -16,7 +16,7 @@
 %D parameters. Currently the following interfaces are
 %D supported:
 %D
-%D \starttabulate[|l|l|c|c|]
+%D \starttabulatie[|l|l|c|c|]
 %D \NC\bf language\NC\bf translator \NC\bf messages\NC\bf interface\NC\NR
 %D \NC dutch     \NC Hans Hagen           \NC yes \NC yes \NC\NR
 %D \NC english   \NC Hans Hagen           \NC yes \NC yes \NC\NR
@@ -24,14 +24,14 @@
 %D \NC czech     \NC Tom Hudec            \NC yes \NC yes \NC\NR
 %D \NC italian   \NC Giuseppe Bilotta     \NC yes \NC yes \NC\NR
 %D \NC norwegian \NC Hans Fredrik Nordhaug\NC yes \NC no  \NC\NR
-%D \stoptabulate
+%D \stoptabulatie
 
 \writestatus{loading}{Context Multilingual Macros / Initialization}
 
 \unprotect
 
 %D \macros
-%D   [constanten,variabelen,commands]
+%D   [constanten,variabelen,commandos]
 %D   {v!,c!,k!,s!,e!,m!,l!,r!,f!,p!,x!,y!}
 %D
 %D In the system modules we introduced some prefixed constants,
@@ -43,8 +43,8 @@
 %D multi||lingual user interface. Redefining these next set of
 %D prefixes therefore can have desastrous results.
 %D
-%D \startlinecorrection
-%D \starttable[|c|c|c|]
+%D \startregelcorrectie
+%D \starttabel[|c|c|c|]
 %D \HL
 %D \NC \bf prefix        \NC \bf meaning \NC \bf application     \NC\SR
 %D \HL
@@ -61,8 +61,8 @@
 %D \NC \type{\x!prefix!} \NC  x!         \NC setup constant      \NC\MR
 %D \NC \type{\y!prefix!} \NC  y!         \NC setup variable      \NC\LR
 %D \HL
-%D \stoptable
-%D \stoplinecorrection
+%D \stoptabel
+%D \stopregelcorrectie
 %D
 %D In the single||lingual version we used \type{!}, \type{!!},
 %D \type{!!!} and \type{!!!!}.
@@ -125,19 +125,19 @@
 %D \type{!}. To force consistency, we provide a few commands
 %D for defining such constants.
 %D
-%D \starttyping
+%D \starttypen
 %D \defineinterfaceconstant {name} {meaning}
 %D \defineinterfacevariable {name} {meaning}
 %D \defineinterfaceelement  {name} {meaning}
-%D \stoptyping
+%D \stoptypen
 %D
 %D Which is the same as:
 %D
-%D \starttyping
+%D \starttypen
 %D \def\c!name{meaning}
 %D \def\v!name{meaning}
 %D \def\e!name{meaning}
-%D \stoptyping
+%D \stoptypen
 
 \def\defineinterfaceconstant #1#2{\setvalue{\c!prefix!#1}{#2}}
 \def\defineinterfacevariable #1#2{\setvalue{\v!prefix!#1}{#2}}
@@ -145,20 +145,20 @@
 
 %D Next come some interface independant constants:
 %D
-%D \starttyping
+%D \starttypen
 %D \definereferenceconstant {name} {meaning}
 %D \definefileconstant      {name} {meaning}
-%D \stoptyping
+%D \stoptypen
 
 \def\definereferenceconstant #1#2{\setvalue{\r!prefix!#1}{#2}}
 \def\definefileconstant      #1#2{\setvalue{\f!prefix!#1}{#2}}
 
 %D And finaly we have the one argument, space saving constants
 %D
-%D \starttyping
+%D \starttypen
 %D \definesystemconstant  {name}
 %D \definemessageconstant {name}
-%D \stoptyping
+%D \stoptypen
 
 \def\definesystemconstant  #1{\setvalue{\s!prefix!#1}{#1}}
 \def\definemessageconstant #1{\setvalue{\m!prefix!#1}{#1}}
@@ -168,9 +168,9 @@
 %D parameters by a unique prefix. Such a prefix is defined
 %D with:
 %D
-%D \starttyping
+%D \starttypen
 %D \definesystemvariable {name}
-%D \stoptyping
+%D \stoptypen
 
 \def\definesystemvariable#1{\setevalue{\??prefix#1}{\@@prefix#1}}
 
@@ -206,7 +206,7 @@
 
   \def\defaultinterface{english}
 
-  \def\selectinterface
+  \def\selectinterface%
     {\def\docommando##1##2%
        {\bgroup
         \endlinechar\minusone
@@ -224,7 +224,7 @@
 
 \else
 
-  \def\selectinterface
+  \def\selectinterface%
     {\writestatus{interface}{defining \currentinterface\space interface}%
      \writeline
      \writestatus{interface}{using    \currentresponses\space messages}%
@@ -243,13 +243,13 @@
 %D interface languages. This can be done by means of the
 %D selector:
 %D
-%D \starttyping
+%D \starttypen
 %D \startinterface language
 %D
 %D language specific definitions & commands
 %D
 %D \stopinterface
-%D \stoptyping
+%D \stoptypen
 
 %\def\startinterface #1
 %  {\doifinsetelse{\currentinterface}{#1}
@@ -280,11 +280,11 @@
 %D in libraries. We can extract a message from such a library
 %D in three ways:
 %D
-%D \starttyping
+%D \starttypen
 %D \getmessage  {library} {tag}
 %D \showmessage {library} {tag} {data}
 %D \makemessage {library} {tag} {data}
-%D \stoptyping
+%D \stoptypen
 %D
 %D The first command gets the message \type{tag} from the
 %D \type{library} specified. The other commands take an extra
@@ -294,31 +294,31 @@
 %D Before we explain the \type{data} argument, we give an
 %D example of a library.
 %D
-%D \starttyping
+%D \starttypen
 %D \startmessages  english  library: alfa
 %D   title: something
 %D       1: first message
 %D       2: second (--) message --
 %D \stopmessages
-%D \stoptyping
+%D \stoptypen
 %D
 %D The first message is a simple one and can be shown with:
 %D
-%D \starttyping
+%D \starttypen
 %D \showmessage {alfa} {1} {}
-%D \stoptyping
+%D \stoptypen
 %D
 %D The second message on the other hand needs some extra data:
 %D
-%D \starttyping
+%D \starttypen
 %D \showmessage {alfa} {2} {and last,to you}
-%D \stoptyping
+%D \stoptypen
 %D
 %D This message is shown as:
 %D
-%D \starttyping
+%D \starttypen
 %D something : second (and last) message to you
-%D \stoptyping
+%D \stoptypen
 %D
 %D As we can see, the title entry is shown with the message.
 %D The data fields are comma separated and are specified in the
@@ -327,11 +327,11 @@
 %D It is not required to define all messages in a library at
 %D once. We can add messages to a library in the following way:
 %D
-%D \starttyping
+%D \starttypen
 %D \startmessages  english  library: alfa
 %D      10: tenth message
 %D \stopmessages
-%D \stoptyping
+%D \stoptypen
 %D
 %D Because such definitions can take place in different
 %D modules, the system gives a warning when a tag occurs more
@@ -465,10 +465,10 @@
 %D considerably. We therefore introduce warnings. Users can
 %D turn of warnings and messages by saying:
 %D
-%D \starttyping
+%D \starttypen
 %D \showwarningstrue
 %D \showmessagestrue
-%D \stoptyping
+%D \stoptypen
 %D
 %D Turning off messages also turns off warnings, which is
 %D quote logical because they are less important.
@@ -501,7 +501,7 @@
 %D
 %D First we show a well||defined (simplified) alternative:
 %D
-%D \starttyping
+%D \starttypen
 %D \def\dosetvalue#1#2#3%
 %D   {\doifdefinedelse{\c!prefix!#2}
 %D      {\setvalue{#1\getvalue{\c!prefix!#2}}{#3}}
@@ -513,12 +513,12 @@
 %D         {\getvalue{#2\getvalue{\c!prefix!#3}}}}
 %D      {\setvalue{#1#3}%
 %D         {\getvalue{#2#3}}}}
-%D \stoptyping
+%D \stoptypen
 %D
 %D These macros are called upon quite often and so we optimized
 %D them a bit.
 %D
-%D \starttyping
+%D \starttypen
 %D \def\dosetvalue#1#2#3%
 %D   {\let\c!internal!\c!internal!n
 %D    \p!doifundefined{\k!prefix!#2}%
@@ -568,7 +568,7 @@
 %D      \@EA\def\csname#1\csname\k!prefix!#3\endcsname\endcsname%
 %D        {\csname#2\csname\k!prefix!#3\endcsname\endcsname}%
 %D    \fi}
-%D \stoptyping
+%D \stoptypen
 
 \def\doresetvalue#1#2%
   {\dosetvalue{#1}{#2}{}}
@@ -584,7 +584,7 @@
 %D the embedded \type {\csname} we can reduce the format file
 %D by about 5\% (60~KB out of 1.9~MB).
 %D
-%D \starttyping
+%D \starttypen
 %D \def\docopyvalue#1#2#3%  c -> k
 %D   {\p!doifundefined{\k!prefix!#3}%
 %D      \let\donottest\doprocesstest
@@ -597,7 +597,7 @@
 %D        \csname\@EA#1\@EA\csname\@EA\k!prefix!\@EA#3\@EA\endcsname\@EA
 %D        \endcsname\@EA{\csname#2\csname\k!prefix!#3\endcsname\endcsname}%
 %D    \fi}
-%D \stoptyping
+%D \stoptypen
 %D
 %D The next alternatives are slightly faster.
 
@@ -861,15 +861,15 @@
 %D users instruct the system by means of variables, values and
 %D keywords. These instructions take the form:
 %D
-%D \starttyping
+%D \starttypen
 %D \setupsomething[some variable=some value, another one=a keyword]
-%D \stoptyping
+%D \stoptypen
 %D
 %D or by keyword only:
 %D
-%D \starttyping
-%D \dosomething[this way,that way,no way]
-%D \stoptyping
+%D \starttypen
+%D \dosomething[this way, that way, no way]
+%D \stoptypen
 %D
 %D Because the same variables can occur in more than one setup
 %D command, we have to be able to distinguish them. This is
@@ -879,34 +879,34 @@
 %D specify the height and width of the box. Behide the scenes
 %D the command
 %D
-%D \starttyping
+%D \starttypen
 %D \setupbox [width=12cm, height=3cm]
-%D \stoptyping
+%D \stoptypen
 %D
 %D results in something like
 %D
-%D \starttyping
+%D \starttypen
 %D \<box><width>   {12cm}
 %D \<box><height>  {3cm}
-%D \stoptyping
+%D \stoptypen
 %D
 %D while a similar command for specifying the page dimensions
-%D of an \cap{A4} page results in:
+%D of an \kap{A4} page results in:
 %D
-%D \starttyping
+%D \starttypen
 %D \<page><width>  {21.0cm}
 %D \<page><height> {27.9cm}
-%D \stoptyping
+%D \stoptypen
 %D
 %D The prefixes \type{<box>} and \type{<page>} are hidden from
 %D users and can therefore be language independant. Variables
 %D on the other hand, differ for each language:
 %D
-%D \starttyping
+%D \starttypen
 %D \<box><color>   {<blue>}
 %D \<box><kleur>   {<blauw>}
 %D \<box><couleur> {<blue>}
-%D \stoptyping
+%D \stoptypen
 %D
 %D In this example we can see that the assigned values or
 %D keywords are language dependant too. This will be a
@@ -915,10 +915,10 @@
 %D A third phenomena is that variables and values can have a
 %D similar meaning.
 %D
-%D \starttyping
+%D \starttypen
 %D \<pagenumber><location> {<left>}
 %D \<skip><left>           {12cm}
-%D \stoptyping
+%D \stoptypen
 %D
 %D A (minor) complication is that where in english we use
 %D \type{<left>}, in dutch we find both \type{<links>} and
@@ -931,17 +931,17 @@
 %D user supplied and/or language specific elements. In english
 %D we can use:
 %D
-%D \starttyping
+%D \starttypen
 %D \<empty><figure>
 %D \<empty><intermezzo>
-%D \stoptyping
+%D \stoptypen
 %D
 %D But in dutch we have the following:
 %D
-%D \starttyping
+%D \starttypen
 %D \<lege><figuur>
 %D \<leeg><intermezzo>
-%D \stoptyping
+%D \stoptypen
 %D
 %D These subtle differences automatically lead to a solution
 %D where variables, values, elements and other components have
@@ -952,28 +952,28 @@
 %D in terms of identifiers with language specific meanings. In
 %D such an implementation, each fixed variable is available as:
 %D
-%D \starttyping
+%D \starttypen
 %D \<prefix><variable>
-%D \stoptyping
+%D \stoptypen
 %D
 %D This means that for instance:
 %D
-%D \starttyping
+%D \starttypen
 %D \setupbox[width=12cm]
-%D \stoptyping
+%D \stoptypen
 %D
 %D expands to something like:
 %D
-%D \starttyping
+%D \starttypen
 %D \def\boxwidth{12cm}
-%D \stoptyping
+%D \stoptypen
 %D
 %D because we don't want to recode the source, a setup command
 %D in another language has to expand to this variable, so:
 %D
-%D \starttyping
-%D \setupblock[width=12cm]
-%D \stoptyping
+%D \starttypen
+%D \stelblokin[breedte=12cm]
+%D \stoptypen
 %D
 %D has to result in the definition of \type{\boxwidth} too.
 %D This method enables us to build compact, fast and readable
@@ -983,18 +983,18 @@
 %D more indirect way. In this case, both calls generate a
 %D different variable:
 %D
-%D \starttyping
+%D \starttypen
 %D \def\boxwidth   {12cm}
 %D \def\boxbreedte {12cm}
-%D \stoptyping
+%D \stoptypen
 %D
 %D And because we don't want to recode those megabytes of
 %D already developed code, this variable has to be called with
 %D something like:
 %D
-%D \starttyping
+%D \starttypen
 %D \valueof\box\width
-%D \stoptyping
+%D \stoptypen
 %D
 %D where \type{\valueof} takes care of the translation of
 %D \type{width} or \type{breedte} to \type{width} and
@@ -1016,21 +1016,21 @@
 %D because in the source we only encounter \type{width}. Such
 %D system constants are presented as
 %D
-%D \starttyping
+%D \starttypen
 %D \c!width
-%D \stoptyping
+%D \stoptypen
 %D
 %D This constant is always equivalent to \type{width}. As we
 %D can see, we use \type{c!} to mark this one as constant. Its
 %D dutch counterpart is:
 %D
-%D \starttyping
-%D breedte
-%D \stoptyping
+%D \starttypen
+%D \c!breedte
+%D \stoptypen
 %D
 %D When we interpret a setup command each variable is
 %D translated to it's \type{c!} counterpart. This means that
-%D \type{breedte} and \type{width} expand to \type{breedte}
+%D \type{breedte} and \type{width} expand to \type{\c!breedte}
 %D and \type{\c!width} which both expand to \type{width}. That
 %D way user variables become system constants.
 %D
@@ -1038,16 +1038,16 @@
 %D command \type{\getparameters} that we introduced in the
 %D system module. Let us define some simple setup command:
 %D
-%D \starttyping
+%D \starttypen
 %D \def\setupbox[#1]%
 %D   {\getparameters[\??bx][#1]}
-%D \stoptyping
+%D \stoptypen
 %D
 %D This command can be used as:
 %D
-%D \starttyping
+%D \starttypen
 %D \setupbox [width=3cm, height=1cm]
-%D \stoptyping
+%D \stoptypen
 %D
 %D Afterwards we have two variables \type{\@@bxwidth} and
 %D \type{\@@bxheight} which have the values \type{3cm} and
@@ -1057,9 +1057,9 @@
 %D  \type{height} or \type{breedte} and \type{hoogte},
 %D depending on the actual language. In dutch we just say:
 %D
-%D \starttyping
-%D \setupblock [width=3cm, height=1cm]
-%D \stoptyping
+%D \starttypen
+%D \stelblokin [breedte=3cm, hoogte=1cm]
+%D \stoptypen
 %D
 %D and get ourselves \type{\@@bxwidth} and \type{\@@bxheight}
 %D too. In the source of \CONTEXT, we can recognize constants
@@ -1071,19 +1071,19 @@
 %D keyword, but instead use in the source a variable which
 %D meaning depends on the interface language.
 %D
-%D \starttyping
+%D \starttypen
 %D \v!left
-%D \stoptyping
+%D \stoptypen
 %D
 %D Which can be used in macro's like:
 %D
-%D \starttyping
+%D \starttypen
 %D \processaction
 %D   [\@@bxlocation]
 %D   [  \v!left=>\dosomethingontheleft,
 %D    \v!middle=>\dosomthinginthemiddle,
 %D     \v!right=>\dosomethingontheright]
-%D \stoptyping
+%D \stoptypen
 %D
 %D Because variables like \type{\@@bxlocation} can have a lot
 %D of meanings, including tricky expandable tokens, we cannot
@@ -1096,15 +1096,15 @@
 %D Although we know it sounds confusing we want to state two
 %D important characteristics of the interface as described:
 %D
-%D \startnarrower \em
+%D \startsmaller \em
 %D user variables become system constants
-%D \stopnarrower
+%D \stopsmaller
 %D
 %D and
 %D
-%D \startnarrower \em
+%D \startsmaller \em
 %D user constants (keywords) become system variables
-%D \stopnarrower
+%D \stopsmaller
 %D
 
 %D \macros
@@ -1115,26 +1115,26 @@
 %D and variables are defined. We only show two languages and
 %D a few words.
 %D
-%D \starttyping
+%D \starttypen
 %D \startconstants  english    dutch
 %D
 %D          width:  width      breedte
 %D         height:  height     hoogte
 %D
 %D \stopconstants
-%D \stoptyping
+%D \stoptypen
 %D
 %D Keep in mind that what users see as variables, are constants
 %D for the system.
 %D
-%D \starttyping
+%D \starttypen
 %D \startvariables  english    dutch
 %D
 %D       location:  left       links
 %D           text:  text       tekst
 %D
 %D \stopvariables
-%D \stoptyping
+%D \stoptypen
 %D
 %D The macro's responsible for interpreting these setups are
 %D shared. They take care of empty lines and permit a more or
@@ -1302,12 +1302,12 @@
 %D following, more efficient approach does not work here,
 %D because it sometimes generates spaces.
 %D
-%D \starttyping
+%D \starttypen
 %D \def\setinterfacesetupconstant
 %D   {\ifinterfacetranslation
 %D      \expandafter\setinterfaceconstant
 %D    \fi}
-%D \stoptyping
+%D \stoptypen
 %D
 %D We therefore use the more redundant but robust method:
 
@@ -1327,7 +1327,7 @@
 %D Due to the object oriented nature of \CONTEXT, we also need
 %D to define the elements that are used to build commands:
 %D
-%D \starttyping
+%D \starttypen
 %D \startelements  english     dutch
 %D
 %D      beginvan:  begin       beginvan
@@ -1336,7 +1336,7 @@
 %D          stop:  stop        stop
 %D
 %D \stopelements
-%D \stoptyping
+%D \stoptypen
 %D
 %D Such elements sometimes are the same in diferent
 %D languages, but mostly they differ. Things can get even
@@ -1346,14 +1346,14 @@
 %D problem, because we just define two elements. When no second
 %D  part is needed, we use a \type{-}:
 %D
-%D \starttyping
+%D \starttypen
 %D \startelements  english     dutch
 %D
 %D        setupa:  setup       stel
 %D        setupb:  -           in
 %D
 %D \stopelements
-%D \stoptyping
+%D \stoptypen
 %D
 %D Element translation is realized by means of:
 
@@ -1377,7 +1377,7 @@
 %D The last setup has to do with the commands themselve.
 %D Commands are defined as:
 %D
-%D \starttyping
+%D \starttypen
 %D \startcommands  english     dutch
 %D
 %D    starttekst:  starttext   starttekst
@@ -1386,16 +1386,10 @@
 %D    margewoord:  marginword  margewoord
 %D
 %D \stopcommands
-%D \stoptyping
+%D \stoptypen
 %D
 %D Here we also have to take care of the optional translation
 %D needed for reference cards.
-
-% \ifx\doifdefinedascommandelse\undefined
-%   \let\doifdefinedascommandelse\thirdofthreearguments
-% \else
-%   % this one will be defined in the encoding modules
-% \fi
 
 \def\setinterfacecommand#1#2%
   {\doifelse{#2}\nointerfaceobject
@@ -1406,8 +1400,10 @@
         {\doifdefinedelse{#2}
            {\debuggerinfo{command}{core command #2 redefined as #1}}%
            {\debuggerinfo{command}{#2 defined as #1}}%
-        %\@EAEAEA\def\@EA\csname\@EA#2\@EA\endcsname\@EA{\csname#1\endcsname}}%
-        \@EA\def\csname#2\@EA\endcsname\@EA{\csname#1\endcsname}}% ugly but faster
+        %\@EAEAEA\def\@EA\csname\@EA#2\@EA\endcsname
+        %  \@EA{\csname#1\endcsname}}%
+         \@EA\def\csname#2\@EA\endcsname % ugly but faster
+           \@EA{\csname#1\endcsname}}%
       \setinterfacesetupvariable{#1}{#2}}}
 
 \def\startcommands
@@ -1419,9 +1415,9 @@
 %D Generating the interface translation macro's that are used
 %D in the reference lists, is enabled by setting the boolean:
 %D
-%D \starttyping
+%D \starttypen
 %D \interfacetranslationtrue
-%D \stoptyping
+%D \stoptypen
 %D
 %D Keep in mind that enabling interfacetranslation costs a
 %D bit of hash space.
@@ -1468,11 +1464,11 @@
 %D generate a new format. Just reloading the relevant
 %D definition files suits:
 %D
-%D \starttyping
+%D \starttypen
 %D \interfacetranslationtrue
 %D \input mult-con
 %D \input mult-com
-%D \stoptyping
+%D \stoptypen
 
 %D \macros
 %D   {interfaced}
@@ -1481,9 +1477,9 @@
 %D When we want to translate 'by hand' we can use the simple
 %D but effective command:
 %D
-%D \starttyping
+%D \starttypen
 %D \interfaced {something}
-%D \stoptyping
+%D \stoptypen
 %D
 %D Giving \type{\interfaced{breedte}} results in \type{width}
 %D or, when not defined, in \type{breedte} itself. This
@@ -1532,13 +1528,7 @@
    \ifx\normalmonth\undefined\the\month\else\the\normalmonth\fi.%
    \ifx\normalday  \undefined\the\day  \else\the\normalday  \fi}
 
-\ifx\contextversion\undefined
-    \def\contextversion{unknown}
-    \def\contextversionnumber{0}
-\else
-    \def\contextversionnumber#1.#2.#3\relax{#1\ifnum#2<10 0\fi#2\ifnum#3<10 0\fi#3}
-    \edef\contextversionnumber{\expandafter\contextversionnumber\contextversion\relax}
-\fi
+\ifx\contextversion\undefined \def\contextversion{unknown} \fi
 
 \ifx\undefined\normaldump
   \newtoks\everydump

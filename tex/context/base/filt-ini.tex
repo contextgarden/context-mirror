@@ -8,72 +8,72 @@
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
-%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
-%C details.
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for 
+%C details. 
 
 \writestatus{loading}{Context Filter Macros (ini)}
 
-% \ifx\OmegaVersion\undefined
+\ifx\OmegaVersion\undefined 
 
-%            \let\definefiltersynonym  \gobbledoubleempty
-%            \let\definefiltersequence \gobbledoubleempty
-% \unexpanded\def\usefiltersequence   {\gobblesingleempty}
-%            \let\usefilter            \gobblesingleempty
-%            \let\truefiltername       \gobbleoneargument
+           \let\definefiltersynonym  \gobbledoubleempty
+           \let\definefiltersequence \gobbledoubleempty
+\unexpanded\def\usefiltersequence   {\gobblesingleempty}
+           \let\usefilter            \gobblesingleempty 
+           \let\truefiltername       \gobbleoneargument
 
-%   \expandafter \endinput
-% \fi
+  \expandafter \endinput 
+\fi 
 
 \unprotect
 
-%D The real work starts here.
+%D The real work starts here. 
 
-\startmessages  dutch  library: filters
+\startmessages  dutch  library: filters 
   title: filter
       1: filter -- wordt geladen
       2: onbekend filter --
 \stopmessages
 
-\startmessages  english  library: filters
+\startmessages  english  library: filters 
   title: filter
       1: filter -- is loaded
       2: unknown filter --
 \stopmessages
 
-\startmessages  german  library: filters
+\startmessages  german  library: filters 
   title: filter
       1: filter -- is loaded
       2: unknown filter --
 \stopmessages
 
-\startmessages  czech  library: filters
+\startmessages  czech  library: filters 
   title: filter
       1: filter -- is loaded
       2: unknown filter --
 \stopmessages
 
-\startmessages  italian  library: filters
+\startmessages  italian  library: filters 
   title: filtri
       1: filtro -- caricato
       2: filtro sconosciuto --
 \stopmessages
 
-%D \macros
+%D \macros 
 %D   {definefiltersynonym}
 
-\def\definefiltersynonym
+\def\definefiltersynonym%
   {\dodoubleargument\dodefinefiltersynonym}
 
 \def\dodefinefiltersynonym[#1][#2]%
   {\setvalue{\??or#1}{#2}}
 
-%D \macros
+%D \macros 
 %D   {truefiltername}
 
 \def\truefiltername#1%
   {\ifundefined{\??or#1}#1\else\truefiltername{\getvalue{\??or#1}}\fi}
 
-%D \macros
+%D \macros 
 %D   {definefiltersequence}
 
 \def\definefiltersequence%
@@ -82,61 +82,38 @@
 \def\dodefinefiltersequence[#1][#2]%
   {\setvalue{\??ot#1}{#2}}
 
-%D \macros
+%D \macros 
 %D   {usefiltersequence}
-%D
 
 \def\magicocpnumber{1}
 
-% \def\dodousefiltersequence#1%
-%   {\expandafter\ocp\csname\??or:#1\endcsname=\truefiltername{#1}\relax
-%    \@EA \appendtoks
-%      \@EA \addbeforeocplist \@EA \magicocpnumber \csname\??or:#1\endcsname
-%    \to \scratchtoks}
-
-% one can do:
-%
-%  \definefiltersequence
-%    [farsi]
-%    [utf8 to unicode16=>5,
-%     persian fix,
-%     arabic analysis=>3,
-%     arabic glyphs]
-%
-% so, => is used to signal a priority
-
 \def\dodousefiltersequence#1%
   {\expandafter\ocp\csname\??or:#1\endcsname=\truefiltername{#1}\relax
-   \splitstring#1\at=>\to\!!stringa\and\!!stringb
-   \edef\!!stringb{\number\ifx\!!stringb\empty\magicocpnumber\else\!!stringb\fi}%
-   \appendetoks
-     \noexpand\addbeforeocplist
-     \!!stringb\space
-     \expandafter\noexpand\csname\??or:\!!stringa\endcsname
-   \to \scratchtoks}
+   \@EA \appendtoks
+     \@EA \addbeforeocplist \@EA \magicocpnumber \csname\??or:#1\endcsname
+   \to {\toks0}}
 
 \unexpanded\def\usefiltersequence[#1]%
   {\edef\currentfiltersequence{\getvalue{\??ot#1}}%
-   \scratchtoks\emptytoks
+   \toks0=\emptytoks
    \processcommacommand[\currentfiltersequence]\dodousefiltersequence
-   % \showthe\scratchtoks
-   \expanded{\ocplist\csname\??ot:#1\endcsname=\the\scratchtoks}\nullocplist
+   \expanded{\ocplist\csname\??ot:#1\endcsname=\the\toks0}\nullocplist
    \expanded{\pushocplist\csname\??ot:#1\endcsname}\relax}
 
-%D \macros
+%D \macros 
 %D   {usefilter}
 
 \def\dousefilter#1%
   {\doifundefined{\c!file\f!filterprefix#1}%
-     {\letvalue{\c!file\f!filterprefix#1}\empty
+     {\setvalue{\c!file\f!filterprefix#1}{}%
       \makeshortfilename[\f!filterprefix#1]%
       \startreadingfile
-      \readsysfile\shortfilename
-        {\showmessage\m!filters1{#1}}
-        {\showmessage\m!filters2{#1}}%
+      \readsysfile{\shortfilename}
+        {\showmessage{\m!filters}{1}{#1}}
+        {\showmessage{\m!filters}{2}{#1}}%
       \stopreadingfile}}
 
 \def\usefilter[#1]%
   {\processcommalist[#1]\dousefilter}
 
-\protect \endinput
+\protect \endinput 

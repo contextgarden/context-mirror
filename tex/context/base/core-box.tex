@@ -28,15 +28,15 @@
 % on the content, which in itsel fis ok, but can lead to loops
 % due to rounding errors (happened in demo-obv)
 
-\definelayer[\v!text-2][\c!position=\v!yes,\c!width=\overlaywidth,\c!height=\overlayheight]
-\definelayer[\v!text-1][\c!position=\v!yes,\c!width=\overlaywidth,\c!height=\overlayheight]
-\definelayer[\v!text+1][\c!position=\v!yes,\c!width=\overlaywidth,\c!height=\overlayheight]
-\definelayer[\v!text+2][\c!position=\v!yes,\c!width=\overlaywidth,\c!height=\overlayheight]
+\definelayer[\v!tekst-2][\c!positie=\v!ja,\c!breedte=\overlaywidth,\c!hoogte=\overlayheight]
+\definelayer[\v!tekst-1][\c!positie=\v!ja,\c!breedte=\overlaywidth,\c!hoogte=\overlayheight]
+\definelayer[\v!tekst+1][\c!positie=\v!ja,\c!breedte=\overlaywidth,\c!hoogte=\overlayheight]
+\definelayer[\v!tekst+2][\c!positie=\v!ja,\c!breedte=\overlaywidth,\c!hoogte=\overlayheight]
 
 \def\internaltextoverlay#1% will become more generic and installable
   {\startoverlay          % i.e. probably an overlay by itself
-     {\positionoverlay{\v!text#1}} % see later
-     {\composedlayer  {\v!text#1}}
+     {\positionoverlay{\v!tekst#1}} % see later
+     {\composedlayer  {\v!tekst#1}}
    \stopoverlay}
 
 %\def\internaltextoverlay#1%
@@ -45,10 +45,10 @@
 
 % todo: share info, so that tuo will be smaller
 
-\defineoverlay[\v!text-2][\internaltextoverlay{-2}]
-\defineoverlay[\v!text-1][\internaltextoverlay{-1}]
-\defineoverlay[\v!text+1][\internaltextoverlay{+1}]
-\defineoverlay[\v!text+2][\internaltextoverlay{+2}]
+\defineoverlay[\v!tekst-2][\internaltextoverlay{-2}]
+\defineoverlay[\v!tekst-1][\internaltextoverlay{-1}]
+\defineoverlay[\v!tekst+1][\internaltextoverlay{+1}]
+\defineoverlay[\v!tekst+2][\internaltextoverlay{+2}]
 
 % to be documented
 
@@ -86,16 +86,16 @@
       \dp\scratchbox\nextboxdp
       \setlayer
         [anchor]
-        [\c!width=\wd\scratchbox,
-         \c!height=\ht\scratchbox,
+        [\c!breedte=\wd\scratchbox,
+         \c!hoogte=\ht\scratchbox,
          \c!offset=\!!zeropoint,
          #2,#3]
         {\setlayer[#1]{\flushnextbox}}%
       \framed
         [#2,
-         \c!background=anchor,
+         \c!achtergrond=anchor,
          \c!offset=\v!overlay,
-         \c!frame=\v!off,
+         \c!kader=\v!uit,
          #3]
         {\box\scratchbox}%
      \egroup}%
@@ -131,11 +131,11 @@
    \resetcollector[#1]%
    \setupcollector
      [#1]
-     [\c!state=\v!start,
+     [\c!status=\v!start,
       \c!x=\!!zeropoint,\c!y=\!!zeropoint,
-      \c!offset=\!!zeropoint,\c!rotation=, % geen 0 !
+      \c!offset=\!!zeropoint,\c!rotatie=, % geen 0 !
       \c!hoffset=\!!zeropoint,\c!voffset=\!!zeropoint,
-      \c!location=rb,\c!corner=,#2]}
+      \c!plaats=rb,\c!hoek=,#2]}
 
 \def\setupcollector
   {\dodoubleargument\dosetupcollector}
@@ -168,36 +168,36 @@
    \getparameters[\??cb#1][#2]%
    \@@layerxsiz\wd\collectorbox
    \@@layerysiz\ht\collectorbox
-   \doifvaluesomething{\??cb#1\c!rotation}
+   \doifvaluesomething{\??cb#1\c!rotatie}
      {\setbox\nextbox\hbox
         {\rotate
-           [\c!location=\v!high,
-            \c!rotation=\collectorparameter\c!rotation]
+           [\c!plaats=\v!hoog,
+            \c!rotatie=\collectorparameter\c!rotatie]
            {\flushnextbox}}}%
    \advance\@@layerysiz\dp\collectorbox
    \@@layerxpos\collectorparameter\c!x
    \advance\@@layerxpos\collectorparameter\c!hoffset
    \@@layerypos\collectorparameter\c!y
    \advance\@@layerypos\collectorparameter\c!voffset
-   \doifelse\v!middle{\collectorparameter\c!corner}
+   \doifelse\v!midden{\collectorparameter\c!hoek}
      {\ifdim\@@layerxsiz>\zeropoint
         \advance\@@layerxpos.5\@@layerxsiz
       \fi
       \ifdim\@@layerysiz>\zeropoint
         \advance\@@layerypos.5\@@layerysiz
       \fi}%
-     {\ExpandBothAfter\doifinset\v!bottom{\collectorparameter\c!corner}
+     {\ExpandBothAfter\doifinset\v!onder{\collectorparameter\c!hoek}
         {\ifdim\@@layerysiz>\zeropoint
            \advance\@@layerypos-\@@layerysiz
            \@@layerypos-\@@layerypos
          \fi}%
-      \ExpandBothAfter\doifinset\v!right{\collectorparameter\c!corner}
+      \ExpandBothAfter\doifinset\v!rechts{\collectorparameter\c!hoek}
         {\ifdim\@@layerxsiz>\zeropoint
            \advance\@@layerxpos-\@@layerxsiz
            \@@layerxpos-\@@layerxpos
          \fi}}%
    \setbox\nextbox\hbox
-     {\alignedbox[\collectorparameter\c!location]\vbox{\flushnextbox}}%
+     {\alignedbox[\collectorparameter\c!plaats]\vbox{\flushnextbox}}%
    \boxmaxdepth\zeropoint % really needed, nice example
    \global\advance\boxhdisplacement\@@layerxpos
    \ifdim\boxhdisplacement<\zeropoint
@@ -239,10 +239,10 @@
   {\ifundefined{\@@collectorbox#1}%
      \writestatus{collector}{unknown collector #1}%
    \else
-     \doifnotvalue{\??cb#1\c!state}\v!stop
+     \doifnotvalue{\??cb#1\c!status}\v!stop
        {\vbox
           {\hbox
-             {\doifelsevalue{\??cb#1\c!state}\v!repeat
+             {\doifelsevalue{\??cb#1\c!status}\v!herhaal
                 {\let\next\copy}{\let\next\box}%
               \raise\dp\csname\@@collectorbox#1\endcsname
               \next\csname\@@collectorbox#1\endcsname}}}%
@@ -297,10 +297,10 @@
       \setcollector
         [caption][#1]
         {\getparameters[\??du][#2]%
-         \dosetfontattribute\??du\c!style\setupinterlinespace
+         \dosetfontattribute\??du\c!letter\setupinterlinespace
          \framed % watch the special setting of kader/overlay
-           [\c!frame=\v!overlay,#2]
-           {\doattributes\??du\c!style\c!color{#3}}}%
+           [\c!kader=\v!overlay,#2]
+           {\doattributes\??du\c!letter\c!kleur{#3}}}%
       \composedcollector{caption}%
       \egroup}%
      \hbox}
@@ -337,22 +337,22 @@
       \bgroup % preserve \nextbox
       \setuplayer
         [caption]
-        [\c!width=\!!widtha,\c!height=\!!heighta]%
+        [\c!breedte=\!!widtha,\c!hoogte=\!!heighta]%
       \setlayer
         [caption]
         [#1]
         {\getparameters[\??du][#2]%
-         \dosetfontattribute\??du\c!style\setupinterlinespace
+         \dosetfontattribute\??du\c!letter\setupinterlinespace
          \framed
-           [\c!frame=\v!overlay,,#2]
-           {\doattributes\??du\c!style\c!color{#3}}}%
+           [\c!kader=\v!overlay,,#2]
+           {\doattributes\??du\c!letter\c!kleur{#3}}}%
       \egroup
       \framed
         [\c!offset=\v!overlay,
-         \c!frame=\v!off,
-         \c!background={\v!foreground,caption},
-         \c!width=\!!widtha,
-         \c!height=\!!heighta]
+         \c!kader=\v!uit,
+         \c!achtergrond={\v!voorgrond,caption},
+         \c!breedte=\!!widtha,
+         \c!hoogte=\!!heighta]
         {\flushnextbox}%
       \egroup}%
      \hbox}
@@ -381,7 +381,7 @@
 \def\doornamenttext[#1][#2]%
   {\bgroup
    \doifassignmentelse{#1}
-     {\getparameters[\s!dummy][\c!alternative=\v!a,#1]%
+     {\getparameters[\s!dummy][\c!variant=\v!a,#1]%
       \doifelse\dummyvariant\v!a
         {\egroup\collectedtext}%
         {\egroup\layeredtext  }%
@@ -434,12 +434,12 @@
   {\dodoubleempty\getparameters[\??bg]}
 
 \setupbleeding
-  [\c!location=l,
-   \c!stretch=\v!yes,
-   \c!width=3cm,
-   \c!height=3cm,
+  [\c!plaats=l,
+   \c!rek=\v!ja,
+   \c!breedte=3cm,
+   \c!hoogte=3cm,
    \c!offset=2mm,
-   \c!page=\v!no,
+   \c!pagina=\v!nee,
    \c!voffset=\@@bgoffset,
    \c!hoffset=\@@bgoffset]
 
@@ -462,7 +462,7 @@
    \!!donedfalse % bottom
    % replace this part ! todo: default location
    \processaction
-     [\@@bglocation]
+     [\@@bgplaats]
      [ t=>\!!donectrue\let\@@bghoffset\!!zeropoint,
        b=>\!!donedtrue\let\@@bghoffset\!!zeropoint,
        l=>\!!doneatrue\let\@@bgvoffset\!!zeropoint,
@@ -475,22 +475,22 @@
       lt=>\!!doneatrue\!!donectrue,
       tr=>\!!donebtrue\!!donectrue,
       rt=>\!!donebtrue\!!donectrue]%
-   \doifelse\@@bgstretch\v!yes\donetrue\donefalse
-   \scratchdimen\@@bgwidth
+   \doifelse\@@bgrek\v!ja\donetrue\donefalse
+   \scratchdimen\@@bgbreedte
    \ifdone
      \if!!donea
        \advance\scratchdimen\MPx{\??bg:\nofbleeds}%
      \else\if!!doneb
-       \scratchdimen\paperwidth
+       \scratchdimen\papierbreedte
        \advance\scratchdimen-\MPx{\??bg:\nofbleeds}%
      \fi\fi
    \fi
    \advance\scratchdimen\@@bghoffset
    \xdef\bleedwidth{\the\scratchdimen}%
-   \scratchdimen\@@bgheight
+   \scratchdimen\@@bghoogte
    \ifdone
      \if!!donec
-       \scratchdimen\paperheight
+       \scratchdimen\papierhoogte
        \advance\scratchdimen-\MPy{\??bg:\nofbleeds}%
      \else\if!!doned
        \advance\scratchdimen\MPy{\??bg:\nofbleeds}%
@@ -501,16 +501,16 @@
    \hsize\bleedwidth
    \vsize\bleedheight
    \setbox\scratchbox\hbox{#2}%
-   \doif\@@bgpage\v!yes
+   \doif\@@bgpagina\v!ja
      {\setbox\scratchbox\topskippedbox{\box\scratchbox}}%
-   \setbox\scratchbox\hbox to \@@bgwidth
+   \setbox\scratchbox\hbox to \@@bgbreedte
      {\if!!donea\hss\fi\box\scratchbox\if!!doneb\hss\fi}%
    \if!!doned
      \setbox\scratchbox\hbox
-       {\lower\bleedheight\hbox{\raise\@@bgheight\box\scratchbox}}%
+       {\lower\bleedheight\hbox{\raise\@@bghoogte\box\scratchbox}}%
    \fi
-   \wd\scratchbox\@@bgwidth
-   \ht\scratchbox\@@bgheight
+   \wd\scratchbox\@@bgbreedte
+   \ht\scratchbox\@@bghoogte
    \dp\scratchbox\zeropoint
    \ifdone
      \hpos{\??bg:\nofbleeds}{\box\scratchbox}%
@@ -519,9 +519,9 @@
    \fi
    \egroup}
 
-\setupbleeding[\c!stretch=\v!yes]
+\setupbleeding[\c!rek=\v!ja]
 
-\defineexternalfigure[bleed][\c!width=\bleedwidth,\c!height=\bleedheight]
+\defineexternalfigure[bleed][\c!breedte=\bleedwidth,\c!hoogte=\bleedheight]
 
 % \placefigure[left]{none}
 %   {\bleed[width=5cm,height=3cm,location=lt]{\externalfigure[koe][bleed]}}
@@ -576,10 +576,10 @@
   {\dowithnextbox
      {\setlayer
         [#1]
-        [\c!width=\nextboxwd,\c!height=\nextboxht,
+        [\c!breedte=\nextboxwd,\c!hoogte=\nextboxht,
          \c!offset=\!!zeropoint,#2]
         {\flushnextbox}}%
-   \hbox\framed[\c!location=\v!normal,#2]}
+   \hbox\framed[\c!plaats=\v!normaal,#2]}
 
 \def\setlayertext
   {\dotripleempty\dosetlayertext}
@@ -588,17 +588,17 @@
   {\bgroup
    \getparameters
      [\??lx]
-     [\c!align=,
-      \c!width=\hsize,
-      \c!color=,
-      \c!style=,
+     [\c!uitlijnen=,
+      \c!breedte=\hsize,
+      \c!kleur=,
+      \c!letter=,
       #3]%
    \dowithnextboxcontent
      {\forgetall
-      \hsize\@@lxwidth
-      \expanded{\setupalign[\@@lxalign]}%
-      \dosetfontattribute\??lx\c!style}
-     {\setlayer[#1][#2]{\strut\color[\@@lxcolor]{\flushnextbox}}%
+      \hsize\@@lxbreedte
+      \expanded{\setupalign[\@@lxuitlijnen]}%
+      \dosetfontattribute\??lx\c!letter}
+     {\setlayer[#1][#2]{\strut\color[\@@lxkleur]{\flushnextbox}}%
       \egroup}%
    \vtop}
 
@@ -625,40 +625,40 @@
 % \setlayer[pagefigures][preset=rightbottom]
 
 \definelayerpreset
-  [\v!left\v!top]
-  [\c!corner={\v!left,\v!top},\c!location={\v!right,\v!bottom}]
+  [\v!links\v!boven]
+  [\c!hoek={\v!links,\v!boven},\c!plaats={\v!rechts,\v!onder}]
 
 \definelayerpreset
-  [\v!right\v!top]
-  [\c!corner={\v!right,\v!top},\c!location={\v!left,\v!bottom}]
+  [\v!rechts\v!boven]
+  [\c!hoek={\v!rechts,\v!boven},\c!plaats={\v!links,\v!onder}]
 
 \definelayerpreset
-  [\v!left\v!bottom]
-  [\c!corner={\v!left,\v!bottom},\c!location={\v!right,\v!top}]
+  [\v!links\v!onder]
+  [\c!hoek={\v!links,\v!onder},\c!plaats={\v!rechts,\v!boven}]
 
 \definelayerpreset
-  [\v!right\v!bottom]
-  [\c!corner={\v!right,\v!bottom},\c!location={\v!left,\v!top}]
+  [\v!rechts\v!onder]
+  [\c!hoek={\v!rechts,\v!onder},\c!plaats={\v!links,\v!boven}]
 
 \definelayerpreset
-  [\v!middle]
-  [\c!corner=\v!middle,\c!location=\v!middle]
+  [\v!midden]
+  [\c!hoek=\v!midden,\c!plaats=\v!midden]
 
 \definelayerpreset
-  [\v!middle\v!top]
-  [\c!location=\v!bottom,\c!hoffset=.5\layerwidth]
+  [\v!midden\v!boven]
+  [\c!plaats=\v!onder,\c!hoffset=.5\layerwidth]
 
 \definelayerpreset
-  [\v!middle\v!bottom]
-  [\c!location=\v!top,\c!hoffset=.5\layerwidth,\c!voffset=\layerheight]
+  [\v!midden\v!onder]
+  [\c!plaats=\v!boven,\c!hoffset=.5\layerwidth,\c!voffset=\layerheight]
 
 \definelayerpreset
-  [\v!middle\v!left]
-  [\c!location=\v!right,\c!voffset=.5\layerwidth]
+  [\v!midden\v!links]
+  [\c!plaats=\v!rechts,\c!voffset=.5\layerwidth]
 
 \definelayerpreset
-  [\v!middle\v!right]
-  [\c!location=\v!left,\c!hoffset=\layerwidth,\c!voffset=.5\layerheight]
+  [\v!midden\v!rechts]
+  [\c!plaats=\v!links,\c!hoffset=\layerwidth,\c!voffset=.5\layerheight]
   
 \def\alignedbox
   {\dodoubleempty\doalignedbox[]}
@@ -688,21 +688,21 @@
       \egroup}#1}
 
 \setvalue{\??ab\??ab         }{\middlebox}
-\setvalue{\??ab\??ab\v!middle}{\middlebox}
-\setvalue{\??ab\??ab\v!left }{\leftbox  }
-\setvalue{\??ab\??ab\v!right}{\rightbox }
-\setvalue{\??ab\??ab\v!bottom }{\bottombox}
-\setvalue{\??ab\??ab\v!top }{\topbox   }
+\setvalue{\??ab\??ab\v!midden}{\middlebox}
+\setvalue{\??ab\??ab\v!links }{\leftbox  }
+\setvalue{\??ab\??ab\v!rechts}{\rightbox }
+\setvalue{\??ab\??ab\v!onder }{\bottombox}
+\setvalue{\??ab\??ab\v!boven }{\topbox   }
 
-\setvalue{\??ab\??ab\v!middle\v!middle}{\middlebox}
-\setvalue{\??ab\??ab\v!left \v!top }{\lefttopbox}
-\setvalue{\??ab\??ab\v!left \v!bottom }{\leftbottombox}
-\setvalue{\??ab\??ab\v!right\v!top }{\righttopbox}
-\setvalue{\??ab\??ab\v!right\v!bottom }{\rightbottombox}
-\setvalue{\??ab\??ab\v!top \v!left }{\topleftbox}
-\setvalue{\??ab\??ab\v!bottom \v!left }{\bottomleftbox}
-\setvalue{\??ab\??ab\v!top \v!right}{\toprightbox}
-\setvalue{\??ab\??ab\v!bottom \v!right}{\bottomrightbox}
+\setvalue{\??ab\??ab\v!midden\v!midden}{\middlebox}
+\setvalue{\??ab\??ab\v!links \v!boven }{\lefttopbox}
+\setvalue{\??ab\??ab\v!links \v!onder }{\leftbottombox}
+\setvalue{\??ab\??ab\v!rechts\v!boven }{\righttopbox}
+\setvalue{\??ab\??ab\v!rechts\v!onder }{\rightbottombox}
+\setvalue{\??ab\??ab\v!boven \v!links }{\topleftbox}
+\setvalue{\??ab\??ab\v!onder \v!links }{\bottomleftbox}
+\setvalue{\??ab\??ab\v!boven \v!rechts}{\toprightbox}
+\setvalue{\??ab\??ab\v!onder \v!rechts}{\bottomrightbox}
 
 \setvalue{\??ab\??ab  c}{\middlebox}
 \setvalue{\??ab\??ab  l}{\leftbox}
@@ -718,27 +718,12 @@
 \setvalue{\??ab\??ab bl}{\bottomleftbox}
 \setvalue{\??ab\??ab tr}{\toprightbox}
 \setvalue{\??ab\??ab br}{\bottomrightbox}
-
-\setvalue{\??ab\??ab  m}{\middlebox}
-
-% The next ones were desparately needed by Vit Zyka (see
-% \type {supp-box} for definitions).
-
-\setvalue{\??ab\??ab  g}{\baselinemiddlebox}
-\setvalue{\??ab\??ab gl}{\baselineleftbox}
-\setvalue{\??ab\??ab gc}{\baselinemiddlebox}
-\setvalue{\??ab\??ab gr}{\baselinerightbox}
-
-\setvalue{\??ab\??ab \v!line         }{\baselinemiddlebox} % \v!grid is taken
-\setvalue{\??ab\??ab \v!line\v!left }{\baselineleftbox}
-\setvalue{\??ab\??ab \v!line\v!middle}{\baselinemiddlebox}
-\setvalue{\??ab\??ab \v!line\v!right}{\baselinerightbox}
 
 \def\offsetbox
   {\dodoubleempty\dooffsetbox[]}
 
 % left/right/top/bottomoffset -> dimensions change
-% x/y | method=fixed          -> dimensions don't change
+% x/y                         -> dimensions don't change
 
 \def\dooffsetbox[#1][#2]%
   {\bgroup
@@ -746,70 +731,45 @@
      {\getparameters[\??ox]
         [\c!x=\zeropoint,
          \c!y=\zeropoint,
-         \c!width=\nextboxwd,
-         \c!height=\nextboxht,
-         \c!depth=\nextboxdp,
-         \c!location=,
-         \c!leftoffset=\zeropoint,
-         \c!rightoffset=\zeropoint,
-         \c!topoffset=\zeropoint,
-         \c!bottomoffset=\zeropoint,
-         \c!method=,
+         \c!breedte=\nextboxwd,
+         \c!hoogte=\nextboxht,
+         \c!diepte=\nextboxdp,
+         \c!plaats=,
+         \c!linkeroffset=\zeropoint,
+         \c!rechteroffset=\zeropoint,
+         \c!bovenoffset=\zeropoint,
+         \c!onderoffset=\zeropoint,
          #2]%
       \donefalse
-      \ifdim\@@oxleftoffset =\zeropoint\else\donetrue\fi
-      \ifdim\@@oxrightoffset=\zeropoint\else\donetrue\fi
-      \ifdim\@@oxtopoffset  =\zeropoint\else\donetrue\fi
-      \ifdim\@@oxbottomoffset  =\zeropoint\else\donetrue\fi
-      \ifdone
-        \doif\@@oxmethod\v!fixed % new
-          {\ifdim\@@oxleftoffset=\zeropoint
-             \ifdim\@@oxrightoffset=\zeropoint \else
-               \scratchdimen-\@@oxrightoffset
-               \edef\@@oxx{\the\scratchdimen}%
-               \let\@@oxrightoffset\zeropoint
-             \fi
-           \else
-             \let\@@oxx\@@oxleftoffset
-             \let\@@oxleftoffset\zeropoint
-           \fi
-           \ifdim\@@oxtopoffset=\zeropoint
-             \ifdim\@@oxbottomoffset=\zeropoint \else
-               \scratchdimen-\@@oxbottomoffset
-               \edef\@@oxy{\the\scratchdimen}%
-               \let\@@oxbottomoffset\zeropoint
-             \fi
-           \else
-             \let\@@oxy\@@oxtopoffset
-             \let\@@oxtopoffset\zeropoint
-           \fi
-           \donefalse}%
-      \fi
+      \ifdim\@@oxlinkeroffset >\zeropoint\donetrue\fi
+      \ifdim\@@oxrechteroffset>\zeropoint\donetrue\fi
+      \ifdim\@@oxbovenoffset  >\zeropoint\donetrue\fi
+      \ifdim\@@oxonderoffset  >\zeropoint\donetrue\fi
       \ifdone
         \setbox\nextbox\vbox
           {\forgetall\offinterlineskip
-           \vskip\@@oxtopoffset
+           \vskip\@@oxbovenoffset
            \hbox
-             {\hskip\@@oxleftoffset
+             {\hskip\@@oxlinkeroffset
               \flushnextbox
-              \hskip\@@oxrightoffset}%
-           \vskip\@@oxbottomoffset}%
+              \hskip\@@oxrechteroffset}%
+           \vskip\@@oxonderoffset}%
         \scratchdimen\nextboxht
         \advance\scratchdimen\nextboxdp
         \nextboxht\scratchdimen
         \nextboxdp\zeropoint
       \fi
-      \freezedimenmacro\@@oxwidth
-      \freezedimenmacro\@@oxheight
-      \freezedimenmacro\@@oxdepth
+      \freezedimenmacro\@@oxbreedte
+      \freezedimenmacro\@@oxhoogte
+      \freezedimenmacro\@@oxdiepte
       \setbox\nextbox\hbox
         {\hskip\@@oxx\lower\@@oxy\hbox
-           {\doifelsenothing\@@oxlocation
+           {\doifelsenothing\@@oxplaats
               {\flushnextbox}
-              {\alignedbox[\@@oxlocation]\hbox{\flushnextbox}}}}%
-      \nextboxwd\@@oxwidth
-      \nextboxht\@@oxheight
-      \nextboxdp\@@oxdepth
+              {\alignedbox[\@@oxplaats]\hbox{\flushnextbox}}}}%
+      \nextboxwd\@@oxbreedte
+      \nextboxht\@@oxhoogte
+      \nextboxdp\@@oxdiepte
       \flushnextbox
       \egroup}#1}
 
@@ -890,46 +850,14 @@
   {\hbox\bgroup
    \getparameters
      [\??ol]
-     [\c!width=\zeropoint,%
-      \c!height=\zeropoint,%
-      \c!depth=\zeropoint,#1]%
+     [\c!breedte=\zeropoint,%
+      \c!hoogte=\zeropoint,%
+      \c!diepte=\zeropoint,#1]%
    \setbox\scratchbox\null
-   \wd\scratchbox\@@olwidth
-   \ht\scratchbox\@@olheight
-   \dp\scratchbox\@@oldepth
+   \wd\scratchbox\@@olbreedte
+   \ht\scratchbox\@@olhoogte
+   \dp\scratchbox\@@oldiepte
    \box\scratchbox
    \egroup}
-
-%  \backgroundimage{\hsize}{\vsize}{1}{\externalfigure[cow][\c!width=3cm]}
-
-\def\backgroundimage#1#2#3% repeat hsize vsize
-  {\bgroup
-   \dowithnextbox
-     {\ifcase#1\relax
-        % just one
-      \else
-        \scratchdimen#2\divide\scratchdimen\nextboxwd\count0\scratchdimen\advance\count0\plusone
-        \scratchdimen#3\divide\scratchdimen\nextboxht\count2\scratchdimen\advance\count2\plusone
-        % to be considered, probably methods
-        \ifcase#1\or % x and y
-          \setbox\nextbox\hbox{\dorecurse{\count0}{\copy\nextbox}}%
-          \setbox\nextbox\vbox{\dorecurse{\count2}{\copy\nextbox\endgraf}}%
-        \or % x
-          \setbox\nextbox\hbox{\dorecurse{\count0}{\copy\nextbox}}%
-        \or % y
-          \setbox\nextbox\vbox{\dorecurse{\count2}{\copy\nextbox\endgraf}}%
-        \fi
-      \fi
-      \ifdim\nextboxwd>#2\relax
-        \setbox\nextbox\hbox to #2{\hss\flushnextbox\hss}%
-        \setbox\scratchbox\hbox{\expanded{\clip[\c!width=#2,\c!height=\the\nextboxht]{\box\scratchbox}}}%
-      \fi
-      \ifdim\nextboxht>#3\relax
-        \setbox\nextbox\vbox to #3{\vss\flushnextbox\vss}%
-        \setbox\nextbox\hbox{\expanded{\clip[\c!width=\the\nextboxwd,\c!height=#3]{\flushnextbox}}}%
-      \fi
-      \flushnextbox
-      \egroup}%
-   \hbox}
 
 \protect \endinput

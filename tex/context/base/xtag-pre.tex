@@ -92,8 +92,8 @@
 \def\setupXMLfile{\dodoubleargument\getparameters[\??xf]}
 
 \setupXMLfile
-  [\c!inbetween=\blank,
-   \c!level=1]
+  [\c!tussen=\blanko,
+   \c!niveau=1]
 
 \fetchruntimecommand\showXMLfile  {\f!xtagprefix\s!run}
 \fetchruntimecommand\showXMLbuffer{\f!xtagprefix\s!run}
@@ -116,58 +116,37 @@
 
 %D The comment escape has the form:
 %D
-%D \starttyping
+%D \starttypen
 %D <!-- a couple of remarks -->
-%D \stoptyping
+%D \stoptypen
 
 \defineXMLescape [--] {\gobbleuntil{-->}}
 
 %D The \type {CDATA} escape is kind of unique in its
 %D strange syntax.
 %D
-%D \starttyping
+%D \starttypen
 %D <!CDATA[it starts here
 %D whatever you like to be shown verbatim
 %D and ends here]]>
-%D \stoptyping
+%D \stoptypen
 %D
 %D Watch this rather obscure definition (we need to pass an
 %D \type {[} to the macro.
 
-\chardef\XMLcdatamethod=1
+% \defineXMLescape [{CDATA[}]
+%   {\skipfirstverbatimlinefalse
+%    \processtaggeddisplayverbatim{]]>}}
 
-\newtoks \everyXMLcdata % \appendtoks \tt \to \everyXMLcdata
-
-\setvalue{XMLcdatamethod1}%
+\defineXMLescape [CDATA]
   {\skipfirstverbatimlinefalse
    \processtaggeddisplayverbatim{]]>}}
 
-\setvalue{XMLcdatamethod2}%
-  {\begingroup
-   \obeylines
-   \obeyspaces
-   \the\everyXMLcdata
-   \processXMLcdata}
-
-\long\def\processXMLcdata#1]]>%
-  {#1\endgroup}
-
-\defineXMLescape [CDATA]
-  {\executeifdefined{XMLcdatamethod\number\XMLcdatamethod}{\begingroup\processXMLcdata}}
-
-%D \starttyping
-%D <!ELEMENT ...">
-%D <!ATTLIST ...">
-%D \stoptyping
-
-\defineXMLescape [ATTLIST]{\gobbleuntil>}
-\defineXMLescape [ELEMENT]{\gobbleuntil>}
-
-%D \starttyping
+%D \starttypen
 %D <!ENTITY crap "very new [&#x7B;] crap">
 %D <!ENTITY crap SYSTEM "crapfile.xml">
 %D <!ENTITY crap SYSTEM "crapfile.pdf" NDATA ignoredanyway>
-%D \stoptyping
+%D \stoptypen
 
 \defineXMLescape [ENTITY] \handleXMLentityescape
 
@@ -283,7 +262,7 @@
 %D because the possibility to process \CONTEXT\ commands is
 %D gone.
 
-\setupXMLprocessing[\c!command=\v!yes]
+\setupXMLprocessing[\c!commando=\v!ja]
 
 %\def\contextXMLcommand#1%
 %  {\doif\@@xpcommando\v!ja
@@ -294,7 +273,7 @@
 %      \popmacro\disableXML}}
 
 \def\contextXMLcommand#1% we don't use #1 here
-  {\doif\@@xpcommand\v!yes
+  {\doif\@@xpcommando\v!ja
      {\disableXML\scantokens\@EA{\currentXMLprocess}\enableXML}}
 
 %D The indirect method (using the macro \type
@@ -303,9 +282,9 @@
 %D definition, and given that \ETEX\ is used, we can now
 %D say:
 %D
-%D \starttyping
+%D \starttypen
 %D <?context-command {\bf Start Of Some \TeX\ Text} ?>
-%D \stoptyping
+%D \stoptypen
 %D
 %D A non||\ETEX\ solution is also possible, using buffers,
 %D but for the moment we assume that \ETEX\ is used.
@@ -320,7 +299,7 @@
   {\docontextXMLdirective#1 @ @ @\end}
 
 \def\docontextXMLdirective#1 #2 #3 #4\end % class variable value
-  {\expandafter\def\csname\@@XMLvariable:#1:#2\endcsname{#3}}
+  {\csname\@@XMLvariable:#1:#2\endcsname{#3}}
 
 %D A simple processing instruction is the following. It just
 %D writes a message to the screen.
@@ -367,24 +346,24 @@
 
 %D Say that a file contains blocks like the following:
 %D
-%D \starttyping
+%D \starttypen
 %D <?context-block begin whatevername ?>
 %D
 %D <to/> <be> <or/> maybe <not/> so much <to/> </be>
 %D
 %D <?context-block end whatevername ?>
-%D \stoptyping
+%D \stoptypen
 %D
 %D The following commands will show only this block:
 %D
-%D \starttyping
+%D \starttypen
 %D \videXMLcontextblock[whatevername] \showXMLfile{yourfile}
-%D \stoptyping
+%D \stoptypen
 %D
 %D You can also mark blocks in the following way, thereby
 %D saving yourself some work:
 %D
-%D \starttyping
+%D \starttypen
 %D <?context-block what ?>
 %D
 %D <what>What do you want?</what>
@@ -394,7 +373,7 @@
 %D <how>How do you want?</how>
 %D
 %D <?context-block done ?>
-%D \stoptyping
+%D \stoptypen
 
 % yet undocumented and experimental
 

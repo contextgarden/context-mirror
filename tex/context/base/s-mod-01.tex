@@ -25,49 +25,49 @@
   [en]
 
 \setupwhitespace
-  [\v!big]
+  [\v!groot]
 
 \setuptolerance
-  [\v!tolerant]
+  [\v!soepel]
 
 \emergencystretch=5em
 
 \setuplayout
-  [\c!backspace=3.5cm,
-   \c!leftmargin=1.75cm,
-   \c!rightmargin=0cm,
-   \c!margindistance=.5cm,
-   \c!leftedgedistance=.25cm,
-   \c!rightedgedistance=.5cm,
-   \c!edge=1.5cm,
-   \c!width=15.55333cm,         % 13.998cm at 9pt => 15.55333 at 10pt
-   \c!topspace=2cm,
-   \c!header=1.25cm,
-   \c!footer=1.25cm,
-   \c!height=25cm,
-   \c!style=\ss]
+  [\c!rugwit=3.5cm,
+   \c!linkermarge=1.75cm,
+   \c!rechtermarge=0cm,
+   \c!margeafstand=.5cm,
+   \c!linkerrandafstand=.25cm,
+   \c!rechterrandafstand=.5cm,
+   \c!rand=1.5cm,
+   \c!breedte=15.55333cm,         % 13.998cm at 9pt => 15.55333 at 10pt
+   \c!kopwit=2cm,
+   \c!hoofd=1.25cm,
+   \c!voet=1.25cm,
+   \c!hoogte=25cm,
+   \c!letter=\ss]
 
-\setupsetup
-  [\c!reference=1]
+\stelsetupin
+  [\c!verwijzing=1]
 
 \startnotmode[single]
 
   \setuppagenumbering
-    [\c!alternative={\v!doublesided,\v!singlesided}]
+    [\c!variant={\v!dubbelzijdig,\v!enkelzijdig}]
 
 \stopnotmode
 
-\setuppagenumbering
-  [\c!location=]
+\stelnummeringin
+  [\c!plaats=]
 
 \setupfootertexts
-  [\v!edge]
-  [][\v!pagenumber]
+  [\v!rand]
+  [][\v!paginanummer]
 
 \startmode[single]
 
   \setupfootertexts
-    [\v!margin]
+    [\v!marge]
     [\tt\Modulefile][]
 
 \stopmode
@@ -75,65 +75,65 @@
 \startnotmode[single]
 
   \setupfootertexts
-    [\v!margin]
+    [\v!marge]
     [\tt\Modulefile][]
     [\tt\Modulefile][]
 
 \stopnotmode
 
 \setupfootertexts
-  [\v!text]
+  [\v!tekst]
   [\CONTEXT]
   [\Moduletitle]
 
 \setupheadertexts
-  [\v!text]
+  [\v!tekst]
   []
   [\Modulesubtitle]
 
-\setupinmargin
-  [\c!location=\v!left]
+\stelinmargein
+  [\c!plaats=\v!links]
 
-\setupheads
-  [\c!alternative=\v!inmargin]
+\stelkoppenin
+  [\c!variant=\v!inmarge]
 
-\setuphead
-  [\v!chapter]
-  [\c!style=\ssc,
-   \c!page=\v!right,
-   \c!header=\v!empty]
+\stelkopin
+  [\v!hoofdstuk]
+  [\c!letter=\ssc,
+   \c!pagina=\v!rechts,
+   \c!hoofd=\v!leeg]
 
-\setuphead
-  [\v!section]
-  [\c!style=\ssb,
-   \c!page=\v!right]
+\stelkopin
+  [\v!paragraaf]
+  [\c!letter=\ssb,
+   \c!pagina=\v!rechts]
 
-\setuplist
-  [\v!chapter]
-  [\c!style=\v!bold,
-   \c!after=\blank]
+\stellijstin
+  [\v!hoofdstuk]
+  [\c!letter=\v!vet,
+   \c!na=\blanko]
 
-\setupcombinedlist
-  [\v!content]
-  [\c!width=3em,
-   \c!aligntitle=\v!yes]
+\stelsamengesteldelijstin
+  [\v!inhoud]
+  [\c!breedte=3em,
+   \c!titeluitlijnen=\v!ja]
 
-\setupregister
+\stelregisterin
   [\v!index]
-  [\c!balance=\v!yes,
-   \c!indicator=\v!no]
+  [\c!balanceren=\v!ja,
+   \c!aanduiding=\v!nee]
 
 \startnotmode[nocolor]
 
 \setupcolors
-  [\c!state=\v!start]
+  [\c!status=\v!start]
 
 \stopnotmode
 
 \startnotmode[color]
 
   \setupcolors
-    [\c!conversion=\v!always]
+    [\c!conversie=\v!altijd]
 
   \setuptyping
     [\c!palet=graypretty]
@@ -141,8 +141,8 @@
 \stopnotmode
 
 \setupinteraction
-  [\c!state=\v!start,
-   \c!color=,
-   \c!style=]
+  [\c!status=\v!start,
+   \c!kleur=,
+   \c!letter=]
 
 \protect \endinput

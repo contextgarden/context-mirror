@@ -43,11 +43,11 @@
 \remapXMLsequence [cn]      [CPA] \MMLcCN
 \remapXMLsequence [csymbol] [CPA] \MMLcCSYMBOL
 
-\setupMMLappearance[polar][\c!alternative=\v!a] % a|b|c
+\setupMMLappearance[polar][\c!variant=\v!a] % a|b|c
 
 \def\MMLcpolar#1%
-  {\doifdefinedelse{MMLcdopolar\@@MMLpolaralternative}
-     {\getvalue{MMLcdopolar\@@MMLpolaralternative}{#1}}
+  {\doifdefinedelse{MMLcdopolar\@@MMLpolarvariant}
+     {\getvalue{MMLcdopolar\@@MMLpolarvariant}{#1}}
      {#1}}
 
 \def\MMLcdopolara#1%
@@ -66,10 +66,10 @@
 
 % float will be obsolete, an is replace by e-notation
 
-\setupMMLappearance[float][\c!symbol=\v!no] % \v!yes|dot
+\setupMMLappearance[float][\c!symbool=\v!nee] % \v!ja|dot
 
 \def\MMLcfloat#1%
-  {\doifelse\@@MMLfloatsymbol\v!no
+  {\doifelse\@@MMLfloatsymbool\v!nee
      {{\rm#1}} % make sure that e shows up ok
      {% we should ignore \entities !
       \beforesplitstring#1\at e\to\first
@@ -77,18 +77,20 @@
       \ifx\first\empty #1\else
       \ifx\last \empty #1\else
         \first
-        \doifelse\@@MMLfloatsymbol{dot}\cdot\times
+        \doifelse\@@MMLfloatsymbool{dot}\cdot\times
         10^{\last}%
       \fi\fi}}
 
 % we now have:
 
-\setupMMLappearance[enotation][\c!symbol=\v!no] % \v!yes|dot
+\setupMMLappearance[enotation][\c!symbool=\v!nee] % \v!ja|dot
 
 \def\MMLcenotation#1%
-  {\doifelse\@@MMLenotationsymbol\v!no
-     {\def\MMLcsep         {\unskip{\rm e}\ignorespaces}}
-     {\def\MMLcsep##1\empty{\doifelse\@@MMLenotationsymbol{dot}\cdot\times10^{##1}}}%
+  {\doifelse\@@MMLenotationsymbool\v!nee
+     {\def\MMLcsep%
+        {\unskip{\rm e}\ignorespaces}}
+     {\def\MMLcsep##1\empty
+        {\doifelse\@@MMLenotationsymbool{dot}\cdot\times10^{##1}}}%
    #1\empty}
 
 \def\MMLcCI#1% #2% can be sped up with \doifundefined ...
@@ -124,7 +126,10 @@ complex-cartesian=>\let\next\MMLccartesian,
   {{\bi#1}}
 
 \def\MMLcCIfunction#1%
-  {\doifMMLoperatorelse{#1}\MMLcCIdefault\MMLcFNdefault{}{#1}}
+  {\doifMMLoperatorelse{#1}
+     {\let\next\MMLcCIdefault}
+     {\let\next\MMLcFNdefault}%
+   \next{}{#1}}
 
 \def\MMLcCIdefault#1#2% #1=dummy
   {#2%\!% \getXMLentity{NegThinSpace}% looks bad in A(x)
@@ -151,19 +156,19 @@ complex-cartesian=>\let\next\MMLccartesian,
      {\let\next\firstofoneargument}
   \next}
 
-\setupMMLappearance[base][\c!symbol=\v!numbers] % cijfers|letters|tekst|nee
+\setupMMLappearance[base][\c!symbool=\v!cijfers] % cijfers|letters|tekst|nee
 
 \def\MMLcCNinteger#1%
   {\doifXMLparelse{cn}{base}
      {\def\MMLcCNbase{\XMLpar{cn}{base}{}}%
-      \doifelse\@@MMLbasesymbol\v!no
+      \doifelse\@@MMLbasesymbool\v!nee
         {\MMLcCNbasedata{#1}}
         {\MMLcCNbasedata{#1}_{\hbox{$\rm\scriptscriptstyle
          \processaction
-           [\@@MMLbasesymbol]
-           [\v!characters=>\MMLcCNbasestring BODH,
-                  \v!text=>\MMLcCNbasestring{BIN}{OCT}{DEC}{HEX},
-               \s!unknown=>\MMLcCNbase]$}}}}
+           [\@@MMLbasesymbool]
+           [\v!letters=>\MMLcCNbasestring BODH,
+              \v!tekst=>\MMLcCNbasestring{BIN}{OCT}{DEC}{HEX},
+            \s!unknown=>\MMLcCNbase]$}}}}
      {#1}}
 
 \def\MMLcCNbasedata#1%
@@ -261,9 +266,10 @@ complex-cartesian=>\let\next\MMLccartesian,
   {\doifXMLRchildelse{ci}{#2}
      {\collectXMLRchild{ci}{#2}%
       \@EA\doifMMLoperatorelse\@EA{\the\XMLRtoks}
-        \MMLcFNoperator\MMLcFNdefault}
-     {\MMLcFNdefault}%
-   {#1}{#2}}
+        {\let\next\MMLcFNoperator}
+        {\let\next\MMLcFNdefault}}
+     {\let\next\MMLcFNdefault}%
+   \next{#1}{#2}}
 
 \def\MMLcFNdefault#1#2% neg space needed because of \left
   {#2\!% \getXMLentity{NegThinSpace}%
@@ -340,10 +346,10 @@ complex-cartesian=>\let\next\MMLccartesian,
 
 \remapXMLsequence [declare] [CPA] \MMLcDECLARE
 
-\setupMMLappearance[declare][\c!state=\v!start]
+\setupMMLappearance[declare][\c!status=\v!start]
 
 \def\MMLcDECLARE#1#2%
-  {\doif\@@MMLdeclarestate\v!start
+  {\doif\@@MMLdeclarestatus\v!start
      {\withnextXMLRelement
         {\getXMLentity{declare}\nextXMLRelement
          \countXMLRchildren{#2}%
@@ -356,10 +362,10 @@ complex-cartesian=>\let\next\MMLccartesian,
 
 \remapXMLsequence [lambda] [CPA] \MMLcLAMBDA
 
-\setupMMLappearance[lambda][\c!alternative=b]
+\setupMMLappearance[lambda][\c!variant=b]
 
 \def\MMLcLAMBDA#1#2%
-  {\doifelse\@@MMLlambdaalternative\v!a
+  {\doifelse\@@MMLlambdavariant\v!a
      {\encapsulateXMLR{\getXMLentity{lambda}(}{\MMLccomma}{)}{#2}}
      {\countXMLRchild{bvar}{#2}%
       \ifnum\nofXMLRchildren>1
@@ -404,12 +410,12 @@ complex-cartesian=>\let\next\MMLccartesian,
 \remapXMLsequence [piece]     [CPA] \MMLcPIECE
 \remapXMLsequence [otherwise] [CPA] \MMLcOTHERWISE
 
-\setupMMLappearance[piece][\c!separator=]
+\setupMMLappearance[piece][\c!scheider=]
 
 \def\MMLcPIECEWISE#1#2%
   {\cases{#2}}
 
-%\def\MMLcPIECE#1#2% \@@MMLpieceseparator
+%\def\MMLcPIECE#1#2% \@@MMLpiecescheider
 %  {\withnexttwoXMLRelements
 %     {\@EA\XMLRtoks\@EA{\firstXMLRelement\@col@amp@}%
 %      \@EA\appendtoks\@EA\mathematics\@EA{\secondXMLRelement}\to\XMLRtoks
@@ -419,7 +425,7 @@ complex-cartesian=>\let\next\MMLccartesian,
 %\def\MMLcOTHERWISE#1#2%
 %  {#2\@col@amp@\mathematics{\getXMLentity{otherwise}}\crcr}
 
-\def\MMLcPIECEseparator{\doif\@@MMLpieceseparator\v!yes,}
+\def\MMLcPIECEseparator{\doif\@@MMLpiecescheider\v!ja,}
 
 \def\MMLcPIECE#1#2%
   {\withnexttwoXMLRelements
@@ -445,12 +451,12 @@ complex-cartesian=>\let\next\MMLccartesian,
 
 \remapXMLsingular [divide] [CPA] \MMLcDIVIDE
 
-\setupMMLappearance [divide] [\c!level=\!!maxcard]
+\setupMMLappearance [divide] [\c!niveau=\!!maxcard]
 
 \def\MMLcDIVIDE#1#2%
   {\withnexttwoXMLRelements
      {\increment\MMLcDIVIDElevel
-      \ifnum\MMLcDIVIDElevel>\@@MMLdividelevel\space
+      \ifnum\MMLcDIVIDElevel>\@@MMLdivideniveau\space
         \firstXMLRelement/\secondXMLRelement
       \else
         \frac{\MMLcreset\firstXMLRelement}{\MMLcreset\secondXMLRelement}%
@@ -473,14 +479,14 @@ complex-cartesian=>\let\next\MMLccartesian,
 \remapXMLsingular [minus] [CPA] \MMLcMINUS
 \remapXMLsingular [plus]  [CPA] \MMLcPLUS
 
-\setupMMLappearance[sign][\c!reduction=\v!yes]
+\setupMMLappearance[sign][\c!reductie=\v!ja]
 
 \def\MMLcMINUS % expandafter needed ?
-  {\doifelse\@@MMLsignreduction\v!yes
+  {\doifelse\@@MMLsignreductie\v!ja
      {\expandafter\MMLcMINUSyes}{\expandafter\MMLcMINUSno}}
 
 \def\MMLcPLUS % expandafter needed ?
-  {\doifelse\@@MMLsignreduction\v!yes
+  {\doifelse\@@MMLsignreductie\v!ja
      {\expandafter\MMLcPLUSyes}{\expandafter\MMLcPLUSno}}
 
 \def\MMLcMINUSno#1#2#3\empty
@@ -511,14 +517,14 @@ complex-cartesian=>\let\next\MMLccartesian,
 
 \remapXMLsingular [power] [CPA] \MMLcPOWER
 
-\setupMMLappearance[power][\c!reduction=\v!yes]
+\setupMMLappearance[power][\c!reductie=\v!ja]
 
 \let\MMLpowerelement\empty
 
 \def\MMLcPOWER#1#2%
   {\withnexttwoXMLRelements
      {\doifXMLRchildelse{apply}{\firstXMLRelement}
-        {\doifelse\@@MMLpowerreduction\v!yes
+        {\doifelse\@@MMLpowerreductie\v!ja
            {\collectXMLRchild{apply}{\firstXMLRelement}%
             \@EA\doifXMLRchildelse\@EA{\MMLcfunctionlist}{\the\XMLRtoks}
               {\let\MMLpowerelement\secondXMLRelement
@@ -535,19 +541,13 @@ complex-cartesian=>\let\next\MMLccartesian,
 
 \remapXMLsingular [times] [CPA] \MMLcTIMES
 
-\setupMMLappearance[times][\c!symbol=\v!no] %
-\setupMMLappearance[times][\c!auto=\v!yes]  % new, auto catches cn cn cn
+\setupMMLappearance[times][\c!symbool=\v!nee]
 
 \def\MMLcTIMES#1#2#3\empty
   {\setMMLcreset{\MMLcfunctionlist,\MMLcconstructlist}%
-   \doifelse\@@MMLtimesauto\v!no
-     {\let\@@MMLtimes@@symbol\@@MMLtimessymbol}
-     {\doifelseXMLRneighbors{cn}{#3}
-        {\let\@@MMLtimes@@symbol\@@MMLtimesauto}
-        {\let\@@MMLtimes@@symbol\v!no}}%
-   \doifelse\@@MMLtimes@@symbol\v!yes
+   \doifelse\@@MMLtimessymbool\v!ja
      {\encapsulateXMLR{}{\times}{}{#3\empty}}
-     {\doifelse\@@MMLtimes@@symbol{dot}
+     {\doifelse\@@MMLtimessymbool{dot}
         {\encapsulateXMLR{}{\cdot}{}{#3\empty}}
         {#3\empty}}}
 
@@ -560,11 +560,11 @@ complex-cartesian=>\let\next\MMLccartesian,
 %          \MMLcreset\processXMLRchildren{#3}}}
 %      {\sqrt{\MMLcreset\processXMLRchildren{#3}}}}
 
-\setupMMLappearance[root][\c!symbol=\v!yes]
+\setupMMLappearance[root][\c!symbool=\v!ja]
 
 \def\MMLcROOT#1#2#3\empty
   {\doifXMLRchildelse{degree}{#3}\donetrue\donefalse
-   \doif\@@MMLrootsymbol\v!no\donefalse
+   \doif\@@MMLrootsymbool\v!nee\donefalse
    \ifdone
      \root\processXMLRchild{degree}{#3}\of
        {\let\MMLcDEGREE\ignoreXMLRelement
@@ -678,7 +678,7 @@ complex-cartesian=>\let\next\MMLccartesian,
 \remapXMLsingular [approx]     [CPA] \MMLcAPPROX
 \remapXMLsingular [factorof]   [CPA] \MMLcFACTOROF
 
-\setupMMLappearance[relation][\c!align=\v!no]
+\setupMMLappearance[relation][\c!uitlijnen=\v!nee]
 
 \def\noMMLcrelation#1#2%
   {\encapsulatenextXMLRelements{}{#1}{}#2\empty}
@@ -719,12 +719,12 @@ complex-cartesian=>\let\next\MMLccartesian,
 \def\MMLcrelation#1#2\empty
   {\MMLcreset
    \processaction
-     [\@@MMLrelationalign]
-     [\v!last=>\let\next\lastMMLcrelation ,
-       \v!first=>\let\next\firstMMLcrelation,
-           \v!yes=>\let\next\leftMMLcrelation ,
-        \v!left=>\let\next\leftMMLcrelation ,
-       \v!right=>\let\next\rightMMLcrelation,
+     [\@@MMLrelationuitlijnen]
+     [\v!laatste=>\let\next\lastMMLcrelation ,
+       \v!eerste=>\let\next\firstMMLcrelation,
+           \v!ja=>\let\next\leftMMLcrelation ,
+        \v!links=>\let\next\leftMMLcrelation ,
+       \v!rechts=>\let\next\rightMMLcrelation,
       \s!default=>\let\next\noMMLcrelation   ,
       \s!unknown=>\let\next\noMMLcrelation   ]
    \next{#1}{#2}}
@@ -749,12 +749,12 @@ complex-cartesian=>\let\next\MMLccartesian,
 
 %%% calculus and vector calculus
 
-\setupMMLappearance[int][\c!location=\v!top]
+\setupMMLappearance[int][\c!plaats=\v!boven]
 
 \remapXMLsingular [int] [CPA] \MMLcINT
 
 \def\doMMLlimits#1%
-  {\doifelsevalue{@@MML#1\c!location}\v!top\limits\nolimits}
+  {\doifelsevalue{@@MML#1\c!plaats}\v!boven\limits\nolimits}
 
 \def\MMLcINT#1#2#3\empty
   {\pushmacro\xmlr
@@ -783,7 +783,7 @@ complex-cartesian=>\let\next\MMLccartesian,
 
 \remapXMLsingular [diff] [CPA] \MMLcDIFF
 
-\setupMMLappearance[diff][\c!location=\v!top]
+\setupMMLappearance[diff][\c!plaats=\v!boven]
 
 \def\MMLcDIFF#1#2#3\empty
   {\pushmacro\xmlr
@@ -794,7 +794,7 @@ complex-cartesian=>\let\next\MMLccartesian,
          \collectXMLRchild{bvar}{#3}%
          \let\MMLcDEGREE\superMMLcelement
          \expanded{\processXMLRchild{degree}{\the\XMLRtoks}}%
-         \doif\@@MMLdifflocation\v!top
+         \doif\@@MMLdiffplaats\v!boven
            {\doifXMLRchildelse{ci}{#3}
               {\processXMLRchild{ci}{#3}}
               {\doifMMLfunctionelse{#3}
@@ -803,7 +803,7 @@ complex-cartesian=>\let\next\MMLccartesian,
         {\let\MMLcDEGREE\superMMLcelement
          \begingroup\rm\getXMLentity{mathematicald}\endgroup
          \processXMLRchild{bvar}{#3}}%
-      \doifnot\@@MMLdifflocation\v!top
+      \doifnot\@@MMLdiffplaats\v!boven
         {\left(\MMLcreset\processXMLRchild{apply,ci}{#3}\right)}}
      {\processXMLRchildren{#3}^\prime}%
    \popmacro\xmlr}
@@ -928,8 +928,8 @@ complex-cartesian=>\let\next\MMLccartesian,
 \def\MMLcSUM    {\MMLcSUMandPRODUCT{sum}\sum}
 \def\MMLcPRODUCT{\MMLcSUMandPRODUCT{product}\prod}
 
-\setupMMLappearance[sum][\c!location=\v!top]
-\setupMMLappearance[product][\c!location=\v!top]
+\setupMMLappearance[sum][\c!plaats=\v!boven]
+\setupMMLappearance[product][\c!plaats=\v!boven]
 
 \def\stackMMLsubscripts#1%
   {\vbox
@@ -959,7 +959,7 @@ complex-cartesian=>\let\next\MMLccartesian,
 
 \remapXMLsingular [limit] [CPA] \MMLcLIMIT
 
-\setupMMLappearance[limit][\c!location=\v!top]
+\setupMMLappearance[limit][\c!plaats=\v!boven]
 
 \def\MMLcLIMIT#1#2#3\empty
   {\pushmacro\xmlr
@@ -1004,13 +1004,13 @@ complex-cartesian=>\let\next\MMLccartesian,
 
 \remapXMLsingular [log] [CPA] \MMLcLOG
 
-\setupMMLappearance[log][\c!location=\v!right]
+\setupMMLappearance[log][\c!plaats=\v!rechts]
 
 \def\MMLcLOG#1#2#3\empty
   {\pushmacro\MMLcLOGBASE
    \let\MMLcLOGBASE\secondoftwoarguments
    \doifXMLRchildelse{logbase}{#3}
-     {\doifelse\@@MMLloglocation\v!left
+     {\doifelse\@@MMLlogplaats\v!links
         {\mathop{{}^{\processXMLRchild{logbase}{#3}}\!\getXMLentity{log}}}
         {\getXMLentity{log}_{\processXMLRchild{logbase}{#3}}}}
      {\getXMLentity{log}}%
@@ -1047,7 +1047,7 @@ complex-cartesian=>\let\next\MMLccartesian,
 \remapXMLsingular [sech]    [CPA] \MMLcSECH
 \remapXMLsingular [arcsech] [CPA] \MMLcARCSECH
 
-\setupMMLappearance[function][\c!reduction=\v!yes]
+\setupMMLappearance[function][\c!reductie=\v!ja]
 
 \def\doMMLcfunction#1%
   {\doifnextcharelse\xmlr{\dodoMMLcfunction{#1}}{\getXMLentity{#1}}}
@@ -1060,7 +1060,7 @@ complex-cartesian=>\let\next\MMLccartesian,
   {\ifx\MMLpowerelement\empty\else
      ^{\MMLcreset\MMLpowerelement\empty}\!\let\MMLpowerelement\empty
    \fi
-   \doifelse\@@MMLfunctionreduction\v!yes
+   \doifelse\@@MMLfunctionreductie\v!ja
      {\doifXMLRchildelse{apply}{#1}
         {\collectXMLRchild{apply}{#1}%
          \@EA\doifXMLRchildelse\@EA{\MMLcfunctionlist}{\the\XMLRtoks}
@@ -1121,12 +1121,12 @@ complex-cartesian=>\let\next\MMLccartesian,
 
 \remapXMLsequence [vector] [CPA] \MMLcVECTOR
 
-\setupMMLappearance[vector][\c!direction=\v!horizontal] % \v!vertical
+\setupMMLappearance[vector][\c!richting=\v!horizontaal] % \v!vertikaal
 
 \def\MMLcVECTOR#1#2%
    {\countXMLRchildren{#2}%
     \ifnum\nofXMLRchildren>1
-      \doifelse\@@MMLvectordirection\v!horizontal
+      \doifelse\@@MMLvectorrichting\v!horizontaal
         {\encapsulateXMLR{\left(}{\MMLccomma}{\right)}{#2}}
         {\collectbetweenXMLR{\crcr}{#2}%
          \MMLcreset\left(\matrix{\the\XMLRtoks}\right)}%

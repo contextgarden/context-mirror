@@ -9,45 +9,45 @@
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
-%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
-%C details.
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for 
+%C details. 
 
-\mainlanguage[cn]
+\mainlanguage[cn] 
 
-\setupbodyfont[chi]
+\setupbodyfont[chi] 
 
-\unprotect
+\unprotect 
 
-\setupsection [\v!sectionlevel-1] [\c!headconversion=\s!chinese]
-\setupsection [\v!sectionlevel-2] [\c!headconversion=\s!chinese]
-\setupsection [\v!sectionlevel-3] [\c!headconversion=\s!chinese]
+\stelsectiein [\v!sectionlevel-1] [\c!kopconversie=\s!chinese]
+\stelsectiein [\v!sectionlevel-2] [\c!kopconversie=\s!chinese]
+\stelsectiein [\v!sectionlevel-3] [\c!kopconversie=\s!chinese]
 
-\setupsection [\v!sectionlevel-2] [\v!appendix\c!conversion=]
+\stelsectiein [\v!sectionlevel-2] [\v!bijlage\c!conversie=]
 
-\setuphead [\v!chapter]    [\c!distance=1.25em]
-\setuphead [\v!section]    [\c!distance=1.25em]
-\setuphead [\v!subsection] [\c!distance=1.00em]
+\stelkopin [\v!hoofdstuk]       [\c!afstand=1.25em]
+\stelkopin [\v!paragraaf]       [\c!afstand=1.25em]
+\stelkopin [\v!sub\v!paragraaf] [\c!afstand=1.00em]
 
-\setuplist [\v!chapter] [\c!headlabel=\v!yes,\c!headconversion=\v!yes,\c!width=5em]
-\setuplist [\v!section] [\c!headlabel=\v!yes,\c!headconversion=\v!yes,\c!width=5em]
+\stellijstin [\v!hoofdstuk] [\c!koplabel=\v!ja,\c!kopconversie=\v!ja,\c!breedte=5em]
+\stellijstin [\v!paragraaf] [\c!koplabel=\v!ja,\c!kopconversie=\v!ja,\c!breedte=5em]
 
-\setupmarking [\v!chapter\v!number] [\c!headlabel=\v!yes,\c!headconversion=\v!yes]
-\setupmarking [\v!section\v!number] [\c!headlabel=\v!yes,\c!headconversion=\v!yes]
+\stelmarkeringin [\v!hoofdstuk\v!nummer] [\c!koplabel=\v!ja,\c!kopconversie=\v!ja]
+\stelmarkeringin [\v!paragraaf\v!nummer] [\c!koplabel=\v!ja,\c!kopconversie=\v!ja]
 
-\setuplabeltext[cn][\v!subsection={\symbol[S]\kern.25em}]
-\setuplabeltext[cn][\v!subsubsection={\symbol[S]\kern.25em}]
-\setuplabeltext[cn][\v!subsubsubsection={\symbol[S]\kern.25em}]
-\setuplabeltext[cn][\v!subsubsubsubsection={\symbol[S]\kern.25em}]
+\setuplabeltext[cn][\v!sub\v!paragraaf={\symbol[S]\kern.25em}]
+\setuplabeltext[cn][\v!sub\v!sub\v!paragraaf={\symbol[S]\kern.25em}]
+\setuplabeltext[cn][\v!sub\v!sub\v!sub\v!paragraaf={\symbol[S]\kern.25em}]
+\setuplabeltext[cn][\v!sub\v!sub\v!sub\v!sub\v!paragraaf={\symbol[S]\kern.25em}]
 
-% nog taalonafhankelijk maken -> \e!tabel enz
+% nog taalonafhankelijk maken -> \e!tabel enz 
 
-\definereferenceformat [intable]   [\c!label=\v!table]
-\definereferenceformat [infigure]  [\c!label=\v!figure]
-\definereferenceformat [inchapter] [\c!label=\v!chapter]
-\definereferenceformat [insection] [\c!label=\v!section]
+\definereferenceformat [intable]   [\c!label=\v!tabel]
+\definereferenceformat [infigure]  [\c!label=\v!figuur]
+\definereferenceformat [inchapter] [\c!label=\v!hoofdstuk]
+\definereferenceformat [insection] [\c!label=\v!paragraaf]
 
-% important
+% important 
 
-\setuptyping[\c!tab=\v!no]
+\setuptyping[\c!tab=\v!nee]
 
 \protect \endinput

@@ -13,8 +13,8 @@
 
 %D There is a more versatile mapper available in \type {xtag-rem.tex}!
 
-%D We also need something that lets content as-is, like for
-%D instance XML embedded in a chemical caption.
+%D We also need something that lets content as-is, like for 
+%D instance XML embedded in a chemical caption. 
 
 \beginTEX
   \endinput
@@ -46,15 +46,15 @@
 \let\normalparseXMLprocess\parseXMLprocess
 
 \let\normaldoXMLelement   \doXMLelement
-\let\normaldoXMLentity    \doXMLentity
+\let\normaldoXMLentity    \doXMLentity    
 
 \def\setnormalXMLhandler
   {\let\doXMLelement   \normaldoXMLelement
    \let\parseXMLelement\normalparseXMLelement
-   \let\parseXMLescape \normalparseXMLescape
+   \let\parseXMLescape \normalparseXMLescape 
    \let\parseXMLprocess\normalparseXMLprocess
-   \let\doXMLentity    \normaldoXMLentity}
-
+   \let\doXMLentity    \normaldoXMLentity}    
+ 
 %D A careful reader will notice that we do a full expansion of
 %D the content of the element, although commands that are
 %D protected will stay untouched. In this stage we also
@@ -124,13 +124,13 @@
 
 % \def\remapXMLunknownONE#1#2% name args
 %   {\ifremapXMLunknown\remapXMLone{\s!unknown}{#1 #2}\fi}
-%
+% 
 % \def\remapXMLunknownTWO#1#2% name args
 %   {\ifremapXMLunknown\remapXMLtwo{\s!unknown}{#1 #2}\fi}
-%
+% 
 % \def\remapXMLunknownTHREE#1#2% name args
 %   {\ifremapXMLunknown\remapXMLthree{\s!unknown/}{#1 #2}\fi}
-%
+% 
 % \long\def\remapXMLelement#1#2 #3>#4% todo: we need to get rid of the end /
 %   {\ifcase\findendofXMLelement#2#3>%
 %      \if#1/%
@@ -298,22 +298,22 @@
 %D macros, that both deal with elements. We distinguish
 %D between normal and empty elements.
 %D
-%D \starttyping
+%D \starttypen
 %D \remapXMLsequence [name] [result map] \unexpandablecommand
 %D \remapXMLsequence [name] [result map] \unexpandablecommand
-%D \stoptyping
+%D \stoptypen
 %D
 %D The \MATHML\ module demonstrates how these can be used.
 %D The element is converted into a sequence with one or more
 %D of the following components.
 %D
-%D \starttyping
+%D \starttypen
 %D { \command {parameters} {argument} }
-%D \stoptyping
+%D \stoptypen
 %D
 %D The following combinations are supported.
 %D
-%D \starttabulate[|c|c|c|c|c|]
+%D \starttabulatie[|c|c|c|c|c|]
 %D \NC GCPA \NC grouped \NC command \NC parameters \NC argument \NC \NR
 %D \NC GCP  \NC grouped \NC command \NC parameters \NC          \NC \NR
 %D \NC GCA  \NC grouped \NC command \NC            \NC argument \NC \NR
@@ -323,7 +323,7 @@
 %D \NC CA   \NC         \NC command \NC            \NC argument \NC \NR
 %D \NC C    \NC         \NC command \NC            \NC          \NC \NR
 %D \NC G    \NC grouped \NC         \NC            \NC          \NC \NR
-%D \stoptabulate
+%D \stoptabulatie
 %D
 %D Empty elements (singular ones) never get an argument,
 %D which makes sense, since they have at most parameters.
@@ -373,7 +373,7 @@
 \def\remapXMLentity#1;#2%
   {\doremapXMLentity{#1}#2}%
 
-\def\doremapXMLentity
+\def\doremapXMLentity%
   {\xmlrent}
 
 \unexpanded\def\xmlrent#1%
@@ -382,9 +382,9 @@
 %D The remapping is taken care of by the following macro,
 %D which takes three arguments.
 %D
-%D \starttyping
+%D \starttypen
 %D \XMLremapdata{before}{after}{content}
-%D \stoptyping
+%D \stoptypen
 %D
 %D After the remapping, the content is executed (expanded)
 %D under the normal \TEX\ catcode regime. The intermediate
@@ -417,15 +417,15 @@
 \long\def\XMLremapdata%
   {\dosingleempty\doXMLremapdata}
 
-\long\def\doXMLremapdata[#1]#2#3#4%
+\long\def\doXMLremapdata[#1]#2#3#4% 
   {\bgroup
    \startXMLmapping[#1]%
    % enable unknown elements (should be macro)
    \doifsomething{#1}
-     {\doifdefinedelse{\@@XML#1:\s!unknown:M}
-        {\remapXMLunknowntrue}{\remapXMLunknownfalse}}%
-   %
-   \pushmacro\doXMLentity % needed ?
+     {\doifdefinedelse{\@@XML#1:\s!unknown:M} 
+        {\remapXMLunknowntrue}{\remapXMLunknownfalse}}% 
+   % 
+   \pushmacro\doXMLentity % needed ?   
    % this will change, proper split in element itself
    \ifx\currentXMLnamespace\empty
      \let\parseXMLelement\remapXMLelement
@@ -453,7 +453,7 @@
    \catcode`\^^Z=\@@space
    \xdef\remappedXMLdata{#4\empty}%
    \let\par\endgraf
-   \popmacro\doXMLentity % needed ?
+   \popmacro\doXMLentity % needed ? 
    \disableXMLexpansion
    \catcode`\{=\@@begingroup
    \catcode`\}=\@@endgroup
@@ -617,22 +617,6 @@
    #2\empty
    \popmacro\xmlr}
 
-\def\doifelseXMLRneighbors#1#2%
-  {\XMLRtoks\emptytoks
-   \pushmacro\xmlr
-   \donefalse
-   \let\prevXMLRchild\empty
-   \def\xmlr##1##2##3##4%
-      {\doif{##1}{#1}{\doif{##1}\prevXMLRchild{\donetrue}}%
-       \def\prevXMLRchild{##1}}%
-   #2\empty
-   \popmacro\xmlr
-   \ifdone
-     \expandafter\firstoftwoarguments
-   \else
-     \expandafter\secondoftwoarguments
-   \fi}
-
 \def\collectbetweenXMLRchild#1#2#3%
   {\XMLRtoks\emptytoks
    \pushmacro\xmlr
@@ -683,7 +667,7 @@
 \def\countXMLRchildren#1%
   {\pushmacro\xmlr
    \nofXMLRchildren=0
-   \def\xmlr##1##2##3##4{\advance\nofXMLRchildren\plusone}
+   \def\xmlr##1##2##3##4{\advance\nofXMLRchildren 1 }
    #1\empty
    \popmacro\xmlr}
 
@@ -691,7 +675,7 @@
   {\pushmacro\xmlr
    \nofXMLRchildren=0
    \def\xmlr##1##2##3##4%
-     {\rawdoifinsetelse{##1}{#1}{\advance\nofXMLRchildren\plusone}{}}
+     {\rawdoifinsetelse{##1}{#1}{\advance\nofXMLRchildren 1 }{}}
    #2\empty
    \popmacro\xmlr}
 
@@ -708,12 +692,12 @@
 \gdef\unmapXMLdata#1#2% todo: singular, evt ##2 space ervoor en ##1##2
   {\bgroup
    \revertXMLremapping
-   \expandXMLremapping      % now we can roll back
-   \setnormalXMLhandler     % using the normal parser
+   \expandXMLremapping      % now we can roll back 
+   \setnormalXMLhandler     % using the normal parser 
    \resetXMLmapping         % and leaving the mapping namespace
-   \xdef\unmappedXMLdata{#2}% recreate the original
-   \enableXMLelements       % enable normal handler
-   \unmappedXMLdata         % off we go ...
+   \xdef\unmappedXMLdata{#2}% recreate the original 
+   \enableXMLelements       % enable normal handler 
+   \unmappedXMLdata         % off we go ... 
    \egroup}
 
 \egroup

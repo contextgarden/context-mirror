@@ -44,15 +44,6 @@
 \newevery \everybeginofpar         \relax
 \newevery \everyendofpar           \relax
 
-%D For shared \type {\everymath} and \type {\everydisplay}:
-
-\newevery \everymathematics        \relax
-
-\prependtoks \the\everymathematics \to \everymath
-\prependtoks \the\everymathematics \to \everydisplay
-
-% \newevery \everyparflush           \relax % collected nodes
-
 %D Experimental (used in xml <p> .. </p>
 
 \def\bpar{\the\everybeginofpar\ignorespaces} % may interfere with \everypar
@@ -94,13 +85,12 @@
 %D We disable trial typesetting in the output routine,
 %D just to be sure.
 
-\prependtoks \trialtypesettingfalse \to \everybeforepagebody
+\prependtoks
+  \trialtypesettingfalse
+\to \everybeforepagebody
 
 %D \macros
 %D   {starttextdata}
-%D
-%D This is a user macro (appending to every last shipout is not
-%D really user friendly.
 
 \newtoks \collectedtextdata
 
@@ -108,11 +98,9 @@
   {\doglobal\appendtoks#1\to\collectedtextdata}
 
 \def\flushtextdata
-  {\vsmashed{\the\collectedtextdata}% all dimensions zero
+  {\vsmash{\the\collectedtextdata}%
    \global\collectedtextdata\emptytoks
    \globallet\flushtextdata\donothing}
-
-\prependtoks \flushtextdata \to \everylastshipout
 
 %D \macros
 %D   {ifprocessingXML}
@@ -188,12 +176,12 @@
 %D   {setvariables,getvariable,getvariabledefault}
 %D
 %D \starttyping
-%D \setvariables[xx][title=]
-%D \setvariables[xx][title=test test]
-%D \setvariables[xx][title=test $x=1$ test]   % fatal error reported
-%D \setvariables[xx][title=test {$x=1$} test]
-%D \setvariables[xx][title]                   % fatal error reported
-%D \setvariables[xx][titletitel=e]
+%D \setvariables[xx][titel=]
+%D \setvariables[xx][titel=test test]
+%D \setvariables[xx][titel=test $x=1$ test]   % fatal error reported
+%D \setvariables[xx][titel=test {$x=1$} test]
+%D \setvariables[xx][titel]                   % fatal error reported
+%D \setvariables[xx][titel=e]
 %D \stoptyping
 
 \def\??vars{@@vars}
@@ -284,15 +272,10 @@
 %D We store some original meanings, maybe in \type
 %D {math-ini}.
 
-\let\normalat             \at
 \let\normalin             \in
-\let\normalfrom           \from
 \let\normalover           \over
-\let\normalabout          \about
-
 \let\normalabove          \above
 \let\normalatop           \atop
-
 \let\normaloverwithdelims \overwithdelims
 \let\normalabovewithdelims\abovewithdelims
 \let\normalatopwithdelims \atopwithdelims

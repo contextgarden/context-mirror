@@ -16,7 +16,7 @@
 %D We predefine some common symbols and conversions that will
 %D be understood by many commands.
 
-\definesymbol [\v!none]   []
+\definesymbol [\v!geen]   []
 \definesymbol [bullet]    [\mathematics{\bullet}]
 \definesymbol [dash]      [\mathematics{-}]
 \definesymbol [star]      [\mathematics{\star}]
@@ -39,27 +39,27 @@
 %D Special hyperlinks, namely those to pages or navigational
 %D properties, are associated with symbols.
 
-\definesymbol [\v!firstpage]      [\gotobegincharacter]
-\definesymbol [\v!previouspage]      [\gobackwardcharacter]
-\definesymbol [\v!nextpage]    [\goforwardcharacter]
-\definesymbol [\v!lastpage]     [\gotoendcharacter]
-\definesymbol [\v!firstsubpage]   [\gotobegincharacter]
-\definesymbol [\v!previoussubpage]   [\gobackwardcharacter]
-\definesymbol [\v!nextsubpage] [\goforwardcharacter]
-\definesymbol [\v!lastsubpage]  [\gotoendcharacter]
+\definesymbol [\v!eerstepagina]      [\gotobegincharacter]
+\definesymbol [\v!vorigepagina]      [\gobackwardcharacter]
+\definesymbol [\v!volgendepagina]    [\goforwardcharacter]
+\definesymbol [\v!laatstepagina]     [\gotoendcharacter]
+\definesymbol [\v!eerstesubpagina]   [\gotobegincharacter]
+\definesymbol [\v!vorigesubpagina]   [\gobackwardcharacter]
+\definesymbol [\v!volgendesubpagina] [\goforwardcharacter]
+\definesymbol [\v!laatstesubpagina]  [\gotoendcharacter]
 \definesymbol [\v!PreviousJump]      [\gobackjumpcharacter]
 \definesymbol [\v!NextJump]          [\goforjumpcharacter]
 \definesymbol [\v!CloseDocument]     [\closecharacter]
 
-\definesymbol [\v!first]   [{\symbol[\v!firstpage]}]
-\definesymbol [\v!previous]   [{\symbol[\v!previouspage]}]
-\definesymbol [\v!next] [{\symbol[\v!nextpage]}]
-\definesymbol [\v!last]  [{\symbol[\v!lastpage]}]
-\definesymbol [\v!somewhere]   [\gotosomewherecharacter]
-\definesymbol [\v!nowhere]  [\gonowherecharacter]
+\definesymbol [\v!eerste]   [{\symbol[\v!eerstepagina]}]
+\definesymbol [\v!vorige]   [{\symbol[\v!vorigepagina]}]
+\definesymbol [\v!volgende] [{\symbol[\v!volgendepagina]}]
+\definesymbol [\v!laatste]  [{\symbol[\v!laatstepagina]}]
+\definesymbol [\v!ergens]   [\gotosomewherecharacter]
+\definesymbol [\v!nergens]  [\gonowherecharacter]
 
-\definesymbol [\v!backward] [{\symbol[\v!previouspage]}]
-\definesymbol [\v!forward]   [{\symbol[\v!nextpage]}]
+\definesymbol [\v!achteruit] [{\symbol[\v!vorigepagina]}]
+\definesymbol [\v!vooruit]   [{\symbol[\v!volgendepagina]}]
 
 %D The next two symbols (\symbol[P] and \symbol[S]) are
 %D variations in their math counterparts. The following ones
@@ -111,7 +111,7 @@
 %  {{\hbox{\hsmash{\gobackwardcharacter}\goforwardcharacter}}}
 
 \def\gotosomewherecharacter%
-  {{\hbox{\hsmash{\symbol[\v!previous]}\symbol[\v!next]}}}
+  {{\hbox{\hsmash{\symbol[\v!vorige]}\symbol[\v!volgende]}}}
 
 \unexpanded\def\closecharacter%
   {\dogotocharacter\boxtimes

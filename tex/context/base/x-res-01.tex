@@ -17,34 +17,34 @@
 %D (\TEXEXEC\ will set this variable). You can apply this
 %D style to a database by saying:
 %D
-%D \starttyping
+%D \starttypen
 %D texexec --pdf --use=fig-make yourfile.xml
-%D \stoptyping
+%D \stoptypen
 %D
 %D The following modes are supported:
 %D
-%D \starttabulate[|lT|l|]
+%D \starttabulatie[|lT|l|]
 %D \NC letter  \NC map the preview on letter size  \NC \NR
 %D \NC compact \NC use an alternative presentation \NC \NR
-%D \stoptabulate
+%D \stoptabulatie
 %D
 %D The resulting file has the following characteristics:
 %D
-%D \startitemize[packed]
-%D \item  the document is split into three sections: first each
+%D \startopsomming[opelkaar]
+%D \som  the document is split into three sections: first each
 %D       figure is shown at its own page, then an overview of
 %D       figures is shown with some data alongside, and
 %D       finally an index and table of contents shows up
-%D \item  there is no title page, which means that one can
+%D \som  there is no title page, which means that one can
 %D       access a figure by page number without offset
-%D \item  the document is opened at the first overview page,
+%D \som  the document is opened at the first overview page,
 %D       that is, when the viewer supports it
-%D \item  the graphic is shown 3~times: on a page of its own,
+%D \som  the graphic is shown 3~times: on a page of its own,
 %D       scaled to a fixed dimension, and relative to a4 or
 %D       letter paper size
-%D \item  the labels can be accessed in an index and list at
+%D \som  the labels can be accessed in an index and list at
 %D       the end of the document
-%D \stopitemize
+%D \stopopsomming
 %D
 %D We use named destinations, which means that one can
 %D access a figure by name from an external application.
@@ -91,7 +91,7 @@
      background=color,
      backgroundcolor=gray,
      foregroundcolor=darkred,
-     align={lohi,middle}, % normal,
+     align=normal,
      frame=off]
     {\bf \XMLflush{rl:dummy}}
 \stopbuffer
@@ -145,13 +145,13 @@
 
 % Ulgy:
 
-\startmode[letter] % downward compatible
-  \enablemode[previewpage-letter]
-\stopmode
-
 \startnotmode[previewpage-letter,previewpage-S6]
   \enablemode[previewpage-A4]
 \stopnotmode
+
+\startmode[letter] % downward compatible
+  \enablemode[previewpage-letter]
+\stopmode
 
 %startbuffer[paper]
 \startsetups[paper]

@@ -8,27 +8,26 @@
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
-%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
-%C details.
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for 
+%C details. 
 
-% Todo: replace \'.. by \namedglyph
+%D Todo: replace \'.. by \namedglyph 
 
 %D The framework of this module is set up by Hans Hagen while
 %D many of the first translations were done by Tobias. Later
 %D on, corrections were made by users. If you have suggestions,
 %D or feel that your name missing here, don't hesitate to send
-%D us an email.
+%D us an email. 
 %D
 %D \starttabulate[|lB|l|]
-%D \NC Czech     \NC Tom Hidec, Petr Sojka \NC \NR
-%D \NC Polish    \NC Grzegorz Sapijaszko   \NC \NR
-%D \NC Croatian  \NC Zeljko Vrba           \NC \NR
-%D \NC Slovenian \NC Mojca Miklavec        \NC \NR
+%D \NC Czech    \NC Tom Hidec, Petr Sojka \NC \NR
+%D \NC Polish   \NC Grzegorz Sapijaszko   \NC \NR
+%D \NC Croatian \NC Zeljko Vrba           \NC \NR
 %D \stoptabulate
-
-%  Belarussian, Russian, Ukrainian, Bulgarian, Macedonian,
-%  Serbo-Croatian, Slovenian, Czech, Kushubian,
-%  Lusatian/Sorbian/Wendish, Polish, Slovak, Albanian,
+ 
+%  Belarussian, Russian, Ukrainian, Bulgarian, Macedonian, 
+%  Serbo-Croatian, Slovenian, Czech, Kushubian, 
+%  Lusatian/Sorbian/Wendish, Polish, Slovak, Albanian, 
 %  Illyrian, Armenian
 
 \writestatus{loading}{Slavic Languages}
@@ -37,7 +36,7 @@
 
 \installlanguage
   [\s!pl]
-  [\c!spacing=\v!packed,
+  [\c!spatiering=\v!opelkaar,
    \c!leftsentence=---,
    \c!rightsentence=---,
    \c!leftsubsentence=---,
@@ -46,26 +45,26 @@
    \c!rightquote=\upperrightsingleninequote,
    \c!leftquotation=\lowerleftdoubleninequote,
    \c!rightquotation=\upperrightdoubleninequote,
-   \c!date={\v!day,{.},\ ,\v!month,\ ,\v!year},
-   \c!state=\v!stop]
+   \c!datum={\v!dag,{.},\ ,\v!maand,\ ,\v!jaar},
+   \c!status=\v!stop]
 
 \installlanguage
   [\s!cz]
-  [\c!spacing=\v!packed,
+  [\c!spatiering=\v!opelkaar,
    \c!leftsentence=---,
    \c!rightsentence=---,
    \c!leftsubsentence=---,
    \c!rightsubsentence=---,
    \c!leftquote=\lowerleftsingleninequote,
-   \c!rightquote=\upperrightsinglesixquote,
+   \c!rightquote=\upperrightsinglesixquote, 
    \c!leftquotation=\lowerleftdoubleninequote,
    \c!rightquotation=\upperrightdoublesixquote,
-   \c!date={\v!day,\ ,\v!month,\ ,\v!year},
-   \c!state=\v!stop]
+   \c!datum={\v!dag,\ ,\v!maand,\ ,\v!jaar},
+   \c!status=\v!stop]
 
-\installlanguage
+\installlanguage 
   [\s!sk]
-  [\c!spacing=\v!packed,
+  [\c!spatiering=\v!opelkaar,
    \c!leftsentence=---,
    \c!rightsentence=---,
    \c!leftsubsentence=---,
@@ -74,12 +73,14 @@
    \c!rightquote=\upperrightsingleninequote,
    \c!leftquotation=\upperleftdoublesixquote,
    \c!rightquotation=\upperrightdoubleninequote,
-   \c!date={\v!year,\ ,\v!month,\ ,\v!day},
-   \c!state=\v!stop]
+   \c!datum={\v!jaar,\ ,\v!maand,\ ,\v!dag},
+   \c!status=\v!stop,
+   \s!encoding=il2,
+   \s!mapping=il2]
 
 \installlanguage
   [\s!hr]
-  [\c!spacing=\v!packed,
+  [\c!spatiering=\v!opelkaar,
    \c!leftsentence=---,
    \c!rightsentence=---,
    \c!leftsubsentence=---,
@@ -88,34 +89,18 @@
    \c!rightquote=\upperrightsingleninequote,
    \c!leftquotation=\upperleftdoublesixquote,
    \c!rightquotation=\upperrightdoubleninequote,
-   \c!date={\v!day,\ ,\v!month,\ ,\v!year},
-   \c!state=\v!stop]
+   \c!datum={\v!dag,\ ,\v!maand,\ ,\v!jaar},
+   \c!status=\v!stop]
 
-\installlanguage
-  [\s!sl]
-  [\c!spacing=\v!packed, % ? copied from german - don't know what this means
-   \c!leftsentence={\hbox{--~}}, % ?
-   \c!rightsentence={\hbox{~--}}, % ?
-   \c!leftsubsentence={--}, % ?
-   \c!rightsubsentence={--}, % ?
-   \c!leftquote=\lowerleftsingleninequote,
-   \c!rightquote=\upperrightsinglesixquote,
-   \c!leftquotation=\lowerleftdoubleninequote,
-   \c!rightquotation=\upperrightdoublesixquote,
-   \c!date={\v!day,{.},\ ,\v!month,\ ,\v!year},
-   \c!state=\v!stop]
-
-\installlanguage [polish]    [\s!pl]
-\installlanguage [czech]     [\s!cz]
-\installlanguage [slovak]    [\s!sk]
-\installlanguage [croatian]  [\s!hr]
-\installlanguage [slovenian] [\s!sl]
-\installlanguage [slovene]   [\s!sl] % both possible
+\installlanguage [polish]   [\s!pl]
+\installlanguage [czech]    [\s!cz]
+\installlanguage [slovak]   [\s!sk]
+\installlanguage [croatian] [\s!hr]
 
 % specifics
-%
-% \startlanguagespecifics[\s!pl]
-%
+% 
+% \startlanguagespecifics[\s!pl] 
+% 
 %   \installcompoundcharacter /a {\k a}
 %   \installcompoundcharacter /c {\'c}
 %   \installcompoundcharacter /e {\k e}
@@ -134,14 +119,14 @@
 %   \installcompoundcharacter /S {\'S}
 %   \installcompoundcharacter /X {\'Z}
 %   \installcompoundcharacter /Z {\.Z}
-%
+% 
 % \stoplanguagespecifics
-%
-% \startlanguagespecifics[\s!pl]
-%
+% 
+% \startlanguagespecifics[\s!pl] 
+% 
 %   \installcompoundcharacter /, {\handlequotation\c!leftquotation}
 %   \installcompoundcharacter /' {\handlequotation\c!rightquotation}
-%
+% 
 %   \def\setupPLlanguage%
 %     {\setuplanguage
 %        [\s!pl]
@@ -149,16 +134,16 @@
 %         \c!rightsentence=\rightguillemot,
 %         \c!leftsubsentence=\leftsubguillemot,
 %         \c!rightsubsentence=\rightsubguillemot]}
-%
+%  
 %   \installcompoundcharacter /< {{\setupPLlanguage|<|}}
 %   \installcompoundcharacter /> {{\setupPLlanguage|>|}}
-%
-%   \installcompoundcharacter /- {|-|}
-%
+% 
+%   \installcompoundcharacter /- {|-|} 
+% 
 % \stoplanguagespecifics
-%
-% \startlanguagespecifics[\s!pl]
-%
+% 
+% \startlanguagespecifics[\s!pl] 
+% 
 %   \definesortkey {/a}{a}{a}{\k a}
 %   \definesortkey {/A}{a}{a}{\k a}
 %   \definesortkey {/c}{c}{a}{\'c}
@@ -177,22 +162,22 @@
 %   \definesortkey {/X}{z}{a}{\'x}
 %   \definesortkey {/z}{z}{b}{\.z}
 %   \definesortkey {/Z}{z}{b}{\.z}
-%
+% 
 % \stoplanguagespecifics
-%
+% 
 % \startencoding[pdfdoc]
-%   \startlanguagespecifics[pl]% hm
+%   \startlanguagespecifics[pl]% hm 
 %     \defineactivecharacter / {\simplifiedcompoundcharacter/}
 %   \stoplanguagespecifics
 % \stopencoding
-%
-% this can best be handled by \quotation and ||
-%
-% \startlanguagespecifics[\s!hr]
-%
+% 
+% this can best be handled by \quotation and || 
+% 
+% \startlanguagespecifics[\s!hr] 
+% 
 %   %\installcompoundcharacter /, {\handlequotation\c!leftquotation}
 %   %\installcompoundcharacter /' {\handlequotation\c!rightquotation}
-%
+% 
 %   \def\setupHRlanguage%
 %     {\setuplanguage
 %        [\s!hr]
@@ -200,148 +185,126 @@
 %         \c!rightsentence=\rightguillemot,
 %         \c!leftsubsentence=\leftsubguillemot,
 %         \c!rightsubsentence=\rightsubguillemot]}
-%
+%  
 %   \installcompoundcharacter /< {{\setupHRlanguage|<|}}
 %   \installcompoundcharacter /> {{\setupHRlanguage|>|}}
-%
-%   \installcompoundcharacter /- {|-|}
-%
+% 
+%   \installcompoundcharacter /- {|-|} 
+% 
 % \stoplanguagespecifics
 
-% labels
+% labels 
 
-\setupheadtext [\s!pl] [\v!content=Spis tre\'sci]
-\setupheadtext [\s!cz] [\v!content=Obsah]
-\setupheadtext [\s!sk] [\v!content=Obsah]
-\setupheadtext [\s!hr] [\v!content=Sadr\v{z}aj]
-\setupheadtext [\s!sl] [\v!content=Vsebina]
+\setupheadtext [\s!pl] [\v!inhoud=Spis tre\'sci]
+\setupheadtext [\s!cz] [\v!inhoud=Obsah]
+\setupheadtext [\s!sk] [\v!inhoud=Obsah]
+\setupheadtext [\s!hr] [\v!inhoud=Sadr\v{z}aj]
 
-\setupheadtext [\s!pl] [\v!tables=Tabele]
-\setupheadtext [\s!cz] [\v!tables=Tabulek]
-\setupheadtext [\s!sk] [\v!tables=Tabuliek]
-\setupheadtext [\s!hr] [\v!tables=Tablice]
-\setupheadtext [\s!sl] [\v!tables=Tabele]
+\setupheadtext [\s!pl] [\v!tabellen=Tabele]
+\setupheadtext [\s!cz] [\v!tabellen=Tabulek]
+\setupheadtext [\s!sk] [\v!tabellen=Tabuliek]
+\setupheadtext [\s!hr] [\v!tabellen=Tablice]
 
-\setupheadtext [\s!pl] [\v!figures=Ilustracje]
-\setupheadtext [\s!cz] [\v!figures=Obr\'azk\r{u}]
-\setupheadtext [\s!sk] [\v!figures=Obr\'azkov]
-\setupheadtext [\s!hr] [\v!figures=Slike]
-\setupheadtext [\s!sl] [\v!figures=Slike]
+\setupheadtext [\s!pl] [\v!figuren=Ilustracje]
+\setupheadtext [\s!cz] [\v!figuren=Obr\'azk\r{u}]
+\setupheadtext [\s!sk] [\v!figuren=Obr\'azkov]
+\setupheadtext [\s!hr] [\v!figuren=Slike]
 
-\setupheadtext [\s!pl] [\v!graphics=Grafika]
-\setupheadtext [\s!cz] [\v!graphics=...]
-\setupheadtext [\s!sk] [\v!graphics=...]
-\setupheadtext [\s!hr] [\v!graphics=Slike]
-\setupheadtext [\s!sl] [\v!graphics=Slike]
+\setupheadtext [\s!pl] [\v!grafieken=Grafika]
+\setupheadtext [\s!cz] [\v!grafieken=...]
+\setupheadtext [\s!sk] [\v!grafieken=...]
+\setupheadtext [\s!hr] [\v!grafieken=Slike]
 
-\setupheadtext [\s!pl] [\v!intermezzi=Intermezza]
-\setupheadtext [\s!cz] [\v!intermezzi=...]
-\setupheadtext [\s!sk] [\v!intermezzi=...]
-\setupheadtext [\s!hr] [\v!intermezzi=Intermezza]
-\setupheadtext [\s!sl] [\v!intermezzi=Intermezzi]
+\setupheadtext [\s!pl] [\v!intermezzos=Intermezza]
+\setupheadtext [\s!cz] [\v!intermezzos=...]
+\setupheadtext [\s!sk] [\v!intermezzos=...]
+\setupheadtext [\s!hr] [\v!intermezzos=Intermezza]
 
 \setupheadtext [\s!pl] [\v!index=Indeks]
 \setupheadtext [\s!cz] [\v!index=Rejst\v{r}\'{\i}k]
 \setupheadtext [\s!sk] [\v!index=Zoznam]
 \setupheadtext [\s!hr] [\v!index=Indeks]
-\setupheadtext [\s!sl] [\v!index=Kazalo]
 
-\setupheadtext [\s!pl] [\v!abbreviations=Skr\'ocenie]
-\setupheadtext [\s!cz] [\v!abbreviations=...]
-\setupheadtext [\s!sk] [\v!abbreviations=...]
-\setupheadtext [\s!hr] [\v!abbreviations=Kratice]
-\setupheadtext [\s!sl] [\v!abbreviations=Kratice]
+\setupheadtext [\s!pl] [\v!afkortingen=Skr\'ocenie]
+\setupheadtext [\s!cz] [\v!afkortingen=...]
+\setupheadtext [\s!sk] [\v!afkortingen=...]
+\setupheadtext [\s!hr] [\v!afkortingen=Kratice]
 
 \setupheadtext [\s!pl] [\v!logos=Znaki]
 \setupheadtext [\s!cz] [\v!logos=...]
 \setupheadtext [\s!sk] [\v!logos=...]
 \setupheadtext [\s!hr] [\v!logos=Znakovi]
-\setupheadtext [\s!sl] [\v!logos=Logotipi]
 
-\setupheadtext [\s!pl] [\v!units=Jednostki]
-\setupheadtext [\s!cz] [\v!units=...]
-\setupheadtext [\s!sk] [\v!units=...]
-\setupheadtext [\s!hr] [\v!units=Jednostki]
-\setupheadtext [\s!sl] [\v!units=Enote]
+\setupheadtext [\s!pl] [\v!eenheden=Jednostki]
+\setupheadtext [\s!cz] [\v!eenheden=...]
+\setupheadtext [\s!sk] [\v!eenheden=...]
+\setupheadtext [\s!hr] [\v!eenheden=Jednostki]
 
-\setuplabeltext [\s!pl] [\v!table=Tabela ]
-\setuplabeltext [\s!cz] [\v!table=Tabulka ]
-\setuplabeltext [\s!sk] [\v!table=Tabu\v{l}ka ]
-\setuplabeltext [\s!hr] [\v!table=T\'abl\'azat ] % [\v!table=Tablica ]
-\setuplabeltext [\s!sl] [\v!table=Tabela ]
+\setuplabeltext [\s!pl] [\v!tabel=Tabela ]
+\setuplabeltext [\s!cz] [\v!tabel=Tabulka ]
+\setuplabeltext [\s!sk] [\v!tabel=Tabu\v{l}ka ]
+\setuplabeltext [\s!hr] [\v!tabel=T\'abl\'azat ] % [\v!tabel=Tablica ]
 
-\setuplabeltext [\s!pl] [\v!figure=Ilustracja ]
-\setuplabeltext [\s!cz] [\v!figure=Obr\'azek ]
-\setuplabeltext [\s!sk] [\v!figure=... ]
-\setuplabeltext [\s!hr] [\v!figure=Slika ]
-\setuplabeltext [\s!sl] [\v!figure=Slika ]
+\setuplabeltext [\s!pl] [\v!figuur=Ilustracja ]
+\setuplabeltext [\s!cz] [\v!figuur=Obr\'azek ]
+\setuplabeltext [\s!sk] [\v!figuur=... ]
+\setuplabeltext [\s!hr] [\v!figuur=Slika ]
 
 \setuplabeltext [\s!pl] [\v!intermezzo=Intermezzo ]
 \setuplabeltext [\s!cz] [\v!intermezzo=... ]
 \setuplabeltext [\s!sk] [\v!intermezzo=... ]
 \setuplabeltext [\s!hr] [\v!intermezzo=Intermezzo ]
-\setuplabeltext [\s!sl] [\v!intermezzo=Intermezzo ]
 
-\setuplabeltext [\s!pl] [\v!graphic=Grafika ]
-\setuplabeltext [\s!cz] [\v!graphic=... ]
-\setuplabeltext [\s!sk] [\v!graphic=... ]
-\setuplabeltext [\s!hr] [\v!graphic=Slika ]
-\setuplabeltext [\s!sl] [\v!graphic=Slika ]
+\setuplabeltext [\s!pl] [\v!grafiek=Grafika ]
+\setuplabeltext [\s!cz] [\v!grafiek=... ]
+\setuplabeltext [\s!sk] [\v!grafiek=... ]
+\setuplabeltext [\s!hr] [\v!grafiek=Slika ]
 
-\setuplabeltext [\s!pl] [\v!chapter=] % Rozdzia\l
-\setuplabeltext [\s!cz] [\v!chapter=] % Kapitola
-\setuplabeltext [\s!sk] [\v!chapter=] % Kapitola
-\setuplabeltext [\s!hr] [\v!chapter=] % Rozdzia\l
-\setuplabeltext [\s!sl] [\v!chapter=]
+\setuplabeltext [\s!pl] [\v!hoofdstuk=] % Rozdzia\l
+\setuplabeltext [\s!cz] [\v!hoofdstuk=] % Kapitola
+\setuplabeltext [\s!sk] [\v!hoofdstuk=] % Kapitola
+\setuplabeltext [\s!hr] [\v!hoofdstuk=] % Rozdzia\l
 
-\setuplabeltext [\s!pl] [\v!section=] % Podrozdzia\l
-\setuplabeltext [\s!cz] [\v!section=]
-\setuplabeltext [\s!sk] [\v!section=]
-\setuplabeltext [\s!hr] [\v!section=] % Podrozdzia\l
-\setuplabeltext [\s!sl] [\v!section=] % Odstavek
+\setuplabeltext [\s!pl] [\v!paragraaf=] % Podrozdzia\l
+\setuplabeltext [\s!cz] [\v!paragraaf=]
+\setuplabeltext [\s!sk] [\v!paragraaf=]
+\setuplabeltext [\s!hr] [\v!paragraaf=] % Podrozdzia\l
 
-\setuplabeltext [\s!pl] [\v!subsection=]
-\setuplabeltext [\s!cz] [\v!subsection=]
-\setuplabeltext [\s!sk] [\v!subsection=]
-\setuplabeltext [\s!hr] [\v!subsection=]
-\setuplabeltext [\s!sl] [\v!subsection=]
+\setuplabeltext [\s!pl] [\v!sub\v!paragraaf=]
+\setuplabeltext [\s!cz] [\v!sub\v!paragraaf=]
+\setuplabeltext [\s!sk] [\v!sub\v!paragraaf=]
+\setuplabeltext [\s!hr] [\v!sub\v!paragraaf=]
 
-\setuplabeltext [\s!pl] [\v!subsubsection=]
-\setuplabeltext [\s!cz] [\v!subsubsection=]
-\setuplabeltext [\s!sk] [\v!subsubsection=]
-\setuplabeltext [\s!hr] [\v!subsubsection=]
-\setuplabeltext [\s!sl] [\v!subsubsection=]
+\setuplabeltext [\s!pl] [\v!sub\v!sub\v!paragraaf=]
+\setuplabeltext [\s!cz] [\v!sub\v!sub\v!paragraaf=]
+\setuplabeltext [\s!sk] [\v!sub\v!sub\v!paragraaf=]
+\setuplabeltext [\s!hr] [\v!sub\v!sub\v!paragraaf=]
 
-\setuplabeltext [\s!pl] [\v!subsubsubsection=]
-\setuplabeltext [\s!cz] [\v!subsubsubsection=]
-\setuplabeltext [\s!sk] [\v!subsubsubsection=]
-\setuplabeltext [\s!hr] [\v!subsubsubsection=]
-\setuplabeltext [\s!sl] [\v!subsubsubsection=]
+\setuplabeltext [\s!pl] [\v!sub\v!sub\v!sub\v!paragraaf=]
+\setuplabeltext [\s!cz] [\v!sub\v!sub\v!sub\v!paragraaf=]
+\setuplabeltext [\s!sk] [\v!sub\v!sub\v!sub\v!paragraaf=]
+\setuplabeltext [\s!hr] [\v!sub\v!sub\v!sub\v!paragraaf=]
 
-\setuplabeltext [\s!pl] [\v!appendix=] % Dodatek
-\setuplabeltext [\s!cz] [\v!appendix=]
-\setuplabeltext [\s!sk] [\v!appendix=]
-\setuplabeltext [\s!hr] [\v!appendix=Dodatak ]
-\setuplabeltext [\s!sl] [\v!appendix=Dodatek ]
+\setuplabeltext [\s!pl] [\v!bijlage=] % Dodatek
+\setuplabeltext [\s!cz] [\v!bijlage=]
+\setuplabeltext [\s!sk] [\v!bijlage=]
+\setuplabeltext [\s!hr] [\v!bijlage=Dodatak ] 
 
-\setuplabeltext [\s!pl] [\v!part=Ust\c{e}p]
-\setuplabeltext [\s!cz] [\v!part=\v{C}\'ast]
-\setuplabeltext [\s!sk] [\v!part=\v{C}as\v{t}]
-\setuplabeltext [\s!hr] [\v!part=Dio]
-\setuplabeltext [\s!sl] [\v!part=Del ]
+\setuplabeltext [\s!pl] [\v!deel=Ust\c{e}p] 
+\setuplabeltext [\s!cz] [\v!deel=\v{C}\'ast]
+\setuplabeltext [\s!sk] [\v!deel=\v{C}as\v{t}]
+\setuplabeltext [\s!hr] [\v!deel=Dio] 
 
-\setuplabeltext [\s!pl] [\v!line=wiersz ]
-\setuplabeltext [\s!cz] [\v!line=... ]
-\setuplabeltext [\s!sk] [\v!line=... ]
-\setuplabeltext [\s!hr] [\v!line=red ]
-\setuplabeltext [\s!sl] [\v!line=vrstica ]
+\setuplabeltext [\s!pl] [\v!regel=wiersz ]
+\setuplabeltext [\s!cz] [\v!regel=... ]
+\setuplabeltext [\s!sk] [\v!regel=... ]
+\setuplabeltext [\s!hr] [\v!regel=red ]  
 
-\setuplabeltext [\s!pl] [\v!lines=wiersze ]
-\setuplabeltext [\s!cz] [\v!lines=... ]
-\setuplabeltext [\s!sk] [\v!lines=... ]
-\setuplabeltext [\s!hr] [\v!lines=redovi ]
-\setuplabeltext [\s!sl] [\v!lines=vrstice ]
-
+\setuplabeltext [\s!pl] [\v!regels=wiersze ]
+\setuplabeltext [\s!cz] [\v!regels=... ]
+\setuplabeltext [\s!sk] [\v!regels=... ]
+\setuplabeltext [\s!hr] [\v!regels=redovi ] 
+ 
 \setuplabeltext [\s!pl]   [\v!january=stycznia]
 \setuplabeltext [\s!pl]  [\v!february=lutego]
 \setuplabeltext [\s!pl]     [\v!march=marca]
@@ -362,7 +325,7 @@
 \setuplabeltext [\s!cz]       [\v!may=kv\v{e}tna]
 \setuplabeltext [\s!cz]      [\v!june=\v{c}ervna]
 \setuplabeltext [\s!cz]      [\v!july=\v{c}ervence]
-\setuplabeltext [\s!cz]    [\v!august=srpna]
+\setuplabeltext [\s!cz]    [\v!august=srpna] 
 \setuplabeltext [\s!cz] [\v!september=z\'a\v{r}\'\i]
 \setuplabeltext [\s!cz]   [\v!october=\v{r}\'{\i}jna]
 \setuplabeltext [\s!cz]  [\v!november=listopadu]
@@ -374,11 +337,11 @@
 \setuplabeltext [\s!sk]     [\v!april=apr\'{\i}la]
 \setuplabeltext [\s!sk]       [\v!may=m\'aja]
 \setuplabeltext [\s!sk]      [\v!june=j\'una]
-\setuplabeltext [\s!sk]      [\v!july=j\'ula]
-\setuplabeltext [\s!sk]    [\v!august=augusta]
-\setuplabeltext [\s!sk] [\v!september=septembra]
+\setuplabeltext [\s!sk]      [\v!july=j\'ula] 
+\setuplabeltext [\s!sk]    [\v!august=augusta] 
+\setuplabeltext [\s!sk] [\v!september=septembra] 
 \setuplabeltext [\s!sk]   [\v!october=okt\'obra]
-\setuplabeltext [\s!sk]  [\v!november=novembra]
+\setuplabeltext [\s!sk]  [\v!november=novembra] 
 \setuplabeltext [\s!sk]  [\v!december=decembra]
 
 \setuplabeltext [\s!hr]   [\v!january=sije\v{c}anj]
@@ -394,25 +357,12 @@
 \setuplabeltext [\s!hr]  [\v!november=studeni]
 \setuplabeltext [\s!hr]  [\v!december=prosinac]
 
-\setuplabeltext [\s!sl]   [\v!january=januar]
-\setuplabeltext [\s!sl]  [\v!february=februar]
-\setuplabeltext [\s!sl]     [\v!march=marec]
-\setuplabeltext [\s!sl]     [\v!april=april]
-\setuplabeltext [\s!sl]       [\v!may=maj]
-\setuplabeltext [\s!sl]      [\v!june=junij]
-\setuplabeltext [\s!sl]      [\v!july=julij]
-\setuplabeltext [\s!sl]    [\v!august=avgust]
-\setuplabeltext [\s!sl] [\v!september=september]
-\setuplabeltext [\s!sl]   [\v!october=oktober]
-\setuplabeltext [\s!sl]  [\v!november=november]
-\setuplabeltext [\s!sl]  [\v!december=december]
-
 \setuplabeltext [\s!pl]    [\v!sunday=niedziela]
 \setuplabeltext [\s!pl]    [\v!monday=poniedzia\l ek]
 \setuplabeltext [\s!pl]   [\v!tuesday=wtorek]
 \setuplabeltext [\s!pl] [\v!wednesday=\'sroda]
 \setuplabeltext [\s!pl]  [\v!thursday=czwartek]
-\setuplabeltext [\s!pl]    [\v!friday=pi\k{a}tek]
+\setuplabeltext [\s!pl]    [\v!friday=pi\k{a}tek] 
 \setuplabeltext [\s!pl]  [\v!saturday=sobota]
 
 \setuplabeltext [\s!hr]    [\v!sunday=nedjelja]
@@ -420,29 +370,14 @@
 \setuplabeltext [\s!hr]   [\v!tuesday=utorak]
 \setuplabeltext [\s!hr] [\v!wednesday=srijeda]
 \setuplabeltext [\s!hr]  [\v!thursday=\v{c}etvrtak]
-\setuplabeltext [\s!hr]    [\v!friday=petak]
+\setuplabeltext [\s!hr]    [\v!friday=petak] 
 \setuplabeltext [\s!hr]  [\v!saturday=subota]
-
-\setuplabeltext [\s!sl]    [\v!sunday=nedelja]
-\setuplabeltext [\s!sl]    [\v!monday=ponedeljek]
-\setuplabeltext [\s!sl]   [\v!tuesday=torek]
-\setuplabeltext [\s!sl] [\v!wednesday=sreda]
-\setuplabeltext [\s!sl]  [\v!thursday=\v{c}etrtek]
-\setuplabeltext [\s!sl]    [\v!friday=petek]
-\setuplabeltext [\s!sl]  [\v!saturday=sobota]
-
-%D Rather new ...
-
-\setuplabeltext [\s!sl]    [\v!page=stran ]
-\setuplabeltext [\s!sl]  [\v!atpage=na strani ]
-\setuplabeltext [\s!sl] [\v!hencefore=glej zgoraj]
-\setuplabeltext [\s!sl] [\v!hereafter=glej spodaj]
-\setuplabeltext [\s!sl]       [\v!see=glej ]
 
 %D \ShowAllLanguageValues [\s!pl] [polish] poolse ...
 %D \ShowAllLanguageValues [\s!cz] [czech]  tsjechische ...
 %D \ShowAllLanguageValues [\s!sk] [slovak] slovaakse ...
 %D \ShowAllLanguageValues [\s!hr] [croatian] croatian ...
-%D \ShowAllLanguageValues [\s!sl] [slovenian] slovenian ...
 
-\protect \endinput
+\protect
+
+\endinput

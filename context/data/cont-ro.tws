@@ -344,7 +344,7 @@ com:seteazanotasubsol:
 typ:vars/:
 var:conversie:numere,caractere,Caractere,numereromane,Numereromane::
 var:mod:detext,de*sectiune::
-var:locatie:pagina,text,coloane,firstcolumn,lastcolumn,inalt,niciunul::
+var:locatie:pagina,text,coloane,inalt,niciunul::
 var:rigla:on,dezactivat::
 var:inainte:*comanda::
 var:dupa:*comanda::
@@ -1072,20 +1072,6 @@ val:*text::
 stopsetup
 
 startsetup
-com:ininner:
-typ:val/ref/arg/:
-val:+,-,jos::
-val:*text::
-stopsetup
-
-startsetup
-com:inouter:
-typ:val/ref/arg/:
-val:+,-,jos::
-val:*text::
-stopsetup
-
-startsetup
 com:coloana:
 typ::
 stopsetup
@@ -1328,6 +1314,12 @@ typ::
 stopsetup
 
 startsetup
+com:refa:
+typ:val/:
+val:repeat/*text::
+stopsetup
+
+startsetup
 com:seteazadescriere:
 typ:vals/vars/:
 val:*nume::
@@ -1340,8 +1332,7 @@ var:exemplu:*text::
 var:text:*text::
 var:aliniere:stanga,centru,dreapta::
 var:margine:standard,da,nu,*dimensiune::
-var:locatie:stanga,dreapta,sus,serried,command, inmargine,instanga,indreapta,suspendat::
-var:headcommand:::
+var:locatie:stanga,dreapta,sus,serried, inmargine,instanga,indreapta,suspendat::
 var:suspenda:ajustat,broad,*numar::
 var:inainte:*comanda::
 var:intre:*comanda::
@@ -1684,8 +1675,6 @@ var:textdistance:*dimensiune::
 var:latimetext:*numar::
 var:textmargin:*dimensiune::
 var:clipoffset:*dimensiune::
-var:pagina:*nume::
-var:hartie:*nume::
 stopsetup
 
 startsetup
@@ -1883,9 +1872,6 @@ startsetup
 com:seteazaplasareaopozita:
 typ:var/:
 var:stare:start,stop::
-var:inainte:*comanda::
-var:intre:*comanda::
-var:dupa:*comanda::
 stopsetup
 
 startsetup
@@ -2031,13 +2017,6 @@ com:determinacaracteristicilelistei:
 typ:vals/vars/:
 val:*nume::
 ivr:seteazalista::
-stopsetup
-
-startsetup
-com:punelistacombinata:
-typ:val/vars/:
-val:*nume::
-ivr:seteazalistacombinata::
 stopsetup
 
 startsetup
@@ -2280,7 +2259,6 @@ var:latime:*dimensiune::
 var:inaltime:*dimensiune::
 var:spatiusus:*dimensiune::
 var:spatiuspate:*dimensiune::
-var:optiune:max,ajustat::
 stopsetup
 
 startsetup
@@ -2441,8 +2419,6 @@ val:*nume::
 val:*numar,fiecare::
 val:standard,repeat/broad,repeat/serried,impachetat, despachetat,stopper,unit,lamargine,inmargine, autointro,larg,sectiune,intext:standard:
 var:margine:nu,standard,*dimensiune::
-var:marginestanga:nu,standard,*dimensiune::
-var:marginedreapta:nu,standard,*dimensiune::
 var:latime:*dimensiune::
 var:distanta:*dimensiune::
 var:factor:*numar::
@@ -2585,13 +2561,6 @@ startsetup
 com:cupleazaregistru:
 typ:val/:
 val:*nume::
-stopsetup
-
-startsetup
-com:puneregistru:
-typ:val/vars/:
-val:*nume::
-ivr:seteazaregistru::
 stopsetup
 
 startsetup
@@ -2973,20 +2942,6 @@ val:*nume::
 stopsetup
 
 startsetup
-com:saripesteblocuri:
-typ:vals/vals/:
-val:*nume::
-val:*nume::
-stopsetup
-
-startsetup
-com:forteazablocuri:
-typ:vals/vals/:
-val:*nume::
-val:*nume::
-stopsetup
-
-startsetup
 com:selecteazablocuri:
 typ:vals/vals/var/:
 val:*nume::
@@ -3034,7 +2989,7 @@ stopsetup
 startsetup
 com:pune<<obiectmobil>>:
 typ:val/refs/arg/arg/:
-val:stanga,dreapta,aici,sus,subsol, instanga,indreapta,inmargine,margine, marginestanga,marginedreapta,bordurastanga,borduradreapta, innermargin,outermargin,inneredge,outeredge, intern,extern,line,inalt,jos,ajustat, pagina,opus,totdeauna,fortat,inalt,reset, linie,inaltime,adancime:aici:
+val:stanga,dreapta,aici,sus,subsol, instanga,indreapta,inmargine,margine, marginestanga,marginedreapta,bordurastanga,borduradreapta, innermargin,outermargin,inneredge,outeredge, intern,extern,regel,inalt,jos,ajustat, pagina,opus,totdeauna,fortat,inalt,reset, linie,inaltime,adancime:aici:
 val:*text::
 val:*text::
 stopsetup
@@ -3098,8 +3053,8 @@ typ:vars/:
 var:bet:*text::
 var:ken:*text::
 var:dat:*text::
-var:van:*text::
-var:aan:*text::
+var:dela:*text::
+var:catre:*text::
 var:ref:*text::
 stopsetup
 
@@ -3261,9 +3216,45 @@ val:*nume::
 stopsetup
 
 startsetup
+com:litere:
+typ:val/:
+val:*nume::
+stopsetup
+
+startsetup
 com:etichete:
 typ:val/:
 val:*nume::
+stopsetup
+
+startsetup
+com:seteazacorespondenta:
+typ:vals/:
+val:formeel,informeel,rekening,ls, inalt,centru,jos:formeel,jos:
+stopsetup
+
+startsetup
+com:seteazasheets:
+typ:vars/:
+var:alternativ:*numar::
+var:text:*text::
+var:dimensiune:mic,mediu,mare::
+var:stil:normal,aldin,inclinat,aldininclinat,type,cap,mic...,*comanda::
+var:numar:*numar,unit::
+stopsetup
+
+startsetup
+com:sheet:
+typ:val/:
+val:*text::
+stopsetup
+
+startsetup
+com:seteazastickers:
+typ:vars/:
+var:alternativ:a::
+var:n:*numar,tot::
+var:locatie:margine,stanga,dreapta,centru::
 stopsetup
 
 startsetup
@@ -3465,13 +3456,13 @@ stopsetup
 startsetup
 com:seteazacombinari:
 typ:vars/:
-var:inainte:command::
-var:intre:command::
-var:dupa:command::
+var:inainte:commando::
+var:intre:commando::
+var:dupa:commando::
 var:distanta:*dimensiune::
 var:inaltime:*dimensiune,ajustat::
 var:latime:*dimensiune,ajustat::
-var:locatie:top,middle,bottom,left,right::
+var:locatie:boven,midden,onder,links,rechts::
 var:aliniere:nu,stanga,dreapta,centru,normal::
 var:stil:normal,aldin,inclinat,aldininclinat,type,cap,mic...*comanda::
 var:culoare:*nume::
@@ -3564,7 +3555,7 @@ var:keyword:*text::
 stopsetup
 
 startsetup
-com:definestemeniuinteractiune:
+com:seteazameniuinteractiune:
 typ:vals/vars/:
 val:stanga,dreapta,sus,subsol,*nume::
 var:inainte:*comanda::
@@ -3658,8 +3649,8 @@ typ:vars/:
 var:stare:start,stop::
 var:alternativ:a,b,c,d,e,f,g::
 var:simbol:da,nu::
-var:latime:*dimensiune,height,ajustat::
-var:inaltime:*dimensiune,height,ajustat::
+var:latime:*dimensiune,hoogte,ajustat::
+var:inaltime:*dimensiune,hoogte,ajustat::
 var:inaltime:*dimensiune::
 var:culoare:*nume::
 var:pas:*numar,mic,mediu,mare::
@@ -3680,7 +3671,7 @@ startsetup
 com:setarebarasincronizare:
 typ:vars/:
 var:alternativ:pagina,local::
-var:latime:*dimensiune,height,ajustat::
+var:latime:*dimensiune,hoogte,ajustat::
 var:inaltime:*dimensiune::
 var:stil:normal,aldin,inclinat,aldininclinat,type,cap,mic...,*comanda::
 var:culoare:*nume::

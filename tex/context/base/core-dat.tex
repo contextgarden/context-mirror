@@ -83,55 +83,55 @@
 %D A database file |<|in most cases such a base is generated 
 %D from another one|>| is structured as follows: 
 %D 
-%D \starttyping 
+%D \starttypen 
 %D \startrecord{tag}
 %D   \memberofgroup{grouplist}
 %D   \setrecordentry{name}{...}
 %D   ....
 %D \stoprecord
-%D \stoptyping 
+%D \stoptypen 
 %D 
 %D The interface to such a database is defined as follows: 
 %D 
-%D \starttyping 
+%D \starttypen 
 %D \definerecord[class][settings]
 %D \setuprecord[class][settings]
 %D \definerecordentry[class][name]
-%D \stoptyping 
+%D \stoptypen 
 %D 
 %D and processed by 
 %D 
-%D \starttyping 
+%D \starttypen 
 %D \processrecords[file list][tag and/or group list]
-%D \stoptyping 
+%D \stoptypen 
 %D 
 %D The actual processing is done by a macro assigned to \type 
 %D {command}: 
 %D 
-%D \starttyping 
+%D \starttypen 
 %D \setuprecord[class][command=\DoWithRecord]
-%D \stoptyping 
+%D \stoptypen 
 %D 
 %D Given that one can ask for a field with 
 %D 
-%D \starttyping 
+%D \starttypen 
 %D \getrecordentry{name}
-%D \stoptyping 
+%D \stoptypen 
 %D 
 %D such a command can look like: 
 %D 
-%D \starttyping 
+%D \starttypen 
 %D \def\DoWithRecord#1%
 %D   {\startpacked
 %D    \let\\=\quad
 %D    name:  \getrecordentry{name}~\getrecordentry{family name}\par
 %D    address: \getrecordentry{postal address}\par
 %D    \stoppacked}
-%D \stoptyping  
+%D \stoptypen  
 %D 
 %D The argument passed is the tag. The database can look like:
 %D 
-%D \starttyping 
+%D \starttypen 
 %D \startrecord{hagenj}
 %D   \memberofgroup{a,b}
 %D   \setrecordentry{naam}{Hans}
@@ -145,27 +145,27 @@
 %D   \setrecordentry{family name}{Otten}
 %D   \setrecordentry{postal address}{A.F. Otten\\Prinsengracht 17\\Hasselt NL}
 %D \stoprecord
-%D \stoptyping  
+%D \stoptypen  
 %D 
 %D The definition of this database looks like: 
 %D 
-%D \starttyping 
+%D \starttypen 
 %D \definerecord[address][command=\DoWithRecord]
 %D 
 %D \definerecordentry[address][name]
 %D \definerecordentry[address][family name]
 %D \definerecordentry[address][postal address]
-%D \stoptyping 
+%D \stoptypen 
 %D 
 %D The actual processing is now done by (for instance): 
 %D 
-%D \starttyping 
+%D \starttypen 
 %D \processrecords[datafile][hagenj]
 %D \processrecords[datafile][hagenj,offenaf]
 %D \processrecords[datafile][all]
 %D \processrecords[datafile][a]
 %D \processrecords[datafile][b]
-%D \stoptyping 
+%D \stoptypen 
 %D 
 %D Of course one can reassign the command used to handle the
 %D records in between. 
@@ -185,7 +185,7 @@
   {\getparameters
      [\??db#1]
      [\c!velden=,
-      \c!command=\gobbleoneargument,
+      \c!commando=\gobbleoneargument,
       #2]}
 
 \def\setuprecord
@@ -225,13 +225,13 @@
    \processcommacommand[\getvalue{\??db#1\c!velden}]\docommando
    \let\setrecordentry\skiprecord
    \the\resetrecordlist
-   \doifelse{#2}\v!all   % 't Is nu eenmaal alles 
+   \doifelse{#2}\v!alles   % 't Is nu eenmaal alles 
      \recordoktrue
      {\doifelsenothing{#2} % of niets 
         \recordoktrue
         \recordokfalse}%   % zullen we maar zeggen. 
    \ifrecordok
-     \let\askedrecords\v!all
+     \let\askedrecords\v!alles
    \else
      \makerawcommalist[#2]\askedrecords
    \fi
@@ -264,7 +264,7 @@
      {\relax
       \egroup
      %\the\everyrecord
-      \getvalue{\??db#1\c!command}{##1}}%
+      \getvalue{\??db#1\c!commando}{##1}}%
    \showmessage\m!databases1\askedrecords
    \def\doprocessrecords##1%
      {\readjobfile{##1}

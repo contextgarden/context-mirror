@@ -37,26 +37,26 @@
 %D While dealing with input (the text source) and output (the
 %D glyphs), encoding comes into view. To summarize a few:
 %D
-%D \startitemize
-%D \item  Bytes in the input file are mapped to an internal
+%D \startopsomming
+%D \som  Bytes in the input file are mapped to an internal
 %D       representation. An~\type {a} often stays an~\type {a},
 %D       but~\type {\"e} can become either one code or become
 %D       two codes (ending in overlapping glyphs).
-%D \item  Characters can be made active and mapped onto another
+%D \som  Characters can be made active and mapped onto another
 %D       character.
-%D \item  When changing case, characters are mapped onto
+%D \som  When changing case, characters are mapped onto
 %D       themselves, their case||counterpart or a reasonable
 %D       alternative, like~\"e onto~e.
-%D \item  Single character representations in a \DVI\ file can
+%D \som  Single character representations in a \DVI\ file can
 %D       be mapped onto one or more characters, either of not
 %D       in more than one font file (virtual fonts).
-%D \item  In the final format, fonts collections can be
+%D \som  In the final format, fonts collections can be
 %D       partially embedded, thereby losing the one||to||one
 %D       relation between several instances of one font.
-%D \item  For special purposes, individual characters should be
+%D \som  For special purposes, individual characters should be
 %D       mapped onto a dedicated encoding vector, for instance
 %D       \PDF\ document encoding.
-%D \stopitemize
+%D \stopopsomming
 %D
 %D These and other kind of mappings are to be dealt with, and
 %D the exact way of dealing often depends on the language to be
@@ -195,13 +195,13 @@
 %D the decimal number of the character is passed as first
 %D argument.
 %D
-%D \starttyping
+%D \starttypen
 %D \def\decimalcharacter#1{\message{#1 is now active}}
 %D
 %D \defineactivedecimal 122 {\decimalcharacter}
 %D
 %D \defineactivedecimals 128 to 255 as {\decimalcharacter}
-%D \stoptyping
+%D \stoptypen
 %D
 %D This command is typically used in coding definitions,
 %D like the \UNICODE\ one.
@@ -322,7 +322,7 @@
 %D mechanism to define mappings. The first real application
 %D of this command was:
 %D
-%D \starttyping
+%D \starttypen
 %D \startmapping [something]
 %D   \definecasemap 165 181 165
 %D   \definecasemap 171 187 171
@@ -332,7 +332,7 @@
 %D   \definelowercasecom \AE \ae
 %D   ...
 %D \stopmapping
-%D \stoptyping
+%D \stoptypen
 %D
 %D So, character 165 becomes 181 in uppercase and 165 in
 %D lowercase. A mapping is activated with \type {\enablemapping}.
@@ -369,11 +369,11 @@
 
 %D This can be used like:
 %D
-%D \starttyping
+%D \starttypen
 %D \definecasemaps 128 to 156 lc  32 uc 0
 %D \definecasemaps 160 to 188 lc -32 uc 0
 %D \definecasemaps 192 to 255 lc  32 uc 0
-%D \stoptyping
+%D \stoptypen
 %D
 %D and saves a lot of typing (copying).
 
@@ -502,17 +502,17 @@
 %D called for by sequences like \type{\"e}. Here the \type{\"}
 %D is defined as:
 %D
-%D \starttyping
+%D \starttypen
 %D \def\"#1{{\accent"7F #1}}
-%D \stoptyping
+%D \stoptypen
 %D
 %D This macro places the accent \accent"7F {} on top of an~e
 %D gives \"e. Some fonts however can have prebuild accents and
 %D use a more direct approach like
 %D
-%D \starttyping
+%D \starttypen
 %D \def\"#1{\if#1e\char 235\else ... \fi}
-%D \stoptyping
+%D \stoptypen
 %D
 %D The latter approach is not used in \CONTEXT, because we
 %D store relevant combinations of accents and characters in
@@ -521,7 +521,7 @@
 %D We define character substitutes and commands with definition
 %D commands like:
 %D
-%D \starttyping
+%D \starttypen
 %D \startcoding[texnansi]
 %D
 %D \defineaccent " a           228
@@ -535,7 +535,7 @@
 %D \definecommand c \texnansiencodedc
 %D
 %D \stopcoding
-%D \stoptyping
+%D \stoptypen
 %D
 %D The last argument of \type{\defineaccent} and
 %D \type{\definecharacter} tells \TEX\ the position of the
@@ -656,9 +656,9 @@
 %D Yet another definition concerns sorting of indexes and
 %D lists.
 %D
-%D \starttyping
+%D \starttypen
 %D \definesortkey {\'e} {e} {a} {\'e}
-%D \stoptyping
+%D \stoptypen
 %D
 %D The first argument denotes the string to be treated. The
 %D second argument is the raw replacement, while the third
@@ -814,28 +814,14 @@
   %\redefinecommand #1 % just to be sure
    \setvalue{\commandprefix\characterencoding\string#1}{#2}}
 
-% %D This one is needed in order to prevent problems with math (see \type
-% %D {\over} in dutch interface). This became a problem one when going
-% %D low level english.
-
-% \def\doifdefinedascommandelse#1%
-%   {\bgroup
-%    \convertargument\dohandlecommand{#1}\to\asciiA
-%    \@EAEAEA\convertargument\csname#1\endcsname\to\asciiB
-%    \ifx\asciiA\asciiB
-%      \egroup\expandafter\firstoftwoarguments
-%    \else
-%      \egroup\expandafter\secondoftwoarguments
-%    \fi}
-
 %D Here we see that redefining accents is characters is more
 %D or less the same as redefining commands. We also could have
 %D said:
 %D
-%D \starttyping
+%D \starttypen
 %D \def\defineaccent#1 #2 {\definecommand#1\string#2 \char}
 %D \def\definecharacter#1 {\definecommand#1 \char}
-%D \stoptyping
+%D \stoptypen
 
 % obsolete
 %
@@ -851,12 +837,12 @@
 % %D
 % %D Accents or accent generating commands are redefined by:
 % %D
-% %D \starttyping
+% %D \starttypen
 % %D \redefineaccent  '  % grave
 % %D \redefineaccent  "  % diaeresis
 % %D \redefineaccent  ^  % circumflex
 % %D \redefineaccent  v  % caron
-% %D \stoptyping
+% %D \stoptypen
 % %D
 % %D The original \PLAIN\ \TEX\ meaning of each accent generating
 % %D command is saved first. Next these commands are redefined to
@@ -885,7 +871,7 @@
 %D When needed, one can overload the default positions of the
 %D accents. The \PLAIN\ \TEX\ defaults are:
 %D
-%D \starttyping
+%D \starttypen
 %D \defineaccentcommand `  18
 %D \defineaccentcommand '  19
 %D \defineaccentcommand v  20
@@ -896,7 +882,7 @@
 %D \defineaccentcommand H 125  % "7D
 %D \defineaccentcommand ~ 126  % "7E
 %D \defineaccentcommand " 127  % "7F
-%D \stoptyping
+%D \stoptypen
 
 \def\defineaccentcommand
   {\protectfontcharacters
@@ -975,10 +961,10 @@
 %D Redefinition of encoding dependant commands like \type{\b}
 %D and \type{\c} can be triggered by:
 %D
-%D \starttyping
+%D \starttypen
 %D \redefinecommand  b  % something math
 %D \redefinecommand  c  % something math
-%D \stoptyping
+%D \stoptypen
 %D
 %D Handling of characters is easier than handling accents
 %D because here we don't have to take care of arguments. We
@@ -1027,10 +1013,10 @@
 % %D in that they are to be presented as they are, are redefined
 % %D by
 % %D
-% %D \starttyping
+% %D \starttypen
 % %D \redefinecharacter  ae  % ae
 % %D \redefinecharacter  cc  % ccedilla
-% %D \stoptyping
+% %D \stoptypen
 % %D
 % %D To keep things simple, we just copy this command:
 %
@@ -1056,19 +1042,19 @@
 %D a few macros that show most of the characters involved. The
 %D next two tables show the result of \type {\showaccents}.
 %D
-%D \placetable
+%D \plaatstabel
 %D   {The special glyphs in default encoding.}
 %D   {\showaccents}
 %D
-%D \placetable
+%D \plaatstabel
 %D   {The special glyphs in texnansi encoding.}
 %D   {\switchtobodyfont[lbr]\showaccents}
 %D
 %D The command
 %D
-%D \starttyping
+%D \starttypen
 %D \showhyphenations{doordefini\"eren}
-%D \stoptyping
+%D \stoptypen
 %D
 %D can be used to check the correct loading of hyphenation
 %D patterns.
@@ -1124,7 +1110,7 @@
    \@EA\appendtoks\csname#1\endcsname\to\everyULmap
    \@EA\appendtoks\csname#2\endcsname\to\everyULmap}
 
-% slightly faster with \smallcapped's but far more hash and stringspace
+% slightly faster with \kap's but far more hash and stringspace
 %
 % \newif\ifuppercase \appendtoks\uppercasetrue\to\everyuppercase
 % \newif\iflowercase \appendtoks\lowercasetrue\to\everylowercase
@@ -1153,20 +1139,20 @@
 
 \ifx\obeylccodes\undefined
 
-  \def\obeylccodes
-    {\scratchcounter32
+\def\obeylccodes
+  {\scratchcounter32
+   \loop
+     \ifnum\scratchcounter<127
+       \lccode\scratchcounter\scratchcounter
+       \advance\scratchcounter \plusone
+   \repeat
+   \ifeightbitcharacters
+     \scratchcounter128
      \loop
-       \ifnum\scratchcounter<127
-         \lccode\scratchcounter\scratchcounter
+       \ifnum\scratchcounter<255
+         \lccode\scratchcounter`.
          \advance\scratchcounter \plusone
      \repeat
-     \ifeightbitcharacters
-       \scratchcounter128
-       \loop
-         \ifnum\scratchcounter<255
-           \lccode\scratchcounter`.
-           \advance\scratchcounter \plusone
-       \repeat
    \fi}
 
 \fi

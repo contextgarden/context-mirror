@@ -94,10 +94,10 @@
 \doglobal\newif\ifXMLunspacepretty
 
 \gdef\@XMLelement#1%
-  {\ifnum\XMLlevel<\@@xflevel\relax
+  {\ifnum\XMLlevel<\@@xfniveau\relax
      \ifnum\kindofXMLelement=2\else
        \doglobal\increment\@XMLnofelements\relax
-       \ifcase\@XMLnofelements\else\@@xfinbetween\fi
+       \ifcase\@XMLnofelements\else\@@xftussen\fi
      \fi
    \fi
    % no, too fragile: \hangindent2em
@@ -116,13 +116,10 @@
        \ifnum\kindofXMLelement=2\string/\fi
        \currentXMLelement
      \stopcolor
-     \ifcase#1\or
-       \cleanupXMLarguments % get rid of spurious end space and end /
-       \ifx\currentXMLarguments\empty\else
-         \setbox\scratchbox\hbox{\space}\hskip\wd\scratchbox % hm, slow
-         \startcolor[xtag:0]\showXMLarguments\unskip\stopcolor\unskip
-       \fi
-     \fi
+     \ifcase#1\or\ifx\currentXMLarguments\empty\else
+       \cleanupXMLarguments
+       \startcolor[xtag:0]\hbox{\space}\showXMLarguments\unskip\stopcolor
+     \fi\fi
      \startcolor[xtag:\ifnum\scratchcounter<0 0\else\number\scratchcounter\fi]%
      \ifnum\kindofXMLelement=3\string/\fi
      \string>%
@@ -131,10 +128,10 @@
    \ifcase\kindofXMLelement\or
      \getvalue{\@@XMLshow::\currentXMLelement}\relax
    \fi
-   \ifnum\XMLlevel<\@@xflevel\relax
+   \ifnum\XMLlevel<\@@xfniveau\relax
      \ifnum\kindofXMLelement=1\else
        \doglobal\increment\@XMLnofelements\relax
-       \ifcase\@XMLnofelements\else\@@xfinbetween\fi
+       \ifcase\@XMLnofelements\else\@@xftussen\fi
      \fi
    \fi
    \ifXMLunspacepretty\ignorespaces\fi}
@@ -222,18 +219,17 @@
    \nohyphens
    \dontcomplain
    \XMLlevel\zerocount
-   \increment\@@xflevel % hack
+   \increment\@@xfniveau % hack
    \tttf
-   \startpacked[\v!blank]
+   \startopelkaar[\v!blanko]
      \ifautoXMLshow \let\executeXMLelement\autoshowXMLelement \fi
      \let\executeXMLentity\@XMLentity
      \enableXML\verbatimXML
      \enableregime[utf]%
      \chardef\utfunicodetracer8
-     \veryraggedright
      \readfile{\truefilename{#1}}\donothing\donothing\endgraf
      \removelastskip % really needed
-   \stoppacked
+   \stopopelkaar
    \egroup}
 
 \gdef\showXMLtext#1%
@@ -243,7 +239,7 @@
    % so far for hack
    \dontcomplain
    \XMLlevel\maxcard
-   \increment\@@xflevel % hack
+   \increment\@@xfniveau % hack
    \tttf
    \ifautoXMLshow \let\executeXMLelement\autoshowXMLelement \fi
    \let\executeXMLentity\@XMLentity
@@ -286,20 +282,5 @@
    \videXMLcontextblock[#2]
    \showXMLfile{#1}
    \egroup}
-
-%D
-
-\gdef\tracebackXMLattribute#1%
-  {\bgroup
-   \doloop
-     {\ifcsname\@@XMLdepth:\recurselevel\endcsname
-        \edef\!!stringa{\csname\@@XMLdepth:\recurselevel\endcsname}%
-        \writestatus
-          {XML TRACE}
-          {[#1] [\recurselevel] [\!!stringa] [\XMLinh{#1}]}%
-      \else
-        \exitloop
-      \fi}%
-    \egroup}
 
 \protect \endinput

@@ -136,16 +136,16 @@
 %D
 %D There are three ways of defining a reference:
 %D
-%D \starttyping
+%D \starttypen
 %D \pagereference[here]
 %D \textreference[here]{some text}
-%D \stoptyping
+%D \stoptypen
 %D
 %D the third alternative combines them in:
 %D
-%D \starttyping
+%D \starttypen
 %D \reference[here]{some text}
-%D \stoptyping
+%D \stoptypen
 
 \def\textreference {\dosingleargument\dotextreference}
 \def\pagereference {\dosingleargument\dopagereference}
@@ -153,11 +153,11 @@
 
 %D These are implemented in a low level form as:
 %D
-%D \starttyping
+%D \starttypen
 %D \def\dotextreference[#1]{\rawtextreference\s!txt{#1}} % #2
 %D \def\dopagereference[#1]{\rawpagereference\s!pag{#1}}
 %D \def\doreference    [#1]{\rawreference    \s!ref{#1}} % #2
-%D \stoptyping
+%D \stoptypen
 %D
 %D or without expansion problems:
 
@@ -244,9 +244,9 @@
 %D a the utility file. The next macro does the job and
 %D generates entries like:
 %D
-%D \starttyping
+%D \starttypen
 %D \mainreference{prefix}{reference}{page}{realpage}{text}
-%D \stoptyping
+%D \stoptypen
 %D
 %D We did not yet discuss prefixing. Especially in interactive
 %D documents, it's not always easy to keep track of duplicate
@@ -314,18 +314,18 @@
 %D In practice this comes to giving \type {\mainreference} a
 %D appropriate meaning and loading the utility file.
 
-% \def\setreferences
+% \def\setreferences%
 %   {\def\mainreference##1##2##3##4##5%
 %      {\doifundefinedelse{\r!cross\fileprefix##1##2}
 %         {\setglobalcrossreference{##1##2}{##3}{##4}{##5}}
-%         {\showmessage\m!references{2}{[##1][##2],##4}}}}
+%         {\showmessage{\m!references}{2}{[##1][##2],##4}}}}
 
-% \def\setreferences
+% \def\setreferences%
 %   {\the\everyreference % we're grouped anyway
 %    \def\mainreference##1##2##3##4##5%
 %      {\doifundefinedelse{\r!cross\fileprefix##1##2}
 %         {\setglobalcrossreference{##1##2}{##3}{##4}{##5}}
-%         {\ifcase0##4\else\showmessage\m!references{2}{[##1][##2],##4}\fi}}}
+%         {\ifcase0##4\else\showmessage{\m!references}{2}{[##1][##2],##4}\fi}}}
 
 %D For a long time the only way to access an external file was
 %D to use the file prefix (\type {somefile::}. However, when
@@ -335,16 +335,16 @@
 %D {page}, you can access the reference directly. The latter
 %D case nills the prefix method, thereby saving some memory.
 %D
-%D \starttabulate[||||]
+%D \starttabulatie[||||]
 %D \NC filename::tag \NC page(filename::pnum) \NC tag     \NC\NR
 %D \NC   $\star$     \NC                      \NC         \NC\NR
 %D \NC   $\star$     \NC $\star$              \NC $\star$ \NC\NR
 %D \NC               \NC $\star$              \NC         \NC\NR
-%D \stoptabulate
+%D \stoptabulatie
 
 \chardef\autocrossfilereferences=0
 
-% \def\setreferences % some day, filename will be stored in ref record
+% \def\setreferences% some day, filename will be stored in ref record
 %   {\the\everyreference % we're grouped anyway
 %    \def\mainreference##1##2##3##4##5%
 %      {\doifundefinedelse{\r!cross\fileprefix##1##2}
@@ -354,14 +354,14 @@
 %            \setglobalcrossreference{##1##2}{##3}{##4}{##5}%
 %            \doifundefinedelse{\r!cross##1##2}
 %              {\expanded{\definereference[##1##2][\fileprefix##1##2]}}
-%              {\showmessage\m!references2{[##1][##2],##4 (auto \currentutilityfilename)}}%
+%              {\showmessage{\m!references}{2}{[##1][##2],##4 (auto \currentutilityfilename)}}%
 %          \or
 %            \doifundefinedelse{\r!cross##1##2}
 %              {\expanded{\definereference[##1##2][\noexpand\v!pagina(\fileprefix##4)]}}
-%              {\showmessage\m!references2{[##1][##2],##4 (auto \currentutilityfilename)}}%
+%              {\showmessage{\m!references}{2}{[##1][##2],##4 (auto \currentutilityfilename)}}%
 %          \fi}
 %         {\ifcase0##4\else
-%            \showmessage\m!references2{[##1][##2],##4 (\currentutilityfilename)}%
+%            \showmessage{\m!references}{2}{[##1][##2],##4 (\currentutilityfilename)}%
 %          \fi}}}
 
 % optimizing this one makes sense when we have docs with 10K
@@ -380,7 +380,7 @@
             {\showmessage\m!references2{[##1][##2],##4 (auto \currentutilityfilename)}}%
         \or
           \doifundefinedelse{\r!cross##1##2}
-            {\expanded{\definereference[##1##2][\noexpand\v!page(\fileprefix##4)]}}
+            {\expanded{\definereference[##1##2][\noexpand\v!pagina(\fileprefix##4)]}}
             {\showmessage\m!references2{[##1][##2],##4 (auto \currentutilityfilename)}}%
         \fi
       \else\ifcase0##4\else
@@ -448,10 +448,10 @@
 %D for navigational purposes. The main reason for this is that
 %D we want to treat both categories alike:
 %D
-%D \starttyping
+%D \starttypen
 %D \goto{go back}[PreviousJump]
 %D \goto{colofon}[colofon page]
-%D \stoptyping
+%D \stoptypen
 %D
 %D Here \type{PreviousJump} is handled by the viewer, while the
 %D \type{colofon page} reference is, apart from hyperlinking, a
@@ -534,19 +534,19 @@
 
 %D In practice accessing a reference comes down to:
 %D
-%D \startitemize[packed]
-%D \item  checking the validity
-%D \item  determining the type
-%D \item  filtering the content
-%D \stopitemize
+%D \startopsomming[opelkaar]
+%D \som  checking the validity
+%D \som  determining the type
+%D \som  filtering the content
+%D \stopopsomming
 %D
 %D We'll deal with the last two steps first. References are
 %D saved in the general format:
 %D
-%D \starttyping
+%D \starttypen
 %D {\referenceclass{realpage}{page}{text}}
 %D {\referenceclass{type}{data}}
-%D \stoptyping
+%D \stoptypen
 %D
 %D When we filter the content, next macros are set when we
 %D meet a normal cross reference:
@@ -602,18 +602,10 @@
       \fi}
      {\realreferencepagefalse}}
 
-\def\currentfolioreference{0}
-
 \def\dogetreferenceelements#1#2#3#4#5%
   {\chardef\currentreferencetype=\ifx#1\relax0\else#1\fi\relax
    \ifnum\currentreferencetype<2
-     \edef\currentpagereference{#2}%
-     \ifx\currentpagereference   \empty
-       \let\currentfolioreference\folio
-     \else
-       \def \currentpagereference {\referencepagenumber[#2]}%
-       \edef\currentfolioreference{\dosplitofffoliopart[#2]}%
-     \fi
+     \def\currentpagereference{\referencepagenumber[#2]}%
      \edef\currentrealreference{#3}%
      \settextreferences#4\end
      \ifnum0#5<\crossreferencenumber
@@ -622,9 +614,8 @@
        \forwardreferencefalse
      \fi
    \else
-     \edef\currentrealreference {#3}%
-     \def \currentdatareference {#2}%
-     \let \currentfolioreference\folio
+     \edef\currentrealreference{#3}%
+     \def\currentdatareference{#2}%
      \settextreferences#4\end
      \forwardreferencefalse
    \fi
@@ -646,15 +637,15 @@
 %D Text references can contain more than one entry and
 %D therefore we check for
 %D
-%D \starttyping
+%D \starttypen
 %D {entry}
-%D \stoptyping
+%D \stoptypen
 %D
 %D or
 %D
-%D \starttyping
+%D \starttypen
 %D {{entry}{entry}{entry}}
-%D \stoptyping
+%D \stoptypen
 %D
 %D and split accordingly.
 
@@ -749,7 +740,7 @@
 %D have \type{\goto}, \type{\button} and alike. These are more
 %D versatile and look like:
 %D
-%D \starttyping
+%D \starttypen
 %D \goto[reference]
 %D \goto[outer reference::]
 %D \goto[outer reference::inner reference]
@@ -757,7 +748,7 @@
 %D \goto[operation(action{argument,argument})]
 %D \goto[action]
 %D \goto[action{argument}]
-%D \stoptyping
+%D \stoptypen
 %D
 %D The first one is a normal reference, the second and third
 %D are references to a file or \URL. The brace delimited
@@ -767,21 +758,21 @@
 %D When we split off the components of such a reference, the
 %D results are available in:
 %D
-%D \starttyping
+%D \starttypen
 %D \currentreferencespecial
 %D \currentreferenceoperation
 %D \currentreferencearguments
 %D \currentinnerreference
 %D \currentouterreference
 %D \currentfullreference
-%D \stoptyping
+%D \stoptypen
 %D
 %D Splitting a reference is done by:
 %D
-%D \starttyping
+%D \starttypen
 %D \splitofffullreference {reference}
 %D \splitoffreference     {reference}
-%D \stoptyping
+%D \stoptypen
 %D
 %D The second alternative can be used in a second stage
 %D splitoff and only handles \type{::}.
@@ -895,20 +886,20 @@
 %D prefixed one. Consider for instance the prefix set to
 %D \type{sidetrack}.
 %D
-%D \starttyping
+%D \starttypen
 %D \pagereference[important]
 %D \pagereference[unimportant]
-%D \setupreferencing[prefixprefix=sidetrack]
+%D \setupreferencing[prefix=sidetrack]
 %D \pagereference[important]
-%D \stoptyping
+%D \stoptypen
 %D
 %D results in saving (writing) the references
 %D
-%D \starttyping
+%D \starttypen
 %D ...{}{important}
 %D ...{}{unimportant}
 %D ...{sidetrack}{important}...
-%D \stoptyping
+%D \stoptypen
 %D
 %D Now when we call for \type{unimportant}, we will indeed get
 %D the pagenumber associated to this reference. But when we
@@ -922,16 +913,16 @@
 %D Before we start analyzing, I introduce a general
 %D definition macro. Consider:
 %D
-%D \starttyping
+%D \starttypen
 %D \goto{do}[JS(My_Script{"test",123}),titlepage]
-%D \stoptyping
+%D \stoptypen
 %D
 %D This can also be achieved by:
 %D
-%D \starttyping
+%D \starttypen
 %D \definereference[startup][JS(My_Script{"test",123}),titlepage]
 %D \goto{do}[REF(startup)]
-%D \stoptyping
+%D \stoptypen
 %D
 %D Now is this is a handy feature or not?
 %D
@@ -1212,16 +1203,16 @@
 
 %D For most situations, we could use:
 %D
-%D \starttyping
+%D \starttypen
 %D \let\doifreferencefoundelse=\dodoifreferencefoundelse
-%D \stoptyping
+%D \stoptypen
 %D
 %D But when we also want to support chained references, we need
 %D some more. Such a chained reference is defined as:
 %D
-%D \starttyping
+%D \starttypen
 %D \goto{somewhere}[JS(somescript),nextpage,JS(anotherscript)]
-%D \stoptyping
+%D \stoptypen
 %D
 %D Actually supporting chains is up to the special driver. Here
 %D we only provide the hooks.
@@ -1461,10 +1452,10 @@
 %D The inner case is simple. Only two cases have to be taken
 %D care of:
 %D
-%D \starttyping
-%D \goto{some text}[reference]
-%D \goto{some text}[prefix:reference]
-%D \stoptyping
+%D \starttypen
+%D \naar{some text}[reference]
+%D \naar{some text}[prefix:reference]
+%D \stoptypen
 
 %\def\docheckinnerreference%
 %  {\global\let\predefinedreference=\currentinnerreference
@@ -1540,13 +1531,13 @@
 %D References to other files however are treated strict or
 %D tolerant, depending on their loading and availability:
 %D
-%D \starttyping
+%D \starttypen
 %D \useexternaldocument[somefile][filename][a nice description]
 %D
 %D \goto{checked   reference}[somefile::reference]
 %D \goto{unchecked reference}[somefile::]
 %D \goto{unchecked reference}[anotherfile::reference]
-%D \stoptyping
+%D \stoptypen
 %D
 %D Here we use the dummy reference \type{somefile::} set in
 %D \type{\setouterreference} as a signal that indeed references
@@ -1671,9 +1662,9 @@
    \the\everyreference % cleanup : etc in french
    \ifvoorlopig\ifinpagebody\else
      \doifsomething{#2}
-       {\inleft
+       {\inlinker
           {\infofont
-           \scratchdimen\leftmarginwidth
+           \scratchdimen\linkermargebreedte
            \advance\scratchdimen -2em
            \doboundtext{#2}\scratchdimen{..}->}}%
    \fi\fi
@@ -1734,9 +1725,9 @@
 %D Sometimes we want to temporary put a reference out of
 %D order. An example can be found in the menu macros.
 %D
-%D \starttyping
+%D \starttypen
 %D \doifreferencepermittedelse{reference}{set}{true}{false}
-%D \stoptyping
+%D \stoptypen
 %D
 %D The second argument can be a comma seperated list.
 
@@ -1807,10 +1798,10 @@
 %D location. The latter one can be seen as a hyperlink to the
 %D former one. In the next macros one we use constructs like:
 %D
-%D \starttyping
+%D \starttypen
 %D \dostart...
 %D \dostop...
-%D \stoptyping
+%D \stoptypen
 %D
 %D Such macros are used to invoke the relevant specials from
 %D the special driver modules (see \type{spec-ini}). The flag
@@ -1829,13 +1820,13 @@
 %D The previous tho macros were easy ones, opposite to their
 %D counterparts. A common component in these is:
 %D
-%D \starttyping
+%D \starttypen
 %D \dostartgoto
 %D   \data  {..}
 %D   \start {..}
 %D   \stop  {..}
 %D \dostopgoto
-%D \stoptyping
+%D \stoptypen
 %D
 %D Here data can be whatever needs highlighting, e.g. {\em
 %D figure 2.4}, and the start and stop entries handle the
@@ -1889,9 +1880,9 @@
 %D uppercase here, since the suffix is handled in the special
 %D driver. Conversion is taken care of by:
 %D
-%D \starttyping
+%D \starttypen
 %D \setreferencefilename somefilename\to\SomeFileName
-%D \stoptyping
+%D \stoptypen
 
 % \def\setreferencefilename#1\to#2%
 %   {\doifelse{\@@converteerfile}{\v!ja} % boolean is sneller
@@ -1915,10 +1906,10 @@
 %D macros. Setting such references to unique values is
 %D completely up to the macros that call them.
 %D
-%D \starttyping
+%D \starttypen
 %D \thisissomeinternal{tag}{identifier}
 %D \gotosomeinternal  {tag}{identifier}{pagenumber}{text}
-%D \stoptyping
+%D \stoptypen
 
 \def\thisissomeinternal#1#2%  tag reference
   {\doifsomething{#2}{\thisisdestination{#1:#2}}}
@@ -1928,10 +1919,10 @@
 
 %D An automatic mechanism is provided too:
 %D
-%D \starttyping
+%D \starttypen
 %D \thisisnextinternal{tag}
 %D \gotonextinternal  {tag}{number}{pagenumber}{text}
-%D \stoptyping
+%D \stoptypen
 %D
 %D The first macro increments a counter. The value of this
 %D counter is available in the macro \type{\nextinternalreference}
@@ -2017,25 +2008,25 @@
 %D Special locations are those that are accessed by saying
 %D things like:
 %D
-%D \starttyping
+%D \starttypen
 %D \goto{calculate total}[JS(summarize{10,23,56}]
-%D \stoptyping
+%D \stoptypen
 %D
 %D After several intermediate steps this finally arrives at
 %D the next macro and expands into (simplified):
 %D
-%D \starttyping
+%D \starttypen
 %D \gotoJSlocation{total{summarize{10,23,56}}}{calculate total}
-%D \stoptyping
+%D \stoptypen
 %D
 %D The first argument is the full reference, the second one
 %D is the text, in some kind of manipulated form. In practice
 %D we split references, so we get:
 %D
-%D \starttyping
+%D \starttypen
 %D \gotoJSlocation{summarize{10,23,56}}{calculate}
 %D \gotoJSlocation{summarize{10,23,56}}{total}
-%D \stoptyping
+%D \stoptypen
 %D
 %D where \type{calculate} and \type{total} are colored, boxed
 %D or whatever \type{\goto} is told to do.
@@ -2060,9 +2051,9 @@
 
 %D This \type{\def} alike macro is to be used as:
 %D
-%D \starttyping
+%D \starttypen
 %D \definespeciallocation{JS}#1#2{... #1 ... #2 ...}
-%D \stoptyping
+%D \stoptypen
 %D
 %D In module \type {java-ini} one can see that \type
 %D {\gotoJSlocation} looks much like the previous goto
@@ -2104,9 +2095,9 @@
 %D In case a command action needs to do some checking in
 %D advance, one can assign an check function by:
 %D
-%D \starttyping
+%D \starttypen
 %D \setexecutecommandcheck{startsound}\checksoundtrack
-%D \stoptyping
+%D \stoptypen
 
 \def\setexecutecommandcheck#1#2% #2 permits \first \second
   {\setvalue{\s!do:\s!do:#1}{#2}}
@@ -2173,7 +2164,6 @@
 \setglobalsystemreference \rt!exec \v!HideField        {hide}
 \setglobalsystemreference \rt!exec \v!ShowField        {show}
 \setglobalsystemreference \rt!exec \v!GotoPage         {gotopage}
-\setglobalsystemreference \rt!exec \v!GotoPage         {gotopage}
 \setglobalsystemreference \rt!exec \v!Query            {query}
 \setglobalsystemreference \rt!exec \v!QueryAgain       {queryagain}
 \setglobalsystemreference \rt!exec \v!FitWidth         {fitwidth}
@@ -2230,29 +2220,29 @@
      [\??rf]
      [\c!prefix=\s!unknown,#1]%
    \processaction
-     [\@@rfstate]
+     [\@@rfstatus]
      [  \v!stop=>\referencingfalse,
        \v!start=>\referencingtrue]%
    \processaction
-     [\@@rfinteraction]
-     [  \v!all=>\let\dowantedreference\docompletereference,
+     [\@@rfinteractie]
+     [  \v!alles=>\let\dowantedreference\docompletereference,
         \v!label=>\let\dowantedreference\dolabelonlyreference,
-        \v!text=>\let\dowantedreference\dotextonlyreference,
-      \v!symbol=>\let\dowantedreference\dosymbolreference]%
+        \v!tekst=>\let\dowantedreference\dotextonlyreference,
+      \v!symbool=>\let\dowantedreference\dosymbolreference]%
    \chardef\autocrossfilereferences\zerocount
    \processaction
      [\@@rfautofile]
-     [     \v!yes=>\chardef\autocrossfilereferences\plusone,
-       \v!page=>\chardef\autocrossfilereferences\plustwo]%
+     [     \v!ja=>\chardef\autocrossfilereferences\plusone,
+       \v!pagina=>\chardef\autocrossfilereferences\plustwo]%
    \chardef\referencefilecase\zerocount
-   \processaction[\@@rfconvertfile]
-     [   \v!yes=>\chardef\referencefilecase\plusone,
-      \v!big=>\chardef\referencefilecase\plusone,
-      \v!small=>\chardef\referencefilecase\plustwo]%
-  %\doifelse\@@rfstrut\v!yes % some day an option
+   \processaction[\@@rfconverteerfile]
+     [   \v!ja=>\chardef\referencefilecase\plusone,
+      \v!groot=>\chardef\referencefilecase\plusone,
+      \v!klein=>\chardef\referencefilecase\plustwo]%
+  %\doifelse\@@rfstrut\v!ja % some day an option
   %  \referencetruttrue\referencestrutfalse
    \setupreferenceprefix[\@@rfprefix]%
-   \doifelse\@@rfglobal\v!yes
+   \doifelse\@@rfglobaal\v!ja
      {\settrue \autoglobalfilereferences}
      {\setfalse\autoglobalfilereferences}}
 
@@ -2286,9 +2276,9 @@
 %D and passes them to a handle. This is a rather dreadfull
 %D hack!
 %D
-%D \starttyping
+%D \starttypen
 %D \handlereferenceactions{references}\handle
-%D \stoptyping
+%D \stoptypen
 %D
 %D So, \type {\handle} does the final job, which in for
 %D instance the \PDF\ drivers comes down to doing something
@@ -2314,7 +2304,7 @@
 %D
 %D \typebuffer
 %D
-%D \getbuffer
+%D \haalbuffer
 %D
 %D We can ask for upto five reference components:
 %D
@@ -2330,9 +2320,9 @@
 %D
 %D And get back:
 %D
-%D \startlines
-%D \getbuffer
-%D \stoplines
+%D \startregels
+%D \haalbuffer
+%D \stopregels
 
 \def\ref{\dodoubleargument\doref}
 
@@ -2374,26 +2364,24 @@
 
 % \let\normalover \over
 
-\definecommand in    {\doinatreference\currenttextreference}
-\definecommand at    {\doinatreference\currentpagereference}
-\definecommand about {\dospecialabout}
-\definecommand from  {\dospecialfrom}
-\definecommand over  {\dospecialabout} % needed here, else math problems
+\definecommand in   {\doinatreference\currenttextreference}
+\definecommand op   {\doinatreference\currentpagereference}
+\definecommand over {\dospecialover}
 
-\unexpanded\def\dospecialabout[#1]%
+\unexpanded\def\dospecialover[#1]%
   {\dontleavehmode
    \bgroup
    \def\thecurrentsubtextreference
-     {\limitatetext\currentsubtextreference\@@rfwidth\unknown}%
+     {\limitatetext\currentsubtextreference\@@rfbreedte\unknown}%
   %\leaveoutervmode % no
-   \@@rfleft
+   \@@rflinks
    \doifreferencefoundelse{#1}
      {\let\crlf\space
       \let\\\space
-      \let\dogotofixed\dogotospace
-      \dogotospace{\thecurrentsubtextreference}[#1]}
+      \let\donaarfixed\donaarspace
+      \donaarspace{\thecurrentsubtextreference}[#1]}
      {\unknownreference{#1}\dummyreference}%
-   \@@rfright
+   \@@rfrechts
    \referentieinfo{<}{#1}%
    \egroup}
 
@@ -2401,14 +2389,14 @@
 %D would at first sight expect. This is due to the fact that we
 %D distinguish three (five) alternative calls:
 %D
-%D \placefigure
-%D   [here][three calls]
+%D \plaatsfiguur
+%D   [hier][three calls]
 %D   {Three alternatives reference calls.}
-%D   {\startcombination[1*3]
-%D      {\framed{\type{ \in }}} {a}
-%D      {\framed{\type{ \at }}} {b}
-%D      {\framed{\type{\goto}}} {c}
-%D    \stopcombination}
+%D   \startcombinatie[1*3]
+%D     {\framed{\type{ \in }}} {a}
+%D     {\framed{\type{ \at }}} {b}
+%D     {\framed{\type{\goto}}} {c}
+%D  \stopcombinatie
 %D
 %D \startbuffer
 %D \in figure[fig:three calls]
@@ -2422,9 +2410,9 @@
 %D
 %D This turns up as:
 %D
-%D \startlines
-%D \getbuffer
-%D \stoplines
+%D \startregels
+%D \haalbuffer
+%D \stopregels
 %D
 %D The dual \type{{}} results in a split reference. In a
 %D document meant for paper, one is tempted to use the last
@@ -2483,30 +2471,30 @@
 
 \def\dosymbolreference#1#2[#3]%
   {\bgroup
-   \setupsymbolset[\@@iasymbolset]%
+   \setupsymbolset[\@@iasymboolset]%
    \removelastskip
    \ifx\currentreferencespecial\empty
      \ifx\currentouterreference\empty
        \ifnum0\currentrealreference=\zerocount
-         \ifhmode\strut\high{\symbol[\v!nowhere]}\fi
+         \ifhmode\strut\high{\symbol[\v!nergens]}\fi
        \else\ifnum0\currentrealreference>\realpageno
-         \dodosymbolreference{#2}{\high{\symbol[\v!next]}}%
+         \dodosymbolreference{#2}{\high{\symbol[\v!volgende]}}%
        \else\ifnum0\currentrealreference<\realpageno
-         \dodosymbolreference{#2}{\high{\symbol[\v!previous]}}%
+         \dodosymbolreference{#2}{\high{\symbol[\v!vorige]}}%
        \else
-         \ifhmode\strut\high{\symbol[\v!nowhere]}\fi
+         \ifhmode\strut\high{\symbol[\v!nergens]}\fi
        \fi\fi\fi
      \else
-       \gotoouterlocation{#3}{\showlocation{\high{\symbol[\v!somewhere]}}}%
+       \gotoouterlocation{#3}{\showlocation{\high{\symbol[\v!ergens]}}}%
      \fi
    \else
-     \gotospeciallocation{#3}{\showlocation{\high{\symbol[\v!somewhere]}}}%
+     \gotospeciallocation{#3}{\showlocation{\high{\symbol[\v!ergens]}}}%
    \fi
    \egroup}
 
 \def\dodosymbolreference#1#2%
   {#1\hbox{\gotorealpage\empty\empty\currentrealreference
-    {\dolocationattributes\??ia\c!style\c!color{#2}}}}
+    {\dolocationattributes\??ia\c!letter\c!kleur{#2}}}}
 
 %D The other alternatives just conform their names: only the
 %D label, only the text, or the label and the text.
@@ -2516,36 +2504,36 @@
 
 % \def\docompletereference#1#2[#3]%
 %   {\doifsomespaceelse{#2}
-%      {\doifsomething{#2}{\dogotospace{#2}[#3]~}\dogotofixed{#1}[#3]}
-%      {\dogotofixed{\dotextprefix{#2}#1}[#3]}}
+%      {\doifsomething{#2}{\donaarspace{#2}[#3]~}\donaarfixed{#1}[#3]}
+%      {\donaarfixed{\dotextprefix{#2}#1}[#3]}}
 %
 % better:
 
 % \def\docompletereference#1#2[#3]%
 %   {\iflocationsplit
 %       \doifsomespaceelse{#2}
-%         {\dogotospace{\dotextprefix{#2}#1}[#3]}
-%         {\dogotofixed{\dotextprefix{#2}#1}[#3]}%
+%         {\donaarspace{\dotextprefix{#2}#1}[#3]}
+%         {\donaarfixed{\dotextprefix{#2}#1}[#3]}%
 %    \else
-%      \dogotofixed{\dotextprefix{#2}#1}[#3]%
+%      \donaarfixed{\dotextprefix{#2}#1}[#3]%
 %    \fi}
 %
 % more efficient
 
 \def\docompletereference#1#2[#3]%
   {\iflocationsplit
-     \doifsomespaceelse{#2}\dogotospace\dogotofixed{\dotextprefix{#2}#1}[#3]%
+     \doifsomespaceelse{#2}\donaarspace\donaarfixed{\dotextprefix{#2}#1}[#3]%
    \else
-     \dogotofixed{\dotextprefix{#2}#1}[#3]%
+     \donaarfixed{\dotextprefix{#2}#1}[#3]%
    \fi}
 
 \def\dolabelonlyreference#1#2[#3]%
   {\doifsomespaceelse{#2}
-     {\doifsomething{#2}{\dogotospace{#2}[#3]}}
-     {\dogotofixed{\dotextprefix{#2}}[#3]}}
+     {\doifsomething{#2}{\donaarspace{#2}[#3]}}
+     {\donaarfixed{\dotextprefix{#2}}[#3]}}
 
 \def\dotextonlyreference#1#2[#3]%
-  {\dotextprefix{#2}\dogotofixed{#1}[#3]}
+  {\dotextprefix{#2}\donaarfixed{#1}[#3]}
 
 \let\dowantedreference=\docompletereference
 
@@ -2558,7 +2546,7 @@
 %D
 %D [more documentation will be added]
 %D
-%D \starttyping
+%D \starttypen
 %D \definereferenceformat[informula]  [left=(,right=),text=formula]
 %D \definereferenceformat[informulas] [left=(,right=),text=formulas]
 %D \definereferenceformat[andformula] [left=(,right=),text=and]
@@ -2569,7 +2557,7 @@
 %D the \informulas {formulas}[b] \informula {and} [for:c]
 %D the \informulas [b] \informula {en} [for:c]
 %D the \informulas [b] \andformula [for:c]
-%D \stoptyping
+%D \stoptypen
 %D
 %D Instead of a text, one can specify a label, which should
 %D be defined with \type {\setuplabeltext}.
@@ -2580,29 +2568,29 @@
 \def\dodefinereferenceformat[#1][#2]%
   {\iffirstargument
      \getparameters[\??rf#1]
-       [\c!left=,  % of the number
-        \c!right=, % of the number
-        \c!text=,  % before the number
+       [\c!links=,  % of the number
+        \c!rechts=, % of the number
+        \c!tekst=,  % before the number
         \c!label=,  % can be {left}{right}
-        \c!command=\in,
+        \c!commando=\in,
         #2]%
      \unexpanded\setvalue{#1}%
        {\dontleavehmode\doexecutereferenceformat{#1}}%
    \fi}
 
 \def\noexecutelabelreferenceformat#1%
-  {\doifvaluesomething{\??rf#1\c!text}
-     {\gdef\textofreference{\csname\??rf#1\c!text\endcsname}}%
-   \csname\??rf#1\c!command\endcsname}
+  {\doifvaluesomething{\??rf#1\c!tekst}
+     {\gdef\textofreference{\csname\??rf#1\c!tekst\endcsname}}%
+   \csname\??rf#1\c!commando\endcsname}
 
 \def\doexecutelabelreferenceformat#1%
-  {\csname\??rf#1\c!command\endcsname
+  {\csname\??rf#1\c!commando\endcsname
      {\leftlabeltext {\csname\??rf#1\c!label\endcsname}}%
      {\rightlabeltext{\csname\??rf#1\c!label\endcsname}}}
 
 \def\doexecutereferenceformat#1%
-  {\gdef\leftofreference {\csname\??rf#1\c!left \endcsname}%
-   \gdef\rightofreference{\csname\??rf#1\c!right\endcsname}%
+  {\gdef\leftofreference {\csname\??rf#1\c!links \endcsname}%
+   \gdef\rightofreference{\csname\??rf#1\c!rechts\endcsname}%
    \global\let\textofreference\empty % otherwise ~ added
    \doifelsevaluenothing{\??rf#1\c!label}
      \noexecutelabelreferenceformat\doexecutelabelreferenceformat{#1}}
@@ -2612,56 +2600,19 @@
 \let\textofreference \relax
 
 \def\dodododoinatreference#1#2#3[#4]% \removeunwantedspaces added june 2004
-  {\ifx\next\bgroup                 % but removed later, fails on metafun
+  {\ifx\next\bgroup
      \dododododoinatreference
-      % fails on metafun  {\leftofreference#1\ignorespaces#3\removeunwantedspaces\rightofreference}{#2}[#4]%
-       {\leftofreference#1\ignorespaces#3\rightofreference}{#2}[#4]%
+       {\leftofreference#1\ignorespaces#3\removeunwantedspaces\rightofreference}{#2}[#4]%
    \else
      \dododododoinatreference
        {\leftofreference#1\rightofreference}{#2#3}[#4]%
    \fi}
 
-% \def\dododododoinatreference#1#2[#3]%
-%   {\bgroup
-%    \forgetall
-%    \postponefootnotes
-%    \leaveoutervmode
-%    \doifreferencefoundelse{#3}
-%      {\bgroup
-%       \let\ignorespaces    \empty % rather dirty trick, but ok
-%       \let\leftofreference \empty % the same, again ok
-%       \let\rightofreference\empty % and once more
-%       \def\textofreference {#2}%  % temporary value
-%       \ifx\textofreference\empty  % simple expansion
-%        %\doifelsenothing{#1}
-%        %  {\egroup\dosymbolreference{#1}{\textofreference}[#3]}
-%        %  {\egroup\dowantedreference{#1}{\textofreference}[#3]}%
-%         \doifelsenothing{#1}%
-%           {\egroup\dosymbolreference}%
-%           {\egroup\dowantedreference}%
-%           {#1}{\textofreference}[#3]%
-%       \else
-%        %\doifelsenothing{#1}
-%        %  {\egroup\dosymbolreference{#1}{#2}[#3]}
-%        %  {\egroup\dowantedreference{#1}{#2}[#3]}%
-%         \doifelsenothing{#1}%
-%           {\egroup\dosymbolreference}%
-%           {\egroup\dowantedreference}%
-%           {#1}{#2}[#3]%
-%       \fi}
-%      {\dounknownreference{#1}{#2}[#3]}%
-%    \referentieinfo<{#3}%
-%    \global\let\leftofreference \empty
-%    \global\let\rightofreference\empty
-%    \global\let\textofreference \empty
-%    \egroup}
-
 \def\dododododoinatreference#1#2[#3]%
-  {\dontleavehmode   % replaces \leaveoutervmode
-   \bgroup
+  {\bgroup
    \forgetall
-   \postponefootnotes
-   %\leaveoutervmode % replaced by \dontleavehmode
+\postponefootnotes
+   \leaveoutervmode
    \doifreferencefoundelse{#3}
      {\bgroup
       \let\ignorespaces    \empty % rather dirty trick, but ok
@@ -2701,7 +2652,7 @@
 %D previous macros are implemented using the goto
 %D functionality.
 %D
-%D \showsetup{\y!goto}
+%D \showsetup{\y!naar}
 %D
 %D One important chaacteristic is that the first argument of
 %D \type{\goto} (and therefore \type{\at} and \type{\in} is
@@ -2714,11 +2665,11 @@
 %   \doifreferencefoundelse{#2}
 %     {\doifelsenothing{#1}
 %        {\dosymbolreference{}{}[#2]}
-%        {\dogotospace{#1}[#2]}}
+%        {\donaarspace{#1}[#2]}}
 %     {\unknownreference{#2}#1}%
 %   \referentieinfo{<}{#2}}
 
-\def\dogoto#1[#2]%
+\def\donaar#1[#2]%
   {\dontleavehmode
   %\leaveoutervmode
 \bgroup
@@ -2726,35 +2677,35 @@
    \doifreferencefoundelse{#2}
      {\doifelsenothing{#1}
         {\dosymbolreference{}{}[#2]}
-        {\dogotospace{#1}[#2]}}
+        {\donaarspace{#1}[#2]}}
      {\unknownreference{#2}#1\relax}% \relax catches lookahead
 \egroup
    \referentieinfo{<}{#2}}
 
-\unexpanded\def\goto#1#2%
-  {\dogoto{#1}#2}
+\unexpanded\def\naar#1#2%
+  {\donaar{#1}#2}
 
 \newif\ifsharesimilarreferences \sharesimilarreferencestrue
 \newcount\similarreference % 0=noppes 1=create/refer 2,3,..=refer
 
-\def\dogotospace#1[#2]%
+\def\donaarspace#1[#2]%
   {\iflocationsplit
      \ifsecondaryreference\setbox0\hbox\fi % due to space insertion
-       {\let\dogotospace\dogotofixed
+       {\let\donaarspace\donaarfixed
         \iflocation
           \def\processisolatedword##1%
             {\ifisolatedwords\ifsharesimilarreferences
                \global\advance\similarreference \plusone
              \fi\fi
              \hbox{\gotolocation{#2}{##1\presetgoto}}}%
-          \doattributes\??ia\c!style\c!color
+          \doattributes\??ia\c!letter\c!kleur
             {\processisolatedwords{#1}\processisolatedword}%
         \else
           #1\relax % \relax prevents #1's next macros from gobbling \fi
         \fi}%
    \else
      \iflocation
-       \doattributes\??ia\c!style\c!color
+       \doattributes\??ia\c!letter\c!kleur
          {\gotolocation{#2}{#1\presetgoto}}%
      \else
        #1\relax % \relax prevents #1's next macros from gobbling \fi
@@ -2762,9 +2713,9 @@
    \fi
    \global\similarreference\zerocount}
 
-\def\dogotofixed#1[#2]%
+\def\donaarfixed#1[#2]%
   {{\iflocation
-      \hbox{\gotolocation{#2}{\doattributes\??ia\c!style\c!color
+      \hbox{\gotolocation{#2}{\doattributes\??ia\c!letter\c!kleur
         {#1\presetgoto}}}%
     \else
       #1%
@@ -2775,13 +2726,13 @@
 
 %D --- NOG IN HANDLEIDING ---
 
-\unexpanded\def\gotobox#1[#2]%
+\unexpanded\def\naarbox#1[#2]%
   {\dontleavehmode
    \bgroup
    \locationstrutfalse
   %\leaveoutervmode
    \doifreferencefoundelse{#2}
-     {\dogotofixed{#1}[#2]}
+     {\donaarfixed{#1}[#2]}
      {\hbox{\unknownreference{#2}#1}}%
    \referentieinfo{<}{#2}%
    \egroup}
@@ -2790,9 +2741,9 @@
 %D or as an \URL. Both are handled by the same mechanism and
 %D can be issued by saying something like:
 %D
-%D \starttyping
+%D \starttypen
 %D \goto[dictionary::the letter a]
-%D \stoptyping
+%D \stoptypen
 %D
 %D The macros that are responsible for handling these
 %D references, use the next six variables:
@@ -2808,41 +2759,41 @@
 %D are made, so in most cases such a document reference in an
 %D indirect one.
 %D
-%D \showsetup{\y!useexternaldocument}
+%D \showsetup{\y!gebruikexterndocument}
 %D
 %D For example:
 %D
-%D \starttyping
+%D \starttypen
 %D \useexternaldocument
 %D   [dictionary][engldict]
 %D   [The Famous English Dictionary]
-%D \stoptyping
+%D \stoptypen
 %D
 %D The next macro implements these relations, and also take
 %D care of loading the document specific references.
 
-\def\useexternaldocument%
-  {\dotripleargument\douseexternaldocument}
+\def\gebruikexterndocument%
+  {\dotripleargument\dogebruikexterndocument}
 
-\def\douseexternaldocument[#1][#2][#3]%
+\def\dogebruikexterndocument[#1][#2][#3]%
   {\bgroup
    \ifsecondargument
      \doifelsenothing{#1}
-       {\douseexternaldocument[#2][#2][#3]}
+       {\dogebruikexterndocument[#2][#2][#3]}
        {\doifelsenothing{#3}
-          {\douseexternaldocument[#1][#2][#2]}
+          {\dogebruikexterndocument[#1][#2][#2]}
           {\doifsomething{#2}
              {\setgvalue{\v!file:::#1}{\doexternaldocument[][#2][#3]}% just \do
-              \doif\@@rfstate\v!start
+              \doif\@@rfstatus\v!start
                 {\doifparentfileelse{#2}
                    {\showmessage\m!references{21}{#2}}
-                   {\dodouseexternaldocument{#1}{#2}}}}}}%
+                   {\dodogebruikexterndocument{#1}{#2}}}}}}%
    \else
-     \dodouseexternaldocument{#1}{#1}%
+     \dodogebruikexterndocument{#1}{#1}%
    \fi
    \egroup}
 
-\def\dodouseexternaldocument#1#2%
+\def\dodogebruikexterndocument#1#2%
   {\bgroup % prevents wrong loading of \jobname
      \def\fileprefix{#1::}%
      \let\setglobalcrossreference\setoutercrossreference
@@ -2852,39 +2803,39 @@
 
 %D The \URL\ alternative takes four arguments:
 %D
-%D \showsetup{\y!useURL}
+%D \showsetup{\y!gebruikURL}
 %D
 %D like:
 %D
-%D \starttyping
+%D \starttypen
 %D \useURL
 %D   [dictionary][http://www.publisher.com/public][engldict]
 %D   [The Famous English Dictionary]
-%D \stoptyping
+%D \stoptypen
 %D
 %D Several specifications are possible:
 %D
-%D \starttyping
+%D \starttypen
 %D \useURL [id] [url] [file] [description]
 %D \useURL [id] [url] [file]
 %D \useURL [id] [url]
-%D \stoptyping
+%D \stoptypen
 %D
 %D This time we don't load the references when no file is
 %D specified. This is logical when one keeps in mind that a
 %D valid \URL\ can also be a mail address.
 
-\def\useURL
+\def\gebruikURL
   {\bgroup
    \protectlabels
    \catcode`\#=12\catcode`\%=12\catcode`\/=12
    \catcode`\_=12\catcode`\~=12\catcode`\:=12
-   \dodoubleempty\douseURL}
+   \dodoubleempty\dogebruikURL}
 
-\def\douseURL[#1][#2]%
-  {\egroup\doquadrupleempty\dodouseURL[#1][#2]}
+\def\dogebruikURL[#1][#2]%
+  {\egroup\doquadrupleempty\dodogebruikURL[#1][#2]}
 
-\def\dodouseURL[#1][#2][#3][#4]%
+\def\dodogebruikURL[#1][#2][#3][#4]%
   {\iffirstargument
      \iffourthargument
        \setgvalue{\v!file:::#1}{\doexternaldocument[#2][#3][#4]}%
@@ -2895,18 +2846,20 @@
      \fi\fi\fi
    \fi}
 
+\let\gebruikurl\gebruikURL
+
 %D \macros
 %D   {url,setupurl}
 %D
 %D We also have: \type{\url} for directly calling the
 %D description. So we can say:
 %D
-%D \starttyping
+%D \starttypen
 %D \useURL [one] [http://www.test.nl]
 %D \useURL [two] [http://www.test.nl] [] [Some Site]
 %D
 %D \url[one] or \from[two] or \goto{Whatever Site}[URL(two)]
-%D \stoptyping
+%D \stoptypen
 %D
 %D An \URL\ can be set up with
 %D
@@ -2918,18 +2871,18 @@
 \unexpanded\def\url[#1]% slow
   {\bgroup
    \processaction
-     [\@@uralternative]
-     [ \v!none=>\chardef\urlsplitmode\zerocount,
-      \v!both=>\chardef\urlsplitmode\plusone,
-         \v!after=>\chardef\urlsplitmode\plustwo,
-       \v!before=>\chardef\urlsplitmode\plusthree]%
-   \doifelse\@@urspace\v!yes
+     [\@@urvariant]
+     [ \v!geen=>\chardef\urlsplitmode\zerocount,
+      \v!beide=>\chardef\urlsplitmode\plusone,
+         \v!na=>\chardef\urlsplitmode\plustwo,
+       \v!voor=>\chardef\urlsplitmode\plusthree]%
+   \doifelse\@@urspatie\v!ja
      {\setbetweenisolatedwords%
         {\scratchskip\currentspaceskip
          \hskip\zeropoint\!!plus.2\scratchskip}}
      {\setbetweenisolatedwords\allowbreak}%
    \def\doexternaldocument[##1][##2][##3]{\hyphenatedurl{##1}}%
-   \dostartattributes\??ur\c!style\c!color{}%
+   \dostartattributes\??ur\c!letter\c!kleur{}%
    \getvalue{\v!file:::#1}%
    \dostopattributes
    \egroup}
@@ -2938,7 +2891,7 @@
 %D \URL's break ok, according to the setting of a switch,
 %D
 %D \startbuffer
-%D \useURL
+%D \gebruikURL
 %D   [test]
 %D   [sentence_sentence%sentence#sentence~sentence/sentence//sentence:sentence.sentence]
 %D \stopbuffer
@@ -2947,21 +2900,21 @@
 %D
 %D Such an \URL\ is, depending on the settings, hyphenated as:
 %D
-%D \getbuffer
+%D \haalbuffer
 %D
-%D \startlinecorrection
+%D \startregelcorrectie
 %D \hbox to \hsize
 %D   {\hss\en
-%D    \setupreferencing[urlalternative=both]%
+%D    \stelrefererenin[urlvariant=beide]%
 %D    \vbox{\hsize.25cm\hbox{\bf both}\prewordbreak\url[test]}%
 %D    \hss
-%D    \setupreferencing[urlalternative=before]%
+%D    \stelrefererenin[urlvariant=voor]%
 %D    \vbox{\hsize.25cm\hbox{\bf before}\prewordbreak\url[test]}%
 %D    \hss
-%D    \setupreferencing[urlalternative=after]%
+%D    \stelrefererenin[urlvariant=na]%
 %D    \vbox{\hsize.25cm\hbox{\bf after}\prewordbreak\url[test]}%
 %D    \hss}
-%D \stoplinecorrection
+%D \stopregelcorrectie
 %D
 %D By setting \type{urlspace=yes} one can get slightly better
 %D spacing when using very long \URL's.
@@ -3002,63 +2955,60 @@
 %D also specify a suitable name (the last argument). This name
 %D can be called upon with:
 %D
-%D \showsetup{\y!from}
+%D \showsetup{\y!uit}
 %D
 %D As can be expected, this macro used \type{\goto} to
 %D perform its task.
 
+\definecomplexorsimple\uit
+
+\def\simpleuit
+  {\bgroup
+   \protectlabels
+   \ifundefined{\v!file:::\otherlabel}%
+     {\tttf[\otherlabel]}%
+   \else
+     \def\doexternaldocument[##1][##2][##3]{##3}%
+     \csname\v!file:::\otherlabel\endcsname
+   \egroup}
+
 % normal version:
 %
-% \def\from[#1]%
+% \def\complexuit[#1]%
 %   {\dontleavehmode % added, but probably not needed
 %    \bgroup
 %    \doifinstringelse{::}{#1}{\docomplexuit[#1]}{\docomplexuit[#1::]}}
 %
 % since we need to serve active :'s we need the less readable:
 
-\def\dospecialfrom % retest this one !
-  {\dosingleempty\dodospecialfrom}
-
-\def\dodospecialfrom[#1]%
+\def\complexuit[#1]%
   {\dontleavehmode % added, but probably not needed
    \bgroup
    \protectlabels % needed for active french :'s
-   \iffirstargument
-     \edef\!!stringa{#1}%
-     \doifincsnameelse{::}\!!stringa\donothing{\edef\!!stringa{#1::}}%
-     \expanded{\redospecialfrom[\!!stringa]}%
+   \edef\!!stringa{#1}%
+   \doifincsnameelse{::}\!!stringa\donothing{\edef\!!stringa{#1::}}%
+   \@EA\docomplexuit\@EA[\!!stringa]}
+
+\def\docomplexuit[#1::#2]%
+  {\ifundefined{\v!file:::#1}%
+     {\tttf[#1]}%
    \else
-     \expanded{\nodospecialfrom[\otherlabel]}%
+     \def\doexternaldocument[##1][##2][##3]{\naar{##3}[#1::#2]}%
+     \csname\v!file:::#1\endcsname
    \fi
    \egroup}
 
-\def\redospecialfrom[#1::#2]%
-  {\ifundefined{\v!file:::#1}%
-     \tttf[#1]%
-   \else
-     \def\doexternaldocument[##1][##2][##3]{\goto{##3}[#1::#2]}%
-     \csname\v!file:::#1\endcsname
-   \fi}
-
-\def\nodospecialfrom[#1]%
-  {\ifundefined{\v!file:::#1}%
-     \tttf[#1]%
-   \else
-     \def\doexternaldocument[##1][##2][##3]{##3}% different than ^
-     \csname\v!file:::#1\endcsname
-   \fi}
-
 %D We also support:
 %D
-%D \starttyping
+%D \starttypen
 %D \goto{some text}[file(identifier{location}]
-%D \stoptyping
+%D \stoptypen
 %D
 %D which is completely equivalent with
 %D
-%D \starttyping
+%D \starttypen
 %D \goto{some text}[identifier::location]
-%D \stoptyping
+%D \stoptypen
 %D
 %D The fastest implementation would be:
 
@@ -3085,75 +3035,75 @@
 %D logical to have the viewer specific ones available in a dual
 %D way too. At first glance we could do with:
 %D
-%D \starttyping
-%D \definespeciallocation\v!action
+%D \starttypen
+%D \definespeciallocation\v!actie
 %D   {\getreferenceelements\currentreferenceoperation
 %D    \handleexecreference}
-%D \stoptyping
+%D \stoptypen
 %D
 %D An better alternative, slower but error aware, is
 
 % \definespecialtest\v!actie
 %   {\localdoifreferencefoundelse\currentreferenceoperation}
 
-\definespecialtest\v!action % rather ugly action(whatever{argument})
+\definespecialtest\v!actie % rather ugly action(whatever{argument})
   {\expanded{\localdoifreferencefoundelse{\currentreferenceoperation
      \ifx\currentreferencearguments\empty\else{\currentreferencearguments}\fi}}}
 
-\definespeciallocation\v!action
+\definespeciallocation\v!actie
   {\handleexecreference}
 
 %D So now we can say:
 %D
-%D \starttyping
+%D \starttypen
 %D \goto{some action}[PreviousJump]
-%D \stoptyping
+%D \stoptypen
 %D
 %D as well as:
 %D
-%D \starttyping
+%D \starttypen
 %D \goto{some text}[action(PreviousJump]
-%D \stoptyping
+%D \stoptypen
 
 %D A special case of references are those to programs. These,
 %D very system dependant references are implemented by abusing
 %D some of the previous macros.
 %D
-%D \showsetup{\y!setupprograms}
-%D \showsetup{\y!defineprogram}
-%D \showsetup{\y!program}
+%D \showsetup{\y!stelprogrammasin}
+%D \showsetup{\y!definieerprogramma}
+%D \showsetup{\y!programma}
 %D
 %D The latter gives access to the description of the program,
 %D being the last argument to the definition command.
 
-\def\setupprograms
+\def\stelprogrammasin
   {\dodoubleargument\getparameters[\??pr]}
 
-\def\dodefineprogram[#1][#2][#3]%
-  {\setgvalue{\v!program:::#1}{\doprogram{#2}{#3}}}
+\def\dodefinieerprogramma[#1][#2][#3]%
+  {\setgvalue{\v!programma:::#1}{\doprogramma{#2}{#3}}}
 
-\def\defineprogram
-  {\dotripleargument\dodefineprogram}
+\def\definieerprogramma
+  {\dotripleargument\dodefinieerprogramma}
 
-\def\program#1[#2]%
+\def\programma#1[#2]%
   {\bgroup
-   \ifundefined{\v!program:::#2}%
+   \ifundefined{\v!programma:::#2}%
      {\tttf[#2]}%
    \else
-     \def\doprogram##1##2%
-       {\goto{\doifelsenothing{#1}{##2}{#1}}[\v!program(#2)]}%
-     \csname\v!program:::#2\endcsname
+     \def\doprogramma##1##2%
+       {\naar{\doifelsenothing{#1}{##2}{#1}}[\v!programma(#2)]}%
+     \csname\v!programma:::#2\endcsname
    \fi
    \egroup}
 
 % needs an update: program(abc{arg})
 
-\definespeciallocation\v!program#1#2%
+\definespeciallocation\v!programma#1#2%
   {\bgroup
    \iflocation
-     \doifdefinedelse{\v!program:::\currentreferenceoperation}
-       {\def\doprogram##1##2{\def\@@programfile{##1}}%
-        \getvalue{\v!program:::\currentreferenceoperation}}
+     \doifdefinedelse{\v!programma:::\currentreferenceoperation}
+       {\def\doprogramma##1##2{\def\@@programfile{##1}}%
+        \getvalue{\v!programma:::\currentreferenceoperation}}
        {\let\@@programfile\currentreferenceoperation}%
      \convertcommand\@@programfile\to\ascii
      \dostartgoto
@@ -3161,7 +3111,7 @@
          {#2}%
        \start
          \dostartrunprogram\buttonwidth\buttonheight
-           {\@@prdirectory\ascii}\currentreferencearguments
+           {\@@prgebied\ascii}\currentreferencearguments
        \stop
          \dostoprunprogram
      \dostopgoto
@@ -3173,9 +3123,9 @@
 %D As we can see, we directly use the special reference
 %D mechanism, which means that
 %D
-%D \starttyping
+%D \starttypen
 %D \goto{some text}[program(name{args})]
-%D \stoptyping
+%D \stoptypen
 %D
 %D is valid.
 
@@ -3185,46 +3135,46 @@
 %D make this meaning available as a special reference method.
 %D So now one can use:
 %D
-%D \starttyping
+%D \starttypen
 %D \gotopage{some text}[location]
 %D \gotopage{some text}[number]
 %D \gotopage{some text}[file::number]
-%D \stoptyping
+%D \stoptypen
 %D
 %D as well as:
 %D
-%D \starttyping
+%D \starttypen
 %D \goto{some text}[page(location)]
 %D \goto{some text}[page(number)]
 %D \goto{some text}[file::page(number)]
-%D \stoptyping
+%D \stoptypen
 %D
 %D Here location is a keyword like \type{nextpage}.
 %D
-%D \showsetup{\y!gotopage}
+%D \showsetup{\y!naarpagina}
 
-\def\dodefinepage[#1][#2]%
-  {\setvalue{\v!page:::#1}{#2}}
+\def\dodefinieerpagina[#1][#2]%
+  {\setvalue{\v!pagina:::#1}{#2}}
 
-\def\definepage
-  {\dodoubleargument\dodefinepage}
+\def\definieerpagina%
+  {\dodoubleargument\dodefinieerpagina}
 
-\definepage [\v!firstpage]      [\firstpage]
-\definepage [\v!previouspage]      [\prevpage]
-\definepage [\v!nextpage]    [\nextpage]
-\definepage [\v!lastpage]     [\lastpage]
-\definepage [\v!firstsubpage]   [\firstsubpage]
-\definepage [\v!previoussubpage]   [\prevsubpage]
-\definepage [\v!nextsubpage] [\nextsubpage]
-\definepage [\v!lastsubpage]  [\lastsubpage]
-\definepage [\v!first]            [\firstpage]
-\definepage [\v!previous]            [\prevpage]
-\definepage [\v!next]          [\nextpage]
-\definepage [\v!last]           [\lastpage]
-\definepage [\v!first\v!sub]      [\firstsubpage]
-\definepage [\v!previous\v!sub]      [\prevsubpage]
-\definepage [\v!next\v!sub]    [\nextsubpage]
-\definepage [\v!last\v!sub]     [\lastsubpage]
+\definieerpagina [\v!eerstepagina]      [\firstpage]
+\definieerpagina [\v!vorigepagina]      [\prevpage]
+\definieerpagina [\v!volgendepagina]    [\nextpage]
+\definieerpagina [\v!laatstepagina]     [\lastpage]
+\definieerpagina [\v!eerstesubpagina]   [\firstsubpage]
+\definieerpagina [\v!vorigesubpagina]   [\prevsubpage]
+\definieerpagina [\v!volgendesubpagina] [\nextsubpage]
+\definieerpagina [\v!laatstesubpagina]  [\lastsubpage]
+\definieerpagina [\v!eerste]            [\firstpage]
+\definieerpagina [\v!vorige]            [\prevpage]
+\definieerpagina [\v!volgende]          [\nextpage]
+\definieerpagina [\v!laatste]           [\lastpage]
+\definieerpagina [\v!eerste\v!sub]      [\firstsubpage]
+\definieerpagina [\v!vorige\v!sub]      [\prevsubpage]
+\definieerpagina [\v!volgende\v!sub]    [\nextsubpage]
+\definieerpagina [\v!laatste\v!sub]     [\lastsubpage]
 
 %D Because we combine both methods, we have to take care of
 %D the \type{file::page(n)} as well as \type{page(file::n)}.
@@ -3288,7 +3238,7 @@
 %      {#2}%
 %    \fi}
 
-\definespeciallocation\v!page#1#2% page(n) page(+n) page(-n)
+\definespeciallocation\v!pagina#1#2% page(n) page(+n) page(-n)
   {\iflocation
      \ifx\currentouterreference\empty
        \splitoffreference\currentreferenceoperation
@@ -3315,8 +3265,8 @@
        \setouterlocation\currentouterreference
        \doifnonzeropositiveelse\currentinnerreference
          \donothing
-         {\doifdefinedelse{\v!page:::\currentinnerreference}
-            {\edef\currentinnerreference{\getvalue{\v!page:::\currentinnerreference}}}
+         {\doifdefinedelse{\v!pagina:::\currentinnerreference}
+            {\edef\currentinnerreference{\getvalue{\v!pagina:::\currentinnerreference}}}
             {\edef\currentinnerreference{1}}}%
        \gotorealpage\otherURL\otherfile\currentinnerreference{#2}%
      \fi
@@ -3324,16 +3274,18 @@
      {#2}%
    \fi}
 
-\def\gotopage#1[#2]%
-  {\goto{#1}[\v!page(#2)]}
+\def\naarpagina#1[#2]%
+  {\naar{#1}[\v!pagina(#2)]}
+
+\let\ganaarpagina=\naarpagina
 
 %D A still very rudimentary|/|experimental forward|/|backward
 %D reference mechanism is provided by the macro \type{\atpage}:
 %D
-%D \starttyping
+%D \starttypen
 %D ... \somewhere{backward text}{forward text}[someref] ...
-%D ... \atpage[someref] ...
-%D \stoptyping
+%D ... \oppagina[someref] ...
+%D \stoptypen
 %D
 %D In future versions there will be more sophisticated
 
@@ -3346,11 +3298,11 @@
      {\ifforwardreference
         \doifelsenothing{#1}
           {\dosymbolreference{}{}[#4]}
-          {\dogotospace{#1}[#4]}%
+          {\donaarspace{#1}[#4]}%
       \else
         \doifelsenothing{#2}
           {\dosymbolreference{}{}[#4]}
-          {\dogotospace{#2}[#4]}%
+          {\donaarspace{#2}[#4]}%
       \fi}
      {\unknownreference{#4}#1/#2}%
    \referentieinfo{<}{#4}}
@@ -3361,15 +3313,15 @@
    \doifreferencefoundelse{#1}
      {\ifrealreferencepage
         \ifforwardreference
-          \dogotofixed{\labeltext\v!hencefore}[#1]%
+          \donaarfixed{\labeltext\v!hierboven}[#1]%
         \else
-          \dogotofixed{\labeltext\v!hereafter}[#1]%
+          \donaarfixed{\labeltext\v!hieronder}[#1]%
         \fi
       \else
-        \dogotofixed{\labeltexts\v!atpage\currentpagereference}[#1]%
+        \donaarfixed{\labeltexts\v!oppagina\currentpagereference}[#1]%
       \fi}
      {\unknownreference{#1}%
-      \labeltexts\v!page\dummyreference}%
+      \labeltexts\v!pagina\dummyreference}%
    \referentieinfo{<}{#1}}
 
 %D We can cross link documents by using:
@@ -3378,16 +3330,16 @@
 %D
 %D like:
 %D
-%D \starttyping
+%D \starttypen
 %D \coupledocument[print][somefile][chapter,section]
-%D \stoptyping
+%D \stoptypen
 %D
 %D After which when applicable, we have available the
 %D references:
 %D
-%D \starttyping
+%D \starttypen
 %D \goto{print version}[print::chapter]
-%D \stoptyping
+%D \stoptypen
 %D
 %D and alike. The title placement definition macros have a
 %D key \type{file}, which is interpreted as the file to jump
@@ -3409,10 +3361,10 @@
        {\startnointerference
         \doutilities{#3}{##1}{#3}\relax\relax
         \stopnointerference}%
-     \douseexternaldocument[#1][#2][#4]%
+     \dogebruikexterndocument[#1][#2][#4]%
      \doglobal\addtocommalist{#1}\crossdocumentreferences
      \def\docommando##1%
-       {\letgvalue{\??rf##1\c!state}\v!start % for fast checking
+       {\globalletvalue{\??rf##1\c!status}\v!start % for fast checking
         \doglobal\addtocommalist{##1}\crossdocumentelements}%
      \processcommalist[#3]\docommando
      \ifutilitydone
@@ -3428,13 +3380,13 @@
 
 \def\checkcontrastreference#1%
   {\ifnum\currentreferencetype=\rt!page\ifnum\currentdatareference=\realpageno
-     \doifdefined{#1\c!contrastcolor}
-       {\setevalue{#1\c!color}{\getvalue{#1\c!contrastcolor}}}%
+     \doifdefined{#1\c!contrastkleur}
+       {\setevalue{#1\c!kleur}{\getvalue{#1\c!contrastkleur}}}%
    \fi\fi}
 
 \def\checkcontrastreference#1%
   {\ifnum\currentreferencetype=\rt!page\relax\ifnum\currentdatareference=\realpageno
-     \copycsname#1\c!color\endcsname\csname#1\c!contrastcolor\endcsname
+     \copycsname#1\c!kleur\endcsname\csname#1\c!contrastkleur\endcsname
    \fi\fi}
 
 %D Buttons are just what their names says: things that can be
@@ -3451,7 +3403,7 @@
 %D
 %D gives
 %D
-%D \getbuffer
+%D \haalbuffer
 %D
 %D This command is formally specified as:
 %D
@@ -3459,9 +3411,14 @@
 %D
 %D The characteristics can be set with:
 %D
-%D \showsetup{\y!setupbuttons}
+%D \showsetup{\y!stelbuttonsin}
 
-\def\setupbuttons
+%\def\dostelbuttonsin[#1]%
+%  {\getparameters[\??bt][#1]%
+%   \dododostelinteractiemenuin{\??bt\c!onbekendeverwijzing}%
+%   \dododostelinteractiemenuin{\??bt\c!zelfdepagina}}
+
+\def\stelbuttonsin
   {\dodoubleargument\getparameters[\??bt]}
 
 \definecomplexorsimpleempty\button
@@ -3476,12 +3433,39 @@
 
 \def\buttonframed{\dodoubleempty\localframed[\??bt]} % goodie
 
+% \def\dodocomplexbutton#1[#2]#3[#4]%
+%   {\bgroup
+%    \doifvalue{#1\c!status}{\v!stop}{\locationfalse}%
+%    \iflocation
+%      \resetgoto
+%      \ConvertConstantAfter\doifelse{#3}{\v!geen}
+%        {\!!doneafalse}
+%        {\!!doneatrue}%
+%      \doifelsenothing{#4} % in handleiding, is soort dummy
+%        {\if!!donea\hbox\else\hphantom\fi
+%           {\localframed[#1][#2]{#3}}}%
+%        {\doifreferencefoundelse{#4}
+%           {\setbox0=\if!!donea\hbox\else\hphantom\fi
+%              {\localframed[#1][#2]
+%                 {\checkcontrastreference{#1}%
+%                  \dolocationattributes{#1}\c!letter\c!kleur{\ignorespaces#3}}}%
+%            \startinteractie
+%           %\hbox{\gotolocation{#4}{\copy0}}%
+%            \hbox{\gotolocation{#4}{\box0}}%
+%            \stopinteractie}
+%           {\unknownreference{#4}%
+%            \if!!donea\hbox\else\hphantom\fi
+%              {\localframed[#1][#2]
+%                 {\ignorespaces#3}}}}% !!!!!!!!!!
+%    \fi
+%    \egroup}
+
 \long\def\dodocomplexbutton#1[#2]#3[#4]% #3 can contain [] -> {#3} later
   {\bgroup
-   \doifvalue{#1\c!state}\v!stop\locationfalse
+   \doifvalue{#1\c!status}\v!stop\locationfalse
    \iflocation
      \resetgoto
-     \ConvertConstantAfter\doifelse{#3}\v!none\hphantom\hbox
+     \ConvertConstantAfter\doifelse{#3}\v!geen\hphantom\hbox
        {\doifelsenothing{#4}
           {\setlocationboxnop#1[#2]{#3}[#4]}
           {\doifreferencefoundelse{#4}
@@ -3496,15 +3480,15 @@
 %D macro builds such a row based on a specification list.
 %D
 %D \startbuffer
-%D \interactionbuttons
-%D   [width=\hsize][page,PreviousJump,ExitViewer]
+%D \interactiebuttons
+%D   [breedte=\hsize][pagina,VorigeSprong,VerlaatViewer]
 %D \stopbuffer
 %D
 %D \typebuffer
 %D
 %D gives
 %D
-%D \getbuffer
+%D \haalbuffer
 %D
 %D Apart from individual entries, one can use \type{page} and
 %D \type {subpage} as shortcuts to their four associated buttons.
@@ -3513,67 +3497,67 @@
 
 % does not work well with for instance SomeRef{whatever}
 
-\def\interactionbuttons
-  {\dodoubleempty\dointeractionbuttons}
+\def\interactiebuttons
+  {\dodoubleempty\dointeractiebuttons}
 
-\def\dointeractionbuttons[#1][#2]% er is een verdeel macro \horizontalfractions
+\def\dointeractiebuttons[#1][#2]% er is een verdeel macro \fractie
   {\iflocation
      \bgroup
-     \doif\@@ibstate\v!stop\locationfalse
+     \doif\@@ibstatus\v!stop\locationfalse
      \iflocation
        \ifsecondargument
-         \checkinteractionbar{1.5em}\v!broad\!!zeropoint % brrrrr
+         \checkinteractiebalk{1.5em}\v!ruim\!!zeropoint % brrrrr
          \setbox2=\hbox
-           {\setupsymbolset[\@@iasymbolset]%
-            \localframed[\??ib][#1,\c!background=]{\symbol[\v!previouspage]}}%
+           {\setupsymbolset[\@@iasymboolset]%
+            \localframed[\??ib][#1,\c!achtergrond=]{\symbol[\v!vorigepagina]}}%
          \!!heighta\ht2 % needed because we default to nothing
-         \setupinteractionbar[#1,\c!strut=\v!no]%
-        %\setupinteraction[\c!width=\!!zeropoint]%
-         \setinteractionparameter\c!width\!!zeropoint
+         \stelinteractiebalkin[#1,\c!strut=\v!nee]%
+        %\setupinteraction[\c!breedte=\!!zeropoint]%
+         \setinteractionparameter\c!breedte\!!zeropoint
          \!!counta\zerocount % new, was 1
          \processallactionsinset
            [#2]
-           [       \v!page=>\advance\!!counta 4,
-                \v!subpage=>\advance\!!counta 4,
+           [       \v!pagina=>\advance\!!counta 4,
+             \v!sub\v!pagina=>\advance\!!counta 4,
                   \s!unknown=>\advance\!!counta 1]%
-         \ifdim\@@ibwidth=\!!zeropoint\relax
+         \ifdim\@@ibbreedte=\!!zeropoint\relax
            \!!widtha2em
-           \advance\!!widtha \@@ibdistance  % new
+           \advance\!!widtha \@@ibafstand  % new
            \!!widthb\!!counta\!!widtha
-           \advance\!!widthb -\@@ibdistance % new
+           \advance\!!widthb -\@@ibafstand % new
          \else
-           \!!widtha\@@ibwidth
-           \!!widthb\@@ibdistance           % new
+           \!!widtha\@@ibbreedte
+           \!!widthb\@@ibafstand           % new
            \multiply\!!widthb \!!counta    % new
-           \advance\!!widthb -\@@ibdistance % new
+           \advance\!!widthb -\@@ibafstand % new
            \advance\!!widtha -\!!widthb    % new
            \divide\!!widtha \!!counta
-           \!!widthb\@@ibwidth
+           \!!widthb\@@ibbreedte
          \fi
          \def\goto##1%
            {\setnostrut
-            \setupsymbolset[\@@iasymbolset]%
+            \setupsymbolset[\@@iasymboolset]%
             \edef\localreference{##1}%
             \dodocomplexbutton\??ib
-              [\c!height=\!!heighta,\c!width=\!!widtha]%
+              [\c!hoogte=\!!heighta,\c!breedte=\!!widtha]%
               {\dontleavehmode\symbol[\localreference]}%
               [\localreference]%
             \hss}%
          \hbox to \!!widthb
            {\processallactionsinset
               [#2]
-              [    \v!page=>\goto\v!firstpage
-                              \goto\v!nextpage
-                              \goto\v!previouspage
-                              \goto\v!lastpage,
-                \v!subpage=>\goto\v!firstsubpage
-                              \goto\v!nextsubpage
-                              \goto\v!previoussubpage
-                              \goto\v!lastsubpage,
+              [    \v!pagina=>\goto\v!eerstepagina
+                              \goto\v!volgendepagina
+                              \goto\v!vorigepagina
+                              \goto\v!laatstepagina,
+             \v!sub\v!pagina=>\goto\v!eerstesubpagina
+                              \goto\v!volgendesubpagina
+                              \goto\v!vorigesubpagina
+                              \goto\v!laatstesubpagina,
                   \s!unknown=>\goto\commalistelement]%
             \unskip}%
        \else
-         \interactionbuttons[][#1]%
+         \interactiebuttons[][#1]%
        \fi
      \fi
      \egroup
@@ -3584,18 +3568,18 @@
 %D
 %D For converience we provide:
 %D
-%D \starttyping
+%D \starttypen
 %D \overlaybutton[reference]
-%D \stoptyping
+%D \stoptypen
 %D
 %D This command can be used to define overlays an/or can be
 %D used in the whatevertext areas, like:
 %D
-%D \starttyping
+%D \starttypen
 %D \defineoverlay[PrevPage][\overlaybutton{PrevPage}]
 %D \setupbackgrounds[page][background=PrevPage]
 %D \setuptexttexts[\overlaybutton{NextPage}]
-%D \stoptyping
+%D \stoptypen
 %D
 %D For practical reasons, this macro accepts square brackets
 %D as well as braces.
@@ -3604,6 +3588,12 @@
 
 \def\simpleoverlaybutton#1%
   {\complexoverlaybutton[#1]}
+
+% \def\complexoverlaybutton% no text, next argument is [reference]
+%   {\button
+%      [\c!kader=\v!uit,\c!achtergrond=,
+%       \c!breedte=\overlaywidth,\c!hoogte=\overlayheight]%
+%      {}}
 
 \def\complexoverlaybutton[#1]%
   {\iflocation
@@ -3626,9 +3616,9 @@
 %D In previous macros we used \type {\dotextprefix} to
 %D generate a space between a label and a number.
 %D
-%D \starttyping
+%D \starttypen
 %D \dotextprefix{text}
-%D \stoptyping
+%D \stoptypen
 %D
 %D Only when \type {text} is not empty, a space is inserted.
 
@@ -3638,7 +3628,7 @@
    \setbox\scratchbox\hbox{#1}% to be solved some day
    \ifdim\wd\scratchbox>\zeropoint
      \unhbox\scratchbox
-     \iflabeltextdone\else\@@rfseparator\fi
+     \iflabeltextdone\else\@@rfscheider\fi
    \else
      \unhbox\scratchbox
    \fi
@@ -3649,37 +3639,48 @@
 %D to are typeset.
 
 \setupreferencing
-  [\c!state=\v!start,
-   \c!autofile=\v!no,
-   \v!part\c!number=\v!yes,
-   \v!chapter\c!number=\v!no,
-   \c!interaction=\v!all,
-  %\c!urlalternative=\v!both,
-  %\c!urlspace=\v!no,
+  [\c!status=\v!start,
+   \c!autofile=\v!nee,
+   \v!deel\c!nummer=\v!ja,
+   \v!hoofdstuk\c!nummer=\v!nee,
+   \c!interactie=\v!alles,
+  %\c!urlvariant=\v!beide,
+  %\c!urlspatie=\v!nee,
   %\c!urlletter=,
   %\c!urlkleur=,
-   \c!convertfile=\v!no,
-  %\c!strut=\v!no, % some day an option
+   \c!converteerfile=\v!nee,
+  %\c!strut=\v!nee, % some day an option
    \c!prefix=,
-   \c!width=.75\makeupwidth,
-   \c!left=\quotation\bgroup,
-   \c!right=\egroup,
-   \c!global=\v!no,
-   \c!expansion=\v!no,
-   \c!separator=\nonbreakablespace]
+   \c!breedte=.75\zetbreedte,
+   \c!links=\citaat\bgroup,
+   \c!rechts=\egroup,
+   \c!globaal=\v!nee,
+   \c!expansie=\v!nee,
+   \c!scheider=\nonbreakablespace]
 
 \let\nonbreakablespace=~
 
 \setupurl
-  [\c!alternative=\v!both,
-   \c!space=\v!no,
-   \c!style=\v!type,
-   \c!color=]
+  [\c!variant=\v!beide,
+   \c!spatie=\v!nee,
+   \c!letter=\v!type,
+   \c!kleur=]
 
-\setupprograms
-  [\c!directory=]
+%D We also set up buttons (not yet, this one calls a menu macro):
 
-%D We cannot set up buttons (not yet, this one calls a menu macro):
+% \stelbuttonsin
+%   [\c!status=\v!start,
+%    \c!breedte=\v!passend,
+%    \c!hoogte=\v!ruim,
+%    \c!offset=0.25em,
+%    \c!kader=\v!aan,
+%    \c!achtergrond=,
+%    \c!achtergrondraster=\@@rsraster,
+%    \c!achtergrondkleur=,
+%    \c!letter=\@@ialetter,
+%    \c!kleur=\@@iakleur,
+%    \c!zelfdepagina=\v!ja,
+%    \c!onbekendeverwijzing=\v!ja]
 
 % under consideration:
 %

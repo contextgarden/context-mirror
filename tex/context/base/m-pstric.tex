@@ -11,8 +11,6 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-%M \usemodule[pstric]
-
 \chardef\oldbarcode\the\catcode`\|  \catcode`\|=12
 
 \def\loadpstrickscolors#1%
@@ -94,7 +92,7 @@
       % Since the graphic is put on a page (sigh) by dvips/gs
       % we need to shift it around a bit.
       \setbox\scratchbox\hbox
-        {\externalfigure[\bufferprefix pstricks.pdf][\c!object=\v!no]}%
+        {\externalfigure[\bufferprefix pstricks.pdf][\c!object=\v!nee]}%
       \setbox\scratchbox\hbox
         {\lower\ht\scratchbox\hbox{\raise\dimen2\box\scratchbox}}%
       \wd\scratchbox\dimen0

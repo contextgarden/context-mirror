@@ -77,10 +77,10 @@
 %D natural to the form embedding. This enables alternative
 %D images to be embedded.
 %D
-%D \starttyping
+%D \starttypen
 %D \pdfimage  <optional dimensions> {file}
 %D \pdfimages <optional dimensions> {high res file} {low res file}
-%D \stoptyping
+%D \stoptypen
 %D
 %D The first one replaces the pre||version||14 original,
 %D while the latter provides alternative images.
@@ -89,9 +89,9 @@
 %D needed to paste prepared \PDF\ pages into conference
 %D proceedings.
 %D
-%D \starttyping
+%D \starttypen
 %D \pdfclippedimage <optional dimensions> {file} {l} {r} {t} {b}
-%D \stoptyping
+%D \stoptypen
 
 % \ifx\pdftexversion\undefined % no \m!systems for the sake of latex
 %   \writestatus{systems}{Why not use pdf(e)TeX binaries?}
@@ -145,13 +145,13 @@
 %D If you want to save a few hash entries, you may prefer the
 %D less readable alternatives, like:
 %D
-%D \starttyping
+%D \starttypen
 %D \def\pdfimage#1#% This one is less readable but needs no additional
 %D   {\bgroup      % hash entry for the second stage macro.
 %D    \def\pdfimage##1%
 %D      {\immediate\pdfximage##1{#2}%
 %D       \pdfrefximage\pdflastximage\egroup}}
-%D \stoptyping
+%D \stoptypen
 
 %D For old times sake we provide a few aliases. These will be
 %D removed some day.
@@ -178,21 +178,21 @@
 %D work. Interpreting their specifications is beyond the
 %D current implementation.
 %D
-%D \starttyping
+%D \starttypen
 %D \convertPDFtoPDF
 %D   {filename}
 %D   {x scale} {y scale}
 %D   {x offset } {y offset}
 %D   {width} {height}
-%D \stoptyping
+%D \stoptypen
 %D
 %D When the scales are set to~1, the last last four values
 %D are the same as the bounding box, e.g.
 %D
-%D \starttyping
+%D \starttypen
 %D \convertPDFtoPDF{mp-pra-1.pdf} {1} {1}{-1bp}{-1bp}{398bp}{398bp}
 %D \convertPDFtoPDF{mp-pra-1.pdf}{.5}{.5} {0bp} {0bp}{199bp}{199bp}
-%D \stoptyping
+%D \stoptypen
 %D
 %D Keep in mind, that this kind of copying only works for
 %D pure and valid pdf code (without fonts).
@@ -210,9 +210,9 @@
 %D specifies the dimensions and offsets of the graphic. When
 %D we say:
 %D
-%D \starttyping
+%D \starttypen
 %D \PDFmediaboxpreferedtrue
-%D \stoptyping
+%D \stoptypen
 %D
 %D the mediabox present in the file superseded the user
 %D specified, already scaled and calculated offset and
@@ -223,24 +223,24 @@
 
 % \newif\ifPDFmediaboxprefered
 
-\def\setPDFboundingbox#1#2#3#4#5#6%
-  {\dimen0=#1\dimen0=#5\dimen0
-   \ScaledPointsToBigPoints{\number\dimen0}\PDFxoffset
-   \dimen0=#3\dimen0=#5\dimen0
-   \xdef\PDFwidth{\the\dimen0}%
-   \dimen0=#2\dimen0=#6\dimen0
-   \ScaledPointsToBigPoints{\number\dimen0}\PDFyoffset
-   \dimen0=#4\dimen0=#6\dimen0
-   \xdef\PDFheight{\the\dimen0}%
-   \global\let\PDFxoffset\PDFxoffset
-   \global\let\PDFyoffset\PDFyoffset}
+% \def\setPDFboundingbox#1#2#3#4#5#6%
+%   {\dimen0=#1\dimen0=#5\dimen0
+%    \ScaledPointsToBigPoints{\number\dimen0}\PDFxoffset
+%    \dimen0=#3\dimen0=#5\dimen0
+%    \xdef\PDFwidth{\the\dimen0}%
+%    \dimen0=#2\dimen0=#6\dimen0
+%    \ScaledPointsToBigPoints{\number\dimen0}\PDFyoffset
+%    \dimen0=#4\dimen0=#6\dimen0
+%    \xdef\PDFheight{\the\dimen0}%
+%    \global\let\PDFxoffset\PDFxoffset
+%    \global\let\PDFyoffset\PDFyoffset}
 
-\def\setPDFmediabox#1[#2 #3 #4 #5]#6\done
-  {\dimen2=#2bp\dimen2=-\dimen2 % \dimen2=-#2bp also works since tex handles --
-   \dimen4=#3bp\dimen4=-\dimen4 % \dimen4=-#3bp also works since tex handles --
-   \dimen6=#4bp\advance\dimen6 \dimen2
-   \dimen8=#5bp\advance\dimen8 \dimen4
-   \setPDFboundingbox{\dimen2}{\dimen4}{\dimen6}{\dimen8}\PDFxscale\PDFyscale}
+% \def\setPDFmediabox#1[#2 #3 #4 #5]#6\done
+%   {\dimen2=#2bp\dimen2=-\dimen2 % \dimen2=-#2bp also works since tex handles --
+%    \dimen4=#3bp\dimen4=-\dimen4 % \dimen4=-#3bp also works since tex handles --
+%    \dimen6=#4bp\advance\dimen6 \dimen2
+%    \dimen8=#5bp\advance\dimen8 \dimen4
+%    \setPDFboundingbox{\dimen2}{\dimen4}{\dimen6}{\dimen8}\PDFxscale\PDFyscale}
 
 % \def\checkPDFmediabox#1/MediaBox#2#3\done
 %   {\ifx#2\relax \else
@@ -281,7 +281,7 @@
 %D one transform call (\type{cm}). This saves some additional
 %D scaling.
 
-%D \starttyping
+%D \starttypen
 %D \def\startPDFtoPDF%
 %D   {\setbox0=\vbox\bgroup
 %D      \message{[PDF to PDF \PDFfilename}%
@@ -329,11 +329,11 @@
 %D The next macro can be used to find the mediabox of a \PDF\
 %D illustration.
 %D
-%D \starttyping
+%D \starttypen
 %D \dogetPDFmediabox
 %D   {filename}
 %D   {new dimen}{new dimen}{new dimen}{new dimen}
-%D \stoptyping
+%D \stoptypen
 %D
 %D Beware of dimen clashes: this macro uses the 5~default
 %D scratch registers! When no file or mediabox is found, the
@@ -439,7 +439,7 @@
 
 %D By the way, the \type {setcmykcolor} operator is not
 %D output by \METAPOST\ but can result from converting the
-%D \cap{RGB} color specifications, as implemented in
+%D \kap{RGB} color specifications, as implemented in
 %D \type{supp-mps}.
 
 %D In \POSTSCRIPT\ arguments precede the operators. Due to the
@@ -451,23 +451,23 @@
 %D (optional) postprocessing. Values are pushed onto the stack
 %D by:
 %D
-%D \starttyping
+%D \starttypen
 %D \setMPargument {value}
-%D \stoptyping
+%D \stoptypen
 %D
 %D They can be retrieved by the short named macros:
 %D
-%D \starttyping
+%D \starttypen
 %D \gMPa {number}
 %D \gMPs {number}
-%D \stoptyping
+%D \stoptypen
 %D
 %D When scanning a path specification, we also save the
 %D operator, using
 %D
-%D \starttyping
+%D \starttypen
 %D \setMPkeyword {n}
-%D \stoptyping
+%D \stoptypen
 %D
 %D The path drawing operators are coded for speed: \type{clip},
 %D \type{stroke}, \type{fill} and \type{fillstroke} become
@@ -476,9 +476,9 @@
 %D When processing the path this code can be retrieved
 %D using
 %D
-%D \starttyping
+%D \starttypen
 %D \getMPkeyword % {n}
-%D \stoptyping
+%D \stoptypen
 %D
 %D When setting an argument, the exact position on the stack
 %D depends on the current value of the \COUNTERS\
@@ -490,9 +490,9 @@
 %D These variables hold the coordinates. The argument part of
 %D the stack is reset by:
 %D
-%D \starttyping
+%D \starttypen
 %D \resetMPstack
-%D \stoptyping
+%D \stoptypen
 %D
 %D We use the prefix \type{@@MP} to keep the stack from
 %D conflicting with existing macros. To speed up things a bit
@@ -627,9 +627,9 @@
 
 %D In earlier versions we used the sequence
 %D
-%D \starttyping
+%D \starttypen
 %D \expandafter\handleMPsequence\input filename\relax
-%D \stoptyping
+%D \stoptypen
 %D
 %D Persistent problems in \LATEX\ however forced us to use a
 %D different scheme. Every \POSTSCRIPT\ file starts with a
@@ -800,11 +800,11 @@
 %D We check for three kind of bounding boxes: the normal one
 %D and two high precision ones:
 %D
-%D \starttyping
+%D \starttypen
 %D BoundingBox: llx lly ucx ucy
 %D HiResBoundingBox: llx lly ucx ucy
 %D ExactBoundingBox: llx lly ucx ucy
-%D \stoptyping
+%D \stoptypen
 %D
 %D The original as well as the recalculated dimensions are
 %D saved for later use.
@@ -891,7 +891,7 @@
 
 \let\MPfshowcommand\empty
 
-\def\dohandleMPfshow
+\def\handleMPfshow
   {\bgroup
    \setbox\scratchbox\hbox
      {\obeyMPspecials
@@ -938,7 +938,7 @@
          \fi
          \unskip}}%
   %
-  % this fails in some versions of pdftex
+  % this fails in latest pdftex's
   %
   % \dimen0=\lastMPmoveY bp
   % \advance\dimen0 by \ht0
@@ -959,8 +959,6 @@
    \box\scratchbox
    \egroup}
 
-\let\handleMPfshow\dohandleMPfshow % so we can overload this one later
-
 %D You could consider the following definition to be the most
 %D natural one.
 
@@ -971,7 +969,7 @@
 %D However, the following implementation is more robust, since
 %D some fonts have funny visible spaces in the space slot. This
 %D gives a mismatch between the space that \METAPOST\ took into
-%D account and the \quote {natural} space. This only happens in
+%D account and the \citeer {natural} space. This only happens in
 %D labels, since \type {btex}||\type {etex} thingies don't have
 %D spaces. This phenomena showed up when preparing the
 %D \METAFUN\ manual, where Palatino fonts are used. We can
@@ -1010,11 +1008,11 @@
 %D two alternatives, that result in a similar look in both
 %D $x$- and $y$-dorection. As John Hobby says:
 %D
-%D \startnarrower \switchtobodyfont[ss]
-%D \starttyping
+%D \startsmaller \switchtobodyfont[ss]
+%D \starttypen
 %D x 0 dtransform exch truncate exch idtransform pop setlinewidth
 %D 0 y dtransform truncate idtransform setlinewidth pop
-%D \stoptyping
+%D \stoptypen
 %D
 %D These are just fancy versions of \type{x setlinewidth} and
 %D \type{y setlinewidth}. The \type{x 0 ...} form is used if
@@ -1028,7 +1026,7 @@
 %D conversion rules cause a horizontal or vertical line of
 %D integer width $n$ in device space to come out $n+1$ pixels
 %D wide, regardless of the phase relative to the pixel grid.)
-%D \stopnarrower
+%D \stopsmaller
 %D
 %D The common operator in these sequences is \type{dtransform},
 %D so we can use this one to trigger setting the linewidth.
@@ -1061,13 +1059,13 @@
 
 %D In \METAPOST\ there are three ways to handle a path $p$:
 %D
-%D \starttyping
+%D \starttypen
 %D draw p;  fill p;  filldraw p;
-%D \stoptyping
+%D \stoptypen
 %D
 %D The last case outputs a \type{gsave fill grestore} before
 %D \type{stroke}. Handling the path outside the main loops
-%D saves about 40\% run time.\footnote{We can save some more by
+%D saves about 40\% run time.\voetnoot{We can save some more by
 %D following the \METAPOST\ output routine, but for the moment
 %D we keep things simple.} Switching between the main loop and
 %D the path loop is done by means of the recursely called
@@ -1164,9 +1162,9 @@
 %D I rewrote and optimized the original macro to suit the other
 %D macros in this module.
 %D
-%D \starttyping
+%D \starttypen
 %D \doMPconcat {x position} \xresult {y position} \yresult
-%D \stoptyping
+%D \stoptypen
 %D
 %D By setting the auxiliary \DIMENSIONS\ \type{\dimen0} upto
 %D \type{\dimen10} only once per path, we save over 20\% run
@@ -1220,7 +1218,7 @@
   {\dimen 8=\zeropoint                    % t_x
    \dimen10=\zeropoint}                   % t_y
 
-%D \starttyping
+%D \starttypen
 %D \def\doMPconcat#1#2#3#4%
 %D   {\dimen12=#1 pt \doMPreducedimen12 % p_x
 %D    \dimen14=#3 pt \doMPreducedimen14 % p_y
@@ -1259,12 +1257,12 @@
 %D    %
 %D    \edef#2{\withoutpt\the\dimen18}% % p_x^\prime
 %D    \edef#4{\withoutpt\the\dimen12}} % p_y^\prime
-%D \stoptyping
+%D \stoptypen
 
 %D The following optimization resulted from some tests by
 %D and email exchanges with Sanjoy Mahajan.
 %D
-%D \starttyping
+%D \starttypen
 %D \def\doMPconcat#1#2#3#4%
 %D   {\dimen12=#1 pt \doMPreducedimen12 % p_x
 %D    \dimen14=#3 pt \doMPreducedimen14 % p_y
@@ -1311,7 +1309,7 @@
 %D    %
 %D    \edef#2{\withoutpt\the\dimen18}% % p_x^\prime
 %D    \edef#4{\withoutpt\the\dimen12}} % p_y^\prime
-%D \stoptyping
+%D \stoptypen
 %D
 %D But, this one is still too inaccurate, so we now have:
 
@@ -1474,7 +1472,7 @@
 %D \METAPOST\ to \PDF\ conversion however only needs
 %D transformation.
 
-%M \start \switchtobodyfont [ss]
+%M \start \switchnaarkorps [ss]
 
 %D Given a point $(U_x, U_y)$ in user coordinates, the business
 %D of \POSTSCRIPT\ is to convert it to device space. Let us say
@@ -1482,37 +1480,37 @@
 %D \POSTSCRIPT\ $(D_x, D_y)$ can be written in terms of
 %D $(U_x, U_y)$ in matrix notation, either as
 %D
-%D \placeformula
-%D   \startformula
+%D \plaatsformule
+%D   \startformule
 %D   \pmatrix{D_x&D_y&1\cr} = \pmatrix{U_x&U_y&1\cr}
 %D                            \pmatrix{s_x&r_x&0\cr
 %D                                     r_y&s_y&0\cr
 %D                                     t_x&t_y&1\cr}
-%D   \stopformula
+%D   \stopformule
 %D
 %D or
 %D
-%D \placeformula
-%D   \startformula
+%D \plaatsformule
+%D   \startformule
 %D    \pmatrix{D_x\cr D_y\cr 1} = \pmatrix{s_x&r_y&t_x\cr
 %D                                         r_x&s_y&t_y\cr
 %D                                         0  &0  &1  \cr}
 %D                                \pmatrix{U_x\cr
 %D                                         U_y\cr
 %D                                         1  \cr}
-%D   \stopformula
+%D   \stopformule
 %D
 %D both of which is a shorthand for the same set of equations:
 %D
-%D \placeformula
-%D   \startformula
+%D \plaatsformule
+%D   \startformule
 %D      D_x = s_x U_x + r_y U_y + t_x
-%D   \stopformula
+%D   \stopformule
 %D
-%D \placeformula
-%D   \startformula
+%D \plaatsformule
+%D   \startformule
 %D      D_y = r_x U_x + s_y U_y + t_y
-%D   \stopformula
+%D   \stopformule
 %D
 %D which define what is called an `affine transformation'.
 %D
@@ -1529,7 +1527,7 @@
 %D $[s_x\, r_x\, r_y\, s_y\, t_x\, t_y]$ and you say \typ{[a b
 %D c d e f] concat}, this means:
 %D
-%D \startnarrower
+%D \startsmaller
 %D Take the user space coordinates and transform them to an
 %D intermediate set of coordinates using array $[a\, b\, c\, d\,
 %D e\, f]$ as the transformation matrix.
@@ -1537,29 +1535,29 @@
 %D Take the intermediate set of coordinates and change them to
 %D device coordinates using array $[s_x\, r_x\, r_y\, s_y\, t_x\, t_y]$
 %D as the transformation matrix.
-%D \stopnarrower
+%D \stopsmaller
 %D
 %D Well, what is the net effect? In matrix notation, it is
 %D
-%D \placeformula
-%D   \startformula
+%D \plaatsformule
+%D   \startformule
 %D     \pmatrix{I_x\cr I_y\cr 1\cr} = \pmatrix{a&c&e\cr
 %D                                             b&d&f\cr
 %D                                             0&0&1\cr}
 %D                                    \pmatrix{U_x\cr
 %D                                             U_y\cr
 %D                                             1  \cr}
-%D   \stopformula
+%D   \stopformule
 %D
-%D \placeformula
-%D   \startformula
+%D \plaatsformule
+%D   \startformule
 %D     \pmatrix{D_y\cr D_y\cr 1\cr} = \pmatrix{s_x&r_y&t_x\cr
 %D                                             r_x&s_y&t_y\cr
 %D                                             0  &0  &1  \cr}
 %D                                    \pmatrix{I_x\cr
 %D                                             I_y\cr
 %D                                             1  \cr}
-%D   \stopformula
+%D   \stopformule
 %D
 %D where $(I_x, I_y)$ is the intermediate coordinate.
 %D
@@ -1567,26 +1565,26 @@
 %D a chain of such matrix equations, one can always compose
 %D them into one matrix equation using the standard matrix
 %D composition law. The composite matrix from two matrices can
-%D be derived very easily: the element in the $i$\high{th}
-%D horizontal row and $j$\high{th} vertical column is
-%D calculated by`multiplying' the $i$\high{th} row of the first
-%D matrix and the $j$\high{th} column of the second matrix (and
+%D be derived very easily: the element in the $i$\hoog{th}
+%D horizontal row and $j$\hoog{th} vertical column is
+%D calculated by`multiplying' the $i$\hoog{th} row of the first
+%D matrix and the $j$\hoog{th} column of the second matrix (and
 %D summing over the elements). Thus, in the above:
 %D
-%D \placeformula
-%D   \startformula
+%D \plaatsformule
+%D   \startformule
 %D   \pmatrix{D_x\cr D_y\cr 1} = \pmatrix{s_x^\prime&r_y^\prime&t_x^\prime\cr
 %D                                        r_x^\prime&s_y^\prime&t_y^\prime\cr
 %D                                        0         &0         &0        \cr}
 %D                               \pmatrix{U_x\cr
 %D                                        U_y\cr
 %D                                        1  \cr}
-%D   \stopformula
+%D   \stopformule
 %D
 %D with
 %D
-%D \placeformula
-%D   \startformula
+%D \plaatsformule
+%D   \startformule
 %D      \eqalign
 %D        {s_x^\prime & = s_x a + r_y b       \cr
 %D         r_x^\prime & = r_x a + s_y b       \cr
@@ -1594,7 +1592,7 @@
 %D         s_y^\prime & = r_x c + s_y d       \cr
 %D         t_x^\prime & = s_x e + r_y f + t_x \cr
 %D         t_y^\prime & = r_x e + s_y f + t_y \cr}
-%D   \stopformula
+%D   \stopformule
 
 %D In fact, the same rule is true not only when one is going
 %D from user coordinates to device coordinates, but whenever
@@ -1619,23 +1617,23 @@
 %D acts on $(P_x^\prime, P_y^\prime)$, they produce $(P_x,
 %D P_y)$. That is we need to solve the set of equations:
 %D
-%D \placeformula
-%D   \startformula
+%D \plaatsformule
+%D   \startformule
 %D     \pmatrix{P_x\cr P_y\cr 1\cr} = \pmatrix{s_x&r_y&t_x\cr
 %D                                             r_x&s_y&t_y\cr
 %D                                             0  &0  &1  \cr}
 %D                                    \pmatrix{P_x^\prime\cr
 %D                                             P_y^\prime\cr
 %D                                             1         \cr}
-%D   \stopformula
+%D   \stopformule
 %D
 %D Again matrix notation comes in handy (i.e. someone has
 %D already solved the problem for us): we need the inverse
 %D transformation matrix. The inverse transformation matrix can
 %D be calculated very easily:
 %D
-%D \placeformula
-%D   \startformula
+%D \plaatsformule
+%D   \startformule
 %D     \pmatrix{P_x^\prime\cr P_y^\prime\cr 1\cr} =
 %D        \pmatrix{s_x^\prime&r_y^\prime&t_x^\prime\cr
 %D                 r_x^\prime&s_y^\prime&t_y^\prime\cr
@@ -1643,12 +1641,12 @@
 %D        \pmatrix{P_x\cr
 %D                 P_y\cr
 %D                 1         \cr}
-%D   \stopformula
+%D   \stopformule
 %D
 %D where, the inverse transformation matrix is given by
 %D
-%D \placeformula
-%D   \startformula
+%D \plaatsformule
+%D   \startformule
 %D     \eqalign
 %D       {D          & = s_x s_y - r_x r_y           \cr
 %D        s_x^\prime & = s_y / D                     \cr
@@ -1657,22 +1655,22 @@
 %D        r_y^\prime & = - r_y / D                   \cr
 %D        t_x^\prime & = ( - s_y t_x + r_y t_y ) / D \cr
 %D        t_y^\prime & = (   r_x t_x - s_x t_y ) / D \cr}
-%D   \stopformula
+%D   \stopformule
 %D
 %D And you can see that when expanded out, this does
 %D give the formulas:
 %D
-%D \placeformula
-%D   \startformula
+%D \plaatsformule
+%D   \startformule
 %D     P_x^\prime = { { s_y(p_x-t_x) + r_y(t_y-p_y) } \over
 %D                    { s_x s_y-r_x r_y } }
-%D   \stopformula
+%D   \stopformule
 %D
-%D \placeformula
-%D   \startformula
+%D \plaatsformule
+%D   \startformule
 %D     P_y^\prime = { { s_x(p_y-t_y) + r_x(t_x-p_x) } \over
 %D                    { s_x*s_y-r_x*r_y } }
-%D   \stopformula
+%D   \stopformule
 %D
 %D The code works by representing a real number by converting
 %D it to a dimension to be put into a \DIMENSION\ register: 2.3 would
@@ -1722,10 +1720,10 @@
 %D between, is hard to determine, so we add an additional
 %D check.
 %D
-%D \starttyping
+%D \starttypen
 %D clip currentpicture to origin -- cycle ;
 %D setbounds currentpicture to fullsquare scaled 5cm ;
-%D \stoptyping
+%D \stoptypen
 
 \def\checkMPpath
   {\ifcase\finiMPpath
@@ -1804,17 +1802,17 @@
 
 %D The main conversion command is:
 %D
-%D \starttyping
+%D \starttypen
 %D \convertMPtoPDF {filename} {x scale} {y scale}
-%D \stoptyping
+%D \stoptypen
 %D
 %D The dimensions are derived from the bounding box. So we
 %D only have to say:
 %D
-%D \starttyping
+%D \starttypen
 %D \convertMPtoPDF{mp-pra-1.eps}{1}{1}
 %D \convertMPtoPDF{mp-pra-1.eps}{.5}{.5}
-%D \stoptyping
+%D \stoptypen
 
 %D \macros
 %D   {makeMPintoPDFobject,lastPDFMPobject}
@@ -1827,18 +1825,16 @@
 %D This option defaults to~0, because \CONTEXT\ takes care
 %D of objects at another level, which saves some bytes.
 %D
-%D \starttabulate[|l|l|p|]
+%D \starttabulatie[|l|l|p|]
 %D \NC 0 \NC never    \NC don't use an object    \NC\NR
 %D \NC 1 \NC always   \NC always use an object   \NC\NR
 %D \NC 2 \NC optional \NC use object when needed \NC\NR
-%D \stoptabulate
+%D \stoptabulatie
 %D
 %D The last object number used is avaliable in the macro
 %D \type {\lastPDFMPobject}.
 
-\ifx\makeMPintoPDFobject\undefined \chardef\makeMPintoPDFobject=0 \fi
-
-\def\lastPDFMPobject{0}
+\chardef\makeMPintoPDFobject=0 \def\lastPDFMPobject{0}
 
 %D The additional code needed can be made available in the
 %D (global) macro \type {\currentPDFresources}.
@@ -1847,16 +1843,14 @@
 
 \newtoks\everyMPtoPDFconversion
 
-\def\convertMPtoPDF % #1#2#3%
+\def\convertMPtoPDF#1#2#3%
   {\bgroup
    \ifx\pdfdecimaldigits\undefined\else \pdfdecimaldigits=5 \fi % new
    \setbox\scratchbox\vbox\bgroup
      \forgetall
      \offinterlineskip
      \startMPresources
-     \doprocessMPtoPDFfile} % {#1}{#2}{#3}} % {#1}{0#2}{0#3} would be saver
-
-%D The next one is kind of private and probably will become obsolete):
+     \doprocessMPtoPDFfile{#1}{#2}{#3}} % {#1}{0#2}{0#3} would be saver
 
 \def\processMPtoPDFfile % file xscale yscale
   {\bgroup
@@ -1864,15 +1858,7 @@
    \doprocessMPtoPDFfile}
 
 \def\doprocessMPtoPDFfile#1#2#3% file xscale yscale
-  {% the following line is needed for latex where onepoint is not
-   % onepoint but a number (maxdimen); some day i'll make a latex
-   % variant of this file so that i no longer have to deal with such
-   % issues; then i'll also speed up this module using a few context
-   % tricks
-   %
-   \let\onepoint\onerealpoint
-   %
-   \setMPspecials
+  {\setMPspecials
    \the\everyMPtoPDFconversion
    \catcode`\^^M=\@@endofline
    \startMPscanning
@@ -1942,6 +1928,18 @@
 \def\finishMPgraphic
   {\stopMPresources
    \egroup
+   % we go simple when in doubt, this macro will get a proper
+   % context counterpart so that we can also cover dvipdfmx
+   \ifx\pdfxform\undefined
+     \chardef\makeMPintoPDFobject\zerocount % no pdftex at all
+   \else\ifx\pdftexversion\undefined
+     \chardef\makeMPintoPDFobject\zerocount % no pdftex at all
+   \else\ifnum\pdftexversion<14
+     \chardef\makeMPintoPDFobject\zerocount % no resource support
+   \fi\fi\fi
+   \ifcase\makeMPintoPDFobject\or\or\ifx\currentPDFresources\empty\else
+     \chardef\makeMPintoPDFobject\plusone
+   \fi\fi
    \setbox\scratchbox\vbox
      {\forgetall
       \hbox
@@ -1951,60 +1949,35 @@
    \ht\scratchbox\MPheight
    \wd\scratchbox\MPwidth
    \dp\scratchbox\zeropoint\relax
-   \dopackageMPgraphic\scratchbox
-   \egroup
-   \endinput}
-
-%D Alternative for \PDFTEX. We cannot come up with something more contexy
-%D because this module is also used in \LATEX.
-
-\def\dopackageMPgraphic#1% #1 = boxregister
-  {%\ifx\pdfxform\undefined
-   %  \chardef\makeMPintoPDFobject\zerocount % no pdftex at all
-   %\else\ifx\pdftexversion\undefined
-   %  \chardef\makeMPintoPDFobject\zerocount % no pdftex at all
-   %\else\ifnum\pdftexversion<14
-   %  \chardef\makeMPintoPDFobject\zerocount % no resource support
-   %\else
-   %                                         % keep the default value
-   %\fi\fi\fi
-   \ifcase\makeMPintoPDFobject\or\or\ifx\currentPDFresources\empty\else
-     % an existing value of 2 signals object support (set elsewhere)
-     \chardef\makeMPintoPDFobject\plusone
-   \fi\fi
    \ifcase\makeMPintoPDFobject
-     \box#1%
+     \box\scratchbox
    \or
      \scratchdimen\PDFMPformoffset\relax
      \ifdim\scratchdimen>\zeropoint % compensate for error
-       \setbox#1\vbox spread 2\scratchdimen
-         {\forgetall\vss\hbox spread 2\scratchdimen{\hss\box#1\hss}\vss}%
+       \setbox\scratchbox\vbox spread 2\scratchdimen
+         {\forgetall
+          \vss
+          \hbox spread 2\scratchdimen
+            {\hss
+             \box\scratchbox
+             \hss}%
+          \vss}%
      \fi
-     \setMPPDFobject{\currentPDFresources}{#1}%
+     \immediate\pdfxform resources{\currentPDFresources}\scratchbox
+     \xdef\lastPDFMPobject{\the\pdflastxform}%
      \ifdim\scratchdimen>\zeropoint % compensate for error
        \vbox to \MPheight
-         {\forgetall\vss\hbox to \MPwidth{\hss\getMPPDFobject\hss}\vss}%
+         {\forgetall
+          \vss\hbox to \MPwidth{\hss\pdfrefxform\lastPDFMPobject\hss}\vss}%
      \else
-       \getMPPDFobject
+       \pdfrefxform\lastPDFMPobject
      \fi
      \global\let\currentPDFresources\empty
    \else
-     \box#1%
-   \fi}
-
-\def\setMPPDFobject#1#2% resources boxnumber
-  {\ifx\pdfxform\undefined
-     \def\getMPPDFobject{\box#2}%
-   \else\ifx\pdftexversion\undefined
-     \def\getMPPDFobject{\box#2}%
-   \else\ifnum\pdftexversion<14
-     \def\getMPPDFobject{\box#2}%
-   \else
-     \immediate\pdfxform resources{#1}#2%
-     \edef\getMPPDFobject{\noexpand\pdfrefxform\the\pdflastxform}%
-   \fi\fi\fi}
-
-\let\getMPPDFobject\relax
+     \box\scratchbox
+   \fi
+   \egroup
+   \endinput}
 
 %D \macros
 %D   {deleteMPgraphic,
@@ -2028,9 +2001,9 @@
 %D We can limit the precision to two digits after the comma
 %D by saying:
 %D
-%D \starttyping
+%D \starttypen
 %D \twodigitMPoutput
-%D \stoptyping
+%D \stoptypen
 %D
 %D This option only works in \CONTEXT\ combined with \ETEX.
 

@@ -15,6 +15,24 @@
 
 \writestatus{loading}{Context Core Macros / Job Handling}
 
+%S InputFile     \input
+%S InputFile     \omgeving    \environment
+%S InputFile     \projekt     \project
+%S InputFile     \produkt     \product
+%S InputFile     \onderdeel   \component
+%S
+%S CheckStrings  \start  \stop
+%S CheckStrings  \begin  \end
+%S CheckStrings  \begin  \eind
+%S
+%S CheckChars    { }
+%S CheckChars    [ ]
+%S CheckChars    ( )
+%S
+%S CheckChar     $
+
+% \appendtoks \reportprotectionstate \to \everydump
+
 \unprotect
 
 \let \currentproject     \empty
@@ -25,7 +43,7 @@
 \let \loadedfiles        \empty
 \let \processedfiles     \empty
 
-\let \nomorefiles        \relax
+\let \geenfilesmeer      \relax
 
 \newcounter\textlevel
 \newcounter\fileprocesslevel
@@ -115,12 +133,12 @@
 % test \@@svgebied
 
 \def\loadallsystemfiles#1#2%
-  {\ifx\@@svdirectory\empty
+  {\ifx\@@svgebied\empty
      \readsysfile{#1}{\showmessage\m!systems2{#1}}{#2}%
    \else% yet undocumented
      \def\doloadsystemfile##1%
        {\readsetfile{##1}{#1}{\showmessage\m!systems2{#1}}{#2}}%
-     \processcommacommand[\@@svdirectory]\doloadsystemfile
+     \processcommacommand[\@@svgebied]\doloadsystemfile
    \fi}
 
 \def\loadsystemfiles
@@ -166,6 +184,8 @@
 % \newevery \everyjob \EveryJob
 % \appendtoks ... \to \everyjob
 
+\prependtoks \showcontextbanner   \to \everyjob
+
 \appendtoks \loadsystemfiles      \to \everyjob
 \appendtoks \preloadfonts         \to \everyjob
 \appendtoks \settopskip           \to \everyjob
@@ -179,7 +199,7 @@
 \appendtoks \checknotes           \to \everyjob % depends on bodyfont
 \appendtoks \initializeMPgraphics \to \everyjob % after loading system files
 
-\appendtoks \page[\v!last] \page           \to \everybye
+\appendtoks \pagina[\v!laatste] \pagina           \to \everybye
 \appendtoks \ifarrangingpages\poparrangedpages\fi \to \everybye
 \appendtoks \registerfileinfo[end]\jobname        \to \everybye
 
@@ -209,7 +229,7 @@
   {\the\everystarttext
    \global\everystarttext\emptytoks}
 
-\def\starttext
+\def\starttekst
   {\doateverystarttext
    \ifnum\textlevel=\zerocount
      \registerfileinfo[begin]\jobname
@@ -217,7 +237,7 @@
    \fi
    \doglobal\increment\textlevel\relax}
 
-\def\stoptext
+\def\stoptekst
   {\doglobal\decrement\textlevel\relax
    \ifnum\textlevel>\zerocount \else
      \the\everystoptext
@@ -226,6 +246,9 @@
     %\expandafter\normalend   %
      \expandafter\end
    \fi}
+
+\let\starttext\starttekst
+\let\stoptext \stoptekst
 
 \let\normalend=\end
 
@@ -237,8 +260,6 @@
      \global\everygoodbye\emptytoks % but for sure
      \expandafter\normalend
    \fi}
-
-\def\currentfile{\inputfilename}
 
 \def\doexecutefileonce#1%
   {\beforesplitstring#1\at.\to\currentfile
@@ -259,72 +280,79 @@
 \def\verwerkfile#1 %
   {\doexecutefile{#1}}
 
-\def\environment #1 % at outermost level only
-  {\def\startenvironment ##1 {}%
-   \let\stopenvironment\relax
+\def\omgeving #1 % at outermost level only
+  {\def\startomgeving ##1 {}%
+   \let\stopomgeving\relax
    \dostarttextfile{#1}%
    \startreadingfile
    \processfile{#1}% was : \readlocfile{#1}{}{}
    \stopreadingfile
    \dostoptextfile}
 
-\def\component #1 % at outermost level only
+\def\onderdeel #1 % at outermost level only
   {\dostarttextfile{#1}%
    \processfile{#1}%
    \dostoptextfile}
 
+\def\environment{\omgeving} % for the moment, no \let !
+
 \newcounter\filelevel
 
-\def\donextlevel#1#2#3#4#5#6\\%
+\def\!!donextlevel#1#2#3#4#5#6\\%
   {\beforesplitstring#6\at.\to#1
    \ifcase\filelevel\relax
-     \starttext
-     \def\project   ##1 {#2{##1}}%
-     \def\environment  ##1 {#3{##1}}%
-     \def\product   ##1 {#4{##1}}%
-     \def\component ##1 {#5{##1}}%
+     \starttekst
+     \def\projekt   ##1 {#2{##1}}%
+     \def\omgeving  ##1 {#3{##1}}%
+     \def\produkt   ##1 {#4{##1}}%
+     \def\onderdeel ##1 {#5{##1}}%
    \fi
    \increment\filelevel\relax
    \fullexpandoneargafter\addtocommalist{#1}\loadedfiles}
 
 \def\doprevlevel
   {\ifnum\filelevel=\plusone
-     \expandafter\stoptext
+     \expandafter\stoptekst
    \else
      \decrement\filelevel\relax
      \expandafter\endinput
    \fi}
 
-\def\startproject #1 %
-  {\donextlevel\currentproject
+\def\startprojekt #1 %
+  {\!!donextlevel\currentproject
      \donotexecutefile\doexecutefileonce
      \doexecutefileonce\doexecutefile#1\\}
 
-\def\startproduct #1 %
+\def\stopprojekt
+  {\doprevlevel}
+
+\def\startprodukt #1 %
   {\doateverystarttext
-   \donextlevel\currentproduct
+   \!!donextlevel\currentproduct
      \doexecutefileonce\doexecutefileonce
      \donotexecutefile\doexecutefile#1\\}
 
-\def\startcomponent #1 %
+\def\stopprodukt
+  {\doprevlevel}
+
+\def\startonderdeel #1 %
   {\doateverystarttext
-   \donextlevel\currentcomponent
+   \!!donextlevel\currentcomponent
      \doexecutefileonce\doexecutefileonce
      \donotexecutefile\doexecutefile#1\\}
 
-\def\startenvironment #1 %
-  {\donextlevel\currentenvironment
+\def\stoponderdeel
+  {\doprevlevel}
+
+\def\startomgeving #1 %
+  {\!!donextlevel\currentenvironment
      \donotexecutefile\doexecutefileonce
      \donotexecutefile\donotexecutefile#1\\}
 
-\def\stopproject    {\doprevlevel}
-\def\stopproduct    {\doprevlevel}
-\def\stopcomponent  {\doprevlevel}
-\def\stopenvironment{\doprevlevel}
+\def\stopomgeving
+  {\doprevlevel}
 
-% more or less replaced by modes
-
-\setvalue{\e!start\v!localenvironment}[#1]%
+\def\startdeelomgeving[#1]%
   {\let\loadedlocalenvironments\empty
    \def\docommando##1%
      {\beforesplitstring##1\at.\to\someevironment
@@ -334,10 +362,18 @@
        {\currentproject,\currentproduct,%
         \currentcomponent,\currentenvironment}
        {\loadedlocalenvironments}
-     {\letvalue{\e!stop\v!localenvironment}\relax}
-     {\grabuntil{\e!stop\v!localenvironment}\relax}}
+     {\letvalue{\e!stop\v!deelomgeving}\relax}
+     {\grabuntil{\e!stop\v!deelomgeving}\relax}}
 
-\setvalue{\v!localenvironment} #1 %
+\def\startproduct{\startprodukt}
+\def\stopproduct {\stopprodukt}
+\def\startproject{\startprojekt}
+\def\stopproject {\stopprojekt}
+
+\def\project{\projekt}
+\def\product{\produkt}
+
+\def\deelomgeving #1 %
   {\doexecutefileonce{#1}}
 
 % Het <pagina>-karakter (FormFeed), wordt omgezet in \par
@@ -348,36 +384,20 @@
 
 \neverypar=\emptytoks
 
-% \appendtoks \flushnotes                     \to \everypar
-% \appendtoks \synchronizesidefloats          \to \everypar
-% \appendtoks \checkindentation               \to \everypar
-% \appendtoks \showparagraphnumber            \to \everypar
-% \appendtoks \flushmargincontents            \to \everypar
-% \appendtoks \flushcommentanchors            \to \everypar
-% \appendtoks \synchronizenotes               \to \everypar
+\appendtoks \flushnotes                     \to \everypar
+\appendtoks \ifinner\else\checksidefloat\fi \to \everypar
+\appendtoks \checkindentation               \to \everypar
+\appendtoks \showparagraphnumber            \to \everypar
+\appendtoks \flushmargincontents            \to \everypar
+\appendtoks \flushcommentanchors            \to \everypar
+\appendtoks \synchronizenotes               \to \everypar
 
-% \appendtoks \flushnotes                     \to \everydisplay
-% \appendtoks \adjustsidefloatdisplaylines    \to \everydisplay
+\appendtoks \flushnotes                     \to \everydisplay
+\appendtoks \adjustsidefloatdisplaylines    \to \everydisplay
 
 %D Better here than in supp-mps:
 
 \def\executesystemcommand{\immediate\write18}
-
-\ifnum\etexversion<202
-  \prependtoks
-     \writestatus\m!systems{eTeX version \number\etexversion\space -> too old (bugs)}%
-     \writeline
-  \to \everyjob
-\fi
-
-\ifnum\number\pdftexversion<120
-  \prependtoks
-     \writestatus\m!systems{pdfTeX version \number\pdftexversion\space -> please update}%
-     \writeline
-  \to \everyjob
-\fi
-
-\prependtoks \showcontextbanner \to \everyjob
 
 % Default-instellingen (verborgen)
 

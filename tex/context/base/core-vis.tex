@@ -61,13 +61,13 @@
    \dontcomplain
    \boxrulewidth5\testrulewidth
    #3#4\relax
-   \setbox\scratchbox\normalhbox to \scratchdimen
+   \setbox0\normalhbox to \scratchdimen
      {#2{\ruledhbox to \scratchdimen
            {\vrule #5 20\testrulewidth \!!width \zeropoint
             \normalhss}}}%
-   \smashbox\scratchbox
+   \smashbox0
    \normalpenalty\!!tenthousand
-   \box\scratchbox
+   \box0
    \egroup}
 
 \def\ruledhanging
@@ -75,7 +75,7 @@
      \ifnum\hangafter<\zerocount
        \normalhbox
          {\boxrulewidth5\testrulewidth
-          \setbox\scratchbox\ruledhbox to \hangindent
+          \setbox0\ruledhbox to \hangindent
             {\scratchdimen\strutht
              \advance\scratchdimen \strutdp
              \vrule
@@ -83,8 +83,8 @@
                \!!height \zeropoint
                \!!depth -\hangafter\scratchdimen}%
           \normalhskip-\hangindent
-          \smashbox\scratchbox
-          \raise\strutht\box\scratchbox}%
+          \smashbox0
+          \raise\strutht\box0}%
      \fi
    \fi}
 
@@ -178,11 +178,11 @@
 %D \voorbeeld \noindent
 %D \voorbeeld \leavevmode
 %D
-%D \startnarrower
+%D \startsmaller
 %D \voorbeeld \indent
 %D \voorbeeld \noindent
 %D \voorbeeld \leavevmode
-%D \stopnarrower
+%D \stopsmaller
 %D \egroup
 %D
 %D These examples also demonstrate the visualization of
@@ -214,14 +214,14 @@
            \vrule
              \!!height \testrulewidth
              \!!depth \testrulewidth
-             \!!width 120\points}
+             \!!width 120pt}
       \normalvfill}%
    \smashbox\scratchbox
    \advance\scratchdimen \strutheightfactor\baselineskip
    \setbox\scratchbox\normalhbox
-     {\normalhskip -48\points
-      \normalhbox to 24\points
-        {\normalhss\debuggertext\ruledbaselines\normalhskip6\points}%
+     {\normalhskip -48pt
+      \normalhbox to 24pt
+        {\normalhss\debuggertext\ruledbaselines\normalhskip6pt}%
       \raise\scratchdimen\box\scratchbox}%
    \smashbox\scratchbox
    \box\scratchbox
@@ -260,9 +260,9 @@
 %D
 %D This marked \type{\vbox} shows up as:
 %D
-%D \startlinecorrection
-%D \getbuffer
-%D \stoplinecorrection
+%D \startregelcorrectie
+%D \haalbuffer
+%D \stopregelcorrectie
 %D
 %D The alternative macros are used as:
 %D
@@ -274,9 +274,9 @@
 %D
 %D This is typeset as:
 %D
-%D \startlinecorrection
-%D \getbuffer
-%D \stoplinecorrection
+%D \startregelcorrectie
+%D \haalbuffer
+%D \stopregelcorrectie
 %D
 %D By setting the next macros one can influence the length of
 %D the marks as well as the horizontal and vertical divisions.
@@ -414,7 +414,7 @@
       \boxmaxdepth\maxdimen
       \offinterlineskip
       \scratchdimen\cutmarklength
-      \divide\scratchdimen \plustwo
+      \divide\scratchdimen 2
       \hsize\ruledwidth
       \setbox\scratchbox\normalvbox
         {\setbox\scratchbox\normalhbox{\horizontalcuts}%
@@ -479,9 +479,9 @@
 %D This macro is used in the pagebody routine. No other use
 %D is advocated here.
 %D
-%D \starttyping
+%D \starttypen
 %D \colormarkbox0
-%D \stoptyping
+%D \stoptypen
 
 \def\colormarkoffset{\cutmarkoffset}
 \def\colormarklength{\cutmarklength}
@@ -526,7 +526,7 @@
 \def\colorrangeB
   {\hbox
      {\scratchdimen-\colormarklength
-      \multiply\scratchdimen \plustwo
+      \multiply\scratchdimen 2
       \advance\scratchdimen \ruledwidth
       \divide\scratchdimen 11
       \def\docommando ##1 ##2 ##3##4##5##6%
@@ -598,7 +598,7 @@
    \edef\ruledwidth {\the\wd#2}%
    \setbox#2\hbox
      {\scratchdimen\colormarklength
-      \divide\scratchdimen \plustwo
+      \divide\scratchdimen 2
       \forgetall
       \ssxx
       \setbox\scratchbox\vbox
@@ -658,10 +658,10 @@
 %D especially \type {\write} is often used in conjunction with
 %D \type {\edef}, we can only savely support that one in \ETEX.
 %D
-%D \bgroup \showwhatsits \setupcolors[state=start]
+%D \bgroup \showwhatsits \stelkleurenin[status=start]
 %D
 %D Whatsits show up \color[blue]{in color} and are
-%D characterized bij their first character.\footnote [some note]
+%D characterized bij their first character.\voetnoot [some note]
 %D {So we may encounter \type {w}, \type {m} and \type{s}.}
 %D They are \writestatus{dummy}{demo}\color[yellow]{stacked}.
 %D
@@ -671,7 +671,7 @@
 
 \ifx\eTeXversion\undefined
 
-  \let\showwhatsits    \relax
+  \let\showwhatsits\relax
   \let\dontshowwhatsits\relax
 
 \else
@@ -720,8 +720,13 @@
         \vrule\!!width\wd\scratchbox\dostopcolormode
         \hskip-\wd\scratchbox\box\scratchbox}%
      \scratchdimen1ex
-     \setbox\scratchbox\hbox
-       {\ifdone\hskip\else\raise#4\fi\scratchdimen\box\scratchbox}%
+     \ifdone
+       \setbox\scratchbox\hbox
+         {\hskip#4\scratchdimen\box\scratchbox}%
+     \else
+       \setbox\scratchbox\hbox
+         {\raise#4\scratchdimen\box\scratchbox}%
+     \fi
      \smashbox\scratchbox
      \ifdone\nointerlineskip\fi
      \box\scratchbox
@@ -746,7 +751,7 @@
            \ifhmode
              \edef\popwhatsit{\kern\the\lastkern}\unkern
            \else
-             \edef\popwhatsit{\kern\the\lastkern\prevdepth\the\prevdepth}%
+             \edef\popwhatsit{\kern\the\lastkern\prevdepth\the\prevdepth}
              \kern-\lastkern
            \fi
          \fi
@@ -763,7 +768,7 @@
        \ifhmode
          \edef\popwhatsit{\hskip\the\lastskip}\unskip
        \else
-         \edef\popwhatsit{\vskip\the\lastskip\prevdepth\the\prevdepth}%
+         \edef\popwhatsit{\vskip\the\lastskip\prevdepth\the\prevdepth}
          \vskip-\lastskip
        \fi
      \fi}
@@ -802,7 +807,7 @@
           \startoverlay
             {\copy\scratchbox}
             {\dodotagbox{#1}\scratchbox{\framed
-               [\c!background=\v!screen,\c!backgroundscreen=1]{#2}}}
+               [\c!achtergrond=\v!raster,\c!achtergrondraster=1]{#2}}}
           \stopoverlay
         \egroup
       \nextboxwd\the\wd\scratchbox
@@ -827,9 +832,9 @@
 
 \def\coloredbox#1%
   {\dowithnextbox{#1{\hbox
-     {\blackrule[\c!width=\nextboxwd,\c!height=\nextboxht,\c!depth=\zeropoint,\c!color=boxcolor:ht]%
+     {\blackrule[\c!breedte=\nextboxwd,\c!hoogte=\nextboxht,\c!diepte=\zeropoint,\c!kleur=boxcolor:ht]%
       \hskip-\nextboxwd
-      \blackrule[\c!width=\nextboxwd,\c!height=\zeropoint,\c!depth=\nextboxdp,\c!color=boxcolor:dp]%
+      \blackrule[\c!breedte=\nextboxwd,\c!hoogte=\zeropoint,\c!diepte=\nextboxdp,\c!kleur=boxcolor:dp]%
       \hskip-\nextboxwd
       \box\nextbox}}}#1}
 
@@ -838,6 +843,6 @@
 \def\coloredvtop{\coloredbox\vtop}
 
 \def\coloredstrut
-  {\color[strutcolor]{\def\strutwidth{2\points}\setstrut\strut}}
+  {\color[strutcolor]{\def\strutwidth{2pt}\setstrut\strut}}
 
 \protect \endinput

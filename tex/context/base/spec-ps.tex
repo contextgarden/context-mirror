@@ -219,11 +219,6 @@
 \definespecial\dostopclipping
   {\special{\@@insertpostscriptliteral\space restore}}
 
-%D Some MP stuff:
-
-\definespecial\doinsertMPfile#1%
-  {\doiffileelse{./#1}{\includeMPasEPS{./#1}}{\message{[MP #1]}}}
-
 \stopspecials
 
 \endinput

@@ -153,10 +153,10 @@
 
 \def\dostelinvullenin[#1]%
   {\getparameters[\??iv][#1]%
-   \doif\@@ivstate\v!reset
+   \doif\@@ivstatus\v!reset
      {\global\invulput\zerocount
       \global\invulget\zerocount
-      \let\@@ivstate\empty}}
+      \let\@@ivstatus\empty}}
 
 \def\definieerinvulwoord
   {\dosingleempty\dodefinieerinvulwoord}
@@ -175,21 +175,21 @@
    \fi \fi}
 
 \def\dosimpleinvulwoord#1%
-  {\ifnum\@@ivnumber>0 \advance\invulteller \plusone \fi
-   \ifnum\invulteller=\@@ivnumber\relax
+  {\ifnum\@@ivnummer>0 \advance\invulteller \plusone \fi
+   \ifnum\invulteller=\@@ivnummer\relax
      \bgroup
-     \doconvertfont\@@ivstyle
-       {\@@ivleft
-        \doifelse\@@ivstate\v!empty
-          {\doifelse\@@ivrule\v!on\leeginvulwoord\geeninvulwoord}
-          {\doifelse\@@ivrule\v!on\underbar      \firstofoneargument}%
+     \doconvertfont\@@ivletter
+       {\@@ivlinks
+        \doifelse\@@ivstatus\v!leeg
+          {\doifelse\@@ivlijn\v!aan\leeginvulwoord\geeninvulwoord}
+          {\doifelse\@@ivlijn\v!aan\underbar      \firstofoneargument}%
         {#1}%
-        \@@ivright}%
+        \@@ivrechts}%
      \egroup
    \fi}%
 
 \def\simpleinvulwoord#1%
-  {\ifnum\@@ivnumber>0
+  {\ifnum\@@ivnummer>0
      \invulteller\zerocount
      \processcommalist[#1]\dosimpleinvulwoord
    \else
@@ -200,10 +200,10 @@
   {\bgroup
    \doifsomething{#1}
      {\global\advance\invulget \plusone
-      \doconvertfont\@@ivstyle
-        {\@@ivleft\getvalue{\r!fillin\the\invulget}\@@ivright}}
-     {\doconvertfont\@@ivstyle
-        {\@@ivleft\getvalue{\r!fillin           #1}\@@ivright}}%
+      \doconvertfont\@@ivletter
+        {\@@ivlinks\getvalue{\r!fillin\the\invulget}\@@ivrechts}}
+     {\doconvertfont\@@ivletter
+        {\@@ivlinks\getvalue{\r!fillin           #1}\@@ivrechts}}%
    \egroup}
 
 \definecomplexorsimple\invulwoord
@@ -220,11 +220,11 @@
 % when nummer > 0, then commalist processing; beware of $(1,2)$, use { } there
 
 \stelinvullenin
-  [\c!number=0,
-   \c!style=\v!bold,
-   \c!rule=\v!on,
-   \c!left=,
-   \c!right=,
-   \c!state=]
+  [\c!nummer=0,
+   \c!letter=\v!vet,
+   \c!lijn=\v!aan,
+   \c!links=,
+   \c!rechts=,
+   \c!status=]
 
 \protect \endinput

@@ -36,11 +36,11 @@
 
 % nog eens \interface \\ \\ verder doorvoeren
 
-\def\resetmodule
+\def\resetmodule%
   {\getrawparameters
      [Module]
      [       file=\jobname,
-          version={\currentdate[\v!year,{.},\v!month,{.},\v!day]},
+          version={\currentdate[\v!jaar,{.},\v!maand,{.},\v!dag]},
            system=\CONTEXT,
             title=,
          subtitle=,
@@ -56,7 +56,7 @@
    \resetmodule
    \getrawparameters[Module][type=tex,#1]}
 
-\def\startmodule
+\def\startmodule%
   {\dosingleempty\dostartmodule}
 
 \def\complexmodule[#1]%
@@ -65,13 +65,13 @@
    \stopglobal  % i.v.m. \bgroup in \startdocumentation
    \moduletitel}
 
-\def\stopmodule
-  {\page
-   \placeregister
+\def\stopmodule%
+  {\pagina
+   \plaatsregister
      [\v!index]
-     [\c!balance=\v!yes,
-      \c!indicator=\v!no,
-      \c!criterium=\v!text]}
+     [\c!balanceren=\v!ja,
+      \c!aanduiding=\v!nee,
+      \c!criterium=\v!tekst]}
 
 \def\simplemodule#1%
   {\type{#1}}
@@ -87,8 +87,8 @@
 %      \stopMPrun
 %      \externalfigure
 %        [\bufferprefix mprun.#1]
-%        [\c!height=\vsize,
-%         \c!width=\hsize]}
+%        [\c!hoogte=\vsize,
+%         \c!breedte=\hsize]}
 %
 %   \defineoverlay[titelpagina][\TitelPagina{512}]
 %
@@ -146,22 +146,22 @@
 
 \defineframed
   [TitleFrame]
-  [\c!background=\v!color,
-   \c!backgroundcolor=wit,
-   \c!align=\v!right,
+  [\c!achtergrond=\v!kleur,
+   \c!achtergrondkleur=wit,
+   \c!uitlijnen=\v!rechts,
    \c!offset=12pt,
-   \c!strut=\v!no,
-   \c!frame=\v!off,
-   \c!bottom=]
+   \c!strut=\v!nee,
+   \c!kader=\v!uit,
+   \c!onder=]
 
 \definelayout
   [titlepage]
-  [\c!backspace=0pt,
-   \c!topspace=0pt,
-   \c!header=0pt,
-   \c!footer=0pt,
-   \c!height=\v!middle,
-   \c!width=\v!middle]
+  [\c!rugwit=0pt,
+   \c!kopwit=0pt,
+   \c!hoofd=0pt,
+   \c!voet=0pt,
+   \c!hoogte=\v!midden,
+   \c!breedte=\v!midden]
 
 \def\moduletitel%
   {\setuplayout[titlepage]
@@ -172,10 +172,10 @@
        \edef\ModuleNumber{0\ModuleNumber}
      \fi\fi
      \setupbackgrounds
-       [\v!page]
-       [\c!background=titelpagina]
+       [\v!pagina]
+       [\c!achtergrond=titelpagina]
    \fi
-   \startmakeup[\v!standard][\c!headerstate=\v!none,\c!footerstate=\v!none]
+   \startmakeup[\v!standaard][\c!hoofdstatus=\v!geen,\c!voetstatus=\v!geen]
      \switchtobodyfont[14.4pt,ss]
      \bgroup
        \def\CONTEXT {Con\kern-.15em\TeX t}
@@ -191,7 +191,7 @@
        \hfill
          {\bf\setstrut
           \TitleFrame
-            {\insidefloattrue\setuptabulate[\c!before=,\c!after=]%
+            {\insidefloattrue\setuptabulate[\c!voor=,\c!na=]%
              \starttemp
                \doifsomething{\Moduletitle}
                  {\NC title \EQ \Moduletitle \NC\NR}%
@@ -207,14 +207,14 @@
    \stopmakeup
    \ifx\ModuleNumber\undefined \else
      \setupbackgrounds
-       [\v!page]
-       [\c!background=]
+       [\v!pagina]
+       [\c!achtergrond=]
    \fi
    \setuplayout}
 
 \let\stopdocumentation=\relax
 
-\def\startdocumentation
+\def\startdocumentation%
   {\bgroup
    \doglobal\newcounter\NOfMarginLines
    \def\stopdocumentation{\par\egroup}}
@@ -226,7 +226,7 @@
 
 \gdef\CompressDefinitions%
   {\ifcompressdefinitions
-     \switchtobodyfont[\v!small]%
+     \switchtobodyfont[\v!klein]%
    \fi}
 
 \startnotmode[nocode]
@@ -236,9 +236,9 @@
 
   \setuptyping
     [definition]
-    [\c!before={\page[\v!preference]}\blank\PresetParagraphNumber\CompressDefinitions,
-     \c!after=\ResetParagraphNumber\blank,
-     \c!option=\Moduletype]
+    [\c!voor={\pagina[\v!voorkeur]}\blanko\PresetParagraphNumber\CompressDefinitions,
+     \c!na=\ResetParagraphNumber\blanko,
+     \c!optie=\Moduletype]
 
 \stopnotmode
 
@@ -250,22 +250,22 @@
 
 \stopmode
 
-\definetyping [PL]  [\c!option=PL, \c!margin=\v!standard]
-\definetyping [JV]  [\c!option=JV, \c!margin=\v!standard]
-\definetyping [MP]  [\c!option=MP, \c!margin=\v!standard]
-\definetyping [TEX] [\c!option=TEX,\c!margin=\v!standard]
+\definetyping [PL]  [\c!optie=PL, \c!marge=\v!standaard]
+\definetyping [JV]  [\c!optie=JV, \c!marge=\v!standaard]
+\definetyping [MP]  [\c!optie=MP, \c!marge=\v!standaard]
+\definetyping [TEX] [\c!optie=TEX,\c!marge=\v!standaard]
 
-\setuptyping [\v!typing]   [\c!margin=\v!standard]
-\setuptyping [\v!file]    [\c!margin=\v!standard]
-\setuptyping [definition] [\c!margin=0pt]
+\setuptyping [\v!typen]   [\c!marge=\v!standaard]
+\setuptyping [\v!file]    [\c!marge=\v!standaard]
+\setuptyping [definition] [\c!marge=0pt]
 
 \newcounter\NOfMarginLines
 \newcounter\ParagraphNumber
 
-\def\ResetParagraphNumber
+\def\ResetParagraphNumber%
   {\egroup}
 
-\def\PresetParagraphNumber
+\def\PresetParagraphNumber%
   {\bgroup
    \xdef\NOfTextLines%
      {\the\prevgraf}%
@@ -273,7 +273,7 @@
    \doglobal\increment\ParagraphNumber
    \message{.}%
    \gdef\ShowParagraphNumber%
-     {\llap{\slx\ParagraphNumber\hskip\leftmargindistance}}%
+     {\llap{\slx\ParagraphNumber\hskip\linkermargeafstand}}%
    \gdef\ShowParagraphNumberA%
      {\ifnum\NOfMarginLines>\NOfTextLines\relax
         \doglobal\increment\NOfTextLines
@@ -303,15 +303,15 @@
          \else
            \index{#2{##1}}%
          \fi
-         #2{\doboundtext{##1}{\leftmarginwidth}{..}}}%
+         #2{\doboundtext{##1}{\linkermargebreedte}{..}}}%
        \doglobal\increment\NOfMarginLines
        \endgraf}%
    \processcommalist[#1]\docommando}
 
 \def\margeaanduidingen#1[#2]%
   {\def\domargeaanduidingen##1##2%
-     {\margintitle[#2]%
-        {\switchtobodyfont[\v!small]%
+     {\margetitel[#2]%
+        {\switchtobodyfont[\v!klein]%
          \doglobal\newcounter\NOfMarginLines
          \dodomargeaanduidingen[##1]#1%
          \scratchcounter=\NOfMarginLines
@@ -325,7 +325,7 @@
 \def\complexmacros{\margeaanduidingen\tex  }
 \def\complexextras{\margeaanduidingen\relax}
 
-\def\complexelements
+\def\complexelements%
   {\margeaanduidingen\someelement}
 
 \def\someelement#1{\type{<#1>}}
@@ -340,7 +340,7 @@
   {\bgroup
    \processXMLbuffer
    \typebuffer
-   \setupcolors[\c!state=\v!stop]
+   \setupcolors[\c!status=\v!stop]
    \showXSDcomponent[#1][#2]
    \egroup}
 
@@ -350,63 +350,65 @@
 
 % weg ermee
 
-\defineparagraphs [interface] [\c!n=2]
-\setupparagraphs  [interface] [1] [\c!width=4cm]
+\definieeralineas [interface] [\c!n=2]
+\stelalineasin    [interface] [1] [\c!breedte=4cm]
 
-\def\startvoorbeeld{\par\startnarrower}
-\def\stopvoorbeeld {\stopnarrower}
+\def\startvoorbeeld{\par\startsmaller}
+\def\stopvoorbeeld {\stopsmaller}
 
-\gdef\VisualizeLastSpace{\ifdim\lastskip>0pt\unskip\tttf\char32\fi}
-
-\gdef\ShowHeadText #1{\tttf#1\VL\headtext {#1}\VisualizeLastSpace}
-\gdef\ShowLabelText#1{\tttf#1\VL\labeltext{#1}\VisualizeLastSpace}
+\gdef\VisualizeLastSpace%
+  {\ifdim\lastskip>0pt\unskip\tttf\char32\fi}
+\gdef\ShowHeadText#1%
+  {\tttf#1\VL\headtext{#1}\VisualizeLastSpace}%
+\gdef\ShowLabelText#1%
+  {\tttf#1\VL\labeltext{#1}\VisualizeLastSpace}
 
 \startbuffer[lang-a]
-\starttable[|l|l|]
+\starttabel[|l|l|]
   \HL
   \VL \bf head key  \VL \bf current value \VL\SR
   \HL
-  \VL \ShowHeadText \v!abbreviations      \VL\FR
-  \VL \ShowHeadText \v!units              \VL\MR
-  \VL \ShowHeadText \v!figures            \VL\MR
-  \VL \ShowHeadText \v!graphics           \VL\MR
+  \VL \ShowHeadText \v!afkortingen        \VL\FR
+  \VL \ShowHeadText \v!eenheden           \VL\MR
+  \VL \ShowHeadText \v!figuren            \VL\MR
+  \VL \ShowHeadText \v!grafieken          \VL\MR
   \VL \ShowHeadText \v!index              \VL\MR
-  \VL \ShowHeadText \v!content            \VL\MR
-  \VL \ShowHeadText \v!intermezzi         \VL\MR
+  \VL \ShowHeadText \v!inhoud             \VL\MR
+  \VL \ShowHeadText \v!intermezzos        \VL\MR
   \VL \ShowHeadText \v!logos              \VL\MR
-  \VL \ShowHeadText \v!tables             \VL\LR
+  \VL \ShowHeadText \v!tabellen           \VL\LR
   \HL
-\stoptable
+\stoptabel
 \stopbuffer
 
 \startbuffer[lang-b]
-\starttable[|l|l|]
+\starttabel[|l|l|]
   \HL
-  \VL \bf label key  \VL \bf current value \VL\SR
+  \VL \bf label key  \VL \bf current value      \VL\SR
   \HL
-  \VL \ShowLabelText \v!table              \VL\FR
-  \VL \ShowLabelText \v!figure             \VL\MR
-  \VL \ShowLabelText \v!intermezzo         \VL\MR
-  \VL \ShowLabelText \v!graphic            \VL\MR
-  \VL \ShowLabelText \v!chapter            \VL\MR
-  \VL \ShowLabelText \v!section            \VL\MR
-  \VL \ShowLabelText \subsection           \VL\MR
-  \VL \ShowLabelText \subsubsection        \VL\MR
-  \VL \ShowLabelText \v!appendix           \VL\MR
-  \VL \ShowLabelText \v!part               \VL\MR
-  \VL \ShowLabelText \v!line               \VL\MR
-  \VL \ShowLabelText \v!lines              \VL\LR
+  \VL \ShowLabelText \v!tabel                   \VL\FR
+  \VL \ShowLabelText \v!figuur                  \VL\MR
+  \VL \ShowLabelText \v!intermezzo              \VL\MR
+  \VL \ShowLabelText \v!grafiek                 \VL\MR
+  \VL \ShowLabelText \v!hoofdstuk               \VL\MR
+  \VL \ShowLabelText \v!paragraaf               \VL\MR
+  \VL \ShowLabelText {\v!sub\v!paragraaf}       \VL\MR
+  \VL \ShowLabelText {\v!sub\v!sub\v!paragraaf} \VL\MR
+  \VL \ShowLabelText \v!bijlage                 \VL\MR
+  \VL \ShowLabelText \v!deel                    \VL\MR
+  \VL \ShowLabelText \v!regel                   \VL\MR
+  \VL \ShowLabelText \v!regels                  \VL\LR
   \HL
-\stoptable
+\stoptabel
 \stopbuffer
 
 \startbuffer[lang-c]
-\starttable[|l|l|]
+\starttabel[|l|l|]
   \HL
   \VL \bf label key  \VL \bf current value \VL\SR
   \HL
   \VL \ShowLabelText \v!january            \VL\FR
-  \VL \ShowLabelText \v!february           \VL\MR
+  \VL \ShowLabelText \v!february            \VL\MR
   \VL \ShowLabelText \v!march              \VL\MR
   \VL \ShowLabelText \v!april              \VL\MR
   \VL \ShowLabelText \v!may                \VL\MR
@@ -418,11 +420,11 @@
   \VL \ShowLabelText \v!november           \VL\MR
   \VL \ShowLabelText \v!december           \VL\LR
   \HL
-\stoptable
+\stoptabel
 \stopbuffer
 
 \startbuffer[lang-d]
-\starttable[|l|l|]
+\starttabel[|l|l|]
   \HL
   \VL \bf label key  \VL \bf current value \VL\SR
   \HL
@@ -432,9 +434,9 @@
   \VL \ShowLabelText \v!wednesday          \VL\MR
   \VL \ShowLabelText \v!thursday           \VL\MR
   \VL \ShowLabelText \v!friday             \VL\MR
-  \VL \ShowLabelText \v!saturday           \VL\LR
+  \VL \ShowLabelText \v!saturday           \VL\MR
   \HL
-\stoptable
+\stoptabel
 \stopbuffer
 
 \gdef\ShowTextsValues [#1] [#2]
@@ -448,9 +450,9 @@
    \vskip2em
    \halign
      {\hss##\hss&##\hskip1em&\hss##\hss\cr
-      $\vcenter{\getbuffer[lang-a]}$&&$\vcenter{\getbuffer[lang-b]}$\cr
+      $\vcenter{\haalbuffer[lang-a]}$&&$\vcenter{\haalbuffer[lang-b]}$\cr
       \noalign{\vskip1em}
-      $\vcenter{\getbuffer[lang-c]}$&&$\vcenter{\getbuffer[lang-d]}$\cr}%
+      $\vcenter{\haalbuffer[lang-c]}$&&$\vcenter{\haalbuffer[lang-d]}$\cr}%
    \egroup}
 
 \gdef\ShowLanguageValues [#1] [#2] #3 #4
@@ -460,14 +462,14 @@
         \bgroup
         \language[#1]%
         \let\normalbar=|
-        \starttable[||||]
+        \starttabel[||||]
         \HL
         \VL \THREE{\bf subsentence symbol and quotes} \VL\SR
         \HL
-        \VL \quotation{#3 #4} \VL \quote{#2} \VL \let|=\normalbar |<||<|#3|>|#4|>| \VL\SR
-        \VL \quotation{#3 #4} \VL \quote{#2} \VL |<||<|#3|>|#4|>| \VL\SR
+        \VL \citaat{#3 #4} \VL \citeer{#2} \VL \let|=\normalbar |<||<|#3|>|#4|>| \VL\SR
+        \VL \citaat{#3 #4} \VL \citeer{#2} \VL |<||<|#3|>|#4|>| \VL\SR
         \HL
-        \stoptable
+        \stoptabel
         \egroup
       \hss}}
 
@@ -477,10 +479,10 @@
       \vskip2em
       \ShowLanguageValues  [#1] [#2] #3 #4 }
    \protect
-   \page}
+   \pagina}
 
 \gdef\ShowAllLanguageValues%
-  {\page
+  {\pagina
    \unprotect
    \doShowAllLanguageValues}
 
@@ -493,13 +495,13 @@
 
 \unprotect
 
-\def\showsetup
+\def\showsetup%
   {\doglobal\newcounter\CurrentArgument
    \setup}
 
 \setupframedtexts
   [setuptext]
-  [\c!background=\v!screen,
-   \c!frame=\v!off]
+  [\c!achtergrond=\v!raster,
+   \c!kader=\v!uit]
 
 \protect \endinput

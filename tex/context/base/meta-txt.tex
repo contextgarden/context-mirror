@@ -47,10 +47,10 @@
 \def\startshapetext[#1]%
   {\global\newcounter\currentshapetext
    \global\setbox\shapetextbox=\vbox\bgroup
-     \expanded{\switchtobodyfont[\@@shbodyfont]}%
+     \expanded{\switchtobodyfont[\@@shkorps]}%
      \dontcomplain
      \hsize\parwidth
-     \setuptolerance[\v!verytolerant,\v!stretch]%
+     \setuptolerance[\v!zeersoepel,\v!rek]%
      \!!counta=0
      \!!toksa=\emptytoks
      \def\docommando##1%
@@ -124,7 +124,7 @@
   {\vbox\bgroup
    \forgetall
    \setbox\scratchbox\vbox to \parheight
-     {\expanded{\switchtobodyfont[\@@shbodyfont]}% evt strutheight en
+     {\expanded{\switchtobodyfont[\@@shkorps]}% evt strutheight en
       \splittopskip\strutheight               % lineheight opslaan
       \vskip\parvoffset                       % scheelt switch en
       \ifcase\parfirst\or\vskip\lineheight\fi % is ook veiliger
@@ -141,7 +141,7 @@
   {\dodoubleempty\getparameters[\??sh]}
 
 \setupshapetexts%
-  [\c!bodyfont=]
+  [\c!korps=]
 
 %%%%%%% rotfont nog definieren
 
@@ -263,7 +263,7 @@
    width=\the\localhsize, % without \the, problems in non e-tex
    color=darkgray]
 
-\defineblank
+\definieerblanko
   [EnglishRule]
   [medium]
 
@@ -281,8 +281,6 @@
 
 %D The following macro returns a tight bound character
 %D sequence.
-%D
-%D \useMPlibrary[txt]
 %D
 %D \startlinecorrection
 %D \TightText{\ss\bf 123}{0cm}{3cm}{red}

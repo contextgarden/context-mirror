@@ -1,4 +1,5 @@
 %D \module
+%D \module
 %D   [       file=core-tbl,
 %D        version=1998.11.03,
 %D          title=\CONTEXT\ Core Macros,
@@ -508,8 +509,8 @@
 \def\dogettabulatewidth(#1)%
   {\processallactionsinset
      [#1]%
-     [\v!fit=>\chardef\tabulatemodus\plusthree,
-         \v!fixed=>\chardef\tabulatemodus\plusthree
+     [\v!passend=>\chardef\tabulatemodus\plusthree,
+         \v!vast=>\chardef\tabulatemodus\plusthree
                   \tabulatenopbreaktrue,
       \s!unknown=>\tabulatewidth#1\relax]%
    \ifnum\tabulatedimen=\plusone
@@ -572,7 +573,7 @@
   {\dontcomplain
    \global\setbox\tabulatebox % % % global ? % % %
      \vsplit\tablebox\tabulatecolumn to \lineheight
-   \setbox\tabulatebox\normalvbox
+   \setbox\tabulatebox\vbox
      {\unvbox\tabulatebox}%
    \setbox\tabulatebox\hbox to \wd\tabulatebox
      {\hss\dotabulatehook{\box\tabulatebox}\hss}%
@@ -612,7 +613,7 @@
       \fi}}
 
 %D \startbuffer
-%D \starttabulate[|c|p|p|]
+%D \starttabulatie[|c|p|p|]
 %D \NC \bf Alpha \NC \bf Beta        \NC \bf Gamma          \NC\NR
 %D \NC 1         \NC right indeed    \NC definitely wrong   \NC\NR
 %D \NC 2         \NC \thinrules[n=3] \NC \thinrules[n=3]    \NC\NR
@@ -620,22 +621,22 @@
 %D \NC 4         \NC very true       \NC as false as can be \NC\NR
 %D \NC 5         \NC \thinrules[n=5] \NC \thinrules[n=5]    \NC\NR
 %D \NC 6         \NC \thinrules[n=3] \NC \thinrules[n=4]    \NC\NR
-%D \stoptabulate
+%D \stoptabulatie
 %D \stopbuffer
 %D
-%D \typebuffer {\tracetabulatetrue\getbuffer}
+%D \typebuffer {\tracetabulatetrue\haalbuffer}
 %D
 %D \startbuffer
-%D \starttabulate[|c|p|p|]
+%D \starttabulatie[|c|p|p|]
 %D \NC \bf Alpha \NC \bf Beta        \NC \bf Gamma          \NC\NR
 %D \NC 1         \NC right indeed    \NC definitely wrong   \NC\NR
 %D \NC 2         \NC oh yes          \NC simply no          \NC\NR
 %D \NC 3         \NC very true       \NC as false as can be \NC\NR
 %D \NC 4         \NC the whole truth \NC but the truth      \NC\NR
-%D \stoptabulate
+%D \stoptabulatie
 %D \stopbuffer
 %D
-%D \typebuffer {\tracetabulatetrue\getbuffer}
+%D \typebuffer {\tracetabulatetrue\haalbuffer}
 
 % \definetabulate
 % \redefinetabulate
@@ -647,21 +648,21 @@
 
 \def\dodefinetabulate[#1][#2][#3]%
   {\ifthirdargument
-     \doifundefined{\??tt#1::\c!unit}
+     \doifundefined{\??tt#1::\c!eenheid}
        {\copyparameters
           [\??tt#1::][\??tt\v!tabulate::]%
-          [\c!frame,\c!distance,\c!unit,\c!before,\c!bodyfont,\c!after,
-           \c!inner,\c!indenting,\c!margin,\c!align,\c!header,\c!title,
-           \c!rulecolor,\c!rulethickness,\c!split,EQ]}%
+          [\c!kader,\c!afstand,\c!eenheid,\c!voor,\c!korps,\c!na,
+           \c!binnen,\c!inspringen,\c!marge,\c!uitlijnen,\c!hoofd,\c!titel,
+           \c!lijnkleur,\c!lijndikte,\c!splitsen,EQ]}%
      \copyparameters
        [\??tt#1::#2][\??tt#1::]%
-       [\c!unit,\c!distance,\c!before,\c!bodyfont,\c!after,
-        \c!inner,\c!indenting,\c!frame,\c!split,\c!header,\c!title,
-        \c!margin,\c!align,\c!rulecolor,\c!rulethickness,EQ]%
+       [\c!eenheid,\c!afstand,\c!voor,\c!korps,\c!na,
+        \c!binnen,\c!inspringen,\c!kader,\c!splitsen,\c!hoofd,\c!titel,
+        \c!marge,\c!uitlijnen,\c!lijnkleur,\c!lijndikte,EQ]%
      \setvalue{\e!start#1::#2}{\dofinalstarttabulate[#1][#2][#3]}%
      \setvalue{\e!start#1}{\bgroup\dosubstarttabulate[#1]}%
-     \letvalue{\??tt#1-\v!header}\empty
-     \letvalue{\??tt#1-\v!footer }\empty
+     \letvalue{\??tt#1-\v!hoofd}\empty
+     \letvalue{\??tt#1-\v!voet }\empty
    \else\ifsecondargument
      \definetabulate[#1][][#2]%
    \else
@@ -673,21 +674,21 @@
 
 \newconditional\tabulatesomeamble
 
-\def\checkfulltabulatecontent % - needed, else confusion with \c!header
-  {\ifundefined{\??tt\currenttabulate-\v!header}%
+\def\checkfulltabulatecontent % - needed, else confusion with \c!hoofd
+  {\ifundefined{\??tt\currenttabulate-\v!hoofd}%
      \let\tabulateheadcontent\empty
    \else
      \def\tabulateheadcontent
        {\TABLEnoalign{\global\settrue\tabulatesomeamble}%
-        \csname\??tt\currenttabulate-\v!header\endcsname
+        \csname\??tt\currenttabulate-\v!hoofd\endcsname
         \TABLEnoalign{\global\setfalse\tabulatesomeamble}}%
    \fi
-   \ifundefined{\??tt\currenttabulate-\v!footer}%
+   \ifundefined{\??tt\currenttabulate-\v!voet}%
      \let\tabulatetailcontent\empty
    \else
      \def\tabulatetailcontent
        {\TABLEnoalign{\global\settrue\tabulatesomeamble}%
-        \csname\??tt\currenttabulate-\v!footer\endcsname
+        \csname\??tt\currenttabulate-\v!voet\endcsname
         \TABLEnoalign{\global\setfalse\tabulatesomeamble}}%
    \fi}
 
@@ -713,14 +714,14 @@
 
 \def\dostartstarttabulatehead[#1]%
   {\processcontent{\e!stop\v!tabulatehead}\next
-     {\letvalue{\??tt\iffirstargument#1\else\v!tabulate\fi::-\v!header}\next}}
+     {\letvalue{\??tt\iffirstargument#1\else\v!tabulate\fi::-\v!hoofd}\next}}
 
 \setvalue{\e!start\v!tabulatetail}%
   {\dosingleempty\dostartstarttabulatetail}
 
 \def\dostartstarttabulatetail[#1]%
   {\processcontent{\e!stop\v!tabulatetail}\next
-     {\letvalue{\??tt\iffirstargument#1\else\v!tabulate\fi::-\v!footer}\next}}
+     {\letvalue{\??tt\iffirstargument#1\else\v!tabulate\fi::-\v!voet}\next}}
 
 \def\dosubstarttabulate
   {\dodoubleempty\dodosubstarttabulate}
@@ -757,28 +758,28 @@
 \def\dofinalstarttabulate[#1][#2][#3]% identifier sub preamble
   {\edef\currenttabulate{#1::#2}%
    \ifinsidefloat \else
-     \whitespace
-     \getvalue{\??tt\currenttabulate\c!before}%
+     \witruimte
+     \getvalue{\??tt\currenttabulate\c!voor}%
    \fi
    \bgroup
    \resetcharacteralign
    % todo: spacing around tabulate when bodyfont is set
    % expansion en test needed ?
-   \doifelsevalue{\??tt\currenttabulate\c!split}\v!yes
+   \doifelsevalue{\??tt\currenttabulate\c!splitsen}\v!ja
      \splittabulatetrue\splittabulatefalse
-   \doifvaluesomething{\??tt\currenttabulate\c!bodyfont}
+   \doifvaluesomething{\??tt\currenttabulate\c!korps}
      {\expanded{\switchtobodyfont
-        [\getvalue{\??tt\currenttabulate\c!bodyfont}]}}%
+        [\getvalue{\??tt\currenttabulate\c!korps}]}}%
    \postponefootnotes % new, to be tested
    \chardef\tabulatepass\plusone
    \widowpenalty\zerocount % otherwise lines are not broken
    \clubpenalty \zerocount % but overlap in funny ways
    \the\everytabulate
-   \getvalue{\??tt\currenttabulate\c!inner}%
+   \getvalue{\??tt\currenttabulate\c!binnen}%
    \scratchdimen\leftskip
    \advance\scratchdimen \hangindent
-   \doifvalue{\??tt\currenttabulate\c!indenting}\v!yes
-     {\advance\scratchdimen \parindent}% \ctxparindent
+   \doifvalue{\??tt\currenttabulate\c!inspringen}\v!ja
+     {\advance\scratchdimen \parindent}% \voorwit
    \edef\tabulateindent{\the\scratchdimen}%
    \!!toksb\emptytoks
    \def\dorepeat*##1##2%
@@ -855,13 +856,13 @@
    \let\factor\!!plusone
    \scratchskip\strutdp
    \ExpandFirstAfter\processallactionsinset
-     [\getvalue{\??tt\currenttabulate\c!distance}]
-     [ \v!blank=>\scratchskip\bigskipamount,
-       \v!depth=>\scratchskip\strutdp,
-        \v!small=>\def\factor{.25},
-       \v!medium=>\def\factor{.5},
-        \v!big=>,
-         \v!none=>\scratchskip\zeropoint\def\factor{0},
+     [\getvalue{\??tt\currenttabulate\c!afstand}]
+     [ \v!blanko=>\scratchskip\bigskipamount,
+       \v!diepte=>\scratchskip\strutdp,
+        \v!klein=>\def\factor{.25},
+       \v!middel=>\def\factor{.5},
+        \v!groot=>,
+         \v!geen=>\scratchskip\zeropoint\def\factor{0},
          \v!grid=>\scratchskip\zeropoint\def\factor{0},
       \s!unknown=>\scratchskip\commalistelement]%
    \scratchdimen\factor\scratchskip
@@ -878,19 +879,19 @@
 
 \def\dodotabulaterule#1%
   {\color
-     [\getvalue{\??tt\currenttabulate\c!rulecolor}]
-     {\scratchdimen\getvalue{\??tt\currenttabulate\c!rulethickness}#1}}
+     [\getvalue{\??tt\currenttabulate\c!lijnkleur}]
+     {\scratchdimen\getvalue{\??tt\currenttabulate\c!lijndikte}#1}}
 
 \def\dotabulaterule
   {\dodotabulaterule
      {\hrule\!!height.5\scratchdimen\!!depth.5\scratchdimen\relax
-      \doifvalue{\??tt\currenttabulate\c!distance}\v!grid
+      \doifvalue{\??tt\currenttabulate\c!afstand}\v!grid
         {\kern-\scratchdimen}}} % experimental tm-prikkels
 
 \def\dotabulatelinerule
   {\multispan\totaltabulatecolumns % \multispan is a plain macro
    % for the moment this one
-   \strut\hskip\getvalue{\??tt\currenttabulate\c!margin}%
+   \strut\hskip\getvalue{\??tt\currenttabulate\c!marge}%
    % neg values are ok !
    \hskip\tabulateindent % new august 2003
    \dodotabulaterule
@@ -951,19 +952,300 @@
 %D cum suis, since \TEX's hard coded noalign lookahead fails
 %D on it! I mistakenly added this for a while.
 
+% \def\processtabulate[|#1|]% in the process of optimizing
+%   {\tabulateunit\getvalue{\??tt\currenttabulate\c!eenheid}%
+%    \checkfulltabulatecontent
+%    \ExpandFirstAfter\processaction % use \setalignmentswitch instead
+%      [\getvalue{\??tt\currenttabulate\c!uitlijnen}]
+%      [\v!normaal=>\def\@@tabulatealign{0},% = default value
+%        \v!rechts=>\def\@@tabulatealign{1},% chardefs gebruiken
+%         \v!links=>\def\@@tabulatealign{2},%
+%        \v!midden=>\def\@@tabulatealign{3},%
+%       \s!default=>\def\@@tabulatealign{0},%
+%       \s!unknown=>\def\@@tabulatealign{0}]%
+%    \let\pretabskip\!!zeropoint
+%    \def\postabskip{.5\tabulateunit}%
+%    \global\tabulatecolumns\zerocount
+%    \global\nofautotabulate\zerocount
+%    \doglobal\newcounter\noftabulatelines
+%    \let\totalnoftabulatelines\noftabulatelines
+%    \let\minusnoftabulatelines\noftabulatelines
+%    \global\tabulatepwidth\zeropoint
+%    \global\tabulateequalfalse
+%    \resettabulatepheight
+%    \unexpanded \def\NC{\tabulatenormalcolumn0}%
+%    \unexpanded \def\RC{\tabulatenormalcolumn1}%
+%    \unexpanded \def\HC{\tabulatenormalcolumn2}%
+%    \unexpanded \def\EQ{\tabulateequalcolumn 0}%
+%    \unexpanded \def\RQ{\tabulateequalcolumn 1}%
+%    \unexpanded \def\HQ{\tabulateequalcolumn 2}%
+%    \unexpanded \def\NG{\NC\handletabulatecharalign}%
+%    \unexpanded \def\NN{\NC\handletabulatedigits}% new, undocumented, test first
+%    \unexpanded \def\ND{\NC\handletabulatedigits}% same, for old times sake
+%    \def\tabulaterule{\HR}% a rule with lineheight
+%    \def\tabulateline{\HL}% just a spaced rule
+%    \def\tabulateautorule{\doHR\plusone}%
+%    \def\tabulateautoline{\doHL\plusone}%
+%    \def\HR{\doHR\zerocount}
+%    \def\HL{\doHL\zerocount}
+%    \unexpanded \def\NR % next row
+%      {\doglobal\increment\noftabulatelines
+%       \global\tabulatefirstflushedfalse
+%       \global\tabulateequalfalse
+%       \globallet\tabulatecolumn\!!zerocount
+%       \resettabulatepheight
+%       \unskip\unskip\crcr\flushtabulated
+%       \TABLEnoalign
+%         {\iftolerantTABLEbreak\else
+%            \ifnum\noftabulatelines=\plusone
+%              \dotabulatenobreak
+%            \else\ifnum\noftabulatelines=\minusnoftabulatelines
+%              \ifnum\tabulatemaxplines<\plustwo
+%                \dotabulatenobreak
+%              \else
+%                \allowbreak % needed with pbreak prevention
+%              \fi
+%            \else
+%              \allowbreak % needed with pbreak prevention
+%            \fi\fi
+%          \fi
+%          \global\tabulatefirstflushedfalse}}%
+%    \let\HL\empty % not needed
+%    \let\SR\NR    \let\AR\NR
+%    \let\FL\empty \let\FR\NR
+%    \let\ML\empty \let\MR\NR
+%    \let\LL\empty \let\LR\NR
+%    \let\doHR\gobbleoneargument
+%    \let\doHL\gobbleoneargument
+%    \global\let\flushtabulated\empty
+%    \let\savedbar|\let|\nexttabulate
+%    \tabskip\zeropoint
+%    \ifdim\getvalue{\??tt\currenttabulate\c!marge}>\zeropoint
+%      \!!toksa{&\flushtabulateindent\strut##%
+%                \tabskip\getvalue{\??tt\currenttabulate\c!marge}\strut
+%               &##\tabskip\zeropoint}%
+%    \else
+%      \!!toksa{&\flushtabulateindent\strut##%
+%               &##\tabskip\zeropoint}%
+%    \fi
+%    \tabulatewidth\zeropoint
+%    |#1X|\relax
+%    \scratchcounter\tabulatecolumns
+%    \multiply\scratchcounter3%
+%    \advance\scratchcounter4%
+%    \edef\totaltabulatecolumns{\the\scratchcounter}%
+%    \tabulatewidth\zeropoint
+%    % \dorecurse\tabulatecolumns % can be made faster
+%    %   {\doifundefinedelse{\@@tabbox@@\recurselevel}
+%    %      {\expandafter\newbox\csname\@@tabbox@@\recurselevel\endcsname}%
+%    %      {\global\setbox\csname\@@tabbox@@\recurselevel\endcsname\box\voidb@x}}%
+%    \initializetableboxes\tabulatecolumns
+%    \appendtoks&##\to\!!toksa
+%    \appendtoks\doglobal\increment\tabulatecolumn\to\!!toksa
+%    \appendtoks\NC\unskip\unskip\crcr\flushtabulated\to\tabulatedummy % no count
+%    \globallet\tabulatecolumn\!!zerocount
+%    \resettabulatepheight
+%    \def\bskip
+%      {\setbox\tabulatebox\vbox\bgroup
+%         \global\let\tabulatehook\notabulatehook}%
+%    \def\eskip
+%      {\par\egroup
+%       \global\let\tabulatehook\dotabulatehook}%
+%    \def\xbskip
+%      {\hbox\bgroup\vbox\bgroup
+%         \global\let\tabulatehook\notabulatehook}%
+%    \def\xeskip
+%      {\par\egroup\egroup
+%    \global\let\tabulatehook\dotabulatehook}%
+%    \let|\savedbar
+%    \global\let\tabulatehook\dotabulatehook
+%    \doifvalue{\??tt\currenttabulate\c!inspringen}\v!nee\forgetparindent
+%    \ifinsidefloat
+%      \let\tabulateindent\!!zeropoint
+%    \else
+%      \setlocalhsize \hsize\localhsize
+%    \fi
+%    \dontcomplain
+%    \forgetall
+%    \setbox0\vbox % outside \if because of line counting
+%      {\notesenabledfalse
+%       \let\tabulateindent\!!zeropoint
+%       \trialtypesettingtrue % very important
+%       \@EA\halign\@EA{\the\!!toksa\crcr\fulltabulatecontent\crcr}}%
+%    \ifnum\nofautotabulate>\zerocount
+%      % so, even if the natural size is larger, in the final
+%      % run, we force the calculated width
+%      \tabulatewidth\hsize
+%      \advance\tabulatewidth -\wd0
+%      \advance\tabulatewidth -\tabulatepwidth
+%      \ifnum\nofautotabulate>\zerocount
+%        \divide\tabulatewidth \nofautotabulate\relax
+%      \fi
+%    \fi
+%    \def\xbskip{\bskip}%
+%    \def\xeskip{\eskip}%
+%    \ifsplittabulate
+%      \splittopskip\strutht
+%      \global\let\flushtabulatedindeed\empty
+%      \long\def\bbskip
+%        {\ifvoid\tablebox\tabulatecolumn
+%           \ifx\flushtabulatedindeed\empty\else
+%             \setbox0\hbox
+%           \fi
+%        \fi}%
+%      \def\bskip
+%        {\ifvoid\tablebox\tabulatecolumn
+%           \global\setbox\tablebox\tabulatecolumn\vbox
+%           \bgroup
+%           \global\let\tabulatehook\notabulatehook
+%           \ifautotabulate\hsize\tabulatewidth\fi
+%           % \begstrut % interferes with pre-\pars
+%           % evt: \appendtoks\begstrut\to\everypar
+%           \ignorespaces
+%           \def\eskip
+%             {\par\egroup
+%              \settabulatepheight
+%              \global\let\tabulatehook\dotabulatehook
+%              \splitofftabulatebox}%
+%         \else
+%           \let\eskip\empty
+%           \dontcomplain
+%           \global\let\tabulatehook\dotabulatehook
+%           \expandafter\splitofftabulatebox
+%         \fi}%
+%      \gdef\flushtabulated
+%        {\TABLEnoalign % noalign % no interference !
+%           {\global\let\flushtabulatedindeed\empty
+%            \globallet\tabulatecolumn\!!zerocount
+%            \handletabulatepbreak
+%            \dorecurse\tabulatecolumns % was: \noftabcolumns
+%              {\ifvoid\tablebox\recurselevel\else
+%                 \gdef\flushtabulatedindeed{\the\tabulatedummy}%
+%               \fi}%
+%            \global\tabulatefirstflushedtrue}%
+%         \flushtabulatedindeed}%
+%    \else
+%      % tabhook op alles ?
+%      \def\bskip
+%        {\vtop\bgroup
+%           \ifautotabulate\hsize\tabulatewidth\fi
+%           % \begstrut % interferes with pre-\pars
+%           % evt: \appendtoks\begstrut\to\everypar
+%           \ignorespaces}%
+%      \def\eskip % vertical strut added august 2003
+%        {\par\verticalstrut\vskip-\struttotal\egroup}%
+%    \fi
+%    \let\totalnoftabulatelines\noftabulatelines
+%    \let\minusnoftabulatelines\noftabulatelines
+%    \decrement\minusnoftabulatelines
+%    \doglobal\newcounter\noftabulatelines
+%    \def\doHL##1%
+%      {\TABLEnoalign
+%         {\ifnum\noftabulatelines=\zerocount
+%            \ifcase##1\or
+%              \@EAEAEA\FL
+%            \fi
+%          \else\ifnum\noftabulatelines=\totalnoftabulatelines
+%            \ifcase##1\or
+%              \@EA\@EAEAEA\@EA\LL
+%            \fi
+%          \else
+%            \@EAEAEA\ML
+%          \fi\fi}}%
+%    \def\doHR##1% horizontal rule line (break untested)
+%      {\TABLEnoalign
+%         {\globallet\TABLEautoline\dotabulatelinerule
+%          \ifcase##1\or
+%            \ifnum\noftabulatelines=\zerocount
+%              \gdef\TABLEautoline{\TABLEnoalign{}}%
+%            \else\ifnum\noftabulatelines=\totalnoftabulatelines
+%              \gdef\TABLEautoline{\TABLEnoalign{}}%
+%            \fi\fi
+%          \fi
+%          \dotabulatenobreak}%
+%       \TABLEautoline
+%       \TABLEnoalign
+%         {\nobreak
+%          \ifx\TABLEautoline\dotabulatelinerule\kern-\lineheight\fi
+%          \ifnum\noftabulatelines=\totalnoftabulatelines
+%            \@EA\dotabulatenobreak
+%          \else
+%            \@EA\allowbreak
+%          \fi}%
+%       \TABLEautoline
+%       \TABLEnoalign
+%         {\dotabulatenobreak}}%
+%    \doifelsevalue{\??tt\currenttabulate\c!lijn}\v!regel
+%      {\let\HL              \HR
+%       \let\tabulateautoline\tabulateautorule
+%       \let\tabulateline    \tabulaterule}%
+%      {\def\HL{\doHL\zerocount}}%
+%    \def\tablebaselinecorrection
+%      {\def\dobaselinecorrection
+%         {\vskip-\prevdepth
+%          \vskip\strutdp
+%          \vskip\strutdp}%
+%       \baselinecorrection}%
+%    \def\FL{\TABLEnoalign
+%      {\ifinsidefloat\else
+%         \doifemptyvalue{\??tt\currenttabulate\c!voor} % no expansion
+%           {\tablebaselinecorrection}%
+%       \fi
+%       \dotabulaterule
+%       \dotabulatenobreak
+%       \dotabulateruleseperator
+%       \prevdepth\strutdp
+%       \dotabulatenobreak}}%
+%    \def\ML{\TABLEnoalign
+%      {\dotabulateruleseperator
+%       \dotabulaterule
+%       \ifnum\noftabulatelines>\plusone
+%         \ifnum\noftabulatelines<\minusnoftabulatelines
+%           \vskip\topskip\allowbreak\vskip-\topskip
+%           \vskip-\getvalue{\??tt\currenttabulate\c!lijndikte}%
+%           \dotabulaterule
+%         \fi
+%       \fi
+%       \dotabulateruleseperator}}%
+%    \def\LL{\TABLEnoalign
+%      {\dotabulatenobreak
+%       \dotabulateruleseperator
+%       \dotabulatenobreak
+%       \dotabulaterule
+%       \ifinsidefloat\else
+%         \doifemptyvalue{\??tt\currenttabulate\c!na} % no expansion
+%           {\vskip\strutdp
+%            \verticalstrut
+%            \vskip-\struttotal}%
+%       \fi}}%
+%    \chardef\tabulatepass\plustwo
+%    %
+%    \startflushtabulate
+%      \@EA\halign\@EA{\the\!!toksa\crcr\fulltabulatecontent\crcr}%
+%      \prevdepth\strutdp % nog eens beter, temporary hack
+%      \doifvalue{\??tt\currenttabulate\c!afstand}\v!grid
+%        {\vskip-\strutdp}% experimental tm-prikkels
+%    \stopflushtabulate
+%    %
+%    \egroup
+%    \ifinsidefloat \else
+%      \getvalue{\??tt\currenttabulate\c!na}%
+%    \fi
+%    \egroup}
+
 \chardef\tabulaterepeathead\zerocount
 
 \def\processtabulate[|#1|]% in the process of optimizing
-  {\tabulateunit\getvalue{\??tt\currenttabulate\c!unit}%
+  {\tabulateunit\getvalue{\??tt\currenttabulate\c!eenheid}%
    \checkfulltabulatecontent
    \globallet\tabulateruledepth \!!zeropoint
    \globallet\tabulateruleheight\!!zeropoint
    \ExpandFirstAfter\processaction % use \setalignmentswitch instead
-     [\getvalue{\??tt\currenttabulate\c!align}]
-     [\v!normal=>\def\@@tabulatealign{0},% = default value
-       \v!right=>\def\@@tabulatealign{1},% chardefs gebruiken
-        \v!left=>\def\@@tabulatealign{2},%
-       \v!middle=>\def\@@tabulatealign{3},%
+     [\getvalue{\??tt\currenttabulate\c!uitlijnen}]
+     [\v!normaal=>\def\@@tabulatealign{0},% = default value
+       \v!rechts=>\def\@@tabulatealign{1},% chardefs gebruiken
+        \v!links=>\def\@@tabulatealign{2},%
+       \v!midden=>\def\@@tabulatealign{3},%
       \s!default=>\def\@@tabulatealign{0},%
       \s!unknown=>\def\@@tabulatealign{0}]%
    \let\pretabskip\!!zeropoint
@@ -978,9 +1260,9 @@
    \resettabulatepheight
    \ifinsidefloat \else
      \processaction
-       [\getvalue{\??tt\currenttabulate\c!header}]
-       [\v!repeat=>\chardef\tabulaterepeathead\plusone,
-          \v!text=>\chardef\tabulaterepeathead\plustwo]%
+       [\getvalue{\??tt\currenttabulate\c!hoofd}]
+       [\v!herhaal=>\chardef\tabulaterepeathead\plusone,
+          \v!tekst=>\chardef\tabulaterepeathead\plustwo]%
    \fi
    \unexpanded \def\NC{\tabulatenormalcolumn0}%
    \unexpanded \def\RC{\tabulatenormalcolumn1}%
@@ -1032,9 +1314,9 @@
    \global\let\flushtabulated\empty
    \let\savedbar|\let|\nexttabulate
    \tabskip\zeropoint
-   \ifdim\getvalue{\??tt\currenttabulate\c!margin}>\zeropoint
+   \ifdim\getvalue{\??tt\currenttabulate\c!marge}>\zeropoint
      \!!toksa{&\flushtabulateindent\strut##%
-               \tabskip\getvalue{\??tt\currenttabulate\c!margin}\strut
+               \tabskip\getvalue{\??tt\currenttabulate\c!marge}\strut
               &##\tabskip\zeropoint}%
    \else
      \!!toksa{&\flushtabulateindent\strut##%
@@ -1071,7 +1353,7 @@
       \global\let\tabulatehook\dotabulatehook}%
    \let|\savedbar
    \global\let\tabulatehook\dotabulatehook
-   \doifvalue{\??tt\currenttabulate\c!indenting}\v!no\forgetparindent
+   \doifvalue{\??tt\currenttabulate\c!inspringen}\v!nee\forgetparindent
    \ifinsidefloat
      \let\tabulateindent\!!zeropoint
    \else
@@ -1220,7 +1502,7 @@
       \TABLEautoline
       \TABLEnoalign
         {\dotabulatenobreak}}%
-   \doifelsevalue{\??tt\currenttabulate\c!rule}\v!line
+   \doifelsevalue{\??tt\currenttabulate\c!lijn}\v!regel
      {\let\HL              \HR
       \let\tabulateautoline\tabulateautorule
       \let\tabulateline    \tabulaterule}%
@@ -1233,7 +1515,7 @@
       \baselinecorrection}%
    \def\FL{\TABLEnoalign
      {\ifinsidefloat\else
-        \doifemptyvalue{\??tt\currenttabulate\c!before} % no expansion
+        \doifemptyvalue{\??tt\currenttabulate\c!voor} % no expansion
           {\tablebaselinecorrection}%
       \fi
       \dotabulaterule
@@ -1247,7 +1529,7 @@
       \ifnum\noftabulatelines>\plusone
         \ifnum\noftabulatelines<\minusnoftabulatelines
           \vskip\topskip\allowbreak\vskip-\topskip
-          \vskip-\getvalue{\??tt\currenttabulate\c!rulethickness}%
+          \vskip-\getvalue{\??tt\currenttabulate\c!lijndikte}%
           \dotabulaterule
         \fi
       \fi
@@ -1258,7 +1540,7 @@
       \dotabulatenobreak
       \dotabulaterule
       \ifinsidefloat\else
-        \doifemptyvalue{\??tt\currenttabulate\c!after} % no expansion
+        \doifemptyvalue{\??tt\currenttabulate\c!na} % no expansion
           {\vskip\strutdp
            \verticalstrut
            \vskip-\struttotal}%
@@ -1266,14 +1548,14 @@
    \chardef\tabulatepass\plustwo
    %
    \ifcase\tabulaterepeathead
-     \startframedcontent[\getvalue{\??tt\currenttabulate\c!frame}]%
+     \startframedcontent[\getvalue{\??tt\currenttabulate\c!kader}]%
    \else
      \setbox\tabulatebox\vbox \bgroup
    \fi
    %
    \@EA\halign\@EA{\the\!!toksa\crcr\fulltabulatecontent\crcr}%
    \prevdepth\strutdp % nog eens beter, temporary hack
-   \doifvalue{\??tt\currenttabulate\c!distance}\v!grid
+   \doifvalue{\??tt\currenttabulate\c!afstand}\v!grid
      {\vskip-\strutdp}% experimental tm-prikkels
    %
    \ifcase\tabulaterepeathead
@@ -1284,7 +1566,7 @@
    %
    \egroup
    \ifinsidefloat \else
-     \getvalue{\??tt\currenttabulate\c!after}%
+     \getvalue{\??tt\currenttabulate\c!na}%
    \fi
    \egroup}
 
@@ -1327,16 +1609,16 @@
           \advance\dimen0\dp0
           \advance\dimen0\ht0
           \ifdim\dimen0>\pagegoal
-            \bgroup \page \egroup % make sure that local vars are kept
+            \bgroup \pagina \egroup % make sure that local vars are kept
             \ifcase\tabulaterepeathead\or
               \unvcopy2
             \or
-              \hbox{\strut\getvalue{\??tt\currenttabulate\c!title}}%
+              \hbox{\strut\getvalue{\??tt\currenttabulate\c!titel}}%
             \fi
           \fi
         \fi
         % test this on icare checklists / quite hacky ! ! !
-        \ifdim\ht0>\getvalue{\??tt\currenttabulate\c!rulethickness}\else
+        \ifdim\ht0>\getvalue{\??tt\currenttabulate\c!lijndikte}\else
           \kern-2\ht0 % brrrr
         \fi
         %
@@ -1345,7 +1627,7 @@
         \ifvoid#1 \exitloop \fi}%
    \fi}
 
-%D \starttyping
+%D \startypen
 %D \setuptabulate[split=no,rule=line]
 %D
 %D \starttabulate
@@ -1356,7 +1638,7 @@
 %D \NC tufte \NC \input tufte \NC \NR \tabulateautorule
 %D \NC tufte \NC \input tufte \NC \NR \tabulateautorule
 %D \stoptabulate
-%D \stoptyping
+%D \stoptypen
 
 % \starttabulatie[|mc|]
 % \NC \digits{100.000,00} \NC\NR
@@ -1411,22 +1693,22 @@
    \fi\fi}
 
 \setuptabulate
-  [\c!unit=1em,
+  [\c!eenheid=1em,
    EQ={:},
-   \c!frame=\v!off,
-   \c!bodyfont=,
-   \c!rule=\v!normal,
-   \c!rulecolor=,
-   \c!rulethickness=\linewidth,
-   \c!inner=,
-   \c!before=\blank,
-   \c!after=\blank,
-   \c!distance={\v!depth,\v!medium},
-   \c!align=\v!normal,
-   \c!margin=\!!zeropoint,
-   \c!split=\v!yes,
-   \c!header=\v!yes,
-   \c!title=,
-   \c!indenting=\v!no]
+   \c!kader=\v!uit,
+   \c!korps=,
+   \c!lijn=\v!normaal,
+   \c!lijnkleur=,
+   \c!lijndikte=\linewidth,
+   \c!binnen=,
+   \c!voor=\blanko,
+   \c!na=\blanko,
+   \c!afstand={\v!diepte,\v!middel},
+   \c!uitlijnen=\v!normaal,
+   \c!marge=\!!zeropoint,
+   \c!splitsen=\v!ja,
+   \c!hoofd=\v!ja,
+   \c!titel=,
+   \c!inspringen=\v!nee]
 
 \protect \endinput

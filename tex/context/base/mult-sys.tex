@@ -22,10 +22,10 @@
 %D The constants are grouped in such a way that there is a
 %D minimal change of conflicts.
 %D
-%D \starttyping
+%D \starttypen
 %D \definesystemconstants {word}
 %D \definemessageconstant {word}
-%D \stoptyping
+%D \stoptypen
 %D
 %D This commands generate \type{\s!word} and \type{\m!word}.
 
@@ -33,7 +33,6 @@
 %D multi||lingual interface and multi||linguag typesetting.
 
 \definesystemconstant {afrikaans}   \definesystemconstant {af}
-\definesystemconstant {catalan}     \definesystemconstant {ca}
 \definesystemconstant {chinese}     \definesystemconstant {cn}
 \definesystemconstant {croation}    \definesystemconstant {hr}
 \definesystemconstant {czech}       \definesystemconstant {cz}
@@ -52,8 +51,6 @@
 \definesystemconstant {romanian}    \definesystemconstant {ro}
 \definesystemconstant {russian}     \definesystemconstant {ru}
 \definesystemconstant {slovak}      \definesystemconstant {sk}
-\definesystemconstant {slovenian}   \definesystemconstant {sl}
-\definesystemconstant {slovene}
 \definesystemconstant {spanish}     \definesystemconstant {es}
 \definesystemconstant {swedish}     \definesystemconstant {sv}
 \definesystemconstant {turkish}     \definesystemconstant {tr}
@@ -110,10 +107,10 @@
 %D Where in the \ASCII\ file the second lines takes nine extra
 %D characters, \TEX\ saves us 13~tokens.
 %D
-%D \starttyping
+%D \starttypen
 %D \hrule width 10pt height 2pt depth 1pt
 %D \hrule \!!width 10pt \!!height 2pt \!!depth 1pt
-%D \stoptyping
+%D \stoptypen
 %D
 %D One condition is that we have defined \type{\!!height},
 %D \type{\!!width} and \type{\!!depth} as respectively
@@ -345,8 +342,6 @@
 \newdimen \onebasepoint   \onebasepoint = 1bp
 \chardef  \scaledpoint                  = 1
 
-\let\onerealpoint\onepoint % needed for latex
-
 \newcount\medcard \medcard\!!medcard % used in font module
 \newcount\maxcard \maxcard\!!maxcard % used in font module
 
@@ -360,7 +355,7 @@
 
 %D A rough test is:
 %D
-%D \starttyping
+%D \starttypen
 %D \def\TestMe % 7.75 sec on a P4/2G
 %D   {\dimen0=10\points\dimen0=10\points\dimen0=10\points\dimen0=10\points\dimen0=10\points
 %D    \dimen0=10\points\dimen0=10\points\dimen0=10\points\dimen0=10\points\dimen0=10\points}
@@ -374,7 +369,7 @@
 %D    \dimen0=10\s!pt\dimen0=10\s!pt\dimen0=10\s!pt\dimen0=10\s!pt\dimen0=10\s!pt}
 %D
 %D \testfeatureonce {500000}{\TestMe}
-%D \stoptyping
+%D \stoptypen
 
 %D Variables are composed of a command specific tag and a user
 %D supplied variable (system constant). The first tag \type{ag}
@@ -431,7 +426,6 @@
 \definesystemvariable {ht}   % HiddenText
 \definesystemvariable {fc}   % FramedContent
 \definesystemvariable {fd}   % FielD
-\definesystemvariable {fe}   % FoxetExtensions
 \definesystemvariable {ff}   % FontFile
 \definesystemvariable {fg}   % FiGuurmaten
 \definesystemvariable {fi}   % FIle
@@ -441,7 +435,6 @@
 \definesystemvariable {fr}   % ForM
 \definesystemvariable {fs}   % FileSynonym
 \definesystemvariable {ft}   % FonTs
-\definesystemvariable {fx}   % FoXet
 \definesystemvariable {ha}   % HAng
 \definesystemvariable {hs}   % HSpace
 \definesystemvariable {ia}   % Interactie

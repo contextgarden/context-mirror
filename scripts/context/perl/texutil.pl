@@ -40,7 +40,7 @@ eval '(exit $?0)' && eval 'exec perl -S $0 ${1+"$@"}' && eval 'exec perl -S $0 $
 #D binary version, like scanning illustrations other than \EPS.
 #D I would suggest to keep an eye on the version number:
 
-$Program = "TeXUtil 9.0 - ConTeXt / PRAGMA ADE 1992-2004" ;
+$Program = "TeXUtil 8.2 - ConTeXt / PRAGMA ADE 1992-2004" ;
 
 #D By the way, this is my first \PERL\ script, which means
 #D that it will be improved as soon as I find new and/or more
@@ -2023,7 +2023,7 @@ sub SaveFigurePresets
       { ++$NOfFigures ;
         $Figures[$NOfFigures] = "\\presetfigure[$FNam][e=$FTyp" ;
         if ($FUni)
-          { $Figures[$NOfFigures] .= (sprintf ",w=%5.3fcm,h=%5.3fcm", $FWid, $FHei) }
+          { $Figures[$NOfFigures] .= (sprintf ",w=%5.3fcm,h=%5.3fcm\n", $FWid, $FHei) }
         else
           { $Figures[$NOfFigures] .= ",w=${FWid}bp,h=${FHei}bp" }
         if (($FXof!=0)||($FYof!=0))

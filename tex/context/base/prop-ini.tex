@@ -39,18 +39,10 @@
   {\csname\s!check\currentpropertytype property\endcsname
    \global\expandafter\let\csname\??py\s!check\currentproperty\endcsname\empty}
 
-% \def\checkproperty[#1]%
-%   {\bgroup
-%    \def\currentproperty{#1}%
-%    \docheckproperty
-%    \egroup}
-%
-% oeps, was wrong, no reset
-
 \def\checkproperty[#1]%
   {\bgroup
    \def\currentproperty{#1}%
-   \csname\??py\s!check\currentproperty\endcsname
+   \docheckproperty
    \egroup}
 
 \unexpanded\def\property[#1]%
@@ -99,7 +91,7 @@
   {\dotripleempty\dodefineproperty}
 
 \def\dodefineproperty[#1]%
-  {\ifundefined{\??py#1\c!global}%
+  {\ifundefined{\??py#1\c!globaal}%
      \expandafter\dododefineproperty
    \else
      \expandafter\nododefineproperty
@@ -113,19 +105,19 @@
 %          none    : no commands
 
 \def\dododefineproperty[#1][#2][#3]% global ! ! !
-  {\getgparameters[\??py#1][\c!global=\v!no,\c!type=#2,\c!method=\v!none,#3]% global ! ! ! !
+  {\getgparameters[\??py#1][\c!globaal=\v!nee,\c!type=#2,\c!methode=\v!geen,#3]% global ! ! ! !
    \expandafter\newcount\csname\??py:l:#2\endcsname % current level
    \expandafter\newcount\csname\??py:p:#2\endcsname % previous level
    \global\csname\??py:p:#2\endcsname\minusone
    \global\expandafter\expandafter\let\csname\??py:c:0\endcsname\empty
    \letgvalue{\??py\s!check#1}\docheckproperty
-   \doifelsevalue{\??py#1\c!method}\v!command
-     {\doifelsevalue{\??py#1\c!global}\v!yes
+   \doifelsevalue{\??py#1\c!methode}\v!commando
+     {\doifelsevalue{\??py#1\c!globaal}\v!ja
         {\setgvalue{\e!start#1}{\dostartproperty{#1}}%
          \letgvalue{\e!stop#1}\dostopproperty}%
         {\setgvalue{\e!start#1}{\dostartgproperty{#1}}%
          \letgvalue{\e!stop#1}\dostopgproperty}}%
-     {\doifelsevalue{\??py#1\c!global}\v!yes
+     {\doifelsevalue{\??py#1\c!globaal}\v!ja
         {\setgvalue{\e!start#2}[##1]{\dostartproperty{##1}}%
          \letgvalue{\e!stop#2}\dostopproperty}%
         {\setgvalue{\e!start#2}[##1]{\dostartgproperty{##1}}%
@@ -134,7 +126,7 @@
 \def\nododefineproperty[#1][#2][#3]%
   {}
 
-\def\doifelseproperty#1{\doifdefinedelse{\??py#1\c!global}}
+\def\doifelseproperty#1{\doifdefinedelse{\??py#1\c!globaal}}
 
 \def\setupproperty
   {\dodoubleempty\dosetupproperty}

@@ -94,6 +94,13 @@
   \definefontsynonym [MathBeta]      [LucidaNewMath-Roman]
 \stoptypescript
 
+ \definefontsynonym  [LucidaNewMath-AltDemiItalic] [lbmdo]
+  \definefontsynonym [LucidaNewMath-Arrows-Demi]   [lbmad]
+  \definefontsynonym [LucidaNewMath-Extension]     [lbme]
+  \definefontsynonym [LucidaNewMath-Demibold]      [lbmd]
+  \definefontsynonym [LucidaNewMath-DemiItalic]    [lbmdi]
+  \definefontsynonym [LucidaNewMath-Symbol-Demi]   [lbmsd]
+
 \starttypescript [boldmath] [lucida] [name]
   \definefontsynonym [MathRoman]     [LucidaBright-Demi]
   \definefontsynonym [MathExtension] [LucidaNewMath-Extension]
@@ -133,7 +140,7 @@
 \starttypescript [sans] [lucida] [texnansi,ec,8r]
   \definefontsynonym [LucidaSans]            [\typescriptthree-lsr]  [encoding=\typescriptthree]
   \definefontsynonym [LucidaSans-Demi]       [\typescriptthree-lsd]  [encoding=\typescriptthree]
-  \definefontsynonym [LucidaSans-DemiItalic] [\typescriptthree-lsdi] [encoding=\typescriptthree]
+  \definefontsynonym f[LucidaSans-DemiItalic] [\typescriptthree-lsdi] [encoding=\typescriptthree]
   \definefontsynonym [LucidaSans-Italic]     [\typescriptthree-lsi]  [encoding=\typescriptthree]
   \definefontsynonym [LucidaSans-Bold]       [\typescriptthree-lsb]  [encoding=\typescriptthree]
   \definefontsynonym [LucidaSans-BoldItalic] [\typescriptthree-lsbi] [encoding=\typescriptthree]
@@ -534,92 +541,6 @@
   \definefontsynonym [ItcKabel-Medium] [\typescriptthree-kbm] [encoding=\typescriptthree]
   \definefontsynonym [ItcKabel-Ultra]  [\typescriptthree-kbu] [encoding=\typescriptthree]
   \definefontsynonym [ItcKabel-Book]   [\typescriptthree-kbw] [encoding=\typescriptthree]
-
-\stoptypescript
-
-% thesans
-
-\starttypescript [map] [thesans] [ec,8r,texnansi]
-  \loadmapfile[\typescriptthree-lucas-thesans.map]
-\stoptypescript
-
-\starttypescript [sans] [thesans] [name]
-
-  \definefontsynonym [Sans]                [TheSans-Plain]
-  \definefontsynonym [SansItalic]          [TheSans-Italic]
-  \definefontsynonym [SansSlanted]         [TheSans-Italic]
-  \definefontsynonym [SansBold]            [TheSansBold-Plain]
-  \definefontsynonym [SansBoldItalic]      [TheSansBold-Italic]
-  \definefontsynonym [SansBoldSlanted]     [TheSansBold-Italic]
-
-  \definefontsynonym [SansCaps]            [TheSans-Caps]
-  \definefontsynonym [SansCapsItalic]      [TheSans-CapsItalic]
-  \definefontsynonym [SansCapsSlanted]     [TheSans-CapsItalic]
-  \definefontsynonym [SansCapsBold]        [TheSansBold-Caps]
-  \definefontsynonym [SansCapsBoldItalic]  [TheSansBold-CapsItalic]
-  \definefontsynonym [SansCapsBoldSlanted] [TheSansBold-CapsItalic]
-
-\stoptypescript
-
-\starttypescript [mono] [thesans] [name]
-
-  \definefontsynonym [Mono]            [TheSansTypewriter-Plain]
-  \definefontsynonym [MonoCaps]        [TheSansTypewriter-Plain]
-  \definefontsynonym [MonoItalic]      [TheSansTypewriter-Italic]
-  \definefontsynonym [MonoSlanted]     [TheSansTypewriter-Italic]
-  \definefontsynonym [MonoBold]        [TheSansTypewriter-Bold]
-  \definefontsynonym [MonoBoldItalic]  [TheSansTypewriter-BoldItalic]
-  \definefontsynonym [MonoBoldSlanted] [TheSansTypewriter-BoldItalic]
-
-\stoptypescript
-
-\starttypescript [sans] [thesans] [ec,8r,texnansi]
-
-  \definefontsynonym [TheSans-Plain]            [\typescriptthree-tsan5]   [encoding=\typescriptthree]
-  \definefontsynonym [TheSans-Italic]           [\typescriptthree-tsan5i]  [encoding=\typescriptthree]
-  \definefontsynonym [TheSansBold-Plain]        [\typescriptthree-tsan7]   [encoding=\typescriptthree]
-  \definefontsynonym [TheSansBold-Italic]       [\typescriptthree-tsan7i]  [encoding=\typescriptthree]
-
-  \definefontsynonym [TheSans-Caps]             [\typescriptthree-tsan5c]  [encoding=\typescriptthree]
-  \definefontsynonym [TheSans-CapsItalic]       [\typescriptthree-tsan5ci] [encoding=\typescriptthree]
-  \definefontsynonym [TheSansBold-Caps]         [\typescriptthree-tsan7c]  [encoding=\typescriptthree]
-  \definefontsynonym [TheSansBold-CapsItalic]   [\typescriptthree-tsan7ci] [encoding=\typescriptthree]
-
-%   \definefontsynonym[TheSans-B2ExtraLight]       [\typescriptthree-thesnb2]  [encoding=\typescriptthree]
-%   \definefontsynonym[TheSans-B2ExtraLightItalic] [\typescriptthree-thesnb2i] [encoding=\typescriptthree]
-%   \definefontsynonym[TheSans-B3Light]            [\typescriptthree-thesnb3]  [encoding=\typescriptthree]
-%   \definefontsynonym[TheSans-B3LightItalic]      [\typescriptthree-thesnb3i] [encoding=\typescriptthree]
-%   \definefontsynonym[TheSans-B4SemiLight]        [\typescriptthree-thesnb4]  [encoding=\typescriptthree]
-%   \definefontsynonym[TheSans-B4SemiLightItalic]  [\typescriptthree-thesnb4i] [encoding=\typescriptthree]
-%   \definefontsynonym[TheSans-B5Plain]            [\typescriptthree-thesnb5]  [encoding=\typescriptthree]
-%   \definefontsynonym[TheSans-B5PlainItalic]      [\typescriptthree-thesnb5i] [encoding=\typescriptthree]
-%   \definefontsynonym[TheSans-B6SemiBold]         [\typescriptthree-thesnb6]  [encoding=\typescriptthree]
-%   \definefontsynonym[TheSans-B6SemiBoldItalic]   [\typescriptthree-thesnb6i] [encoding=\typescriptthree]
-%   \definefontsynonym[TheSans-B7Bold]             [\typescriptthree-thesnb7]  [encoding=\typescriptthree]
-%   \definefontsynonym[TheSans-B7BoldItalic]       [\typescriptthree-thesnb7i] [encoding=\typescriptthree]
-%   \definefontsynonym[TheSans-B8ExtraBold]        [\typescriptthree-thesnb8]  [encoding=\typescriptthree]
-%   \definefontsynonym[TheSans-B8ExtraBoldItalic]  [\typescriptthree-thesnb8i] [encoding=\typescriptthree]
-%   \definefontsynonym[TheSans-B8ExtraBoldItalic]  [\typescriptthree-thesnb8i] [encoding=\typescriptthree]
-%   \definefontsynonym[TheSans-B9Black]            [\typescriptthree-thesnb9]  [encoding=\typescriptthree]
-%   \definefontsynonym[TheSans-B9BlackItalic]      [\typescriptthree-thesnb9i] [encoding=\typescriptthree]
-
-\stoptypescript
-
-\starttypescript [mono] [thesans] [ec,8r,texnansi]
-
-  \definefontsynonym [TheSansTypewriter-Plain]      [\typescriptthree-tsaty5]  [encoding=\typescriptthree]
-  \definefontsynonym [TheSansTypewriter-Italic]     [\typescriptthree-tsaty5i] [encoding=\typescriptthree]
-  \definefontsynonym [TheSansTypewriter-Bold]       [\typescriptthree-tsaty7]  [encoding=\typescriptthree]
-  \definefontsynonym [TheSansTypewriter-BoldItalic] [\typescriptthree-tsaty7i] [encoding=\typescriptthree]
-
-\stoptypescript
-
-\starttypescript [expert] [thesans]
-
-  \definefontsynonym [TheSans-Expert]           [tsan5e]  [encoding=\typescriptthree]
-  \definefontsynonym [TheSans-ExpertItalic]     [tsan5ei] [encoding=\typescriptthree]
-  \definefontsynonym [TheSansBold-Expert]       [tsan7e]  [encoding=\typescriptthree]
-  \definefontsynonym [TheSansBold-ExpertItalic] [tsan7ei] [encoding=\typescriptthree]
 
 \stoptypescript
 

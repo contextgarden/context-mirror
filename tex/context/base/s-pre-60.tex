@@ -48,16 +48,14 @@
 
 % todo: roll back blank
 
-\def\StepLayer{step:\StepCounter}
-
 \def\StartStep
   {\ifvmode
      \scratchskip\lastskip
      \vskip-\scratchskip
-     \startproperty[\StepLayer]%
+     \startproperty[step:\StepCounter]%
      \vskip\scratchskip
    \else
-     \startproperty[\StepLayer]%
+     \startproperty[step:\StepCounter]%
    \fi
    \ignorespaces}
 
@@ -65,9 +63,9 @@
   {\removeunwantedspaces
    \stopproperty}
 
-\def\StartSteps{\iftrialtypesetting\else\ResetStep\NextStep\StartStep\fi}
-\def\StopSteps {\iftrialtypesetting\else\StopStep\PrevStep\fi}
-\def\FlushStep {\iftrialtypesetting\else\StopStep\NextStep\StartStep\fi}
+\def\StartSteps{\ResetStep\NextStep\StartStep}
+\def\StopSteps {\StopStep\PrevStep}
+\def\FlushStep {\StopStep\NextStep\StartStep}
 
 \appendtoks
   \ResetStep
@@ -86,26 +84,5 @@
 \setupbackgrounds
   [text]
   [background=invoke]
-
-% bonus
-
-\useMPlibrary[nav]
-
-\definepalet
-  [navplus]
-  [attach=interactioncolor,
-   comment=interactioncolor]
-
-\setupcomment
-  [symbol={comment-normal,comment-down},
-   textlayer=\StepLayer,
-   option=buffer,
-   height=\textheight,
-   width=\textwidth,
-   margin=0pt]
-
-\setupattachments
-  [symbol={attach-normal,attach-down},
-   textlayer=\StepLayer]
 
 \endinput

@@ -1,6 +1,6 @@
 %D \module
 %D   [       file=lang-vn,
-%D        version=1999.12.12,
+%D        version=1999.12.12, 
 %D          title=\CONTEXT\ Language Macros,
 %D       subtitle=Vietnamese,
 %D         author={Hans Hagen \& Han The Thanh},
@@ -8,8 +8,8 @@
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
-%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
-%C details.
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for 
+%C details. 
 
 \writestatus{loading}{Vietnamese Language}
 
@@ -17,19 +17,19 @@
 %D many of the first translations were done by Tobias. Later
 %D on, corrections were made by users. If you have suggestions,
 %D or feel that your name missing here, don't hesitate to send
-%D us an email.
+%D us an email. 
 %D
 %D \starttabulate[|lB|l|]
 %D \NC Vietnamese \NC \THANH\ \NC \NR
 %D \stoptabulate
 
-\unprotect
+\unprotect 
 
 \definesystemconstant {vietnamese} \definesystemconstant {vn}
 
 \installlanguage
   [\s!vn]
-  [\c!spacing=\v!packed,
+  [\c!spatiering=\v!opelkaar,
    \c!leftsentence=---,
    \c!rightsentence=---,
    \c!leftsubsentence=---,
@@ -38,34 +38,36 @@
    \c!rightquote=\upperrightsingleninequote,
    \c!leftquotation=\lowerleftdoubleninequote,
    \c!rightquotation=\upperrightdoubleninequote,
-   \c!date={{Ng\`ay },dd,{ th\'ang },\v!month,{ n\u a m },yy},
-   \c!state=\v!stop]
+   \c!datum={{Ng\`ay },dd,{ th\'ang },\v!maand,{ n\u a m },yy},
+   \c!status=\v!stop]
 
 \installlanguage [vietnamese] [\s!vn]
 
-\setupheadtext [\s!vn] [\v!content=M\d{u}c l\d{u}c]
-\setupheadtext [\s!vn] [\v!tables=Danh s\'ach b\h{a}ng]
-\setupheadtext [\s!vn] [\v!figures=Danh s\'ach h\`inh v\~e]
-\setupheadtext [\s!vn] [\v!graphics=Graphics]
-\setupheadtext [\s!vn] [\v!intermezzi=Intermezzos]
-\setupheadtext [\s!vn] [\v!index=Ch\h{i} s\'{^o}]
-\setupheadtext [\s!vn] [\v!abbreviations=Abbreviations]
-\setupheadtext [\s!vn] [\v!logos=Logos]
-\setupheadtext [\s!vn] [\v!units=Units]
+\installlanguage [\s!vn] [\c!status=\v!start]
 
-\setuplabeltext [\s!vn] [\v!table=B\h{a}ng]
-\setuplabeltext [\s!vn] [\v!figure=H\`inh]
+\setupheadtext [\s!vn] [\v!inhoud=M\d{u}c l\d{u}c]
+\setupheadtext [\s!vn] [\v!tabellen=Danh s\'ach b\h{a}ng]
+\setupheadtext [\s!vn] [\v!figuren=Danh s\'ach h\`inh v\~e]
+\setupheadtext [\s!vn] [\v!grafieken=Graphics]
+\setupheadtext [\s!vn] [\v!intermezzos=Intermezzos]
+\setupheadtext [\s!vn] [\v!index=Ch\h{i} s\'{^o}]
+\setupheadtext [\s!vn] [\v!afkortingen=Abbreviations]
+\setupheadtext [\s!vn] [\v!logos=Logos]
+\setupheadtext [\s!vn] [\v!eenheden=Units]
+
+\setuplabeltext [\s!vn] [\v!tabel=B\h{a}ng]
+\setuplabeltext [\s!vn] [\v!figuur=H\`inh]
 \setuplabeltext [\s!vn] [\v!intermezzo=intermezzo]
-\setuplabeltext [\s!vn] [\v!graphic=graphic]
-\setuplabeltext [\s!vn] [\v!chapter=chapter]
-\setuplabeltext [\s!vn] [\v!section=] % not set
-\setuplabeltext [\s!vn] [\v!subsection=] % not set
-\setuplabeltext [\s!vn] [\v!subsubsection=] % not set
-\setuplabeltext [\s!vn] [\v!subsubsubsection=] % not set
-\setuplabeltext [\s!vn] [\v!appendix=] % not set
-\setuplabeltext [\s!vn] [\v!part=Ph\`{^a} n ]
-\setuplabeltext [\s!vn] [\v!line=line ]
-\setuplabeltext [\s!vn] [\v!lines=lines ]
+\setuplabeltext [\s!vn] [\v!grafiek=graphic]
+\setuplabeltext [\s!vn] [\v!hoofdstuk=chapter]
+\setuplabeltext [\s!vn] [\v!paragraaf=] % not set 
+\setuplabeltext [\s!vn] [\v!sub\v!paragraaf=] % not set 
+\setuplabeltext [\s!vn] [\v!sub\v!sub\v!paragraaf=] % not set 
+\setuplabeltext [\s!vn] [\v!sub\v!sub\v!sub\v!paragraaf=] % not set 
+\setuplabeltext [\s!vn] [\v!bijlage=] % not set 
+\setuplabeltext [\s!vn] [\v!deel=Ph\`{^a} n ]
+\setuplabeltext [\s!vn] [\v!regel=line ]
+\setuplabeltext [\s!vn] [\v!regels=lines ]
 
 \setuplabeltext [\s!vn]    [\v!sunday=Sunday]
 \setuplabeltext [\s!vn]    [\v!monday=Monday]
@@ -83,11 +85,11 @@
 \setuplabeltext [\s!vn]      [\v!june=s\'au]
 \setuplabeltext [\s!vn]      [\v!july=b\h{a}y]
 \setuplabeltext [\s!vn]    [\v!august=t\'am]
-\setuplabeltext [\s!vn] [\v!september=ch\'in]
+\setuplabeltext [\s!vn] [\v!september=ch\'in] 
 \setuplabeltext [\s!vn]   [\v!october=m\h{u}\`{ho}i]
 \setuplabeltext [\s!vn]  [\v!november=m\h{u}\`{ho}im\d{^o}t]
 \setuplabeltext [\s!vn]  [\v!december=m\h{u}\`{ho}ihai]
 
-\protect
+\protect 
 
-\endinput
+\endinput 

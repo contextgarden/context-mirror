@@ -79,22 +79,22 @@
 %D
 %D The three specials involved are:
 %D
-%D \starttyping
+%D \starttypen
 %D \dosetposition          {identifier}
 %D \dosetpositionwhd       {identifier} {width} {height} {depth}
 %D \dosetpositionplus      {identifier} {width} {height} {depth} {list}
 %D \dosetpositionpapersize {width} {height}
-%D \stoptyping
+%D \stoptypen
 %D
 %D Either directly, when using \PDFTEX, or by means of a
 %D postprocessor, when using \DVI\ output, these end up in the
 %D utility file as:
 %D
-%D \starttyping
+%D \starttypen
 %D \pospxy     {identifier} {page} {x} {y}
 %D \pospxywhd  {identifier} {page} {x} {y} {w} {h} {d}
 %D \pospxylist {identifier} {page} {x} {y} {w} {h} {d} {list}
-%D \stoptyping
+%D \stoptypen
 %D
 %D This means that we have to provide both a utility set and
 %D reset macro for positions.
@@ -130,8 +130,8 @@
 
 \def\registerpageposition#1% this one is flushed first !
   {\ifpositioning\ifcase\realpageno\or
-     \ifdim\printpaperheight=\paperheight\else
-       \ifdim\printpaperwidth=\paperwidth\else
+     \ifdim\printpapierhoogte=\papierhoogte\else
+       \ifdim\printpapierbreedte=\papierbreedte\else
          \setbox#1\hbox{\hpos\pageanchor{\box#1}}%
        \fi
      \fi
@@ -358,15 +358,15 @@
 %D extra argument, denoting what additional parameter to pick
 %D up. So, the third extra is fetched with,
 %D
-%D \starttyping
+%D \starttypen
 %D \MPplus{identifier}{3}{default}
-%D \stoptyping
+%D \stoptypen
 %D
 %D All extras (comma separated) are fetched with:
 %D
-%D \starttyping
+%D \starttypen
 %D \MPrest{identifier}
-%D \stoptyping
+%D \stoptypen
 %D
 %D The extra parameters are not treated.
 
@@ -430,8 +430,8 @@
   {\ifpositioning \else
      \global\positioningtrue
      \dosetpositionpapersize
-       {\number\printpaperwidth}%
-       {\number\printpaperheight }%
+       {\number\printpapierbreedte}%
+       {\number\printpapierhoogte }%
    \fi
    \doglobal\increment\currentpositions}
 
@@ -582,7 +582,7 @@
 
 %D The next one will be overloaded later.
 %D
-%D \starttyping
+%D \starttypen
 %D \def\dopositionaction#1% test saves hash entry in etex
 %D   {\ifundefined{\POSactionprefix#1::}\else
 %D      \ifnum\MPp{#1}>\zerocount % new
@@ -612,11 +612,11 @@
 %D        \traceposstring\clap\cyan{<#1>}%
 %D      \fi
 %D    \fi}
-%D \stoptyping
+%D \stoptypen
 
 \def\doifpositionaction#1%
   {\ifundefined{\POSactionprefix#1::}%
-     \@EA\gobbleoneargument
+     \@EA\gobblefirstargument
    \else
      \@EA\firstofoneargument
    \fi}
@@ -630,9 +630,9 @@
 
 %D We can copy a position with:
 %D
-%D \starttyping
+%D \starttypen
 %D \copyposition {to} {from}
-%D \stoptyping
+%D \stoptypen
 %D
 %D Again, this is a global action.
 
@@ -650,9 +650,9 @@
 %D one of the reasons why we need to be able to test for
 %D existence, using:
 %D
-%D \starttyping
+%D \starttypen
 %D \doifpositionelse {identifier} {found action} {not found action}
-%D \stoptyping
+%D \stoptypen
 
 % \def\doifpositionelse#1%
 %   {\doifdefinedelse{\POSprefix#1}}
@@ -673,7 +673,7 @@
 %D We have several macros available to save positions. Later
 %D we will see applications.
 %D
-%D \starttabulate[|l|l||]
+%D \starttabulatie[|l|l||]
 %D \NC \type {\xypos} \NC    \NC simple position with no dimensions \NC \NR
 %D \NC \type {\hpos}  \NC    \NC position and characteristics of a \type {\hbox}                    \NC \NR
 %D \NC \type {\vpos}  \NC    \NC position and characteristics of a \type {\vbox}                    \NC \NR
@@ -681,7 +681,7 @@
 %D \NC \type {\epos}  \NC e: \NC end point in a line \NC \NR
 %D \NC \type {\fpos}  \NC f: \NC begin point in a paragraph \NC \NR
 %D \NC \type {\tpos}  \NC t: \NC end point in a paragraph \NC \NR
-%D \stoptabulate
+%D \stoptabulatie
 %D
 %D Each macro takes an identifier as argument, and the \type
 %D {\hpos} and \type {\vpos} also expect box content.
@@ -810,7 +810,7 @@
         \hss}%
    \fi}
 
-% \appendtoks \registerparoptions \to \everypar
+\appendtoks \registerparoptions \to \everypar
 
 %D \macros
 %D   {doifoverlappingelse}
@@ -818,11 +818,11 @@
 %D A first application of positional information, is to
 %D determine if two boxes do overlap:
 %D
-%D \starttyping
+%D \starttypen
 %D \doifoverlappingelse{point a}{point b}
 %D   {action when overlapping}
 %D   {action when not overlapping}
-%D \stoptyping
+%D \stoptypen
 
 % \def\doifoverlappingelse#1#2#3#4%
 %   {\relax\ifnum\MPp{#1}=\MPp{#2}\relax
@@ -915,14 +915,14 @@
 %D Instead of letting the user handle fuzzy expansion, we
 %D provide a simple test on positione being on the same page.
 %D
-%D \starttyping
+%D \starttypen
 %D \doifpositionsonsamepageelse{point a}{point b}
 %D   {action when on same page}
 %D   {action when not on same page}
 %D \doifpositionsonthispageelse{point a}{point b}
 %D   {action when on this page}
 %D   {action when not on this page}
-%D \stoptyping
+%D \stoptypen
 
 \def\dodoifpositionsonsamepageelse#1#2#3#4%
   {\bgroup
@@ -966,16 +966,16 @@
 
 \def\placepositionanchors % todo : depth pagebox
   {\ifpositioning
-     \setbox\scratchbox\vbox to \textheight
+     \setbox\scratchbox\vbox to \teksthoogte
        {\simpletopskipcorrection
         \hbox{\strut\dopositionaction\headanchor}%
         \vfill
         \hbox{\strut\dopositionaction\tailanchor}}%
      \dp\scratchbox\zeropoint
-     \wd\scratchbox\makeupwidth % not \zeropoint, else wrong text backgrounds
+     \wd\scratchbox\zetbreedte % not \zeropoint, else wrong text backgrounds
      \hpos\textanchor{\box\scratchbox}%
    \else
-     \vskip\textheight
+     \vskip\teksthoogte
    \fi}
 
 %D The first version of this module implemented head and tail
@@ -1070,17 +1070,17 @@
 %D We can best demonstrate this in an example, say:
 %D
 %D \startbuffer[text]
-%D \framed
-%D   [backgroundachtergrond=sample,align=middle,width=7cm]
+%D \omlijnd
+%D   [achtergrond=sample,uitlijnen=midden,breedte=7cm]
 %D   {We want to connect \hpos {A-1} {this} word with its
 %D    grammatical cousin \hpos {A-2} {that}.}
 %D \stopbuffer
 %D
 %D \typebuffer[text]
 %D
-%D \startlinecorrection
-%D %\getbuffer[graphic,sample,text]
-%D \stoplinecorrection
+%D \startregelcorrectie
+%D %\haalbuffer[graphic,sample,text]
+%D \stopregelcorrectie
 %D
 %D The graphic is defined in the following way, using some
 %D macros defined in an auxiliary \METAPOST\ module that is
@@ -1501,10 +1501,10 @@
 
 % will be overloaded, and/or code below moved to core-box
 
-\defineoverlay[\v!text-2][\positionoverlay{\v!text-2}]
-\defineoverlay[\v!text-1][\positionoverlay{\v!text-1}]
-\defineoverlay[\v!text+1][\positionoverlay{\v!text+1}]
-\defineoverlay[\v!text+2][\positionoverlay{\v!text+2}]
+\defineoverlay[\v!tekst-2][\positionoverlay{\v!tekst-2}]
+\defineoverlay[\v!tekst-1][\positionoverlay{\v!tekst-1}]
+\defineoverlay[\v!tekst+1][\positionoverlay{\v!tekst+1}]
+\defineoverlay[\v!tekst+2][\positionoverlay{\v!tekst+2}]
 
 %D The auxiliary \METAPOST\ macros are defined by default,
 %D by saying:
@@ -1685,12 +1685,12 @@
   \MPpositiongraphic{mpos:par}{}%
 \stopMPpositionmethod
 
-%D \starttyping
+%D \starttypen
 %D \setupbackground
 %D   [test]
 %D   [mp=mpos:par:columnset,
-%D    methodmethode=mpos:par:columnset]
-%D \stoptyping
+%D    methode=mpos:par:columnset]
+%D \stoptypen
 
 %D We need to treat floats in a special way.
 
@@ -1699,7 +1699,7 @@
 \to \MPinitializations
 
 \def\textbackgroundoverlay#1%
-  {\iflocalpositioning\v!local\else\v!text\fi#1}
+  {\iflocalpositioning\v!lokaal\else\v!tekst\fi#1}
 
 \newcounter\localpositionnumber
 
@@ -1750,29 +1750,6 @@
 \def\backgroundvariable#1%
   {\csname\??td\currenttextbackground#1\endcsname}
 
-% \definetextbackground[more][state=start,backgroundcolor=red] % location=paragraph
-% \definetextbackground[test][state=start,backgroundcolor=green]
-%
-% \page \placefigure[left]{}{}
-%
-% \starttextbackground[test]
-%   \readfile{ward}{}{}
-%   \starttextbackground[more]
-%     \readfile{ward}{}{}
-%   \stoptextbackground
-%   \readfile{ward}{}{}
-% \stoptextbackground
-%
-% \page \placefigure[right]{}{}
-%
-% \starttextbackground[test]
-%   \readfile{ward}{}{}
-%   \starttextbackground[more]
-%     \readfile{ward}{}{}
-%   \stoptextbackground
-%   \readfile{ward}{}{}
-% \stoptextbackground
-
 \def\dostarttextbackground[#1][#2]%
   {\checktextbackgrounds
    \def\currenttextbackground{#1}%
@@ -1788,7 +1765,7 @@
    \setuptextbackground[#1][#2]%
    \let\dodostarttextbackground\relax
    \let\dodostoptextbackground \relax
-   \doifvalue{\??td#1\c!state}\v!start
+   \doifvalue{\??td#1\c!status}\v!start
      {\dopresettextbackground{#1}}%
    \dodostarttextbackground}
 
@@ -1796,12 +1773,12 @@
 
 \def\dopresettextbackground#1% todo: \backgroundparameter
   {\ExpandFirstAfter\processaction % \EFA niet echt nodig
-     [\getvalue{\??td#1\c!location}]
-     [ \v!text=>\let\dodostarttextbackground\dostarttextbackgroundtxt
+     [\getvalue{\??td#1\c!plaats}]
+     [ \v!tekst=>\let\dodostarttextbackground\dostarttextbackgroundtxt
                  \let\dodostoptextbackground \dostoptextbackgroundtxt,
-      \v!paragraph=>\let\dodostarttextbackground\dostarttextbackgroundpar
+      \v!alinea=>\let\dodostarttextbackground\dostarttextbackgroundpar
                  \let\dodostoptextbackground \dostoptextbackgroundpar,
-        \v!none=>\let\dodostarttextbackground\relax
+        \v!geen=>\let\dodostarttextbackground\relax
                  \let\dodostoptextbackground \relax]%
    \ifx\dodostarttextbackground\dostarttextbackgroundpar % untested
      \ifnum\textbackgrounddepth>\plusone % new
@@ -1809,33 +1786,33 @@
        \let\dodostoptextbackground \dostoptextbackgroundtxt
      \fi
    \fi
-   \doifelsevalue{\??td#1\c!frame}\v!on
-     {\doifelsevalue{\??td#1\c!corner}\v!round
-        {\setvalue{\??td#1\c!frame}{2}}
-        {\setvalue{\??td#1\c!frame}{1}}}
-     {\setvalue{\??td#1\c!frame}{0}}%
-   \doifelsevalue{\??td#1\c!background}\v!color
-     {\setvalue{\??td#1\c!background}{1}}
-     {\setvalue{\??td#1\c!background}{0}}%
-  %\startpositionoverlay{\v!text\getvalue{\??td#1\c!level}}%
-   \startpositionoverlay{\textbackgroundoverlay{\getvalue{\??td#1\c!level}}}%
+   \doifelsevalue{\??td#1\c!kader}\v!aan
+     {\doifelsevalue{\??td#1\c!hoek}\v!rond
+        {\setvalue{\??td#1\c!kader}{2}}
+        {\setvalue{\??td#1\c!kader}{1}}}
+     {\setvalue{\??td#1\c!kader}{0}}%
+   \doifelsevalue{\??td#1\c!achtergrond}\v!kleur
+     {\setvalue{\??td#1\c!achtergrond}{1}}
+     {\setvalue{\??td#1\c!achtergrond}{0}}%
+  %\startpositionoverlay{\v!tekst\getvalue{\??td#1\c!niveau}}%
+   \startpositionoverlay{\textbackgroundoverlay{\getvalue{\??td#1\c!niveau}}}%
      \expanded
        {\setMPpositiongraphicrange % moet veel efficienter
           {\btbanchor}% {b:\currentparbackground}%
           {\etbanchor}% {e:\currentparbackground}%
-          {\getvalue{\??td#1\c!method}}%
+          {\getvalue{\??td#1\c!methode}}%
           {self=\currentparbackground,
            mp=\getvalue{\??td#1\c!mp},
-           gridtype=\getvalue{\??td#1\c!alternative},
-           filltype=\getvalue{\??td#1\c!background},
-           linetype=\getvalue{\??td#1\c!frame},
-           gridcolor=\getvalue{\??td#1\c!framecolor},
-           linecolor=\getvalue{\??td#1\c!framecolor},
-           fillcolor=\getvalue{\??td#1\c!backgroundcolor},
-           filloffset=\getvalue{\??td#1\c!backgroundoffset},
-           gridwidth=\getvalue{\??td#1\c!rulethickness},
-           linewidth=\getvalue{\??td#1\c!rulethickness},
-           lineradius=\getvalue{\??td#1\c!radius}}}%
+           gridtype=\getvalue{\??td#1\c!variant},
+           filltype=\getvalue{\??td#1\c!achtergrond},
+           linetype=\getvalue{\??td#1\c!kader},
+           gridcolor=\getvalue{\??td#1\c!kaderkleur},
+           linecolor=\getvalue{\??td#1\c!kaderkleur},
+           fillcolor=\getvalue{\??td#1\c!achtergrondkleur},
+           filloffset=\getvalue{\??td#1\c!achtergrondoffset},
+           gridwidth=\getvalue{\??td#1\c!lijndikte},
+           linewidth=\getvalue{\??td#1\c!lijndikte},
+           lineradius=\getvalue{\??td#1\c!straal}}}%
    \stoppositionoverlay}
 
 \def\stoptextbackground
@@ -1843,7 +1820,7 @@
    \carryoverpar\egroup}
 
 \def\starttextbackgroundmanual
-  {\dostartattributes{\??td\currenttextbackground}\c!style\c!color\empty
+  {\dostartattributes{\??td\currenttextbackground}\c!letter\c!kleur\empty
    \fpos\currentparbackground\ignorespaces}
 
 \def\stoptextbackgroundmanual
@@ -1852,7 +1829,7 @@
 
 \def\dostarttextbackgroundtxt
   {\ifvmode \leavevmode \fi
-   \dostartattributes{\??td\currenttextbackground}\c!style\c!color\empty
+   \dostartattributes{\??td\currenttextbackground}\c!letter\c!kleur\empty
    \fpos\currentparbackground\ignorespaces}
 
 \def\dostoptextbackgroundtxt
@@ -1863,37 +1840,37 @@
 %
 % \def\dostarttextbackgroundpar
 %   {\endgraf % new
-%    \getvalue{\??td\currenttextbackground\c!before}%
+%    \getvalue{\??td\currenttextbackground\c!voor}%
 %    \noindent\fpos\currentparbackground\ignorespaces
 %    \bgroup
 %    \nobreak \vskip-\lineheight \nobreak
-%    \doassignsomeskip\getvalue{\??td\currenttextbackground\c!topoffset}\to\scratchskip
+%    \doassignsomeskip\getvalue{\??td\currenttextbackground\c!bovenoffset}\to\scratchskip
 %    \kern\scratchskip\nobreak
-%    \dosetleftskipadaption{\getvalue{\??td\currenttextbackground\c!leftoffset}}%
+%    \dosetleftskipadaption{\getvalue{\??td\currenttextbackground\c!linkeroffset}}%
 %    \advance\leftskip\leftskipadaption
-%    \dosetleftskipadaption{\getvalue{\??td\currenttextbackground\c!rightoffset}}%
+%    \dosetleftskipadaption{\getvalue{\??td\currenttextbackground\c!rechteroffset}}%
 %    \advance\rightskip\leftskipadaption
-%    \dostartattributes{\??td\currenttextbackground}\c!style\c!color{}%
-%    \nowhitespace
+%    \dostartattributes{\??td\currenttextbackground}\c!letter\c!kleur{}%
+%    \geenwitruimte
 %    \seteffectivehsize
 %    \par}
 %
 % \def\dostoptextbackgroundpar
 %   {\par
 %    \dostopattributes
-%    \doassignsomeskip\getvalue{\??td\currenttextbackground\c!bottomoffset}\to\scratchskip
+%    \doassignsomeskip\getvalue{\??td\currenttextbackground\c!onderoffset}\to\scratchskip
 %    \kern\scratchskip\nobreak
 %    \nobreak \vskip-\lineheight \nobreak
-%    \nowhitespace
+%    \geenwitruimte
 %    \egroup
 %    \nobreak \noindent \strut \hfill \kern\zeropoint \tpos\currentparbackground
 %    \endgraf % new
-%    \getvalue{\??td\currenttextbackground\c!after}}
+%    \getvalue{\??td\currenttextbackground\c!na}}
 
 \def\dostarttextbackgroundpar
   {\endgraf % new
-   \getvalue{\??td\currenttextbackground\c!before}%
-   \doassignsomeskip\getvalue{\??td\currenttextbackground\c!topoffset}\to\scratchskip
+   \getvalue{\??td\currenttextbackground\c!voor}%
+   \doassignsomeskip\getvalue{\??td\currenttextbackground\c!bovenoffset}\to\scratchskip
    \xdef\textbackgroundskip{\the\scratchskip}%
    \noindent
    \ifgridsnapping
@@ -1906,31 +1883,30 @@
      \fpos\currentparbackground
    \fi
    \bgroup
-   \endgraf % we need a vertical nobreak - 29/06/2004
    \nobreak \vskip-\lineheight \nobreak
-   \doassignsomeskip\getvalue{\??td\currenttextbackground\c!topoffset}\to\scratchskip
+   \doassignsomeskip\getvalue{\??td\currenttextbackground\c!bovenoffset}\to\scratchskip
    \ifgridsnapping \else \ifdim\textbackgroundskip>\zeropoint
      \kern\textbackgroundskip\nobreak
    \fi \fi
-   \dosetleftskipadaption{\getvalue{\??td\currenttextbackground\c!leftoffset}}%
+   \dosetleftskipadaption{\getvalue{\??td\currenttextbackground\c!linkeroffset}}%
    \advance\leftskip\leftskipadaption
-   \dosetleftskipadaption{\getvalue{\??td\currenttextbackground\c!rightoffset}}%
+   \dosetleftskipadaption{\getvalue{\??td\currenttextbackground\c!rechteroffset}}%
    \advance\rightskip\leftskipadaption
-   % new
-   \dosetraggedcommand{\getvalue{\??td\currenttextbackground\c!align}}%
-   \raggedcommand
-   %
-   \dostartattributes{\??td\currenttextbackground}\c!style\c!color\empty
-   \nowhitespace
+% new
+\dosetraggedcommand{\getvalue{\??td\currenttextbackground\c!uitlijnen}}%
+\raggedcommand
+%
+   \dostartattributes{\??td\currenttextbackground}\c!letter\c!kleur\empty
+   \geenwitruimte
    \seteffectivehsize
-   \doinhibitblank %   \blank[\v!disable]% new
+   \doinhibitblank %   \blanko[\v!blokkeer]% new
    \par}
 
 \def\dostoptextbackgroundpar
   {\par
    \removelastskip % new
    \dostopattributes
-   \doassignsomeskip\getvalue{\??td\currenttextbackground\c!bottomoffset}\to\scratchskip
+   \doassignsomeskip\getvalue{\??td\currenttextbackground\c!onderoffset}\to\scratchskip
    \ifdim\lastskip>\zeropoint
      \advance\scratchskip-\lastskip
    \fi
@@ -1939,7 +1915,7 @@
      \kern\scratchskip\nobreak
    \fi \fi
    \nobreak \vskip-\lineheight \nobreak
-   \nowhitespace
+   \geenwitruimte
    \egroup
 \bgroup \forgeteverypar % NOT REALLY NEEDED, SAVES HASH/MEM
    \nobreak \noindent \strut \hfill \kern\zeropoint
@@ -1954,7 +1930,7 @@
    \fi
 \egroup
    \endgraf % new
-   \getvalue{\??td\currenttextbackground\c!after}}
+   \getvalue{\??td\currenttextbackground\c!na}}
 
 \let\textparpages \!!zeropoint
 \let\textparheight\!!zeropoint
@@ -1983,12 +1959,12 @@
      \advance\scratchdimen \MPh\textanchor\relax
      \ifcase\scratchcounter>2 \ifnum\scratchcounter<5
        % more pages
-       \scratchdimen\textheight
+       \scratchdimen\teksthoogte
        \advance\scratchcounter \minusone
        \multiply\scratchdimen \scratchcounter
      \else
        % keep'm small
-       \scratchdimen5\textheight
+       \scratchdimen5\teksthoogte
      \fi \fi
    \fi
    \edef\textparheight{\the\scratchdimen}%
@@ -1999,7 +1975,7 @@
    \else
      % two or more pages / maybe also hang
      \ifx#3\relax
-       \scratchdimen\makeupwidth % \textwidth
+       \scratchdimen\zetbreedte % \tekstbreedte
      \else
        \scratchdimen\MPw\MPparanchor
        \advance\scratchdimen-\MPl\MPparanchor
@@ -2011,18 +1987,18 @@
 \def\mintextparheight{4\lineheight}
 
 \def\dontsplitnexttextbackground % dangerous but useful
-  {\ifdim\pagetotal>\textheight \else
+  {\ifdim\pagetotal>\teksthoogte \else
      \ifdim\pagegoal=\maxdimen \else
       \calculatenexttextpardimensions
       % too tricky
       % \scratchdimen=\textparheight
       % \advance\scratchdimen\pagetotal\relax
       % \ifdim\scratchdimen>\pagegoal
-      % \page
+      % \pagina
       % \fi
       \ifdim\textparheight>\zeropoint
         \ifdim\textparheight>\mintextparheight\else
-          \page % option
+          \pagina % option
         \fi
       \fi
     \fi
@@ -2034,13 +2010,13 @@
 \def\dodefinetextbackground[#1][#2]%
   {\ifsecondargument % why ?
      \copyparameters[\??td#1][\??td]
-       [\c!state,\c!location,\c!alternative,\c!mp,\c!method,
-        \c!background,\c!backgroundcolor,\c!corner,\c!level,
-        \c!backgroundoffset,\c!before,\c!after,\c!align,
-        \c!radius,\c!frame,\c!framecolor,\c!rulethickness,
-        \c!leftoffset,\c!rightoffset,\c!topoffset,\c!bottomoffset]%
+       [\c!status,\c!plaats,\c!variant,\c!mp,\c!methode,
+        \c!achtergrond,\c!achtergrondkleur,\c!hoek,\c!niveau,
+        \c!achtergrondoffset,\c!voor,\c!na,\c!uitlijnen,
+        \c!straal,\c!kader,\c!kaderkleur,\c!lijndikte,
+        \c!linkeroffset,\c!rechteroffset,\c!bovenoffset,\c!onderoffset]%
      \getparameters[\??td#1][#2]%
-     \doifvalue{\??td#1\c!state}\v!start\checktextbackgrounds
+     \doifvalue{\??td#1\c!status}\v!start\checktextbackgrounds
      \unexpanded\setvalue{#1}%
        {\groupedcommand{\starttextbackground[#1]}{\stoptextbackground}}%
      \setvalue{\e!start#1}{\starttextbackground[#1]}%
@@ -2049,6 +2025,15 @@
 
 \def\setuptextbackground
   {\dodoubleargument\dosetuptextbackground}
+
+%\def\dosetuptextbackground[#1][#2]%
+%  {\ifsecondargument
+%     \getparameters[\??td#1][#2]%
+%     \def\currenttextbackground{#1}%
+%     \doifvalue{\??td#1\c!status}{\v!start}{\checktextbackgrounds}%
+%   \else
+%     \setuptextbackground[][#1]%
+%   \fi}
 
 \def\dosetuptextbackground[#1][#2]%
   {\ifsecondargument
@@ -2062,7 +2047,7 @@
 \def\dodosetuptextbackground#1#2%
   {\getparameters[\??td#2][#1]%
    \def\currenttextbackground{#2}%
-   \doifvalue{\??td#2\c!state}\v!start\checktextbackgrounds}
+   \doifvalue{\??td#2\c!status}\v!start\checktextbackgrounds}
 
 \let\currenttextbackground\empty
 
@@ -2074,35 +2059,35 @@
 
 \setuptextbackground
   [\c!mp=mpos:par:columnset,      % buggy: mpos:par:shape
-   \c!method=mpos:par:columnset, %
-   \c!state=\v!start,
-   \c!location=\v!text,
-   \c!leftoffset=\!!zeropoint, % 1em,
-   \c!rightoffset=\getvalue{\??td\currenttextbackground\c!leftoffset},
-   \c!topoffset=\!!zeropoint,  % \v!medium,
-   \c!bottomoffset=\getvalue{\??td\currenttextbackground\c!topoffset},
-   \c!level=-1,
-   \c!alternative=0,
-   \c!align=,
-   \c!background=\v!color,
-   \c!backgroundcolor=lightgray,
-   \c!backgroundoffset=\!!zeropoint,
-   \c!corner=\v!rectangular,
-   \c!radius=.5\bodyfontsize,
-   \c!frame=\v!on,
-   \c!framecolor=blue,
-   \c!rulethickness=\linewidth]
+   \c!methode=mpos:par:columnset, %
+   \c!status=\v!start,
+   \c!plaats=\v!tekst,
+   \c!linkeroffset=\!!zeropoint, % 1em,
+   \c!rechteroffset=\getvalue{\??td\currenttextbackground\c!linkeroffset},
+   \c!bovenoffset=\!!zeropoint,  % \v!middel,
+   \c!onderoffset=\getvalue{\??td\currenttextbackground\c!bovenoffset},
+   \c!niveau=-1,
+   \c!variant=0,
+   \c!uitlijnen=,
+   \c!achtergrond=\v!kleur,
+   \c!achtergrondkleur=lightgray,
+   \c!achtergrondoffset=\!!zeropoint,
+   \c!hoek=\v!recht,
+   \c!straal=.5\bodyfontsize,
+   \c!kader=\v!aan,
+   \c!kaderkleur=blue,
+   \c!lijndikte=\linewidth]
 
 %D As an example we define a grid background:
 
 \definetextbackground
   [\v!grid]
-  [\c!state=\v!stop,
-   \c!location=\v!paragraph,
-   \c!frame=\v!off,
-   \c!framecolor=red,
-   \c!background=,
-   \c!alternative=1]
+  [\c!status=\v!stop,
+   \c!plaats=\v!alinea,
+   \c!kader=\v!uit,
+   \c!kaderkleur=red,
+   \c!achtergrond=,
+   \c!variant=1]
 
 \ifx\basegrid\undefined \else \letvalue\v!grid=\basegrid \fi
 
@@ -2161,15 +2146,15 @@
 %D A non graphic example of the use of positioning, is to stack
 %D text in for instance the margin.
 %D
-%D \stackposdown \inleft {some text}The text \type {some text}
-%D goes into the left margin, and \stackposdown \inleft {some
+%D \stackposdown \inlinker {some text}The text \type {some text}
+%D goes into the left margin, and \stackposdown \inlinker {some
 %D more}\type {some more} as well. When they overlap, they
 %D will not touch.
 %D
-%D Here we said \type {\stackposdown \inleft{some text}}. Instead
-%D of \stackposleft \inleft {one}stacking \stackposleft \inleft
+%D Here we said \type {\stackposdown \inlinker{some text}}. Instead
+%D of \stackposleft \inlinker {one}stacking \stackposleft \inlinker
 %D {two}vertically, one can stack horizontally by \stackposleft
-%D \inleft {three}using \type {\stackposleft}.
+%D \inlinker {three}using \type {\stackposleft}.
 %D
 %D We can go in all four directions, using \type {\stackposdown},
 %D \type {\stackposup}, \type {\stackposleft} and \type
@@ -2275,14 +2260,11 @@
 % \stopbuffer
 % \getbuffer \typebuffer \flushstatus \page
 
-\newdimen\laststackvmove
-
 \def\stackeddown
   {\bgroup
    % this macro assumes a few things and is meant to work for margin notes
    \dowithnextbox
      {\doglobal\increment\currentautopos
-      \global\laststackvmove\zeropoint
       \hpos{\POSstackprefix\currentautopos}
         {\edef\next
            {\nextboxht\the\nextboxht
@@ -2329,7 +2311,6 @@
              {\MPw\currentposition}{\the\scratchskip}{\MPd\currentposition}}%
            %\registerstatus{new \currentautopos: \MPy\currentposition/\MPh\currentposition}%
            \egroup
-           \global\laststackvmove\scratchdimen % new
            \setbox\nextbox\iftracepositions\@EA\ruledhbox\else\@EA\hbox\fi
              {\lower\scratchdimen\flushnextbox}%
            \next
@@ -2389,9 +2370,9 @@
 %D For a right menu, a sequence of calls to \type
 %D {right_menu_button} is generated.
 %D
-%D \starttyping
+%D \starttypen
 %D right_menu_button (n, p, s=0/1/2, x, y, w, h, d) ;
-%D \stoptyping
+%D \stoptypen
 %D
 %D Here, n is the number of the button, s a status variable,
 %D while the rest is positional info. The status variable is
@@ -2410,7 +2391,7 @@
 % 0=notfound  1=found  2=currentpage
 
 \def\do@@amposition#1#2#3%
-  {\doifelsevalue{\??am#1\c!position}\v!yes
+  {\doifelsevalue{\??am#1\c!positie}\v!ja
      {\doglobal\increment\currentamposition
       \doifnumberelse{#2}
         {\docheckrealreferencepage{#2}%
@@ -2558,21 +2539,21 @@
 %D
 %D \typebuffer
 %D
-%D % \getbuffer
+%D % \haalbuffer
 %D
 %D \startbuffer
-%D \starttabulate[|c|c|c|]
+%D \starttabulatie[|c|c|c|]
 %D \GFC[f:x] this is a small  \NC       table            \NC     in which we \NC \FR
 %D \NC       will demonstrate \GFC[g:z] that this        \GTC[g] positioning \NC \MR
 %D \GSC[e:y] mechanism also   \GTC[f]   works quite well \NC     in tables   \NC \LR
-%D \stoptabulate
+%D \stoptabulatie
 %D \stopbuffer
 %D
 %D The table itself defines three areas (a, b and~c) using
 %D these frames.
 %D
 %D \typebuffer
-%D % \getbuffer
+%D % \haalbuffer
 %D
 %D Tables (based on \TABLE) are supported by:
 
@@ -2609,22 +2590,22 @@
 %D \setMPpositiongraphic{b:z}{tableshade}{from=b:z,to=e:z,color=blue}
 %D \stopbuffer
 %D
-%D \typebuffer \getbuffer
+%D \typebuffer \haalbuffer
 %D
 %D The definition of the table looks about the same as the
 %D previous one:
 %D
 %D \startbuffer
-%D \starttable[|c|c|c|]
+%D \starttabel[|c|c|c|]
 %D \GFC[b:z] \cw{this is a small}  \NC       \cw{table}            \NC     in which we      \NC \FR
 %D \NC       \cw{will demonstrate} \GFC[c:y] \cw{that this}        \GTC[c] \cw{positioning} \NC \MR
 %D \GSC[a:x] \cw{mechanism also}   \GTC[b]   \cw{works quite well} \NC     in tables        \NC \LR
-%D \stoptable
+%D \stoptabel
 %D \stopbuffer
 %D
 %D \typebuffer
 %D
-%D \getbuffer
+%D \haalbuffer
 
 % \definepositionframed[w][background=color,backgroundcolor=yellow]
 % \definepositionframed[x][background=color,backgroundcolor=red]
@@ -2692,7 +2673,7 @@
       \lower\dimen2\hbox
         {\advance\dimen2 \MPh{b:#1}%
          \framed
-           [\c!width=\dimen0,\c!height=\dimen2,
+           [\c!breedte=\dimen0,\c!hoogte=\dimen2,
             \c!offset=\v!overlay,#2]{}}}%
    \smashedbox\scratchbox
    \egroup}

@@ -32,46 +32,27 @@ module CommandBase
 
     def initialize(commandline,logger,banner)
         @commandline, @logger, @banner = commandline, logger, banner
-        @forcenewline, @versiondone = false, false
         version if @commandline.option('version')
+    end
+
+    def report(*str)
+        @logger.report(str)
     end
 
     def reportlines(*str)
         @logger.reportlines(str)
     end
 
-    # only works in 1.8
-    #
-    # def report(*str)
-        # @logger.report(str)
-    # end
-    #
-    # def version # just a bit of playing with defs
-        # report(@banner.join(' - '))
-        # def report(*str)
-            # @logger.report
-            # @logger.report(str)
-            # def report(*str)
-                # @logger.report(str)
-            # end
-        # end
-        # def version
-        # end
-    # end
-
-    def report(*str)
-        if @forcenewline then
-            @logger.report
-            @forcenewline = false
-        end
-        @logger.report(str)
-    end
-
     def version # just a bit of playing with defs
-        unless @versiondone then
-            report(@banner.join(' - '))
-            @forcenewline = true
-            @versiondone = true
+        report(@banner.join(' - '))
+        def report(*str)
+            @logger.report
+            @logger.report(str)
+            def report(*str)
+                @logger.report(str)
+            end
+        end
+        def version
         end
     end
 
@@ -115,14 +96,7 @@ module CommandBase
 
         files = Array.new
         pattern.split(' ').each do |p|
-            if recurse then
-                if p =~ /^(.*)(\/.*?)$/i then
-                    p = $1 + '/**' + $2
-                else
-                    p = '**/' + p
-                end
-                p.gsub!(/[\\\/]+/, '/')
-            end
+            p = '**/' + p if recurse
             files.push(Dir.glob(p))
         end
         files.flatten.sort do |a,b|

@@ -13,21 +13,18 @@
 
 \writestatus{loading}{Context Spacing Macros}
 
-% to be sorted out: dependencies, orderof initialization
-
 \unprotect
 
 \newevery \everybodyfont    \Everybodyfont   % just to be sure
 \newevery \everyfontswitch  \EveryFontSwitch % just to be sure
 \newevery \everydefinedfont \relax           % just to be sure
 
-\appendtoks \spacing               1\to \everybodyfont
 \appendtoks \presetnormallineheight \to \everybodyfont
-\appendtoks \setnormalbaselines     \to \everybodyfont % check if redundant
-\appendtoks \setstrut               \to \everybodyfont % check if redundant
+\appendtoks \setnormalbaselines     \to \everybodyfont
+\appendtoks \setstrut               \to \everybodyfont
 \appendtoks \settopskip             \to \everybodyfont
 \appendtoks \setmaxdepth            \to \everybodyfont
-%appendtoks \spacing               1\to \everybodyfont
+\appendtoks \spacing               1\to \everybodyfont
 \appendtoks \simplesetupindenting   \to \everybodyfont
 \appendtoks \simplesetupblank       \to \everybodyfont
 \appendtoks \simplesetupwhitespace  \to \everybodyfont
@@ -35,11 +32,11 @@
 \appendtoks \simplesetupspacing     \to \everybodyfont % nieuw
 \appendtoks \setdisplayskips        \to \everybodyfont % nieuw
 
-\appendtoks \updateraggedskips      \to \everyfontswitch  % under test
+\appendtoks \updateraggedskips \to \everyfontswitch  % under test
 
-\prependtoks \let\par\endgraf       \to \everypagebody % see \fillinline
+\prependtoks \let\par\endgraf \to \everypagebody % see \fillinline
 
-\appendtoks \simplesetupspacing     \to \everydefinedfont
+\appendtoks \simplesetupspacing \to \everydefinedfont
 
 \def\stelfactorenin
   {\simplesetupwhitespace
@@ -78,8 +75,8 @@
 \global\let\carriedoverpar\relax
 
 \def\carryoverpar#1%
-  {\expanded     % \scratchtoks{#1}%
-     {\noexpand#1% \the\scratchtoks
+  {\expanded
+     {\noexpand#1%
       \hangindent\the\hangindent
       \hangafter \the\hangafter
       \parskip   \the\parskip
@@ -89,9 +86,9 @@
 %D A quick way to determine left|/|middle|/|right states
 %D (experimental).
 
-\setvalue{\??as\v!left }{0}
-\setvalue{\??as\v!middle}{1}
-\setvalue{\??as\v!right}{2}
+\setvalue{\??as\v!links }{0}
+\setvalue{\??as\v!midden}{1}
+\setvalue{\??as\v!rechts}{2}
 
 \def\setalignmentswitch#1%
   {\chardef\alignmentswitch0\csname\??as#1\endcsname\relax}
@@ -103,23 +100,23 @@
 %D
 %D For instance
 %D
-%D \starttyping
+%D \starttypen
 %D \setupinterlinespace[line=2.8ex]
-%D \stoptyping
+%D \stoptypen
 %D
 %D This setting adapts itself to the bodyfontsize, while for
 %D instance saying
 %D
-%D \starttyping
+%D \starttypen
 %D \setupinterlinespace[line=12pt]
-%D \stoptyping
+%D \stoptypen
 %D
 %D sets things fixed for all sizes, which is definitely not
 %D what we want. Therefore one can also say:
 %D
-%D \starttyping
+%D \starttypen
 %D \definebodyfontenvironment[9pt][interlinespace=11pt]
-%D \stoptyping
+%D \stoptypen
 %D
 %D One can still use \type{\setupinterlinespace} (without
 %D arguments) to set the interline space according to the
@@ -137,8 +134,7 @@
 \fi
 
 \def\presetnormallineheight
-  {\edef\normallineheight{\@@itline}%
-%  done elsewhere : \spacing\!!plusone % new per 10/08/2004, else problems in otr / !! needed
+  {\edef\normallineheight{\@@itregel}%
    \iflocalinterlinespace \else
      \doifdefined\bodyfontinterlinespecs
        {\doifsomething\bodyfontinterlinespace
@@ -147,31 +143,29 @@
 
 \def\setupspecifiedinterlinespace[#1]%
   {\getparameters[\??it][#1]%
-   \scratchdimen0\@@itheight\points
-   \advance\scratchdimen 0\@@itdepth\points
+   \scratchdimen0\@@ithoogte\points
+   \advance\scratchdimen 0\@@itdiepte\points
    \ifdim\scratchdimen>\onepoint
-     \showmessage\m!layouts{10}{\@@itheight,\@@itdepth}%
-     \let\@@itheight\strutheightfactor
-     \let\@@itdepth\strutdepthfactor
+     \showmessage\m!layouts{10}{\@@ithoogte,\@@itdiepte}%
+     \let\@@ithoogte\strutheightfactor
+     \let\@@itdiepte\strutdepthfactor
    \else
-     \let\strutheightfactor\@@itheight
-     \let\strutdepthfactor \@@itdepth
+     \let\strutheightfactor\@@ithoogte
+     \let\strutdepthfactor \@@itdiepte
    \fi
-   \let\minimumstrutheight \@@itminheight
-   \let\minimumstrutdepth  \@@itmindepth
-   \let\minimallinedistance\@@itdistance
-   \let\normallineheight   \@@itline % let ! ! ! ! ! ivm ex
-   \let\topskipfactor      \@@ittop
-   \let\maxdepthfactor     \@@itbottom
-   \let\baselinegluefactor \@@itstretch
+   \let\minimallinedistance\@@itafstand
+   \let\normallineheight\@@itregel % let ! ! ! ! ! ivm ex
+   \let\topskipfactor\@@itboven
+   \let\maxdepthfactor\@@itonder
+   \let\baselinegluefactor\@@itrek
    \setfontparameters % redundant, can be \setstrut, test first
    \updateraggedskips} % yes indeed
 
 \def\setuprelativeinterlinespace[#1]%
   {\processallactionsinset % \regelwit = dummy !
      [#1]
-     [      \v!on=>\oninterlineskip,
-           \v!off=>\offinterlineskip,
+     [     \v!aan=>\oninterlineskip,
+           \v!uit=>\offinterlineskip,
          \v!reset=>\setfontparameters,% just \setstrut, test first
        \s!unknown=>\assignvalue{#1}\regelwit{1.00}{1.25}{1.50}%
                    \spacing\regelwit]}
@@ -236,7 +230,7 @@
   {\removelastskip}
 
 \def\currentblanko
-  {\v!big}
+  {\v!groot}
 
 \def\oldprevdepth {\prevdepth}
 \def\newprevdepth {-1001pt}
@@ -248,8 +242,8 @@
 
 %%%% pas op, wordt ook in core-pos gebruikt
 
-\def\doassignsomeskip#1\to#2% ook nog \v!halfline+fuzzysnap
-  {\doifelse{#1}\v!line
+\def\doassignsomeskip#1\to#2% ook nog \v!halveregel+fuzzysnap
+  {\doifelse{#1}\v!regel
      {#2\openlineheight}
      {\ifgridsnapping
         \assigndimension{#1}{#2}%
@@ -267,7 +261,7 @@
 %   {\doassignsomeskip#1\to\blankoskipamount
 %    \global\advance\blankoskip \blankoskipamount}
 %
-% \def\doblank#1%
+% \def\doblanko#1%
 %   {\processallactionsinset % is maar een actie
 %      [#1]
 %      [    \v!groot=>\dosingleblanko\v!groot, % happens often
@@ -287,7 +281,7 @@
 %                     \global\advance\blankoskip .5\lineheight,
 %         \s!unknown=>\doindirectblanko{#1}]}
 %
-% \def\docomplexdoblank[#1]% pas op \relax's zijn nodig ivm volgende \if
+% \def\docomplexdoblanko[#1]% pas op \relax's zijn nodig ivm volgende \if
 %   {\global\blankoresetfalse
 %    \global\blankoblokkeerfalse
 %    \global\blankogeenwitfalse
@@ -296,7 +290,7 @@
 %    \global\blankoskip\zeropoint
 %    \global\blankoforceerfalse
 %    \blankobuitenfalse
-%    \processcommalist[#1]\doblank
+%    \processcommalist[#1]\doblanko
 %    \ifdim\blankoskip=\zeropoint\relax
 %      \iflokaalblankoflexibel \dosingleblanko\currentblanko \fi
 %      \iflokaalblankovast     \dosingleblanko\currentblanko \fi
@@ -377,32 +371,32 @@
 %    \global\fuzzyvskipfalse
 %    \presetindentation}
 %
-% \def\complexdodoblank[#1]%
+% \def\complexdodoblanko[#1]%
 %   {\flushnotes
 %    \ifopelkaar
 %      \ifinpagebody
-%        \expanded{\docomplexdoblank[#1]}% \expanded=nieuw
+%        \expanded{\docomplexdoblanko[#1]}% \expanded=nieuw
 %      \else
 %        \par
 %      \fi
 %    \else
-%      \expanded{\docomplexdoblank[#1]}% \expanded = nieuw
+%      \expanded{\docomplexdoblanko[#1]}% \expanded = nieuw
 %    \fi}
 %
 % % old
 % %
 % % \def\doindirectblanko#1%
 % %   {\ifundefined{\??bo#1}% <-etex \expandafter\ifx\csname\??bo#1\endcsname\relax
-% %      \expanded{\complexdodoblank[#1]}%
+% %      \expanded{\complexdodoblanko[#1]}%
 % %    \else
-% %      \expandafter\complexdoblank\expandafter[\csname\??bo#1\endcsname]%
+% %      \expandafter\complexdoblanko\expandafter[\csname\??bo#1\endcsname]%
 % %    \fi}
 % %
-% % \def\complexdoblank[#1]% enables [force,8\bodyfontsize]
+% % \def\complexdoblanko[#1]% enables [force,8\bodyfontsize]
 % %   {\doifinstringelse{,}{#1}
-% %      {\expanded{\complexdodoblank[#1]}}
+% %      {\expanded{\complexdodoblanko[#1]}}
 % %      {\doifnumberelse{#1}
-% %         {\expanded{\complexdodoblank[#1]}}
+% %         {\expanded{\complexdodoblanko[#1]}}
 % %         {\doindirectblanko{#1}}}}
 % %
 % % new, more robust
@@ -410,9 +404,9 @@
 % % \def\doindirectblanko#1%
 % %   {\edef\ascii{#1}\convertcommand\ascii\to\ascii
 % %    \ifundefined{\??bo\ascii}% <-etex \expandafter\ifx\csname\??bo#1\endcsname\rel
-% %      \dorepeatwithcommand[#1]\dosingleblanko
+% %      \herhaalmetcommando[#1]\dosingleblanko
 % %    \else
-% %      \expandafter\complexdoblank\expandafter[\csname\??bo\ascii\endcsname]%
+% %      \expandafter\complexdoblanko\expandafter[\csname\??bo\ascii\endcsname]%
 % %    \fi}
 % %
 % % even more robust
@@ -420,9 +414,9 @@
 % \def\doindirectblanko#1%
 %   {\edef\ascii{#1}\convertcommand\ascii\to\ascii
 %    \ifundefined{\??bo\ascii}% <-etex \expandafter\ifx\csname\??bo#1\endcsname
-%      \expanded{\dorepeatwithcommand[#1]\noexpand\dosingleblanko}%
+%      \expanded{\herhaalmetcommando[#1]\noexpand\dosingleblanko}%
 %    \else
-%      \expandafter\complexdoblank\expandafter[\csname\??bo\ascii\endcsname]%
+%      \expandafter\complexdoblanko\expandafter[\csname\??bo\ascii\endcsname]%
 %    \fi}
 
 % \def\TestBlank[#1]%
@@ -438,66 +432,64 @@
 % \TestBlank[2*big,whatever]
 % \TestBlank[3\lineheight]
 
-% this will be replaced/enhanced
-
-\def\addblankskip#1#2#3{\global\advance\blankoskip#1\ifgridsnapping#3\else#2\fi}
+\def\addblankskip#1#2#3%
+  {\global\advance\blankoskip#1\ifgridsnapping#3\else#2\fi}
 
 \def\defineblankmethod[#1]#2{\setvalue{\??bo\??bo#1}{#2}}
 
-\defineblankmethod       [\v!big] {\addblankskip+\bigskipamount      \openlineheight}
-\defineblankmethod      [-\v!big] {\addblankskip-\bigskipamount      \openlineheight}
-\defineblankmethod      [\v!medium] {\addblankskip+\medskipamount   {.5\openlineheight}}
-\defineblankmethod     [-\v!medium] {\addblankskip-\medskipamount   {.5\openlineheight}}
-\defineblankmethod       [\v!small] {\addblankskip+\smallskipamount{.25\openlineheight}}
-\defineblankmethod      [-\v!small] {\addblankskip-\smallskipamount{.25\openlineheight}}
-\defineblankmethod         [\v!white] {\addblankskip+\parskip            \openlineheight}
-\defineblankmethod        [-\v!white] {\addblankskip-\parskip            \openlineheight}
-\defineblankmethod       [\v!line] {\addblankskip+\openlineheight     \openlineheight}
-\defineblankmethod      [-\v!line] {\addblankskip-\openlineheight     \openlineheight}
+\defineblankmethod   [\v!groot]{\addblankskip+\bigskipamount      \openlineheight}
+\defineblankmethod  [-\v!groot]{\addblankskip-\bigskipamount      \openlineheight}
+\defineblankmethod  [\v!middel]{\addblankskip+\medskipamount   {.5\openlineheight}}
+\defineblankmethod [-\v!middel]{\addblankskip-\medskipamount   {.5\openlineheight}}
+\defineblankmethod   [\v!klein]{\addblankskip+\smallskipamount{.25\openlineheight}}
+\defineblankmethod  [-\v!klein]{\addblankskip-\smallskipamount{.25\openlineheight}}
+\defineblankmethod     [\v!wit]{\addblankskip+\parskip\openlineheight}
+\defineblankmethod    [-\v!wit]{\addblankskip-\parskip\openlineheight}
+\defineblankmethod   [\v!regel]{\addblankskip+\openlineheight\openlineheight}
+\defineblankmethod  [-\v!regel]{\addblankskip-\openlineheight\openlineheight}
 
-\defineblankmethod     [\v!formula] {\global\advance\blankoskip\medskipamount}
-\defineblankmethod     [\v!nowhite] {\global\blankogeenwittrue}
-\defineblankmethod    [\v!disable] {\global\blankoblokkeertrue}
-\defineblankmethod     [\v!force] {\global\blankoforceertrue}
-\defineblankmethod      [\v!outer] {\ifvmode\ifinner\blankobuitentrue\fi\fi}
-\defineblankmethod       [\v!reset] {\global\blankoresettrue}
-\defineblankmethod    [\v!flexible] {\global\lokaalblankoflexibeltrue}
-\defineblankmethod        [\v!fixed] {\global\lokaalblankovasttrue}
-\defineblankmethod        [\v!back] {\global\blankogobacktrue} % {\geenblanko}
-\defineblankmethod  [\v!halfline] {\ifgridsnapping\global\fuzzyvskiptrue\fi
-                                     \global\advance\blankoskip .5\lineheight}
+\defineblankmethod [\v!formule    ]{\global\advance\blankoskip\medskipamount}
+\defineblankmethod [\v!geenwit    ]{\global\blankogeenwittrue}
+\defineblankmethod [\v!blokkeer   ]{\global\blankoblokkeertrue}
+\defineblankmethod [\v!forceer    ]{\global\blankoforceertrue}
+\defineblankmethod [\v!buiten     ]{\ifvmode\ifinner\blankobuitentrue\fi\fi}
+\defineblankmethod [\v!reset      ]{\global\blankoresettrue}
+\defineblankmethod [\v!flexibel   ]{\global\lokaalblankoflexibeltrue}
+\defineblankmethod [\v!vast       ]{\global\lokaalblankovasttrue}
+\defineblankmethod [\v!back       ]{\global\blankogobacktrue} % {\geenblanko}
+\defineblankmethod [\v!halveregel ]{\ifgridsnapping\global\fuzzyvskiptrue\fi
+                                    \global\advance\blankoskip .5\lineheight}
 
-\defineblankmethod        [\v!none] {\global\blankoresettrue}
-\defineblankmethod [\v!joinedup] {\ifvmode\nointerlineskip\fi}
+\defineblankmethod [\v!geen       ]{\global\blankoresettrue}
+\defineblankmethod [\v!aansluitend]{\ifvmode\nointerlineskip\fi}
 
-% happens often, so we speed this up:
+% happens often
 
-\defineblankmethod     [2*\v!line] {\addblankskip+{2\openlineheight}{2\openlineheight}}
-\defineblankmethod     [2*\v!big] {\addblankskip+{2\bigskipamount }{2\openlineheight}}
+\defineblankmethod [2*\v!groot]{\addblankskip+{2\bigskipamount}{2\openlineheight}}
 
 % ETEX ! ! !
 
 \beginETEX \ifcsname
 
-\def\doblank#1%
+\def\doblanko#1%
   {\edef\ascii{#1}\convertcommand\ascii\to\ascii
    \ifx\ascii\empty\else
      \ifcsname\??bo\??bo\ascii\endcsname % internal def
        \csname\??bo\??bo\ascii\endcsname
      \else\ifcsname\??bo\ascii\endcsname % user def / slow
-       \@EA\rawprocesscommalist\@EA[\csname\??bo\ascii\endcsname]\doblank\relax
+       \@EA\rawprocesscommalist\@EA[\csname\??bo\ascii\endcsname]\doblanko\relax
      \else
-       \dorepeatwithcommand[#1]\redoblank
+       \dorepeatwithcommand[#1]\redoblanko
      \fi\fi
    \fi}
 
-\def\redoblank#1%
+\def\redoblanko#1%
   {\edef\ascii{#1}\convertcommand\ascii\to\ascii
    \ifx\ascii\empty\else
      \ifcsname\??bo\??bo\ascii\endcsname % internal def
        \csname\??bo\??bo\ascii\endcsname
      \else\ifcsname\??bo\ascii\endcsname % user def / slow
-       \@EA\rawprocesscommalist\@EA[\csname\??bo\ascii\endcsname]\doblank\relax
+       \@EA\rawprocesscommalist\@EA[\csname\??bo\ascii\endcsname]\doblanko\relax
      \else
        \global\advance\blankoskip#1\relax
      \fi\fi
@@ -507,28 +499,28 @@
 
 \beginTEX
 
-\def\doblank#1%
+\def\doblanko#1%
   {\edef\ascii{#1}\convertcommand\ascii\to\ascii
    \ifx\ascii\empty\else
      \@EA\ifx\csname\??bo\??bo\ascii\endcsname\relax
        \@EA\ifx\csname\??bo\ascii\endcsname\relax
-         \dorepeatwithcommand[#1]\redoblank
+         \dorepeatwithcommand[#1]\redoblanko
        \else
-         \@EA\rawprocesscommalist\@EA[\csname\??bo\ascii\endcsname]\doblank\relax
+         \@EA\rawprocesscommalist\@EA[\csname\??bo\ascii\endcsname]\doblanko\relax
        \fi
      \else
        \csname\??bo\??bo\ascii\endcsname
      \fi
    \fi}
 
-\def\redoblank#1%
+\def\redoblanko#1%
   {\edef\ascii{#1}\convertcommand\ascii\to\ascii
    \ifx\ascii\empty\else
      \@EA\ifx\csname\??bo\??bo\ascii\endcsname\relax
        \@EA\ifx\csname\??bo\ascii\endcsname\relax
          \global\advance\blankoskip#1\relax
        \else
-         \@EA\rawprocesscommalist\@EA[\csname\??bo\ascii\endcsname]\doblank\relax
+         \@EA\rawprocesscommalist\@EA[\csname\??bo\ascii\endcsname]\doblanko\relax
        \fi
      \else
        \csname\??bo\??bo\ascii\endcsname
@@ -537,45 +529,45 @@
 
 \endTEX
 
-\unexpanded\def\blank % the \relax is definitely needed due to the many \if's
-  {\relax\complexorsimple\doblank}
+\unexpanded\def\blanko % the \relax is definitely needed due to the many \if's
+  {\relax\complexorsimple\doblanko}
 
-% \def\complexdoblank
+% \def\complexdoblanko
 %   {\flushnotes
 %    \ifmmode
-%      \let\next\nocomplexdoblank
+%      \let\next\nocomplexdoblanko
 %    \else
 %      \ifopelkaar
 %        \ifinpagebody
-%          \let\next\docomplexdoblank
+%          \let\next\docomplexdoblanko
 %        \else
-%          \let\next\nocomplexdoblank
+%          \let\next\nocomplexdoblanko
 %        \fi
 %      \else
-%        \let\next\docomplexdoblank
+%        \let\next\docomplexdoblanko
 %      \fi
 %    \fi
 %    \next}
 %
 % with \next removed
 
-\def\complexdoblank
+\def\complexdoblanko
   {\flushnotes
    \ifmmode
-     \@EA\nocomplexdoblank
+     \@EA\nocomplexdoblanko
    \else
      \ifopelkaar
        \ifinpagebody
-         \@EA\@EAEAEA\@EA\docomplexdoblank
+         \@EA\@EAEAEA\@EA\docomplexdoblanko
        \else
-         \@EA\@EAEAEA\@EA\nocomplexdoblank
+         \@EA\@EAEAEA\@EA\nocomplexdoblanko
        \fi
      \else
-       \@EAEAEA\docomplexdoblank
+       \@EAEAEA\docomplexdoblanko
      \fi
    \fi}
 
-\def\nocomplexdoblank[#1]%
+\def\nocomplexdoblanko[#1]%
   {% evt blokkeerfalse
    \ifmmode\else\par\fi}
 
@@ -589,7 +581,7 @@
 % \def\inhibitblank% the fast, local way
 %   {\endgraf\ifvmode\prevdepth\newprevdepth\fi}
 
-% \def\docomplexdoblank[#1]% pas op \relax's zijn nodig ivm volgende \if
+% \def\docomplexdoblanko[#1]% pas op \relax's zijn nodig ivm volgende \if
 %   {\global\blankoresetfalse
 %    \global\blankoblokkeerfalse
 %    \global\blankogeenwitfalse
@@ -599,7 +591,7 @@
 %    \global\blankoforceerfalse
 %    \global\blankogobackfalse
 %    \blankobuitenfalse
-%    \expanded{\rawprocesscommalist[#1]}\doblank
+%    \expanded{\rawprocesscommalist[#1]}\doblanko
 %    \ifdim\blankoskip=\zeropoint\relax
 %      \iflokaalblankoflexibel
 %        \doglobal\advance\blankoskip \currentblanko
@@ -797,7 +789,7 @@
 \ifx\undefined\savedlastskip    \newskip \savedlastskip    \fi
 \ifx\undefined\savedlastpenalty \newcount\savedlastpenalty \fi
 
-\def\docomplexdoblank[#1]% pas op \relax's zijn nodig ivm volgende \if
+\def\docomplexdoblanko[#1]% pas op \relax's zijn nodig ivm volgende \if
   {\global\blankoresetfalse
    \global\blankoblokkeerfalse
    \global\blankogeenwitfalse
@@ -807,7 +799,7 @@
    \global\blankoforceerfalse
    \global\blankogobackfalse
    \blankobuitenfalse
-   \expanded{\rawprocesscommalist[#1]}\doblank
+   \expanded{\rawprocesscommalist[#1]}\doblanko
    \ifdim\blankoskip=\zeropoint\relax
      \iflokaalblankoflexibel
        \doglobal\advance\blankoskip \currentblanko
@@ -884,7 +876,7 @@
        \fi
        \ifdoeblanko
          \ifdim1\savedlastskip<1\blankoskip\relax
-           % else when \blank[2*groot] + \blank[3*groot] with parskip
+           % else when \blanko[2*groot] + \blanko[3*groot] with parskip
            % equaling 1*groot, gives a groot=\parskip so adding a small
            % value makes it distinguishable; can also be done at parskip
            % setting time (better)
@@ -953,7 +945,7 @@
                % also new
                \ifdim\blankoskip=\zeropoint
                  \ifblankogeenwit
-                   \nowhitespace
+                   \geenwitruimte
                  \fi
                \fi
              \fi
@@ -967,27 +959,27 @@
 
 %D For a long time we had:
 %D
-%D \starttyping
-%D \def\simpledoblank%
-%D   {\doifelse{\currentwhitespace}{\v!geen}
-%D      {\blank[\currentblanko]}
-%D      {\blank[\currentwhitespace]}}
-%D \stoptyping
+%D \starttypen
+%D \def\simpledoblanko%
+%D   {\doifelse{\currentwitruimte}{\v!geen}
+%D      {\blanko[\currentblanko]}
+%D      {\blanko[\currentwitruimte]}}
+%D \stoptypen
 %D
 %D But Berend de Boer wanted more control, so now we have:
 
-\def\simpledoblank % ...
-  {\doifelse\currentwhitespace\v!none
-     {\blank[\currentblanko]}
-     {\blank[\s!default]}}
+\def\simpledoblanko % ...
+  {\doifelse\currentwitruimte\v!geen
+     {\blanko[\currentblanko]}
+     {\blanko[\s!default]}}
 
 %D Another useful definition would be:
 %D
-%D \starttyping
-%D \defineblank
+%D \starttypen
+%D \definieerblanko
 %D   [\s!default]
 %D   [\v!groot]
-%D \stoptyping
+%D \stoptypen
 
 \def\dosetupblank#1% amount are an plain inheritance
   {\bigskipamount#1\relax
@@ -1003,40 +995,40 @@
    \else
      \ExpandFirstAfter\processallactionsinset
        [#1]
-       [ \v!flexible=>\blankoflexibeltrue,
-             \v!fixed=>\blankoflexibelfalse]%
+       [ \v!flexibel=>\blankoflexibeltrue,
+             \v!vast=>\blankoflexibelfalse]%
    \fi
    \ExpandFirstAfter\processallactionsinset
      [#1]
-     [ \v!flexible=>\dosetupblank\deblankoskip,
-           \v!fixed=>\dosetupblank\deblankoskip,
-          \v!line=>\edef\deblankoskip{\regelafstand}%
+     [ \v!flexibel=>\dosetupblank\deblankoskip,
+           \v!vast=>\dosetupblank\deblankoskip,
+          \v!regel=>\edef\deblankoskip{\regelafstand}%
                     \dosetupblank\deblankoskip
-                    \let\deblanko\v!big,
-     \v!halfline=>\scratchskip.5\regelafstand
+                    \let\deblanko\v!groot,
+     \v!halveregel=>\scratchskip.5\regelafstand
                     \edef\deblankoskip{\the\scratchskip}%
                     \dosetupblank\deblankoskip
-                    \let\deblanko\v!medium,
-          \v!big=>\ifgridsnapping
+                    \let\deblanko\v!middel,
+          \v!groot=>\ifgridsnapping
                       \edef\deblankoskip{\regelafstand}%
                       \dosetupblank\deblankoskip
                     \fi
-                    \let\currentblanko\v!big  % was \def, why ?
-                    \let\deblanko\v!big,
-         \v!medium=>\let\currentblanko\v!medium % was \def, why ?
-                    \let\deblanko\v!medium,
-          \v!small=>\let\currentblanko\v!small  % was \def, why ?
-                    \let\deblanko\v!small,
-        \v!normal=>\dosetupblank\deblankoskip
-                    \let\deblanko\v!big,
-      \v!standard=>\edef\deblankoskip{\skipfactor\regelafstand}%
+                    \let\currentblanko\v!groot  % was \def, why ?
+                    \let\deblanko\v!groot,
+         \v!middel=>\let\currentblanko\v!middel % was \def, why ?
+                    \let\deblanko\v!middel,
+          \v!klein=>\let\currentblanko\v!klein  % was \def, why ?
+                    \let\deblanko\v!klein,
+        \v!normaal=>\dosetupblank\deblankoskip
+                    \let\deblanko\v!groot,
+      \v!standaard=>\edef\deblankoskip{\skipfactor\regelafstand}%
                     \dosetupblank\deblankoskip
-                    \let\deblanko\v!big,
+                    \let\deblanko\v!groot,
         \s!default=>\dosetupblank\deblankoskip
-                    \let\deblanko\v!big,
+                    \let\deblanko\v!groot,
         \s!unknown=>\let\deblankoskip\commalistelement
                     \dosetupblank\deblankoskip
-                    \let\deblanko\v!big]%
+                    \let\deblanko\v!groot]%
    \simplesetupwhitespace}
 
 % \definecomplexorsimpleempty\setupblank
@@ -1050,20 +1042,20 @@
      \blankoflexibelfalse
    \fi
    \dosetupblank\deblankoskip
-   \let\deblanko\v!big
+   \let\deblanko\v!groot
    \simplesetupwhitespace}
 
-\def\restorestandardblank% \v!standard
+\def\restorestandardblank% \v!standaard
   {\edef\deblankoskip{\skipfactor\regelafstand}%
    \dosetupblank\deblankoskip
-   \let\deblanko\v!big}
+   \let\deblanko\v!groot}
 
-\def\dodefineblank[#1][#2]%
+\def\dodefinieerblanko[#1][#2]%
   {\def\docommando##1{\setvalue{\??bo##1}{#2}}%
    \processcommalist[#1]\docommando}
 
-\def\defineblank
-  {\dodoubleargument\dodefineblank}
+\def\definieerblanko
+  {\dodoubleargument\dodefinieerblanko}
 
 \def\savecurrentblanko
   {\edef\restorecurrentblanko
@@ -1079,13 +1071,13 @@
 
 %D Now.
 
-\defineblank [\s!default] [\v!white]
-\defineblank [\v!height]  [\strutheight]
-\defineblank [\v!depth]   [\strutdepth]
+\definieerblanko [\s!default] [\v!wit]
+\definieerblanko [\v!hoogte]  [\strutheight]
+\definieerblanko [\v!diepte]  [\strutdepth]
 
-\let\currentindentation=\empty
+\let\currentvoorwit=\empty
 
-\newdimen\ctxparindent
+\newdimen\voorwit
 
 \newif\ifindentfirstparagraph % \indentfirstparagraphtrue
 
@@ -1097,46 +1089,40 @@
 \def\complexsetupindenting[#1]%
   {\processallactionsinset
      [#1]
-     [   \v!first=>\indentfirstparagraphtrue,
-       \v!next=>\indentfirstparagraphfalse,
+     [   \v!eerste=>\indentfirstparagraphtrue,
+       \v!volgende=>\indentfirstparagraphfalse,
         \s!default=>\simplesetupindenting,
-        \s!unknown=>\edef\currentindentation{\commalistelement}%
+        \s!unknown=>\edef\currentvoorwit{\commalistelement}%
                     \simplesetupindenting]}
 
 \def\simplesetupindenting
-  {\assigndimension\currentindentation\ctxparindent{1em}{1.5em}{2em}%
-   \parindent\ctxparindent\relax}
+  {\assigndimension\currentvoorwit\voorwit{1em}{1.5em}{2em}%
+   \parindent\voorwit\relax}
 
-\def\indenting % watch out: \dodo and no \do
-  {\dosingleargument\dodoindenting}
+\def\doinspringen[#1]% too many relaxes
+  {\processallactionsinset
+     [#1]
+     [    \v!nee=>\parindent\voorwit\relax\noindent,
+         \v!niet=>\parindent\voorwit\relax\noindent,
+           \v!ja=>\parindent\voorwit\relax,            % geen \indent !
+       \v!eerste=>\indentfirstparagraphtrue,
+     \v!volgende=>\indentfirstparagraphfalse,
+       \v!altijd=>\parindent\voorwit\relax,            % geen \indent !
+        \v!nooit=>\parindent\zeropoint\relax]}
 
-\def\dodoindenting[#1]%
-  {\executeifdefined{\??in:#1}\donothing}
+\def\inspringen
+  {\dosingleargument\doinspringen}
 
-\def\defineindentingmethod[#1]#2%
-  {\setvalue{\??in:#1}{#2}}
-
-\defineindentingmethod [\v!no]      {\parindent\ctxparindent\noindent}
-\defineindentingmethod [\v!not]     {\parindent\ctxparindent\noindent}
-
-\defineindentingmethod [\v!first]   {\indentfirstparagraphtrue}
-\defineindentingmethod [\v!next] {\indentfirstparagraphfalse}
-
-\defineindentingmethod [\v!yes]       {\parindent\ctxparindent\relax}   % no \indent !
-\defineindentingmethod [\v!always]   {\parindent\ctxparindent\relax}   % no \indent !
-
-\defineindentingmethod [\v!never]    {\parindent\zeropoint\relax} % no \indent !
-
-\def\noindenting{\indenting[\v!no,\v!next]} % was \nietinspringen
-\def\doindenting{\indenting[\v!yes,\v!first]}    % was \welinspringen
+\def\nietinspringen{\inspringen[\v!nee,\v!volgende]}
+\def\welinspringen {\inspringen[\v!ja,\v!eerste]}
 
 \def\dochecknextindentation#1% internal one
-  {\checknextindentation[\getvalue{#1\c!indentnext}]}
+  {\checknextindentation[\getvalue{#1\c!springvolgendein}]}
 
 \def\checknextindentation[#1]%
-  {\processaction[#1][%\v!keep=>,
-      \v!yes=>\doindentation,
-     \v!no=>\noindentation,
+  {\processaction[#1][%\v!handhaaf=>,
+      \v!ja=>\doindentation,
+     \v!nee=>\noindentation,
     \v!auto=>\autoindentation]}
 
 \def\doindentation% too simple
@@ -1164,8 +1150,8 @@
 
 \def\definespacingmethod[#1]#2{\setvalue{\??sg\??sg#1}{#2}}
 
-\definespacingmethod[\v!packed]{\newfrenchspacing}
-\definespacingmethod[\v!broad    ]{\nonfrenchspacing}
+\definespacingmethod[\v!opelkaar]{\newfrenchspacing}
+\definespacingmethod[\v!ruim    ]{\nonfrenchspacing}
 
 \def\complexsetupspacing[#1]%
   {\executeifdefined{\??sg\??sg#1}\relax
@@ -1191,7 +1177,7 @@
 % but, since not all fonts have .5em digits:
 
 \def\fixedspace
-  {\setbox\scratchbox\normalhbox\ifmmode{$0$}\else{0}\fi
+  {\setbox\scratchbox\hbox\ifmmode{$0$}\else{0}\fi
    \hskip\wd\scratchbox\relax}
 
 \def\fixedspaces
@@ -1214,7 +1200,7 @@
 %
 % due to backward compability
 
-\let\space     \space
+\let\spatie     \space
 \let\hardespatie\fixedspace
 \let\geenspatie \nospace
 
@@ -1240,10 +1226,10 @@
 % \setupbodyfont[cmr] \getbuffer
 % \setupbodyfont[lbr] \getbuffer
 
-\def\packed
+\def\opelkaar
   {\nointerlineskip}
 
-\def\godown[#1]% nog eens mooier, relateren aan blanko
+\def\omlaag[#1]% nog eens mooier, relateren aan blanko
   {\nointerlineskip
    \vskip#1 }
 
@@ -1372,17 +1358,17 @@
 
 \fi
 
-\newskip\ctxparskip \ctxparskip\zeropoint
+\newskip\tussenwit \tussenwit\zeropoint
 
 \newif\ifwitruimteflexibel \witruimteflexibeltrue
 
 \def\blankokleinmaat  {\smallskipamount}
 \def\blankomiddelmaat {\medskipamount}
 \def\blankogrootmaat  {\bigskipamount}
-\def\currentwhitespace {\zeropoint}
+\def\currentwitruimte {\zeropoint}
 
 % \def\stelwitruimteopnieuwin
-%   {\expanded{\setupwhitespace[\currentwhitespace]}}
+%   {\expanded{\setupwhitespace[\currentwitruimte]}}
 %
 % \newif\ifwitruimteflexibel \witruimteflexibeltrue
 %
@@ -1398,81 +1384,81 @@
 %      [\v!herstel=>,
 %          \v!vast=>\witruimteflexibelfalse,
 %      \v!flexibel=>\witruimteflexibeltrue,
-%         \v!regel=>\ctxparskip\baselineskip,
-%    \v!halveregel=>\ctxparskip.5\baselineskip,
-%       \s!default=>\doifnot\currentwhitespace\v!geen\stelwitruimteopnieuwin,
+%         \v!regel=>\tussenwit\baselineskip,
+%    \v!halveregel=>\tussenwit.5\baselineskip,
+%       \s!default=>\doifnot\currentwitruimte\v!geen\stelwitruimteopnieuwin,
 %       \s!unknown=>\@EA\assigndimension\@EA{\commalistelement} % \@EA is nodig
-%                     \ctxparskip\blankokleinmaat\blankomiddelmaat\blankogrootmaat]}   % te vangen
+%                     \tussenwit\blankokleinmaat\blankomiddelmaat\blankogrootmaat]}   % te vangen
 %
 % \def\dodosetupwhitespace
-%   {\edef\currentwhitespace
-%      {\ifdim\ctxparskip=\zeropoint
+%   {\edef\currentwitruimte
+%      {\ifdim\tussenwit=\zeropoint
 %         \v!geen
 %       \else
-%         \ifgridsnapping\the\baselineskip\else\the\ctxparskip\fi
+%         \ifgridsnapping\the\baselineskip\else\the\tussenwit\fi
 %       \fi}%
 %    \ifgridsnapping
 %      \witruimteflexibelfalse
-%      \ctxparskip1\ctxparskip
-%      \ifdim\ctxparskip>\zeropoint
-%        \ctxparskip\baselineskip
+%      \tussenwit1\tussenwit
+%      \ifdim\tussenwit>\zeropoint
+%        \tussenwit\baselineskip
 %      \fi
 %    \else
-%      \ifwitruimteflexibel \else \ctxparskip1\ctxparskip \fi
+%      \ifwitruimteflexibel \else \tussenwit1\tussenwit \fi
 %    \fi
-%    \parskip\ctxparskip}
+%    \parskip\tussenwit}
 %
 % \def\simplesetupwhitespace% == snelle \setupwhitespace[\s!default]
-%   {\doifnot\currentwhitespace\v!geen\stelwitruimteopnieuwin
+%   {\doifnot\currentwitruimte\v!geen\stelwitruimteopnieuwin
 %    \dodosetupwhitespace}
 
 \definecomplexorsimple\setupwhitespace
 
 \def\simplesetupwhitespace
-  {\doifnot\currentwhitespace\v!none\dosetupwhitespace}
+  {\doifnot\currentwitruimte\v!geen\dosetupwhitespace}
 
 \def\complexsetupwhitespace[#1]%
   {\doifelsenothing{#1}
      {\simplesetupwhitespace}
-     {\edef\currentwhitespace{#1}%
+     {\edef\currentwitruimte{#1}%
       \dosetupwhitespace}}
 
 \def\dosetupwhitespace
-  {\processcommacommand[\currentwhitespace]\dowhitespacemethod
+  {\processcommacommand[\currentwitruimte]\dowhitespacemethod
    \dodosetupwhitespace}
 
 \def\dodosetupwhitespace
   {\ifgridsnapping
      \witruimteflexibelfalse
-     \ctxparskip1\ctxparskip
-     \ifdim\ctxparskip>\zeropoint
-       \ctxparskip\baselineskip
+     \tussenwit1\tussenwit
+     \ifdim\tussenwit>\zeropoint
+       \tussenwit\baselineskip
      \fi
    \else
-     \ifwitruimteflexibel \else \ctxparskip1\ctxparskip \fi
+     \ifwitruimteflexibel \else \tussenwit1\tussenwit \fi
    \fi
-   \parskip\ctxparskip}
+   \parskip\tussenwit}
 
 \definesystemvariable {ws} % whitespace
 
 \def\definewhitespacemethod[#1]#2{\setvalue{\??ws\??ws#1}{#2}}
 
-\definewhitespacemethod [\v!fix]    {}
-\definewhitespacemethod [\v!fixed]       {\witruimteflexibelfalse}
-\definewhitespacemethod [\v!flexible]   {\witruimteflexibeltrue}
-\definewhitespacemethod [\v!line]      {\ctxparskip  \baselineskip}
-\definewhitespacemethod [\v!halfline] {\ctxparskip.5\baselineskip}
-\definewhitespacemethod [\v!none]       {\ctxparskip  \zeropoint}
-\definewhitespacemethod [\v!big]      {\ctxparskip  \blankogrootmaat}
-\definewhitespacemethod [\v!medium]     {\ctxparskip  \blankomiddelmaat}
-\definewhitespacemethod [\v!small]      {\ctxparskip  \blankokleinmaat}
+\definewhitespacemethod [\v!herstel]    {}
+\definewhitespacemethod [\v!vast]       {\witruimteflexibelfalse}
+\definewhitespacemethod [\v!flexibel]   {\witruimteflexibeltrue}
+\definewhitespacemethod [\v!regel]      {\tussenwit  \baselineskip}
+\definewhitespacemethod [\v!halveregel] {\tussenwit.5\baselineskip}
+\definewhitespacemethod [\v!geen]       {\tussenwit  \zeropoint}
+\definewhitespacemethod [\v!groot]      {\tussenwit  \blankogrootmaat}
+\definewhitespacemethod [\v!middel]     {\tussenwit  \blankomiddelmaat}
+\definewhitespacemethod [\v!klein]      {\tussenwit  \blankokleinmaat}
 
 \definewhitespacemethod [\s!default]    {\stelwitruimteopnieuwin}
 
 \def\dowhitespacemethod#1%
-  {\executeifdefined{\??ws\??ws#1}{\ctxparskip#1}\relax}
+  {\executeifdefined{\??ws\??ws#1}{\tussenwit#1}\relax}
 
-\def\nowhitespace
+\def\geenwitruimte
   {\ifdim\parskip>\zeropoint\relax
      \ifdim\lastskip=-\parskip
      \else
@@ -1480,11 +1466,11 @@
      \fi
    \fi}
 
-\def\savecurrentwhitespace
-  {\edef\restorecurrentwhitespace
-     {\ctxparskip\the\ctxparskip
+\def\savecurrentwitruimte
+  {\edef\restorecurrentwitruimte
+     {\tussenwit\the\tussenwit
       \parskip\the\parskip
-      \noexpand\def\noexpand\currentwhitespace{\currentwhitespace}%
+      \noexpand\def\noexpand\currentwitruimte{\currentwitruimte}%
       \ifwitruimteflexibel
         \noexpand\witruimteflexibeltrue
       \else
@@ -1501,7 +1487,7 @@
 %
 % met/zonder witruimte
 
-\def\whitespace
+\def\witruimte%
   {\par
    \ifdim\parskip>\zeropoint\relax
     %\ifdim\lastskip>\parskip \else
@@ -1513,7 +1499,7 @@
 \def\nonoblanko[#1]%
   {\par}
 
-\def\noblanko
+\def\noblanko%
   {\dosingleempty\nonoblanko}
 
 % De onderstaande macro handelt ook de situatie dat er geen
@@ -1526,49 +1512,49 @@
 \newsignal \noparskipsignal % \def\noparskipsignal {0.00001pt}
 \def\lastdoneparskip {0pt}
 
-\def\startpacked
-  {\dosingleempty\dostartpacked}
+\def\startopelkaar
+  {\dosingleempty\dostartopelkaar}
 
-\def\dostartpacked[#1]% nesting afvangen
+\def\dostartopelkaar[#1]% nesting afvangen
   {\par
    \ifvmode
      \edef\lastdoneparskip  {\the\lastskip}%
      \edef\lastdoneprevdepth{\the\prevdepth}% zeer recent toegevoegd
      \ifdim\prevdepth=-\thousandpoint % toegevoegd omdat binnen
      \else                            % een vbox een extra skip
-       \whitespace                     % ongewenst is; dit kan
-       \baselinecorrection %% zie in \placeregister[n=1]
+       \witruimte                     % ongewenst is; dit kan
+       \baselinecorrection %% zie in \plaatsregister[n=1]
        \vskip\noparskipsignal   % waarschijnlijk ook in
      \fi                        % blanko blokkeer
      \bgroup
-     \doifelse{#1}\v!blank
+     \doifelse{#1}\v!blanko
        \opelkaarfalse
        \opelkaartrue
-     \blank[\v!disable]       % dit is nog niet ok, gaat fout
-     \setupwhitespace[\v!none]  % bovenin vtop (dwz, baseline)
+     \blanko[\v!blokkeer]       % dit is nog niet ok, gaat fout
+     \setupwhitespace[\v!geen]  % bovenin vtop (dwz, baseline)
   \fi}
 
-\def\stoppacked
+\def\stopopelkaar
   {\par
    \ifvmode
      \egroup
      \ifdim\lastskip=\noparskipsignal\relax
        \removelastskip
-       \nowhitespace
+       \geenwitruimte
        \vskip-\lastdoneparskip
        \vskip+\lastdoneparskip
-       \prevdepth-\lastdoneprevdepth % zeer recent toegevoegd
+      \prevdepth-\lastdoneprevdepth % zeer recent toegevoegd
      \fi
   \fi}
 
-\def\startunpacked
-  {\blank
+\def\startvanelkaar
+  {\blanko
    \leavevmode
    \bgroup}
 
-\def\stopunpacked
+\def\stopvanelkaar
   {\egroup
-   \blank}
+   \blanko}
 
 % De onderstaande macro's moeten nog eens nader worden uitgewerkt.
 % Ze spelen een rol bij de spatiering rond omkaderde teksten
@@ -1582,27 +1568,27 @@
 
 \let\dorondomregelcorrectie=\relax
 
-\def\startlinecorrection
-  {\dodoubleempty\dostartlinecorrection}
+\def\startregelcorrectie
+  {\dodoubleempty\dostartregelcorrectie}
 
-\def\dostartlinecorrection[#1][#2]% #2 gobbles spaces
+\def\dostartregelcorrectie[#1][#2]% #2 gobbles spaces
   {\bgroup
    \processaction
      [#1]
-     [ \v!blank=>\let\dorondomregelcorrectie\blank,
+     [ \v!blanko=>\let\dorondomregelcorrectie\blanko,
       \s!default=>\let\dorondomregelcorrectie\relax,
-      \s!unknown=>{\def\dorondomregelcorrectie{\blank[#1]}}]%
+      \s!unknown=>{\def\dorondomregelcorrectie{\blanko[#1]}}]%
    \dorondomregelcorrectie
    \startbaselinecorrection
    \offbaselinecorrection
    \ignorespaces}
 
-\def\stoplinecorrection
+\def\stopregelcorrectie
   {\stopbaselinecorrection
    \dorondomregelcorrectie
    \egroup}
 
-\def\correctwhitespace
+\def\corrigeerwitruimte
   {\dowithnextbox
      {\startbaselinecorrection
       \flushnextbox
@@ -1664,9 +1650,6 @@
 \def\baselinefactor         {2.8}
 \def\baselinegluefactor     {0}
 
-\def\minimumstrutheight     {0pt}
-\def\minimumstrutdepth      {0pt}
-
 \def\normallineheight       {\baselinefactor ex}
 \def\minimallinedistance    {\lineskip}
 
@@ -1718,18 +1701,6 @@
      \vskip-\openstrutheight
    \fi}
 
-% \def\settopskip % the extra test is needed for the lbr family
-%   {\topskip\systemtopskipfactor\globalbodyfontsize
-%    \ifgridsnapping \else
-%      \ifr@ggedbottom\!!plus5\globalbodyfontsize\fi
-%    \fi
-%    \relax % the skip
-%    \topskipgap\topskip
-%    \advance\topskipgap -\openstrutheight\relax
-%    \ifdim\topskip<\strutheightfactor\openlineheight
-%      \topskip\strutheightfactor\openlineheight\relax
-%    \fi}
-
 \def\settopskip % the extra test is needed for the lbr family
   {\topskip\systemtopskipfactor\globalbodyfontsize
    \ifgridsnapping \else
@@ -1738,15 +1709,9 @@
    \relax % the skip
    \topskipgap\topskip
    \advance\topskipgap -\openstrutheight\relax
-\ifdim\minimumstrutheight>\zeropoint
-   \ifdim\topskip<\minimumstrutheight
-     \topskip\minimumstrutheight\relax
-   \fi
-\else
    \ifdim\topskip<\strutheightfactor\openlineheight
      \topskip\strutheightfactor\openlineheight\relax
-   \fi
-\fi}
+   \fi}
 
 \def\setmaxdepth
   {\maxdepth\systemmaxdepthfactor\globalbodyfontsize}
@@ -1756,45 +1721,13 @@
    \lineskip\normallineskip
    \lineskiplimit\normallineskiplimit}
 
-% \def\setnormalbaselines
-%   {\ifdim\normallineheight>\zeropoint
-%      \lineheight\normallineheight
-%    \fi
-%    \openlineheight\spacingfactor\lineheight
-%    \openstrutheight\strutheightfactor\openlineheight
-%    \openstrutdepth \strutdepthfactor \openlineheight
-%    \normalbaselineskip\openlineheight
-%      \!!plus\baselinegluefactor\openlineheight
-%      \!!minus\baselinegluefactor\openlineheight
-%    \normallineskip\minimallinedistance\relax % \onepoint\relax
-%    \normallineskiplimit\zeropoint\relax
-%    \normalbaselines}
-
 \def\setnormalbaselines
   {\ifdim\normallineheight>\zeropoint
      \lineheight\normallineheight
    \fi
    \openlineheight\spacingfactor\lineheight
-   \openstrutheight \ifdim\minimumstrutheight>\zeropoint
-     \minimumstrutheight % new
-   \else
-     \strutheightfactor\openlineheight
-   \fi
-   \openstrutdepth \ifdim\minimumstrutdepth>\zeropoint
-     \minimumstrutdepth % new
-   \else
-     \strutdepthfactor \openlineheight
-   \fi
-   \begingroup % avoid interference
-   \scratchdimen\minimumstrutdepth
-   \advance\scratchdimen\minimumstrutheight
-   \ifdim\scratchdimen>\zeropoint
-     \endgroup
-     \openlineheight\openstrutheight % new
-     \advance\openlineheight\openstrutdepth % new
-   \else
-     \endgroup
-   \fi
+   \openstrutheight\strutheightfactor\openlineheight
+   \openstrutdepth \strutdepthfactor \openlineheight
    \normalbaselineskip\openlineheight
      \!!plus\baselinegluefactor\openlineheight
      \!!minus\baselinegluefactor\openlineheight
@@ -1815,8 +1748,8 @@
    \else
      \edef\spacingfactor{#1}%
    \fi
-   \setspacingfactor\systemtopskipfactor \to\topskipfactor \by#1\\% why no \spacingfactor ?
-   \setspacingfactor\systemmaxdepthfactor\to\maxdepthfactor\by#1\\% why no \spacingfactor ?
+   \setspacingfactor\systemtopskipfactor \to\topskipfactor \by#1\\%
+   \setspacingfactor\systemmaxdepthfactor\to\maxdepthfactor\by#1\\%
    \setnormalbaselines
    \setstrut}
 
@@ -1838,7 +1771,7 @@
 
   \newbox\strutbox
 
-  \setbox\strutbox=\normalhbox{\vrule height8.5pt depth3.5pt width\z@}
+  \setbox\strutbox=\hbox{\vrule height8.5pt depth3.5pt width\z@}
 
  %\def\strut{\relax\ifmmode\copy\strutbox\else\unhcopy\strutbox\fi}
   \def\strut{\relax\ifmmode\copy\else\unhcopy\fi\strutbox}
@@ -1867,64 +1800,29 @@
 %    \setstrutdimen\strutdepth \strutdepthfactor \spacingfactor
 %    \dosetstrut}
 
-% \def\setstrut
-%   {\strutdimen\normallineheight
-%    \strutdimen\strutheightfactor\strutdimen
-%    \strutdimen\spacingfactor\strutdimen
-%    \edef\strutheight{\the\strutdimen}%
-%    \strutdimen\normallineheight
-%    \ifgridsnapping
-%      \advance\strutdimen-\strutheight
-%    \else
-%      \strutdimen\strutdepthfactor\strutdimen
-%      \strutdimen\spacingfactor\strutdimen
-%    \fi
-%    \edef\strutdepth{\the\strutdimen}%
-%    \dosetstrut}
-
 \def\setstrut
-  {% height
-   \strutdimen\normallineheight
-\ifdim\minimumstrutheight>\zeropoint
-  \strutdimen\minimumstrutheight
-\else
+  {\strutdimen\normallineheight
    \strutdimen\strutheightfactor\strutdimen
-\fi
    \strutdimen\spacingfactor\strutdimen
    \edef\strutheight{\the\strutdimen}%
-   % depth
    \strutdimen\normallineheight
    \ifgridsnapping
-\ifdim\minimumstrutdepth>\zeropoint
-  \strutdimen\minimumstrutdepth
-\else
      \advance\strutdimen-\strutheight
-\fi
    \else
-\ifdim\minimumstrutdepth>\zeropoint
-  \strutdimen\minimumstrutdepth
-\else
      \strutdimen\strutdepthfactor\strutdimen
-\fi
      \strutdimen\spacingfactor\strutdimen
    \fi
    \edef\strutdepth{\the\strutdimen}%
-   % finish
    \dosetstrut}
 
 \def\setcharstrut#1%
-  {\setbox\strutbox\normalhbox{#1}%
+  {\setbox\strutbox\hbox{#1}%
    \edef\strutheight{\the\strutht}%
    \edef\strutdepth {\the\strutdp}%
    \dosetstrut}
 
-% \def\setfontstrut
-%   {\setcharstrut{(}}
-%
-% better, since some fonts have small (but descending Q etc)
-
 \def\setfontstrut
-  {\setcharstrut{(gplQT}}
+  {\setcharstrut{(}}
 
 \def\setcapstrut% could be M, but Q has descender
   {\setcharstrut{Q}}
@@ -1950,13 +1848,13 @@
 
 %D Sometimes a capstrut comes in handy
 %D
-%D \starttabulate[|Tl|l|l|]
-%D \NC yes          \NC normal strut               \NC {\showstruts\setupstrut[yes]\strut}  \NC \NR
-%D \NC no           \NC no strut                   \NC {\showstruts\setupstrut[no]\strut}  \NC \NR
-%D \NC kap          \NC a capital strut (i.e. Q)   \NC {\showstruts\setupstrut[cap]\strut} \NC \NR
+%D \starttabulatie[|Tl|l|l|]
+%D \NC yes          \NC normal strut               \NC {\showstruts\setupstrut[ja]\strut}  \NC \NR
+%D \NC no           \NC no strut                   \NC {\showstruts\setupstrut[nee]\strut}  \NC \NR
+%D \NC kap          \NC a capital strut (i.e. Q)   \NC {\showstruts\setupstrut[kap]\strut} \NC \NR
 %D \NC A B \unknown \NC a character strut (e.g. A) \NC {\showstruts\setupstrut[A]\strut}   \NC \NR
 %D \NC              \NC a normal strut             \NC {\showstruts\setupstrut\strut}      \NC \NR
-%D \stoptabulate
+%D \stoptabulatie
 
 \def\setupstrut
   {\dosingleempty\dosetupstrut}
@@ -1964,11 +1862,11 @@
 \def\dosetupstrut[#1]% yet undocumented, todo: fontstrut
   {\processaction
      [#1]
-     [     \v!yes=>\setstrut,
-            \v!no=>\setnostrut,
-          \v!cap=>\setcapstrut,
-          \v!fit=>\setfontstrut,
-         \v!line=>\setstrut,
+     [     \v!ja=>\setstrut,
+          \v!nee=>\setnostrut,
+          \v!kap=>\setcapstrut,
+      \v!passend=>\setfontstrut,
+        \v!regel=>\setstrut,
       \s!default=>\setstrut,
       \s!unknown=>\setcharstrut\commalistelement]}
 
@@ -2132,30 +2030,18 @@
 %
 % expands to \widowpenalty \maxdimen \maxdimen \zeropoint
 
-\beginTEX
+\def\resetpenalties#1%
+  {\ifx#1\undefined\else
+      #1\minusone
+   \fi}
 
-  \let\resetpenalties   \gobbleoneargument
-  \let\setpenalties     \gobblethreearguments
-  \let\doexpandedrecurse\gobbletwoarguments
+\def\setpenalties#1#2#3%
+  {\ifx#1\undefined\else
+     #1\numexpr(#2+1)\space\doexpandedrecurse{\numexpr(#2)}{#3}\zerocount\relax
+   \fi}
 
-\endTEX
-
-\beginETEX \numexpr
-
-  \def\resetpenalties#1%
-    {\ifx#1\undefined\else
-       #1\minusone
-     \fi}
-
-  \def\setpenalties#1#2#3%
-    {\ifx#1\undefined\else % space before #3 prevents lookahead problems, needed when #3=text
-       #1\numexpr(#2+1)\space\doexpandedrecurse{\the\numexpr(#2)}{ #3}\zerocount\relax
-     \fi}
-
-  \def\doexpandedrecurse#1#2%
-    {\ifnum#1>\zerocount#2\@EA\doexpandedrecurse\@EA{\the\numexpr(#1-1)}{#2}\fi}
-
-\endETEX
+\def\doexpandedrecurse#1#2%
+  {\ifnum#1>\zerocount#2\@EA\doexpandedrecurse\@EA{\the\numexpr(#1-1)}{#2}\fi}
 
 \newif\ifgridsnapping % to be sure
 
@@ -2217,7 +2103,7 @@
 
 % as an illustration:
 
-\startsetups [\systemsetupsprefix\v!strict]
+\startsetups [\systemsetupsprefix\v!streng]
 
    \setups[\v!reset]
 
@@ -2250,47 +2136,47 @@
 \def\dotfskip#1{{\tf\hskip#1}}
 \def\dotfkern#1{{\tf\kern #1}}
 
-\newskip\ctxleftskip
-\newskip\ctxrightskip
-\newskip\ctxmidskip
+\newskip\linkssmaller
+\newskip\rechtssmaller
+\newskip\middensmaller
 
-\def\dosinglenarrower#1%
+\def\dosinglesmaller#1%
   {\processaction
      [#1]
-     [     \v!left=>\global\advance\ctxleftskip  \@@slleft,
-         \v!middle=>\global\advance\ctxmidskip   \@@slmiddle,
-          \v!right=>\global\advance\ctxrightskip \@@slright,
-           \v!none=>,
-        \s!unknown=>\global\advance\ctxmidskip \commalistelement]}
+     [    \v!links=>\global\advance\linkssmaller  \@@sllinks,
+         \v!midden=>\global\advance\middensmaller \@@slmidden,
+         \v!rechts=>\global\advance\rechtssmaller \@@slrechts,
+           \v!geen=>,
+        \s!unknown=>\global\advance\middensmaller \commalistelement]}
 
-\def\donarrower[#1]%
+\def\dosmaller[#1]%
   {\processaction
      [#1]
-     [     \v!left=>\global\advance\ctxleftskip  \@@slleft,
-         \v!middle=>\global\advance\ctxmidskip   \@@slmiddle,
-          \v!right=>\global\advance\ctxrightskip \@@slright,
-           \v!none=>,% handy for delimitedtexts
-        \s!unknown=>{\dorepeatwithcommand[#1]\dosinglenarrower}]}
+     [    \v!links=>\global\advance\linkssmaller  \@@sllinks,
+         \v!midden=>\global\advance\middensmaller \@@slmidden,
+         \v!rechts=>\global\advance\rechtssmaller \@@slrechts,
+           \v!geen=>,% handy for delimitedtexts
+        \s!unknown=>{\herhaalmetcommando[#1]\dosinglesmaller}]}
 
-\def\complexstartnarrower[#1]%
+\def\complexstartsmaller[#1]%
   {\par
    \bgroup
-   \global\ctxleftskip \zeropoint
-   \global\ctxrightskip\zeropoint
-   \global\ctxmidskip\zeropoint
-   \processcommalistwithparameters[#1]\donarrower
-   \advance\leftskip  \ctxleftskip
-   \advance\rightskip \ctxrightskip
-   \advance\leftskip  \ctxmidskip
-   \advance\rightskip \ctxmidskip
+   \global\linkssmaller \zeropoint
+   \global\rechtssmaller\zeropoint
+   \global\middensmaller\zeropoint
+   \processcommalistwithparameters[#1]\dosmaller
+   \advance\leftskip  \linkssmaller
+   \advance\rightskip \rechtssmaller
+   \advance\leftskip  \middensmaller
+   \advance\rightskip \middensmaller
    \seteffectivehsize}
 
-\def\simplestartnarrower
-  {\startnarrower[\v!middle]}
+\def\simplestartsmaller
+  {\startsmaller[\v!midden]}
 
-\definecomplexorsimple\startnarrower
+\definecomplexorsimple\startsmaller
 
-\def\stopnarrower
+\def\stopsmaller
   {\par % else skips forgotten
    \egroup}
 
@@ -2310,12 +2196,21 @@
    \let\effectiveleftskip \@@effectiveleftskip
    \let\effectiverightskip\@@effectiverightskip}
 
-\def\dodefinehbox[#1][#2]%
+\def\dodefinieerhbox[#1][#2]%
   {\setvalue{hbox#1}##1%
      {\hbox to #2{\begstrut##1\endstrut\hss}}}
 
-\def\definehbox%
-  {\dodoubleargument\dodefinehbox}
+\def\definieerhbox%
+  {\dodoubleargument\dodefinieerhbox}
+
+\def\lrcbox#1#2#%
+  {\vbox#2\bgroup
+   \let\\=\endgraf
+   \forgetall#1\let\next=}
+
+\def\lbox{\lrcbox\raggedleft}
+\def\rbox{\lrcbox\raggedright}
+\def\cbox{\lrcbox\raggedcenter}
 
 \def\iobox#1#2#3#% here #3# is not really needed
   {\vbox\bgroup  % we want to return a vbox like the others
@@ -2332,44 +2227,86 @@
 \def\dosetraggedvbox#1%
   {\processaction
      [#1]
-     [   \v!left=>\let\raggedbox\lbox,
-        \v!right=>\let\raggedbox\rbox,
-       \v!middle=>\let\raggedbox\cbox,
-        \v!inner=>\let\raggedbox\ibox,
-        \v!outer=>\let\raggedbox\obox,
-    \v!flushleft=>\let\raggedbox\rbox,
-   \v!flushright=>\let\raggedbox\lbox,
-       \v!center=>\let\raggedbox\cbox,
-           \v!no=>\def\raggedbox{\vbox\bgroup\raggedright\let\next=},
+     [  \v!links=>\let\raggedbox\lbox,
+       \v!rechts=>\let\raggedbox\rbox,
+       \v!midden=>\let\raggedbox\cbox,
+       \v!binnen=>\let\raggedbox\ibox,
+       \v!buiten=>\let\raggedbox\obox,
+          \v!nee=>\def\raggedbox{\vbox\bgroup\raggedright\let\next=},
       \s!default=>\let\raggedbox\vbox,
       \s!unknown=>\let\raggedbox\vbox]}
 
 \def\dosetraggedhbox#1%
   {\processaction % slow
      [#1]
-     [   \v!left=>\def\raggedbox{\doalignedline\v!left  },
-        \v!right=>\def\raggedbox{\doalignedline\v!right },
-       \v!middle=>\def\raggedbox{\doalignedline\v!middle},
-        \v!inner=>\def\raggedbox{\doalignedline\v!inner },
-        \v!outer=>\def\raggedbox{\doalignedline\v!outer },
-    \v!flushleft=>\def\raggedbox{\doalignedline\v!right },
-   \v!flushright=>\def\raggedbox{\doalignedline\v!left  },
-       \v!center=>\def\raggedbox{\doalignedline\v!middle},
-       \v!normal=>\let\raggedbox\hbox,
+     [  \v!links=>\def\raggedbox{\doregelplaats\v!links },
+       \v!rechts=>\def\raggedbox{\doregelplaats\v!rechts},
+       \v!midden=>\def\raggedbox{\doregelplaats\v!midden},
+       \v!binnen=>\def\raggedbox{\doregelplaats\v!binnen},
+       \v!buiten=>\def\raggedbox{\doregelplaats\v!buiten},
+      \v!normaal=>\let\raggedbox\hbox,
       \s!default=>\let\raggedbox\hbox,
       \s!unknown=>\let\raggedbox\hbox]}
+
+% \def\dosetraggedcommand#1% ook ruim,rechts en zo
+%   {\processaction
+%      [#1]
+%      [  \v!links=>\def\raggedcommand{\raggedleft},
+%        \v!rechts=>\def\raggedcommand{\raggedright},
+%        \v!midden=>\def\raggedcommand{\raggedcenter},
+%           \v!nee=>\def\raggedcommand{\raggedright},
+%       \v!normaal=>\let\raggedcommand\relax,
+%       \s!default=>\def\raggedcommand{\raggedcenter},
+%       \s!unknown=>\let\raggedcommand\relax]}
 
 \def\dosetraggedcommand#1%
   {\expanded{\dodosetraggedcommand{#1}}}
 
+% \def\dodosetraggedcommand#1%
+%   {\doifinsetelse{\v!ruim} {#1}{\!!doneatrue}{\!!doneafalse}%
+%    \doifinsetelse{\v!breed}{#1}{\!!donebtrue}{\!!donebfalse}%
+%    \let\raggedcommand\relax
+%    \let\raggedtopcommand\empty
+%    \let\raggedbottomcommand\empty
+%    \!!donectrue
+%    \ExpandFirstAfter\processallactionsinset
+%      [#1]
+%      [  \v!links=>\if!!donea      \def\raggedcommand{\veryraggedleft}%
+%                   \else           \def\raggedcommand{\raggedleft}%
+%                   \fi
+%                   \!!donecfalse,                    % {\v!links,\v!midden}
+%        \v!rechts=>\if!!donea      \def\raggedcommand{\veryraggedright}%
+%                   \else           \def\raggedcommand{\raggedright}%
+%                   \fi
+%                   \!!donecfalse,                    % {\v!rechts,\v!midden}
+%        \v!midden=>\if!!donec
+%                     \if!!doneb      \def\raggedcommand{\raggedwidecenter}%
+%                     \else\if!!donea \def\raggedcommand{\veryraggedcenter}%
+%                     \else           \def\raggedcommand{\raggedcenter}%
+%                     \fi\fi
+%                     \!!donecfalse                   % {\v!midden,\v!midden}
+%                   \else
+%                     \let\raggedbottomcommand\vfilll % bonus, pretty strong
+%                     \let\raggedtopcommand   \vfilll % used with \framed for
+%                   \fi,                              % instance in tables
+%          \v!hoog=>\let\raggedbottomcommand\vfilll,  % and since we lack a
+%          \v!laag=>\let\raggedtopcommand   \vfilll,  % proper keyword, but
+%          \v!laho=>\let\raggedbottomcommand\vfilll   % we do support the
+%                   \let\raggedtopcommand   \vfilll,  % ugly laho (lohi)
+%           \v!nee=>\def\raggedcommand{\raggedright},
+%            \v!ja=>\let\raggedcommand\notragged,  % was \relax
+%       \v!normaal=>\let\raggedcommand\notragged]} % was \relax
+%
+% much faster and important since TABLE uses them a lot:
+
 \def\dodosetraggedcommand#1% beware: #1=empty is ignored, keep that!
-  {\let\raggedcommand      \relax
-   \let\raggedtopcommand   \empty
+  {\let\raggedcommand\relax
+   \let\raggedtopcommand\empty
    \let\raggedbottomcommand\empty
    \chardef\raggedoneliner\zerocount
    \doifsomething{#1}
-     {\doifinsetelse\v!broad{#1}\!!doneatrue\!!doneafalse
-      \doifinsetelse\v!wide {#1}\!!donebtrue\!!donebfalse
+     {\doifinsetelse\v!ruim {#1}\!!doneatrue\!!doneafalse
+      \doifinsetelse\v!breed{#1}\!!donebtrue\!!donebfalse
       \!!donectrue
       \rawprocesscommalist[#1]\dododosetraggedcommand}}
 
@@ -2378,19 +2315,19 @@
 
 \def\@@ragged@@command{@@raggedcommand}
 
-\setvalue{\@@ragged@@command\v!left}%
+\setvalue{\@@ragged@@command\v!links}%
   {\if!!donea \def\raggedcommand{\veryraggedleft}%
    \else      \def\raggedcommand{\raggedleft}%
    \fi
    \!!donecfalse}
 
-\setvalue{\@@ragged@@command\v!right}%
+\setvalue{\@@ragged@@command\v!rechts}%
   {\if!!donea \def\raggedcommand{\veryraggedright}%
    \else      \def\raggedcommand{\raggedright}%
    \fi
    \!!donecfalse}
 
-\setvalue{\@@ragged@@command\v!middle}%
+\setvalue{\@@ragged@@command\v!midden}%
   {\if!!donec
      \if!!doneb      \def\raggedcommand{\raggedwidecenter}%
      \else\if!!donea \def\raggedcommand{\veryraggedcenter}%
@@ -2402,44 +2339,40 @@
      \let\raggedtopcommand   \vfilll % used with \framed for
    \fi}                              % instance in tables
 
-\setvalue{\@@ragged@@command\v!flushleft }{\getvalue{\@@ragged@@command\v!right }}
-\setvalue{\@@ragged@@command\v!flushright}{\getvalue{\@@ragged@@command\v!left  }}
-\setvalue{\@@ragged@@command\v!center    }{\getvalue{\@@ragged@@command\v!middle}}
-
-\setvalue{\@@ragged@@command\v!high}%
+\setvalue{\@@ragged@@command\v!hoog}%
   {\let\raggedbottomcommand\vfilll}  % and since we lack a
 
-\setvalue{\@@ragged@@command\v!low}%
+\setvalue{\@@ragged@@command\v!laag}%
   {\let\raggedtopcommand\vfilll}     % proper keyword, but
 
-\setvalue{\@@ragged@@command\v!lohi}%
+\setvalue{\@@ragged@@command\v!laho}%
   {\let\raggedbottomcommand\vfilll   % we do support the
    \let\raggedtopcommand\vfilll}     % ugly laho (lohi)
 
-\setvalue{\@@ragged@@command\v!no}%
+\setvalue{\@@ragged@@command\v!nee}%
   {\def\raggedcommand{\raggedright}}
 
-\setvalue{\@@ragged@@command\v!yes}%
+\setvalue{\@@ragged@@command\v!ja}%
   {\let\raggedcommand\notragged}
 
-\setvalue{\@@ragged@@command\v!normal}%
+\setvalue{\@@ragged@@command\v!normaal}%
   {\let\raggedcommand\notragged}
 
-\setvalue{\@@ragged@@command\v!inner}% not yet perfect
+\setvalue{\@@ragged@@command\v!binnen}% not yet perfect
   {\signalrightpage % may interfere
    \doifrightpageelse
-     {\getvalue{\@@ragged@@command\v!right}}
-     {\getvalue{\@@ragged@@command\v!left}}}
+     {\getvalue{\@@ragged@@command\v!rechts}}
+     {\getvalue{\@@ragged@@command\v!links}}}
 
-\setvalue{\@@ragged@@command\v!outer}% not yet perfect
+\setvalue{\@@ragged@@command\v!buiten}% not yet perfect
   {\signalrightpage % may interfere
    \doifrightpageelse
-     {\getvalue{\@@ragged@@command\v!left}}
-     {\getvalue{\@@ragged@@command\v!right}}}
+     {\getvalue{\@@ragged@@command\v!links}}
+     {\getvalue{\@@ragged@@command\v!rechts}}}
 
 \chardef\raggedoneliner\zerocount
 
-\setvalue{\@@ragged@@command\v!line}%
+\setvalue{\@@ragged@@command\v!regel}%
   {\chardef\raggedoneliner\plusone}
 
 \def\@@startraggedoneliner
@@ -2469,6 +2402,10 @@
 
 \def\explicithmode{\unhbox\voidb@x}
 
+% Nodig voor gebruikers
+
+\def\geentest{\donottest}
+
 % Nog doen:
 %
 %  \goodbreak -> \allowbreak en \dosomebreak{..} in koppen
@@ -2482,7 +2419,7 @@
 % Om ongewenste witruimte te voorkomen kan met \dosomebreak{\break}
 % een \penalty v¢¢r witruimte worden geplaatst.
 
-\def\removelastskip % a redefinition of plain
+\def\removelastskip% a redefinition of plain
   {\ifvmode\ifdim\lastskip=\zeropoint\else\vskip-\lastskip\fi\fi}
 
 % first version:
@@ -2591,13 +2528,13 @@
 \def\forgetparindent
   {\forgeteverypar
    \indentfirstparagraphtrue % recently added
-   \let\currentindentation\v!none
-   \ctxparindent\zeropoint
+   \let\currentvoorwit\v!geen
+   \voorwit\zeropoint
    \parindent\zeropoint\relax}
 
 \def\forgetparskip
-  {\let\currentwhitespace\v!none
-   \ctxparskip\zeropoint
+  {\let\currentwitruimte\v!geen
+   \tussenwit\zeropoint
    \parskip\zeropoint\relax}
 
 \def\forgetbothskips
@@ -2744,6 +2681,7 @@
      \@EA\doconvertfont\csname#1#2\@EA\endcsname
    \fi}
 
+
 \unexpanded\def\@@dostopattributes
   {\doglobalstopcolor
    \endgroup}
@@ -2818,19 +2756,19 @@
 \def\dosetleftskipadaption#1%
   {\leftskipadaption\zeropoint
    \processaction[#1]
-     [\v!standard=>\leftskipadaption
-                    \ifdim\ctxparindent=\zeropoint\@@slleft\else\ctxparindent\fi,
-             \v!yes=>\leftskipadaption
-                    \ifdim\ctxparindent=\zeropoint\@@slleft\else\ctxparindent\fi,
-            \v!no=>,
+     [\v!standaard=>\leftskipadaption
+                    \ifdim\voorwit=\zeropoint\@@sllinks\else\voorwit\fi,
+             \v!ja=>\leftskipadaption
+                    \ifdim\voorwit=\zeropoint\@@sllinks\else\voorwit\fi,
+            \v!nee=>,
         \s!unknown=>\leftskipadaption#1]}
 
 \def\dosetrightskipadaption#1%
   {\rightskipadaption\zeropoint
    \processaction[#1]
-     [\v!standard=>\rightskipadaption\@@slright,
-             \v!yes=>\rightskipadaption\@@slright,
-            \v!no=>,
+     [\v!standaard=>\rightskipadaption\@@slrechts,
+             \v!ja=>\rightskipadaption\@@slrechts,
+            \v!nee=>,
         \s!unknown=>\rightskipadaption#1]}
 
 \endTEX
@@ -2839,18 +2777,18 @@
 
 % installation
 
-\setvalue{@lsa@\v!standard}%
-  {\ifdim\ctxparindent=\zeropoint\@@slleft\else\ctxparindent\fi}
+\setvalue{@lsa@\v!standaard}%
+  {\ifdim\voorwit=\zeropoint\@@sllinks\else\voorwit\fi}
 
-\setvalue{@lsa@\v!yes}%
-  {\ifdim\ctxparindent=\zeropoint\@@slleft\else\ctxparindent\fi}
+\setvalue{@lsa@\v!ja}%
+  {\ifdim\voorwit=\zeropoint\@@sllinks\else\voorwit\fi}
 
-\letvalue{@lsa@\v!no      }\zeropoint
+\letvalue{@lsa@\v!nee      }\zeropoint
 \letvalue{@lsa@\empty      }\zeropoint
 
-\setvalue{@rsa@\v!standard}{\@@slright}
-\setvalue{@rsa@\v!yes       }{\@@slright}
-\letvalue{@rsa@\v!no      }\zeropoint
+\setvalue{@rsa@\v!standaard}{\@@slrechts}
+\setvalue{@rsa@\v!ja       }{\@@slrechts}
+\letvalue{@rsa@\v!nee      }\zeropoint
 \letvalue{@rsa@\empty      }\zeropoint
 
 % not safe for 2\parindent
@@ -2888,34 +2826,33 @@
 
 \endETEX
 
-% \definetwopasslist\s!paragraph
-%
-% \newcounter\nofraggedparagraphs
-%
-% \def\doparagraphreference% looks very much like domarginreference
-%   {\doglobal\increment\nofraggedparagraphs
-%    \edef\writeparref%
-%      {\writeutilitycommand%
-%         {\twopassentry%
-%            {\s!paragraph}%
-%            {\nofraggedparagraphs}%
-%            {\noexpand\realfolio}}}%
-%    \writeparref}
-%
-% \def\setraggedparagraphmode#1#2% combineren met \ifrightpage
-%   {\ifinpagebody
+% Dit hoort eigenlijk thuis onder het kopje boodschappen cq,
+% meldingen.
+
+\let\mindermeldingen\dontcomplain
+
+\definetwopasslist\s!paragraph
+
+\newcounter\nofraggedparagraphs
+
+\def\doparagraphreference% looks very much like domarginreference
+  {\doglobal\increment\nofraggedparagraphs\relax
+   \edef\writeparref%
+     {\writeutilitycommand%
+        {\twopassentry%
+           {\s!paragraph}%
+           {\nofraggedparagraphs}%
+           {\noexpand\realfolio}}}%
+   \writeparref}
+
+% \def\setraggedparagraphmode#1#2%
+%   {\ifinner
 %      \ifdubbelzijdig
-%        \ifodd\realpageno\relax#1\else#2\fi
-%      \else
-%        #2\relax
-%      \fi
-%    \else\ifinner
-%      \ifdubbelzijdig
-%        \gettwopassdata\s!paragraph
+%        \gettwopassdata{\s!paragraph}%
 %        \iftwopassdatafound
-%          \ifodd\twopassdata\relax#1\else#2\fi
+%          \ifodd\twopassdata#1\else#2\fi
 %        \else
-%          \ifodd\realpageno\relax#1\else#2\fi
+%          \ifodd\realfolio#1\else#2\fi
 %        \fi
 %        \doparagraphreference
 %      \else
@@ -2923,87 +2860,64 @@
 %      \fi
 %    \else
 %      #2\relax
-%    \fi\fi}
-%
-% \def\doifrightpageelse % watch out: other default ! ! !
-%   {\ifinpagebody
-%      % optimalisation ?
-%      \ifdubbelzijdig
-%        \ifodd\realpageno\relax
-%          \twopassdatafoundtrue \else \twopassdatafoundfalse
-%        \fi
+%    \fi}
+
+% TO BE REDONE: inset test
+
+\def\setraggedparagraphmode#1#2% combineren met \ifrightpage
+  {\ifinpagebody
+     \ifdubbelzijdig
+       \ifodd\realpageno\relax#1\else#2\fi
+     \else
+       #2\relax
+     \fi
+   \else\ifinner
+     \ifdubbelzijdig
+       \gettwopassdata\s!paragraph
+       \iftwopassdatafound
+         \ifodd\twopassdata\relax#1\else#2\fi
+       \else
+         \ifodd\realpageno\relax#1\else#2\fi
+       \fi
+       \doparagraphreference
+     \else
+       #2\relax
+     \fi
+   \else
+     #2\relax
+   \fi\fi}
+
+% \let\doifrightpageelse\setraggedparagraphmode
+
+% in both (otr) modules !
+
+% \def\doifrightpageelse#1#2%
+%   {\ifdubbelzijdig
+%      \gettwopassdata\s!paragraph
+%      \iftwopassdatafound
+%        \ifodd\twopassdata#1\else#2\fi
 %      \else
-%        \twopassdatafoundtrue
+%        \ifodd\realfolio#1\else#2\fi
 %      \fi
 %    \else
-%      \ifdubbelzijdig
-%        \gettwopassdata\s!paragraph
-%        \iftwopassdatafound
-%          \ifodd\twopassdata\relax
-%            \twopassdatafoundtrue \else \twopassdatafoundfalse
-%          \fi
-%        \else
-%          \ifodd\realpageno\relax
-%            \twopassdatafoundtrue \else \twopassdatafoundfalse
-%          \fi
-%        \fi
-%      \else
-%        \twopassdatafoundtrue
-%      \fi
-%    \fi
-%    \iftwopassdatafound
-%      \@EA\firstoftwoarguments
-%    \else
-%      \@EA\secondoftwoarguments
+%      #1% was #2
 %    \fi}
 %
-% \def\signalrightpage
-%   {\ifdubbelzijdig \ifinpagebody \else
-%      \doparagraphreference
-%    \fi \fi}
+% better :
 
-% slightly adapted implementation
-
-\newcounter \noftrackedpagestates
-\newif      \ifpagestatemismatch
-\let        \realpagestateno      \realfolio
-\chardef    \frozenpagestate      \zerocount
-
-\def\dotrackpagestate#1#2%
-  {\ifdubbelzijdig \ifinpagebody \else
-     \doforcedtrackpagestate{#1}{#2}%
-   \fi \fi}
-
-\def\doforcedtrackpagestate#1#2%
-  {\ifcase\frozenpagestate
-     \doglobal\increment\noftrackedpagestates
-     \doglobal\increment#2%
-     \edef\dodotrackpagestate
-       {\writeutilitycommand
-          {\twopassentry{#1}{\noftrackedpagestates}{#2:\noexpand\realfolio}}}%
-     %\llap{\infofont\noftrackedpagestates/#2}% tracing
-     \dodotrackpagestate
-   \fi}
-
-\def\doifrightpagestateelse#1#2%
-  {\ifcase\frozenpagestate
-     \pagestatemismatchfalse
-     \let\realpagestateno\realfolio
-     \ifinpagebody
-       \ifdubbelzijdig
-         \ifodd\realpageno\relax
-           \twopassdatafoundtrue \else \twopassdatafoundfalse
-         \fi
-       \else
-         \twopassdatafoundtrue
+\def\doifrightpageelse % watch out: other default ! ! !
+  {\ifinpagebody
+     \ifdubbelzijdig
+       \ifodd\twopassdata\relax
+         \twopassdatafoundtrue \else \twopassdatafoundfalse
        \fi
-     \else\ifdubbelzijdig
-       \findtwopassdata{#1}{#2:}%
+     \else
+       \twopassdatafoundtrue
+     \fi
+   \else
+     \ifdubbelzijdig
+       \gettwopassdata\s!paragraph
        \iftwopassdatafound
-         \let\realpagestateno\twopassdata
-         \ifnum\twopassdata=\realpageno \else
-           \pagestatemismatchtrue
-         \fi
          \ifodd\twopassdata\relax
            \twopassdatafoundtrue \else \twopassdatafoundfalse
          \fi
@@ -3014,10 +2928,6 @@
        \fi
      \else
        \twopassdatafoundtrue
-     \fi\fi
-   \else
-     \ifodd\realpagestateno\relax
-       \twopassdatafoundtrue \else \twopassdatafoundfalse
      \fi
    \fi
    \iftwopassdatafound
@@ -3026,121 +2936,10 @@
      \@EA\secondoftwoarguments
    \fi}
 
-\def\doifforcedrightpagestateelse#1#2%
-  {\ifcase\frozenpagestate
-     \pagestatemismatchfalse
-     \let\realpagestateno\realfolio
-     \findtwopassdata{#1}{#2:}%
-     \iftwopassdatafound
-       \let\realpagestateno\twopassdata
-       \ifnum\twopassdata=\realpageno \else
-         \pagestatemismatchtrue
-       \fi
-       \ifodd\twopassdata\relax
-         \twopassdatafoundtrue \else \twopassdatafoundfalse
-       \fi
-     \else
-       \ifodd\realpageno\relax
-         \twopassdatafoundtrue \else \twopassdatafoundfalse
-       \fi
-     \fi
-   \else
-     \ifodd\realpagestateno\relax
-       \twopassdatafoundtrue \else \twopassdatafoundfalse
-     \fi
-   \fi
-   \iftwopassdatafound
-     \@EA\firstoftwoarguments
-   \else
-     \@EA\secondoftwoarguments
+\def\signalrightpage
+  {\ifdubbelzijdig
+     \doparagraphreference
    \fi}
-
-\def\freezepagestate {\chardef\frozenpagestate\plusone  }
-\def\defrostpagestate{\chardef\frozenpagestate\zerocount}
-
-% we can make more of these on top, but how to deal with mixed frozen states
-
-\definetwopasslist\s!paragraph \newcounter\nofraggedparagraphs
-
-\def\signalrightpage  {\dotrackpagestate      \s!paragraph\nofraggedparagraphs}
-\def\doifrightpageelse{\doifrightpagestateelse\s!paragraph\nofraggedparagraphs}
-
-\newcounter\pagesignallevel
-
-\def\startsignalrightpage % one may do a \postsignalrightplace
-  {\increment\pagesignallevel
-   \presignalrightpage
-   \let\signalrightpage\relax
-   \let\presignalrightpage\relax
-   \let\startsignalrightpage\relax
-   \doifrightpageelse\donothing\donothing
-   \freezepagestate}
-
-\def\stopsignalrightpage
-  {\ifcase\pagesignallevel\or\postsignalrightpage\fi
-   \decrement\pagesignallevel}
-
-\def\setraggedparagraphmode{\signalrightpage\doifrightpageelse} % move it there
-
-\def\doifswappedrightpageelse#1#2% alleen in box construction !
-  {\doifrightpageelse
-     {#1}
-     {\scratchcounter\realpageno
-      \realpageno\realpagestateno\relax
-      \swapmargins
-      \realpageno\scratchcounter
-      #2}}
-
-\newbox\signaledrightpage % this way we can avoid interference, i.e. postpone placement
-
-\def\presignalrightpage {\global\setbox\signaledrightpage\hbox{\signalrightpage}}
-\def\postsignalrightpage{\ifvoid\signaledrightpage\else\box\signaledrightpage\fi}
-
-% The next feature is is used in:
-%
-% \definenumber[test][way=bypage]
-%
-% \def\Test
-%   {\incrementnumber[test]\rawnumber[test]/%
-%    \incrementnumber[test]\rawnumber[test]/%
-%    \incrementnumber[test]\rawnumber[test]\space
-%    \checkpagechange{oeps}\changedpage{oeps}\space
-%    \ifpagechanged TRUE\else FALSE\fi}
-%
-% \Test\page \Test\par \Test\page \Test\par \Test\page \Test\page
-%
-% (adapted from cont-new.tex:)
-
-\newif\ifpagechanged \let\lastchangedpage\empty
-
-\def\docheckpagestatechange#1#2#3%
-  {\pagechangedfalse
-   \doforcedtrackpagestate{#2}{#3}%
-   \findtwopassdata{#2}{#3:}%
-   \iftwopassdatafound
-     \ifnum\twopassdata>0\getvalue{#2:p:#1}\relax
-       \pagechangedtrue
-     \fi
-   \fi
-   \ifpagechanged
-     \letgvalue{#2:p:#1}\twopassdata
-     \globallet\lastchangedpage\twopassdata
-   \else
-     \globallet\lastchangedpage\realfolio
-   \fi}
-
-\def\changedpagestate#1#2%
-  {\executeifdefined{#2:p:#1}{0}}
-
-\def\checkpagechange#1{\docheckpagestatechange{#1}\s!paragraph\nofraggedparagraphs}
-\def\changedpage    #1{\changedpagestate{#1}\s!paragraph}
-
-% saved struts
-
-\ifx\savedstrutbox\undefined \newbox\savedstrutbox \fi
-
-\def\savestrut {\setbox\savedstrutbox\copy\strutbox}
-\def\savedstrut{\copy  \savedstrutbox}
 
 % De onderstaande macro's zijn opgenomen in Plain TeX.
 %
@@ -3171,7 +2970,7 @@
 \newif\ifr@ggedbottom
 \newif\ifb@selinebottom
 
-\def\normalbottom
+\def\normalbottom%
   {% \topskip 10pt
    \r@ggedbottomfalse}
 
@@ -3296,11 +3095,11 @@
 
 %D We used to have:
 %D
-%D \starttyping
+%D \starttypen
 %D \def\raggedright
 %D   {\setraggedness\rightraggedness
 %D    \setraggedskips{3}{0em}{\rightraggedness}{.3333em}{.5em}{0em}{\parindent}}
-%D \stoptyping
+%D \stoptypen
 %D
 %D However, the next alternative, suggested by Taco, is better.
 
@@ -3315,10 +3114,10 @@
 
 %D When we want the last line to have a natural width:
 %D
-%D \starttyping
+%D \starttypen
 %D \def\veryraggedleft%
 %D   {\setraggedskips{1}{1fil}{0em}{.3333em}{.5em}{0em}{-1fil}}
-%D \stoptyping
+%D \stoptypen
 %D
 %D but this one is not accepted by the macros.
 
@@ -3333,7 +3132,7 @@
 \def\ttraggedright
   {\tttf
    \setraggedskips3\zeropoint\rightraggedness
-     \zeropoint\zeropoint\zeropoint\parindent} % \ctxparindent
+     \zeropoint\zeropoint\zeropoint\parindent} % \voorwit
 
 %D A bonus one:
 
@@ -3344,6 +3143,7 @@
 
 \newif\if@@asragged \@@asraggedtrue % old method
 
+
 % todo
 %
 % \setuplayout[grid=yes,lines=44] \showgrid
@@ -3351,114 +3151,48 @@
 % test \vfill test \endgraf \strut \endgraf \vskip-\lineheight \removedepth \pagina test
 % \stoptext
 
-% Keep this one:
-%
-% \def\setupalign
-%   {\dosingleargument\dosetupalign}
-%
-% \def\dosetupalign[#1]%
-%   {\expanded{\dodosetupalign[#1]}}
-%
-% \def\dodosetupalign[#1]%
-%   {\doifinsetelse\v!broad {#1}\!!doneatrue\!!doneafalse
-%    \doifinsetelse\v!wide{#1}\!!donebtrue\!!donebfalse
-%    \ExpandFirstAfter\processallactionsinset % expansion redundant
-%      [#1]
-%      [                        \v!line=>\baselinebottom,
-%                             \v!bottom=>\raggedbottom,
-%                             \v!height=>\normalbottom,
-%                              \v!width=>\notragged,
-%                             \v!normal=>\notragged,
-%                                \v!yes=>\notragged,
-%                                 \v!no=>\raggedright,
-% \if@@asragged\v!inner\else\v!outer\fi=>\setraggedparagraphmode\raggedleft\raggedright,
-% \if@@asragged\v!outer\else\v!inner\fi=>\setraggedparagraphmode\raggedright\raggedleft,
-% \if@@asragged\v!left \else\v!right\fi=>\if!!donea\veryraggedleft  \else\raggedleft  \fi,
-% \if@@asragged\v!right\else\v!left \fi=>\if!!donea\veryraggedright \else\raggedright \fi,
-%                             \v!middle=>\if!!doneb\raggedwidecenter\else\if!!donea\veryraggedcenter\else\raggedcenter\fi\fi,
-%                          \v!flushleft=>\if!!donea\veryraggedright \else\raggedright \fi,
-%                         \v!flushright=>\if!!donea\veryraggedleft  \else\raggedleft  \fi,
-%                             \v!center=>\if!!doneb\raggedwidecenter\else\if!!donea\veryraggedcenter\else\raggedcenter\fi\fi,
-%                            \v!hanging=>\enableprotruding,
-%                         \v!nothanging=>\disableprotruding,
-%                                 \v!hz=>\enableadjusting,
-%                               \v!nohz=>\disableadjusting,
-%                         \v!hyphenated=>\dohyphens,
-%                      \v!nothyphenated=>\nohyphens,
-%                                \v!new=>\@@asraggedfalse, % so new will give you consistency
-%                              \v!reset=>\notragged\normalbottom]}
-%
-% The next one is more than three times faster:
+\def\dodosetupalign[#1]%
+  {\doifinsetelse\v!ruim {#1}\!!doneatrue\!!doneafalse
+   \doifinsetelse\v!breed{#1}\!!donebtrue\!!donebfalse
+   \ExpandFirstAfter\processallactionsinset
+     [#1]
+     [   \v!regel=>\baselinebottom,
+         \v!onder=>\raggedbottom,
+        \v!hoogte=>\normalbottom,
+       \v!breedte=>\notragged,
+       \v!normaal=>\notragged,
+            \v!ja=>\notragged,
+           \v!nee=>\raggedright,
+\if@@asragged\v!binnen\else\v!buiten\fi
+                 =>\setraggedparagraphmode\raggedleft\raggedright,
+\if@@asragged\v!buiten\else\v!binnen\fi
+                 =>\setraggedparagraphmode\raggedright\raggedleft,
+\if@@asragged\v!links\else\v!rechts\fi
+                 =>\if!!donea\veryraggedleft  \else\raggedleft  \fi,
+\if@@asragged\v!rechts\else\v!links\fi
+                 =>\if!!donea\veryraggedright \else\raggedright \fi,
+        \v!midden=>\if!!doneb\raggedwidecenter\else
+                   \if!!donea\veryraggedcenter\else\raggedcenter\fi\fi,
+       \v!hangend=>\enableprotruding,
+   \v!niethangend=>\disableprotruding,
+            \v!hz=>\enableadjusting,
+        \v!geenhz=>\disableadjusting,
+    \v!afgebroken=>\dohyphens,
+\v!nietafgebroken=>\nohyphens,
+         \v!nieuw=>\@@asraggedfalse, % so new will give you consistency
+         \v!reset=>\notragged\normalbottom]}
 
-\setvalue{@@align@@\v!line         }{\baselinebottom}
-\setvalue{@@align@@\v!bottom       }{\raggedbottom}
-\setvalue{@@align@@\v!height       }{\normalbottom}
-\setvalue{@@align@@\v!width        }{\notragged}
-\setvalue{@@align@@\v!normal       }{\notragged}
-\setvalue{@@align@@\v!yes          }{\notragged}
-\setvalue{@@align@@\v!no           }{\raggedright}
-\setvalue{@@align@@\v!inner        }{\if@@asragged
-                                       \setraggedparagraphmode\raggedleft\raggedright
-                                     \else
-                                       \setraggedparagraphmode\raggedright\raggedleft
-                                     \fi}
-\setvalue{@@align@@\v!outer        }{\if@@asragged
-                                       \setraggedparagraphmode\raggedright\raggedleft
-                                     \else
-                                       \setraggedparagraphmode\raggedleft\raggedright
-                                     \fi}
-\setvalue{@@align@@\v!left         }{\if@@asragged
-                                       \if!!donea\veryraggedleft\else\raggedleft\fi
-                                     \else
-                                       \if!!donea\veryraggedright\else\raggedright\fi
-                                     \fi}
-\setvalue{@@align@@\v!right        }{\if@@asragged
-                                       \if!!donea\veryraggedright\else\raggedright\fi
-                                     \else
-                                       \if!!donea\veryraggedleft\else\raggedleft\fi
-                                     \fi}
-\setvalue{@@align@@\v!middle       }{\if!!doneb\raggedwidecenter\else\if!!donea\veryraggedcenter\else\raggedcenter\fi\fi}
-\setvalue{@@align@@\v!flushleft    }{\if!!donea\veryraggedright \else\raggedright \fi}
-\setvalue{@@align@@\v!flushright   }{\if!!donea\veryraggedleft  \else\raggedleft  \fi}
-\setvalue{@@align@@\v!center       }{\if!!doneb\raggedwidecenter\else\if!!donea\veryraggedcenter\else\raggedcenter\fi\fi}
-\setvalue{@@align@@\v!hanging      }{\enableprotruding}
-\setvalue{@@align@@\v!nothanging   }{\disableprotruding}
-\setvalue{@@align@@\v!hz           }{\enableadjusting}
-\setvalue{@@align@@\v!nohz         }{\disableadjusting}
-\setvalue{@@align@@\v!hyphenated   }{\dohyphens}
-\setvalue{@@align@@\v!nothyphenated}{\nohyphens}
-\setvalue{@@align@@\v!new          }{\@@asraggedfalse} % so new will give you consistency
-\setvalue{@@align@@\v!reset        }{\notragged\normalbottom}
-
-\setvalue{@@ngila@@\v!broad        }{\!!doneatrue}
-\setvalue{@@ngila@@\v!wide         }{\!!donebtrue}
-
-\def\dodosetupalign#1{\getvalue{@@align@@#1}}
-\def\dodosetupngila#1{\getvalue{@@ngila@@#1}}
+\def\dosetupalign[#1]%
+  {\expanded{\dodosetupalign[#1]}}
 
 \def\setupalign
   {\dosingleargument\dosetupalign}
 
-\def\dosetupalign[#1]%
-  {\!!doneafalse
-   \!!donebfalse
-   \processcommacommand[#1]\dodosetupngila
-   \processcommacommand[#1]\dodosetupalign}
-
-% \setupalign[flushleft]  \input ward \par % lijnlinks
-% \setupalign[right]      \input ward \par
-
-% \setupalign[flushright] \input ward \par % lijnrechts
-% \setupalign[left]       \input ward \par
-
-% \setupalign[middle]     \input ward \par % centreer
-% \setupalign[center]     \input ward \par
-
-\def\startalignment
+\def\startuitlijnen
   {\bgroup
    \setupalign}
 
-\def\stopalignment
+\def\stopuitlijnen
   {\par
    \egroup}
 
@@ -3479,23 +3213,19 @@
 
 % directe commando's
 
-\def\leftaligned {\doalignline \relax \hss  }
-\def\midaligned  {\doalignline \hss   \hss  }
-\def\rightaligned{\doalignline \hss   \relax}
+\def\regellinks {\doalignline \relax \hss  }
+\def\regelmidden{\doalignline \hss   \hss  }
+\def\regelrechts{\doalignline \hss   \relax}
 
-\def\regelbegrensd#1{\limitatetext{#1}{\hsize}{\unknown}} % to be translated
+\def\regelbegrensd#1{\limitatetext{#1}{\hsize}{\unknown}}
 
 % indirecte commando's
 
-\letvalue{\s!do\v!line\v!left  }\leftaligned
-\letvalue{\s!do\v!line\v!right }\rightaligned
-\letvalue{\s!do\v!line\v!middle}\midaligned
+\setvalue{\s!do\v!regel\v!links }{\doalignline \relax \hss  }
+\setvalue{\s!do\v!regel\v!rechts}{\doalignline \hss   \relax}
+\setvalue{\s!do\v!regel\v!midden}{\doalignline \hss   \hss  }
 
-\letvalue{\s!do\v!line\v!flushleft }\rightaligned
-\letvalue{\s!do\v!line\v!flushright}\leftaligned
-\letvalue{\s!do\v!line\v!center    }\midaligned
-
-\def\doalignedline#1{\csname\s!do\v!line#1\endcsname}
+\def\doregelplaats#1{\csname\s!do\v!regel#1\endcsname}
 
 %D Experimental:
 
@@ -3536,19 +3266,19 @@
 \def\doxcheckline
   {\signalrightpage\doifrightpageelse\donetrue\donefalse}
 
-\setvalue{\s!do\v!line\v!inner      }{\doxalignline\doxcheckline++\zeropoint       \relax\hss  }
-\setvalue{\s!do\v!line\v!outer      }{\doxalignline\doxcheckline++\zeropoint       \hss  \relax}
-\setvalue{\s!do\v!line\v!innermargin}{\doxalignline\doxcheckline-+\innermargintotal\relax\hss  }
-\setvalue{\s!do\v!line\v!outermargin}{\doxalignline\doxcheckline+-\outermargintotal\hss  \relax}
-\setvalue{\s!do\v!line\v!inneredge  }{\doxalignline\doxcheckline-+\inneredgetotal  \relax\hss  }
-\setvalue{\s!do\v!line\v!outeredge  }{\doxalignline\doxcheckline+-\outeredgetotal  \hss  \relax}
-\setvalue{\s!do\v!line\v!backspace  }{\doxalignline\doxcheckline-+\backspace       \relax\hss  }
-\setvalue{\s!do\v!line\v!cutspace   }{\doxalignline\doxcheckline+-\cutspace        \hss  \relax}
+\setvalue{\s!do\v!regel\v!binnen      }{\doxalignline\doxcheckline++\zeropoint       \relax\hss  }
+\setvalue{\s!do\v!regel\v!buiten      }{\doxalignline\doxcheckline++\zeropoint       \hss  \relax}
+\setvalue{\s!do\v!regel\v!binnenmarge }{\doxalignline\doxcheckline-+\innermargintotal\relax\hss  }
+\setvalue{\s!do\v!regel\v!buitenmarge }{\doxalignline\doxcheckline+-\outermargintotal\hss  \relax}
+\setvalue{\s!do\v!regel\v!binnenrand  }{\doxalignline\doxcheckline-+\inneredgetotal  \relax\hss  }
+\setvalue{\s!do\v!regel\v!buitenrand  }{\doxalignline\doxcheckline+-\outeredgetotal  \hss  \relax}
+\setvalue{\s!do\v!regel\v!rugwit      }{\doxalignline\doxcheckline-+\rugwit          \relax\hss  }
+\setvalue{\s!do\v!regel\v!snijwit     }{\doxalignline\doxcheckline+-\snijwit         \hss  \relax}
 
-\setvalue{\s!do\v!line\v!leftmargin }{\doxalignline\donefalse   --\leftmargintotal \hss  \relax}
-\setvalue{\s!do\v!line\v!rightmargin}{\doxalignline\donefalse   ++\rightmargintotal\relax\hss  }
-\setvalue{\s!do\v!line\v!leftedge   }{\doxalignline\donefalse   --\leftedgetotal   \hss  \relax}
-\setvalue{\s!do\v!line\v!rightedge  }{\doxalignline\donefalse   ++\rightedgetotal  \relax\hss  }
+\setvalue{\s!do\v!regel\v!linkermarge }{\doxalignline\donefalse   --\leftmargintotal \hss  \relax}
+\setvalue{\s!do\v!regel\v!rechtermarge}{\doxalignline\donefalse   ++\rightmargintotal\relax\hss  }
+\setvalue{\s!do\v!regel\v!linkerrand  }{\doxalignline\donefalse   --\leftedgetotal   \hss  \relax}
+\setvalue{\s!do\v!regel\v!rechterrand }{\doxalignline\donefalse   ++\rightedgetotal  \relax\hss  }
 
 % ! ! ! beware, redefining \doalignline gives the wrong results ! ! !
 %
@@ -3556,35 +3286,35 @@
 
 %D Better:
 
-\def\doalignedline#1{\csname\s!do\v!line#1\endcsname}
+\def\doregelplaats#1{\csname\s!do\v!regel#1\endcsname}
 
 \def\alignedline#1#2% setting default
   {\csname
-     \s!do\v!line
-     \ifundefined{\s!do\v!line#1}#2\else#1\fi
+     \s!do\v!regel
+     \ifundefined{\s!do\v!regel#1}#2\else#1\fi
    \endcsname}
 
-% \def\doalignedline#1%
+% \def\doregelplaats#1%
 %   {\alignedline{#1}\v!links}
 
 %D ...
 
 \def\dosetuptolerance[#1]%
-  {\doifinsetelse\v!vertical{#1}%
+  {\doifinsetelse\v!vertikaal{#1}%
      {\ExpandFirstAfter\processallactionsinset
         [#1]
-        [  \v!verystrict=>\def\bottomtolerance{},
-               \v!strict=>\def\bottomtolerance{.050},
-             \v!tolerant=>\def\bottomtolerance{.075},
-         \v!verytolerant=>\def\bottomtolerance{.100}]}%
+        [\v!zeerstreng=>\def\bottomtolerance{},
+             \v!streng=>\def\bottomtolerance{.050},
+             \v!soepel=>\def\bottomtolerance{.075},
+         \v!zeersoepel=>\def\bottomtolerance{.100}]}%
      {\ExpandFirstAfter\processallactionsinset
         [#1]
-        [     \v!stretch=>\emergencystretch\bodyfontsize,
-                \v!space=>\spaceskip.5em\!!plus.25em\!!minus.25em\relax,
-           \v!verystrict=>\tolerance 200,
-               \v!strict=>\tolerance1500,
-             \v!tolerant=>\tolerance3000,
-         \v!verytolerant=>\tolerance4500]}}
+        [       \v!rek=>\emergencystretch\bodyfontsize,
+             \v!spatie=>\spaceskip.5em\!!plus.25em\!!minus.25em\relax,
+         \v!zeerstreng=>\tolerance 200,
+             \v!streng=>\tolerance1500,
+             \v!soepel=>\tolerance3000,
+         \v!zeersoepel=>\tolerance4500]}}
 
 \def\setuptolerance
   {\dosingleargument\dosetuptolerance}
@@ -3592,7 +3322,7 @@
 % \def\woordrechts
 %   {\groupedcommand{\hfill\hbox}{\parfillskip\zeropoint}}
 
-\def\wordright % zie naw
+\def\woordrechts % zie naw
   {\groupedcommand
      {\removeunwantedspaces
       \hfill
@@ -3634,10 +3364,10 @@
 %D The only complication lays in \type{\strut}. In \PLAIN\
 %D \TEX\ a \type{\strut} is defined as:
 %D
-%D \starttyping
+%D \starttypen
 %D \def\strut%
 %D   {\relax\ifmmode\copy\strutbox\else\unhcopy\strutbox\fi}
-%D \stoptyping
+%D \stoptypen
 %D
 %D But what is a \type{\strut}? Normally it's a rule of width
 %D zero, but when made visual, it's a rule and a negative skip.
@@ -3650,21 +3380,21 @@
 %D To serve our purpose a bit better, the macro \type{\strut}
 %D can be redefined as:
 %D
-%D \starttyping
+%D \starttypen
 %D \def\strut
 %D   {\relax\ifmmode\else\hskip0pt\fi\copy\strutbox}
-%D \stoptyping
+%D \stoptypen
 %D
 %D Or more compatible:
 %D
-%D \starttyping
+%D \starttypen
 %D \def\strut
 %D   {\relax\ifmmode
 %D      \copy\strutbox
 %D    \else
 %D      \bgroup\setbox\strutbox=\normalhbox{\box\strutbox}\unhcopy\strutbox\egroup
 %D    \fi}
-%D \stoptyping
+%D \stoptypen
 %D
 %D In \CONTEXT\ however we save some processing time by putting
 %D an extra \type{\hbox} around the \type{\strutbox}.
@@ -3695,7 +3425,7 @@
         {\strut{\infofont\kern.25em}\lohi{\infofont CR}{\infofont LF}\hss}}}
 
 %D \starttyping
-%D % \setuplayout[gridgrid=yes] \showgrid
+%D % \setuplayout[grid=yes] \showgrid
 %D
 %D \startbuffer
 %D test 1\crlf
@@ -3776,10 +3506,10 @@
 \def\emspaceamount{\fontdimen6\font}
 \def\spaceamount  {\fontdimen2\font}
 
-\definehspace [\v!small]   [.25\emspaceamount]
-\definehspace [\v!medium]  [.5\emspaceamount]
-\definehspace [\v!big]   [1\emspaceamount]
-\definehspace [\v!normal] [1\spaceamount]
+\definehspace [\v!klein]   [.25\emspaceamount]
+\definehspace [\v!middel]  [.5\emspaceamount]
+\definehspace [\v!groot]   [1\emspaceamount]
+\definehspace [\v!normaal] [1\spaceamount]
 \definehspace [\v!default] [\spaceamount]
 
 %D Taken from Taco's math module (cq. \AMS\ macros), but
@@ -3803,261 +3533,6 @@
 \definehspace[1][.1667em]
 \definehspace[2][.2222em]
 \definehspace[3][.2777em]
-
-% this will become an alternative bunch of \blank settings
-%
-% \startlines
-% \scratchskip=.23pt plus 10pt minus 4pt \relax \number\scratchskip \space \the\scratchskip
-% \setsimplifiedskip\scratchskip1 \number\scratchskip \space \the\scratchskip
-% \setsimplifiedskip\scratchskip2 \number\scratchskip \space \the\scratchskip
-% \getsimplifiedskip\scratchskip\scratchcounter \number\scratchcounter
-% \stoplines
-%
-% \hrule width10cm \endgraf
-%   \discardedskip{10pt}
-%   \retainedskip  {4pt}
-%   \discardedskip {5pt}
-% \hrule width10cm \endgraf
-%   \blockedskip{0pt}
-%   \discardedskip{10pt}
-%   \retainedskip  {4pt}
-%   \discardedskip {5pt}
-% \hrule width10cm \endgraf
-%   \frozenskip    {4cm}
-% \hrule width10cm \endgraf
-%   \vskip10pt
-% \hrule width10cm \endgraf
-
-% etex only, evt splitskip macro gebruiken (syst-new)
-
-\newskip\simplifiedskip
-\newskip\simplifiedcounter
-
-\chardef\@@discardedskip1
-\chardef\@@retainedskip 2
-\chardef\@@forcedskip   3
-\chardef\@@blockedskip  4
-\chardef\@@frozenskip   5 % after heads, no break
-
-\def\setsimplifiedskip#1#2%
-  {#1\dimexpr(10\dimexpr(#1/10)) plus \gluestretch#1 minus \glueshrink#1\relax
-   \advance#1\numexpr(#2)sp\relax}
-
-\def\getsimplifiedskip#1#2%
-  {\simplifiedskip#1\relax
-   \ifdim\simplifiedskip=\zeropoint
-     #2\zerocount
-   \else
-     \simplifiedcounter\dimexpr(10\dimexpr(#1/10))\relax
-     \advance\simplifiedskip-\simplifiedcounter
-     #2\number\simplifiedskip\relax
-   \fi}
-
-\def\conditionalskip#1#2%
-  {\scratchskip#1\relax
-   \setsimplifiedskip\scratchskip#2\relax
-   \vskip\scratchskip\relax}
-
-\def\defrostskip
-  {\scratchskip\lastskip\penalty50000\normalvskip-\scratchskip\penalty50000\relax}
-
-\def\frozenskip#1%
-  {\endgraf
-   \ifvmode
-     \getsimplifiedskip\lastskip\scratchcounter
-     \ifdim\lastskip>#1\else
-       \defrostskip
-       \conditionalskip{#1}\@@frozenskip
-     \fi
-   \fi}
-
-\def\discardedskip#1%
-  {\endgraf
-   \ifvmode
-     \getsimplifiedskip\lastskip\scratchcounter
-     \ifcase\scratchcounter
-       \conditionalskip{#1}\@@discardedskip
-     \or % discard
-       \ifdim\lastskip>#1\else
-         \normalvskip-\lastskip
-         \conditionalskip{#1}\@@discardedskip
-       \fi
-     \or % retain
-       \ifdim\lastskip>#1\else
-         \normalvskip-\lastskip
-         \conditionalskip{#1}\@@discardedskip
-       \fi
-     \or % forced
-       \conditionalskip{#1}\@@discardedskip
-     \or % ignored
-     \or % frozen
-       \ifdim\lastskip>#1\else
-         \defrostskip
-         \conditionalskip{#1}\@@frozenskip
-       \fi
-     \else\ifdim#1=\zeropoint\else
-       \vskip#1\relax
-     \fi\fi
-   \fi}
-
-\def\retainedskip#1%
-  {\endgraf
-   \ifvmode
-     \getsimplifiedskip\lastskip\scratchcounter
-     \ifcase\scratchcounter
-       \conditionalskip{#1}\@@retainedskip
-     \or % discard
-       \normalvskip-\lastskip
-       \conditionalskip{#1}\@@retainedskip
-     \or % retain
-       \ifdim\lastskip>#1\else
-         \normalvskip-\lastskip
-         \conditionalskip{#1}\@@retainedskip
-       \fi
-     \or % forced
-       \conditionalskip{#1}\@@retainedskip
-     \or % ignored
-     \or % frozen
-       \ifdim\lastskip>#1\else
-         \defrostskip
-         \conditionalskip{#1}\@@frozenskip
-       \fi
-     \else\ifdim#1=\zeropoint\else
-       \vskip#1\relax
-     \fi\fi
-  \fi}
-
-\def\forcedskip#1%
-  {\endgraf
-   \ifvmode
-     \conditionalskip{#1}\@@forcedskip
-   \fi}
-
-\def\blockedskip#1%
-  {\endgraf
-   \ifvmode
-     \getsimplifiedskip\lastskip\scratchcounter
-     \ifcase\scratchcounter
-       \conditionalskip{#1}\@@blockedskip
-     \or % discard
-       \conditionalskip{#1}\@@blockedskip
-     \or % retain
-       \conditionalskip{#1}\@@blockedskip
-     \or % forced
-       \conditionalskip{#1}\@@blockedskip
-     \or % ignored
-     \or % frozen
-       \ifdim\lastskip>#1\else
-         \defrostskip
-         \conditionalskip{#1}\@@frozenskip
-       \fi
-     \else\ifdim#1=\zeropoint\else
-       \vskip#1\relax
-     \fi\fi
-   \fi}
-
-% beware, changing this will break some code (like pos/backgrounds)
-
-\newtoks\everyfirstparagraphintro
-\newtoks\everynextparagraphintro
-\newtoks\@@everyparagraphtoks
-
-\chardef\everyparagraphintro\zerocount
-
-\def\setupparagraphintro
-  {\dodoubleempty\dosetupparagraphintro}
-
-\def\dosetupparagraphintro[#1][#2]%
-  {\processallactionsinset
-     [#1]
-     [   \v!reset=>\global\chardef\everyparagraphintro\zerocount
-                   \global\everyfirstparagraphintro\emptytoks
-                   \global\everynextparagraphintro \emptytoks,
-        \v!first=>\global\chardef\everyparagraphintro\plusone
-                   \doglobal\appendtoks#2\to\everyfirstparagraphintro,
-      \v!next=>\ifcase\everyparagraphintro\global\chardef\everyparagraphintro\plusone\fi
-                   \doglobal\appendtoks#2\to\everynextparagraphintro,
-           \v!each=>\ifcase\everyparagraphintro\global\chardef\everyparagraphintro\plustwo\fi
-                   \doglobal\appendtoks#2\to\everyfirstparagraphintro
-                   \doglobal\appendtoks#2\to\everynextparagraphintro]}
-
-% \def\doinsertparagraphintro
-%   {\ifcase\everyparagraphintro\relax
-%      % no data
-%      \@@everyparagraphtoks\emptytoks
-%    \or
-%      % first data
-%      \global\chardef\everyparagraphintro\plustwo
-%      \@@everyparagraphtoks\everyfirstparagraphintro
-%      \global\everyfirstparagraphintro\emptytoks
-%    \or
-%      % next data
-%      \@@everyparagraphtoks\everynextparagraphintro
-%    \fi
-%    \the\@@everyparagraphtoks}
-
-\def\doinsertparagraphintro
-  {\begingroup
-   \everypar\emptytoks
-   \ifcase\everyparagraphintro\relax
-     % no data
-     \@@everyparagraphtoks\emptytoks
-   \or
-     % first data
-     \global\chardef\everyparagraphintro\plustwo
-     \@@everyparagraphtoks\everyfirstparagraphintro
-     \global\everyfirstparagraphintro\emptytoks
-   \or
-     % next data
-     \@@everyparagraphtoks\everynextparagraphintro
-   \fi
-   \the\@@everyparagraphtoks
-   \endgroup}
-
-\def\insertparagraphintro
-  {\ifcase\everyparagraphintro\else\@EA\doinsertparagraphintro\fi}
-
-%  \appendtoksonce\insertparagraphintro\to\everypar % should come last
-
-%D \starttyping
-%D \setupparagraphintro[first][\hbox to 3.5em{\tt FIRST \hss}]
-%D \setupparagraphintro[first][\hbox to 3.5em{\tt TSRIF \hss}]
-%D \setupparagraphintro[next] [\hbox to 3.5em{\tt NEXT  \hss}]
-%D \setupparagraphintro[next] [\hbox to 3.5em{\tt TXEN  \hss}]
-%D \setupparagraphintro[each] [\hbox to 3.0em{\tt EACH  \hss}]
-%D \setupparagraphintro[each] [\hbox to 3.0em{\tt HCEA  \hss}]
-%D
-%D some paragraph \par
-%D some paragraph \par
-%D some paragraph \par
-%D
-%D \definelabel[parnumber]
-%D
-%D \setupparagraphintro[reset,each][\inleft{\slxx\parnumber}]
-%D
-%D some paragraph \par
-%D some paragraph \par
-%D some paragraph \par
-%D \stoptyping
-
-%D \macros
-%D   {flushatnextpar}
-%D
-%D This macro collects data that will be flushed at the next paragraph.
-%D By using this macro you can avoid interfering nodes (writes, etc).
-
-\newbox \postponednodedata
-
-\def\flushatnextpar
-  {\bgroup
-   \dowithnextbox
-     {\global\setbox\postponednodedata\hbox{\box\postponednodedata\box\nextbox}\egroup}%
-     \hbox}
-
-\def\flushpostponednodedata
-  {\ifvoid\postponednodedata\else
-     \hbox{\smashedbox\postponednodedata}%
-   \fi}
 
 % Very nasty but needed for margin stuff inside colored
 % paragraphs.
@@ -4085,10 +3560,10 @@
   {\dowithnextboxcontent
      {\forgetall}
      {\ifcase\graphicvadjustmode \@EA \fakedvadjust \else \@EA\normalvadjust \fi
-        {\dostartgraphicgroup % don't ask
+        {\dostartgraphicgroup
          \localstarttextcolor
          \unvbox\nextbox
-         \localstoptextcolor  % don't ask
+         \localstoptextcolor
          \dostopgraphicgroup
          \ifcase\graphicvadjustmode \or \or
            % corrects for one line paragraphs
@@ -4117,50 +3592,54 @@
          {#1\fontdimen2\font}
 
 \setupwhitespace
-  [\v!none]
+  [\v!geen]
 
-\indenting
-  [\v!never]
+\inspringen
+  [\v!nooit]
 
 \setupindenting
-  [\v!none]
+  [\v!geen]
 
 \setupblank
-  [\v!standard,
-   \v!big]
+  [\v!standaard,
+   \v!groot]
 
-\defineblank[\v!default]  [\currentblanko]
-\defineblank[\v!before]   [\v!default]
-\defineblank[\v!inbetween][\v!default]
-\defineblank[\v!after]    [\v!before]
+\definieerblanko[\v!default] [\currentblanko]
+\definieerblanko[\v!voor]    [\v!default]
+\definieerblanko[\v!tussen]  [\v!default]
+\definieerblanko[\v!na]      [\v!voor]
+
+% doen?
+
+\def\@@blankovoor  {\blanko[\v!voor]}   %
+\def\@@blankotussen{\blanko[\v!tussen]} %  scheelt 5 tokens == >20 bytes
+\def\@@blankona    {\blanko[\v!na]}     %
 
 \setupinterlinespace
-  [\c!minheight=0pt, % only special purpose
-   \c!mindepth=0pt, % only special purpose
-   \c!height=.72,
-   \c!depth=.28,
-   \c!top=1.0,
-   \c!bottom=0.4,
-   \c!distance=1pt,
-   \c!line=2.8ex,
-   \c!stretch=0]
+  [\c!hoogte=.72,
+   \c!diepte=.28,
+   \c!boven=1.0,
+   \c!onder=0.4,
+   \c!afstand=1pt,
+   \c!regel=2.8ex,
+   \c!rek=0]
 
 \setupnarrower
-  [\c!left=1.5em,
-   \c!right=1.5em,
-   \c!middle=1.5em]
+  [\c!links=1.5em,
+   \c!rechts=1.5em,
+   \c!midden=1.5em]
 
 \setuptolerance
-  [\v!horizontal,\v!verystrict]
+  [\v!horizontaal,\v!zeerstreng]
 
 \setuptolerance
-  [\v!vertical,\v!strict]
+  [\v!vertikaal,\v!streng]
 
 \setupalign
-  [\v!bottom,
-   \v!width]
+  [\v!onder,
+   \v!breedte]
 
 \setupspacing
-  [\v!packed]
+  [\v!opelkaar]
 
 \protect \endinput

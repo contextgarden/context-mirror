@@ -1,3 +1,5 @@
+% NOT YET ADAPTED TO THE NEW FONT MACROS
+
 %D \module
 %D   [       file=font-chi,
 %D        version=1999.10.10,
@@ -12,28 +14,27 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-% NOT YET ADAPTED TO THE NEW FONT MACROS
-
 \writestatus{loading}{Context Font Macros / Chinese}
 
 % much will to typo-chi.tex
 
 %D Still to be implemented:
 %D
-%D \startitemize
-%D \item columns left right touch
-%D \item distance = (hsize-n*bodyfontsize)/(n-1)
-%D \item char grids
-%D \item char tables
-%D \item all kind of rotated combinations
-%D \item hanging puctuation
-%D \item a few more encodings
-%D \item rotation list
-%D \stopitemize
+%D \startopsomming
+%D \som columns left right touch
+%D \som distance = (hsize-n*bodyfontsize)/(n-1)
+%D \som char grids
+%D \som char tables
+%D \som all kind of rotated combinations
+%D \som hanging puctuation
+%D \som a few more encodings
+%D \som rotation list
+%D \stopopsomming
 
-%M \setupbodyfont[chi]
+%M \stelkorpsin[chi]
 %M
-%M \def\WangLei{\purechinese{\uchar{205}{245}\uchar{192}{218}}}
+%M \def\WangLei%
+%M   {\purechinese{\uchar{205}{245}\uchar{192}{218}}}
 
 \useencoding[chi]
 
@@ -89,9 +90,9 @@
 %D Before and after the glyph we have to deal with Chinese
 %D spacing. Special attention is given to punctuation.
 %D
-%D \starttyping
+%D \starttypen
 %D [some short nice chinese text with () and english]
-%D \stoptyping
+%D \stoptypen
 %D
 %D We insert a bit of stretch and introduce a signal to
 %D keep track of previous characters. We use a similar
@@ -353,7 +354,7 @@
           \insertchineseglyph
         \else % left / right
           \setbox\scratchbox\hbox{\insertchineseglyph}%
-          \rotate[\c!rotation=270]{\box\scratchbox}%
+          \rotate[\c!rotatie=270]{\box\scratchbox}%
         \fi
         \hss}%
      \ht\scratchbox\unicodeheight\strutht
@@ -392,29 +393,29 @@
    \verticalchinesetrue
    \global\chardef\prevchineseSstatus=0
    \let\nochinese\nochineseinvertical
-   \doif\@@vtn\v!fit
+   \doif\@@vtn\v!passend
      {\dimen0=\textwidth
-      \advance\dimen0 \@@vtdistance
+      \advance\dimen0 \@@vtafstand
       \dimen2=\bodyfontsize
-      \advance\dimen2 \@@vtdistance
+      \advance\dimen2 \@@vtafstand
       \divide\dimen0 \number\dimen2
       \edef\@@vtn{\number\dimen0}}%
-   \startcolumns
-     [\c!direction=\@@vtdirection,
-      \c!balance=\@@vtbalance,
-      \c!distance=\@@vtdistance,
+   \startkolommen
+     [\c!richting=\@@vtrichting,
+      \c!balanceren=\@@vtbalanceren,
+      \c!afstand=\@@vtafstand,
       \c!n=\@@vtn,
       #1]}
 
 \def\stopvertical
-  {\stopcolumns
+  {\stopkolommen
    \egroup}
 
 \setupchinese
-  [\c!direction=\v!left,
-   \c!balance=\v!no,
-   \c!n=\v!fit,
-   \c!distance=1.5\bodyfontsize]
+  [\c!richting=\v!links,
+   \c!balanceren=\v!nee,
+   \c!n=\v!passend,
+   \c!afstand=1.5\bodyfontsize]
 
 %D We can set up vertical typesetting with \type
 %D {\setupchinese}.
@@ -433,7 +434,7 @@
    \hbox to \hsize
      {\hss
       \rotate
-        [\c!rotation=270]
+        [\c!rotatie=270]
         {\vbox to \ht\scratchbox{\vss\box\scratchbox\vss}}%
       \hss}
    \par}
@@ -444,9 +445,9 @@
 %D Careful reading of the previous macro learns that we
 %D treat left and right glyphs differently. When we say
 %D
-%D \starttyping
+%D \starttypen
 %D \correctchineseboundarycharstrue
-%D \stoptyping
+%D \stoptypen
 %D
 %D For the moment correction in on by default.
 
@@ -491,22 +492,22 @@
 %D \def\DoIt #1 #2 %
 %D   {\hbox{\hbox to 2em{\uchar{#1}{#2}\hss}#1 #2}\par}
 %D
-%D \startcolumns[n=5]
+%D \startkolommen[n=5]
 %D \DoIt 161 162 \DoIt 161 163 \DoIt 161 164 \DoIt 161 167 \DoIt 161 173
 %D \DoIt 161 175 \DoIt 161 177 \DoIt 161 179 \DoIt 161 181 \DoIt 161 183
 %D \DoIt 161 185 \DoIt 161 187 \DoIt 161 189 \DoIt 161 191 \DoIt 161 227
 %D \DoIt 161 228 \DoIt 161 229 \DoIt 163 161 \DoIt 163 162 \DoIt 163 167
 %D \DoIt 163 169 \DoIt 163 172 \DoIt 163 174 \DoIt 163 186 \DoIt 163 187
 %D \DoIt 163 190 \DoIt 163 191 \DoIt 163 221 \DoIt 163 253
-%D \stopcolumns
+%D \stopkolommen
 %D
 %D A linebreak is not permitted after the following glyphs:
 %D
-%D \startcolumns[n=5]
+%D \startkolommen[n=5]
 %D \DoIt 161 174 \DoIt 161 176 \DoIt 161 178 \DoIt 161 180 \DoIt 161 182
 %D \DoIt 161 184 \DoIt 161 186 \DoIt 161 188 \DoIt 161 190 \DoIt 163 168
 %D \DoIt 163 219 \DoIt 163 224 \DoIt 163 251
-%D \stopcolumns
+%D \stopkolommen
 
 %D \macros
 %D   {tracechinesetrue, showchinesetracelegend}
@@ -542,14 +543,17 @@
          \hskip-\wd\scratchbox
          \hbox to \wd\scratchbox
            {\hss
-            \color[green]{\ifcase\chineseSstatus\relax u\or l\or r\fi}%
+            \color[green]
+              {\ifcase\chineseSstatus\relax u\or l\or r\fi}%
             \hss}%
          \hskip-\wd\scratchbox
          \lower\dp\scratchbox\hbox to \wd\scratchbox
            {\hss
-            \color[red]{\ifcase\chineseBstatus\relax u\or l\or r\or c\or n\fi}%
+            \color[red]
+              {\ifcase\chineseBstatus\relax u\or l\or r\or c\or n\fi}%
             \hss
-            \color[blue]{\ifcase\chineseAstatus\relax u\or l\or r\or s\fi}%
+            \color[blue]
+              {\ifcase\chineseAstatus\relax u\or l\or r\or s\fi}%
             \hss}}}}
 
 %D The following example shows how tracing works.
@@ -579,23 +583,23 @@
 %D The chinese numbering systems rather straightforward. First
 %D there are the digits:
 %D
-%D \starttabulate[|c|c|c|c|c|c|c|c|c|c|]
+%D \starttabulatie[|c|c|c|c|c|c|c|c|c|c|]
 %D \NC 0 \NC 1 \NC 2 \NC 3 \NC 4 \NC 5 \NC 6 \NC 7 \NC 8 \NC 9 \NC\NR
 %D \NC \chinesenumber{0} \NC \chinesenumber{1} \NC \chinesenumber{2}
 %D \NC \chinesenumber{3} \NC \chinesenumber{4} \NC \chinesenumber{5}
 %D \NC \chinesenumber{6} \NC \chinesenumber{7} \NC \chinesenumber{8}
 %D \NC \chinesenumber{9} \NC\NR
-%D \stoptabulate
+%D \stoptabulatie
 %D
 %D Apart from these numbers, we have dedicated representations
 %D of some powers of~$10$.
 %D
-%D \starttabulate[|c|c|c|c|c|]
+%D \starttabulatie[|c|c|c|c|c|]
 %D \NC 10 \NC 100 \NC 1000 \NC 10000 \NC 100000000 \NC\NR
 %D \NC \chinesenumber{10} \NC \chinesenumber{100}
 %D \NC \chinesenumber{1000} \NC \chinesenumber{10000}
 %D \NC \chinesenumber{100000000} \NC\NR
-%D \stoptabulate
+%D \stoptabulatie
 %D
 %D The number~12 is a combination of $1\times10+2$, or:
 %D \chinesenumber {12}, while~22 becomes \chinesenumber {22}.
@@ -605,7 +609,7 @@
 %D case the~$1$ is redundant. The same is true for the powers
 %D of~10.
 %D
-%D \starttabulate[|r|r|r|r|r|r|]
+%D \starttabulatie[|r|r|r|r|r|r|]
 %D \NC     1 \NC \chinesenumber     {1} \NC
 %D         9 \NC \chinesenumber     {9} \NC
 %D         4 \NC \chinesenumber     {4} \NC\NR
@@ -618,7 +622,7 @@
 %D \NC  1111 \NC \chinesenumber  {1111} \NC
 %D      9999 \NC \chinesenumber  {9999} \NC
 %D     65536 \NC \chinesenumber {65536} \NC\NR
-%D \stoptabulate
+%D \stoptabulatie
 %D
 %D The implementation is rather simple. For internal purposes,
 %D we let zero expand to~0. The digits $0-9$ and numbers $10$,
@@ -653,7 +657,7 @@
 %D a derived one with capitalized characters, an extended
 %D version of the first method, and a rather Arabic method.
 %D
-%D \starttabulate[|l|l|]
+%D \starttabulatie[|l|l|]
 %D \HL
 %D \NC \bf command                      \NC \bf number 39                 \NC\NR
 %D \HL
@@ -662,7 +666,7 @@
 %D \NC \type{\arabicchinesenumber}      \NC \arabicchinesenumber     {39} \NC\NR
 %D \NC \type{\extendedchinesenumber}    \NC \extendedchinesenumber   {39} \NC\NR
 %D \HL
-%D \stoptabulate
+%D \stoptabulatie
 %D
 %D We use a dirty trick to enable Chinese Capital Digits. In
 %D the encoding vectors, we define these by appending a suffix
@@ -805,7 +809,7 @@
 %D conversion macro.
 %D
 %D \startbuffer
-%D \starttable[|l|l|l|l|l|l|]
+%D \starttabel[|l|l|l|l|l|l|]
 %D \HL
 %D \NC number     \NC converter                  \NC hard coded \NC
 %D     number     \NC converter                  \NC hard coded\NC \SR
@@ -838,10 +842,10 @@
 %D \NC 1111111111 \NC \chinesenumber{1111111111} \NC 十一亿一千一百一十一万一千一百一十一 \NC
 %D     1000000000 \NC \chinesenumber{1000000000} \NC 十亿 \NC\LR
 %D \HL
-%D \stoptable
+%D \stoptabel
 %D \stopbuffer
 %D
-%D \placetable{Some Chinese number examples.}{\getbuffer}
+%D \plaatstabel{Some Chinese number examples.}{\haalbuffer}
 
 %D Although the conversion can be hooked into most commands
 %D that deal with numbers |<|those familiar with \TEX\ macro
@@ -850,12 +854,12 @@
 %D digits. So, in practice, the change that the next example
 %D shows up, is minimal.
 %D
-%D \starttabulate[|r|r|c|]
+%D \starttabulatie[|r|r|c|]
 %D \NC  2546 \NC \chinesenumber  {2546} \NC     \NC\NR
 %D \NC  9258 \NC \chinesenumber  {9258} \NC $+$ \NC\NR
 %D \HL
 %D \NC 11804 \NC \chinesenumber {11804} \NC     \NC\NR
-%D \stoptabulate
+%D \stoptabulatie
 %D
 %D While in arabic arithmics addition leads to more digits, in
 %D Chinese the number of glyphs can (temporary) decrease.
@@ -877,9 +881,9 @@
 
 %D Date conversion:
 
-\defineconversion [cn] [\v!day]   [\chinesenumber]
-\defineconversion [cn] [\v!month] [\chinesenumber]
-\defineconversion [cn] [\v!year]  [\chinesenumber]
+\defineconversion [cn] [\v!dag]   [\chinesenumber]
+\defineconversion [cn] [\v!maand] [\chinesenumber]
+\defineconversion [cn] [\v!jaar]  [\chinesenumber]
 
 %D \macros
 %D   {SimChi, TraChi}
@@ -889,12 +893,12 @@
 
 \setupunicodefont
   [chinese]
-  [   \c!scale=\chineseunicodescale,
-      \c!height=\chineseunicodeheight,
-      \c!depth=\chineseunicodedepth,
-   \c!conversion=\chinesenumber,
-   \c!commands=\setchineseencoding, % needed for digits
-    \c!command=\handlechineseunicodeglyph]
+  [   \c!schaal=\chineseunicodescale,
+      \c!hoogte=\chineseunicodeheight,
+      \c!diepte=\chineseunicodedepth,
+   \c!conversie=\chinesenumber,
+   \c!commandos=\setchineseencoding, % needed for digits
+    \c!commando=\handlechineseunicodeglyph]
 
 %D For the moment, this encoding is implemented rather ugly. The
 %D trick is to move the encoding value from the current font
@@ -910,17 +914,17 @@
 
 %D We could have said:
 %D
-%D \starttyping
+%D \starttypen
 %D \defineunicodefont
 %D   [SimChi]
 %D   [SimplifiedChinese]
-%D   [   \c!scale=\chineseunicodescale,
-%D       \c!height=\chineseunicodeheight,
-%D       \c!depth=\chineseunicodedepth,
-%D    \c!conversion=\chinesenumber,
-%D    \c!commands=\setchineseencoding, % needed for digits
-%D     \c!command=\handlechineseunicodeglyph]
-%D \stoptyping
+%D   [   \c!schaal=\chineseunicodescale,
+%D       \c!hoogte=\chineseunicodeheight,
+%D       \c!diepte=\chineseunicodedepth,
+%D    \c!conversie=\chinesenumber,
+%D    \c!commandos=\setchineseencoding, % needed for digits
+%D     \c!commando=\handlechineseunicodeglyph]
+%D \stoptypen
 %D
 %D However, the former definitions is more general. Next we
 %D map a few fonts:
@@ -1081,7 +1085,7 @@
 %D
 %D The full range of sizes is:
 %D
-%D \starttabulate[|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|]
+%D \starttabulatie[|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|]
 %D \NC          8 \NC         7 \NC         -6 \NC         6 \NC
 %D             -5 \NC         5 \NC         -4 \NC         4 \NC
 %D             -3 \NC         3 \NC         -2 \NC         2 \NC
@@ -1090,43 +1094,43 @@
 %D    \chisize{-5}\NC\chisize{5}\NC\chisize{-4}\NC\chisize{4}\NC
 %D    \chisize{-3}\NC\chisize{3}\NC\chisize{-2}\NC\chisize{2}\NC
 %D    \chisize{-1}\NC\chisize{1}\NC\chisize{-0}\NC\chisize{0}\NC\NR
-%D \stoptabulate
+%D \stoptabulatie
 
 %D Now it's time for some real Chinese. This example
 %D also shows that font switching is supported.
 %D
-%D \startnarrower
-%D \midaligned{\tfd 水调歌头}
-%D \blank
-%D \midaligned{\tfb 丙辰中秋，欢饮达旦，大醉作此篇，兼怀子由。}
-%D \blank
-%D \midaligned{\tfb 苏轼}
-%D \blank
+%D \startsmaller
+%D \regelmidden{\tfd 水调歌头}
+%D \blanko
+%D \regelmidden{\tfb 丙辰中秋，欢饮达旦，大醉作此篇，兼怀子由。}
+%D \blanko
+%D \regelmidden{\tfb 苏轼}
+%D \blanko
 %D 明月几时有？把酒问青天。不知天上宫阙，今夕是何年？我欲乘风归去
 %D ，又恐琼楼玉宇，高处不胜寒。起舞弄清影，何似在人间？
-%D \blank
+%D \blanko
 %D 转朱阁，低户，照无眠。不应有恨，何事偏向别时圆？人有悲欢离合，
 %D 月有阴晴圆缺，此事古难全。但愿人长久，千里共婵娟。
-%D \stopnarrower
+%D \stopsmaller
 %D
 %D The english translation is:
 %D
-%D \startnarrower
-%D \midaligned{\tfd Tune: Prelude to the Melody of Water}
-%D \blank
-%D \midaligned{\tfb On the night of the Mid||Autumn Festival of
+%D \startsmaller
+%D \regelmidden{\tfd Tune: Prelude to the Melody of Water}
+%D \blanko
+%D \regelmidden{\tfb On the night of the Mid||Autumn Festival of
 %D 1076, I drank happily till dawn and wrote this in my cups
 %D while thinking of Zi||you.}
-%D \blank
-%D \midaligned{\tfb Su Shi}
-%D \blank
+%D \blanko
+%D \regelmidden{\tfb Su Shi}
+%D \blanko
 %D How long will the bright moon appear? Wine||cup in hand, I
 %D ask the sky. I do not know waht time of year it would be
 %D tonight in the palace on high. Riding the wind, there I
 %D would fly, yet I fear the crystal palace would be far too
 %D high and cold for me. I rise and dance, with my shadow I
 %D play. On high as on earth, would it be as gay?
-%D \blank
+%D \blanko
 %D The moon goes round the mansion red though gauze||draped
 %D windows soft to shed her light upon the sleepless bed.
 %D Against man she should have no spite. Why then when people
@@ -1136,7 +1140,7 @@
 %D olden days. So let us wish that man will live long as he
 %D can! Though miles apart, we'll share the beauty she
 %D displays.
-%D \stopnarrower
+%D \stopsmaller
 
 %D This package is written in the city of Hasselt, a pretty
 %D small town in the |<|compare to China real small|>|
@@ -1150,6 +1154,6 @@
 
 %D To make our lives more easy, we put it here (too):
 
-\setuptyping[\c!tab=\v!no]
+\setuptyping[\c!tab=\v!nee]
 
 \protect \endinput

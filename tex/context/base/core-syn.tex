@@ -28,11 +28,11 @@
 
 \newif\ifsynonymmeaning
 
-\def\dosetupsynonyms[#1][#2]%
+\def\dostelsynoniemenin[#1][#2]%
   {\getparameters[\??sm#1][#2]}
 
-\def\setupsynonyms
-  {\dodoubleargument\dosetupsynonyms}
+\def\stelsynoniemenin
+  {\dodoubleargument\dostelsynoniemenin}
 
 \def\doresetsynonym#1%
   {\letvalue{#1\s!entry}\gobblethreearguments}
@@ -41,7 +41,7 @@
   {\bgroup
    \global\utilitydonetrue
    \syndef
-     {\doattributes{\??sm#1}\c!textstyle\c!textcolor{#3}}
+     {\doattributes{\??sm#1}\c!tekstletter\c!tekstkleur{#3}}
      \ConvertToConstant\doifelse{#4}{}{\unknown}{#4}\par
    \egroup}
 
@@ -49,33 +49,37 @@
   {\executeifdefined{#1\s!entry}\gobblethreearguments}
 
 \def\dosetsynonym#1%
-  {\doifdefinedelse{\??sm#1\c!command}
-     {\setvalue{#1\s!entry}{\getvalue{\??sm#1\c!command}}} % 3 argumenten
+  {\doifdefinedelse{\??sm#1\c!commando}
+     {\setvalue{#1\s!entry}{\getvalue{\??sm#1\c!commando}}} % 3 argumenten
      {\setvalue{#1\s!entry}{\dohandlesynonymentry{#1}}}}
 
 \def\doplaatslijstmetsynoniemen#1#2%
-  {\whitespace
+  {\witruimte
    \begingroup
    \def\currentsynonym{#1}%
-   \definedescription  % nog eens een class van maken, net als framed
-     [syndef]
-     [\c!location=\getvalue{\??sm#1\c!location},
-      \c!width=\getvalue{\??sm#1\c!width},
-      \c!distance=\getvalue{\??sm#1\c!distance},
-      \c!sample=\getvalue{\??sm#1\c!sample},
-      \c!hang=\getvalue{\??sm#1\c!hang},
-      \c!align=\getvalue{\??sm#1\c!align},
-      \c!before=\getvalue{\??sm#1\c!before},
-      \c!inbetween=\getvalue{\??sm#1\c!inbetween},
-      \c!after=\getvalue{\??sm#1\c!after},
-      \c!indentnext=\getvalue{\??sm#1\c!indentnext},
-      \c!headstyle=,
-      \c!style=]%
+%   \def\synplaats{\getvalue{\??sm#1\c!plaats}}%
+%   \def\synbreedte{\getvalue{\??sm#1\c!breedte}}%
+%   \def\synmonster{\getvalue{\??sm#1\c!monster}}%
 %
-   \setupwhitespace[\v!none]%
+   \doordefinieren  % nog eens een class van maken, net als framed
+     [syndef]
+     [\c!plaats=\getvalue{\??sm#1\c!plaats},
+      \c!breedte=\getvalue{\??sm#1\c!breedte},
+      \c!afstand=\getvalue{\??sm#1\c!afstand},
+      \c!monster=\getvalue{\??sm#1\c!monster},
+      \c!hang=\getvalue{\??sm#1\c!hang},
+      \c!uitlijnen=\getvalue{\??sm#1\c!uitlijnen},
+      \c!voor=\getvalue{\??sm#1\c!voor},
+      \c!tussen=\getvalue{\??sm#1\c!tussen},
+      \c!na=\getvalue{\??sm#1\c!na},
+      \c!springvolgendein=\getvalue{\??sm#1\c!springvolgendein},
+      \c!kopletter=,
+      \c!letter=]%
+%
+   \setupwhitespace[\v!geen]%
    \doutilities{#1}\jobname{#2}\relax\par
    \endgroup
-   \ifutilitydone\else\nowhitespace\fi}
+   \ifutilitydone\else\geenwitruimte\fi}
 
 \def\dovolledigelijstmetsynoniemen#1#2% expansion needed to avoid v! (due to french active !)
   {\expanded
@@ -89,10 +93,10 @@
   {\begingroup  % anders in mathmode lege \hbox, zie eenheden
    \ifsynonymmeaning
      \synonymmeaningfalse
-     \doattributes{\??sm#1}\c!synonymstyle\c!synonymcolor{#3}%
+     \doattributes{\??sm#1}\c!synoniemletter\c!synoniemkleur{#3}%
    \else
      \explicithmode
-     \doattributes{\??sm#1}\c!textstyle\c!textcolor{#2}%
+     \doattributes{\??sm#1}\c!tekstletter\c!tekstkleur{#2}%
    \fi
    \endgroup}
 
@@ -152,10 +156,10 @@
 \def\dodocomplexsynonym[#1][#2]#3#4%
   {\doifsomething{#2}
      {\getvalue{\s!check#1}{#2}%
-      \doifelsevalue{\??sm#1\c!conversion}\v!yes
+      \doifelsevalue{\??sm#1\c!conversie}\v!ja
         {\unexpanded\setgvalue{#2}{\expandsynonym{#1}{#2}{#3}{#4}}}
-        {\doifelsevalue{\??sm#1\c!state}\v!start
-           {\doifelsevalue{\??sm#1\c!criterium}\v!all
+        {\doifelsevalue{\??sm#1\c!status}\v!start
+           {\doifelsevalue{\??sm#1\c!criterium}\v!alles
               {\preexecutesynonym{#1}{#2}{#3}{#4}}
               {\unexpanded\setgvalue{#2}{\executesynonym{#1}{#2}{#3}{#4}}}}
            {\unexpanded\setgvalue{#2}{\processsynonym{#1}{#3}{#4}}}}}}
@@ -167,48 +171,61 @@
      \dodocomplexsynonym[#2][#1#4]{#4}{#5}%
    \fi}
 
-\def\dodefinesynonyms[#1][#2][#3][#4]%
-  {\iffourthargument
-     \unexpanded\def#4##1{\getsynonymmeaning{#1}{\??sm:#1:}{##1}}%
+\def\dodefinieersynoniemen[#1][#2][#3][#4]%
+  {\setvalue{\e!stel#2\e!in}%
+     {\dodoubleargument\getparameters[\??sm#1]}%
+   \iffourthargument
+     \unexpanded\def#4##1%
+       {\getsynonymmeaning{#1}{\??sm:#1:}{##1}}%
      \ifthirdargument
-       \unexpanded\def#3##1{\getvalue{\??sm:#1:##1}}%
+       \unexpanded\def#3##1%
+         {\getvalue{\??sm:#1:##1}}%
      \fi
-     \setvalue{#1}{\dotripleempty\docomplexsynonym[\??sm:#1:][#1]}%
+     \setvalue{#1}%
+       {\dotripleempty\docomplexsynonym[\??sm:#1:][#1]}%
    \else
      \ifthirdargument
-       \unexpanded\def#3##1{\getsynonymmeaning{#1}{}{##1}}%
+       \unexpanded\def#3##1%
+         {\getsynonymmeaning{#1}{}{##1}}%
      \fi
-     \setvalue{#1}{\dotripleempty\docomplexsynonym[][#1]}%
+     \setvalue{#1}%
+       {\dotripleempty\docomplexsynonym[][#1]}%
    \fi
-   \dosetupsynonyms
+   \dostelsynoniemenin
      [#1]%
-     [\c!synonymstyle=,
-      \c!textstyle=,
-      \c!state=\v!start,
+     [\c!synoniemletter=,
+      \c!tekstletter=,
+      \c!status=\v!start,
       \c!criterium=,
-      \c!location=\v!left,
-      \c!width=5em,
-      \c!distance=0pt,
-      \c!sample=,
+      \c!plaats=\v!links,
+      \c!breedte=5em,
+      \c!afstand=0pt,
+      \c!monster=,
       \c!hang=,
-      \c!align=,
-      \c!before=,
-      \c!inbetween=,
-      \c!after=,
-      \c!indentnext=\v!no,
-      \c!expansion=]%
-   \presetheadtext[#2=\Word{#2}]% changes the \if...argument
+      \c!uitlijnen=,
+      \c!voor=,
+      \c!tussen=,
+      \c!na=,
+      \c!springvolgendein=\v!nee,
+      \c!expansie=]%
+   \presetheadtext % changes the \if...argument
+     [#2=\Word{#2}]%
+   \setvalue{\s!set#1}%
+     {\dosetsynonym{#1}}%
+   \setvalue{\s!reset#1}%
+     {\doresetsynonym{#1}}%
+   \setvalue{\s!check#1}##1%
+     {\checkdefined{synoniemen}{#1}{##1}}%
    \addutilityreset{#1}%
-   \setvalue{\e!setup#2\e!endsetup}{\dodoubleargument\getparameters[\??sm#1]}% to be obsolete
-   \setvalue{\s!set#1}{\dosetsynonym{#1}}%
-   \setvalue{\s!reset#1}{\doresetsynonym{#1}}%
-   \setvalue{\s!check#1}##1{\checkdefined{synoniemen}{#1}{##1}}%
-   \setvalue{\e!load#2}{\dolaadsynoniemen{#1}{#2}}%
-   \setvalue{\e!place\e!listof#2}{\doplaatslijstmetsynoniemen{#1}{#2}}%
-   \setvalue{\e!complete\e!listof#2}{\dovolledigelijstmetsynoniemen{#1}{#2}}}
+   \setvalue{\e!laad#2}%
+     {\dolaadsynoniemen{#1}{#2}}%
+   \setvalue{\e!plaats\e!lijstmet#2}%
+     {\doplaatslijstmetsynoniemen{#1}{#2}}%
+   \setvalue{\e!volledige\e!lijstmet#2}%
+     {\dovolledigelijstmetsynoniemen{#1}{#2}}}
 
-\def\definesynonyms
-  {\doquadrupleempty\dodefinesynonyms}
+\def\definieersynoniemen
+  {\doquadrupleempty\dodefinieersynoniemen}
 
 %  Formaat tex-utility-input-file <jobname.tui>:
 %
@@ -219,11 +236,11 @@
 %
 %    \synonymentry {tag} {pure} {text} {}
 
-\def\dosetupsorting[#1][#2]%
+\def\dostelsorterenin[#1][#2]%
   {\getparameters[\??so#1][#2]}
 
-\def\setupsorting
-  {\dodoubleargument\dosetupsorting}
+\def\stelsorterenin
+  {\dodoubleargument\dostelsorterenin}
 
 \def\doresetsorteren#1%
   {\letvalue{#1\s!entry}\gobblethreearguments}
@@ -233,20 +250,20 @@
      {\def\dowritesort####1####2####3{}%
       \global\utilitydonetrue
       \bgroup
-      \doifdefinedelse{\??so#1\c!command}
-        {\getvalue{\??so#1\c!command}{##2}}  % 1 argument
-        {\getvalue{\??so#1\c!before}%
-         \doattributes{\??so#1}\c!style\c!color{##2}%
-         \getvalue{\??so#1\c!after}}%
+      \doifdefinedelse{\??so#1\c!commando}
+        {\getvalue{\??so#1\c!commando}{##2}}  % 1 argument
+        {\getvalue{\??so#1\c!voor}%
+         \doattributes{\??so#1}\c!letter\c!kleur{##2}%
+         \getvalue{\??so#1\c!na}}%
       \egroup}}
 
 \def\doplaatslijstmetsorteren#1% NOG EEN RUWE VERSIE MAKEN
-  {\whitespace                  % ZONDER WITRUIMTE ETC ETC
+  {\witruimte                  % ZONDER WITRUIMTE ETC ETC
    \begingroup
-   \setupwhitespace[\v!none]%
+   \setupwhitespace[\v!geen]%
    \doutilities{#1}\jobname{#1}\relax\par
    \endgroup
-   \ifutilitydone\else\nowhitespace\fi}
+   \ifutilitydone\else\geenwitruimte\fi}
 
 \def\dovolledigelijstmetsorteren#1#2%
   {\plaatsvolledig
@@ -256,7 +273,7 @@
 \def\processsort#1#2#3%
   {\explicithmode
    \bgroup
-   \doattributes{\??so#1}\c!style\c!color{#2}%
+   \doattributes{\??so#1}\c!letter\c!kleur{#2}%
    \egroup}
 
 \def\dowritesort#1#2#3%
@@ -303,8 +320,8 @@
 \def\dodocomplexsort[#1][#2]#3%
   {\doifsomething{#2}
      {\getvalue{\s!check#1}{#2}%
-      \doifelsevalue{\??so#1\c!state}\v!start
-        {\doifelsevalue{\??so#1\c!criterium}\v!all
+      \doifelsevalue{\??so#1\c!status}\v!start
+        {\doifelsevalue{\??so#1\c!criterium}\v!alles
            {\preexecutesort{#1}{#2}{#3}}
            {\unexpanded\setgvalue{#2}{\executesort{#1}{#2}{#3}}}}
         {\unexpanded\setgvalue{#2}{\processsort{#1}{#3}{#2}}}}}
@@ -318,64 +335,72 @@
 
 % if #3=\relax or \v!geen, then no command but still protected
 
-\def\dodefinesorting[#1][#2][#3]%
+\def\dodefinieersorteren[#1][#2][#3]%
   {\getparameters[\??so#1]
-     [%\c!command=, % we test for defined !
-      \c!state=\v!start,
+     [%\c!commando=, % we test for defined !
+      \c!status=\v!start,
       \c!criterium=,
-      \c!style=,
-      \c!before=,
-      \c!after=\endgraf,
-      \c!expansion=]%
+      \c!letter=,
+      \c!voor=,
+      \c!na=\endgraf,
+      \c!expansie=]%
+   \presetheadtext[#2=\Word{#2}]%
+   \setvalue{\e!stel#2\e!in}[##1]% vervalt tzt, soort oo-mode
+     {\getparameters[\??so#1][##1]}%
    \ifthirdargument
-     \ConvertConstantAfter\doifnot{#3}\v!none
+     \ConvertConstantAfter\doifnot{#3}\v!geen
        {\ifx#3\relax \else
           \def#3##1{\getvalue{\??so:#1:##1}}
         \fi}%
-     \setvalue{#1}{\dotripleempty\docomplexsort[\??so:#1:][#1]}%
+     \setvalue{#1}%
+       {\dotripleempty\docomplexsort[\??so:#1:][#1]}%
    \else
-     \setvalue{#1}{\dotripleempty\docomplexsort[][#1]}%
+     \setvalue{#1}%
+       {\dotripleempty\docomplexsort[][#1]}%
    \fi
+   \setvalue{\s!set#1}%
+     {\dosetsorteren{#1}}%
+   \setvalue{\s!reset#1}%
+     {\doresetsorteren{#1}}%
    \addutilityreset{#1}%
-   \presetheadtext[#2=\Word{#2}]% after \ifthirdargument -)
-   \setvalue{\e!setup#2\e!endsetup}[##1]{\getparameters[\??so#1][##1]}% to be obsolete
-   \setvalue{\s!set#1}{\dosetsorteren{#1}}%
-   \setvalue{\s!reset#1}{\doresetsorteren{#1}}%
-   \setvalue{\e!load#2}{\dolaadsorteren{#1}{#2}}%
-   \setvalue{\s!check#1}##1{\checkdefined{sorteren}{#1}{##1}}%
-   \setvalue{\e!place\e!listof#2}{\doplaatslijstmetsorteren{#1}}%
-   \setvalue{\e!complete\e!listof#2}{\dovolledigelijstmetsorteren{#1}{#2}}}
+   \setvalue{\e!laad#2}%
+     {\dolaadsorteren{#1}{#2}}%
+   \setvalue{\s!check#1}##1%
+     {\checkdefined{sorteren}{#1}{##1}}%
+   \setvalue{\e!plaats\e!lijstmet#2}%
+     {\doplaatslijstmetsorteren{#1}}%
+   \setvalue{\e!volledige\e!lijstmet#2}%
+     {\dovolledigelijstmetsorteren{#1}{#2}}}
 
-\def\definesorting
-  {\dotripleempty\dodefinesorting}
+\def\definieersorteren%
+  {\dotripleempty\dodefinieersorteren}
 
-\definesynonyms
-  [\v!abbreviation]
-  [\v!abbreviations]
-  [\infull]
+\definieersynoniemen
+  [\v!afkorting]
+  [\v!afkortingen]
+  [\voluit]
 
-\setupsynonyms
-  [\v!abbreviation]
-  [\c!textstyle=\v!capital,
-   \c!synonymstyle=,
-   \c!textcolor=,
-   \c!synonymcolor=,
-   \c!location=\v!left,
-   \c!width=5em,
-   \c!state=\v!start]
+\stelsynoniemenin
+  [\v!afkorting]
+  [\c!tekstletter=\v!kapitaal,
+   \c!synoniemletter=,
+   \c!tekstkleur=,
+   \c!synoniemkleur=,
+   \c!plaats=\v!links,
+   \c!breedte=5em,
+   \c!status=\v!start]
 
-\definesorting
+\definieersorteren
   [\v!logo]
   [\v!logos]
-% no [\logogram]
 
-\definesynonyms
-  [\v!unit]
-  [\v!units]
-  [\unitmeaning]
+\definieersynoniemen
+  [\v!eenheid]
+  [\v!eenheden]
+  [\betekenis]
 
-\setupsynonyms
-  [\v!unit]
-  [\c!textstyle=\dimension]
+\stelsynoniemenin
+  [\v!eenheid]
+  [\c!tekstletter=\dimension]
 
 \protect \endinput

@@ -23,7 +23,7 @@
 %D
 %D A figure base coded this way looks like: 
 %D 
-%D \starttyping
+%D \starttypen
 %D <!-- texexec --pdf --use=fig-01 figtest.xml --> 
 %D 
 %D <figurelibrary language="nl"> 
@@ -50,28 +50,28 @@
 %D   </figure>
 %D 
 %D </figurelibrary> 
-%D \stoptyping 
+%D \stoptypen 
 %D 
 %D You can convert this base into a \PDF\ file using 
 %D \TEXEXEC\ and another module in this suite. 
 %D 
-%D \starttyping 
+%D \starttypen 
 %D texexec --pdf --use=fig-make yourfile.xml
-%D \stoptyping 
+%D \stoptypen 
 %D 
 %D You can now select a graphic from this file using the 
 %D 
-%D \starttyping 
+%D \starttypen 
 %D \externalfigure[a dutch cow][width=4cm]
-%D \stoptyping 
+%D \stoptypen 
 %D
 %D This module overloads this command so that a figure is 
 %D it first searched in the list of databases. 
 %D 
-%D \starttyping 
+%D \starttypen 
 %D \usemodule     [fig-base]
 %D \usefigurebases[yourfile]
-%D \stoptyping 
+%D \stoptypen 
 %D 
 %D The special keyword \type {reset} can be used to reset 
 %D this list.
@@ -170,7 +170,7 @@
      \else
        \let\figurepathlist\figurefilebasepath
        \normalcalculateexternalfigure
-         [#1][#2][\figurefilebase.pdf][\c!page=\figurefilepage,#4][#5][#6]%
+         [#1][#2][\figurefilebase.pdf][\c!pagina=\figurefilepage,#4][#5][#6]%
      \fi
    \fi}
 

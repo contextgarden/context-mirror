@@ -14,8 +14,6 @@
 % todo: nagaan of we met reserveobjnum en useobjnum kunnen werken;
 % driver referenced etc
 
-% layers and links don't work while the spec says they should
-
 % method = auto
 %
 % \definefileinsertion{tpd}{auto}#1#2#3#4#5#6#7#8#9%
@@ -123,9 +121,7 @@
   \newcount\pdfoptionpdfminorversion
 \fi
 
-\pdfoptionpdfminorversion=5
-
-\def\PDFversion{1.\the\pdfoptionpdfminorversion}%
+\pdfoptionpdfminorversion=4
 
 % %D Why are the Acrobat viewers so buggy? To prevent font cache
 % %D mismatches, we say:
@@ -146,9 +142,9 @@
 
 %D This means that by saying
 %D
-%D \starttyping
+%D \starttypen
 %D \usespecials[tpd]
-%D \stoptyping
+%D \stoptypen
 %D
 %D we get ourselves full \PDF\ output.
 
@@ -245,7 +241,7 @@
 \definespecial\dogetnofinsertpages#1%
   {\xdef\nofinsertpages{1}% global
    \doifvalidpdfimagefileelse{#1}%
-     {\pdfximage {#1}\xdef\nofinsertpages{\the\pdflastximagepages}}
+     {\pdfximage{#1}\xdef\nofinsertpages{\the\pdflastximagepages}}
      {}}
 
 %D Currently we support \type{pdf} for \PDF\ files, \type{mps}
@@ -262,13 +258,13 @@
 
 %D The old, \TEX\ base \PDF\ insertion macro:
 %D
-%D \starttyping
+%D \starttypen
 %D \def\dotpdinsertpdf#1#2#3#4#5#6#7#8#9%
 %D   {\beforesplitstring#1\at.\to\filename
 %D    \scratchdimen=#3pt \PointsToReal{.01\scratchdimen}\xscale
 %D    \scratchdimen=#4pt \PointsToReal{.01\scratchdimen}\yscale
 %D    \convertPDFtoPDF{\filename.pdf}\xscale\yscale{#5}{#6}{#7}{#8}}
-%D \stoptyping
+%D \stoptypen
 %D
 %D superseded by the next macros.
 
@@ -322,12 +318,11 @@
         \ifdim#7>\zeropoint \!!width  #7\fi
         \ifdim#8>\zeropoint \!!height #8\fi
         \pdfimagepagenumber
-%         \@@DriverImageBox
         {#1}%
       \xdef\PDFimagereference{\the\pdflastximage}%
       \xdef\nofinsertpages{\the\pdflastximagepages}%
       \pdfrefximage\pdflastximage}
-     {\framed[\c!width=#7,\c!height=#8]{#1}}%
+     {\framed[\c!breedte=#7,\c!hoogte=#8]{#1}}%
    \egroup}
 
 \else
@@ -339,7 +334,7 @@
         \ifdim#7>\zeropoint \!!width  #7\fi
         \ifdim#8>\zeropoint \!!height #8\fi
         {#1}}%
-     {\framed[\c!width=#7,\c!height=#8]{#1}}%
+     {\framed[\c!breedte=#7,\c!hoogte=#8]{#1}}%
    \egroup}
 
 \fi
@@ -373,8 +368,6 @@
 %D themselves have alternatives, especially cylcic
 %D dependencies.
 
-\ifx\@@DriverImageBox\undefined \def\@@DriverImageBox{artbox} \fi
-
 \ifnum\pdftexversion>13
 
 \def\checkpdfimageattributes
@@ -405,9 +398,8 @@
        \the\everyPDFximage
        \checkpdfimagepagenumber{#3}%
        \checkpdfimageattributes
-       \global\setbox\foundexternalfigure\hbox
-         {\immediate\pdfximage
-            \pdfimageattributes \pdfimagepagenumber \@@DriverImageBox {#2}%
+       \global\setbox\foundexternalfigure\vbox
+         {\immediate\pdfximage \pdfimageattributes \pdfimagepagenumber{#2}%
           \xdef\PDFimagereference{\the\pdflastximage}%
           \xdef\nofinsertpages{\the\pdflastximagepages}%
           \pdfrefximage\pdflastximage}%
@@ -425,19 +417,19 @@
 
 \else
 
-  \def\dogetTPDfiguresize#1#2#3#4#5#6#7%
-    {\ifmeasureTPDfiguresize
-       #4\zeropoint
-       #5\zeropoint
-       \doifvalidpdfimagefileelse{#2}
-         {\global\setbox\foundexternalfigure\vbox{\pdfimage{#2}}%
-          #6\wd\foundexternalfigure
-          #7\ht\foundexternalfigure}
-         {#6\zeropoint
-          #7\zeropoint}%
-     \else
-       #1{#2}{#3}{#4}{#5}{#6}{#7}% \normaldogetfiguresize...
-     \fi}
+\def\dogetTPDfiguresize#1#2#3#4#5#6#7%
+  {\ifmeasureTPDfiguresize
+     #4\zeropoint
+     #5\zeropoint
+     \doifvalidpdfimagefileelse{#2}
+       {\global\setbox\foundexternalfigure\vbox{\pdfimage{#2}}%
+        #6\wd\foundexternalfigure
+        #7\ht\foundexternalfigure}
+       {#6\zeropoint
+        #7\zeropoint}%
+  \else
+    #1{#2}{#3}{#4}{#5}{#6}{#7}% \normaldogetfiguresize...
+  \fi}
 
 \fi
 
@@ -516,96 +508,17 @@
 \definespecial\doregisterrgbspotcolor {\doPDFregisterrgbspotcolor}
 \definespecial\doregistergrayspotcolor{\doPDFregistergrayspotcolor}
 
-\definespecial\doregistercmykindexcolor{\doPDFregistercmykindexcolor}
-\definespecial\doregisterrgbindexcolor {\doPDFregisterrgbindexcolor}
-\definespecial\doregistergrayindexcolor{\doPDFregistergrayindexcolor}
-
 \definespecial\dostartnonecolormode{\doPDFstartnonecolormode}
 \definespecial\doregisternonecolor {\doPDFregisternonecolor}
 
-% \def\doPDFregistersomespotcolor#1#2#3#4%
-%   {\immediate \pdfobj stream attr
-%      {/FunctionType 4 /Domain [0.0 1.0] /Range #3}{#4}%
-%    \immediate \pdfobj
-%      {[/Separation /#1 /Device#2 \the\pdflastobj\space0 R]}%
-%    \dosetobjectreference{PDFCS}{#1}{\the\pdflastobj}%
-%    \appendtoPDFdocumentcolorspaces
-%      {/#1 \the\pdflastobj\space0 R}}
-
-\def\doPDFregisterspotcolorname#1#2%
-  {\bgroup
-   \let\ascii\empty
-   \def\docommand##1%
-     {\edef\ascii{\ascii
-       \ifx\nexthandledtoken\space
-         \letterhash20%
-       \else\ifx\nexthandledtoken\blankspace
-         \letterhash20%
-       \else
-         ##1%
-       \fi\fi}}%
-   \expanded{\handletokens#2}\with\docommand
-   \letgvalue{@@pdf@@scn@@#1}\ascii
-   \egroup}
-
-\def\doPDFregistersomespotcolor#1#2#3#4#5#6#7% name fractions names p's space domain function
-  {\bgroup
-   \let\spotpops\empty
-   \ifcase#2\or
-     %def\PDFspotcolornames{/Separation /#1}%
-     \edef\PDFspotcolornames{/Separation /\executeifdefined{@@pdf@@scn@@#1}{#1}}%
-     \def\PDFspotcolordomain{0.0 1.0}%
-   \else
-     \dorecurse{#2}{\edef\spotpops{\spotpops pop }}%
-     \let\PDFspotcolornames \empty
-     \let\PDFspotcolordomain\empty
-     \def\dospotcolorcommand##1%
-       {%\edef\PDFspotcolornames {\PDFspotcolornames/##1\space}%
-        \edef\PDFspotcolornames {\PDFspotcolornames/\executeifdefined{@@pdf@@scn@@##1}{##1}\space}%
-        \edef\PDFspotcolordomain{\PDFspotcolordomain 0.0 1.0\space}}%
-     \processcommacommand[#3]\dospotcolorcommand
-     \edef\PDFspotcolornames{/DeviceN [\PDFspotcolornames]}%
-   \fi
-   \immediate \pdfobj stream attr
-     {/FunctionType 4 /Domain [\PDFspotcolordomain] /Range [#6]}{{\spotpops#7}}%
+\def\doPDFregistersomespotcolor#1#2#3#4%
+  {\immediate \pdfobj stream attr
+     {/FunctionType 4 /Domain [0.0 1.0] /Range #3}{#4}%
    \immediate \pdfobj
-     {[\PDFspotcolornames\space /Device#5 \the\pdflastobj\space0 R]}%
+     {[/Separation /#1 /Device#2 \the\pdflastobj\space0 R]}%
    \dosetobjectreference{PDFCS}{#1}{\the\pdflastobj}%
-   \appendtoPDFdocumentcolorspaces{/#1 \the\pdflastobj\space0 R}%
-   \egroup}
-
-%D New and very experimental.
-
-\def\doPDFregistersomeindexcolor#1#2#3#4#5#6#7% name fractions names p's space domain function
-  {\bgroup
-   \let\spotpops\empty
-   \dorecurse{#2}{\edef\spotpops{\spotpops exch pop\space}}%
-   \let\PDFspotcolornames \empty
-   \let\PDFspotcolordomain\empty
-   \def\docommand##1%
-     {%\edef\PDFspotcolornames {\PDFspotcolornames/##1\space}%
-      \edef\PDFspotcolornames{\PDFspotcolornames/\executeifdefined{@@pdf@@scn@@##1}{##1}\space}%
-      \edef\PDFspotcolordomain{\PDFspotcolordomain 0.0 1.0\space}}%
-   \processcommacommand[#3,None]\docommand
-   \let\PDFcolorindexvector\empty
-   \def\docommand##1%
-     {\scratchdimen##1\points
-      \scratchdimen\recurselevel\scratchdimen
-      \scratchcounter\scratchdimen
-      \divide\scratchcounter \maxcard
-      \edef\PDFcolorindexvector{\PDFcolorindexvector\uchexnumbers\scratchcounter}}%
-   \dostepwiserecurse\zerocount{255}\plusone
-     {\rawprocesscommacommand[#4,1]\docommand
-      \xdef\PDFcolorindexvector{\PDFcolorindexvector\space}}%
-   \immediate \pdfobj stream attr
-     {/FunctionType 4 /Domain [\PDFspotcolordomain] /Range [#6]}{{\spotpops#7}}%
-   \immediate \pdfobj
-     {[/Indexed
-         [/DeviceN [\PDFspotcolornames] /Device#5 \the\pdflastobj\space0 R] %
-         255 <\PDFcolorindexvector>]}%
-   \dosetobjectreference{PDFIX}{#1}{\the\pdflastobj}%
-   \appendtoPDFdocumentcolorspaces{/#1_INDEXED \the\pdflastobj\space0 R}%
-   \egroup}
+   \appendtoPDFdocumentcolorspaces
+     {/#1 \the\pdflastobj\space0 R}}
 
 %D \macros
 %D   {dostarttransparency,dostoptransparency}
@@ -620,9 +533,7 @@
 
 \def\@@PDT{@PDT@}
 
-\ifx\PDFcurrenttransparency\undefined
-  \newcount\PDFcurrenttransparency \PDFcurrenttransparency=0 % -1
-\fi
+\newcount\PDFcurrenttransparency \PDFcurrenttransparency=0 % -1
 
 \def\assignPDFtransparency#1#2%
   {\def\PDFtransparencyidentifier{/Tr#1}%
@@ -1227,13 +1138,11 @@
 
 \def\doPDFdictionaryobject class #1 name #2 data #3%
   {\flushatshipout
-     {\immediate\pdfobj{<< #3 >>}%
-      \dosetobjectreference{#1}{#2}{\the\pdflastobj}}}
+     {\immediate\pdfobj{<< #3 >>}\dosetobjectreference{#1}{#2}{\the\pdflastobj}}}
 
 \def\doPDFarrayobject class #1 name #2 data #3%
   {\flushatshipout
-     {\immediate\pdfobj{[ #3 ]}%
-      \dosetobjectreference{#1}{#2}{\the\pdflastobj}}}
+     {\immediate\pdfobj{[ #3 ]}\dosetobjectreference{#1}{#2}{\the\pdflastobj}}}
 
 %D \macros
 %D   {defaultobjectreference,doPDFgetobjectreference}
@@ -1292,7 +1201,7 @@
 
 %D File embedding. Storing the stream identifier is needed
 %D to get access to the number. When typeset, the user can
-%D feed this number to \type {pdftosrc} and filter the
+%D use feed this number to \type {pdftosrc} and filter the
 %D file from the \PDF\ file.
 
 \let\PDFlaststreamobject   \s!unknown
@@ -1322,28 +1231,6 @@
 
 \definespecial\dostartfonteffect{\doPDFstartfonteffect}
 \definespecial\dostopfonteffect {\doPDFstopfonteffect}
-
-%D Some MP stuff:
-
-\let\handleMPfshow\dohandleMPfshow % default anyway
-
-\ifnum\pdftexversion<14
-
-  \def\setMPPDFobject#1#2% resources boxnumber
-    {\def\getMPPDFobject{\box#2}}
-
-\else
-
-  \def\setMPPDFobject#1#2% resources boxnumber
-    {\immediate\pdfxform resources{#1}#2%
-     \edef\getMPPDFobject{\noexpand\pdfrefxform\the\pdflastxform}}
-
-\fi
-
-\let\getMPPDFobject\relax
-
-\definespecial\doinsertMPfile#1%
-  {\doiffileelse{./#1}{\includeMPasPDF{./#1}}{\message{[MP #1]}}}
 
 %D Now we can finish this module.
 

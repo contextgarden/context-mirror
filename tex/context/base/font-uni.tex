@@ -13,7 +13,7 @@
 
 \writestatus{loading}{Context Font Macros / UNICODE Support}
 
-%D I wrote this module when Wang Lei asked me how to use
+%D I wrote this module when \WangLei\ asked me how to use
 %D Chinese in \CONTEXT. From the samples he sent me, I deduced
 %D that some mixture of one and two byte encoding was used,
 %D which he confirmed. Since \TEX\ normally does not use the
@@ -71,10 +71,10 @@
 %D
 %D There are two commands to handle unicode characters:
 %D
-%D \starttyping
+%D \starttypen
 %D \handleunicodeflowglyph{number}{character}
 %D \uchar{number}{number}
-%D \stoptyping
+%D \stoptypen
 %D
 %D The first one can be assigned to an active character, the
 %D second one can be used to directly access a glyph. Both
@@ -252,9 +252,9 @@
 %D access the glyph in that font. This means that a particular
 %D font is split up in subfonts with names in the range:
 %D
-%D \starttyping
+%D \starttypen
 %D <filename>80 ... <filename>ff
-%D \stoptyping
+%D \stoptypen
 %D
 %D The \type {<filename>} as well as the composed name are
 %D mapped ones. The next macros take care of this mapping.
@@ -325,7 +325,7 @@
 
 %D An example of a remapping is the following:
 %D
-%D \starttyping
+%D \starttypen
 %D \defineucharmapping{GBK}#1#2%
 %D   {\unicodeposition=#1
 %D    \advance\unicodeposition -129
@@ -333,7 +333,7 @@
 %D    \advance\unicodeposition #2
 %D    \advance\unicodeposition-\ifnum#2>127 65\else64\fi
 %D    \dorepositionunicode}
-%D \stoptyping
+%D \stoptypen
 %D
 %D This maps the GBK vector onto a compact GBK one. The
 %D auxiliary macro is defined here as a goody.
@@ -354,14 +354,14 @@
 %D A careful analysis of the previous macros, learns that the
 %D process of mapping comes down to:
 %D
-%D \startitemize[packed,n]
-%D \item  taking care of preceding material (and spacing)
-%D \item  defining the font at \type {\currentfontscale} $\times$
+%D \startopsomming[opelkaar,n]
+%D \som  taking care of preceding material (and spacing)
+%D \som  defining the font at \type {\currentfontscale} $\times$
 %D       \type {\unicodescale} $\times$ \type {\bodyfontsize}
-%D \item  inserting a \type {\unicodestrut}
-%D \item  inserting the character (glyph)
-%D \item  executing some actions afterwards
-%D \stopitemize
+%D \som  inserting a \type {\unicodestrut}
+%D \som  inserting the character (glyph)
+%D \som  executing some actions afterwards
+%D \stopopsomming
 %D
 %D The actions before and after placing the glyph, is up to
 %D the user supplied handler. This handler (\type
@@ -405,30 +405,30 @@
 %D provide a more user friendly alternative. Given that one
 %D has defined:
 %D
-%D \starttyping
+%D \starttypen
 %D \defineunicodefont
 %D   [SimChi] [SimplifiedChinese]
-%D   [   \c!scale=0.85,
-%D       \c!height=1.25,
-%D       \c!depth=1.00,
-%D   \c!interlinespaceinterlinie=yes,
-%D    \c!conversion=\chinesenumber,
-%D     \c!command=\handlechineseunicodeglyph]
-%D \stoptyping
+%D   [   \c!schaal=0.85,
+%D       \c!hoogte=1.25,
+%D       \c!diepte=1.00,
+%D   \c!interlinie=yes,
+%D    \c!conversie=\chinesenumber,
+%D     \c!commando=\handlechineseunicodeglyph]
+%D \stoptypen
 %D
 %D Together with:
 %D
-%D \starttyping
+%D \starttypen
 %D \definefontsynonym [SimplifiedChineseRegular] [gbsong]
 %D \definefontsynonym [SimplifiedChineseSlanted] [gbsongsl]
-%D \stoptyping
+%D \stoptypen
 %D
 %D we can now switch to Simplified Chinese by saying \type
 %D {SimChi}. Some values can be changed afterwards with
 %D
-%D \starttyping
+%D \starttypen
 %D \setupunicodefont[SimChi][...=...]
-%D \stoptyping
+%D \stoptypen
 %D
 %D Specific initializations can be assigned to \type
 %D {commands}.
@@ -459,8 +459,8 @@
         {\setupunicodefont[#1][#3]}
         {\copyparameters
            [\??uc#1][\??uc#3]
-           [\c!height,\c!depth,\c!scale,\c!commands,
-            \c!interlinespace,\c!command,\c!conversion]}}%
+           [\c!hoogte,\c!diepte,\c!schaal,\c!commandos,
+            \c!interlinie,\c!commando,\c!conversie]}}%
    \doifelsenothing{#2}
      {\setvalue{#1}{[uc font #1 undefined]}}
      {\setvalue{\??uc#1\c!file}{#2}%
@@ -476,23 +476,23 @@
   {\dodoubleempty\dosetupunicodefont}
 
 \def\dosetupunicodefont[#1][#2]% also predefines
-  {\doifundefined{\??uc#1\c!command}
+  {\doifundefined{\??uc#1\c!commando}
      {\copyparameters
         [\??uc#1][\??uc\s!default]
-        [\c!height,\c!depth,\c!scale,\c!commands,
-         \c!interlinespace,\c!command,\c!conversion]}%
+        [\c!hoogte,\c!diepte,\c!schaal,\c!commandos,
+         \c!interlinie,\c!commando,\c!conversie]}%
    \getparameters[\??uc#1][#2]}
 
 \def\enableunicodefont#1%
   {\definefontsynonym[\s!Unicode][\getvalue{\??uc#1\c!file}]%
-   \def\unicodescale             {\getvalue{\??uc#1\c!scale}}%
-   \def\unicodeheight            {\getvalue{\??uc#1\c!height}}%
-   \def\unicodedepth             {\getvalue{\??uc#1\c!depth}}%
-   \def\unicodedigits            {\getvalue{\??uc#1\c!conversion}}%
-   \def\handleunicodeglyph       {\getvalue{\??uc#1\c!command}}%
+   \def\unicodescale             {\getvalue{\??uc#1\c!schaal}}%
+   \def\unicodeheight            {\getvalue{\??uc#1\c!hoogte}}%
+   \def\unicodedepth             {\getvalue{\??uc#1\c!diepte}}%
+   \def\unicodedigits            {\getvalue{\??uc#1\c!conversie}}%
+   \def\handleunicodeglyph       {\getvalue{\??uc#1\c!commando}}%
    \enableregime[unicode]% the following \relax's are realy needed
-   \doifvalue{\??uc#1\c!interlinespace}\v!yes\setupinterlinespace\relax
-   \getvalue{\??uc#1\c!commands}\relax}
+   \doifvalue{\??uc#1\c!interlinie}\v!ja\setupinterlinespace\relax
+   \getvalue{\??uc#1\c!commandos}\relax}
 
 %D \macros
 %D   {unicodedigits}
@@ -513,11 +513,11 @@
 
 \setupunicodefont
   [\s!default]
-  [\c!height=1,
-   \c!depth=1,
-   \c!scale=1,
-   \c!interlinespace=\v!yes,
-   \c!command=\insertunicodeglyph,
-   \c!conversion=\number]
+  [\c!hoogte=1,
+   \c!diepte=1,
+   \c!schaal=1,
+   \c!interlinie=\v!ja,
+   \c!commando=\insertunicodeglyph,
+   \c!conversie=\number]
 
 \protect \endinput

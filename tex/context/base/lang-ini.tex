@@ -25,7 +25,7 @@
 \startmessages  dutch  library: linguals
   title: taal
       1: afbreekpatronen -- voor -- geladen (n=--)
-      2: geen afbreekpatronen -- voor -- (n=--) (--,--)
+      2: geen afbreekpatronen -- voor -- (n=--)
       3: afbreekdefinities -- voor -- geladen (n=--)
       4: geen afbreekdefinities -- voor -- (n=--)
       5: afbreekpatronen voor -- niet geladen
@@ -39,7 +39,7 @@
 \startmessages  english  library: linguals
   title: language
       1: patterns -- for -- loaded (n=--)
-      2: no patterns -- for -- (n=--) (--,--)
+      2: no patterns -- for -- (n=--)
       3: hyphenations -- for -- loaded (n=--)
       4: no hyphenations -- for -- (n=--)
       5: patterns for -- not loaded
@@ -53,7 +53,7 @@
 \startmessages  german  library: linguals
   title: Sprache
       1: Trennmuster -- fuer -- geladen (n=--)
-      2: Keine Trennmuster -- fuer -- (n=--) (--,--)
+      2: Keine Trennmuster -- fuer -- (n=--)
       3: Trenndefinitionen -- fuer -- geladen (n=--)
       4: Keine Trenndefinitionen -- fuer -- (n=--)
       5: Trennmuster fuer -- nicht geladen
@@ -69,7 +69,7 @@
 \startmessages  czech  library: linguals
   title: jazyky
       1: vzory -- pro -- nacteny (n=--)
-      2: zadne vzory -- pro -- (n=--) (--,--)
+      2: zadne vzory -- pro -- (n=--)
       3: deleni slov -- pro -- nacteno (n=--)
       4: zadne deleni slov -- pro -- (n=--)
       5: vzory pro -- nenacteny
@@ -83,7 +83,7 @@
 \startmessages  italian  library: linguals
   title: lingua
       1: schemi -- per -- caricati (n=--)
-      2: niente schemi -- per -- (n=--) (--,--)
+      2: niente schemi -- per -- (n=--)
       3: sillabazione -- per -- caricata (n=--)
       4: niente sillabazione -- per -- (n=--)
       5: schemi per -- non caricati
@@ -97,7 +97,7 @@
 \startmessages  norwegian  library: linguals
   title: språk
       1: orddelingsmønster -- for -- er lest inn (n=--)
-      2: ingen orddelingsmønster -- for -- (n=--) (--,--)
+      2: ingen orddelingsmønster -- for -- (n=--)
       3: orddelingsdefinisjon -- for -- er lest inn (n=--)
       4: ingen orddelingsdefinisjon -- for -- (n=--)
       5: orddelingsmønster for -- er ikke lest inn
@@ -111,7 +111,7 @@
 \startmessages  romanian  library: linguals
   title: limbi
       1: sablonul -- pentru -- s-a incarcat (n=--)
-      2: nu exista sabloane -- pentru -- (n=--) (--,--)
+      2: nu exista sabloane -- pentru -- (n=--)
       3: despartirea in silabe -- pentru -- s-a incarcat (n=--)
       4: nu exista despartire in silabe -- pentru -- (n=--)
       5: sabloanele pentru -- nu sunt incarcate
@@ -134,40 +134,15 @@
 
 %D We keep track of the last loaded patterns by means of a
 %D pseudo \COUNTER. This just one of those situations in which
-%D we don't want to spent a real one. Language zero has no
-%D patterns, first of all because I like to start numbering
-%D at one. It may come in handy for special purposes as well.
+%D we don't want to spent a real one.
 
-\normallanguage\zerocount
-
-\beginETEX
-
-    \begingroup
-      \obeylccodes
-      \patterns{}
-    \endgroup
-
-\endETEX
-
-\def\loadedlanguage{1}
+\newcounter\loadedlanguage
 
 %D Let's start with setting the lowercase code of quotes, so
 %D that we get proper hyphenation in languages like Dutch,
 %D French and Czech.
 
-% elsewhere: \lccode`\'=`\'
-
-% \def\showlccodes
-%   {\currentlanguage:\space
-%    \dostepwiserecurse{0}{255}{1}
-%      {\ifnum\lccode\recurselevel>0
-%         \char\recurselevel:\the\lccode\recurselevel\relax\space
-%       \fi}
-%    \endgraf}
-
-% \de \hyphenatedword{Works''} \showlccodes
-% \nl \hyphenatedword{Works''} \showlccodes
-% \uk \hyphenatedword{Works''} \showlccodes
+\lccode`\'=`\'
 
 %D \macros
 %D   {currentlanguage, setupcurrentlanguage}
@@ -193,24 +168,24 @@
 %D
 %D \showsetup{\y!installlanguage}
 %D
-%D When \type {state} equals \type {start}, both patterns
+%D When \type{\c!status} equals \type{\v!start}, both patterns
 %D and additional hyphenation specifications are loaded. These
 %D files are seached for on the system path and are to be
 %D named:
 %D
-%D \starttyping
+%D \starttypen
 %D \f!languageprefix-identifier.\f!patternsextension
 %D \f!languageprefix-identifier.\f!hyhensextension
-%D \stoptyping
+%D \stoptypen
 %D
-%D The \type{spacing} variable specifies how the spaces after
+%D The \type{\c!spatiering} specifies how the spaces after
 %D punctuation has to be handled. English is by tradition more
 %D tolerant to inter||sentence spacing than other languages.
 %D
-%D This macro also defines \type {\identifier} as a shortcut
+%D This macro also defines \type{\identifier} as a shortcut
 %D switch to the language. Furthermore the command defined as
 %D being language specific, are executed. With
-%D \type {default} we can default to another language
+%D \type{\c!default} we can default to another language
 %D (patterns) at format generation time. This default language
 %D is overruled when the appropriate patterns are loaded (some
 %D implementations support run time addition of patterns to a
@@ -233,18 +208,22 @@
 \let\preloadedpatterns\empty
 \let\preloadedpmessage\empty
 
-\def\showpatterns#1#2#3#4% language number encoding mapping
-  {#1->#3:#4->#2->\getvalue{\??la#1\s!lefthyphenmin}:\getvalue{\??la#1\s!righthyphenmin}\space}
+\def\showpatterns#1%
+  {\getvalue{\??la#1\s!lefthyphenmin}%
+   -#1-%
+   \getvalue{\??la#1\s!righthyphenmin}%
+   \space}
 
 \def\preloadlanguages
-  {\doifsomething\preloadedpmessage{\showmessage\m!linguals{10}\preloadedpmessage}}
+  {\doifsomething\preloadedpmessage
+     {\showmessage\m!linguals{10}\preloadedpmessage}}
 
 \let\installedlanguages\empty
 
 \def\doinstalllanguage[#1][#2]%
   {%\ConvertConstantAfter\doifinstringelse{=}{#2}
    \doifassignmentelse{#2}
-     {\doifdefinedelse{\??la#1\c!state}
+     {\doifdefinedelse{\??la#1\c!status}
         {\getparameters[\??la#1][#2]}
         {\setvalue{\l!prefix!#1}{#1}%
          \addtocommalist{#1}\installedlanguages
@@ -253,7 +232,7 @@
            [\??la#1]
            [\s!lefthyphenmin=2,
             \s!righthyphenmin=2,
-            \c!spacing=\v!packed,
+            \c!spatiering=\v!opelkaar,
             \c!midsentence=---,
             \c!leftsentence=---,
             \c!rightsentence=---,
@@ -267,13 +246,13 @@
             \c!middlespeech=,
             \c!rightspeech=\getvalue{\??la#1\c!rightquotation},
             \c!limittext=\unknown,
-            \c!date={\v!year,\ ,\v!month,\ ,\v!day},
-            \c!state=\v!stop,
+            \c!datum={\v!jaar,\ ,\v!maand,\ ,\v!dag},
+            \c!status=\v!stop,
             \c!default=,
             \s!patterns=,
             \s!mapping=,
             \s!encoding=,
-            \c!text=Ag,
+            \c!tekst=Ag,
             #2]%
          \doifvaluesomething{\??la#1\c!default}
            {\doifnotvalue{\??la#1\c!default}{#1}
@@ -281,7 +260,7 @@
                  [\??la#1]
                  [\s!lefthyphenmin=\languagedefault{#1}\s!lefthyphenmin,
                   \s!righthyphenmin=\languagedefault{#1}\s!righthyphenmin,
-                  \c!spacing=\languagedefault{#1}\c!spacing,
+                  \c!spatiering=\languagedefault{#1}\c!spatiering,
                   \c!leftsentence=\languagedefault{#1}\c!leftsentence,
                   \c!rightsentence=\languagedefault{#1}\c!rightsentence,
                   \c!leftsubsentence=\languagedefault{#1}\c!leftsubsentence,
@@ -293,21 +272,21 @@
                   \c!leftspeech=\languagedefault{#1}\c!leftspeech,
                   \c!middlespeech=\languagedefault{#1}\c!middlespeech,
                   \c!rightspeech=\languagedefault{#1}\c!rightspeech,
-                  \c!date=\languagedefault{#1}\c!date,
+                  \c!datum=\languagedefault{#1}\c!datum,
                   \s!mapping=\languagedefault{#1}\s!mapping,
                   \s!encoding=\languagedefault{#1}\s!encoding,
-                  \c!text=\languagedefault{#1}\c!text,
+                  \c!tekst=\languagedefault{#1}\c!tekst,
                   #2]}}}%
       \doifvalue{\??la#1\c!default}{#1}{\letvalue{\??la#1\c!default}\empty}%
        % loop in deo
        % \doifvalue{\??la#1\s!patterns}{#1}{\letvalue{\??la#1\c!default}\empty}%
        %
-      \doifelsevalue{\??la#1\c!state}\v!start
+      \doifelsevalue{\??la#1\c!status}\v!start
         {\doifelsevaluenothing{\??la#1\s!patterns}
            {\edef\languagesuffix{#1}}
            {\edef\languagesuffix{\getvalue{\??la#1\s!patterns}}}%
          \doifundefinedelse{\??la\??la:\currentencoding:\currentmapping:\languagesuffix}
-           {\doloadpatterns{#1}\languagesuffix}
+           {\doloadpatterns{#1}{\languagesuffix}}
            {\bgroup
             \edef\loadedlanguage{\getvalue{\??la\??la:\currentencoding:\currentmapping:\languagesuffix}}%
             \showmessage\m!linguals1{\languagesuffix,#1,\loadedlanguage}%
@@ -325,7 +304,8 @@
 %D Handy
 
 \def\preloadallpatterns
-  {\gdef\preloadallpatterns##1{\installlanguage[##1][\c!state=\v!start]}%
+  {\gdef\preloadallpatterns##1%
+     {\installlanguage[##1][\c!status=\v!start]}%
    \processcommacommand[\installedlanguages]\preloadallpatterns
    \global\let\preloadallpatterns\relax}
 
@@ -357,56 +337,42 @@
 
 \def\dodoloadpatterns#1#2#3#4% beware, loaded language also incr
   {\normallanguage\loadedlanguage % when not really needed
+  %\letvalue{\??la\??la#2}\loadedlanguage
    \bgroup
+   \scratchtoks\everyjob % we don't want additional junk put there
+   \let\showpatterns\relax
    \startencoding[#3]%
    \enablemapping[#4]%
    \doifnothing\currentencoding{\let\currentencoding\s!default}%
    \doifnothing\currentmapping {\let\currentmapping \s!default}%
-   \ifundefined{\??la\??la:\currentencoding:\currentmapping:#2}%
-     \let\showpatterns\relax
-     \scratchtoks\everyjob % we don't want additional junk put there, is saving needed?
-     \edef\alreadyloadedlanguage
-       {\executeifdefined{\??la\??la:\currentencoding:\currentmapping:\truefilename{\f!languageprefix#2.\f!patternsextension}}\empty}%
-     \edef\alreadyloadedlanguage
-       {\executeifdefined{\??la\??la:\currentencoding:\currentmapping:\f!languageprefix#2.\f!patternsextension}\alreadyloadedlanguage}%
-     \ifx\alreadyloadedlanguage\empty
-       \letgvalue{\??la\??la:\currentencoding:\currentmapping:#2}\loadedlanguage
-       \doifundefined{\??la\??la:\s!default:\s!default:#2}{\letgvalue{\??la\??la:\s!default:\s!default:#2}\loadedlanguage}% fall back
-       \startreadingfile
-       \startpatternaccents
-       \readsysfile{\truefilename{\f!languageprefix#2.\f!patternsextension}}
-         {\setxvalue{\??la#1\s!patterns}{#2}%
-          \setxvalue{\??la\??la:\currentencoding:\currentmapping:\truefilename{\f!languageprefix#2.\f!patternsextension}}{\number\loadedlanguage}%
-          \xdef\preloadedpmessage{\preloadedpmessage\showpatterns{#2}{\number\normallanguage}{\currentencoding}{\currentmapping}}%
-          \doglobal\addtocommalist{#2}\preloadedpatterns
-          \showmessage\m!linguals1{#2,#1,\loadedlanguage}}
-         {\readsysfile{\f!languageprefix#2.\f!patternsextension}
-            {\setxvalue{\??la#1\s!patterns}{#2}%
-             \setxvalue{\??la\??la:\currentencoding:\currentmapping:\f!languageprefix#2.\f!patternsextension}{\number\loadedlanguage}%
-             \xdef\preloadedpmessage{\preloadedpmessage\showpatterns{#2}{\number\normallanguage}{\currentencoding}{\currentmapping}}%
-             \doglobal\addtocommalist{#2}\preloadedpatterns
-             \showmessage\m!linguals1{#2,#1,\loadedlanguage}}
-            {\showmessage\m!linguals2{#2,#1,\loadedlanguage,\f!languageprefix#2.\f!patternsextension,\truefilename{\f!languageprefix#2.\f!patternsextension}}}}%
-          \readsysfile{\truefilename{\f!languageprefix#2.\f!hyphensextension}}
-            {\showmessage\m!linguals3{#2,#1,\loadedlanguage}}
-            {\readsysfile{\f!languageprefix#2.\f!hyphensextension}
-               {\showmessage\m!linguals3{#2,#1,\loadedlanguage}}
-               {\showmessage\m!linguals4{#2,#1,\loadedlanguage}}}%
-       \doglobal\increment\loadedlanguage
-       \stoppatternaccents
-       \stopreadingfile
-       \stopencoding
-     \else % optimization, introduced 2004.08.24, while sorting out changes in tl
-       \letgvalue{\??la\??la:\currentencoding:\currentmapping:#2}\alreadyloadedlanguage
-       \doifundefined{\??la\??la:\s!default:\s!default:#2}{\letgvalue{\??la\??la:\s!default:\s!default:#2}\loadedlanguage}% fall back
-       \setxvalue{\??la#1\s!patterns}{#2}%
-       \xdef\preloadedpmessage{\preloadedpmessage\showpatterns{#2}{[\number\alreadyloadedlanguage]}{\currentencoding}{\currentmapping}}%
-       \doglobal\addtocommalist{#2}\preloadedpatterns
-       \showmessage\m!linguals1{#2,#1,[\alreadyloadedlanguage]}%
-     \fi
-     \global\everyjob\scratchtoks
-   \fi
-   \egroup}
+   \letgvalue{\??la\??la:\currentencoding:\currentmapping:#2}\loadedlanguage
+   \startreadingfile
+   \startpatternaccents
+  %\def\patterns##1{\message{#1/#2/#3/#4/##1}\normalpatterns{##1}}%
+   \readsysfile{\truefilename{\f!languageprefix#2.\f!patternsextension}}
+     {\setxvalue{\??la#1\s!patterns}{#2}%
+      \xdef\preloadedpmessage
+        {\preloadedpmessage
+         \number\normallanguage:\showpatterns{#2}}%
+      \doglobal\addtocommalist{#2}\preloadedpatterns
+      \showmessage\m!linguals1{#2,#1,\loadedlanguage}}
+     {\readsysfile{\f!languageprefix#2.\f!patternsextension}
+        {\setxvalue{\??la#1\s!patterns}{#2}%
+         \xdef\preloadedpmessage{\preloadedpmessage\showpatterns{#2}}%
+         \doglobal\addtocommalist{#2}\preloadedpatterns
+         \showmessage\m!linguals1{#2,#1,\loadedlanguage}}
+        {\showmessage\m!linguals2{#2,#1,\loadedlanguage}}}%
+      \readsysfile{\truefilename{\f!languageprefix#2.\f!hyphensextension}}
+        {\showmessage\m!linguals3{#2,#1,\loadedlanguage}}
+        {\readsysfile{\f!languageprefix#2.\f!hyphensextension}
+           {\showmessage\m!linguals3{#2,#1,\loadedlanguage}}
+           {\showmessage\m!linguals4{#2,#1,\loadedlanguage}}}%
+   \stoppatternaccents
+   \stopreadingfile
+   \stopencoding
+   \global\everyjob\scratchtoks
+   \egroup
+   \increment\loadedlanguage}
 
 \def\doifpatternselse#1%
   {\expanded{\doifinsetelse{#1}{\preloadedpatterns}}}
@@ -416,7 +382,7 @@
 %D strangely enough not in the format).
 
 \appendtoks
-  \gdef\doloadpatterns{\doglobal\increment\loadedlanguage\gobbletwoarguments}%
+  \gdef\doloadpatterns{\increment\loadedlanguage\gobbletwoarguments}%
   \globallet\dodoloadpatterns\gobblefourarguments
 \to \everydump
 
@@ -446,13 +412,13 @@
      \docomplexlanguage
    \fi}
 
-%D The values \type {leftsentence} and \type
-%D {rightsentence} can be (and are) used to implement
+%D The values \type {\c!leftsentence} and \type
+%D {\c!rightsentence} can be (and are) used to implement
 %D automatic subsentence boundary glyphs, like in {\fr
 %D |<|french guillemots|>|} or {\de |<|german guillemots|>|} or
 %D {\nl |<|dutch dashes|>|} like situations. Furthermore \type
-%D {leftquotation} and \type {leftquote} come into view
-%D \quotation {when we quote} or \quote {quote} something.
+%D {\c!leftquotation} and \type {\c!leftquote} come into view
+%D \citaat {when we quote} or \citeer {quote} something.
 
 %D \macros
 %D  {currentdatespecification}
@@ -461,16 +427,16 @@
 %D specification by saying:
 
 \def\currentdatespecification
-  {\csname\??la\currentlanguage\c!date\endcsname}
+  {\csname\??la\currentlanguage\c!datum\endcsname}
 
 %D This command is not meant for users.
 
 %D Carefull reading of these macros shows that it's legal to
 %D say
 %D
-%D \starttyping
+%D \starttypen
 %D \installlanguage [du] [de]
-%D \stoptyping
+%D \stoptypen
 
 %D \macros
 %D   {language,mainlanguage}
@@ -478,16 +444,16 @@
 %D Switching to another language (actually another hyphenation
 %D pattern) is done with:
 %D
-%D \starttyping
+%D \starttypen
 %D \language[identifier]
-%D \stoptyping
+%D \stoptypen
 %D
 %D or with \type{\identifier}. Just to be compatible with
 %D \PLAIN\ \TEX, we still support the original meaning, so
 %D
-%D \starttyping
+%D \starttypen
 %D \language=1
-%D \stoptyping
+%D \stoptypen
 %D
 %D is a valid operation, where the relation between number
 %D and language depends on the order in installing languages.
@@ -600,7 +566,7 @@
    \lefthyphenmin 0\csname\??la\currentlanguage\s!lefthyphenmin \endcsname
    \righthyphenmin0\csname\??la\currentlanguage\s!righthyphenmin\endcsname\relax
    % will be definable and move to core-spa !
-   \doifelsevalue{\??la\currentlanguage\c!spacing}\v!broad
+   \doifelsevalue{\??la\currentlanguage\c!spatiering}\v!ruim
      \nonfrenchspacing\frenchspacing}
 
 \ifx\enablelanguagespecifics\undefined
@@ -723,7 +689,7 @@
 % %D When using Computer Modern Roman, the next definitions
 % %D looks a bit better than the default ligatures.
 % %D
-% %D \starttyping
+% %D \starttypen
 % %D \def\lowerleftsingleninequote  {,}
 % %D \def\lowerleftdoubleninequote  {,\kern-.1em,}
 % %D \def\upperleftsingleninequote  {'}
@@ -737,7 +703,7 @@
 % %D \def\upperrightdoubleninequote {''}
 % %D \def\upperrightsinglesixquote  {`}
 % %D \def\upperrightdoublesixquote  {\kern-.125em``}
-% %D \stoptyping
+% %D \stoptypen
 % %D
 % %D But in other fonts, these definitions can give problems, so
 % %D we just say:
@@ -773,7 +739,7 @@
 %D New (see nomarking and nolist):
 
 \def\splitsequence#1#2%
-  {\doifelse{#1}\v!no{#2}{\doifelse{#1}\v!yes{\languageparameter\c!limittext}{#1}}}
+  {\doifelse{#1}\v!nee{#2}{\doifelse{#1}\v!ja{\languageparameter\c!limittext}{#1}}}
 
 \def\splitsymbol#1%
   {\splitsequence{#1}{\languageparameter\c!limittext}}
@@ -783,8 +749,8 @@
 %D the defaults here.
 %D
 %D \def\ShowLanguageValues [#1] [#2] #3 #4
-%D   {\blank
-%D    \startlinecorrection
+%D   {\blanko
+%D    \startregelcorrectie
 %D    \vbox\bgroup
 %D    \language[#1]%
 %D    \setbox0=\hbox to \hsize{\hss\bf#2 subsentence symbol and quotes\hss}
@@ -795,16 +761,15 @@
 %D    \vskip.5em
 %D    \let\normalbar=|
 %D    \hbox to \hsize
-%D      {\hfil\quotation{#3 #4}\hfil\quote{#2}\hfil
+%D      {\hfil\citaat{#3 #4}\hfil\citeer{#2}\hfil
 %D       \let|=\normalbar\strut|<||<|#3|>|#4|>|\hfil}
 %D    \vskip.5em
 %D    \hrule
 %D    \egroup
-%D    \stoplinecorrection
-%D    \blank}
+%D    \stopregelcorrectie
+%D    \blanko}
 %D
 %D \ShowLanguageValues [af] [afrikaans]  afrikaanse ...
-%D \ShowLanguageValues [ca] [catalan]    catalan ...
 %D \ShowLanguageValues [cz] [czech]      tjechisch tex
 %D \ShowLanguageValues [cz] [slovak]     slowaakse ...
 %D \ShowLanguageValues [da] [danish]     deense ...
@@ -828,8 +793,8 @@
 %D language.
 %D
 %D \unprotect
-%D \placetable{The germanic languages (\type{lang-ger})}
-%D \starttable[||||]
+%D \plaatstabel{The germanic languages (\type{lang-ger})}
+%D \starttabel[||||]
 %D \HL
 %D \NC \bf mnemonic \NC \bf language \NC \bf group \NC\SR
 %D \HL
@@ -841,28 +806,27 @@
 %D \NC \s!af        \NC afrikaans    \NC germanic  \NC\MR
 %D \NC \s!no        \NC norwegian    \NC germanic  \NC\LR
 %D \HL
-%D \stoptable
+%D \stoptabel
 %D \protect
 %D
 %D \unprotect
-%D \placetable{The italic languages (\type{lang-ita})}
-%D \starttable[||||]
+%D \plaatstabel{The italic languages (\type{lang-ita})}
+%D \starttabel[||||]
 %D \HL
 %D \NC \bf mnemonic \NC \bf language \NC \bf group \NC\SR
 %D \HL
 %D \NC \s!fr        \NC french       \NC italic    \NC\FR
-%D \NC \s!ca        \NC catalan      \NC italic    \NC\MR
 %D \NC \s!es        \NC spanish      \NC italic    \NC\MR
 %D \NC \s!it        \NC italian      \NC italic    \NC\MR
 %D \NC \s!la        \NC latin        \NC italic    \NC\MR
 %D \NC \s!pt        \NC portuguese   \NC italic    \NC\LR
 %D \HL
-%D \stoptable
+%D \stoptabel
 %D \protect
 %D
 %D \unprotect
-%D \placetable{The slavic languages (\type{lang-sla})}
-%D \starttable[||||]
+%D \plaatstabel{The slavic languages (\type{lang-sla})}
+%D \starttabel[||||]
 %D \HL
 %D \NC \bf mnemonic \NC \bf language \NC \bf group \NC\SR
 %D \HL
@@ -870,27 +834,27 @@
 %D \NC \s!cz        \NC czech        \NC slavic    \NC\MR
 %D \NC \s!sk        \NC slavik       \NC slavic    \NC\LR
 %D \HL
-%D \stoptable
+%D \stoptabel
 %D \protect
 %D \unprotect
 %D
-%D \placetable{The altaic languages (\type{lang-alt})}
-%D \starttable[||||]
+%D \plaatstabel{The altaic languages (\type{lang-alt})}
+%D \starttabel[||||]
 %D \HL
 %D \NC \bf mnemonic \NC \bf language \NC \bf group \NC\SR
 %D \HL
 %D \NC \s!tr        \NC turkish      \NC altaic    \NC\SR
 %D \HL
-%D \stoptable
+%D \stoptabel
 %D
-%D \placetable{The uralic languages (\type{lang-ura})}
-%D \starttable[||||]
+%D \plaatstabel{The uralic languages (\type{lang-ura})}
+%D \starttabel[||||]
 %D \HL
 %D \NC \bf mnemonic \NC \bf language \NC \bf group \NC\SR
 %D \HL
 %D \NC \s!fi        \NC finnish      \NC uralic    \NC\SR
 %D \HL
-%D \stoptable
+%D \stoptabel
 %D \protect
 
 % \bgroup \normallanguage255 \patterns{} \egroup

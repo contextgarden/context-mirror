@@ -186,14 +186,11 @@
 
 \ifnocontextobject \thousandpoint  \do \newdimen  \thousandpoint  \fi
 
-\ifnocontextobject \onerealpoint   \do \newdimen  \onerealpoint   \fi % latex has a funny \onepoint
-
-\thousandpoint = 1000pt
-\zeropoint     =    0pt
-\onepoint      =    1pt
-\onebasepoint  =    1bp
-\minusone      =   -1
-\onerealpoint  =    1pt
+\thousandpoint=1000pt
+\zeropoint    =   0pt
+\onepoint     =   1pt
+\onebasepoint =   1bp
+\minusone     =  -1
 
 \ifnocontextobject \emptytoks      \do \newtoks   \emptytoks      \fi
 
@@ -635,9 +632,9 @@
 %D The following macro is the simplified version, but good
 %D enough for day to day hacks.
 %D
-%D \starttyping
+%D \starttypen
 %D \dohandletokens some text\with\somemacro
-%D \stoptyping
+%D \stoptypen
 
 \ifnocontextobject \dohandletokens \do
 

@@ -8,10 +8,10 @@
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
-%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
-%C details.
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for 
+%C details. 
 
-% Todo: replace \'.. by \namedglyph
+%D Todo: replace \'.. by \namedglyph 
 
 \writestatus{loading}{Uralic Languages}
 
@@ -19,21 +19,21 @@
 %D many of the first translations were done by Tobias. Later
 %D on, corrections were made by users. If you have suggestions,
 %D or feel that your name missing here, don't hesitate to send
-%D us an email.
+%D us an email. 
 %D
 %D \starttabulate[|lB|l|]
 %D \NC Finnish    \NC             \NC \NR
 %D \NC Hungarian  \NC Balazs Nagy \NC \NR
 %D \stoptabulate
 
-%  Cheremiss, Estonian, Finnish, Karelian, Laap, Mordvinian,
+%  Cheremiss, Estonian, Finnish, Karelian, Laap, Mordvinian, 
 %  Permian tongues, Hungarian, Ostyak, Vogul, Samoyed
 
 \unprotect
 
 \installlanguage
   [\s!fi]
-  [\c!spacing=\v!packed,
+  [\c!spatiering=\v!opelkaar,
    \c!leftsentence=---,
    \c!rightsentence=---,
    \c!leftsubsentence=---,
@@ -42,12 +42,12 @@
    \c!rightquote=\upperrightsingleninequote,
    \c!leftquotation=\upperleftdoublesixquote,
    \c!rightquotation=\upperrightdoubleninequote,
-   \c!date={\v!year,\ ,\v!month,\ ,\v!day},
-   \c!state=\v!stop]
+   \c!datum={\v!jaar,\ ,\v!maand,\ ,\v!dag},
+   \c!status=\v!stop]
 
 \installlanguage
   [\s!hu]
-  [\c!spacing=\v!packed,
+  [\c!spatiering=\v!opelkaar,
    \c!leftsentence=---,
    \c!rightsentence=---,
    \c!leftsubsentence=---,
@@ -56,61 +56,61 @@
    \c!rightquote=\upperrightsingleninequote,
    \c!leftquotation=\lowerleftdoubleninequote,
    \c!rightquotation=\upperrightdoubleninequote,
-   \c!date={\v!year,.,\ ,\v!month,\ ,\v!day,.},
-   \c!state=\v!stop,
+   \c!datum={\v!jaar,.,\ ,\v!maand,\ ,\v!dag,.},
+   \c!status=\v!stop,
    \s!mapping=ec,
    \s!encoding=ec]
 
 \installlanguage [finish]    [\s!fi]
 \installlanguage [hungarian] [\s!hu]
 
-\setupheadtext  [\s!fi] [\v!content=Sis\"allys]
-\setupheadtext  [\s!fi] [\v!tables=Taulukkoj]
-\setupheadtext  [\s!fi] [\v!figures=Kuvi]
-\setupheadtext  [\s!fi] [\v!graphics=Grafiikkaoi]
-\setupheadtext  [\s!fi] [\v!intermezzi=Intermezzos]
+\setupheadtext  [\s!fi] [\v!inhoud=Sis\"allys]
+\setupheadtext  [\s!fi] [\v!tabellen=Taulukkoj]
+\setupheadtext  [\s!fi] [\v!figuren=Kuvi]
+\setupheadtext  [\s!fi] [\v!grafieken=Grafiikkaoi]
+\setupheadtext  [\s!fi] [\v!intermezzos=Intermezzos]
 \setupheadtext  [\s!fi] [\v!index=Indeksiluku]
-\setupheadtext  [\s!fi] [\v!abbreviations=Lyhennyksi]
+\setupheadtext  [\s!fi] [\v!afkortingen=Lyhennyksi]
 \setupheadtext  [\s!fi] [\v!logos=Vertauskuva]
-\setupheadtext  [\s!fi] [\v!units=Yksik\"ot]
+\setupheadtext  [\s!fi] [\v!eenheden=Yksik\"ot]
 
-\setupheadtext  [\s!hu] [\v!content=Tartalom]
-\setupheadtext  [\s!hu] [\v!tables=T\'abl\'azatok]
-\setupheadtext  [\s!hu] [\v!figures=\'Abr\'ak]
-\setupheadtext  [\s!hu] [\v!graphics=Grafik\'ak]
-\setupheadtext  [\s!hu] [\v!intermezzi=Intermezzok]
+\setupheadtext  [\s!hu] [\v!inhoud=Tartalom]
+\setupheadtext  [\s!hu] [\v!tabellen=T\'abl\'azatok]
+\setupheadtext  [\s!hu] [\v!figuren=\'Abr\'ak]
+\setupheadtext  [\s!hu] [\v!grafieken=Grafik\'ak]
+\setupheadtext  [\s!hu] [\v!intermezzos=Intermezzok]
 \setupheadtext  [\s!hu] [\v!index=Index]
-\setupheadtext  [\s!hu] [\v!abbreviations=R\"ovid\'\it\'esek]
+\setupheadtext  [\s!hu] [\v!afkortingen=R\"ovid\'\it\'esek]
 \setupheadtext  [\s!hu] [\v!logos=Fejl\'ecek]
-\setupheadtext  [\s!hu] [\v!units=M\'ert\'ekegys\'egek]
+\setupheadtext  [\s!hu] [\v!eenheden=M\'ert\'ekegys\'egek]
 
-\setuplabeltext [\s!fi] [\v!table=Taulukko ]
-\setuplabeltext [\s!fi] [\v!figure=Kuva ]
+\setuplabeltext [\s!fi] [\v!tabel=Taulukko ]
+\setuplabeltext [\s!fi] [\v!figuur=Kuva ]
 \setuplabeltext [\s!fi] [\v!intermezzo=Intermezzo ]
-\setuplabeltext [\s!fi] [\v!graphic=Grafiikka ]
-\setuplabeltext [\s!fi] [\v!chapter=]
-\setuplabeltext [\s!fi] [\v!section=]
-\setuplabeltext [\s!fi] [\v!subsection=]
-\setuplabeltext [\s!fi] [\v!subsubsection=]
-\setuplabeltext [\s!fi] [\v!subsubsubsection=]
-\setuplabeltext [\s!fi] [\v!appendix=]
-\setuplabeltext [\s!fi] [\v!part=Osa ]
-\setuplabeltext [\s!fi] [\v!line=rivi ]
-\setuplabeltext [\s!fi] [\v!lines=rivie ]
+\setuplabeltext [\s!fi] [\v!grafiek=Grafiikka ]
+\setuplabeltext [\s!fi] [\v!hoofdstuk=]
+\setuplabeltext [\s!fi] [\v!paragraaf=]
+\setuplabeltext [\s!fi] [\v!sub\v!paragraaf=]
+\setuplabeltext [\s!fi] [\v!sub\v!sub\v!paragraaf=]
+\setuplabeltext [\s!fi] [\v!sub\v!sub\v!sub\v!paragraaf=]
+\setuplabeltext [\s!fi] [\v!bijlage=]
+\setuplabeltext [\s!fi] [\v!deel=Osa ]
+\setuplabeltext [\s!fi] [\v!regel=rivi ]
+\setuplabeltext [\s!fi] [\v!regels=rivie ]
 
-\setuplabeltext [\s!hu] [\v!table={,.~t\'abl\'azat:}]
-\setuplabeltext [\s!hu] [\v!figure={,.~\'abra:}]
+\setuplabeltext [\s!hu] [\v!tabel={,.~t\'abl\'azat:}]
+\setuplabeltext [\s!hu] [\v!figuur={,.~\'abra:}]
 \setuplabeltext [\s!hu] [\v!intermezzo={,.~intermezzo:}]
-\setuplabeltext [\s!hu] [\v!graphic={,.~k\'ep:}]
-\setuplabeltext [\s!hu] [\v!chapter={,.~fejezet:}]
-\setuplabeltext [\s!hu] [\v!section={,.}]
-\setuplabeltext [\s!hu] [\v!subsection={,.}]
-\setuplabeltext [\s!hu] [\v!subsubsection={,.}]
-\setuplabeltext [\s!hu] [\v!subsubsubsection={,.}]
-\setuplabeltext [\s!hu] [\v!appendix=]
-\setuplabeltext [\s!hu] [\v!part={,.~r\'esz:}]
-\setuplabeltext [\s!hu] [\v!line={,.~sor:}]
-\setuplabeltext [\s!hu] [\v!lines=sorok]
+\setuplabeltext [\s!hu] [\v!grafiek={,.~k\'ep:}]
+\setuplabeltext [\s!hu] [\v!hoofdstuk={,.~fejezet:}]
+\setuplabeltext [\s!hu] [\v!paragraaf={,.}]
+\setuplabeltext [\s!hu] [\v!sub\v!paragraaf={,.}]
+\setuplabeltext [\s!hu] [\v!sub\v!sub\v!paragraaf={,.}]
+\setuplabeltext [\s!hu] [\v!sub\v!sub\v!sub\v!paragraaf={,.}]
+\setuplabeltext [\s!hu] [\v!bijlage=]
+\setuplabeltext [\s!hu] [\v!deel={,.~r\'esz:}]
+\setuplabeltext [\s!hu] [\v!regel={,.~sor:}]  
+\setuplabeltext [\s!hu] [\v!regels=sorok]
 
 \setuplabeltext [\s!fi]   [\v!january=tammikuu]
 \setuplabeltext [\s!fi]  [\v!february=helmikuu]
@@ -155,6 +155,8 @@
 \setuplabeltext [\s!hu]  [\v!saturday=szombat]
 
 %D \ShowAllLanguageValues [\s!fi] [finnish] finse ...
-%D \ShowAllLanguageValues [\s!hu] [hungarian] magyar ...
+%D \ShowAllLanguageValues [\s!hu] [hungarian] magyar.
 
-\protect \endinput
+\protect 
+
+\endinput 

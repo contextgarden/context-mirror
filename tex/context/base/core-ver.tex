@@ -133,40 +133,40 @@
    %
    \def\prettyidentifier{TEX}%
    %
-   \doifelsevalue{#1\c!text}\v!yes
+   \doifelsevalue{#1\c!tekst}\v!ja
      \naturaltextexttrue
      \naturaltextextfalse
-   \def\prettyidentifierfont{\getvalue{#1\c!icommand}}%
-   \def\prettyvariablefont  {\getvalue{#1\c!vcommand}}%
-   \def\prettynaturalfont   {\getvalue{#1\c!ccommand}}%
+   \def\prettyidentifierfont{\getvalue{#1\c!icommando}}%
+   \def\prettyvariablefont  {\getvalue{#1\c!vcommando}}%
+   \def\prettynaturalfont   {\getvalue{#1\c!ccommando}}%
    %
-   \doifvalue{#1\c!space}\v!on{\def\obeyspaces{\setcontrolspaces}}%
-   %doifvalue{#1\c!tab}   \v!on{\def\obeytabs  {\settabskips}}%
-   \doifnotvalue{#1\c!tab}\v!off{\def\obeytabs  {\settabskips}}%
+   \doifvalue{#1\c!spatie}\v!aan{\def\obeyspaces{\setcontrolspaces}}%
+   %doifvalue{#1\c!tab}   \v!aan{\def\obeytabs  {\settabskips}}%
+   \doifnotvalue{#1\c!tab}\v!uit{\def\obeytabs  {\settabskips}}%
    \doifvalue{#1\c!tab} \s!ascii{\chardef\tabskipmode\plustwo}% quit on >127
-   \doifvalue{#1\c!page}\v!no{\def\obeypages {\ignorepages}}%
+   \doifvalue{#1\c!pagina}\v!nee{\def\obeypages {\ignorepages}}%
    %
    \ignorehyphens % default
    \ExpandFirstAfter\processaction
-     [\getvalue{#1\c!lines}]
-     [        \v!yes=>\obeybreakpoints,
-      \v!hyphenated=>\obeyhyphens]%
+     [\getvalue{#1\c!regels}]
+     [        \v!ja=>\obeybreakpoints,
+      \v!afgebroken=>\obeyhyphens]%
    %
    \ExpandFirstAfter\processaction
-     [\getvalue{#1\c!option}]
-     [     \v!none=>\let\obeycharacters\relax,
-          \v!color=>\setupprettiesintype{TEX}%
+     [\getvalue{#1\c!optie}]
+     [     \v!geen=>\let\obeycharacters\relax,
+          \v!kleur=>\setupprettiesintype{TEX}%
                     \let\obeycharacters\setupprettytype
                     \let\obeytabs\ignoretabs,
-        \v!normal=>\let\obeycharacters\setupgroupedtype,
-      \v!commands=>\def\obeycharacters{\setupcommandsintype{#1}}%
+        \v!normaal=>\let\obeycharacters\setupgroupedtype,
+      \v!commandos=>\def\obeycharacters{\setupcommandsintype{#1}}%
                     \let\obeytabs\ignoretabs,
-         \v!slanted=>\let\obeycharacters\setupslantedtype
+         \v!schuin=>\let\obeycharacters\setupslantedtype
                     \let\obeytabs\ignoretabs,
-        \s!unknown=>\setupprettiesintype{\getvalue{#1\c!option}}%
+        \s!unknown=>\setupprettiesintype{\getvalue{#1\c!optie}}%
                     \let\obeycharacters\setupprettytype
                     \let\obeytabs\ignoretabs]%
-   \def\verbatimfont{\getvalue{#1\c!style}}%
+   \def\verbatimfont{\getvalue{#1\c!letter}}%
    \setupverbatimcolor{#1}}
 
 %D The verbatim commands have a rather long and turbulent
@@ -185,7 +185,7 @@
 %D Typesetting inline verbatim can be accomplished by
 %D \type{\type}, which in this sentence was typeset by saying
 %D just \type{\type{\type}}, which in turn was typeset by
-%D \unknown. Using the normal grouping characters \type{{}} is
+%D \onbekend. Using the normal grouping characters \type{{}} is
 %D the most natural way of using this command.
 %D
 %D A second, more or less redundant, alternative is delimiting
@@ -318,7 +318,7 @@
   {\ifx\next\bgroup
      \@EA\dodotypeA
    \else\if\next<%
-     \doifelsevalue{\??ty\@@currenttype\c!option}\v!none
+     \doifelsevalue{\??ty\@@currenttype\c!optie}\v!geen
        {\@EAEAEA\dodotypeB}{\@EAEAEA\dodotypeC}%
    \else
      \@EAEAEA\dodotypeD
@@ -364,7 +364,7 @@
 %D because we think it's shows a bit better what we are
 %D doing.
 %D
-%D \starttyping
+%D \starttypen
 %D \bgroup
 %D \catcode`\<=\@@active
 %D \catcode`\>=\@@active
@@ -390,7 +390,7 @@
 %D          \next}%
 %D       \futurelet\next\do}}
 %D \egroup
-%D \stoptyping
+%D \stoptypen
 %D
 %D The final implementation looks a bit further and treats the
 %D lone \type{<<} and \type{>>} a bit different. The \type
@@ -548,13 +548,13 @@
 %D The setups for inline verbatim default to:
 
 \setuptype
-  [\c!space=\v!off,
-    \c!color=,
-   \c!style=\tt\tf, % \tttf gives problems with {\tx \type...}
-   \c!page=\v!no,
-      \c!tab=\v!no,
+  [\c!spatie=\v!uit,
+    \c!kleur=,
+   \c!letter=\tt\tf, % \tttf gives problems with {\tx \type...}
+   \c!pagina=\v!nee,
+      \c!tab=\v!nee,
     \c!palet=colorpretty,
-    \c!option=\v!normal]
+    \c!optie=\v!normaal]
 
 %D \macros
 %D   {typ,obeyhyphens,obeybreakpoints}
@@ -605,7 +605,7 @@
 
 \unexpanded\def\typ
   {\bgroup
-   \let\@@tylines\v!hyphenated
+   \let\@@tyregels\v!afgebroken
    \futurelet\next\dodotype}
 
 %D \macros
@@ -622,7 +622,7 @@
 %D The next implementation is more clear but less versatile,
 %D so we treated it for a beter one.
 %D
-%D \starttyping
+%D \starttypen
 %D \def\dospecialtype#1#2%
 %D   {\bgroup
 %D    \initializetype
@@ -640,12 +640,12 @@
 %D \unexpanded\def\arg{\dospecialtype\leftargument\rightargument}
 %D \unexpanded\def\mat{\dospecialtype\$\$}
 %D \unexpanded\def\dis{\dospecialtype{\$\$}{\$\$}}
-%D \stoptyping
+%D \stoptypen
 %D
 %  %D For sometime we used the better but less readable is
 %  %D alternative
 %  %D
-%  %D \starttyping
+%  %D \starttypen
 %  %D \def\doprocessgroup#1#2#3%
 %  %D   {\bgroup
 %  %D    #1%
@@ -666,7 +666,7 @@
 %  %D \unexpanded\def\arg{\doprocessgroup\setgroupedtype\leftargument\rightargument}
 %  %D \unexpanded\def\mat{\doprocessgroup\setgroupedtype\$\$}
 %  %D \unexpanded\def\dis{\doprocessgroup\setgroupedtype{\$\$}{\$\$}}
-%  %D \stoptyping
+%  %D \stoptypen
 %  %D
 %D
 %D But since \type{\groupedcommand} became available, we use
@@ -693,35 +693,35 @@
 
 \def\initializetyping#1%
   {%\donefalse
-   \switchtobodyfont[\getvalue{\??tp#1\c!bodyfont}]%
+   \switchtobodyfont[\getvalue{\??tp#1\c!korps}]%
    \donefalse
-   \scratchskip\getvalue{\??tp#1\c!oddmargin}\relax
+   \scratchskip\getvalue{\??tp#1\c!onevenmarge}\relax
    \ifzeropt\scratchskip\else\donetrue\fi
-   \scratchskip\getvalue{\??tp#1\c!evenmargin}\relax
+   \scratchskip\getvalue{\??tp#1\c!evenmarge}\relax
    \ifzeropt\scratchskip\else\donetrue\fi
    \ifdone
      \def\doopenupverbatimline
        {\getpagestatus
         \ifrightpage
-          \hskip\getvalue{\??tp#1\c!oddmargin}\relax
+          \hskip\getvalue{\??tp#1\c!onevenmarge}\relax
         \else
-          \hskip\getvalue{\??tp#1\c!evenmargin}\relax
+          \hskip\getvalue{\??tp#1\c!evenmarge}\relax
         \fi}%
    \else
-     \doadaptleftskip{\getvalue{\??tp#1\c!margin}}%
+     \doadaptleftskip{\getvalue{\??tp#1\c!marge}}%
    \fi
-   \doifdefinedelse{\??bo\getvalue{\??tp#1\c!blank}}
-     {\edef\!!stringa{\csname\??bo\csname\??tp#1\c!blank\endcsname\endcsname}}
-     {\edef\!!stringa{\csname\??tp#1\c!blank\endcsname}}%
+   \doifdefinedelse{\??bo\getvalue{\??tp#1\c!blanko}}
+     {\edef\!!stringa{\csname\??bo\csname\??tp#1\c!blanko\endcsname\endcsname}}
+     {\edef\!!stringa{\csname\??tp#1\c!blanko\endcsname}}%
    \processaction
      [\!!stringa]
-     [\v!standard=>\scratchskip\ctxparskip,
-          \v!small=>\scratchskip\blankokleinmaat,
-         \v!medium=>\scratchskip\blankomiddelmaat,
-          \v!big=>\scratchskip\blankogrootmaat,
-     \v!halfline=>\scratchskip.5\baselineskip,
-          \v!line=>\scratchskip\baselineskip,
-           \v!none=>\scratchskip\zeropoint,
+     [\v!standaard=>\scratchskip\tussenwit,
+          \v!klein=>\scratchskip\blankokleinmaat,
+         \v!middel=>\scratchskip\blankomiddelmaat,
+          \v!groot=>\scratchskip\blankogrootmaat,
+     \v!halveregel=>\scratchskip.5\baselineskip,
+          \v!regel=>\scratchskip\baselineskip,
+           \v!geen=>\scratchskip\zeropoint,
         \s!unknown=>\scratchskip\commalistelement]%
    \ifgridsnapping
      \ifdim\scratchskip=.5\baselineskip\relax
@@ -739,16 +739,16 @@
 %D more general mechanism.
 
 \def\dostarttyping#1%
-  {\getvalue{\??tp#1\c!before}%
-   \startpacked % includes \bgroup
+  {\getvalue{\??tp#1\c!voor}%
+   \startopelkaar % includes \bgroup
    \initializetyping{#1}%
    \startverbatimcolor
    \expandafter\processdisplayverbatim\expandafter{\s!stop#1}}
 
 \def\dostoptyping#1%
   {\stopverbatimcolor
-   \stoppacked  % includes \egroup
-   \getvalue{\??tp#1\c!after}%
+   \stopopelkaar  % includes \egroup
+   \getvalue{\??tp#1\c!na}%
    \dochecknextindentation{\??tp#1}}
 
 %D \macros
@@ -789,28 +789,28 @@
 %D alternative escape character.
 
 \setuptyping
-  [          \c!before=\blank,
-               \c!after=\blank,
-            \c!bodyfont=,
-            \c!color=,
-           \c!space=\v!off,
-           \c!page=\v!no,
+  [          \c!voor=\blanko,
+               \c!na=\blanko,
+            \c!korps=,
+            \c!kleur=,
+           \c!spatie=\v!uit,
+           \c!pagina=\v!nee,
               \c!tab=\s!ascii,
-            \c!option=\v!none,
+            \c!optie=\v!geen,
             \c!palet=colorpretty,
-            \c!text=\v!no,
-           \c!style=\tttf,
-        \c!icommand=\ttsl,
-        \c!vcommand=,
-        \c!ccommand=\tttf,
- \c!indentnext=\v!yes,
-            \c!margin=\!!zeropoint,
-        \c!evenmargin=\!!zeropoint,
-      \c!oddmargin=\!!zeropoint,
-           \c!blank=\v!line,
+            \c!tekst=\v!nee,
+           \c!letter=\tttf,
+        \c!icommando=\ttsl,
+        \c!vcommando=,
+        \c!ccommando=\tttf,
+ \c!springvolgendein=\v!ja,
+            \c!marge=\!!zeropoint,
+        \c!evenmarge=\!!zeropoint,
+      \c!onevenmarge=\!!zeropoint,
+           \c!blanko=\v!regel,
            \c!escape=/, % beware \string\ , should also be accepted
-           \c!numbering=\v!no,
-           \c!lines=]
+           \c!nummeren=\v!nee,
+           \c!regels=]
 
 %D \macros
 %D   {definetype}
@@ -825,7 +825,7 @@
   {\unexpanded\setvalue{#1}{\dotype{#1}}%
    \copyparameters
      [\??ty#1][\??ty]
-     [\c!space,\c!palet,\c!color,\c!style,\c!page,\c!tab,\c!option]%
+     [\c!spatie,\c!palet,\c!kleur,\c!letter,\c!pagina,\c!tab,\c!optie]%
    \getparameters[\??ty#1][#2]}
 
 %D \macros
@@ -835,23 +835,23 @@
 %D will suffice, but for documentation purposes the next
 %D definition command can be of use:
 %D
-%D \starttyping
+%D \starttypen
 %D \definetyping[extratyping][margin=3em]
 %D
 %D \startextratyping
 %D these extra ones are indented by 1 em
 %D \stopextratyping
-%D \stoptyping
+%D \stoptypen
 %D
 %D The definitions default to the standard typing values.
 
 \def\presettyping[#1][#2]%
   {\copyparameters
      [\??tp#1][\??tp]
-     [\c!before,\c!after,\c!space,\c!page,\c!tab,\c!color,\c!style,
-      \c!text,\c!icommand,\c!vcommand,\c!ccommand,\c!bodyfont,
-      \c!option,\c!palet,\c!margin,\c!evenmargin,\c!oddmargin,
-      \c!indentnext,\c!blank,\c!escape,\c!lines,\c!numbering]%
+     [\c!voor,\c!na,\c!spatie,\c!pagina,\c!tab,\c!kleur,\c!letter,
+      \c!tekst,\c!icommando,\c!vcommando,\c!ccommando,\c!korps,
+      \c!optie,\c!palet,\c!marge,\c!evenmarge,\c!onevenmarge,
+      \c!springvolgendein,\c!blanko,\c!escape,\c!regels,\c!nummeren]%
    \getparameters
      [\??tp#1]
      [#2]}
@@ -864,23 +864,23 @@
 \def\definetyping
   {\dodoubleempty\dodefinetyping}
 
-\definetyping[\v!typing]
+\definetyping[\v!typen]
 
-\definetyping[RAW]   [\c!option=RAW]
-\definetyping[MP]    [\c!option=MP]
-\definetyping[PL]    [\c!option=PL]
-\definetyping[PM]    [\c!option=PL]
-\definetyping[JS]    [\c!option=JS]
-\definetyping[JV]    [\c!option=JV]
-\definetyping[SQL]   [\c!option=SQL]
-\definetyping[TEX]   [\c!option=TEX]
-\definetyping[PAS]   [\c!option=PAS]
-\definetyping[PASCAL][\c!option=PAS]
-\definetyping[MOD]   [\c!option=PAS]
-\definetyping[MODULA][\c!option=PAS]
-\definetyping[DELPHI][\c!option=PAS]
-\definetyping[EIFFEL][\c!option=EIF]
-\definetyping[XML]   [\c!option=XML]
+\definetyping[RAW]   [\c!optie=RAW]
+\definetyping[MP]    [\c!optie=MP]
+\definetyping[PL]    [\c!optie=PL]
+\definetyping[PM]    [\c!optie=PL]
+\definetyping[JS]    [\c!optie=JS]
+\definetyping[JV]    [\c!optie=JV]
+\definetyping[SQL]   [\c!optie=SQL]
+\definetyping[TEX]   [\c!optie=TEX]
+\definetyping[PAS]   [\c!optie=PAS]
+\definetyping[PASCAL][\c!optie=PAS]
+\definetyping[MOD]   [\c!optie=PAS]
+\definetyping[MODULA][\c!optie=PAS]
+\definetyping[DELPHI][\c!optie=PAS]
+\definetyping[EIFFEL][\c!optie=EIF]
+\definetyping[XML]   [\c!optie=XML]
 
 %D We use the \CONTEXT\ color system for switching to and from
 %D color mode. We can always redefine these colors afterwards.
@@ -938,18 +938,18 @@
 %D the standard color switching ones and work ok on a line by
 %D line basis.
 %D
-%D \starttyping
+%D \starttypen
 %D \def\setupverbatimcolor#1%
 %D   {\edef\prettypalet{\prettyidentifier\getvalue{#1\c!palet}}%
 %D    \def\beginofpretty[##1]{\startcolormode{\prettypalet:##1}}%
 %D    \def\endofpretty       {\stopcolormode}}
-%D \stoptyping
+%D \stoptypen
 %D
 %D Since we support a global color too, the folowing
 %D definition is better:
 
 \def\setupverbatimcolor#1% fast and local versus slow and global
-  {\doifelsevaluenothing{#1\c!color}
+  {\doifelsevaluenothing{#1\c!kleur}
      {\def\beginofpretty[##1]{\startcolormode{\prettypalet:##1}}%
       \let\endofpretty        \restorecolormode % \stopcolormode
       \let\startverbatimcolor \relax
@@ -957,9 +957,9 @@
       \let\verbatimcolor      \relax}
      {\def\beginofpretty[##1]{\startcolor[\prettypalet:##1]}%
       \let\endofpretty        \stopcolor
-      \def\startverbatimcolor{\startcolor[\getvalue{#1\c!color}]}%
+      \def\startverbatimcolor{\startcolor[\getvalue{#1\c!kleur}]}%
       \let\stopverbatimcolor  \stopcolor
-      \def\verbatimcolor     {\getvalue{\getvalue{#1\c!color}}}}%
+      \def\verbatimcolor     {\getvalue{\getvalue{#1\c!kleur}}}}%
    \doifelsevaluenothing{#1\c!palet}
      {\let\prettypalet\empty
       \let\endofpretty\relax
@@ -985,7 +985,7 @@
 %D
 %D This gives, as can be expected:
 %D
-%D \getbuffer
+%D \haalbuffer
 %D
 %D When we want to see some typeset \TEX\ too, we can say:
 %D
@@ -1000,7 +1000,7 @@
 %D
 %D or:
 %D
-%D \getbuffer
+%D \haalbuffer
 %D
 %D In a similar way:
 %D
@@ -1016,7 +1016,7 @@
 %D
 %D gives:
 %D
-%D \getbuffer
+%D \haalbuffer
 %D
 %D The next examples sow how we can directly call for natural
 %D \TEX\ comments:
@@ -1024,7 +1024,7 @@
 %D \startbuffer
 %D \setuptyping
 %D   [TEX]
-%D   [text=yes]
+%D   [tekst=ja]
 %D
 %D \startTEX
 %D \def\mathematics#1%         % usage: \type {\mathematics{x^2}}
@@ -1033,7 +1033,7 @@
 %D
 %D \setuptyping
 %D   [SQL]
-%D   [text=yes,palet=,icommand=\bf,vcommand=,ccommand=\it]
+%D   [tekst=ja,palet=,icommando=\bf,vcommando=,ccommando=\it]
 %D
 %D \startSQL
 %D select *       -- indeed, here we {\em do} select
@@ -1043,7 +1043,7 @@
 %D
 %D \setuptyping
 %D   [SQL]
-%D   [ccommand=\tf\underbar]
+%D   [ccommando=\tf\underbar]
 %D
 %D \startSQL
 %D select *       -- indeed, here we {\em do} select
@@ -1056,7 +1056,7 @@
 %D
 %D Now watch:
 %D
-%D \getbuffer
+%D \haalbuffer
 %D
 %D The natural \TEX\ typesetting was introduced when Tobias
 %D and Berend started using verbatim \JAVASCRIPT\ and \SQL.
@@ -1108,86 +1108,86 @@
    \fi\fi}
 
 \unprotected \def\dosetuptypelinenumbering#1#2%
-  {\doifundefined{\??tp#1\c!start}{\setuptyping[#1][\c!start=1,\c!stop=,\c!step=1,\c!nlines=,#2]}%
-   \doifelsevalue{\??tp#1\c!numbering}\v!file
-     {\setuplinenumbering[\c!method=\v!file]%
+  {\doifundefined{\??tp#1\c!start}{\setuptyping[#1][\c!start=1,\c!stop=,\c!stap=1,\c!nregels=,#2]}%
+   \doifelsevalue{\??tp#1\c!nummeren}\v!file
+     {\stelregelnummerenin[\c!methode=\v!file]%
       \donetrue}
-     {\doifelsevalue{\??tp#1\c!numbering}\v!line
-        {% \setuplinenumbering defaults start/step to 1/1, so we need
+     {\doifelsevalue{\??tp#1\c!nummeren}\v!regel
+        {% \stelregelnummerenin defaults start/step to 1/1, so we need
          \doifvaluenothing{\??tp#1\c!start}{\setvalue{\??tp#1\c!start}{1}}%
-         \doifvaluenothing{\??tp#1\c!step }{\setvalue{\??tp#1\c!step }{1}}%
-         \setuplinenumbering
-           [\c!method=\v!type,
+         \doifvaluenothing{\??tp#1\c!stap }{\setvalue{\??tp#1\c!stap }{1}}%
+         \stelregelnummerenin
+           [\c!methode=\v!type,
             \c!start=\getvalue{\??tp#1\c!start},
-            \c!step=\getvalue{\??tp#1\c!step}]%
+            \c!stap=\getvalue{\??tp#1\c!stap}]%
          \donetrue}
         {\donefalse}}%
    \ifdone
-     \def\beginofverbatimlines{\startlinenumbering}%
-     \def\endofverbatimlines  {\stoplinenumbering }%
+     \def\beginofverbatimlines{\startregelnummeren}%
+     \def\endofverbatimlines  {\stopregelnummeren }%
    \fi}
 
 \setuptyping
   [\v!file]
   [\c!start=1,
    \c!stop=,
-   \c!step=1,
-   \c!nlines=]
+   \c!stap=1,
+   \c!nregels=]
 
 \def\dodotypefile[#1][#2]#3%
-  {\getvalue{\??tp#1\c!before}%
+  {\getvalue{\??tp#1\c!voor}%
    \doiflocfileelse{#3}
-     {\startpacked % includes \bgroup
+     {\startopelkaar % includes \bgroup
       \dosetuptypelinenumbering{#1}{#2}%
-      \doifinset{\getvalue{\??tp#1\c!option}}{\v!commands,\v!slanted,\v!normal}
-        {\setuptyping[#1][\c!option=\v!none]}%
-      \doifvalue{\??tp#1\c!option}\v!color
+      \doifinset{\getvalue{\??tp#1\c!optie}}{\v!commandos,\v!schuin,\v!normaal}
+        {\setuptyping[#1][\c!optie=\v!geen]}%
+      \doifvalue{\??tp#1\c!optie}\v!kleur
         {\expandafter\aftersplitstring#3\at.\to\prettyidentifier
-         \letvalue{\??tp#1\c!option}\prettyidentifier}%
+         \letvalue{\??tp#1\c!optie}\prettyidentifier}%
       \initializetyping{#1}%
       \startverbatimcolor
       \makelocreadfilename{#3}%
-      \doifundefinedelse{\??tp#3\v!global\c!start}
+      \doifundefinedelse{\??tp#3\v!globaal\c!start}
         {\scratchcounter\zerocount}
-        {\scratchcounter\getvalue{\??tp#3\v!global\c!start}}%
+        {\scratchcounter\getvalue{\??tp#3\v!globaal\c!start}}%
       \advance\scratchcounter\plusone
-      \setxvalue{\??tp#3\v!global\c!start}{\the\scratchcounter}%
+      \setxvalue{\??tp#3\v!globaal\c!start}{\the\scratchcounter}%
       \doifelsevaluenothing{\??tp#1\c!start}
         {\processfileverbatim\readfilename}
-        {\doifvalue{\??tp#1\c!start}\v!continue
+        {\doifvalue{\??tp#1\c!start}\v!verder
            {\setevalue{\??tp#1\c!start}%
-              {\getvalue{\??tp#3\v!global\c!start}}}%
+              {\getvalue{\??tp#3\v!globaal\c!start}}}%
          \doifelsevaluenothing{\??tp#1\c!stop}
-           {\doifelsevaluenothing{\??tp#1\c!nlines}
+           {\doifelsevaluenothing{\??tp#1\c!nregels}
               {\processfileverbatim\readfilename}
               {\scratchcounter\getvalue{\??tp#1\c!start}%
-               \advance\scratchcounter\getvalue{\??tp#1\c!nlines}%
+               \advance\scratchcounter\getvalue{\??tp#1\c!nregels}%
                \advance\scratchcounter\minusone
-               \setxvalue{\??tp#3\v!global\c!start}%
+               \setxvalue{\??tp#3\v!globaal\c!start}%
                  {\the\scratchcounter}%
                \processfilelinesverbatim\readfilename
                  {\getvalue{\??tp#1\c!start}}
-                 {\getvalue{\??tp#3\v!global\c!start}}}}%
+                 {\getvalue{\??tp#3\v!globaal\c!start}}}}%
            {\processfilelinesverbatim\readfilename
               {\getvalue{\??tp#1\c!start}}
               {\getvalue{\??tp#1\c!stop }}}}%
       \stopverbatimcolor
-      \stoppacked}  % includes \egroup
+      \stopopelkaar}  % includes \egroup
      {\bgroup
       \expanded{\convertargument#3}\to\ascii
       \tttf[\makemessage\m!verbatims1\ascii]%
       \showmessage\m!verbatims1\ascii
       \egroup}%
-   \getvalue{\??tp#1\c!after}}
+   \getvalue{\??tp#1\c!na}}
 
 %D \macros
 %D   {filename}
 %D
 %D Typesetting filenames in monospaced fonts is possible with
 %D
-%D \starttyping
+%D \starttypen
 %D \filename{here/there/filename.suffix}
-%D \stoptyping
+%D \stoptypen
 %D
 %D The definition is not that spectacular.
 

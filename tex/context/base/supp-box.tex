@@ -168,10 +168,10 @@
 %D
 %D Also handy (all dimensions zeroed):
 %D
-%D \starttyping
+%D \starttypen
 %D \smashedhbox to ... {...}
 %D \smashedvbox to ... {...}
-%D \stoptyping
+%D \stoptypen
 
 \def\dosmashedbox#1%
  %{#1\bgroup\dowithnextbox{\smashbox\nextbox\flushnextbox\egroup}#1}
@@ -224,13 +224,13 @@
   {\dowithnextbox
      {\@EA\handletokens\@@smash\with\makesm@sh\flushnextbox}\normalhbox}
 
-%D \starttabulate[|l|l|]
+%D \starttabulatie[|l|l|]
 %D \NC w   \NC \ruledhbox{\smash  [w]{This is some great smashing, isn't it?}} \NC \NR
 %D \NC h   \NC \ruledhbox{\smash  [h]{This is some great smashing, isn't it?}} \NC \NR
 %D \NC d   \NC \ruledhbox{\smash  [d]{This is some great smashing, isn't it?}} \NC \NR
 %D \NC tb  \NC \ruledhbox{\smash [tb]{This is some great smashing, isn't it?}} \NC \NR
 %D \NC whd \NC \ruledhbox{\smash[whd]{This is some great smashing, isn't it?}} \NC \NR
-%D \stoptabulate
+%D \stoptabulatie
 
 %D \macros
 %D   {phantom, hphantom, vphantom, mathstrut}
@@ -260,7 +260,7 @@
    \futurelet\nextph@nt\doph@nt}
 
 \def\makeph@nt#1#2#3%
-  {\begingroup % why no \bgroup
+  {\begingroup
    \dowithnextbox
      {\setbox\scratchbox\null
       \ht\scratchbox\ht#1\dp\scratchbox\dp#2\wd\scratchbox\wd#3%
@@ -285,29 +285,29 @@
 %D Although often needed, \TEX\ does not support arithmics
 %D like:
 %D
-%D \starttyping
+%D \starttypen
 %D \dimen0 = \ht0 + \dp0
-%D \stoptyping
+%D \stoptypen
 %D
 %D so we implemented:
 %D
-%D \starttyping
+%D \starttypen
 %D \getboxheight ... \of \box...
-%D \stoptyping
+%D \stoptypen
 %D
 %D For instance,
 %D
-%D \starttyping
+%D \starttypen
 %D \getboxheight \dimen0 \of \box0
 %D \getboxheight \someheight \of \box \tempbox
-%D \stoptyping
+%D \stoptypen
 %D
 %D The implementation is rather stupid:
 %D
-%D \starttyping
+%D \starttypen
 %D \def\getboxheight#1\of#2\box#3%
 %D   {#1\ht#3\advance#1\dp#3\relax}
-%D \stoptyping
+%D \stoptypen
 %D
 %D The next alternative is slightly more clever, since
 %D it accepts \type {{12}} as well as \type {12} as box
@@ -328,9 +328,9 @@
 %D (dimensie) in een aantal regels en kent dit toe aan
 %D \type{\noflines}.
 %D
-%D \starttyping
+%D \starttypen
 %D \getnoflines{dimensie}
-%D \stoptyping
+%D \stoptypen
 %D
 %D Er wordt gedeeld door \type{\openlineheight} en een hoogte
 %D van~0pt komt overeen met 0~regels. The raw alternative
@@ -361,11 +361,11 @@
 %D returns it it \type {\noflines}. The macro works
 %D reasonable well as long as the content can be unboxed.
 %D
-%D \starttyping
+%D \starttypen
 %D \determinenoflines{test\\test}
 %D \determinenoflines{\bfd test\\test}
 %D \determinenoflines{\definedfont[Sans at 40pt]test\\test}
-%D \stoptyping
+%D \stoptypen
 
 \def\determinenoflines
   {\bgroup
@@ -388,10 +388,10 @@
 %D instance because we pass data, we can fall back on the next
 %D macro:
 %D
-%D \starttyping
+%D \starttypen
 %D \doiftextelse {data} {then branch} {else branch}
 %D \doiftext     {data} {then branch}
-%D \stoptyping
+%D \stoptypen
 
 %\def\doiftextelse#1#2#3%
 %  {\bgroup
@@ -444,18 +444,18 @@
 %D treating it according to earlier specifications. We use for
 %D instance something like:
 %D
-%D \starttyping
+%D \starttypen
 %D \def\getfloat%
 %D   {\def\handlefloat{...\flushnextbox...}
 %D    \dowithnextbox\handlefloat\normalvbox}
-%D \stoptyping
+%D \stoptypen
 %D
 %D instead of:
 %D
-%D \starttyping
+%D \starttypen
 %D \def\getfloat#1%
 %D   {...#1...}
-%D \stoptyping
+%D \stoptypen
 %D
 %D In this implementation the \type{\aftergroup} construction
 %D is needed because \type{\afterassignment} is executed inside
@@ -473,19 +473,19 @@
 
 %D So in fact we get:
 %D
-%D \starttyping
+%D \starttypen
 %D \setbox\nextbox { \aftergroup\dodowithnextbox ... }
-%D \stoptyping
+%D \stoptypen
 %D
 %D or
 %D
-%D \starttyping
+%D \starttypen
 %D \setbox\nextbox { ... } \dodowithnextbox
-%D \stoptyping
+%D \stoptypen
 %D
 %D A slower but more versatile implementation is:
 %D
-%D \starttyping
+%D \starttypen
 %D \long\def\dowithnextbox#1#2%
 %D   {\long\def\dodowithnextbox{#1}%
 %D    \ifx#2\normalhbox
@@ -500,7 +500,7 @@
 %D      \afterassignment\dodowithnextbox
 %D    \fi\fi\fi\fi
 %D    \setbox\nextbox#2}
-%D \stoptyping
+%D \stoptypen
 %D
 %D This alternative also accepts \type{\box0} and alike, but
 %D we don't really need this functionality now.
@@ -524,9 +524,9 @@
 %D without wanting to use additional grouping. Therefore we
 %D provide:
 %D
-%D \starttyping
+%D \starttypen
 %D \dowithnextboxcontent{inside}{after}{box content}
-%D \stoptyping
+%D \stoptypen
 %D
 %D {\em todo: Search source for potential usage!}
 
@@ -585,11 +585,11 @@
 %D First we have to grab the piece of text we want to act
 %D upon. This is done by means of the duo macros:
 %D
-%D \starttyping
+%D \starttypen
 %D \beginofshapebox
 %D a piece of text
 %D \endofshapebox
-%D \stoptyping
+%D \stoptypen
 %D
 %D When all texts is collected, we can call \type{\reshapebox}
 %D and do something with it's vertical components. We can make
@@ -618,7 +618,7 @@
 %D
 %D \typebuffer
 %D
-%D \getbuffer
+%D \haalbuffer
 %D
 %D As we can see, when some kind of numbering is done, we have
 %D to add a second pass.
@@ -643,7 +643,7 @@
 %D
 %D \typebuffer
 %D
-%D \getbuffer
+%D \haalbuffer
 %D
 %D This example shows that the content of the box is still
 %D available after flushing. Another feature is that only the
@@ -664,7 +664,7 @@
 %D
 %D \typebuffer
 %D
-%D \getbuffer
+%D \haalbuffer
 %D
 %D The macros are surprisingly easy to follow and in fact
 %D introduce no new concepts. Nearly all books on \TEX\ show
@@ -674,9 +674,9 @@
 %D reshaping, which can result in an endless loop. We
 %D therefore offer:
 %D
-%D \starttyping
+%D \starttypen
 %D \ifreshapingbox
-%D \stoptyping
+%D \stoptypen
 %D
 %D Some \CONTEXT\ commands are protected this way. Anyhow,
 %D reshaping is aborted after 100 dead cycles.
@@ -821,9 +821,9 @@
 
 %D In real inner situations we can use:
 %D
-%D \starttyping
+%D \starttypen
 %D \flushinnershapebox
-%D \stoptyping
+%D \stoptypen
 %D
 %D This one is used in \type{\framed}.
 
@@ -841,12 +841,12 @@
 %D directly. This macro takes four arguments, that take care
 %D of:
 %D
-%D \startitemize[n,packed]
-%D \item \type{\shapebox}
-%D \item \type{\shapepenalty}
-%D \item \type{\shapekern}
-%D \item \type{\shapeskip}
-%D \stopitemize
+%D \startopsomming[n,opelkaar]
+%D \som \type{\shapebox}
+%D \som \type{\shapepenalty}
+%D \som \type{\shapekern}
+%D \som \type{\shapeskip}
+%D \stopopsomming
 
 %D \macros
 %D   {shapedhbox}
@@ -885,9 +885,9 @@
 %D The simple command \type{\hyphenatedword} accepts one
 %D argument and gives the hyphenated word. This macro calls for
 %D
-%D \starttyping
+%D \starttypen
 %D \dohyphenateword {n} {pre} {word}
-%D \stoptyping
+%D \stoptypen
 %D
 %D The next examples tell more than lots of words:
 %D
@@ -903,31 +903,27 @@
 %D shorter alternative for the first line.
 %D
 %D \startvoorbeeld
-%D \getbuffer
+%D \haalbuffer
 %D \stopvoorbeeld
 %D
 %D These macros are slow but effective and not that hard to
 %D program at all.
 
-\ifx\scantokens\undefined \let\scantokens\firstofoneargument \fi
-
 \def\dohyphenateword#1#2#3%
   {\bgroup
    \setbox\scratchbox\normalhbox
-     {\dontcomplain
+     {\mindermeldingen
       \nopenalties % \widowpenalty \clubpenalty \brokenpenalty \doublehyphendemerits \finalhyphendemerits \adjdemerits
       \hyphenpenalty  \zerocount
       \exhyphenpenalty\zerocount
       \setbox0\normalvbox
-        {\hsize\zeropoint
-         \hskip\zeropoint % really needed
+        {\hsize\zeropoint \space
          \ifnum#1=\minusone
            \obeyspaces
            \obeylines
            \def\obeyedspace{\hskip\zeropoint\hbox to \onepoint{}\hskip\zeropoint}%
            \let\obeyedline  \obeyedspace
-           \def\next{#3}\scantokens\expandafter{\next}%
-           % also ok: \scantokens{#3}%
+           \def\next{#3}\scantokens{\next}%
          \else
            #3%
          \fi}%
@@ -966,9 +962,9 @@
 
 %D You may want to give the following call a try:
 %D
-%D \starttyping
+%D \starttypen
 %D \hyphenatedpar{\readfile{zapf}{}{}}\endgraf
-%D \stoptyping
+%D \stoptypen
 
 %D \macros
 %D   {doboundtext}
@@ -980,9 +976,9 @@
 %D argument is appended. When the text to be checked is packed
 %D in a command, we'll have to use \type{\expandafter}.
 %D
-%D \starttyping
+%D \starttypen
 %D \doboundtext{a very, probably to long, text}{3cm}{...}
-%D \stoptyping
+%D \stoptypen
 %D
 %D When calculating the room needed, we take the width of the
 %D third argument into account, which leads to a bit more
@@ -1039,10 +1035,10 @@
 %D \TEX\ do most of the job. The previous command works better
 %D on text that cannot be hyphenated.
 %D
-%D \starttyping
+%D \starttypen
 %D \limitatetext {text}  {width} {sentinel}
 %D \limitatetext {text} {-width} {prelude}
-%D \stoptyping
+%D \stoptypen
 %D
 %D When no width is given, the whole text comes available. The
 %D sentinel is optional. This is about the third version.
@@ -1051,7 +1047,7 @@
 
 %D The simple alternative is as follows:
 %D
-%D \starttyping
+%D \starttypen
 %D \unexpanded\def\limitatetext%
 %D   {\bgroup % evt \setstrut
 %D    \forgetall
@@ -1087,7 +1083,7 @@
 %D         \unhbox\nextbox
 %D       \fi}%
 %D    \egroup}
-%D \stoptyping
+%D \stoptypen
 %D
 %D The next alternative accepts a negative width. A negative
 %D value crops the beginning. The macro thereby becomes less
@@ -1202,9 +1198,9 @@
 %D chapter~5} is for instance the results of the character
 %D sequence:
 %D
-%D \starttyping
+%D \starttypen
 %D The typeset text \in{chapter}[texniques] is for instance
-%D \stoptyping
+%D \stoptypen
 %D
 %D When such words are made active in interactive texts, the
 %D combination cannot longer be hyphenated. Normally this is no
@@ -1220,9 +1216,9 @@
 %D the more we needed a robust solution. Well, here it is and
 %D it called as:
 %D
-%D \starttyping
+%D \starttypen
 %D \processisolatedwords{some words}\someaction
-%D \stoptyping
+%D \stoptypen
 %D
 %D The second argument \type{someactions} handles the
 %D individual words, like in:
@@ -1238,7 +1234,7 @@
 %D which let the words turn up as:
 %D
 %D \startvoorbeeld
-%D \getbuffer
+%D \haalbuffer
 %D \stopvoorbeeld
 %D
 %D The macro has been made a bit more clever than needed at
@@ -1256,9 +1252,9 @@
 %D becomes:
 %D
 %D \startvoorbeeld
-%D \startlines
-%D \getbuffer
-%D \stoplines
+%D \startregels
+%D \haalbuffer
+%D \stopregels
 %D \stopvoorbeeld
 %D
 %D Single word arguments are treated without further
@@ -1280,7 +1276,7 @@
 %D When needed, spacing can be suppressed by \type
 %D {\nothingbetweenisolatedwords}.
 
-\newif\ifisolatedwords % public, e.g. used in core-ref
+\newif\ifisolatedwords
 
 \def\betweenisolatedwords
   {\hskip\currentspaceskip}
@@ -1290,17 +1286,13 @@
 
 \newskip\isolatedlastskip
 
-\chardef\isolatedwordsmode=0 % no nesting
-
 \def\processisolatedwords#1#2% todo: vbox ipv hbox ivm afbreken!
   {\bgroup                   % todo: doloop
    \fakecompoundhyphen
-   \dontcomplain
+   \mindermeldingen
    \forgetall
    \nopenalties
-   \ifcase\isolatedwordsmode
-     \def\processisolatedwords##1##2{##2{##1}}% we split only once
-   \fi
+   \def\processisolatedwords##1##2{##2{##1}}% we split only once
    \global\let\localbetweenisolatedwords\betweenisolatedwords
    \setbox0\normalhbox    % we default to spaces, but from inside out
      {\ignorespaces#1% \localbetweenisolatedwords can be overruled
@@ -1376,7 +1368,7 @@
 %D
 %D \startvoorbeeld
 %D \vskip3\baselineskip
-%D \getbuffer
+%D \haalbuffer
 %D \stopvoorbeeld
 %D
 %D Before displaying the result we added some skip, otherwise
@@ -1384,7 +1376,7 @@
 %D macro can be useful when building complicated menus, headers
 %D and footers and|/|or margin material.
 
-\def\sbox%  in handleiding, voorbeeld \inleft{xx} \extern..
+\def\sbox%  in handleiding, voorbeeld \inlinker{xx} \extern..
   {\normalvbox\bgroup % new ! ! !
    \dowithnextbox
      {\setbox\scratchbox\normalhbox
@@ -1440,13 +1432,13 @@
 %D should be centered with respect to the surrounding box. The
 %D last of the three examples we show below says:
 %D
-%D \starttyping
+%D \starttypen
 %D \vsize=3cm
 %D \hsize=3cm
 %D \ruledvbox to \vsize
 %D   {\centeredbox height .5cm width -1cm
 %D      {\vrule width \hsize height \vsize}}}
-%D \stoptyping
+%D \stoptypen
 %D
 %D Here the \type{\ruledvbox} just shows the surrounding box
 %D and \type{\vrule} is used to show the centered box.
@@ -1456,15 +1448,15 @@
 %D    \hsize=3cm
 %D    \ruledvbox to \vsize
 %D      {\centeredbox height #1 width #2
-%D         {\color[green]{\vrule width \hsize height \vsize}}}}
+%D         {\color[groen]{\vrule width \hsize height \vsize}}}}
 %D
-%D \startlinecorrection
-%D \startcombination[3*1]
+%D \startregelcorrectie
+%D \startcombinatie[3*1]
 %D   {\AnExample {-1cm}  {.5cm}} {}
 %D   {\AnExample {.5cm}  {-1cm}} {}
 %D   {\AnExample {-1cm} {-.5cm}} {}
-%D \stopcombination
-%D \stoplinecorrection
+%D \stopcombinatie
+%D \stopregelcorrectie
 %D
 %D This command takes two optional arguments: \type{width} and
 %D \type{height}. Observing readers can see that we use \TEX's
@@ -1479,7 +1471,7 @@
   {\bgroup
    \setbox0\normalvbox to \vsize
      \bgroup
-       \dontcomplain
+       \mindermeldingen
        \forgetall
        \setbox0\normalhbox{\vrule\!!width \zeropoint#1}%
        \setbox2\normalvbox{\hrule\!!height\zeropoint#1}%
@@ -1509,10 +1501,10 @@
 %D For those who don't want to deal with \type {\hsize}
 %D and \type {\vsize}, we have:
 %D
-%D \starttyping
+%D \starttypen
 %D \centerednextbox width 2bp height 2bp
 %D   {\framed[width=100bp,height=100bp]{}}
-%D \stoptyping
+%D \stoptypen
 %D
 %D Do you see what we call this one \type {next}?
 
@@ -1530,9 +1522,9 @@
 %D
 %D Centering on the available space is done by:
 %D
-%D \starttyping
+%D \starttypen
 %D \centerbox <optional specs> {content}
-%D \stoptyping
+%D \stoptypen
 %D
 %D When omitted, the current \type {\hsize} and \type
 %D {\vsize} are used. Local dimensions are supported.
@@ -1555,10 +1547,10 @@
 %D These macros are copied from the \TEX book, page~397, and
 %D extended by a macro that sets the \type{\hsize}.
 %D
-%D \starttyping
+%D \starttypen
 %D \setrigidcolumnhsize {total width} {distance} {n}
 %D \rigidcolumnbalance  {box}
-%D \stoptyping
+%D \stoptypen
 %D
 %D Both these macros are for instance used in typesetting
 %D footnotes.
@@ -1568,7 +1560,6 @@
 
 \newif\ifalignrigidcolumns
 \newif\ifstretchrigidcolumns
-\newif\iftightrigidcolumns    % if true: just a vbox, no depth/noflines/gridsnap corrrections
 
 %D De eerste switch bepaald het uitlijnen, de tweede rekt de
 %D individuele kolommen op naar \type{\vsize}.
@@ -1610,27 +1601,22 @@
         \setbox\scratchbox\normalhbox to \savedrigidhsize
           {\dorecurse\rigidcolumns
              {\setbox\scratchbox\vsplit\rigidcolumnbox to \scratchdimen
-               \dp\scratchbox\openstrutdepth
+              \dp\scratchbox\openstrutdepth
               \setbox\scratchbox\normalvtop
-                 \ifalignrigidcolumns to
-                   \ifstretchrigidcolumns\vsize\else\scratchdimen\fi
-                 \fi
+                \ifalignrigidcolumns to
+                  \ifstretchrigidcolumns\vsize\else\scratchdimen\fi
+                \fi
                 {\unvbox\scratchbox}%
               \wd\scratchbox\hsize
               \box\scratchbox
               \hfill}%
            \hfillneg}%
-       \iftightrigidcolumns
-         \setbox\scratchbox\normalhbox{\raise\dp\scratchbox\box\scratchbox}%
-       \else
-         \advance\scratchdimen -\openstrutdepth
-         \setbox\scratchbox\normalhbox{\raise\scratchdimen\box\scratchbox}%
-         \dp\scratchbox\openstrutdepth
-         \ht\scratchbox\scratchdimen
-       \fi
+       \advance\scratchdimen -\openstrutdepth
+       \setbox\scratchbox\normalhbox{\raise\scratchdimen\box\scratchbox}%
+       \dp\scratchbox\openstrutdepth
+       \ht\scratchbox\scratchdimen
        \box\scratchbox}%
    \fi}
-
 
 %D \macros
 %D   {startvboxtohbox,stopvboxtohbox,convertvboxtohbox}
@@ -1639,7 +1625,7 @@
 %D pages 398 and 399 of the \TEX book. These macros can be used
 %D like:
 %D
-%D \starttyping
+%D \starttypen
 %D \normalvbox
 %D   \bgroup
 %D     \startvboxtohbox ... \stopvboxtohbox
@@ -1651,7 +1637,7 @@
 %D   \bgroup
 %D     \converthboxtovbox
 %D   \egroup
-%D \stoptyping
+%D \stoptypen
 %D
 %D These macros are used in reformatting footnotes, so they do
 %D what they're meant for.
@@ -1745,7 +1731,7 @@
 \def\unhhbox#1\with#2%
   {\bgroup
    \nopenalties
-   \dontcomplain
+   \mindermeldingen
    \forgetall
    \setbox\unhhedbox\normalvbox{\hskip\hhboxindent\strut\unhbox#1}% => \hsize
    \doloop
@@ -1794,7 +1780,7 @@
 %D \unhhbox2\with{\ruledhbox{\box\hhbox}}
 %D \stopbuffer
 %D
-%D \getbuffer
+%D \haalbuffer
 %D
 %D This piece of text was typeset by saying:
 %D
@@ -1809,9 +1795,9 @@
 %D When processing depends on the availability of content, one
 %D can give the next macro a try.
 %D
-%D \starttyping
+%D \starttypen
 %D \doifcontent{pre content}{post content}{no content}\somebox
-%D \stoptyping
+%D \stoptypen
 %D
 %D Where \type{\somebox} is either a \type{\normalhbox} or
 %D \type{\normalvbox}. If the dimension of this box suggest some
@@ -1839,7 +1825,7 @@
 %D \startbuffer
 %D \doifcontent{[}{]}{}\normalhbox{content sensitive typesetting}
 %D
-%D \doifcontent{}{\page}{}\normalvbox{content sensitive typesetting}
+%D \doifcontent{}{\pagina}{}\normalvbox{content sensitive typesetting}
 %D
 %D \doifcontent{}{}{\message{Didn't you forget something?}}\normalhbox{}
 %D \stopbuffer
@@ -1848,7 +1834,7 @@
 %D
 %D We get:
 %D
-%D \getbuffer
+%D \haalbuffer
 %D
 %D Where the last call of course does not show up in this
 %D document, but definitely generates a confusing message.
@@ -1893,9 +1879,9 @@
 %D
 %D \startbuffer
 %D \startoverlay
-%D   {\framed{hans}}
-%D   {\framed[width=3cm]{ton}}
-%D   {\framed[height=2cm]{oeps}}
+%D   {\omlijnd{hans}}
+%D   {\omlijnd[breedte=3cm]{ton}}
+%D   {\omlijnd[hoogte=2cm]{oeps}}
 %D \stopoverlay
 %D \stopbuffer
 %D
@@ -1903,7 +1889,7 @@
 %D
 %D shows up as:
 %D
-%D \leavevmode\getbuffer
+%D \leavevmode\haalbuffer
 
 % \def\dooverlaybox%
 %   {\ifhmode\unskip\fi
@@ -1982,7 +1968,7 @@
 % %D
 % %D shows up as:
 % %D
-% %D \leavevmode\getbuffer
+% %D \leavevmode\haalbuffer
 %
 % \def\dohspread
 %   {\flushnextbox
@@ -1998,9 +1984,9 @@
 %D
 %D The next macro is a rather silly one, but saves space.
 %D
-%D \starttyping
+%D \starttypen
 %D \normalhbox{\fakebox0}
-%D \stoptyping
+%D \stoptypen
 %D
 %D returns an empty box with the dimensions of the box
 %D specified, here being zero.
@@ -2022,46 +2008,44 @@
 %D
 %D Here are some convenient alternative box types:
 %D
-%D \starttyping
+%D \starttypen
 %D \lbox{text ...}
 %D \cbox{text ...}
 %D \rbox{text ...}
-%D \stoptyping
+%D \stoptypen
 %D
 %D Are similar to \type {\normalvbox}, which means that they also
 %D accept something like \type{to 3cm}, but align to the left,
 %D middle and right. These box types can be used to typeset
 %D paragraphs.
 
-\def\lbox{\makelrcbox\normalvbox\raggedleft}
-\def\cbox{\makelrcbox\normalvbox\raggedcenter}
-\def\rbox{\makelrcbox\normalvbox\raggedright}
+\def\lbox{\lrcbox\raggedleft}
+\def\cbox{\lrcbox\raggedcenter}
+\def\rbox{\lrcbox\raggedright}
 
-\def\ltop{\makelrcbox\normalvtop\raggedleft}
-\def\ctop{\makelrcbox\normalvtop\raggedcenter}
-\def\rtop{\makelrcbox\normalvtop\raggedright}
-
-\def\makelrcbox#1#2#3#%
-  {#1#3\bgroup \forgetall \let\\=\endgraf #2\let\next=}
+\def\lrcbox#1#2#%
+  {\normalvbox#2\bgroup
+   \let\\=\endgraf
+   \forgetall#1\let\next=}
 
 %D The alternatives \type {\tbox} and \type {\bbox} can be used
 %D to properly align boxes, like in:
 %D
 %D \startbuffer
-%D \starttable[|||]
+%D \starttabel[|||]
 %D \HL
-%D \VL \tbox{\externalfigure[koe][height=3cm,frame=on]} \VL top aligned    \VL\SR
+%D \VL \tbox{\externfiguur[koe][hoogte=3cm,kader=aan]} \VL top aligned    \VL\SR
 %D \HL
-%D \VL \bbox{\externalfigure[koe][height=3cm,frame=on]} \VL bottom aligned \VL\SR
+%D \VL \bbox{\externfiguur[koe][hoogte=3cm,kader=aan]} \VL bottom aligned \VL\SR
 %D \HL
-%D \stoptable
+%D \stoptabel
 %D \stopbuffer
 %D
 %D \typebuffer
 %D
 %D The positioning depends on the strut settings:
 %D
-%D \getbuffer
+%D \haalbuffer
 
 \def\tbox{\tbbox\ht\dp}
 \def\bbox{\tbbox\dp\ht}
@@ -2102,9 +2086,9 @@
 %D width made up of several dimensions. Instead of cumbersome
 %D additions, we can use:
 %D
-%D \starttyping
+%D \starttypen
 %D \boxofsize \normalvbox 10cm 3cm -5cm {the text to be typeset}
-%D \stoptyping
+%D \stoptypen
 %D
 %D This example demonstrates that one can use positive and
 %D negative values. Dimension registers are also accepted.
@@ -2321,41 +2305,6 @@
 
 \def\middlebox#1%
   {\normalhbox{\setbox0\placedbox{#1}\boxoffset=-.5\wd0\rightbox{\box0}}}
-
-\def\baselinemiddlebox#1%
-  {\normalhbox
-     {\setbox0\placedbox{#1}%
-      \global\boxhdisplacement-.5\wd0
-      \global\advance\boxhdisplacement-\boxoffset
-      \global\boxvdisplacement-\boxoffset
-      \boxcursor\hskip\boxhdisplacement\raise-\boxvdisplacement\box0}}
-
-\def\baselineleftbox#1%
-  {\normalhbox
-     {\setbox0\placedbox{#1}%
-      \global\boxhdisplacement-\wd0
-      \global\advance\boxhdisplacement-\boxoffset
-      \global\boxvdisplacement-\boxoffset
-      \boxcursor\hskip\boxhdisplacement\raise-\boxvdisplacement\box0}}
-
-\def\baselinerightbox#1%
-  {\normalhbox
-     {\setbox0\placedbox{#1}%
-      \global\boxhdisplacement\boxoffset
-      \global\boxvdisplacement-\boxoffset
-      \boxcursor\hskip\boxhdisplacement\raise-\boxvdisplacement\box0}}
-
-%D \macros
-%D   {obox}
-%D
-%D Experimental, not yet frozen:
-
-\def\lrtbbox#1#2#3#4% l r t b
-  {\bgroup
-   \dowithnextboxcontent
-     {\advance\hsize-#1\advance\hsize-#2\advance\vsize-#3\advance\vsize-#4\relax}
-     {\forgetall\vbox to \vsize{\vskip#3\hbox to \hsize{\hskip#1\box\nextbox\hss}\vss}\egroup}
-     \vbox}
 
 %D \macros
 %D   {toplinebox}
@@ -2381,7 +2330,7 @@
 %D At the cost of some memory, but saving box registers, we
 %D have implemented a box repository.
 %D
-%D \starttyping
+%D \starttypen
 %D \initializeboxstack{one}
 %D
 %D \savebox{one}{a}{test a}
@@ -2393,7 +2342,7 @@
 %D \normalhbox{p:\foundbox{one}{p}} \par
 %D \normalhbox{x:\foundbox{one}{x}} \par
 %D \normalhbox{y:\foundbox{two}{a}} \par
-%D \stoptyping
+%D \stoptypen
 
 % a first version
 %
@@ -2581,11 +2530,11 @@
 %D construction). Nice stuff for a tips and tricks maps
 %D article.
 %D
-%D \starttyping
+%D \starttypen
 %D \raisebox{100pt}\normalhbox{test}
 %D \raisebox50pt\normalhbox{test}
 %D \hsmash{\raisebox{100pt}\normalhbox{test}}
-%D \stoptyping
+%D \stoptypen
 
 \def\doraiselowerbox#1#2% a nice trick us used to accept
   {\def\next            % both direct and {} dimensions
@@ -2633,7 +2582,7 @@
 % %D \stopbuffer
 % %D
 % %D \typebuffer
-% %D \getbuffer
+% %D \haalbuffer
 %
 % \def\dodonormbox#1#2#3#4#5#6#7%
 %   {\doifnumberelse{#1}
@@ -2687,10 +2636,9 @@
 
 %D And even rawer:
 
-\let\naturalhbox    \normalhbox
-\let\naturalvbox    \normalvbox
-\let\naturalvtop    \normalvtop
-\let\naturalvcenter \normalvtop
+\let\naturalhbox \normalhbox
+\let\naturalvbox \normalvbox
+%let\naturalvtop \normalvtop
 
 \beginOMEGA dir
 
@@ -2712,10 +2660,7 @@
    \dowithnextbox{\normalhbox{$\verynormalvcenter{\flushnextbox}$}\egroup}
    \normalvbox}
 
-% could be \everymathematics
-
 \prependtoks \let\vcenter\normalvcenter \to \everymath
-\prependtoks \let\vcenter\normalvcenter \to \everydisplay
 
 %D \macros
 %D   {frozenhbox}

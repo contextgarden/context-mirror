@@ -27,7 +27,7 @@
 %D Instead of a prolog, we can put the code in the file
 %D ourselve.
 %D
-%D \starttyping
+%D \starttypen
 %D \definespecial\dosetupinteraction%
 %D   {\special
 %D      {\@@insertpostscriptretain
@@ -35,14 +35,14 @@
 %D           {pop}
 %D           {userdict /pdfmark /cleartomark load put}
 %D         ifelse}}
-%D \stoptyping
+%D \stoptypen
 %D
 %D We decided to use a prolog file. The following code has to
 %D be put somewhere, e.g.\ in the startup directory of
 %D \DISTILLER. To overcome problems, we always embed the fonts,
 %D but copyrights force us always to make subsets.
 %D
-%D \starttyping
+%D \starttypen
 %D /currentdistillerparams where
 %D   { pop } { userdict /currentdistillerparams { 1 dict } put } ifelse
 %D
@@ -56,12 +56,12 @@
 %D    /MaxSubsetPct           99
 %D    /EmbedAllFonts          true
 %D    /SubSetFonts            true >> setdistillerparams
-%D \stoptyping
+%D \stoptypen
 %D
 %D Beware, this is the PostScript Level 2 way of doing things.
 
-\definespecial\dosetupinteraction
-  {\showmessage\m!interactions{21}{acrobat}}
+\definespecial\dosetupinteraction%
+  {\showmessage{\m!interactions}{21}{acrobat}}
 
 \definespecial\dosetupopenaction {\doPDFsetupopenaction}
 \definespecial\dosetupcloseaction{\doPDFsetupcloseaction}
@@ -140,12 +140,12 @@
 %D We can set up the page dimensions, full screen start up
 %D mode and identify the file with:
 
-\definespecial\dosetupscreen  {\doPDFsetupscreen  \printpaperheight}
+\definespecial\dosetupscreen  {\doPDFsetupscreen  \printpapierhoogte}
 
-\definespecial\dosetupartbox  {\doPDFsetupartbox  \printpaperheight}
-\definespecial\dosetupcropbox {\doPDFsetupcropbox \printpaperheight}
-\definespecial\dosetupbleedbox{\doPDFsetupbleedbox\printpaperheight}
-\definespecial\dosetuptrimbox {\doPDFsetuptrimbox \printpaperheight}
+\definespecial\dosetupartbox  {\doPDFsetupartbox  \printpapierhoogte}
+\definespecial\dosetupcropbox {\doPDFsetupcropbox \printpapierhoogte}
+\definespecial\dosetupbleedbox{\doPDFsetupbleedbox\printpapierhoogte}
+\definespecial\dosetuptrimbox {\doPDFsetuptrimbox \printpapierhoogte}
 
 \definespecial\dosetupidentity{\doPDFsetupidentity}
 

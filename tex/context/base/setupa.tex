@@ -198,7 +198,7 @@ sectionnumber:  numero sezione
 
 \egroup
 
-% \setupsetup
+% \stelsetupin
 %   [verwijzing=<0,1,2,3>]
 %
 % \startsetup
@@ -339,27 +339,27 @@ sectionnumber:  numero sezione
 \def\c!doropt! #1#2#3{{\setupoptfont{#1#2#3}}}
 \def\c!noropt!     #1{{\setupoptfont{#1}}}
 
-\defineregister
+\definieerregister
   [texmacro]
   [texmacros]
 
-\definesorting
+\definieersorteren
   [texcommando]
   [texcommandos]
 
-\setupsorting
+\stelsorterenin
   [texcommando]
-  [\c!command=\@@stpcommand,
+  [\c!commando=\@@stpcommando,
    \c!criterium=\@@stpcriterium]
 
-\definesorting
+\definieersorteren
   [elktexcommando]
   [alletexcommandos]
 
-\setupsorting
+\stelsorterenin
   [elktexcommando]
-  [\c!command=\@@stpcommand,
-   \c!criterium=\v!all]
+  [\c!commando=\@@stpcommando,
+   \c!criterium=\v!alles]
 
 % verwijzing: 0 geen verwijzingen plaatsen / wel genereren
 %             1 alleen bij zie plaatsen / wel genereren
@@ -381,7 +381,7 @@ sectionnumber:  numero sezione
    \fi}
 
 \def\writesetupparbox#1%
-  {\hbox to \@@stpwidth{\strut#1\hss}}%
+  {\hbox to \@@stpbreedte{\strut#1\hss}}%
 
 \def\writesetupparameter#1#2%
   {\doifcommonelse{#1}{#2}
@@ -394,7 +394,7 @@ sectionnumber:  numero sezione
      {\writesetupparameter{##1}{#3}}%
    \veryraggedright
    \noindent
-   \hangindent=\@@stpwidth
+   \hangindent=\@@stpbreedte
    \writesetupparbox{\let\c!setup!variable!\firstofoneargument\getinterfaceconstant{#1}}%
    \processcommalist[#2]\dowritesetupparameter
    \doifcommonelse{#3}{#2}{}{\underbar{#3}}%
@@ -408,7 +408,7 @@ sectionnumber:  numero sezione
         {\writesetupparameter{##1}{#2}}%
       \indent
       \veryraggedright
-      \hangindent=\@@stpwidth
+      \hangindent=\@@stpbreedte
       \writesetupparbox{\c!dots!}%
       \processcommalist[#1]\dowritesetupparameter
       \endgraf
@@ -435,14 +435,14 @@ sectionnumber:  numero sezione
 
 \unexpanded\def\inheritsetup#1%
   {\setsetupreference#1\to\currentsetupinheritance
-   \ifcase\@@stpreference
+   \ifcase\@@stpverwijzing
      \texescape#1% % njet
    \or
-     {\at{p}[\currentsetupinheritance]: \texescape#1}% zonder { } probleem
+     {\op{p}[\currentsetupinheritance]: \texescape#1}% zonder { } probleem
    \or
-     {\at{p}[\currentsetupinheritance]: \texescape#1}% nog eens uitzoeken
+     {\op{p}[\currentsetupinheritance]: \texescape#1}% nog eens uitzoeken
    \or
-     {\goto{\tttf\texescape#1}[\currentsetupinheritance]}%
+     {\naar{\tttf\texescape#1}[\currentsetupinheritance]}%
    \fi}
 
 % #1=name
@@ -463,7 +463,7 @@ sectionnumber:  numero sezione
    \variable[..=..][\getmessage{setup}{see} \inheritsetup{#1}\next#3][]%
    \egroup}
 
-\def\setupsetup
+\def\stelsetupin
   {\dodoubleargument\getparameters[\??stp]}
 
 \bgroup \catcode`<=\active
@@ -539,8 +539,8 @@ sectionnumber:  numero sezione
 
 \defineframedtext
   [setuptext]
-  [\c!width=\hsize,
-   \c!height=\v!fit,
+  [\c!breedte=\hsize,
+   \c!hoogte=\v!passend,
    \c!offset=0.75em]
 
 \popmacro\setuptext
@@ -568,7 +568,7 @@ sectionnumber:  numero sezione
      \advance\hsize by -\leftskip
      \advance\hsize by -\rightskip
      \getvalue{\e!start setuptext}
-       \setupwhitespace[\v!none]%
+       \setupwhitespace[\v!geen]%
        \bgroup
          \verbatimsetupvariablepart \edef\first {#2*}%
          \protectsetupvariablepart  \edef\second{#2}%
@@ -598,19 +598,19 @@ sectionnumber:  numero sezione
           \visualizesetupvariablepart
           \writetexcommand{#2}#3%
           \ifbreaksetup\hfill\else\hss\fi
-          \ifnum\@@stpreference>0
+          \ifnum\@@stpverwijzing>0
             \dointeractivesetup
           \fi
           \setsetupnumber   #1\to\currentsetupnumber
           \setsetupreference#2\to\currentsetupreference
-          \ifcase\@@stpreference
+          \ifcase\@@stpverwijzing
             \dosetupreference
           \or
             \dosetupreference
           \or
             \hskip1em
             \doifreferencefoundelse{\currentsetupreference}
-              {\bf\at[\currentsetupreference]}
+              {\bf\op[\currentsetupreference]}
               {\setupvarfont \translate
                  [nl=nog niet beschreven,
                   en=not yet described,
@@ -622,7 +622,7 @@ sectionnumber:  numero sezione
          \endgraf
        \fi
        \ifshortsetup \else
-         \switchtobodyfont[\v!small]%
+         \switchtobodyfont[\v!klein]%
          \setuptxtfont
          \redefinesetupconstants
          \global\v!dotnumber!=0
@@ -635,11 +635,11 @@ sectionnumber:  numero sezione
               \dimen0=2.5em
             \fi
             \advance\dimen0 by 2em
-            \xdef\@@stpwidth{\the\dimen0}}%
+            \xdef\@@stpbreedte{\the\dimen0}}%
          \global\v!dotnumber!=0
          \setbox0=\vbox{#4}%
          \ifdim\wd0>\!!zeropoint
-           \blank
+           \blanko
            \unvbox0
          \fi
        \fi
@@ -650,7 +650,7 @@ sectionnumber:  numero sezione
   {\protect
    \verbatimsetupvariablepart
    \xdef\globalsetupname{#1}%
-   \expanded{\usecommands{#1*}}%
+   \expanded{\gebruikcommandos{#1*}}%
    \doifdefinedelse{\@@setup\globalsetupname}
      {\getvalue{\@@setup\globalsetupname}}
      {\bgroup
@@ -658,10 +658,10 @@ sectionnumber:  numero sezione
       \setuptxtfont [setup \makemessage{setup}{3}{#1}]\endgraf
       \egroup}%
    \egroup
-   \@@stpafter}
+   \@@stpna}
 
 \def\setup
-  {\@@stpbefore
+  {\@@stpvoor
    \bgroup
    \catcode`\<=\@@active
    \catcode`\>=\@@other
@@ -670,7 +670,7 @@ sectionnumber:  numero sezione
    \dosetup}
 
 \def\shortsetup
-  {\@@stpbefore
+  {\@@stpvoor
    \bgroup
    \catcode`\<=\@@active
    \catcode`\>=\@@other
@@ -707,30 +707,31 @@ sectionnumber:  numero sezione
 
 \let\documenteduntilhere\relax
 
-\defineblock  [dutch, english, german, czech, italian]
-\hideblocks [dutch, english, german, czech, italian]
+\definieerblok  [dutch, english, german, czech, italian]
+\verbergblokken [dutch, english, german, czech, italian]
 
-\setupsetup
-  [\c!before=,
-   \c!after=,
-   \c!command=\setup,
-   \c!reference=0,
-   \c!criterium=\v!used]
+\stelsetupin
+  [\c!voor=,
+   \c!na=,
+   \c!commando=\setup,
+   \c!verwijzing=0,
+   \c!criterium=\v!gebruikt]
 
-\def\placesetup
+\def\plaatssetup
   {\bgroup
-   \getvalue{\e!place\e!listof texcommandos}
+   \getvalue{\e!plaats\e!lijstmet texcommandos}
    \egroup}
 
-\def\placeeverysetup % for fun purposes only
+\def\plaatselkesetup % for fun purposes only
   {\bgroup
-   \setupsetup[\c!reference=2]%
-   \setupreferencing[\c!state=\v!stop]%
-   \getvalue{\e!place\e!listof alletexcommandos}%
+   \stelsetupin[\c!verwijzing=2]%
+   \setupreferencing[\c!status=\v!stop]%
+   \getvalue{\e!plaats\e!lijstmet alletexcommandos}%
    \egroup}
 
-\let\plaatssetup    \placesetup
-\let\plaatselkesetup\placeeverysetup
+\let\setupsetup     \stelsetupin
+\let\placesetup     \plaatssetup
+\let\placeeverysetup\plaatselkesetup
 
 \bgroup \catcode`\<=\active \def<{\lesscharacter} \egroup
 

@@ -18,49 +18,35 @@
 
 \unprotect
 
+\def\dostartfittingpage[#1][#2]%
+  {\pagina % this is kind of tricky! there can be preceding page refs
+   \bgroup % resulting in a zero height page; test fig-make !
+   \dontcomplain
+   % runs under current page regime, i.e. page variables passed to mp
+   \setbox\scratchbox\hbox
+     \bgroup
+     \getparameters[#1][#2]%
+     \schaal[\c!schaal=\getvalue{#1\c!schaal}]\bgroup\localframed[#1]\bgroup}
+
 \definepapersize
   [\??fp\s!dummy]
-  [\c!width=\fittingwd,
-   \c!height=\fittinght]
+  [\c!breedte=\fittingwd,
+   \c!hoogte=\fittinght]
 
 \definelayout
   [\??fp\s!dummy]
-  [\c!width=\fittingwd,\c!height=\fittinght,\c!location=\v!middle,
-   \c!topspace=\!!zeropoint,\c!backspace=\!!zeropoint,
-   \c!cutspace=\!!zeropoint,\c!bottomspace=\!!zeropoint,
-   \c!textdistance=\!!zeropoint,\c!lines=0,\c!grid=\v!no,
-   \c!top=\!!zeropoint,\c!bottom=\!!zeropoint,
-   \c!margin=\!!zeropoint,\c!edge=\!!zeropoint,
-   \c!leftmargin=\!!zeropoint,\c!leftedge=\!!zeropoint,
-   \c!rightmargin=\!!zeropoint,\c!rightedge=\!!zeropoint,
-   \c!header=\!!zeropoint,\c!footer=\!!zeropoint]
-
-\def\dostartfittingpage[#1][#2]%
-  {\page % this is kind of tricky! there can be preceding page refs
-   \bgroup % resulting in a zero height page; test fig-make !
-   \def\currentfittingpage{#1}%
-   \dontcomplain
-   % runs under current page regime, i.e. page variables passed to mp
-   \getparameters[\currentfittingpage][\c!paper=,#2]% auto or size or nothing
-   \setbox\scratchbox\hbox
-     \bgroup
-     % needed later \getparameters[\currentfittingpage][\c!paper=,#2]% auto or size or nothing
-     \doifvalue{\currentfittingpage\c!margin}\v!page % undocumented
-       {\offsetbox
-          [\c!leftoffset=\backspace,
-           \c!rightoffset=\cutspace,
-           \c!topoffset=\topspace,
-           \c!bottomoffset=\bottomspace]\hbox}%
-     \bgroup
-     \scale[\c!scale=\getvalue{\currentfittingpage\c!scale}]%
-     \bgroup\localframed[\currentfittingpage]%
-     \bgroup}
+  [\c!breedte=\fittingwd,\c!hoogte=\fittinght,\c!plaats=\v!midden,
+   \c!kopwit=\!!zeropoint,\c!rugwit=\!!zeropoint,
+   \c!snijwit=\!!zeropoint,\c!bodemwit=\!!zeropoint,
+   \c!tekstafstand=\!!zeropoint,\c!regels=0,\c!grid=\v!nee,
+   \c!boven=\!!zeropoint,\c!onder=\!!zeropoint,
+   \c!marge=\!!zeropoint,\c!rand=\!!zeropoint,
+   \c!linkermarge=\!!zeropoint,\c!linkerrand=\!!zeropoint,
+   \c!rechtermarge=\!!zeropoint,\c!rechterrand=\!!zeropoint,
+   \c!hoofd=\!!zeropoint,\c!voet=\!!zeropoint]
 
 \def\dostopfittingpage
-  {\egroup % localframed
-   \egroup % scale
-   \egroup % offsetbox
-   \egroup % scratchbox
+  {\egroup\egroup\egroup
    \edef\fittingwd{\the\wd\scratchbox}%
    \edef\fittinght{\the\ht\scratchbox}%
    \startlocallayout
@@ -70,20 +56,16 @@
      \edef\fittinght{\the\lineheight}%
    \fi
    \let\checkcurrentlayout\relax % else interference with odd/even layout
-   \processaction
-     [\getvalue{\currentfittingpage\c!paper}]
-     [   \v!auto=>\let\fittingpapersize\printpapersize,
-      \s!unknown=>\let\fittingpapersize\commalistelement,
-      \s!default=>\def\fittingpapersize{\??fp\s!dummy}]%
-   \expanded{\setuppapersize[\??fp\s!dummy][\fittingpapersize]}%
+   \setuppapersize
+     [\??fp\s!dummy][\??fp\s!dummy]%
    \definelayout
-     [\v!page]%
-     [\c!location=\v!middle,
-      \c!width=\fittingwd,
-      \c!height=\fittinght]%
+     [\v!pagina]%
+     [\c!plaats=\v!midden,
+      \c!breedte=\fittingwd,
+      \c!hoogte=\fittinght]%
    \setuplayout
-     [\v!page]%
-   \startmakeup[\v!standard][\c!textstate=\v!empty,\c!doublesided=\v!no,\c!page=]%
+     [\v!pagina]%
+   \startmakeup[\v!standaard][\c!tekststatus=\v!leeg,\c!dubbelzijdig=\v!nee,\c!pagina=]%
      \centerbox{\box\scratchbox}%
    \stopmakeup
    \stoplocallayout
@@ -107,13 +89,13 @@
    \dostopfittingpage}
 
 \setupTEXpage
-  [\c!scale=1000,
-   \c!strut=\v!no,
-   \c!align=\v!normal, % needed, else problems !
+  [\c!schaal=1000,
+   \c!strut=\v!nee,
+   \c!uitlijnen=\v!normaal, % needed, else problems !
    \c!offset=\v!overlay,
-   \c!width=\v!fit,
-   \c!height=\v!fit,
-   \c!frame=\v!off]
+   \c!breedte=\v!passend,
+   \c!hoogte=\v!passend,
+   \c!kader=\v!uit]
 
 %D Application pages (for an example, see \type {m-pstric}):
 
@@ -160,7 +142,7 @@
    \setbox\scratchbox\hbox
      {\expanded{\externalfigure
         [\bufferprefix\@@texapp.\ifdone eps\else pdf\fi]
-        [\c!object=\v!no]}}%
+        [\c!object=\v!nee]}}%
    \setbox\scratchbox\hbox
      {\lower\ht\scratchbox\hbox{\raise\dimen2\box\scratchbox}}%
    \wd\scratchbox\dimen0

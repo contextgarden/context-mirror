@@ -86,10 +86,6 @@
   graphictextdirective "\the\everyMPTEXgraphic";
 \to \MPextensions
 
-% \appendtoks
-%   textextdirective "\the\everyMPTEXgraphic";
-% \to \MPextensions
-
 %D A signal that we're in combines \CONTEXT||\METAFUN mode:
 
 \appendtoks
@@ -126,9 +122,9 @@
 %D backgrounds. To prevent conflicts, we will use the \type
 %D {-} in \METAPOST\ specific variables, like:
 %D
-%D \starttyping
+%D \starttypen
 %D \setupMPvariables[meta:button][size=20pt]
-%D \stoptyping
+%D \stoptypen
 
 \def\@@meta{meta:}
 
@@ -178,19 +174,19 @@
 %D to use graphics that adapt themselves. The next \METAPOST\
 %D kind of graphic is both unique and reused when possible.
 %D
-%D \starttyping
+%D \starttypen
 %D \defineoverlay[example][\uniqueMPgraphic{test}]
 %D
 %D \startuniqueMPgraphic {test}
 %D   draw unitsquare xscaled \overlaywidth yscaled \overlayheight ;
 %D \stopuniqueMPgraphic
-%D \stoptyping
+%D \stoptypen
 
 %D For educational purposes, we show the original version
 %D first. This one used a rather simple method for determining
 %D the uniqueness.
 %D
-%D \starttyping
+%D \starttypen
 %D \long\def\startuniqueMPgraphic#1#2\stopuniqueMPgraphic%
 %D   {\setvalue{\@@MPG#1}%
 %D      {\startreusableMPgraphic{\overlaystamp:#1}#2\stopreusableMPgraphic
@@ -198,7 +194,7 @@
 %D
 %D \def\uniqueMPgraphic#1%
 %D   {\getvalue{\@@MPG#1}}
-%D \stoptyping
+%D \stoptypen
 
 %\def\overlaystamp % watch the \MPcolor, since colors can be redefined
 %  {\overlaywidth:\overlayheight:\overlaydepth
@@ -214,17 +210,17 @@
 %D uniqueness, as well as prepare variables for passing them to
 %D \METAPOST.
 %D
-%D \starttyping
+%D \starttypen
 %D \startuniqueMPgraphic{meta:hash}{gap,angle,...}
-%D \stoptyping
+%D \stoptypen
 %D
 %D The calling macro also accepts a second argument. For
 %D convenient use in overlay definitions, we use \type {{}}
 %D instead of \type {[]}.
 %D
-%D \starttyping
+%D \starttypen
 %D \uniqueMPgraphic{meta:hash}{gap=10pt,angle=30}
-%D \stoptyping
+%D \stoptypen
 
 \long\def\handleuniqueMPgraphic#1#2#3%
   {\blabelgroup
@@ -373,12 +369,12 @@
 
 %D One way of defining a stamp is:
 %D
-%D \starttyping
+%D \starttypen
 %D \def\extendMPoverlaystamp#1%
 %D   {\def\docommando##1%
 %D      {\edef\overlaystamp{\overlaystamp:\MPvariable{##1}}}%
 %D    \processcommalist[#1]\docommando}
-%D \stoptyping
+%D \stoptypen
 
 %D Since we need to feed \METAPOST\ with expanded dimensions,
 %D we introduce a dedicated expansion engine.
@@ -544,7 +540,7 @@
 \long\def\dostartMPenvironment[#1][#2]#3\stopMPenvironment
   {\egroup
    \doif{#1}\s!reset\resetMPenvironment % reset mp toks
-   \doif{#1}\v!global{#3}%             % use in main doc too
+   \doif{#1}\v!globaal{#3}%             % use in main doc too
    \doif{#1}+{#3}%                      % use in main doc too
    \convertargument#3\to\ascii
    \expandafter\appendtoks\ascii\to\everyMPTEXgraphic}
@@ -560,7 +556,7 @@
 %D This command takes \type {[reset]} as optional
 %D argument.
 %D
-%D \starttyping
+%D \starttypen
 %D \startMPenvironment
 %D   \setupbodyfont[pos,14.4pt]
 %D \stopMPenvironment
@@ -568,7 +564,7 @@
 %D \startMPcode
 %D   draw btex \sl Hans Hagen etex scaled 5 ;
 %D \stopMPcode
-%D \stoptyping
+%D \stoptypen
 %D
 %D The \type {\resetMPenvironment} is a quick way to erase
 %D the token list.
@@ -771,7 +767,7 @@
 %D First we present the reasonable fast alternative that we
 %D happily used for some time.
 %D
-%D \starttyping
+%D \starttypen
 %D \def\insertMPfile#1#2%
 %D   {\ifx\undefined\externalfigure
 %D      \message{[insert file #1 here]}%
@@ -780,19 +776,24 @@
 %D      \the\everyinsertMPfile
 %D      \externalfigure
 %D        [#1]
-%D        [\c!type=\c!mps,\c!object=\v!no,%
-%D         \c!symbol=\v!yes,\c!reset=\v!yes,%
-%D         \c!maxwidth=,\c!maxheight=,%
-%D         \c!frame=\v!off,\c!background=,%
+%D        [\c!type=\c!mps,\c!object=\v!nee,%
+%D         \c!symbool=\v!ja,\c!reset=\v!ja,%
+%D         \c!maxbreedte=,\c!maxhoogte=,%
+%D         \c!kader=\v!uit,\c!achtergrond=,%
 %D         #2]%
 %D      \egroup
 %D    \fi}
-%D \stoptyping
+%D \stoptypen
 %D
 %D However, on a 1 Gig Pentium, the next alternative saves
 %D us 20 seconds run time for the 300 page \METAFUN\ manual:
 
-\def\insertMPfile#1#2{\doinsertMPfile{#1}}
+\def\insertMPfile#1#2%
+  {\doiffileelse{./#1}
+     {\ifcase\pdfoutput
+        \@EA\includeMPasEPS\else\@EA\includeMPasPDF
+      \fi{./#1}}
+     {\message{[MP #1]}}}
 
 \def\includeMPasEPS#1%
   {\bgroup
@@ -802,7 +803,7 @@
    \setbox\scratchbox\vbox to \!!heightb
      {\vfill
       \doinsertfile
-        {\c!mps,\c!mps}{#1,\empty}{100}{100}%
+        {\c!mps,\c!mps}{#1,\empty}{100}{100}
         \!!widtha\!!heighta\!!widthb\!!heightb\zerocount}%
    \wd\scratchbox\!!widthb
    \dp\scratchbox\zeropoint
@@ -912,7 +913,7 @@
   [mp]
   [\c!y=-\MPury bp,
    \c!x=\MPllx bp,
-   \c!method=\v!fit]
+   \c!methode=\v!passend]
 
 \definelayer
   [mp]
@@ -920,7 +921,7 @@
 
 %D Usage:
 %D
-%D \starttyping
+%D \starttypen
 %D \defineproperty[one][layer][state=start]
 %D \defineproperty[two][layer][state=stop]
 %D
@@ -936,7 +937,7 @@
 %D \setlayer[mp]{\property[two]{\useMPgraphic{step-2}}}
 %D
 %D \ruledhbox{\flushlayer[mp]}
-%D \stoptyping
+%D \stoptypen
 
 %D New:
 

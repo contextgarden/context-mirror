@@ -18,19 +18,19 @@
 \gdef\doshowprint[#1][#2][#3]%
   {\framed
      [\c!offset=\v!overlay,
-      \c!strut=\v!no]
+      \c!strut=\v!nee]
      {\forgetall
-      \dontcomplain
+      \mindermeldingen
       \globaldefs\minusone
       \dimen0\pagegoal
-      \definepapersize[X][\c!width=4em, \c!height=6em]%
-      \definepapersize[Y][\c!width=12em,\c!height=14em]%
+      \definepapersize[X][\c!breedte=4em, \c!hoogte=6em]%
+      \definepapersize[Y][\c!breedte=12em,\c!hoogte=14em]%
       \setuppapersize[#1,X][#2,Y]%
       \setuplayout[#3]%
       \setbox0\vbox
         {\framed
-          [\c!offset=\v!overlay,\c!strut=\v!no,
-           \c!width=\paperwidth,\c!height=\paperheight]
+          [\c!offset=\v!overlay,\c!strut=\v!nee,
+           \c!breedte=\papierbreedte,\c!hoogte=\papierhoogte]
           {\ss ABC\par DEF}}%
       \dubbelzijdigfalse
       \def\cutmarklength{.5em}%
@@ -92,33 +92,33 @@
 \gdef\doshowframe[#1][#2]%
   {\ifsecondargument
      \setupbackgrounds
-       [\v!page]
-       [\c!frame=\v!on,
-        \c!corner=\v!rectangular,
-        \c!frameoffset=\!!zeropoint,
-        \c!framedepth=\!!zeropoint,
-        \c!framecolor=layout:page]
+       [\v!pagina]
+       [\c!kader=\v!aan,
+        \c!hoek=\v!recht,
+        \c!kaderoffset=\!!zeropoint,
+        \c!kaderdiepte=\!!zeropoint,
+        \c!kaderkleur=layout:page]
      \setupbackgrounds
        [#1][#2]
-       [\c!background=,
-        \c!frame=\v!on,
-        \c!corner=\v!rectangular,
-        \c!frameoffset=\!!zeropoint,
-        \c!framedepth=\!!zeropoint,
-        \c!framecolor=]
+       [\c!achtergrond=,
+        \c!kader=\v!aan,
+        \c!hoek=\v!recht,
+        \c!kaderoffset=\!!zeropoint,
+        \c!kaderdiepte=\!!zeropoint,
+        \c!kaderkleur=]
    \else\iffirstargument
      \showframe
-       [\v!header,\v!text,\v!footer]
+       [\v!hoofd,\v!tekst,\v!voet]
        [#1]
    \else
      \showframe
-       [\v!header,\v!text,\v!footer]
-       [\v!leftedge,\v!leftmargin,
-        \v!text,
-        \v!rightmargin,\v!rightedge]
+       [\v!hoofd,\v!tekst,\v!voet]
+       [\v!linkerrand,\v!linkermarge,
+        \v!tekst,
+        \v!rechtermarge,\v!rechterrand]
    \fi\fi
    \setupbackgrounds
-     [\c!state=\v!repeat]}
+     [\c!status=\v!herhaal]}
 
 \gdef\showframe{\dodoubleempty\doshowframe}
 
@@ -128,14 +128,26 @@
 \gdef\showsetupB#1#2#3%
   {#1&&#2#3&\tttf\string#3\cr}
 
+\iffixedlayoutdimensions
+
+  \global\let\showsetupC=\showsetupA
+
+\else % we could have used \@the
+
+  \gdef\showsetupC#1#2% \relax is really needed here !
+    {#1&\scratchdimen#2\PtToCm{\the\scratchdimen}&%
+     \scratchdimen#2\relax\the\scratchdimen&\tttf\string#2\cr}
+
+\fi
+
 % \startinterface english % english is fallback
 
 \gdef\showsetups
   {\noindent
    \vbox
      {\forgetall
-      \dontcomplain
-      \switchtobodyfont[\v!small]
+      \mindermeldingen
+      \switchtobodyfont[\v!klein]
       \tabskip\zeropoint
       \halign
         {\strut##\quad\hss&##\quad\hss&##\quad\hss&##\hss\cr
@@ -148,22 +160,22 @@
          \showsetupA{height}             \makeupheight
          \showsetupA{width}              \makeupwidth
          \showsetupA{top}                \topheight
-         \showsetupA{topdistance}        \topdistance
+         \showsetupC{topdistance}        \topdistance
          \showsetupA{header}             \headerheight
-         \showsetupA{headerdistance}     \headerdistance
+         \showsetupC{headerdistance}     \headerdistance
          \showsetupA{textheight}         \textheight
-         \showsetupA{footerdistance}     \footerdistance
+         \showsetupC{footerdistance}     \footerdistance
          \showsetupA{footer}             \footerheight
-         \showsetupA{bottomdistance}     \bottomdistance
+         \showsetupC{bottomdistance}     \bottomdistance
          \showsetupA{bottom}             \bottomheight
          \showsetupA{leftedge}           \leftedgewidth
-         \showsetupA{leftedgedistance}   \leftedgedistance
+         \showsetupC{leftedgedistance}   \leftedgedistance
          \showsetupA{leftmargin}         \leftmarginwidth
-         \showsetupA{leftmargindistance} \leftmargindistance
+         \showsetupC{leftmargindistance} \leftmargindistance
          \showsetupA{textwidth}          \textwidth
-         \showsetupA{rightmargindistance}\rightmargindistance
+         \showsetupC{rightmargindistance}\rightmargindistance
          \showsetupA{rightmargin}        \rightmarginwidth
-         \showsetupA{rightedgedistance}  \rightedgedistance
+         \showsetupC{rightedgedistance}  \rightedgedistance
          \showsetupA{rightedge}          \rightedgewidth
          \showsetupB{bodyfontsize}       \the   \globalbodyfontsize
          \showsetupB{line}               \relax \normallineheight
@@ -180,8 +192,8 @@
   {\noindent
    \vbox
      {\forgetall
-      \dontcomplain
-      \switchtobodyfont[\v!small]
+      \mindermeldingen
+      \switchtobodyfont[\v!klein]
       \tabskip\zeropoint
       \halign
         {\strut##\quad\hss&##\quad\hss&##\quad\hss&##\hss\cr
@@ -195,22 +207,22 @@
          \showsetupA{hoogte}             \zethoogte
          \showsetupA{breedte}            \zetbreedte
          \showsetupA{boven}              \bovenhoogte
-         \showsetupA{bovenafstand}       \bovenafstand
+         \showsetupC{bovenafstand}       \bovenafstand
          \showsetupA{hoofd}              \hoofdhoogte
-         \showsetupA{hoofdafstand}       \hoofdafstand
+         \showsetupC{hoofdafstand}       \hoofdafstand
          \showsetupA{teksthoogte}        \teksthoogte
-         \showsetupA{voetafstand}        \voetafstand
+         \showsetupC{voetafstand}        \voetafstand
          \showsetupA{voet}               \voethoogte
-         \showsetupA{onderafstand}       \onderafstand
+         \showsetupC{onderafstand}       \onderafstand
          \showsetupA{onder}              \onderhoogte
          \showsetupA{linkerrand}         \linkerrandbreedte
-         \showsetupA{linkerrandafstand}  \linkerrandafstand
+         \showsetupC{linkerrandafstand}  \linkerrandafstand
          \showsetupA{linkermarge}        \linkermargebreedte
-         \showsetupA{linkermargeafstand} \linkermargeafstand
+         \showsetupC{linkermargeafstand} \linkermargeafstand
          \showsetupA{tekstbreedte}       \tekstbreedte
-         \showsetupA{rechtermargeafstand}\rechtermargeafstand
+         \showsetupC{rechtermargeafstand}\rechtermargeafstand
          \showsetupA{rechtermarge}       \rechtermargebreedte
-         \showsetupA{rechterrandafstand} \rechterrandafstand
+         \showsetupC{rechterrandafstand} \rechterrandafstand
          \showsetupA{rechterrand}        \rechterrandbreedte
          \showsetupB{korps}              \the   \globalbodyfontsize
          \showsetupB{regel}              \relax \normallineheight
@@ -229,8 +241,8 @@
   {\noindent
    \vbox
      {\forgetall
-      \dontcomplain
-      \switchtobodyfont[\v!small]
+      \mindermeldingen
+      \switchtobodyfont[\v!klein]
       \tabskip\zeropoint
       \halign
         {\strut##\quad\hss&##\quad\hss&##\quad\hss&##\hss\cr
@@ -243,22 +255,22 @@
          \showsetupA{hoehe}                \satzhoehe
          \showsetupA{breite}               \satzbreite
          \showsetupA{oben}                 \hoeheoben
-         \showsetupA{abstandoben}          \abstandoben
+         \showsetupC{abstandoben}          \abstandoben
          \showsetupA{kopfzeile}            \kopfzeilenhoehe
-         \showsetupA{kopfzeilenabstand}    \kopfzeilenabstand
+         \showsetupC{kopfzeilenabstand}    \kopfzeilenabstand
          \showsetupA{texthoehe}            \texthoehe
-         \showsetupA{fusszeileabstand}     \fusszeileabstand
+         \showsetupC{fusszeileabstand}     \fusszeileabstand
          \showsetupA{fusszeilen}           \fusszeilenhoehe
-         \showsetupA{abstandunten}         \abstandunten
+         \showsetupC{abstandunten}         \abstandunten
          \showsetupA{hoeheunten}           \hoeheunten
          \showsetupA{linkerrand}           \breitelinkerrand
-         \showsetupA{abstandlinkerrand}    \abstandlinkerrand
+         \showsetupC{abstandlinkerrand}    \abstandlinkerrand
          \showsetupA{linkemarginal}        \linkemarginalbreite
-         \showsetupA{linkemarginalafstand} \linkemarginalafstand
+         \showsetupC{linkemarginalafstand} \linkemarginalafstand
          \showsetupA{textbreite}           \textbreite
-         \showsetupA{rechtemarginalafstand}\rechtemarginalafstand
+         \showsetupC{rechtemarginalafstand}\rechtemarginalafstand
          \showsetupA{rechtemarginal}       \rechtemarginalbreite
-         \showsetupA{abstandrechterrand}   \abstandrechterrand
+         \showsetupC{abstandrechterrand}   \abstandrechterrand
          \showsetupA{rechterrand}          \breiterechterrand
          \showsetupB{fliesstext}           \the   \globalbodyfontsize
          \showsetupB{linie}                \relax \normallineheight
@@ -275,8 +287,8 @@
   {\noindent
    \vbox
      {\forgetall
-      \dontcomplain
-      \switchtobodyfont[\v!small]
+      \mindermeldingen
+      \switchtobodyfont[\v!klein]
       \tabskip\zeropoint
       \halign
         {\strut##\quad\hss&##\quad\hss&##\quad\hss&##\hss\cr
@@ -291,20 +303,20 @@
          \showsetupA{vyskatextu}               \vyskatextu
          \showsetupA{sirkatextu}               \sirkatextu
          \showsetupA{horejsek}                 \vyskahorejsku
-         \showsetupA{vzdalenosthorejsku}       \vzdalenosthorejsku
+         \showsetupC{vzdalenosthorejsku}       \vzdalenosthorejsku
          \showsetupA{zahlavi}                  \vyskazahlavi
-         \showsetupA{vzdalenostzahlavi}        \vzdalenostzahlavi
-         \showsetupA{fusszeileabstand}         \vzdalenostupati
+         \showsetupC{vzdalenostzahlavi}        \vzdalenostzahlavi
+         \showsetupC{fusszeileabstand}         \vzdalenostupati
          \showsetupA{upati}                    \vyskaupati
-         \showsetupA{vzdalenostspodku}         \vzdalenostspodku
+         \showsetupC{vzdalenostspodku}         \vzdalenostspodku
          \showsetupA{spodek}                   \vyakaspodku
          \showsetupA{levyokraj}                \sirkalevehookraje
-         \showsetupA{vzdalenostlevehookraje}   \vzdalenostlevehookraje
+         \showsetupC{vzdalenostlevehookraje}   \vzdalenostlevehookraje
          \showsetupA{levamarginalie}           \sirkalevemarginalie
-         \showsetupA{vzdalenostlevemarginalie} \vzdalenostlevemarginalie
-         \showsetupA{vzdalenostpravemarginalie}\vzdalenostpravemarginalie
+         \showsetupC{vzdalenostlevemarginalie} \vzdalenostlevemarginalie
+         \showsetupC{vzdalenostpravemarginalie}\vzdalenostpravemarginalie
          \showsetupA{pravamarginalie}          \sirkapravemarginalie
-         \showsetupA{vzdalenostpravehookraje}  \vzdalenostpravehookraje
+         \showsetupC{vzdalenostpravehookraje}  \vzdalenostpravehookraje
          \showsetupA{pravyokraj}               \sirkapravehookraje
          \showsetupB{zakladnivelikost}         \the   \globalbodyfontsize
          \showsetupB{linka}                    \relax \normallineheight
@@ -321,8 +333,8 @@
   {\noindent
    \vbox
      {\forgetall
-      \dontcomplain
-      \switchtobodyfont[\v!small]
+      \mindermeldingen
+      \switchtobodyfont[\v!klein]
       \tabskip\zeropoint
       \halign
         {\strut##\quad\hss&##\quad\hss&##\quad\hss&##\hss\cr
@@ -335,22 +347,22 @@
          \showsetupA{height}             \makeupheight
          \showsetupA{width}              \makeupwidth
          \showsetupA{top}                \topheight
-         \showsetupA{topdistance}        \topdistance
+         \showsetupC{topdistance}        \topdistance
          \showsetupA{header}             \headerheight
-         \showsetupA{headerdistance}     \headerdistance
+         \showsetupC{headerdistance}     \headerdistance
          \showsetupA{textheight}         \textheight
-         \showsetupA{footerdistance}     \footerdistance
+         \showsetupC{footerdistance}     \footerdistance
          \showsetupA{footer}             \footerheight
-         \showsetupA{bottomdistance}     \bottomdistance
+         \showsetupC{bottomdistance}     \bottomdistance
          \showsetupA{bottom}             \bottomheight
          \showsetupA{leftedge}           \leftedgewidth
-         \showsetupA{leftedgedistance}   \leftedgedistance
+         \showsetupC{leftedgedistance}   \leftedgedistance
          \showsetupA{leftmargin}         \leftmarginwidth
-         \showsetupA{leftmargindistance} \leftmargindistance
+         \showsetupC{leftmargindistance} \leftmargindistance
          \showsetupA{textwidth}          \textwidth
-         \showsetupA{rightmargindistance}\rightmargindistance
+         \showsetupC{rightmargindistance}\rightmargindistance
          \showsetupA{rightmargin}        \rightmarginwidth
-         \showsetupA{rightedgedistance}  \rightedgedistance
+         \showsetupC{rightedgedistance}  \rightedgedistance
          \showsetupA{rightedge}          \rightedgewidth
          \showsetupB{bodyfontsize}       \the   \globalbodyfontsize
          \showsetupB{line}               \relax \normallineheight
@@ -363,10 +375,10 @@
 
 \gdef\showlayout % interfereert lelijk met een \typefile er na
   {\bgroup
-   \page
+   \pagina
    \showframe
-   \setuplayout[\c!marking=\v!on]
-   \dorecurse{4}{\showsetups\page}
+   \setuplayout[\c!markering=\v!aan]
+   \dorecurse{4}{\showsetups\pagina}
    \egroup}
 
 \gdef\showmargins

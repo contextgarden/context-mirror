@@ -20,6 +20,14 @@
 %D \useMPlibrary[dum]
 %D
 %D \startlinecorrection
+%D \useMPgraphic{placeholder}{width=3cm,height=4cm,color=red}
+%D \stoplinecorrection
+%D
+%D \startlinecorrection
+%D \useMPgraphic{placeholder}{width=8cm,height=10cm,color=green}
+%D \stoplinecorrection
+%D
+%D \startlinecorrection
 %D \externalfigure[unknown-a][width=3cm,height=1cm]
 %D \stoplinecorrection
 %D
@@ -67,8 +75,8 @@
 \let\figurereplacementcycle\relax
 
 \setupexternalfigures
-  [\c!reduction=0,
-   \c!text=\v!yes]
+  [\c!reductie=0,
+   \c!tekst=\v!ja]
 
 \def\externalfigurereplacement#1#2#3%
   {\getpaletsize[placeholder]%
@@ -88,17 +96,17 @@
         {placeholder}%
         {width=\figurewidth,
          height=\figureheight,
-         reduction=\@@efreduction,
+         reduction=\@@efreductie,
          color=placeholder:\figurereplacementcycle}]%
    \expanded{\localframed
      [\??ef]
-     [\c!width=\figurewidth,
-      \c!height=\figureheight,
-      \c!frame=\v!off,
-      \c!strut=\v!no,
-      \c!background=\s!dummy,
-      \c!foregroundcolor=\s!white]}%
-     {\doif\@@eftext\v!yes
+     [\c!breedte=\figurewidth,
+      \c!hoogte=\figureheight,
+      \c!kader=\v!uit,
+      \c!strut=\v!nee,
+      \c!achtergrond=\s!dummy,
+      \c!voorgrondkleur=\s!white]}%
+     {\doif\@@eftekst\v!ja
         {\infofont \setupinterlinespace \dohyphens % \nohyphens
          \doifelse{#1}\s!dummy  \!!doneafalse\!!doneatrue
          \doifelse{#2}\s!dummy  \!!donebfalse\!!donebtrue

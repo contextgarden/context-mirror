@@ -51,8 +51,6 @@ set  TeXShell  to  tetex
 %
 % Here are some general defaults. They can be overruled later.
 
-set  UseEnginePath      to  false
-
 set  UsedInterfaces     to  en nl metafun mptopdf
 set  UserInterface      to  en
 
@@ -117,12 +115,12 @@ for  fptex  set  MpPassString      to  -progname=mpost   -translate-file=natural
 for  miktex  set  TeXHashExecutable to  initexmf --update-fndb
 for  miktex  set  TeXExecutable     to  pdfetex
 for  miktex  set  TeXVirginFlag     to  --initialize
-for  miktex  set  TeXPassString     to  --alias=context --translate-file=natural.tcx
+for  miktex  set  TeXPassString     to  --alias=context --8bit
 for  miktex  set  TeXBatchFlag      to  --interaction=batchmode
 for  miktex  set  TeXNonStopFlag    to  --interaction=nonstopmode
 for  miktex  set  MpToTeXExecutable to  mptotex
 for  miktex  set  MpVirginFlag      to  --initialize
-for  miktex  set  MpPassString      to  --alias=mpost --translate-file=natural.tcx
+for  miktex  set  MpPassString      to  --alias=mpost
 for  miktex  set  MpBatchFlag       to  --interaction=batchmode
 for  miktex  set  MpNonStopFlag     to  --interaction=nonstopmode
 

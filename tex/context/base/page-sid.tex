@@ -28,7 +28,7 @@
 % \sidegap    vervangen door   \floatsideskip
 % \undergap   vervangen door   \floatsidebottomskip
 %
-% \prskp      vervangen door   \ctxparskip
+% \prskp      vervangen door   \tussenwit
 
 % toegevoegde macro's/aanroepen
 %
@@ -50,7 +50,6 @@
 \newdimen\sidefloatextrashift
 \newdimen\sidefloatvsize       \def\nofloatvsize{-1pt }
 \newdimen\sidefloatprogress
-\newdimen\sidefloatpagetotal
 
 \newbox\floatbottom
 
@@ -95,24 +94,24 @@
        % backspace
      \or
        \global\sidefloatshift-\sidefloatmaximum
-       \global\advance\sidefloatshift-\rightorleftpageaction \leftedgedistance \rightedgedistance
-       \global\advance\sidefloatshift-\rightorleftpageaction \leftmarginwidth \rightmarginwidth
-       \global\advance\sidefloatshift-\rightorleftpageaction \leftmargindistance \rightmargindistance
+       \global\advance\sidefloatshift-\rightorleftpageaction \linkerrandafstand \rechterrandafstand
+       \global\advance\sidefloatshift-\rightorleftpageaction \linkermargebreedte \rechtermargebreedte
+       \global\advance\sidefloatshift-\rightorleftpageaction \linkermargeafstand \rechtermargeafstand
      \or
        \global\sidefloatshift-\sidefloatmaximum
-       \global\advance\sidefloatshift-\rightorleftpageaction \leftmargindistance \rightmargindistance
+       \global\advance\sidefloatshift-\rightorleftpageaction \linkermargeafstand \rechtermargeafstand
      \or
        % left
      \or
        % right
      \or
        \global\sidefloatshift-\sidefloatmaximum
-       \global\advance\sidefloatshift-\rightorleftpageaction \leftmargindistance \rightmargindistance
+       \global\advance\sidefloatshift-\rightorleftpageaction \linkermargeafstand \rechtermargeafstand
      \or
        \global\sidefloatshift-\sidefloatmaximum
-       \global\advance\sidefloatshift-\rightorleftpageaction \leftedgedistance \rightedgedistance
-       \global\advance\sidefloatshift-\rightorleftpageaction \leftmarginwidth \rightmarginwidth
-       \global\advance\sidefloatshift-\rightorleftpageaction \leftmargindistance \rightmargindistance
+       \global\advance\sidefloatshift-\rightorleftpageaction \linkerrandafstand \rechterrandafstand
+       \global\advance\sidefloatshift-\rightorleftpageaction \linkermargebreedte \rechtermargebreedte
+       \global\advance\sidefloatshift-\rightorleftpageaction \linkermargeafstand \rechtermargeafstand
      \or
        % cutspace
      \fi
@@ -123,23 +122,23 @@
    \global\sidefloatleftskip \zeropoint
    \ifcase\sidefloattype
    \or % backspace
-     \global        \sidefloatleftskip \rightorleftpageaction \backspace \cutspace
+     \global        \sidefloatleftskip \rightorleftpageaction \rugwit \snijwit
    \or % leftedge
-     \global        \sidefloatleftskip \rightorleftpageaction \leftmargindistance\rightmargindistance
-     \global\advance\sidefloatleftskip \rightorleftpageaction \leftmarginwidth\rightmarginwidth
-     \global\advance\sidefloatleftskip \rightorleftpageaction \leftedgedistance\rightedgedistance
+     \global        \sidefloatleftskip \rightorleftpageaction \linkermargeafstand\rechtermargeafstand
+     \global\advance\sidefloatleftskip \rightorleftpageaction \linkermargebreedte\rechtermargebreedte
+     \global\advance\sidefloatleftskip \rightorleftpageaction \linkerrandafstand\rechterrandafstand
    \or % leftmargin
-     \global        \sidefloatleftskip \rightorleftpageaction \leftmargindistance\rightmargindistance
+     \global        \sidefloatleftskip \rightorleftpageaction \linkermargeafstand\rechtermargeafstand
    \or % leftside
    \or % rightside
    \or % rightmargin
-     \global        \sidefloatrightskip\rightorleftpageaction \rightmargindistance\leftmargindistance
+     \global        \sidefloatrightskip\rightorleftpageaction \rechtermargeafstand\linkermargeafstand
    \or % rightedge
-     \global        \sidefloatrightskip\rightorleftpageaction \rightmargindistance\leftmargindistance
-     \global\advance\sidefloatrightskip\rightorleftpageaction \rightmarginwidth\leftmarginwidth
-     \global\advance\sidefloatrightskip\rightorleftpageaction \rightedgedistance\leftedgedistance
+     \global        \sidefloatrightskip\rightorleftpageaction \rechtermargeafstand\linkermargeafstand
+     \global\advance\sidefloatrightskip\rightorleftpageaction \rechtermargebreedte\linkermargebreedte
+     \global\advance\sidefloatrightskip\rightorleftpageaction \rechterrandafstand\linkerrandafstand
    \or % cutspace
-     \global        \sidefloatrightskip\rightorleftpageaction \cutspace\backspace
+     \global        \sidefloatrightskip\rightorleftpageaction \snijwit\rugwit
    \fi
    \ifdim\sidefloatrightskip>\zeropoint
      \doglobal\advance\sidefloatrightskip\rightskip
@@ -264,7 +263,7 @@
        \egroup
        \ifdim\parskip>\zeropoint
          \ifdim\sidefloatbottomskip>\parskip
-           \nowhitespace
+           \geenwitruimte
            \vskip\sidefloatbottomskip
          \fi
        \fi
@@ -504,7 +503,7 @@
 
 \def\putsidefloat#1% grid (4) is rather experimental
   {\par
-   \whitespace
+   \witruimte
    % moved here dec 2001
    {\everypar\emptytoks\forgetall\verticalstrut\vskip-\struttotal}% moved
    \checksidefloatshift
@@ -629,6 +628,8 @@
 \def\tosssidefloat
   {\vfill\eject}
 
+\newdimen\sidefloatpagetotal
+
 \def\measuresidefloat
   {\global\floatflagtrue
    \global\sidefloatpagetotal \pagetotal % global
@@ -664,7 +665,7 @@
    \fi
    \relax % really needed ! ! ! !
    \ifdim\dimen0>\dimen2
-     \global\roomforfloatfalse
+     \roomforfloatfalse
    \else
      \dimen0=\pagegoal
      \advance\dimen0 -\sidefloatvsize
@@ -677,7 +678,7 @@
        \global\advance\sidefloatvsize \sidefloatbottomskip
        \global\floatshortfalse
      \fi
-     \global\roomforfloattrue
+     \roomforfloattrue
    \fi}
 
 \def\setsidefloat% nilling everypar saves time and redudant pos's
@@ -735,7 +736,7 @@
 %    %\!!counta\sidefloatprogress
 %    \scratchdimen\sidefloatprogress
 %    \advance\scratchdimen \strutht
-%    \advance\scratchdimen -\roundingeps % new, needed in prikkels, prevent rounding errors
+%    \advance\scratchdimen -10sp % new, needed in prikkels, prevent rounding errors
 %    \!!counta\scratchdimen
 %    \divide\!!counta \baselineskip
 %    \ifnum\!!counta>0
@@ -756,7 +757,7 @@
    %\!!counta\sidefloatprogress
    \scratchdimen\sidefloatprogress
    \advance\scratchdimen \strutht
-   \advance\scratchdimen -\roundingeps % new, needed in prikkels, prevent rounding errors
+   \advance\scratchdimen -10sp % new, needed in prikkels, prevent rounding errors
    \!!counta\scratchdimen
    \divide\!!counta \baselineskip\relax
    \ifnum\!!counta>0
@@ -814,13 +815,10 @@
    \else
      \resetsidefloatparagraph
    \fi
-   \parskip\ctxparskip}
+   \parskip\tussenwit}
 
 \def\checksidefloat
   {\dochecksidefloat}
-
-\def\synchronizesidefloats
-  {\ifinner \else \checksidefloat \fi}
 
 \def\doadjustsidefloatdisplaylines
   {\par

@@ -41,22 +41,22 @@
    
 %D If you run into troubles, try: 
 %D 
-%D \starttyping 
+%D \starttypen 
 %D \forceMPTEXgraphictrue 
-%D \stoptyping 
+%D \stoptypen 
 %D
 %D A demo can be run with:
 %D
-%D \starttyping
+%D \starttypen
 %D texexec --mode=demo --pdf m-graph
-%D \stoptyping 
+%D \stoptypen 
 
 % No longer needed, since John will fix it. 
 % 
 % %D For the moment we need the following patch. Adam T. Lindsay 
 % %D found out that the following code produced an error: 
 % %D 
-% %D \starttyping 
+% %D \starttypen 
 % %D \startMPcode
 % %D draw begingraph(130mm,35mm);
 % %D   setrange(0,0,10,22000);
@@ -80,15 +80,15 @@
 % %D    autogrid(itick.bot,grid.lft) withcolor .75white ;
 % %D   endgraph;
 % %D \stopMPcode
-% %D \stoptyping 
+% %D \stoptypen 
 % %D
 % %D The bug is a rather nasty one and needs some tweaking in 
 % %D the low level graph code. John Hobby suggested for the 
 % %D moment to initialize \type {setrange} as follows: 
 % %D 
-% %D \starttyping  
+% %D \starttypen  
 % %D  setrange(0,0,"22000","22000")
-% %D \stoptyping 
+% %D \stoptypen 
 % %D 
 % %D Folowing this suggesion, I provide the following 
 % %D extension: 

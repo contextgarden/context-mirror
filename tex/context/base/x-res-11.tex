@@ -48,11 +48,11 @@
 
 \unprotect 
 
-\setuplayout[\v!middle]
+\setuplayout[\v!midden]
 
 \startsetups[rl:figure]
 
-  \externalfigure[\XMLflush{rl:file}][\c!width=4cm]
+  \externalfigure[\XMLflush{rl:file}][\c!breedte=4cm]
  
 \stopsetups
 
@@ -79,7 +79,7 @@
 
 \startsetups[rl:usage]
 
-  \startfiguretext {\v!none} {\setups[rl:figure]}
+  \startfiguretext {\v!geen} {\setups[rl:figure]}
     \setups[rl:table]
   \stopfiguretext 
 
@@ -89,16 +89,16 @@
 
   \useMPlibrary[nav]
 
-  \setupcolors[\c!state=\v!start]
+  \setupcolors[\c!status=\v!start]
 
-  \setupinteraction[\c!state=\v!start]
+  \setupinteraction[\c!status=\v!start]
 
   \useattachment[whatever][\outputfilename.zip]
 
   \startlocalsetups[rl:attach:button]
 
     \inframed
-      [\c!offset=\v!overlay,\c!frame=\v!off]
+      [\c!offset=\v!overlay,\c!kader=\v!uit]
       {\attachment[whatever]}
 
   \stoplocalsetups

@@ -58,15 +58,15 @@
 %D is provided by a macro that signals changes in layout
 %D specifications:
 %D
-%D \starttyping
+%D \starttypen
 %D \recalculatelogos
-%D \stoptyping
+%D \stoptypen
 %D
 %D as well as a simple placement macro:
 %D
-%D \starttyping
+%D \starttypen
 %D \addlogobackground <box>
-%D \stoptyping
+%D \stoptypen
 %D
 %D In no way the following boolean switch should be used
 %D directly.
@@ -79,12 +79,12 @@
 %D The current state of logos is registered in a status
 %D variable \type {\logostatus}.
 %D
-%D \starttabulate[|l|l|l|]
+%D \starttabulatie[|l|l|l|]
 %D \NC 0 \NC don't place              \NC remains 0 \NC \NR
 %D \NC 1 \NC place now                \NC remains 1 \NC \NR
 %D \NC 2 \NC calulate and place       \NC becomes 1 \NC \NR
 %D \NC 3 \NC calculate and place once \NC becomes 2 \NC \NR
-%D \stoptabulate
+%D \stoptabulatie
 
 \chardef\logostatus=0
 
@@ -136,75 +136,75 @@
    \fi}
 
 \def\dosetlogobox#1#2%
-  {\global\setbox#1\vbox to \paperheight
+  {\global\setbox#1\vbox to \papierhoogte
      {\dontcomplain           % needed here ?
       \calculatereducedvsizes % needed here ?
       \offinterlineskip
       #2\relax
-      \vskip-\topspace
-      \dodosetlogobox\v!top\blap
-      \vskip\topspace
-      \dodosetlogobox\v!header\blap
-      \vskip\headerheight
-      \vskip\headerdistance
-      \dodosetlogobox\v!text\blap
-      \vskip\textheight
-      \vskip\footerdistance
-      \vskip\footerheight
-      \dodosetlogobox\v!footer \tlap
+      \vskip-\kopwit
+      \dodosetlogobox\v!boven\blap
+      \vskip\kopwit
+      \dodosetlogobox\v!hoofd\blap
+      \vskip\hoofdhoogte
+      \vskip\hoofdafstand
+      \dodosetlogobox\v!tekst\blap
+      \vskip\teksthoogte
+      \vskip\voetafstand
+      \vskip\voethoogte
+      \dodosetlogobox\v!voet \tlap
       \vfilll
-      \dodosetlogobox\v!bottom\tlap
-      \vskip\topspace}
+      \dodosetlogobox\v!onder\tlap
+      \vskip\kopwit}
   \smashbox#1}
 
 \def\dodosetlogobox#1#2%
-  {\hbox % width equals \makeupwidth
+  {\hbox % width equals \zetbreedte
      {\def\docommando##1%
         {\donefalse
          \ifnum\logostatus=3 \ExpandBothAfter
            \doifinset{\getvalue{\??lo#1##1}}\requestedlogos\donetrue
          \else
-           \doifvalue{\??lo#1##1\c!state}\v!start\donetrue
+           \doifvalue{\??lo#1##1\c!status}\v!start\donetrue
          \fi
          \ifdone
-           #2{\hbox{\getvalue{\??lo#1##1\c!command}}}%
+           #2{\hbox{\getvalue{\??lo#1##1\c!commando}}}%
          \fi}%
       \def\dodocommando##1##2##3##4##5##6%
         {\hsmash
            {\hskip-\texthoffset
-            \hbox to \paperwidth
+            \hbox to \papierbreedte
               {\rlap{\docommando##1}\hss\llap{\docommando##6}}%
-            \hskip-\paperwidth
-            \hbox to \paperwidth
+            \hskip-\papierbreedte
+            \hbox to \papierbreedte
               {\hskip\texthoffset
-               \hskip-\leftmarginwidth
-               \hskip-\leftmargindistance
-               \hbox to \leftmarginwidth{\docommando##2\hss}%
-               \hskip\leftmargindistance
-               \hbox to \makeupwidth{\docommando##3\hss\docommando##4}%
-               \hskip\rightmargindistance
-               \hbox to \rightmarginwidth{\hss\docommando##5}%
+               \hskip-\linkermargebreedte
+               \hskip-\linkermargeafstand
+               \hbox to \linkermargebreedte{\docommando##2\hss}%
+               \hskip\linkermargeafstand
+               \hbox to \zetbreedte{\docommando##3\hss\docommando##4}%
+               \hskip\rechtermargeafstand
+               \hbox to \rechtermargebreedte{\hss\docommando##5}%
                \hfill}}}%
       \normalbaselines
       \settexthoffset
       \hsmash
-        {\hbox to \makeupwidth{\hss\docommando\c!middle\hss}}%
+        {\hbox to \zetbreedte{\hss\docommando\c!midden\hss}}%
       \hsmash
         {\hskip-\texthoffset
-         \hbox to \paperwidth{\docommando\v!page\hss}}%
+         \hbox to \papierbreedte{\docommando\v!pagina\hss}}%
       \swapmargins
       \doifbothsidesoverruled
         \dodocommando
-          \v!leftedge \v!leftmargin  \v!left
-          \v!right     \v!rightmargin \v!rightedge
+          \v!linkerrand \v!linkermarge  \v!links
+          \v!rechts     \v!rechtermarge \v!rechterrand
       \orsideone
         \dodocommando
-          \v!leftedge \v!leftmargin  \v!left
-          \v!right     \v!rightmargin \v!rightedge
+          \v!linkerrand \v!linkermarge  \v!links
+          \v!rechts     \v!rechtermarge \v!rechterrand
       \orsidetwo
         \dodocommando
-          \v!rightedge \v!rightmargin \v!right
-          \v!left       \v!leftmargin  \v!leftedge
+          \v!rechterrand \v!rechtermarge \v!rechts
+          \v!links       \v!linkermarge  \v!linkerrand
       \od}}
 
 %D The user interface is relatively simple and provides

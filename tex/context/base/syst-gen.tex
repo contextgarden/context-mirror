@@ -31,14 +31,14 @@
 %D want to prevent it being loaded more than once. This can be
 %D done using:
 %D
-%D \starttyping
+%D \starttypen
 %D \abortinputifdefined\command
-%D \stoptyping
+%D \stoptypen
 %D
 %D where \type{\command} is a command defined in the module
 %D to be loaded only once.
 %D
-%D \starttyping
+%D \starttypen
 %D \def\abortinputifdefined#1%
 %D   {\ifx#1\undefined
 %D      \let\next=\relax
@@ -46,7 +46,7 @@
 %D      \let\next=\endinput
 %D    \fi
 %D    \next}
-%D \stoptyping
+%D \stoptypen
 %D
 %D This macro can be speed up in terms of speed as well as
 %D memory. Because this is a nice example of a bit strange
@@ -54,31 +54,31 @@
 %D
 %D If we perform such actions directly, we can say:
 %D
-%D \starttyping
+%D \starttypen
 %D \ifx\somecommand\undefined
 %D   \let\next=\relax
 %D \else
 %D   \let\next=\endinput
 %D \fi
 %D \next
-%D \stoptyping
+%D \stoptypen
 %D
 %D We need the \type{\next} because we need to end the
 %D \type{\fi}. The efficient one is:
 %D
-%D \starttyping
+%D \starttypen
 %D \ifx\somecommand\undefined
 %D \else
 %D   \expandafter\endinput
 %D \fi
-%D \stoptyping
+%D \stoptypen
 %D
 %D Because \type{\endinput} comes into action after the current
 %D line, we can also say:
 %D
-%D \starttyping
+%D \starttypen
 %D \ifx\somecommand\undefined \else \endinput \fi
-%D \stoptyping
+%D \stoptypen
 %D
 %D When we define a macro, we tend to use a format which
 %D shows as besat as can how things are done. \TEX\ however
@@ -104,9 +104,9 @@
 %D However, the command that is needed for this is not yet
 %D defined.
 %D
-%D \starttyping
+%D \starttypen
 %D \writestatus{laden}{Context Systeem Macro's (a)}
-%D \stoptyping
+%D \stoptypen
 
 %D The next few macros are needed in case this module is
 %D used outside \CONTEXT.
@@ -132,11 +132,11 @@
 %D This is done by \type{\unprotect} and \type{\protect}, for
 %D instance:
 %D
-%D \starttyping
+%D \starttypen
 %D \unprotect
 %D \def\!test{test}
 %D \protect
-%D \stoptyping
+%D \stoptypen
 %D
 %D The defined command \type{\!test} can of course only be
 %D called upon when we are in the \type{\unprotect}'ed state,
@@ -411,9 +411,9 @@
 %D don't expand them before interpretation. Such commands can
 %D be enclosed with \type{\expanded}, like:
 %D
-%D \starttyping
+%D \starttypen
 %D \expanded{\setupsomething[\alfa]}
-%D \stoptyping
+%D \stoptypen
 %D
 %D Such situations occur for instance when \type{\alfa} is a
 %D commalist or when data stored in macros is fed to index of
@@ -461,10 +461,10 @@
 %D lot of \type {\expandafter}'s. They expand the arguments
 %D after the first command.
 %D
-%D \starttyping
+%D \starttypen
 %D \expandoneargafter \command{\abc}
 %D \expandtwoargsafter\command{\abc}{\def}
-%D \stoptyping
+%D \stoptypen
 %D
 %D These commands expect the arguments to be macros.
 
@@ -510,9 +510,9 @@
 %D character. Disturbing spaces and line endings, which are
 %D normally interpreted as spaces too, are skipped.
 %D
-%D \starttyping
+%D \starttypen
 %D \doifnextcharelse {karakter} {then ...} {else ...}
-%D \stoptyping
+%D \stoptypen
 %D
 %D This macro differs from the original in the use of \type
 %D {\localnext} because we don't want clashes with \type
@@ -554,10 +554,10 @@
 %D \type{\reinspectnextcharacter}. The chain reaction is
 %D visually compatible with the next sequence:
 %D
-%D \starttyping
+%D \starttypen
 %D \expandafter\def\reinspectnextcharacter %
 %D   {\futurelet\nexttoken\inspectnextcharacter}
-%D \stoptyping
+%D \stoptypen
 %D
 %D However complicated it may look, I'm still glad I stumbled
 %D into this construction. Saving and restoring \type {\:} is
@@ -584,7 +584,7 @@
 %D \type{\def} and \type{\let}. Every macro programmer sooner
 %D or later wants macros like these.
 %D
-%D \starttyping
+%D \starttypen
 %D \setvalue   {name}{...} = \def\name{...}
 %D \setgvalue  {name}{...} = \gdef\name{...}
 %D \setevalue  {name}{...} = \edef\name{...}
@@ -593,7 +593,7 @@
 %D \letgvalue  {name}=\... = \global\let\name=\...
 %D \getvalue   {name}      = \name
 %D \resetvalue {name}      = \def\name{}
-%D \stoptyping
+%D \stoptypen
 %D
 %D As we will see, \CONTEXT\ uses these commands many times,
 %D which is mainly due to its object oriented and parameter
@@ -630,17 +630,17 @@
 %D Sometimes prefixing the macro with \type{\donottest} leads
 %D to defining an auxiliary macro, like
 %D
-%D \starttyping
+%D \starttypen
 %D \def\dosomecommand {... ... ...}
 %D \def\somecommand   {\donottest\dosomecommand}
-%D \stoptyping
+%D \stoptypen
 %D
 %D This double definition can be made transparant by using
 %D \type{\unexpanded}, as in:
 %D
-%D \starttyping
+%D \starttypen
 %D \unexpanded\def\somecommand{... ... ...}
-%D \stoptyping
+%D \stoptypen
 %D
 %D The protection mechanism uses:
 
@@ -673,11 +673,11 @@
 %D a negative impact on searching in the hash table. Because
 %D some simple testing does not show differences, we just use:
 %D
-%D \starttyping
+%D \starttypen
 %D \def\unexpanded#1#2%
 %D   {\@EA#1\@EA#2\@EA{\@EA\donottest\csname\s!do\string#2\endcsname}%
 %D    \@EA#1\csname\s!do\string#2\endcsname}
-%D \stoptyping
+%D \stoptypen
 %D
 %D Well, in fact we use the bit more versatile alternative. The
 %D \type {\honorunexpanded} can be used to \type {\string}
@@ -730,10 +730,10 @@
 %D
 %D And so the definition in our example turns out to be:
 %D
-%D \starttyping
+%D \starttypen
 %D \def\csname do\somecommand\endcsname{... ... ...}
 %D \def\somecommand{\donottest\csname do\somecommand\endcsname}
-%D \stoptyping
+%D \stoptypen
 %D
 %D In which \type{do\somecommand} is hidden from the user and
 %D cannot lead to confusion. It's still permitted to define
@@ -753,13 +753,13 @@
 %D \type{\undefined}. To garantee correct working of the next
 %D set of macros, \type{\undefined} may never be defined!
 %D
-%D \starttyping
+%D \starttypen
 %D \doifundefined      {string}    {...}
 %D \doifdefined        {string}    {...}
 %D \doifundefinedelse  {string}    {then ...} {else ...}
 %D \doifdefinedelse    {string}    {then ...} {else ...}
 %D \doifalldefinedelse {commalist} {then ...} {else ...}
-%D \stoptyping
+%D \stoptypen
 %D
 %D Every macroname that \TEX\ builds gets an entry in the hash
 %D table, which is of limited size. It is expected that e-\TeX\
@@ -770,11 +770,11 @@
 %D name to be build by using \type{\csname} and
 %D \type{\endcsname} and testing the \type{\name} directly.
 %D
-%D \starttyping
+%D \starttypen
 %D \expandafter\ifx\csname NameA\endcsname\relax ... \else ... \fi
 %D
 %D \ifx\NameB\undefined ... \else ... \fi
-%D \stoptyping
+%D \stoptypen
 %D
 %D I became aware of this when I mistakenly testen the first
 %D one against \type{\undefined}. When \TEX\ build a name using
@@ -783,11 +783,11 @@
 %D quickest way to check these things is asking \TEX\ to show
 %D the meaning of the names:
 %D
-%D \starttyping
+%D \starttypen
 %D \expandafter\show\csname NameA\endcsname
 %D
 %D \show\NameB
-%D \stoptyping
+%D \stoptypen
 %D
 %D The main reason why this never will be a big problem is that
 %D when one uses the \type{\csname} way, one probably has to do
@@ -804,7 +804,7 @@
 %D Our first implementation of \type{\ifundefined} was
 %D straightforward and readable:
 %D
-%D \starttyping
+%D \starttypen
 %D \def\ifundefined#1%
 %D   {\expandafter\ifx\csname#1\endcsname\relax}%
 %D
@@ -836,7 +836,7 @@
 %D    \else
 %D      \endgroup#3%
 %D    \fi}
-%D \stoptyping
+%D \stoptypen
 %D
 %D When this module was optimized, timing showed that the
 %D next alternative can be upto twice as fast, especially when
@@ -960,7 +960,7 @@
 %D Before we start using this variant, we used another one,
 %D which is even a bit faster. This one looked like:
 %D
-%D \starttyping
+%D \starttypen
 %D \def\p!doifundefined%
 %D   {\begingroup
 %D    \let\donottest=\dontprocesstest
@@ -972,18 +972,18 @@
 %D    \else
 %D      \endgroup#3%
 %D    \fi}
-%D \stoptyping
+%D \stoptypen
 %D
 %D A even more previous version used \type{\bgroup} and
 %D \type {\egroup}. In math mode however, \type{$1{x}2$} differs
 %D from \type{$1x2$}. This can been seen when one compares the
 %D output of:
 %D
-%D \starttyping
+%D \starttypen
 %D $\kern10pt\showthe\lastkern$
 %D $\kern10pt{\showthe\lastkern}$
 %D $\kern10pt\begingroup\showthe\lastkern\endgroup$
-%D \stoptyping
+%D \stoptypen
 %D
 %D Also in math mode, one can better use \type {\begingroup}
 %D and companion instead of \type {\bgroup}.
@@ -1054,11 +1054,11 @@
 %D runtime redefinition, expansion etc. While \MODULA\ taught
 %D me to structure, \TEX\ taught me to think recursive.
 %D
-%D \starttyping
+%D \starttypen
 %D \doif     {string1} {string2} {...}
 %D \doifnot  {string1} {string2} {...}
 %D \doifelse {string1} {string2} {then ...}{else ...}
-%D \stoptyping
+%D \stoptypen
 %D
 %D When expansion gives problems, we can precede the
 %D troublemaker with \type{\donottest}.
@@ -1066,14 +1066,14 @@
 %D This implementatie does not use the construction which is
 %D more robust for nested conditionals.
 %D
-%D \starttyping
+%D \starttypen
 %D \ifx\!!stringa\!!stringb
 %D   \def\next{#3}%
 %D \else
 %D   \def\next{#4}%
 %D \fi
 %D \next
-%D \stoptyping
+%D \stoptypen
 %D
 %D In practice, this alternative is at least 20\% slower than
 %D the alternative used here. The few cases in which we
@@ -1204,7 +1204,7 @@
 %D auxiliary macro also proved to be slower, so we definitely
 %D did not choose for:
 %D
-%D \starttyping
+%D \starttypen
 %D \def\p!doifelse#1#2%
 %D   {\let\donottest=\dontprocesstest
 %D    \edef\!!stringa{#1}%
@@ -1220,7 +1220,7 @@
 %D
 %D \long\def\doifelse#1#2#3#4%
 %D   {\p!doifelse{#1}{#2}#3\else#4\fi}
-%D \stoptyping
+%D \stoptypen
 %D
 %D Optimizations like this are related of course to the
 %D bottlenecks in \TEX. It seems that restoring saved meanings
@@ -1231,11 +1231,11 @@
 %D
 %D We complete our set of conditionals with:
 %D
-%D \starttyping
+%D \starttypen
 %D \doifempty     {string} {...}
 %D \doifnotempty  {string} {...}
 %D \doifemptyelse {string} {then ...} {else ...}
-%D \stoptyping
+%D \stoptypen
 %D
 %D This time, the string is not expanded.
 
@@ -1270,15 +1270,15 @@
 %D set of strings. Depending on the result, some action is
 %D taken.
 %D
-%D \starttyping
+%D \starttypen
 %D \doifinset     {string} {string,...} {...}
 %D \doifnotinset  {string} {string,...} {...}
 %D \doifinsetelse {string} {string,...} {then ...} {else ...}
-%D \stoptyping
+%D \stoptypen
 %D
 %D The second argument is the comma separated set of strings.
 %D
-%D \starttyping
+%D \starttypen
 %D \long\def\doifinsetelse#1#2#3#4%
 %D   {\doifelse{#1}{}
 %D      {#4}
@@ -1299,7 +1299,7 @@
 %D
 %D \long\def\doifnotinset#1#2#3%
 %D   {\doifinsetelse{#1}{#2}{}{#3}}
-%D \stoptyping
+%D \stoptypen
 %D
 %D Because this macro is called quite often we've spent some
 %D time optimizing it. This time, the gain in speed is due to
@@ -1456,16 +1456,16 @@
 %D Probably the most time consuming tests are those that test
 %D for overlap in sets of strings.
 %D
-%D \starttyping
+%D \starttypen
 %D \doifcommon     {string,...} {string,...} {...}
 %D \doifnotcommon  {string,...} {string,...} {...}
 %D \doifcommonelse {string,...} {string,...} {then ...} {else ...}
-%D \stoptyping
+%D \stoptypen
 %D
 %D We show the slower alternative first, because it shows us
 %D how things are done.
 %D
-%D \starttyping
+%D \starttypen
 %D \long\def\doifcommonelse#1#2#3#4%
 %D   {\donefalse
 %D    \def\p!docommoncheck##1%
@@ -1488,7 +1488,7 @@
 %D
 %D \long\def\doifnotcommon#1#2#3%
 %D   {\doifcommonelse{#1}{#2}{}{#3}}
-%D \stoptyping
+%D \stoptypen
 %D
 %D The processing time is shortened by getting the auxiliary
 %D macro to the outermost level and using less \type{\edef}'s.
@@ -1644,9 +1644,9 @@
 %D We've already seen some macros that take care of comma
 %D separated lists. Such list can be processed with
 %D
-%D \starttyping
+%D \starttypen
 %D \processcommalist[string,string,...]\commando
-%D \stoptyping
+%D \stoptypen
 %D
 %D The user supplied command \type{\commando} receives one
 %D argument: the string. This command permits nesting and
@@ -1702,7 +1702,7 @@
 %D however are treated. We have to check for the special case
 %D \type{[{a,b,c}]}.
 %D
-%D \starttyping
+%D \starttypen
 %D \def\processcommalist[%
 %D   {\futurelet\nexttoken\docheckcommaitem}
 %D
@@ -1729,7 +1729,7 @@
 %D      {#2{##1}\doprocesscommaitem}%
 %D    \doprocesscommaitem#1,]\relax
 %D    \global\advance\commalevel -1 }
-%D \stoptyping
+%D \stoptypen
 %D
 %D However, this is not a the most straightforward solution!
 %D We can misuse one of \TEX's hidden features, and prepend
@@ -1778,32 +1778,32 @@
 
 %D The previous examples lead to:
 %D
-%D \getbuffer
+%D \haalbuffer
 
 %D When a list is saved in a macro, we can use a construction
 %D like:
 %D
-%D \starttyping
+%D \starttypen
 %D \expandafter\processcommalist\expandafter[\list]\command
-%D \stoptyping
+%D \stoptypen
 %D
 %D Such solutions suit most situations, but we wanted a bit
 %D more.
 %D
-%D \starttyping
+%D \starttypen
 %D \processcommacommand[string,\stringset,string]\commando
-%D \stoptyping
+%D \stoptypen
 %D
 %D where \type{\stringset} is a predefined set, like:
 %D
-%D \starttyping
+%D \starttypen
 %D \def\first{aap,noot,mies}
 %D \def\second{laatste}
 %D
 %D \processcommacommand[\first]\message
 %D \processcommacommand[\first,second,third]\message
 %D \processcommacommand[\first,between,\second]\message
-%D \stoptyping
+%D \stoptypen
 %D
 %D Commands that are part of the list are expanded, so the
 %D use of this macro has its limits.
@@ -1814,15 +1814,15 @@
 %D The argument to \type{\command} is not delimited. Because
 %D we often use \type{[]} as delimiters, we also have:
 %D
-%D \starttyping
+%D \starttypen
 %D \processcommalistwithparameters[string,string,...]\command
-%D \stoptyping
+%D \stoptypen
 %D
 %D where \type{\command} looks like:
 %D
-%D \starttyping
+%D \starttypen
 %D \def\command[#1]{... #1 ...}
-%D \stoptyping
+%D \stoptypen
 
 \def\processcommalistwithparameters[#1]#2%
   {\def\docommand##1{#2[##1]}%
@@ -1838,16 +1838,16 @@
 %D items, some actions is taken. These macros can be nested
 %D without problems.
 %D
-%D \starttyping
+%D \starttypen
 %D \processaction           [x]     [a=>\a,b=>\b,c=>\c]
 %D \processfirstactioninset [x,y,z] [a=>\a,b=>\b,c=>\c]
 %D \processallactionsinset  [x,y,z] [a=>\a,b=>\b,c=>\c]
-%D \stoptyping
+%D \stoptypen
 %D
 %D We can supply both a \type{default} action and an action
 %D to be undertaken when an \type{unknown} value is met:
 %D
-%D \starttyping
+%D \starttypen
 %D \processallactionsinset
 %D   [x,y,z]
 %D   [      a=>\a,
@@ -1855,7 +1855,7 @@
 %D          c=>\c,
 %D    default=>\default,
 %D    unknown=>\unknown{... \commalistelement ...}]
-%D \stoptyping
+%D \stoptypen
 %D
 %D When \type{#1} is empty, this macro scans list \type{#2} for
 %D the keyword \type{default} and executed the related action
@@ -1876,7 +1876,7 @@
 %D direct result of the support of nesting. Protection is only
 %D applied in \type{\processaction}.
 %D
-%D \starttyping
+%D \starttypen
 %D \newcount\processlevel
 %D
 %D \def\processaction[#1]#2[#3]%
@@ -1946,7 +1946,7 @@
 %D          \processcommalist[#3]\p!dodoprocessaction}%
 %D       \processcommalist[#1]{\getvalue{\s!do\the\processlevel}}%
 %D       \advance\processlevel by -1 }}
-%D \stoptyping
+%D \stoptypen
 %D
 %D The gain of speed in the (again) next implementation is
 %D around 20\%, depending on the application.
@@ -2241,9 +2241,9 @@
 %D next character. This macro get this character and puts it in
 %D \type{\firstcharacter}.
 %D
-%D \starttyping
+%D \starttypen
 %D \getfirstcharacter {string}
-%D \stoptyping
+%D \stoptypen
 %D
 %D A two step expansion is used to prevent problems with
 %D complicated arguments, for instance arguments that
@@ -2276,15 +2276,15 @@
 %D We can check for the presence of a substring in a given
 %D sequence of characters.
 %D
-%D \starttyping
+%D \starttypen
 %D \doifinsetelse {substring} {string} {then ...} {else ...}
-%D \stoptyping
+%D \stoptypen
 %D
 %D An application of this command can be found further on.
 %D Like before, we first show some alternatives, like the one
 %D we started with:
 %D
-%D \starttyping
+%D \starttypen
 %D \long\def\p!doifinstringelse#1#2#3#4%
 %D   {\def\pp!doifinstringelse##1#1##2##3\war%
 %D      {\if##2@%
@@ -2296,11 +2296,11 @@
 %D
 %D \def\doifinstringelse%
 %D   {\ExpandBothAfter\p!doifinstringelse}
-%D \stoptyping
+%D \stoptypen
 %D
 %D After this we came to:
 %D
-%D \starttyping
+%D \starttypen
 %D \def\p!doifinstringelse#1#2%
 %D   {\def\pp!doifinstringelse##1#1##2##3\war%
 %D      {\if##2@}%
@@ -2312,7 +2312,7 @@
 %D    \else
 %D      #3%
 %D    \fi}
-%D \stoptyping
+%D \stoptypen
 %D
 %D Sometimes the second argument is passed as a macro. By
 %D postponing the expansion of this macro, we gain quite some
@@ -2349,7 +2349,7 @@
      \@EA\gobbleoneargument
    \fi}
 
-%D \starttyping
+%D \starttypen
 %D \beginTEX
 %D
 %D \long\def\p!doifinstringelse#1#2%
@@ -2367,7 +2367,7 @@
 %D    \expanded{\pp!doifinstringelse#2#1@@\noexpand\war}} % expand #2 here
 %D
 %D \endETEX
-%D \stoptyping
+%D \stoptypen
 %D
 %D And then \unknown\ after a couple of years, we ran into a
 %D situation where \type {##2} was something \type {{bla}}. So
@@ -2418,9 +2418,9 @@
 %D typesetting! This is mainly due to the fact that passing
 %D (expanded) strings is much slower that passing a macro.
 %D
-%D \starttyping
+%D \starttypen
 %D \doifincsnameelse {substring} {\string} {then ...} {else ...}
-%D \stoptyping
+%D \stoptypen
 %D
 %D Where \type{\doifinstringelse} does as much expansion as
 %D possible, the latter alternative does minimal (one level)
@@ -2460,24 +2460,24 @@
 %D test possible, exept from a less robust 10||step
 %D \type{\if}||ladder or some tricky \type{\lcode} checking.
 %D
-%D \starttyping
+%D \starttypen
 %D \doifnumberelse {string} {then ...} {else ...}
-%D \stoptyping
+%D \stoptypen
 %D
 %D The macro accepts \type{123}, \type{abc}, \type{{}},
 %D \type{\getal} and \type{\the\count...}. This macro is a
 %D rather dirty one.
 %D
-%D \starttyping
+%D \starttypen
 %D \long\def\doifnumberelse#1#2#3%
 %D   {\begingroup\donefalse
 %D    \ifcase1#1\or\or\or\or\or\or\or\or\or\else\donetrue\fi
 %D    \ifdone\endgroup#2\else\endgroup#3\fi}
-%D \stoptyping
+%D \stoptypen
 %D
 %D Or better:
 %D
-%D \starttyping
+%D \starttypen
 %D \long\def\doifnumberelse#1%
 %D   {\begingroup\donefalse
 %D    \ifcase1#1\or\or\or\or\or\or\or\or\or\else\donetrue\fi
@@ -2486,11 +2486,11 @@
 %D    \else
 %D      \endgroup\expandafter\secondoftwoarguments
 %D    \fi}
-%D \stoptyping
+%D \stoptypen
 %D
 %D A previous implementation was:
 %D
-%D \starttyping
+%D \starttypen
 %D \long\def\doifnumberelse#1#2#3%
 %D   {\getfirstcharacter{#1}%
 %D    \@EA\p!doifinstringelse\@EA{\firstcharacter}{1234567890}%
@@ -2498,21 +2498,21 @@
 %D    \else
 %D      #3%
 %D    \fi}
-%D \starttyping
+%D \starttypen
 %D
 %D And before we had \type{\p!doifinstringelse} available, we
 %D used:
 %D
-%D \starttyping
+%D \starttypen
 %D \def\doifnumberelse#1%
 %D   {\getfirstcharacter{#1}%
 %D    \rawdoifinsetelse{\firstcharacter}{1,2,3,4,5,6,7,8,9,0}}
-%D \stoptyping
+%D \stoptypen
 %D
 %D The implementation using \type {\ifcase} is much faster, but
 %D the next one is not, not even when testing milion calls.
 %D
-%D \starttyping
+%D \starttypen
 %D \newif\ifitsanumber
 %D
 %D \long\def\isitanumber#1%
@@ -2521,7 +2521,7 @@
 %D
 %D \long\def\doifnumberelse#1#2#3%
 %D   {\isitanumber{#1}\ifitsanumber#2\else#3\fi}
-%D \stoptyping
+%D \stoptypen
 %D
 %D After a while the next evolved and this one is the one we
 %D will use. This one is some 5\% faster than the group/done
@@ -2552,12 +2552,12 @@
 %D compare anything. Expandable macros are permitted as search
 %D string.
 %D
-%D \starttyping
+%D \starttypen
 %D \makerawcommalist[string,string,...]\stringlist
 %D \rawdoifinsetelse{string}{string,...}{...}{...}
 %D \rawprocesscommalist[string,string,...]\commando
 %D \rawprocessaction[x][a=>\a,b=>\b,c=>\c]
-%D \stoptyping
+%D \stoptypen
 %D
 %D Spaces embedded in the list, for instance after commas,
 %D spoil the search process. The gain in speed depends on the
@@ -2566,7 +2566,7 @@
 %D
 %D The slow alternative looks like:
 %D
-%D \starttyping
+%D \starttypen
 %D \def\makerawcommalist[#1]#2%
 %D   {\def\appendtocommalist##1%
 %D      {\doifelse{#2}{}
@@ -2574,7 +2574,7 @@
 %D         {\edef#2{#2,##1}}}%
 %D    \def#2{}%
 %D    \processcommalist[#1]\appendtocommalist}
-%D \stoptyping
+%D \stoptypen
 %D
 %D But we prefer:
 
@@ -2687,11 +2687,11 @@
 % %D macros are used for interfacing. The next alternative can be used
 % %D for
 % %D
-% %D \starttyping
+% %D \starttypen
 % %D \processunexpandedcommalist
 % %D   [\alfa\beta,\gamma,\delta\epsilon]
 % %D   \handleitem
-% %D \stoptyping
+% %D \stoptypen
 % %D
 % %D This time nesting is not supported.
 %
@@ -2732,13 +2732,13 @@
 %D multi||linguality into account. For the moment we keep
 %D things simple and single||lingual.
 %D
-%D \starttyping
+%D \starttypen
 %D \dosetvalue   {label}    {variable}   {value}
 %D \dosetevalue  {label}    {variable}   {value}
 %D \dosetgvalue  {label}    {variable}   {value}
 %D \docopyvalue  {to label} {from label} {variable}
 %D \doresetvalue {label}    {variable}
-%D \stoptyping
+%D \stoptypen
 %D
 %D These macros are in fact auxiliary ones and are not meant
 %D for use outside the assignment macros.
@@ -2774,22 +2774,22 @@
 %D
 %D Assignments can be realized with:
 %D
-%D \starttyping
+%D \starttypen
 %D \doassign[label][variable=value]
 %D \undoassign[label][variable=value]
-%D \stoptyping
+%D \stoptypen
 %D
 %D and:
 %D
-%D \starttyping
+%D \starttypen
 %D \doassignempty[label][variable=value]
-%D \stoptyping
+%D \stoptypen
 %D
 %D Assignments like \type{\doassign} are compatible with:
 %D
-%D \starttyping
+%D \starttypen
 %D \def\labelvariable{value}
-%D \stoptyping
+%D \stoptypen
 %D
 %D We do check for the presence of an \type{=} and loudly
 %D complain of it's missed. We will redefine this macro later
@@ -2839,54 +2839,54 @@
 %D ideal of user friendly interfacing, so we take some further
 %D steps.
 %D
-%D \starttyping
+%D \starttypen
 %D \getparameters    [label] [...=...,...=...]
 % %D \forgetparameters [label] [...=...,...=...]
-%D \stoptyping
+%D \stoptypen
 %D
 %D Again, the label identifies the category a variable
 %D belongs to. The second argument can be a comma separated
 %D list of assignments.
 %D
-%D \starttyping
+%D \starttypen
 %D \getparameters
 %D   [demo]
 %D   [alfa=1,
 %D    beta=2]
-%D \stoptyping
+%D \stoptypen
 %D
 %D is equivalent to
 %D
-%D \starttyping
+%D \starttypen
 %D \def\demoalfa{1}
 %D \def\demobeta{2}
-%D \stoptyping
+%D \stoptypen
 %D
 %D
 %D In the pre||multi||lingual stadium \CONTEXT\ took the next
 %D approach. With
 %D
-%D \starttyping
+%D \starttypen
 %D \def\??demo {@@demo}
 %D \def\!!alfa {alfa}
 %D \def\!!beta {beta}
-%D \stoptyping
+%D \stoptypen
 %D
 %D calling
 %D
-%D \starttyping
+%D \starttypen
 %D \getparameters
 %D   [\??demo]
 %D   [\!!alfa=1,
 %D    \!!beta=2]
-%D \stoptyping
+%D \stoptypen
 %D
 %D lead to:
 %D
-%D \starttyping
+%D \starttypen
 %D \def\@@demoalfa{1}
 %D \def\@@demobeta{2}
-%D \stoptyping
+%D \stoptypen
 %D
 %D Because we want to be able to distinguish the \type{!!}
 %D pre||tagged user supplied variables from internal
@@ -2999,9 +2999,9 @@
 %D Sometimes we explicitly want variables to default to an
 %D empty string, so we welcome:
 %D
-%D \starttyping
+%D \starttypen
 %D \getemptyparameters [label] [...=...,...=...]
-%D \stoptyping
+%D \stoptypen
 
 \def\getemptyparameters[#1]#2[#3]%
   {\def\p!dogetemptyparameter##1%
@@ -3017,24 +3017,24 @@
 %D standard command for ruled boxes. Is situations like this
 %D we can use:
 %D
-%D \starttyping
+%D \starttypen
 %D \copyparameters [to-label] [from-label] [name1,name2,...]
-%D \stoptyping
+%D \stoptypen
 %D
 %D For instance
 %D
-%D \starttyping
+%D \starttypen
 %D \copyparameters
 %D   [internal][external]
 %D   [alfa,beta]
-%D \stoptyping
+%D \stoptypen
 %D
 %D Leads to:
 %D
-%D \starttyping
+%D \starttypen
 %D \def\internalalfa {\externalalfa}
 %D \def\internalbeta {\externalbeta}
-%D \stoptyping
+%D \stoptypen
 %D
 %D By using \type{\docopyvalue} we've prepared this command
 %D for use in a multi||lingual environment.
@@ -3051,19 +3051,19 @@
 %D A lot of \CONTEXT\ commands take optional arguments, for
 %D instance:
 %D
-%D \starttyping
+%D \starttypen
 %D \dothisorthat[alfa,beta]
 %D \dothisorthat[first=foo,second=bar]
 %D \dothisorthat[alfa,beta][first=foo,second=bar]
-%D \stoptyping
+%D \stoptypen
 %D
 %D Although a combined solution is possible, we prefer a
 %D seperation. The next command takes care of propper
 %D handling of such multi||faced commands.
 %D
-%D \starttyping
+%D \starttypen
 %D \doifassignmentelse {...} {then ...} {else ...}
-%D \stoptyping
+%D \stoptypen
 
 % not robust
 %
@@ -3090,9 +3090,9 @@
 %D Combining both in one \type{\if}||macro would lead to
 %D problems with nested \type{\if}'s.
 %D
-%D \starttyping
+%D \starttypen
 %D \checkparameters[argument]
-%D \stoptyping
+%D \stoptypen
 
 \newif\ifparameters
 
@@ -3110,10 +3110,10 @@
 %D It's possible to get an element from a commalist or a
 %D command representing a commalist.
 %D
-%D \starttyping
+%D \starttypen
 %D \getfromcommalist    [string] [n]
 %D \getfromcommacommand [string,\strings,string,...] [n]
-%D \stoptyping
+%D \stoptypen
 %D
 %D The difference betwee the two of them is the same as the
 %D difference between \type{\processcomma...}. The found string
@@ -3122,10 +3122,10 @@
 %D We can calculate the size of a comma separated list by
 %D using:
 %D
-%D \starttyping
+%D \starttypen
 %D \getcommalistsize    [string,string,...]
 %D \getcommacommandsize [string,\strings,string,...]
-%D \stoptyping
+%D \stoptypen
 %D
 %D Afterwards, the length is available in the macro
 %D \type{\commalistsize} (not a \COUNTER).
@@ -3183,7 +3183,7 @@
 %D macro for those cases. The indirect call however slows
 %D down the other cases.
 %D
-%D \starttyping
+%D \starttypen
 %D \def\p!dogetfirstfromcommalist    [#1,#2]{\def\commalistelement{#1}}
 %D \def\p!dogetsecondfromcommalist[#1,#2,#3]{\def\commalistelement{#2}}
 %D \let\p!dogetotherfromcommalist=\getfromcommalist
@@ -3198,7 +3198,7 @@
 %D    \else
 %D      \p!dogetotherfromcommalist[#1][#3]%
 %D    \fi}
-%D \stoptyping
+%D \stoptypen
 %D
 %D Even worse, this alternative does not strip preceding
 %D spaces, which is what we want. So, we stick to the slow
@@ -3225,7 +3225,7 @@
 %D
 %D reports:
 %D
-%D \getbuffer
+%D \haalbuffer
 
 %D \macros
 %D   {dogetcommalistelement,dogetcommacommandelement}
@@ -3233,9 +3233,9 @@
 %D For low level (fast) purposes, we can also use the next
 %D alternative, which can handle 8~elements at most.
 %D
-%D \starttyping
+%D \starttypen
 %D \dogetcommalistelement1\from a,b,c\to\commalistelement
-%D \stoptyping
+%D \stoptypen
 
 \def\dodogetcommalistelement#1\from#2,#3,#4,#5,#6,#7,#8\to#9%
   {\edef#9{\ifcase#1\relax\or#2\or#3\or#4\or#5\or#6\or#7\or#8\fi}}
@@ -3262,30 +3262,30 @@
 %D \TEX' internal scanner for grabbing everything between
 %D arguments. Forgive me the funny names.
 %D
-%D \starttyping
+%D \starttypen
 %D \dosingleargument\commando    = \commando[#1]
 %D \dodoubleargument\commando    = \commando[#1][#2]
 %D \dotripleargument\commando    = \commando[#1][#2][#3]
 %D \doquadrupleargument\commando = \commando[#1][#2][#3][#4]
 %D \doquintupleargument\commando = \commando[#1][#2][#3][#4][#5]
 %D \dosixtupleargument\commando  = \commando[#1][#2][#3][#4][#5][#6]
-%D \doseventupleargument\command= \commando[#1][#2][#3][#4][#5][#6][#7]
-%D \stoptyping
+%D \doseventupleargument\commando= \commando[#1][#2][#3][#4][#5][#6][#7]
+%D \stoptypen
 %D
 %D These macros are used in the following way:
 %D
-%D \starttyping
+%D \starttypen
 %D \def\dosetupsomething[#1][#2]%
 %D   {... #1 ... #2 ...}
 %D
 %D \def\setupsomething%
 %D   {\dodoubleargument\dosetupsomething}
-%D \stoptyping
+%D \stoptypen
 %D
 %D The implementation can be surprisingly simple and needs no
 %D further explanation, like:
 %D
-%D \starttyping
+%D \starttypen
 %D \def\dosingleargument#1[#2]%
 %D   {#1[#2]}
 %D \def\dotripleargument#1[#2]#3[#4]#5[#6]%
@@ -3294,7 +3294,7 @@
 %D   {\def\dodoquintupleargument[##1]##2[##3]##4[##5]##6[##7]##8[##9]%
 %D      {#1[##1][##3][##5][##7][##9]}%
 %D    \dodoquintupleargument}
-%D \stoptyping
+%D \stoptypen
 %D
 %D Because \TEX\ accepts 9~arguments at most, we have to use
 %D two||step solution when getting five or more arguments.
@@ -3338,7 +3338,7 @@
 %D The empty argument supplying macros mentioned before, look
 %D like:
 %D
-%D \starttyping
+%D \starttypen
 %D \dosingleempty    \command
 %D \dodoubleempty    \command
 %D \dotripleempty    \command
@@ -3346,15 +3346,15 @@
 %D \doquintupleempty \command
 %D \dosixtupleempty  \command
 %D \doseventupleempty\command
-%D \stoptyping
+%D \stoptypen
 %D
 %D So \type{\dodoubleempty} leades to:
 %D
-%D \starttyping
+%D \starttypen
 %D \command[#1][#2]
 %D \command[#1][]
 %D \command[][]
-%D \stoptyping
+%D \stoptypen
 %D
 %D Depending of the generousity of the user. Afterwards one can
 %D use the \type{\if...argument} boolean. For novice: watch
@@ -3656,32 +3656,32 @@
 %D These maybe too mysterious macros enable us to handle more
 %D than one setup at once.
 %D
-%D \starttyping
+%D \starttypen
 %D \dosingleargumentwithset \command[#1]
 %D \dodoubleargumentwithset \command[#1][#2]
 %D \dotripleargumentwithset \command[#1][#2][#3]
 %D \dodoubleemptywithset    \command[#1][#2]
 %D \dotripleemptywithset    \command[#1][#2][#3]
-%D \stoptyping
+%D \stoptypen
 %D
 %D The first macro calls \type{\command[##1]} for each string
 %D in the set~\type{#1}. The second one calls for
 %D \type{\commando[##1][#2]} and the third, well one may guess.
 %D These commands support constructions like:
 %D
-%D \starttyping
+%D \starttypen
 %D \def\dodefinesomething[#1][#2]%
 %D   {\getparameters[\??xx#1][#2]}
 %D
 %D \def\definesomething%
 %D   {\dodoubleargumentwithset\dodefinesomething}
-%D \stoptyping
+%D \stoptypen
 %D
 %D Which accepts calls like:
 %D
-%D \starttyping
+%D \starttypen
 %D \definesomething[alfa,beta,...][variable=...,...]
-%D \stoptyping
+%D \stoptypen
 %D
 %D Now a whole bunch of variables like \type{\@@xxalfavariable}
 %D and \type{\@@xxbetavariable} is defined.
@@ -3727,9 +3727,9 @@
 %D The next macro can be very useful when using \type{\csname}
 %D like in:
 %D
-%D \starttyping
+%D \starttypen
 %D \csname if\strippedcsname\something\endcsname
-%D \stoptyping
+%D \stoptypen
 %D
 %D This expands to \type{\ifsomething}.
 
@@ -3743,35 +3743,35 @@
 %D prefixed by \type{\complex}, a command without one gets the
 %D prefix \type{\simple}. Commands like this can be defined by:
 %D
-%D \starttyping
+%D \starttypen
 %D \complexorsimple\command
-%D \stoptyping
+%D \stoptypen
 %D
 %D When \type{\command} is followed by a \type{[setup]}, then
 %D
-%D \starttyping
+%D \starttypen
 %D \complexcommand [setup]
-%D \stoptyping
+%D \stoptypen
 %D
 %D executes, else we get
 %D
-%D \starttyping
+%D \starttypen
 %D \simplecommand
-%D \stoptyping
+%D \stoptypen
 %D
 %D An alternative for \type{\complexorsimple} is:
 %D
-%D \starttyping
+%D \starttypen
 %D \complexorsimpleempty {command}
-%D \stoptyping
+%D \stoptypen
 %D
 %D Depending on the presence of \type{[setup]}, this one
 %D leads to one of:
 %D
-%D \starttyping
+%D \starttypen
 %D \complexcommando [setup]
 %D \complexcommando []
-%D \stoptyping
+%D \stoptypen
 %D
 %D Many \CONTEXT\ commands started as complex or simple ones,
 %D but changed into more versatile (more object oriented) ones
@@ -3880,16 +3880,16 @@
 
 %D These commands are called as:
 %D
-%D \starttyping
+%D \starttypen
 %D \definecomplexorsimple\command
-%D \stoptyping
+%D \stoptypen
 %D
 %D Of course, we must have available
 %D
-%D \starttyping
+%D \starttypen
 %D \def\complexcommand[#1]{...}
 %D \def\simplecommand     {...}
-%D \stoptyping
+%D \stoptypen
 %D
 %D Using this construction saves a few string now and then.
 
@@ -3904,38 +3904,38 @@
 %D We won't go into details here, but the general form of
 %D this using this command is:
 %D
-%D \starttyping
+%D \starttypen
 %D \definestartstopcommand\somecommand\e!specifier{arg}{arg}%
 %D   {do something with arg}
-%D \stoptyping
+%D \stoptypen
 %D
 %D This expands to something like:
 %D
-%D \starttyping
+%D \starttypen
 %D \def\somecommand arg \startspecifier arg \stopspecifier%
 %D   {do something with arg}
-%D \stoptyping
+%D \stoptypen
 %D
 %D The arguments can be anything reasonable, but double
 %D \type{#}'s are needed in the specification part, like:
 %D
-%D \starttyping
+%D \starttypen
 %D \definestartstopcommand\somecommand\e!specifier{[##1][##2]}{##3}%
 %D   {do #1 something #2 with #3 arg}
-%D \stoptyping
+%D \stoptypen
 %D
 %D which becomes:
 %D
-%D \starttyping
+%D \starttypen
 %D \def\somecommand[#1][#2]\startspecifier#3\stopspecifier%
 %D   {do #1 something #2 with #3 arg}
-%D \stoptyping
+%D \stoptypen
 %D
 %D We will see some real applications of this command in the
 %D core modules.
 
 \def\definestartstopcommand#1#2#3#4% can be done with \expanded ot better, toks
-  {\def\!stringa{#3}%              % but let's keep this unused one crappy
+  {\def\!stringa{#3}%              % but let's keep this unuded one crappy
    \def\!stringb{\e!start#2}%
    \def\!stringc{#4}%
    \def\!stringd{\e!stop#2}%
@@ -3955,19 +3955,19 @@
 %D optional arguments between \type{[]}. The next two commands
 %D handle the ones with \type{{}}. They are called as:
 %D
-%D \starttyping
+%D \starttypen
 %D \dosinglegroupempty    \ineedONEargument
 %D \dodoublegroupempty    \ineedTWOarguments
 %D \dotriplegroupempty    \ineedTHREEarguments
 %D \doquadruplegroupempty \ineedFOURarguments
 %D \doquintuplegroupempty \ineedFIVEarguments
-%D \stoptyping
+%D \stoptypen
 %D
 %D where \type{\ineedONEargument} takes one and the others
 %D two and three arguments. These macro's were first needed in
 %D \PPCHTEX.
 %D
-%D \starttyping
+%D \starttypen
 %D \def\dogetgroupargument#1#2% redefined in mult-ini
 %D   {\def\nextnextargument%
 %D      {\ifx\nextargument\bgroup
@@ -3989,7 +3989,7 @@
 %D       \fi%\fi\fi                 % so let's get rid of it
 %D       \nextargument}%
 %D    \futurelet\nextargument\nextnextargument}
-%D \stoptyping
+%D \stoptypen
 %D
 %D In order to catch \type {\nextargument}'s that expand to
 %D \type {\if} and friends, in practice we will use a
@@ -4153,7 +4153,7 @@
 %D These macros can explictly take care of spaces, which means
 %D that the next definition and calls are valid:
 %D
-%D \starttyping
+%D \starttypen
 %D \def\test#1#2#3{[#1#2#3]}
 %D
 %D \dotriplegroupempty\test {a}{b}{c}
@@ -4165,7 +4165,7 @@
 %D \dotriplegroupempty\test
 %D   {a}
 %D   {b}
-%D \stoptyping
+%D \stoptypen
 %D
 %D And alike.
 
@@ -4226,11 +4226,11 @@
 %D we will also introduce a mechanism for message passing. For
 %D the moment we stick to the core macros:
 %D
-%D \starttyping
+%D \starttypen
 %D \writestring {string}
 %D \writeline
 %D \writestatus {category} {message}
-%D \stoptyping
+%D \stoptypen
 %D
 %D Messages are formatted. One can provide the maximum with
 %D of the identification string with the macro
@@ -4305,14 +4305,14 @@
 
 %D Because we're grouped, we could have initialized at forehand:
 %D
-%D \starttyping
+%D \starttypen
 %D \statuscounter\statuswidth
-%D \stoptyping
+%D \stoptypen
 
 %D The next implementation saves only some 10 words of format
 %D memory, but we hardly gain any speed.
 %D
-%D \starttyping
+%D \starttypen
 %D \def\dosplitstatus#1#2#3#4#5#6#7#8#9%
 %D   {#1#2#3#4#5#6#7#8#9\dodosplitstatus}
 %D
@@ -4326,7 +4326,7 @@
 %D         \space\space\space\space\space
 %D         \space\space\space\space\space\end
 %D         \space:\space#2}}
-%D \stoptyping
+%D \stoptypen
 
 %D Okay then. More obscure but slightly faster: no split grabs
 %D the do split part and skipping the else branch has to happen
