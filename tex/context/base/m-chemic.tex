@@ -13,7 +13,13 @@
 %C details. 
 
 \ifx\beginpicture\undefined
+  \let\normalgrid\grid
+  \let\normalaxis\axis
   \input pictex.tex \relax
+  \let\pictexgrid\grid
+  \let\pictexaxis\axis
+  \let\grid\normalgrid
+  \let\axis\normalaxis
 \fi
 
 \input ppchtex.tex \relax

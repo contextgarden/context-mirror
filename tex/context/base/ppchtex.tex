@@ -485,7 +485,7 @@
      \endpspicture
    \or
      \resetchemicalcoordinates
-     \setbox2=\hbox{\getMPdrawing}%
+     \setbox2=\hbox{\MPshiftdrawingtrue\getMPdrawing}%
      \wd2=\!!zeropoint\ht2=\!!zeropoint\dp2=\!!zeropoint
      \put {\box2} at 0 0 
      \endpicture 
@@ -524,7 +524,7 @@
      \put {\box\chemicalsymbols} at 0 0 %  elders
      \ifMPdrawingdone
        \resetchemicalcoordinates
-       \setbox2=\hbox{\getMPdrawing}%
+       \setbox2=\hbox{\MPshiftdrawingtrue\getMPdrawing}%
        \wd2=\!!zeropoint\ht2=\!!zeropoint\dp2=\!!zeropoint
        \put {\box2} at 0 0 %
      \fi

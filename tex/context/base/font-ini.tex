@@ -888,8 +888,15 @@
 \def\definefont%
   {\dodoubleargument\dodefinefont}
 
+% \def\dodefinefont[#1][#2]% 
+%   {\unexpanded\setvalue{#1}{\dododefinefont{#1}#2 sa sa*}}
+%
+% A more friendly version, which defaults to \type {sa 1} is: 
+
 \def\dodefinefont[#1][#2]% 
-  {\unexpanded\setvalue{#1}{\dododefinefont{#1}#2 sa sa*}}
+  {\doifinstringelse{ }{#2}
+     {\unexpanded\setvalue{#1}{\dododefinefont{#1}#2 sa sa*}}
+     {\dodefinefont[#1][#2 sa 1]}}
 
 \def\dododefinefont#1#2sa #3sa#4*%
   {\edef\fontscale{#3}%
@@ -986,7 +993,7 @@
 
 \endTEX
 
-\beginETEX
+\beginETEX \ifcsname
 
 \def\currentfontscale%
   {\ifcsname\??ft\s!default\xfontsize\endcsname
@@ -2198,22 +2205,22 @@
 %D On behalf of {\frac Tobias Burnus}, we define some more of
 %D these: 
 
-\definefont [frak] [Fraktur     sa \currentfontscale]
-\definefont [goth] [Gothic      sa \currentfontscale]
-\definefont [cal]  [Caligraphic sa \currentfontscale]
+\definefont [frak] [Fraktur      sa \currentfontscale]
+\definefont [goth] [Gothic       sa \currentfontscale]
+\definefont [cal]  [Calligraphic sa \currentfontscale]
 
-\definefontsynonym [Fraktur]     [Serif]
-\definefontsynonym [Gothic]      [Serif]
-\definefontsynonym [Caligraphic] [Serif]
+\definefontsynonym [Fraktur]      [Serif]
+\definefontsynonym [Gothic]       [Serif]
+\definefontsynonym [Calligraphic] [Serif]
 
 %D \macros
-%D   {fraktur, gothic, caligraphic}
+%D   {fraktur, gothic, calligraphic}
 %D
 %D For Tobias and friends:
 
-\def\fraktur    #1{\ifmmode\hbox\fi{\frak#1}}
-\def\gothic     #1{\ifmmode\hbox\fi{\goth#1}}
-\def\caligraphic#1{\ifmmode\hbox\fi{\cal #1}}
+\def\fraktur     #1{\ifmmode\hbox\fi{\frak#1}}
+\def\gothic      #1{\ifmmode\hbox\fi{\goth#1}}
+\def\calligraphic#1{\ifmmode\hbox\fi{\cal #1}}
 
 %D In \type {font-cmr} we will link these to real file names.
 
@@ -2249,7 +2256,7 @@
 %D system calls and are defined by the bodyfontenvironment.
 
 \def\setsmallbodyfont%
-  {\doswitchpoints[\getvalue{\??ft\normalizedbodyfontsize\v!klein}]%
+  {\doswitchpoints[\getvalue{\??ft\normalizedbodyfontsize\interfaced\v!klein}]%
    \doswitchstyle[\fontstyle]}
 
 \def\setmainbodyfont%
@@ -2462,7 +2469,8 @@
 \newconditional\emneeded
 
 \unexpanded\def\em%
-  {\ifdim\fontdimen1\font>\!!zeropoint\relax
+  {\relax
+   \ifdim\fontdimen1\font>\!!zeropoint\relax
      \settrue\emneeded
    \else
      \setfalse\emneeded
@@ -2494,7 +2502,8 @@
   {\let\normalbf\bf
    \let\setemphasisboldface\relax
    \def\bf%
-     {\ifnum\fam=\itfam
+     {\relax
+      \ifnum\fam=\itfam
         \bi
       \else\ifnum\fam=\slfam
         \bs
@@ -2667,15 +2676,15 @@
       \doifelsenothing{#1}
         {\def\title{\the\korpsgrootte}}
         {\switchtobodyfont[#1]\def\title{#1}}
-      \def\do##1##2%
-        {\getvalue{\??ft##1##2}}
-      \def\next##1##2%
-        {&&##1{##2}{\s!text}&&##1{##2}{\s!script}&&##1{##2}{\s!scriptscript}%
-         &&##1{##2}{\c!x}&&##1{##2}{\c!xx}%
-         &&##1{##2}{\v!klein}&&##1{##2}{\v!groot}&\cr
+      \def\next##1%
+        {&&\getvalue{\??ft##1\s!text}%                
+         &&\getvalue{\??ft##1\s!script}%              
+         &&\getvalue{\??ft##1\s!scriptscript}%        
+         &&\getvalue{\??ft##1\c!x}%                  
+         &&\getvalue{\??ft##1\c!xx}%                  
+         &&\getvalue{\??ft##1\interfaced{\v!klein}}%
+         &&\getvalue{\??ft##1\interfaced{\v!groot}}&\cr
          \noalign{\hrule}}
-      \def\donext##1%
-        {\doifdefined{\??ft##1\s!text}{\next\do{##1}}}
       \setlocalhsize
       \halign to \localhsize
         {##&\vrule##\strut
@@ -2687,8 +2696,10 @@
          \noalign{\hrule}
          &\multispan{15}{\vrule\hfil\tttf\strut[\title]\hfil}\vrule\cr
          \noalign{\hrule}
-         \next\bf\relax
-         \@EA\globalprocesscommalist\@EA[\bodyfontenvironmentlist]\donext}}
+         &&\bf\s!text&&\bf\s!script&&\bf\s!scriptscript
+         &&\bf\c!x&&\bf\c!xx&&\bf\v!klein&&\bf\v!groot&\cr
+         \noalign{\hrule}
+         \@EA\globalprocesscommalist\@EA[\bodyfontenvironmentlist]\next}}
    \stopbaselinecorrection}
 
 %D \macros
@@ -2704,13 +2715,16 @@
 %D as one can see, it does obey the small and even smaller 
 %D sizes. 
 
+% \def\getglyph#1#2%
+%   {{\ifcase\currentxfontsize\or
+%       \bodyfontsize=\getvalue{\??ft\normalizedbodyfontsize\c!x}% 
+%     \else
+%       \bodyfontsize=\getvalue{\??ft\normalizedbodyfontsize\c!xx}% 
+%     \fi
+%     \font\temp=\truefontname{#1} at \bodyfontsize \temp#2\relax}}
+
 \def\getglyph#1#2%
-  {{\ifcase\currentxfontsize\or
-      \bodyfontsize=\getvalue{\??ft\normalizedbodyfontsize\c!x}% 
-    \else
-      \bodyfontsize=\getvalue{\??ft\normalizedbodyfontsize\c!xx}% 
-    \fi
-    \font\temp=\truefontname{#1} at \bodyfontsize \temp#2\relax}}
+  {{\definefont[\s!dummy][#1 sa \currentfontscale]\dummy#2}}
 
 %D Fonts can only be used when loaded. In \CONTEXT\ we
 %D postpone the loading of fonts, even when we load \PLAIN.
@@ -2756,14 +2770,15 @@
 \let\setplainfonts=\undefined
 
 %D \macros
-%D   {ss, SS}
+%D   {ss, SS, sz}
 %D
 %D We are going to redefine \type{\ss} but for those wo still
 %D want to have access to the german \SS, we save it's value in
 %D \type{\SS}. Ok, I should have used \type{\sf} insead of
 %D \type{\ss} in the first place.
 
-\let\SS=\ss
+\ifx\undefined\SS \let\SS=\ss \fi
+\ifx\undefined\sz \let\sz=\ss \fi
 
 %D \macros
 %D   {xi}
@@ -2903,6 +2918,26 @@
              \c!em=\v!schuin]
 
 \definebodyfontenvironment
+  [20.7pt]
+  [        \s!text=20.7pt,
+         \s!script=\!!fourteenpointfour,
+   \s!scriptscript=\!!twelvepoint, 
+              \c!x=17.3pt,
+             \c!xx=\!!fourteenpointfour,
+          \c!groot=20.7pt,    % !!!!
+          \c!klein=17.3pt]
+
+\definebodyfontenvironment
+  [17.3pt]
+  [        \s!text=17.3pt,
+         \s!script=\!!twelvepoint, 
+   \s!scriptscript=\!!tenpoint,
+              \c!x=\!!fourteenpointfour,
+             \c!xx=\!!twelvepoint, 
+          \c!groot=20.7pt,
+          \c!klein=\!!fourteenpointfour]
+
+\definebodyfontenvironment
   [\!!fourteenpointfour]
   [        \s!text=\!!fourteenpointfour,
          \s!script=\!!elevenpoint,
@@ -3020,39 +3055,6 @@
 \definebodyfontswitch [viii] [\!!eightpoint]
 \definebodyfontswitch [vii]  [\!!sevenpoint]
 \definebodyfontswitch [vi]   [\!!sixpoint]
-
-%D Well, why not define a few more big ones. Nowadays memory 
-%D is not so much a problem any more. 
-
-\definebodyfontenvironment
-  [14.4pt]
-  [        \s!text=14.4pt,
-         \s!script=11pt, 
-   \s!scriptscript=9pt, 
-              \c!x=12pt,
-             \c!xx=10pt,
-          \c!groot=17.3pt,
-          \c!klein=12pt]
-
-\definebodyfontenvironment
-  [17.3pt]
-  [        \s!text=17.3pt,
-         \s!script=12pt, 
-   \s!scriptscript=10pt, 
-              \c!x=14.4pt,
-             \c!xx=12pt,
-          \c!groot=20.7pt,
-          \c!klein=14.4pt]
-
-\definebodyfontenvironment
-  [20.7pt]
-  [        \s!text=20.7pt,
-         \s!script=14.4pt, 
-   \s!scriptscript=12pt, 
-              \c!x=17.3pt,
-             \c!xx=14.4pt,
-          \c!groot=20.7pt,    % !!!!
-          \c!klein=17.3pt]
 
 %D So far. 
  

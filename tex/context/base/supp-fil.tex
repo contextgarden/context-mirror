@@ -342,7 +342,7 @@
    \doopenin{#1}{\pathplusfile{#2}{#3}}}
 
 %D \macros
-%D   {doiffileelse,doiflocfileelse}
+%D   {doiffileelse,doiflocfileelse,doifjobfileelse}
 %D
 %D The next alternative only looks if a file is present. No
 %D loading is done. This one obeys the standard \TEX\
@@ -353,7 +353,7 @@
 %D \stoptypen
 %D
 %D We use \type{\next} here, because we want to close the 
-%D file first. We also provide the local alternative: 
+%D file first. We also provide the alternatives: 
 %D 
 %D \starttypen
 %D \doiflocfileelse {filename} {before loading} {not found}

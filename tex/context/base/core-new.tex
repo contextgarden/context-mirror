@@ -30,16 +30,29 @@
 %
 % \startnotmode [list]
 % \stopnotmode
-
+%
+% system modes have a * as prefix 
+%
 % to be implemented: mode naar texutil/scherm + message  
+%                  : geen #2 en nesting (\startregels)
+
+\def\systemmodeprefix{*}
 
 \let\currentmode=\empty
 
+% \def\enablemode[#1]%
+%   {\expandafter\addtocommalist\expandafter{#1}\currentmode}
+%
+% \def\disablemode[#1]%
+%   {\expandafter\removefromcommalist\expandafter{#1}\currentmode}
+%
+% this one fails in removing system modes 
+
 \def\enablemode[#1]%
-  {\expandafter\addtocommalist\expandafter{#1}\currentmode}
+  {\expanded{\addtocommalist{#1}\noexpand\currentmode}}
 
 \def\disablemode[#1]%
-  {\expandafter\removefromcommalist\expandafter{#1}\currentmode}
+  {\expanded{\removefromcommalist{#1}\noexpand\currentmode}}
 
 \def\doifmodeelse%
   {\unprotect\dodoifmodeelse}

@@ -232,12 +232,11 @@
 %D Should be a special!
 
 \def\dogetfiguresizetex#1#2#3#4#5#6% file pagina ...
-  {\ifx\@@efextension\c!tex \else \ifx\@@efextension\c!tmp \else
-     \doifnumberelse{\@@efextension}
-       {\executedfalse}
-       {\ExpandBothAfter\doifinset{\@@efextension}{\figuretypes}
-          {\executedfalse}}%
-   \fi \fi
+  {\doifinset{\@@efextension}{\c!tex,\c!tmp}
+     {\doifnumberelse{\@@efextension}
+        {\executedfalse}
+        {\ExpandBothAfter\doifinset{\@@efextension}{\figuretypes}
+           {\executedfalse}}}%
    \ifexecuted
      \global\setbox\foundexternalfigure=\vbox
        {\insidefloattrue
@@ -273,22 +272,20 @@
          \executedfalse % nothing decent found
        \fi\fi
      \fi\fi
-     \ifexecuted\ifx\@@efcurrenttype\c!mps\ifcase\EPScreator
-       \executedfalse % searching for mps, eps found, but no valid mps
-     \fi\fi\fi
+     \ifexecuted % searching for mps, eps found, but no valid mps
+       \doif{\@@efcurrenttype}{\c!mps}{\ifcase\EPScreator\executedfalse\fi}%
+     \fi
 % until here
      \ifexecuted
        \chardef\figurestatus=3
-       \ifx\@@efcurrenttype\c!eps
-         \ifcase\EPScreator
+       \doifelse{\@@efcurrenttype}{\c!eps}
+         {\ifcase\EPScreator
            \@@eftrace{found}%
-         \else
-           \let\@@efcurrenttype\c!mps
-           \@@eftrace{mps found}%
-         \fi
-       \else
-         \@@eftrace{found}%
-       \fi
+          \else
+            \let\@@efcurrenttype\c!mps
+            \@@eftrace{mps found}%
+          \fi}
+         {\@@eftrace{found}}%
        \geteparameters % e !
          [\??ep]
          [\c!x=\the\!!widtha,\c!y=\the\!!heighta,
@@ -335,21 +332,20 @@
 
 \def\getfiguredimensionsC%
   {\ifcase\figurestatus\ifrunutilityfile\ifcase\figurefilemode\else
-     \ifx\@@efcurrenttype\c!tex\else
-       \doiffileelse{\@@efcurrentfile}
-         {\edef\@@effilenametype{\@@effilename.\@@efcurrenttype}%
-          \@@eftrace{running texutil on \@@effilenametype}%
-          \def\@@efloadname{\f!utilityfilename.\f!temporaryextension}%
-          \executesystemcommand
-            {texutil --fig --out=\@@efloadname\space\@@effilenametype}%
-          \@@eftrace{analyzing \@@efloadname\space on \@@effilenametype}%
-          \pushendofline
-          \let\presetfigure=\presetfigureB
+     \doif{\@@efcurrenttype}{\c!tex}
+       {\doiffileelse{\@@efcurrentfile}
+          {\edef\@@effilenametype{\@@effilename.\@@efcurrenttype}%
+           \@@eftrace{running texutil on \@@effilenametype}%
+           \def\@@efloadname{\f!utilityfilename.\f!temporaryextension}%
+           \executesystemcommand
+             {texutil --fig --out=\@@efloadname\space\@@effilenametype}%
+           \@@eftrace{analyzing \@@efloadname\space on \@@effilenametype}%
+           \pushendofline
+           \let\presetfigure=\presetfigureB
           \readsetfile{.}{\@@efloadname}\relax\relax
-          \popendofline
-          \@@eftrace{\ifcase\figurestatus not \fi found}}
-         {}%
-     \fi
+            \popendofline
+           \@@eftrace{\ifcase\figurestatus not \fi found}}
+          {}}%
    \fi\fi\fi}
 
 \def\presetfigureB[#1][#2]%
@@ -563,32 +559,42 @@
 \def\docalculatefigurescales#1#2#3#4%
   {\dimen0=#1\relax                     % #1 = new 1-value
    \dimen2=#2\relax                     % #2 = old 1-value
-   \divide\dimen2 by \!!thousand\relax
-   \divide\dimen0 by \dimen2\relax
-   \figxsca=\dimen0\relax               %      x scale
-   \figysca=\dimen0\relax               %      y scale
+   \divide\dimen2 by \!!thousand
+   \divide\dimen0 by \dimen2
+   \figxsca=\dimen0                     %      x scale
+   \figysca=\dimen0                     %      y scale
    \dimen2=#4\relax                     % #4 = old 2-value
-   \divide\dimen2 by \!!thousand\relax
-   \multiply\dimen2 by \dimen0\relax
-   #3=\dimen2\relax}                    % #3 = new 2-value
+   \divide\dimen2 by \!!thousand
+   \multiply\dimen2 by \dimen0
+   #3=\dimen2 }                         % #3 = new 2-value
 
 \def\docalculatefigurescale#1#2#3%
   {\dimen0=#1\relax                     % #1 = new value
    \dimen2=#2\relax                     % #2 = old value
-   \divide\dimen2 by \!!thousand\relax
-   \divide\dimen0 by \dimen2\relax
-   #3=\dimen0\relax}                    % #3 = schaal
+   \divide\dimen2 by \!!thousand
+   \divide\dimen0 by \dimen2
+   #3=\dimen0 }                         % #3 = schaal
 
 \def\doapplyfigurescale#1#2#3%
   {#1=#2\relax
-   \ifcase0\@@efschaal\relax#3=\!!thousand\else#3=\@@efschaal\fi\relax
-   \divide#1 by \!!thousand\relax
-   \multiply#1 by #3\relax}
+   \ifcase0\@@efschaal\relax
+     #3=\!!thousand
+   \else
+     #3=\@@efschaal
+   \fi
+   \relax % important !  
+   \ifnum#3=\!!thousand\else
+     \divide#1 by \!!thousand
+     \multiply#1 by #3\relax
+   \fi}
 
 \def\doapplyfiguresize%
   {\ifinner
      \teksthoogte=\vsize
      \scratchdimen=\teksthoogte
+   \else\ifinpagebody
+     \teksthoogte=\vsize
+     \scratchdimen=\teksthoogte   
    \else
      \ifdim\pagegoal<\maxdimen
        \ifdim\pagetotal<\pagegoal
@@ -600,7 +606,7 @@
      \else
        \scratchdimen=\teksthoogte
      \fi
-   \fi
+   \fi\fi
    \doifelsenothing{\@@efhoogte}
      {\edef\@@efvsize{\the\scratchdimen}}
      {\let\@@efvsize=\@@efhoogte}%
@@ -610,9 +616,10 @@
 
 \def\convertfigureinsertscale#1#2#3#4%
   {\scratchdimen=#1\relax
-   %\advance\scratchdimen by .0005pt
-   \divide\scratchdimen by \!!thousand
-   \multiply\scratchdimen by #3\relax
+   \ifnum#3=\!!thousand\else % better 1000 100 10 ranges, evt round 2sp 
+     \divide\scratchdimen by \!!thousand
+     \multiply\scratchdimen by #3\relax
+   \fi
    \scratchdimen=-\scratchdimen  % beter hier - dan in driver
    \edef#2{\number\scratchdimen}%
    \scratchdimen=#3pt
@@ -667,15 +674,14 @@
       \c!factor=,\c!hfactor=,\c!bfactor=,
       \c!achtergrond=,\c!achtergrondkleur=,\c!achtergrondraster=\@@rsraster,
       \c!hoek=,\c!straal=.5\korpsgrootte,\c!kader=\v!uit]%
-   \ifx\@@efextension\c!mov \presetfiguremov \fi
+   \doif{\@@efextension}{\c!mov}{\presetfiguremov}%
    #1[#4][#5][#6]%
-   \ifx\@@eftype\c!mov   \presetfiguremov \fi
-   \ifx\@@eftype\v!buffer
-     \ifx\@@efextension\empty
-       \let\@@efextension\c!tmp
-     \fi
-     \let\@@eftype\c!tex
-   \fi
+   \doif{\@@eftype}{\c!mov}{\presetfiguremov}%
+   \doif{\@@eftype}{\v!buffer}
+     {\ifx\@@efextension\empty
+        \let\@@efextension\c!tmp
+      \fi
+      \let\@@eftype\c!tex}%
    \processaction
      [\@@efextension]
      [   \c!tex=>\let\@@eftype\c!tex,
@@ -692,12 +698,11 @@
             \doifobjectfoundelse{FIG}{\@@efobjectname}{\donetrue}{\donefalse}}
            {\donefalse}}
         {\donefalse}}%
-   \ifx\@@effilename\jobname
-     \@EA\removefromcommalist\@EA{\jobsuffix}\figuretypes
-     \let\@@efextension=\empty
-     \showmessage{\m!figures}{9}{\@@effilename,\jobsuffix}%
-     \donefalse
-   \fi
+   \doif{\@@effilename}{\jobname}
+     {\@EA\removefromcommalist\@EA{\jobsuffix}\figuretypes
+      \let\@@efextension=\empty
+      \showmessage{\m!figures}{9}{\@@effilename,\jobsuffix}%
+      \donefalse}%
    \ifdone
      \getobjectdimensions{FIG}{\@@efobjectname}%
      \geteparameters % e !
@@ -806,12 +811,13 @@
      {\addtocommalist\v!preview\@@efoptions}%
    \doif{\@@efherhaal}{\v!ja}
      {\addtocommalist\v!herhaal\@@efoptions}%
-\ifx\@@eftype\c!mps\ifcase\EPSspecial\else\ifinobject\else
-  \@@eftrace{special mps, object forced}%
-  \doglobal\increment\forcedMPSobject
-  \edef\@@efobjectname{\c!mps::\forcedMPSobject}%
-  \let\@@efobject\v!ja
-\fi\fi\fi
+\doif{\@@eftype}{\c!mps}
+  {\ifcase\EPSspecial\else\ifinobject\else
+     \@@eftrace{special mps, object forced}%
+     \doglobal\increment\forcedMPSobject
+     \edef\@@efobjectname{\c!mps::\forcedMPSobject}%
+     \let\@@efobject\v!ja
+   \fi\fi}%
 \global\let\lastfigureobjectname\@@efobjectname
     \doifelse{\@@efobject}{\v!nee}
      {\donefalse}
@@ -884,18 +890,19 @@
 \let\lastfigureobjectname\empty
 
 \def\calculateexternalscreenfigure[#1][#2][#3][#4][#5][#6]%
-  {\ifx\@@efscherm\empty\else\ifx\@@efobject\v!nee\else
-     \doifobjectssupportedelse
-       {\doifspecialavailableelse\doregisterfigure
-          {\bgroup
-           #1[#4][#5][#6]%
-           \doregisterfigure{FIG}{\lastfigureobjectname}%
-           \let\@@ef@@scherm\@@efscherm
-           \calculateexternalfigure[#1][\@@ef@@scherm][\@@ef@@scherm][#4,\c!scherm=][#5][#6]%
-           \egroup}
-          {}}
-       {}%
-   \fi\fi}
+  {\ifx\@@efscherm\empty\else
+     \doifnot{\@@efobject}{\v!nee}
+       {\doifobjectssupportedelse
+          {\doifspecialavailableelse\doregisterfigure
+             {\bgroup
+              #1[#4][#5][#6]%
+              \doregisterfigure{FIG}{\lastfigureobjectname}%
+              \let\@@ef@@scherm\@@efscherm
+              \calculateexternalfigure[#1][\@@ef@@scherm][\@@ef@@scherm][#4,\c!scherm=][#5][#6]%
+              \egroup}
+             {}}
+          {}}%
+   \fi}
 
 \let\dowithfigure\relax
 
@@ -903,12 +910,15 @@
 \let\naturalfigurewidth =\!!zeropoint
 \let\figureheight       =\!!zeropoint
 \let\figurewidth        =\!!zeropoint
+\def\noffigurepages     {1}
 
 \def\getfiguredimensions%
   {\dodoubleempty\dogetfiguredimensions}
 
+\gdef\noffigurepages{\nofinsertpages}
+
 \def\dogetfiguredimensions[#1][#2]%
-  {{\let\immediate\relax % very dirty but prevents flushing
+  {{\let\immediate\relax % very dirty but prevents flushing, will change 
     \setbox0=\hbox{\externalfigure[#1][#2,\c!scherm=,\c!object=\v!nee]}}}
 
 \presetlocalframed[\??ef]
@@ -960,10 +970,6 @@
      {\getparameters[\??ef][##4,#2,#3]%
       \getparameters[\??ep][##5]}%
    \getvalue{\??ef\??ef#1}}
-
-\def\getnumberoffigurepages#1%
-  {\gdef#1{1}% the default 
-   \dogetnofinsertpages#1} 
 
 % \useexternalfigure[alpha][koe]
 % \useexternalfigure[beta] [koe]       [breedte=1cm]
@@ -1098,6 +1104,8 @@
    \pagina
    \getfiguredimensions
      [#1][#2]
+   \getparameters
+     [\??ex][\c!offset=\!!zeropoint,#2]
    \scratchdimen=\@@exoffset
    \dimen0=\figurewidth \advance\dimen0 2\scratchdimen\edef\figurewidth {\the\dimen0}
    \dimen0=\figureheight\advance\dimen0 2\scratchdimen\edef\figureheight{\the\dimen0}
@@ -1393,47 +1401,6 @@
 %D
 %D \showsetup{setupclipping}
 
-% \def\doclip[#1]% nb top->bottom left->right
-%   {\bgroup
-%    \getparameters[\??cp][#1]%
-%    \dowithnextbox
-%      {\ifdim\@@cpbreedte>\!!zeropoint
-%         \dimen0=\@@cpbreedte
-%         \dimen4=\@@cphoffset
-%       \else
-%         \dimen0=\wd\nextbox
-%         \divide\dimen0 \@@cpnx
-%         \dimen4=\@@cpx\dimen0
-%         \advance\dimen4 -\dimen0
-%       \fi
-%       \relax % sure
-%       \ifdim\@@cphoogte>\!!zeropoint
-%         \dimen2=\@@cphoogte
-%         \dimen6=\ht\nextbox
-%         \advance\dimen6 by -\@@cpvoffset
-%         \advance\dimen6 by -\dimen2
-%       \else
-%         \dimen2=\ht\nextbox
-%         \divide\dimen2 \@@cpny
-%         \dimen6=-\@@cpy\dimen2
-%         \advance\dimen6 \ht\nextbox
-%       \fi
-%       \setbox\nextbox=\hbox
-%         {\hskip-\dimen4\lower\dimen6\box\nextbox}%
-%       \wd\nextbox=\!!zeropoint
-%       \ht\nextbox=\!!zeropoint
-%       \dp\nextbox=\!!zeropoint
-%       \setbox\nextbox=\hbox
-%         {\dostartclipping{\@@cpmp}{\number\dimen0}{\number\dimen2}%
-%          \box\nextbox
-%          \dostopclipping}%
-%       \wd\nextbox=\dimen0
-%       \ht\nextbox=\dimen2
-%       \dp\nextbox=\!!zeropoint
-%       \box\nextbox
-%       \egroup}%
-%    \hbox}
-
 \def\doclip[#1]% nb top->bottom left->right
   {\bgroup
    \getparameters[\??cp][#1]%
@@ -1484,11 +1451,37 @@
 \def\setupclipping%
   {\dodoubleargument\getparameters[\??cp]}
 
+%D defining sound tracks: 
+%D
+%D \starttypen 
+%D \useexternalsoundtrack[label][file]
+%D \stoptypen 
+%D
+%D associated actions: StartSound StopSound PauseSound ResumeSound
+%D
+%D Todo: like external figures, also search on path, 
+%D although, they need to be present ar viewing time, so ...
+
+\def\useexternalsoundtrack%
+  {\dodoubleargument\douseexternalsoundtrack}
+
+\def\douseexternalsoundtrack[#1][#2]% 
+  {\setgvalue{\??sd#1}{#2}}
+
+\def\checksoundtrack#1%
+  {\iflocation
+     \doifdefined{\??sd#1}{\doifvaluesomething{\??sd#1}
+       {\doinsertsoundtrack{\getvalue{\??sd#1}}{#1}{}%
+        \setgvalue{\??sd#1}{}}}%
+   \fi}
+
+\setexecutecommandcheck {startsound} \checksoundtrack
+
 \appendtoks \setupexternalfigures[\c!optie=\v!leeg] \to \everyfastmode
 \appendtoks \runMPgraphicsfalse                     \to \everyfastmode
 \appendtoks \insertMPgraphicsfalse                  \to \everyfastmode
 
-\appendtoks \flushMPgraphics \to \everylastshipout
+\appendtoks \flushMPgraphics \to \everygoodbye  % \everylastshipout
 
 \setupexternalfigures
   [\c!optie=,

@@ -90,15 +90,13 @@
 \newif\ifsplittables
 
 %D \macros
-%D   {iftracetables}
+%D   {tracetablestrue}
 %D
 %D When I documented this module, I felt the need for tracing
 %D options. After implementing this feature, I also added
 %D warnings, error recovery and automatic spacing.
 
-\newif\iftracetables
-
-\let\tracetables \tracetablestrue
+\newif\iftracetables 
 
 %D We show this feature in an eample that also shows some of
 %D the basic table typesetting commands.
@@ -367,8 +365,10 @@
 \newif\ifForgetTableBarAndQuote \ForgetTableBarAndQuotetrue
 
 \bgroup
+
 \catcode`\|=\@@active
 \catcode`\"=\@@active
+
 \gdef\pushouterbarandquote%
   {\ifForgetTableBarAndQuote
      \ifnum\catcode`\|=\@@active \else
@@ -382,6 +382,7 @@
      \fi
      \let\outertablequote="%
    \fi}
+
 \gdef\popouterbarandquote%
   {\ifForgetTableBarAndQuote
      \let|=\outertablebar
@@ -389,11 +390,13 @@
    \else
      \redefinetablebarandquote
    \fi}
+
 \gdef\ObeyTableBarAndQuote%
   {\ForgetTableBarAndQuotefalse
    \ifintable
      \redefinetablebarandquote
    \fi}
+
 \egroup
 
 %D \macros
@@ -475,11 +478,11 @@
 
 \def\BeginTableParBox#1%
   {\setbox\scratchbox=\vtop\bgroup % \setbox added
-     \hsize=#1
+     \hsize=#1\relax
      \normalbaselines
      \let~=\!ttTie
      \let\-=\!ttDH
-     \blanko[\v!blokkeer] % added
+     \blanko[\v!blokkeer]% % added
      \the\EveryTableParBox}
 
 \def\EndTableParBox%
@@ -764,7 +767,7 @@
        ####%
        \noexpand\hfil
        \noexpand\stopglobalTABLEcolor % added
-       \the\!taRuleColumnTemplate}
+       \the\!taRuleColumnTemplate}%
   \!tfAdjoinPriorColumn}
 
 \def\!ttShortHruleA%
@@ -859,8 +862,8 @@
 
 \def\stoptabel%
   {\TABLEtail
-   \global\let\TABLEhead\empty
-   \global\let\TABLEtail\empty
+   \global\let\@@TABLEhead\empty
+   \global\let\@@TABLEtail\empty
    \finishTABLE
    \ifinsidefloat\else
      \stopbaselinecorrection % \outer..
@@ -909,12 +912,14 @@
 %   \catcode`\|=\@@other
 %   \dodoubleargument\dodefinetabletemplate}
 
+\def\douseTABLEtemplate#1#2#3%
+  {\gdef\TABLEhead{\getvalue{@@TABLEhead#2}}%
+   \gdef\TABLEtail{\getvalue{@@TABLEtail#3}}%
+   \complexsecondstagestartTABLE[#1]}
+
 \def\dodefinetabletemplate[#1][#2][#3][#4]%
   {\ifsecondargument
-     \setgvalue{\c!Table#1}%
-       {\gdef\TABLEhead{\getvalue{@@TABLEhead#3}}%
-        \gdef\TABLEtail{\getvalue{@@TABLEtail#4}}%
-        \complexsecondstagestartTABLE[#2]}%
+     \setgvalue{\c!Table#1}{\douseTABLEtemplate{#2}{#3}{#4}}%
    \fi
    \egroup}
 
@@ -1125,22 +1130,6 @@
 %D the fact that the stopcondition is interface language
 %D dependant.
 
-%\let\TABLEhead=\empty
-%\let\TABLEtail=\empty
-%
-%\letvalue{\e!start   \e!tabelkop}=\undefined
-%\letvalue{\e!stop    \e!tabelkop}=\undefined
-%\letvalue{\e!start\e!tabelstaart}=\undefined
-%\letvalue{\e!stop \e!tabelstaart}=\undefined
-%
-%\expanded
-%  {\def\csname\e!start\e!tabelkop\endcsname##1\csname\e!stop\e!tabelkop\endcsname%
-%     {\noexpand\def\noexpand\TABLEhead{##1}}}
-%
-%\expanded
-%  {\def\csname\e!start\e!tabelstaart\endcsname##1\csname\e!stop\e!tabelstaart\endcsname%
-%     {\noexpand\def\noexpand\TABLEtail{##1}}}
-
 \let\@@TABLEhead\empty  \def\TABLEhead{\@@TABLEhead}
 \let\@@TABLEtail\empty  \def\TABLEtail{\@@TABLEtail}
 
@@ -1156,12 +1145,6 @@
 \expanded
   {\def\csname\e!start\e!tabelstaart\endcsname##1\csname\e!stop\e!tabelstaart\endcsname%
      {\noexpand\setTABLEtail##1\noexpand\end}}
-
-% \def\setTABLEhead{\dosingleempty\dosetTABLEhead}
-% \def\setTABLEtail{\dosingleempty\dosetTABLEtail}
-
-% \def\dosetTABLEhead[#1]#2\end{\setvalue{@@TABLEhead#1}{#2}}
-% \def\dosetTABLEtail[#1]#2\end{\setvalue{@@TABLEtail#1}{#2}}
 
 %D The second argument is a dummy one, by scanning for it, we
 %D get rid of interfering spaces.
@@ -1369,7 +1352,8 @@
 \chardef\TABLErowzero=0
 
 \def\checkTABLErow#1% pure for message purposes
-  {\ifTABLEgraydone
+  {\unskip % added
+   \ifTABLEgraydone
      \convertargument         #1\to\asciiA
      \convertcommand\TABLEendBCL\to\asciiB
      \ifx\asciiA\asciiB \else
@@ -1729,7 +1713,10 @@
   {\ifnum\currentTABLEcolumn>\maxTABLEcolumn
      \chuckTABLEautorow
    \else\ifnum\currentTABLEcolumn=0
-     \chuckTABLEautorow
+    %\chuckTABLEautorow
+     \TABLEnoalign
+       {\global\let\checkTABLEautorow=\empty
+        \global\let\chuckTABLEautorow=\empty}%
    \else
      \setTABLEerror\TABLEmissingcolumn
      \handleTABLEerror
@@ -2278,12 +2265,13 @@
    \fi}
 
 \def\defineTABLEshorthands%
-  {\def\TWO  {\use{2}}%
-   \def\THREE{\use{3}}%
-   \def\FOUR {\use{4}}%
-   \def\FIVE {\use{5}}%
-   \def\SIX  {\use{6}}%
-   \def\REF  {\ReFormat}}
+  {\def\SPAN##1{\use{##1}}%
+   \def\TWO    {\use{2}}%
+   \def\THREE  {\use{3}}%
+   \def\FOUR   {\use{4}}%
+   \def\FIVE   {\use{5}}%
+   \def\SIX    {\use{6}}%
+   \def\REF    {\ReFormat}}
 
 \def\defineTABLEunits%
   {\processaction

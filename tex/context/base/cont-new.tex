@@ -17,327 +17,423 @@
 \unprotect
 
 \writestatus{\m!systems}{beware: some patches loaded from cont-new.tex!}
-
-% Speeds up when having a field with thousands of clones, 
-% which we happen to have -)
 
-\def\getmainfieldkids#1%
-  {\let\@@FieldKids\empty
-   \ifdefinemainfield 
-     \definerawpasslist{fld:#1}% runtime defined by system 
-     \moverawpasslist{fld:#1}\@@FieldKids
+%D Hm. Needed for low level calls, like in verbatim. 
+
+\def\startcolormode#1% 
+  {\ifincolor
+     \doifcolorelse{#1}
+       {\getcurrentcolorspecs{#1}%
+        \expandafter\dostartcolormode\currentcolorspecs\od}
+       {\dostopcolormode}%
    \fi}
-
-%D Let's also support a negative offset.
 
-\def\dooutlinebox#1\color#2\offset#3\corner#4\radius#5\depth#6\toggle#7\\%
-  {\vbox % rules on top of box
-     {\dimen0=#3\relax
-      \dimen2=\wd#1\advance\dimen2 by 2\dimen0
-      \dimen4=\ht#1\advance\dimen4 by  \dimen0
-      \dimen6=\dp#1\advance\dimen6 by  \dimen0\advance\dimen6 by #6\relax
-\ifdim\dimen6<\!!zeropoint
-  \advance\dimen4 by \dimen6 \dimen8=-\dimen6 \dimen6=\!!zeropoint
-\else
-  \dimen8=\!!zeropoint
+\def\stopcolormode%
+  {\ifincolor\dostopcolormode\fi}
+
+%D New table stuff. 
+
+\readfile{supp-ali}{}{} % alignment stuff
+\readfile{core-ntb}{}{} % new table mechanism 
+
+\ifx\alignmentclass\undefined \else % [|lg{.}|] \NG 12.34 \NC
+
+\gdef\handletabulatecharalign#1 % space delimited ! 
+  {\edef\alignmentclass{\tabulatecolumn}%
+   \edef\alignmentcharacter{\getvalue{\@@tabalign@@\tabulatecolumn}}%
+   \ifcase\tabulatepass\or
+     \setfirstpasscharacteralign\checkalignment{#1}%
+   \fi % force hsize 
+   \setsecondpasscharacteralign\checkalignment{#1}}
+
 \fi
-      \setbox\extraframebox=\hbox
-        {\dostrokedbox\width\dimen2\height\dimen4\depth\dimen6%
-           \corner#4\radius#5\toggle#7\\}%
-      \setbox\extraframebox=\hbox
-        {\raise\dimen8\vbox{\moveleft#3\box\extraframebox}}%
-      \wd\extraframebox=\wd#1%
-      \ht\extraframebox=\ht#1%
-      \dp\extraframebox=\dp#1%
-      \hbox
-        {%\copy#1\hskip-\wd#1%
-         \box#1\hskip-\wd\extraframebox % faster
-         \doifelsenothing{#2} % speeds up a little
-           {\box\extraframebox}
-           {\color[#2]{\box\extraframebox}}}}}
 
-%D More chinese:
+%D A funny (but rather stupid) one. 
 
-\unexpanded\def\uc#1#2% used in tricky situations
-  {\bgroup
-   \edef\unicodeone{#1}%
-   \edef\unicodetwo{#2}%
-   \futurelet\nextglyph\dohandleucflowglyph}
+\def\removebottomthings%
+  {\dorecurse{5}{\unskip\unkern\unpenalty}}
 
-\def\dohandleucflowglyph%
-  {\unicodeposition=\unicodeone\unicodetwo\relax
-   \handleunicodeglyph
+%D We also support broad here: 
+
+\def\dosetraggedcommand#1% 
+  {\expanded{\dodosetraggedcommand{#1}}}
+ 
+\def\dodosetraggedcommand#1% 
+  {\doifinsetelse{\v!ruim} {#1}{\!!doneatrue}{\!!doneafalse}%
+   \doifinsetelse{\v!breed}{#1}{\!!donebtrue}{\!!donebfalse}%
+   \let\raggedcommand\relax
+   \let\raggedtopcommand\empty
+   \let\raggedbottomcommand\empty
+   \ExpandFirstAfter\processallactionsinset
+     [#1]
+     [  \v!links=>\if!!donea      \def\raggedcommand{\veryraggedleft}%
+                  \else           \def\raggedcommand{\raggedleft}%
+                  \fi,
+       \v!rechts=>\if!!donea      \def\raggedcommand{\veryraggedright}%
+                  \else           \def\raggedcommand{\raggedright}%
+                  \fi,
+       \v!midden=>\if!!doneb      \def\raggedcommand{\raggedwidecenter}%
+                  \else\if!!donea \def\raggedcommand{\veryraggedcenter}%
+                  \else           \def\raggedcommand{\raggedcenter}%
+                  \fi\fi,
+         \v!hoog=>\let\raggedbottomcommand\vfilll, % bonus, pretty strong 
+         \v!laag=>\let\raggedtopcommand   \vfilll, % used with \framed 
+          \v!nee=>\def\raggedcommand{\raggedright},
+           \v!ja=>\let\raggedcommand\relax,
+      \v!normaal=>\let\raggedcommand\relax]}
+
+%D Sometimes a capstrut comes in handy
+%D
+%D \starttabulatie[|Tl|l|l|]
+%D \NC yes          \NC normal strut               \NC {\toonstruts\setupstrut[ja]\strut}  \NC \NR 
+%D \NC no           \NC no strut                   \NC {\toonstruts\setupstrut[nee]\strut}  \NC \NR 
+%D \NC kap          \NC a capital strut (i.e. Q)   \NC {\toonstruts\setupstrut[kap]\strut} \NC \NR 
+%D \NC A B \unknown \NC a character strut (e.g. A) \NC {\toonstruts\setupstrut[A]\strut}   \NC \NR 
+%D \NC              \NC a normal strut             \NC {\toonstruts\setupstrut\strut}      \NC \NR 
+%D \stoptabulatie
+
+\def\setstrut%
+  {\setstrutdimen\strutheight\strutheightfactor\spacingfactor
+   \setstrutdimen\strutdepth \strutdepthfactor \spacingfactor
+   \dosetstrut}
+
+\def\setcharstrut#1%
+  {\setbox\strutbox=\hbox{#1}% 
+   \edef\strutheight{\the\ht\strutbox}%
+   \edef\strutdepth {\the\dp\strutbox}%
+   \dosetstrut}
+
+\def\setcapstrut% could be M, but Q has descender
+  {\setcharstrut{Q}} 
+
+\def\setupstrut%
+  {\dosingleempty\dosetupstrut}
+
+\def\dosetupstrut[#1]%
+  {\processaction
+     [#1]
+     [     \v!ja=>\setstrut,
+          \v!nee=>\setnostrut,
+          \v!kap=>\setcapstrut,
+      \s!default=>\setstrut,
+      \s!unknown=>\setcharstrut{\commalistelement}]}
+
+%D Centered looks nicer: 
+
+\def\dosetstrut%
+  {\let\strut=\normalstrut
+   \setbox\strutbox=\normalhbox
+     {\normalhbox to \!!zeropoint
+        {% \hss % new, will be option 
+         \vrule
+           \!!width \strutwidth
+           \!!height\strutheight
+           \!!depth \strutdepth
+         \hss}}}
+
+%D in case of no color we don't want to see the rules 
+
+\def\dophantombox#1\\{\hphantom{\dofilledbox#1\\}}
+
+\def\raster[#1]%
+  {\groupedcommand{\startraster[#1]}{\stopraster}}
+
+\def\setgraybox\width#1\height#2\depth#3\raster#4\corner#5\radius#6\\%
+  {\doifelsenothing{#4}
+     {\dophantombox\width#1\height#2\depth#3\corner#5\radius#6\\}
+     {\raster[#4]%
+     {\dofilledbox \width#1\height#2\depth#3\corner#5\radius#6\\}}}
+
+\def\setcolorbox\width#1\height#2\depth#3\color#4\corner#5\radius#6\\%
+  {\ifincolor
+     \doifcolorelse{#4}{\color[#4]%
+    {\dofilledbox \width#1\height#2\depth#3\corner#5\radius#6\\}}
+    {\dophantombox\width#1\height#2\depth#3\corner#5\radius#6\\}%
+   \else
+     \dophantombox\width#1\height#2\depth#3\corner#5\radius#6\\%
+   \fi}
+
+%D more and more
+
+\def\lhbox{\dowithnextbox{\hbox to \hsize{\box\nextbox\hss    }}\hbox}
+\def\mhbox{\dowithnextbox{\hbox to \hsize{\hss\box\nextbox\hss}}\hbox}
+\def\rhbox{\dowithnextbox{\hbox to \hsize{\hss\box\nextbox    }}\hbox}
+
+\let\lefthbox =\lhbox 
+\let\midhbox  =\mhbox 
+\let\righthbox=\rhbox
+
+%D to be tested
+
+\def\docomplexuit[#1::#2]%
+  {\dontleavehmode % added, but probably not needed
+   \bgroup
+   \doifdefinedelse{\v!file:::#1}
+     {\def\doexternaldocument[##1][##2][##3]%
+        {\naar{##3}[#1::#2]}%
+      \getvalue{\v!file:::#1}}
+     {\tttf[#1]}%
    \egroup}
 
-%D Some adaptions due to active /'s. This goes to supp-lan.tex.
+%D Makes sense:
 
-%D And then came the Polish users, and who can deny them? Like
-%D the German \TEX\ users demand an active \type {"}, the
-%D Polish cannot do without the \type {/}. The next alternative
-%D is a bit slower but far the most robust alternative. As a
-%D bonus it also offers \type {|^|} and even \type {|||} which
-%D both result in a breakable|^|bar.
-%D
-%D The trick we use here is to convert the argument to a
-%D string and compare this string to string'd tokens.
+\def\removelastskip% \ifvmode the plain tex one \fi
+  {\ifvmode\ifdim\lastskip=\z@\else\vskip-\lastskip\fi\fi}
 
-\def\activedotextmodediscretionary#1%
+%D More hyphention control, will be combined with hz setup.
+
+\def\nohyphens%
+  {\ifx\dohyphens\relax
+     \edef\dohyphens%
+       {\hyphenpenalty\the\hyphenpenalty
+        \exhyphenpenalty\the\exhyphenpenalty\relax}%
+   \fi
+   \hyphenpenalty\@M\exhyphenpenalty\@M}
+
+\let\dohyphens\relax
+
+%D Better (a mere copy with \dohyphens): 
+
+\bgroup \catcode`\~=\active \catcode`\/=\active 
+
+\unexpanded\gdef\hyphenatedurl#1% {}{} handles accents
   {\bgroup
-   \let\nextnextnext\egroup
-   \def\handlecompoundcharacter##1% new, needed for polish
-     {\getvalue{\@nc@\string##1}}%  where / is active
-   \def\next##1#1%
-     {\def\next{\activedododotextmodediscretionary#1{##1}}%
-      \futurelet\nextnext\next}%
-   \next}
-
-\def\activedododotextmodediscretionary#1#2%
-  {\convertargument#2\to\discretionarytoken
-   \def\textmodediscretionary{\getvalue{textmodediscretionary\string#1}}%
-   \ifx#1\nextnext % takec care of ||| and +++ and ......
-     \prewordbreak\discretionary{\hbox{$#1$}}{}{\hbox{$#1$}}%
-       \allowbreak\postwordbreak
-     \def\nextnextnext{\afterassignment\egroup\let\next=}%
-   \else\ifx\discretionarytoken\empty
-     \checkafterdiscretionary
-     \bgroup
-       \checkbeforediscretionary
-       \prewordbreak\hbox{\textmodediscretionary\nextnext}\allowbreak\postwordbreak
-     \egroup
-   \else\convertargument=\to\next\ifx\next\discretionarytoken
-     \prewordbreak\textmodediscretionary
-   \else\convertargument~\to\next\ifx\next\discretionarytoken
-     \prewordbreak\discretionary{-}{}{\thinspace}\postwordbreak
-   \else\convertargument_\to\next\ifx\next\discretionarytoken
-     \prewordbreak\discretionary{\textmodediscretionary}
-       {\textmodediscretionary}{\textmodediscretionary}\prewordbreak
-   \else\convertargument(\to\next\ifx\next\discretionarytoken
-     \ifdim\lastskip>\!!zeropoint\relax
-       (\prewordbreak
-     \else
-       \prewordbreak\discretionary{}{(-}{(}\prewordbreak
-     \fi
-   \else\convertargument)\to\next\ifx\next\discretionarytoken
-     \ifx\nextnext\blankspace
-       \prewordbreak)\relax
-     \else\ifx\nextnext\space
-       \prewordbreak)\relax
-     \else
-       \prewordbreak\discretionary{-)}{}{)}\prewordbreak
-     \fi\fi
-   \else\convertargument'\to\next\ifx\next\discretionarytoken
-     \prewordbreak\discretionary{-}{}{'}\postwordbreak
-   \else\convertargument<\to\next\ifx\next\discretionarytoken
-     \beginofsubsentence\prewordbreak\beginofsubsentencespacing
-   \else\convertargument>\to\next\ifx\next\discretionarytoken
-     \endofsubsentencespacing\prewordbreak\endofsubsentence
-   \else\convertargument^\to\next\ifx\next\discretionarytoken
-     \prewordbreak\discretionary{\hbox{$|$}}{}{\hbox{$|$}}%
-       \allowbreak\postwordbreak
-   \else
-     \checkafterdiscretionary
-     \bgroup
-       \checkbeforediscretionary
-       \prewordbreak
-       \discretionary{\hbox{#2}}{}{\hbox{#2}}%
-       \allowbreak\postwordbreak
-     \egroup
-   \fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi
-   \nextnextnext}
-
-%D Since we don't have to bother about active characters any
-%D longer, we end up with a pretty simple activating macro:
-
-\def\enableactivediscretionaries%
-  {\let\dotextmodediscretionary=\activedotextmodediscretionary}
-
-\enableactivediscretionaries
-
-\def\handlecompoundcharacter#1%
-  {\def\dohandlecompoundcharacter%
-     {\ifx\next\bgroup
-       %\def\next{\dodohandlecompoundcharacter#1}%    % handle "{ee} -> \"ee
-       %\let\next\relax                               % forget "{ee} -> ee
-        \def\next{\handlecompoundcharacterone#1}%     % ignore "{ee} -> "ee
-      \else\ifx\next\egroup
-        \def\next{\getvalue{\@nc@\string#1}}%
-      \else\ifx\next\blankspace
-        \def\next{\getvalue{\@nc@\string#1}}%
+   \ifnum\hyphenpenalty<10000 \else
+     \def\discretionary##1##2##3{##1\allowbreak##2}%
+   \fi
+   \obeyhyphens
+   \def\splitbefore##1%
+     {\setbox\scratchbox=\hbox{##1{}{}}%
+      \ifcase\urlsplitmode 
+        \box\scratchbox
+      \or 
+        \postwordbreak\box\scratchbox\prewordbreak
+      \or
+        \prewordbreak\discretionary{\box\scratchbox}{}{\box\scratchbox}\prewordbreak
       \else
-        \def\next{\dodohandlecompoundcharacter#1}%
-      \fi\fi\fi
-      \next}%
-   \futurelet\next\dohandlecompoundcharacter}
+        \postwordbreak\box\scratchbox\prewordbreak
+      \fi}%
+   \def\splitafter##1%
+     {\ifcase\urlsplitmode
+        ##1{}{}%
+      \or
+        \prewordbreak\discretionary{##1{}{}}{}{##1{}{}}\prewordbreak
+      \or
+        \prewordbreak\discretionary{##1{}{}}{}{##1{}{}}\prewordbreak
+      \else
+        \prewordbreak\discretionary{}{##1{}{}}{##1{}{}}\prewordbreak
+      \fi}% 
+   \def\flushurl%
+     {\savedurl\let\savedurl\empty}%
+   \def\\%
+     {\spliturl\#}%
+   \let\~=\tildeletter \let~=\~%
+   \let\/=\slashletter \let/=\/%
+   \let\savedurl\empty
+   \handletokens#1\with\scanurl
+   \egroup}
 
-%D So far for supp-lan.tex.
+\egroup
 
-%D For Berend:
+%D A prelude to strategies. Note for myself: overloads
+%D previous stuff from local pragma test files.
 
-\def\simpledoblanko%
-  {\doifelse{\currentwitruimte}{\v!geen}
-     {\blanko[\currentblanko]}
-     {\blanko[\s!default]}}
+\def\s!strategy{strategy}
 
-\definieerblanko
-  [\s!default]
-  [\v!wit]
+\def\currentstrategypass    {1}
+\def\currentstrategyvariable{0}
+\def\maximumstrategypass    {8}
 
-%\definieerblanko
-%  [\s!default]
-%  [\v!groot]
+\newconditional\strategypassneeded
+\newconditional\strategypassforced
 
-%D Yes or no:
+\definetwopasslist{\s!strategy}
 
-\def\collectlocalfootnotes%
-  {\def\localfootinsert##1% was \gdef, but never reset!
-     {%\message{[local footnote]}%
-      \global\setbox\localpostponedfootnotes=\vbox\bgroup
-        \unvbox\localpostponedfootnotes
-        \let\next}}
+\def\registerstrategypass%
+  {\ifnum\currentstrategypass>\maximumstrategypass \else
+     \ifconditional\strategypassforced
+       \doglobal\increment\currentstrategypass
+     \else%\ifconditional\strategypassneeded
+       %\doglobal\increment\currentstrategypass
+     \fi%\fi
+   \fi
+   \savecurrentvalue\currentstrategypass{\currentstrategypass}}
 
-\def\doplaatskoptekst#1#2#3#4%
-  {\beginheadplacement{#1}%
-   \setbox0=\hbox
-     {\getvalue{\??ko#1\c!commando}
-        {} % no number
-        {\doattributes
-           {\??ko#1}\c!letter\c!kleur
-           {\doattributes
-              {\??ko#1}\c!tekstletter\c!tekstkleur
-              {\dontconvertfont
-               \ifdisplaysectionhead\stelinterliniein
-\else
-  \stelspatieringin
-\fi
-               #2%
-               \getvalue{\??ko#1\c!voorcommando}%
-               \getvalue{\??ko#1\c!tekstcommando}%
-                 {\ifdisplaysectionhead
-                    \setstrut\begstrut#3\endstrut
-\xdef\localheaddepth{\the\dp\strutbox}%
-                  \else
-                    #3%
-                  \fi}%
-               \getvalue{\??ko#1\c!nacommando}%
-               \ifdisplaysectionhead\endgraf\fi}}}}%
-   \endheadplacement{#1}{#4}}
+\appendtoks \registerstrategypass \to \everybye % \everylastshipout
 
-\def\doplaatskopnummertekst#1#2#3#4#5%
-  {\beginheadplacement{#1}%
-   \setbox0=\hbox
-     {\getvalue{\??ko#1\c!commando}%
-        {\doattributes{\??ko#1}\c!letter\c!kleur
-           {\doattributes{\??ko#1}\c!nummerletter\c!nummerkleur
-              {\getvalue{\??ko#1\c!voorcommando}%
-               \getvalue{\??ko#1\c!nummercommando}%
-                 {\ifdisplaysectionhead
-                    \setstrut\begstrut#3\endstrut
-                  \else
-                    #3%
-                  \fi}}}}
-        {\doattributes{\??ko#1}\c!letter\c!kleur
-           {\doattributes{\??ko#1}\c!tekstletter\c!tekstkleur
-              {\dontconvertfont
-               \ifdisplaysectionhead\stelinterliniein
-\else
-  \stelspatieringin
-\fi
-               #2%
-               \getvalue{\??ko#1\c!tekstcommando}%
-                 {\ifdisplaysectionhead
-                    \setstrut\begstrut#4\endstrut
-\xdef\localheaddepth{\the\dp\strutbox}%
-                  \else
-                    #4%
-                  \fi}%
-               \getvalue{\??ko#1\c!nacommando}%
-               \ifdisplaysectionhead\endgraf\fi}}}}%
-   \endheadplacement{#1}{#5}}
+\def\setstrategyvariable#1#2% key value
+  {%\doifnotstrategyvariable{#1}{\global\settrue\strategypassneeded}%
+   \doglobal\increment\currentstrategyvariable
+   \expanded{\immediatewriteutilitycommand{\noexpand
+     \twopassentry{\s!strategy}{\currentstrategyvariable}{#1::#2}}}}
 
-%D depth
+\def\doifstrategyvariableelse#1#2#3%
+  {\getstrategyvariable{#1}\iftwopassdatafound#2\else#3\fi}
 
-\def\beginheadplacement#1%
+\def\getstrategyvariable#1% key
+  {\findtwopassdata{\s!strategy}{#1::}%
+   \setxvalue{\s!strategy:#1}{\twopassdata}}
+
+\def\retainstrategyvariable#1% key
+  {\expanded{\setstrategyvariable{#1}{\strategyvariable{#1}}}}
+
+\def\strategyvariable#1% key
+  {\csname\s!strategy:#1\endcsname}
+
+\let\stratvar\strategyvariable
+
+\def\forcestrategy{\global\settrue \strategypassforced}
+\def\abortstrategy{\global\setfalse\strategypassforced}
+
+\def\doifstrategyvariableelse#1#2#3%
+  {\getstrategyvariable{#1}\iftwopassdatafound#2\else#3\fi}
+
+\def\doifstrategyvariable   #1#2{\doifstrategyvariableelse{#1}{#2}{}}
+\def\doifnotstrategyvariable#1#2{\doifstrategyvariableelse{#1}{}{#2}}
+
+%D New: only at start of columns; may change !
+
+\definesystemvariable {ks}   % KolomSpan
+
+\def\setupcolumnspan[#1]%
+  {\getparameters[\??ks][#1]}
+
+\presetlocalframed
+  [\??ks]
+
+\setupcolumnspan
+  [\c!n=2,
+   \c!offset=\v!overlay,
+   \c!kader=\v!uit]
+
+\newbox\columnspanbox \let\postprocesscolumnspanbox\gobbleoneargument
+
+\def\dostartcolumnspan[#1]%
   {\bgroup
-   \gdef\localheaddepth{\dp\strutbox}%
-   \everypar{}% needed indeed
-   \noindent  % ipv \witruimte elders, na \forgetall !
-   \bgroup
-   \forgetall % now we may forget everything
-  %\showcomposition
-   \mindermeldingen
-   \postponefootnotes
-   \iflocation\ifdisplaysectionhead\else\noninterferingmarks\fi\fi
-   \setupinteraction
-     [\c!letter=,
-      \c!kleur=,
-      \c!contrastkleur=]%
-   \strictouterreferencestrue % tzt instelling
-   \def\localkopsetup%
-     {\dolocalkopsetup{#1}}%
-   \startsynchronisatie}
-
-\def\endheadplacement#1#2%
-  {\doifvaluenothing{\??ko#1\c!file}{\locationfalse}%
-   \ifdisplaysectionhead
-     \let\headlastlinewidth\!!zeropoint
-     \snaptogrid\hbox
-       {\iflocation
-          \ifautocrossdocument
-            \naarbox{\box0}[\getvalue{\??ko#1\c!file}::#1]%
-          \else
-            \hbox{\box0}%
-          \fi
-        \else
-          \hbox{\box0}%
-        \fi
-        \doflushfootnotes}% new
-     \endgraf
-     \nointerlineskip
-     \dosomebreak\nobreak
-     #2%
-   \else
-     \strut
-     \doflushfootnotes % new
-     \iflocation
-       \ifautocrossdocument
-         \hhboxindent=\ifcontinuoushead\headlastlinewidth\else\!!zeropoint\fi
-         \unhhbox0\with{\naarbox{\box\hhbox}[\getvalue{\??ko#1\c!file}::#1]}%
-         \advance\lasthhboxwidth by \numberheaddistance
-         \xdef\headlastlinewidth{\the\lasthhboxwidth}%
-       \else
-         \unhbox0
-         \global\let\headlastlinewidth\!!zeropoint
+   \setupcolumnspan[#1]%
+   \forgetall
+%
+       \ifbinnenkolommen
+         \advance\hsize by \intercolumnwidth
+         \hsize=\@@ksn\hsize
+         \advance\hsize by -\intercolumnwidth
        \fi
-     \else
-       \unhbox0
-       \global\let\headlastlinewidth\!!zeropoint
-     \fi
-     #2%
-     \dimen0=\numberheaddistance
-     \hskip\dimen0 \!!plus \dimen0 \!!minus .25\dimen0
-     \hskip\headsignal\ignorespaces
-   \fi
-   \ifdisplaysectionhead
-     \ifgridsnapping % important, font related depth, see comment
-       \prevdepth\dp\strutbox
-     \else
-       \prevdepth\localheaddepth
-     \fi
-   \fi
-   \stopsynchronisatie
-   \egroup
-   \egroup
-\doflushfootnotes % new, still needed?
-   \ifdisplaysectionhead
-     \doifvalue{\??ko#1\c!springvolgendein}{\v!nee}{\noindentation}%
-   \else
-     \nonoindentation % recently added, was a bug
-   \fi}
+%
+   \dowithnextbox
+     {\setbox\columnspanbox=\box\nextbox
+\ifbinnenkolommen\wd\columnspanbox=\hsize\fi
+      \postprocesscolumnspanbox\columnspanbox
+      \scratchdimen=\ht\columnspanbox
+      \setbox\columnspanbox=\hbox % depth to be checked, probably option!
+        {\localframed[\??ks][\c!offset=\v!overlay]{\box\columnspanbox}}%
+      \ht\columnspanbox=\scratchdimen
+      \dp\columnspanbox=\dp\strutbox
+      \wd\columnspanbox=\hsize
+      \ifbinnenkolommen
+        \ifnum\@@ksn>1
+          \setvsize
+          \dohandleallcolumns
+            {\ifnum\currentcolumn>\@@ksn\else
+               \global\setbox\currenttopcolumnbox=\vbox
+                 {\ifnum\currentcolumn=1
+                    \snaptogrid\vbox{\copy\columnspanbox}
+                  \else
+                    \snaptogrid\vbox{\vphantom{\copy\columnspanbox}}
+                  \fi}%
+               \wd\currenttopcolumnbox=\hsize
+               \global\advance\vsize by -\ht\currenttopcolumnbox
+             \fi}
+          \global\pagegoal=\vsize
+        \else
+          \snaptogrid\vbox{\box\columnspanbox}
+        \fi
+      \else
+        \snaptogrid\vbox{\box\columnspanbox}
+      \fi
+      \prevdepth\dp\strutbox
+      \egroup}
+     \vbox\bgroup
+%       \ifbinnenkolommen
+%         \advance\hsize by \intercolumnwidth
+%         \hsize=\@@ksn\hsize
+%         \advance\hsize by -\intercolumnwidth
+%       \fi
+      %\topskipcorrection % becomes an option ! 
+       \EveryPar{\begstrut\EveryPar{}}} % also ! 
 
-%D Due to polish active /'s we have to deal a bit more
-%D robust with filename:
+\def\startcolumnspan%
+  {\dosingleempty\dostartcolumnspan}
 
-%D ...
+\def\stopcolumnspan%
+  {\egroup}
+
+%D A test:
+
+\def\EndTableParBox%
+  {\removelastskip % added
+  %\MakeStrut{0pt}{\StrutDepthFactor\StrutUnit}       % removed
+\par
+\ifnum\prevgraf>0
+  \strut
+  \vskip-\lineheight
+\fi
+   \egroup % finishes the \vtop begun by \BeginTableParbox
+   \getboxheight\scratchdimen\of\box\scratchbox\relax % added
+   \ifdim\scratchdimen>\TABLEparheight                % added
+     \global\TABLEparheight=\scratchdimen             % added
+   \fi                                                % added
+   \box\scratchbox}
+
+%D A few local optimizations and new features:
+
+\readfile {cont-loc} {} {}
+
+%D For Ton:
+
+\def\plaatsexterndocument[#1]%
+  {\def\doexternaldocument[##1][##2][##3]%
+     {\readlocfile{##2}{}{}}%
+   \getvalue{\v!file:::#1}}
+
+%D For me:
+
+\beginTEX
+
+\def\p!doifinstringelse#1#2%
+  {\def\pp!doifinstringelse##1#1##2##3\war%
+     {\csname if\if##2@fals\else tru\fi e\endcsname}%
+   \expanded{\pp!doifinstringelse#2#1@@\noexpand\war}} % expand #2 here
+
+\endTEX
+
+\beginETEX \unless
+
+\def\p!doifinstringelse#1#2%
+  {\def\pp!doifinstringelse##1#1##2##3\war%
+     {\unless\if##2@}%
+   \expanded{\pp!doifinstringelse#2#1@@\noexpand\war}} % expand #2 here
+
+\endETEX
+
+%D For Willy's nested commented buffers:
+
+\def\processnextbufferline#1#2#3%
+  {\relax % checken waarom eerdere macro dit nodig heeft / supp-mps run
+   \convertargument#1 \to\next
+   \doifinstringelse{\delcharacter\texcommentsymbol}{\delcharacter\next}
+     {\def\next{#3}}
+     {\doifinstringelse{\endofblock}{\next}
+        {\ifnum\nestedbufferlevel=0\relax % \relax ?
+           \def\next{#2}%
+         \else
+           \decrement\nestedbufferlevel\relax
+           \def\next{#3}%
+         \fi}
+        {\doifinstringelse{\beginofblock}{\next}
+           {\increment\nestedbufferlevel\relax
+            \def\next{#3}}
+           {\def\next{#3}}}}%
+   \next}
 
 %D Some day:
 
@@ -351,10 +447,7 @@
 %       \flushmargincontent[#1][#2]{#3}%
 %       \markeer[\v!margetitel]{#3}}}
 
-%D Table
-
-
-%D New indeed. Undocumented and under development.
+%D Undocumented and still under development.
 
 \def\startsimplecolumns%
   {\dosingleempty\dostartsimplecolumns}
@@ -364,36 +457,49 @@
    \getparameters[\??kl][\c!breedte=\hsize,\c!afstand=1em,\c!n=2,#1]%
    \setrigidcolumnhsize\@@klbreedte\@@klafstand\@@kln
    \setbox\scratchbox=\vbox\bgroup
-   \forgetall}
+   \forgetall} % \blanko[\v!blokkeer]
 
 \def\stopsimplecolumns%
-  {\removelastskip
+  {\removebottomthings 
    \egroup
    \rigidcolumnbalance\scratchbox
    \egroup}
 
-%D Aha.
+%D Improved: 
+
+\newbox\rigidcolumnbox
 
 \def\rigidcolumnbalance#1%
-  {\global\chardef\rigidcolumnbox=#1\relax
-   \ifnum\rigidcolumns=1
-     \ifinner\ifhmode\box\else\unvbox\fi\else\unvbox\fi\rigidcolumnbox
+  {\ifnum\rigidcolumns=1 % tzt ook h/d correctie
+     \ifinner\ifhmode\box\else\unvbox\fi\else\unvbox\fi#1\relax 
    \else
-     \hbox to \savedrigidhsize % was \hsize
-       {\vbadness=10000
-        \tabskip\!!zeropoint
+     \vbox
+       {\forgetall
+        \dontcomplain
         \setbox\rigidcolumnbox=\vbox
-          {\unvbox\rigidcolumnbox
-           \unpenalty\removelastskip}% get rid of \blank's
-        \splittopskip=\openstrutheight
-\splittopskip=\!!zeropoint
-       %\scratchdimen=\ht\rigidcolumnbox      % sensitive for overflow
-       %\divide\scratchdimen by \rigidcolumns % therefore we need the hack:
-        \scratchdimen=1pt
-        \divide\scratchdimen by \rigidcolumns
-        \expanded{\scratchdimen=\withoutpt{\the\scratchdimen}\ht\rigidcolumnbox}%
-        \advance\scratchdimen by \ht\strutbox
-        \valign{##\vfill\cr\dorigidcolumnsplits}}%
+          {\line{}\goodbreak\unvbox#1\removebottomthings}%
+        \splittopskip=\openstrutheight 
+        \setbox\scratchbox=\vsplit\rigidcolumnbox to \!!zeropoint
+        \scratchdimen=\ht\rigidcolumnbox      
+        \divide\scratchdimen by \rigidcolumns 
+        \getnoflines\scratchdimen 
+        \scratchdimen=\noflines\lineheight
+        \setbox\scratchbox=\hbox to \savedrigidhsize
+          {\dorecurse{\rigidcolumns}
+             {\setbox\scratchbox=\vsplit\rigidcolumnbox to \scratchdimen
+              \dp\scratchbox=\openstrutdepth
+              \vtop
+                \ifalignrigidcolumns to 
+                  \ifstretchrigidcolumns\vsize\else\scratchdimen\fi
+                \fi
+               {\unvbox\scratchbox}%
+              \hfill}%
+           \hfillneg}%
+       \advance\scratchdimen by -\openstrutdepth
+       \setbox\scratchbox\hbox{\raise\scratchdimen\box\scratchbox}
+       \dp\scratchbox=\openstrutdepth
+       \ht\scratchbox=\scratchdimen
+       \box\scratchbox}
    \fi}
 
 %D Is this a better default?
@@ -410,126 +516,55 @@
 \def\stopgeheel
   {\stopregelcorrectie}
 
-%D Can save lots of mpgraph files when using pdftex:
-
-\newif\ifrecycleMPslots \recycleMPslotsfalse
-
-\def\allocateMPslot#1%
-  {\ifrunMPgraphics
-     \ifcase\pdfoutput \recycleMPslotsfalse \fi
-   \else
-     \recycleMPslotsfalse
-   \fi
-   \ifrecycleMPslots
-     \doloop
-       {\doifundefined{\recurselevel MP}
-          {\global\letvalue{\recurselevel MP}=\empty
-           \global#1=\recurselevel\exitloop}}%
-    %\message{[MP slot + \number#1]%
-   \else
-     \global\advance#1 by 1
-   \fi}
-
-\def\deallocateMPslot#1%
-  {\ifrunMPgraphics
-     \ifcase\pdfoutput \recycleMPslotsfalse \fi
-   \else
-     \recycleMPslotsfalse
-   \fi
-   \ifrecycleMPslots
-     \global\letbeundefined{\number#1MP}%
-    %\message{[MP slot - \number#1]}%
-   \fi}
-
-%D For Taco and David: (to be documented and added to 
-%D setupb too). 
-
-\def\definereferenceformat%
-  {\dodoubleargument\dodefinereferenceformat}
-
-\def\dodefinereferenceformat[#1][#2]%
-  {\iffirstargument
-     \getparameters[\??rf#1]
-       [\c!links={[},
-        \c!rechts={]},
-        \c!tekst=,
-        \c!label=,
-        \c!commando=\in,
-        #2]%
-     \unexpanded\setvalue{#1}{\doexecutereferenceformat{#1}}%
-   \fi}
-
-\def\noexecutelabelreferenceformat#1%
-  {\doifvaluesomething{\??rf#1\c!tekst}
-     {\gdef\textofreference{\getvalue{\??rf#1\c!tekst}}}%
-   \getvalue{\??rf#1\c!commando}}
-
-\def\doexecutelabelreferenceformat#1%
-  {\getvalue{\??rf#1\c!commando}%
-     {\leftlabeltext {\getvalue{\??rf#1\c!label}}}%
-     {\rightlabeltext{\getvalue{\??rf#1\c!label}}}}
-
-\def\doexecutereferenceformat#1%
-  {\gdef\leftofreference {\getvalue{\??rf#1\c!links }}%
-   \gdef\rightofreference{\getvalue{\??rf#1\c!rechts}}%
-   \global\let\textofreference\empty % otherwise ~ added
-   \doifelsevaluenothing{\??rf#1\c!label}
-     {\let\next\noexecutelabelreferenceformat}
-     {\let\next\doexecutelabelreferenceformat}%
-   \next{#1}}
-
-\let\leftofreference \relax
-\let\rightofreference\relax
-\let\textofreference \relax
-
-\def\dodododoinatreference#1#2#3[#4]%
-  {\ifx\next\bgroup
-     \dododododoinatreference
-       {\leftofreference#1\ignorespaces#3\rightofreference}{#2}[#4]%
-   \else
-     \dododododoinatreference
-       {\leftofreference#1\rightofreference}{#2#3}[#4]%
-   \fi}
-
-\def\dododododoinatreference#1#2[#3]%
-  {\bgroup
-   \forgetall
-   \leaveoutervmode
-   \doifreferencefoundelse{#3}
-     {\bgroup
-      \let\ignorespaces    \empty % rather dirty trick, but ok
-      \let\leftofreference \empty % the same, again ok
-      \let\rightofreference\empty % and once more
-      \def\textofreference {#2}%  % temporary value
-      \ifx\textofreference\empty  % simple expansion
-        \doifelsenothing{#1}
-          {\egroup\dosymbolreference{#1}{\textofreference}[#3]}
-          {\egroup\dowantedreference{#1}{\textofreference}[#3]}%
-      \else
-        \doifelsenothing{#1}
-          {\egroup\dosymbolreference{#1}{#2}[#3]}
-          {\egroup\dowantedreference{#1}{#2}[#3]}%
-      \fi}
-     {\dounknownreference{#1}{#2}[#3]}%
-   \referentieinfo{<}{#3}%
-   \global\let\leftofreference \empty
-   \global\let\rightofreference\empty
-   \global\let\textofreference \empty
-   \egroup}
-
-%D The next hack is used for some exiting new feature test.
+%D Under construction:
 
 \def\resetpositions%
-  {\let\someposition=\gobblesevenarguments}
+  {\let\someposition=\gobblesevenarguments   % old
+   \let\pxypos      =\gobblefourarguments    % new
+   \let\pxywhdpos   =\gobblesevenarguments}  % new
 
 \resetpositions
+
+%D Some more box stuff, related to positioning (under 
+%D construction). Nice stuff for a tips and tricks maps 
+%D article. 
+%D
+%D \starttypen 
+%D \raisebox{100pt}\hbox{test} 
+%D \raisebox50pt\hbox{test} 
+%D \hsmash{\raisebox{100pt}\hbox{test}} 
+%D \stoptypen 
+
+\def\doraiselowerbox#1#2% a nice trick us used to accept 
+  {\def\next%           % both direct and {} dimensions 
+     {\dowithnextbox
+        {\setbox\nextbox=\hbox{#1\scratchdimen\box\nextbox}%
+         \ht\nextbox=\ht\strutbox
+         \dp\nextbox=\dp\strutbox
+         \box\nextbox}}%
+   \afterassignment\next\scratchdimen=#2}
+
+\def\raisebox{\doraiselowerbox\raise}
+\def\lowerbox{\doraiselowerbox\raise}
+
+%D It's more convenient to use \type {\columnwidth} instead 
+%D of messing around with boxes each time.
+
+\newdimen\columnwidth
+\newdimen\gutterwidth
+
+\def\determinecolumnwidth% 
+  {\bgroup
+   \setbox\scratchbox=\hbox
+     {\setcolumnhsize
+      \global\columnwidth=\usercolumnwidth
+      \global\gutterwidth=\intercolumnwidth}%
+   \egroup}
 
 %D The next line can be uncommented when Taco's extensions to
 %D \quote {\TEX\ The Program} are used.
 
 % \readfile {syst-eet} {} {}
-
-% I have to scan for \unhbox and use the vbox/hbox trick instead
 
 \protect
 

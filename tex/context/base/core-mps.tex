@@ -15,9 +15,22 @@
 
 \unprotect 
 
-%D Let's first load the auxiliary file. 
+%D Let's first preload a few auxiliary \METAPOST\ files. 
 
-\appendtoks input mp-tool ;\to \MPinitializations 
+\appendtoks 
+  input mp-tool ; 
+  input mp-spec ; 
+  _inline_shading_ := true ; 
+\to \MPinitializations 
+
+%D We save the number of graphics for the sake of \TEXEXEC.
+
+\newcounter\totalnumberofMPgraphics 
+\def\thecurrentMPgraphic{\the\currentMPgraphic}
+
+\appendtoks 
+  \savecurrentvalue\totalnumberofMPgraphics\thecurrentMPgraphic
+\to \everybye
 
 %D The next few macros tell \METAPOST\ how the \CONTEXT\ 
 %D pagebody looks. 
@@ -54,7 +67,9 @@
    \writeMPpagedata RightMarginWidth    \rechtermargebreedte 
    \writeMPpagedata RightEdgeDistance   \rechterrandafstand      
    \writeMPpagedata RightEdgeWidth      \rechterrandbreedte
-   \writeMPpagedata PageOffset          {\getvalue{\??ma\v!pagina\c!offset}}%
+   \doifelsevalue{\??ma\v!pagina\c!offset}{\v!overlay}
+     {\writeMPpagedata PageOffset       {0pt}}
+     {\writeMPpagedata PageOffset       {\getvalue{\??ma\v!pagina\c!offset}}}%
    \writeMPpagedata PageDepth           {\getvalue{\??ma\v!pagina\c!diepte}}%
    \immediate\closeout\scratchwrite
    \egroup}
@@ -79,6 +94,49 @@
      enddef ; 
    \to \MPinitializations
    \let\prepareMPpagedata\relax}
+
+%D \macros 
+%D   {startuniqueMPgraphic, uniqueMPgraphic}
+%D
+%D This macros is probably of most use to myself, since I like
+%D to use graphics that adapt themselves. The next \METAPOST\
+%D kind of graphic is both unique and reused when possible. 
+%D 
+%D \starttypen 
+%D \defineoverlay[example][\uniqueMPgraphic{test}]
+%D
+%D \startuniqueMPgraphic {test}
+%D   draw unitsquare xscaled \overlaywidth yscaled \overlayheight ; 
+%D \stopuniqueMPgraphic 
+%D \stoptypen
+
+\long\def\startuniqueMPgraphic#1#2\stopuniqueMPgraphic%
+  {\setvalue{MP:#1}%
+     {\startreusableMPgraphic{\overlaystamp:#1}#2\stopreusableMPgraphic
+      \reuseMPgraphic{\overlaystamp:#1}}}
+
+\def\uniqueMPgraphic#1%
+  {\getvalue{MP:#1}}
+
+\def\overlaystamp%
+  {\overlaywidth:\overlayheight:\overlaydepth:\overlaycolor}
+
+%D We redefine a macro from \type {supp-mps.tex}: 
+
+\def\MPdatafile%
+  {\bufferprefix mpd-\the\currentMPgraphic.tmp}
+
+%D We also have to make sure that \METAPOST\ knows this: 
+
+\appendtoks 
+  if not known _data_prefix_ :
+    string _data_prefix_ , _data_suffix_ ; 
+  fi ;
+  _data_prefix_ := "\bufferprefix mpd-" ; 
+  _data_suffix_ := ".tmp" ; 
+\to \MPinitializations 
+
+%D Happy drawing. 
 
 \protect 
 

@@ -472,9 +472,10 @@
      {\dodoinsertpages[#1][][#2]}
      {\dodoinsertpages[#1][#2][#3]}} 
 
-\def\dodoinsertpages[#1][#2][#3]%
+\def\dodoinsertpages[#1][#2][#3]% 
   {\bgroup
    \mindermeldingen
+   \getfiguredimensions[#1]% 
    \getparameters[\??ip][\c!n=\noffigurepages,\c!breedte=\!!zeropoint,#3]%
    \dorecurse{\@@ipn}
      {\dofilterpage{#1}{\recurselevel}%
@@ -484,9 +485,10 @@
 \def\filterpages%
   {\dotripleempty\dofilterpages}
 
-\def\dofilterpages[#1][#2][#3]%
+\def\dofilterpages[#1][#2][#3]% % \noffigurepages not yet supported 
   {\bgroup
    \mindermeldingen
+   \getfiguredimensions[#1]% 
    \getparameters[\??ip][\c!n=\noffigurepages,\c!breedte=\!!zeropoint,#3]%
    \doifelse{#2}{\v!even}
      {\dorecurse{\@@ipn}
@@ -514,12 +516,23 @@
   {\dodoubleempty\docopypages}
 
 \def\docopypages[#1][#2]%
-  {\getparameters[\??ip][\c!n=\noffigurepages,#2]%
+  {\bgroup
+   \getfiguredimensions[#1]%
+   \getparameters[\??ip][\c!n=\noffigurepages,\c!schaal=\!!thousand,\c!offset=\!!zeropoint,#2]%
    \dorecurse{\@@ipn}
      {\vbox to \teksthoogte
         {\hsize=\tekstbreedte
-         \centeredbox{\externalfigure[#1][\c!pagina=\recurselevel,#2]}}
-      \pagina}}
+         \scratchdimen=\@@ipoffset
+         \centeredbox
+           {\ifdim\scratchdimen>\!!zeropoint\relax
+              \advance\vsize by -2\scratchdimen 
+              \advance\hsize by -2\scratchdimen
+              \externalfigure[#1][\c!pagina=\recurselevel,#2,\c!schaal=,\c!factor=\v!max,\c!offset=\v!overlay]%
+            \else
+              \externalfigure[#1][\c!pagina=\recurselevel,#2,\c!offset=\v!overlay]%
+            \fi}}
+      \pagina}
+   \egroup}
 
 %D \macros
 %D   {combinepages}
@@ -553,7 +566,7 @@
 
 \def\docombinepages[#1][#2]%
   {\bgroup
-   \def\noffigurepages{1}%
+   \getfiguredimensions[#1]% 
    \getparameters
      [\??ip]
      [\c!n=\noffigurepages,\c!nx=2,\c!ny=2,
@@ -567,7 +580,7 @@
    \doloop
      {\vbox to \teksthoogte
         {\mindermeldingen
-         \hsize=\tekstbreedte
+         \hsize=\tekstbreedte 
          \scratchdimen=\@@ipafstand
          \!!widtha=\hsize
          \advance\!!widtha  by -\@@ipnx\scratchdimen
@@ -589,7 +602,6 @@
                        {\@@iplinks
                         \ifnum\combinedpagescounter>\@@ipn \else
                           \externalfigure[#1][\c!pagina=\combinedpagescounter,\c!factor=\v!max,\c!kader=\@@ipkader]%
-                          \getnumberoffigurepages\noffigurepages
                         \fi
                         \@@iprechts}
                      \@@iponder}%
@@ -625,11 +637,11 @@
         {\stelpapierformaatin[\c!links=\hskip\@@pcoffset]%
          \adddimenmacro\papierhoogte\@@pcoffset\@@pcoffset\@@pcafstand\@@pchoogte\to\@@pcpaperheight
          \adddimenmacro\papierbreedte\@@pcoffset\@@pcoffset\to\@@pcpaperwidth
-         \definieeroverlay[pagecomment][\placepagecommentTB]}
+         \defineoverlay[pagecomment][\placepagecommentTB]}
         {\stelpapierformaatin[\c!boven=\vskip\@@pcoffset]%
          \adddimenmacro\papierhoogte\@@pcoffset\@@pcoffset\to\@@pcpaperheight
          \adddimenmacro\papierbreedte\@@pcoffset\@@pcoffset\@@pcafstand\@@pcbreedte\to\@@pcpaperwidth
-         \definieeroverlay[pagecomment][\placepagecommentLR]}%
+         \defineoverlay[pagecomment][\placepagecommentLR]}%
       \processaction
         [\@@pcplaats]
         [ \v!onder=>{\stelpapierformaatin[\c!onder =\vss,\c!boven =\vskip\@@pcoffset]},

@@ -29,7 +29,7 @@
 \fi
 
 %D \macros
-%D   {DroppedCaps}
+%D   {DroppedCaps, DroppedString, DroppedIndent, DroppedLines}
 %D     
 %D \startbuffer
 %D \DroppedCaps 
@@ -116,32 +116,81 @@
 %D fact that the offsets depend on the design of the glyphs 
 %D used. 
 
-\def\DroppedCaps#1#2#3#4#5#6#7%
-  {\par
-   \vskip#6\baselineskip
-   \penalty-200
-   \vskip-#6\baselineskip
-   \setbox0=\hbox
-     {\definefont[temp][#2 at #3]%
-      \temp#1{#7}\hskip#4}%
-   \setbox0=\hbox
-     {\lower#5\box0}%
-   \ht0=\ht\strutbox
-   \dp0=\dp\strutbox
-   \hangindent\wd0
-   \hangafter-#6%
-   \noindent
-   \hskip-\wd0
-   \vbox{\forgetall\box0}%
-   \nobreak}
+\let\DroppedIndent\zeropoint \def\DroppedLines{0}
+
+\def\DroppedString%
+  {ABCDEFGHIJKLMNOPQRSTUVWXYZ}
+
+\def\DroppedCaps#1#2#3#4#5#6#7% 
+  {\ExpandBothAfter\doifinstringelse{#7}{\DroppedString} % 
+     {\ifvmode % this one is \EveryPar save, precede by \par if needed
+        \vskip#6\baselineskip
+        \penalty-200
+        \vskip-#6\baselineskip
+      \fi
+      \ifhmode
+        \hskip-\parindent
+      \fi
+      \setbox0=\hbox
+        {\definefont[temp][#2 at #3]\temp#1{#7}\hskip#4}%
+         \ifdim\dp0>\dp\strutbox % one of those Q's , will be option
+           \setbox2=\hbox{\raise\dp0\hbox{\lower\dp\strutbox\copy0}}%
+           \ht2=\ht0 \dp0=\dp\strutbox \setbox0=\box2
+         \fi
+      \setbox0=\hbox
+        {\lower#5\box0}%
+      \ht0=\ht\strutbox
+      \dp0=\dp\strutbox
+      \edef\DroppedIndent{\the\wd0}%
+      \edef\DroppedLines {\number#6}%
+      \hangindent\DroppedIndent
+      \hangafter-\DroppedLines
+      \noindent
+      \hskip-\DroppedIndent
+      \vbox{\forgetall\box0}%
+      \nobreak
+      \ignorespaces} % Could be a one character word ! 
+     {\edef\DroppedIndent{0pt}%
+      \edef\DroppedLines {\number\maxdimen}%
+      #7}}
+
 
 %D Before we go to the next topic, we summarize this command:
 %D
 %D \starttypen
 %D \DroppedCaps 
-%D    {command} {font} 
-%D    {height} {hoffset} {voffset} {lines}
+%D   {command} {font} 
+%D   {height} {hoffset} {voffset} {lines}
 %D \stoptypen
+
+%D \macros 
+%D   {LineDroppedCaps, NiceDroppedCaps}
+%D
+%D To save definitions, we also provide: 
+%D
+%D \starttypen
+%D \LineDroppedCaps {command} {font} {hoffset} {lines}
+%D \NiceDroppedCaps {command} {font} {hoffset} {lines}
+%D \stoptypen
+%D
+%D The first command scales the font to the exact height, while 
+%D the second command scales the font to a nice 2.5 times the 
+%D line height, a value that gives a pleasant grayness. 
+
+\def\DoLineDroppedCaps#1#2#3#4#5% compensation command font offset lines 
+  {\scratchcounter=#5%
+   \advance\scratchcounter by -1
+   \scratchdimen=\scratchcounter\baselineskip
+   \advance\scratchdimen by #1%
+   \NormalizeFontHeight\DummyFont{W}{\scratchdimen}{#3}%
+   \DroppedCaps{#2}{#3}{\TheNormalizedFontSize}{#4}
+     {\scratchcounter\baselineskip}{#5}}
+
+\def\LineDroppedCaps% command font offset lines
+  {\DoLineDroppedCaps{\ht\strutbox}}
+
+\def\NiceDroppedCaps% command font offset lines
+  {\DoLineDroppedCaps{.5\baselineskip}}
 
 %D \macros
 %D   {TreatFirstLine}
@@ -358,7 +407,8 @@
 %D \typebuffer[b]
 
 %D \macros
-%D   {NormalizeFontHeight, NormalizeFontWidth}
+%D   {NormalizeFontHeight, NormalizeFontWidth, 
+%D    TheNormalizedFontSize}
 %D
 %D Next we introduce some font manipulation macros. When we
 %D want to typeset some text spread in a well defined area, it
@@ -388,11 +438,16 @@
    \divide\dimen4 by \dimen2
    \divide\dimen0 by 1000
    \dimen0=\number\dimen4\dimen0
+   \xdef\TheNormalizedFontSize{\the\dimen0}%
    \definefont[temp][#5 at \the\dimen0]%
    \temp
    \expandafter
    \egroup
    \expandafter\font\expandafter#2\expandafter=\fontname\font\relax}
+
+%D Afterwards, we have access to the calculated size by: 
+
+\let\TheNormalizedFontSize\!!zeropoint
 
 %D Consider for instance:
 %D 

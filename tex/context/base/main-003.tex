@@ -1,0 +1,657 @@
+%D \module
+%D   [       file=main-003,
+%D        version=1997.03.31,
+%D          title=\CONTEXT\ Core Macros,
+%D       subtitle=1C (to be split),
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D This module is still to be split and documented. 
+
+\writestatus{loading}{Context Core Macros (3)}
+
+\unprotect
+
+\startmessages  dutch  library: systems
+     41: externe file -- in groep -- bestaat niet
+\stopmessages
+
+\startmessages  english  library: systems
+     41: external file -- in group -- does not exist
+\stopmessages
+
+\startmessages  german  library: systems
+     41: Externe Datei -- in Gruppe -- existiert nicht
+\stopmessages
+
+\startmessages  czech  library: systems
+     41: externi soubor -- ve skupine -- neexistuje
+\stopmessages
+
+%I n=Formules+
+%I c=\startlegenda,\startgegeven
+%I
+%I Ten behoeve van een consistente toelichting op een
+%I formule zijn er de volgende commando's:
+%I
+%I \startlegenda
+%I   \leg symbool \\ betekenis \\ dimensie \\
+%I   \leg symbool \\ betekenis \\ dimensie \\
+%I \stoplegenda
+%I
+%I \startgegeven
+%I   \geg betekenis \\ symbool \\ waarde \\
+%I   \geg betekenis \\ symbool \\ waarde \\
+%I \stopgegeven
+%I
+%I Ten behoeve van het zetten van ub- en superscripts zijn
+%I er, naast \hbox, de commando's \xbox en \xxbox.
+%P
+%I Het onderstaande mag ook:
+%I
+%I \startlegenda[twee]
+%I   \leg symbool \\ symbool \\ betekenis \\ dimensie \\
+%I   \leg symbool \\ symbool \\ betekenis \\ dimensie \\
+%I \stoplegenda
+
+\definetabulate
+  [\e!legenda]
+  [|emj1|i1|mR|]
+
+\setuptabulate
+  [\e!legenda]
+  [\c!eenheid=.75em,\c!binnen=\setquicktabulate\leg,EQ={=}]
+
+\definetabulate
+  [\e!legenda][\v!twee]
+  [|emj1|emk1|i1|mR|]
+
+\definetabulate
+  [\e!gegeven]
+  [|R|ecmj1|i1mR|]
+
+\setuptabulate
+  [\e!gegeven]
+  [\c!eenheid=.75em,\c!binnen=\setquicktabulate\geg,EQ={=}]
+
+\unexpanded\def\xbox%
+  {\bgroup\aftergroup\egroup\hbox\bgroup\tx\let\next=}
+
+\unexpanded\def\xxbox%
+  {\bgroup\aftergroup\egroup\hbox\bgroup\txx\let\next=}
+
+% \def\mrm#1%
+%   {$\rm#1$}
+
+%D \macros 
+%D   {setuplegend, placelegend}
+%D
+%D It makes sense to typeset a legend to a figure in \TEX\ and
+%D not in a drawing package. The macro \type {\placelegend}
+%D combines a figure (or something else) and its legend. 
+%D
+%D \showsetup{placelegend}
+%D
+%D The legend is placed according to \type {location}, being 
+%D \type {bottom} or \type {right}. The macro macro is used as
+%D follows. 
+%D
+%D \starttypen 
+%D \placefigure
+%D   {whow}
+%D   {\placelegend
+%D      {\externalfigure[cow]}
+%D      {\starttabulation
+%D       \NC 1 \NC head \NC \NR
+%D       \NC 2 \NC legs \NC \NR
+%D       \NC 3 \NC tail \NC \NR
+%D       \stoptabulation}}
+%D 
+%D \placefigure
+%D   {whow}
+%D   {\placelegend
+%D      {\externalfigure[cow]}
+%D      {\starttabulation[|l|l|l|l|]
+%D       \NC 1 \NC head \NC 3 \NC tail \NC \NR
+%D       \NC 2 \NC legs \NC   \NC      \NC \NR
+%D       \stoptabulation}}
+%D 
+%D \placefigure
+%D   {whow}
+%D   {\placelegend[n=2]
+%D      {\externalfigure[cow]}
+%D      {\starttabulation
+%D       \NC 1 \NC head \NC \NR
+%D       \NC 2 \NC legs \NC \NR
+%D       \NC 3 \NC tail \NC \NR
+%D       \stoptabulation}}
+%D 
+%D \placefigure
+%D   {whow}
+%D   {\placelegend[n=2]
+%D      {\externalfigure[cow]}
+%D      {head \par legs \par tail}}
+%D 
+%D \placefigure
+%D   {whow}
+%D   {\placelegend[n=2]
+%D      {\externalfigure[cow]}
+%D      {\startitemize[packed]
+%D       \item head \item legs \item  tail \item belly \item horns 
+%D       \stopitemize}}
+%D 
+%D \placefigure
+%D   {whow}
+%D   {\placelegend[n=2,width=.8\hsize]
+%D      {\externalfigure[cow]}
+%D      {\startitemize[packed]
+%D       \item head \item legs \item  tail \item belly \item horns 
+%D       \stopitemize}}
+%D \stoptypen 
+%D
+%D There are a few more parameters: 
+%D
+%D \showsetup{setuplegend}
+
+\def\setuplegend%
+  {\dodoubleargument\getparameters[\??ld]}
+
+\setuplegend
+  [\c!n=1,
+   \c!afstand=1em,
+   \c!tussen={\blanko[\v!middel]},
+   \c!breedte=\hsize,
+   \c!hoogte=\vsize,
+   \c!korps=,
+   \c!plaats=\v!onder]
+
+\def\placelegend%
+  {\bgroup
+   \dosingleempty\doplacelegend}
+
+\def\doplacelegend[#1]% watch the hsize/vsize tricks
+  {\setuplegend[#1]%  % and don't change them 
+   \dowithnextbox
+     {\switchtobodyfont[\@@ldkorps]% split under same regime  
+      \scratchdimen=\wd\nextbox
+      \doifelse{\@@ldplaats}{\v!rechts}
+        {\vsize=\ht\nextbox
+         \vsize=\@@ldhoogte
+         \hsize=\zetbreedte
+         \advance\hsize by -\scratchdimen
+         \advance\hsize by -\@@ldafstand
+         \plaatsnaastelkaar{\box\nextbox}\bgroup}
+        {\hsize\scratchdimen
+         \plaatsonderelkaar{\box\nextbox}\bgroup}%
+       \hsize\@@ldbreedte
+       \doif{\@@ldplaats}{\v!rechts}{\hskip\@@ldafstand}%
+       \ifnum\@@ldn>1
+         \setrigidcolumnhsize\hsize\@@ldafstand\@@ldn
+       \fi
+       \dowithnextbox
+         {\doifelse{\@@ldplaats}{\v!rechts}
+            {\vbox to \vsize
+               {\ifnum\@@ldn>1
+                  \rigidcolumnbalance\nextbox
+                \else
+                  \box\nextbox
+                \fi
+                \vfill}}
+            {\vbox
+               {\@@ldtussen
+                \ifnum\@@ldn>1
+                  \rigidcolumnbalance\nextbox
+                \else
+                  \box\nextbox
+                \fi}}%
+          \egroup\egroup}%
+         \vbox
+           \bgroup
+           \forgetall
+           \tolerantTABLEbreaktrue % hm.
+           \blanko[\v!blokkeer]%
+           \everypar{\begstrut}%
+           \let\next=}
+   \hbox}
+
+%I n=Combinaties
+%I c=\startcombinatie,\stelcombinatiesin
+%I
+%I Er kunnen meerdere tabellen, figuren enz. worden
+%I gecombineerd. Dit gebeurt met het commando:
+%I
+%I   \startcombinatie[n*m]
+%I      {inhoud 1}{ondertitel 1}
+%I      {inhoud 2}{ondertitel 2}
+%I      .....
+%I   \stopcombinatie
+%I
+%I Eventueel kan volstaan worden met [n]. Vier inhouden
+%I kunnen bijvoorbeeld worden gecombineerd als:
+%I
+%I   [4*1] of [4]     vier inhouden naast elkaar
+%I   [1*4]            vier inhouden onder elkaar
+%I   [2*2]            inhouden twee aan twee onder elkaar
+%P
+%I Dit commando is goed te combineren met \plaats-commando's:
+%I
+%I   \plaatsfiguur[][]{}
+%I     \startcombinatie[2]
+%I       {\legefiguur}{a}
+%I       {\legefiguur}{b}
+%I     \stopcombinatie
+%I
+%I Rond \start-\stopcombineer hoeven geen {} te worden
+%I geplaatst.
+%I
+%I De afstanden tussen de inhouden en de titels kunnen worden
+%I ingesteld met:
+%I
+%I   \stelcombinatiesin[voor=,na=,tussen=,afstand=,
+%I     uitlijnen=,hoogte=,breedte=]
+%I
+%I Waarbij de afstand betrekking heeft op de horizontale
+%I afstand (een maat dus) en voor, na en tussen commando's
+%I zijn (bijvoorbeeld \blanko).
+
+%T n=combinaties
+%T m=com
+%T a=c
+%T
+%T \startcombinatie
+%T   {?} {}
+%T   {} {}
+%T \stopcombinatie
+
+\newcount\horcombinatie  % counter
+\newcount\totcombinatie
+
+\def\stelcombinatiesin%
+  {\dodoubleargument\getparameters[\??co]}
+
+\long\def\dodostartcombinatie[#1*#2*#3]%
+  {\stelfractiesin
+     [\c!n=\v!passend,
+      \c!afstand=\@@coafstand]%
+   \global\horcombinatie=#1\relax
+   \global\totcombinatie=#2\relax
+   \xdef\maxhorcombinatie{\the\horcombinatie}%
+   \multiply\totcombinatie by \horcombinatie
+   \tabskip=\!!zeropoint
+   \doifelse{\@@cobreedte}{\v!passend}
+     {\halign}
+     {\halign to \@@cobreedte}%
+   \bgroup&\hfil##\hfil&\tabskip\!!zeropoint \!!plus 1fill##\cr
+   \docombinatie}
+
+% \def\docombinatie%
+%   {\dowithnextbox
+%      {\setbox0=\box\nextbox
+%       \dowithnextbox
+%         {\setbox2=\box\nextbox
+%          \dodocombinatie}
+%      \hbox}
+%   \hbox}
+
+\def\docombinatie% we want to add struts but still ignore an empty box
+  {\dowithnextbox%
+     {\setbox0=\box\nextbox
+      \dowithnextbox
+        {\setbox2=\box\nextbox
+         \dodocombinatie}
+      \vtop\bgroup
+        \def\next%
+          {\futurelet\nexttoken\nextnext}
+        \def\nextnext%
+          {\ifx\nexttoken\egroup \else % the next box is empty  
+             \hsize\wd0
+             \steluitlijnenin[\@@couitlijnen]
+             \bgroup
+             \aftergroup\endstrut
+             \aftergroup\egroup
+             \begstrut
+           \fi}
+        \afterassignment\next\let\nexttoken=}
+  \hbox}
+
+\def\dodocombinatie%
+  {\vbox
+     {\forgetall % \stelwitruimtein[\v!geen]%
+      \vbox
+        {\copy0}%
+      \ifdim\ht2>\!!zeropoint\relax % beter dan \wd2, nu \strut mogelijk
+        \@@cotussen
+       %\vtop
+       %  {\nointerlineskip  % recently added
+       %   \hsize\wd0
+       %   \steluitlijnenin[\@@couitlijnen]%  % \raggedcenter
+       %   \begstrut\unhbox2\endstrut}%
+        \box2
+      \fi}%
+   \ifnum\totcombinatie>1
+     \global\advance\totcombinatie by -1
+     \global\advance\horcombinatie by -1
+     \ifnum\horcombinatie=0
+       \def\next%
+         {\cr\noalign
+            {\forgetall %\stelwitruimtein[\v!geen]%
+             \nointerlineskip
+             \@@cona
+             \@@covoor
+             \vss
+             \nointerlineskip}%
+          \global\horcombinatie=\maxhorcombinatie\relax
+          \docombinatie}%
+     \else
+       \def\next%
+         {&&&\hskip\@@coafstand&\docombinatie}%
+     \fi
+   \else
+     \def\next%
+       {\cr\egroup}%
+   \fi
+   \next}
+
+\def\complexdostartcombinatie[#1]%
+  {\dodostartcombinatie[#1*1*]}
+
+\def\simpledostartcombinatie%
+  {\complexdostartcombinatie[2]}
+
+\def\startcombinatie%
+  {\bgroup
+   \forgetall
+   \doifelse{\@@cohoogte}{\v!passend}
+     {\vbox}
+     {\vbox to \@@cohoogte}%
+   \bgroup
+   \complexorsimple\dostartcombinatie}
+
+\def\stopcombinatie%
+  {\egroup
+   \egroup}
+
+\def\plaatsondernaastelkaar#1#2%
+  {\bgroup
+   \def\doplaatsondernaastelkaar%
+     {#2\cr\omit\bgroup#2%
+      \aftergroup#2%
+      \aftergroup\cr
+      \aftergroup\egroup
+      \aftergroup\egroup
+      \let\next=}%
+   #1\bgroup##\cr
+   \omit\bgroup#2%
+   \aftergroup\doplaatsondernaastelkaar
+   \let\next=}
+
+\def\plaatsonderelkaar%
+  {\plaatsondernaastelkaar\halign\hss}
+
+\def\plaatsnaastelkaar%
+  {\plaatsondernaastelkaar\valign\vss}
+
+%I n=Files
+%I c=\definieerfile
+%I
+%I De onderstaande commando's zijn beschikbaar, maar nog in
+%I ontwikkeling.
+%I
+%I   \gebruikexternefile  [groep] [naam] [file] [instellingen]
+%I
+%I   \gebruikexternefiles [groep] [korps=,file=]
+%I   \stelexternefilesin  [groep] [korps=,file=]
+%I
+%I   \naam{naam} of \naam
+%I
+%I Standaard zijn gedefinieerd:
+%I
+%I   \gebruikexternefiles[pictex][korps=klein,file=pictex]
+%I   \gebruikexternefiles[table][file=table]
+
+\def\dogebruikexternefiles[#1][#2]%
+  {\getparameters
+     [\??fi#1]
+     [\c!file=,
+      \c!korps=,
+      \c!optie=,
+      #2]}
+
+\def\gebruikexternefiles%
+  {\dodoubleargument\dogebruikexternefiles}
+
+\def\dostelexternefilesin[#1][#2]%
+  {\doifundefinedelse{\??fi#1\c!file}
+     {\gebruikexternefiles[#1][#2]}
+     {\getparameters[\??fi#1][#2]}}
+
+\def\stelexternefilesin%
+  {\dodoubleargument\dostelexternefilesin}
+
+\def\verwerkexternefile#1#2#3%
+  {\bgroup
+   \getparameters[\??fi#1][\c!file=,#3]%
+   \doinputonce{\getvalue{\??fi#1\c!file}}%
+   \ExpandFirstAfter\switchtobodyfont[\getvalue{\??fi#1\c!korps}]%
+   \readsysfile{#2}  % beter: loc of fix gebied
+     {}
+     {\showmessage{\m!systems}{41}{#2,#1}}%
+   \egroup}
+
+\def\dogebruikexternefile[#1][#2][#3][#4]%
+  {\stelexternefilesin[#1][]%
+   \doinputonce{\getvalue{\??fi#1\c!file}}%
+   \doifelsenothing{#2}
+     {\setvalue{#3}{\verwerkexternefile{#1}{#3}{#4}}}
+     {\setvalue{#2}{\verwerkexternefile{#1}{#3}{#4}}}}
+
+\def\gebruikexternefile%
+  {\doquadrupleargument\dogebruikexternefile}
+
+%I n=Roteren
+%I c=\roteer
+%I
+%I Er is een rotatiecommando beschikbaar:
+%I
+%I   \roteer[rotatie=]{}
+%I
+%I Waarbij als rotatie 0, 90, 180 of 270 kan worden opgegeven.
+%I Als extra instellingen kunnen de instellingen van
+%I \omlijnd worden meegegeven. Er wordt gebruik gemaakt van
+%I het \special commando en het rotatiemechanisme van
+%I PostScript. Dit betekent dat in de previewer de tekst
+%I niet (!) geroteerd wordt. Overigens draagt TeX zorg voor
+%I de exacte plaatsing, uitlijnen enz. De afhankelijkheid
+%I van PostScript is dus tot een minimum beperkt.
+%I
+%I Verder zijn dezelfde instellingen mogelijk als bij
+%I \omlijnd.
+
+\presetlocalframed[\??ro]
+
+\def\stelroterenin%
+  {\dodoubleargument\getparameters[\??ro]}
+
+% \ht, \vfillvoor, \vfillna, \wd, \hfillvoor, \hfillna
+
+\def\dodostoproteer#1#2#3#4#5#6%
+  {\dontshowcomposition
+   \vbox to #1\nextbox
+     {#2\relax
+      \hbox to #4\nextbox
+        {#5\relax
+         \doifelsenothing{\@@rorotatie}
+           {\dostartrotation{90}}
+           {\dostartrotation{\@@rorotatie}}%
+         \wd\nextbox=\!!zeropoint
+         \ht\nextbox=\!!zeropoint
+         \box\nextbox
+         \dostoprotation
+         #6}
+      #3}%
+   \egroup}
+
+\def\dostoproteer%
+  {\!!counta=\@@rorotatie
+   \divide\!!counta by 90
+   \ifcase\!!counta
+     \dodostoproteer\ht\relax\vfill\wd\relax\hfill
+   \or
+     \dodostoproteer\wd\vfill\relax\ht\relax\hfill
+   \or
+     \dodostoproteer\ht\vfill\relax\wd\hfill\relax
+   \or
+     \dodostoproteer\wd\relax\vfill\ht\hfill\relax
+   \or
+     \dodostoproteer\ht\relax\vfill\wd\relax\hfill
+   \else
+     \def\@@rotatie{90}%
+     \dodostoproteer\ht\relax\vfill\wd\relax\hfill
+   \fi}
+
+\def\dorotatebox#1% {angle} \hbox/\vbox/\vtop
+  {\bgroup
+   \hbox\bgroup % compatibility hack
+   \dowithnextbox
+     {\edef\@@rorotatie{#1}%
+      \setbox\nextbox=\vbox{\box\nextbox}%
+      \dostoproteer
+      \egroup}}
+
+\def\complexroteer[#1]%
+  {\dowithnextbox
+     {\getparameters[\??ro][#1]%
+      \dostoproteer}%
+   \vbox\localframed[\??ro][#1]}
+
+\def\roteer%
+  {\bgroup     % \roteer kan argument zijn
+   \complexorsimpleempty\roteer}
+
+% schaal
+
+\def\doschaal[#1]%
+  {\bgroup
+   \forgetall
+   \getparameters[\??xy][\c!sx=1,\c!sy=1,#1]%
+   \dowithnextbox
+     {\dontshowcomposition
+      \dimen0=\@@xysy\ht\nextbox
+      \dimen2=\@@xysy\dp\nextbox
+      \dimen4=\@@xysx\wd\nextbox
+      \dimen6=\dimen0\advance\dimen6 by \dimen2
+      \setbox\nextbox=\vbox to \dimen6
+        {\ht\nextbox=\!!zeropoint
+         \dp\nextbox=\!!zeropoint
+         \vfill % erbij
+         \dostartscaling\@@xysx\@@xysy\box\nextbox\dostopscaling
+         }% was \vfill}%
+      \ht\nextbox=\dimen0
+      \dp\nextbox=\dimen2
+      \wd\nextbox=\dimen4
+      \box\nextbox
+      \egroup}
+   \hbox} % was \vbox}
+
+\def\schaal%
+  {\dosingleempty\doschaal}
+
+% mirror
+
+\def\domirrorbox% \hbox/\vbox/\vtop
+  {\bgroup
+   \dowithnextbox
+     {\dontshowcomposition
+      \dimen0=\wd\nextbox
+      \setbox\nextbox=\vbox
+        {\dostartmirroring\hskip-\wd\nextbox\box\nextbox\dostopmirroring}%
+      \wd\nextbox=\dimen0
+      \box\nextbox
+      \egroup}}
+
+\def\spiegel%
+  {\domirrorbox\hbox}
+
+%\setbox0=\hbox{gans}
+%
+%\ruledhbox{\copy0 \schaal[sx=2,sy=2]{\copy0}}
+%
+%\spiegel{\ruledhbox{\copy0 \schaal{\box0}}}
+
+% verdelen \hsize in fracties
+%
+% \fractie[n/m,elementen,afstand]
+%
+% \fractie[2/5,3,1em]
+% \fractie[2/5,3,1em]
+% \fractie[1/5,3,1em]
+%
+% \stelfractiesin[afstand=,aantal=]  (passend,passend)
+
+\def\??fr{@@fr}
+
+\def\stelfractiesin%
+  {\dodoubleargument\getparameters[\??fr]}
+
+\def\dodofractie[#1/#2,#3,#4,#5]%
+  {\doifelsenothing{#3}
+     {\doifelse{\@@frn}{\v!passend}
+        {\!!counta=#2\relax}
+        {\!!counta=\@@frn\relax}}
+     {\!!counta=#3\relax}%
+   \doifelsenothing{#4}
+     {\doifelse{\@@frafstand}{\v!passend}
+        {\!!widtha=\!!zeropoint}
+        {\!!widtha=\@@frafstand}}
+     {\!!widtha=#4}%
+   \advance\!!counta by -1\relax
+   \multiply\!!widtha by \!!counta
+   \advance\hsize by -\!!widtha
+   \divide\hsize by #2\relax
+   \hsize=#1\hsize}
+
+\def\dofractie[#1]%
+  {\dodofractie[#1,,,,,,]}
+
+\def\fractie%
+  {\dosingleargument\dofractie}
+
+\stelfractiesin
+  [\c!afstand=\tfskipsize,
+   \c!n=\v!passend]
+
+% Standaardinstellingen
+
+\stelroterenin
+  [\c!rotatie=90,
+   \c!breedte=\v!passend,
+   \c!hoogte=\v!passend,
+   \c!offset=\v!overlay,
+   \c!kader=\v!uit]
+
+\stelcombinatiesin
+  [\c!breedte=\v!passend,
+   \c!hoogte=\v!passend,
+   \c!afstand=1em,
+   \c!voor=\blanko,
+   \c!tussen={\blanko[\v!middel]},
+   \c!na=,
+   \c!uitlijnen=\v!midden]
+
+\gebruikexternefiles
+  [pictex]
+  [\c!korps=\v!klein,
+   \c!file=pictex]
+
+\gebruikexternefiles
+  [table]
+  [\c!file=table]
+
+\protect
+
+\endinput

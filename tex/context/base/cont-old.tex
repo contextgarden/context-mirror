@@ -24,32 +24,21 @@
 
 \def\substitutecommand#1#2%
   {\gdef#1{\dosubstitutecommand{#1}{#2}}}
-
-\def\blockstatus#1#2#3%
-  {\writestatus{tekstblok}{sorry, nieuwe versie, tweede/andere run nodig}%
-   \endinput}
 
-\def\presetexternfiguur[#1][#2]%
-  {\writestatus{figuren}{sorry, nieuwe versie, run texutil /figures}%
-   \endinput}
+%substitutecommand \stelopsomminginopniveau \stelopsommingin
+%substitutecommand \stelopsommingvolledigin \stelopsommingin
+%substitutecommand \stelsomsymboolin        \definieersymbool
+%substitutecommand \somsymbool              \symbool
 
-\def\blokstatus              {\endinput}
-\def\beginvanexternefiguren  {\thisisfigureversion{0}}
-
-\substitutecommand \stelopsomminginopniveau \stelopsommingin
-\substitutecommand \stelopsommingvolledigin \stelopsommingin
-\substitutecommand \stelsomsymboolin        \definieersymbool
-\substitutecommand \somsymbool              \symbool
+%substitutecommand \stelzetspiegelin        \stellayoutin
+%substitutecommand \stelmargesin            \stellayoutin
+%substitutecommand \steloffsetin            \stellayoutin
 
-\substitutecommand \stelzetspiegelin        \stellayoutin
-\substitutecommand \stelmargesin            \stellayoutin
-\substitutecommand \steloffsetin            \stellayoutin
+              %def \randbreedte             {\rechterrandbreedte}
 
-              \def \randbreedte             {\rechterrandbreedte}
-
-\substitutecommand \steldoordefinitiein     \steldoordefinierenin
-\substitutecommand \steldoornummerin        \steldoornummerenin
-\substitutecommand \steldoorsprongin        \steldoorspringenin
+%substitutecommand \steldoordefinitiein     \steldoordefinierenin
+%substitutecommand \steldoornummerin        \steldoornummerenin
+%substitutecommand \steldoorsprongin        \steldoorspringenin
 
 \substitutecommand \volgendehoofdstuk       {\stelkopnummerin[hoofdstuk][+1]}
 \substitutecommand \volgendeparagraaf       {\stelkopnummerin[paragraaf][+1]}
@@ -67,32 +56,32 @@
 
 \substitutecommand \definieersynoniem       \definieersynoniemen       
 
-\substitutecommand \stelvoetnootin          \stelvoetnotenin
+%substitutecommand \stelvoetnootin          \stelvoetnotenin
 
-\substitutecommand \karakters               \uitgerekt
+%substitutecommand \karakters               \uitgerekt
 
-\substitutecommand \diepevoetnoot           \voetnoot
+%substitutecommand \diepevoetnoot           \voetnoot
 
 % english: 
 
 \substitutecommand \setupformulas           \setupformulae 
 
-\substitutecommand \useexternalfigures      \setupexternalfigures
+%substitutecommand \useexternalfigures      \setupexternalfigures
 
 \substitutecommand \setupintermezzos        \setupintermezzi
 
-\substitutecommand \leftlined               \leftaligned
-\substitutecommand \middlelined             \midaligned
-\substitutecommand \rightlined              \rightaligned
+%substitutecommand \leftlined               \leftaligned
+%substitutecommand \middlelined             \midaligned
+%substitutecommand \rightlined              \rightaligned
 
-\substitutecommand \setupcorps              \setupbodyfont
-\substitutecommand \switchtocorps           \switchtobodyfont
-\substitutecommand \definecorps             \definebodyfont
-\substitutecommand \definecorpsenvironment  \definebodyfontenvironment
-\substitutecommand \showcorps               \showbodyfont
-\substitutecommand \showcorpsenvironment    \showbodyfontenvironment
+%substitutecommand \setupcorps              \setupbodyfont
+%substitutecommand \switchtocorps           \switchtobodyfont
+%substitutecommand \definecorps             \definebodyfont
+%substitutecommand \definecorpsenvironment  \definebodyfontenvironment
+%substitutecommand \showcorps               \showbodyfont
+%substitutecommand \showcorpsenvironment    \showbodyfontenvironment
 
-              \def \corpssize               {\bodyfontsize}
+              %def \corpssize               {\bodyfontsize}
 \protect
 
 \endinput

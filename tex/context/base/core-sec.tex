@@ -1,0 +1,1491 @@
+%D \module
+%D   [       file=core-sec,
+%D        version=1997.03.31,
+%D          title=\CONTEXT\ Core Macros,
+%D       subtitle=Sectioning,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for 
+%C details. 
+
+\writestatus{loading}{Context Core Macros / Sectioning}
+
+\startmessages  dutch  library: structures
+  title: structuur
+      1: begin van sectieblok --
+      2: eind van sectieblok --
+\stopmessages
+
+\startmessages  english  library: structures
+  title: structure
+      1: begin of sectionblock --
+      2: end of sectionblock --
+\stopmessages
+
+\startmessages  german  library: structures
+  title: struktur
+      1: Begin des Abschnittsblock --
+      2: Ende des Abschnittsblock --
+\stopmessages
+
+\startmessages  czech  library: structures
+  title: struktury
+      1: zacatek oddilu (sekce) --
+      2: konec oddilu (sekce) --
+\stopmessages
+
+\unprotect 
+
+\def\dodochecknummer#1#2#3%
+  {\bgroup
+   \doifinstringelse{.0}{.#2}   % waarom \instring en \@koscheider
+     {\doifnot{#3}{\v!per}
+        {%\debuggerinfo{\m!systems}{number #1 #3 becomes \getnumbervariable{#1\c!wijze}}%
+         \setevalue{\s!number#1\c!wijze}{#3}% geen \xdef, gaat mis met \subpage
+         \dochecknummer{#1}}} % tricky and ugly
+     {\doifnotvalue{\s!number#1\s!check}{#2}
+        {\setcounter{\s!number#1}{0\getvalue{\s!number#1\c!start}}%
+         \setxvalue{\s!number#1\c!wijze\c!lokaal}%
+           {\getvalue{\s!number#1\c!wijze}}%
+         \setxvalue{\s!number#1\s!check}%
+           {#2}}}%
+   \egroup}
+
+\def\dochecknummer#1%
+  {\edef\currentsection{\getvalue{\??by\getvalue{\s!number#1\c!wijze}}}%
+   \doifsomething{\currentsection}
+     {\dodochecknummer
+        {#1}
+        {\getvalue{\currentsection\c!nummer}}
+        {\v!per\previoussection{\currentsection}}}}
+
+\def\checknummer#1%
+  {\bgroup
+   \ifnum\blocklevel>0
+     \doifelsevalue{\s!number#1\c!blokwijze}{\v!nee}
+       {\dochecknummer{#1}}
+       {\setblockcounters    % dit kan sneller omdat de waarden
+        \dochecknummer{#1}}% % en het type bekend zijn
+   \else
+     \dochecknummer{#1}%
+   \fi
+   \egroup}
+
+\def\domaakvoorafgaandenummer[#1]%
+  {\bgroup % added
+   \global\let\voorafgaandenummer\empty
+   \ifsectienummer
+     \doifvalue{\??sb\@@sectieblok\c!nummer}{\v!ja} % added
+       {\doifelsevalue{\s!number#1\c!sectienummer}{\v!ja}
+          {\donetrue}{\donefalse}%
+        \doifvalue{\s!number#1\c!sectienummer}{\v!nummer}
+          {\donetrue\let\@@sectionconversion\gobbleoneargument}%
+        \ifdone
+          \edef\currentsection%
+            {\getvalue{\??by\getvalue{\s!number#1\c!wijze\c!lokaal}}}%
+          \doifnot{\currentsection}{\zerosection}
+            {\doifnot{\@@sectionvalue{\currentsection}}{0}
+               {\xdef\voorafgaandenummer%
+                  {\getvalue{\currentsection\c!nummer}.}}}%
+        \fi}%
+   \fi
+   \egroup}
+
+\def\maakvoorafgaandenummer[#1]%
+  {\bgroup
+   \ifnum\blocklevel>0
+     \doifelsevalue{\s!number#1\c!blokwijze}{\v!nee}
+       {\domaakvoorafgaandenummer[#1]}%
+       {\setblockcounters               % dit kan sneller omdat de waarden
+        \domaakvoorafgaandenummer[#1]}% % en het type bekend zijn
+   \else
+     \domaakvoorafgaandenummer[#1]%
+   \fi
+   \egroup}
+
+\def\maakhetnummer[#1]%
+  {\maakvoorafgaandenummer[#1]%
+   \xdef\hetnummer%
+     {\voorafgaandenummer\nummer[#1]}}%
+
+\def\lossenummer[#1]%
+  {\maakhetnummer[#1]%
+   \hetnummer}
+
+\def\huidigenummer[#1]%
+  {%\getvalue{\getvalue{\s!number#1\c!zetwijze}}%
+   \getvalue{\getvalue{\s!number#1\c!plaats}}%
+     {\dotextprefix{\getvalue{\s!number#1\c!tekst}}\lossenummer[#1]}}
+
+\def\volgendenummer[#1][#2][#3]%
+  {\verhoognummer[#1]%
+   \huidigenummer[#1]%
+   \rawreference{#2}{#3}{\hetnummer}}
+
+% sectioning 
+
+\newcount\nofsections
+
+\def\zerosection{\v!tekst}
+\def\firstsection{}
+\def\lastsection{}
+\let\@@sectie\empty
+\let\@@koppeling\empty
+
+\makecounter{\??se\v!tekst}
+
+\setevalue{\??se\v!tekst\c!voor}{}
+\setevalue{\??se\v!tekst\c!na  }{}
+
+\setevalue{\v!tekst\c!nummer}{0}
+\setevalue{\v!tekst\s!format}{}
+
+\setevalue{\??sk\v!tekst}{}
+\setevalue{\??sk        }{}
+
+\setvalue{\??by               }{\v!tekst}
+\setvalue{\??by\v!tekst       }{\v!tekst}
+\setvalue{\??by\v!alles       }{\v!tekst}
+\setvalue{\??by\v!per         }{\v!tekst}
+\setvalue{\??by\v!per\v!tekst }{\v!tekst}
+\setvalue{\??by\v!per\v!alles }{\v!tekst}
+\setvalue{\??by\v!per\v!pagina}{\v!tekst} % see footnotes 
+
+%%%%%%%%% old
+
+\def\dostelsectiein[#1][#2]%
+  {\getparameters[\??se#1][#2]%
+   \doifelsevalue{\??se#1\c!vorigenummer}{\v!ja}
+     {\setvalue{#1\c!nummer}{\@@longsectionnumber{#1}}}
+     {\setvalue{#1\c!nummer}{\@@shortsectionnumber{#1}}}}
+
+\def\stelsectiein%
+  {\dodoubleargument\dostelsectiein}
+
+%%%%%%%%% new, multilingual 
+
+\def\dostelsectiein[#1][#2][#3]%
+  {\ifthirdargument
+     \getparameters[\??se#1#2][#3]%
+   \else
+     \getparameters[\??se#1][#2]%
+   \fi
+   \doifelsevalue{\??se#1\c!vorigenummer}{\v!ja}
+     {\setvalue{#1\c!nummer}{\@@longsectionnumber{#1}}}
+     {\setvalue{#1\c!nummer}{\@@shortsectionnumber{#1}}}}
+
+\def\stelsectiein%
+  {\dotripleempty\dostelsectiein}
+
+%%%%%%%%%
+
+\def\dokoppelmarkering[#1][#2]%
+  {\doifdefinedelse{\??ko#2\c!sectie}
+     {\dokoppelmarkering[#1][\getvalue{\??ko#2\c!sectie}]}
+     {\def\donexttrackcommando##1%
+        {\edef\gekoppeldemarkeringen{\getvalue{\??se##1\c!markering}}%
+         \doifelse{##1}{#2}
+           {\addtocommalist{#1}\gekoppeldemarkeringen}
+           {\removefromcommalist{#1}\gekoppeldemarkeringen}%
+         \setevalue{\??se##1\c!markering}{\gekoppeldemarkeringen}%
+         \donexttracklevel{##1}}%
+      \donexttracklevel{\zerosection}}} % \firstsection
+
+\def\koppelmarkering%
+  {\dodoubleargument\dokoppelmarkering}
+
+\def\ontkoppelmarkering[#1]%
+  {\koppelmarkering[#1][]}
+
+\def\definieersectie[#1]%
+  {\doifundefined{\??se#1}
+     {\doifelsenothing{\firstsection}
+        {\def\firstsection{#1}%
+         \setevalue{\??se#1\c!voor}{\v!tekst}%
+         \setevalue{\??se\v!tekst\c!na}{#1}}
+        {\setevalue{\??se\commalistelement\c!na}{#1}%
+         \setevalue{\??se#1\c!voor}{\lastsection}%
+         \setevalue{\??se\lastsection\c!na}{#1}}%
+      \advance\nofsections by 1
+      \setevalue{\??se#1\c!niveau}%
+        {\the\nofsections}%
+      \setevalue{\??se#1\c!na}%
+        {}%
+      \setvalue{\e!volgende#1}%
+        {\@@nextsectionnumber{#1}}%
+      \setvalue{#1\c!nummer}%
+        {\@@longsectionnumber{#1}}%
+      \setvalue{#1\s!format}%
+        {\@@longformatnumber{#1}}%
+      \setevalue{\??by#1}{#1}%
+      \setevalue{\??by\v!per#1}{#1}%
+      \makecounter{\??se#1}%
+      \def\lastsection{#1}%
+      \setvalue{\??sk#1}%
+        {#1}%
+      \setvalue{\??se#1\c!markering}%
+        {}%
+      \stelsectiein[#1]
+        [\c!vorigenummer=\v!ja]}}%
+
+\def\previoussection#1%
+  {\getvalue{\??se#1\c!voor}}
+
+\def\nextsection#1%
+  {\getvalue{\??se#1\c!na}}
+
+\def\@@setsectionnumber#1#2%
+  {\setgvalue{\??se#1\s!start}{}%   % signal i.p.v. boolean
+   \setcounter{\??se#1}{#2}%
+   \resetsectioncounters[#1]%
+   \checkpagecounter}
+
+\def\@@nextsectionnumber#1%
+  {\setgvalue{\??se#1\s!start}{}%   % signal i.p.v. boolean
+   \pluscounter{\??se#1}%
+   \resetsectioncounters[#1]%
+   \checkpagecounter}
+
+\def\@@sectionvalue#1%       % nog niet overal doorgevoerd
+  {\countervalue{\??se#1}}   % zoeken op \??se
+
+% \def\@@sectionconversion#1%
+%   {\getvalue{\??cv\getvalue{\??se#1\@@sectieblok\c!conversie}}}
+
+% suited for chinese too: 
+
+\def\@@sectionconversion#1#2% a doublure with \@@shortsectionnumber
+  {\ifnum#2=0 0\else % else troubles with \uchar 
+     \@EA\ifx\csname\??se#1\@@sectieblok\c!conversie\endcsname\relax
+       \@EA\ifx\csname\??se#1\c!conversie\endcsname\relax
+         #2%
+       \else
+         \getvalue{\??cv\getvalue{\??se#1\c!conversie}}{#2}%
+       \fi
+     \else
+       \getvalue{\??cv\getvalue{\??se#1\@@sectieblok\c!conversie}}{#2}%
+     \fi
+   \fi}
+
+\def\@@sectionlevel#1%
+  {\ifundefined{\??se#1\c!niveau}0\else\getvalue{\??se#1\c!niveau}\fi}
+
+% Omdat een markering kan worden herdefinieerd moeten we
+% eerst testen of er wel een keten||afhankelijkheid is.
+
+\def\resetsectionmarks[#1]%
+  {\doifdefinedelse{\??se#1}
+     {\def\donexttrackcommando##1%
+        {\doifdefined{\??se##1\c!markering} % skip zero level
+           {\def\docommando####1%
+              {\ExpandFirstAfter\resetmarkering[####1]}%
+            \processcommacommand[\getvalue{\??se##1\c!markering}]\docommando}%
+         \donexttracklevel{##1}}%
+      \donexttracklevel{#1}}%
+     {\ExpandFirstAfter\resetmarkering[\hoofdmarkering{#1}]}}
+
+\def\resetsectioncounters[#1]%
+  {\def\donexttrackcommando##1%
+     {\resetcounter{\??se##1}%
+      \donexttracklevel{##1}}%
+   \donexttracklevel{#1}}
+
+% bij checken kan geen prefix worden bekeken, anders vallen
+% er titels buiten de inhoudsopgave
+
+% evt ook level gaan opslaan tbv snelle selectie
+
+\def\makesectionformat%
+  {\@EA\edef\@EA\sectionformat\@EA%
+     {\@@sectiontype:\getvalue{\lastsection\s!format}}}
+
+\def\dobacktracklevel#1%
+  {\doifnot{\previoussection{#1}}{\zerosection}
+     {\dobacktrackcommando{\previoussection{#1}}}}
+
+\def\donexttracklevel#1%
+  {\doifnot{#1}{\lastsection}
+     {\donexttrackcommando{\nextsection{#1}}}}
+
+\newif\ifalllevels
+
+\def\dosetlevel#1% opvoeren met \ifcsname
+  {\bgroup
+   \doifelse{#1}{\v!vorige}
+     {\global\alllevelstrue
+      \global\let\currentlevel\empty
+      \def\dobacktrackcommando##1%
+        {\ifnum\countervalue{\??se##1}>0
+           \global\alllevelsfalse
+           \xdef\currentlevel{\getvalue{\previoussection{##1}\s!format}}%
+         \else
+           \dobacktracklevel{##1}%
+         \fi}%
+      \dobacktrackcommando\lastsection}
+     {\doifelse{\getvalue{\??by#1}}{\v!tekst}
+        {\global\alllevelstrue
+         \global\let\currentlevel\empty}
+        {\doifdefinedelse{\??ko#1\c!sectie}            % beter alteratief: ook
+           {\edef\@@sectie{\getvalue{\??ko#1\c!sectie}}} % hoofdstuk\c!format
+           {\edef\@@sectie{#1}}%
+         \doifdefinedelse{\??se\@@sectie}
+           {\global\alllevelsfalse
+            \xdef\currentlevel{\getvalue{\@@sectie\s!format}}}
+           {\global\alllevelstrue
+            \global\let\currentlevel\empty
+            \def\dobacktrackcommando##1%
+              {\@EA\ifx\csname\??se##1\c!start\endcsname\relax
+                 \dobacktracklevel{##1}%
+               \else
+                 \ifnum\countervalue{\??se##1}>0
+                   \global\alllevelsfalse
+                   \xdef\currentlevel{\getvalue{##1\s!format}}%
+                 \else
+                   \dobacktracklevel{##1}%
+                 \fi
+               \fi}%
+            \dobacktrackcommando\lastsection}}}%
+   \egroup}
+
+\let\currentlevel\empty
+
+\def\doifnextlevelelse[#1::#2]#3#4%
+  {\ifalllevels
+     #3%
+   \else
+     \doifelse{\@@sectiontype}{#1} % \@EA kunnen denk ik weg
+       {\@EA\doifinstringelse\@EA{\@EA=\currentlevel:}{=:#2:}
+          {\@EA\doifinstringelse\@EA{\@EA=\currentlevel:0}{=:#2:}{#4}{#3}}
+          {#4}}
+       {#4}%
+   \fi}
+
+\def\doifprevlevelelse[#1::#2]#3#4%
+  {\ifalllevels
+     #3%
+   \else
+     \doifelse{\@@sectiontype}{#1}
+      {\@EA\doifinstringelse\@EA{\@EA=\currentlevel:}{=:#2:}
+         {#3}
+         {#4}}
+       {#4}%
+   \fi}
+
+\def\dosettoclevel{\dosetlevel}
+\def\dosetreglevel{\dosetlevel}
+\def\dosetblklevel{\dosetlevel}
+
+\def\doiftoclevelelse{\doifnextlevelelse}
+\def\doifreglevelelse{\doifprevlevelelse}
+\def\doifblklevelelse{\doifprevlevelelse}
+
+\def\@@longformatnumber#1%
+  {\getvalue{\previoussection{#1}\s!format}:\@@shortsectionnumber{#1}}
+
+\def\@@longsectionnumber#1%
+  {\ifnum\countervalue{\??se\previoussection{#1}}>0
+     \getvalue{\previoussection{#1}\c!nummer}\@@koscheider
+   \fi
+   \@@shortsectionnumber{#1}}
+
+\def\@@shortsectionnumber#1%
+  {\@EA\ifx\csname\??se#1\@@sectieblok\c!conversie\endcsname\relax
+     \@@sectionvalue{#1}%
+   \else
+     \@@sectionconversion{#1}{\@@sectionvalue{#1}}%
+   \fi}
+
+% suited for chinese too: 
+
+\def\@@shortsectionnumber#1%
+  {\@EA\ifx\csname\??se#1\@@sectieblok\c!conversie\endcsname\relax
+     \@EA\ifx\csname\??se#1\c!conversie\endcsname\relax
+       \@@sectionvalue{#1}%
+     \else
+       \@@sectionconversion{#1}{\@@sectionvalue{#1}}%
+     \fi
+   \else
+     \@@sectionconversion{#1}{\@@sectionvalue{#1}}%
+   \fi}
+
+\def\dosetlocalsectieblok#1#2#3%
+  {\def\@@sectiontype{#1}%
+   \def\@@sectieblok{#2}%
+   \def\@@sectieblokken{#3}}
+
+\def\doaroundsectieblok#1%
+  {\doifvaluesomething{\??sb#1\c!pagina}
+     {\ExpandFirstAfter\pagina[\getvalue{\??sb#1\c!pagina}]}%
+   \resetsectioncounters[\zerosection]% was firstsection
+   \resetsectionmarks[\zerosection]}
+
+\def\dostartsectieblok#1#2%
+  {\begingroup
+   \doaroundsectieblok{#1}%
+   \getvalue{\??sb#1}%  
+   \expandafter\csname#2true\endcsname % vervangen door mode
+   \enablemode[\systemmodeprefix#1]%
+   \getvalue{\??sb\@@sectieblok\c!voor}% don't move
+   \showmessage{\m!structures}{1}{\@@sectieblokken}}
+
+\def\dostopsectieblok%
+  {\showmessage{\m!structures}{2}{\@@sectieblokken}%
+   \getvalue{\??sb\@@sectieblok\c!na}% don't move
+   \doaroundsectieblok{\@@sectieblok}%
+   \endgroup}
+
+\def\dostelsectieblokin[#1][#2]%
+  {\getparameters[\??sb#1][#2]}
+
+\def\stelsectieblokin%
+  {\dodoubleargument\dostelsectieblokin}
+
+% We used to use the first char as id, but a counter is 
+% better, because in english we get a name clash. 
+
+\newcounter\currentsectionblock 
+
+\def\dodefinieersectieblok[#1][#2][#3]%
+  {\getparameters
+     [\??sb#1]
+     [\c!nummer=\v!ja,
+      \c!pagina=\v!rechts, % anders worden marks te vroeg gereset !
+      %\c!voor=,
+      %\c!na=,
+      #3]%
+   \expandafter\newif\csname if#2\endcsname
+   \doglobal\increment\currentsectionblock 
+   \setevalue{\??sb#1}%
+     {\noexpand\dosetlocalsectieblok{\currentsectionblock}{#1}{#2}}%
+   \setvalue{\e!start#2}%
+     {\dostartsectieblok{#1}{#2}}%
+   \setvalue{\e!stop#2}%
+     {\dostopsectieblok}}
+
+\def\definieersectieblok%
+  {\dotripleargument\dodefinieersectieblok}
+
+\def\sectiebloklabel#1#2%
+  {\@EA\ifx\csname\??ko#1\@@sectieblok\c!label\endcsname\relax
+     \labeltexts{#1}{#2}%
+   \else
+     \labeltexts{\getvalue{\??ko#1\@@sectieblok\c!label}}{#2}%
+   \fi}
+
+\dosetlocalsectieblok{2}{\v!hoofdtekst}{\v!hoofdteksten} % hm, dirty
+
+\def\setsectiontype[#1]%
+  {\getvalue{\??sb#1}}
+
+\def\writesection#1#2#3% #3 -> \asciititle
+  {\bgroup
+   \edef\!!stringa{#1}%
+   \@EA\writestatus\@EA
+     {\!!stringa}
+     {\ifsectienummer#2\else(#2)\fi\normalspace\asciititle}%
+   \egroup}
+
+\def\@@koniveau{1}        \def\kopniveau{\@@koniveau}
+
+\def\dohandelpaginaafAA#1%
+  {\ifnum\lastpenalty>0
+     \global\paginageblokkeerdtrue
+   \fi}
+
+\def\dohandelpaginaafAB#1%
+  {\flushsidefloats
+   \getvalue{\??ko#1\c!voor}%
+   %\witruimte vervangen door \noindent elders
+   \relax
+   \ifpaginageblokkeerd
+     \global\paginageblokkeerdfalse
+   \else
+     \!!countb=\getvalue{\??se\@@sectie\c!niveau}\relax
+     \ifnum\!!countb>\@@koniveau\relax
+       \!!counta=20000
+       \multiply\!!countb by 500
+       \advance\!!counta by \!!countb
+       \dosomebreak{\penalty\!!counta}%
+     \else
+       \dosomebreak{\allowbreak}%
+     \fi
+   \fi
+   \xdef\@@koniveau{\getvalue{\??se\@@sectie\c!niveau}}}
+
+\def\dohandelpaginaafB#1%
+  {\doifinset{\getvalue{\??ko#1\c!pagina}}{\v!ja,\v!rechts,\v!links}
+     {\def\resetcurrentsectionmarks% toegevoegd, zie \pagina
+        {\resetsectionmarks[\previoussection{\@@sectie}]}%
+      \pagina[\getvalue{\??ko#1\c!pagina}]%
+      \doifinset{\getvalue{\??tk\v!hoofd\v!tekst\c!status}}{\v!normaal,\v!start}
+        {\doifvaluesomething{\??ko#1\c!hoofd}
+           {\stelhoofdin[\c!status=\getvalue{\??ko#1\c!hoofd}]}}%
+      \doifinset{\getvalue{\??tk\v!voet\v!tekst\c!status}}{\v!normaal,\v!start}
+        {\doifvaluesomething{\??ko#1\c!voet} % new
+           {\stelvoetin[\c!status=\getvalue{\??ko#1\c!voet}]}}}}
+
+\def\dohandelpaginaafX#1% zie doordefinieren / boven
+  {\bgroup
+   \!!countb=\@@koniveau
+   \advance\!!countb by #1
+   \multiply\!!countb by 500
+   \!!counta=20000
+   \advance\!!counta by \!!countb
+   \dosomebreak{\penalty\!!counta}%
+   \egroup}
+
+\def\handelpaginaaf#1%
+  {\dohandelpaginaafAA{#1}%
+   \ifnum\countervalue{\??se\previoussection{\@@sectie}}>0
+     \ifnum\countervalue{\??se\@@sectie}>0
+       \dohandelpaginaafB{#1}%
+     \else
+       \doifnotvalue{\??ko#1\c!doorgaan}{\v!ja}
+         {\dohandelpaginaafB{#1}}%
+     \fi
+   \else
+     \dohandelpaginaafB{#1}%
+   \fi
+   \dohandelpaginaafAB{#1}}
+
+\def\handelpaginaafC#1%
+  {\xdef\@@koniveau{\getvalue{\??se\@@sectie\c!niveau}}%
+   \nobreak}
+
+%\def\dolocalkopsetup#1%  koppeling met standaard kopcommando / engels
+%  {\forgetall
+%   \doifvaluesomething{\??ko#1\c!uitlijnen}  
+%     {\ExpandFirstAfter\steluitlijnenin[\getvalue{\??ko#1\c!uitlijnen}]}%
+%   \doifvaluesomething{\??ko#1\c!tolerantie} 
+%     {\ExpandFirstAfter\steltolerantiein[\getvalue{\??ko#1\c!tolerantie}]}%
+%   \def\\{\crlf\strut\ignorespaces}}
+
+\def\dolocalkopsetup#1%  koppeling met standaard kopcommando / engels
+  {\forgetall
+   \doifvaluesomething{\??ko#1\c!uitlijnen}  
+     {\expanded{\steluitlijnenin[\getvalue{\??ko#1\c!uitlijnen}]}}%
+   \doifvaluesomething{\??ko#1\c!tolerantie} 
+     {\expanded{\steltolerantiein[\getvalue{\??ko#1\c!tolerantie}]}}%
+   \def\\{\crlf\strut\ignorespaces}}
+
+\newif\ifplaatskop
+\newif\ifverhoognummer
+\newif\ifkopnummer
+
+\def\setsectieenkoppeling#1%
+  {\edef\@@koppeling{\getvalue{\??ko#1\c!koppeling}}%
+   \edef\@@sectie{\getvalue{\??ko#1\c!sectie}}%
+   \doifnothing{\@@koppeling}
+     {\edef\@@koppeling{#1}}%
+   \doifnothing{\@@sectie}
+     {\edef\@@sectie{\getvalue{\??ko\@@koppeling\c!sectie}}}}
+
+\newif\ifkopprefix
+
+% \handelpaginaaf komt het eerst omdat eventueel
+% subpaginanummers moeten worden afgehandeld. Vervolgens
+% worden de nummers opgehoogd en referenties geset, dan
+% volgt de kop en tot slot de worden de marks en de prefix
+% geset.
+
+% \hoofdstuk {tekst}
+% \hoofdstuk tekst
+% \hoofdstuk <niets>
+
+\def\dodosomekop#1[#2]#3%
+  {\doifelsevalue{\??ko#1\c!eigennummer}{\v!ja}
+     {\def\next{\doquadruplegroupempty\dododosomekop{#1}{#2}{#3}}}
+     {\def\next{\fourthargumentfalse\dododosomekop{#1}{#2}{#3}{}}}%
+   \next}
+
+\def\finalsectionnumber%
+  {\ifundefined{\@@sectie\c!nummer}\else
+     \ifsomeheadconversion
+       \@@shortsectionnumber{\@@sectie}%
+     \else
+       \getvalue{\@@sectie\c!nummer}%
+     \fi
+   \fi}
+
+\def\dododosomekop#1#2#3#4%
+  {\iffourthargument
+     \def\next%
+       {\dodododosomekop{#1}[#2]{#1}{#3}{#4}}%
+   \else
+     \def\next%
+       {\dodododosomekop{#1}[#2]{#1}{\finalsectionnumber}{#3}}%
+   \fi
+   \next}
+
+\def\findsectionnumber#1#2#3% class file title
+  {\begingroup
+   \setsectieenkoppeling{#1}%
+   \xdef\foundsectionnumber{1}%
+   \def\dolijstelement##1##2##3##4##5##6%
+     {\doif{##1}{#1}
+        {\ConvertConstantAfter\doif{##4}{#3}
+           {\global\utilitydonetrue
+            \scratchcounter=0\getvalue{\??se\@@sectie\c!niveau}%
+            \advance\scratchcounter by 2
+            \def\do####1:####2]%
+              {\advance\scratchcounter by -1
+               \ifcase\scratchcounter
+                 \xdef\foundsectionnumber{####1}%
+               \else
+                 \do####2]%
+               \fi}%
+            \do##5]}}}%
+   \setbox0=\vbox
+     {\doutilities{#1}{#2}{#1}{}{}}%
+   \endgroup
+   \doifnumberelse{\foundsectionnumber}
+     {\doif{\foundsectionnumber}{0}{\xdef\foundsectionnumber{1}}}
+     {\xdef\foundsectionnumber{1}}% an appendix or so
+   \stelkopnummerin[#1][\foundsectionnumber]%
+   \stelkopnummerin[#1][-1]}
+
+\newif\ifsomeheadconversion
+
+\def\setsomeheadconversion#1#2%
+   {\someheadconversionfalse
+    \doifelsevalue{\??ko#1\c!eigennummer}{\v!ja} 
+      {\def\someheadconversion{#2}}
+      {\bepaalkopnummer[#1]%
+       \@EA\ifx\csname\??se\@@sectie\@@sectieblok\c!kopconversie\endcsname\relax
+         \@EA\ifx\csname\??se\@@sectie\c!kopconversie\endcsname\relax
+           \def\someheadconversion{#2}%
+         \else
+           \@EA\ifx\csname\??se\@@sectie\c!kopconversie\endcsname\empty
+             \def\someheadconversion{#2}%
+           \else
+             \someheadconversiontrue
+             \def\someheadconversion%
+               {\fullsectionnumber{#1}{\getvalue{\??se\@@sectie\c!kopconversie}}{#2}}%
+           \fi
+         \fi
+       \else
+         \@EA\ifx\csname\??se\@@sectie\@@sectieblok\c!kopconversie\endcsname\empty
+           \def\someheadconversion{#2}%
+         \else
+           \someheadconversiontrue
+           \def\someheadconversion%
+             {\fullsectionnumber{#1}{\getvalue{\??se\@@sectie\@@sectieblok\c!kopconversie}}{#2}}%
+         \fi
+       \fi}} 
+
+\def\writtenfullsectionnumber{\string\fullsectionnumber}
+\def\ignoredfullsectionnumber#1#2#3{#3}
+\let\storedfullsectionnumber\relax
+\unexpanded\def\naturalfullsectionnumber#1#2#3{\sectiebloklabel{#1}{\getvalue{\??cv#2}{#3}}}
+\unexpanded\def\limitedfullsectionnumber#1#2#3{\getvalue{\??cv#2}{#3}}
+
+\def\setfullsectionnumber#1%
+  {\doifelsevalue{#1\c!kopconversie}{\v!ja}
+     {\doifelsevalue{#1\c!koplabel}{\v!ja}
+        {\let\fullsectionnumber\naturalfullsectionnumber}
+        {\let\fullsectionnumber\limitedfullsectionnumber}}
+     {\let\fullsectionnumber\ignoredfullsectionnumber}}
+
+%\let\fullsectionnumber\naturalfullsectionnumber
+\let\fullsectionnumber\limitedfullsectionnumber
+
+% \dodododosomekop IS NON GROUPED, SO WE NEED TO RESTORE !!!!
+%
+% dit kan dus beter \everyaroundhead zijn 
+
+\def\dodododosomekop#1[#2]#3#4#5% % pas met \ExpandFirstAfter op bij twee||taligheid
+  {\flushingcolumnfloatsfalse     % #3=#1=redundant
+   \someheadconversionfalse
+%   \let\fullsectionnumber\naturalfullsectionnumber
+\let\fullsectionnumber\limitedfullsectionnumber
+   \setsectieenkoppeling{#1}%
+   \doifelsevalue{\??ko#1\c!prefix}{}
+     {\kopprefixfalse}
+     {\kopprefixtrue}%
+   \ifkopprefix
+     \doifelsevalue{\??ko#1\c!prefix}{+}
+       {\doifelsenothing{#2}
+          {\def\localkopprefix{+}}
+          {\def\localkopprefix{#2}}} % eigenlijk alleen eerste
+       {\edef\localkoprefix{\getvalue{\??ko#1\c!prefix}}}%
+   \fi
+   \doifelsevalue{\??ko#1\c!plaatskop}{\v!ja}
+     {\plaatskoptrue}
+     {\plaatskopfalse}%
+   \processaction
+     [\getvalue{\??ko#1\c!verhoognummer}]
+     [     \v!ja=>\verhoognummertrue,
+          \v!nee=>\verhoognummerfalse,
+      \s!unknown=>{\ifx\currentproduct\empty
+                     \findsectionnumber{#1}\commalistelement{#5}%
+                   \fi
+                   \verhoognummertrue}]%
+   \edef\numberheaddistance   {\getvalue{\??ko#1\c!afstand}}%
+   \edef\numberheadalternative{\getvalue{\??ko#1\c!variant}}%
+   \dostelkopvariantin[\numberheadalternative]%
+   \ifsectienummer
+     \doifelsevalue{\??sb\@@sectieblok\c!nummer}{\v!ja}
+       {\doifelsevalue{\??ko#1\c!nummer}{\v!ja}
+          {\kopnummertrue}{\kopnummerfalse}}
+       {\kopnummerfalse}%
+   \else
+     \kopnummerfalse
+   \fi
+   \convertexpanded{\??ko#1}{#5}\asciititle
+   \ifverhoognummer
+     \ifplaatskop
+       \checknexthead\handelpaginaaf{#1}%
+       \setsectieenkoppeling{#1}% can be changed when [voor=\somehead{..}...]
+       \ifkopprefix
+         \setupreferencing[\c!prefix=-]%
+       \fi
+       \getvalue{\e!volgende\@@sectie}%
+       \getvalue{\??ko#1\c!tussen}%
+       \ifkopnummer
+\setsomeheadconversion{#1}{#4}% 
+\ifsomeheadconversion
+         \let\fullsectionnumber\naturalfullsectionnumber
+         \doplaatskopnummertekst
+           {#1}
+           {\setsectionlistreference{\@@sectie}{#1}%
+            \ExpandFirstAfter\soortpagina[\@@koppeling]%
+%            \let\fullsectionnumber\storedfullsectionnumber
+            \let\fullsectionnumber\writtenfullsectionnumber
+            \rawreference{\s!sec}{#2}{{\someheadconversion}{\asciititle}}%
+            \resetsectionmarks[\@@sectie]%
+            \stellijstin[\@@koppeling][\c!expansie=\getvalue{\??ko#1\c!expansie}]%
+            \let\fullsectionnumber\writtenfullsectionnumber
+            \doschrijfnaarlijst{\@@koppeling}{\someheadconversion}{#5}{\v!kop}}%
+           {\someheadconversion}
+           {#5}
+           {\marking[#1]{#5}%
+            \let\fullsectionnumber\storedfullsectionnumber
+            \expanded{\marking[#1\v!nummer]{\someheadconversion}}}%
+         \let\fullsectionnumber\ignoredfullsectionnumber
+         \writesection{#1}{\someheadconversion}{#5}%
+\else
+         \doplaatskopnummertekst
+           {#1}
+           {\setsectionlistreference{\@@sectie}{#1}%
+            \ExpandFirstAfter\soortpagina[\@@koppeling]%
+            \rawreference{\s!sec}{#2}{{#4}{\asciititle}}%
+            \resetsectionmarks[\@@sectie]%
+            \stellijstin[\@@koppeling][\c!expansie=\getvalue{\??ko#1\c!expansie}]%
+            \doschrijfnaarlijst{\@@koppeling}{#4}{#5}{\v!kop}}
+           {\sectiebloklabel{#3}{#4}}
+           {#5}
+           {\marking[#1]{#5}%
+            \doifelsevalue{\??ko#1\c!eigennummer}{\v!ja} % rommelig omdat
+              {\edef\finalsectionnumber{#4}}             % #4 al is toegekend
+              {\bepaalkopnummer[#1]}% migreert naar 3e argument 
+            \expanded{\marking[#1\v!nummer]{\finalsectionnumber}}}%
+         \writesection{#1}{#4}{#5}%
+ \fi
+       \else
+         \doplaatskoptekst
+           {#1}
+           {\setsectionlistreference{\@@sectie}{#1}%
+            \ExpandFirstAfter\soortpagina[\@@koppeling]%
+            \rawreference{\s!sec}{#2}{{#4}{\asciititle}}%
+            \resetsectionmarks[\@@sectie]%
+            \stellijstin[\@@koppeling][\c!expansie=\getvalue{\??ko#1\c!expansie}]%
+            \doschrijfnaarlijst{\@@koppeling}{}{#5}{\v!kop}}
+           {#5}
+           {\marking[#1]{#5}%
+            \doifelsevalue{\??ko#1\c!eigennummer}{\v!ja}
+              {\edef\finalsectionnumber{#4}}
+              {\bepaalkopnummer[#1]}%
+            \expanded{\marking[#1\v!nummer]{\finalsectionnumber}}}%
+         \writesection{#1}{-}{#5}%
+       \fi
+       \ifkopprefix
+         \ExpandFirstAfter\setupreferencing[\c!prefix=\localkopprefix]%
+       \fi
+       \dosomebreak\nobreak
+       \ifdisplaysectionhead\getvalue{\??ko#1\c!na}\fi
+     \else
+       \checknexthead\dohandelpaginaafB{#1}% toegevoegd ivm subpaginanr / tug sheets
+       \setsectieenkoppeling{#1}% can be changed when [voor=\somehead{..}...]
+       \ifkopprefix
+         \setupreferencing[\c!prefix=-]%
+       \fi
+       \getvalue{\e!volgende\@@sectie}%
+       \getvalue{\??ko#1\c!tussen}%
+       \setsectionlistreference{\@@sectie}{#1}%
+       \resetsectionmarks[\@@sectie]%
+       \marking[#1]{#5}%
+       \doifelsevalue{\??ko#1\c!eigennummer}{\v!ja}
+         {\edef\finalsectionnumber{#4}}  
+         {\bepaalkopnummer[#1]}%
+       \expanded{\marking[#1\v!nummer]{\finalsectionnumber}}%
+       \ExpandFirstAfter\soortpagina[\@@koppeling]%
+       \bgroup
+       \stellijstin[\@@koppeling][\c!expansie=\getvalue{\??ko#1\c!expansie}]%
+       \ifkopnummer
+         \rawreference{\s!sec}{#2}{{#4}{\asciititle}}%
+         \doschrijfnaarlijst{\@@koppeling}{#4}{#5}{\v!kop}%
+         \writesection{#1}{#4}{#5}%
+       \else
+         \rawreference{\s!sec}{#2}{{#4}{\asciititle}}%
+         \doschrijfnaarlijst{\@@koppeling}{}{#5}{\v!kop}%
+         \writesection{#1}{-}{#5}%
+       \fi
+       \egroup
+       \ifkopprefix
+         \ExpandFirstAfter\setupreferencing[\c!prefix=\localkopprefix]%
+       \fi
+     \fi
+   \else
+     \ifplaatskop
+       \checknexthead\handelpaginaaf{#1}%
+       \setsectieenkoppeling{#1}% can be changed when [voor=\somehead{..}...]
+       \getvalue{\??ko#1\c!tussen}%
+       \doplaatskoptekst
+         {#1}
+         {\rawreference{\s!sec}{#2}{{#4}{\asciititle}}}
+         {#5}
+         {}%
+       \writesection{#1}{-}{#5}%
+       \dosomebreak\nobreak
+       \ifdisplaysectionhead\getvalue{\??ko#1\c!na}\fi
+     \else
+       % do nothing
+     \fi
+   \fi
+   \flushingcolumnfloatstrue
+   \someheadconversionfalse
+%   \let\fullsectionnumber\naturalfullsectionnumber
+\let\fullsectionnumber\limitedfullsectionnumber
+   \ifdisplaysectionhead\else\expandafter\GotoPar\fi}
+
+% \prevdepth\dp\strutbox is belangrijk, vergelijk naast elkaar:
+%
+% \onderwerp{test} \input tufte
+% \onderwerp{test} \strut \input tufte
+% \onderwerp{test} \plaatslijst[...]
+
+\def\doplaatskoptekst#1#2#3#4%
+  {\beginheadplacement{#1}%
+   \setbox0=\hbox
+     {\getvalue{\??ko#1\c!commando}
+        {} % no number
+        {\doattributes
+           {\??ko#1}\c!letter\c!kleur
+           {\doattributes
+              {\??ko#1}\c!tekstletter\c!tekstkleur
+              {\dontconvertfont
+               \ifdisplaysectionhead
+                 \stelinterliniein
+               \else
+                 \stelspatieringin
+               \fi
+               #2%
+               \getvalue{\??ko#1\c!voorcommando}%
+               \getvalue{\??ko#1\c!tekstcommando}%
+                 {\ifdisplaysectionhead
+                    \setstrut\begstrut#3\endstrut
+                     \xdef\localheaddepth{\the\dp\strutbox}%
+                  \else
+                    #3%
+                  \fi}%
+               \getvalue{\??ko#1\c!nacommando}%
+               \ifdisplaysectionhead\endgraf\fi}}}}%
+   \endheadplacement{#1}{#4}}
+
+\def\doplaatskopnummertekst#1#2#3#4#5%
+  {\beginheadplacement{#1}%
+   \setbox0=\hbox
+     {\getvalue{\??ko#1\c!commando}%
+        {\doattributes{\??ko#1}\c!letter\c!kleur
+           {\doattributes{\??ko#1}\c!nummerletter\c!nummerkleur
+              {\getvalue{\??ko#1\c!voorcommando}%
+               \getvalue{\??ko#1\c!nummercommando}%
+                 {\ifdisplaysectionhead
+                    \setstrut\begstrut#3\endstrut
+                  \else
+                    #3%
+                  \fi}}}}
+        {\doattributes{\??ko#1}\c!letter\c!kleur
+           {\doattributes{\??ko#1}\c!tekstletter\c!tekstkleur
+              {\dontconvertfont
+               \ifdisplaysectionhead
+                 \stelinterliniein
+               \else
+                 \stelspatieringin
+               \fi
+               #2%
+               \getvalue{\??ko#1\c!tekstcommando}%
+                 {\ifdisplaysectionhead
+                    \setstrut\begstrut#4\endstrut
+                    \xdef\localheaddepth{\the\dp\strutbox}%
+                  \else
+                    #4%
+                  \fi}%
+               \getvalue{\??ko#1\c!nacommando}%
+               \ifdisplaysectionhead\endgraf\fi}}}}%
+   \endheadplacement{#1}{#5}}
+
+\newsignal\headsignal
+\let\headlastlinewidth\!!zeropoint
+\newif\ifcontinuoushead
+
+\def\beginheadplacement#1%
+  {\bgroup
+   \gdef\localheaddepth{\dp\strutbox}%
+   \everypar{}% needed indeed
+   \noindent  % ipv \witruimte elders, na \forgetall !
+   \bgroup
+   \forgetall % now we may forget everything
+  %\showcomposition
+   \mindermeldingen
+   \postponefootnotes
+   \iflocation\ifdisplaysectionhead\else\noninterferingmarks\fi\fi
+   \setupinteraction
+     [\c!letter=,
+      \c!kleur=,
+      \c!contrastkleur=]%
+   \strictouterreferencestrue % tzt instelling
+   \def\localkopsetup%
+     {\dolocalkopsetup{#1}}%
+   \startsynchronisatie}
+
+\def\endheadplacement#1#2%
+  {\doifvaluenothing{\??ko#1\c!file}{\locationfalse}%
+   \ifdisplaysectionhead
+     \let\headlastlinewidth\!!zeropoint
+     \snaptogrid\hbox
+       {\iflocation
+          \ifautocrossdocument
+            \naarbox{\box0}[\getvalue{\??ko#1\c!file}::#1]%
+          \else
+            \hbox{\box0}%
+          \fi
+        \else
+          \hbox{\box0}%
+        \fi
+        \doflushfootnotes}% new
+     \endgraf
+     \nointerlineskip
+     \dosomebreak\nobreak
+     #2%
+   \else
+     \strut
+     \doflushfootnotes % new
+     \iflocation
+       \ifautocrossdocument
+         \hhboxindent=\ifcontinuoushead\headlastlinewidth\else\!!zeropoint\fi
+         \unhhbox0\with{\naarbox{\box\hhbox}[\getvalue{\??ko#1\c!file}::#1]}%
+         \advance\lasthhboxwidth by \numberheaddistance
+         \xdef\headlastlinewidth{\the\lasthhboxwidth}%
+       \else
+         \unhbox0
+         \global\let\headlastlinewidth\!!zeropoint
+       \fi
+     \else
+       \unhbox0
+       \global\let\headlastlinewidth\!!zeropoint
+     \fi
+     #2%
+     \dimen0=\numberheaddistance
+     \hskip\dimen0 \!!plus \dimen0 \!!minus .25\dimen0
+     \hskip\headsignal\ignorespaces
+   \fi
+   \ifdisplaysectionhead
+     \ifgridsnapping % important, font related depth, see comment
+       \prevdepth\dp\strutbox
+     \else
+       \prevdepth\localheaddepth
+     \fi
+   \fi
+   \stopsynchronisatie
+   \egroup
+   \egroup
+   \doflushfootnotes % new, still needed?
+   \ifdisplaysectionhead
+     \doifvalue{\??ko#1\c!springvolgendein}{\v!nee}{\noindentation}%
+   \else
+     \nonoindentation % recently added, was a bug
+   \fi}
+
+\def\checknexthead#1#2% nog optioneel
+  {\ifhmode
+     \scratchcounter=\lastpenalty\unpenalty % no beauty in this
+     \ifdim\lastskip=\headsignal
+       \handelpaginaafC{#1}%
+       \global\continuousheadtrue
+     \else
+       \penalty\scratchcounter
+       \global\continuousheadfalse
+       #1{#2}%
+     \fi
+   \else
+     \global\continuousheadfalse
+     #1{#2}%
+   \fi}
+
+\def\dostelkopnummerin[#1][#2#3]%
+  {\bgroup
+   \setsectieenkoppeling{#1}%
+   \doifinstringelse{#2}{+-}
+     {\doifelse{#3}{}
+        {\@@nextsectionnumber{\@@sectie}}
+        {\!!counta=#2#3\relax
+         \advance\!!counta by \@@sectionvalue{\@@sectie}%
+         \@@setsectionnumber{\@@sectie}{\!!counta}}}
+     {\@@setsectionnumber{\@@sectie}{#2#3}}%
+   \egroup}
+
+\def\stelkopnummerin%
+  {\dodoubleargument\dostelkopnummerin}
+
+% \def\dokopnummer[#1]%
+%   {\bgroup
+%    \setsectieenkoppeling{#1}%
+%    \doifnot{\finalsectionnumber}{0} % kan effienter
+%      {\finalsectionnumber}%
+%    \egroup}
+%
+% beter :
+
+\def\huidigekopnummer{0}
+
+\def\bepaalkopnummer[#1]%
+  {\bgroup
+   \setsectieenkoppeling{#1}%
+   \xdef\huidigekopnummer{\@@sectionvalue{\@@sectie}}%
+   \egroup}
+
+%\def\complexkopnummer[#1]%
+%  {\bgroup
+%   \setsectieenkoppeling{#1}%
+%   \xdef\huidigekopnummer{\@@sectionvalue{\@@sectie}}%
+%   \doifnot{\huidigekopnummer}{0}
+%     {\finalsectionnumber}%
+%   \egroup}
+
+\def\complexkopnummer[#1]%
+  {\bgroup
+   \edef\huidigekopnummer{#1}%
+   \doifinsetelse{-}{#1}
+     {\removefromcommalist{-}\huidigekopnummer
+      \setsectieenkoppeling\huidigekopnummer
+      \stelsectiein[\@@sectie][\c!vorigenummer=\v!nee]}%
+     {\setsectieenkoppeling\huidigekopnummer}%
+   \xdef\huidigekopnummer{\@@sectionvalue{\@@sectie}}%
+   \doifnot{\huidigekopnummer}{0}{\finalsectionnumber}%
+   \egroup}
+
+\def\simplekopnummer%
+  {\huidigekopnummer}
+
+\definecomplexorsimple\kopnummer
+
+\def\alinea%
+  {\par}
+
+\def\plaatskopalinea#1#2%
+  {\vbox
+    {\localkopsetup
+     \begstrut\doifsomething{#1}{#1\hskip\numberheaddistance}#2}}
+
+\def\plaatskopnormaal#1#2%
+  {\doifelsenothing{#1}
+     {\vbox
+        {\localkopsetup
+         \noindent
+         #2}}%
+     {\setbox0=\hbox{{#1}\hskip\numberheaddistance}%
+      \vbox
+        {\localkopsetup
+         \hangindent 1\wd0
+         \hangafter 1
+         \noindent
+         \unhbox0    %  don't use \strut's here!
+         #2}}}
+
+\def\plaatskopinmarge#1#2%
+  {\vbox
+     {\localkopsetup
+      \begstrut            % but use one \strut here!
+      \doifsomething{#1}
+        {\llap{\hbox to 5em{\hfill{#1}\hskip\linkermargeafstand}}}%
+      {#2}}}
+
+\def\plaatskopmidden#1#2%
+  {\vbox
+     {\localkopsetup
+      \veryraggedcenter
+      \let\\\endgraf
+      \let\crlf\endgraf
+      \doifsomething{#1}{\strut#1\par}\begstrut#2}}
+
+\def\plaatskopintekst#1#2%
+  {\bgroup
+   \localkopsetup % no stretch in distance 
+   \doifsomething{#1}{{#1}\kern\numberheaddistance}{\begstrut#2}%
+   \egroup}
+
+% default   == instellingen
+% koppeling == koppen, breaks, marks, enz.
+% sectie    == nummering
+
+\let\@@kolijst=\empty
+
+\def\dodefinieerkop[#1][#2]%   % don't preset prefix to much
+  {\presetlabeltext[#1=]%
+   \getparameters
+     [\??ko#1]
+     [\c!nummerletter=\getvalue{\??ko#1\c!letter},
+      \c!tekstletter=\getvalue{\??ko#1\c!letter},
+      \c!nummerkleur=\getvalue{\??ko#1\c!kleur},
+      \c!tekstkleur=\getvalue{\??ko#1\c!kleur}]%
+   \ConvertToConstant\doifinstringelse{=}{#2}
+     {\getparameters
+        [\??ko#1]
+        [\c!sectie=\getvalue{\??ko\getvalue{\??ko#1\c!koppeling}\c!sectie},
+         \c!default=,
+         \c!koppeling=,
+         \c!prefix=,
+         \c!voor=,
+         \c!na=,
+         \c!afstand=,
+         \c!pagina=,
+         \c!hoofd=,
+         \c!voet=,
+         \c!letter=,
+         \c!nummercommando=,
+         \c!tekstcommando=,
+         \c!eigennummer=\v!nee,
+         \c!nummer=\v!ja,
+         \c!kleur=,
+         \c!springvolgendein=\v!nee,
+         \c!doorgaan=\v!ja,
+         \c!plaatskop=\v!ja,
+         \c!verhoognummer=\v!ja,
+         \c!variant=\@@kovariant,
+         \c!commando=\@@plaatskop,
+         \c!uitlijnen=,
+         \c!tolerantie=,
+         \c!file=,
+         \c!expansie=,
+         #2]%
+      \ConvertToConstant\doifnot{#1}{\getvalue{\??ko#1\c!default}}
+        {\doifsomething{\getvalue{\??ko#1\c!default}}
+           {\copyparameters
+              [\??ko#1][\??ko\getvalue{\??ko#1\c!default}]
+              [\c!voor,\c!na,\c!commando,\c!file,\c!pagina,\c!doorgaan,\c!hoofd,\c!voet,
+               \c!nummer,\c!eigennummer,\c!plaatskop,\c!verhoognummer,
+               \c!letter,\c!kleur,\c!afstand,\c!variant,\c!springvolgendein,
+              %\c!nummerletter,\c!tekstletter,
+              %\c!expansie, % njet
+               \c!uitlijnen,\c!tolerantie,\c!nummercommando,\c!tekstcommando]}}%
+      \getparameters[\??ko#1][#2]%
+      \doifsomething{\getvalue{\??ko#1\c!sectie}}
+        {\doifundefined{\??mk#1}
+           {\definieermarkering[#1]%
+            \koppelmarkering[#1][\getvalue{\??ko#1\c!sectie}]%
+            \definieermarkering[#1\v!nummer]%
+            \koppelmarkering[#1\v!nummer][\getvalue{\??ko#1\c!sectie}]}}%
+%            \koppelmarkering[#1\v!nummer][\getvalue{\??ko#1\c!sectie}\v!nummer]}}%
+      \doifundefined{\??li#1}{\definieerlijst[#1]}}
+     {\ConvertToConstant\doifelse{#1}{#2}
+        {\doifundefined{\??li#1}{\definieerlijst[#1]}}
+        {\copyparameters
+           [\??ko#1][\??ko#2]
+           [\c!niveau,\c!sectie,\c!koppeling,\c!prefix,
+            \c!voor,\c!na,\c!commando,\c!file,\c!pagina,\c!doorgaan,\c!hoofd,\c!voet,
+            \c!nummer,\c!eigennummer,\c!plaatskop,\c!verhoognummer,
+            \c!letter,\c!kleur,\c!afstand,\c!variant,\c!springvolgendein,
+           %\c!nummerletter,\c!tekstletter,
+           %\c!expansie, % njet
+            \c!uitlijnen,\c!tolerantie,\c!nummercommando,\c!tekstcommando]%
+         \definieermarkering[#1][#2]%
+         \definieermarkering[#1\v!nummer][#2\v!nummer]%
+         \doifundefined{\??li#1}{\definieerlijst[#1][#2]}}}%
+   \addtocommalist{#1}\@@kolijst
+   \setevalue{\??sk#1}%
+     {\getvalue{\??ko#1\c!koppeling}}%
+   \setevalue{\??by#1}%
+     {\getvalue{\??ko#1\c!sectie}}%
+   \setevalue{\??by\v!per#1}%
+     {\getvalue{\??ko#1\c!sectie}}%
+   \setvalue{#1}%
+     {\dodoubleempty\dosomekop[#1]}}
+
+\def\definieerkop%
+  {\dodoubleemptywithset\dodefinieerkop}
+
+\def\dosomekop[#1][#2]%
+  {\dowithpargument{\dodosomekop{#1}[#2]}}
+
+\def\dostelkopin[#1][#2]%
+  {\getparameters[\??ko#1][#2]%
+   % The next check prevents hard to trace problems. I once
+   % set \c!commando to nothing and (quite natural) got the
+   % wrong references etc. The whole bunch should be boxed!
+   \expandafter\convertcommand\csname\??ko#1\c!commando\endcsname\to\ascii
+   \doifnothing{\ascii}
+     {\setvalue{\??ko#1\c!commando}{\@@plaatskop}}}
+
+\def\stelkopin%
+  {\dodoubleargumentwithset\dostelkopin}
+
+\newif\ifsectienummer       \sectienummertrue
+\newif\ifdisplaysectionhead \displaysectionheadtrue
+
+\def\@@plaatskop{\plaatskopnormaal}
+
+\def\dostelkopvariantin[#1]%
+  {\displaysectionheadtrue
+   \processaction
+     [#1]
+     [ \v!normaal=>\def\@@plaatskop{\plaatskopnormaal},
+        \v!midden=>\def\@@plaatskop{\plaatskopmidden},
+         \v!marge=>\def\@@plaatskop{\plaatskopinmarge},
+       \v!inmarge=>\def\@@plaatskop{\plaatskopinmarge},
+         \v!tekst=>\def\@@plaatskop{\plaatskopintekst}\displaysectionheadfalse,
+        \v!alinea=>\def\@@plaatskop{\plaatskopalinea},
+       \s!unknown=>\def\@@plaatskop{\plaatskopnormaal}]}
+
+\def\dostelkoppenin[#1]%
+  {\getparameters[\??ko][#1]%
+   \doifelse{\@@kosectienummer}{\v!ja}
+     {\sectienummertrue}
+     {\sectienummerfalse}%
+   \dostelkopvariantin[\@@kovariant]}
+
+\def\stelkoppenin%
+  {\dosingleargument\dostelkoppenin}
+
+\def\systemsuppliedchapter {\getvalue{\v!hoofdstuk}}
+\def\systemsuppliedtitle   {\getvalue{\v!titel}}
+
+% a left over
+
+\def\complexbijlage[#1]#2%
+  {\pagina[\v!rechts]
+   \stelnummeringin[\c!status=\v!stop]
+   \systemsuppliedchapter[#1]{#2}
+   \pagina[\v!rechts]
+   \stelnummeringin[\c!status=\v!start]
+   \stelpaginanummerin[\c!nummer=1]}
+
+\setvalue{\v!bijlage}%
+  {\complexorsimpleempty\bijlage}
+
+\stelkoppenin
+  [\c!variant=\v!normaal,
+   \c!sectienummer=\v!ja,
+   \c!scheider=.,
+   \c!commando=]
+
+\definieersectieblok [\v!hoofdtekst] [\v!hoofdteksten] [\c!nummer=\v!ja]
+\definieersectieblok [\v!bijlage]    [\v!bijlagen]     [\c!nummer=\v!ja]
+\definieersectieblok [\v!inleiding]  [\v!inleidingen]  [\c!nummer=\v!nee]
+\definieersectieblok [\v!uitleiding] [\v!uitleidingen] [\c!nummer=\v!nee]
+
+\definieersectie[\v!sectionlevel-1]   % deel
+\definieersectie[\v!sectionlevel-2]   % hoofdstuk
+\definieersectie[\v!sectionlevel-3]   % paragraaf
+\definieersectie[\v!sectionlevel-4]   % subparagraaf
+\definieersectie[\v!sectionlevel-5]   % subsubparagraaf
+\definieersectie[\v!sectionlevel-6]   % subsubsubparagraaf
+\definieersectie[\v!sectionlevel-7]   % subsubsubsubparagraaf
+
+% \c!eigennummer ook hier?
+
+\definieerkop
+  [\v!deel]
+  [\c!sectie=\v!sectionlevel-1]
+
+\definieerkop
+  [\v!hoofdstuk]
+  [\c!sectie=\v!sectionlevel-2]
+
+\definieerkop
+  [\v!paragraaf]
+  [\c!sectie=\v!sectionlevel-3]
+
+\definieerkop
+  [\v!sub\v!paragraaf]
+  [\c!sectie=\v!sectionlevel-4,
+   \c!default=\v!paragraaf]
+
+\definieerkop
+  [\v!sub\v!sub\v!paragraaf]
+  [\c!sectie=\v!sectionlevel-5,
+  %\c!default=\v!paragraaf]
+   \c!default=\v!sub\v!paragraaf]             % nieuw
+
+\definieerkop
+  [\v!sub\v!sub\v!sub\v!paragraaf]
+  [\c!sectie=\v!sectionlevel-6,
+  %\c!default=\v!paragraaf]
+   \c!default=\v!sub\v!sub\v!paragraaf]       % nieuw
+
+\definieerkop
+  [\v!sub\v!sub\v!sub\v!sub\v!paragraaf]
+  [\c!sectie=\v!sectionlevel-7,
+  %\c!default=\v!paragraaf]
+   \c!default=\v!sub\v!sub\v!sub\v!paragraaf] % nieuw
+
+\definieerkop
+  [\v!titel]
+  [\c!koppeling=\v!hoofdstuk,
+   \c!default=\v!hoofdstuk,
+   \c!verhoognummer=\v!nee]
+
+\definieerkop
+  [\v!onderwerp]
+  [\c!koppeling=\v!paragraaf,
+   \c!default=\v!paragraaf,
+   \c!verhoognummer=\v!nee]
+
+\definieerkop
+  [\v!sub\v!onderwerp]
+  [\c!koppeling=\v!sub\v!paragraaf,
+   \c!default=\v!sub\v!paragraaf,
+   \c!verhoognummer=\v!nee]
+
+\definieerkop
+  [\v!sub\v!sub\v!onderwerp]
+  [\c!koppeling=\v!sub\v!sub\v!paragraaf,
+   \c!default=\v!sub\v!sub\v!paragraaf,
+   \c!verhoognummer=\v!nee]
+
+\definieerkop
+  [\v!sub\v!sub\v!sub\v!onderwerp]
+  [\c!koppeling=\v!sub\v!sub\v!sub\v!paragraaf,
+   \c!default=\v!sub\v!sub\v!sub\v!paragraaf,
+   \c!verhoognummer=\v!nee]
+
+\definieerkop
+  [\v!sub\v!sub\v!sub\v!sub\v!onderwerp]
+  [\c!koppeling=\v!sub\v!sub\v!sub\v!sub\v!paragraaf,
+   \c!default=\v!sub\v!sub\v!sub\v!sub\v!paragraaf,
+   \c!verhoognummer=\v!nee]
+
+\stelsectiein
+  [\v!sectionlevel-2]
+  [\v!bijlage\c!conversie=\v!Letter,
+   \c!vorigenummer=\v!nee]
+
+\stelkopin
+  [\v!deel]
+  [\c!plaatskop=\v!nee]
+
+\stelkopin
+  [\v!hoofdstuk]
+  [\v!bijlage\c!label=\v!bijlage,
+   \v!hoofdtekst\c!label=\v!hoofdstuk]             %   bijlageconversie=\Character
+
+\stelkopin
+  [\v!paragraaf]
+  [\v!bijlage\c!label=\v!paragraaf,
+   \v!hoofdtekst\c!label=\v!paragraaf]             %   bijlageconversie=\Character
+
+\stelkopin
+  [\v!sub\v!paragraaf]
+  [\v!bijlage\c!label=\v!sub\v!paragraaf,
+   \v!hoofdtekst\c!label=\v!sub\v!paragraaf]       %   bijlageconversie=\Character
+
+\stelkopin
+  [\v!sub\v!sub\v!paragraaf]
+  [\v!bijlage\c!label=\v!sub\v!sub\v!paragraaf,
+   \v!hoofdtekst\c!label=\v!sub\v!sub\v!paragraaf] %   bijlageconversie=\Character
+
+\stelkopin
+  [\v!deel,\v!hoofdstuk]
+  [\c!uitlijnen=,
+   \c!doorgaan=\v!nee,
+   \c!springvolgendein=\v!nee,
+   \c!pagina=\v!rechts,
+   \c!hoofd=,
+   \c!letter=\tfc,
+   \c!afstand=.75em,
+   \c!voor={\blanko[2*\v!groot]},
+   \c!na={\blanko[2*\v!groot]}]
+
+\stelkopin
+  [\v!paragraaf]
+  [\c!uitlijnen=,
+   \c!letter=\tfa,
+   \c!afstand=.75em,
+   \c!springvolgendein=\v!nee,
+   \c!voor={\blanko[2*\v!groot]},
+   \c!na=\blanko]
+
+\stelkopin                 % nieuw
+  [\v!sub\v!paragraaf]
+  [\c!pagina=]
+
+\definieersamengesteldelijst
+  [\v!inhoud]
+  [\v!deel,
+   \v!hoofdstuk,
+   \v!paragraaf,
+   \v!sub\v!paragraaf,
+   \v!sub\v!sub\v!paragraaf,
+   \v!sub\v!sub\v!sub\v!paragraaf,
+   \v!sub\v!sub\v!sub\v!sub\v!paragraaf]
+  [\c!niveau=\v!sub\v!sub\v!sub\v!sub\v!paragraaf,
+   \c!criterium=\v!lokaal]
+
+\stellijstin
+  [\v!deel]
+  [\c!breedte=0em,
+   \c!voor={\blanko\pagina[\v!voorkeur]},
+   \c!na=\blanko,
+   \c!label=\v!ja,
+   \c!scheider=:,
+   \c!afstand=1em]
+
+\stellijstin
+  [\v!hoofdstuk]
+  [\c!breedte=2em,
+   \c!voor={\blanko\pagina[\v!voorkeur]},
+   \c!na=]
+
+\stellijstin
+  [\v!paragraaf]
+  [\c!breedte=3em]
+
+\stellijstin
+  [\v!sub\v!paragraaf]
+  [\c!breedte=4em]
+
+\stellijstin
+  [\v!sub\v!sub\v!paragraaf]
+  [\c!breedte=5em]
+
+\stellijstin
+  [\v!sub\v!sub\v!sub\v!paragraaf]
+  [\c!breedte=6em]
+
+\stellijstin
+  [\v!sub\v!sub\v!sub\v!sub\v!paragraaf]
+  [\c!breedte=7em]
+
+% hm 
+
+\stelnummeringin % na instellen hoofdteksten !
+  [\c!variant=\v!enkelzijdig,
+   \c!plaats={\v!hoofd,\v!midden},
+   \c!conversie=\v!cijfers,
+   \c!links=,
+   \c!rechts=,
+   \c!wijze=\v!per\v!deel,
+   \c!tekst=,
+   \v!hoofdstuk\v!nummer=\v!nee, % v
+   \v!deel\v!nummer=\v!ja,       % v
+   \c!nummerscheider=--,
+   \c!tekstscheider=\tfskip,
+   \c!status=\v!start,
+   \c!commando=,
+   \c!letter=\v!normaal,
+   \c!kleur=]
+
+\protect \endinput 

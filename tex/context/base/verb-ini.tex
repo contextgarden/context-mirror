@@ -446,6 +446,7 @@
    \edef\endofverbatimcommand{\csname\verbatimname\endcsname}%
    \edef\endofverbatimcommand{\meaning\endofverbatimcommand}%
    \verbatimfont \spaceskip=.5em \xspaceskip=\spaceskip
+   \global\linepartrue % needed for paragraph numbering 
    \setupcopyverbatim
    \initializeverbatimline
    \copyverbatimline}
@@ -664,11 +665,11 @@
    \iflinepar\else\EveryPar{}\fi
    \leavevmode
    \xdef\dokeepverbatimlinedata%
-     {\parindent=\the\parindent
+     {\parindent =\the\parindent
       \hangindent=\the\hangindent
-      \hangafter=\the\hangafter
-      \leftskip =\the\leftskip
-      \rightskip=\the\rightskip}%
+      \hangafter =\the\hangafter
+      \leftskip  =\the\leftskip
+      \rightskip =\the\rightskip}%
    \egroup
    \dokeepverbatimlinedata
    \doopenupverbatimline
@@ -827,7 +828,7 @@
    \obeypages
    \obeycharacters
    \ignoreeofs
-   \openin\verbatiminput=#1
+   \openin\verbatiminput=#1\relax
    \skipfirstverbatimlinefalse
    \initializeverbatimline
    \def\readline%
@@ -1709,6 +1710,7 @@
      \expandafter\convertargument\csname\verbatimname\endcsname
        \to\endofverbatimcommand
      \verbatimfont \spaceskip=.5em \xspaceskip=\spaceskip
+     \global\linepartrue % needed for paragraph numbering 
      \setupcopyverbatim
      \initializeverbatimline
      \copyverbatimline}

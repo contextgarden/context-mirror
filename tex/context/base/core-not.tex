@@ -350,17 +350,17 @@
   {\bgroup
    \unskip\unskip
    \ifdim\lastkern=\footnotesignal
-     \hoog{\kern\@@vnafstand}% gets the font right, hack !
+     \high{\kern\@@vnafstand}% gets the font right, hack !
    \fi
    \ignorespaces
    \nobreak
    \iflocation
      \naarbox
-       {\hoog{\tx\footnotenumber\domovednote\v!vorigepagina\v!volgendepagina}}
+       {\high{\tx\footnotenumber\domovednote\v!vorigepagina\v!volgendepagina}}
        [\s!fnt:t:\internalfootreference]%
      \rawreference{\s!fnt}{\s!fnt:f:\internalfootreference}{}%
    \else
-     \hoog{\tx\footnotenumber\domovednote\v!vorigepagina\v!volgendepagina}%
+     \high{\tx\footnotenumber\domovednote\v!vorigepagina\v!volgendepagina}%
      \ifconditional\pagewisefootnotes
        \rawreference{\s!fnt}{\s!fnt:f:\internalfootreference}{}%
      \fi
@@ -418,7 +418,7 @@
   {\iffootnotesenabled
      \bgroup
      \unskip
-     \naarbox{\hoog{\tx\currenttextreference}}[#1]%
+     \naarbox{\high{\tx\currenttextreference}}[#1]%
      \egroup
    \fi}
 
@@ -613,7 +613,7 @@
 \newbox\localpostponedfootnotes
 
 \def\collectlocalfootnotes%
-  {\gdef\localfootinsert##1%
+  {\def\localfootinsert##1% was \gdef, but never reset!
      {%\message{[local footnote]}%
       \global\setbox\localpostponedfootnotes=\vbox\bgroup
         \unvbox\localpostponedfootnotes
@@ -755,7 +755,7 @@
   %\c!breedte=\ifdim\hsize<\zetbreedte\hsize\else\zetbreedte\fi,
    \c!breedte=\defaultfootnotewidth,
    \c!hoogte=\teksthoogte,
-   \c!nummercommando=\hoog,
+   \c!nummercommando=\high,
    \c!n=1]
 
 \protect

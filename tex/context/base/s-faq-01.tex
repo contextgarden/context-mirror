@@ -75,6 +75,7 @@
 \setupregister
   [index]
   [coupling=yes,
+   unknownreference=none,
    interaction=text]
 
 \coupleregister
@@ -120,7 +121,8 @@
 \def\CurrentIndexOfFAQ%
   {\bgroup
    \setupinteraction[color=]%
-   \menubox[bottom]{\let\index\coupledindex\IndexOfFAQ}%
+   \menubox[bottom]%
+     {\hskip-.5em\def\index{\hskip.5em\coupledindex}\IndexOfFAQ}%
    \egroup}
 
 \setupinteractionmenu
@@ -192,15 +194,13 @@
    \pagereference[faqs]
    \useblocks[question]}
 
-\def\MyFrame%
-  {\startreusableMPgraphic{Frame:\overlaywidth:\overlayheight}
-     path p ; p := unitsquare xscaled \overlaywidth yscaled \overlayheight ;
-     pickup pencircle scaled 2pt ; 
-     fill p withcolor \MPcolor{\overlaycolor} ;
-     draw p withcolor \MPcolor{\overlaylinecolor} ;
-   \stopreusableMPgraphic
-   \reuseMPgraphic{Frame:\overlaywidth:\overlayheight}}
+\startuniqueMPgraphic{Frame}
+  path p ; p := unitsquare xscaled \overlaywidth yscaled \overlayheight ;
+  pickup pencircle scaled 2pt ; 
+  fill p withcolor \MPcolor{\overlaycolor} ;
+  draw p withcolor \MPcolor{\overlaylinecolor} ;
+\stopuniqueMPgraphic
 
-\defineoverlay[MyFrame][\MyFrame]
+\defineoverlay[MyFrame][\uniqueMPgraphic{Frame}]
 
 \endinput

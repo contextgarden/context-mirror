@@ -651,9 +651,9 @@
      \fi}
 
   \def\pushwhatsit%
-    {\ifdim\lastskip=\!!zeropoint
-       \ifnum\lastpenalty=0 
-         \ifnum\lastkern=0
+    {\ifzeropt\lastskip
+       \ifcase\lastpenalty
+         \ifzeropt\lastkern
            \ifhmode
              \let\popwhatsit\relax
            \else

@@ -144,11 +144,6 @@
    \handleunicodeglyph
    \egroup}
 
-\unexpanded\def\uc#1#2% used in tricky situations 
-  {\bgroup
-   \edef\unicodeone{#1}%
-   \afterassignment\dohandleunicodeflowglyph\chardef\nexttoken}
-
 \unexpanded\def\uchar#1#2% use as standalone glyph  
   {\bgroup
    \let\nextglyph\relax
@@ -157,6 +152,17 @@
    \unicodeposition=\unicodeone\unicodetwo\relax
    \handleunicodeglyph
    \egroup}
+
+\def\dohandleucflowglyph%
+  {\unicodeposition=\unicodeone\unicodetwo\relax
+   \handleunicodeglyph
+   \egroup}
+
+\unexpanded\def\uc#1#2% used in tricky situations
+  {\bgroup
+   \edef\unicodeone{#1}%
+   \edef\unicodetwo{#2}%
+   \futurelet\nextglyph\dohandleucflowglyph}
 
 % Alternative, handles [char >127]{number} too. 
 %

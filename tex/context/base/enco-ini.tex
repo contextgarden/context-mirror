@@ -167,7 +167,7 @@
 %D This command is typically used in coding definitions, 
 %D like the \UNICODE\ one. 
 
-\def\dodefineactivedecimal#1#2%
+\def\dodefineactivedecimal#1#2% \unexpanded ? pdfdoc encoding 
   {\catcode#1=\active % maybe \protectregimetrue
    \scratchcounter=\the\uccode`~
    \uccode`~=#1\relax
@@ -493,7 +493,7 @@
 %D \stoptypen
 %D
 %D The first argument denotes the string to be treated. The 
-%D second argument is the raw replacement, while the second 
+%D second argument is the raw replacement, while the third 
 %D argument determines the sort order given the replacement. 
 %D The last argument is used as entry in the index (a, b, etc).
 %D
@@ -817,6 +817,7 @@
 
 %\appendtoks     \def\i{I}\to \everyuppercase
 %\appendtoks     \def\j{J}\to \everyuppercase
+%\appendtoks   \def\sz{sz}\to \everyuppercase % \sz <= \ss
 %\appendtoks   \def\SS{SS}\to \everyuppercase % \SS <= \ss
 %
 %\appendtoks  \let\l=\L   \to \everyuppercase
@@ -895,6 +896,11 @@
 
 \unexpanded\def\udigit#1#2{\getvalue{@#1@uc\number#2}}
 
+%D Just to be sure, we save the original values of \type {\ss}. 
+
+\ifx\undefined\SS \let\SS=\ss \fi
+\ifx\undefined\sz \let\sz=\ss \fi
+
 %D Here come the definitions.
 
 \redefineaccent    '   % grave
@@ -920,7 +926,7 @@
 \redefinecharacter OE  % OE
 \redefinecharacter o   % oslash
 \redefinecharacter O   % Oslash
-\redefinecharacter ss  % germandbls
+\redefinecharacter sz  % germandbls
 \redefinecharacter SS  % germandbls
 \redefinecharacter aa  % aring
 \redefinecharacter AA  % Aring
@@ -944,12 +950,18 @@
 \defineaccent ' i {\'\i}  \defineaccent ' j {\'\j}
 \defineaccent ~ i {\~\i}  \defineaccent ~ j {\~\j}
 
+\redefinecharacter leftguillemot 
+\redefinecharacter rightguillemot  
+\redefinecharacter leftsubguillemot 
+\redefinecharacter rightsubguillemot  
+
 %D Some more:
 
 \startmapping[\s!default] 
 
 \defineuppercasecom \i  {I}
 \defineuppercasecom \j  {J}
+\defineuppercasecom \sz {SS}
 \defineuppercasecom \SS {SS}
 \defineuppercasecom \l  \L 
 \defineuppercasecom \ae \AE

@@ -14,23 +14,36 @@
 %D This module is one big hack. This hack is not needed when
 %D using \ETEX, so there we simply load \PICTEX\ and quit.  
 
-\ifx\eTeXversion\undefined \else 
+%D Not every package defines \type{\fiverm}, \PICTEX's pixel,
+%D so let's take care of that omision here. The actual loading 
+%D of \PICTEX\ depends on the package. For \LATEX\ users we 
+%D take care of loading the auxiliary ones too.
 
-  \ifx\undefined\fiverm
-    \font\fiverm=cmr5
-  \fi
+\def\loadpictex%
+  {\ifx\grid\undefined \else \let\normalgrid\grid \fi 
+   \ifx\axis\undefined \else \let\normalaxis\axis \fi 
+   \ifx\undefined\fiverm
+     \font\fiverm=cmr5
+   \fi
+   \ifx\beginpicture\undefined
+     \ifx\newenvironment\undefined
+       \input pictex.tex     \relax
+     \else
+       \input prepictex.tex  \relax
+       \input pictex.tex     \relax
+       \input postpictex.tex \relax
+     \fi
+   \fi
+   \ifx\normalgrid\undefined \else 
+     \let\pictexgrid\grid 
+     \let\grid\normalgrid
+   \fi 
+   \ifx\normalaxis\undefined \else 
+     \let\pictexaxis\axis 
+     \let\axis\normalaxis
+   \fi} 
 
-  \ifx\beginpicture\undefined
-    \ifx\newenvironment\undefined
-      \input pictex.tex     \relax
-    \else
-      \input prepictex.tex  \relax
-      \input pictex.tex     \relax
-      \input postpictex.tex \relax
-    \fi
-  \fi
-
-\expandafter \endinput \fi 
+\ifx\eTeXversion\undefined \else \loadpictex \expandafter \endinput \fi 
  
 %D When not in \ETEX\ and not in \CONTEXT, we load a few 
 %D auxiliary macros. 
@@ -224,26 +237,9 @@
    \input #1 \relax
    \message{[after: d=\the\count11,s=\the\count12]}}%
 
-%D Not every package defines \type{\fiverm}, \PICTEX's pixel,
-%D so let's take care of that omision now:
+%D Now we can load \PICTEX: 
 
-\ifx\undefined\fiverm
-  \font\fiverm=cmr5
-\fi
-
-%D The actual loading of \PICTEX\ depends on the package.
-%D For \LATEX\ users we take care of loading the auxiliary
-%D ones too.
-
-\ifx\beginpicture\undefined
-  \ifx\newenvironment\undefined
-    \dimeninput pictex.tex     \relax
-  \else
-    \dimeninput prepictex.tex  \relax
-    \dimeninput pictex.tex     \relax
-    \dimeninput postpictex.tex \relax
-  \fi
-\fi
+\loadpictec
 
 %D Finally we restore the old definitions of \type{\newdimen}
 %D and \type{\newskip}:

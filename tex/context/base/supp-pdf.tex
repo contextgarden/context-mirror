@@ -1,6 +1,6 @@
 %D \module
 %D   [       file=supp-pdf,
-%D        version=1998.10.15,
+%D        version=2000.04.28,
 %D          title=\CONTEXT\ Support Macros,
 %D       subtitle=\METAPOST\ to \PDF\ conversion,
 %D         author=Hans Hagen,
@@ -36,7 +36,7 @@
 \ifx\pdfliteral\undefined
   \def\PDFcode#1{\message{[ignored pdfliteral: #1]}}
 \else
-  \let\PDFcode=\pdfliteral
+  \let\PDFcode\pdfliteral
 \fi
 
 %D \macros 
@@ -356,7 +356,7 @@
 %D
 %D \starttypen
 %D \gMPa {number}
-%D \sMPa {number}
+%D \gMPs {number}
 %D \stoptypen
 %D
 %D When scanning a path specification, we also save the
@@ -404,10 +404,10 @@
      {\do#1}}
 
 \def\gMPa#1%
-  {\csname\@@MP0#1\endcsname}
+  {\csname\@@MP0\number#1\endcsname}
 
 \def\gMPs#1%
-  {\csname\@@MP\the\nofMPsegments#1\endcsname}
+  {\csname\@@MP\the\nofMPsegments\number#1\endcsname}
 
 \def\setMPkeyword#1
   {\expandafter\def\csname\@@MP\the\nofMPsegments0\endcsname{#1}%
@@ -577,6 +577,7 @@
          \PDFcode{\gMPa1 M}%
          \resetMPstack
        \else\ifx\somestring\PSfshow
+         \PDFcode{n}% 
          \handleMPfshow
          \resetMPstack
        \else\ifx\somestring\PSsetlinecap
@@ -661,6 +662,7 @@
      \dimen0=\MPxscale\dimen0
      \xdef\MPwidth{\the\dimen0}%
      \advance\dimen2 by #5bp
+     \xdef\MPyshift{\the\dimen2}% unscaled 
      \dimen2=\MPyscale\dimen2
      \xdef\MPheight{\the\dimen2}%
      \chardef\currentMPboundingbox=#1\relax
@@ -714,12 +716,13 @@
 %D take care of \type{(split arguments)}.
 
 \def\handleMPfshow%
-  {\setbox0=\hbox
+  {\bgroup
+   \setbox\scratchbox=\hbox
      {\obeyMPspecials
-      \edef\size{\gMPa{\the\nofMParguments}}%
+      \edef\size{\gMPa\nofMParguments}%
       \ifx\size\PSnfont % round font size (to pt) 
         \advance\nofMParguments by -1
-        \expandafter\scratchdimen\gMPa{\the\nofMParguments}pt
+        \expandafter\scratchdimen\gMPa\nofMParguments pt
         \ifdim\scratchdimen<1pt
           \def\size{1pt}%
         \else
@@ -731,7 +734,7 @@
         \edef\size{\size bp}%
       \fi
       \advance\nofMParguments by -1
-      \font\temp=\gMPa{\the\nofMParguments} at \size
+      \font\temp=\gMPa\nofMParguments\space at \size
       \advance\nofMParguments by -1
       \temp
       \ifnum\nofMParguments=1
@@ -739,27 +742,41 @@
         \gMPa1%
       \else
         \scratchcounter=1
-        \def\do(##1{\if##1 \char32\else##1\fi}%
-        \gMPa{\the\scratchcounter}\space
-        \def\do{}%
+        \def\dodo##1%
+          {\edef\!!stringa{##1}\ifx\!!stringa\space\char32\else##1\fi}%
+        \def\do(##1{\dodo{##1}}%
+        \gMPa\scratchcounter\space
+        \let\do\relax
         \loop
           \advance\scratchcounter by 1
           \ifnum\scratchcounter<\nofMParguments
-            \gMPa{\the\scratchcounter}\space
+            [\gMPa\scratchcounter]\space
         \repeat
-        \def\do##1){\if##1 \char32\else##1\fi}%
-        \gMPa{\the\scratchcounter}%
+        \def\do##1){\dodo{##1}}%
+        \gMPa\scratchcounter
       \fi
       \unskip}%
-   \dimen0=\lastMPmoveY bp
-   \advance\dimen0 by \ht0
-   \ScaledPointsToBigPoints{\number\dimen0}\lastMPmoveY
-   \PDFcode{n q 1 0 0 1 \lastMPmoveX\space\lastMPmoveY\space cm}%
-   \dimen0=\ht0
-   \advance\dimen0 by \dp0
-   \box0
-   \vskip-\dimen0
-   \PDFcode{Q}}
+  % 
+  % this fails in latest pdftex's
+  %
+  % \dimen0=\lastMPmoveY bp
+  % \advance\dimen0 by \ht0
+  % \ScaledPointsToBigPoints{\number\dimen0}\lastMPmoveY
+  % \PDFcode{n q 1 0 0 1 \lastMPmoveX\space\lastMPmoveY\space cm}%
+  % \dimen0=\ht0
+  % \advance\dimen0 by \dp0
+  % \box0
+  % \vskip-\dimen0
+  % \PDFcode{Q}%
+  % \egroup}
+  %
+   \setbox\scratchbox=\hbox
+     {\hskip\lastMPmoveX bp\raise\lastMPmoveY bp\box\scratchbox}%
+   \ht\scratchbox\!!zeropoint
+   \dp\scratchbox\!!zeropoint
+   \wd\scratchbox\!!zeropoint
+   \box\scratchbox
+   \egroup}
 
 %D Most operators are just converted and keep their
 %D arguments. Dashes however need a bit different treatment,
@@ -776,10 +793,10 @@
    \scratchcounter=1
    \loop
    \ifnum\scratchcounter<\nofMParguments
-     \edef\somestring{\somestring\space\gMPa{\the\scratchcounter}}%
+     \edef\somestring{\somestring\space\gMPa\scratchcounter}%
      \advance\scratchcounter by 1
    \repeat
-   \edef\somestring{\somestring]\gMPa{\the\scratchcounter} d}%
+   \edef\somestring{\somestring]\gMPa\scratchcounter\space d}%
    \PDFcode{\somestring}%
    \egroup}
 
@@ -1342,6 +1359,14 @@
 
 \let\currentPDFresources\empty  
 
+\def\convertMPtoPDF#1#2#3%
+  {\bgroup
+   \setbox\scratchbox=\vbox\bgroup
+     \forgetall
+     \offinterlineskip
+     \startMPresources
+     \doprocessMPtoPDFfile{#1}{#2}{#3}} % {#1}{0#2}{0#3} would be saver 
+
 \def\processMPtoPDFfile% file xscale yscale 
   {\bgroup
    \let\finishMPgraphic=\egroup
@@ -1360,42 +1385,48 @@
    \input#1\relax
    \deleteMPgraphic{#1}}
 
-\def\convertMPtoPDF#1#2#3%
-  {\bgroup
-   \setbox0=\vbox\bgroup
-     \forgetall
-     \offinterlineskip
-     \PDFcode{q}%
-     \startMPresources
-     \doprocessMPtoPDFfile{#1}{#2}{#3}}
-
-\def\finishMPgraphic%
+\def\finishMPgraphic% 
   {\stopMPresources
-   \PDFcode{Q}%
    \egroup
-   \wd0=\MPwidth
    \ifx\pdftexversion\undefined\else\ifnum\pdftexversion<14 % for the moment 
      \chardef\makeMPintoPDFobject=0 
    \fi\fi
-   \ifcase\makeMPintoPDFobject\or
-     \setbox0=
-   \or\ifx\currentPDFresources\empty\else
-     \chardef\makeMPintoPDFobject=1 \setbox0=
+   \ifcase\makeMPintoPDFobject\or\or\ifx\currentPDFresources\empty\else
+     \chardef\makeMPintoPDFobject=1 
    \fi\fi
-   \vbox to \MPheight
+   \setbox\scratchbox=\vbox
      {\forgetall
-      \vfill
-      \PDFcode{q \MPxscale\space 0 0 \MPyscale\space
-        \MPxoffset\space \MPyoffset\space cm}%
-      \box0
-      \PDFcode{Q}}%
-   \ifcase\makeMPintoPDFobject\or
-     \immediate\pdfxform attr{\currentPDFresources}0%
+      \hbox
+        {\PDFcode{q \MPxscale\space 0 0 \MPyscale\space \MPxoffset\space \MPyoffset\space cm}%
+         \lower\MPyshift\box\scratchbox % unscaled shift 
+         \PDFcode{Q}}}%
+   \ht\scratchbox\MPheight
+   \wd\scratchbox\MPwidth
+   \dp\scratchbox\!!zeropoint
+   \ifcase\makeMPintoPDFobject
+     \box\scratchbox
+   \or
+     \immediate\pdfxform attr{\currentPDFresources}\scratchbox
      \xdef\lastPDFMPobject{\the\pdflastxform}%
      \pdfrefxform\lastPDFMPobject
      \global\let\currentPDFresources\empty
+   \else
+     \box\scratchbox
    \fi
    \egroup}
+
+% \setbox\scratchbox=\vbox
+%   {\forgetall
+%    \dimen0=\MPllx bp
+%    \dimen2=\MPlly bp
+%    \setbox\scratchbox=\hbox{\hskip-\dimen0\raise-\dimen2\box\scratchbox}%
+%    \ht\scratchbox=\!!zeropoint
+%    \dp\scratchbox=\!!zeropoint
+%    \wd\scratchbox=\!!zeropoint
+%    \hbox
+%      {\PDFcode{q \MPxscale\space 0 0 \MPyscale\space 0 0 cm}%
+%       \lower\MPheight\box\scratchbox
+%       \PDFcode{Q}}}%
 
 %D \macros 
 %D   {deleteMPgraphic,

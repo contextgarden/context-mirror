@@ -442,7 +442,7 @@
      \fi\fi
    \fi\fi}
 
-\def\finalflushJSpreamble%
+\def\finalflushJSpreamble% kan direct in \everylastshipout, testen 
   {\iflocation
      \flushJSpreamble
      \ifcase\currentJSpreamble\relax\else
@@ -452,7 +452,7 @@
    \fi}
 
 \prependtoks \flushJSpreamble      \to \everyshipout
-\prependtoks \finalflushJSpreamble \to \everylastshipout
+\prependtoks \finalflushJSpreamble \to \everylastshipout 
 
 %D \macros
 %D   {doPSsanitizeJScode}

@@ -61,6 +61,12 @@
 
 \pdfimageresolution=300
 
+%D Another downward compatible hack: 
+
+\ifx\pdflastximagepages\undefined 
+  \newcount\pdflastximagepages \pdflastximagepages=1
+\fi
+
 % %D Why are the Acrobat viewers so buggy? To prevent font cache 
 % %D mismatches, we say:
 %
@@ -110,7 +116,7 @@
 
 \appendtoks \let\defaultspecial\normalspecial \to \everyresetspecials
 
-\let\PDFcode=\pdfliteral
+\let\PDFcode\pdfliteral
 
 %D \macros
 %D   {dosetuppaper}
@@ -151,8 +157,11 @@
 %D The number of pages in (for instance an \PDF) insert 
 %D file, can be asked for using: 
 
-\definespecial\dogetnofinsertpages#1% global ! 
-  {\global\let#1\PDFimagenofpages}
+\definespecial\dogetnofinsertpages#1% 
+  {\xdef\nofinsertpages{1}% global 
+   \doifvalidpdfimagefileelse{#1}%
+     {\pdfximage{#1}\xdef\nofinsertpages{\the\pdflastximagepages}}
+     {}}
 
 %D Currently we support \type{pdf} for \PDF\ files, \type{mps}
 %D for \METAPOST\ graphics, \type{png} and \type{jpg} for 
@@ -214,7 +223,7 @@
    \doifnumberelse{\commalistelement}
      {\ifcase\commalistelement\else
         \edef\pdfimagepagenumber{page \commalistelement}%
-        \message{(pdf image page \pdfimagepagenumber)}% 
+        \message{(pdf image \pdfimagepagenumber)}% 
       \fi}
      {}}
 
@@ -228,7 +237,7 @@
         \pdfimagepagenumber
         {#1}%
       \xdef\PDFimagereference{\the\pdflastximage}%
-      \xdef\PDFimagenofpages{\the\pdflastximagepages}%
+      \xdef\nofinsertpages{\the\pdflastximagepages}%
       \pdfrefximage\pdflastximage}
      {\framed[\c!breedte=#7sp,\c!hoogte=#8sp]{#1}}%
    \egroup}
@@ -253,12 +262,14 @@
 %D similar to figure inclusion. The next macro calls the 
 %D general \PDF\ one.
 
-\newcounter\currentmovie
-
-\def\setcurrentmovie#1%
-  {\doglobal\increment\currentmovie}
-
 \definefileinsertion{tpd}{mov}{\doPDFinsertmov}
+
+%D \macros 
+%D   {doinsertsoundtrack}
+%D
+%D We use numbers instead of labels to keep track of sounds. 
+
+\definespecial\doinsertsoundtrack{\doPDFinsertsoundtrack}
 
 %D \macros 
 %D   {measureTPDfiguresizetrue}
@@ -305,7 +316,7 @@
        \global\setbox\foundexternalfigure=\vbox
          {\immediate\pdfximage \pdfimageattributes \pdfimagepagenumber{#2}%
           \xdef\PDFimagereference{\the\pdflastximage}%
-          \xdef\PDFimagenofpages{\the\pdflastximagepages}%
+          \xdef\nofinsertpages{\the\pdflastximagepages}%
           \pdfrefximage\pdflastximage}%
        #6=\wd\foundexternalfigure
        #7=\ht\foundexternalfigure
@@ -717,6 +728,34 @@
 \definespecial\doregistercalculationset{\doFDFregistercalculationset}
 
 %D \macros 
+%D   {dosetposition, dosetpositionwdh}
+%D
+%D Opposite to its \DVI\ counterpart, the \PDFTEX\ backend 
+%D can provide positional information directly. Since 
+%D \CONTEXT\ only uses relative positions, the origin is of 
+%D less importance. 
+
+\def\doTPDsetposition#1#2#3%
+  {\bgroup
+   \edef\doTPDsetposition%
+     {\writeutilitycommand
+        {#1%
+         {#2}%
+         {\noexpand\realfolio}%
+         {\noexpand\number\pdflastxpos}%
+         {\noexpand\number\pdflastypos}%
+         #3}}%
+   \pdfsavepos
+   \doTPDsetposition
+   \egroup}
+
+\definespecial\dosetposition#1%
+  {\doTPDsetposition{\pospxy}{#1}{}}
+
+\definespecial\dosetpositionwhd#1#2#3#4%
+  {\doTPDsetposition{\pospxywhd}{#1}{{#2}{#3}{#4}}}
+
+%D \macros 
 %D   {doPDFdestination}
 %D
 %D Finally we implement some low level macros to deal with
@@ -764,7 +803,8 @@
        \xdef\lastPDFaction{<<#3>>}%
      \or
        \ifsharePDFactions
-         \immediate\pdfobj{<<#3>>}\xdef\lastPDFaction{\the\pdflastobj\space0 R}%
+         \immediate\pdfobj{<<#3>>}%
+         \xdef\lastPDFaction{\the\pdflastobj\space0 R}%
        \else
          \xdef\lastPDFaction{<<#3>>}%
        \fi
@@ -827,15 +867,13 @@
   {\pdfcatalog}
 
 \def\doPDFpageattribute#1%
-  {\expanded{\global\pdfpageattr{\the\pdfpageattr#1}}}
+  {\expanded{\global\pdfpageattr{#1\the\pdfpageattr}}}
 
 \def\doPDFpagesattribute#1%
-  {\expanded{\global\pdfpagesattr{\the\pdfpagesattr#1}}}
+  {\expanded{\global\pdfpagesattr{#1\the\pdfpagesattr}}}
 
 \def\doPDFresetattributes%
   {\global\pdfpageattr{}}
-
-%   \global\pdfpagesattr{}}
 
 \appendtoks\doPDFresetattributes\to\everyaftershipout
 

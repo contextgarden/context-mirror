@@ -135,10 +135,10 @@
 \def\assignvalue#1#2#3#4#5%
   {\processaction
      [#1]
-     [   \v!klein=>\def#2{#3},
-        \v!middel=>\def#2{#4},
-         \v!groot=>\def#2{#5},
-     \s!unknown=>\def#2{#1}]}
+     [   \v!klein=>\edef#2{#3},
+        \v!middel=>\edef#2{#4},
+         \v!groot=>\edef#2{#5},
+       \s!unknown=>\edef#2{#1}]}
 
 %D \macros
 %D   {assignwidth}

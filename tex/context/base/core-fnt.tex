@@ -259,6 +259,41 @@
 %D \typebuffer
 
 %D \macros
+%D   {stretcheduppercase}
+%D
+%D A convenient alternative is:
+%D
+%D \starttypen
+%D \stretcheduppercase{Is this what you like?}
+%D \stoptypen
+%D
+%D \typebuffer
+%D
+%D this one uses fixed skips and kerns. 
+%D
+%D \startvoorbeeld
+%D \haalbuffer
+%D \stopvoorbeeld
+%D
+%D The default skip can be set with:
+
+\def\stretchedspaceamount{.25em} 
+
+\unexpanded\def\stretcheduppercase#1%
+  {\bgroup
+   \the\everyuppercase
+   \uppercase{\def\textstring{#1}}%
+   \ifdim\stretchedspaceamount>\!!zeropoint
+     \def\textkern{\kern \stretchedspaceamount}%
+     \def\textskip{\hskip\stretchedspaceamount}%
+     \@EA\processtokens\@EA\relax\@EA\textskip\@EA\relax\@EA
+       {\@EA\textkern\@EA\textkern\@EA}\@EA{\textstring}%
+   \else
+     \textstring
+   \fi
+   \egroup}
+
+%D \macros
 %D   {underbar,underbars,
 %D    overbar,overbars,
 %D    overstrike,overstrikes,
@@ -424,6 +459,62 @@
 
 \def\setupunderbar%
   {\dodoubleargument\getparameters[\??on]}
+
+%D \macros
+%D   {low, high, lohi}
+%D 
+%D Although \TEX\ is pretty well aware of super- and
+%D subscripts, its mechanism is mainly tuned for math mode. 
+%D The next few commands take care of script texts both modes. 
+%D 
+%D \startbuffer
+%D The higher\high{one goes} the lower\low{one drops}, or\lohi{yes}{no}?
+%D \stopbuffer
+%D 
+%D \typebuffer
+%D 
+%D \getbuffer
+%D
+%D Note the different placement of \type {\lohi}, where we 
+%D need a bit more space. The implementation looks a bit 
+%D fuzzy, since some \type {\fontdimen}'s are involved to 
+%D determine the optimal placement. 
+
+\def\dodohighlow%
+  {\ifx\fontsize\empty
+     \ifmmode
+       \ifnum\fam<0 \tx \else \holamathfont \fi
+     \else
+       \tx 
+     \fi
+   \else
+     \tx 
+   \fi}
+
+\def\dohighlow#1#2#3#4#5%
+  {\bgroup
+   \scratchdimen= 
+     \ifdim\fontdimen5\textfont2=1ex\fontdimen#2\textfont2\else#3ex\fi
+   \advance\scratchdimen by #4ex
+   \kern.1ex
+   \setbox\scratchbox=\hbox{#1\scratchdimen\hbox{\dodohighlow#5}}%
+   \ht\scratchbox\strutheight
+   \dp\scratchbox\strutdepth
+   \box\scratchbox
+   \egroup}
+
+\unexpanded\def\high{\dohighlow\raise{14}{.86}{0}}
+\unexpanded\def\low {\dohighlow\lower{16}{.48}{0}}
+
+\unexpanded\def\lohi#1#2%
+  {\hbox
+     {\setbox4=\hbox{\dohighlow\lower{16}{.48}{.1}{#1}}%
+      \setbox6=\hbox{\dohighlow\raise{14}{.86}{.1}{#2}}%
+      \ifdim\wd4<\wd6
+        \wd4=\!!zeropoint\box4\box6
+      \else
+        \wd6=\!!zeropoint\box6\box4
+      \fi}}
 
 %D This module has only a few setups:
 

@@ -17,7 +17,7 @@
 %
 % uitprinten
 % engels maken
-% rommel voorlopig naar core-01d
+% rommel voorlopig naar core-int/core-nav
 % programma, profiel etc als methode
 % \macro toevoegen
 
@@ -833,9 +833,8 @@
          \fi
        \fi
      \fi
-%    \ifx\currentfullreference\v!geen % DOCUMENT THIS ONE!
-%       \global\referencefoundfalse
-%    \fi
+%    \doif{\currentfullreference}{\v!geen} % DOCUMENT THIS ONE!
+%      {\global\referencefoundfalse}
      \iftracereferences
        \doshowcurrentreference\space
        \writestatus{\m!references}{\currentreferenceshow}%
@@ -902,9 +901,8 @@
          \fi
        \fi
      \fi
-%     \ifx\currentfullreference\v!geen % DOCUMENT THIS ONE!
-%       \global\referencefoundfalse
-%     \fi
+%     \doif{\currentfullreference}{\v!geen} % DOCUMENT THIS ONE!
+%       {\global\referencefoundfalse}%
      \iftracereferences
        \doshowcurrentreference\space
        \writestatus{\m!references}{\currentreferenceshow}%
@@ -1340,7 +1338,7 @@
 %D produce \CDROM's conforming to ISO9660. We consider is the
 %D savest to enable this feature by default. We cannot handle
 %D uppercase here, since the suffix is handled in the special
-%D driver. COnversion is taken care of by: 
+%D driver. Conversion is taken care of by: 
 %D 
 %D \startypen
 %D \setreferencefilename somefilename\to\SomeFileName
@@ -1520,13 +1518,32 @@
 \definesystemreferencehandler \rt!list \handlelistreference
 
 \def\handleexecreference#1%
-  {\executecommand{\currentdatareference}{\currentreferencearguments}}
+  {\checkexecutecommand{\currentdatareference}{\currentreferencearguments}%
+   \executecommand{\currentdatareference}{\currentreferencearguments}}
 
 \def\handlepagereference#1%
   {\gotorealpage{}{}{\currentdatareference}}
 
 \def\handlelistreference#1% is deze nog echt nodig?
   {\gotodestination{}{}{\currentdatareference}{\getvalue{\currentdatareference}}}
+
+%D \macros
+%D   {setexecutecommandcheck}
+%D
+%D In case a command action needs to do some checking in 
+%D advance, one can assign an check function by: 
+%D
+%D \starttypen 
+%D \setexecutecommandcheck{startsound}\checksoundtrack
+%D \stoptypen 
+
+\def\setexecutecommandcheck#1#2% #2 permits \first \second
+  {\setvalue{\s!do\s!do#1}{#2}}
+
+\def\checkexecutecommand#1#2%
+  {\def\docheckexecutecommand##1%
+     {\doifdefined{\s!do\s!do#1}{\getvalue{\s!do\s!do#1}{##1}}}%
+   \processcommacommand[#2]\docheckexecutecommand}
 
 %D Command references (in dutch, english, german of
 %D whatever interface language) are translated into a bit
@@ -1541,20 +1558,24 @@
 \setglobalsystemreference \rt!exec \v!LastPage       {last}
 \setglobalsystemreference \rt!exec \v!NextJump       {forward}
 \setglobalsystemreference \rt!exec \v!NextPage       {next}
-\setglobalsystemreference \rt!exec \v!PauseMovie     {pause}
+\setglobalsystemreference \rt!exec \v!PauseMovie     {pausemovie}
+\setglobalsystemreference \rt!exec \v!PauseSound     {pausesound}
 \setglobalsystemreference \rt!exec \v!PreviousJump   {backward}
 \setglobalsystemreference \rt!exec \v!PreviousPage   {previous}
 \setglobalsystemreference \rt!exec \v!PrintDocument  {print}
-\setglobalsystemreference \rt!exec \v!SaveForm       {export}
-\setglobalsystemreference \rt!exec \v!LoadForm       {import}
-\setglobalsystemreference \rt!exec \v!ResetForm      {reset}
-\setglobalsystemreference \rt!exec \v!ResumeMovie    {resume}
+\setglobalsystemreference \rt!exec \v!SaveForm       {exportform}
+\setglobalsystemreference \rt!exec \v!LoadForm       {importform}
+\setglobalsystemreference \rt!exec \v!ResetForm      {resetform}
+\setglobalsystemreference \rt!exec \v!ResumeMovie    {resumemovie}
+\setglobalsystemreference \rt!exec \v!ResumeSound    {resumesound}
 \setglobalsystemreference \rt!exec \v!SaveDocument   {save}
 \setglobalsystemreference \rt!exec \v!SearchAgain    {searchagain}
 \setglobalsystemreference \rt!exec \v!SearchDocument {search}
-\setglobalsystemreference \rt!exec \v!StartMovie     {start}
-\setglobalsystemreference \rt!exec \v!StopMovie      {stop}
-\setglobalsystemreference \rt!exec \v!SubmitForm     {submit}
+\setglobalsystemreference \rt!exec \v!StartMovie     {startmovie}
+\setglobalsystemreference \rt!exec \v!StartSound     {startsound}
+\setglobalsystemreference \rt!exec \v!StopMovie      {stopmovie}
+\setglobalsystemreference \rt!exec \v!StopSound      {stopsound}
+\setglobalsystemreference \rt!exec \v!SubmitForm     {submitform}
 \setglobalsystemreference \rt!exec \v!SwapViewer     {swap}
 \setglobalsystemreference \rt!exec \v!ViewerHelp     {help}
 \setglobalsystemreference \rt!exec \v!HideField      {hide}
@@ -1853,19 +1874,19 @@
    \ifx\currentreferencespecial\empty
      \ifx\currentouterreference\empty
        \ifnum0\currentrealreference=0
-         \ifhmode\strut\hoog{\symbol[\v!nergens]}\fi
+         \ifhmode\strut\high{\symbol[\v!nergens]}\fi
        \else\ifnum0\currentrealreference>\realpageno
-         \dodosymbolreference{#2}{\hoog{\symbol[\v!volgende]}}%
+         \dodosymbolreference{#2}{\high{\symbol[\v!volgende]}}%
        \else\ifnum0\currentrealreference<\realpageno
-         \dodosymbolreference{#2}{\hoog{\symbol[\v!vorige]}}%
+         \dodosymbolreference{#2}{\high{\symbol[\v!vorige]}}%
        \else
-         \ifhmode\strut\hoog{\symbol[\v!nergens]}\fi
+         \ifhmode\strut\high{\symbol[\v!nergens]}\fi
        \fi\fi\fi
      \else
-       \gotoouterlocation{#3}{\showlocation{\hoog{\symbol[\v!ergens]}}}%
+       \gotoouterlocation{#3}{\showlocation{\high{\symbol[\v!ergens]}}}%
      \fi
    \else
-     \gotospeciallocation{#3}{\showlocation{\hoog{\symbol[\v!ergens]}}}%
+     \gotospeciallocation{#3}{\showlocation{\high{\symbol[\v!ergens]}}}%
    \fi
    \egroup}
 
@@ -1901,41 +1922,103 @@
 
 \let\dowantedreference=\docompletereference
 
-%D [ref] here when ok 
+%D \macros
+%D   {definereferenceformat}
+%D
+%D The next few macros were made for for David Arnold and Taco
+%D Hoekwater. They can be used for predefining reference 
+%D texts, and thereby stimulate efficiency. 
+%D
+%D [more documentation will be added]
+%D
+%D \starttypen 
+%D \definereferenceformat[informula]  [left=(,right=),text=formula]
+%D \definereferenceformat[informulas] [left=(,right=),text=formulas]
+%D \definereferenceformat[andformula] [left=(,right=),text=and]
+%D \definereferenceformat[andformulas][left=(,right=),text=and]
+%D  
+%D \informula [b] and \informula [for:c] 
+%D the \informula {formulas}[b] \informula {and} [for:c] 
+%D the \informulas {formulas}[b] \informula {and} [for:c] 
+%D the \informulas [b] \informula {en} [for:c] 
+%D the \informulas [b] \andformula [for:c] 
+%D \stoptypen
+%D  
+%D Instead of a text, one can specify a label, which should 
+%D be defined with \type {\setuplabeltext}. 
 
-% \chapter[a]{first}
-% 
-% \placeformula[b] \startformula a = b + c \stopformula
-% 
-% \placeformula[for:c] \startformula a = b + c  \stopformula
-% 
-% \blank
-% 
-% \in{chapter}[a] and \in{formula}[b] and \in{formula}[for:c] \par
-% \at{page}[a] and \at{page}[b] and \at{page}[for:c] 
-% 
-% \definereferenceformat[informula]
-% 
-% \informula[b] and \informula[for:c] \par
-% the \informula{formulas}[b] \informula{en}[for:c] 
-% 
-% \definereferenceformat[informula][left=(,right=)]
-% 
-% \informula[b] en \informula[for:c] \par
-% the \informula{formulas}[b] \informula{and}[for:c] 
-% 
-% \definereferenceformat[informula]  [left=(,right=),text=formula]
-% \definereferenceformat[informulas] [left=(,right=),text=formulas]
-% \definereferenceformat[andformula] [left=(,right=),text=and]
-% \definereferenceformat[andformulas][left=(,right=),text=and]
-% 
-% \informula[b] and \informula[for:c] \par
-% the \informula{formulas}[b] \informula{and}[for:c] \par
-% the \informulas{formulas}[b] \informula{and}[for:c] \par
-% the \informulas[b] \informula{en}[for:c] \par
-% the \informulas[b] \andformula[for:c] \par
-%
-% Instead of a text, one can specify a label. 
+\def\definereferenceformat%
+  {\dodoubleargument\dodefinereferenceformat}
+
+\def\dodefinereferenceformat[#1][#2]%
+  {\iffirstargument
+     \getparameters[\??rf#1]
+       [\c!links=,  % of the number
+        \c!rechts=, % of the number 
+        \c!tekst=,  % before the number 
+        \c!label=,  % can be {left}{right}
+        \c!commando=\in,
+        #2]%
+     \unexpanded\setvalue{#1}{\doexecutereferenceformat{#1}}%
+   \fi}
+
+\def\noexecutelabelreferenceformat#1%
+  {\doifvaluesomething{\??rf#1\c!tekst}
+     {\gdef\textofreference{\getvalue{\??rf#1\c!tekst}}}%
+   \getvalue{\??rf#1\c!commando}}
+
+\def\doexecutelabelreferenceformat#1%
+  {\getvalue{\??rf#1\c!commando}%
+     {\leftlabeltext {\getvalue{\??rf#1\c!label}}}%
+     {\rightlabeltext{\getvalue{\??rf#1\c!label}}}}
+
+\def\doexecutereferenceformat#1%
+  {\gdef\leftofreference {\getvalue{\??rf#1\c!links }}%
+   \gdef\rightofreference{\getvalue{\??rf#1\c!rechts}}%
+   \global\let\textofreference\empty % otherwise ~ added
+   \doifelsevaluenothing{\??rf#1\c!label}
+     {\let\next\noexecutelabelreferenceformat}
+     {\let\next\doexecutelabelreferenceformat}%
+   \next{#1}}
+
+\let\leftofreference \relax
+\let\rightofreference\relax
+\let\textofreference \relax
+
+\def\dodododoinatreference#1#2#3[#4]%
+  {\ifx\next\bgroup
+     \dododododoinatreference
+       {\leftofreference#1\ignorespaces#3\rightofreference}{#2}[#4]%
+   \else
+     \dododododoinatreference
+       {\leftofreference#1\rightofreference}{#2#3}[#4]%
+   \fi}
+
+\def\dododododoinatreference#1#2[#3]%
+  {\bgroup
+   \forgetall
+   \leaveoutervmode
+   \doifreferencefoundelse{#3}
+     {\bgroup
+      \let\ignorespaces    \empty % rather dirty trick, but ok
+      \let\leftofreference \empty % the same, again ok
+      \let\rightofreference\empty % and once more
+      \def\textofreference {#2}%  % temporary value
+      \ifx\textofreference\empty  % simple expansion
+        \doifelsenothing{#1}
+          {\egroup\dosymbolreference{#1}{\textofreference}[#3]}
+          {\egroup\dowantedreference{#1}{\textofreference}[#3]}%
+      \else
+        \doifelsenothing{#1}
+          {\egroup\dosymbolreference{#1}{#2}[#3]}
+          {\egroup\dowantedreference{#1}{#2}[#3]}%
+      \fi}
+     {\dounknownreference{#1}{#2}[#3]}%
+   \referentieinfo{<}{#3}%
+   \global\let\leftofreference \empty
+   \global\let\rightofreference\empty
+   \global\let\textofreference \empty
+   \egroup}
 
 %D In interactive documents going to a specific location is not
 %D bound to cross references. The \type{\goto} commands can be
@@ -1970,7 +2053,7 @@
      {\doifelsenothing{#1}
         {\dosymbolreference{}{}[#2]}
         {\donaarspace{#1}[#2]}}
-     {\unknownreference{#2}#1}%
+     {\unknownreference{#2}#1\relax}% \relax catches lookahead
    \referentieinfo{<}{#2}}
 
 \unexpanded\def\naar#1#2%
@@ -2198,14 +2281,22 @@
 %D \type{\setouterlocation} and now is the time to define this
 %D one.
 
+\newconditional\forceURLlocation
+
 \def\setouterlocation#1%
   {\doifdefinedelse{\v!file:::#1}
      {\def\doexternaldocument[##1][##2][##3]%
         {\edef\otherURL{##1}%
          \edef\otherfile{##2}}%
       \getvalue{\v!file:::#1}}
-     {\let\otherURL=\empty
-      \edef\otherfile{#1}}%
+     {\ifconditional\forceURLlocation
+        \edef\otherURL {#1}%
+        \let\otherfile\empty
+      \else
+        \let\otherURL\empty
+        \edef\otherfile{#1}%
+      \fi}% 
+   \setfalse\forceURLlocation
    \doifparentfileelse{\otherfile}
      {\let\otherURL=\empty
       \let\otherfile=\empty
@@ -2261,13 +2352,13 @@
 %D
 %D The fastest implementation would be:
 
-\definespecialtest\v!file     {\handlespecialFILEandURL}
-\definespecialtest\v!URL      {\handlespecialFILEandURL}
-\definespecialtest\v!url      {\handlespecialFILEandURL}
+\definespecialtest\v!file    {\setfalse\forceURLlocation\handlespecialFILEandURL}
+\definespecialtest\v!URL     {\settrue \forceURLlocation\handlespecialFILEandURL}
+\definespecialtest\v!url     {\settrue \forceURLlocation\handlespecialFILEandURL}
 
-\definespeciallocation\v!file {\handlespecialallocationFILEandURL}
-\definespeciallocation\v!URL  {\handlespecialallocationFILEandURL}
-\definespeciallocation\v!url  {\handlespecialallocationFILEandURL}
+\definespeciallocation\v!file{\setfalse\forceURLlocation\handlespecialallocationFILEandURL}
+\definespeciallocation\v!URL {\settrue \forceURLlocation\handlespecialallocationFILEandURL}
+\definespeciallocation\v!url {\settrue \forceURLlocation\handlespecialallocationFILEandURL}
 
 \def\handlespecialFILEandURL%
   {\doifreferencefoundelse
@@ -2702,7 +2793,7 @@
      \doif{\@@ibstatus}{\v!stop}{\locationfalse}%
      \iflocation
        \ifsecondargument
-         \checkinteractiebalk\v!ruim\!!zeropoint % brrrrr
+         \checkinteractiebalk{1.5em}\v!ruim\!!zeropoint % brrrrr
          \setbox2=\hbox
            {\setupsymbolset[\@@iasymboolset]%
             \localframed[\??ib][]{\symbol[\v!vorigepagina]}}%
@@ -2716,7 +2807,7 @@
            [       \v!pagina=>\advance\!!counta by 4,
              \v!sub\v!pagina=>\advance\!!counta by 4,
                   \s!unknown=>\advance\!!counta by 1]%
-         \ifdim\@@ibbreedte=\!!zeropoint
+         \ifdim\@@ibbreedte=\!!zeropoint\relax
            \!!widtha=2em
            \advance\!!widtha by \@@ibafstand  % new
            \!!widthb=\!!counta\!!widtha

@@ -61,6 +61,11 @@
         \showmessage{\m!interactions}{3}{\ifusepagedestinations\space(PAGE)\fi}%
         \global\locationfalse
       \fi}%
+   \iflocation
+     \enablemode [\systemmodeprefix\v!interactie]%
+   \else
+     \disablemode[\systemmodeprefix\v!interactie]%
+   \fi
    \doifsomething{\@@iabereken}
      {\doregistercalculationset\@@iabereken}%
    \doifelse{\@@iastrut}{\v!ja}

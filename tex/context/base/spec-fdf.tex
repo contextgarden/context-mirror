@@ -316,31 +316,36 @@
 %D fast convert the command asked for. This is how the \PDF\
 %D code looks like.
 
-\def\PDFmoviecode%
+\def\PDFmoviecode#1#2#3%
   {/Movie
-   /T (movie \ifx\argumentA\empty\currentmovie\else\argumentA\fi)
-   /Operation\space}
+   /T (\ifcase#1movie \else sound \fi\ifx\argumentA\empty#2\else\argumentA\fi)
+   /Operation /\ifcase#3Play\or Stop\or Pause\or Resume\fi\space}
 
-\def\PDFexecutestart  {\PDFmoviecode /Play}
-\def\PDFexecutestop   {\PDFmoviecode /Stop}
-\def\PDFexecutepause  {\PDFmoviecode /Pause}
-\def\PDFexecuteresume {\PDFmoviecode /Resume}
+\def\PDFexecutestartmovie  {\PDFmoviecode0\currentmovie0}
+\def\PDFexecutestopmovie   {\PDFmoviecode0\currentmovie1}
+\def\PDFexecutepausemovie  {\PDFmoviecode0\currentmovie2}
+\def\PDFexecuteresumemovie {\PDFmoviecode0\currentmovie3}
+
+\def\PDFexecutestartsound  {\PDFmoviecode1\currentsound0}
+\def\PDFexecutestopsound   {\PDFmoviecode1\currentsound1}
+\def\PDFexecutespausesound {\PDFmoviecode1\currentsound2}
+\def\PDFexecuteresumesound {\PDFmoviecode1\currentsound3}
 
 \def\PDFformcode#1%
   {\doFDFiffieldset{#1}{/Field [\doFDFgetfieldset{#1}]}}
 
 \chardef\PDFsubmitformat=1 % 0=FDF 1=HTML
 
-\def\PDFexecuteimport {/Named /N /AcroForm:ImportFDF}
-\def\PDFexecuteexport {/Named /N /AcroForm:ExportFDF}
-\def\PDFexecutereset  {/ResetForm  \PDFformcode\argumentA}
-\def\PDFexecutesubmit {/SubmitForm \PDFformcode\argumentB
-                      %/Flags \ifnum\PDFsubmitformat=1 12\fi
-                      %/Flags \ifnum\PDFsubmitformat=1  4\fi
-                       /F (\argumentA)}
+\def\PDFexecuteimportform  {/Named /N /AcroForm:ImportFDF}
+\def\PDFexecuteexportform  {/Named /N /AcroForm:ExportFDF}
+\def\PDFexecuteresetform   {/ResetForm  \PDFformcode\argumentA}
+\def\PDFexecutesubmitform  {/SubmitForm \PDFformcode\argumentB
+                           %/Flags \ifnum\PDFsubmitformat=1 12\fi
+                           %/Flags \ifnum\PDFsubmitformat=1  4\fi
+                            /F (\argumentA)}
                        
-\def\PDFexecutehide   {/Hide /T (\argumentA) /H true}
-\def\PDFexecuteshow   {/Hide /T (\argumentA) /H false}
+\def\PDFexecutehide        {/Hide /T (\argumentA) /H true}
+\def\PDFexecuteshow        {/Hide /T (\argumentA) /H false}
 
 \def\PDFexecutefirst       {/Named /N /FirstPage}
 \def\PDFexecuteprevious    {/Named /N /PrevPage}
@@ -478,9 +483,11 @@
 %D link}, but here is another one: the {\em movie} annotation.
 %D The driver module must implement \type {setcurrentmovie}.
 
+\let\currentmovie\s!unknown
+
 \def\doPDFinsertmov#1#2#3#4#5#6#7#8#9%
   {\bgroup
-   \setcurrentmovie{#1}%
+   \xdef\currentmovie{#2}% label 
    \ScaledPointsToBigPoints{#7}\width
    \ScaledPointsToBigPoints{#8}\height
    \let\pdf@@options\empty
@@ -493,7 +500,23 @@
      {/Subtype /Movie
       /T (movie \currentmovie)
       /Movie << /F (#1) /Aspect [\width\space\height] \pdf@@options >>
-      /A << \pdf@@actions>>}
+      /A << \pdf@@actions>>}%
+   \egroup}
+
+%D \macros
+%D   {doPDFinsertsoundtrack}
+%D
+%D In \PDF\ sounds can be embedded like movies. 
+
+\let\currentsound\s!unknown
+
+\def\doPDFinsertsoundtrack#1#2#3% 
+  {\bgroup
+   \xdef\currentsound{#2}%
+   \doPDFannotation width 0 height 0 data
+     {/Subtype /Movie
+      /T (sound \currentsound)
+      /Movie <</F (#1)>>}%
    \egroup}
 
 %D \macros
@@ -716,7 +739,7 @@
               \currentreferencearguments
             \doPSsanitizeJScode\JScode\to\JScode
             \xdef\sanitizedJScode{\sanitizedJScode\space\JScode}}
-           {\invalidreference{##1}}}
+           {\illegalreference{##1}}}
         {\unknownreference{##1}}}%
    \@EA\processcommalist\@EA[#2]\setFDFaction % one level expansion
    \ifx\sanitizedJScode\empty \else
@@ -799,7 +822,7 @@
        {\FDFcollection\space\PDFobjectreference}%
    \fi}
 
-\prependtoks \flushFDFnames \to \everylastshipout
+\prependtoks \flushFDFnames \to \everylastshipout % test \everybye
 
 %D \macros
 %D   {defineFDFfonts,
@@ -1069,12 +1092,13 @@
 
 \newif\ifFDFvalues
 
-\def\doFDFpresetpushcheckfield#1#2#3#4#5#6#7%
+\def\doFDFpresetpushcheckfield#1#2#3#4#5#6#7#8%
   {\bgroup
+   \ifcase#8\relax\FDFvaluesfalse\else\FDFvaluestrue\fi
    \setFDFswitches[#5]%
    \setFDFactions[#7]%
    \ifcase\currentFDFmode
-     \doFDFappearance{On}{#6}%
+     \doFDFappearance{On}{#6}{#8}%
      \doFDFdefault{#6}{#4}%
      \doPDFannotationobject class FDF name #1 width #2 height #3 data
        {/Subtype /Widget /T (#1) /FT /Btn
@@ -1096,7 +1120,7 @@
         \FDFactions}%
      \registerFDFobject{#1}%
    \or
-     \doFDFappearance{On}{#6}%
+     \doFDFappearance{On}{#6}{#8}%
      \doFDFdefault{#6}{#4}%
      \doPDFgetobjectreference{FDF}{\currentFDFparent}\PDFobjectreference
      \global\objectreferencingtrue
@@ -1108,7 +1132,7 @@
         \FDFappearance\space
         \FDFactions}%
    \or
-     \doFDFappearance{On}{#6}%
+     \doFDFappearance{On}{#6}{#8}%
      \doFDFdefault{#6}{#4}%
      \doPDFgetobjectreference{FDF}{\currentFDFparent}\PDFobjectreference
      \global\objectreferencingtrue
@@ -1121,12 +1145,10 @@
    \egroup}
 
 \def\doFDFpresetpushfield#1#2#3#4#5#6#7%
-  {\FDFvaluesfalse
-   \doFDFpresetpushcheckfield{#1}{#2}{#3}{#4}{PushButton,#5}{#6}{#7}}
+  {\doFDFpresetpushcheckfield{#1}{#2}{#3}{#4}{PushButton,#5}{#6}{#7}{0}}
 
 \def\doFDFpresetcheckfield#1#2#3#4#5#6#7%
-  {\FDFvaluestrue
-   \doFDFpresetpushcheckfield{#1}{#2}{#3}{#4}{#5}{#6}{#7}}
+  {\doFDFpresetpushcheckfield{#1}{#2}{#3}{#4}{#5}{#6}{#7}{1}}
 
 \def\doFDFpresetradiofield#1#2#3#4#5#6#7%
   {\bgroup
@@ -1134,7 +1156,7 @@
    \setFDFswitches[#4]%
    \setFDFactions[#7]%
    \ifcase\currentFDFmode
-     \doFDFappearance{#1}{#6}%
+     \doFDFappearance{#1}{#6}{1}%
      \doPDFgetobjectreference{FDF}{#5}\PDFobjectreference
      \doPDFannotationobject class FDF name #1 width #2 height #3 data
        {/Subtype /Widget
@@ -1153,7 +1175,7 @@
         \FDFactions}%
      \registerFDFobject{#1}%
    \or
-     \doFDFappearance{#1}{#6}%
+     \doFDFappearance{#1}{#6}{1}%
      \doPDFgetobjectreference{FDF}{\currentFDFparent}\PDFobjectreference
      \global\objectreferencingtrue
      \doPDFannotationobject class FDF name kids:#1 width #2 height #3 data
@@ -1163,7 +1185,7 @@
         \FDFappearance\space
         \FDFactions}%
    \or
-     \doFDFappearance{#1}{#6}%
+     \doFDFappearance{#1}{#6}{1}%
      \doPDFgetobjectreference{FDF}{\currentFDFparent}\PDFobjectreference
      \global\objectreferencingtrue
      \doPDFannotationobject class FDF name kids:#1 width #2 height #3 data
@@ -1188,7 +1210,8 @@
    \egroup}
 
 %D At the cost of some more references, we can save bytes,
-%D by sharing appearance dictionaries. Surprise:
+%D by sharing appearance dictionaries. This code needs more 
+%D documentation. Surprise:
 
 \def\dodoFDFappearance#1#2%
   {\ifx#2\empty\else
@@ -1218,9 +1241,14 @@
      \fi
    \fi}
 
-\def\doFDFappearance#1#2%
-  {\dogetcommacommandelement1\from#2,\to\yes
-   \dogetcommacommandelement2\from#2,\to\no
+\def\doFDFappearance#1#2#3% 
+  {\ifcase#3\relax % push only field 
+     \edef\yes{#2}%
+     \let\no\empty
+   \else % on / off field 
+     \dogetcommacommandelement1\from#2,\to\yes
+     \dogetcommacommandelement2\from#2,\to\no
+   \fi
    \def\FDFappearance{/H /N}%
    \doifobjectfoundelse{FDF}{ap:#1:\yes:\no}
      {\redoFDFappearance\yes
@@ -1448,7 +1476,7 @@
 \long\def\sanitizePDFdocencoding#1\to#2%
   {\enablePDFcrlf
    \enablePDFdocencoding
-\honorunexpanded
+  %\honorunexpanded % otherwise problems with "e etc in de 
    \edef#2{#1}}
 
 \bgroup

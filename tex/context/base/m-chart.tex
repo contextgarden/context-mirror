@@ -143,6 +143,7 @@
    \c!focus=,
    \c!achtergrond=,      % \v!kleur,
    \c!achtergrondkleur=white,
+   \c!lijndikte=\linewidth,
    \c!kader=\v!uit,
    \c!kaderkleur=]
 
@@ -465,44 +466,43 @@
       \ifx\FLOWshape\empty 
         \global\let\FLOWshape\@@FLOSdefault 
       \fi
-      \ifx\FLOWshape\v!geen \else
-        \ExpandBothAfter\doifinsetelse{\FLOWshape}{\FLOWshapes}
-          {\edef\FLOWshapetag{shape_\FLOWshape}%
-           \@EA\setFLOWname\@EA\FLOWshapetag\@EA{\FLOWshapetag}}
-          {\doifnumberelse{\FLOWshape}
-             {\let\FLOWshapetag\FLOWshape}
-             {\let\FLOWshapetag\empty}}%
-        \ifx\FLOWshapetag\empty \else
-          \ExpandBothAfter\doifinsetelse{\FLOWshape}{\FLOWlines}
-            {\chardef\FLOWstate=0 }
-            {\ExpandBothAfter\doifcommonelse{\FLOWcell,\FLOWfocus}{\@@FLOWfocus}
-               {\chardef\FLOWstate=1 }
-               {\chardef\FLOWstate=2 }}%
-          \startMPdrawing
-            begin_sub_chart ;
-            \ifcase\FLOWstate
-              shape_line_color := \MPcolor{\@@FLOLkleur} ;
-              shape_fill_color := \MPcolor{\@@FLOLkleur} ;
-              shape_line_width := \@@FLOLlijndikte ;
-            \or
-              shape_line_color := \MPcolor{\@@FLOFkaderkleur} ;
-              shape_fill_color := \MPcolor{\@@FLOFachtergrondkleur} ;
-              shape_line_width := \@@FLOFlijndikte ;
-            \or
-              shape_line_color := \MPcolor{\@@FLOSkaderkleur} ;
-              shape_fill_color := \MPcolor{\@@FLOSachtergrondkleur} ;
-              shape_line_width := \@@FLOSlijndikte ;
-            \fi
-            \ifx\FLOWoverlay\empty
-              peepshape := false ;
-            \else
-              peepshape := true ;
-            \fi
-            new_shape(\FLOWlocation,\FLOWshapetag) ;
-            end_sub_chart ;
-          \stopMPdrawing
-        \fi
-      \fi
+      \doifnot{\FLOWshape}{\v!geen}
+        {\ExpandBothAfter\doifinsetelse{\FLOWshape}{\FLOWshapes}
+           {\edef\FLOWshapetag{shape_\FLOWshape}%
+            \@EA\setFLOWname\@EA\FLOWshapetag\@EA{\FLOWshapetag}}
+           {\doifnumberelse{\FLOWshape}
+              {\let\FLOWshapetag\FLOWshape}
+              {\let\FLOWshapetag\empty}}%
+         \ifx\FLOWshapetag\empty \else
+           \ExpandBothAfter\doifinsetelse{\FLOWshape}{\FLOWlines}
+             {\chardef\FLOWstate=0 }
+             {\ExpandBothAfter\doifcommonelse{\FLOWcell,\FLOWfocus}{\@@FLOWfocus}
+                {\chardef\FLOWstate=1 }
+                {\chardef\FLOWstate=2 }}%
+           \startMPdrawing
+             begin_sub_chart ;
+             \ifcase\FLOWstate
+               shape_line_color := \MPcolor{\@@FLOLkleur} ;
+               shape_fill_color := \MPcolor{\@@FLOLkleur} ;
+               shape_line_width := \@@FLOLlijndikte ;
+             \or
+               shape_line_color := \MPcolor{\@@FLOFkaderkleur} ;
+               shape_fill_color := \MPcolor{\@@FLOFachtergrondkleur} ;
+               shape_line_width := \@@FLOFlijndikte ;
+             \or
+               shape_line_color := \MPcolor{\@@FLOSkaderkleur} ;
+               shape_fill_color := \MPcolor{\@@FLOSachtergrondkleur} ;
+               shape_line_width := \@@FLOSlijndikte ;
+             \fi
+             \ifx\FLOWoverlay\empty
+               peepshape := false ;
+             \else
+               peepshape := true ;
+             \fi
+             new_shape(\FLOWlocation,\FLOWshapetag) ;
+             end_sub_chart ;
+           \stopMPdrawing
+         \fi}%
       \ignorespaces}%
    \haalbuffer[flw-\currentFLOWnumber]%
    \long\def\startFLOWcell##1\stopFLOWcell%
@@ -555,7 +555,7 @@
    \def\MPareapath##1##2##3##4%
      {\def\areaMPllx{##1bp}\def\areaMPlly{##2bp}%
       \def\areaMPurx{##3bp}\def\areaMPury{##4bp}}%
-   \readfile{mpgraph.tmp}{}{}%
+   \readfile{\MPdatafile}{}{}%
    \doglobal\newcounter\FLOWcomment
    \long\def\startFLOWcell##1\stopFLOWcell%
      {\resetFLOWcell
@@ -602,11 +602,9 @@
                    m=>{\setupframed[\c!uitlijnen=\v!midden]},
                    c=>{\setupframed[\c!uitlijnen=\v!midden]}]%
               \fi
-              \ifx\FLOWshape\v!geen
-                \setupframed[\c!offset=\v!overlay]%
-              \else
-                \setupframed[\c!offset=.5\bodyfontsize]%
-              \fi
+              \doifelse{\FLOWshape}{\v!geen}
+                {\setupframed[\c!offset=\v!overlay]}
+                {\setupframed[\c!offset=.5\bodyfontsize]}%
               \framed
                 [\c!kader=\v!uit,\c!breedte=\FLOWshapewidth,\c!hoogte=\FLOWshapeheight]
                 {\FLOWtext}}%
@@ -782,17 +780,17 @@
                         \hfill}}}
                \vfill}}}%
       \wd8=\wd0\ht8=\ht0\dp8=\dp0
-      \framed
+      \framed 
         [\c!offset=\v!overlay,\c!kaderkleur=green]
-        {\hbox{\box4\hskip-\wd0 \raise1pt \box0\hskip-\wd2\box2\hskip-\wd6\box6\hskip-\wd8\box8}}}
+        {\hbox{\box4\hskip-\wd0\box0\hskip-\wd2\box2\hskip-\wd6\box6\hskip-\wd8\box8}}}
      {\framed
         [\c!offset=\v!overlay,
          \c!kader=\@@FLOWkader,
+\c!lijndikte=\@@FLOWlijndikte,
          \c!kaderkleur=\@@FLOWkaderkleur,
          \c!achtergrond=\@@FLOWachtergrond,
          \c!achtergrondkleur=\@@FLOWachtergrondkleur]
-%        {\hbox{\box4\hskip-\wd0 \raise1pt \box0\hskip-\wd2\box2}}}% raise is a bug
-        {\hbox{\box4\hskip-\wd0 \box0\hskip-\wd2\box2}}}%
+        {\hbox{\box4\hskip-\wd0\box0\hskip-\wd2\box2}}}%
   %\message{[\FLOWcells]}\wait
    \egroup}
 

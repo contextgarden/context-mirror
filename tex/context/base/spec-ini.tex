@@ -1,5 +1,3 @@
-% \dogetfiguresize     will be a special !
-
 %D \module
 %D   [       file=spec-ini,
 %D        version=1996.01.25,
@@ -17,7 +15,7 @@
 %D \TEX\ even more platform independant and permit easy
 %D adaption to new developments. One major drawback of specials
 %D is that they have to be supported by printer drivers. We've
-%D tried to overcome this problem by implementinmg specials as
+%D tried to overcome this problem by implementing specials as
 %D a sort of drivers themselves.
 
 \writestatus{loading}{Context Special Macros / Initialization}
@@ -83,6 +81,32 @@
 \startmessages  czech  library: interactions
      21: -- kod vlozen
 \stopmessages
+
+%D \TEX\ produces files in the \DVI\ format. This format is
+%D well defined and stable. In this format one||byte commands
+%D are used which can optionally be followed by length
+%D specifiers and arguments. The \DVI||format incorporates a
+%D channel to the outside world. This channel is activated by
+%D the \TEX\ primitive \type {\special}. The sequence 
+%D 
+%D \starttypen
+%D \special{Hello here I am.}
+%D \stoptypen
+%D
+%D results in \DVI||codes:
+%D
+%D \starttypen
+%D xxx1 16 Hello here I am.
+%D \stoptypen
+%D
+%D The \type {xxx1} is represented in byte code 239 and the
+%D number of following bytes in a~1, 2, 3 or~4 byte number. So
+%D here we get $1+1+16$ bytes of code.
+%D 
+%D Translating these codes is upto the \DVI\ driver. It's
+%D common use to ignore specials that cannot be interpreted, so
+%D the example string should have no consequences for the
+%D output. 
 
 %D \macros 
 %D   {everyresetspecials}
@@ -580,6 +604,61 @@
 %D   {dostartgraymode,dostopgraymode,
 %D    dostartrgbcolormode,dostartcmykcolormode,dostartgraycolormode,dostopcolormode}
 %D
+%D Switching to and from color can be done in two ways:
+%D
+%D \startopsomming[opelkaar,n]
+%D \som  insert driver specific commands
+%D \som  pass instructions to the output device
+%D \stopopsomming
+%D
+%D The first approach is more general and lays the
+%D responsibility at the driver side. Probably due to the fact
+%D that \TEX\ does not directly support color, we have been
+%D confronted for the last few years with changing special
+%D definitions. The need for support depends on how a macro
+%D package handles colored text that crosses the page boundary.
+%D Again, there are two approaches.
+%D
+%D \startopsomming[opelkaar,n]
+%D \som  let \TEX\ do the job
+%D \som  let the driver handle things
+%D \stopopsomming
+%D
+%D The first approach is as driver independant as possible and
+%D can easily be accomplished by using \TEX's mark mechanism.
+%D In \CONTEXT\ we follow this approach. More and more, drivers
+%D are starting to support color, including stacking them.
+%D 
+%D Colors as well as grayscales can be represented in scales
+%D from~0 to~1. When drivers use values in the range 0..255,
+%D this value has to be adapted in the translation process.
+%D Technically it's possible to get a grayscale from combining
+%D colors. In the \kap{RGB} color system, a color with Red,
+%D Green and Blue components of 0.80 show the same gray as a
+%D Gray Scale specified 0.80. The \kap{CMYK} color system
+%D supports a Black component apart from Cyan, Magenta and
+%D Yellow. 
+%D 
+%D Depending on the target format, color support differs from
+%D gray support. PostScript for example offers different
+%D operators for setting gray and color. This is because
+%D printing something using three colors is someting else than
+%D printing with just black.
+%D
+%D In \CONTEXT\ we have implemented a color subsystem that
+%D supports the use of well defined colors that, when printed
+%D in black and white, still can be distinguished. This
+%D approach enables us to serve both printed and electronic
+%D versions, using colored text and illustrations. More on the
+%D fundamentals of this topic can be found in the \kap{MAPS} of
+%D the Dutch User Group, 14 (95.1).
+%D
+%D To satisfy all those needs, we define four specials which
+%D supply enough information for drivers to act upon. We
+%D could have used more general commands with the keywords
+%D 'rgb' and 'gray', but because these specials are used often,
+%D we prefer the more direct and shorter alternative.
+%D
 %D We start with the installation of color and grayscale
 %D specials. The values are in the range 0..1 (e.g. 0.25).
 %D
@@ -603,13 +682,23 @@
 \installspecial [\dostartgraycolormode] [or] [1]
 \installspecial [\dostopcolormode]      [or] [0]
 
+%D For some drivers, the stop special is of no use and can
+%D simply call the start one with zero arguments.
+
 %D \macros
 %D   {doinsertfile}
 %D
 %D Probably the most problematic special is the following
 %D one. Because we want to be able to support different
 %D schemes, we pass a lot of data to it.
-%D
+%D 
+%D The support of inserting files (like illustrations) comes in
+%D many flavors. Some drivers use scales, some take dimensions.
+%D Some need offsets and others act on stored characteristics.
+%D They need one thing in common: a filename. Although separate
+%D specials for different formats sometimes are more clear, we
+%D decided to combine them all in one: 
+%D 
 %D \starttypen
 %D \doinsertfile {type,method} {file,label} 
 %D               {xscale} {yscale} {x} {y} {w} {h} 
@@ -618,16 +707,32 @@
 %D
 %D The scale is given percents, the other values are base 
 %D points.
-%D
-%D The special is implemented as \type{or}. Because
-%D \DVIPSONE\ understands them all, a chain of alternatives
-%D would generate multiple occurrences of the same
-%D illustration.
-%D
+%D 
+%D The special is implemented as \type{or}. Because \DVIPSONE\
+%D understands them all, a chain of alternatives would generate
+%D multiple occurrences of the same illustration. 
+%D 
 %D When option 1 is passed, the viewers is asked to present a
 %D preview, like the first frame of a movie. 
 
 \installspecial [\doinsertfile] [or] [9]
+
+%D No start||stop construction is needed here, because there in
+%D no further interference of \TEX. All dimensions are output
+%D as scaled points and scales as a number, where 100 equal
+%D 100\%. 
+
+%D \macros
+%D   {doinsertsoundtrack}
+%D
+%D Sounds are (for the moment) just files with 
+%D associated options. 
+%D
+%D \starttypen
+%D \doinsertsoundtrack {file} {label} {options} 
+%D \stoptypen
+
+\installspecial [\doinsertsoundtrack] [or] [3]
 
 %D \macros
 %D   {dogetnofinsertpages}
@@ -637,12 +742,14 @@
 %D to the total number of pages. 
 %D
 %D \starttyping
-%D \dogetnofinsertpages\nofinsertpages
+%D \dogetnofinsertpages{filename}
 %D \stoptyping
 %D
-%D The number is available after the insert is placed, 
+%D The number is also available after the insert is placed, 
 %D since inclusion may take place immediate when an insert is 
 %D called upon. 
+
+\def\nofinsertpages{1} % one of the few 'talk backs' 
 
 \installspecial [\dogetnofinsertpages] [or] [1] 
 
@@ -863,6 +970,41 @@
 %D   {dostartgotolocation, dostopgotolocation,
 %D    dostartgotorealpage, dostopgotorealpage}
 %D
+%D When we want to support hypertext buttons, again we have 
+%D to deal with two concepts.
+%D
+%D \startopsomming[opelkaar,n]
+%D \som let \TEX\ highlight the text
+%D \som let the driver show us where to click
+%D \stopopsomming
+%D 
+%D The first approach is the most secure one. It gives us
+%D complete control over the visual appearance of hyper
+%D buttons. The second alternative lets the driver guess what
+%D part of the text needs highlighting. As long as we deal with
+%D not too complicated textual buttons, this is no problem.
+%D It's even a bit more efficient when we take long mid
+%D paragraph active regions into account. When we let \TEX\
+%D handle active sentences {\em for instance marked like this
+%D one}, we have to take care of line- and pagebreaks ourselve.
+%D However, it's no trivial matter to let a driver find out
+%D where things begin and end. Because most hyperlinks can be
+%D found in tables of contents and registers, the saving in
+%D terms of bytes can be neglected and the first approach is a 
+%D clear winner. 
+%D 
+%D The most convenient way of cross||referencing is using named
+%D destinations. A more simple scheme is using page numbers as
+%D destinations. Because the latter alternative can often be
+%D implemented more efficient, and because we cannot be sure
+%D what scheme a driver supports, we always have to supply a
+%D pagenumber, even when we use named destinations.
+%D
+%D To enable a driver to find out what to make active, we have
+%D to provide begin and endpoints, so like with color, we use
+%D pairs of specials. The first scheme can be satisfied with
+%D proper dimensions of the areas to be made active.
+%D
 %D The interactive real work is done by the following four
 %D specials. The reason for providing the first one with both
 %D a label and a number, is a result of the quite poor
@@ -893,10 +1035,14 @@
 \installspecial [\dostartgotorealpage] [and] [5]
 \installspecial [\dostopgotorealpage]  [and] [0]
 
+%D One may wonder why jumps to page and location are not
+%D combined. By splitting them, we enable macro||packages to
+%D force the prefered alternative, while on the other hand
+%D drivers can pick up the alternative desired most.
+
 %D \macros
 %D  {dostartgotoJS, doflushJSpreamble}
 %D   
-%D
 %D Rather special is the option to include and execute 
 %D JavaScript code. This is a typical \PDF\ option.
 %D
@@ -916,6 +1062,12 @@
 %D \macros
 %D   {dostartthisislocation, dostopthisislocation,
 %D    dostartthisisrealpage, dostopthisisrealpage}
+%D
+%D Before we can goto some location or page, we have to tell
+%D the system where it can be found. Because some drivers
+%D follow the \SGML\ approach of begin||end tags, we have to
+%D support pairs. A possible extension to this scheme is
+%D supplying coordinates for viewing the text.
 %D
 %D The opposite commands of \type{\dogotosomething} have only
 %D one argument:
@@ -939,6 +1091,10 @@
 \installspecial [\dostopthisislocation]  [and] [0]
 \installspecial [\dostartthisisrealpage] [and] [1]
 \installspecial [\dostopthisisrealpage]  [and] [0]
+
+%D In \CONTEXT\ we don't use the \type{\stopsomething} 
+%D macros because we let \TEX\ take care of typographic 
+%D issues.  
 
 %D \macros
 %D   {doresetgotowhereever}
@@ -1177,7 +1333,7 @@
 %D \macros 
 %D   {doinsertcomment}
 %D
-%D Not so much out ot need, but to be complete, we also 
+%D Not so much out of need, but to be complete, we also 
 %D implement text annotations, so called  comment:
 %D 
 %D \starttypen
@@ -1186,6 +1342,26 @@
 %D \stoptypen
 
 \installspecial[\doinsertcomment] [and] [7]
+
+%D \macros
+%D   {dosetposition, dosetpositionwhd, dosetpositionpapersize}
+%D
+%D Not natural to \TEX, but available in \PDFTEX, and by 
+%D means of postprocessed \DVI, we can save and call upon 
+%D positions. 
+%D
+%D \starttypen
+%D \dosetposition          {identifier}
+%D \dosetpositionwhd       {identifier} {width} {height} {depth}
+%D \dosetpositionpapersize {width} {height} 
+%D \stoptypen
+%D
+%D This is one of the few specials where when using \PDFTEX\ 
+%D the driver directly deals with the utility file. 
+
+\installspecial [\dosetposition]          [or] [1] 
+\installspecial [\dosetpositionwhd]       [or] [4] 
+\installspecial [\dosetpositionpapersize] [or] [2] 
 
 %D So far for the installation. For quite some time the 
 %D \CONTEXT\ way of specifying the output format has been: 

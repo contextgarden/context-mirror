@@ -486,9 +486,9 @@
 \def\initializetyping#1%
   {\donefalse
    \scratchskip=\getvalue{\??tp#1\c!onevenmarge}\relax
-   \ifdim\scratchskip=\!!zeropoint\relax\else\donetrue\fi
+   \ifzeropt\scratchskip\else\donetrue\fi
    \scratchskip=\getvalue{\??tp#1\c!evenmarge}\relax
-   \ifdim\scratchskip=\!!zeropoint\relax\else\donetrue\fi
+   \ifzeropt\scratchskip\else\donetrue\fi
    \ifdone
      \def\doopenupverbatimline%
        {\getpagestatus
@@ -804,7 +804,7 @@
 
 \def\typefile#1%
   {\getvalue{\??tp\v!file\c!voor}%
-   \doiffileelse{#1}
+   \doiflocfileelse{\pathplusfile\f!currentpath{#1}}
      {\startopelkaar % includes \bgroup
       \startcolor[\getvalue{\??tp\v!file\c!kleur}]%
       \doifinset{\getvalue{\??tp\v!file\c!optie}}{\v!commandos,\v!schuin,\v!normaal}
@@ -813,7 +813,7 @@
         {\expandafter\aftersplitstring#1\at.\to\prettyidentifier
          \letvalue{\??tp\v!file\c!optie}=\prettyidentifier}%
       \initializetyping\v!file
-      \processfileverbatim{#1}%
+      \processfileverbatim{\pathplusfile\f!currentpath{#1}}%
       \stopcolor
       \stopopelkaar}  % includes \egroup
      {{\tttf[\makemessage{\m!verbatims}{1}{#1}]}% 

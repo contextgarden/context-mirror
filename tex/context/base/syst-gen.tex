@@ -108,6 +108,14 @@
 %D \writestatus{laden}{Context Systeem Macro's (a)}
 %D \stoptypen
 
+%D The next few macros are needed in case this module is 
+%D used outside \CONTEXT. 
+
+\ifx\beginTEX\undefined
+  \long\def\beginETEX#1\endETEX{} 
+  \let\beginTEX\relax \let\endTEX\relax
+\fi
+
 %D \macros
 %D   [beschermen]
 %D   {protect,unprotect}
@@ -264,6 +272,7 @@
 
 \newdimen\!!widtha \newdimen\!!heighta \newdimen\!!deptha 
 \newdimen\!!widthb \newdimen\!!heightb \newdimen\!!depthb 
+\newdimen\!!widthc \newdimen\!!heightc \newdimen\!!depthc 
 
 \newif\if!!donea   \newif\if!!doneb    \newif\if!!donec
 
@@ -397,13 +406,18 @@
 %D \stoptypen
 %D
 %D However complicated it may look, I'm still glad I stumbled
-%D into this construction.
+%D into this construction. Saving and restoring \type {\:} is 
+%D needed when we use \PPCHTEX\ in \LATEX. 
+
+\let\next\: 
 
 \def\:{\let\blankspace= }  \:
 
 \def\:{\reinspectnextcharacter}
 
 \expandafter\def\: {\futurelet\nexttoken\inspectnextcharacter}
+
+\let\:\next
 
 %D \macros
 %D   {setvalue,setgvalue,setevalue,setxvalue,
@@ -450,6 +464,17 @@
 
 \def\resetvalue#1%
   {\expandafter\let\csname#1\endcsname\empty}
+
+%D \macros
+%D   {showvalue,showargument}
+%D
+%D A handy macro for testing purposes only, is the following: 
+
+\def\showvalue#1%
+  {\expandafter\show\csname#1\endcsname}
+
+\def\showargument#1%
+  {\convertargument#1\to\ascii\show\ascii}
 
 %D \macros
 %D   {donottest,unexpanded}
@@ -1303,41 +1328,64 @@
 \def\doprocesscommaitem%
   {\futurelet\nexttoken\dodoprocesscommaitem}
 
-\def\doprocesscommalistA#1#2]#3%
-  {\global\advance\commalevel 1
-   \long\expandafter\def\csname\s!next\the\commalevel\endcsname##1,%
-     {#3{##1}\doprocesscommaitem}%
-   \doprocesscommaitem{#1}#2,]\relax
-   \global\advance\commalevel -1 }
-
-\def\doprocesscommalistB#1]#2%
-  {\global\advance\commalevel 1
-   \long\expandafter\def\csname\s!next\the\commalevel\endcsname##1,%
-     {#2{##1}\doprocesscommaitem}%
-   \doprocesscommaitem#1,]\relax
-   \global\advance\commalevel -1 }
-
 %D Empty arguments are not processed. Empty items (\type{,,})
 %D however are treated. We have to check for the special case
 %D \type{[{a,b,c}]}.
-
-\def\docheckcommaitem%
-  {\ifx\nexttoken]%
-     \let\nextcommaitem\gobbletwoarguments
-   \else\ifx\nexttoken\bgroup
-     \let\nextcommaitem\doprocesscommalistA
-   \else
-     \let\nextcommaitem\doprocesscommalistB
-   \fi\fi
-   \nextcommaitem}
+%D 
+%D \starttypen 
+%D \def\processcommalist[%
+%D   {\futurelet\nexttoken\docheckcommaitem}
+%D
+%D \def\docheckcommaitem%
+%D   {\ifx\nexttoken]%
+%D      \let\nextcommaitem\gobbletwoarguments
+%D    \else\ifx\nexttoken\bgroup
+%D      \let\nextcommaitem\doprocesscommalistA
+%D    \else
+%D      \let\nextcommaitem\doprocesscommalistB
+%D    \fi\fi
+%D    \nextcommaitem}
+%D
+%D \def\doprocesscommalistA#1#2]#3%
+%D   {\global\advance\commalevel 1
+%D    \long\expandafter\def\csname\s!next\the\commalevel\endcsname##1,%
+%D      {#3{##1}\doprocesscommaitem}%
+%D    \doprocesscommaitem{#1}#2,]\relax
+%D    \global\advance\commalevel -1 }
+%D 
+%D \def\doprocesscommalistB#1]#2%
+%D   {\global\advance\commalevel 1
+%D    \long\expandafter\def\csname\s!next\the\commalevel\endcsname##1,%
+%D      {#2{##1}\doprocesscommaitem}%
+%D    \doprocesscommaitem#1,]\relax
+%D    \global\advance\commalevel -1 }
+%D \stoptypen 
+%D 
+%D However, this is not a the most straightforward solution! 
+%D We can misuse one of \TEX's hidden features, and prepend 
+%D and remove a \type {\relax}. By the way, although it 
+%D involves less testing, this cleaner alternative is not 
+%D faster. 
 
 \def\processcommalist[%
   {\futurelet\nexttoken\docheckcommaitem}
 
-%D One way of quitting a commalist halfway is:
+\def\docheckcommaitem%
+  {\ifx\nexttoken]%
+     \expandafter\gobblethreearguments
+   \else
+     \expandafter\doprocesscommalist
+   \fi
+   \relax} % this one preserved the next {} 
 
-% \def\quitcommalist%
-%   {\@EA\let\csname\s!next\the\commalevel\endcsname\gobbleoneargument}
+\def\doprocesscommalist#1]#2%
+  {\global\advance\commalevel 1
+   \long\expandafter\def\csname\s!next\the\commalevel\endcsname##1,%
+     {#2{##1}\doprocesscommaitem}%
+   \@EA\dodoprocesscommaitem\gobbleoneargument#1,]\relax
+   \global\advance\commalevel -1 }
+
+%D One way of quitting a commalist halfway is:
 
 \def\quitcommalist%
   {\bgroup\let\doprocesscommaitem\doquitcommalist}
@@ -1860,7 +1908,7 @@
 %D
 %D The macro accepts \type{123}, \type{abc}, \type{{}},
 %D \type{\getal} and \type{\the\count...}. This macro is a 
-%D reather dirty one.
+%D rather dirty one.
 
 \long\def\doifnumberelse#1#2#3%
   {\bgroup\donefalse
@@ -2028,7 +2076,7 @@
 %    \fi}
 
 %D \macros
-%D   {dosetvalue,dosetevalue,docopyvalue,doresetvalue,
+%D   {dosetvalue,dosetevalue,dosetgvalue,docopyvalue,doresetvalue,
 %D    dogetvalue}
 %D
 %D When we are going to do assignments, we have to take
@@ -2038,6 +2086,7 @@
 %D \starttypen
 %D \dosetvalue   {label}    {variable}   {value}
 %D \dosetevalue  {label}    {variable}   {value}
+%D \dosetgvalue  {label}    {variable}   {value}
 %D \docopyvalue  {to label} {from label} {variable}
 %D \doresetvalue {label}    {variable}
 %D \stoptypen
@@ -2050,6 +2099,9 @@
 
 \def\dosetevalue#1#2% #3
   {\@EA\edef\csname#1#2\endcsname} % {#3}}
+
+\def\dosetevalue#1#2% #3
+  {\@EA\gdef\csname#1#2\endcsname} % {#3}}
 
 \def\doresetvalue#1#2%
   {\@EA\def\csname#1#2\endcsname{}}
@@ -2129,7 +2181,7 @@
      {\dosetvalue{#1}{#2}{#3}}}
 
 %D \macros
-%D   {getparameters,geteparameters} % ,forgetparameters}
+%D   {getparameters,geteparameters,getgparameters} % ,forgetparameters}
 %D
 %D Using the assignment commands directly is not our
 %D ideal of user friendly interfacing, so we take some further
@@ -2209,6 +2261,9 @@
 
 \def\geteparameters%
   {\dogetparameters\dosetevalue}
+
+\def\getgparameters%
+  {\dogetparameters\dosetgvalue}
 
 % \def\forgetparameters%
 %   {\dogetparameters\doresetvalue}

@@ -141,6 +141,8 @@
 \ifnocontextobject \eightbitcharacterstrue \do \newif\ifeightbitcharacters \fi
 \ifnocontextobject \MPdrawingdonetrue      \do \newif\ifMPdrawingdone      \fi
 
+\ifnocontextobject \ifzeropt               \do \let\ifzeropt\ifcase        \fi
+
 %D \macros
 %D   {@@...}
 %D
@@ -157,6 +159,16 @@
 \ifnocontextobject \@@other      \do \chardef\@@other      = 12 \fi
 \ifnocontextobject \@@active     \do \chardef\@@active     = 13 \fi
 \ifnocontextobject \@@comment    \do \chardef\@@comment    = 14 \fi
+
+%D \macros 
+%D   {@EA,expanded}
+%D
+%D Also needed: 
+
+\let\@EA=\expandafter
+
+\def\expanded#1%
+  {\edef\@@expanded{\noexpand#1}\@@expanded}
 
 %D \macros
 %D   {everyline,EveryLine,EveryPar}

@@ -120,7 +120,7 @@
       \@@fdformatteer,\@@fdvalideer,\@@fdbereken}}
 
 \def\presetpushfield%
-  {\edef\@@FieldValues{{\@@FieldValues}}% makes sure {a,b,c} is passed
+  {%\edef\@@FieldValues{{\@@FieldValues}}% makes sure {a,b,c} is passed
    \presetfieldsymbols[\@@FieldValues]%
    \dopresetpushfield
      {\@@FieldName}
@@ -273,18 +273,32 @@
 
 \newif\ifdefinemainfield \definemainfieldfalse
 
+%D We used to have: 
+%D
+%D \starttyping 
+%D \def\getmainfieldkids#1%
+%D   {\let\@@FieldKids\empty
+%D    \ifdefinemainfield 
+%D      \definetwopasslist{fld:#1}% defined by system 
+%D      \doloop
+%D        {\gettwopassdata{fld:#1}%
+%D         \iftwopassdatafound
+%D          %\addtocommalist\twopassdata\@@FieldKids
+%D           \appendtocommalist\twopassdata\@@FieldKids
+%D         \else
+%D           \exitloop
+%D         \fi}%
+%D    \fi}
+%D \stoptyping 
+%D 
+%D The next alternative is much faster when we have a field 
+%D with thousands of clones, somthing not that imaginary.
+
 \def\getmainfieldkids#1%
   {\let\@@FieldKids\empty
    \ifdefinemainfield 
-     \definetwopasslist{fld:#1}% defined by system 
-     \doloop
-       {\gettwopassdata{fld:#1}%
-        \iftwopassdatafound
-         %\addtocommalist\twopassdata\@@FieldKids
-          \appendtocommalist\twopassdata\@@FieldKids
-        \else
-          \exitloop
-        \fi}%
+     \definerawpasslist{fld:#1}% runtime defined by system 
+     \moverawpasslist{fld:#1}\@@FieldKids
    \fi}
 
 \newcounter\nofmainfieldkids
@@ -314,7 +328,7 @@
      \savecurrentvalue\totalnumberoffields\numberoffields
    \fi}
 
-\appendtoks \savenumberoffields \to \everylastshipout
+\appendtoks \savenumberoffields \to \everybye % \everylastshipout
 
 % \def\presetfieldreferences%
 %   {\ifnum\totalnumberoffields>0

@@ -74,13 +74,12 @@
    \doprocessfile\scratchread{#1}\doprocessEPSline
    \egroup
    \ifnum\EPSfound>0
-     \dimen0=1bp\relax
-     #2=\EPSllx\dimen0
-     #4=\EPSurx\dimen0
-     \advance#4 by -\EPSllx\dimen0
-     #3=\EPSlly\dimen0
-     #5=\EPSury\dimen0
-     \advance#5 by -\EPSlly\dimen0
+     #2=\EPSllx bp  % Using \EPSllx bp instead of 
+     #4=\EPSurx bp  % \dimen0=1bp and \EPSllx\dimen0
+     #3=\EPSlly bp  % is more accurate (.005pt). 
+     #5=\EPSury bp 
+     \scratchdimen=\EPSllx bp \advance#4 -\scratchdimen
+     \scratchdimen=\EPSlly bp \advance#5 -\scratchdimen
    \else
      #2=\!!zeropoint
      #3=\!!zeropoint

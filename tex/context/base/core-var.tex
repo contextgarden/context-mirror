@@ -15,14 +15,30 @@
 
 \unprotect
 
+%D \macros 
+%D   {every...}
+%D
+%D A few every's. 
+
 \newevery \everyshipout       \relax
 \newevery \everybeforeshipout \relax
 \newevery \everyaftershipout  \relax
 \newevery \everylastshipout   \relax
 \newevery \everybye           \relax   
+\newevery \everygoodbye       \relax   
 \newevery \everystarttext     \relax
 \newevery \everystoptext      \relax
 \newevery \everypagebody      \relax
+
+%D \macros
+%D   {ifproductionrun}
+%D
+%D This boolean can be used to bypass certain 
+%D initializations. 
+
+\newif\ifproductionrun 
+
+\appendtoks \productionruntrue \to \everydump
 
 %D \macros 
 %D   {fastmode}

@@ -177,7 +177,7 @@
   {\bgroup
    \doifelse{#4}{\v!rond}
      {\dimen0=#5\relax   % just in case of .x\bodyfontsize
-      \ifdim\dimen0=\!!zeropoint
+      \ifzeropt\dimen0
         \dofilledlinedbox\width#1\height#2\depth#3\\%
       \else
         \dofilledroundbox\width#1\height#2\depth#3\radius#5\\%
@@ -314,6 +314,10 @@
    \scratchdimen=#5%
    \edef\overlaydepth{\the\scratchdimen}%
    \edef\overlaycolor{#6}%
+\prependtoks
+  \hsize=\overlaywidth
+  \vsize=\overlayheight
+\to\everyoverlay
    %\writestatus
    %  {overlay}
    %  {#1\space w=\overlaywidth/h+d=\overlayheight/d=\overlaydepth]}%
@@ -400,7 +404,8 @@
 %D Besides backgrounds (overlays) we also need some macros to
 %D draw outlines (ruled borders). Again we have to deal with
 %D square and round corners. The first category can be handled
-%D by \TEX\ itself, the latter one depends on the driver. 
+%D by \TEX\ itself, the latter one depends on the driver. This
+%D macro also support a negative offset. 
 
 \def\dooutlinebox#1\color#2\offset#3\corner#4\radius#5\depth#6\toggle#7\\%
   {\vbox % rules on top of box
@@ -408,17 +413,22 @@
       \dimen2=\wd#1\advance\dimen2 by 2\dimen0
       \dimen4=\ht#1\advance\dimen4 by  \dimen0
       \dimen6=\dp#1\advance\dimen6 by  \dimen0\advance\dimen6 by #6\relax
+      \ifdim\dimen6<\!!zeropoint 
+        \advance\dimen4 by \dimen6 \dimen8=-\dimen6 \dimen6=\!!zeropoint
+      \else
+        \dimen8=\!!zeropoint
+      \fi
       \setbox\extraframebox=\hbox
         {\dostrokedbox\width\dimen2\height\dimen4\depth\dimen6%
            \corner#4\radius#5\toggle#7\\}%
       \setbox\extraframebox=\hbox
-        {\vbox{\moveleft#3\box\extraframebox}}%
+        {\raise\dimen8\vbox{\moveleft#3\box\extraframebox}}%
       \wd\extraframebox=\wd#1%
       \ht\extraframebox=\ht#1%
       \dp\extraframebox=\dp#1%
       \hbox
         {%\copy#1\hskip-\wd#1%
-         \box#1\hskip-\wd\extraframebox % faster 
+         \box#1\hskip-\wd\extraframebox % faster
          \doifelsenothing{#2} % speeds up a little
            {\box\extraframebox}
            {\color[#2]{\box\extraframebox}}}}}
@@ -427,7 +437,7 @@
   {\bgroup
    \doifelse{#4}{\v!rond}
      {\dimen0=#5\relax   % just in case of .x\bodyfontsize
-      \ifdim\dimen0=\!!zeropoint
+      \ifzeropt\dimen0
         \dostrokedlinedbox\width#1\height#2\depth#3\toggle#6\\%
       \else
         \dostrokedroundbox\width#1\height#2\depth#3\radius#5\toggle#6\\%
@@ -567,7 +577,7 @@
 \def\localframed%
   {\bgroup
    \inframedtrue 
-   \dodoubleargument\startlocalframed}
+   \dodoubleempty\startlocalframed}
 
 %D Before we go into details, we present (and implement) the
 %D main framing routine. I saw no real reason for splitting the
@@ -575,11 +585,23 @@
 %D collected in a horizontal or vertical box with fixed or free
 %D dimensions and specific settings concerning aligment and
 %D offsets.
+%D 
+%D In the first few lines, we pre||expand the frame and
+%D background offsets. We do so, because the can be defined in
+%D terms of the main offset. However, see for instance page
+%D backgrounds, when \type {#2} sets the offset to \type
+%D {overlay}, both offsets become invalid. 
 
 \def\startlocalframed[#1][#2]%
   {\bgroup
-   \edef\@@framed{#1}%
-   \getparameters[\@@framed][#2]%
+   \edef\@@framed{#1}% 
+   \scratchdimen\getvalue{\@@framed\c!kaderoffset}%  
+   \setevalue{\@@framed\c!kaderoffset}{\the\scratchdimen}% 
+   \scratchdimen\getvalue{\@@framed\c!achtergrondoffset}%  
+   \setevalue{\@@framed\c!achtergrondoffset}{\the\scratchdimen}% 
+   \ifsecondargument % faster 
+     \getparameters[\@@framed][#2]% here ! 
+   \fi
    \edef\localoffset{\getvalue{\@@framed\c!offset}}%
    \edef\localwidth{\getvalue{\@@framed\c!breedte}}%
    \edef\localheight{\getvalue{\@@framed\c!hoogte}}%
@@ -590,9 +612,9 @@
    \doifelsenothing{\localformat}
      {\boxhasformatfalse}
      {\boxhasformattrue
-      \edef\beforeframedbox{\getvalue{\@@framed\c!boven}}%
-      \edef\afterframedbox{\getvalue{\@@framed\c!onder}}%
-      \dosetraggedcommand{\localformat}}%
+      \dosetraggedcommand{\localformat}%
+      \edef\beforeframedbox{\raggedtopcommand\getvalue{\@@framed\c!boven}}%
+      \edef\afterframedbox {\getvalue{\@@framed\c!onder}\raggedbottomcommand}}%
    \doifelse{\localoffset}{\v!geen}
      {\boxhasoffsetfalse
       \boxhasstrutfalse
@@ -631,7 +653,7 @@
      \setlocalhsize
      \!!widtha=\localhsize
    \fi
-   \advance\!!widtha by -2\@@localoffset
+   \advance\!!widtha  by -2\@@localoffset
    \advance\!!heighta by -2\@@localoffset
    \doif{\localstrut}{\v!nee} 
      {\boxhasstrutfalse}%
@@ -641,12 +663,12 @@
      \let\localendstrut=\endstrut
      \let\localstrut   =\strut
    \else
-     \let\localbegstrut=\pseudostrut % was: \relax
-     \let\localendstrut=\relax
-     \let\localstrut   =\pseudostrut % was: \relax
+     \let\localbegstrut=\pseudobegstrut % was: \relax
+     \let\localendstrut=\pseudoendstrut % was: \relax
+     \let\localstrut   =\pseudostrut    % was: \relax
     %\ifboxhasheight\ifdim\!!heighta<\ht\strutbox % saveguard 
-    %  \let\localbegstrut=\relax
-    %  \let\localstrut   =\relax
+    %  \let\localbegstrut=\relax                  % but not that 
+    %  \let\localstrut   =\relax                  % save afterall
     %\fi\fi
    \fi
    \ifboxhasheight
@@ -684,13 +706,15 @@
      \fi
    \fi
    \def\dowithframedbox%
-     {\aftergroup\stoplocalframed}%
+     {\let\postprocessframebox\undefined %new
+      \aftergroup\stoplocalframed}%
    \edef\framedwidth % a new feature  
      {\ifdim\!!widtha >\!!zeropoint\the\!!widtha \else\!!zeropoint\fi}%  
    \edef\framedheight% a new feature  
      {\ifdim\!!heighta>\!!zeropoint\the\!!heighta\else\!!zeropoint\fi}% 
    \afterassignment\dowithframedbox
    \setbox\framebox=\next}
+
 
 %D Carefull analysis of this macro will learn us that not all
 %D branches in the last conditionals can be encountered, that
@@ -731,6 +755,9 @@
    \fi
    \ifboxisoverlaid \else
      \dolocateframebox
+   \fi
+   \ifx\postprocessframebox\undefined \else
+     \postprocessframebox\framebox
    \fi
    \doifelsevalue{\@@framed\c!kader}{\v!overlay}
      {\edef\overlaylinecolor{\getvalue{\@@framed\c!kaderkleur}}%
@@ -852,7 +879,7 @@
 \def\mframed%
   {\dodoubleempty\domframed[\donetrue]}
 
-\def\minframed%
+\def\inmframed%
   {\dodoubleempty\domframed[\donefalse]}
 
 %D So instead of the rather versatile \type {\framed}, we ue
@@ -860,7 +887,8 @@
 %D 
 %D \startbuffer
 %D \startformule
-%D   x \times \mframed{y} \times y^{z_z}
+%D   x \times   \mframed{y} \times y^{z_z}
+%D   x \times \inmframed{y} \times y^{z_z}
 %D \stopformule
 %D \stopbuffer
 %D 
@@ -911,8 +939,8 @@
 %D 
 %D \haalbuffer
 %D 
-%D For inline use, we also provide the \type {\minframed}
-%D alternative: we want $x \times \minframed{y}$ in inline 
+%D For inline use, we also provide the \type {\inmframed}
+%D alternative: we want $x \times \inmframed{y}$ in inline 
 %D math, right?
 
 %D This previous framing macros needs a lot of alternatives for
@@ -1582,7 +1610,7 @@
 \def\dostopmarginrule%
   {\endofshapebox
    \reshapebox
-     {\hbox{\inlinkermarge{\dodrawmarginrule}\box\shapebox}}%
+     {\hbox{\inleftmargin{\dodrawmarginrule}\box\shapebox}}%
    \flushshapebox
    \egroup}
 
@@ -1710,7 +1738,7 @@
 \def\thinrule%
   {\strut
    \leaders
-     \hrule\!!height\@@dlhoogte\!!depth\@@dlhoogte
+     \hrule\!!height.5\linewidth\!!depth.5\linewidth
      \hfill
    \strut}
 
@@ -1720,8 +1748,7 @@
    \endgraf}
 
 \def\dosetupthinrules[#1]%
-  {\getparameters[\??dl][#1]%
-   \assignvalue{\@@dlafstand}{\@@dl@@afstand}{1.0}{1.5}{2.0}}
+  {\getparameters[\??dl][#1]}
 
 \def\setupthinrules%
   {\dosingleargument\dosetupthinrules}
@@ -1730,16 +1757,31 @@
   {\bgroup
    \dosetupthinrules[#1]%
    \@@dlvoor
-   \spacing\@@dl@@afstand
+   \assignvalue{\@@dlinterlinie}{\@@dlinterlinie}{1.0}{1.5}{2.0}%
+   \spacing\@@dlinterlinie
    \dorecurse
      {\@@dln}
-     {\thinrule\ifnum\recurselevel<\@@dln\endgraf\fi}%
+     {\ifnum\recurselevel=\@@dln \dothinrulesnobreak \else
+      \ifnum\recurselevel=2      \dothinrulesnobreak \fi\fi
+                                 \thinrule 
+      \ifnum\recurselevel<\@@dln \endgraf            \fi}%
    \@@dlna
    \egroup}
 
 \def\thinrules%
   {\dosingleempty\dothinrules}
 
+%D \macros
+%D   {optimizethinrules}
+%D
+%D By saying \type {\thinrulestrue} or \type {-false}, we 
+%D can influence the way dangling lines are handled. 
+
+\newif\ifoptimizethinrules \optimizethinrulestrue 
+
+\def\dothinrulesnobreak%
+  {\ifoptimizethinrules\penalty500\fi} 
+
 %D \macros
 %D   {startframedtext, setupframedtexts,
 %D    defineframedtext, start<<framedtext>>, <<framedtext>>}
@@ -1891,11 +1933,11 @@
 \def\dododostartframedtext[#1][#2][#3]%
   {\processaction
      [#2]       
-     [  \v!links=>\letvalue{\??kd#1\c!links}=\relax
+     [  \v!links=>\letvalue{\??kd#1\c!links }=\relax
                   \letvalue{\??kd#1\c!rechts}=\hfill,
-       \v!rechts=>\letvalue{\??kd#1\c!links}=\hfill
+       \v!rechts=>\letvalue{\??kd#1\c!links }=\hfill
                   \letvalue{\??kd#1\c!rechts}=\relax,
-       \v!midden=>\letvalue{\??kd#1\c!links}=\hfill
+       \v!midden=>\letvalue{\??kd#1\c!links }=\hfill
                   \letvalue{\??kd#1\c!rechts}=\hfill]%
    \forgetparindent
    \setbox\framebox=\vbox
@@ -1906,7 +1948,7 @@
          \blanko[\v!blokkeer]%
          \let\\=\endgraf
          \getvalue{\??kd#1\c!binnen}%
-         \dostartattributes\??kd\c!letter\c!kleur{}}
+         \dostartattributes{\??kd#1}\c!letter\c!kleur{}}
 
 \def\dostopframedtext[#1]%
   {\endgraf
@@ -1936,7 +1978,7 @@
        \blanko[\v!blokkeer]%
        \let\\=\endgraf
        \getvalue{\??kd#1\c!binnen}%
-       \dostartattributes\??kd\c!letter\c!kleur{}%
+       \dostartattributes{\??kd#1}\c!letter\c!kleur{}%
        \bgroup
        \aftergroup\docloseframedtext
        \let\next=}
@@ -2065,7 +2107,7 @@
    \@@tltussen
    \endgraf}
 
-\def\dodobottomtextrule#1%
+\def\dodobottomtextrule#1#2%
   {\ifhmode
      \endgraf
    \fi
@@ -2078,7 +2120,7 @@
    \advance\dimen0 by .5ex
    \vskip\dimen0
    \@@tltussen
-   \doifelsenothing{#1}
+   \doifelsenothing{#2}
      {\bgroup
       \advance\hsize by -\rightskip
       \advance\hsize by -\leftskip
@@ -2087,18 +2129,16 @@
         {\color[\@@tllijnkleur]
            {\hrule\!!depth\linewidth\!!height\!!zeropoint\!!width\hsize}}%
       \egroup}
-     {\docomplextextrule{#1}}% 
-   \prevdepth\!!zeropoint}  % look at this
-
-\def\dobottomtextrule#1%
-  {\dodobottomtextrule{#1}%
-   \@@tlna  
+     {\docomplextextrule{#2}}% 
+   \ifvmode\prevdepth\!!zeropoint\fi
+   #1%
    \pagina[\v!voorkeur]}
 
-\def\domiddletextrule#1%
-  {\dodobottomtextrule{#1}%
-   \@@tltussen
-   \pagina[\v!voorkeur]}
+\def\dobottomtextrule%
+  {\dodobottomtextrule\@@tlna}
+
+\def\domiddletextrule%
+  {\dodobottomtextrule\@@tltussen}
 
 \def\dounknowntextrule%
   {\iffirstargument
@@ -2153,7 +2193,8 @@
 
 \def\complexfillinrules[#1]%
   {\def\docomplexfillinrules##1##2%
-     {\dodocomplexfillinrules[#1]{##1}{##2}{\thinrules[n=\@@iln]}}%
+     {\dodocomplexfillinrules[#1]{##1}{##2}{\thinrules
+        [\c!n=\@@iln,\c!interlinie=\@@ilinterlinie,\c!voor=,\c!na=]}}%
    \dodoublegroupempty\docomplexfillinrules}
 
 \def\dodocomplexfillinrules[#1]#2#3#4%
@@ -2164,23 +2205,22 @@
    \noindent
    \doifelse{\@@ilbreedte}{\v!passend}
      {\let\@@ilafstand=\!!zeropoint
-      \setbox0=\hbox}
+      \hbox}
      {\doifelse{\@@ilbreedte}{\v!ruim}
-        {\setbox0=\hbox}                                
-        {\setbox0=\hbox to \@@ilbreedte}}
-     \bgroup 
+        {\hbox}
+        {\hbox to \@@ilbreedte}}
+     \bgroup
        \doattributes\??il\c!letter\c!kleur{\strut#2\hfill\@@ilscheider}%
        \hskip\@@ilafstand
      \egroup
-   \hangindent=\wd0\relax
-   \parindent=\hangindent
-   \box0\relax
+  %\hangindent=\wd0\relax % tzt hang=yes,n
+  %\parindent=\hangindent
+  %\box0\relax
    \stelwitruimtein[\v!groot]%
    \ignorespaces
    #4%
    \doifsomething{#3}
-     {\doifnot{\@@ilbreedte}{\v!passend}
-        {\kern\@@ilafstand}
+     {\kern\@@ilafstand
       \doattributes\??il\c!letter\c!kleur{#3\strut}}%
    \endgroup
    \endgraf
@@ -2197,7 +2237,7 @@
 
 \definecomplexorsimpleempty\fillintext
 
-\def\complexfillintext[#1]%
+\def\complexfillintext[#1]% rather rough, using an \unhbox is suboptimal 
   {\def\docomplexfillintext##1##2%
      {\dowithnextbox
         {\dodocomplexfillinrules[#1]{##1}{\hfill##2}{\unhbox\nextbox\unskip}}%
@@ -2494,10 +2534,8 @@
    \c!dikte=\@@kadefaultwidth\linewidth]
 
 \setupthinrules
-  [\c!afstand=\v!klein,
+  [\c!interlinie=\v!klein,
    \c!n=3,
-   \c!hoogte=.5\linewidth,
-   \c!diepte=\@@dlhoogte,
    \c!voor=,
    \c!na=]
 
@@ -2519,6 +2557,7 @@
    \c!voor=\blanko,
    \c!na=\blanko,
    \c!n=1,
+   \c!interlinie=\v!klein,
    \c!scheider=,
    \c!letter=\v!normaal,
    \c!kleur=]

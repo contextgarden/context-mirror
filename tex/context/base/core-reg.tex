@@ -15,8 +15,6 @@
 
 \newif \ifautoregisterhack % for the moment a private hack
 
-% for the moment \e!register ipv #1 (evt nog \v!register)
-
 \unprotect 
 
 %D Isolated but still indocumented. 
@@ -71,7 +69,7 @@
 \def\getlastregisterentry#1%
   {\def\docommando##1%
      {\def\!!stringa{##1}}%
-   \processconcanatedlist[#1][+]\docommando
+   \processseparatedlist[#1][+]\docommando
    \!!stringa}
 
 \def\doprocesspageregister[#1]#2%
@@ -454,8 +452,8 @@
         \fi
       \fi
       % aangepast 
-      \def\dodocommando[####1-####2]%
-        {\gotonextinternal{\s!ind}{####1}{####2}{\box0}}%
+      \def\dodocommando[##1-##2]%
+        {\gotonextinternal{\s!ind}{##1}{##2}{\box0}}%
       \doifelsevalue{\??id#1\c!interactie}{\v!paginanummer}     
         {\limitedregisterentry{#1}{#2}} % paginanummer
         {{\setbox0=\hbox{\limitedregisterentry{#1}{\begstrut#2}}%  
@@ -471,12 +469,12 @@
       \doifvalue{\??id#1\c!nummer}{\v!ja}
         {\hskip\getvalue{\??id#1\c!afstand}(\commalistsize)}%
       \doifnotvalue{\??id#1\c!interactie}{\v!tekst} % paginanummer,alles
-        {\def\docommando####1####2%
-           {{\setbox0=\hbox{\showlocation{\hbox to 1em{\hss\symbol[####2]\hss}}}%
-             \ifx####1\empty
+        {\def\docommando##1##2%
+           {{\setbox0=\hbox{\showlocation{\hbox to 1em{\hss\symbol[##2]\hss}}}%
+             \ifx##1\empty
                % \hskip\wd0 % (optioneel maken)
              \else
-               \expandafter\dodocommando\expandafter[####1]%
+               \expandafter\dodocommando\expandafter[##1]%
              \fi}}%
          \hskip\getvalue{\??id#1\c!afstand}%
          \docommando\firstlistreference\v!vorige
@@ -666,7 +664,7 @@
    \setvalue{#1\s!entry}##1% 
      {\dosetpageregisterletter{#1}{##1}}}
 
-\def\dosetautoregisterentrya#1#2% for the moment \e!register ipv #1
+\def\dosetautoregisterentrya#1#2%
   {\global\utilitydonetrue
    \c!entryletter
    \iflocation
@@ -678,7 +676,7 @@
      \setupinteraction[\c!kleur=,\c!contrastkleur=,\c!letter=]% kan sneller
      \naarbox
        {\limitedregisterentry{#1}{\begstrut#2}}%  
-       [JS(SetRegisterEntry{\e!register,\countervalue{autolink:#1},#2,{\alllistreferences}})]%
+       [JS(SetRegisterEntry{\v!register,\countervalue{autolink:#1},#2,{\alllistreferences}})]%
      \egroup
    \else
      \endgraf\noindent\c!entryreference
@@ -703,31 +701,31 @@
 %D much faster, but is conceptually pretty weak. 
 
 \def\complexregisterfield[#1]% 
-  {\definefield[#1:\realfolio][line][\e!register]%
+  {\definefield[#1:\realfolio][line][\v!register]%
    \field[#1:\realfolio]}
 
 \def\simpleregisterfield%
-  {\complexregisterfield[\e!register]}
+  {\complexregisterfield[\v!register]}
 
 \definecomplexorsimple\registerfield
 
 \setupfield
-  [\e!register]
+  [\v!register]
   [\c!breedte=10em,
    \c!hoogte=3ex,
    \c!uitlijnen=\v!midden,
    \c!optie=\v!alleenleesbaar,
    \c!plaats=\v!laag]
 
-\def\doinitializeautoregister#1% for the moment \e!register ipv #1
+\def\doinitializeautoregister#1% 
   {\useJSscripts[reg]%
    \useJSpreamblenow{LinkedRegisters}% 
-   \setupinteraction[\c!openpaginaactie=JS(UpdateRegisterField{\e!register})]% 
-   \definereference[\v!reset   \e!register][JS(ResetRegisterEntry{\e!register})]%
-   \definereference[\v!eerste  \e!register][JS(GotoFirstRegisterEntry{\e!register})]%
-   \definereference[\v!vorige  \e!register][JS(GotoPreviousRegisterEntry{\e!register})]%
-   \definereference[\v!volgende\e!register][JS(GotoNextRegisterEntry{\e!register})]%
-   \definereference[\v!laatste \e!register][JS(GotoLastRegisterEntry{\e!register})]}
+   \setupinteraction[\c!openpaginaactie=JS(UpdateRegisterField{\v!register})]% 
+   \definereference[\v!reset   \v!register][JS(ResetRegisterEntry{\v!register})]%
+   \definereference[\v!eerste  \v!register][JS(GotoFirstRegisterEntry{\v!register})]%
+   \definereference[\v!vorige  \v!register][JS(GotoPreviousRegisterEntry{\v!register})]%
+   \definereference[\v!volgende\v!register][JS(GotoNextRegisterEntry{\v!register})]%
+   \definereference[\v!laatste \v!register][JS(GotoLastRegisterEntry{\v!register})]}
 
 \def\doinitializelinkregister#1%
   {}
@@ -830,8 +828,12 @@
    \setbox0=\vbox
      {\doutilities{#1}{\jobname}{#1}{}{}}%
    \endgroup
-   \ifregistergeplaatst\enablemode[\e!register]\else\disablemode[\e!register]\fi}
-
+   \ifregistergeplaatst
+     \enablemode [\systemmodeprefix\v!register]%
+   \else
+     \disablemode[\systemmodeprefix\v!register]%
+   \fi}
+     
 \def\bepaalregisterkenmerken%
   {\dodoubleempty\dobepaalregisterkenmerken}
 

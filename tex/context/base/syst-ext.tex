@@ -224,7 +224,7 @@
 %D When writing advanced macros, we cannot do without
 %D signaling. A signal is a small (invisible) kern or penalty
 %D that signals the next macro that something just happened.
-%D This macro can take any action depending onthe previous
+%D This macro can take any action depending on the previous
 %D signal. Signals must be unique and the next macro takes care
 %D of that. 
 %D
@@ -235,12 +235,12 @@
 %D Signals old dimensions and can be used in skips, kerns and 
 %D tests like \type{\ifdim}. 
 
-\newdimen\currentsignal
+\newdimen\maximumsignal % step is about 0.00025pt 
 
 \def\newsignal#1%
   {\ifx#1\undefined
-     \advance\currentsignal by 0.00025pt 
-     \edef#1{\the\currentsignal}%
+     \advance\maximumsignal by 2sp % to be save in rounding
+     \edef#1{\the\maximumsignal}%
    \fi}
 
 %D \macros
@@ -248,7 +248,7 @@
 %D 
 %D \TEX\ offers 256 \DIMENSIONS\ and \SKIPS. Unfortunately this
 %D amount is too small to suit certain packages. Therefore when
-%D possible one should use 
+%D possible one should use: 
 %D 
 %D \starttypen
 %D \newskimen\tempskimen
@@ -332,6 +332,19 @@
 
 \let\newconditional = \setfalse
 \let\ifconditional  = \ifcase
+
+%D \macros
+%D   {ifzeropt}
+%D 
+%D The next macro is both cosmetic and byte saving. It is 
+%D pretty \type{\if}||safe too. It can be used in cases 
+%D like:
+%D
+%D \starttypen 
+%D \ifzeropt \somedimen ... \else ... \fi 
+%D \stoptypen
+
+\let\ifzeropt\ifcase
 
 %D \macros
 %D   {dorecurse,recurselevel,recursedepth,
@@ -763,6 +776,25 @@
 %D
 %D The \type{-}, the delimiter \type{\\\\} and the the second 
 %D argument are completely redundant.
+
+%D \macros
+%D   {doifmeaningelse}
+%D
+%D We can use both commands in testing, but alas, not all
+%D meanings expand to something \type {->}. This is no problem
+%D in the \ETEX\ implementation, but since we want
+%D compatibility, we need: 
+%D
+%D \starttypen 
+%D \doifmeaningelse {\next} {\something} {true} {false}
+%D \stoptypen 
+%D
+%D Watch the one level expansion of the second argument. 
+
+\def\doifmeaningelse#1#2#3#4%
+  {\edef\!!stringa{\meaning#1}%
+   \def\!!stringb{#2}\edef\!!stringb{\meaning\!!stringb}%
+   \ifx\!!stringa\!!stringb#3\else#4\fi}
 
 %D \macros
 %D   {ExpandFirstAfter,ExpandSecondAfter,ExpandBothAfter}
@@ -1496,45 +1528,65 @@
 %D
 %D But here we prefer: 
 
+% haha, far to complex
+%
+% \def\appendtoks%
+%   {\bgroup
+%    \let\bgroup\relax
+%    \futurelet\scratchtoken\doappendtoks}
+% 
+% \def\doappendtoks%
+%   {\ifx\scratchtoken\normalbgroup
+%      \egroup\expandafter\dodoappendtoks
+%    \else
+%      \egroup\expandafter\dododoappendtoks
+%    \fi}
+% 
+% \def\dodoappendtoks#1%
+%   {\dododoappendtoks{{#1}}}
+% 
+% \def\dododoappendtoks#1\to#2%
+%   {\scratchtoks={#1}%
+%    \edef\scratchtoken{\noexpand#2={\the#2\the\scratchtoks}}%
+%    \scratchtoken
+%    \dodoglobal#2=#2}
+% 
+% \def\prependtoks%
+%   {\bgroup
+%    \let\bgroup\relax
+%    \futurelet\scratchtoken\doprependtoks}
+% 
+% \def\doprependtoks%
+%   {\ifx\scratchtoken\normalbgroup
+%      \egroup\expandafter\dodoprependtoks
+%    \else
+%      \egroup\expandafter\dododoprependtoks
+%    \fi}
+% 
+% \def\dodoprependtoks#1%
+%   {\dododoprependtoks{{#1}}}
+% 
+% \def\dododoprependtoks#1\to#2%
+%   {\scratchtoks={#1}%
+%    \edef\scratchtoken{\noexpand#2={\the\scratchtoks\the#2}}%
+%    \scratchtoken
+%    \dodoglobal#2=#2}
+
 \def\appendtoks%
-  {\bgroup
-   \let\bgroup\relax
-   \futurelet\scratchtoken\doappendtoks}
+  {\doappendtoks\relax}
 
-\def\doappendtoks%
-  {\ifx\scratchtoken\normalbgroup
-     \egroup\expandafter\dodoappendtoks
-   \else
-     \egroup\expandafter\dododoappendtoks
-   \fi}
-
-\def\dodoappendtoks#1%
-  {\dododoappendtoks{{#1}}}
-
-\def\dododoappendtoks#1\to#2%
-  {\scratchtoks={#1}%
-   \edef\scratchtoken{\noexpand#2={\the#2\the\scratchtoks}}%
+\long\def\doappendtoks#1\to#2%
+  {\@EA\scratchtoks\@EA{\gobbleoneargument#1}%
+   \long\edef\scratchtoken{\noexpand#2={\the#2\the\scratchtoks}}%
    \scratchtoken
    \dodoglobal#2=#2}
 
 \def\prependtoks%
-  {\bgroup
-   \let\bgroup\relax
-   \futurelet\scratchtoken\doprependtoks}
+  {\doprependtoks\relax}
 
-\def\doprependtoks%
-  {\ifx\scratchtoken\normalbgroup
-     \egroup\expandafter\dodoprependtoks
-   \else
-     \egroup\expandafter\dododoprependtoks
-   \fi}
-
-\def\dodoprependtoks#1%
-  {\dododoprependtoks{{#1}}}
-
-\def\dododoprependtoks#1\to#2%
+\long\def\doprependtoks#1\to#2%
   {\scratchtoks={#1}%
-   \edef\scratchtoken{\noexpand#2={\the\scratchtoks\the#2}}%
+   \long\edef\scratchtoken{\noexpand#2={\the\scratchtoks\the#2}}%
    \scratchtoken
    \dodoglobal#2=#2}
 
@@ -1745,6 +1797,12 @@
    \aftersplitstring#3\at,,\to#3\relax
    \beforesplitstring#3\at,,\to#3}
 
+\def\removefromcommalist#1#2%
+  {\doremovefromcommalist{ }{#1}{#2}%
+   \doremovefromcommalist{}{#1}{#2}%
+   \dofrontstrip#2%
+   \dodoglobal\edef#2{#2}}
+
 \def\dodofrontstrip[#1#2]#3%
   {\ifx#1\space
      \def#3{#2}%
@@ -1758,12 +1816,6 @@
    \else
      \@EA\dodofrontstrip\@EA[#1]#1%
    \fi}
-
-\def\removefromcommalist#1#2%
-  {\doremovefromcommalist{ }{#1}{#2}%
-   \doremovefromcommalist{}{#1}{#2}%
-   \dofrontstrip#2%
-   \dodoglobal\edef#2{#2}}
 
 %D \macros 
 %D   {replaceincommalist}
@@ -2318,37 +2370,82 @@
 %D global character.
 
 %D \macros
-%D   {processconcanatedlist}
+%D   {processseparatedlist}
 %D
 %D Maybe a bit late, but here is a more general version of the
 %D \type{\processcommalist} command. This time we don't handle
 %D nesting but accept arbitrary seperators.
 %D
 %D \starttypen
-%D \processconcanatedlist[list][separator]\command
+%D \processseparatedlist[list][separator]\command
 %D \stoptypen
 %D
 %D One can think of things like:
 %D
 %D \starttypen
-%D \processconcanatedlist[alfa+beta+gamma][+]\message
+%D \processseparatedlist[alfa+beta+gamma][+]\message
 %D \stoptypen
 
-\def\processconcanatedlist[#1][#2]#3%
-  {\def\doprocessconcanatedlist##1##2#2%
+%D First we show the simple alternative: 
+%D
+%D \starttypen
+%D \def\processseparatedlist[#1][#2]#3%
+%D   {\def\doprocessseparatedlist##1##2#2%
+%D      {\if]##1%
+%D         \let\next=\relax
+%D       \else\if]##2%
+%D         \let\next=\relax
+%D       \else\ifx\blankspace##2%
+%D         #3{##1}%
+%D         \let\next=\doprocessseparatedlist
+%D       \else
+%D         #3{##1##2}%
+%D         \let\next=\doprocessseparatedlist
+%D       \fi\fi\fi
+%D       \next}%
+%D    \doprocessseparatedlist#1#2]#2}
+%D \stoptypen
+%D
+%D However, we want to handle all situations, like: 
+%D 
+%D \starttypen 
+%D \processseparatedlist[{aap noot}]  [ ]{\def\xxx} \show\xxx
+%D \processseparatedlist[{aap} {noot}][ ]{\def\xxx} \show\xxx
+%D \processseparatedlist[aap {noot}]  [ ]{\def\xxx} \show\xxx
+%D \processseparatedlist[aap noot]    [ ]{\def\xxx} \show\xxx
+%D \stoptypen
+%D
+%D Therefore we smuggle a \type {\relax} in front of the 
+%D argument, which we remove afterwards. 
+
+\def\doprocessseparatedlist#1]#2[#3]#4%
+  {\def\dodoprocessseparatedlist##1##2#3%
      {\if]##1%
-        \let\next=\relax
+        \let\dodoprocessseparatedlist\relax
       \else\if]##2%
-        \let\next=\relax
+        \let\dodoprocessseparatedlist\relax
       \else\ifx\blankspace##2%
-        #3{##1}%
-        \let\next=\doprocessconcanatedlist
+        #4{##1}%
       \else
-        #3{##1##2}%
-        \let\next=\doprocessconcanatedlist
+        #4{##1##2}%
       \fi\fi\fi
-      \next}%
-   \doprocessconcanatedlist#1#2]#2}
+      \dodoprocessseparatedlist}%
+   \@EA\dodoprocessseparatedlist\gobbleoneargument#1#3]#3}
+
+\def\processseparatedlist[%
+  {\doprocessseparatedlist\relax}
+
+% %D \macros 
+% %D   {dohonorgroupedargument}
+% %D
+% %D The previous macro uses yet another auxiliary macro to 
+% %D handle the special case. 
+% 
+% \def\dohonorgroupedargument#1[%
+%   {\doifnextcharelse\bgroup{\dodohonorgroupedargument#1}{#1[}}
+% 
+% \def\dodohonorgroupedargument#1#2%
+%   {#1[{{#2}}}
 
 %D \macros
 %D   {processassignlist}
@@ -2948,6 +3045,20 @@
 \def\@False   {01}
 \def\@Not   #1{0\ifcase#11 \or\@EA 1\else \@EA 0\fi}
 \def\@And #1#2{0\ifcase#1#2 \@EA 0\else \@EA 1\fi}
+
+%D \macros
+%D   {setdimensionwithunit}
+%D
+%D The next assignments are all valid: 
+%D
+%D \starttypen 
+%D \setdimensionwithunit\scratchdimen{10}  {cm}
+%D \setdimensionwithunit\scratchdimen{10cm}{cm}
+%D \setdimensionwithunit\scratchdimen{10cm}{}
+%D \stoptypen 
+
+\def\setdimensionwithunit#1#2#3% number unit dimension / nice trick 
+  {\afterassignment\gobblefourarguments#1=#2#3pt\relax\relax\relax\relax\relax}
 
 \protect
 

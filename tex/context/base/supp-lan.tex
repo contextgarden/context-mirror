@@ -40,18 +40,18 @@
 %D combining words, we often favor putting dashes between those
 %D words, because it facilitates reading, at least for those
 %D who are not that accustomed to it.
-%D
+%D 
 %D In \TEX\ compound words, separated by a hyphen, are not
 %D hyphenated at all. In spite of the multiple pass paragraph
 %D typesetting this can lead to parts of words sticking into
-%D the margin. The solution lays in saying
-%D \type{spoelwater||terugwinunit} instead of
-%D \type{spoelwater-terugwinunit}. By using a one character
-%D command like \type{|}, delimited by the same character
-%D \type{|}, we get ourselves both a decent visualization (in
-%D \TEXEDIT\ and colored verbatim we color these commands
-%D yellow) and an efficient way of combining words.
-%D
+%D the margin. The solution lays in saying \type
+%D {spoelwater||terugwinunit} instead of \type
+%D {spoelwater-terugwinunit}. By using a one character command
+%D like \type {|}, delimited by the same character \type {|},
+%D we get ourselves both a decent visualization (in \TEXEDIT\
+%D and colored verbatim we color these commands yellow) and an
+%D efficient way of combining words. 
+%D 
 %D The sequence \type{||} simply leads to two words connected by
 %D a hyphen. Because we want to distinguish such a hyphen from
 %D the one inserted when \TEX\ hyphenates a word, we use a bit
@@ -113,7 +113,7 @@
 %D \test {well|_|known}
 %D \stoptest
 %D 
-%D to strees the compoundness of hyphenated words. 
+%D to stress the compoundness of hyphenated words. 
 %D
 %D Of course we also have to take care of the special case: 
 %D
@@ -377,7 +377,8 @@
    \scratchcounter=\the\uccode`~
    \uccode`~=`#1\relax
    \uppercase{\def\next{~}}%
-   \expandafter\unexpanded\expandafter\def\next{#2}%
+  %\expandafter\unexpanded\expandafter\def\next{#2}% 
+   \expandafter\def\next{#2}% unexpanded goes wrong in pdfdoc 
    \uccode`~=\scratchcounter}
 
 %D The next alternative also supports character numbers: 
@@ -388,7 +389,8 @@
      {\catcode #1=\@@active \uccode`~= #1\relax}
      {\catcode`#1=\@@active \uccode`~=`#1\relax}%
    \uppercase{\def\next{~}}%
-   \expandafter\unexpanded\expandafter\def\next{#2}%
+  %\expandafter\unexpanded\expandafter\def\next{#2}% 
+   \expandafter\def\next{#2}% unexpanded goes wrong in pdfdoc 
    \uccode`~=\scratchcounter}
 
 %D Although adapting character codes and making characters
@@ -620,6 +622,88 @@
 %D load macropackages afterwards that make use of \type{<} in
 %D \type{\ifnum} or \type{\ifdim} statements.
 
+%D And then came the Polish users, and who can deny them? Like
+%D the German \TEX\ users demand an active \type {"}, the
+%D Polish cannot do without the \type {/}. The next alternative
+%D is a bit slower but far the most robust alternative. As a
+%D bonus it also offers \type {|^|} and even \type {|||} which
+%D both result in a breakable|^|bar.
+%D
+%D The trick we use here is to convert the argument to a
+%D string and compare this string to string'd tokens.
+
+\def\activedotextmodediscretionary#1%
+  {\bgroup
+   \let\nextnextnext\egroup
+   \def\handlecompoundcharacter##1% new, needed for polish
+     {\getvalue{\@nc@\string##1}}%  where / is active
+   \def\next##1#1%
+     {\def\next{\activedododotextmodediscretionary#1{##1}}%
+      \futurelet\nextnext\next}%
+   \next}
+
+\def\activedododotextmodediscretionary#1#2%
+  {\convertargument#2\to\discretionarytoken
+   \def\textmodediscretionary{\getvalue{textmodediscretionary\string#1}}%
+   \ifx#1\nextnext % takec care of ||| and +++ and ......
+     \prewordbreak\discretionary{\hbox{$#1$}}{}{\hbox{$#1$}}%
+       \allowbreak\postwordbreak
+     \def\nextnextnext{\afterassignment\egroup\let\next=}%
+   \else\ifx\discretionarytoken\empty
+     \checkafterdiscretionary
+     \bgroup
+       \checkbeforediscretionary
+       \prewordbreak\hbox{\textmodediscretionary\nextnext}\allowbreak\postwordbreak
+     \egroup
+   \else\convertargument=\to\next\ifx\next\discretionarytoken
+     \prewordbreak\textmodediscretionary
+   \else\convertargument~\to\next\ifx\next\discretionarytoken
+     \prewordbreak\discretionary{-}{}{\thinspace}\postwordbreak
+   \else\convertargument_\to\next\ifx\next\discretionarytoken
+     \prewordbreak\discretionary{\textmodediscretionary}
+       {\textmodediscretionary}{\textmodediscretionary}\prewordbreak
+   \else\convertargument(\to\next\ifx\next\discretionarytoken
+     \ifdim\lastskip>\!!zeropoint\relax
+       (\prewordbreak
+     \else
+       \prewordbreak\discretionary{}{(-}{(}\prewordbreak
+     \fi
+   \else\convertargument)\to\next\ifx\next\discretionarytoken
+     \ifx\nextnext\blankspace
+       \prewordbreak)\relax
+     \else\ifx\nextnext\space
+       \prewordbreak)\relax
+     \else
+       \prewordbreak\discretionary{-)}{}{)}\prewordbreak
+     \fi\fi
+   \else\convertargument'\to\next\ifx\next\discretionarytoken
+     \prewordbreak\discretionary{-}{}{'}\postwordbreak
+   \else\convertargument<\to\next\ifx\next\discretionarytoken
+     \beginofsubsentence\prewordbreak\beginofsubsentencespacing
+   \else\convertargument>\to\next\ifx\next\discretionarytoken
+     \endofsubsentencespacing\prewordbreak\endofsubsentence
+   \else\convertargument^\to\next\ifx\next\discretionarytoken
+     \prewordbreak\discretionary{\hbox{$|$}}{}{\hbox{$|$}}%
+       \allowbreak\postwordbreak
+   \else
+     \checkafterdiscretionary
+     \bgroup
+       \checkbeforediscretionary
+       \prewordbreak
+       \discretionary{\hbox{#2}}{}{\hbox{#2}}%
+       \allowbreak\postwordbreak
+     \egroup
+   \fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi
+   \nextnextnext}
+
+%D Since we don't have to bother about active characters any
+%D longer, we end up with a pretty simple activating macro:
+
+\def\enableactivediscretionaries%
+  {\let\dotextmodediscretionary=\activedotextmodediscretionary}
+
+%D Done somewhere else: \type {\enableactivediscretionaries}. 
+
 %D \macros
 %D   {installcompoundcharacter}
 %D
@@ -697,10 +781,9 @@
        %\let\next\relax                               % forget "{ee} -> ee
         \def\next{\handlecompoundcharacterone#1}%     % ignore "{ee} -> "ee
       \else\ifx\next\egroup
-        \let\next\relax
+        \def\next{\getvalue{\@nc@\string#1}}%
       \else\ifx\next\blankspace
-       %\let\next\relax
-        \def\next{\getvalue{\@nc@\string#1}}% better 
+        \def\next{\getvalue{\@nc@\string#1}}%
       \else
         \def\next{\dodohandlecompoundcharacter#1}%
       \fi\fi\fi

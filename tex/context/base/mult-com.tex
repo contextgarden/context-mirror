@@ -8,8 +8,8 @@
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
-%C therefore copyrighted by \PRAGMA. See licen-en.pdf for 
-%C details. 
+%C therefore copyrighted by \PRAGMA. See licen-en.pdf for
+%C details.
 
 %D In this module we define the commands. A more than quick
 %D glance at this list leans that it's incomplete. This is due
@@ -20,8 +20,8 @@
 %D the words left of the \type{:} are in dutch. In the near
 %D future english will be the core language.}
 %D
-%D The German translations were provided by Tobias Burnus, 
-%D and the Czech ones by Tom Hudec. 
+%D The German translations were provided by Tobias Burnus,
+%D and the Czech ones by Tom Hudec.
 
 \writestatus{loading}{Context Multilingual Macros / Commands}
 
@@ -82,7 +82,7 @@
                    stopcoding:  stopcodering                 stopcoding
                                 stopkodierung                stopkodovani
     definebodyfontenvironment:  definieerkorpsomgeving       definebodyfontenvironment
-                                definierefliesstextumgebung  definujzakladnifont
+                                definierefliesstextumgebung  definebodyfontenvironment % TOM, was duplicate
      setupbodyfontenvironment:  stelkorpsomgevingin          setupbodyfontenvironment
                                 stellefliesstextumgebungein  nastavprostredizakladnihofont
                definebodyfont:  definieerkorps               definebodyfont
@@ -95,6 +95,8 @@
                                 definierestil                definujstyl
               definefontstyle:  definieerfontstijl           definefontstyle
                                 definiereschriftstil         definujstylfontu
+                   setupstrut:  stelstrutin                  setupstrut
+                                setupstrut                   setupstrut
 
                     setuptype:  steltypein                   setuptype
                                 stelletipein                 nastavtype
@@ -187,7 +189,7 @@
                 convertnumber:  converteernummer             convertnumber
                                 konvertierezahl              konvertujcislo
 
-                setupcapitals:  stelkapitalenin              setupcapitals 
+                setupcapitals:  stelkapitalenin              setupcapitals
                                 stelleversalienein           nastavverzalky
 
                           kap:  kap                          kap
@@ -232,7 +234,7 @@
                  showbodyfont:  toonkorps                    showbodyfont
                                 zeigefliesstext              ukazzakladnifont
       showbodyfontenvironment:  toonkorpsomgeving            showbodyfontenvironment
-                                zeigefliesstextumgebung      ukazpostredizakladnihofont
+                                zeigefliesstextumgebung       ukazpostredizakladnihofontu
 
                      headtext:  koptekst                     headtext
                                 ueberschrifttext             texthlavicky
@@ -269,7 +271,9 @@
                      inframed:  inlijnd                      inframed
                                 imumriss                     zaramovani
                       mframed:  wilijnd                      maframed
-                                maframed                     mazaramovani
+                                maumrise                     maoramovani
+                    inmframed:  inwilijnd                    inmaframed
+                                immaumrise                   mazaramovani
 
                   setupframed:  stelomlijndin                setupframed
                                 stelleumrahmtein             nastavoramovani
@@ -306,7 +310,6 @@
 
                 defineoverlay:  definieeroverlay             defineoverlay
                                 definiereoverlay             definujprekryv
-
                    background:  achtergrond                  background
                                 hintergrund                  pozadi
               startbackground:  startachtergrond             startbackground
@@ -351,9 +354,6 @@
                                 marginaltitel                marginalninadpis
                    margewoord:  margewoord                   marginword
                                 marginalwort                 marginalnislovo
-
-                  % dit wordt:
-
                    margetekst:  margetekst                   margintext
                                 marginaltext                 marginalnitext
 
@@ -396,7 +396,7 @@
                                 korrigierezwischenraum       korekcebilehomista
                   fixedspaces:  vastespaties                 fixedspaces
                                 festesspatium                tvrdemezery
-                   fixedspace:  vastespatie                  fixedspace 
+                   fixedspace:  vastespatie                  fixedspace
                                 festesspatium                tvrdamezera
                       nospace:  geenspatie                   nospace
                                 keinspatium                  zadnamezera
@@ -439,12 +439,14 @@
                                 startzeilen                  startradky
                    stopregels:  stopregels                   stoplines
                                 stopzeilen                   stopradky
+      stelparagraafnummerenin:  stelparagraafnummerenin      setupparagraphnumbering
+                                stelleabsatznummerierungein  nastavcislovaniodstavcu
           stelregelnummerenin:  stelregelnummerenin          setuplinenumbering
-                                stellezeilennummerierungein  nastavcislovaniradku
+                                stellezeilennumerierungein   nastavcislovaniradku
            startregelnummeren:  startregelnummeren           startlinenumbering
-                                startzeilennummerierung      startcislovaniradku
+                                startzeilennumerierung       startcislovaniradku
             stopregelnummeren:  stopregelnummeren            stoplinenumbering
-                                stopzeilennummerierung       stopcislovaniradku
+                                stopzeilennumerierung        stopcislovaniradku
                    startregel:  startregel                   startline
                                 startzeile                   startradek
                     stopregel:  stopregel                    stopline
@@ -654,7 +656,6 @@
              stelarrangerenin:  stelarrangerenin             setuparranging
                                 stelleanordnenein            nastavusporadani
 
-
                        versie:  versie                       version
                                 version                      verze
 
@@ -672,8 +673,8 @@
                                 stelleinteraktionsmenueein   nastavinterakcnimenu
       definieerinteractiemenu:  definieerinteractiemenu      defineinteractionmenu
                                 definiereinteraktionsmenue   definujinterakcnimenu
-%          startinteractiemenu:  startinteractiemenu          startinteractionmenu
-%                                startinteraktionsmenue       startinterakcnimenu
+%         startinteractiemenu:  startinteractiemenu          startinteractionmenu
+%                               startinteraktionsmenue       startinterakcnimenu
        blokkeerinteractiemenu:  blokkeerinteractiemenu       disableinteractionmenu
                                 inaktiviereinteraktionsmenue zablokujinterakcnimenu
             interactiebuttons:  interactiebuttons            interactionbuttons
@@ -771,7 +772,7 @@
 
          bepaallijstkenmerken:  bepaallijstkenmerken         determinelistcharacteristics
                                 bestimmelistencharakeristika stanovcharakteristickuseznamu
-                  lijstlengte:  lijstlengte                  listlength 
+                  lijstlengte:  lijstlengte                  listlength
                                 listenlaenge                 delkaseznamu
                  lijstbreedte:  lijstbreedte                 listwidth
                                 listenbreite                 sirkaseznamu
@@ -781,7 +782,7 @@
                     geenlijst:  geenlijst                    nolist
                                 keineliste                   zadnyseznam
 
-% zal vervallen 
+% zal vervallen
 
      definieerreferentielijst:  definieerreferentielijst     definereferencelist
                                 definierereferenzliste       definujseznamodkazu
@@ -947,7 +948,7 @@
 %                      marking:  markeer                      marking
 %                                beschriftung                 oznacujici
                        remark:  toelichting                  remark
-                                bemerkung                    poznamka
+                                bemerkung                    remark % other word than poznamka/note, a commenting note
                      colorbar:  kleurenbalk                  colorbar
                                 farbbalken                   barevnalista
 
@@ -978,18 +979,20 @@
                                 referenz                     odkaz
               definereference:  definieerreferentie          definereference
                                 definierereferenz            definujodkaz
+        definereferenceformat:  definieerreferentieformaat   definereferenceformat
+                                definierereferenzformat      definujformatodkazu
 
                  useJSscripts:  gebruikJSscripts             useJSscripts
                                 verwendeJSscript             uzijJSscripts
 
                           uit:  uit                          from
-                                von                          z
+                                von                          from  % z
                            in:  in                           in
-                                in                           v
+                                in                           in    % v
                            op:  op                           at
-                                bei                          v
+                                bei                          at    % v
                          over:  over                         about
-                                euber                        o
+                                ueber                        about % o
                          naar:  naar                         goto
                                 zu                           jdina
                        atpage:  oppagina                     atpage
@@ -997,23 +1000,28 @@
                     somewhere:  ergens                       somewhere
                                 irgendwo                     nekde
                           ref:  ref                          ref
-                                ref                          odkaz
+                                ref                          odk % short
                       naarbox:  naarbox                      gotobox
                                 zurbox                       jdinabox
                    naarpagina:  naarpagina                   gotopage
                                 zurseite                     jdinastranu
-%                                zurseite % - old but forgotten
 
-%                 startformule:  startformule                 startformula
-%                                startformel                  startrovnice
-%                  stopformule:  stopformule                  stopformula
-%                                stopformel                   stoprovnice
+%                startformule:  startformule                 startformula
+%                               startformel                  startrovnice
+%                 stopformule:  stopformule                  stopformula
+%                               stopformel                   stoprovnice
                 plaatsformule:  plaatsformule                placeformula
                                 platziereformel              umistirovnici
              plaatssubformule:  plaatssubformule             placesubformula
                                 platziereunterformel         umistipodrovnici
                stelformulesin:  stelformulesin               setupformulae
                                 stelleformelnein             nastavrovnice
+                formulenummer:  formulenummer                formulanumber
+                                formelnummer                 cislorovnice
+
+             subformulenummer:  subformulenummer             subformulanumber
+                                unterformelnummer            cislopodrovnice
+
 %                startgegeven:  startgegeven                 startfact
 %                               startgegeben                 startfakt
 %                 stopgegeven:  stopgegeven                  stopfact
@@ -1022,9 +1030,9 @@
 %                               startlegende                 startlegenda
 %                 stoplegenda:  stoplegenda                  stoplegend
 %                               stoplegende                  stoplegenda
-                           leg: leg                          leg 
+                           leg: leg                          leg
                                 leg                          leg
-                           geg: geg                          fact 
+                           geg: geg                          fact
                                 geg                          fakt
 
                   mathematics:  wiskunde                     mathematics
@@ -1124,6 +1132,9 @@
                    stopopmaak:  stopopmaak                   stopmakeup
                                 stopumbruch                  stopuprava
 
+        useexternalsoundtrack:  gebruikexterngeluidsfragment useexternalsoundtrack
+                                verwendeexternestonstueck    uzijexternizvuk
+
            gebruikexternefile:  gebruikexternefile           useexternalfile
                                 verwendeexternedatei         uzijexternisoubor
           gebruikexternefiles:  gebruikexternefiles          useexternalfiles
@@ -1134,11 +1145,11 @@
                  kenmerkdatum:  kenmerkdatum                 referraldate
                                 verweisdatum                 odkaznadatum
 
-                         hoog:  hoog                         high
+                         high:  hoog                         high
                                 hoch                         vysoky
-                         laho:  laho                         lohi
+                         lohi:  laho                         lohi
                                 hoti                         nivy
-                         laag:  laag                         low
+                          low:  laag                         low
                                 tief                         nizky
 
 %              startuitstellen:  startuitstellen              startpostponing
@@ -1212,8 +1223,8 @@
 
                   setupsystem:  stelsysteemin                setupsystem
                                 stellesystemein              nastavsystem
-                      usepath:  gebruikgebied                usepath 
-                                benutzepfad                  uzijcestu
+                      usepath:  gebruikgebied                usedirectory
+                                benutzeverzeichnis           uzijcestu % TOBIAS
 
              definieeralineas:  definieeralineas             defineparagraphs
                                 definiereabsaetze            definujodstavce
@@ -1253,26 +1264,60 @@
                       tooltip:  suggestie                    tooltip
                                 tooltip                      bublinkovanapoveda
                   fillinfield:  invulveld                    fillinfield
-                                ausfuellfeld                 vyplnovepole % or vyplnenepole ?
+                                ausfuellfeld                 vyplnovepole
              definefieldstack:  definieerveldstapel          definefieldstack
                                 definierefeldstapel          definujzasobnikpoli
                    fieldstack:  veldstapel                   fieldstack
                                 feldstapel                   zasobnikpoli
 
-                setupclipping:  stelclipin                   setupclipping 
-                                stelleausschnittein          setupclipping  % TOM
-                         clip:  clip                         clip 
-                                ausschnitt                   clip % TOM
+                setupclipping:  stelclipin                   setupclipping
+                                stelleausschnittein          nastavorez
+                         clip:  clip                         clip
+                                ausschnitt                   orez
 
-                  placelegend:  plaatslegenda                placelegend 
-                                platzierelegende             placelegend % TOM
+                  placelegend:  plaatslegenda                placelegend
+                                platzierelegende             umistilegendu
                   setuplegend:  stellegendain                setuplegend
-                                stellelegendeein             setuplegend % TOM
- 
-             setuppagecomment:  stelpaginacommentaarin       setuppagecomment  
-                                setuppagecomment             setuppagecomment % TOBIAS % TOM 
+                                stellelegendeein             nastavlegendu
+
+             setuppagecomment:  stelpaginacommentaarin       setuppagecomment
+                                stelleseitenkommentarein     nastavkomentarstrany
+
+                   setupstrut:  stelstrutin                  setupstrut
+                                setupstrut                   setupstrut
+
+                   definerule:  definieerlijn                definerule
+                                definerule                   definerule
+                    placerule:  plaatslijn                   placerule
+                                placerule                    placerule
+                    setuprule:  stellijnin                   setuprule
+                                setuprule                    setuprule
+
+           definetextvariable:  definieertekstvariabele      definetextvariable
+                                definetextvariable           definetextvariable
+            setuptextvariable:  steltekstvariabelein         setuptextvariable
+                                setuptextvariable            setuptextvariable
+              settextvariable:  kentekstvariabeletoe         settextvariable
+                                settextvariable              settextvariable
+            placetextvariable:  plaatstekstvariabele         placetextvariable
+                                placetextvariable            placetextvariable
+                 textvariable:  tekstvariabele               textvariable
+                                textvariable                 textvariable
+
+           definetextposition:  definieertekstpositie        definetextposition
+                                definetextposition           definetextposition
+            setuptextposition:  steltekstpositiein           setuptextposition  
+                                setuptextposition            setuptextposition  
+                 positiontext:  positioneertekst             positiontext
+                                positiontext                 positiontext 
+                definerawfont:  definerawfont                definerawfont
+                                definerawfont                definerawfont
+              switchtorawfont:  switchtorawfont              switchtorawfont
+                                switchtorawfont              switchtorawfont
 
 \stopcommands
+
+% ^ ^ ^ nadenken over \settextvariable vs \setuptextvariable in nl
 
 %D \stopcompressdefinitions
 

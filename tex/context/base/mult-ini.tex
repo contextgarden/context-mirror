@@ -436,7 +436,7 @@
    \fi}
 
 %D \macros
-%D   {dosetvalue,dosetevalue,docopyvalue,doresetvalue} % dogetvalue
+%D   {dosetvalue,dosetevalue,dosetgvalue,docopyvalue,doresetvalue} % dogetvalue
 %D
 %D We already defined these auxiliary macros in the system
 %D modules. Starting with this module however, we have to take
@@ -547,6 +547,16 @@
      \@EA\edef\csname#1\csname\k!prefix!#2\endcsname\endcsname{#3}%
    \fi}
 
+\def\dosetgvalue#1#2#3%  
+  {\let\c!internal!\c!internal!n
+   \@EA\ifx\csname\k!prefix!#2\endcsname\relax
+     \let\c!internal!\c!internal!y
+     \@EA\gdef\csname#1#2\endcsname{#3}%
+   \else
+     \let\c!internal!\c!internal!y
+     \@EA\gdef\csname#1\csname\k!prefix!#2\endcsname\endcsname{#3}%
+   \fi}
+
 \def\docopyvalue#1#2#3% 
   {\let\c!internal!\c!internal!n
    \@EA\ifx\csname\k!prefix!#3\endcsname\relax
@@ -583,6 +593,16 @@
    \else
      \let\c!internal!\c!internal!y
      \@EA\edef\csname#1#2\endcsname{#3}%
+   \fi}
+
+\def\dosetgvalue#1#2#3%  
+  {\let\c!internal!\c!internal!n
+   \ifcsname\k!prefix!#2\endcsname
+     \let\c!internal!\c!internal!y
+     \@EA\gdef\csname#1\csname\k!prefix!#2\endcsname\endcsname{#3}%
+   \else
+     \let\c!internal!\c!internal!y
+     \@EA\gdef\csname#1#2\endcsname{#3}%
    \fi}
 
 \def\docopyvalue#1#2#3%  
@@ -1125,7 +1145,6 @@
 
 %D \macros
 %D   {startelements}
-%D   {}
 %D
 %D Due to the object oriented nature of \CONTEXT, we also need
 %D to define the elements that are used to build commands:

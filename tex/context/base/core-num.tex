@@ -1,0 +1,133 @@
+%D \module
+%D   [       file=core-num,
+%D        version=1997.03.31,
+%D          title=\CONTEXT\ Core Macros,
+%D       subtitle=Numbering,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for 
+%C details. 
+
+\writestatus{loading}{Context Core Macros / Numbering}
+
+\unprotect
+
+%  Commando's ten behoeve van nummeren:
+%
+%    \definieernummer[naam]
+%    \stelnummerin[naam][wijze=,blok=,tekst=,plaats=,conversie=,start=]
+%    \setnummer[naam]{waarde}
+%    \resetnummer[naam]
+%    \verhoognummer[naam]
+%    \verlaagnummer[naam]
+%    \volgendenummer[naam][tag][referentie]
+%    \nummer[naam]
+%    \huidigenummer[naam]
+%    \savenumber[naam]
+%    \restorenumber[naam]
+
+\newif\ifnummeren
+
+\def\dostelnummerin[#1][#2]%
+  {\@EA\let\@EA\savedstartnumber\csname\s!number#1\c!start\endcsname
+   \getparameters[\s!number#1][\c!start=,#2]%
+   \doifelsevaluenothing{\s!number#1\c!start}
+     {\letvalue{\s!number#1\c!start}=\savedstartnumber}
+     {\setcounter{\s!number#1}{\getvalue{\s!number#1\c!start}}}}
+
+\def\stelnummerin%
+  {\dodoubleargument\dostelnummerin}
+
+\def\dodefinieernummer[#1][#2]% ook overal class als localframed
+  {\getparameters
+     [\s!number#1]
+     [\s!check=,
+      \c!wijze=\@@nrwijze,
+      \c!wijze\c!lokaal=\getvalue{\s!number#1\c!wijze},
+      \c!sectienummer=\v!ja,
+      \c!tekst=,
+      \c!plaats=, % was: \c!zetwijze
+      \c!conversie=\v!cijfers,
+      \c!start=0,
+      #2]%
+    \makecounter{\s!number#1}%
+    \setcounter{\s!number#1}{\getvalue{\s!number#1\c!start}}}
+
+% \c!nummer=#1 ; nogal veel copieen nodig
+%
+% \def\@@thenumber#1{\s!number\getvalue{\s!number#1\c!nummer}}
+
+\def\definieernummer%
+  {\dodoubleempty\dodefinieernummer}
+
+\def\setnummer[#1]#2%
+  {\setcounter{\s!number#1}{#2}}
+
+\def\resetnummer[#1]%
+  {\setcounter{\s!number#1}{0\getvalue{\s!number#1\c!start}}}
+
+\def\dodoreset#1%
+  {\getvalue{\s!reset#1}}%
+
+\def\doreset[#1]%
+  {\processcommalist[#1]\dodoreset}
+
+\def\reset%
+  {\dosingleargument\doreset}
+
+\def\verhoognummer[#1]%
+  {\checknummer{#1}%
+   \ifnummeren
+   \else
+     \resetcounter{\s!number#1}%
+   \fi
+   \pluscounter{\s!number#1}}
+
+\def\savenumber[#1]%
+  {\savecounter{\s!number#1}}
+
+\def\restorenumber[#1]%
+  {\restorecounter{\s!number#1}}
+
+% nieuw, maar kan dit (i.v.m. (sub)page?)
+
+\def\verhoognummer[#1]%
+  {\checknummer{#1}%
+   \ifnummeren
+     \pluscounter{\s!number#1}%
+   \else
+     \setcounter{\s!number#1}{0\getvalue{\s!number#1\c!start}}%
+   \fi}
+
+\def\verlaagnummer[#1]%
+  {\minuscounter{\s!number#1}}
+
+\def\nummer[#1]%
+  {\convertnumber
+     {\getvalue{\s!number#1\c!conversie}}
+     {\countervalue{\s!number#1}}}
+
+\def\ruwenummer[#1]%
+  {\countervalue{\s!number#1}}
+
+% ook de pag nummers hierheen halen ivm \@@nrwijze 
+
+\def\dostelnummerenin[#1]%                 globaal
+  {\getparameters[\??nr][#1]%
+   \doifelse{\@@nrstatus}{\v!start}
+     {\global\nummerentrue}
+     {\global\nummerenfalse}}%
+
+\def\stelnummerenin%
+  {\dosingleargument\dostelnummerenin}
+
+\stelnummerenin
+  [\c!wijze=\v!per\v!hoofdstuk,
+   \c!blokwijze=,
+   \c!sectienummer=\v!ja,
+   \c!status=\v!start]
+
+\protect \endinput 

@@ -139,6 +139,8 @@
 %D
 %D \interface \type{\nofcolumns} \\
 %D   the number of columns \\
+%D \interface \type{\minbalancetoplines}
+%D   the minimum number op balanced top lines 
 %D \interface \type{\betweencolumns} \\
 %D   the stuff between columns \\
 %D \interface \type{\finaloutput{action}{box}} \\
@@ -246,10 +248,11 @@
 %D are applied to columns. The final values are used when
 %D flushing the columns.
 
-\newcount\nofcolumns        \nofcolumns=2
+\newcount\nofcolumns       \nofcolumns=2
 
-\def\maxnofcolumns          {16}
-\def\allocatednofcolumns    {0}
+\def\maxnofcolumns        {16}
+\def\allocatednofcolumns  {0}
+\def\minbalancetoplines   {1}
 
 \newif\ifbalancecolumns    \balancecolumnsfalse
 \newif\ifstretchcolumns    \stretchcolumnsfalse
@@ -267,6 +270,11 @@
 \newdimen\savedpagetotal
 
 \newtoks\singlecolumnout
+
+%D The next dimension reports the final column height 
+
+\newdimen\finalcolumnheights 
+\newcount\finalcolumnlines
 
 %D During initialization the temporary boxes are allocated.
 %D This enables us to use as much columns as we want, without
@@ -414,7 +422,7 @@
 %D The local column width is available in the dimension
 %D register \type{\localcolumnwidth}, which is calculated as:
 
-\def\setcolumnhsize%
+\def\setcolumnhsize% beware, this one is available for use in macros 
   {\setbox0=\hbox
      {\parindent\!!zeropoint\betweencolumns}%
    \intercolumnwidth=\wd0
@@ -648,70 +656,6 @@
         \edef\maxcolumndepth{\the\dp\currentcolumnbox}%
       \fi}}
 
-% \def\flushcolumnedpage%
-%   {\bgroup
-%    \forgetall
-%    \setmulticolumnsout
-%    \showcomposition
-%    \setmaxcolumndimensions
-%    \postprocesscolumns
-%    \dohandleallcolumns % \hbox i.v.m. \showcomposition
-%      {\global\setbox\currentcolumnbox=\hbox to \localcolumnwidth
-%         {\box\currentcolumnbox
-%          \global\wd\currentcolumnbox=\localcolumnwidth
-%          \ifheightencolumns
-%            \global\ht\currentcolumnbox=\fixedcolumnheight
-%          \fi}}%
-%    \setmaxcolumndimensions
-%    \overlaycolumnfootnotes
-%    \setbox0=\vbox
-%      {\hbox to \finalcolumntextwidth
-%         {\dohandleallcolumns
-%            {\finishcolumnbox{\hbox
-%               {\ifx\finishcolumnbox\relax\else\strut\fi
-%                \box\currentcolumnbox}}%
-%             \ifnum\currentcolumn<\nofcolumns
-%               \hfil
-%             \fi}}}%
-%    \scratchdimen=\!!zeropoint
-%    \dohandleallcolumns
-%      {\ifdim-\ht\currenttopcolumnbox<\scratchdimen
-%         \scratchdimen=-\ht\currenttopcolumnbox
-%       \fi
-%       \global\setbox\currenttopcolumnbox=\box\voidb@x}%
-%    \advance\scratchdimen by \ht0
-%    \setbox2=\hbox to \columntextwidth
-%      {\vrule\!!width\!!zeropoint\!!height\scratchdimen\!!depth\dp0
-%       \dostepwiserecurse{2}{\nofcolumns}{1}{\hfil\betweencolumns}\hfil}%
-%    \setbox0=\hbox
-%      {\box0\hskip-\columntextwidth\color[black]{\box2}}%
-%    \ifvoid\partialpage \else
-%      \ifgridsnapping % do you believe this junk?
-%        \scratchdimen=\savedpagetotal
-%        \advance\scratchdimen by -\ht\partialpage
-%        \advance\scratchdimen by -\dp\partialpage
-%        \advance\scratchdimen by -\topskip
-%        \box\partialpage
-%        \kern\scratchdimen
-%      \else
-%        \unvbox\partialpage
-%      \fi
-%    \fi
-%    \global\partialpageheight=\!!zeropoint
-%    \setvsize
-%    \dosomebreak\nobreak
-%    \ifgridsnapping \else
-%      \dimen0=\topskip
-%      \advance\dimen0 by -\openstrutheight
-%      \nointerlineskip
-%      \vskip-\dimen0
-%    \fi
-%    \prevdepth\openstrutdepth
-%    \nointerlineskip
-%    \dp0=\!!zeropoint
-%    \box0
-%    \egroup}
-
 \def\flushcolumnedpage%
   {\bgroup
    \forgetall
@@ -776,6 +720,9 @@
    \prevdepth\openstrutdepth
    \nointerlineskip
    \dp0=\!!zeropoint
+   \global\finalcolumnheights=\ht0
+   \getnoflines\finalcolumnheights
+   \global\finalcolumnlines=\noflines
    \box0
    \egroup}
 
@@ -959,17 +906,6 @@
 \def\splitfirstcolumn from \box#1to \dimen#2%
   {\splitcolumn\firstcolumnbox from \box#1 to \dimen#2 top \box\firsttopcolumnbox}
 
-% \def\splitlastcolumn from \box#1to \dimen#2%
-%   {\global\setbox\lastcolumnbox=\vbox
-%      {\unvcopy\lasttopcolumnbox
-%       \unvbox#1}}
-
-% \def\splitlastcolumn from \box#1to \dimen#2%
-%   {\global\setbox\lastcolumnbox=\vbox
-%      {\unvcopy\lasttopcolumnbox
-%       \unvbox#1
-%       \fakecolumnfootnotes\lastcolumnbox}}
-
 \def\splitlastcolumn from \box#1to \dimen#2%
   {\global\setbox\lastcolumnbox=\vbox
      {\unvcopy\lasttopcolumnbox
@@ -1028,7 +964,7 @@
 %D mode was entered, or floats that migrate to next columns.
 %D Flushing floats is a delicate process.
 
-\def\continuousmulticolumnsout%
+\def\continuousmulticolumnsout% 
   {\bgroup
    \forgetall
    \setmulticolumnsout
@@ -1095,8 +1031,6 @@
    % \penalty\outputpenalty % gaat gruwelijk mis in opsommingen
    \egroup}
 
-
-
 %D And this is the balancing stuff. Again, part of the routine
 %D is dedicated to handling ragged bottoms, but here we also
 %D see some handling concerning the stretching of columns.
@@ -1105,13 +1039,36 @@
 %D \type{\box4} garantees a more robust check when skips are
 %D used.
 
-\def\balancedmulticolumnsout%
+\def\balancedmulticolumnsout% 
   {\bgroup
    \setmulticolumnsout
    \dontshowcomposition
    \widowpenalty=0
    \setbox0=\vbox{\unvbox\normalpagebox}%
-   \ifdim\ht0>\openlineheight
+\ifdim\ht0>\openlineheight % at least one line 
+  \ifnum\minbalancetoplines<2 % balance anyway 
+    \donetrue 
+  \else % check criterium to available lines  
+    \getnoflines{\ht0}%
+    \divide\noflines by \nofcolumns \relax
+    \ifnum\noflines<\minbalancetoplines \relax
+      \dimen0=\ht0 
+      \advance\dimen0 by \ht\firsttopcolumnbox
+      \advance\dimen0 by \openlineheight \relax % let's play safe
+      \ifdim\dimen0>\columntextheight % column exceeding text height 
+        \donetrue
+      \else % it seems to fit 
+        \donefalse 
+      \fi
+    \else % balance indeed
+      \donetrue
+    \fi
+  \fi
+\else % balancing does not make sense 
+  \donefalse
+\fi
+\ifdone % start balancing 
+  %\ifdim\ht0>\openlineheight
      \dimen0=\ht0
      \advance\dimen0 by \topskip
      \advance\dimen0 by -\baselineskip

@@ -542,11 +542,12 @@
    \c!tussen=]
 
 %D Gezien het brede karakter van de \MAPS\ gebruiken we andere
-%D waarden voor links geraffeld uitlijnen.
+%D waarden voor links geraffeld uitlijnen. The low level macro 
+%D used here is subjected to changes!
 
 \def\raggedleft%
   {\setraggedness\leftraggedness
-   \setraggedskips{1fill}{0em}{.3333em}{.5em}{1fil}{\parindent}}
+   \setraggedskips{1}{1fill}{0em}{.3333em}{.5em}{1fil}{\parindent}}
 
 %D Standaard gebruikt \CONTEXT\ kleur bij pretty verbatim
 %D printing. In the \MAPS\ gebruiken we echter fonts:

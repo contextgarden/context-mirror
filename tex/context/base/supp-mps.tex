@@ -70,7 +70,7 @@
 %D \macros
 %D   {startMPrun}
 %D
-%D If we just wat to run \METAPOST\ code, that is, not to
+%D If we just want to run \METAPOST\ code, that is, not to
 %D explictly generate a figure in terms of \type{beginfig} and
 %D \type{endfig}, we can use: 
 %D
@@ -195,7 +195,7 @@
 %D \MPinclusions{input mp-mine}
 %D \stoptypen
 %D
-%D The token register type {\MPinitializations} is expanded 
+%D The token register \type {\MPinitializations} is expanded 
 %D before all other inclusions. 
 
 \newtoks \MPinitializations 
@@ -346,7 +346,8 @@
 \let\stopwritingMPgraphic=\relax
 \let\flushMPgraphics     =\relax
 
-%D By default each graphic gets its own slot (number): 
+%D By default each graphic gets its own slot (number). Later 
+%D on we will define a recycle bin.   
 
 \def  \allocateMPslot#1{\global\advance#1 by 1 }
 \def\deallocateMPslot#1{}
@@ -417,8 +418,17 @@
   {\setbox\MPgraphicbox=\hbox
      {\ifinsertMPgraphics\insertMPfile{#1}{#2}\fi}}
 
+% \def\placeMPgraphic%
+%   {\box\MPgraphicbox}
+
 \def\placeMPgraphic%
-  {\box\MPgraphicbox}
+  {\ifMPshiftdrawing
+     \dimen0=\MPllx bp
+     \dimen2=\MPlly bp
+     \hbox{\hskip\dimen0\raise\dimen2\box\MPgraphicbox}%
+   \else
+     \box\MPgraphicbox
+   \fi}
 
 %D \macros
 %D   {startreusableMPgraphic, reuseMPgraphic, useMPbox}
@@ -649,7 +659,7 @@
 %D inclusion macros. A decent plain \TEX\ alternative is:
 %D 
 %D \starttypen
-%D \def\includeMPgraphics#1%
+%D \def\includeMPgraphic#1%
 %D   {\hbox\bgroup
 %D    \includeMPfonts{#1}%
 %D    \dogetEPSboundingbox{#1}{\dimen2}{\dimen4}{\dimen6}{\dimen8}%
@@ -672,7 +682,7 @@
 %D scaling. For \LATEX\ users the next one wil do: 
 %D
 %D \starttypen
-%D \def\includeMPgraphics#1#%
+%D \def\includeMPgraphic#1#%
 %D   {\hbox\bgroup
 %D    \def\includeMPgraphics##1%
 %D      {\includeMPfonts{##1}%
@@ -1074,7 +1084,7 @@
 \let\MPdrawingdata\empty
 
 \newif\ifMPdrawingdone  \MPdrawingdonefalse
-\newif\ifMPshiftdrawing \MPshiftdrawingtrue
+\newif\ifMPshiftdrawing \MPshiftdrawingfalse
 
 \def\resetMPdrawing%
   {\global\let\MPdrawingdata\empty
@@ -1087,22 +1097,28 @@
 \def\popMPdrawing%
   {\popmacro\MPdrawingdata}
 
+% \def\getMPdrawing%
+%   {\ifMPdrawingdone
+%      \bgroup
+%      \setbox0=\hbox
+%        {\expandafter\startMPgraphic\MPdrawingdata\stopMPgraphic
+%         \loadcurrentMPgraphic\empty
+%         \placeMPgraphic}%
+%      \ifMPshiftdrawing 
+%        \dimen0=\MPllx bp 
+%        \dimen2=\MPlly bp
+%        \hbox{\hskip\dimen0\raise\dimen2\box0}%
+%      \else
+%        \box0
+%      \fi
+%      \egroup
+%    \fi}
+
 \def\getMPdrawing%
   {\ifMPdrawingdone
-     \bgroup
-     \setbox0=\hbox
-       {\expandafter\startMPgraphic\MPdrawingdata\stopMPgraphic
-        \loadcurrentMPgraphic\empty
-%\deallocateMPslot\currentMPgraphic
-       \placeMPgraphic}%
-     \ifMPshiftdrawing 
-       \dimen0=\MPllx bp 
-       \dimen2=\MPlly bp
-       \hbox{\hskip\dimen0\raise\dimen2\box0}%
-     \else
-       \box0
-     \fi
-     \egroup
+     \expandafter\startMPgraphic\MPdrawingdata\stopMPgraphic
+     \loadcurrentMPgraphic\empty
+     \placeMPgraphic
    \fi}
 
 \long\def\startMPdrawing#1\stopMPdrawing%
@@ -1187,6 +1203,47 @@
    \readfile{\MPgraphicfile.\the\currentMPgraphic}{}{}/
    \egroup}
 \egroup
+
+%D \macros
+%D   {recycleMPslots}
+%D
+%D When coding and embedding many \METAPOST\ figures in a 
+%D document, one can save quite some disk space by using 
+%D \PDFTEX\ and setting the next switch: 
+
+\newif\ifrecycleMPslots \recycleMPslotsfalse
+
+\def\allocateMPslot#1%
+  {\ifrunMPgraphics
+     \ifcase\pdfoutput \recycleMPslotsfalse \fi
+   \else
+     \recycleMPslotsfalse
+   \fi
+   \ifrecycleMPslots
+     \doloop
+       {\doifundefined{\recurselevel MP}
+          {\global\letvalue{\recurselevel MP}=\empty
+           \global#1=\recurselevel\exitloop}}%
+    %\message{[MP slot + \number#1]%
+   \else
+     \global\advance#1 by 1
+   \fi}
+
+\def\deallocateMPslot#1%
+  {\ifrunMPgraphics
+     \ifcase\pdfoutput \recycleMPslotsfalse \fi
+   \else
+     \recycleMPslotsfalse
+   \fi
+   \ifrecycleMPslots
+     \global\letbeundefined{\number#1MP}%
+    %\message{[MP slot - \number#1]}%
+   \fi}
+
+%D Experimental:
+
+\def\MPdatafile%
+  {mp-\the\currentMPgraphic.tmp}
 
 \protect
 

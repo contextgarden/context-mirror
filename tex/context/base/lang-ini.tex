@@ -278,8 +278,12 @@
 %D
 %D \showsetup{\y!setuplanguage}
 
-\def\setuplanguage[#1]%
-  {\dodoubleargument\getparameters[\??la#1]}
+\def\setuplanguage%
+  {\dodoubleargument\dosetuplanguage}
+
+\def\dosetuplanguage[#1][#2]%
+  {\getparameters[\??la#1][#2]%                % we need to make sure
+   \doif{#1}{\currentlanguage}{\language[#1]}} % that settings apply
 
 %D The values \type {\c!leftsentence} and \type
 %D {\c!rightsentence} can be (and are) used to implement
@@ -385,8 +389,10 @@
 %  {\edef\currentmainlanguage{#1}} % We expand indeed!
 
 \def\mainlanguage[#1]%
-  {\@EA\let\@EA\currentmainlanguage\csname\l!prefix!#1\endcsname
-   \language[#1]}
+  {\doifsomething{#1}
+     {\doifdefined{\l!prefix!#1}
+        {\@EA\let\@EA\currentmainlanguage\csname\l!prefix!#1\endcsname
+         \language[#1]}}}
 
 %D \macros
 %D   {defaultlanguage,languagedefault}
@@ -541,13 +547,6 @@
 
 \def\rightsubguillemot%
   {\hbox{\raise.25ex\hbox{$\scriptscriptstyle>$}}}
-
-%D We enable proper substititutions by: 
-
-\redefinecharacter leftguillemot 
-\redefinecharacter rightguillemot  
-\redefinecharacter leftsubguillemot 
-\redefinecharacter rightsubguillemot  
 
 %D Just like with subsentence boundary symbols, quotes
 %D placement depends on the current language, therefore we show

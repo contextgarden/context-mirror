@@ -1,0 +1,296 @@
+%D \module
+%D   [       file=core-par,
+%D        version=1997.03.31,
+%D          title=\CONTEXT\ Core Macros,
+%D       subtitle=Paragraph Tricks,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Pararaph Tricks}
+
+\unprotect
+
+% \ifprocesspreviousparagraphs
+%
+% \nofskippedparagraphs
+% \paragraphnumber
+% \nofparagraphs
+%
+% \dosetparagraph
+% \doresetparagraph
+% \dobeforeparagraph
+% \doafterparagraph
+% \dobeforeskipparagraph
+% \doafterskipparagraph
+%
+% \pushparagraphs\endcommand       alle alineas tot \endcommand laden
+% \pushmoreparagraphs\endcommand   alle alineas tot \endcommand toevoegen
+% \popparagraphs                   alle alineas oproepen
+% \popparagraphs[a,b,c]            enkele alineas oproepen [geen]
+%
+% tzt een optionele prefix:
+%
+% \pushparagraphs[xxx]\endcommand  alle alineas tot \endcommand laden
+% \popparagraphs[xxx]              alle alineas oproepen
+% \popparagraphs[xxx][a,b,c]       enkele alineas oproepen
+%
+% \numberparagraphs
+% \numberparagraphlines
+% \resetparagraphlines
+
+\newif\ifprocesspreviousparagraphs  % public
+\newif\ifprocessallparagraphs       % private
+
+\newcounter\totalnofparagraphs       % private
+\newcounter\globalparagraphnumber    % private
+\newcounter\discardedparagraphs      % private
+\newcounter\mostrecentparagraphtotal % public
+
+\let\dosetparagraph        = \relax % public
+\let\doresetparagraph      = \relax % public
+\let\dobeforeparagraph     = \relax % public
+\let\doafterparagraph      = \relax % public
+\let\dobeforeskipparagraph = \relax % public
+\let\doafterskipparagraph  = \relax % public
+
+\def\paragraphnumber      {} % public
+\def\nofparagraphs        {} % public
+\def\nofskippedparagraphs {} % public
+
+\def\paragraphprefix {paragraph} % private
+
+% voorlopig, wordt nog class
+
+\def\resetparagraphlines%
+  {\global\linenumber=1\relax}
+
+\def\numberparagraphs% instelbaar maken en slimmer ivm breedte regelnummer !!!!!
+  {\processpreviousparagraphstrue
+   \def\dosetparagraph%
+     {\bgroup
+      \resetparagraphlines
+      \EveryPar
+        {\strut\inleftmargin{\tf{\tx\paragraphnumber}\kern2em}%
+         \ignorespaces}}
+   \def\doresetparagraph%
+     {\resetparagraphlines
+      \egroup}}
+
+\def\numberparagraphlines%
+  {\processpreviousparagraphstrue
+   \def\dosetparagraph%
+     {\resetparagraphlines}
+   \def\doresetparagraph%
+     {\resetparagraphlines}
+   \def\dobeforeparagraph%
+     {\startregelnummeren[\v!verder]}
+   \def\doafterparagraph%
+     {\stopregelnummeren}
+   \def\dobeforeskipparagraph%
+     {\stopregelnummeren
+      \let\paragraphnumber=\relax}
+   \def\doafterskipparagraph%
+     {\startregelnummeren[\v!verder]}}
+
+\def\dopushparagraphs#1%
+  {\global\let\mostrecentparagraphtotal=\totalnofparagraphs
+   \ifx#1\undefined
+     \let#1=\relax
+   \fi
+   \convertargument#1\to\asciiA
+   \convertargument{ }\to\asciiB  % lege regel
+   \def\dopushparagraph##1\par%
+     {\convertargument##1\to\asciiC
+      \doifelse{\asciiC}{\asciiA}
+        {\let\next=#1}
+        {\doifnot{\asciiC}{}      % lege paragraaf
+           {\doifnot{\asciiC}{\asciiB}
+              {\doglobal\increment\totalnofparagraphs
+               \ifnum\totalnofparagraphs>0\nofskippedparagraphs\relax
+                 \setgvalue{\paragraphprefix\totalnofparagraphs}%
+                   {##1}%
+               \else
+                 \setgvalue{\paragraphprefix\totalnofparagraphs}%
+                   {\skipparagraph##1\par}%
+               \fi}}%
+         \let\next=\dopushparagraph}
+      \next}%
+   \dopushparagraph}
+
+\def\pushparagraphs%
+  {\doglobal\newcounter\totalnofparagraphs
+   \dopushparagraphs}
+
+\def\pushmoreparagraphs%
+  {\dopushparagraphs}
+
+\def\dododopopparagraph#1% no grouping, i.v.m. sidefloats
+  {\ifnum#1>\totalnofparagraphs\relax
+   \else
+     \let\paragraphnumber=\globalparagraphnumber
+     \decrement(\paragraphnumber,\discardedparagraphs)%
+     \dobeforeparagraph
+     \ifhmode\indentation\fi\getvalue{\paragraphprefix#1}\par
+     \doafterparagraph
+   \fi}
+
+\long\def\skipparagraph#1\par%
+  {\doglobal\increment\discardedparagraphs
+   \ifprocessallparagraphs
+     \dobeforeskipparagraph
+     \ifhmode\indentation\fi#1\par
+     \doafterskipparagraph
+   \fi}
+
+\def\dodopopparagraph%
+  {\dododopopparagraph}
+
+\def\dodoprocessparagraph#1%
+  {\ifprocesspreviousparagraphs
+     \bgroup
+     \setbox0=\vbox{\dododopopparagraph{#1}}%
+     \egroup
+   \fi}
+
+\def\processpreviousparagraphs[#1]% process previous ones
+  {\ifprocesspreviousparagraphs
+     \bgroup
+     \getfromcommacommand[#1][1]% tzt snelle \..command.. testen
+     \let\totalnofparagraphs=\commalistelement
+     \decrement\totalnofparagraphs
+     \let\dodopopparagraph=\dodoprocessparagraph
+     \popparagraphs
+     \egroup
+   \fi}
+
+\def\dopopparagraphs[#1]%
+  {\doifnotinset{#1}{\v!geen,0}
+     {\dosetparagraph
+      \doglobal\newcounter\globalparagraphnumber
+      \doglobal\newcounter\discardedparagraphs
+      \doifelse{#1}{}
+        {\processallparagraphstrue}
+        {\processallparagraphsfalse}%
+      \def\dopopparagraph%
+        {\doglobal\increment\globalparagraphnumber
+         \ifnum\globalparagraphnumber>\totalnofparagraphs\relax
+           \let\dopopparagraph=\relax
+         \else\ifprocessallparagraphs
+           \ifnum\globalparagraphnumber>\mostrecentparagraphtotal\relax
+             \dodopopparagraph\globalparagraphnumber
+           \else
+             \dodoprocessparagraph\globalparagraphnumber
+           \fi
+         \else
+           \let\paragraphnumber=\globalparagraphnumber
+           \decrement(\paragraphnumber,\discardedparagraphs)%
+           \ExpandBothAfter\doifinsetelse{\paragraphnumber}{#1}
+             {\dodopopparagraph\globalparagraphnumber}
+             {\dodoprocessparagraph\globalparagraphnumber}%
+         \fi\fi
+         \dopopparagraph}%
+      \dopopparagraph
+      \doresetparagraph}}
+
+\def\popparagraphs%
+  {\dosingleempty\dopopparagraphs}
+
+\def\countparagraphs%
+  {\popparagraphs[\!!maxcard]%
+   \global\let\nofparagraphs=\totalnofparagraphs
+   \doglobal\decrement(\nofparagraphs,\discardedparagraphs)}
+
+% \toonkader
+%
+% \numberparagraphlines
+% \numberparagraphs
+%
+% \def\nofskippedparagraphs{1}
+%
+% \pushparagraphs\ThatsIt
+%
+% \ruledbaseline eerste eerste eerste eerste eerste eerste
+% eerste eerste eerste eerste eerste eerste eerste eerste
+% eerste eerste eerste eerste eerste eerste eerste eerste
+% eerste eerste eerste eerste eerste eerste eerste eerste
+% eerste eerste eerste eerste eerste eerste eerste eerste
+% eerste eerste eerste eerste eerste
+%
+% \ruledbaseline eerste eerste eerste eerste eerste eerste
+% eerste eerste eerste eerste eerste eerste eerste eerste
+% eerste eerste eerste eerste eerste eerste eerste eerste
+% eerste eerste eerste eerste eerste eerste eerste eerste
+% eerste eerste eerste eerste eerste eerste eerste eerste
+% eerste eerste eerste eerste eerste
+%
+% \ruledbaseline tweede tweede tweede tweede tweede tweede
+% tweede tweede tweede tweede tweede tweede tweede tweede
+% tweede tweede tweede tweede tweede tweede tweede tweede
+% tweede tweede tweede tweede tweede tweede tweede tweede
+% tweede tweede tweede tweede tweede tweede tweede tweede
+% tweede tweede tweede tweede tweede tweede tweede tweede
+% tweede tweede tweede tweede tweede
+%
+% \skipparagraph \ruledbaseline skipped skipped skipped
+% skipped skipped skipped skipped skipped skipped skipped
+% skipped skipped skipped skipped skipped skipped skipped
+% skipped skipped
+%
+% \ruledbaseline derde derde derde derde derde derde derde
+% derde derde derde derde derde derde derde derde derde derde
+% derde derde derde derde derde derde derde derde derde derde
+% derde derde derde derde derde derde derde derde derde derde
+% derde derde derde derde derde derde derde derde derde derde
+% derde derde derde derde derde derde derde derde derde derde
+%
+% \skipparagraph \ruledbaseline skipped skipped skipped
+% skipped skipped skipped skipped skipped skipped skipped
+% skipped skipped skipped skipped skipped skipped skipped
+% skipped skipped skipped
+%
+% \ruledbaseline vierde vierde vierde vierde vierde vierde
+% vierde vierde vierde vierde vierde vierde vierde vierde
+% vierde vierde vierde vierde vierde vierde vierde vierde
+% vierde vierde vierde vierde
+%
+% \ruledbaseline vijfde vijfde vijfde vijfde vijfde vijfde
+% vijfde vijfde vijfde vijfde vijfde vijfde vijfde vijfde
+% vijfde vijfde vijfde vijfde vijfde vijfde vijfde vijfde
+% vijfde vijfde vijfde vijfde vijfde vijfde vijfde vijfde
+% vijfde vijfde vijfde
+%
+% \skipparagraph \ruledbaseline skipped skipped skipped
+% skipped skipped skipped skipped skipped skipped skipped
+% skipped skipped skipped skipped skipped skipped skipped
+% skipped skipped skipped
+%
+% \ThatsIt
+%
+% \popparagraphs
+%
+% \countparagraphs
+%
+% \blanko[2*groot]
+%
+% nofparagraphs:~\nofparagraphs
+%
+% \pagina
+%
+% \popparagraphs[1]
+% \popparagraphs[2]
+% \popparagraphs[3]
+% \popparagraphs[4]
+% \popparagraphs[5]
+%
+% \pagina
+%
+% \ruledvbox{\popparagraphs[1,2,3,4,5]}
+%
+% \pagina
+
+\protect \endinput

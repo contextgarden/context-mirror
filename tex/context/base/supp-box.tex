@@ -8,8 +8,8 @@
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
-%C therefore copyrighted by \PRAGMA. See mreadme.pdf for 
-%C details. 
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
 
 %D This module implements some box manipulation macros. Some
 %D are quite simple, some are more advanced and when understood
@@ -63,33 +63,29 @@
 %D and smashed alternatives. The later ones reduce all
 %D dimensions to zero.
 
-\def\hsmash#1%
-  {\bgroup
-   \setbox0=\normalhbox{#1}%
-   \hsmashbox0%
-   \box0
-   \egroup}
+% Ok, but inefficient and/or catcode unsafe:
+%
+% \def\hsmash  #1{\bgroup\setbox0=\normalhbox{#1}\hsmashbox0\box0\egroup}
+% \def\vsmash  #1{\bgroup\setbox0=\normalvbox{#1}\vsmashbox0\box0\egroup}
+% \def\hsmashed#1{\bgroup\setbox0=\normalhbox{#1}\smashbox 0\box0\egroup}
+% \def\vsmashed#1{\bgroup\setbox0=\normalvbox{#1}\smashbox 0\box0\egroup}
+%
+% Better, but a waste of tokens:
+%
+% \def\hsmash  {\bgroup\dowithnextbox{\hsmashbox\nextbox\box\nextbox\egroup}\normalhbox}
+% \def\vsmash  {\bgroup\dowithnextbox{\vsmashbox\nextbox\box\nextbox\egroup}\normalvbox}
+% \def\hsmashed{\bgroup\dowithnextbox{\smashbox \nextbox\box\nextbox\egroup}\normalhbox}
+% \def\vsmashed{\bgroup\dowithnextbox{\smashbox \nextbox\box\nextbox\egroup}\normalvbox}
+%
+% The best:
 
-\def\vsmash#1%
-  {\bgroup
-   \setbox0=\normalvbox{#1}%
-   \vsmashbox0%
-   \box0
-   \egroup}
+\def\dosomesmash#1%
+  {\bgroup\dowithnextbox{#1\nextbox\box\nextbox\egroup}}
 
-\def\hsmashed#1%
-  {\bgroup
-   \setbox0=\normalhbox{#1}%
-   \smashbox0%
-   \box0
-   \egroup}
-
-\def\vsmashed#1%
-  {\bgroup
-   \setbox0=\normalvbox{#1}%
-   \smashbox0%
-   \box0
-   \egroup}
+\def\hsmash  {\dosomesmash\hsmashbox\normalhbox}
+\def\vsmash  {\dosomesmash\vsmashbox\normalvbox}
+\def\hsmashed{\dosomesmash\smashbox \normalhbox}
+\def\vsmashed{\dosomesmash\smashbox \normalvbox}
 
 %D \macros
 %D   {getboxheight}
@@ -118,16 +114,16 @@
   {#1=\ht#3%
    \advance#1 by \dp#3\relax}
 
-%D \macros 
+%D \macros
 %D   {doiftextelse, doiftext}
 %D
-%D When \type {\doifelse} cum suis hopelessly fail, for 
-%D instance because we pass data, we can fall back on the next 
-%D macro: 
-%D 
+%D When \type {\doifelse} cum suis hopelessly fail, for
+%D instance because we pass data, we can fall back on the next
+%D macro:
+%D
 %D \starttypen
 %D \doiftextelse {data} {then branch} {else branch}
-%D \doiftext     {data} {then branch} 
+%D \doiftext     {data} {then branch}
 %D \stoptypen
 
 \def\doiftextelse#1#2#3%
@@ -228,8 +224,8 @@
 %D    \setbox\nextbox#2}
 %D \stoptypen
 %D
-%D This alternative also accepts \type{\box0} and alike, but 
-%D we don't really need this functionality now.  
+%D This alternative also accepts \type{\box0} and alike, but
+%D we don't really need this functionality now.
 
 %D \macros
 %D   {beginofshapebox,
@@ -316,7 +312,7 @@
 %D
 %D \startbuffer
 %D \beginofshapebox
-%D \flushshapebox 
+%D \flushshapebox
 %D \endofshapebox
 %D
 %D \reshapebox
@@ -443,9 +439,9 @@
    \else
      % make \prevdepth legal
      % \par before the next \vskip gives far worse results
-     \ifdim\parskip>\!!zeropoint\vskip\parskip\else\par\fi 
+     \ifdim\parskip>\!!zeropoint\vskip\parskip\else\par\fi
      % and take a look
-     \ifdim\prevdepth=-1000pt 
+     \ifdim\prevdepth=-1000pt
        \prevdepth=\!!zeropoint
      \fi
      \ifdim\prevdepth<\!!zeropoint\relax
@@ -460,25 +456,25 @@
        % give the previous line a normal depth
        \donetrue
        \vbox{\forgetall\strut}\nobreak\kern-\lineheight % geen \vskip
-       \vskip-\dp\strutbox 
+       \vskip-\dp\strutbox
      \fi\fi\fi
      \unvcopy\newshapebox\relax
      % \prevdepth=0pt and \dp\newshapebox depend on last line
      \kern-\dp\newshapebox\relax
      % now \prevdepth=0pt
      \ifdone
-       \kern\dp\strutbox 
-       \prevdepth\dp\strutbox 
+       \kern\dp\strutbox
+       \prevdepth\dp\strutbox
      \fi
    \fi}
 
-%D In real inner situations we can use: 
+%D In real inner situations we can use:
 %D
 %D \starttypen
 %D \flushinnershapebox
 %D \stoptypen
 %D
-%D This one is used in \type{\framed}. 
+%D This one is used in \type{\framed}.
 
 \def\innerflushshapebox%
   {\ifdim\ht\newshapebox=\!!zeropoint\relax
@@ -487,16 +483,16 @@
      \kern-\dp\newshapebox\relax
    \fi}
 
-%D For absolute control, one can use \type{\doreshapebox} 
-%D directly. This macro takes four arguments, that take care 
+%D For absolute control, one can use \type{\doreshapebox}
+%D directly. This macro takes four arguments, that take care
 %D of:
-%D 
+%D
 %D \startopsomming[n,opelkaar]
 %D \som \type{\shapebox}
 %D \som \type{\shapepenalty}
 %D \som \type{\shapekern}
 %D \som \type{\shapeskip}
-%D \stopopsomming 
+%D \stopopsomming
 
 %D \macros
 %D   {hyphenatedword,
@@ -630,7 +626,7 @@
 %D \stoptypen
 %D
 %D When no width is given, the whole text comes available. The
-%D sentinel is optional. This is about the third version. 
+%D sentinel is optional. This is about the third version.
 
 \ifx\fakecompoundhyphen\undefined \let\fakecompoundhyphen\relax \fi
 
@@ -642,6 +638,8 @@
   {\doifelsenothing{#1}
      {\unhbox\nextbox}
      {\fakecompoundhyphen
+      \widowpenalty=0
+      \clubpenalty=0
       \scratchdimen=#1\relax
       \ifdim\wd\nextbox>\scratchdimen
         \setbox\scratchbox=\hbox{ #2}%
@@ -745,28 +743,31 @@
 %D splitting, packing and unpacking to get the spacing and
 %D dimensions right.
 %D
-%D Normally the isolated words are separated by space, but 
+%D Normally the isolated words are separated by space, but
 %D one can overrule this separator by changing the next macros.
 %D
-%D When needed, spacing can be suppressed by \type 
+%D When needed, spacing can be suppressed by \type
 %D {\nothingbetweenisolatedwords}.
 
 \newif\ifisolatedwords
 
 \def\betweenisolatedwords%
-  {\hskip\currentspaceskip} 
+  {\hskip\currentspaceskip}
 
-\def\setbetweenisolatedwords#1%
-  {\gdef\localbetweenisolatedwords{#1}}
+%D In order to prevent problems with nested isolated words, we
+%D do process them, but only split at the outermost level. 
 
-\def\processisolatedwords#1#2%
-  {\bgroup
+\def\processisolatedwords#1#2% todo: vbox ipv hbox ivm afbreken!
+  {\bgroup                   % todo: doloop       
    \fakecompoundhyphen
    \mindermeldingen
    \forgetall
-   \global\let\localbetweenisolatedwords\betweenisolatedwords
-   \setbox0=\hbox
-     {\ignorespaces#1%
+   \widowpenalty=0  
+   \clubpenalty=0
+   \def\processisolatedwords##1##2{##2{##1}}% we split only once
+   \global\let\localbetweenisolatedwords\betweenisolatedwords 
+   \setbox0=\hbox    % we default to spaces, but from inside out
+     {\ignorespaces#1% \localbetweenisolatedwords can be overruled 
       \xdef\isolatedlastskip{\the\lastskip}}%
    \setbox2=\vbox
      {%\hyphenpenalty10000       % this one fails in \url breaking, 
@@ -775,8 +776,8 @@
       \hsize\!!zeropoint
       \unhcopy0}% == #1
    \ifdim\ht0=\ht2
-      \isolatedwordsfalse
-      #2{\unhcopy0}% == #2{#1}
+     \isolatedwordsfalse
+     #2{\unhcopy0}% == #2{#1}
    \else
      \isolatedwordstrue
      \setbox0=\hbox
@@ -794,9 +795,22 @@
                 \hbox{#2{\hbox{\unhbox4}}}}}% 
         \ifdim\ht2>\!!zeropoint \localbetweenisolatedwords \repeat
         \unskip}%
-      \unhbox0\unskip\hskip\isolatedlastskip
+      \unhbox0\unskip
+      \ifdim\isolatedlastskip=\!!zeropoint\else % added
+        \hskip\isolatedlastskip
+      \fi
     \fi
     \egroup}
+
+%D One can use the next macro to change the intersplit
+%D material. An example can be found in the \type {\url}
+%D macro. The innermost setting is used. In the url case, it
+%D means that either very small spaces are used or no spaces
+%D at all. So, the innermost settings are used, while the 
+%D outermost split takes place. 
+
+\def\setbetweenisolatedwords#1%
+  {\gdef\localbetweenisolatedwords{#1}}
 
 %D \macros
 %D   {sbox}
@@ -914,13 +928,13 @@
    \hbox}
 
 %D For those who don't want to deal with \type {\hsize}
-%D and \type {\vsize}, we have: 
-%D 
+%D and \type {\vsize}, we have:
+%D
 %D \starttypen
-%D \centerednextbox width 2bp height 2bp 
+%D \centerednextbox width 2bp height 2bp
 %D   {\framed[width=100bp,height=100bp]{}}
 %D \stoptypen
-%D 
+%D
 %D Do you see what we call this one \type {next}?
 
 \def\centerednextbox#1#%
@@ -932,17 +946,17 @@
       \egroup}
    \hbox}
 
-%D \macros 
+%D \macros
 %D   {centerbox}
 %D
-%D Centering on the available space is done by: 
+%D Centering on the available space is done by:
 %D
 %D \starttypen
 %D \centeredbox <optional specs> {content}
 %D \stoptypen
 %D
-%D When omitted, the current \type {\hsize} and \type 
-%D {\vsize} are used. Local dimensions are supported. 
+%D When omitted, the current \type {\hsize} and \type
+%D {\vsize} are used. Local dimensions are supported.
 
 \def\centerbox#1#%   optional height +/-dimen width +/-dimen
   {\bgroup
@@ -970,13 +984,13 @@
 %D Both these macros are for instance used in typesetting
 %D footnotes.
 %D
-%D Men kan het proces van breken enigzins beinvloeden met de 
+%D Men kan het proces van breken enigzins beinvloeden met de
 %D volgende twee switches:
 
-\newif\ifalignrigidcolumns      
-\newif\ifstretchrigidcolumns    
+\newif\ifalignrigidcolumns
+\newif\ifstretchrigidcolumns
 
-%D De eerste switch bepaald het uitlijnen, de tweede rekt de 
+%D De eerste switch bepaald het uitlijnen, de tweede rekt de
 %D individuele kolommen op naar \type{\vsize}.
 
 \def\setrigidcolumnhsize#1#2#3%
@@ -1000,7 +1014,8 @@
         \setbox\rigidcolumnbox=\vbox
           {\unvbox\rigidcolumnbox
            \unpenalty\removelastskip}% get rid of \blank's
-        \splittopskip=\openstrutheight
+       %\splittopskip=\openstrutheight
+        \splittopskip=\!!zeropoint
        %\scratchdimen=\ht\rigidcolumnbox      % sensitive for overflow
        %\divide\scratchdimen by \rigidcolumns % therefore we need the hack:
         \scratchdimen=1pt
@@ -1079,9 +1094,9 @@
    \box0
    \egroup}
 
-% % to be done: start halfway a line combined with one line 
+% % to be done: start halfway a line combined with one line
 % % extra to start with (skip) and one line less than counted.
-% 
+%
 % \def\stopvboxtohbox%
 %   {\egroup
 %    \setbox2=\vbox
@@ -1114,7 +1129,7 @@
 
 \def\makehboxofhboxes%
   {\setbox0=\hbox{}%
-   \loop                  % \doloop { .. \exitloop .. } 
+   \loop                  % \doloop { .. \exitloop .. }
      \setbox2=\lastbox
      \ifhbox2
        \setbox0=\hbox{\box2\unhbox0}%
@@ -1127,11 +1142,11 @@
      \unhbox0
    \fi}
 
-%D \macros 
+%D \macros
 %D   {unhhbox}
 %D
-%D The next macro is used in typesetting inline headings. 
-%D Let's first look at the macro and then show an example. 
+%D The next macro is used in typesetting inline headings.
+%D Let's first look at the macro and then show an example.
 
 \newbox   \unhhedbox
 \newbox   \hhbox
@@ -1140,11 +1155,13 @@
 
 \def\unhhbox#1\with#2%
   {\bgroup
+   \widowpenalty=0
+   \clubpenalty=0
    \mindermeldingen
    \forgetall
-   \setbox\unhhedbox=\vbox{\hskip\hhboxindent\strut\unhbox#1}% => \hsize 
+   \setbox\unhhedbox=\vbox{\hskip\hhboxindent\strut\unhbox#1}% => \hsize
    \doloop
-     {\setbox\hhbox=\vsplit\unhhedbox to \lineheight 
+     {\setbox\hhbox=\vsplit\unhhedbox to \lineheight
       \ifvoid\unhhedbox
         \setbox\hhbox=\hbox{\strut\hboxofvbox\hhbox}%
       \fi
@@ -1159,7 +1176,7 @@
       \ifvoid\unhhedbox
         \exitloop
       \else
-        \hskip\!!zeropoint \!!plus \!!zeropoint 
+        \hskip\!!zeropoint \!!plus \!!zeropoint
       \fi}%
    \egroup}
 
@@ -1177,26 +1194,26 @@
 %D each line seperately, for instance, making it clickable. The
 %D main complication is that we want to be able to continue the
 %D paragraph, something that's needed in the in line section
-%D headers. 
-%D 
+%D headers.
+%D
 %D \startbuffer
 %D \setbox0=\hbox{\input tufte \relax}
 %D \setbox2=\hbox{\input knuth \relax}
 %D \unhhbox0\with{\ruledhbox{\box\hhbox}}
-%D \hskip1em plus 1em minus 1em 
-%D \hhboxindent=\lasthhboxwidth 
+%D \hskip1em plus 1em minus 1em
+%D \hhboxindent=\lasthhboxwidth
 %D \advance\hhboxindent by \lastskip
 %D \unhhbox2\with{\ruledhbox{\box\hhbox}}
 %D \stopbuffer
-%D 
+%D
 %D \haalbuffer
-%D 
+%D
 %D This piece of text was typeset by saying:
-%D 
+%D
 %D \typebuffer
-%D 
-%D Not that nice a definition, but effective. Note the stretch 
-%D we've build in the line that connects the two paragraphs. 
+%D
+%D Not that nice a definition, but effective. Note the stretch
+%D we've build in the line that connects the two paragraphs.
 
 %D \macros
 %D   {doifcontent}
@@ -1248,15 +1265,15 @@
 %D Where the last call of course does not show up in this
 %D document, but definitely generates a confusing message.
 
-%D \macros 
+%D \macros
 %D   {processboxes}
 %D
-%D The next macro gobble boxes and is for instance used for 
+%D The next macro gobble boxes and is for instance used for
 %D overlays. First we show the general handler.
 
 \newbox\processbox
 
-\def\processboxes#1% 
+\def\processboxes#1%
   {\bgroup
    \def\doprocessbox{#1}% #1 can be redefined halfway
    \setbox\processbox=\box\voidb@x
@@ -1277,15 +1294,15 @@
 
 \def\dodogetprocessbox%
   {\dowithnextbox
-     {\ifhmode\unskip\fi\doprocessbox % takes \nextbox makes \processbox 
+     {\ifhmode\unskip\fi\doprocessbox % takes \nextbox makes \processbox
       \afterassignment\dogetprocessbox\let\next=}
    \hbox\bgroup}
 
-%D \macros 
+%D \macros
 %D   {startoverlay}
-%D 
+%D
 %D We can overlay boxes by saying:
-%D 
+%D
 %D \startbuffer
 %D \startoverlay
 %D   {\omlijnd{hans}}
@@ -1293,15 +1310,15 @@
 %D   {\omlijnd[hoogte=2cm]{oeps}}
 %D \stopoverlay
 %D \stopbuffer
-%D 
+%D
 %D \typebuffer
 %D
-%D shows up as: 
+%D shows up as:
 %D
 %D \leavevmode\haalbuffer
 
 % \def\dooverlaybox%
-%   {\ifhmode\unskip\fi 
+%   {\ifhmode\unskip\fi
 %    \ifdim\ht\nextbox>\ht\processbox
 %      \setbox\processbox=\vbox to \ht\nextbox
 %        {\vss\box\processbox\vss}%
@@ -1310,16 +1327,16 @@
 %        {\vss\box\nextbox\vss}%
 %    \fi
 %    \scratchdimen=\wd
-%      \ifdim\wd\nextbox>\wd\processbox 
+%      \ifdim\wd\nextbox>\wd\processbox
 %        \nextbox
 %      \else
 %        \processbox
-%      \fi        
+%      \fi
 %    \setbox\processbox=\hbox to \scratchdimen
 %      {\hbox to \scratchdimen{\hss\box\processbox\hss}%
 %       \hskip-\scratchdimen
 %       \hbox to \scratchdimen{\hss\box\nextbox\hss}}}
-%  
+%
 % \def\startoverlay%
 %   {\bgroup
 %    \let\stopoverlay\egroup
@@ -1358,31 +1375,31 @@
    \let\stopoverlay\egroup
    \processboxes\dooverlaybox}
 
-% %D \macros 
+% %D \macros
 % %D   {starthspread}
-% %D 
-% %D In a similar way we can build a horizontal box, spread 
+% %D
+% %D In a similar way we can build a horizontal box, spread
 % %D over the available width.
-% %D 
+% %D
 % %D \startbuffer
 % %D \starthspread
 % %D   {hans}
 % %D   {ton}
 % %D   {oeps}
 % %D \stophspread
-% %D 
+% %D
 % %D \stopbuffer
-% %D 
+% %D
 % %D \typebuffer
 % %D
-% %D shows up as: 
+% %D shows up as:
 % %D
 % %D \leavevmode\haalbuffer
-% 
+%
 % \def\dohspread%
 %   {\box\nextbox
 %    \def\dohspread{\hfil\box\nextbox}}
-% 
+%
 % \def\starthspread%
 %   {\hbox to \hsize \bgroup
 %    \let\stophspread\egroup
@@ -1390,15 +1407,15 @@
 
 %D \macros
 %D   {fakebox}
-%D 
-%D The next macro is a rather silly one, but saves space. 
+%D
+%D The next macro is a rather silly one, but saves space.
 %D
 %D \starttypen
-%D \hbox{\fakebox0} 
+%D \hbox{\fakebox0}
 %D \stoptypen
 %D
-%D returns an empty box with the dimensions of the box 
-%D specified, here being zero. 
+%D returns an empty box with the dimensions of the box
+%D specified, here being zero.
 
 \def\dofakebox%
   {\setbox\scratchbox=\null
@@ -1412,7 +1429,7 @@
   {\bgroup
    \afterassignment\dofakebox\scratchcounter}
 
-%D \macros 
+%D \macros
 %D   {lbox,rbox,cbox,tbox,bbox}
 %D
 %D Here are some convenient alternative box types:
@@ -1422,11 +1439,11 @@
 %D \cbox{text ...}
 %D \rbox{text ...}
 %D \stoptypen
-%D 
-%D Are similar to \type {\vbox}, which means that they also 
-%D accept something like \type{to 3cm}, but align to the left, 
-%D middle and right. These box types can be used to typeset 
-%D paragraphs. 
+%D
+%D Are similar to \type {\vbox}, which means that they also
+%D accept something like \type{to 3cm}, but align to the left,
+%D middle and right. These box types can be used to typeset
+%D paragraphs.
 
 \def\lbox{\lrcbox\raggedleft}
 \def\cbox{\lrcbox\raggedcenter}
@@ -1437,10 +1454,10 @@
    \let\\=\endgraf
    \forgetall#1\let\next=}
 
-%D The alternatives \type {\tbox} and \type {\bbox} can be used 
+%D The alternatives \type {\tbox} and \type {\bbox} can be used
 %D to properly allign boxes, like in:
-%D 
-%D \startbuffer 
+%D
+%D \startbuffer
 %D \starttabel[|||]
 %D \HL
 %D \VL \tbox{\externfiguur[koe][hoogte=3cm,kader=aan]} \VL top aligned    \VL\SR
@@ -1449,20 +1466,20 @@
 %D \HL
 %D \stoptabel
 %D \stopbuffer
-%D 
+%D
 %D \typebuffer
-%D 
-%D The positioning depends on the strut settings: 
-%D 
+%D
+%D The positioning depends on the strut settings:
+%D
 %D \haalbuffer
 
 \def\tbox{\tbbox\ht\dp}
 \def\bbox{\tbbox\dp\ht}
 
-\def\tbbox#1#2%  
+\def\tbbox#1#2%
   {\hbox\bgroup
-   \dowithnextbox 
-     {\scratchdimen=\ht\nextbox   
+   \dowithnextbox
+     {\scratchdimen=\ht\nextbox
       \advance\scratchdimen\dp\nextbox
       \advance\scratchdimen-#1\strutbox
       #1\nextbox=#1\strutbox
@@ -1478,15 +1495,15 @@
 %D \macros
 %D   {boxofsize}
 %D
-%D Sometimes we need to construct a box with a height or 
-%D width made up of several dimensions. Instead of cumbersome 
-%D additions, we can use: 
+%D Sometimes we need to construct a box with a height or
+%D width made up of several dimensions. Instead of cumbersome
+%D additions, we can use:
 %D
 %D \starttypen
 %D \boxofsize \vbox 10cm 3cm -5cm {the text to be typeset}
 %D \stoptypen
 %D
-%D This example demonstrates that one can use positive and 
+%D This example demonstrates that one can use positive and
 %D negative values. Dimension registers are also accepted.
 
 \newdimen\sizeofbox
@@ -1525,7 +1542,7 @@
       \unhbox\nextbox}
      \hbox}
 
-\def\fittoptobaselinegrid% weg hier 
+\def\fittoptobaselinegrid% weg hier
   {\dowithnextbox
      {\bgroup
       \par
@@ -1545,7 +1562,7 @@
       \egroup}
      \vbox}
 
-%D Some more undocumented macros (used in m-chart). 
+%D Some more undocumented macros (used in m-chart).
 
 \newif\iftraceboxplacement % \traceboxplacementtrue
 
@@ -1624,12 +1641,12 @@
 \def\middlebox#1%
   {\hbox{\setbox0=\placedbox{#1}\boxoffset=-.5\wd0\rightbox{\box0}}}
 
-%D \macros 
+%D \macros
 %D   {removedepth, obeydepth}
 %D
-%D While \type {\removedepth} removes the preceding depth, 
-%D \type {\obeydepth} makes sure we have depth. Both macros 
-%D leave the \type {\prevdepth} untouched. 
+%D While \type {\removedepth} removes the preceding depth,
+%D \type {\obeydepth} makes sure we have depth. Both macros
+%D leave the \type {\prevdepth} untouched.
 
 \def\removedepth%
   {\ifvmode \ifdim\prevdepth>\!!zeropoint \kern-\prevdepth \fi \fi}
@@ -1672,17 +1689,17 @@
 %D
 %D \typebuffer
 %D \haalbuffer
-% 
+%
 % \def\dodonormbox#1#2#3#4#5#6#7%
 %   {\doifnumberelse{#1}
-%      {\dimen0=#1}{\setbox0=#3{#1}\dimen0=#50}% 
+%      {\dimen0=#1}{\setbox0=#3{#1}\dimen0=#50}%
 %    \doifinstringelse{f}{#2}
 %      {\let\next#4}{\let\next#3}%
 %    \next to \dimen0
 %      {\counttoken b\in#2\to\!!counta\dorecurse{\!!counta}{#6}#6%
-%       #7\nextbox                   
+%       #7\nextbox
 %       \counttoken a\in#2\to\!!counta\dorecurse{\!!counta}{#6}#6}}
-% 
+%
 % \def\donormbox[#1][#2]%
 %   {\bgroup
 %    \doifinstringelse{v}{#2}
@@ -1698,7 +1715,7 @@
 %       \fi
 %       \egroup}%
 %    \next}
-% 
+%
 % \def\normbox%
 %   {\dodoubleempty\donormbox}
 

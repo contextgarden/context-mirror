@@ -1,18 +1,3 @@
-% still to be implemented: 
-%
-% - columns left right touch  
-% - distance = (hsize-n*bodyfontsize)/(n-1)
-% - char grids 
-% - char tables 
-% - all kind of rotated combinations 
-% - hanging puctuation
-% - a few more encodings
-% - rotation list 
-%
-% currently under testing: big5 
-%
-% misschien een andere suffix: tux of tuc
-
 %D \module
 %D   [       file=font-chi,
 %D        version=1999.10.10,
@@ -28,6 +13,19 @@
 %C details. 
 
 \writestatus{loading}{Context Font Macros / Chinese}
+
+%D Still to be implemented: 
+%D
+%D \startopsomming
+%D \som columns left right touch  
+%D \som distance = (hsize-n*bodyfontsize)/(n-1)
+%D \som char grids 
+%D \som char tables 
+%D \som all kind of rotated combinations 
+%D \som hanging puctuation
+%D \som a few more encodings
+%D \som rotation list 
+%D \stopopsomming
 
 %M \stelkorpsin[chi]
 %M 
@@ -475,22 +473,22 @@
 %D \def\DoIt #1 #2 %
 %D   {\hbox{\hbox to 2em{\uchar{#1}{#2}\hss}#1 #2}\par}
 %D 
-%D \startcolumns[n=5] 
+%D \startkolommen[n=5] 
 %D \DoIt 161 162 \DoIt 161 163 \DoIt 161 164 \DoIt 161 167 \DoIt 161 173 
 %D \DoIt 161 175 \DoIt 161 177 \DoIt 161 179 \DoIt 161 181 \DoIt 161 183 
 %D \DoIt 161 185 \DoIt 161 187 \DoIt 161 189 \DoIt 161 191 \DoIt 161 227
 %D \DoIt 161 228 \DoIt 161 229 \DoIt 163 161 \DoIt 163 162 \DoIt 163 167 
 %D \DoIt 163 169 \DoIt 163 172 \DoIt 163 174 \DoIt 163 186 \DoIt 163 187 
 %D \DoIt 163 190 \DoIt 163 191 \DoIt 163 221 \DoIt 163 253
-%D \stopcolumns
+%D \stopkolommen
 %D 
 %D A linebreak is not permitted after the following glyphs: 
 %D 
-%D \startcolumns[n=5]
+%D \startkolommen[n=5]
 %D \DoIt 161 174 \DoIt 161 176 \DoIt 161 178 \DoIt 161 180 \DoIt 161 182 
 %D \DoIt 161 184 \DoIt 161 186 \DoIt 161 188 \DoIt 161 190 \DoIt 163 168 
 %D \DoIt 163 219 \DoIt 163 224 \DoIt 163 251
-%D \stopcolumns
+%D \stopkolommen
 
 %D \macros 
 %D   {tracechinesetrue, showchinesetracelegend}
@@ -504,7 +502,8 @@
 \newif\iftracechinese 
 
 \def\showchinesetracelegend%
-  {\starttabulate[|c|l|l|l|]
+  {\definetabulate[\s!dummy][|c|l|l|l|]%
+   \startdummy
      \HL \NC \bf key \NC \bf meaning \NC \bf glyph \NC \bf keys \NC \NR \HL
      \NC u \NC unknown character type \NC \color[green]{current} \NC u l r \NC\NR
      \NC l \NC left boundary character \NC \color[red]{previous} \NC u l r c n \NC\NR
@@ -512,7 +511,7 @@
      \NC c \NC chinese character \NC \NC \NC\NR
      \NC s \NC following space \NC \NC \NC\NR 
      \NC n \NC no preceding space \NC \NC \NC\NR \HL
-   \stoptabulate}
+   \stopdummy}
 
 \def\tracedchineseglyph%
   {\leavevmode
@@ -635,8 +634,24 @@
 %    \fi\fi\fi\fi\fi\fi}
 % \stoptypen 
 
+%D We use a dirty trick to enable Chinese Capital Digits. In
+%D the encoding vectors, we define these by appending a suffix 
+%D \type {*} to the digit. For the moment this method works ok. 
+%D With \type {\capstyle} one can switch to those capitalized 
+%D digits. 
+
+\def\enablechinesecapdigits%
+  {\def\chinesedigitsuffix{*}}
+
+\def\disablechinesecapdigits%
+  {\let\chinesedigitsuffix\empty}
+
+\disablechinesecapdigits  
+
+\let\capstyle\enablechinesecapdigits
+
 \def\chinesedigit#1%
-  {\udigit{\chineseencoding}{\number#1}}
+  {\udigit{\chineseencoding}{\number#1\chinesedigitsuffix}}
 
 \def\chinesenumber#1%
   {\expandafter\dochinesenumber\number#1\relax}
@@ -718,11 +733,11 @@
    \chinesedigit{100000000}%
    \dododochinesenumber#3\relax} 
 
-%D The next gtable demonstates the correctness of the 
+%D The next table demonstates the correctness of the 
 %D conversion macro. 
 %D 
-%D \starybuffer
-%D \starttable[|l|l|l|l|l|l|]
+%D \startbuffer
+%D \starttabel[|l|l|l|l|l|l|]
 %D \HL
 %D \NC number     \NC converter                  \NC hard coded \NC
 %D     number     \NC converter                  \NC hard coded\NC \SR
@@ -755,10 +770,10 @@
 %D \NC 1111111111 \NC \chinesenumber{1111111111} \NC 十一亿一千一百一十一万一千一百一十一 \NC
 %D     1000000000 \NC \chinesenumber{1000000000} \NC 十亿 \NC\LR
 %D \HL
-%D \stoptable
+%D \stoptabel
 %D \stopbuffer
 %D
-%D \plaatstabel{Some Chinese number examples.}{\getbuffer}
+%D \plaatstabel{Some Chinese number examples.}{\haalbuffer}
 
 %D Although the conversion can be hooked into most commands
 %D that deal with numbers |<|those familiar with \TEX\ macro
@@ -805,6 +820,8 @@
 %D For the moment, this encoding is implemented rather ugly. The 
 %D trick is to move the encoding value from the current font 
 %D definition to the \type {\chineseencoding} macro.  
+
+\let\chineseencoding\empty
 
 \def\setchineseencoding% normally SomeChineseRegular 
   {\getfontfileparameters\unicodestyle
@@ -887,38 +904,38 @@
 %D Now it's time for some real Chinese. This example 
 %D also shows that font switching is supported. 
 %D 
-%D \startnarrower
-%D \midalligned{\bfb 水调歌头} 
-%D \blank
-%D \midaligned{\sl 丙辰中秋，欢饮达旦，大醉作此篇，兼怀子由。} 
-%D \blank
-%D \midaligned{\bs 苏轼} 
-%D \blank
+%D \startsmaller
+%D \regelmidden{\tfd 水调歌头} 
+%D \blanko
+%D \regelmidden{\tfb 丙辰中秋，欢饮达旦，大醉作此篇，兼怀子由。} 
+%D \blanko
+%D \regelmidden{\tfb 苏轼} 
+%D \blanko
 %D 明月几时有？把酒问青天。不知天上宫阙，今夕是何年？我欲乘风归去
 %D ，又恐琼楼玉宇，高处不胜寒。起舞弄清影，何似在人间？ 
-%D \blank
+%D \blanko
 %D 转朱阁，低户，照无眠。不应有恨，何事偏向别时圆？人有悲欢离合，
 %D 月有阴晴圆缺，此事古难全。但愿人长久，千里共婵娟。
-%D \stopnarrower
+%D \stopsmaller
 %D 
 %D The english translation is: 
 %D 
-%D \startnarrower
-%D \midaligned{\slb Tune: Prelude to the Melody of Water} 
-%D \blank 
-%D \midaligned{\sl On the night of the Mid||Autumn Festival of
+%D \startsmaller
+%D \regelmidden{\tfd Tune: Prelude to the Melody of Water} 
+%D \blanko 
+%D \regelmidden{\tfb On the night of the Mid||Autumn Festival of
 %D 1076, I drank happily till dawn and wrote this in my cups
 %D while thinking of Zi||you.} 
-%D \blank 
-%D \midaligned{\bf Su Shi} 
-%D \blank
+%D \blanko 
+%D \regelmidden{\tfb Su Shi} 
+%D \blanko
 %D How long will the bright moon appear? Wine||cup in hand, I
 %D ask the sky. I do not know waht time of year it would be
 %D tonight in the palace on high. Riding the wind, there I
 %D would fly, yet I fear the crystal palace would be far too
 %D high and cold for me. I rise and dance, with my shadow I
 %D play. On high as on earth, would it be as gay? 
-%D \blank 
+%D \blanko 
 %D The moon goes round the mansion red though gauze||draped
 %D windows soft to shed her light upon the sleepless bed.
 %D Against man she should have no spite. Why then when people
@@ -928,7 +945,7 @@
 %D olden days. So let us wish that man will live long as he
 %D can! Though miles apart, we'll share the beauty she
 %D displays. 
-%D \stopnarrower 
+%D \stopsmaller
 
 %D This package is written in the city of Hasselt, a pretty
 %D small town in the |<|compare to China real small|>|

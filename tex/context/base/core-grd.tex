@@ -57,7 +57,7 @@
 %D calculated from the dimensions of a~(. One can disble the
 %D correction by calling \type {\offbaselinecorrection}.
 %D
-%D When visulaize the first example looks like:
+%D When visualize the first example looks like:
 %D
 %D {\showbaselinecorrection\haalbuffer[1]}
 %D
@@ -260,8 +260,7 @@
 \newif\iftracegridsnapping
 \newif\ifshowfuzzyskips
 
-\def\snaptogrid#1% #1 == \hbox or \vbox
-  {\ifgridsnapping\expandafter\dosnaptogrid\expandafter#1\fi}
+\chardef\@@alignsnap=0
 
 \def\tracesnapping%
   {\iftracegridsnapping
@@ -279,9 +278,25 @@
                     \vl\currentsnap\vl}}%
    \fi}
 
-\def\dosnaptogrid%
+\def\snaptogrid% [#1]#2 -> #2 == \hbox|\vbox
+  {\dosingleempty\dosnaptogrid}
+
+\def\dosnaptogrid[#1]% 
+  {\ifgridsnapping
+     \iffirstargument\verplaatsopgrid[#1]\fi\expandafter\dodosnaptogrid
+   \fi}
+
+\def\dodosnaptogrid% 
   {\dowithnextbox
      {\bgroup
+      \ifcase\@@alignsnap\else % 1=top 2=high 3=middle 4=low
+        \getnoflines{\ht\nextbox}
+        \setbox\nextbox=\vbox to \noflines\lineheight
+          {\ifnum\@@alignsnap=1 \kern\lineheight\kern-\topskip\fi
+           \ifnum\@@alignsnap>2 \vfill\fi
+           \box\nextbox
+           \ifnum\@@alignsnap<4 \vfill\fi}
+      \fi
       \forgetall
       \par
       \ifvbox\nextbox
@@ -364,6 +379,7 @@
       \fi
       \extrasnapreset
       \enablepresnapcorrection
+      \global\chardef\@@alignsnap0
       \egroup}}
 
 \def\snaptomathgrid% probably not working ok
@@ -456,6 +472,7 @@
 
 \def\doverplaatsopgrid[#1]%
   {\ifgridsnapping
+     \global\chardef\@@alignsnap0
      \processaction
        [#1]
        [  \v!boven=>\gridwarning+\positiveextrasnap\extrasnapbefore,
@@ -464,6 +481,11 @@
          -\v!boven=>\gridwarning-\negativeextrasnap\extrasnapbefore,
          -\v!onder=>\gridwarning-\negativeextrasnap\extrasnapafter,
          -\v!beide=>\negativeextrasnap\extrasnaparound,
+         \v!pagina=>\global\chardef\@@alignsnap1, % topskip
+           \v!hoog=>\global\chardef\@@alignsnap2, 
+         \v!midden=>\global\chardef\@@alignsnap3, 
+           \v!laag=>\global\chardef\@@alignsnap4, 
+          \v!reset=>\positiveextrasnap\extrasnapreset,
         \s!default=>\positiveextrasnap\extrasnaparound,
         \s!unknown=>\positiveextrasnap\extrasnapreset]%
    \fi}

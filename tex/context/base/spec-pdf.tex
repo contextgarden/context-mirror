@@ -184,12 +184,15 @@
 %D \POSTSCRIPT\ drivers. We just link the movie annotation
 %D handled to the file inclusion system.
 
-\let\currentmovie\s!unknown
-
-\def\setcurrentmovie{\xdef\currentmovie}
-
 \definefileinsertion{yy}{mov}{\doPDFinsertmov}
 \definefileinsertion{tr}{mov}{\doPDFinsertmov}
+
+%D \macros
+%D   {doinsertsoundtrack}
+%D
+%D Sounds look much like movies:
+
+\definespecial\doinsertsoundtrack{\doPDFinsertsoundtrack}
 
 %D \macros
 %D   {dostartobject,dostopobject,

@@ -89,8 +89,8 @@
        {\doifdefinedelse{\??ss#1}{\getvalue{\??ss#1}}{#1}}%
    \fi}
 
-\unexpanded\def\symbol%
-  {\dodoubleempty\dosymbol}
+\unexpanded\def\symbol%      % This one always gobbles spaces, 
+  {\dodoubleempty\dosymbol}  % so never change it again!
 
 %D \macros
 %D   {definefiguresymbol}
@@ -273,6 +273,13 @@
 
 \definesymbol [\v!achteruit] [{\symbol[\v!vorigepagina]}]
 \definesymbol [\v!vooruit]   [{\symbol[\v!volgendepagina]}]
+
+%D The next two symbols (\symbol[P] and \symbol[S]) are 
+%D variations in their math counterparts. The following ones 
+%D {\em do} scale. 
+
+\definesymbol[S][\getglyph{MathSymbol}{\char"78}]
+\definesymbol[P][\getglyph{MathSymbol}{\char"7B}]
 
 %D These symbols are taken from the Computer Moders Roman
 %D symbol set or, when present, from the additional symbols of

@@ -13,7 +13,7 @@
 
 \catcode`\{=1 \catcode`\}=2 
 
-\def\contextversion{1999.12.30}
+\def\contextversion{2000.5.11}
 
 %D Welcome to the main module. When this module is ran through
 %D \type{initex} or \type{tex -i} or \type{whatevertex} using
@@ -62,6 +62,7 @@
 \input supp-pdf.tex
 \input supp-spe.tex
 \input supp-mps.tex
+\input supp-mpe.tex
 \input supp-tpi.tex
 \input supp-mat.tex
 \input supp-ran.tex
@@ -132,9 +133,12 @@
 \input symb-ini.tex
 
 %D Next we load some core macro's. These implement the
-%D macros' that are seen by the users.
+%D macros' that are seen by the users. The order of loading 
+%D is important, due to dependancies. 
 
 \input core-gen.tex
+\input core-uti.tex
+\input core-mar.tex
 \input core-mak.tex
 \input core-mat.tex
 \input core-dat.tex
@@ -148,14 +152,22 @@
 \input core-nav.tex
 \input core-ref.tex
 \input core-obj.tex
-\input core-01a.tex
-\input core-mul.tex
+\input core-buf.tex
+\input core-lst.tex 
+\input core-num.tex 
+\input core-itm.tex 
+\input core-des.tex 
+\input core-syn.tex 
+\input core-mul.tex % moved 
+\input main-001.tex % still to be split  
+\input core-sec.tex 
 \input core-pag.tex
 \input core-tbl.tex
 \input core-mis.tex
 \input core-mps.tex
+\input core-int.tex
 
-%D A few more languages, that have specifics use core 
+%D A few more languages, that have specifics using core 
 %D functionality: 
 
 \input lang-chi.tex
@@ -183,18 +195,11 @@
 \input core-fnt.tex
 \input core-not.tex
 
-\input core-01b.tex
-\input core-01c.tex
+\input main-002.tex % still to be split  
+\input main-003.tex % still to be split  
 
 \input core-fig.tex
-
-\input core-01d.tex
-\input core-01e.tex
-
-%      core-02a.tex % obsolete, replaced by core-dat.tex
-%      core-02b.tex
-%      core-02c.tex
-\input core-02d.tex
+\input core-par.tex
 
 %D The next two modules implement some additional
 %D functionality concenring classes of documents and output.
@@ -266,7 +271,8 @@
 \writestring{Tento balik pouziva balik TaBlE, ktery vytvoril M. J. Wichura (1988).}
 \writestring{Je generovano jen nekolik pomocnych souboru, z nichz nektere musi byt}
 \writestring{zpracovany programem TeXUtil (\utilityversion). Aktualni verze}
-\writestring{blok-maker je \blockversion.}
+\writestring{}
+\writestring{THE CZECH USER INTERFACE IS STILL UNDER DEVELOPMENT!}
 
 \stopinterface
 

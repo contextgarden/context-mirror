@@ -81,15 +81,21 @@
      background=HashFrameB,
      frame=off,
      offset=10pt,
-   % align=middle,                 % this is a nice alternative 
+     style=smallbold,
      width=\rightedgewidth,
+     maxwidth=.8\rightedgewidth,
      interaction=all,
-     textcommand=\TopicLine,
      before=,
      after=]
   \vfill
   \button{Close}[CloseDocument]
 \stopinteractionmenu
+
+\setupwhitespace
+  [big]
+
+\setupblank
+  [big]
 
 %D \macros
 %D   {TitlePage}
@@ -163,12 +169,7 @@
    continue=no,
    style=\tfa]
 
-\def\TopicLine#1%
-  {\limitatetext{#1}{80pt}{...}}
-
 \startMPinclusions
-  input mp-tool ;
-  
   def random_hash_frame (expr width, height, offset, linewidth ) =  
 
     def delta = ((uniformdeviate .5offset) + .25offset) enddef ;

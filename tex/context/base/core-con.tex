@@ -246,40 +246,29 @@
 
 \def\getdayoftheweek#1#2#3%
   {\bgroup
-   \!!counta=\ifcase#2\relax
-     0\or  0\or 31\or 59\or 90\or120\or151\or
-   181\or212\or243\or273\or304\or334\or365\fi
-   \advance\!!counta by #1\relax
-   \ifnum\!!counta<31
-     \DoMod#3by4to\!!countb
-     \ifnum\!!countb=0
-       \!!doneafalse
-       \DoMod#3by100to\!!countb
-       \ifnum\!!countb=0 \else \!!doneatrue \fi
-       \DoMod#3by400to\!!countb
-       \ifnum\!!countb=0 \!!doneatrue \fi
-     \else
-       \!!doneafalse
-     \fi
-   \else
-     \!!doneafalse
+   \!!counta=#3\relax 
+   \advance\!!counta -1
+   \!!countb=\!!counta 
+   \multiply\!!countb 365
+   \advance\!!countb \ifcase#2\relax
+     0 \or  0 \or 31 \or 59 \or 90 \or120 \or151 \or
+   181 \or212 \or243 \or273 \or304 \or334 \or365 \fi
+   \advance\!!countb #1\relax
+   \ifnum#2>2
+     \doifleapyearelse{#3}{\advance\!!countb 1}{}\relax
    \fi
-   \!!countb=#3\relax
-   \multiply\!!countb by 365
-   \advance\!!counta by \!!countb
-   \DoDiv#3by4to\!!countb
-   \advance\!!counta by \!!countb
-   \DoDiv#3by400to\!!countb
-   \advance\!!counta by \!!countb
-   \DoDiv#3by100to\!!countb
-   \advance\!!counta by -\!!countb
-   \if!!donea
-     \advance\!!counta by -1
-   \fi
-   \advance\!!counta by -1
-   \DoMod\!!counta by7to\!!counta
-   \advance\!!counta by 1
-   \@EA\egroup\@EA\normalweekday\the\!!counta\relax}
+   \!!countc=\!!counta 
+   \DoDiv\!!countc by4to\!!countc
+   \advance\!!countb \!!countc
+   \!!countc=\!!counta 
+   \DoDiv\!!countc by100to\!!countc
+   \advance\!!countb -\!!countc
+   \!!countc=\!!counta 
+   \DoDiv\!!countc by400to\!!countc
+   \advance\!!countb \!!countc
+   \DoMod\!!countb by7to\!!countb
+   \advance\!!countb 1 
+   \@EA\egroup\@EA\normalweekday\the\!!countb\relax}
 
 \def\dayoftheweek#1#2#3%
   {\getdayoftheweek{#1}{#2}{#3}\doconvertday{\normalweekday}}
@@ -440,6 +429,8 @@
 %D \haalbuffer
 %D \stopregels
 
+\def\kenmerkdatumpatroon{j,mm,dd} % jj,mm,dd changed at januari 1-1-2000 
+
 \def\complexcurrentdate[#1]%
   {\bgroup
    \let\labellanguage=\currentlanguage
@@ -455,7 +446,7 @@
                j=>\the\normalyear,
                y=>\the\normalyear,
                w=>\betweendates\dayoftheweek\normalday\normalmonth\normalyear,
-      \v!kenmerk=>{\complexcurrentdate[jj,mm,dd]},
+      \v!kenmerk=>\expanded{\complexcurrentdate[\kenmerkdatumpatroon]},
           \v!dag=>\betweendates\the\normalday,
         \v!maand=>\betweendates\month\normalmonth,
         \v!MAAND=>\betweendates\MONTH\normalmonth,
