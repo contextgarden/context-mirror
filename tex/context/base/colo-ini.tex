@@ -239,6 +239,13 @@
 %    \let\@@cl@@t\@@cl@@z\let\@@cl@@a\@@cl@@z
 %    \let\@@cl@@h\empty  \let\@@cl@@n\empty}
 
+% r g b   : rbg
+% c m y k : cmyk
+% s       : gray
+% p n d f : spot
+% h       : hexadecimal
+% t a     : transparency
+
 \def\@@resetcolorparameters
   {\let\@@cl@@r\@@cl@@z \let\@@cl@@g\@@cl@@z \let\@@cl@@b\@@cl@@z
    \let\@@cl@@c\@@cl@@z \let\@@cl@@m\@@cl@@z \let\@@cl@@y\@@cl@@z \let\@@cl@@k\@@cl@@z
@@ -422,8 +429,14 @@
    \scratchcounter\zerocount
    \processcommacommand[#2]\dododefinemultitonecolor
    \bgroup
-     \lccode`\.=`\_\lccode`\,=`\_\lccode`\:=`\_\lccode`\;=`\_%
-     \lccode`\+=`\_\lccode`\-=`\_\lccode`\*=`\_\lccode`\/=`\_%
+     \lccode`\.=`\_%
+     \lccode`\,=`\_%
+     \lccode`\:=`\_%
+     \lccode`\;=`\_%
+     \lccode`\+=`\_%
+     \lccode`\-=`\_%
+     \lccode`\*=`\_%
+     \lccode`\/=`\_%
      % not needed, other attribute in driver:
      %
      % \@@resetcolorparameters
@@ -821,9 +834,9 @@
 %    \exectransparency}
 
 \def\doexeccolorP#1:#2:#3:#4:%
-  {\edef\@@cl@@n{#1}%
-   \edef\@@cl@@f{#2}%
-   \edef\@@cl@@d{#3}%
+  {\edef\@@cl@@n{#1}% name
+   \edef\@@cl@@f{#2}% fractions
+   \edef\@@cl@@d{#3}% definitions
    \edef\@@cl@@p{#4}%
    \ifx\@@cl@@d\empty
      \let\@@cl@@d\@@cl@@n
@@ -1101,10 +1114,12 @@
    \flushatshipout{\hbox{\localcolortrue\color[#1]}}% index one
    \egroup}
 
-\def\checkpredefinedcolor[#1]%
-  {\ifcase\internalspotcolorsize{#1}\relax
-     \@EA\predefinecolor\or\@EA\predefinecolor\else\@EA\predefineindexcolor
-   \fi[#1]}
+% \def\checkpredefinedcolor[#1]%
+%   {\ifcase\internalspotcolorsize{#1}\relax
+%      \@EA\predefinecolor\or\@EA\predefinecolor\else\@EA\predefineindexcolor
+%    \fi[#1]}
+
+\let\checkpredefinedcolor\predefineindexcolor % we need an index in order to negate bitmaps
 
 %D \startbuffer
 %D \definecolor [blue]   [c=1,m=.38,y=0,k=.64] % pantone pms 2965 uncoated m

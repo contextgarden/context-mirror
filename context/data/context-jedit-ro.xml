@@ -224,6 +224,7 @@
       <KEYWORD2>\paginadubla</KEYWORD2>
       <KEYWORD2>\pastreazablocuri</KEYWORD2>
       <KEYWORD2>\placefloat</KEYWORD2>
+      <KEYWORD2>\placereferencelist</KEYWORD2>
       <KEYWORD2>\plaseazapegrid</KEYWORD2>
       <KEYWORD2>\plaseazasemnecarte</KEYWORD2>
       <KEYWORD2>\potrivestecamp</KEYWORD2>
@@ -240,7 +241,6 @@
       <KEYWORD2>\punelegenda</KEYWORD2>
       <KEYWORD2>\punelista</KEYWORD2>
       <KEYWORD2>\punelistacombinata</KEYWORD2>
-      <KEYWORD2>\punelistareferinte</KEYWORD2>
       <KEYWORD2>\punelogouri</KEYWORD2>
       <KEYWORD2>\punenotesubsol</KEYWORD2>
       <KEYWORD2>\punenotesubsollocale</KEYWORD2>

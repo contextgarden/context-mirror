@@ -11,6 +11,8 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
+% testfile: tfmetrics.tex
+
 % todo: als nx>1, dan in geval van rek tussenruimte berekenen en optellen
 % bij breedte, dus: nx nog niet gebruiken in combinatie met rek ! ! ! ! !
 
@@ -167,20 +169,19 @@
 
 \def\setnoftableslines
   {\doifelse{\linetableparameter\c!lines}\v!fit
-     {% nearly the same as core-tab, so same bugs
+     {% whitespace already added by vertical strut
       \ifdim\pagegoal<\maxdimen
         \scratchdimen\pagegoal
         \advance\scratchdimen -\pagetotal
       \else
         \scratchdimen\textheight
       \fi
-      \advance\scratchdimen -\strutdp
-      \ifdim\prevdepth<\maxdimen\ifdim\prevdepth>\zeropoint
-        \global\advance\scratchdimen -\strutdp
-        \global\advance\scratchdimen -\parskip
-      \fi\fi
       \getrawnoflines\scratchdimen
-      \xdef\noflinetablelines{\the\noflines}}
+      \xdef\noflinetablelines{\the\noflines}
+\iflinetablepreroll \else \ifnum\noflinetablelines<\plustwo
+  \page \setnoftableslines
+\fi \fi
+}
      {\xdef\noflinetablelines{\linetableparameter\c!lines}}}
 
 \def\startlinetablecell
@@ -290,23 +291,15 @@
      \iflinetablepreroll
        % forget about them
      \else
-       \doifelse{\linetableparameter\c!lines}\v!fit
-         {\scratchdimen\pagetotal}%
-         {\scratchdimen\zeropoint}%
        \dorecurse\noflinetableparts
          {\let\linetablepart\recurselevel
-          \ifdim\scratchdimen>\zeropoint
-            \ifnum\recurselevel>\plusone
-              \setbox\scratchbox\vbox to \scratchdimen{\vss}%
-              \dp\scratchbox\strutdepth
-              \wd\scratchbox\hsize
-              \box\scratchbox
-            \else
-              \obeydepth
-            \fi
-          \fi
           \dp\tablebox\linetablepart\strutdepth
-          \hbox to \hsize{\box\tablebox\linetablepart\hss}%
+          % noindent en endgraf needed else whitespace mess-up!
+          \whitespace % here not after verticalstrut
+          \ifdim\topskipgap=\zeropoint\else
+            \verticalstrut\nobreak\kern-\struttotal\kern-\parskip\nobreak\nointerlineskip % fix topskip
+          \fi
+          \noindent\strut\hbox to \hsize{\box\tablebox\linetablepart\hss}\endgraf
           \ifnum\linetablepart<\noflinetableparts\relax
             \linetableparameter\c!inbetween
           \fi}%
@@ -327,26 +320,6 @@
      \setnoftableslines
    \fi}
 
-% \def\startlinetablepart
-%   {\global\linetablesubcol\zerocount
-%    \setbox\scratchbox\hbox\bgroup\ignorespaces}
-
-% \def\stoplinetablepart
-%   {\ifnum\linetablepart>\zerocount
-%      \unskip \unskip % remove last intercolumn skip (distance+fill)
-%    \fi
-%    \egroup
-%    \iflinetablepreroll \else
-%      \ifcase\linetablepart
-%        % we're collecting the repeater
-%      \else
-%        \scratchdimen\hsize \advance\scratchdimen-\wd\scratchbox\relax
-%        \ifdim\scratchdimen>\linetableparameter\c!rek\else
-%          \setbox\scratchbox\hbox to \hsize{\unhbox\scratchbox}%
-%        \fi
-%      \fi
-%    \fi}
-
 \def\startlinetablepart
   {\global\linetablesubcol\zerocount
    \setbox\scratchbox\hbox\bgroup
@@ -516,6 +489,9 @@
    \global\linetablecolumn \zerocount
    \global\linetablesubcol \zerocount
    \global\linetablewidth  \zeropoint
+\iflinetablepreroll \else \ifdim\pagetotal>\zeropoint
+  \verticalstrut\kern-\struttotal
+\fi \fi
    \setnoftableslines
    \checklinetablepage
    \let\BR\linetableBR

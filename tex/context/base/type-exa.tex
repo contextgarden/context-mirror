@@ -34,9 +34,9 @@
 \starttypescript [postscript] [texnansi,ec,8r,t5,uc]
 
   \definetypeface [postscript] [rm] [serif] [times]     [default] [encoding=\typescripttwo]
-  \definetypeface [postscript] [mm] [math]  [times]     [default]
   \definetypeface [postscript] [ss] [sans]  [helvetica] [default] [rscale=.9,encoding=\typescripttwo]
   \definetypeface [postscript] [tt] [mono]  [courier]   [default] [rscale=1.1,encoding=\typescripttwo]
+  \definetypeface [postscript] [mm] [math]  [times]     [default]
 
 \stoptypescript
 
@@ -54,8 +54,8 @@
 \starttypescript [palatino] [texnansi,ec,8r,t5,uc]
 
   \definetypeface [palatino] [rm] [serif] [palatino] [default] [encoding=\typescripttwo]
-  \definetypeface [palatino] [mm] [math]  [palatino] [default] [encoding=default]
   \definetypeface [palatino] [tt] [mono]  [modern]   [default] [encoding=\typescripttwo,rscale=1.075]
+  \definetypeface [palatino] [mm] [math]  [palatino] [default] [encoding=default]
 
 % \usemathcollection[default]
 
@@ -119,69 +119,36 @@
 
 \stoptypescript
 
-\starttypescript [serif] [hanging] [pure]
+\starttypescript [serif] [hanging] [pure,normal]
 
-  \setupfontsynonym [Serif]            [handling=pure]
-  \setupfontsynonym [SerifBold]        [handling=pure]
-  \setupfontsynonym [SerifSlanted]     [handling=pure]
-  \setupfontsynonym [SerifItalic]      [handling=pure]
-  \setupfontsynonym [SerifBoldSlanted] [handling=pure]
-  \setupfontsynonym [SerifBoldItalic]  [handling=pure]
-
-\stoptypescript
-
-\starttypescript [sans] [hanging] [pure]
-
-  \setupfontsynonym [Sans]            [handling=pure]
-  \setupfontsynonym [SansBold]        [handling=pure]
-  \setupfontsynonym [SansSlanted]     [handling=pure]
-  \setupfontsynonym [SansItalic]      [handling=pure]
-  \setupfontsynonym [SansBoldSlanted] [handling=pure]
-  \setupfontsynonym [SansBoldItalic]  [handling=pure]
+  \setupfontsynonym [Serif]            [handling=\typescriptthree]
+  \setupfontsynonym [SerifBold]        [handling=\typescriptthree bold]
+  \setupfontsynonym [SerifSlanted]     [handling=\typescriptthree slanted]
+  \setupfontsynonym [SerifItalic]      [handling=\typescriptthree italic]
+  \setupfontsynonym [SerifBoldSlanted] [handling=\typescriptthree boldslanted]
+  \setupfontsynonym [SerifBoldItalic]  [handling=\typescriptthree bolditalic]
 
 \stoptypescript
 
-\starttypescript [mono] [hanging] [pure]
+\starttypescript [sans] [hanging] [pure,normal]
 
-  \setupfontsynonym [Mono]            [handling=pure]
-  \setupfontsynonym [MonoBold]        [handling=pure]
-  \setupfontsynonym [MonoSlanted]     [handling=pure]
-  \setupfontsynonym [MonoItalic]      [handling=pure]
-  \setupfontsynonym [MonoBoldSlanted] [handling=pure]
-  \setupfontsynonym [MonoBoldItalic]  [handling=pure]
-
-\stoptypescript
-
-\starttypescript [serif] [hanging] [thanh]
-
-  \setupfontsynonym [Serif]            [handling=normal]
-  \setupfontsynonym [SerifBold]        [handling=bold]
-  \setupfontsynonym [SerifSlanted]     [handling=slanted]
-  \setupfontsynonym [SerifItalic]      [handling=italic]
-  \setupfontsynonym [SerifBoldSlanted] [handling=boldslanted]
-  \setupfontsynonym [SerifBoldItalic]  [handling=bolditalic]
+  \setupfontsynonym [Sans]            [handling=\typescriptthree]
+  \setupfontsynonym [SansBold]        [handling=\typescriptthree bold]
+  \setupfontsynonym [SansSlanted]     [handling=\typescriptthree slanted]
+  \setupfontsynonym [SansItalic]      [handling=\typescriptthree italic]
+  \setupfontsynonym [SansBoldSlanted] [handling=\typescriptthree boldslanted]
+  \setupfontsynonym [SansBoldItalic]  [handling=\typescriptthree bolditalic]
 
 \stoptypescript
 
-\starttypescript [sans] [hanging] [thanh]
+\starttypescript [mono] [hanging] [pure,normal]
 
-  \setupfontsynonym [Sans]            [handling=normal]
-  \setupfontsynonym [SansBold]        [handling=bold]
-  \setupfontsynonym [SansSlanted]     [handling=slanted]
-  \setupfontsynonym [SansItalic]      [handling=italic]
-  \setupfontsynonym [SansBoldSlanted] [handling=boldslanted]
-  \setupfontsynonym [SansBoldItalic]  [handling=bolditalic]
-
-\stoptypescript
-
-\starttypescript [mono] [hanging] [thanh]
-
-  \setupfontsynonym [Mono]            [handling=normal]
-  \setupfontsynonym [MonoBold]        [handling=bold]
-  \setupfontsynonym [MonoSlanted]     [handling=slanted]
-  \setupfontsynonym [MonoItalic]      [handling=italic]
-  \setupfontsynonym [MonoBoldSlanted] [handling=boldslanted]
-  \setupfontsynonym [MonoBoldItalic]  [handling=bolditalic]
+  \setupfontsynonym [Mono]            [handling=\typescriptthree]
+  \setupfontsynonym [MonoBold]        [handling=\typescriptthree bold]
+  \setupfontsynonym [MonoSlanted]     [handling=\typescriptthree slanted]
+  \setupfontsynonym [MonoItalic]      [handling=\typescriptthree italic]
+  \setupfontsynonym [MonoBoldSlanted] [handling=\typescriptthree boldslanted]
+  \setupfontsynonym [MonoBoldItalic]  [handling=\typescriptthree bolditalic]
 
 \stoptypescript
 

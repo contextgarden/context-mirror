@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 
-<cd:interface xmlns:cd="http://www.pragma-ade.com/commands" name="context" language="ro" version="2004.12.17">
+<cd:interface xmlns:cd="http://www.pragma-ade.com/commands" name="context" language="ro" version="2005.01.12">
 
   <cd:variables>
     <cd:variable name="one" value="unu"/>
@@ -191,6 +191,7 @@
     <cd:constant name="ownnumber" value="numarpropriu"/>
     <cd:constant name="evenmargin" value="marginepara"/>
     <cd:constant name="expansion" value="expansiune"/>
+    <cd:constant name="keyexpansion" value="keyexpansion"/>
     <cd:constant name="factor" value="factor"/>
     <cd:constant name="convertfile" value="convertestefisier"/>
     <cd:constant name="file" value="fisier"/>
@@ -1350,8 +1351,8 @@
     <cd:command name="menubutton" value="butonmeniu"/>
     <cd:command name="setupbuttons" value="seteazabutoane"/>
     <cd:command name="usereferences" value="folosestereferinte"/>
-    <cd:command name="reflijst" value="listaref"/>
-    <cd:command name="stelreferentielijstin" value="seteazalistareferinte"/>
+    <cd:command name="placereferencelist" value="placereferencelist"/>
+    <cd:command name="setupreferencelist" value="seteazalistareferinte"/>
     <cd:command name="setupreferencing" value="seteazareferinte"/>
     <cd:command name="textreference" value="referintatext"/>
     <cd:command name="pagereference" value="referintapagina"/>

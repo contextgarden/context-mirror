@@ -164,7 +164,7 @@
 \def\dotextreference[#1]#2%
   {\bgroup
    \def\asciia{#1}%
-   \convertexpanded\??rf{#2}\asciib
+   \convertexpanded\@@rfexpansion{#2}\asciib
    \@EA\rawtextreference\@EA\s!txt\@EA\asciia\@EA{\asciib}%
    \egroup}
 
@@ -174,7 +174,7 @@
 \def\doreference[#1]#2%
   {\bgroup
    \def\asciia{#1}%
-   \convertexpanded\??rf{#2}\asciib
+   \convertexpanded\@@rfexpansion{#2}\asciib
    \@EA\rawreference\@EA\s!ref\@EA\asciia\@EA{\asciib}%
    \egroup}
 
@@ -2884,6 +2884,8 @@
 \def\douseURL[#1][#2]%
   {\egroup\doquadrupleempty\dodouseURL[#1][#2]}
 
+\let\useurl\useURL
+
 % \def\dodouseURL[#1][#2][#3][#4]%
 %   {\iffirstargument
 %      \iffourthargument\setgvalue{\v!file:::#1}{\doexternaldocument{#2}{#3}{#4}}\else
@@ -3410,7 +3412,7 @@
 \def\docoupledocument[#1][#2][#3][#4]% is this :/- safe ?
   {\ifthirdargument
      \begingroup
-     \def\dolijstelement##1##2##3##4##5##6% 2=aut 6=pag / 2 goes into text ref slot
+     \def\dolistelement##1##2##3##4##5##6% 2=aut 6=pag / 2 goes into text ref slot
        {\global\utilitydonetrue %{Watch the braces here below!}
         \setglobalcrossreference{{##1::\@@filterblocknumberpart[##5]}}{}{##6}{##2}}%
      \def\usereferences[##1]%

@@ -16,12 +16,46 @@
 %D features.
 
 % todo: mp-new
+% caption: grid=top|bottom in xml defs
 
 \unprotect
 
 \writestatus{\m!systems}{beware: some patches loaded from cont-new.tex!}
 
 \ifx\normalcompound\undefined \let\normalcompound=| \fi
+
+\beginETEX
+
+% fallback to math when in text mode (handy for unicode vectors)
+
+\def\dohandlemathtoken#1%
+  {\csname
+     \ifmmode
+       \ifcsname\@mt@\mathcollection#1\endcsname
+         \@mt@\mathcollection
+       \else\ifcsname\@mt@\nomathcollection#1\endcsname
+         \@mt@\nomathcollection
+       \else\ifcsname\characterencoding#1\endcsname
+         \characterencoding
+       \else
+         \nocharacterencoding
+       \fi\fi\fi
+     \else
+       \ifcsname\characterencoding#1\endcsname
+         \characterencoding
+       \else\ifcsname\nocharacterencoding#1\endcsname
+         \nocharacterencoding
+       \else\ifcsname\@mt@\mathcollection#1\endcsname
+         \strippedcsname\mathematics\expandafter\endcsname\csname\@mt@\mathcollection
+       \else\ifcsname\@mt@\nomathcollection#1\endcsname
+         \strippedcsname\mathematics\expandafter\endcsname\csname\@mt@\nomathcollection
+       \else
+         \nocharacterencoding
+       \fi\fi\fi\fi
+     \fi
+   #1\endcsname}
+
+\endETEX
 
 \def\defXMLattributestring#1#2#3#4%
   {\ifcsname\@@XMLvariable:#2:#3\endcsname
@@ -38,54 +72,6 @@
 \gdef\parseXMLattributes #1#2{\dogetXMLarguments{#1}#2>}
 
 \egroup
-
-\def\setupTBLcell#1#2% cell over col over row
-  {\setupTBLsection % already forgotten
-   \getvalue{\@@tblprefix\c!y\v!each}%
-   \getvalue{\@@tblprefix\c!x\v!each}%
-   \getvalue{\@@tblprefix\c!y\v!oddeven{#1}}%
-   \getvalue{\@@tblprefix\c!x\v!oddeven{#2}}%
-   \getvalue{\@@tblprefix\c!x\v!oddeven{#2}\c!y\v!oddeven{#1}}%
-   \ifnum#1=\plusone
-     \getvalue{\@@tblprefix\c!y\v!first}%
-     \executeifdefined{\@@tblprefix\c!x#2\c!y\v!first}\donothing
-   \fi
-   \ifnum#2=\plusone
-     \getvalue{\@@tblprefix\c!x\v!first}%
-     \executeifdefined{\@@tblprefix\c!x\v!first\c!y#1}\donothing
-   \fi
-   \ifnum#1=\maximumrow\relax
-     \getvalue{\@@tblprefix\c!y\v!last}%
-     \executeifdefined{\@@tblprefix\c!x#2\c!y\v!last}\donothing
-   \fi
-   \ifnum#2=\maximumcol\relax
-     \getvalue{\@@tblprefix\c!x\v!last}%
-     \executeifdefined{\@@tblprefix\c!x\v!last\c!y#1}\donothing
-   \fi
-   \ifnum#1=\maximumrow\relax\ifnum#2=\maximumcol\relax
-     \getvalue{\@@tblprefix\c!x\v!last\c!y\v!last}%
-   \fi\fi
-   \ifnum#1=\plusone \ifnum#2=\plusone
-     \getvalue{\@@tblprefix\c!x\v!first\c!y\v!first}%
-   \fi\fi
-   \ifnum#1>\noftblhdnxlines\else
-     \executeifdefined{\@@tblprefix\v!header\v!each}\donothing
-     \executeifdefined{\@@tblprefix\v!header#2}\donothing
-   \fi
-   \executeifdefined{\@@tblprefix\c!y#1}\donothing
-\getvalue{\@@tbl\@@tbl\c!extras}\letvalue{\@@tbl\@@tbl\c!extras}\relax
-   \executeifdefined{\@@tblprefix\c!x#2}\donothing
-\getvalue{\@@tbl\@@tbl\c!extras}\letvalue{\@@tbl\@@tbl\c!extras}\relax
-   \executeifdefined{\@@tblprefix\c!x#2\c!y#1}\donothing
-   \global\letcscsname\@@tblsplitafter\csname\@@tbl\@@tbl\c!after\endcsname
-   \relax}
-
-\newbox\@@dlhbox
-
-\def\dontleavehmode
-  {\ifhmode\else \ifmmode\else
-     \setbox\@@dlhbox\hbox{\mathsurround\zeropoint\everymath\emptytoks$ $}\unhbox\@@dlhbox
-   \fi \fi}
 
 % in xtag-ini:
 
@@ -262,88 +248,12 @@
    \egroup
    \dodoglobal\let#1\globalascii}
 
-\def\resetsetups[#1]%
-  {\ifundefined{\??su\ifgridsnapping\v!grid\fi:#1}%
-     \letbeundefined{\??su:#1}%
-   \else
-     \letbeundefined{\??su\ifgridsnapping\v!grid\fi:#1}%
-   \fi}
-
-% \def\resetsetups[#1]%
-%   {\letbeundefined
-%      {\??su:%
-%       \ifundefined{\??su\ifgridsnapping\v!grid\fi:#1}#1\else\ifgridsnapping\v!grid\fi%
-%       #1}}
-
 \ifx\pagediscards\undefined \let\pagediscards\relax \fi
 
 \installoutput\synchronizeoutput % maybe add pagediscards
   {\ifvoid\normalpagebox\else
      \unvbox\normalpagebox
      \pagediscards
-   \fi}
-
-\def\testpage     {\dotripleempty\dotestpage[\plusone]}
-\def\testpageonly {\dotripleempty\dotestpage[\plustwo]}
-
-\chardef\testpagetrigger=0
-
-\def\dotestpage[#1][#2][#3]%
-  {%\relax % needed before \if
-   \ifpaginageblokkeerd
-     \endgraf
-   \else
-     % new from here
-     \ifcase\testpagetrigger
-       \endgraf
-     \or
-       \ifvmode
-         \dosomebreak\allowbreak
-       \else % indeed?
-         \vadjust{\allowbreak}%
-         \endgraf
-       \fi
-     \fi
-     % till here
-     \ifdim\pagegoal<\maxdimen \relax
-       \ifdim\pagetotal<\pagegoal \relax
-         \scratchdimen\lineheight
-         \multiply\scratchdimen#2\relax
-         \advance\scratchdimen \pagetotal
-         \ifdim\lastskip<\parskip
-           \advance\scratchdimen \parskip
-         \fi
-         \ifthirdargument
-           \advance\scratchdimen#3\relax
-         \fi
-         \ifcase\testpagemethod
-           \ifdim\scratchdimen>.99\pagegoal
-             \penalty-\!!tenthousand\relax
-           \fi
-         \or
-           \advance\scratchdimen-\pagegoal
-           \ifdim\scratchdimen>-\lineheight
-             \penalty-\!!tenthousand\relax
-           \fi
-         \or
-           \getnoflines\pagegoal
-           \advance\scratchdimen-\noflines\lineheight \relax
-           \ifdim\scratchdimen>-\lineheight
-             \penalty-\!!tenthousand\relax
-           \fi
-         \or % same as 0 but more accurate
-           \advance\scratchdimen-10\s!sp\relax
-           \ifdim\scratchdimen>\pagegoal
-             \penalty-\!!tenthousand\relax
-           \fi
-         \fi
-       \else
-         % force page break / new / does not work as expected
-         % never: \penalty-\!!tenthousand\relax
-       \fi
-     \else
-       \ifnum#1=\plusone\goodbreak\fi
-     \fi
    \fi}
 
 % temp hack, else no proper default fall back (like \textmultiply); todo: sync encoding
@@ -360,156 +270,6 @@
 %    \processseparatedlist[#1][ ]\docommand}
 %
 % \processseparatedlist[aap noot][]\ruledhbox
-
-% \startbuffer
-% \scratchdimen\dimexpr(3pt)               \getnoflines\scratchdimen  1=\the\noflines \endgraf
-% \scratchdimen\dimexpr(10\lineheight)     \getnoflines\scratchdimen 10=\the\noflines \endgraf
-% \scratchdimen\dimexpr(10.1\lineheight)   \getnoflines\scratchdimen 11=\the\noflines \endgraf
-% \scratchdimen\dimexpr(10.5\lineheight)   \getnoflines\scratchdimen 11=\the\noflines \endgraf
-% \scratchdimen\dimexpr(10.9\lineheight)   \getnoflines\scratchdimen 11=\the\noflines \endgraf
-% \scratchdimen\dimexpr(10\lineheight+3pt) \getnoflines\scratchdimen 11=\the\noflines \endgraf
-% \scratchdimen\dimexpr(10\lineheight+3sp) \getnoflines\scratchdimen 10=\the\noflines \endgraf
-% \scratchdimen\dimexpr(10\lineheight-3sp) \getnoflines\scratchdimen 10=\the\noflines \endgraf
-%
-% \scratchdimen\dimexpr(3pt)               \getrawnoflines\scratchdimen  0=\the\noflines \endgraf
-% \scratchdimen\dimexpr(10\lineheight)     \getrawnoflines\scratchdimen 10=\the\noflines \endgraf
-% \scratchdimen\dimexpr(10.1\lineheight)   \getrawnoflines\scratchdimen 10=\the\noflines \endgraf
-% \scratchdimen\dimexpr(10.5\lineheight)   \getrawnoflines\scratchdimen 11=\the\noflines \endgraf
-% \scratchdimen\dimexpr(10.9\lineheight)   \getrawnoflines\scratchdimen 11=\the\noflines \endgraf
-% \scratchdimen\dimexpr(10\lineheight+3pt) \getrawnoflines\scratchdimen 10=\the\noflines \endgraf
-% \scratchdimen\dimexpr(10\lineheight+3sp) \getrawnoflines\scratchdimen 10=\the\noflines \endgraf
-% \scratchdimen\dimexpr(10\lineheight-3sp) \getrawnoflines\scratchdimen 10=\the\noflines \endgraf
-% \stopbuffer
-%
-% \typebuffer \getbuffer
-
-\ifx\roundingeps\undefined \newdimen\roundingeps \roundingeps=10sp \fi
-
-\def\getnoflines       {\xdogetnoflines\plusone  } % compensated
-\def\getroundednoflines{\xdogetnoflines\plustwo  } % rounded
-\def\getrawnoflines    {\xdogetnoflines\plusthree} % truncated
-
-\def\xdogetnoflines#1#2%
-  {\noflinesheight#2\relax
-   \ifzeropt\noflinesheight
-     \noflines\zerocount
-   \else\ifdim#2>\zeropoint
-     \ifcase#1\or
-       \advance\noflinesheight-\roundingeps
-       \divide\noflinesheight\openlineheight
-       \noflines\noflinesheight
-       \advance\noflines\plusone
-     \or
-       \advance\noflinesheight\roundingeps
-       \divide\noflinesheight\openlineheight
-       \noflines\noflinesheight
-     \or
-       \advance\noflinesheight\roundingeps
-       \advance\noflinesheight.5\openlineheight
-       \divide\noflinesheight\openlineheight
-       \noflines\noflinesheight
-     \fi
-   \else
-     \ifcase#1\or
-       \advance\noflinesheight\roundingeps
-       \divide\noflinesheight\openlineheight
-       \noflines\noflinesheight
-       \advance\noflines\minusone
-     \or
-       \advance\noflinesheight-\roundingeps
-       \divide\noflinesheight\openlineheight
-       \noflines\noflinesheight
-     \or
-       \advance\noflinesheight-\roundingeps
-       \advance\noflinesheight-.5\openlineheight
-       \divide\noflinesheight\openlineheight
-       \noflines\noflinesheight
-     \fi
-   \fi\fi}
-
-\def\splittblboxb#1%
-  {\scratchdimen-\extratblsplitheight
-   \advance\scratchdimen-\tbltblsplitoffset
-   \expanded{\testpage[2][\the\scratchdimen]}% quite save since a row is > 1 lineheight and we don't want one-liners
-   \setbox\TABLEsplitbox\vbox{#1}%
-   \setbox8\vbox{\doifsomething\tbltblspaceinbetween{\blanko[\tbltblspaceinbetween]}}%
-   \dimen8\ht8\advance\dimen8\dp8
-   \ifmultipleTBLheads
-     \setbox2\vbox{}%
-     \setbox4\vbox{}%
-     \dorecurse\noftblheadlines
-       {\setbox0\vsplit\TABLEsplitbox to \lineheight
-        \setbox2\vbox{\unvcopy2\unvcopy0}}%
-     \dorecurse\noftblnextlines
-       {\setbox0\vsplit\TABLEsplitbox to \lineheight
-        \setbox4\vbox{\unvcopy4\unvcopy0}}%
-   \fi
-   \!!doneafalse
-   \doloop
-     {\ifdim\pagegoal<\maxdimen
-        \scratchdimen\pagegoal
-        \advance\scratchdimen-\pagetotal
-      \else
-        \scratchdimen\textheight
-      \fi
-      \advance\scratchdimen-\dimen8
-      \advance\scratchdimen-\extratblsplitheight
-      \advance\scratchdimen-\tbltblsplitoffset
-      \setbox\finaltblbox\vbox
-        {\ifmultipleTBLheads
-           \ifcase\noftblheadlines\else
-             \unvcopy2 \doifsomething\tbltblspaceinbetween{\blank[\tbltblspaceinbetween]}%
-           \fi
-         \fi}%
-      \if!!donea\else\ifcase\noftblnextlines\else
-        \setbox2\box4
-      \fi\fi
-      \!!doneatrue
-      % alternatively we could use a kind of balancing like splitter
-      % first to scratchdimen and then smaller etc; more code and copy -)
-      \doloop
-        {\setbox\scratchbox\vsplit\TABLEsplitbox to \onepoint
-         \setbox\scratchbox\vbox{\unvbox\scratchbox}%
-         \bgroup
-         \advance\scratchdimen-\ht\scratchbox
-         \advance\scratchdimen-\dp\scratchbox
-         \advance\scratchdimen-\ht\finaltblbox
-         \advance\scratchdimen-\dp\finaltblbox\relax
-         \ifdim\scratchdimen>\zeropoint
-           \egroup
-           \setbox\finaltblbox\vbox
-              {\unvbox\finaltblbox
-               \unvbox\scratchbox}%
-           \ifvoid\TABLEsplitbox \exitloop \fi
-         \else
-           \egroup
-           \setbox\TABLEsplitbox\vbox
-              {\unvbox\scratchbox
-               \ifvoid\TABLEsplitbox\else\unvbox\TABLEsplitbox\allowbreak\fi}%
-           \exitloop
-         \fi}%
-      %
-      \postprocessTABLEsplitbox\finaltblbox
-      \ifvoid\TABLEsplitbox
-        \beforeTABLEsplitbox
-        \box\finaltblbox
-        \afterTABLEsplitbox
-        \@@tblsplitafter
-        \exitloop
-      \else
-        % hack
-        \ifdim\pagegoal<\maxdimen
-          \scratchdimen\pagegoal
-          \advance\scratchdimen \lineheight
-          \global\pagegoal\scratchdimen
-        \fi
-        % brrr
-        \beforeTABLEsplitbox
-        \box\finaltblbox
-        \afterTABLEsplitbox
-        \@@tblsplitafter
-        \pagina
-      \fi}}
 
 % this will be activated when
 
@@ -574,6 +334,26 @@
 \def\stophanging
   {\endgraf
    \egroup}
+
+% experimental
+
+\def\stophangaround
+  {\endgraf
+   \egroup}
+
+\def\starthangaround
+  {\noindent\bgroup
+   \dowithnextbox
+     {\ifdim\nextboxht>\strutht\setbox\nextbox\tbox{\flushnextbox}\fi
+      \setbox\nextbox\hbox{\flushnextbox\hskip\@@hadistance}%
+      \getboxheight\scratchdimen\of\box\nextbox
+      \getnoflines\scratchdimen
+      \nextboxht\strutht
+      \nextboxdp\strutdp
+      \hangindent\nextboxwd
+      \hangafter-\noflines
+      \llap{\flushnextbox}\ignorespaces}
+   \hbox}
 
 \def\modevalue#1#2#3%
   {\@EA\ifx\csname\@mode@\systemmodeprefix#1\endcsname\endcsname\enabledmode#2\else#2\fi}
@@ -587,58 +367,7 @@
   {\long\def\currentcommalistcommand##1{\def\currentcommalistitem{##1}#2}%
    \processcommalist[#1]\currentcommalistcommand}
 
-\long\def\startexpanded#1\stopexpanded % beware, this time no \noexpand before #1
-  {\long\xdef\@@expanded{#1}\@@expanded}
-
 % \tracefonthandlingtrue
-
-\def\parseTR[#1][#2]% [#2] is dummy that kills spaces / no #3 argument
-  {\def\currentcol{0}\increment\maximumrow
-   \let\currentcolpos\currentcol
-   \let\eTR\relax
-   \setupTABLE[\v!row][\maximumrow][#1]}
-
-\long\def\parseTD[#1][#2]#3\eTD % [#2] is dummy that kills spaces
-  {\getparameters[\@@tbl][\c!ny=\tblnr,\c!nx=\tblnc,nc=1,nr=1,\c!n=\currentcol,#1]%
-   % goto first cell % NEW, n=cellnumber
-   \increment\currentcolpos
-   \doifvaluesomething{\@@tbl\c!n}
-     {\ifnum\getvalue{\@@tbl\c!n}=\currentcol\else
-        \scratchcounter\getvalue{\@@tbl\c!n}%
-        \advance\scratchcounter-\currentcol
-        \advance\scratchcounter\plusone
-        \expanded{\parseTD[][\c!nx=\the\scratchcounter]}\eTD
-        \getparameters[\@@tbl][\c!ny=\tblnr,\c!nx=\tblnc,nc=1,nr=1,\c!n=\currentcol,#1]%
-      \fi}%
-   \doloop
-     {\increment\currentcol
-      \doifnottbltag\maximumrow\currentcol\exitloop}%
-   % fill r*c cells and set span
-   \let\row\maximumrow
-   \let\col\currentcol
-   \dorecurse\tblny
-     {\let\col\currentcol
-      \settblcol\row\col\tblnx
-      \ifnum\tblnx>\maximumrowspan\relax
-        \let\maximumrowspan\tblnx
-      \fi
-      \dorecurse\tblnx
-        {\settbltag\row\col\tblnone
-         \increment\col}%
-      \increment\row}%
-   % check max column
-   \decrement\col
-   \ifnum\col>\maximumcol\relax
-     \let\maximumcol\col
-   \fi
-   % set values
-   \settbltag\maximumrow\currentcol\tblcell
-   \settblcol\maximumrow\currentcol\tblnx
-   \settblrow\maximumrow\currentcol\tblny
-   % save text
-   \edef\celltag{{\maximumrow}{\currentcol}}%
-   \@EA\settbltxt\@EA\maximumrow\@EA\currentcol\@EA
-     {\@EA\handleTBLcell\celltag[#1]{#3}}}
 
 % new, still to be improved
 %
@@ -664,6 +393,8 @@
 \setuplabeltext
   [placeholder={, moved}]
 
+% etex only, of course we could just parse (scan for \% in string)
+
 \newif\ifpercentdimendone
 
 \bgroup % usage: \setpercentdimen\somedimen{% or dimen} todo: pct
@@ -678,15 +409,36 @@
      \catcode`%=\@@active
      \catcode`\\=\@@escape
      \let%\%|
-\scratchdimen#1|
-\xdef\@@expanded{\@@expanded\scratchdimen\!!zeropoint}| trick: when 1.2 => .2\scratchdimen and 0pt typeset
-\startnointerference
-      \global\globalscratchdimen\scantokens\@EA{\@@expanded}| i'm lazy and use etex
-\stopnointerference
+     \scratchdimen#1|
+     \xdef\@@expanded{\@@expanded\scratchdimen\!!zeropoint}| trick: when 1.2 => .2\scratchdimen and 0pt typeset
+     \startnointerference
+     \global\globalscratchdimen\scantokens\@EA{\@@expanded}| i'm lazy and use etex
+     \stopnointerference
      \egroup
      #1\globalscratchdimen
    \fi}
 \egroup
+
+% TEX alternative, in principle accurate enough and also a bit faster
+
+% \bgroup
+%
+% \catcode`\%=\@@other
+% \catcode`\|=\@@comment
+%
+% \gdef\setpercentdimen#1#2|
+%   {\beforesplitstring#2\at%\to\ascii
+%    \doifelse\ascii{#2}
+%     {#1=#2}
+%     {\divide#1by100\relax#1=\ascii#1\relax}} | or: {#1=\ascii#1\divide#1by100\relax}}
+%
+% \egroup
+%
+% \dimen0=1000pt \setpercentdimen{\dimen0}{10%} \the\dimen0
+% \dimen0= 100pt \setpercentdimen{\dimen0}{10%} \the\dimen0
+% \dimen0=  95pt \setpercentdimen{\dimen0}{10%} \the\dimen0
+% \dimen0=  10pt \setpercentdimen{\dimen0}{10%} \the\dimen0
+% \dimen0=   1pt \setpercentdimen{\dimen0}{10%} \the\dimen0
 
 \bgroup
 
@@ -1329,9 +1081,9 @@
 
 \let\currentrendering\empty
 
-\definereference[StartCurrentRendering] [\v!StartRendering{\currentrendering}]
-\definereference[StopCurrentRendering]  [\v!StopRendering {\currentrendering}]
-\definereference[PauseCurrentRendering] [\v!PauseRendering{\currentrendering}]
+\definereference[StartCurrentRendering] [\v!StartRendering {\currentrendering}]
+\definereference[StopCurrentRendering]  [\v!StopRendering  {\currentrendering}]
+\definereference[PauseCurrentRendering] [\v!PauseRendering {\currentrendering}]
 \definereference[ResumeCurrentRendering][\v!ResumeRendering{\currentrendering}]
 
 \newcounter\nofexternalrenderings
@@ -1793,11 +1545,8 @@
 \def\startdisplay{\displaybreak\ignorespaces\startpacked}
 \def\stopdisplay {\stoppacked\displaybreak\ignorespaces}
 
-\def\tightvbox
-  {\dowithnextbox{\nextboxdp\zeropoint\flushnextbox}\vbox}
-
-\def\tightvtop
-  {\dowithnextbox{\nextboxht\zeropoint\flushnextbox}\vtop}
+\def\tightvbox{\dowithnextbox{\nextboxdp\zeropoint\flushnextbox}\vbox}
+\def\tightvtop{\dowithnextbox{\nextboxht\zeropoint\flushnextbox}\vtop}
 
 % pretty important (esp since we now ignore shipouts)
 %

@@ -323,6 +323,21 @@
 \def\systemsetupsprefix{*}
 
 \def\systemsetups#1{\dosetups{\systemsetupsprefix#1}}
+
+\def\resetsetups[#1]% see x-fo for usage
+  {\ifundefined{\??su\ifgridsnapping\v!grid\fi:#1}%
+     \letbeundefined{\??su:#1}%
+   \else
+     \letbeundefined{\??su\ifgridsnapping\v!grid\fi:#1}%
+   \fi}
+
+% or
+%
+% \def\resetsetups[#1]%
+%   {\letbeundefined
+%      {\??su:%
+%       \ifundefined{\??su\ifgridsnapping\v!grid\fi:#1}#1\else\ifgridsnapping\v!grid\fi%
+%       #1}}
 
 % new
 %

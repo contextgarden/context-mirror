@@ -129,31 +129,17 @@
 
   \appendtoks \disableadjusting \to \everyforgetall % Here or not here?
 
-%   \def\dodefineadjustfactor#1#2 #3 %
-%     {\ifskiphandlingdef \else
-%        \doifelsenothing{#2}
-%          {\doifnumberelse{\string#1}
-%             {\dododefineadjustfactor {#1}{#3}}
-%             {\dododefineadjustfactor{`#1}{#3}}}
-%          {\pushmacro\char \let\char\empty
-%           \doifnumberelse{\csname#1#2\endcsname}
-%             {\dododefineadjustfactor{\csname#1#2\endcsname}{#3}}
-%             \donothing
-%           \popmacro\char}%
-%      \fi}
-
-%   \def\doinheritadjustfactor#1 #2 %
-%     {\ifskiphandlingdef \else
-%        \pushmacro\char \let\char\empty
-%        \doifnumberelse{\csname#1\endcsname}
-%          {\dodoinheritadjustfactor{\csname#1\endcsname}{`#2}}
-%          \donothing
-%        \popmacro\char
-%      \fi}
-
   \def\dododefineadjustfactor#1#2%
     {\adjustdimen#2pt\multiply\adjustdimen\plusthousand\divide\adjustdimen\maxcard\relax
      \efcode\handledfont#1\adjustdimen}
+
+  \beginETEX
+
+  \def\dododefineadjustfactor#1#2%
+%     {\efcode\handledfont#1\dimexpr#2pt*\plusthousand/\maxcard\relax}
+    {\efcode\handledfont#1\dimexpr#2\onepoint*\plusthousand/\maxcard\relax}
+
+  \endETEX
 
   \def\dodoinheritadjustfactor#1#2%
     {\efcode\handledfont#1\efcode\handledfont#2\relax}
@@ -220,12 +206,25 @@
   \def\setprotrudingfactor#1%
     {\doifvalue{\@fha@\@fha@#1\c!type}\v!hanging{\dosetprotrudingfactor{#1}}}
 
-  \def\dosetprotrudingfactor#1% mo \onepoint instead of pt
+  \beginTEX
+
+  \def\dosetprotrudingfactor#1% no \onepoint instead of pt
     {\lproddimen\csname\@fha@\@fha@#1\c!left\endcsname\s!pt
      \multiply\lproddimen\plusthousand\divide\lproddimen\maxcard\relax
      \rproddimen\csname\@fha@\@fha@#1\c!right\endcsname\s!pt
      \multiply\rproddimen\plusthousand\divide\rproddimen\maxcard\relax
      \iftracefonthandling\showprotrudingfactor{#1}\fi}
+
+  \endTEX
+
+  \beginETEX \dimexpr
+
+  \def\dosetprotrudingfactor#1% no \onepoint instead of pt
+    {\lproddimen\dimexpr\csname\@fha@\@fha@#1\c!left \endcsname\onepoint*\plusthousand/\maxcard\relax
+     \rproddimen\dimexpr\csname\@fha@\@fha@#1\c!right\endcsname\onepoint*\plusthousand/\maxcard\relax
+     \iftracefonthandling\showprotrudingfactor{#1}\fi}
+
+  \endETEX
 
   \def\showprotrudingfactor#1%
     {\writestatus\m!handlings{[protrude]\space#1\space
@@ -233,54 +232,54 @@
        \csname\@fha@\@fha@#1\c!right\endcsname\space
        \fontname\handledfont}}
 
-%   \def\dodefineprotrudefactor#1#2 #3 #4 %
-%     {\ifskiphandlingdef \else
-%        \doifelsenothing{#2}
-%          {\doifnumberelse{\string#1}
-%             {\dododefineprotrudefactor {#1}{#3}{#4}}
-%             {\dododefineprotrudefactor{`#1}{#3}{#4}}}
-%          {\pushmacro\char \let\char\empty
-%           \doifnumberelse{\csname#1#2\endcsname}
-%             {\dododefineprotrudefactor{\csname#1#2\endcsname}{#3}{#4}}
-%             \donothing
-%           \popmacro\char}%
-%      \fi}
-
-%   \def\doinheritprotrudefactor#1 #2 %
-%     {\ifskiphandlingdef \else
-%        \pushmacro\char \let\char\empty
-%        \doifnumberelse{\csname#1\endcsname}
-%          {\dodoinheritprotrudefactor{\csname#1\endcsname}{`#2}}
-%          \donothing
-%        \popmacro\char
-%      \fi}
-
   \beginETEX \fontcharwd
 
     % division before multiplication, else overflow with "sa>5"
 
     \newdimen\protrudethreshold \protrudethreshold=36pt
 
-    \def\redodefineprotrudefactor#1%
-      {\ifdim\fontdimen6\font>\protrudethreshold
-         \divide\scratchdimen\fontdimen6\font
-         \multiply\scratchdimen\fontcharwd\handledfont#1\relax
-       \else
-         \multiply\scratchdimen\fontcharwd\handledfont#1\relax
-         \divide\scratchdimen\fontdimen6\font
-       \fi}
+%     keep this
+
+%     \def\redodefineprotrudefactor#1%
+%       {\ifdim\fontdimen6\font>\protrudethreshold
+%          \divide\scratchdimen\fontdimen6\font
+%          \multiply\scratchdimen\fontcharwd\handledfont#1\relax
+%        \else
+%          \multiply\scratchdimen\fontcharwd\handledfont#1\relax
+%          \divide\scratchdimen\fontdimen6\font
+%        \fi}
+
+%     \def\dododefineprotrudefactor#1#2#3%
+%       {\scratchdimen#2\lproddimen
+%        \ifembasedprotruding \else
+%          \redodefineprotrudefactor{#1}%
+%        \fi
+%        \lpcode\handledfont#1\scratchdimen
+%        \scratchdimen#3\rproddimen
+%        \ifembasedprotruding \else
+%          \redodefineprotrudefactor{#1}%
+%        \fi
+%        \rpcode\handledfont#1\scratchdimen}
 
     \def\dododefineprotrudefactor#1#2#3%
-      {\scratchdimen#2\lproddimen
-       \ifembasedprotruding \else
-         \redodefineprotrudefactor{#1}%
-       \fi
-       \lpcode\handledfont#1\scratchdimen
-       \scratchdimen#3\rproddimen
-       \ifembasedprotruding \else
-         \redodefineprotrudefactor{#1}%
-       \fi
-       \rpcode\handledfont#1\scratchdimen}
+      {\lpcode\handledfont#1\dimexpr#2\lproddimen
+         \ifembasedprotruding \else
+           \ifdim\fontdimen6\font>\protrudethreshold
+             /\fontdimen6\font*\fontcharwd\handledfont#1%
+           \else
+             *\fontcharwd\handledfont#1/\fontdimen6\font
+           \fi
+         \fi
+       \relax
+       \rpcode\handledfont#1\dimexpr#3\rproddimen
+         \ifembasedprotruding \else
+           \ifdim\fontdimen6\font>\protrudethreshold
+             /\fontdimen6\font*\fontcharwd\handledfont#1%
+           \else
+             *\fontcharwd\handledfont#1/\fontdimen6\font
+           \fi
+         \fi
+       \relax}
 
   \endETEX
 

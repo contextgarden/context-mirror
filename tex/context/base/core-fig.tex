@@ -894,20 +894,38 @@
 
 \newbox\foundexternalfigure
 
-\def\presetundefinedfigure#1%
-  {\let\@@eftype      #1%
-   \let\@@efextension #1%
+% \def\presetundefinedfigure#1%
+%   {\let\@@eftype      #1%
+%    \let\@@efextension #1%
+%    \let\@@efobject    \v!no
+%    \let\@@efpreset    \v!no
+%    \ifx\@@efwidth\empty
+%      \def\@@efwidth{8\lineheight}% 4cm
+%    \fi
+%    \ifx\@@efheight\empty
+%      \def\@@efheight{6\lineheight}%  3cm
+%    \fi}
+
+% \def\presetfiguremov{\presetundefinedfigure\c!mov}
+% \def\presetfigureavi{\presetundefinedfigure\c!avi}
+
+\def\presetundefinedfigure#1#2%
+  {\let\@@eftype      #2%
+   \let\@@efextension #2%
    \let\@@efobject    \v!no
-   \let\@@efpreset    \v!no
-   \ifx\@@efwidth\empty
-     \def\@@efwidth{8\lineheight}% 4cm
-   \fi
-   \ifx\@@efheight\empty
-     \def\@@efheight{6\lineheight}%  3cm
+   \ifcase#1\or
+     \let\@@efpreset \v!no
+     \ifx\@@efwidth\empty
+       \def\@@efwidth{8\lineheight}% 4cm
+     \fi
+     \ifx\@@efwidth\empty
+       \def\@@efwidth{6\lineheight}%  3cm
+     \fi
    \fi}
 
-\def\presetfiguremov{\presetundefinedfigure\c!mov}
-\def\presetfigureavi{\presetundefinedfigure\c!avi}
+\def\presetfiguresvg{\presetundefinedfigure0\c!svg}
+\def\presetfiguremov{\presetundefinedfigure1\c!mov}
+\def\presetfigureavi{\presetundefinedfigure1\c!avi}
 
 % The page number (frame) is passed as first option.
 
@@ -957,8 +975,9 @@
    % nil path search in case of path spec
    \expanded{\checkfilename{\expandedfigurename}}%
    \ifcase\kindoffile\else \let\figurepathlist\empty \fi
-   \expandafter\beforesplitstring\expandedfigurename\at.\to\@@effilename
-   \expandafter\aftersplitstring \expandedfigurename\at.\to\@@efextension
+%    \expandafter\beforesplitstring\expandedfigurename\at.\to\@@effilename
+%    \expandafter\aftersplitstring \expandedfigurename\at.\to\@@efextension
+\greedysplitstring\expandedfigurename\at.\to\@@effilename\and\@@efextension
    \doifelse\@@effilename{mprun}
      {\edef\@@effilepref{\bufferprefix}}
      {\let \@@effilepref\empty}%
@@ -988,6 +1007,7 @@
       \c!factor=,\c!hfactor=,\c!wfactor=]%
    \doif\@@efextension\c!mov\presetfiguremov
    \doif\@@efextension\c!avi\presetfigureavi
+   \doif\@@efextension\c!svg\presetfiguresvg
    #1[#4][#5][#6]%
    % new, somehow needed when \textwidth is used:
    \doifsomething\@@efmaxwidth {\freezedimenmacro\@@efmaxwidth }%
@@ -1020,12 +1040,13 @@
          \doregisterfigurecolor\@@efcolor}}%
         \donothing
    %
-   \doif\@@efreset\v!yes \resetexternalfigures
+   \doif\@@efreset\v!yes\resetexternalfigures
    \doif\@@eftype \c!mov\presetfiguremov
    \doif\@@eftype \c!avi\presetfigureavi
+   \doif\@@eftype \c!svg\presetfiguresvg
    % hack
-   \doif\@@efmethod\c!mov
-     {\doifsomething\@@efextension{\presetundefinedfigure\@@efextension}}%
+   \doif\@@efmethod\c!mov{\doifsomething\@@efextension{\presetundefinedfigure1\@@efextension}}%
+   \doif\@@efmethod\c!svg{\doifsomething\@@efextension{\presetundefinedfigure0\@@efextension}}%
    %
    \doif\@@eftype\v!buffer
      {\ifx\@@efextension\empty
@@ -1041,7 +1062,8 @@
                  \edef\@@effilepref{\bufferprefix}%
                  \edef\@@effilename{\@@effilepref\@@effilename},
          \c!avi=>\presetfigureavi,
-         \c!mov=>\presetfiguremov]}%
+         \c!mov=>\presetfiguremov,
+         \c!svg=>\presetfiguresvg]}%
    \edef\figuretypes{\figuretypes,\c!tex}%
    \ifx\@@eftype\c!tex
      % Since tex code can have positional stuff and worse,
@@ -1158,7 +1180,7 @@
      \setdimensionfiguresize
      \processaction
        [\@@efgrid]
-       [   \v!yes=>\getnoflines\fighei
+       [  \v!yes=>\getnoflines\fighei
                   \edef\@@efheight{\the\noflines\lineheight}%
                   \global\gridfiguretrue,
        \v!height=>\getrawnoflines\fighei
@@ -1166,17 +1188,17 @@
                   \advance\scratchdimen\strutdepth
                   \edef\@@efheight{\the\scratchdimen}%
                   \global\gridfiguretrue,
-       \v!depth=>\getrawnoflines\fighei
+        \v!depth=>\getrawnoflines\fighei
                   \scratchdimen\noflines\lineheight
                   \advance\scratchdimen-\strutdepth
                   \edef\@@efheight{\the\scratchdimen}%
                   \global\gridfiguretrue,
-   \v!halfline=>\getrawnoflines\fighei
+     \v!halfline=>\getrawnoflines\fighei
                   \scratchdimen\noflines\lineheight
                   \advance\scratchdimen+.5\lineheight
                   \edef\@@efheight{\the\scratchdimen}%
                   \global\gridfiguretrue,
-      \v!fit=>\getrawnoflines\fighei
+          \v!fit=>\getrawnoflines\fighei
                   \edef\@@efheight{\the\noflines\lineheight}%
                   \global\gridfiguretrue]%
      \ifgridfigure

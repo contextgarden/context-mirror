@@ -257,6 +257,7 @@
       <KEYWORD2>\parovastrana</KEYWORD2>
       <KEYWORD2>\pis</KEYWORD2>
       <KEYWORD2>\placefloat</KEYWORD2>
+      <KEYWORD2>\placereferencelist</KEYWORD2>
       <KEYWORD2>\placerule</KEYWORD2>
       <KEYWORD2>\placetextvariable</KEYWORD2>
       <KEYWORD2>\podtrzeni</KEYWORD2>
@@ -385,7 +386,6 @@
       <KEYWORD2>\umistirejstrik</KEYWORD2>
       <KEYWORD2>\umistirovnici</KEYWORD2>
       <KEYWORD2>\umistiseznam</KEYWORD2>
-      <KEYWORD2>\umistiseznamodkazu</KEYWORD2>
       <KEYWORD2>\umistivedlesebe</KEYWORD2>
       <KEYWORD2>\umistizalozky</KEYWORD2>
       <KEYWORD2>\uzijURL</KEYWORD2>

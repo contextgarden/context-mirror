@@ -48,7 +48,7 @@ def protectgraphicmacros =
   save endfig   ; let endfig   = endgraphictextfig ;
   save end      ; let end      = relax ;
   interim prologues := prologues ;
-  resetfig ;
+  resetfig ; % resets currentpicture
 enddef ;
 
 numeric currentgraphictext ; currentgraphictext := 0 ;
@@ -115,7 +115,7 @@ def doloadfigure (expr filename) text figureattributes =
   enddef ;
   let endfig = relax ;
   readfile(filename) ;
-  if figureshift : 
+  if figureshift :
     currentpicture := currentpicture shifted -llcorner currentpicture ;
   fi ;
   addto figurepicture also currentpicture figureattributes ;
@@ -129,6 +129,8 @@ enddef ;
 
 def dographictext (expr t) =
   begingroup ;
+  save figurepicture ; picture figurepicture ;
+  figurepicture := currentpicture ; currentpicture := nullpicture ;
   if graphictextformat<>"" :
     graphictextstring :=
       "% format=" & graphictextformat & CRLF & graphictextstring ;
@@ -145,6 +147,8 @@ enddef ;
 
 def regraphictext (expr t) =
   begingroup ;
+  save figurepicture ; picture figurepicture ;
+  figurepicture := currentpicture ; currentpicture := nullpicture ;
   save currentgraphictext ; numeric currentgraphictext ;
   currentgraphictext := t ;
   dofinishgraphictext
@@ -164,7 +168,7 @@ enddef ;
 %D why.
 
 def dofinishgraphictext text x_op_x =
-  protectgraphicmacros ;
+  protectgraphicmacros ; % resets currentpicture
   interim linecap    := butt ;     % normally rounded
   interim linejoin   := mitered ;  % normally rounded
   interim miterlimit := 10 ;       % todo
@@ -213,6 +217,7 @@ def dofinishgraphictext text x_op_x =
   scratchpicture := (scratchpicture shifted -llcorner scratchpicture) scaled (1/10) ;
   if not d_color and not f_color : d_color := true ; fi
   if s_color : d_color := false ; f_color := false ; fi ;
+  currentpicture := figurepicture ;
   if d_color and not reverse_fill :
     for i within scratchpicture :
       if f_color and outline_fill :

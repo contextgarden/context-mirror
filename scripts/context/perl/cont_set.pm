@@ -185,7 +185,7 @@ sub show_setups
                                            -font => $buttonfont    ,
                                     -selectcolor => 'ivory1'       ,
                                     -indicatoron => 0              ,
-                                         command => \&change_setup ,
+                                        -command => \&change_setup ,
                                        -variable => \$setup_file   ) ;
         $lw{$_} -> pack ( -padx => '2p',
                           -pady => '2p',

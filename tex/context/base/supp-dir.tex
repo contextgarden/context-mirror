@@ -30,7 +30,8 @@
   \def\pardir#1#2#3% messages end up in a higher level command
     {\global\TeXXeTstate\plusone
      \if#2L\chardef\inlinedirection\plusone\else
-     \if#2R\chardef\inlinedirection\plustwo\fi\fi}
+     \if#2R\chardef\inlinedirection\plustwo\fi\fi
+     \checkinlinedirection} % needed / added
 
  %\appendtoks \checkinlinedirection \to \everypar % see core-ini.tex
 

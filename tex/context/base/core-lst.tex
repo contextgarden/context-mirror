@@ -41,17 +41,17 @@
   {\begingroup
    \expanded{\everylistentry\emptytoks\the\everylistentry}% \emptytoks, else loop
    \def\currentlist{#1}%
-   \convertexpanded{\??li\currentlist}{#3}\asciilistentry
+   \convertexpanded{\getvalue{\??li\currentlist\c!expansion}}{#3}\asciilistentry
    \makesectionformat
    \doifelse\@@nmstate\v!start
-     {\def\dopaginanummer{\noexpand\pagenumber}}
-     {\def\dopaginanummer{0}}%
+     {\def\dopagenummer{\noexpand\pagenumber}}
+     {\def\dopagenummer{0}}%
    % niet waterdicht, wat te doen met figuren en zo
    % first hack: scheelt rommel, second hack: alleen koppen
    \doifelsevalue{\??rf\currentlist\c!state}\v!start
      {\doif{\@@sectionlevel\@@sectie}{0}\autocrossdocumentfalse}
      {\autocrossdocumentfalse}%
-   % blijft nog wat zwakjes en inefficient
+   % weak and inefficient
    \ifautocrossdocument
      \bgroup
      \thisisnextinternal\currentlist
@@ -63,20 +63,19 @@
    \else
      \thisisnextinternal\currentlist
    \fi
-   \edef\next % \schrijfwegnaarlijst%
+   \expanded
      {\writeutilitycommand%
-        {\listentry%
+        {\noexpand\listentry%
            {\currentlist}%
            {\nextinternalreference}%
            {#2}%
            {\asciilistentry}%
-           {\sectionformat\sectionseparator\sectionseparator\dopaginanummer}%
+           {\sectionformat\sectionseparator\sectionseparator\dopagenummer}%
            {\noexpand\realfolio}}}%
-   \next % \schrijfwegnaarlijst
    \endgroup}
 
 \def\dododowritetolist#1%
-  {\def\docommando##1%
+  {\def\docommand##1%
      {\doifvalue{\??rf##1\c!state}\v!start
         {\setsectieenkoppeling{##1}%
          \def\level{\@@sectionlevel\@@sectie}%
@@ -85,7 +84,7 @@
          \else\ifnum\level=\currentlevel
            \expanded{\definereference[#1::##1][#1::{##1::\sectionformat}]}%
          \fi\fi}}%
-   \processcommacommand[\crossdocumentelements]\docommando}
+   \processcommacommand[\crossdocumentelements]\docommand}
 
 % so far
 
@@ -95,23 +94,22 @@
       \convertargument#2\to\ascii
       \makesectionformat
       \doifelse{\@@nmstate}\v!start
-        {\def\dopaginanummer{\noexpand\pagenumber}}
-        {\def\dopaginanummer{0}}%
-      \edef\next % \schrijfwegnaarlijst
+        {\def\dopagenummer{\noexpand\pagenumber}}
+        {\def\dopagenummer{0}}%
+      \expanded
         {\writeutilitycommand%
-           {\listbetween%
+           {\noexpand\listbetween%
               {#1}%
               {\ascii}%
-              {\sectionformat\sectionseparator\sectionseparator\dopaginanummer}%
+              {\sectionformat\sectionseparator\sectionseparator\dopagenummer}%
               {\noexpand\realfolio}}}%
-      \next % \schrijfwegnaarlijst
       \endgroup}}
 
 % experimental (no nodes in mvl), needed for naw
 
 \def\immediatetolist[#1]#2#3#4%
   {\begingroup
-   \convertexpanded{\??li#1}{#3}\asciilistentry
+   \convertexpanded{\getvalue{\??li#1\c!expansion}}{#3}\asciilistentry
    \makesectionformat
    \immediatewriteutilitycommand
      {\listentry
@@ -132,7 +130,7 @@
    \endgroup}
 
 \def\setlistentries
-  {\def\listentry  ##1{\executeifdefined{##1\c!list }\gobblefivearguments }%
+  {\def\listentry  ##1{\executeifdefined{##1\c!list     }\gobblefivearguments }%
    \def\listbetween##1{\executeifdefined{##1\c!inbetween}\gobblethreearguments}}
 
 \def\resetlistentries
@@ -143,54 +141,48 @@
 
 \addutilityreset{listentries}
 
-%\def\@@livariantaa% nr - tit - pag
-%  {\def\lijstfill{\hskip .5em}%
-%   \def\lijstskip{0em}%
-%   \def\lijstwidth{0pt}}
+\setvalue{\??li\c!alternative a}% nr - tit - pag
+% {\def\listfill {\hskip 1.75em}% was \hskip.5em\hskip 1.25em
+  {\def\listfill {\hskip .25em}% omdat nu check
+   \def\listskip {0em}%
+   \def\listwidth{2em}}
 
-\def\@@livarianta% nr - tit - pag
-% {\def\lijstfill{\hskip 1.75em}% was \hskip.5em\hskip 1.25em
-  {\def\lijstfill{\hskip .25em}% omdat nu check
-   \def\lijstskip{0em}%
-   \def\lijstwidth{2em}}
+\setvalue{\??li\c!alternative b}% nr - tit - fill - pag
+  {\def\listfill {\hfill}%  was \hskip.5em\hfill
+   \def\listskip {5em}%
+   \def\listwidth{2em}}
 
-\def\@@livariantb% nr - tit - fill - pag
-  {\def\lijstfill{\hfill}%  was \hskip.5em\hfill
-   \def\lijstskip{5em}%
-   \def\lijstwidth{2em}}
+\setvalue{\??li\c!alternative c}% nr - tit - dots - pag
+  {\def\listfill {\hskip.5em\listdots\hskip.5em}%
+   \def\listskip {5em}%
+   \def\listwidth{0pt}}
 
-\def\@@livariantc% nr - tit - dots - pag
-  {\def\lijstfill{\hskip.5em\lijstdots\hskip.5em}%
-   \def\lijstskip{5em}%
-   \def\lijstwidth{0pt}}
+\def\listdots{\leaders\hbox to .5em{\hss.\hss}\hfill}
 
-\def\lijstdots{\leaders\hbox to .5em{\hss.\hss}\hfill}
+\setvalue{\??li\c!alternative}{\getvalue{\??li\c!alternative b}}
 
-\def\@@lialternative%
-  {\lijstvariantb}
-
-\@@livariantb
+\getvalue{\??li\c!alternative}
 
 \def\setlistparameter#1#2{\@EA\def\csname\??li#1#2\endcsname}
 
 \def\dosetuplist[#1][#2]% slow -)
-  {\def\docommando##1%
+  {\def\docommand##1%
      {\getparameters[\??li##1][#2]%
       \preparepageprefix{\??li##1}}%
-   \processcommalist[#1]\docommando}
+   \processcommalist[#1]\docommand}
 
 \def\setuplist
   {\dodoubleargument\dosetuplist}
 
-\def\dodosetlijst#1%
+\def\dodosetlist#1%
   {\def\nolist{\splitsequence{\getvalue{\??li#1\c!limittext}}}%
-   \setvalue{#1\c!inbetween}{\dotussenlijst {#1}}%
-   \setvalue{#1\c!list }{\dolijstelement{#1}}}
+   \setvalue{#1\c!inbetween}{\dobetweenlist{#1}}%
+   \setvalue{#1\c!list     }{\dolistelement{#1}}}
 
-\def\dodoresetlijst#1%
+\def\dodoresetlist#1%
   {\let\nolist\empty
    \setvalue{#1\c!inbetween}{\gobblefourarguments{#1}}%
-   \setvalue{#1\c!list }{\gobblesixarguments {#1}}}
+   \setvalue{#1\c!list     }{\gobblesixarguments {#1}}}
 
 \let\nolist\empty
 
@@ -215,9 +207,9 @@
       \c!textcolor=\getvalue{\??li#1\c!color},
       \c!numbercolor=\getvalue{\??li#1\c!color},
       \c!pagecolor=\getvalue{\??li#1\c!color},
-      \c!numbercommand=\lijstnummercommando,
-      \c!textcommand=\lijsttekstcommando,
-      \c!pagecommand=\lijstpaginacommando,
+      \c!numbercommand=\listnumbercommand,
+      \c!textcommand=\listtextcommand,
+      \c!pagecommand=\listpagecommand,
       \c!pagenumber=\v!yes,
       \c!pageboundaries=,
       \c!margin=\!!zeropoint,
@@ -236,7 +228,7 @@
       \c!expansion=]%
    \doifassignmentelse{#2}
      {\getparameters[\??li#1][#2]}
-     {\ConvertToConstant\doifnot{#2}{}
+     {\ConvertToConstant\doifnot{#2}{} % not \doifsomething ivm Convert...
         {\copyparameters % interactie ?
            [\??li#1][\??li#2]
            [\c!state,\c!width,\c!alternative,\c!style,\c!color,
@@ -248,19 +240,19 @@
             \c!aligntitle,\c!before,\c!after,\c!inbetween,\v!part\c!number,\c!label]%
          \getparameters[\??li#1][#3]}}%
     \addutilityreset{#1}%
-    \setvalue{\s!set  #1}{\dodosetlijst  {#1}}%
-    \setvalue{\s!reset#1}{\dodoresetlijst{#1}}}
+    \setvalue{\s!set  #1}{\dodosetlist  {#1}}%
+    \setvalue{\s!reset#1}{\dodoresetlist{#1}}}
 
 \def\definelist
   {\dotripleempty\dodefinelist}
 
-\def\iflijstgeplaatst{\ifutilitydone}
+\def\iflijstgeplaatst{\ifutilitydone} % is now a mode
 
 \def\placelist
   {\dodoubleempty\doplacelist}
 
-\def\plaatsruwelijst
-  {\dodoubleempty\doplaatsruwelijst}
+\def\placerawlist
+  {\dodoubleempty\doplacerawlist}
 
 \def\dobeginoflist
   {\begingroup
@@ -272,10 +264,10 @@
 
 \def\doplacelist[#1][#2]%
   {\dobeginoflist
-   \plaatsruwelijst[#1][#2]%
+   \doplacerawlist[#1][#2]%
    \doendoflist}
 
-\def\plaatsruwelijst[#1][#2]%
+\def\doplacerawlist[#1][#2]%
   {\begingroup
    \dogetcommalistelement1\from#1\to\firstlistelement
    \dosetuplist[#1][#2]%
@@ -318,7 +310,7 @@
    \fi}
 
 \def\dosetlistmode
-  {\iflijstgeplaatst
+  {\ifutilitydone
      \setsystemmode  \v!list
    \else
      \resetsystemmode\v!list
@@ -334,10 +326,10 @@
 \def\completelist
   {\dodoubleempty\docompletelist}
 
-\def\lijstelementen        {}   % bevat lijst met paginaovergangen
-\def\lijstnummercommando #1{#1} % geen strut i.v.m. intractieve versie
-\def\lijsttekstcommando  #1{\begstrut#1\endstrut}
-\def\lijstpaginacommando #1{\strut#1}
+\def\listelements        {}   % list of page breaks
+\def\listnumbercommand #1{#1} % no strut due to interactive version
+\def\listtextcommand   #1{\begstrut#1\endstrut}
+\def\listpagecommand   #1{\strut#1}
 
 \def\doassigndimen#1#2#3%
   {\doifinsetelse{#2}{\v!fit,\v!broad}
@@ -374,9 +366,9 @@
 
 \def\listsymbol@three#1#2%
   {\def\currentlistsymbol % very slow
-     {{\doassigndimen{\dimen0}{\getvalue{\??li#1\c!width}}{1.5em}%
+     {{\doassigndimen{\dimen0}{\getvalue{\??li#1\c!width }}{1.5em}%
        \doassigndimen{\dimen2}{\getvalue{\??li#1\c!height}}{1ex}%
-       \doassigndimen{\dimen4}{\getvalue{\??li#1\c!depth}}{0pt}%
+       \doassigndimen{\dimen4}{\getvalue{\??li#1\c!depth }}{0pt}%
        \vrule\!!width\dimen0\!!height\dimen2\!!depth\dimen4}}}
 
 \def\listsymbol@default#1#2%
@@ -398,47 +390,47 @@
 
 % so far for list symbols
 
-\def\@@dodolijstelement{dodolijstelement}
+\def\@@dodolistelement{dodolistelement}
 
-\def\dosomelijstelement#1#2#3{#1 #2 \translatednumber[#3]}
+\def\dosomelistelement#1#2#3{#1 #2 \translatednumber[#3]}
 
-\setvalue{\@@dodolijstelement a}{\let\dosomelijstelement\dodofixdlijstelementABC}
-\setvalue{\@@dodolijstelement b}{\let\dosomelijstelement\dodofixdlijstelementABC}
-\setvalue{\@@dodolijstelement c}{\let\dosomelijstelement\dodofixdlijstelementABC}
-\setvalue{\@@dodolijstelement d}{\let\dosomelijstelement\dodofixdlijstelementD}
-\setvalue{\@@dodolijstelement e}{\let\dosomelijstelement\dodofixdlijstelementE}
-\setvalue{\@@dodolijstelement f}{\let\dosomelijstelement\dodofixdlijstelementF}
-\setvalue{\@@dodolijstelement g}{\let\dosomelijstelement\dodofixdlijstelementG}
+\setvalue{\@@dodolistelement a}{\let\dosomelistelement\dodofixdlistelementABC}
+\setvalue{\@@dodolistelement b}{\let\dosomelistelement\dodofixdlistelementABC}
+\setvalue{\@@dodolistelement c}{\let\dosomelistelement\dodofixdlistelementABC}
+\setvalue{\@@dodolistelement d}{\let\dosomelistelement\dodofixdlistelementD}
+\setvalue{\@@dodolistelement e}{\let\dosomelistelement\dodofixdlistelementE}
+\setvalue{\@@dodolistelement f}{\let\dosomelistelement\dodofixdlistelementF}
+\setvalue{\@@dodolistelement g}{\let\dosomelistelement\dodofixdlistelementG}
 
-\setvalue{\@@dodolijstelement\v!none      }{\def\dosomelijstelement{\dodofreevlijstelement}}
-\setvalue{\@@dodolijstelement\v!vertical  }{\def\dosomelijstelement{\dodofreevlijstelement}}
-\setvalue{\@@dodolijstelement\v!horizontal}{\def\dosomelijstelement{\dodofreehlijstelement}}
-\setvalue{\@@dodolijstelement\v!command   }{\let\dosomelijstelement\dodocommandlijstelement}
+\setvalue{\@@dodolistelement\v!none      }{\def\dosomelistelement{\dodofreevlistelement}}
+\setvalue{\@@dodolistelement\v!vertical  }{\def\dosomelistelement{\dodofreevlistelement}}
+\setvalue{\@@dodolistelement\v!horizontal}{\def\dosomelistelement{\dodofreehlistelement}}
+\setvalue{\@@dodolistelement\v!command   }{\let\dosomelistelement\dodocommandlistelement}
 
 % don't mess arround with endgraf/grouping else we loose leftskip
 
-% \strippedcsname\dodolijstelement
+% \strippedcsname\dodolistelement
 
 \def\newlineinlist{\space}
 
-\def\dolijstelement#1#2#3#4#5#6% pas op: wordt ook elders gedefinieerd
-  {\doiftoclevelelse[#5]{\dodolijstelement{#1}{#2}{#3}{#4}{#5}{#6}}{}}
+\def\dolistelement#1#2#3#4#5#6% pas op: wordt ook elders gedefinieerd
+  {\doiftoclevelelse[#5]{\dodolistelement{#1}{#2}{#3}{#4}{#5}{#6}}{}}
 
-\def\dodolijstelement#1#2#3#4#5#6%
-  {\getvalue{\@@dodolijstelement\getvalue{\??li#1\c!alternative}}%
+\def\dodolistelement#1#2#3#4#5#6%
+  {\getvalue{\@@dodolistelement\getvalue{\??li#1\c!alternative}}%
    %\showcomposition
    \let\@@iawidth\!!zeropoint  % moet boolean worden
    \bgroup
-   \edef\lijstelementen
+   \edef\listelements
      {\getvalue{\??li#1\c!pageboundaries}}%
-   \ExpandBothAfter\doifinset{#3}\lijstelementen
+   \ExpandBothAfter\doifinset{#3}\listelements
      {\showmessage\m!systems{14}{#3}%
       \page}%
    \egroup
    \dontcomplain
    \setfullsectionnumber{\??li#1}%
    \dosetlistsymbol{#1}{#3}%
-   \dosomelijstelement{#1}{#2}{#3}{#4}{#5}{#6}%
+   \dosomelistelement{#1}{#2}{#3}{#4}{#5}{#6}%
    \global\utilitydonetrue}
 
 \def\dolistattributes#1#2#3%
@@ -447,14 +439,14 @@
       \resetinteractionparameter\c!contrastcolor}%
    \doattributes{\??li#1}{#2}{#3}}
 
-\def\dodocommandlijstelement#1#2#3#4#5#6%
+\def\dodocommandlistelement#1#2#3#4#5#6%
   {\doifdefinedelse{\??li#1\c!command}
      {\getvalue{\??li#1\c!command}%
         {#3}{#4}{\pageprefix\??li#1[#5]\translatednumber[#5]}}
      {[#1: #3 - #4 - \pageprefix\??li#1[#5]\translatednumber[#5]]}}
 
-\def\dodofreelijstelement#1#2#3#4#5#6#7#8%
-  {\def\makelijstelement##1##2%
+\def\dodofreelistelement#1#2#3#4#5#6#7#8%
+  {\def\makelistelement##1##2%
      {\noindent % new and needed
       \hbox
         {\doifelsevalue{\??li#1\c!interaction}{##1} % \??li ipv \??ia
@@ -463,7 +455,7 @@
            {##2}}}%
    \getvalue{\??li#1\c!before}% can be \hskip
    \doifdefinedelse{\??li#1\c!command}
-     {\makelijstelement{\getvalue{\??li#1\c!interaction}}% this forces all
+     {\makelistelement{\getvalue{\??li#1\c!interaction}}% this forces all
         {\getvalue{\??li#1\c!command}%
            {#3}% geen conversies etc
            {#4}% geen conversies etc
@@ -472,18 +464,18 @@
      {#7%
       \vbox
         {\forgetall
-         \makelijstelement\v!all
-           {\makelijstelement\v!sectionnumber
+         \makelistelement\v!all
+           {\makelistelement\v!sectionnumber
               {\dolistattributes{#1}\c!numberstyle\c!numbercolor
                  {\getvalue{\??li#1\c!numbercommand}{\currentlistsymbol}}}%
-            \makelijstelement\v!text
+            \makelistelement\v!text
               {\dolistattributes{#1}\c!textstyle\c!textcolor
                  {\let\\=\newlineinlist
                   \dontconvertfont
                   \getvalue{\??li#1\c!textcommand}{#4}}}%
             \doifvalue{\??li#1\c!pagenumber}\v!yes
               {\doifsomething{#5}
-                 {\makelijstelement\v!pagenumber
+                 {\makelistelement\v!pagenumber
                     {\dolistattributes{#1}\c!pagestyle\c!pagecolor
                        {\getvalue{\??li#1\c!pagecommand}
                           {\pageprefix\??li#1[#5]%
@@ -491,14 +483,14 @@
       #8}%
    \getvalue{\??li#1\c!after}}
 
-\def\dodofreehlijstelement#1#2#3#4#5#6%
-  {\dodofreelijstelement{#1}{#2}{#3}{#4}{#5}{#6}
+\def\dodofreehlistelement#1#2#3#4#5#6%
+  {\dodofreelistelement{#1}{#2}{#3}{#4}{#5}{#6}
      {\noindent}{}}
 
-\def\dodofreevlijstelement#1#2#3#4#5#6%          % \nointerlineskip nodig,
-  {\dodofreelijstelement{#1}{#2}{#3}{#4}{#5}{#6} % anders verkeerde spatiering
-     {\ifvmode\nointerlineskip\fi}               % bij multi-line lijsten
-     {\nointerlineskip\endgraf\allowbreak}}      %
+\def\dodofreevlistelement#1#2#3#4#5#6%          % \nointerlineskip needed,
+  {\dodofreelistelement{#1}{#2}{#3}{#4}{#5}{#6} % otherwise wrong spacing
+     {\ifvmode\nointerlineskip\fi}              % at multi-line lists
+     {\nointerlineskip\endgraf\allowbreak}}     %
 
 % to be documented: uitlijnen, hang
 
@@ -513,7 +505,7 @@
            {\getvalue{\??li#1\c!maxwidth}}%
            {\splitsymbol{\getvalue{\??li#1\c!limittext}}}}}}
 
-\def\dodofixdlijstelementABC#1#2#3#4#5#6% weeden
+\def\dodofixdlistelementABC#1#2#3#4#5#6% weeden
   {\endgraf
    \leftskip\getvalue{\??li#1\c!margin}% na de \endgraf !
    \getvalue{\??li#1\c!before}%
@@ -528,31 +520,31 @@
         {\!!widtha\getvalue{\??li#1\c!width}}}%
    \getvalue{\??li\c!alternative\getvalue{\??li#1\c!alternative}}%
    \endgraf
-   \def\makelijstelement##1##2%
+   \def\makelistelement##1##2%
      {\doifelsevalue{\??li#1\c!interaction}{##1}
         {\setbox0\hbox{\showcontrastlocation\??ia{#6}{##2}}%
          \linklisttoelement{#1}{#2}{#5}{#6}{\box0}}%{\copy0}}%
         {\hbox{##2}}}%
    \doifvalue{\??li#1\c!interaction}\v!text % not supported
      {\setlistparameter{#1}\c!interaction\v!all}%
-%    \makelijstelement\v!all
+%    \makelistelement\v!all
 %      {\hbox to \hsize
-   \makelijstelement\v!all
+   \makelistelement\v!all
      {\setlocalhsize \hsize\localhsize \hbox to \hsize
         {\forgetall
          \dostartattributes{\??li#1}\c!style\c!color\empty
          \!!widthb\hsize
          \setbox2\hbox \ifdim\!!widtha>\zeropoint to \!!widtha \fi
-           {\makelijstelement\v!sectionnumber
+           {\makelistelement\v!sectionnumber
               {\dolistattributes{#1}\c!numberstyle\c!numbercolor
                  {\getvalue{\??li#1\c!numbercommand}{\currentlistsymbol}}%
             \hfill}}%
          \setbox4\hbox
            {\doifvalue{\??li#1\c!pagenumber}\v!yes
-              {\doifsomething{#5}    % \lijstwidth is new ; temp hack
-                 {\hbox \ifdim\lijstwidth>\zeropoint to \lijstwidth\fi
+              {\doifsomething{#5}    % \listwidth is new ; temp hack
+                 {\hbox \ifdim\listwidth>\zeropoint to \listwidth\fi
                     {\hfill
-                     \makelijstelement\v!pagenumber
+                     \makelistelement\v!pagenumber
                        {\dolistattributes{#1}\c!pagestyle\c!pagecolor
                           {\getvalue{\??li#1\c!pagecommand}%
                              {\pageprefix\??li#1[#5]%
@@ -569,8 +561,8 @@
               \ifdim\wd4=\zeropoint % \ifvoid4
                 % we kunnen gewoon afbreken aan het eind
               \else
-                \ifdim\lijstskip>\zeropoint\relax
-                  \rightskip=\lijstskip\!!plus10em\relax
+                \ifdim\listskip>\zeropoint\relax
+                  \rightskip=\listskip\!!plus10em\relax
                   \parfillskip=-\rightskip
                 \fi
               \fi
@@ -592,7 +584,7 @@
             \ifdim\wd4=\zeropoint\relax % \ifvoid4
               % \ifdim\!!widtha<\hsize \hfill\strut \fi % spoils align
             \else
-              \nobreak\lijstfill
+              \nobreak\listfill
               \box4\relax
               \relax
             \fi}%
@@ -628,7 +620,7 @@
 % overrulen interactie kan sneller, bv door hulpconstanten
 % te gebruiken en die te letten
 
-\def\dodofixdlijstelementD#1#2#3#4#5#6%
+\def\dodofixdlistelementD#1#2#3#4#5#6%
   {%\leftskip=\getvalue{\??li#1\c!margin}%
    \ifvmode
      \advance\leftskip\getvalue{\??li#1\c!margin}%  AANGEPAST
@@ -641,7 +633,7 @@
      {\setlistparameter{#1}\c!interaction\v!sectionnumber}%
    \doifvalue{\??li#1\c!interaction}\v!all % not supported
      {\setlistparameter{#1}\c!interaction\v!sectionnumber}%
-   \def\makelijstelement##1##2%
+   \def\makelistelement##1##2%
      {\doifelsevalue{\??li#1\c!interaction}{##1}
         {\setbox0\hbox{\showcontrastlocation\??ia{#6}{##2}}%
          \linklisttoelement{#1}{#2}{#5}{#6}{\box0}}%{\copy0}}%
@@ -649,7 +641,7 @@
    \setbox4=\hbox
      {\doifvalue{\??li#1\c!pagenumber}\v!yes
         {\doifsomething{#5}
-           {\makelijstelement\v!pagenumber
+           {\makelistelement\v!pagenumber
               {\dolistattributes{#1}\c!pagestyle\c!pagecolor
                  {\getvalue{\??li#1\c!pagecommand}
                     {\pageprefix\??li#1[#5]%
@@ -659,7 +651,7 @@
    \ifdone
      \hbox
        {\getvalue{\??li#1\c!left}%
-        \makelijstelement\v!sectionnumber
+        \makelistelement\v!sectionnumber
           {\dolistattributes{#1}\c!numberstyle\c!numbercolor
              {\getvalue{\??li#1\c!numbercommand}{\currentlistsymbol}}}%
           \getvalue{\??li#1\c!right}%
@@ -686,25 +678,25 @@
    \fi
    \egroup}
 
-\def\dodofixdlijstelementE#1%
-  {\dodofixdlijstelementEFG
+\def\dodofixdlistelementE#1%
+  {\dodofixdlistelementEFG
      {\setupinteraction[\c!strut=\v!no]}
      {\localframed[\??li#1][\c!depth=\!!zeropoint,\c!color=]}
      {#1}}
 
-\def\dodofixdlijstelementF#1%
-  {\dodofixdlijstelementEFG
+\def\dodofixdlistelementF#1%
+  {\dodofixdlistelementEFG
      {}
      {\dosetraggedhbox{\getvalue{\??li#1\c!align}}\raggedbox}
      {#1}}
 
-\def\dodofixdlijstelementG#1%
-  {\dodofixdlijstelementEFG
+\def\dodofixdlistelementG#1%
+  {\dodofixdlistelementEFG
      {}
      \midaligned
      {#1}}
 
-\def\dodofixdlijstelementEFG#1#2#3#4#5#6#7#8%
+\def\dodofixdlistelementEFG#1#2#3#4#5#6#7#8%
   {\noindent
    \hbox
      {#1% in case E nils the strut
@@ -743,7 +735,7 @@
      {\convertargument#2\to\firstlistelement
       \@EA\dowritetolist\@EA{#1}{\firstlistelement}{#3}{\v!head}}}
 
-\def\dotussenlijst#1#2#3#4% pas op: wordt ook elders gedefinieerd
+\def\dobetweenlist#1#2#3#4% pas op: wordt ook elders gedefinieerd
   {\doiftoclevelelse[#3]{#2}{}}
 
 \def\writebetweenlist[#1]#2%
@@ -759,7 +751,7 @@
 \def\utilitylistwidth  {0pt}
 \def\utilitylistheight {0pt}
 
-\def\dolijstelementX#1#2#3#4#5#6%
+\def\dolistelementX#1#2#3#4#5#6%
   {\doiftoclevelelse[#5]
      {\doglobal\increment\utilitylistlength
       \hbox
@@ -774,7 +766,7 @@
 \def\dodeterminelistcharacteristics[#1][#2]%
   {\begingroup
    \doglobal\newcounter\utilitylistlength
-   \let\dolijstelement\dolijstelementX
+   \let\dolistelement\dolistelementX
    \dosetuplist[#1][#2]%
    \dogetcommalistelement1\from#1\to\commalistelement
    \dosettoclevel\??li\commalistelement
@@ -787,29 +779,29 @@
 \def\determinelistcharacteristics
   {\dodoubleempty\dodeterminelistcharacteristics}
 
-% \definieerreferentielijst
+% \definerreferencelist
 %   [externalfigure]
-%   [commando=\toongrootfiguur,
-%    voor=\pagina,
-%    na=\pagina]
+%   [command=\showbigfigure,
+%    before=\page,
+%    after=\page]
 %
-% \definieerreferentielijst
+% \definereferencelist
 %   [externaltable]
-%   [commando=\toongrotetabel,
-%    voor=\pagina,
-%    na=\pagina]
+%   [command=\showbigtable,
+%    before=\page,
+%    after=\page]
 %
-% \def\toongrootfiguur#1%
-%   {\externfiguur[#1][kader=aan,factor=max]}
+% \def\showbigfigure#1%
+%   {\externalfigure[#1][frame=on,factor=max]}
 %
-% \def\toongrotetabel#1%
-%   {\switchtobodyfont[12pt]\haalbuffer[#1]}
+% \def\showbigtable#1%
+%   {\switchtobodyfont[12pt]\getbuffer[#1]}
 %
-% \schrijfnaarreferentielijst[externalfigure]{koe}{\externfiguur[koe][breedte=3cm,kader=aan]}
-% \schrijfnaarreferentielijst[externalfigure]{paard}{\externfiguur[paard][breedte=3cm,kader=aan]}
+% \writetoreferencelist[externalfigure]{koe}  {\externalfigure[koe]  [width=3cm,frame=on]}
+% \writetoreferencelist[externalfigure]{paard}{\externalfigure[paard][width=3cm,frame=on]}
 %
 % \startbuffer[kanweg]
-% \starttabel[|||]
+% \starttable[|||]
 % \HL
 % \VL test \VL test \VL\SR
 % \HL
@@ -817,19 +809,18 @@
 % \VL test \VL test \VL\MR
 % \VL test \VL test \VL\LR
 % \HL
-% \stoptabel
+% \stoptable
 % \stopbuffer
 %
-% \schrijfnaarreferentielijst[externaltable]{kanweg}{\switchtbodyfont[5pt]\haalbuffer[kanweg]}
+% \writetoreferencelist[externaltable]{kanweg}{\switchtbodyfont[5pt]\getbuffer[kanweg]}
 %
-% \plaatsreferentielijst
-%   [externalfigure,externaltable]
+% \placereferencelist[externalfigure,externaltable]
 
 % algemeen
 
-\def\referentiebutton#1[#2]%
-  {\hbox\bgroup                        % the \hbox is needed to bypass
-   \let\referenceprefix=\empty         % \dontleavehmode in \gotobox
+\def\referencebutton#1[#2]%
+  {\hbox\bgroup               % the \hbox is needed to bypass
+   \let\referenceprefix\empty % \dontleavehmode in \gotobox
    \setupinteraction[\c!color=,\c!contrastcolor=,\c!strut=]%
    \setupreferencing[\c!prefix=]%
    \gotobox{\hbox{\ignorespaces#1}}[#2]%
@@ -837,51 +828,49 @@
 
 \newcounter\referencecounter
 
-\def\doreferentielijstelement#1#2#3#4#5%
+\def\doreferencelistelement#1#2#3#4#5%
   {\doiftoclevelelse[#4]
      {\getvalue{\??rl#1\c!before}%
-      \referentiebutton
+      \referencebutton
         {\getvalue{\??rl#1\c!command}{#3}\pagereference[\r!to#2]}%
         [\r!from#2]%
       \global\utilitydonetrue
       \getvalue{\??rl#1\c!after}}
      {}}
 
-\def\doplaatsreferentielijst[#1][#2]%
+\def\doplacereferencelist[#1][#2]%
   {\begingroup
-%   \let\doschrijfnaarreferentielijst=\gobblethreearguments
    \setupreferencelist[#1][#2,\c!state=\v!stop]%
    \dogetcommalistelement1\from#1\to\commalistelement
    \dosettoclevel\??rl\commalistelement
    \doutilities{listentries,#1}\jobname{#1}\relax\par
    \endgroup}
 
-\def\plaatsreferentielijst%
-  {\dodoubleempty\doplaatsreferentielijst}
+\def\placereferencelist
+  {\dodoubleempty\doplacereferencelist}
 
 \def\dowritetoreferencelist#1#2#3%
   {\doifvalue{\??rl#1\c!state}\v!start
      {\begingroup
       \makesectionformat
       \doifelse{\@@nmstate}\v!start
-        {\def\dopaginanummer{\noexpand\pagenumber}}
-        {\def\dopaginanummer{0}}%
-      \edef\schrijfwegnaarlijst%
+        {\def\dopagenummer{\noexpand\pagenumber}}
+        {\def\dopagenummer{0}}%
+      \expanded
         {\writeutilitycommand%
-           {\referencelistentry%
+           {\noexpand\referencelistentry%
               {#1}%  tag
               {#2}%  number
               {#3}%  data
-              {\sectionformat\sectionseparator\sectionseparator\dopaginanummer}%
+              {\sectionformat\sectionseparator\sectionseparator\dopagenummer}%
               {\noexpand\realfolio}}}%
-      \schrijfwegnaarlijst
       \endgroup}}
 
 \def\writetoreferencelist[#1]#2% #1=class #2=data #3=visualization
   {\dowithnextbox
      {\doifelsevalue{\??rl#1\c!state}\v!start
         {\doglobal\increment\referencecounter % must be resolved due to #2
-         \referentiebutton
+         \referencebutton
            {\flushnextbox
             \pagereference[\r!from\referencecounter]%
             \dowritetoreferencelist{#1}{\referencecounter}{#2}}%
@@ -892,10 +881,10 @@
 \def\referencelistentry#1%
   {\executeifdefined{#1\c!list}\gobblefourarguments}
 
-\def\dodosetreferentielijst#1%
-  {\setvalue{#1\c!list}{\doreferentielijstelement{#1}}}
+\def\dodosetreferencelist#1%
+  {\setvalue{#1\c!list}{\doreferencelistelement{#1}}}
 
-\def\dodoresetreferentielijst#1%
+\def\dodoresetreferencelist#1%
   {\setvalue{#1\c!list}{\gobblefourarguments}}
 
 \def\dodefinereferencelist[#1][#2]%
@@ -908,16 +897,16 @@
       #2]%
    \setcounter{#1}{0}%
    \addutilityreset{#1}%
-   \setvalue{\s!set  #1}{\dodosetreferentielijst  {#1}}%
-   \setvalue{\s!reset#1}{\dodoresetreferentielijst{#1}}}
+   \setvalue{\s!set  #1}{\dodosetreferencelist  {#1}}%
+   \setvalue{\s!reset#1}{\dodoresetreferencelist{#1}}}
 
-\def\definereferencelist%
+\def\definereferencelist
   {\dodoubleempty\dodefinereferencelist}
 
 \def\dosetupreferencelist[#1][#2]%
   {\getparameters[\??rl#1][#2]}
 
-\def\setupreferencelist%
+\def\setupreferencelist
   {\dodoubleempty\dosetupreferencelist}
 
 \def\dosetupcombinedlist[#1][#2]%
@@ -931,28 +920,27 @@
   {\begingroup
    \getparameters[\??ih#1][#2]%
    \dosettoclevel\??ih{#1}%
-   \edef\samengesteldelijst{\getvalue{\??ih#1\c!list}}%
-  %\stripspaces\from\samengesteldelijst\to\samengesteldelijst
-   \doifelsevalue{\??ih#1\c!level}\v!current % criterium=vorige,niveau=huidige
+   \edef\combinedlist{\getvalue{\??ih#1\c!list}}%
+   \doifelsevalue{\??ih#1\c!level}\v!current %
      {\!!counta=0\@@kolevel} % hm: \@@kolevel
      {\fullexpandoneargafter\doifnumberelse{\getvalue{\??ih#1\c!level}}% in verband
         {\!!counta\getvalue{\??ih#1\c!level}% met de vorige implementatie
          \advance\!!counta \plusone % accepteren we ook nummers (0==deel)
-         \getfromcommacommand[\samengesteldelijst][\!!counta]%
-         \edef\maximumlijst{\commalistelement}}%
-        {\edef\maximumlijst{\getvalue{\??ih#1\c!level}}}%
-      \!!counta\getvalue{\??se\getvalue{\??ko\maximumlijst\c!section}\c!level}}%
-   \let\!!stringa\samengesteldelijst
-   \let\samengesteldelijst\empty
-   \def\docommando##1%
+         \getfromcommacommand[\combinedlist][\!!counta]%
+         \edef\maximumlist{\commalistelement}}%
+        {\edef\maximumlist{\getvalue{\??ih#1\c!level}}}%
+      \!!counta\getvalue{\??se\getvalue{\??ko\maximumlist\c!section}\c!level}}%
+   \let\!!stringa\combinedlist
+   \let\combinedlist\empty
+   \def\docommand##1%
      {\ifnum\getvalue{\??se\getvalue{\??ko##1\c!section}\c!level}>\!!counta
       \else
-        \addtocommalist{##1}\samengesteldelijst
+        \addtocommalist{##1}\combinedlist
       \fi}%
-   \processcommacommand[\!!stringa]\docommando
+   \processcommacommand[\!!stringa]\docommand
    \doifvalue{\??ih#1\c!coupling}\v!on
      {\startlistreferences{#1}}%
-   \ExpandFirstAfter\dodoplacecombinedlist[\samengesteldelijst][#2]%
+   \ExpandFirstAfter\dodoplacecombinedlist[\combinedlist][#2]%
    \stoplistreferences{#1}%
    \endgroup
    \dosetlistmode}
@@ -963,13 +951,13 @@
    \doutilities{listentries,#1}\jobname{#1}\relax\par
    \doendoflist}
 
-\def\dovolledigesamengesteldelijst[#1][#2]%
+\def\docompletecombinedlist[#1][#2]%
   {\expanded{\systemsuppliedtitle[#1]{\noexpand\headtext{#1}}}% expansion due to v! vs french !
    \doplacecombinedlist[#1][#2]}
 
 \def\dodefinecombinedlist[#1][#2][#3]%
-  {\makerawcommalist[#2]\samengesteldelijst % for fast processing
-   \letvalue{\??ih#1\c!list}\samengesteldelijst
+  {\makerawcommalist[#2]\combinedlist % for fast processing
+   \letvalue{\??ih#1\c!list}\combinedlist
    \getcommalistsize[#2]%
    \getfromcommalist[#2][\commalistsize]%
    \doeassign[\??ih#1][\c!level=\commalistelement]%
@@ -981,7 +969,7 @@
    \setvalue{\e!place#1}%
      {\dodoubleempty\doplacecombinedlist[#1]}%
    \setvalue{\e!complete#1}%
-     {\dodoubleempty\dovolledigesamengesteldelijst[#1]}}
+     {\dodoubleempty\docompletecombinedlist[#1]}}
 
 \def\definecombinedlist%
   {\dotripleempty\dodefinecombinedlist}

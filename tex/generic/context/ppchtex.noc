@@ -62,13 +62,13 @@
 
 \def\defineconstant #1 #2 #3 % en nl de
   {\ifcase\interfacenumber
-     \setvalue{c!#1}{#2}
-     \setvalue{c!#2}{#2}
+     \setvalue{c!#1}{#1}
+     \setvalue{c!#2}{#1}
    \or
-     \setvalue{c!#1}{#2}
+     \setvalue{c!#1}{#1}
    \or
-     \setvalue{c!#1}{#2}
-     \setvalue{c!#3}{#2}
+     \setvalue{c!#1}{#1}
+     \setvalue{c!#3}{#1}
    \fi}
 
 \def\definecommand #1 #2 #3 %
@@ -139,7 +139,7 @@
 \defineconstant right           rechts           rechts
 \defineconstant resolution      resolutie        aufloesung
 \defineconstant scale           schaal           format
-\defineconstant status          status           status
+\defineconstant state           status           status
 \defineconstant text            tekst            text
 \defineconstant textcolor       tekstkleur       tekstfarbe
 \defineconstant textsize        tekstformaat     textgroesse

@@ -397,7 +397,7 @@
 \def\s!simple  {simple}       \def\s!stop    {stop}
 
 %D \macros
-%D   {@EA,@EAEA,@EAEAEA,@EAEAEAEAEAEA,expanded}
+%D   {@EA,@EAEA,@EAEAEA,@EAEAEAEAEAEA,expanded,startexpanded}
 %D
 %D When in unprotected mode, to be entered with
 %D \type{\unprotect}, one can use \type{\@EA} as equivalent
@@ -427,6 +427,12 @@
 
 \long\def\expanded#1%
   {\long\xdef\@@expanded{\noexpand#1}\@@expanded}
+
+%D Beware, the next one has no \type {\noexpand} before its
+%D argument.
+
+\long\def\startexpanded#1\stopexpanded % see x-fo for example
+  {\long\xdef\@@expanded{#1}\@@expanded}
 
 %D \macros
 %D   {safeexpanded,everysafeexpanded}

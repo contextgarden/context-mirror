@@ -75,6 +75,8 @@
 
 \stopfonthandling
 
+% ogoneks may need another treatment
+
 \startfonthandling [extended]
 
   \inherithandling Acircumflex A
@@ -487,25 +489,39 @@
 
 % protruding variants -- slanted/italic is yet incomplete
 
-\definefonthandling [pure]        [pure]                       [\c!type=\v!hanging]
-\definefonthandling [normal]      [punctuation,alpha,extended] [\c!type=\v!hanging]
-\definefonthandling [bold]        [punctuation,alpha,extended] [\c!type=\v!hanging]
-\definefonthandling [slanted]     [punctuation]                [\c!type=\v!hanging,\c!right=1.5]
-\definefonthandling [italic]      [punctuation]                [\c!type=\v!hanging,\c!right=1.5]
-\definefonthandling [boldslanted] [punctuation]                [\c!type=\v!hanging,\c!right=1.5]
-\definefonthandling [bolditalic]  [punctuation]                [\c!type=\v!hanging,\c!right=1.5]
+\definefonthandling [pure]              [pure]                       [\c!type=\v!hanging]
+\definefonthandling [purebold]          [pure]                       [\c!type=\v!hanging]
+\definefonthandling [pureslanted]       [pure]                       [\c!type=\v!hanging,\c!right=1.5]
+\definefonthandling [pureitalic]        [pure]                       [\c!type=\v!hanging,\c!right=1.5]
+\definefonthandling [pureboldslanted]   [pure]                       [\c!type=\v!hanging,\c!right=1.5]
+\definefonthandling [purebolditalic]    [pure]                       [\c!type=\v!hanging,\c!right=1.5]
+
+\definefonthandling [normal]            [punctuation,alpha,extended] [\c!type=\v!hanging]
+\definefonthandling [normalbold]        [punctuation,alpha,extended] [\c!type=\v!hanging]
+\definefonthandling [normalslanted]     [punctuation,alpha,extended] [\c!type=\v!hanging,\c!right=1.5]
+\definefonthandling [normalitalic]      [punctuation,alpha,extended] [\c!type=\v!hanging,\c!right=1.5]
+\definefonthandling [normalboldslanted] [punctuation,alpha,extended] [\c!type=\v!hanging,\c!right=1.5]
+\definefonthandling [normalbolditalic]  [punctuation,alpha,extended] [\c!type=\v!hanging,\c!right=1.5]
+
+% for old times sake
+
+\definefonthandling [bold]              [punctuation,alpha,extended] [\c!type=\v!hanging]
+\definefonthandling [slanted]           [punctuation,alpha,extended] [\c!type=\v!hanging,\c!right=1.5]
+\definefonthandling [italic]            [punctuation,alpha,extended] [\c!type=\v!hanging,\c!right=1.5]
+\definefonthandling [boldslanted]       [punctuation,alpha,extended] [\c!type=\v!hanging,\c!right=1.5]
+\definefonthandling [bolditalic]        [punctuation,alpha,extended] [\c!type=\v!hanging,\c!right=1.5]
 
 % hz variants
 
-\definefonthandling [hz]          [hz,extended]                [\c!type=\v!hz]
+\definefonthandling [hz]              [hz,extended]                [\c!type=\v!hz]
 
 % combined variants
 
-\definefonthandling [quality]     [hz,pure]
+\definefonthandling [quality]         [hz,pure]
 
 % noligs (xml) : \definefonthandling [default] [noligs]
 
-\definefonthandling [noligs]      [noligs]                     [\c!type=tag]
+\definefonthandling [noligs]          [noligs]                     [\c!type=tag]
 
 % A special case of guillemots, beware: when used ungrouped,
 % it overloads all successive (current) encoding vector

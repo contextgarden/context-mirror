@@ -1073,7 +1073,7 @@
       \offinterlineskip
       \vskip\topspace
       \hsize\paperwidth
-      \hfill\hbox{\plaatstestinfo\hskip.5cm}\vss
+      \hfill\hbox{\placetestinfo\hskip.5cm}\vss
       \settexthoffset\hskip\texthoffset % brrrr
      %\tlap{\plaatsversieaanduiding}\vskip.5cm}}
       \vbox to 1cm{\vss\plaatsversieaanduiding\vss}}}
@@ -1115,7 +1115,7 @@
 \def\registerinfo  {\dotestinfo\registerinfobox}
 \def\floatinfo     {\dotestinfo\floatinfobox}
 
-\def\plaatstestinfo
+\def\placetestinfo
   {\ifvoorlopig
      \vbox to \makeupheight
        {\forgetall
@@ -1354,18 +1354,82 @@
 
 \newif\ifpaginageblokkeerd \paginageblokkeerdfalse
 
-\def\testpage     {\dotripleempty\dotestpage[\plusone]}
-\def\testpageonly {\dotripleempty\dotestpage[\plustwo]}
+% \chardef\testpagemethod=0 % todo: \testnewpage[method=,lines=,voffset=]
+%
+% \def\testpage    {\dotripleempty\dotestpage[\plusone]}
+% \def\testpageonly{\dotripleempty\dotestpage[\plustwo]}
+%
+% \def\dotestpage[#1][#2][#3]%
+%   {%\relax % needed  before \if
+%    \endgraf
+%    \ifpaginageblokkeerd
+%      % do nothing
+%    \else
+%      %ifnum#1=\plusone\synchronizeoutput\fi
+%      \ifdim\pagegoal<\maxdimen \relax
+%        \ifdim\pagetotal<\pagegoal \relax
+%          \scratchdimen\lineheight
+%          \multiply\scratchdimen#2\relax
+%          \advance\scratchdimen \pagetotal
+%          \ifdim\lastskip<\parskip
+%            \advance\scratchdimen \parskip
+%          \fi
+%          \ifthirdargument
+%            \advance\scratchdimen#3\relax
+%          \fi
+%          \ifcase\testpagemethod
+%            \ifdim\scratchdimen>.99\pagegoal
+%              \vfill\eject % \penalty-\!!tenthousand\relax
+%            \fi
+%          \or
+%            \advance\scratchdimen-\pagegoal
+%            \ifdim\scratchdimen>-\lineheight
+%              \vfill\eject % \penalty-\!!tenthousand\relax
+%            \fi
+%          \or
+%            \getnoflines\pagegoal
+%            \advance\scratchdimen-\noflines\lineheight \relax
+%            \ifdim\scratchdimen>-\lineheight
+%              \vfill\eject % \penalty-\!!tenthousand\relax
+%            \fi
+%          \or % same as 0 but more accurate
+%            \advance\scratchdimen-10\s!sp\relax
+%            \ifdim\scratchdimen>\pagegoal
+%              \vfill\eject % \penalty-\!!tenthousand\relax
+%            \fi
+%          \fi
+%        \else
+%          % force page break / new
+%          % \vfill\eject % \penalty-\!!tenthousand\relax
+%        \fi
+%      \else
+%        \ifnum#1=\plusone\goodbreak\fi
+%      \fi
+%    \fi}
 
-\chardef\testpagemethod=0 % todo: \testnewpage[method=,lines=,voffset=]
+\chardef\testpagemethod \zerocount % todo: \testnewpage[method=,lines=,voffset=]
+\chardef\testpagetrigger\zerocount
 
-\def\dotestpage[#1][#2][#3]%
-  {%\relax % needed  before \if
-   \endgraf
+\def\testpage    {\dotripleempty\dotestpage[\plusone]} %
+\def\testpageonly{\dotripleempty\dotestpage[\plustwo]} % no penalties added to the mvl
+
+\def\dotestpage[#1][#2][#3]% don't change, only add more methods
+  {%\relax % needed before \if
    \ifpaginageblokkeerd
-     % do nothing
+     \endgraf
    \else
-%      \ifnum#1=\plusone\synchronizeoutput\fi
+     % new from here
+     \ifcase\testpagetrigger
+       \endgraf
+     \or
+       \ifvmode
+         \dosomebreak\allowbreak
+       \else % indeed?
+         \vadjust{\allowbreak}%
+         \endgraf
+       \fi
+     \fi
+     % till here
      \ifdim\pagegoal<\maxdimen \relax
        \ifdim\pagetotal<\pagegoal \relax
          \scratchdimen\lineheight
@@ -1379,28 +1443,28 @@
          \fi
          \ifcase\testpagemethod
            \ifdim\scratchdimen>.99\pagegoal
-             \vfill\eject % \penalty-\!!tenthousand\relax
+             \penalty-\!!tenthousand\relax
            \fi
          \or
            \advance\scratchdimen-\pagegoal
            \ifdim\scratchdimen>-\lineheight
-             \vfill\eject % \penalty-\!!tenthousand\relax
+             \penalty-\!!tenthousand\relax
            \fi
          \or
            \getnoflines\pagegoal
            \advance\scratchdimen-\noflines\lineheight \relax
            \ifdim\scratchdimen>-\lineheight
-             \vfill\eject % \penalty-\!!tenthousand\relax
+             \penalty-\!!tenthousand\relax
            \fi
          \or % same as 0 but more accurate
            \advance\scratchdimen-10\s!sp\relax
            \ifdim\scratchdimen>\pagegoal
-             \vfill\eject % \penalty-\!!tenthousand\relax
+             \penalty-\!!tenthousand\relax
            \fi
          \fi
        \else
-         % force page break / new
-         % \vfill\eject % \penalty-\!!tenthousand\relax
+         % force page break / new / does not work as expected
+         % never: \penalty-\!!tenthousand\relax
        \fi
      \else
        \ifnum#1=\plusone\goodbreak\fi

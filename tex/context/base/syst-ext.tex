@@ -872,13 +872,13 @@
    \long\global\@EA\def\csname\@@arecurse\recursedepth\endcsname{#1}%
    \global\@EA\let\csname\@@irecurse\recursedepth\endcsname\recurselevel
    \let\endofloop\dodoloop
-   \dodoloop1}
+   \dodoloop\plusone}
 
 \beginETEX \numexpr
 
 \long\def\dodoloop#1%
   {\def\recurselevel{#1}%
-   \@EA\redoloop\@EA{\the\numexpr\recurselevel+1\relax}}
+   \@EA\redoloop\@EA{\the\numexpr\recurselevel+\plusone\relax}}
 
 \endETEX
 
@@ -2422,19 +2422,55 @@
    \@EA\dosplitstring#1@@@#2@@@\\}
 
 %D \macros
-%D   {splitstring}
+%D   {splitstring,greedysplitstring}
 %D
 %D A bonus macro.
 
-%\def\splitstring#1\at#2\to#3\and#4%
-%  {\def\dosplitstring##1#2##2@@@##3\\%
-%     {\def#3{##1}\def#4{##2}}%
-%   \@EA\dosplitstring#1@@@#2@@@\\}
-
 \def\splitstring#1\at#2\to#3\and#4%
-  {\def\dosplitstring##1#2##2#2##3\\%
-     {\def#3{##1}\def#4{##2}}%
-   \@EA\dosplitstring#1#2#2\\}
+  {\def\dosplitstring##1#2##2\empty\empty\empty##3\\%
+     {\def#3{##1}%
+      \def\dosplitstring{##3}%
+      \ifx\dosplitstring\empty
+        \let#4\empty
+      \else
+        \def#4{##2}%
+      \fi}%
+   \@EA\dosplitstring#1\empty\empty\empty#2\empty\empty\empty\\}
+
+\def\greedysplitstring#1\at#2\to#3\and#4%
+  {\edef\asciib{#1}%
+   \let\asciic\asciib
+   \let#3\empty
+   \let#4\empty
+   \doloop
+     {\expandafter\splitstring\asciib\at#2\to\asciia\and\asciib
+      \ifx\asciib\empty
+        \exitloop
+      \else
+        \edef#3{\ifx#3\empty\else#3#2\fi\asciia}%
+        \let#4\asciib
+      \fi}%
+  \ifx#3\empty\let#3\asciic\fi}
+
+% The next one is some 25\% faster, but it hardly matters because
+% we seldom use this macro.
+%
+% \def\greedysplitstring#1\at#2\to#3\and#4%
+%   {\edef\asciib{#1}%
+%    \let\asciic\asciib
+%    \let#3\empty
+%    \let#4\empty
+%    \def\dogreedysplitstring
+%      {\expandafter\splitstring\asciib\at#2\to\asciia\and\asciib
+%       \ifx\asciib\empty
+%         \expandafter\dogreedysplitstring
+%       \else
+%         \edef#3{\ifx#3\empty\else#3#2\fi\asciia}%
+%         \let#4\asciib
+%       \fi}%
+%   \dogreedysplitstring
+%   \ifx#3\empty\let#3\asciic\fi}
+
 
 %D \macros
 %D   {beforetestandsplitstring,
@@ -3802,18 +3838,33 @@
 %D \stoptyping
 %D
 %D This command is used in for instance the language module
-%D \type{lang-ini}.
+%D \type{lang-ini}. The first version was:
+%D
+%D \starttyping
+%D \def\dontleavehmode{\ifhmode\else\ifmmode\else$ $\fi\fi}
+%D \stoptyping
+%D
+%D Next, Taco came with a better alternative (using mathsurround):
+%D
+%D \starttyping
+%D \def\dontleavehmode
+%D   {\ifhmode\else \ifmmode\else
+%D      {\mathsurround\zeropoint\everymath\emptytoks$ $}%
+%D    \fi \fi}
+%D \stoptyping
+%D
+%D And finaly we got the following alternative, one that avoids
+%D interfering grouping at the cost of a box.
 
-%\def\dontleavehmode{\ifhmode\else\ifmmode\else$ $\fi\fi}
-%
-% The (thanks to Taco) better alternative (mathsurround):
+\newbox\@@dlhbox
 
-\def\dontleavehmode
+\unexpanded \def\dontleavehmode
   {\ifhmode\else \ifmmode\else
-     {\mathsurround\zeropoint\everymath\emptytoks$ $}%
+     \setbox\@@dlhbox\hbox{\mathsurround\zeropoint\everymath\emptytoks$ $}\unhbox\@@dlhbox
    \fi \fi}
 
-%D And now your version of \TEX\ may provide:
+%D But, if you run a recent version of \TEX, we can use the new
+%D primitive:
 
 \ifx\quitvmode\undefined \else \let\dontleavehmode\quitvmode \fi
 

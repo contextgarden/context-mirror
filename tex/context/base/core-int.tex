@@ -333,10 +333,9 @@
 \def\doinitializeidentity#1%
   {%\iflocation
      \doprepareidentity
-     \expanded
-       {\dosetupidentity
-          {\@@iatitle}{\@@iasubtitle}{\@@iaauthor}{#1}%
-          {\@@iadate}{\@@iakeyword}}%
+     \dosetupidentity % no \expanded{..} will be done in special (else no pdfdoc)
+       {\@@iatitle}{\@@iasubtitle}{\@@iaauthor}{#1}%
+       {\@@iadate}{\@@iakeyword}%
      \global\let\initializeidentity\relax
   }%\fi}
 
@@ -446,23 +445,28 @@
 
 % \appendtoks\flushpostponedbookmark\to\everypar
 % \appendtoks\flushpostponedbookmark\to\neverypar
+%
+% \let\flushpostponedbookmark\relax
+%
+% \def\simplebookmark#1%
+%   {\ifx\flushpostponedbookmark\relax \else
+%      \bgroup
+%      \convertargument#1\to\ascii
+%      \writestatus\m!systems{clashing bookmarks: \ascii}% ECHTE MESSAGE MAKEN
+%      \egroup
+%    \fi
+%    \doglobal\prependtoks
+%      \writetolist[\@@bookmark]{}{#1}%
+%    \to\postponedbookmarks}
 
 \newtoks\postponedbookmarks
-
-%\let\flushpostponedbookmark\relax
 
 \def\flushpostponedbookmark
   {\the\postponedbookmarks
    \global\postponedbookmarks\emptytoks}
 
 \def\simplebookmark#1%
-  {\ifx\flushpostponedbookmark\relax \else
-     \bgroup
-     \convertargument#1\to\ascii
-     \writestatus\m!systems{clashing bookmarks: \ascii}% ECHTE MESSAGE MAKEN
-     \egroup
-   \fi
-   \doglobal\prependtoks
+  {\doglobal\prependtoks
      \writetolist[\@@bookmark]{}{#1}%
    \to\postponedbookmarks}
 
@@ -490,7 +494,7 @@
        \global\let\bookmarklevellist\empty
        \def\bookmarklevelcount{0}%
        \doprocessbookmarks[#1]\dogetbookmarkelement
-       \dolijstelement{}{}{}{}{}{}% needed to finish the first pass
+       \dolistelement{}{}{}{}{}{}% needed to finish the first pass
        \doprocessbookmarks[#1]\doputbookmarkelement
        \flushbookmark
        \egroup
@@ -500,7 +504,7 @@
    \fi}
 
 \def\doprocessbookmarks[#1]#2%
-  {\let\dolijstelement#2\relax
+  {\let\dolistelement#2\relax
    \scratchcounter\zerocount
    \def\docommando##1%
      {\advance\scratchcounter \plusone
@@ -1123,7 +1127,7 @@
 \def\dodefineinteractionmenu[#1][#2]% compatibility hack
   {\convertargument#2\to\ascii        % will disappear soon
    \doifinstringelse[\ascii
-     \dodostelinteractielijstmenuinx
+     \dodosetupinteractionlistmenux
      \dododefineinteractionmenu
    [#1][#2]}
 
@@ -1135,8 +1139,8 @@
    \letvalue{\??am\c!menu#1}\empty
    % \setvalue{\??am\c!menu#1}%
    %   {\extendedmenufalse\dointeractionmenu{#1}{}}%
-   \setvalue{\@@dodolijstelement#1}%
-     {\def\dosomelijstelement{\dodomenulistelement{#1}}}%
+   \setvalue{\@@dodolistelement#1}%
+     {\def\dosomelistelement{\dodomenulistelement{#1}}}%
    \presetlocalframed[\??am#1]%
    % register location
    \expanded{\addtocommalist{#1}\@EA\noexpand\csname\??am#2\endcsname}%
@@ -1157,13 +1161,13 @@
 
 \def\dosetupinteractionmenu[#1][% compatibillity hack
   {\doifnextcharelse\bgroup     % will disappear soon
-     {\dodostelinteractielijstmenuiny[#1][}
+     {\dodosetupinteractionlistmenuy[#1][}
      {\dodosetupinteractionmenu      [#1][}}
 
-\def\dodostelinteractielijstmenuinx[#1][#2][#3]% compatibillity hack
+\def\dodosetupinteractionlistmenux[#1][#2][#3]% compatibillity hack
   {\setvalue{\??am\c!menu#1}{\extendedmenufalse\dointeractionmenu{#1}{#2}}}
 
-\def\dodostelinteractielijstmenuiny[#1][#2]% compatibillity hack
+\def\dodosetupinteractionlistmenuy[#1][#2]% compatibillity hack
   {\setvalue{\??am\c!menu#1}%
      {\extendedmenufalse\dointeractionmenu{#1}{#2}}}
 

@@ -185,6 +185,7 @@
       <KEYWORD2>\passelayoutan</KEYWORD2>
       <KEYWORD2>\passendfeld</KEYWORD2>
       <KEYWORD2>\placefloat</KEYWORD2>
+      <KEYWORD2>\placereferencelist</KEYWORD2>
       <KEYWORD2>\placerule</KEYWORD2>
       <KEYWORD2>\placetextvariable</KEYWORD2>
       <KEYWORD2>\platzierebookmarks</KEYWORD2>
@@ -195,7 +196,6 @@
       <KEYWORD2>\platzierelogo</KEYWORD2>
       <KEYWORD2>\platzierelokalefussnoten</KEYWORD2>
       <KEYWORD2>\platzierenebeneinander</KEYWORD2>
-      <KEYWORD2>\platzierereferenzliste</KEYWORD2>
       <KEYWORD2>\platziereregister</KEYWORD2>
       <KEYWORD2>\platziereuntereinander</KEYWORD2>
       <KEYWORD2>\platziereunterformel</KEYWORD2>

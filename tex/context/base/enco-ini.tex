@@ -1308,12 +1308,17 @@
 \let\normalmathaccent\mathaccent
 \let\normalchar      \char
 
-\def\buildtextaccent
+% ** we will explicitly embrace the two arguments, since in definitions
+% this may not be the case, and we don't want faulty expansions like
+% "\dobuildtextaccent \char 18 a" but "\dobuildtextaccent {\char 18}{a}"
+% instead
+
+\def\buildtextaccent#1#2% **
   {\ifignoreaccent
      \expandafter\nobuildtextaccent
    \else
      \expandafter\dobuildtextaccent
-   \fi}
+   \fi{#1}{#2}}
 
 \unexpanded\def\dobuildtextaccent#1#2%
   {{\let\char\normalaccent#1\let\char\normalchar#2}}

@@ -503,11 +503,11 @@
 %    \processisolatedwords{#2}\dodounderbar
 %    \egroup}
 
-% \unexpanded\def\underbar
-%   {\bgroup
-%    \increment\underbarlevel
-%    \donetrue
-%    \dounderbar\betweenunderbarwords}
+\unexpanded\def\underbar
+  {\bgroup
+   \increment\underbarlevel
+   \donetrue
+   \dounderbar\betweenunderbarwords}
 
 \unexpanded\def\dounderbar#1%
   {\let\betweenisolatedwords#1%

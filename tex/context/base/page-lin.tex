@@ -40,12 +40,12 @@
    \globallet\@@rglinesteptoggle\!!plusone
    \processaction
      [\@@rgindenting]
-     [    \v!yes=>\def\@@rgstepyes{\parindent\@@rgparindent}%
-                 \def\@@rgstepno {\parindent\@@rgparindent},
-      \v!odd=>\def\@@rgstepyes{\parindent\zeropoint    }%
-                 \def\@@rgstepno {\parindent\@@rgparindent},
-        \v!even=>\def\@@rgstepno {\parindent\zeropoint    }%
-                 \def\@@rgstepyes{\parindent\@@rgparindent}]%
+     [  \v!yes=>\def\@@rgstepyes{\parindent\@@rgparindent}%
+                \def\@@rgstepno {\parindent\@@rgparindent},
+        \v!odd=>\def\@@rgstepyes{\parindent\zeropoint    }%
+                \def\@@rgstepno {\parindent\@@rgparindent},
+       \v!even=>\def\@@rgstepno {\parindent\zeropoint    }%
+                \def\@@rgstepyes{\parindent\@@rgparindent}]%
    \typesettinglinestrue
    \setupwhitespace[\v!none]%
    \obeylines
@@ -71,6 +71,11 @@
         \@@rgstepno
       \fi
       \futurelet\next\dobetweenthelines}%
+   % new
+   \processaction
+     [\@@rgspace]
+     [ \v!on=>\obeyspaces\def\obeyedspace{\mathortext\normalspace{\dontleavehmode{\tt\controlspace}}},
+      \v!yes=>\obeyspaces\def\obeyedspace{\mathortext\normalspace{\dontleavehmode\normalspace}}]%
    \GotoPar}
 
 % \def\dobetweenthelines%
@@ -414,6 +419,7 @@
   [\c!before=\blank,
    \c!after=\blank,
    \c!inbetween=\blank,
-   \c!indenting=\v!no]
+   \c!indenting=\v!no,
+   \c!space=\v!default]
 
 \protect \endinput

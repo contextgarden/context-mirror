@@ -238,7 +238,7 @@
 \def\globalgetrawparameters{\dogetparameters\dosetrawgvalue} % obsolete
 
 \def\splitskip#1%
-  {\scratchskip\zeropoint \!!plus 1pt \!!minus 1pt
+  {\scratchskip\zeropoint \!!plus \onepoint \!!minus \onepoint
    \advance\scratchskip#1\relax % \relax is realy needed here
    \expandafter\SPLITSKIP\the\scratchskip}
 
@@ -256,8 +256,8 @@
 
 \def\DOSPLITSKIP#1 #2 #3
   {\dimen0=#1pt\dimen2=#2pt\dimen4=#3pt
-   \advance\dimen2 -1pt%
-   \advance\dimen4 -1pt}
+   \advance\dimen2 -\onepoint
+   \advance\dimen4 -\onepoint}
 
 % \def\minimaxskip#1#2%
 %   {\splitskip#2\relax
@@ -616,5 +616,125 @@
 \def\appended#1#2#3{\@EA#1\@EA#2\@EA{#2#3}}
 \def\appendvalue #1{\@EA\appended\@EA \def\csname#1\endcsname}
 \def\appendgvalue#1{\@EA\appended\@EA\gdef\csname#1\endcsname}
+
+\def\prepended#1#2#3{\scratchtoks{#3}\@EA\@EA\@EA#1\@EA\@EA\@EA#2\@EA\@EA\@EA{\@EA\the\@EA\scratchtoks#2}}
+\def\prependvalue #1{\@EA\prepended\@EA \def\csname#1\endcsname}
+\def\prependgvalue#1{\@EA\prepended\@EA\gdef\csname#1\endcsname}
+
+%D \macros
+%D   {compresscommacommandnrs,compresscommalistnrs,compressedcommalistnrs,
+%D    compresscommacommand,compresscommalist,compressedcommalist,
+%D    reversecommacommand,reversecommalist,reversedcommalist}
+%D
+%D The following two list processing macros are needed by Taco's
+%D bibliography module. The numbers compressor converts the
+%D list in a list of ranges. The normal compressor remove duplicate
+%D and empty entries.
+
+\def\compresscommalistnrs[#1]%
+  {\let\compressedlist\empty
+   \!!counta\maxdimen
+   \!!countb\maxdimen
+   \processcommalist[#1]\docompresslistnrs
+   \ifnum\!!counta=\maxdimen\else\dodocompresslistnrs\fi}
+
+\def\compresscommacommandnrs[#1]%
+  {\expanded{\compresscommalistnrs[#1]}}
+
+\def\docompresslistnrs#1%
+  {\edef\commalistelement{#1}%
+   \ifx\commalistelement\empty\else
+     \ifnum\!!counta=\maxdimen
+       \!!counta\commalistelement\relax
+       \!!countb\!!counta
+     \else
+       \advance\!!countb\plusone
+       \ifnum\commalistelement>\!!countb
+         \advance\!!countb\minusone
+         \dodocompresslistnrs
+         \!!counta\commalistelement\relax
+         \!!countb\!!counta
+       \fi
+     \fi
+   \fi}
+
+\def\dodocompresslistnrs
+  {\edef\compressedlist
+     {\ifx\compressedlist\empty\else\compressedlist,\fi
+      {\the\!!counta}{\ifnum\!!countb>\!!counta\the\!!countb\fi}}}
+
+%D \def\test#1{{\tttf#1->\compresscommalistnrs[#1]\convertcommand\compressedlist\to\ascii\ascii}}
+%D \startlines
+%D \test{}
+%D \test{1}
+%D \test{1,3}
+%D \test{1,3,4}
+%D \test{1,3,3,4,5}
+%D \test{1,3,3,4,5,8}
+%D \test{1,3,3,4,5,5,8,10}
+%D \test{1,3,4,5,8,10,11}
+%D \test{1,,3,,4,,5,,8,,10,,11,}
+%D \stoplines
+
+\def\compresscommalist[#1]%
+  {\let\compressedlist\empty
+   \let\!!stringa\empty
+   \processcommalist[#1]\docompresslist}
+
+\def\compresscommacommand[#1]%
+  {\expanded{\compresscommalist[#1]}}
+
+\def\docompresslist#1%
+  {\edef\commalistelement{#1}%
+   \ifx\commalistelement\empty \else
+     \ifx\!!stringa\commalistelement \else
+       \ifx\compressedlist\empty
+         \def\compressedlist{#1}%
+       \else
+         \appended\def\compressedlist{,#1}%
+       \fi
+       \let\!!stringa\commalistelement
+     \fi
+   \fi}
+
+%D \def\test#1{{\tttf#1->\compresscommalist[#1]\convertcommand\compressedlist\to\ascii\ascii}}
+%D \startlines
+%D \test{}
+%D \test{1}
+%D \test{1,3}
+%D \test{1,3,4}
+%D \test{1,3,3,4,5}
+%D \test{1,3,3,4,5,8}
+%D \test{1,3,3,4,5,5,8,10}
+%D \test{1,3,4,5,8,10,11}
+%D \test{1,,3,,4,,5,,8,,10,,11,}
+%D \stoplines
+
+\def\reversecommalist[#1]%
+  {\let\reversedlist\empty
+   \processcommalist[#1]\doreverselist}
+
+\def\doreverselist#1%
+  {\ifx\reversedlist\empty
+     \def\reversedlist{#1}%
+   \else
+     \prepended\def\reversedlist{#1,}%
+   \fi}
+
+\def\reversecommacommand[#1]%
+  {\expanded{\reversecommalist[#1]}}
+
+%D \def\test#1{{\tttf#1->\reversecommalist[#1]\convertcommand\reversedlist\to\ascii\ascii}}
+%D \startlines
+%D \test{}
+%D \test{1}
+%D \test{1,3}
+%D \test{1,3,4}
+%D \test{1,3,3,4,5}
+%D \test{1,3,3,4,5,8}
+%D \test{1,3,3,4,5,5,8,10}
+%D \test{1,3,4,5,8,10,11}
+%D \test{1,,3,,4,,5,,8,,10,,11,}
+%D \stoplines
 
 \protect \endinput

@@ -247,7 +247,7 @@
       \endgraf}%
    \fi}
 
-\def\definemathcharacter%
+\def\definemathcharacter
   {\dosixtupleempty\dodefinemathcharacter}
 
 \def\dodefinemathcharacter[#1][#2][#3][#4][#5][#6]%
@@ -256,19 +256,17 @@
    \doifnumberelse{#1}
      {\scratchcounter#1}
      {\scratchcounter\@EA`\string#1}%
-   \expanded
-     {\appendtoks
-        \ifsixthargument
-          \delcode\the\scratchcounter="%
-            \ifnum\puremathcode{#2}>7 0\else\puremathcode{#2}\fi
-            \purefamilyhex{#3}\uchexnumbers{#4}%
-            \purefamilyhex{#5}\uchexnumbers{#6}\space
-        \else\iffourthargument
-          \mathcode\the\scratchcounter="%
-            \ifnum\puremathcode{#2}>7 0\else\puremathcode{#2}\fi
-            \purefamilyhex{#3}\uchexnumbers{#4}\space
-        \fi\fi
-        \noexpand\to \noexpand\mathtoks}%
+   \appendetoks
+      \ifsixthargument
+        \delcode\the\scratchcounter="%
+          \ifnum\puremathcode{#2}>7 0\else\puremathcode{#2}\fi
+          \purefamilyhex{#3}\uchexnumbers{#4}%
+          \purefamilyhex{#5}\uchexnumbers{#6}\space
+      \else\iffourthargument
+        \mathcode\the\scratchcounter="%
+          \ifnum\puremathcode{#2}>7 0\else\puremathcode{#2}\fi
+          \purefamilyhex{#3}\uchexnumbers{#4}\space
+      \fi\fi\to\mathtoks
    \let\purefamilyhex\normalpurefamilyhex
    \tracemathcharacter{#1}}
 
@@ -308,7 +306,7 @@
    \setmathcollection{#1}}
 
 \def\setmathcollection#1%
-  {\def\mathcollection{#1}%
+  {\edef\mathcollection{#1}%
    \doifundefined{\@ml@\mathcollection}
      {\expandafter\newtoks\csname\@ml@\mathcollection\endcsname}}
 
@@ -341,9 +339,24 @@
 
 \definefilesynonym[\f!mathprefix\s!default][\f!mathprefix tex]
 
-\def\usemathcollection[#1]%
-  {\doinputonce{\truefilename{\f!mathprefix#1}}%
-   \doifsomething\fontclass{\setvalue{\@mc@\fontclass\@mc@}{#1}}}
+\def\usemathcollection
+  {\dodoubleempty\dousemathcollection}
+
+\def\dousemathcollection[#1][#2]%
+  {\pushmacro\fontclass
+   \pushmacro\mathclass
+   \ifsecondargument
+     \edef\fontclass{#1}%
+     \edef\mathclass{#2}%
+   \else
+     \edef\mathclass{#1}%
+   \fi
+   \doinputonce{\truefilename{\f!mathprefix\mathclass}}%
+   \doifsomething\fontclass{\setevalue{\@mc@\fontclass\@mc@}{\mathclass}}%
+   \popmacro\mathclass
+   \popmacro\fontclass}
+
+\let\mathclass\nomathcollection
 
 \letvalue{\@mc@\@mc@}\nomathcollection
 
@@ -430,8 +443,8 @@
 
 \enablemathcollection[default]
 
-\usemathcollection[tex] % actually this is 'default'
-\usemathcollection[ams] % actually this is 'default'
+\usemathcollection [default] [tex]
+\usemathcollection [default] [ams]
 
 \enablemathcollection[default]
 

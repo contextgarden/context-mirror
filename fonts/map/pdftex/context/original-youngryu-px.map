@@ -1,14 +1,16 @@
 % This file a (slightly adapted) copy of the map file
 % that comes with the PX fonts by Young Ryu.
 
+% tx8r.enc replaced by 8r.enc
+
 % URW Palatino
 
-rpxpplb  URWPalladioL-Bold                      <tx8r.enc <uplb8a.pfb
-rpxpplbo URWPalladioL-Bold     ".167 SlantFont" <tx8r.enc <uplb8a.pfb
-rpxpplbi URWPalladioL-BoldItal                  <tx8r.enc <uplbi8a.pfb
-rpxpplr  URWPalladioL-Roma                      <tx8r.enc <uplr8a.pfb
-rpxpplro URWPalladioL-Roma     ".167 SlantFont" <tx8r.enc <uplr8a.pfb
-rpxpplri URWPalladioL-Ital                      <tx8r.enc <uplri8a.pfb
+rpxpplb  URWPalladioL-Bold                      <8r.enc <uplb8a.pfb
+rpxpplbo URWPalladioL-Bold     ".167 SlantFont" <8r.enc <uplb8a.pfb
+rpxpplbi URWPalladioL-BoldItal                  <8r.enc <uplbi8a.pfb
+rpxpplr  URWPalladioL-Roma                      <8r.enc <uplr8a.pfb
+rpxpplro URWPalladioL-Roma     ".167 SlantFont" <8r.enc <uplr8a.pfb
+rpxpplri URWPalladioL-Ital                      <8r.enc <uplri8a.pfb
 
 % PX Text
 

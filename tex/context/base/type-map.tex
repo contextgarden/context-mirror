@@ -81,8 +81,16 @@
   \loadmapfile[\typescriptthree-bitstrea-charter.map]
 \stoptypescript
 
-\starttypescript [map] [antykwa-torunska] [ec,texnansi,t5,8r]
-  \loadmapfile[\typescriptthree-public-antt.map]
+% \starttypescript [map] [antykwa-torunska] [ec,texnansi,t5,8r]
+%   \loadmapfile[\typescriptthree-public-antt.map]
+% \stoptypescript
+
+\starttypescript [map] [antykwa-torunska,antykwa-torunska-light,antykwa-torunska-cond,antykwa-torunska-lightcond] [texnansi,t2a,t2b,t2c,qx]
+  \loadmapfile[\typescriptthree-antt.map]
+\stoptypescript
+
+\starttypescript [map] [antykwa-torunska,antykwa-torunska-light,antykwa-torunska-cond,antykwa-torunska-lightcond] [ec]
+  \loadmapfile[cork-antt.map]
 \stoptypescript
 
 \starttypescript [map] [antykwa-poltawskiego] [ec,texnansi,t5,8r]

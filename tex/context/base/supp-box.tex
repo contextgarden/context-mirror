@@ -322,7 +322,7 @@
 %D have them here so that users can see them.
 %D
 %D \macros
-%D   {getnoflines, getrawnoflines}
+%D   {getnoflines, getroundednoflines, getrawnoflines}
 %D
 %D Het commando \type{\getnoflines} converteert een hoogte
 %D (dimensie) in een aantal regels en kent dit toe aan
@@ -336,23 +336,100 @@
 %D van~0pt komt overeen met 0~regels. The raw alternative
 %D does not round.
 
+%D For a long time we had:
+%D
+%D \starttyping
+%D \newcount\noflines
+%D \newdimen\noflinesheight
+%D
+%D \def\dogetnoflines#1#2%
+%D   {\noflinesheight#2\relax
+%D    \ifzeropt\noflinesheight % \ifdim\noflinesheight=\zeropoint
+%D      \noflines\zerocount
+%D    \else
+%D      \divide\noflinesheight \openlineheight
+%D      \noflines\noflinesheight
+%D      #1\ifdim\noflines\openlineheight=#2\relax \else
+%D        \advance\noflines\ifdim#2>\zeropoint\plusone\else\minusone\fi
+%D      \fi\fi
+%D    \fi}
+%D
+%D \def\getnoflines   {\dogetnoflines\iftrue } % compensated
+%D \def\getrawnoflines{\dogetnoflines\iffalse} % no compensation
+%D \stoptyping
+%D
+%D A more recent variant is:
+
+\ifx\roundingeps\undefined \newdimen\roundingeps \roundingeps=10sp \fi
+
 \newcount\noflines
 \newdimen\noflinesheight
 
-\def\dogetnoflines#1#2%
-  {\noflinesheight#2\relax
-   \ifzeropt\noflinesheight % \ifdim\noflinesheight=\zeropoint
-     \noflines\zerocount
-   \else
-     \divide\noflinesheight \openlineheight
-     \noflines\noflinesheight
-     #1\ifdim\noflines\openlineheight=#2\relax \else
-       \advance\noflines\ifdim#2>\zeropoint\plusone\else\minusone\fi
-     \fi\fi
-   \fi}
+\def\getnoflines       {\xdogetnoflines\plusone  } % compensated
+\def\getroundednoflines{\xdogetnoflines\plustwo  } % rounded
+\def\getrawnoflines    {\xdogetnoflines\plusthree} % truncated
 
-\def\getnoflines   {\dogetnoflines\iftrue } % compensated
-\def\getrawnoflines{\dogetnoflines\iffalse} % no compensation
+\def\xdogetnoflines#1#2%
+  {\noflinesheight#2\relax
+   \ifzeropt\noflinesheight
+     \noflines\zerocount
+   \else\ifdim#2>\zeropoint
+     \ifcase#1\or
+       \advance\noflinesheight-\roundingeps
+       \divide\noflinesheight\openlineheight
+       \noflines\noflinesheight
+       \advance\noflines\plusone
+     \or
+       \advance\noflinesheight\roundingeps
+       \divide\noflinesheight\openlineheight
+       \noflines\noflinesheight
+     \or
+       \advance\noflinesheight\roundingeps
+       \advance\noflinesheight.5\openlineheight
+       \divide\noflinesheight\openlineheight
+       \noflines\noflinesheight
+     \fi
+   \else
+     \ifcase#1\or
+       \advance\noflinesheight\roundingeps
+       \divide\noflinesheight\openlineheight
+       \noflines\noflinesheight
+       \advance\noflines\minusone
+     \or
+       \advance\noflinesheight-\roundingeps
+       \divide\noflinesheight\openlineheight
+       \noflines\noflinesheight
+     \or
+       \advance\noflinesheight-\roundingeps
+       \advance\noflinesheight-.5\openlineheight
+       \divide\noflinesheight\openlineheight
+       \noflines\noflinesheight
+     \fi
+   \fi\fi}
+
+%D Let's proof that it works:
+%D
+%D \startbuffer
+%D \scratchdimen\dimexpr(3pt)               \getnoflines\scratchdimen  1=\the\noflines \endgraf
+%D \scratchdimen\dimexpr(10\lineheight)     \getnoflines\scratchdimen 10=\the\noflines \endgraf
+%D \scratchdimen\dimexpr(10.1\lineheight)   \getnoflines\scratchdimen 11=\the\noflines \endgraf
+%D \scratchdimen\dimexpr(10.5\lineheight)   \getnoflines\scratchdimen 11=\the\noflines \endgraf
+%D \scratchdimen\dimexpr(10.9\lineheight)   \getnoflines\scratchdimen 11=\the\noflines \endgraf
+%D \scratchdimen\dimexpr(10\lineheight+3pt) \getnoflines\scratchdimen 11=\the\noflines \endgraf
+%D \scratchdimen\dimexpr(10\lineheight+3sp) \getnoflines\scratchdimen 10=\the\noflines \endgraf
+%D \scratchdimen\dimexpr(10\lineheight-3sp) \getnoflines\scratchdimen 10=\the\noflines \endgraf
+%D
+%D \scratchdimen\dimexpr(3pt)               \getrawnoflines\scratchdimen  0=\the\noflines \endgraf
+%D \scratchdimen\dimexpr(10\lineheight)     \getrawnoflines\scratchdimen 10=\the\noflines \endgraf
+%D \scratchdimen\dimexpr(10.1\lineheight)   \getrawnoflines\scratchdimen 10=\the\noflines \endgraf
+%D \scratchdimen\dimexpr(10.5\lineheight)   \getrawnoflines\scratchdimen 11=\the\noflines \endgraf
+%D \scratchdimen\dimexpr(10.9\lineheight)   \getrawnoflines\scratchdimen 11=\the\noflines \endgraf
+%D \scratchdimen\dimexpr(10\lineheight+3pt) \getrawnoflines\scratchdimen 10=\the\noflines \endgraf
+%D \scratchdimen\dimexpr(10\lineheight+3sp) \getrawnoflines\scratchdimen 10=\the\noflines \endgraf
+%D \scratchdimen\dimexpr(10\lineheight-3sp) \getrawnoflines\scratchdimen 10=\the\noflines \endgraf
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
 
 %D \macros
 %D   {determinenoflines}

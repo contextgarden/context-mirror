@@ -287,22 +287,6 @@
 
 \def\maxreadlevel{3}
 
-% \def\doreadfile#1#2#3#4%
-%   {\sanitizefilename#2\to\readfilename
-%    \checkfilename\readfilename
-%    \ifcase\kindoffile
-%      \iftracefiles\writestatus\m!systems{searching for \readfilename\space on #1}\fi
-%      % not a full path or url, check for existence
-%      \doifelsenothing{#1}
-%        {\def\next{\redoreadfile\readfilename{#3}{#4}}}%
-%        {\def\next{\redoreadfile{\pathplusfile{#1}{\readfilename}}{#3}{#4}}}%
-%    \else
-%      % a full path or url, no further checking done
-%      \iftracefiles\writestatus\m!systems{assuming present \readfilename}\fi
-%      \def\next{#3\dodoreadfile}%
-%    \fi
-%    \next}
-
 \newconditional\trackfilenames
 
 % We need to postpone loading, else we got frozen type-* files and so when
@@ -613,9 +597,44 @@
    \catcode`\}=\@@endgroup
    \catcode`\%=\@@comment}
 
-\def\stopreadingfile%
+\def\stopreadingfile
   {\getvalue{\string\readingfilelevel::\readingfilelevel}%
    \doglobal\decrement\readingfilelevel}
+
+%D \macros
+%D   {splitfilename}
+%D
+%D I should have made this one sooner. This macro was first needed when
+%D ran into graphic with a period in the pathpart.
+%D
+%D \startbuffer
+%D \def\showfilesplit
+%D   {\bgroup \tttf
+%D      \hbox{(full: \splitofffull)}\space
+%D      \hbox{(path: \splitoffpath)}\space
+%D      \hbox{(base: \splitoffbase)}\space
+%D      \hbox{(name: \splitoffname)}\space
+%D      \hbox{(type: \splitofftype)}\space
+%D    \egroup}
+%D
+%D \splitfilename{c:/aa/bb/cc/dd.ee.ff} \showfilesplit \endgraf
+%D \splitfilename{c:/aa/bb/cc/dd.ee}    \showfilesplit \endgraf
+%D \splitfilename{c:/aa/bb/cc/dd}       \showfilesplit \endgraf
+%D
+%D \splitfilename{dd.ee.ff} \showfilesplit \endgraf
+%D \splitfilename{dd.ee}    \showfilesplit \endgraf
+%D \splitfilename{dd}       \showfilesplit \endgraf
+%D \stopbuffer
+%D
+%D \start \typebuffer \getbuffer \stop
+
+\def\splitfilename#1%
+  {\edef\splitofffull{#1}% normally outside this call: \sanitizefilename#1\to\sanitizedfilename
+   \greedysplitstring\splitofffull\at/\to\splitoffpath\and\splitoffbase
+   \ifx\splitoffbase\empty\let\splitoffbase\splitofffull\fi
+   \greedysplitstring\splitoffbase\at.\to\splitoffname\and\splitofftype
+   \ifx\splitoffpath\empty\def\splitoffpath{.}\fi
+   \ifx\splitoffname\empty\let\splitoffname\splitoffbase\fi}
 
 %% % gebruikt voor normale (!) files, will change to proper
 %% % installer maybe combined with verb module push/popper

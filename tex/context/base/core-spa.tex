@@ -152,7 +152,7 @@
    \ifdim\scratchdimen>\onepoint
      \showmessage\m!layouts{10}{\@@itheight,\@@itdepth}%
      \let\@@itheight\strutheightfactor
-     \let\@@itdepth\strutdepthfactor
+     \let\@@itdepth \strutdepthfactor
    \else
      \let\strutheightfactor\@@itheight
      \let\strutdepthfactor \@@itdepth
@@ -161,7 +161,9 @@
    \let\minimumstrutdepth  \@@itmindepth
    \let\minimallinedistance\@@itdistance
    \let\normallineheight   \@@itline % let ! ! ! ! ! ivm ex
-   \let\topskipfactor      \@@ittop
+   \doifelse\@@ittop\v!height % new, topskip does more bad than good
+     {\let\topskipfactor   \@@itheight}
+     {\let\topskipfactor   \@@ittop   }%
    \let\maxdepthfactor     \@@itbottom
    \let\baselinegluefactor \@@itstretch
    \setfontparameters % redundant, can be \setstrut, test first
@@ -220,7 +222,7 @@
 \def\normalskipamount
   {\openlineheight
      \ifgridsnapping \else \ifblankoflexibel
-       \!!plus\skipgluefactor\openlineheight
+       \!!plus \skipgluefactor\openlineheight
        \!!minus\skipgluefactor\openlineheight
      \fi \fi
    \relax}
@@ -912,7 +914,7 @@
            \fi
            \iflokaalblankoflexibel
              \blankoskip1\blankoskip
-               \!!plus\skipgluefactor\blankoskip
+               \!!plus \skipgluefactor\blankoskip
                \!!minus\skipgluefactor\blankoskip
            \fi
            \ifdim\lastkern=\noblanksignal\relax % controlled and grid
@@ -1463,17 +1465,17 @@
 
 \def\definewhitespacemethod[#1]#2{\setvalue{\??ws\??ws#1}{#2}}
 
-\definewhitespacemethod [\v!fix]    {}
-\definewhitespacemethod [\v!fixed]       {\witruimteflexibelfalse}
-\definewhitespacemethod [\v!flexible]   {\witruimteflexibeltrue}
-\definewhitespacemethod [\v!line]      {\ctxparskip  \baselineskip}
+\definewhitespacemethod [\v!fix]      {}
+\definewhitespacemethod [\v!fixed]    {\witruimteflexibelfalse}
+\definewhitespacemethod [\v!flexible] {\witruimteflexibeltrue}
+\definewhitespacemethod [\v!line]     {\ctxparskip  \baselineskip}
 \definewhitespacemethod [\v!halfline] {\ctxparskip.5\baselineskip}
-\definewhitespacemethod [\v!none]       {\ctxparskip  \zeropoint}
+\definewhitespacemethod [\v!none]     {\ctxparskip  \zeropoint}
 \definewhitespacemethod [\v!big]      {\ctxparskip  \blankogrootmaat}
-\definewhitespacemethod [\v!medium]     {\ctxparskip  \blankomiddelmaat}
-\definewhitespacemethod [\v!small]      {\ctxparskip  \blankokleinmaat}
+\definewhitespacemethod [\v!medium]   {\ctxparskip  \blankomiddelmaat}
+\definewhitespacemethod [\v!small]    {\ctxparskip  \blankokleinmaat}
 
-\definewhitespacemethod [\s!default]    {\stelwitruimteopnieuwin}
+\definewhitespacemethod [\s!default]  {\stelwitruimteopnieuwin}
 
 \def\dowhitespacemethod#1%
   {\executeifdefined{\??ws\??ws#1}{\ctxparskip#1}\relax}
@@ -1580,9 +1582,8 @@
 % Ze spelen een rol bij de spatiering rond omkaderde teksten
 % en/of boxen zonder diepte.
 
-\def\toonregelcorrectie   {\showbaselinecorrection}
-\def\regelcorrectie       {\baselinecorrection}
-
+\def\toonregelcorrectie{\showbaselinecorrection}
+\def\regelcorrectie    {\baselinecorrection}
 
 % \prevdepth crosses pageboundaries!
 
@@ -1758,8 +1759,8 @@
   {\maxdepth\systemmaxdepthfactor\globalbodyfontsize}
 
 \def\normalbaselines
-  {\baselineskip\normalbaselineskip
-   \lineskip\normallineskip
+  {\baselineskip \normalbaselineskip
+   \lineskip     \normallineskip
    \lineskiplimit\normallineskiplimit}
 
 % \def\setnormalbaselines
@@ -1802,8 +1803,10 @@
      \endgroup
    \fi
    \normalbaselineskip\openlineheight
-     \!!plus\baselinegluefactor\openlineheight
+\ifgridsnapping\else
+     \!!plus \baselinegluefactor\openlineheight
      \!!minus\baselinegluefactor\openlineheight
+\fi
    \normallineskip\minimallinedistance\relax % \onepoint\relax
    \normallineskiplimit\zeropoint\relax
    \normalbaselines}

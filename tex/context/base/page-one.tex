@@ -114,65 +114,6 @@
      \fi
    \fi}
 
-% \def\OTRONEdopagecontents#1#2% \box<n> \unvbox<n>
-%   {\bgroup             % niet breedte zetten, kan fractie zijn!
-%    \setbox0\vbox \ifbottomnotes to \teksthoogte \fi
-%      {\edef\currentpagedepth{\the\dp#2}% still to be derived from #1
-%       \dotopinsertions
-%       #1#2%
-%       \everypushproperties
-%       \ifgridsnapping
-%         \vskip-\currentpagedepth
-%         \vskip\openstrutdepth     % \strutdp
-%         \prevdepth\openstrutdepth % \strutdp
-%         \dobotinsertions
-%         \vfil
-%       \else\ifr@ggedbottom
-%         \vskip-\currentpagedepth
-%         \vskip\openstrutdepth % \strutdp
-%         \prevdepth\openstrutdepth % \strutdp
-%         \dobotinsertions
-%         \vfil
-%       \else\ifb@selinebottom
-%         \kern-\currentpagedepth
-%         \kern\maxdepth
-%         \dobotinsertions
-%       \fi\fi\fi
-%       \fakenotes}%
-%    \ifbottomnotes
-%      \ifgridsnapping
-%        \getnoflines\teksthoogte
-%        \advance\noflines -1
-%        \scratchdimen\noflines\lineheight
-%        \advance\scratchdimen \topskip
-%      \else
-%        \scratchdimen\ht0
-%      \fi
-%    \else
-%      \scratchdimen\zeropoint
-%    \fi
-%    \setbox2\hbox
-%      {\checksinglecolumnfootnotes
-%       \lower\scratchdimen\vbox{\placebottomnotes}}%
-%    \smashbox2% % needed here
-%    \ifbottomnotes
-%      \ht0\zeropoint
-%    \fi
-%    \vbox to \teksthoogte
-%      {\box0\box2\ifbottomnotes\else\vfill\fi}%
-%    \egroup}
-
-%\def\OTRONEregisteredtextarea#1#2#3%
-%  {\ifregistertextareas
-%     % sub optimal, unvbox is nilled here
-%     \setbox#2\vbox{#1#2}%
-%     \wd#2\zetbreedte % somehow a space creeps in (in unvbox'd #2)
-%     \vbox{\registeredtextarea00#2}%
-%     #3%
-%   \else
-%     #1#2#3%
-%   \fi}
-
 \chardef\kindofpagetextareas=2 % whole page (public variable! never change)
 
 \def\OTRONEregisteredtextarea#1%
@@ -278,48 +219,6 @@
      \fi
    \fi
    \egroup}
-
-% \def\OTRONEdodosettopinserts
-%   {\ifnum\noffloatinserts<\noftopfloats
-%      \dogetfloat
-%      \ifdim\topinserted=\zeropoint
-%        \topofinserttrue
-%      \else
-%        \topofinsertfalse
-%      \fi
-%      \global\advance\topinserted \ht\floatbox
-%      \global\advance\topinserted \dp\floatbox
-%      \global\advance\topinserted \floatbottomskip\relax
-%      \ifdim\topinserted<\teksthoogte\relax
-%        \xdef\totaltopinserted{\the\topinserted}%
-%        \insert\topins
-%          {\forgetall
-%           \iftopofinsert
-%             \kern-\lineskip\par
-%             \prevdepth\maxdimen
-%           \else
-%             %\blanko[-\@@bknawit,\@@bkvoorwit]% inserts can't look back
-%             \betweenfloatblanko
-%           \fi
-%           \flushfloatbox
-%           \blanko[\@@bknawit]}%
-%        \ifsomefloatwaiting
-%          \advance\noffloatinserts \plusone
-%        \else
-%          \noffloatinserts\noftopfloats\relax
-%        \fi
-%        \dofloatflushedinfo
-%      \else
-%        \doresavefloat
-%        \noffloatinserts\noftopfloats\relax
-%      \fi
-%    \else
-%      \ifsomefloatwaiting
-%        \showmessage\m!floatblocks6{\the\noftopfloats}%
-%      \fi
-%      \let\OTRONEdodosettopinserts\relax
-%    \fi
-%    \OTRONEdodosettopinserts}
 
 \def\OTRONEdodosettopinserts
   {\ifnum\noffloatinserts<\noftopfloats
@@ -441,17 +340,6 @@
    \fi
    \global\botinserted\zeropoint
    \global\nofloatpermittedfalse}
-
-% \def\OTRONEdoflushfloats
-%   {\global\flushingfloatstrue
-%    \ifsomefloatwaiting
-%      \par
-%      \ifvmode \prevdepth\maxdimen \fi % prevents whitespace
-%      \OTRONEdodoflushfloats
-%    \fi
-%    \global\savednoffloats\zerocount
-%    \global\somefloatwaitingfalse
-%    \global\flushingfloatsfalse}
 
 \def\OTRONEdoflushfloats
   {\global\flushingfloatstrue
@@ -676,27 +564,6 @@
          \doifnotinset\v!low{#1}\vfill}%
       \goodbreak}%
    \doinsertfloatinfo}
-
-% \def\OTRONEsometopsfloat[#1]%
-%   {\ifdim\topinserted=\zeropoint
-%      \topofinserttrue
-%    \else
-%      \topofinsertfalse
-%    \fi
-%    \global\advance\topinserted \ht\floatbox
-%    \global\advance\topinserted \dp\floatbox
-%    \global\advance\topinserted \floatbottomskip
-%    \insert\topins
-%      {\forgetall
-%       \iftopofinsert
-%         \kern-\lineskip\par\prevdepth\maxdimen
-%       \else
-%         %\blanko[-\@@bknawit,\@@bkvoorwit]% inserts can't look back
-%         \betweenfloatblanko
-%       \fi
-%       \flushfloatbox
-%       \blanko[\@@bknawit]}%
-%    \doinsertfloatinfo}
 
 \def\OTRONEsometopsfloat[#1]%
   {\ifdim\topinserted=\zeropoint

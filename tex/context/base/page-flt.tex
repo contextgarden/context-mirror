@@ -279,21 +279,21 @@
      \processaction
        [\getvalue{\??fl#1\c!sidealign}]
        [\v!height=>\global\chardef\sidefloatalign\plusone,%
-         \v!line=>\global\chardef\sidefloatalign\plustwo,% (***)
-        \v!depth=>\global\chardef\sidefloatalign\plusthree,%
+          \v!line=>\global\chardef\sidefloatalign\plustwo,% (***)
+         \v!depth=>\global\chardef\sidefloatalign\plusthree,%
           \v!grid=>\global\chardef\sidefloatalign4,%
-    \v!halfline=>\global\chardef\sidefloatalign5]%
+      \v!halfline=>\global\chardef\sidefloatalign5]%
 % todo (test first): \doifinset\v!lokaal{#2}{\chardef\sidefloatalign\zerocount}%
      \ifcase\sidefloatalign\relax % todo: optie v!lokaal => \else
-       \doifinset\v!height    {#2}{\global\chardef\sidefloatalign\plusone}%
-       \doifinset\v!line     {#2}{\global\chardef\sidefloatalign\plustwo}%
-       \doifinset\v!depth    {#2}{\global\chardef\sidefloatalign\plusthree}%
-       \doifinset\v!grid      {#2}{\global\chardef\sidefloatalign4}%
+       \doifinset\v!height  {#2}{\global\chardef\sidefloatalign\plusone}%
+       \doifinset\v!line    {#2}{\global\chardef\sidefloatalign\plustwo}%
+       \doifinset\v!depth   {#2}{\global\chardef\sidefloatalign\plusthree}%
+       \doifinset\v!grid    {#2}{\global\chardef\sidefloatalign4}%
        \doifinset\v!halfline{#2}{\global\chardef\sidefloatalign5}% meant for 'none'
      \fi
      \doifinset\v!high{#2}{\global\sidefloattopskip   \zeropoint}%
-     \doifinset\v!low{#2}{\global\sidefloatbottomskip\zeropoint}%
-     \doifinset\v!fit{#2}
+     \doifinset\v!low {#2}{\global\sidefloatbottomskip\zeropoint}%
+     \doifinset\v!fit {#2}
        {\global\sidefloattopskip   \zeropoint
         \global\sidefloatbottomskip\zeropoint
         \global\floatsideskip      \zeropoint}%
@@ -565,6 +565,7 @@
    \setupcaption
      [#1]
      [\c!location=\@@kjlocation,
+      \c!grid=\@@kjgrid,
      %\c!before=\@@kjbefore,
       \c!inbetween=\@@kjinbetween,
      %\c!after=\@@kjafter,
@@ -1158,6 +1159,29 @@
 
 % \floatparameter
 
+% \def\putcompletecaption#1#2#3#4%
+%   {\noindent
+%    \xdef\lastcaptiontag{\strut#2\floatcaptionsuffix}%
+%    \xdef\floatcaptionnumber{#1}%
+%    \dostartattributes{\??kj#1}\c!style\c!color\empty
+%      \ifnofloatnumber
+%      \else
+%        \hbox{\doattributes{\??kj#1}\c!headstyle\c!headcolor{\strut#2\floatcaptionsuffix}}%
+%        \ifnofloatcaption \else \ifemptyfloatcaption \else
+%          \ifcase#4\relax
+%            \scratchskip\@@kjkjdistance\relax
+%            \dotfskip\scratchskip\emergencystretch.5\scratchskip
+%          \else
+%            \ifx\@@kjkjinbetween\empty\else\unskip\@@kjkjinbetween\fi
+%          \fi
+%        \fi \fi
+%      \fi
+%      \ifnofloatcaption \else
+%        \doattributes{\??kj#1}\c!textstyle\c!textcolor
+%          {\begstrut#3\endstrut\endgraf}%
+%      \fi
+%    \dostopattributes}
+
 \def\putcompletecaption#1#2#3#4%
   {\noindent
    \xdef\lastcaptiontag{\strut#2\floatcaptionsuffix}%
@@ -1175,11 +1199,19 @@
          \fi
        \fi \fi
      \fi
-     \ifnofloatcaption \else
+     \ifnofloatcaption
+       \globallet\lastcaptionht\!!zeropoint
+       \globallet\lastcaptiondp\!!zeropoint
+     \else
        \doattributes{\??kj#1}\c!textstyle\c!textcolor
-         {\begstrut#3\endstrut\endgraf}%
+         {\xdef\lastcaptionht{\strutheight}%
+          \xdef\lastcaptiondp{\strutdepth}%
+          \begstrut#3\endstrut\endgraf}%
      \fi
    \dostopattributes}
+
+\let\lastcaptionht\!!zeropoint
+\let\lastcaptiondp\!!zeropoint
 
 % new
 
@@ -1204,6 +1236,10 @@
        \fi
      \fi
    \fi}
+
+% minwidth=fit,width=max : no overshoot, as wide as graphic
+
+\ifx\moveboxontogrid\undefined \let\movecaptionontogrid\gobblethreearguments \fi
 
 \def\dosetpagfloat#1#2#3#4% \copy wegwerken
   {\bgroup
@@ -1241,6 +1277,7 @@
      \edef\width{\the\wd\tempfloatbox}%
      \addlocalbackgroundtobox\tempfloatbox
      \setbox\tempcaptionbox\hbox{\@@kjkjcommand{\box\tempcaptionbox}}%
+     \moveboxontogrid\tempcaptionbox\@@kjkjgrid\lastcaptionht
      \addlocalbackgroundtobox\tempcaptionbox
      \buildfloatbox
    \fi
@@ -1287,71 +1324,10 @@
 
 \def\dopreparestackcaptionmin#1#2#3#4%
   {\raggedcenter                    % the default
-   \dosetraggedvbox\@@kjkjalign % when given
+   \dosetraggedvbox\@@kjkjalign     % when given
    \setbox\tempcaptionbox\raggedbox % vbox, keeps footnotes
      {\hsize\wd\tempfloatbox
       \putcompletecaption{#4}{#2}{#3}{0}}}
-
-% \def\dopreparestackcaptionaut#1#2#3#4%
-%   {\doifsomething\@@kjkjalign
-%      {\ExpandBothAfter\doifnotinset\v!middle\@@kjkjalign
-%         {\let\captionovershoot\!!zeropoint}}%
-%    \ifdim\wd\tempfloatbox>\hsize
-%      % float is wider than \hsize
-%      \dosetraggedvbox\@@kjkjalign
-%      \setbox\scratchbox\raggedbox % trial run
-%        {\hsize\wd\tempfloatbox
-%         \notesenabledfalse
-%         \putcompletecaption{#4}{#2}{#3}{0}}%
-%      \ifdim\ht\scratchbox>\lineheight % more lines
-%        \dosetraggedvbox\@@kjkjalign
-%        \setbox\tempcaptionbox\raggedbox
-%          {\hsize\wd\tempfloatbox
-%           \advance\hsize -\captionovershoot\relax
-%           \ifdim\hsize<\captionminwidth\relax
-%             \hsize\wd\tempfloatbox
-%           \fi
-%           \putcompletecaption{#4}{#2}{#3}{0}}%
-%      \else
-%        \setbox\tempcaptionbox\raggedbox
-%          {\hsize\wd\tempfloatbox
-%           \putcompletecaption{#4}{#2}{#3}{0}}%
-%      \fi
-%    \else
-%      % float is smaller of equal to \hsize
-%      \ifdim\wd\tempfloatbox<\captionminwidth\relax
-%        \scratchdimen\captionminwidth % float smaller than min width
-%      \else
-%        \scratchdimen\wd\tempfloatbox % float width
-%      \fi
-%      \setbox\scratchbox\vbox     % test with overshoot
-%        {\advance\scratchdimen \captionovershoot
-%         \advance\scratchdimen 3em % an average word length
-%         \ifdim\scratchdimen<\hsize \hsize\scratchdimen \fi
-%         \notesenabledfalse
-%         \putcompletecaption{#4}{#2}{#3}{0}}%
-%      \ifdim\ht\scratchbox>\lineheight
-%        % at least an average word longer than a line
-%        \dosetraggedvbox\@@kjkjalign
-%        \setbox\tempcaptionbox\raggedbox
-%          {\advance\scratchdimen \captionovershoot
-%           \ifdim\scratchdimen<\hsize \hsize\scratchdimen \fi
-%           \putcompletecaption{#4}{#2}{#3}{0}}%
-%      \else
-%        % just over a line, don't use an overshoot
-%        % \doifinsetelse\@@kjkjalign{\v!left,\v!right}
-%        \expanded{\doifcommonelse{\@@kjkjalign}}{\v!left,\v!right,\v!flushleft,\v!flushright}
-%          {\dosetraggedvbox\@@kjkjalign
-%           \setbox\tempcaptionbox\raggedbox
-%             {\hsize\scratchdimen
-%              % strange : \raggedcenter
-%              \putcompletecaption{#4}{#2}{#3}{0}}}
-%          {% nicer
-%           \setbox\tempcaptionbox\cbox
-%             {\hsize\scratchdimen
-%              \putcompletecaption{#4}{#2}{#3}{0}}}%
-%      \fi
-%    \fi}
 
 \def\dopreparestackcaptionaut#1#2#3#4%
   {\doifsomething\@@kjkjalign
@@ -1436,10 +1412,10 @@
       \forgetall
       \processaction
         [\@@kjkjlocation]
-        [ \v!top=>\locatefloat{\box\tempcaptionbox}%
+        [   \v!top=>\locatefloat{\box\tempcaptionbox}%
                     \endgraf\nointerlineskip\@@kjkjinbetween
                     \locatefloat{\box\tempfloatbox},
-          \v!bottom=>\locatefloat{\box\tempfloatbox}%
+         \v!bottom=>\locatefloat{\box\tempfloatbox}%
                     \endgraf\nointerlineskip\@@kjkjinbetween
                     \locatefloat{\box\tempcaptionbox},
            \v!high=>\locatefloat
@@ -1450,7 +1426,7 @@
                          {\vbox to\ht\tempfloatbox{\@@kjkjinbetween\box\tempcaptionbox\vfill}%
                           \tfskip
                           \box\tempfloatbox}},
-           \v!low=>\locatefloat
+            \v!low=>\locatefloat
                       {\doifelse\@@flfllocation\v!left
                          {\box\tempfloatbox
                           \dotfskip\@@kjkjdistance
@@ -1583,6 +1559,7 @@
            \setbox\tempcaptionbox\raggedbox
              {\hsize\wd\tempfloatbox\putcompletecaption{#4}{#2}{#3}{0}}}}%
      \setbox\tempcaptionbox\hbox{\@@kjkjcommand{\box\tempcaptionbox}}%
+     \moveboxontogrid\tempcaptionbox\@@kjkjgrid\lastcaptionht
      \addlocalbackgroundtobox\tempcaptionbox % no \doglobal
      \global\setbox\floatbox\vbox
        {\processaction
@@ -1607,10 +1584,11 @@
   {\ifvisible
      \par
      \edef\@@kjkjlocation {\getvalue{\??kj#4\c!location}}%
+     \edef\@@kjkjgrid     {\getvalue{\??kj#4\c!grid}}%       new
       \def\@@kjkjinbetween{\getvalue{\??kj#4\c!inbetween}}%  no \edef
-      \def\@@kjkjcommand  {\getvalue{\??kj#4\c!command}}%  no \edef
+      \def\@@kjkjcommand  {\getvalue{\??kj#4\c!command}}%    no \edef
      \edef\@@kjkjwidth    {\getvalue{\??kj#4\c!width}}%
-     \edef\@@kjkjminwidth {\getvalue{\??kj#4\c!minwidth}}%  in geval van automatisch
+     \edef\@@kjkjminwidth {\getvalue{\??kj#4\c!minwidth}}%   in geval van automatisch
      \edef\@@kjkjdistance {\getvalue{\??kj#4\c!distance}}%
      \edef\@@kjkjalign    {\getvalue{\??kj#4\c!align}}%
      \edef\@@flfllocation {\getvalue{\??fl#4\c!location}}%
@@ -2023,6 +2001,7 @@
 
 \setupcaptions
   [\c!location=\v!bottom,
+   \c!grid=,
    \c!before=\blank,
    \c!inbetween={\blank[\v!medium]},
    \c!after=\blank,

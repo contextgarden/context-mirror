@@ -269,6 +269,7 @@ def some_wrd_error(data, filename, start, stop, ignore)
     while line<data.length do
         dataline = data[line].split(/[^\\A-Za-z]/)
         if dataline.length>0 then
+            # todo: more on one line
             dataline.each do |dataword|
                 case dataword
                     when re_ignore then
@@ -349,6 +350,7 @@ end
 def some_key_error(data, filename, valid)
     return if (! valid) || (valid.length == 0)
     error = false
+    # data.foreach do |line| ... end
     for line in 0..data.length-1 do
         data[line].scan(/\\([a-zA-Z]+)/io) do
             unless valid.has_key?($1) then

@@ -242,10 +242,10 @@
      \gdef\arrangedrotationE{180}%
      \processallactionsinset
        [#1]
-       [  \v!mirrored=>\global\mirrorarrangedtrue,
-        \v!doublesided=>\global\doublearrangedtrue,
+       [    \v!mirrored=>\global\mirrorarrangedtrue,
+         \v!doublesided=>\global\doublearrangedtrue,
             \v!negative=>\global\negatearrangedtrue,
-           \v!rotated=>\gdef\arrangedrotationO {90}\gdef\arrangedrotationE{270},
+             \v!rotated=>\gdef\arrangedrotationO {90}\gdef\arrangedrotationE{270},
                      90=>\gdef\arrangedrotationO {90}\gdef\arrangedrotationE{270},
                     180=>\gdef\arrangedrotationO{180}\gdef\arrangedrotationE{0},
                     270=>\gdef\arrangedrotationO{270}\gdef\arrangedrotationE{90},

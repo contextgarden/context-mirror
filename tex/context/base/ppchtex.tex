@@ -1052,7 +1052,7 @@
      \startrotation by {#1} {#2} %% \stoprotation (t.b.v. testen)
    \fi}
 
-\def\doresetchemicalrotation%
+\def\doresetchemicalrotation
   {\ifnum\chemicaldrawingmode=1
      % njet
    \else
@@ -3354,7 +3354,7 @@ RT##3##4##5=>\processchemicaltextelement{RN}{##3##4##5}{#1}{0}{},
 %D \item position tracking
 %D \stopopsoming
 
-\ifCONTEXT
+\ifCONTEXT \else \protect \endinput \fi
 
 \def\setchemicalattributes
   {\scratchdimen\@@chemicalchemicalrulethickness
@@ -3392,7 +3392,5 @@ RT##3##4##5=>\processchemicaltextelement{RN}{##3##4##5}{#1}{0}{},
      #2%
      \egroup
   \fi}
-
-\fi
 
 \protect \endinput

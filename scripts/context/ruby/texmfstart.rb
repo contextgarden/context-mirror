@@ -208,9 +208,19 @@ def runcommand(command)
         print(command)
     elsif $execute then
         report("using 'exec' instead of 'system' call: #{command}") if $verbose
+        begin
+            Dir.chdir($path) if ! $path.empty?
+        rescue
+            report("unable to chdir to: #{$path}") if $verbose
+        end
         exec(command)
     else
         report("using 'system' call: #{command}") if $verbose
+        begin
+            Dir.chdir($path) if ! $path.empty?
+        rescue
+            report("unable to chdir to: #{$path}") if $verbose
+        end
         system(command)
     end
 end
@@ -544,6 +554,8 @@ $verbose     = $directives['verbose']   || false
 $arguments   = $directives['arguments'] || ''
 $execute     = $directives['execute']   || $directives['exec'] || false
 $locate      = $directives['locate']    || false
+
+$path        = $directives['path']      || ''
 
 $make        = $directives['make']      || false
 $unix        = $directives['unix']      || false

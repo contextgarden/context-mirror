@@ -105,8 +105,8 @@
 
 \def\dowritesynonym#1#2#3#4%
   {\begingroup  % anders in mathmode lege \hbox
-   \convertexpanded{\??sm#1}{#3}\asciisynonym
-   \convertexpanded{\??sm#1}{#4}\asciimeaning
+   \convertexpanded{\getvalue{\??sm#1\c!expansion}}{#3}\asciisynonym
+   \convertexpanded{\getvalue{\??sm#1\c!expansion}}{#4}\asciimeaning
    \immediatewriteutility{s e {#1} {#2} {\asciisynonym} {\asciimeaning}}%
    \endgroup}
 
@@ -247,7 +247,7 @@
 
 \def\dowritesort#1#2#3%
   {\bgroup
-   \convertexpanded{\??so#1}{#3}\asciisynonym
+   \convertexpanded{\getvalue{\??so#1\c!expansion}}{#3}\asciisynonym
    \immediatewriteutility{s e {#1} {#2} {\asciisynonym} {}}%
    \egroup}
 

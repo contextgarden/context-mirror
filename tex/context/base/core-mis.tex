@@ -81,14 +81,16 @@
 %appendtoks        \def\executesynonym#1#2#3#4{#3}\to\simplifiedcommands
 %appendtoks             \def\executesort#1#2#3{#3}\to\simplifiedcommands
 
-\appendtoks                              \def\ { }\to\simplifiedcommands
-\appendtoks\def\type#1{\string\\\strippedcsname#1}\to\simplifiedcommands
-\appendtoks                          \def\TeX{TeX}\to\simplifiedcommands
-\appendtoks                  \def\ConTeXt{ConTeXt}\to\simplifiedcommands
-\appendtoks                \def\MetaPost{MetaPost}\to\simplifiedcommands
-\appendtoks                \def\MetaFont{MetaFont}\to\simplifiedcommands
-\appendtoks                  \def\MetaFun{MetaFun}\to\simplifiedcommands
-\appendtoks                              \def||{-}\to\simplifiedcommands
+\appendtoks                                \def\ { }\to\simplifiedcommands
+\appendtoks  \def\type#1{\string\\\strippedcsname#1}\to\simplifiedcommands
+\appendtoks                            \def\TeX{TeX}\to\simplifiedcommands
+\appendtoks                    \def\ConTeXt{ConTeXt}\to\simplifiedcommands
+\appendtoks                  \def\MetaPost{MetaPost}\to\simplifiedcommands
+\appendtoks                  \def\MetaFont{MetaFont}\to\simplifiedcommands
+\appendtoks                    \def\MetaFun{MetaFun}\to\simplifiedcommands
+\appendtoks                                \def||{-}\to\simplifiedcommands
+
+\appendtoks\let\buildtextaccent\secondoftwoarguments\to\simplifiedcommands
 
 % THIS WAS MAIN-002.TEX
 
@@ -1002,83 +1004,42 @@
       \popmacro\currentdelimitedtext}}
 
 % \definedelimitedtext
-%   [\v!citaat]
-%   [\c!links={\symbol[\c!leftquotation]},
-%    \c!rechts={\symbol[\c!rightquotation]},
-%    \c!linkermarge=\v!standaard]
+%   [\v!quotation]
+%   [\c!left={\symbol[\c!leftquotation]},
+%    \c!right={\symbol[\c!rightquotation]},
+%    \c!leftmargin=\v!standard]
 %
 % \definedelimitedtext
-%   [\v!citeer][\v!citaat]
+%   [\v!quote][\v!quotation]
 %
 % \setupdelimitedtext
-%   [\v!citeer]
-%   [\c!plaats=\v!tekst,
-%    \c!links={\symbol[\c!leftquote]},
-%    \c!rechts={\symbol[\c!rightquote]}]
+%   [\v!quote]
+%   [\c!location=\v!text,
+%    \c!left={\symbol[\c!leftquote]},
+%    \c!right={\symbol[\c!rightquote]}]
 %
 % \definedelimitedtext
-%   [\v!spraak][\v!citaat]
+%   [\v!speech][\v!quotation]
 %
 % \setupdelimitedtext
-%   [\v!spraak]
-%   [\c!herhaal=\v!ja,
-%    \c!links={\symbol[\c!leftspeech]},
-%    \c!midden={\symbol[\c!middlespeech]},
-%    \c!rechts={\symbol[\c!rightspeech]}]
+%   [\v!speech]
+%   [\c!repeat=\v!yes,
+%    \c!left={\symbol[\c!leftspeech]},
+%    \c!middle={\symbol[\c!middlespeech]},
+%    \c!right={\symbol[\c!rightspeech]}]
 %
-% % how do we call an tight quote
-% %
-% % \definedelimitedtext
-% %    [x\v!citaat][\v!citaat]
-% %
-% % \setupdelimitedtext
-% %   [x\v!citaat]
-% %   [\c!springvolgendein=\v!nee,
-% %    \c!voorwit=\v!geenwit]
+% how do we call an tight quote
 %
-% \def\stelciterenin{\setupdelimitedtext[\v!citaat]}
-% \def\stelcitatenin{\setupdelimitedtext[\v!citeer]}
-
-% seldom used, move from kernel to run time module
-
-% Tijden horen hier niet thuis en zullen in een aparte
-% module worden ondergebracht. voorlopig handhaven we ze nog
-% even. Een implementatie met \doordefinieren zou beter voldoen
-% omdat een en ander dan instelbaar wordt. Het is trouwens
-% zowieso beter het commando \tijd te reserveren voor de
-% systeemtijd.
-
-\def\tijd#1%
-  {\setbox0=\hbox{00.00}%
-   \hbox to \wd0{\hfill#1}}
-
-\def\tijdspan#1#2%
-  {\hbox{\tijd{#1}~---~\tijd{#2}}}
-
-\def\activiteit#1#2%
-  {\activity{\tijdspan{#1}{#2}}}
-
-\def\activiteit#1#2%
-  {\sym{\tijdspan{#1}{#2}}}
-
-% seldom used, move from kernel to run time module
-
-\def\doadding#1%
-  {\def\next{#1}%
-   \dorecurse{#1}{\inleft{\next~+}\let\next\empty\crlf}}
-
-\def\complexadding[#1]%
-  {\blank
-   \processaction
-     [#1]
-     [  \v!small=>\doadding{3},
-       \v!medium=>\doadding{6},
-        \v!big=>\doadding{9},
-      \s!default=>\doadding{6},
-      \s!unknown=>\doadding{#1}]
-   \blank}
-
-\definecomplexorsimpleempty\adding
+% \definedelimitedtext
+%    [\v!quotation][\v!quotation]
+%
+% \setupdelimitedtext
+%   [\v!quotation]
+%   [\c!indentnext=\v!no,
+%    \c!spacebefore=\v!nowhite]
+%
+% \def\setupquotation{\setupdelimitedtext[\v!quotation]}
+% \def\setupquote    {\setupdelimitedtext[\v!quote]}
 
 % seldom used, move from kernel to run time module
 
@@ -1213,6 +1174,8 @@
 %
 % eigenlijk kan ook door... zo worden uitgebreid!
 
+% old, will become obsolete or module, replace by bib module
+
 \defineenumeration
   [@publicatie]
   [\c!location=\v!left,
@@ -1317,43 +1280,43 @@
 \def\referral
   {\dosingleargument\doreferral}
 
-% NIEUW NIEUW NIEUW NIEUW NIEUW NIEUW NIEUW NIEUW NIEUW NIEUW NIEUW
-% NIEUW NIEUW NIEUW NIEUW NIEUW NIEUW NIEUW NIEUW NIEUW NIEUW NIEUW
-
-\def\??ri{@@ri}
-
-\def\stelrijenin
-  {\dodoubleargument\getparameters[\??ri]}
-
-\def\complexstartrijen[#1]%
-  {\bgroup
-   \stelrijenin[#1]%
-   \let\do@@rionder\relax
-   \def\rij
-     {\do@@rionder
-      \egroup
-      \dimen0\vsize
-      \divide\dimen0 \@@rin
-      \advance\dimen0 -\lineskip
-      \vbox to \dimen0
-        \bgroup
-        \@@riboven
-        \let\do@@rionder\@@rionder
-        \ignorespaces}%
-   \bgroup
-   \rij}
-
-\definecomplexorsimpleempty\startrijen
-
-\def\stoprijen
-  {\do@@rionder
-   \egroup
-   \egroup}
-
-\stelrijenin
-  [\c!n=2,
-   \c!top=,
-   \c!bottom=\vfill]
+% FUZZY OLD STUFF: will be removed when not used in some manual;
+% rows instead of columns, i'd forgotten that this code exist
+%
+% \definesystemvariable{ri}
+%
+% \def\setuprows
+%   {\dodoubleargument\getparameters[\??ri]}
+%
+% \definecomplexorsimpleempty\startrows
+%
+% \def\complexstartrows[#1]%
+%   {\bgroup
+%    \setuprows[#1]%
+%    \let\do@@ribottom\relax
+%    \def\row
+%      {\do@@ribottom
+%       \egroup
+%       \dimen0\vsize
+%       \divide\dimen0 \@@rin
+%       \advance\dimen0 -\lineskip
+%       \vbox to \dimen0
+%         \bgroup
+%         \@@ritop
+%         \let\do@@ribottom\@@ribottom
+%         \ignorespaces}%
+%    \bgroup
+%    \row}
+%
+% \def\stoprows
+%   {\do@@ribottom
+%    \egroup
+%    \egroup}
+%
+% \setuprows
+%   [\c!n=2,
+%    \c!top=,
+%    \c!bottom=\vfill]
 
 % THIS WAS MAIN-003.TEX
 
@@ -1585,8 +1548,8 @@
       \c!inbetween={\blank[\v!medium]},
       \c!width=\hsize,
       \c!height=\vsize,
-      \c!maxwidth=\makeupwidth,
-      \c!maxheight=\makeupheight,
+      \c!maxwidth=\textwidth,   % \makeupwidth,
+      \c!maxheight=\textheight, % \makeupheight,
       \c!bodyfont=,
       \c!align=,
       \c!location=\v!bottom,

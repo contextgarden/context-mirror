@@ -2129,14 +2129,14 @@
   {\csname\ifcsname\@@XMLdata:#1\endcsname\@@XMLdata:#1\else\s!empty\fi\endcsname}
 
 %D \starttyping
-%D \defineXMLenvironmentsave[formula]{}{$\XMLtex{formula}$}
+%D \defineXMLenvironmentsave[formula]{}{$\XMLtexdata{formula}$}
 %D
 %D \startXMLdata
 %D <formula>t+3+x+t\neq m\alpha\frac\theta\hbar</formula>
 %D \stopXMLdata
 %D \stoptyping
 
-\def\XMLtex#1%
+\def\XMLtexdata#1%
   {\begingroup
    \disableXML
    \scantokens\@EA\@EA\@EA{\csname\@@XMLdata:#1\endcsname}%
@@ -2152,7 +2152,6 @@
   {\detokenize\@EAEAEA{\csname\@@XMLdata:#1\endcsname}}
 
 \let\XMLpop    \XMLflush
-
 \let\XMLpopdata\XMLflushdata
 
 \def\XMLappend#1#2% let to empty expands to nothing -)

@@ -138,16 +138,12 @@
   [titelpagina]
   [\useMPgraphic{titlepage}]
 
-% When run at \PRAGMA, we use a slightly different graphic,
-% so that we can recognize an original. Users are not
-% supposed to mimick this feature.
-
 \doifmode{atpragma}{\readfile{s-mod-04.tex}{}{}}
 
 \defineframed
   [TitleFrame]
   [\c!background=\v!color,
-   \c!backgroundcolor=wit,
+   \c!backgroundcolor=white,
    \c!align=\v!right,
    \c!offset=12pt,
    \c!strut=\v!no,
@@ -163,7 +159,7 @@
    \c!height=\v!middle,
    \c!width=\v!middle]
 
-\def\moduletitel%
+\def\moduletitel
   {\setuplayout[titlepage]
    \ifx\ModuleNumber\undefined \else
      \ifnum\ModuleNumber<10
@@ -488,8 +484,10 @@
 
 %D Command references:
 
-\input setupa
-\input setupb
+% \input setupa
+% \input setupb
+
+\usemodule[int-load] \loadsetups
 
 \unprotect
 

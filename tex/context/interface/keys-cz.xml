@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 
-<cd:interface xmlns:cd="http://www.pragma-ade.com/commands" name="context" language="cz" version="2004.12.17">
+<cd:interface xmlns:cd="http://www.pragma-ade.com/commands" name="context" language="cz" version="2005.01.12">
 
   <cd:variables>
     <cd:variable name="one" value="jedna"/>
@@ -191,6 +191,7 @@
     <cd:constant name="ownnumber" value="vlastnicislo"/>
     <cd:constant name="evenmargin" value="sudamarginalie"/>
     <cd:constant name="expansion" value="expanzen"/>
+    <cd:constant name="keyexpansion" value="keyexpansion"/>
     <cd:constant name="factor" value="faktor"/>
     <cd:constant name="convertfile" value="konverzesouboru"/>
     <cd:constant name="file" value="soubor"/>
@@ -1350,8 +1351,8 @@
     <cd:command name="menubutton" value="tlacitkomenu"/>
     <cd:command name="setupbuttons" value="nastavtlacitka"/>
     <cd:command name="usereferences" value="uzijodkazy"/>
-    <cd:command name="reflijst" value="seznamodkazu"/>
-    <cd:command name="stelreferentielijstin" value="nastavseznamodkazu"/>
+    <cd:command name="placereferencelist" value="placereferencelist"/>
+    <cd:command name="setupreferencelist" value="nastavseznamodkazu"/>
     <cd:command name="setupreferencing" value="nastavodkazovani"/>
     <cd:command name="textreference" value="odkaznatext"/>
     <cd:command name="pagereference" value="odkaznastranu"/>

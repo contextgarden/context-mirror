@@ -286,7 +286,6 @@
       <KEYWORD2>\mettiingriglia</KEYWORD2>
       <KEYWORD2>\mettilegenda</KEYWORD2>
       <KEYWORD2>\mettilinea</KEYWORD2>
-      <KEYWORD2>\mettilistariferimenti</KEYWORD2>
       <KEYWORD2>\mettiloghi</KEYWORD2>
       <KEYWORD2>\mettinotepdp</KEYWORD2>
       <KEYWORD2>\mettinotepdplocali</KEYWORD2>
@@ -332,6 +331,7 @@
       <KEYWORD2>\ped</KEYWORD2>
       <KEYWORD2>\pedap</KEYWORD2>
       <KEYWORD2>\placefloat</KEYWORD2>
+      <KEYWORD2>\placereferencelist</KEYWORD2>
       <KEYWORD2>\posizionatesto</KEYWORD2>
       <KEYWORD2>\posizione</KEYWORD2>
       <KEYWORD2>\prendibuffer</KEYWORD2>

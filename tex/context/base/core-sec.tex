@@ -608,9 +608,9 @@
 %
 % meaner
 %
-% \stellijstin
-%   [hoofdstuk]
-%   [na={\startkolommen\plaatslijst[paragraaf]\stopkolommen}]
+% \setuplist
+%   [chapter]
+%   [after={\startcolumns\placelist[section]\stopcolumns}]
 
 \def\somesavedlevel{0}
 
@@ -1151,7 +1151,7 @@
   {\begingroup
    \setsectieenkoppeling{#1}%
    \xdef\foundsectionnumber{1}%
-   \def\dolijstelement##1##2##3##4##5##6%
+   \def\dolistelement##1##2##3##4##5##6%
      {\doif{##1}{#1}
         {\ConvertConstantAfter\doif{##4}{#3}
            {\global\utilitydonetrue
@@ -1374,7 +1374,7 @@
    \else
      \headnumberfalse
    \fi
-   \convertexpanded{\??ko#1}{#4}\asciititle
+   \convertexpanded{\getvalue{\??ko#1\c!expansion}}{#4}\asciititle
    %
    \gdef\currentheadtext{#4}% scheelt args
    \globallet\currentheadnumber\empty
@@ -1585,8 +1585,8 @@
    \def\stoplistreferences{\dostoplistreferences}}
 
 \def\dostoplistreferences#1%
-  {\iflijstgeplaatst
-     \addtocommalist{#1}\updatedlistreferences               % nog global (\doglobal)
+  {\ifutilitydone
+     \addtocommalist{#1}\updatedlistreferences              % nog global (\doglobal)
      \globallet\updatedlistreferences\updatedlistreferences % een noodverbandje
      \gdef\updatelistreferences%
        {\def\docommando####1%
@@ -1606,9 +1606,9 @@
 
 % \prevdepth\strutdp % is belangrijk, vergelijk naast elkaar:
 %
-% \onderwerp{test} \input tufte
-% \onderwerp{test} \strut \input tufte
-% \onderwerp{test} \plaatslijst[...]
+% \subject{test} \input tufte
+% \subject{test} \strut \input tufte
+% \subject{test} \placelist[...]
 
 % todo: kap
 
@@ -2187,13 +2187,13 @@
 \definesectionblock [\v!frontpart]  [\v!frontmatter] [\c!number=\v!no]
 \definesectionblock [\v!backpart]    [\v!backmatter] [\c!number=\v!no]
 
-\definesection[\v!sectionlevel-1]   % deel
-\definesection[\v!sectionlevel-2]   % hoofdstuk
-\definesection[\v!sectionlevel-3]   % paragraaf
-\definesection[\v!sectionlevel-4]   % subparagraaf
-\definesection[\v!sectionlevel-5]   % subsubparagraaf
-\definesection[\v!sectionlevel-6]   % subsubsubparagraaf
-\definesection[\v!sectionlevel-7]   % subsubsubsubparagraaf
+\definesection[\v!sectionlevel-1]   % part
+\definesection[\v!sectionlevel-2]   % chapter
+\definesection[\v!sectionlevel-3]   % section
+\definesection[\v!sectionlevel-4]   % subsection
+\definesection[\v!sectionlevel-5]   % subsubsection
+\definesection[\v!sectionlevel-6]   % subsubsubsection
+\definesection[\v!sectionlevel-7]   % subsubsubsubsection
 
 % \c!eigennummer ook hier?
 

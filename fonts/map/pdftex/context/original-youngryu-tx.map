@@ -1,21 +1,23 @@
 % This file is a (slightly adapted) copy of the map file
 % that comes with the TX fonts by Young Ryu.
 
+% tx8r.enc replaced by 8r.enc
+
 % URW times
 
-rtxptmb  NimbusRomNo9L-Medi                      <tx8r.enc <utmb8a.pfb
-rtxptmbo NimbusRomNo9L-Medi     ".167 SlantFont" <tx8r.enc <utmb8a.pfb
-rtxptmbi NimbusRomNo9L-MediItal                  <tx8r.enc <utmbi8a.pfb
-rtxptmr  NimbusRomNo9L-Regu                      <tx8r.enc <utmr8a.pfb
-rtxptmro NimbusRomNo9L-Regu     ".167 SlantFont" <tx8r.enc <utmr8a.pfb
-rtxptmri NimbusRomNo9L-ReguItal                  <tx8r.enc <utmri8a.pfb
+rtxptmb  NimbusRomNo9L-Medi                      <8r.enc <utmb8a.pfb
+rtxptmbo NimbusRomNo9L-Medi     ".167 SlantFont" <8r.enc <utmb8a.pfb
+rtxptmbi NimbusRomNo9L-MediItal                  <8r.enc <utmbi8a.pfb
+rtxptmr  NimbusRomNo9L-Regu                      <8r.enc <utmr8a.pfb
+rtxptmro NimbusRomNo9L-Regu     ".167 SlantFont" <8r.enc <utmr8a.pfb
+rtxptmri NimbusRomNo9L-ReguItal                  <8r.enc <utmri8a.pfb
 
 % URW Helvetica
 
-rtxphvr  NimbusSanL-Regu                         <tx8r.enc <uhv8a.pfb
-rtxphvro NimbusSanL-Regu        ".167 SlantFont" <tx8r.enc <uhv8a.pfb
-rtxphvb  NimbusSanL-Bold                         <tx8r.enc <uhvb8a.pfb
-rtxphvbo NimbusSanL-Bold        ".167 SlantFont" <tx8r.enc <uhvb8a.pfb
+rtxphvr  NimbusSanL-Regu                         <8r.enc <uhv8a.pfb
+rtxphvro NimbusSanL-Regu        ".167 SlantFont" <8r.enc <uhv8a.pfb
+rtxphvb  NimbusSanL-Bold                         <8r.enc <uhvb8a.pfb
+rtxphvbo NimbusSanL-Bold        ".167 SlantFont" <8r.enc <uhvb8a.pfb
 
 % TX Text
 

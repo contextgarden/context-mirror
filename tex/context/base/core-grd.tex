@@ -1013,6 +1013,48 @@
      \global\chardef\fuzzysnappedleft0
    \fi\fi\fi}
 
+%D New, experimental, used in caption snapping:
+%D
+%D \starttyping
+%D \startcolumnset
+%D
+%D \setupcaption[figure][style=\tfx\setupinterlinespace,inbetween=,grid=top]
+%D
+%D \placefigure [lrtb] {\dorecurse{5}{green gras}}
+%D   {\externalfigure[dummy][width=\textwidth,height=3cm,grid=height]}
+%D \placefigure [lrtb] {\dorecurse{15}{green gras}}
+%D   {\externalfigure[dummy][width=\textwidth,height=3cm,grid=height]}
+%D
+%D \setupcaption[figure][style=\tfx\setupinterlinespace,inbetween=,grid=bottom]
+%D
+%D \placefigure [rltb] {\dorecurse{5}{green gras}}
+%D   {\externalfigure[dummy][width=\textwidth,height=3cm,grid=height]}
+%D \placefigure [rltb] {\dorecurse{15}{green gras}}
+%D   {\externalfigure[dummy][width=\textwidth,height=3cm,grid=height]}
+%D
+%D \input thuan
+%D
+%D \stopcolumnset
+%D \stoptyping
+
+\def\moveboxontogrid#1#2#3% box method firstlineht % experimental ! ! !
+  {\doifsomething{#2}
+     {\getnoflines{\ht#1}% no depth taken into account, depth preserved
+      \scratchdimen\noflines\lineheight
+      \advance\scratchdimen-\strutdp
+      \bgroup
+      \advance\scratchdimen-\onepoint % be a bit tolerant
+      \ifdim\scratchdimen>\ht#1\relax
+        \egroup
+        \doif{#2}\v!top   {\setbox#1\vbox to \scratchdimen{\vskip-#3\vskip\strutht\box#1\vfill}}%
+        \doif{#2}\v!bottom{\setbox#1\vbox to \scratchdimen{\vfill\box#1\removedepth}}%
+        \dp#1\strutdp
+      \else
+        \egroup
+        \ht#1\scratchdimen
+        \dp#1\strutdp
+      \fi}}
+
 %D New:
 
 \let\checkgridsnapping\relax

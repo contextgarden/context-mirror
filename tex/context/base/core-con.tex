@@ -539,19 +539,64 @@
      \hskip\datesignal\relax
    \fi}
 
+% \def\complexcurrentdate[#1]%
+%   {\bgroup
+%    \let\labellanguage\currentlanguage
+%    \def\betweendates{\let\betweendates\dobetweendates}%
+%    \lowercase{\edef\!!stringa{#1}}% permits usage in \smallcapped
+%    \@EA\processallactionsinset\@EA
+%      [\!!stringa]
+%      [    \v!day=>\betweendates\the\normalday,
+%         %\v!day+=>\betweendates\ordinaldaynumber\normalday,
+%          \v!day+=>\betweendates\convertnumber{\v!day+}\normalday,
+%         \v!month=>\betweendates\month\normalmonth,
+%          \v!year=>\betweendates\the\normalyear,
+%         \v!space=>\unskip\ \hskip\datesignal,% optimization -)
+%               \ =>\unskip\ \hskip\datesignal,% optimization -)
+%                d=>\convertnumber\v!day\normalday,
+%              %d+=>\ordinaldaynumber\normalday,
+%               d+=>\convertnumber{\v!day+}\normalday,
+%                m=>\convertnumber\v!month\normalmonth,
+%                j=>\convertnumber\v!year\normalyear,
+%                y=>\convertnumber\v!year\normalyear,
+%                w=>\betweendates\dayoftheweek\normalday\normalmonth\normalyear,
+%               dd=>\ifnum\normalday  >9 \else0\fi\the\normalday,
+%             %dd+=>\ordinaldaynumber{\ifnum\normalday >9 \else0\fi\the\normalday},
+%              dd+=>\convertnumber{\v!day+}{\ifnum\normalday >9 \else0\fi\the\normalday},
+%               mm=>\ifnum\normalmonth>9 \else0\fi\the\normalmonth,
+%               jj=>\expandafter\gobbletwoarguments\the\normalyear,
+%               yy=>\expandafter\gobbletwoarguments\the\normalyear,
+%       \v!weekday=>\betweendates\dayoftheweek\normalday\normalmonth\normalyear,
+%      \v!referral=>\expanded{\complexcurrentdate[\kenmerkdatumpatroon]},
+%       \s!unknown=>\unskip
+%                   \commalistelement
+%                   \hskip\datesignal
+%                   \def\betweendates{\let\betweendates\dobetweendates}]%
+%    \ifdim\lastskip=\datesignal\relax
+%      \unskip
+%    \fi
+%    \egroup}
+
 \def\complexcurrentdate[#1]%
   {\bgroup
    \let\labellanguage\currentlanguage
    \def\betweendates{\let\betweendates\dobetweendates}%
-   \lowercase{\edef\!!stringa{#1}}% permits usage in \smallcapped
-   \@EA\processallactionsinset\@EA
-     [\!!stringa]
+   \processcommacommand[#1]\docomplexcurrentdate
+   \ifdim\lastskip=\datesignal\relax
+     \unskip
+   \fi
+   \egroup}
+
+\def\docomplexcurrentdate#1%
+  {\lowercase{\edef\!!stringa{#1}}% permits usage in \smallcapped
+   \processaction
+     [#1]
      [    \v!day=>\betweendates\the\normalday,
         %\v!day+=>\betweendates\ordinaldaynumber\normalday,
          \v!day+=>\betweendates\convertnumber{\v!day+}\normalday,
         \v!month=>\betweendates\month\normalmonth,
          \v!year=>\betweendates\the\normalyear,
-       \v!space=>\unskip\ \hskip\datesignal,% optimization -)
+        \v!space=>\unskip\ \hskip\datesignal,% optimization -)
               \ =>\unskip\ \hskip\datesignal,% optimization -)
                d=>\convertnumber\v!day\normalday,
              %d+=>\ordinaldaynumber\normalday,
@@ -567,15 +612,13 @@
               jj=>\expandafter\gobbletwoarguments\the\normalyear,
               yy=>\expandafter\gobbletwoarguments\the\normalyear,
       \v!weekday=>\betweendates\dayoftheweek\normalday\normalmonth\normalyear,
-      \v!referral=>\expanded{\complexcurrentdate[\kenmerkdatumpatroon]},
+     \v!referral=>\expanded{\complexcurrentdate[\kenmerkdatumpatroon]},
       \s!unknown=>\unskip
-                  \commalistelement
+                  % #1 and not the lowercased \commalistelement, vietnamese has text
+                  % {} because #1 can have comma, like: {\ ,}
+                  {#1}%
                   \hskip\datesignal
-                  \def\betweendates{\let\betweendates\dobetweendates}]%
-   \ifdim\lastskip=\datesignal\relax
-     \unskip
-   \fi
-   \egroup}
+                  \def\betweendates{\let\betweendates\dobetweendates}]}
 
 \def\simplecurrentdate
   {\expanded{\complexcurrentdate[\currentdatespecification]}}

@@ -43,6 +43,11 @@
 \def\PDFobjref#1{\purenumber{#1} 0 R}
 
 %D \macros
+%D   {PDFswapdir}
+
+\let\PDFswapdir\empty \def\PDFswapdir{\ifcase\inlinedirection\or\or-\fi}
+
+%D \macros
 %D   {setPDFdestination}
 %D
 %D \PDF\ destinations should obey the specifications laid down
@@ -624,7 +629,7 @@
      \else
        \getsecondaryPDFreferences
        \doPDFaction
-         width #1 height #2
+         width \PDFswapdir#1 height #2
          action {\action \secondaryPDFreferences}%
      \fi
    \fi
@@ -680,7 +685,7 @@
      \else
        \getsecondaryPDFreferences
        \doPDFaction
-         width #1 height #2
+         width \PDFswapdir#1 height #2
          action {\action \secondaryPDFreferences}%
      \fi
    \fi
@@ -713,7 +718,7 @@
    \else
      \getsecondaryPDFreferences
      \doPDFaction
-       width #1 height #2
+       width \PDFswapdir#1 height #2
        action {\action \secondaryPDFreferences}%
    \fi
    \egroup}
@@ -817,8 +822,8 @@
 %          \globalletempty\PDFobjectname
 %        \fi
 %        \next
-\doPDFaction
-          width #1 height #2
+        \doPDFaction
+          width \PDFswapdir#1 height #2
           action {\action \secondaryPDFreferences}%
       \fi
       \egroup}}
@@ -843,7 +848,7 @@
    \else
      \getsecondaryPDFreferences
      \doPDFaction
-       width #1 height #2
+       width \PDFswapdir#1 height #2
        action {\action \secondaryPDFreferences}%
    \fi
    \egroup}
@@ -866,7 +871,7 @@
       \else
         \getsecondaryPDFreferences
         \doPDFaction
-          width #1 height #2
+          width \PDFswapdir#1 height #2
           action {\action \secondaryPDFreferences}%
       \fi}%
    \egroup}
@@ -2078,7 +2083,8 @@
 %\expanded{\setFDFkids[][\FDFkidlist]}%
    \setFDFactions[#5]%
    \doPDFdictionaryobject class FDF name #1 data
-     {/Subtype /Widget /FT /Btn /T (#1) /Rect [0 0 0 0]
+     {%/Subtype /Widget
+      /FT /Btn /T (#1) /Rect [0 0 0 0]
       % used to be this
       % /V (#2)
       % then this
@@ -2804,9 +2810,17 @@
   {\doPDFregistersomeindexcolor{#1}{#2}{#3}{#4}{Gray}{0.0 1.0}%
      {pop}}
 
-\def\doPDFregisterfigurecolor#1%
+% \def\doPDFregisterfigurecolor#1%
+%   {\dogetobjectreference
+%      {PDF\ifcase\internalspotcolorsize{#1} CS\or CS\else IX\fi}
+%      {\internalspotcolorname{#1}}
+%      \PDFimagecolorreference}
+
+\let\checkpredefinedcolor\predefineindexcolor % we need an index in order to negate bitmaps
+
+\def\doPDFregisterfigurecolor#1% always an index color
   {\dogetobjectreference
-     {PDF\ifcase\internalspotcolorsize{#1} CS\or CS\else IX\fi}
+     {PDFIX}
      {\internalspotcolorname{#1}}
      \PDFimagecolorreference}
 

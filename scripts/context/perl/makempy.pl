@@ -317,20 +317,19 @@ sub make_pdf_pages
 sub make_mp_figures
   { process ("postscript file") ;
     if ($pmethod) { run($posfile, "$pdftops",
-      #~ "-paperw 10000 -paperh 10000 $pdffile $posfile") }
       "-paper match $pdffile $posfile") }
     if ($gmethod) { run($posfile, "$ghostscript",
       "-q -sOutputFile=$posfile -dNOPAUSE -dBATCH -dSAFER -sDEVICE=pswrite $pdffile") }
     if ($amethod) { run($posfile, "$acroread",
       "-toPostScript -pairs $pdffile $posfile") } }
 
-sub make_mp_pictures
+sub make_mp_pictures_ps
   { process ("metapost file") ;
-    #~ if ($wereondos)
-      #~ { my $safeguard = `pstoedit -gstest` ;
-        #~ if ($safeguard =~ /\-I(.*?[\\\/])lib/mois)
-          #~ { $ENV{'PATH'} .= ";$1bin;" } }
     run ($tmpfile, "$pstoedit", "-ssp -dt -f mpost $posfile $tmpfile") }
+
+sub make_mp_pictures_pdf
+  { process ("metapost file") ;
+    run ($tmpfile, "$pstoedit", "-ssp -dt -f mpost $pdffile $tmpfile") }
 
 if ($help) { show_help_info }
 
@@ -339,8 +338,11 @@ verify_check_sum ;
 cleanup_files ;
 construct_tex_file ;
 make_pdf_pages ;
-make_mp_figures ;
-make_mp_pictures ;
+if (1)
+  { make_mp_pictures_pdf ; }
+else
+  { make_mp_figures ;
+    make_mp_pictures_ps ; }
 construct_mpy_file ; # less save : rename $tmpfile, $mpyfile ;
 unless ($noclean) { cleanup_files }
 

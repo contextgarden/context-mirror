@@ -125,7 +125,6 @@ my $dosish = ($Config{'osname'} =~ /^(ms)?dos|^os\/2|^(ms|cyg)win/i) ;
    "purgeall"       => \$PurgeAllFiles,
    "analyze"        => \$AnalyzeFile,
    "filter"         => \$FilterPages,
-   "sciteapi"       => \$SciteApi,
    "help"           => \$ProcessHelp,
    "silent"         => \$ProcessSilent,
    "verbose"        => \$ProcessVerbose,
@@ -2814,57 +2813,6 @@ sub FilterPages # temp feature / no reporting
               { $old = $_ } }
        close(PDF) ;
        close(TUO) } }
-
-sub GenerateSciteApi # ugly, not generic, but fast, will become xsltproc based
-  { my $interface = $ARGV[0] ;
-    my $commands = 0 ;
-    my $environments = 0 ;
-    my %collection ;
-    my %mappings ;
-    return unless -f "cont-en.xml" ;
-    print "        scite api file : cont-$interface-scite.api\n" ;
-    print "      scite lexer file : cont-$interface-scite.properties\n" ;
-    if (open(XML,"<keys-$interface.xml"))
-      { while (<XML>)
-          { if (/\<cd\:command\s+name=\"(.*?)\"\s+value=\"(.*?)\".*?\>/o)
-              { $mappings{"$1"} = $2 } }
-        close(XML) }
-    else
-      { print "          missing file : keys-$interface.xml\n" ;
-        return }
-    if (open(XML,"<cont-en.xml"))
-      { while (<XML>)
-          { chomp ;
-            if (/\<cd\:command\s+name=\"(.*?)\"\s+type=\"environment\".*?\>/o)
-              { $environments++ ;
-                $collection{"start$mappings{$1}"} = '' ;
-                $collection{"stop$mappings{$1}"} = '' }
-            elsif (/\<cd\:command\s+name=\"(.*?)\".*?\>/o)
-              { $commands++ ;
-                $collection{"$mappings{$1}"} = '' } }
-       close(XML) ;
-       if (open(API,">cont-$interface-scite.api"))
-         { foreach $name (keys %collection)
-             { print API "\\$name\n" }
-           print API "\n" ;
-           close(API) }
-       if (open(API,">cont-$interface-scite.properties"))
-         { my $i = 0 ;
-           print API "keywordclass.macros.context.$interface=" ;
-           foreach $name (keys %collection)
-             { if ($i==0)
-                 { print API "\\\n    " ;
-                   $i = 5 }
-               else
-                 { $i-- }
-               print API "$name " }
-           print API "\n" ;
-           close(API) } }
-    print "              commands : $commands\n" ;
-    print "          environments : $environments\n" }
-
-#D We're done! All this actions and options are organized in
-#D one large conditional:
 
                               ShowBanner       ;
 

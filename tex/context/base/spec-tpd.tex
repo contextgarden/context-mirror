@@ -611,6 +611,38 @@
 
 %D New and very experimental.
 
+% \def\doPDFregistersomeindexcolor#1#2#3#4#5#6#7% name fractions names p's space domain function
+%   {\bgroup
+%    \let\spotpops\empty
+%    \dorecurse{#2}{\edef\spotpops{\spotpops exch pop\space}}%
+%    \let\PDFspotcolornames \empty
+%    \let\PDFspotcolordomain\empty
+%    \def\docommand##1%
+%      {\edef\PDFspotcolornames{\PDFspotcolornames/\executeifdefined{@@pdf@@scn@@##1}{##1}\space}%
+%       \edef\PDFspotcolordomain{\PDFspotcolordomain 0.0 1.0\space}}%
+%    \processcommacommand[#3,None]\docommand
+%    \let\PDFcolorindexvector\empty
+%    \def\docommand##1%
+%      {\scratchdimen##1\points
+%       \scratchdimen\recurselevel\scratchdimen
+%       \scratchcounter\scratchdimen
+%       \divide\scratchcounter \maxcard
+%       \edef\PDFcolorindexvector{\PDFcolorindexvector\uchexnumbers\scratchcounter}}%
+%    \dostepwiserecurse\zerocount{255}\plusone
+%      {\rawprocesscommacommand[#4,1]\docommand
+%       \xdef\PDFcolorindexvector{\PDFcolorindexvector\space}}%
+%    \immediate \pdfobj stream attr
+%      {/FunctionType 4 /Domain [\PDFspotcolordomain] /Range [#6]}{{\spotpops#7}}%
+%    \immediate \pdfobj
+%      {[/Indexed
+%          [/DeviceN [\PDFspotcolornames] /Device#5 \PDFobjref\pdflastobj] %
+%          255 <\PDFcolorindexvector>]}%
+%    \dosetobjectreference{PDFIX}{#1}{\the\pdflastobj}%
+%    \appendtoPDFdocumentcolorspaces{/#1_INDEXED \PDFobjref\pdflastobj}%
+%    \egroup}
+
+% we reverse the index; an alternative is to negate the graphic itself (\start/stop negative)
+
 \def\doPDFregistersomeindexcolor#1#2#3#4#5#6#7% name fractions names p's space domain function
   {\bgroup
    \let\spotpops\empty
@@ -618,7 +650,8 @@
    \let\PDFspotcolornames \empty
    \let\PDFspotcolordomain\empty
    \def\docommand##1%
-     {\edef\PDFspotcolornames{\PDFspotcolornames/\executeifdefined{@@pdf@@scn@@##1}{##1}\space}%
+     {%\edef\PDFspotcolornames {\PDFspotcolornames/##1\space}%
+      \edef\PDFspotcolornames{\PDFspotcolornames/\executeifdefined{@@pdf@@scn@@##1}{##1}\space}%
       \edef\PDFspotcolordomain{\PDFspotcolordomain 0.0 1.0\space}}%
    \processcommacommand[#3,None]\docommand
    \let\PDFcolorindexvector\empty
@@ -628,17 +661,18 @@
       \scratchcounter\scratchdimen
       \divide\scratchcounter \maxcard
       \edef\PDFcolorindexvector{\PDFcolorindexvector\uchexnumbers\scratchcounter}}%
-   \dostepwiserecurse\zerocount{255}\plusone
+   %\dostepwiserecurse\zerocount{255}\plusone
+   \dostepwiserecurse{255}\zerocount\minusone % we need to negate
      {\rawprocesscommacommand[#4,1]\docommand
       \xdef\PDFcolorindexvector{\PDFcolorindexvector\space}}%
    \immediate \pdfobj stream attr
      {/FunctionType 4 /Domain [\PDFspotcolordomain] /Range [#6]}{{\spotpops#7}}%
    \immediate \pdfobj
      {[/Indexed
-         [/DeviceN [\PDFspotcolornames] /Device#5 \PDFobjref\pdflastobj] %
+         [/DeviceN [\PDFspotcolornames] /Device#5 \the\pdflastobj\space0 R] %
          255 <\PDFcolorindexvector>]}%
    \dosetobjectreference{PDFIX}{#1}{\the\pdflastobj}%
-   \appendtoPDFdocumentcolorspaces{/#1_INDEXED \PDFobjref\pdflastobj}%
+   \appendtoPDFdocumentcolorspaces{/#1_INDEXED \the\pdflastobj\space0 R}%
    \egroup}
 
 %D \macros

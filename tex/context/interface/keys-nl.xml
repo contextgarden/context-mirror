@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 
-<cd:interface xmlns:cd="http://www.pragma-ade.com/commands" name="context" language="nl" version="2004.12.17">
+<cd:interface xmlns:cd="http://www.pragma-ade.com/commands" name="context" language="nl" version="2005.01.12">
 
   <cd:variables>
     <cd:variable name="one" value="een"/>
@@ -191,6 +191,7 @@
     <cd:constant name="ownnumber" value="eigennummer"/>
     <cd:constant name="evenmargin" value="evenmarge"/>
     <cd:constant name="expansion" value="expansie"/>
+    <cd:constant name="keyexpansion" value="sleutelexpansie"/>
     <cd:constant name="factor" value="factor"/>
     <cd:constant name="convertfile" value="converteerfile"/>
     <cd:constant name="file" value="file"/>
@@ -1253,7 +1254,7 @@
     <cd:command name="definecombinedlist" value="definieersamengesteldelijst"/>
     <cd:command name="listsymbol" value="lijstsymbool"/>
     <cd:command name="placelist" value="plaatslijst"/>
-    <cd:command name="plaatsruwelijst" value="plaatslruweijst"/>
+    <cd:command name="plaatsruwelijst" value="plaatsruwelijst"/>
     <cd:command name="placecombinedlist" value="plaatssamengesteldelijst"/>
     <cd:command name="writetolist" value="schrijfnaarlijst"/>
     <cd:command name="writebetweenlist" value="schrijftussenlijst"/>
@@ -1350,8 +1351,8 @@
     <cd:command name="menubutton" value="menubutton"/>
     <cd:command name="setupbuttons" value="stelbuttonsin"/>
     <cd:command name="usereferences" value="gebruikreferenties"/>
-    <cd:command name="reflijst" value="reflijst"/>
-    <cd:command name="stelreferentielijstin" value="stelreferentielijstin"/>
+    <cd:command name="placereferencelist" value="plaatsreferentielijst"/>
+    <cd:command name="setupreferencelist" value="stelreferentielijstin"/>
     <cd:command name="setupreferencing" value="stelrefererenin"/>
     <cd:command name="textreference" value="tekstreferentie"/>
     <cd:command name="pagereference" value="paginareferentie"/>

@@ -1213,12 +1213,12 @@ vnvtt10  VNVTT10  <vnvtt10.pfb
 
 % URW Palatino
 
-rpxpplb  URWPalladioL-Bold                      <tx8r.enc <uplb8a.pfb
-rpxpplbo URWPalladioL-Bold     ".167 SlantFont" <tx8r.enc <uplb8a.pfb
-rpxpplbi URWPalladioL-BoldItal                  <tx8r.enc <uplbi8a.pfb
-rpxpplr  URWPalladioL-Roma                      <tx8r.enc <uplr8a.pfb
-rpxpplro URWPalladioL-Roma     ".167 SlantFont" <tx8r.enc <uplr8a.pfb
-rpxpplri URWPalladioL-Ital                      <tx8r.enc <uplri8a.pfb
+rpxpplb  URWPalladioL-Bold                      <8r.enc <uplb8a.pfb
+rpxpplbo URWPalladioL-Bold     ".167 SlantFont" <8r.enc <uplb8a.pfb
+rpxpplbi URWPalladioL-BoldItal                  <8r.enc <uplbi8a.pfb
+rpxpplr  URWPalladioL-Roma                      <8r.enc <uplr8a.pfb
+rpxpplro URWPalladioL-Roma     ".167 SlantFont" <8r.enc <uplr8a.pfb
+rpxpplri URWPalladioL-Ital                      <8r.enc <uplri8a.pfb
 
 % PX Text
 
@@ -1262,19 +1262,19 @@ pxsyc   pxsyc                   <pxsyc.pfb
 
 % URW times
 
-rtxptmb  NimbusRomNo9L-Medi                      <tx8r.enc <utmb8a.pfb
-rtxptmbo NimbusRomNo9L-Medi     ".167 SlantFont" <tx8r.enc <utmb8a.pfb
-rtxptmbi NimbusRomNo9L-MediItal                  <tx8r.enc <utmbi8a.pfb
-rtxptmr  NimbusRomNo9L-Regu                      <tx8r.enc <utmr8a.pfb
-rtxptmro NimbusRomNo9L-Regu     ".167 SlantFont" <tx8r.enc <utmr8a.pfb
-rtxptmri NimbusRomNo9L-ReguItal                  <tx8r.enc <utmri8a.pfb
+rtxptmb  NimbusRomNo9L-Medi                      <8r.enc <utmb8a.pfb
+rtxptmbo NimbusRomNo9L-Medi     ".167 SlantFont" <8r.enc <utmb8a.pfb
+rtxptmbi NimbusRomNo9L-MediItal                  <8r.enc <utmbi8a.pfb
+rtxptmr  NimbusRomNo9L-Regu                      <8r.enc <utmr8a.pfb
+rtxptmro NimbusRomNo9L-Regu     ".167 SlantFont" <8r.enc <utmr8a.pfb
+rtxptmri NimbusRomNo9L-ReguItal                  <8r.enc <utmri8a.pfb
 
 % URW Helvetica
 
-rtxphvr  NimbusSanL-Regu                         <tx8r.enc <uhv8a.pfb
-rtxphvro NimbusSanL-Regu        ".167 SlantFont" <tx8r.enc <uhv8a.pfb
-rtxphvb  NimbusSanL-Bold                         <tx8r.enc <uhvb8a.pfb
-rtxphvbo NimbusSanL-Bold        ".167 SlantFont" <tx8r.enc <uhvb8a.pfb
+rtxphvr  NimbusSanL-Regu                         <8r.enc <uhv8a.pfb
+rtxphvro NimbusSanL-Regu        ".167 SlantFont" <8r.enc <uhv8a.pfb
+rtxphvb  NimbusSanL-Bold                         <8r.enc <uhvb8a.pfb
+rtxphvbo NimbusSanL-Bold        ".167 SlantFont" <8r.enc <uhvb8a.pfb
 
 % TX Text
 
