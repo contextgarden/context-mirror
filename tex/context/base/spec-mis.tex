@@ -127,10 +127,11 @@
 
 \def\setsubmitoutputformat#1%
   {\doifinsetelse{#1}{FDF,fdf}
-     {\chardef\submitoutputformat=2} 
+     {\chardef\submitoutputformat2} 
      {\doifinsetelse{#1}{XML,xml}
-        {\chardef\submitoutputformat=3}
-        {\chardef\submitoutputformat=1}}} 
+        {\chardef\submitoutputformat3}
+        {\chardef\submitoutputformat1}}%
+   \relax} 
 
 %D \macros 
 %D   {escapePSstring}
@@ -181,5 +182,13 @@
   {\bgroup
    \def\par{\rawcharacter{12}}%
    \expanded{\egroup\noexpand\def\noexpand#2{#1}}}
+
+%D \macros 
+%D   {ifPDFunicode}
+%D 
+%D We can use this switch to signal that content streams has
+%D to be unicoded. 
+
+\newif\ifPDFunicode
 
 \protect \endinput

@@ -26,18 +26,46 @@
 %D In addition to the uppercase hex conversion, as needed in 
 %D math families, we occasionally need a lowercase one, for 
 %D instance when we want to compose gbsong fontnames.
-
-\def\uchexnumber#1%
-  {\ifcase#1 0\or 1\or 2\or 3\or 4\or 5\or 6\or 7\or
-             8\or 9\or A\or B\or C\or D\or E\or F\else 0\fi}
+%D
+%D The ugly indirectness is needed to get rid of \TEX\ 
+%D induced spaces and \type {\relax}'s. 
+%D 
+%D \starttypen 
+%D [\uchexnumber{0}]
+%D [\uchexnumber\scratchcounter]
+%D [\uchexnumber\zerocount]
+%D [\uchexnumber{\number0}]
+%D [\uchexnumber{\number\scratchcounter}]
+%D [\uchexnumber{\number\zerocount}]
+%D [\uchexnumber{\the\scratchcounter}]
+%D [\uchexnumber{\the\zerocount}]
+%D [\expandafter\uchexnumber\expandafter{\number0}]
+%D [\expandafter\uchexnumber\expandafter{\number\scratchcounter}]
+%D [\expandafter\uchexnumber\expandafter{\number\zerocount}]
+%D [\expandafter\uchexnumber\expandafter{\the\scratchcounter}]
+%D [\expandafter\uchexnumber\expandafter{\the\zerocount}]
+%D \stoptypen
 
 \def\lchexnumber#1%
+  {\@EA\dolchexnumber\number#1\relax}
+
+\def\dolchexnumber#1\relax % \def\lchexnumber#1%
   {\ifcase#1 0\or 1\or 2\or 3\or 4\or 5\or 6\or 7\or
              8\or 9\or a\or b\or c\or d\or e\or f\else 0\fi}
+
+\def\uchexnumber#1% 
+  {\@EA\douchexnumber\number#1\relax}
+
+\def\douchexnumber#1\relax % \def\uchexnumber#1%
+  {\ifcase#1 0\or 1\or 2\or 3\or 4\or 5\or 6\or 7\or
+             8\or 9\or A\or B\or C\or D\or E\or F\else 0\fi}
 
 \let\hexnumber=\uchexnumber
 
 \def\lchexnumbers#1%
+  {\@EA\dolchexnumbers\number#1\relax}
+
+\def\dolchexnumbers#1\relax % \def\lchexnumbers#1%
   {\ifcase#1
      00\or 01\or 02\or 03\or 04\or 05\or 06\or 07\or 08\or 09\or 0a\or 0b\or 0c\or 0d\or 0e\or 0f\or
      10\or 11\or 12\or 13\or 14\or 15\or 16\or 17\or 18\or 19\or 1a\or 1b\or 1c\or 1d\or 1e\or 1f\or
@@ -56,7 +84,10 @@
      e0\or e1\or e2\or e3\or e4\or e5\or e6\or e7\or e8\or e9\or ea\or eb\or ec\or ed\or ee\or ef\or
      f0\or f1\or f2\or f3\or f4\or f5\or f6\or f7\or f8\or f9\or fa\or fb\or fc\or fd\or fe\or ff\fi}
 
-\def\uchexnumbers#1%
+\def\uchexnumbers#1% 
+  {\@EA\douchexnumbers\number#1\relax}
+
+\def\douchexnumbers#1\relax % \def\uchexnumbers#1%
   {\ifcase#1
      00\or 01\or 02\or 03\or 04\or 05\or 06\or 07\or 08\or 09\or 0A\or 0B\or 0C\or 0D\or 0E\or 0F\or
      10\or 11\or 12\or 13\or 14\or 15\or 16\or 17\or 18\or 19\or 1A\or 1B\or 1C\or 1D\or 1E\or 1F\or
@@ -81,6 +112,9 @@
 %D For unicode remapping purposes, we need octal numbers. 
 
 \def\octnumber#1%
+  {\@EA\dooctnumber\number#1\relax}
+
+\def\dooctnumber#1\relax % \def\octnumber#1%
   {\ifcase#1
      000\or 001\or 002\or 003\or 004\or 005\or 006\or 007\or 
      010\or 011\or 012\or 013\or 014\or 015\or 016\or 017\or 

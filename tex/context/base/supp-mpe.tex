@@ -11,6 +11,13 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
+% fuzzy and complicating is the fact that we need to support
+% context as well as mptopdf, so we cannot fall back on the 
+% special drivers and color module (although there may be 
+% good reasons to use a smaller context instead); also, 
+% shading is handled here while it should move to the special 
+% driver - to do!
+
 %D This module is still experimental and deals with some
 %D extensions to \METAPOST. When using \POSTSCRIPT\ output,
 %D these extensions can be supplied by means of proper
@@ -95,8 +102,8 @@
 
 \def\dohandleMPspecialcomment#1
   {\setMPargument{#1}%
-   \advance\scratchcounter -1
-   \ifcase\scratchcounter\relax
+   \advance\scratchcounter \minusone
+   \ifcase\scratchcounter
      \handleMPspecialcommand
      \donetrue
      \doresetMPstack
@@ -108,13 +115,13 @@
 
 \def\handleMPspecialcomment #1 % number of arguments
   {\doresetMPstack
-   \scratchcounter=#1\relax
+   \scratchcounter#1\relax
    \ifcase\scratchcounter % when zero, inline shading is used
-     \chardef\inlineMPspecials1
+     \chardef\inlineMPspecials\plusone
      \let\handleMPsequence\dohandleMPsequence
      \expandafter\handleMPsequence
    \else
-     \chardef\inlineMPspecials0
+     \chardef\inlineMPspecials\zerocount
      \expandafter\dohandleMPspecialcomment
    \fi}
 
@@ -122,9 +129,9 @@
 %D definitions. Actually, this macro is called by the
 %D previous ones.
 
-\def\handleMPspecialcommand%
+\def\handleMPspecialcommand
   {\ifcase\inlineMPspecials\or
-     \advance\nofMParguments -1 % pop the size
+     \advance\nofMParguments \minusone % pop the size
    \fi
    \ifundefined\MPspecial
      \message{[unknown \MPspecial]}%
@@ -143,9 +150,9 @@
 
 \def\handleMPspecialscomment #1.#2 #3 % version.revision signal
   {\doresetMPstack
-   \chardef\MPspecialversion #1
-   \chardef\MPspecialrevision#2
-   \chardef\MPspecialsignal  #3
+   \chardef\MPspecialversion #1%
+   \chardef\MPspecialrevision#2%
+   \chardef\MPspecialsignal  #3%
    \let\handleMPsequence\dohandleMPsequence
    \handleMPsequence}
 
@@ -154,14 +161,14 @@
 \newtoks\MPstartresources
 \newtoks\MPstopresources
 
-\def\startMPresources%
+\def\startMPresources
   {\the\MPstartresources
    \ifx\currentPDFresources\empty\else
      \message{[unused resources]}%
    \fi
    \global\let\currentPDFresources\empty}
 
-\def\stopMPresources%
+\def\stopMPresources
   {\let\currentPDFresources\empty
    \the\MPstopresources}
 
@@ -171,13 +178,15 @@
 %D {0.001} is the first path and \type {0.010} the tenth. Since
 %D \METAPOST strips trailing zeros, we have to padd the string.
 
-\newif\ifMPcmyk
+\newif\ifMPcmykcolors
+\newif\ifMPspotcolors  
 
 \ifx\normalhandleMPrgbcolor\undefined % in case we reload this module
 
   \let\normalhandleMPrgbcolor \handleMPrgbcolor
   \let\normalhandleMPcmykcolor\handleMPcmykcolor
   \let\normalhandleMPgraycolor\handleMPgraycolor
+  \let\normalhandleMPspotcolor\handleMPspotcolor
 
 \fi
 
@@ -194,7 +203,7 @@
 
 \ifCONTEXT % we can use this for a better xgstate handling
 
-  \def\checkPDFMPstrokecolor%
+  \def\checkPDFMPstrokecolor
     {\ifPDFMPstrokecolor \PDFstrokecolortrue \fi}
 
   \def\normalhandleMPrgbcolor
@@ -205,6 +214,9 @@
 
   \def\normalhandleMPgraycolor
     {{\checkPDFMPstrokecolor\execcolorS\gMPa1:0:0\od}}
+
+  \def\normalhandleMPspotcolor
+    {{\checkPDFMPstrokecolor\execcolorP\gMPa1:\gMPa2:0:0\od}}
 
 \fi
 
@@ -256,7 +268,7 @@
 %
 % speed up:
 
-\def\setMPcolor%
+\def\setMPcolor
   {\edef\lastMPrvalue{\csname\@@MP01\endcsname}%
    \edef\lastMPgvalue{\csname\@@MP02\endcsname}%
    \edef\lastMPbvalue{\csname\@@MP03\endcsname}}
@@ -270,39 +282,43 @@
 
 \resetMPcolor
 
-% \def\handleMPrgbcolor%
-%  {\ifcase\MPspecialversion
-%     \normalhandleMPrgbcolor
-%   \else
-%     \setMPcolor
-%     \ifnum\MPrgbnumber\lastMPrvalue=\MPspecialsignal\relax
-%       \ifMPcmyk \interceptMPcmykcolor \fi
-%     \else
-%       \resetMPcolor\normalhandleMPrgbcolor
-%     \fi
-%   \fi}
-
 \def\@@MPSK{@MPSK@}
+\def\@@MPSP{@MPSP@}
 
-\def\interceptMPcmykcolor % todo : \ifMPcmyk
+\def\interceptMPcmykcolor % todo : \ifMPcmykcolors
   {\ifcase\MPrgbnumber\lastMPgvalue
      % cannot happen
    \or
      % 1 == cmyk color spec
-     \ifMPcmyk \dointerceptMPcmykcolor \fi
+     \ifMPcmykcolors \dointerceptMPcmykcolor \fi
    \or
-     % 2 == rgb transparency
+     % 2 == spot color
+     \ifMPspotcolors \dointerceptMPspotcolor \fi
+   \or
+     % 3 == rgb transparency
      \invokeMPtransparencyspecial
+   \or
+     % 4 == cmyk transparency
+     \ifMPcmykcolors \invokeMPtransparencyspecial \fi
+   \or
+     % 5 == spot transparency
+     \ifMPspotcolors \invokeMPtransparencyspecial \fi
    \else
-     % 3 == cmyk transparency
-     \ifMPcmyk \invokeMPtransparencyspecial \fi
+     % \writestatus{MPtoPDF}{unknown direct special}%
    \fi}
 
-\def\dointerceptMPcmykcolor % can be used often, so sped up 
+\def\dointerceptMPcmykcolor 
   {\revokeMPtransparencyspecial
    \@EA\ifx\csname\@@MPSK\number\MPrgbnumber\lastMPbvalue\endcsname\relax\else
      \@EA\@EA\@EA\setMPcmyk\csname\@@MPSK\number\MPrgbnumber\lastMPbvalue\endcsname
      \normalhandleMPcmykcolor
+   \fi}
+
+\def\dointerceptMPspotcolor 
+  {\revokeMPtransparencyspecial
+   \@EA\ifx\csname\@@MPSP\number\MPrgbnumber\lastMPbvalue\endcsname\relax\else
+     \@EA\@EA\@EA\setMPspot\csname\@@MPSP\number\MPrgbnumber\lastMPbvalue\endcsname
+     \normalhandleMPspotcolor
    \fi}
 
 \def\handleMPrgbcolor
@@ -341,12 +357,12 @@
 
 \newtoks \invokeMPspecials
 
-\def\finishMPpath%
+\def\finishMPpath
   {\PDFcode
      {\ifcase\finiMPpath W n\or S\or f\or B\else W n\fi
       \extraMPpathcode}}
 
-\def\processMPpath%
+\def\processMPpath
   {\checkMPpath % !
    \ifcase\nofMPsegments\else
      \let\extraMPpathcode\empty
@@ -510,8 +526,8 @@
 \def\startMPshading#1%
   {\edef\currentMPspecial{\gMPs{#1}}}
 
-\def\stopMPshading%
-  {\global\advance\currentPDFshade 1
+\def\stopMPshading
+  {\global\advance\currentPDFshade \plusone
    \setxvalue{obj:Sh:\currentMPspecial}%
      {/Sh\the\currentPDFshade\space\the\pdflastobj\space0 R }%
    \setxvalue{mps:Sh:\currentMPspecial}%
@@ -522,19 +538,19 @@
 \to \MPstartresources
 
 \appendtoks
-   \ifx\currentMPshades\empty \else
-     \xdef\currentPDFresources{\currentPDFresources
-       /Shading <<\currentMPshades>>}%
-   \fi
+  \ifx\currentMPshades\empty \else
+    \xdef\currentPDFresources{\currentPDFresources
+      /Shading <<\currentMPshades>>}%
+  \fi
 \to \MPstopresources
 
-\def\invokeMPshadespecial%
+\def\invokeMPshadespecial
   {\doifdefined{mps:Sh:\currentMPspecial}
      {\edef\currentMPshade{\getvalue{obj:Sh:\currentMPspecial}}%
-      \doifinstringelse{\currentMPshade}{\currentMPshades}
-        {}{\xdef\currentMPshades{\currentMPshades\currentMPshade}}%
+      \doifinstringelse\currentMPshade\currentMPshades \donothing
+        {\xdef\currentMPshades{\currentMPshades\currentMPshade}}%
       \def\extraMPpathcode{/Sh\getvalue{mps:Sh:\currentMPspecial} sh Q}%
-      \chardef\finiMPpath=0
+      \chardef\finiMPpath\zerocount
       \PDFcode{q /Pattern cs}}}
 
 \appendtoks \invokeMPshadespecial \to \invokeMPspecials
@@ -542,63 +558,129 @@
 %D We need to convert the \CMYK\ specials into colors, because
 %D we have to do it twice, we define a macro. 
 
+% \def\checkMPshadingcolor#1#2#3#4#5%
+%   {\edef\tempMPrvalue{\csname\@@MP0#1\endcsname}%
+%    \edef\tempMPgvalue{\csname\@@MP0#2\endcsname}%
+%    \edef\tempMPbvalue{\csname\@@MP0#3\endcsname}%
+%    \edef#5%
+%      {\ifx\tempMPrvalue\tempMPgvalue
+%         \ifx\tempMPrvalue\tempMPbvalue
+%           \ifx\tempMPgvalue\tempMPbvalue
+%             \tempMPbvalue
+%           \fi
+%         \fi   
+%       \fi}%
+%    \edef#4% todo : spotcolors 
+%      {\ifnum\MPrgbnumber\tempMPrvalue=\MPspecialsignal\space
+%         \ifMPcmykcolors\getvalue{\@@MPSK\number\MPrgbnumber\tempMPbvalue}\fi
+%       \fi}}
+
 \def\checkMPshadingcolor#1#2#3#4#5%
   {\edef\tempMPrvalue{\csname\@@MP0#1\endcsname}%
    \edef\tempMPgvalue{\csname\@@MP0#2\endcsname}%
    \edef\tempMPbvalue{\csname\@@MP0#3\endcsname}%
-   \edef#5%
-     {\ifx\tempMPrvalue\tempMPgvalue
-        \ifx\tempMPrvalue\tempMPbvalue
-          \ifx\tempMPgvalue\tempMPbvalue
-            \tempMPbvalue
-          \fi
-        \fi   
-      \fi}%
-   \edef#4%
-     {\ifnum\MPrgbnumber\tempMPrvalue=\MPspecialsignal\space
-        \ifMPcmyk\getvalue{\@@MPSK\number\MPrgbnumber\tempMPbvalue}\fi
-      \fi}}
+   \global\let\MPresolvedspace\MPgrayspace
+   \global\let\MPresolvedcolor\!!zerocount
+   \ifnum\MPrgbnumber\tempMPrvalue=\MPspecialsignal\relax
+     \ifcase\MPrgbnumber\tempMPgvalue
+     \or % 1 = cmyk 
+       \ifMPcmykcolors
+         \expanded{\resolveMPcmykcolor\getvalue{\@@MPSK\number\MPrgbnumber\tempMPbvalue}}\end
+       \fi
+     \or % 2 = spot 
+       \ifMPspotcolors
+         \expanded{\resolveMPspotcolor\getvalue{\@@MPSP\number\MPrgbnumber\tempMPbvalue}}\end
+       \fi
+     \fi
+   \else
+     \ifx\tempMPrvalue\tempMPgvalue
+       \ifx\tempMPrvalue\tempMPbvalue
+         \expanded{\resolveMPgraycolor\tempMPbvalue}\end
+       \else
+         \expanded{\resolveMPrgbcolor\tempMPrvalue\space\tempMPgvalue\space\tempMPbvalue}\end
+       \fi
+     \else
+       \expanded{\resolveMPrgbcolor\tempMPrvalue\space\tempMPgvalue\space\tempMPbvalue}\end
+     \fi
+   \fi
+   \let#4\MPresolvedcolor
+   \let#5\MPresolvedspace}
 
 %D We also need to make sure that we have two \RGB\ or 
 %D \CMYK colors, since we have to set the colorspace. 
 
-\def\setMPshadingcolors#1#2#3#4#5#6%
-  {\checkMPshadingcolor{#1}{#2}{#3}\MPshadeA\MPshadeAA
-   \checkMPshadingcolor{#4}{#5}{#6}\MPshadeB\MPshadeBB
-   \ifx\MPshadeA\empty 
-     \ifx\MPshadeB\empty 
-       \edef\MPshadeA{\gMPs{#1} \gMPs{#2} \gMPs{#3}}%
-       \edef\MPshadeB{\gMPs{#4} \gMPs{#5} \gMPs{#6}}%
-       \def \MPshadeC{RGB}%   
+% \def\setMPshadingcolors#1#2#3#4#5#6%
+%   {\checkMPshadingcolor{#1}{#2}{#3}\MPshadeA\MPshadeAA
+%    \checkMPshadingcolor{#4}{#5}{#6}\MPshadeB\MPshadeBB
+%    \ifx\MPshadeA\empty 
+%      \ifx\MPshadeB\empty 
+%        \edef\MPshadeA{\gMPs{#1} \gMPs{#2} \gMPs{#3}}%
+%        \edef\MPshadeB{\gMPs{#4} \gMPs{#5} \gMPs{#6}}%
+%        \def \MPshadeC{RGB}%   
+%      \else
+%        \ifx\MPshadeAA\empty
+%          \let\MPshadeA\MPcmykWhite
+%          \let\MPshadeB\MPcmykBlack
+%        \else
+%          \scratchdimen\!!onepoint
+%          \advance\scratchdimen -\MPshadeAA\s!pt
+%          \edef\MPshadeA{0 0 0 \withoutpt\the\scratchdimen}%
+%        \fi
+%        \def\MPshadeC{CMYK}%   
+%      \fi
+%    \else
+%      \ifx\MPshadeB\empty 
+%        \ifx\MPshadeBB\empty
+%          \let\MPshadeA\MPcmykWhite
+%          \let\MPshadeB\MPcmykBlack
+%        \else
+%          \scratchdimen\!!onepoint
+%          \advance\scratchdimen -\MPshadeBB\s!pt
+%          \edef\MPshadeB{0 0 0 \withoutpt\the\scratchdimen}%
+%        \fi
+%      \fi
+%      \def\MPshadeC{CMYK}%   
+%    \fi}
+
+\def\setMPshadingcolors#1#2#3#4#5#6% color space 
+  {\checkMPshadingcolor{#1}{#2}{#3}\MPshadeAc\MPshadeAs
+   \checkMPshadingcolor{#4}{#5}{#6}\MPshadeBc\MPshadeBs
+   \ifx\MPshadeAs\MPshadeBs
+     \let\MPshadeA\MPshadeAc
+     \let\MPshadeB\MPshadeBc
+     \let\MPshadeC\MPshadeAs
+   \else\ifx\MPshadeAs\MPgrayspace
+     \ifx\MPshadeBs\MPrgbspace
+       \edef\MPshadeA{\MPshadeAc\space\MPshadeAc\space\MPshadeAc}%
      \else
-       \ifx\MPshadeAA\empty
-         \let\MPshadeA\MPcmykWhite
-         \let\MPshadeB\MPcmykBlack
-       \else
-         \scratchdimen=1pt\advance\scratchdimen -\MPshadeAA pt
-         \edef\MPshadeA{0 0 0 \withoutpt\the\scratchdimen}%
-       \fi
-       \def\MPshadeC{CMYK}%   
+       \negatecolorcomponent\MPshadeAc
+       \edef\MPshadeA{0 0 0 \MPshadeAc}%
      \fi
+     \let\MPshadeB\MPshadeBc
+     \let\MPshadeC\MPshadeBs
+   \else\ifx\MPshadeBs\MPgrayspace
+     \let\MPshadeA\MPshadeAc
+     \ifx\MPshadeAs\MPrgbspace
+       \edef\MPshadeB{\MPshadeBc\space\MPshadeBc\space\MPshadeBc}%
+     \else
+       \negatecolorcomponent\MPshadeBc
+       \edef\MPshadeB{0 0 0 \MPshadeBc}%
+     \fi
+     \let\MPshadeC\MPshadeAs
    \else
-     \ifx\MPshadeB\empty 
-       \ifx\MPshadeBB\empty
-         \let\MPshadeA\MPcmykWhite
-         \let\MPshadeB\MPcmykBlack
-       \else
-         \scratchdimen=1pt\advance\scratchdimen -\MPshadeBB pt
-         \edef\MPshadeB{0 0 0 \withoutpt\the\scratchdimen}%
-       \fi
-     \fi
-     \def\MPshadeC{CMYK}%   
-   \fi}
+     % different color spaces 
+     \def\MPshadeA{1}%
+     \def\MPshadeB{1}%
+     \let\MPshadeC\MPgrayspace
+   \fi\fi\fi}
+
+\let\MPshadeA\MPcmykWhite
+\let\MPshadeB\MPcmykBlack
+\let\MPshadeC\MPgrayspace
 
 %D The reason why this macro is a bit complicates is that we
 %D handle black and white situations (otherwise we would have
 %D to use \CMYK\ b/w in case of a \CMYK\ shade). 
-
-\def\MPcmykBlack{0 0 0 0} 
-\def\MPcmykWhite{0 0 0 1} 
 
 %D Here are the special handlers: 
 
@@ -613,7 +695,7 @@
         /N \gMPs3>>}%
    \immediate\pdfobj
      {<</ShadingType 2
-        /ColorSpace /Device\MPshadeC\space
+        /ColorSpace /\MPshadeC\space
         /Function \the\pdflastobj\space 0 R
         /Coords [\gMPs7 \gMPs8 \gMPs{12} \gMPs{13}]
         /Extend [true true]>>}%
@@ -630,7 +712,7 @@
         /N \gMPs3>>}%
    \immediate\pdfobj
      {<</ShadingType 3
-        /ColorSpace /Device\MPshadeC\space
+        /ColorSpace /\MPshadeC\space
         /Function \the\pdflastobj\space 0 R
         /Coords [\gMPs7 \gMPs8 \gMPs9 \gMPs{13} \gMPs{14} \gMPs{15}]
         /Extend [true true]>>}%
@@ -669,7 +751,7 @@
         {\ifcase\pdfoutput\or % will be hooked into the special driver
            \doiffileelse{#7}
              {\doifundefinedelse{mps:x:#7}
-                {\immediate\pdfximage width 1bp height 1bp {#7}%
+                {\immediate\pdfximage\!!width1\s!bp\!!height1\s!bp{#7}%
                  \setxvalue{mps:x:#7}{\pdfrefximage\the\pdflastximage}}%
                 {\message{[reusing figure #7]}}%
               \pdfliteral{q #1 #2 #3 #4 #5 #6 cm}%
@@ -708,20 +790,20 @@
 
 \def\handleMPhyperlink#1#2#3#4#5%
   {%\ifcase\pdfoutput\or
-     \setbox\scratchbox=\hbox
-       {\setbox\scratchbox=\null
-        \scratchdimen=#1bp\scratchdimen=-\scratchdimen
-        \advance\scratchdimen#3bp
-        \wd\scratchbox=\scratchdimen
-        \scratchdimen=#2bp\scratchdimen=-\scratchdimen
-        \advance\scratchdimen#4bp
-        \ht\scratchbox=\scratchdimen
+     \setbox\scratchbox\hbox
+       {\setbox\scratchbox\null
+        \scratchdimen#1\s!bp\scratchdimen-\scratchdimen
+        \advance\scratchdimen#3\s!bp
+        \wd\scratchbox\scratchdimen
+        \scratchdimen#2bp\scratchdimen-\scratchdimen
+        \advance\scratchdimen#4\s!bp
+        \ht\scratchbox\scratchdimen
         \incolorfalse
         \gotobox{\box\scratchbox}[#5]}%
-     \setbox\scratchbox=\hbox
-       {\scratchdimen\MPxoffset  bp \advance\scratchdimen#1bp
+     \setbox\scratchbox\hbox
+       {\scratchdimen\MPxoffset\s!bp\advance\scratchdimen#1\s!bp
         \hskip\scratchdimen
-        \scratchdimen=\MPyoffset bp \advance\scratchdimen#2bp
+        \scratchdimen\MPyoffset\s!bp\advance\scratchdimen#2\s!bp
         \raise\scratchdimen\box\scratchbox}%
      \smashbox\scratchbox
      \box\scratchbox
@@ -765,7 +847,7 @@
 %D   {\setupcolors[cmyk=ja,status=start]\haalbuffer[cmyk]}
 
 \defineMPspecial{1}
-  {\ifMPcmyk
+  {\ifMPcmykcolors
      \setxvalue{\@@MPSK\gMPs1}{\gMPs2 \gMPs3 \gMPs4 \gMPs5 }%
    \fi}
  
@@ -775,6 +857,30 @@
    \setvalue{\@@MP03}{#3}%
    \setvalue{\@@MP04}{#4}}
 
+%\defineMPspecial{2}
+%  {\ifMPspotcolors
+%     \setxvalue{\@@MPSP\gMPs1}{\gMPs2 \gMPs3 }%
+%   \fi}
+
+
+\defineMPspecial{2}
+  {\ifMPspotcolors
+     \setxvalue{\@@MPSP\gMPs1}{\gMPs2 \gMPs3 }%
+     \checkMPspot{\gMPs2}{\gMPs3}%
+   \fi}
+
+\def\setMPspot#1 #2 %
+  {\setvalue{\@@MP01}{#1}%
+   \setvalue{\@@MP02}{#2}}
+
+\def\checkMPspot#1#2%
+  {\expanded{\resolveMPspotcolor#1 #2}\end
+   \ifx\MPspotspace\MPresolvedspace
+     \edef\MPspotspacespec{/\MPspotspace\space}% 
+     \doifinstringelse\MPspotspacespec\currentMPcolorspaces
+       \donothing\registerMPcolorspace
+   \fi}
+ 
 %D This special (number 50) passes positions to a tex file.
 %D This method uses a two||pass approach an (mis|)|used the
 %D context positioning macros. In \type {core-pos} we will
@@ -825,17 +931,17 @@
 
 \defineMPspecial{50} % x y width height label
   {\bgroup
-   \scratchdimen\MPllx bp \scratchdimen-\scratchdimen
-   \advance\scratchdimen\gMPs1bp
+   \scratchdimen\MPllx\s!bp \scratchdimen-\scratchdimen
+   \advance\scratchdimen\gMPs1\s!bp
    \edef\x{\number\scratchdimen}%
-   \scratchdimen\gMPs2bp \scratchdimen-\scratchdimen
-   \advance\scratchdimen\MPury bp
+   \scratchdimen\gMPs2\s!bp \scratchdimen-\scratchdimen
+   \advance\scratchdimen\MPury\s!bp
    \edef\y{\number\scratchdimen}%
-   \scratchdimen\gMPs3bp
+   \scratchdimen\gMPs3\s!bp
    \edef\w{\number\scratchdimen}%
-   \scratchdimen\gMPs4bp
+   \scratchdimen\gMPs4\s!bp
    \edef\h{\number\scratchdimen}%
-   \dosavepositionwhd{\gMPs5}{0}{\x}{\y}{\w}{\h}{0}%
+   \dosavepositionwhd{\gMPs5}0\x\y\w\h0%
    \egroup}
 
 %D Transparency support used specials 60 (rgb) and 61
@@ -884,23 +990,84 @@
    \edef\PDFtransparencyreference {#2}%
    \edef\PDFtransparencycolorspecs{#3}}
 
-\defineMPspecial{2}
+\def\PDFtransparencyspec
+  {\ifx\MPresolvedspace\MPgrayspace
+     \MPresolvedcolor\space  g \MPresolvedcolor\space  G%
+   \else\ifx\MPresolvedspace\MPrgbspace 
+     \MPresolvedcolor\space rg \MPresolvedcolor\space RG%
+   \else\ifx\MPresolvedspace\MPcmykspace  
+     \MPresolvedcolor\space  k \MPresolvedcolor\space  K%
+   \else\ifx\MPresolvedspace\empty\else
+    /\MPresolvedspace\space cs \MPresolvedcolor\space sc 
+    /\MPresolvedspace\space CS \MPresolvedcolor\space SC%
+  \fi\fi\fi\fi} 
+
+\defineMPspecial{3} % rgb 
   {\edef\currentMPspecial{\gMPs6}%
    \presetPDFtransparency{\gMPs1}{\gMPs2}%
+   \expanded{\resolveMPrgbcolor\gMPs3 \gMPs4 \gMPs5}\end
    \setevalue{\@@MPST\currentMPspecial}% was \setxvalue, bug !
      {\noexpand\assignMPStransparency
         {\PDFtransparencyidentifier}%
         {\PDFtransparencyreference}%
-        {\gMPs3 \gMPs4 \gMPs5 rg \gMPs3 \gMPs4 \gMPs5 RG}}}
+        {\PDFtransparencyspec}}}
 
-\defineMPspecial{3}
+\defineMPspecial{4} % cmyk 
   {\edef\currentMPspecial{\gMPs7}%
    \presetPDFtransparency{\gMPs1}{\gMPs2}%
+   \expanded{\resolveMPcmykcolor\gMPs3 \gMPs4 \gMPs5 \gMPs6}\end
    \setevalue{\@@MPST\currentMPspecial}% was \setxvalue, bug !
      {\noexpand\assignMPStransparency
         {\PDFtransparencyidentifier}%
         {\PDFtransparencyreference}%
-        {\gMPs3 \gMPs4 \gMPs5 \gMPs6 k \gMPs3 \gMPs4 \gMPs5 \gMPs6 K}}}
+        {\PDFtransparencyspec}}}
+
+%\defineMPspecial{5} % spot 
+%  {\edef\currentMPspecial{\gMPs5}%
+%   \presetPDFtransparency{\gMPs1}{\gMPs2}%
+%   \expanded{\resolveMPspotcolor\gMPs3 \gMPs4}\end
+%   \ifx\MPspotspace\MPresolvedspace
+%     \edef\MPspotspacespec{/\MPspotspace\space}% 
+%     \doifinstringelse\MPspotspacespec\currentMPcolorspaces
+%       \donothing\registerMPcolorspace
+%   \fi
+%   \setevalue{\@@MPST\currentMPspecial}% was \setxvalue, bug !
+%     {\noexpand\assignMPStransparency
+%        {\PDFtransparencyidentifier}%
+%        {\PDFtransparencyreference}%
+%        {\PDFtransparencyspec}}}
+
+\defineMPspecial{5} % spot 
+  {\edef\currentMPspecial{\gMPs5}%
+   \presetPDFtransparency{\gMPs1}{\gMPs2}%
+   \checkMPspot{\gMPs3}{\gMPs4}%
+   \setevalue{\@@MPST\currentMPspecial}% was \setxvalue, bug !
+     {\noexpand\assignMPStransparency
+        {\PDFtransparencyidentifier}%
+        {\PDFtransparencyreference}%
+        {\PDFtransparencyspec}}}
+
+% beware: for the moment only supported in pdftex; needs a cleanup! 
+
+\def\registerMPcolorspace
+  {\doifobjectreferencefoundelse{PDFCS}\MPspotspace
+     {\doPDFgetobjectreference{PDFCS}\MPspotspace\PDFobjectreference
+      \xdef\currentMPcolorspaces
+        {\currentMPcolorspaces\MPspotspacespec\PDFobjectreference\space}}
+     \donothing}
+ 
+%D We need to add resource specifications! 
+
+\appendtoks
+  \global\let\currentMPcolorspaces\empty
+\to \MPstartresources
+
+\appendtoks
+  \ifx\currentMPcolorspaces\empty \else
+    \xdef\currentPDFresources{\currentPDFresources
+       /ColorSpace <<\currentMPcolorspaces>>}%
+  \fi
+\to \MPstopresources
 
 %D For efficiency reasons, we fall back on the allocation
 %D mechanisms already present. For use within \MPTOPDF, we
@@ -1014,7 +1181,7 @@
   \def\presetPDFtransparency#1#2%
     {\initializePDFtransparency
      \@EA\ifx\csname\@@MPSTO#1:#2\endcsname\relax
-       \global\advance\PDFcurrenttransparency 1
+       \global\advance\PDFcurrenttransparency \plusone
        \immediate\pdfobj{\PDFtransparencydictionary{#1}{#2}{}}%
        \setxvalue{\@@MPSTN#1:#2}{\the\PDFcurrenttransparency}%
        \setxvalue{\@@MPSTO#1:#2}{\the\pdflastobj}%
@@ -1046,5 +1213,77 @@
 
 %D In all cases, we need to keep track of the resources
 %D used.
+
+%D A few auxiliary macros: 
+
+\def\MPgrayspace{DeviceGray}
+\def\MPrgbspace {DeviceRGB}
+\def\MPcmykspace{DeviceCMYK}
+\let\MPspotspace\MPgrayspace
+
+\def\MPcmykBlack{0 0 0 0} 
+\def\MPcmykWhite{0 0 0 1} 
+
+\ifCONTEXT 
+
+  \def\startMPcolorresolve
+    {\bgroup
+     \def\dostartgraycolormode##1%
+       {\global\let\MPresolvedspace\MPgrayspace
+        \xdef\MPresolvedcolor{##1}}%
+     \def\dostartrgbcolormode ##1##2##3%
+       {\global\let\MPresolvedspace\MPrgbspace
+        \xdef\MPresolvedcolor{##1 ##2 ##3}}%
+     \def\dostartcmykcolormode##1##2##3##4%
+       {\global\let\MPresolvedspace\MPcmykspace
+        \xdef\MPresolvedcolor{##1 ##2 ##3 ##4}}%
+     \def\dostartspotcolormode##1##2%
+       {\global\let\MPspotspace\empty
+        \xdef\MPresolvedspace{##1}%
+        \xdef\MPresolvedcolor{##2}%
+        \global\let\MPspotspace\MPresolvedspace}% signal 
+     \dostartgraycolormode\!!zerocount} % kind of hackery initialization
+
+  \let\stopMPcolorresolve\egroup
+    
+  \def\resolveMPrgbcolor#1 #2 #3\end
+    {\startMPcolorresolve
+     \execcolorR#1:#2:#3:0:0\od
+     \stopMPcolorresolve}
+  
+  \def\resolveMPcmykcolor#1 #2 #3 #4\end
+    {\startMPcolorresolve
+     \execcolorC#1:#2:#3:#4:0:0\od
+     \stopMPcolorresolve}
+  
+  \def\resolveMPgraycolor#1\end
+    {\startMPcolorresolve
+     \execcolorS#1:0:0\od
+     \stopMPcolorresolve}
+
+  \def\resolveMPspotcolor#1 #2\end
+    {\startMPcolorresolve
+     \execcolorP#1:#2:0:0\od
+     \stopMPcolorresolve}  
+
+\else
+
+  \def\resolveMPspotcolor#1 #2\end
+    {\global\let\MPresolvedspace\MPgrayspace
+     \xdef\MPresolvedcolor{0}}
+
+  \def\resolveMPrgbcolor#1 #2 #3\end
+    {\global\let\MPresolvedspace\MPrgbspace
+     \xdef\MPresolvedcolor{#1 #2 #3}}
+  
+  \def\resolveMPcmykcolor#1 #2 #3 #4\end
+    {\global\let\MPresolvedspace\MPcmykspace
+     \xdef\MPresolvedcolor{#1 #2 #3 #4}}
+  
+  \def\resolveMPgraycolor#1\end
+    {\global\let\MPresolvedspace\MPgrayspace
+     \xdef\MPresolvedcolor{#1}} % should be inverted
+
+\fi
 
 \protect \endinput

@@ -71,17 +71,15 @@
   {\convertargument#2\to\asciiafter
    \@EA#1\@EA{\asciiafter}}
 
-\def\checkMMLoperator#1#2% temp hack
+\def\checkMMLoperator#1% #2
   {\unspaceargument#1\to\ascii
-   \doifXMLentityelse\ascii{\getXMLentity\ascii}{#2}}
+   \doifXMLentityelse\ascii{\getXMLentity\ascii}} % {#2}
 
 % this will be done in a more safe way
 
 \def\MMLtodo#1{\enspace\hbox{\rm#1}\enspace}
 
 % this goes to core-mat
-
-\def\mathortext#1#2{\ifmmode#1\else#2\fi}
 
 \def\normalorfiller   #1#2{#1}
 \def\normalordelimiter#1#2{#2}
@@ -98,15 +96,15 @@
 
 \bgroup \obeylines
 
-\gdef\defineMMLentity%
+\gdef\defineMMLentity
   {\bgroup\obeylines\xdefineMMLentity}
 
 \gdef\xdefineMMLentity #1 #2 #3 #4
   {\egroup\dodefineMMLentity{#1}{#2}{#3}{#4}} 
 
-\global\let\dodefineMMLsynonym\gobblefourarguments
+\global\let\dodefineMMLentity\gobblefourarguments
 
-\gdef\defineMMLsynonym%
+\gdef\defineMMLsynonym
   {\bgroup\obeylines\xdefineMMLsynonym}
 
 \gdef\xdefineMMLsynonym #1 #2 
@@ -349,12 +347,12 @@
 \defineXMLentity [scalarproduct]    {\cdot}
 \defineXMLentity [outerproduct]     {\otimes}
 
-\defineXMLentity [integers]         {{\blackboard Z}}
-\defineXMLentity [reals]            {{\blackboard R}}
-\defineXMLentity [rationals]        {{\blackboard Q}}
-\defineXMLentity [naturalnumbers]   {{\blackboard N}}
-\defineXMLentity [complexes]        {{\blackboard C}}
-\defineXMLentity [primes]           {{\blackboard P}}
+\defineXMLentity [integers]         {\integers}
+\defineXMLentity [reals]            {\reals}
+\defineXMLentity [rationals]        {\rationals}
+\defineXMLentity [naturalnumbers]   {\naturalnumbers}
+\defineXMLentity [complexes]        {\complexes}
+\defineXMLentity [primes]           {\primes}
 
 \defineXMLentity [emptyset]         {\emptyset}
 \defineXMLentity [pi]               {\pi}
@@ -450,7 +448,7 @@
 \@EA \defineXMLentity \@EA [\mmlrbrace] {\getXMLentity{rbrace}}
 
 \defineXMLentity [{[}] {\getXMLentity{lbracket}}
-\defineXMLentity [{]}] {\getXMLentity{lbracket}}
+\defineXMLentity [{]}] {\getXMLentity{rbracket}}
 \defineXMLentity [{(}] {\getXMLentity{lparenthesis}}
 \defineXMLentity [{)}] {\getXMLentity{rparenthesis}}
 
@@ -489,6 +487,7 @@
 \defineXMLentity [oplus]          {\mathematics\oplus}
 \defineXMLentity [cup]            {\mathematics\cup}
 \defineXMLentity [cap]            {\mathematics\cap}
+\defineXMLentity [sdot]           {\mathematics\cdot}
 \defineXMLentity [dot]            {\mathematics\cdot}
 \defineXMLentity [sim]            {\mathematics\sim}
 \defineXMLentity [circ]           {\mathematics\circ}

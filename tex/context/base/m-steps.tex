@@ -391,11 +391,12 @@
 \newcounter\cellcounter
 \newcounter\textcounter
 
-\def\startSTEPchart%
+\def\startSTEPchart
   {\dosingleempty\dostartSTEPchart}
 
 \long\def\dostartSTEPchart[#1]#2\stopSTEPchart
-  {\ifinsidefloat \else 
+  {\ifinsidefloat 
+   \else 
      \witruimte 
      \@@STPCvoor 
      \startbaselinecorrection 
@@ -414,14 +415,10 @@
    \stopMPdrawing
    \initializeSTEP
    \initializeSTPC
-\global
-   \chardef\somestepboxone=1 
-\global
-   \chardef\sometextboxone=1 
-\global
-   \chardef\somestepboxtwo\somestepboxone
-\global
-   \chardef\sometextboxtwo\sometextboxone
+   \global\chardef\somestepboxone\plusone
+   \global\chardef\sometextboxone\plusone
+   \global\chardef\somestepboxtwo\somestepboxone
+   \global\chardef\sometextboxtwo\sometextboxone
    \def\startlines{\bgroup\setupSTEPlines}%
    \def\stoplines {\egroup}%
    \def\cells{\dosingleempty\dostepchartcells}
@@ -430,10 +427,8 @@
    \def\text {\dosingleempty\dotext}%
    \def\docell[##1]{\dostepchartcells[##1]{}}%
    \def\dotext[##1]{\dostepcharttexts[##1]{}}
-\doglobal
-   \newcounter\cellcounter
-\doglobal
-   \newcounter\textcounter
+   \doglobal\newcounter\cellcounter
+   \doglobal\newcounter\textcounter
    \let\dostepchartcells\doSTEPchartcellsA
    \let\dostepcharttexts\doSTEPcharttextsA
    {#2} % pass one: cells and texts {} keeps setting local
@@ -441,10 +436,8 @@
      nofcells := \cellcounter ;
      analyze_step_chart ;
    \stopMPdrawing
-\doglobal
-   \newcounter\cellcounter
-\doglobal
-   \newcounter\textcounter
+   \doglobal\newcounter\cellcounter
+   \doglobal\newcounter\textcounter
    \let\dostepchartcells\doSTEPchartcellsB
    \let\dostepcharttexts\doSTEPcharttextsB
    {#2} % pass two: lines
@@ -457,11 +450,13 @@
      anchor_box(\MPpos{\stepchartprefix origin}) ;
    \stopMPdrawing
    \MPdrawingdonetrue
-   \setbox0=\vbox{\MPstaticgraphictrue\getMPdrawing}%
+   \doifelse\@@STPCmethode{0}
+     {\setbox0\null}
+     {\setbox0\vbox{\MPstaticgraphictrue\getMPdrawing}}%
    \resetMPdrawing
-   \setbox2=\vbox
+   \setbox2\vbox
      {\offinterlineskip
-      \scratchdimen=\@@STPChoogte
+      \scratchdimen\@@STPChoogte
       \advance\scratchdimen\@@STPCoffset 
       \advance\scratchdimen\@@STPCoffset
       \ifcase\sometextboxone \box\textboxone \vskip\scratchdimen  \fi
@@ -470,7 +465,7 @@
       \ifcase\sometextboxtwo \box\textboxtwo \vskip\@@STPCvoffset \fi
       \global\resetbox\stepboxone \global\resetbox\stepboxtwo % needed indeed
       \global\resetbox\textboxone \global\resetbox\textboxtwo % needed indeed
-%      \kern-\scratchdimen}%
+     %\kern-\scratchdimen % no, instead:
       \vskip-\lastskip}
    \hbox
      {\scratchdimen\wd0
@@ -491,24 +486,23 @@
   {% synchronize texts
    \doSTEPchartcellsAB[#1]{#2}{#3}%
    % package steps
-   \setbox0=\hbox{\doifsomething{#2}{\@@stepcell{#2}}}%
-   \setbox2=\hbox{\doifsomething{#3}{\@@stepcell{#3}}}%
+   \setbox0\hbox{\doifsomething{#2}{\@@stepcell{#2}}}%
+   \setbox2\hbox{\doifsomething{#3}{\@@stepcell{#3}}}%
    \ifdim\wd0>\zeropoint \!!doneafalse \else \!!doneatrue \fi
    \ifdim\wd2>\zeropoint \!!donebfalse \else \!!donebtrue \fi
    \ifdim\wd0>\wd2
-     \setbox2=\hbox to \wd0{\hss\box2\hss}%
+     \setbox2\hbox to \wd0{\hss\box2\hss}%
    \else
-     \setbox0=\hbox to \wd2{\hss\box0\hss}%
+     \setbox0\hbox to \wd2{\hss\box0\hss}%
    \fi
    \if!!donea
      \startMPdrawing
        cells[t][\cellcounter] := nullpicture ;
      \stopMPdrawing
    \else
-\global
-     \chardef\somestepboxone=0
+     \global\chardef\somestepboxone\zerocount
      \edef\stepidentifier{\stepchartprefix\cellcounter-t-c}%
-     \setbox0=\hbox{\hpos{\stepidentifier}{\box0}}%
+     \setbox0\hbox{\hpos{\stepidentifier}{\box0}}%
      \bgroup
      \iffirstargument\setupSTEPcells[#1]\fi\initializeSTEC
      \startMPdrawing
@@ -522,10 +516,9 @@
        cells[b][\cellcounter] := nullpicture ;
      \stopMPdrawing
    \else
-\global
-     \chardef\somestepboxtwo=0
+     \global\chardef\somestepboxtwo\zerocount
      \edef\stepidentifier{\stepchartprefix\cellcounter-b-c}%
-     \setbox2=\hbox{\hpos{\stepidentifier}{\box2}}%
+     \setbox2\hbox{\hpos{\stepidentifier}{\box2}}%
      \bgroup
      \iffirstargument\setupSTEPcells[#1]\fi\initializeSTEC
      \startMPdrawing
@@ -534,13 +527,11 @@
      \stopMPdrawing
      \egroup
    \fi
-\global
-   \setbox\stepboxone=\hbox
+   \global\setbox\stepboxone\hbox
      {\ifdim\wd\stepboxone>\zeropoint
         \box\stepboxone\hskip\@@STPChoffset\else
       \fi\box0}%
-\global
-   \setbox\stepboxtwo=\hbox
+   \global\setbox\stepboxtwo\hbox
      {\ifdim\wd\stepboxtwo>\zeropoint
         \box\stepboxtwo\hskip\@@STPChoffset\else
       \fi\box2}%
@@ -556,10 +547,9 @@
      {\ifnum\cellcounter>\textcounter
         \texts{}{}\else\exitloop
       \fi}%
-\doglobal
-   \increment\cellcounter}
+   \doglobal\increment\cellcounter}
 
-\def\doSTEPchartcellsBA%
+\def\doSTEPchartcellsBA
   {\scratchtoks\stepchartbuffer
    \stepchartbuffer\emptytoks
    \the\scratchtoks}
@@ -584,23 +574,21 @@
 \def\dodoSTEPcharttextsA#1#2#3#4% #1=number #2=setup
   {\dodoSTEPcharttextsAB{#1}{#2}{#3}{#4}\dodoSTEPcharttextsA
    \ifnum\textcounter>\cellcounter\relax 
-\doglobal
-     \decrement\textcounter\relax
+     \doglobal\decrement\textcounter\relax
    \else
-     \setbox0=\hbox{\doifsomething{#3}{\@@steptext{#3}}}%
-     \setbox2=\hbox{\doifsomething{#4}{\@@steptext{#4}}}%
+     \setbox0\hbox{\doifsomething{#3}{\@@steptext{#3}}}%
+     \setbox2\hbox{\doifsomething{#4}{\@@steptext{#4}}}%
      \ifdim\wd0>\zeropoint \!!doneafalse \else \!!doneatrue \fi
      \ifdim\wd2>\zeropoint \!!donebfalse \else \!!donebtrue \fi
      \if!!donea
-       \setbox0=\hbox to \@@STPChoffset{\hss}%
+       \setbox0\hbox to \@@STPChoffset{\hss}%
        \startMPdrawing
          texts[t][#1][\textcounter] := nullpicture ;
        \stopMPdrawing
-     \else
-\global
-       \chardef\sometextboxone=0
+     \else   
+       \global\chardef\sometextboxone\zerocount
        \edef\stepidentifier{\stepchartprefix#1-\textcounter-t-t}%
-       \setbox0=\hbox to \@@STPChoffset
+       \setbox0\hbox to \@@STPChoffset
          {\hss\hpos{\stepidentifier}{\box0}\hss}%
        \bgroup
        \setupSTEPtexts[#2]\initializeSTET
@@ -611,15 +599,14 @@
        \egroup
      \fi
      \if!!doneb
-       \setbox2=\hbox to \@@STPChoffset{\hss}%
+       \setbox2\hbox to \@@STPChoffset{\hss}%
        \startMPdrawing
          texts[b][#1][\textcounter] := nullpicture ;
        \stopMPdrawing
      \else
-\global
-       \chardef\sometextboxtwo=0
+       \global\chardef\sometextboxtwo\zerocount
        \edef\stepidentifier{\stepchartprefix#1-\textcounter-b-t}%
-       \setbox2=\hbox to \@@STPChoffset
+       \setbox2\hbox to \@@STPChoffset
          {\hss\hpos{\stepidentifier}{\box2}\hss}%
        \bgroup
        \setupSTEPtexts[#2]\initializeSTET
@@ -629,11 +616,9 @@
        \stopMPdrawing
        \egroup
      \fi
-\global
-     \setbox\textboxone=\hbox
+     \global\setbox\textboxone\hbox
        {\hbox to \wd\stepboxone{\box\textboxone\hss}\box0}
-\global
-     \setbox\textboxtwo=\hbox
+     \global\setbox\textboxtwo\hbox
        {\hbox to \wd\stepboxtwo{\box\textboxtwo\hss}\box2}
    \fi}
 
@@ -643,8 +628,7 @@
 \def\dodoSTEPcharttextsB#1#2#3#4% #1=number #2=setup
   {\dodoSTEPcharttextsAB{#1}{#2}{#3}{#4}\dodoSTEPcharttextsB
    \ifnum\textcounter>\cellcounter\relax 
-\doglobal
-     \decrement\textcounter\relax
+     \doglobal\decrement\textcounter\relax
    \else
      \bgroup
      \initializeSTEL
@@ -656,46 +640,43 @@
    \fi}
 
 \def\dodoSTEPcharttextsAB#1#2#3#4#5% #1=number #2=setup
-  {%
-\doglobal
-   \increment\textcounter\relax
+  {\doglobal\increment\textcounter\relax
    \ifnum\textcounter>\cellcounter\relax
      \@EA\appendtoks\@EA#5\@EA{#1}{#2}{#3}{#4}\to\stepchartbuffer
    \fi}
 
 \def\MPtextsgraphic
-  {image ( drawshape (
+  {image(drawshape(
      \@@STETvariant, pxy enlarged (-.5*\@@STEToffset),
      \@@STETlijndikte, \MPcolor{\@@STETkaderkleur},
      \MPcolor{\@@STETachtergrondkleur} ) )}
 
 \def\MPcharttoplinesgraphic#1#2%
-  {image ( drawline (
+  {image(drawline(
      \@@STELvariant, get_step_chart_top_line(#1,#2),  
      \@@STELlijndikte, \MPcolor{\@@STELkleur} ) )}
 
 \def\MPchartbotlinesgraphic#1#2%
-  {image ( drawline ( 
+  {image(drawline( 
      \@@STELvariant, get_step_chart_bot_line(#1,#2), 
      \@@STELlijndikte, \MPcolor{\@@STELkleur} ) )}
 
 %D \XML\ coupling. 
 
-\defineXMLpickup 
-  [stepchart] [@@STPC] 
+\defineXMLpickup[stepchart][@@STPC] 
   {\bgroup
    \defineXMLpush[top]%
    \defineXMLpush[bot]%
-   \defineXMLenvironment [lines] [@@STEL] 
+   \defineXMLenvironment[lines][@@STEL] 
      {\expanded{\startlines[\theXMLarguments{@@STEL}]}} 
      {\stoplines}%
-   \defineXMLenvironment [cells] [@@STEC] 
+   \defineXMLenvironment[cells][@@STEC] 
      {\XMLerase{top}\XMLerase{bot}}
      {\expanded{\cells[\theXMLarguments{@@STEC}]{\XMLpop{top}}{\XMLpop{bot}}}}%
-   \defineXMLenvironment [texts] [@@STET] 
+   \defineXMLenvironment[texts][@@STET] 
      {\XMLerase{top}\XMLerase{bot}}
      {\expanded{\texts[\theXMLarguments{@@STET}]{\XMLpop{top}}{\XMLpop{bot}}}}%
-   \defineXMLenvironmentpush [cell] [@@STEC] 
+   \defineXMLenvironmentpush[cell][@@STEC] 
      {\XMLerase{cell}}
      {\expanded{\cell [\theXMLarguments{@@STEC}]{\XMLpop{cell}}}}%
    \defineXMLenvironmentpush [text] [@@STET] 
@@ -721,7 +702,14 @@
   {\dodoubleempty\dostartSTEPaligntable[1]}
 
 \def\dostartSTEPaligntable[#1][#2]#3\stopSTEPaligntable % flag settings data
-  {\ifinsidefloat \else \witruimte \@@STPTvoor \startbaselinecorrection \fi
+  {\ifinsidefloat 
+   \else 
+     \witruimte    
+     \@@STPTvoor 
+     \startbaselinecorrection 
+     \setlocalhsize
+     \noindent
+   \fi
    \vbox\bgroup
    \setupSTEPtables[#2]%
    \forgetall
@@ -740,9 +728,9 @@
    \def\cells  {\dosingleempty\docells}%
    \def\text   {\dosingleempty\dotext}%
    % first graphic pass, also trial pass
-   \global\dimen1=\zeropoint
-   \global\dimen3=\zeropoint
-   \global\dimen5=\zeropoint
+   \global\dimen1\zeropoint
+   \global\dimen3\zeropoint
+   \global\dimen5\zeropoint
    \def\docell[##1]%
      {\docells[##1]{}{}}%
    \def\docells[##1]##2##3##4%
@@ -758,7 +746,7 @@
       \stopMPdrawing
       \egroup
       \def\do####1####2%
-        {\setbox\scratchbox=\hbox{\@@stepfake{####2}}%
+        {\setbox\scratchbox\hbox{\@@stepfake{####2}}%
          \ifdim\wd\scratchbox>\dimen####1\global\dimen####1=\wd\scratchbox\fi}%
       \ifcase#1\else\do1{##2}\do3{##3}\fi\do5{##4}}%
    \def\dotext[##1]##2%
@@ -791,7 +779,9 @@
      anchor_box(\MPpos{\steptableprefix origin}) ;
    \stopMPdrawing
    \MPdrawingdonetrue
-   \setbox0=\vbox{\MPstaticgraphictrue\getMPdrawing}%
+   \doifelse\@@STPTmethode{0}
+     {\setbox0\null}
+     {\setbox0\vbox{\MPstaticgraphictrue\getMPdrawing}}%
    \resetMPdrawing
    % typesetting pass 
    \dimen6=\@@STPTafstand \dimen6=2\dimen6
@@ -809,7 +799,7 @@
      {\doglobal\increment\cellcounter
       \def\do####1####2####3####4% % strut really needed there !
         {\hbox to \dimen####1{####2\@@stepfake{####3}\strut####4}}%
-      \setbox8=\hbox
+      \setbox8\hbox
         {\ifcase#1\else
            \do1\hss{##2}\relax \hskip\@@STPTafstand 
            \do3\hss{##3}\hss   \hskip\@@STPTafstand 
@@ -824,7 +814,7 @@
       \hskip\dimen8
       \advance\hsize-\dimen8
       \advance\hsize-\dimen6 % twice the offset
-      \setbox0=\hbox{\@@steptext{##2}}%
+      \setbox0\hbox{\@@steptext{##2}}%
 % to do 
 %     \ifdim\wd0>\hsize
 %       \setbox0=\vbox{\@@steptext{##2}}%
@@ -835,7 +825,7 @@
       \egroup
       \nointerlineskip
       \kern\@@STPTvoffset}
-   \setbox2=\vbox
+   \setbox2\vbox
      {\doglobal\newcounter\cellcounter
       #3\kern-\@@STPTvoffset}
    \hbox
@@ -853,35 +843,33 @@
      \@@STELvariant, get_step_table_line(\cellcounter), 
      \@@STELlijndikte, \MPcolor{\@@STELkleur} ) )}
 
-\defineXMLpickup
-  [steptable] [@@STPT]
+\defineXMLpickup[steptable][@@STPT]
   {\bgroup
-   \defineXMLenvironment [lines] [@@STEL] 
+   \defineXMLenvironment[lines][@@STEL] 
      {\expanded{\startlines[\theXMLarguments{@@STEL}]}} 
      {\stoplines}%
-   \defineXMLargument [cell] [@@STEC]   
+   \defineXMLargument[cell][@@STEC]   
      {\expanded{\cell[\theXMLarguments{@@STEC}]}}% 
-   \defineXMLargument [text] [@@STET]
+   \defineXMLargument[text][@@STET]
      {\expanded{\text[\theXMLarguments{@@STET}]}}% 
-   \defineXMLargument [prep]
+   \defineXMLargument[prep]
      {\prep}%
    \expanded{\startSTEPtable[\theXMLarguments{@@STPT}]}}  
   {\stopSTEPtable
    \egroup}
 
-\defineXMLpickup
-  [stepaligntable] [@@STPT]
+\defineXMLpickup[stepaligntable][@@STPT]
   {\bgroup
-    \defineXMLenvironment [lines] [@@STEL] 
+    \defineXMLenvironment[lines][@@STEL] 
       {\expanded{\setupSTEPlines[\theXMLarguments{@@STEL}]}} 
       {}%
    \defineXMLpush[c1]\defineXMLpush[c2]\defineXMLpush[c3]%
-   \defineXMLenvironment [cells] [@@STEC]
+   \defineXMLenvironment[cells][@@STEC]
      {\XMLerase{c1}\XMLerase{c1}\XMLerase{c3}}
      {\expanded{\cells[\theXMLarguments{@@STEC}]{\XMLpop{c1}}{\XMLpop{c2}}{\XMLpop{c3}}}}%
-   \defineXMLargument [text] [@@STET]
+   \defineXMLargument[text][@@STET]
      {\expanded{\text[\theXMLarguments{@@STET}]}}% 
-   \defineXMLargument [prep]
+   \defineXMLargument[prep]
      {\prep}%
    \expanded{\startSTEPaligntable[\theXMLarguments{@@STPT}]}}  
   {\stopSTEPaligntable

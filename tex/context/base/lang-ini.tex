@@ -194,7 +194,7 @@
 \def\dodoinstalllanguage#1#2% #2 added
   {\doifundefined{#1}{\setvalue{#1}{\complexlanguage[#2]}}%
    \expanded{\noexpand\uppercase{\noexpand\edef\noexpand\ascii{#1}}}%
-   \doifundefined{\ascii}{\setvalue{\ascii}{\complexlanguage[#2]}}}
+   \doifundefined\ascii{\setvalue{\ascii}{\complexlanguage[#2]}}}
 
 %D \macros
 %D   {preloadlanguages}
@@ -212,9 +212,11 @@
    -#1-%
    \getvalue{\??la#1\s!righthyphenmin} }
 
-\def\preloadlanguages%
-  {\doifsomething{\preloadedpatterns}
-     {\showmessage{\m!linguals}{10}{\preloadedpatterns}}}
+\def\preloadlanguages
+  {\doifsomething\preloadedpatterns
+     {\showmessage\m!linguals{10}\preloadedpatterns}}
+
+\let\installedlanguages\empty
 
 \def\doinstalllanguage[#1][#2]%
   {%\ConvertConstantAfter\doifinstringelse{=}{#2}
@@ -222,6 +224,7 @@
      {\doifdefinedelse{\??la#1\c!status}
         {\getparameters[\??la#1][#2]}
         {\setvalue{\l!prefix!#1}{#1}%
+         \addtocommalist{#1}\installedlanguages
          \dodoinstalllanguage{#1}{#1}%
          \getparameters
            [\??la#1]
@@ -274,27 +277,33 @@
        % loop in deo
        % \doifvalue{\??la#1\s!patterns}{#1}{\letvalue{\??la#1\c!default}\empty}%
        %
-      \doifelsevalue{\??la#1\c!status}{\v!start}
+      \doifelsevalue{\??la#1\c!status}\v!start
         {\doifelsevaluenothing{\??la#1\s!patterns}
            {\edef\languagesuffix{#1}}
            {\edef\languagesuffix{\getvalue{\??la#1\s!patterns}}}%
-        %\doifundefinedelse{\??la\??la\languagesuffix}
          \doifundefinedelse{\??la\??la:\currentencoding:\currentmapping:\languagesuffix}
            {\doloadpatterns{#1}{\languagesuffix}}
            {\bgroup
-           %\edef\loadedlanguage{\getvalue{\??la\??la\languagesuffix}}%
             \edef\loadedlanguage{\getvalue{\??la\??la:\currentencoding:\currentmapping:\languagesuffix}}%
-            \showmessage{\m!linguals}{1}{\languagesuffix,#1,\loadedlanguage}%
-            \showmessage{\m!linguals}{3}{\languagesuffix,#1,\loadedlanguage}%
+            \showmessage\m!linguals1{\languagesuffix,#1,\loadedlanguage}%
+            \showmessage\m!linguals3{\languagesuffix,#1,\loadedlanguage}%
             \egroup}}
-        {\showmessage{\m!linguals}{5}{#1}}}
+        {\showmessage\m!linguals5{#1}}}
      {\setvalue{\l!prefix!#1}{#2}%
       \dodoinstalllanguage{#1}{#2}}}
 
 % ^^ \language[#1] gave unwanted side effect of loading language specifics
 
-\def\installlanguage%
+\def\installlanguage
   {\dodoubleargument\doinstalllanguage}
+
+%D Handy 
+
+\def\preloadallpatterns
+  {\gdef\preloadallpatterns##1%
+     {\installlanguage[##1][\c!status=\v!start]}%
+   \processcommacommand[\installedlanguages]\preloadallpatterns
+   \global\let\preloadallpatterns\relax}
 
 %D When the second argument is a language identifier, a
 %D synonym is created. This feature is present because we
@@ -307,7 +316,7 @@
 \def\doloadpatterns#1#2%
   {\expanded{\getcommacommandsize[\getvalue{\??la#2\s!encoding}]}%
    \ifnum\commalistsize>0
-     %\message{[nofpatterns #2: \commalistsize/\getvalue{\??la#2\s!encoding}]}%
+    %\message{[nofpatterns #2: \commalistsize/\getvalue{\??la#2\s!encoding}]}%
      \dorecurse\commalistsize
        {\expanded{\getfromcommacommand[\getvalue{\??la#2\s!encoding}][\recurselevel]}%
         \let\patternencoding\commalistelement
@@ -324,38 +333,38 @@
 
 \def\dodoloadpatterns#1#2#3#4% beware, loaded language also incr 
   {\normallanguage\loadedlanguage % when not really needed
-%  \letvalue{\??la\??la#2}\loadedlanguage
+  %\letvalue{\??la\??la#2}\loadedlanguage
    \bgroup
    \scratchtoks\everyjob % we don't want additional junk put there
    \let\showpatterns\relax
    \startencoding[#3]%
    \enablemapping[#4]%
-   \doifnothing{\currentencoding}{\let\currentencoding\s!default}%
-   \doifnothing{\currentmapping }{\let\currentmapping \s!default}%
-   \global\letvalue{\??la\??la:\currentencoding:\currentmapping:#2}=\loadedlanguage
+   \doifnothing\currentencoding{\let\currentencoding\s!default}%
+   \doifnothing\currentmapping {\let\currentmapping \s!default}%
+   \letgvalue{\??la\??la:\currentencoding:\currentmapping:#2}\loadedlanguage
    \startreadingfile
    \startpatternaccents
-%\def\patterns##1{\message{#1/#2/#3/#4/##1}\normalpatterns{##1}}%
+  %\def\patterns##1{\message{#1/#2/#3/#4/##1}\normalpatterns{##1}}%
    \readsysfile{\truefilename{\f!languageprefix#2.\f!patternsextension}}
      {\setxvalue{\??la#1\s!patterns}{#2}%
       \xdef\preloadedpatterns
         {\preloadedpatterns
          \number\normallanguage:\showpatterns{#2}}%
-      \showmessage{\m!linguals}{1}{#2,#1,\loadedlanguage}}
+      \showmessage\m!linguals1{#2,#1,\loadedlanguage}}
      {\readsysfile{\f!languageprefix#2.\f!patternsextension}
         {\setxvalue{\??la#1\s!patterns}{#2}%
          \xdef\preloadedpatterns{\preloadedpatterns\showpatterns{#2}}%
-         \showmessage{\m!linguals}{1}{#2,#1,\loadedlanguage}}
-        {\showmessage{\m!linguals}{2}{#2,#1,\loadedlanguage}}}%
+         \showmessage\m!linguals1{#2,#1,\loadedlanguage}}
+        {\showmessage\m!linguals2{#2,#1,\loadedlanguage}}}%
       \readsysfile{\truefilename{\f!languageprefix#2.\f!hyphensextension}}
-        {\showmessage{\m!linguals}{3}{#2,#1,\loadedlanguage}}
+        {\showmessage\m!linguals3{#2,#1,\loadedlanguage}}
         {\readsysfile{\f!languageprefix#2.\f!hyphensextension}
-           {\showmessage{\m!linguals}{3}{#2,#1,\loadedlanguage}}
-           {\showmessage{\m!linguals}{4}{#2,#1,\loadedlanguage}}}%
+           {\showmessage\m!linguals3{#2,#1,\loadedlanguage}}
+           {\showmessage\m!linguals4{#2,#1,\loadedlanguage}}}%
    \stoppatternaccents
    \stopreadingfile
    \stopencoding
-   \global\everyjob=\scratchtoks
+   \global\everyjob\scratchtoks
    \egroup
    \increment\loadedlanguage}
 
@@ -366,12 +375,12 @@
 %D
 %D \showsetup{\y!setuplanguage}
 
-\def\setuplanguage%
+\def\setuplanguage
   {\dodoubleargument\dosetuplanguage}
 
 \def\dosetuplanguage[#1][#2]%
   {\getparameters[\??la#1][#2]%  
-   \doif{#1}{\currentlanguage}{\docomplexlanguage}}
+   \doif{#1}\currentlanguage\docomplexlanguage}
 
 %D The values \type {\c!leftsentence} and \type
 %D {\c!rightsentence} can be (and are) used to implement
@@ -387,8 +396,8 @@
 %D Just to make things easy we can ask for the current date
 %D specification by saying:
 
-\def\currentdatespecification%
-  {\getvalue{\??la\currentlanguage\c!datum}}
+\def\currentdatespecification
+  {\csname\??la\currentlanguage\c!datum\endcsname}
 
 %D This command is not meant for users.
 
@@ -811,6 +820,6 @@
 
 \appendtoks\mainlanguage[\currentlanguage]\to\everyjob
 
-\appendtoks\showmessage{\m!linguals}{9}{\currentlanguage}\to\everyjob
+\appendtoks\showmessage\m!linguals9\currentlanguage\to\everyjob
 
 \protect \endinput

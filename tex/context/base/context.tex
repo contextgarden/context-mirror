@@ -15,7 +15,7 @@
 
 \catcode`\{=1 \catcode`\}=2 
 
-\def\contextversion{2002.6.7}
+\def\contextversion{2002.12.20}
 
 %D Welcome to the main module. When this module is ran through
 %D \type{initex} or \type{tex -i} or \type{whatevertex} using
@@ -34,14 +34,14 @@
 \input syst-pln.tex % stripped plain 
 \input syst-prm.tex % saved primitives (will be extended)
 
-\input math-pln.tex % basic plain math 
-
 \input syst-etx.tex % etex 
 \input syst-omg.tex % omega 
 \input syst-gen.tex
 \input syst-ext.tex
 \input syst-new.tex
 \input syst-con.tex
+
+\input math-pln.tex % basic plain math 
 
 %D To enable selective loading, we say:
 
@@ -132,8 +132,10 @@
 \input hand-ini.tex 
 \input regi-ini.tex 
 \input lang-ini.tex
+\input unic-ini.tex 
 
 \input colo-ini.tex
+%input colo-sep.tex
 
 \input spec-mis.tex
 \input spec-ini.tex
@@ -222,6 +224,7 @@
 \input core-tbl.tex
 \input core-int.tex
 \input core-ntb.tex
+\input core-ltb.tex 
 
 %D Like languages, fonts, encodings and symbols, \METAPOST\ 
 %D support is also organized in its own class of modules. 
@@ -287,7 +290,12 @@
 \input xtag-exp.tex
 \input xtag-pre.tex
 \input xtag-xsd.tex
+\input xtag-rng.tex
 %input xtag-ent.tex
+
+%D How about this: 
+
+\input meta-xml.tex
 
 %D The next two modules implement some additional
 %D functionality concenring classes of documents and output.
@@ -398,7 +406,7 @@
 
 \stopinterface
 
-\edef\copyrightversion%
+\edef\copyrightversion
   {Copyright 1990-\the\normalyear\normalspace / 
    PRAGMA ADE / J. Hagen - A.F. Otten}
 
@@ -411,7 +419,7 @@
 
 %D Let's quit this file when doing a \type {cont-..} generation.
 
-\doifparentfileelse{context}{\let\next\relax}{\let\next\endinput} \next 
+\doifparentfileelse{context}{\donothing}{\endinput}
 
 %D Unless we're generating a \type {cont-..} format, we also 
 %D do the following. 
@@ -483,9 +491,17 @@
 
 \protect
 
-%D Finally we load some fonts. 
+%D Finally we (pre)load some fonts. 
 
 \setupbodyfont [cmr,rm,12pt]
+
+%D The next hook can be used to generate a local (extended)
+%D format. This file is only searched for at the current 
+%D path. 
+
+% \readlocfile{cont-def.tex}
+%   {\writestatus{loading}{adding extensions from cont-def}}
+%   {}
 
 %D Now dumping the format is all that's left to be done.
 

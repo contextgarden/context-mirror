@@ -1,0 +1,36 @@
+%D \module
+%D   [       file=xtag-raw,
+%D        version=2002.03.21,
+%D          title=\CONTEXT\ XML Support,
+%D       subtitle=reducing specials,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{Context XML Macros (raw specials)}
+
+%D Some day this module will be obsolete. 
+
+\defineXMLentity [tex-hash]       {\letterhash}
+\defineXMLentity [tex-dollar]     {\letterdollar}
+\defineXMLentity [tex-percent]    {\letterpercent}
+\defineXMLentity [tex-backslash]  {\letterbackslash}
+\defineXMLentity [tex-hat]        {\letterhat}
+\defineXMLentity [tex-underscore] {\letterunderscore}
+\defineXMLentity [tex-leftbrace]  {\letterbgroup}
+\defineXMLentity [tex-rightbrace] {\letteregroup}
+\defineXMLentity [tex-bar]        {\letterbar}
+\defineXMLentity [tex-tilde]      {\lettertilde}
+
+\endinput 
+ 
+\defineXMLsingular[test][oeps=,whow=,hm=]
+  {\tttf \input \XMLop{oeps} [\XMLop{whow}] [\XMLop{hm}]}
+
+\startXMLdata
+<test oeps="oeps_tst.tmp" whow="#FFEEGG" hm="^{}~"/>
+\stopXMLdata

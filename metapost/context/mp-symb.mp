@@ -27,7 +27,6 @@ path lefttriangle, righttriangle, sublefttriangle, subrighttriangle;
 
 pair s ; s = (2wb,0) ;
 
-
 x1t = x2t = 0;
 x3t = wt;
 y3t = .5h;

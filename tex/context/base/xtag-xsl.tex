@@ -22,11 +22,13 @@
 
 \def\XSLTscriptfile{\bufferprefix xlscript}
 
+% to be sped up: 
+
 \def\presetXSLTcharacters
   {\let\par\empty
-   \def\{{\rawcharacter{`\{}}%
-   \def\}{\rawcharacter{`\}}}%
-   \def\\{\rawcharacter{`\\}}}
+   \def\{{\rawcharacter{`\{}}%  \string^^..
+   \def\}{\rawcharacter{`\}}}%  \string^^..
+   \def\\{\rawcharacter{`\\}}}% \string^^..
 
 \def\obeyXSLTcharacters
   {\setnaturalcatcodes

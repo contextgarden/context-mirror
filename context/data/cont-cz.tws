@@ -159,7 +159,10 @@ var:redukce:ano,ne::
 var:rgb:ano,ne::
 var:cmyk:ano,ne::
 var:mpcmyk:ano,ne::
+var:mpspot:ano,ne::
 var:barvatextu:*jmeno::
+var:split:c,m,y,k,p,s,ne,*jmeno::
+var:kriterium:vse,zadny::
 stopsetup
 
 startsetup
@@ -699,9 +702,9 @@ startsetup
 com:nastavoramovani:
 typ:vars/:
 var:vyska:prizpusobive,siroky,*dimenze::
-var:sirka:prizpusobive,siroky,*dimenze::
+var:sirka:prizpusobive,siroky,fixne,*dimenze::
 var:offset:zadny,prekryv,implicitni,*dimenze::
-var:misto:nizko,podlehloubky::
+var:misto:nizko,podlehloubky,visici::
 var:volba:zadny,prazdne::
 var:strut:ano,ne::
 var:zarovnani:ne,vlevo,vpravo,nastred,normalni,vysoko,nizko,nivy::
@@ -1291,6 +1294,12 @@ typ::
 stopsetup
 
 startsetup
+com:emptylines:
+typ:val/:
+val:*cislo::
+stopsetup
+
+startsetup
 com:zadnamezera:
 typ::
 stopsetup
@@ -1643,7 +1652,7 @@ var:horoffset:*dimenze::
 var:offsethlavicky:*dimenze::
 var:pismeno:normalni,tucne,sklonene,tucnesklonene,opis,kap,male...,*prikaz::
 var:barva:*jmeno::
-var:znaceni:zap,vyp,barevne::
+var:znaceni:zap,vyp,barevne,rastr::
 var:misto:vlevo,nastred,vpravo,spodek,vrsek, jednostranne,dvoustranny::
 var:meritko:*dimenze::
 var:nx:*cislo::
@@ -1651,10 +1660,15 @@ var:ny:*cislo::
 var:dx:*dimenze::
 var:dy:*dimenze::
 var:radky:*cislo::
+var:sloupce:*cislo::
+var:vzdalenostsloupcu:*dimenze::
 var:mrizka:ano,ne::
-var:bottomspace:*cislo::
-var:cutspace:*cislo::
-var:textdistance:*cislo::
+var:bottomspace:*dimenze::
+var:cutspace:*dimenze::
+var:textdistance:*dimenze::
+var:sirkatextu:*cislo::
+var:textmargin:*dimenze::
+var:clipoffset:*dimenze::
 stopsetup
 
 startsetup
@@ -1739,6 +1753,7 @@ var:*sekcecislo singular: jmeno v singularu:ano,ne::
 var:oddelovac:*text::
 var:strut:ano,ne::
 var:status:start,stop::
+var:sirka:*dimenze::
 var:prikaz:*\prikaz#1::
 stopsetup
 
@@ -1777,6 +1792,10 @@ typ:vars/:
 var:cislooddilu:ano,cislo,ne::
 var:alternativa:normalni,marginalie,nastred,text,odstavec::
 var:oddelovac:*text::
+var:zarovnani:vlevo,vpravo,normalni,siroky::
+var:zarovnejtitul:ano,ne::
+var:tolerance:velmistriktni,striktni,tolerantni,velmitolerantni,natahnout::
+var:odsadpristi:ano,ne::
 var:prikaz:*\prikaz#1#2::
 stopsetup
 
@@ -1818,6 +1837,9 @@ var:odsadpristi:ano,ne::
 var:nvrsek:*cislo::
 var:nspodek:*cislo::
 var:nradky:*cislo::
+var:implicitni:*jmeno::
+var:vzdalenostlevehookraje:*dimenze::
+var:vzdalenostpravehookraje:*dimenze::
 ivr:nastavoramovani::
 stopsetup
 
@@ -1961,6 +1983,13 @@ stopsetup
 startsetup
 com:zadnyseznam:
 typ:arg/:
+val:*text::
+stopsetup
+
+startsetup
+com:listsymbol:
+typ:val/arg/:
+val:*jmeno::
 val:*text::
 stopsetup
 
@@ -2164,6 +2193,8 @@ var:zarovnani:uvnitr,vnejsi,vlevo,vpravo,nastred,normalni,ne,ano::
 var:radek:*cislo::
 var:vzdalenost:*dimenze::
 var:oddelovac:*text::
+var:sirka:*dimenze::
+var:vzdalenost:*dimenze::
 ivr:nastavoramovani::
 stopsetup
 
@@ -2205,6 +2236,19 @@ var:meritko:*cislo::
 stopsetup
 
 startsetup
+com:setuppaper:
+typ:vars/:
+var:papir:*jmeno::
+var:stranka:*jmeno::
+var:nx:*cislo::
+var:ny:*cislo::
+var:sirka:*dimenze::
+var:vyska:*dimenze::
+var:svrchnimezera:*dimenze::
+var:zpetnamezera:*dimenze::
+stopsetup
+
+startsetup
 com:nastavvelikostpapiru:
 typ:vals/vals/:
 val:A3,A4,A5,A6,letter,...,CD,*jmeno, nasirku,zrcadleno,otoceno,90,180,270:A4:
@@ -2214,7 +2258,7 @@ stopsetup
 startsetup
 com:nastavusporadani:
 typ:vals/:
-val:zablokovat, 2*16,2*8,2*4,2*2,2**2,2UP,2DOWN, zrcadleno,otoceno,dvoustranny,negativ,90,180,270::
+val:zablokovat, 2*16,2*8,2*4,2*2,2**2,2*2*4,2*4*2,2UP,2DOWN,2SIDE,2TOP, zrcadleno,otoceno,dvoustranny,negativ,90,180,270::
 stopsetup
 
 startsetup
@@ -2306,16 +2350,12 @@ var:alternativa:normalni,naokraji,nastred,text::
 var:prikaz:*\prikaz#1#2::
 var:ciselnyprikaz:*\prikaz#1::
 var:textovyprikaz:*\prikaz#1::
-var:oddelovac:*text::
 var:prefix:+,-,*text::
-var:umistihlavicku:ano,ne::
-var:zvysujicicislo:ano,ne,*soubor::
-var:zarovnani:vlevo,vpravo,normalni,siroky::
-var:zarovnejtitul:ano,ne::
-var:tolerance:velmistriktni,striktni,tolerantni,velmitolerantni,natahnout::
-var:odsadpristi:ano,ne::
+var:umistihlavicku:ano,ne,prazdne::
+var:zvysujicicislo:ano,ne,seznam,*soubor::
 var:soubor:*jmeno::
 var:expanzen:ano,prikaz,ne::
+ivr:nastavnadpisy::
 stopsetup
 
 startsetup
@@ -3223,6 +3263,7 @@ var:zarovnani:vlevo,nastred,vpravo,normalni::
 var:tloustkalinky:*dimenze::
 var:vzdalenost:prazdny,mrizka,podlehloubky,*dimenze,male,stredni,velke,zadny::
 var:zakladnifont:5pt,...,12pt,male,velke::
+var:linka:normalni,radek::
 stopsetup
 
 startsetup
@@ -3395,6 +3436,7 @@ var:po:commando::
 var:vzdalenost:*dimenze::
 var:vyska:*dimenze,prizpusobive::
 var:sirka:*dimenze,prizpusobive::
+var:misto:boven,midden,onder,links,rechts::
 var:zarovnani:ne,vlevo,vpravo,nastred,normalni::
 stopsetup
 
@@ -3798,6 +3840,7 @@ stopsetup
 startsetup
 com:nastavkomentar:
 typ:vars/:
+var:status:start,stop::
 var:sirka:*dimenze::
 var:vyska:*dimenze::
 var:barva:*jmeno::

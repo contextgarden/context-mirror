@@ -94,17 +94,17 @@
 % FontFont Meta
 
 \starttypescript [map] [ec,8r,texnansi]
-  \loadmapfile [\typefaceencoding-ff-meta]
+  \loadmapfile [\typefaceencoding-fontfont-meta]
 \stoptypescript
 
 \starttypescript [sans] [meta] [name]
 
   \definefontsynonym [Sans]           [MetaNormal-Roman]
   \definefontsynonym [SansItalic]     [MetaNormal-Italic]
-  \definefontsynonym [SansSlanted]    [MetaNormal-Slanted]
+  \definefontsynonym [SansSlanted]    [MetaNormal-Italic]
   \definefontsynonym [SansBold]       [MetaBold-Roman]
   \definefontsynonym [SansBoldItalic] [MetaBold-Italic]
-  \definefontsynonym [SansBoldSlanted][MetaBold-Slanted]
+  \definefontsynonym [SansBoldSlanted][MetaBold-Italic]
   \definefontsynonym [SansCaps]       [MetaNormal-Caps]
 
 \stoptypescript
@@ -206,6 +206,12 @@
   \definefontsynonym [MetaBlackLF-Italic]     [\typefaceencoding-mtblfi]  [encoding=\typefaceencoding]
   \definefontsynonym [MetaBlackLF-Caps]       [\typefaceencoding-mtblfc]  [encoding=\typefaceencoding]
   \definefontsynonym [MetaBlackLF-ItalicCaps] [\typefaceencoding-mtblfic] [encoding=\typefaceencoding]
+
+\stoptypescript
+
+\starttypescript [expert] [meta] % incomplete 
+
+  \definefontsynonym [MetaNormal-Expert] [mtnx]   
 
 \stoptypescript
 

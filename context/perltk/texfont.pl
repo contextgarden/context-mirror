@@ -4,6 +4,8 @@ eval '(exit $?0)' && eval 'exec perl -S $0 ${1+"$@"}' && eval 'exec perl -S $0 $
 # This is an example of a crappy unstructured file but once 
 # I know what should happen exactly, I will clean it up. 
 
+# todo : ttf (partially doen already) 
+
 #D \module
 #D   [       file=texfont.pl,
 #D        version=2000.12.14,
@@ -72,6 +74,7 @@ my $virtual         = 0 ;
 my $novirtual       = 0 ;
 my $listing         = 0 ;
 my $remove          = 0 ;
+my $expert          = 0 ; 
 
 my $fontsuffix  = "" ;
 my $namesuffix  = "" ;
@@ -111,7 +114,8 @@ my $width = "" ;
     "caps=s"       => \$caps,
     "batch"        => \$batch,
     "weight=s"     => \$weight,
-    "width=s"      => \$width) ;
+    "width=s"      => \$width,
+    "expert"       => \$expert) ;
 
 # so we can use both combined 
 
@@ -135,7 +139,7 @@ sub error
 # The banner. 
 
 print "\n" ;
-report ("TeXFont 1.5 - ConTeXt / PRAGMA ADE 2000-2001 (STILL BETA)") ;
+report ("TeXFont 1.6 - ConTeXt / PRAGMA ADE 2000-2002") ;
 print "\n" ;
 
 # Handy for scripts: one can provide a preferred path, if it 
@@ -231,6 +235,8 @@ if ($help)
     print  "\n" ; 
     report "--weight            : multiple master weight" ; 
     report "--width             : multiple master width" ; 
+    print  "\n" ; 
+    report "--expert            : also handle expert fonts" ; 
     exit }
 
 if (($batch)||($ARGV[0] =~ /.+\.dat$/io))
@@ -262,7 +268,7 @@ if (($batch)||($ARGV[0] =~ /.+\.dat$/io))
                 s/\s+/ /gio ;
                 s/(--en.*\=)\?/$1$encoding/io ;
                 report ("batch line : $_") ;
-                system ("perl $0 $_") }
+                system ("perl $0 --fontroot=$fontroot $_") }
             close (BAT) }
     exit }
 
@@ -340,7 +346,16 @@ my $afmpath = "$fontroot/fonts/afm/$vendor/$collection" ;
 my $tfmpath = "$fontroot/fonts/tfm/$vendor/$collection" ;
 my $vfpath  = "$fontroot/fonts/vf/$vendor/$collection" ;
 my $pfbpath = "$fontroot/fonts/type1/$vendor/$collection" ;
+my $ttfpath = "$fontroot/fonts/truetype/$vendor/$collection" ;
 my $pdfpath = "$fontroot/pdftex/config" ;
+
+# are not on local path ! ! ! !
+
+foreach my $path ($afmpath, $pfbpath) 
+  { my @gzipped = <$path/*.gz> ; 
+    foreach my $file (@gzipped) 
+      { system ("gzip -d $file") } 
+    system ("mktexlsr $fontroot") } # needed ?  
 
 sub do_make_path
   { my $str = shift ; mkdir $str, 0755 unless -d $str }
@@ -388,16 +403,32 @@ my $runpath = $sourcepath ;
 
 my @files ;
 
+sub globafmfiles
+  { my ($runpath, $pattern)  = @_ ; 
+    my @files = glob("$runpath/$pattern.afm") ;
+    if (@files) # also elsewhere 
+      { report("locating afm files : using pattern $pattern") }
+    else
+      { report("locating afm files : using ttf files") ; 
+        @files = glob("$runpath/$pattern.ttf") ;
+        foreach my $file (@files) 
+          { $file =~ s/\.ttf$//io ; 
+            report ("generating afm file : $file.afm") ; 
+            system("ttf2afm $file.ttf -o $file.afm") }    
+        @files = glob("$runpath/$pattern.afm") }  
+    return @files }
+
+
 if ($ARGV[0] ne "")
   { $pattern = $ARGV[0] ;
     report ("processing files : all in pattern $ARGV[0]") ;
-    @files = glob("$runpath/$pattern.afm") }
+    @files = globafmfiles($runpath,$pattern) }
 elsif ("$extend$narrow$slant$caps" ne "")
   { error ("transformation needs file spec") }
 else
   { $pattern = "*" ;
     report ("processing files : all on afm path") ;
-    @files = glob("$runpath/$pattern.afm") }
+    @files = globafmfiles($runpath,$pattern) }
 
 sub copy_files
   { my ($suffix,$sourcepath,$topath) = @_ ;
@@ -555,15 +586,17 @@ foreach my $file (@files)
       { $vfstr = " -V $raw$cleanname$fontsuffix" }
     else # if ($virtual)
       { $vfstr = " -v $raw$cleanname$fontsuffix" }
-    # let's see what we have here 
-    my $font = `afm2tfm $file texfont.tfm` ;
+    # let's see what we have here (we force texnansi.enc to avoid error messages)
+    my $font = `afm2tfm $file -p texnansi.enc texfont.tfm` ;
     unlink "texfont.tfm" ; 
     if ($font =~ /(math|expert)/io) { $strange = lc $1 } 
     my ($rawfont,$cleanfont,$restfont) = split(/\s/,$font) ;
     $cleanfont =~ s/\_/\-/goi ;
     $cleanfont =~ s/\-+$//goi ;
     print "\n" ; 
-    if ($strange ne "") 
+    if (($strange eq "expert")&&($expert)) 
+      { report ("font identifier : $cleanfont$namesuffix -> $strange -> tfm") }
+    elsif ($strange ne "")
       { report ("font identifier : $cleanfont$namesuffix -> $strange -> skipping") }
     elsif ($virtual)
       { report ("font identifier : $cleanfont$namesuffix -> text -> tfm + vf") }
@@ -590,7 +623,10 @@ foreach my $file (@files)
         } # end of next stage
     elsif (-e "$sourcepath/$cleanname.tfm" )   
       { report "using existing tfm : $cleanname.tfm" }
-    else
+    elsif (($strange eq "expert")&&($expert))  
+      { report "creating tfm file : $cleanname.tfm" ;
+        my $font = `afm2tfm $file $cleanname.tfm` } 
+    else 
       { report "use supplied tfm : $cleanname" }
     # report results
     my ($rawfont,$cleanfont,$restfont) = split(/\s/,$font) ;
@@ -644,24 +680,32 @@ foreach my $file (@files)
      { if ($tex) { $report .= "missing file: \\type \{$fontname.pfb\}\n" }
        report ("missing pfb file : $fontname.pfb") }
     # now add entry to map 
-    $str = "$thename $cleanfont $option < $fontname.pfb$theencoding\n" ;
+    if ($strange eq "") 
+      { $str = "$thename $cleanfont $option < $fontname.pfb$theencoding\n" }
+    else
+      { $str = "$thename $cleanfont < $fontname.pfb\n" }
     if ($map) # check for redundant entries
       { $mapdata =~ s/^$thename\s.*?$//gmis ;
         $maplist .= $str ; 
         $mapdata .= $str }
     # write lines to tex file
-    if ($strange ne "") 
-      { $fntlist .= "\%definefontsynonym[$cleanfont$namesuffix][$usename]\n" }
+    if (($strange eq "expert")&&($expert)) 
+      { $fntlist .= "\\definefontsynonym[$cleanfont$namesuffix][$cleanname] \% expert\n" }
+    elsif ($strange ne "") 
+      { $fntlist .= "\%definefontsynonym[$cleanfont$namesuffix][$cleanname]\n" }
     else
       { $fntlist .= "\\definefontsynonym[$cleanfont$namesuffix][$usename][encoding=$encoding]\n" }
     next unless $tex ;
-    if ($strange ne "") 
-      { $texlist .= "\%ShowFont[$cleanfont$namesuffix][$usename]\n" }
+    if (($strange eq "expert")&&($expert)) 
+      { $texlist .= "\\ShowFont[$cleanfont$namesuffix][$cleanname]\n" }
+    elsif ($strange ne "") 
+      { $texlist .= "\%ShowFont[$cleanfont$namesuffix][$cleanname]\n" }
     else
       { $texlist .= "\\ShowFont[$cleanfont$namesuffix][$usename][$encoding]\n" } }
 
 if ($map) 
-  { while ($mapdata =~ s/\n\n+/\n/mois) {} ;             
+  { report ("updating map file : $mapfile") ;
+    while ($mapdata =~ s/\n\n+/\n/mois) {} ;             
     $mapdata =~ s/^\s*//gmois ; 
     print MAP $mapdata }
 

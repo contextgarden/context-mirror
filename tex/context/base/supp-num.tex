@@ -93,11 +93,21 @@
 %D the grouped call, the other branch handles the fuzzy 
 %D delimited calls. 
 
+% \unexpanded\def\digits
+%   {\bgroup\let~@\doifnextcharelse\bgroup\dodigits\grabdigit}
+
 \unexpanded\def\digits
-  {\bgroup\let~@\doifnextcharelse\bgroup\dodigits\grabdigit}
+  {\bgroup
+   \let~@%
+   \doifnextcharelse\bgroup
+     \dodigits
+     {\doifnextcharelse\normalmathshift\domathdigits\grabdigit}}
 
 \def\dodigits#1%
   {\grabdigit#1\relax}
+
+\def\domathdigits$#1$%
+  {\mbox{\grabdigit#1\relax}} % adding $ $ goes wrong in tabulate
 
 \def\grabdigit
   {\futurelet\next\scandigit}
@@ -114,7 +124,7 @@
  
 \ifx\normalmathshift\undefined \let\normalmathshift=$ \fi 
 
-\def\scandigit%
+\def\scandigit
   {\ifx\next\blankspace
      \let\next\handledigits
    \else\ifx\next\nextobeyedline % the indirect one 
@@ -147,11 +157,11 @@
      \let\grabdigit\handledigits
    \else\ifcase\powerdigits
      \if#1E%
-       \chardef\powerdigits1
+       \chardef\powerdigits\plusone
      \else\if#1e%
-       \chardef\powerdigits1
+       \chardef\powerdigits\plusone
      \else\if#1^%
-       \chardef\powerdigits1
+       \chardef\powerdigits\plusone
      \else
        \savedigit\collecteddigits#1%
        %\doifnumberelse{#1}
@@ -169,7 +179,7 @@
 \let\handlemathdigits\firstofoneargument
 \let\handletextdigits\mathematics
 
-\def\handledigits%  
+\def\handledigits  
   {%\ifcase\powerdigits
    %  \edef\collecteddigits{\collecteddigits\saveddigits}%
    %\else
@@ -185,50 +195,101 @@
 %D Although we could do with one pass, a second pass for 
 %D handling the stored sequence is more readable. 
 
-\def\dohandledigits%
+\def\dohandledigits
   {\mathcode`\,="013B \mathcode`\.="013A % pretty hard coded
    \expandafter\handletokens\collecteddigits\with\scandigits
    \ifcase\powerdigits\else\digitpowerseparator^{\savedpowerdigits}\fi}
 
 \def\doscandigit#1%
-  {\ifcase\skipdigit\else\hphantom{\fi
-   \ifnum\digitinputmode=#1\relax
-     \ifcase\digitoutputmode
-     \or .%
-     \or ,%
-     \or \mskip\thinmuskip
-     \or \mskip\thinmuskip
-     \or \mskip\thickmuskip
-     \or \mskip\thickmuskip
-     \fi
-   \else
-     \ifodd\digitoutputmode,\else.\fi
-   \fi
-   \ifcase\skipdigit\else}\fi}
+  {\ifcase\skipdigit\hbox\else\hphantom\fi\bgroup
+     \mathematics % brr, needed because of stored punctuation
+       {\ifnum\digitinputmode=#1\relax
+        \ifcase\digitoutputmode
+        \or .%
+        \or ,%
+        \or \mskip\thinmuskip
+        \or \mskip\thinmuskip
+        \or \mskip\thickmuskip
+        \or \mskip\thickmuskip
+        \fi
+      \else
+        \ifodd\digitoutputmode,\else.\fi
+      \fi}%
+   \egroup}
+
 
 %D The signs can be made smaller and sqeezed into the width 
 %D of a digit. Watch the \type {\fontdimen22} trickery (this
 %D font related register stored the math axis). 
 
+% \def\scandigits#1%
+%   {\if#1.\doscandigit1\chardef\skipdigit0\else
+%    \if#1,\doscandigit2\chardef\skipdigit0\else
+%    \if#1@\hphantom{0}\chardef\skipdigit1\else
+%    \if#1_\hphantom{0}\chardef\skipdigit1\else
+%    \if#1/\digitsgn{\hphantom{+}}\chardef\skipdigit0\else
+%    \if#1-\digitsgn-\chardef\skipdigit0\else
+%    \if#1+\digitsgn+\chardef\skipdigit0\else
+%    \if#1=\digitsgn\zeroamount\chardef\skipdigit0\else
+%    \if#1s\digitsgn{\hphantom{\positive}}\chardef\skipdigit0\else
+%    \if#1p\digitsgn\positive\chardef\skipdigit0\else
+%    \if#1m\digitsgn\negative\chardef\skipdigit0\else
+%    \if#1n\digitsgn\negative\chardef\skipdigit0\else
+%       #1\chardef\skipdigit0\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi}
+
+% \def\digitsep#1%
+%   {\doscandigit#1\chardef\skipdigit0}
+%
+% \def\digitnop
+%   {\hphantom{0}\chardef\skipdigit1}
+
+% 0,= 
+% 0,==  second = results in delta(00,=) 
+% 0,-   is invalid, should be = but we try to catch this error  
+% 0,--  is invalid, but catched as == 
+
+\def\digitzeroamount
+  {\digitsgn\zeroamount
+   \def\digitzeroamount
+     {\hphantom
+        {00\setbox\scratchbox\hbox{$\zeroamount$}%
+         \hskip-\wd\scratchbox}%
+      \let\digitzeroamount\empty}}
+
 \def\scandigits#1%
-  {\if#1.\doscandigit1\chardef\skipdigit0\else
-   \if#1,\doscandigit2\chardef\skipdigit0\else
-   \if#1@\hphantom{0}\chardef\skipdigit1\else
-   \if#1_\hphantom{0}\chardef\skipdigit1\else
+  {\if#1.\digitsep1\else
+   \if#1,\digitsep2\else
+   \if#1@\digitnop \else
+   \if#1_\digitnop \else
    \if#1/\digitsgn{\hphantom{+}}\chardef\skipdigit0\else
-   \if#1-\digitsgn-\chardef\skipdigit0\else
+   \if#1-\ifcase\digitsepbox\digitsgn-\else
+           \box\digitsepbox\digitzeroamount \fi\chardef\skipdigit0\else
    \if#1+\digitsgn+\chardef\skipdigit0\else
-   \if#1=\digitsgn\zeroamount\chardef\skipdigit0\else
+   \if#1=\box\digitsepbox\digitzeroamount \chardef\skipdigit0\else
    \if#1s\digitsgn{\hphantom{\positive}}\chardef\skipdigit0\else
    \if#1p\digitsgn\positive\chardef\skipdigit0\else
    \if#1m\digitsgn\negative\chardef\skipdigit0\else
    \if#1n\digitsgn\negative\chardef\skipdigit0\else
-      #1\chardef\skipdigit0\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi}
+         \box\digitsepbox #1\chardef\skipdigit0\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi}
+
+\newbox\digitsepbox \chardef\autodigitmode=1
+
+\def\digitsep#1%
+  {\ifcase\autodigitmode
+     \doscandigit#1%
+   \else
+     \setbox\digitsepbox\hbox{\doscandigit#1}
+   \fi
+   \chardef\skipdigit0}
+
+\def\digitnop
+   {\hphantom{\box\digitsepbox}%
+    \hphantom{0}\chardef\skipdigit1}
 
 \def\digitsgn#1%
   {\ifcase\digitsignmode#1\else
      \hbox
-       {\setbox\scratchbox=\hbox{0}%
+       {\setbox\scratchbox\hbox{0}%
         \scratchdimen\fontdimen22\textfont2
         \def\digitsgn##1##2%
           {\advance\scratchdimen-\fontdimen22##12
@@ -332,7 +393,7 @@
 %D \macros
 %D   {digittemplate}
 %D
-%D Users can specify the way they enter those digits by sayon
+%D Users can specify the way they enter those digits by saying
 %D something like:
 %D
 %D \starttypen
@@ -340,14 +401,12 @@
 %D \stoptypen
 
 \def\digittemplate #1 %
-  {\chardef\digitinputmode=0
+  {\chardef\digitinputmode\zerocount
    \handletokens#1\with\scandigittemplate}  
 
 \def\scandigittemplate#1%
-  {\if     #1.\ifcase\digitinputmode\chardef\digitinputmode=1 \fi% period
-   \else\if#1,\ifcase\digitinputmode\chardef\digitinputmode=2 \fi% comma
+  {\if     #1.\ifcase\digitinputmode\chardef\digitinputmode1 \fi% period
+   \else\if#1,\ifcase\digitinputmode\chardef\digitinputmode2 \fi% comma
    \fi\fi}
 
-\protect
-
-\endinput
+\protect \endinput

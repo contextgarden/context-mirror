@@ -68,13 +68,13 @@
            \v!geen=>\subpagingtrue
                     \showingsubpagefalse]}}
 
-\def\aantalsubpaginas%
+\def\aantalsubpaginas
   {\ifshowingsubpage\nofsubpages\else0\fi}
 
-\def\subpaginanummer%
+\def\subpaginanummer
   {\ifshowingsubpage\the\subpageno\else0\fi}
 
-\def\stelsubpaginanummerin%
+\def\stelsubpaginanummerin
   {\dosingleargument\dostelsubpaginanummerin}
 
 \def\newnofsubpages{0}
@@ -89,7 +89,7 @@
 
 \definetwopasslist\s!subpage
 
-\def\savenofsubpages%
+\def\savenofsubpages
   {\ifsubpaging
      \showmessage\m!layouts6{\newnofsubpages,\the\subpageno}%
      \immediatewriteutilitycommand%
@@ -99,20 +99,20 @@
            {\the\subpageno}}%
    \fi}
 
-\def\setsubpagenumbers%
+\def\setsubpagenumbers
   {\iftwopassdatafound
      \bgroup
-     \xdef\nofsubpages{\twopassdata}%
-     \xdef\firstsubpage{\realfolio}%
+     \xdef\nofsubpages  {\twopassdata}%
+     \xdef\firstsubpage {\realfolio}%
      \advance\realpageno \nofsubpages
-     \advance\realpageno -1
-     \xdef\lastsubpage{\realfolio}%
+     \advance\realpageno \minusone
+     \xdef\lastsubpage  {\realfolio}%
      \egroup
    \else
      \xdef\nofsubpages{0}%
    \fi}
 
-\def\gotonextsubpage% overlapt behoorlijk met realpage macro
+\def\gotonextsubpage % overlapt behoorlijk met realpage macro
   {\global\let\checksubpages\relax
    \ifresettingsubpagenumber 
      \resetnummer[\s!subpage]%  
@@ -122,12 +122,12 @@
      \edef\oldsubpage{\the\subpageno}%
      \verhoognummer[\s!subpage]%
      \global\subpageno\ruwenummer[\s!subpage]\relax
-     \ifnum\subpageno=1
+     \ifnum\subpageno=\plusone
        \gettwopassdata\s!subpage
        \setsubpagenumbers
-       \ifnum\oldsubpage>0
+       \ifnum\oldsubpage>\zerocount
          \showmessage\m!layouts6{\newnofsubpages,\oldsubpage}%
-         \edef\next%
+         \edef\next % \expanded
            {\writeutilitycommand%
               {\twopassentry%
                  {\s!subpage}%
@@ -161,7 +161,7 @@
      \egroup
    \fi}
 
-\def\checksubpages%
+\def\checksubpages
   {\getfromtwopassdata\s!subpage1%
    \setsubpagenumbers
    \global\let\checksubpages\relax}
@@ -185,25 +185,26 @@
 \newcount\pageno           \pageno     = 1
 
 \def\setuserpageno#1%
-  {\global\userpageno=#1\relax
-   \global\pageno=\userpageno}
+  {\global\userpageno#1\relax
+   \global\pageno\userpageno}
 
-\def\realfolio   {\the\realpageno}
-\def\folio       {\the\userpageno}
-\def\firstpage   {1}
-\def\lastpage    {1}
-\def\currentpage {\the\realpageno}
+\def\realfolio     {\the\realpageno}
+\def\folio         {\the\userpageno}
+\def\firstpage     {1}
+\def\lastpage      {1}
+\def\currentpage   {\the\realpageno}
+\def\lastpagenumber{1}
 
-\def\gotonextrealpage%
-  {\global\advance\realpageno 1
+\def\gotonextrealpage
+  {\global\advance\realpageno \plusone\relax
    \ifnum\realpageno>\lastpage
      \xdef\lastpage{\realfolio}%
    \fi
-   \setglobalsystemreference\rt!page\v!eerstepagina\firstpage
+   \setglobalsystemreference\rt!page\v!eerstepagina \firstpage
    \setglobalsystemreference\rt!page\v!laatstepagina\lastpage
    \bgroup
-   \ifnum\realpageno>1
-     \advance\realpageno -1
+   \ifnum\realpageno>\plusone
+     \advance\realpageno \minusone
      \xdef\prevpage{\realfolio}%
      \setglobalsystemreference\rt!page\v!achteruit\prevpage
    \else
@@ -214,7 +215,7 @@
    \egroup
    \bgroup
    \ifnum\realpageno<\lastpage\relax
-     \advance\realpageno 1
+     \advance\realpageno \plusone
      \xdef\nextpage{\realfolio}%
      \setglobalsystemreference\rt!page\v!pagina\nextpage
      \setglobalsystemreference\rt!page\v!vooruit\nextpage
@@ -225,7 +226,7 @@
      \else
        \setglobalsystemreference\rt!page\v!volgendeevenpagina\nextnextpage
      \fi
-     \advance\realpageno 1
+     \advance\realpageno \plusone
      \xdef\nextnextpage{\realfolio}%
      \ifnum\realpageno>\lastpage\relax
       %\ifodd\realpageno
@@ -252,13 +253,17 @@
    \egroup}
 
 \def\checkrealpage
-  {\global\realpageno0
+  {\global\realpageno\zerocount
    \gotonextrealpage
    \global\let\checkrealpage\relax}
 
 \def\savenofpages
-  {\advance\realpageno -1
-   \savecurrentvalue\lastpage{\realfolio}}%
+  {\bgroup 
+   \advance\realpageno \minusone
+   \savecurrentvalue\lastpage\realfolio
+   \advance\userpageno \minusone
+   \savecurrentvalue\lastpagenumber\folio
+   \egroup}
 
 \def\totaalaantalpaginas
   {\lastpage}
@@ -295,17 +300,17 @@
      \global\shiftedrealpagenotrue
    \fi \fi}
 
-\def\stelpaginanummerin%
+\def\stelpaginanummerin
   {\dosingleargument\dostelpaginanummerin}
 
 % long time used alternative 
 %
-% \def\verlaagpaginanummer%
+% \def\verlaagpaginanummer
 %   {\doifinset{\@@pnstatus}{\v!start,\v!leeg,\v!geen}
 %      {\verlaagnummer[\s!page]%
 %       \setuserpageno{\ruwenummer[\s!page]}}}
 % 
-% \def\verhoogpaginanummer%
+% \def\verhoogpaginanummer
 %   {\doifinset{\@@pnstatus}{\v!start,\v!leeg,\v!geen}
 %      {\verhoognummer[\s!page]%
 %       \setuserpageno{\ruwenummer[\s!page]}}%
@@ -351,9 +356,9 @@
 
 \definetwopasslist\s!page
 
-\def\dopagesetreference%
+\def\dopagesetreference
   {\doglobal\increment\nofpagesets\relax
-   \edef\writepagref%
+   \edef\writepagref
      {\writeutilitycommand
         {\twopassentry
            {\s!page}%
@@ -361,7 +366,7 @@
            {\noexpand\realfolio}}}%
    \writepagref}
 
-\def\getpagestatus% hierboven gebruiken
+\def\getpagestatus % hierboven gebruiken
   {\ifdubbelzijdig
      \gettwopassdata\s!page
      \iftwopassdatafound \else
@@ -411,12 +416,12 @@
      \fi
    \fi}
 
-\def\dosetpagenumberlocation%
-  {\ExpandBothAfter\doifinsetelse{\v!hoofd}{\@@nmplaats,\@@nmin}
+\def\dosetpagenumberlocation
+  {\ExpandBothAfter\doifinsetelse\v!hoofd{\@@nmplaats,\@@nmin}
      {\dodosetpagenumberlocation\v!hoofd}
      {\dodosetpagenumberlocation\v!voet}}
 
-\def\dostelnummeringin[#1]%
+\def\dosetuppagenumbering[#1]%
   {\getparameters[\??nm][#1]%
    \preparepaginaprefix\??nm
    \enkelzijdigfalse
@@ -434,8 +439,10 @@
    \recalculatebackgrounds
    \recalculatelogos}
 
-\def\stelnummeringin%
-  {\dosingleempty\dostelnummeringin}
+\def\setuppagenumbering
+  {\dosingleempty\dosetuppagenumbering}
+
+\let\stelnummeringin\setuppagenumbering
 
 % listig: hangt af van \@@kolijst
 
@@ -512,9 +519,9 @@
 %D oldstyle numbers are about as high as strutheight. Rather
 %D interesting that it went unnoticed for so long. 
 
-\unexpanded\def\@@plaatspaginanummer% called in empty tests
+\unexpanded\def\@@plaatspaginanummer % called in empty tests
   {\doif{\@@nmstatus\@@pnstatus}{\v!start\v!start}
-     {{\doif{\@@nmstrut}{\v!ja}{\strut}%
+     {{\doif\@@nmstrut\v!ja\strut
        \@@nmcommando{\doattributes\??nm\c!letter\c!kleur
          {\completepagenumber}}}}}
 
@@ -522,16 +529,16 @@
   {\doif{\@@nmstatus\@@pnstatus}{\v!start\v!start}
      {\@@nmtekstscheider}}
 
-\def\userfolio%  naast realfolio
+\def\userfolio %  naast realfolio
   {\nummer[\s!page]}
 
-\def\pagenumber%
+\def\pagenumber
   {\userfolio}
 
-\def\pageprefixes%
+\def\pageprefixes
   {\def\donexttrackcommando##1%
-      {\doifvalue{\??nm##1\v!nummer}{\v!ja}  % v
-         {\ifnum\countervalue{\??se##1}>0\relax
+      {\doifvalue{\??nm##1\v!nummer}\v!ja  % v
+         {\ifnum\countervalue{\??se##1}>\zerocount
             \getvalue{##1\c!nummer}\@@nmnummerscheider
           \fi}%
        \doifsomething{\@@nmtekst}
@@ -541,11 +548,16 @@
 
 \unexpanded\def\completepagenumber  
   {\doif{\@@nmstatus\@@pnstatus}{\v!start\v!start} 
-     {\@@nmlinks\labeltexts{\v!paginanummer}{\pageprefixes\pagenumber}\@@nmrechts}}
+     {\@@nmlinks\labeltexts\v!paginanummer{\pageprefixes\pagenumber}\@@nmrechts}}
 
 \unexpanded\def\placepagenumber
   {\doif{\@@nmstatus\@@pnstatus}{\v!start\v!start}
-     {\labeltexts{\v!paginanummer}{\pagenumber}}}
+     {\labeltexts\v!paginanummer{\pagenumber}}}
+
+% Nog een variant; wat is een goeie naam? 
+
+% \unexpanded\def\placexxpagenumber
+%   {\@@plaatspaginanummer}
 
 % \def\translatednumber[#1::#2::#3]{#3}
 

@@ -76,47 +76,47 @@
 %D wouldn't you? It's there to warn \LATEX\ users that
 %D something is wrong.
 
-\def\documentstyle%
-  {\showmessage{\m!systems}{3}{}\stoptekst}
+\def\documentstyle
+  {\showmessage\m!systems3\empty\stoptekst}
 
 \let\documentclass=\documentstyle
 
 % THIS WAS MAIN-002.TEX
 
-%\def\checkinterlineskip%
+%\def\checkinterlineskip
 %  {\ifvmode
-%     \ifdim\lastskip>\!!zeropoint\relax
+%     \ifdim\lastskip>\zeropoint
 %       \nointerlineskip
-%     \else\ifdim\lastkern>\!!zeropoint\relax
+%     \else\ifdim\lastkern>\zeropoint
 %       \nointerlineskip
 %     \fi\fi
 %   \fi}
 
 \def\horitems#1#2% #1=breedte #2=commandos
-  {\dimen0=#1\relax
-   \divide\dimen0 by \nofitems
-   \!!counta=0\relax
+  {\scratchdimen#1%
+   \divide\scratchdimen \nofitems
+   \!!counta\zerocount
    \def\docommando##1%
-     {\advance\!!counta by 1\relax
+     {\advance\!!counta \plusone
       \processaction
         [\@@isuitlijnen]
-        [  \v!links=>\hbox to \dimen0{\strut##1\hss},
-          \v!rechts=>\hbox to \dimen0{\hss\strut##1},
-          \v!midden=>\hbox to \dimen0{\hss\strut##1\hss},
-           \v!marge=>\ifnum\!!counta=1\hss\else\hfill\fi
+        [  \v!links=>\hbox to \scratchdimen{\strut##1\hss},
+          \v!rechts=>\hbox to \scratchdimen{\hss\strut##1},
+          \v!midden=>\hbox to \scratchdimen{\hss\strut##1\hss},
+           \v!marge=>\ifnum\!!counta=\plusone\hss\else\hfill\fi
                      \strut##1%
                      \ifnum\!!counta=\nofitems\hss\else\hfill\fi,
-         \s!default=>\hbox to \dimen0{\hss\strut##1\hss}, % midden
-         \s!unknown=>\hbox to \dimen0{\strut##1\hss}]}%   % links
+         \s!default=>\hbox to \scratchdimen{\hss\strut##1\hss}, % midden
+         \s!unknown=>\hbox to \scratchdimen{\strut##1\hss}]}%   % links
    \hbox to #1{\hss#2\hss}}
 
 \def\veritems#1#2% #1=breedte #2=commandos
-  {\dimen0=#1\relax
+  {\scratchdimen#1%
    \def\docommando##1%
-     {\ifdim\dimen0<\!!zeropoint\relax   % the - was a signal
-        \hbox to -\dimen0{\hss\strut##1}%
-      \else\ifdim\dimen0>\!!zeropoint\relax
-        \hbox to \dimen0{\strut##1\hss}%
+     {\ifdim\scratchdimen<\zeropoint % the - was a signal
+        \hbox to -\scratchdimen{\hss\strut##1}%
+      \else\ifdim\scratchdimen>\zeropoint
+        \hbox to \scratchdimen{\strut##1\hss}%
       \else
         \hbox{\strut##1}%
       \fi\fi}%
@@ -124,35 +124,33 @@
 
 \def\dostelitemsin[#1]%
   {\getparameters[\??is][#1]%
-   \doif{\@@isbreedte}{\v!onbekend}
+   \doif\@@isbreedte\v!onbekend
      {\def\@@isbreedte{\hsize}}%
-   \doifconversiondefinedelse{\@@issymbool}
+   \doifconversiondefinedelse\@@issymbool
      {\def\doitembullet##1{\convertnumber{\@@issymbool}{##1}}}
-     {\doifsymboldefinedelse{\@@issymbool}
+     {\doifsymboldefinedelse\@@issymbool
         {\def\doitembullet##1{\symbol[\@@issymbool]}}{}}}
 
 \def\makeitemsandbullets#1%
-  {\doifelse{\@@isn}{\v!onbekend}
+  {\doifelse\@@isn\v!onbekend
      {\getcommalistsize[#1]%
       \edef\nofitems{\commalistsize}}
      {\edef\nofitems{\@@isn}}%
-   \setbox0=\hbox
-     {\doitems
-        {\@@isbreedte}
+   \setbox0\hbox
+     {\doitems \@@isbreedte
         {\processcommalist[#1]\docommando}}%
-   \setbox2=\hbox
-     {\doitems
-        {\@@isbulletbreedte}
-        {\dorecurse{\nofitems}
-           {\docommando{\strut\doitembullet{\herhaler}}}}}}
+   \setbox2\hbox
+     {\doitems \@@isbulletbreedte
+        {\dorecurse\nofitems
+           {\docommando{\strut\doitembullet\recurselevel}}}}}
 
 \def\dostartitems#1#2#3%
-  {\let\doitems=#2
+  {\let\doitems#2%
    \def\@@isbulletbreedte{#3}%
    \makeitemsandbullets{#1}%
    \@@isvoor}
 
-\def\dostopitems%
+\def\dostopitems
   {\@@isna
    \egroup}
 
@@ -160,8 +158,8 @@
   {\dostartitems{#1}\horitems\@@isbreedte
    \noindent\vbox
      {\forgetall
-      \doifsomething{\@@issymbool}
-        {\doifnot{\@@issymbool}{\v!geen}
+      \doifsomething\@@issymbool
+        {\doifnot\@@issymbool\v!geen
            {\box2
             \@@istussen
             \nointerlineskip}}%
@@ -173,41 +171,42 @@
    \noindent\vbox
      {\forgetall
       \box0
-      \doifsomething{\@@issymbool}
+      \doifsomething\@@issymbool
         {\@@istussen
          \nointerlineskip
          \box2}}%
    \dostopitems}
 
 \setvalue{doitems\v!inmarge}#1%
-  {\dostartitems{#1}{\veritems}{-1.5em}%  - is a signal
+  {\dostartitems{#1}\veritems{-1.5em}%  - is a signal
    \noindent\hbox{\llap{\box2\hskip\linkermargeafstand}\box0}%
    \dostopitems}
 
 \setvalue{doitems\v!links}#1%
-  {\advance\hsize by -1.5em\relax
-   \dostartitems{#1}{\veritems}{1.5em}%
+  {\advance\hsize -1.5em%
+   \dostartitems{#1}\veritems{1.5em}%
    \noindent\hbox{\box2\box0}%
    \dostopitems}
 
 \setvalue{doitems\v!rechts}#1%
-  {\dostartitems{#1}{\veritems}{0em}%
+  {\dostartitems{#1}\veritems{0em}%
    \noindent\hbox{\box0\hskip-\wd2\box2}%
    \dostopitems}
 
-\def\stelitemsin%
+\def\stelitemsin
   {\dosingleargument\dostelitemsin}
 
 \def\complexitems[#1]%
   {\bgroup
    \stelitemsin[#1]%
-   \parindent=\!!zeropoint
+   \parindent\zeropoint
    \setlocalhsize
-   \hsize=\localhsize
+   \hsize\localhsize
    \mindermeldingen
-   \doifundefined{doitems\@@isplaats}%
-     {\let\@@isplaats\v!links}%
-   \getvalue{doitems\@@isplaats}}
+  %\doifundefined{doitems\@@isplaats}%
+  %  {\let\@@isplaats\v!links}%
+  %\getvalue{doitems\@@isplaats}}
+   \executeifdefined{doitems\@@isplaats}{\let\@@isplaats\v!links}}
 
 \definecomplexorsimpleempty\items
 
@@ -236,7 +235,7 @@
      {\getvalue{#1}}%
    \setvalue{\e!start#1}%
      {\bgroup
-      \setvalue{\s!do\s!next#1}{}%
+      \letvalue{\s!do\s!next#1}\empty
       \setvalue{\e!stop#1}%
         {\getvalue{#1}%
          \egroup}%
@@ -290,17 +289,17 @@
   {\dodoubleargument\dodefinieeralineas}
 
 \def\dostelalineasin[#1][#2][#3]%
-  {\doifelse{#2}{\v!elk}
+  {\doifelse{#2}\v!elk
      {\dorecurse
         {\getvalue{\??al#1\c!n}}
-        {\getparameters[\??al#1\herhaler][#3]}}
+        {\getparameters[\??al#1\recurselevel][#3]}}
      {\ConvertToConstant\doifelse{#3}{}
         {\getparameters[\??al#1][#2]}
         {\def\docommando##1%
            {\getparameters[\??al#1##1][#3]}%
          \processcommalist[#2]\docommando}}}
 
-\def\stelalineasin%
+\def\stelalineasin
   {\dotripleempty\dostelalineasin}
 
 \newcount\alteller
@@ -308,8 +307,8 @@
 \newdimen\alhsize
 
 \def\doalinealijn#1#2%
-  {\doifelsevalue{\??al#2\the\alteller\c!lijn}{\v!aan}
-     {\expandafter\dimen2=#1\relax
+  {\doifelsevalue{\??al#2\the\alteller\c!lijn}\v!aan
+     {\dimen2=#1\relax
       \hskip.5\dimen2
       \hskip-\linewidth
       \vrule\!!width\linewidth
@@ -318,21 +317,21 @@
 
 \def\dostartalinea#1%
   {\doifelsevaluenothing{\??al#1\the\alteller\c!breedte}
-     {\!!widtha=\alhsize\relax
-      \divide\!!widtha by \alnsize}
-     {\!!widtha=\getvalue{\??al#1\the\alteller\c!breedte}\relax}%
+     {\!!widtha\alhsize
+      \divide\!!widtha \alnsize}
+     {\!!widtha\getvalue{\??al#1\the\alteller\c!breedte}}%
    \dostartattributes
      {\??al#1\the\alteller}\c!letter\c!kleur
-     {}%
-   \doifelsevalue{\??al#1\the\alteller\c!hoogte}{\v!passend}
-     {\setbox0=\vtop}
-     {\setbox0=\vtop to \getvalue{\??al#1\the\alteller\c!hoogte}}%
+     \empty
+   \doifelsevalue{\??al#1\the\alteller\c!hoogte}\v!passend
+     {\setbox0\vtop}
+     {\setbox0\vtop to \getvalue{\??al#1\the\alteller\c!hoogte}}%
    \bgroup
    \blanko[\v!blokkeer]%
    \forgetall
    \getvalue{\??al#1\the\alteller\c!boven}%
    \getvalue{\??al#1\c!binnen}%
-   \hsize=\!!widtha  % setting \wd afterwards removed
+   \hsize\!!widtha  % setting \wd afterwards removed
    \getvalue{\??al#1\the\alteller\c!binnen}%
    \edef\!!stringa{\getvalue{\??al#1\the\alteller\c!uitlijnen}}%  nodig?
    \expandafter\steluitlijnenin\expandafter[\!!stringa]%
@@ -348,7 +347,7 @@
    %
    % Hier is \Everypar niet nodig.
    %
-   \everypar{\begstrut\everypar{}}%
+   \everypar{\begstrut\everypar\emptytoks}%
    %
    \ignorespaces\geenspatie % dubbel: \ignorespaces
    \getvalue{\??al#1\the\alteller\c!commando}}
@@ -361,20 +360,25 @@
    \fi
    \getvalue{\??al#1\the\alteller\c!onder}%
    \egroup
-   \ifdim\wd0=\!!zeropoint % no data
-     \wd0=\!!widtha
+   \ifdim\wd0=\zeropoint % no data
+     \wd0\!!widtha
    \fi
    \box0
    \dostopattributes
+   %\ifnum\alteller<\getvalue{\??al#1\c!n}\relax
+   %  \def\next{\doalinea{#1}}%
+   %\else
+   %  \def\next{\dostopalineas{#1}}%
+   %\fi
+   %\next}
    \ifnum\alteller<\getvalue{\??al#1\c!n}\relax
-     \def\next{\doalinea{#1}}%
+     \@EA\doalinea
    \else
-     \def\next{\dostopalineas{#1}}%
-   \fi
-   \next}
+     \@EA\dostopalineas
+   \fi{#1}}
 
 \def\doalinea#1%
-  {\global\advance\alteller by 1\relax
+  {\global\advance\alteller \plusone
    \doifelsevaluenothing{\??al#1\the\alteller\c!afstand}
      {\doifnot{\the\alteller}{1}
         {\hskip\getvalue{\??al#1\c!afstand}}}
@@ -385,25 +389,24 @@
    \dostartalinea{#1}}
 
 \def\dostartalineas#1%
-  {\global\alteller=0\relax
-   \parindent=\!!zeropoint
+  {\global\alteller\zerocount
+   \parindent\zeropoint
    \setlocalhsize
-   \alhsize=\localhsize
-   \alnsize=\getvalue{\??al#1\c!n}\relax
+   \alhsize\localhsize
+   \alnsize\getvalue{\??al#1\c!n}\relax
    \dorecurse
      {\getvalue{\??al#1\c!n}}
      {\doifelsevaluenothing{\??al#1\recurselevel\c!afstand}
         {\doifnot{\recurselevel}{1}
-           {\global\advance\alhsize by -\getvalue{\??al#1\c!afstand}\relax}}
-        {\global\advance\alhsize by -\getvalue{\??al#1\recurselevel\c!afstand}\relax}%
+           {\global\advance\alhsize -\getvalue{\??al#1\c!afstand}\relax}}
+        {\global\advance\alhsize -\getvalue{\??al#1\recurselevel\c!afstand}\relax}%
       \doifvaluesomething{\??al#1\recurselevel\c!breedte}
-        {\global\advance\alnsize by -1\relax
-         \global\advance\alhsize by -\getvalue{\??al#1\recurselevel\c!breedte}\relax}}%
+        {\global\advance\alnsize \minusone
+         \global\advance\alhsize -\getvalue{\??al#1\recurselevel\c!breedte}\relax}}%
    %\witruimte                 % gaat fout bij \framed
    \getvalue{\??al#1\c!voor}%
    \leavevmode                 % gaat wel goed bij \framed
-   \vbox\bgroup\hbox\bgroup
-     \doalinea{#1}}
+   \vbox\bgroup\hbox\bgroup\doalinea{#1}}
 
 \def\dostopalineas#1%
   {\egroup
@@ -431,7 +434,7 @@
       \c!voor=\@@tavoor,
       \c!na=\@@tana]}
 
-\def\steltabin%
+\def\steltabin
   {\dosingleargument\dosteltabin}
 
 \steltabin
@@ -448,14 +451,14 @@
 
 \doifundefined{@@chemieletter}{\def\@@chemieletter{\rm}}
 
-\def\beginlatexmathmodehack%
+\def\beginlatexmathmodehack
   {\ifmmode
-     \let\endlatexmathmodehack=\relax
+     \let\endlatexmathmodehack\relax
    \else
      \def\endlatexmathmodehack{$}$\@@chemieletter
    \fi}
 
-\def\setsubscripts%
+\def\setsubscripts
   {\beginlatexmathmodehack
    \def\dosetsubscript##1##2##3%
      {\dimen0=##3\fontdimen5##2%
@@ -465,13 +468,13 @@
      {\dosetsubscript{##1}{\textfont2}{##2}%
       \dosetsubscript{##1}{\scriptfont2}{##2}%
       \dosetsubscript{##1}{\scriptscriptfont2}{##2}}%
-   %\dodosetsubscript{\fontdimen14}{?}%
+  %\dodosetsubscript{\fontdimen14}{?}%
    \dodosetsubscript{\fontdimen16}{.7}%
    \dodosetsubscript{\fontdimen17}{.7}%
    \global\loweredsubscriptstrue
    \endlatexmathmodehack}
 
-\def\resetsubscripts%
+\def\resetsubscripts
   {\ifloweredsubscripts
      \beginlatexmathmodehack
      \def\doresetsubscript##1##2%
@@ -481,7 +484,7 @@
        {\doresetsubscript{##1}{\textfont2}%
         \doresetsubscript{##1}{\scriptfont2}%
         \doresetsubscript{##1}{\scriptscriptfont2}}%
-     %\dodoresetsubscript{\fontdimen14}%
+    %\dodoresetsubscript{\fontdimen14}%
      \dodoresetsubscript{\fontdimen16}%
      \dodoresetsubscript{\fontdimen17}%
      \global\loweredsubscriptsfalse
@@ -498,22 +501,10 @@
    \resetsubscripts
    \egroup}
 
-\def\celsius#1%
-  {#1\mathematics{^\circ}C}
-
-\def\graden%
-  {\mathematics{^\circ}}
-
-\def\inch%
-  {\hbox{\rm\char125\relax}}
-
-\def\breuk#1#2%
-  {\mathematics{#1\over#2}}
-
-% \def\bedrag#1%
-%   {\mathematics{f~}\hbox{#1}}
-
-% \def\bedragprefix{\mathematics{f\normalfixedspace}}
+\def\celsius#1{#1\mathematics{^\circ}C}
+\def\graden   {\mathematics{^\circ}}
+\def\inch     {\hbox{\rm\char125\relax}}
+\def\breuk#1#2{\mathematics{#1\over#2}}
 
 \def\bedragprefix {\euro\normalfixedspace}
 \def\bedragsuffix {}
@@ -545,26 +536,23 @@
 % \test hans \\ ton \\ \subtot{nihil,--} \\
 % \stopopelkaar
 
-\def\doorsnede%
+\def\doorsnede
   {\hbox{\rlap/$\circ$} }
 
-\def\complexpunten[#1]%
-  {\dimen0=.5em\relax
-   \multiply\dimen0 by #1\relax
-   \hbox to \dimen0
-     {\leaders\hbox to .5em{\hss.\hss}\hss}}
+\def\punten
+  {\dosingleempty\dopunten}
 
-\def\simplepunten%
-  {\complexpunten[5]}
+\def\dopunten[#1]%
+  {\scratchdimen.5em%
+   \hbox to \iffirstargument#1\else5\fi \scratchdimen
+     {\leaders\hbox to \scratchdimen{\hss.\hss}\hss}}
 
-\definecomplexorsimple\punten
-
-\def\ongeveer%
-  {\mathematics{\pm}}
+\def\ongeveer
+  {\mathematics\pm}
 
 % for compatibility
 
-\def\unknown%
+\def\unknown
   {\dontleavehmode\punten[3]}
 
 \def\leftboundarycharacter#1#2%
@@ -609,30 +597,30 @@
 \newsignal \subsentencesignal
 \newcounter\subsentencelevel
 
-\def\beginofsubsentence%
+\def\beginofsubsentence
   {\ifdim\lastkern=\subsentencesignal
      \unskip
      \kern\hspaceamount\currentlanguage{intersentence}%
    \fi
    \doglobal\increment\subsentencelevel
-   \ifnum\subsentencelevel=1
+   \ifnum\subsentencelevel=\plusone
      \leaveoutervmode
    \fi
    \symbol[\ifodd\subsentencelevel\c!leftsentence   \else
                                   \c!leftsubsentence\fi]%
    \ignorespaces}
 
-\def\beginofsubsentencespacing%
+\def\beginofsubsentencespacing
   {\kern\subsentencesignal\ignorespaces}
 
-\def\endofsubsentence%
+\def\endofsubsentence
   {\symbol[\ifodd\subsentencelevel\c!rightsentence   \else
                                   \c!rightsubsentence\fi]%
    \doglobal\decrement\subsentencelevel
    \unskip
    \kern\subsentencesignal}
 
-\def\endofsubsentencespacing%
+\def\endofsubsentencespacing
   {\ifdim\lastkern=\subsentencesignal
      \unskip
      \hskip\hspaceamount\currentlanguage{intersentence}%
@@ -684,6 +672,16 @@
   [\c!middlespeech] 
   [\leftboundarycharacter\c!middlespeech{speech}]
 
+%%%%% will be replaced by delimitedtext %%%%%
+
+\def\leftquotationmark
+  {\setbox\scratchbox\hbox{\symbol[\c!leftquotation]}%
+   \doif\@@ciplaats\v!marge{\hskip-\wd\scratchbox}%
+   \box\scratchbox}
+
+\def\rightquotationmark
+  {\hsmash{\symbol[\c!rightquotation]}}
+
 \newsignal\quotationsignal
 
 \def\stelciterenin
@@ -695,25 +693,17 @@
 \def\startcitaat
   {\bgroup\dosingleempty\dostartcitaat}
 
-\def\leftquotationmark
-  {\setbox\scratchbox\hbox{\symbol[\c!leftquotation]}%
-   \doif\@@ciplaats\v!marge{\hskip-\wd\scratchbox}%
-   \box\scratchbox}
-
-\def\rightquotationmark
-  {\hsmash{\symbol[\c!rightquotation]}}
-
 \def\dostartcitaat[#1]%
   {\@@civoor
    \doifelsenothing{#1}
      {\let\dostopcitaat\relax}
      {\startsmaller[#1]%
       \let\dostopcitaat\stopsmaller}%
-   \dostartattributes\??ci\c!letter\c!kleur{}%
+   \dostartattributes\??ci\c!letter\c!kleur\empty
    \leftquotationmark
    \ignorespaces}
 
-\def\stopcitaat%
+\def\stopcitaat
   {\removeunwantedspaces
    \removelastskip
    \rightquotationmark
@@ -743,12 +733,6 @@
      {\dohandlequotation\c!leftquotation \relax}
      {\dohandlequotation\c!rightquotation\removelastskip}}
 
-%\unexpanded\def\citeer
-%  {\doifelse\@@ciletter\v!normaal
-%     {\let\next\doquotedcite}
-%     {\let\next\doattributedcite}%
-%   \next}
-
 \unexpanded\def\citeer
   {\doifelse\@@ciletter\v!normaal\doquotedcite\doattributedcite}
 
@@ -766,13 +750,15 @@
 %D we use the next alternative, where the first one is handled
 %D outside group. Watch the strut.
 
-\unexpanded\def\citaat%
+\unexpanded\def\citaat
   {\dohandlequotation\c!leftquotation\relax
-   \groupedcommand{}{\dohandlequotation\c!rightquotation\removelastskip}}
+   \groupedcommand \donothing 
+     {\dohandlequotation\c!rightquotation\removelastskip}}
 
-\def\doquotedcite%
+\def\doquotedcite
   {\dohandlequotation\c!leftquote\relax
-   \groupedcommand{}{\dohandlequotation\c!rightquote\removelastskip}}
+   \groupedcommand \donothing
+     {\dohandlequotation\c!rightquote\removelastskip}}
 
 \stelciterenin
   [\c!plaats=\v!marge,
@@ -788,6 +774,8 @@
 %D feature could be build on top of it. The speech opening and
 %D closing symbols are defined per language. Italian is an
 %D example of a language that has them set.
+
+%%%%% will be replaced by delimitedtext %%%%%
 
 \newcounter\speechlevel \newconditional\insidespeech
 
@@ -816,13 +804,229 @@
 \unexpanded\def\speech
   {\doglobal\increment\speechlevel\relax
    \dohandlequotation\c!leftspeech\relax
-   \groupedcommand
-     {\ignorespaces}
+   \groupedcommand \ignorespaces
      {\dohandlequotation\c!rightspeech\removelastskip
       \doglobal\decrement\speechlevel\relax}}
 
 \appendtoks \dohandlespeech \to \everypar
 
+% this will replace the quotation and speed definitions 
+
+\newsignal\delimitedtextignal
+
+\def\delimitedtextparameter#1%
+  {\csname\??ci
+     \ifundefined{\??ci\currentdelimitedtext#1}\else\currentdelimitedtext\fi
+   #1\endcsname}
+
+\def\definedelimitedtext
+  {\dodoubleempty\dodefinedelimitedtext}
+
+\def\dodefinedelimitedtext[#1][#2]%
+  {\doifassignmentelse{#2}
+     {\getparameters
+        [\??ci#1]
+        [\c!plaats=\v!marge, % \v!tekst \v!alinea 
+         \c!voorwit=,
+         \c!nawit=\delimitedtextparameter\c!voorwit,
+         \c!letter=\v!normaal,
+         \c!kleur=,
+         \c!linkermarge=\zeropoint,
+         \c!rechtermarge=\delimitedtextparameter\c!linkermarge,
+         \c!springvolgendein=\v!ja,
+         \c!voor=,
+         \c!na=,
+         \c!links=,
+         \c!rechts=,
+         \c!niveau=0,
+         \c!herhaal=\v!nee,
+        #2]}%
+     {\doifdefined{#2} 
+        {\copyparameters[\??ci#1][\??ci#2]
+           [\c!plaats,\c!voorwit,\c!nawit,\c!letter,\c!kleur,
+            \c!linkermarge,\c!rechtermarge,\c!springvolgendein,
+            \c!voor,\c!na,\c!links,\c!rechts]}}%
+   \doifsomething{#1}
+     {\unexpanded\setvalue{#1}{\delimitedtext[#1]}%
+      \setvalue{\e!start#1}{\startdelimitedtext[#1]}%
+      \setvalue{\e!stop#1}{\stopdelimitedtext}}}
+
+\def\setupdelimitedtext
+  {\dodoubleargument\dosetupdelimitedtext}
+
+\def\dosetupdelimitedtext[#1][#2]%
+  {\ifsecondargument
+     \getparameters[\??ci#1][#2]%
+   \else
+     \getparameters[\??ci][#1]%
+   \fi}
+
+\def\dorepeatdelimitedtext
+  {\relax\ifcase\delimitedtextparameter\c!niveau\else
+     \dohandledelimitedtext\c!midden
+   \fi}
+
+\def\startdelimitedtext[#1]%
+  {\bgroup
+   \def\currentdelimitedtext{#1}%
+   \doif{\delimitedtextparameter\c!herhaal}\v!ja
+     {\appendtoks \dorepeatdelimitedtext \to \everypar}%
+   \doifinsetelse{\delimitedtextparameter\c!plaats}{\v!alinea,\v!marge}%
+     {\dosingleempty\dostartdelimitedtextpar}\dostartdelimitedtexttxt}
+
+\def\dostartdelimitedtextpar[#1]%                                     
+  {\let\dostopdelimitedtext\dostopdelimitedtextpar
+   \doifsomething{\delimitedtextparameter\c!voorwit}
+     {\blanko[\delimitedtextparameter\c!voorwit]}%
+   \delimitedtextparameter\c!voor
+   % nicer: 
+   % \doadaptleftskip {\delimitedtextparameter\c!linkermarge}%
+   % \doadaptrightskip{\delimitedtextparameter\c!rechtermarge}%
+   % backward compatible: 
+   \doifelsenothing{#1}
+     {\doadaptleftskip {\delimitedtextparameter\c!linkermarge}%
+      \doadaptrightskip{\delimitedtextparameter\c!rechtermarge}%
+      \let\dodostopdelimitedtextpar\endgraf}
+     {\startsmaller[#1]\let\dodostopdelimitedtextpar\stopsmaller}%
+   % so far 
+   \doif{\delimitedtextparameter\c!springvolgendein}\v!nee\noindentation
+   \dostartattributes{\??ci\currentdelimitedtext}\c!letter\c!kleur\empty
+   \leftdelimitedtextmark
+   \doglobal\incrementvalue{\??ci\currentdelimitedtext\c!niveau}%
+   \ignorespaces}
+
+\def\dostopdelimitedtextpar
+  {\removeunwantedspaces
+   \removelastskip
+   \rightdelimitedtextmark
+   \dostopattributes
+   \dodostopdelimitedtextpar
+   \delimitedtextparameter\c!na
+   \doifsomething{\delimitedtextparameter\c!nawit}
+     {\blanko[\delimitedtextparameter\c!nawit]}}
+
+\def\dostartdelimitedtexttxt
+  {\let\dostopdelimitedtext\dostopdelimitedtexttxt
+   \dostartattributes{\??ci\currentdelimitedtext}\c!letter\c!kleur\empty
+   \dohandledelimitedtext\c!links
+   \ignorespaces}
+
+\def\dostopdelimitedtexttxt
+  {\removeunwantedspaces
+   \dohandledelimitedtext\c!rechts
+   \dostopattributes}
+
+\def\stopdelimitedtext 
+  {\dostopdelimitedtext
+   \doglobal\decrementvalue{\??ci\currentdelimitedtext\c!niveau}%
+   \egroup}
+
+\def\delimitedtext[#1]%
+  {\pushmacro\currentdelimitedtext 
+   \def\currentdelimitedtext{#1}%
+   \doifinsetelse{\delimitedtextparameter\c!plaats}{\v!alinea,\v!marge}%
+     \dodelimitedtextpar\dodelimitedtexttxt}
+
+% shortcuts 
+
+\def\startdelimited{\startdelimitedtext}
+\def\stopdelimited {\stopdelimitedtext}  % no let, dynamically assigned
+\def\delimited     {\delimitedtext}
+
+\def\leftdelimitedtextmark
+  {\dontleavehmode 
+   \setbox\scratchbox\hbox{\delimitedtextparameter\c!links}%
+   \doif{\delimitedtextparameter\c!plaats}\v!marge{\hskip-\wd\scratchbox}%
+   \box\scratchbox}
+
+\def\rightdelimitedtextmark
+  {\hsmash{\delimitedtextparameter\c!rechts}}
+
+\def\dohandledelimitedtext#1#2%
+  {\bgroup
+   \setbox\scratchbox\hbox{#1}%
+   \ifdim\wd\scratchbox>\zeropoint
+     \ifdim\lastskip=\delimitedtextignal
+       \unskip\hskip\hspaceamount\currentlanguage{interquotation}%
+     \else
+       #2%
+     \fi
+     \ifhmode % else funny pagebeaks
+       \penalty\!!tenthousand\hskip\zeropoint % == \prewordbreak
+     \fi
+     \strut % new, needed below
+     \delimitedtextparameter#1%
+     \penalty\!!tenthousand\hskip\delimitedtextignal % +- \prewordbreak
+   \fi
+   \egroup}
+
+\def\handledelimitedtext#1%
+  {\dohandledelimitedtext{#1}\relax}
+
+\unexpanded\def\dodelimitedtextpar
+  {\dohandledelimitedtext\c!links\relax
+   \groupedcommand
+     \donothing
+     {\dohandledelimitedtext\c!rechts\removelastskip}}
+
+\unexpanded\def\dodelimitedtexttxt
+  {\doifelse{\delimitedtextparameter\c!letter}\v!normaal
+     \doquoteddelimited\doattributeddelimited}
+
+\def\doquoteddelimited
+  {\dohandledelimitedtext\c!links\relax
+   \groupedcommand 
+     \donothing
+     {\dohandledelimitedtext\c!rechts
+      \removelastskip
+      \popmacro\currentdelimitedtext}}
+
+\def\doattributeddelimited
+  {\groupedcommand
+     {\dostartattributes{\??ci\currentdelimitedtext}\c!letter\c!kleur}
+     {\dostopattributes
+      \popmacro\currentdelimitedtext}}
+
+% \definedelimitedtext
+%   [\v!citaat]
+%   [\c!links={\symbol[\c!leftquotation]},
+%    \c!rechts={\symbol[\c!rightquotation]},
+%    \c!linkermarge=\v!standaard]
+% 
+% \definedelimitedtext
+%   [\v!citeer][\v!citaat]
+% 
+% \setupdelimitedtext
+%   [\v!citeer]
+%   [\c!plaats=\v!tekst, 
+%    \c!links={\symbol[\c!leftquote]},
+%    \c!rechts={\symbol[\c!rightquote]}]
+% 
+% \definedelimitedtext
+%   [\v!spraak][\v!citaat]
+% 
+% \setupdelimitedtext
+%   [\v!spraak]
+%   [\c!herhaal=\v!ja,
+%    \c!links={\symbol[\c!leftspeech]},
+%    \c!midden={\symbol[\c!middlespeech]},
+%    \c!rechts={\symbol[\c!rightspeech]}]
+% 
+% % how do we call an tight quote 
+% %
+% % \definedelimitedtext
+% %    [x\v!citaat][\v!citaat]
+% %
+% % \setupdelimitedtext
+% %   [x\v!citaat]
+% %   [\c!springvolgendein=\v!nee,
+% %    \c!voorwit=\v!geenwit]
+% 
+% \def\stelciterenin{\setupdelimitedtext[\v!citaat]}
+% \def\stelcitatenin{\setupdelimitedtext[\v!citeer]}
+
+% seldom used, move from kernel to run time module 
+
 % Tijden horen hier niet thuis en zullen in een aparte
 % module worden ondergebracht. voorlopig handhaven we ze nog
 % even. Een implementatie met \doordefinieren zou beter voldoen
@@ -843,23 +1047,30 @@
 \def\activiteit#1#2%
   {\sym{\tijdspan{#1}{#2}}}
 
+% seldom used, move from kernel to run time module 
+
 \def\dotoevoegen#1%
   {\def\next{#1}%
-   \dorecurse{#1}{\inlinker{\next~+}\def\next{}\crlf}}
+   \dorecurse{#1}{\inlinker{\next~+}\let\next\empty\crlf}}
 
 \def\complextoevoegen[#1]%
   {\blanko
    \processaction
      [#1]
-     [   \v!klein=>\dotoevoegen{3},
-        \v!middel=>\dotoevoegen{6},
-         \v!groot=>\dotoevoegen{9},
-     \s!default=>\dotoevoegen{6},
-     \s!unknown=>\dotoevoegen{#1}]
+     [  \v!klein=>\dotoevoegen{3},
+       \v!middel=>\dotoevoegen{6},
+        \v!groot=>\dotoevoegen{9},
+      \s!default=>\dotoevoegen{6},
+      \s!unknown=>\dotoevoegen{#1}]
    \blanko}
 
 \definecomplexorsimpleempty\toevoegen
 
+% seldom used, move from kernel to run time module 
+
+\def\rooster
+  {\dosingleempty\dorooster}
+
 \def\dorooster[#1]%
   {\begingroup
    \getparameters[\??rt]
@@ -877,11 +1088,11 @@
      \dimen0=\@@rtdx\@@rteenheid\relax
      \dimen0=\@@rtschaal\dimen0\relax
      \dimen0=\@@rtfactor\dimen0\relax
-     \multiply\dimen0 by \@@rtnx\relax
+     \multiply\dimen0 \@@rtnx\relax
      \dimen2=\@@rtdy\@@rteenheid\relax
      \dimen2=\@@rtschaal\dimen2\relax
      \dimen2=\@@rtfactor\dimen2\relax
-     \multiply\dimen2 by \@@rtny\relax
+     \multiply\dimen2 \@@rtny\relax
      \def\horline
        {\vbox
           {\hrule
@@ -902,7 +1113,7 @@
         \dimen2=##2\@@rteenheid\relax
         \dimen2=\@@rtschaal\dimen2\relax
         \dimen2=\@@rtfactor\dimen2\relax
-        \divide\dimen0 by \dimen2\relax
+        \divide\dimen0 \dimen2\relax
         \xdef\@@roostere{\number\dimen0}%
         \ifnum\@@roostere>50
           \gdef\@@roostere{100}%
@@ -916,8 +1127,8 @@
           \gdef\@@roostere{1}%
         \fi\fi\fi\fi
         \gdef\@@roosterd{0}%
-        \def\legend%
-          {\ifnum\@@roosterd=0\relax
+        \def\legend
+          {\ifnum\@@roosterd=\zerocount
              \vbox
                {\increment(\@@roosterc,##1)%
                 \hbox to 2em{\hss\@@roosterc\hss}}%
@@ -936,12 +1147,12 @@
            \c!offset=\@@rtoffset,
            \c!xoffset=##6,
            \c!yoffset=##7]%
-        \doifelse{##9}{\v!midden}
-          {\scratchdimen=##3pt\scratchdimen=.5\scratchdimen
+        \doifelse{##9}\v!midden
+          {\scratchdimen##3pt\scratchdimen.5\scratchdimen
            \edef\@@psxx{\withoutpt\the\scratchdimen}%
-           \scratchdimen=##4pt\scratchdimen=.5\scratchdimen
+           \scratchdimen##4pt\scratchdimen.5\scratchdimen
            \edef\@@psyy{\withoutpt\the\scratchdimen}%
-           \scratchcounter=##2\advance\scratchcounter by -1
+           \scratchcounter##2\advance\scratchcounter -1
            \edef\@@pszz{\the\scratchcounter}}
           {\edef\@@psxx{0}\edef\@@psyy{0}\edef\@@pszz{##2}}%
         \position(\@@psxx,\@@psyy){##1}%
@@ -953,23 +1164,20 @@
            \c!factor=\@@rtfactor,
            \c!offset=\@@rtoffset,
            \c!eenheid=\@@rteenheid]%
-        \dorecurse{\@@pszz}{\position(##3,##4){##5}}}%
+        \dorecurse\@@pszz{\position(##3,##4){##5}}}%
      \draw
        \verline\@@rtnx\@@rtdx0\verline\!!zeropoint\!!zeropoint\v!start\empty
      \draw
        \horline\@@rtny0\@@rtdy\horline\!!zeropoint\!!zeropoint\v!start\empty
      \tfx
-     \doifnot{\@@rtxstap}{0}
+     \doifnot\@@rtxstap{0}
        {\setlegend\@@rtxstap\@@rtdx\@@rtx
         \draw\legend\@@rtnx\@@rtdx0\legend{-1em}{-1.5em}\v!overlay\@@rtplaats}%
-     \doifnot{\@@rtystap}{0}
+     \doifnot\@@rtystap{0}
        {\setlegend\@@rtystap\@@rtdy\@@rty
         \draw\legend\@@rtny0\@@rtdy\legend{-2em}{-.75ex}\v!overlay\@@rtplaats}%
   \stoppositioning
   \endgroup}
-
-\def\rooster%
-  {\dosingleempty\dorooster}
 
 % Dit wordt:
 %
@@ -1005,29 +1213,29 @@
 \def\stelpublicatiesin%
   {\dosingleargument\dostelpublicatiesin}
 
-\def\apa@publicatie%
-  {\doifsomething{\@@pb@naam}{\@@pb@naam,\spatie}%
-   \doifsomething{\@@pb@titel}{{\sl\@@pb@titel}.\spatie}%
-   \doifsomething{\@@pb@jaar}{(\@@pb@jaar).\spatie}%
-   \doifsomething{\@@pb@plaats}{\@@pb@plaats\doifelsenothing{\@@pb@uitgever}{.}{:\spatie}}%
-   \doifsomething{\@@pb@uitgever}{\@@pb@uitgever.}}
+\def\apa@publicatie
+  {\doifsomething\@@pb@naam    {\@@pb@naam,\space}%
+   \doifsomething\@@pb@titel   {{\sl\@@pb@titel}.\space}%
+   \doifsomething\@@pb@jaar    {(\@@pb@jaar).\space}%
+   \doifsomething\@@pb@plaats  {\@@pb@plaats\doifelsenothing\@@pb@uitgever{.}{:\space}}%
+   \doifsomething\@@pb@uitgever{\@@pb@uitgever.}}
 
-\def\normaal@publicatie%
+\def\normaal@publicatie
   {\@@pb@naam, \@@pb@titel, \@@pb@jaar, \@@pb@pagina, \@@pb@plaats, \@@pb@uitgever.}
 
-\def\complexstartpublicatie[#1]#2\stoppublicatie%
-  {\bgroup%
-   \def\dosetpublicatie%
+\def\complexstartpublicatie[#1]#2\stoppublicatie
+  {\bgroup
+   \def\dosetpublicatie
      {\processcommalist
         [naam,titel,jaar,plaats,pagina,uitgever]
         \setpublicatie
       \ignorespaces}%
    \def\setpublicatie##1%
-      {\setvalue{\??pb @##1}{}%
+      {\letvalue{\??pb @##1}\empty
        \setvalue{##1}####1{\setvalue{\??pb @##1}{####1}\ignorespaces}}%
    \def\getpublicatie%
-     {\doifsomething{\@@pbvariant}{\getvalue{\@@pbvariant @publicatie}}}%
-   \doifelse{\@@pbnummeren}{\v!ja}%
+     {\doifsomething\@@pbvariant{\getvalue{\@@pbvariant @publicatie}}}%
+   \doifelse\@@pbnummeren\v!ja
       {\@publicatie[#1]\dosetpublicatie#2\getpublicatie\par}%
       {\@@pbvoor
        \dosetpublicatie\ignorespaces#2\getpublicatie
@@ -1058,7 +1266,9 @@
    \c!links={[},
    \c!rechts={]}]
 
-\def\kenmerkdatum%
+% only used at pragma, move from kernel to run time module 
+
+\def\kenmerkdatum
   {\currentdate[\v!kenmerk]}
 
 \def\dokenmerk[#1]%
@@ -1067,14 +1277,14 @@
     \getparameters
       [\??km]
       [\c!bet=\unknown,\c!dat=\unknown,\c!ken=\unknown,
-       \c!van=,        \c!aan=,        \c!ref=,        #1]%
+       \c!van=,\c!aan=,\c!ref=,#1]%
     % moet anders, hoort niet in 01b
-    \assigntranslation[nl=referentie,en=reference,du=Referenz,   sp=referencia]\to\@@@kmref
-    \assigntranslation[nl=van,       en=from,     du=Von,        sp=de]\to\@@@kmvan
-    \assigntranslation[nl=aan,       en=to,       du=An,         sp=a]\to\@@@kmaan
-    \assigntranslation[nl=betreft,   en=concerns, du=Betreff,    sp=]\to\@@@kmbet
-    \assigntranslation[nl=datum,     en=date,     du=Datum,      sp=fecha]\to\@@@kmdat
-    \assigntranslation[nl=kenmerk,   en=mark,     du=Kennzeichen,sp=]\to\@@@kmken
+    \assigntranslation[\s!nl=referentie,\s!en=reference,\s!de=Referenz,\s!sp=referencia]\to\@@@kmref
+    \assigntranslation[\s!nl=van,\s!en=from,\s!de=Von,\s!sp=de]\to\@@@kmvan
+    \assigntranslation[\s!nl=aan,\s!en=to,\s!de=An,\s!sp=a]\to\@@@kmaan
+    \assigntranslation[\s!nl=betreft,\s!en=concerns,\s!de=Betreff,\s!sp=]\to\@@@kmbet
+    \assigntranslation[\s!nl=datum,\s!en=date,\s!de=Datum,\s!sp=fecha]\to\@@@kmdat
+    \assigntranslation[\s!nl=kenmerk,\s!en=mark,\s!de=Kennzeichen,\s!sp=]\to\@@@kmken
     %
     \definetabulate[\s!dummy][|l|p|]
     \startdummy
@@ -1082,13 +1292,13 @@
       \NC\@@@kmdat\EQ\@@kmdat\NC\NR
       \NC\@@@kmken\EQ\expanded{\kap{\@@kmken}}\NC\NR
       \doifsomething{\@@kmvan\@@kmaan}{\NC\NC\NC\NR}%
-      \doifsomething{\@@kmvan}{\NC\@@@kmvan\EQ\@@kmvan\NC\NR}%
-      \doifsomething{\@@kmaan}{\NC\@@@kmaan\EQ\@@kmaan\NC\NR}%
-      \doifsomething{\@@kmref}{\NC\NC\NC\NR\NC\@@@kmref\EQ\@@kmref\NC\NR}%
+      \doifsomething \@@kmvan         {\NC\@@@kmvan\EQ\@@kmvan\NC\NR}%
+      \doifsomething \@@kmaan         {\NC\@@@kmaan\EQ\@@kmaan\NC\NR}%
+      \doifsomething \@@kmref         {\NC\NC\NC\NR\NC\@@@kmref\EQ\@@kmref\NC\NR}%
     \stopdummy
     \egroup}
 
-\def\kenmerk%
+\def\kenmerk
   {\dosingleargument\dokenmerk}
 
 % NIEUW NIEUW NIEUW NIEUW NIEUW NIEUW NIEUW NIEUW NIEUW NIEUW NIEUW
@@ -1096,30 +1306,30 @@
 
 \def\??ri{@@ri}
 
-\def\stelrijenin%
+\def\stelrijenin
   {\dodoubleargument\getparameters[\??ri]}
 
 \def\complexstartrijen[#1]%
   {\bgroup
    \stelrijenin[#1]%
-   \let\do@@rionder=\relax
-   \def\rij%
+   \let\do@@rionder\relax
+   \def\rij
      {\do@@rionder
       \egroup
-      \dimen0=\vsize
-      \divide\dimen0 by \@@rin
-      \advance\dimen0 by -\lineskip
+      \dimen0\vsize
+      \divide\dimen0 \@@rin
+      \advance\dimen0 -\lineskip
       \vbox to \dimen0
         \bgroup
         \@@riboven
-        \let\do@@rionder=\@@rionder
+        \let\do@@rionder\@@rionder
         \ignorespaces}%
    \bgroup
    \rij}
 
 \definecomplexorsimpleempty\startrijen
 
-\def\stoprijen%
+\def\stoprijen
   {\do@@rionder
    \egroup
    \egroup}
@@ -1179,10 +1389,10 @@
   [\e!gegeven]
   [\c!eenheid=.75em,\c!binnen=\setquicktabulate\geg,EQ={=}]
 
-\unexpanded\def\xbox%
+\unexpanded\def\xbox
   {\bgroup\aftergroup\egroup\hbox\bgroup\tx\let\next=}
 
-\unexpanded\def\xxbox%
+\unexpanded\def\xxbox
   {\bgroup\aftergroup\egroup\hbox\bgroup\txx\let\next=}
 
 % \def\mrm#1%
@@ -1338,71 +1548,10 @@
 %D       \stopitemize}}
 %D \stoptypen
 
-% \def\setuplegend%
-%   {\dodoubleargument\getparameters[\??ld]}
-%
-% \setuplegend
-%   [\c!n=1,
-%    \c!afstand=1em,
-%    \c!tussen={\blanko[\v!middel]},
-%    \c!breedte=\hsize,
-%    \c!hoogte=\vsize,
-%    \c!korps=,
-%    \c!plaats=\v!onder]
-%
-% \def\placelegend%
-%   {\bgroup
-%    \dosingleempty\doplacelegend}
-%
-% \def\doplacelegend[#1]% watch the hsize/vsize tricks
-%   {\setuplegend[#1]%  % and don't change them
-%    \dowithnextbox
-%      {\switchtobodyfont[\@@ldkorps]% split under same regime
-%       \scratchdimen=\wd\nextbox
-%       \doifelse{\@@ldplaats}{\v!rechts}
-%         {\vsize=\ht\nextbox
-%          \vsize=\@@ldhoogte
-%          \hsize=\zetbreedte
-%          \advance\hsize by -\scratchdimen
-%          \advance\hsize by -\@@ldafstand
-%          \plaatsnaastelkaar{\box\nextbox}\bgroup}
-%         {\hsize\scratchdimen
-%          \plaatsonderelkaar{\box\nextbox}\bgroup}%
-%        \hsize\@@ldbreedte
-%        \doif{\@@ldplaats}{\v!rechts}{\hskip\@@ldafstand}%
-%        \ifnum\@@ldn>1
-%          \setrigidcolumnhsize\hsize\@@ldafstand\@@ldn
-%        \fi
-%        \dowithnextbox
-%          {\doifelse{\@@ldplaats}{\v!rechts}
-%             {\vbox to \vsize
-%                {\ifnum\@@ldn>1
-%                   \rigidcolumnbalance\nextbox
-%                 \else
-%                   \box\nextbox
-%                 \fi
-%                 \vfill}}
-%             {\vbox
-%                {\@@ldtussen
-%                 \ifnum\@@ldn>1
-%                   \rigidcolumnbalance\nextbox
-%                 \else
-%                   \box\nextbox
-%                 \fi}}%
-%           \egroup\egroup}%
-%          \vbox
-%            \bgroup
-%            \forgetall
-%            \tolerantTABLEbreaktrue % hm.
-%            \blanko[\v!blokkeer]%
-%            \everypar{\begstrut}%
-%            \let\next=}
-%    \hbox}
-
 \newbox\firstpairedbox
 \newbox\secondpairedbox
 
-\def\definepairedbox%
+\def\definepairedbox
   {\dodoubleempty\dodefinepairedbox}
 
 \def\dodefinepairedbox[#1][#2]%
@@ -1424,13 +1573,13 @@
    \setvalue{\e!stel#1\e!in}{\setuppairedbox[#1]}%
    \setvalue{\e!plaats#1}{\placepairedbox[#1]}}
 
-\def\setuppairedbox%
+\def\setuppairedbox
   {\dodoubleempty\dosetuppairedbox}
 
 \def\dosetuppairedbox[#1]%
   {\getparameters[\??ld#1]}
 
-\def\placepairedbox%
+\def\placepairedbox
   {\bgroup\dodoubleempty\doplacepairedbox}
 
 \def\doplacepairedbox[#1][#2]% watch the hsize/vsize tricks
@@ -1453,85 +1602,85 @@
         \let\next=}
    \hbox}
 
-\def\beforefirstpairedbox%
-  {\chardef\pairedlocationa=1 % left
-   \chardef\pairedlocationb=4 % middle
+\def\beforefirstpairedbox
+  {\chardef\pairedlocationa1 % left
+   \chardef\pairedlocationb4 % middle
    \getfromcommacommand[\@@ldplaats][1]%
    \processaction
      [\commalistelement]
-     [ \v!links=>\chardef\pairedlocationa=0,
-      \v!rechts=>\chardef\pairedlocationa=1,
-       \v!boven=>\chardef\pairedlocationa=2,
-       \v!onder=>\chardef\pairedlocationa=3]%
+     [ \v!links=>\chardef\pairedlocationa0,
+      \v!rechts=>\chardef\pairedlocationa1,
+       \v!boven=>\chardef\pairedlocationa2,
+       \v!onder=>\chardef\pairedlocationa3]%
    \getfromcommacommand[\@@ldplaats][2]%
    \processaction
      [\commalistelement]
-     [ \v!links=>\chardef\pairedlocationb=0,
-      \v!rechts=>\chardef\pairedlocationb=1,
-        \v!hoog=>\chardef\pairedlocationb=2,
-       \v!boven=>\chardef\pairedlocationb=2,
-        \v!laag=>\chardef\pairedlocationb=3,
-       \v!onder=>\chardef\pairedlocationb=3,
-      \v!midden=>\chardef\pairedlocationb=4]}
+     [ \v!links=>\chardef\pairedlocationb0,
+      \v!rechts=>\chardef\pairedlocationb1,
+        \v!hoog=>\chardef\pairedlocationb2,
+       \v!boven=>\chardef\pairedlocationb2,
+        \v!laag=>\chardef\pairedlocationb3,
+       \v!onder=>\chardef\pairedlocationb3,
+      \v!midden=>\chardef\pairedlocationb4]}
 
-\def\betweenbothpairedboxes%
+\def\betweenbothpairedboxes
   {\switchtobodyfont[\@@ldkorps]% split under same regime
-   \setbox\firstpairedbox=\box\nextbox
+   \setbox\firstpairedbox\box\nextbox
    \ifnum\pairedlocationa<2
      \hsize\wd\firstpairedbox % trick
-     \hsize=\@@ldbreedte
-     \scratchdimen=\wd\firstpairedbox
-     \advance\scratchdimen by \@@ldafstand
-     \bgroup\advance\scratchdimen by \hsize
+     \hsize\@@ldbreedte
+     \scratchdimen\wd\firstpairedbox
+     \advance\scratchdimen \@@ldafstand
+     \bgroup\advance\scratchdimen \hsize
      \ifdim\scratchdimen>\@@ldmaxbreedte\relax
        \egroup
-       \hsize=\@@ldmaxbreedte
-       \advance\hsize by -\scratchdimen
+       \hsize\@@ldmaxbreedte
+       \advance\hsize -\scratchdimen
      \else
        \egroup
      \fi
    \else
      \hsize\wd\firstpairedbox
      \hsize\@@ldbreedte % can be \hsize
-     \ifdim\hsize>\@@ldmaxbreedte\relax \hsize=\@@ldmaxbreedte \fi % can be \hsize
+     \ifdim\hsize>\@@ldmaxbreedte\relax \hsize\@@ldmaxbreedte \fi % can be \hsize
    \fi
-   \ifnum\@@ldn>1
+   \ifnum\@@ldn>\plusone
      \setrigidcolumnhsize\hsize\@@ldafstand\@@ldn
    \fi}
 
-\def\afterbothpairedboxes%
-  {\setbox\secondpairedbox=\vbox
+\def\afterbothpairedboxes
+  {\setbox\secondpairedbox\vbox
      {\ifnum\@@ldn>1 \rigidcolumnbalance\nextbox \else \box\nextbox \fi}%
    \ifnum\pairedlocationa<2\hbox\else\vbox\fi\bgroup % hide vsize
    \forgetall
    \ifnum\pairedlocationa<2
-     \scratchdimen=\maxoftwoboxdimens\ht\firstpairedbox\secondpairedbox
-     \vsize=\scratchdimen
+     \scratchdimen\maxoftwoboxdimens\ht\firstpairedbox\secondpairedbox
+     \vsize\scratchdimen
      \ifdim\scratchdimen<\@@ldhoogte\relax % can be \vsize
-       \scratchdimen=\@@ldhoogte
+       \scratchdimen\@@ldhoogte
      \fi
      \ifdim\scratchdimen>\@@ldmaxhoogte\relax
-       \scratchdimen=\@@ldmaxhoogte
+       \scratchdimen\@@ldmaxhoogte
      \fi
      \valignpairedbox\firstpairedbox \scratchdimen
      \valignpairedbox\secondpairedbox\scratchdimen
    \else
-     \scratchdimen=\maxoftwoboxdimens\wd\firstpairedbox\secondpairedbox
+     \scratchdimen\maxoftwoboxdimens\wd\firstpairedbox\secondpairedbox
      \halignpairedbox\firstpairedbox \scratchdimen
      \halignpairedbox\secondpairedbox\scratchdimen
-     \scratchdimen=\ht\secondpairedbox
-     \vsize=\scratchdimen
+     \scratchdimen\ht\secondpairedbox
+     \vsize\scratchdimen
      \ifdim\ht\secondpairedbox<\@@ldhoogte\relax % can be \vsize
-       \scratchdimen=\@@ldhoogte\relax % \relax needed
+       \scratchdimen\@@ldhoogte\relax % \relax needed
      \fi
      \ifdim\scratchdimen>\@@ldmaxhoogte\relax % todo: totale hoogte
-       \scratchdimen=\@@ldmaxhoogte\relax % \relax needed
+       \scratchdimen\@@ldmaxhoogte\relax % \relax needed
      \fi
      \ifdim\scratchdimen>\ht\secondpairedbox
        \setbox\secondpairedbox\vbox to \scratchdimen
-         {\ifnum\pairedlocationa=3 \vss\fi
+         {\ifnum\pairedlocationa=3 \vss\fi % 
           \box\secondpairedbox
-          \ifnum\pairedlocationa=2 \vss\fi}%
+          \ifnum\pairedlocationa=2 \vss\fi}% \kern\zeropoint
      \fi
    \fi
    \ifcase\pairedlocationa
@@ -1542,7 +1691,7 @@
    \fi
    \egroup}
 
-\def\insidesecondpairedbox%
+\def\insidesecondpairedbox
   {\forgetall
    \steluitlijnenin[\@@lduitlijnen]%
    \tolerantTABLEbreaktrue % hm.
@@ -1553,131 +1702,225 @@
   {#1\ifdim#1#2>#1#3 #2\else#3\fi}
 
 \def\valignpairedbox#1#2%
-  {\setbox#1=\vbox to #2
+  {\setbox#1\vbox to #2
      {\ifcase\pairedlocationb\or\or\or\vss\or\vss\fi
       \box#1\relax
       \ifcase\pairedlocationb\or\or\vss\or\or\vss\fi}}
 
 \def\halignpairedbox#1#2%
-  {\setbox#1=\hbox to #2
+  {\setbox#1\hbox to #2
      {\ifcase\pairedlocationb\or\hss\or\or\or\hss\fi
       \box#1\relax
       \ifcase\pairedlocationb\hss\or\or\or\or\hss\fi}}
 
 \definepairedbox[\e!legenda]
 
-\newcount\horcombinatie  % counter
-\newcount\totcombinatie
+\newcount\horcombination  % counter
+\newcount\totcombination
 
-\def\stelcombinatiesin%
+\def\definecombination
+  {\dodoubleempty\dodefinecombination}
+
+\def\definecombination[#1][#2]%
+  {\copyparameters
+     [\??co#1][\??co]
+     [\c!breedte,\c!hoogte,\c!afstand,\c!plaats,%
+      \c!voor,\c!tussen,\c!na,\c!uitlijnen]%
+   \getparameters
+     [\??co#1][#2]}
+
+\def\setupcombinations
   {\dodoubleargument\getparameters[\??co]}
 
-\long\def\dodostartcombinatie[#1*#2*#3]%
+\def\startcombination
+  {\dodoubleempty\dostartcombination}
+
+\def\dostartcombination[#1][#2]%
+  {\bgroup
+   \ifsecondargument
+     \def\combinationparameter##1{\csname\??co#1##1\endcsname}%
+   \else
+     \def\combinationparameter##1{\csname\??co  ##1\endcsname}%
+   \fi
+   \forgetall
+   \doifelse{\combinationparameter\c!hoogte}\v!passend
+     {\vbox}{\vbox to \combinationparameter\c!hoogte}%
+   \bgroup
+  %\doifelsenothing{#1}
+  %  {\dodostartcombination[2*1*]}
+  %  {\doifelsenothing{#2}
+  %     {\dodostartcombination[#1*1*]}
+  %     {\dodostartcombination[#2*1*]}}}
+   \expanded{\dodostartcombination
+     [\ifsecondargument#2\else\iffirstargument#1\else2\fi\fi*1*]}}
+
+\long\def\dodostartcombination[#1*#2*#3]%
   {\stelfractiesin
-     [\c!n=\v!passend,
-      \c!afstand=\@@coafstand]%
-   \global\horcombinatie=#1\relax
-   \global\totcombinatie=#2\relax
-   \xdef\maxhorcombinatie{\the\horcombinatie}%
-   \multiply\totcombinatie by \horcombinatie
+     [\c!n=\v!passend,\c!afstand=\combinationparameter\c!afstand]%
+   \global\horcombination#1%
+   \global\totcombination#2%
+   \global\setbox\combinationstack\emptybox
+   \xdef\maxhorcombination{\the\horcombination}%
+   \multiply\totcombination\horcombination
    \tabskip\zeropoint
-   \doifelse{\@@cobreedte}{\v!passend}
-     {\halign}
-     {\halign to \@@cobreedte}%
-   \bgroup&\hfil##\hfil&\tabskip\!!zeropoint \!!plus 1fill##\cr
-   \docombinatie}
+   \doifelse{\combinationparameter\c!breedte}\v!passend
+     {\halign}{\halign to \combinationparameter\c!breedte}%
+   \bgroup&%
+   %\hfil##\hfil% now : location={left,top}
+   \ExpandBothAfter\doifnotinset\v!links{\combinationparameter\c!plaats}\hfil
+   ##%
+   \ExpandBothAfter\doifnotinset\v!rechts{\combinationparameter\c!plaats}\hfil
+   &\tabskip\zeropoint \!!plus 1fill##\cr
+   \docombination}
 
-% \def\docombinatie%
-%   {\dowithnextbox
-%      {\setbox0=\box\nextbox
-%       \dowithnextbox
-%         {\setbox2=\box\nextbox
-%          \dodocombinatie}
-%      \hbox}
-%   \hbox}
-
-\def\docombinatie% we want to add struts but still ignore an empty box
-  {\dowithnextbox%
-     {\setbox0=\box\nextbox
+\def\docombination % we want to add struts but still ignore an empty box
+  {\dowithnextbox
+     {\setbox0\box\nextbox
       \dowithnextbox
-        {\setbox2=\box\nextbox
-         \dodocombinatie}
+        {\setbox2\box\nextbox
+         \dodocombination}%
       \vtop\bgroup
-        \def\next%
-          {\futurelet\nexttoken\nextnext}
-        \def\nextnext%
+        \def\next
+          {\futurelet\nexttoken\nextnext}%
+        \def\nextnext
           {\ifx\nexttoken\egroup \else % the next box is empty
              \hsize\wd0
-             \steluitlijnenin[\@@couitlijnen]
+             \steluitlijnenin[\combinationparameter\c!uitlijnen]%
              \bgroup
              \aftergroup\endstrut
              \aftergroup\egroup
              \begstrut
-           \fi}
+           \fi}%
         \afterassignment\next\let\nexttoken=}
   \hbox}
 
-\def\dodocombinatie%
+% stupid version, does not align top stuff when captions, 
+% keep as example
+% 
+% \def\dodocombination
+%   {\vbox
+%      {\forgetall % \stelwitruimtein[\v!geen]%
+%       \let\next\vbox
+%       \ExpandFirstAfter\processallactionsinset
+%         [\combinationparameter\c!plaats]
+%         [  \v!boven=>\let\next\tbox,
+%           \v!midden=>\let\next\halfwaybox]%
+%       \next{\copy0}% 
+%       \ifdim\ht2>\zeropoint % beter dan \wd2, nu \strut mogelijk
+%         \@@cotussen
+%         %\vtop % wrong code 
+%         %  {\nointerlineskip  % recently added
+%         %   \hsize\wd0
+%         %   \steluitlijnenin[\combinationparameter\c!uitlijnen]%  % \raggedcenter
+%         %   \begstrut\unhbox2\endstrut}%
+%         \box2
+%       \fi}%
+%    \ifnum\totcombination>\plusone
+%      \global\advance\totcombination\minusone
+%      \global\advance\horcombination\minusone
+%      \ifnum\horcombination=\zerocount
+%        \def\next
+%          {\cr\noalign
+%             {\forgetall % \stelwitruimtein[\v!geen]% no 
+%              \nointerlineskip
+%              \combinationparameter\c!na
+%              \combinationparameter\c!voor
+%              \vss
+%              \nointerlineskip}%
+%           \global\horcombination\maxhorcombination\relax
+%           \docombination}%
+%      \else
+%        \def\next
+%          {&&&\hskip\combinationparameter\c!afstand&\docombination}%
+%      \fi
+%    \else
+%      \def\next
+%        {\cr\egroup}%
+%    \fi
+%    \next}
+
+\def\dodocombination
   {\vbox
      {\forgetall % \stelwitruimtein[\v!geen]%
-      \vbox
-        {\copy0}%
-      \ifdim\ht2>\!!zeropoint\relax % beter dan \wd2, nu \strut mogelijk
-        \@@cotussen
-       %\vtop
-       %  {\nointerlineskip  % recently added
-       %   \hsize\wd0
-       %   \steluitlijnenin[\@@couitlijnen]%  % \raggedcenter
-       %   \begstrut\unhbox2\endstrut}%
-        \box2
-      \fi}%
-   \ifnum\totcombinatie>1
-     \global\advance\totcombinatie by -1
-     \global\advance\horcombinatie by -1
-     \ifnum\horcombinatie=0
-       \def\next%
-         {\cr\noalign
-            {\forgetall %\stelwitruimtein[\v!geen]%
+      \let\next\vbox
+      \ExpandFirstAfter\processallactionsinset
+        [\combinationparameter\c!plaats]
+        [  \v!boven=>\let\next\tbox,
+          \v!midden=>\let\next\halfwaybox]%
+      \next{\copy0}%
+      % we need to save the caption for a next alignment line
+      \saveoncombinationstack2}%
+   \ifnum\totcombination>\plusone
+     \global\advance\totcombination\minusone
+     \global\advance\horcombination\minusone
+     \ifnum\horcombination=\zerocount
+       \def\next
+         {\cr
+          \flushcombinationstack
+          \noalign
+            {\forgetall % \stelwitruimtein[\v!geen]% no
+             \global\setbox\combinationstack\emptybox
              \nointerlineskip
-             \@@cona
-             \@@covoor
+             \combinationparameter\c!na
+             \combinationparameter\c!voor
              \vss
              \nointerlineskip}%
-          \global\horcombinatie=\maxhorcombinatie\relax
-          \docombinatie}%
+          \global\horcombination\maxhorcombination\relax
+          \docombination}%
      \else
-       \def\next%
-         {&&&\hskip\@@coafstand&\docombinatie}%
+       \def\next
+         {&&&\hskip\combinationparameter\c!afstand&\docombination}%
      \fi
    \else
-     \def\next%
-       {\cr\egroup}%
+     \def\next
+       {\cr
+        \flushcombinationstack
+        \egroup}%
    \fi
    \next}
 
-\def\complexdostartcombinatie[#1]%
-  {\dodostartcombinatie[#1*1*]}
-
-\def\simpledostartcombinatie%
-  {\complexdostartcombinatie[2]}
-
-\def\startcombinatie%
-  {\bgroup
-   \forgetall
-   \doifelse{\@@cohoogte}{\v!passend}
-     {\vbox}
-     {\vbox to \@@cohoogte}%
-   \bgroup
-   \complexorsimple\dostartcombinatie}
-
-\def\stopcombinatie%
+\def\stopcombination
   {\egroup
    \egroup}
 
-\stelcombinatiesin
+\newbox\combinationstack
+
+\def\saveoncombinationstack#1% 
+  {\global\setbox\combinationstack\hbox
+     {\hbox{\box#1}\unhbox\combinationstack}}
+
+\def\flushcombinationstack
+  {\noalign
+     {\ifdim\ht\combinationstack>\zeropoint
+        \@@cotussen
+        \global\horcombination\maxhorcombination
+        \globallet\doflushcombinationstack\dodoflushcombinationstack
+      \else
+        \global\setbox\combinationstack\emptybox
+        \globallet\doflushcombinationstack\donothing
+      \fi}%
+   \doflushcombinationstack\crcr}
+
+\gdef\dodoflushcombinationstack
+  {\global\setbox\combinationstack\hbox
+     {\unhbox\combinationstack
+      \global\setbox1\lastbox}%
+   \box1% \ruledhbox{\box1}%
+   \global\advance\horcombination\minusone\relax
+   \ifnum\horcombination>\zerocount
+     \def\next{&&&&\doflushcombinationstack}%
+   \else
+     \global\setbox\combinationstack\emptybox
+    %\let\next\relax
+     \@EA\gobbleoneargument
+   \fi
+   \next}
+
+\setupcombinations
   [\c!breedte=\v!passend,
    \c!hoogte=\v!passend,
    \c!afstand=1em,
+   \c!plaats=\v!onder, % can be something {top,left} 
    \c!voor=\blanko,
    \c!tussen={\blanko[\v!middel]},
    \c!na=,
@@ -1697,10 +1940,10 @@
    \aftergroup\doplaatsondernaastelkaar
    \let\next=}
 
-\def\plaatsonderelkaar%
+\def\plaatsonderelkaar
   {\plaatsondernaastelkaar\halign\hss}
 
-\def\plaatsnaastelkaar%
+\def\plaatsnaastelkaar
   {\plaatsondernaastelkaar\valign\vss}
 
 \def\dogebruikexternefiles[#1][#2]%
@@ -1711,7 +1954,7 @@
       \c!optie=,
       #2]}
 
-\def\gebruikexternefiles%
+\def\gebruikexternefiles
   {\dodoubleargument\dogebruikexternefiles}
 
 \def\dostelexternefilesin[#1][#2]%
@@ -1719,7 +1962,7 @@
      {\gebruikexternefiles[#1][#2]}
      {\getparameters[\??fi#1][#2]}}
 
-\def\stelexternefilesin%
+\def\stelexternefilesin
   {\dodoubleargument\dostelexternefilesin}
 
 \def\verwerkexternefile#1#2#3%
@@ -1728,8 +1971,8 @@
    \doinputonce{\getvalue{\??fi#1\c!file}}%
    \ExpandFirstAfter\switchtobodyfont[\getvalue{\??fi#1\c!korps}]%
    \readsysfile{#2}  % beter: loc of fix gebied
-     {}
-     {\showmessage{\m!systems}{41}{#2,#1}}%
+     \donothing
+     {\showmessage\m!systems{41}{#2,#1}}%
    \egroup}
 
 \def\dogebruikexternefile[#1][#2][#3][#4]%
@@ -1739,7 +1982,7 @@
      {\setvalue{#3}{\verwerkexternefile{#1}{#3}{#4}}}
      {\setvalue{#2}{\verwerkexternefile{#1}{#3}{#4}}}}
 
-\def\gebruikexternefile%
+\def\gebruikexternefile
   {\doquadrupleargument\dogebruikexternefile}
 
 \gebruikexternefiles
@@ -1814,15 +2057,15 @@
 
 \def\dodostoprotate#1#2#3#4#5#6%
   {\dontshowcomposition
-\scratchdimen\nextboxht\advance\scratchdimen\nextboxdp
-\doif\@@roplaats\v!hoog
-  {\setbox\nextbox\vbox{\hbox{\raise\nextboxdp\box\nextbox}}}%
-\setbox\nextbox=\vbox to #1
+   \scratchdimen\nextboxht\advance\scratchdimen\nextboxdp
+   \doif\@@roplaats\v!hoog
+     {\setbox\nextbox\vbox{\hbox{\raise\nextboxdp\box\nextbox}}}%
+   \setbox\nextbox\vbox to #1
      {#2\relax
       \hbox to #4
         {#5\relax % \number removes leading spaces too
          \edef\@@rorotatie{\number\@@rorotatie}%
-         \doifelsenothing{\@@rorotatie}
+         \doifelsenothing\@@rorotatie
            {\dostartrotation{90}}
            {\dostartrotation{\@@rorotatie}}%
          \nextboxwd\zeropoint
@@ -1836,8 +2079,8 @@
 \box\nextbox
    \egroup}
 
-\def\dostoprotate%
-  {\!!counta=\@@rorotatie
+\def\dostoprotate
+  {\!!counta\@@rorotatie
    \divide\!!counta 90
    \ifcase\!!counta
      \dodostoprotate\nextboxht\relax\vfill\nextboxwd\relax\hfill
@@ -1888,25 +2131,28 @@
 % schaal
 
 \def\doscalelikeafigure
-  {\doifsomething{\@@xyfactor\@@xyschaal\@@xyhfactor\@@xybreedte\@@xyhoogte}
+  {\doifsomething{\@@xyfactor\@@xyhfactor\@@xybfactor\@@xyschaal
+                  \@@xybreedte\@@xyhoogte\@@xyregels}
      {\let \@@efschaal \@@xyschaal
       \let \@@effactor \@@xyfactor
       \let \@@efbfactor\@@xybfactor
       \let \@@efhfactor\@@xyhfactor
       \let \@@efbreedte\@@xybreedte
       \let \@@efhoogte \@@xyhoogte
+      \let \@@efregels \@@xyregels
       \let \@@epx      \!!zeropoint
       \let \@@epy      \!!zeropoint
       \edef\@@epw     {\the\wd\nextbox}%
       \edef\@@eph     {\the\ht\nextbox}%
+      \checkfiguresettings
       \setfactorfiguresize
       \setscalefiguresize
       \setdimensionfiguresize
       \convertfigureinsertscale\@@epx\figx\figxsca\scax
       \convertfigureinsertscale\@@epy\figy\figysca\scay
-      \scratchdimen=\scax pt \divide\scratchdimen by 100
+      \scratchdimen\scax\s!pt \divide\scratchdimen 100
       \edef\@@xysx{\withoutpt\the\scratchdimen}%
-      \scratchdimen=\scay pt \divide\scratchdimen by 100
+      \scratchdimen\scay\s!pt \divide\scratchdimen 100
       \edef\@@xysy{\withoutpt\the\scratchdimen}}}
 
 \def\doschaal[#1]%
@@ -1914,26 +2160,26 @@
    \forgetall
    \getparameters
      [\??xy]
-     [\c!schaal=,\c!breedte=,\c!hoogte=,
+     [\c!schaal=,\c!breedte=,\c!hoogte=,\c!regels=,
       \c!factor=,\c!hfactor=,\c!bfactor=,
       \c!sx=1,\c!sy=1,#1]%
    \dowithnextbox
      {\dontshowcomposition
-\ifdim\ht\nextbox>\zeropoint \ifdim\wd\nextbox>\zeropoint
-      \doscalelikeafigure
-      \dimen0=\@@xysy\ht\nextbox
-      \dimen2=\@@xysy\dp\nextbox
-      \dimen4=\@@xysx\wd\nextbox
-      \dimen6=\dimen0\advance\dimen6 by \dimen2
-      \setbox\nextbox=\vbox to \dimen6
-        {\ht\nextbox=\zeropoint
-         \dp\nextbox=\zeropoint
-         \vfill % erbij
-         \dostartscaling\@@xysx\@@xysy\box\nextbox\dostopscaling}%
-      \ht\nextbox=\dimen0
-      \dp\nextbox=\dimen2
-      \wd\nextbox=\dimen4
-\fi \fi
+      \ifdim\ht\nextbox>\zeropoint \ifdim\wd\nextbox>\zeropoint
+        \doscalelikeafigure
+        \dimen0=\@@xysy\ht\nextbox
+        \dimen2=\@@xysy\dp\nextbox
+        \dimen4=\@@xysx\wd\nextbox
+        \dimen6=\dimen0\advance\dimen6 \dimen2
+        \setbox\nextbox\vbox to \dimen6
+          {\ht\nextbox\zeropoint
+           \dp\nextbox\zeropoint
+           \vfill % erbij
+           \dostartscaling\@@xysx\@@xysy\box\nextbox\dostopscaling}%
+        \ht\nextbox\dimen0
+        \dp\nextbox\dimen2
+        \wd\nextbox\dimen4
+      \fi \fi
       \box\nextbox
       \egroup}
    \hbox}
@@ -1943,18 +2189,18 @@
 
 % mirror
 
-\def\domirrorbox% \hbox/\vbox/\vtop
+\def\domirrorbox % \hbox/\vbox/\vtop
   {\bgroup
    \dowithnextbox
      {\dontshowcomposition
-      \dimen0=\wd\nextbox
-      \setbox\nextbox=\vbox
+      \scratchdimen\wd\nextbox
+      \setbox\nextbox\vbox
         {\dostartmirroring\hskip-\wd\nextbox\box\nextbox\dostopmirroring}%
-      \wd\nextbox=\dimen0
+      \wd\nextbox\scratchdimen
       \box\nextbox
       \egroup}}
 
-\def\spiegel%
+\def\spiegel
   {\domirrorbox\hbox}
 
 %\setbox0=\hbox{gans}
@@ -1978,7 +2224,7 @@
 
 \def\??fr{@@fr}
 
-\def\stelfractiesin%
+\def\stelfractiesin
   {\dodoubleargument\getparameters[\??fr]}
 
 \def\dodofractie[#1/#2,#3,#4,#5]%
@@ -1992,7 +2238,7 @@
         {\!!widtha\zeropoint}
         {\!!widtha\@@frafstand}}
      {\!!widtha#4}%
-   \advance\!!counta -1\relax
+   \advance\!!counta \minusone
    \multiply\!!widtha \!!counta
    \advance\hsize -\!!widtha
    \divide\hsize #2\relax
@@ -2001,7 +2247,7 @@
 \def\dofractie[#1]%
   {\dodofractie[#1,,,,,,]}
 
-\def\fractie%
+\def\fractie
   {\dosingleargument\dofractie}
 
 \stelfractiesin
@@ -2100,8 +2346,8 @@
      \let\serializedcommalist\empty
      \scratchcounter\zerocount
      \def\docommando##1%
-       {\advance\scratchcounter 1 
-        \ifnum\scratchcounter=1 
+       {\advance\scratchcounter \plusone 
+        \ifnum\scratchcounter=\plusone
           \scratchtoks{\handlecommalistsentence{##1}}%
         \else
           \ifnum\scratchcounter=\commalistsize

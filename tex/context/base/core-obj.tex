@@ -210,10 +210,10 @@
 
 \newif\ifobjectreferencing \objectreferencingtrue
 
-\def\checkobjectreferences%
+\def\checkobjectreferences
   {\startnointerference
    \protectlabels 
-   \doutilities{objectreferences}\jobname\empty\empty\empty
+   \doutilities{objectreferences}\jobname\empty\relax\relax
    \global\let\checkobjectreferences\relax
    \stopnointerference}
 
@@ -222,7 +222,7 @@
      {\ifundefined{\r!driver##1::##2}%
         \setxvalue{\r!driver##1::##2}{##3}%
       \else
-        \showmessage{\m!references}{31}{[##1 ##2=>##3]}%
+        \showmessage\m!references{31}{[##1 ##2=>##3]}%
       \fi}}
 
 \def\resetobjectreferences
@@ -234,7 +234,7 @@
   {\checkobjectreferences
    \blabelgroup
    \ifobjectreferencing 
-     \edef\dowritereference% why not immediate ? 
+     \edef\dowritereference % why not immediate ? 
        {\writeutilitycommand{\objectreference{#1}{#2}{#3}}}%
      \dowritereference
    \else
@@ -249,7 +249,7 @@
   {\checkobjectreferences
    \blabelgroup 
    \ifundefined{\r!driver#1::#2}%
-     \showmessage{\m!references}{30}{[#1 #2=>\defaultobjectreference{#1}{#2}]}%
+     \showmessage\m!references{30}{[#1 #2=>\defaultobjectreference{#1}{#2}]}%
      \xdef#3{\defaultobjectreference{#1}{#2}}%
    \else
      \global\@EA\let\@EA#3\csname\r!driver#1::#2\endcsname

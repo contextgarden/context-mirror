@@ -128,10 +128,11 @@
    % by integrating the split in the loop below
    % \splitofftokens\maxPDFstringsize\from\ascii\to\ascii
    % we diminish the processing time considerably
-   \scratchcounter=\maxPDFstringsize
+   \scratchcounter\maxPDFstringsize
    \def\docommando##1%
-     {\ifnum\scratchcounter>0
-        \advance\scratchcounter by -1
+    %{\ifnum\scratchcounter>0
+     {\ifcase\scratchcounter\else
+        \advance\scratchcounter \minusone
         \ifcase\lccode`##1\relax
           \xdef#2{#2.}% let's show that something is missing
         \or
@@ -193,6 +194,7 @@
 %D    doPDFdictionaryobject,
 %D    doPDFarrayobject,
 %D    doPDFaddtocatalog,
+%D    doPDFaddtoinfo,
 %D    doPDFpageattribute,
 %D    doPDFpageresource,
 %D    doPDFpagesattribute,
@@ -214,6 +216,7 @@
 %D \doPDFdictionaryobject   class #1 name #2 data #3
 %D \doPDFarrayobject        class #1 name #2 data #3
 %D \doPDFaddtocatalog       #1
+%D \doPDFaddtoinfo          #1
 %D \doPDFpageattribute      #1
 %D \doPDFpageresource       #1
 %D \doPDFpagesattribute     #1
@@ -271,50 +274,128 @@
 \def\appendtoPDFdocumentextgstates#1%
   {\xdef\docuPDFextgstates{\docuPDFextgstates\space#1}}
 
+%D Another special mechanism (needed for color separation):
+
+\let\docuPDFcolorspaces\empty 
+
+\def\checkPDFcolorspaces
+  {\ifx\docuPDFcolorspaces\empty \else
+     \ifnum\realpageno=\lastpage\relax
+       \doPDFdictionaryobject class FDF name colorspaces data
+         {\docuPDFcolorspaces}%
+     \fi
+     \doPDFgetobjectreference{FDF}{colorspaces}\PDFobjectreference
+     \doPDFpageresource{/ColorSpace \PDFobjectreference}%
+   \fi}
+
+\appendtoksonce 
+  \checkPDFcolorspaces
+\to \everyshipout
+
+\def\appendtoPDFdocumentcolorspaces#1%
+  {\xdef\docuPDFcolorspaces{\docuPDFcolorspaces\space#1}}
+
 %D \macros
-%D   {doPDFsetupscreen}
+%D   {doPDFsetupscreen,doPDFsetupidentity}
 %D
 %D Opposite to \DVI\ drivers, \PDF\ ones must know which what
 %D page dimensions they are dealing. We also use the
 %D opportunity to launch full screen (1) or show bookmarks (2).
 
+\let\currentPDFpagemode   \empty % document catalog
+\let\currentPDFviewerprefs\empty % document catalog
+
+\let\currentPDFcropbox    \empty % page attributes 
+\let\currentPDFbleedbox   \empty % page attributes 
+\let\currentPDFartbox     \empty % page attributes 
+\let\currentPDFtrimbox    \empty % page attributes 
+
 \def\doPDFsetupscreen#1#2#3#4#5#6% watch the extra argument
   {\bgroup
-   \!!widtha#4%
-   \advance\!!widtha #2%
-   \!!heighta-#5%
-   \!!heightb#1% extra argument
-   \advance\!!heightb -#3%
-   \advance\!!heighta \!!heightb
-   \PointsToWholeBigPoints{#2}\left
-   \PointsToWholeBigPoints\!!heighta\bottom
-   \PointsToWholeBigPoints\!!widtha \width
-   \PointsToWholeBigPoints\!!heightb\height
+%   \!!widtha#4%
+%   \advance\!!widtha#2%
+%   \!!heighta-#5%
+%   \!!heightb#1% extra argument
+%   \advance\!!heightb -#3%
+%   \advance\!!heighta \!!heightb
+%   % sometimes whole values give better results
+%   % \PointsToWholeBigPoints{#2}\left
+%   % \PointsToWholeBigPoints\!!heighta\bottom
+%   % \PointsToWholeBigPoints\!!widtha \width
+%   % \PointsToWholeBigPoints\!!heightb\height
+%   % but since pdf/x does not round when checking if 
+%   % the boxes fit inside the media box ...
 %   \PointsToBigPoints{#2}\left
 %   \PointsToBigPoints\!!heighta\bottom
 %   \PointsToBigPoints\!!widtha \width
 %   \PointsToBigPoints\!!heightb\height
-   \xdef\currentPDFcropbox 
-     {/CropBox [\left\space\bottom\space\width\space\height]}%
+%   \xdef\currentPDFcropboxspec 
+%     {[\left\space\bottom\space\width\space\height]}%
+%   \global\let\currentPDFtrimboxspec\currentPDFcropboxspec
    \xdef\currentPDFpagemode
      {/PageMode \ifcase#6 /UseNone\or/FullScreen\or/UseOutlines\else/UseNone\fi}%
-   \xdef\currentPDFviewerprefs 
-     {\ifcase#6\or\or\or /ViewerPreferences << /FitWindow true >>\fi}%
+   \xdef\currentPDFviewerprefs % space after #6 needed, else \relax
+     {\ifcase#6 \or\or\or /ViewerPreferences << /FitWindow true >>\fi}%
    \egroup}
 
-\global\let\currentPDFcropbox    \empty % page attributes 
-\global\let\currentPDFpagemode   \empty % document catalog
-\global\let\currentPDFviewerprefs\empty % document catalog
-
 \appendtoksonce % hack to prevent duplicates
-  \ifcase\realfolio\or
+  \ifcase\realfolio \or % only at page one 
     \doPDFaddtocatalog{\currentPDFpagemode\currentPDFviewerprefs}%
+    \doPDFaddtoinfo{/Trapped /False}%
   \fi
 \to \everyshipout
 
+\def\doPDFsetupwhateverbox#1#2#3#4#5#6% watch the extra arguments
+  {\bgroup
+   \!!widtha#5%
+   \advance\!!widtha#3%
+   \!!heighta-#6%
+   \!!heightb#2% extra argument
+   \advance\!!heightb -#4%
+   \advance\!!heighta \!!heightb
+   % sometimes whole values give better results
+   % \PointsToWholeBigPoints{#3}\left
+   % \PointsToWholeBigPoints\!!heighta\bottom
+   % \PointsToWholeBigPoints\!!widtha \width
+   % \PointsToWholeBigPoints\!!heightb\height
+   % but since pdf/x does not round when checking if 
+   % the boxes fit inside the media box ...
+   \PointsToBigPoints{#3}\left
+   \PointsToBigPoints\!!heighta\bottom
+   \PointsToBigPoints\!!widtha \width
+   \PointsToBigPoints\!!heightb\height
+   \xdef#1{[\left\space\bottom\space\width\space\height]}%
+   \egroup}
+
+\def\doPDFsetupartbox  {\doPDFsetupwhateverbox\currentPDFartbox  }
+\def\doPDFsetupcropbox {\doPDFsetupwhateverbox\currentPDFcropbox }
+\def\doPDFsetupbleedbox{\doPDFsetupwhateverbox\currentPDFbleedbox}
+\def\doPDFsetuptrimbox {\doPDFsetupwhateverbox\currentPDFtrimbox }
+
+\gdef\currentPDFtrimbox{\currentPDFcropbox} % default, needed for pdf/x 
+
+\def\flushPDFwhateverbox#1#2%
+  {\doifsomething{#1}{\doPDFpageattribute{/#2Box #1}}}
+
 \appendtoksonce
-  \doPDFpageattribute{\currentPDFcropbox}%
+  \flushPDFwhateverbox\currentPDFartbox  {Art}%
+  \flushPDFwhateverbox\currentPDFcropbox {Crop}%
+  \flushPDFwhateverbox\currentPDFbleedbox{Bleed}%
+  \flushPDFwhateverbox\currentPDFtrimbox {Trim}%
 \to \everyshipout
+
+\def\doPDFsetupidentity#1#2#3#4#5#6%
+  {\bgroup 
+   \enablePDFdocencoding
+   \expanded{\doPDFaddtoinfo
+     {/Title (#1)
+      /Subject (#2)
+      /Author (#3)
+      /Creator (#4)
+      /ModDate (#5) 
+      /ID (\jobname.#5) % needed for pdf/x
+      /Keywords (#6)}}%
+   \egroup}
 
 %D \macros
 %D   {doPDFsetupopenaction,doPDFsetupcloseaction,
@@ -333,10 +414,10 @@
 %D update of Acrobat Viewers, upward compatibility was 
 %D just a dream.  
 
-\def\doPDFsetupopenaction%
+\def\doPDFsetupopenaction
   {\doPDFaddtocatalog{/OpenAction <<\lastPDFaction>>}}
 
-\def\doPDFsetupcloseaction%
+\def\doPDFsetupcloseaction
   {\doPDFaddtocatalog{/CloseAction <<\lastPDFaction>>}}
 
 %D So, starting with version~5 viewers, when the open actions 
@@ -359,7 +440,7 @@
 \def\doPDFsetupopenpageaction%
   {\global\let\PDFopenpageaction\lastPDFaction}
 
-\def\doPDFsetupclosepageaction%
+\def\doPDFsetupclosepageaction
   {\global\let\PDFclosepageaction\lastPDFaction}
 
 \def\checkPDFpageactions
@@ -413,7 +494,7 @@
   {\bgroup
    \doifelsenothing{#3}
      {\setPDFdestination{#5}%
-      \doifelsenothing{\PDFdestination}
+      \doifelsenothing\PDFdestination
         {\let\action\empty}
         {\doifelsenothing{#4}
            {\let\PDFfile\empty}
@@ -429,7 +510,7 @@
          \let\PDFdestination\empty}
         {\setreferencefilename/#4\to\PDFfile
          \setPDFdestination{#5}%
-         \doifsomething{\PDFdestination}
+         \doifsomething\PDFdestination
            {\edef\PDFdestination{\URLhash\PDFdestination}}}%
       \edef\action%
         {/S /URI /URI (#3\PDFfile\PDFdestination)}}%
@@ -450,9 +531,9 @@
 \def\doPDFstartgotorealpage#1#2#3#4#5% watch the R append trick 
   {\bgroup
    \doifelsenothing{#3}
-     {\scratchcounter=0#5\relax
+     {\scratchcounter0#5\relax
       \ifnum\scratchcounter>0
-        \advance\scratchcounter -1 % pdf starts numbering at zero 
+        \advance\scratchcounter \minusone % pdf starts numbering at zero 
         \doifelsenothing{#4}
           {\let\PDFfile\empty}
           {\doifparentfileelse{#4}
@@ -491,7 +572,7 @@
 \def\fakePDFpagedestination % as in pdf, we start numbering at zero 
   {\iflocation \ifovercomePDFpage \ifarrangingpages \else
      \bgroup
-     \advance\realpageno -1 % is \expanded needed ? 
+     \advance\realpageno \minusone % is \expanded needed ? 
      \expanded{\doPDFdestination name {page:\realfolio}}%
      \egroup
    \fi \fi \fi}
@@ -540,16 +621,24 @@
 \def\PDFformcode#1%
   {\doFDFiffieldset{#1}{/Field [\doFDFgetfieldset{#1}]}}
 
+% bit 3 = html 
+% bit 6 = xml 
+% bit 4 = get 
+
+\chardef\PDFformmethod=1 % 0=GET 1=POST
+
+\def\PDFformflag#1#2{\ifcase\PDFformmethod#1\else#2\fi}
+ 
 \def\PDFexecuteimportform  {/Named /N /AcroForm:ImportFDF}
 \def\PDFexecuteexportform  {/Named /N /AcroForm:ExportFDF}
 \def\PDFexecuteresetform   {/ResetForm  \PDFformcode\argumentA}
 \def\PDFexecutesubmitform  {/SubmitForm \PDFformcode\argumentB
                             /Flags \ifcase\submitoutputformat\space
-                                          4 % 0=unknown
-                                   \or    4 % 1=HTML 
-                                   \or    0 % 2=FDF % was 12 ? ? ?  
-                                   \or   32 % 3=XML
-                                   \else  4 % ?=unknown
+                                         \PDFformflag{12} {4} % 0=unknown
+                                   \or   \PDFformflag{12} {4} % 1=HTML 
+                                   \or   \PDFformflag {8} {0} % 2=FDF 
+                                   \or   \PDFformflag{40}{32} % 3=XML
+                                   \else \PDFformflag{12} {4} % ?=unknown
                                    \fi
                             /F (\argumentA)}
                        
@@ -631,7 +720,7 @@
 \def\doPDFstartgotoprofile#1#2#3% to be done: file
   {\bgroup
    \setPDFdestination{#3}%
-   \doifsomething{\PDFdestination}
+   \doifsomething\PDFdestination
      {\edef\action%
         {/S /Thread /D (\PDFdestination)}%
       \ifsecondaryreference
@@ -755,9 +844,10 @@
 
 \def\doPDFinsertbookmark#1#2#3#4#5% level sublevels text page open=1
   {\bgroup
+   % todo, unicode 
    \sanitizePDFdocencoding#3\to\bookmarktext % uses scratchcounter
-   \scratchcounter=#4%
-   \advance\scratchcounter -1
+   \scratchcounter#4%
+   \advance\scratchcounter \minusone
   %\sanitizePDFstring#3\to\bookmarktext
    \doPDFbookmark level #1 n #2 text {\bookmarktext}
       page {\the\scratchcounter} open #5
@@ -798,6 +888,7 @@
 \def\FDFflagNoExport              {4} %  3
 \def\FDFflagPassword           {8192} % 14
 \def\FDFflagSort             {524288} % 20
+\def\FDFflagFileSelect      {1048576} % 21 
 
 %D There is a second, again bitset oriented, \type{/F} flag:
 
@@ -821,6 +912,7 @@
 \letvalue {\@@FDFflag\v!nietbeschikbaar}=\FDFflagNoExport
 \letvalue    {\@@FDFflag\v!geencontrole}=\FDFflagDoNotSpellCheck
 \letvalue            {\@@FDFflag\v!vast}=\FDFflagDoNotScroll
+\letvalue            {\@@FDFflag\v!file}=\FDFflagFileSelect
 
 \letvalue       {\@@FDFplus\v!verborgen}=\FDFplusHidden
 \letvalue       {\@@FDFplus\v!printbaar}=\FDFplusPrintable
@@ -853,17 +945,37 @@
 %D Menu items are passed as an array of \type{(string)}'s and
 %D the content of this array is build with:
 
-\let\FDFvalues\empty
+\let\FDFvalues      \empty
+\let\FDFfirstvalues \empty
+\let\FDFsecondvalues\empty
+\let\FDFkidlist     \empty
+\let\FDFdefaultindex\!!zerocount
+\let\FDFdefaultvalue\empty
 
-\def\setFDFvalues[#1]%
-  {\let\FDFvalues\empty
+\def\setFDFvalues[#1][#2]% #1 = list (item=>value) #2 = default 
+  {\let\FDFvalues      \empty
+   %when radio opt works ok 
+   %\let\FDFfirstvalues \empty
+   %\let\FDFsecondvalues\empty
+   %\let\FDFkidlist     \empty
+   %\let\FDFdefaultindex\!!zerocount
+   %\let\FDFdefaultvalue\empty
+   %\scratchcounter\zerocount
    \def\dodocommando##1=>##2=>##3\end
-     {\doifelsenothing{##2}
-        {\edef\FDFvalues{\FDFvalues [(##1)(##1)] }}
-        {\edef\FDFvalues{\FDFvalues [(##2)(##1)] }}}% ! ##1 is shown
+     {%\addtocommalist{##1}\FDFkidlist
+      %\edef\FDFfirstvalues{\FDFfirstvalues(##1)}%
+      %\doif{##1}{#2}{\edef\FDFdefaultindex{\the\scratchcounter}}%
+      %\advance\scratchcounter\plusone
+      \doifelsenothing{##2}
+        {%\doif{##1}{#2}{\edef\FDFdefaultvalue{##1}}%
+         %\edef\FDFsecondvalues{\FDFsecondvalues(##1)}%
+         \edef\FDFvalues{\FDFvalues [(##1)(##1)] }}
+        {%\doif{##1}{#2}{\edef\FDFdefaultvalue{##2}}%
+         %\edef\FDFsecondvalues{\FDFsecondvalues(##2)}%
+         \edef\FDFvalues{\FDFvalues [(##2)(##1)] }}}% ! ##1 is shown
    \def\docommando##1%
      {\dodocommando##1=>=>\end}%
-   \@EA\processcommalist\@EA[#1]\docommando}
+   \expanded{\processcommalist[#1]}\docommando}
 
 %D This macro accepts comma separated \type{visual=>result}
 %D pairs.
@@ -1053,7 +1165,7 @@
 %D well as what resources they use. The next mechanism does that
 %D job automatically when one registers the field.
 
-\def\flushFDFnames%
+\def\flushFDFnames
   {\ifbuildFDFdictionary
      \ifx\FDFcollection\empty\else
        \ifbuildFDFencodingvector
@@ -1136,7 +1248,8 @@
 \def\FDFnameCoOb {Courier-Oblique}
 \def\FDFnameCoBO {Courier-BoldOblique}
 
-%D And a big one:
+%D And a big one: (should be run time loaded (spec-run or 
+%D so)).
 
 \def\FDFencodingvector 
   {/Type /Encoding
@@ -1186,7 +1299,7 @@
 %D And here comes the special that deals with them.
 
 \definespecial\dosetfieldstatus#1#2#3#4%
-  {\chardef\currentFDFmode=#1%
+  {\chardef\currentFDFmode #1%
    \edef\currentFDFparent {#2}%
    \edef\currentFDFkids   {#3}%
    \edef\currentFDFroot   {#4}}
@@ -1226,7 +1339,7 @@
 %D   {setFDFkids}
 %D
 %D Clones as well as radiofields (which themselves can have
-%D cloned components) need a list fo kids. The next macro
+%D cloned components) need a list of kids. The next macro
 %D builds one.
 
 \def\setFDFkids[#1][#2]% tag commalist
@@ -1252,13 +1365,13 @@
    \setFDFattributes[#6]%
    \setFDFalignment[#8]%
    \setFDFactions[#9]%
-\expanded{\escapePSstring#4}\to\FDFtext
+   \expanded{\escapePSstring#4}\to\FDFtext
    \ifcase\currentFDFmode
      \doPDFannotationobject class FDF name #1 width #2 height #3 data
        {/Subtype /Widget /T (#1) /FT /Tx
         /MaxLen \ifcase0#5 1000 \else#5 \fi
-%        /DV (#4) /V (#4) % value added
-/DV (\FDFtext) /V (\FDFtext) % value added
+       %/DV (#4) /V (#4) % value added
+        /DV (\FDFtext) /V (\FDFtext) % value added
         /Ff \FDFflag\space
         /F \FDFplus\space
         /DA (\FDFattributes)
@@ -1272,8 +1385,8 @@
        {/T (#1) /FT /Tx
         /MaxLen \ifcase0#5 1000 \else#5 \fi
         /Kids [\FDFkids]
-%        /DV (#4) /V (#4) % value added
-/DV (\FDFtext) /V (\FDFtext) % value added
+       %/DV (#4) /V (#4) % value added
+        /DV (\FDFtext) /V (\FDFtext) % value added
         /Ff \FDFflag\space
         /F \FDFplus\space
         /DA (\FDFattributes)
@@ -1282,7 +1395,7 @@
         \FDFactions}%
      \registerFDFobject{#1}%
    \or
-     \doPDFgetobjectreference{FDF}{\currentFDFparent}\PDFobjectreference
+     \doPDFgetobjectreference{FDF}\currentFDFparent\PDFobjectreference
      \global\objectreferencingtrue
      \doPDFannotationobject class FDF name kids:#1 width #2 height #3 data
        {/Subtype /Widget
@@ -1294,12 +1407,13 @@
         /Q \FDFalign\space
         \FDFactions}%
    \or
-     \doPDFgetobjectreference{FDF}{\currentFDFparent}\PDFobjectreference
+     \doPDFgetobjectreference{FDF}\currentFDFparent\PDFobjectreference
      \global\objectreferencingtrue
      \doPDFannotationobject class FDF name kids:#1 width #2 height #3 data
        {/Subtype /Widget
         /Parent \PDFobjectreference
-        /F \FDFplus}%
+        /F \FDFplus
+        \FDFactions}%
    \fi
    \egroup}
 
@@ -1310,7 +1424,7 @@
   {\bgroup
    \setFDFswitches[#6]%
    \setFDFattributes[#5]%
-   \setFDFvalues[#7]%
+   \setFDFvalues[#7][#4]%
    \setFDFactions[#8]%
    \ifcase\currentFDFmode
      \doPDFannotationobject class FDF name #1 width #2 height #3 data
@@ -1338,7 +1452,7 @@
         \FDFactions}%
      \registerFDFobject{#1}%
    \or
-     \doPDFgetobjectreference{FDF}{\currentFDFparent}\PDFobjectreference
+     \doPDFgetobjectreference{FDF}\currentFDFparent\PDFobjectreference
      \global\objectreferencingtrue
      \doPDFannotationobject class FDF name kids:#1 width #2 height #3 data
        {/Subtype /Widget
@@ -1349,12 +1463,13 @@
         \FDFsurroundings\space
         \FDFactions}%
    \or
-     \doPDFgetobjectreference{FDF}{\currentFDFparent}\PDFobjectreference
+     \doPDFgetobjectreference{FDF}\currentFDFparent\PDFobjectreference
      \global\objectreferencingtrue
      \doPDFannotationobject class FDF name kids:#1 width #2 height #3 data
        {/Subtype /Widget
         /Parent \PDFobjectreference
-        /F \FDFplus}%
+        /F \FDFplus
+        \FDFactions}%
    \fi
    \egroup}
 
@@ -1404,7 +1519,7 @@
      \registerFDFobject{#1}%
    \or
      \doFDFappearance{On}{#6}{#8}%
-     \doPDFgetobjectreference{FDF}{\currentFDFparent}\PDFobjectreference
+     \doPDFgetobjectreference{FDF}\currentFDFparent\PDFobjectreference
      \global\objectreferencingtrue
      \doPDFannotationobject class FDF name kids:#1 width #2 height #3 data
        {/Subtype /Widget
@@ -1420,7 +1535,7 @@
         \FDFactions}%
    \or
      \doFDFappearance{On}{#6}{#8}%
-     \doPDFgetobjectreference{FDF}{\currentFDFparent}\PDFobjectreference
+     \doPDFgetobjectreference{FDF}\currentFDFparent\PDFobjectreference
      \global\objectreferencingtrue
      \doPDFannotationobject class FDF name kids:#1 width #2 height #3 data
        {/Subtype /Widget
@@ -1431,7 +1546,8 @@
           /V  /\FDFdefault\space 
           /AS /\FDFdefault\space 
         \fi 
-        \FDFappearance}%
+        \FDFappearance
+        \FDFactions}%
    \fi
    \egroup}
 
@@ -1449,6 +1565,8 @@
    \doifelsenothing{#4}
      {\def\FDFdefault{Off}}
      {\def\FDFdefault{#4}}%
+\@EA\aftersplitstring\FDFdefault\at=>\to\FDFdefaultvalue
+\ifx\FDFdefaultvalue\empty\else\let\FDFdefault\FDFdefaultvalue\fi
    \ifcase\currentFDFmode
      \doFDFappearance{#1}{#7}{1}%
      \doPDFgetobjectreference{FDF}{#6}\PDFobjectreference
@@ -1472,7 +1590,7 @@
    \or
      %\doFDFappearance{#1}{#7}{1}%
      \doFDFappearance{\currentFDFparent}{#7}{1}%
-     \doPDFgetobjectreference{FDF}{\currentFDFparent}\PDFobjectreference
+     \doPDFgetobjectreference{FDF}\currentFDFparent\PDFobjectreference
      \global\objectreferencingtrue % nb
      \doPDFannotationobject class FDF name kids:#1 width #2 height #3 data
        {/Subtype /Widget
@@ -1484,27 +1602,55 @@
    \or
      %\doFDFappearance{#1}{#7}{1}%
      \doFDFappearance{\currentFDFparent}{#7}{1}%
-     \doPDFgetobjectreference{FDF}{\currentFDFparent}\PDFobjectreference
+     \doPDFgetobjectreference{FDF}\currentFDFparent\PDFobjectreference
      \global\objectreferencingtrue
      \doPDFannotationobject class FDF name kids:#1 width #2 height #3 data
        {/Subtype /Widget
         /Parent \PDFobjectreference\space
         /AS /\FDFdefault\space 
         /F \FDFplus\space
-        \FDFappearance\space}
+        \FDFappearance\space
+        \FDFactions}%
    \fi
    \egroup}
+
+%D \macros 
+%D   {setFDFstrings}
+%D
+%D This one creates a string array. 
+
+%\def\setFDFstrings[#1]%
+%  {\let\FDFstrings\empty
+%   \def\docommando##1{\edef\FDFstrings{\FDFstrings(##1)}}%
+%   \processcommacommand[#1]\docommando}
 
 \def\doFDFpresetradiorecord#1#2#3#4#5%
   {\bgroup
    \setFDFswitches[Radio,NoToggleToOff,#3]%
-   \setFDFkids[][#4]%
+   \setFDFkids[#4][]%
+%\setFDFvalues[#4][#2]%
+%\expanded{\setFDFkids[][\FDFkidlist]}%
    \setFDFactions[#5]%
    \doPDFdictionaryobject class FDF name #1 data
      {/Subtype /Widget /FT /Btn /T (#1) /Rect [0 0 0 0]
-      /DV (#2) % /V (#2)
+      % used to be this 
+      % /V (#2)
+      % then this 
+      % /DV (#2) 
+      % since this bomded in 5 
+      % /V (#2)
+      % and now finally this works 
       /H /N
-      /Ff \FDFflag\space /F \FDFplus\space /Kids [\FDFkids]
+% /opt is buggy in 5.05, only works once, sigh  
+%\ifx\FDFfirstvalues\FDFsecondvalues
+  /V /#2
+%\else
+%  /V /\FDFdefaultindex\space
+%  /Opt [\FDFsecondvalues]
+%\fi
+      /Ff \FDFflag\space 
+      /F \FDFplus\space 
+      /Kids [\FDFkids]
       \FDFactions}%
    \egroup}
 
@@ -1722,14 +1868,14 @@
 %D sure or the order in which the name and value are given
 %D (actually the reverse).
 
-\def\PERLloadFDFfields#1%
+\def\PERLloadFDFfields#1% will become obsolete soon 
   {\bgroup
    \global\let\allFDFfields\empty
    \ifrunFDFconverter
      \executesystemcommand{fdf2tex #1}%
-     \let\beginFDFobject=\relax \let\endFDFobject=\relax
-     \let\beginFDFdata  =\relax \let\endFDFdata  =\relax
-     \let\beginFDFfields=\relax \let\endFDFfields=\relax
+     \let\beginFDFobject\relax \let\endFDFobject\relax
+     \let\beginFDFdata  \relax \let\endFDFdata  \relax
+     \let\beginFDFfields\relax \let\endFDFfields\relax
      \def\FDFfield[##1]%
        {\getparameters[FDF][##1]%
         \doglobal\addtocommalist\FDFname\allFDFfields
@@ -1782,11 +1928,8 @@
 %D Whatever mechanism is used, the next macros can be used to
 %D fetch the values.
 
-\def\getFDFfield#1%
-  {\getvalue{FDFfield::#1}}
-
-\def\setFDFfield#1#2%
-  {\setevalue{FDFfield::#1}{#2}}
+\def\getFDFfield  #1{\getvalue {FDFfield::#1}}
+\def\setFDFfield#1#2{\setevalue{FDFfield::#1}{#2}}
 
 %D Of course the fields are only present when the file is
 %D loaded.
@@ -1805,13 +1948,16 @@
    \egroup}
 
 %D \macros
-%D   {sanitizePDFdocencoding}
+%D   {sanitizePDFencoding,sanitizePDFdocencoding}
 %D
 %D We already dealt with the encoding vector. Conversion from
 %D \TEX\ \ASCII\ encoding to the other one, is accomplished by
 %D the next few macros. Wach out: we don't group here.
 
 %D This will be reimplemented using the mapping mechanism.
+
+\def\enablePDFdocencoding
+  {\reducetocoding[pdfdoc]\simplifycommands}
 
 \long\def\sanitizePDFdocencoding#1\to#2%
   {\enablePDFcrlf
@@ -1828,8 +1974,7 @@
    \let^^M=\\}
 \egroup
 
-\def\enablePDFdocencoding%
-  {\reducetocoding[pdfdoc]\simplifycommands}
+\let\sanitizePDFencoding\sanitizePDFdocencoding
 
 %D A bit out of place, but useful:
 
@@ -1864,13 +2009,13 @@
    \doifundefinedelse{PDFcomment#6} 
      {\let\PDFcomment\empty}
      {\def\PDFcomment{/Name \getvalue{PDFcomment#6} }}%
-   \sanitizePDFdocencoding#8\to\PDFdata
+   \sanitizePDFencoding#8\to\PDFdata
    \setbox\scratchbox=\vbox to #3
      {\vfill
       \doPDFannotation width #2 height #3 data 
         {/Subtype /Text 
          \ifcase#5 \else/Open true\fi
-         /Contents (\PDFdata)
+         /Contents \ifPDFunicode <\PDFdata> \else(\PDFdata) \fi
          \PDFcomment
          \PDFidentifier
          \PDFattributes}}%
@@ -1909,7 +2054,7 @@
         {\let\PDFcomment\empty}
         {\presetPDFcommentappearance{#6}}}
      {\def\PDFcomment{/Name \getvalue{PDFcomment#6} }}%
-   \sanitizePDFdocencoding#8\to\PDFdata
+   \sanitizePDFencoding#8\to\PDFdata
    \setbox\scratchbox=\vbox to #3
      {\vfill
       \ifPDFpopupcomments
@@ -1938,7 +2083,7 @@
           {/Subtype /Text
            \ifcase#5 \else/Open true\fi 
            \ifdone /Popup \the\pdflastannot\space 0 R\fi
-           /Contents (\PDFdata)
+           /Contents \ifPDFunicode <\PDFdata> \else(\PDFdata) \fi
            \PDFcomment
            \PDFidentifier
            \PDFattributes}%
@@ -1948,7 +2093,7 @@
         \doPDFannotation width #2 height #3 data
           {/Subtype /Text
            \ifcase#5 \else/Open true\fi 
-           /Contents (\PDFdata)
+           /Contents \ifPDFunicode <\PDFdata> \else(\PDFdata) \fi
            \PDFcomment
            \PDFidentifier
            \PDFattributes}%
@@ -1976,7 +2121,7 @@
 \def\dopresetPDFcommentappearance#1#2%
   {\dopresetfieldsymbol{#1}%
    \dopresetfieldsymbol{#2}%
-   \setbox\scratchbox=\hbox{\symbol[#1]}%
+   \setbox\scratchbox\hbox{\symbol[#1]}%
    \edef\width {\the\wd\scratchbox}%
    \edef\height{\the\ht\scratchbox}%
    \doPDFgetobjectreference{SYM}{#1}\FDFcommentNappearance
@@ -2022,7 +2167,7 @@
 
 \def\doPDFovalbox#1#2#3#4#5#6#7% todo: \scratchdimen/\scatchbox  
   {\bgroup
-   \dimen0=#4\divide\dimen0 by 2
+   \dimen0=#4\divide\dimen0 2
    \doPDFovalcalc{0pt}{+\dimen0}\xmin
    \doPDFovalcalc{#1}{-\dimen0}\xmax
    \doPDFovalcalc{#2}{-\dimen0}\ymax
@@ -2036,10 +2181,10 @@
    \doPDFovalcalc{#5}{\zeropoint}\radius
    \edef\dostroke{#6}%
    \edef\dofill{#7}%
-   \setbox0=\hbox
+   \setbox0\hbox
      {\ifnum\dostroke\dofill>0
         \ifPDFstrokecolor\else\ifnum\dostroke=1
-          \writestatus{\m!colors}{pdf stroke color will fail}\wait
+          \writestatus\m!colors{pdf stroke color will fail}\wait
         \fi\fi
         \PDFcode
           {q
@@ -2077,7 +2222,7 @@
 \def\doPDFstartgraymode#1%
   {\PDFcode{#1 g\ifPDFstrokecolor\space#1 G\fi}}
 
-\def\doPDFstopgraymode%
+\def\doPDFstopgraymode
   {\PDFcode{0 g\ifPDFstrokecolor\space0 G\fi}}
 
 \def\doPDFstartrgbcolormode#1#2#3%
@@ -2089,8 +2234,36 @@
 \def\doPDFstartgraycolormode#1%
   {\PDFcode{#1 g\ifPDFstrokecolor\space#1 G\fi}}
 
-\def\doPDFstopcolormode%
+\def\doPDFstartspotcolormode#1#2%
+  {\PDFcode{/#1 CS #2 SC /#1 cs #2 sc}}
+
+\def\doPDFstopcolormode
   {\PDFcode{0 g\ifPDFstrokecolor\space0 G\fi}}
+
+%D We need to register the spot colors and their fallbacks.
+
+% we cannot use /DeviceN since GS <=7.21 breaks on it
+% and Jaws does not handle it at all {[/DeviceN [/All|/None] 
+% /Device#2 \the\pdflastobj\space0 R]} so we use separation 
+% colors that work and print ok
+
+\def\doPDFregistersomespotcolor#1#2#3#4%
+  {\writestatus\m!systems{missing spot color definition}\wait}
+
+\def\doPDFregisterrgbspotcolor#1#2#3#4%
+  {\doPDFregistersomespotcolor
+     {#1}{RGB}{[0.0 1.0 0.0 1.0 0.0 1.0]}%
+     {{dup #2 mul exch dup #3 mul exch #4 mul}}}
+
+\def\doPDFregistercmykspotcolor#1#2#3#4#5%
+  {\doPDFregistersomespotcolor
+     {#1}{CMYK}{[0.0 1.0 0.0 1.0 0.0 1.0 0.0 1.0]}%
+     {{dup #2 mul exch dup #3 mul exch dup #4 mul exch #5 mul}}}
+
+\def\doPDFregistergrayspotcolor#1#2%
+  {\doPDFregistersomespotcolor
+     {#1}{Gray}{[0.0 1.0]}%
+     {{pop}}}
 
 %D \macros
 %D   {doPDFstartrotation,doPDFstoprotation}
@@ -2139,13 +2312,13 @@
 %D When producing output for an image setter, sometimes negative
 %D output is needed.
    
-\def\doPDFstartnegative%
+\def\doPDFstartnegative
   {\ifx\initializePDFnegative\undefined\else
      \initializePDFnegative
      \PDFcode{/GSnegative gs}%
    \fi}
 
-\def\doPDFstopnegative%
+\def\doPDFstopnegative
   {\ifx\initializePDFnegative\undefined\else
      \PDFcode{/GSpositive gs}%
    \fi}
@@ -2165,10 +2338,10 @@
 
 \def\dodoPDFstarttransparency#1#2%
   {\presetPDFtransparency{#1}{#2}% 
-   \PDFcode{\PDFtransparencyidentifier\space gs}}
+   \PDFcode{\PDFtransparencyidentifier\space gs }}
 
 \def\dodoPDFstoptransparency
-  {\PDFcode{/Tr0 gs}}
+  {\PDFcode{/Tr0 gs }}
 
 \def\doPDFstarttransparency
   {\ifPDFtransparencysupported
@@ -2195,8 +2368,8 @@
 
 %D New trickery:
 
-\definespecial\dostartgraphicgroup{\pdfliteral{q}}
-\definespecial\dostopgraphicgroup {\pdfliteral{Q}}
+\definespecial\dostartgraphicgroup{\PDFcode{q}}
+\definespecial\dostopgraphicgroup {\PDFcode{Q}}
 
 %D And that was all.
 

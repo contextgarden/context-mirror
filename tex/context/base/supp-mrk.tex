@@ -210,10 +210,10 @@
   {\bgroup
    \makemarknames{#1}%
    #2%
-   \global\letvalue{\@@markcurrent@@\markname}\empty
-   \global\letvalue{\@@marktop@@    \markname}\empty
-   \global\letvalue{\@@markfirst@@  \markname}\empty
-   \global\letvalue{\@@markbot@@    \markname}\empty
+   \letgvalueempty{\@@markcurrent@@\markname}%
+   \letgvalueempty{\@@marktop@@    \markname}%
+   \letgvalueempty{\@@markfirst@@  \markname}%
+   \letgvalueempty{\@@markbot@@    \markname}%
    \setgvalue{\marklist}{\domark0{}}% beware of halfway definitions
    \long\gdef#1{\addmarker#1}%
    \egroup}
@@ -257,17 +257,17 @@
   {\bgroup
    \makemarknames{#1}%
    \setgvalue{\@@markcurrent@@\markname}{#2}%
-   \global\advance\currentmarker by 1
+   \global\advance\currentmarker 1
    \normalmark{\the\currentmarker}%
    \!!toksa\@EA\@EA\@EA{\csname\marklist\endcsname}%
    \ifexpandmarks
-     \setxvalue{\marklist}%
+     \setxvalue\marklist
        {\the\!!toksa
         \noexpand\domark
         \the\currentmarker{#2}}%
    \else
      \!!toksb\@EA{#2}% one level, why ? handy for cs 
-     \setxvalue{\marklist}%
+     \setxvalue\marklist
        {\the\!!toksa
         \noexpand\domark
         \the\currentmarker{\the\!!toksb}}%
@@ -337,7 +337,7 @@
    \let\else\relax
    %
    \let\domark\doscanmarks
-   \getvalue{\marklist}\lastmark
+   \getvalue\marklist\lastmark
    % \global\@EA\let\csname\marklist\endcsname\savedmarklist
    \egroup}
 
@@ -376,24 +376,34 @@
   {\!!toksc\emptytoks}
 
 \endTEX
-
+
 %D The \ETEX\ way of doing things \unknown 
 
 \beginETEX \marks cum suis 
 
 \newtoks \listofmarks 
 
-\def\@@mrk{mrk:} \def\@@trk{trk:} \def\@@crk{crk:}
+\def\@@prk{prk:} 
+\def\@@mrk{mrk:} 
+\def\@@trk{trk:} 
+\def\@@frk{frk:} 
+\def\@@brk{brk:} 
+\def\@@crk{crk:}
 
 %D We will use two state variables per mark, one to signal 
 %D that a new mark value is set, and one to trigger (on the 
 %D next page) the setting of the top mark. 
 
-\def\checkedtopmarks#1{\csname\@@trk\string#1\endcsname}
-\def\thecurrentmarks#1{\csname\@@crk\string#1\endcsname}
+\def\checkedtopmarks  #1{\csname\@@trk\string#1\endcsname}
+\def\checkedfirstmarks#1{\csname\@@frk\string#1\endcsname}
+\def\checkedbotmarks  #1{\csname\@@brk\string#1\endcsname}
+\def\thecurrentmarks  #1{\csname\@@crk\string#1\endcsname}
 
 \long\def\setmark#1%
-  {\global\@EA\mathchardef\csname\@@mrk\string#1\endcsname\zerocount
+  {%\writestatus{marks}{setting \string#1}\wait
+   \global\@EA\chardef\csname\@@mrk\string#1\endcsname\plusone
+  %\@EA\normalmarks\csname\@@prk\string#1\endcsname{1}%
+   \@EA\normalmarks\csname\@@prk\string#1\endcsname{\realfolio}%
    \ifexpandmarks\@EA\setexpandedmark\else\@EA\setnormalmark\fi#1}
 
 \def\setexpandedmark#1#2% % marks expand anyway 
@@ -405,33 +415,45 @@
    \@EA\xdef\csname\@@crk\string#1\endcsname{\the\scratchtoks}%
    \normalmarks#1{\the\scratchtoks}} % one level expansion 
 
-\def\checktopmark#1% is called often, so its minimized  
-  {\ifcase\csname\@@mrk\string#1\endcsname\else
-     \@EA\dochecktopmark\@EA#1%
-   \fi}
+\def\checktopmark#1% 
+  {%\writestatus{marks}{checking \string#1}\wait
+   \ifcase\csname\@@mrk\string#1\endcsname\else\dochecktopmark#1\fi}
 
 \def\dochecktopmark#1% 
-  {\ifnum\realpageno>\csname\@@mrk\string#1\endcsname\relax 
-     \@EA\gdef\csname\@@trk\string#1\endcsname{\normalbotmarks#1}%
+  {\ifcase0\@EA\normalfirstmarks\csname\@@prk\string#1\endcsname\else
+     \@EA\ifx\csname\@@frk\string#1\endcsname\empty
+       \@EA\gdef\csname\@@frk\string#1\endcsname{\normalfirstmarks#1}%
+       \@EA\gdef\csname\@@brk\string#1\endcsname{\normalbotmarks  #1}%
+     \else
+       \@EA\gdef\csname\@@trk\string#1\endcsname{\normaltopmarks  #1}%
+       \global\@EA\chardef\csname\@@mrk\string#1\endcsname\zerocount
+     \fi
    \fi}
 
-\def\resetmark#1% we cannot use \normalmarks#1{}}
-  {\@EA\mathchardef\csname\@@mrk\string#1\endcsname\realfolio
-   \global\@EA\let\csname\@@trk\string#1\endcsname\empty}
+\def\resetmark#1% we cannot use \normalmarks#1{} 
+  {\global\@EA\chardef\csname\@@mrk\string#1\endcsname\zerocount
+   \@EA\normalmarks\csname\@@prk\string#1\endcsname{0}%
+   \global\@EA\let\csname\@@trk\string#1\endcsname\empty
+   \global\@EA\let\csname\@@frk\string#1\endcsname\empty
+   \global\@EA\let\csname\@@brk\string#1\endcsname\empty
+   \global\@EA\let\csname\@@crk\string#1\endcsname\empty}
 
 \def\definenewmark#1%
-  {\ifcsname\@@mrk\string#1\endcsname\else % this is etex -) 
-     \newmarks#1\appendtoks\checktopmark#1\to\listofmarks 
+  {\ifcsname\@@prk\string#1\endcsname\else % this is etex -) 
+     \newmarks#1\doglobal\appendtoks\checktopmark#1\to\listofmarks 
+     \@EA\newmarks\csname\@@prk\string#1\endcsname % status mark 
    \fi
-   \global\@EA\let\csname\@@crk\string#1\endcsname\empty
    \global\@EA\mathchardef\csname\@@mrk\string#1\endcsname\zerocount
-   \@EA\gdef\csname\@@trk\string#1\endcsname{\normaltopmarks#1}}
+   \global\@EA\let\csname\@@crk\string#1\endcsname\empty
+   \@EA\gdef\csname\@@trk\string#1\endcsname{\normaltopmarks  #1}% 
+   \@EA\gdef\csname\@@frk\string#1\endcsname{\normalfirstmarks#1}%
+   \@EA\gdef\csname\@@brk\string#1\endcsname{\normalbotmarks  #1}}
 
 \let \newmark           \definenewmark  
-\let \newpersistentmark \definenewmark  
+\let \newpersistentmark \newmarks % \definenewmark  
 \let \normalsetmark     \setmark
 
-\def\setallmarks{\the\listofmarks}
+\def\getallmarks{\the\listofmarks} % \def\setallmarks{\the\listofmarks}
 
 %D In \type {page-ini} or \type {core-mar} we should say: 
 %D
@@ -442,12 +464,12 @@
 
 \let\getcurrentmark     \thecurrentmarks
 \let\gettopmark         \checkedtopmarks
-\let\getbottommark      \normalbotmarks
-\let\getfirstmark       \normalfirstmarks
+\let\getbottommark      \checkedbotmarks     % \normalbotmarks
+\let\getfirstmark       \checkedfirstmarks   % \normalfirstmarks
 \let\getsplitbottommark \normalsplitbotmarks
 \let\getsplitfirstmark  \normalsplitfirstmarks
 
-\let\getbotmark         \normalbotmarks
+\let\getbotmark         \getbottommark      
 \let\getsplitbotmark    \normalsplitbotmarks
 \let\getsplittopmark    \normalsplitfirstmarks
 
@@ -541,5 +563,31 @@
 %D assigned boxes, the list can grow quite big, and processing
 %D can slow down considerably. This drawback is removed in 
 %D \ETEX\ mode.  
+
+\beginTEX
+
+\let\rawnewmark          \newmark
+\let\rawdefinemark       \newmark
+\let\rawsetmark          \setmark
+\let\rawgettopmark       \gettopmark
+\let\rawgetfirstmark     \getfirstmark
+\let\rawgetbotmark       \getbotmark
+\let\rawgetsplitbotmark  \normalsplitbotmark   
+\let\rawgetsplitfirstmark\normalsplitfirstmark  
+
+\endTEX
+
+\beginETEX
+
+\let\rawnewmark          \newmarks
+\let\rawdefinemark       \newmarks
+\let\rawsetmark          \normalmarks
+\let\rawgettopmark       \normaltopmarks
+\let\rawgetfirstmark     \normalfirstmarks
+\let\rawgetbotmark       \normalbotmarks
+\let\rawgetsplitbotmark  \normalsplitbotmarks   
+\let\rawgetsplitfirstmark\normalsplitfirstmarks  
+
+\endETEX
 
 \protect \endinput

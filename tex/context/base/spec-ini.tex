@@ -285,9 +285,9 @@
 %D The following command can be used to show the loaded list
 %D of specials.
 
-\def\preloadspecials%
-  {\doifsomething{\preloadedspecials}
-     {\showmessage{\m!specials}{1}{\preloadedspecials}}}
+\def\preloadspecials
+  {\doifsomething\preloadedspecials
+     {\showmessage\m!specials1\preloadedspecials}}
 
 %D \macros
 %D   {startspecials}
@@ -309,11 +309,11 @@
    \unprotect
    \addtocommalist\currentspecial\preloadedspecials}
 
-\def\startspecials%
+\def\startspecials
   {\localpushmacro\currentspecial
    \dodoubleempty\dostartspecials}
 
-\def\stopspecials%
+\def\stopspecials
   {\localpopmacro\currentspecial
    \protect}
  
@@ -339,22 +339,22 @@
 \let\@@allspecials=\empty
 
 \def\doinstallspecial[#1][#2][#3]%
-  {\setvalue{\@@speclst@@\string#1}{}%
+  {\letvalue{\@@speclst@@\string#1}\empty
    \setvalue{\@@speccat@@\string#1}{#2}%
    \setvalue{\@@specarg@@\string#1}{#3}%
    \addtocommalist{\string#1}\@@allspecials
    \def#1{\executespecial#1}}
 
-\def\installspecial%
+\def\installspecial
   {\dotripleargument\doinstallspecial}
 
-\def\resetspecials%
+\def\resetspecials
   {\the\everyresetspecials
    \def\docommando##1%
      {\letvalue{\@@speclst@@##1}\empty}%
    \processcommacommand[\@@allspecials]\docommando
    \ifx\preloadedspecials\empty \else
-     \showmessage{\m!specials}{3}{\preloadedspecials}%
+     \showmessage\m!specials3\preloadedspecials
      \let\preloadedspecials\empty
    \fi}
 
@@ -373,15 +373,15 @@
 
 \def\definespecial#1%
   {\ifx#1\undefined
-     \showmessage{\m!specials}{4}{\string#1}%
-     \def\next%
+     \showmessage\m!specials4{\string#1}%
+     \def\next
        {\def\@@illegalspecial@@}%
    \else
-     \def\next%
-       {\doifelse{\getvalue{\@@speccat@@\string#1}}{or}
+     \def\next
+       {\doifelsevalue{\@@speccat@@\string#1}{or}
           {\edef\@@newspeclst@@{\currentspecial}}
           {\edef\@@newspeclst@@{\getvalue{\@@speclst@@\string#1}}%
-           \addtocommalist{\currentspecial}\@@newspeclst@@}%
+           \addtocommalist\currentspecial\@@newspeclst@@}%
         \setevalue{\@@speclst@@\string#1}{\@@newspeclst@@}%
         \setvalue{\currentspecial\string#1}}%
    \fi
@@ -394,7 +394,7 @@
 %D This command is only permitted outside the definition part.
 
 \def\dousespecials#1% 
-  {\doifelse{#1}{\v!reset}
+  {\doifelse{#1}\v!reset
      {\resetspecials}
      {\doifdefinedelse{\@@specfil@@#1}
         {\edef\currentspecialfile{\getvalue{\@@specfil@@#1}}}
@@ -408,7 +408,7 @@
 
 \def\usespecials[#1]%
   {\ifnum\realpageno<2
-     \doifelsenothing{\currentspecial}
+     \doifelsenothing\currentspecial
        {\processcommalist[#1]\dousespecials}
        {\showmessage\m!specials6\empty}%
    \fi}
@@ -572,7 +572,7 @@
 
   \def\doinstallspecial[#1][#2][#3]%
     {\appendtoks\forgetspecial#1{#3}\to\everyresetspecials
-     \@EA\chardef\csname\@@speclst@@\string#1\endcsname0 
+     \@EA\chardef\csname\@@speclst@@\string#1\endcsname\zerocount
      \forgetspecial#1{#3}}
 
   \def\forgetspecial#1#2%
@@ -589,7 +589,7 @@
         \let#1\gobbleninearguments  \or
         \let#1\gobbletenarguments   \fi}
 
-  \def\resetspecials%
+  \def\resetspecials
     {\the\everyresetspecials
      \let\preloadedspecials\empty}
 
@@ -637,7 +637,7 @@
 %D
 %D In a \type {spec-def} you can find some examples. 
 
-\def\defineoutput%
+\def\defineoutput
   {\dodoubleargument\dodefineoutput}
 
 \def\dodefineoutput[#1][#2]%
@@ -648,7 +648,7 @@
      {\processcommacommand[\getvalue{\??ui#1}]\dousespecials}
      {\doifdefinedelse{\@@specfil@@#1}
         {\dousespecials{#1}}
-        {\showmessage{\m!specials}{7}{#1}}}}
+        {\showmessage\m!specials7{#1}}}}
 
 \def\setupoutput[#1]%
   {\ifnum\realpageno<2 % new 

@@ -64,12 +64,11 @@
 
 \long\def\ifnocontextobject#1\do%
   {\ifx#1\undefined
-     \let\next=\definecontextobject
+     \expandafter\definecontextobject
    \else
      %\writestatus{system}{beware of conflicting \string#1}%
-     \let\next=\gobblecontextobject
-   \fi
-   \next}
+     \expandafter\gobblecontextobject
+   \fi}
 
 %D \macros 
 %D   {beginETEX,beginTEX}
@@ -108,7 +107,7 @@
 
 \ifnocontextobject \protect \do
 
-  \let\protect=\relax
+  \let\protect\relax
 
 \fi
 
@@ -160,7 +159,18 @@
 \ifnocontextobject \scratchbox     \do \newbox    \scratchbox     \fi
 \ifnocontextobject \scratchread    \do \newread   \scratchread    \fi
 \ifnocontextobject \scratchwrite   \do \newwrite  \scratchwrite   \fi
+
 \ifnocontextobject \zeropoint      \do \newdimen  \zeropoint      \fi
+\ifnocontextobject \zerocount      \do \chardef   \zerocount=0    \fi
+\ifnocontextobject \plusone        \do \chardef   \plusone  =1    \fi
+\ifnocontextobject \minusone       \do \newcount  \minusone       \fi
+
+\ifnocontextobject \thousandpoint  \do \newdimen  \thousandpoint  \fi
+
+\thousandpoint=1000pt 
+\minusone     = -1 
+
+\ifnocontextobject \emptytoks      \do \newtoks   \emptytoks      \fi
 
 \ifnocontextobject \nextbox   \do \newbox   \nextbox   \fi
 \ifnocontextobject \nextdepth \do \newdimen \nextdepth \fi
@@ -189,21 +199,27 @@
 \ifnocontextobject \@@active     \do \chardef\@@active     = 13 \fi
 \ifnocontextobject \@@comment    \do \chardef\@@comment    = 14 \fi
 
+\def\s!sp{sp}
+\def\s!pt{pt}
+\def\s!bp{bp}
+
 %D \macros 
 %D   {@EA,expanded,expandoneargafter,expandtwoargsafter}
 %D
 %D Also needed: 
 
-\let\@EA=\expandafter
+\let\@EA=\expandafter \let\@@expanded\empty
 
 \def\expanded#1%
-  {\edef\@@expanded{\noexpand#1}\@@expanded}
+  {\long\xdef\@@expanded{\noexpand#1}\@@expanded}
 
 \def\expandoneargafter#1#2%
   {\@EA#1\@EA{#2}}
 
 \def\expandtwoargsafter#1#2#3%
   {\@EA\@EA\@EA#1\@EA\@EA\@EA{\@EA#2\@EA}\@EA{#3}}
+
+\def\@EAEAEA{\@EA\@EA\@EA}
 
 %D \macros
 %D   {everyline,EveryLine,EveryPar}
@@ -215,6 +231,11 @@
 \ifnocontextobject \everyline \do \newtoks\everyline        \fi
 \ifnocontextobject \EveryPar  \do \let\EveryPar =\everypar  \fi
 \ifnocontextobject \EveryLine \do \let\EveryLine=\everyline \fi
+
+%D \macros
+%D   {globallet}
+
+\def\globallet{\global\let}
 
 %D \macros
 %D   {!!...}
@@ -237,6 +258,7 @@
 %D Furthermore it saves memory.
 
 \ifnocontextobject \!!zeropoint   \do \def\!!zeropoint   {0pt}    \fi
+\ifnocontextobject \!!zerocount   \do \def\!!zerocount   {0}      \fi
 \ifnocontextobject \!!tenthousand \do \def\!!tenthousand {10000}  \fi
 
 \ifnocontextobject \!!width       \do \def\!!width       {width}  \fi
@@ -283,7 +305,9 @@
 \fi
 
 %D \macros
-%D   {setvalue,setevalue,setxvalue,getvalue,letvalue,setgvalue}
+%D   {setvalue,setevalue,setxvalue,,setgvalue,
+%D    getvalue,
+%D    letvalue,letgvalue}
 %D
 %D The next two macros expand their argument to
 %D \type{\argument}. The first one is used to define macro's
@@ -297,7 +321,7 @@
   \def\setxvalue#1{\expandafter\xdef\csname#1\endcsname}
   \def\getvalue #1{\csname#1\endcsname}
   \def\letvalue #1{\expandafter\let\csname#1\endcsname}
-
+  \def\letgvalue#1{\global\expandafter\let\csname#1\endcsname}
 \fi
 
 %D \macros
@@ -309,7 +333,7 @@
 
 \ifnocontextobject \unexpanded \do
 
-  \let\unexpanded=\relax
+  \let\unexpanded\relax
 
 \fi
 
@@ -399,7 +423,7 @@
        \fileprocessedtrue
        \gdef\dofinishfile% 
          {\closein#1\relax
-          \global\let\doprocessline=\relax}%
+          \global\let\doprocessline\relax}%
        \gdef\doprocessline%
          {\ifeof#1%
             \dofinishfile
@@ -464,7 +488,7 @@
 %D Some \CONTEXT\ low level macros can have a \type{\doglobal}
 %D prefix. Let's just forget about that here:
 
-\ifnocontextobject \doglobal \do \let\doglobal=\relax  \fi
+\ifnocontextobject \doglobal \do \let\doglobal\relax  \fi
 
 %D The next obscure one is needed in the generic verbatim
 %D environment. When we end up with more of these, it's time
@@ -628,6 +652,22 @@
 %D New. 
 
 \let\donothing\empty
+
+%D Also new: 
+
+\def\letempty             #1{\let#1\empty}
+\def\globalletempty#1{\global\let#1\empty}
+
+\def\letvalueempty        #1{\expandafter\let\csname#1\endcsname\empty}
+\def\letgvalueempty#1{\global\expandafter\let\csname#1\endcsname\empty}
+
+%D Sigh 
+
+\def\settrue #1{\chardef#1\zerocount}
+\def\setfalse#1{\chardef#1\plusone}
+
+\let\newconditional = \setfalse
+\let\ifconditional  = \ifcase
 
 %D That's it. Please forget this junk and take a look at how
 %D it should be done.

@@ -18,7 +18,7 @@
 \definefamilysynonym [default] [lcgreek]    [mi]
 \definefamilysynonym [default] [ucgreek]    [mr]
 \definefamilysynonym [default] [vargreek]   [mi]
-\definefamilysynonym [default] [blackboard] [mr]
+%definefamilysynonym [default] [blackboard] [mb] % extra font 
 
 \startmathcollection [default]
 
@@ -89,45 +89,57 @@
 
 \stopmathcollection
 
-% The \mbox macro is an alternative for \hbox with a 
+% The \mfunction macro is an alternative for \hbox with a 
 % controlable font switch. 
 
 \startmathcollection[default]
 
-\definemathcommand [arccos]  [nolop] {\mbox{arccos}}
-\definemathcommand [arcsin]  [nolop] {\mbox{arcsin}}
-\definemathcommand [arctan]  [nolop] {\mbox{arctan}}
-\definemathcommand [arg]     [nolop] {\mbox{arg}}
-\definemathcommand [cosh]    [nolop] {\mbox{cosh}}
-\definemathcommand [cos]     [nolop] {\mbox{cos}}
-\definemathcommand [coth]    [nolop] {\mbox{coth}}
-\definemathcommand [cot]     [nolop] {\mbox{cot}}
-\definemathcommand [csc]     [nolop] {\mbox{csc}}
-\definemathcommand [deg]     [nolop] {\mbox{deg}}
-\definemathcommand [det]     [limop] {\mbox{det}}
-\definemathcommand [dim]     [nolop] {\mbox{dim}}
-\definemathcommand [exp]     [nolop] {\mbox{exp}}
-\definemathcommand [gcd]     [limop] {\mbox{gcd}}
-\definemathcommand [hom]     [nolop] {\mbox{hom}}
-\definemathcommand [inf]     [limop] {\mbox{inf}}
-\definemathcommand [injlim]  [limop] {\mbox{inj\,lim}}
-\definemathcommand [ker]     [nolop] {\mbox{ker}}
-\definemathcommand [lg]      [nolop] {\mbox{lg}}
-\definemathcommand [liminf]  [limop] {\mbox{lim\,inf}}
-\definemathcommand [limsup]  [limop] {\mbox{lim\,sup}}
-\definemathcommand [lim]     [limop] {\mbox{lim}}
-\definemathcommand [ln]      [nolop] {\mbox{ln}}
-\definemathcommand [log]     [nolop] {\mbox{log}}
-\definemathcommand [max]     [limop] {\mbox{max}}
-\definemathcommand [min]     [limop] {\mbox{min}}
-\definemathcommand [projlim] [limop] {\mbox{proj\,lim}}
-\definemathcommand [Pr]      [limop] {\mbox{Pr}}
-\definemathcommand [sec]     [nolop] {\mbox{sec}}
-\definemathcommand [sinh]    [nolop] {\mbox{sinh}}
-\definemathcommand [sin]     [nolop] {\mbox{sin}}
-\definemathcommand [sup]     [limop] {\mbox{sup}}
-\definemathcommand [tanh]    [nolop] {\mbox{tanh}}
-\definemathcommand [tan]     [nolop] {\mbox{tan}}
+\definemathcommand [arccos]  [nolop] {\mfunction{arccos}}
+\definemathcommand [arcsin]  [nolop] {\mfunction{arcsin}}
+\definemathcommand [arctan]  [nolop] {\mfunction{arctan}}
+\definemathcommand [arg]     [nolop] {\mfunction{arg}}
+\definemathcommand [cosh]    [nolop] {\mfunction{cosh}}
+\definemathcommand [cos]     [nolop] {\mfunction{cos}}
+\definemathcommand [coth]    [nolop] {\mfunction{coth}}
+\definemathcommand [cot]     [nolop] {\mfunction{cot}}
+\definemathcommand [csc]     [nolop] {\mfunction{csc}}
+\definemathcommand [deg]     [nolop] {\mfunction{deg}}
+\definemathcommand [det]     [limop] {\mfunction{det}}
+\definemathcommand [dim]     [nolop] {\mfunction{dim}}
+\definemathcommand [exp]     [nolop] {\mfunction{exp}}
+\definemathcommand [gcd]     [limop] {\mfunction{gcd}}
+\definemathcommand [hom]     [nolop] {\mfunction{hom}}
+\definemathcommand [inf]     [limop] {\mfunction{inf}}
+\definemathcommand [injlim]  [limop] {\mfunction{inj\,lim}}
+\definemathcommand [ker]     [nolop] {\mfunction{ker}}
+\definemathcommand [lg]      [nolop] {\mfunction{lg}}
+\definemathcommand [liminf]  [limop] {\mfunction{lim\,inf}}
+\definemathcommand [limsup]  [limop] {\mfunction{lim\,sup}}
+\definemathcommand [lim]     [limop] {\mfunction{lim}}
+\definemathcommand [ln]      [nolop] {\mfunction{ln}}
+\definemathcommand [log]     [nolop] {\mfunction{log}}
+\definemathcommand [median]  [limop] {\mfunction{median}}
+\definemathcommand [max]     [limop] {\mfunction{max}}
+\definemathcommand [min]     [limop] {\mfunction{min}}
+\definemathcommand [projlim] [limop] {\mfunction{proj\,lim}}
+\definemathcommand [Pr]      [limop] {\mfunction{Pr}}
+\definemathcommand [sec]     [nolop] {\mfunction{sec}}
+\definemathcommand [sinh]    [nolop] {\mfunction{sinh}}
+\definemathcommand [sin]     [nolop] {\mfunction{sin}}
+\definemathcommand [sup]     [limop] {\mfunction{sup}}
+\definemathcommand [tanh]    [nolop] {\mfunction{tanh}}
+\definemathcommand [tan]     [nolop] {\mfunction{tan}}
+
+\stopmathcollection
+
+\startmathcollection[default]
+
+\definemathcommand [integers]       {\mfunction{Z}}
+\definemathcommand [reals]          {\mfunction{R}}
+\definemathcommand [rationals]      {\mfunction{Q}}
+\definemathcommand [naturalnumbers] {\mfunction{N}}
+\definemathcommand [complexes]      {\mfunction{C}}
+\definemathcommand [primes]         {\mfunction{P}}
 
 \stopmathcollection
 
@@ -309,6 +321,9 @@
 \definemathcommand [ne]     {\neq}
 \definemathcommand [le]     {\leq}
 \definemathcommand [ge]     {\geq}
+\definemathcommand [eq]     {=}
+\definemathcommand [gt]     {>}
+\definemathcommand [lt]     {<}
 \definemathcommand [gets]   {\leftarrow}
 \definemathcommand [owns]   {\ni}
 \definemathcommand [to]     {\rightarrow}
@@ -497,9 +512,12 @@
 \def\{{\lbrace} 
 \def\}{\rbrace} 
 
-\def\Bbb#1{{\fam\purefamily{blackboard}\relax#1}}  
-\def\mit   {\fam\purefamily{mitfamily}}
-\def\cal   {\fam\purefamily{calfamily}}
+%def\bbd{\fam\purefamily{blackboard}}  
+%def\cal{\fam\purefamily{calfamily}}
+
+\def\mit{\fam\purefamily{mitfamily}}
+
+\def\Bbb{\blackboard} % conforming amstex 
 
 \startmathcollection[default]
 

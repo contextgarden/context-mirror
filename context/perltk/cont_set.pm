@@ -12,6 +12,8 @@
 #C therefore copyrighted by \PRAGMA. See licen-en.pdf for 
 #C details. 
 
+# todo: tacos speed patch 
+
 #D As always: thanks to Taco and Tobias for testing this 
 #D module and providing suggestions and code snippets as 
 #D well as haunting bugs.  
@@ -81,13 +83,34 @@ my $c_horizontal = 24 ;
 #D The main window is not resizable, but the text area and 
 #D command list will have scrollbars. 
 
+my %lw ; # stack of lists 
+
 my $mw = MainWindow -> new ( -title => 'ConTeXt commands' ) ;
 
-$mw -> resizable ('n', 'n') ; 
+$mw -> withdraw() ; $mw -> resizable ('y', 'y') ; 
 
 sub SetupWindow { return $mw } ; 
 
-my $sw = $mw -> Scrolled (                'ROText'      ,
+my $bw = $mw -> Frame () ; # buttons 
+my $tw = $mw -> Frame () ; # sw + fw 
+my $fw = $tw -> Frame () ; # string + list 
+
+my $request  = $fw -> Entry (       -font => $textfont , 
+                              -background => 'ivory1' ,
+                                   -width => $c_horizontal ) ; 
+
+my $cw       = $fw -> Scrolled (             'Listbox'     ,
+                              -scrollbars => 'e'           ,
+                                    -font => $textfont     ,
+                                   -width => $c_horizontal ,  
+                        -selectbackground => 'gray'        ,
+                              -background => 'ivory1'      ,
+                              -selectmode => 'browse'      ) ;
+
+$cw      -> pack ( -side => 'bottom' , -fill => 'both' , -expand => 1 ) ;
+$request -> pack ( -side => 'top'    , -fill => 'x' ) ; 
+
+my $sw = $tw -> Scrolled (                'ROText'      ,
                            -scrollbars => 'se'          ,
                                -height => $s_vertical   ,  
                                 -width => $s_horizontal ,  
@@ -95,36 +118,20 @@ my $sw = $mw -> Scrolled (                'ROText'      ,
                            -background => 'ivory1'      ,
                                  -font => $textfont     ) ;
 
-my $cw = $mw -> Scrolled (                'Listbox'     ,
-                           -scrollbars => 'e'           ,
-                                 -font => $textfont     ,
-                                -width => $c_horizontal ,  
-                     -selectbackground => 'gray'        ,
-                           -background => 'ivory1'      ,
-                           -selectmode => 'browse'      ) ;
-
-#D The (optional) file buttons are packed in a frame. 
-
-my $fw = $mw -> Frame () ; 
-
-my %lw ; 
-
-#D We can search for commands, using: 
-
-my $request  = $fw -> Entry (       -font => $textfont , 
-                              -background => 'ivory1' ,
-                                   -width => 20 ) ;
 
 #D And the whole bunch of widgets are packed in the main 
 #D window. 
 
-$fw -> pack (   -fill => 'x'    ,
-                -side => 'top'  ) ; 
-$sw -> pack (  #-fill => 'both' , 
-             #-expand => 1      ,
-                -side => 'left' ) ;
-$cw -> pack (   -fill => 'both' , 
-              -expand => 1      ) ;
+sub pack_them_all 
+  { $sw -> pack ( -side => 'left'  , -fill => 'both' , -expand => 1 ) ;
+    $fw -> pack ( -side => 'right' , -fill => 'y'    , -expand => 0 ) ; 
+    $bw -> pack ( -side => 'top'   , -fill => 'x'    , -anchor => 'w'  , -expand => 1 ) ;
+    $tw -> pack ( -side => 'bottom', -fill => 'both' , -expand => 1 ) }
+
+sub unpack_them_all 
+  { }
+
+pack_them_all ; 
 
 #D We scan for available setup files, with suffix \type {tws}.
 #D These should be somewhere on the system, grouped in one
@@ -155,11 +162,25 @@ sub setups_found
     else 
       { return 0 } } 
 
+#D A hide button 
+
+sub show_hide_button
+  { my $hb = $bw -> Button (     -text => "hide" ,
+                                 -font => $buttonfont    , 
+                               command => \&hide_widget  ) ;
+    $hb -> pack ( -padx => '2p', 
+                  -pady => '2p', 
+                  -side => 'right' ) } 
+
+sub hide_widget 
+  { $mw -> withdraw() } 
+
 #D The setup files can be shown and chosen. 
 
 sub show_setups 
-  { foreach (@setup_files)
-      { $lw{$_} = $fw -> Radiobutton (     -text => lc $_          , 
+  { unpack_them_all ; 
+    foreach (@setup_files)
+      { $lw{$_} = $bw -> Radiobutton (     -text => lc $_          , 
                                           -value => $_             , 
                                            -font => $buttonfont    , 
                                     -selectcolor => 'ivory1'       ,
@@ -169,9 +190,7 @@ sub show_setups
         $lw{$_} -> pack ( -padx => '2p', 
                           -pady => '2p', 
                           -side => 'left' ) } 
-       $request -> pack ( -padx => '6p', 
-                          -pady => '2p', 
-                          -side => 'left' ) }
+    pack_them_all }
 
 $cw -> bind ('<B1-Motion>', \&update_setup ) ;
 $cw -> bind ('<1>'        , \&update_setup ) ;
@@ -264,7 +283,8 @@ sub load_setup
     update_setup } 
 
 sub load_setups 
-  { foreach my $setup (@setup_files) { load_setup ($setup) } } 
+  { foreach my $setup (@setup_files) { load_setup ($setup) } ;
+    $mw -> deiconify() }
 
 #D The core of this module deals with transforming the 
 #D definitions like shown earlier. Details on the format 

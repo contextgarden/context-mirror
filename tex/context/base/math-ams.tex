@@ -15,7 +15,7 @@
 
 % maybe we should just include these into the default tex one
 
-\definefamilysynonym [ams] [blackboard] [mb]
+%definefamilysynonym [ams] [blackboard] [mb]
 
 \startmathcollection [default] % [ams]
 
@@ -33,7 +33,7 @@
 
 \stopmathcollection
 
-\startmathcollection[default]
+\startmathcollection[default] % [ams] 
 
 \definemathsymbol [internalAnd] [rel] [operators] ["26]
 
@@ -176,6 +176,17 @@
 \definemathsymbol [circledcirc]         [bin]   [ma] ["7D]
 \definemathsymbol [circledast]          [bin]   [ma] ["7E]
 \definemathsymbol [circleddash]         [bin]   [ma] ["7F]
+
+\stopmathcollection
+
+\startmathcollection [default] % [ams]
+
+\definemathcommand [integers]       {\blackboard{Z}}
+\definemathcommand [reals]          {\blackboard{R}}
+\definemathcommand [rationals]      {\blackboard{Q}}
+\definemathcommand [naturalnumbers] {\blackboard{N}}
+\definemathcommand [complexes]      {\blackboard{C}}
+\definemathcommand [primes]         {\blackboard{P}}
 
 \stopmathcollection
 

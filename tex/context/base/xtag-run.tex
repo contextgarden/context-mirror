@@ -46,10 +46,10 @@
 
 .egroup
 
-\gdef\@@XMLshow {\@@XML shw}  
+\gdef\@@XMLshow{\@@XML shw}  
 
 \gdef\@XMLindent#1%
-  {\ifnum\XMLlevel>1\advance\leftskip#11em\relax\fi}
+  {\ifnum\XMLlevel>\plusone\advance\leftskip#11em\relax\fi}
 
 \gdef\@XMLlevel#1%
   {\advance\XMLlevel#11\relax}
@@ -64,17 +64,22 @@
 \@EA\catcode\string``\@@active
 \@EA\catcode\string`&\@@active
 
-\gdef\showXMLarguments%
-  {\ifshowXMLarguments
+\gdef\doshowXMLargument#1#2#3#4%
+  {\hskip\zeropoint % or maybe \allowbreak
+   \string#1\color[xtag:#3]{#4}\string#2}%
+
+\gdef\showXMLarguments
+  {\hskip\zeropoint % or maybe \allowbreak
+   \ifshowXMLarguments
      \bgroup
      \@EA\catcode\string`=\@@active
      \@EA\catcode\string`"\@@active
      \@EA\catcode\string``\@@active
      \@EA\catcode\string`&\@@active
      \def={\color[xtag:7]{\string=}}%
-     \def"##1"{\string"\color[xtag:8]{##1}\string"}%
-     \def`##1`{\string`\color[xtag:8]{##1}\string`}%
-     \def&##1;{\string&\color[xtag:7]{##1}\string;}%
+     \def"##1"{\doshowXMLargument""8{##1}}%
+     \def`##1`{\doshowXMLargument``8{##1}}%
+     \def&##1;{\doshowXMLargument&;7{##1}}%
      \scantokens\@EA{\currentXMLarguments}%
      \egroup
    \else
@@ -95,27 +100,27 @@
        \ifcase\@XMLnofelements\else\@@xftussen\fi 
      \fi 
    \fi
-\hangindent2em 
-\indent 
-    \bgroup
-      \localcolortrue
-      \advance\XMLlevel -1
-      \DoMod\XMLlevel by\XMLprettycycle to\scratchcounter
-      \advance\scratchcounter 1
-      \startcolor[xtag:\ifnum\scratchcounter<0 0\else\number\scratchcounter\fi]%
-\ifXMLunspacepretty\unskip\fi
-        \string<%
-        \ifnum\kindofXMLelement=2\string/\fi
-        \currentXMLelement
-      \stopcolor
-      \ifcase#1\or\ifx\currentXMLarguments\empty\else
-        \cleanupXMLarguments
-        \startcolor[xtag:0]\hbox{\space}\showXMLarguments\unskip\stopcolor
-      \fi\fi
-      \startcolor[xtag:\ifnum\scratchcounter<0 0\else\number\scratchcounter\fi]%
-      \ifnum\kindofXMLelement=3\string/\fi
-      \string>%
-      \stopcolor
+   \hangindent2em 
+   \indent 
+   \bgroup
+     \localcolortrue
+     \advance\XMLlevel \minusone
+     \DoMod\XMLlevel by\XMLprettycycle to\scratchcounter
+     \advance\scratchcounter \plusone
+     \startcolor[xtag:\ifnum\scratchcounter<0 0\else\number\scratchcounter\fi]%
+       \ifXMLunspacepretty\unskip\fi
+       \string<%
+       \ifnum\kindofXMLelement=2\string/\fi
+       \currentXMLelement
+     \stopcolor
+     \ifcase#1\or\ifx\currentXMLarguments\empty\else
+       \cleanupXMLarguments
+       \startcolor[xtag:0]\hbox{\space}\showXMLarguments\unskip\stopcolor
+     \fi\fi
+     \startcolor[xtag:\ifnum\scratchcounter<0 0\else\number\scratchcounter\fi]%
+     \ifnum\kindofXMLelement=3\string/\fi
+     \string>%
+     \stopcolor
    \egroup 
    \ifnum\XMLlevel<\@@xfniveau\relax
      \ifnum\kindofXMLelement=1\else
@@ -182,12 +187,12 @@
 \gdef\showXMLemp[#1]%
   {\setXMLshow\defineXMLsingular\someXMLword\relax[#1]}
 
-\gdef\doautoshowXMLelement%
+\gdef\doautoshowXMLelement
   {\ifcase\kindofXMLelement
      \or \nextXMLpara \or \prevXMLpara \or \someXMLline
    \fi}
 
-\gdef\autoshowXMLelement%
+\gdef\autoshowXMLelement
   {\ifcsname\@@XMLshow:\currentXMLelement\endcsname
      \expandafter\normalexecuteXMLelement
    \else
@@ -200,18 +205,19 @@
   {\bgroup
    \nohyphens
    \dontcomplain
-   \XMLlevel=0
+   \XMLlevel\zerocount
    \increment\@@xfniveau % hack 
    \tttf
    \startopelkaar[\v!blanko]
      \ifautoXMLshow \let\executeXMLelement\autoshowXMLelement \fi
      \let\executeXMLentity\@XMLentity
      \enableXML\verbatimXML
-     \readfile{\truefilename{#1}}{}{}\endgraf
+     \readfile{\truefilename{#1}}\donothing\donothing\endgraf
+     \removelastskip % really needed 
    \stopopelkaar
    \egroup}
 
-\gdef\showXMLbuffer%
+\gdef\showXMLbuffer
   {\dosingleempty\doshowXMLbuffer}
 
 \gdef\doshowXMLbuffer[#1]%
@@ -224,7 +230,7 @@
 
 %D 
 
-\gdef\showXSDcomponent%
+\gdef\showXSDcomponent
   {\dodoubleargument\doshowXSDcomponent}
 
 \gdef\doshowXSDcomponent[#1][#2]%
@@ -232,6 +238,15 @@
    \showXMLnop[xsd:schema] 
    \showXMLign[xsd:appInfo] 
    \showXMLign[xsd:annotation] 
+   \videXMLcontextblock[#2]
+   \showXMLfile{#1}
+   \egroup}
+
+\gdef\showRNGcomponent
+  {\dodoubleargument\doshowRNGcomponent}
+
+\gdef\doshowRNGcomponent[#1][#2]%
+  {\bgroup
    \videXMLcontextblock[#2]
    \showXMLfile{#1}
    \egroup}

@@ -42,7 +42,13 @@
 
 \stopencoding 
 
-\unexpanded\def\euro{\doiftextelse{\texteuro}{\texteuro}{\symbol[euro]}}
+\unexpanded\def\euro{\doiftextelse\texteuro\texteuro{\symbol[euro]}}
+
+% ok for one font series, but not for mixed sets 
+%
+% \unexpanded\def\euro
+%   {\doiftextelse \texteuro \texteuro
+%      {\unexpanded\def\euro{\symbol[euro]}\euro}
 
 %D The next table shows the complete set of symbols:
 %D

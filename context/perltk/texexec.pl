@@ -55,8 +55,10 @@ $ENV{"MPXCOMMAND"} = "0" ; # otherwise loop
 
 my $TotalTime = time ;
 
-## $dosish    = ($Config{'osname'} =~ /dos|mswin/i) ;
-my $dosish    = ($Config{'osname'} =~ /^(ms)?dos|^os\/2|^(ms|cyg)win/i) ;
+## $dosish      = ($Config{'osname'} =~ /dos|mswin/i) ;
+## $dosish      = ($Config{'osname'} =~ /^(ms)?dos|^os\/2|^(ms|cyg)win/i) ;
+my $dosish      = ($Config{'osname'} =~ /^(ms)?dos|^os\/2|^mswin/i) ;
+my $escapeshell = ($ENV{'SHELL'} =~ m/sh/i);
 
 my $TeXUtil   = 'texutil'  ;
 my $TeXExec   = 'texexec'  ;
@@ -112,7 +114,9 @@ my $PdfArrange       = 0 ;
 my $PdfSelect        = 0 ;
 my $PdfCombine       = 0 ;
 my $PrintFormat      = 'standard' ;
-my $ProducePdf       = 0 ;
+my $ProducePdfT      = 0 ;
+my $ProducePdfM      = 0 ;
+my $ProducePdfX      = 0 ;
 my $Input            = "" ;
 my $Result           = 0 ;
 my $Suffix           = '' ;
@@ -136,6 +140,14 @@ my $RunPath          = "" ;
 my $Arguments        = "" ;
 my $Pretty           = 0 ;
 my $SetFile          = "" ;
+my $TeXTree          = "" ; 
+my $TeXRoot          = "" ; 
+my $Purge            = 0 ; 
+my $Separation       = "" ; 
+my $ModeFile         = "" ; 
+my $GlobalFile       = 0 ; 
+my $AllPatterns      = 0 ; 
+my $ForceXML         = 0 ; 
 
 &GetOptions
   ( "arrange"       => \$Arrange          ,
@@ -145,6 +157,7 @@ my $SetFile          = "" ;
     "convert=s"     => \$Convert          ,
     "environments=s"=> \$Environments     ,
     "usemodules=s"  => \$Modules          ,
+    "xml"           => \$ForceXML         , 
     "xmlfilters=s"  => \$Filters          ,
     "fast"          => \$FastMode         ,
     "final"         => \$FinalMode        ,
@@ -173,7 +186,9 @@ my $SetFile          = "" ;
     "paper=s"       => \$PaperFormat      ,
     "passon=s"      => \$PassOn           ,
     "path=s"        => \$RunPath          ,
-    "pdf"           => \$ProducePdf       ,
+    "pdf"           => \$ProducePdfT      ,
+    "pdm"           => \$ProducePdfM      ,
+    "pdx"           => \$ProducePdfX      ,
     "pdfarrange"    => \$PdfArrange       ,
     "pdfselect"     => \$PdfSelect        ,
     "pdfcombine"    => \$PdfCombine       ,
@@ -203,7 +218,16 @@ my $SetFile          = "" ;
     "input=s"       => \$Input            ,
     "arguments=s"   => \$Arguments        ,
     "pretty"        => \$Pretty           ,
-    "setfile=s"     => \$SetFile          ) ;
+    "setfile=s"     => \$SetFile          ,
+    "purge"         => \$Purge            ,
+    #### yet undocumented ################# 
+    "allpatterns"   => \$AllPatterns      ,
+    "separation=s"  => \$Separation       , 
+    "textree=s"     => \$TeXTree          , 
+    "texroot=s"     => \$TeXRoot          , 
+    "translate=s"   => \$TeXTranslation   , 
+    "modefile=s"    => \$ModeFile         ,   # additional modes file 
+    "globalfile"    => \$GlobalFile       ) ; # don't check name 
 
 # a set file (like blabla.bat) can set paths now
 
@@ -219,14 +243,17 @@ if ($ARGV[0] =~ /\.mpx$/io) # catch -tex=.... bug in mpost
 
 if ($DoMPTeX||$DoMPXTeX)
   { $RunOnce = 1 ;
-    $ProducePdf = 0 }
+    $ProducePdfT = 0 ;
+    $ProducePdfX = 0 ;
+    $ProducePdfM = 0 }
 
 if ($PdfArrange||$PdfSelect||$PdfCopy||$PdfCombine)
-  { $ProducePdf = 1 ;
+  { $ProducePdfT = 1 ;
     $RunOnce = 1 }
 
-if ($ProducePdf)
-  { $OutputFormat = "pdf" }
+if    ($ProducePdfT) { $OutputFormat = "pdftex" }
+elsif ($ProducePdfM) { $OutputFormat = "dvipdfm" }
+elsif ($ProducePdfX) { $OutputFormat = "dvipdfmx" }
 
 if ($RunOnce||$Pages||$TypesetFigures||$TypesetListing)
   { $NOfRuns = 1 }
@@ -236,9 +263,12 @@ if (($LogFile ne '')&&($LogFile =~ /\w+\.log$/io))
     *STDOUT = *LOGFILE ;
     *STDERR = *LOGFILE }
 
-my $Program = " TeXExec 3.0 - ConTeXt / PRAGMA ADE 1997-2002" ;
+my $Program = " TeXExec 3.1 - ConTeXt / PRAGMA ADE 1997-2002" ;
 
 print "\n$Program\n\n" ;
+
+if ($Verbose) 
+  { print "          current path : " . cwd . "\n" }
 
 my $pathslash = '/' ; if ($0 =~ /\\/) { $pathslash = "\\" }
 my $cur_path  = ".$pathslash" ;
@@ -509,7 +539,7 @@ if ($TeXFormatFlag eq "" )
 if ($MpFormatFlag eq "")
   { $MpFormatFlag  = "&" }
 
-unless ($dosish)
+unless ($dosish && !$escapeshell)
   { if ($TeXFormatFlag == "&") { $TeXFormatFlag = "\\&" }
     if ($MpFormatFlag  == "&") { $MpFormatFlag  = "\\&" } }
 
@@ -565,6 +595,7 @@ $OutputFormats{acrobat}  = "acrobat" ;
 $OutputFormats{dviwindo} = "dviwindo" ;
 $OutputFormats{dviview}  = "dviview" ;
 $OutputFormats{dvipdfm}  = "dvipdfm" ;
+$OutputFormats{dvipdfmx} = "dvipdfmx" ;
 
 my @ConTeXtFormats = ("nl", "en", "de", "cz", "uk", "it", "ro", "xx") ;
 
@@ -660,6 +691,7 @@ SetInterfaces ( "xx" , "experimental" , "english"   ) ;
 #                    . "                           =dviwindo\n"
 #                    . "                           =dviview\n"
 #                    . "                           =dvipdfm\n" ;
+#                    . "                           =dvipdfmx\n" ;
 # $Help{PASSON}      = '              --passon   switches to pass to TeX ("--src" for MikTeX)' . "\n" ;
 # $Help{PAGES}       = "               --pages   pages to output\n" ;
 # $Help{pages}       =
@@ -870,7 +902,7 @@ sub print_val
   { my ($k,$opt) = @_ ;
     $~ = 'H2' ; write ;
 format H2 =
-                           @<<<<<<< : @<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+                           @<<<<<<<< : @<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 $k,$opt
 .
   }
@@ -951,9 +983,9 @@ sub MPJobName
 sub RunPerlScript
   { my ($ScriptName, $Options) = @_ ;
     if ($dosish)
-#      { if (-e "$TeXScriptsPath$ScriptName.pl")
-      { if (-e "$TeXScriptsPath$ScriptName$own_type")
-#          { system ("perl $TeXScriptsPath$ScriptName.pl $Options") } }
+      { if (-e "$own_path$ScriptName$own_type")
+          { system ("$own_stub$own_path$ScriptName$own_type $Options") } 
+        elsif (-e "$TeXScriptsPath$ScriptName$own_type")
           { system ("$own_stub$TeXScriptsPath$ScriptName$own_type $Options") } }
     else
       { system ("$ScriptName $Options") } }
@@ -989,6 +1021,8 @@ sub MakeOptionFile
   { my ($FinalRun, $FastDisabled, $JobName, $JobSuffix) = @_ ;
     open (OPT, ">$JobName.top") ;
     print OPT "\\unprotect\n" ;
+    if ($ModeFile ne '') 
+      { print OPT "\\readlocfile{$ModeFile}{}{}" } 
     if ($Result) # no '' test
       { print OPT "\\setupsystem[file=$Result]\n" }
     elsif ($Suffix)
@@ -1015,6 +1049,8 @@ sub MakeOptionFile
       { print OPT "\\fastmode\n" }
     if ($SilentMode)
       { print OPT "\\silentmode\n" }
+    if ($Separation ne "")
+      { print OPT "\\setupcolors[\\c!splitsen=$Separation]\n" } 
     if ($SetupPath)
       { print OPT "\\setupsystem[\\c!gebied=\{$SetupPath\}]\n" }
     $_ = $PaperFormat ;
@@ -1025,7 +1061,9 @@ sub MakeOptionFile
         elsif (/.5.4/goi)
           { print OPT "\\setuppapersize[A5][A4]\n" }
         elsif (!/standard/)
-          { s/x/\*/io ; $_ = uc $_ ; my ($from,$to) = split (/\*/) ;
+          { s/x/\*/io ; 
+            if (/\w+\d+/) { $_ = uc $_ } 
+            my ($from,$to) = split (/\*/) ;
             if ($to eq "") { $to = $from }
             print OPT "\\setuppapersize[$from][$to]\n" } }
     if (($PdfSelect||$PdfCombine||$PdfCopy||$PdfArrange)&&($Background ne ''))
@@ -1093,27 +1131,31 @@ my $AllLanguages = '' ;
 
 sub MakeUserFile
   { $UserFileOk = 0 ;
-    return if (($MainLanguage eq 'standard')&&
-               ($MainBodyFont eq 'standard')) ;
-    print "   preparing user file : cont-fmt.tex\n" ;
-    open (USR, ">cont-fmt.tex") ;
-    print USR "\\unprotect\n" ;
-    $AllLanguages = $MainLanguage ;
-    if ($MainLanguage ne 'standard')
-      { @MainLanguages = split (/\,/,$MainLanguage) ;
-        foreach (@MainLanguages)
-          { print USR "\\installlanguage[\\s!$_][\\c!status=\\v!start]\n" }
-        $MainLanguage = $MainLanguages[0] ;
-        print USR "\\setupcurrentlanguage[\\s!$MainLanguage]\n" }
-    if ($MainBodyFont ne 'standard')
-       { print USR "\\definetypescriptsynonym[cmr][$MainBodyFont]" ;
-         print USR "\\definefilesynonym[font-cmr][font-$MainBodyFont]\n" }
-    print USR "\\protect\n" ;
+    if ($AllPatterns)
+      { open (USR, ">cont-fmt.tex") ;
+        print USR "\\preloadallpatterns\n" }
+    else 
+      { return if (($MainLanguage eq 'standard')&&
+                   ($MainBodyFont eq 'standard')) ;
+        print "   preparing user file : cont-fmt.tex\n" ;
+        open (USR, ">cont-fmt.tex") ;
+        print USR "\\unprotect\n" ;
+        $AllLanguages = $MainLanguage ;
+        if ($MainLanguage ne 'standard')
+          { @MainLanguages = split (/\,/,$MainLanguage) ;
+            foreach (@MainLanguages)
+              { print USR "\\installlanguage[\\s!$_][\\c!status=\\v!start]\n" }
+            $MainLanguage = $MainLanguages[0] ;
+            print USR "\\setupcurrentlanguage[\\s!$MainLanguage]\n" }
+        if ($MainBodyFont ne 'standard')
+           { print USR "\\definetypescriptsynonym[cmr][$MainBodyFont]" ;
+             print USR "\\definefilesynonym[font-cmr][font-$MainBodyFont]\n" }
+        print USR "\\protect\n" }
     print USR "\\endinput\n" ;
     close (USR) ;
     ReportUserFile () ;
     print "\n" ;
-    $UserFileOk = 1 }
+    $UserFileOk = 1 } 
 
 sub RemoveResponseFile
   { unlink "mult-def.tex" }
@@ -1162,7 +1204,7 @@ sub CompareFiles # 2 = tuo
       { return 0 } }
 
 sub CheckPositions
- { return if ($DVIspec eq '') ;
+ { return if ($DVIspec eq '') || ($OutputFormat eq 'pdftex') ; 
    my $JobName = shift ; my $TuoName = "$JobName.tuo" ;
    if (open(POS,"$TuoName"))
      { seek POS, (-s $TuoName) - 5000, 0 ;
@@ -1211,6 +1253,8 @@ sub ScanPreamble
            if (/program=([a-z]*)/goi)              { $TeXExecutable  = $1 }
            if (/output=([a-z\,\-]*)/goi)           { $OutputFormat   = $1 }
            if (/modes=([a-z\,\-]*)/goi)            { $ConTeXtModes   = $1 }
+           if (/textree=([a-z\-]*)/goi)            { $TeXTree        = $1 }
+           if (/texroot=([a-z\-]*)/goi)            { $TeXRoot        = $1 }
            if ($ConTeXtInterface eq "unknown")
              { if (/format=([a-z]*)/goi)           { $ConTeXtInterface = $ConTeXtInterfaces{$1}  }
                if (/interface=([a-z]*)/goi)        { $ConTeXtInterface = $ConTeXtInterfaces{"$1"} } }
@@ -1338,6 +1382,10 @@ sub RunTeXutil
       { print "\n utility file analysis : another run needed\n" }
     return $StopRunning }
 
+sub PurgeFiles
+  { my $JobName = shift ;
+    RunPerlScript($TeXUtil, "--purge $JobName" ) } 
+
 sub RunTeXMP
   { my $JobName = shift ;
     my $MPfile = shift ;
@@ -1347,6 +1395,7 @@ sub RunTeXMP
     if ($MPJobName ne "")
       { if (open(MP, "$MPJobName"))
           { $_ = <MP> ; chomp ;  # we should handle the prefix as well
+if (/^\%\s+translate.*?\=([\w\d\-]+)/io) { $TeXTranslation = $1 } 
             if (/collected graphics of job \"(.+)\"/i)
               { $MPFoundJobName = $1 }
             close(MP) ;
@@ -1356,10 +1405,12 @@ sub RunTeXMP
                       { print "   generating graphics : metaposting $MPJobName\n" ;
                         my $ForceMpy = "" ;
                         if ($MpyForce) { $ForceMpy = "--mpyforce" }
+my $ForceTCX = '' ; 
+if ($TeXTranslation ne '') { $ForceTCX = "--translate=$TeXTranslation " }
                         if ($EnterBatchMode)
-                          { RunPerlScript ($TeXExec,"$ForceMpy --mptex --nomp --batch $MPJobName") }
+                          { RunPerlScript ($TeXExec,"$ForceTCX $ForceMpy --mptex --nomp --batch $MPJobName") }
                         else
-                          { RunPerlScript ($TeXExec,"$ForceMpy --mptex --nomp $MPJobName") } }
+                          { RunPerlScript ($TeXExec,"$ForceTCX $ForceMpy --mptex --nomp $MPJobName") } }
                     else
                       { print "   generating graphics : metapost cannot be run\n" }
                     $MPrundone = 1 } } } }
@@ -1398,22 +1449,27 @@ sub RunConTeXtFile
     $RunPath =~ s/\\/\//goi ;
     my $OriSuffix = $JobSuffix ;
     if (-e "$JobName.$JobSuffix")
-      { $DummyFile = ($JobSuffix =~ /(xml|xsd)/io) }
-    elsif (($RunPath)&&(-e "$RunPath/$JobName.$JobSuffix"))
-      { $DummyFile = 1 }
+      { $DummyFile = (($JobSuffix =~ /(xml|xsd|exa|rng)/io)||($ForceXML)) }
+    elsif ($RunPath ne "")
+      { my @RunPaths = split(/,/,$RunPath) ; 
+        foreach my $rp (@RunPaths) 
+          { if (-e "$rp/$JobName.$JobSuffix")
+              { $DummyFile = 1 ; last } } }
     if ($DummyFile)
       { open (TMP,">$JobName.run") ;
-        if ($JobSuffix =~ /(xml|xsd)/io)
+        if ($JobSuffix =~ /(xml|xsd|exa)/io)
           { if ($Filters ne "")
               { print "     using xml filters : $Filters\n" }
             print TMP "\\starttext\n" ;
             print TMP "\\processXMLfilegrouped{$JobName.$JobSuffix}\n" ;
             print TMP "\\stoptext\n" }
         else
-          { print TMP "\\processfile{$JobName}\n" }
+          { print TMP "\\starttext\n" ;
+            print TMP "\\processfile{$JobName}\n" ;
+            print TMP "\\stoptext\n" }
         close (TMP) ;
         $JobSuffix = "run" }
-    if (-e "$JobName.$JobSuffix")
+    if ((-e "$JobName.$JobSuffix")||($GlobalFile))
       { unless ($Dummy) # we don't need this for xml
           { ScanPreamble ("$JobName.$JobSuffix") ;
             if ($ConTeXtInterface eq "unknown")
@@ -1518,8 +1574,11 @@ sub RunConTeXtFile
             unlink "$JobName.tup" ; # previous tuo file
             unlink "$JobName.top" ; # runtime option file
             PopResult($JobName) }
-        if ($DummyFile) # $JobSuffix == run
-          { unlink "$JobName.$JobSuffix" } } }
+        if ($Purge)
+          { PurgeFiles($JobName) }
+#        if ($DummyFile) # $JobSuffix == run
+#          { unlink "$JobName.$JobSuffix" } 
+} }
 
 sub RunSomeTeXFile
   { my ($JobName, $JobSuffix) = @_ ;
@@ -1586,11 +1645,11 @@ sub RunFigures
     if (@Files) { RunPerlScript ($TeXUtil, "--figures @Files" ) }
     open (FIG, ">$FiguresFile.tex") ;
     print FIG "% format=english\n" ;
-    print FIG "\\starttext\n" ;
     print FIG "\\setuplayout\n" ;
     print FIG "  [topspace=1.5cm,backspace=1.5cm,\n" ;
     print FIG "   header=1.5cm,footer=0pt,\n" ;
     print FIG "   width=middle,height=middle]\n" ;
+    print FIG "\\starttext\n" ;
     print FIG "\\showexternalfigures[alternative=$TypesetFigures,offset=$PaperOffset]\n" ;
     print FIG "\\stoptext\n" ;
     close(FIG) ;
@@ -1631,7 +1690,6 @@ sub RunListing
       { print "              topspace : $TopSpace\n" }
     open (LIS, ">$ListingFile.tex") ;
     print LIS "% format=english\n" ;
-    print LIS "\\starttext\n" ;
     print LIS "\\setupbodyfont[11pt,tt]\n" ;
     print LIS "\\setuplayout\n" ;
     print LIS "  [topspace=$TopSpace,backspace=$BackSpace,\n" ;
@@ -1640,6 +1698,7 @@ sub RunListing
     print LIS "\\setuptyping[lines=yes]\n" ;
     if ($Pretty)
       { print LIS "\\setuptyping[option=color]\n" }
+    print LIS "\\starttext\n" ;
     foreach $FileName (@FileNames)
       { $CleanFileName = lc CleanTeXFileName($FileName) ;
         print LIS "\\page\n" ;
@@ -1704,6 +1763,7 @@ sub RunArrange
       { print "                duplex : on\n" ;
         print ARR "\\setuppagenumbering\n" ;
         print ARR "  [alternative=doublesided]\n" }
+    print ARR "\\starttext\n" ;
     foreach my $FileName (@files)
       { print "               pdffile : $FileName\n" ;
         print ARR "\\insertpages\n  [$FileName]" ;
@@ -1751,6 +1811,7 @@ sub RunSelect
     print SEL "      footer=0pt]\n" ;
     print SEL "\\setupexternalfigures\n" ;
     print SEL "  [directory=]\n" ;
+    print SEL "\\starttext\n" ;
     if ($Selection ne '')
       { print SEL "\\filterpages\n" ;
         print SEL "  [$FileName][$Selection][width=$TextWidth]\n" }
@@ -1972,6 +2033,7 @@ sub RunFiles
 my $MpTmp = "tmpgraph"   ;    # todo: prefix met jobname
 my $MpKep = "$MpTmp.kep" ;    # sub => MpTmp("kep")
 my $MpLog = "$MpTmp.log" ;
+my $MpBck = "$MpTmp.bck" ;
 my $MpTex = "$MpTmp.tex" ;
 my $MpDvi = "$MpTmp.dvi" ;
 
@@ -2031,21 +2093,24 @@ sub doRunMP ###########
       { # fails with %
         # local $/ = "\0777" ; $_ = <MP> ; close(MP) ;
 
-my $MPdata = "" ;
-while (<MP>) { unless (/^\%/) { $MPdata .= $_ } }
-$_ = $MPdata ;
-close (MP) ;
+        my $MPdata = "" ;
+        while (<MP>) { unless (/^\%/) { $MPdata .= $_ } }
+        $_ = $MPdata ;
+        close (MP) ;
 
         # save old file
         unlink ($MpKep) ;
         return if (-e $MpKep) ;
         rename ($MpFile, $MpKep) ;
         # check for tex stuff
-# $TexFound = $MergeBE || /(btex|etex|verbatimtex)/o ;
-# verbatim tex can be there due to an environment belonging to
-# mpy (not really, but about)
-# $TexFound = $MergeBE || /(btex|etex)/o ;
-$TexFound = $MergeBE || /btex .*? etex/o ;
+
+        # $TexFound = $MergeBE || /(btex|etex|verbatimtex)/o ;
+        # verbatim tex can be there due to an environment belonging to
+        # mpy (not really, but about)
+        # $TexFound = $MergeBE || /(btex|etex)/o ;
+
+        $TexFound = $MergeBE || /btex .*? etex/o ;
+
         # shorten lines into new file if okay
         unless (-e $MpFile)
           { open(MP, ">$MpFile") ;
@@ -2060,7 +2125,7 @@ $TexFound = $MergeBE || /btex .*? etex/o ;
             unless (/beginfig\s*\(\s*0\s*\)/gmois)
               { print MP $mpbetex{0} }
             print MP $_ ;
-            print MP "end .\n" ;
+            print MP "\n" . "end" . "\n" ;
             close(MP) }
         if ($TexFound)
           { print "       metapost to tex : $MpName\n" ;
@@ -2079,8 +2144,9 @@ $TexFound = $MergeBE || /btex .*? etex/o ;
                         $Problems = system ("$DviToMpExecutable $MpDvi $MpName.mpx") }
                     # $Problems = system ("dvicopy $MpDvi texexec.dvi") ;
                     # $Problems = system ("$DviToMpExecutable texexec.dvi $MpName.mpx") }
-                    unlink $MpTex ;
-                    unlink $MpDvi } }
+                   unlink $MpBck ; 
+                   rename $MpTex, $MpBck ;
+                   unlink $MpDvi } }
             print "              metapost : $MpName\n" ;
             my $cmd = $MpExecutable ;
             if ($EnterBatchMode)
@@ -2161,23 +2227,73 @@ if ($SetFile ne "")
 #       { print "               warning : nothing to do\n" }
 #     return $problems }
 
+# sub check_texmf_root 
+#   { return if ($TeXRoot eq "") ; 
+#     my $root = $TeXRoot ; 
+#     $root =~ s/\\/\//goi ; 
+#     if (-d $root) 
+#       { print "        using tex root : $root \n" ;
+#         $ENV{TEXROOT}    = $root ; 
+#         $ENV{TEXMFCNF}   = "$root/texmf-local/web2c" ; 
+#         $ENV{TEXMFFONTS} = "$root/texmf-fonts" ;
+#         $ENV{TEXMFLOCAL} = "$root/texmf-local" ; 
+#         $ENV{TEXMFMAIN}  = "$root/texmf" }
+#     else 
+#       { print "      invalid tex root : $root \n" } }
+# 
+# sub check_texmf_tree 
+#   { return if ($TeXTree eq "") ; 
+#     my $tree = $TeXTree ; 
+#     unless (-d $tree) 
+#       { $tree = $ENV{TEXMFLOCAL} ; 
+#         $tree =~ s/texmf.*//io ; 
+#         $tree .= $TeXTree }
+#     if (-d $tree) 
+#       { print "      using texmf tree : $tree \n" ;
+#         $ENV{TEXMFPROJECT} = $tree ; 
+#         if ((-f "$tree/web2c/cont-en.efmt")||
+#             (-f "$tree/web2c/cont-nl.efmt"))
+#           { $ENV{TEXFORMATS} = "$tree/web2c" } 
+#         $ENV{TEXMF} = '{$TEXMFPROJECT,$TEXMFFONTS,$TEXMFLOCAL,!!$TEXMFMAIN}' }
+#     else 
+#       { print "    invalid texmf tree : $tree \n" } }
+
+sub check_texmf_root {}
+sub check_texmf_tree {}
+
+# the main thing 
+
    if ($HelpAsked) 
   { show_help_info } 
 elsif ($TypesetListing)
-  { RunListing (@ARGV) }
+  { check_texmf_root ; 
+    check_texmf_tree ; 
+    RunListing (@ARGV) }
 elsif ($TypesetFigures)
-  { RunFigures (@ARGV) }
+  { check_texmf_root ; 
+    check_texmf_tree ; 
+    RunFigures (@ARGV) }
 elsif ($DoMPTeX)
-  { RunMP }
+  { check_texmf_root ; 
+    check_texmf_tree ; 
+    RunMP }
 elsif ($DoMPXTeX)
-  { RunMPX ($ARGV[0]) }
+  { check_texmf_root ; 
+    check_texmf_tree ; 
+    RunMPX ($ARGV[0]) }
 elsif ($MakeFormats)
-  { if ($MpDoFormat ne '')
+  { check_texmf_root ; 
+    check_texmf_tree ; 
+    if ($MpDoFormat ne '')
       { RunMpFormat($MpDoFormat) }
     else
       { RunFormats } }
 elsif (@ARGV)
-  { @ARGV = <@ARGV> ; RunFiles }
+  { check_texmf_root ; 
+    check_texmf_tree ; 
+    @ARGV = <@ARGV> ; 
+    RunFiles }
+
 # else
 #   { # print $Help{HELP} ;
 #     # unless ($Verbose) { print $Help{VERBOSE} } }
@@ -2275,6 +2391,7 @@ output specials to use
 =dvipsone YandY's dvi to ps converter 
 =dviwindo YandY's windows previewer
 =dvipdfm  Mark Wicks' dvi to pdf converter 
+=dvipdfmx Jin-Hwan Cho's extended dvipdfm 
 -----------
 passon switches to pass to TeX (--src for MikTeX)
 -----------
@@ -2351,6 +2468,12 @@ silent minimize (status) messages
 -----------
 tex TeX binary 
 =name binary of executable 
+-----------
+textree additional texmf tree to be used  
+=path subpath of tex root 
+-----------
+texroot root of tex trees 
+=path tex root 
 -----------
 verbose shows some additional info 
 -----------

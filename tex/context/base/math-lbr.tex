@@ -39,6 +39,13 @@
 
 \stopmathcollection
 
+% \startmathcollection[lbr]
+% 
+% \definemathcharacter [:]  [punct] [tf] ["3A] % unbelievable
+% \definemathcharacter [;]  [punct] [tf] ["3B] % unbelievable
+% 
+% \stopmathcollection
+
 \startmathcollection[lbr]
 
 \definemathsymbol [ldbrack]      [open]  [mi] ["82] [ex] ["82]
@@ -84,22 +91,34 @@
 
 \stopmathcollection
 
-\definefamilysynonym [lbr] [ucgreek]  [ex]
+\definefamilysynonym [lbr] [ucgreek]  [mb] 
 \definefamilysynonym [lbr] [vargreek] [mi]
 
 \startmathcollection[lbr]
 
-\definemathsymbol [Gamma]   [alpha] [ucgreek] ["D0]
-\definemathsymbol [Delta]   [alpha] [ucgreek] ["D1]
-\definemathsymbol [Theta]   [alpha] [ucgreek] ["D2]
-\definemathsymbol [Lambda]  [alpha] [ucgreek] ["D3]
-\definemathsymbol [Xi]      [alpha] [ucgreek] ["D4]
-\definemathsymbol [Pi]      [alpha] [ucgreek] ["D5]
-\definemathsymbol [Sigma]   [alpha] [ucgreek] ["D6]
-\definemathsymbol [Upsilon] [alpha] [ucgreek] ["D7]
-\definemathsymbol [Phi]     [alpha] [ucgreek] ["D8]
-\definemathsymbol [Psi]     [alpha] [ucgreek] ["D9]
-\definemathsymbol [Omega]   [alpha] [ucgreek] ["DA]
+%\definemathsymbol [Gamma]   [alpha] [ucgreek] ["D0]
+%\definemathsymbol [Delta]   [alpha] [ucgreek] ["D1]
+%\definemathsymbol [Theta]   [alpha] [ucgreek] ["D2]
+%\definemathsymbol [Lambda]  [alpha] [ucgreek] ["D3]
+%\definemathsymbol [Xi]      [alpha] [ucgreek] ["D4]
+%\definemathsymbol [Pi]      [alpha] [ucgreek] ["D5]
+%\definemathsymbol [Sigma]   [alpha] [ucgreek] ["D6]
+%\definemathsymbol [Upsilon] [alpha] [ucgreek] ["D7]
+%\definemathsymbol [Phi]     [alpha] [ucgreek] ["D8]
+%\definemathsymbol [Psi]     [alpha] [ucgreek] ["D9]
+%\definemathsymbol [Omega]   [alpha] [ucgreek] ["DA]
+
+\definemathsymbol [Gamma]   [alpha] [ucgreek] ["00]
+\definemathsymbol [Delta]   [alpha] [ucgreek] ["01]
+\definemathsymbol [Theta]   [alpha] [ucgreek] ["02]
+\definemathsymbol [Lambda]  [alpha] [ucgreek] ["03]
+\definemathsymbol [Xi]      [alpha] [ucgreek] ["04]
+\definemathsymbol [Pi]      [alpha] [ucgreek] ["05]
+\definemathsymbol [Sigma]   [alpha] [ucgreek] ["06]
+\definemathsymbol [Upsilon] [alpha] [ucgreek] ["07]
+\definemathsymbol [Phi]     [alpha] [ucgreek] ["08]
+\definemathsymbol [Psi]     [alpha] [ucgreek] ["09]
+\definemathsymbol [Omega]   [alpha] [ucgreek] ["0A]
 
 \definemathsymbol [varGamma]   [ord] [vargreek] ["00]
 \definemathsymbol [varDelta]   [ord] [vargreek] ["01]
@@ -112,6 +131,25 @@
 \definemathsymbol [varPhi]     [ord] [vargreek] ["08]
 \definemathsymbol [varPsi]     [ord] [vargreek] ["09]
 \definemathsymbol [varOmega]   [ord] [vargreek] ["0A]
+
+\stopmathcollection
+
+% we define the whole lot, although only a few differ (esp dot)
+
+\startmathcollection[lbr]
+
+\definemathsymbol [acute]     [accent] [tf] ["13] % mr -> tf
+\definemathsymbol [grave]     [accent] [tf] ["12] % mr -> tf
+\definemathsymbol [ddot]      [accent] [tf] ["7F] % mr -> tf
+\definemathsymbol [tilde]     [accent] [tf] ["7E] % mr -> tf
+\definemathsymbol [bar]       [accent] [tf] ["16] % mr -> tf
+\definemathsymbol [breve]     [accent] [tf] ["15] % mr -> tf
+\definemathsymbol [check]     [accent] [tf] ["14] % mr -> tf
+\definemathsymbol [hat]       [accent] [tf] ["5E] % mr -> tf
+\definemathsymbol [vec]       [accent] [mi] ["7E] % [ord]
+\definemathsymbol [dot]       [accent] [tf] ["05] % mr -> tf, 5F -> 05
+\definemathsymbol [widetilde] [accent] [ex] ["65] % [ord]
+\definemathsymbol [widehat]   [accent] [ex] ["62] % [ord]
 
 \stopmathcollection
 

@@ -29,41 +29,42 @@
      {\def\next{#2}}%
    \next}
 
-\unexpanded\def\CMRkern%
+\unexpanded\def\CMRkern
   {\doifCMRfontelse{\kern}{\scratchdimen=}}
 
-\def\TeX%
+\def\TeX
   {T% 
    \kern-.1667em\lower.5ex\hbox{E}%
    \kern-.125emX}
 
-\def\ConTeXt%
+\def\ConTeXt
                   {C%
    \CMRkern-.0333emo%
    \CMRkern-.0333emn%
-   \CMRkern-.1667em\TeX%
+%  \CMRkern-.1667em\TeX%
+   \CMRkern-.0667em\TeX%
    \CMRkern-.0333emt}
 
-\def\PPCHTeX%
+\def\PPCHTeX
   {ppch\TeX}
 
-\def\PRAGMA%
+\def\PRAGMA
   {Pragma ADE}
 
-%\def\LaTeX%
+%\def\LaTeX
 %  {L%
 %   \kern-.30em\raise.3ex\hbox{\txx A}%
 %   \kern-.18em\TeX}
 
-\def\LaTeX% requested by erik frambach 
+\def\LaTeX % requested by erik frambach 
   {{\setbox\scratchbox\hbox{L}%
-    \scratchdimen=\ht\scratchbox
+    \scratchdimen\ht\scratchbox
     \setbox\scratchbox\hbox{\txx A}%
     L\kern-.55\wd\scratchbox
     \raise\scratchdimen\hbox{\lower\ht\scratchbox\copy\scratchbox}%
     \kern-.2\wd\scratchbox\TeX}}
 
-\def\TaBlE%
+\def\TaBlE
   {T%
    \kern-.27em\lower.5ex\hbox{A}%
    \kern-.18emB%

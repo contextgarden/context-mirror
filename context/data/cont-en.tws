@@ -159,7 +159,10 @@ var:reduction:yes,no::
 var:rgb:yes,no::
 var:cmyk:yes,no::
 var:mpcmyk:yes,no::
+var:mpspot:yes,no::
 var:textcolor:*name::
+var:split:c,m,y,k,p,s,no,*name::
+var:criterium:all,none::
 stopsetup
 
 startsetup
@@ -699,9 +702,9 @@ startsetup
 com:setupframed:
 typ:vars/:
 var:height:fit,broad,*dimension::
-var:width:fit,broad,*dimension::
+var:width:fit,broad,fixed,*dimension::
 var:offset:none,overlay,default,*dimension::
-var:location:low,depth::
+var:location:low,depth,hanging::
 var:option:none,empty::
 var:strut:yes,no::
 var:align:no,left,right,middle,normal,high,low,lohi::
@@ -1291,6 +1294,12 @@ typ::
 stopsetup
 
 startsetup
+com:emptylines:
+typ:val/:
+val:*number::
+stopsetup
+
+startsetup
 com:nospace:
 typ::
 stopsetup
@@ -1643,7 +1652,7 @@ var:horoffset:*dimension::
 var:veroffset:*dimension::
 var:style:normal,bold,slanted,boldslanted,type,cap,small...,*command::
 var:color:*name::
-var:marking:on,off,color::
+var:marking:on,off,color,screen::
 var:location:left,middle,right,bottom,top, singlesided,doublesided::
 var:scale:*dimension::
 var:nx:*number::
@@ -1651,10 +1660,15 @@ var:ny:*number::
 var:dx:*dimension::
 var:dy:*dimension::
 var:lines:*number::
+var:columns:*number::
+var:columndistance:*dimension::
 var:grid:yes,no::
-var:bottomspace:*number::
-var:cutspace:*number::
-var:textdistance:*number::
+var:bottomspace:*dimension::
+var:cutspace:*dimension::
+var:textdistance:*dimension::
+var:textwidth:*number::
+var:textmargin:*dimension::
+var:clipoffset:*dimension::
 stopsetup
 
 startsetup
@@ -1739,6 +1753,7 @@ var:*sectionnumber:yes,no::
 var:separator:*text::
 var:strut:yes,no::
 var:state:start,stop::
+var:width:*dimension::
 var:command:*\command#1::
 stopsetup
 
@@ -1777,6 +1792,10 @@ typ:vars/:
 var:sectionnumber:yes,number,no::
 var:alternative:normal,margin,middle,text,paragraph::
 var:separator:*text::
+var:align:left,right,normal,broad::
+var:aligntitle:yes,no::
+var:tolerance:verystrict,strict,tolerant,verytolerant,stretch::
+var:indentnext:yes,no::
 var:command:*\command#1#2::
 stopsetup
 
@@ -1818,6 +1837,9 @@ var:indentnext:yes,no::
 var:ntop:*number::
 var:nbottom:*number::
 var:nlines:*number::
+var:default:*name::
+var:leftmargindistance:*dimension::
+var:rightmargindistance:*dimension::
 ivr:setupframed::
 stopsetup
 
@@ -1961,6 +1983,13 @@ stopsetup
 startsetup
 com:nolist:
 typ:arg/:
+val:*text::
+stopsetup
+
+startsetup
+com:listsymbol:
+typ:val/arg/:
+val:*name::
 val:*text::
 stopsetup
 
@@ -2164,6 +2193,8 @@ var:align:inner,outer,left,right,middle,normal,no,yes::
 var:line:*number::
 var:distance:*dimension::
 var:separator:*text::
+var:width:*dimension::
+var:distance:*dimension::
 ivr:setupframed::
 stopsetup
 
@@ -2205,6 +2236,19 @@ var:scale:*number::
 stopsetup
 
 startsetup
+com:setuppaper:
+typ:vars/:
+var:paper:*name::
+var:page:*name::
+var:nx:*number::
+var:ny:*number::
+var:width:*dimension::
+var:height:*dimension::
+var:topspace:*dimension::
+var:backspace:*dimension::
+stopsetup
+
+startsetup
 com:setuppapersize:
 typ:vals/vals/:
 val:A3,A4,A5,A6,letter,...,CD,*name, landscape,mirrored,rotated,90,180,270:A4:
@@ -2214,7 +2258,7 @@ stopsetup
 startsetup
 com:setuparranging:
 typ:vals/:
-val:disable, 2*16,2*8,2*4,2*2,2**2,2UP,2DOWN, mirrored,rotated,doublesided,negative,90,180,270::
+val:disable, 2*16,2*8,2*4,2*2,2**2,2*2*4,2*4*2,2UP,2DOWN,2SIDE,2TOP, mirrored,rotated,doublesided,negative,90,180,270::
 stopsetup
 
 startsetup
@@ -2306,16 +2350,12 @@ var:alternative:normal,inmargin,middle,text::
 var:command:*\command#1#2::
 var:numbercommand:*\command#1::
 var:textcommand:*\command#1::
-var:separator:*text::
 var:prefix:+,-,*text::
-var:placehead:yes,no::
-var:incrementnumber:yes,no,*file::
-var:align:left,right,normal,broad::
-var:aligntitle:yes,no::
-var:tolerance:verystrict,strict,tolerant,verytolerant,stretch::
-var:indentnext:yes,no::
+var:placehead:yes,no,empty::
+var:incrementnumber:yes,no,list,*file::
 var:file:*name::
 var:expansion:yes,command,no::
+ivr:setupheads::
 stopsetup
 
 startsetup
@@ -3223,6 +3263,7 @@ var:align:left,middle,right,normal::
 var:rulethickness:*dimension::
 var:distance:blank,grid,depth,*dimension,small,medium,big,none::
 var:bodyfont:5pt,...,12pt,small,big::
+var:rule:normal,line::
 stopsetup
 
 startsetup
@@ -3395,6 +3436,7 @@ var:after:commando::
 var:distance:*dimension::
 var:height:*dimension,fit::
 var:width:*dimension,fit::
+var:location:boven,midden,onder,links,rechts::
 var:align:no,left,right,middle,normal::
 stopsetup
 
@@ -3798,6 +3840,7 @@ stopsetup
 startsetup
 com:setupcomment:
 typ:vars/:
+var:state:start,stop::
 var:width:*dimension::
 var:height:*dimension::
 var:color:*name::

@@ -261,7 +261,7 @@
 
 \def\dodowritereference#1#2#3\end#4#5#6% 
   {\bgroup 
-   \global\advance\crossreferencenumber 1
+   \global\advance\crossreferencenumber \plusone\relax
    \if#1-\if#2:%
      \let\referenceprefix\empty
      \xdef\lastreference{#3}%
@@ -404,23 +404,16 @@
    \egroup
    \the\everycheckreferences}
 
-% \def\usereferences[#1]%
-%   {\bgroup
-%    \checkreferences % Load job ones first!
-%    \setbox0=\hbox
-%      {\doonlyonce{references:#1}{\doutilities{references}{#1}{}{}{}}}%
-%   \egroup}
-
 \def\usereferences[#1]%
   {\startnointerference
    \checkreferences
    \doifparentfileelse{#1}
      {\ifconditional\jobreferencesloaded\else
-        \doutilities{references}{#1}{}{}{}%
+        \doutilities{references}{#1}\empty\relax\relax
         \global\settrue\jobreferencesloaded
       \fi}
      {\ExpandBothAfter\doifnotinset{#1}{\loadedreferences}
-        {\doutilities{references}{#1}{}{}{}%
+        {\doutilities{references}{#1}\empty\relax\relax
          \ifx\fileprefix\empty\else
            \doglobal\addtocommalist{#1}\loadedreferences
          \fi}}
@@ -2239,7 +2232,7 @@
    \ifx\@@rfprefix\empty
      \let\referenceprefix\empty
    \else\ifx\@@rfprefix\incrementreferenceprefix
-     \advance\prefixcounter 1 % should be global 
+     \advance\prefixcounter \plusone % should be global 
      \edef\referenceprefix{\the\prefixcounter:}%
      \let\@@rfprefix\s!unknown
    \else\ifx\@@rfprefix\decrementreferenceprefix
@@ -2589,6 +2582,7 @@
 \def\dododododoinatreference#1#2[#3]%
   {\bgroup
    \forgetall
+\postponefootnotes
    \leaveoutervmode
    \doifreferencefoundelse{#3}
      {\bgroup
@@ -2649,11 +2643,14 @@
 \def\donaar#1[#2]%
   {\dontleavehmode
   %\leaveoutervmode
+\bgroup
+\postponefootnotes
    \doifreferencefoundelse{#2}
      {\doifelsenothing{#1}
         {\dosymbolreference{}{}[#2]}
         {\donaarspace{#1}[#2]}}
      {\unknownreference{#2}#1\relax}% \relax catches lookahead
+\egroup
    \referentieinfo{<}{#2}}
 
 \unexpanded\def\naar#1#2%
@@ -3291,7 +3288,10 @@
        {\global\utilitydonetrue %{Watch the braces here below!}
         \setglobalcrossreference{{##1::\@@filterblocknumberpart[##5]}}{}{##6}{##2}}%
      \def\usereferences[##1]%
-       {\setbox0=\vbox{\doutilities{#3}{##1}{#3}{}{}}}%
+      %{\setbox0\vbox{\doutilities{#3}{##1}{#3}\relax\relax}}%
+       {\startnointerference
+        \doutilities{#3}{##1}{#3}\relax\relax
+        \stopnointerference}%
      \dogebruikexterndocument[#1][#2][#4]%
      \doglobal\addtocommalist{#1}\crossdocumentreferences
      \def\docommando##1%
@@ -3424,7 +3424,7 @@
 %D The symbols are derived from the symbols linked to the
 %D entries.
 
-\def\interactiebuttons%
+\def\interactiebuttons
   {\dodoubleempty\dointeractiebuttons}
 
 \def\dointeractiebuttons[#1][#2]% er is een verdeel macro \fractie

@@ -231,17 +231,17 @@
 
 \newbox\nointerferencebox
 
-\def\startnointerference%
+\def\startnointerference
   {\setbox\nointerferencebox\vbox
    \bgroup}
 
-\def\stopnointerference%
+\def\stopnointerference
   {\egroup
    \setbox\nointerferencebox\box\voidb@x}
 
 % will go to ...
 
-\def\alignedbox%
+\def\alignedbox
   {\dodoubleempty\doalignedbox[]}
 
 % \def\doalignedbox[#1][#2]%
@@ -299,7 +299,7 @@
 \setvalue{\??ab\??ab tr}{\toprightbox}
 \setvalue{\??ab\??ab br}{\bottomrightbox}
 
-\def\offsetbox%
+\def\offsetbox
   {\dodoubleempty\dooffsetbox[]}
 
 \def\dooffsetbox[#1][#2]%
@@ -318,7 +318,7 @@
       \freezedimenmacro\@@oxdiepte
       \setbox\nextbox\hbox
         {\hskip\@@oxx\lower\@@oxy\hbox
-           {\doifelsenothing{\@@oxplaats}
+           {\doifelsenothing\@@oxplaats
               {\box\nextbox}
               {\alignedbox[\@@oxplaats]\hbox{\box\nextbox}}}}%
       \wd\nextbox\@@oxbreedte
@@ -376,7 +376,7 @@
 %   {\getvalue{#1\c!commandos}%
 %    \doattributes{#1}\c!letter\c!kleur{\getvalue{#1\c!commando}{#2}}}
 
-\def\defineshortcut%
+\def\defineshortcut
   {\dotripleargument\dodefineshortcut}
 
 \def\dodefineshortcut[#1][#2][#3]%
@@ -463,6 +463,8 @@
 \def\setupenv{\dodoubleargument\rawgetparameters[\??en]}
 
 \def\doifenvelse#1{\doifdefinedelse{\??en#1}} % speed up
+\def\doifenv    #1{\doifdefined    {\??en#1}} % speed up
+\def\doifnotenv #1{\doifundefined  {\??en#1}} % speed up
 
 \def\env#1{\csname\??en#1\endcsname}
 

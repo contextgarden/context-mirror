@@ -34,7 +34,7 @@
 %D \showsetup{\y!setupmakeup}
 %D \showsetup{\y!startmakeup}
 
-\def\definemakeup%
+\def\definemakeup
   {\dodoubleargument\dodefinemakeup}
 
 \def\dodefinemakeup[#1][#2]%
@@ -63,7 +63,7 @@
    \setvalue{\e!start#1\e!opmaak}{\startmakeup[#1]}%
    \setvalue{\e!stop #1\e!opmaak}{\stopmakeup}}
 
-\def\setupmakeup%
+\def\setupmakeup
   {\dodoubleargument\dosetupmakeup}
 
 \def\dosetupmakeup[#1]%
@@ -83,7 +83,7 @@
 
 \let\currentmakeup\empty
 
-\def\startmakeup%
+\def\startmakeup
   {\dodoubleempty\dostartmakeup}
 
 \def\dostartmakeup[#1][#2]%
@@ -101,13 +101,14 @@
 
 %D The simple case: 
 
-\def\donostartmakeup%
+\def\donostartmakeup
   {\pagina
    \setupheader[\c!status=\v!leeg]%
    \setupfooter[\c!status=\v!leeg]%
+   \setsystemmode\v!opmaak
    \vbox to \teksthoogte\bgroup\hsize\tekstbreedte}
 
-\def\donostopmakeup%
+\def\donostopmakeup
   {\egroup
    \flushmarks % new, here, else empty pages 
    \pagina
@@ -117,14 +118,15 @@
 
 \newbox\makeupbox 
 
-\def\dodostartmakeup%
+\def\dodostartmakeup
   {\doifvaluesomething{\??do\currentmakeup\c!pagina}
      {\ExpandFirstAfter\pagina[\makeupparameter\c!pagina]}
    \soortpagina[\currentmakeup]
+   \setsystemmode\v!opmaak
    \setupmakeuplayout
    \makeupparameter\c!commandos
-\startregistercolor[\makeupparameter\c!kleur]%
-   \global\setbox\makeupbox=\vbox to \makeupparameter\c!hoogte
+   \startregistercolor[\makeupparameter\c!kleur]%
+   \global\setbox\makeupbox\vbox to \makeupparameter\c!hoogte
      \bgroup
        \forgetall 
        \hsize\makeupparameter\c!breedte
@@ -132,7 +134,7 @@
          {\expanded{\steluitlijnenin[\makeupparameter\c!uitlijnen]}}%
        \makeupparameter\c!boven}
 
-\def\dodostopmakeup%
+\def\dodostopmakeup
   {\endgraf
    \makeupparameter\c!onder
    \egroup
@@ -159,7 +161,7 @@
      \global\geselecteerdfalse
    \fi}
 
-\def\doshipoutmakeup%
+\def\doshipoutmakeup
   {\pushmacro\@@pnstatus % new 
    \makeupparameter\c!voor   
    \vbox{\hbox{\color[\makeupparameter\c!kleur]{\box\makeupbox}}}%
@@ -174,7 +176,7 @@
                  \pagina,
                % \verlaagpaginanummer, % new 
         \v!leeg=>\setupmakeuplayout
-                 \pagebodyornamentsfalse 
+                 \global\pagebodyornamentsfalse 
                  \null\pagina]%
                % \verlaagpaginanummer]% % new 
    \fi \fi
@@ -185,7 +187,7 @@
 %D by setting their associated status variables. The
 %D connection between them is made by the following macro 
 
-\def\setupmakeuplayout%
+\def\setupmakeuplayout
   {\setupfooter[\c!status=\makeupparameter\c!voetstatus ]%
    \setupheader[\c!status=\makeupparameter\c!hoofdstatus]%
    \setuptext  [\c!status=\makeupparameter\c!tekststatus]%

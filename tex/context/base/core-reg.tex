@@ -16,6 +16,7 @@
 \newif \ifautoregisterhack % for the moment a private hack
 
 % new: eigennummer=ja => eerste {} ipv pag nummer
+
 \unprotect 
 
 %D Isolated but still indocumented. 
@@ -64,7 +65,7 @@
    \fi
    \processcommalist[#1]\dodostelregisterin}
 
-\def\stelregisterin%
+\def\stelregisterin
   {\dotripleempty\dostelregisterin}
 
 \def\getlastregisterentry#1%
@@ -75,11 +76,12 @@
 
 \def\doprocesspageregister[#1]#2#3% key altnum entry 
   {\begingroup
-   \thisisnextinternal{\s!ind}%
+   \thisisnextinternal\s!ind
    \ifduplicate\getlastregisterentry{#3}\fi
    \convertexpanded{\??id\currentregister}{#3}\asciiregisterentry
    \makesectionformat
-   \doifelsevalue{\??id\currentregister\c!eigennummer}{\v!ja}{\donetrue}{\donefalse}%
+   \doifelsevalue{\??id\currentregister\c!eigennummer}\v!ja
+     \donetrue\donefalse
    % the spaces between } { are essential for texutil's split  
    \edef\schrijfwegnaarregister% 
      {\writeutility%
@@ -97,9 +99,9 @@
    \endgroup}
 
 \def\doregister#1%
-  {\chardef\registerpagestatus=1
+  {\chardef\registerpagestatus\plusone
    \def\currentregister{#1}%
-   \doifelsevalue{\??id\currentregister\c!eigennummer}{\v!ja}
+   \doifelsevalue{\??id\currentregister\c!eigennummer}\v!ja
      {\dosingleempty\dodoregister}
      {\dosingleempty\donoregister}}
 
@@ -114,7 +116,7 @@
 \def\writetoregister[#1]% to be documented
   {\doregister{#1}}
 
-\def\startregister%
+\def\startregister
   {\dodoubleargument\dostartregister}
 
 %\def\dostartregister[#1][#2]#3%
@@ -124,12 +126,12 @@
 %   \complexdoregister[#2]{#3}}
 
 \def\dostartregister[#1][#2]#3%
-  {\chardef\registerpagestatus=2
+  {\chardef\registerpagestatus2
    \def\currentregister{#1}%
    \setgvalue{\??id#1\??id#2}{\dodostopregister[#1][#2]{#3}}%
    \donoregister[#2]{#3}}
 
-\def\stopregister%
+\def\stopregister
   {\dodoubleargument\dostopregister}
 
 \def\dostopregister[#1][#2]%
@@ -141,13 +143,13 @@
 %   \complexdoregister[#2]}
 
 \def\dodostopregister[#1][#2]%
-  {\chardef\registerpagestatus=3
+  {\chardef\registerpagestatus3
    \def\currentregister{#1}%
    \donoregister[#2]}
 
 \def\complexdozieregister[#1]#2#3%
   {\begingroup
-     \thisisnextinternal{\s!ind}%
+     \thisisnextinternal\s!ind
      \ifduplicate\getlastregisterentry{#2}\fi
      \convertexpanded{\??id\currentregister}{#2}\asciiregisterentry
      \makesectionformat
@@ -177,18 +179,19 @@
   {\edef\currentregister{#1}%    % om gebruik van \ExpandBothAfter
    \doprocesspageregister{}}     % mogelijk te maken
 
-\def\schrijfnaarregister%
+\def\schrijfnaarregister
   {\dodoubleempty\doschrijfnaarregister}
 
 \def\ifregistergeplaatst{\ifutilitydone}
 
 \newif\iffirstregisterpage
+\newif\iffirstregisterentry 
 
-\def\c!entrya{}
-\def\c!entryb{}
-\def\c!entryc{}
+\let\c!entrya\empty
+\let\c!entryb\empty
+\let\c!entryc\empty
 
-\def\nextregisterpage%
+\def\nextregisterpage
   {\iffirstregisterpage
      \doglobal\newcounter\registerpagenumber
    \fi
@@ -199,7 +202,7 @@
    \hbox to 1em{\hss\doregisterpagehowto{#1}{#2}\hss}}
 
 \def\setregisterpage#1%
-  {\let\registerpageseparator=\empty
+  {\let\registerpageseparator\empty
    \processaction
      [\getvalue{\??id#1\c!symbool}]
      [      \c!n=>{\def\doregisterpage##1[##2]%
@@ -239,24 +242,24 @@
    \getvalue{\??id#1\c!paginacommando}{#2}%
    \dostopattributes}
 
-\def\registerentry #1{\executeifdefined{#1\s!entry}\gobbleoneargument}
-\def\registerentrya#1{\executeifdefined{#1\s!entrya}\gobbleoneargument}
-\def\registerentryb#1{\executeifdefined{#1\s!entryb}\gobbleoneargument}
-\def\registerentryc#1{\executeifdefined{#1\s!entryc}\gobbleoneargument}
-\def\registersee   #1{\executeifdefined{#1\s!see}\gobblethrearguments}
-\def\registerpage  #1{\executeifdefined{#1\s!page}\gobblefourarguments}
-\def\registerfrom  #1{\executeifdefined{#1\s!from}\gobblefourarguments}
-\def\registerto    #1{\executeifdefined{#1\s!to}\gobblefourarguments}
+\def\registerentry #1{\executeifdefined{#1\s!entry }\gobbleoneargument  }
+\def\registerentrya#1{\executeifdefined{#1\s!entrya}\gobbleoneargument  }
+\def\registerentryb#1{\executeifdefined{#1\s!entryb}\gobbleoneargument  }
+\def\registerentryc#1{\executeifdefined{#1\s!entryc}\gobbleoneargument  }
+\def\registersee   #1{\executeifdefined{#1\s!see   }\gobblethrearguments}
+\def\registerpage  #1{\executeifdefined{#1\s!page  }\gobblefourarguments}
+\def\registerfrom  #1{\executeifdefined{#1\s!from  }\gobblefourarguments}
+\def\registerto    #1{\executeifdefined{#1\s!to    }\gobblefourarguments}
 
 \def\doresetregister#1%
-  {\letvalue{#1\s!entrya}=\gobbleoneargument
-   \letvalue{#1\s!entryb}=\gobbleoneargument
-   \letvalue{#1\s!entryc}=\gobbleoneargument
-   \letvalue   {#1\s!see}=\gobblethreearguments
-   \letvalue  {#1\s!page}=\gobblefourarguments
-   \letvalue  {#1\s!from}=\gobblefourarguments
-   \letvalue    {#1\s!to}=\gobblefourarguments
-   \letvalue {#1\s!entry}=\gobbleoneargument}
+  {\letvalue{#1\s!entrya}\gobbleoneargument
+   \letvalue{#1\s!entryb}\gobbleoneargument
+   \letvalue{#1\s!entryc}\gobbleoneargument
+   \letvalue{#1\s!see   }\gobblethreearguments
+   \letvalue{#1\s!page  }\gobblefourarguments
+   \letvalue{#1\s!from  }\gobblefourarguments
+   \letvalue{#1\s!to    }\gobblefourarguments
+   \letvalue{#1\s!entry }\gobbleoneargument}
 
 \newif\iffirstsubentry
 \newif\iffirstsubsubentry
@@ -287,7 +290,7 @@
     \def\dohandleregisterentry##1%
       {\bgroup
        \if!!donea % \strut nieuw
-         \setbox0=\hbox{\showlocation{\doregistertexthowto{#2}
+         \setbox0\hbox{\showlocation{\doregistertexthowto{#2}
            {\strut\limitedregisterentry{#2}{##1}}}}% 
          \gotonextinternal{\s!ind}{#4}{#6}{\box0}%
        \else
@@ -296,19 +299,20 @@
        \egroup
        \!!doneafalse}%
     \!!doneafalse
-    \doifelsevalue{\??id#2\c!interactie}{\v!tekst}
+    \doifelsevalue{\??id#2\c!interactie}\v!tekst
       {\ifcase\currententrylevel                 \or
          \!!doneatrue\c!entrya\c!entryb\c!entryc \or
          \c!entrya\!!doneatrue\c!entryb\c!entryc \or
          \c!entrya\c!entryb\!!doneatrue\c!entryc \fi}
       {\c!entrya\c!entryb\c!entryc}%
-    \global\let\c!entrya=\relax
-    \global\let\c!entryb=\relax
-    \global\let\c!entryc=\relax
-    \global\let\c!entryletter=\relax
-    \global\let\c!entryreference=\relax
+    \global\let\c!entrya\relax
+    \global\let\c!entryb\relax
+    \global\let\c!entryc\relax
+    \global\let\c!entryletter\relax
+    \global\let\c!entryreference\relax
+   % \global\firstregisterentrytrue 
     \iffirstregisterpage
-      \global\chardef\lastregisterpagestatus=0
+      \global\chardef\lastregisterpagestatus\zerocount
       \expandafter\hskip\getvalue{\??id#2\c!afstand}\relax
       \donetrue
     \else\ifnum#1=3
@@ -322,15 +326,15 @@
       \donetrue
     \fi\fi\fi
     \ifdone
-      \doifelsevalue{\??id#2\c!interactie}{\v!paginanummer}
+      \doifelsevalue{\??id#2\c!interactie}\v!paginanummer
         {\bgroup
-         \setbox0=\hbox
+         \setbox0\hbox
            {\showlocation{\doregisterpage{#2}[#5]\ifnum#1=2\/\fi}}%
          \gotonextinternal{\s!ind}{#4}{#6}{\box0}%{\copy0}%
          \egroup}
         {\hbox{\doregisterpage{#2}[#5]\ifnum#1=2\/\fi}}%
       \ignorespaces
-      \global\chardef\lastregisterpagestatus=#1\relax
+      \global\chardef\lastregisterpagestatus#1\relax
     \fi
     \global\firstregisterpagefalse}
 
@@ -344,85 +348,126 @@
          {#1\ifcase\currententrylevel\s!entrya\or\s!entryb\else\s!entryc\fi}%
          {\doregisterpagehowto{#1}{\labeltexts{\v!zie}{#3}}}%
        \c!entryletter\c!entrya\c!entryb\c!entryc
-       \global\let\c!entrya=\relax
-       \global\let\c!entryb=\relax
-       \global\let\c!entryc=\relax
-       \global\let\c!entryletter=\relax
-       \global\let\c!entryreference=\relax
-       \global\chardef\lastregisterpagestatus=0
+       \global\let\c!entrya\relax
+       \global\let\c!entryb\relax
+       \global\let\c!entryc\relax
+       \global\let\c!entryletter\relax
+       \global\let\c!entryreference\relax
+       \global\chardef\lastregisterpagestatus\zerocount
+    %   \global\firstregisterentrytrue 
        \global\firstregisterpagefalse}}
      {}}
 
+%D Extended with variant: 
+
+\def\doregistercharacter[#1]#2%
+  {\global\firstregisterentrytrue 
+   \doifelsevalue{\??id#1\c!aanduiding}\v!ja
+     {\executeifdefined
+        {\strippedcsname\doregistercharacter\getvalue{\??id#1\c!variant}}%
+        \doregistercharactera
+        [#1]{#2}}
+     {\noregistercharacter[#1]{#2}}}       
+
+\def\noregistercharacter[#1]#2%
+  {\getvalue{\??id#1\c!voor}%
+   \goodbreak}
+
+% a = <before> <goodbreak> <character> <par> <after> <nobreak>
+
+\def\doregistercharactera[#1]#2%
+  {\getvalue{\??id#1\c!voor}%
+   \vskip\lineheight\goodbreak\vskip-\lineheight
+   \ifhmode\unskip\else\noindent\fi % brrr 
+   \getvalue{\??id#1\c!commando}% 
+     {\doattributes{\??id#1}\c!letter\c!kleur{\strut\ignorespaces#2}}%
+   \getvalue{\??id#1\c!na}%
+   \par\nobreak}    
+
+% b = <goodbreak> <before> <character> <after> <nobreak>
+
+\def\doregistercharacterb[#1]#2% here no lineheight hackery ! ! !
+  {\getvalue{\??id#1\c!voor}%
+   \ifhmode\unskip\else\noindent\fi % brrr 
+   \getvalue{\??id#1\c!commando}% 
+     {\doattributes{\??id#1}\c!letter\c!kleur{\strut\ignorespaces#2}}%
+   \getvalue{\??id#1\c!na}%
+   \nobreak}    
+
+%D Don't use \type{\string#2}; another hack isneeded, since 
+%D \type {#2} can be \type {\string} itself.
+
+\def\doregisterreference[#1]#2%
+  {\doifvalue{\??id#1\c!refereren}\v!aan
+     {\pagereference[#1:#2]}}
+
 \def\dosetpageregisterletter#1#2%
-  {\gdef\c!entryreference%
-     {\global\let\c!entryreference=\relax
-      \doifvalue{\??id#1\c!refereren}{\v!aan}
-        {\pagereference[#1:#2]}}%
-   \gdef\c!entryletter%
-     {\global\let\c!entryletter=\relax
-      \global\utilitydonetrue
-      \getvalue{\??id#1\c!voor}%
-      \vskip\lineheight\goodbreak\vskip-\lineheight
-      \doifelsevalue{\??id#1\c!aanduiding}{\v!ja}
-        {\ifhmode\unskip\else\noindent\fi
-         \getvalue{\??id#1\c!commando}% % needed
-           {\doattributes{\??id#1}\c!letter\c!kleur{\strut\ignorespaces#2}}%
-         \getvalue{\??id#1\c!na}%
-         \par\nobreak}       % don't use \string#2, other hack
-        {\goodbreak}}}       % needed #2 can be \string...
+  {\gdef\c!entryreference
+     {\global\let\c!entryreference\relax
+      \doregisterreference[#1]{#2}}%
+   \gdef\c!entryletter   
+     {\global\utilitydonetrue
+      \global\let\c!entryletter\relax
+      \doregistercharacter[#1]{#2}}}
 
 \def\dosetpageregisterentrya#1#2%
   {\edef\currententrylevel{1}%
-   \global\let\c!entryb=\relax
-   \global\let\c!entryc=\relax
-   \gdef\c!entrya%
-     {\global\firstregisterpagetrue
-      \endgraf
+   \global\let\c!entryb\relax
+   \global\let\c!entryc\relax
+   \gdef\c!entrya
+     {\iffirstregisterentry\else\endgraf\fi % new
+      \global\firstregisterpagetrue
       \hangindent1em\noindent\c!entryreference
       \dohandleregisterentry{#2}%
+      \global\firstregisterentryfalse
       \global\firstsubentrytrue
       \global\firstsubsubentrytrue}}
 
 \def\dosetpageregisterentryb#1#2%
   {\edef\currententrylevel{2}%
-   \global\let\c!entryc=\relax
-   \global\def\c!entryb%
-     {\global\firstregisterpagetrue
-      \global\let\c!entrya=\relax
-      \endgraf
+   \global\let\c!entryc\relax
+   \global\def\c!entryb
+     {\iffirstregisterentry\else\endgraf\fi % new
+      \global\firstregisterpagetrue
+      \global\let\c!entrya\relax
       \iffirstsubentry\nobreak\fi
       \hangindent2em\noindent\c!entryreference\hskip1em\relax
       \dohandleregisterentry{#2}%
+      \global\firstregisterentryfalse
       \global\firstsubentryfalse
       \global\firstsubsubentrytrue}}
 
 \def\dosetpageregisterentryc#1#2%
   {\edef\currententrylevel{3}%
-   \gdef\c!entryc%
-     {\global\firstregisterpagetrue
-      \global\let\c!entrya=\relax
-      \global\let\c!entryb=\relax
-      \endgraf
+   \gdef\c!entryc
+     {\iffirstregisterentry\else\endgraf\fi % new
+      \global\firstregisterpagetrue
+      \global\let\c!entrya\relax
+      \global\let\c!entryb\relax
       \iffirstsubsubentry\nobreak\fi
       \hangindent3em\noindent\c!entryreference\hskip2em\relax
       \dohandleregisterentry{#2}%
+      \global\firstregisterentryfalse
       \global\firstsubsubentryfalse}}
 
 \def\dosetpageregister#1% \currentregister gebruiken 
-  {\dosetreglevel{\getvalue{\??id#1\c!criterium}}%
+  {\dosetreglevel{#1}%
    \global\let\currentregisterentry\empty
    \global\firstsubentrytrue
    \global\firstsubsubentrytrue
    \setregisterpage{#1}%
-   \chardef\lastregisterpagestatus=0
+   \chardef\lastregisterpagestatus\zerocount
    \setvalue{#1\s!entrya}{\dosetpageregisterentrya {#1}}%
    \setvalue{#1\s!entryb}{\dosetpageregisterentryb {#1}}%
    \setvalue{#1\s!entryc}{\dosetpageregisterentryc {#1}}%
-   \setvalue  {#1\s!page}{\dosetpageregisterpage{1}{#1}}%
-   \setvalue  {#1\s!from}{\dosetpageregisterpage{2}{#1}}%
-   \setvalue    {#1\s!to}{\dosetpageregisterpage{3}{#1}}%
-   \setvalue   {#1\s!see}{\dosetpageregistersee    {#1}}%
-   \setvalue {#1\s!entry}{\dosetpageregisterletter {#1}}}
+   \setvalue{#1\s!page  }{\dosetpageregisterpage{1}{#1}}%
+   \setvalue{#1\s!from  }{\dosetpageregisterpage{2}{#1}}%
+   \setvalue{#1\s!to    }{\dosetpageregisterpage{3}{#1}}%
+   \setvalue{#1\s!see   }{\dosetpageregistersee    {#1}}%
+   \setvalue{#1\s!entry }{\dosetpageregisterletter {#1}}}
+
+\def\dosetreglevel#1%
+  {\dosetfilterlevel{\getvalue{\??id#1\c!criterium}}\empty}
 
 \def\getalllistreferences#1#2%
   {\doglobal\convertexpanded{\??id#1}{#2}\currentregisterentry 
@@ -435,7 +480,7 @@
       \def\internallistreference{0}}}
 
 \def\dosetlinkregister#1% is die page reference echt nodig?
-  {\dosetreglevel{\getvalue{\??id#1\c!criterium}}%
+  {\dosetreglevel{#1}%
    \setregisterpage{#1}%
    \global\let\currentregisterentry\empty
    \global\firstsubentrytrue % not needed 
@@ -476,9 +521,9 @@
       % aangepast 
       \def\dodocommando[##1-##2]%
         {\gotonextinternal{\s!ind}{##1}{##2}{\box0}}%
-      \doifelsevalue{\??id#1\c!interactie}{\v!paginanummer}     
+      \doifelsevalue{\??id#1\c!interactie}\v!paginanummer     
         {\limitedregisterentry{#1}{#2}} % paginanummer
-        {{\setbox0=\hbox{\limitedregisterentry{#1}{\begstrut#2}}%  
+        {{\setbox0\hbox{\limitedregisterentry{#1}{\begstrut#2}}%  
           \ifx\firstlistreference\empty  % tekst,alles
             \ifx\midlistreference\empty
               \box0
@@ -488,11 +533,11 @@
           \else
             \expandafter\dodocommando\expandafter[\firstlistreference]%
           \fi}}%
-      \doifvalue{\??id#1\c!nummer}{\v!ja}
+      \doifvalue{\??id#1\c!nummer}\v!ja
         {\hskip\getvalue{\??id#1\c!afstand}(\commalistsize)}%
       \doifnotvalue{\??id#1\c!interactie}{\v!tekst} % paginanummer,alles
         {\def\docommando##1##2%
-           {{\setbox0=\hbox{\showlocation{\hbox to 1em{\hss\symbol[##2]\hss}}}%
+           {{\setbox0\hbox{\showlocation{\hbox to 1em{\hss\symbol[##2]\hss}}}%
              \ifx##1\empty
                % \hskip\wd0 % (optioneel maken)
              \else
@@ -508,13 +553,8 @@
       \limitedregisterentry{#1}{#2}%
     \fi}
 
-%\def\dosetregister#1%
-%  {\doifelsevalue{\??id#1\c!koppeling}{\v!ja}
-%     {\dosetlinkregister{#1}}
-%     {\dosetpageregister{#1}}}
-
 \def\dosetregister#1%
-  {\doifelsevalue{\??id#1\c!koppeling}{\v!ja}
+  {\doifelsevalue{\??id#1\c!koppeling}\v!ja
      {\ifautoregisterhack 
         \dosetautoregister{#1}%
       \else
@@ -525,7 +565,7 @@
 \newcounter\internallistreference
 
 \def\doloadregisterlinks#1%
-  {\dosetreglevel{\getvalue{\??id#1\c!criterium}}%
+  {\dosetreglevel{#1}%
    \setregisterpage{#1}%
    \global\let\currentregisterentry\empty
    \global\firstregisterpagetrue
@@ -570,9 +610,9 @@
   {\iflocation
      \ifcase0\countervalue{autolink:#1}\relax % only once 
        \begingroup
-       \let\dosetregister=\doloadregisterlinks
+       \let\dosetregister\doloadregisterlinks
        \stelregisterin[#1][#2]%
-       \doutilities{#1}{\jobname}{#1}{}{}%
+       \doutilities{#1}\jobname{#1}\relax\relax
        \endgroup
        \ifautoregisterhack 
          \doinitializeautoregister{#1}%
@@ -582,157 +622,8 @@
      \fi
    \fi}
 
-\def\koppelregister%
+\def\koppelregister
   {\dodoubleempty\dokoppelregister}
-
-% \def\doprocesslinkregister[#1][#2]#3%
-%   {\hbox
-%      {\doprocesspageregister[#2]{#3}%
-%       \let\firstlistreference=\empty
-%       \let\lastlistreference=\empty
-%       \let\selflistreference=\empty
-%       \let\prevlistreference=\empty
-%       \let\nextlistreference=\empty
-%       \getalllistreferences{#1}{#3}%
-%       \doifnot{\alllistreferences}{}
-%         {\def\dodocommando[##1-##2]%
-%            {\ifx\firstlistreference\empty
-%               \def\firstlistreference{##1-##2}%
-%             \fi
-%             \def\lastlistreference{##1-##2}%
-%             \ifnum##1<\nextinternalreference\relax
-%               \def\prevlistreference{##1-##2}%
-%              \else\ifnum##1>\nextinternalreference\relax
-%                \def\nextlistreference{##1-##2}%
-%                \def\dodocommando[####1-####2]%
-%                  {\def\lastlistreference{####1-####2}}%
-%              \else
-%                \def\selflistreference{##1-##2}%
-%              \fi\fi}%
-%          \def\docommando##1%
-%            {\dodocommando[##1]}%
-%          \processcommacommand[\alllistreferences]\docommando}%
-%        \ifx\prevlistreference\empty
-%          \let\prevlistreference=\lastlistreference
-%        \fi
-%        \ifx\nextlistreference\empty
-%          \let\nextlistreference=\firstlistreference
-%        \fi
-%        \ifx\prevlistreference\selflistreference
-%          \let\prevlistreference=\empty
-%          \let\nextlistreference=\empty
-%        \fi
-%        \def\dodocommando[##1-##2]%
-%          {\gotonextinternal{\s!ind}{##1}{##2}{\box0}}%{\copy0}}%
-%        \def\docommando##1##2%
-%          {\bgroup
-%           \ifx##1\empty
-%             \doifvalue{\??id#1\c!onbekendeverwijzing}{\v!leeg}
-%               {\hskip1em}%
-%           \else
-%             \setbox0=\hbox to 1em{\hss\showlocation{\symbol[##2]}\hss}%
-%             \expandafter\dodocommando\expandafter[##1]%
-%           \fi
-%           \egroup}%
-%        \processaction
-%          [\getvalue{\??id#1\c!plaats}]
-%          [\v!midden=>\docommando\prevlistreference\v!vorige,
-%            \v!links=>\docommando\prevlistreference\v!vorige
-%                      \docommando\nextlistreference\v!volgende]%
-%        \doifreferencefoundelse{\s!lin:\internallistreference}
-%          {\gotosomeinternal
-%             {\s!lin}{\internallistreference}{\currentrealreference}
-%             {\showlocation{\limitedregisterentry{#1}{#3}}}}
-%          {\hbox{\limitedregisterentry{#1}{#3}}}%
-%        \processaction
-%          [\getvalue{\??id#1\c!plaats}]
-%          [ \v!midden=>\docommando\nextlistreference\v!volgende,
-%            \v!rechts=>\docommando\prevlistreference\v!vorige
-%                       \docommando\nextlistreference\v!volgende]}}
-%
-% \def\doprocesslinkregister[#1][#2]#3%
-%   {\hbox
-%      {\doprocesspageregister[#2]{}{#3}%
-%       \let\firstlistreference=\empty
-%       \let\lastlistreference=\empty
-%       \let\selflistreference=\empty
-%       \let\prevlistreference=\empty
-%       \let\nextlistreference=\empty
-%       \getalllistreferences{#1}{#3}%
-%       \doifnot{\alllistreferences}{}
-%         {\def\dodocommando[##1-##2]%
-%            {\ifx\firstlistreference\empty
-%               \def\firstlistreference{##1-##2}%
-%             \fi
-%             \def\lastlistreference{##1-##2}%
-%             \ifnum##1<\nextinternalreference\relax
-%               \def\prevlistreference{##1-##2}%
-%              \else\ifnum##1>\nextinternalreference\relax
-%                \def\nextlistreference{##1-##2}%
-%                \def\dodocommando[####1-####2]%
-%                  {\def\lastlistreference{####1-####2}}%
-%              \else
-%                \def\selflistreference{##1-##2}%
-%              \fi\fi}%
-%          \def\docommando##1%
-%            {\dodocommando[##1]}%
-%          \processcommacommand[\alllistreferences]\docommando}%
-%        \ifx\prevlistreference\empty
-%          \let\prevlistreference=\lastlistreference
-%        \fi
-%        \ifx\nextlistreference\empty
-%          \let\nextlistreference=\firstlistreference
-%        \fi
-%        \ifx\prevlistreference\selflistreference
-%          \let\prevlistreference=\empty
-%          \let\nextlistreference=\empty
-%        \fi
-%        \def\dodocommando[##1-##2]%
-%          {\gotonextinternal{\s!ind}{##1}{##2}{\box0}}%{\copy0}}%
-%        \def\docommando##1##2%
-%          {\bgroup
-%           \ifx##1\empty
-%             \doifvalue{\??id#1\c!onbekendeverwijzing}{\v!leeg}
-%               {\hskip1em}%
-%           \else
-%             \setbox0=\hbox to 1em{\hss\showlocation{\symbol[##2]}\hss}%
-%             \expandafter\dodocommando\expandafter[##1]%
-%           \fi
-%           \egroup}%
-%        \processaction
-%          [\getvalue{\??id#1\c!plaats}]
-%          [\v!midden=>\docommando\prevlistreference\v!vorige,
-%            \v!links=>\docommando\prevlistreference\v!vorige
-%                      \docommando\nextlistreference\v!volgende]%
-%        \doifreferencefoundelse{\s!lin:\internallistreference}
-%          {\gotosomeinternal
-%             {\s!lin}{\internallistreference}{\currentrealreference}
-%             {\showlocation{\limitedregisterentry{#1}{#3}}}}
-%          {\hbox{\limitedregisterentry{#1}{#3}}}%
-%        \processaction
-%          [\getvalue{\??id#1\c!plaats}]
-%          [ \v!midden=>\docommando\nextlistreference\v!volgende,
-%            \v!rechts=>\docommando\prevlistreference\v!vorige
-%                       \docommando\nextlistreference\v!volgende]}}
-%
-% better: 
- 
-% \def\dodocommandoprolinrefA[#1-#2]%
-%   {\ifx\firstlistreference\empty
-%      \def\firstlistreference{#1-#2}%
-%    \fi
-%    \def\lastlistreference{#1-#2}%
-%    \ifnum#1<\nextinternalreference\relax
-%      \def\prevlistreference{#1-#2}%
-%    \else\ifnum#1>\nextinternalreference\relax
-%      \def\nextlistreference{#1-#2}%
-%      \def\dodocommandoprolinrefA[##1-##2]%
-%        {\def\lastlistreference{##1-##2}}%
-%    \else
-%      \def\selflistreference{#1-#2}%
-%    \fi\fi}
-% 
-% more efficient :
 
 \def\dodocommandoprolinrefAA[#1-#2]%
   {\def\lastlistreference{#1-#2}}
@@ -762,50 +653,10 @@
    \ifx#2\empty
      \doifvalue{\??id#1\c!onbekendeverwijzing}\v!leeg{\hskip1em}%
    \else
-     \setbox0=\hbox to 1em{\hss\showlocation{\symbol[#3]}\hss}%
+     \setbox0\hbox to 1em{\hss\showlocation{\symbol[#3]}\hss}%
      \expandafter\dodocommandoprolinrefB\expandafter[#2]%
    \fi
    \egroup}
-
-%\def\doprocesslinkregister[#1][#2]#3%
-%  {\hbox
-%     {\doprocesspageregister[#2]{}{#3}%
-%      \let\firstlistreference\empty
-%      \let\lastlistreference\empty
-%      \let\selflistreference\empty
-%      \let\prevlistreference\empty
-%      \let\nextlistreference\empty
-%      \getalllistreferences{#1}{#3}%
-%      \ifx\alllistreferences\empty \else
-%        \expanded{\rawprocesscommalist[\alllistreferences]}\docommandoprolinrefA
-%      \fi
-%       \ifx\prevlistreference\empty
-%         \let\prevlistreference\lastlistreference
-%       \fi
-%       \ifx\nextlistreference\empty
-%         \let\nextlistreference\firstlistreference
-%       \fi
-%       \ifx\prevlistreference\selflistreference
-%         \let\prevlistreference\empty
-%         \let\nextlistreference\empty
-%       \fi
-%       % can be a bit faster is one proces only
-%       % can even be resolved at definition time 
-%       \processaction
-%         [\getvalue{\??id#1\c!plaats}]
-%         [\v!midden=>\docommandoprolinrefB{#1}\prevlistreference\v!vorige,
-%           \v!links=>\docommandoprolinrefB{#1}\prevlistreference\v!vorige
-%                     \docommandoprolinrefB{#1}\nextlistreference\v!volgende]%
-%       \doifreferencefoundelse{\s!lin:\internallistreference}
-%         {\gotosomeinternal
-%            {\s!lin}{\internallistreference}{\currentrealreference}
-%            {\showlocation{\limitedregisterentry{#1}{#3}}}}
-%         {\hbox{\limitedregisterentry{#1}{#3}}}%
-%       \processaction
-%         [\getvalue{\??id#1\c!plaats}]
-%         [ \v!midden=>\docommandoprolinrefB{#1}\nextlistreference\v!volgende,
-%           \v!rechts=>\docommandoprolinrefB{#1}\prevlistreference\v!vorige
-%                      \docommandoprolinrefB{#1}\nextlistreference\v!volgende]}}
 
 \def\doprocesslinkregister[#1][#2]#3%
   {\hbox
@@ -856,27 +707,9 @@
          \docommandoprolinrefB{#1}\nextlistreference\v!volgende
        \fi}}
 
-% \def\dodolinkedregister[#1][#2]#3% page auto link 
-%   {\bgroup
-%    \chardef\registerpagestatus=1
-%    \def\currentregister{#1}%
-%    \iflocation
-%      \ifautoregisterhack 
-%        \def\next{\doprocessautoregister[#1][#2]{#3}}%
-%      \else
-%        \def\next{\doprocesslinkregister[#1][#2]{#3}}%
-%      \fi
-%    \else
-%      \def\next{\doprocesspageregister[#2]{#3}}%
-%    \fi
-%    \next
-%    \egroup
-%    \ifvmode\nobreak\fi
-%    \GotoPar}
-
 \def\dodolinkedregister[#1][#2]#3% page auto link
   {\bgroup                                       
-   \chardef\registerpagestatus=1
+   \chardef\registerpagestatus\plusone
    \def\currentregister{#1}%
    \iflocation
      \ifautoregisterhack 
@@ -897,7 +730,7 @@
 
 \def\dosetautoregister#1% 
   {\makecounter{autolink:#1}%
-   \dosetreglevel{\getvalue{\??id#1\c!criterium}}%
+   \dosetreglevel{#1}%
    \setregisterpage{#1}%
    \global\let\currentregisterentry\empty
    \global\firstsubentrytrue % not needed 
@@ -919,7 +752,7 @@
     %\setupinteraction[\c!kleur=,\c!contrastkleur=,\c!letter=]% kan sneller
      \resetinteractionparameter\c!kleur
      \resetinteractionparameter\c!contrastkleur
-     \resetinteractionparameter\c!letterkleur
+     \resetinteractionparameter\c!letter
      \naarbox
        {\limitedregisterentry{#1}{\begstrut#2}}%  
        [JS(SetRegisterEntry{\v!register,\countervalue{autolink:#1},#2,{\alllistreferences}})]%
@@ -929,21 +762,12 @@
      \limitedregisterentry{#1}{#2}%
    \fi}
 
-% \def\doprocessautoregister[#1][#2]#3%
-%   {\hbox
-%      {\doprocesspageregister[#2]{#3}%
-%       \doifreferencefoundelse{\s!lin:\internallistreference}
-%         {\gotosomeinternal
-%            {\s!lin}{\internallistreference}{\currentrealreference}
-%            {\showlocation{\limitedregisterentry{#1}{#3}}}}
-%         {\hbox{\limitedregisterentry{#1}{#3}}}}}
-
 \def\doprocessautoregister[#1][#2]#3%
   {\hbox
      {\doprocesspageregister[#2]{}{#3}%
       \doifreferencefoundelse{\s!lin:\internallistreference}
-        {\gotosomeinternal
-           {\s!lin}{\internallistreference}{\currentrealreference}
+        {\gotosomeinternal \s!lin
+           {\internallistreference}{\currentrealreference}
            {\showlocation{\limitedregisterentry{#1}{#3}}}}
         {\hbox{\limitedregisterentry{#1}{#3}}}}}
 
@@ -959,7 +783,7 @@
   {\definefield[#1:\realfolio][line][\v!register]%
    \field[#1:\realfolio]}
 
-\def\simpleregisterfield%
+\def\simpleregisterfield
   {\complexregisterfield[\v!register]}
 
 \definecomplexorsimple\registerfield
@@ -985,6 +809,15 @@
 \def\doinitializelinkregister#1%
   {}
 
+% todo ruwe register 
+
+\def\plaatsregister
+  {\dosingleargument\doplaatsregister}
+
+\def\doplaatsregister[#1]%
+  {\def\currentregister{#1}%
+   \complexorsimpleempty\doplaatsregister}
+
 \def\complexdoplaatsregister[#1]%
   {\begingroup
    \stelregisterin[\currentregister][#1]%
@@ -995,17 +828,10 @@
       \c!uitlijnen=\getvalue{\??id\currentregister\c!uitlijnen}]%
    \mindermeldingen
    \startopelkaar[\v!blanko]%
-   \doutilities{\currentregister}{\jobname}{\currentregister}{}{\par}%
+   \doutilities\currentregister\jobname\currentregister\relax\par
    \stopopelkaar
    \stopkolommen
    \endgroup}
-
-\def\doplaatsregister[#1]%
-  {\def\currentregister{#1}%
-   \complexorsimpleempty\doplaatsregister}
-
-\def\plaatsregister%
-  {\dosingleargument\doplaatsregister}
 
 \def\complexdovolledigregister[#1]% \@EA's kunnen weg
   {\@EA\plaatsvolledig\@EA{\@EA\systemsuppliedchapter\@EA}%
@@ -1017,7 +843,7 @@
   {\def\currentregister{#1}%
    \complexorsimpleempty\dovolledigregister}
 
-\def\volledigregister%
+\def\volledigregister
   {\dosingleargument\doplaatsregister}
 
 \def\dodefinieerregister[#1][#2]%
@@ -1029,6 +855,7 @@
       \c!na=,
       \c!symbool=,
       \c!interactie=\v!paginanummer,
+      \c!variant=\v!a,
       \c!afstand=1em,
       \c!letter=\v!vet,
       \c!paginaletter=\v!schuin,
@@ -1065,14 +892,14 @@
 \def\definieerregister%
   {\dodoubleargument\dodefinieerregister}
 
-\def\registerlengte  {\utilityregisterlength}
+\def\registerlengte{\utilityregisterlength}
 
-\def\utilityregisterlength {0}
+\def\utilityregisterlength{0}
 
 \def\dobepaalregisterkenmerken[#1][#2]%
   {\begingroup
    \stelregisterin[#1][#2]%
-   \dosetreglevel{\getvalue{\??id#1\c!criterium}}%
+   \dosetreglevel{#1}%
    \setvalue{#1\s!from}%
      {\getvalue{#1\s!page}}%
    \setvalue{#1\s!page}##1##2##3##4%
@@ -1081,8 +908,8 @@
          \global\utilitydonetrue}
         {}}%
    \doglobal\newcounter\utilityregisterlength
-   \setbox0=\vbox
-     {\doutilities{#1}{\jobname}{#1}{}{}}%
+   \setbox0\vbox
+     {\doutilities{#1}\jobname{#1}\relax\relax}%
    \endgroup
    \ifregistergeplaatst
      \setsystemmode  \v!register 
@@ -1126,6 +953,4 @@
 % 
 % \volledigeindex
 
-\protect 
-
-\endinput 
+\protect \endinput 

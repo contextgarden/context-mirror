@@ -19,48 +19,59 @@
 \def\dostartfittingpage[#1][#2]%
   {\pagina
    \bgroup
-   \setbox\scratchbox=\hbox
+   \dontcomplain
+   \setbox\scratchbox\hbox
      \bgroup
      \getparameters[#1][#2]%
      \schaal[\c!schaal=\getvalue{#1\c!schaal}]\bgroup\localframed[#1]\bgroup}
 
-\def\dostopfittingpage%
+\definepapersize
+  [\??fp\s!dummy]
+  [\c!breedte=\fittingwd,
+   \c!hoogte=\fittinght]
+
+\definelayout
+  [\??fp\s!dummy]
+  [\c!breedte=\fittingwd,\c!hoogte=\fittinght,\c!plaats=\v!midden,
+   \c!kopwit=\!!zeropoint,\c!rugwit=\!!zeropoint,
+   \c!snijwit=\!!zeropoint,\c!bodemwit=\!!zeropoint,
+   \c!tekstafstand=\!!zeropoint,\c!regels=0,\c!grid=\v!nee,
+   \c!hoofd=\!!zeropoint,\c!voet=\!!zeropoint]
+
+\def\dostopfittingpage
   {\egroup\egroup\egroup
    \edef\fittingwd{\the\wd\scratchbox}%
    \edef\fittinght{\the\ht\scratchbox}%
-   \definepapersize
-     [\s!dummy]
-     [\c!breedte=\fittingwd,
-      \c!hoogte=\fittinght]%
-   \startlocal % keep settings as local as can be
-     \setuppapersize
-       [\s!dummy][\s!dummy]%
-     \stellayoutin
-       [\c!breedte=\fittingwd,\c!hoogte=\fittinght,\c!plaats=\v!midden,
-        \c!kopwit=\!!zeropoint,\c!rugwit=\!!zeropoint,
-        \c!snijwit=\!!zeropoint,\c!bodemwit=\!!zeropoint,
-        \c!tekstafstand=\!!zeropoint,
-        \c!hoofd=\!!zeropoint,\c!voet=\!!zeropoint]%
-   \stoplocal % which saves us the trouble of push/pop
+   \startlocallayout
+   \ifdim\fittinght<\lineheight 
+     % write status : too small 
+     \setbox\scratchbox\vbox to \lineheight{\vss\box\scratchbox\vss}%
+     \edef\fittinght{\the\lineheight}%
+   \fi
+   \setuppapersize
+     [\??fp\s!dummy][\??fp\s!dummy]%
+   \stellayoutin
+     [\??fp\s!dummy]%
    \startmakeup[\v!standaard][\c!tekststatus=\v!leeg,\c!dubbelzijdig=\v!nee,\c!pagina=]%
      \centerbox{\box\scratchbox}%
    \stopmakeup
+   \stoplocallayout
    \egroup}
 
 %D \TEX\ pages (for \METAPOST\ pages, see \type {meta-fig}): 
 
 \presetlocalframed[\??tg]
 
-\def\setupTEXpage%
+\def\setupTEXpage
   {\dodoubleargument\getparameters[\??tg]}
 
-\def\startTEXpage%
+\def\startTEXpage
   {\dosingleempty\dostartTEXpage}
 
 \def\dostartTEXpage[#1]%
   {\dostartfittingpage[\??tg][#1]\gobblespacetokens}
 
-\def\stopTEXpage%
+\def\stopTEXpage
   {\removelastspace
    \dostopfittingpage}
 
@@ -98,7 +109,7 @@
      \starttext 
      #2% preamble 
      \startTEXpage[#1]%
-       \setbox\scratchbox=\hbox{#3}%
+       \setbox\scratchbox\hbox{#3}%
        \saveTEXapplication02% dimensions 
        \box\scratchbox
      \stopTEXpage
@@ -114,11 +125,11 @@
      \executesystemcommand{ps2pdf \bufferprefix\@@texapp.ps \bufferprefix\@@texapp.pdf}%
    \fi
    \restoreTEXapplication % dimensions 
-   \setbox\scratchbox=\hbox
+   \setbox\scratchbox\hbox
      {\expanded{\externalfigure
         [\bufferprefix\@@texapp.\ifdone eps\else pdf\fi]
         [\c!object=\v!nee]}}%
-   \setbox\scratchbox=\hbox
+   \setbox\scratchbox\hbox
      {\lower\ht\scratchbox\hbox{\raise\dimen2\box\scratchbox}}%
    \wd\scratchbox\dimen0
    \ht\scratchbox\dimen2

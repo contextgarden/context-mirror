@@ -25,7 +25,7 @@
 \writestatus{loading}{Context Support Macros / Fun Stuff}
 
 \ifx\definefont\undefined
-  \def\definefont[#1][#2]{\expandafter\font\csname#1\endcsname=#2\relax}
+  \def\definedfont[#1]{\font\temp#1\relax\temp}
 \fi
 
 %D \macros
@@ -132,7 +132,7 @@
 %         \hskip-\parindent
 %       \fi
 %       \setbox0=\hbox
-%         {\definefont[temp][#2 at #3]\temp#1{#7}\hskip#4}%
+%         {\definedfont[#2 at #3]#1{#7}\hskip#4}%
 %          \ifdim\dp0>\dp\strutbox % one of those Q's , will be option
 %            \setbox2=\hbox{\raise\dp0\hbox{\lower\dp\strutbox\copy0}}%
 %            \ht2=\ht0 \dp0=\dp\strutbox \setbox0=\box2
@@ -160,10 +160,51 @@
 
 \chardef\DroppedStatus=0 % 0=done 1=starting 2=doing 3=error
 
+% \def\DroppedCaps#1#2#3#4#5#6#7% does not yet handle accented chars
+%   {\convertargument            #7\to\asciia
+%    \convertcommand \DroppedString\to\asciib
+%    \ExpandBothAfter\doifinstringelse{\asciia}{\asciib}
+%      {\ifvmode % this one is \EveryPar save, precede by \par if needed
+%         \vskip#6\baselineskip
+%         \penalty-200
+%         \vskip-#6\baselineskip
+%       \fi
+%       \ifhmode
+%         \hskip-\parindent
+%       \fi
+%       \setbox0\hbox
+%         {\definedfont[#2 at #3]#1{#7}\hskip#4}%
+%          \ifdim\dp0>\dp\strutbox % one of those Q's , will be option
+%            \setbox2\hbox{\raise\dp0\hbox{\lower\dp\strutbox\copy0}}%
+%            \ht2\ht0 \dp0\dp\strutbox \setbox0\box2
+%          \fi
+%       \setbox0\hbox
+%         {\lower#5\box0}%
+%       \ht0\ht\strutbox
+%       \dp0\dp\strutbox
+%       \globaldropcaps\edef\DroppedIndent{\the\wd0}%
+%       \globaldropcaps\edef\DroppedLines {\number#6}%
+%       \globaldropcaps\chardef\DroppedStatus2
+%       \globaldropcaps\hangindent\DroppedIndent
+%       \globaldropcaps\hangafter-\DroppedLines
+%       \noindent
+%       \hskip-\DroppedIndent
+%       \vbox{\forgetall\box0}%
+%       \nobreak
+%       \let\next\ignorespaces} % Could be a one character word !
+%      {\globaldropcaps\let\DroppedIndent\!!zeropoint
+%       \globaldropcaps\edef\DroppedLines{\number\maxdimen}%
+%       \globaldropcaps\chardef\DroppedStatus3
+%       \def\next{#7}}%
+%    \let\globaldropcaps\global 
+%    \next}
+
+\chardef\DropMode=0 % 1 == marginhang 
+
 \def\DroppedCaps#1#2#3#4#5#6#7% does not yet handle accented chars
   {\convertargument            #7\to\asciia
    \convertcommand \DroppedString\to\asciib
-   \ExpandBothAfter\doifinstringelse{\asciia}{\asciib}
+   \ExpandBothAfter\doifinstringelse\asciia\asciib
      {\ifvmode % this one is \EveryPar save, precede by \par if needed
         \vskip#6\baselineskip
         \penalty-200
@@ -172,29 +213,40 @@
       \ifhmode
         \hskip-\parindent
       \fi
-      \setbox0=\hbox
-        {\definefont[temp][#2 at #3]\temp#1{#7}\hskip#4}%
+      \setbox0\hbox
+        {\definedfont[#2 at #3]#1{#7}\hskip#4}%
          \ifdim\dp0>\dp\strutbox % one of those Q's , will be option
-           \setbox2=\hbox{\raise\dp0\hbox{\lower\dp\strutbox\copy0}}%
-           \ht2=\ht0 \dp0=\dp\strutbox \setbox0=\box2
+           \setbox2\hbox{\raise\dp0\hbox{\lower\dp\strutbox\copy0}}%
+           \ht2\ht0
+           \dp0\dp\strutbox
+           \setbox0\box2
          \fi
-      \setbox0=\hbox
-        {\lower#5\box0}%
-      \ht0=\ht\strutbox
-      \dp0=\dp\strutbox
-      \globaldropcaps\edef\DroppedIndent{\the\wd0}%
-      \globaldropcaps\edef\DroppedLines {\number#6}%
-      \globaldropcaps\chardef\DroppedStatus=2
-      \globaldropcaps\hangindent\DroppedIndent
-      \globaldropcaps\hangafter-\DroppedLines
-      \noindent
-      \hskip-\DroppedIndent
+      \setbox0\hbox
+        {\ifnum\DropMode=\plusone
+           \hskip-\wd0\wd0\zeropoint
+         \fi
+         \lower#5\box0}%
+      \ht0\ht\strutbox
+      \dp0\dp\strutbox
+      \ifnum\DropMode=\plusone
+        \globaldropcaps\let\DroppedIndent\!!zeropoint
+        \globaldropcaps\edef\DroppedLines{\number\maxdimen}%
+        \globaldropcaps\chardef\DroppedStatus3
+      \else
+        \globaldropcaps\edef\DroppedIndent{\the\wd0}%
+        \globaldropcaps\edef\DroppedLines {\number#6}%
+        \globaldropcaps\chardef\DroppedStatus2
+        \globaldropcaps\hangindent\DroppedIndent
+        \globaldropcaps\hangafter-\DroppedLines
+        \noindent
+        \hskip-\DroppedIndent
+      \fi
       \vbox{\forgetall\box0}%
       \nobreak
-      \let\next=\ignorespaces} % Could be a one character word !
-     {\globaldropcaps\edef\DroppedIndent{0pt}%
-      \globaldropcaps\edef\DroppedLines {\number\maxdimen}%
-      \globaldropcaps\chardef\DroppedStatus=3
+      \let\next\ignorespaces} % Could be a one character word !
+     {\globaldropcaps\let\DroppedIndent\!!zeropoint
+      \globaldropcaps\edef\DroppedLines{\number\maxdimen}%
+      \globaldropcaps\chardef\DroppedStatus3
       \def\next{#7}}%
    \let\globaldropcaps\global 
    \next}
@@ -210,10 +262,14 @@
 %D Sometimes you need to make sure that the global settings are
 %D kept local, as in:  
 %D 
+% %D \startbuffer
+% %D \defineparagraphs[SomePar][n=2,rule=on]
+% %D \setupparagraphs [SomePar][1][width=.5\textwidth]
+% %D \setupparagraphs [SomePar][2][width=.5\textwidth]
 %D \startbuffer
-%D \defineparagraphs[SomePar][n=2,rule=on]
-%D \setupparagraphs [SomePar][1][width=.5\textwidth]
-%D \setupparagraphs [SomePar][2][width=.5\textwidth]
+%D \definieeralineas[SomePar][n=2,rule=on]
+%D \stelalineasin [SomePar][1][width=.5\textwidth]
+%D \stelalineasin [SomePar][2][width=.5\textwidth]
 %D 
 %D \startSomePar
 %D   \localdropcaps\NiceDroppedCaps{}{cmr12}{0pt}{2}Here we need
@@ -241,18 +297,18 @@
 \newcount\lastprevgraf
 \newcount\droppedlines
 
-\def\CheckDroppedCaps%
+\def\CheckDroppedCaps
   {\global\lastprevgraf\prevgraf}
 
-\def\AutoDroppedCaps% will be proper core stuff since it
-  {\globaldropcaps\chardef\DroppedStatus=1
-   \global\lastprevgraf=0
-   \global\droppedlines=0
+\def\AutoDroppedCaps % will be proper core stuff since it
+  {\globaldropcaps\chardef\DroppedStatus\plusone
+   \global\lastprevgraf\zerocount
+   \global\droppedlines\zerocount
    \EveryPar{\doAutoDroppedCaps}}
 
 \let\AutoDroppedNext\relax
   
-\def\doAutoDroppedCaps%
+\def\doAutoDroppedCaps
   {\ifcase\DroppedStatus % done
      \let\next\relax  
    \or % starting
@@ -263,27 +319,27 @@
        \def\next{\NiceDroppedCaps{}{\@@dcfont}{.125em}{\@@dcn}}%
    % \fi % and hope for the best 
    \or % doing
-     \global\advance\droppedlines by \lastprevgraf
-     \ifnum\droppedlines=0
-       \globaldropcaps\chardef\DroppedStatus=0
+     \global\advance\droppedlines \lastprevgraf
+     \ifnum\droppedlines=\zerocount
+       \globaldropcaps\chardef\DroppedStatus\zerocount
        \let\next\relax
-     \else\ifnum\droppedlines>0
+     \else\ifnum\droppedlines>\zerocount
        \ifnum\droppedlines<\DroppedLines\relax
-         \globaldropcaps\hangindent=\DroppedIndent
-         \globaldropcaps\hangafter=-\DroppedLines
-         \globaldropcaps\advance\hangafter by \droppedlines
+         \globaldropcaps\hangindent\DroppedIndent
+         \globaldropcaps\hangafter-\DroppedLines
+         \globaldropcaps\advance\hangafter \droppedlines
          \hskip-\parindent
          \let\next\AutoDroppedNext
        \else
-         \globaldropcaps\chardef\DroppedStatus=0
+         \globaldropcaps\chardef\DroppedStatus\zerocount
          \let\next\relax
        \fi
      \else
-       \globaldropcaps\chardef\DroppedStatus=0
+       \globaldropcaps\chardef\DroppedStatus\zerocount
        \let\next\relax
      \fi\fi
    \or % error
-     \globaldropcaps\chardef\DroppedStatus=0
+     \globaldropcaps\chardef\DroppedStatus\zerocount
      \let\next\relax
    \fi
    \next}
@@ -303,12 +359,12 @@
 %D line height, a value that gives a pleasant grayness. 
 
 \def\DoLineDroppedCaps#1#2#3#4#5% compensation command font offset lines 
-  {\scratchcounter=#5%
-   \advance\scratchcounter by -1
-   \scratchdimen=\scratchcounter\baselineskip
-   \advance\scratchdimen by #1%
-   \NormalizeFontHeight\DummyFont{W}{\scratchdimen}{#3}%
-   \DroppedCaps{#2}{#3}{\TheNormalizedFontSize}{#4}
+  {\scratchcounter#5%
+   \advance\scratchcounter \minusone
+   \scratchdimen\scratchcounter\baselineskip
+   \advance\scratchdimen #1%
+   \NormalizeFontHeight\DummyFont{W}\scratchdimen{#3}%
+   \DroppedCaps{#2}{#3}\TheNormalizedFontSize{#4}
      {\scratchcounter\baselineskip}{#5}}
 
 \def\LineDroppedCaps% command font offset lines
@@ -358,29 +414,27 @@
    \forgetall
    \bgroup
    #1%
-   \setbox0=\box\voidb@x
-   \setbox2=\box\voidb@x
+   \setbox0\box\voidb@x
+   \setbox2\box\voidb@x
    \def\grabfirstline##1 %
-     {\setbox2=\hbox
+     {\setbox2\hbox
         {\ifvoid0
            {#3{\ignorespaces##1}}%
          \else
            \unhcopy0\ {#4{##1}}%
          \fi}%
-      \ifdim\wd2=\!!zeropoint
-        \setbox0=\box\voidb@x
-        \setbox2=\box\voidb@x
-        \let\next=\grabfirstline
+      \ifdim\wd2=\zeropoint
+        \setbox0\box\voidb@x
+        \setbox2\box\voidb@x
+        \@EA\grabfirstline
       \else\ifdim\wd2>\hsize
         \hbox to \hsize{\strut\unhbox0}#2\egroup
         \break##1\ 
         \egroup
-        \let\next=\relax
       \else
-        \setbox0=\box2
-        \let\next=\grabfirstline
-      \fi\fi
-      \next}%
+        \setbox0\box2
+        \@EAEAES\grabfirstline
+      \fi\fi}%
    \grabfirstline}
 
 %D \startbuffer
@@ -460,7 +514,7 @@
 \def\StackCharacters#1#2#3#4% sequence vsize vskip command
   {\vbox #2
      {\forgetall
-      \baselineskip0pt
+      \baselineskip\zeropoint
       \def\StackCharacter##1{#4{##1}\cr\noalign{#3}}%
       \halign
         {\hss##\hss&##\cr
@@ -548,27 +602,27 @@
 %D 
 %D These are implemented using an auxilliary macro:
 
-\def\NormalizeFontHeight%
-  {\NormalizeFontSize\ht}
-
-\def\NormalizeFontWidth%
-  {\NormalizeFontSize\wd} 
+\def\NormalizeFontHeight{\NormalizeFontSize\ht}
+\def\NormalizeFontWidth {\NormalizeFontSize\wd} 
 
 \def\NormalizeFontSize#1#2#3#4#5%
   {\bgroup
    \dimen0=#4% #4 can be \ht0 or so
-   \setbox0=\hbox{\definefont[temp][#5 at 10pt]\temp#3}%
-   \dimen2=#10 % #1 is \wd or \ht
-   \dimen4=10000pt
-   \divide\dimen4 by \dimen2
-   \divide\dimen0 by 1000
-   \dimen0=\number\dimen4\dimen0
-   \xdef\TheNormalizedFontSize{\the\dimen0}%
-   \definefont[temp][#5 at \the\dimen0]%
-   \temp
+   \setbox0\hbox{\definedfont[#5 at 10pt]#3}%
+   \ifdim\wd0>\zeropoint
+     \dimen2=#10 % #1 is \wd or \ht
+     \dimen4=10000pt
+     \divide\dimen4 \dimen2
+     \divide\dimen0 1000
+     \dimen0=\number\dimen4\dimen0
+     \xdef\TheNormalizedFontSize{\the\dimen0}%
+   \else
+     \dimen0\bodyfontsize
+   \fi
+   \definedfont[#5 at \the\dimen0]%
    \expandafter
    \egroup
-   \expandafter\font\expandafter#2\expandafter=\fontname\font\relax}
+   \expandafter\font\expandafter#2\fontname\font\relax}
 
 %D Afterwards, we have access to the calculated size by: 
 
@@ -616,7 +670,7 @@
 %D \starttypen
 %D \NormalizeFontHeight {text} \DroppedFont {2\baselineskip} {cmbx12}
 %D 
-%D \def\NicelyDroppedCaps%
+%D \def\NicelyDroppedCaps
 %D   {\DroppedCaps 
 %D      {\kleur[groen]} 
 %D      {\DroppedFont} 
@@ -627,6 +681,79 @@
 %D
 %D It's up to the reader to test this one. 
 
-\protect
+%D For Hraban. 
 
-\endinput
+\unexpanded\def\FirstNCharacters#1#2% \FirstNCharacters{3}{fr{\"o}beln}
+  {\bgroup
+   \scratchcounter\zerocount
+   \def\docommando##1%
+     {\ifnum\scratchcounter=#1\else
+        ##1\relax % catches ##1 = \"e and alike
+        \advance\scratchcounter\plusone
+      \fi}
+   \handletokens#2\with\docommando
+   \egroup}
+
+%D \macros 
+%D   {FittingText}
+%D
+%D First used in Pascal (demo-bbv):  
+%D 
+%D \startbuffer
+%D \ruledvbox{\FittingText{3cm}{1cm}{Serif}{24pt}{1pt}{1}
+%D   {\veryraggedright
+%D    \hangindent1em\hangafter1\relax 
+%D    \begstrut \dorecurse{8}{Bram Marta }\unskip \endstrut}}
+%D
+%D \ruledvbox{\FittingText{3cm}{1cm}{Serif}{24pt}{1pt}{1}
+%D   {\raggedleft\begstrut Bram\\Marta \unskip\endstrut}}
+%D \stopbuffer
+%D
+%D \typebuffer
+%D
+%D \startlinecorrection
+%D \getbuffer
+%D \stoplinecorrection
+
+% #1 width #2 height #3 font #4 size #5 step #6 interlinie #7 text 
+
+\long\def\FittingText#1#2#3#4#5#6#7% 
+  {\bgroup
+   \forgetall
+   \dontcomplain
+   \steltolerantiein[\v!zeersoepel]% == \tolerance4500
+   \hsize#1% 
+   \def\\{\softbreak}%
+   \!!heighta#4%
+   \!!heightb#2%
+   \doloop
+     {\ifdim\!!heighta>\!!onepoint
+        \expanded{\definefont[\s!dummy][#3 at \the\!!heighta][\c!interlinie=#6]}%
+        \getvalue\s!dummy
+        \setbox\scratchbox\vbox{#7\endgraf}%
+        \ifdim\ht\scratchbox>\!!heightb
+          \advance\!!heighta-#5%
+        \else
+          \beginshapebox
+          \unvcopy\scratchbox
+          \endshapebox
+          \global\dimen1\hsize
+          \reshapebox
+            {\setbox\shapebox\hbox{\unhbox\shapebox}%
+             \ifdim\wd\shapebox>\dimen1 
+               \global\dimen1\wd\shapebox
+             \fi}%
+          \ifdim\dimen1>\hsize 
+            \advance\!!heighta-#5%
+          \else
+            \exitloop
+          \fi 
+        \fi
+      \else
+        \exitloop
+      \fi}%
+   \writestatus{\strippedcsname\FittingText}{height: \the\!!heighta}%
+   \unvbox\scratchbox
+   \egroup}
+
+\protect \endinput

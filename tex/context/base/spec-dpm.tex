@@ -175,7 +175,12 @@
 %D \macros
 %D   {dosetupscreen}
 
-\definespecial\dosetupscreen{\doPDFsetupscreen\printpapierhoogte}
+\definespecial\dosetupscreen  {\doPDFsetupscreen  \printpapierhoogte}
+
+\definespecial\dosetupartbox  {\doPDFsetupartbox  \printpapierhoogte}
+\definespecial\dosetupcropbox {\doPDFsetupcropbox \printpapierhoogte}
+\definespecial\dosetupbleedbox{\doPDFsetupbleedbox\printpapierhoogte}
+\definespecial\dosetuptrimbox {\doPDFsetuptrimbox \printpapierhoogte}
 
 %D \macros
 %D   {dostartexecutecommand}
@@ -185,15 +190,7 @@
 %D \macros
 %D   {dosetupidentity}
 
-\definespecial\dosetupidentity#1#2#3#4#5#6%
-  {\bgroup
-   \enablePDFdocencoding
-   \special
-     {pdf: docinfo
-        <</Title (#1) /Subject (#2) /Author (#3)
-          /Creator (#4) /ModificationDate (#5)
-          /Keywords (#6) /Producer (dvipdfm)>>}%
-   \egroup}
+\definespecial\dosetupidentity{\doPDFsetupidentity}
 
 %D \macros
 %D   {dostartrunprogam}
@@ -351,10 +348,14 @@
    \egroup}
 
 %D \macros
-%D   {doPDFaddtocatalog,doPDFpageattribute,doPDFpagesattribute}
+%D   {doPDFaddtocatalog,doPDFaddtoinfo,
+%D    doPDFpageattribute,doPDFpagesattribute}
 
 \def\doPDFaddtocatalog#1%
   {\special{pdf: put @catalog <<#1>>}}
+
+\def\doPDFaddtoinfo#1% Is this auto appended? Not checked! 
+  {\special{pdf: docinfo <<#1>>}} % put @docinfo <<#1>>}}
 
 \def\doPDFpageattribute#1%
   {\special{pdf: put @thispage <<#1>>}}

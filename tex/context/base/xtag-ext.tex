@@ -187,7 +187,7 @@
      \@@XMLsave:\ifcsname\@@XMLsave:#1\endcsname#1\else\@@XMLsave\fi
    \endcsname}
 
-\global\letvalue{\@@XMLsave:\@@XMLsave}\empty
+\letgvalueempty{\@@XMLsave:\@@XMLsave}
 
 \gdef\showXMLelement#1%
   {\showvalue{\@@XMLsave:#1}}
@@ -228,5 +228,10 @@
 
 \def\potentialXMLentity#1%
   {\doifXMLentityelse{#1}{\getXMLentity{#1}}{#1}}
+
+\def\writtenXMLelement#1#2{<#1>#2</#1>}
+\def\writtenXMLstart    #1{<#1>}
+\def\writtenXMLend      #1{</#1>}
+\def\writtenXMLempty    #1{<#1/>}
 
 \protect \endinput

@@ -201,7 +201,7 @@
 %D processing a record, no grouping is applied. 
 
 \def\getrecordentry   #1{\getvalue{\??db:#1}}
-\def\resetrecordentry #1{\global\letvalue{\??db:#1}\empty}
+\def\resetrecordentry #1{\letgvalueempty{\??db:#1}}
 \def\assignrecordentry#1{\setgvalue{\??db:#1}}
 
 \long\def\skiprecord#1\stoprecord%
@@ -263,7 +263,7 @@
       \egroup
      %\the\everyrecord
       \getvalue{\??db#1\c!commando}{##1}}%
-   \showmessage{\m!databases}{1}{\askedrecords}%
+   \showmessage\m!databases1\askedrecords
    \def\doprocessrecords##1%
      {\readjobfile{##1}
         {\showmessage{\m!databases}{2}{(job)}}
@@ -283,7 +283,4 @@
 %D block moving mechaism, the current implementation is
 %D prefered out of speed reasons. 
 
-\protect
-
-\endinput
-
+\protect \endinput

@@ -353,9 +353,11 @@
 \ifx \@ne\undefined \else \let\plusone  \@ne  \fi
 \ifx\m@ne\undefined \else \let\minusone \m@ne \fi 
 
-\ifx\zeropoint\undefined \newdimen\zeropoint          \fi 
-\ifx\plusone  \undefined \chardef\plusone=1           \fi
-\ifx\minusone \undefined \count\minusone \minusone=-1 \fi
+\ifx\zeropoint\undefined \csname newdimen\endcsname\zeropoint \fi % plain
+\ifx\plusone  \undefined \chardef\plusone  =1                 \fi
+\ifx\plustwo  \undefined \chardef\plustwo  =2                 \fi
+\ifx\plusthree\undefined \chardef\plusthree=3                 \fi
+\ifx\minusone \undefined \count\minusone \minusone=-1         \fi
 
 \newcount\zerocount 
 
@@ -404,10 +406,10 @@
 %D inside the argument. Later on we will meet some more clever
 %D alternatives to this command.
 
-\let\@@expanded\empty
+\long\def\@@expanded{} % always long; global (less restores) 
 
 \long\def\expanded#1%
-  {\long\edef\@@expanded{\noexpand#1}\@@expanded}
+  {\long\xdef\@@expanded{\noexpand#1}\@@expanded}
 
 %D \macros
 %D   {expandoneargafter,expandtwoargsafter}
@@ -432,10 +434,10 @@
 %D These two do a full expansion:
 
 \def\fullexpandoneargafter#1#2%
-  {\edef\@@expanded{\noexpand#1{#2}}\@@expanded}
+  {\long\xdef\@@expanded{\noexpand#1{#2}}\@@expanded}
 
 \def\fullexpandtwoargsafter#1#2#3%
-  {\edef\@@expanded{\noexpand#1{#2}{#3}}\@@expanded}
+  {\long\xdef\@@expanded{\noexpand#1{#2}{#3}}\@@expanded}
 
 %D \macros
 %D   {gobbleoneargument,gobble...arguments}
@@ -485,7 +487,7 @@
    \def\!!stringb{#3}%
    \futurelet\nexttoken\inspectnextcharacter}
 
-\def\inspectnextcharacter% 
+\def\inspectnextcharacter
   {\ifx\nexttoken\blankspace
      \@EA\reinspectnextcharacter
    \else\ifx\nexttoken\charactertoken
@@ -546,13 +548,14 @@
 %D or later wants macros like these.
 %D
 %D \starttypen
-%D \setvalue   {naam}{...} = \def\naam{...}
-%D \setgvalue  {naam}{...} = \gdef\naam{...}
-%D \setevalue  {naam}{...} = \edef\naam{...}
-%D \setxvalue  {naam}{...} = \xdef\naam{...}
-%D \letvalue   {naam}=\... = \let\naam=\...
-%D \getvalue   {naam}      = \naam
-%D \resetvalue {naam}      = \def\naam{}
+%D \setvalue   {name}{...} = \def\name{...}
+%D \setgvalue  {name}{...} = \gdef\name{...}
+%D \setevalue  {name}{...} = \edef\name{...}
+%D \setxvalue  {name}{...} = \xdef\name{...}
+%D \letvalue   {name}=\... = \let\name=\...
+%D \letgvalue  {name}=\... = \global\let\name=\...
+%D \getvalue   {name}      = \name
+%D \resetvalue {name}      = \def\name{}
 %D \stoptypen
 %D
 %D As we will see, \CONTEXT\ uses these commands many times,
@@ -565,18 +568,19 @@
 \def\setxvalue    #1{\expandafter\xdef\csname#1\endcsname}
 \def\getvalue     #1{\csname#1\endcsname}
 \def\letvalue     #1{\expandafter\let\csname#1\endcsname}
+\def\letgvalue    #1{\global\expandafter\let\csname#1\endcsname}
 \def\resetvalue   #1{\expandafter\let\csname#1\endcsname\empty}
 \def\ignorevalue#1#2{\expandafter\let\csname#1\endcsname\empty}
 
 %D \macros
-%D   {globallet}
+%D   {globallet,glet}
 %D
 %D In \CONTEXT\ of May 2000 using \type {\globallet}
 %D instead of the two tokens will save us some
 %D $300\times4=1200$ bytes of format file on a 32~bit
 %D system. So:
 
-\def\globallet{\global\let}
+\def\globallet{\global\let}  \let\glet\globallet 
 
 %D \macros
 %D   {donottest,unexpanded}
@@ -655,7 +659,7 @@
    \@EA#1\csname\s!do\string#2\endcsname}
 
 \def\unexpanded#1%
-  {\def\dounexpanded%
+  {\def\dounexpanded
      {\ifx\next\bgroup
         \@EA\dosetunexpanded
       \else
@@ -799,7 +803,13 @@
 %D
 %D When this module was optimized, timing showed that the
 %D next alternative can be upto twice as fast, especially when
-%D longer arguments are used.
+%D longer arguments are used. Watch how we reach over the 
+%D \type {\else} and \type {\fi}: this way they cannot get 
+%D into the way (and we can avoid those \type {\next} 
+%D hacks); I started using this method after I did some 
+%D speed optimization tests in the xtag modules; the 
+%D efficiency of such hacks depends on the length of the 
+%D argument etc. etc.) 
 
 \beginTEX
 
@@ -810,32 +820,32 @@
   {\let\donottest\dontprocesstest
    \expandafter\ifx\csname#1\endcsname\relax}
 
-\def\doifundefinedelse#1#2#3%
+\def\doifundefinedelse#1% 
   {\p!doifundefined{#1}%
-     \let\donottest\doprocesstest#2%
+     \let\donottest\doprocesstest\@EA\firstoftwoarguments  
    \else
-     \let\donottest\doprocesstest#3%
+     \let\donottest\doprocesstest\@EA\secondoftwoarguments 
    \fi}
 
-\def\doifdefinedelse#1#2#3%
+\def\doifdefinedelse#1% 
   {\p!doifundefined{#1}%
-     \let\donottest\doprocesstest#3%
+     \let\donottest\doprocesstest\@EA\secondoftwoarguments 
    \else
-     \let\donottest\doprocesstest#2%
+     \let\donottest\doprocesstest\@EA\firstoftwoarguments  
    \fi}
 
-\def\doifundefined#1#2%
+\def\doifundefined#1% 
   {\p!doifundefined{#1}%
-     \let\donottest\doprocesstest#2%
+     \let\donottest\doprocesstest\@EA\firstofoneargument 
    \else
-     \let\donottest\doprocesstest
+     \let\donottest\doprocesstest\@EA\gobbleoneargument 
    \fi}
 
-\def\doifdefined#1#2%
+\def\doifdefined#1% 
   {\p!doifundefined{#1}%
-     \let\donottest\doprocesstest
+     \let\donottest\doprocesstest\@EA\gobbleoneargument 
    \else
-     \let\donottest\doprocesstest#2%
+     \let\donottest\doprocesstest\@EA\firstofoneargument 
    \fi}
 
 \endTEX
@@ -849,33 +859,33 @@
   {\edef\p!defined{#1}%
    \unless\ifcsname\detokenize\@EA{\p!defined}\endcsname}
 
-\def\doifundefinedelse#1%                          % #2#3%
+\def\doifundefinedelse#1%                          
   {\edef\p!defined{#1}%
-   \ifcsname\detokenize\@EA{\p!defined}\endcsname  % #3\else#2\fi}
+   \ifcsname\detokenize\@EA{\p!defined}\endcsname  
      \expandafter\secondoftwoarguments
    \else
      \expandafter\firstoftwoarguments
    \fi}
 
-\def\doifdefinedelse#1%                            % #2#3%
+\def\doifdefinedelse#1%                            
   {\edef\p!defined{#1}%
-   \ifcsname\detokenize\@EA{\p!defined}\endcsname  % #2\else#3\fi}
+   \ifcsname\detokenize\@EA{\p!defined}\endcsname  
      \expandafter\firstoftwoarguments
    \else
      \expandafter\secondoftwoarguments
    \fi}
 
-\def\doifundefined#1%                              % #2%
+\def\doifundefined#1%                              
   {\edef\p!defined{#1}%
-   \ifcsname\detokenize\@EA{\p!defined}\endcsname  % \else#2\fi}
+   \ifcsname\detokenize\@EA{\p!defined}\endcsname  
      \expandafter\gobbleoneargument
    \else
      \expandafter\firstofoneargument
    \fi}
 
-\def\doifdefined#1%                                % #2%
+\def\doifdefined#1%                                
   {\edef\p!defined{#1}%
-   \ifcsname\detokenize\@EA{\p!defined}\endcsname  % #2\fi}
+   \ifcsname\detokenize\@EA{\p!defined}\endcsname  
      \expandafter\firstofoneargument
    \else
      \expandafter\gobbleoneargument
@@ -960,17 +970,17 @@
      \donefalse
    \fi}
 
-\def\doifalldefinedelse#1%                 % #2#3%
+\def\doifalldefinedelse#1%                 
   {\begingroup
    \let\donottest\dontprocesstest
    \donetrue
    \processcommalist[#1]\docheckonedefined
    \ifdone
      \endgroup\let\donottest\doprocesstest
-     \expandafter\firstoftwoarguments      % #2%
+     \expandafter\firstoftwoarguments      
    \else
      \endgroup\let\donottest\doprocesstest
-     \expandafter\secondoftwoarguments     % #3%
+     \expandafter\secondoftwoarguments     
    \fi}
 
 \endTEX
@@ -982,13 +992,13 @@
      \donefalse
    \fi}
 
-\def\doifalldefinedelse#1%                      % #2#3%
+\def\doifalldefinedelse#1%                 
   {\begingroup
    \donetrue \processcommalist[#1]\docheckonedefined
    \ifdone
-     \endgroup\expandafter\firstoftwoarguments  % #2%
+     \endgroup\expandafter\firstoftwoarguments 
    \else
-     \endgroup\expandafter\secondoftwoarguments % #3%
+     \endgroup\expandafter\secondoftwoarguments
    \fi}
 
 \endETEX
@@ -1035,53 +1045,91 @@
 
 \beginTEX
 
-\long\def\doif#1#2#3%
+% \long\def\doif#1#2#3%
+%   {\let\donottest\dontprocesstest
+%    \edef\!!stringa{#1}%
+%    \edef\!!stringb{#2}%
+%    \let\donottest\doprocesstest
+%    \ifx\!!stringa\!!stringb
+%      #3%
+%    \fi}
+% 
+% \long\def\doifnot#1#2#3%
+%   {\let\donottest\dontprocesstest
+%    \edef\!!stringa{#1}%
+%    \edef\!!stringb{#2}%
+%    \let\donottest\doprocesstest
+%    \ifx\!!stringa\!!stringb
+%    \else
+%      #3%
+%    \fi}
+% 
+% \long\def\doifelse#1#2#3#4%
+%   {\let\donottest\dontprocesstest
+%    \edef\!!stringa{#1}%
+%    \edef\!!stringb{#2}%
+%    \let\donottest\doprocesstest
+%    \ifx\!!stringa\!!stringb
+%      #3%
+%    \else
+%      #4%
+%    \fi}
+
+%D Slightly faster on big arguments, as well as \type 
+%D {\next} avoiding: 
+
+\long\def\doif#1#2%
   {\let\donottest\dontprocesstest
    \edef\!!stringa{#1}%
    \edef\!!stringb{#2}%
    \let\donottest\doprocesstest
    \ifx\!!stringa\!!stringb
-     #3%
+     \expandafter\firstofoneargument
+   \else
+     \expandafter\gobbleoneargument
    \fi}
 
-\long\def\doifnot#1#2#3%
+\long\def\doifnot#1#2% 
   {\let\donottest\dontprocesstest
    \edef\!!stringa{#1}%
    \edef\!!stringb{#2}%
    \let\donottest\doprocesstest
    \ifx\!!stringa\!!stringb
+     \expandafter\gobbleoneargument
    \else
-     #3%
+     \expandafter\firstofoneargument
    \fi}
 
-\long\def\doifelse#1#2#3#4%
+
+\long\def\doifelse#1#2%
   {\let\donottest\dontprocesstest
    \edef\!!stringa{#1}%
    \edef\!!stringb{#2}%
    \let\donottest\doprocesstest
    \ifx\!!stringa\!!stringb
-     #3%
+     \expandafter\firstoftwoarguments
    \else
-     #4%
+     \expandafter\secondoftwoarguments
    \fi}
 
 \endTEX
 
 \beginETEX \protected
 
-\long\def\doif#1#2#3%
-  {\edef\!!stringa{#1}\edef\!!stringb{#2}%
-   \ifx\!!stringa\!!stringb#3\fi}
+% \long\def\doif#1#2#3%
+%   {\edef\!!stringa{#1}\edef\!!stringb{#2}%
+%    \ifx\!!stringa\!!stringb#3\fi}
+% 
+% \long\def\doifnot#1#2#3%
+%   {\edef\!!stringa{#1}\edef\!!stringb{#2}%
+%    \unless\ifx\!!stringa\!!stringb#3\fi}
+% 
+% \long\def\doifelse#1#2#3#4%
+%   {\edef\!!stringa{#1}\edef\!!stringb{#2}%
+%    \ifx\!!stringa\!!stringb#3\else#4\fi}
 
-\long\def\doifnot#1#2#3%
-  {\edef\!!stringa{#1}\edef\!!stringb{#2}%
-   \unless\ifx\!!stringa\!!stringb#3\fi}
-
-\long\def\doifelse#1#2#3#4%
-  {\edef\!!stringa{#1}\edef\!!stringb{#2}%
-   \ifx\!!stringa\!!stringb#3\else#4\fi}
-
-% slightly faster on big arguments
+%D Slightly faster on big arguments, as well as \type 
+%D {\next} avoiding: 
 
 \long\def\doif#1#2%
   {\edef\!!stringa{#1}\edef\!!stringb{#2}%
@@ -1154,25 +1202,25 @@
 %D
 %D This time, the string is not expanded.
 
-\long\def\doifemptyelse#1% % #2#3%
+\long\def\doifemptyelse#1% 
   {\def\!!stringa{#1}%
-   \ifx\!!stringa\empty    % #2\else#3\fi}
+   \ifx\!!stringa\empty    
      \expandafter\firstoftwoarguments
    \else
      \expandafter\secondoftwoarguments
    \fi}
 
-\long\def\doifempty#1%     % #2%
+\long\def\doifempty#1%     
   {\def\!!stringa{#1}%
-   \ifx\!!stringa\empty    % #2\fi}
+   \ifx\!!stringa\empty    
      \expandafter\firstofoneargument
    \else
      \expandafter\gobbleoneargument
    \fi}
 
-\long\def\doifnotempty#1%  % #2%
+\long\def\doifnotempty#1%  
   {\def\!!stringa{#1}%
-   \ifx\!!stringa\empty    % \else#2\fi}
+   \ifx\!!stringa\empty    
      \expandafter\gobbleoneargument
    \else
      \expandafter\firstofoneargument
@@ -1296,22 +1344,22 @@
 
 \endETEX
 
-\long\def\doifinsetelse#1#2%            % #3#4%
-  {\p!doifinsetelse{#1}{#2}%            % #3\else#4\fi}
+\long\def\doifinsetelse#1#2%
+  {\p!doifinsetelse{#1}{#2}%
      \expandafter\firstoftwoarguments
    \else
      \expandafter\secondoftwoarguments
    \fi}
 
-\long\def\doifinset#1#2%                % #3%
-  {\p!doifinsetelse{#1}{#2}%            % #3\fi}
+\long\def\doifinset#1#2%    
+  {\p!doifinsetelse{#1}{#2}%
      \expandafter\firstofoneargument
    \else
      \expandafter\gobbleoneargument
    \fi}
 
-\long\def\doifnotinset#1#2%             % #3%
-  {\p!doifinsetelse{#1}{#2}%            % \else#3\fi}
+\long\def\doifnotinset#1#2% 
+  {\p!doifinsetelse{#1}{#2}%
      \expandafter\gobbleoneargument
    \else
      \expandafter\firstofoneargument
@@ -1446,15 +1494,15 @@
      \expandafter\secondoftwoarguments
    \fi}
 
-\long\def\doifcommon#1#2%      % #3%
-  {\p!doifcommonelse{#1}{#2}%  % #3\fi}
+\long\def\doifcommon#1#2%    
+  {\p!doifcommonelse{#1}{#2}%
      \expandafter\firstofoneargument
    \else
      \expandafter\gobbleoneargument
    \fi}
 
-\long\def\doifnotcommon#1#2%   % #3%
-  {\p!doifcommonelse{#1}{#2}%  % \else#3\fi}
+\long\def\doifnotcommon#1#2% 
+  {\p!doifcommonelse{#1}{#2}%
      \expandafter\gobbleoneargument
    \else
      \expandafter\firstofoneargument
@@ -2061,7 +2109,7 @@
   {\let\expandedaction\noexpandedaction}
 
 %D \macros
-%D   {getfirstcharacter,firstcharacter}
+%D   {getfirstcharacter,firstcharacter, doiffirstcharacter}
 %D
 %D Sometimes the action to be undertaken depends on the
 %D next character. This macro get this character and puts it in
@@ -2081,6 +2129,20 @@
 \def\getfirstcharacter#1%
   {\edef\!!stringa{#1}%
    \expandafter\dogetfirstcharacter\!!stringa\\}
+
+\def\doiffirstcharelse#1#2% char string 
+% kort (maar onleesbaar) 
+% {\expanded{\dogetfirstcharacter#2}\\\doifelse{#1}\firstcharacter}
+% korter (en begrijpelijk)) 
+  {\getfirstcharacter{#2}\doifelse{#1}\firstcharacter}
+% snel (maar zelden gebruikt, dus niet zo belangrijk) 
+% {\getfirstcharacter{#2}%
+%  \edef\!!stringa{#1}%
+%  \ifx\!!stringa\firstcharacter 
+%    \expandafter\firstoftwoarguments
+%  \else 
+%    \expandafter\secondoftwoarguments 
+%  \fi}
 
 %D \macros
 %D   {doifinstringelse, doifincsnameelse}
@@ -2607,8 +2669,14 @@
 %D complain of it's missed. We will redefine this macro later
 %D on, when a more advanced message mechanism is implemented.
 
+\newif\iferrorisfatal
+
+\def\waitonfatalerror
+  {\iferrorisfatal\wait\fi}
+
 \def\showassignerror#1#2%
-  {\writestatus{setup}{missing '=' after '#1' in line #2}}
+  {\writestatus{setup}{missing or ungrouped '=' after '#1' in line #2}%
+   \waitonfatalerror}
 
 %\def\p!doassign#1[#2][#3=#4=#5]%
 %  {\let\donottest\dontprocesstest
@@ -2778,8 +2846,18 @@
 % \def\p!doassign#1#2\@relax@#3=#4=#5\@relax@
 %   {\ifx\@relax@#5\@EA\xshowassignerror\else\@EA#1\fi{#2}{#3}{#4}}
 
-\def\p!doassign#1#2\@relax@#3=#4=#5\@relax@
-  {\ifx#5\empty\@EA\xshowassignerror\else\@EA#1\fi{#2}{#3}{#4}}
+% \def\p!doassign#1#2\@relax@#3=#4=#5\@relax@
+%   {\ifx#5\empty\@EA\xshowassignerror\else\@EA#1\fi{#2}{#3}{#4}}
+
+\def\p!doassign#1#2\@relax@#3=#4=#5#6\@relax@
+  {\ifx#5\empty
+     \@EA\xshowassignerror
+   \else\ifx#5=%
+     \@EAEAEA#1%
+   \else
+     \@EAEAEA\xshowassignerror
+   \fi\fi
+   {#2}{#3}{#4}}
 
 \def\xshowassignerror#1#2#3%
   {\showassignerror{#2}{\the\inputlineno\space(#1)}}
@@ -2871,10 +2949,16 @@
 %
 % \def\doifassignmentelse%
 %   {\doifinstringelse{=}}
+%
+% readable
+%
+% \def\doifassignmentelse#1%
+%   {\convertargument#1\to\ascii
+%    \doifinstringelse{=}{\ascii}}
 
 \def\doifassignmentelse#1%
   {\convertargument#1\to\ascii
-   \doifinstringelse{=}{\ascii}}
+   \doifinstringelse=\ascii}
 
 %D \macros
 %D   {ifparameters,checkparameters}
@@ -2964,7 +3048,7 @@
 
 \def\getfromcommalist[#1]#2[#3]%
   {\let\commalistelement\empty
-   \commalistcounter=#3\relax
+   \commalistcounter#3\relax
    \processcommalist[#1]\p!dogetfromcommalist}
 
 % \def\getfromcommacommand[#1]% why so complicated, still needed?
@@ -3984,6 +4068,17 @@
 \long\def\thirdofthreearguments   #1#2#3{#3}
 \long\def\thirdoffourarguments  #1#2#3#4{#3}
 \long\def\fourthoffourarguments #1#2#3#4{#4}
+
+%D \macros 
+%D   {globalletempty,letempty,letvalueempty,letgvalueempty}
+%D
+%D Trivial: 
+
+\def\letempty             #1{\let#1\empty}
+\def\globalletempty#1{\global\let#1\empty}
+
+\def\letvalueempty        #1{\expandafter\let\csname#1\endcsname\empty}
+\def\letgvalueempty#1{\global\expandafter\let\csname#1\endcsname\empty}
 
 %D \macros
 %D   {wait}

@@ -1,6 +1,6 @@
 %D \module
 %D   [       file=mp-core.mp,
-%D        version=1999.08.12,
+%D        version=2000.something, % 1999.08.12,
 %D          title=\CONTEXT\ \METAPOST\ graphics,
 %D       subtitle=core interfacing,
 %D         author=Hans Hagen,
@@ -87,6 +87,15 @@ def do_initialize_area (expr fpos, tpos) =
   cxy  := center pxy ;
 enddef ;
 
+def set_par_line_height (expr ph, pd) =
+  par_strut_height := 
+    if ph>0 : ph elseif StrutHeight>0 : StrutHeight else : 8pt fi ; 
+  par_strut_depth  :=
+    if pd>0 : pd elseif StrutDepth >0 : StrutDepth  else : 3pt fi ; 
+  par_line_height  := 
+    par_strut_height + par_strut_depth ;
+enddef ; 
+
 def initialize_par (expr fn,fx,fy,fw,fh,fd,
                          tn,tx,ty,tw,th,td,
                          mn,mx,my,mw,mh,md,
@@ -100,9 +109,7 @@ def initialize_par (expr fn,fx,fy,fw,fh,fd,
 
   numeric par_strut_height, par_strut_depth, par_line_height ;
 
-  par_strut_height := ph ; 
-  par_strut_depth  := pd ;
-  par_line_height  := ph + pd ;
+  set_par_line_height (ph, pd) ; 
 
   do_initialize_area (fpos, tpos) ;
   do_initialize_par  (fpos, tpos, mpos, ppos, rw,rl,rr,rh,ra,ri) ;
@@ -119,9 +126,7 @@ def initialize_area_par (expr fn,fx,fy,fw,fh,fd,
 
   numeric par_strut_height, par_strut_depth, par_line_height ;
 
-  par_strut_height := wh ; 
-  par_strut_depth  := wd ;
-  par_line_height  := wh + wd ;
+  set_par_line_height (wh, wd) ; 
 
   numeric ffpos ; ffpos := 4 ; initialize_box_pos(ffpos,wn,wx,fy,0,wh,wd) ;
   numeric ttpos ; ttpos := 5 ; initialize_box_pos(ttpos,wn,wx+ww,ty,0,wh,wd) ;
@@ -316,9 +321,9 @@ def do_initialize_par (expr fpos, tpos, mpos, ppos, rw,rl,rr,rh,ra,ri) =
 
 enddef ;
 
-if unknown TopSkip     : TopSkip     := 0 fi ; 
-if unknown StrutHeight : StrutHeight := 0 fi ;    
-
+TopSkip     := 0 ; % will move 
+StrutHeight := 0 ; % will move 
+ 
 pair last_multi_par_shift ; last_multi_par_shift := origin ; 
 
 def relocate_multipars (expr xy) = 
@@ -329,15 +334,38 @@ def relocate_multipars (expr xy) =
 enddef ; 
  
 boolean compensate_multi_par_topskip ; 
-compensate_multi_par_topskip := true ; 
-
 boolean span_multi_column_pars ; 
-span_multi_column_pars := false ;
+boolean auto_multi_par_hsize ; 
+
+compensate_multi_par_topskip := true ; 
+span_multi_column_pars       := false ;
+auto_multi_par_hsize         := false ; % true ;
 
 vardef multi_par_at_top (expr i) = 
   (round (ypart ulcorner multipars[i]) = round (ypart ulcorner 
      (TextAreas[multirefs[i]] shifted last_multi_par_shift)))
 enddef ; 
+
+numeric nofmultipars ; nofmultipars := 0 ; 
+
+boolean obey_multi_par_hang   ; obey_multi_par_hang   := true ;
+boolean obey_multi_par_more   ; obey_multi_par_more   := true ;
+boolean snap_multi_par_tops   ; snap_multi_par_tops   := true ;
+boolean local_multi_par_area  ; local_multi_par_area  := false ; 
+boolean ignore_multi_par_page ; ignore_multi_par_page := false ; 
+
+def simplify_multi_pars = % boundingbox ipv shape als optie
+  for i := 1 upto nofmultipars :
+    multipars[i] := boundingbox multipars[i] ;
+  endfor ;
+enddef ;
+
+def save_multipar (expr i, l, p) =
+  nofmultipars := nofmultipars + 1 ;
+  multirefs[nofmultipars] := i ;
+  multilocs[nofmultipars] := l ;
+  multipars[nofmultipars] := unspiked (simplified p) ;
+enddef ;
 
 def prepare_multi_pars (expr fn,fx,fy,fw,fh,fd,
                              tn,tx,ty,tw,th,td,
@@ -346,121 +374,568 @@ def prepare_multi_pars (expr fn,fx,fy,fw,fh,fd,
                              rw,rl,rr,rh,ra,ri) =
 
   if span_multi_column_pars :
-    begingroup ; 
-    save TextAreas ; path TextAreas[] ; 
-    save NOfTextAreas ; numeric NOfTextAreas ; 
-    for i=1 upto NOfTextColumns : 
-      TextAreas[i] := TextColumns[i] ;  
-    endfor ;  
-    NOfTextAreas := NOfTextColumns ; 
-  fi ; 
+    begingroup ;
+    save TextAreas ; path TextAreas[] ;
+    save NOfTextAreas ; numeric NOfTextAreas ;
+    for i=1 upto NOfTextColumns :
+      TextAreas[i] := TextColumns[i] ;
+    endfor ;
+    NOfTextAreas := NOfTextColumns ;
+  fi ;
 
   last_multi_par_shift := origin ; 
-
-  % rh/ra/ri not yet supported 
 
   numeric fpos ; fpos := 1 ; initialize_box_pos(fpos,fn,fx,fy,fw,fh,fd) ;
   numeric tpos ; tpos := 2 ; initialize_box_pos(tpos,tn,tx,ty,tw,th,td) ;
   numeric wpos ; wpos := 3 ; initialize_box_pos(wpos,wn,wx,wy,ww,wh,wd) ;
   numeric ppos ; ppos := 4 ; initialize_box_pos(ppos,pn,px,py,pw,ph,pd) ;
 
+if local_multi_par_area : 
+  RealPageNumber := fn ; 
+  NOfTextAreas := 1 ;  
+  NOfSavedTextAreas := 0 ;  
+  TextAreas[1] := TextAreas[0] ;
+  TextColumns[1] := TextColumns[0] ;
+  nxy[fpos] := nxy[tpos] := nxy[wpos] := nxy[ppos] := RealPageNumber ;  
+elseif ignore_multi_par_page :
+  RealPageNumber := fn ; 
+  nxy[fpos] := nxy[tpos] := nxy[wpos] := nxy[ppos] := RealPageNumber ;  
+fi ; 
+
   numeric par_strut_height, par_strut_depth, par_line_height ;
 
-  par_strut_height := ph ; 
-  par_strut_depth  := pd ;
-  par_line_height  := ph + pd ;
+  set_par_line_height (ph, pd) ; 
+
+  numeric par_hang_indent, par_hang_after, par_indent, par_left_skip ;
+
+  par_hang_indent  := rh ;
+  par_hang_after   := ra ;
+  par_indent       := ri ;
+  par_left_skip    := rl ;
+
+  pair par_start_pos ;
+
+% par_start_pos := llxy[fpos] if par_indent<0: shifted (-par_indent,0) fi ;
+
+  par_start_pos := llxy[fpos] 
+    if par_indent   <0: shifted (-par_indent,   0) fi 
+    if par_left_skip<0: shifted (-par_left_skip,0) fi ;
 
   if wxy[wpos]>0 :
     left_skip  := rl + xpart llxy[wpos] - xpart llxy[ppos] ;
-    right_skip := rw - left_skip - ww ; 
-  else : 
-    left_skip  := rl ; 
-    right_skip := rr ; 
+    right_skip := rw - left_skip - ww ;
+  else :
+    left_skip  := rl ;
+    right_skip := rr ;
   fi ;
 
-  path    multipar, multipars[] ; 
-  numeric multiref, multirefs[] ; 
+  path    multipar, multipars[] ;
+  numeric multiref, multirefs[] ;
   numeric multiloc, multilocs[] ; % 1=begin 2=between 3=end
 
-  ii := 0 ; nn := NOfTextAreas+1 ; nofmultipars := 0 ; 
+  numeric multi_par_pages ; multi_par_pages := nxy[tpos]-nxy[fpos]+1 ; 
 
-  def set_multipar (expr i) = 
-    ((TextAreas[i] leftenlarged -left_skip) rightenlarged -right_skip)
+  ii := 0 ; nn := NOfTextAreas+1 ; nofmultipars := 0 ;
+
+  vardef snapped_multi_pos (expr p) =
+    if snap_multi_par_tops :
+      if abs(ypart p - ypart ulcorner multipar) < par_line_height :
+        (xpart p,ypart ulcorner multipar)  
+      else : 
+        p 
+      fi 
+    else :
+      p 
+    fi 
   enddef ; 
 
-  def save_multipar (expr i, l, p) = 
-    nofmultipars := nofmultipars + 1 ; 
-    multirefs[nofmultipars] := i ;  
-    multilocs[nofmultipars] := l ;  
-    multipars[nofmultipars] := unspiked simplified p ;
-  enddef ; 
+  % def set_multipar (expr i) =
+  %   ((TextAreas[i] leftenlarged -left_skip) rightenlarged -right_skip)
+  % enddef ;
+
+  vardef set_multipar (expr i) =
+    ( (TextAreas[i] leftenlarged -left_skip) rightenlarged (-right_skip 
+      if auto_multi_par_hsize : + rw - bbwidth(TextAreas[i]) fi) )
+  enddef ;
+
+  vardef top_multi_par(expr p) =
+    (round(estimated_par_lines(bbheight(p)*par_line_height))=round(bbheight(p)))
+  enddef ;
+
+  vardef multi_par_tsc(expr p) =
+    if top_multi_par(p) : TopSkipCorrection else : 0 fi
+  enddef ;
+
+  vardef estimated_par_lines (expr h) =
+    round(h/par_line_height)
+  enddef ;
+
+  vardef estimated_multi_par_height (expr n, t) =
+    if round(par_line_height)=0 :
+      0
+    else :
+      save ok, h ; boolean ok ;
+      numeric h ; h := 0 ;
+      ok := false ;
+      if (nxy[fpos]=RealPageNumber-1) :
+        for i := 1 upto NOfSavedTextAreas :
+          if (InsideSavedTextArea(i,par_start_pos)) :
+            ok := true ;
+            h := h + estimated_par_lines(ypart ulxy[fpos] -
+                   ypart llcorner SavedTextAreas[i]) ;
+          elseif ok :
+            h := h + estimated_par_lines(bbheight(SavedTextAreas[i])) ;
+          fi ;
+        endfor ;
+      fi ;
+      if ok :
+        for i := 1 upto n-1 :
+          h := h + estimated_par_lines(bbheight(TextAreas[i])) ;
+        endfor ;
+      else :
+        % already: ok := false ;
+        for i := 1 upto n-1 :
+          if (InsideTextArea(i,par_start_pos)) :
+            ok := true ;
+            h := h + estimated_par_lines(ypart ulxy[fpos] - ypart llcorner TextAreas[i]) ;
+          elseif ok :
+            h := h + estimated_par_lines(bbheight(TextAreas[i])) ;
+          fi ;
+        endfor ;
+      fi ;
+      h
+    fi
+  enddef ;
+
+  vardef left_top_hang (expr same_area) =
+
+par_hang_after := ra + estimated_par_lines(py-fy) ;
+
+    if (par_hang_indent>0) and (par_hang_after<0) and obey_multi_par_hang :
+      pair _ul_ ; _ul_ := (xpart ulcorner multipar, ypart snapped_multi_pos(ulxy[fpos]));  
+      pair _pa_ ; _pa_ := _ul_ shifted (0,par_hang_after*par_line_height) ;
+      _pa_ := (xpart _pa_,max(ypart _pa_,ypart llcorner multipar)) ;
+      if same_area :
+        _pa_ := (xpart _pa_,max(ypart _pa_,ypart llxy[tpos])) ;
+      fi ;
+% vervalt:
+      if obey_multi_par_more and (round(par_line_height)>0) :
+        par_hang_after := min(0,round(par_hang_after +
+          (ypart urxy[fpos]-ypart _pa_)/par_line_height)) ;
+      fi ;
+      (xpart _ul_ + par_hang_indent, ypart lrxy[fpos]) --
+      (xpart _ul_ + par_hang_indent, ypart _pa_) --
+      (xpart ulcorner multipar, ypart _pa_)
+    else :
+      (xpart ulcorner multipar, ypart lrxy[fpos])
+    fi
+  enddef ;
+
+  vardef right_top_hang (expr same_area) =
+
+par_hang_after := ra - estimated_par_lines(py-fy) ;
+
+    if (par_hang_indent<0) and (par_hang_after<0) and obey_multi_par_hang :
+      pair _ur_ ; _ur_ := (xpart urcorner multipar, ypart snapped_multi_pos(urxy[fpos])) ;
+      pair _pa_ ; _pa_ := _ur_ shifted (0,par_hang_after*par_line_height) ;
+      _pa_ := (xpart _pa_,max(ypart _pa_ -TopSkipCorrection,ypart llcorner multipar)) ;
+      if same_area :
+        _pa_ := (xpart _pa_,max(ypart _pa_ -TopSkipCorrection,ypart snapped_multi_pos(ulxy[tpos]))) ;
+      fi ;
+      if obey_multi_par_more and (round(par_line_height)>0) :
+        par_hang_after := min(0,round(par_hang_after +
+          (ypart urxy[fpos]-ypart _pa_)/par_line_height)) ;
+      fi ;
+      (xpart urcorner multipar, ypart _pa_) --
+      (xpart _ur_ + par_hang_indent, ypart _pa_) --
+      (xpart _ur_ + par_hang_indent, ypart snapped_multi_pos(urxy[fpos]))
+    else :
+      (xpart urcorner multipar, ypart snapped_multi_pos(urxy[fpos]))
+    fi
+  enddef ;
+
+  vardef x_left_top_hang (expr i, t) =
+    par_hang_after := min(0,ra + estimated_multi_par_height(i,t)) ;
+    if (par_hang_indent>0) and (par_hang_after<0) :
+      pair _ul_ ; _ul_ := ulcorner multipar ;
+      pair _pa_ ; _pa_ := _ul_ shifted (0,par_hang_after*par_line_height) ;
+      _pa_ := (xpart _pa_,max(ypart _pa_,ypart llcorner multipar)) ;
+
+if t :
+  _pa_ := (xpart _pa_,max(ypart _pa_,ypart llxy[tpos]));
+fi ;
+if abs(ypart _pa_-ypart llxy[tpos])<par_line_height :
+  _pa_ := (xpart _pa_,ypart llxy[tpos]);
+fi ;
+if abs(ypart _pa_-ypart llcorner multipar)<par_line_height :
+  _pa_ := (xpart _pa_,ypart llcorner multipar);
+fi ;
+
+      (xpart _ul_, ypart _pa_) --
+      (xpart _ul_ + par_hang_indent, ypart _pa_) --
+      (xpart _ul_ + par_hang_indent, ypart _ul_)
+    else :
+      ulcorner multipar
+    fi
+  enddef ;
+
+% here
+
+  vardef x_right_top_hang (expr i, t) =
+    par_hang_after := min(0,ra + estimated_multi_par_height(i,t)) ;
+    if (par_hang_indent<0) and (par_hang_after<0) :
+      pair _ur_ ; _ur_ := urcorner multipar ;
+      pair _pa_ ; _pa_ := _ur_ shifted (0,par_hang_after*par_line_height) ;
+      _pa_ := (xpart _pa_,max(ypart _pa_,ypart lrcorner multipar)) ;
+if t :
+  _pa_ := (xpart _pa_,max(ypart _pa_,ypart snapped_multi_pos(urxy[tpos]))) ;
+fi ;
+
+%todo
+%
+%if abs(ypart _pa_-ypart llxy[tpos])<par_line_height :
+%  _pa_ := (xpart _pa_,ypart llxy[tpos]);
+%fi ;
+%if abs(ypart _pa_-ypart llcorner multipar)<par_line_height :
+%  _pa_ := (xpart _pa_,ypart llcorner multipar);
+%fi ;
+
+
+      (xpart _ur_ + par_hang_indent, ypart _ur_) --
+      (xpart _ur_ + par_hang_indent, ypart _pa_) --
+      (xpart _ur_, ypart _pa_)
+    else :
+      urcorner multipar
+    fi
+  enddef ;
+
+  vardef left_bottom_hang (expr same_area) =
+    pair _ll_, _sa_, _pa_ ;
+    _sa_ := if same_area : llxy[tpos] else : lrcorner multipar fi ;
+    if (par_hang_indent>0) and (par_hang_after>0) and obey_multi_par_hang :
+      _ll_ := (xpart ulcorner multipar, ypart snapped_multi_pos(ulxy[fpos])) ;
+      _pa_ := _ll_ shifted (0,-par_hang_after*par_line_height) ;
+      _pa_ := (xpart _pa_,max(ypart _pa_,ypart llcorner multipar)) ;
+      if same_area :
+        _pa_ := (xpart _pa_,max(ypart _pa_,ypart _sa_)) ;
+      fi ;
+      if obey_multi_par_more and (round(par_line_height)>0) :
+        par_hang_after := max(0,round(par_hang_after -
+          (ypart urxy[fpos]-ypart _pa_)/par_line_height)) ;
+      fi ;
+      _pa_ --
+      (xpart _pa_ + par_hang_indent,ypart _pa_) --
+      (xpart _pa_ + par_hang_indent,ypart _sa_)
+    else :
+      (xpart llcorner multipar, ypart _sa_)
+    fi
+  enddef ;
+
+  vardef right_bottom_hang (expr same_area) =
+    pair _lr_, _sa_, _pa_ ;
+    _sa_ := if same_area : snapped_multi_pos(ulxy[tpos]) else : lrcorner multipar fi ;
+    if (par_hang_indent<0) and (par_hang_after>0) and obey_multi_par_hang :
+      _lr_ := (xpart urcorner multipar, ypart snapped_multi_pos(urxy[fpos])) ;
+      _pa_ := _lr_ shifted (0,-par_hang_after*par_line_height) ;
+      _pa_ := (xpart _pa_,max(ypart _pa_,ypart lrcorner multipar)) ;
+      if same_area :
+        _pa_ := (xpart _pa_,max(ypart _pa_,ypart snapped_multi_pos(ulxy[tpos]))) ;
+      fi ;
+      if obey_multi_par_more and (round(par_line_height)>0) :
+        par_hang_after := max(0,round(par_hang_after -
+          (ypart urxy[fpos]-ypart _pa_)/par_line_height)) ;
+      fi ;
+      (xpart _pa_ + par_hang_indent,ypart _sa_) --
+      (xpart _pa_ + par_hang_indent,ypart _pa_) --
+      _pa_
+    else :
+     (xpart lrcorner multipar, ypart _sa_)
+    fi
+  enddef ;
+
+  vardef x_left_bottom_hang (expr i, t) =
+    pair _ll_, _sa_, _pa_ ;
+if t :
+    _sa_ := llxy[tpos] ;
+else :
+  _sa_ := llcorner multipar ;
+fi ;
+    if (par_hang_indent>0) and (ra>0) :
+      par_hang_after := max(0,ra - estimated_multi_par_height(i,t)) ;
+      _ll_ := ulcorner multipar ;
+      _pa_ := _ll_ shifted (0,-par_hang_after*par_line_height) ;
+      _pa_ := (xpart _pa_,max(ypart _pa_,ypart llcorner multipar)) ;
+      _pa_ := (xpart _pa_,max(ypart _pa_,ypart _sa_)) ;
+      % we need to compensate for topskip enlarged areas
+      if abs(ypart _pa_ - ypart _sa_) > par_line_height :
+        (xpart _pa_ + par_hang_indent,ypart _sa_) --
+        (xpart _pa_ + par_hang_indent,ypart _pa_) --
+      fi
+      _pa_
+    else :
+      (xpart llcorner multipar, ypart _sa_)
+    fi
+  enddef ;
+
+  vardef x_right_bottom_hang (expr i, t) =
+    pair _lr_, _sa_, _pa_ ;
+if t :
+    _sa_ := snapped_multi_pos(ulxy[tpos]) ;
+else :
+  _sa_ := llcorner multipar ;
+fi ;
+    if (par_hang_indent<0) and (ra>0) :
+      par_hang_after := max(0,ra - estimated_multi_par_height(i, t)) ;
+      _lr_ := urcorner multipar ;
+      _pa_ := _lr_ shifted (0,-par_hang_after*par_line_height) ;
+      _pa_ := (xpart _pa_,max(ypart _pa_,ypart lrcorner multipar)) ;
+      _pa_ := (xpart _pa_,max(ypart _pa_,ypart _sa_)) ;
+      % we need to compensate for topskip enlarged areas
+      _pa_
+      if abs(ypart _pa_ - ypart _sa_) > par_line_height :
+        -- (xpart _pa_ + par_hang_indent,ypart _pa_)
+        -- (xpart _pa_ + par_hang_indent,ypart _sa_)
+      fi
+    else :
+     (xpart lrcorner multipar, ypart _sa_)
+    fi
+  enddef ;
+
+  def test_multipar =
+    multipar :=
+      llcorner multipar --
+      urcorner multipar --
+      lrcorner multipar --
+      ulcorner multipar --
+      cycle ;
+  enddef ;
+
+  % first loop 
 
   for i=1 upto NOfTextAreas :
+
+    TopSkipCorrection := 0 ;
+
     multipar := set_multipar(i) ;
-    if (nxy[fpos]=RealPageNumber) and (InsideTextArea(i,llxy[fpos])) :
-      % first one in chain 
+
+    % watch how we compensate for negative indentation
+
+    if (nxy[fpos]=RealPageNumber) and (InsideTextArea(i,par_start_pos)) :
+
+      % first one in chain
+
       ii := i ;
+
       if (nxy[tpos]=RealPageNumber) and (InsideTextArea(i,llxy[tpos])) :
+
+        % in same area
+
         nn := i ;
 
-        if compensate_multi_par_topskip :
-          TopSkipCorrection := TopSkip - StrutHeight ;    
+        if compensate_multi_par_topskip and (round(LineHeight-ph-pd)=0) :
 
-          if round(ypart ulxy[fpos] + TopSkipCorrection) = 
-             round(ypart ulcorner TextAreas[i]) : 
-            ulxy[fpos] := ulxy[fpos] shifted (0,TopSkipCorrection) ;  
-            urxy[fpos] := urxy[fpos] shifted (0,TopSkipCorrection) ;  
-          fi ; 
-        fi ; 
+          TopSkipCorrection := TopSkip - StrutHeight ;
+
+          if round(ypart ulxy[fpos] + TopSkipCorrection) =
+             round(ypart ulcorner TextAreas[i]) :
+            ulxy[fpos] := ulxy[fpos] shifted (0,TopSkipCorrection) ;
+            urxy[fpos] := urxy[fpos] shifted (0,TopSkipCorrection) ;
+          else :
+            TopSkipCorrection := 0 ;
+          fi ;
+
+        fi ;
 
         if ypart llxy[fpos] = ypart llxy[tpos] :
-          multipar := llxy[fpos] --
-                 lrxy[tpos] --
-                 urxy[tpos] --
-                 ulxy[fpos] --
-                 cycle ;
+
+          multipar :=
+            llxy[fpos] --
+            lrxy[tpos] --
+           %urxy[tpos] --
+            snapped_multi_pos(urxy[tpos]) --  
+           %ulxy[fpos] --
+            snapped_multi_pos(ulxy[fpos]) --  
+            cycle ;
+
+          save_multipar (i,1,multipar) ;
+
+        elseif (ypart llxy[fpos] = ypart ulxy[tpos]) and 
+               (xpart llxy[tpos] < xpart llxy[fpos]) :
+
+          % two loners 
+
+          multipar := if obey_multi_par_hang :
+
+            right_bottom_hang(true) --
+            right_top_hang(true) --
+            snapped_multi_pos(urxy[fpos]) -- 
+            lrxy[fpos] --
+
+          else :
+
+            llxy[fpos] --
+            (xpart urcorner multipar, ypart llxy[fpos]) --
+            (xpart urcorner multipar, ypart ulxy[fpos]) --
+            snapped_multi_pos(ulxy[fpos]) -- 
+
+          fi cycle ;
+
+          save_multipar (i,1,multipar) ;
+
+          multipar := set_multipar(i) ;
+
+          multipar := if obey_multi_par_hang :
+
+            left_bottom_hang(true) --
+            llxy[tpos] --
+            snapped_multi_pos(ulxy[tpos]) -- 
+            left_top_hang(true) --
+
+          else :
+
+            (xpart llcorner multipar, ypart llxy[tpos]) --
+            llxy[tpos] --
+            snapped_multi_pos(ulxy[tpos]) -- 
+            (xpart llcorner multipar, ypart ulxy[tpos]) --
+
+          fi cycle ;
+
+          save_multipar (i,1,multipar) ;
+
         else :
-          multipar := (xpart llcorner multipar, ypart llxy[tpos]) --
-                 llxy[tpos] --
-                 ulxy[tpos] --
-                 (xpart lrcorner multipar, ypart ulxy[tpos]) --
-                 (xpart urcorner multipar, ypart urxy[fpos]) --
-                 urxy[fpos] --
-                 lrxy[fpos] --
-                 (xpart ulcorner multipar, ypart lrxy[fpos])--
-                 cycle ;
+
+          multipar := if obey_multi_par_hang :
+
+            left_bottom_hang(true) --
+            llxy[tpos] --
+           %ulxy[tpos] --
+            snapped_multi_pos(ulxy[tpos]) -- 
+            right_bottom_hang(true) --
+            right_top_hang(true) --
+           %urxy[fpos] --
+            snapped_multi_pos(urxy[fpos]) -- 
+            lrxy[fpos] --
+            left_top_hang(true) --
+
+          else :
+
+            (xpart llcorner multipar, ypart llxy[tpos]) --
+            llxy[tpos] --
+           %ulxy[tpos] -- 
+            snapped_multi_pos(ulxy[tpos]) -- 
+            (xpart lrcorner multipar, ypart ulxy[tpos]) --
+            (xpart urcorner multipar, ypart urxy[fpos]) --
+           %urxy[fpos] --
+            snapped_multi_pos(urxy[fpos]) -- 
+            lrxy[fpos] --
+            (xpart ulcorner multipar, ypart lrxy[fpos]) --
+
+          fi cycle ;
+
+          save_multipar (i,1,multipar) ;
+ 
         fi ;
+
       else :
-        multipar := llcorner multipar --
-               lrcorner multipar --
-               (xpart lrcorner multipar, ypart urxy[fpos]) --
-               urxy[fpos] --
-               lrxy[fpos] --
-               (xpart ulcorner multipar, ypart lrxy[fpos])-- cycle ;
+
+        multipar := if obey_multi_par_hang :
+
+          left_bottom_hang(false) --
+          right_bottom_hang(false) --
+          right_top_hang(false) --
+         %urxy[fpos] --
+          snapped_multi_pos(urxy[fpos]) -- 
+          lrxy[fpos] --
+          left_top_hang(false) --
+
+        else :
+
+          llcorner multipar --
+          lrcorner multipar --
+          (xpart urcorner multipar, ypart urxy[fpos]) --
+         %urxy[fpos] --
+          snapped_multi_pos(urxy[fpos]) -- 
+          lrxy[fpos] --
+          (xpart ulcorner multipar, ypart lrxy[fpos]) --
+
+        fi cycle ;
+
+        save_multipar (i,1,multipar) ;
+
       fi ;
-      save_multipar (i,1,multipar) ; 
+
     elseif (nxy[tpos]=RealPageNumber) and (InsideTextArea(i,llxy[tpos])) :
-      % last one in chain 
+
+      % last one in chain
+
       nn := i ;
-      multipar := ulcorner multipar --
-             urcorner multipar --
-             (xpart lrcorner multipar, ypart urxy[tpos]) --
-             ulxy[tpos] --
-             llxy[tpos] --
-             (xpart llcorner multipar, ypart llxy[tpos]) --
-             cycle ;
-      save_multipar (i,3,multipar) ; 
+
+      if obey_multi_par_hang and obey_multi_par_more :
+
+        multipar :=
+          x_left_top_hang(i,true) --
+          x_right_top_hang(i,true) --
+          x_right_bottom_hang(i,true) --
+%          ulxy[tpos] --
+snapped_multi_pos(ulxy[tpos]) -- 
+          llxy[tpos] --
+          x_left_bottom_hang(i,true) --
+          cycle ;
+
+      else :
+
+        multipar :=
+          ulcorner multipar --
+          urcorner multipar --
+          (xpart lrcorner multipar, ypart urxy[tpos]) --
+%          ulxy[tpos] --
+snapped_multi_pos(ulxy[tpos]) -- 
+          llxy[tpos] --
+          (xpart llcorner multipar, ypart llxy[tpos]) --
+          cycle ;
+
+      fi ;
+
+      save_multipar (i,3,multipar) ;
+
+    else : 
+      
+      % handled later  
+     
     fi ;
+
   endfor ;
 
+  % second loop 
+
   for i=ii+1 upto nn-1 :
-    % rest of chain 
-    save_multipar(i,2,set_multipar(i)) ; 
+
+    % rest of chain / todo : hang
+
+%if (nxy[fpos]<=RealPageNumber) and (nxy[tpos]>=RealPageNumber) :
+
+    multipar := set_multipar(i) ;
+
+    if obey_multi_par_hang and obey_multi_par_more :
+
+      multipar :=
+        x_left_top_hang(i,false) --
+        x_right_top_hang(i,false) --
+        x_right_bottom_hang(i,false) --
+        x_left_bottom_hang(i,false) --
+        cycle ;
+
+    fi ;
+
+    save_multipar(i,2,multipar) ;
+
+%fi ; 
+
   endfor ;
 
   if span_multi_column_pars :
-    endgroup ; 
-  fi ; 
+    endgroup ;
+  fi ;
 
 enddef ;
 
@@ -475,22 +950,26 @@ numeric boxgridwidth     ; boxgridwidth     := 1pt ;
 numeric boxlinewidth     ; boxlinewidth     := 1pt ;
 numeric boxlineradius    ; boxlineradius    := 0pt ; 
 numeric boxfilloffset    ; boxfilloffset    := 0pt ; 
+numeric boxgriddistance  ; boxgriddistance  := .5cm ;
 
 def draw_box =
   draw pxy withcolor boxlinecolor withpen pencircle scaled boxlinewidth ;
   draw lxy -- rxy withcolor boxlinecolor withpen pencircle scaled boxgridwidth ;
 enddef ;
 
-def draw_par  = % 1 2 11
-  numeric distance ; distance := .5cm ; 
+def draw_par  = % 1 2 11 12 
   do_draw_par(pxy) ; do_draw_par(txy) ; do_draw_par(bxy) ;
   for i = pxy, txy, bxy :
         if boxgridtype= 1 :
+      boxgriddirection := origin ; 
       draw baseline_grid (i,boxgriddirection,true ) withcolor boxgridcolor ;
     elseif boxgridtype= 2 :
+      boxgriddirection := origin ; 
       draw baseline_grid (i,boxgriddirection,false) withcolor boxgridcolor ;
     elseif boxgridtype=11 :
-      draw graphic_grid(i,distance,distance,distance/2,distance/2) ;
+      draw graphic_grid(i,boxgriddistance,boxgriddistance,boxgriddistance/2,boxgriddistance/2) ;
+    elseif boxgridtype=12 :
+      draw graphic_grid(i,boxgriddistance,boxgriddistance,0,0) ;
     fi ;
   endfor ;
 enddef ;
@@ -500,6 +979,7 @@ def do_show_par (expr p, r, c) =
     draw fullcircle scaled r shifted point i of p 
       withpen pencircle scaled .5pt withcolor c ;
   endfor ; fi ;
+  draw p withpen pencircle scaled .5pt withcolor c ;
 enddef ; 
 
 def show_par  =
@@ -517,11 +997,13 @@ def draw_multi_pars  =
   for i=1 upto nofmultipars : 
     do_draw_par(multipars[i]) ; 
         if boxgridtype= 1 :
-      draw baseline_grid (multipars[i],boxgriddirection,true ) withcolor boxgridcolor ;
+      draw baseline_grid (multipars[i],up,true ) withcolor boxgridcolor ;
     elseif boxgridtype= 2 :
-      draw baseline_grid (multipars[i],boxgriddirection,false) withcolor boxgridcolor ;
+      draw baseline_grid (multipars[i],up,false) withcolor boxgridcolor ;
     elseif boxgridtype=11 :
-      draw graphic_grid(multipars[i],distance,distance,distance/2,distance/2) ;
+      draw graphic_grid(multipars[i],boxgriddistance,boxgriddistance,boxgriddistance/2,boxgriddistance/2) ;
+    elseif boxgridtype=12 :
+      draw graphic_grid(multipars[i],boxgriddistance,boxgriddistance,0,0) ;
     fi ;
   endfor ; 
 enddef ; 
@@ -558,27 +1040,28 @@ enddef ;
 
 vardef baseline_grid (expr pxy, pdir, at_baseline) =
   if (par_line_height>0) and (bbheight(pxy)>1) and (bbwidth(pxy)>1) and (boxgridwidth>0) :
-    save grid, start ; picture grid ; pair start ;
+    save i, grid ; picture grid ; pair start ;
+    def _do_ (expr start) = 
+      draw start -- start shifted (bbwidth(pxy),0) 
+        withpen pencircle scaled boxgridwidth 
+        withcolor boxgridcolor ;
+    enddef ;  
     grid := image
       ( %fails with inlinespace
         %
-        %if pdir=up :
-        %  for i = if at_baseline : par_strut_depth else : 0 fi
-        %          step par_line_height until bbheight(pxy) :
-        %    start := llcorner pxy shifted (0,+i) ;
-        %    draw start -- start shifted (bbwidth(pxy),0) 
-        %      withpen pencircle scaled boxgridwidth 
-        %      withcolor boxgridcolor ; 
-        %  endfor ;
-        %else :
-          for i = if at_baseline : par_strut_height else : 0 fi
-                  step par_line_height until bbheight(pxy) :
-            start := ulcorner pxy shifted (0,-i) ;
-            draw start -- start shifted (bbwidth(pxy),0) 
-              withpen pencircle scaled boxgridwidth 
-              withcolor boxgridcolor ; 
+        if pdir=up :
+          for i = if at_baseline : par_strut_depth else : 0 fi
+                  step  par_line_height 
+                  until max(bbheight(pxy),par_line_height) :
+            _do_ (llcorner pxy shifted (0,+i)) ;
           endfor ;
-        %fi ; 
+        else :
+          for i = if at_baseline : par_strut_height else : 0 fi
+                  step  par_line_height 
+                  until bbheight(pxy) :
+            _do_ (ulcorner pxy shifted (0,-i)) ;
+          endfor ;
+        fi ; 
       ) ;
     clip grid to pxy ;
     grid
@@ -598,8 +1081,8 @@ vardef graphic_grid (expr pxy, dx, dy, x, y) =
         for i = ypart llcorner pxy step dy until ypart ulcorner pxy :
           draw (xpart llcorner pxy,i) -- (xpart lrcorner pxy,i) 
             withpen pencircle scaled boxgridwidth ; 
-        endfor ) ;
-    clip grid shifted (x,y) to pxy ;
+        endfor ) shifted (x,y) ;
+    clip grid to pxy ;
     grid
   else :
     nullpicture

@@ -19,10 +19,19 @@
 
 \unprotect 
 
-\definelayer[\v!tekst-2][\c!positie=\v!ja]
-\definelayer[\v!tekst-1][\c!positie=\v!ja]
-\definelayer[\v!tekst+1][\c!positie=\v!ja]
-\definelayer[\v!tekst+2][\c!positie=\v!ja]
+% \definelayer[\v!tekst-2][\c!positie=\v!ja]
+% \definelayer[\v!tekst-1][\c!positie=\v!ja]
+% \definelayer[\v!tekst+1][\c!positie=\v!ja]
+% \definelayer[\v!tekst+2][\c!positie=\v!ja]
+
+% we need to set the size, else we get dimensions depending 
+% on the content, which in itsel fis ok, but can lead to loops
+% due to rounding errors (happened in demo-obv)
+
+\definelayer[\v!tekst-2][\c!positie=\v!ja,\c!breedte=\overlaywidth,\c!hoogte=\overlayheight]
+\definelayer[\v!tekst-1][\c!positie=\v!ja,\c!breedte=\overlaywidth,\c!hoogte=\overlayheight]
+\definelayer[\v!tekst+1][\c!positie=\v!ja,\c!breedte=\overlaywidth,\c!hoogte=\overlayheight]
+\definelayer[\v!tekst+2][\c!positie=\v!ja,\c!breedte=\overlaywidth,\c!hoogte=\overlayheight]
 
 \def\internaltextoverlay#1% will become more generic and installable
   {\startoverlay          % i.e. probably an overlay by itself 
@@ -33,6 +42,8 @@
 %\def\internaltextoverlay#1%
 %  {\hbox to \zeropoint{\positionoverlay{\v!tekst#1}\hss}%
 %   \composedlayer{\v!tekst#1}}
+
+% todo: share info, so that tuo will be smaller 
 
 \defineoverlay[\v!tekst-2][\internaltextoverlay{-2}]
 \defineoverlay[\v!tekst-1][\internaltextoverlay{-1}]
@@ -70,16 +81,16 @@
      {\bgroup
       \checktextbackgrounds
       \setbox\scratchbox\null
-      \wd\scratchbox\wd\nextbox
-      \ht\scratchbox\ht\nextbox
-      \dp\scratchbox\dp\nextbox
+      \wd\scratchbox\nextboxwd
+      \ht\scratchbox\nextboxht
+      \dp\scratchbox\nextboxdp
       \setlayer
         [anchor]
         [\c!breedte=\wd\scratchbox,
          \c!hoogte=\ht\scratchbox,
          \c!offset=\!!zeropoint,
          #2,#3]
-        {\setlayer[#1]{\box\nextbox}}% 
+        {\setlayer[#1]{\flushnextbox}}% 
       \framed
         [#2,
          \c!achtergrond=anchor,
@@ -158,7 +169,7 @@
         {\rotate
            [\c!plaats=\v!hoog,
             \c!rotatie=\getvalue{\??cb#1\c!rotatie}]
-           {\box\nextbox}}}%
+           {\flushnextbox}}}%
    \advance\@@layerysiz\dp\csname\@@collectorbox#1\endcsname
    \@@layerxpos\getvalue{\??cb#1\c!x}%
    \advance\@@layerxpos\getvalue{\??cb#1\c!hoffset}%
@@ -175,7 +186,7 @@
         \@@layerxpos-\@@layerxpos
       \fi}%
    \setbox\nextbox\hbox
-     {\alignedbox[\getvalue{\??cb#1\c!plaats}]\vbox{\box\nextbox}}%
+     {\alignedbox[\getvalue{\??cb#1\c!plaats}]\vbox{\flushnextbox}}%
    \boxmaxdepth\zeropoint % really needed, nice example 
    \global\advance\boxhdisplacement\@@layerxpos
    \ifdim\boxhdisplacement<\zeropoint
@@ -185,14 +196,14 @@
    \fi
    \global\advance\boxvdisplacement\@@layerypos
    \ifdim\boxvdisplacement<\zeropoint
-     \global\setbox\csname\@@collectorbox#1\endcsname=\hbox
+     \global\setbox\csname\@@collectorbox#1\endcsname\hbox
        {\lower-\boxvdisplacement
         \box\csname\@@collectorbox#1\endcsname}%
    \fi
    \@@layerxsiz\wd\csname\@@collectorbox#1\endcsname
    \@@layerysiz\ht\csname\@@collectorbox#1\endcsname
    \advance\@@layerysiz\dp\csname\@@collectorbox#1\endcsname
-   \global\setbox\csname\@@collectorbox#1\endcsname=\hbox
+   \global\setbox\csname\@@collectorbox#1\endcsname\hbox
      {\box\csname\@@collectorbox#1\endcsname
       \hskip-\@@layerxsiz
       \hskip\@@layerxpos\relax
@@ -201,9 +212,9 @@
       \fi
       \lower\@@layerypos\hbox
         {\ifdim\boxvdisplacement<\zeropoint
-           \lower-\boxvdisplacement\box\nextbox
+           \lower-\boxvdisplacement\flushnextbox
          \else
-           \box\nextbox
+           \flushnextbox
          \fi}}%
    \ifdim\wd\csname\@@collectorbox#1\endcsname<\@@layerxsiz
      \global\wd\csname\@@collectorbox#1\endcsname\@@layerxsiz 
@@ -249,7 +260,7 @@
    \dowithnextbox
      {\setcollector 
         [caption]
-        {\box\nextbox}%
+        {\flushnextbox}%
       \setcollector 
         [caption][#1]
         {\getparameters[\??du][#2]%
@@ -288,7 +299,7 @@
 \def\dolayeredtext[#1][#2]#3%
   {\bgroup
    \dowithnextbox
-     {\!!widtha\nextboxwd
+     {\!!widtha \nextboxwd
       \!!heighta\nextboxht
       \bgroup % preserve \nextbox
       \setlayer
@@ -306,7 +317,7 @@
          \c!achtergrond={\v!voorgrond,caption},
          \c!breedte=\!!widtha,
          \c!hoogte=\!!heighta]
-        {\box\nextbox}%
+        {\flushnextbox}%
       \egroup}%
      \hbox}
 
@@ -379,7 +390,7 @@
 % 
 % \affiliation{drawing}{\externalfigure[hakker][width=3cm]}
 
-% pas op: aanpassen aan nieuwe layer hoek ankers 
+% pas op: aanpassen aan nieuwe layer hoek ankers en columnset 
 
 \newcounter\nofbleeds % per pag 
 
@@ -408,7 +419,7 @@
    \!!donebfalse % right 
    \!!donecfalse % top
    \!!donedfalse % bottom  
-% replace this part ! 
+   % replace this part ! todo: default location
    \processaction
      [\@@bgplaats]
      [ t=>\!!donectrue\let\@@bghoffset\!!zeropoint, 
@@ -503,16 +514,58 @@
    \fi}
 
 \def\dosetlayerframedT[#1][#2][#3]%
-  {\dowithnextbox{\setlayer[#1][#2]{\box\nextbox}}%
+  {\dowithnextbox{\setlayer[#1][#2]{\flushnextbox}}%
    \hbox\framed[#3]}
 
 \def\dosetlayerframedS[#1][#2][#3]%
   {\dowithnextbox
      {\setlayer
         [#1]
-        [\c!breedte=\wd\nextbox,\c!hoogte=\ht\nextbox,
+        [\c!breedte=\nextboxwd,\c!hoogte=\nextboxht,
          \c!offset=\!!zeropoint,#2]
-        {\box\nextbox}}%
+        {\flushnextbox}}%
    \hbox\framed[\c!plaats=\v!normaal,#2]}
+
+\def\setlayertext
+  {\dotripleempty\dosetlayertext}
 
+\def\dosetlayertext[#1][#2][#3]%
+  {\bgroup
+   \getparameters
+     [\??lx]
+     [\c!uitlijnen=,
+      \c!breedte=\hsize,
+      \c!kleur=,
+      \c!letter=,
+      #3]%
+   \dowithnextboxcontent
+     {\forgetall
+      \hsize\@@lxbreedte
+      \expanded{\steluitlijnenin[\@@lxuitlijnen]}%
+      \dosetfontattribute\??lx\c!letter}
+     {\setlayer[#1][#2]{\strut\color[\@@lxkleur]{\flushnextbox}}%
+      \egroup}%
+   \vtop}
+
+% \setupbackgrounds
+%   [page]
+%   [background=pagefigures]
+% 
+% \definelayer
+%   [pagefigures]
+%   [x=-2mm,
+%    y=-2mm,
+%    width=\paperwidth,
+%    height=\paperheight]
+% 
+% \definelayerpreset [lefttop]     [location=rb]
+% \definelayerpreset [righttop]    [corner={right,top},location={left,bottom}]
+% \definelayerpreset [leftbottom]  [corner={left,bottom},location={right,top}]
+% \definelayerpreset [rightbottom] [corner={right,bottom},location={left,top}]
+% 
+% \setlayer[pagefigures][preset=lefttop]
+% \setlayer[pagefigures][preset=righttop]
+% \setlayer[pagefigures][preset=leftbottom]
+% \setlayer[pagefigures][preset=rightbottom]
+
 \protect \endinput 

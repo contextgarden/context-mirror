@@ -92,7 +92,7 @@
 %D finally does some finishing: 
 %D 
 %D \starttyping 
-%D \def\handleunicodeglyph%   
+%D \def\handleunicodeglyph
 %D   {take actions based on \unicodeone-two-position cq. \nextglyph 
 %D    redefine \unicodecharcommand if needed
 %D    expand \insertunicodeglyph 
@@ -137,18 +137,36 @@
 %D token, since this token can have any value and any 
 %D catcode. 
 
-\def\handleunicodeflowglyph#1%
+%\def\handleunicodeflowglyph#1%
+%  {\bgroup
+%   \edef\unicodeone{#1}%
+%   \@EA\afterassignment\@EA\dohandleunicodeflowglyph
+%     \@EA\chardef\@EA\nexttoken\@EA`\string}
+%
+%\def\dohandleunicodeflowglyph
+%  {\futurelet\nextglyph\dodohandleunicodeflowglyph}
+%
+%\def\dodohandleunicodeflowglyph%
+%  {\edef\unicodetwo{\the\nexttoken}% 
+%   \unicodeposition\unicodeone\unicodetwo\relax
+%   \handleunicodeglyph
+%   \egroup}
+
+% the \relax trick prevents eating up the space (needed for 
+% korean
+
+\def\handleunicodeflowglyph#1#2%
   {\bgroup
    \edef\unicodeone{#1}%
    \@EA\afterassignment\@EA\dohandleunicodeflowglyph
-     \@EA\chardef\@EA\nexttoken\@EA=\@EA`\string}
+     \@EA\chardef\@EA\nexttoken\@EA`\string#2\relax}
 
-\def\dohandleunicodeflowglyph%
+\def\dohandleunicodeflowglyph\relax
   {\futurelet\nextglyph\dodohandleunicodeflowglyph}
 
-\def\dodohandleunicodeflowglyph% 
-  {\edef\unicodetwo{\the\nexttoken}% 
-   \unicodeposition=\unicodeone\unicodetwo\relax
+\def\dodohandleunicodeflowglyph
+  {\edef\unicodetwo{\the\nexttoken}%
+   \unicodeposition\unicodeone\unicodetwo\relax
    \handleunicodeglyph
    \egroup}
 
@@ -157,12 +175,14 @@
    \let\nextglyph\relax
    \edef\unicodeone{#1}%  
    \edef\unicodetwo{#2}% 
-   \unicodeposition=\unicodeone\unicodetwo\relax
+%   \unicodeposition=\unicodeone\unicodetwo\relax
+   \unicodeposition\unicodeone\unicodetwo\relax
    \handleunicodeglyph
    \egroup}
 
-\def\dohandleucflowglyph%
-  {\unicodeposition=\unicodeone\unicodetwo\relax
+\def\dohandleucflowglyph
+%  {\unicodeposition=\unicodeone\unicodetwo\relax
+  {\unicodeposition\unicodeone\unicodetwo\relax
    \handleunicodeglyph
    \egroup}
 
@@ -214,7 +234,7 @@
 %    else
 %      { return "$a$b" } } 
 
-\def\insertunicodeglyph%
+\def\insertunicodeglyph
   {\unicodeglyph\unicodeone\unicodetwo}
 
 \let\handleunicodeglyph=\insertunicodeglyph
@@ -265,7 +285,7 @@
 %D The command \type {\unicodecharcommand} can be used to 
 %D handle special cases. At that moment \type {1em} is known.  
 
-\def\unicodestyle%
+\def\unicodestyle
   {\truefontname\s!Unicode\fontstylesuffix}
 
 \let\unicodecharcommand\firstofoneargument
@@ -281,7 +301,7 @@
 \unexpanded\def\unicodeglyph#1#2% watch the double mapping
   {\bgroup
    \getvalue{@@\currentucharmapping\strippedcsname\uchar}{#1}{#2}%
-   \bodyfontsize=\unicodescale\bodyfontsize
+   \bodyfontsize\unicodescale\bodyfontsize
    \font\unicodefont=\truefontname{\truefontname\unicodestyle\unicodeone}
      at \currentfontscale\bodyfontsize
    \unicodestrut\unicodefont\unicodecharcommand{\char\unicodetwo\relax}%
@@ -318,7 +338,7 @@
 %D This maps the GBK vector onto a compact GBK one. The 
 %D auxiliary macro is defined here as a goody. 
 
-\def\dorepositionunicode%
+\def\dorepositionunicode
   {\DoDiv\unicodeposition by256to\scratchcounter
    \advance\scratchcounter 1
    \edef\unicodeone{\ifnum\scratchcounter<10 0\fi\the\scratchcounter}%
@@ -350,17 +370,17 @@
   {\def\unicodescale{#1}}
 
 \def\dosetunicodestrut#1#2% height depth
-  {\def\unicodestrut%
+  {\def\unicodestrut
      {\vrule
-        \!!width\!!zeropoint
+        \!!width\zeropoint
         \!!height#1\ht\strutbox
         \!!depth#2\dp\strutbox
         \relax}}
 
 \def\setunicodestrut#1#2% height depth
-  {\ifdim#1\ht\strutbox>\!!zeropoint
+  {\ifdim#1\ht\strutbox>\zeropoint
      \dosetunicodestrut{#1}{#2}%
-   \else\ifdim#1\dp\strutbox>\!!zeropoint
+   \else\ifdim#1\dp\strutbox>\zeropoint
      \dosetunicodestrut{#1}{#2}%
    \else
      \let\unicodestrut\empty
@@ -413,8 +433,8 @@
 
 \beginTEX 
 
-  \def\unicodeTEXwarning%
-     {\writeline\showmessage{\m!fonts}{21}{}\writeline
+  \def\unicodeTEXwarning
+     {\writeline\showmessage\m!fonts{21}\empty\writeline
       \global\let\unicodeTEXwarning\relax}
 
 \endTEX
@@ -426,17 +446,19 @@
 
 \endETEX
 
-\def\defineunicodefont%
+\def\defineunicodefont
   {\dotripleempty\dodefineunicodefont}
 
 \def\dodefineunicodefont[#1][#2][#3]%
   {\unicodeTEXwarning
-   \doifinstringelse{=}{#3}
+   \doifassignmentelse{#3}
      {\setupunicodefont[#1][#3]}
-     {\copyparameters
-        [\??uc#1][\??uc#3]
-        [\c!hoogte,\c!diepte,\c!schaal,\c!commandos,
-         \c!interlinie,\c!commando,\c!conversie]}%
+     {\doifelsenothing{#3}
+        {\setupunicodefont[#1][#3]}
+        {\copyparameters
+           [\??uc#1][\??uc#3]
+           [\c!hoogte,\c!diepte,\c!schaal,\c!commandos,
+            \c!interlinie,\c!commando,\c!conversie]}}%
    \doifelsenothing{#2}
      {\setvalue{#1}{[uc font #1 undefined]}}
      {\setvalue{\??uc#1\c!file}{#2}%
@@ -448,10 +470,10 @@
          \definefontsynonym[#2\s!BoldItalic] [#2\s!Italic]}%
       \unexpanded\setvalue{#1}{\enableunicodefont{#1}}}}
 
-\def\setupunicodefont%
+\def\setupunicodefont
   {\dodoubleempty\dosetupunicodefont}
 
-\def\dosetupunicodefont[#1][#2]%
+\def\dosetupunicodefont[#1][#2]% also predefines 
   {\doifundefined{\??uc#1\c!commando}
      {\copyparameters
         [\??uc#1][\??uc\s!default]
@@ -467,8 +489,7 @@
    \def\unicodedigits            {\getvalue{\??uc#1\c!conversie}}%
    \def\handleunicodeglyph       {\getvalue{\??uc#1\c!commando}}%
    \enableregime[unicode]%
-   \doifvalue{\??uc#1\c!interlinie}{\v!ja}
-     {\stelinterliniein\relax}%
+   \doifvalue{\??uc#1\c!interlinie}\v!ja{\stelinterliniein\relax}%
    \getvalue{\??uc#1\c!commandos}\relax}
 
 %D \macros 

@@ -159,7 +159,10 @@ var:riduzione:si,no::
 var:rgb:si,no::
 var:cmyk:si,no::
 var:mpcmyk:si,no::
+var:mpspot:si,no::
 var:coloretesto:*nome::
+var:separa:c,m,y,k,p,s,no,*nome::
+var:criterio:tutti,nessuno::
 stopsetup
 
 startsetup
@@ -699,9 +702,9 @@ startsetup
 com:impostaincorniciato:
 typ:vars/:
 var:altezza:adatta,ampio,*dimensione::
-var:ampiezza:adatta,ampio,*dimensione::
+var:ampiezza:adatta,ampio,fisso,*dimensione::
 var:offset:nessuno,sovrapponi,implicito,*dimensione::
-var:luogo:basso,profondita::
+var:luogo:basso,profondita,sospeso::
 var:opzione:nessuno,vuoto::
 var:strut:si,no::
 var:allinea:no,sinistra,destra,centro,normale,alto,basso,pedap::
@@ -1291,6 +1294,12 @@ typ::
 stopsetup
 
 startsetup
+com:emptylines:
+typ:val/:
+val:*numero::
+stopsetup
+
+startsetup
 com:nientespazio:
 typ::
 stopsetup
@@ -1643,7 +1652,7 @@ var:horoffset:*dimensione::
 var:veroffset:*dimensione::
 var:stile:normale,grassetto,inclinato,grassettoinclinato,type,cap,piccolo...,*comando::
 var:colore:*nome::
-var:marcatura:attivo,disattivo,colore::
+var:marcatura:attivo,disattivo,colore,schermo::
 var:luogo:sinistra,centro,destra,fondo,cima, facciasingola,doppiafaccia::
 var:scala:*dimensione::
 var:nx:*numero::
@@ -1651,10 +1660,15 @@ var:ny:*numero::
 var:dx:*dimensione::
 var:dy:*dimensione::
 var:righe:*numero::
+var:colonne:*numero::
+var:distanzacolonne:*dimensione::
 var:griglia:si,no::
-var:spaziofondo:*numero::
-var:cutspace:*numero::
-var:distanzatesto:*numero::
+var:spaziofondo:*dimensione::
+var:cutspace:*dimensione::
+var:distanzatesto:*dimensione::
+var:ampiezzatesto:*numero::
+var:textmargin:*dimensione::
+var:clipoffset:*dimensione::
 stopsetup
 
 startsetup
@@ -1739,6 +1753,7 @@ var:*numero sezione:si,no::
 var:separatore:*testo::
 var:strut:si,no::
 var:stato:inizia,termina::
+var:ampiezza:*dimensione::
 var:comando:*\comando#1::
 stopsetup
 
@@ -1777,6 +1792,10 @@ typ:vars/:
 var:numerosezione:si,numero,no::
 var:alternativa:normale,margine,centro,testo,capoverso::
 var:separatore:*testo::
+var:allinea:sinistra,destra,normale,ampio::
+var:allineatitolo:si,no::
+var:tolleranza:moltorigido,rigido,tollerante,moltotollerante,dilata::
+var:rientrasuccessivo:si,no::
 var:comando:*\comando#1#2::
 stopsetup
 
@@ -1818,6 +1837,9 @@ var:rientrasuccessivo:si,no::
 var:ncima:*numero::
 var:nfondo:*numero::
 var:nrighe:*numero::
+var:implicito:*nome::
+var:distanzamarginesinistro:*dimensione::
+var:distanzamarginedestro:*dimensione::
 ivr:impostaincorniciato::
 stopsetup
 
@@ -1961,6 +1983,13 @@ stopsetup
 startsetup
 com:nienteelenco:
 typ:arg/:
+val:*testo::
+stopsetup
+
+startsetup
+com:listsymbol:
+typ:val/arg/:
+val:*nome::
 val:*testo::
 stopsetup
 
@@ -2164,6 +2193,8 @@ var:allinea:interno,esterno,sinistra,destra,centro,normale,no,si::
 var:riga:*numero::
 var:distanza:*dimensione::
 var:separatore:*testo::
+var:ampiezza:*dimensione::
+var:distanza:*dimensione::
 ivr:impostaincorniciato::
 stopsetup
 
@@ -2205,6 +2236,19 @@ var:scala:*numero::
 stopsetup
 
 startsetup
+com:setuppaper:
+typ:vars/:
+var:carta:*nome::
+var:pagina:*nome::
+var:nx:*numero::
+var:ny:*numero::
+var:ampiezza:*dimensione::
+var:altezza:*dimensione::
+var:spaziocima:*dimensione::
+var:backspace:*dimensione::
+stopsetup
+
+startsetup
 com:impostadimensionicarta:
 typ:vals/vals/:
 val:A3,A4,A5,A6,letter,...,CD,*nome, orizzontale,riflesso,ruotato,90,180,270:A4:
@@ -2214,7 +2258,7 @@ stopsetup
 startsetup
 com:impostaparranging:
 typ:vals/:
-val:disattiva, 2*16,2*8,2*4,2*2,2**2,2UP,2DOWN, riflesso,ruotato,doppiafaccia,negativo,90,180,270::
+val:disattiva, 2*16,2*8,2*4,2*2,2**2,2*2*4,2*4*2,2UP,2DOWN,2SIDE,2TOP, riflesso,ruotato,doppiafaccia,negativo,90,180,270::
 stopsetup
 
 startsetup
@@ -2306,16 +2350,12 @@ var:alternativa:normale,inmargine,centro,testo::
 var:comando:*\comando#1#2::
 var:comandonumero:*\comando#1::
 var:comandotesto:*\comando#1::
-var:separatore:*testo::
 var:prefisso:+,-,*testo::
-var:mettitesta:si,no::
-var:incrementanumero:si,no,*file::
-var:allinea:sinistra,destra,normale,ampio::
-var:allineatitolo:si,no::
-var:tolleranza:moltorigido,rigido,tollerante,moltotollerante,dilata::
-var:rientrasuccessivo:si,no::
+var:mettitesta:si,no,vuoto::
+var:incrementanumero:si,no,elenco,*file::
 var:file:*nome::
 var:espansione:si,comando,no::
+ivr:impostateste::
 stopsetup
 
 startsetup
@@ -3223,6 +3263,7 @@ var:allinea:sinistra,centro,destra,normale::
 var:spessorelinea:*dimensione::
 var:distanza:rigovuoto,griglia,profondita,*dimensione,piccolo,medio,grande,nessuno::
 var:fonttesto:5pt,...,12pt,piccolo,grande::
+var:linea:normale,riga::
 stopsetup
 
 startsetup
@@ -3395,6 +3436,7 @@ var:dopo:commando::
 var:distanza:*dimensione::
 var:altezza:*dimensione,adatta::
 var:ampiezza:*dimensione,adatta::
+var:luogo:boven,midden,onder,links,rechts::
 var:allinea:no,sinistra,destra,centro,normale::
 stopsetup
 
@@ -3798,6 +3840,7 @@ stopsetup
 startsetup
 com:impostacommento:
 typ:vars/:
+var:stato:inizia,termina::
 var:ampiezza:*dimensione::
 var:altezza:*dimensione::
 var:colore:*nome::

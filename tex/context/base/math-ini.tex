@@ -25,12 +25,11 @@
 
 \unprotect
 
-\def\@mt@{@mt@} % math token
-\def\@mt@{@mc@} % math character 
-\def\@mh@{@mh@} % math handler
+\def\@ml@{@ml@} % math list (used for collection) 
 \def\@mf@{@mf@} % math family
-\def\@mc@{@mc@} % math class
-\def\@ml@{@mc@} % math list 
+%def\@mh@{@mh@} % math handler (not used) 
+\def\@mt@{@mt@} % math token
+\def\@mc@{@mc@} % math collection
 
 \def\@@mathlimopcomm#1{\mathop{#1}\limits}
 \def\@@mathnolopcomm#1{\mathop{#1}\nolimits}
@@ -158,7 +157,7 @@
 
 \let\dohandlecommand\dohandlemathtoken
 
-\def\definefamilysynonym%
+\def\definefamilysynonym
   {\dotripleempty\dodefinefamilysynonym}
 
 \def\dodefinefamilysynonym[#1][#2][#3]% [mathcollection] [] []
@@ -251,8 +250,8 @@
   {\setmathtoks
    \ifdynamicmathfamilies \let\purefamilyhex\relax \fi
    \doifnumberelse{#1}
-     {\scratchcounter=#1}
-     {\scratchcounter=\@EA`\string#1}%
+     {\scratchcounter#1}
+     {\scratchcounter\@EA`\string#1}%
    \expanded
      {\appendtoks
         \ifsixthargument
@@ -311,29 +310,26 @@
    \doifundefined{\@ml@\mathcollection}
      {\expandafter\newtoks\csname\@ml@\mathcollection\endcsname}}
 
-\def\stopmathcollection%
+\def\stopmathcollection
   {\popmacro\mathcollection}
 
 \def\startrawmathcollection%
-  {%\pushmacro\iftracemathcollection % does not work in new push 
-   %\tracemathcollectionfalse
-   \startmathcollection}
+  {\startmathcollection}
 
 \def\stoprawmathcollection%
-  {%\popmacro\iftracemathcollection
-   \stopmathcollection}
+  {\stopmathcollection}
 
 \newtoks\mathtoks
 
-\def\setmathtoks%
+\def\setmathtoks
   {\@EA\let\@EA\mathtoks\csname\@ml@\mathcollection\endcsname}
 
 \def\currentmathcollection{\mathcollection}
 
-\def\nomathcollection{\s!default}
+\let\nomathcollection\s!default
 
 \def\enablemathcollection[#1]%
-  {\doifnot{#1}{\s!default}
+  {\doifnot{#1}\s!default
      {\setmathcollection\s!default
       \the\csname\@ml@\mathcollection\endcsname}%
    \setmathcollection{#1}%
@@ -355,6 +351,7 @@
 \appendtoks\autoenablemathcollection\to\mathstrategies
 
 \fetchruntimecommand \showmathcharacters {\f!mathprefix\s!run}
+\fetchruntimecommand \showmathtoken      {\f!mathprefix\s!run}
 
 %D \macros 
 %D   {ifmathpunctuation, enablemathpunctuation, 
@@ -381,7 +378,6 @@
    \fi}
 
 \unexpanded\def\dohandlemathpunctuation#1#2% \if fails in mathml interval
-%  {\def\next{\csname\if\space\nexttoken#2\else#1\fi\endcsname}%
   {\def\next{\csname\ifx\space\nexttoken#2\else#1\fi\endcsname}%
    \futurelet\nexttoken\next}
  
@@ -392,6 +388,10 @@
 %D \typebuffer
 %D 
 %D \blanko{\getbuffer}\blanko
+
+%D needed for sin, cos etc
+
+\def\mfunction#1{{\mr#1}}
 
 \edef\hexmrfam {0} \edef\hexbsfam {8}
 \edef\hexmifam {1} \edef\hexbifam {9}
@@ -422,6 +422,29 @@
 %D Some goodies: 
 
 \def\Angstrom{\nomathematics{\Aring}}
+
+%D Bold math: 
+%D 
+%D \starttypen 
+%D \usetypescript [lucida] [texnansi]
+%D 
+%D \definetypeface [boldmath] [rm] [serif] 
+%D   [lucida] [default] [encoding=texnansi]
+%D \definetypeface [boldmath] [tt] [mono] 
+%D   [lucida] [default] [encoding=texnansi]
+%D \definetypeface [boldmath] [ss] [sans] 
+%D   [lucida] [default] [encoding=texnansi]
+%D \definetypeface [boldmath] [mm] [boldmath] 
+%D   [lucida] [default] [encoding=texnansi]
+%D 
+%D \switchtobodyfont[lucida,10pt] 
+%D 
+%D \showmathtoken{Gamma} $\Gamma \Delta \alpha \delta \zeta$
+%D 
+%D \switchtobodyfont[boldmath,10pt] 
+%D 
+%D \showmathtoken{Gamma} $\Gamma \Delta \alpha \delta \zeta$
+%D \stoptypen 
 
 \protect \endinput
 

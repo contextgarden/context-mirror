@@ -69,12 +69,12 @@
      {\ifcase\margetekstnummer\relax
         \def\margetekstnummer{#2}%
       \fi}
-     {}%
+     \donothing
    \doifnumberelse\margetekstnummer
      {\ifnum\margetekstnummer>25 % to be translated 
-       \writestatus{\m!systems}{potential margin stack overflow (\margetekstnummer)}%
+       \writestatus\m!systems{potential margin stack overflow (\margetekstnummer)}%
      \fi}
-     {}% 
+     \donothing
    \processaction
      [\getvalue{\??im\margetekstnummer\c!uitlijnen}]
      [     \v!ja=>\setvalue{\??im\margetekstnummer\c!uitlijnen}{#2},
@@ -85,64 +85,60 @@
        \v!midden=>\setvalue{\??im\margetekstnummer\c!uitlijnen}{\v!midden},
        \v!rechts=>\setvalue{\??im\margetekstnummer\c!uitlijnen}{\v!rechts},
       \s!default=>\setvalue{\??im\margetekstnummer\c!uitlijnen}{#2}]%
-   \setbox0=\vbox\localframed
+   \setbox0\vbox\localframed
      [\??im\margetekstnummer]
      [\c!strut=\v!nee]
      {\decrement\margetekstregels
       \@@imvoor
-      \doattributes
-        {\??im\margetekstnummer}\c!letter\c!kleur
-        {\dorecurse{\margetekstregels}{\strut\\}%
-         \xdef\margestrutheight{\the\ht\strutbox}%
-         \begstrut#6\endstrut\endgraf}%
+      \dostartattributes{\??im\margetekstnummer}\c!letter\c!kleur\empty
+        \dorecurse\margetekstregels{\strut\\}%
+        \xdef\margestrutheight{\the\ht\strutbox}%
+        \begstrut#6\endstrut\endgraf
+      \dostopattributes
       \@@imna}%
-   \ht0=\ht\strutbox
+   \ht0\ht\strutbox
    \box0
    \egroup
    #5\relax}
 
-\def\plaatsmargetekstscheider%
-  {\ifnum\margincontent>0
+\def\plaatsmargetekstscheider
+  {\ifnum\margincontent>\zerocount
      \bgroup
      \dimen0=\margetekstregels\lineheight
-     \advance\dimen0 by -\lineheight
+     \advance\dimen0 -\lineheight
      \lower\dimen0\hbox{\margetekstscheider}%
      \egroup
    \fi}
 
 \def\linkermargetekstblok#1%
-  {\maakmargetekstblok
-     {\linkermargebreedte}
-     {\v!links}{\v!rechts}
+  {\maakmargetekstblok \leftmargintextwidth \v!links \v!rechts
      {\llap{\plaatsmargetekstscheider}}{\hskip\margetekstafstand}
      {#1}}
 
 \def\rechtermargetekstblok#1%
-  {\maakmargetekstblok
-     {\rechtermargebreedte}
-     {\v!rechts}{\v!links}
+  {\maakmargetekstblok \rightmargintextwidth \v!rechts \v!links
      {\hskip\margetekstafstand}{\rlap{\plaatsmargetekstscheider}}
      {#1}}
 
 \def\doplacemargintext#1#2#3%
   {\strut
-   \setbox0=\hbox{#1}%
-   \dimen0=\ht0
-   \advance\dimen0 by \dp0
+   \setbox0\hbox{#1}%
+   \dimen0\ht0
+   \advance\dimen0 \dp0
    \ifdim\dimen0>\marginheight
-     \global\marginheight=\dimen0
+     \global\marginheight\dimen0
    \fi
-   \setbox0=\hbox
+   \setbox0\hbox
      {#2{\hskip#3\strut
          \iflowinmargin\else
-           \dimen0=\dp\strutbox
-           \advance\dimen0 by \margestrutheight
-           \advance\dimen0 by -\ht\strutbox
+           \dimen0\dp\strutbox
+           \advance\dimen0 \margestrutheight
+           \advance\dimen0 -\ht\strutbox
            \raise\dimen0
          \fi
          \box0}}%
-   \ht0=\!!zeropoint
-   \dp0=\!!zeropoint
+   \ht0\zeropoint
+   \dp0\zeropoint
    \gdef\margestrutheight{\the\ht\strutbox}%
   %\graphicvadjust{\box0}} % fails in high math lines, let it be  
   %\hbox{\lower\dp\strutbox\box0}} % alas, wrong lapping, therefore useless 
@@ -164,14 +160,20 @@
   \def\dopositionmarginbox#1{\graphicvadjust{\box#1}}
 \fi
 
+\def\leftmargintextdistance  {\getvalue{\??im\v!links \c!afstand}}
+\def\rightmargintextdistance {\getvalue{\??im\v!rechts\c!afstand}}
+
+\def\leftmargintextwidth     {\getvalue{\??im\v!links \c!breedte}}
+\def\rightmargintextwidth    {\getvalue{\??im\v!rechts\c!breedte}}
+
 \def\doinlinker#1%
   {\doplacemargintext
-     {\linkermargetekstblok{#1}\hskip\linkermargeafstand}
+     {\linkermargetekstblok{#1}\hskip\leftmargintextdistance}
      \llap\!!zeropoint}
 
 \def\doinrechter#1%
   {\doplacemargintext
-     {\hskip\rechtermargeafstand\rechtermargetekstblok{#1}}
+     {\hskip\rightmargintextdistance\rechtermargetekstblok{#1}}
      \rlap\hsize}
 
 \newcounter \nofmarginnotes
@@ -180,9 +182,9 @@
 
 \definetwopasslist{\s!margin}
 
-\def\domarginreference%
+\def\domarginreference
   {\doglobal\increment\nofmarginnotes\relax
-   \edef\writemarref%
+   \edef\writemarref
      {\writeutilitycommand%
         {\twopassentry%
            {\s!margin}%
@@ -203,7 +205,7 @@
 \def\doinmargenormal#1#2#3%
   {\bgroup
    \iftrackingmarginnotes
-     \gettwopassdata{\s!margin}%
+     \gettwopassdata\s!margin
      \iftwopassdatafound
        \dodoinmargenormal\twopassdata#1#2{#3}%
      \else
@@ -227,7 +229,7 @@
 \def\dodoinmarge[#1][#2][#3][#4][#5]#6%
   {\ignorespaces
    \bgroup\postponefootnotes % group is (somehow) needed
-   \doifinsetelse{\v!laag}{#4}
+   \doifinsetelse\v!laag{#4}
      {\lowinmargintrue}
      {\lowinmarginfalse}%
    \processaction
@@ -236,28 +238,27 @@
        \v!rechts=>#3{#6},
       \s!unknown=>\ifdubbelzijdig
                     \doifcommonelse{+,-}{#4}
-                      {\doinmargereverse#2#3{#6}}
-                      {\doinmargenormal#2#3{#6}}%
+                      \doinmargereverse\doinmargenormal#2#3{#6}%
                   \else
                     #2{#6}%
                   \fi]%
-   \rawpagereference{\s!mar}{#5}%
+   \rawpagereference\s!mar{#5}%
    \flushnotes\egroup % don't forget the group 
    \ignorespaces}
 
-\def\inlinker%
+\def\inlinker
   {\indentation\doquintupleempty\doinmarge
      [\v!links][\doinlinker][\doinrechter]}
 
-\def\inrechter%
+\def\inrechter
   {\indentation\doquintupleempty\doinmarge
      [\v!rechts][\doinlinker][\doinrechter]}
 
-\def\inmarge%
+\def\inmarge
   {\doquintupleempty\doinmarge
      [\@@implaats][\doinlinker][\doinrechter]}
 
-\def\inanderemarge%
+\def\inanderemarge
   {\doquintupleempty\doinmarge
      [\@@implaats][\doinrechter][\doinlinker]}
 
@@ -270,7 +271,7 @@
 
 \let\restoreinterlinepenalty=\relax
 
-\def\flushmargincontents%
+\def\flushmargincontents
   {\restoreinterlinepenalty  % here?
    \ifcase\margincontent\else           % called quite often, so we
      \expandafter\doflushmargincontents % speed up the \fi scan by
@@ -311,14 +312,14 @@
 %    \doglobal\newcounter\margincontent
 %    \egroup}
 
-\def\doflushmargincontents% % links + rechts
+\def\doflushmargincontents % links + rechts
   {\bgroup
    \forgetall
    \global\marginheight\zeropoint
-   \dorecurse{\margincontent}
+   \dorecurse\margincontent
      {\bgroup
-      \edef\margetekstafstand {\getvalue{\??im\recurselevel\c!afstand}}%
-      \edef\margetekstregels  {\getvalue{\??im\recurselevel\c!regel}}%
+      \edef\margetekstafstand {\getvalue{\??im\recurselevel\c!afstand }}%
+      \edef\margetekstregels  {\getvalue{\??im\recurselevel\c!regel   }}%
       \edef\margetekstscheider{\getvalue{\??im\recurselevel\c!scheider}}%
       \let\margetekstnummer\recurselevel
       \getvalue{\??im\recurselevel}%
@@ -335,10 +336,10 @@
      \advance\marginheight \pagetotal
      \advance\marginheight \lineheight  % a sort of bonus
      \ifdim\marginheight>\pagegoal
-       \xdef\restoreinterlinepenalty%
+       \xdef\restoreinterlinepenalty
          {\global\let\restoreinterlinepenalty\relax
           \global\interlinepenalty=\the\interlinepenalty}% keep = here
-       \global\interlinepenalty=10000
+       \global\interlinepenalty10000
      \fi
    \else % We need the above because interlinepenalties overrule vadjusted \nobreaks.
      %\vadjust
@@ -364,7 +365,7 @@
   {\doglobal\increment\margincontent
    \stelinmargein[\margincontent][]% see next macro
    \ifsecondargument
-     \doifnumberelse{#1}
+     \doifnumberelse{#1} % only one #3 (after test)
        {\docomplexmargewoord{#2}{#1}{#3}}
        {\docomplexmargewoord{#1}{#2}{#3}}%
    \else
@@ -385,19 +386,16 @@
 \def\margewoord%
   {\dodoubleempty\complexmargewoord}
 
-\def\margetitel%
-  {\margewoord}
-
-\def\margetekst%
-  {\margewoord}
+\def\margetitel{\margewoord}
+\def\margetekst{\margewoord}
 
 \def\oplinker#1%
   {\strut
    \graphicvadjust
      {\mindermeldingen
-      \setbox0=\vtop{\forgetall\strut#1}%
+      \setbox0\vtop{\forgetall\strut#1}%
       \getboxheight\dimen0\of\box0
-      \vskip-\dimen0\
+      \vskip-\dimen0 % waarom stond hier een \ ? 
       \box0}}
 
 \def\resetmargincontent % quick hack
@@ -417,13 +415,13 @@
 
 \def\inleftmargin#1%
   {\pushindentation
-   \llap{#1\hskip\leftskip\hskip\linkermargeafstand}%
+   \llap{#1\hskip\leftskip\hskip\leftmargintextdistance}%
    \popindentation
    \ignorespaces}
 
 \def\inrightmargin#1%
   {\pushindentation
-   \rlap{\hskip\hsize\hskip-\rightskip\hskip\rechtermargeafstand#1}%
+   \rlap{\hskip\hsize\hskip-\rightskip\hskip\rightmargintextdistance#1}%
    \popindentation
    \ignorespaces}
 
@@ -459,12 +457,36 @@
 %D \haalbuffer
 %D \egroup
 
+%D New, yet undocumented:
+%D 
+%D used for pascal: 
+%D
+%D \starttypen 
+%D \index {test} test \index {west} west \index {rest} rest 
+%D 
+%D \startnarrower
+%D \placeregister[index][alternative=b,command=\atleftmargin]
+%D \stopnarrower
+%D \stoptypen 
+
+\def\atleftmargin#1%
+  {\pushindentation
+   \llap{\rlap{#1}\hskip\leftskip}%
+   \popindentation
+   \ignorespaces}
+
+\def\atrightmargin#1%
+  {\pushindentation
+   \rlap{\hskip\hsize\hskip-\rightskip\llap{#1}}%
+   \popindentation
+   \ignorespaces}
+
 % dit zijn voorlopig lokale commando's
 
 \def\woordinlinker {\inleftmargin}  % vervallen
 \def\woordinrechter{\inrechtermarge} % vervallen
 
-\def\woordinmarge%
+\def\woordinmarge
   {\doquintupleempty\doinmarge
      [\@@implaats][\woordinlinker][\woordinrechter]}
 
@@ -480,24 +502,28 @@
 
 \stelinmargein
   [\v!links]
-  [\c!plaats=\v!links]
-%  \c!uitlijnen=\v!links] % njet
+  [\c!afstand=\linkermargeafstand,
+   \c!breedte=\linkermargebreedte,
+  %\c!uitlijnen=\v!links, % njet
+   \c!plaats=\v!links]
 
 \stelinmargein
   [\v!rechts]
-  [\c!plaats=\v!rechts]
-%  \c!uitlijnen=\v!rechts] % njet
+  [\c!afstand=\rechtermargeafstand,
+   \c!breedte=\rechtermargebreedte,
+  %\c!uitlijnen=\v!rechts, % njet
+   \c!plaats=\v!rechts]
 
 \newbox\facingbox
 \newbox\facingpage
 
 \newif\iffacingpages \facingpagesfalse
 
-\def\shipoutfacingpage%
+\def\shipoutfacingpage
   {\iffacingpages
-     \ifnum\realpageno>1
+     \ifnum\realpageno>\plusone
        \bgroup
-       \pagebodyornamentsfalse
+       \global\pagebodyornamentsfalse
        \setbox\facingpage\vbox to \zethoogte
          {\unvbox\facingpage\vfil}%
        \myshipout{\buildpagebody\box\facingpage}%
@@ -507,13 +533,13 @@
      \fi
    \fi}
 
-\def\naastpagina%
+\def\naastpagina
   {\shipoutfacingpage}
 
-\def\facefloat%               redefined
+\def\facefloat % redefined
   {\startnaast\box\floatbox\stopnaast}
 
-\def\startnaast% beter: \dowithnextbox
+\def\startnaast % beter: \dowithnextbox
   {\iffacingpages
      \global\setbox\facingbox\vbox
        \bgroup
@@ -522,7 +548,7 @@
      \@EA\gobbleuntil\@EA\stopnaast
    \fi}
 
-\def\stopnaast%
+\def\stopnaast
   {\egroup
    \global\setbox\facingpage\vbox
      {\ifvoid\facingpage
@@ -535,11 +561,11 @@
 
 \def\dostelnaastplaatsenin[#1]%
   {\getparameters[\??np][#1]%
-   \doifelse{\@@npstatus}{\v!start}
+   \doifelse\@@npstatus\v!start
      {\global\facingpagestrue}
      {\global\facingpagesfalse}}
 
-\def\stelnaastplaatsenin%
+\def\stelnaastplaatsenin
   {\dosingleargument\dostelnaastplaatsenin}
 
 \stelnaastplaatsenin

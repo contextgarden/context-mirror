@@ -42,6 +42,31 @@
 
 \def\cleanupfeatures{\the\everycleanupfeatures}
 
+\newevery \everyinsidefloat \relax
+
+%D \macros 
+%D   {trialtypesetting} 
+%D
+%D We disable trial typesetting in the output routine, 
+%D just to be sure. 
+
+\prependtoks 
+  \trialtypesettingfalse
+\to \everybeforepagebody 
+
+%D \macros 
+%D   {starttextdata}
+
+\newtoks \collectedtextdata
+
+\long\def\starttextdata#1\stoptextdata
+  {\doglobal\appendtoks#1\to\collectedtextdata}
+
+\def\flushtextdata
+  {\vsmash{\the\collectedtextdata}%
+   \global\collectedtextdata\emptytoks
+   \globallet\flushtextdata\donothing}
+
 %D \macros 
 %D   {ifprocessingXML}
 %D
@@ -84,11 +109,11 @@
 
 \newif\iffastmode 
 
-\def\fastmode%
+\def\fastmode
   {\fastmodetrue 
    \the\everyfastmode}
 
-\def\silentmode% ook hier \everysilentmode net als \fastmode
+\def\silentmode % ook hier \everysilentmode net als \fastmode
   {\showmessagesfalse
    \showwarningsfalse
    \let\writestatus\gobbletwoarguments}

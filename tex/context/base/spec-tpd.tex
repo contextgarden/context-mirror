@@ -241,12 +241,12 @@
          \else
            \let\filesuffix\temp
            % a temporary hack
-           \doif{\filesuffix}{PDF}{\pdfimageresolution=72}%
-           \doif{\filesuffix}{pdf}{\pdfimageresolution=72}%
+           \doif\filesuffix{PDF}{\pdfimageresolution72}%
+           \doif\filesuffix{pdf}{\pdfimageresolution72}%
            % because pdfTeX scales back
          \fi}}
       {\let\filesuffix\s!unknown}%
-   \doiffileinsertionsupportedelse{\filesuffix}}
+   \doiffileinsertionsupportedelse\filesuffix}
 
 \ifx\pdflastximagepages\undefined \chardef\pdflastximagepages=1 \fi
 
@@ -322,11 +322,11 @@
 
 \ifnum\pdftexversion>13
 
-\def\checkpdfimageattributes%
+\def\checkpdfimageattributes
   {\ifx\PDFfigurereference\empty
      \global\let\pdfimageattributes\empty
    \else
-     \immediate\pdfobj%
+     \immediate\pdfobj
        {[ << /Image \PDFfigurereference\space0 R
              /DefaultForPrinting true >> ]}%
      \xdef\pdfimageattributes%
@@ -335,8 +335,8 @@
 
 \def\dogetTPDfiguresize#1#2#3#4#5#6#7%
   {\ifmeasureTPDfiguresize
-     #4=\zeropoint
-     #5=\zeropoint
+     #4\zeropoint
+     #5\zeropoint
      \doifvalidpdfimagefileelse{#2}
        {\ifvoid\foundexternalfigure
           \donetrue
@@ -349,7 +349,7 @@
      \ifdone
        \checkpdfimagepagenumber{#3}%
        \checkpdfimageattributes
-       \global\setbox\foundexternalfigure=\vbox
+       \global\setbox\foundexternalfigure\vbox
          {\immediate\pdfximage \pdfimageattributes \pdfimagepagenumber{#2}%
           \xdef\PDFimagereference{\the\pdflastximage}%
           \xdef\nofinsertpages{\the\pdflastximagepages}%
@@ -442,6 +442,7 @@
 \definespecial\dostartrgbcolormode  {\doPDFstartrgbcolormode}
 \definespecial\dostartcmykcolormode {\doPDFstartcmykcolormode}
 \definespecial\dostartgraycolormode {\doPDFstartgraycolormode}
+\definespecial\dostartspotcolormode {\doPDFstartspotcolormode}
 \definespecial\dostopcolormode      {\doPDFstopcolormode}
 \definespecial\dostartrotation      {\doPDFstartrotation}
 \definespecial\dostoprotation       {\doPDFstoprotation}
@@ -451,6 +452,19 @@
 \definespecial\dostopmirroring      {\doPDFstopmirroring}
 \definespecial\dostartnegative      {\doPDFstartnegative}
 \definespecial\dostopnegative       {\doPDFstopnegative}
+
+\definespecial\doregistercmykspotcolor {\doPDFregistercmykspotcolor}
+\definespecial\doregisterrgbspotcolor  {\doPDFregisterrgbspotcolor}
+\definespecial\doregistergrayspotcolor {\doPDFregistergrayspotcolor}
+
+\def\doPDFregistersomespotcolor#1#2#3#4%
+  {\immediate \pdfobj stream attr
+     {/FunctionType 4 /Domain [0.0 1.0] /Range #3}{#4}%
+   \immediate \pdfobj
+     {[/Separation /#1 /Device#2 \the\pdflastobj\space0 R]}%
+   \dosetobjectreference{PDFCS}{#1}{\the\pdflastobj}%
+   \appendtoPDFdocumentcolorspaces
+     {/#1 \the\pdflastobj\space0 R}}
 
 %D \macros
 %D   {dostarttransparency,dostoptransparency}
@@ -476,7 +490,7 @@
    \executeifdefined{\@@PDT#1:#2}{\dopresetPDFtransparency{#1}{#2}}}
 
 \def\dopresetPDFtransparency#1#2% 
-  {\global\advance\PDFcurrenttransparency 1
+  {\global\advance\PDFcurrenttransparency \plusone
    \immediate\pdfobj{\PDFtransparancydictionary{#1}{#2}{}}%
    \edef\PDFtransparencyidentifier{/Tr\the\PDFcurrenttransparency}%
    \edef\PDFtransparencyreference {\the\pdflastobj\space 0 R}%
@@ -594,7 +608,12 @@
 %D \ACROBAT\ handle setting the page dimensions in a
 %D different way, we do not share this special.
 
-\definespecial\dosetupscreen{\doPDFsetupscreen\pdfpageheight}
+\definespecial\dosetupscreen  {\doPDFsetupscreen  \pdfpageheight}
+
+\definespecial\dosetupartbox  {\doPDFsetupartbox  \pdfpageheight}
+\definespecial\dosetupcropbox {\doPDFsetupcropbox \pdfpageheight}
+\definespecial\dosetupbleedbox{\doPDFsetupbleedbox\pdfpageheight}
+\definespecial\dosetuptrimbox {\doPDFsetuptrimbox \pdfpageheight}
 
 %D \macros
 %D   {dostartexecutecommand}
@@ -613,18 +632,7 @@
 %D etc. For the moment \PDFTEX\ only supports the first three
 %D of these.
 
-\definespecial\dosetupidentity#1#2#3#4#5#6%
-  {\bgroup
-   \enablePDFdocencoding
-   \pdfinfo
-     {%Producer (pdfTeX) % already there
-      /Title (#1)
-      /Subject (#2)
-      /Author (#3)
-      /Creator (#4)
-      /ModificationDate (#5) 
-      /Keywords (#6)}%
-   \egroup}
+\definespecial\dosetupidentity{\doPDFsetupidentity}
 
 %D \macros
 %D   {dostartrunprogam}
@@ -710,8 +718,8 @@
 
   \definespecial\dostartobject#1#2#3#4#5%
     {\bgroup
-     \setbox\nextbox=\vbox\bgroup
-     \def\dodostopobject%
+     \setbox\nextbox\vbox\bgroup
+     \def\dodostopobject
        {\egroup
         \ifx\PDFimagereference\empty
           % We also flush page resources, since shared 
@@ -728,7 +736,7 @@
           \global\let\PDFimagereference\empty
         \fi}}
 
-  \definespecial\dostopobject%
+  \definespecial\dostopobject
     {\dodostopobject
      \egroup}
 
@@ -751,7 +759,7 @@
 
   \definespecial\dostartobject#1#2#3#4#5%
     {\bgroup
-     \setbox\nextbox=\vbox\bgroup
+     \setbox\nextbox\vbox\bgroup
      \def\dodostopobject%
        {\egroup
         \pdfform\nextbox
@@ -1021,13 +1029,17 @@
    \dosetobjectreference{#1}{#2}{\the\pdflastannot}}
 
 %D \macros
-%D   {doPDFaddtocatalog,doPDFpageattribute,doPDFpagesattribute}
+%D   {doPDFaddtocatalog,doPDFaddtoinfo,
+%D    doPDFpageattribute,doPDFpagesattribute}
 %D
 %D Next some simple ones. Watch the global directive and the
 %D expansion in the page attribute macro.
 
-\def\doPDFaddtocatalog%
+\def\doPDFaddtocatalog
   {\pdfcatalog}
+
+\def\doPDFaddtoinfo
+  {\pdfinfo}
 
 \def\doPDFpageattribute#1%
   {\expanded{\global\pdfpageattr{#1\the\pdfpageattr}}}
@@ -1038,10 +1050,10 @@
 \def\doPDFpagesattribute#1%
   {\expanded{\global\pdfpagesattr{#1\the\pdfpagesattr}}}
 
-\def\doPDFresetpageattributes%
+\def\doPDFresetpageattributes
   {\global\pdfpageattr\emptytoks}
 
-\def\doPDFresetpageresources%
+\def\doPDFresetpageresources
   {\global\pdfpageresources\emptytoks}
 
 %D \macros

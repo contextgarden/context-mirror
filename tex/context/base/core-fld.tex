@@ -14,6 +14,11 @@
 % \appendtocommalist  versus \addtocommalist 
 %
 % * as default trigger in radiofields ? 
+%
+% beware: weblink plugin truncates on length, while save as doesn't; 
+% more precise: (1) first time right string is sent, (2) 
+% internal string truncated, (3) second time truncated 
+% string is sent. 
 
 \writestatus{loading}{Context Field Macros}
 
@@ -34,7 +39,7 @@
      {}
      {\settightobject{SYM}{#1}\hbox{\symbol[#1]}% 
       \flushatshipout
-        {\setbox0=\hbox{\hskip-\maxdimen\getobject{SYM}{#1}}%
+        {\setbox0\hbox{\hskip-\maxdimen\getobject{SYM}{#1}}%
          \smashbox0\box0}}}
 
 \def\presetfieldsymbols[#1]% slow 
@@ -117,7 +122,6 @@
      {\@@FieldWidth}
      {\@@FieldHeight}
      {\@@FieldDefault}  
-% opties
      {\@@fdoptie}
      {\@@FieldValues}
      {\@@fdklikin,\@@fdklikuit,\@@fdgebiedin,\@@fdgebieduit,\@@fdnatoets,%
@@ -205,7 +209,7 @@
 
 \let\tracefields\tracefieldstrue
 
-\def\doshowfields[#1]% todo: tabulate van maken 
+\def\doshowfields[#1]% todo: tabulate van maken en runtime 
   {\bgroup
    \switchtobodyfont[8pt,tt]
    \doifsomething{#1}{\def\collectedfields{#1}}
@@ -240,7 +244,7 @@
      \immediate\write\scratchwrite{use \tracefieldstrue}%
    \else
      \def\normalizedfieldmode##1##2##3%
-       {\edef\@@FieldMode%
+       {\edef\@@FieldMode
           {\ifcase##1 loner \or parent \or clone \or copy \fi
            \ifcase##2 \else(done)\fi}}
      \def\dosetfield##1##2##3##4##5##6##7##8##9%
@@ -253,7 +257,7 @@
    \immediate\closeout\scratchwrite
    \egroup}
 
-\def\logfields% 
+\def\logfields
   {\dosingleempty\doLogFields}
 
 %D \starttypen    
@@ -342,14 +346,14 @@
 \def\setmainfieldkid#1#2%
   {\immediatewriteutilitycommand{\fieldreference{#1}{#2}}}
 
-\def\checkfieldreferences%
+\def\checkfieldreferences
   {\startnointerference
    \protectlabels 
-   \doutilities{fieldreferences}{\jobname}{}{}{}%
+   \doutilities{fieldreferences}\jobname\empty\relax\relax
    \global\let\checkfieldreferences\relax
    \stopnointerference}
 
-\def\setfieldreferences%
+\def\setfieldreferences
   {\def\fieldreference##1##2%
      {\ifundefined{\r!widget##1}
         \setxvalue{\r!widget##1}{##2}%
@@ -378,24 +382,24 @@
 %D english examns publishing on demand document went down from 
 %D 1350 seconds to less than 950 on a 650 Mhz pentium. 
 
-\def\definefield%
+\def\definefield
   {\definemainfieldfalse\doquintupleempty\dodefinefield}
 
-\def\definemainfield%
+\def\definemainfield
   {\definemainfieldtrue \doquintupleempty\dodefinefield}
 
-\let\collectedfields=\empty
+\let\collectedfields\empty
 \newcounter\numberoffields
 \newcounter\totalnumberoffields
 
-\def\savenumberoffields%
+\def\savenumberoffields
   {\ifcase\numberoffields\relax\else
      \savecurrentvalue\totalnumberoffields\numberoffields
    \fi}
 
 \appendtoks \savenumberoffields \to \everybye % \everylastshipout
 
-% \def\presetfieldreferences%
+% \def\presetfieldreferences
 %   {\ifnum\totalnumberoffields>0
 %      \definereference[AtOpenInitializeForm][\v!ResetForm]%
 %    \fi}
@@ -410,7 +414,7 @@
      \doifundefinedelse{define#2field}
        {\writestatus\m!fields{unknown field type #2}}
        {\doifundefined{fielddata\currentfieldname}
-          {\getmainfieldkids{\currentfieldname}% 
+          {\getmainfieldkids\currentfieldname 
            \ifdefinemainfield
              \ifx\@@FieldKids\empty
                \let\@@FieldMode\fieldlonermode
@@ -484,19 +488,29 @@
        {\dogetcommacommandelement1\from#4\to\SavedFieldDefault
         \dogetcommacommandelement1\from\SavedFieldDefault\to\SavedFieldDefault}
        {\def\SavedFieldDefault{#5}}%
+% when opt works 
+% \@EA\beforesplitstring\SavedFieldDefault\at=>\to\SavedFieldDefault
      \ifx\@@FieldKids\empty
        \setfield{#1}{#2}{}{}{#4}{#3}{\@@FieldMode\@@FieldFree\@@FieldAuto}{}{\SavedFieldDefault}%
      \else
        \setfield{#1}{#2}{}{}{#4,\@@FieldKids}{#3}{\@@FieldMode\@@FieldFree\@@FieldAuto}{}{\SavedFieldDefault}%
      \fi
+%
      \def\docommando##1%
-       {\doifelse{##1}{\SavedFieldDefault}
+       {\doifelse{##1}\SavedFieldDefault
           {\def\@@FieldDefault{##1}}% 
           {\let\@@FieldDefault\empty}%
         \setfield{##1}{#2}{#1}{}{}{#3}{\@@FieldMode\@@FieldFree\@@FieldAuto}{}{\@@FieldDefault}}%
+% when opt works 
+%     \def\docommando##1%
+%       {\@EA\beforesplitstring##1\at=>\to\FieldValue
+%        \doifelse\FieldValue\SavedFieldDefault
+%          {\let\@@FieldDefault\FieldValue}% 
+%          {\let\@@FieldDefault\empty}%
+%        \setfield\FieldValue{#2}{#1}{}{}{#3}{\@@FieldMode\@@FieldFree\@@FieldAuto}{}{\@@FieldDefault}}%
      \processcommalist[#4]\docommando
   \else
-     \writestatus{\m!fields}{pass values too}%
+     \writestatus\m!fields{pass values too}%
   \fi}
 
 \def\definesubfield%
@@ -507,7 +521,7 @@
      \def\docommando##1%
        {\getfield{##1}%
         \ifx\@@FieldType\empty 
-          \writestatus{\m!fields}{unknown field ##1}% to do
+          \writestatus\m!fields{unknown field ##1}% to do
         \else   
           \doifsomething{#2}
             {\edef\@@FieldGroup{#2}}%
@@ -519,7 +533,7 @@
         \fi}%
       \processcommalist[#1]\docommando
    \else
-     \writestatus{\m!fields}{pass fieldname, setupgroup, values and default}%
+     \writestatus\m!fields{pass fieldname, setupgroup, values and default}%
    \fi}
 
 \def\doclonefield[#1][#2][#3][#4]% parent children setupgroup values
@@ -527,7 +541,7 @@
      \getfield{#1}%
 \iftrialtypesetting\else
      \ifx\@@FieldType\empty
-       \writestatus{\m!fields}{unknown field #1}%
+       \writestatus\m!fields{unknown field #1}%
      \else
        \let\@@FieldMode=\fieldparentmode
       %\def\docommando##1{\addtocommalist{##1}\@@FieldKids}%
@@ -552,7 +566,7 @@
      \fi
 \fi
    \else
-     \writestatus{\m!fields}{pass parent field and clones}%
+     \writestatus\m!fields{pass parent field and clones}%
    \fi}
 
 \def\clonefield%
@@ -586,7 +600,7 @@
      \fi
 \fi
    \else
-     \writestatus{\m!fields}{pass parent field and copies}%
+     \writestatus\m!fields{pass parent field and copies}%
    \fi}
 
 \def\copyfield%
@@ -822,7 +836,8 @@
   {\presetlocalframed[\??fd]%
    \localframed
      [\??fd]
-     [\c!n=12,\c!strut=\v!nee,\c!kleur=,\c!letter=,\c!optie=,
+     [\c!n=1024, % beware: weblink plug in truncates
+      \c!strut=\v!nee,\c!kleur=,\c!letter=,\c!optie=,
       \c!klikin=,\c!klikuit=,\c!gebiedin=,\c!gebieduit=,
       \c!focusin=,\c!focusuit=,
       \c!natoets=,\c!formatteer=,\c!valideer=,\c!bereken=,
@@ -843,13 +858,13 @@
 
 \newcounter\nofsystemfields
 
-\def\nextsystemfield%
+\def\nextsystemfield
   {\doglobal\increment\nofsystemfields
    \def\currentsystemfield{sys::\nofsystemfields}}
 
 %D An example:
 
-\def\fillinfield%
+\def\fillinfield
   {\dosingleempty\dofillinfield}
 
 \def\dofillinfield[#1]#2%
@@ -865,12 +880,13 @@
       \setbox0=\hbox{#2}%
       \setbox2=\hbox{\therightanswer}%
       \dimen0=\ifdim\wd0>\wd2 \wd0 \else \wd2 \fi 
-      \advance\dimen0 by .2em
+      \advance\dimen0 .2em
       \definefield
         [\currentsystemfield][line][systemfield]%
       \setupfield
         [systemfield]
-        [\c!n=100,\c!plaats=\v!laag,\c!strut=\v!ja,\c!veldoffset=0pt,
+        [\c!n=1024, % beware: weblink plugin truncates 
+         \c!plaats=\v!laag,\c!strut=\v!ja,\c!veldoffset=0pt,
          \c!hoogte=1.2\openlineheight,\c!breedte=\dimen0,\c!offset=\v!overlay,
          \c!letter=,\c!uitlijnen=\v!midden,\c!kader=\v!uit,
          \c!kleur=red,\c!veldachtergrondkleur=white,\c!veldkaderkleur=blue,
@@ -889,7 +905,7 @@
   {\bgroup 
    \setupfields[\v!reset]%
    \useJSscripts[fld]%
-   \setbox0=\hbox
+   \setbox0\hbox
      {\mindermeldingen
       \nextsystemfield
       \setbox0=\hbox{#2}%
@@ -905,15 +921,15 @@
         [\c!kader=\v!uit,
          \c!gebieduit=JS(Hide_Field{\currentsystemfield:txt}),
          \c!optie=\v!verborgen]%
-      \hbox to \!!zeropoint
-         {\dimen0=\wd2\advance\dimen0 by -\wd0
-          \doifelse{#1}{\v!links}
+      \hbox to \zeropoint
+         {\dimen0\wd2\advance\dimen0 -\wd0
+          \doifelse{#1}\v!links
             {\hskip-\dimen0}
-            {\doif{#1}{\v!midden}
+            {\doif{#1}\v!midden
                {\hskip-.5\dimen0}}%    
-          \lower\openlineheight\hbox to \!!zeropoint
+          \lower\openlineheight\hbox to \zeropoint
             {\fitfield[\currentsystemfield:txt]}}%
-      \dimen0=\ifdim\wd0=\!!zeropoint 3em\else\wd0\fi
+      \dimen0=\ifdim\wd0=\zeropoint 3em\else\wd0\fi
       \definesymbol
         [\currentsystemfield:but]
         [{\framed[\c!hoogte=2ex,\c!breedte=\dimen0,\c!kader=\v!uit]{}}]%
@@ -926,7 +942,7 @@
          \c!optie=,
          \c!gebiedin=JS(Vide_Field{\currentsystemfield:txt}),
          \c!gebieduit=JS(Hide_Field{\currentsystemfield:txt})]%
-       \lower2ex\hbox to \!!zeropoint
+       \lower2ex\hbox to \zeropoint
          {\fitfield[\currentsystemfield:but]}%
       #2}%
   \ht0=\ht\strutbox\dp0=\dp\strutbox\box0
@@ -976,17 +992,17 @@
      \getvalue{fieldstack:#1}\setgvalue{fieldstack:#1}{[#1]}%
    \fi}
 
-\def\fieldstack%
+\def\fieldstack
   {\dotripleempty\dofieldstack}
 
 %D When submitting a form, we need to tell the driver module
 %D that we want \FDF\ or \HTML. 
 
-\def\setupforms%
+\def\setupforms
   {\dodoubleargument\getparameters[\??fr]}
 
 \def\checksubmitform#1%
-  {\setsubmitoutputformat{\@@frmethode}}
+  {\setsubmitoutputformat\@@frmethode}
 
 \setexecutecommandcheck {submitform} \checksubmitform
 

@@ -102,13 +102,14 @@
 
 \newcounter\figurefilepage
 
-\def\figbase@StartFigure%
+\def\figbase@StartFigure
   {\bgroup}
 
-\def\figbase@StopFigure%
+\def\figbase@StopFigure
   {\doglobal\increment\figurefilepage
-   \doif{\askedlabel}{\XMLpop{label}}
-     {\xdef\figurefilename{\XMLpop{file}}\endinput}%
+   \doif\askedlabel{\XMLpop{label}}
+     {\doglobal\settrue\figurefiledone
+      \xdef\figurefilename{\XMLpop{file}}\endinput}%
    \egroup}
 
 \def\getfigurefilename#1#2%
@@ -122,14 +123,29 @@
        \xdef\figurefilebase{#1}%
        \doglobal\newcounter\figurefilepage
        \def\askedlabel{#2}
-       \processXMLfilegrouped{#1.xml} % grouped ? 
+       \processcommacommand[\figurepathlist]\dogetfigurefilename
      \stopXMLmapping
    \stopnointerference}
 
-\def\resetfigurefilebase%
-  {\global\let\figurefilebase\empty
-   \global\let\figurefilename\empty
-   \global\let\figurefilepage\empty}
+\globalletempty\figurebasepath
+
+\def\dogetfigurefilename#1%
+  {\ifx\figurefilename\empty
+     \bgroup
+     \xdef\figurefilebasepath{#1}%
+     \assignfullfilename{#1}\figurefilebase\to\filename
+     \expanded{\processXMLfilegrouped{\filename.xml}}%
+     \ifx\figurefilename\empty\else
+       \globallet\figurefilebase\figurefilebase
+     \fi
+     \egroup
+   \fi}
+
+\def\resetfigurefilebase
+  {\globalletempty\figurefilebase
+   \globalletempty\figurefilename
+   \globalletempty\figurefilebasepath
+   \globalletempty\figurefilepage}
 
 \let\normalcalculateexternalfigure\calculateexternalfigure
 
@@ -148,13 +164,14 @@
        \normalcalculateexternalfigure
          [#1][#2][\figurefilename][#4][#5][#6]%
      \else
-        \normalcalculateexternalfigure
-          [#1][#2][\figurefilebase.pdf][\c!pagina=\figurefilepage,#4][#5][#6]%
+       \let\figurepathlist\figurefilebasepath
+       \normalcalculateexternalfigure
+         [#1][#2][\figurefilebase.pdf][\c!pagina=\figurefilepage,#4][#5][#6]%
      \fi
    \fi}
 
 \def\usefigurebase[#1]%
-  {\doifelse{#1}{\v!reset}
+  {\doifelse{#1}\v!reset
      {\let\figurebaselist\empty}
      {\addtocommalist{#1}\figurebaselist}}
 

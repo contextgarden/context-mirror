@@ -109,15 +109,15 @@
   \def\dopdfclippedimage#1#2#3#4#5#6% 
     {\bgroup
      \pdfximage#1{#2}%
-     \setbox\scratchbox=\hbox
+     \setbox\scratchbox\hbox
        {\pdfrefximage\pdflastximage}%
-     \hsize=\wd\scratchbox
+     \hsize\wd\scratchbox
      \advance\hsize -#3 
      \advance\hsize -#4 
-     \vsize=\ht\scratchbox
+     \vsize\ht\scratchbox
      \advance\vsize -#5 
      \advance\vsize -#6 
-     \setbox\scratchbox=\vbox to \vsize
+     \setbox\scratchbox\vbox to \vsize
        {\vskip-#5\hbox to \hsize{\hskip-#3\box\scratchbox\hss}}%
      \pdfxform\scratchbox
      \pdfrefxform\pdflastxform
@@ -197,6 +197,8 @@
 %D dimensions. Beware: the user supplied values are not the
 %D bounding box ones!
 
+% this will become obsolete 
+
 \newif\ifPDFmediaboxprefered
 
 \def\setPDFboundingbox#1#2#3#4#5#6%
@@ -214,8 +216,8 @@
 \def\setPDFmediabox#1[#2 #3 #4 #5]#6\done%
   {\dimen2=#2bp\dimen2=-\dimen2
    \dimen4=#3bp\dimen4=-\dimen4
-   \dimen6=#4bp\advance\dimen6 by \dimen2
-   \dimen8=#5bp\advance\dimen8 by \dimen4
+   \dimen6=#4bp\advance\dimen6 \dimen2
+   \dimen8=#5bp\advance\dimen8 \dimen4
    \setPDFboundingbox{\dimen2}{\dimen4}{\dimen6}{\dimen8}\PDFxscale\PDFyscale}
 
 \def\checkPDFmediabox#1/MediaBox#2#3\done%
@@ -230,7 +232,7 @@
 
 \def\handlePDFline%
   {\ifx\@@PDFstream@@\fileline
-     \let\doprocessPDFline=\copyPDFobject
+     \let\doprocessPDFline\copyPDFobject
      \startPDFtoPDF
    \else\ifPDFmediaboxprefered
      \expandafter\checkPDFmediabox\fileline/MediaBox\relax\done
@@ -239,12 +241,12 @@
 \def\copyPDFobject%
   {\ifx\@@PDFendstream@@\fileline
      \ifPDFmediaboxprefered
-       \let\doprocessPDFline=\findPDFmediabox
+       \let\doprocessPDFline\findPDFmediabox
      \else
-       \let\doprocessPDFline=\relax
+       \let\doprocessPDFline\relax
      \fi
    \else
-     \advance\scratchcounter by 1
+     \advance\scratchcounter 1
      \PDFcode{\fileline}%
    \fi}
 
@@ -324,9 +326,9 @@
    \def\checkPDFtypepage##1/Type /Page##2##3\done%
      {\ifx##2\relax 
       \else\if##2s% accept /Page and /Pages 
-        \let\doprocessPDFline=\findPDFmediabox
+        \let\doprocessPDFline\findPDFmediabox
       \else
-        \let\doprocessPDFline=\findPDFmediabox
+        \let\doprocessPDFline\findPDFmediabox
       \fi\fi}%
    \def\findPDFtypepage%
      {\expandafter\checkPDFtypepage\fileline/Type /Page\relax\done}%
@@ -337,7 +339,7 @@
       \fi}%
    \def\findPDFmediabox%
      {\expandafter\checkPDFmediabox\fileline/MediaBox\relax\done}%
-   \let\doprocessPDFline=\findPDFtypepage
+   \let\doprocessPDFline\findPDFtypepage
    \doprocessfile\scratchread{#1}\doprocessPDFline
    \egroup
    \ifx\PDFxoffset\undefined
@@ -707,6 +709,10 @@
   {\PDFcode{\!MPgMPa1 g 
             \!MPgMPa1 G}}
 
+\def\handleMPspotcolor
+  {\PDFcode{0 g 
+            0 G}}
+
 %D Beginning and ending the graphics is taken care of by the
 %D macro \type{\handleMPgraphic}, which is redefined when
 %D the first graphics operator is met.
@@ -765,10 +771,10 @@
      \xdef\MPyoffset{\withoutpt{\the\dimen2}}%
      \dimen0=#2bp\dimen0=-\dimen0
      \dimen2=#3bp\dimen2=-\dimen2
-     \advance\dimen0 by #4bp
+     \advance\dimen0 #4bp
      \dimen0=\MPxscale\dimen0
      \xdef\MPwidth{\the\dimen0}%
-     \advance\dimen2 by #5bp
+     \advance\dimen2 #5bp
      \xdef\MPyshift{\the\dimen2}% unscaled 
      \dimen2=\MPyscale\dimen2
      \xdef\MPheight{\the\dimen2}%
@@ -829,9 +835,9 @@
 
 \let\MPfshowcommand\empty
 
-\def\handleMPfshow%
+\def\handleMPfshow
   {\bgroup
-   \setbox\scratchbox=\hbox
+   \setbox\scratchbox\hbox
      {\obeyMPspecials
       \edef\size{\gMPa\nofMParguments}%
       \ifx\size\PSnfont % round font size (to pt) 
@@ -861,7 +867,8 @@
            % we need to catch ( a ) (a a a) (\123 \123 \123) etc 
            \scratchcounter=1
            \def\dodo##1% Andreas Fieger's bug: (\304...) 
-             {\ifx##1\MPspacechar\MPspacechar\else\expandafter##1\fi}%
+             {\edef\!!stringa{##1\empty\empty}% and another one: ( 11) -> \ifx 11 
+              \ifx\!!stringa\MPspacechar\MPspacechar\else\expandafter##1\fi}%
            \def\do(##1{\dodo{##1}}%
            \dogMPa\scratchcounter\MPspacechar 
            \let\do\relax
@@ -888,7 +895,7 @@
   % \PDFcode{Q}%
   % \egroup}
   %
-   \setbox\scratchbox=\hbox
+   \setbox\scratchbox\hbox
      {\hskip\lastMPmoveX bp\raise\lastMPmoveY bp\box\scratchbox}%
    \ht\scratchbox\!!zeropoint
    \dp\scratchbox\!!zeropoint
@@ -911,7 +918,11 @@
 %D safely assume that \METAPOST\ considers \type {\char32} to 
 %D be the space.  
 
-\def\MPspacechar{\setbox\scratchbox=\hbox{\char32}\kern\wd\scratchbox}
+\def\MPspacechar{\setbox\scratchbox\hbox{\char32}\kern\wd\scratchbox}
+
+%D Well, this does not work with math fonts, so: 
+
+\def\MPspacechar{\char32\relax}
 
 %D Most operators are just converted and keep their
 %D arguments. Dashes however need a bit different treatment,
@@ -925,7 +936,7 @@
 \def\handleMPsetdash%
   {\bgroup
    \def\somestring{[}%
-   \scratchcounter=1
+   \scratchcounter1
    \loop
      \ifnum\scratchcounter<\nofMParguments
        \edef\somestring{\somestring\space\gMPa\scratchcounter}%
@@ -1061,8 +1072,8 @@
    \fi}
 
 \def\flushconcatMPpath%
-  {\scratchcounter=\nofMPsegments
-   \nofMPsegments=1
+  {\scratchcounter\nofMPsegments
+   \nofMPsegments1
    \loop
      \flushconcatMPsegment
      \advance\nofMPsegments 1
@@ -1616,7 +1627,7 @@
    \fi 
    \let\handleMPsequence\dohandleMPsequence
    \resetMPstack
-   \nofMPsegments=0
+   \nofMPsegments0
    \handleMPsequence}
 
 %D The following \METAPOST\ code is quite valid but, when
@@ -1635,7 +1646,7 @@
   {\ifcase\finiMPpath       
      \ifnum\nofMPsegments<3 % n is one ahead
        \message{omitting zero clip path}%
-       \nofMPsegments=0 
+       \nofMPsegments0 
      \fi 
    \fi}
 
@@ -1752,7 +1763,7 @@
 \def\convertMPtoPDF#1#2#3%
   {\bgroup
    \ifx\pdfdecimaldigits\undefined\else \pdfdecimaldigits=5 \fi % new 
-   \setbox\scratchbox=\vbox\bgroup
+   \setbox\scratchbox\vbox\bgroup
      \forgetall
      \offinterlineskip
      \startMPresources
@@ -1828,16 +1839,16 @@
 \def\PDFMPformoffset
   {\ifx\objectoffset\undefined\!!zeropoint\else\objectoffset\fi}
 
-\def\finishMPgraphic% 
+\def\finishMPgraphic
   {\stopMPresources
    \egroup
    \ifx\pdftexversion\undefined\else\ifnum\pdftexversion<14 % for the moment 
-     \chardef\makeMPintoPDFobject=0 
+     \chardef\makeMPintoPDFobject0 
    \fi\fi
    \ifcase\makeMPintoPDFobject\or\or\ifx\currentPDFresources\empty\else
-     \chardef\makeMPintoPDFobject=1 
+     \chardef\makeMPintoPDFobject1 
    \fi\fi
-   \setbox\scratchbox=\vbox 
+   \setbox\scratchbox\vbox 
      {\forgetall
       \hbox 
         {\PDFcode{q \MPxscale\space 0 0 \MPyscale\space \MPxoffset\space \MPyoffset\space cm}%
@@ -1849,7 +1860,7 @@
    \ifcase\makeMPintoPDFobject
      \box\scratchbox
    \or
-     \scratchdimen=\PDFMPformoffset\relax
+     \scratchdimen\PDFMPformoffset\relax
      \ifdim\scratchdimen>\!!zeropoint % compensate for error 
        \setbox\scratchbox=\vbox spread 2\scratchdimen
          {\forgetall

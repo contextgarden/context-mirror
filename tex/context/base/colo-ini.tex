@@ -14,6 +14,7 @@
 \writestatus{loading}{Context Color Macros}
 
 %D To do: stroke versus fill color
+%D 1000 100 10 -> constants 
 
 \unprotect
 
@@ -219,7 +220,10 @@
 %D \setvalue{\??cr name}{S:s:a:t}
 %D \stoptypen
 
-\let\colorlist\empty
+\newif\iffreezecolors  \freezecolorsfalse
+
+\let\colorlist       \empty
+\let\currentspotcolor\empty
 
 \def\@@cl@@z{0}
 \def\@@cl@@o{1}
@@ -227,36 +231,168 @@
 \def\@@resetcolorparameters
   {\let\@@cl@@r\@@cl@@z\let\@@cl@@g\@@cl@@z\let\@@cl@@b\@@cl@@z
    \let\@@cl@@c\@@cl@@z\let\@@cl@@m\@@cl@@z\let\@@cl@@y\@@cl@@z
-   \let\@@cl@@k\@@cl@@z\let\@@cl@@s\@@cl@@z
-   \let\@@cl@@t\@@cl@@z\let\@@cl@@a\@@cl@@z}
+   \let\@@cl@@k\@@cl@@z\let\@@cl@@s\@@cl@@z\let\@@cl@@p\@@cl@@o
+   \let\@@cl@@t\@@cl@@z\let\@@cl@@a\@@cl@@z\let\@@cl@@n\empty}
 
 \def\@@cl@@A{\@@cl@@a} % a hook for symbolic conversion, see below 
 
-\def\colorZpattern{S:\@@cl@@z:\@@cl@@A:\@@cl@@t}
-\def\colorSpattern{S:\@@cl@@s:\@@cl@@A:\@@cl@@t}
-\def\colorCpattern{C:\@@cl@@c:\@@cl@@m:\@@cl@@y:\@@cl@@k:\@@cl@@A:\@@cl@@t}
-\def\colorRpattern{R:\@@cl@@r:\@@cl@@g:\@@cl@@b:\@@cl@@A:\@@cl@@t}
+%D Handling a few nested \type{\cs}'s is no problem (\type
+%D {\@EA\@EAEAEA\@EA}) but we need a full expansion, so I
+%D tried one of the fully expandable primitives using a sort
+%D of delimited thing. I tried \type {\number} first, but this
+%D does not work, but \type {\romannumeral} does. Actually,
+%D \type{\romannumeral0} returns nothing, so it's a perfect
+%D candidate for this kind of hackery. This reminds me that I
+%D have to look into David Karstrup's (check spelling) 
+%D Euro\TeX\ 2002 article because he is using \type 
+%D {\romannumeral} for loops (repetitive \quote {m} stuff). 
 
-\def\definecolor
-  {\dodoubleargument\dodefinecolor}
+% \def\x{\y}\def\y{\z}\def\z{0:1:1:1}
+%
+% \def\bla #1:#2:#3\end{}
+%
+% \@EA\bla\romannumeral\x\end
 
-\def\dodefinecolor[#1][#2]% 
-  {\addtocommalist{#1}\colorlist
-   \doifassignmentelse{#2}
+\def\colorXpattern{0S:\@@cl@@z:\@@cl@@z:\@@cl@@z}
+\def\colorZpattern{0S:\@@cl@@z:\@@cl@@A:\@@cl@@t}
+\def\colorSpattern{0S:\@@cl@@s:\@@cl@@A:\@@cl@@t}
+\def\colorCpattern{0C:\@@cl@@c:\@@cl@@m:\@@cl@@y:\@@cl@@k:\@@cl@@A:\@@cl@@t}
+\def\colorRpattern{0R:\@@cl@@r:\@@cl@@g:\@@cl@@b:\@@cl@@A:\@@cl@@t}
+\def\colorPpattern{0P:\@@cl@@n:\@@cl@@p:\@@cl@@A:\@@cl@@t}
+
+%D The extra 0 catches empty colors specs (needed for the 
+%D \type {\MPcolor} and \type {\PDFcolor} conversion (\type 
+%D {\@@cr} equals \type {\relax}!).
+
+\def\handlecolorwith#1{\@EA#1\romannumeral0} 
+
+%D Next comes the main definition macro. 
+
+\def\definecolor      {\dodoubleargument\dodefinecolor}
+\def\defineglobalcolor{\dodoubleargument\dodefineglobalcolor}
+\def\definenamedcolor {\dodoubleargument\dodefinenamedcolor}
+
+\def\dodefinecolor      {\dododefinecolor\relax   \setvalue \setevalue1}
+\def\dodefineglobalcolor{\dododefinecolor\doglobal\setgvalue\setxvalue1}
+\def\dodefinenamedcolor {\dododefinecolor\doglobal\setvalue \setevalue0}
+
+% keep this for readability 
+%
+% \def\dodefinecolor[#1][#2]% 
+%   {\addtocommalist{#1}\colorlist
+%    \doifassignmentelse{#2}
+%      {\@@resetcolorparameters
+%       \getparameters[\??cl @@][#2]%
+%       \doifelse{\@@cl@@r\@@cl@@g\@@cl@@b}{\@@cl@@z\@@cl@@z\@@cl@@z}
+%         {\doifelse{\@@cl@@c\@@cl@@m\@@cl@@y\@@cl@@k}{\@@cl@@z\@@cl@@z\@@cl@@z\@@cl@@z}
+%            {\doifelse\@@cl@@s\@@cl@@z
+%               {\showmessage\m!colors8{{[#2]},#1}%
+%                \setevalue{\??cr#1}{\colorZpattern}}
+%               {\setevalue{\??cr#1}{\colorSpattern}}}
+%            {\setevalue{\??cr#1}{\colorCpattern}}}
+%         {\setevalue{\??cr#1}{\colorRpattern}}}
+%      {\doifdefinedelse{\??cr#2}
+%         {\doifelse{#1}{#2}
+%            {% this way we can freeze \definecolor[somecolor][somecolor]
+%             % and still prevent cyclic definitions 
+%             \iffreezecolors\setevalue{\??cr#1}{\getvalue{\??cr#2}}\fi}
+%            {\iffreezecolors\@EA\setevalue\else\@EA\setvalue\fi
+%               {\??cr#1}{\getvalue{\??cr#2}}}}
+%         {\showmessage\m!colors3{#1}}}%
+%    \unexpanded\setvalue{#1}{\color[#1]}} % \unexpanded toegevoegd 
+
+\def\dododefinecolor#1#2#3#4[#5][#6]% #2==set(g)value #3==set[e|x]value
+  {#1\addtocommalist{#5}\colorlist
+   \doifassignmentelse{#6}
      {\@@resetcolorparameters
-      \getparameters[\??cl @@][#2]%
+      \getparameters[\??cl @@][#6]%
       \doifelse{\@@cl@@r\@@cl@@g\@@cl@@b}{\@@cl@@z\@@cl@@z\@@cl@@z}
         {\doifelse{\@@cl@@c\@@cl@@m\@@cl@@y\@@cl@@k}{\@@cl@@z\@@cl@@z\@@cl@@z\@@cl@@z}
-           {\doifelse{\@@cl@@s}{\@@cl@@z}
-              {\showmessage{\m!colors}{8}{{[#2]},#1}%
-               \setevalue{\??cr#1}{\colorZpattern}}
-              {\setevalue{\??cr#1}{\colorSpattern}}}
-           {\setevalue{\??cr#1}{\colorCpattern}}}
-        {\setevalue{\??cr#1}{\colorRpattern}}}
-     {\doifdefinedelse{\??cr#2}
-        {\setevalue{\??cr#1}{\getvalue{\??cr#2}}}
-        {\showmessage{\m!colors}{3}{#1}}}%
-   \unexpanded\setvalue{#1}{\color[#1]}} % \unexpanded toegevoegd 
+           {\doifelse\@@cl@@s\@@cl@@z
+              {\showmessage\m!colors8{{[#6]},#5}%
+               #3{\??cr#5}{\colorZpattern}}
+              {#3{\??cr#5}{\colorSpattern}}}
+           {#3{\??cr#5}{\colorCpattern}}}
+        {#3{\??cr#5}{\colorRpattern}}}
+     {\doifdefinedelse{\??cr#6}
+        {\doifelse{#5}{#6}
+           {% this way we can freeze \definecolor[somecolor][somecolor]
+            % and still prevent cyclic definitions 
+            \iffreezecolors#3{\??cr#5}{\getvalue{\??cr#6}}\fi}
+           {\iffreezecolors\@EA#3\else\@EA#2\fi
+              {\??cr#5}{\getvalue{\??cr#6}}}}
+        {\showmessage\m!colors3{#5}}}%
+   \ifcase#4\or
+     \unexpanded#2{#5}{\switchtocolor[#5]}% \unexpanded toegevoegd 
+   \fi}
+
+%D New and experimental. 
+
+\let\allspotcolors\empty
+
+\def\definespotcolor % [name] [color] [p=,t=,a=]
+  {\dotripleempty\dodefinespotcolor}
+
+\def\dodefinespotcolor[#1][#2][#3]%
+  {\doifnot{#1}{#2}
+     {\@@resetcolorparameters
+      \edef\@@cl@@n{#2}%
+      \getparameters[\??cl @@][#3]%
+      \doifnothing\@@cl@@p{\let\@@cl@@p\!!plusone}%
+      \doglobal\addtocommalist{#2}\allspotcolors
+      \setevalue{\??cr#1}{\colorPpattern}%
+      \setvalue{#1}{\switchtocolor[#1]}}}
+
+\let\usedspotcolors\empty
+
+\def\registerusedspotcolors
+  {\ifx\allspotcolors\empty \else
+     \bgroup
+     \let\usedspotcolors\empty
+     \def\docommando##1%
+       {\doifdefined{\??cs##1}{\addtocommalist{##1}\usedspotcolors}}%
+     \processcommacommand[\allspotcolors]\docommando
+     \savecurrentvalue\usedspotcolors\usedspotcolors
+     \egroup
+   \fi}
+
+\let\usedcolorchannels\empty
+
+\def\registerusedcolorchannels
+  {\bgroup
+   \doifdefinedelse{\??cs c}
+     {\def\usedcolorchannels{c,m,y,k}}%    
+     {\let\usedcolorchannels\empty}%
+   \doifdefined{\??cs r}
+     {\addtocommalist{r,g,b}\usedcolorchannels}%
+   \doifdefined{\??cs s}
+     {\ExpandBothAfter\doifnotinset{k}\usedcolorchannels
+        {\addtocommalist{s}\usedcolorchannels}}%
+   \savecurrentvalue\usedcolorchannels\usedcolorchannels
+   \egroup}
+   
+\prependtoks
+  \registerusedspotcolors
+  \registerusedcolorchannels
+\to \everylastshipout 
+
+\def\registerusedspotcolor#1%
+  {\global\@EA\chardef\csname\??cs#1\endcsname\zerocount}
+
+%D We now redefine the color definition macro so that you 
+%D can define both normal and spotcolors. 
+
+\def\definecolor
+  {\dotripleempty\dodefinewhatevercolor}
+
+\def\dodefinewhatevercolor[#1][#2][#3]%
+  {\ifthirdargument
+     \doifassignmentelse{#2}
+       {\dododefinecolor[#1][#2,#3]}% actually this is an error 
+       {\dodefinespotcolor[#1][#2][#3]}%  
+   \else
+     \dodefinecolor[#1][#2]% 
+   \fi}
 
 %D The names of colors are stored in a comma separated list
 %D only for the purpose of showing them with \type {\showcolor}.
@@ -264,8 +400,24 @@
 %D \typebuffer
 %D \haalbuffer
 %D
-%D This color shows up as \color[SomeKindOfRed]{some kind
+%D This color shows up as \color [SomeKindOfRed] {some kind
 %D of red}.
+%D
+%D \starttypen 
+%D \setupcolors[state=start]
+%D 
+%D \definecolor[mygreen][green]
+%D \definecolor[green][g=.5]
+%D 
+%D \startcolor[mygreen]test\stopcolor
+%D 
+%D \setupcolors[expansion=no]
+%D 
+%D \definecolor[mygreen][green]
+%D \definecolor[green][g=.5]
+%D 
+%D \startcolor[mygreen]test\stopcolor
+%D \stoptypen
 
 %D \macros
 %D   {setupcolor}
@@ -290,11 +442,11 @@
 
 \let\colorstyle\empty
 
-\def\setupcolor%
+\def\setupcolor
   {\dosingleargument\dosetupcolor}
 
 \def\dosetupcolor[#1]%
-  {\doifnot{#1}{\colorstyle}
+  {\doifnot{#1}\colorstyle
      {\def\colorstyle{#1}%
       \processcommalist[#1]\dodosetupcolor}}
 
@@ -327,6 +479,7 @@
 
 \newif\ifRGBsupported
 \newif\ifCMYKsupported
+\newif\ifSPOTsupported
 \newif\ifpreferGRAY
 \newif\ifGRAYprefered
 \newif\ifreduceCMYK
@@ -381,9 +534,9 @@
 \def\dowithcolor#1#2% #1=\action #2=color 
   {\ifincolor\ifpermitcolormode
      \ifcsname\??cr\currentpalet#2\endcsname
-       \@EAEAEA#1\csname\??cr\currentpalet#2\endcsname\od
+       \handlecolorwith#1\csname\??cr\currentpalet#2\endcsname\od
      \else\ifcsname\??cr#2\endcsname
-       \@EAEAEA#1\csname\??cr#2\endcsname\od
+       \handlecolorwith#1\csname\??cr#2\endcsname\od
      \fi\fi
    \fi\fi}
 
@@ -395,22 +548,33 @@
   {\ifincolor\ifpermitcolormode
      \@EA\ifx\csname\??cr\currentpalet#2\endcsname\relax
        \@EA\ifx\csname\??cr#2\endcsname\relax \else
-         \@EAEAEA#1\csname\??cr#2\endcsname\od
+         \handlecolorwith#1\csname\??cr#2\endcsname\od
        \fi
      \else
-       \@EAEAEA#1\csname\??cr\currentpalet#2\endcsname\od
+       \handlecolorwith#1\csname\??cr\currentpalet#2\endcsname\od
      \fi
    \fi\fi}
 
 \endTEX
 
 \def\startcolormode % includes \ifincolor\ifpermitcolormode
-  {\dowithcolor\execcolorRCS}
+  {%\dostoptransparency % needed for: {test \trans test \notrans test}
+   \conditionalstoptransparency
+   \dowithcolor\execcolorRCSP}
 
 \def\stopcolormode
   {\ifincolor\ifpermitcolormode
+     \dostoptransparency 
+     \dostopcolormode
+   \fi\fi}
+
+\def\restorecolormode
+  {\ifincolor\ifpermitcolormode
      \dostoptransparency
      \dostopcolormode
+     \ifx\maintextcolor\empty \else
+       \startcolormode\maintextcolor
+     \fi 
    \fi\fi}
 
 %D Color modes are entered using the next set of commands.
@@ -420,53 +584,276 @@
 %D The, for this module redundant, check if we are in color
 %D mode is needed when we use these macros in other modules.
 
-\def\execcolorRCS#1:%
+\chardef\currentcolorchannel=0
+
+\newif\iffilterspotcolor \filterspotcolorfalse
+\newif\ifdoingspotcolor  \doingspotcolorfalse
+
+\def\registercolorchannel#1%
+  {\ifdoingspotcolor \else
+     \global\expandafter\chardef\csname\??cs#1\endcsname\zerocount
+   \fi}
+
+\def\execcolorRCSP#1:%
   {\csname execcolor#1\endcsname}
 
-\def\execcolorR#1:#2:#3:%
+\def\execcolorR
+  {\iffilterspotcolor 
+     \@EA\noexeccolor
+   \else
+     \@EA\doexeccolorR
+   \fi}
+
+\def\execcolorC
+  {\iffilterspotcolor 
+     \@EA\noexeccolor
+   \else
+     \@EA\doexeccolorC
+   \fi}
+
+\def\execcolorS
+  {\iffilterspotcolor
+     \@EA\noexeccolorS
+   \else
+     \@EA\doexeccolorS
+   \fi}
+
+\def\execcolorP
+  {\iffilterspotcolor
+     \@EA\doexeccolorPP
+   \else\ifcase\currentcolorchannel
+     \@EAEAEA\doexeccolorP
+   \else
+     \@EAEAEA\noexeccolorP
+   \fi\fi}
+
+\def\doexeccolorR#1:#2:#3:%
   {\edef\@@cl@@r{#1}\edef\@@cl@@g{#2}\edef\@@cl@@b{#3}%
    \ifpreferGRAY\ifx\@@cl@@r\@@cr@@g\ifx\@@cl@@r\@@cl@@b
      \GRAYpreferedtrue
    \fi\fi\fi
    \ifincolor\else\RGBsupportedfalse\CMYKsupportedfalse\fi
    \ifGRAYprefered
-     \dostartgraycolormode\@@cl@@r
+     \registercolorchannel\c!s
+     \let\@@cl@@s\@@cl@@r
+     \normalizeGRAY 
+     \doexeccolorgray
    \else\ifRGBsupported
-     \dostartrgbcolormode\@@cl@@r\@@cl@@g\@@cl@@b
+     \registercolorchannel\c!r
+     \normalizeRGB
+     \doexeccolorrgb
    \else\ifCMYKsupported
+     \registercolorchannel\c!c
      \convertRGBtoCMYK\@@cl@@r\@@cl@@g\@@cl@@b
-     \dostartcmykcolormode\@@cl@@c\@@cl@@m\@@cl@@y\@@cl@@k
+\normalizeCMYK
+     \doexeccolorcmyk
    \else
+     \registercolorchannel\c!s
      \convertRGBtoGRAY\@@cl@@r\@@cl@@g\@@cl@@b
-     \dostartgraycolormode\@@cl@@s
+\normalizeGRAY
+     \doexeccolorgray
    \fi\fi\fi
    \exectransparency}
-   
-\def\execcolorC#1:#2:#3:#4:%
+
+\def\doexeccolorC#1:#2:#3:#4:%
   {\edef\@@cl@@c{#1}\edef\@@cl@@m{#2}\edef\@@cl@@y{#3}\edef\@@cl@@k{#4}%
    \ifpreferGRAY\ifx\@@cl@@k\@@cl@@z\ifx\@@cl@@c\@@cr@@m\ifx\@@cl@@c\@@cl@@y
      \GRAYpreferedtrue
    \fi\fi\fi\fi
    \ifincolor\else\RGBsupportedfalse\CMYKsupportedfalse\fi
    \ifGRAYprefered
-     \dostartgraycolormode\@@cl@@c
+     \registercolorchannel\c!s
+     \let\@@cl@@s\@@cl@@c
+     \normalizeGRAY 
+     \doexeccolorgray
    \else\ifCMYKsupported
+     \registercolorchannel\c!c
      \ifreduceCMYK
        \convertCMYKtoCMY\@@cl@@c\@@cl@@m\@@cl@@y\@@cl@@k
-     \fi
-     \dostartcmykcolormode\@@cl@@c\@@cl@@m\@@cl@@y\@@cl@@k
+%     \else  
+%       \normalizeCMYK
+%     \fi
+\fi 
+\normalizeCMYK
+     \doexeccolorcmyk
    \else\ifRGBsupported
+     \registercolorchannel\c!r
      \convertCMYKtoRGB\@@cl@@c\@@cl@@m\@@cl@@y\@@cl@@k
-     \dostartrgbcolormode\@@cl@@r\@@cl@@g\@@cl@@b
+\normalizeRGB
+     \doexeccolorrgb
    \else
+     \registercolorchannel\c!s
      \convertCMYKtoGRAY\@@cl@@c\@@cl@@m\@@cl@@y\@@cl@@k
-     \dostartgraycolormode\@@cl@@s
+\normalizeGRAY
+     \doexeccolorgray
    \fi\fi\fi
    \exectransparency}
-   
-\def\execcolorS#1:%
-  {\dostartgraycolormode{#1}%
+
+\def\doexeccolorS#1:%
+  {\edef\@@cl@@s{#1}%
+   \registercolorchannel\c!s
+   \normalizeGRAY
+   \doexeccolorgray
    \exectransparency}
+
+\def\doexeccolorP#1:#2:%
+  {\edef\@@cl@@n{#1}%
+   \edef\@@cl@@p{#2}%  
+   \registerusedspotcolor\@@cl@@n
+   \ifSPOTsupported
+     \dowithcolor\registerspotcolor\@@cl@@n
+     \dostartspotcolormode\@@cl@@n\@@cl@@p
+   \else
+     \doingspotcolortrue  
+     \let\spotcolorfactor\@@cl@@p  
+     \factorizecolortrue            % using counter and array 
+     \dowithcolor\execcolorRCSP\@@cl@@n
+     \factorizecolorfalse
+\let\spotcolorfactor\@@cl@@o
+     \doingspotcolorfalse
+   \fi
+   \exectransparency} 
+
+\def\doexeccolorPP#1:#2:%
+  {\edef\@@cl@@n{#1}%
+   \edef\@@cl@@p{#2}%
+   \registerusedspotcolor\@@cl@@n
+   \ifx\@@cl@@n\currentspotcolor
+     \normalizeSPOT 
+     \dostartgraycolormode\@@cl@@p % was spotcolormode
+   \else
+     \dostartgraycolormode\@@cl@@o
+   \fi
+   \exectransparency} 
+
+\def\doexeccolorrgb
+  {\ifcase\currentcolorchannel
+     \dostartrgbcolormode\@@cl@@r\@@cl@@g\@@cl@@b
+   \or \or \or \or 
+   \or \dostartgraycolormode\@@cl@@r 
+   \or \dostartgraycolormode\@@cl@@g 
+   \or \dostartgraycolormode\@@cl@@b 
+   \fi}
+
+\def\doexeccolorcmyk
+  {\ifcase\currentcolorchannel 
+       \dostartcmykcolormode\@@cl@@c\@@cl@@m\@@cl@@y\@@cl@@k
+   \or \negatecolorcomponent\@@cl@@c\dostartgraycolormode\@@cl@@c 
+   \or \negatecolorcomponent\@@cl@@m\dostartgraycolormode\@@cl@@m 
+   \or \negatecolorcomponent\@@cl@@y\dostartgraycolormode\@@cl@@y 
+   \or \negatecolorcomponent\@@cl@@k\dostartgraycolormode\@@cl@@k 
+   \fi}
+
+\def\doexeccolorgray
+  {\ifcase\currentcolorchannel 
+       \dostartgraycolormode\@@cl@@s
+   \or \or \or 
+   \or \dostartgraycolormode\@@cl@@s 
+   \or \or \or 
+   \or \dostartgraycolormode\@@cl@@s 
+   \fi}
+
+%D When filtering colors, we need to either erase 
+%D the background, or ignore the foreground. 
+
+\newif\ifhidesplitcolor \hidesplitcolortrue
+
+\def\noexeccolor#1\od
+  {\dostartgraycolormode\@@cl@@o}
+
+\let\noexeccolorS\noexeccolor
+\let\noexeccolorP\noexeccolor
+
+%D For the sake of postprocessing (i.e.\ color separation) 
+%D we can normalize colors, which comes down to giving equal 
+%D values an equal accuracy and format. This feature is 
+%D turned off by default due to a speed penalty. This macro 
+%D also handles spot color precentages.
+
+\newif\iffactorizecolor
+\newif\ifnormalizecolor
+
+\def\spotcolorfactor{1}
+
+\def\normalizecolor#1%
+  {\colordimen#1\thousandpoint 
+   \colordimen\spotcolorfactor\colordimen
+   \colorcount\colordimen
+   \advance\colorcount \medcard
+   \divide\colorcount \maxcard
+   \edef#1{\realcolorvalue\colorcount}}
+
+\def\normalizespotcolor#1%
+  {\colordimen-#1\thousandpoint 
+   \advance\colordimen\thousandpoint 
+   \colorcount\colordimen
+   \advance\colorcount \medcard
+   \divide\colorcount \maxcard
+   \edef#1{\realcolorvalue\colorcount}}
+
+\def\donormalizeRGB
+  {\normalizecolor\@@cl@@r
+   \normalizecolor\@@cl@@g
+   \normalizecolor\@@cl@@b}
+
+\def\normalizeRGB
+  {\ifnormalizecolor
+     \donormalizeRGB  
+   \else\iffactorizecolor
+     \donormalizeRGB  
+   \fi\fi}
+
+\def\donormalizeCMYK
+  {\normalizecolor\@@cl@@c
+   \normalizecolor\@@cl@@m
+   \normalizecolor\@@cl@@y
+   \normalizecolor\@@cl@@k}
+
+\def\normalizeCMYK
+  {\ifnormalizecolor
+     \donormalizeCMYK
+   \else\iffactorizecolor
+     \donormalizeCMYK
+   \fi\fi}
+
+\def\donormalizeGRAY
+  {\normalizecolor\@@cl@@s}
+
+\def\normalizeGRAY
+  {\ifnormalizecolor
+     \donormalizeGRAY
+   \else\iffactorizecolor
+     \donormalizeGRAY
+   \fi\fi}
+
+\def\normalizeSPOT
+  {\normalizespotcolor\@@cl@@p} 
+
+%D We need to register spot colors (i.e.\ resources need to 
+%D be created.
+
+\def\registerspotcolor#1:%
+  {\ifundefined{\??cl:\c!p:\@@cl@@n}%
+     \letgvalue{\??cl:\c!p:\@@cl@@n}\empty
+     \@EA\@EA\csname registerspotcolor#1\endcsname
+   \else
+     \@EA\dontregistersplotcolor
+   \fi}
+
+\def\dontregistersplotcolor#1\od
+  {}
+
+\def\registerspotcolorR#1:#2:#3:#4\od
+  {\doregisterrgbspotcolor\@@cl@@n{#1}{#2}{#3}}
+
+\def\registerspotcolorC#1:#2:#3:#4:#5\od
+  {\doregistercmykspotcolor\@@cl@@n{#1}{#2}{#3}{#4}}
+
+\def\registerspotcolorS#1:#2\od
+  {\doregistergrayspotcolor\@@cl@@n{#1}}
+
+\def\registerspotcolorP#1:#2:#3\od
+  {\doregistergrayspotcolor\@@cl@@n{#2}}
 
 %D Transparency is handled similar for all three color modes. We 
 %D can turn transparency off with the following switch:
@@ -480,24 +867,46 @@
      \expandafter\noexectransparency
    \fi}
 
+%\def\doexectransparency#1:#2\od
+%  {\global\@EA\chardef\csname\@@currenttransparent\endcsname % nasty 
+%   \ifcase#1\space
+%     \zerocount
+%   \else
+%     \plusone
+%     \dostarttransparency{#1}{#2}%
+%   \fi}
+
 \def\doexectransparency#1:#2\od
-  {\global\@EA\chardef\csname\@@currenttransparent\endcsname % nasty 
-   \ifcase#1\space
-     \zerocount
+  {\ifcase#1\space
+     \global\intransparentfalse
    \else
-     \plusone
+     \global\intransparentfalse
      \dostarttransparency{#1}{#2}%
+     \global\intransparenttrue
    \fi}
 
 \def\noexectransparency#1\od
   {}
 
-%D Todo: minimize resets. 
+%D Experimental: minimize transparency resets. 
 
-\def\conditionalstoptransparancy
-  {\ifcase\csname\@@currenttransparent\endcsname\or
+\newif\ifintransparent \newif\ifoptimizetransparency
+
+\def\conditionalstoptransparency
+  {\iffilterspotcolor
      \dostoptransparency
-   \fi}
+   \else\ifcase\currentcolorchannel
+     \ifoptimizetransparency
+       \ifintransparent
+         \dostoptransparency
+         \global\intransparentfalse
+       \fi
+     \else
+       \dostoptransparency
+     \fi
+   \else
+     \dostoptransparency
+   \fi\fi}
 
 %D We now use the \type {\@@cl@@A} hook to implement 
 %D symbolic names. These are converted into numbers 
@@ -566,20 +975,38 @@
 %D \stopregistercolor
 %D \stoptypen 
 
-\let\maintextcolor\empty
+\let\maintextcolor\empty \def\defaulttextcolor{black}
 
-\def\starttextcolor[#1]% 
+% \def\starttextcolor[#1]% 
+%   {\doifsomething{#1}
+%      {\bgroup
+%       \def\stoptextcolor          % also goes ok with \page after 
+%         {\let\maintextcolor\empty % this one because the top of 
+%          \stopregistercolor       % page sets the color right (side 
+%          \egroup}%                % effect)   
+%       \def\starttextcolor[##1]%
+%         {\bgroup
+%          \let\stoptextcolor\egroup}% 
+%       \startregistercolor[#1]%
+%       \edef\maintextcolor{#1}}}
+
+\def\@@themaintextcolor{themaintextcolor}
+
+\def\starttextcolor[#1]%
   {\doifsomething{#1}
      {\bgroup
-      \def\stoptextcolor          % also goes ok with \page after 
-        {\let\maintextcolor\empty % this one because the top of 
-         \stopregistercolor       % page sets the color right (side 
-         \egroup}%                % effect)   
+      \def\stoptextcolor          % also goes ok with \page after
+        {\let\maintextcolor\empty % this one because the top of
+         \stopregistercolor       % page sets the color right (side
+         \egroup}%                % effect)
       \def\starttextcolor[##1]%
         {\bgroup
-         \let\stoptextcolor\egroup}% 
-      \startregistercolor[#1]%
-      \def\maintextcolor{#1}}}
+         % \@@themaintextcolor==##1 is catched in \definecolor 
+         \definecolor[\@@themaintextcolor][##1]%
+         \let\stoptextcolor\egroup}%
+      \startregistercolor[\@@themaintextcolor]%
+      \definecolor[\@@themaintextcolor][#1]%
+      \let\maintextcolor\@@themaintextcolor}}
 
 \let\stoptextcolor\relax          
 
@@ -589,19 +1016,41 @@
 
 \ifx\initializemaintextcolor\undefined
 
-  % \let\initializemaintextcolor\relax
+%  \def\initializemaintextcolor
+%    {\doifsomething\@@cltekstkleur
+%       {\appendtoks\starttextcolor[\@@cltekstkleur]\to\everystarttext 
+%        \appendtoks\stoptextcolor                  \to\everystoptext 
+%        \let\initializemaintextcolor\relax}}
+
+  % global ? 
 
   \def\initializemaintextcolor
-    {\doifsomething{\@@cltekstkleur}
-       {\appendtoks\starttextcolor[\@@cltekstkleur]\to\everystarttext 
-        \appendtoks\stoptextcolor                  \to\everystoptext 
-        \let\initializemaintextcolor\relax}}
-
+    {\doifelsenothing\@@cltekstkleur
+       {\let\maintextcolor\empty}
+       {\let\maintextcolor\@@themaintextcolor
+        \definecolor[\@@themaintextcolor][\@@cltekstkleur]%
+        \doinitializemaintextcolor}}
+  
+  \def\doinitializemaintextcolor
+    {\appendtoks\starttextcolor[\@@themaintextcolor]\to\everystarttext
+     \appendtoks\stoptextcolor                      \to\everystoptext
+     \let\doinitializemaintextcolor\relax}
+  
 \fi 
 
 %D The next macro can be used to return to the (normal)
 %D page color. This macro is used in the same way as 
 %D \type {\color}. 
+
+\def\localstarttextcolor
+  {\ifx\maintextcolor\empty
+     \startcolormode\defaulttextcolor
+   \else
+     \startcolormode\maintextcolor
+   \fi}
+
+\def\localstoptextcolor
+  {\stopcolormode}
 
 \def\restoretextcolor
   {\ifx\maintextcolor\empty
@@ -611,7 +1060,7 @@
    \fi}
 
 \def\dorestoretextcolor
-  {\color[black]}
+  {\color[\defaulttextcolor]}
 
 %D We use some reserved names for local color components.
 %D Consistent use of these scratch variables saves us
@@ -665,17 +1114,17 @@
    \else           0\fi}
 
 \def\doconvertCMYKtoRGB#1\k#2\to#3%
-  {\ifdim#2\s!pt<#1\s!pt 
+  {\ifdim#2\s!pt>#1\s!pt % >= problem, repaired 2/12/2002
+     \let#3\@@cl@@z % k >= color
+   \else 
      \colordimen1\s!pt
      \advance\colordimen -#1\s!pt
      \advance\colordimen -#2\s!pt
-     \multiply\colordimen 1000
+     \multiply\colordimen \!!thousand\relax % 1000
      \colorcount\colordimen
      \advance\colorcount \medcard
      \divide\colorcount \maxcard
      \edef#3{\realcolorvalue\colorcount}%
-   \else % k >= color
-     \let#3\@@cl@@z
    \fi}
 
 \def\convertCMYKtoRGB#1#2#3#4%
@@ -685,12 +1134,12 @@
 
 \def\doconvertRGBtoCMYK#1\to#2%
   {\colordimen#1\s!pt
-   \multiply\colordimen 1000
+   \multiply\colordimen \!!thousand\relax % 1000
    \colorcount\colordimen
    \advance\colorcount \medcard
    \divide\colorcount \maxcard
    \colorcount-\colorcount
-   \advance\colorcount 1000
+   \advance\colorcount \!!thousand\relax % 1000
    \edef#2{\realcolorvalue\colorcount}}
 
 \def\convertRGBtoCMYK#1#2#3%
@@ -735,7 +1184,7 @@
    %\else
    % \colordimen\colordimen
    \fi
-   \multiply\colordimen 1000
+   \multiply\colordimen \!!thousand\relax % 1000
    \colorcount\colordimen
    \advance\colorcount \medcard
    \divide\colorcount \maxcard
@@ -752,71 +1201,112 @@
 %D booleans that control local and global behavior (more on
 %D that later) and conversion to other color spaces.
 
+\let\currentspotcolor \empty
+\let\previousspotcolor\empty
+
 \newif\ifincolor
 \newif\iflocalcolor
 
-\def\setupcolors%
+\def\setupcolors
   {\dosingleargument\dosetupcolors}
 
+\def\resetcolorsplitting
+  {\chardef\currentcolorchannel\zerocount
+   \let\currentspotcolor\empty
+   \filterspotcolorfalse}
+
+\def\colorsplitsuffix{\ifcase\currentcolorchannel\else-\@@clsplitsen\fi}
+\def\colorsplitprefix{\ifcase\currentcolorchannel\else\@@clsplitsen-\fi}
+
+\ifx\resetsystemmode\undefined 
+  \let\setsystemmode  \gobbleoneargument
+  \let\resetsystemmode\gobbleoneargument
+\fi 
+
+\def\setcolorsplitting
+  {\resetsystemmode{\v!kleur\colorsplitsuffix}%
+   \resetcolorsplitting
+   \processaction
+     [\@@clsplitsen]
+     [         c=>\chardef\currentcolorchannel1,% 
+               m=>\chardef\currentcolorchannel2,% 
+               y=>\chardef\currentcolorchannel3,% 
+               k=>\chardef\currentcolorchannel4,% 
+               r=>\chardef\currentcolorchannel5,% 
+               g=>\chardef\currentcolorchannel6,% 
+               b=>\chardef\currentcolorchannel7,% 
+               s=>\chardef\currentcolorchannel8,% 
+          \v!nee=>,%      \currentcolorchannel0,% all colors
+      \s!default=>,%      \currentcolorchannel0,% all colors
+      \s!unknown=>\filterspotcolortrue 
+                  \edef\currentspotcolor{\commalistelement}]%
+   \setsystemmode{\v!kleur\colorsplitsuffix}%
+   \iffilterspotcolor \let\@@clrgb\v!nee \fi}
+ 
 \def\dosetupcolors[#1]%
- {\getparameters[\??cl][#1]%
-  \doifelse\@@clreductie\v!ja
-    \reduceCMYKtrue
-    \reduceCMYKfalse
-  \doifelse\@@clrgb\v!nee
-    {\ifRGBsupported     \showmessage\m!colors {9}\v!rgb\RGBsupportedfalse\fi}
-    {\ifRGBsupported\else\showmessage\m!colors{10}\v!rgb\RGBsupportedtrue \fi}%
-  \doifelse\@@clcmyk\v!nee
-    {\ifCMYKsupported     \showmessage\m!colors {9}\v!cmyk\CMYKsupportedfalse\fi}
-    {\ifCMYKsupported\else\showmessage\m!colors{10}\v!cmyk\CMYKsupportedtrue \fi}%
-  \doifelse\@@clmpcmyk\v!nee
-    {\ifMPcmyk     \showmessage\m!colors {9}{\v!mp\v!cmyk}\MPcmykfalse\fi}
-    {\ifMPcmyk\else\showmessage\m!colors{10}{\v!mp\v!cmyk}\MPcmyktrue \fi}%
-% \processaction
-%   [\@@clconversie]
-%   [    \v!ja=>\preferGRAYtrue,
-%       \v!nee=>\preferGRAYfalse,
-%    \v!altijd=>\preferGRAYtrue
-%               \RGBsupportedfalse
-%               \CMYKsupportedfalse,
-%   \s!default=>\preferGRAYfalse,
-%   \s!unknown=>\preferGRAYfalse]%
-%
-  \preferGRAYfalse
-  \processaction
-    [\@@clconversie]
-    [    \v!ja=>\preferGRAYtrue,
-     \v!altijd=>\preferGRAYtrue\RGBsupportedfalse\CMYKsupportedfalse]%
-%
-  \ifRGBsupported
-    \converttoGRAYfalse
-    \forcegrayMPcolorsfalse
-  \else\ifCMYKsupported
-    \converttoGRAYfalse
-    \forcegrayMPcolorsfalse
-    \convertMPcolorstrue
-    \ifreduceCMYK
-      \reduceMPcolorstrue
-    \fi
-  \else
-    \ifconverttoGRAY\else\showmessage\m!colors{11}\empty\fi
-    \converttoGRAYtrue
-    \forcegrayMPcolorstrue
-    \convertMPcolorsfalse
-    \reduceMPcolorsfalse
-  \fi\fi
-  \processaction
-    [\@@clstatus]
-    [\v!globaal=>\ifincolor\else\showmessage\m!colors1\colorstyle\fi
-                 \incolortrue\localcolorfalse,
-      \v!lokaal=>\ifincolor\else\showmessage\m!colors2\colorstyle\fi
-                 \incolortrue\localcolortrue,
-       \v!start=>\ifincolor\else\showmessage\m!colors1\colorstyle\fi
-                 \incolortrue\localcolorfalse
-                 \let\@@clstatus\v!globaal,
-        \v!stop=>\incolorfalse\localcolorfalse
-                 \forcegrayMPcolorstrue]%
-  \initializemaintextcolor}
+  {\getparameters[\??cl][#1]%
+   \doifelse\@@clspot\v!ja
+     \SPOTsupportedtrue
+     \SPOTsupportedfalse
+   \doifelsenothing\@@clsplitsen
+     \resetcolorsplitting
+     \setcolorsplitting
+   \doifelse\@@clreductie\v!ja
+     \reduceCMYKtrue
+     \reduceCMYKfalse
+   \doifelse\@@clexpansie\v!ja
+     \freezecolorstrue
+     \freezecolorsfalse
+   \doifelse\@@clcriterium\v!alles
+     \hidesplitcolortrue
+     \hidesplitcolorfalse
+   \doifelse\@@clrgb\v!nee
+     {\ifRGBsupported     \showmessage\m!colors {9}\v!rgb\RGBsupportedfalse\fi}
+     {\ifRGBsupported\else\showmessage\m!colors{10}\v!rgb\RGBsupportedtrue \fi}%
+   \doifelse\@@clcmyk\v!nee
+     {\ifCMYKsupported     \showmessage\m!colors {9}\v!cmyk\CMYKsupportedfalse\fi}
+     {\ifCMYKsupported\else\showmessage\m!colors{10}\v!cmyk\CMYKsupportedtrue \fi}%
+   % todo : mpspot 
+   \doifelse\@@clmpcmyk\v!nee
+     {\ifMPcmykcolors     \showmessage\m!colors {9}{\v!mp\v!cmyk}\MPcmykcolorsfalse\fi}
+     {\ifMPcmykcolors\else\showmessage\m!colors{10}{\v!mp\v!cmyk}\MPcmykcolorstrue \fi}%
+   \doifelse\@@clmpspot\v!nee
+     {\ifMPspotcolors     \showmessage\m!colors {9}{\v!mp\v!spot}\MPspotcolorsfalse\fi}
+     {\ifMPspotcolors\else\showmessage\m!colors{10}{\v!mp\v!spot}\MPspotcolorstrue \fi}%
+   \preferGRAYfalse
+   \processaction
+     [\@@clconversie]
+     [    \v!ja=>\preferGRAYtrue,
+      \v!altijd=>\preferGRAYtrue\RGBsupportedfalse\CMYKsupportedfalse]%
+   \ifRGBsupported
+     \converttoGRAYfalse
+     \forcegrayMPcolorsfalse
+   \else\ifCMYKsupported
+     \converttoGRAYfalse
+     \forcegrayMPcolorsfalse
+     \convertMPcolorstrue
+     \ifreduceCMYK
+       \reduceMPcolorstrue
+     \fi
+   \else
+     \ifconverttoGRAY\else\showmessage\m!colors{11}\empty\fi
+     \converttoGRAYtrue
+     \forcegrayMPcolorstrue
+     \convertMPcolorsfalse
+     \reduceMPcolorsfalse
+   \fi\fi
+   \processaction
+     [\@@clstatus]
+     [\v!globaal=>\ifincolor\else\showmessage\m!colors1\colorstyle\fi
+                  \incolortrue\localcolorfalse,
+       \v!lokaal=>\ifincolor\else\showmessage\m!colors2\colorstyle\fi
+                  \incolortrue\localcolortrue,
+        \v!start=>\ifincolor\else\showmessage\m!colors1\colorstyle\fi
+                  \incolortrue\localcolorfalse
+                  \let\@@clstatus\v!globaal,
+         \v!stop=>\incolorfalse\localcolorfalse
+                  \forcegrayMPcolorstrue]%
+   \initializemaintextcolor}
 
 %D \macros
 %D   {doifcolorelse}
@@ -929,16 +1419,21 @@
 \def\@@currentcolorstop  {\??cl\the\colorlevel S}
 \def\@@currenttransparent{\??cl\the\colorlevel T}
 
+\def\currentcolor
+  {\csname
+     \ifundefined\@@currentcolorname\s!empty\else\@@currentcolorname\fi
+   \endcsname}
+
 \def\dodoglobalstartcolor
-  {\global\@EA\let\@EA\currentcolor\csname\@@currentcolorname\endcsname
+  {\global\@EA\let\@EA\@@currentcolor\csname\@@currentcolorname\endcsname
    \global\advance\colorlevel \@@colorplus
    \global\@EA\let\csname\@@currentcolorname\endcsname\@@askedcolor
-  %\debuggerinfo{\m!colors}
+  %\debuggerinfo\m!colors
   %  {start \@@askedcolor\space at level \the\colorlevel}%
    \ifx\@@askedcolor\empty
-     \global\@EA\let\csname\@@currentcolorname\endcsname\currentcolor
+     \global\@EA\let\csname\@@currentcolorname\endcsname\@@currentcolor
      \global\@EA\let\csname\@@currentcolorstop\endcsname\donoglobalstopcolor
-   \else\ifx\@@askedcolor\currentcolor
+   \else\ifx\@@askedcolor\@@currentcolor
      \global\@EA\let\csname\@@currentcolorstop\endcsname\donoglobalstopcolor
    \else
      \doifcolorelse\@@askedcolor
@@ -968,35 +1463,43 @@
 \def\dodoglobalstopcolor
   {\ifcase\colorlevel \else
      \donoglobalstopcolor
-     \global\@EA\let\@EA\previouscolor\csname\@@currentcolorname\endcsname
+     \global\@EA\let\@EA\@@previouscolor\csname\@@currentcolorname\endcsname
      \ifcase\colorlevel\relax
-       \docolormark\empty
-       \dostoptransparency
-       \dostopcolormode
-     \else % let's do a bit redundant testing here
-       \docolormark\previouscolor
-       \ifx\previouscolor\empty
-         \dostoptransparency
+       \ifpermitcolormode 
+         \docolormark\empty
+         \conditionalstoptransparency
          \dostopcolormode
+       \fi
+     \else % let's do a bit redundant testing here
+       \docolormark\@@previouscolor
+       \ifx\@@previouscolor\empty
+         \ifpermitcolormode
+           \conditionalstoptransparency
+           \dostopcolormode
+         \fi
        \else
-         \doifcolorelse\previouscolor
-           {\ifx\currentcolor\previouscolor\else
+         \doifcolorelse\@@previouscolor
+           {\ifx\@@currentcolor\@@previouscolor\else
               % alternatively we could let \startcolormode handle this 
-              \dostoptransparency % really needed 
-              % \dostopcolormode % less safe but more efficient 
-              \startcolormode\previouscolor
+              \ifpermitcolormode 
+                \conditionalstoptransparency % really needed 
+                % more safe but less efficient: \dostopcolormode
+              \fi
+              \startcolormode\@@previouscolor
             \fi}
-           {\dostoptransparency
-            \dostopcolormode}%
+           {\ifpermitcolormode 
+              \conditionalstoptransparency
+              \dostopcolormode
+            \fi}%
        \fi
      \fi
    \fi}
 
 \def\donoglobalstopcolor
   {\ifcase\colorlevel \else
-     \global\@EA\let\@EA\currentcolor\csname\@@currentcolorname\endcsname
+     \global\@EA\let\@EA\@@currentcolor\csname\@@currentcolorname\endcsname
     %\debuggerinfo{\m!colors}
-    %  {stop \currentcolor\normalspace at level \the\colorlevel}%
+    %  {stop \@@currentcolor\normalspace at level \the\colorlevel}%
      \global\advance\colorlevel \@@colorminus 
    \fi}
 
@@ -1068,14 +1571,14 @@
 %D the colors temporary have to be reset. After the page is
 %D shipped out, we have to revive the current color.
 %D
-%D We use \type{\marks} to keep track of colors across page
+%D We use \type{\mark}s to keep track of colors across page
 %D boundaries. Unfortunately standard \TEX\ supports only one mark,
 %D and using this one for color support only would be a waste.
 %D We therefore use an adapted version of J.~Fox's multiple mark
 %D mechanism as (re|)|implemented in \module{supp-mrk}.
 
-\doifdefinedelse{newmark}
-  {\newmark\colormark}
+\doifdefinedelse{rawnewmark}
+  {\rawnewmark\colormark}
   {\let\colormark\gobbleoneargument}
 
 %D Using this mark mechanism with lots of colors has one
@@ -1107,7 +1610,7 @@
   {\edef\newcolormark{#1}%
    \ifx\newcolormark\lastcolormark\else
      \global\let\lastcolormark\newcolormark
-     \@EA\setmark\@EA\colormark\@EA{\lastcolormark}%
+     \@EA\rawsetmark\@EA\colormark\@EA{\lastcolormark}%
    \fi}
 
 %D \macros
@@ -1117,21 +1620,35 @@
 %D to resetting the color to black, while popping restores the
 %D color state to that of before the break.
 
-\def\topofpagecolor{\getbotmark\colormark} % see postponing 
+\def\topofpagecolor{\rawgetbotmark\colormark} % see postponing 
 
 \def\pushcolor
   {\stopcolormode}
 
 \def\popcolor
-  {\doifsomething{\getbotmark\colormark}
-     {%\debuggerinfo{\m!colors}{popping \getbotmark\colormark}%
-      \startcolormode{\getbotmark\colormark}}}
+  {\doifsomething{\rawgetbotmark\colormark}
+     {%\debuggerinfo\m!colors{popping \getbotmark\colormark}%
+      \startcolormode{\rawgetbotmark\colormark}}}
 
-\def\popsplitcolor%
+\def\popsplitcolor
   {\getsplitmarks\colormark  % hier wel
-   \doifsomething{\getsplitbotmark\colormark}
-     {%\debuggerinfo{\m!colors}{split popping \getsplitbotmark\colormark}%
-      \startcolormode{\getsplitbotmark\colormark}}}
+   \doifsomething{\rawgetsplitbotmark\colormark}
+     {%\debuggerinfo\m!colors{split popping \getsplitbotmark\colormark}%
+      \startcolormode{\rawgetsplitbotmark\colormark}}}
+
+% Private macro: only needed in test cases (like multiple 
+% seprations in one file); no user command! 
+
+\def\resynccolor 
+  {\ifdim\pagetotal=\zeropoint
+     \popcolor
+   \else\ifx\@@currentcolor\empty
+     \ifx\maintextcolor\empty\else
+       \startcolormode\maintextcolor
+     \fi
+   \else
+     \startcolormode\@@currentcolor
+   \fi\fi}
 
 %D \macros
 %D   {startcolorpage, stopcolorpage}
@@ -1143,16 +1660,20 @@
 %D easy. It also supports nested colors in page backgrounds
 %D and texts.
 
-\def\startcolorpage%
+\def\startcolorpage
   {\bgroup
    \let\@@colorplus \minusone 
    \let\@@colorminus\plusone
    \let\docolormark\gobbleoneargument
    \edef\savedcolorlevel{\the\colorlevel}%
    \global\colorlevel\zerocount % before \localstartcolor of
-   \localstartcolor[black]}     % course, ugly bug removed
+   \ifx\maintextcolor\empty     % course, ugly bug removed
+     \localstartcolor[\defaulttextcolor]%
+   \else
+     \localstartcolor[\maintextcolor]%
+   \fi} 
 
-\def\stopcolorpage%
+\def\stopcolorpage
   {\localstopcolor
    \global\colorlevel\savedcolorlevel
    \egroup}
@@ -1172,6 +1693,8 @@
 \unexpanded\def\color[#1]%
   {\groupedcommand
      {\startcolor[#1]}\stopcolor}
+
+\let\switchtocolor\color
 
 \unexpanded\def\graycolor[#1]% not \gray because this is a color
   {\groupedcommand
@@ -1258,6 +1781,9 @@
 \def\doformatgrayS#1:#2:#3\od
   {\dodoformatcolor{#1}}
 
+\def\doformatgrayP#1:#2:#3:#4\od   
+  {\dowithcolor\doformatcolor{#1}} 
+
 \def\doformatgray#1:%
   {\getvalue{doformatgray#1}}
 
@@ -1278,7 +1804,7 @@
 
 \def\localstartraster[#1]%
   {\doifelsenothing{#1}
-     {\dostartgraymode{\@@rsraster}}
+     {\dostartgraymode\@@rsraster}
      {\dostartgraymode{#1}}}
 
 \def\localstopraster
@@ -1352,21 +1878,22 @@
 %D This saves us some typing in for instance the modules that
 %D deal with pretty verbatim typesetting.
 
-\def\definepalet%
+\def\definepalet
   {\dodoubleargument\dodefinepalet}
 
 \def\dodefinepalet[#1][#2]%
   {\doifassignmentelse{#2}
-     {\setvalue{\??pa#1}{}%
+     {\showmessage\m!colors6{#1}%
+      \letvalue{\??pa#1}\empty
       \setevalue{\??pa\??pa#1}{#2}%
-      \showmessage{\m!colors}{6}{#1}%
       \def\dodododefinepalet[##1=##2]%
         {\doifvaluesomething{\??pa#1}
            {\setevalue{\??pa#1}{\getvalue{\??pa#1},}}%
          \setevalue{\??pa#1}{\getvalue{\??pa#1}##1}%
          \doifdefinedelse{\??cr##2}
-           {\setevalue{\??cr#1:##1}{\getvalue{\??cr##2}}}
-           {\setevalue{\??cr#1:##1}{S:0:0:0}}}%
+           {\iffreezecolors\@EA\setevalue\else\@EA\setvalue\fi
+              {\??cr#1:##1}{\getvalue{\??cr##2}}}
+           {\letvalue{\??cr#1:##1}\colorXpattern}}%
       \def\dododefinepalet##1%
         {\dodododefinepalet[##1]}%
       \processcommalist[#2]\dododefinepalet}
@@ -1440,7 +1967,7 @@
 %D defining each color separate, it also loads faster and takes
 %D less bytes.
 
-\def\definecolorgroup%
+\def\definecolorgroup
   {\dotripleempty\dodefinecolorgroup}
 
 \def\dodefinecolorgroup[#1][#2][#3]%
@@ -1450,11 +1977,12 @@
        [    \v!cmyk=>\edef\currentcolorspace{C},
              \v!rgb=>\edef\currentcolorspace{R},
             \v!gray=>\edef\currentcolorspace{S},
+            \v!spot=>\edef\currentcolorspace{P},
                \v!s=>\edef\currentcolorspace{S},
          \s!unknown=>\edef\currentcolorspace{R}]%
-     \colorcount=0
+     \colorcount\zerocount
      \def\dododefinecolorgroup##1%
-       {\advance\colorcount 1
+       {\advance\colorcount \plusone
         \setevalue{\??cr#1:\the\colorcount}{\currentcolorspace:##1:0:0}}%
      \processcommalist[#3]\dododefinecolorgroup
    \else
@@ -1589,7 +2117,7 @@
 \fetchruntimecommand \showcolor {\f!colorprefix\s!run}
 
 %D \macros
-%D   {negativecolorbox}
+%D   {negatecolorcomponent, negativecolorbox}
 %D
 %D Sometimes, especially when we deal with typesetting
 %D devices, we want to reverse the color scheme. Instead of
@@ -1602,8 +2130,13 @@
 %D
 %D will negate the colors in box zero.
 
+\def\negatecolorcomponent#1% #1 = \macro 
+  {\scratchdimen\!!onepoint\advance\scratchdimen-#1\s!pt
+   \ifdim\scratchdimen<\zeropoint\scratchdimen\zeropoint\fi
+   \edef#1{\@EA\withoutpt\the\scratchdimen}}
+
 \def\negatecolorbox#1%
-  {\setbox#1=\hbox
+  {\setbox#1\hbox
      {\dostartnegative
       \localstartcolor[white]%
       \vrule\!!height\ht#1\!!depth\dp#1\!!width\wd#1%
@@ -1612,7 +2145,7 @@
       \box#1\dostopnegative}}
 
 %D \macros
-%D   {ifMPgraphics, ifMPcmyk, MPcolor}
+%D   {ifMPgraphics, ifMPcmykcolors, MPcolor}
 %D
 %D A very special macro is \type{\MPcolor}. This one can be
 %D used to pass a \CONTEXT\ color to \METAPOST.
@@ -1626,37 +2159,40 @@
 %D {MPcmyk}, only \kap{RGB} colors and gray scales are
 %D supported.
 
-\newif\ifMPcmyk % \MPcmykfalse
+\newif\ifMPcmykcolors % \MPcmykcolorsfalse
+\newif\ifMPspotcolors % \MPspotcolorsfalse
 
 \beginTEX
 
-\def\MPcolor#1%
+\def\scaledMPcolor#1#2%
   {\ifMPgraphics
-     \@EA\@EA\@EA\doMPcolor
+     \handlecolorwith\doMPcolor
        \csname\??cr\@EA
-         \ifx\csname\??cr\currentpalet#1\endcsname\relax\else\currentpalet\fi
-       #1\endcsname
-     :::::::\end
+         \ifx\csname\??cr\currentpalet#2\endcsname\relax\else\currentpalet\fi
+       #2\endcsname
+     :::::::\end#1\end
    \else
-     #1%
+     #2%
    \fi}
 
 \endTEX
 
 \beginETEX \ifcsname
 
-\def\MPcolor#1%
+\def\scaledMPcolor#1#2%
   {\ifMPgraphics
-     \@EA\@EA\@EA\doMPcolor
+     \handlecolorwith\doMPcolor
        \csname\??cr
-         \ifcsname\??cr\currentpalet#1\endcsname\currentpalet\fi
-       #1\endcsname
-     :::::::\end
+         \ifcsname\??cr\currentpalet#2\endcsname\currentpalet\fi
+       #2\endcsname
+     :::::::\end#1\end
    \else
-     #1%
+     #2%
    \fi}
 
 \endETEX
+
+\def\MPcolor{\scaledMPcolor1}
 
 %D Before we had transparancy available, the following 
 %D conversion macro was available: 
@@ -1664,43 +2200,56 @@
 %D \starttypen
 %D \def\doMPcolor#1:#2:#3:#4:#5:#6:#7:#8\end
 %D   {\if     #1R(#2,#3,#4)%
-%D    \else\if#1C\ifMPcmyk cmyk(#2,#3,#4,#5)\else(1-#2-#5,1-#3-#5,1-#4-#5)\fi
+%D    \else\if#1C\ifMPcmykcolors cmyk(#2,#3,#4,#5)\else(1-#2-#5,1-#3-#5,1-#4-#5)\fi
 %D    \else\if#1S(#2,#2,#2)%
 %D    \else      (0,0,0)%
 %D    \fi\fi\fi}
 %D \stoptypen
 %D 
 %D In order to be useful, this macro is to be fully
-%D expandabele. The next alternative also handles transparant
-%D colors. We could have packaged everything in one macro, but
-%D splitting it up is not only more readable, but also faster
-%D (because less arguments have to be skipped) 
+%D expandabele. 
 
-\def\doMPcolor#1:%
-  {\if#1R%
-     \@EA\doMPrgb
-   \else\if#1C\ifMPcmyk
-     \@EA\@EAEAEA\@EA\doMPcmykY
-   \else
-     \@EA\@EAEAEA\@EA\doMPcmykN
-   \fi\else\if#1S%
-     \@EA\@EAEAEA\@EA\doMPgray
-   \else      
-     \@EA\@EAEAEA\@EA\doMPblack
-   \fi\fi\fi}
+\def\doMPcolor#1:% #1 can be \relax ! ! ! i.e. an empty color 
+  {\csname 
+     MPc\@EA\ifx\csname MPc\string#1\endcsname\relax B\else#1\fi
+   \endcsname}
 
-\def\transparentMP{transparent}
-\def\cmykspecialMP{cmyk}
+\def\MPcR{\doMPrgb}
+\def\MPcC{\ifMPcmykcolors\@EA\doMPcmykY\else\@EA\doMPcmykN\fi}
+\def\MPcS{\doMPgray}
+\def\MPcP{\ifMPspotcolors\@EA\doMPspotY\else\@EA\doMPspotN\fi}
+\def\MPcB{\doMPblack}
+
+\def\transparentMP {transparent}
+\def\cmykMP        {scaledcmyk}
+\def\cmykASrgbMP   {scaledcmykasrgb} % not really needed any more
+\def\rgbMP         {scaledrgb} 
+\def\grayMP        {scaledgray} 
+\def\processMP     {spotcolor}
 
 \def\doMPtransparent#1#2:#3:#4\end
   {\ifcase#2\space(#1)\else\transparentMP(#2,#3,(#1))\fi}
 
-\def\doMPgray          #1:{\doMPtransparent{#1,#1,#1}}
-\def\doMPrgb     #1:#2:#3:{\doMPtransparent{#1,#2,#3}}
-\def\doMPcmykY#1:#2:#3:#4:{\doMPtransparent{\cmykspecialMP(#1,#2,#3,#4)}}
-\def\doMPcmykN#1:#2:#3:#4:{\doMPtransparent{1-#1-#4,1-#2-#4,1-#3-#4}}
+\def\doMPgray#1:#2\end#3\end
+  {\doMPtransparent{\grayMP(#1,#3)}#2\end}
 
-\def\doMPblack#1:#2:#3:#4:#5:#6:#7\end{(0,0,0)}
+\def\doMPrgb#1:#2:#3:#4\end#5\end
+  {\doMPtransparent{\rgbMP(#1,#2,#3,#5)}#4\end}
+
+\def\doMPcmykY#1:#2:#3:#4:#5\end#6\end
+  {\doMPtransparent{\cmykMP(#1,#2,#3,#4,#6)}#5\end}
+
+\def\doMPcmykN#1:#2:#3:#4:#5\end#6\end
+  {\doMPtransparent{\cmykASrgbMP(#1,#2,#3,#4,#6)}#5\end}
+
+\def\doMPspotY#1:#2:#3\end#4\end
+  {\doMPtransparent{\processMP("#1",#2)}#3\end}
+
+\def\doMPspotN#1:#2:#3\end#4\end
+  {\scaledMPcolor{#2}{#1}}
+
+\def\doMPblack#1\end#2\end
+  {(0,0,0)}
 
 %D \macros
 %D   {PDFcolor,FDFcolor}
@@ -1708,24 +2257,37 @@
 %D Similar alternatives are avaliable for \PDF:
 
 \def\PDFcolor#1%
-  {\@EA\@EA\@EA\doPDFcolor\csname\??cr#1\endcsname:::::::\end}
+  {\handlecolorwith\doPDFcolor\csname\??cr#1\endcsname:::::::\end}
 
 \def\doPDFcolor#1:#2:#3:#4:#5:#6:#7:#8\end
   {\if     #1R#2 #3 #4 rg%
    \else\if#1C#2 #3 #4 #5 k%
    \else\if#1S#2 g%
-   \else      0 g%
-   \fi\fi\fi}
+   \else\if#1P#3 g% todo 
+   \else       0 g%
+   \fi\fi\fi\fi}
+
+\def\PDFcolorvalue#1%
+  {\handlecolorwith\doPDFcolorvalue\csname\??cr#1\endcsname:::::::\end}
+
+\def\doPDFcolorvalue#1:#2:#3:#4:#5:#6:#7:#8\end
+  {\if     #1R#2 #3 #4%
+   \else\if#1C#2 #3 #4 #5%
+   \else\if#1S#2%
+   \else\if#1P#3%
+   \else       0%
+   \fi\fi\fi\fi}
 
 \def\FDFcolor#1%
-  {\@EA\@EA\@EA\doFDFcolor\csname\??cr#1\endcsname:::::::\end}
+  {\handlecolorwith\doFDFcolor\csname\??cr#1\endcsname:::::::\end}
 
 \def\doFDFcolor#1:#2:#3:#4:#5:#6:#7:#8\end
   {[\if     #1R#2 #3 #4%
     \else\if#1C#2 #3 #4 #5%
     \else\if#1S#2%
-    \else      0%
-    \fi\fi\fi]}
+    \else\if#1P#3% todo 
+    \else       0%
+    \fi\fi\fi\fi]}
 
 %D \macros
 %D   {everyshapebox}
@@ -1744,11 +2306,63 @@
    \c!reductie=\v!nee,
    \c!rgb=\v!ja,
    \c!cmyk=\v!ja,
+   \c!spot=\v!ja,
    \c!mp\c!cmyk=\@@clcmyk,
-   \c!tekstkleur=]
+   \c!mp\c!spot=\@@clspot,
+   \c!expansie=\v!nee,
+   \c!tekstkleur=,
+   \c!splitsen=\v!nee,
+   \c!criterium=\v!alles]
 
 \setupcolor
   [\v!rgb]
+
+%D For the moment we keep the next downward compatibility 
+%D switch, i.e.\ expanded colors. However, predefined colors
+%D and palets are no longer expanded (which is what I wanted
+%D in the first place).  
+%D
+%D Well, in case we want to do color separation and use CMYK
+%D colors only, this is dangerous since unwanted remapping may 
+%D take place. Especially when we redefine already defined 
+%D colors in another color space (e.g. darkgreen is 
+%D predefined in RGB color space, so a redefinition in CMYK 
+%D coordinates before RGB mode is disabled, would give 
+%D unexpected results due to the already frozen color spec.)
+%D
+%D So, from now on, colors are not frozen any more! 
+
+% \appendtoks\setupcolors[\c!expansie=\v!ja]\to\everyjob
+
+%D The next macro is for instance used in figure splitting:
+
+\def\doifseparatingcolorselse
+  {\iffilterspotcolor
+     \@EA\firstoftwoarguments
+   \else\ifcase\currentcolorchannel
+     \@EAEAEA\secondoftwoarguments
+   \else
+     \@EAEAEA\firstoftwoarguments
+   \fi\fi}
+
+\def\doifcolorchannelelse#1%
+  {\doifseparatingcolorselse
+     {\doifelsenothing{#1}
+        \secondoftwoarguments
+        {\doifelse{#1}\@@clsplitsen
+           \firstoftwoarguments
+           \secondoftwoarguments}}
+     \secondoftwoarguments}
+
+\def\resetcolorseparation
+  {\filterspotcolorfalse
+   \chardef\currentcolorchannel\zerocount}
+
+%D These can be used in selecting specific files (like 
+%D figuredatabases). 
+
+\def\colorchannelprefix{\doifseparatingcolorselse\@@clsplitsen\empty-}
+\def\colorchannelsuffix{-\doifseparatingcolorselse\@@clsplitsen\empty}
 
 %D As we can see, color support is turned off by default.
 %D Reduction of gray colors to gray scales is turned on.

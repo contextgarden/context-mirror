@@ -96,7 +96,7 @@
   {\begingroup
    \convertargument#2\to\ascii
    \makesectionformat
-   \doifelse{\@@nmstatus}{\v!start}
+   \doifelse{\@@nmstatus}\v!start
      {\def\dopaginanummer{\noexpand\pagenumber}}
      {\def\dopaginanummer{0}}%
    \edef\schrijfwegnaarlijst%
@@ -115,20 +115,28 @@
 \def\listbetween#1%
   {\executeifdefined{#1\c!tussen}\gobblethreearguments}
 
+%\def\@@livariantaa% nr - tit - pag
+%  {\def\lijstfill{\hskip .5em}%
+%   \def\lijstskip{0em}%
+%   \def\lijstwidth{0pt}}
+
 \def\@@livarianta% nr - tit - pag
-  {\def\lijstfill{\hskip 1.25em}%
+% {\def\lijstfill{\hskip 1.75em}% was \hskip.5em\hskip 1.25em
+  {\def\lijstfill{\hskip .25em}% omdat nu check 
    \def\lijstskip{0em}%
    \def\lijstwidth{2em}}
 
 \def\@@livariantb% nr - tit - fill - pag
-  {\def\lijstfill{\hfill}%
+  {\def\lijstfill{\hfill}%  was \hskip.5em\hfill
    \def\lijstskip{5em}%
    \def\lijstwidth{2em}}
 
 \def\@@livariantc% nr - tit - dots - pag
-  {\def\lijstfill{\leaders\hbox to .5em{\hss.\hss}\hfill\hskip.5em}%
+  {\def\lijstfill{\hskip.5em\lijstdots\hskip.5em}%
    \def\lijstskip{5em}%
    \def\lijstwidth{0pt}}
+
+\def\lijstdots{\leaders\hbox to .5em{\hss.\hss}\hfill}
 
 \def\@@livariant%
   {\lijstvariantb}
@@ -154,7 +162,7 @@
 \def\dodoresetlijst#1%
   {\let\geenlijst\empty
    \setvalue{#1\c!tussen}{\gobblefourarguments{#1}}%
-   \setvalue{#1\c!lijst}{\gobblesixarguments{#1}}}
+   \setvalue{#1\c!lijst }{\gobblesixarguments{#1}}}
 
 \let\geenlijst\empty
 
@@ -197,7 +205,6 @@
       \c!scheider=\@@koscheider,
       \c!afsluiter=,
       \c!expansie=]%
-%   \ConvertToConstant\doifinstringelse{=}{#2}
    \doifassignmentelse{#2}
      {\getparameters[\??li#1][#2]}
      {\ConvertToConstant\doifnot{#2}{}
@@ -216,30 +223,45 @@
    \setvalue{\s!reset#1}%
      {\dodoresetlijst{#1}}}
 
-\def\definieerlijst%
+\def\definieerlijst
   {\dotripleempty\dodefinieerlijst}
 
 \def\iflijstgeplaatst{\ifutilitydone}
 
-\def\dobeginoflist%
+\def\plaatslijst
+  {\dodoubleempty\doplaatslijst}
+
+\def\plaatsruwelijst
+  {\dodoubleempty\doplaatsruwelijst}
+
+\def\dobeginoflist
   {\begingroup
    \startopelkaar[\v!blanko]}
 
-\def\doendoflist%
+\def\doendoflist
   {\stopopelkaar
    \endgroup}
 
 \def\doplaatslijst[#1][#2]%
   {\dobeginoflist
+   \plaatsruwelijst[#1][#2]%
+   \doendoflist}
+
+\def\plaatsruwelijst[#1][#2]%
+  {\begingroup
    \dogetcommalistelement1\from#1\to\firstlistelement
    \dostellijstin[#1][#2]%
-   \doifvalue{\??li\firstlistelement\c!koppeling}{\v!aan}
+   \doifvalue{\??li\firstlistelement\c!koppeling}\v!aan
      {\startlistreferences{#1}}%
-   \dosettoclevel{\getvalue{\??li\firstlistelement\c!criterium}}%
-   \doutilities{#1}{\jobname}{#1}{}{\par}%
+   \dosettoclevel\??li\firstlistelement
+   \honorlocalfilterlevel
+   \doutilities{#1}\jobname{#1}\relax\par
    \stoplistreferences{#1}%
-   \doendoflist
-   \dosetlistmode}
+   \dosetlistmode
+   \endgroup}
+
+\def\dosettoclevel#1#2%
+  {\dosetfilterlevel{\getvalue{#1#2\c!criterium}}\empty}
 
 \def\dosetlistmode
   {\iflijstgeplaatst
@@ -247,9 +269,6 @@
    \else
      \resetsystemmode\v!lijst 
    \fi}
-
-\def\plaatslijst
-  {\dodoubleempty\doplaatslijst}
 
 \def\dodovolledigelijst[#1][#2][#3]%  enkelvoud, meervoud, instellingen
   {\systemsuppliedtitle[#2]{\headtext{#2}}
@@ -277,34 +296,43 @@
 
 \def\dohandlelistnumber#1{\separatednumber{#1}} 
 
+% new 
+
+\let\currentlistsymbol\empty
+
+\def\listsymbol[#1]#2%
+  {{\dosetlistsymbol{#1}{#2}\currentlistsymbol}}
+
+%
+
 \def\dosetlistsymbol#1#2% kan sneller, default case afvangen 
   {\processaction
      [\getvalue{\??li#1\c!symbool}]
-     [    \v!geen=>\def\listsymbol%
+     [    \v!geen=>\def\currentlistsymbol%
                      {\doassigndimen{\dimen0}{\getvalue{\??li#1\c!breedte}}{1.5em}%
                       \hbox to \dimen0{}},
-                1=>\def\listsymbol%
+                1=>\def\currentlistsymbol%
                      {\strut$\bullet$},
-                2=>\def\listsymbol%
+                2=>\def\currentlistsymbol%
                      {\vrule\!!width1em\!!height1ex\!!depth\zeropoint},
-                3=>\def\listsymbol% very slow
+                3=>\def\currentlistsymbol% very slow
                      {{\doassigndimen{\dimen0}{\getvalue{\??li#1\c!breedte}}{1.5em}%
                        \doassigndimen{\dimen2}{\getvalue{\??li#1\c!hoogte}}{1ex}%
                        \doassigndimen{\dimen4}{\getvalue{\??li#1\c!diepte}}{0pt}%
                        \vrule\!!width\dimen0\!!height\dimen2\!!depth\dimen4}},
-      \s!unknown=>\def\listsymbol{\getvalue{\??li#1\c!symbool}},
-      \s!default=>\doifelsevalue{\??li#1\c!prefix}{\v!nee} % ook nog eerste 
+      \s!unknown=>\def\currentlistsymbol{\getvalue{\??li#1\c!symbool}},
+      \s!default=>\doifelsevalue{\??li#1\c!prefix}\v!nee % ook nog eerste 
                     {\edef\splitlistsymbol{\removefirstprefix{#2}}}
-                    {\doifelsevalue{\??li#1\c!prefix}{\v!geen} 
+                    {\doifelsevalue{\??li#1\c!prefix}\v!geen 
                        {\edef\splitlistsymbol{\removeallprefixes{#2}}}%
                        {\def\splitlistsymbol{#2}}}% geen \edef ivm  enz
-                  \def\listsymbol% kan iets efficienter met \ifdone 
-                    {\doifvalue{\??li#1\c!label}{\v!ja}{\leftlabeltext{#1}}%
+                  \def\currentlistsymbol% kan iets efficienter met \ifdone 
+                    {\doifvalue{\??li#1\c!label}\v!ja{\leftlabeltext{#1}}%
                      \strut  
                      \def\numberseparator{\getvalue{\??li#1\c!scheider}}%
                      \@EA\dohandlelistnumber\@EA{\splitlistsymbol}%
                      \getvalue{\??li#1\c!afsluiter}% 
-                     \doifvalue{\??li#1\c!label}{\v!ja}{\rightlabeltext{#1}}}]}
+                     \doifvalue{\??li#1\c!label}\v!ja{\rightlabeltext{#1}}}]}
 
 \def\@@dodolijstelement{dodolijstelement}
 
@@ -349,9 +377,9 @@
    %\showcomposition
    \let\@@iabreedte\!!zeropoint  % moet boolean worden
    \bgroup
-   \edef\lijstelementen%
+   \edef\lijstelementen
      {\getvalue{\??li#1\c!paginaovergangen}}%
-   \ExpandBothAfter\doifinset{#3}{\lijstelementen}%
+   \ExpandBothAfter\doifinset{#3}\lijstelementen
      {\showmessage{\m!systems}{14}{#3}%
       \pagina}%
    \egroup
@@ -363,14 +391,13 @@
 
 \def\dolistattributes#1#2#3%
   {\doifvaluesomething{\??li#1#3}
-    %{\setupinteraction[\c!kleur=,\c!contrastkleur=]}%
      {\resetinteractionparameter\c!kleur
       \resetinteractionparameter\c!contrastkleur}%
    \doattributes{\??li#1}{#2}{#3}}
 
 \def\dodocommandlijstelement#1#2#3#4#5#6%
   {\doifdefinedelse{\??li#1\c!commando}
-     {\getvalue{\??li#1\c!commando}
+     {\getvalue{\??li#1\c!commando}%
         {#3}{#4}{\paginaprefix\??li#1[#5]\translatednumber[#5]}}
      {[#1: #3 - #4 - \paginaprefix\??li#1[#5]\translatednumber[#5]]}}
 
@@ -379,7 +406,7 @@
      {\noindent % new and needed 
       \hbox
         {\doifelsevalue{\??li#1\c!interactie}{##1} % \??li ipv \??ia
-           {\setbox0=\hbox{\showcontrastlocation{\??li#1}{#6}{##2}}%
+           {\setbox0\hbox{\showcontrastlocation{\??li#1}{#6}{##2}}%
             \linklisttoelement{#1}{#2}{#5}{#6}{\box0}}%{\copy0}}%
            {##2}}}%
    \getvalue{\??li#1\c!voor}% can be \hskip
@@ -396,13 +423,13 @@
          \makelijstelement\v!alles
            {\makelijstelement\v!sectienummer
               {\dolistattributes{#1}\c!nummerletter\c!nummerkleur
-                 {\getvalue{\??li#1\c!nummercommando}{\listsymbol}}}%
+                 {\getvalue{\??li#1\c!nummercommando}{\currentlistsymbol}}}%
             \makelijstelement\v!tekst
               {\dolistattributes{#1}\c!tekstletter\c!tekstkleur
                  {\let\\=\newlineinlist
                   \dontconvertfont
                   \getvalue{\??li#1\c!tekstcommando}{#4}}}%
-            \doifvalue{\??li#1\c!paginanummer}{\v!ja}
+            \doifvalue{\??li#1\c!paginanummer}\v!ja
               {\doifsomething{#5}
                  {\makelijstelement\v!paginanummer
                     {\dolistattributes{#1}\c!paginaletter\c!paginakleur
@@ -428,10 +455,10 @@
    \leftskip\getvalue{\??li#1\c!marge}% na de \endgraf !
    \getvalue{\??li#1\c!voor}%
    \!!widthc\getvalue{\??li#1\c!afstand}%
-   \doifelsevalue{\??li#1\c!breedte}{\v!passend}
+   \doifelsevalue{\??li#1\c!breedte}\v!passend
      {\!!widtha\zeropoint}
      {\doifelsenothing{#3}
-        {\doifelsevalue{\??li#1\c!titeluitlijnen}{\v!ja}
+        {\doifelsevalue{\??li#1\c!titeluitlijnen}\v!ja
            {\!!widtha\zeropoint
             \!!widthc\zeropoint}
            {\!!widtha\getvalue{\??li#1\c!breedte}}}
@@ -440,22 +467,22 @@
    \endgraf
    \def\makelijstelement##1##2%
      {\doifelsevalue{\??li#1\c!interactie}{##1}
-        {\setbox0=\hbox{\showcontrastlocation{\??ia}{#6}{##2}}%
+        {\setbox0\hbox{\showcontrastlocation\??ia{#6}{##2}}%
          \linklisttoelement{#1}{#2}{#5}{#6}{\box0}}%{\copy0}}%
         {\hbox{##2}}}%
-   \doifvalue{\??li#1\c!interactie}{\v!tekst} % not supported
+   \doifvalue{\??li#1\c!interactie}\v!tekst % not supported
      {\setlistparameter{#1}\c!interactie\v!alles}%
    \makelijstelement\v!alles
      {\hbox to \hsize
-        {\dostartattributes{\??li#1}\c!letter\c!kleur{}% new
+        {\dostartattributes{\??li#1}\c!letter\c!kleur\empty
          \!!widthb\hsize
-         \setbox2=\hbox \ifdim\!!widtha>\zeropoint to \!!widtha \fi
+         \setbox2\hbox \ifdim\!!widtha>\zeropoint to \!!widtha \fi
            {\makelijstelement\v!sectienummer
               {\dolistattributes{#1}\c!nummerletter\c!nummerkleur
-                 {\getvalue{\??li#1\c!nummercommando}{\listsymbol}}%
+                 {\getvalue{\??li#1\c!nummercommando}{\currentlistsymbol}}%
             \hfill}}%
-         \setbox4=\hbox
-           {\doifvalue{\??li#1\c!paginanummer}{\v!ja}
+         \setbox4\hbox
+           {\doifvalue{\??li#1\c!paginanummer}\v!ja
               {\doifsomething{#5}    % \lijstwidth is new ; temp hack
                  {\hbox \ifdim\lijstwidth>\zeropoint to \lijstwidth\fi
                     {\hfill
@@ -466,13 +493,13 @@
                               \translatednumber[#5]}}}}}}}%
          \vbox
            {\hsize\!!widthb
-\expanded{\steluitlijnenin[\getvalue{\??li#1\c!uitlijnen}]}%
+            \expanded{\steluitlijnenin[\getvalue{\??li#1\c!uitlijnen}]}%
             \ifdim\!!widtha<\hsize
               \hangindent=\wd2
               \dimen2=\!!widthc % \getvalue{\??li#1\c!afstand}%
-              \advance\hangindent by \dimen2
+              \advance\hangindent \dimen2
               \hangafter=1
-\doifvalue{\??li#1\c!hang}{\v!nee}{\hangafter=0 }%
+              \doifvalue{\??li#1\c!hang}\v!nee{\hangafter\zerocount}%
               \ifdim\wd4=\zeropoint % \ifvoid4
                 % we kunnen gewoon afbreken aan het eind
               \else
@@ -482,7 +509,7 @@
                 \fi
               \fi
             \else
-              \dimen2=\zeropoint
+              \dimen2\zeropoint
             \fi
             \parindent\zeropoint\relax
             \leavevmode
@@ -498,7 +525,7 @@
             \ifdim\wd4=\zeropoint\relax % \ifvoid4
               % \ifdim\!!widtha<\hsize \hfill\strut \fi % spoils align 
             \else
-              \nobreak\hskip.5em\lijstfill
+              \nobreak\lijstfill
               \box4\relax
               \relax
             \fi}%
@@ -521,35 +548,35 @@
    \ifvmode
      \noindent\leavevmode % leavevmode ? ? ? 
    \fi
-   \doifvalue{\??li#1\c!interactie}{\v!tekst} % not supported
+   \doifvalue{\??li#1\c!interactie}\v!tekst % not supported
      {\setlistparameter{#1}\c!interactie\v!sectienummer}%
-   \doifvalue{\??li#1\c!interactie}{\v!alles} % not supported
+   \doifvalue{\??li#1\c!interactie}\v!alles % not supported
      {\setlistparameter{#1}\c!interactie\v!sectienummer}%
    \def\makelijstelement##1##2%
      {\doifelsevalue{\??li#1\c!interactie}{##1}
-        {\setbox0=\hbox{\showcontrastlocation{\??ia}{#6}{##2}}%
+        {\setbox0\hbox{\showcontrastlocation\??ia{#6}{##2}}%
          \linklisttoelement{#1}{#2}{#5}{#6}{\box0}}%{\copy0}}%
         {\hbox{##2}}}%
    \setbox4=\hbox
-     {\doifvalue{\??li#1\c!paginanummer}{\v!ja}
+     {\doifvalue{\??li#1\c!paginanummer}\v!ja
         {\doifsomething{#5}
            {\makelijstelement\v!paginanummer
               {\dolistattributes{#1}\c!paginaletter\c!paginakleur
                  {\getvalue{\??li#1\c!paginacommando}
                     {\paginaprefix\??li#1[#5]%
                      \translatednumber[#5]}}}}}}%
-\donetrue
-\doifnothing{#3}{\doifvaluenothing{\??li#1\c!symbool}{\donefalse}}%
-\ifdone
-    \hbox
-     {\getvalue{\??li#1\c!links}%
-      \makelijstelement\v!sectienummer
-        {\dolistattributes{#1}\c!nummerletter\c!nummerkleur
-           {\getvalue{\??li#1\c!nummercommando}{\listsymbol}}}%
-      \getvalue{\??li#1\c!rechts}%
-      \hskip.5em}%
-   \nobreak
-\fi
+   \donetrue
+   \doifnothing{#3}{\doifvaluenothing{\??li#1\c!symbool}\donefalse}%
+   \ifdone
+     \hbox
+       {\getvalue{\??li#1\c!links}%
+        \makelijstelement\v!sectienummer
+          {\dolistattributes{#1}\c!nummerletter\c!nummerkleur
+             {\getvalue{\??li#1\c!nummercommando}{\currentlistsymbol}}}%
+          \getvalue{\??li#1\c!rechts}%
+        \hskip.5em}%
+     \nobreak
+   \fi
    \tolerance3500 % niet zomaar veranderen
    \dolistattributes{#1}\c!tekstletter\c!tekstkleur
      {\let\\=\newlineinlist
@@ -592,9 +619,9 @@
    \hbox
      {#1% in case E nils the strut
       \let\\=\newlineinlist
-      \setbox0=\hbox
-        {#2{\showcontrastlocation{\??ia}{#8}
-          {\dostartattributes{\??li#3}\c!letter\c!kleur{}%
+      \setbox0\hbox
+        {#2{\showcontrastlocation\??ia{#8}%
+          {\dostartattributes{\??li#3}\c!letter\c!kleur\empty
            \ignorespaces\dontconvertfont\setstrut
            \begstrut
            \doifelsenothing{\??li#3\c!maxbreedte}
@@ -659,9 +686,8 @@
    \let\dolijstelement\dolijstelementX
    \dostellijstin[#1][#2]%
    \dogetcommalistelement1\from#1\to\commalistelement
-   \dosettoclevel{\getvalue{\??li\commalistelement\c!criterium}}%
-   \setbox0=\vbox
-     {\doutilities{#1}{\jobname}{#1}{}{\par}}%
+   \dosettoclevel\??li\commalistelement
+   \setbox0\vbox{\doutilities{#1}\jobname{#1}\relax\par}%
    \xdef\utilitylistheight{\the\ht0}%
    \xdef\utilitylistwidth {\the\wd0}%
    \endgroup
@@ -735,18 +761,18 @@
 %   \let\doschrijfnaarreferentielijst=\gobblethreearguments
    \stelreferentielijstin[#1][#2,\c!status=\v!stop]%
    \dogetcommalistelement1\from#1\to\commalistelement
-   \dosettoclevel{\getvalue{\??rl\commalistelement\c!criterium}}%
-   \doutilities{#1}{\jobname}{#1}{}{\par}%
+   \dosettoclevel\??rl\commalistelement
+   \doutilities{#1}\jobname{#1}\relax\par
    \endgroup}
 
 \def\plaatsreferentielijst%
   {\dodoubleempty\doplaatsreferentielijst}
 
 \def\doschrijfnaarreferentielijst#1#2#3%
-  {\doifvalue{\??rl#1\c!status}{\v!start}
+  {\doifvalue{\??rl#1\c!status}\v!start
      {\begingroup
       \makesectionformat
-      \doifelse{\@@nmstatus}{\v!start}
+      \doifelse{\@@nmstatus}\v!start
         {\def\dopaginanummer{\noexpand\pagenumber}}
         {\def\dopaginanummer{0}}%
       \edef\schrijfwegnaarlijst%
@@ -772,7 +798,7 @@
 
 \def\schrijfnaarreferentielijst[#1]#2% #1=class #2=data #3=visualization
   {\dowithnextbox
-     {\doifelsevalue{\??rl#1\c!status}{\v!start}
+     {\doifelsevalue{\??rl#1\c!status}\v!start
         {\doglobal\increment\referencecounter % must be resolved due to #2 
          \referentiebutton
            {\box\nextbox
@@ -822,48 +848,21 @@
 \def\stelsamengesteldelijstin%
   {\dodoubleargument\dostelsamengesteldelijstin}
 
-% \def\doplaatssamengesteldelijst[#1][#2]%
-%   {\begingroup
-%    \getparameters[\??ih#1][#2]%
-%    \dosettoclevel{\getvalue{\??ih#1\c!criterium}}%
-%    \edef\samengesteldelijst{\getvalue{\??ih#1\c!lijst}}% om voorlopig nog
-%    \stripspaces\from\samengesteldelijst\to\samengesteldelijst % compatible te
-%    \ExpandFirstAfter\doifnumberelse{\getvalue{\??ih#1\c!niveau}}% blijven
-%      {\!!counta=\getvalue{\??ih#1\c!niveau}% met de vorige implementatie
-%       \advance\!!counta by 1\relax% accepteren we ook nummers (0==deel)
-%       \getfromcommacommand[\samengesteldelijst][\!!counta]%
-%       \edef\maximumlijst{\commalistelement}}%
-%      {\edef\maximumlijst{\getvalue{\??ih#1\c!niveau}}}%
-%    \!!counta=\getvalue{\??se\getvalue{\??ko\maximumlijst \c!sectie}\c!niveau}%
-%    \let\!!stringa=\samengesteldelijst
-%    \let\samengesteldelijst=\empty
-%    \def\docommando##1%
-%      {\ifnum\getvalue{\??se\getvalue{\??ko##1\c!sectie}\c!niveau}>\!!counta
-%       \else
-%         \addtocommalist{##1}\samengesteldelijst
-%       \fi}%
-%    \processcommacommand[\!!stringa]\docommando
-%    \doifvalue{\??ih#1\c!koppeling}{\v!aan}
-%      {\startlistreferences{#1}}%
-%    \ExpandFirstAfter\dodoplaatssamengesteldelijst[\samengesteldelijst][#2]%
-%    \stoplistreferences{#1}%
-%    \endgroup}
-
 \def\doplaatssamengesteldelijst[#1][#2]%
   {\begingroup
    \getparameters[\??ih#1][#2]%
-   \dosettoclevel{\getvalue{\??ih#1\c!criterium}}%
+   \dosettoclevel\??ih{#1}%
    \edef\samengesteldelijst{\getvalue{\??ih#1\c!lijst}}%
   %\stripspaces\from\samengesteldelijst\to\samengesteldelijst
-   \doifelsevalue{\??ih#1\c!niveau}{\v!huidige} % criterium=vorige,niveau=huidige
+   \doifelsevalue{\??ih#1\c!niveau}\v!huidige % criterium=vorige,niveau=huidige
      {\!!counta=0\@@koniveau} % hm: \@@koniveau
      {\fullexpandoneargafter\doifnumberelse{\getvalue{\??ih#1\c!niveau}}% in verband
-        {\!!counta=\getvalue{\??ih#1\c!niveau}% met de vorige implementatie
-         \advance\!!counta by 1 % accepteren we ook nummers (0==deel)
+        {\!!counta\getvalue{\??ih#1\c!niveau}% met de vorige implementatie
+         \advance\!!counta \plusone % accepteren we ook nummers (0==deel)
          \getfromcommacommand[\samengesteldelijst][\!!counta]%
          \edef\maximumlijst{\commalistelement}}%
         {\edef\maximumlijst{\getvalue{\??ih#1\c!niveau}}}%
-      \!!counta=\getvalue{\??se\getvalue{\??ko\maximumlijst\c!sectie}\c!niveau}}%
+      \!!counta\getvalue{\??se\getvalue{\??ko\maximumlijst\c!sectie}\c!niveau}}%
    \let\!!stringa\samengesteldelijst
    \let\samengesteldelijst\empty
    \def\docommando##1%
@@ -872,7 +871,7 @@
         \addtocommalist{##1}\samengesteldelijst
       \fi}%
    \processcommacommand[\!!stringa]\docommando
-   \doifvalue{\??ih#1\c!koppeling}{\v!aan}
+   \doifvalue{\??ih#1\c!koppeling}\v!aan
      {\startlistreferences{#1}}%
    \ExpandFirstAfter\dodoplaatssamengesteldelijst[\samengesteldelijst][#2]%
    \stoplistreferences{#1}%
@@ -882,7 +881,7 @@
 \def\dodoplaatssamengesteldelijst[#1][#2]%
   {\dobeginoflist
    \dostellijstin[#1][#2]%
-   \doutilities{#1}{\jobname}{#1}{}{\par}%
+   \doutilities{#1}\jobname{#1}\relax\par
    \doendoflist}
 
 \def\dovolledigesamengesteldelijst[#1][#2]%
@@ -945,16 +944,16 @@
 
 \def\showremaininglistlength%
   {\bgroup
-   \ifnum\listlengthcounter>1 
-     \scratchdimen=\pagetotal
-     \setbox\scratchbox=\vbox
+   \ifnum\listlengthcounter>\plusone
+     \scratchdimen\pagetotal
+     \setbox\scratchbox\vbox
        {\@@llvoor\par\hbox{\strut}\par\hbox{\strut}\par\@@llna}
-     \advance\scratchdimen by \ht\scratchbox
-     \advance\scratchdimen by \dp\scratchbox
+     \advance\scratchdimen \ht\scratchbox
+     \advance\scratchdimen \dp\scratchbox
      \ifdim\scratchdimen>\pagegoal
        \@@llvoor
        \nobreak\hbox to \hsize
-         {\doifnot{\@@llnummer}{\v!ja}{\let\listlengthcounter\empty}%
+         {\doifnot\@@llnummer\v!ja{\let\listlengthcounter\empty}%
           \doattributes\??ll\c!letter\c!kleur{\@@lllinks\listlengthcounter\@@llrechts}}
        \@@llna
      \fi 
@@ -964,5 +963,5 @@
 
 \stelreferentielijstin
   [\c!letter=\v!normaal]
-
+
 \protect \endinput 

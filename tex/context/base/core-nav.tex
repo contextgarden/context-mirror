@@ -136,13 +136,13 @@
 \newif\iflocationstrut
 \newif\iflocationsplit
 
-\def\resetgoto%
+\def\resetgoto
   {\global\let\@@ia@@hoogte\!!zeropoint
    \global\let\@@ia@@diepte\!!zeropoint}
  
 \resetgoto
 
-\def\presetgoto% 
+\def\presetgoto
   {\iflocationstrut
      \setstrut
      \xdef\@@ia@@hoogte{\the\ht\strutbox}%
@@ -185,7 +185,7 @@
               \hskip\dimen0#2#3}}% when visualizing things
         \naturalhbox % needed for omega / moved from plus-omg  
           {\ifreversegoto
-             \dimen0=\wd0\box0\kern-\dimen0\smashbox2\box2\kern\dimen0
+             \dimen0\wd0\box0\kern-\dimen0\smashbox2\box2\kern\dimen0
            \else 
              \smashbox2\box2\box0
            \fi}%
@@ -228,7 +228,7 @@
 %D situations where the typeface is handled by the calling
 %D macro. 
 
-\def\interactioncolor%
+\def\interactioncolor
   {\iflocation
      \ifrealreferencepage
        \@@iacontrastkleur
@@ -300,9 +300,9 @@
 %D such, are visible on screen, but invisible on paper. Don't
 %D trust this mechanism yet!
 
-\def\dostartinteractie%
+\def\dostartinteractie
   {\bgroup
-   \let\stopinteractie=\egroup
+   \let\stopinteractie\egroup
    \dowithnextbox{\dostarthide\box\nextbox\dostophide\egroup}\hbox}
 
 \let\startinteractie = \relax
@@ -315,7 +315,7 @@
 % \getvalue{#1\c!print}=={\v!ja} enz. Consequent menubutton
 % gebruiken!
 
-\def\@@iatimestamp%
+\def\@@iatimestamp
   {\the\normalyear
    \ifnum\normalmonth<10 0\fi\the\normalmonth
    \ifnum\normalday  <10 0\fi\the\normalday}
@@ -349,12 +349,10 @@
    \c!breedte=1em,
    \c!hoogte=\!!zeropoint,
    \c!diepte=\!!zeropoint,
-   \c!titel=,
+   \c!titel=\jobname, % needed for fdf/x 
    \c!subtitel=,
    \c!auteur=,
    \c!trefwoord=,
    \c!datum=\@@iatimestamp]
 
-\protect 
-
-\endinput 
+\protect \endinput 

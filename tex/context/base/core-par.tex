@@ -66,35 +66,35 @@
 
 % voorlopig, wordt nog class
 
-\def\resetparagraphlines%
-  {\global\linenumber=1\relax}
+\def\resetparagraphlines
+  {\global\linenumber\plusone}
 
-\def\numberparagraphs% instelbaar maken en slimmer ivm breedte regelnummer !!!!!
+\def\numberparagraphs % instelbaar maken en slimmer ivm breedte regelnummer !!!!!
   {\processpreviousparagraphstrue
-   \def\dosetparagraph%
+   \def\dosetparagraph
      {\bgroup
       \resetparagraphlines
       \EveryPar
         {\strut\inleftmargin{\tf{\tx\paragraphnumber}\kern2em}%
          \ignorespaces}}%
-   \def\doresetparagraph%
+   \def\doresetparagraph
      {\resetparagraphlines
       \egroup}}
 
-\def\numberparagraphlines%
+\def\numberparagraphlines
   {\processpreviousparagraphstrue
-   \def\dosetparagraph%
+   \def\dosetparagraph
      {\resetparagraphlines}%
-   \def\doresetparagraph%
+   \def\doresetparagraph
      {\resetparagraphlines}%
-   \def\dobeforeparagraph%
+   \def\dobeforeparagraph
      {\startregelnummeren[\v!verder]}%
-   \def\doafterparagraph%
+   \def\doafterparagraph
      {\stopregelnummeren}%
-   \def\dobeforeskipparagraph%
+   \def\dobeforeskipparagraph
      {\stopregelnummeren
-      \let\paragraphnumber=\relax}%
-   \def\doafterskipparagraph%
+      \let\paragraphnumber\relax}%
+   \def\doafterskipparagraph
      {\startregelnummeren[\v!verder]}}
 
 \long\def\directpushparagraph#1%
@@ -110,41 +110,40 @@
    \setgvalue{\paragraphprefix\totalnofparagraphs}{\skipparagraph#1\par}}
 
 \def\dopushparagraphs#1%
-  {\global\let\mostrecentparagraphtotal=\totalnofparagraphs
+  {\global\let\mostrecentparagraphtotal\totalnofparagraphs
    \ifx#1\undefined
-     \let#1=\relax
+     \let#1\relax
    \fi
    \convertargument#1\to\asciiA
-   \convertargument{ }\to\asciiB  % lege regel
-   \def\dopushparagraph##1\par%
+   \convertargument{ }\to\asciiB % lege regel
+   \def\dopushparagraph##1\par
      {\convertargument##1\to\asciiC
-      \doifelse{\asciiC}{\asciiA}
-        {\let\next=#1}
-        {\doifnot{\asciiC}{} % lege paragraaf
-           {\doifnot{\asciiC}{\asciiB}
+      \doifelse\asciiC\asciiA
+        {#1}
+        {\doifsomething\asciiC % lege paragraaf
+           {\doifnot\asciiC\asciiB
               {\directpushparagraph{#1}}}%
-         \let\next=\dopushparagraph}%
-      \next}%
+         \dopushparagraph}}%
    \dopushparagraph}
 
-\def\pushparagraphs%
+\def\pushparagraphs
   {\doglobal\newcounter\totalnofparagraphs
    \dopushparagraphs}
 
-\def\pushmoreparagraphs%
+\def\pushmoreparagraphs
   {\dopushparagraphs}
 
 \def\dododopopparagraph#1% no grouping, i.v.m. sidefloats
   {\ifnum#1>\totalnofparagraphs\relax
    \else
-     \let\paragraphnumber=\globalparagraphnumber
+     \let\paragraphnumber\globalparagraphnumber
      \decrement(\paragraphnumber,\discardedparagraphs)%
      \dobeforeparagraph
      \ifhmode\indentation\fi\getvalue{\paragraphprefix#1}\par
      \doafterparagraph
    \fi}
 
-\long\def\skipparagraph#1\par%
+\long\def\skipparagraph#1\par
   {\doglobal\increment\discardedparagraphs
    \ifprocessallparagraphs
      \dobeforeskipparagraph
@@ -152,13 +151,13 @@
      \doafterskipparagraph
    \fi}
 
-\def\dodopopparagraph%
+\def\dodopopparagraph
   {\dododopopparagraph}
 
 \def\dodoprocessparagraph#1%
   {\ifprocesspreviousparagraphs
      \bgroup
-     \setbox0=\vbox{\dododopopparagraph{#1}}%
+     \setbox0\vbox{\dododopopparagraph{#1}}%
      \egroup
    \fi}
 
@@ -166,9 +165,9 @@
   {\ifprocesspreviousparagraphs
      \bgroup
      \getfromcommacommand[#1][1]% tzt snelle \..command.. testen
-     \let\totalnofparagraphs=\commalistelement
+     \let\totalnofparagraphs\commalistelement
      \decrement\totalnofparagraphs
-     \let\dodopopparagraph=\dodoprocessparagraph
+     \let\dodopopparagraph\dodoprocessparagraph
      \popparagraphs
      \egroup
    \fi}
@@ -181,10 +180,10 @@
       \doifelse{#1}{}
         {\processallparagraphstrue}
         {\processallparagraphsfalse}%
-      \def\dopopparagraph%
+      \def\dopopparagraph
         {\doglobal\increment\globalparagraphnumber
          \ifnum\globalparagraphnumber>\totalnofparagraphs\relax
-           \let\dopopparagraph=\relax
+           \let\dopopparagraph\relax
          \else\ifprocessallparagraphs
            \ifnum\globalparagraphnumber>\mostrecentparagraphtotal\relax
              \dodopopparagraph\globalparagraphnumber
@@ -192,7 +191,7 @@
              \dodoprocessparagraph\globalparagraphnumber
            \fi
          \else
-           \let\paragraphnumber=\globalparagraphnumber
+           \let\paragraphnumber\globalparagraphnumber
            \decrement(\paragraphnumber,\discardedparagraphs)%
            \ExpandBothAfter\doifinsetelse{\paragraphnumber}{#1}
              {\dodopopparagraph\globalparagraphnumber}
@@ -202,12 +201,12 @@
       \dopopparagraph
       \doresetparagraph}}
 
-\def\popparagraphs%
+\def\popparagraphs
   {\dosingleempty\dopopparagraphs}
 
-\def\countparagraphs%
+\def\countparagraphs
   {\popparagraphs[\!!maxcard]%
-   \global\let\nofparagraphs=\totalnofparagraphs
+   \global\let\nofparagraphs\totalnofparagraphs
    \doglobal\decrement(\nofparagraphs,\discardedparagraphs)}
 
 % \showframe

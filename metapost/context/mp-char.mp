@@ -146,6 +146,8 @@ def initialize_grid (expr maxx, maxy) =
   save i, j ; 
   max_x := maxx ;
   max_y := maxy ;
+  dsp_x := 0 ;
+  dsp_y := 0 ;
   for x=1 upto max_x :
     for y=1 upto max_y :
       xyfree [x][y] := true ;
@@ -291,13 +293,15 @@ def collapse_points = % this is now an mp-tool macro
   fi ;
 enddef ;
 
-vardef smooth_connection (expr a,b) = % also a mp-tool macro
+vardef smooth_connection (expr a,b) = 
   sx := connection_smooth_size/grid_width ;
   sy := connection_smooth_size/grid_height ;
   if ypart a = ypart b :
     a shifted (if xpart a >= xpart b : - fi sx,0)
+% a shifted (sx*xpart unitvector(b-a),0) 
   else :
     a shifted (0,if ypart a >= ypart b : - fi sy)
+% a shifted (0,sy*ypart unitvector(b-a)) 
   fi
 enddef ;
 
@@ -347,6 +351,33 @@ vardef connection_path =
   xypoints[xypoint])
 enddef ;
 
+% vardef connection_path =
+%   sx := connection_smooth_size/grid_width ;
+%   sy := connection_smooth_size/grid_height ;
+%   if reverse_connection : reverse fi 
+%   (for i=1 upto xypoint-1 : xypoints[i] -- endfor xypoints[xypoint]) 
+%   if smooth : cornered max(sx,sy) fi 
+% enddef ;
+% 
+% primarydef p cornered c = 
+%   if cycle p : 
+%     ((point 0 of p) shifted (c*(unitvector(point 1 of p - point 0 of p))) -- 
+%      for i=1 upto length(p) :
+%        (point i-1 of p) shifted (c*(unitvector(point i   of p - point i-1 of p))) -- 
+%        (point i   of p) shifted (c*(unitvector(point i-1 of p - point i   of p))) ..
+%        controls point i of p .. 
+%      endfor cycle) 
+%   else :
+%     ((point 0 of p) -- 
+%      for i=1 upto length(p)-1 :
+%        (point i-1 of p) shifted (c*(unitvector(point i   of p - point i-1 of p))) -- 
+%        (point i   of p) shifted (c*(unitvector(point i-1 of p - point i   of p))) ..
+%        controls point i of p .. 
+%      endfor
+%      (point length(p) of p))
+%   fi 
+% enddef ;
+
 def draw_connection =
   if xypoint>0 :
     collapse_points ;
@@ -382,11 +413,11 @@ def flush_connections =
       endfor ; 
       if crossing : 
         pickup pencircle scaled 2cline[i] ;
-%        draw cpaths[i] withcolor chart_background_color ;
-path cp ; cp := cpaths[i] ; 
-cp := cp cutbefore point .05 length cp of cp ;  
-cp := cp cutafter  point .95 length cp of cp ;  
-draw cp withcolor chart_background_color ;
+       %draw cpaths[i] withcolor chart_background_color ;
+        path cp ; cp := cpaths[i] ; 
+        cp := cp cutbefore point .05 length cp of cp ;  
+        cp := cp cutafter  point .95 length cp of cp ;  
+        draw cp withcolor chart_background_color ;
       fi ; 
     fi ; 
     pickup pencircle scaled cline[i] ;
@@ -482,6 +513,10 @@ vardef right_to_grid (expr a,b) =
    ypart xypoints[a])
 enddef ;
 
+% vardef boundingboxfraction(expr p, f) = 
+%   ((boundingbox p) enlarged (-f*bbwidth(p),-f*bbheight(p)))
+% enddef ; 
+
 vardef valid_connection (expr xfrom, yfrom, xto, yto) =
   begingroup ;
   save ok, vc, pp ;
@@ -489,9 +524,9 @@ vardef valid_connection (expr xfrom, yfrom, xto, yto) =
   % check for slanted lines
   ok := true ;
   for i=1 upto xypoint-1 :
-    if not ((xpart xypoints[i]=xpart xypoints[i+1]) or
-            (ypart xypoints[i]=ypart xypoints[i+1])) : ok := false ;
-    fi ;
+   if not ((xpart xypoints[i]=xpart xypoints[i+1]) or
+           (ypart xypoints[i]=ypart xypoints[i+1])) : ok := false ;
+   fi ;
   endfor ;
   if not ok :
    %message("slanted");
@@ -516,13 +551,13 @@ vardef valid_connection (expr xfrom, yfrom, xto, yto) =
     xypoints[xypoint] := xylast ;
 
     for i=1 upto max_x :
-      for j=1 upto max_y :
-if not ( ( (i,j) = (xfrom,yfrom) ) or ( (i,j) = (yfrom,yto) ) ) : 
-        if not xyfree[i][j] : 
-          vc := pp intersection_point xypath[i][j] ;
-          if intersection_found : ok := false fi ;
-        fi ;
-fi ; 
+      for j=1 upto max_y :                % was bug: xfrom,yto
+        if not ( ( (i,j)=(xfrom,yfrom) ) or ( (i,j)=(xto,yto) ) ) : 
+          if not xyfree[i][j] : 
+            vc := pp intersection_point xypath[i][j] ;
+            if intersection_found : ok := false fi ;
+          fi ;
+        fi ; 
       endfor ;
     endfor ;
    %if not ok: message("crossing") ; fi ;
@@ -544,6 +579,17 @@ def connect_top_bottom (expr xfrom,yyfrom,zfrom) (expr xto,yyto,zto) =
       xypoints[3] := x_on_grid(2,xfrom,xto,zfrom) ;
       xypoints[4] := xy_on_grid(3,5) ;
     fi ;
+    %%%% begin experiment
+    xypoints[3] := xypoints[3] shifted (dsp_x,0) ;
+    xypoints[4] := xypoints[4] shifted (dsp_x,0) ;
+    if dsp_y>0 :
+      xypoints[2] := xypoints[2] shifted (0,dsp_y) ;
+      xypoints[3] := xypoints[3] shifted (0,dsp_y) ;
+    elseif dsp_y<0 :
+      xypoints[4] := xypoints[4] shifted (0,dsp_y) ;
+      xypoints[5] := xypoints[5] shifted (0,dsp_y) ;
+    fi 
+    %%%% end experiment 
     draw_connection ;
   fi ;
 enddef ;
@@ -621,6 +667,17 @@ def connect_right_bottom (expr xfrom,yyfrom,zfrom) (expr xto,yyto,zto) =
     if not valid_connection(xfrom,yfrom,xto,yto) :
       xypoints[3] := xy_on_grid(2,4) ;
     fi ;
+    %%%% begin experiment
+    xypoints[2] := xypoints[2] shifted (dsp_x,0) ;
+    xypoints[3] := xypoints[3] shifted (dsp_x,0) ;
+    if dsp_y>0 :
+      xypoints[3] := xypoints[3] shifted (0,-dsp_y) ;
+      xypoints[4] := xypoints[4] shifted (0,-dsp_y) ;
+    elseif dsp_y<0 :
+      xypoints[3] := xypoints[3] shifted (0,dsp_y) ;
+      xypoints[4] := xypoints[4] shifted (0,dsp_y) ;
+    fi 
+    %%%% end experiment 
     draw_connection ;
   fi ;
 enddef ;
@@ -689,6 +746,17 @@ def connect_bottom_bottom (expr xfrom,yyfrom,zfrom) (expr xto,yyto,zto) =
       xypoints[3] := x_on_grid(2,xfrom,xto,zfrom) ;
       xypoints[4] := xy_on_grid(3,5) ;
     fi ;
+    %%%% begin experiment
+    xypoints[3] := xypoints[3] shifted (dsp_x,0) ;
+    xypoints[4] := xypoints[4] shifted (dsp_x) ;
+    if dsp_y<0 :
+      xypoints[2] := xypoints[2] shifted (0,-dsp_y) ;
+      xypoints[3] := xypoints[3] shifted (0,-dsp_y) ;
+    elseif dsp_y>0 :
+      xypoints[4] := xypoints[4] shifted (0,dsp_y) ;
+      xypoints[5] := xypoints[5] shifted (0,dsp_y) ;
+    fi 
+    %%%% end experiment 
     draw_connection ;
   fi ;
 enddef ;

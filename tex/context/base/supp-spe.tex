@@ -65,8 +65,7 @@
 
 \def\@rds@{@rds@}
 
-\def\redefinespecial #1 %
-  {\setvalue{\@rds@#1}}
+\def\redefinespecial #1 {\setvalue{\@rds@#1}}
 
 %D \macros
 %D   {mimmickspecials}
@@ -80,8 +79,8 @@
 %D This commands redefines the \PLAIN\ \TEX\ primitive 
 %D \type{\special}. 
 
-\def\mimmickspecials%
-  {\let\special=\domimmickspecial}
+\def\mimmickspecials
+  {\let\special\domimmickspecial}
 
 %D The special mimmicking macro first looks if it can find an
 %D colon terminated tag, next it searches for a tag that end
@@ -91,21 +90,21 @@
 \def\domimmickspecial#1%
   {\domimmickcolonspecial#1:\relax/:\relax/\end}
 
-\def\domimmickcolonspecial#1:#2#3:\relax/#4\end%
+\def\domimmickcolonspecial#1:#2#3:\relax/#4\end
   {\ifx#2\relax
      \domimmickspacespecial#1 \relax/ \relax/\end
    \else
      \dodomimmickspecial#1:\using#2#3\endspecial
    \fi}
 
-\def\domimmickspacespecial#1 #2#3 \relax/#4\end%
+\def\domimmickspacespecial#1 #2#3 \relax/#4\end
   {\ifx#2\relax
      \dodomimmickspecial#1\using\endspecial
    \else
      \dodomimmickspecial#1\using#2#3\endspecial
    \fi}
 
-\def\dodomimmickspecial#1\using#2\endspecial%
+\def\dodomimmickspecial#1\using#2\endspecial
   {\expandafter\ifx\csname\@rds@#1\endcsname\relax % \doifdefinedelse
      \defaultspecial{#1 #2}%
    \else  
@@ -144,8 +143,7 @@
 %D
 %D This can be handy when specials have much in common.
 
-\def\mimmickspecial #1 %
-  {\getvalue{\@rds@#1}}
+\def\mimmickspecial #1 {\getvalue{\@rds@#1}}
 
 %D \macros
 %D   {normalspecial,defaultspecial}
@@ -163,6 +161,4 @@
 \let\normalspecial =\special
 \let\defaultspecial=\special
 
-\protect 
-
-\endinput 
+\protect \endinput 

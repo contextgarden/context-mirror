@@ -78,27 +78,27 @@
 %D mechanism. That way we can use different schemes i a quite
 %D natural way. 
 
-\gdef\setupprettyTEXtype%
+\gdef\setupprettyTEXtype
   {\def\prettyidentifier{TEX}%
    \TEXsetcontrols
    \TEXsethandlers
    \TEXsetspecials}
 
-\gdef\TEXsetcontrols%
+\gdef\TEXsetcontrols
   {\saveprettycontrols
    \everyprettyend
      {\TEXendofcommand
       \TEXendofparameter}%
-   \def\obeyedspace%
+   \def\obeyedspace
      {\TEXendofcommand
       \TEXendofparameter
       \oldobeyedspace}%
-   \def\flushrestofverbatimline%
+   \def\flushrestofverbatimline
      {\TEXendofcommand
       \TEXendofparameter}%
    \let\obeytabs=\ignoretabs}
 
-\gdef\TEXsetspecials%
+\gdef\TEXsetspecials
   {\setpretty`\$=1 \setpretty`\{=1 \setpretty`\}=1
    \setpretty`\[=2 \setpretty`\]=2 \setpretty`\(=2 \setpretty`\)=2
    \setpretty`\==2 \setpretty`\<=2 \setpretty`\>=2 \setpretty`\"=2
@@ -126,7 +126,7 @@
    \setpretty`\?=9 \setpretty`\!=9 \setpretty`\@=9
    \setpretty`\%=0 }
 
-\gdef\TEXsethandlers%
+\gdef\TEXsethandlers
   {\installprettyhandler 1 \TEXtypeone
    \installprettyhandler 2 \TEXtypetwo
    \installprettyhandler 3 \TEXtypethree
@@ -141,7 +141,7 @@
 \doglobal\newif\ifinTEXcommand
 \doglobal\newif\ifinTEXparameter
 
-\gdef\TEXbeginofcommand%
+\gdef\TEXbeginofcommand
   {\TEXendofparameter
    \ifinTEXcommand
    \else
@@ -150,14 +150,14 @@
      \beginofpretty[\!!prettytwo]%
    \fi}
 
-\gdef\TEXendofcommand%
+\gdef\TEXendofcommand
   {\ifinTEXcommand
      \endofpretty
      \global\inTEXcommandfalse
      \global\firstinTEXcommandfalse
    \fi}
 
-\gdef\TEXbeginofparameter%
+\gdef\TEXbeginofparameter
   {\TEXendofcommand
    \ifinTEXparameter
    \else
@@ -165,7 +165,7 @@
      \beginofpretty[\!!prettythree]%
    \fi}
 
-\gdef\TEXendofparameter%
+\gdef\TEXendofparameter
   {\ifinTEXparameter
      \endofpretty
      \global\inTEXparameterfalse
@@ -251,7 +251,7 @@
    \fi
    \next}
 
-\gdef\TEXtypeeightB%
+\gdef\TEXtypeeightB
   {\TEXendofparameter
    \ifinTEXcommand
      \firstinTEXcommandfalse
@@ -260,15 +260,15 @@
      \expandafter\TEXtypethree
    \fi}
 
-\gdef\TEXtypeeight%
+\gdef\TEXtypeeight
   {\handlenextnextpretty\TEXtypeeightA\TEXtypeeightB}
 
-\gdef\TEXtypenine%
+\gdef\TEXtypenine
   {\TEXendofparameter
    \global\firstinTEXcommandfalse
    \getpretty}
 
-%\gdef\TEXtypezero%
+%\gdef\TEXtypezero
 %  {\disableprettyafterwards % only when enabled of course 
 %   \ifnewpretty\expandafter\handlenewpretty\fi\TEXtypethree}
 
@@ -289,7 +289,7 @@
 
 \endETEX
 
-\gdef\TEXtypezero%
+\gdef\TEXtypezero
   {\ifnaturaltextext
      \expandafter\naturalTEXtext
    \else
@@ -297,6 +297,4 @@
      \expandafter\handlenewpretty\expandafter\TEXtypethree
    \fi}
 
-\protect 
-
-\endinput 
+\protect \endinput 

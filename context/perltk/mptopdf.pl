@@ -26,11 +26,14 @@ use strict ;
 $Getopt::Long::passthrough = 1 ; # no error message
 $Getopt::Long::autoabbrev  = 1 ; # partial switch accepted
 
-my $Help = my $Latex = 0 ; 
+my $Help = my $Latex = my $RawMP = 0 ; 
+my $PassOn = '' ; 
 
 &GetOptions
-  ( "help"  => \$Help  ,
-    "latex" => \$Latex ) ;
+  ( "help"   => \$Help  ,
+    "rawmp"  => \$RawMP, 
+    "passon" => \$PassOn,
+    "latex"  => \$Latex ) ;
  
 my $program = "MPtoPDF 1.2" ;
 my $pattern = $ARGV[0] ;
@@ -44,7 +47,7 @@ my $dosish = ($Config{'osname'} =~ /^(ms)?dos|^os\/2|^(ms|cyg)win/i) ;
 my $miktex = ($ENV{"TEXSYSTEM"} =~ /miktex/io); 
 
 my @files ; 
-my $command = "" ; 
+my $command = my $mpbin = ''  ; 
 
 sub CopyFile # agressive copy, works for open files like in gs 
   { my ($From,$To) = @_ ; 
@@ -66,7 +69,11 @@ elsif ($pattern =~ /\.mp$/io)
         close (INP) } 
     if ($Latex) 
       { $rest .= " $latexswitch" } 
-    my $error = system ("texexec --mptex $rest $pattern") ;
+    if ($RawMP)
+      { $mpbin = 'mpost' } 
+    else
+      { $mpbin = 'texexec --mptex $PassOn' } 
+    my $error =  system ("$mpbin $rest $pattern") ;
     if ($error) 
       { print "\n$program : error while processing mp file\n" ; exit } 
     else 
@@ -100,6 +107,9 @@ foreach my $file (@files)
         if ($done) { $report .= " +" }
         $report .= " $_-$1.pdf" ;
         ++$done } }
+
+if ($report eq '') 
+  { $report = '*' } 
 
 if ($done)
   { print "\n$program : $pattern is converted to$report\n" }

@@ -42,9 +42,9 @@
   {\doifsomethingXMLop{name}
      {\processaction
          [\XMLop{type}]
-         [xml=>\readfile{\XMLop{name}}{}{},
-          tex=>{{\disableXML\readfile{\XMLop{name}}{}{}}},
-          txt=>{{\disableXML\typefile{\XMLop{name}}{}{}}}]}}
+         [xml=>\readfile{\XMLop{name}}\donothing,
+          tex=>{{\disableXML\readfile{\XMLop{name}}\donothing\donothing}},
+          txt=>{{\disableXML\typefile{\XMLop{name}}\donothing\donothing}}]}}
 
 %D \elements {compound}
 %D
@@ -61,12 +61,17 @@
 % \defineXMLsingular [context:compound] [token=]
 %   {\expanded{\normalcompound\XMLop{token}}|}
 
+% \defineXMLsingular [context:compound] [token=]
+%   {\ifmmode
+%      \doifXMLop{token}{\XMLop{token}}{\compoundhyphen}%
+%    \else
+%      \expanded{\normalcompound\XMLop{token}}|%
+%    \fi}
+
 \defineXMLsingular [context:compound] [token=]
-  {\ifmmode
-     \doifXMLop{token}{\XMLop{token}}{\compoundhyphen}%
-   \else
-     \expanded{\normalcompound\XMLop{token}}|%
-   \fi}
+  {\mathortext % disc comm looks ahead, so \relax
+     {\doifXMLop{token}{\XMLop{token}}\compoundhyphen}%
+     {\expanded{\discretionarycommand\noexpand|\XMLop{token}}|\relax}}
 
 %D \elements {p}
 %D
@@ -339,7 +344,7 @@
 %D
 %D \startbuffer
 %D The second mechanism that we support is tabulation. The advantage of this
-%D mechanism is that it it well tuned for tables that hav emuch text in the
+%D mechanism is that it it well tuned for tables that have much text in the
 %D cells and cross page boundaires.
 %D
 %D <tabulate>
@@ -447,5 +452,10 @@
   {\doifelsenothingXMLop{key}{\index}{\expanded{\index[\XMLop{key}]}}}
 
 % \enableXMLfiledata
+
+% Needed for example (stickers and so): 
+
+\defineXMLenvironment [context:makeup] 
+  \startstandardmakeup \stopstandardmakeup
 
 \protect \endinput

@@ -72,4 +72,20 @@
 % \definecolor[math \purefamilyhex{mc}] [lightblue]
 % \definecolor[math \purefamilyhex{md}] [lightmagenta]
 
+\gdef\showmathtoken#1%
+  {\starttabulate[|lT|lT|lT|l|]
+   \NC token         \NC #1 \NC \NR 
+   \NC collection    \NC \ifcsname\@mt@\mathcollection#1\endcsname 
+                           \mathcollection 
+                         \else\ifcsname\@mt@\nomathcollection#1\endcsname 
+                           \nomathcollection
+                         \else
+                           ?%
+                         \fi\fi \NC \NR 
+   \NC visualization \NC \mathematics{\getvalue{#1}} \NC \NR
+   \NC definition    \NC \tttf \@EA\convertcommand
+                           \csname\@mt@\mathcollection#1\endcsname
+                         \to \ascii \ascii \NC \NR 
+   \stoptabulate}
+ 
 \protect \endinput

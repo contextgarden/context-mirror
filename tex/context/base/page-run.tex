@@ -21,13 +21,13 @@
       \c!strut=\v!nee]
      {\forgetall
       \mindermeldingen
-      \globaldefs=-1
-      \dimen0=\pagegoal
+      \globaldefs\minusone
+      \dimen0\pagegoal
       \definepapersize[X][\c!breedte=4em, \c!hoogte=6em]%
       \definepapersize[Y][\c!breedte=12em,\c!hoogte=14em]%
       \setuppapersize[#1,X][#2,Y]%
       \stellayoutin[#3]%
-      \setbox0=\vbox
+      \setbox0\vbox
         {\framed
           [\c!offset=\v!overlay,\c!strut=\v!nee,
            \c!breedte=\papierbreedte,\c!hoogte=\papierhoogte]
@@ -43,10 +43,10 @@
       \mirrorprintbox0%
       \rotateprintbox0%
       \offsetprintbox0%
-      \pagegoal=\dimen0
+      \pagegoal\dimen0
       \box0}}
 
-\gdef\showprint%
+\gdef\showprint
   {\dotripleempty\doshowprint}
 
 % \switchnaarkorps[8pt]
@@ -135,20 +135,20 @@
 \else % we could have used \@the
 
   \gdef\showsetupC#1#2% \relax is really needed here ! 
-    {#1&\scratchdimen=#2\PtToCm{\the\scratchdimen}&%
-     \scratchdimen=#2\relax\the\scratchdimen&\tttf\string#2\cr}
+    {#1&\scratchdimen#2\PtToCm{\the\scratchdimen}&%
+     \scratchdimen#2\relax\the\scratchdimen&\tttf\string#2\cr}
 
 \fi
 
 % \startinterface english % english is fallback 
 
-\gdef\showsetups% 
+\gdef\showsetups
   {\noindent
    \vbox
      {\forgetall
       \mindermeldingen
       \switchtobodyfont[\v!klein]
-      \tabskip\!!zeropoint
+      \tabskip\zeropoint
       \halign
         {\strut##\quad\hss&##\quad\hss&##\quad\hss&##\hss\cr
          \showsetupA{paperheight}        \paperheight
@@ -188,13 +188,13 @@
 
 \startinterface dutch
 
-\gdef\showsetups%
+\gdef\showsetups
   {\noindent
    \vbox
      {\forgetall
       \mindermeldingen
       \switchtobodyfont[\v!klein]
-      \tabskip\!!zeropoint
+      \tabskip\zeropoint
       \halign
         {\strut##\quad\hss&##\quad\hss&##\quad\hss&##\hss\cr
          \showsetupA{papierhoogte}       \papierhoogte
@@ -243,7 +243,7 @@
      {\forgetall
       \mindermeldingen
       \switchtobodyfont[\v!klein]
-      \tabskip\!!zeropoint
+      \tabskip\zeropoint
       \halign
         {\strut##\quad\hss&##\quad\hss&##\quad\hss&##\hss\cr
          \showsetupA{papierhoehe}          \papierhoehe
@@ -289,7 +289,7 @@
      {\forgetall
       \mindermeldingen
       \switchtobodyfont[\v!klein]
-      \tabskip\!!zeropoint
+      \tabskip\zeropoint
       \halign
         {\strut##\quad\hss&##\quad\hss&##\quad\hss&##\hss\cr
          \showsetupA{vyskapapiru}              \vyskapapiru
@@ -335,7 +335,7 @@
      {\forgetall
       \mindermeldingen
       \switchtobodyfont[\v!klein]
-      \tabskip\!!zeropoint
+      \tabskip\zeropoint
       \halign
         {\strut##\quad\hss&##\quad\hss&##\quad\hss&##\hss\cr
          \showsetupA{paperheight}        \paperheight
@@ -373,7 +373,7 @@
 
 \stopinterface
 
-\gdef\showlayout% interfereert lelijk met een \typefile er na
+\gdef\showlayout % interfereert lelijk met een \typefile er na
   {\bgroup
    \pagina
    \showframe

@@ -234,4 +234,23 @@
 \let\normalprotected  = \protected
 \let\normalunexpanded = \unexpanded
 
+%D \macros 
+%D   {begcsname}
+%D
+%D Handy for \ETEX-only usage: 
+
+\beginETEX \ifcsname
+
+\def\begcsname#1\endcsname
+  {\ifcsname#1\endcsname\csname#1\endcsname\fi}
+
+\endETEX 
+
+\beginTEX
+
+\def\begcsname#1\endcsname
+  {\csname#1\endcsname}
+
+\endTEX
+
 \protect \endinput

@@ -97,10 +97,10 @@
 
 \newif\ifcleverfootnotes % being [plaats=kolommen]
 
-\def\setupfootnotes%
+\def\setupfootnotes
   {\dosingleempty\dosetupfootnotes}
 
-\def\dodofootnoterule%
+\def\dodofootnoterule
   {\ifvmode
      \color
        [\@@vnlijnkleur]
@@ -129,32 +129,32 @@
             \v!streng=>\footnotepenalty9999,
         \v!zeerstreng=>\footnotepenalty\maxdimen,
            \s!default=>\footnotepenalty\zeropoint,
-           \v!unknown=>\footnotepenalty\commalistelement]%
+           \s!unknown=>\footnotepenalty\commalistelement]%
    \fi
    \setfootnotedistance
-   \count\footins=1000
-   \ExpandBothAfter\doifinsetelse{\v!kolommen}{\@@vnplaats}
+   \count\footins1000
+   \ExpandBothAfter\doifinsetelse\v!kolommen\@@vnplaats
      {\cleverfootnotestrue % global ?
-      \ifnum\@@kln=0
-        \scratchcounter=1
+      \ifnum\@@kln=\zerocount
+        \scratchcounter\plusone
       \else
-        \scratchcounter=\@@vnn\relax
+        \scratchcounter\@@vnn
       \fi
       \global\endnotesfalse
       \global\bottomnotestrue
       \setcleverfootnotes}
      {\cleverfootnotesfalse
-      \ifnum\@@vnn=0
+      \ifnum\@@vnn=\zerocount
         \settextfootnotes
-        \scratchcounter=1
+        \scratchcounter\plusone
       \else
         \setcolumnfootnotes
-        \scratchcounter=\@@vnn\relax
+        \scratchcounter\@@vnn
         \divide\count\footins \scratchcounter
       \fi
-      \ExpandBothAfter\doifinsetelse{\v!pagina}{\@@vnplaats}
+      \ExpandBothAfter\doifinsetelse\v!pagina\@@vnplaats
         {\global\endnotesfalse
-         \ExpandBothAfter\doifinsetelse{\v!hoog}{\@@vnplaats}
+         \ExpandBothAfter\doifinsetelse\v!hoog\@@vnplaats
            {\global\bottomnotesfalse}
            {\global\bottomnotestrue}}
         {\global\endnotestrue
@@ -182,16 +182,16 @@
 
 \fi
 
-\def\setcleverfootnotes%
+\def\setcleverfootnotes
   {\def\startpushfootnote  {\bgroup % wellicht ooit kopuitlijnen
                             \stelinmargein[\c!uitlijnen=\v!links]%
                             \getvalue{\e!start\??vn\??vn}}%
    \def\stoppushfootnote   {\getvalue{\e!stop\??vn\??vn}%
                             \egroup}%
-   \def\startpopfootnotes  {}%
-   \def\stoppopfootnotes   {}}
+   \let\startpopfootnotes  \donothing
+   \let\stoppopfootnotes   \donothing}
 
-\def\setcolumnfootnotes%
+\def\setcolumnfootnotes
   {\def\startpushfootnote  {\setfootnotehsize % possibly overloaded
                             \setrigidcolumnhsize\hsize\@@vnkolomafstand\@@vnn
                             \bgroup
@@ -202,32 +202,21 @@
    \def\startpopfootnotes  {\bgroup
                             \setfootnotehsize
                             \setrigidcolumnhsize\hsize\@@vnkolomafstand\@@vnn
-                            \setbox0=\vbox\bgroup}%
+                            \setbox0\vbox\bgroup}%
    \def\stoppopfootnotes   {\egroup
-                            \setbox0=\vbox
+                            \setbox0\vbox
                               {\unvbox0\setbox0\lastbox
                                \ifvbox0\unvbox\else\box\fi0}%
                             \rigidcolumnbalance0\egroup}}
 
-% \def\settextfootnotes%
-%   {\def\startpushfootnote  {\startvboxtohbox
-%                             \dostartattributes\??vn\c!letter\c!kleur{}}%
-%    \def\stoppushfootnote   {\hskip\@@vnkolomafstand % plus.5em minus.5em
-%                             \dostopattributes
-%                             \stopvboxtohbox}%
-%    \def\startpopfootnotes  {\vbox\bgroup % \doifdimenelse
-%                             \doifnotinset{\@@vnbreedte}{\v!passend,\v!ruim}
-%                               {\setfootnotehsize}}%
-%    \def\stoppopfootnotes   {\convertvboxtohbox\egroup}}
-
-\def\settextfootnotes%
+\def\settextfootnotes
   {\def\startpushfootnote  {\startvboxtohbox
                             \dostartattributes\??vn\c!letter\c!kleur{}}%
    \def\stoppushfootnote   {\hskip\@@vnkolomafstand % plus.5em minus.5em
                             \dostopattributes
                             \stopvboxtohbox}%
    \def\startpopfootnotes  {\vbox\bgroup
-                            \doifnotinset{\@@vnbreedte}{\v!passend,\v!ruim}
+                            \doifnotinset\@@vnbreedte{\v!passend,\v!ruim}
                               {\setfootnotehsize}%
                             \beginofshapebox}%
    \def\stoppopfootnotes   {\endofshapebox
@@ -319,24 +308,6 @@
 \unexpanded\def\footnote    {\dodoubleempty\dofootnote[1]}
 \unexpanded\def\footnotetext{\dodoubleempty\dofootnote[0]}
 
-%\def\dofootnote[#1][#2]%
-%  {\unskip
-%   \ifcase#1\relax
-%     \global\footnotesymbolfalse
-%   \else
-%     \global\footnotesymboltrue
-%   \fi
-%   \ifvisible
-%     \ifreshapingbox
-%       \let\next\gobbletwoarguments
-%     \else
-%       \let\next\dodofootnote
-%     \fi
-%   \else
-%     \let\next\gobbletwoarguments
-%   \fi
-%   \next{#2}}
-
 \def\dofootnote[#1][#2]%
   {\unskip
    \ifcase#1\relax
@@ -387,32 +358,7 @@
        {}
    \fi}
 
-% \def\dodofootnote#1%
-%   {\iffootnotesenabled
-%      \doglobal\increment\internalfootreference
-%      \doifelse{\@@vnwijze}{\v!per\v!pagina}
-%        {\settrue\pagewisefootnotes}
-%        {\setfalse\pagewisefootnotes}%
-%      \doifelse{#1}{-}
-%        {\let\footnotenumber\empty}
-%        {\ifconditional\pagewisefootnotes
-%           \doifreferencefoundelse{\s!fnt:t:\internalfootreference}
-%             {\ifnum\currentrealreference>\lastfootnotepage\relax
-%                \global\let\lastfootnotepage\currentrealreference
-%                \resetnummer[\v!voetnoot]%
-%              \fi}
-%             {}%
-%         \fi
-%         \verhoognummer[\v!voetnoot]%
-%         \maakhetnummer[\v!voetnoot]%
-%         \rawreference{\s!fnt}{#1}{\hetnummer}%
-%         \let\footnotenumber\hetnummer}%
-%      \expandafter\dostartfootnote
-%    \else
-%      \expandafter\gobbleoneargument
-%    \fi}
-
-\def\dodofootnote%
+\def\dodofootnote
   {\iffootnotesenabled
      \iftrialtypesetting
        \@EAEAEA\nododofootnote
@@ -429,8 +375,8 @@
 
 \def\dododofootnote#1%
   {\doglobal\increment\internalfootreference
-   \doifelse{\@@vnwijze}{\v!per\v!pagina}
-     {\settrue\pagewisefootnotes}
+   \doifelse\@@vnwijze{\v!per\v!pagina}
+     {\settrue \pagewisefootnotes}
      {\setfalse\pagewisefootnotes}%
    \doifelse{#1}{-}
      {\let\footnotenumber\empty}
@@ -444,7 +390,7 @@
       \fi
       \verhoognummer[\v!voetnoot]%
       \maakhetnummer[\v!voetnoot]%
-      \rawreference{\s!fnt}{#1}{\hetnummer}%
+      \rawreference\s!fnt{#1}{\hetnummer}%
       \let\footnotenumber\hetnummer}%
    \dostartfootnote}
 
@@ -503,7 +449,7 @@
        \let\rechtermargeafstand\linkermargeafstand
      \fi
      \ifcase\@@vnn\relax % new 31-07-99 ; always ?
-       \doifnotinset{\@@vnbreedte}{\v!passend,\v!ruim}
+       \doifnotinset\@@vnbreedte{\v!passend,\v!ruim}
          {\setfootnotehsize}%
      \fi
      \startpushfootnote
@@ -521,9 +467,9 @@
           \fi
         \fi
         \iflocation
-          \rawreference{\s!fnt}{\s!fnt:t:\internalfootreference}{}%
+          \rawreference\s!fnt{\s!fnt:t:\internalfootreference}{}%
         \else\ifconditional\pagewisefootnotes
-          \rawreference{\s!fnt}{\s!fnt:t:\internalfootreference}{}%
+          \rawreference\s!fnt{\s!fnt:t:\internalfootreference}{}%
         \fi\fi}%
      \bgroup
      \postponefootnotes
@@ -531,7 +477,7 @@
      \begstrut
      \let\next}
 
-\def\dostopfootnote%
+\def\dostopfootnote
   {\endstrut
    \stoppushfootnote
    \egroup
@@ -550,11 +496,11 @@
      \naarbox
        {\high{\tx\footnotenumber\domovednote\v!vorigepagina\v!volgendepagina}}%
        [\s!fnt:t:\internalfootreference]%
-     \rawreference{\s!fnt}{\s!fnt:f:\internalfootreference}{}%
+     \rawreference\s!fnt{\s!fnt:f:\internalfootreference}{}%
    \else
      \high{\tx\footnotenumber\domovednote\v!vorigepagina\v!volgendepagina}%
      \ifconditional\pagewisefootnotes
-       \rawreference{\s!fnt}{\s!fnt:f:\internalfootreference}{}%
+       \rawreference\s!fnt{\s!fnt:f:\internalfootreference}{}%
      \fi
    \fi
    \global\let\lastnotesymbol\relax}
@@ -596,15 +542,15 @@
 \let\startpopfootnotes = \relax
 \let\stoppopfootnotes  = \relax
 
-\def\placefootnoteinserts%
+\def\placefootnoteinserts
   {%\ifvoid\footins \else % unsafe, strange
-   \ifdim\ht\footins>\!!zeropoint\relax
+   \ifdim\ht\footins>\zeropoint
      \ifendnotes \else
        \@@vnvoor
        \dofootnoterule  % alleen in ..mode
        \bgroup
        \setfootnotebodyfont
-       \setbox0=\hbox
+       \setbox0\hbox
          {\startpopfootnotes
           \setfootnotebodyfont
 %          % this should be checked, smells like a mix-up
@@ -662,49 +608,44 @@
 
 \newbox\postponedfootnotes
 
-\def\autopostponefootnotes%
-%  {\gdef\localfootinsert%
-  {\def\localfootinsert%
+\def\autopostponefootnotes
+  {\def\localfootinsert % not global 
      {\ifinner
         %\message{[postponed footnote]}%
-        \global\setbox\postponedfootnotes=\vbox\bgroup
+        \global\setbox\postponedfootnotes\vbox\bgroup
           \ifvoid\postponedfootnotes\else
             \unvbox\postponedfootnotes
           \fi
-          \let\next=\gobbletwoarguments
+          \expandafter\gobbletwoarguments
       \else
         %\message{[inserted footnote]}%
-        \let\next=\insert
-      \fi
-      \next}}
+        \expandafter\insert
+      \fi}}
 
-\def\postponefootnotes%
-  {\let\autopostponefootnotes=\postponefootnotes
+\def\postponefootnotes
+  {\let\autopostponefootnotes\postponefootnotes
    \let\postponefootnotes\relax % prevent loops
-%   \gdef\localfootinsert%
-   \def\localfootinsert%
+   \def\localfootinsert % not global 
      {%\message{[postponed footnote]}%
       \global\setbox\postponedfootnotes=\vbox\bgroup
         \unvbox\postponedfootnotes
         \gobbletwoarguments}}
 
-\def\doflushnotes% also called directly, \ifvoid is needed !
+\def\doflushnotes % also called directly, \ifvoid is needed !
   {\ifendnotes \else
      \ifvoid\postponedfootnotes
-%       \global\let\localfootinsert=\insert
-       \let\localfootinsert=\insert
+       \let\localfootinsert\insert % not global 
      \else
        \bgroup
-         \ifdim\ht\postponedfootnotes>\!!zeropoint
-           \scratchdimen=\pagegoal
-           \advance\scratchdimen by -\pagetotal
+         \ifdim\ht\postponedfootnotes>\zeropoint
+           \scratchdimen\pagegoal
+           \advance\scratchdimen -\pagetotal
            \ifdim\scratchdimen<\ht\postponedfootnotes
              \message{[moved footnote]}%
            \fi
          \fi
        \egroup
-%       \global\let\localfootinsert=\insert
-       \let\localfootinsert=\insert
+       \let\localfootinsert\insert % not global
        \insert\footins\bgroup\unvbox\postponedfootnotes\egroup
      \fi
    \fi}
@@ -744,12 +685,12 @@
      \fi
      \snaptogrid\hbox
        {\setfootnotebodyfont
-        \setbox0=\hbox
+        \setbox0\hbox
           {\startpopfootnotes
            \unvbox#1\endgraf\relax
            \stoppopfootnotes}%
-        \doif{\@@vnbreedte}{\v!passend} % new, auto width
-          {\setbox0=\hbox               % uggly but ok.
+        \doif\@@vnbreedte\v!passend % new, auto width
+          {\setbox0\hbox            % uggly but ok.
              {\beginofshapebox
               \unhbox0\setbox0=\lastbox\unvbox0
               \endofshapebox
@@ -761,7 +702,7 @@
             \c!hoogte=\v!passend,
              \c!strut=\v!nee,
             \c!offset=\v!overlay]
-          {\ifdim\dp0=\!!zeropoint % this hack is needed because \vadjust
+          {\ifdim\dp0=\zeropoint   % this hack is needed because \vadjust
              \hbox{\lower\dp\strutbox\box0}% % in margin number placement
            \else                   % hides the (always) present depth
              \box0
@@ -804,7 +745,7 @@
 \def\collectlocalfootnotes%
   {\def\localfootinsert##1% was \gdef, but never reset!
      {%\message{[local footnote]}%
-      \global\setbox\localpostponedfootnotes=\vbox\bgroup
+      \global\setbox\localpostponedfootnotes\vbox\bgroup
         \ifvoid\localpostponedfootnotes \else
           \unvbox\localpostponedfootnotes
         \fi
@@ -813,18 +754,18 @@
 \def\dostartlocalfootnotes[#1]%
   {\let\autopostponefootnotes\postponefootnotes
    \let\postponefootnotes\collectlocalfootnotes
-   \def\defaultfootnotewidth%
+   \def\defaultfootnotewidth
      {\ifdim\hsize<\zetbreedte\hsize\else\zetbreedte\fi}%
    \setupfootnotes[#1]%
    \savenumber[\v!voetnoot]%
    \resetnummer[\v!voetnoot]%
    \collectlocalfootnotes}
 
-\def\startlocalfootnotes%
+\def\startlocalfootnotes
   {\bgroup % here because we support \vbox\startlocalfootnotes
    \dosingleempty\dostartlocalfootnotes}
 
-\def\stoplocalfootnotes%
+\def\stoplocalfootnotes
   {\restorenumber[\v!voetnoot]%
    \egroup
    \checknotes} % really needed, else wrong main settings
@@ -832,13 +773,13 @@
 \def\doplacelocalfootnotes[#1]%
   {\bgroup
    \setupfootnotes[#1]%
-   \ExpandBothAfter\doifinsetelse{\v!geen}{\@@vnplaats}
+   \ExpandBothAfter\doifinsetelse\v!geen\@@vnplaats
      {\placefootnotesasnone\localpostponedfootnotes}%
      {\placefootnotesintext\localpostponedfootnotes}%
    \egroup
    \checknotes}
 
-\def\placelocalfootnotes%
+\def\placelocalfootnotes
   {\dosingleempty\doplacelocalfootnotes}
 
 %D These commands can be used like:
@@ -876,7 +817,7 @@
 %D
 %D \showsetup{\y!placefootnotes}
 
-\def\placefootnotes%
+\def\placefootnotes
   {\dosingleempty\doplacefootnotes}
 
 \def\doplacefootnotes[#1]%
@@ -884,9 +825,8 @@
    \ifendnotes
      \ifinpagebody \else \ifdim\ht\postponedfootnotes>\zeropoint
        \iffirstargument\setupfootnotes[#1,\c!hoogte=\teksthoogte]\fi
-       \ExpandBothAfter\doifinsetelse{\v!geen}{\@@vnplaats}
-         {\placefootnotesasnone\postponedfootnotes}%
-         {\placefootnotesintext\postponedfootnotes}%
+       \ExpandBothAfter\doifinsetelse\v!geen\@@vnplaats
+         \placefootnotesasnone\placefootnotesintext\postponedfootnotes
      \fi \fi
    \else \ifdim\ht\footins>\zeropoint
      \iffirstargument\setupfootnotes[#1,\c!hoogte=\teksthoogte]\fi
@@ -949,12 +889,7 @@
 %D from the global document bodyfont size. In the previous macros
 %D we already used a footnote specific font setting macro.
 
-%\def\setfootnotebodyfont%
-%  {\let\setfootnotebodyfont\relax
-%   \restoreglobalbodyfont
-%   \switchtobodyfont[\@@vnkorps]}
-
-\def\setfootnotebodyfont%
+\def\setfootnotebodyfont
   {\let\setfootnotebodyfont\relax
    \restoreglobalbodyfont
    \switchtobodyfont[\@@vnkorps]%

@@ -66,7 +66,7 @@
          \noalign{\hrule}}}
    \ifinsidefloat\else\stopbaselinecorrection\fi}
 
-\gdef\showbodyfontenvironment%
+\gdef\showbodyfontenvironment
   {\dosingleempty\doshowbodyfontenvironment}
 
 \gdef\doshowbodyfontenvironment[#1]%
@@ -234,5 +234,67 @@
       \show{``}\NC\show{''}\NC\show{--}\NC\show{---}\NC\NR 
    \stoptabulate
    \egroup}
+
+\gdef\showfontstrip
+  {\dosingleempty\doshowfontstrip}
+
+\gdef\doshowfontstrip[#1]%
+  {\bgroup
+   \def\dofontstripa##1##2%
+     {\tttf\string##1}
+   \def\dofontstripb##1##2%
+     {\ruledhbox{\switchtobodyfont[#1]##1{##2}}}
+   \def\dofontstripc##1##2%
+     {\setbox\scratchbox\hbox{\switchtobodyfont[#1]##1{##2}}%
+      \tt\tfx\the\ht\scratchbox}%
+   \def\dofontstripd##1##2%
+     {\setbox\scratchbox\hbox{\switchtobodyfont[#1]##1{##2}}%
+      \tt\tfx\the\wd\scratchbox}%
+   \def\fontstrip##1##2##3%
+     {\NC##2\rm{##3}\NC
+         ##2\ss{##3}\NC
+         ##2\tt{##3}\NC
+         ##2\mathematics{##3}\NC
+         \tttf##1\NR}
+   \starttabulate[|c|c|c|c|c|]
+     \fontstrip\relax\dofontstripa\empty
+     \TB
+     \fontstrip\relax\dofontstripb{xxxx}
+     \fontstrip\relax\dofontstripb{12345}
+     \fontstrip\relax\dofontstripb{(Agw)}
+     \TB
+     \fontstrip{(x height)}\dofontstripc{x}
+     \fontstrip{(m  width)}\dofontstripd{m}
+   \stoptabulate
+   \egroup}
+
+\ifx\databox\undefined \newbox\databox \fi 
+
+\gdef\testminimalbaseline#1%
+  {\setbox\databox\ruledhbox{#1}%
+   \scratchdimen\ht\databox
+   \advance\scratchdimen\dp\databox
+   \scratchtoks{#1}%
+   \expanded
+     {\NC \ruledhbox{\the\scratchtoks}
+      \noexpand \NC ->
+      \noexpand \NC \the\scratchdimen
+      \noexpand \NC =
+      \noexpand \NC \the\ht\databox
+      \noexpand \NC +
+      \noexpand \NC \the\dp\databox
+      \noexpand \NC \ifdim\scratchdimen<\baselineskip <
+                    \else\ifdim\scratchdimen=\baselineskip =
+                    \else > \fi\fi 
+      \noexpand \NC \the\baselineskip
+      \noexpand \NC (\ifdim\scratchdimen>\baselineskip not \fi ok)  
+      \noexpand \NC \noexpand \NR }}
+
+\gdef\showminimalbaseline
+  {\starttabulate[||T|T|T|T|T|T|T|T|T|]
+   \testminimalbaseline{\hbox to 1em{\hss\showstruts\strut\hss}}%
+   \testminimalbaseline{(/)}%
+   \testminimalbaseline{$\frac{1}{2}x^2_3$}
+   \stoptabulate}
 
 \protect \endinput

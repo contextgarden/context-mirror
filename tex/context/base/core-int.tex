@@ -8,8 +8,8 @@
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
-%C therefore copyrighted by \PRAGMA. See mreadme.pdf for 
-%C details. 
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
 
 %D Still to be done properly.
 
@@ -137,12 +137,12 @@
 \def\stelkoppelingenin%
   {\dodoubleargument\getparameters[\??lk]}
 
-\def\definieerkoppeling[#1]%  % local loading ! 
+\def\definieerkoppeling[#1]%  % local loading !
   {\doifundefined{\s!link:#1:\s!list}
      {\expanded{\definetwopasslist{\s!link:#1}}%
       \expanded{\doloadtwopassdata{\s!link:#1}}%
       \getfirsttwopassdata{\s!link:#1}%
-      \setxvalue{\s!link:#1:f}{\twopassdata}%  
+      \setxvalue{\s!link:#1:f}{\twopassdata}%
       \getlasttwopassdata{\s!link:#1}%
       \setxvalue{\s!link:#1:l}{\twopassdata}%
       \setxvalue{\s!link:#1:s}{\noftwopassitems}%
@@ -159,7 +159,7 @@
    \edef\firstlink{0\getvalue{\s!link:#1:f}}%
    \edef\lastlink{0\getvalue{\s!link:#1:l}}%
    \edef\currentlink{0\getvalue{\s!link:#1:n}}%
-   \edef\prevlink{0\getvalue{\s!link:#1:c}}% 
+   \edef\prevlink{0\getvalue{\s!link:#1:c}}%
    \iftwopassdatafound
      \edef\nextlink{0\twopassdata}%
      \setxvalue{\s!link:#1:n}{\nextlink}%
@@ -199,17 +199,17 @@
    \fi
    \egroup}
 
-\def\definieerkoppeling[#1]%  % local loading ! 
+\def\definieerkoppeling[#1]%  % local loading !
   {\doifundefined{\s!link:#1:\s!list}
      {\expanded{\definetwopasslist{\s!link:#1}}%      \expanded{\doloadtwopassdata{\s!link:#1}}%
       \getfirsttwopassdata{\s!link:#1}%
-      \let\firstlink=\twopassdata  
+      \let\firstlink\twopassdata
       \getlasttwopassdata{\s!link:#1}%
-      \let\lastlink=\twopassdata
-      \let\noflinks=\noftwopassitems
+      \let\lastlink\twopassdata
+      \let\noflinks\noftwopassitems
       \gettwopassdata{\s!link:#1}%
-      \let\currentlink=\twopassdata
-      \let\nextlink=\twopassdata
+      \let\currentlink\twopassdata
+      \let\nextlink\twopassdata
       \setxvalue{\s!link:#1:}%
         {\firstlink:\lastlink:\noflinks:\currentlink:\nextlink}}}
 
@@ -261,7 +261,7 @@
 
 \let\setupinteractionscreens\empty
 
-\def\berekeninteractiescherm%
+\def\berekeninteractiescherm
   {\doifelse\@@scbreedte\v!passend
      {\!!widtha\linkerrandbreedte
       \advance\!!widtha \linkerrandafstand
@@ -302,9 +302,9 @@
 % may be set! ConTeXt is the producer but we no longer
 % mention the pragma site, since we don't want to be bothered
 % with remarks about third party documents and/or associated
-% with documents produced outside our control. 
+% with documents produced outside our control.
 
-\def\doprepareidentity 
+\def\doprepareidentity
   {\let\!!stringa\@@iatrefwoord
    \let\@@iatrefwoord\empty
    \def\doprepareidentity##1{\edef\@@iatrefwoord
@@ -312,45 +312,28 @@
    \@EA\processcommacommand\@EA[\!!stringa]\doprepareidentity
    \global\let\doprepareidentity\relax}
 
-\def\initializeidentity
-  {\iflocation         
+\def\doinitializeidentity#1%
+  {%\iflocation
      \doprepareidentity
-     \expanded{\dosetupidentity  
-       {\@@iatitel}%    
-       {\@@iasubtitel}% 
-       {\@@iaauteur}%   
-       {ConTeXt/user/\jobname.tex}%
-       {\@@iadatum}%   
-       {\@@iatrefwoord}}%
-     \global\let\initializeidentity\relax 
-   \fi}                
+     \expanded
+       {\dosetupidentity
+          {\@@iatitel}{\@@iasubtitel}{\@@iaauteur}{#1}%
+          {\@@iadatum}{\@@iatrefwoord}}%
+     \global\let\initializeidentity\relax
+  }%\fi}
 
-\appendtoks \initializeidentity \to \everyshipout 
+\def\initializeidentity % not to be changed !
+  {\doinitializeidentity{ConTeXt/user/\jobname.tex}}
 
-% \def\initializepaper%
-%   {\bgroup
-%    \doif\@@pcstatus\v!start\locationfalse
-%    \iflocation % without screen settings
-%      \egroup
-%      \dosetuppaper
-%        {\papersize}
-%        {\the\papierbreedte}
-%        {\the\papierhoogte}%
-%    \else
-%      \egroup
-%      \dosetuppaper
-%        {\printpapersize}
-%        {\the\printpapierbreedte}
-%        {\the\printpapierhoogte}%
-%    \fi}
+\appendtoks \initializeidentity \to \everyshipout
 
-\def\initializepaper%
+\def\initializepaper
   {\bgroup
-   \ifx\@@pplinks \empty  
-   \ifx\@@pprechts\empty  
-   \ifx\@@ppboven \empty  
-   \ifx\@@pponder \empty  
-   \ifx\@@pcstatus\v!start     
+   \ifx\@@pplinks \empty
+   \ifx\@@pprechts\empty
+   \ifx\@@ppboven \empty
+   \ifx\@@pponder \empty
+   \ifx\@@pcstatus\v!start
      \locationfalse\fi\else
      \locationfalse\fi\else
      \locationfalse\fi\else
@@ -364,16 +347,16 @@
      \dosetuppaper\printpapersize\printpapierbreedte\printpapierhoogte
    \fi}
 
-\appendtoks \initializepaper \to \everyshipout 
+\appendtoks \initializepaper \to \everyshipout
 
 \def\doinitializepaper
   {\bgroup
    \berekeninteractiescherm
-   \ifdim\!!widtha>\papierbreedte\ifdim\!!widtha>\zeropoint 
-     \papierbreedte\!!widtha  
+   \ifdim\!!widtha>\papierbreedte\ifdim\!!widtha>\zeropoint
+     \papierbreedte\!!widtha
    \fi\fi
-   \ifdim\!!heighta>\papierhoogte\ifdim\!!heighta>\zeropoint 
-     \papierhoogte\!!heighta 
+   \ifdim\!!heighta>\papierhoogte\ifdim\!!heighta>\zeropoint
+     \papierhoogte\!!heighta
    \fi\fi
    \dosetuppaper
      {\printpapersize}
@@ -383,59 +366,26 @@
 
 \let\@@pcscreendata\empty
 
-% \def\dosetupinteractionscreens% met a, b en \number
-%   {\doifnot{\@@pcstatus}{\v!start}
-%      {\bgroup
-%       \berekeninteractiescherm
-%       \processaction
-%         [\@@scoptie]
-%         [     \v!max=>\!!counte=1,
-%          \v!bookmark=>\!!counte=2,
-%           \s!unknown=>\!!counte=0,
-%           \s!default=>\!!counte=0]%
-%       \edef\temp%
-%         {{\number\rugoffset}{\number\kopoffset}%
-%          {\number\!!widtha}{\number\!!heighta}%
-%          {\the\!!counte}}%
-%       \doifnot{\the\!!widtha\the\!!heighta}{\@@pcscreendata}
-%         {\xdef\@@pcscreendata{\the\!!widtha\the\!!heighta}%
-%          \showmessage{\m!interactions}{1} % niet waterdicht
-%            {\@EA\withoutpt\the\!!widtha,\@EA\withoutpt\the\!!heighta}}%
-%       % need to be split: dimensions for each page 
-%       % and mode per document and only once ! 
-%       \dosetupscreen
-%         {\rugoffset}{\kopoffset}
-%         {\!!widtha}{\!!heighta}
-%         {\the\!!counte}%
-%       \egroup}}
-
-\def\dosetupinteractionscreens% met a, b en \number
+\def\dosetupinteractionscreens % met a, b en \number
   {\doifnot\@@pcstatus\v!start\dodosetupinteractionscreens}
 
-\setvalue{\??sc\c!optie\v!max     }{1} % tzt share with driver 
-\setvalue{\??sc\c!optie\v!bookmark}{2} % tzt share with driver 
-\setvalue{\??sc\c!optie\v!passend }{3} % tzt share with driver 
+\setvalue{\??sc\c!optie\v!max     }{1} % tzt share with driver
+\setvalue{\??sc\c!optie\v!bookmark}{2} % tzt share with driver
+\setvalue{\??sc\c!optie\v!passend }{3} % tzt share with driver
 
-\def\dodosetupinteractionscreens% met a, b en \number
+\def\dodosetupinteractionscreens % met a, b en \number
   {\bgroup
    \berekeninteractiescherm
-   % slow, called each page  
-   %  \processaction
-   %    [\@@scoptie]
-   %    [     \v!max=>\!!counte=1,
-   %     \v!bookmark=>\!!counte=2,
-   %      \s!unknown=>\!!counte=0,
-   %      \s!default=>\!!counte=0]%
-   % fast, tzt installable 
    \!!counte=0\getvalue{\??sc\c!optie\@@scoptie}\relax
-   %
+   % niet waterdicht
    \doifnot{\the\!!widtha\the\!!heighta}\@@pcscreendata
      {\xdef\@@pcscreendata{\the\!!widtha\the\!!heighta}%
-      \showmessage{\m!interactions}{1} % niet waterdicht
-        {\@EA\withoutpt\the\!!widtha,\@EA\withoutpt\the\!!heighta}}%
-   % need to be split: dimensions for each page 
-   % and mode per document and only once ! 
+      \showmessage\m!interactions
+        1{\@EA\withoutpt\the\!!widtha,\@EA\withoutpt\the\!!heighta}}%
+   % needs to be split: dimensions for each page
+   % and mode per document and only once !
    \dosetupscreen\rugoffset\kopoffset\!!widtha\!!heighta{\the\!!counte}%
+   \dosetupcropbox\rugoffset\kopoffset\!!widtha\!!heighta
    \egroup}
 
 \def\dostelinteractieschermin[#1]%
@@ -445,9 +395,9 @@
      \let\setupinteractionscreens\dosetupinteractionscreens
    \fi}
 
-\appendtoks \setupinteractionscreens \to \everyshipout 
+\appendtoks \setupinteractionscreens \to \everyshipout
 
-\def\stelinteractieschermin%
+\def\stelinteractieschermin
   {\dosingleempty\dostelinteractieschermin}
 
 %D Due to requests I finally decided to support bookmarks, a
@@ -482,7 +432,7 @@
 
 %\let\flushpostponedbookmark\relax
 
-\def\flushpostponedbookmark%
+\def\flushpostponedbookmark
   {\the\postponedbookmarks
    \global\postponedbookmarks\emptytoks}
 
@@ -493,31 +443,20 @@
      \writestatus{system}{clashing bookmarks: \ascii}% ECHTE MESSAGE MAKEN
      \egroup
    \fi
-%   \gdef\flushpostponedbookmark%
-%     {\global\let\flushpostponedbookmark\relax
-%      \schrijfnaarlijst[\@@bookmark]{}{#1}}}
    \doglobal\prependtoks
      \schrijfnaarlijst[\@@bookmark]{}{#1}%
    \to\postponedbookmarks}
 
 \def\complexbookmark[#1]#2%
-%  {\schrijfnaarlijst[#1]{}{#2}}
   {\doglobal\appendtoks\schrijfnaarlijst[#1]{}{#2}\to\postponedbookmarks}
 
 \definecomplexorsimple\bookmark
-
-% \def\insertbookmark[#1]#2%
-%   {\bgroup
-%    \doifreferencefoundelse{#1}
-%      {\doinsertbookmark{0}{0}{#2}{\currentrealreference}}{1}
-%      {\unknownreference{#1}}%
-%    \egroup}
 
 \newif\iftracebookmarks \tracebookmarksfalse
 
 \let\tracebookmarks\tracebookmarkstrue
 
-\def\placebookmarks%
+\def\placebookmarks
   {\dodoubleempty\doplacebookmarks}
 
 \def\doplacebookmarks[#1][#2]%
@@ -527,9 +466,9 @@
        \ifsecondargument
          \edef\openbookmarklist{#2}%
        \else
-         \let\openbookmarklist=\empty
+         \let\openbookmarklist\empty
        \fi
-       \global\let\bookmarklevellist=\empty
+       \global\let\bookmarklevellist\empty
        \def\bookmarklevelcount{0}%
        \doprocessbookmarks[#1]\dogetbookmarkelement
        \dolijstelement{}{}{}{}{}{}% needed to finish the first pass
@@ -542,42 +481,40 @@
    \fi}
 
 \def\doprocessbookmarks[#1]#2%
-  {\let\dolijstelement=#2\relax
-   \scratchcounter=0
+  {\let\dolijstelement#2\relax
+   \scratchcounter\zerocount
    \def\docommando##1%
-     {\advance\scratchcounter by 1
+     {\advance\scratchcounter \plusone
       \getlistlevel[##1]\listlevel{\the\scratchcounter}%
       \setxvalue{\@@bookcount\the\scratchcounter}{1}%
       \setxvalue{\@@booklevel##1}{\listlevel}}%
    \processcommalist[#1]\docommando
    \setxvalue{\@@bookcount0}{1}%
-   \global\chardef\currentbookmarklevel=0
-   \global\chardef\previousbookmarklevel=0
-   \doutilities{#1,\@@bookmark}{\jobname}{#1}{}{}}
+   \global\chardef\currentbookmarklevel\zerocount
+   \global\chardef\previousbookmarklevel\zerocount
+   \doutilities{#1,\@@bookmark}\jobname{#1}\relax\relax}
 
 \def\dodogetbookmarkelement#1#2#3#4#5#6%
-  {%\doifsomething{#1}
-   %  {\global\chardef\currentbookmarklevel=\getvalue{\@@booklevel#1}}%
-   \doifelsenothing{#1}
-     {\global\chardef\currentbookmarklevel=0\relax}
-     {\global\chardef\currentbookmarklevel=\getvalue{\@@booklevel#1}\relax}%
+  {\doifelsenothing{#1}
+     {\global\chardef\currentbookmarklevel\zerocount}
+     {\global\chardef\currentbookmarklevel\getvalue{\@@booklevel#1}\relax}%
    \ifnum\currentbookmarklevel>\previousbookmarklevel
      \setxvalue{\@@bookcount\the\currentbookmarklevel}{1}%
    \else\ifnum\currentbookmarklevel<\previousbookmarklevel
      \bgroup
-     \!!counta=\previousbookmarklevel
+     \!!counta\previousbookmarklevel
      \doloop
-       {\let\bookmarktag=\empty
-        \!!countb=\!!counta
-        \advance\!!countb by -1
-        \dorecurse{\!!countb}
-          {\edef\bookmarktag%
+       {\let\bookmarktag\empty
+        \!!countb\!!counta
+        \advance\!!countb \minusone
+        \dorecurse\!!countb
+          {\edef\bookmarktag
              {\bookmarktag\getvalue{\@@bookcount\recurselevel}:}}%
-        \edef\bookmarklevelcount%
+        \edef\bookmarklevelcount
           {\getvalue{\@@bookcount\the\!!counta}}%
-        \xdef\bookmarklevellist%
+        \xdef\bookmarklevellist
           {\bookmarklevellist/\bookmarktag:\bookmarklevelcount/}%
-        \advance\!!counta by -1
+        \advance\!!counta \minusone 
         \ifnum\!!counta=\currentbookmarklevel
           \exitloop
         \fi}%
@@ -587,19 +524,17 @@
      \@EA\doglobal\@EA\increment\csname \@@bookcount\the\previousbookmarklevel\endcsname\relax
    \fi\fi
    \global\utilitydonetrue
-   \global\chardef\previousbookmarklevel=\currentbookmarklevel}
+   \global\chardef\previousbookmarklevel\currentbookmarklevel}
 
-\def\getbookmarklevelcount%
+\def\getbookmarklevelcount
   {\@EA\def\@EA\docommando\@EA[\@EA##\@EA1\@EA/\bookmarktag:##2/##3]%
      {\def\bookmarklevelcount{##2}}%
    \@EA\@EA\@EA\docommando\@EA\@EA\@EA[\@EA\bookmarklevellist\@EA/\bookmarktag:0/]}
 
 \def\dodoputbookmarkelement#1#2#3#4#5#6%
-  {%\doifsomething{#1}
-   %  {\global\chardef\currentbookmarklevel=\getvalue{\@@booklevel#1}}%
-   \doifelsenothing{#1}
-     {\global\chardef\currentbookmarklevel=0\relax}
-     {\global\chardef\currentbookmarklevel=\getvalue{\@@booklevel#1}\relax}%
+  {\doifelsenothing{#1}
+     {\global\chardef\currentbookmarklevel\zerocount}
+     {\global\chardef\currentbookmarklevel\getvalue{\@@booklevel#1}\relax}%
    \ifnum\currentbookmarklevel>\previousbookmarklevel
      \setxvalue{\@@bookcount\the\currentbookmarklevel}{1}%
    \else\ifnum\currentbookmarklevel<\previousbookmarklevel
@@ -607,55 +542,51 @@
    \else
      \@EA\doglobal\@EA\increment\csname \@@bookcount\the\previousbookmarklevel\endcsname\relax
    \fi\fi
-   \let\bookmarktag=\empty
+   \let\bookmarktag\empty
    \!!countb\currentbookmarklevel
-   \dorecurse{\!!countb}
-     {\edef\bookmarktag%
+   \dorecurse\!!countb
+     {\edef\bookmarktag
         {\bookmarktag\getvalue{\@@bookcount\recurselevel}:}}%
    \getbookmarklevelcount
    \iftracebookmarks
      \bgroup
      \par
      \bookmarktag\quad
-     \dorecurse{\currentbookmarklevel}{\quad}\unskip#1\quad
+     \dorecurse\currentbookmarklevel{\quad}\unskip#1\quad
      (\bookmarklevelcount)\quad
      \egroup
    \fi
-   \global\chardef\previousbookmarklevel=\currentbookmarklevel
+   \global\chardef\previousbookmarklevel\currentbookmarklevel
    \global\utilitydonetrue
    \insertsomebookmark
-     {#1}
-     {\the\currentbookmarklevel}
-     {\bookmarklevelcount}
-     {#4}
-     {#6}}
+     {#1}{\the\currentbookmarklevel}{\bookmarklevelcount}{#4}{#6}}
 
 \def\dogetbookmarkelement#1#2#3#4#5#6%
-  {\doifnot{#1}{\@@bookmark}
+  {\doifnot{#1}\@@bookmark
      {\dodogetbookmarkelement{#1}{#2}{#3}{#4}{#5}{#6}}}
 
 \def\doputbookmarkelement#1#2#3#4#5#6%
-  {\doifelse{#1}{\@@bookmark}
+  {\doifelse{#1}\@@bookmark
      {\localbookmark{#4}}
      {\flushbookmark
       \dodoputbookmarkelement{#1}{#2}{#3}{#4}{#5}{#6}}}
 
-\let\flushbookmark=\relax
-\let\localbookmark=\gobbleoneargument
+\let\flushbookmark\relax
+\let\localbookmark\gobbleoneargument
 
 \def\insertsomebookmark#1#2#3#4#5%
-  {\gdef\flushbookmark%
+  {\gdef\flushbookmark
      {\doinsertsomebookmark{#1}{#2}{#3}{#4}{#5}{g}}%
    \gdef\localbookmark##1%
      {\doinsertsomebookmark{#1}{#2}{#3}{##1}{#5}{l}}}
 
 \def\doinsertsomebookmark#1#2#3#4#5#6%
   {\global\utilitydonetrue
-   \global\let\localbookmark=\gobbleoneargument
-   \global\let\flushbookmark=\relax
-   \doifinstringelse{#1}{\openbookmarklist}
-     {\chardef\openbookmark=1}
-     {\chardef\openbookmark=0}%
+   \global\let\localbookmark\gobbleoneargument
+   \global\let\flushbookmark\relax
+   \doifinstringelse{#1}\openbookmarklist
+     {\chardef\openbookmark\plusone}
+     {\chardef\openbookmark\zerocount}%
    \iftracebookmarks(#6: #4)\quad(\the\openbookmark)\par\fi
    \doinsertbookmark{#2}{#3}{#4}{#5}{\openbookmark}}
 
@@ -677,8 +608,8 @@
 
 \def\testinteractiemenu#1%
    {\iflocation
-      \doifelse{\@@iamenu}{\v!aan}
-        {\doifelsevalue{\??am#1\c!status}{\v!start}
+      \doifelse\@@iamenu\v!aan
+        {\doifelsevalue{\??am#1\c!status}\v!start
            {\global\locationmenupermittedtrue}
            {\global\locationmenupermittedfalse}}
         {\global\locationmenupermittedfalse}%
@@ -697,10 +628,10 @@
          \setevalue{\??am##1\c!blokkade}{\interactieblokkade}}}%
    \processcommalist[#2]\dodoblokkeerinteractiemenu}
 
-\def\blokkeerinteractiemenu%
+\def\blokkeerinteractiemenu
   {\dotripleempty\doblokkeerinteractiemenu[\addtocommalist]}
 
-\def\geefinteractiemenuvrij%
+\def\geefinteractiemenuvrij
   {\dotripleempty\doblokkeerinteractiemenu[\removefromcommalist]}
 
 % ja   : kader/achtergrond met tekst
@@ -711,78 +642,7 @@
 \newif\iflocationdummy
 \newif\ifskippedmenuitem
 
-% \def\dosetlocationbox#1[#2]#3#4%
-%   {\global\skippedmenuitemfalse
-%    \setbox\locationbox=\hbox
-%      {% anders cyclische aanroep !
-%       \resetgoto
-%       \iflocationdummy
-%         \edef\locationboxborder{\getvalue{#1\c!kader}}%
-%         \edef\locationboxbackground{\getvalue{#1\c!achtergrond}}%
-%       \else
-%         \edef\locationboxborder{\v!uit}%
-%         \edef\locationboxbackground{}%
-%       \fi
-%       \localframed[#1]
-%         [\c!kader=\locationboxborder,
-%          \c!achtergrond=\locationboxbackground,
-%          #2]
-%         {\dolocationattributes{#1}\c!letter\c!kleur{#3}}}%
-%    \hbox{#4{\box\locationbox}}}
-% 
-% \def\setlocationboxyes#1[#2]#3[#4]%
-%   {\ifx\currentouterreference\empty
-%      \ifrealreferencepage\!!doneatrue\else\!!doneafalse\fi
-%      %\doifelse{\currentrealreference}{\realfolio}
-%      %  {\!!doneatrue}{\!!doneafalse}%
-%    \else
-%      \!!doneafalse
-%    \fi
-%    \if!!donea
-%     %\ifcase0\getvalue{#1\c!zelfdepagina}\relax
-%      \ifcase0\getvalue{\??am\??am\getvalue{#1\c!zelfdepagina}}\relax
-%        \bgroup
-%        \locationdummytrue
-%        \setevalue{#1\c!kleur}{\getvalue{#1\c!contrastkleur}}%
-%        \dosetlocationbox{#1}[#2,\c!leeg=\v!nee]{#3}{\gotolocation{#4}}%
-%        \egroup
-%      \or
-%        \locationdummytrue
-%        \dosetlocationbox{#1}[#2,\c!leeg=\v!ja]{#3}{\gotolocation{#4}}%
-%      \or
-%        \locationdummyfalse
-%        \dosetlocationbox{#1}[#2,\c!leeg=\v!ja]{#3}{\gotolocation{#4}}%
-%      \or
-%        \locationdummyfalse
-%        \global\skippedmenuitemtrue
-%      \fi
-%    \else
-%      \locationdummytrue
-%      \dosetlocationbox{#1}[#2,\c!leeg=\v!nee]{#3}{\gotolocation{#4}}%
-%    \fi}
-% 
-% \def\setlocationboxnop#1[#2]#3[#4]%
-%  %{\ifcase\getvalue{#1\c!onbekendeverwijzing}\relax
-%   {\ifcase\getvalie{\??am\??am\getvalue{#1\c!onbekendeverwijzing}}\relax
-%      \locationdummytrue
-%      \dosetlocationbox{#1}[#2,\c!leeg=\v!nee]{#3}{}%
-%    \or
-%      \locationdummytrue
-%      \dosetlocationbox{#1}[#2,\c!leeg=\v!ja]{#3}{}%
-%    \or
-%      \locationdummyfalse
-%      \dosetlocationbox{#1}[#2,\c!leeg=\v!ja]{#3}{}%
-%    \or
-%      \locationdummyfalse
-%      \global\skippedmenuitemtrue
-%    \fi}
-% 
-% \def\setlocationbox#1[#2]#3[#4]%
-%   {\doifreferencepermittedelse{#4}{\csname#1\c!blokkade\endcsname}
-%      {\setlocationboxyes{#1}[#2]{#3}[#4]}
-%      {\setlocationboxnop{#1}[#2]{#3}[#4]}}
-
-\newif\iflocationempty 
+\newif\iflocationempty
 \newif\iflocationclick
 
 % ja   : kader/achtergrond met tekst
@@ -796,14 +656,14 @@
 % \setupinteractionmenu[right][samepage=none, unknownreference=none]
 %
 % \startinteractionmenu[right]
-% \but [firstpage] first \\ 
-% \but [lastpage] last \\ 
-% \but [somepage] crap \\ 
+% \but [firstpage] first \\
+% \but [lastpage] last \\
+% \but [somepage] crap \\
 % \stopinteractionmenu
 
 \def\dosetlocationboxcontent#1[#2]#3[#4]%
   {\global\skippedmenuitemfalse
-   \setbox\locationbox=\hbox
+   \setbox\locationbox\hbox
      {\resetgoto % anders cyclische aanroep !
       \localframed[#1][#2]
         {\dolocationattributes{#1}\c!letter\c!kleur{#3}}}%
@@ -813,15 +673,15 @@
      \hbox{\box\locationbox}%
    \fi}
 
-\let\dosetlocationboxyes\dosetlocationboxcontent 
+\let\dosetlocationboxyes\dosetlocationboxcontent
 
-\def\dosetlocationboxempty#1[% 
-  {\dosetlocationboxcontent{#1}[\c!leeg=\v!ja}
+\def\dosetlocationboxempty#1[%
+  {\dosetlocationboxcontent{#1}[\c!leeg=\v!ja,}
 
-\def\dosetlocationboxno#1[% 
+\def\dosetlocationboxno#1[%
   {\dosetlocationboxcontent{#1}[\c!leeg=\v!ja,\c!kader=,\c!achtergrond=,}
 
-\def\dosetlocationboxnone#1[#2]#3[#4]% 
+\def\dosetlocationboxnone#1[#2]#3[#4]%
   {\global\skippedmenuitemtrue}
 
 \def\setlocationboxyes#1%
@@ -859,7 +719,7 @@
    \fi{#1}}
 
 \def\setlocationbox#1[#2]#3[#4]%
-  {\bgroup % really needed ! 
+  {\bgroup % really needed !
    \edef\permittedreferences{\csname#1\c!blokkade\endcsname}%
    \doifreferencepermittedelse{#4}
      {\setlocationboxyes{#1}[#2]{#3}[#4]}
@@ -911,37 +771,9 @@
 
 \newtoks\everysetmenucommands
 
-% \def\setamboxcommands#1#2%
-%   {\def\@@amboxcommand##1\\%
-%      {\bgroup
-%       \leavevmode\ignorespaces##1\unskip\relax
-%       \ifskippedmenuitem \else
-%         \getvalue{\??am#1#2}%
-%       \fi
-%       \egroup
-%       \ignorespaces}%
-%    \doglobal\newcounter\currentamposition %%% experiment 
-%    \def\currentmenu{#1}% to be sure 
-%    % here, but could go into \everysetmenucommands
-%    \def\raw[##1]##2\\%
-%      {\@@amboxcommand\naarbox{\ignorespaces##2\unskip}[##1]\\}%
-%    \def\but[##1]##2\\%
-%      {\@@amboxcommand\do@@amposition{#1}{##1}{\setlocationbox{\??am#1}[]{\ignorespaces##2\unskip}[##1]}\\}%
-%    \def\got[##1]##2\\% pas op! offset 
-%      {\@@amboxcommand\setlocationbox{\??am#1}[\c!kader=\v!uit,\c!achtergrond=]{\ignorespaces##2\unskip}[##1]\\}%
-%    \def\nop##1\\%
-%      {\@@amboxcommand\phantom{\localframed[\??am#1][]{}}\\}%
-%    \def\txt##1\\%
-%      {\@@amboxcommand\localframed[\??am#1][\c!kader=\v!uit,\c!achtergrond=]{\ignorespaces##1\unskip}\\}%
-%    \def\rul##1\\% ook \do@@amposition ! 
-%      {\@@amboxcommand\localframed[\??am#1][]{\ignorespaces##1\unskip}\\}%
-%    \def\com##1\\%
-%      {\ignorespaces##1\unskip\ignorespaces}%
-%    \the\everysetmenucommands}
-
 \def\setamboxcommands#1#2%
   {\def\currentmenu{#1}%    % kan nog eerder
-   \def\currentsubmenu{#2}% % ? ? 
+   \def\currentsubmenu{#2}% % ? ?
    \doglobal\newcounter\currentamposition
    \the\everysetmenucommands}
 
@@ -995,9 +827,9 @@
 
 \let\currentmenu\empty
 
-% beware : never change the concept of pbgoffset  
+% beware : never change the concept of pbgoffset
 
-\def\@@amhbox#1#2#3#4% 
+\def\@@amhbox#1#2#3#4%
   {\def\currentmenu{#3}%
    \testinteractiemenu{#3}%
    \iflocationmenupermitted
@@ -1010,10 +842,10 @@
      \advance\dimen0 \pagebackgroundhoffset
      \advance\dimen0 -\getvalue{\??am#3\c!linkeroffset}%
      \advance\dimen0 -\getvalue{\??am#3\c!rechteroffset}%
-     \setbox0=\hbox to \dimen0
+     \setbox0\hbox to \dimen0
        {\forgetall
         \executeamboxcommands{#3}{#4}\c!links\c!midden\c!rechts}%
-     \setbox0=\hbox{\do@@ammenuposition{#3}{\box0}}%
+     \setbox0\hbox{\do@@ammenuposition{#3}{\box0}}%
      \wd0=\zetbreedte
      % geen \ht=#2 setting (yet)
      \hskip-\pagebackgroundhoffset
@@ -1036,14 +868,14 @@
      \advance\dimen0 \pagebackgrounddepth
      \advance\dimen0 -\getvalue{\??am#3\c!bovenoffset}%
      \advance\dimen0 -\getvalue{\??am#3\c!onderoffset}%
-     \setbox0=\vbox to \dimen0
+     \setbox0\vbox to \dimen0
        {\forgetall                     % Voor't geval de afstand
        %\stelblankoin[\v!standaard]%   % (tijdelijk) is aangepast.
         \restorestandardblank
         \hsize#2\relax
         \executeamboxcommands{#3}{#4}\c!voor\c!tussen\c!na}%
-     \setbox0=\vbox{\hbox{\do@@ammenuposition{#3}{\box0}}}%
-     \setbox0=\vbox
+     \setbox0\vbox{\hbox{\do@@ammenuposition{#3}{\box0}}}%
+     \setbox0\vbox
        {\vskip-\pagebackgroundvoffset
         \vskip\getvalue{\??am#3\c!bovenoffset}%
         \ht0=\zeropoint
@@ -1080,47 +912,47 @@
   {\getvalue{\??am\c!menu#1}}
 
 \def\horizontaalinteractiemenu#1#2#3#4%
-  {\ifdim#2>\zeropoint % new 
-     \dimen2=\zeropoint
-     \setbox0=\hbox
+  {\ifdim#2>\zeropoint % new
+     \dimen2\zeropoint
+     \setbox0\hbox
        {\def\docommando##1%
-          {\doifnotvalue{\??am##1\c!status}{\v!geen}
+          {\doifnotvalue{\??am##1\c!status}\v!geen
              {\hskip\dimen2
-              \setbox2=\hbox to #2
+              \setbox2\hbox to #2
                 {\getvalue{\??am##1#3}\interactiemenu[##1]\getvalue{\??am##1#4}}%
-              \doifelsevalue{\??am##1\c!afstand}{\v!overlay}
-                {\dimen2=\zeropoint
-                 \wd2=\zeropoint}%
+              \doifelsevalue{\??am##1\c!afstand}\v!overlay
+                {\dimen2\zeropoint
+                 \wd2\zeropoint}%
                 {\dimen2=\getvalue{\??am##1\c!afstand}}%
               \box2}}%
        \startinteractie
        \processcommacommand[\getvalue{\??am#1}]\docommando
-       \stopinteractie}%  
+       \stopinteractie}%
      \wd0=#2\relax
      \box0\relax
    \fi}
 
 \def\vertikaalinteractiemenu#1#2#3#4%
-  {\ifdim#2>\zeropoint % new 
-     \dimen2=\zeropoint
-     \setbox0=\vbox
+  {\ifdim#2>\zeropoint % new
+     \dimen2\zeropoint
+     \setbox0\vbox
        {\def\docommando##1%
-          {\doifnotvalue{\??am##1\c!status}{\v!geen}
+          {\doifnotvalue{\??am##1\c!status}\v!geen
              {\vskip\dimen2
-              \setbox2=\vbox to #2
+              \setbox2\vbox to #2
                 {\getvalue{\??am##1#3}\interactiemenu[##1]\getvalue{\??am##1#4}}%
-              \doifelsevalue{\??am##1\c!afstand}{\v!overlay}
-                {\dimen2=\zeropoint
+              \doifelsevalue{\??am##1\c!afstand}\v!overlay
+                {\dimen2\zeropoint
                  \offinterlineskip
-                 \dp2=\zeropoint
-                 \ht2=\zeropoint}%
+                 \dp2\zeropoint
+                 \ht2\zeropoint}%
                 {\dimen2=\getvalue{\??am##1\c!afstand}}%
               \box2}}%
         \startinteractie
         \processcommacommand[\getvalue{\??am#1}]\docommando
-        \stopinteractie}%  
+        \stopinteractie}%
      \ht0=#2\relax
-     \dp0=\zeropoint
+     \dp0\zeropoint
      \box0\relax
    \fi}
 
@@ -1129,17 +961,7 @@
 \letvalue{\??am\v!boven }\empty
 \letvalue{\??am\v!onder }\empty
 
-% \def\interactiemenus[#1]%
-%   {\iflocation
-%      \processaction
-%        [#1]
-%        [  \v!links=>\horizontaalinteractiemenu\v!links \linkerrandbreedte\c!links\c!rechts,
-%          \v!rechts=>\horizontaalinteractiemenu\v!rechts\rechterrandbreedte\c!links\c!rechts,
-%           \v!boven=>\vertikaalinteractiemenu  \v!boven \bovenhoogte\c!voor\c!na,
-%           \v!onder=>\vertikaalinteractiemenu  \v!onder \onderhoogte\c!voor\c!na]%
-%    \else
-%      \dodummypageskip{#1}%
-%    \fi}
+% todo : \defineinteractionmenuclass 
 
 \def\interactiemenus[#1]%
   {\iflocation
@@ -1157,8 +979,50 @@
 \setvalue{\??am\??am\c!menu\v!onder}%
   {\vertikaalinteractiemenu\v!onder\onderhoogte\c!voor\c!na}
 
-%D This can save complicated menu macros when one want to 
-%D keep control over parts of a menu (i.e.\ turn them on and 
+% this can be implemented with the following command (which 
+% is new, undocumented, experimental, untested, etc etc) 
+
+\def\defineinteractionmenuclass
+  {\dodoubleargument\dodefineinteractionmenuclass}
+
+\def\dodefineinteractionmenuclass[#1][#2]% tag hori|veri
+  {\doifelse{#2}\v!vertikaal
+     {\setvalue{\??am\??am\c!menu#1}%
+        {\vertikaalinteractiemenu
+           {#1}{\getvalue{\??am#1\c!breedte}}\c!voor\c!na}}
+     {\setvalue{\??am\??am\c!menu#1}%
+        {\horizontaalinteractiemenu
+           {#1}{\getvalue{\??am#1\c!hoogte}}\c!links\c!rechts}}}
+
+% \setupinteraction[menu=on,state=start]
+% 
+% \defineinteractionmenuclass[test]   [vertical]
+% \defineinteractionmenuclass[another][horizontal]
+% 
+% \defineinteractionmenu[test]   [left][state=start,width=4cm]
+% \defineinteractionmenu[another][top] [state=start,height=1cm]
+% 
+% \startinteractionmenu[test]
+%   \but [firstpage] test-a \\ 
+%   \but [nextpage]  test-b \\ 
+% \stopinteractionmenu
+% 
+% \startinteractionmenu[another]
+%   \but [firstpage] test-a \\ 
+%   \but [nextpage]  test-b \\ 
+% \stopinteractionmenu
+% 
+% \setupheadertexts[{\interactiemenu[another]}] 
+% 
+% \starttext 
+% 
+% test \interactionmenu[test] \page 
+% test \interactionmenu[test] \page 
+% 
+% \stoptext 
+
+%D This can save complicated menu macros when one want to
+%D keep control over parts of a menu (i.e.\ turn them on and
 %D off). We could have achieved something similar with modes.
 
 \def\local@@ambox#1#2#3#4% don't change skipping, this one works!
@@ -1172,105 +1036,48 @@
    \egroup}
 
 \unprotected\def\includemenu[#1]%
-  {\doifvalue{\??am#1\c!status}{\v!lokaal}
+  {\doifvalue{\??am#1\c!status}\v!lokaal
      {\bgroup
-      \setvalue{\??am#1\c!status}{\v!start}%
+      \letvalue{\??am#1\c!status}\v!start
       \let\@@amvbox\local@@ambox
       \let\@@amhbox\local@@ambox
       \getvalue{\??am\c!menu#1}%
       \egroup}}
 
-%D We also need an explicit position control some day. I'll 
+%D We also need an explicit position control some day. I'll
 %D do that when I need it. [The stacking order.]
 
-% \newif\ifextendedmenu
-%
-% \def\dodefinieerinteractiemenu[#1][#2][#3]%
-%   {\ConvertToConstant\doifelse{#3}{}
-%      {\setvalue{\??am\c!menu#1}%
-%         {\extendedmenufalse\dointeractiemenu{#1}{#2}}%
-%       \setvalue{\@@dodolijstelement#1}%
-%         {\def\dosomelijstelement{\dodomenulijstelement{#1}}}} % of #2 ?  
-%      {\setvalue{\??am\c!menu#1}%
-%         {\extendedmenufalse\dointeractiemenu{#1}{}}%
-%       \setvalue{\@@dodolijstelement#1}%
-%         {\def\dosomelijstelement{\dodomenulijstelement{#1}}}%
-%       \presetlocalframed[\??am#1]%
-%       \letvalue{\??am#1\c!blokkade}\empty
-%       \edef\!!stringe{\getvalue{\??am#2}}%
-%       \addtocommalist{#1}\!!stringe
-%       \letvalue{\??am#2}=\!!stringe
-%       \doifnot{#1}{#2}
-%         {\copyparameters[\??am#1][\??am#2]
-%            [\c!links,\c!midden,\c!rechts,\c!voor,\c!na,\c!tussen,
-%             \c!breedte,\c!hoogte,\c!afstand,\c!offset,\c!kader,
-%             \c!achtergrond,\c!achtergrondkleur,\c!achtergrondraster,
-%             \c!letter,\c!kleur,\c!contrastkleur,\c!zelfdepagina,\c!onbekendeverwijzing,
-%             \c!linkeroffset,\c!rechteroffset,\c!bovenoffset,\c!onderoffset]}%
-% %      \ConvertToConstant\doifinstringelse{=}{#3}
-%       \doifassignmentelse{#3}
-%         {\getparameters[\??am#1][\c!plaats=#2,#3]}%
-%         {\doifnot{#2}{#3}
-%            {\copyparameters[\??am#1][\??am#3]
-%               [\c!links,\c!midden,\c!rechts,\c!voor,\c!na,\c!tussen,
-%                \c!breedte,\c!hoogte,\c!afstand,\c!offset,\c!kader,
-%                \c!achtergrond,\c!achtergrondkleur,\c!achtergrondraster,
-%                \c!letter,\c!kleur,\c!zelfdepagina,\c!onbekendeverwijzing,
-%                \c!linkeroffset,\c!rechteroffset,\c!bovenoffset,\c!onderoffset]}%
-%          \getparameters[\??am#1][\c!plaats=#2]}}}
-%
-%\def\dodostelinteractiemenuin[#1][#2]%
-%  {\def\docommando##1%
-%     {\getparameters[\??am##1][#2]%
-%      \dododostelinteractiemenuin{\??am##1\c!onbekendeverwijzing}%
-%      \dododostelinteractiemenuin{\??am##1\c!zelfdepagina}}%
-%   \processcommalist[#1]\docommando}
-%
-%\def\dostelinteractiemenuin[#1][#2]%
-%%  {\ConvertToConstant\doifinstringelse{=}{#2}
-%  {\doifassignmentelse{#2}
-%     {\dodostelinteractiemenuin[#1][#2]}
-%     {\dodefinieerinteractiemenu[#1][#2][]}}
-
-% \def\dododostelinteractiemenuin#1%
-%   {\processaction
-%      [\getvalue{#1}]
-%      [     \v!ja=>\setvalue{#1}{0},
-%          \v!leeg=>\setvalue{#1}{1},
-%           \v!nee=>\setvalue{#1}{2},
-%          \v!geen=>\setvalue{#1}{3},
-%       \s!default=>\setvalue{#1}{1}]}
-
-% for the moment we will support the old method 
+% for the moment we will support the old method
 %
 % \stelinteractiemenuin[right][{abc[xyz]},...]
 % \stelinteractiemenuin[right][key=val,...]
- 
+
 \newif\ifextendedmenu
 
-\def\definieerinteractiemenu%
+\def\definieerinteractiemenu
   {\dotripleempty\dodefinieerinteractiemenu}
 
-\def\dodefinieerinteractiemenu[#1][#2]% compatibility hack 
-  {\doifinstringelse{[}{#2}
-     {\dodostelinteractielijstmenuinx}
-     {\dododefinieerinteractiemenu   }%
+\def\dodefinieerinteractiemenu[#1][#2]% compatibility hack
+  {\convertargument#2\to\ascii        % will disappear soon 
+   \doifinstringelse[\ascii
+     \dodostelinteractielijstmenuinx
+     \dododefinieerinteractiemenu   
    [#1][#2]}
 
 % [name] [location]
-% [name] [location] [pars]  
+% [name] [location] [pars]
 
-\def\dododefinieerinteractiemenu[#1][#2][#3]% 
-  {% main settings 
-   \letvalue{\??am\c!menu#1}\empty     
+\def\dododefinieerinteractiemenu[#1][#2][#3]%
+  {% main settings
+   \letvalue{\??am\c!menu#1}\empty
    % \setvalue{\??am\c!menu#1}%
    %   {\extendedmenufalse\dointeractiemenu{#1}{}}%
    \setvalue{\@@dodolijstelement#1}%
      {\def\dosomelijstelement{\dodomenulijstelement{#1}}}%
    \presetlocalframed[\??am#1]%
-   % register location 
+   % register location
    \expanded{\addtocommalist{#1}\@EA\noexpand\csname\??am#2\endcsname}%
-   % inherit settings 
+   % inherit settings
    \doifnot{#1}{#2}
      {\copyparameters[\??am#1][\??am#2]
         [\c!links,\c!midden,\c!rechts,\c!voor,\c!na,\c!tussen,
@@ -1278,21 +1085,21 @@
          \c!achtergrond,\c!achtergrondkleur,\c!achtergrondraster,
          \c!letter,\c!kleur,\c!contrastkleur,\c!zelfdepagina,\c!onbekendeverwijzing,
          \c!linkeroffset,\c!rechteroffset,\c!bovenoffset,\c!onderoffset]}%
-   % additional settings 
+   % additional settings
    \getparameters[\??am#1][\c!plaats=#2,\c!blokkade=,#3]}
 
 \def\stelinteractiemenuin
   {\dodoubleargument\dostelinteractiemenuin}
 
-\def\dostelinteractiemenuin[#1][#2% compatibillity hack 
-  {\doifnextcharelse\bgroup
-     {\dodostelinteractielijstmenuiny[#1][#2}
-     {\dodostelinteractiemenuin      [#1][#2}}
+\def\dostelinteractiemenuin[#1][% compatibillity hack
+  {\doifnextcharelse\bgroup     % will disappear soon 
+     {\dodostelinteractielijstmenuiny[#1][}
+     {\dodostelinteractiemenuin      [#1][}}
 
-\def\dodostelinteractielijstmenuinx[#1][#2][#3]% compatibillity hack 
+\def\dodostelinteractielijstmenuinx[#1][#2][#3]% compatibillity hack
   {\setvalue{\??am\c!menu#1}{\extendedmenufalse\dointeractiemenu{#1}{#2}}}
 
-\def\dodostelinteractielijstmenuiny[#1][#2]% compatibillity hack 
+\def\dodostelinteractielijstmenuiny[#1][#2]% compatibillity hack
   {\setvalue{\??am\c!menu#1}%
      {\extendedmenufalse\dointeractiemenu{#1}{#2}}}
 
@@ -1300,11 +1107,11 @@
   {\def\docommando##1{\getparameters[\??am##1][#2]}%
    \processcommalist[#1]\docommando}
 
-\setvalue{\??am\??am\v!ja  }{0}               
-\setvalue{\??am\??am\v!leeg}{1}               
-\setvalue{\??am\??am\v!nee }{2}               
-\setvalue{\??am\??am\v!geen}{3}               
-\setvalue{\??am\??am       }{1} % default                
+\setvalue{\??am\??am\v!ja  }{0}
+\setvalue{\??am\??am\v!leeg}{1}
+\setvalue{\??am\??am\v!nee }{2}
+\setvalue{\??am\??am\v!geen}{3}
+\setvalue{\??am\??am       }{1} % default
 
 \processbetween{\e!interactiemenu}\dostartinteractiemenu
 
@@ -1314,15 +1121,18 @@
 \def\dodostartinteractiemenu[#1]#2\dodostopinteractiemenu
   {\setvalue{\??am\c!menu#1}{\extendedmenutrue\dointeractiemenu{#1}{#2}}}
 
-\def\dodomenulijstelement#1#2#3#4#5#6#7% 
+\def\resetinteractionmenu[#1]%
+  {\letvalue{\??am\c!menu#1}\empty}
+
+\def\dodomenulijstelement#1#2#3#4#5#6#7%
   {\setbox0=\hbox
      {\let\gotolocation\gobbleoneargument % hack to catch last []
-%\locationclickfalse % ipv ^ 
+%\locationclickfalse % ipv ^
       \docheckrealreferencepage{#7}%
       \setlocationboxyes
         {\??am#1}% % needed !
         []% no settings
-        {\limitatetext{#5}{\getvalue{\??li#2\c!maxbreedte}}{\unknown}}% % needed ! 
+        {\limitatetext{#5}{\getvalue{\??li#2\c!maxbreedte}}{\unknown}}% % needed !
         []}% normally the destination, catch by gobble
    \@@amboxcommand\do@@amposition{#1}{#7}% beware, we pass the pagenumber
      {\ignorespaces\linklisttoelement{#2}{#3}{#6}{#7}{\box0}\unskip}\\}
@@ -1341,22 +1151,6 @@
 
 \definecomplexorsimple\scherm
 
-% \def\domenubutton[#1][#2]#3[#4]%
-%   {\bgroup
-%    \locationdummytrue
-%    \iffirstargument
-%      \ifsecondargument
-%        \setlocationbox{\??am#1}[#2]{#3}[#4]%
-%      \else
-%        \doifassignmentelse{#1}
-%          {\setlocationbox\??bt[#1]{#3}[#4]}
-%          {\setlocationbox{\??am#1}[]{#3}[#4]}%
-%      \fi
-%    \else
-%      \setlocationbox\??bt[]{#3}[#4]%
-%    \fi
-%    \egroup}
-
 \unexpanded\def\menubutton
   {\dodoubleempty\domenubutton}
 
@@ -1370,7 +1164,7 @@
          {\@EAEAEA\domenubuttonD}%
      \fi
    \else
-     \@EA\domenubuttonA 
+     \@EA\domenubuttonA
    \fi[#1]}
 
 \def\domenubuttonA[#1][#2]#3[#4]% normal button, no parameters
@@ -1393,7 +1187,7 @@
 
 \def\domenubuttonD[#1][#2]#3[#4]% menu button, no parameters
   {\bgroup
-  %\locationdummytrue 
+  %\locationdummytrue
    \setlocationbox{\??am#1}[]{#3}[#4]%
    \egroup}
 
@@ -1440,7 +1234,7 @@
      \ifvmode
        \@EA\setmark\@EA\syncmarker\@EA{\synccounter} % \marking[\syncmarker]{\synccounter}%
      \else
-       \showmessage{\m!interactions}{4}{\synccounter}%
+       \showmessage\m!interactions4\synccounter
      \fi
    \fi\fi}
 
@@ -1450,17 +1244,17 @@
 
 \def\dostelsynchronisatiein[#1]%
   {\getparameters[\??sy][#1]%
-   \doifelse{\@@systatus}{\v!start}
-     {\synchronisationtrue}
-     {\synchronisationfalse}}
+   \doifelse\@@systatus\v!start
+     \synchronisationtrue
+     \synchronisationfalse}
 
-\def\stelsynchronisatiein%
+\def\stelsynchronisatiein
   {\dosingleargument\dostelsynchronisatiein}
 
-\def\definieersynchronisatie%
+\def\definieersynchronisatie
   {\dosingleargument\dodefinieersynchronisatie}
 
-\def\stelsynchronisatiebalkin%
+\def\stelsynchronisatiebalkin
   {\dodoubleargument\getparameters[\??ba]}
 
 \presetlocalframed[\??ba]
@@ -1477,10 +1271,10 @@
      {\leaders\hrule\!!depth1ex\!!height-.5ex\hfil}%
    \def\boven##1##2##3%
      {\dimen0=\wd0
-      \divide\dimen0 by 3
-      \multiply\dimen0 by ##2\relax
+      \divide\dimen0 3
+      \multiply\dimen0 ##2\relax
       \dimen2=.25em
-      \advance\dimen0 by -##3\dimen2
+      \advance\dimen0 -##3\dimen2
       %\gotodestination
       %  {}{#1}{\syncprefix:##1}{}
       %  {\hbox to \dimen0{\color[\locationcolor\@@bakleur]{\onder}}}}%
@@ -1494,7 +1288,7 @@
       \check\gettopmark\top
       \check\getfirstmark\first
       \check\getbotmark\bot
-      \setbox2=\hbox to \wd0
+      \setbox2\hbox to \wd0
         {\ifnum\top=\first\relax
            \ifnum\first=\bot\relax
              \boven\first30\relax
@@ -1562,12 +1356,12 @@
     %\setupinteraction[\c!breedte=\!!zeropoint]%
      \setinteractionparameter\c!breedte\!!zeropoint
      \setupblackrules[\c!hoogte=\v!max,\c!diepte=\v!max]% maten ??
-     \!!widthb=\@@ibbreedte\relax
-     \advance\!!widthb by -2.75em\relax
-     \!!widtha=\!!widthb\relax
-     \divide\!!widtha by \lastpage\relax
+     \!!widthb\@@ibbreedte
+     \advance\!!widthb -2.75em\relax
+     \!!widtha\!!widthb
+     \divide\!!widtha \lastpage\relax
      \bgroup
-       \advance\realpageno by -1\relax
+       \advance\realpageno \minusone
        \ifvoid\meterbox
          \bgroup
          \processaction
@@ -1577,20 +1371,20 @@
                \v!groot=>\dimen0=1em\relax,
              \s!unknown=>\dimen0=\!!widtha]%
          \ifdim\!!widtha<\dimen0\relax
-           \!!counta=\dimen0\relax
-           \!!countb=\!!widtha
-           \divide\!!counta by \!!countb
+           \!!counta\dimen0\relax
+           \!!countb\!!widtha
+           \divide\!!counta \!!countb
          \else
-           \!!counta=\@@ibstap\relax
+           \!!counta\@@ibstap\relax
          \fi
          \!!widtha=\!!counta\!!widtha
-         \setbox0=\hbox{\blackrule[\c!breedte=\!!widtha]}%
-         \global\setbox\meterbox=\hbox to \!!widthb
+         \setbox0\hbox{\blackrule[\c!breedte=\!!widtha]}%
+         \global\setbox\meterbox\hbox to \!!widthb
            {\hss
             \for \teller=1 \to \lastpage \step \!!counta \do
               {\gotorealpage{}{}{\teller}{\copy0}}%
             \hss}%
-         \global\wd\meterbox=\zeropoint\relax
+         \global\wd\meterbox\zeropoint
          \egroup
        \fi
      \egroup
@@ -1609,17 +1403,17 @@
            \setupblackrules[\c!breedte=\!!widtha]%
            \ifnum\realpageno>1\relax
              \!!counta=\realpageno
-             \advance\!!counta by -2\relax
-             \hskip\zeropoint\!!plus\!!counta sp\relax % cm gives overflow
+             \advance\!!counta -2\relax
+             \hskip\zeropoint\!!plus\!!counta \s!sp\relax % cm gives overflow
              \doganaareenpagina\??ib\blackrule\prevpage
            \fi
            \color[\@@ibcontrastkleur]{\blackrule[\c!breedte=.5em]}%
            \ifnum\realpageno<\lastpage\relax
              \doganaareenpagina\??ib\blackrule\nextpage
              \!!counta=\lastpage\relax
-             \advance\!!counta by -\realpageno
-             \advance\!!counta by -1\relax
-             \hskip\zeropoint\!!plus\!!counta sp\relax % cm gives overflow
+             \advance\!!counta -\realpageno
+             \advance\!!counta \minusone
+             \hskip\zeropoint\!!plus\!!counta \s!sp\relax % cm gives overflow
            \fi}%
         \hss
         \doganaareenpagina\??ib\blackrule\lastpage}%
@@ -1630,28 +1424,28 @@
 
 \def\interactiebalkc%
   {\iflocation
-     \ifnum\lastpage>1
+     \ifnum\lastpage>\plusone
        \hbox to \@@ibbreedte
          {\setupblackrules[\c!hoogte=\@@ibhoogte,\c!diepte=\@@ibdiepte]%
           \def\gotox##1%
             {\doganaareenpagina{}{\blackrule[\c!breedte=##1]}}%
           \dimen0=\@@ibbreedte\relax
-          \advance\dimen0 by -4em
-          \!!counta=\lastpage
-          \advance\!!counta by -1
-          \divide\dimen0 by \!!counta
-          \!!counta=\realpageno
-          \advance\!!counta by -1
-          \!!widtha=\!!counta\dimen0\relax
-          \!!countb=\lastpage
-          \advance\!!countb by -\realpageno
-          \!!widthb=\!!countb\dimen0
+          \advance\dimen0 -4em
+          \!!counta\lastpage
+          \advance\!!counta \minusone
+          \divide\dimen0 \!!counta
+          \!!counta\realpageno
+          \advance\!!counta \minusone
+          \!!widtha\!!counta\dimen0
+          \!!countb\lastpage
+          \advance\!!countb -\realpageno
+          \!!widthb\!!countb\dimen0
           \startcolor[\locationcolor\@@ibkleur]%
           \gotox{1em}\firstpage
           \hss
-          \gotox{\!!widtha}\prevpage
+          \gotox\!!widtha\prevpage
           \color[\@@ibcontrastkleur]{\blackrule[\c!breedte=1em]}%
-          \gotox{\!!widthb}\nextpage
+          \gotox\!!widthb\nextpage
           \hss
           \gotox{1em}\lastpage
           \stopcolor}%
@@ -1660,27 +1454,27 @@
 
 \def\interactiebalkd%
   {\iflocation\ifshowingsubpage
-     \ifnum\nofsubpages>1
+     \ifnum\nofsubpages>\plusone
        \hbox
        \bgroup
       %\setupinteraction[\c!breedte=\!!zeropoint]%
        \setinteractionparameter\c!breedte\!!zeropoint
        \ifbalksymbool % beter: 3 chars assign en 3*box
          \setupsymbolset[\@@iasymboolset]%
-         \setbox0=\hbox{\symbol[\v!vorige]}%
-         \setbox2=\hbox{\symbol[\v!ergens]}%
-         \setbox4=\hbox{\symbol[\v!volgende]}%
+         \setbox0\hbox{\symbol[\v!vorige]}%
+         \setbox2\hbox{\symbol[\v!ergens]}%
+         \setbox4\hbox{\symbol[\v!volgende]}%
        \else
-         \setbox0=\hbox
+         \setbox0\hbox
            {\vrule
               \!!height\@@ibhoogte
               \!!depth\@@ibdiepte
               \!!width\@@ibbreedte}%
-         \setbox2=\copy0
-         \setbox4=\copy0
+         \setbox2\copy0
+         \setbox4\copy0
        \fi
        \startcolor[\locationcolor\@@ibkleur]%
-       \for\teller=1\to\nofsubpages\step1\do
+       \for\teller=1\to\nofsubpages\step1\do % brr, \dostepwiserecurse
          {\bgroup
           \increment(\teller,\firstsubpage)\relax
           \decrement\teller\relax
@@ -1703,14 +1497,14 @@
 
 \def\interactiebalke%  KAN WORDEN GECOMBINEERD MET D
   {\iflocation\ifshowingsubpage
-     \ifnum\nofsubpages>1
+     \ifnum\nofsubpages>\plusone
        \bgroup
-       \!!widthb=\@@ibafstand
-       \multiply\!!widthb by \nofsubpages
-       \advance\!!widthb by -\@@ibafstand % (n-1)
-       \!!widtha=\@@ibbreedte
-       \advance\!!widtha by -\!!widthb
-       \divide\!!widtha by \nofsubpages\relax
+       \!!widthb\@@ibafstand
+       \multiply\!!widthb \nofsubpages
+       \advance\!!widthb -\@@ibafstand % (n-1)
+       \!!widtha\@@ibbreedte
+       \advance\!!widtha -\!!widthb
+       \divide\!!widtha \nofsubpages\relax
        \ifdim\!!widtha<\@@ibafstand\relax
          \interactiebalkf
        \else
@@ -1721,17 +1515,17 @@
            \bgroup
              \ifbalksymbool
                \setupsymbolset[\@@iasymboolset]%
-               \setbox0=\hbox{\symbol[\v!vorige]}%
-               \setbox2=\hbox{\symbol[\v!ergens]}%
-               \setbox4=\hbox{\symbol[\v!volgende]}%
+               \setbox0\hbox{\symbol[\v!vorige]}%
+               \setbox2\hbox{\symbol[\v!ergens]}%
+               \setbox4\hbox{\symbol[\v!volgende]}%
              \else
-               \setbox0=\hbox
+               \setbox0\hbox
                   {\vrule
                      \!!height\@@ibhoogte
                      \!!depth\@@ibdiepte
                      \!!width\!!widtha}%
-               \setbox2=\copy0
-               \setbox4=\copy0
+               \setbox2\copy0
+               \setbox4\copy0
              \fi
              \startcolor[\locationcolor\@@ibkleur]%
              \for\teller=1\to\nofsubpages\step1\do
@@ -1759,55 +1553,55 @@
 
 \def\interactiebalkf%  !! KAN WORDEN GECOMBINEERD MET D !!
   {\iflocation\ifshowingsubpage
-     \ifnum\nofsubpages>1
+     \ifnum\nofsubpages>\plusone
       %\setupinteraction[\c!breedte=\!!zeropoint]%
        \setinteractionparameter\c!breedte\!!zeropoint
        \noindent
        \hbox to \@@ibbreedte
        \bgroup
-       \!!countb=0
+       \!!countb\zerocount
        \loop
-         \advance\!!countb by 1
-         \!!countc=\nofsubpages
-         \divide\!!countc by \!!countb
-         \advance\!!countc by 1
-         \!!widthb=\@@ibafstand
-         \multiply\!!widthb by \!!countc
-         \advance\!!widthb by -\@@ibafstand
-         \!!widtha=\@@ibbreedte
-         \advance\!!widtha by -\!!widthb
-         \divide\!!widtha by \!!countc
+         \advance\!!countb \plusone
+         \!!countc\nofsubpages
+         \divide\!!countc \!!countb
+         \advance\!!countc \plusone
+         \!!widthb\@@ibafstand
+         \multiply\!!widthb \!!countc
+         \advance\!!widthb -\@@ibafstand
+         \!!widtha\@@ibbreedte
+         \advance\!!widtha -\!!widthb
+         \divide\!!widtha \!!countc
          \ifdim\!!widtha<\@@ibafstand\relax
        \repeat
-\advance\!!countc by -2
-\!!widtha=-\@@ibafstand
+\advance\!!countc -2
+\!!widtha-\@@ibafstand
 \!!widtha=\!!countc\!!widtha
-\advance\!!widtha by \@@ibbreedte
-\advance\!!countc by 1
-\divide\!!widtha by \!!countc
+\advance\!!widtha \@@ibbreedte
+\advance\!!countc \plusone
+\divide\!!widtha \!!countc
        \ifbalksymbool
          \setupsymbolset[\@@iasymboolset]%
-         \setbox0=\hbox{\symbol[\v!vorige]}%
-         \setbox4=\hbox{\symbol[\v!ergens]}%
-         \setbox8=\hbox{\symbol[\v!volgende]}%
-         \setbox2=\copy4
-         \setbox6=\copy4
+         \setbox0\hbox{\symbol[\v!vorige]}%
+         \setbox4\hbox{\symbol[\v!ergens]}%
+         \setbox8\hbox{\symbol[\v!volgende]}%
+         \setbox2\copy4
+         \setbox6\copy4
        \else
-         \setbox0=\hbox
+         \setbox0\hbox
            {\vrule
               \!!height\@@ibhoogte
               \!!depth\@@ibdiepte
               \!!width\!!widtha}%
-         \setbox4=\copy0
-         \setbox8=\copy0
-         \setbox2=\hbox
+         \setbox4\copy0
+         \setbox8\copy0
+         \setbox2\hbox
            {\vrule
               \!!height.5\ht0
               \!!depth.5\dp0
               \!!width\!!widtha}%
-         \ht2=\ht0
-         \dp2=\dp0
-         \setbox6=\copy2
+         \ht2\ht0
+         \dp2\dp0
+         \setbox6\copy2
        \fi
        \def\gotox##1%
          {\ifnum\teller=\realpageno
@@ -1817,15 +1611,15 @@
           \else
             \gotorealpage{}{}{\teller}{\copy##1}%
           \fi
-          \!!countf=0
+          \!!countf\zerocount
           \hss}%
        \startcolor[\locationcolor\@@ibkleur]%
-       \!!countc=\realpageno \advance\!!countc by -2
-       \!!countd=\realpageno \advance\!!countd by 2
-       \!!countf=0
+       \!!countc\realpageno \advance\!!countc -2
+       \!!countd\realpageno \advance\!!countd 2
+       \!!countf\zerocount
        \for\teller=\firstsubpage\to\lastsubpage\step1\do
          {\!!doneafalse
-          \advance\!!countf by 1
+          \advance\!!countf \plusone
           \ifnum\teller=\firstsubpage\relax \!!doneatrue \fi
           \ifnum\teller=\lastsubpage\relax  \!!doneatrue \fi
           \ifnum\teller>\!!countc \ifnum\teller<\!!countd \!!doneatrue \fi\fi
@@ -1872,19 +1666,19 @@
 
 \def\checkinteractiebalk#1#2#3%
   {\ifdim\@@ibbreedte=\zeropoint\def\@@ibbreedte{#1}\fi
-   \doifnothing{\@@ibhoogte}{\def\@@ibhoogte{#2}}%
-   \doifnothing{\@@ibdiepte}{\def\@@ibdiepte{#3}}}
+   \doifnothing\@@ibhoogte{\def\@@ibhoogte{#2}}%
+   \doifnothing\@@ibdiepte{\def\@@ibdiepte{#3}}}
 
 \def\complexinteractiebalk[#1]%
-  {\doifelse{#1}{\v!reset}
-    {\global\setbox\meterbox=\box\voidb@x}%
+  {\doifelse{#1}\v!reset
+    {\global\setbox\meterbox\box\voidb@x}%
     {\bgroup
        \iflocation
          \checksubpages % goes wrong / loads \numberofpages too
          \getparameters[\??ib][#1]%
-         \doif{\@@ibstatus}{\v!start}
+         \doif\@@ibstatus\v!start
            {\startinteractie
-            \processaction % breedte defaults ! 
+            \processaction % breedte defaults !
               [\@@ibvariant]
               [         c=>\checkinteractiebalk{.5em}\v!max \v!max,
                         d=>\checkinteractiebalk{.5em}{.5em} \!!zeropoint,
@@ -1892,8 +1686,8 @@
                         f=>\checkinteractiebalk{.5em}{.5em} \!!zeropoint,
                \s!default=>\checkinteractiebalk{10em}\v!ruim\!!zeropoint,
                \s!unknown=>\checkinteractiebalk{10em}\v!ruim\!!zeropoint]%
-            \doifelse{\@@ibsymbool}{\v!ja}
-              {\balksymbooltrue}{\balksymboolfalse}%
+            \doifelse\@@ibsymbool\v!ja
+              \balksymbooltrue\balksymboolfalse
             \getvalue{interactiebalk\@@ibvariant}%
             \stopinteractie}%
        \fi
@@ -1931,8 +1725,8 @@
 
 \def\profilepage{}
 
-\let\dosetprofilepage=\relax
-\let\dogetprofilepage=\relax
+\let\dosetprofilepage\relax
+\let\dogetprofilepage\relax
 
 \def\processprofile#1[#2]%
   {\iflocation
@@ -1950,7 +1744,7 @@
             \else
               \doendofprofile
             \fi}}%
-     \def\processedprofiles{}%
+     \let\processedprofiles\empty
      \def\doprocessprofile##1%
        {\doifelse{\@@pfoptie}{\v!test}%
           {\goodbreak\blanko\nobreak\tt[\spatie
@@ -1983,12 +1777,12 @@
        {\processprofile1[#1]%
         \egroup}%
      \def\next{\processprofile0[#1]}% % \DoAfterFi \processprofile0[#1]%
-   \else                              % ^^^^^^^^^^ will be obsolete 
-     \let\next\relax                  % since ugly and never used 
+   \else                              % ^^^^^^^^^^ will be obsolete
+     \let\next\relax                  % since ugly and never used
    \fi
    \next}
 
-\let\stopprofiel=\relax
+\let\stopprofiel\relax
 
 \def\dovolgprofiel#1[#2]%
   {\iflocation
@@ -2007,7 +1801,7 @@
 
 \def\volgprofiel#1[#2]%
   {\iflocation
-     \doif{\@@pfoptie}{\v!test}{\pagereference[\c!profiel!!#2]}%
+     \doif\@@pfoptie\v!test{\pagereference[\c!profiel!!#2]}%
      \dovolgprofiel{#1}[#2]%
    \fi}
 
@@ -2094,10 +1888,10 @@
 \def\checkrecentcontributions%
   {\gettwopassdata{\s!versionbegin}%
    \iftwopassdatafound
-     \!!counta=\twopassdata\relax
+     \!!counta\twopassdata\relax
      \gettwopassdata{\s!versionend}%
      \iftwopassdatafound
-       \!!countb=\twopassdata\relax
+       \!!countb\twopassdata\relax
        \doglobal\increment\versionorder\relax
        \writeutilitycommand%
          {\twopassentry%
@@ -2111,12 +1905,12 @@
             {\the\!!countb}}%
        \for\teller=\!!counta\to\!!countb\step1\do%
          {\@EA\doglobal\@EA\addtocommalist\@EA{\teller}{\recentcontributions}}%
-       \let\next=\checkrecentcontributions
+       \let\next\checkrecentcontributions
      \else
-       \let\next=\relax
+       \let\next\relax
      \fi
    \else
-     \let\next=\relax
+     \let\next\relax
    \fi
    \next}
 
@@ -2131,13 +1925,13 @@
 
 \def\complexstartversie[#1]%
   {\bgroup
-   \doifelse{\actualprofile}{}%
+   \doifelsenothing\actualprofile
      {\startprofiel[#1]}%
      {\startprofiel[#1,\actualprofile]}%
    \def\docomplexstartversie##1%
      {\stripcharacter.\from##1\to\actualversion
-      \ifnum\versionlevel>0\relax
-        \ifnum\actualversion=0\relax
+      \ifnum\versionlevel>\zerocount\relax
+        \ifnum\actualversion=\zerocount
           \setpageversion\actualversion   % unknown version
         \else
           \ifnum\actualversion<\minimumversion\relax
@@ -2157,8 +1951,8 @@
 \def\stopversie%
   {\stopprofiel
    \doglobal\decrement\versionlevel
-   \ifnum\versionlevel<0\relax
-     \showmessage{\m!versions}{1}{}%
+   \ifnum\versionlevel<\zerocount
+     \showmessage\m!versions1\empty
    \else
      \resetpageversion
      \egroup
@@ -2178,28 +1972,28 @@
       \fi\fi}}
 \egroup
 
-\def\markeerversie%
-  {\showmessage{\m!versions}{2}{}%
-   \let\setpageversion=\dosetpageversion
-   \let\resetpageversion=\relax
-   \let\checkpageversion=\relax}
+\def\markeerversie
+  {\showmessage\m!versions2\empty
+   \let\setpageversion\dosetpageversion
+   \let\resetpageversion\relax
+   \let\checkpageversion\relax}
 
-\def\selecteerversie%
+\def\selecteerversie
   {\checkrecentcontributions
-   \showmessage{\m!versions}{3}{\recentcontributions}%
-   \let\setpageversion=\gobbleoneargument
-   \let\resetpageversion=\relax
-   \let\checkpageversion=\docheckpageversion
+   \showmessage\m!versions3\recentcontributions
+   \let\setpageversio\gobbleoneargument
+   \let\resetpageversion\relax
+   \let\checkpageversion\docheckpageversion
    \setversion}
 
 \def\dodefinieerversie[#1][#2]%
   {\setvalue{\c!versie!!#1}{#2}%
    \definieerprofiel[#1][#2]}
 
-\def\definieerversie%
+\def\definieerversie
   {\dodoubleargument\dodefinieerversie}
 
-\def\volgversie%
+\def\volgversie
   {\volgprofiel}
 
 \def\volgprofielversie#1[#2][#3]%
@@ -2217,16 +2011,16 @@
 
 \def\dostelpaginaovergangenin[#1]%
   {\doifelsenothing{#1}
-     {\doifnot{\@@scwachttijd}{\v!geen}
+     {\doifnot\@@scwachttijd\v!geen
         {\let\setpagetransition\setsomepagedelay}}
-     {\doifelse{#1}{\v!start}
-        {\doifnot{\@@scwachttijd}{\v!geen}
+     {\doifelse{#1}\v!start
+        {\doifnot\@@scwachttijd\v!geen
            {\let\setpagetransition\setsomepagedelay}}
         {\doglobal\newcounter\currentpagetransition
          \doifinsetelse{#1}{\v!reset,\v!stop}
            {\let\setpagetransition\relax}
            {\let\setpagetransition\setsomepagetransition
-            \doifinsetelse{\v!willekeurig}{#1}
+            \doifinsetelse\v!willekeurig{#1}
               {\randomtransitionstrue}{\randomtransitionsfalse}%
             \edef\userpagetransitions{#1}%
             \@EA\removefromcommalist\@EA{\v!willekeurig}\userpagetransitions
@@ -2234,26 +2028,26 @@
               \let\userpagetransitions\pagetransitions
             \fi}}}}
 
-\def\setsomepagedelay%
+\def\setsomepagedelay
   {\expanded{\dosetpagetransition{0}{\@@scwachttijd}}}
 
-\def\setsomepagetransition%
+\def\setsomepagetransition
   {\iflocation
      \ifrandomtransitions
        \expanded{\getcommalistsize[\userpagetransitions]}%
-       \getrandomnumber{\currentpagetransition}{1}{\commalistsize}%
+       \getrandomnumber\currentpagetransition1\commalistsize
      \else
        \doglobal\increment\currentpagetransition
      \fi
      \expanded{\getfromcommalist[\userpagetransitions][\currentpagetransition]}%
-     \doifnumberelse{\commalistelement}
+     \doifnumberelse\commalistelement
        {\expanded{\getfromcommalist[\pagetransitions][\commalistelement]}}
        {}%
      \ifx\commalistelement\empty
        \doglobal\newcounter\currentpagetransition
        \setsomepagetransition
      \else
-       \doifelse{\@@scwachttijd}{\v!geen}
+       \doifelse\@@scwachttijd\v!geen
          {\expanded{\dosetpagetransition{\commalistelement}{0}}}
          {\expanded{\dosetpagetransition{\commalistelement}{\@@scwachttijd}}}%
      \fi
@@ -2295,19 +2089,19 @@
 
 \def\horizontalgrowingbar\pos#1\min#2\max#3\height#4\depth#5\\%
   {\hbox to \hsize
-     {\scratchcounter=#1\relax
-      \advance\scratchcounter by -#2\relax
-      \advance\scratchcounter by 1\relax
+     {\scratchcounter#1%
+      \advance\scratchcounter -#2%
+      \advance\scratchcounter \plusone
       \leaders\vrule\hskip\zeropoint\!!plus \scratchcounter\!!fill
-      \vrule\!!width\zeropoint\!!height#4\!!depth#5\relax
+      \vrule\!!width\zeropoint\!!height#4\!!depth#5%
       \hskip\zeropoint\!!plus #3\!!fill
       \hskip\zeropoint\!!plus-#1\!!fill}}
 
 \def\verticalgrowingbar\pos#1\min#2\max#3\width#4\\%
   {\vbox to \vsize
-     {\scratchcounter=#1\relax
-      \advance\scratchcounter by -#2\relax
-      \advance\scratchcounter by 1\relax
+     {\scratchcounter#1%
+      \advance\scratchcounter -#2%
+      \advance\scratchcounter \plusone
       \leaders\hrule\vskip\zeropoint\!!plus\scratchcounter\!!fill
       \hrule\!!width#4\!!height\zeropoint\!!depth\zeropoint
       \vskip\zeropoint\!!plus #3\!!fill
@@ -2315,85 +2109,60 @@
 
 \newbox\commentbox
 
-\def\doflushcommentanchors%
+\def\doflushcommentanchors
    {\inmarge{\hbox{\raise\ht\strutbox\box\commentbox}}}
 
-\def\flushcommentanchors% in everypar so indirect 
+\def\flushcommentanchors % in everypar so indirect
   {\ifvoid\commentbox\else \doflushcommentanchors \fi}
 
-\def\stelcommentaarin%
+\def\stelcommentaarin
   {\dodoubleargument\getparameters[\??cc]}
 
 \setvalue{\e!start\e!commentaar}% the dummy triple gobbles trailing spaces
   {\dotripleempty\dostartcommentaar}
 
-\def\commentaar%
+\def\commentaar
   {\dodoubleempty\docommentaar}
 
 \def\dodocommentaar#1%
   {\!!widtha\@@ccbreedte
    \!!heighta\@@cchoogte
-   \doifelse{\@@ccoptie}{\v!max}
+   \doifelse\@@ccoptie\v!max
      {\def\@@ccopen{1}}{\def\@@ccopen{0}}%
-   \doifelse{\@@ccoptie}{\v!buffer}
+   \doifelse\@@ccoptie\v!buffer
      {\def\@@cccollect{1}}{\def\@@cccollect{0}}%
    \doinsertcomment
      \@@cctitel\!!widtha\!!heighta
      \@@cckleur\@@ccopen\@@ccsymbool
      \@@cccollect{#1}}
 
-%\def\dopreparecommentaar#1#2%
-%  {\doifassignmentelse{#1}
-%     {\getparameters[\??cc][#1]}
-%     {\getparameters[\??cc][\c!titel=#1,#2]}}
-%
-%\def\dostartcommentaar[#1][#2][#3]%
-%  {\bgroup
-%   \dopreparecommentaar{#1}{#2}%
-%   \bgroup
-%   \obeylines
-%   \doif{\@@ccspatie}{\v!ja}{\obeyspaces}%
-%   \long\def\docommando##1%
-%     {\egroup
-%      \global\setbox\commentbox=\hbox
-%        {\dodocommentaar{##1}%
-%         \hskip\ifvoid\commentbox\@@ccmarge\else\@@ccafstand\fi
-%         \box\commentbox}%
-%      \egroup}%
-%   \grabuntil{\e!stop\e!commentaar}\docommando}
-%
-%\def\docommentaar[#1][#2]#3%
-%  {\bgroup
-%   \dopreparecommentaar{#1}{#2}%
-%   \hbox to \zeropoint
-%     {\hskip-\@@ccmarge
-%      \raise\ht\strutbox\hbox{\dodocommentaar{#3}}}%
-%   \egroup
-%   \ignorespaces}
-
 \def\dopreparecommentaar#1#2%
   {\doifassignmentelse{#1}
      {\getparameters[\??cc][#1]}
      {\getparameters[\??cc][\c!titel=#1,#2]}%
    \obeylines
-   \doif{\@@ccspatie}{\v!ja}{\obeyspaces}}
+   \doif\@@ccspatie\v!ja\obeyspaces}
 
 \def\dostartcommentaar[#1][#2][#3]%
   {\bgroup
-   \dopreparecommentaar{#1}{#2}%
-   \long\def\docommando##1%
-     {\global\setbox\commentbox=\hbox
-        {\dodocommentaar{##1}%
-         \hskip\ifvoid\commentbox\@@ccmarge\else\@@ccafstand\fi
-         \box\commentbox}%
-      \egroup}%
+   \doifelse\@@ccstatus\v!start
+     {\dopreparecommentaar{#1}{#2}%
+      \long\def\docommando##1%
+        {\global\setbox\commentbox\hbox
+           {\dodocommentaar{##1}%
+            \hskip\ifvoid\commentbox\@@ccmarge\else\@@ccafstand\fi
+            \box\commentbox}%
+         \egroup}}%
+     {\long\def\docommando##1%
+        {\egroup}}%
    \grabuntil{\e!stop\e!commentaar}\docommando}
 
 \def\docommentaar[#1][#2]#3%
-  {\hbox to \!!zeropoint
-     {\dopreparecommentaar{#1}{#2}%
-      \hskip-\@@ccmarge
-      \raise\ht\strutbox\hbox{\dodocommentaar{#3}}}%
+  {\doif\@@ccstatus\v!start
+     {\hbox to \zeropoint
+        {\dopreparecommentaar{#1}{#2}%
+         \hskip-\@@ccmarge
+         \raise\ht\strutbox\hbox{\dodocommentaar{#3}}}}%
    \ignorespaces}
 
 % \startcommentaar
@@ -2426,26 +2195,26 @@
 %   (actually not) documented? Anyhow, by providing this
 %   functionality we demonstrate that \pdfTeX\ can do it. By
 %   the way, it's funny that when in Acrobat we scale up the
-%   text, the symbols scale down. 
+%   text, the symbols scale down.
 % \stopcommentaar
 
 % \definesymbol [comment-normal][{\externalfigure[koe.pdf]}]
 % \definesymbol [comment-down]  [{\externalfigure[koe.pdf]}]
-% 
+%
 % \def\CowSymbol#1#2%
 %  {\scale
 %     [\c!hoogte=#1]
 %     {\startMPcode
-%        loadfigure "koe.mp" number 1 ; 
-%        refill currentpicture withcolor #2 ; 
+%        loadfigure "koe.mp" number 1 ;
+%        refill currentpicture withcolor #2 ;
 %      \stopMPcode}}
-% 
-% \definesymbol [comment-normal]  
+%
+% \definesymbol [comment-normal]
 %   [\CowSymbol{4ex}{red}]
-% 
-% \definesymbol [comment-down]  
+%
+% \definesymbol [comment-down]
 %   [\CowSymbol{4ex}{green}]
-% 
+%
 % \setupcomment
 %   [\c!symbool={comment-normal,comment-down},
 %    \c!optie=\v!buffer]
@@ -2458,7 +2227,7 @@
 % jammer, tussen/midden had erin gemoeten; \c!commando toevoegen
 
 \def\registermenucommand#1%
-  {{\textonly\noindent#1\space}} % no math switching 
+  {{\textonly\noindent#1\space}} % no math switching
 
 \def\doregistermenubuttons[#1][#2]% [menu id] [register]
   {\bgroup
@@ -2474,10 +2243,10 @@
              [\c!onbekendeverwijzing=\v!ja,\c!zelfdepagina=\v!ja]
              {##1}[#1:##1]}}%
    \fi
-   \handletokens abcdefghijklmnopqrstuvwxyz\with\docommando % moet anders 
+   \handletokens abcdefghijklmnopqrstuvwxyz\with\docommando % moet anders
    \egroup}
 
-\def\registermenubuttons%
+\def\registermenubuttons
   {\dodoubleempty\doregistermenubuttons}
 
 \stelkoppelingenin
@@ -2560,19 +2329,19 @@
 
 \def\plaatslinkerrandtekstblok % Is \hss/\hsize really needed here?
   {\hbox to \linkerrandbreedte % (check outer level and settings)
-     {\hsize\linkerrandbreedte 
+     {\hsize\linkerrandbreedte
       \hss
       \interactiemenus[\v!links]}}
 
 \def\plaatsrechterrandtekstblok % Is \hss/\hsize really needed here?
   {\hbox to \rechterrandbreedte % (check outer level and settings)
-     {\hsize\rechterrandbreedte 
+     {\hsize\rechterrandbreedte
       \interactiemenus[\v!rechts]%
       \hss}}
 
 \def\plaatsboventekstblok
   {\vbox to \bovenhoogte
-     {\vsize\bovenhoogte 
+     {\vsize\bovenhoogte
 %      \getvalue{\??tk\v!boven\v!tekst\c!voor}
       \getvalue{\??tk\v!boven\c!voor}
       \interactiemenus[\v!boven]
@@ -2582,7 +2351,7 @@
 
 \def\plaatsondertekstblok
   {\vbox to \onderhoogte
-     {\vsize\onderhoogte 
+     {\vsize\onderhoogte
 %      \getvalue{\??tk\v!onder\v!tekst\c!voor}
       \getvalue{\??tk\v!onder\c!voor}
       \interactiemenus[\v!onder]
@@ -2597,8 +2366,8 @@
   \appendtoks \plaatsboventekstblok       \vskip-\bovenhoogte        \to \toptextcontent
   \appendtoks \plaatsondertekstblok       \vskip-\onderhoogte        \to \bottomtextcontent
 
-\fi 
-  
+\fi
+
 \stelinteractieschermin
   [\c!breedte=\printpapierbreedte,
    \c!hoogte=\printpapierhoogte,
@@ -2664,7 +2433,8 @@
   [\v!reset]
 
 \stelcommentaarin
-  [\c!marge=2.5em,
+  [\c!status=\v!start,
+   \c!marge=2.5em,
    \c!afstand=1em,
    \c!breedte=.3\tekstbreedte,
    \c!hoogte=.2\teksthoogte,

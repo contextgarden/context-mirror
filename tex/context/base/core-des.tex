@@ -55,10 +55,10 @@
 \def\@@definitiehang#1#2#3%
   {\processaction
      [\getvalue{\??dd#1\c!hang}]
-     [   \v!geen=>\let\next=#2,
-               0=>\let\next=#2,
-      \s!unknown=>\let\next=#3,
-      \s!default=>\let\next=#2]%
+     [   \v!geen=>\let\next#2,%
+               0=>\let\next#2,%
+      \s!unknown=>\let\next#3,%
+      \s!default=>\let\next#2]%
    \next{#1}}
 
 \def\@@definitielinkspure#1[#2]#3%
@@ -66,9 +66,9 @@
    \noindent\ignorespaces
    \leftskip\@@leftdefinitieskip
    \rightskip\@@rightdefinitieskip
-   \advance\leftskip by \!!widtha
+   \advance\leftskip \!!widtha
    \@@makedefinitiepurebox{#1}\raggedright
-   \advance\leftskip by \!!widthb
+   \advance\leftskip \!!widthb
    \llap
      {\hbox to \leftskip
         {\hskip\@@leftdefinitieskip
@@ -80,7 +80,7 @@
    \noindent\ignorespaces
    \leftskip\@@leftdefinitieskip
    \rightskip\@@rightdefinitieskip
-   \advance\rightskip by \!!widtha
+   \advance\rightskip \!!widtha
    \@@makedefinitiepurebox{#1}\raggedleft
    \rlap
      {\hskip\hsize
@@ -88,66 +88,66 @@
       \hskip-\rightskip
       \copy\@@definitiebox
       \hskip\@@rightdefinitieskip}%
-   \advance\rightskip by \!!widthb
+   \advance\rightskip \!!widthb
    \@@dodefinitie{#1}}
 
 \def\@@makedefinitiepurebox#1#2%
-  {\setbox\@@definitiebox=\vtop
+  {\setbox\@@definitiebox\vtop
      {\mindermeldingen
       \hsize\!!widtha
-      \leftskip\!!zeropoint
-      \rightskip\!!zeropoint
+      \leftskip\zeropoint
+      \rightskip\zeropoint
       #2\steluitlijnenin[\getvalue{\??dd#1\c!uitlijnen}]%
       \unhcopy\@@definitiebox}%
-   \ht\@@definitiebox=\ht\strutbox
-   \dp\@@definitiebox=\dp\strutbox}
+   \ht\@@definitiebox\ht\strutbox
+   \dp\@@definitiebox\dp\strutbox}
 
 \def\@@definitielinkshang#1[#2]#3%
   {\@@dostartdefinitie{#1}[#2]{#3}%
    \mindermeldingen
-   \advance\!!widtha by \!!widthb
-   \hangindent=\!!widtha
-   \@@makedefinitiehangbox{#1}{\raggedright}{\advance\rightskip by \!!widthb}%
+   \advance\!!widtha \!!widthb
+   \hangindent\!!widtha
+   \@@makedefinitiehangbox{#1}{\raggedright}{\advance\rightskip \!!widthb}%
    \noindent\ignorespaces
    \llap
      {\dontshowcomposition
-      \vtop to \!!zeropoint{\box\@@definitiebox}}%
+      \vtop to \zeropoint{\box\@@definitiebox}}%
    \@@dodefinitie{#1}}%
 
 \def\@@definitierechtshang#1[#2]#3%
   {\@@dostartdefinitie{#1}[#2]{#3}%
    \mindermeldingen
-   \advance\!!widtha by \!!widthb
-   \hangindent=-\!!widtha
-   \@@makedefinitiehangbox{#1}{\raggedleft}{\advance\leftskip by \!!widthb}%
+   \advance\!!widtha \!!widthb
+   \hangindent-\!!widtha
+   \@@makedefinitiehangbox{#1}{\raggedleft}{\advance\leftskip \!!widthb}%
    \noindent\ignorespaces
    \rlap
      {\mindermeldingen
       \dontshowcomposition
       \dimen0=\hsize
-      \advance\dimen0 by -\leftskip
-      \advance\dimen0 by -\rightskip
+      \advance\dimen0 -\leftskip
+      \advance\dimen0 -\rightskip
       \hbox to \dimen0
-        {\hss\vtop to \!!zeropoint{\box\@@definitiebox}}}%
+        {\hss\vtop to \zeropoint{\box\@@definitiebox}}}%
    \@@dodefinitie{#1}}
 
 \def\@@makedefinitiehangbox#1#2#3%
-  {\setbox\@@definitiebox=\vtop % \vbox gaat fout in hang
+  {\setbox\@@definitiebox\vtop % \vbox gaat fout in hang
      {\forgetall
       \mindermeldingen
       \hsize\!!widtha
       #2\steluitlijnenin[\getvalue{\??dd#1\c!uitlijnen}]#3%
       \unhcopy\@@definitiebox}%
-   \ht\@@definitiebox=\ht\strutbox
-   \dp\@@definitiebox=\dp\strutbox
+   \ht\@@definitiebox\ht\strutbox
+   \dp\@@definitiebox\dp\strutbox
    \doifinsetelse{\getvalue{\??dd#1\c!hang}}{\v!passend,\v!ruim}
      {\dimen0=\ht\@@definitiebox
-      \advance\dimen0 by \dp\@@definitiebox
-      \doifvalue{\??dd#1\c!hang}{\v!ruim}
-        {\advance\dimen0 by .5\ht\strutbox}%
+      \advance\dimen0 \dp\@@definitiebox
+      \doifvalue{\??dd#1\c!hang}\v!ruim
+        {\advance\dimen0 .5\ht\strutbox}%
       \getnoflines{\dimen0}%
-      \hangafter=-\noflines}
-     {\hangafter=-\getvalue{\??dd#1\c!hang}}}%
+      \hangafter-\noflines}
+     {\hangafter-\getvalue{\??dd#1\c!hang}}}%
 
 \setvalue{@@definitie\v!boven}#1[#2]#3%
   {%\pagina[\v!voorkeur]%       % Weg ermee!
@@ -205,86 +205,36 @@
 \setvalue{@@definitie\v!aanelkaar}#1[#2]#3%
   {\processaction
       [\getvalue{\??dd#1\c!breedte}]
-      [\v!passend=>\let\next=\@@definitieaanelkaarpassend,
-          \v!ruim=>\let\next=\@@definitieaanelkaarruim,
-       \s!unknown=>\let\next=\@@definitieaanelkaarbreed,
-       \s!default=>\let\next=\@@definitieaanelkaarruim]%
+      [\v!passend=>\let\next\@@definitieaanelkaarpassend,
+          \v!ruim=>\let\next\@@definitieaanelkaarruim,
+       \s!unknown=>\let\next\@@definitieaanelkaarbreed,
+       \s!default=>\let\next\@@definitieaanelkaarruim]%
    \next{#1}[#2]{#3}}
-
-% \setvalue{@@definitie\v!hangend}#1[#2]#3%
-%   {\skip0=-\leftskip                % uggly trick
-%    \@@dostartdefinitie{#1}[#2]{#3}% % adds \c!marge to \leftskip
-%    \noindent\ignorespaces
-%    \advance\skip0 by \leftskip      % but useful
-%    \ifdim\skip0=\!!zeropoint
-%      \skip0=1.5em                   % just some default
-%      \advance\leftskip by \skip0
-%    \fi
-%    \hskip-\skip0                    % no hang in the first line
-%    \unhcopy\@@definitiebox
-%    \ifdim\!!widthb=\!!zeropoint
-%      \kern.75em                     % another default
-%    \else
-%      \kern\!!widthb
-%    \fi
-%    \ignorespaces
-%    \@@dodefinitie{#1}}
 
 \setvalue{@@definitie\v!hangend}#1[#2]#3%
   {\@@dostartdefinitie{#1}[#2]{#3}% % adds \c!marge to \leftskip
    \noindent\ignorespaces
-   \advance\leftskip by -\leftskipadaption
-   \ifdim\leftskipadaption=\!!zeropoint
-     \leftskipadaption=1.5em % just some default  
-     \ifnum\insidedefinition=1 \ifdim\leftskip>\!!zeropoint 
-       \leftskipadaption=\leftskip
-     \fi \fi
+   \advance\leftskip -\leftskipadaption \relax
+   \ifdim\leftskipadaption=\zeropoint
+     \leftskipadaption1.5em % just some default  
+     \ifnum\insidedefinition=\plusone 
+       \ifdim\leftskip>\zeropoint \relax
+         \leftskipadaption\leftskip
+       \fi 
+     \fi
    \fi
-   \ifnum\insidedefinition=1
-     \advance\leftskip by \leftskipadaption
+   \ifnum\insidedefinition=\plusone
+     \advance\leftskip \leftskipadaption
    \fi
    \hskip-\leftskipadaption
    \unhcopy\@@definitiebox
-   \ifdim\!!widthb=\!!zeropoint
+   \ifdim\!!widthb=\zeropoint
      \kern.75em                     % another default
    \else
      \kern\!!widthb
    \fi
    \ignorespaces
    \@@dodefinitie{#1}}
-
-% \def\@@dostartdefinitie#1[#2]#3%
-%   {\getvalue{\??dd#1\c!voor}%
-%    \begingroup
-%    \doadaptleftskip{\getvalue{\??dd#1\c!marge}}%
-%    \showcomposition
-%    \setbox\@@definitiebox=\hbox
-%      {\forgetall
-%       \mindermeldingen
-%       \def\\{\crcr}%
-% %      \doattributes
-% %        {\??dd#1}\c!kopletter\c!kopkleur
-% %        {\doifelsevalue{\??dd#1\c!plaats}{\v!aanelkaar}
-% %           {\@@definitiewoord{#1}[#2]{#3}{#3}}
-% %           {\@@definitiewoord{#1}[#2]{#3}{\vbox{\halign{\strut##\hss\cr#3\crcr}}}}}}%
-%       \doifelsevalue{\??dd#1\c!plaats}{\v!aanelkaar}
-%         {\@@definitiewoord{#1}[#2]{#3}{#3}}
-%         {\@@definitiewoord{#1}[#2]{#3}{\vbox{\halign{\strut##\hss\cr#3\crcr}}}}}%
-%    \!!widthb=\getvalue{\??dd#1\c!afstand}\relax
-%    \ifdim\!!widthb=\!!zeropoint\relax
-%      \doifvalue{\??dd#1\c!breedte}{\v!ruim}{\!!widthb=1em}%
-%    \fi
-%    \assignwidth
-%      {\!!widtha}
-%      {\getvalue{\??dd#1\c!breedte}}
-%      {\doifelsevaluenothing{\??dd#1\c!monster}
-%         {\unhcopy\@@definitiebox}
-%         {\doattributes
-%            {\??dd#1}\c!kopletter\c!kopkleur
-%            {\getvalue{\??dd#1\c!tekst}\getvalue{\??dd#1\c!monster}}}}
-%      {\!!widthb}%
-%   %\getvalue{\??dd#1\s!do\c!lokaal}%
-%    \parindent=\!!zeropoint\relax} % \noindent\ignorespaces
 
 %D A new key 'titeluitlijnen' in definitions. 
 
@@ -298,16 +248,16 @@
    \begingroup
    \doadaptleftskip{\getvalue{\??dd#1\c!marge}}%
    \showcomposition
-   \setbox\@@definitiebox=\hbox
+   \setbox\@@definitiebox\hbox
      {\forgetall
       \mindermeldingen
       \def\\{\crcr}%
-      \doifelsevalue{\??dd#1\c!plaats}{\v!aanelkaar}
+      \doifelsevalue{\??dd#1\c!plaats}\v!aanelkaar
         {\@@definitiewoord{#1}[#2]{#3}{#3}}
         {\@@definitiewoord{#1}[#2]{#3}{\vbox{\halign{\strut##\hss\cr#3\crcr}}}}}%
-   \!!widthb=\getvalue{\??dd#1\c!afstand}\relax
-   \ifdim\!!widthb=\!!zeropoint\relax
-     \doifvalue{\??dd#1\c!breedte}{\v!ruim}{\!!widthb=1em}%
+   \!!widthb\getvalue{\??dd#1\c!afstand}\relax
+   \ifdim\!!widthb=\zeropoint\relax
+     \doifvalue{\??dd#1\c!breedte}\v!ruim{\!!widthb=1em}%
    \fi
    \assignwidth
      {\!!widtha}
@@ -319,8 +269,8 @@
            {\getvalue{\??dd#1\c!tekst}\getvalue{\??dd#1\c!monster}}}}
      {\!!widthb}%
   %\getvalue{\??dd#1\s!do\c!lokaal}%
-   \parindent=\!!zeropoint\relax
-   \doifelsevalue{\??dd#1\c!titeluitlijnen}{\v!nee}       
+   \parindent\zeropoint\relax
+   \doifelsevalue{\??dd#1\c!titeluitlijnen}\v!nee
      {\edef\@@leftdefinitieskip {\the\leftskip }%
       \edef\@@rightdefinitieskip{\the\rightskip}}
      {\ifcase\insidedefinition 
@@ -328,33 +278,31 @@
         \edef\@@rightdefinitieskip{\the\rightskip}%
       \fi}%
    \ifcase\insidedefinition 
-     \chardef\insidedefinition=1 
+     \chardef\insidedefinition1 
    \or
-     \chardef\insidedefinition=2 
+     \chardef\insidedefinition2 
    \fi} % now happens elsewhere : \noindent\ignorespaces
 
 \def\@@stopdefinitie#1%
   {\par
    \dostopattributes
    \endgroup
-   \egroup % temporary hack
    \getvalue{\??dd#1\c!na}%
-   \doifvalue{\??dd#1\c!springvolgendein}{\v!nee}{\noindentation}}
+   \egroup % temporary hack
+   \doifvalue{\??dd#1\c!springvolgendein}\v!nee\noindentation}
 
 \def\@@dodefinitie#1%
-  {\dostartattributes{\??dd#1}\c!letter\c!kleur{}%
+  {\dostartattributes{\??dd#1}\c!letter\c!kleur\empty
    \ignorespaces}
 
 \def\@@somedefinitie#1[#2]#3%
   {\bgroup % temporary hack
-  %\BeforePar{\getvalue{\??dd#1}[#2]{#3}}%
    \BeforePar{\executedoordefinitie{#1}[#2]{#3}}%
    \AfterPar{\@@stopdefinitie{#1}}%
    \GetPar}
 
 \def\@@startsomedefinitie#1[#2]#3%
   {\bgroup % temporary hack
-  %\BeforePar{\getvalue{\??dd#1}[#2]{#3}}%
    \BeforePar{\executedoordefinitie{#1}[#2]{#3}}%
    \GotoPar}
 
@@ -383,7 +331,7 @@
      [\s!do\c!status=\v!stop,
       \s!do\c!commando=\normal@@definitiewoord,
       #2]%
-   \doifvalue{\??dd#1\c!plaats}{\v!boven}%
+   \doifvalue{\??dd#1\c!plaats}\v!boven
      {\doassign[\??dd#1][\c!tussen={\blanko}]}%
    \setvalue{#1}%
      {\dodoubleempty\@@definitie[#1]}%
@@ -393,16 +341,14 @@
      {\@@stopdefinitie{#1}}}%
 
 \def\@@startdefinitie[#1][#2]%
-  {\doifelsevalue{\??dd#1\s!do\c!status}{\v!start}
-     {\def\next{\@@startsomedefinitie{#1}[#2]{}}}
-     {\def\next{\dowithwargument{\@@startsomedefinitie{#1}[#2]}}}%
-   \next}
+  {\doifelsevalue{\??dd#1\s!do\c!status}\v!start
+     {\@@startsomedefinitie{#1}[#2]{}}
+     {\dowithwargument{\@@startsomedefinitie{#1}[#2]}}}
 
 \def\@@definitie[#1][#2]%
-  {\doifelsevalue{\??dd#1\s!do\c!status}{\v!start}
-     {\def\next{\@@somedefinitie{#1}[#2]{}}}
-     {\def\next{\dowithwargument{\@@somedefinitie{#1}[#2]}}}%
-   \next}
+  {\doifelsevalue{\??dd#1\s!do\c!status}\v!start
+     {\@@somedefinitie{#1}[#2]{}}
+     {\dowithwargument{\@@somedefinitie{#1}[#2]}}}
 
 \def\doordefinieren%
   {\dodoubleemptywithset\dodoordefinieren}
@@ -449,18 +395,18 @@
 
 \def\special@@definitiewoord#1#2#3#4[#5]#6#7%
   {\strut
-   \doifelsevalue{\??dd#1\c!nummer}{\v!nee}
+   \doifelsevalue{\??dd#1\c!nummer}\v!nee
      {\!!doneafalse}
      {\doifelse{#5}{-}
         {\!!doneafalse}
         {\!!doneatrue}}%
-   \chardef\definitiekoppeling=0
+   \chardef\definitiekoppeling0
    \iflocation
      \doifvaluesomething{\??dd#1\c!koppeling}
        {\processaction % genereert > of <
           [\getvalue{\??dd#1\c!koppelwijze}]
-          [ \v!lokaal=>\chardef\definitiekoppeling=1, % old: default
-           \v!globaal=>\chardef\definitiekoppeling=2]}% new: global crosslinking
+          [ \v!lokaal=>\chardef\definitiekoppeling1, % old: default
+           \v!globaal=>\chardef\definitiekoppeling2]}% new: global crosslinking
    \fi
    \stelnummerin % the number is called indirectly
      [\getvalue{\??dd#1\??dd\c!nummer}]
@@ -469,11 +415,10 @@
      \getvalue{\e!volgende#2#1}%
      \iflocation
        \bgroup
-       \setvalue{\??dd#1\c!sectienummer}{\v!ja}%
+       \letvalue{\??dd#1\c!sectienummer}\v!ja
        \protectconversion
-      %\maakvoorafgaandenummer[#1]%
        \maakvoorafgaandenummer[\getvalue{\??dd#1\??dd\c!nummer}]%
-\preparethenumber{\??dd#1}\voorafgaandenummer\preparednumber
+       \preparethenumber{\??dd#1}\voorafgaandenummer\preparednumber
        \ifcase\definitiekoppeling \or
          \xdef\internaldoornummer{#3{#1}}%
          \rawreference{\s!num}{#1:\internaldoornummer}{}%
@@ -483,9 +428,8 @@
        \fi
        \egroup
      \fi
-    %\maakvoorafgaandenummer[#1]%
      \maakvoorafgaandenummer[\getvalue{\??dd#1\??dd\c!nummer}]%
-\preparethenumber{\??dd#1}\voorafgaandenummer\preparednumber
+     \preparethenumber{\??dd#1}\voorafgaandenummer\preparednumber
      \hbox
        {\let\normalkap\relax % sorry, uppercase causes troubles
         \doattributes        % \nocase primitive needed
@@ -497,15 +441,13 @@
           \edef\localconnection{\getvalue{\??dd#1\c!koppeling}:\internaldoornummer}%
           \doifreferencefoundelse{\localconnection}
             {\in[\localconnection]}{}% genereert > of <
-         %\in[\localconnection]%
         \fi\fi}%
      \doifnot{#5}{-}{\rawreference{\s!num}{#5}{#3{#1}}}%
    \else % Why was this strange expansion needed? 
      \hbox
        {\edef\!!stringa{\showdnpuretext{#2#1}}% nog eens testen binnen \expanded
         \expanded{\doattributes{\??dd#1}\noexpand\c!kopletter\noexpand\c!kopkleur
-          {\noexpand\getvalue{\??dd#1\c!commando}%
-             {\!!stringa}}}%
+          {\noexpand\getvalue{\??dd#1\c!commando}{\!!stringa}}}%
         \doifnot{#5}{-}{\rawreference{\s!num}{#5}{}}}%
    \fi}
 
@@ -586,7 +528,6 @@
       \c!monster,\c!hang,\c!uitlijnen,\c!voor,\c!tussen,\c!na,
       \c!niveaus,\c!wijze,\c!blokwijze,\c!scheider,\c!marge,
       \c!springvolgendein,\c!afsluiter,\c!sectienummer,\c!nummer]%
-%   \ConvertToConstant\doifinstringelse{=}{#4}
    \doifassignmentelse{#4}
      {\getparameters[\??dd#3#1]%
         [\c!tekst=#1,\??dd\c!nummer=#1,\c!conversie=,
@@ -594,13 +535,13 @@
      {\doifelsenothing{#4}
         {\getparameters[\??dd#3#1]%
            [\c!tekst=#1,\??dd\c!nummer=#1,\c!conversie=,
-\c!afsluiter=, 
+            \c!afsluiter=, 
             \c!links=,\c!rechts=,\c!koppeling=,\c!koppelwijze=,#4]}%
         {\copyparameters[\??dd#3#1][\??dd#3#4]
            [\c!plaats,\c!kopletter,\c!letter,\c!kleur,\c!kopkleur,
             \c!breedte,\c!nummer,\c!afstand,\c!commando,\c!marge,
             \c!monster,\c!hang,\c!uitlijnen,\c!voor,\c!tussen,\c!na,
-\c!afsluiter, 
+            \c!afsluiter, 
             \c!springvolgendein,\c!links,\c!rechts,\c!koppeling,\c!koppelwijze]%
          \getparameters[\??dd#3#1]
            [\c!tekst=#1,\??dd\c!nummer=#4,\c!conversie=,#5]}}%
@@ -652,17 +593,17 @@
      {\dodosteldoorspringenin[][#1]}
      {\dodoubleargumentwithset\dodosteldoorspringenin[#1][#2]}}
 
-\def\steldoorspringenin%
+\def\steldoorspringenin
   {\dodoubleempty\dosteldoorspringenin}
 
-\def\startdoorspringen%
+\def\startdoorspringen
   {\witruimte
    \@@dsvoor
    \dosomebreak{\goodbreak}% \pagina[\v!voorkeur]
    \begingroup
-   \parskip=\!!zeropoint\relax}
+   \parskip\zeropoint\relax}
 
-\def\stopdoorspringen%
+\def\stopdoorspringen
   {\endgroup
    \@@dsna}
 
@@ -680,8 +621,8 @@
         {\??ds#1}\c!kopletter\c!kopkleur
         {\getvalue{\??ds#1\c!monster}\getvalue{\??ds#1\c!scheider}}}
      {\getvalue{\??ds#1\c!afstand}}%
-   \advance\!!widtha by \getvalue{\??ds#1\c!afstand}%
-   \setbox2=\hbox to \!!widtha
+   \advance\!!widtha \getvalue{\??ds#1\c!afstand}%
+   \setbox2\hbox to \!!widtha
      {\doattributes
         {\??ds#1}\c!kopletter\c!kopkleur
         {\strut
@@ -689,7 +630,7 @@
          \hss
          \getvalue{\??ds#1\c!scheider}%
          \hskip\getvalue{\??ds#1\c!afstand}}}%
-   \parindent\!!zeropoint
+   \parindent\zeropoint
    \hskip#2\!!widtha\indent\box2%
    \hangindent#3\!!widtha
    \doattributes{\??ds#1}\c!letter\c!kleur{}% #4}%

@@ -38,7 +38,7 @@ eval '(exit $?0)' && eval 'exec perl -S $0 ${1+"$@"}' && eval 'exec perl -S $0 $
 #D binary version, like scanning illustrations other than \EPS.
 #D I would suggest to keep an eye on the version number:
 
-$Program = "TeXUtil 7.3 - ConTeXt / PRAGMA ADE 1992-2000" ;
+$Program = "TeXUtil 7.4 - ConTeXt / PRAGMA ADE 1992-2002" ;
 
 #D By the way, this is my first \PERL\ script, which means
 #D that it will be improved as soon as I find new and/or more
@@ -87,6 +87,12 @@ $Getopt::Long::autoabbrev  = 1 ; # partial switch accepted
 $UserInterface  = "en" ;
 $UnknownOptions = 0 ;
 $TcXPath        = '' ;
+
+#D We need this for calling GS.  
+
+use Config        ;
+
+my $dosish = ($Config{'osname'} =~ /^(ms)?dos|^os\/2|^(ms|cyg)win/i) ;
 
 #D Here come the options:
 
@@ -153,12 +159,18 @@ sub CloseTerminal
 
 $InputFile = "@ARGV" ; # niet waterdicht
 
-#sub CheckInputFiles
-# { my ($UserSuppliedPath) = @_ ;
-#   @UserSuppliedFiles = map { split " " } sort lc $UserSuppliedPath }
+sub CompFileName
+  { my ($a,$b) = @_ ; 
+    my ($fa,$sa) = split(/\./,$a) ; 
+    my ($fb,$sb) = split(/\./,$b) ;  
+    if (($sa =~ /^\d+$/o)&&($sb =~ /^\d+$/o)) 
+      { $a = $fa . "." . sprintf("%10d",$sa) ; $a =~ s/\s/0/o ; 
+        $b = $fb . "." . sprintf("%10d",$sb) ; $b =~ s/\s/0/o } 
+    return (lc ($a) cmp lc ($b)) } 
 
 sub CheckInputFiles
- { @UserSuppliedFiles = glob $_[0] }
+ { @UserSuppliedFiles = glob $_[0] ;
+   @UserSuppliedFiles = sort { CompFileName($a,$b) } @UserSuppliedFiles }
 
 #D The next subroutine takes care of the optional output
 #D filename (e.g. for figure dimensions).
@@ -822,16 +834,16 @@ sub FlushKeys
   { Report ("RemappedKeys", $SortN) }
 
 sub SanitizedString
-  { my $string = shift ;
+  { my $string = my $original = shift ;
     if ($SortN)
       { my $copied = $string ;
         for ($i=1;$i<=$SortN;$i++)
           { my $s = $STR[$i] ;
-            my $m = $MAP[$i] ;
             my $c = $CHR[$i] ;
+            my $m = $MAP[$i] ;
+#print "[$i $s $c $m]\n" ; 
             $string =~ s/($s)/$c/ge ;
-            $copied =~ s/($s)/$m/eg }
-       #print "$string $copied\n" ;
+            $copied =~ s/($s)/$m/ge }
         $string .= "\x00";
         $string .= $copied }
     elsif ($ProcessQuotes)
@@ -841,6 +853,8 @@ sub SanitizedString
         $string =~ s/([\^\"\`\'\~\,])([a-zA-Z])/$2/gio ;
         $string .= "\x00";
         $string .= $copied }
+#
+#print "$original $string $copied\n" ;
 # new and very experimental, will change
 $string =~ s/\<\*(.*?)\>/\\$1 /go ; # reduce entities / will be table too
 $string =~ s/\\getXMLentity\s*\{(.*?)\}/$1/gio ; # {tex} => tex
@@ -943,6 +957,8 @@ my $NOfPositionsFound  = 0 ;
 my $TotalNOfPositions  = 0 ;
 my $TotalNOfMPgraphics = 0 ;
 
+my $SectionSeparator = ":" ; 
+
 sub InitializeCommands
   { print TUO "%\n" . "% $Program / Commands\n" . "%\n" ;
     $NOfCommands = 0 }
@@ -956,6 +972,9 @@ sub HandleCommand
       { $TotalNOfPositions = $1 }
     elsif ($RestOfLine =~ /^initializevariable\\totalnofMPgraphics\{(.*)\}/i)
       { $TotalNOfMPgraphics = $1 }
+# todo: reg how to 
+#    elsif ($RestOfLine =~ /^thisissectionseparator\{(.*)\}/o) 
+#      { $SectionSeparator = $1 } 
     print TUO "\\$RestOfLine\n" }
 
 sub FlushCommands
@@ -1171,6 +1190,8 @@ $RegStat{"e"} = 2 ; # end up between from and to
 $RegStat{"t"} = 3 ;
 $RegStat{"s"} = 4 ;
 
+my $RegSep = "$SectionSeparator$SectionSeparator" ; 
+
 sub HandleRegister # the } { makes sure that local {} is ok
   { ($SecondTag, $RestOfLine) = split(/ /, $RestOfLine, 2) ;
     ++$NOfEntries ;
@@ -1188,13 +1209,13 @@ sub HandleRegister # the } { makes sure that local {} is ok
         $SeeToo = "" }
     #
     $_ = $Key ;
-    if (/\:\:/)
-      { ($PageHow,$Key) = split (/\:\:/) }
+    if (/$RegSep/)
+      { ($PageHow,$Key) = split (/$RegSep/) }
     else
       { $PageHow = "" }
     $_ = $Entry ;
-    if (/\:\:/)
-      { ($TextHow,$Entry) = split (/\:\:/) }
+    if (/$RegSep/)
+      { ($TextHow,$Entry) = split (/$RegSep/) }
     else
       { $TextHow = "" }
     #
@@ -1293,10 +1314,23 @@ $Entry =~ s/^\{(.*)\}$SPLIT/$1$SPLIT/go ; ###### new
 #D \haalbuffer After being sorted, these entries are
 #D turned into something \TEX\ using:
 
+$CollapseEntries = 0 ; 
+
 $RegisterEntry[0] = ("") ;
 
 sub How
-  { return "$TextHow\:\:" . "$_[0]" }
+  { return "$TextHow$RegSep" . "$_[0]" }
+
+sub FlushSavedLine
+  { if (($CollapseEntries)&&($SavedFrom ne ""))
+      { if ($SavedTo ne "") 
+          { print TUO "\\registerfrom$SavedFrom" ;
+            print TUO "\\registerto$SavedTo" } 
+        else
+          { print TUO "\\registerpage$SavedFrom" } } 
+    $SavedFrom  = "" ;
+    $SavedTo    = "" ;
+    $SavedEntry = "" }
 
 sub FlushRegisters
   { print TUO "%\n" . "% $Program / Registers\n" . "%\n" ;
@@ -1313,25 +1347,32 @@ sub FlushRegisters
     $ActualA        = "" ;
     $ActualB        = "" ;
     $ActualC        = "" ;
+
+$SavedFrom  = "" ;
+$SavedTo    = "" ;
+$SavedEntry = "" ; 
+
     for ($n=1 ; $n<=$NOfEntries ; ++$n)
       { ($Class, $LCKey, $Key, $Entry, $TextHow, $RegisterState,
            $RealPage, $Location, $Page, $PageHow, $SeeToo) =
              split(/$JOIN/, $RegisterEntry[$n]) ;
         $RealPage =~ s/^\s*//o ;
         $TestAlfa = lc substr $Key, 0, 1 ;
-#
-if ($SortN)
-  { $AlfKey = $Key ;
-    $AlfKey =~ s/(.).*\x00(.).*/$1$2/o ;
-    if (defined($ALF{$AlfKey}))
-      { $TestAlfa = $ALF{$AlfKey} } }
-#
+        #
+        if ($SortN)
+          { $AlfKey = $Key ;
+            $AlfKey =~ s/(.).*\x00(.).*/$1$2/o ;
+            if (defined($ALF{$AlfKey}))
+              { $TestAlfa = $ALF{$AlfKey} } }
+        #
         if ((lc $TestAlfa ne lc $Alfa) or ($AlfaClass ne $Class))
           { # $Alfa= lc substr $Key, 0, 1 ;
             $Alfa = $TestAlfa ;
             $AlfaClass = $Class ;
             if ($Alfa ne " ")
-              { print TUO "\\registerentry{$Class}{$Alfa}\n" } }
+              { 
+FlushSavedLine ;
+                print TUO "\\registerentry{$Class}{$Alfa}\n" } }
         ($ActualA, $ActualB, $ActualC ) =
            split(/$SPLIT/, $Entry, 3) ;
         unless ($ActualA) { $ActualA = "" }
@@ -1354,33 +1395,64 @@ if ($SortN)
           { $PreviousC = How($ActualC) }
         $Copied = 0 ;
         if ($ActualA ne "")
-          { print TUO "\\registerentrya{$Class}{$ActualA}\n" ;
+          { 
+FlushSavedLine ;
+            print TUO "\\registerentrya{$Class}{$ActualA}\n" ;
             $Copied = 1 }
         if ($ActualB ne "")
-          { print TUO "\\registerentryb{$Class}{$ActualB}\n" ;
+          { 
+FlushSavedLine ;
+            print TUO "\\registerentryb{$Class}{$ActualB}\n" ;
             $Copied = 1 }
         if ($ActualC ne "")
-          { print TUO "\\registerentryc{$Class}{$ActualC}\n" ;
+          { 
+FlushSavedLine ;
+            print TUO "\\registerentryc{$Class}{$ActualC}\n" ;
             $Copied = 1 }
         if ($Copied)
           { $NOfSaneEntries++ }
         if ($RealPage eq 0)
-#          { print TUO "\\registersee{$Class}{$SeeToo}{$Page}\n" ;
-{ print TUO "\\registersee{$Class}{$PageHow,$TextHow}{$SeeToo}{$Page}\n" ;
+          { 
+FlushSavedLine ;
+            print TUO "\\registersee{$Class}{$PageHow,$TextHow}{$SeeToo}{$Page}\n" ;
             $LastPage = $Page ;
             $LastRealPage = $RealPage }
         elsif (($Copied) ||
               ! (($LastPage eq $Page) and ($LastRealPage eq $RealPage)))
-#          { print TUO "\\registerpage{$Class}{$Location}{$Page}{$RealPage}\n" ;
-{ if ($RegisterState eq $RegStat{"f"})
-    { print TUO "\\registerfrom{$Class}{$PageHow,$TextHow}{$Location}{$Page}{$RealPage}\n" }
-  elsif ($RegisterState eq $RegStat{"t"})
-    { print TUO "\\registerto  {$Class}{$PageHow,$TextHow}{$Location}{$Page}{$RealPage}\n" }
-  else
-    { print TUO "\\registerpage{$Class}{$PageHow,$TextHow}{$Location}{$Page}{$RealPage}\n" }
+          { # print "$LastPage / $Page // $LastRealPage / $RealPage\n" ;  
+
+$NextEntry = "{$Class}{$PreviousA}{$PreviousB}{$PreviousC}{$PageHow,$TextHow}" ; 
+
+            $SavedLine = "{$Class}{$PageHow,$TextHow}{$Location}{$Page}{$RealPage}\n" ;
+            if ($RegisterState eq $RegStat{"f"})
+              { 
+FlushSavedLine ;
+                print TUO "\\registerfrom$SavedLine" }
+            elsif ($RegisterState eq $RegStat{"t"})
+              { 
+FlushSavedLine ;
+                print TUO "\\registerto$SavedLine" }
+            else
+#             { print TUO "\\registerpage$SavedLine" }
+              { if ($CollapseEntries) 
+                  { 
+
+if ($SavedEntry ne $NextEntry)
+  { $SavedFrom = $SavedLine }
+else
+  { $SavedTo = $SavedLine }
+$SavedEntry = $NextEntry ;
+
+                  } 
+                else 
+                 { print TUO "\\registerpage$SavedLine" }
+              } 
             ++$NOfSanePages ;
             $LastPage = $Page ;
             $LastRealPage = $RealPage } }
+
+FlushSavedLine ;
+
     Report("RegisterEntries", $NOfEntries, "->", $NOfSaneEntries, "Entries",
                                                  $NOfSanePages,   "References") ;
     if ($NOfBadEntries>0)
@@ -1958,7 +2030,8 @@ sub ConvertEpsToEps
   { my ( $SuppliedFileName , $LLX, $LLY, $URX, $URY ) = @_ ;
     ($FileName, $FileSuffix) = SplitFileName ($SuppliedFileName) ;
     if ($ProcessEpsToPdf)
-      { unlink "$FileName.pdf" ;
+      { if ($dosish) { $gs = "gswin32c" } else { $gs = "gs" } 
+        unlink "$FileName.pdf" ;
         $GSCommandLine = "-q " .
                          "-sDEVICE=pdfwrite " .
                          "-dNOCACHE " .
@@ -1967,7 +2040,7 @@ sub ConvertEpsToEps
                          "-sOutputFile=$FileName.pdf " .
                          "- -c " .
                          "quit " ;
-        open ( EPS, "| gs $GSCommandLine") }
+        open ( EPS, "| $gs $GSCommandLine") }
     elsif ($PDFReady)
       { return }
     else
@@ -2098,9 +2171,9 @@ sub HandlePdfFigure
     while (<PDF>)
       { $SomeLine = $_ ;
         chomp ($SomeLine) ;
-        if ($SomeLine =~ /\/Type \/Pages/io)
+        if ($SomeLine =~ /\/Type\s*\/Pages/io)
           { $PagesFound = 1 }
-        elsif ($SomeLine =~ /\/Type \/Page/io)
+        elsif ($SomeLine =~ /\/Type\s*\/Page/io)
           { ++$PageFound ;
             if ($PageFound>1) { last } }
         if ((($PageFound)||($PagesFound)) && ($SomeLine =~ /\/MediaBox /io))
@@ -2438,8 +2511,7 @@ sub InitializeFigures
   { $NOfFigures = 0 }
 
 sub FlushFigures
-  { $Figures = sort { lc ($a) cmp lc ($b) } $Figures ;
-    SetOutputFile ("texutil.tuf") ;
+  { SetOutputFile ("texutil.tuf") ;
     open ( TUF, ">$OutputFile" ) ;
     print TUF "%\n" . "% $Program / Figures\n" . "%\n" ;
     print TUF "\\thisisfigureversion\{1996.06.01\}\n" . "%\n" ;
@@ -2614,7 +2686,7 @@ my @dontasksuffixes =
      "mprun.mp",  "mprun.mpd",  "mprun.mpo",  "mprun.mpy") ;
 my @forsuresuffixes =
   ("tui","tup","ted","tes","top",
-   "log","tmp",
+   "log","tmp","run",
    "mpt","mpx","mpd","mpo") ;
 my @texonlysuffixes =
   ("dvi","ps","pdf") ;

@@ -159,7 +159,10 @@ var:reductie:ja,nee::
 var:rgb:ja,nee::
 var:cmyk:ja,nee::
 var:mpcmyk:ja,nee::
+var:mpspot:ja,nee::
 var:tekstkleur:*naam::
+var:splitsen:c,m,y,k,p,s,nee,*naam::
+var:criterium:alles,geen::
 stopsetup
 
 startsetup
@@ -699,9 +702,9 @@ startsetup
 com:stelomlijndin:
 typ:vars/:
 var:hoogte:passend,ruim,*maat::
-var:breedte:passend,ruim,*maat::
+var:breedte:passend,ruim,vast,*maat::
 var:offset:geen,overlay,default,*maat::
-var:plaats:laag,diepte::
+var:plaats:laag,diepte,hangend::
 var:optie:geen,leeg::
 var:strut:ja,nee::
 var:uitlijnen:nee,links,rechts,midden,normaal,hoog,laag,laho::
@@ -1291,6 +1294,12 @@ typ::
 stopsetup
 
 startsetup
+com:legeregels:
+typ:val/:
+val:*getal::
+stopsetup
+
+startsetup
 com:geenspatie:
 typ::
 stopsetup
@@ -1643,7 +1652,7 @@ var:rugoffset:*maat::
 var:kopoffset:*maat::
 var:letter:normaal,vet,schuin,vetschuin,type,kap,klein...,*commando::
 var:kleur:*naam::
-var:markering:aan,uit,kleur::
+var:markering:aan,uit,kleur,raster::
 var:plaats:links,midden,rechts,onder,boven, enkelzijdig,dubbelzijdig::
 var:schaal:*maat::
 var:nx:*getal::
@@ -1651,10 +1660,15 @@ var:ny:*getal::
 var:dx:*maat::
 var:dy:*maat::
 var:regels:*getal::
+var:kolommen:*getal::
+var:kolomafstand:*maat::
 var:grid:ja,nee::
-var:bodemwit:*getal::
-var:snijwit:*getal::
-var:tekstafstand:*getal::
+var:bodemwit:*maat::
+var:snijwit:*maat::
+var:tekstafstand:*maat::
+var:tekstbreedte:*getal::
+var:tekstmarge:*maat::
+var:clipoffset:*maat::
 stopsetup
 
 startsetup
@@ -1723,7 +1737,7 @@ var:onder:*getal::
 stopsetup
 
 startsetup
-com:stelnummeringin:
+com:stelpaginanummeringin:
 typ:vars/:
 var:variant:enkelzijdig,dubbelzijdig::
 var:plaats:hoofd,voet, links,rechts,midden, marge,kantlijn,inlinker,inrechter::
@@ -1739,6 +1753,7 @@ var:*sectienummer:ja,nee::
 var:scheider:*tekst::
 var:strut:ja,nee::
 var:status:start,stop::
+var:breedte:*maat::
 var:commando:*\commando#1::
 stopsetup
 
@@ -1777,6 +1792,10 @@ typ:vars/:
 var:sectienummer:ja,nummer,nee::
 var:variant:normaal,marge,midden,tekst,alinea::
 var:scheider:*tekst::
+var:uitlijnen:links,rechts,normaal,ruim::
+var:titeluitlijnen:ja,nee::
+var:tolerantie:zeerstreng,streng,soepel,zeersoepel,rek::
+var:springvolgendein:ja,nee::
 var:commando:*\commando#1#2::
 stopsetup
 
@@ -1818,6 +1837,9 @@ var:springvolgendein:ja,nee::
 var:nboven:*getal::
 var:nonder:*getal::
 var:nregels:*getal::
+var:default:*naam::
+var:linkermargeafstand:*maat::
+var:rechtermargeafstand:*maat::
 ivr:stelomlijndin::
 stopsetup
 
@@ -1961,6 +1983,13 @@ stopsetup
 startsetup
 com:geenlijst:
 typ:arg/:
+val:*tekst::
+stopsetup
+
+startsetup
+com:lijstsymbool:
+typ:val/arg/:
+val:*naam::
 val:*tekst::
 stopsetup
 
@@ -2164,6 +2193,8 @@ var:uitlijnen:binnen,buiten,links,rechts,midden,normaal,nee,ja::
 var:regel:*getal::
 var:afstand:*maat::
 var:scheider:*tekst::
+var:breedte:*maat::
+var:afstand:*maat::
 ivr:stelomlijndin::
 stopsetup
 
@@ -2205,6 +2236,19 @@ var:schaal:*getal::
 stopsetup
 
 startsetup
+com:stelpapierin:
+typ:vars/:
+var:papier:*naam::
+var:pagina:*naam::
+var:nx:*getal::
+var:ny:*getal::
+var:breedte:*maat::
+var:hoogte:*maat::
+var:kopwit:*maat::
+var:rugwit:*maat::
+stopsetup
+
+startsetup
 com:stelpapierformaatin:
 typ:vals/vals/:
 val:A3,A4,A5,A6,letter,...,CD,*naam, liggend,gespiegeld,geroteerd,90,180,270:A4:
@@ -2214,7 +2258,7 @@ stopsetup
 startsetup
 com:stelarrangerenin:
 typ:vals/:
-val:blokkeer, 2*16,2*8,2*4,2*2,2**2,2UP,2DOWN, gespiegeld,geroteerd,dubbelzijdig,negatief,90,180,270::
+val:blokkeer, 2*16,2*8,2*4,2*2,2**2,2*2*4,2*4*2,2UP,2DOWN,2SIDE,2TOP, gespiegeld,geroteerd,dubbelzijdig,negatief,90,180,270::
 stopsetup
 
 startsetup
@@ -2306,16 +2350,12 @@ var:variant:normaal,inmarge,midden,tekst::
 var:commando:*\commando#1#2::
 var:nummercommando:*\commando#1::
 var:tekstcommando:*\commando#1::
-var:scheider:*tekst::
 var:prefix:+,-,*tekst::
-var:plaatskop:ja,nee::
-var:verhoognummer:ja,nee,*file::
-var:uitlijnen:links,rechts,normaal,ruim::
-var:titeluitlijnen:ja,nee::
-var:tolerantie:zeerstreng,streng,soepel,zeersoepel,rek::
-var:springvolgendein:ja,nee::
+var:plaatskop:ja,nee,leeg::
+var:verhoognummer:ja,nee,lijst,*file::
 var:file:*naam::
 var:expansie:ja,commando,nee::
+ivr:stelkoppenin::
 stopsetup
 
 startsetup
@@ -3223,6 +3263,7 @@ var:uitlijnen:links,midden,rechts,normaal::
 var:lijndikte:*maat::
 var:afstand:blanko,grid,diepte,*maat,klein,middel,groot,geen::
 var:korps:5pt,...,12pt,klein,groot::
+var:lijn:normaal,regel::
 stopsetup
 
 startsetup
@@ -3395,6 +3436,7 @@ var:na:commando::
 var:afstand:*maat::
 var:hoogte:*maat,passend::
 var:breedte:*maat,passend::
+var:plaats:boven,midden,onder,links,rechts::
 var:uitlijnen:nee,links,rechts,midden,normaal::
 stopsetup
 
@@ -3798,6 +3840,7 @@ stopsetup
 startsetup
 com:stelcommentaarin:
 typ:vars/:
+var:status:start,stop::
 var:breedte:*maat::
 var:hoogte:*maat::
 var:kleur:*naam::

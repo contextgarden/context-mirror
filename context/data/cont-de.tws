@@ -159,7 +159,10 @@ var:reduktion:ja,nein::
 var:rgb:ja,nein::
 var:cmyk:ja,nein::
 var:mpcmyk:ja,nein::
+var:mpspot:ja,nein::
 var:textfarbe:*Name::
+var:split:c,m,y,k,p,s,nein,*Name::
+var:kriterium:alles,kein::
 stopsetup
 
 startsetup
@@ -699,9 +702,9 @@ startsetup
 com:stelleumrahmtein:
 typ:vars/:
 var:hoehe:passend,breit,*Dimension::
-var:breite:passend,breit,*Dimension::
+var:breite:passend,breit,fest,*Dimension::
 var:offset:kein,overlay,default,*Dimension::
-var:platz:tief,tiefe::
+var:platz:tief,tiefe,haengend::
 var:option:kein,leer::
 var:strut:ja,nein::
 var:ausrichtung:nein,links,rechts,mittig,normal,hoch,tief,hoti::
@@ -1291,6 +1294,12 @@ typ::
 stopsetup
 
 startsetup
+com:emptylines:
+typ:val/:
+val:*Nummer::
+stopsetup
+
+startsetup
 com:keinspatium:
 typ::
 stopsetup
@@ -1643,7 +1652,7 @@ var:rumpfabstand:*Dimension::
 var:kopfoffset:*Dimension::
 var:stil:normal,fett,geneigt,fettgeneigt,tippen,kap,klein...,*Befehl::
 var:farbe:*Name::
-var:beschriftung:an,aus,farbe::
+var:beschriftung:an,aus,farbe,raster::
 var:platz:links,mittig,rechts,unten,oben, einzelseitig,doppelseitig::
 var:format:*Dimension::
 var:nx:*Nummer::
@@ -1651,10 +1660,15 @@ var:ny:*Nummer::
 var:dx:*Dimension::
 var:dy:*Dimension::
 var:zeilen:*Nummer::
+var:spalten:*Nummer::
+var:spaltenabstand:*Dimension::
 var:gritter:ja,nein::
-var:bottomspace:*Nummer::
-var:cutspace:*Nummer::
-var:textdistance:*Nummer::
+var:bottomspace:*Dimension::
+var:cutspace:*Dimension::
+var:textdistance:*Dimension::
+var:textbreite:*Nummer::
+var:textmargin:*Dimension::
+var:clipoffset:*Dimension::
 stopsetup
 
 startsetup
@@ -1739,6 +1753,7 @@ var:*Abschnittnummer:ja,nein::
 var:seperator:*Text::
 var:strut:ja,nein::
 var:status:start,stop::
+var:breite:*Dimension::
 var:befehl:*\Befehl#1::
 stopsetup
 
@@ -1777,6 +1792,10 @@ typ:vars/:
 var:abschnittsnummer:ja,nummer,nein::
 var:alternative:normal,marginalie,mittig,text,absatz::
 var:seperator:*Text::
+var:ausrichtung:links,rechts,normal,breit::
+var:titelausrichten:ja,nein::
+var:toleranz:sehrstreng,streng,tolerant,sehrtolerant,strecken::
+var:ziehefolgendeein:ja,nein::
 var:befehl:*\Befehl#1#2::
 stopsetup
 
@@ -1818,6 +1837,9 @@ var:ziehefolgendeein:ja,nein::
 var:noben:*Nummer::
 var:nunten:*Nummer::
 var:zzeile:*Nummer::
+var:default:*Name::
+var:linkerrandabstand:*Dimension::
+var:rechterrandabstand:*Dimension::
 ivr:stelleumrahmtein::
 stopsetup
 
@@ -1961,6 +1983,13 @@ stopsetup
 startsetup
 com:keineliste:
 typ:arg/:
+val:*Text::
+stopsetup
+
+startsetup
+com:listsymbol:
+typ:val/arg/:
+val:*Name::
 val:*Text::
 stopsetup
 
@@ -2164,6 +2193,8 @@ var:ausrichtung:innen,aussen,links,rechts,mittig,normal,nein,ja::
 var:zeile:*Nummer::
 var:abstand:*Dimension::
 var:seperator:*Text::
+var:breite:*Dimension::
+var:abstand:*Dimension::
 ivr:stelleumrahmtein::
 stopsetup
 
@@ -2205,6 +2236,19 @@ var:format:*Nummer::
 stopsetup
 
 startsetup
+com:setuppaper:
+typ:vars/:
+var:papier:*Name::
+var:seite:*Name::
+var:nx:*Nummer::
+var:ny:*Nummer::
+var:breite:*Dimension::
+var:hoehe:*Dimension::
+var:kopfspatium:*Dimension::
+var:rumpfspatium:*Dimension::
+stopsetup
+
+startsetup
 com:stellepapierformatein:
 typ:vals/vals/:
 val:A3,A4,A5,A6,letter,...,CD,*Name, querformat,gespiegelt,gedreht,90,180,270:A4:
@@ -2214,7 +2258,7 @@ stopsetup
 startsetup
 com:stelleanordnenein:
 typ:vals/:
-val:sperren, 2*16,2*8,2*4,2*2,2**2,2UP,2DOWN, gespiegelt,gedreht,doppelseitig,negativ,90,180,270::
+val:sperren, 2*16,2*8,2*4,2*2,2**2,2*2*4,2*4*2,2UP,2DOWN,2SIDE,2TOP, gespiegelt,gedreht,doppelseitig,negativ,90,180,270::
 stopsetup
 
 startsetup
@@ -2306,16 +2350,12 @@ var:alternative:normal,imrand,mittig,text::
 var:befehl:*\Befehl#1#2::
 var:nummerbefehl:*\Befehl#1::
 var:textbefehl:*\Befehl#1::
-var:seperator:*Text::
 var:prefix:+,-,*Text::
-var:setzekopf:ja,nein::
-var:nummererhoehen:ja,nein,*Datei::
-var:ausrichtung:links,rechts,normal,breit::
-var:titelausrichten:ja,nein::
-var:toleranz:sehrstreng,streng,tolerant,sehrtolerant,strecken::
-var:ziehefolgendeein:ja,nein::
+var:setzekopf:ja,nein,leer::
+var:nummererhoehen:ja,nein,liste,*Datei::
 var:datei:*Name::
 var:expansion:ja,befehl,nein::
+ivr:stelleueberschriftenein::
 stopsetup
 
 startsetup
@@ -3223,6 +3263,7 @@ var:ausrichtung:links,mittig,rechts,normal::
 var:liniendicke:*Dimension::
 var:abstand:blanko,gritter,tiefe,*Dimension,klein,mittel,gross,kein::
 var:fliesstext:5pt,...,12pt,klein,gross::
+var:linie:normal,zeile::
 stopsetup
 
 startsetup
@@ -3395,6 +3436,7 @@ var:nach:commando::
 var:abstand:*Dimension::
 var:hoehe:*Dimension,passend::
 var:breite:*Dimension,passend::
+var:platz:boven,midden,onder,links,rechts::
 var:ausrichtung:nein,links,rechts,mittig,normal::
 stopsetup
 
@@ -3798,6 +3840,7 @@ stopsetup
 startsetup
 com:stellekommentarein:
 typ:vars/:
+var:status:start,stop::
 var:breite:*Dimension::
 var:hoehe:*Dimension::
 var:farbe:*Name::

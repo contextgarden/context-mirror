@@ -46,11 +46,11 @@
 %D \type {\redoglobal}. When using only alternatives, one can 
 %D reset this mechanism with \type {\resetglobal}. 
 
-\def\doglobal%
+\def\doglobal
   {\let\redoglobal\global
    \def\dodoglobal{\resetglobal\global}}
 
-\def\resetglobal%
+\def\resetglobal
   {\let\redoglobal\relax
    \let\dodoglobal\relax}
 
@@ -58,7 +58,7 @@
 
 %D New: 
 
-\def\doglobal%
+\def\doglobal
   {\ifx\redoglobal\relax
      \let\redoglobal\global
      \let\dodoglobal\@@dodoglobal
@@ -218,6 +218,10 @@
 % 
 % And this is the one optimized for speed:
 
+\def\!!zerocount {0} % alongside \zerocount 
+\def\!!minusone {-1} % alongside \minusone  
+\def\!!plusone   {1} % alongside \plusone
+
 \beginTEX
 
 \def\dodoindecrement#1(#2,#3)%
@@ -239,18 +243,22 @@
 
 \def\doincrement#1% 10% faster alternative
   {\ifx#1\undefined
-     \dodoglobal\edef#1{1}%
+    %\dodoglobal\edef#1{1}%
+     \dodoglobal\let#1\!!plusone
    \else\ifx#1\relax % \csname...\endcsname
-     \dodoglobal\edef#1{1}%
+    %\dodoglobal\edef#1{1}%
+     \dodoglobal\let#1\!!plusone
    \else
      \fastincrement#1%
    \fi\fi}
 
-\def\dodecrement#1% 10% faster alternative
+\def\dodecrement#1% 10% faster alternative 
   {\ifx#1\undefined
-     \dodoglobal\edef#1{\minusone}%
+    %\dodoglobal\edef#1{-1}%
+     \dodoglobal\let#1\!!minusone
    \else\ifx#1\relax % \csname...\endcsname
-     \dodoglobal\edef#1{\minusone}%
+    %\dodoglobal\edef#1{-1}%
+     \dodoglobal\let#1\!!minusone
    \else
      \fastdecrement#1%
    \fi\fi}
@@ -313,7 +321,7 @@
 
 \def\newsignal#1%
   {\ifx#1\undefined
-     \advance\maximumsignal by 2sp % to be save in rounding
+     \advance\maximumsignal 2sp % to be save in rounding
      \edef#1{\the\maximumsignal}%
    \fi}
 
@@ -367,7 +375,7 @@
 %D
 %D This expands to \type{\ifsomething}. 
 
-\def\strippedcsname%
+\def\strippedcsname
   {\expandafter\gobbleoneargument\string}
 
 %D \macros
@@ -530,10 +538,10 @@
 %D    \long\setvalue{\@@arecurse\recursedepth}{#5}%
 %D    \dodorecurse}
 %D 
-%D \def\donorecurse%
+%D \def\donorecurse
 %D   {}
 %D 
-%D \def\dododorecurse%
+%D \def\dododorecurse
 %D   {\edef\recurselevel{\csname\@@irecurse\recursedepth\endcsname}%
 %D    \getvalue{\@@arecurse\recursedepth}%
 %D    \edef\recurselevel{\csname\@@irecurse\recursedepth\endcsname}%
@@ -542,7 +550,7 @@
 %D    \setevalue{\@@irecurse\recursedepth}{\the\innerrecurse}%
 %D    \dodorecurse}
 %D 
-%D \def\dodorecurse%
+%D \def\dodorecurse
 %D   {\ifnum\csname\@@irecurse\recursedepth\endcsname
 %D          \csname\@@drecurse\recursedepth\endcsname
 %D          \csname\@@nrecurse\recursedepth\endcsname\relax
@@ -1060,7 +1068,7 @@
 %D powerful. 
 
 %D \macros
-%D   {convertargument,convertcommand}
+%D   {convertargument,convertcommand,convertvalue}
 %D
 %D Some persistent experimenting led us to the next macro. This
 %D macro converts a parameter or an expanded macro to it's
@@ -1093,37 +1101,50 @@
 
 \def\doconvertargument#1>{}
 
-\def\convertedcommand%
+\def\convertedcommand
   {\expandafter\doconvertargument\meaning}
 
+%\long\def\convertargument#1\to#2%
+%  {\long\def\convertedargument{#1}%
+%   \dodoglobal\edef#2{\convertedcommand\convertedargument}}
+
 \long\def\convertargument#1\to#2%
-  {\long\def\convertedargument{#1}%
-   \dodoglobal\edef#2{\convertedcommand\convertedargument}}
+  {\long\def#2{#1}% saves a restore 
+   \dodoglobal\edef#2{\convertedcommand#2}}
 
 \long\def\convertcommand#1\to#2%
   {\dodoglobal\edef#2{\convertedcommand#1}}
 
 \endTEX
 
+\def\convertvalue#1\to
+  {\expandafter\convertcommand\csname#1\endcsname\to}
+
 %D In \ETEX\ we can use \type {\detokenize} and gain some
 %D speed, but in general far less that 1\% for \type
 %D {\convertargument} and nil for \type {\convertcommand}. 
 %D This macro is more robust than the pure \TEX\ one, 
 %D something I found out when primitives like \type 
-%D {\jobname}.
+%D {\jobname} were fed (or something undefined).
 
 \beginETEX \detokenize 
 
 \long\def\convertargument#1\to#2%
   {\dodoglobal\edef#2{\detokenize{#1}}}
-
+ 
 % \long\def\convertcommand#1\to#2% 
 %   {\@EA\dodoglobal\@EA\edef\@EA#2\@EA{\@EA\detokenize\@EA{#1}}}
-
+ 
 \long\def\convertcommand#1\to#2% 
   {\dodoglobal\edef#2{\@EA\detokenize\@EA{#1}}}
 
 \endETEX
+
+%D When you try to convert a primitive command, you'll find
+%D out that the \ETEX\ method fails on for instance \type
+%D {\jobname} in the sense that it returns the filename
+%D instead of just \type {\jobname}. So far this does not 
+%D give real problems. 
 
 %D This is typically a macro that one comes to after reading
 %D the \TEX book carefully. Even then, the definite solution
@@ -1137,13 +1158,11 @@
 %D The \type{-}, the delimiter \type{\\\\} and the the second 
 %D argument are completely redundant.
 
-% this does not work ok yet 
-% 
 % %D As said, the \TEX\ alternative fails on expanding primitives,
 % %D like in: 
 % %D 
 % %D \starttypen
-% %D \convertcommand\jobname\to\ascii
+% %D \convertcommand\someprimitive\to\ascii
 % %D \stoptypen
 % %D 
 % %D Because these primitives convert to themselves, we can use 
@@ -1152,24 +1171,26 @@
 % %D more robust alternative. The catcode trickery is needed to
 % %D get the backslash into the test as character (and not as 
 % %D escape, letter or whatever code else). 
-% 
-% \beginTEX 
-% 
-% \let\dodoconvertargument\doconvertargument
-% 
-% \bgroup
-%   \catcode`\*=\@@escape
-%   \catcode`\\=\@@other
-%   *gdef*doconvertargument#1%
-%     {*ifx#1\*else*expandafter*dodoconvertargument*fi#1}
-% *egroup
-% 
-% \endTEX
+% %
+% % does not work:
+% % 
+% % \beginTEX 
+% %
+% % \let\dodoconvertargument\doconvertargument
+% %
+% % \bgroup
+% %   \catcode`\*=\@@escape
+% %   \catcode`\\=\@@other
+% %   *gdef*doconvertargument#1%
+% %     {*ifx#1\*else*expandafter*dodoconvertargument*fi#1}
+% % *egroup
+% % 
+% % \endTEX
 
 %D \macros
 %D   {showvalue,showargument}
 %D
-%D A handy macro for testing purposes only, is the following: 
+%D Two handy macros for testing purposes only: 
 
 \def\showvalue#1%
   {\expandafter\show\csname#1\endcsname}
@@ -1191,24 +1212,49 @@
 %D
 %D Watch the one level expansion of the second argument. 
 
-\def\doifmeaningelse#1#2#3#4%
+\def\doifmeaningelse#1#2%
   {\edef\!!stringa{\meaning#1}%
    \def\!!stringb{#2}\edef\!!stringb{\meaning\!!stringb}%
-   \ifx\!!stringa\!!stringb#3\else#4\fi}
+   \ifx\!!stringa\!!stringb
+     \expandafter\firstoftwoarguments
+   \else
+     \expandafter\secondoftwoarguments
+   \fi}
 
 %D \macros
-%D   {doifsamestringselse}
+%D   {doifsamestringselse,doifsamestring,doifnotsamestring}
 %D
 %D The next comparison macro converts the arguments into 
 %D expanded strings. This command can be used to compare for 
 %D instance \type {\jobname} with a name stored in a macro. 
 
-\def\doifsamestringelse#1#2#3#4%
+\def\@@doifsamestringelse#1#2%
   {\edef\!!stringa{#1}%
    \edef\!!stringb{#2}%
    \convertcommand\!!stringa\to\!!stringa
    \convertcommand\!!stringb\to\!!stringb   
-   \ifx\!!stringa\!!stringb#3\else#4\fi}
+   \ifx\!!stringa\!!stringb}
+
+\def\doifsamestringelse#1#2%
+  {\@@doifsamestringelse{#1}{#2}%
+     \expandafter\firstoftwoarguments
+   \else
+     \expandafter\secondoftwoarguments
+   \fi}
+
+\def\doifsamestring#1#2%
+  {\@@doifsamestringelse{#1}{#2}%
+     \expandafter\firstofoneargument
+   \else
+     \expandafter\gobbleoneargument
+   \fi}
+
+\def\doifnotsamestring#1#2%
+  {\@@doifsamestringelse{#1}{#2}%
+     \expandafter\gobbleoneargument
+   \else
+     \expandafter\firstofoneargument
+   \fi}
 
 %D \macros
 %D   {ExpandFirstAfter,ExpandSecondAfter,ExpandBothAfter}
@@ -1237,10 +1283,10 @@
 %D but the faster \type{\ExpandAfter} does not.
 
 \def\simpleExpandFirstAfter#1%
-  {\edef\@@expanded{\noexpand\ExpandCommand{#1}}\@@expanded}
+  {\long\xdef\@@expanded{\noexpand\ExpandCommand{#1}}\@@expanded}
 
 \def\complexExpandFirstAfter[#1]%
-  {\edef\@@expanded{\noexpand\ExpandCommand[#1]}\@@expanded}
+  {\long\xdef\@@expanded{\noexpand\ExpandCommand[#1]}\@@expanded}
 
 \def\ExpandFirstAfter#1%
   {\let\ExpandCommand#1%
@@ -1248,13 +1294,13 @@
 
 \def\ExpandSecondAfter#1#2#3%
   {\scratchtoks{#2}%
-   \edef\@@expanded{\noexpand#1{\the\scratchtoks}{#3}}\@@expanded}
+   \long\xdef\@@expanded{\noexpand#1{\the\scratchtoks}{#3}}\@@expanded}
 
 \def\ExpandBothAfter#1#2#3%
-  {\edef\@@expanded{\noexpand#1{#2}{#3}}\@@expanded}
+  {\long\xdef\@@expanded{\noexpand#1{#2}{#3}}\@@expanded}
 
 \def\ExpandAfter#1#2%
-  {\edef\@@expanded{\noexpand#1{#2}}\@@expanded}
+  {\long\xdef\@@expanded{\noexpand#1{#2}}\@@expanded}
 
 %D Now we can for instance define \type{\ifinstringelse} as:
 
@@ -1335,7 +1381,7 @@
 \def\CheckConstantAfter#1#2%
   {\@EA\convertargument\v!prefix!\to\ascii
    \convertargument#1\to#2\relax
-   \doifinstringelse{\ascii}{#2}
+   \doifinstringelse\ascii{#2}
      {\expandafter\convertargument#1\to#2}
      {}}
 
@@ -1356,7 +1402,7 @@
 %D We don't explicitly test if the macro is defined.
 
 \def\assignifempty#1#2% can be sped up 
-  {\doifnot{#1}{}{\def#1{#2}}}
+  {\doifsomething{#1}{\def#1{#2}}} % {\doifnot{#1}{}{\def#1{#2}}}
 
 %D \macros
 %D   {gobbleuntil,grabuntil,gobbleuntilrelax,
@@ -1385,9 +1431,9 @@
 %D \grabuntil{stop}\command
 %D \stoptypen
 %D
-%D This commands executed, after having encountered
-%D \type{\stop} the command \type{\command}. This command
-%D receives as argument the text preceding the \type{\stop}.
+%D This commands executes, after having encountered
+%D \type {\stop} the command \type {\command}. This command
+%D receives as argument the text preceding the \type {\stop}.
 %D This means that:
 %D
 %D \starttypen
@@ -1428,8 +1474,7 @@
 %D everything preceding \type{\command}.
 
 \long\def\processbetween#1#2%
-  {\setvalue{\s!start#1}%
-     {\grabuntil{\s!stop#1}{#2}}}
+  {\setvalue{\s!start#1}{\grabuntil{\s!stop#1}{#2}}}
 
 \def\gobbleuntil#1%
   {\long\def\next##1#1{}\next}
@@ -1545,10 +1590,8 @@
 
 \long\def\HandleGroup#1#2%
   {\bgroup
-   \long\def\BeforeGroup%
-     {\bgroup#1\bgroup\aftergroup\AfterGroup}%
-   \long\def\AfterGroup%
-     {#2\egroup\egroup}%
+   \long\def\BeforeGroup{\bgroup#1\bgroup\aftergroup\AfterGroup}%
+   \long\def\AfterGroup {#2\egroup\egroup}%
    \afterassignment\BeforeGroup
    \let\next=}
 
@@ -1696,20 +1739,7 @@
 
 \let\endoflinetoken=^^M
 
-%\def\doGotoPar%
-%  {\ifx\nextchar\blankspace
-%     \let\donext\GotoPar
-%   \else\ifx\nextchar\endoflinetoken
-%     \let\donext\GotoPar
-%   \else
-%     \def\donext%
-%       {\the\BeforePar
-%        \BeforePar\emptytoks
-%        \nextchar}%
-%   \fi\fi
-%   \donext}
-
-\def\doGotoPar%
+\def\doGotoPar
   {\ifx\nextchar\blankspace
      \@EA\GotoPar
    \else\ifx\nextchar\endoflinetoken
@@ -1723,29 +1753,14 @@
    \BeforePar\emptytoks
    \nextchar}
 
-\def\GotoPar%
+\def\GotoPar
   {\afterassignment\doGotoPar\let\nextchar=}
 
 %D Its big brother \type{\GetPar} redefines the \type{\par}
 %D primitive, which can lead to unexpected results, depending
 %D in the context.
 
-% \def\GetPar%
-%   {\edef\next%
-%      {\BeforePar
-%         {\the\BeforePar
-%          \BeforePar\emptytoks
-%          \bgroup
-%          \def\par%
-%            {\egroup
-%             \par
-%             \the\AfterPar
-%             \BeforePar\emptytoks
-%             \AfterPar\emptytoks}}}%
-%    \next
-%    \GotoPar}
-
-\def\GetPar%
+\def\GetPar
   {\expanded
      {\BeforePar
         {\the\BeforePar
@@ -1758,6 +1773,29 @@
             \BeforePar\emptytoks
             \AfterPar\emptytoks}}}%
    \GotoPar}
+
+%D New and better alternatives: 
+
+\def\dowithpar#1#2%
+  {\def\handlepar##1\par{#1##1#2}% 
+   \def\gobblepar\par{\dowithpar{#1}{#2}}% 
+   \doifnextcharelse\par\gobblepar\handlepar}
+
+% nicer 
+
+\def\redowithpar\par
+  {\doifnextcharelse\par\redowithpar\dodowithpar}% 
+
+\def\dowithpar#1#2%
+  {\def\dodowithpar##1\par{#1##1#2}% 
+   \redowithpar\par}
+
+\def\redogotopar\par
+  {\doifnextcharelse\par\redogotopar\dodogotopar}% 
+
+\def\dogotopar#1%
+  {\def\dodogotopar{#1}% 
+   \redogotopar\par}
 
 %D \macros
 %D   {dowithpargument,dowithwargument}
@@ -1915,6 +1953,8 @@
 %D we get ourselves three \type{\message{Hello}} messages in
 %D a row. In both commands, the \type{n*} is optional. When this
 %D specification is missing, the command executes once.
+
+% ! ! ! obsolete ! ! ! 
 
 \def\dorepeat[#1]%
   {\dodorepeat#1*\empty*\relax}
@@ -2169,27 +2209,29 @@
 %D here:
 
 \def\makecounter#1%
-  {\global\letvalue{#1}\zerocountervalue} % see earlier
+  {\letgvalue{#1}\zerocountervalue} % see earlier
+
+% \def\countervalue#1%
+%   {\getvalue{#1}}
+
+\let\countervalue\getvalue
 
 \def\pluscounter#1%
-  {\scratchcounter=\getvalue{#1}\relax
+  {\scratchcounter\getvalue{#1}%
    \advance\scratchcounter \plusone
    \setxvalue{#1}{\the\scratchcounter}}
 
 \def\minuscounter#1%
-  {\scratchcounter=\getvalue{#1}\relax
+  {\scratchcounter\getvalue{#1}%
    \advance\scratchcounter \minusone
    \setxvalue{#1}{\the\scratchcounter}}
 
 \def\resetcounter#1%
-  {\global\letvalue{#1}\zerocountervalue} 
+  {\letgvalue{#1}\zerocountervalue} 
 
 \def\setcounter#1#2%
-  {\scratchcounter=#2\relax
+  {\scratchcounter#2%
    \setxvalue{#1}{\the\scratchcounter}}
-
-\def\countervalue#1%
-  {\getvalue{#1}}
 
 %D \macros
 %D   {savecounter,restorecounter}
@@ -2214,6 +2256,9 @@
 \def\makecounter#1%
   {\global\@EA\let\csname#1\endcsname\zerocountervalue} % see earlier
 
+\def\countervalue#1%
+  {\csname#1\endcsname}
+
 \def\pluscounter#1%
   {\@EA\xdef\csname#1\endcsname{\the\numexpr(\csname#1\endcsname+1)}}
 
@@ -2225,9 +2270,6 @@
 
 \def\setcounter#1#2%  
   {\@EA\xdef\csname#1\endcsname{\the\numexpr(#2)}}
-
-\def\countervalue#1%
-  {\csname#1\endcsname}
 
 \def\savecounter#1%
   {\@EA\xdef\csname !#1\endcsname{\the\numexpr(\csname#1\endcsname)}}
@@ -2278,6 +2320,46 @@
   {\def\dosplitstring##1#2##2#2##3\\%
      {\def#3{##1}\def#4{##2}}%
    \@EA\dosplitstring#1#2#2\\}
+
+%D \macros 
+%D   {beforetestandsplitstring,
+%D    aftertestandsplitstring,
+%D    testandsplitstring}
+%D 
+%D The next alternatives are for Simon Pepping. This time 
+%D the result is empty when no split is done. 
+
+% \def\beforetestandsplitstring#1\at#2\to#3%
+%   {\def\dosplitstring##1#2##2#2##3\\{\doifelsenothing
+%      {##3}{\let#3\empty}{\def#3{##1}}}%
+%    \@EA\dosplitstring#1#2#2\\}
+% 
+% \def\aftertestandsplitstring#1\at#2\to#3%
+%   {\def\dosplitstring ##1#2##2@@@##3\\{\doifelsenothing
+%      {##3}{\let#3\empty}{\def#3{##2}}}%
+%    \@EA\dosplitstring #1@@@#2@@@\\}
+% 
+% \def\testandsplitstring#1\at#2\to#3\and#4%
+%   {\def\dosplitstring##1#2##2#2##3\\{\doifelsenothing
+%      {##3}{\let#3\empty\let#4\empty}{\def#3{##1}\def#4{##2}}}%
+%    \@EA\dosplitstring#1#2#2\\}
+% 
+% faster: 
+
+\def\beforetestandsplitstring#1\at#2\to#3%
+  {\def\dosplitstring##1#2##2#2##3##4\\%
+     {\ifx##3\empty\let#3\empty\else\def#3{##1}\fi}%
+   \@EA\dosplitstring#1#2#2\empty\\}
+
+\def\aftertestandsplitstring#1\at#2\to#3%
+  {\def\dosplitstring ##1#2##2@@@##3##4\\%
+     {\ifx##3\empty\let#3\empty\else\def#3{##2}\fi}%
+   \@EA\dosplitstring #1@@@#2@@@\empty\\}
+
+\def\testandsplitstring#1\at#2\to#3\and#4%
+  {\def\dosplitstring##1#2##2#2##3##4\\%
+     {\ifx##3\empty\let#3\empty\let#4\empty\else\def#3{##1}\def#4{##2}\fi}%
+   \@EA\dosplitstring#1#2#2\empty\\}
 
 %D \macros
 %D   {removesubstring}
@@ -2516,7 +2598,7 @@
       \advance\commalistcounter\plusone}%
    \let\commalistelement\empty
    \let\newcommalist\empty
-   \commalistcounter=1
+   \commalistcounter\plusone
    \@EA\processcommalist\@EA[#1]\doreplaceincommalist
    \dodoglobal\let#1\newcommalist}
 
@@ -2536,7 +2618,7 @@
    \fi}
 
 \def\globalprocesscommalist[#1]#2%
-  {\global\let\globalcommacommand=#2%
+  {\global\let\globalcommacommand#2%
    \expandafter\globalprocesscommaitem#1,],}
 
 %D \macros
@@ -2562,11 +2644,8 @@
    \!!stringa
    \endgroup}
 
-\def\withoutpt#1%
-  {\withoutunit{#1}{pt}}
-
-\def\withoutcm#1%
-  {\withoutunit{#1}{cm}}
+\def\withoutpt#1{\withoutunit{#1}{pt}}
+\def\withoutcm#1{\withoutunit{#1}{cm}}
 
 %D A bit faster and more robust alternative is one that 
 %D manipulates the \CATCODES.
@@ -2589,8 +2668,8 @@
 
 \def\PtToCm#1%
   {\begingroup
-   \scratchdimen=#1\relax
-   \scratchdimen=0.0351459804\scratchdimen % 2.54/72.27
+   \scratchdimen#1\relax
+   \scratchdimen0.0351459804\scratchdimen % 2.54/72.27
    \withoutpt{\the\scratchdimen}cm%
    \endgroup}
 
@@ -2604,15 +2683,15 @@
 %D Both macros return a rounded number.
 
 \def\numberofpoints#1%
-  {\scratchdimen=#1\relax
+  {\scratchdimen#1%
    \advance\scratchdimen .5pt
    \withoutpt{\the\scratchdimen}}
 
 \def\dimensiontocount#1#2%
-  {\scratchdimen=#1\relax
+  {\scratchdimen#1%
    \advance\scratchdimen .5pt
-   #2=\scratchdimen
-   \divide#2 by \maxcard}
+   #2\scratchdimen
+   \divide#2 \maxcard}
 
 %D \macros
 %D   {swapdimens,swapmacros}
@@ -2721,7 +2800,7 @@
 \newdimen\localhsize
 
 \def\complexsetlocalhsize[#1]% don't change !
-  {\localhsize=\hsize
+  {\localhsize\hsize
  % \advance\localhsize -\parindent % changed anyway
    \advance\localhsize -\leftskip
    \advance\localhsize -\rightskip
@@ -2800,9 +2879,9 @@
 \def\dodoprocesstokens
   {\ifx\nextprocessedtoken\lastcharacter
      \after
-     \let\nextprocessedtoken=\relax
+     \let\nextprocessedtoken\relax
    \else\ifx\nextprocessedtoken\bgroup
-     \def\nextprocessedtoken%
+     \def\nextprocessedtoken
        {\dowithnextbox
           {\before{\copy\nextbox}% \before can use nextbox several times 
            \let\before\between
@@ -2816,7 +2895,7 @@
        \before\nextprocessedtoken
        \let\before\between
      \fi
-     \let\nextprocessedtoken=\doprocesstokens
+     \let\nextprocessedtoken\doprocesstokens
    \fi\fi
    \nextprocessedtoken}
 
@@ -2957,14 +3036,26 @@
 %D  
 %D Also handy: 
 
-\long\def\doifemptyelsevalue#1#2#3%
-  {\@EA\ifx\csname#1\endcsname\empty#2\else#3\fi}
+\def\doifemptyelsevalue#1%
+  {\@EA\ifx\csname#1\endcsname\empty
+     \expandafter\firstoftwoarguments
+   \else
+     \expandafter\secondoftwoarguments
+   \fi}
 
-\long\def\doifemptyvalue#1#2%
-  {\@EA\ifx\csname#1\endcsname\empty#2\fi}
+\def\doifemptyvalue#1%
+  {\@EA\ifx\csname#1\endcsname\empty
+     \expandafter\firstofoneargument
+   \else
+     \expandafter\gobbleoneargument
+   \fi}
 
-\long\def\doifnotemptyvalue#1#2%
-  {\@EA\ifx\csname#1\endcsname\empty\else#2\fi}
+\def\doifnotemptyvalue#1%
+  {\@EA\ifx\csname#1\endcsname\empty
+     \expandafter\gobbleoneargument
+   \else
+     \expandafter\firstofoneargument
+   \fi}
 
 %D \macros
 %D   {doifallcommonelse}
@@ -3015,29 +3106,32 @@
 %D We have to use a two||step implementation, because the
 %D expansion has to take place outside \type{\uppercase}.
 
-\def\p!DOIF#1#2#3%
+\def\p!DOIF#1#2%
   {\uppercase{\ifinstringelse{$#1$}{$#2$}}%
-     #3%
-   \fi}
-
-\def\p!DOIFNOT#1#2#3%
-  {\uppercase{\ifinstringelse{$#1$}{$#2$}}%
+     \expandafter\firstofoneargument
    \else
-     #3%
+     \expandafter\gobbleoneargument  
    \fi}
 
-\def\p!DOIFELSE#1#2#3#4%
+\def\p!DOIFNOT#1#2%
   {\uppercase{\ifinstringelse{$#1$}{$#2$}}%
-     #3%
+     \expandafter\gobbleoneargument  
    \else
-     #4%
+     \expandafter\firstofoneargument
    \fi}
 
-\def\p!DOIFINSTRINGELSE#1#2#3#4%
+\def\p!DOIFELSE#1#2%
+  {\uppercase{\ifinstringelse{$#1$}{$#2$}}%
+     \expandafter\firstoftwoarguments  
+   \else
+     \expandafter\secondoftwoarguments 
+   \fi}
+
+\def\p!DOIFINSTRINGELSE#1#2%             
   {\uppercase{\ifinstringelse{#1}{#2}}%
-     #3%
+     \expandafter\firstoftwoarguments  
    \else
-     #4%
+     \expandafter\secondoftwoarguments 
    \fi}
 
 \def\DOIF             {\ExpandBothAfter\p!DOIF}
@@ -3071,16 +3165,13 @@
 %D to enclosed in \type{{}}.
 
 \def\stripcharacter#1\from#2\to#3%
-  {\def\dostripcharacter##1#1##2\end%
+  {\def\dostripcharacter##1#1##2\end
      {\edef\!!strippedstring{\!!strippedstring##1}%
-      \doifemptyelse{##2}
-        {\let\next=\relax}
-        {\def\next{\dostripcharacter##2\end}}%
-      \next}%
-   \let\!!strippedstring=\empty
+      \doifnotempty{##2}{\dostripcharacter##2\end}}%
+   \let\!!strippedstring\empty
    \edef\!!stringa{#2}%
    \@EA\dostripcharacter\!!stringa#1\end
-   \dodoglobal\let#3=\!!strippedstring}
+   \dodoglobal\let#3\!!strippedstring}
 
 \def\stripspaces\from#1\to#2%
   {\stripcharacter{ }\from#1\to#2}
@@ -3138,11 +3229,24 @@
 
 \endETEX
 
-
 %D This one also has the advantage that it is fully 
 %D expandable and that it can be used after an assignment. 
 
-%D We considered an alternative imlementation accepting
+%D \macros 
+%D   {executeifdefinedcs}
+%D
+%D An also fully expandable variant is the following: 
+%D 
+%D \starttypen
+%D \executeifdefinedcs{a}{b}
+%D \stoptypen
+%D 
+%D In dit geval zijn beide argumenten csnames. 
+
+\def\executeifdefinedcs#1#2%
+  {\csname\ifundefined{#1}#2\else#1\fi\endcsname}
+
+%D We considered an alternative implementation accepting
 %D commands directly, like:
 %D
 %D \starttypen
@@ -3151,6 +3255,22 @@
 %D
 %D For the moment we don't need this one, so we stick to the
 %D faster one. 
+
+%D \macros
+%D   {executeandforget}
+%D 
+%D The following macros were requested by Simon. Watch the 
+%D global variant. 
+%D 
+%D \starttypen 
+%D          \executeandforget\SomeCommand
+%D \doglobal\executeandforget\AnotherCommand
+%D \stoptypen 
+
+\def\executeandforget#1%
+  {\global\let\@@expanded#1%
+   \dodoglobal\let#1\relax 
+   \@@expanded}
 
 %D \macros
 %D   {doifsomespaceelse}
@@ -3199,9 +3319,9 @@
 
 \def\doadaptdimension#1#2\\#3\\%
   {\if#1+%
-     \dodoglobal\advance#3 by #1#2\relax
-   \else\if##1-%
-     \dodoglobal\advance#3 by #1#2\relax
+     \dodoglobal\advance#3 #1#2\relax
+   \else\if#1-%
+     \dodoglobal\advance#3 #1#2\relax
    \else
      \dodoglobal#3=#1#2\relax
    \fi\fi}
@@ -3223,9 +3343,9 @@
 %D has the opposite result.
 
 \def\balancedimensions#1#2#3%
-  {\scratchdimen=#3\relax
-   \redoglobal\advance#1 by \scratchdimen\relax
-   \dodoglobal\advance#2 by -\scratchdimen\relax}
+  {\scratchdimen#3\relax
+   \redoglobal\advance#1  \scratchdimen
+   \dodoglobal\advance#2 -\scratchdimen}
 
 %D Both commands can be preceded by \type{\doglobal}. Here we
 %D use \type{\redo} first, because \type{\dodo} resets the 
@@ -3362,7 +3482,7 @@
 
 \def\processassignlist#1[#2]#3%
   {\def\p!dodogetparameter[##1=##2=##3]%
-     {\doifnot{##3}{\relax}{#3{##1}}}%
+     {\doifnot{##3}\relax{#3{##1}}}%
    \def\p!dogetparameter##1%
      {\p!dodogetparameter[##1==\relax]}%
    \processcommalist[#2]\p!dogetparameter}
@@ -3412,13 +3532,10 @@
 \long\def\dountexsomething#1#2\to#3%
   {\doglobal#1#2\to\untexedargument
    \endgroup
-   \let#3=\untexedargument}
+   \let#3\untexedargument}
 
-\def\untexargument%
-  {\untexsomething\convertargument}
-
-\def\untexcommand%
-  {\untexsomething\convertcommand}
+\def\untexargument{\untexsomething\convertargument}
+\def\untexcommand {\untexsomething\convertcommand}
 
 %D \macros
 %D   {ScaledPointsToBigPoints,ScaledPointsToWholeBigPoints}
@@ -3462,7 +3579,7 @@
 %D \stoptypen 
 
 \def\PointsToReal#1#2%
-  {\scratchdimen=#1%  
+  {\scratchdimen#1%  
    \edef#2{\withoutpt{\the\scratchdimen}}}
 
 %D \macros 
@@ -3481,9 +3598,9 @@
 
 %\def\dontleavehmode{\ifhmode\else\ifmmode\else$ $\fi\fi}
 %
-% The (thanks to Taco) better alternative: 
+% The (thanks to Taco) better alternative (mathsurround): 
 
-\def\dontleavehmode%
+\def\dontleavehmode
   {\ifhmode\else \ifmmode\else
      {\mathsurround\z@\everymath\emptytoks$ $}%
    \fi \fi}
@@ -3583,7 +3700,7 @@
 %D {\doglobal}.  
 
 \def\counttoken#1\in#2\to#3%
-  {\redoglobal#3=\zerocount
+  {\redoglobal#3\zerocount
    \def\!!stringa{#1}%
    \def\!!stringb{\end}%
    \def\docounttoken##1% obeys {}
@@ -3605,14 +3722,14 @@
 %D wrote this token handler. 
 
 \long\def\splitofftokens#1\from#2\to#3%
-  {\ifnum#1>0
-     \scratchcounter=#1\relax
+  {\ifnum#1>\zerocount
+     \scratchcounter#1\relax
      \def\dosplitofftokens##1%
-       {\ifnum\scratchcounter>0
+       {\ifnum\scratchcounter>\zerocount
           \advance\scratchcounter \minusone
           \edef#3{#3##1}%
         \fi}%
-     % \let#3=\empty % #3 can be #2, so:  
+   % \let#3\empty % #3 can be #2, so:  
      \@EA\let\@EA#3\@EA\empty
      \@EA\handletokens#2\with\dosplitofftokens
    \else
@@ -3651,11 +3768,11 @@
 %D way we can handle the sentinal, a blank space and grouped 
 %D tokens. 
 
-\def\dohandletokens% 
+\def\dohandletokens
   {\futurelet\nexthandledtoken\dodohandletokens}
 
 \long\def\handletokens#1\with#2%
-  {\global\let\dododohandletokens=#2% 
+  {\global\let\dododohandletokens#2% 
    \dohandletokens#1\end}
 
 %D A previous version said \type{\docommando=#2}, but to enable
@@ -3692,7 +3809,7 @@
 %D
 %D So, now we have:
 
-\def\dodohandletokens%
+\def\dodohandletokens % can be sped up 
   {\ifx\nexthandledtoken\blankspace
      \def\next * {\dododohandletokens{ }\dohandletokens}%
    \else\ifx\nexthandledtoken\end
@@ -3751,10 +3868,10 @@
 \def\dostartglobaldefs#1#2%
   {\edef\!!stringa{\the\globaldefs}%
    \ifnum\globaldefs#10
-     \globaldefs=-\globaldefs
+     \globaldefs-\globaldefs
    \fi
-   \advance\globaldefs #21
-   \setevalue{@gd@\the\globaldefs}{\!!stringa}}
+   \advance\globaldefs#21
+   \letvalue{@gd@\the\globaldefs}\!!stringa}
 
 \def\dostopglobaldefs%
   {\doifdefinedelse{@gd@\the\globaldefs}
@@ -3893,7 +4010,7 @@
     \else
       \def\!!tempa{#1}%
       \ifx\!!tempa\empty\else
-        \scratchcounter=1
+        \scratchcounter\plusone
         \@EA\getcommalistsize\@EA[\sortedcommalist]%
         \@EA\processcommalist\@EA[\sortedcommalist]\docompareitems
       \fi
@@ -3930,14 +4047,14 @@
    {\doifnumberelse{#1}
       {\doifnumberelse{#2}
          {\ifnum#1>#2\relax 
-            \comparedresult=1       % #1 is larger
+            \comparedresult1       % #1 is larger
           \else\ifnum#1<#2\relax
-            \comparedresult=2       % #2 is larger
+            \comparedresult2       % #2 is larger
           \else
-            \comparedresult=0       % both are equal
+            \comparedresult0       % both are equal
           \fi\fi}
-         {\comparedresult=2 }}
-      {\comparedresult=1 }}
+         {\comparedresult2 }}
+      {\comparedresult1 }}
 
 %D \macros
 %D   {@saveprimitive}
@@ -3955,15 +4072,15 @@
   \edef\@tempb{\meaning#1}%
   \ifx\@tempa\@tempb 
     \global\let#2#1%
-    \debuggerinfo{prim}{Saving \string#1 as \string#2}%
+   %\debuggerinfo{prim}{Saving \string#1 as \string#2}%
   \else
     \edef\@tempb{\meaning#2}%
-    \ifx\@tempa\@tempb
-      \debuggerinfo{prim}{Saving \string#1 as \string#2}%
-    \else
-      \debuggerinfo{prim}{Can't define \string#2 properly; 
-        primitive \noexpand#1 is no longer primitive}%
-    \fi
+   %\ifx\@tempa\@tempb
+   %  \debuggerinfo{prim}{Saving \string#1 as \string#2}%
+   %\else
+   %  \debuggerinfo{prim}{Can't define \string#2 properly; 
+   %    primitive \noexpand#1 is no longer primitive}%
+   %\fi
   \fi
   \endgroup}
 

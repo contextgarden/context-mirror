@@ -108,13 +108,15 @@
 
 % BETER: check for context and include mp-tool.mp
 
-\def\startTPICspecials%
+\def\startTPICspecials
   {\bgroup
-   \let\startTPICspecials=\relax
+   \let\startTPICspecials\relax
    \aftergroup\stopTPICspecials
-   \startwritingMPgraphic
-   \writeMPgraphic{input mp-tool.mp;}%
-   \writeMPgraphic{pair p[];}}
+   \resetMPdrawing
+   \startMPdrawing
+     input mp-tool.mp;
+     pair p[];
+   \stopMPdrawing}
 
 %D As soon as we begin a picture, we inhibit nesting by
 %D relaxing the start macro. The first \METAPOST\ action we
@@ -125,18 +127,19 @@
 %D reflect the current \METAPOST\ picture, stored in the system
 %D variable {\it currentpicture}, around the $x$-axis.
 
-\def\stopTPICspecials% needs to be adapted to direct run -> \useMPgraphic
-  {\writeMPgraphic   % otherwise \flushMPgraphics interferes
-     {currentpicture:=currentpicture reflectedabout ((0,0),(4095,0));}%
-   \stopwritingMPgraphic
-   \flushMPgraphics
-   \loadcurrentMPgraphic{}%
-   \setbox\MPgraphicbox=\hbox to \!!zeropoint
+\def\stopTPICspecials
+  {\startMPdrawing 
+     currentpicture:=currentpicture reflectedabout ((0,0),(4095,0));
+   \stopMPdrawing
+   \MPdrawingdonetrue 
+   \setbox\MPgraphicbox\hbox
+     {\getMPdrawing}%
+   \setbox\MPgraphicbox\hbox to \zeropoint
      {\kern-\wd\MPgraphicbox
-      \vbox to \!!zeropoint{\box\MPgraphicbox\vss}\hss}%
-   \ht\MPgraphicbox=\!!zeropoint
-   \wd\MPgraphicbox=\!!zeropoint
-   \dp\MPgraphicbox=\!!zeropoint
+      \vbox to \zeropoint{\box\MPgraphicbox\vss}\hss}%
+   \ht\MPgraphicbox\zeropoint
+   \wd\MPgraphicbox\zeropoint
+   \dp\MPgraphicbox\zeropoint
    \box\MPgraphicbox
    \egroup}
 
@@ -178,17 +181,21 @@
 \redefinespecial pa \using#1 #2\endspecial
   {\startTPICspecials
    \bgroup
-   \global\advance\TPICcounter by 1
+   \global\advance\TPICcounter 1
    \dimen0=#1pt \dimen0=.07227\dimen0
    \dimen2=#2pt \dimen2=.07227\dimen2
-   \writeMPgraphic{p[\the\TPICcounter]:=(\the\dimen0,\the\dimen2);}%
+   \startMPdrawing
+     p[\the\TPICcounter]:=(\the\dimen0,\the\dimen2);
+   \stopMPdrawing
    \egroup}
 
 \redefinespecial pn \using#1\endspecial
   {\startTPICspecials
    \bgroup
    \dimen0=#1pt \dimen0=.07227\dimen0
-   \writeMPgraphic{pickup pencircle scaled \the\dimen0;}%
+   \startMPdrawing 
+     pickup pencircle scaled \the\dimen0;
+   \stopMPdrawing
    \egroup}
 
 \redefinespecial sh \using#1\endspecial
@@ -264,14 +271,15 @@
    \ifTPICdraw
      \def\TPICgrayscale{}%
    \fi
-   \writeMPgraphic
-     {\ifTPICfill fill\fi\ifTPICdraw draw\fi\space
-      for i:=1 upto \the\TPICcounter-1:
-        p[i]\ifTPICcurve..\else--\fi
-      endfor
-      p[\the\TPICcounter]
-      \ifTPICfill\ifTPICcurve..\else--\fi cycle \fi
-      \TPIClinetype\space\TPICgrayscale;}%
+   \startMPdrawing 
+     \ifTPICfill fill\fi\ifTPICdraw draw\fi\space
+     for i:=1 upto \the\TPICcounter-1:
+       p[i]\ifTPICcurve..\else--\fi
+     endfor
+     p[\the\TPICcounter]
+     \ifTPICfill\ifTPICcurve..\else--\fi cycle \fi
+     \TPIClinetype\space\TPICgrayscale;
+   \stopMPdrawing
    \resetTPICvariables
    \egroup}
 
@@ -291,12 +299,13 @@
    \dimen12=#4pt\dimen12=.14454\dimen12
    \dimen20=#5pt
    \dimen22=#6pt
-   \writeMPgraphic
-     {\ifTPICfill fill\fi\ifTPICdraw draw\fi \space
-      \ifTPICfill\else subpath 4/3.14159*(\the\dimen20,\the\dimen22) of \fi
-      fullcircle xscaled \the\dimen10 \space yscaled \the\dimen12 \space
-      shifted (\the\dimen0,\the\dimen2)
-      \TPIClinetype \space \TPICgrayscale;}%
+   \startMPdrawing
+     \ifTPICfill fill\fi\ifTPICdraw draw\fi \space
+     \ifTPICfill\else subpath 4/3.14159*(\the\dimen20,\the\dimen22) of \fi
+     fullcircle xscaled \the\dimen10 \space yscaled \the\dimen12 \space
+     shifted (\the\dimen0,\the\dimen2)
+     \TPIClinetype \space \TPICgrayscale;
+   \stopMPdrawing
    \resetTPICvariables
    \egroup}
 
@@ -304,12 +313,12 @@
 %D cannot be sure if any further grouping is used by the
 %D envelopping macros.
 
-\def\resetTPICvariables%
-  {\global\TPICcounter=0
+\def\resetTPICvariables
+  {\global\TPICcounter\zerocount
    \global\TPICfillfalse
    \global\TPICdrawfalse
-   \global\let\TPIClinetype=\empty
-   \global\let\TPICgrayscale=\empty}
+   \global\let\TPIClinetype\empty
+   \global\let\TPICgrayscale\empty}
 
 %D I have to admit that by using the \METAPOST\ B‚zier cubics
 %D routines these implementation does produce better curves
@@ -337,6 +346,4 @@
 %D uses delinberately the not that accurate features of
 %D b-splines. Hereby the user is warned.
 
-\protect 
-
-\endinput
+\protect \endinput

@@ -408,7 +408,8 @@
 
 \def\defineactivecharacter #1 %
   {\scratchcounter\the\uccode\activehackcode
-   \uccode\activehackcode\expandafter\doifnumberelse\expandafter{\string#1}\empty`#1%
+   \uccode\activehackcode\expandafter\doifnumberelse
+     \expandafter{\string#1}\empty`#1%
    \catcode\uccode\activehackcode\@@active
    \uppercase{\def\next{~}}%
    \uccode\activehackcode\scratchcounter

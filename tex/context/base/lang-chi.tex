@@ -1,11 +1,10 @@
 %D \module
 %D   [       file=lang-chi,
-%D        version=1998.10.10,
+%D        version=2002.06.25, % 1998.10.10,
 %D          title=\CONTEXT\ Language Macros,
 %D       subtitle=Chinese,
-%D         author=Hans Hagen,
+%D         author={Hans Hagen \& Wang Lei},
 %D           date=\currentdate,
-%D    suggestions=Wang Lei,
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
@@ -22,20 +21,31 @@
 
 \definesystemconstant {chinese}   \definesystemconstant {cn}
 
-\installlanguage[\s!cn][\c!status=\v!start]
+\installlanguage
+  [\s!cn]
+  [\c!leftsentence=\cnencoding\cnleftsentence,
+   \c!rightsentence=\cnencoding\cnrightsentence,
+   \c!leftsubsentence=\cnencoding\cnleftsubsentence,
+   \c!rightsubsentence=\cnencoding\cnrightsubsentence,
+   \c!leftquote=\cnencoding\cnupperleftsinglequote,
+   \c!rightquote=\cnencoding\cnupperrightsinglequote,
+   \c!leftquotation=\cnencoding\cnupperleftdoublequote,
+   \c!rightquotation=\cnencoding\cnupperrightdoublequote,
+   \c!datum={\v!maand,\ ,\v!dag,{,\ },\v!jaar},
+   \c!status=\v!start]
 
-\setupheadtext [\s!cn]      [\v!inhoud={\cnencodecontents}]
-\setupheadtext [\s!cn]    [\v!tabellen={\cnencodetables}]
-\setupheadtext [\s!cn]     [\v!figuren={\cnencodefigures}]
+\setupheadtext [\s!cn]      [\v!inhoud={\cnencoding\cnencodedcontents}]
+\setupheadtext [\s!cn]    [\v!tabellen={\cnencoding\cnencodedtables}]
+\setupheadtext [\s!cn]     [\v!figuren={\cnencoding\cnencodedfigures}]
 \setupheadtext [\s!cn]   [\v!grafieken=Graphics]
 \setupheadtext [\s!cn] [\v!intermezzos=Intermezzos]
-\setupheadtext [\s!cn]       [\v!index={\cnencodeindex}]
-\setupheadtext [\s!cn] [\v!afkortingen={\cnencodeabbreviations}]
-\setupheadtext [\s!cn]       [\v!logos={\cnencodelogos}]
-\setupheadtext [\s!cn]    [\v!eenheden={\cnencodeunits}]
+\setupheadtext [\s!cn]       [\v!index={\cnencoding\cnencodedindex}]
+\setupheadtext [\s!cn] [\v!afkortingen={\cnencoding\cnencodedabbreviations}]
+\setupheadtext [\s!cn]       [\v!logos={\cnencoding\cnencodedlogos}]
+\setupheadtext [\s!cn]    [\v!eenheden={\cnencoding\cnencodedunits}]
 
-\setuplabeltext [\s!cn]      [\v!tabel={\cnencodetable}]
-\setuplabeltext [\s!cn]     [\v!figuur={\cnencodefigure}]
+\setuplabeltext [\s!cn]      [\v!tabel={\cnencoding\cnencodedtable}]
+\setuplabeltext [\s!cn]     [\v!figuur={\cnencoding\cnencodedfigure}]
 \setuplabeltext [\s!cn] [\v!intermezzo=Intermezzo ]
 \setuplabeltext [\s!cn]    [\v!grafiek=Illustration ]
 \setuplabeltext [\s!cn]    [\v!bijlage=]
@@ -49,6 +59,35 @@
 \setuplabeltext [\s!cn]       [\v!sub\v!sub\v!paragraaf=]
 \setuplabeltext [\s!cn] [\v!sub\v!sub\v!sub\v!paragraaf=]
 
+%D From this definition one can deduce that language, input
+%D encoding, font encoding, and glyph meaning form a pretty
+%D complex four dimensional space.
+
+\startlanguagespecifics[\s!cn]
+
+\setuplabeltext [\s!cn]   [\v!january=\cnencoding\cnencodedjanuary  ]
+\setuplabeltext [\s!cn]  [\v!february=\cnencoding\cnencodedfebrary  ]
+\setuplabeltext [\s!cn]     [\v!march=\cnencoding\cnencodedmarch    ]
+\setuplabeltext [\s!cn]     [\v!april=\cnencoding\cnencodedapril    ]
+\setuplabeltext [\s!cn]       [\v!may=\cnencoding\cnencodedmay      ]
+\setuplabeltext [\s!cn]      [\v!june=\cnencoding\cnencodedjune     ]
+\setuplabeltext [\s!cn]      [\v!july=\cnencoding\cnencodedjuly     ]
+\setuplabeltext [\s!cn]    [\v!august=\cnencoding\cnencodedaugust   ]
+\setuplabeltext [\s!cn] [\v!september=\cnencoding\cnencodedseptember]
+\setuplabeltext [\s!cn]   [\v!october=\cnencoding\cnencodedoctober  ]
+\setuplabeltext [\s!cn]  [\v!november=\cnencoding\cnencodednovember ]
+\setuplabeltext [\s!cn]  [\v!december=\cnencoding\cnencodeddecember ]
+
+\setuplabeltext [\s!cn]    [\v!sunday=\cnencoding\cnencodedsunday   ]
+\setuplabeltext [\s!cn]    [\v!monday=\cnencoding\cnencodedmonday   ]
+\setuplabeltext [\s!cn]   [\v!tuesday=\cnencoding\cnencodedtuesday  ]
+\setuplabeltext [\s!cn] [\v!wednesday=\cnencoding\cnencodedwednesday]
+\setuplabeltext [\s!cn]  [\v!thursday=\cnencoding\cnencodedthursday ]
+\setuplabeltext [\s!cn]    [\v!friday=\cnencoding\cnencodedfriday   ]
+\setuplabeltext [\s!cn]  [\v!saturday=\cnencoding\cnencodedsaturday ]
+
+\stoplanguagespecifics
+
 %D One can specify a split labeltext, as demonstrated in
 %D the definition of the \type {part} label. Unfortunately
 %D the glyphs of both part depend on the encoding. Therefore,
@@ -57,93 +96,97 @@
 \def\cnencoding{\enableencoding[\chineseencoding]} % ugly and temporary
 
 \startencoding[gbk]
-  \definecommand cnencodecontents {\uchar{196}{191}\uchar{194}{188}}
-  \definecommand cnencodetables   {\uchar{177}{237}\uchar{184}{241}}
-  \definecommand cnencodefigures  {\uchar{205}{188}\uchar{208}{206}}
-  \definecommand cnencodeindex    {\uchar{203}{247}\uchar{210}{253}}
-  \definecommand cnencodeabbreviations {\uchar{203}{245}\uchar{194}{212}\uchar{211}{239}}
-  \definecommand cnencodelogos    {\uchar{187}{213}\uchar{177}{225}}
-  \definecommand cnencodeunits    {\uchar{188}{198}\uchar{193}{191}\uchar{181}{165}\uchar{206}{187}}
-  \definecommand cnencodetable    {\uchar{177}{237}}
-  \definecommand cnencodefigure   {\uchar{205}{188}}
-  \definecommand cnencodedintro   {\uchar{181}{218}}
-  \definecommand cnencodedpart    {\uchar{178}{191}\uchar{183}{214}}
-  \definecommand cnencodedchapter {\uchar{213}{194}}
-  \definecommand cnencodedsection {\uchar{189}{218}}
+  \definecommand cnleftsentence            {\uchar{161}{170}\uchar{161}{170}}
+  \definecommand cnrightsentence           {\uchar{161}{170}\uchar{161}{170}}
+  \definecommand cnleftsubsentence         {\uchar{161}{170}\uchar{161}{170}}
+  \definecommand cnrightsubsentence        {\uchar{161}{170}\uchar{161}{170}}
+  \definecommand cnupperleftsinglequote    {\uchar{161}{174}}
+  \definecommand cnupperrightsinglequote   {\uchar{161}{175}}
+  \definecommand cnupperleftdoublequote    {\uchar{161}{176}}
+  \definecommand cnupperrightdoublequote   {\uchar{161}{177}}
+  \definecommand cnupperleftsinglequote-v  {\uchar{161}{184}}
+  \definecommand cnupperrightsinglequote-v {\uchar{161}{185}}
+  \definecommand cnupperleftdoublequote-v  {\uchar{161}{186}}
+  \definecommand cnupperrightdoublequote-v {\uchar{161}{187}}
+  \definecommand cnencodedcontents         {\uchar{196}{191}\uchar{194}{188}}
+  \definecommand cnencodedtables           {\uchar{177}{237}\uchar{184}{241}}
+  \definecommand cnencodedfigures          {\uchar{205}{188}\uchar{208}{206}}
+  \definecommand cnencodedindex            {\uchar{203}{247}\uchar{210}{253}}
+  \definecommand cnencodedabbreviations    {\uchar{203}{245}\uchar{194}{212}\uchar{211}{239}}
+  \definecommand cnencodedlogos            {\uchar{187}{213}\uchar{177}{225}}
+  \definecommand cnencodedunits            {\uchar{188}{198}\uchar{193}{191}\uchar{181}{165}\uchar{206}{187}}
+  \definecommand cnencodedtable            {\uchar{177}{237}}
+  \definecommand cnencodedfigure           {\uchar{205}{188}}
+  \definecommand cnencodedintro            {\uchar{181}{218}}
+  \definecommand cnencodedpart             {\uchar{178}{191}\uchar{183}{214}}
+  \definecommand cnencodedchapter          {\uchar{213}{194}}
+  \definecommand cnencodedsection          {\uchar{189}{218}}
+  \definecommand cnencodedjanuary          {\uchar{210}{187}\uchar{212}{194}}
+  \definecommand cnencodedfebrary          {\uchar{182}{254}\uchar{212}{194}}
+  \definecommand cnencodedmarch            {\uchar{200}{253}\uchar{212}{194}}
+  \definecommand cnencodedapril            {\uchar{203}{196}\uchar{212}{194}}
+  \definecommand cnencodedmay              {\uchar{206}{229}\uchar{212}{194}}
+  \definecommand cnencodedjune             {\uchar{193}{249}\uchar{212}{194}}
+  \definecommand cnencodedjuly             {\uchar{198}{223}\uchar{212}{194}}
+  \definecommand cnencodedaugust           {\uchar{176}{203}\uchar{212}{194}}
+  \definecommand cnencodedseptember        {\uchar{190}{197}\uchar{212}{194}}
+  \definecommand cnencodedoctober          {\uchar{202}{174}\uchar{212}{194}}
+  \definecommand cnencodednovember         {\uchar{202}{174}\uchar{210}{187}\uchar{212}{194}}
+  \definecommand cnencodeddecember         {\uchar{202}{174}\uchar{182}{254}\uchar{212}{194}}
+  \definecommand cnencodedsunday           {\uchar{208}{199}\uchar{198}{218}\uchar{200}{213}}
+  \definecommand cnencodedmonday           {\uchar{208}{199}\uchar{198}{218}\uchar{210}{187}}
+  \definecommand cnencodedtuesday          {\uchar{208}{199}\uchar{198}{218}\uchar{182}{254}}
+  \definecommand cnencodedwednesday        {\uchar{208}{199}\uchar{198}{218}\uchar{200}{253}}
+  \definecommand cnencodedthursday         {\uchar{208}{199}\uchar{198}{218}\uchar{203}{196}}
+  \definecommand cnencodedfriday           {\uchar{208}{199}\uchar{198}{218}\uchar{206}{229}}
+  \definecommand cnencodedsaturday         {\uchar{208}{199}\uchar{198}{218}\uchar{193}{249}}
 \stopencoding
 
 \startencoding[big5]
-  \definecommand cnencodecontents {\uchar{165}{216}\uchar{191}{253}}
-  \definecommand cnencodetables   {\uchar{170}{237}\uchar{174}{230}}
-  \definecommand cnencodefigures  {\uchar{185}{207}\uchar{167}{206}}
-  \definecommand cnencodeindex    {\uchar{175}{193}\uchar{174}{222}}
-  \definecommand cnencodeabbreviations {\uchar{191}{89}\uchar{178}{164}\uchar{187}{121}}
-  \definecommand cnencodelogos    {\uchar{192}{178}\uchar{188}{208}}
-  \definecommand cnencodeunits    {\uchar{173}{112}\uchar{182}{113}\uchar{179}{230}\uchar{166}{236}}
-  \definecommand cnencodetable    {\uchar{170}{237}}
-  \definecommand cnencodefigure   {\uchar{185}{207}}
-  \definecommand cnencodedintro   {\uchar{178}{196}}
-  \definecommand cnencodedpart    {\uchar{179}{161}\uchar{164}{192}}
-  \definecommand cnencodedchapter {\uchar{179}{185}}
-  \definecommand cnencodedsection {\uchar{184} {96}}
+  \definecommand cnleftsentence            {\uchar{162}{119}\uchar{162}{119}}
+  \definecommand cnrightsentence           {\uchar{162}{119}\uchar{162}{119}}
+  \definecommand cnleftsubsentence         {\uchar{162}{119}\uchar{162}{119}}
+  \definecommand cnrightsubsentence        {\uchar{162}{119}\uchar{162}{119}}
+  \definecommand cnupperleftsinglequote    {\uchar{161}{165}}
+  \definecommand cnupperrightsinglequote   {\uchar{161}{166}}
+  \definecommand cnupperleftdoublequote    {\uchar{161}{167}}
+  \definecommand cnupperrightdoublequote   {\uchar{161}{168}}
+  \definecommand cnupperleftsinglequote-v  {\uchar{161}{117}}
+  \definecommand cnupperrightsinglequote-v {\uchar{161}{118}}
+  \definecommand cnupperleftdoublequote-v  {\uchar{161}{121}}
+  \definecommand cnupperrightdoublequote-v {\uchar{161}{122}}
+  \definecommand cnencodecontents          {\uchar{165}{216}\uchar{191}{253}}
+  \definecommand cnencodetables            {\uchar{170}{237}\uchar{174}{230}}
+  \definecommand cnencodefigures           {\uchar{185}{207}\uchar{167}{206}}
+  \definecommand cnencodeindex             {\uchar{175}{193}\uchar{174}{222}}
+  \definecommand cnencodeabbreviations     {\uchar{191}{89}\uchar{178}{164}\uchar{187}{121}}
+  \definecommand cnencodelogos             {\uchar{192}{178}\uchar{188}{208}}
+  \definecommand cnencodeunits             {\uchar{173}{112}\uchar{182}{113}\uchar{179}{230}\uchar{166}{236}}
+  \definecommand cnencodetable             {\uchar{170}{237}}
+  \definecommand cnencodefigure            {\uchar{185}{207}}
+  \definecommand cnencodedintro            {\uchar{178}{196}}
+  \definecommand cnencodedpart             {\uchar{179}{161}\uchar{164}{192}}
+  \definecommand cnencodedchapter          {\uchar{179}{185}}
+  \definecommand cnencodedsection          {\uchar{184} {96}}
+  \definecommand cnencodedjanuary          {\uchar{164} {64}\uchar{164}{235}}
+  \definecommand cnencodedfebrary          {\uchar{164} {71}\uchar{164}{235}}
+  \definecommand cnencodedmarch            {\uchar{164} {84}\uchar{164}{235}}
+  \definecommand cnencodedapril            {\uchar{165}{124}\uchar{164}{235}}
+  \definecommand cnencodedmay              {\uchar{164}{173}\uchar{164}{235}}
+  \definecommand cnencodedjune             {\uchar{164}{187}\uchar{164}{235}}
+  \definecommand cnencodedjuly             {\uchar{164} {67}\uchar{164}{235}}
+  \definecommand cnencodedaugust           {\uchar{164} {75}\uchar{164}{235}}
+  \definecommand cnencodedseptember        {\uchar{164} {69}\uchar{164}{235}}
+  \definecommand cnencodedoctober          {\uchar{164} {81}\uchar{164}{235}}
+  \definecommand cnencodednovember         {\uchar{164} {81}\uchar{164} {64}\uchar{164}{235}}
+  \definecommand cnencodeddecember         {\uchar{164} {81}\uchar{164} {71}\uchar{164}{235}}
+  \definecommand cnencodedsunday           {\uchar{172} {80}\uchar{180}{193}\uchar{164}{233}}
+  \definecommand cnencodedmonday           {\uchar{172} {80}\uchar{180}{193}\uchar{164} {64}}
+  \definecommand cnencodedtuesday          {\uchar{172} {80}\uchar{180}{193}\uchar{164} {71}}
+  \definecommand cnencodedwednesday        {\uchar{172} {80}\uchar{180}{193}\uchar{164} {84}}
+  \definecommand cnencodedthursday         {\uchar{172} {80}\uchar{180}{193}\uchar{165}{124}}
+  \definecommand cnencodedfriday           {\uchar{172} {80}\uchar{180}{193}\uchar{164}{173}}
+  \definecommand cnencodedsaturday         {\uchar{172} {80}\uchar{180}{193}\uchar{164}{187}}
 \stopencoding
-
-%D From this definition one can deduce that language, input 
-%D encoding, font encoding, and glyph meaning form a pretty 
-%D complex four dimensional space.
-
-\startlanguagespecifics[\s!cn]
-
-\startencoding[gbk]
-
-\setuplabeltext [\s!cn]   [\v!january=\uchar{210}{187}\uchar{212}{194}]
-\setuplabeltext [\s!cn]  [\v!february=\uchar{182}{254}\uchar{212}{194}]
-\setuplabeltext [\s!cn]     [\v!march=\uchar{200}{253}\uchar{212}{194}]
-\setuplabeltext [\s!cn]     [\v!april=\uchar{203}{196}\uchar{212}{194}]
-\setuplabeltext [\s!cn]       [\v!may=\uchar{206}{229}\uchar{212}{194}]
-\setuplabeltext [\s!cn]      [\v!june=\uchar{193}{249}\uchar{212}{194}]
-\setuplabeltext [\s!cn]      [\v!july=\uchar{198}{223}\uchar{212}{194}]
-\setuplabeltext [\s!cn]    [\v!august=\uchar{176}{203}\uchar{212}{194}]
-\setuplabeltext [\s!cn] [\v!september=\uchar{190}{197}\uchar{212}{194}]
-\setuplabeltext [\s!cn]   [\v!october=\uchar{202}{174}\uchar{212}{194}]
-\setuplabeltext [\s!cn]  [\v!november=\uchar{202}{174}\uchar{210}{187}\uchar{212}{194}]
-\setuplabeltext [\s!cn]  [\v!december=\uchar{202}{174}\uchar{182}{254}\uchar{212}{194}]
-
-\setuplabeltext [\s!cn]    [\v!sunday=\uchar{208}{199}\uchar{198}{218}\uchar{200}{213}]
-\setuplabeltext [\s!cn]    [\v!monday=\uchar{208}{199}\uchar{198}{218}\uchar{210}{187}]
-\setuplabeltext [\s!cn]   [\v!tuesday=\uchar{208}{199}\uchar{198}{218}\uchar{182}{254}]
-\setuplabeltext [\s!cn] [\v!wednesday=\uchar{208}{199}\uchar{198}{218}\uchar{200}{253}]
-\setuplabeltext [\s!cn]  [\v!thursday=\uchar{208}{199}\uchar{198}{218}\uchar{203}{196}]
-\setuplabeltext [\s!cn]    [\v!friday=\uchar{208}{199}\uchar{198}{218}\uchar{206}{229}]
-\setuplabeltext [\s!cn]  [\v!saturday=\uchar{208}{199}\uchar{198}{218}\uchar{193}{249}]
-
-\stopencoding
-
-\startencoding[big5]
-
-\setuplabeltext [\s!cn]   [\v!january=\uchar{164} {64}\uchar{164}{235}]
-\setuplabeltext [\s!cn]  [\v!february=\uchar{164} {71}\uchar{164}{235}]
-\setuplabeltext [\s!cn]     [\v!march=\uchar{164} {84}\uchar{164}{235}]
-\setuplabeltext [\s!cn]     [\v!april=\uchar{165}{124}\uchar{164}{235}]
-\setuplabeltext [\s!cn]       [\v!may=\uchar{164}{173}\uchar{164}{235}]
-\setuplabeltext [\s!cn]      [\v!june=\uchar{164}{187}\uchar{164}{235}]
-\setuplabeltext [\s!cn]      [\v!july=\uchar{164} {67}\uchar{164}{235}]
-\setuplabeltext [\s!cn]    [\v!august=\uchar{164} {75}\uchar{164}{235}]
-\setuplabeltext [\s!cn] [\v!september=\uchar{164} {69}\uchar{164}{235}]
-\setuplabeltext [\s!cn]   [\v!october=\uchar{164} {81}\uchar{164}{235}]
-\setuplabeltext [\s!cn]  [\v!november=\uchar{164} {81}\uchar{164} {64}\uchar{164}{235}]
-\setuplabeltext [\s!cn]  [\v!december=\uchar{164} {81}\uchar{164} {71}\uchar{164}{235}]
-
-\setuplabeltext [\s!cn]    [\v!sunday=\uchar{172} {80}\uchar{180}{193}\uchar{164}{233}]
-\setuplabeltext [\s!cn]    [\v!monday=\uchar{172} {80}\uchar{180}{193}\uchar{164}{64}]
-\setuplabeltext [\s!cn]   [\v!tuesday=\uchar{172} {80}\uchar{180}{193}\uchar{164}{71}]
-\setuplabeltext [\s!cn] [\v!wednesday=\uchar{172} {80}\uchar{180}{193}\uchar{164}{84}]
-\setuplabeltext [\s!cn]  [\v!thursday=\uchar{172} {80}\uchar{180}{193}\uchar{165}{124}]
-\setuplabeltext [\s!cn]    [\v!friday=\uchar{172} {80}\uchar{180}{193}\uchar{164}{173}]
-\setuplabeltext [\s!cn]  [\v!saturday=\uchar{172} {80}\uchar{180}{193}\uchar{164}{187}]
-
-\stopencoding
-
-\stoplanguagespecifics
 
 \protect \endinput

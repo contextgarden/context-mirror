@@ -125,7 +125,7 @@
 
 \sfcode`(=2000  % a temporary hack
 
-\def\chinesenobreak%
+\def\chinesenobreak
  {\relax
   \iftracechinese
     \nobreak
@@ -137,15 +137,15 @@
 
 \newif\ifcorrectchineseboundarychars
 
-\def\chineseunskip%
+\def\chineseunskip
   {\unskip\unskip\unskip\unskip}
 
-\def\insertchineseglyph%
+\def\insertchineseglyph
   {\iftracechinese\tracedchineseglyph\else\insertunicodeglyph\fi}
 
 \newif\ifverticalchinese
 
-\def\handlechineseunicodeglyph%
+\def\handlechineseunicodeglyph
   {\ifinpagebody
      \horizontalchineseunicodeglyph
    \else\ifverticalchinese
@@ -259,7 +259,7 @@
      \fi\fi\fi
    \fi\fi\fi}
 
-\def\horizontalchineseunicodeglyph%
+\def\horizontalchineseunicodeglyph
   {\relax
    \ifhmode\else\dontleavehmode\fi % added
    \setunicodescale\chineseunicodescale
@@ -340,7 +340,7 @@
      \aftergroup\ignorespaces            % watch this
    \fi}
 
-\def\verticalchineseunicodeglyph%
+\def\verticalchineseunicodeglyph
   {\relax
    \ifprocessingverbatim % to do
      \horizontalchineseunicodeglyph
@@ -348,17 +348,17 @@
      \setunicodescale\chineseunicodescale
      \setunicodestrut\chineseunicodeheight\chineseunicodedepth
      \analyzechineseunicodeglyph
-     \setbox\scratchbox=\hbox to \hsize
+     \setbox\scratchbox\hbox to \hsize
        {\hss
         \ifcase\chineseSstatus\relax
           \insertchineseglyph
         \else % left / right
-          \setbox\scratchbox=\hbox{\insertchineseglyph}%
+          \setbox\scratchbox\hbox{\insertchineseglyph}%
           \rotate[\c!rotatie=270]{\box\scratchbox}%
         \fi
         \hss}%
-     \ht\scratchbox=\unicodeheight\ht\strutbox
-     \dp\scratchbox=\unicodedepth \dp\strutbox
+     \ht\scratchbox\unicodeheight\ht\strutbox
+     \dp\scratchbox\unicodedepth \dp\strutbox
      \ifvmode % catches \hbox{...}, actually \hbox should be \vbox -)
        \nointerlineskip
      \fi
@@ -369,7 +369,7 @@
      \or % right
        \ifnum\chineseSstatus=2 \par\nobreak\else\allowbreak\fi
      \fi
-     \global\chardef\prevchineseSstatus=\chineseSstatus % pagebody ...
+     \global\chardef\prevchineseSstatus\chineseSstatus % pagebody ...
      \box\scratchbox\par
      \aftergroup\ignorespaces                           % watch this
    \fi}
@@ -381,10 +381,10 @@
 %D vertical typesetting. Vertical typesetting is implemented
 %D on top of the multi||column routines.
 
-\def\setupchinese%
+\def\setupchinese
   {\dodoubleargument\getparameters[\??vt]}
 
-\def\startvertical%
+\def\startvertical
   {\dosingleempty\dostartvertical}
 
 \def\dostartvertical[#1]%
@@ -392,13 +392,13 @@
    \def\maxnofcolumns{25}%
    \verticalchinesetrue
    \global\chardef\prevchineseSstatus=0
-   \let\nochinese=\nochineseinvertical
-   \doif{\@@vtn}{\v!passend}
+   \let\nochinese\nochineseinvertical
+   \doif\@@vtn\v!passend
      {\dimen0=\textwidth
-      \advance\dimen0 by \@@vtafstand
+      \advance\dimen0 \@@vtafstand
       \dimen2=\bodyfontsize
-      \advance\dimen2 by \@@vtafstand
-      \divide\dimen0 by \number\dimen2
+      \advance\dimen2 \@@vtafstand
+      \divide\dimen0 \number\dimen2
       \edef\@@vtn{\number\dimen0}}%
    \startkolommen
      [\c!richting=\@@vtrichting,
@@ -407,7 +407,7 @@
       \c!n=\@@vtn,
       #1]}
 
-\def\stopvertical%
+\def\stopvertical
   {\stopkolommen
    \egroup}
 
@@ -427,9 +427,9 @@
 
 \def\nochineseinvertical#1%
   {\par
-   \setbox\scratchbox=\hbox{\strut#1}
+   \setbox\scratchbox\hbox{\strut#1}
    \getnoflines{\wd\scratchbox}
-   \setbox\scratchbox=\hbox to \noflines\openlineheight
+   \setbox\scratchbox\hbox to \noflines\openlineheight
      {\hss\box\scratchbox\hss}
    \hbox to \hsize
      {\hss
@@ -978,20 +978,20 @@
 \definefontsynonym [SimplifiedChineseKaiTiBold]        [gbkai]   [encoding=gbk]
 \definefontsynonym [SimplifiedChineseKaiTiBoldSlanted] [gbkaisl] [encoding=gbk]
 
-\definefontsynonym [TraditionalChineseKaiTiRegular]    [b5kai]   [encoding=big5]
-\definefontsynonym [TraditionalChineseKaiTiSlanted]    [b5kaisl] [encoding=big5]
-\definefontsynonym [TraditionalChineseKaiTiBold]       [b5kai]   [encoding=big5]
-\definefontsynonym [TraditionalChineseKaiTiBoldSlanted][b5kaisl] [encoding=big5]
+\definefontsynonym [TraditionalChineseKaiTiRegular]     [b5kai]   [encoding=big5]
+\definefontsynonym [TraditionalChineseKaiTiSlanted]     [b5kaisl] [encoding=big5]
+\definefontsynonym [TraditionalChineseKaiTiBold]        [b5kai]   [encoding=big5]
+\definefontsynonym [TraditionalChineseKaiTiBoldSlanted] [b5kaisl] [encoding=big5]
 
-\definefontsynonym [SimplifiedChineseFangSongRegular]    [gbfs]   [encoding=gbk]
-\definefontsynonym [SimplifiedChineseFangSongSlanted]    [gbfssl] [encoding=gbk]
-\definefontsynonym [SimplifiedChineseFangSongBold]       [gbfs]   [encoding=gbk]
-\definefontsynonym [SimplifiedChineseFangSongBoldSlanted][gbfssl] [encoding=gbk]
+\definefontsynonym [SimplifiedChineseFangSongRegular]     [gbfs]   [encoding=gbk]
+\definefontsynonym [SimplifiedChineseFangSongSlanted]     [gbfssl] [encoding=gbk]
+\definefontsynonym [SimplifiedChineseFangSongBold]        [gbfs]   [encoding=gbk]
+\definefontsynonym [SimplifiedChineseFangSongBoldSlanted] [gbfssl] [encoding=gbk]
 
-\definefontsynonym [TraditionalChineseFangSongRegular]  [b5fs]   [encoding=big5]
-\definefontsynonym [TraditionalChineseFangSongSlanted]  [b5fssl] [encoding=big5]
-\definefontsynonym [TraditionalChineseFangSongBold]     [b5fs]   [encoding=big5]
-\definefontsynonym [TraditionalChineseFangSongBoldSlanted][b5fssl] [encoding=big5]
+\definefontsynonym [TraditionalChineseFangSongRegular]     [b5fs]   [encoding=big5]
+\definefontsynonym [TraditionalChineseFangSongSlanted]     [b5fssl] [encoding=big5]
+\definefontsynonym [TraditionalChineseFangSongBold]        [b5fs]   [encoding=big5]
+\definefontsynonym [TraditionalChineseFangSongBoldSlanted] [b5fssl] [encoding=big5]
 
 \definefontsynonym [SimplifiedChineseLiShuRegular]     [gbli]   [encoding=gbk]
 \definefontsynonym [SimplifiedChineseLiShuSlanted]     [gblisl] [encoding=gbk]

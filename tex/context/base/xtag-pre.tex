@@ -11,9 +11,9 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-\beginTEX 
-  \endinput 
-\endTEX 
+\beginTEX
+  \endinput
+\endTEX
 
 \writestatus{loading}{Context XML Macros (predefined)}
 
@@ -111,7 +111,7 @@
 %D strange syntax.
 %D
 %D \starttypen
-%D <!CDATA[it starts here 
+%D <!CDATA[it starts here
 %D whatever you like to be shown verbatim
 %D and ends here]]>
 %D \stoptypen
@@ -139,7 +139,7 @@
   {\dohandleXMLentityescape#1 @ @ @ @ @ @>}
 
 \def\dohandleXMLentityescape#1 #2 #3 #4>
-  {\doifnot{#1}{\letterpercent}
+  {\doifnot{#1}\letterpercent
      {\doifelse{#2}{SYSTEM}
         {\dohandleXMLentitySYSTEM#1 #2 #3 #4>}
         {\dohandleXMLentityDEFINE#1 #2 #3 #4>}}}
@@ -165,16 +165,53 @@
 %D Such entities can be encapsulated in a \type {DOCTYPE}
 %D element. Therefore we remove the outer level of document
 %D type definitions.
+%D 
+%D \starttyping
+%D <!DOCTYPE Something>
+%D <!DOCTYPE Something >
+%D <!DOCTYPE Something [ ... ]>
+%D <!DOCTYPE Something SYSTEM "... ...">
+%D <!DOCTYPE Something SYSTEM "... ..." >
+%D <!DOCTYPE Something SYSTEM "... ..." [ ... ]>
+%D <!DOCTYPE Something PUBLIC "... ..." "...">
+%D <!DOCTYPE Something PUBLIC "... ..." "..." >
+%D <!DOCTYPE Something PUBLIC "... ..." "..." [ ... ]>
+%D \stoptyping
 
 \defineXMLescape [DOCTYPE] \handleXMLdoctype
 
-\def\handleXMLdoctype#1 #2%
-  {\doifelse{#2}{[}
-     {%\writestatus{xml-doctype}{expanding #1}%
-      \def\next{\processuntil{]>}}}
-     {%\writestatus{xml-doctype}{skipping  #1}%
-      \def\next{\gobbleuntil  {>}}}%
-   \next}
+\def\handleXMLdoctype
+  {\let\XMLdoctype\empty
+   \dohandleXMLdoctype}
+
+\def\dohandleXMLdoctype
+  {\futurelet\nexttoken\dohandleXMLdoctok}
+
+\def\dohandleXMLdoctok
+  {\ifx\nexttoken>%
+   % [doctype: \XMLdoctype]
+     \@EA\gobbleuntil\@EA>\@EA
+   \else\ifx\nexttoken\blankspace
+   % [doctype: \XMLdoctype]
+     \@EAEAEA\dodohandleXMLdoctype
+   \else
+     \@EAEAEA\redoXMLdoctype
+   \fi\fi}
+
+\def\redoXMLdoctype#1%
+  {\edef\XMLdoctype{\XMLdoctype#1}\dohandleXMLdoctype}
+
+\def\dodohandleXMLdoctype#1%
+  {\executeifdefined{XMLdoctype#1}{\gobbleuntil>}}
+
+\setvalue{XMLdoctype>}{}
+\setvalue{XMLdoctype[}{\processuntil{]>}}
+
+\def\XMLdoctypeS YSTEM %
+  {\dowithgrabbedstring\dodohandleXMLdoctype}
+
+\def\XMLdoctypeP UBLIC %
+  {\dowithgrabbedstring{\dowithgrabbedstring\dodohandleXMLdoctype}}
 
 %D Some day we may need to support entities within a
 %D document type namespace.
@@ -196,30 +233,30 @@
 % \def\scanXMLtokens#1%
 %   {\saveendlinechar\scantokens{#1}\restoreendlinechar}
 
-%D For security reasons, we provide a switch to turn this 
+%D For security reasons, we provide a switch to turn this
 %D mechanism on and off. When turned off, there is no way to
-%D turn it on from within an \XML\ encoded document, simply 
-%D because the possibility to process \CONTEXT\ commands is 
-%D gone. 
+%D turn it on from within an \XML\ encoded document, simply
+%D because the possibility to process \CONTEXT\ commands is
+%D gone.
 
 \setupXMLprocessing[\c!commando=\v!ja]
 
 %\def\contextXMLcommand#1%
-%  {\doif{\@@xpcommando}{\v!ja}
+%  {\doif\@@xpcommando\v!ja
 %     {\pushmacro\disableXML
 %      \def\disableXML{\global\let\afterXMLprocessor\empty}%
 %      \global\let\afterXMLprocessor\enableXML
 %      \setnormalcatcodes\scantokens{#1}\afterXMLprocessor
 %      \popmacro\disableXML}}
 
-\def\contextXMLcommand#1% we don't use #1 here      
-  {\doif{\@@xpcommando}{\v!ja}  
+\def\contextXMLcommand#1% we don't use #1 here
+  {\doif\@@xpcommando\v!ja
      {\disableXML\scantokens\@EA{\currentXMLprocess}\enableXML}}
 
 %D The indirect method (using the macro \type
 %D {\currentXMLprocess} instead of \type {#}) is needed
-%D because of the \type {\scantokens}. Given the previous 
-%D definition, and given that \ETEX\ is used, we can now 
+%D because of the \type {\scantokens}. Given the previous
+%D definition, and given that \ETEX\ is used, we can now
 %D say:
 %D
 %D \starttypen
@@ -238,7 +275,7 @@
 \def\contextXMLdirective#1%
   {\docontextXMLdirective#1 @ @ @\end}
 
-\def\docontextXMLdirective#1 #2 #3 #4\end% class variable value
+\def\docontextXMLdirective#1 #2 #3 #4\end % class variable value
   {\csname\@@XMLvariable:#1:#2\endcsname{#3}}
 
 %D A simple processing instruction is the following. It just

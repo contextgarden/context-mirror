@@ -284,7 +284,7 @@
 
 \def\doloadfontmapfile#1% will be special
   {\doifundefined{#1 \c!status}
-     {\ifnum\realpageno>1
+     {\ifnum\realpageno>\plusone
         \writestatus{pdftex}{too late for map file: #1}%
       \else
         \writestatus{pdftex}{using map file: #1}%
@@ -326,7 +326,7 @@
 % \definetypeface [#1:joke] [#2:rm] [#3:...]
 % \definetypeface [#1:joke] [#2:rm] [#3:serif] [#4:lucida] [#5:size] [#6:...]
 
-\def\definetypeface%
+\def\definetypeface
   {\dosixtupleargument\dodefinetypeface}
 
 \def\tsvar#1#2%
@@ -345,13 +345,15 @@
    \iffifthargument % sixth is optional
    % \getparameters[\??ts][rscale=1,\s!encoding=\defaultencoding,#6]
    % we need to expand since iin #6 there can be a \typescripttwo 
-     \expanded{\getparameters[\??ts][rscale=1,\s!encoding=\defaultencoding,#6]}%
+   %\expanded{\getparameters[\??ts][\s!rscale=1,\s!encoding=\defaultencoding,#6]}%
+\expanded{\getparameters[\??ts][\s!rscale=1,\s!encoding=\s!default,#6]}%
      \pushmacro\relativefontsize
      \pushmacro\typefaceencoding
      \pushmacro\fontclass
      \let\relativefontsize\@@tsrscale
      \let\typefaceencoding\@@tsencoding
      \setcurrentfontclass{#1}
+     \saverelativefontsize{#2}{\relativefontsize}% fall back 
      \writestatus{typeface}{[#1] [#2] [#3] [#4]}
      \usetypescript[map][\typefaceencoding]
    % \usetypescript[#3][#4][name]
@@ -395,7 +397,7 @@
        {#1[\getvalue{\??tf\fontclass\s!default}]}
        {#1[\c!rm]}%
    \fi \fi
-   \tf}
+   \ifmmode\mr\else\tf\fi} % needed ? 
 
 \def\usetypefile[#1]% recurses on path ! 
   {\readfile{\f!typeprefix#1}{}{}}% \relax\relax}

@@ -16,7 +16,7 @@ eval '(exit $?0)' && eval 'exec perl -S $0 ${1+"$@"}' && eval 'exec perl -S $0 $
 
 # Tobias Burnus provided the code needed to proper testing 
 # of binaries on UNIX as well as did some usefull suggestions 
-# to imnprove the functionality. 
+# to improve the functionality. 
  
 #  This script uses GhostScript and PStoEdit as well as 
 #  pdfTeX, and if requested TeXEdit and ConTeXt. 

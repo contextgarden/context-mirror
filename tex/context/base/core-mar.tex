@@ -15,8 +15,8 @@
 
 \unprotect 
 
-\prependtoks \getallmarks \to \everybeforepagebody % TEX 
-\prependtoks \setallmarks \to \everyafterpagebody  % ETEX 
+\prependtoks \getallmarks \to \everybeforepagebody 
+\prependtoks \setallmarks \to \everyafterpagebody  % currently \relax
 
 % voor 'interne' doeleinden zijn beschikbaar:
 %
@@ -67,14 +67,14 @@
 \def\doresetmarkering[#1]%
   {\processcommalist[#1]\fastresetmarker}
 
-\def\resetmarkering%
+\def\resetmarkering
   {\dosingleargument\doresetmarkering}
 
 \def\dostelmarkeringin[#1][#2]%
   {\def\docommando##1{\getparameters[\??mk##1][#2]}%
    \processcommalist[#1]\docommando}
 
-\def\stelmarkeringin%
+\def\stelmarkeringin
   {\dodoubleargument\dostelmarkeringin}
 
 % betere protectie 
@@ -92,14 +92,14 @@
    \ontkoppelmarkering[#1]%  % no coupling with sections
    \setevalue{\??mk#1\c!koppeling}{#2}%
    \expandafter\newmark\csname\??mk#2\endcsname
-   \showmessage{\m!systems}{13}{#1,[#2]}}
+   \showmessage\m!systems{13}{#1,[#2]}}
 
 \def\dodefinieermarkering[#1][#2]%
   {\doifelsenothing{#2}
      {\dododefinieermarkering[#1][#1]}
      {\dododefinieermarkering[#1][#2]}}
 
-\def\definieermarkering%
+\def\definieermarkering
   {\dodoubleempty\dodefinieermarkering}
 
 \let\geenmarkering=\relax
@@ -143,7 +143,7 @@
       \fetchtwomarks[#1]}
 
 \def\dohaalmarkering[#1][#2]%
-  {\doifvalue{\??mk#1\c!status}{\v!start}
+  {\doifvalue{\??mk#1\c!status}\v!start
      {\bgroup
       \def\geenmarkering##1{\unknown\ }%
       \setfullsectionnumber{\??mk#1}%
@@ -189,7 +189,7 @@
 
 \endETEX
 
-\def\marking%
+\def\marking
   {\dosingleargument\domarking}
 
 %D Used in placing text lines. 
@@ -218,3 +218,34 @@
      {\unhbox\collectedmarks\setmark{#1}{#2}}} 
 
 \protect \endinput
+
+% Pseudo marks: (for Hraban)
+% 
+% \def\RegisterPageMark#1#2%
+%   {\iftrialtypesetting \else
+%      \doglobal\increment\NameCounter
+%      \textreference[#1:t:\NameCounter]{#2}%
+%      \doifreferencefoundelse{#1:t:\NameCounter}
+%        {\doifundefined{#1:f:\currentrealreference}%
+%           {\setxvalue{#1:f:\currentrealreference}%
+%              {\noexpand\in[#1:t:\NameCounter]}}%
+%         \setxvalue{#1:l:\currentrealreference}%
+%           {\noexpand\in[#1:t:\NameCounter]}}%
+%        {}%
+%    \fi}
+% 
+% \def\GetFirstOnPage#1{\getvalue{#1:f:\realfolio}}
+% \def\GetLastOnPage #1{\getvalue{#1:l:\realfolio}}
+% 
+% \setupheadertexts[\GetFirstOnPage{Name}][\GetLastOnPage{Name}]
+% 
+% \starttext 
+% 
+% \def\Name#1{\RegisterPageMark{Name}{#1}#1}
+% \def\TestLine#1{\NC test \NC \Name {test: #1} \NC \NR} 
+% 
+% \starttabulate
+% \dorecurse{100}{\expanded{\TestLine{\recurselevel}}}
+% \stoptabulate
+% 
+% \stoptext 

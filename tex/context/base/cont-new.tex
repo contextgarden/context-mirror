@@ -12,309 +12,901 @@
 %C details.
 
 % manual : offsetbox alignbox
-
-% todo achtergronden in kolommen 
+% todo achtergronden in kolommen
 
 %D This file is loaded at runtime, thereby providing an
 %D excellent place for hacks and new features.
 
 \unprotect
 
-% we don't register the paragraph characteristics, only the 
-% width 
+\def\filluparrangedpages % beware: \realpageno is 1 ahead
+  {\ifarrangingpages
+     \scratchcounter\realpageno 
+     \advance\scratchcounter \minusone
+     \dosetmodulo\scratchcounter\arrangedpageT\scratchcounter 
+     \ifcase\scratchcounter\else
+       \advance\scratchcounter \plusone
+       \dostepwiserecurse\scratchcounter\arrangedpageT\plusone
+         {\noheaderandfooterlines\ejectdummypage}%
+     \fi
+   \fi}
+
+% experiment, not yet to be used 
 
-\appendtoks 
-  \setinnerparpositions % see "techniek" for application 
-\to \everytabulate
+\def\displaybreak
+  {\ifhmode
+     \removeunwantedspaces
+     \ifcase\raggedstatus\hfill\fi
+     \strut\penalty-9999 % \break fails on case (3) 
+   \fi}
 
-\def\OTRSETnaturalflush
-  {\bgroup 
-   \forgetall % new 
-   \setbox0\vbox to \columnfreecells\lineheight
-     {\vskip-\topskip
-      \vskip\lineheight
-      \prevdepth\dp\strutbox
-      \unvbox\normalpagebox
-      \vfill}%
-   \setbox2\hbox
-     {\OTRSETplacebottomnotes}%
-   \setbox\scratchbox\hbox
-     {\wd0=\zeropoint\box0\box2}%
-   \dp\scratchbox\dp\strutbox
-   \OTRSEThandleflushedtext1
+\def\startdisplay{\displaybreak\ignorespaces\startopelkaar}
+\def\stopdisplay {\stopopelkaar\displaybreak\ignorespaces}
+
+\def\tightvbox
+  {\dowithnextbox{\dp\nextbox\zeropoint\box\nextbox}\vbox}
+\def\tightvtop
+  {\dowithnextbox{\ht\nextbox\zeropoint\box\nextbox}\vtop}
+
+% cleaner 
+
+\def\@@nmpre#1{\doiftext{#1}{{#1}\tfskip}}
+\def\@@nmpos#1{\doiftext{#1}{\tfskip{#1}}}
+
+% newer 
+
+\def\@@nmprepos#1#2#3#4#5%
+  {\doifelsenothing\@@nmbreedte
+     {\doiftext{#5}{#1{#5}#2}}
+     {\doiftext{#5}{\hbox to \@@nmbreedte{#3{#5}#4}}}}
+
+\def\@@nmpre{\@@nmprepos\empty\tfskip\relax\hss}
+\def\@@nmpos{\@@nmprepos\tfskip\empty\hss\relax}
+
+\def\doprocesstabskipline#1%
+  {\bgroup
+   \scratchcounter\plusone
+   \dodoprocesstabskipline#1\relax 
+   \egroup}
+      
+\def\dodoprocesstabskipline#1%
+  {\ifnum\scratchcounter>\spacespertab\relax
+     \donetrue \else \donefalse \advance
+   \fi \scratchcounter \plusone
+   \ifx#1\relax \else
+     \ifcase\tabskipmode
+       % can't happen 
+     \or 
+       % go on 
+     \else\ifnum`#1<128
+       % ok, no special character  
+     \else\ifnum\catcode`#1=\active
+       % quits parsing, else utf lookahead problems  
+       \chardef\tabskipmode\zerocount
+     \fi\fi\fi
+     \ifcase\tabskipmode 
+       \@EAEAEA#1%
+     \else
+       \@EAEAEA#1\@EAEAEA\dodoprocesstabskipline
+     \fi
+   \fi}
+
+\setuptyping[\c!tab=\s!ascii] % better default than \v!yes 
+
+% obey eigennummer
+
+\def\doresetsectioncounters#1%
+  {\resetcounter{\??se#1}%
+   \letgvalue{\??se#1\c!eigennummer}\relax
+   \donexttracklevel{#1}}
+
+\def\@@shortsectionnumber#1%
+  {\@EA\ifx\csname\??se#1\c!eigennummer\endcsname\relax
+     \@EA\ifx\csname\??se#1\@@sectieblok\c!conversie\endcsname\relax
+       \@EA\ifx\csname\??se#1\c!conversie\endcsname\relax
+         \@@sectionvalue{#1}%
+       \else
+         \@@sectionconversion{#1}{\@@sectionvalue{#1}}%
+       \fi
+     \else
+       \@@sectionconversion{#1}{\@@sectionvalue{#1}}%
+     \fi
+   \else
+     \csname\??se#1\c!eigennummer\endcsname
+   \fi}
+
+\def\setsomeheadconversion#1#2%
+   {\someheadconversionfalse
+    \doifelsevalue{\??ko#1\c!eigennummer}\v!ja
+      {\setgvalue{\??se\@@sectie\c!eigennummer}{#2}%
+       \def\someheadconversion{#2}}
+      {\letgvalue{\??se\@@sectie\c!eigennummer}\relax
+       \bepaalkopnummer[#1]%
+       \@EA\ifx\csname\??se\@@sectie\@@sectieblok\c!kopconversie\endcsname\relax
+         \@EA\ifx\csname\??se\@@sectie\c!kopconversie\endcsname\relax
+           \def\someheadconversion{#2}%
+         \else
+           \@EA\ifx\csname\??se\@@sectie\c!kopconversie\endcsname\empty
+             \def\someheadconversion{#2}%
+           \else
+             \someheadconversiontrue
+             \def\someheadconversion%
+               {\fullsectionnumber{#1}{\getvalue{\??se\@@sectie\c!kopconversie}}{#2}}%
+           \fi
+         \fi
+       \else
+         \@EA\ifx\csname\??se\@@sectie\@@sectieblok\c!kopconversie\endcsname\empty
+           \def\someheadconversion{#2}%
+         \else
+           \someheadconversiontrue
+           \def\someheadconversion%
+             {\fullsectionnumber{#1}{\getvalue{\??se\@@sectie\@@sectieblok\c!kopconversie}}{#2}}%
+         \fi
+       \fi}}
+
+% pretty important (esp since we now ignore shipouts) 
+%
+% actually we should nil all writes, marks, specials 
+
+\appendtoks \globallet\popcolor\relax \to \everylastshipout
+
+\def\doscalelikeafigure % quite dirty and potential interference possible
+  {\doifsomething{\@@xyfactor\@@xyhfactor\@@xybfactor\@@xyschaal
+                  \@@xybreedte\@@xyhoogte\@@xyregels}
+     {\let \@@efschaal \@@xyschaal
+      \let \@@effactor \@@xyfactor
+      \let \@@efbfactor\@@xybfactor
+      \let \@@efhfactor\@@xyhfactor
+      \let \@@efbreedte\@@xybreedte
+      \let \@@efhoogte \@@xyhoogte
+      \let \@@efregels \@@xyregels
+      \let \@@epx      \!!zeropoint
+      \let \@@epy      \!!zeropoint
+      \edef\@@epw     {\the\wd\nextbox}%
+      \edef\@@eph     {\the\ht\nextbox}%
+      \figwid\zeropoint \figxsca\plusone % see note * (core-fig)
+      \fighei\zeropoint \figysca\plusone % see note * (core-fig)
+      \checkfiguresettings
+      \setfactorfiguresize
+      \setscalefiguresize
+      \setdimensionfiguresize
+      \convertfigureinsertscale\@@epx\figx\figxsca\scax
+      \convertfigureinsertscale\@@epy\figy\figysca\scay
+      \scratchdimen\scax\s!pt \divide\scratchdimen 100
+      \edef\@@xysx{\withoutpt\the\scratchdimen}%
+      \scratchdimen\scay\s!pt \divide\scratchdimen 100
+      \edef\@@xysy{\withoutpt\the\scratchdimen}}}
+
+\def\doschaal[#1]%
+  {\bgroup
+   \forgetall
+   \getparameters
+     [\??xy]
+     [\c!schaal=,\c!breedte=,\c!hoogte=,\c!regels=,
+      \c!factor=,\c!hfactor=,\c!bfactor=,
+      \c!sx=1,\c!sy=1,#1]%
+   \dowithnextbox
+     {\dontshowcomposition
+      \ifdim\ht\nextbox>\zeropoint \ifdim\wd\nextbox>\zeropoint
+        \doscalelikeafigure
+        \dimen0=\@@xysy\ht\nextbox
+        \dimen2=\@@xysy\dp\nextbox
+        \dimen4=\@@xysx\wd\nextbox
+        \dimen6=\dimen0\advance\dimen6 \dimen2
+%        \setbox\nextbox\vbox to \dimen6
+%          {\ht\nextbox\zeropoint
+%           \dp\nextbox\zeropoint
+%           \vfill % erbij
+%           \dostartscaling\@@xysx\@@xysy\box\nextbox\dostopscaling}%
+        \setbox\nextbox\hbox
+          {\smashbox\nextbox
+           \dostartscaling\@@xysx\@@xysy\box\nextbox\dostopscaling}%
+        \ht\nextbox\dimen0
+        \dp\nextbox\dimen2
+        \wd\nextbox\dimen4
+      \fi \fi
+      \box\nextbox
+      \egroup}
+   \hbox}
+
+\def\incrementvalue#1%
+  {\expandafter\increment\csname#1\endcsname}
+
+\def\decrementvalue#1%
+  {\expandafter\decrement\csname#1\endcsname}
+
+% \translateMPinput{il2-pl}
+%
+% \startMPenvironment[global] 
+%   \setupbodyfont[plr] 
+% \stopMPenvironment 
+%
+% \TeX: ± ¶ 
+%
+% \startMPcode
+% draw btex MetaPost: ± ¶ etex scaled 5 ;  
+% \stopMPcode
+
+\def\doMPpositiongraphic#1#2% tag setups
+  {\bgroup
+   \def\@@meta{#1:}%
+   \setupMPvariables[#2]%
+   \prepareMPpositionvariables
+   \MPshiftdrawingtrue
+   \def\doMPpositiongraphic##1##2%
+     {{% new, see (techniek) 
+       \def\@@meta{##1:}%
+       \setupMPvariables[#2,##2]%
+       \prepareMPpositionvariables
+       % and needed 
+       \getvalue{MPG:##1}}}% temp hack
+   \setbox\positiongraphicbox\hbox
+     {\ignorespaces 
+      \executeifdefined{MPM:#1}{\executeifdefined{MPG:#1}\donothing}%
+      \removelastspace}%
+   \smashbox\positiongraphicbox
+   \box\positiongraphicbox
    \egroup}
 
-\appendtoks \checkcurrentlayout \to \everystarttext 
+\writestatus{\m!systems}{beware: some patches loaded from cont-new.tex!}
+
+\def\columnhbreak
+  {\ifhmode
+     \bgroup
+     \removeunwantedspaces
+     \parfillskip\zeropoint
+     \OTRSETcolumnseparator
+     \par
+     \egroup
+   \fi}
+
+\installcolumnbreakhandler {SET} \v!lokaal
+  {\columnhbreak
+   \ejectinsert
+   \ejectpage} % brrr
+   % no \OTRSETsethsize, can be mid smaller (like tabulate)
+
+% We need to make sure that we really leave the column; mid 
+% column we may end up in an empty gap, and we don;t want to 
+% stay there (basically such a gap is a small empty page 
+% then).  
+
+\installcolumnbreakhandler {SET} \v!ja
+  {\columnhbreak
+   \edef\savedmofcolumns{\the\mofcolumns}%
+   \edef\savedrealpageno{\the\realpageno}%
+   \ejectinsert
+   \ejectpage % brrr
+   \doloop
+     {\ifnum\savedmofcolumns=\mofcolumns
+        \ifnum\savedrealpageno=\realpageno
+          \OTRSETdummycolumn
+        \else
+          \exitloop
+        \fi 
+      \else      
+        \exitloop
+      \fi}} 
+
+% testcase : pascal demo-bbi, paragraaf/aanduiding koppen 
+
+\ifx\lastskipinotr\undefined \newskip\lastskipinotr \fi 
+
+\installoutput\OTRSETflushpreposttext
+  {\global\setbox\precolumnbox\vbox
+     {\unvbox\normalpagebox
+      \global\lastskipinotr\lastskip}%
+   \ifdim\lastskipinotr>\zeropoint
+     \global\setbox\precolumnbox\hbox
+       {\lower\strutdepth\box\precolumnbox}%
+   \fi 
+   \global\dp\precolumnbox\strutdepth
+   \ifcarryoverfootnotes \else
+     \global\setbox\postcolumnbox\vbox{\placebottomnotes}%
+   \fi}
+
+\def\dopositionaction#1% test saves hash entry in etex
+  {\ifundefined{\POSactionprefix#1::}\else
+     \ifnum\MPp{#1}>\zerocount % new 
+\setbox\scratchbox\hbox
+       \bgroup
+       \traceposstring\clap\red{<#1>}%
+       \the\everyinsertpositionaction
+       \the\everypositionaction
+       \ifcollectMPpositiongraphics 
+         % can save a lot of run time 
+         \pushMPdrawing
+         \MPshiftdrawingtrue
+         \resetMPdrawing
+         \getvalue{\POSactionprefix#1::}%
+         \ifMPdrawingdone
+           \getMPdrawing
+         \fi
+         \resetMPdrawing
+         \popMPdrawing
+       \else
+         \getvalue{\POSactionprefix#1::}%
+       \fi
+       \cleanuppositionaction{#1}%
+       \egroup
+\smashedbox\scratchbox
+     \else
+       % shouldn't happen too often 
+       \traceposstring\clap\cyan{<#1>}%
+     \fi
+   \fi}
+
+\def\MPspacechar{\char32\relax} % old solution does not work with math 
+
+\def\begintbl
+  {\doglobal\newcounter\colTBL
+   \doglobal\newcounter\rowTBL
+   \doglobal\decrement\rowTBL
+   \tabskip\zeropoint
+   \halign\bgroup
+\registerparoptions
+   \ignorespaces##\unskip&&\ignorespaces##\unskip\cr}
+
+% \startcolumnset[two] \input tufte
+% \startcolumnsetspan[two] \input tufte \stopcolumnsetspan
+% \input tufte \stopcolumnset
+
+%D Well, here comes some real trickery. When we have the 100\%
+%D spot color or black color, we don't want to erase the
+%D background. So, instead we hide the content by giving it
+%D zero transparency.
+
+% todo : #1#2#3 met #2 > of < and #3 een threshold
+
+% \newif\ifhidesplitcolor \hidesplitcolortrue
+
+\def\dohidecolor#1#2%
+  {\ifhidesplitcolor
+     \ifx#1#2%
+       \dostartgraycolormode\@@cl@@o
+     \else
+       \fullytransparentcolor
+     \fi
+   \else
+     \dostartgraycolormode\@@cl@@o
+   \fi}
+
+\def\dovidecolor#1#2%
+  {\ifhidesplitcolor
+     \ifx#1#2%
+       \fullytransparentcolor
+     \else
+       \dostartgraycolormode\@@cl@@o
+     \fi
+   \else
+     \dostartgraycolormode\@@cl@@o
+   \fi}
+
+\def\fullytransparentcolor
+  {\dostartgraycolormode\@@cl@@o % better than z
+  %\global\@EA\chardef\csname\@@currenttransparent\endcsname\plusone
+  %\global\intransparenttrue 
+   \dostarttransparency10}
+
+\def\noexeccolorS#1:#2\od
+  {\edef\@@cl@@s{#1}%
+   \dohidecolor\@@cl@@s\@@cl@@o}
+
+\def\noexeccolorP#1:#2:#3\od
+  {\edef\@@cl@@p{#2}%
+   \dohidecolor\@@cl@@p\@@cl@@z}
+
+\def\doexeccolorPP#1:#2:%
+  {\edef\@@cl@@n{#1}%
+   \edef\@@cl@@p{#2}%
+   \registerusedspotcolor\@@cl@@n
+   \ifx\@@cl@@n\currentspotcolor
+     \normalizeSPOT
+     \dostartgraycolormode\@@cl@@p % was spotcolormode
+   \else
+     \dovidecolor\@@cl@@p\@@cl@@o
+   \fi
+   \exectransparency}
+
+% now in cont-loc.tex, for the sake of testing.
+%
+% %D When \type {\somecolor} is issued, we can savely assume
+% %D grouping. Using \type {\groupedcommand} here (i.e.\ the
+% %D definition of \type {\color}) is unsafe because in
+% %D interferes with for instance switching attributes.
+%
+% \def\switchtocolor[#1]%
+%   {\bgroup\startcolor[#1]
+%    \aftergroup\stopcolor
+%    \aftergroup\egroup}
+
+% this supports:
+%
+% \starttypen
+% \placelist[section][criterium=chapter,number=1] \blank
+% \placelist[section][criterium=chapter,number=2] \blank
+% \placelist[section][criterium=chapter,number=3] \blank
+%
+% \chapter{first}  \section{AA} \section{BB}
+% \chapter{second} \section{CC} \section{DD}
+% \chapter{third}  \section{EE} \section{FF}
+% \stoptypen
+
+\def\dosettoclevel#1#2%
+  {\ifundefined{#1#2\c!nummer}%
+     \dosetfilterlevel{\getvalue{#1#2\c!criterium}}\empty
+   \else
+     \doifelsevaluenothing{#1#2\c!nummer}%
+       {\dosetfilterlevel{\getvalue{#1#2\c!criterium}}\empty}
+       {\setsectieenkoppeling{\getvalue{#1#2\c!criterium}}%
+        \dosetfilterlevel
+          {\previoussection\@@sectie}%
+          {\getvalue{#1#2\c!nummer}}}%
+   \fi}
+
+\def\GetPar
+  {\expanded
+     {\dowithpar
+        {\the\BeforePar
+         \BeforePar\emptytoks}
+        {\the\AfterPar
+         \BeforePar\emptytoks
+         \AfterPar\emptytoks}}}
+
+\def\GotoPar
+  {\expanded
+     {\dogotopar
+        {\the\BeforePar
+         \BeforePar\emptytoks}}}
+
+\def\@@somedefinitie#1[#2]#3%
+  {\dowithpar
+     {\bgroup\executedoordefinitie{#1}[#2]{#3}}%
+     {\@@stopdefinitie{#1}}}
+
+% test this for a long time, esp since from now on, by default
+% \commands are not expanded
+
+\setupreferencing
+  [\c!expansie=\v!nee]
+
+\def\dotextreference[#1]#2%
+  {\bgroup
+   \def\asciia{#1}%
+   \convertexpanded\??rf{#2}\asciib
+   \@EA\rawtextreference\@EA\s!txt\@EA\asciia\@EA{\asciib}%
+   \egroup}
+
+\def\dopagereference[#1]%
+  {\rawpagereference\s!pag{#1}}
+
+\def\doreference[#1]#2%
+  {\bgroup
+   \def\asciia{#1}%
+   \convertexpanded\??rf{#2}\asciib
+   \@EA\rawreference\@EA\s!ref\@EA\asciia\@EA{\asciib}%
+   \egroup}
+
+\def\hyphenationpoint
+  {\hskip\zeropoint}
+
+\def\hyphenated#1%
+  {\bgroup
+   \!!counta\zerocount
+   \def\hyphenated##1{\advance\!!counta\plusone}%
+   \handletokens#1\with\hyphenated
+   \!!countb\plusone
+   \def\hyphenated##1%
+     {##1%
+      \advance\!!countb\plusone\relax
+      \ifnum\!!countb>2 \ifnum\!!countb<\!!counta
+        \hyphenationpoint
+      \fi\fi}%
+   \handletokens#1\with\hyphenated
+   \egroup}
+
+\def\obeysupersubletters
+  {\let\super\normalsuper
+   \let\suber\normalsuber
+   \let\normalsuper\letterhat
+   \let\normalsuber\letterunderscore
+   \enablesupersub}
+
+\def\obeysupersubmath
+  {\let\normalsuper\letterhat
+   \let\normalsuber\letterunderscore
+   \enablesupersub}
+
+%\let\normaltype\type
+%
+%\def\type#1%
+%  {\expanded{\normaltype{\detokenize{#1}}}}
+
+% {x123 \os x123} {\tfa x123 \os x123} {x123 \tx x123 \os x123}
+% \definefontsynonym[OldStyle][Serif]
+% {x123 \os x123} {\tfa x123 \os x123} {x123 \tx x123 \os x123}
+
+% testen :
+%
+% \appendtoks
+%   \let\registerparoptions\relax
+% \to \everyforgetall
+
+\newsignal\noblanksignal
+
+\def\docomplexdoblanko[#1]% pas op \relax's zijn nodig ivm volgende \if
+  {\global\blankoresetfalse
+   \global\blankoblokkeerfalse
+   \global\blankogeenwitfalse
+   \global\lokaalblankoflexibelfalse
+   \global\lokaalblankovastfalse
+   \global\blankoskip\zeropoint
+   \global\blankoforceerfalse
+   \blankobuitenfalse
+   \expanded{\rawprocesscommalist[#1]}\doblanko
+   \ifdim\blankoskip=\zeropoint\relax
+     \iflokaalblankoflexibel
+       \doglobal\advance\blankoskip \currentblanko
+     \else\iflokaalblankovast
+       \doglobal\advance\blankoskip \currentblanko
+     \fi\fi
+   \fi
+   \ifblankobuiten
+   \else
+     \par
+     \ifvmode          %in pos fonts gaat dit mis
+       \ifblankoforceer%\ifdim\prevdepth>\zeropoint\else
+         % -1000pt signals top of page or column (\ejectcolumn)
+         \vbox{\strut}\kern-\lineheight
+       \fi
+       \ifblankoblokkeer
+         \global\doeblankofalse
+         \ifgridsnapping
+           \ifdim\prevdepth<\zeropoint
+             % brrr
+           \else
+             % dirty trick: smaller blanks are ignored after
+             % a larger one, so 10 lines is probably safe; first make
+             % sure that we honor penalties
+             \scratchcounter\lastpenalty
+             % now comes the trick (cross our fingers that this works
+             % well in multi columns; maybe an ifinner test is needed
+             % \vskip-10\lineheight
+             %    \ifnum\scratchcounter=\zerocount \else \penalty\lastpenalty \fi
+             %    \vskip 10\lineheight
+             % allas, this leads to overfull pages, so we try this:
+             \kern-\noblanksignal
+             \ifnum\scratchcounter=\zerocount
+             \else
+               \penalty\lastpenalty
+             \fi
+             \kern\noblanksignal
+             % end-of-dirty-trick
+           \fi
+         \else
+           \ifdim\prevdepth<\zeropoint
+             % brrr
+           \else
+             % ensure at least a proper prevdepth, this should be
+             % an option
+             \vskip-\prevdepth
+             \vskip\strutdepth
+             \prevdepth\strutdepth
+           \fi
+           % the old crappy piece of code
+           \edef\oldprevdepth{\the\prevdepth}%
+           \prevdepth\newprevdepth
+         \fi
+       \else
+         \global\doeblankotrue
+       \fi
+       \ifblankoreset
+         \global\doeblankotrue
+         \ifgridsnapping
+            % let's play safe and not fool around with the depth, if
+            % only because it took a lot of effort to sort out the grid
+            % stuff in the first place
+         \else
+           \ifdim\prevdepth=\newprevdepth
+             \prevdepth\oldprevdepth
+           \fi
+         \fi
+       \fi
+       \ifdoeblanko
+         \ifdim1\lastskip<1\blankoskip\relax
+           % else when \blanko[2*groot] + \blanko[3*groot] with parskip
+           % equaling 1*groot, gives a groot=\parskip so adding a small
+           % value makes it distinguishable; can also be done at parskip
+           % setting time (better)
+           \global\advance\blankoskip \mindimen\relax % = skip
+           % test this on 2* + 3* and parskip groot
+           \ifblankogeenwit
+             \global\advance\blankoskip -\parskip
+           \else
+             \ifdim\lastskip=\parskip
+             \else  % force this due to previous comment
+               \ifdim\parskip>\zeropoint\relax
+                 \ifdim\blankoskip<\parskip\relax
+                   \global\blankoskip\zeropoint
+                 \else
+                   \global\advance\blankoskip -\parskip
+                 \fi
+               \fi
+             \fi
+           \fi
+           \ifblankoflexibel \else
+             \blankoskip1\blankoskip
+           \fi
+           \iflokaalblankovast
+             \blankoskip1\blankoskip
+           \fi
+           \iflokaalblankoflexibel
+             \blankoskip1\blankoskip
+               \!!plus\skipgluefactor\blankoskip
+               \!!minus\skipgluefactor\blankoskip
+           \fi
+           \ifgridsnapping
+             \ifdim\lastkern=\noblanksignal
+               \global\doeblankofalse
+             \fi
+           \else
+             \ifdim\prevdepth=\newprevdepth
+               \global\doeblankofalse
+             \fi
+           \fi
+           \ifdoeblanko
+             \iffuzzyvskip
+               \removelastfuzzyvskip
+               \fuzzyvskip\blankoskip\relax
+             \else
+               \removelastskip
+               \vskip\blankoskip\relax
+             \fi
+           \fi
+         \else
+           \iffuzzyvskip
+             \removelastfuzzyvskip
+             \fuzzyvskip\blankoskip\relax
+           \else
+             % new, test this on pascal
+             \ifdim\blankoskip<\zeropoint
+               \advance\blankoskip-\lastskip
+               \removelastskip
+               \ifdim\blankoskip>\zeropoint
+                 \vskip\blankoskip
+               \else
+                 \vskip\zeropoint
+               \fi
+             \else
+               % also new 
+               \ifdim\blankoskip=\zeropoint
+                 \ifblankogeenwit
+                   \geenwitruimte 
+                 \fi
+               \fi
+             \fi
+           \fi
+         \fi
+       \fi
+     \fi
+   \fi
+   \global\fuzzyvskipfalse
+   \presetindentation}
+
+\def\processfilelinesverbatim#1#2#3%
+  {\bgroup
+   \let\saveddoflushverbatimline\doflushverbatimline
+   \let\saveddoemptyverbatimline\doemptyverbatimline
+   \def\checkverbatimfileline##1%
+     {\ifnum\verbatimlinenumber<#2\else
+      \ifnum\verbatimlinenumber>#3\else
+        ##1%
+      \fi\fi}%
+   \def\doflushverbatimline
+     {\checkverbatimfileline\saveddoflushverbatimline}%
+   \def\doemptyverbatimline
+     {\checkverbatimfileline\saveddoemptyverbatimline}%
+   \processfileverbatim{#1}%
+   \egroup}
+
+\def\typefile
+  {\dodoubleempty\dotypefile}
+
+\def\dotypefile[#1][#2]#3%
+  {\ifsecondargument
+     \dodotypefile[#1][#2]{#3}%
+   \else\iffirstargument
+     \doifassignmentelse{#1}
+       {\dodotypefile[\v!file][#1]{#3}}
+       {\dodotypefile[#1][]{#3}}%
+   \else
+     \dodotypefile[\v!file][]{#3}%
+   \fi\fi}
+
+\def\dosetuptypelinenumbering#1#2%
+  {\setuptyping[#1][\c!start=,\c!stop=,\c!stap=,\c!nregels=,#2]%
+   \doifelsevalue{\??tp#1\c!nummeren}\v!file
+     {\stelregelnummerenin[\c!methode=\v!file]%
+      \donetrue}
+     {\doifelsevalue{\??tp#1\c!nummeren}\v!regel
+        {% \stelregelnummerenin defaults start/step to 1/1, so we need
+         \doifvaluenothing{\??tp#1\c!start}{\setvalue{\??tp#1\c!start}{1}}%
+         \doifvaluenothing{\??tp#1\c!stap }{\setvalue{\??tp#1\c!stap }{1}}%
+         \stelregelnummerenin
+           [\c!methode=\v!type,
+            \c!start=\getvalue{\??tp#1\c!start},
+            \c!stap=\getvalue{\??tp#1\c!stap}]%
+         \donetrue}
+        {\donefalse}}%
+   \ifdone
+     \def\beginofverbatimlines{\startregelnummeren}%
+     \def\endofverbatimlines  {\stopregelnummeren }%
+   \fi}
+
+\def\dodotypefile[#1][#2]#3%
+  {\getvalue{\??tp#1\c!voor}%
+   \doiflocfileelse{#3}
+     {\startopelkaar % includes \bgroup
+      \dosetuptypelinenumbering{#1}{#2}%
+      \doifinset{\getvalue{\??tp#1\c!optie}}{\v!commandos,\v!schuin,\v!normaal}
+        {\setuptyping[#1][\c!optie=\v!geen]}%
+      \doifvalue{\??tp#1\c!optie}\v!kleur
+        {\expandafter\aftersplitstring#3\at.\to\prettyidentifier
+         \letvalue{\??tp#1\c!optie}\prettyidentifier}%
+      \initializetyping{#1}%
+      \startverbatimcolor
+      \makelocreadfilename{#3}%
+      \doifundefinedelse{\??tp#3\v!globaal\c!start}
+        {\scratchcounter\zerocount}
+        {\scratchcounter\getvalue{\??tp#3\v!globaal\c!start}}%
+      \advance\scratchcounter\plusone
+      \setxvalue{\??tp#3\v!globaal\c!start}{\the\scratchcounter}%
+      \doifelsevaluenothing{\??tp#1\c!start}
+        {\processfileverbatim\readfilename}
+        {\doifvalue{\??tp#1\c!start}\v!verder
+           {\setevalue{\??tp#1\c!start}%
+              {\getvalue{\??tp#3\v!globaal\c!start}}}%
+         \doifelsevaluenothing{\??tp#1\c!stop}
+           {\doifelsevaluenothing{\??tp#1\c!nregels}
+              {\processfileverbatim\readfilename}
+              {\scratchcounter\getvalue{\??tp#1\c!start}%
+               \advance\scratchcounter\getvalue{\??tp#1\c!nregels}%
+               \advance\scratchcounter\minusone
+               \setxvalue{\??tp#3\v!globaal\c!start}%
+                 {\the\scratchcounter}%
+               \processfilelinesverbatim\readfilename
+                 {\getvalue{\??tp#1\c!start}}
+                 {\getvalue{\??tp#3\v!globaal\c!start}}}}%
+           {\processfilelinesverbatim\readfilename
+              {\getvalue{\??tp#1\c!start}}
+              {\getvalue{\??tp#1\c!stop }}}}%
+      \stopverbatimcolor
+      \stopopelkaar}  % includes \egroup
+     {\bgroup
+      \expanded{\convertargument#3}\to\ascii
+      \tttf[\makemessage\m!verbatims1\ascii]%
+      \showmessage\m!verbatims1\ascii
+      \egroup}%
+   \getvalue{\??tp#1\c!na}}
+
+% \setuptyping[file][numbering=file]
+%
+% \typefile[start=2,nlines=3]{zapf}
+% \typefile[start=continue,nlines=13]{zapf}
+% \typefile{zapf}
+%
+% \setuptyping[file][numbering=line]
+%
+% \typefile[start=4,step=3]{zapf}
+% \typefile{zapf}
+
+\def\startgridcorrection
+  {\dosingleempty\dostartgridcorrection}
+
+\def\dostartgridcorrection[#1]%
+  {\ifgridsnapping
+     \iffirstargument\doifsomething{#1}{\verplaatsopgrid[#1]}\fi
+     \snaptogrid\vbox\bgroup
+   \else
+     \startbaselinecorrection
+   \fi}
+
+\def\stopgridcorrection
+  {\ifgridsnapping
+     \egroup
+   \else
+     \stopbaselinecorrection
+   \fi}
+
+\def\checkgridsnapping
+  {\lineskip\ifgridsnapping\zeropoint\else\normallineskip\fi}
+
+\def\splittblbox#1% #1 <> 0/2
+  {\ifinsidefloat
+     \unvbox#1%
+   \else
+     % spacing between rows gets lost in split
+     \setbox4\vbox
+       {\doifsomething\tbltbltussenwit{\blank[\tbltbltussenwit]}}%
+     \setbox2\vbox
+       {}%
+     \dorecurse\noftblheadlines
+       {\setbox0\vsplit#1 to \lineheight
+        \setbox2\vbox{\unvcopy2\unvcopy0}}%
+     \ifcase\noftblheadlines\else\unvcopy2\fi
+     \donefalse
+     \doloop
+       {\setbox0\vsplit#1 to \lineheight
+        \ifdim\pagegoal<\maxdimen
+          \setbox0\vbox{\unvbox0}%
+          \dimen0\ht0
+          \advance\dimen0\ht4
+          \advance\dimen0\pagetotal
+          \ifdim\dimen0>\pagegoal
+            \bgroup \pagina \egroup % make sure that local vars are kept
+            \ifcase\noftblheadlines\else\unvcopy2\fi
+          \fi
+        \fi
+        \ifdone
+          \doifsomething\tbltbltussenwit{\blank[\tbltbltussenwit]}%
+        \fi
+        \unvbox0
+        \allowbreak
+        \ifvoid#1 \exitloop \else \donetrue \fi}%
+   \fi}
+
+\def\startplaatsen
+  {\dosingleempty\dostartplaatsen}
+
+\def\dostartplaatsen[#1]% tzt n*links etc
+  {\endgraf
+   \noindent\bgroup
+   \setlocalhsize
+   \hbox to \localhsize\bgroup
+     \doifnot{#1}\v!links\hss
+     \def\stopplaatsen
+       {\unskip\unskip\unskip
+        \doifnot{#1}\v!rechts\hss
+        \egroup
+        \egroup
+        \endgraf}%
+     \gobblespacetokens}
+
+% \startplaatsen[links] bla \stopplaatsen
+
+% we don't register the paragraph characteristics, only the
+% width
+
+\appendtoks
+  \setinnerparpositions % see "techniek" for application
+\to \everytabulate
+
+\appendtoks \checkcurrentlayout \to \everystarttext
 
 \def\flushfootnotes  {\flushnotes}
 \def\doflushfootnotes{\doflushnotes}
 
-\def\usesubpath[#1]%
-  {\ifx\allinputpaths\empty
-     \edef\allinputpaths{#1}%
-   \else
-     \def\docommando##1%
-       {\def\dodocommando####1{\addtocommalist{##1/####1}\allinputpaths}%
-        \processcommalist[#1]\dodocommando}%
-     \processcommacommand[\allinputpaths]\docommando
-   \fi}
-
-\newif\ifboxhasframe
-
-\def\startlocalframed[#1][#2]%
-  {\bgroup
-   \inframedtrue
-   \edef\@@framed{#1}%
-   % this piece of pre expansion is needed (sometimes used in frameoffset)
-   % \doifvaluesomething{\@@framed\c!lijndikte}         % obsolete 
-   %   {\ruledlinewidth\getvalue{\@@framed\c!lijndikte}}% obsolete 
-   % this piece of pre expansion is needed (sometimes used circular)
-   \scratchdimen\getvalue{\@@framed\c!kaderoffset}%
-   \setevalue{\@@framed\c!kaderoffset}{\the\scratchdimen}%
-   \doifnotvalue{\@@framed\c!achtergrondoffset}\v!kader
-     {\scratchdimen\getvalue{\@@framed\c!achtergrondoffset}%
-      \setevalue{\@@framed\c!achtergrondoffset}{\the\scratchdimen}}%
-   % we need to register the (outer) color
-   \startregistercolor[\getvalue{\@@framed\c!voorgrondkleur}]%
-   % to prevent deadlock in case of self refering
-   \ifsecondargument % faster
-     \getparameters[\@@framed][#2]% here !
-   \fi
-   % to get the right spacing
-   \doifvaluesomething{\@@framed\c!voorgrondletter}
-     {\@EA\doconvertfont\csname\@@framed\c!voorgrondletter\endcsname\empty}%
-   % beware, both the frame and background offset can be overruled
-   %
-   % the next macros are visible 
-   \edef\localoffset{\getvalue{\@@framed\c!offset   }}%
-   \edef\localwidth {\getvalue{\@@framed\c!breedte  }}%
-   \edef\localheight{\getvalue{\@@framed\c!hoogte   }}%
-   \edef\localformat{\getvalue{\@@framed\c!uitlijnen}}%
-   \edef\localstrut {\getvalue{\@@framed\c!strut    }}%
-   % these are not 
-   \edef\@@localframing {\getvalue{\@@framed\c!kader }}%
-   \edef\@@locallocation{\getvalue{\@@framed\c!plaats}}%
-   %
-   \ifx\@@localframing\v!overlay   % no frame, no offset, no framewidth 
-     \boxhasframefalse
-     \let\localoffset\v!overlay
-   \else\ifx\@@localframing\v!geen % no frame, no framewidth
-     \boxhasframefalse
-   \else
-     \boxhasframetrue
-   \fi\fi
-   \ifboxhasframe
-     \doifvaluesomething{\@@framed\c!lijndikte}
-       {\ruledlinewidth\getvalue{\@@framed\c!lijndikte}\relax
-        \ifinheritruledlinewidth\linewidth\ruledlinewidth\fi}%
-   \else
-     \ruledlinewidth\zeropoint
-   \fi
-   \ifx\localformat\empty
-     \boxhasformatfalse
-   \else
-     \boxhasformattrue
-     \dosetraggedcommand\localformat
-     \edef\dobeforeframedbox{\raggedtopcommand\getvalue{\@@framed\c!boven}}%
-     \edef\doafterframedbox {\getvalue{\@@framed\c!onder}\raggedbottomcommand}%
-   \fi
-   \ifx\localoffset\v!geen
-     \boxhasoffsetfalse
-     \boxhasstrutfalse
-     \boxisoverlaidfalse
-     \@@localoffset\ruledlinewidth
-   \else\ifx\localoffset\v!overlay
-% \ifx\@@localframing\v!nee \boxhasframefalse \fi % test first 
-     \boxhasoffsetfalse
-     \boxhasstrutfalse
-     \boxisoverlaidtrue
-     \@@localoffset\zeropoint
-   \else
-     \boxhasoffsettrue
-     \boxhasstruttrue
-     \boxisoverlaidfalse
-     \ifx\localoffset\v!default % new per 2-6-2000
-       \let\localoffset\defaultframeoffset
-       \letvalue{\@@framed\c!offset}\defaultframeoffset
-     \else
-       \let\defaultframeoffset\localoffset
-     \fi
-     \@@localoffset\localoffset
-     \advance\@@localoffset \ruledlinewidth
-   \fi\fi
-   \ifx\localwidth\v!passend
-     \ifboxhasformat
-       \boxhaswidthtrue
-       \!!widtha\hsize
-     \else
-       \boxhaswidthfalse
-     \fi
-   \else\ifx\localwidth\v!ruim
-     \boxhaswidthtrue
-     \!!widtha\hsize
-   \else
-     \boxhaswidthtrue
-     \!!widtha\localwidth
-   \fi\fi
-   \ifx\localheight\v!passend
-     \boxhasheightfalse % no longer: \boxhasstrutfalse
-   \else\ifx\localheight\v!ruim
-     \boxhasheightfalse
-   \else
-     \boxhasheighttrue
-     \!!heighta\localheight
-   \fi\fi
-   % this should be an option ! ! ! !
-   \ifdim\!!widtha=\hsize
-     \parindent\zeropoint
-     \setlocalhsize
-     \!!widtha\localhsize
-   \fi
-   % i.e. disable (colsetbackgroundproblemintechniek)
-   \advance\!!widtha  -2\@@localoffset
-   \advance\!!heighta -2\@@localoffset
-   \ifx\localstrut\v!nee
-     \boxhasstrutfalse
-   \fi
-   \ifboxhasstrut
-     \setstrut
-     \let\localbegstrut\begstrut
-     \let\localendstrut\endstrut
-     \let\localstrut   \strut
-   \else
-     \let\localbegstrut\pseudobegstrut % was: \relax
-     \let\localendstrut\pseudoendstrut % was: \relax
-     \let\localstrut   \pseudostrut    % was: \relax
-    %\ifboxhasheight\ifdim\!!heighta<\ht\strutbox % saveguard
-    %  \let\localbegstrut\relax                  % but not that
-    %  \let\localstrut   \relax                  % save afterall
-    %\fi\fi
-   \fi
-   \ifboxhasheight
-     \let\\\vboxednewline
-     \ifboxhaswidth
-       \let\hairline\vboxedhairline
-       \ifboxhasformat
-         \let\next\doformatboxSomeFormat
-       \else
-         \let\next\doformatboxNoFormat
-       \fi
-     \else
-       \let\hairline\hboxedhairline
-       \ifboxhasformat
-         \let\next\doformatboxHeight
-       \else
-         \let\next\doformatboxVSize
-       \fi
-     \fi
-   \else
-     \ifboxhaswidth
-       \ifboxhasformat
-         \let\hairline\vboxedhairline
-         \let\\\vboxednewline
-         \let\next\doformatboxWidth
-       \else
-         \let\hairline\hboxedhairline
-         \let\\\hboxednewline
-         \let\next\doformatboxHSize
-       \fi
-     \else
-       \let\hairline\hboxedhairline
-       \let\\\hboxednewline
-       \let\next\doformatboxNoSize
-     \fi
-   \fi
-   \edef\framedwidth % a new feature, visible fo ruser
-     {\ifdim\!!widtha >\zeropoint\the\!!widtha \else\zeropoint\fi}%
-   \edef\framedheight% a new feature, visible fo ruser
-     {\ifdim\!!heighta>\zeropoint\the\!!heighta\else\zeropoint\fi}%
-   % first alternative 
-   %\def\dowithframedbox%
-   %  {\let\postprocessframebox\undefined %new
-   %   \aftergroup\stoplocalframed}%
-   % \afterassignment\dowithframedbox
-   % \setbox\framebox=\next}
-   % second alternative 
-   %\dowithnextbox 
-   %  {\setbox\framebox=\box\nextbox
-   %   \let\postprocessframebox\undefined %new
-   %   \stoplocalframed}
-   %  \next}
-   % third alternative 
-   \afterassignment\dodowithframebox
-   \setbox\framebox\next}
-
-\def\stoplocalframed%
-  {\dontshowcomposition
-   \ifboxhasformat
-     \ifx\localwidth\v!passend
-       \ifreshapeframebox\doreshapeframedbox\fi
-       \boxhaswidthfalse
-     \else
-       \resetshapeframebox
-     \fi
-   \else
-     \resetshapeframebox
-   \fi
-   \ifboxhaswidth
-     \wd\framebox\!!widtha
-   \fi
-   \ifboxhasheight
-     \ht\framebox\!!heighta
-   \fi
-   \doifvalue{\@@framed\c!leeg}\v!ja
-     {\setbox\scratchbox\null
-      \wd\scratchbox\wd\framebox 
-      \ht\scratchbox\ht\framebox 
-      \dp\scratchbox\dp\framebox
-      \setbox\framebox\box\scratchbox}%
-   \stopregistercolor
-   \docolorframebox
-   \ifboxhasoffset
-     \dooffsetframebox
-   \fi
-   \ifboxisoverlaid \else
-     \dolocateframebox
-   \fi
-   \ifx\postprocessframebox\undefined \else
-     \postprocessframebox\framebox
-   \fi
-   \edef\overlaylinecolor{\getvalue{\@@framed\c!kaderkleur}}%
-   \edef\overlaylinewidth{\the\ruledlinewidth}% \@@...
-   \ifboxhasframe % real or invisible frame 
-     \doframedbox 
-   \fi
-   \doifvaluesomething{\@@framed\c!achtergrond}\dobackedbox
-   \ifx\@@locallocation\v!laag
-     \doinlineframedbox
-   \else\ifx\@@locallocation\v!diepte
-     \doloweredframedbox
-   \fi\fi
-   \box\framebox
-   \egroup
-   \egroup}
-
-%D This alternative is slower, since it works on top of the 
-%D color (stack) mechanism, but it does provide nesting. 
+%D This alternative is slower, since it works on top of the
+%D color (stack) mechanism, but it does provide nesting.
 
 \def\dosetrastercolor#1%
   {\edef\@@cl@@s{#1}%
    \ifx\@@cl@@s\empty
-     \let\@@rsraster
+     \let\@@cl@@s\@@rsraster
    \fi
    \setevalue{\??cr\??rs}{\colorSpattern}}
 
-\def\localstartraster[#1]%
-  {\bgroup\dosetrastercolor{#1}\localstartcolor[\??rs]}
+% beware, don't add extra grouping, else color in tables
+% fails
 
-\def\localstopraster
-  {\localstopcolor\egroup}
+\def\localstartraster[#1]%
+  {\ifincolor\dosetrastercolor{#1}\localstartcolor[\??rs]\fi}
 
 \def\startraster[#1]%
-  {\bgroup\dosetrastercolor{#1}\startcolor[\??rs]}
+  {\ifincolor\dosetrastercolor{#1}\startcolor[\??rs]\fi}
 
-\def\stopraster
-  {\stopcolor\egroup}
+\def\localstopraster{\ifincolor\localstopcolor\fi}
+\def\stopraster     {\ifincolor\stopcolor\fi}
 
 \def\fontclassname#1#2%
   {\ifcsname\??ff#1#2\endcsname
@@ -329,24 +921,32 @@
   {\dotripleargument\dodefineclassfontsynonym}
 
 \def\dodefineclassfontsynonym[#1][#2][#3]%
-  {\definefontsynonym[#1][\fontclassname{#2}{#3}]} 
+  {\definefontsynonym[#1][\fontclassname{#2}{#3}]}
 
-%\definefontsynonym [KopFont] [\fontclassname{officina}{SerifBold}] 
+%\definefontsynonym [KopFont] [\fontclassname{officina}{SerifBold}]
 %
-%\defineclassfontsynonym [KopFont] [officina] [SerifBold] 
+%\defineclassfontsynonym [KopFont] [officina] [SerifBold]
 
-\def\woordrechts % zie naw 
+\def\woordrechts % zie naw
   {\groupedcommand
-     {\hfill\allowbreak\strut\hfill\hbox}
-     {\parfillskip\zeropoint\par}}
+     {\removeunwantedspaces
+      \hfill
+      \hskip\zeropoint % permit break, \allowbreak fails here
+      \strut
+      \hfill
+      \quad % decent spacing
+      \hbox}
+     {\parfillskip\zeropoint
+      \par}}
 
-\def\startkolomopmaak % don't change 
+\def\startkolomopmaak % don't change
   {\bgroup
-   \getrawnoflines\teksthoogte % teksthoogte kan topskip hebben, dus raw  
+   \getrawnoflines\teksthoogte % teksthoogte kan topskip hebben, dus raw
    \scratchdimen\noflines\lineheight
    \advance\scratchdimen-\lineheight
    \advance\scratchdimen\topskip
-   \setbox\scratchbox\vbox to \scratchdimen\bgroup}
+   \setbox\scratchbox
+   \ifcase\showgridstate\vbox\else\ruledvbox\fi to \scratchdimen\bgroup}
 
 \def\stopkolomopmaak
   {\egroup
@@ -355,9 +955,7 @@
    \box\scratchbox
    \egroup}
 
-\writestatus{\m!systems}{beware: some patches loaded from cont-new.tex!}
-
-% todo : hoe komt box er uit 
+% todo : hoe komt box er uit
 
 \long\def\startexternalfigure
   {\dotripleempty\dostartexternalfigure}
@@ -365,11 +963,11 @@
 \long\def\dostartexternalfigure[#1][#2][#3]#4\stopexternalfigure
   {\gdef\figuredescription{#4}%
    \externalfigure[#1][#2][#3]%
-   \global\let\figuredescription\empty}
+   \globallet\figuredescription\empty}
 
 \let\figuredescription\empty
 
-% very experimental 
+% very experimental
 
 \def\redoanalyzefigurefiles#1%
   {\ifcase\figurestatus
@@ -390,257 +988,6 @@
    \doanalyzefigurefiles\doanalyzefigurefilesA
    \doanalyzefigurefiles\doanalyzefigurefilesB
    \doanalyzefigurefiles\doanalyzefigurefilesC}
-
-\def\regelweergave
-  {\@@rnlinks\convertnumber\@@rnconversie\linenumber\@@rnrechts}
-
-% extension to page-lin 
-
-\def\dodoschrijfregelnummer%
-  {% beware of em's, the font is already switched ! 
-   \setbox\scratchbox\hbox
-     {\setbox0\hbox{\@@rncommando{\regelweergave}}\vsmashbox0%
-      \ifcase\linenumberlocation
-        \rlap{\hbox to \@@rnbreedte{\box0\hss}}% was \llap, nog testen !! 
-      \or
-       %\llap{\hbox to \@@rnbreedte{\hss\box0\hskip\linkermargeafstand}}%
-        \inleftmargin
-          {\forgetall 
-           \doifelse\@@rnbreedte\v!marge
-             {\hsize\linkermargebreedte}{\hsize\@@rnbreedte}%
-           \alignedline\@@rnuitlijnen\v!rechts{\box0\hskip\@@rnafstand}}%
-      \else
-        \inrightmargin
-          {\forgetall 
-           \doifelse\@@rnbreedte\v!marge
-             {\hsize\rechtermargebreedte}{\hsize\@@rnbreedte}%
-           \alignedline\@@rnuitlijnen\v!links{\hskip\@@rnafstand\box0}}%
-      \fi}%
-   \vsmashbox\scratchbox
-   \box\scratchbox}
-
-\stelregelnummerenin
-  [\c!breedte=\ifcase\linenumberlocation2em\else\v!marge\fi,
-   \c!links=,
-   \c!rechts=,
-   \c!commando=,
-   \c!afstand=\zeropoint,
-   \c!uitlijnen=\ifcase\linenumberlocation\v!rechts\or\v!rechts\or\v!links\fi]
-
-% another one 
-
-\newevery \everylinenumber \relax
-
-\let\normaldodoschrijfregelnummer\dodoschrijfregelnummer
-
-\def\dodoschrijfregelnummer
-  {\normaldodoschrijfregelnummer
-   \the\everylinenumber}
-
-% new 
-
-\newcounter\linenotecounter
-\newtoks   \collectedlinenotes
-\newif     \iftracelinenotes
-
-\appendtoks
-  \the\collectedlinenotes
-\to \everylinenumber 
-
-\appendtoks 
-  \global\collectedlinenotes\emptytoks
-\to \beforeeverylinenumbering
-
-\def\handlelinenote#1#2%
-  {\bgroup
-   \expanded{\beforesplitstring#1}\at--\to\linenotelinenumber
-   \ifnum\linenotelinenumber=\linenumber\relax
-     % todo: \onlyfootnote{#1}{#2}% == configurable 
-     \setupfootnotes[\c!nummercommando=\gobbleoneargument]%
-     \footnotetext{#1: #2}% 
-   \fi
-   \egroup}
-
-\def\tracedlinenote#1%
-  {\iftracelinenotes
-     \hbox to \zeropoint
-       {\forgetall
-        \localcolortrue
-        \hsize\zeropoint
-        \hss
-        \vbox to \strutheight{\llap{\red\infofont\setstrut\linenotecounter}\vss}%
-        {\blue\vl}%
-        \vbox to \strutheight{\rlap{\red\infofont\setstrut#1}\vss}%
-        \hss}%
-      \prewordbreak
-   \fi}
-
-\def\linenote#1%
-  {\doglobal\increment\linenotecounter
-   \doifreferencefoundelse{\??rr:\linenotecounter}%
-     {\doglobal\@EA\appendtoks\@EA\handlelinenote\@EA
-        {\currenttextreference}{#1}\to\collectedlinenotes}
-     {}%
-   \tracedlinenote\empty
-   \expanded{\eenregel[\??rr:\linenotecounter]}}
-
-\def\startlinenote[#1]#2%
-  {\doifreferencefoundelse{\??rr:#1}%
-     {\doglobal\@EA\appendtoks\@EA\handlelinenote\@EA
-        {\currenttextreference}{#2}\to\collectedlinenotes}
-     {}%
-   \tracedlinenote{#1}%
-   \startregel[\??rr:#1]}
-
-\def\stoplinenote[#1]%
-  {\stopregel[\??rr:#1]}
-
-% \startbuffer[test]
-% \startlinenumbering[100]
-% test \linenote {oeps} test test test test test test
-% test \startlinenote [well] {oeps} test test test test test test
-% test \linenote {oeps} test test test test test test
-% test \linenote {oeps} test test test test test test
-% test \linenote {oeps} test test test test test test
-% test \linenote {oeps} test test test test test test
-% test \stoplinenote [well] test test test test test test 
-% \stoplinenumbering
-% \stopbuffer
-% 
-% {\typebuffer[test] \getbuffer[test]} \page
-% 
-% \startbuffer[setup]
-% \setuplinenumbering
-%   [align=left]
-% \stopbuffer
-% 
-% {\typebuffer[setup] \getbuffer[setup,test]} \page
-% 
-% \startbuffer[setup]
-% \setuplinenumbering
-%   [width=1em,
-%    align=left]
-% \stopbuffer
-% 
-% {\typebuffer[setup] \getbuffer[setup,test]} \page
-% 
-% \startbuffer[setup]
-% \setuplinenumbering
-%   [width=2em,
-%    distance=.5em,
-%    align=left]
-% \stopbuffer
-% 
-% {\typebuffer[setup] \getbuffer[setup,test]} \page
-% 
-% \startbuffer[setup]
-% \setuplinenumbering
-%   [width=2em,
-%    align=middle]
-% \stopbuffer
-% 
-% {\typebuffer[setup] \getbuffer[setup,test]} \page
-% 
-% \startbuffer[setup]
-% \setuplinenumbering
-%   [conversion=romannumerals,
-%    start=1,
-%    step=1,
-%    location=text,
-%    style=slanted,
-%    color=blue,
-%    width=1.5em]
-% \stopbuffer
-% 
-% {\typebuffer[setup] \startnarrower\getbuffer[setup,test]\stopnarrower} \page
-% 
-% \startbuffer[setup]
-% \setuplinenumbering
-%   [width=4em,
-%    left=--,
-%    right=--,
-%    align=middle]
-% \stopbuffer
-% 
-% {\typebuffer[setup] \getbuffer[setup,test]} \page
-% 
-% \startbuffer[setup-1]
-% \setuplinenumbering
-%   [style=\bfxx,
-%    command=\WatchThis]
-% \stopbuffer
-% 
-% \startbuffer[setup-2]
-% \def\WatchThis#1%
-%   {\ifodd\linenumber
-%      \definecolor[linecolor][red]%
-%    \else
-%      \definecolor[linecolor][green]%
-%    \fi
-%    \inframed
-%      [offset=1pt,frame=off,background=color,backgroundcolor=linecolor]
-%      {#1}}
-% \stopbuffer
-% 
-% {\typebuffer[setup-1,setup-2] \getbuffer[setup-1,setup-2,test]} \page
-% 
-% \startbuffer[setup-1]
-% \setuplinenumbering
-%   [location=inright,
-%    style=\bfxx,
-%    command=\WatchThis]
-% \stopbuffer
-% 
-% {\typebuffer[setup-1] \getbuffer[setup-1,setup-2,test]} \page
-
-\def\OTRSETgotocell#1#2% not that robust 
-  {\endgraf
-   \gdef\gotocellcounter{0}%
-   \doloop
-     {\ifnum\mofcolumns<#1\relax 
-        \doglobal\increment\gotocellcounter\relax
-        \ifnum\gotocellcounter>#1\relax
-          \line{\strut}\crlf 
-          \line{\strut}\crlf 
-          \kolom % \column 
-          \writestatus{columnset}{quitting goto cell}%
-          \exitloop
-        \else
-          \kolom % \column 
-        \fi 
-      \else 
-        \exitloop 
-      \fi}% 
-   \ifnum\mofcolumns=#1\relax
-     \ifnum#2>1
-       \scratchcounter=0
-       \currenthcell\mofcolumns
-       \currentvcell#2\advance\currentvcell -1 
-       \dorecurse\currentvcell
-         {\OTRSETdoifcellelse\mofcolumns\recurselevel\donothing
-            {\advance\scratchcounter1\relax}}
-       \getnoflines\pagetotal
-       \advance\scratchcounter-\noflines
-       \ifnum\scratchcounter>0 
-         \dorecurse\scratchcounter{\line{\strut}}%
-       \fi
-     \fi
-   \fi
-   \OTRSETsetvsize}
-
-\def\setlocalfloatdimensions#1#2% experimental ! ! ! !
-  {\doifvaluesomething{\??fl#1\c!maxbreedte}
-     {\scratchdimen=\getvalue{\??fl#1\c!maxbreedte}\relax
-      \ifdim\wd\nextbox>\scratchdimen
-        \setbox\nextbox=\hbox to \scratchdimen
-          {\doifcommonelse{\v!rechts,\v!inrechter,\v!links,\v!inlinker}{#2}
-             {\doifnotcommon{\v!rechts,\v!inrechter}{#2}\hss
-              \box\nextbox
-              \doifnotcommon{\v!links ,\v!inlinker }{#2}\hss}%
-             {\doifvalue{\??fl#1\c!plaats}\v!rechts\hss
-              \box\nextbox
-              \doifvalue{\??fl#1\c!plaats}\v!links \hss}}%
-      \fi}}
 
 \def\phantombox[#1]%
   {\hbox\bgroup
@@ -663,212 +1010,40 @@
   {\long\noexpand\def\noexpand\xdostartsetups##1##2\csname\e!stop\e!instellingen\endcsname%
      {\egroup
       \long\noexpand\setvalue{\??su##1}{##2}}}
-
-\def\startsetups#1 % for international purposes
-  {\bgroup
-   \catcode`\^^M=\@@ignore
-   \dostartsetups{#1}}
-
-\long\def\dostartsetups#1#2\stopsetups
-  {\egroup
-   \long\setvalue{\??su#1}{#2}}
-
-\def\definefont
-  {\dotripleempty\dodefinefont}
-
-\def\dodefinefont[#1][#2][#3]% [name][spec][1.6 | line=10pt | setup_id]
-  {\doifinstringelse{ }{#2}
-     {\ifthirdargument
-        \unexpanded\setvalue{#1}{\redodefinefont{#1}{#2}{#3}}%
-      \else
-        \unexpanded\setvalue{#1}{\dododefinefont{#1}{#2}}%
-      \fi}
-     {\definefont[#1][#2 sa 1][#3]}}
-
-\def\redodefinefont#1#2#3%
-  {\dododefinefont{#1}{#2}%
-   \doifnumberelse{#3}
-     {\stelinterliniein[#3]\stelspatieringin}
-     {\doifassignmentelse{#3}
-        {\stelinterliniein[#3]\stelspatieringin}
-        {\setups[#3]}}}
-
-% \def\defineclassfont
-%   {\doquadrupleempty\dodefineclassfont}
-% 
-% \def\dodefineclassfont[#1][#2][#3][#4]%  #2 = class 
-%   {\iffourthargument
-%      \definefont[#1][#2#3][#4]%
-%   %\else\ifthirdargument
-%   %  \definefont[#1][#2#3]%
-%    \else
-%      \definefont[#1][#2]%
-%    \fi}
 
-% todo, but now more easy to do:\definepage
-
-\def\docomplexpagina[#1]%
-  {\flushnotes
-   \bgroup
-   \def\dodocomplexpagina##1%
-     {\csname
-        @@\v!pagina\ifundefined{@@\v!pagina##1}\s!unknown\else##1\fi
-      \endcsname}%
-   \processcommalist[#1]\dodocomplexpagina
-   \egroup}
-
-\def\installpagehandler#1#2%
-  {\setvalue{@@\v!pagina#1}{#2}}
-
-\installpagehandler \s!unknown
-  {\let\@@pagespecification\commalistelement
-   \doifinstringelse{+}\@@pagespecification
-     {\ejectinsert\ejectpage
-      \dorecurse\@@pagespecification\ejectdummypage}
-     {\doifnumberelse\@@pagespecification
-        {\ejectinsert\ejectpage
-         \doloop
-           {\ifnum\userpageno<\@@pagespecification\relax
-              \ejectdummypage
-            \else
-              \exitloop
-            \fi}}
-        {}}}
-
-\installpagehandler \s!default
-  {} % do nothing if empty
-
-\installpagehandler  \v!reset
-  {\global\paginageblokkeerdfalse}
-
-\installpagehandler \v!blokkeer
-  {\global\paginageblokkeerdtrue}
-
-\installpagehandler \v!ja
-  {\ifpaginageblokkeerd\else
-     \ejectinsert
-     \ejectpage
-     \ifbinnenkolommen
-       \ejectpage  % anders soms geen overgang
-     \fi
-   \fi}
-
-\installpagehandler \v!opmaak
-  {\ifpaginageblokkeerd\else
-     \eject
-   \fi}
-
-\installpagehandler \v!blanko
-  {\pagebodyornamentsfalse}
-
-\installpagehandler \v!nee
-  {\ifpaginageblokkeerd\else
-     \dosomebreak\nobreak
-   \fi}
-
-\installpagehandler \v!voorkeur
-  {\ifpaginageblokkeerd\else
-     \ifbinnenkolommen
-       \dosomebreak\goodbreak
-     \else
-       \testpagina[3][\!!zeropoint]%
-     \fi
-    \fi}
-
-\installpagehandler \v!grotevoorkeur
-  {\ifpaginageblokkeerd\else
-     \ifbinnenkolommen
-       \dosomebreak\goodbreak
-     \else
-       \testpagina[5][\!!zeropoint]%
-     \fi
-   \fi}
-
-\installpagehandler \v!leeg
-  {\ejectinsert
-   \ejectpage
-   \doifnotvalue{\??tk\v!hoofd\c!status}{\v!stop}
-     {\setupheader[\c!status=\v!leeg]}%
-   \doifnotvalue{\??tk\v!voet\c!status}{\v!stop}
-     {\setupfooter[\c!status=\v!leeg]}%
-   \ejectdummypage}
-
-\installpagehandler \v!links
-  {\ejectinsert
-   \superejectpage
-   \doifbothsidesoverruled
-   \orsideone
-     \resetcurrentsectionmarks
-     \ejectdummypage
-   \orsidetwo
-   \od}
-
-\installpagehandler \v!rechts
-  {\ejectinsert
-   \superejectpage
-   \doifbothsidesoverruled
-   \orsideone
-   \orsidetwo
-     \resetcurrentsectionmarks
-     \ejectdummypage
-   \od}
-
-\installpagehandler \v!even
-  {\pagina
-   \doifonevenpaginaelse
-     {\resetcurrentsectionmarks\ejectdummypage}{}}
-
-\installpagehandler \v!oneven
-  {\pagina
-   \doifonevenpaginaelse
-     {}{\resetcurrentsectionmarks\ejectdummypage}}
-
-\installpagehandler \v!viertal
-  {\ifdubbelzijdig
-     \!!counta=\realpageno
-     \!!countb=\realpageno
-     \divide\!!counta 4
-     \divide\!!countb 2
-     \ifnum\!!counta=\!!countb
-     \else
-       \pagina
-       \pagina[\v!leeg]%
-       \pagina[\v!leeg]%
-     \fi
-   \fi}
-
-\installpagehandler \v!laatste
-  {\ejectinsert
-   \superejectpage\relax
-   \doifbothsidesoverruled
-     \naastpagina
-   \orsideone
-   \orsidetwo
-     %\ifodd\realpageno \else % kan weer weg
-       \noheaderandfooterlines
-       \ejectdummypage
-     %\fi
-   \od
-   \filluparrangedpages}
+%\def\startsetups % for international purposes
+%  {\bgroup
+%   \doifnextcharelse[\startsetupsA\startsetupsB}
+%
+%\def\startsetupsA[#1]%
+%  {\catcode`\^^M=\@@ignore
+%   \dostartsetups{#1}}
+%
+%\def\startsetupsB#1 % space delimited
+%  {\catcode`\^^M=\@@ignore
+%   \dostartsetups{#1}}
+%
+%\long\def\dostartsetups#1#2\stopsetups
+%  {\egroup
+%   \long\setvalue{\??su#1}{#2}}
 
-\beginETEX \dimexpr
+\def\startsetups % for international purposes
+  {\bgroup\doifnextcharelse[{\startsetupsA\stopsetups}%
+                            {\startsetupsB\stopsetups}}
+ 
+\def\startlocalsetups % for nested purposes
+  {\bgroup\doifnextcharelse[{\startsetupsA\stoplocalsetups}%
+                            {\startsetupsB\stoplocalsetups}}
 
-\definepapersize
-  [oversized]
-  [\c!breedte=\dimexpr(\papierbreedte+1.5cm),
-   \c!hoogte=\dimexpr(\papierhoogte+1.5cm)]
+\def\startsetupsA#1[#2]%
+  {\catcode`\^^M=\@@ignore
+   \dostartsetups#1{#2}}
 
-\definepapersize
-  [doublesized]
-  [\c!breedte=\dimexpr(\papierbreedte),
-   \c!hoogte=\dimexpr(2\papierhoogte)]
+\def\startsetupsB#1#2 % space delimited
+  {\startsetupsA#1[#2]}%
 
-\definepapersize
-  [doubleoversized]
-  [\c!breedte=\dimexpr(\papierhoogte+1.5cm),
-   \c!hoogte=\dimexpr(2\papierbreedte+1.5cm)]
-
-\endETEX
+\long\def\dostartsetups#1#2% watch out: not \grabuntil 
+  {\dograbuntil#1{\egroup\long\setvalue{\??su#2}}}
 
 \newtoks\everyfirstparagraphintro
 \newtoks\everynextparagraphintro
@@ -881,10 +1056,10 @@
 \def\dosetupparagraphintro[#1][#2]%
   {\processallactionsinset
      [#1]
-     [   \v!reset=>\global\chardef\everyparagraphintro=0
+     [   \v!reset=>\global\chardef\everyparagraphintro0
                    \global\everyfirstparagraphintro\emptytoks
                    \global\everynextparagraphintro \emptytoks,
-        \v!eerste=>\global\chardef\everyparagraphintro=1
+        \v!eerste=>\global\chardef\everyparagraphintro1
                    \doglobal\appendtoks#2\to\everyfirstparagraphintro,
       \v!volgende=>\ifcase\everyparagraphintro\global\chardef\everyparagraphintro=2\fi
                    \doglobal\appendtoks#2\to\everynextparagraphintro,
@@ -897,7 +1072,7 @@
      % no data
    \or
      % first data
-     \global\chardef\everyparagraphintro=2
+     \global\chardef\everyparagraphintro2
      \scratchtoks\everyfirstparagraphintro
      \global\everyfirstparagraphintro\emptytoks
    \or
@@ -932,35 +1107,6 @@
 %D some paragraph \par
 %D \stoptypen
 
-\def\@@themaintextcolor{themaintextcolor}
-
-\def\starttextcolor[#1]%
-  {\doifsomething{#1}
-     {\bgroup
-      \def\stoptextcolor          % also goes ok with \page after
-        {\let\maintextcolor\empty % this one because the top of
-         \stopregistercolor       % page sets the color right (side
-         \egroup}%                % effect)
-      \def\starttextcolor[##1]%
-        {\bgroup
-         \definecolor[\@@themaintextcolor][##1]%
-         \let\stoptextcolor\egroup}%
-      \startregistercolor[\@@themaintextcolor]%
-      \definecolor[\@@themaintextcolor][#1]%
-      \let\maintextcolor\@@themaintextcolor}}
-
-\def\initializemaintextcolor
-  {\doifelsenothing\@@cltekstkleur
-     {\let\maintextcolor\empty}
-     {\let\maintextcolor\@@themaintextcolor
-      \definecolor[\@@themaintextcolor][\@@cltekstkleur]%
-      \doinitializemaintextcolor}}
-
-\def\doinitializemaintextcolor
-  {\appendtoks\starttextcolor[\@@themaintextcolor]\to\everystarttext
-   \appendtoks\stoptextcolor                      \to\everystoptext
-   \let\doinitializemaintextcolor\relax}
-
 % wrong names
 
 \newif\ifpagechanged \let\lastchangedpage\empty
@@ -974,10 +1120,10 @@
      \fi
    \fi
    \ifpagechanged
-     \global\letvalue{\s!paragraph:p:#1}\twopassdata
-     \global\let\lastchangedpage\twopassdata
+     \letgvalue{\s!paragraph:p:#1}\twopassdata
+     \globallet\lastchangedpage\twopassdata
    \else
-     \global\let\lastchangedpage\realfolio
+     \globallet\lastchangedpage\realfolio
    \fi
    \doparagraphreference}
 
@@ -998,15 +1144,15 @@
   {\ifcase#1\relax
      \processaction
        [#2]
-       [   \v!hoog=>\bbox{\box\nextbox},
-           \v!laag=>\tbox{\box\nextbox},
-         \v!midden=>\vcenter{\box\nextbox},
-           \v!laho=>\vcenter{\box\nextbox},
-        \s!unknown=>\tbox{\box\nextbox},
-        \s!default=>\tbox{\box\nextbox}]%
+       [   \v!hoog=>\bbox   {\flushnextbox},
+           \v!laag=>\tbox   {\flushnextbox},
+         \v!midden=>\vcenter{\flushnextbox},
+           \v!laho=>\vcenter{\flushnextbox},
+        \s!unknown=>\tbox   {\flushnextbox},
+        \s!default=>\tbox   {\flushnextbox}]%
    \else
      \startbaselinecorrection
-     \noindent\box\nextbox
+     \noindent\flushnextbox
      \stopbaselinecorrection
    \fi}
 
@@ -1074,10 +1220,10 @@
 \def\doTableinterline% #1
   {\ifnum\currentTABLEcolumn>\maxTABLEcolumn
      \chuckTABLEautorow
-   \else\ifnum\currentTABLEcolumn=0
+   \else\ifnum\currentTABLEcolumn=\zerocount
      \TABLEnoalign
-       {\global\let\checkTABLEautorow\empty
-        \global\let\chuckTABLEautorow\empty}%
+       {\globalletempty\checkTABLEautorow
+        \globalletempty\chuckTABLEautorow}%
    \else
      \setTABLEerror\TABLEmissingcolumn
      \handleTABLEerror
@@ -1112,37 +1258,34 @@
 \let\placefloatlabeltext      \placefloatcaptiontext
 \let\placefloatlabelreference \placefloatcaptionreference
 
-\def\checkframedtext%
-  {\ifinsidefloat
-     \localhsize\hsize
-   \else\ifdim\sidefloatvsize>\zeropoint % will be proper handle
-   %  \strut            % rather clean way to invoke the sidefloat OTR
-   %  \setbox0=\lastbox % and get the widths set, so from now on we
-   %  \setlocalhsize    % can have framed texts alongside sidefloats
-   \checksidefloat
-   \setlocalhsize
-     \advance\localhsize-\hangindent
-   \else
-     \localhsize\hsize
-   \fi \fi}
-
 \def\obeyfollowingtoken{{}}  % end \cs scanning
 
 \def\gobbleparameters{\doquadrupleempty\dogobbleparameters}
 \def\dogobbleparameters[#1][#2][#3][#4]{}
 
-\def\setvariables%
+% \setvariables[xx][titel=]
+% \setvariables[xx][titel=test test]
+% \setvariables[xx][titel=test $x=1$ test]   % fatal error reported
+% \setvariables[xx][titel=test {$x=1$} test]
+% \setvariables[xx][titel]                   % fatal error reported
+% \setvariables[xx][titel=e]
+
+\def\??vars{@@vars}
+
+\def\setvariables
   {\dodoubleargument\dosetvariables}
 
 \def\dosetvariables[#1][#2]%
-  {\def\currentvariableclass{#1}%
-   \getparameters[vars:#1:][#2]}
-
-% \def\getvariable#1#2%
-%   {\ifundefined{vars:#1:#2}\else\getvalue{vars:#1:#2}\fi}
+  {\errorisfataltrue
+   \def\currentvariableclass{#1}%
+   \getrawparameters[\??vars:#1:][#2]%
+   \errorisfatalfalse}
 
 \def\getvariable#1#2% to be sped up
-  {\csname\ifundefined{vars:#1:#2}empty\else vars:#1:#2\fi\endcsname}
+  {\csname\ifundefined{\??vars:#1:#2}\s!empty\else\??vars:#1:#2\fi\endcsname}
+
+\def\showvariable#1#2%
+  {\showvalue{\ifundefined{\??vars:#1:#2}\s!empty\else\??vars:#1:#2\fi}}
 
 \let\currentvariableclass\empty
 
@@ -1297,20 +1440,20 @@
    \setupcolumnspan[#1]%
    \forgetall
    \ifbinnenkolommen
-     \advance\hsize by \intercolumnwidth
-     \hsize=\@@ksn\hsize
-     \advance\hsize by -\intercolumnwidth
+     \advance\hsize \intercolumnwidth
+     \hsize\@@ksn\hsize
+     \advance\hsize -\intercolumnwidth
    \fi
    \dowithnextbox
-     {\setbox\columnspanbox=\box\nextbox
-      \ifbinnenkolommen\wd\columnspanbox=\hsize\fi
+     {\setbox\columnspanbox\flushnextbox
+      \ifbinnenkolommen\wd\columnspanbox\hsize\fi
       \postprocesscolumnspanbox\columnspanbox
-      \scratchdimen=\ht\columnspanbox
-      \setbox\columnspanbox=\hbox % depth to be checked, probably option!
+      \scratchdimen\ht\columnspanbox
+      \setbox\columnspanbox\hbox % depth to be checked, probably option!
         {\localframed[\??ks][\c!offset=\v!overlay]{\box\columnspanbox}}%
-      \ht\columnspanbox=\scratchdimen
-      \dp\columnspanbox=\dp\strutbox
-      \wd\columnspanbox=\hsize
+      \ht\columnspanbox\scratchdimen
+      \dp\columnspanbox\dp\strutbox
+      \wd\columnspanbox\hsize
       \ifbinnenkolommen
         \ifnum\@@ksn>1
           \setvsize
@@ -1322,10 +1465,10 @@
                   \else
                     \snaptogrid\vbox{\vphantom{\copy\columnspanbox}}
                   \fi}%
-               \wd\currenttopcolumnbox=\hsize
-               \global\advance\vsize by -\ht\currenttopcolumnbox
+               \wd\currenttopcolumnbox\hsize
+               \global\advance\vsize -\ht\currenttopcolumnbox
              \fi}
-          \global\pagegoal=\vsize
+          \global\pagegoal\vsize
         \else
           \snaptogrid\vbox{\box\columnspanbox}
         \fi
@@ -1344,6 +1487,23 @@
 
 \def\stopcolumnspan%
   {\egroup}
+
+\def\backgroundline[#1]%
+ %{\doifsomething{#1}{\dobackgroundline{#1}}\hbox}
+  {\doifcolorelse{#1}{\dobackgroundline{#1}\hbox}\hbox}
+
+\def\dobackgroundline#1%
+  {\dowithnextbox
+     {\hbox
+        {\localcolortrue
+         \startcolor[#1]%
+         \vrule
+           \!!width \wd\nextbox
+           \!!height\ht\nextbox
+           \!!depth \dp\nextbox
+       \stopcolor
+       \hskip-\wd\nextbox
+       \box\nextbox}}}
 
 %D For Ton. To be documented.
 
@@ -1370,4 +1530,3 @@
 \readfile {cont-loc} {} {}
 
 \endinput
-

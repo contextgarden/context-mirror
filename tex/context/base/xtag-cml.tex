@@ -80,7 +80,7 @@
       \newcounter\nofCMLatoms
       \getXMLarguments{cml-i}{n="0" charge="0" #1}%
       \doifnotXMLzero{cml-i}{n}\firstofoneargument
-      \doifelse{\@@CMLionvariant}{\v!b}
+      \doifelse\@@CMLionvariant\v!b
         {[\ignorespaces\processXMLRchild{atom,bond/,%
             singlebond/,doublebond/,triplebond/}{#2}\unskip]%
          \high{\doifnotXMLzero{cml-i}{charge}\CMLscript}}

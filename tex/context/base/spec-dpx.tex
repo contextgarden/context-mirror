@@ -1,0 +1,579 @@
+%\unprotect
+%D \module
+%D   [       file=spec-dpx,
+%D        version=2002.11.28,
+%D          title=\CONTEXT\ Special Macros,
+%D       subtitle=DVIPDFMx support,
+%D         author=Jin-Hwan Cho,
+%D           date=\currentdate,
+%D      copyright={Jin-Hwan Cho \& Hans Hagen}]
+%C
+%C DVIPDFMx is an eXtended version of the DVIPDFM, a DVI to PDF
+%C translator, still under construction by Jin-Hwan Cho and 
+%C Shunsaku Hirata.
+%C
+%C It supports multi-byte character encodings and large character
+%C sets for East Asian languages by CID-keyed font technology,
+%C and many features including PDF encryption, PDF bookmarks and
+%C annotations with Chinese, Japanese, Korean characters, etc.
+%C
+%C DVIPDFMx (and information) can be downloaded from:
+%C 
+%C   http://project.ktug.or.kr/dvipdfmx/
+
+\unprotect
+
+%D This driver is build on top of the general \PDF\ macros,
+%D as defined in \type{spec-fdf}, so we inherit that one.
+
+\startspecials[dpx][reset,fdf]
+
+%D 1. Modified codes from \type{spec-dpm}
+
+%D \macros
+%D   {jobsuffix}
+%D
+%D Because no intermediate output format is used, we set the
+%D jobsuffix to \PDF.
+
+\def\jobsuffix{pdf}
+
+%D DVIPDFMx supports the special command \type{pdf: literal ...}
+%D since the version \type{dvipdfmx-20021028}.
+%D
+%D 1. \type{pdf: linteral #1} puts the given PDF commands \#1
+%D    after changing the text matrix with \type{"1 0 0 1 x y cm"}
+%D    to set the current DVI position $(x,y)$ to the origin.
+%D
+%D 2. \type{pdf: linteral reverse #1} puts the given PDF commands \#1
+%D    after changing the text matrix with \type{"1 0 0 1 -x -y cm"}.
+%D
+%D 3. \type{pdf: linteral direct #1} puts directly the given PDF
+%D    commands \#1 without changing the text matrix.
+%D
+%D Literal \PDF\ inclusion is implemented as:
+
+\def\PDFcode#1{\special{pdf: literal direct #1}}
+
+%D \type{\dosetuppaper} in \type{spec-dpm} did not work properly
+%D because DVIPDFM did not permit changing the page size.
+%D
+%D However, DVIPDFMx permits different page size in each page
+%D since the version \type{dvipdfmx-20021028}.
+%D
+%D \macros
+%D   {dosetuppaper}
+%D
+%D A simple one.
+
+\definespecial\dosetuppaper#1#2#3%
+  {\bgroup
+   \scratchdimen#2\edef\width {\the\scratchdimen\space}%
+   \scratchdimen#3\edef\height{\the\scratchdimen\space}%
+   \special{pdf: pagesize width \width height \height}%
+   \egroup}
+
+%D \macros
+%D   {doinsertfile}
+%D
+%D Only \METAPOST, \JPG\ \PNG\ and \PDF\ inclusion are supported.
+
+\definespecial\doinsertfile#1#2#3#4#5#6#7#8#9%
+  {\dodoinsertfile{dpx}{#1}{#2}{#3}{#4}{#5}{#6}{#7}{#8}{#9}}
+
+%D Even though DVIPDFM supports \METAPOST directly, the funtionality
+%D is not good. It conflicts much with \CONTEXT.
+%D
+%D So, \METAPOST will be treated as the same way as PDFTeX using
+%D MPtoPDF in DVIPDFMx since the version \type{dvipdfmx-20021028}.
+
+\definefileinsertion{dpx}{mps}#1#2#3#4#5#6#7#8#9%
+  {\hbox
+     {%\convertMPcolors{#1}% plugged in supp-mpe
+      \scratchdimen#3pt \PointsToReal{.01\scratchdimen}\xscale
+      \scratchdimen#4pt \PointsToReal{.01\scratchdimen}\yscale
+      \special{pdf: literal direct q}\special{pdf: literal}%
+      \convertMPtoPDF{#1}\xscale\yscale
+      \special{pdf: literal direct Q}
+      \global\let\PDFimagereference\empty}}
+
+%D DVIPDFM (and DVIPDFMx too) supports the image files with
+%D the extension, \PDF, \JPG, \PNG, and \EPS.
+
+\def\handlepdfimage#1#2#3#4#5#6#7#8#9%
+  {\bgroup
+   \scratchdimen#7\edef\width {\the\scratchdimen\space}%
+   \scratchdimen#8\edef\height{\the\scratchdimen\space}%
+   \special{pdf: image width \width height \height (#1)}%
+   \egroup}
+
+\definefileinsertion{dpx}{pdf}{\handlepdfimage}
+\definefileinsertion{dpx}{jpg}{\handlepdfimage}
+\definefileinsertion{dpx}{png}{\handlepdfimage}
+\definefileinsertion{dpx}{eps}{\handlepdfimage} % unstable
+
+\definefileinsertion{dpx}{mov}{\doPDFinsertmov}
+\definefileinsertion{dpx}{avi}{\doPDFinsertmov}
+
+%D \macros
+%D  {doinsertsoundtrack}
+%D
+%D Sounds are supported too. 
+
+\definespecial\doinsertsoundtrack{\doPDFinsertsoundtrack}
+
+%D \type{\doPDFovalbox} in \type{spec-fdf} was modifed because
+%D the definition of \type{\PDFcode} was changed in this module.
+%D
+%D \macros
+%D  {doPDFovalbox}
+%D
+%D For drawing ovals we use quite raw \PDF\ code. The next
+%D implementation does not differ that much from the one
+%D implemented in the \POSTSCRIPT\ driver.
+
+\def\doPDFovalbox#1#2#3#4#5#6#7% todo: \scratchdimen/\scatchbox  
+  {\bgroup
+   \dimen0=#4\divide\dimen0 2
+   \doPDFovalcalc{0pt}{+\dimen0}\xmin
+   \doPDFovalcalc{#1}{-\dimen0}\xmax
+   \doPDFovalcalc{#2}{-\dimen0}\ymax
+   \doPDFovalcalc{-#3}{+\dimen0}\ymin
+   \advance\dimen0 by #5%
+   \doPDFovalcalc{0pt}{+\dimen0}\xxmin
+   \doPDFovalcalc{#1}{-\dimen0}\xxmax
+   \doPDFovalcalc{#2}{-\dimen0}\yymax
+   \doPDFovalcalc{-#3}{+\dimen0}\yymin
+   \doPDFovalcalc{#4}{\zeropoint}\stroke
+   \doPDFovalcalc{#5}{\zeropoint}\radius
+   \edef\dostroke{#6}%
+   \edef\dofill{#7}%
+   \setbox0\hbox
+     {\ifnum\dostroke\dofill>0
+        \ifPDFstrokecolor\else\ifnum\dostroke=1
+          \writestatus\m!colors{pdf stroke color will fail}\wait
+        \fi\fi
+        \special{pdf: content
+          \stroke\space w
+          \xxmin\space \ymin\space  m
+          \xxmax\space \ymin\space  l
+          \xmax \space \ymin\space  \xmax\space  \yymin\space y
+          \xmax \space \yymax\space l
+          \xmax \space \ymax\space  \xxmax\space \ymax\space  y
+          \xxmin\space \ymax\space  l
+          \xmin \space \ymax\space  \xmin\space  \yymax\space y
+          \xmin \space \yymin\space l
+          \xmin \space \ymin\space  \xxmin\space \ymin\space  y
+          \ifnum\dostroke=1 S \fi
+          \ifnum\dofill=1 f \fi}%
+      \fi}%
+   \wd0=#1\ht0=#2\dp0=#3\box0
+   \egroup}
+
+%D \macros
+%D  {doovalbox}
+
+\definespecial\doovalbox{\doPDFovalbox}
+
+%D \macros
+%D   {dostartgraymode,dostopgraymode,
+%D    dostartrgbcolormode,dostartcmykcolormode,dostartgraycolormode,
+%D    dostopcolormode,
+%D    dostartrotation,dostoprotation,
+%D    dostartscaling,dostopscaling,
+%D    dostartmirroring,dostopmirroring,
+%D    dostartnegative,dostopnegative}
+%D
+%D Unfortunately the direct \PDF\ inclusion is not suited
+%D for the next macros, which means that we cannot use the
+%D \type {\doPDF..} alternatives. Since \CONTEXT\ maintains
+%D its own colorstack, we use the \DVIPS\ alternatives.
+
+\definespecial\dostartgraymode           #1{\special{color gray #1}}
+\definespecial\dostopgraymode              {\special{color gray 0}}
+\definespecial\dostartrgbcolormode   #1#2#3{\special{color rgb  #1 #2 #3}}
+\definespecial\dostartcmykcolormode#1#2#3#4{\special{color cmyk #1 #2 #3 #4}}
+\definespecial\dostartgraycolormode      #1{\special{color gray #1}}
+\definespecial\dostopcolormode             {\special{color gray 0}}
+\definespecial\dostartrotation           #1{\special{pdf: bt rotate #1}}
+\definespecial\dostoprotation              {\special{pdf: et}}
+\definespecial\dostartscaling          #1#2{\special{pdf: bt xscale #1 yscale #2}}
+\definespecial\dostopscaling               {\special{pdf: et}}
+\definespecial\dostartmirroring            {\special{pdf: bt xscale -1}} % ?
+\definespecial\dostopmirroring             {\special{pdf: et}}
+
+%D Negation is not (yet) supported:
+
+% \definespecial\dostartnegative      {}
+% \definespecial\dostopnegative       {}
+% \definespecial\dostarttransparency  {}
+% \definespecial\dostoptransparency   {}
+
+
+%D \macros
+%D   {dosetupinteraction,
+%D    dosetupopenaction,dosetupcloseaction}
+
+\definespecial\dosetupinteraction%
+  {\showmessage{\m!interactions}{21}{DVIPDFMx}}
+
+\definespecial\dosetupopenaction {\doPDFsetupopenaction}
+\definespecial\dosetupcloseaction{\doPDFsetupcloseaction}
+
+%D \macros
+%D   {doresetgotowhereever,
+%D    dostartthisisrealpage,dostartthisislocation,
+%D    dostartgotorealpage,dostartgotolocation,dostartgotoJS}
+
+\definespecial\doresetgotowhereever {\doPDFresetgotowhereever}
+\definespecial\dostartthisislocation{\doPDFstartthisislocation}
+
+\definespecial\dostartgotolocation{\doPDFstartgotolocation}
+\definespecial\dostartgotorealpage{\doPDFstartgotorealpage}
+\definespecial\dostartgotoJS      {\doPDFstartgotoJS}
+
+%D \macros
+%D   {doflushJSpreamble}
+
+\definespecial\doflushJSpreamble#1%
+  {\bgroup
+   \let\compositeJScode\empty
+   \def\docommando##1%
+     {\edef\sanitizedJScode{\getJSpreamble{##1}}%
+      \@EA\doPSsanitizeJScode\sanitizedJScode\to\sanitizedJScode
+      \special{pdf: object @JS:#1 <</S /JavaScript /JS (\sanitizedJScode)>>}%
+      \edef\compositeJScode{\compositeJScode\space (##1) @JS:#1}}%
+   \processcommalist[#1]\docommando
+   \special{pdf: object @JS:JS <</Names [\compositeJScode]>>}%
+   \special{pdf: put @names <</JavaScript @JS:JS>>}%
+   \egroup}
+
+%D \macros
+%D   {dostarthide,dostophide}
+
+\definespecial\dostarthide{}
+\definespecial\dostophide {}
+
+%D \macros
+%D   {dosetupscreen}
+
+\definespecial\dosetupscreen  {\doPDFsetupscreen  \printpapierhoogte}
+
+\definespecial\dosetupartbox  {\doPDFsetupartbox  \printpapierhoogte}
+\definespecial\dosetupcropbox {\doPDFsetupcropbox \printpapierhoogte}
+\definespecial\dosetupbleedbox{\doPDFsetupbleedbox\printpapierhoogte}
+\definespecial\dosetuptrimbox {\doPDFsetuptrimbox \printpapierhoogte}
+
+%D \macros
+%D   {dostartexecutecommand}
+
+\definespecial\dostartexecutecommand{\doPDFstartexecutecommand}
+
+%D \macros
+%D   {dosetupidentity}
+
+\definespecial\dosetupidentity{\doPDFsetupidentity}
+
+%D \macros
+%D   {dostartrunprogam}
+
+\definespecial\dostartrunprogram{\doPDFstartrunprogram}
+
+%D \macros
+%D   {dostartgotoprofile, dostopgotoprofile,
+%D    dobeginofprofile, doendofprofile}
+
+\definespecial\dostartgotoprofile{\doPDFstartgotoprofile}
+
+\definespecial\dobeginofprofile#1#2#3#4%
+  {\bgroup
+   \setPDFdestination{#1}%
+   \scratchdimen#2\edef\width {\the\scratchdimen\space}%
+   \scratchdimen#3\edef\height{\the\scratchdimen\space}%
+   \doifsomething{\PDFdestination}
+     {\special
+        {pdf: thread @ART::\PDFdestination\space
+              width \width height \height
+              <</Title (\PDFdestination)>>}}%
+   \egroup}
+
+\definespecial\doendofprofile
+  {}
+
+%D \macros
+%D  {doinsertbookmark}
+
+\definespecial\doinsertbookmark{\doPDFinsertbookmark}
+
+%D \macros
+%D  {dostartobject,dostopobject,doinsertobject}
+
+\definespecial\dostartobject#1#2#3#4#5%
+  {\bgroup
+   \setbox\nextbox=\hbox\bgroup
+     \dosetobjectreference{#1}{#2}{#1::#2}%
+     \scratchdimen#3\edef\width {\the\scratchdimen\space}%
+     \scratchdimen#4\edef\height{\the\scratchdimen\space}%
+     \special{pdf: bxobj @#1::#2 width \width height \height}}
+
+%D Modified to support the color shading feature since version
+%D \type{dvipdfmx-20021128}.
+
+\definespecial\dostopobject%
+  {\ifx\currentPDFresources\empty
+     \special{pdf: exobj}%
+   \else
+     \special{pdf: exobj <<\currentPDFresources>>}%
+     \global\let\currentPDFresources\empty
+   \fi
+   \egroup
+   \smashbox\nextbox
+   \flushatshipout{\box\nextbox}%
+   \egroup}
+
+\definespecial\doinsertobject#1#2%
+  {\hbox
+     {\dogetobjectreference{#1}{#2}\PDFobjectreference
+      \ifx\PDFobjectreference\empty \else
+        \special{pdf: usexobj @\PDFobjectreference}%
+      \fi}}
+
+%D \macros
+%D   {dosetpagetransition}
+
+\definespecial\dosetpagetransition{\doPDFsetpagetransition}
+
+%D \macros
+%D   {doinsertcomment, doflushcomments}
+
+\definespecial\doinsertcomment{\doPDFinsertcomment}
+\definespecial\doflushcomments{\doPDFflushcomments}
+
+%D \macros
+%D   {dopresetlinefield,dopresettextfield,
+%D    dopresetchoicefield,dopresetpopupfield,dopresetcombofield,
+%D    dopresetpushfield,dopresetcheckfield,
+%D    dopresetradiofield,dopresetradiorecord}
+
+\definespecial\dopresetlinefield  {\doFDFpresetlinefield}
+\definespecial\dopresettextfield  {\doFDFpresettextfield}
+\definespecial\dopresetchoicefield{\doFDFpresetchoicefield}
+\definespecial\dopresetpopupfield {\doFDFpresetpopupfield}
+\definespecial\dopresetcombofield {\doFDFpresetcombofield}
+\definespecial\dopresetpushfield  {\doFDFpresetpushfield}
+\definespecial\dopresetcheckfield {\doFDFpresetcheckfield}
+\definespecial\dopresetradiofield {\doFDFpresetradiofield}
+\definespecial\dopresetradiorecord{\doFDFpresetradiorecord}
+
+%D \macros
+%D   {dodefinefieldset,dogetfieldset,doiffieldset}
+
+\definespecial\dodefinefieldset{\doFDFdefinefieldset}
+\definespecial\dogetfieldset   {\doFDFgetfieldset}
+\definespecial\doiffieldset    {\doFDFiffieldset}
+
+%D \macros
+%D   {doregistercalculationset}
+
+\definespecial\doregistercalculationset{\doFDFregistercalculationset}
+
+%D \type{\doPDFdestination} in \type{spec-dpm} had a bug.
+%D
+%D \macros
+%D   {doPDFdestination}
+
+\def\doPDFdestination name #1%
+  {\special{pdf: dest (#1) [@thispage\PDFpageviewwrd]}}
+
+%D \macros
+%D   {doPDFaction,doPDFannotation,ifsharePDFactions}
+%D
+%D Sharing is not yet supported.
+
+\newif\ifsharePDFactions \sharePDFactionsfalse
+
+\def\doPDFaction width #1 height #2 action #3%
+  {\ifcollectreferenceactions 
+     \xdef\lastPDFaction{#3}%
+   \else
+     \bgroup
+    % this is yet untested 
+    %\ifsharePDFactions
+    %  \ifcase\similarreference\relax
+    %    \xdef\lastPDFaction{<<#3>>}%
+    %  \or
+    %    \global\advance\nofPDFsimilar by 1
+    %    \special{pdf: object @PDF::sim:\the\nofPDFsimilar\space<<#3>>}%
+    %    \xdef\lastPDFaction{@PDF::sim:\the\nofPDFsimilar}%
+    %  \else
+    %    % leave \lastPDFaction untouched 
+    %  \fi
+    %\else
+       \xdef\lastPDFaction{<<#3>>}%
+    %\fi
+     \scratchdimen#1\edef\width {\the\scratchdimen\space}%
+     \scratchdimen#2\edef\height{\the\scratchdimen\space}%
+     \special{pdf: ann width \width height \height
+       <</Subtype /Link /Border [0 0 0]
+         \ifhighlighthyperlinks \else /H /N \fi
+         /A \lastPDFaction\space>>}%
+     \egroup
+   \fi}
+
+%D \type{\doPDFannotation} in \type{spec-dpm} had a bug.
+
+\def\doPDFannotation width #1 height #2 data #3%
+  {\bgroup
+   \scratchdimen#1\edef\width {\the\scratchdimen\space}%
+   \scratchdimen#2\edef\height{\the\scratchdimen\space}%
+   \special{pdf: ann width \width height \height <<#3>>}%
+   \egroup}
+
+%D \macros
+%D   {doPDFannotationobject}
+
+\def\doPDFannotationobject class #1 name #2 width #3 height #4 data #5%
+  {\bgroup
+   \scratchdimen#3\edef\width {\the\scratchdimen\space}%
+   \scratchdimen#4\edef\height{\the\scratchdimen\space}%
+   \special{pdf: ann @#1::#2 width \width height \height <<#5>>}%
+   \dosetobjectreference{#1}{#2}{#1::#2}%
+   \egroup}
+
+%D \macros
+%D   {doPDFaddtocatalog,doPDFaddtoinfo,
+%D    doPDFpageattribute,doPDFpagesattribute}
+
+\def\doPDFaddtocatalog#1%
+  {\special{pdf: put @catalog <<#1>>}}
+
+\def\doPDFaddtoinfo#1% Is this auto appended? Not checked!
+  {\special{pdf: docinfo <<#1>>}} % put @docinfo <<#1>>}}
+
+\def\doPDFpageattribute#1%
+  {\special{pdf: put @thispage <<#1>>}}
+
+\def\doPDFpagesattribute#1%
+  {\special{pdf: put @pages <<#1>>}}
+
+\def\doPDFpageresource#1%
+  {\message{[skipping PDF resource]}}
+
+\let\doPDFresetpageresources =\relax
+\let\doPDFresetpageattributes=\relax
+
+%D \type{\doPDFbookmark} in \type{spec-dpm} had a bug.
+%D The openbookmark option \#5 is not supported yet.
+%D
+%D \macros
+%D   {doPDFbookmark}
+
+\def\doPDFbookmark level #1 n #2 text #3 page #4 open #5%
+  {\ifcase#1\else
+     \special{pdf: outline #1 %\ifcase\the#5-\fi#1
+                <</Title (#3) /A <</S /GoTo /D (page:#4)>>>>}%
+   \fi}
+
+%D \macros
+%D   {doPDFdictionaryobject,doPDFarrayobject}
+
+\def\doPDFdictionaryobject class #1 name #2 data #3%
+  {\special{pdf: object @#1::#2 <<#3>>}}
+
+\def\doPDFarrayobject class #1 name #2 data #3%
+  {\special{pdf: object @#1::#2 [#3]}}
+
+%D \macros
+%D   {defaultobjectreference,doPDFgetobjectreference}
+
+\def\defaultobjectreference#1#2{#1::#2}
+
+%D \type{\doPDFgetobjectrefernce} in \type{spec-dpm} had a bug.
+
+\def\doPDFgetobjectreference#1#2#3%
+  {\dogetobjectreference{@#1}{#2}#3%
+   \ifx#3\empty\else\edef#3{#3}\fi}
+
+%D Done.
+
+% %D 2. Modified codes from \type{spec-fdf}
+% 
+% \definespecial\dostartgraphicgroup{\special{pdf: literal direct q}}
+% \definespecial\dostopgraphicgroup {\special{pdf: literal direct Q}}
+
+%D 3. Modified codes from \type{spec-tpd}
+
+%D \macros
+%D   {dostartclipping,dostopclipping}
+%D
+%D Clipping in \PDFTEX\ is rather trivial. We can even hook
+%D in \METAPOST\ without problems.                                 
+
+\definespecial\dostartclipping#1#2#3%
+  {\PointsToBigPoints{#2}\width
+   \PointsToBigPoints{#3}\height
+   \grabMPclippath{#1}{1}\width\height
+     {0 0 m \width\space 0 l \width \height l 0 \height l}%
+   \special{pdf: literal direct q}%
+   \special{pdf: literal 0 w \MPclippath\space W n}%
+   \special{pdf: literal reverse}}
+
+\definespecial\dostopclipping
+  {\special{pdf: literal direct Q n}}
+
+%D 4. Modified codes from \type{supp-mpe}
+
+\def\stopMPshading
+  {\global\advance\currentPDFshade \plusone
+   \setxvalue{obj:Sh:\currentMPspecial}%
+     {/Sh\the\currentPDFshade\space @obj:Sh:\currentMPspecial\space}%
+   \setxvalue{mps:Sh:\currentMPspecial}%
+     {\the\currentPDFshade}}
+
+\defineMPspecial{30}
+  {\startMPshading{14}% type 2
+   \setMPshadingcolors{4}{5}{6}{9}{10}{11}%
+   \special{pdf: object @ftn:Sh:\currentMPspecial\space
+     <</FunctionType 2
+       /Domain [\gMPs1 \gMPs2]
+       /C0 [\MPshadeA]
+       /C1 [\MPshadeB]
+       /N \gMPs3>>}%
+   \special{pdf: object @obj:Sh:\currentMPspecial\space
+     <</ShadingType 2
+       /ColorSpace /\MPshadeC\space
+       /Function @ftn:Sh:\currentMPspecial\space
+       /Coords [\gMPs7 \gMPs8 \gMPs{12} \gMPs{13}]
+       /Extend [true true]>>}%
+   \stopMPshading}
+
+\defineMPspecial{31}
+  {\startMPshading{16}% type 3
+   \setMPshadingcolors{4}{5}{6}{10}{11}{12}%
+   \special{pdf: object @ftn:Sh:\currentMPspecial\space
+     <</FunctionType 2
+       /Domain [\gMPs1 \gMPs2]
+       /C0 [\MPshadeA]
+       /C1 [\MPshadeB]
+       /N \gMPs3>>}%
+   \special{pdf: object @obj:Sh:\currentMPspecial\space
+     <</ShadingType 3
+       /ColorSpace /\MPshadeC\space
+       /Function @ftn:Sh:\currentMPspecial\space
+       /Coords [\gMPs7 \gMPs8 \gMPs9 \gMPs{13} \gMPs{14} \gMPs{15}]
+       /Extend [true true]>>}%
+   \stopMPshading}
+
+%D 5. Modified codes from \type{supp-pdf}
+
+\let\dohandleMPfshow\handleMPfshow
+
+\def\handleMPfshow
+  {\special{pdf: literal direct q}%
+   \special{pdf: literal reverse}%
+   \dohandleMPfshow
+   \special{pdf: literal direct Q}}
+
+\stopspecials
+
+\protect \endinput

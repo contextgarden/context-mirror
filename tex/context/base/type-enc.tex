@@ -298,7 +298,8 @@
 \stoptypescript
 
 \starttypescript [math] [computer-modern] [default]
-  \definefontsynonym [ComputerModernMath-Roman]     [cmr10]
+  % watch the space, it prevents remapping 
+  \definefontsynonym [ComputerModernMath-Roman]     [cmr10 ]
   \definefontsynonym [ComputerModernMath-Extension] [cmex10]
   \definefontsynonym [ComputerModernMath-Italic]    [cmmi10]
   \definefontsynonym [ComputerModernMath-Symbol]    [cmsy10]
@@ -549,7 +550,7 @@
   \definefontsynonym [LucidaBlackletter]           [lbl]
 \stoptypescript
 
-\starttypescript [boldmath] [lucida] [texnansi,ec,8r]
+\starttypescript [boldmath,bfmath] [lucida] [texnansi,ec,8r]
   \definefontsynonym [LucidaNewMath-AltDemiItalic] [lbmdo]
   \definefontsynonym [LucidaNewMath-Arrows-Demi]   [lbmad]
   \definefontsynonym [LucidaNewMath-Extension]     [lbme]
@@ -594,7 +595,7 @@
 \definefontsynonym [8r-utmb8a-slanted-167]     [utmbo8r] [encoding=8r]
 
 \definefontsynonym [8r-uhvr8a]                 [uhvr8r]  [encoding=8r]
-\definefontsynonym [8r-uhvo8a]                 [uhvro8r] [encoding=8r]
+\definefontsynonym [8r-uhvro8a]                [uhvro8r] [encoding=8r]
 \definefontsynonym [8r-uhvb8a]                 [uhvb8r]  [encoding=8r]
 \definefontsynonym [8r-uhvbo8a]                [uhvbo8r] [encoding=8r]
 
@@ -652,7 +653,7 @@
 \definefontsynonym [ec-utmb8a-slanted-167]     [utmbo8t] [encoding=ec]
 
 \definefontsynonym [ec-uhvr8a]                 [uhvr8t]  [encoding=ec]
-\definefontsynonym [ec-uhvo8a]                 [uhvro8t] [encoding=ec]
+\definefontsynonym [ec-uhvro8a]                [uhvro8t] [encoding=ec]
 \definefontsynonym [ec-uhvb8a]                 [uhvb8t]  [encoding=ec]
 \definefontsynonym [ec-uhvbo8a]                [uhvbo8t] [encoding=ec]
 
@@ -712,7 +713,7 @@
 \definefontsynonym [ec-utmb8a-slanted-167]     [ptmbo8y] [encoding=texnansi]
 
 \definefontsynonym [ec-uhvr8a]                 [uhvr8y]  [encoding=texnansi]
-\definefontsynonym [ec-uhvo8a]                 [uhvro8y] [encoding=texnansi]
+\definefontsynonym [ec-uhvro8a]                [uhvro8y] [encoding=texnansi]
 \definefontsynonym [ec-uhvb8a]                 [uhvb8y]  [encoding=texnansi]
 \definefontsynonym [ec-uhvbo8a]                [uhvbo8y] [encoding=texnansi]
 

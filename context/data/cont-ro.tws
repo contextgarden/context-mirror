@@ -159,7 +159,10 @@ var:reducere:da,nu::
 var:rgb:da,nu::
 var:cmyk:da,nu::
 var:mpcmyk:da,nu::
+var:mpspot:da,nu::
 var:culoaretext:*nume::
+var:split:c,m,y,k,p,s,nu,*nume::
+var:criteriu:tot,niciunul::
 stopsetup
 
 startsetup
@@ -699,9 +702,9 @@ startsetup
 com:seteazainconjurat:
 typ:vars/:
 var:inaltime:ajustat,broad,*dimensiune::
-var:latime:ajustat,broad,*dimensiune::
+var:latime:ajustat,broad,fixat,*dimensiune::
 var:offset:niciunul,overlay,implicit,*dimensiune::
-var:locatie:jos,adancime::
+var:locatie:jos,adancime,suspendat::
 var:optiune:niciunul,gol::
 var:strut:da,nu::
 var:aliniere:nu,stanga,dreapta,centru,normal,inalt,jos,lohi::
@@ -1291,6 +1294,12 @@ typ::
 stopsetup
 
 startsetup
+com:emptylines:
+typ:val/:
+val:*numar::
+stopsetup
+
+startsetup
 com:faraspatiu:
 typ::
 stopsetup
@@ -1643,7 +1652,7 @@ var:offsetoriz:*dimensiune::
 var:veroffset:*dimensiune::
 var:stil:normal,aldin,inclinat,aldininclinat,type,cap,mic...,*comanda::
 var:culoare:*nume::
-var:marcaje:on,dezactivat,culoare::
+var:marcaje:on,dezactivat,culoare,ecran::
 var:locatie:stanga,centru,dreapta,subsol,sus, ofata,douafete::
 var:scala:*dimensiune::
 var:nx:*numar::
@@ -1651,10 +1660,15 @@ var:ny:*numar::
 var:dx:*dimensiune::
 var:dy:*dimensiune::
 var:linii:*numar::
+var:coloane:*numar::
+var:distantacoloane:*dimensiune::
 var:grid:da,nu::
-var:spatiujos:*numar::
-var:cutspace:*numar::
-var:textdistance:*numar::
+var:spatiujos:*dimensiune::
+var:cutspace:*dimensiune::
+var:textdistance:*dimensiune::
+var:latimetext:*numar::
+var:textmargin:*dimensiune::
+var:clipoffset:*dimensiune::
 stopsetup
 
 startsetup
@@ -1739,6 +1753,7 @@ var:*sectiunenumar singular: nume singular:da,nu::
 var:separator:*text::
 var:strut:da,nu::
 var:stare:start,stop::
+var:latime:*dimensiune::
 var:comanda:*\comanda#1::
 stopsetup
 
@@ -1777,6 +1792,10 @@ typ:vars/:
 var:numarsectiune:da,numar,nu::
 var:alternativ:normal,margine,centru,text,paragraf::
 var:separator:*text::
+var:aliniere:stanga,dreapta,normal,broad::
+var:alinieretitlu:da,nu::
+var:toleranta:foartestrict,strict,tolerant,foartetolerant,dilatat::
+var:aliniaturmator:da,nu::
 var:comanda:*\comanda#1#2::
 stopsetup
 
@@ -1818,6 +1837,9 @@ var:aliniaturmator:da,nu::
 var:nsus:*numar::
 var:njos:*numar::
 var:nlinii:*numar::
+var:implicit:*nume::
+var:distantamarginestanga:*dimensiune::
+var:distantamarginedreapta:*dimensiune::
 ivr:seteazainconjurat::
 stopsetup
 
@@ -1961,6 +1983,13 @@ stopsetup
 startsetup
 com:faralista:
 typ:arg/:
+val:*text::
+stopsetup
+
+startsetup
+com:listsymbol:
+typ:val/arg/:
+val:*nume::
 val:*text::
 stopsetup
 
@@ -2164,6 +2193,8 @@ var:aliniere:intern,extern,stanga,dreapta,centru,normal,nu,da::
 var:linie:*numar::
 var:distanta:*dimensiune::
 var:separator:*text::
+var:latime:*dimensiune::
+var:distanta:*dimensiune::
 ivr:seteazainconjurat::
 stopsetup
 
@@ -2205,6 +2236,19 @@ var:scala:*numar::
 stopsetup
 
 startsetup
+com:setuppaper:
+typ:vars/:
+var:hartie:*nume::
+var:pagina:*nume::
+var:nx:*numar::
+var:ny:*numar::
+var:latime:*dimensiune::
+var:inaltime:*dimensiune::
+var:spatiusus:*dimensiune::
+var:spatiuspate:*dimensiune::
+stopsetup
+
+startsetup
 com:seteazadimensiunihartie:
 typ:vals/vals/:
 val:A3,A4,A5,A6,letter,...,CD,*nume, vedere,oglindit,rotat,90,180,270:A4:
@@ -2214,7 +2258,7 @@ stopsetup
 startsetup
 com:seteazaaranjareapag:
 typ:vals/:
-val:dezactivat, 2*16,2*8,2*4,2*2,2**2,2UP,2DOWN, oglindit,rotat,douafete,negativ,90,180,270::
+val:dezactivat, 2*16,2*8,2*4,2*2,2**2,2*2*4,2*4*2,2UP,2DOWN,2SIDE,2TOP, oglindit,rotat,douafete,negativ,90,180,270::
 stopsetup
 
 startsetup
@@ -2306,16 +2350,12 @@ var:alternativ:normal,inmargine,centru,text::
 var:comanda:*\comanda#1#2::
 var:comandanumar:*\comanda#1::
 var:comandatext:*\comanda#1::
-var:separator:*text::
 var:prefix:+,-,*text::
-var:punetitlu:da,nu::
-var:numarincrement:da,nu,*fisier::
-var:aliniere:stanga,dreapta,normal,broad::
-var:alinieretitlu:da,nu::
-var:toleranta:foartestrict,strict,tolerant,foartetolerant,dilatat::
-var:aliniaturmator:da,nu::
+var:punetitlu:da,nu,gol::
+var:numarincrement:da,nu,lista,*fisier::
 var:fisier:*nume::
 var:expansiune:da,comanda,nu::
+ivr:seteazatitluri::
 stopsetup
 
 startsetup
@@ -3223,6 +3263,7 @@ var:aliniere:stanga,centru,dreapta,normal::
 var:grosimerigla:*dimensiune::
 var:distanta:blank,grila,adancime,*dimensiune,mic,mediu,mare,niciunul::
 var:fonttext:5pt,...,12pt,mic,mare::
+var:rigla:normal,linie::
 stopsetup
 
 startsetup
@@ -3395,6 +3436,7 @@ var:dupa:commando::
 var:distanta:*dimensiune::
 var:inaltime:*dimensiune,ajustat::
 var:latime:*dimensiune,ajustat::
+var:locatie:boven,midden,onder,links,rechts::
 var:aliniere:nu,stanga,dreapta,centru,normal::
 stopsetup
 
@@ -3798,6 +3840,7 @@ stopsetup
 startsetup
 com:seteazacomentariu:
 typ:vars/:
+var:stare:start,stop::
 var:latime:*dimensiune::
 var:inaltime:*dimensiune::
 var:culoare:*nume::

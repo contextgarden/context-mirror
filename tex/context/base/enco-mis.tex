@@ -33,26 +33,26 @@
 
 \unprotect 
 
-\def\pseudoencodeddj% like in babel 
+\def\pseudoencodeddj % like in babel 
   {\leavevmode\hbox\bgroup
-   \setbox0=\hbox{d}%
+   \setbox0\hbox{d}%
    \dimen0=\ht0
-   \advance\dimen0 by 1ex
+   \advance\dimen0 1ex
    \dimen0=.45\dimen0
    \dimen2\expandafter\withoutpt\the\fontdimen1\font\dimen0
-   \advance\dimen2 by .5ex
+   \advance\dimen2 .5ex
    \rlap{\raise\dimen0\hbox{\kern\dimen2\vbox{\hrule\!!height0.1ex\!!width0.3em}}}%
    \box0
    \egroup}
 
-\def\pseudoencodedDJ% like in babel 
+\def\pseudoencodedDJ % like in babel 
   {\leavevmode
    \hbox\bgroup
-   \setbox0=\hbox{D}%
+   \setbox0\hbox{D}%
    \dimen0=.55\ht0
    \dimen2\expandafter\withoutpt\the\fontdimen1\font\dimen0
-   \advance\dimen2 by .15ex 
-   \advance\dimen2 by -.15\fontdimen7\font 
+   \advance\dimen2 .15ex 
+   \advance\dimen2 -.15\fontdimen7\font 
    \dimen4\expandafter\withoutpt\the\fontdimen7\font\dimen0
    \rlap{\raise\dimen0\hbox{\kern\dimen2\vbox{\hrule\!!height0.1ex\!!width0.33em}}}%
    \box0
@@ -109,7 +109,7 @@
 \def\fakepermine
   {\dontleavehmode
    \bgroup
-   \setbox0=\hbox
+   \setbox0\hbox
      {\mathematics{+}}%
    \hbox to \wd0
      {\hss
@@ -172,7 +172,6 @@
 \ifx\textunderscore\undefined \let\textunderscore\fakeunderscore \fi
 
 \def\_{\ifmmode\mathunderscore\else\textunderscore\fi}
-
 
 %D Handy: 
 

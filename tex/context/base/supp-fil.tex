@@ -93,6 +93,13 @@
 \def\unlinkfile#1%  
   {\immediate\openout\scratchwrite=#1\immediate\closeout\scratchwrite}
 
+%D \macros 
+%D   {writeln}
+%D 
+%D This saves a few tokens:
+
+\def\writeln#1{\write#1{}}
+
 %D \macros
 %D   {doprocessfile,fileline,fileprocessedtrue,dofinishfile}
 %D
@@ -114,14 +121,14 @@
 \let\fileline\empty
 
 \def\doprocessfile#1#2#3%
-  {\openin#1=#2\relax
+  {\immediate\openin#1=#2\relax
    \ifeof#1%
      \fileprocessedfalse
-     \closein#1\relax
+     \immediate\closein#1\relax
    \else
      \fileprocessedtrue
      \gdef\dofinishfile% 
-       {\closein#1\relax
+       {\immediate\closein#1\relax
         \global\let\doprocessline\relax}%
      \gdef\doprocessline%
        {\ifeof#1%
@@ -301,7 +308,7 @@
    \doreadfile{\pathplusfile{\f!currentpath}{#1}}}
 
 \def\readlocfile#1% current path, backtracking 
-  {\let\readlevel=\maxreadlevel
+  {\let\readlevel\maxreadlevel
    \doreadfile{\pathplusfile{\f!currentpath}{#1}}}
 
 %D System files can be anywhere and therefore
@@ -309,7 +316,7 @@
 %D and obeys the \TEX\ implementation.
 
 \def\readsysfile#1% current path, obeys tex search 
-  {\let\readlevel=\maxreadlevel
+  {\let\readlevel\maxreadlevel
    \doreadfile{#1}}
 
 %D Of the last two, \type{\readfixfile} searches on the
@@ -317,7 +324,7 @@
 %D \type{\readsetfile} does only search on the specified path. 
 
 \def\readfixfile#1#2% specified path, backtracking 
-  {\let\readlevel=\maxreadlevel
+  {\let\readlevel\maxreadlevel
    \doreadfile{\pathplusfile{#1}{#2}}}
 
 \def\readsetfile#1#2% specified path, no backtracking 
@@ -362,25 +369,25 @@
        \ifnum\readlevel>\maxreadlevel\relax
        \else
          \immediate\closein#1\relax
-         \doopenin{#1}{\pathplusfile{\f!parentpath}{#2}}%
+         \doopenin{#1}{\pathplusfile\f!parentpath{#2}}%
        \fi
      \fi
    \fi}
 
 \def\openjobin#1#2%
   {\newcounter\readlevel
-   \doopenin{#1}{\pathplusfile{\f!currentpath}{#2}}}
+   \doopenin{#1}{\pathplusfile\f!currentpath{#2}}}
 
 \def\opensysin#1#2%
-  {\let\readlevel=\maxreadlevel
+  {\let\readlevel\maxreadlevel
    \doopenin{#1}{#2}}
 
 \def\openlocin#1#2%
-  {\let\readlevel=\maxreadlevel
-   \doopenin{#1}{\pathplusfile{\f!currentpath}{#2}}}
+  {\let\readlevel\maxreadlevel
+   \doopenin{#1}{\pathplusfile\f!currentpath{#2}}}
 
 \def\openfixin#1#2#3%
-  {\let\readlevel=\maxreadlevel
+  {\let\readlevel\maxreadlevel
    \doopenin{#1}{\pathplusfile{#2}{#3}}}
 
 %D \macros
@@ -412,7 +419,7 @@
    \next}
 
 % \def\doiflocfileelse#1%
-%   {\doiffileelse{\pathplusfile{\f!currentpath}{#1}}}
+%   {\doiffileelse{\pathplusfile\f!currentpath{#1}}}
 
 \def\doiflocfileelse#1%
   {\makelocreadfilename{#1}%
@@ -422,7 +429,7 @@
   {\sanitizefilename#1\to\readfilename
    \checkfilename\readfilename
    \ifcase\kindoffile
-     \edef\locreadfilename{\pathplusfile{\f!currentpath}{#1}}%
+     \edef\locreadfilename{\pathplusfile\f!currentpath{#1}}%
    \fi}
 
 %D \macros
@@ -449,7 +456,7 @@
   {\doonlyonce{#1}{\doiffileelse{#1}{\normalinput #1\relax}{}}}
 
 \def\doendinputonce#1%
-  {\doifdefined{@@@#1@@@}{\endinput}}
+  {\doifdefined{@@@#1@@@}\endinput}
 
 %D \macros
 %D   {doifparentfileelse}
@@ -469,61 +476,17 @@
 
 \ifx\outputfilename\undefined \def\outputfilename{\jobname} \fi
 
-% \def\doifparentfileelse#1#2#3%
-%   {\edef\!!stringa{#1}%
-%    \edef\!!stringb{\jobname}%
-%    \edef\!!stringc{\outputfilename}%
-%    \convertcommand\!!stringa\to\!!stringa
-%    \convertcommand\!!stringb\to\!!stringb
-%    \convertcommand\!!stringc\to\!!stringc
-%    \ifx\!!stringa\!!stringb#2\else  
-%    \ifx\!!stringa\!!stringc#2\else
-%                            #3\fi\fi}
-
 \def\doifparentfileelse#1#2#3%
   {\doifsamestringelse{#1}{\jobname       }{#2}
   {\doifsamestringelse{#1}{\jobname.\c!tex}{#2}
   {\doifsamestringelse{#1}{\outputfilename}{#2}{#3}}}}
 
-% \newcounter\readingfilelevel
-%
-% \def\startreadingfile%
-%   {\ifnum\readingfilelevel=0
-%      \edef\doreadingfilecharacters%
-%        {\catcode`"=\the\catcode`"\relax
-%         \catcode`<=\the\catcode`<\relax
-%         \catcode`>=\the\catcode`>\relax}%
-%      \catcode`"=\@@letter
-%      \catcode`<=\@@other
-%      \catcode`>=\@@other
-%      \let\stopreadingfile=\dostopreadingfile
-%    \fi
-%    \increment\readingfilelevel}
-% 
-% \def\dostopreadingfile%
-%   {\ifnum\readingfilelevel=1
-%      \doreadingfilecharacters
-%    \fi
-%    \decrement\readingfilelevel}
-
 \def\normalless    {<} % geen \let ! 
 \def\normalmore    {>} % geen \let ! 
 \def\normalequal   {=} % geen \let ! 
 \def\normaldblquote{"} % geen \let ! 
 
 \newcounter\readingfilelevel
-
-%\def\popfilecharacter#1#2%
-%  {\ifnum\catcode`#1=\@@other \ifnum#2=\@@other \else
-%    %\message{[popping catcode #1 to #2]}%
-%     \catcode`#1=#2\relax
-%   \fi \fi}
-%
-%\def\pushfilecharacter#1%
-%  {\ifnum\catcode`#1=\@@other \else
-%    %\message{[pushing catcode #1 from \the\catcode`#1]}%
-%     \catcode`#1=\@@other
-%   \fi}
 
 \def\popfilecharacter#1#2%
   {\ifnum\catcode`#1=\@@other \ifnum#2=\@@other \else
@@ -538,13 +501,14 @@
 %D regards to active characters (german ", polish /, 
 %D french : and ;).
 
-\def\startreadingfile% beter een every 
+\def\startreadingfile% beter een every en \setnormalcatcodes
   {\doglobal\increment\readingfilelevel
    \setxvalue{\string\readingfilelevel::\readingfilelevel}%
      {\catcode`/ =\the\catcode`/%
+     %\catcode`_ =\the\catcode`_% math ! ! !
       \catcode`" =\the\catcode`"%
-\catcode`: =\the\catcode`:%
-\catcode`; =\the\catcode`;%
+      \catcode`: =\the\catcode`:%
+      \catcode`; =\the\catcode`;%
       \catcode`< =\the\catcode`<%
       \catcode`> =\the\catcode`>%
       \catcode`\noexpand\\=\the\catcode`\\%
@@ -552,9 +516,10 @@
       \catcode`\noexpand\}=\the\catcode`\}%
       \catcode`\noexpand\%=\the\catcode`\%}%
    \catcode`/ =\@@other
+  %\catcode`_ =\@@other
    \catcode`" =\@@other
-\catcode`: =\@@other
-\catcode`; =\@@other
+   \catcode`: =\@@other
+   \catcode`; =\@@other
    \catcode`< =\@@other
    \catcode`> =\@@other
    \catcode`\\=\@@escape

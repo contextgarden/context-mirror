@@ -159,11 +159,13 @@
 
 \newif\ifskipexternalfigures  % \skipexternalfigurestrue
 
+%newif\ifsplitexternalfigures 
+
 %D A last switch inhibits running \TEXUTIL. Lets do it when
 %D possible.
 
 \newif\ifrunutilityfile       % \runutilityfiletrue
-\newif\ifconsultutilityfile   \consultutilityfiletrue
+\newif\ifconsultutilityfile     \consultutilityfiletrue
 
 %D When I ever decide to change the format of the figure
 %D directory file that \TEXUTIL\ produces, the next number
@@ -237,14 +239,16 @@
 %D method scans the utility files for files with the same name,
 %D but different type.
 
+\let\figurepathlist\empty
+
 \def\doanalyzefigurefiles#1%
-  {\let\dodododoanalyzefigurefiles=#1%
+  {\let\dodododoanalyzefigurefiles#1%
    \processcommacommand[\@@eftype]\dodoanalyzefigurefiles}
 
 \def\dodoanalyzefigurefiles#1%
   {\ifcase\figurestatus
      \def\@@efcurrenttype{#1}%
-     \processcommacommand[\@@ex@@gebied]\dododoanalyzefigurefiles
+     \processcommacommand[\figurepathlist]\dododoanalyzefigurefiles
    \fi}
 
 \def\dododoanalyzefigurefiles#1%
@@ -257,21 +261,21 @@
           {\@@effilename.\figureextension{\@@efcurrenttype}}%
           \to\@@efcurrentfile
         \dodododoanalyzefigurefiles}
-       {}%
+       \donothing
    \fi}
 
 %D Here is our first method: we scan the file directly, parse
 %D the utility file next, and finaly run \TEXUTIL. The latter
 %D two of course only take place when the first scan fails.
 
-\def\doanalyzefigurefilesA%
+\def\doanalyzefigurefilesA
   {\ifcase\figurestatus
      \@@eftrace{locating \@@efcurrentfile\space as \@@efcurrenttype}%
      \doiffileelse\@@efcurrentfile
        {\getfiguredimensionsA
         \getfiguredimensionsB
         \getfiguredimensionsC}
-       {}%
+       \donothing
    \fi}
 
 %D It is possible to let \TEX\ determine the dimensions itself.
@@ -286,25 +290,25 @@
 % never change the vsize / hsize here, is taken from env 
 
 \def\dogetfiguresizetex#1#2#3#4#5#6% file pagina ...
-  {\doifinsetelse{\@@efextension}{\c!tex,\c!tmp}
+  {\doifinsetelse\@@efextension{\c!tex,\c!tmp}
      {\ifx\@@efcurrentpath\empty\executedfalse\else\executedtrue\fi}
-     {\executedfalse}%
+     \executedfalse
    \ifexecuted
-     \global\setbox\foundexternalfigure=\vbox
+     \global\setbox\foundexternalfigure\vbox
        {\insidefloattrue
         \forgetall
-        \blanko[\v!blokkeer] % niet meer weg !
+        \blanko[\v!blokkeer]% niet meer weg !
         \startreadingfile
-        \readfile{#1}{}{}%
+        \readfile{#1}\donothing\donothing
         \stopreadingfile
         \endgraf
         \removelastskip}%
-     \global\setbox\foundexternalfigure=\hbox
+     \global\setbox\foundexternalfigure\hbox
        {\raise\dp\foundexternalfigure\box\foundexternalfigure}%
-     #3=\zeropoint
-     #4=\zeropoint
-     #5=\wd\foundexternalfigure
-     #6=\ht\foundexternalfigure
+     #3\zeropoint
+     #4\zeropoint
+     #5\wd\foundexternalfigure
+     #6\ht\foundexternalfigure
    \else
      \@@eftrace{ignored}%
    \fi}
@@ -315,28 +319,28 @@
 
 \def\@@dogetfiguresize{dogetfiguresize}
 
-\def\getfiguredimensionsA%
+\def\getfiguredimensionsA
   {\ifcase\figurestatus
      \@@eftrace{analyzing \@@efcurrentfile\space 
                        on \@@efcurrentpath\space 
                        as \@@efcurrenttype}%
-     \!!widthb=\zeropoint % ?
+     \!!widthb\zeropoint % ?
      \doifdefinedelse{\@@dogetfiguresize\@@efcurrenttype}
        {\executedtrue
         \getvalue{\@@dogetfiguresize\@@efcurrenttype}%
-          {\@@efcurrentfile}{\@@efpagina}%
-          {\!!widtha}{\!!heighta}{\!!widthb}{\!!heightb}}
-       {\executedfalse}%
+          \@@efcurrentfile\@@efpagina 
+          \!!widtha\!!heighta\!!widthb\!!heightb}
+       \executedfalse
      \ifexecuted
        \donetrue
        \ifdim\!!widtha=\zeropoint\relax\ifdim\!!heighta=\zeropoint\relax
          \ifdim\!!widthb=\zeropoint\relax\ifdim\!!heightb=\zeropoint\relax
-           \showmessage{\m!figures}{10}{\@@efcurrentfile}%
+           \showmessage\m!figures{10}\@@efcurrentfile
            \@@eftrace{zero}%
            \donefalse
          \fi\fi
        \fi\fi
-       \doifelse{\@@efcurrenttype}{\c!mps}
+       \doifelse\@@efcurrenttype\c!mps
          {\ifcase\EPScreator
             \executedfalse
           \else 
@@ -351,7 +355,7 @@
      \fi
      \ifexecuted
        \chardef\figurestatus=3
-       \doifelse{\@@efcurrenttype}{\c!eps}
+       \doifelse\@@efcurrenttype\c!eps
          {\ifcase\EPScreator
             \@@eftrace{found}%
           \else
@@ -376,10 +380,10 @@
 \def\dogetfiguresizeeps#1#2#3#4#5#6%
   {\dogetEPSboundingbox{#1}{#3}{#4}{#5}{#6}}
 
-\def\dogetfiguresizemps%
+\def\dogetfiguresizemps
   {\dogetfiguresizeeps}
 
-\def\getfiguredimensionsB%
+\def\getfiguredimensionsB
   {\ifcase\figurestatus\ifcase\figurefilemode\else
     %\def\@@efloadname{\@@efcurrentpath\f!pathseparator\@@exfile}%
      \assignfullfilename\@@efcurrentpath\@@exfile\to\@@efloadname
@@ -388,10 +392,10 @@
                        on \@@efcurrentpath\space 
                       for \@@effilenametype}%
      \pushendofline
-     \let\presetfigure=\presetfigureA
-\startreadingfile
-     \readsetfile{\@@efcurrentpath}{\@@exfile}\relax\relax
-\stopreadingfile
+     \startreadingfile
+     \let\presetfigure\presetfigureA
+     \readsetfile\@@efcurrentpath\@@exfile\donothing\donothing
+     \stopreadingfile
      \popendofline
      \@@eftrace{\ifcase\figurestatus not \fi found}%
    \fi\fi}
@@ -400,19 +404,18 @@
   {\ifcase\figurestatus
      \@EA\DOIF\@EA{\@@effilenametype}{#1} % hm, tzt ook nog eens met pad/naam
        {\getparameters[\??ep][#2]%
-        \ExpandBothAfter\doif{\@@epe}{\@@efcurrenttype}
-          {\chardef\figurestatus=4
+        \ExpandBothAfter\doif\@@epe\@@efcurrenttype
+          {\chardef\figurestatus4
            \let\@@eftype\@@efcurrenttype
            \let\@@effullname\@@efcurrentfile}}%
    \else
      \endinput
    \fi}
 
-\def\getfiguredimensionsC%
+\def\getfiguredimensionsC
   {\ifconsultutilityfile \ifrunutilityfile 
      \ifcase\figurestatus\ifcase\figurefilemode\else
-      %\doif{\@@efcurrenttype}{\c!tex} % oeps, was wrong 
-       \doifnotinset{\@@efextension}{\c!tex,\c!tmp}
+       \doifnotinset\@@efextension{\c!tex,\c!tmp}
          {\doiffileelse\@@efcurrentfile
             {\edef\@@effilenametype{\@@effilename.\@@efcurrenttype}%
              \@@eftrace{running texutil on \@@effilenametype}%
@@ -421,10 +424,10 @@
                {texutil --fig --out=\@@efloadname\space\@@effilenametype}%
              \@@eftrace{analyzing \@@efloadname\space on \@@effilenametype}%
              \pushendofline
-\startreadingfile
-             \let\presetfigure=\presetfigureB
-             \readsetfile{.}{\@@efloadname}\relax\relax
-\stopreadingfile
+             \startreadingfile
+             \let\presetfigure\presetfigureB
+             \readsetfile{.}\@@efloadname\donothing\donothing
+             \stopreadingfile
              \popendofline
              \@@eftrace{\ifcase\figurestatus not \fi found}}
             {}}%
@@ -440,7 +443,7 @@
 %D The second pass over types and directories uses the
 %D utilility files.
 
-\def\doanalyzefigurefilesB%
+\def\doanalyzefigurefilesB
   {\ifconsultutilityfile\ifcase\figurestatus\ifcase\figurefilemode\else
     %\def\@@efloadname{\@@efcurrentpath\f!pathseparator\@@exfile}%
      \assignfullfilename\@@efcurrentpath\@@exfile\to\@@efloadname
@@ -449,10 +452,10 @@
                        on \@@efcurrentpath\space 
                       for \@@effilenametype}%
      \pushendofline
-     \let\presetfigure=\presetfigureC
-\startreadingfile
-     \readsetfile{\@@efcurrentpath}{\@@exfile}\relax\relax
-\stopreadingfile
+     \startreadingfile
+     \let\presetfigure\presetfigureC
+     \readsetfile\@@efcurrentpath\@@exfile\donothing\donothing
+     \stopreadingfile
      \popendofline
      \@@eftrace{\ifcase\figurestatus not \fi found}%
    \fi\fi\fi}
@@ -461,8 +464,8 @@
   {\ifcase\figurestatus
      \@EA\DOIF\@EA{\@@effilenametype}{#1}
        {\getparameters[\??ep][#2]%
-        \doif{\@@epe}{\@@efcurrenttype}
-          {\chardef\figurestatus=4
+        \doif\@@epe\@@efcurrenttype
+          {\chardef\figurestatus4
            \let\@@eftype\@@efcurrenttype
            \let\@@effullname\@@efcurrentfile}}%
    \else
@@ -472,7 +475,7 @@
 %D The last and third pass mainly differs from the second in
 %D being more tolerant.
 
-\def\doanalyzefigurefilesC%
+\def\doanalyzefigurefilesC
   {\ifconsultutilityfile\ifcase\figurestatus\ifcase\figurefilemode\else
     %\def\@@efloadname{\@@efcurrentpath\f!pathseparator\@@exfile}%
      \assignfullfilename\@@efcurrentpath\@@exfile\to\@@efloadname
@@ -480,10 +483,10 @@
                        on \@@efcurrentpath\space 
                       for \@@effilename.* surrogate}%
      \pushendofline
-     \let\presetfigure=\presetfigureD
-\startreadingfile
-     \readsetfile{\@@efcurrentpath}{\@@exfile}\relax\relax
-\stopreadingfile
+     \startreadingfile
+     \let\presetfigure\presetfigureD
+     \readsetfile\@@efcurrentpath\@@exfile\donothing\donothing
+     \stopreadingfile
      \popendofline
      \@@eftrace{\ifcase\figurestatus not \fi found}%
    \fi\fi\fi}
@@ -492,12 +495,12 @@
   {\ifcase\figurestatus
      \@EA\DOIFINSTRINGELSE\@EA{\@@effilename.}{#1}
        {\getparameters[\??ep][#2]%
-        \ExpandBothAfter\doifinsetelse{\@@epe}{\@@efcurrenttype}
-          {\chardef\figurestatus=4
+        \ExpandBothAfter\doifinsetelse\@@epe\@@efcurrenttype
+          {\chardef\figurestatus4
            \let\@@eftype\@@efcurrenttype
            \let\@@effullname\@@efcurrentfile}
-          {}}
-       {}%
+          \donothing}
+       \donothing
    \else
      \endinput
    \fi}
@@ -507,8 +510,9 @@
 %D versions don't match.
 
 \def\thisisfigureversion#1%
-  {\doifnot{\figureversion}{#1}
-     {\showmessage{\m!figures}{7}{\@@efloadname}\endinput}}
+  {\doifnot\figureversion{#1}
+     {\showmessage\m!figures7\@@efloadname 
+      \endinput}}
 
 %D Some files, take for instance movies, cannot easilly be
 %D parsed on dimensions, that is, not yet. Although the current
@@ -518,28 +522,26 @@
 %D can disable \type{preset}. When no preset is needed, we only
 %D locate the file.
 
-\def\locatepresetfigurefiles%
+\def\locatepresetfigurefiles
   {\processcommacommand[\@@eftype]\dolocatepresetfigurefiles}
 
 \def\dolocatepresetfigurefiles#1%
   {\def\@@efcurrenttype{#1}%
-   \processcommacommand[\@@ex@@gebied]\dodolocatepresetfigurefiles}
+   \processcommacommand[\figurepathlist]\dodolocatepresetfigurefiles}
 
 \def\dodolocatepresetfigurefiles#1%
   {\ifcase\figurestatus
      \doiffileinsertionsupportedelse\@@efcurrenttype
-       {%\edef\@@efcurrentfile%
-        %  {#1\f!pathseparator\@@effilename.\figureextension{\@@efcurrenttype}}%
-        \assignfullfilename
+       {\assignfullfilename
           {#1}{\@@effilename.\figureextension{\@@efcurrenttype}}%
           \to\@@efcurrentfile
         \@@eftrace{only searching for \@@efcurrentfile}%
         \doiffileelse\@@efcurrentfile
-          {\chardef\figurestatus=1
+          {\chardef\figurestatus\plusone
            \let\@@eftype\@@efcurrenttype
            \let\@@effullname\@@efcurrentfile}
-          {}}
-       {}%
+          \donothing}
+       \donothing
    \fi}
 
 %D All these macros are in some way called by the macro \type
@@ -548,17 +550,17 @@
 
 % bools gebruiken
 
-\def\setnaturalfiguresize%
-  {\doifsomething{\@@efbreedte}
-     {\global\figwid=\@@efbreedte}%
-   \doifsomething{\@@efhoogte}
-     {\global\fighei=\@@efhoogte}%
-   \doifsomething{\@@efschaal}
-     {\figxsca=\@@efschaal
-      \figysca=\@@efschaal}}
+\def\setnaturalfiguresize
+  {\doifsomething\@@efbreedte
+     {\global\figwid\@@efbreedte}%
+   \doifsomething\@@efhoogte
+     {\global\fighei\@@efhoogte}%
+   \doifsomething\@@efschaal
+     {\figxsca\@@efschaal
+      \figysca\@@efschaal}}
 
-\def\setfactorfiguresize%
-  {\doifinsetelse{\@@effactor}{\v!max,\v!passend,\v!ruim}
+\def\setfactorfiguresize
+  {\doifinsetelse\@@effactor{\v!max,\v!passend,\v!ruim}
      {\doapplyfiguresize
       \ifdim\@@epw>\@@eph\relax
         \docalculatefigurenorm\figwid\@@effactor\@@efmaxbreedte\hsize\@@efhsize
@@ -568,12 +570,12 @@
         \docalculatefigurescales\fighei\@@eph\figwid\@@epw
       \fi
       \!!doneatrue}
-     {\doifinsetelse{\@@efhfactor}{\v!max,\v!passend,\v!ruim}
+     {\doifinsetelse\@@efhfactor{\v!max,\v!passend,\v!ruim}
         {\doapplyfiguresize
          \docalculatefigurenorm\fighei\@@efhfactor\@@efmaxhoogte\figurevsize\@@efvsize
          \docalculatefigurescales\fighei\@@eph\figwid\@@epw
          \!!doneatrue}
-        {\doifinsetelse{\@@efbfactor}{\v!max,\v!passend,\v!ruim}
+        {\doifinsetelse\@@efbfactor{\v!max,\v!passend,\v!ruim}
            {\doapplyfiguresize
             \docalculatefigurenorm\figwid\@@efbfactor\@@efmaxbreedte\hsize\@@efhsize
             \docalculatefigurescales\figwid\@@epw\fighei\@@eph
@@ -584,35 +586,35 @@
             \!!doneafalse}}}%
    \if!!donea
      \ifdim\figwid>\@@efhsize\relax
-       \global\fighei=\zeropoint
-       \global\figwid=\@@efhsize
+       \global\fighei\zeropoint
+       \global\figwid\@@efhsize
      \else\ifdim\fighei>\@@efvsize\relax
-       \global\fighei=\@@efvsize
-       \global\figwid=\zeropoint
+       \global\fighei\@@efvsize
+       \global\figwid\zeropoint
      \fi\fi
    \fi}
 
-\def\setscalefiguresize%
-  {\doifsomething{\@@efschaal}
+\def\setscalefiguresize
+  {\doifsomething\@@efschaal
      {\doapplyfigurescale\figwid\@@epw\figxsca
       \doapplyfigurescale\fighei\@@eph\figysca
-      \global\figwid=\zeropoint
-      \global\fighei=\zeropoint
-      \doifelsenothing{\@@efmaxbreedte}
-        {\doifsomething{\@@efmaxhoogte}
+      \global\figwid\zeropoint
+      \global\fighei\zeropoint
+      \doifelsenothing\@@efmaxbreedte
+        {\doifsomething\@@efmaxhoogte
            {\ifdim\@@eph>\@@efmaxhoogte
-              \global\fighei=\@@efmaxhoogte
+              \global\fighei\@@efmaxhoogte
             \fi}}
         {\ifdim\@@epw>\@@efmaxbreedte
-           \global\figwid=\@@efmaxbreedte
+           \global\figwid\@@efmaxbreedte
          \fi}}}
 
 \def\dosetdimensionfiguresize#1#2#3%
   {#1\relax
-   \doifsomething{\@@efmaxbreedte}
-     {\ifdim\figwid>\@@efmaxbreedte\global\figwid=\@@efmaxbreedte#2\relax\fi}%
-   \doifsomething{\@@efmaxhoogte}
-     {\ifdim\fighei>\@@efmaxhoogte \global\fighei=\@@efmaxhoogte #3\relax\fi}}
+   \doifsomething\@@efmaxbreedte
+     {\ifdim\figwid>\@@efmaxbreedte\global\figwid\@@efmaxbreedte#2\relax\fi}%
+   \doifsomething\@@efmaxhoogte
+     {\ifdim\fighei>\@@efmaxhoogte \global\fighei\@@efmaxhoogte #3\relax\fi}}
 
 \def\setdimensionfiguresize
   {\ifdim\figwid>\zeropoint\relax
@@ -645,50 +647,55 @@
      \fi
    \fi}
 
-\def\setupexternalfigures%
+\def\setupexternalfigures
   {\dosingleempty\dosetupexternalfigures}
 
 \def\dosetupexternalfigures[#1]% needs a good clean up 
   {\getparameters[\??ex][#1]%
    \getparameters[\??ef][#1]% dangerous for figs with backgrounds  
-   \doifelsenothing{\@@explaats} % fig file paths 
-     {\scratchcounter=3 }
-     {\doifelsenothing{\@@exfile} % tuf file paths 
-        {\scratchcounter=3 }
-        {\scratchcounter=0
-         \ExpandBothAfter\doifinset{\v!lokaal}{\@@explaats}
+   \checkfiguresettings
+   \doifelsenothing\@@explaats % fig file paths 
+     {\scratchcounter3 }
+     {\doifelsenothing\@@exfile % tuf file paths 
+        {\scratchcounter3 }
+        {\scratchcounter0
+         \ExpandBothAfter\doifinset\v!lokaal\@@explaats
            {\advance\scratchcounter 1 }%
-         \ExpandBothAfter\doifinset{\v!globaal}{\@@explaats}
+         \ExpandBothAfter\doifinset\v!globaal\@@explaats
            {\advance\scratchcounter 2 }}}%
-   \chardef\figurefilemode=\scratchcounter
+   \chardef\figurefilemode\scratchcounter\relax
    \ifcase\figurefilemode
-     \let\@@ex@@gebied\f!currentpath
+     \let\figurepathlist\f!currentpath
    \or % lokaal 
-     \let\@@ex@@gebied\f!currentpath 
+     \let\figurepathlist\f!currentpath 
    \or % globaal 
-     \let\@@ex@@gebied\@@exgebied    
+     \let\figurepathlist\@@exgebied    
    \or % lokaal,globaal / non empty gebied
-     \edef\@@ex@@gebied{\f!currentpath\ifx\@@exgebied\empty\else,\fi\@@exgebied}%
+     \edef\figurepathlist{\f!currentpath\ifx\@@exgebied\empty\else,\fi\@@exgebied}%
    \fi
-   \ExpandBothAfter\doifinset{\v!default}{\@@explaats}
-     {\edef\@@ex@@gebied{\@@ex@@gebied,}}% default tex path search 
+   \ExpandBothAfter\doifinset\v!default\@@explaats
+     {\edef\figurepathlist{\figurepathlist,}}% default tex path search 
    \ifx\@@exfile\empty
-     \chardef\figurefilemode=0
+     \chardef\figurefilemode\zerocount
    \fi}
 
 %D The next one is for instance used in symbols: 
 
-\def\resetexternalfigures%
+\def\resetexternalfigures
   {\setupexternalfigures
      [\c!optie=,\c!maxbreedte=,\c!maxhoogte=,
+     %\c!splitskleur=,% needed ? 
+      \c!voorgrondkleur=,
       \c!kader=\v!uit,\c!achtergrond=]}
 
 %D Since we only need to reset some parameters, we can 
 %D better use a faster alternative:
 
-\def\resetexternalfigures%
+\def\resetexternalfigures
   {\getparameters[\??ef]
      [\c!optie=,\c!maxbreedte=,\c!maxhoogte=,
+     %\c!splitskleur=,% needed ? 
+      \c!voorgrondkleur=,
       \c!kader=\v!uit,\c!achtergrond=]}
 
 %D This one dropped the runtime of the \MAPS\ bibliography 
@@ -715,118 +722,87 @@
       [     \v!max=>\global#1=#4\relax,
         \v!passend=>\global#1=#5\relax,
            \v!ruim=>\global#1=#5\relax
-                    \global\advance #1 by -4\@@exkorps\relax,
+                    \global\advance #1 -4\@@exkorps\relax,
         \s!default=>\doifsomething{#3}{\global#1=#3\relax},
         \s!unknown=>\global#1=\@@exkorps\relax
-                    \global\divide#1 by \!!ten\relax
-                    \global\multiply#1 by #2\relax]}
+                    \global\divide#1 \!!ten\relax
+                    \global\multiply#1 #2\relax]}
 
 \def\docalculatefigurescales#1#2#3#4%
   {\dimen0=#1\relax                     % #1 = new 1-value
    \dimen2=#2\relax                     % #2 = old 1-value
-   \divide\dimen2 by \!!thousand
-   \divide\dimen0 by \dimen2
-   \figxsca=\dimen0                     %      x scale
-   \figysca=\dimen0                     %      y scale
+   \divide\dimen2 \!!thousand
+   \divide\dimen0 \dimen2
+   \figxsca\dimen0                      %      x scale
+   \figysca\dimen0                      %      y scale
    \dimen2=#4\relax                     % #4 = old 2-value
-   \divide\dimen2 by \!!thousand
-   \multiply\dimen2 by \dimen0
+   \divide\dimen2 \!!thousand
+   \multiply\dimen2 \dimen0
    #3=\dimen2 }                         % #3 = new 2-value
 
 \def\docalculatefigurescale#1#2#3%
   {\dimen0=#1\relax                     % #1 = new value
    \dimen2=#2\relax                     % #2 = old value
-   \divide\dimen2 by \!!thousand
-   \divide\dimen0 by \dimen2
+   \divide\dimen2 \!!thousand
+   \divide\dimen0 \dimen2
    #3=\dimen0 }                         % #3 = schaal
 
 \def\doapplyfigurescale#1#2#3%
   {\global#1=#2\relax
-   \ifcase0\@@efschaal\relax
+   \ifcase0\@@efschaal\relax % beter: doifnum...
      #3=\!!thousand
    \else
      #3=\@@efschaal
-   \fi
-   \relax % important !
+   \fi\relax % important !
    \ifnum#3=\!!thousand\else
-     \global\divide#1 by \!!thousand
-     \global\multiply#1 by #3\relax
+     \global\divide  #1 \!!thousand
+     \global\multiply#1 #3\relax
    \fi}
 
 \newdimen\figurevsize % we cannot manipulate any global vsize ! 
 
-% \def\doapplyfiguresize%
-%   {\figurevsize=\teksthoogte
-%    \ifinner
-%      \figurevsize =\vsize % \teksthoogte =\vsize
-%      \scratchdimen=\vsize % \scratchdimen=\teksthoogte
-%    \else\ifinsidefloat
-%      \figurevsize =\vsize % \teksthoogte =\vsize
-%      \scratchdimen=\vsize % \scratchdimen=\teksthoogte
-%    \else\ifinpagebody
-%      \figurevsize =\vsize % \teksthoogte =\vsize
-%      \scratchdimen=\vsize % \scratchdimen=\teksthoogte
-%    \else
-%      \ifdim\pagegoal<\maxdimen
-%        \ifdim\pagetotal<\pagegoal
-%          \scratchdimen=\pagegoal
-%          \advance\scratchdimen by -\pagetotal
-%        \else
-%          \scratchdimen=\figurevsize % \teksthoogte
-%        \fi
-%      \else
-%        \scratchdimen=\figurevsize % \teksthoogte
-%      \fi
-%    \fi\fi\fi
-%    \doifelsenothing{\@@efhoogte}
-%      {\edef\@@efvsize{\the\scratchdimen}}
-%      {\let\@@efvsize=\@@efhoogte}%
-%    \doifelsenothing{\@@efbreedte}
-%      {\edef\@@efhsize{\the\hsize}}
-%      {\let\@@efhsize=\@@efbreedte}}
-
-\def\doapplyfiguresize%
-  {\doifelsenothing{\@@efmaxhoogte}
-     {\figurevsize=\teksthoogte
+\def\doapplyfiguresize
+  {\doifelsenothing\@@efmaxhoogte
+     {\figurevsize\teksthoogte
       \ifinner
-        \figurevsize =\vsize % \teksthoogte =\vsize
-        \scratchdimen=\vsize % \scratchdimen=\teksthoogte
+        \figurevsize \vsize % \teksthoogte =\vsize
+        \scratchdimen\vsize % \scratchdimen=\teksthoogte
       \else\ifinsidefloat
-        \figurevsize =\vsize % \teksthoogte =\vsize
-        \scratchdimen=\vsize % \scratchdimen=\teksthoogte
+        \figurevsize \vsize % \teksthoogte =\vsize
+        \scratchdimen\vsize % \scratchdimen=\teksthoogte
       \else\ifinpagebody
-        \figurevsize =\vsize % \teksthoogte =\vsize
-        \scratchdimen=\vsize % \scratchdimen=\teksthoogte
-      \else
+        \figurevsize \vsize % \teksthoogte =\vsize
+        \scratchdimen\vsize % \scratchdimen=\teksthoogte
+      \else % hm, there should be an option to force this 
         \ifdim\pagegoal<\maxdimen
           \ifdim\pagetotal<\pagegoal
-            \scratchdimen=\pagegoal
-            \advance\scratchdimen by -\pagetotal
+            \scratchdimen\pagegoal
+            \advance\scratchdimen -\pagetotal
           \else
-            \scratchdimen=\figurevsize % \teksthoogte
+            \scratchdimen\figurevsize % \teksthoogte
           \fi
         \else
-          \scratchdimen=\figurevsize % \teksthoogte
+          \scratchdimen\figurevsize % \teksthoogte
         \fi
       \fi\fi\fi}
-     {\figurevsize=\@@efmaxhoogte}%
-   \doifelsenothing{\@@efhoogte}
+     {\figurevsize\@@efmaxhoogte}%
+   \doifelsenothing\@@efhoogte
      {\edef\@@efvsize{\the\scratchdimen}}
-     {\let\@@efvsize=\@@efhoogte}%
-   \doifelsenothing{\@@efbreedte}
+     {\let\@@efvsize\@@efhoogte}%
+   \doifelsenothing\@@efbreedte
      {\edef\@@efhsize{\the\hsize}}
-     {\let\@@efhsize=\@@efbreedte}}
+     {\let\@@efhsize\@@efbreedte}}
 
 \def\convertfigureinsertscale#1#2#3#4%
-  {\scratchdimen=#1\relax
+  {\scratchdimen#1\relax
    \ifnum#3=\!!thousand\else % better 1000 100 10 ranges, evt round 2sp
-     \divide\scratchdimen by \!!thousand
-     \multiply\scratchdimen by #3\relax
+     \divide\scratchdimen \!!thousand
+     \multiply\scratchdimen #3\relax
    \fi
-   \scratchdimen=-\scratchdimen  % beter hier - dan in driver
-   \edef#2{\scratchdimen}%
-   \scratchdimen=#3pt
-   \divide\scratchdimen by \!!ten
+   \scratchdimen-\scratchdimen  % beter hier - dan in driver
+   \edef#2{\the\scratchdimen}% oeps, \the vergeten 
+   \scratchdimen#3\s!pt
+   \divide\scratchdimen \!!ten
    \edef#4{\@EA\withoutpt\@EA{\the\scratchdimen}}}
 
 \newbox\foundexternalfigure
@@ -865,17 +841,294 @@
 %  become replaced by its xml counterpart; for that I first 
 %  need to patch texutil. 
 
+\def\checkfiguresettings
+  {\doifsomething\@@efregels
+     {\scratchdimen\@@efregels\lineheight
+      \edef\@@efhoogte{\the\scratchdimen}}}
+
+% \def\calculateexternalfigure[#1][#2][#3][#4][#5][#6]%
+%   {\mindermeldingen
+%    \setupexternalfigures
+%    \the\externalfigureresets % hook, see resource libraries
+%    \global\figwid\zeropoint \figxsca\plusone % see note * 
+%    \global\fighei\zeropoint \figysca\plusone % see note * 
+%    \global\setbox\foundexternalfigure\box\voidb@x
+%    \edef\expandedfigurename{#3}% needed e.g. in [\get...] cases
+%    \expandafter\beforesplitstring\expandedfigurename\at.\to\@@effilename
+%    \expandafter\aftersplitstring \expandedfigurename\at.\to\@@efextension
+%    \doifelse\@@effilename{mprun}
+%      {\edef\@@effilepref{\bufferprefix}}
+%      {\let \@@effilepref\empty}%
+%    \edef\@@effilename{\@@effilepref\@@effilename}%
+%    \restorecatcodes  % recently added; we presume local use
+%    \def\@@eflabel{#2}%
+%    \global\let\externalfigurelog\empty
+%    \getparameters
+%      [\??ep]
+%      [\c!e=\s!unknown,
+%       \c!w=15\korpsgrootte,\c!h=10\korpsgrootte,
+%       \c!x=\!!zeropoint,\c!y=\!!zeropoint,
+%       \c!t=,\c!s=,\c!a=,\c!f=\@@effilename]%
+%    \getparameters
+%      [\??ef]
+%      [\c!type=\s!unknown,\c!methode=\@@eftype,\c!symbool=\v!nee,
+%       \c!object=\@@exobject,\c!preset=\v!ja,
+%       \c!pagina=0,\c!sturing=\v!nee,\c!preview=\v!nee,\c!herhaal=\v!nee,
+%       \c!maxbreedte=\@@exmaxbreedte,\c!maxhoogte=\@@exmaxhoogte,
+%       \c!schaal=,\c!breedte=,\c!hoogte=,\c!scherm=,\c!regels=,
+%      %\c!voorgrondkleur=,
+%       \c!splitsen=,
+%       \c!factor=,\c!hfactor=,\c!bfactor=]%
+%    \doif\@@efextension\c!mov\presetfiguremov
+%    \doif\@@efextension\c!avi\presetfigureavi
+%    #1[#4][#5][#6]%
+%    % lines -> height 
+%    \checkfiguresettings
+%    % new, color separation 
+%    \doifseparatingcolorselse
+%      {\let\@@efvoorgrondkleur\empty 
+%       \doifelsenothing\@@efsplitsen 
+%         {\splitexternalfiguresfalse}
+%         {\doifcolorchannelelse\@@efsplitsen 
+%            {\splitexternalfiguresfalse}
+%            {\let\@@efobject\v!nee 
+%             \splitexternalfigurestrue}}}
+%      {\splitexternalfiguresfalse}%
+%    % new, fake color in gray bitmaps 
+%    \doifsomething\@@efvoorgrondkleur
+%      {\getparameters[\??ef]
+%         [\c!achtergrond={\v!voorgrond,\v!kleur},
+%          \c!achtergrondkleur=\@@efvoorgrondkleur]}%
+%    %
+%    \doif\@@efreset\v!ja \resetexternalfigures
+%    \doif\@@eftype \c!mov\presetfiguremov
+%    \doif\@@eftype \c!avi\presetfigureavi
+%    % hack 
+%    \doif\@@efmethode\c!mov
+%      {\doifsomething\@@efextension{\presetundefinedfigure\@@efextension}}%
+%    % 
+%    \doif\@@eftype\v!buffer
+%      {\ifx\@@efextension\empty
+%         \let\@@efextension\c!tmp
+%       \fi
+%       \let\@@eftype\c!tex}%
+%    %\@EA\doifnumberelse\@EA{\@@efextension} % new, test first
+%    %{\def\@@eftype{\c!mps}}
+%    %{%
+%    \processaction
+%      [\@@efextension]
+%      [   \c!tex=>\let\@@eftype\c!tex,
+%          \c!tmp=>\let\@@eftype\c!tex
+%                  \edef\@@effilepref{\bufferprefix}%
+%                  \edef\@@effilename{\@@effilepref\@@effilename},
+%          \c!avi=>\presetfigureavi,
+%          \c!mov=>\presetfiguremov]%
+%    %}%
+%    \edef\figuretypes{\figuretypes,\c!tex}%
+%    \ifx\@@eftype\c!tex
+%      % Since tex code can have positional stuff and worse, 
+%      % we want to avoid interference with how objects end 
+%      % up in files, therefore: 
+%      \let\@@efobject\v!nee
+%    \fi
+%    \edef\@@efobjectname{\@@effilename-\@@eftype-\@@efextension-\@@efpagina}%
+%    \doifelse\@@efobject\v!nee
+%      \donefalse
+%      {\doifspecialavailableelse\dostartscaling
+%         {\doifobjectssupportedelse
+%            {\doifobjectfoundelse{FIG}{\@@efobjectname}{\donetrue}{\donefalse}}
+%            \donefalse}
+%         \donefalse}%
+%    % redo message, only filename  
+%    \doifparentfileelse\@@effilename
+%      {\@EA\removefromcommalist\@EA{\jobsuffix}\figuretypes
+%       \let\@@efextension\empty
+%       \showmessage\m!figures9\@@effilename
+%       \donefalse}
+%      \donothing 
+%    \ifdone
+%      \getobjectdimensions{FIG}{\@@efobjectname}%
+%      \geteparameters % e !
+%        [\??ep]
+%        [\c!x=\!!zeropoint,\c!y=\!!zeropoint,
+%         \c!w=\objectwidth,\c!h=\objectheight]%
+%      \chardef\figurestatus=5
+%      \edef\@@effullname{\@@effilepref#3}%
+%    \else
+%      \doifelse{#2}\s!figurepreset
+%        {\def\figureextension##1{\@@efextension}%
+%         \edef\@@effullname{\@@effilepref#3}}%
+%        {\ifx\@@efextension\empty
+%           \dogetcommacommandelement1\from\@@eftype\to\commalistelement
+%           \edef\@@effullname{\@@effilename.\commalistelement}%
+%           \def\figureextension##1{##1}%
+%         \else
+%           \@EA\doifnumberelse\@EA{\@@efextension}
+%             {\let\@@eftype\c!mps}\donothing
+%           \edef\@@effullname{\@@effilename.\@@efextension}%
+%           \def\figureextension##1{\@@efextension}%
+%         \fi}%
+%      \doifelse\@@efpreset\v!nee
+%        {\doifelse\@@eftype\s!unknown
+%           {\chardef\figurestatus0
+%            \let\@@eftype\figuretypes
+%            \locatepresetfigurefiles}
+%           {\chardef\figurestatus1 }}
+%        {\doifelse\@@eftype\s!unknown
+%           {\let\@@eftype\figuretypes}
+%           {\@EA\removefromcommalist\@EA{\@@eftype}\figuretypes
+%            \edef\@@eftype{\ifx\@@eftype\empty\else\@@eftype,\fi\figuretypes}}%
+%         \ifx\@@efextension\empty\else
+%           \ExpandBothAfter\doifinsetelse\@@efextension\@@eftype
+%             {\@EA\removefromcommalist\@EA{\@@efextension}\@@eftype
+%              \edef\@@eftype{\@@efextension,\@@eftype}}%
+%             \donothing
+%         \fi
+%         \doifelse{#2}\s!figurepreset
+%           {\chardef\figurestatus4
+%           %\def\@@efloadname{\f!currentpath\f!pathseparator\@@exfile}%
+%            \assignfullfilename\f!currentpath\@@exfile\to\@@efloadname
+%            \let\@@eftype\@@epe}
+%           {\chardef\figurestatus\zerocount
+%            \analyzefigurefiles}}%
+%      \let\@@epe\@@eftype
+%      \edef\@@efextension{\figureextension{\@@eftype}}% dirty trick
+%      \global\figwid\zeropoint \figxsca\plusone 
+%      \global\fighei\zeropoint \figysca\plusone
+%      \doif\v!kader\@@exoptie
+%        {\let\@@efkader\v!aan}%
+%    \fi
+%    \ifcase\figurestatus
+%      \let\@@efkader\v!aan
+%      \let\@@efobject\v!nee
+%      \showmessage\m!figures1{\@@effilename}%
+%    \or
+%      \showmessage\m!figures2{\@@effullname}%
+%    \or
+%      \showmessage\m!figures3{\@@effullname,\@@eflenttype}%
+%    \or
+%      \showmessage\m!figures4{\@@effullname}%
+%    \or
+%      \showmessage\m!figures5{\@@effullname,\@@efloadname}%
+%    \or % no message 
+%      \doifnot\@@efsymbool\v!ja
+%        {\showmessage\m!figures8{\@@effullname}}%
+%    \fi
+%    \ifdim\@@epw=\zeropoint \chardef\figurestatus1 \fi
+%    \ifdim\@@eph=\zeropoint \chardef\figurestatus1 \fi
+%    \ifnum\figurestatus=1 % unknown dimensions, take width or height or scale
+%      \setnaturalfiguresize
+%      \xdef\naturalfigurewidth{\the\figwid}%
+%      \xdef\naturalfigureheight{\the\fighei}%
+%      \let\@@efkader\v!uit
+%    \else
+%      \global\let\naturalfigurewidth\@@epw
+%      \global\let\naturalfigureheight\@@eph
+%      \setfactorfiguresize
+%      \setscalefiguresize
+%      \setdimensionfiguresize
+%    \fi
+%    \convertfigureinsertscale\@@epx\figx\figxsca\scax
+%    \convertfigureinsertscale\@@epy\figy\figysca\scay
+%    \iftraceexternalfigures
+%      \message
+%        {\externalfigurelog
+%           [\@@effullname:
+%            t={\@@eftype}\space m={\@@efmethode}\space l=\@@eflabel\space
+%            w=\number\figwid\space h=\number\fighei\space
+%            \c!sx=\scax\space\c!sy=\scay\space 
+%            ox=\figx\space oy=\figy]}%
+%    \fi
+%    \doif\v!leeg\@@exoptie
+%      {\skipexternalfigurestrue
+%       \let\@@efkader\v!uit}% ? ? 
+%    \doifelsenothing\@@efpagina % NIEUW ?? 
+%      {\let\@@efoptions\empty}
+%      {\let\@@efoptions\@@efpagina}%
+%    \doif\@@efpreview\v!ja{\addtocommalist\v!preview\@@efoptions}%
+%    \doif\@@efsturing\v!ja{\addtocommalist\v!sturing\@@efoptions}%
+%    \doif\@@efherhaal\v!ja{\addtocommalist\v!herhaal\@@efoptions}%
+%    \doif\@@eftype\c!mps
+%      {\ifcase\EPSspecial\else\ifinobject\else
+%         \@@eftrace{special mps, object forced}%
+%         \doglobal\increment\forcedMPSobject
+%         \edef\@@efobjectname{\c!mps::\forcedMPSobject}%
+%         \let\@@efobject\v!ja
+%       \fi\fi}%
+%    \global\let\lastfigureobjectname\@@efobjectname
+%    \doifelse\@@efobject\v!nee
+%      \donefalse
+%      {\doifobjectssupportedelse\donetrue\donefalse}%
+%    \ifdone
+%      \doifobjectfoundelse{FIG}\@@efobjectname
+%        \donothing
+%        {\bgroup % to be cleaned up 
+%         \figwid\@@epw % local ? 
+%         \fighei\@@eph % local ? 
+%         \scratchdimen\@@epx\scratchdimen-\scratchdimen
+%         \edef\@@epx{\the\scratchdimen}%
+%         \scratchdimen\@@epy\scratchdimen-\scratchdimen
+%         \edef\@@epy{\the\scratchdimen}%
+%        %\scratchdimen\@@epw\edef\@@epw{\the\scratchdimen}%
+%        %\scratchdimen\@@eph\edef\@@eph{\the\scratchdimen}%
+%         \setbox0\vbox to \fighei
+%           {\vfill
+%            \ifdim\wd\foundexternalfigure=\zeropoint
+%              \doinsertfile
+%                {\@@eftype,\@@efmethode}{\@@effullname,\@@eflabel}
+%                {100}{100}\@@epx\@@epy\@@epw\@@eph\@@efoptions
+%            \else\ifskipexternalfigures
+%              \ruledhbox
+%                {\backgroundline
+%                   [\@@efsplitskleur]{\fakebox\foundexternalfigure}}%
+%            \else
+%              \box\foundexternalfigure
+%            \fi\fi}%
+%         \wd0=\figwid
+%         \setobject{FIG}\@@efobjectname\vbox{\box0}%
+%         \setxvalue{\@@efobjectname\c!n}{\number\nofinsertpages}%
+%         \egroup}%
+%    \fi
+%    \xdef\figurewidth {\the\figwid}%
+%    \xdef\figureheight{\the\fighei}%
+%    \global\setbox\foundexternalfigure\vbox to \fighei
+%      {\vfill
+%       \hsize\figwid
+%       \ifdone
+%         \dimen0=\scax\s!pt\divide\dimen0 100\edef\scax{\@EA\withoutpt\the\dimen0}%
+%         \dimen0=\scay\s!pt\divide\dimen0 100\edef\scay{\@EA\withoutpt\the\dimen0}%
+%         \schaal[\c!sx=\scax,\c!sy=\scay]{\dowithfigure{\getobject{FIG}{\@@efobjectname}}}%
+%         \xdef\noffigurepages{\number\getvalue{\@@efobjectname\c!n}}%
+%       \else\ifdim\wd\foundexternalfigure=\zeropoint
+%         \dowithfigure
+%           {\doinsertfile
+%              {\@@eftype,\@@efmethode}{\@@effullname,\@@eflabel}
+%              \scax\scay\figx\figy\figwid\fighei\@@efoptions}%
+%         \xdef\noffigurepages{\number\nofinsertpages}%
+%       \else
+%         \dimen0=\scax\s!pt\divide\dimen0 100\edef\scax{\@EA\withoutpt\the\dimen0}%
+%         \dimen0=\scay\s!pt\divide\dimen0 100\edef\scay{\@EA\withoutpt\the\dimen0}%
+%         \schaal[\c!sx=\scax,\c!sy=\scay]{\dowithfigure{\box\foundexternalfigure}}%
+%         \xdef\noffigurepages{\number\nofinsertpages}%
+%       \fi\fi
+%       \global\let\appliedfigurexscale\scax
+%       \global\let\appliedfigureyscale\scay}%
+%    \global\wd\foundexternalfigure\figwid
+%    \finalizeexternalfigure{#2}{#3}}
+
+\chardef\splitexternalfigure=0 % 0 nosplit 1 split/yes 2 split/no
+
 \def\calculateexternalfigure[#1][#2][#3][#4][#5][#6]%
   {\mindermeldingen
    \setupexternalfigures
    \the\externalfigureresets % hook, see resource libraries
-   \global\figwid\zeropoint \figxsca1 % see note * 
-   \global\fighei\zeropoint \figysca1 % see note * 
-   \global\setbox\foundexternalfigure=\box\voidb@x
+   \global\figwid\zeropoint \figxsca\plusone % see note * 
+   \global\fighei\zeropoint \figysca\plusone % see note * 
+   \global\setbox\foundexternalfigure\box\voidb@x
    \edef\expandedfigurename{#3}% needed e.g. in [\get...] cases
    \expandafter\beforesplitstring\expandedfigurename\at.\to\@@effilename
    \expandafter\aftersplitstring \expandedfigurename\at.\to\@@efextension
-   \doifelse{\@@effilename}{mprun}
+   \doifelse\@@effilename{mprun}
      {\edef\@@effilepref{\bufferprefix}}
      {\let \@@effilepref\empty}%
    \edef\@@effilename{\@@effilepref\@@effilename}%
@@ -894,25 +1147,47 @@
       \c!object=\@@exobject,\c!preset=\v!ja,
       \c!pagina=0,\c!sturing=\v!nee,\c!preview=\v!nee,\c!herhaal=\v!nee,
       \c!maxbreedte=\@@exmaxbreedte,\c!maxhoogte=\@@exmaxhoogte,
-      \c!schaal=,\c!breedte=,\c!hoogte=,\c!scherm=,
+      \c!schaal=,\c!breedte=,\c!hoogte=,\c!scherm=,\c!regels=,
+     %\c!voorgrondkleur=,
+      \c!splitsen=,
       \c!factor=,\c!hfactor=,\c!bfactor=]%
-   \doif{\@@efextension}{\c!mov}{\presetfiguremov}%
-   \doif{\@@efextension}{\c!avi}{\presetfigureavi}%
+   \doif\@@efextension\c!mov\presetfiguremov
+   \doif\@@efextension\c!avi\presetfigureavi
    #1[#4][#5][#6]%
-   \doif{\@@efreset}{\v!ja}{\resetexternalfigures}%
-   \doif{\@@eftype}{\c!mov}{\presetfiguremov}%
-   \doif{\@@eftype}{\c!avi}{\presetfigureavi}%
-% hack 
-\doif{\@@efmethode}{\c!mov}{\doifsomething{\@@efextension}{\presetundefinedfigure\@@efextension}}%
-% 
-   \doif{\@@eftype}{\v!buffer}
+   % lines -> height 
+   \checkfiguresettings
+   % new, color separation 
+   \doifseparatingcolorselse
+     {\let\@@efvoorgrondkleur\empty 
+      \doifelsenothing\@@efsplitsen 
+        {\chardef\splitexternalfigure0}
+        {\doifcolorchannelelse\@@efsplitsen 
+           {\let\@@efobject\v!nee % ? 
+            \chardef\splitexternalfigure1}
+           {\chardef\splitexternalfigure2}}}
+     {\chardef\splitexternalfigure0}%
+   \relax % ends \chardef 
+   % new, fake color in gray bitmaps 
+   \doifsomething\@@efvoorgrondkleur
+     {\getparameters[\??ef]
+        [\c!achtergrond={\v!voorgrond,\v!kleur},
+         \c!achtergrondkleur=\@@efvoorgrondkleur]}%
+   %
+   \doif\@@efreset\v!ja \resetexternalfigures
+   \doif\@@eftype \c!mov\presetfiguremov
+   \doif\@@eftype \c!avi\presetfigureavi
+   % hack 
+   \doif\@@efmethode\c!mov
+     {\doifsomething\@@efextension{\presetundefinedfigure\@@efextension}}%
+   % 
+   \doif\@@eftype\v!buffer
      {\ifx\@@efextension\empty
         \let\@@efextension\c!tmp
       \fi
       \let\@@eftype\c!tex}%
-%\@EA\doifnumberelse\@EA{\@@efextension} % new, test first
-%{\def\@@eftype{\c!mps}}
-%{%
+   %\@EA\doifnumberelse\@EA{\@@efextension} % new, test first
+   %{\def\@@eftype{\c!mps}}
+   %{%
    \processaction
      [\@@efextension]
      [   \c!tex=>\let\@@eftype\c!tex,
@@ -921,7 +1196,7 @@
                  \edef\@@effilename{\@@effilepref\@@effilename},
          \c!avi=>\presetfigureavi,
          \c!mov=>\presetfiguremov]%
-%}%
+   %}%
    \edef\figuretypes{\figuretypes,\c!tex}%
    \ifx\@@eftype\c!tex
      % Since tex code can have positional stuff and worse, 
@@ -930,20 +1205,20 @@
      \let\@@efobject\v!nee
    \fi
    \edef\@@efobjectname{\@@effilename-\@@eftype-\@@efextension-\@@efpagina}%
-   \doifelse{\@@efobject}{\v!nee}
-     {\donefalse}
+   \doifelse\@@efobject\v!nee
+     \donefalse
      {\doifspecialavailableelse\dostartscaling
         {\doifobjectssupportedelse
-           {\doifobjectfoundelse{FIG}{\@@efobjectname}{\donetrue}{\donefalse}}
-           {\donefalse}}
-        {\donefalse}}%
+           {\doifobjectfoundelse{FIG}\@@efobjectname\donetrue\donefalse}
+           \donefalse}
+        \donefalse}%
    % redo message, only filename  
-   \doifparentfileelse{\@@effilename}
+   \doifparentfileelse\@@effilename
      {\@EA\removefromcommalist\@EA{\jobsuffix}\figuretypes
-      \let\@@efextension=\empty
-      \showmessage{\m!figures}{9}{\@@effilename}%
+      \let\@@efextension\empty
+      \showmessage\m!figures9\@@effilename
       \donefalse}
-     {}% 
+     \donothing 
    \ifdone
      \getobjectdimensions{FIG}{\@@efobjectname}%
      \geteparameters % e !
@@ -953,7 +1228,7 @@
      \chardef\figurestatus=5
      \edef\@@effullname{\@@effilepref#3}%
    \else
-     \doifelse{#2}{\s!figurepreset}
+     \doifelse{#2}\s!figurepreset
        {\def\figureextension##1{\@@efextension}%
         \edef\@@effullname{\@@effilepref#3}}%
        {\ifx\@@efextension\empty
@@ -962,72 +1237,63 @@
           \def\figureextension##1{##1}%
         \else
           \@EA\doifnumberelse\@EA{\@@efextension}
-            {\def\@@eftype{\c!mps}}{}%
+            {\let\@@eftype\c!mps}\donothing
           \edef\@@effullname{\@@effilename.\@@efextension}%
           \def\figureextension##1{\@@efextension}%
         \fi}%
-%     \ifcase\figurefilemode
-%       \let\@@ex@@gebied\f!currentpath
-%     \or % lokaal 
-%       \let\@@ex@@gebied\f!currentpath 
-%     \or % globaal 
-%       \let\@@ex@@gebied\@@exgebied    
-%     \or % lokaal,globaal / non empty gebied
-%       \edef\@@ex@@gebied{\f!currentpath\ifx\@@exgebied\empty\else,\fi\@@exgebied}%
-%     \fi
-     \doifelse{\@@efpreset}{\v!nee}
-       {\doifelse{\@@eftype}{\s!unknown}
-          {\chardef\figurestatus=0
-           \let\@@eftype=\figuretypes
+     \doifelse\@@efpreset\v!nee
+       {\doifelse\@@eftype\s!unknown
+          {\chardef\figurestatus0
+           \let\@@eftype\figuretypes
            \locatepresetfigurefiles}
-          {\chardef\figurestatus=1 }}
-       {\doifelse{\@@eftype}{\s!unknown}
-          {\let\@@eftype=\figuretypes}
+          {\chardef\figurestatus1 }}
+       {\doifelse\@@eftype\s!unknown
+          {\let\@@eftype\figuretypes}
           {\@EA\removefromcommalist\@EA{\@@eftype}\figuretypes
            \edef\@@eftype{\ifx\@@eftype\empty\else\@@eftype,\fi\figuretypes}}%
         \ifx\@@efextension\empty\else
-          \ExpandBothAfter\doifinsetelse{\@@efextension}{\@@eftype}
+          \ExpandBothAfter\doifinsetelse\@@efextension\@@eftype
             {\@EA\removefromcommalist\@EA{\@@efextension}\@@eftype
              \edef\@@eftype{\@@efextension,\@@eftype}}%
-            {}%
+            \donothing
         \fi
-        \doifelse{#2}{\s!figurepreset}
-          {\chardef\figurestatus=4
+        \doifelse{#2}\s!figurepreset
+          {\chardef\figurestatus4
           %\def\@@efloadname{\f!currentpath\f!pathseparator\@@exfile}%
            \assignfullfilename\f!currentpath\@@exfile\to\@@efloadname
-           \let\@@eftype=\@@epe}
-          {\chardef\figurestatus=0
+           \let\@@eftype\@@epe}
+          {\chardef\figurestatus\zerocount
            \analyzefigurefiles}}%
-     \let\@@epe=\@@eftype
+     \let\@@epe\@@eftype
      \edef\@@efextension{\figureextension{\@@eftype}}% dirty trick
-     \global\figwid=\zeropoint \figxsca=1 
-     \global\fighei=\zeropoint \figysca=1
-     \doif{\v!kader}{\@@exoptie}
-       {\let\@@efkader=\v!aan}%
+     \global\figwid\zeropoint \figxsca\plusone 
+     \global\fighei\zeropoint \figysca\plusone
+     \doif\v!kader\@@exoptie
+       {\let\@@efkader\v!aan}%
    \fi
    \ifcase\figurestatus
      \let\@@efkader\v!aan
      \let\@@efobject\v!nee
-     \showmessage{\m!figures}{1}{\@@effilename}%
+     \showmessage\m!figures1{\@@effilename}%
    \or
-     \showmessage{\m!figures}{2}{\@@effullname}%
+     \showmessage\m!figures2{\@@effullname}%
    \or
-     \showmessage{\m!figures}{3}{\@@effullname,\@@eflenttype}%
+     \showmessage\m!figures3{\@@effullname,\@@eflenttype}%
    \or
-     \showmessage{\m!figures}{4}{\@@effullname}%
+     \showmessage\m!figures4{\@@effullname}%
    \or
-     \showmessage{\m!figures}{5}{\@@effullname,\@@efloadname}%
+     \showmessage\m!figures5{\@@effullname,\@@efloadname}%
    \or % no message 
-     \doifnot{\@@efsymbool}{\v!ja}
-       {\showmessage{\m!figures}{8}{\@@effullname}}%
+     \doifnot\@@efsymbool\v!ja
+       {\showmessage\m!figures8{\@@effullname}}%
    \fi
-   \ifdim\@@epw=\zeropoint \chardef\figurestatus=1 \fi
-   \ifdim\@@eph=\zeropoint \chardef\figurestatus=1 \fi
+   \ifdim\@@epw=\zeropoint \chardef\figurestatus1 \fi
+   \ifdim\@@eph=\zeropoint \chardef\figurestatus1 \fi
    \ifnum\figurestatus=1 % unknown dimensions, take width or height or scale
      \setnaturalfiguresize
      \xdef\naturalfigurewidth{\the\figwid}%
      \xdef\naturalfigureheight{\the\fighei}%
-     \let\@@efkader=\v!uit
+     \let\@@efkader\v!uit
    \else
      \global\let\naturalfigurewidth\@@epw
      \global\let\naturalfigureheight\@@eph
@@ -1043,18 +1309,19 @@
           [\@@effullname:
            t={\@@eftype}\space m={\@@efmethode}\space l=\@@eflabel\space
            w=\number\figwid\space h=\number\fighei\space
-           sx=\scax\space sy=\scay\space ox=\figx\space oy=\figy]}%
+           \c!sx=\scax\space\c!sy=\scay\space 
+           ox=\figx\space oy=\figy]}%
    \fi
-   \doif{\v!leeg}{\@@exoptie}
+   \doif\v!leeg\@@exoptie
      {\skipexternalfigurestrue
-      \let\@@efkader=\v!uit}% ? ? 
-   \doifelsenothing{\@@efpagina} % NIEUW ?? 
+      \let\@@efkader\v!uit}% ? ? 
+   \doifelsenothing\@@efpagina % NIEUW ?? 
      {\let\@@efoptions\empty}
      {\let\@@efoptions\@@efpagina}%
-   \doif{\@@efpreview}{\v!ja}{\addtocommalist\v!preview\@@efoptions}%
-   \doif{\@@efsturing}{\v!ja}{\addtocommalist\v!sturing\@@efoptions}%
-   \doif{\@@efherhaal}{\v!ja}{\addtocommalist\v!herhaal\@@efoptions}%
-   \doif{\@@eftype}{\c!mps}
+   \doif\@@efpreview\v!ja{\addtocommalist\v!preview\@@efoptions}%
+   \doif\@@efsturing\v!ja{\addtocommalist\v!sturing\@@efoptions}%
+   \doif\@@efherhaal\v!ja{\addtocommalist\v!herhaal\@@efoptions}%
+   \doif\@@eftype\c!mps
      {\ifcase\EPSspecial\else\ifinobject\else
         \@@eftrace{special mps, object forced}%
         \doglobal\increment\forcedMPSobject
@@ -1062,12 +1329,12 @@
         \let\@@efobject\v!ja
       \fi\fi}%
    \global\let\lastfigureobjectname\@@efobjectname
-   \doifelse{\@@efobject}{\v!nee}
-     {\donefalse}
-     {\doifobjectssupportedelse{\donetrue}{\donefalse}}%
+   \doifelse\@@efobject\v!nee
+     \donefalse
+     {\doifobjectssupportedelse\donetrue\donefalse}%
    \ifdone
-     \doifobjectfoundelse{FIG}{\@@efobjectname}
-       {}
+     \doifobjectfoundelse{FIG}\@@efobjectname
+       \donothing
        {\bgroup % to be cleaned up 
         \figwid\@@epw % local ? 
         \fighei\@@eph % local ? 
@@ -1077,77 +1344,160 @@
         \edef\@@epy{\the\scratchdimen}%
        %\scratchdimen\@@epw\edef\@@epw{\the\scratchdimen}%
        %\scratchdimen\@@eph\edef\@@eph{\the\scratchdimen}%
-        \setbox0=\vbox to \fighei
+        \setbox0\vbox to \fighei
           {\vfill
            \ifdim\wd\foundexternalfigure=\zeropoint
              \doinsertfile
                {\@@eftype,\@@efmethode}{\@@effullname,\@@eflabel}
-               {100}{100}
-               {\@@epx}{\@@epy}
-               {\@@epw}{\@@eph}
-               {\@@efoptions}%
+               {100}{100}\@@epx\@@epy\@@epw\@@eph\@@efoptions
            \else\ifskipexternalfigures
-             \ruledhbox{\fakebox\foundexternalfigure}%
+             \ruledhbox
+               {\backgroundline
+                  [\@@efsplitskleur]{\fakebox\foundexternalfigure}}%
            \else
              \box\foundexternalfigure
            \fi\fi}%
         \wd0=\figwid
-        \setobject{FIG}{\@@efobjectname}\vbox{\box0}%
+        \setobject{FIG}\@@efobjectname\vbox{\box0}%
         \setxvalue{\@@efobjectname\c!n}{\number\nofinsertpages}%
         \egroup}%
    \fi
    \xdef\figurewidth {\the\figwid}%
    \xdef\figureheight{\the\fighei}%
-   \global\setbox\foundexternalfigure=\vbox to \fighei
+   \global\setbox\foundexternalfigure\vbox to \fighei
      {\vfill
       \hsize\figwid
       \ifdone
-        \dimen0=\scax pt\divide\dimen0 by 100\edef\scax{\@EA\withoutpt\the\dimen0}%
-        \dimen0=\scay pt\divide\dimen0 by 100\edef\scay{\@EA\withoutpt\the\dimen0}%
-        \schaal[sx=\scax,sy=\scay]{\dowithfigure{\getobject{FIG}{\@@efobjectname}}}%
+        \dimen0=\scax\s!pt\divide\dimen0 100\edef\scax{\@EA\withoutpt\the\dimen0}%
+        \dimen0=\scay\s!pt\divide\dimen0 100\edef\scay{\@EA\withoutpt\the\dimen0}%
+        \schaal[\c!sx=\scax,\c!sy=\scay]{\dowithfigure{\getobject{FIG}{\@@efobjectname}}}%
         \xdef\noffigurepages{\number\getvalue{\@@efobjectname\c!n}}%
       \else\ifdim\wd\foundexternalfigure=\zeropoint
         \dowithfigure
           {\doinsertfile
              {\@@eftype,\@@efmethode}{\@@effullname,\@@eflabel}
-             {\scax}{\scay}
-             {\figx}{\figy}
-             {\figwid}{\fighei}
-             {\@@efoptions}}%
+             \scax\scay\figx\figy\figwid\fighei\@@efoptions}%
         \xdef\noffigurepages{\number\nofinsertpages}%
       \else
-        \dimen0=\scax pt\divide\dimen0 100\edef\scax{\@EA\withoutpt\the\dimen0}%
-        \dimen0=\scay pt\divide\dimen0 100\edef\scay{\@EA\withoutpt\the\dimen0}%
-        \schaal[sx=\scax,sy=\scay]{\dowithfigure{\box\foundexternalfigure}}%
+        \dimen0=\scax\s!pt\divide\dimen0 100\edef\scax{\@EA\withoutpt\the\dimen0}%
+        \dimen0=\scay\s!pt\divide\dimen0 100\edef\scay{\@EA\withoutpt\the\dimen0}%
+        \schaal[\c!sx=\scax,\c!sy=\scay]{\dowithfigure{\box\foundexternalfigure}}%
         \xdef\noffigurepages{\number\nofinsertpages}%
       \fi\fi
       \global\let\appliedfigurexscale\scax
       \global\let\appliedfigureyscale\scay}%
-   \global\wd\foundexternalfigure=\figwid
+   \global\wd\foundexternalfigure\figwid
    \finalizeexternalfigure{#2}{#3}}
+
+\let\figurelabel   \empty
+\let\figurefilename\empty
+\let\figurefiletype\empty
+\let\figurefilepage\empty
+
+% \def\finalizeexternalfigure#1#2%
+%   {\pushmacro\figurewidth
+%    \pushmacro\figureheight
+%    \pushmacro\figurelabel
+%    \pushmacro\figurefilename
+%    \pushmacro\figurefiletype
+%    \pushmacro\figurefilepage
+%    \xdef\figurewidth   {\the\figwid}%
+%    \xdef\figureheight  {\the\fighei}%
+%    \xdef\figurelabel   {#1}%
+%    \xdef\figurefilename{#2}% 
+%    \xdef\figurefiletype{\@@eftype}%
+%    \xdef\figurefilepage{\@@efpagina}%
+%    \global\setbox\foundexternalfigure\vbox
+%      {\forgetall
+%       \ifcase\figurestatus 
+%         \resetsystemmode\v!figuur
+%         \let\figurefiletype\empty
+%       \else
+%         \setsystemmode  \v!figuur % beter resource
+%       \fi
+%       \ifconditional\externalfigurelevel % probably background
+%         \ifskipexternalfigures
+%           % nothing 
+%         \else\ifsplitexternalfigures
+%           % nothing 
+%         \else\ifcase\figurestatus
+%           % nothing 
+%         \else
+%           \the\externalfigurepostprocessors
+%           \box\foundexternalfigure
+%         \fi\fi\fi
+%       \else
+%         \feedbackexternalfigure 
+%         \settrue\externalfigurelevel
+%         \ifskipexternalfigures
+%           \externalfigurereplacement{#1}{#2}{skipped}% 
+%         \else\ifsplitexternalfigures
+%           \backgroundline
+%             [\@@efsplitskleur]{\fakebox\foundexternalfigure}%
+%         \else\ifcase\figurestatus
+%           \externalfigurereplacement{#1}{#2}{unknown}% 
+%         \else
+%           \the\externalfigurepostprocessors
+%           \doifelse\@@efreset\v!ja
+%             {\ht\foundexternalfigure\figureheight
+%              \dp\foundexternalfigure\zeropoint
+%              \wd\foundexternalfigure\figurewidth
+%              \box\foundexternalfigure}
+%             {\localframed % should also be applied to high res !
+%                [\??ef]
+%                [\c!offset=\v!overlay, 
+%                 \c!breedte=\figurewidth,
+%                 \c!hoogte=\figureheight]             
+%                {\vfilll\box\foundexternalfigure}}%
+%         \fi\fi\fi
+%       \fi}%
+%    \popmacro\figurefilepage
+%    \popmacro\figurefiletype
+%    \popmacro\figurefilename
+%    \popmacro\figurelabel
+%    \popmacro\figureheight
+%    \popmacro\figurewidth}
 
 \def\finalizeexternalfigure#1#2%
   {\pushmacro\figurewidth
    \pushmacro\figureheight
-   \xdef\figurewidth {\the\figwid}%
-   \xdef\figureheight{\the\fighei}%
+   \pushmacro\figurelabel
+   \pushmacro\figurefilename
+   \pushmacro\figurefiletype
+   \pushmacro\figurefilepage
+   \xdef\figurewidth   {\the\figwid}%
+   \xdef\figureheight  {\the\fighei}%
+   \xdef\figurelabel   {#1}%
+   \xdef\figurefilename{#2}% 
+   \xdef\figurefiletype{\@@eftype}%
+   \xdef\figurefilepage{\@@efpagina}%
    \global\setbox\foundexternalfigure\vbox
      {\forgetall
+      \ifcase\figurestatus 
+        \resetsystemmode\v!figuur
+        \let\figurefiletype\empty
+      \else
+        \setsystemmode  \v!figuur % beter resource
+      \fi
       \ifconditional\externalfigurelevel % probably background
         \ifskipexternalfigures
           % nothing 
         \else\ifcase\figurestatus
           % nothing 
-        \else
+        \else\ifnum\splitexternalfigure=2\else 
           \the\externalfigurepostprocessors
           \box\foundexternalfigure
-        \fi\fi
+        \fi\fi\fi
       \else
+        \feedbackexternalfigure 
         \settrue\externalfigurelevel
         \ifskipexternalfigures
           \externalfigurereplacement{#1}{#2}{skipped}% 
         \else\ifcase\figurestatus
           \externalfigurereplacement{#1}{#2}{unknown}% 
+        \else\ifnum\splitexternalfigure=2
+          \backgroundline[\@@efsplitskleur]    
+            {\fakebox\foundexternalfigure}%
         \else
           \the\externalfigurepostprocessors
           \doifelse\@@efreset\v!ja
@@ -1160,21 +1510,37 @@
                [\c!offset=\v!overlay, 
                 \c!breedte=\figurewidth,
                 \c!hoogte=\figureheight]             
-               {\vfilll\box\foundexternalfigure}}%
-        \fi\fi
+               {\vfilll
+                \ifnum\splitexternalfigure=1
+                  % hm, eigenlijk in dit geval achtergrondkleur
+\hidesplitcolorfalse % really needed 
+                  \backgroundline[\@@efsplitskleur]
+                    {\box\foundexternalfigure}%
+                \else % = 0, no split mode 
+                  \box\foundexternalfigure
+                \fi}}%
+        \fi\fi\fi
       \fi}%
+   \popmacro\figurefilepage
+   \popmacro\figurefiletype
+   \popmacro\figurefilename
+   \popmacro\figurelabel
    \popmacro\figureheight
    \popmacro\figurewidth}
 
+
 \def\externalfigurereplacement#1#2#3%
-  {\expanded{\localframed
+  {\setupcolors
+     [\c!status=\v!lokaal]%
+   \expanded{\localframed
      [\??ef]
      [\c!breedte=\figurewidth,
       \c!hoogte=\figureheight,
       \c!achtergrond=\v!raster, 
-      \c!achtergrondraster=.5, 
+      \c!achtergrondraster=.8, 
      %\c!kader=\ifincolor\v!uit\else\v!aan\fi]
-      \c!kader=\ifincolor\@@efkader\else\v!aan\fi]}%
+     %\c!kader=\ifincolor\@@efkader\else\v!aan\fi]}%
+      \c!kader=\@@efkader]}%
      {\ttx \nohyphens
            name:  \expanded{\verbatimstring{#1}}\\%
            file:  \expanded{\verbatimstring{#2}}\\%
@@ -1182,6 +1548,8 @@
 
 \newtoks\externalfigureresets
 \newtoks\externalfigurepostprocessors
+
+\let\feedbackexternalfigure\relax % \gobblefourarguments
 
 \gdef\appliedfigurexscale{1}
 \gdef\appliedfigureyscale{1}
@@ -1213,7 +1581,7 @@
 
 \def\calculateexternalscreenfigure[#1][#2][#3][#4][#5][#6]%
   {\ifx\@@efscherm\empty\else
-     \doifnot{\@@efobject}{\v!nee}
+     \doifnot\@@efobject\v!nee
        {\doifobjectssupportedelse
           {\doifspecialavailableelse\doregisterfigure
              {\bgroup
@@ -1240,7 +1608,7 @@
 
 \def\dogetfiguredimensions[#1][#2]%
   {{\let\immediate\relax % very dirty but prevents flushing, will change
-    \setbox0=\hbox{\externalfigure[#1][#2,\c!scherm=,\c!object=\v!nee]}}}
+    \setbox0\hbox{\externalfigure[#1][#2,\c!scherm=,\c!object=\v!nee]}}}
 
 % use the next one when the object must be forgotten (xobj 
 % nums can migrate to the next object; maybe it should 
@@ -1257,7 +1625,7 @@
 
 \newconditional\externalfigurelevel
 
-\def\doplaceexternalfigure% used direct and indirect
+\def\doplaceexternalfigure % used direct and indirect
   {\dosixtupleempty\dodoplaceexternalfigure}
 
 \def\dodoplaceexternalfigure[#1][#2][#3][#4][#5][#6]%
@@ -1323,7 +1691,7 @@
         {\setvalue{\??ef\??ef#1}{\doplaceexternalfigure[\doprecopfigure][#1][#2][#3][#4]}}}%
    \doifundefined{#1}{\setvalue{#1}{\getexternalfigure{#1}}}} % upward compatible
 
-\def\douseexternalfigure[#1][#2][#3][#4]%
+\def\douseexternalfigure[#1][#2][#3][#4]% 
   {\doifelsenothing{#1}
      {\doifsomething{#2}
         {\dosetuseexternalfigure[#2][#2][#3][#4]}}
@@ -1331,7 +1699,7 @@
         {\dosetuseexternalfigure[#1][#1][#3][#4]}
         {\dosetuseexternalfigure[#1][#2][#3][#4]}}}
 
-\def\useexternalfigure%
+\def\useexternalfigure
   {\doquadrupleempty\douseexternalfigure}
 
 \def\doexternalfigure[#1][#2][#3]%
@@ -1349,18 +1717,14 @@
 
 %D Two alternatives, more settings needed.
 
-\def\showexternalfigurea%
+\def\showexternalfigurea
   {\bgroup
    \mindermeldingen
    \def\presetfigure[##1][##2]%
-     {%\useexternalfigure
-      %  [\s!figurepreset][##1]
-      %  [\c!kader=\v!aan,\c!breedte=6cm][##2]%
-      \getvalue{\e!start\v!figuur\e!tekst}[\v!links][]
+     {\getvalue{\e!start\v!figuur\e!tekst}[\v!links][]
         {\v!geen}
         {\hbox
-%           {\getvalue{\s!figurepreset}%
-{\externalfigure[##1][\c!kader=\v!aan,\c!breedte=6cm][##2]%
+           {\externalfigure[##1][\c!kader=\v!aan,\c!breedte=6cm][##2]%
             \tfskip
             \framed[\c!breedte=\figurewidth,\c!hoogte=\figureheight]{}}}%
         {\tfa ##1}%
@@ -1377,14 +1741,14 @@
         \endgraf
       \getvalue{\e!stop\v!figuur\e!tekst}}%
    \pushendofline
-   \readjobfile{\@@exfile}{}{}% was \readlocfile
+   \readjobfile\@@exfile\donothing\donothing
    \popendofline
    \egroup}
 
 \def\showexternalfigureb% instelbaar maken
   {\bgroup
    \def\total{5}%
-   \global\let\allfigures=\empty
+   \globalletempty\allfigures
    \doglobal\newcounter\figurecounter
    \mindermeldingen
    \def\docommando##1{##1&}%
@@ -1392,20 +1756,16 @@
      {\crcr
       \noalign{\nobreak\vskip.5em}%
       \@EA\globalprocesscommalist\@EA[\allfigures]\docommando
-      \global\let\allfigures=\empty
+      \globalletempty\allfigures
       \crcr
       \noalign{\vskip1em\goodbreak}}%
    \def\presetfigure[##1][##2]%
      {\vbox
-        {\divide\hsize by \total
-         \advance\hsize by -1em
-        %\useexternalfigure
-        %  [\s!figurepreset][##1]
-        %  [\c!kader=\v!aan,\c!factor=\v!max,\c!breedte=\hsize][##2]%
+        {\divide\hsize \total
+         \advance\hsize -1em
          \externalfigure
            [##1]
-           [\c!kader=\v!aan,\c!factor=\v!max,\c!breedte=\hsize][##2]%
-       }%\getvalue{\s!figurepreset}}%
+           [\c!kader=\v!aan,\c!factor=\v!max,\c!breedte=\hsize][##2]}%
       \doglobal\addtocommalist{##1}\allfigures
      %\getvalue{\s!figurepreset}%
       \doglobal\increment\figurecounter
@@ -1419,16 +1779,16 @@
    \pushendofline
    \tabskip\zeropoint \!!plus 1fill
    \halign to \hsize
-     {&\hss##\hss\cr\readjobfile{\@@exfile}{}{}\crcr % was \readlocfile
+     {&\hss##\hss\cr\readjobfile\@@exfile\donothing\donothing\crcr 
       \figurecaptions}
    \popendofline
    \egroup}
 
-\def\showexternalfigurec%
+\def\showexternalfigurec
   {\bgroup
    \def\presetfigure[##1][##2]{\pagefigure[##1]}
    \pushendofline
-   \readjobfile{\@@exfile}{}{}
+   \readjobfile\@@exfile\donothing\donothing
    \popendofline
    \egroup}
 
@@ -1437,7 +1797,7 @@
 
 \def\dopagefigure[#1][#2]%
   {\bgroup
-   \getparameters[\??ex][\c!offset=\!!zeropoint,#2]
+   \getparameters[\??ex][\c!offset=\!!zeropoint,#2]%
    \startTEXpage[\c!offset=\@@exoffset]%
      \externalfigure[#1][#2]%
    \stopTEXpage
@@ -1452,7 +1812,7 @@
    \getvalue{showexternalfigure\@@exvariant}%
    \egroup}
 
-\def\showexternalfigures%
+\def\showexternalfigures
   {\dosingleempty\doshowexternalfigures}
 
 \def\overlayfigure#1%
@@ -1464,20 +1824,20 @@
 \newdimen\efxsteps
 \newdimen\efysteps
 
-\def\calculateefsteps%
-  {\ifnum0\@@exxmax=0
-     \ifnum0\@@exymax=0
+\def\calculateefsteps
+  {\ifnum0\@@exxmax=\zerocount
+     \ifnum0\@@exymax=\zerocount
        \def\@@exymax{24}%
      \fi
-     \efysteps=\figureheight \divide\efysteps by \@@exymax
-     \efxsteps=\efysteps
+     \efysteps\figureheight \divide\efysteps \@@exymax
+     \efxsteps\efysteps
      \dimen0=\figurewidth
-     \advance\dimen0 by \efysteps
-     \divide\dimen0 by \efysteps
+     \advance\dimen0 \efysteps
+     \divide \dimen0 \efysteps
      \edef\@@exxmax{\number\dimen0}%
    \else
-     \efxsteps=\figurewidth  \divide\efxsteps by \@@exxmax
-     \efysteps=\figureheight \divide\efysteps by \@@exymax
+     \efxsteps\figurewidth  \divide\efxsteps \@@exxmax
+     \efysteps\figureheight \divide\efysteps \@@exymax
    \fi}
 
 \def\efcomment#1(#2,#3)#4(#5,#6)%    {kader}(x,y)(h,b)[...]{tekst}
@@ -1524,21 +1884,19 @@
    \naarbox{\copy0}[#4]}
 
 \def\efmark(#1,#2)#3(#4,#5)#6[#7]%
-  {\advance\efreference by 1
+  {\advance\efreference \plusone
    \position(#1,#2)
      {\hbox{\the\efreference}}%
    \position(#1,#2)
-     {\gotosomeinternal
-        {\s!vwb}{#7}{\realfolio}
-        {\efdomarker(#4,#5){\v!aan}{\thisissomeinternal{\s!vwa}{#7}}}}}
+     {\gotosomeinternal\s!vwb{#7}\realfolio
+        {\efdomarker(#4,#5)\v!aan{\thisissomeinternal\s!vwa{#7}}}}}
 
 \def\eftext#1(#2,#3)#4(#5,#6)#7[#8]%
-  {\advance\efreference by 1
+  {\advance\efreference \plusone
    \hbox
      {\quad
-      \thisissomeinternal{\s!vwb}{#8}%
-      \gotosomeinternal
-        {\s!vwa}{#8}{\realfolio}
+      \thisissomeinternal\s!vwb{#8}%
+      \gotosomeinternal  \s!vwa{#8}\realfolio
         {\hbox to 1.5em{\the\efreference\presetgoto\hfill}}%
       \quad#1 (#2,#3) (#5,#6) [#8]\hfill}%
    \endgraf}
@@ -1565,7 +1923,7 @@
 
 \def\placestartfigure[#1][#2][#3]#4\placestopfigure[#5]%
   {\hbox
-     {\setbox0=\hbox
+     {\setbox0\hbox
         {\useexternalfigure[\s!dummy][#2][#3,#5]%
          \externalfigure[\s!dummy]}%
       \calculateefsteps
@@ -1581,7 +1939,7 @@
         \def\colorbar##1[##2]%
           {}%
         \position(0,0){\box0}%
-        \linewidth=1pt
+        \linewidth1pt
         \setuppositioning
           [\c!eenheid=pt,
            \c!xschaal=\withoutpt{\the\efxsteps},
@@ -1590,7 +1948,7 @@
         \ignorespaces#4%
         \def\referring(##1,##2)##3(##4,##5)##6[##7]%
           {}%
-        \let\marking=\referring
+        \let\marking\referring
         \def\remark%
           {\efcomment\v!nee}%
         \def\colorbar##1[##2]%
@@ -1599,11 +1957,11 @@
       \stoppositioning
       \box\colorbarbox}}
 
-\def\dodostartfigure[#1][#2][#3]#4\stopfigure%
+\def\dodostartfigure[#1][#2][#3]#4\stopfigure
   {\doifelse{\v!test}{\@@exoptie}
      {\teststartfigure[#1][#2][#3]#4\teststopfigure
-      \def\@@exhokjes{\v!aan}}
-     {\def\@@exhokjes{\v!uit}}%
+      \let\@@exhokjes\v!aan}
+     {\let\@@exhokjes\v!uit}%
    \setvalue{\??ef\??ef#1}%
      {\dosingleempty{\placestartfigure[#1][#2][#3]#4\placestopfigure}}%
    \doifundefined{#1}{\setvalue{#1}{\getexternalfigure{#1}}}}
@@ -1613,19 +1971,19 @@
 
 \def\teststartfigure[#1][#2][#3]#4\teststopfigure%
   {\begingroup
-     \setbox0=\hbox
+     \setbox0\hbox
        {\useexternalfigure[\s!dummy][#2][\c!bfactor=\v!max]%
         \externalfigure[\s!dummy]}%
-     \def\referring%
+     \def\referring
        {\efmark}%
-     \def\marking%
+     \def\marking  
        {\efmark}%
-     \def\remark%
+     \def\remark   
        {\efcomment\v!ja}%
      \def\colorbar##1[##2]%
        {}%
-     \efreference=0
-     \setbox0=\vbox
+     \efreference\zerocount
+     \setbox0\vbox
        {\hsize240pt
         \startpositioning
           \calculateefsteps
@@ -1647,11 +2005,11 @@
              \c!xschaal=\withoutpt{\the\efxsteps},
              \c!yschaal=\withoutpt{\the\efysteps},
              \c!factor=1]%
-          \linewidth=1pt
+          \linewidth1pt
           \ignorespaces#4\relax
         \stoppositioning
         \vfill}%
-     \efreference=0
+     \efreference\zerocount
      \def\referring%
        {\eftext{$\rightarrow$}}%
      \def\marking%
@@ -1660,15 +2018,15 @@
        {\efnocomment}%
      \def\colorbar##1[##2]%
        {}%
-     \setbox2=\vbox
+     \setbox2\vbox
        {{\tfa\doifelsenothing{#1}{#2}{#1}}
         \blanko
         \tfxx#4
         \vfilll}%
      \ifdim\ht0>\ht2
-       \ht2=\ht0
+       \ht2\ht0
      \else
-       \ht0=\ht2
+       \ht0\ht2
      \fi
      \hbox
        {\hskip3em
@@ -1677,10 +2035,10 @@
    \endgroup}
 
 \def\dodostartfigure[#1][#2][#3]#4\stopfigure%
-  {\doifelse{\v!test}{\@@exoptie}
+  {\doifelse\v!test\@@exoptie
      {\teststartfigure[#1][#2][#3]#4\teststopfigure
-      \def\@@exhokjes{\v!aan}}
-     {\def\@@exhokjes{\v!uit}}%
+      \let\@@exhokjes\v!aan}
+     {\let\@@exhokjes\v!uit}%
    \setvalue{\??ef\??ef#1}%
      {\dosingleempty{\placestartfigure[#1][#2][#3]#4\placestopfigure}}%
    \doifundefined{#1}{\setvalue{#1}{\getexternalfigure{#1}}}}
@@ -1740,36 +2098,36 @@
       \ifdim\@@cphoogte>\zeropoint
         \dimen2=\@@cphoogte
         \dimen6=\ht\nextbox
-        \advance\dimen6 by -\@@cpvoffset
-        \advance\dimen6 by -\dimen2
+        \advance\dimen6 -\@@cpvoffset
+        \advance\dimen6 -\dimen2
       \else
         \dimen2=\ht\nextbox
         \divide\dimen2 \@@cpny
         \dimen6=-\@@cpy\dimen2
         \advance\dimen6 -\@@cpsy\dimen2
-        \advance\dimen6  \dimen2
+        \advance\dimen6 \dimen2
         \dimen2=\@@cpsy\dimen2
         \advance\dimen6 \ht\nextbox
       \fi
-      \setbox\nextbox=\hbox
+      \setbox\nextbox\hbox
         {\hskip-\dimen4\lower\dimen6\box\nextbox}%
       \wd\nextbox\zeropoint
       \ht\nextbox\zeropoint
       \dp\nextbox\zeropoint
-      \setbox\nextbox=\hbox
-        {\dostartclipping{\@@cpmp}{\dimen0}{\dimen2}%
+      \setbox\nextbox\hbox
+        {\dostartclipping\@@cpmp{\dimen0}{\dimen2}%
          \box\nextbox
          \dostopclipping}%
-      \wd\nextbox=\dimen0
-      \ht\nextbox=\dimen2
-      \dp\nextbox=\zeropoint
+      \wd\nextbox\dimen0
+      \ht\nextbox\dimen2
+      \dp\nextbox\zeropoint
       \box\nextbox
       \egroup}%
    \hbox}
 
 \def\clip{\dosingleempty\doclip}
 
-\def\setupclipping%
+\def\setupclipping
   {\dodoubleargument\getparameters[\??cp]}
 
 %D defining sound tracks:
@@ -1793,7 +2151,7 @@
   {\iflocation
      \doifdefined{\??sd:#1}{\doifvaluesomething{\??sd:#1}
        {\doinsertsoundtrack{\getvalue{\??sd:#1}}{#1}\@@sdoptie
-        \setgvalue{\??sd:#1}{}}}%
+        \letgvalueempty{\??sd:#1}}}%
    \fi}
 
 \setexecutecommandcheck {startsound} \checksoundtrack
@@ -1823,6 +2181,7 @@
    \c!hoek=\v!recht,
    \c!kader=\v!uit,
    \c!achtergrond=, % new 
+   \c!splitskleur=white,
    \c!plaats={\v!lokaal,\v!globaal}]
 
 \setupexternalfigures
@@ -1834,12 +2193,11 @@
   [buffer] [\jobname] [\c!type=\v!buffer,\c!object=\v!nee]
 
 \setupclipping
-  [\c!nx=2,\c!x=1,\c!sx=1,
-   \c!ny=2,\c!y=1,\c!sy=1,
+  [\c!n=1, % was 2 
+   \c!nx=\@@cpn,\c!x=1,\c!sx=1, 
+   \c!ny=\@@cpn,\c!y=1,\c!sy=1, 
    \c!breedte=\!!zeropoint,\c!hoogte=\!!zeropoint,
    \c!hoffset=\!!zeropoint,\c!voffset=\!!zeropoint,
    \c!mp=]
 
-\protect
-
-\endinput
+\protect \endinput

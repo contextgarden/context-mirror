@@ -47,12 +47,14 @@ def SaveTextAreas =
 enddef ;
 
 def ResetTextAreas = 
-  path TextAreas[], TextColumns[]; 
+  path TextAreas[], TextColumns[] ; 
   numeric NOfTextAreas   ; NOfTextAreas   := 0 ;  
   numeric NOfTextColumns ; NOfTextColumns := 0 ;  
+  numeric nofmultipars   ; nofmultipars   := 0 ;
+  TextAreas[0] := TextColumns[0] := origin -- cycle ; 
 enddef ; 
 
-ResetTextAreas ; SaveTextAreas ; 
+ResetTextAreas ; SaveTextAreas ; ; 
 
 def RegisterTextArea (expr x, y, w, h, d) = 
   begingroup ; save p ; path p ;  
@@ -90,6 +92,18 @@ def RegisterTextArea (expr x, y, w, h, d) =
     TextColumns[NOfTextColumns] := p ;
   endgroup ; 
 enddef ; 
+
+%D We store a local area in slot zero. 
+
+def RegisterLocalTextArea (expr x, y, w, h, d) = 
+  TextAreas[0] := TextColumns[0] := unitsquare xyscaled(w,h+d) shifted (x,y-d) ;
+enddef ; 
+
+def ResetLocalTextArea =
+  TextAreas[0] := TextColumns[0] := origin -- cycle ; 
+enddef ; 
+
+ResetLocalTextArea ;
 
 vardef InsideTextArea (expr _i_, _xy_) = 
   ( (round(xpart _xy_) >= round(xpart llcorner TextAreas[_i_])) and 
@@ -181,7 +195,7 @@ PaperWidth          := 597.50787pt  ;
 PrintPaperHeight    := 845.04684pt  ;
 PrintPaperWidth     := 597.50787pt  ;
 TopSpace            :=  71.12546pt  ;
-BottomSpace         :=   0.0pt ; 
+BottomSpace         :=   0.0pt      ; 
 BackSpace           :=  71.13275pt  ;
 CutSpace            :=   0.0pt      ;
 MakeupHeight        := 711.3191pt   ; 
@@ -218,12 +232,22 @@ RightMargin          :=  +2 ; Footer          := +20 ;
 RightEdgeSeparator   :=  +3 ; BottomSeparator := +30 ; 
 RightEdge            :=  +4 ; Bottom          := +40 ; 
 
-Margin      := LeftMargin  ; 
-Edge        := LeftEdge    ; 
-InnerMargin := RightMargin ; 
-InnerEdge   := RightEdge   ; 
-OuterMargin := LeftMargin  ; 
-OuterEdge   := LeftEdge    ; 
+Margin      := LeftMargin  ; % obsolete 
+Edge        := LeftEdge    ; % obsolete 
+InnerMargin := RightMargin ; % obsolete 
+InnerEdge   := RightEdge   ; % obsolete 
+OuterMargin := LeftMargin  ; % obsolete 
+OuterEdge   := LeftEdge    ; % obsolete 
+ 
+InnerMarginWidth     := 0pt ; 
+OuterMarginWidth     := 0pt ; 
+InnerMarginDistance  := 0pt ; 
+OuterMarginDistance  := 0pt ; 
+
+InnerEdgeWidth     := 0pt ; 
+OuterEdgeWidth     := 0pt ; 
+InnerEdgeDistance  := 0pt ; 
+OuterEdgeDistance  := 0pt ; 
 
 path Area [][] ; pair Location [][] ; path Field [][] ;  path Page ; 
 numeric HorPos ; numeric Hstep [] ; numeric Hsize [] ; 
@@ -261,6 +285,8 @@ def SwapPageState =
     LeftEdgeDistance := RightEdgeDistance ;
    RightEdgeDistance := i ;
 
+% these are now available as ..Width and ..Distance 
+
               Margin := LeftMargin ; 
                 Edge := LeftEdge ; 
          InnerMargin := RightMargin ; 
@@ -269,7 +295,7 @@ def SwapPageState =
            OuterEdge := LeftEdge ; 
   else : 
               Margin := RightMargin ; 
-              Edge   := RightEdge ; 
+                Edge := RightEdge ; 
          InnerMargin := LeftMargin ; 
            InnerEdge := LeftEdge ; 
          OuterMargin := RightMargin ; 
@@ -277,13 +303,8 @@ def SwapPageState =
   fi ;
 enddef ; 
 
-def StartPage =
+def SetPageAreas = 
 
-  if PageStateAvailable : 
-    LoadPageState ; 
-    SwapPageState ;
-  fi ; 
- 
   numeric Vsize[], Hsize[], Vstep[], Hstep[] ;
 
   Vsize[Top]             = TopHeight ; 
@@ -337,18 +358,33 @@ def StartPage =
     endfor ; 
   endfor ; 
 
-% pickup pencircle scaled 0pt ; 
-
   Page := unitsquare xscaled PaperWidth yscaled PaperHeight ;  
+
+enddef ; 
+
+def BoundPageAreas =
+
+ % pickup pencircle scaled 0pt ; 
+
   bboxmargin := 0 ; setbounds currentpicture to Page ;
+
+enddef ; 
+
+def StartPage =
+
+  if PageStateAvailable : 
+    LoadPageState ; 
+    SwapPageState ;
+  fi ; 
+ 
+  SetPageAreas ;
+  BoundPageAreas ;
 
 enddef ; 
 
 def StopPage =
 
- %pickup pencircle scaled 0pt ; 
-
-  bboxmargin := 0 ; setbounds currentpicture to Page ;
+  BoundPageAreas ;
 
 enddef ; 
 

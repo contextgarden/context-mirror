@@ -67,14 +67,14 @@
 %D driver to sort out the margins. Therefore we are not 
 %D really typesetting in A5, but on something larger. 
 
-\definieerpapierformaat
+\definepapersize
   [DanteA5]
   [breedte=486.54pt]  
 
-\stelpapierformaatin
+\setuppapersize
   [DanteA5][A4] 
 
-\stellayoutin      % w=342pt h=484pt 
+\setuplayout % w=342pt h=484pt 
   [\c!rugwit=1in,
    \c!kopwit=1in,
    \c!plaats=\v!enkelzijdig,
@@ -92,7 +92,7 @@
 
 %D Numbering. 
 
-\stelnummeringin
+\setuppagenumbering
   [\c!plaats=,
    \c!variant=\v!dubbelzijdig]
 
@@ -254,4 +254,4 @@
 
 %D Done. 
 
-\endinput
+\protect \endinput

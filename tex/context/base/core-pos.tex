@@ -11,11 +11,21 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
+% shorter tags, ..:achtergrond:.. etc in pos actions 
+
+% class pos -> als gelijk aan vorige, dan niet niet definieren
+% en erven, maw: 
+%
+% 1 -> opslaan 
+% 2 -> undef, dus == prev 
+% 3 -> undef, dus == prev
+% 4 -> opslaan 
+
 \writestatus{loading}{Context Positioning Support}
 
 % todo: topskip als optie voor eerste regel achtergrond 
-
 % todo: build pos layers on top of layers 
+% todo: positionlayer pos van text-1 etc delen 
 
 %D Although \TEX\ has a rather powerful channel to the outside
 %D world, called \type {\special}, real communication with
@@ -96,7 +106,7 @@
    \let\pospxywhd \gobblesevenarguments
    \let\pospxyplus\gobbleeightarguments}
 
-\def\setpositions%
+\def\setpositions
   {\let\pospxy    \setpospxy
    \let\pospxywhd \setpospxywhd
    \let\pospxyplus\setpospxyplus}
@@ -142,21 +152,39 @@
   \savecurrentvalue\totalnofpositions\currentpositions
 \to \everybye
 
+%D The next switch can be used to communicate a special 
+%D situation. Positioning and associated actions can be 
+%D executed any time. However, in for instance backgrounds 
+%D they can be collected in a layer, for instance the text 
+%D layer (especially the hidden text layer). In the case of 
+%D floats, we run into problems, since the page information is 
+%D not applicable when the content floats indeed. In such 
+%D situations one can treat positions and graphics local. 
+
+\newif\iflocalpositioning
+
+%D Watch out: sometimes a pagebreak occurs inside a float 
+%D placement, so there we need to disable local mode.
+
+\appendtoks \localpositioningtrue  \to \everyinsidefloat 
+\appendtoks \localpositioningfalse \to \everypagebody 
+
 %D We save positionional information without dimensions, which
 %D saves some bytes. The conversion too saves some bytes, but
 %D is primarily needed because we want to pass those values to
 %D \METAPOST\ too.
 
 \def\dosetpositionpt#1#2%
-  {\scratchdimen=#2sp\xdef#1{\@EA\withoutpt\the\scratchdimen}}
+  {\scratchdimen#2\s!sp
+   \xdef#1{\@EA\withoutpt\the\scratchdimen}}
 
 \def\dosetpositionnm#1#2%
   {\xdef#1{\number#2}}
 
-\def\checkpositions%
+\def\checkpositions
   {\startnointerference
    \protectlabels 
-   \doutilities{positions}{\jobname}{}{}{}%
+   \doutilities{positions}\jobname\empty\relax\relax
    \global\let\checkpositions\relax
    \stopnointerference}
 
@@ -339,41 +367,99 @@
    \fi
    \doglobal\increment\currentpositions}
 
+% \def\setposition#1%
+%   {\initializenextposition
+%    \dosetposition{#1}%
+%    \dopositionaction{#1}}
+% 
+% \def\setpositionbox#1%
+%   {\dowithnextbox
+%      {\hbox to \wd\nextbox
+%         {\initializenextposition
+%          \def\currentposition{#1}%
+%          \dosetpositionwhd \currentposition
+%            {\number\wd\nextbox}%
+%            {\number\ht\nextbox}%
+%            {\number\dp\nextbox}%
+%          \traceposstring\llap\green{\currentposition>}%
+%          \setbox\positionbox\box\nextbox
+%          \dopositionaction\currentposition
+%          \box\positionbox
+%          \hss}}}
+% 
+% \def\setpositionplus#1#2%
+%   {\dowithnextbox
+%      {\hbox to \wd\nextbox
+%         {\initializenextposition
+%          \def\currentposition{#1}%
+%          \dosetpositionplus \currentposition
+%            {\number\wd\nextbox}%
+%            {\number\ht\nextbox}%
+%            {\number\dp\nextbox}%
+%            {#2}%
+%          \traceposstring\rlap\magenta{<\currentposition}%
+%          \setbox\positionbox\box\nextbox
+%          \dopositionaction\currentposition 
+%          \box\positionbox
+%          \hss}}}
+
+\def\setpositiononly#1%
+  {\iftrialtypesetting 
+      % nothing 
+   \else
+     \initializenextposition
+     \def\currentposition{#1}%
+     \dosetposition\currentposition
+   \fi}
+
 \def\setposition#1%
-  {\initializenextposition
-   \dosetposition{#1}%
-   \dopositionaction{#1}}
+  {\iftrialtypesetting 
+      % nothing 
+   \else
+     \initializenextposition
+     \def\currentposition{#1}%
+     \dosetposition\currentposition
+     \dopositionaction\currentposition
+   \fi}
 
 \def\setpositionbox#1%
   {\dowithnextbox
-     {\hbox to \wd\nextbox
-        {\initializenextposition
-         \def\currentposition{#1}%
-         \dosetpositionwhd
-           {\currentposition}% {#1}%
-           {\number\wd\nextbox}%
-           {\number\ht\nextbox}%
-           {\number\dp\nextbox}%
-         \setbox\positionbox=\box\nextbox
-         \dopositionaction\currentposition % {#1}%
-         \box\positionbox
-         \hss}}}
+     {\iftrialtypesetting 
+        \box\nextbox
+      \else
+        \initializenextposition
+        \hbox to \wd\nextbox
+          {\def\currentposition{#1}%
+           \dosetpositionwhd\currentposition
+             {\number\wd\nextbox}%
+             {\number\ht\nextbox}%
+             {\number\dp\nextbox}%
+           \traceposstring\llap\green{\currentposition>}%
+           \setbox\positionbox\box\nextbox
+           \dopositionaction\currentposition
+           \box\positionbox
+           \hss}%
+      \fi}}
 
 \def\setpositionplus#1#2%
   {\dowithnextbox
-     {\hbox to \wd\nextbox
-        {\initializenextposition
-         \def\currentposition{#1}%
-         \dosetpositionplus
-           {\currentposition}% {#1}%
-           {\number\wd\nextbox}%
-           {\number\ht\nextbox}%
-           {\number\dp\nextbox}%
-           {#2}%
-         \setbox\positionbox=\box\nextbox
-         \dopositionaction\currentposition % {#1}%
-         \box\positionbox
-         \hss}}}
+     {\iftrialtypesetting 
+        \box\nextbox
+      \else
+        \initializenextposition
+        \hbox to \wd\nextbox
+          {\def\currentposition{#1}%         
+           \dosetpositionplus\currentposition
+             {\number\wd\nextbox}%
+             {\number\ht\nextbox}%
+             {\number\dp\nextbox}%
+             {#2}%
+           \traceposstring\rlap\magenta{<\currentposition}%
+           \setbox\positionbox\box\nextbox
+           \dopositionaction\currentposition 
+           \box\positionbox
+           \hss}%
+      \fi}}
 
 \let\currentposition\s!unknown
 
@@ -396,17 +482,30 @@
 
 \let\cleanuppositionaction\gobbleoneargument
 
+%D The next one will be overloaded later. 
+
 \def\dopositionaction#1% test saves hash entry in etex
-  {\doifdefined{\POSactionprefix#1::}%
-     {\bgroup
-      \the\everyinsertpositionaction
-      \the\everypositionaction
-      \getvalue{\POSactionprefix#1::}%
-      \cleanuppositionaction{#1}%
-      \egroup}}
+  {\ifundefined{\POSactionprefix#1::}\else
+     \ifnum\MPp{#1}>\zerocount % new 
+       \bgroup
+       \traceposstring\clap\red{<#1>}%
+       \the\everyinsertpositionaction
+       \the\everypositionaction
+       \getvalue{\POSactionprefix#1::}%
+       \cleanuppositionaction{#1}%
+       \egroup
+     \else
+       % shouldn't happen too often 
+       \traceposstring\clap\cyan{<#1>}%
+     \fi
+   \fi}
 
 \def\doifpositionaction#1%
-  {\doifdefined{\POSactionprefix#1::}}
+  {\ifundefined{\POSactionprefix#1::}%
+     \@EA\gobblefirstargument
+   \else
+     \@EA\firstofoneargument
+   \fi}
 
 %D We can copy a position with:
 %D
@@ -420,8 +519,11 @@
   {\bgroup
    \edef\to  {\POSprefix#1}%
    \edef\from{\POSprefix#2}%
-   \doifdefined\from
-     {\global\@EA\@EA\@EA\let\@EA\csname\@EA\to\@EA\endcsname\csname\from\endcsname}%
+  %\doifdefined\from
+  %  {\global\@EA\@EA\@EA\let\@EA\csname\@EA\to\@EA\endcsname\csname\from\endcsname}%
+   \ifundefined\from\else
+     \global\@EA\@EA\@EA\let\@EA\csname\@EA\to\@EA\endcsname\csname\from\endcsname
+   \fi
    \egroup}
 
 %D The fact that handling positions is a two pass operation, is
@@ -464,68 +566,41 @@
 %D Each macro takes an identifier as argument, and the \type
 %D {\hpos} and \type {\vpos} also expect box content.
 
-\def\xypos{\initializenextposition\dosetposition}
+% \def\xypos{\initializenextposition\dosetposition}
+
+\let\xypos\setpositiononly
 
 \def\hpos#1{\dontleavehmode\setpositionbox{#1}\hbox}
 \def\vpos#1{\setpositionbox{#1}\vbox}
-
-% \def\lpos#1{\lrpos{l:#1}{\kern\leftskip}}
-% \def\rpos#1{\lrpos{r:#1}{\hskip\hsize\hskip-\rightskip}}
-%
-% \def\lrpos#1#2%
-%   {\dontleavehmode\vadjust % may disappear if buried
-%      {\setbox0=\hbox{\raise\dp\strutbox\hbox{\hpos{#1}{\strut}}}%
-%       \smashbox0
-%       \rlap{#2\box0}}}
 
 \def\bpos#1{\hpos{b:#1}{\strut}\ignorespaces}
 \def\epos#1{\removelastspace\hpos{e:#1}{\strut}}
 
 \def\fpos#1%
-  {\setpositionplus{b:#1}{\parposcounter}\hbox{\strut}%
+  {\setpositionplus{b:#1}\parposcounter\hbox{\strut}%
    \ignorespaces}
 
 \def\tpos#1%
   {\removelastspace
-   \setpositionplus{e:#1}{\parposcounter}\hbox{\strut}}
-
-%\def\ffpos#1%
-%  {\setpositionbox{b:#1}\hbox{\strut}\wpos{#1}%
-%   \ignorespaces}
-%
-%\def\ttpos#1%
-%  {\removelastspace
-%   \setpositionbox{e:#1}\hbox{\strut}}
+   \setpositionplus{e:#1}\parposcounter\hbox{\strut}}
 
 \def\ffpos#1%
-  {\setpositionplus{b:#1}{\parposcounter}\hbox{\strut}\wpos{#1}%
+  {\setpositionplus{b:#1}\parposcounter\hbox{\strut}\wpos{#1}%
    \ignorespaces}
 
 \def\ttpos#1%
   {\removelastspace
-   \setpositionplus{e:#1}{\parposcounter}\hbox{\strut}}
-
-%\def\wpos#1%
-%  {\dontleavehmode\vadjust % may disappear if buried
-%     {\setbox0=\hbox{\raise\dp\strutbox\hbox{\hpos{w:#1}
-%       {\strut
-%        \hskip-\leftskip
-%        \hskip\hsize
-%        \hskip-\rightskip}}}%
-%      \smashbox0
-%      \rlap{\box0}}}
+   \setpositionplus{e:#1}\parposcounter\hbox{\strut}}
 
 \def\wpos#1%
   {\dontleavehmode\vadjust % may disappear if buried
      {\setbox0\hbox{\raise\dp\strutbox\hbox{\rawwpos{#1}}}%
-      \smashbox0
-      \rlap{\box0}}}
+      \rlap{\smashedbox0}}}
 
-\def\wwpos#1%
+\def\wwpos#1% \hsmashed{\llap{\rawwpos{#1}}}
   {\rlap
      {\setbox0\hbox{\rawwpos{#1}}%
-      \smashbox0
-      \box0}}
+      \smashedbox0}}
 
 \def\rawwpos#1%
   {\hpos{w:#1}
@@ -563,24 +638,22 @@
 
 % we can check for used entries, and if not, then not add one
 
-\def\registerparoptions%
-  {\ifpositioningpar
-     \ifpositioning
-       \ifinpagebody \else
-         \ifmmode \else
-           \ifinformula \else
-             \doregisterparoptions
-           \fi
-         \fi
+\def\registerparoptions
+  {\ifpositioningpar \ifpositioning \iftrialtypesetting \else
+     \ifinpagebody \else \ifmmode \else \ifinformula \else 
+       \ifprocessingverbatim 
+         \iflinepar \doregisterparoptions \fi
+       \else
+         \doregisterparoptions
        \fi
-     \fi
-   \fi}
+     \fi \fi \fi
+   \fi \fi \fi}
 
-\def\doregisterparoptions%
+\def\doregisterparoptions
   {\doglobal\increment\parposcounter
    \bgroup
-     \leftskip =1\leftskip
-     \rightskip=1\rightskip
+     \leftskip 1\leftskip
+     \rightskip1\rightskip
      \setpositionplus
        {p:\parposcounter}%         % identifier
        {\efficientdimen\hsize     ,% 1
@@ -589,14 +662,27 @@
         \efficientdimen\hangindent,% 4
                    \the\hangafter ,% 5
         \efficientdimen\parindent }% 6
-       \hbox{\strut\registerparsymbol}%
-   \egroup}
-
+     % no strut here ! (see stepcharts and pascal) 
+     \normalhbox{\registerparsymbol}% 
+   \egroup}                        
+  
 \newif\iftracepositions
+
+\def\traceposstring#1#2#3%
+  {\iftracepositions\smashedhbox{#1{\infofont#2#3}}\fi}
 
 \def\registerparsymbol
   {\iftracepositions
-     \hbox to \zeropoint{\hss\blue\vrule\!!width4pt\!!height2pt\!!depth2pt\hss}%
+     \smashedhbox to \zeropoint
+       {\hss
+        \blue
+        \llap{\infofont\number\parposcounter}%
+        \scratchdimen\!!onepoint
+        \vrule
+          \!!width 4\scratchdimen
+          \!!height2\scratchdimen
+          \!!depth 2\scratchdimen
+        \hss}%
    \fi}
 
 \appendtoks \registerparoptions \to \everypar
@@ -658,10 +744,10 @@
 
 \def\dodoifpositionsonsamepageelse#1#2#3#4%
   {\bgroup
-   \scratchcounter=#1\donefalse
+   \scratchcounter#1\donefalse
    \def\docommando##1%
      {\ifcase\scratchcounter
-        \scratchcounter=\MPp{##1}\donetrue
+        \scratchcounter\MPp{##1}\donetrue
       \else
         \ifnum\scratchcounter=\MPp{##1}\relax\else\donefalse\fi
       \fi}%
@@ -682,7 +768,7 @@
 
 \def\textanchor{text:\realfolio}
 
-\def\placepositionanchors% todo : depth pagebox
+\def\placepositionanchors % todo : depth pagebox
   {\ifpositioning
      \setbox\scratchbox\vbox to \teksthoogte
        {\topskipcorrection
@@ -690,6 +776,7 @@
         \vfill
         \hbox{\strut\dopositionaction\tailanchor}}%
      \dp\scratchbox\zeropoint
+     \wd\scratchbox\zetbreedte % not \zeropoint, else wrong text backgrounds
      \hpos\textanchor{\box\scratchbox}%
    \else
      \vskip\teksthoogte
@@ -825,10 +912,17 @@
         \vfill}%
    \fi}
 
-\def\startpositionoverlay#1%
-  {\def\currentpositionoverlay{#1}}
+% \def\startpositionoverlay#1%
+%   {\def\currentpositionoverlay{#1}}
 
-\def\stoppositionoverlay%
+\def\startpositionoverlay#1%
+  {\iftrialtypesetting % we don't want redundant entries in the list 
+     \@EA\gobbleuntil\@EA\stoppositionoverlay
+   \else
+     \def\currentpositionoverlay{#1}%
+   \fi}
+
+\def\stoppositionoverlay
   {\let\currentpositionoverlay\empty}
 
 \def\resetpositionoverlay#1%
@@ -844,10 +938,26 @@
 \newtoks\everycleanpositionaction
 \newtoks\everyinsertpositionaction
 
-\def\cleanuppositionaction#1%
-  {\doifdefined{\POSactionprefix#1++}
-     {\the\everycleanpositionaction
-      \setxvalue{\POSactionprefix#1++}{\getvalue{\POSactionprefix#1++}}}}
+%\def\cleanuppositionaction#1%
+%  {\doifdefined{\POSactionprefix#1++}
+%     {\the\everycleanpositionaction
+%      \setxvalue{\POSactionprefix#1++}{\getvalue{\POSactionprefix#1++}}}}
+
+%\def\cleanuppositionaction#1%
+%  {\ifundefined{\POSactionprefix#1++}\else
+%     \the\everycleanpositionaction
+%     \setxvalue{\POSactionprefix#1++}{\getvalue{\POSactionprefix#1++}}%
+%   \fi}
+
+\def\cleanuppositionaction#1% not in trialtypesetting 
+  {\ifundefined{\POSactionprefix#1++}\else
+     \the\everycleanpositionaction
+     \iflocalpositioning 
+       \letgvalue{\POSactionprefix#1++}\empty
+     \else
+       \setxvalue{\POSactionprefix#1++}{\getvalue{\POSactionprefix#1++}}%
+     \fi
+   \fi}
 
 \def\handlepositionaction#1\with#2\on#3%
   {\bgroup
@@ -859,9 +969,15 @@
    \edef\!!stringc{\POSactionprefix\!!stringa++}%
    \expanded{\dosetpositionaction{\!!stringa}{\noexpand\getvalue{\!!stringc}}}%
    \global\let#1\relax
-   \doifundefinedelse\!!stringc
-     {\let\!!stringb\empty}
-     {\edef\!!stringb{\getvalue\!!stringc}}%
+%   \doifundefinedelse\!!stringc
+%     {\let\!!stringb\empty}
+%     {\edef\!!stringb{\getvalue\!!stringc}}%
+%   \ifundefined\!!stringc
+%     \let\!!stringb\empty
+%   \else  
+%     \edef\!!stringb{\getvalue\!!stringc}%
+%   \fi 
+   \edef\!!stringb{\executeifdefined\!!stringc\empty}%
    \setxvalue\!!stringc{\!!stringb#1#2}%
    \egroup}
 
@@ -898,31 +1014,84 @@
 
 \newbox\positiongraphicbox
 
-\def\startMPpositiongraphic% id setups
+\def\startMPpositiongraphic % id setups
   {\dodoublegroupempty\dostartMPpositiongraphic}
 
-\long\def\dostartMPpositiongraphic#1#2#3\stopMPpositiongraphic%
+\long\def\dostartMPpositiongraphic#1#2#3\stopMPpositiongraphic
   {\long\setgvalue{MPG:#1}% tag list mpcode
      {\useMPpositiongraphic{#1}{#2}{#3}}}
 
-\def\prepareMPpositionvariables%
-  {\doifundefined{\@@meta self}{\setvalue{\@@meta self}{\currentposition}}%
-   \doifundefined{\@@meta from}{\setvalue{\@@meta from}{\currentposition}}}
+%\def\prepareMPpositionvariables
+%  {\doifundefined{\@@meta self}{\setvalue{\@@meta self}{\currentposition}}%
+%   \doifundefined{\@@meta from}{\setvalue{\@@meta from}{\currentposition}}}
+
+\def\prepareMPpositionvariables
+  {\ifundefined{\@@meta self}\setvalue{\@@meta self}{\currentposition}\fi
+   \ifundefined{\@@meta from}\setvalue{\@@meta from}{\currentposition}\fi}
+
+% \long\def\useMPpositiongraphic#1#2#3%
+%   {\bgroup
+%    \prepareMPvariables{#2}%
+%    \prepareMPpositionvariables
+%    \enableincludeMPgraphics
+%    \startMPgraphic#3\stopMPgraphic
+%    \loadMPgraphic{\MPgraphicfile.\the\currentMPgraphic}{}%
+%    \deallocateMPslot\currentMPgraphic
+%    \placeMPgraphic
+%    \egroup}
+
+\newif\ifcollectMPpositiongraphics 
 
 \long\def\useMPpositiongraphic#1#2#3%
   {\bgroup
    \prepareMPvariables{#2}%
    \prepareMPpositionvariables
    \enableincludeMPgraphics
-   \startMPgraphic#3\stopMPgraphic
-   \loadMPgraphic{\MPgraphicfile.\the\currentMPgraphic}{}%
-   \deallocateMPslot\currentMPgraphic
-   \placeMPgraphic
+   \ifcollectMPpositiongraphics
+     \expanded{\startMPdrawing#3\noexpand\stopMPdrawing}%
+     \global\MPdrawingdonetrue
+   \else
+     \startMPgraphic#3\stopMPgraphic
+     \loadMPgraphic{\MPgraphicfile.\the\currentMPgraphic}{}%
+     \deallocateMPslot\currentMPgraphic
+     \placeMPgraphic
+   \fi
    \egroup}
 
-\def\MPpositiongraphic%
-  {\dodoublegroupempty\doMPpositiongraphic}
+% Now we need a adapted action handler: 
 
+\def\dopositionaction#1% test saves hash entry in etex
+  {\ifundefined{\POSactionprefix#1::}\else
+     \ifnum\MPp{#1}>\zerocount % new 
+       \bgroup
+       \traceposstring\clap\red{<#1>}%
+       \the\everyinsertpositionaction
+       \the\everypositionaction
+       \ifcollectMPpositiongraphics 
+         % can save a lot of run time 
+         \pushMPdrawing
+         \MPshiftdrawingtrue
+         \resetMPdrawing
+         \getvalue{\POSactionprefix#1::}%
+         \ifMPdrawingdone
+           \getMPdrawing
+         \fi
+         \resetMPdrawing
+         \popMPdrawing
+       \else
+         \getvalue{\POSactionprefix#1::}%
+       \fi
+       \cleanuppositionaction{#1}%
+       \egroup
+     \else
+       % shouldn't happen too often 
+       \traceposstring\clap\cyan{<#1>}%
+     \fi
+   \fi}
+
+\def\MPpositiongraphic
+  {\dodoublegroupempty\doMPpositiongraphic}
+ 
 \def\doMPpositiongraphic#1#2% tag setups
   {\bgroup
    \def\@@meta{#1:}%
@@ -930,10 +1099,10 @@
    \prepareMPpositionvariables
    \MPshiftdrawingtrue
    \def\doMPpositiongraphic##1##2{\getvalue{MPG:##1}}% temp hack
-   \setbox\positiongraphicbox=\hbox
-     {\doifdefinedelse{MPM:#1} % method
-        {\ignorespaces\getvalue{MPM:#1}\removelastspace}
-        {\getvalue{MPG:#1}}}%
+   \setbox\positiongraphicbox\hbox
+     {\ignorespaces 
+      \executeifdefined{MPM:#1}{\executeifdefined{MPG:#1}\donothing}%
+      \removelastspace}%
    \smashbox\positiongraphicbox
    \box\positiongraphicbox
    \egroup}
@@ -943,7 +1112,7 @@
 
 %D Simple one position graphics.
 
-\def\setMPpositiongraphic%
+\def\setMPpositiongraphic
   {\dotriplegroupempty\dosetMPpositiongraphic}
 
 \def\dosetMPpositiongraphic#1#2#3% pos tag vars
@@ -989,13 +1158,32 @@
 \def\handlepositiongraphicsrange#1#2#3#4%
   {\handlepositionaction\dohandleMPpositiongraphicrange\with{#1}{#2}{#3}{#4}\on{#2}}
 
+% \def\doinsertMPpositiongraphicrange#1#2#3#4% pos tag setups
+%   {\donefalse
+%         \ifnum\MPp{#1}=\realpageno\relax                          \donetrue
+%    \else\ifnum\MPp{#2}=\realpageno\relax                          \donetrue
+%    \else\ifnum\MPp{#1}<\realpageno\relax\ifnum\MPp{#2}>\realpageno\donetrue
+%    \fi\fi\fi\fi \ifdone
+%      \def\currentposition{#1}\MPpositiongraphic{#3}{#4}%
+%    \fi}
+
 \def\doinsertMPpositiongraphicrange#1#2#3#4% pos tag setups
-  {\donefalse
-        \ifnum\MPp{#1}=\realpageno\relax                          \donetrue
-   \else\ifnum\MPp{#2}=\realpageno\relax                          \donetrue
-   \else\ifnum\MPp{#1}<\realpageno\relax\ifnum\MPp{#2}>\realpageno\donetrue
-   \fi\fi\fi\fi \ifdone
-     \def\currentposition{#1}\MPpositiongraphic{#3}{#4}%
+  {\ifnum\MPp{#1}\MPp{#2}>\zerocount
+     \iflocalpositioning 
+       \donetrue
+     \else
+       \donefalse
+       \ifnum\MPp{#1}=\realpageno
+         \donetrue
+       \else\ifnum\MPp{#2}=\realpageno
+         \donetrue
+       \else\ifnum\MPp{#1}<\realpageno\relax\ifnum\MPp{#2}>\realpageno
+         \donetrue
+       \fi\fi\fi\fi
+     \fi
+     \ifdone
+       \def\currentposition{#1}\MPpositiongraphic{#3}{#4}%
+     \fi
    \fi}
 
 \appendtoks
@@ -1076,6 +1264,7 @@
    gridtype=0,
    linetype=1,
    filltype=1,
+  %snaptops=true, % not that nice: true/false 
    gridcolor=red,
    linecolor=blue,
    fillcolor=lightgray,
@@ -1085,7 +1274,7 @@
    lineradius=.5\bodyfontsize]
 
 \startuseMPgraphic{mpos:par:shape}
-  draw_par ; \iftracepositions show_par ; \fi
+  \iftracepositions show_par \else draw_par \fi ;
 \stopuseMPgraphic
 
 \startuseMPgraphic{mpos:par:setup}
@@ -1099,6 +1288,12 @@
    boxlinewidth  := \MPvar{linewidth} ;
    boxgridwidth  := \MPvar{gridwidth} ;
    boxlineradius := \MPvar{lineradius} ;
+  %snap_multi_par_tops := \MPvar{snaptops} ;
+\stopuseMPgraphic
+
+\startuseMPgraphic{mpos:par:extra}
+  % user stuff, like:
+  % snap_multi_par_tops := false ;
 \stopuseMPgraphic
 
 % \startMPpositionmethod{mpos:par}
@@ -1109,6 +1304,7 @@
 %                            \MPpos{e:\MPvar{self}},
 %                            \MPpos{w:\MPvar{self}}) ;
 %        \includeMPgraphic{mpos:par:setup} ;
+%        \includeMPgraphic{mpos:par:extra} ;
 %        \includeMPgraphic{\MPvar{mp}} ; % \includeMPgraphic{mpos:par:shape} ;
 %        anchor_par(\MPanchor{b:\MPvar{self}}) ;
 %      \stopMPpositiongraphic}
@@ -1120,6 +1316,7 @@
 %                       \MPpos{p:\MPparcounter},
 %                       \MPvv {p:\MPparcounter}{0,0,0,0,0,0}) ;
 %        \includeMPgraphic{mpos:par:setup} ;
+%        \includeMPgraphic{mpos:par:extra} ;
 %        \includeMPgraphic{\MPvar{mp}} ; % \includeMPgraphic{mpos:par:shape} ;
 %        anchor_par(\MPanchor{b:\MPvar{self}}) ;
 %      \stopMPpositiongraphic}%
@@ -1148,6 +1345,7 @@
                            \MPpos\MPeself,
                            \MPpos\MPwself) ;
        \includeMPgraphic{mpos:par:setup} ;
+       \includeMPgraphic{mpos:par:extra} ;
        \includeMPgraphic{\MPvar{mp}} ;
        anchor_par(\MPanchor\MPbself) ;
      \stopMPpositiongraphic}
@@ -1159,6 +1357,7 @@
                       \MPpos\MPparanchor,
                       \MPvv \MPparanchor{0,0,0,0,0,0}) ;
        \includeMPgraphic{mpos:par:setup} ;
+       \includeMPgraphic{mpos:par:extra} ;
        \includeMPgraphic{\MPvar{mp}} ;
        anchor_par(\MPanchor\MPbself) ;
      \stopMPpositiongraphic}%
@@ -1168,8 +1367,7 @@
 %D The next alternative works in columnsets :
 
 \startuseMPgraphic{mpos:par:columnset}
-  draw_multi_pars ; 
-  \iftracepositions show_multi_pars ; \fi
+  \iftracepositions show_multi_pars \else draw_multi_pars \fi ; 
 \stopuseMPgraphic
 
 \startMPpositionmethod{mpos:par:columnset}
@@ -1177,6 +1375,7 @@
   \startMPpositiongraphic{mpos:par}%
     {fillcolor,filloffset,linecolor,gridcolor,linewidth,gridwidth,lineradius}
     \includeMPgraphic{mpos:par:setup} ;
+    \includeMPgraphic{mpos:par:extra} ;
     prepare_multi_pars(\MPpos\MPbself,\MPpos\MPeself,\MPpos\MPwself, 
       \MPpos\MPparanchor,\MPvv\MPparanchor{0,0,0,0,0,0}) ; 
     relocate_multipars(-\MPxy\MPanchorid) ; % inside layerpos 
@@ -1191,6 +1390,17 @@
 %D   [mp=mpos:par:columnset,
 %D    methode=mpos:par:columnset]
 %D \stoptypen   
+
+%D We need to treat floats in a special way. 
+
+\appendtoks 
+  local_multi_par_area:=\iflocalpositioning true\else false\fi;
+\to \MPinitializations 
+
+\def\textbackgroundoverlay#1%
+  {\iflocalpositioning\v!lokaal\else\v!tekst\fi#1}
+
+%D So far for the trickery. 
 
 \newcounter\textbackgrounddepth
 
@@ -1242,7 +1452,7 @@
    \setuptextbackground[#1][#2]%
    \let\dodostarttextbackground\relax
    \let\dodostoptextbackground \relax
-   \doifvalue{\??td#1\c!status}{\v!start}
+   \doifvalue{\??td#1\c!status}\v!start
      {\dopresettextbackground{#1}}%
    \dodostarttextbackground}
 
@@ -1253,24 +1463,24 @@
                  \let\dodostoptextbackground \dostoptextbackgroundtxt,
       \v!alinea=>\let\dodostarttextbackground\dostarttextbackgroundpar
                  \let\dodostoptextbackground \dostoptextbackgroundpar]%
-   \ifnum\textbackgrounddepth>1 % new 
+   \ifnum\textbackgrounddepth>\plusone % new 
      \let\dodostarttextbackground\dostarttextbackgroundtxt
      \let\dodostoptextbackground \dostoptextbackgroundtxt
    \fi
-   \doifelsevalue{\??td#1\c!kader}{\v!aan}
-     {\doifelsevalue{\??td#1\c!hoek}{\v!rond}
+   \doifelsevalue{\??td#1\c!kader}\v!aan
+     {\doifelsevalue{\??td#1\c!hoek}\v!rond
         {\setvalue{\??td#1\c!kader}{2}}
         {\setvalue{\??td#1\c!kader}{1}}}
      {\setvalue{\??td#1\c!kader}{0}}%
-   \doifelsevalue{\??td#1\c!achtergrond}{\v!kleur}
+   \doifelsevalue{\??td#1\c!achtergrond}\v!kleur
      {\setvalue{\??td#1\c!achtergrond}{1}}
      {\setvalue{\??td#1\c!achtergrond}{0}}%
-   \startpositionoverlay{\v!tekst\getvalue{\??td#1\c!niveau}}%
+  %\startpositionoverlay{\v!tekst\getvalue{\??td#1\c!niveau}}%
+   \startpositionoverlay{\textbackgroundoverlay{\getvalue{\??td#1\c!niveau}}}%
      \expanded
        {\setMPpositiongraphicrange % moet veel efficienter
           {b:\currentparbackground}%
           {e:\currentparbackground}%
-%          {mpos:par}%
           {\getvalue{\??td#1\c!methode}}%
           {self=\currentparbackground,
            mp=\getvalue{\??td#1\c!mp},
@@ -1292,39 +1502,105 @@
 
 \def\dostarttextbackgroundtxt
   {\ifvmode \leavevmode \fi
-   \dostartattributes{\??td\currenttextbackground}\c!letter\c!kleur{}%
+   \dostartattributes{\??td\currenttextbackground}\c!letter\c!kleur\empty
    \fpos\currentparbackground\ignorespaces}
 
 \def\dostoptextbackgroundtxt
   {\tpos\currentparbackground
    \dostopattributes}
 
+% keep this simple one, it's used in prikkels and alike  
+%
+% \def\dostarttextbackgroundpar
+%   {\endgraf % new 
+%    \getvalue{\??td\currenttextbackground\c!voor}%
+%    \noindent\fpos\currentparbackground\ignorespaces
+%    \bgroup
+%    \nobreak \vskip-\lineheight \nobreak
+%    \doassignsomeskip\getvalue{\??td\currenttextbackground\c!bovenoffset}\to\scratchskip
+%    \kern\scratchskip\nobreak
+%    \dosetleftskipadaption{\getvalue{\??td\currenttextbackground\c!linkeroffset}}%
+%    \advance\leftskip\leftskipadaption
+%    \dosetleftskipadaption{\getvalue{\??td\currenttextbackground\c!rechteroffset}}%
+%    \advance\rightskip\leftskipadaption
+%    \dostartattributes{\??td\currenttextbackground}\c!letter\c!kleur{}%
+%    \geenwitruimte
+%    \seteffectivehsize
+%    \par}
+% 
+% \def\dostoptextbackgroundpar
+%   {\par
+%    \dostopattributes
+%    \doassignsomeskip\getvalue{\??td\currenttextbackground\c!onderoffset}\to\scratchskip
+%    \kern\scratchskip\nobreak
+%    \nobreak \vskip-\lineheight \nobreak
+%    \geenwitruimte
+%    \egroup
+%    \nobreak \noindent \strut \hfill \kern\zeropoint \tpos\currentparbackground
+%    \endgraf % new 
+%    \getvalue{\??td\currenttextbackground\c!na}}
+
 \def\dostarttextbackgroundpar
-  {\getvalue{\??td\currenttextbackground\c!voor}%
-%   {\forgetall\noindent\fpos\currentparbackground}\ignorespaces
-   \noindent\fpos\currentparbackground\ignorespaces
+  {\endgraf % new
+   \getvalue{\??td\currenttextbackground\c!voor}%
+   \doassignsomeskip\getvalue{\??td\currenttextbackground\c!bovenoffset}\to\scratchskip
+   \xdef\textbackgroundskip{\the\scratchskip}%
+   \noindent
+   \ifgridsnapping
+     \ifdim\textbackgroundskip>\zeropoint
+       \struttedbox{\hbox{\raise\textbackgroundskip\hbox{\fpos\currentparbackground}}}%
+     \else
+      \fpos\currentparbackground
+     \fi
+   \else
+     \fpos\currentparbackground
+   \fi
    \bgroup
    \nobreak \vskip-\lineheight \nobreak
    \doassignsomeskip\getvalue{\??td\currenttextbackground\c!bovenoffset}\to\scratchskip
-   \kern\scratchskip\nobreak
+   \ifgridsnapping \else \ifdim\textbackgroundskip>\zeropoint
+     \kern\textbackgroundskip\nobreak
+   \fi \fi
    \dosetleftskipadaption{\getvalue{\??td\currenttextbackground\c!linkeroffset}}%
    \advance\leftskip\leftskipadaption
    \dosetleftskipadaption{\getvalue{\??td\currenttextbackground\c!rechteroffset}}%
    \advance\rightskip\leftskipadaption
-   \dostartattributes{\??td\currenttextbackground}\c!letter\c!kleur{}%
+   \dostartattributes{\??td\currenttextbackground}\c!letter\c!kleur\empty
    \geenwitruimte
+   \seteffectivehsize
+   \blanko[\v!blokkeer]% new
    \par}
 
 \def\dostoptextbackgroundpar
   {\par
+   \removelastskip % new
    \dostopattributes
    \doassignsomeskip\getvalue{\??td\currenttextbackground\c!onderoffset}\to\scratchskip
-   \kern\scratchskip\nobreak
+   \ifdim\lastskip>\zeropoint
+     \advance\scratchskip-\lastskip
+   \fi
+   \xdef\textbackgroundskip{\the\scratchskip}%
+   \ifgridsnapping \else \ifdim\textbackgroundskip>\zeropoint
+     \kern\scratchskip\nobreak
+   \fi \fi
    \nobreak \vskip-\lineheight \nobreak
    \geenwitruimte
    \egroup
-   \nobreak \noindent \strut \hfill \kern\zeropoint \tpos\currentparbackground
+\bgroup \forgeteverypar % NOT REALLY NEEDED, SAVES HASH/MEM
+   \nobreak \noindent \strut \hfill \kern\zeropoint
+   \ifgridsnapping % experimental, pascal (todo: topoffset in same way)
+     \ifdim\textbackgroundskip>\zeropoint
+       \struttedbox{\hbox{\lower\textbackgroundskip\hbox{\tpos\currentparbackground}}}%
+     \else
+       \tpos\currentparbackground
+     \fi
+   \else
+     \tpos\currentparbackground
+   \fi
+\egroup
+   \endgraf % new
    \getvalue{\??td\currenttextbackground\c!na}}
+
 
 \let\textparpages \!!zeropoint
 \let\textparheight\!!zeropoint
@@ -1354,11 +1630,11 @@
      \ifcase\scratchcounter>2 \ifnum\scratchcounter<5
        % more pages
        \scratchdimen\teksthoogte
-       \advance\scratchcounter -1
+       \advance\scratchcounter \minusone
        \multiply\scratchdimen \scratchcounter
      \else
        % keep'm small
-       \scratchdimen=5\teksthoogte
+       \scratchdimen5\teksthoogte
      \fi \fi
    \fi
    \edef\textparheight{\the\scratchdimen}%
@@ -1398,7 +1674,7 @@
     \fi
    \fi}
 
-\def\definetextbackground%
+\def\definetextbackground
   {\dodoubleempty\dodefinetextbackground}
 
 \def\dodefinetextbackground[#1][#2]%
@@ -1406,18 +1682,18 @@
      \copyparameters[\??td#1][\??td]
        [\c!status,\c!plaats,\c!variant,\c!mp,\c!methode,
         \c!achtergrond,\c!achtergrondkleur,\c!hoek,\c!niveau,
-        \c!achtergrondoffset,
+        \c!achtergrondoffset,\c!voor,\c!na,
         \c!straal,\c!kader,\c!kaderkleur,\c!lijndikte,
         \c!linkeroffset,\c!rechteroffset,\c!bovenoffset,\c!onderoffset]%
      \getparameters[\??td#1][#2]%
-     \doifvalue{\??td#1\c!status}{\v!start}{\checktextbackgrounds}%
+     \doifvalue{\??td#1\c!status}\v!start\checktextbackgrounds
      \unexpanded\setvalue{#1}%
        {\groupedcommand{\starttextbackground[#1]}{\stoptextbackground}}%
      \setvalue{\e!start#1}{\starttextbackground[#1]}%
      \setvalue{\e!stop #1}{\stoptextbackground}%
    \fi}
 
-\def\setuptextbackground%
+\def\setuptextbackground
   {\dodoubleargument\dosetuptextbackground}
 
 %\def\dosetuptextbackground[#1][#2]%
@@ -1441,12 +1717,15 @@
 \def\dodosetuptextbackground#1#2%
   {\getparameters[\??td#2][#1]%
    \def\currenttextbackground{#2}%
-   \doifvalue{\??td#2\c!status}{\v!start}{\checktextbackgrounds}}
+   \doifvalue{\??td#2\c!status}\v!start\checktextbackgrounds}
 
 \let\currenttextbackground\empty
 
 \def\checktextbackgrounds
-  {\ifproductionrun \enablehiddenbackground \fi}
+  {\ifproductionrun 
+     \enabletextarearegistration
+     \enablehiddenbackground 
+   \fi}
 
 \setuptextbackground
   [\c!mp=mpos:par:shape,
@@ -1467,6 +1746,17 @@
    \c!kader=\v!aan,
    \c!kaderkleur=blue,
    \c!lijndikte=\linewidth]
+
+%D As an example we define a grid background: 
+
+\definetextbackground
+  [\v!grid]
+  [\c!status=\v!stop,
+   \c!plaats=\v!alinea,
+   \c!kader=\v!uit,
+   \c!kaderkleur=red,
+   \c!achtergrond=,
+   \c!variant=1]
 
 % lelijk, aanpassen, opties
 
@@ -1516,7 +1806,6 @@
   fi ;
   anchor_box(\MPanchor{\MPvar{self}}) ;
 \stopMPpositiongraphic
-
 
 %D \macros
 %D   {stackposdown, stackposup, stackposleft,stackposright}
@@ -1588,20 +1877,21 @@
    \ifrepositionmarginbox
      \doglobal\increment\currentmarginpos
      \setposition{\s!margin:\currentmarginpos}%
-     \scratchdimen=\MPy{\s!margin:\currentmarginpos}%
+     \scratchdimen\MPy{\s!margin:\currentmarginpos}%
      \doglobal\increment\currentmarginpos
-     \advance\scratchdimen by -\MPy{\s!margin:\currentmarginpos}%
-     \advance\scratchdimen by -\dp\strutbox
+     \advance\scratchdimen -\MPy{\s!margin:\currentmarginpos}%
+     \advance\scratchdimen -\dp\strutbox
      % new
-     \setbox#1=\hbox
+     \setbox#1\hbox
        {\hskip-\MPx{\s!margin:\currentmarginpos}%
         \hskip\MPx{head:\realfolio}%
         \box#1}%
      % so far
-     \setbox#1=\hbox
-       {\setposition{\s!margin:\currentmarginpos}\raise\scratchdimen\box#1}%
-     \dp#1=\zeropoint
-     \ht#1=\zeropoint
+     \setbox#1\hbox
+       {\setposition{\s!margin:\currentmarginpos}%
+        \raise\scratchdimen\box#1}%
+     \dp#1\zeropoint
+     \ht#1\zeropoint
    \fi
    \graphicvadjust{\box#1}%
    \egroup}
@@ -1630,14 +1920,14 @@
 % 0=notfound  1=found  2=currentpage
 
 \def\do@@amposition#1#2#3%
-  {\doifelsevalue{\??am#1\c!positie}{\v!ja}
+  {\doifelsevalue{\??am#1\c!positie}\v!ja
      {\doglobal\increment\currentamposition
       \doifnumberelse{#2}
         {\docheckrealreferencepage{#2}%
-         \global\chardef\currentamrealpage=\ifrealreferencepage2\else1\fi}
+         \global\chardef\currentamrealpage\ifrealreferencepage2\else1\fi}
         {\doifreferencefoundelse{#2}
-           {\global\chardef\currentamrealpage=\ifrealreferencepage2\else1\fi}
-           {\global\chardef\currentamrealpage=0}}% % not found
+           {\global\chardef\currentamrealpage\ifrealreferencepage2\else1\fi}
+           {\global\chardef\currentamrealpage0}}% % not found
       \expanded
         {\doglobal\noexpand\appendtoks
            #1_menu_button(\currentamposition,\the\currentamrealpage,\noexpand\MPpos{#1:\currentamposition}) ;
@@ -1736,22 +2026,22 @@
 
 \let\tabulatepos\tablepos
 
-\def\tabulatenormalpos%
+\def\tabulatenormalpos
   {\hss\tabulatepos\hss}
 
-\def\tabulateequalpos%
-  {\setbox\scratchbox=\hbox{\tabulateEQ}%
-   \hbox to \wd\scratchbox{\hss\kern\!!zeropoint\tabulatepos\hss}%
+\def\tabulateequalpos
+  {\setbox\scratchbox\hbox{\tabulateEQ}%
+   \hbox to \wd\scratchbox{\hss\kern\zeropoint\tabulatepos\hss}%
    \hskip-\wd\scratchbox
    \box\scratchbox}
 
 \def\tabulatenormalcolumn#1% overloaded
   {&\iftabulateequal\tabulateequalpos\else\tabulatenormalpos\fi
-   &\global\chardef\tabulatetype=#1&}
+   &\global\chardef\tabulatetype#1&}
 
 \def\tabulateequalcolumn#1% overloaded
   {&\tabulateequalpos
-   &\global\chardef\tabulatetype=#1&}
+   &\global\chardef\tabulatetype#1&}
 
 \appendtoks
   \doglobal\increment\noftabpositions
@@ -1894,41 +2184,40 @@
    \copyposition{e:#1}{e:#2}%
    \dosetpositionaction{b:#2}{\dopositionaction{b:#1}}}
 
-\def\definepositionframed%
+\def\definepositionframed
   {\dodoubleargument\dodefinepositionframed}
 
 \def\dodefinepositionframed[#1][#2]%
   {\dosetpositionaction{b:#1}{\dopositionframed[#1][#2]}}
 
-\def\positionframed%
+\def\positionframed
   {\dodoubleempty\dopositionframed}
 
 \def\dopositionframed[#1][#2]%
   {\bgroup
-   \setbox\scratchbox=\hbox
+   \setbox\scratchbox\hbox
      {\dimen0=\MPx{e:#1}%
-      \advance\dimen0 by -\MPx{b:#1}%
+      \advance\dimen0 -\MPx{b:#1}%
       \dimen2=\MPy{b:#1}%
-      \advance\dimen2 by -\MPy{e:#1}%
-      \advance\dimen2 by \MPd{e:#1}%
+      \advance\dimen2 -\MPy{e:#1}%
+      \advance\dimen2 \MPd{e:#1}%
       \lower\dimen2\hbox
-        {\advance\dimen2 by \MPh{b:#1}%
+        {\advance\dimen2 \MPh{b:#1}%
          \framed
            [\c!breedte=\dimen0,\c!hoogte=\dimen2,
             \c!offset=\v!overlay,#2]{}}}%
-   \smashbox\scratchbox
-   \box\scratchbox
+   \smashedbox\scratchbox
    \egroup}
 
 % \def\sethdistances#1%
 %   {\hbox{\lpos{ml:#1}\hpos{mh:#1}{\strut}\rpos{mr:#1}}}
 %
 % \def\gethdistances#1%
-%   {\scratchdimen=\MPx{mh:#1}%
-%    \advance\scratchdimen by -\MPx{ml#1}%
+%   {\scratchdimen\MPx{mh:#1}%
+%    \advance\scratchdimen -\MPx{ml#1}%
 %    \edef\lefthdistance{\the\scratchdimen}%
-%    \scratchdimen=\MPx{mr:#1}%
-%    \advance\scratchdimen by -\MPx{mh:#1}%
+%    \scratchdimen\MPx{mr:#1}%
+%    \advance\scratchdimen -\MPx{mh:#1}%
 %    \edef\righthdistance{\the\scratchdimen}}
 
 \protect \endinput

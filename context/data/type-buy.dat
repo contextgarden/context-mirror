@@ -19,8 +19,8 @@
 # fontfont meta
 
 --en=? --ve=fontfont --co=meta --re
---en=? --ve=fontfont --co=meta --so=fontfont/meta-1 --ma --in
---en=? --ve=fontfont --co=meta --so=fontfont/meta-2 --ma --in
+--en=? --ve=fontfont --co=meta --so=fontfont/meta-1 --ma --in --expert
+--en=? --ve=fontfont --co=meta --so=fontfont/meta-2 --ma --in --expert
 
 --en=? --ve=fontfont --co=meta --so=fontfont/meta-1 --sl=* mtbk_*
 --en=? --ve=fontfont --co=meta --so=fontfont/meta-1 --sl=* mtbd_*

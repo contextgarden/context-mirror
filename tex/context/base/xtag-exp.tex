@@ -28,6 +28,7 @@
 \def\startXMLreading
   {\increment \XMLfilenesting \relax
    \ifnum\XMLfilenesting=1 
+%\ifcase\XMLfilenesting\or
      \ifprocessingXML 
        \let\restoreXMLelements\relax
      \else 
@@ -38,6 +39,7 @@
 
 \def\stopXMLreading
   {\ifnum\XMLfilenesting=1 
+%\ifcase\XMLfilenesting\or
      \restoreXMLelements 
      \let\restoreXMLelements\relax
    \fi  
@@ -52,7 +54,9 @@
 
 \setupXMLprocessing[\c!status=\v!start]
 
-\appendtoks \enableXMLfiledata \to \aftersetupXMLprocessing
+\appendtoks 
+  \ifproductionrun \enableXMLfiledata \fi 
+\to \aftersetupXMLprocessing
 
 %D Here we overload the mark handler. 
 

@@ -29,7 +29,7 @@
   {\ifcase\protectionlevel
      \the\everyresetlanguagespecifics
    \else % to be translated 
-     \writestatus{system}{don't change language in unprotected mode!}%
+     \writestatus\m!systems{don't change language in unprotected mode!}%
    \fi}
 
 \appendtoks
@@ -159,7 +159,7 @@
 
 \def\deactivatelanguagespecific#1%
   {\ifundefined{l g s \string#1}%
-     \global\letvalue{l g s \string#1}\empty % signal to prevent dup def 
+     \letgvalueempty{l g s \string#1}% signal to prevent dup def 
      \bgroup
      \catcode`#1=\@@active
      \uccode`~=`#1

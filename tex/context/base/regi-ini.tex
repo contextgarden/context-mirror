@@ -10,9 +10,9 @@
      {\setvalue{\c!file\f!regimeprefix#1}{}%
       \makeshortfilename[\f!regimeprefix#1]%
       \startreadingfile
-      \readsysfile{\shortfilename}
-        {\showmessage{\m!encodings}{2}{#1}}
-        {\showmessage{\m!encodings}{3}{#1}}%
+      \readsysfile\shortfilename
+        {\showmessage\m!encodings2{#1}}
+        {\showmessage\m!encodings3{#1}}%
       \stopreadingfile}}
 
 \def\useregime[#1]%
@@ -20,6 +20,6 @@
 
 \protect 
 
-\useregime[def,uni,ibm,win,il1]
+\useregime[def,uni,ibm,win,il1,mac]
 
 \endinput 

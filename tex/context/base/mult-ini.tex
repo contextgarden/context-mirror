@@ -172,9 +172,9 @@
 %D \definesystemvariable {name}
 %D \stoptypen
 
-\def\definesystemvariable #1{\setevalue{\??prefix#1}{\@@prefix#1}}
+\def\definesystemvariable#1{\setevalue{\??prefix#1}{\@@prefix#1}}
 
-\definesystemvariable {ms}
+\definesystemvariable{ms}
 
 %D \macros
 %D   {selectinterface,
@@ -209,10 +209,10 @@
   \def\selectinterface%
     {\def\docommando##1##2%
        {\bgroup
-        \endlinechar=-1
+        \endlinechar\minusone
         \global\read16 to ##1
         \egroup
-        \doif{\currentinterface}{}{\let##1=##2}%
+        \doifnothing\currentinterface{\let##1=##2}%
         \doifundefined{\s!prefix!##1}{\let##1=##2}}%
      \docommando\currentinterface\defaultinterface
      \writestatus{interface}{defining \currentinterface\space interface}%
@@ -251,11 +251,14 @@
 %D \stopinterface
 %D \stoptypen
 
+%\def\startinterface #1
+%  {\doifinsetelse{\currentinterface}{#1}
+%     {\let\next\relax}
+%     {\long\def\next##1\stopinterface{}}%
+%   \next}
+
 \def\startinterface #1
-  {\doifinsetelse{\currentinterface}{#1}
-     {\let\next\relax}
-     {\long\def\next##1\stopinterface{}}%
-   \next}
+  {\doifnotinset\currentinterface{#1}{\gobbleuntil\stopinterface}}
 
 \let\stopinterface=\relax
 
@@ -384,7 +387,7 @@
 
 \def\doaddinterfacemessage#1#2%
   {\findinterfacemessage{#1}\currentmessagetext
-   \doifelse{\currentmessagetext}{}
+   \doifelsenothing\currentmessagetext
      {\setxvalue{\??ms\currentmessagelibrary}%
         {\getvalue{\??ms\currentmessagelibrary} #1: #2\relax}}
      {\debuggerinfotrue % we consider this an important error
@@ -401,7 +404,7 @@
   {\doaddinterfacemessage{#1}{#2}}%
 \egroup
 
-\def\getinterfacemessage%
+\def\getinterfacemessage
   {\ifx\next\stopmessages
      \egroup\expandafter\gobbleoneargument 
    \else
@@ -413,10 +416,10 @@
    \bgroup
    \obeylines
    \doifinsetelse{#1}{\currentresponses,all}
-     {\def\next%
+     {\def\next
         {\def\currentmessagelibrary{#2}%
          \doifundefined{\??ms\currentmessagelibrary}
-           {\setgvalue{\??ms\currentmessagelibrary}{}}%
+           {\letgvalueempty{\??ms\currentmessagelibrary}}%
          \futurelet\next\getinterfacemessage}}
      {\long\def\next##1\stopmessages{\egroup}}%
    \next}
@@ -435,7 +438,7 @@
    \bgroup
    \obeylines
    \doifinsetelse{#1}{\currentresponses,all}
-     {\def\next%
+     {\def\next
         {\def\currentmessagelibrary{#2}%
          \futurelet\next\getinterfacemessage}}
      {\long\def\next##1\stopmessages{\egroup}}%
@@ -475,14 +478,14 @@
 
 \let\normalshowmessage=\showmessage
 
-\def\showwarning%
+\def\showwarning
   {\ifshowwarnings
      \expandafter\showmessage
    \else
      \expandafter\gobblethreearguments
    \fi}
 
-\def\showmessage%
+\def\showmessage
   {\ifshowmessages
      \expandafter\normalshowmessage
    \else
@@ -791,9 +794,9 @@
 %D We can now redefine some messages that will be 
 %D introduced in the multi||lingual system module. 
 
-\def\showassignerror  #1#2{\showmessage{\m!check}{1}{#1,#2}}
-\def\showargumenterror#1#2{\showmessage{\m!check}{2}{#1,#2}}
-\def\showdefinederror #1#2{\showmessage{\m!check}{3}{#1,#2}}
+\def\showassignerror  #1#2{\showmessage\m!check1{#1,#2}\waitonfatalerror}
+\def\showargumenterror#1#2{\showmessage\m!check2{#1,#2}\waitonfatalerror}
+\def\showdefinederror #1#2{\showmessage\m!check3{#1,#2}\waitonfatalerror}
 
 %D \CONTEXT\ is a parameter driven package. This means that
 %D users instruct the system by means of variables, values and
@@ -1084,7 +1087,7 @@
 
 \newif\iflogginginterface
 
-\def\flushinterfaceelementline%
+\def\flushinterfaceelementline
   {\iflogginginterface
      \immediate\write\scratchwrite{\interfaceelementline}%
      \let\interfaceelementline\empty
@@ -1100,7 +1103,7 @@
    \let\interfaceelementline\empty
    \immediate\openout\scratchwrite=./#1\relax}
 
-\def\stoplogginginterface%
+\def\stoplogginginterface
   {\flushinterfaceelementline
    \immediate\closeout\scratchwrite
    \logginginterfacefalse}
@@ -1115,10 +1118,10 @@
 \def\nointerfaceobject{-}
 
 \def\startinterfaceobjects#1#2%
-  {\!!counta=1
+  {\!!counta\plusone
    \let\dogetinterfaceobject\dogetinterfacetemplate
    \let\dowithinterfaceelement#1%
-   \def\dodogetinterfaceobjects%
+   \def\dodogetinterfaceobjects
       {\ifx\next#2%
          \flushinterfaceelementline
          \flushinterfaceelementline
@@ -1135,7 +1138,7 @@
             \dogetinterfaceobjects}%
        \fi\fi\fi
        \next}%
-   \def\dogetinterfaceobjects%
+   \def\dogetinterfaceobjects
      {\futurelet\next\dodogetinterfaceobjects}%
    \dogetinterfaceobjects}
 
@@ -1143,7 +1146,7 @@
   {\saveinterfaceelementline{#1}%
    \doifinsetelse{#1}{\currentinterface,all}
      {\let\dogetinterfaceobject\doskipinterfaceobject}
-     {\advance\!!counta by 1\relax}}
+     {\advance\!!counta\plusone}}
 
 \def\doskipinterfaceobject[#1:#2#3]%
   {\if#2:%
@@ -1157,11 +1160,11 @@
 
 \def\dogetinterfaceelement[#1:#2#3]%
   {\ifx#2:%
-     \!!countb=0
+     \!!countb\zerocount
      \def\!!stringa{#1}%
      \flushinterfaceelementline
    \else
-     \advance\!!countb by 1
+     \advance\!!countb\plusone
      \saveinterfaceelementline{#1}%
      \ifnum\!!countb=\!!counta
        \@EA\dowithinterfaceelement\@EA{\!!stringa}{#1}%
@@ -1185,7 +1188,7 @@
 
 \def\setinterfaceconstant#1#2%
   {\setvalue{\c!prefix!#1}{\c!internal!#1}%
-   \doifelse{#2}{\nointerfaceobject}
+   \doifelse{#2}\nointerfaceobject
      {\debuggerinfo{constant}{#1 defined as #1 by default}%
       \setvalue{\k!prefix!#2}{#1}}
      {\debuggerinfo{constant}{#1 defined as #2}%
@@ -1196,7 +1199,7 @@
       \setvalue{\k!prefix!#2}{#1}}}
 
 \def\setinterfacevariable#1#2%
-  {\doifelse{#2}{\nointerfaceobject}
+  {\doifelse{#2}\nointerfaceobject
      {\debuggerinfo{variable}{#1 defined as #1 by default}%
       \checksetvalue{\v!prefix!#1}{#1}%
       \setvalue{\v!prefix!#1}{#1}}
@@ -1208,10 +1211,10 @@
   {\doifdefined{#1}{\doifvaluesomething{#1}{\doifnotvalue{#1}{#2}
      {\writestatus{problems}{set #1 to #2 overloads \getvalue{#1}}}}}}
 
-\def\startvariables%
+\def\startvariables
   {\startinterfaceobjects\setinterfacevariable\stopvariables}
 
-\def\startconstants%
+\def\startconstants
   {\startinterfaceobjects\setinterfaceconstant\stopconstants}
 
 %D \macros
@@ -1248,12 +1251,12 @@
 
 \def\setinterfacesetupvariable#1#2%
   {\ifinterfacetranslation
-     \doifelse{#2}{\nointerfaceobject}
+     \doifelse{#2}\nointerfaceobject
        {\setvalue{\y!prefix!#1}{#1}}
        {\setvalue{\y!prefix!#1}{#2}}%
    \fi}
 
-\def\startsetupvariables%
+\def\startsetupvariables
   {\startinterfaceobjects\setinterfacesetupvariable\stopsetupvariables}
 
 %D \macros
@@ -1293,22 +1296,21 @@
 %D Element translation is realized by means of:
 
 \def\setinterfaceelement#1#2%
-  {\doifelse{#2}{\nointerfaceobject}
+  {\doifelse{#2}\nointerfaceobject
      {\debuggerinfo{element}{#1 defined as <empty>}%
       \resetvalue{\e!prefix!#1}}
      {\doifdefinedelse{\e!prefix!#1}
-       {\doifnot{\getvalue{\e!prefix!#1}}{#2}
+       {\doifnotvalue{\e!prefix!#1}{#2}
           {\debuggerinfo{element}{#1 redefined as #2}%
            \setvalue{\e!prefix!#1}{#2}}}
        {\debuggerinfo{element}{#1 defined as #2}%
         \setvalue{\e!prefix!#1}{#2}}}}
 
-\def\startelements%
+\def\startelements
   {\startinterfaceobjects\setinterfaceelement\stopelements}
 
 %D \macros
 %D   {startcommands}
-%D   {}
 %D
 %D The last setup has to do with the commands themselve.
 %D Commands are defined as:
@@ -1328,7 +1330,7 @@
 %D needed for reference cards.
 
 \def\setinterfacecommand#1#2%
-  {\doifelse{#2}{\nointerfaceobject}
+  {\doifelse{#2}\nointerfaceobject
      {\debuggerinfo{command}{no link to #1}%
       \setinterfacesetupvariable{#1}{#1}}
      {\doifelse{#1}{#2}
@@ -1340,12 +1342,11 @@
            \@EA{\csname#1\endcsname}}%
       \setinterfacesetupvariable{#1}{#2}}}
 
-\def\startcommands%
+\def\startcommands
   {\startinterfaceobjects\setinterfacecommand\stopcommands}
 
 %D \macros
 %D   {getinterfaceconstant, getinterfacevariable}
-%D   {}
 %D
 %D Generating the interface translation macro's that are used
 %D in the reference lists, is enabled by setting the boolean:
@@ -1430,17 +1431,17 @@
 
 %D Out of convenience we define the banners here.
 
-\edef\contextbanner%
+\edef\contextbanner
   {ConTeXt \space
    ver: \noexpand \contextversion   \space \space
    fmt: \noexpand \formatversion    \space \space
    int: \noexpand \currentinterface \space \space
    mes: \noexpand \currentresponses}
 
-\def\showcontextbanner%
+\def\showcontextbanner
   {\writeline\writestring{\contextbanner}\writeline}
 
-\edef\formatversion%
+\edef\formatversion
   {\ifx\normalyear \undefined\the\year \else\the\normalyear \fi.%
    \ifx\normalmonth\undefined\the\month\else\the\normalmonth\fi.%
    \ifx\normalday  \undefined\the\day  \else\the\normalday  \fi}

@@ -226,7 +226,7 @@
 
 \def\MMLpSUBP#1#2%
   {\withnexttwoXMLRelements
-     {\doifelse{\@@MMLscriptsvariant}{\v!a}
+     {\doifelse\@@MMLscriptsvariant\v!a
         {{\firstXMLRelement}#1{\secondXMLRelement}} % both {} essential 
         {\firstXMLRelement#1{\secondXMLRelement}}}%
    #2}
@@ -359,8 +359,8 @@
 
 \setupMMLappearance[mtable][\c!variant=\v!a]
 
-\def\MMLpTABLE% 
-  {\doifelse{\@@MMLmtablevariant}{\v!a}
+\def\MMLpTABLE
+  {\doifelse\@@MMLmtablevariant\v!a
      {\expandafter\MMLpTABLEa}
      {\expandafter\MMLpTABLEb}}
 

@@ -45,23 +45,21 @@
 \newwrite\uti
 \newif\ifutilitydone
 
-\def\@@utilityerrormessage%
-  {\showmessage\m!systems{8}{}%
-   \global\let\@@utilityerrormessage\relax}
+\def\@@utilityerrormessage
+  {\showmessage\m!systems8\empty
+   \globallet\@@utilityerrormessage\relax}
 
 \def\thisisutilityversion#1%
   {\doifelse\utilityversion{#1}%
      {\checksectionseparator}
-     {\@@utilityerrormessage
-      \resetutilities
-      \endinput}}
+     {\@@utilityerrormessage\resetutilities\endinput}}
 
 \def\checksectionseparator % catches backward compatibility conflict 
   {\doifnot\sectionseparator:\endinput}
 
 \def\thisissectionseparator#1%
   {\bgroup
-   \global\let\checksectionseparator\relax
+   \globallet\checksectionseparator\relax
    \convertcommand \sectionseparator\to\asciiA   
    \convertargument               #1\to\asciiB
    \ifx\asciiA\asciiB
@@ -73,17 +71,11 @@
      \endinput
    \fi}
 
-\def\writeutility%
-  {\write\uti}
+\def\writeutility         {\write\uti}
+\def\writeutilitycommand#1{\write\uti{c \string#1}}
 
-\def\immediatewriteutility%
-  {\immediate\write\uti}
-
-\def\writeutilitycommand#1%
-  {\write\uti{c \string#1}}
-
-\def\immediatewriteutilitycommand#1%
-  {\immediate\write\uti{c \string#1}}
+\def\immediatewriteutility       {\immediate\writeutility}
+\def\immediatewriteutilitycommand{\immediate\writeutilitycommand}
 
 %\def\openutilities%
 %  {\immediate\openout\uti=\jobname.\f!inputextension
@@ -94,27 +86,29 @@
    \immediatewriteutilitycommand{\thisissectionseparator{\sectionseparator}}%
    \immediatewriteutilitycommand{\thisisutilityversion  {\utilityversion}}}
 
-\def\closeutilities%
+\def\closeutilities
   {%\savenofsubpages
    %\savenofpages
-   \immediate\closeout\uti
+   \immediate\closeout\uti % niet echt nodig 
    \reportutilityproblems
    % should be a message : 
+   \let\writeutilitycommand         \gobbleoneargument
+   \let\writeutility                \gobbleoneargument
    \let\immediatewriteutilitycommand\gobbleoneargument
-   \let\immediatewriteutility\gobbleoneargument}
+   \let\immediatewriteutility       \gobbleoneargument}
 
 \def\reopenutilities
   {\immediate\closeout\uti
    \openutilities}
 
-\def\abortutilitygeneration%
-  {\immediatewriteutilitycommand{\utilitygenerationaborted}%
+\def\abortutilitygeneration
+  {\immediatewriteutilitycommand\utilitygenerationaborted
    \immediatewriteutility{q {quit}}}
 
-\def\utilitygenerationaborted%
-  {\showmessage{\m!systems}{21}{}%
-   \global\let\utilitygenerationaborted=\endinput
-   \gdef\reportutilityproblems{\showmessage{\m!systems}{22}{}}%
+\def\utilitygenerationaborted
+  {\showmessage\m!systems{21}\empty
+   \globallet\utilitygenerationaborted\endinput
+   \gdef\reportutilityproblems{\showmessage\m!systems{22}\empty}%
    \endinput}
 
 \def\savecurrentvalue#1#2%
@@ -122,8 +116,8 @@
 
 \let\initializevariable\gdef
 
-\def\disableinitializevariables%
-  {\global\let\initializevariable\gobbletwoarguments}
+\def\disableinitializevariables
+  {\globallet\initializevariable\gobbletwoarguments}
 
 \let\reportutilityproblems=\relax
 
@@ -156,7 +150,7 @@
 \def\addutilityreset#1%
   {\@EA\appendtoks\csname\s!reset#1\endcsname\to\utilityresetlist}
 
-\def\resetutilities%
+\def\resetutilities
   {\the\utilityresetlist}
 
 % #1=type
@@ -178,7 +172,7 @@
 %
 % \def\utilitycheckmessage%
 %   {\showmessage{\m!systems}{12}{}%
-%    \global\let\utilitycheckmessage=\relax}
+%    \globallet\utilitycheckmessage=\relax}
 %
 % \def\saveutilityline#1 #2\txen% tricky maar ok, want achter \command
 %   {\if     #1c% commands      % in \ascii staat een spatie; #1 kan
@@ -241,7 +235,7 @@
    \fi
    #4%
    \the\everybeforeutilityread
-   \readjobfile{#2.\f!outputextension}{}{}%
+   \readjobfile{#2.\f!outputextension}\donothing\donothing
    \the\everyafterutilityread
    #5%
    \relax
@@ -251,7 +245,7 @@
    \popendofline
    \ifutilitydone\else
      \doifsomething{#3}
-       {\showmessage{\m!systems}{9}{{#3}}%
+       {\showmessage\m!systems9{{#3}}%
         \ifvoorlopig
           \blanko
           \type{[\currentmessagetext]}%
@@ -264,15 +258,14 @@
 % Saving the sort vector: 
 
 \def\savesortkeys%
-  {\setbox\scratchbox=\hbox
-     \bgroup
-       \def\flushsortkey##1##2##3##4%
-         {\convertargument{##1}{##2}{##3}{##4}\to\ascii
-          \immediatewriteutility{k {\currentlanguage}{\currentencoding}\ascii}}%
-       \let\definesortkey\flushsortkey
-       \flushsortkeys
-     \egroup
-   \global\let\savesortkeys\relax}
+  {\startnointerference 
+   \def\flushsortkey##1##2##3##4%
+     {\convertargument{##1}{##2}{##3}{##4}\to\ascii
+      \immediatewriteutility{k {\currentlanguage}{\currentencoding}\ascii}}%
+   \let\definesortkey\flushsortkey
+   \flushsortkeys
+   \globallet\savesortkeys\relax
+   \stopnointerference}
 
 \prependtoks \savesortkeys \to \everystarttext 
 
@@ -319,31 +312,20 @@
      {\@EA\ifx\csname#1:\s!list\endcsname\empty \else
         \csname#1:\s!list\endcsname,\fi#3}}
 
-%\def\dodefinetwopasslist#1%
-%  {\doifundefined{#1:\s!list}
-%     {%\debuggerinfo{\m!systems}{defining twopass class #1}%
-%      \doglobal\addutilityreset{#1\s!pass}%
-%      \setgvalue{\s!set#1\s!pass}%
-%        {\global\letvalue{\s!set#1\s!pass}\gobbletwoarguments
-%         \setgvalue{@@#1\s!pass}{\appendtwopasselement{#1}}}%
-%      \setgvalue{\s!reset#1\s!pass}%
-%        {\global\letvalue{@@#1\s!pass}\gobbletwoarguments}%
-%      \getvalue{\s!reset#1\s!pass}}}
-
 \def\dodefinetwopasslist#1%
   {\doifundefined{#1:\s!list}
-     {%\debuggerinfo{\m!systems}{defining twopass class #1}%
+     {%\debuggerinfo\m!systems{defining twopass class #1}%
       \doglobal\addutilityreset{#1\s!pass}%
       \setgvalue{\s!set  #1\s!pass}{\dosettwopasslist  {#1}}%
       \setgvalue{\s!reset#1\s!pass}{\doresettwopasslist{#1}}%
       \getvalue {\s!reset#1\s!pass}}}
 
 \def\dosettwopasslist#1%
-  {\global\letvalue{\s!set#1\s!pass}\gobbletwoarguments
+  {\letgvalue{\s!set#1\s!pass}\gobbletwoarguments
    \setgvalue{@@#1\s!pass}{\appendtwopasselement{#1}}}
 
 \def\doresettwopasslist#1%
-  {\global\letvalue{@@#1\s!pass}\gobbletwoarguments}
+  {\letgvalue{@@#1\s!pass}\gobbletwoarguments}
 
 \def\definetwopasslist#1%
   {\expanded{\dodefinetwopasslist{#1}}%
@@ -356,9 +338,9 @@
 \def\doloadtwopassdata#1%
   {\doifundefined{#1:\s!list}
      {\startnointerference 
-      \global\letvalue{#1:\s!list}\empty
+      \letgvalueempty{#1:\s!list}%
       \protectlabels 
-      \doutilities{#1\s!pass}{\jobname}{}{}{}%
+      \doutilities{#1\s!pass}\jobname\empty\relax\relax
       \ifx\twopassdata\empty\else
         \appendtwopasselement{#1}{0}\twopassdata
       \fi
@@ -368,12 +350,12 @@
   {\ifx\alltwopasslists\empty\else
      \def\twopassdata{0,0}% end condition 
      \processcommacommand[\alltwopasslists]\doloadtwopassdata
-     \global\let\alltwopassdata\empty
+     \globallet\alltwopassdata\empty
    \fi
    \ifx\allrawpasslists\empty\else
      \let\twopassdata\empty
      \processcommacommand[\allrawpasslists]\doloadtwopassdata
-     \global\let\allrawpassdata\empty
+     \globallet\allrawpassdata\empty
    \fi}
 
 \def\moverawpasslist#1#2% erases the old one, like the others do
@@ -503,13 +485,13 @@
   {\edef\nexttwopassdata{#1}%
    \ifx\nexttwopassdata\notwopassdata \else
      \let\twopassdata\nexttwopassdata
-     \advance\scratchcounter 1
+     \advance\scratchcounter \plusone
      \twopassdatafoundtrue
    \fi}
 
 \def\getlasttwopassdata#1%
   {\loadtwopassdata
-   \scratchcounter0
+   \scratchcounter\zerocount
    \@EAEAEA\rawprocesscommalist\@EA\@EA\@EA[\csname#1:\s!list\endcsname]\dogetlasttwopassdata
    \edef\noftwopassitems{\the\scratchcounter}%
    \iftwopassdatafound\else
@@ -557,7 +539,7 @@
   {\writeutility{p u {#1} #2}}
 
 \def\loadplugindata#1%
-  {\doutilities{#1}{\jobname}{}{}{}{}}
+  {\doutilities{#1}\jobname\empty\relax\relax}
 
 % \plugincommand{\command{}{}{}}
 %

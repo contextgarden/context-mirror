@@ -13,7 +13,7 @@
 
 %D Today I would implement the pretty handler slightly 
 %D different, using stack and intermediate flushing. Maybe 
-%D even without active chars.  
+%D even without active chars. So, someday \unknown
 
 %D Because this module is quite independant of system macros,
 %D it can be used as a stand||alone verbatim environment.
@@ -190,10 +190,10 @@
 
 \catcode`\^^I=\@@active
 
-\gdef\settabskips%
-  {\let\processverbatimline=\doprocesstabskipline
-   \catcode`\^^I=\@@active
-   \let^^I=\doprocesstabskip}
+\gdef\settabskips
+  {\let\processverbatimline\doprocesstabskipline
+   \catcode`\^^I\@@active
+   \let^^I\doprocesstabskip}
 
 \egroup
 
@@ -250,7 +250,7 @@
    \spaceskip\wd\scratchbox 
    \xspaceskip\spaceskip}
 
-\def\setupinlineverbatim%
+\def\setupinlineverbatim
   {\verbatimfont 
    \setverbatimspaceskip
    \let\obeytabs\ignoretabs
@@ -258,7 +258,7 @@
    \let\obeypages\ignorepages
    \setupcopyverbatim}
 
-\def\doprocessinlineverbatim%
+\def\doprocessinlineverbatim
   {\ifx\next\bgroup
      \setupinlineverbatim
      \catcode`\{\@@begingroup
@@ -339,13 +339,13 @@
 %D The long ones are \type{\nobreaks} and the short ones 
 %D \type{\goodbreaks}. And this is how it's done:
 
-\def\doverbatimnobreak%
+\def\doverbatimnobreak
   {\ifoptimizeverbatim\penalty500\fi} 
 
-\def\doverbatimgoodbreak%
+\def\doverbatimgoodbreak
   {\ifoptimizeverbatim\penalty\linepenalty\fi}
 
-\def\doflushverbatimline%
+\def\doflushverbatimline
   {\expandafter\dodoverbatimline\expandafter{\savedverbatimline}}
 
 \let\handleverbatimline=\relax
@@ -360,52 +360,54 @@
 % 
 % more efficient 
 
-\def\initializeverbatimline%
+\global\chardef\verbatimstatus0
+
+\def\initializeverbatimline
   {\global\let\savedverbatimline\empty
    \global\chardef\verbatimstatus\ifskipfirstverbatimline0 \else1 \fi}
 
-\def\presetemptyverbatimline%
+\def\presetemptyverbatimline
   {\ifcase\verbatimstatus
-     \global\chardef\verbatimstatus=1
+     \global\chardef\verbatimstatus1
    \or
    \or
      % \ifoptimizeverbatim\else\doemptyverbatimline\fi
    \or
      \doflushverbatimline
-     \global\let\savedverbatimline=\empty
+     \global\let\savedverbatimline\empty
      \doemptyverbatimline
-     \global\chardef\verbatimstatus=2
+     \global\chardef\verbatimstatus2
    \else
      \kern\zeropoint
      \doverbatimnobreak
      \doflushverbatimline
-     \global\let\savedverbatimline=\empty
+     \global\let\savedverbatimline\empty
      \doemptyverbatimline
-     \global\chardef\verbatimstatus=2
+     \global\chardef\verbatimstatus2
    \fi}
 
-\def\presetnormalverbatimline%
+\def\presetnormalverbatimline
   {\ifcase\verbatimstatus
-     \global\chardef\verbatimstatus=2
+     \global\chardef\verbatimstatus2
    \or
-     \global\chardef\verbatimstatus=3
+     \global\chardef\verbatimstatus3
    \or
-     \global\chardef\verbatimstatus=3
+     \global\chardef\verbatimstatus3
    \or
      \doflushverbatimline
-     \global\chardef\verbatimstatus=4
+     \global\chardef\verbatimstatus4
    \or
      \kern\zeropoint
      \doverbatimnobreak
      \doflushverbatimline
-     \global\chardef\verbatimstatus=5
+     \global\chardef\verbatimstatus5
    \or
      \doverbatimgoodbreak
      \doflushverbatimline
    \fi
-   \global\let\savedverbatimline=\verbatimline}
+   \global\let\savedverbatimline\verbatimline}
 
-\def\presetlastverbatimline%
+\def\presetlastverbatimline
   {\ifcase\verbatimstatus \or \or \or
      \doflushverbatimline
    \else
@@ -470,7 +472,7 @@
    \parskip\zeropoint
    \processingverbatimtrue
    \global\linepartrue
-   \expandafter\let\csname\verbatimname\endcsname=\relax
+   \expandafter\let\csname\verbatimname\endcsname\relax
    \edef\endofverbatimcommand{\csname\verbatimname\endcsname}%
    \edef\endofverbatimcommand{\meaning\endofverbatimcommand}%
    \verbatimfont 
@@ -492,6 +494,8 @@
 %D it assigns all characters \CATCODE~11. Next we switch to
 %D french spacing and call for obeyance.
 
+\newevery \everysetupverbatim \relax
+
 \def\setupcopyverbatim
   {\uncatcodecharacters
    \frenchspacing
@@ -499,7 +503,8 @@
    \obeytabs
    \obeylines
    \obeypages
-   \obeycharacters}
+   \obeycharacters
+   \the\everysetupverbatim}
 
 %D \macros
 %D   {eightbitcharacters,
@@ -521,8 +526,8 @@
    \loop
      \savecatcode
      #1\relax
-     \advance\scratchcounter -1
-     \ifnum\scratchcounter>-1
+     \advance\scratchcounter \minusone
+     \ifnum\scratchcounter>\minusone
    \repeat
    \let\savecatcode\relax
    \let\restorecatcodes\dorestorecatcodes}
@@ -619,7 +624,7 @@
 
 \newif\iflocalcatcodes
 
-\def\savecatcode%
+\def\savecatcode
   {\iflocalcatcodes \else
      \saverestoreactivecatcode
        {\@EA\let\csname\@@aa@@\the\scratchcounter\endcsname~}%
@@ -629,7 +634,7 @@
 
 %D It's counterpart is:
 
-\def\restorecatcode%
+\def\restorecatcode
   {\@EA\catcode\@EA\scratchcounter
      \csname\@@cc@@\the\scratchcounter\endcsname
    \saverestoreactivecatcode
@@ -652,7 +657,7 @@
 
 %D or when we've saved things calls for:
 
-\def\dorestorecatcodes%
+\def\dorestorecatcodes
   {\iflocalcatcodes \else
      \doprocesscatcodes\restorecatcode
    \fi}
@@ -661,7 +666,7 @@
 %D when needed. An application of this macros can be found in
 %D buffering data.
 
-\def\beginrestorecatcodes%
+\def\beginrestorecatcodes
   {\ifx\restorecatcodes\relax
      \let\endrestorecatcodes\relax
    \else
@@ -757,7 +762,7 @@
   {\bgroup                  % due to pretty status 
    \iflinepar\else\EveryPar{}\fi
    \leavevmode
-   \xdef\dokeepverbatimlinedata%
+   \xdef\dokeepverbatimlinedata
      {\parindent \the\parindent
       \hangindent\the\hangindent
       \hangafter \the\hangafter
@@ -810,12 +815,12 @@
 \def\verbatimbaselineskip% We don't use \let here!
   {\baselineskip}
 
-\def\doemptyverbatimline%
+\def\doemptyverbatimline
   {\vskip\verbatimbaselineskip
-   {\setbox0=\hbox{\the\everyline}}%
+   {\setbox0\hbox{\the\everyline}}%
    \global\linepartrue}
 
-\def\obeyemptylines%
+\def\obeyemptylines
   {\def\doemptyverbatimline{\doverbatimline}}
 
 %D \TEX\ does not offer \type{\everyline}, which is a direct
@@ -864,21 +869,21 @@
   {\obeyedspace % \hskip.5em  or  \hbox to .5em{}
    \ifdone
      \donefalse
-     \advance\scratchcounter 1
+     \advance\scratchcounter \plusone
      \@EA\doprocesstabskip
    \else\ifnum\scratchcounter>\spacespertab
      % nothing 
    \else
-     \advance\scratchcounter 1
+     \advance\scratchcounter \plusone
      \@EAEAEA\doprocesstabskip
    \fi\fi}
 
 \def\dodoprocesstabskipline#1#2\endoftabskipping
   {\ifnum\scratchcounter>\spacespertab
-     \scratchcounter=1
+     \scratchcounter\plusone
      \donetrue
    \else
-     \advance\scratchcounter 1
+     \advance\scratchcounter \plusone
      \donefalse
    \fi
    \ifx#1\relax
@@ -888,14 +893,20 @@
    \fi
    \next}
 
-\let\endoftabskipping=\relax
+\let\endoftabskipping=\relax % will become obsolete 
 
 \def\doprocesstabskipline#1%
   {\bgroup
-   \scratchcounter=1
+   \scratchcounter1
    \dodoprocesstabskipline#1\relax\endoftabskipping
    \egroup}
 
+% ^ will be replaced 
+
+\chardef\tabskipmode=1 % 0=quit 1=no test 2=test on active>128
+
+%
+ 
 \def\processverbatimline#1{#1} % remove the fake grouping
 
 %D \macros
@@ -914,8 +925,18 @@
 
 \newread\verbatiminput
 
+\newcount\verbatimlinenumber
+
+\let \beginofverbatimlines \relax
+\let \endofverbatimlines   \relax
+
 \def\processfileverbatim#1%
   {\par
+   \bgroup
+   \processingverbatimtrue
+   \global\verbatimlinenumber0
+   \global\linepartrue
+   \beginofverbatimlines 
    \bgroup
    \parindent\zeropoint
    \ifdim\lastskip<\parskip
@@ -923,8 +944,6 @@
      \vskip\parskip
    \fi
    \parskip\zeropoint
-   \processingverbatimtrue
-   \global\linepartrue
    \uncatcodecharacters
    \verbatimfont 
    \setverbatimspaceskip
@@ -942,6 +961,7 @@
    \def\readline%
      {\ifeof\verbatiminput \else
         \ifx\firstverbatimfileline\empty 
+\global\advance\verbatimlinenumber\plusone
           \read\verbatiminput to \verbatimline
         \else
           \let\verbatimline\firstverbatimfileline
@@ -951,7 +971,7 @@
       \ifeof\verbatiminput
         \ifx\lastverbatimfileline\empty 
           \presetlastverbatimline
-          \let\readline=\relax
+          \let\readline\relax
         \else % we will re-enter the \ifeof branch twice  
           \presetnormalverbatimline
           \def\readline% 
@@ -973,6 +993,8 @@
      \expandafter\readline
    \fi
    \closein\verbatiminput
+   \egroup
+   \endofverbatimlines   
    \egroup
    \ignorespaces}
 
@@ -1092,7 +1114,7 @@
    \global\chardef\prettychar0
    \bgroup
    \let\handleprettytoken\setprettydata
-   \setbox0=\hbox{#1}% expands #1 and ignores space
+   \setbox0\hbox{#1}% expands #1 and ignores space
    \egroup}
 
 %D If needed the current and next token can be handled alongside:
@@ -1228,7 +1250,7 @@
 
 \let\prettyend=\relax
 
-\def\prettybegin%
+\def\prettybegin
   {\bgroup\def\prettyend{\the\everyprettyend\egroup}}
 
 \installnewpretty B \prettybegin
@@ -1346,12 +1368,12 @@
            |let|oldprettytype=|prettytype
            |getprettydata{####1}%
            |ifnum|prettytype=|oldprettytype
-             |let|next=|newpretty
+             |let|next|newpretty
            |else
              |def|next{|newprettycommand{#1}##1####1}%
            |fi
            |next}%
-        |let|next=|dododohandlenewpretty
+        |let|next|dododohandlenewpretty
       |else
         |def|next{|newprettycommand{#1}##1}%
       |fi
@@ -1376,7 +1398,7 @@
       %\else\ifx\next\egroup % end of line / no signal
       %  \let\next=#2%
       %\else\ifx\next\par    % end of line / \par
-        \let\next=#2%
+      % \let\next=#2%
       \else
         \let\next=#1%
       \fi\fi%\fi\fi
@@ -1548,12 +1570,12 @@
      \def\_{\string_}%
      \def\^{\string^}%
      \presettyping
-     \processinlineverbatim{\egroup}}
+     \processinlineverbatim\egroup}
 
   \def\starttyping
     {\bgroup
      \presettyping
-     \processdisplayverbatim{\stoptyping}}
+     \processdisplayverbatim\stoptyping}
 
   \def\stoptyping
     {\egroup}
@@ -1595,27 +1617,27 @@
 
   \def\startTEX
     {\bgroup \everypar{}%
-     \let\obeycharacters=\setupprettyTEXtype
+     \let\obeycharacters\setupprettyTEXtype
      \processdisplayverbatim{\stopTEX}}
 
   \def\startMP
     {\bgroup \everypar{}%
-     \let\obeycharacters=\setupprettyMPtype
+     \let\obeycharacters\setupprettyMPtype
      \processdisplayverbatim{\stopMP}}
 
   \def\startPL
     {\bgroup \everypar{}%
-     \let\obeycharacters=\setupprettyPLtype
+     \let\obeycharacters\setupprettyPLtype
      \processdisplayverbatim{\stopPL}}
 
   \def\startJV
     {\bgroup \everypar{}%
-     \let\obeycharacters=\setupprettyJVtype
+     \let\obeycharacters\setupprettyJVtype
      \processdisplayverbatim{\stopJV}}
 
   \def\startSQL
     {\bgroup \everypar{}%
-     \let\obeycharacters=\setupprettySQLtype
+     \let\obeycharacters\setupprettySQLtype
      \processdisplayverbatim{\stopSQL}}
 
   \let\stopTEX=\egroup
@@ -1823,8 +1845,8 @@
 
   \let\doifendofverbatim=\doifelse
 
-  \def\permitshiftedendofverbatim%
-    {\let\doifendofverbatim=\doifinstringelse}
+  \def\permitshiftedendofverbatim
+    {\let\doifendofverbatim\doifinstringelse}
 
 %  \def\processdisplayverbatim#1%
 %    {\par
@@ -1891,7 +1913,7 @@
   \def\doprocessdisplayverbatim#1#2%
     {\par
      \bgroup
-     \escapechar=-1
+     \escapechar-1
      \xdef\verbatimname{\string#2}%
      \egroup
      \ifcase#1%
@@ -1925,5 +1947,61 @@
   \def\processtaggeddisplayverbatim{\doprocessdisplayverbatim0}
 
 \fi
+
+%D \macros
+%D   {installprettyescape}
+%D
+%D The next feature is dedicated to Fabrice Popineau who 
+%D wanted math inside verbatim. 
+
+\def\prettyescapecnt{255}
+
+\def\installprettyescape
+  {\dodoubleempty\doinstallprettyescape}
+
+\def\doinstallprettyescape[#1][#2]#3 #4%
+  {\bgroup
+   \doglobal\decrement\prettyescapecnt
+   \def\docommando##1%
+     {\def\next{\dodoinstallprettyescape{##1}{#3}{#4}}%
+      \catcode`#3=\@@active
+      \@EA\scantokens\@EA{\next}}%
+   \iffirstargument
+     \processcommalist[#1]\docommando
+   \else
+     \docommando\empty
+   \fi}
+
+\def\dodoinstallprettyescape#1#2#3%
+  {\unexpanded\setgvalue{PRETTY@#1@\prettyescapecnt}##1##2#2{#3{##2}}%
+   \expanded % we need to freeze the counter 
+     {\doglobal\noexpand\appendtoks
+      \noexpand\doif{#1}\noexpand\prettyidentifier
+        {\noexpand\setpretty`\string#2=\prettyescapecnt
+         \noexpand\installprettyhandler \prettyescapecnt\space\getvalue{PRETTY@#1@\prettyescapecnt}}%
+      }\to \everysetupverbatim
+   \egroup}
+
+%D An example of its usage is: 
+%D
+%D \startbuffer
+%D \def\xverbatimmath#1#2{\naturaltextext\mathematics{#1}\relax}
+%D \def\yverbatimmath#1#2{\naturaltextext\mathematics{[[#1]]}\relax}
+%D \def\zverbatimmath#1#2{\naturaltextext\mathematics{(#1)}\relax}
+%D
+%D \installprettyescape [MP] $ \xverbatimmath
+%D \installprettyescape [MP] ~ \yverbatimmath
+%D \installprettyescape [MP] * \zverbatimmath
+%D
+%D \startMP
+%D if $x>10$ :
+%D   $x := 20$
+%D   ~x := 20~
+%D   *x := 20* 
+%D end
+%D \stopMP
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
 
 \protect \endinput

@@ -239,7 +239,7 @@
 %D \showsetup{\y!month}
 %D \showsetup{\y!MONTH}
 
-\def\month%
+\def\month
   {\doconvertmonth}
 
 \def\MONTH#1%
@@ -281,7 +281,7 @@
 \def\getdayoftheweek#1#2#3%
   {\bgroup
    \!!counta#3\relax 
-   \advance\!!counta -1
+   \advance\!!counta \minusone
    \!!countb\!!counta 
    \multiply\!!countb 365
    \advance\!!countb \ifcase#2\relax
@@ -305,7 +305,7 @@
    \advance\!!countb \!!countc
 %  \DoMod\!!countb by7to\!!countb
    \dosetmodulo\!!countb7\!!countb
-   \advance\!!countb 1 
+   \advance\!!countb \plusone 
    \@EA\egroup\@EA\normalweekday\the\!!countb\relax}
 
 \def\dayoftheweek#1#2#3%
@@ -346,7 +346,7 @@
 %D \showsetup{\y!weekday}
 %D \showsetup{\y!WEEKDAY}
 
-\def\weekday%
+\def\weekday
   {\doconvertday}
 
 \def\WEEKDAY#1%
@@ -473,7 +473,7 @@
 
 \newsignal\datesignal
 
-\def\dobetweendates%
+\def\dobetweendates
   {\ifdim\lastskip=\datesignal\relax\else
      \unskip\space
      \hskip\datesignal\relax
@@ -555,21 +555,21 @@
      [\!!stringa]
      [    \v!dag=>\betweendates\the\normalday,
         %\v!dag+=>\betweendates\ordinaldaynumber\normalday,
-         \v!dag+=>\betweendates\convertnumber{\v!day+}\normalday,
+         \v!dag+=>\betweendates\convertnumber{\v!dag+}\normalday,
         \v!maand=>\betweendates\month\normalmonth,
          \v!jaar=>\betweendates\the\normalyear,
        \v!spatie=>\unskip\ \hskip\datesignal,% optimization -) 
               \ =>\unskip\ \hskip\datesignal,% optimization -) 
                d=>\convertnumber\v!dag\normalday,
              %d+=>\ordinaldaynumber\normalday,
-              d+=>\convertnumber{\v!day+}\normalday,
+              d+=>\convertnumber{\v!dag+}\normalday,
                m=>\convertnumber\v!maand\normalmonth,
                j=>\convertnumber\v!jaar\normalyear,
                y=>\convertnumber\v!jaar\normalyear,
                w=>\betweendates\dayoftheweek\normalday\normalmonth\normalyear,
               dd=>\ifnum\normalday  >9 \else0\fi\the\normalday,
-            %dd+=>\ordinaldaynumber{\ifnum\normalday  >9 \else0\fi\the\normalday},
-             dd+=>\convertnumber{\v!day+}{\ifnum\normalday  >9 \else0\fi\the\normalday},
+            %dd+=>\ordinaldaynumber{\ifnum\normalday >9 \else0\fi\the\normalday},
+             dd+=>\convertnumber{\v!dag+}{\ifnum\normalday >9 \else0\fi\the\normalday},
               mm=>\ifnum\normalmonth>9 \else0\fi\the\normalmonth,
               jj=>\expandafter\gobbletwoarguments\the\normalyear,
               yy=>\expandafter\gobbletwoarguments\the\normalyear,
@@ -584,7 +584,7 @@
    \fi
    \egroup}
 
-\def\simplecurrentdate%
+\def\simplecurrentdate
   {\expanded{\complexcurrentdate[\currentdatespecification]}}
 
 \definecomplexorsimple\currentdate
@@ -775,7 +775,7 @@
 \def\convertnumber#1%
   {\csname\??cv
      \@EA\ifx\csname\??cv\currentlanguage#1\endcsname\relax
-       \@EA\ifx\ifcsname\??cv#1\endcsname\relax
+       \@EA\ifx\csname\??cv#1\endcsname\relax
          \s!default
        \else
          #1%
@@ -787,7 +787,7 @@
 
 \def\doifconversiondefinedelse#1%
   {\@EA\ifx\csname\??cv\currentlanguage#1\endcsname\relax
-     \@EA\ifx\ifcsname\??cv#1\endcsname\relax
+     \@EA\ifx\csname\??cv#1\endcsname\relax
        \@EAEAEA\secondoftwoarguments
      \else
        \@EAEAEA\firstoftwoarguments

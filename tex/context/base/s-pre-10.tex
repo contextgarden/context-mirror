@@ -40,7 +40,7 @@
 %D The topic goes to the top right corner of the screen which
 %D means that it is positioned left down to the reference
 %D point. Watch how we make data on this layer (here only
-%D the topic but it van be more) persistent.
+%D the topic but it can be more) persistent.
 
 \setuplayer
   [topic]
@@ -112,16 +112,18 @@
 
 \def\DoSampleText#1#2#3% 
   {\setupframedtexts[SampleText][background={background,#3}]
+   \bgroup
+   \setups[#1]%
+   \setups[always]%
    \setbox\nextbox=\hbox
      {\startSampleText[none]
-        \setups[#1]
-        \setups[always]
         \getbuffer[#1]\par
         \doif{#1}{text}
           {\dorecurse{\TextN}{\getbuffer[text-\recurselevel]\par}}
       \stopSampleText}
    \xdef\SampleTextWidth{\the\wd\nextbox}
-   \setlayer[#2]{\box\nextbox}}
+   \setlayer[#2]{\box\nextbox}%
+   \egroup}
 
 %D Since we are no longer swapping windows, we end up with a
 %D much simplier \type {\Stopidea} macro. We don't reset 

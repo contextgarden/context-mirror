@@ -80,13 +80,13 @@
 %D \usemodules[pictex,chemie,eenheid]
 %D \stoptypen
 
-\def\definefilesynonym%
+\def\definefilesynonym
   {\dodoubleempty\dodefinefilesynonym}
 
 \def\dodefinefilesynonym[#1][#2]%
   {\doifdefined{\??fs#1}
      {\doifnotvalue{\??fs#1}{#2} 
-        {\showmessage{\m!files}{1}{#1 (#2),\getvalue{\??fs#1}}}}%
+        {\showmessage\m!files1{#1 (#2),\getvalue{\??fs#1}}}}%
    \doifelse{#1}{#2}
      {\letbeundefined{\??fs#1}{#2}}
      {\setevalue{\??fs#1}{#2}}}
@@ -170,7 +170,7 @@
       \dododousemodules\f!thirdprefix  {#2}}
      {\dododousemodules{#1-}{#2}}%
    \ifconditional\moduleisloaded\else
-     \showmessage{\m!systems}{6}{#2}%
+     \showmessage\m!systems6{#2}%
    \fi}
 
 \def\dousemodules[#1][#2]%
@@ -257,10 +257,10 @@
   {\doifnotflagged{#2}
      {\let#1\undefined
       \startreadingfile
-      \bgroup
+      \startnointerference % \bgroup
       \cleanupfeatures % better \setnormalcatcodes / test first 
       \readfile{#2}\donothing\donothing
-      \egroup
+      \stopnointerference  % \egroup
       \stopreadingfile
       \doglobal\setflag{#2}}% 
    \ifx#1\undefined

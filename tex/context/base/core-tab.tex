@@ -18,7 +18,7 @@
 % \xhrule : calls for 'special' with width
 % BUG:
 %
-% \starttabel[|l|l|]
+% \starttable[|l|l|]
 % \HL
 % \RL\FR \VL Head 1 \VL Head 2 \VL\FR
 % \RL\LR \VL Head A \VL Head B \VL\LR  % niet grijs ??
@@ -26,7 +26,7 @@
 % \VL 1 \VL 2 \VL\FR
 % \VL a \VL b \VL\LR
 % \HL
-% \stoptabel
+% \stoptable
 
 % melden als in kleur conflict, uitgestelde test op \SR\SR
 
@@ -102,7 +102,7 @@
 %D the basic table typesetting commands.
 %D
 %D \startbuffer
-%D \starttabel[|||]
+%D \starttable[|||]
 %D \HL
 %D \VL first \VL second \VL\AR
 %D \HL
@@ -110,10 +110,10 @@
 %D \VL beta  \VL 2      \VL\AR
 %D \VL gamma \VL 3      \VL\AR
 %D \HL
-%D \stoptabel
+%D \stoptable
 %D \stopbuffer
 %D
-%D \startcombinatie[2]
+%D \startcombinatie
 %D   {\tracetablesfalse\haalbuffer} {\type{\tracetablesfalse}}
 %D   {\tracetablestrue\haalbuffer}  {\type{\tracetablestrue}}
 %D \stopcombinatie
@@ -129,7 +129,7 @@
 %D \type {\LR} commands.
 %D
 %D \startbuffer
-%D \starttabellen[|||]
+%D \starttables[|||]
 %D \HL
 %D \VL first \VL second \VL\AR
 %D \HL
@@ -137,7 +137,7 @@
 %D \VL beta  \VL 2      \VL\AR
 %D \VL gamma \VL 3      \VL\AR
 %D \HL
-%D \stoptabellen
+%D \stoptable
 %D \stopbuffer
 %D
 %D When we use the split table feature, we get a bit more
@@ -150,7 +150,7 @@
 %D table definition is wrong.
 %D
 %D \startbuffer
-%D \starttabel[||||]
+%D \starttable[||||]
 %D \HL
 %D \VL first     second    \VL third \VL\AR
 %D \HL
@@ -158,7 +158,7 @@
 %D \VL beta  \VL 2         \VL b     \VL
 %D \VL gamma \VL \THREE{3}     c     \VL\AR
 %D \HL
-%D \stoptabel
+%D \stoptable
 %D \stopbuffer
 %D
 %D \typebuffer
@@ -194,7 +194,7 @@
 %D    \stopfiguurtekst}
 %D
 %D \startbuffer
-%D \starttabel[|c|c|]
+%D \starttable[|c|c|]
 %D \HL
 %D \BL[2]               \SR
 %D \VL test \VL test \VL\SR
@@ -203,7 +203,7 @@
 %D \VL test \VL test \VL\MR
 %D \VL test \VL test \VL\LR
 %D \HL
-%D \stoptabel
+%D \stoptable
 %D \stopbuffer
 %D
 %D \ShowExample
@@ -213,56 +213,56 @@
 %D the commands used.
 %D
 %D \startbuffer
-%D \starttabel[|c|c|c|]
+%D \starttable[|c|c|c|]
 %D \HL
 %D \BL[3]                        \SR
 %D \VL test \VL test \VL test \VL\SR
 %D \HL
-%D \stoptabel
+%D \stoptable
 %D \stopbuffer
 %D
 %D \ShowExample
 %D
 %D \startbuffer
-%D \starttabel[|c|c|c|]
+%D \starttable[|c|c|c|]
 %D \HL
 %D \BC      \BL[2]               \SR
 %D \VL test \VL test \VL test \VL\SR
 %D \HL
-%D \stoptabel
+%D \stoptable
 %D \stopbuffer
 %D
 %D \ShowExample
 %D
 %D \startbuffer
-%D \starttabel[|c|c|c|]
+%D \starttable[|c|c|c|]
 %D \HL
 %D \BC      \BC      \BL         \SR
 %D \VL test \VL test \VL test \VL\SR
 %D \HL
-%D \stoptabel
+%D \stoptable
 %D \stopbuffer
 %D
 %D \ShowExample
 %D
 %D \startbuffer
-%D \starttabel[|c|c|c|]
+%D \starttable[|c|c|c|]
 %D \HL
 %D \BC      \BL                  \SR
 %D \VL test \VL test \VL test \VL\SR
 %D \HL
-%D \stoptabel
+%D \stoptable
 %D \stopbuffer
 %D
 %D \ShowExample
 %D
 %D \startbuffer
-%D \starttabel[|c|c|c|]
+%D \starttable[|c|c|c|]
 %D \BL               \BL         \SR
 %D \HL
 %D \VL test \VL test \VL test \VL\SR
 %D \HL
-%D \stoptabel
+%D \stoptable
 %D \stopbuffer
 %D
 %D \ShowExample
@@ -273,7 +273,7 @@
 %D specification later on:
 %D
 %D \startbuffer
-%D \starttabel[|c|c|c|]
+%D \starttable[|c|c|c|]
 %D \BC      \BL                  \SR
 %D \HL
 %D \VL test \VL test \VL test \VL\SR
@@ -285,7 +285,7 @@
 %D                            \BR\LR
 %D \VL test \VL test \VL test \VL\LR
 %D \HL
-%D \stoptabel
+%D \stoptable
 %D \stopbuffer
 %D
 %D \ShowExample
@@ -313,7 +313,8 @@
 
 %D Nog vervangen:
 
-\def\c!Table {Table}
+\def\c!Table{Table}
+\def\m!TABLE{TABLE}
 
 %D We already saw that the table macros report errors and
 %D provide automatic spacing. These features can only be
@@ -369,7 +370,7 @@
 \catcode`\|=\@@active
 \catcode`\"=\@@active
 
-\gdef\pushouterbarandquote%
+\gdef\pushouterbarandquote
   {\ifForgetTableBarAndQuote
      \ifnum\catcode`\|=\@@active \else
        \catcode`\|=\@@active
@@ -383,15 +384,15 @@
      \let\outertablequote="%
    \fi}
 
-\gdef\popouterbarandquote%
+\gdef\popouterbarandquote
   {\ifForgetTableBarAndQuote
-     \let|=\outertablebar
-     \let"=\outertablequote
+     \let|\outertablebar
+     \let"\outertablequote
    \else
      \redefinetablebarandquote
    \fi}
 
-\gdef\ObeyTableBarAndQuote%
+\gdef\ObeyTableBarAndQuote
   {\ForgetTableBarAndQuotefalse
    \ifintable
      \redefinetablebarandquote
@@ -430,7 +431,7 @@
 %D The next hack is dedicated to Tobias, who found out that
 %D paragraph entries don't break well.
 
-\def\TABLEhack{\hskip\!!zeropoint}
+\def\TABLEhack{\hskip\zeropoint}
 
 %D The first attemp to solve this problem was:
 %D
@@ -463,45 +464,32 @@
 \newdimen\TABLEparheight
 
 \def\BeginTableParBox#1%
-  {\setbox\scratchbox=\vtop\bgroup % \setbox added
-     \hsize=#1\relax
+  {\setbox\scratchbox\vtop\bgroup % \setbox added
+     \hsize#1\relax
      \normalbaselines
-     \let~=\!ttTie
-     \let\-=\!ttDH
+     \let~\!ttTie
+     \let\-\!ttDH
      \blanko[\v!blokkeer]% % added
      \the\EveryTableParBox}
-
-% \def\EndTableParBox%
-%   {\removelastskip % added
-%   %\MakeStrut{0pt}{\StrutDepthFactor\StrutUnit}         % removed
-%    \par
-%    \ifnum\prevgraf>0
-%      \strut \geenwitruimte \vskip-\lineheight           % added
-%    \fi
-%    \egroup % finishes the \vtop begun by \BeginTableParbox
-%    \getboxheight\scratchdimen\of\box\scratchbox\relax   % added
-%    \ifdim\scratchdimen>\TABLEparheight                  % added
-%      \global\TABLEparheight=\scratchdimen               % added
-%    \fi                                                  % added
-%    \box\scratchbox}
 
 \def\EndTableParBox 
   {\removelastskip                                   % itemize or so
    \par
-   \ifnum\prevgraf>0                                 % we want at least
+   \ifnum\prevgraf>\zerocount                        % we want at least
      \strut \geenwitruimte \vskip-\lineheight        % one line of text
      \egroup
      \ifdim\dp\scratchbox>\lineheight                % see (*) for an
        \getnoflines{\dp\scratchbox}%                 % example of where
-       \dp\scratchbox=\zeropoint                     % saving can go 
-       \vtop to \noflines\lineheight{\box\scratchbox}% terrible wrong 
+       \dp\scratchbox\zeropoint                      % saving can go 
+       \setbox\scratchbox                            % terrible wrong 
+         \vtop to \noflines\lineheight{\box\scratchbox}%
      \fi                                             % esp between rows
    \else                                             % of paragraphs
      \egroup
    \fi
    \getboxheight\scratchdimen\of\box\scratchbox\relax% compensate for
    \ifdim\scratchdimen>\TABLEparheight               % funny depth of 
-     \global\TABLEparheight=\scratchdimen            % multi-line box
+     \global\TABLEparheight\scratchdimen             % multi-line box
    \fi                                               % i.e. vtop
    \box\scratchbox}
 
@@ -553,12 +541,12 @@
 %D format.
 %D
 %D \startbuffer
-%D \starttabel{|q[00,000]|Q[00,00]|}
+%D \starttable{|q[00,000]|Q[00,00]|}
 %D \HL
 %D \VL -1,2   \VL 12,35 \VL\FR
 %D \VL 11,203 \VL  2,4  \VL\LR
 %D \HL
-%D \stoptabel
+%D \stoptable
 %D \stopbuffer
 %D
 %D \ShowExample
@@ -576,7 +564,7 @@
 %D \em Key \type{q}: quantity item, non||math mode.
 
 \NewFormatKey q%
-  {\def\!tqStyle{}%
+  {\letempty\!tqStyle
    \futurelet\!tnext\!tqTestForBracket}
 
 %D \em Key \type{Q}: quantity item, math mode.
@@ -617,9 +605,9 @@
    \aftergroup[%
    \!taCountA #1
    \!thLoop
-     \ifnum \!taCountA>0
-     \advance\!taCountA -1
-     \aftergroup0
+     \ifnum \!taCountA>\zerocount
+       \advance\!taCountA \minusone
+       \aftergroup0
    \repeat
    \def\!ttemp{#3}%
    \ifx\!ttemp\empty
@@ -627,9 +615,9 @@
      \aftergroup,
      \!taCountA #2
      \!thLoop
-       \ifnum\!taCountA>0
-       \advance\!taCountA -1
-       \aftergroup0
+       \ifnum\!taCountA>\zerocount
+         \advance\!taCountA \minusone
+         \aftergroup0
      \repeat
    \fi
    \aftergroup]\aftergroup}%
@@ -650,15 +638,15 @@
 \def\!tqMakeQuantityTemplate#1#2,#3,#4!%  #1=<empty> or $
   {\def\!ttemp{#4}%
    \ifx\!ttemp\empty
-     \!taDimenC=0pt
+     \!taDimenC\zeropoint
    \else
-     \setbox0=\hbox{\m@th #1,#3#1}%
-     \!taDimenC=\wd0
+     \setbox0\hbox{\m@th #1,#3#1}%
+     \!taDimenC\wd0
    \fi
-   \setbox0=\hbox{\m@th #1#2#1}%
-   \!thToksEdef\!taDataColumnTemplate=
-     {\noexpand\!tqSetQuantityItem{\the\wd0 }{\the\!taDimenC}{#1}%
-      \the\!taDataColumnTemplate}%
+   \setbox0\hbox{\m@th #1#2#1}%
+   \!thToksEdef\!taDataColumnTemplate
+     ={\noexpand\!tqSetQuantityItem{\the\wd0 }{\the\!taDimenC}{#1}%
+       \the\!taDataColumnTemplate}%
   \ReadFormatKeys}
 
 %D \em Set numeric item.
@@ -667,16 +655,9 @@
   {\!tqSetQuantityItemA{#1}{#2}{#3}#4,,!}
 
 \def\!tqSetQuantityItemA #1#2#3#4,#5,#6!%
-  {\def\!ttemp%
-     {#6}%
-   \hbox to #1
-     {\hss\m@th#3#4#3}%
-   \hbox to #2
-     {\ifx\!ttemp\empty
-      \else
-        \m@th#3,#5#3%
-      \fi
-      \hss}}
+  {\def\!ttemp{#6}%
+   \hbox to #1{\hss\m@th#3#4#3}%
+   \hbox to #2{\ifx\!ttemp\empty\else\m@th#3,#5#3\fi\hss}}
 
 %D Here ends the Q||extension. Did you watch the clever use
 %D of aftergroup in \type{\!tqConvertCode}.
@@ -696,9 +677,9 @@
 %D centering}.
 %D
 %D \startbuffer
-%D \starttabel[|C{red}|C{green}|C{blue}|]
+%D \starttable[|C{red}|C{green}|C{blue}|]
 %D \VL R(ed) \VL G(reen) \VL B(lue) \VL\SR
-%D \stoptabel
+%D \stoptable
 %D \stopbuffer
 %D
 %D \ShowExample
@@ -710,7 +691,7 @@
 
 %D So now we have three new keys:
 %D
-%D \starttabel[|||]
+%D \starttable[|||]
 %D \HL
 %D \NC \bf key       \NC \bf meaning                 \NC\AR
 %D \HL
@@ -718,7 +699,7 @@
 %D \NC q[x,y]        \NC text mode formatted numbers \NC\AR
 %D \NC C{identifier} \NC column entry color          \NC\AR
 %D \HL
-%D \stoptabel
+%D \stoptable
 
 %D To be compatible with the tabulate environment, we also
 %D support the \type {l}, \type {c} and \type {r} keys for
@@ -752,7 +733,7 @@
 %D slightly adapted, i.c. the penalty is removed. We also
 %D add basic color support.
 
-\def\!ttFullHruleA%
+\def\!ttFullHruleA
   {\!ttGetHalfRuleThickness
    \startglobalTABLEcolor % added
    \hrule\!thHeight\dimen0\!thDepth\dimen0
@@ -766,15 +747,15 @@
 %D hooks. One thing to keep in mind is that \type{&} keeps
 %D assignments local. Again, we add basic color support.
 
-\let\TABLEbeforebar=\empty
-\let\TABLEafterbar =\empty
+\let\TABLEbeforebar\empty
+\let\TABLEafterbar \empty
 
-\def\!ttInsertVrule%
+\def\!ttInsertVrule
   {\hfil
    \TABLEbeforebar % added
    \startglobalTABLEcolor % added
    \vrule \!thWidth
-     \ifnum\!tgCode=1
+     \ifnum\!tgCode=\plusone
        \ifx\!tgValue\empty
          \LineThicknessFactor
        \else
@@ -792,13 +773,13 @@
 %D The next two macros are only adapted to basis rule
 %D color support.
 
-\def\!tfSetVrule%
+\def\!tfSetVrule
   {\!thToksEdef\!taRuleColumnTemplate=
       {\noexpand\hfil
        \noexpand\startglobalTABLEcolor % added
        \noexpand\vrule
        \noexpand\!thWidth
-       \ifnum\!tgCode=1
+       \ifnum\!tgCode=\plusone
          \ifx\!tgValue\empty
            \the\LineThicknessFactor
          \else
@@ -814,7 +795,7 @@
        \the\!taRuleColumnTemplate}%
   \!tfAdjoinPriorColumn}
 
-\def\!ttShortHruleA%
+\def\!ttShortHruleA
   {\!ttGetHalfRuleThickness
    \startglobalTABLEcolor % added
    \leaders\hrule\!thHeight\dimen0\!thDepth\dimen0\hfill
@@ -834,23 +815,25 @@
 %D extensions concern the second level check, the first
 %D subbranch and advancing the column.
 
+\ifx\mscount\undefined \newcount\mscount \fi 
+
 \def\!ttuse#1%
-  {\ifnum#1>\@ne
+  {\ifnum#1>\plusone
      \omit
-     \scratchcounter=\currentTABLEcolumn                 % added
-     \advance\scratchcounter by #1%                      % added
-     \advance\scratchcounter by -1                       % added
-     \ifnum\scratchcounter>\maxTABLEcolumn               % added
-       \def\next%                                        % added
-         {\setTABLEerror\TABLEspanoverflow               % added
-          \handleTABLEerror}%                            % added
-     \else                                               % added
-       \def\next%                                        % added
-         {\global\advance\currentTABLEcolumn by #1%      % added
-          \global\advance\currentTABLEcolumn by -1       % added
-          \mscount=#1%  \mscount is in Plain
-          \advance\mscount by \m@ne
-          \advance\mscount by \mscount
+     \scratchcounter\currentTABLEcolumn                % added
+     \advance\scratchcounter #1%                       % added
+     \advance\scratchcounter \minusone                 % added
+     \ifnum\scratchcounter>\maxTABLEcolumn             % added
+       \def\next                                       % added
+         {\setTABLEerror\TABLEspanoverflow             % added
+          \handleTABLEerror}%                          % added
+     \else                                             % added
+       \def\next                                       % added
+         {\global\advance\currentTABLEcolumn #1%       % added
+          \global\advance\currentTABLEcolumn \minusone % added
+          \mscount#1%   \mscount is in Plain
+          \advance\mscount \m@ne
+          \advance\mscount \mscount
           \!thLoop
             \ifnum\mscount>\@ne
               \sp@n % from Plain (\span\omit \advance\mscount\m@ne)
@@ -858,8 +841,8 @@
           \span}%
      \fi                                                 % added
    \else                                                 % added
-     \def\next% conflicts with possible next \omit       % added
-       {\global\advance\currentTABLEcolumn by 1 }%       % added
+     \def\next % conflicts with possible next \omit      % added
+       {\global\advance\currentTABLEcolumn \plusone}%    % added
    \fi
    \next}                                                % added
 
@@ -871,8 +854,8 @@
 %D such hacks become a second nature. However, redefining \type
 %D {\omit} and \type{\span} is not that easy.}
 
-\def\TABLEnoalign%
-  {\noalign\bgroup\let\noalign=\relax\let\next=}
+\def\TABLEnoalign
+  {\noalign\bgroup\let\noalign\relax\let\next=}
 
 %D \macros
 %D   {starttable}
@@ -896,29 +879,31 @@
 %D
 %D \showsetup{starttable}
 
-\def\starttabel%
+\def\starttable
   {\bgroup
-   \ifinsidefloat\else
-     \startbaselinecorrection % \outer..
-   \fi
+   \doifelsenothing\@@tikader
+     {\ifinsidefloat\else\startbaselinecorrection\fi}
+     {\startframedcontent[\@@tikader]}%
    \postponefootnotes
    \firststagestartTABLE}
 
-\def\stoptabel%
+\def\stoptable
   {\TABLEtail
-   \global\let\@@TABLEhead\empty
-   \global\let\@@TABLEtail\empty
+   \globalletempty\@@TABLEhead
+   \globalletempty\@@TABLEtail
    \finishTABLE
-   \ifinsidefloat\else
-     \stopbaselinecorrection % \outer..
-     \goodbreak % compensates all the nobreaks
-   \fi
+   \doifelsenothing\@@tikader
+     {\ifinsidefloat\else
+        \stopbaselinecorrection
+        \goodbreak % compensates all the nobreaks
+      \fi}
+     {\stopframedcontent}%
    \egroup}
 
 %D Before we can grab the argument, we have to make sure that
 %D the \CATCODES\ are set. The first stage takes care of that.
 
-\def\firststagestartTABLE%
+\def\firststagestartTABLE
   {\bgroup                   % kan-ie weg?
    \global\intabletrue
    \pushouterbarandquote
@@ -937,11 +922,11 @@
 %D \starttypen
 %D \definetabletemplate[test][|||]
 %D
-%D \starttabel[test]
+%D \starttable[test]
 %D \VL test \VL test \VL\AR
 %D \VL test \VL test \VL\AR
 %D \VL test \VL test \VL\AR
-%D \stoptabel
+%D \stoptable
 %D \stoptypen
 %D
 %D The implementation of the definition macro is not that
@@ -967,7 +952,7 @@
    \fi
    \egroup}
 
-\def\definetabletemplate%
+\def\definetabletemplate
   {\bgroup
    \catcode`\|=\@@other
    \doquadrupleempty\dodefinetabletemplate}
@@ -1011,16 +996,16 @@
 \def\complexsecondstagestartTABLE#1[#2]%
   {\convertargument|\to\asciiA
    \convertargument#2\to\asciiB
-   \doifinstringelse{\asciiA}{\asciiB}
-     {\gdef\restartTABLE%
+   \doifinstringelse\asciiA\asciiB
+     {\gdef\restartTABLE
         {\gdef\restartTABLE{\thirdstagestartTABLE{#2}}%
          \prepareTABLEsplitting
          \restartTABLE
          \TABLEhead}}
      {\doifdefinedelse{\c!Table#2}
-        {\gdef\restartTABLE%
+        {\gdef\restartTABLE
            {\getvalue{\c!Table#2}}}
-        {\gdef\restartTABLE%
+        {\gdef\restartTABLE
            {\gdef\restartTABLE{\getvalue{#2}}%
             \prepareTABLEsplitting
             \restartTABLE
@@ -1037,12 +1022,12 @@
    \setTABLEaction\TABLEunknown
    \setTABLEforce\TABLEunknown
    \setTABLEerror\TABLEunknown
-   \global\let\TABLEgrayline=\empty
-   \global\let\nextTABLEgrayline=\empty
    \global\TABLEgraylinefalse
    \global\TABLEgraydonefalse
-   \global\let\TABLEgraylineerror =\empty
-   \global\let\TABLEgraylinestatus=\empty
+   \globalletempty\TABLEgrayline
+   \globalletempty\nextTABLEgrayline
+   \globalletempty\TABLEgraylineerror
+   \globalletempty\TABLEgraylinestatus
    \resetVLvalues
    \appendtoks\popouterbarandquote\to\EveryTable
    \appendtoks\localTABLEsetup\to\EveryTable
@@ -1057,10 +1042,10 @@
    \forgetall % added
    \doifsomething{#1}
      {\def\TABLEformat{#1}%
-      \expandafter\getTABLEnofcolumns\expandafter{\TABLEformat}%
+     %\expandafter\getTABLEnofcolumns\expandafter{\TABLEformat}%
       \expandafter\BeginFormat\TABLEformat\EndFormat}}
 
-\def\finishTABLE%
+\def\finishTABLE
   {\chuckTABLEautorow
    \unskip\crcr
    \EndTable
@@ -1076,34 +1061,34 @@
 %D support captions too, we will also reserve some space for
 %D those later on.
 
-\def\prepareTABLEsplitting%
-  {\global\TABLEheight=\!!zeropoint
+\def\prepareTABLEsplitting
+  {\global\TABLEheight\zeropoint
    \ifsplittables
      \ifx\TABLEhead\empty
-       \global\TABLEheadheight=\!!zeropoint
+       \global\TABLEheadheight\zeropoint
      \else
-       \setbox0=\vbox
+       \setbox0\vbox
          \bgroup
            \def\doEndOfTableLine##1##2##3{\normalTABLElineformat##2##3}%
            \restartTABLE\TABLEhead
          \finishTABLE
-         \global\TABLEheadheight=\ht0
+         \global\TABLEheadheight\ht0
      \fi
      \ifx\TABLEtail\empty
-       \global\TABLEtailheight=\!!zeropoint
+       \global\TABLEtailheight\zeropoint
      \else
-       \setbox0=\vbox
+       \setbox0\vbox
          \bgroup
            \def\doEndOfTableLine##1##2##3{\normalTABLElineformat##2##3}%
            \restartTABLE\TABLEtail
          \finishTABLE
-       \global\TABLEtailheight=\ht0
+       \global\TABLEtailheight\ht0
      \fi
    \else
-     \global\TABLEheadheight=\!!zeropoint
-     \global\TABLEtailheight=\!!zeropoint
+     \global\TABLEheadheight\zeropoint
+     \global\TABLEtailheight\zeropoint
    \fi
-   \global\TABLEheight=\!!zeropoint
+   \global\TABLEheight\zeropoint
    \calculatemaxTABLEheight\docalculatemaxTABLEheight}
 
 %D \macros
@@ -1117,17 +1102,17 @@
 %D For example:
 %D
 %D \starttypen
-%D \starttabellen[|||]
+%D \starttables[|||]
 %D \HL
 %D \VL element \VL atom weight \VL\AR
 %D \HL
 %D \VL ....... \VL ........... \VL\AR
 %D \VL ....... \VL ........... \VL\AR
 %D \HL
-%D \stoptabellen
+%D \stoptables
 %D \stoptypen
 
-\def\starttabellen%
+\def\starttables
   {\bgroup
    \ifinsidefloat\else
      \baselinecorrection
@@ -1135,12 +1120,12 @@
      \topbaselinecorrection
    \fi
    \forgetall
-   \global\let\absmaxTABLEheight=\!!zeropoint
+   \globallet\absmaxTABLEheight\zeropoint
    \splittablestrue
    \global\TABLEinbreakfalse
    \firststagestartTABLE}
 
-\def\stoptabellen%
+\def\stoptables
   {\TABLEtail
    \finishTABLE
    \ifinsidefloat\else
@@ -1154,20 +1139,20 @@
 %D something like:
 %D
 %D \starttypen
-%D \starttabelkop
+%D \starttablekop
 %D \HL
 %D \VL element \VL atom weight \VL\AR
 %D \HL
-%D \stoptabelkop
+%D \stoptablekop
 %D
-%D \starttabelstaart
+%D \starttablestaart
 %D \HL
-%D \stoptabelstaart
+%D \stoptablestaart
 %D
-%D \starttabellen[|||]
+%D \starttables[|||]
 %D \VL ....... \VL ........... \VL\AR
 %D \VL ....... \VL ........... \VL\AR
-%D \stoptabellen
+%D \stoptables
 %D \stoptypen
 %D
 %D This time each split table gets a head line and ends with
@@ -1180,17 +1165,17 @@
 \let\@@TABLEhead\empty  \def\TABLEhead{\@@TABLEhead}
 \let\@@TABLEtail\empty  \def\TABLEtail{\@@TABLEtail}
 
-\letvalue{\e!start   \e!tabelkop}=\undefined
-\letvalue{\e!stop    \e!tabelkop}=\undefined
-\letvalue{\e!start\e!tabelstaart}=\undefined
-\letvalue{\e!stop \e!tabelstaart}=\undefined
+\letvalue{\e!start\e!tablehead}=\undefined
+\letvalue{\e!stop \e!tablehead}=\undefined
+\letvalue{\e!start\e!tabletail}=\undefined
+\letvalue{\e!stop \e!tabletail}=\undefined
 
 \expanded
-  {\def\csname\e!start\e!tabelkop\endcsname##1\csname\e!stop\e!tabelkop\endcsname%
+  {\def\csname\e!start\e!tablehead\endcsname##1\csname\e!stop\e!tablehead\endcsname%
      {\noexpand\setTABLEhead##1\noexpand\end}}
 
 \expanded
-  {\def\csname\e!start\e!tabelstaart\endcsname##1\csname\e!stop\e!tabelstaart\endcsname%
+  {\def\csname\e!start\e!tabletail\endcsname##1\csname\e!stop\e!tabletail\endcsname%
      {\noexpand\setTABLEtail##1\noexpand\end}}
 
 %D The second argument is a dummy one, by scanning for it, we
@@ -1210,36 +1195,36 @@
 %D algoritm evolved during the development of the split option
 %D and will probably be improved bit by bit.
 
-\def\docalculatemaxTABLEheight%
+\def\docalculatemaxTABLEheight
   {\ifbinnenkolommen
      \getcolumnstatus\column\scratchcounter\total\dimen0\goal\dimen2\\%
    \else
      \ifdim\pagegoal<\maxdimen
-       \dimen0=\pagetotal
-       \dimen2=\pagegoal
+       \dimen0\pagetotal
+       \dimen2\pagegoal
      \else
-       \dimen0=\!!zeropoint
-       \dimen2=\teksthoogte
+       \dimen0\zeropoint
+       \dimen2\teksthoogte
      \fi
    \fi
-   \advance\dimen2 by -\dimen0
-   \global\TABLEmaxheight=\dimen2
-   \global\advance\TABLEmaxheight by -\dp\strutbox
-   \ifdim\prevdepth<\maxdimen\ifdim\prevdepth>\!!zeropoint
-     \global\advance\TABLEmaxheight by -\dp\strutbox
-     \global\advance\TABLEmaxheight by -\parskip
+   \advance\dimen2 -\dimen0
+   \global\TABLEmaxheight\dimen2
+   \global\advance\TABLEmaxheight -\dp\strutbox
+   \ifdim\prevdepth<\maxdimen\ifdim\prevdepth>\zeropoint
+     \global\advance\TABLEmaxheight -\dp\strutbox
+     \global\advance\TABLEmaxheight -\parskip
    \fi\fi}
 
-\def\nocalculatemaxTABLEheight%
+\def\nocalculatemaxTABLEheight
   {\ifbinnenkolommen
      \getcolumnstatus\column\scratchcounter\total\dimen0\goal\dimen2\\%
    \else
-     \dimen0=\!!zeropoint
-     \dimen2=\teksthoogte
+     \dimen0\zeropoint
+     \dimen2\teksthoogte
    \fi
-   \advance\dimen2 by -\dimen0
-   \global\TABLEmaxheight=\dimen2
-   \global\advance\TABLEmaxheight by -\dp\strutbox}
+   \advance\dimen2 -\dimen0
+   \global\TABLEmaxheight\dimen2
+   \global\advance\TABLEmaxheight -\dp\strutbox}
 
 \def\calculatemaxTABLEheight#1%
   {\ifsplittables
@@ -1256,20 +1241,20 @@
        \nocalculatemaxTABLEheight
      \fi
      \ifdim\TABLEmaxheight<\absmaxTABLEheight % forces equal columns
-       \global\TABLEmaxheight=\absmaxTABLEheight
+       \global\TABLEmaxheight\absmaxTABLEheight
      \else
        \xdef\absmaxTABLEheight{\the\TABLEmaxheight}%
      \fi
-     \global\TABLEheight=\!!zeropoint
+     \global\TABLEheight\zeropoint
    \else
-     \global\TABLEmaxheight=\maxdimen
+     \global\TABLEmaxheight\maxdimen
    \fi}
 
 %D When splitting tables, we have to remove the top skip when
 %D we're in the main vertical list, else we remove whatever
 %D skip \TEX\ adds.
 
-\def\removeTABLEtopskip%
+\def\removeTABLEtopskip
   {\ifinsidefloat
      \hbox{\strut}\kern-\lineheight
    \else
@@ -1299,37 +1284,37 @@
 %D screen and log file as well as visualized in the table in
 %D teletype.
 
-\def\handleTABLEerror%
+\def\handleTABLEerror
   {\ifTABLEgrayline \else
      \ifnum\TABLEerror=\TABLEunknown \else
        \setTABLEaction\TABLEunknown
-       \global\let\checkTABLEautorow=\empty
-       \global\let\chuckTABLEautorow=\empty
+       \globalletempty\checkTABLEautorow
+       \globalletempty\chuckTABLEautorow
      \fi
      \ifcase\TABLEerror
        % no error
      \or
        % \TABLEmissingrow
        \tttf [missing row]%
-       \writestatus{TABLE}{missing row}%
+       \writestatus\m!TABLE{missing row}%
        \SR
      \or
        % \TABLEmissingcolumn
        \fillTABLEcolumns
        \tttf [missing column]%
-       \writestatus{TABLE}{missing column}%
+       \writestatus\m!TABLE{missing column}%
        \SR
      \or
        % \TABLEspanoverflow
        \fillTABLEcolumns
        \tttf [columnspan too large]%
-       \writestatus{TABLE}{columnspan too large}%
+       \writestatus\m!TABLE{columnspan too large}%
        \SR
      \or
        % \TABLEdivisionoverflow
        \fillTABLEcolumns
        \tttf [division line too long]%
-       \writestatus{TABLE}{division line too long}%
+       \writestatus\m!TABLE{division line too long}%
        \SR
      \fi
    \fi
@@ -1337,19 +1322,19 @@
      \finishTABLErow
    \fi}
 
-\def\finishTABLErow%
+\def\finishTABLErow
   {\crcr
    \TABLEnoalign
      {\nobreak
       \setTABLEaction\TABLEunknown
       \setTABLEerror\TABLEunknown
-      \global\let\checkTABLEautorow=\empty
-      \global\let\chuckTABLEautorow=\empty
-      \global\currentTABLEcolumn=0 }}
+      \globalletempty\checkTABLEautorow
+      \globalletempty\chuckTABLEautorow
+      \global\currentTABLEcolumn\zerocount}}
 
-\def\fillTABLEcolumns%
+\def\fillTABLEcolumns
   {\ifnum\currentTABLEcolumn>\maxTABLEcolumn \else
-     \global\advance\currentTABLEcolumn by 1
+     \global\advance\currentTABLEcolumn \plusone
      \normalTABLEquote
      \expandafter\fillTABLEcolumns
    \fi}
@@ -1376,7 +1361,7 @@
 %D itself into one of the other types.
 %D
 %D \starttypen
-%D \starttabel[||]
+%D \starttable[||]
 %D \HL
 %D \VL a separate row \VL\SR
 %D \HL
@@ -1384,7 +1369,7 @@
 %D \VL a mid row      \VL\MR
 %D \VL a last row     \VL\LR
 %D \HL
-%D \stoptabel
+%D \stoptable
 %D \stoptypen
 %D
 %D In this example we could have used \type{\AR} without
@@ -1405,60 +1390,60 @@
      \convertargument         #1\to\asciiA
      \convertcommand\TABLEendBCL\to\asciiB
      \ifx\asciiA\asciiB \else
-       \writestatus{TABLE}{confusing \asciiA\space and \asciiB}%
+       \writestatus\m!TABLE{confusing \asciiA\space and \asciiB}%
        \gdef\TABLEgraylineerror%
-         {\global\let\TABLEgraylineerror=\empty
+         {\globalletempty\TABLEgraylineerror
           [\asciiA\unskip<->\asciiB\unskip]}%
      \fi
      \global\TABLEgraydonefalse
    \fi}
 
-\def\defineTABLEendings%
-  {\let\SR=\TableSR
-   \let\FR=\TableFR
-   \let\MR=\TableMR
-   \let\LR=\TableLR
-   \let\AR=\TableAR}
+\def\defineTABLEendings
+  {\let\SR\TableSR
+   \let\FR\TableFR
+   \let\MR\TableMR
+   \let\LR\TableLR
+   \let\AR\TableAR}
 
-\def\TableSR%
+\def\TableSR
   {\ifTABLEgrayline \else
      \ifnum\TABLEaction=\TABLEfirstrow
-       \writestatus{TABLE}{change \string\SR\space into \string\MR/\string\LR}%
+       \writestatus\m!TABLE{change \string\SR\space into \string\MR/\string\LR}%
      \else\ifnum\TABLEaction=\TABLEmidrow
-       \writestatus{TABLE}{change \string\SR\space into \string\MR/\string\LR}%
+       \writestatus\m!TABLE{change \string\SR\space into \string\MR/\string\LR}%
      \else\ifnum\TABLEaction=\TABLEmidrow
-       \writestatus{TABLE}{change \string\SR\space into \string\MR/\string\LR}%
+       \writestatus\m!TABLE{change \string\SR\space into \string\MR/\string\LR}%
      \fi\fi\fi
    \fi
    \checkTABLErow\SR
    \endTABLErow\TABLEseparaterow\TABLErowfactor\TABLErowfactor}
 
-\def\TableFR%
+\def\TableFR
   {\ifTABLEgrayline \else
      \ifnum\TABLEaction=\TABLEmidrow
-       \writestatus{TABLE}{change \string\FR\space into \string\MR/\string\LR}%
+       \writestatus\m!TABLE{change \string\FR\space into \string\MR/\string\LR}%
      \else\ifnum\TABLEaction=\TABLElastrow
-       \writestatus{TABLE}{change \string\FR\space into \string\MR/\string\LR}%
+       \writestatus\m!TABLE{change \string\FR\space into \string\MR/\string\LR}%
      \fi\fi
    \fi
    \checkTABLErow\FR
    \endTABLErow\TABLEfirstrow\TABLErowfactor\TABLErowzero}
 
-\def\TableMR%
+\def\TableMR
   {\ifTABLEgrayline \else
      \ifnum\TABLEaction=\TABLErule
-       \writestatus{TABLE}{change \string\MR\space into \string\FR/\string\SR}%
+       \writestatus\m!TABLE{change \string\MR\space into \string\FR/\string\SR}%
      \else\ifnum\TABLEaction=\TABLElastrow
-       \writestatus{TABLE}{change \string\MR\space into \string\FR}%
+       \writestatus\m!TABLE{change \string\MR\space into \string\FR}%
      \fi\fi
    \fi
    \checkTABLErow\MR
    \endTABLErow\TABLEmidrow00}
 
-\def\TableLR%
+\def\TableLR
   {\ifTABLEgrayline \else
      \ifnum\TABLEaction=\TABLErule
-       \writestatus{TABLE}{change \string\LR\space into \string\FR/\string\SR}%
+       \writestatus\m!TABLE{change \string\LR\space into \string\FR/\string\SR}%
      \fi
    \fi
    \checkTABLErow\LR
@@ -1477,8 +1462,8 @@
 
 \newif\ifcheckTABLEcolumns
 
-\let\beforeTABLEline=\empty
-\let\afterTABLEline =\empty
+\let\beforeTABLEline\empty
+\let\afterTABLEline \empty
 
 \def\doendTABLErow#1#2#3%
   {\handleTABLEbreak#2#3%
@@ -1502,7 +1487,7 @@
    \fi
    \TABLEnoalign
      {\setTABLEforce\TABLEunknown
-      \global\currentTABLEcolumn=0 }%
+      \global\currentTABLEcolumn\zerocount}%
    \afterTABLEline}
 
 \def\endTABLErow#1#2#3%
@@ -1524,30 +1509,30 @@
 %D check takes care of the first and mid rows, the chuck macro
 %D |<|how about that name|>| handles the last row.
 
-\def\TableAR%
+\def\TableAR
   {\ifTABLEgraydone
-     \global\let\checkTABLEautorow=\empty
-     \global\let\chuckTABLEautorow=\empty
+     \globalletempty\checkTABLEautorow
+     \globalletempty\chuckTABLEautorow
      \global\TABLEgraydonefalse
      \TABLEendBCL
    \else
-     \global\let\checkTABLEautorow=\docheckTABLEautorow
-     \global\let\chuckTABLEautorow=\dochuckTABLEautorow
+     \globallet\checkTABLEautorow\docheckTABLEautorow
+     \globallet\chuckTABLEautorow\dochuckTABLEautorow
    \fi}
 
-\let\checkTABLEautorow=\empty
-\let\chuckTABLEautorow=\empty
+\let\checkTABLEautorow\empty
+\let\chuckTABLEautorow\empty
 
-\def\docheckTABLEautorow%
-  {\global\let\checkTABLEautorow=\empty
+\def\docheckTABLEautorow
+  {\globallet\checkTABLEautorow\empty
    \ifnum\TABLEaction=\TABLErule          \FR
    \else\ifnum\TABLEaction=\TABLEunknown  \FR
    \else                                  \MR
    \fi\fi}
 
-\def\dochuckTABLEautorow%
-  {\global\let\checkTABLEautorow=\empty
-   \global\let\chuckTABLEautorow=\empty
+\def\dochuckTABLEautorow
+  {\globalletempty\checkTABLEautorow
+   \globalletempty\chuckTABLEautorow
    \ifnum\TABLEaction=\TABLErule          \SR
    \else\ifnum\TABLEaction=\TABLEunknown  \SR
    \else                                  \LR
@@ -1558,28 +1543,32 @@
 
 \def\handleTABLEbreak#1#2%
   {\ifsplittables
-     \setbox0=\hbox{\AugmentedTableStrut{#1}{#2}}%
-     \getboxheight\dimen0\of\box0\relax
+     \setbox0\hbox{\AugmentedTableStrut{#1}{#2}}%
+     \getboxheight\dimen0\of\box0\relax    
      \ifdim\TABLEparheight>\dimen0         % new
-       \dimen0=\TABLEparheight             % new
-       \global\TABLEparheight=\!!zeropoint % new
+       \advance\dimen0-\lineheight         % newer
+       \ifdim\dimen0<\zeropoint            % newer
+         \dimen2\zeropoint                 % newer
+       \fi                                 % newer
+       \advance\dimen0 \TABLEparheight     % new
+       \global\TABLEparheight\zeropoint    % new
      \fi                                   % new
      \ifTABLEgrayline \else
-       \global\advance\TABLEheight by \dimen0
+       \global\advance\TABLEheight\dimen0
      \fi
      \ifTABLEinbreak
-       \global\let\beforeTABLEline=\empty
+       \globalletempty\beforeTABLEline
        \gdef\afterTABLEline{\TABLEnoalign{\nobreak}}%
      \else
        \dimen2=\TABLEheight
-       \advance\dimen2 by \dp\strutbox
-       \advance\dimen2 by \TABLEtailheight
-       \advance\dimen2 by \TABLEcaptionheight
-       \advance\dimen2 by \lineheight % we're ahead
+       \advance\dimen2 \dp\strutbox
+       \advance\dimen2 \TABLEtailheight
+       \advance\dimen2 \TABLEcaptionheight
+       \advance\dimen2 \lineheight % we're ahead
        \ifdim\dimen2>\TABLEmaxheight
-         \gdef\beforeTABLEline%
+         \gdef\beforeTABLEline
            {\setTABLEforce\TABLEforcelastrow}%
-         \gdef\afterTABLEline%
+         \gdef\afterTABLEline
            {\TABLEnoalign
               {\nobreak
                \global\TABLEinbreaktrue}%
@@ -1596,12 +1585,12 @@
                \global\TABLEinbreakfalse
                \setTABLEforce\TABLEforcefirstrow}}%
        \else
-         \global\let\beforeTABLEline=\empty
+         \globalletempty\beforeTABLEline
          \gdef\afterTABLEline{\TABLEnoalign{\nobreak}}%
        \fi
      \fi
    \else
-     \global\let\beforeTABLEline=\empty
+     \globalletempty\beforeTABLEline
      \gdef\afterTABLEline{\TABLEnoalign{\nobreak}}%
    \fi}
 
@@ -1610,7 +1599,7 @@
 
 \def\endofTABLEline[#1][#2->#3]#4#5%
   {\ifx#2#3\else
-     \writestatus{TABLE}{\string#2\space changed into \string#3}%
+     \writestatus\m!TABLE{\string#2\space changed into \string#3}%
    \fi
    \iftracetables
      \bgroup
@@ -1633,8 +1622,8 @@
   %   \tttf\space\TABLEgraylineerror
   %   \egroup
    \fi\fi
-   \global\let\TABLEgraylinestatus=\empty
-   \global\let\TABLEgraylineerror =\empty
+   \globalletempty\TABLEgraylinestatus
+   \globalletempty\TABLEgraylineerror 
    \expandafter\normalTABLElineformat#4#5\crcr % \crcr nodig ?
    \TABLEnoalign{\nobreak\global\setTABLEactiontrue}}
 
@@ -1655,14 +1644,25 @@
 %D \TABLE\ changes the catcode when needed.}
 
 \bgroup
-\catcode`\|=\@@other
+\catcode`\&=\@@other
 \gdef\getTABLEnofcolumns#1%
   {\bgroup
    \convertargument#1\to\ascii
-   \@EA\doglobal\@EA\counttoken\@EA|\@EA\in\ascii\to\maxTABLEcolumn
-   \global\advance\maxTABLEcolumn by -1
+   \@EA\doglobal\@EA\counttoken\@EA&\@EA\in\ascii\to\maxTABLEcolumn
+   \global\advance\maxTABLEcolumn \minusone
+   \global\divide\maxTABLEcolumn 2
    \egroup}
 \egroup
+
+\def\!ttDoHalign
+  {\baselineskip \zeropoint
+   \lineskiplimit\zeropoint
+   \lineskip     \zeropoint
+   \tabskip      \zeropoint
+   \expanded{\getTABLEnofcolumns{\the\!taPreamble}}% added
+   \halign \the\!taTableSpread \bgroup
+   \span\the\!taPreamble
+   \ifx \!tfRowOfWidths \empty \else \!tfRowOfWidths \cr \fi}
 
 %D \startopsomming[3*ruim]
 %D \sym{\type{\VL}} a vertical line
@@ -1671,76 +1671,69 @@
 %D \sym{\type{\HC}} a horizontal colored line
 %D \stopopsomming
 
-\def\defineTABLErules%
-  {\let\VL=\TableVL
-   \let\VC=\TableVC
-   \let\HL=\TableHL
-   \let\HC=\TableHC}
+\def\defineTABLErules
+  {\let\VL\TableVL
+   \let\VC\TableVC
+   \let\HL\TableHL
+   \let\HC\TableHC}
 
-\def\TableVL%
+\def\TableVL
   {\checkTABLEautorow
    \nextTABLEgrayline
    \ifnum\currentTABLEcolumn>\maxTABLEcolumn
      \setTABLEerror\TABLEmissingrow
      \handleTABLEerror
    \else
-     \global\advance\currentTABLEcolumn by 1
+     \global\advance\currentTABLEcolumn \plusone
      \expandafter\doTableVL
    \fi}
 
-%\def\doTableVL%
-%  {\complexorsimpleTable{VL}}
-
-\def\doTableVL%
+\def\doTableVL
   {\futurelet\next\dodoTableVL}
 
-\def\dodoTableVL%
+\def\dodoTableVL
   {\docomplexorsimpleTable\complexTableVL\simpleTableVL}
 
 \def\complexTableVL[#1]%
   {\scratchcounter=0#1%
-   \multiply\scratchcounter by \@@tiVLwidth
+   \multiply\scratchcounter \@@tiVLwidth
    \setxvalue{wVL\the\currentTABLEcolumn}{\the\scratchcounter}%
    \simpleTableVL}
 
-\def\simpleTableVL%
+\def\simpleTableVL
   {\doifundefined{wVL\the\currentTABLEcolumn}%
      {\setgvalue{wVL\the\currentTABLEcolumn}{\@@tiVLwidth}}%
-   \gdef\TABLEbeforebar%
+   \gdef\TABLEbeforebar
      {\getvalue{bVL\the\currentTABLEcolumn}%
-      \global\letvalue{bVL\the\currentTABLEcolumn}=\empty}%
-   \gdef\TABLEafterbar%
+      \letgvalueempty{bVL\the\currentTABLEcolumn}}%
+   \gdef\TABLEafterbar
      {\getvalue{eVL\the\currentTABLEcolumn}%
-      \global\letvalue{eVL\the\currentTABLEcolumn}=\empty}%
+      \letgvalueempty{eVL\the\currentTABLEcolumn}}%
    \edef\@@tiVLwidth{\getvalue{wVL\the\currentTABLEcolumn}}%
    \expanded{\normalTABLEcomplexbar\@@tiVLwidth\space}}% \relax breaks \use
 
+\def\resetVLvalues
+  {\dostepwiserecurse\zerocount\maxTABLEcolumn\plusone
+     {\setgvalue{wVL\recurselevel}{\@@tiVLwidth}%
+      \letgvalueempty{bVL\recurselevel}%
+      \letgvalueempty{eVL\recurselevel}}%
+   \global\currentTABLEcolumn\zerocount}
 
-\def\resetVLvalues%
-  {\dostepwiserecurse{0}{\maxTABLEcolumn}{1}
-     {\global\setvalue{wVL\recurselevel}{\@@tiVLwidth}%
-      \global\letvalue{bVL\recurselevel}=\empty
-      \global\letvalue{eVL\recurselevel}=\empty}%
-   \global\currentTABLEcolumn=0 }
-
-\def\TableVC%
+\def\TableVC
   {\checkTABLEautorow
    \nextTABLEgrayline
    \ifnum\currentTABLEcolumn>\maxTABLEcolumn
      \setTABLEerror\TABLEmissingrow
      \handleTABLEerror
    \else
-     \global\advance\currentTABLEcolumn by 1
+     \global\advance\currentTABLEcolumn \plusone
      \expandafter\doTableVC
    \fi}
 
-%\def\doTableVC%
-%  {\complexorsimpleTable{VC}}
-
-\def\doTableVC%
+\def\doTableVC
   {\futurelet\next\dodoTableVC}
 
-\def\dodoTableVC%
+\def\dodoTableVC
   {\docomplexorsimpleTable\complexTableVC\simpleTableVC}
 
 \def\complexTableVC[#1]%
@@ -1750,21 +1743,21 @@
      {\localstopcolor}%
    \simpleTableVC}
 
-\def\simpleTableVC%
+\def\simpleTableVC
   {\global\setvalue{bVL\the\currentTABLEcolumn}%
      {\getvalue{bVC\the\currentTABLEcolumn}}%
    \global\setvalue{eVL\the\currentTABLEcolumn}%
      {\getvalue{eVC\the\currentTABLEcolumn}}%
    \doTableVL}
 
-\def\TableHL%
+\def\TableHL
   {\ifnum\currentTABLEcolumn>\maxTABLEcolumn
      \chuckTABLEautorow
-   \else\ifnum\currentTABLEcolumn=0
+   \else\ifnum\currentTABLEcolumn=\zerocount
     %\chuckTABLEautorow
      \TABLEnoalign
-       {\global\let\checkTABLEautorow=\empty
-        \global\let\chuckTABLEautorow=\empty}%
+       {\globalletempty\checkTABLEautorow
+        \globalletempty\chuckTABLEautorow}%
    \else
      \setTABLEerror\TABLEmissingcolumn
      \handleTABLEerror
@@ -1774,35 +1767,35 @@
 \def\complexTableHL[#1]%
   {\TABLEnoalign
      {\scratchcounter=0#1%
-      \multiply\scratchcounter by \@@tiHLheight
+      \multiply\scratchcounter \@@tiHLheight
       \edef\@@tiHLheight{\the\scratchcounter}%
       \simpleTableHL}}
 
-\def\simpleTableHL%
+\def\simpleTableHL
   {\TABLEnoalign
      {\nobreak
       \ifnum\TABLEaction=\TABLErule
-        \writestatus{TABLE}{skipping \string\HL}% \statusmessage
+        \writestatus\m!TABLE{skipping \string\HL}% \statusmessage
       \else
         \ifnum\TABLEaction=\TABLEmidrow
-          \writestatus{TABLE}{change \string\MR\space into \string\LR/\string\SR}%
+          \writestatus\m!TABLE{change \string\MR\space into \string\LR/\string\SR}%
         \else\ifnum\TABLEaction=\TABLEfirstrow
-          \writestatus{TABLE}{change \string\MR\space into \string\SR}%
+          \writestatus\m!TABLE{change \string\MR\space into \string\SR}%
         \fi\fi
         \startHLcommand
         \expandafter\normalTABLEfullrule\@@tiHLheight
         \stopHLcommand
-        \global\let\startHLcommand=\empty
-        \global\let\stopHLcommand =\empty
+        \globalletempty\startHLcommand
+        \globalletempty\stopHLcommand 
         \accountTABLElinewidth
       \fi
       \setTABLEaction\TABLErule
       \nobreak}}
 
-\let\startHLcommand=\empty
-\let\stopHLcommand =\empty
+\let\startHLcommand\empty
+\let\stopHLcommand \empty
 
-\def\TableHC%
+\def\TableHC
   {\complexorsimpleTable{HC}}
 
 \def\complexTableHC[#1]%
@@ -1811,10 +1804,10 @@
       \gdef\stopHCcommand {\localstopcolor}}%
    \simpleTableHC}
 
-\def\simpleTableHC%
+\def\simpleTableHC
   {\TABLEnoalign
-     {\global\let\startHLcommand=\startHCcommand
-      \global\let\stopHLcommand =\stopHCcommand}%
+     {\globallet\startHLcommand\startHCcommand
+      \globallet\stopHLcommand \stopHCcommand}%
    \HL}
 
 %D \startopsomming[3*ruim]
@@ -1828,15 +1821,15 @@
 
 % n+1 uitleggen
 
-\def\defineTABLEsteps%
-  {\let\NL=\TableNL
-   \let\NR=\TableNR
-   \let\NC=\TableNC
-   \let\FC=\TableNC
-   \let\MC=\TableNC
-   \let\LC=\TableNC}
+\def\defineTABLEsteps
+  {\let\NL\TableNL
+   \let\NR\TableNR
+   \let\NC\TableNC
+   \let\FC\TableNC
+   \let\MC\TableNC
+   \let\LC\TableNC}
 
-\def\TableNL%
+\def\TableNL
   {\complexorsimpleTable{NL}}
 
 \def\complexTableNL[#1]%
@@ -1844,17 +1837,17 @@
      {\edef\@@tiNL{#1}%
       \simpleTableNL}}%
 
-\def\simpleTableNL%
+\def\simpleTableNL
   {\TABLEnoalign
      {\nobreak
-      \setbox0=\vbox{\blanko[\@@tiNL]}%
-      \global\advance\TABLEheight by \ht0
+      \setbox0\vbox{\blanko[\@@tiNL]}%
+      \global\advance\TABLEheight \ht0
       \vskip\ht0
       \nobreak}}
 
-\def\TableNR%
+\def\TableNR
   {\ifnum\currentTABLEcolumn>\maxTABLEcolumn
-     \global\currentTABLEcolumn=0
+     \global\currentTABLEcolumn\zerocount
      \normalTABLElineending
    \else
      \setTABLEerror\TABLEmissingcolumn
@@ -1864,14 +1857,14 @@
      {\nobreak
       \setTABLEaction\TABLEunknown}}
 
-\def\TableNC%
+\def\TableNC
   {\checkTABLEautorow
    \nextTABLEgrayline
    \ifnum\currentTABLEcolumn>\maxTABLEcolumn
      \setTABLEerror\TABLEmissingrow
      \handleTABLEerror
    \else
-     \global\advance\currentTABLEcolumn by 1
+     \global\advance\currentTABLEcolumn \plusone
      \normalTABLEquote
    \fi}
 
@@ -1893,36 +1886,36 @@
 
 \newif\ifTABLEdivision
 
-\def\defineTABLEdivisions%
+\def\defineTABLEdivisions
   {\global\TABLEdivisionfalse % in start
-   \let\DL=\TableDL
-   \let\DC=\TableDC
-   \let\DV=\TableDV
-   \let\VD=\TableDV
-   \let\DR=\TableDR}
+   \let\DL\TableDL
+   \let\DC\TableDC
+   \let\DV\TableDV
+   \let\VD\TableDV
+   \let\DR\TableDR}
 
-\def\checkTABLEdivision%
+\def\checkTABLEdivision
   {\ifTABLEdivision \else
      \chuckTABLEautorow
-     \global\currentTABLEcolumn=0
+     \global\currentTABLEcolumn\zerocount
      \global\TABLEdivisiontrue
    \fi}
 
-\def\TableDL%
+\def\TableDL
   {\checkTABLEdivision
    \complexorsimpleTable{DL}}
 
-\def\simpleTableDL%
+\def\simpleTableDL
   {\complexTableDL[1]}
 
 \def\complexTableDL[#1]%
   {\ifnum\TABLEaction=\TABLErule
-     \writestatus{TABLE}{skipping \string\DL}%
+     \writestatus\m!TABLE{skipping \string\DL}%
    \else
      \ifnum\TABLEaction=\TABLEmidrow
-       \writestatus{TABLE}{change \string\MR\space into \string\LR/\string\SR}%
+       \writestatus\m!TABLE{change \string\MR\space into \string\LR/\string\SR}%
      \else\ifnum\TABLEaction=\TABLEfirstrow
-       \writestatus{TABLE}{change \string\MR\space into \string\SR}%
+       \writestatus\m!TABLE{change \string\MR\space into \string\SR}%
      \fi\fi
      \setTABLEaction=\TABLEunknown
      \ifnum\currentTABLEcolumn>\maxTABLEcolumn
@@ -1930,28 +1923,28 @@
        \handleTABLEerror
      \fi
      %\startHLcommand
-     \ifnum#1=1
-       \global\advance\currentTABLEcolumn by 2
-       \let\next=\normalTABLEsinglerule
+     \ifnum#1=\plusone
+       \global\advance\currentTABLEcolumn 2
+       \let\next\normalTABLEsinglerule
      \else
        \ifnum#1<\maxTABLEcolumn
-         \global\advance\currentTABLEcolumn by 1 % was 2
+         \global\advance\currentTABLEcolumn \plusone
          \def\next{\normalTABLEmultirule{#1}}%
        \else
          \setTABLEerror\TABLEdivisionoverflow
-         \let\next=\handleTABLEerror
+         \let\next\handleTABLEerror
        \fi
      \fi
      \next
      %\stopHLcommand
-     %\global\let\startHLcommand=\empty
-     %\global\let\stopHLcommand =\empty
+     %\globalletempty\startHLcommand
+     %\globalletempty\stopHLcommand 
    \fi}
 
-\def\TableDV%
+\def\TableDV
   {\TableDCV\normalTABLEsimplebar}
 
-\def\TableDC%
+\def\TableDC
   {\TableDCV\normalTABLEquote}
 
 \def\TableDCV#1%
@@ -1961,31 +1954,17 @@
      \setTABLEerror\TABLEmissingrow
      \handleTABLEerror
    \else
-     \global\advance\currentTABLEcolumn by 1
+     \global\advance\currentTABLEcolumn \plusone
      #1%
    \fi}
 
-%\def\TableDR%
-%  {\ifnum\currentTABLEcolumn<\maxTABLEcolumn % silent recovery
-%     \setTABLEerror\TABLEmissingcolumn       % some day warning
-%     \handleTABLEerror
-%   \else
-%     \global\currentTABLEcolumn=0            % nog check
-%     \normalTABLElineending
-%   \fi
-%   \TABLEnoalign
-%     {\nobreak
-%      \global\TABLEdivisionfalse
-%      \accountTABLElinewidth % temporary solution
-%      \setTABLEaction\TABLErule}}
-
-\def\TableDR%
+\def\TableDR
   {\ifnum\currentTABLEcolumn<\maxTABLEcolumn % silent recovery
      %\setTABLEerror\TABLEmissingcolumn      % some day warning
      %\handleTABLEerror
      \finishTABLErow
    \else
-     \global\currentTABLEcolumn=0            % nog check
+     \global\currentTABLEcolumn\zerocount    % nog check
      \normalTABLElineending
    \fi
    \TABLEnoalign
@@ -1994,9 +1973,9 @@
       \accountTABLElinewidth % temporary solution
       \setTABLEaction\TABLErule}}
 
-\def\accountTABLElinewidth%
-  {\scratchdimen=\LineThicknessUnit
-   \global\advance\TABLEheight by \@@tiHLheight\scratchdimen}
+\def\accountTABLElinewidth
+  {\scratchdimen\LineThicknessUnit
+   \global\advance\TABLEheight \@@tiHLheight\scratchdimen}
 
 %D \startopsomming[3*ruim]
 %D \sym{\type{\BC}}
@@ -2014,51 +1993,51 @@
 % definieer: \CL \RL (eerste \CL[green] = hele row! / \CL[1,green])
 % dus: \CL en \RL mix tussen \HL en \BL
 
-\def\defineTABLEbackgrounds%
-  {\let\BC        =\TableBC
-   \let\BL        =\TableBL
-   \let\BR        =\TableBR
-   \let\BACKGROUND=\TableBR
-   \let\CL        =\TableCL
-   \let\RL        =\TableRL
-   \let\COLOR     =\TableCOLOR
-   \let\RASTER    =\TableRASTER
-   \global\let\lastTABLEc=\@@tiachtergrondkleur
-   \global\let\lastTABLEr=\@@tiachtergrondraster
-   \doifinsetelse{\@@tiachtergrond}{c,color}
-     {\global\chardef\TABLEcr=1}
-     {\global\chardef\TABLEcr=2}}
+\def\defineTABLEbackgrounds
+  {\let\BC        \TableBC
+   \let\BL        \TableBL
+   \let\BR        \TableBR
+   \let\BACKGROUND\TableBR
+   \let\CL        \TableCL
+   \let\RL        \TableRL
+   \let\COLOR     \TableCOLOR
+   \let\RASTER    \TableRASTER
+   \globallet\lastTABLEc\@@tiachtergrondkleur
+   \globallet\lastTABLEr\@@tiachtergrondraster
+   \doifinsetelse\@@tiachtergrond{c,color}
+     {\global\chardef\TABLEcr1 }
+     {\global\chardef\TABLEcr2 }}
 
-\def\TableBC%
+\def\TableBC
   {\ifTABLEgrayline
      \normalTABLEquote
    \else
      \TABLEnoalign\bgroup
-       \global\let\nextTABLEgrayline=\executeTABLEgrayline
-       \global\let\TABLEgrayline\empty % new
-       \let\BL=\doTableBL
-       \let\BC=\doTableBC
+       \globallet\nextTABLEgrayline\executeTABLEgrayline
+       \globalletempty\TABLEgrayline % new
+       \let\BL\doTableBL
+       \let\BC\doTableBC
        \expandafter\doTableBC
    \fi}
 
-\def\doTableBC%
+\def\doTableBC
   {\addtoTABLEgrayline{\BC}%
    \gobbleTableBCL}
 
-\def\TableBL%
+\def\TableBL
   {\TABLEnoalign\bgroup
-     \global\let\nextTABLEgrayline=\executeTABLEgrayline
-     \global\let\TABLEgrayline\empty % new
-     \let\BL=\doTableBL
-     \let\CL=\doTableCL
-     \let\RL=\doTableRL
-     \let\BC=\doTableBC
+     \globallet\nextTABLEgrayline\executeTABLEgrayline
+     \globalletempty\TABLEgrayline % new
+     \let\BL\doTableBL
+     \let\CL\doTableCL
+     \let\RL\doTableRL
+     \let\BC\doTableBC
      \doTableBL}
 
-\def\doTableBL%
+\def\doTableBL
   {\complexorsimpleTable{BL}}
 
-\def\simpleTableBL%
+\def\simpleTableBL
   {\complexTableBL[,]}
 
 \def\complexTableBL[#1]%
@@ -2067,7 +2046,7 @@
 
 \def\TableBR#1%
   {\TABLEnoalign
-     {\global\let\nextTABLEgrayline=\executeTABLEgrayline
+     {\globallet\nextTABLEgrayline\executeTABLEgrayline
       \checkTABLEgrayline#1\BR
       \global\TABLEgraylinetrue}}
 
@@ -2080,20 +2059,20 @@
      {\dodoanalyzeTABLEcr[1,#1,#2]}}
 
 \def\dodoanalyzeTABLEcr[#1,#2,#3]%
-  {\global\chardef\TABLEn=#1\relax
+  {\global\chardef\TABLEn#1\relax
    \processaction
      [#2]
-     [         c=>\global\chardef\TABLEcr=1,
-           color=>\global\chardef\TABLEcr=1,
-               r=>\global\chardef\TABLEcr=2,
-          raster=>\global\chardef\TABLEcr=2]%
+     [     c=>\global\chardef\TABLEcr1,%
+       color=>\global\chardef\TABLEcr1,%
+           r=>\global\chardef\TABLEcr2,%
+      raster=>\global\chardef\TABLEcr2]%
    \ifcase\TABLEcr \or
-     \doifnot{#3}{}{\xdef\lastTABLEc{#3}}%
+     \doifsomething{#3}{\xdef\lastTABLEc{#3}}%
    \or
-     \doifnot{#3}{}{\xdef\lastTABLEr{#3}}%
+     \doifsomething{#3}{\xdef\lastTABLEr{#3}}%
    \fi}
 
-\def\handleTABLEcr%
+\def\handleTABLEcr
   {\relax % else funny side effect
    \ifcase\TABLEcr
      % Can't happen!
@@ -2112,17 +2091,17 @@
      {\dodoanalyzeTABLEcr[#2,#1,#3]}
      {\dodoanalyzeTABLEcr[\ifTABLEgrayline1\else\maxTABLEcolumn\fi,#1,#2]}}
 
-\def\TableCL%
+\def\TableCL
   {\TABLEnoalign\bgroup
-     \global\let\nextTABLEgrayline=\executeTABLEgrayline
-     \global\let\TABLEgrayline\empty % new
-     \let\BL=\doTableBL
-     \let\CL=\doTableCL
-     \let\RL=\doTableRL
-     \let\BC=\doTableBC
+     \globallet\nextTABLEgrayline\executeTABLEgrayline
+     \globalletempty\TABLEgrayline % new
+     \let\BL\doTableBL
+     \let\CL\doTableCL
+     \let\RL\doTableRL
+     \let\BC\doTableBC
      \doTableCL}
 
-\def\doTableCL%
+\def\doTableCL
   {\complexorsimpleTable{CL}}
 
 \def\simpleTableCL%  nog eens \'e\'en lijn van maken
@@ -2132,20 +2111,20 @@
   {\analyzeTABLEcrl{c}[#1]%
    \handleTABLEcr}
 
-\def\TableRL%
+\def\TableRL
   {\TABLEnoalign\bgroup
-     \global\let\nextTABLEgrayline=\executeTABLEgrayline
-     \global\let\TABLEgrayline\empty % new
-     \let\BL=\doTableBL
-     \let\CL=\doTableCL
-     \let\RL=\doTableRL
-     \let\BC=\doTableBC
+     \globallet\nextTABLEgrayline\executeTABLEgrayline
+     \globalletempty\TABLEgrayline % new
+     \let\BL\doTableBL
+     \let\CL\doTableCL
+     \let\RL\doTableRL
+     \let\BC\doTableBC
      \doTableRL}
 
-\def\doTableRL%
+\def\doTableRL
   {\complexorsimpleTable{RL}}
 
-\def\simpleTableRL%
+\def\simpleTableRL
   {\BL[\the\maxTABLEcolumn,r,\lastTABLEr]}
 
 \def\complexTableRL[#1]%
@@ -2160,14 +2139,14 @@
      \!!doneafalse
    \fi\fi\fi\fi\fi
    \if!!donea
-     \gdef\TABLEgraylinestatus%
+     \gdef\TABLEgraylinestatus
        {[\string#1]}%
-     \gdef\TABLEendBCL%
+     \gdef\TABLEendBCL
        {#1}%
    \else
-     \gdef\TABLEgraylineerror%
+     \gdef\TABLEgraylineerror
        {[\string#2\string#1->\string#2\string\SR]}%
-     \gdef\TABLEendBCL%
+     \gdef\TABLEendBCL
        {\SR}%
    \fi}
 
@@ -2193,15 +2172,15 @@
 \def\doPreTableGL#1#2%  betere namen
   {\xdef\OldLineThicknessFactor{\the\LineThicknessFactor}%
    \xdef\OldLineThicknessUnit{\the\LineThicknessUnit}%
-   \global\LineThicknessFactor=1
-   \setbox0=\hbox{\AugmentedTableStrut{#1}{#2}}%
+   \global\LineThicknessFactor\plusone
+   \setbox0\hbox{\AugmentedTableStrut{#1}{#2}}%
    \getboxheight\dimen0\of\box0\relax
    \xdef\TABLEgraylineHeight{\the\dimen0}%
-   \global\LineThicknessUnit=\TABLEgraylineHeight}
+   \global\LineThicknessUnit\TABLEgraylineHeight}
 
-\def\doPostTableGL%
-  {\global\LineThicknessFactor=\OldLineThicknessFactor
-   \global\LineThicknessUnit  =\OldLineThicknessUnit}
+\def\doPostTableGL
+  {\global\LineThicknessFactor\OldLineThicknessFactor
+   \global\LineThicknessUnit  \OldLineThicknessUnit}
 
 % kan simpeler
 
@@ -2216,8 +2195,8 @@
 \def\dodocomplexTableGL#1#2[#3,#4,#5,#6]%
   {\doifelsenothing{#4}{#1[#5]}{#1[#4]}%
    \doPreTableGL\TABLEendofrowheight\TABLEendofrowdepth
-   \ifnum#3=1 % else conflict with \omit in \=
-     \let\next=\normalTABLEsinglerule
+   \ifnum#3=\plusone % else conflict with \omit in \=
+     \let\next\normalTABLEsinglerule
    \else
      \def\next{\normalTABLEmultirule{#3}}%
    \fi
@@ -2225,7 +2204,7 @@
    \doPostTableGL
    #2}
 
-\def\TableBACKGROUND%
+\def\TableBACKGROUND
   {\TableBR}
 
 \def\simpleTableRASTER#1%
@@ -2234,20 +2213,20 @@
 \def\complexTableRASTER[#1]%
   {\docomplexTableRASTER[#1]}
 
-\def\simpleTableCOLOR%
+\def\simpleTableCOLOR
   {\docomplexTableCOLOR[1]}
 
 \def\complexTableCOLOR[#1]%
   {\docomplexTableCOLOR[#1]}
 
-\def\TableRASTER%
+\def\TableRASTER
   {\complexorsimpleTable{RASTER}}
 
-\def\TableCOLOR%
+\def\TableCOLOR
   {\complexorsimpleTable{COLOR}}
 
 \def\addtoTABLEgrayline#1%
-  {\TABLEgraytoks=\expandafter{\TABLEgrayline}%
+  {\TABLEgraytoks\expandafter{\TABLEgrayline}%
    \xdef\TABLEgrayline{\the\TABLEgraytoks\noexpand#1}}
 
 \def\setTableBCL#1#2%
@@ -2262,69 +2241,69 @@
    \fi}
 
 \def\gobbleTableBCL#1%
-  {\ifx#1\BC                    \let\next=\doTableBC \else
-   \ifx#1\BL                    \let\next=\doTableBL \else
-   \ifx#1\SR \setTableBCL\SR\SR \let\next=\egroup    \else
-   \ifx#1\FR \setTableBCL\FR\FR \let\next=\egroup    \else
-   \ifx#1\MR \setTableBCL\MR\MR \let\next=\egroup    \else
-   \ifx#1\LR \setTableBCL\LR\LR \let\next=\egroup    \else
-             \setTableBCL #1\SR \let\next=\egroup
+  {\ifx#1\BC                    \let\next\doTableBC \else
+   \ifx#1\BL                    \let\next\doTableBL \else
+   \ifx#1\SR \setTableBCL\SR\SR \let\next\egroup    \else
+   \ifx#1\FR \setTableBCL\FR\FR \let\next\egroup    \else
+   \ifx#1\MR \setTableBCL\MR\MR \let\next\egroup    \else
+   \ifx#1\LR \setTableBCL\LR\LR \let\next\egroup    \else
+             \setTableBCL #1\SR \let\next\egroup
    \fi\fi\fi\fi\fi\fi
    \next}
 
-\def\executeTABLEgrayline%
+\def\executeTABLEgrayline
   {\TABLEnoalign
-     {\def\BC%
-        {\advance\currentTABLEcolumn by 1 }%
+     {\def\BC
+        {\advance\currentTABLEcolumn \plusone}%
       \def\dodocomplexTableGL##1##2[##3,##4,##5,##6]%
-        {\BC\advance\currentTABLEcolumn by ##3 }%
-      \let\endTABLErow=\endTABLEgrayrow
-      \currentTABLEcolumn=0
+        {\BC\advance\currentTABLEcolumn ##3 }%
+      \let\endTABLErow\endTABLEgrayrow
+      \currentTABLEcolumn\zerocount
       \TABLEgrayline\TABLEendBCL % determine n of columns and height
-      \advance\currentTABLEcolumn by -1
+      \advance\currentTABLEcolumn \minusone 
       \ifnum\currentTABLEcolumn>\maxTABLEcolumn
         % error message too long line
-        \global\let\TABLEgrayline=\empty
+        \globalletempty\TABLEgrayline
       \else
         % \message{n of color columns: \the\currentTABLEcolumn}\wait
         \global\TABLEgraylinetrue  % vanaf hier nog checken
       \fi
-      \global\currentTABLEcolumn=0}%
+      \global\currentTABLEcolumn\zerocount}%
    \unskip\TABLEgrayline\TABLEendBCL
    \TABLEnoalign
      {\nobreak
       \vskip-\TABLEgraylineHeight
       \nobreak
       \global\setTABLEactiontrue
-      \global\currentTABLEcolumn=0
-      \global\let\nextTABLEgrayline=\empty
+      \global\currentTABLEcolumn\zerocount
+      \globalletempty\nextTABLEgrayline
       \global\TABLEgraydonetrue
       \global\TABLEgraylinefalse}}
 
 \def\endTABLEgrayrow#1#2#3%
   {\ifcase#1\relax
-     \global\chardef\TABLEendofrowheight=\TABLErowfactor
-     \global\chardef\TABLEendofrowdepth =\TABLErowfactor
+     \global\chardef\TABLEendofrowheight\TABLErowfactor
+     \global\chardef\TABLEendofrowdepth \TABLErowfactor
    \or
-     \global\chardef\TABLEendofrowheight=\TABLErowfactor
-     \global\chardef\TABLEendofrowdepth =\TABLErowfactor
+     \global\chardef\TABLEendofrowheight\TABLErowfactor
+     \global\chardef\TABLEendofrowdepth \TABLErowfactor
    \or
-     \global\chardef\TABLEendofrowheight=\TABLErowfactor
-     \global\chardef\TABLEendofrowdepth =\TABLErowzero
+     \global\chardef\TABLEendofrowheight\TABLErowfactor
+     \global\chardef\TABLEendofrowdepth \TABLErowzero
    \or
      \ifnum\TABLEforce=\TABLEforcelastrow
-       \global\chardef\TABLEendofrowheight=\TABLErowzero
-       \global\chardef\TABLEendofrowdepth =\TABLErowfactor
+       \global\chardef\TABLEendofrowheight\TABLErowzero
+       \global\chardef\TABLEendofrowdepth \TABLErowfactor
      \else\ifnum\TABLEforce=\TABLEforcefirstrow
-       \global\chardef\TABLEendofrowheight=\TABLErowfactor
-       \global\chardef\TABLEendofrowdepth =\TABLErowzero
+       \global\chardef\TABLEendofrowheight\TABLErowfactor
+       \global\chardef\TABLEendofrowdepth \TABLErowzero
      \else
-       \global\chardef\TABLEendofrowheight=\TABLErowzero
-       \global\chardef\TABLEendofrowdepth =\TABLErowzero
+       \global\chardef\TABLEendofrowheight\TABLErowzero
+       \global\chardef\TABLEendofrowdepth \TABLErowzero
      \fi\fi
    \or
-     \global\chardef\TABLEendofrowheight=\TABLErowzero
-     \global\chardef\TABLEendofrowdepth =\TABLErowfactor
+     \global\chardef\TABLEendofrowheight\TABLErowzero
+     \global\chardef\TABLEendofrowdepth \TABLErowfactor
    \fi}
 
 \def\defineTABLEshorthands%
@@ -2336,33 +2315,32 @@
    \def\SIX    {\use{6}}%
    \def\REF    {\ReFormat}}
 
-\def\defineTABLEunits%
+\def\defineTABLEunits
   {\processaction
      [\@@tiafstand]
-     [   \v!geen=>\OpenUp{0}{0}\def\LOW{\Lower6 },
-        \v!klein=>\OpenUp{0}{0}\def\LOW{\Lower6 }, % == baseline
-       \v!middel=>\OpenUp{1}{1}\def\LOW{\Lower7 },
-        \v!groot=>\OpenUp{2}{2}\def\LOW{\Lower8 }]%
-   \doifelse{\@@tiafstand}{\v!geen}
-     {\chardef\TABLErowfactor=0 }
-     {\chardef\TABLErowfactor=2 }}
+     [  \v!geen=>\OpenUp{0}{0}\def\LOW{\Lower6 },
+       \v!klein=>\OpenUp{0}{0}\def\LOW{\Lower6 }, % == baseline
+      \v!middel=>\OpenUp{1}{1}\def\LOW{\Lower7 },
+       \v!groot=>\OpenUp{2}{2}\def\LOW{\Lower8 }]%
+   \doifelse\@@tiafstand\v!geen
+     {\chardef\TABLErowfactor0 }
+     {\chardef\TABLErowfactor2 }}
 
-\def\dohandlebar%
+\def\dohandlebar
   {\ifmmode
-     \let\next=\domathmodebar
+     \@EA\domathmodebar
    \else\ifintable
-     \let\next=\domathmodebar
+     \@EAEAEA\domathmodebar
    \else
-     \let\next=\dotextmodebar
-   \fi\fi
-   \next}
+     \@EAEAEA\dotextmodebar
+   \fi\fi}
 
 % De macro's t.b.v. instellingen.
 
-\def\steltabellenin%
-  {\dosingleargument\dosteltabellenin}
+\def\setuptables
+  {\dosingleargument\dosetuptables}
 
-\def\dosteltabellenin[#1]%
+\def\dosetuptables[#1]%
   {\getparameters[\??ti][#1]%
    \processaction
      [\@@tiuitlijnen]
@@ -2371,17 +2349,17 @@
        \v!midden=>\def\TABLEparalignment{\raggedcenter},
       \s!default=>\def\TABLEparalignment{\notragged},
       \s!unknown=>\def\TABLEparalignment{\notragged}]%
-   \assignalfadimension{\@@tiVL}{\@@tiVLwidth} {2}{4}{6}%
-   \assignalfadimension{\@@tiHL}{\@@tiHLheight}{2}{4}{6}}
+   \assignalfadimension\@@tiVL\@@tiVLwidth 246%
+   \assignalfadimension\@@tiHL\@@tiHLheight246}
 
-\def\localTABLEsetup%
+\def\localTABLEsetup
   {\@@ticommandos\relax
    \expanded{\switchtobodyfont[\@@tikorps]}%
-   \StrutHeightFactor  =8
-   \StrutDepthFactor   =4
-   \LineThicknessFactor=4
-   \NormalTLTU         ={.1pt}%
-   \NormalTSU          ={\normalbaselineskip\divide\StrutUnit by 12 }%
+   \StrutHeightFactor  8
+   \StrutDepthFactor   4
+   \LineThicknessFactor4
+   \NormalTLTU         {.1pt}%
+   \NormalTSU          {\normalbaselineskip\divide\StrutUnit 12 }%
    \NormalTableUnits}
 
 %D And then I wrote the tabulate environment. That
@@ -2391,52 +2369,52 @@
 \let\startglobalTABLEcolor\empty
 \let\stopglobalTABLEcolor \empty
 
-\def\localTABLEsetup%
+\def\localTABLEsetup
   {\@@ticommandos\relax
    % bodyfont
    \expanded{\switchtobodyfont[\@@tikorps]}%
    % linecolor
-   \doifsomething{\@@tilijnkleur}
+   \doifsomething\@@tilijnkleur
      {\def\startglobalTABLEcolor{\localstartcolor[\@@tilijnkleur]}%
       \def\stopglobalTABLEcolor {\localstopcolor}}%
    % linethickness
-   \LineThicknessFactor=4
-   \scratchdimen=\@@tilijndikte
-   \divide\scratchdimen by \LineThicknessFactor
-   \expanded{\NormalTLTU={\the\scratchdimen}}%
+   \LineThicknessFactor4
+   \scratchdimen\@@tilijndikte
+   \divide\scratchdimen \LineThicknessFactor
+   \expanded{\NormalTLTU{\the\scratchdimen}}%
    % spacing, was depth=4 height=8 (counters, sigh, now macros)
-   \doifelse{\@@tihoogte}{\v!strut}
+   \doifelse\@@tihoogte\v!strut
      {\let\StrutHeightFactor\@@ithoogte}
      {\let\StrutHeightFactor\@@tihoogte}%
-   \doifelse{\@@tidiepte}{\v!strut}
+   \doifelse\@@tidiepte\v!strut
      {\let\StrutDepthFactor\@@itdiepte}
      {\let\StrutDepthFactor\@@tidiepte}%
-   \scratchdimen=\StrutHeightFactor pt \multiply\scratchdimen by 10
+   \scratchdimen\StrutHeightFactor \s!pt \multiply\scratchdimen 10%
    \edef\StrutHeightFactor{\@EA\withoutpt\the\scratchdimen}%
-   \scratchdimen=\StrutDepthFactor  pt \multiply\scratchdimen by 10
+   \scratchdimen\StrutDepthFactor  \s!pt \multiply\scratchdimen 10%
    \edef\StrutDepthFactor{\@EA\withoutpt\the\scratchdimen}%
    % units
-   \NormalTSU={\normalbaselineskip\divide\StrutUnit by 12 }%
+   \NormalTSU{\normalbaselineskip\divide\StrutUnit 12 }%
    \NormalTableUnits}
 
 \def\OpenUp#1#2%
-  {\scratchdimen=\StrutHeightFactor pt \advance\scratchdimen by #1pt
+  {\scratchdimen\StrutHeightFactor \s!pt \advance\scratchdimen #1\s!pt
    \edef\StrutHeightFactor{\@EA\withoutpt\the\scratchdimen}%
-   \scratchdimen=\StrutDepthFactor  pt \advance\scratchdimen by #2pt
+   \scratchdimen\StrutDepthFactor  \s!pt \advance\scratchdimen #2\s!pt
    \edef\StrutDepthFactor{\@EA\withoutpt\the\scratchdimen}}
 
 %D As one can see, we didn't only add color, but also more
 %D control over spacing.
 %D
 %D \startbuffer[a]
-%D \starttabel[|c|]
+%D \starttable[|c|]
 %D \HL
 %D \VL \strut test \VL \FR
 %D \VL \strut test \VL \MR
 %D \VL \strut test \VL \MR
 %D \VL \strut test \VL \LR
 %D \HL
-%D \stoptabel
+%D \stoptable
 %D \stopbuffer
 %D
 %D \startbuffer[b]
@@ -2464,21 +2442,22 @@
 %D happens when we set the values to zero. The rightmost table
 %D is typeset using the tabulate environment.
 %D
-%D \startcombinatie
+%D \startcombinatie[4*1]
 %D   {$\vcenter{\haalbuffer[a]}$}
-%D     {h=.8 d=.4}
-%D   {\steltabellenin[hoogte=strut,diepte=strut]$\vcenter{\haalbuffer[a]}$}
-%D     {h=d=\type{strut}}
-%D   {\steltabellenin[hoogte=0,diepte=0]$\vcenter{\haalbuffer[a]}$}
-%D     {h=d=0}
+%D     {\hbox{h=.8 d=.4}}
+%D   {\setuptables[hoogte=strut,diepte=strut]$\vcenter{\haalbuffer[a]}$}
+%D     {\hbox{h=d=\type{strut}}}
+%D   {\setuptables[hoogte=0,diepte=0]$\vcenter{\haalbuffer[a]}$}
+%D     {\hbox{h=d=0}}
 %D   {$\vcenter{\haalbuffer[b]}$}
-%D     {tabulate}
+%D     {\hbox{tabulate}}
 %D \stopcombinatie
 
-\steltabellenin
+\setuptables
   [HL=\v!middel,
    VL=\v!middel,
    NL=\v!klein,
+   \c!kader=,
    \c!uitlijnen=\v!rechts,
    \c!diepte=.40, % \v!strut
    \c!hoogte=.80, % \v!strut

@@ -444,7 +444,7 @@
 %D Ordinal converters:
 
 \def\frordinaldaynumber#1% date is masculine
-  {#1\ifcase#1\or
+  {\number#1\ifcase#1\or
      \highordinalstr{er}%
    \fi}
 

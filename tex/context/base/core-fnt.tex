@@ -98,8 +98,8 @@
    \def\cap@@visualize{\tx}}
 
 \def\userealcaps%
-  {\let\cap@@uppercase=\relax
-  %\let\cap@@lowercase=\relax % Definitely not!
+  {\let\cap@@uppercase\relax
+  %\let\cap@@lowercase\relax % Definitely not!
    \def\cap@@visualize{\sc}}
 
 \usepseudocaps
@@ -454,7 +454,7 @@
 \def\underbarmethodc#1#2#3% PERIOD
   {\hbox to #1
      {\dimen4=#3
-      \advance\dimen4 by .2ex 
+      \advance\dimen4 .2ex 
       \hskip-.25em 
       \xleaders
         \hbox{\hskip.25em\lower\dimen4\hbox{.}}
@@ -462,11 +462,11 @@
 
 \def\dododounderbar#1#2#3% 
   {\startmathmode
-   \setbox0=\hbox{#3}%
-   \setbox2=\hbox{\color[\@@onlijnkleur]{\getvalue{underbarmethod\@@onvariant}{\wd0}{#1}{#2}}}%
-   \wd0=\zeropoint
-   \ht2=\ht0 
-   \dp2=\dp0 
+   \setbox0\hbox{#3}%
+   \setbox2\hbox{\color[\@@onlijnkleur]{\getvalue{underbarmethod\@@onvariant}{\wd0}{#1}{#2}}}%
+   \wd0\zeropoint
+   \ht2\ht0 
+   \dp2\dp0 
    \box0\box2
    \stopmathmode}
 
@@ -475,17 +475,17 @@
    \dimen0=\@@ononderoffset
    \dimen0=\underbarlevel\dimen0
    \ifdone \else
-    %\advance\dimen0 by -1pt 
-     \advance\dimen0 by -\ht\strutbox 
+    %\advance\dimen0 -1pt 
+     \advance\dimen0 -\ht\strutbox 
    \fi
    \dimen2=\dimen0
-   \advance\dimen2 by \@@onlijndikte
+   \advance\dimen2 \@@onlijndikte
    \dododounderbar{-\dimen0}{\dimen2}{#1}%
    \egroup}
 
 \def\betweenunderbarwords%
   {\bgroup
-   \setbox0=\hbox
+   \setbox0\hbox
      {\dodounderbar{\hskip\fontdimen2\font}}%
    \nobreak
    \hskip\zeropoint\!!minus\fontdimen4\font
@@ -528,7 +528,7 @@
   {\bgroup
    \dimen0=\@@onbovenoffset
    \dimen2=\dimen0
-   \advance\dimen2 by \@@onlijndikte
+   \advance\dimen2 \@@onlijndikte
    \dododounderbar{\dimen2}{-\dimen0}{#1}%
    \egroup}
 
@@ -675,12 +675,13 @@
 
 \setupinitial
   [\c!status=\v!stop,
+   \c!plaats=\v!tekst,
    \c!n=3,
    \s!font=initial]
 
 \def\placeinitial%
-  {\doif{\@@dcstatus}{\v!start} 
-     {\ifnum\@@dcn>0 \AutoDroppedCaps \fi}}
+  {\doifelse\@@dcplaats\v!marge{\chardef\DropMode1}{\chardef\DropMode0}%
+   \doif\@@dcstatus\v!start{\ifnum\@@dcn>0 \AutoDroppedCaps\fi}}
 
 \let\checkinitial\CheckDroppedCaps
 

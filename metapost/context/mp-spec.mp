@@ -11,9 +11,13 @@
 %C therefore copyrighted by \PRAGMA. See licen-en.pdf for
 %C details.
 
+% Spot colors are not handled by mptopdf !
+                                         
 % (r,g,b) => cmyk             : r=123 g=   1 b=hash
-%         => transparent rgb  : r=123 g=   2 b=hash
-%         => transparent cmyk : r=123 g=   3 b=hash
+%         => spot             : r=123 g=   2 b=hash 
+%         => transparent rgb  : r=123 g=   3 b=hash
+%         => transparent cmyk : r=123 g=   4 b=hash
+%         => transparent spot : r=123 g=   5 b=hash
 %         => rest             : r=123 g=n>10 b=whatever 
 
 %D This module is rather preliminary and subjected to
@@ -162,15 +166,15 @@ pair shadeoffset ; shadeoffset := origin ;
 
 vardef define_linear_shade (expr a, b, ca, cb) =
   flush_special(30, 15, "0 1 " & decimal shadefactor & " " &
-    dddecimal ca & ddecimal (a shifted shadeoffset) &
-    dddecimal cb & ddecimal (b shifted shadeoffset) ) ;
+    dddecimal ca & " " & ddecimal (a shifted shadeoffset) & " " & 
+    dddecimal cb & " " & ddecimal (b shifted shadeoffset) ) ;
   _special_counter_
 enddef ;
 
 vardef define_circular_shade (expr a, b, ra, rb, ca, cb) =
   flush_special(31, 17, "0 1 " & decimal shadefactor & " " &
-    dddecimal ca & ddecimal (a shifted shadeoffset) & " " & decimal ra &
-    dddecimal cb & ddecimal (b shifted shadeoffset) & " " & decimal rb ) ;
+    dddecimal ca & " " & ddecimal (a shifted shadeoffset) & " " & decimal ra & " " &
+    dddecimal cb & " " & ddecimal (b shifted shadeoffset) & " " & decimal rb ) ;
   _special_counter_
 enddef ;
 
@@ -356,24 +360,6 @@ enddef ;
 
 resetcmykcolors ; boolean cmykcolors ; cmykcolors := false ; % true
 
-% vardef cmyk(expr c,m,y,k) =
-%   if cmykcolors :
-%     if not known cmykcolorhash[c][m][y][k] :
-%       _cmyk_counter_ := _cmyk_counter_ + 1 ;
-%       cmykcolorhash[c][m][y][k] := _cmyk_counter_ ;
-%       flush_special(1, 7,
-%         decimal _cmyk_counter_ & " "  &
-%         decimal c & " " &
-%         decimal m & " " &
-%         decimal y & " " &
-%         decimal k) ;
-%     fi
-%     (_special_signal_/1000,1/1000,cmykcolorhash[c][m][y][k]/1000)
-%   else :
-%     (1-c-k,1-m-k,1-y-k)
-%   fi
-% enddef ;
-
 string cmykcolorpattern[] ; % needed for transparancies 
 
 vardef cmyk(expr c,m,y,k) =
@@ -384,7 +370,7 @@ vardef cmyk(expr c,m,y,k) =
     elseif cmykcolorhash[c][m][y][k] = -1 : 
       ok := false ; % locally defined and undefined  
     else : 
-     ok := true ;  % globally already defined 
+      ok := true ;  % globally already defined 
     fi ; 
     if not ok : 
       save s ; string s ; s := dddecimal (c,m,y) & " " & decimal k ;
@@ -394,7 +380,7 @@ vardef cmyk(expr c,m,y,k) =
       flush_special(1, 7, decimal _cmyk_counter_ & " " & s) ; 
       _local_specials_ := _local_specials_ & 
         " cmykcolorhash[" & decimal c & "][" & decimal m & 
-        "][" & decimal y & "][" & decimal k & "] := -1 ; " ;  
+        "][" & decimal y & "][" & decimal k & "] := -1 ; " ; 
     fi ;
     (_special_signal_/1000,1/1000,cmykcolorhash[c][m][y][k]/1000)
   else :
@@ -407,6 +393,52 @@ enddef ;
 % truecyan    = cmyk (1,0,0,0) ; 
 % truemagenta = cmyk (0,1,0,0) ; 
 % trueyellow  = cmyk (0,0,1,0) ; 
+
+%D Spot colors
+
+_spotcolor_counter_ := 0 ;
+_spotcolor_number_ := 0 ;
+
+extra_endfig := " resetspotcolors ; " & extra_endfig ;
+
+def resetspotcolors =
+  numeric spotcolorhash[][] ;
+enddef ;
+
+resetspotcolors ; boolean spotcolors ; spotcolors := false ; % true
+
+string spotcolorpattern[] ; % needed for transparancies 
+
+vardef spotcolor(expr p, s) =
+  if spotcolors :
+    save ok, pc_tag ; boolean ok ; string pc_tag ; 
+    pc_tag := "_pct_"&p ; 
+    if not unstringed(pc_tag) : 
+      _spotcolor_number_ := _spotcolor_number_ + 1 ; 
+      setunstringed(pc_tag,_spotcolor_number_) ; 
+    fi ; 
+    pp := getunstringed(pc_tag) ; 
+    if unknown spotcolorhash[pp][s] :
+      ok := false ; % not yet defined 
+    elseif spotcolorhash[pp][s] = -1 : 
+      ok := false ; % locally defined and undefined  
+    else : 
+      ok := true ;  % globally already defined 
+    fi ; 
+    if not ok : 
+      save ss ; string ss ; ss := p & " " & decimal s ;
+      _spotcolor_counter_ := _spotcolor_counter_ + 1 ;
+      spotcolorpattern[_spotcolor_counter_/1000] := ss ;  
+      spotcolorhash[pp][s] := _spotcolor_counter_ ;
+      flush_special(2, 5, decimal _spotcolor_counter_ & " " & ss) ; 
+      _local_specials_ := _local_specials_ & 
+        "spotcolorhash["&decimal pp&"]["&decimal s&"]:=-1;" ;  
+    fi ;
+    (_special_signal_/1000,2/1000,spotcolorhash[pp][s]/1000)
+  else :
+    (1-s,1-s,1-s)
+  fi
+enddef ;
 
 %D Transparency 
 
@@ -423,8 +455,8 @@ differencetransparent := 11 ; exclusiontransparent  := 12 ;
 % fill fullcircle scaled 10cm withcolor transparant(.8,3,color) ; 
 
 vardef transparent(expr n, t, c) =
-  save s, ss, nn, cc, is_cmyk, ok ;
-  string s, ss ; numeric nn ; color cc ; boolean is_cmyk, ok ;
+  save s, ss, nn, cc, is_cmyk, is_spot, ok ;
+  string s, ss ; numeric nn ; color cc ; boolean is_cmyk, is_spot, ok ;
   % transparancy type
   if string n :
     if expandafter known scantokens(n&"transparent") :
@@ -440,9 +472,13 @@ vardef transparent(expr n, t, c) =
   % check for cmyk special
   is_cmyk := (redpart   cc = _special_signal_/1000)
          and (greenpart cc = 1/1000) ;
+  is_spot := (redpart   cc = _special_signal_/1000)
+         and (greenpart cc = 2/1000) ;
   % build special string, fetch cmyk components
-  s := decimal nn & " " & decimal t & " " & if is_cmyk :
-         cmykcolorpattern[bluepart cc] else : dddecimal cc fi ;
+  s := decimal nn & " " & decimal t & " " & 
+       if     is_cmyk : cmykcolorpattern[bluepart cc] 
+       elseif is_spot : spotcolorpattern[bluepart cc] 
+       else           : dddecimal cc fi ;
   % check if this one is already used
   ss := "tr_" & s ;
   % efficiency hack
@@ -454,20 +490,24 @@ vardef transparent(expr n, t, c) =
     ok := true ;  % globally already defined 
   fi ; 
   if not ok : 
-    if is_cmyk :
-      flush_special(3, 8, s) ;
-    else :
-      flush_special(2, 7, s) ;
+    if is_spot  :
+      flush_special(5, 6, s) ;
+    elseif is_cmyk :
+      flush_special(4, 8, s) ;
+    else : 
+      flush_special(3, 7, s) ;
     fi ;
     scantokens(ss) := _special_counter_ ;
     _local_specials_ := _local_specials_ & 
       "scantokens(" & ditto & ss & ditto & ") := -1 ;" ; 
   fi ; 
   % go ahead
-  if is_cmyk :
-    (_special_signal_/1000,3/1000,scantokens(ss)/1000)
+  if is_spot :
+    (_special_signal_/1000,5/1000,scantokens(ss)/1000)
+  elseif is_cmyk :
+    (_special_signal_/1000,4/1000,scantokens(ss)/1000)
   else :
-    (_special_signal_/1000,2/1000,scantokens(ss)/1000)
+    (_special_signal_/1000,3/1000,scantokens(ss)/1000)
   fi
 enddef ;
 
@@ -481,5 +521,30 @@ def register (expr label, width, height, offset) =
     decimal  height & " " & label) ;
   endgroup ;
 enddef ;
+
+%D We cannot scale cmyk colors directly since this spoils 
+%D the trigger signal (such colors are no real colors). 
+
+vardef scaledcmyk(expr c,m,y,k,sf) =
+  cmyk(sf*c,sf*m,sf*y,sf*k) 
+enddef ;
+
+vardef scaledcmykasrgb(expr c,m,y,k,sf) =
+  (sf*(1-c-k,1-m-k,1-y-k)) 
+enddef ;
+
+vardef scaledrgbascmyk(expr c,m,y,k,sf) =
+  scaledcmyk(1-c,1-m,1-y,0,sf) 
+enddef ;
+
+vardef scaledrgb(expr r,g,b,sf) =
+  (sf*(r,g,b))
+enddef ;
+
+vardef scaledgray(expr s,sf) =
+  (sf*(s,s,s))
+enddef ;
+
+% spotcolor is already scaled 
 
 endinput ;

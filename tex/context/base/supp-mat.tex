@@ -19,7 +19,7 @@
 \unprotect
 
 %D \macros
-%D   {mathematics, nomathematics, startmathmode}
+%D   {mathematics, math, nomathematics, startmathmode}
 %D 
 %D The \type{$} can be both an begin and end math character.
 %D This can lead to confusing and errorprone situations when
@@ -48,15 +48,17 @@
 \def\mathematics#1%
   {\ifmmode#1\else$#1$\fi}
 
-\def\startmathmode%
+\def\startmathmode
   {\ifmmode
-     \let\stopmathmode=\relax
+     \let\stopmathmode\relax
    \else
      $\def\stopmathmode{$}%  \let\stopmathmode=$
    \fi}
 
 \def\nomathematics#1%
   {\ifmmode\hbox{#1}\else#1\fi}
+
+\let\math\mathematics
 
 %D \macros
 %D   {dimension, nodimension}
@@ -73,8 +75,8 @@
 
 \unexpanded\def\dimension#1%
   {\def\dodimensionsignal{\kern\dimensionsignal}%
-   \ifdim\lastskip=\!!zeropoint\relax
-     \ifdim\lastkern=\!!zeropoint\relax
+   \ifdim\lastskip=\zeropoint\relax
+     \ifdim\lastkern=\zeropoint\relax
        \ifmmode
          \mathematics{\dimensionhalfspace\dimensionhalfspace\dimensiontypeface#1}%
        \else
@@ -108,7 +110,7 @@
 
 \newevery\everysupersub \EverySuperSub
 
-\appendtoks \advance\supersubmode by 1\relax \to \everysupersub
+\appendtoks \advance\supersubmode 1\relax \to \everysupersub
 
 % \def\dodosuper#1{\normalsuper{\the\everysupersub#1}}
 % \def\dodosuber#1{\normalsuber{\the\everysupersub#1}}
@@ -131,7 +133,7 @@
 \bgroup
 \catcode`\^=\@@active
 \catcode`\_=\@@active
-\gdef\enablesupsub%
+\gdef\enablesupsub
   {\catcode`\^=\@@active
    \def^{\ifmmode\expandafter\super\else\expandafter\normalsuper\fi}%
    \catcode`\_=\@@active
@@ -144,7 +146,7 @@
 %D We can pick up the current math style by calling \type 
 %D {\restoremathstyle}.
 
-\def\restoremathstyle%
+\def\restoremathstyle
   {\ifmmode
      \ifcase\supsubmode
        \textstyle
@@ -155,6 +157,4 @@
      \fi
    \fi}
 
-\protect
-
-\endinput
+\protect \endinput

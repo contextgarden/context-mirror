@@ -13,6 +13,8 @@
 % instead of a picture, one can format a number in a for TeX
 % acceptable input string
 
+boolean mant_font ; mant_font := true ; % signals graph not to load form 
+
 if   known fmt_loaded : expandafter endinput fi ; 
    boolean fmt_loaded ; fmt_loaded := true ;
 
@@ -115,7 +117,11 @@ vardef init_numbers(expr s, m, x, sn, e) =
     Feraise_ := ypart llcorner p ;
     exitif true ;
   endfor
-  Fe_base := Fline_up_("1" infont Fmfont_ scaled Fmscale_, Femarker_) ;
+  if fmt_metapost : 
+    Fe_base := Fline_up_("1" infont Fmfont_ scaled Fmscale_, Femarker_) ;
+  % else : 
+  %   sFe_base := Fline_up_("1", sFemarker_) ;
+  fi ; 
   Fe_plus := nullpicture ;
 enddef ;
 
@@ -323,14 +329,23 @@ fmt_[ASCII "G"] = "Formgen_(z Fdigs_ p)" ;
 % of the format letters defined above. The number should be
 % an integer giving the precision (default 3). 
 
+vardef isfmtseparator primary c = %%% added by HH %%%
+  ((c <> fmt_separator) and (c <> "%")) 
+enddef ; 
+
 vardef dofmt_@#(expr f, x) = %%% adapted by HH %%%
+  initialize_numbers ; 
   if f = "" : 
     if fmt_metapost : nullpicture else : "" fi 
   else :
     interim warningcheck := 0 ;
     save k, l, s, p, z ;
     pair z ; z = @#(x) ;
-    k = 1 + cspan(f, fmt_separator <> ) ;
+    % the next adaption is okay 
+    % k = 1 + cspan(f, fmt_separator <> ) ;
+    % but best is to support both % and fmt_separator 
+    k = 1 + cspan(f, isfmtseparator) ;
+    % 
     l-k = cspan(substring(k,infinity) of f, isdigit) ;
     p = if l > k :  
       scantokens substring(k,l) of f  

@@ -225,16 +225,13 @@
 %D met 1~em vermeerderd.
 
 \def\assignwidth#1#2#3#4%
-  {\doifelse{#2}{}
-     {\setbox0=\hbox{#3}%
-      #1=\wd0}
+  {\doifelsenothing{#2}
+     {\setbox0\hbox{#3}%
+      #1\wd0}
      {\doifinsetelse{#2}{\v!passend,\v!ruim}
         {\setbox0=\hbox{#3}%
-         #1=\wd0
-         \doif{#2}{\v!ruim}
-           {\advance#1 by #4}}%
+         #1\wd0
+         \doif{#2}\v!ruim{\advance#1 #4}}%
         {#1=#2}}}%
 
-\protect
-
-\endinput
+\protect \endinput

@@ -131,11 +131,11 @@
 
 \def\addsomebackground#1#2#3#4% area box width height / zero test added
   {\ifdim#3>\zeropoint\ifdim#4>\zeropoint\ifsomebackgroundfound#1%
-     \setbox#2=\vbox\localframed
+     \setbox#2\vbox\localframed
        [\??ma#1]
        [\c!strut=\v!nee,\c!offset=\v!overlay,
         \c!breedte=#3,\c!hoogte=#4]
-       {\dp#2=\zeropoint\box#2}%
+       {\dp#2\zeropoint\box#2}%
    \fi\fi\fi}
 
 %D There are quite some backgrounds. At the bottom layer,
@@ -172,7 +172,7 @@
 \def\addmainbackground#1% todo: dimension spec
   {\ifsomebackground
      \ifnewbackground \setbackgroundboxes \fi
-     \setbox#1=\vbox
+     \setbox#1\vbox
        {\offinterlineskip
         \doifmarginswapelse
           {\copy\leftbackground}
@@ -188,7 +188,7 @@
 
 \def\addtextbackground#1%
   {\ifconditional\hiddenbackgroundenabled
-    \addsomebackground\v!verborgen#1\zetbreedte\teksthoogte % mine ! 
+     \addsomebackground\v!verborgen#1\zetbreedte\teksthoogte % mine ! 
    \fi 
    \addsomebackground\v!tekst#1\zetbreedte\teksthoogte}
 
@@ -217,12 +217,12 @@
 \let\pagebackgrounddepth   = \!!zeropoint
 
 % \def\setbackgroundboxes
-%   {\showmessage{\m!layouts}{8}\empty
+%   {\showmessage\m!layouts8\empty
 %    \setbackgroundbox\leftbackground\relax
 %    \ifdubbelzijdig
 %      \setbackgroundbox\rightbackground\doswapmargins
 %    \fi
-%    \doifnot{\@@mastatus}{\v!herhaal}{\global\newbackgroundfalse}}
+%    \doifnot\@@mastatus\v!herhaal{\global\newbackgroundfalse}}
 
 %D We need a bit more clever mechanism in order to handle
 %D layers well. This means that we cannot calculate both
@@ -237,8 +237,8 @@
 
 \def\setbackgroundboxes
   {\ifnewbackground
-     \global\chardef\newrightbackground1
-     \global\chardef\newleftbackground1
+     \global\chardef\newrightbackground\plusone
+     \global\chardef\newleftbackground\plusone
      \global\setbox\leftbackground\emptybox
      \global\setbox\rightbackground\emptybox
    \fi 
@@ -246,21 +246,21 @@
      \ifcase\newleftbackground \else
        \showmessage\m!layouts8\empty
        \setbackgroundbox\leftbackground\relax
-       \global\chardef\newleftbackground0
-       \global\chardef\newrightbackground0
+       \global\chardef\newleftbackground\zerocount
+       \global\chardef\newrightbackground\zerocount
      \fi
    \orsideone
      \ifcase\newleftbackground \else
        \showmessage\m!layouts8\empty
        \setbackgroundbox\leftbackground\relax
-       \global\chardef\newleftbackground0
-      %\global\chardef\newrightbackground0
+       \global\chardef\newleftbackground\zerocount
+      %\global\chardef\newrightbackground\zerocount
      \fi
    \orsidetwo
      \ifcase\newrightbackground \else
        \showmessage\m!layouts8\empty
        \setbackgroundbox\rightbackground\doswapmargins
-       \global\chardef\newrightbackground0
+       \global\chardef\newrightbackground\zerocount
      \fi
    \od
    \ifx\@@mastatus\v!herhaal\else\global\newbackgroundfalse\fi}
@@ -268,7 +268,7 @@
 \def\addmainbackground#1% todo: dimension spec
   {\ifsomebackground
      \setbackgroundboxes 
-     \setbox#1=\vbox
+     \setbox#1\vbox
        {\offinterlineskip
         \doifmarginswapelse
           {\copy\leftbackground}
@@ -301,7 +301,7 @@
 \appendtoks \setbackgroundoffsets \to \everybeforepagebody
 
 \def\setbackgroundbox#1#2%
-  {\global\setbox#1=\vbox
+  {\global\setbox#1\vbox
      {\dontcomplain
       \calculatereducedvsizes
       \offinterlineskip
@@ -322,7 +322,7 @@
 
 \def\dodopagebodybackground#1#2%
   {\ifdim#2>\zeropoint % added, faster 
-     \setbox\scratchbox=\vbox to #2
+     \setbox\scratchbox\vbox to #2
        \bgroup\hbox\bgroup
          \swapmargins
          \goleftonpage
@@ -336,7 +336,7 @@
          \hskip\rechterrandafstand
          \dododopagebodybackground\rechterrandbreedte #2#1\v!rechterrand
        \egroup\egroup
-     \wd\scratchbox=\zeropoint
+     \wd\scratchbox\zeropoint
      \box\scratchbox\relax
    \fi}
 
@@ -355,7 +355,7 @@
        \hskip#1%
      \fi
    \else
-     \hskip#1%
+    \hskip#1%
    \fi}
 
 %D The background mechanism is quite demanding in terms or
@@ -374,7 +374,7 @@
 %D Because the number of arguments runs from one to three,
 %D we need to check for it.
 
-\def\setupbackgrounds%
+\def\setupbackgrounds
   {\dotripleempty\dosetupbackgrounds}
 
 \def\dosetupbackgrounds[#1][#2][#3]%
@@ -550,6 +550,56 @@
 \setupbackgrounds
   [\v!verborgen]
   [\c!achtergrond=\hiddenbackground]
+
+% The next series is used in local (for instance floating) 
+% backgrounds. 
+
+\presetlocalframed
+  [\??ma\v!lokaal]
+
+\def\localbackground
+  {\v!lokaal-2,\v!lokaal-1,\v!voorgrond,\v!lokaal+1,\v!lokaal+2}
+
+\defineoverlay[\v!lokaal-2][\positionoverlay{\v!lokaal-2}]
+\defineoverlay[\v!lokaal-1][\positionoverlay{\v!lokaal-1}]
+\defineoverlay[\v!lokaal+1][\positionoverlay{\v!lokaal+1}]
+\defineoverlay[\v!lokaal+2][\positionoverlay{\v!lokaal+2}]
+
+\def\addlocalbackgroundtobox
+  {\ifconditional\hiddenbackgroundenabled
+     \expandafter\doaddlocalbackground
+   \else
+     \expandafter\gobbleoneargument
+   \fi}
+
+\def\doaddlocalbackground#1%
+  {\scratchdimen\dp#1%
+   \edef\next
+     {\noexpand\redoglobal\wd#1\the\wd#1%
+      \noexpand\redoglobal\ht#1\the\ht#1%
+      \noexpand\dodoglobal\dp#1\the\dp#1}%
+   \dp#1\zeropoint
+   \setbox#1\hbox
+     {\localframed
+        [\??ma\v!lokaal]
+        [\c!kader=\v!uit,
+         \c!offset=\v!overlay,
+         \c!achtergrond=\localbackground]%
+        {\registerMPlocaltextarea{\box#1}}}%
+   \ifdim\naturalfloatdepth>\zeropoint % maybe take difference 
+     \redoglobal\setbox#1\hbox{\lower\scratchdimen\box#1}%
+   \fi 
+   \next}
+
+% Test how previous macro behaves with depth: 
+%
+% \startcolumnset
+% \input tufte
+% \placefigure{none}{\framed[lines=5]{xxx}}
+% \input tufte
+% \placefigure{none}{\starttabulate\NC test\nc test\NC\NR\stoptabulate}
+% \input tufte
+% \stopcolumnset
 
 %D Because we haven't really set up backgrounds yet, we set
 %D the main efficiency switch to false.

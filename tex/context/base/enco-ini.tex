@@ -133,10 +133,11 @@
 
 \def\setregimecode#1#2%
   {\ifprotectregime\ifnum\catcode#1=\active\else
-     \catcode#1=#2\relax
+     \catcode#1=#2%\relax
    \fi\else     
-     \catcode#1=#2\relax
-   \fi}
+     \catcode#1=#2%\relax
+   \fi
+   \relax}
 
 %D \macros 
 %D   {startregime, enableregime}
@@ -161,16 +162,20 @@
 \def\startregime[#1]%
   {\localpushmacro\characterregime
    \edef\characterregime{@#1@}%
-   \doifundefined{\@reg@\characterregime}
+   \checkregimetoks}
+
+\def\checkregimetoks
+  {\doifundefined{\@reg@\characterregime}
      {\@EA\newtoks\csname\@reg@\characterregime\endcsname}}
 
-\def\stopregime%
+\def\stopregime
   {\localpopmacro\characterregime}
 
 %\long\def\startregime[#1]#2\stopregime{}
 
-\def\setregimetoks%
-  {\@EA\let\@EA\regimetoks\csname\@reg@\characterregime\endcsname}
+\def\setregimetoks
+  {\checkregimetoks
+   \@EA\let\@EA\regimetoks\csname\@reg@\characterregime\endcsname}
 
 \let\enabledregime\empty 
 
@@ -221,12 +226,16 @@
 
 \long\def\defineactivedecimals#1 to #2 as #3 %
   {\setregimetoks
-   \dostepwiserecurse{#1}{#2}{1}
+   \dostepwiserecurse{#1}{#2}\plusone
      {\@EA\appendtoks\@EA\dodefineactivedecimal\@EA{\recurselevel}{#3}\to\regimetoks}}
 
 \long\def\defineactivetoken #1 #2% watch the {} 
   {\setregimetoks
    \appendtoks\defineactivecharacter#1 {#2{}}\to\regimetoks}
+
+\long\def\defineactiveinspector #1 #2% watch the missing {} 
+  {\setregimetoks
+   \appendtoks\defineactivecharacter#1 {#2}\to\regimetoks}
 
 %D ....
  
@@ -261,8 +270,9 @@
 
 \def\doautosetregime#1#2%
   {\ifnum#2>127
-     \def\!!stringa{#2 }%
-     \@EA\@EA\@EA\defineactivetoken\@EA\!!stringa\@EA{\csname#1\endcsname}%
+%     \def\!!stringa{#2 }%
+%     \@EA\@EA\@EA\defineactivetoken\@EA\!!stringa\@EA{\csname#1\endcsname}%
+\expanded{\defineactivetoken #2 \@EA\noexpand\csname#1\endcsname}%
    \fi}
 
 %D \macros 
@@ -271,7 +281,7 @@
 %D The following setup command is used to tune encoding 
 %D handling. 
 
-\def\setupencoding%
+\def\setupencoding
   {\dosingleargument\dosetupencoding}
 
 \def\dosetupencoding[#1]%
@@ -292,9 +302,9 @@
      {\setvalue{\c!file\f!encodingprefix#1}{}%
       \makeshortfilename[\f!encodingprefix#1]%
       \startreadingfile
-      \readsysfile{\shortfilename}
-        {\showmessage{\m!encodings}{2}{#1}}
-        {\showmessage{\m!encodings}{3}{#1}}%
+      \readsysfile\shortfilename
+        {\showmessage\m!encodings2{#1}}
+        {\showmessage\m!encodings3{#1}}%
       \stopreadingfile}}
 
 \def\useencoding[#1]%
@@ -332,7 +342,7 @@
 \def\stopmapping
   {\popmacro\charactermapping}
 
-\def\setmappingtoks%
+\def\setmappingtoks
   {\@EA\let\@EA\mappingtoks\csname\@map@\charactermapping\endcsname}
 
 \def\definecasemap #1 #2 #3 % code lower upper
@@ -364,7 +374,7 @@
 %D and saves a lot of typing (copying). 
 
 \def\presetcaserange#1#2%
-  {\dostepwiserecurse{#1}{#2}{1}
+  {\dostepwiserecurse{#1}{#2}\plusone
      {\setregimecode\recurselevel\@@letter
       \lccode \recurselevel=\recurselevel
       \uccode \recurselevel=\recurselevel}}
@@ -436,8 +446,8 @@
 %D and~\type{^}, so let us define ourselve some handy macros
 %D first.
 
-\def\protectfontcharacters%
-  {\edef\unprotectfontcharacters%
+\def\protectfontcharacters
+  {\edef\unprotectfontcharacters
      {\catcode`\noexpand ~=\the\catcode`~\relax
       \catcode`\noexpand _=\the\catcode`_\relax
       \catcode`\noexpand ^=\the\catcode`^\relax}%
@@ -553,7 +563,7 @@
      \csname\characterencoding#1\endcsname
    \fi}
 
-\def\enableencoding%
+\def\enableencoding
   {\dodoubleempty\doenableencoding}
 
 \def\doenableencoding[#1][#2]% main fallback 
@@ -573,30 +583,29 @@
   {\edef\characterencoding{@#1@}%
    \let\nocharacterencoding\xnocharacterencoding}
 
-\def\startencoding%
+\def\startencoding
   {\dodoubleempty\dostartencoding}
 
 \def\dostartencoding[#1][#2]% encoding regime 
   {\doifelsenothing{#1}
      {\let\stopencoding\relax}
      {%\protectfontcharacters % problematic in language loading
-      \showmessage{\m!encodings}{1}{#1}%
+      \showmessage\m!encodings1{#1}%
       \pushmacro\dohandleaccent
       \pushmacro\dohandlecommand
       \pushmacro\definesortkey
-      \pushmacro\currentcharacterregime
-      \pushmacro\dosetautoregime
+      \pushmacro\characterregime
+      \pushmacro\doautosetregime
       \let\dohandleaccent\donthandleaccent
       \let\dohandlecommand\donthandlecommand
       \let\definesortkey\savesortkey
       \doifelsenothing{#2}%
-        {% message 
-         \let\doautosetregime\gobbletwoarguments}
-        {\def\currentcharacterregime{@#2@}}%
+        {\let\doautosetregime\gobbletwoarguments}
+        {\def\characterregime{@#2@}}%
       \enableencoding[#1]%
       \def\stopencoding%
-        {\popmacro\dosetautoregime
-         \popmacro\currentcharacterregime
+        {\popmacro\doautosetregime
+         \popmacro\characterregime
          \popmacro\definesortkey
          \popmacro\dohandlecommand
          \popmacro\dohandleaccent
@@ -635,7 +644,7 @@
 %D argument determines the sort order given the replacement. 
 %D The last argument is used as entry in the index (a, b, etc).
 %D
-%D The keys can be flished using \type {\flushsortkeys} 
+%D The keys can be flushed using \type {\flushsortkeys} 
 %D which in turn results in a sequence of calls to \type 
 %D {\flushsortkey}, a macro taking 4~arguments.  
 %D
@@ -657,7 +666,7 @@
 \def\definesortkey#1#2#3#4%
   {}
 
-\def\flushsortkeys%
+\def\flushsortkeys
   {\enablelanguagespecifics[\currentlanguage]%
    \getvalue{sort:\characterencoding}}
 
@@ -669,7 +678,7 @@
 %D The actual definition of accents, special characters and
 %D commands is done with the next three commands.
 
-\def\defineaccent%
+\def\defineaccent
   {\protectfontcharacters
    \dodefineaccent}
 
@@ -677,21 +686,11 @@
   {\unprotectfontcharacters
    \dododefineaccent#1 #2 }
 
-% obsolete 
-%
-% \def\dododefineaccent#1 #2 #3 %
-%   {\redefineaccent #1 % just to be sure
-%    \doifnumberelse{\string#3}
-%      {\setvalue{\characterencoding#1\string#2}{\char#3 }} % space added
-%      {\setvalue{\characterencoding#1\string#2}{#3}}%
-%    \unprotectfontcharacters}
-
 \def\dododefineaccent#1 #2 #3 %
   {\setvalue{#1}{\dohandleaccent{#1}}%
    \doifnumberelse{\string#3}
      {\setvalue{\characterencoding#1\string#2}{\char#3 }} % space added
-     {\setvalue{\characterencoding#1\string#2}{#3}}%
-   \unprotectfontcharacters}
+     {\setvalue{\characterencoding#1\string#2}{#3}}}
 
 \beginTEX
 
@@ -740,12 +739,12 @@
 
 \def\patternchar#1 {\rawcharacter{#1}}
 
-\def\startpatternaccents%
+\def\startpatternaccents
   {\let\savedpatternchar\char
    \let\char\patternchar
    \let\dohandleaccent\normaldohandleaccent}
 
-\def\stoppatternaccents%
+\def\stoppatternaccents
   {\let\char\savedpatternchar}
 
 \def\definecharacter#1 #2 %
@@ -863,7 +862,7 @@
 %D \defineaccentcommand " 127  % "7F 
 %D \stoptypen
 
-\def\defineaccentcommand%
+\def\defineaccentcommand
   {\protectfontcharacters
    \dodefineaccentcommand}
 
@@ -1278,7 +1277,7 @@
 \let\normalmathaccent\mathaccent
 \let\normalchar      \char
 
-\def\buildtextaccent%
+\def\buildtextaccent
   {\ifignoreaccent
      \expandafter\nobuildtextaccent
    \else
@@ -1327,7 +1326,7 @@
 
 % some fake ones, name will change into build 
 
-\def\bottomaccent#1#2#3#4#5% down right slantcorrection accent char 
+\unexpanded\def\bottomaccent#1#2#3#4#5% down right slantcorrection accent char 
   {\leavevmode
    \vtop
      {\forgetall
@@ -1336,7 +1335,7 @@
       \everycr\emptytoks
       \tabskip\zeropoint
       \lineskiplimit\zeropoint
-      \setbox0=\hbox{#4}%
+      \setbox0\hbox{#4}%
       \halign
         {##\crcr#5\crcr
          \hidewidth
@@ -1423,6 +1422,28 @@
 \def\donthandlecommand  #1{\expandafter\string\csname#1\endcsname\space}
 \def\donthandlecharacter#1{\expandafter\string\csname#1\endcsname\space}
 
+\def\keepencodedtokens
+  {\let\dohandleaccent   \keephandleaccent
+   \let\dohandlecommand  \keephandlecommand
+   \let\dohandlecharacter\keephandlecharacter}
+
+\def\keephandleaccent   #1{\expandafter\noexpand\csname#1\endcsname}
+\def\keephandlecommand  #1{\expandafter\noexpand\csname#1\endcsname}
+\def\keephandlecharacter#1{\expandafter\noexpand\csname#1\endcsname}
+
+\def\handleaccent   #1{\csname#1\endcsname}
+\def\handlecommand  #1{\csname#1\endcsname}
+\def\handlecharacter#1{\csname#1\endcsname}
+
+\unexpanded\def\uhandleaccent   #1{\csname#1\endcsname}
+\unexpanded\def\uhandlecommand  #1{\csname#1\endcsname}
+\unexpanded\def\uhandlecharacter#1{\csname#1\endcsname}
+
+\def\dontexpandencodedtokens
+  {\def\dohandleaccent   {\uhandleaccent}%     
+   \def\dohandlecommand  {\uhandlecommand}% 
+   \def\dohandlecharacter{\uhandlecharacter}}
+
 %D Still valid? To be checked: 
 
 \def\ignoreencoding
@@ -1440,7 +1461,7 @@
 
 %D We preload several encodings: 
 
-\useencoding[def,acc,raw,com,cas,mis]
+\useencoding[def,acc,raw,com,cas,mis] 
 
 \useencoding[ans,il2,ec,tbo,pdf,uc,pol,x5]
 

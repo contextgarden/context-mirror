@@ -98,8 +98,26 @@
 %   \dochecksidefloat
 %   \scratchcounter=-\hangafter
 %   \dorecurse{\scratchcounter}{\strut\hfill\strut\par}}
+%
+%\def\flushsidefloats
+%  {\par
+%   \!!heighta\sidefloatvsize
+%   \advance\!!heighta -\pagetotal
+%   \ifdim\!!heighta>\zeropoint
+%     % to be checked for interference
+%     \witruimte
+%     % will be option
+%     \getnoflines\!!heighta
+%     \!!heighta\noflines\lineheight
+%     % so far for option
+%     \kern\!!heighta
+%   \fi
+%   % == \forgetsidefloats 
+%   \global\sidefloatvsize\nofloatvsize
+%   \global\floatshortfalse
+%   \global\floatflagfalse}
 
-\def\flushsidefloats%
+\def\flushsidefloats
   {\par
    \!!heighta\sidefloatvsize
    \advance\!!heighta -\pagetotal
@@ -110,50 +128,60 @@
      \getnoflines\!!heighta
      \!!heighta\noflines\lineheight
      % so far for option
-     \kern\!!heighta
+     \ifdim\sidefloatbottomskip>\zeropoint\relax
+       \ifdim\!!heighta>\sidefloatbottomskip
+         \advance\!!heighta-\sidefloatbottomskip
+         \kern\!!heighta
+         \vskip\sidefloatbottomskip
+       \else
+         \kern\!!heighta
+       \fi
+     \else
+       \kern\!!heighta
+     \fi
    \fi
-% == \forgetsidefloats 
+   % == \forgetsidefloats 
    \global\sidefloatvsize\nofloatvsize
    \global\floatshortfalse
    \global\floatflagfalse}
 
-\def\flushsidefloatsafterpar%
+\def\flushsidefloatsafterpar
   {\xdef\oldpagetotal{\the\pagetotal}%
-   \gdef\checksidefloat%
+   \gdef\checksidefloat
      {\dochecksidefloat
       \ifdim\oldpagetotal=\pagetotal \else
         \global\let\checksidefloat\dochecksidefloat
         \flushsidefloats
       \fi}}
 
-\def\forgetsidefloats% 
+\def\forgetsidefloats
   {\global\sidefloatvsize\nofloatvsize
    \global\floatshortfalse
    \global\floatflagfalse}
 
 \let\logsidefloat=\relax
 
-\def\pushpenalties%
-  {\widowpenalty1
+\def\pushpenalties
+  {\widowpenalty\plusone
    \clubpenalty2
-   \brokenpenalty1
+   \brokenpenalty\plusone
    \let\pushpenalties\relax
-   \edef\poppenalties%
-     {\widowpenalty\the\widowpenalty
-      \clubpenalty\the\clubpenalty
+   \edef\poppenalties
+     {\widowpenalty \the\widowpenalty
+      \clubpenalty  \the\clubpenalty
       \brokenpenalty\the\brokenpenalty}}
 
 \let\poppenalties=\relax
 
-\def\restorepenalties%
+\def\restorepenalties
   {\ifnum\outputpenalty=\!!tenthousand\else
      \penalty\outputpenalty
    \fi}
 
-\def\sidefloatoutput%
+\def\sidefloatoutput
   {\iffloatshort
      \unvbox\normalpagebox
-     \setbox\floatbottom=\lastbox
+     \setbox\floatbottom\lastbox
      \ifdim\wd\floatbottom>\sidefloathsize
        \penalty-201
        \box\floatbottom
@@ -162,17 +190,17 @@
        \else
          \restoreleftindent
          \ifdim\wd\floatbottom<\sidefloathsize
-           \parskip=\zeropoint
+           \parskip\zeropoint
            %\noindent
-           \vadjust{\penalty-1}%
+           \vadjust{\penalty\minusone}%
            \iffloatlefteqo
              \global\floatlefteqofalse
            \else
-             \global\advance\sidefloathsize by -\wd\floatbottom
+             \global\advance\sidefloathsize -\wd\floatbottom
              \iffloatrighteqo
                \global\floatrighteqofalse
              \else
-               \global\divide\sidefloathsize by 2
+               \global\divide\sidefloathsize 2
              \fi
              \hskip\sidefloathsize
            \fi
@@ -181,11 +209,11 @@
          \restorepenalties
        \fi
      \fi
-     \global\holdinginserts=0
+     \global\holdinginserts\zerocount
      \global\floatshortfalse
    \else
      \finalsidefloatoutput % new 
-     \global\sidefloatvsize=\nofloatvsize
+     \global\sidefloatvsize\nofloatvsize
      \poppenalties
    \fi}
 
@@ -197,7 +225,7 @@
      \parskip\zeropoint % here ? 
      \ifdim\sidefloatwidth>\zeropoint % new, see prikkels 
        \noindent
-       \vadjust{\penalty-1}%
+       \vadjust{\penalty\minusone}%
        \hskip\sidefloatwidth
     %\else
     %  we have a margin or edge float 
@@ -206,7 +234,7 @@
 
 \ifx\normaleqno\undefined
 
-  \def\normaleqno%
+  \def\normaleqno
     {\iffloatshort
        \global\floatrighteqotrue
      \fi
@@ -214,7 +242,7 @@
 
 \else
 
-  \def\eqno%
+  \def\eqno
     {\iffloatshort
        \global\floatrighteqotrue
      \fi
@@ -240,6 +268,36 @@
 \def\rightfloat#1%
   {\global\rightfloattrue\marginfloatfalse\edgefloatfalse\putsidefloat{#1}}
 
+% \def\putsidefloat#1% crap macro 
+%   {\par
+%    \witruimte
+%    % moved here dec 2001 
+%    {\everypar\emptytoks\forgetall\vbox{\strut}\vskip-\lineheight}% moved
+%    %
+%    \previoussidefloat
+%    \stallsidefloat
+%    \setbox\floatbox\hbox{\vbox % pretty ugly, will be rewritten
+%      {\vskip
+%         \sidefloatdownshift
+%       \vskip
+%         \ifmarginfloat
+%           -\sidefloattopskip
+%         \else\ifedgefloat
+%           -\sidefloattopskip
+%         \else
+%           +\sidefloattopoffset
+%         \fi\fi
+%         #1}}
+%    \global\sidefloatdownshift\zeropoint
+%    \measuresidefloat
+%    \ifroomforfloat 
+%    \else
+%      \tosssidefloat
+%      \measuresidefloat
+%      \stallsidefloat
+%    \fi
+%    \setsidefloat}
+
 \def\putsidefloat#1% crap macro 
   {\par
    \witruimte
@@ -248,15 +306,22 @@
    %
    \previoussidefloat
    \stallsidefloat
-   \setbox\floatbox=\hbox{\vbox % pretty ugly, will be rewritten
-     {\vskip
-        \ifmarginfloat
-          -\sidefloattopskip
-        \else\ifedgefloat
-          -\sidefloattopskip
-        \else
-          +\sidefloattopoffset
-        \fi\fi#1}}
+   \setbox\floatbox\hbox
+     {\ifmarginfloat\else\ifrightfloat\else\kern\sidefloatleftshift\fi\fi
+      \vbox % pretty ugly, will be rewritten
+        {\vskip
+           \sidefloatdownshift
+         \vskip
+           \ifmarginfloat
+             -\sidefloattopskip
+           \else\ifedgefloat
+             -\sidefloattopskip
+           \else
+             +\sidefloattopoffset
+           \fi\fi
+           #1}% no \hskip, but \kern here 
+      \ifmarginfloat\else\ifrightfloat\kern\sidefloatrightshift\fi\fi}%
+   \global\sidefloatdownshift\zeropoint
    \measuresidefloat
    \ifroomforfloat 
    \else
@@ -267,7 +332,7 @@
    \setsidefloat}
 
 \def\progresssidefloat%
-  {\sidefloatprogress=\sidefloatvsize
+  {\sidefloatprogress\sidefloatvsize
    \iffloatflag
      \advance\sidefloatprogress -\sidefloatpagetotal
      \global\floatflagfalse
@@ -275,12 +340,12 @@
      \advance\sidefloatprogress -\pagetotal
    \fi}
 
-\def\tosssidefloat%
+\def\tosssidefloat
   {\vfill\eject}
 
 \newdimen\sidefloatpagetotal
 
-\def\measuresidefloat%
+\def\measuresidefloat
   {\global\floatflagtrue
    \global\sidefloatpagetotal \pagetotal % global 
    \ifmarginfloat
@@ -303,14 +368,14 @@
      \roomforfloatfalse
    \else
      \dimen0=\pagegoal
-     \advance\dimen0 by -\sidefloatvsize
+     \advance\dimen0 -\sidefloatvsize
      \ifdim\dimen0<\sidefloatbottomskip
-       \global\advance\sidefloatvsize by \dimen0
+       \global\advance\sidefloatvsize \dimen0
        \global\floatshorttrue
        \pushpenalties
-       \global\holdinginserts=1
+       \global\holdinginserts\plusone
      \else
-       \global\advance\sidefloatvsize by \sidefloatbottomskip
+       \global\advance\sidefloatvsize \sidefloatbottomskip
        \global\floatshortfalse
      \fi
      \roomforfloattrue
@@ -356,7 +421,7 @@
    \kern-\sidefloatheight
    \penalty10001 % oeps, this will change 
    \normalbaselines
-   \prevdepth=\presidefloatdepth
+   \prevdepth\presidefloatdepth
    %\noindent
    \resetsidefloatparagraph
    \ignorespaces}
@@ -367,12 +432,12 @@
   {\ifnum\sidefloatparagraph=1 }
 
 \def\setsidefloatparagraph%
-  {%\advance\sidefloatprogress by \sidefloatbottomskip
-   %\!!counta=\sidefloatprogress
-\scratchdimen=\sidefloatprogress
+  {%\advance\sidefloatprogress \sidefloatbottomskip
+   %\!!counta\sidefloatprogress
+\scratchdimen\sidefloatprogress
 \advance\scratchdimen \ht\strutbox
-\!!counta=\scratchdimen
-   \divide\!!counta by \baselineskip
+\!!counta\scratchdimen
+   \divide\!!counta \baselineskip
    \ifnum\!!counta>0
      \ifrightfloat
        \hangindent=-\sidefloatwidth
@@ -381,10 +446,10 @@
      \fi
      \hangafter=-\!!counta
    \fi
-   \global\advance\sidefloatparagraph 1 }
+   \global\advance\sidefloatparagraph \plusone}
 
 \def\resetsidefloatparagraph%
-  {\global\sidefloatparagraph=0 }
+  {\global\sidefloatparagraph\zerocount }
 
 \def\dochecksidefloat%
   {\progresssidefloat
@@ -419,12 +484,12 @@
    \fi}
 
 \def\stallsidefloat%
-  {\!!counta=\pageshrink
+  {\!!counta\pageshrink
    \divide\!!counta \baselineskip
-   \advance\!!counta 1
-   \parskip=\zeropoint
-   \dorecurse{\!!counta}{\line{}}
+   \advance\!!counta \plusone
+   \parskip\zeropoint
+   \dorecurse\!!counta{\line{}}
    \kern-\!!counta\baselineskip
-   \penalty0 }
+   \penalty\zerocount }
 
 \protect \endinput 

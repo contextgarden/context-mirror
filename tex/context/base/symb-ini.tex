@@ -197,7 +197,7 @@
 
 \appendtoks \resetexternalfigures \to \everysymbol
 
-\def\definefiguresymbol%
+\def\definefiguresymbol
   {\dotripleempty\dodefinefiguresymbol}
 
 \def\dodefinefiguresymbol[#1][#2][#3]%
@@ -324,9 +324,9 @@
 
 \def\dousesymbols#1%
   {\makeshortfilename[\f!symbolprefix#1]%
-   \showmessage{\m!symbols}{1}{#1}%
+   \showmessage\m!symbols1{#1}%
    \startreadingfile
-   \readsysfile{\shortfilename}{}{}%
+     \readsysfile\shortfilename\donothing\donothing
    \stopreadingfile}
 
 \def\usesymbols[#1]%

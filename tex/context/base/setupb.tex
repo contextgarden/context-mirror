@@ -375,9 +375,21 @@
     [\v!ja,\v!nee]
     [\v!ja]
   \variable
+    [\c!mp\c!spot]
+    [\v!ja,\v!nee]
+    [\v!ja]
+  \variable
     [\c!tekstkleur]
     [\c!identifier!]
     []
+  \variable
+    [\c!splitsen]
+    [\c!c,\c!m,\c!y,\c!k,\c!p,\c!s,\v!nee,\c!identifier!]
+    [\v!nee]
+  \variable
+    [\c!criterium]
+    [\v!alles,\v!geen]
+    [\v!geen]
 \stopsetup
 
 \startsetup
@@ -1308,7 +1320,7 @@
     [\v!ruim]
   \variable
     [\c!breedte]
-    [\v!passend,\v!ruim,\c!dimension!]
+    [\v!passend,\v!ruim,\v!vast,\c!dimension!]
     [\v!ruim]
   \variable
     [\c!offset]
@@ -1316,7 +1328,7 @@
     [1em]
   \variable
     [\c!plaats]
-    [\v!laag,\v!diepte]
+    [\v!laag,\v!diepte,\v!hangend]
     []
   \variable
     [\c!optie]
@@ -2100,7 +2112,7 @@
 %\stopsetup
 
 \startsetup
-  \command[\y!kolom]
+  \command[\y!column]
   \type[]
 \stopsetup
 
@@ -2400,6 +2412,12 @@
 \startsetup
   \command[\y!fixedspaces]
   \type[]
+\stopsetup
+
+\startsetup
+  \command[\y!emptylines]
+  \type[\c!val!]
+  \value[\c!number!][]
 \stopsetup
 
 \startsetup
@@ -3232,7 +3250,7 @@
     []
   \variable
     [\c!markering]
-    [\v!aan,\v!uit,\v!kleur]
+    [\v!aan,\v!uit,\v!kleur,\v!raster]
     [\v!uit]
   \variable
     [\c!plaats]
@@ -3262,23 +3280,43 @@
   \variable
     [\c!regels]
     [\c!number!]
-    []
+    [0]
+  \variable
+    [\c!kolommen]
+    [\c!number!]
+    [0]
+  \variable
+    [\c!kolomafstand]
+    [\c!dimension!]
+    [0pt]
   \variable
     [\c!grid]
     [\v!ja,\v!nee]
     [\v!nee]
   \variable
     [\c!bodemwit]
-    [\c!number!]
+    [\c!dimension!]
     []
   \variable
     [\c!snijwit]
-    [\c!number!]
+    [\c!dimension!]
     []
   \variable 
     [\c!tekstafstand]
+    [\c!dimension!]
+    []
+  \variable 
+    [\c!tekstbreedte]
     [\c!number!]
     []
+  \variable 
+    [\c!tekstmarge]
+    [\c!dimension!]
+    []
+  \variable
+    [\c!clipoffset]
+    [\c!dimension!]
+    [\!!zeropoint]
 \stopsetup
 
 \startsetup
@@ -3407,7 +3445,7 @@
 
 \startsetup
   \command
-    [\y!stelnummeringin]
+    [\y!setuppagenumbering]
   \type
     [\c!vars!]
   \variable
@@ -3468,6 +3506,10 @@
     [\c!status]
     [\v!start,\v!stop]
     [\v!start]
+  \variable
+    [\c!breedte]
+    [\c!dimension!]          
+    []
   \variable
     [\c!commando]
     [\c!oneargument!]
@@ -3553,6 +3595,22 @@
     [\c!scheider]
     [\c!text!]
     [.]
+  \variable
+    [\c!uitlijnen]
+    [\v!links,\v!rechts,\v!normaal,\v!ruim]
+    [\v!normaal]
+  \variable
+    [\c!titeluitlijnen]
+    [\v!ja,\v!nee]
+    [\v!nee]
+  \variable
+    [\c!tolerantie]
+    [\v!zeerstreng,\v!streng,\v!soepel,\v!zeersoepel,\v!rek]
+    [\v!soepel]
+  \variable
+    [\c!springvolgendein]
+    [\v!ja,\v!nee]
+    [\v!nee]
   \variable
     [\c!commando]
     [\c!twoarguments!]
@@ -3684,6 +3742,18 @@
     [\c!nregels]
     [\c!number!]
     [4]
+  \variable
+    [\c!default]
+    [\c!identifier!]
+    []
+  \variable
+    [\c!linkermargeafstand]
+    [\c!dimension!]
+    [\!!zeropoint]
+  \variable
+    [\c!rechtermargeafstand]
+    [\c!dimension!]
+    [\!!zeropoint]
   \inheritvariables
     [\y!setupframed]
     []
@@ -3847,7 +3917,7 @@
 
 \startsetup
   \command
-    [\y!pagina]
+    [\y!page]
   \type
     [\c!vals!]
   \value
@@ -4015,6 +4085,19 @@
     [\y!geenlijst]
   \type
     [\c!arg!]
+  \value
+    [\c!text!]
+    []
+\stopsetup
+
+\startsetup
+  \command
+    [\y!listsymbol]
+  \type 
+    [\c!val!\c!arg!]
+  \value
+    [\c!identifier!]
+    []
   \value
     [\c!text!]
     []
@@ -4554,6 +4637,14 @@
     [\c!scheider]
     [\c!text!]
     []
+  \variable
+    [\c!breedte]
+    [\c!dimension!]
+    []
+  \variable
+    [\c!afstand]
+    [\c!dimension!]
+    []
   \inheritvariables
     [\y!setupframed]
     []
@@ -4647,6 +4738,45 @@
 
 \startsetup
   \command
+    [\y!setuppaper]
+  \type
+    [\c!vars!]
+  \variable
+    [\c!papier]
+    [\c!identifier!]
+    []
+  \variable
+    [\c!pagina]
+    [\c!identifier!]
+    []
+  \variable
+    [\c!nx]
+    [\c!number!]
+    [1]
+  \variable
+    [\c!ny]
+    [\c!number!]
+    [1]
+  \variable
+    [\c!breedte]
+    [\c!dimension!]
+    [0pt]
+  \variable
+    [\c!hoogte]
+    [\c!dimension!]
+    [0pt]
+  \variable
+    [\c!kopwit]
+    [\c!dimension!]
+    [0pt]
+  \variable
+    [\c!rugwit]
+    [\c!dimension!]
+    [0pt]
+\stopsetup
+
+\startsetup
+  \command
     [\y!setuppapersize]
   \type
     [\c!vals!\c!opt!\c!vals!]
@@ -4667,7 +4797,7 @@
     [\c!vals!]
   \value
     [\v!blokkeer,
-     2*16,2*8,2*4,2*2,2**2,2UP,2DOWN,
+     2*16,2*8,2*4,2*2,2**2,2*2*4,2*4*2,2UP,2DOWN,2SIDE,2TOP,
      \v!gespiegeld,\v!geroteerd,\v!dubbelzijdig,\v!negatief,90,180,270]
     []
 \stopsetup
@@ -4892,37 +5022,37 @@
     [\c!oneargument!]
     []
   \variable
-    [\c!scheider]
-    [\c!text!]
-    [.]
-  \variable
     [\c!prefix]
     [+,-,\c!text!]
     []
   \variable
     [\c!plaatskop]
-    [\v!ja,\v!nee]
+    [\v!ja,\v!nee,\v!leeg] % leeg: wel markering 
     [\v!ja]
   \variable
     [\c!verhoognummer]
-    [\v!ja,\v!nee,\c!filename!]
+    [\v!ja,\v!nee,\v!lijst,\c!filename!] % lijst: wel lijstentry 
     [\v!ja]
-  \variable
-    [\c!uitlijnen]
-    [\v!links,\v!rechts,\v!normaal,\v!ruim]
-    [\v!normaal]
-  \variable
-    [\c!titeluitlijnen]
-    [\v!ja,\v!nee]
-    [\v!nee]
-  \variable
-    [\c!tolerantie]
-    [\v!zeerstreng,\v!streng,\v!soepel,\v!zeersoepel,\v!rek]
-    [\v!soepel]
-  \variable
-    [\c!springvolgendein]
-    [\v!ja,\v!nee]
-    [\v!nee]
+%  \variable
+%    [\c!scheider]
+%    [\c!text!]
+%    [.]
+%  \variable
+%    [\c!uitlijnen]
+%    [\v!links,\v!rechts,\v!normaal,\v!ruim]
+%    [\v!normaal]
+%  \variable
+%    [\c!titeluitlijnen]
+%    [\v!ja,\v!nee]
+%    [\v!nee]
+%  \variable
+%    [\c!tolerantie]
+%    [\v!zeerstreng,\v!streng,\v!soepel,\v!zeersoepel,\v!rek]
+%    [\v!soepel]
+%  \variable
+%    [\c!springvolgendein]
+%    [\v!ja,\v!nee]
+%    [\v!nee]
   \variable
     [\c!file]
     [\c!identifier!]
@@ -4931,6 +5061,9 @@
     [\c!expansie]
     [\v!ja,\v!commando,\v!nee]
     [\v!nee]
+  \inheritvariables
+    [\y!stelkoppenin]
+    []
 \stopsetup
 
 \startsetup
@@ -6840,11 +6973,15 @@
     [\c!korps]
     [5pt,...,12pt,\v!klein,\v!groot]
     []
+  \variable
+    [\c!lijn]
+    [\v!normaal,\v!regel]
+    [\v!regel]
 \stopsetup
 
 \startsetup
   \command
-    [\y!steltabellenin]
+    [\y!setuptables]
   \type
     [\c!vars!]
   \variable
@@ -6911,7 +7048,7 @@
 
 \startsetup
   \command
-    [\y!starttabel]
+    [\y!starttable]
   \type
     [\c!val!\c!stp!]
   \value
@@ -6921,7 +7058,7 @@
 
 \startsetup
   \command
-    [\y!starttabellen]
+    [\y!starttables]
   \type
     [\c!val!\c!stp!]
   \value
@@ -7258,7 +7395,7 @@
 
 \startsetup
   \command
-    [\y!stelcombinatiesin]
+    [\y!setupcombinations]
   \type
     [\c!vars!]
   \variable
@@ -7286,6 +7423,10 @@
     [\c!dimension!,\v!passend]
     [\v!passend]
   \variable
+    [\c!plaats]
+    [\c!boven,\c!midden,\c!onder,\c!links,\c!rechts]
+    [\c!onder]
+  \variable
     [\c!uitlijnen]
     [\v!nee,\v!links,\v!rechts,\v!midden,\v!normaal]
     [\v!midden]
@@ -7293,7 +7434,7 @@
 
 \startsetup
   \command
-    [\y!startcombinatie]
+    [\y!startcombination]
   \type
     [\c!val!\c!stp!]
   \value
@@ -8169,6 +8310,10 @@
     [\y!stelcommentaarin]
   \type
     [\c!vars!]
+  \variable
+    [\c!status]
+    [\v!start,\v!stop]
+    [\v!start]
   \variable
     [\c!breedte]
     [\c!dimension!]

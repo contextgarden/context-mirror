@@ -76,11 +76,11 @@
       \else\getvalue{\??ty\??ty\ascii}\fi}%
    \doifundefined{setuppretty\prettyidentifier type}%
      {\bgroup
-      \setbox0=\hbox % get rid of spaces when in-line \newpretty loading
+      \setbox0\hbox % get rid of spaces when in-line \newpretty loading
         {\restorecatcodes % also needed when loading during \newpretty 
          \startreadingfile % restore < and > if needed
          \lowercasestring verb-\prettyidentifier.tex\to\filename
-         \readsysfile{\filename}{}{}%
+         \readsysfile\filename\donothing\donothing
          \stopreadingfile}%
       \egroup}%
    \doifdefinedelse{setuppretty\prettyidentifier type}%
@@ -128,20 +128,23 @@
 \installnewpretty I {\setupprettiesintype{EIF}\setupprettytype} % E taken
 \installnewpretty X {\setupprettiesintype{XML}\setupprettytype}
 
-\def\setupcommonverbatim#1%
+ \def\setupcommonverbatim#1%
   {\eightbitcharactersfalse % obey regime / encoding 
    %
    \def\prettyidentifier{TEX}%
    %
-   \doifelsevalue{#1\c!tekst}{\v!ja}
-     {\naturaltextexttrue}{\naturaltextextfalse}%
+   \doifelsevalue{#1\c!tekst}\v!ja
+     \naturaltextexttrue
+     \naturaltextextfalse
    \def\prettyidentifierfont{\getvalue{#1\c!icommando}}%
    \def\prettyvariablefont  {\getvalue{#1\c!vcommando}}%
    \def\prettynaturalfont   {\getvalue{#1\c!ccommando}}%
    %
-   \doifvalue{#1\c!spatie}{\v!aan}{\def\obeyspaces{\setcontrolspaces}}%
-   \doifvalue{#1\c!tab}   {\v!aan}{\def\obeytabs  {\settabskips}}%
-   \doifvalue{#1\c!pagina}{\v!nee}{\def\obeypages {\ignorepages}}%
+   \doifvalue{#1\c!spatie}\v!aan{\def\obeyspaces{\setcontrolspaces}}%
+   %doifvalue{#1\c!tab}   \v!aan{\def\obeytabs  {\settabskips}}%
+   \doifnotvalue{#1\c!tab}\v!uit{\def\obeytabs  {\settabskips}}%
+   \doifvalue{#1\c!tab} \s!ascii{\chardef\tabskipmode2}% quit on >127 
+   \doifvalue{#1\c!pagina}\v!nee{\def\obeypages {\ignorepages}}%
    %
    \ExpandFirstAfter\processaction
      [\getvalue{#1\c!regels}]
@@ -150,18 +153,18 @@
    %
    \ExpandFirstAfter\processaction
      [\getvalue{#1\c!optie}]
-     [     \v!geen=>\let\obeycharacters=\relax,
+     [     \v!geen=>\let\obeycharacters\relax,
           \v!kleur=>\setupprettiesintype{TEX}%
-                    \let\obeycharacters=\setupprettytype
-                    \let\obeytabs=\ignoretabs,
-        \v!normaal=>\let\obeycharacters=\setupgroupedtype,
+                    \let\obeycharacters\setupprettytype
+                    \let\obeytabs\ignoretabs,
+        \v!normaal=>\let\obeycharacters\setupgroupedtype,
       \v!commandos=>\def\obeycharacters{\setupcommandsintype{#1}}%
-                    \let\obeytabs=\ignoretabs,
-         \v!schuin=>\let\obeycharacters=\setupslantedtype
-                    \let\obeytabs=\ignoretabs,
+                    \let\obeytabs\ignoretabs,
+         \v!schuin=>\let\obeycharacters\setupslantedtype
+                    \let\obeytabs\ignoretabs,
         \s!unknown=>\setupprettiesintype{\getvalue{#1\c!optie}}%
-                    \let\obeycharacters=\setupprettytype
-                    \let\obeytabs=\ignoretabs]%
+                    \let\obeycharacters\setupprettytype
+                    \let\obeytabs\ignoretabs]%
    \def\verbatimfont{\getvalue{#1\c!letter}}%
    \setupverbatimcolor{#1}}
 
@@ -292,7 +295,7 @@
    \verbatimcolor 
    \afterassignment\protectfirsttype\let\next=}
 
-\def\dodotypeB%
+\def\dodotypeB
   {\initializetype
    \setupnotypegrouping
    \verbatimcolor 
@@ -314,7 +317,7 @@
   {\ifx\next\bgroup
      \@EA\dodotypeA
    \else\if\next<%
-     \doifelsevalue{\??ty\@@currenttype\c!optie}{\v!geen}
+     \doifelsevalue{\??ty\@@currenttype\c!optie}\v!geen
        {\@EAEAEA\dodotypeB}{\@EAEAEA\dodotypeC}%
    \else
      \@EAEAEA\dodotypeD
@@ -342,17 +345,14 @@
 \bgroup
 \catcode`\<=\@@active
 \catcode`\>=\@@active
-\gdef\setupalternativetypegrouping%
+\gdef\setupalternativetypegrouping
   {\catcode`\<=\@@active
    \catcode`\>=\@@active
-   \def<%
-     {\bgroup
-      \switchslantedtype}%
-   \def>%
-     {\egroup}}
+   \def<{\bgroup\switchslantedtype}%
+   \def>{\egroup}}
 \egroup
 
-\def\setupnotypegrouping%
+\def\setupnotypegrouping
   {\catcode`\<=\@@begingroup
    \catcode`\>=\@@endgroup}
 
@@ -396,16 +396,16 @@
 %D {\hbox{}} prevents ligatures, which unfortunately turn up 
 %D in Lucida fonts. 
 
-\def\doenterdoublelesstype%
+\def\doenterdoublelesstype
   {\ifx\next\egroup
       \lesscharacter\hbox{}\lesscharacter 
    \else
      \bgroup\switchslantedtype
-     \let\doenterdoublemoretype=\egroup
+     \let\doenterdoublemoretype\egroup
    \fi}
 
-\def\doenterdoublemoretype%
-  {\def\doenterdoubletype%
+\def\doenterdoublemoretype
+  {\def\doenterdoubletype
      {\ifx\next\egroup
         \morecharacter\hbox{}\morecharacter
       \fi}}
@@ -413,13 +413,13 @@
 \bgroup
 \catcode`\<=\@@active
 \catcode`\>=\@@active
-\gdef\setupgroupedtype%
+\gdef\setupgroupedtype
   {\catcode`\<=\@@active
    \catcode`\>=\@@active
-   \def\doless%
+   \def\doless
      {\ifx<\next
-        \def\next%
-          {\def\enterdoubletype%           
+        \def\next
+          {\def\enterdoubletype
              {\futurelet\next\doenterdoublelesstype}%
            \afterassignment\enterdoubletype
            \let\next=}%
@@ -427,15 +427,15 @@
         \let\next=\lesscharacter
       \fi
       \next}%
-   \def\domore%
+   \def\domore
      {\ifx>\next
-        \def\next%
-          {\def\enterdoubletype%           
+        \def\next
+          {\def\enterdoubletype
              {\futurelet\next\doenterdoublemoretype}%
            \afterassignment\enterdoubletype
            \let\next=}%
       \else
-        \let\next=\morecharacter
+        \let\next\morecharacter
       \fi
       \next}%
    \def<{\futurelet\next\doless}%
@@ -445,7 +445,7 @@
 \newif\ifslantedtypeactivated
 \newif\ifslantedtypepermitted
 
-\def\switchslantedtype%
+\def\switchslantedtype
   {\ifslantedtypepermitted
      \ifslantedtypeactivated
        \slantedtypeactivatedfalse\tttf
@@ -485,24 +485,24 @@
 %D 
 %D \typebuffer
 
-\def\setupslantedtype%
+\def\setupslantedtype
   {\setupgroupedtype
    \slantedtypepermittedtrue}
 
 \bgroup
 \catcode`\<=\active
 \catcode`\>=\active
-\gdef\doprotectfirsttype%
+\gdef\doprotectfirsttype
   {\ifx\next<%
-     \let\next=\relax
+     \let\next\relax
    \else\ifx\next\bgroup
-     \let\next=\relax
+     \let\next\relax
    \else\ifx\next\egroup % takes care of \type{} 
-     \let\next=\relax
+     \let\next\relax
    \else\ifx\next\activeleftargument
-     \let\next=\relax
+     \let\next\relax
    \else
-     \let\next=\string
+     \let\next\string
    \fi\fi\fi\fi
    \next}
 \egroup
@@ -521,8 +521,8 @@
 
 \let\@@currenttype\empty
 
-\def\initializetype%
-  {\let\obeylines=\ignorelines
+\def\initializetype
+  {\let\obeylines\ignorelines
    \setupcommonverbatim{\??ty\@@currenttype}%
    \setupinlineverbatim}
 
@@ -534,7 +534,7 @@
 %\def\setuptype%
 %  {\dodoubleargument\getparameters[\??ty]}
 
-\def\setuptype%
+\def\setuptype
   {\dodoubleempty\dosetuptype}
 
 \def\dosetuptype[#1][#2]%
@@ -564,7 +564,7 @@
 %D implementation works all right, but a decent hyphenation
 %D support of \type{\tt} text will be implemented soon.
 
-\def\obeyhyphens%
+\def\obeyhyphens
   {\def\obeyedspace{\hskip\spaceskip}%
    \edef\savedfont{\the\font}%
    \ttsl\hyphenchar\font=45
@@ -572,17 +572,17 @@
    \savedfont
    \spaceskip.5em\!!plus.25em\!!minus.25em\relax}
 
-\def\obeybreakpoints%
+\def\obeybreakpoints
   {\def\obeyedspace{\hskip\spaceskip}%
    \spaceskip.5em
    \veryraggedright}
 
-%\unexpanded\def\typ%
+%\unexpanded\def\typ
 %  {\bgroup
 %   \obeyhyphens
 %   \futurelet\next\dotype}
 
-\unexpanded\def\typ%
+\unexpanded\def\typ
   {\bgroup
    \obeyhyphens
    \futurelet\next\dodotype}
@@ -651,7 +651,7 @@
 %D But since \type{\groupedcommand} became available, we use
 %D however
 
-\def\setgroupedtype%
+\def\setgroupedtype
   {\initializetype
    \catcode`\{=\@@begingroup
    \catcode`\}=\@@endgroup}
@@ -672,19 +672,19 @@
 
 \def\initializetyping#1%
   {%\donefalse
-\switchtobodyfont[\getvalue{\??tp#1\c!korps}]%
+   \switchtobodyfont[\getvalue{\??tp#1\c!korps}]%
    \donefalse
-   \scratchskip=\getvalue{\??tp#1\c!onevenmarge}\relax
+   \scratchskip\getvalue{\??tp#1\c!onevenmarge}\relax
    \ifzeropt\scratchskip\else\donetrue\fi
-   \scratchskip=\getvalue{\??tp#1\c!evenmarge}\relax
+   \scratchskip\getvalue{\??tp#1\c!evenmarge}\relax
    \ifzeropt\scratchskip\else\donetrue\fi
    \ifdone
      \def\doopenupverbatimline%
        {\getpagestatus
         \ifrightpage 
-          \hskip \getvalue{\??tp#1\c!onevenmarge}\relax
+          \hskip\getvalue{\??tp#1\c!onevenmarge}\relax
         \else
-          \hskip \getvalue{\??tp#1\c!evenmarge}\relax
+          \hskip\getvalue{\??tp#1\c!evenmarge}\relax
         \fi}%
    \else
      \doadaptleftskip{\getvalue{\??tp#1\c!marge}}%
@@ -694,14 +694,14 @@
      {\edef\!!stringa{\csname\??tp#1\c!blanko\endcsname}}%
    \processaction
      [\!!stringa]
-     [\v!standaard=>\scratchskip=\tussenwit,
-          \v!klein=>\scratchskip=\blankokleinmaat,
-         \v!middel=>\scratchskip=\blankomiddelmaat,
-          \v!groot=>\scratchskip=\blankogrootmaat,
-     \v!halveregel=>\scratchskip=.5\baselineskip,
-          \v!regel=>\scratchskip=\baselineskip,
-           \v!geen=>\scratchskip=\zeropoint,
-        \s!unknown=>\scratchskip=\commalistelement]%
+     [\v!standaard=>\scratchskip\tussenwit,
+          \v!klein=>\scratchskip\blankokleinmaat,
+         \v!middel=>\scratchskip\blankomiddelmaat,
+          \v!groot=>\scratchskip\blankogrootmaat,
+     \v!halveregel=>\scratchskip.5\baselineskip,
+          \v!regel=>\scratchskip\baselineskip,
+           \v!geen=>\scratchskip\zeropoint,
+        \s!unknown=>\scratchskip\commalistelement]%
    \ifgridsnapping
      \ifdim\scratchskip=.5\baselineskip\relax  
        \edef\verbatimbaselineskip{\the\scratchskip}% new 
@@ -728,7 +728,7 @@
   {\stopverbatimcolor
    \stopopelkaar  % includes \egroup
    \getvalue{\??tp#1\c!na}%
-   \doifvalue{\??tp#1\c!springvolgendein}{\v!nee}{\noindentation}}
+   \doifvalue{\??tp#1\c!springvolgendein}\v!nee\noindentation}
 
 %D \macros
 %D   {setuptyping}
@@ -759,7 +759,7 @@
      \getparameters[\??tp][#1]%
    \fi}
 
-\def\setuptyping%
+\def\setuptyping
   {\dodoubleempty\dosetuptyping}
 
 %D The setups for display verbatim and file verbatim are
@@ -788,6 +788,7 @@
       \c!onevenmarge=\!!zeropoint,
            \c!blanko=\v!regel,
            \c!escape=/, % beware \string\ , should also be accepted
+           \c!nummeren=\v!nee,
            \c!regels=]
 
 %D \macros
@@ -829,17 +830,17 @@
      [\c!voor,\c!na,\c!spatie,\c!pagina,\c!tab,\c!kleur,\c!letter,
       \c!tekst,\c!icommando,\c!vcommando,\c!ccommando,\c!korps,
       \c!optie,\c!palet,\c!marge,\c!evenmarge,\c!onevenmarge,
-      \c!springvolgendein,\c!blanko,\c!escape,\c!regels]%
+      \c!springvolgendein,\c!blanko,\c!escape,\c!regels,\c!nummeren]%
    \getparameters
      [\??tp#1]
      [#2]}
 
 \def\dodefinetyping[#1][#2]%
   {\setvalue{\e!start#1}{\dostarttyping{#1}}%
-   \setvalue{\e!stop#1}{\dostoptyping{#1}}%
+   \setvalue{\e!stop #1}{\dostoptyping {#1}}%
    \presettyping[#1][#2]}
 
-\def\definetyping%
+\def\definetyping
   {\dodoubleempty\dodefinetyping}
 
 \definetyping[\v!typen]
@@ -929,7 +930,7 @@
 \def\setupverbatimcolor#1% fast and local versus slow and global 
   {\doifelsevaluenothing{#1\c!kleur} 
      {\def\beginofpretty[##1]{\startcolormode{\prettypalet:##1}}%
-      \let\endofpretty        \stopcolormode
+      \let\endofpretty        \restorecolormode % \stopcolormode
       \let\startverbatimcolor \relax
       \let\stopverbatimcolor  \relax
       \let\verbatimcolor      \relax}
@@ -1087,9 +1088,9 @@
      {\startopelkaar % includes \bgroup
       \doifinset{\getvalue{\??tp#1\c!optie}}{\v!commandos,\v!schuin,\v!normaal}
         {\setuptyping[#1][\c!optie=\v!geen]}%
-      \doifvalue{\??tp#1\c!optie}{\v!kleur}
+      \doifvalue{\??tp#1\c!optie}\v!kleur
         {\expandafter\aftersplitstring#2\at.\to\prettyidentifier
-         \letvalue{\??tp#1\c!optie}=\prettyidentifier}%
+         \letvalue{\??tp#1\c!optie}\prettyidentifier}%
       \initializetyping{#1}%
       \startverbatimcolor
       \makelocreadfilename{#2}%
@@ -1099,8 +1100,8 @@
       \stopopelkaar}  % includes \egroup
      {\bgroup
       \expanded{\convertargument#2}\to\ascii
-      \tttf[\makemessage{\m!verbatims}{1}\ascii]% 
-      \showmessage{\m!verbatims}{1}\ascii
+      \tttf[\makemessage\m!verbatims1\ascii]% 
+      \showmessage\m!verbatims1\ascii
       \egroup}%
    \getvalue{\??tp#1\c!na}}
 
@@ -1115,7 +1116,7 @@
 %D
 %D The definition is not that spectacular. 
 
-\def\filename#1{{\tttf\hyphenatedfile{#1}}}
+\unexpanded\def\filename#1{{\tttf\hyphenatedfile{#1}}}
 
 %D This leaves some settings: 
 
@@ -1124,9 +1125,6 @@
 
 %D And a bonus macro: 
 
-\def\verbatim#1%
-  {\convertargument#1\to\ascii\ascii}
+\def\verbatim#1{\convertargument#1\to\ascii\ascii}
 
-\protect
-
-\endinput
+\protect \endinput

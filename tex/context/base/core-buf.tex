@@ -129,7 +129,12 @@
 
 \unprotect 
 
-\def\resetbuffer%
+% more accurate 
+%
+% \@EA\convertcommand\csname\e!start\e!buffer\endcsname\to\beginofblock % else a space
+% \@EA\convertcommand\csname\e!stop\e!buffer \endcsname\to\endofblock
+
+\def\resetbuffer
   {\dosingleempty\doresetbuffer}
 
 \def\doresetbuffer[#1]%
@@ -146,43 +151,42 @@
 %D For Willy's nested commented buffers, we need the \type 
 %D {\delcharacter} trick. 
 
-% \def\processnextbufferline#1#2#3%
-%   {\relax % checken waarom eerdere macro dit nodig heeft / supp-mps run
-%    \convertargument#1 \to\next
-%    \doifinstringelse{\delcharacter\texcommentsymbol}{\delcharacter\next}
-%      {\def\next{#3}}
-%      {\doifinstringelse{\endofblock}{\next}
-%         {\ifnum\nestedbufferlevel=0\relax % \relax ?
-%            \def\next{#2}%
-%          \else
-%            \decrement\nestedbufferlevel\relax
-%            \def\next{#3}%
-%          \fi}
-%         {\doifinstringelse{\beginofblock}{\next}
-%            {\increment\nestedbufferlevel\relax
-%             \def\next{#3}}
-%            {\def\next{#3}}}}%
-%    \next}
+%\def\processnextbufferline#1% needs testing ! ! ! !
+%  {\relax % checken waarom eerdere macro dit nodig heeft / supp-mps run
+%   \convertargument#1 \to\next
+%   \doifinstringelse{\delcharacter\texcommentsymbol}{\delcharacter\next}
+%     {\let\next\secondoftwoarguments}
+%     {\doifincsnameelse\endofblock\next
+%        {\ifnum\nestedbufferlevel=\zerocount 
+%           \let\next\firstoftwoarguments
+%         \else
+%           \decrement\nestedbufferlevel\relax
+%           \let\next\secondoftwoarguments
+%         \fi}
+%        {\doifincsnameelse\beginofblock\next
+%           {\increment\nestedbufferlevel\relax
+%            \let\next\secondoftwoarguments}
+%           {\let\next\secondoftwoarguments}}}%
+%   \next}
 
-\def\processnextbufferline#1% needs testing ! ! ! !
+\long\def\processnextbufferline#1% 
   {\relax % checken waarom eerdere macro dit nodig heeft / supp-mps run
    \convertargument#1 \to\next
    \doifinstringelse{\delcharacter\texcommentsymbol}{\delcharacter\next}
-     {\let\next\secondoftwoarguments}
-     {\doifincsnameelse{\endofblock}{\next}
-        {\ifnum\nestedbufferlevel=0 
-           \let\next\firstoftwoarguments
+     {\secondoftwoarguments}
+     {\doifincsnameelse\endofblock\next
+        {\ifnum\nestedbufferlevel=\zerocount 
+           \expandafter\firstoftwoarguments
          \else
            \decrement\nestedbufferlevel\relax
-           \let\next\secondoftwoarguments
+           \expandafter\secondoftwoarguments
          \fi}
-        {\doifincsnameelse{\beginofblock}{\next}
+        {\doifincsnameelse\beginofblock\next
            {\increment\nestedbufferlevel\relax
-            \let\next\secondoftwoarguments}
-           {\let\next\secondoftwoarguments}}}%
-   \next}
+            \secondoftwoarguments}
+           {\secondoftwoarguments}}}}
 
-\def\dostartbuffer%
+\def\dostartbuffer
   {\bgroup
    \obeylines % nodig, anders gaat 't fout als direct \starttabel (bv)
    \doquadrupleempty\dodostartbuffer}
@@ -196,17 +200,16 @@
    \next}
 
 \def\dododostartbuffer[#1][#2][#3][#4]%
-  {%\showmessage{\m!systems}{15}{#2}%
-   \doifelsevalue{\??bu#1\c!alinea}{\v!ja}
+  {%\showmessage\m!systems{15}{#2}%
+   \doifelsevalue{\??bu#1\c!alinea}\v!ja
      {\segmentatebuffertrue}
      {\doifnumberelse{\getvalue{\??bu#1\c!alinea}} 
-        {\segmentatebuffertrue}
-        {\segmentatebufferfalse}}%
+        \segmentatebuffertrue\segmentatebufferfalse}%
    \doifelse{#4}{}
      {\letbeundefined{\e!stop\e!buffer}% % \let\stopbuffer=\relax   % \undefined
       \@EA\@EA\@EA\convertargument\@EA\e!start\e!buffer\to\beginofblock % else a space
       \@EA\@EA\@EA\convertargument\@EA\e!stop\e!buffer\to\endofblock
-      \let\processnextblockline=\processnextbufferline}
+      \let\processnextblockline\processnextbufferline}
      {\letbeundefined{#4}% \letvalue{#4}=\relax     % \undefined
       \@EA\convertargument\csname#3\endcsname\to\beginofblock
       \@EA\convertargument\csname#4\endcsname\to\endofblock}%
@@ -219,7 +222,7 @@
       \getvalue{#4}}%
    \doifelsenothing{#2}
      {\message{<\TEXbufferfile{\jobname}>}%
-      \immediate\openout\tmpblocks\TEXbufferfile{\jobname}}
+      \immediate\openout\tmpblocks\TEXbufferfile\jobname}
      {\message{<\TEXbufferfile{#2}>}%
       \immediate\openout\tmpblocks\TEXbufferfile{#2}}%
    \ifsegmentatebuffer 
@@ -234,7 +237,7 @@
 
 % \setbuffer[name]#2\endbuffer : saves to file #1.tmp
 
-\def\setbuffer[#1]#2\endbuffer%
+\def\setbuffer[#1]#2\endbuffer
   {\immediate\openout\tmpblocks=\TEXbufferfile{#1}%
    \convertargument#2\to\ascii
    \immediate\write\tmpblocks{\ascii}%
@@ -242,17 +245,17 @@
 
 \def\dobuffer#1[#2]#3%
   {\def\dodobuffer##1%
-      {%\showmessage{\m!systems}{#1}{##1}%
+      {%\showmessage\m!systems{#1}{##1}%
        \beginrestorecatcodes
        \doifdefinedelse{\??bu##1\c!nummer}
-         {#3{\TEXbufferfile{def-\getvalue{\??bu##1\c!nummer}}}{}{}}
-         {#3{\TEXbufferfile{##1}}{}{}}%
+         {#3{\TEXbufferfile{def-\getvalue{\??bu##1\c!nummer}}}\donothing\donothing}
+         {#3{\TEXbufferfile{##1}}\donothing\donothing}%
        \endrestorecatcodes}%
    \doifelsenothing{#2}
      {\dodobuffer\jobname}
      {\processcommalist[#2]\dodobuffer}}
 
-\def\processTEXbuffer%
+\def\processTEXbuffer
   {\dodoubleempty\doprocessTEXbuffer}
 
 \def\doprocessTEXbuffer[#1][#2]%
@@ -270,7 +273,7 @@
 \let\getbuffer \processTEXbuffer % handy  
 \let\haalbuffer\processTEXbuffer % will move to mult-com.tex
 
-\def\typebuffer%
+\def\typebuffer
   {\dodoubleempty\dotypebuffer}
 
 \def\dotypebuffer[#1][#2]%
@@ -280,7 +283,7 @@
      \dobuffer{17}[#2]\typefile
    \fi}
 
-\def\stelbufferin%
+\def\stelbufferin
   {\dodoubleempty\dostelbufferin}
 
 \def\dostelbufferin[#1][#2]%
@@ -293,8 +296,8 @@
 \def\dodefinieerbuffer[#1]%
   {\iffirstargument % else problems
      \doglobal\increment\nofdefinedbuffers
-     \setevalue{\??bu#1\c!nummer}{\nofdefinedbuffers}%
-     \setvalue {\??bu#1\c!alinea}{\v!nee}%
+     \letvalue{\??bu#1\c!nummer}\nofdefinedbuffers
+     \letvalue{\??bu#1\c!alinea}\v!nee
      \setevalue{\e!start#1}%
        {\noexpand\dostartbuffer[#1][def-\nofdefinedbuffers][\e!start#1][\e!stop#1]}%
      \setevalue{\e!haal#1}%
@@ -303,8 +306,31 @@
        {\noexpand\dodotypebuffer[#1][def-\nofdefinedbuffers]}%
    \fi}
 
-\def\definieerbuffer%
+\def\definieerbuffer
   {\dosingleargument\dodefinieerbuffer}
+
+% yet another undocumented feature, but who cares:
+
+\let\startfilebuffer\startbuffer
+
+\def\usememorybuffers{\let\startbuffer\startmemorybuffer}
+\def\usefilebuffers  {\let\startbuffer\startfilebuffer}
+
+\def\startmemorybuffer
+  {\dosingleempty\dostartmemorybuffer}
+
+\long\def\dostartmemorybuffer[#1]#2\stopbuffer
+  {\setbuffer[\iffirstargument#1\else\jobname\fi]#2\endbuffer}
+
+% \long\def\startcrap#1\stopcrap
+%   {\usememorybuffers#1\usefilebuffers} % or {{...}} 
+%
+% \startcrap
+% \startbuffer
+% some awful code
+% \stopbuffer
+% \placefigure{crap}{\getbuffer}
+% \stopcrap
 
 % TODO: no grouping due to sidefloats 
 
@@ -320,20 +346,20 @@
 
 \newcount\currentbufferparagraph
 
-\def\getbufferparagraphs%
+\def\getbufferparagraphs
   {\dodoubleempty\dogetbufferparagraphs}
 
 \def\dosetbufferoffset#1% 
   {\doifnumberelse{\getvalue{\??bu#1\c!alinea}}
-     {\currentbufferparagraph=-\getvalue{\??bu#1\c!alinea}}
-     {\currentbufferparagraph=0}%
+     {\currentbufferparagraph-\getvalue{\??bu#1\c!alinea}}
+     {\currentbufferparagraph \zerocount}%
    \relax}
 
 \def\dogetbufferparagraphs[#1][#2]%
   {\iffirstargument
      \ifsecondargument
        \dosetbufferoffset{#1}% 
-       \doifelse{#2}{\v!alles}
+       \doifelse{#2}\v!alles
          {\def\startbufferparagraph{\normalbufferparagraph{#1}}}
          {\def\startbufferparagraph{\filterbufferparagraph{#1}{#2}}}%
        \def\stopbufferparagraph{\dostopbufferparagraph{#1}}%
@@ -361,17 +387,17 @@
 \def\dostartbufferparagraph#1%
   {\par\getvalue{\??bu#1\c!voor}}
 
-\def\normalbufferparagraph%
-  {\advance\currentbufferparagraph 1 
-   \ifnum\currentbufferparagraph>0 
+\def\normalbufferparagraph
+  {\advance\currentbufferparagraph \plusone
+   \ifnum\currentbufferparagraph>\zerocount
      \expandafter\dostartbufferparagraph
    \else
      \expandafter\gobbleoneargument
    \fi}
 
 \def\filterbufferparagraph#1#2%
-  {\advance\currentbufferparagraph 1 
-   \ifnum\currentbufferparagraph>0 
+  {\advance\currentbufferparagraph \plusone
+   \ifnum\currentbufferparagraph>\zerocount
      \doifinsetelse{\the\currentbufferparagraph}{#2}
        {\let\next\dostartbufferparagraph}
        {\let\next\fakebufferparagraph}%  
@@ -380,48 +406,35 @@
    \fi
    \next{#1}}
 
-\long\def\gobblebufferparagraph#1#2\stopbufferparagraph%
+\long\def\gobblebufferparagraph#1#2\stopbufferparagraph
   {}
 
 \def\fakebufferparagraph#1%
   {\bgroup
    \def\stopbufferparagraph{\dostopbufferparagraph{#1}\egroup\egroup}%
-   \setbox\scratchbox=\vbox\bgroup\dostartbufferparagraph{#1}}
+   \setbox\scratchbox\vbox\bgroup\dostartbufferparagraph{#1}}
 
 \def\blockversion {1996.03.10}
 
 \def\@@blockerrormessage%
-  {\showmessage{\m!textblocks}{1}{}%
-   \global\let\@@blockerrormessage=\relax}
+  {\showmessage\m!textblocks1\empty
+   \global\let\@@blockerrormessage\relax}
 
 \def\thisisblockversion#1%
-  {\doifnot{\blockversion}{#1}%
-     {\@@blockerrormessage\endinput}}
+  {\doifnot\blockversion{#1}{\@@blockerrormessage\endinput}}
 
-\def\stopcopyingblocks%
+\def\stopcopyingblocks
   {\ifcopyingblocks
      \immediate\closeout\outblocks
      \copyblockfile
      \global\copyingblocksfalse
    \fi}
 
-% \def\dodosetblockcounters[#1:#2]#3%
-%   {\setvalue{\??se\s!old#3}{#1}%
-%    \doifnot{#3}{\lastsection}
-%      {\dodosetblockcounters[#2:0]{\getvalue{\??se#3\c!na}}}}
-% 
-% \def\dosetblockcounters[#1#2::#3]%
-%   {\ifblockpermitted
-%      \dodosetblockcounters[#3:0]\firstsection
-%      \setsectiontype[#1]%
-%      \def\@@sectionvalue##1{\getvalue{\??se\s!old##1}}%
-%      \def\@@sectionconversion##1##2{##2}% to get rid of {##2}
-%    \fi}
-
 \def\dodosetblockcounters[#1]#2%
   {\expanded{\setvalue{\??se\s!old#2}{\@@filterheadpart[#1]}}%
-   \doifnot{#2}{\lastsection}
-     {\expanded{\dodosetblockcounters[\@@filtertailpart[#1]]}{\getvalue{\??se#2\c!na}}}}
+   \doifnot{#2}\lastsection
+     {\expanded{\dodosetblockcounters[\@@filtertailpart[#1]]}%
+        {\getvalue{\??se#2\c!na}}}} % ???? 
 
 \def\dosetblockcounters[#1]%
   {\ifblockpermitted
@@ -433,26 +446,19 @@
 
 \let\blockstatus\empty
 
-\def\setblockcounters%
+\def\setblockcounters
   {\ifx\blockstatus\empty \else
      \@EA\dosetblockcounters\@EA[\blockstatus]%
    \fi}
 
-%\def\getblockstatus#1%
-%  {\dosetblklevel{\getvalue{\??by\@@bscriterium}}%
-%   \doifblklevelelse[#1]
-%     {\global\blockpermittedtrue}
-%     {\global\blockpermittedfalse}%
-%   \def\blockstatus{#1}}
-
-\def\getblockstatus#1%
-  {\dosetblklevel{\getvalue{\??by\@@bscriterium}}%
+\def\getblockstatus#1% is this still ok 
+  {\dosetfilterlevel{\getvalue{\??by\@@bscriterium}}\empty
    \expanded{\doifblklevelelse[#1\sectionseparator\sectionseparator0]}
      {\global\blockpermittedtrue}
      {\global\blockpermittedfalse}%
    \def\blockstatus{#1}}
 
-\def\setupblockparameters%
+\def\setupblockparameters
   {\dodoubleargument\dosetupblockparameters}
 
 \def\dosetupblockparameters[#1][#2]%
@@ -461,14 +467,14 @@
 \beginTEX
 
 \def\blockparameter#1#2%
-  {\csname\@EA\ifx\csname\??tb#1#2\endcsname\relax empty\else\??tb#1#2\fi\endcsname}
+  {\csname\@EA\ifx\csname\??tb#1#2\endcsname\relax\s!empty\else\??tb#1#2\fi\endcsname}
 
 \endTEX
 
 \beginETEX \ifcsname
 
 \def\blockparameter#1#2%
-  {\@EA\csname\ifcsname\??tb#1#2\endcsname\??tb#1#2\else empty\fi\endcsname}
+  {\@EA\csname\ifcsname\??tb#1#2\endcsname\??tb#1#2\else\s!empty\fi\endcsname}
 
 \endETEX
 
@@ -493,13 +499,13 @@
 % oeps, got bugged 
 
 \def\setblocklevel#1% sign 
-  {\global\advance\blocklevel by #11
+  {\global\advance\blocklevel #11
    \ifcase\blocklevel\doingblocksfalse\else\doingblockstrue\fi}
 
-\def\opentmpblock%
+\def\opentmpblock
   {\immediate\openout\tmpblocks=\TEXbufferfile{\f!utilityfilename\the\blocklevel}}
 
-\def\closetmpblock%
+\def\closetmpblock
   {\immediate\write\tmpblocks{}%   een lege regel is handig voor \par commando's
    \immediate\closeout\tmpblocks}
 
@@ -521,10 +527,10 @@
         \immediate\write\tmpblocks{\string#1}}%
    \fi}
 
-\def\startcopyingblocks%
+\def\startcopyingblocks
   {\global\copyingblocksfalse}
 
-\def\checkcopyingblocks%
+\def\checkcopyingblocks
   {\ifcopyingblocks
    \else
      \immediate\openout\outblocks\f!utilityfilename.\f!blockextension
@@ -533,21 +539,21 @@
      \global\copyingblockstrue
    \fi}
 
-\def\stopcopyingblocks%
+\def\stopcopyingblocks
   {\ifcopyingblocks
      \immediate\closeout\outblocks
      \copyblockfile
      \global\copyingblocksfalse
    \fi}
 
-\def\geenblokkenmeer%
+\def\geenblokkenmeer
   {\stopcopyingblocks}
 
 \def\copyblockfile
   {\ifcopyingblocks
      \begingroup
-     \showmessage{\m!textblocks}{2}{\jobname.\f!blockextension}%
-     \openlocin{\inpblocks}{\f!utilityfilename.\f!blockextension}%
+     \showmessage\m!textblocks2{\jobname.\f!blockextension}%
+     \openlocin\inpblocks{\f!utilityfilename.\f!blockextension}%
      \immediate\openout\outblocks\jobname.\f!blockextension
      \setupcopyblock
      \catcode`\^^M=\@@ignore\relax
@@ -565,26 +571,26 @@
 
 \def\loadallblocks#1%
   {\beginrestorecatcodes
-\catcode`\^^M=\@@endofline\relax
+   \catcode`\^^M=\@@endofline\relax
    \readjobfile{#1.\f!blockextension}
-     {\showmessage{\m!textblocks}{3}{#1.\f!blockextension}}
-     {\showmessage{\m!textblocks}{4}{}}%
+     {\showmessage\m!textblocks3{#1.\f!blockextension}}
+     {\showmessage\m!textblocks4\empty}%
    \endrestorecatcodes}
 
-\def\setupcopyblock%
-  {\makeallother % \dostepwiserecurse{1}{255}{1}{\catcode\recurselevel=\@@other}%
+\def\setupcopyblock
+  {\makeallother 
    \obeylines}
 
-\def\writeoutblocks%
+\def\writeoutblocks
   {\immediate\write\outblocks}
 
 % readable
 % 
 % \def\processnextblocklineAB#1#2#3%
 %   {\convertargument#1 \to\next
-%    \doifinstringelse{\endofblockA}{\next}
+%    \doifinstringelse\endofblockA\next
 %      {\def\next{#2}}
-%      {\doifinstringelse{\endofblockB}{\next}
+%      {\doifinstringelse\endofblockB\next
 %        {\def\next{#2}}
 %        {\def\next{#3}}}%
 %    \next}
@@ -598,7 +604,7 @@
 %
 % even more 
 
-\def\processnextblocklineAB#1% #2#3%
+\long\def\processnextblocklineAB#1% #2#3%
   {\convertargument#1 \to\next
    \doifinstringelse\endofblockA\next
       \firstoftwoarguments
@@ -634,7 +640,7 @@
 % 
 % faster 
 
-\def\processnextblockline#1% #2#3%
+\long\def\processnextblockline#1% #2#3%
   {\convertargument#1 \to\next
    \ifx\next\emptybufferline
      \ifsegmentatebuffer \emptybufferlinetrue \fi
@@ -663,15 +669,15 @@
 \def\skipblock#1%
   {\checkcopyingblocks
    \@EA\convertargument\string\thiswasblock{#1}\to\endofblock
-%testen : \expanded{\convertargument\string\thiswasblock{#1}\noexpand\to\noexpand\endofblock}%
-   \let\openblock=\begingroup
-   \let\closeblock=\endgroup
+   %testen : \expanded{\convertargument\string\thiswasblock{#1}\noexpand\to\noexpand\endofblock}%
+   \let\openblock\begingroup
+   \let\closeblock\endgroup
    \openblock
    \setupcopyblock
    \skipblockline}
 
-\def\doafterblock#1#2{}
-\def\dobeforeblock#1#2{}
+\let\doafterblock \gobbletwoarguments
+\let\dobeforeblock\gobbletwoarguments
 
 \def\thisisblock#1%
   {\executeifdefined{\s!thisisblock#1}{\skipblock{#1}}}
@@ -683,16 +689,16 @@
   {\checkcopyingblocks
    \obeylines
    \@EA\@EA\@EA\convertargument\@EA\string\csname\e!eindvan#1\endcsname\to\endofblockA
-%testen:  \expanded{\convertargument\string\csname\e!eindvan#1\endcsname\to\endofblockA}%
+   %testen:  \expanded{\convertargument\string\csname\e!eindvan#1\endcsname\to\endofblockA}%
    \@EA\convertargument\string\eindvanblok[#1]\to\endofblockB % MULTI LINGUAL MAKEN
-   \def\openblock%
+   \def\openblock
      {\dobeforeblock{#1}{#2}%
       \opentmpblock
       \begingroup
       \makesectionformat
       \immediate\write\outblocks{}%
       \immediate\write\outblocks{\string\thisisblock{#1}{\sectionformat}[#2]}}%
-   \def\closeblock%
+   \def\closeblock
      {\immediate\write\outblocks{}%   handig voor \par commando's
       \immediate\write\outblocks{\string\thiswasblock{#1}}%
       \endgroup
@@ -703,16 +709,16 @@
    \setupcopyblock
    \copyblocklineAB}
 
-\def\copyblock%
+\def\copyblock
   {\let\opentmpblock\empty
    \let\closetmpblock\empty
    \let\writetmpblock\gobbleoneargument
    \saveblock}
 
-\def\loadoneblock%
+\def\loadoneblock
   {\edef\blockfilename{\TEXbufferfile{\f!utilityfilename\the\blocklevel}}%
    \setblocklevel+%
-   \readjobfile{\blockfilename}{}{}%
+   \readjobfile\blockfilename\donothing\donothing
    \setblocklevel-}%
 
 \def\dodefinieerblok[#1]%
@@ -726,13 +732,13 @@
       \c!letter=,
       \c!file=\jobname]}
 
-\def\definieerblok%
+\def\definieerblok
   {\dosingleargumentwithset\dodefinieerblok}
 
 \def\dostelblokin[#1][#2]%
   {\getparameters[\??tb#1][#2]}
 
-\def\stelblokin%
+\def\stelblokin
   {\dodoubleargumentwithset\dostelblokin}
 
 \def\passeerblok[#1]%
@@ -741,9 +747,8 @@
 
 \def\doverbergblok[#1][#2][#3]%
   {\doifassignmentelse{#3}
-     {\def\next{\dodoverbergblok[#1][#2][][#3]}}
-     {\def\next{\dodoverbergblok[#1][#2][#3][]}}%
-   \next}
+     {\dodoverbergblok[#1][#2][][#3]}
+     {\dodoverbergblok[#1][#2][#3][]}}   
 
 \def\dodoverbergblok[#1][#2][#3][#4]%
   {\doifelsenothing{#2}
@@ -758,8 +763,8 @@
            {\global\blockpermittedtrue
             \edef\bloktitel{#1:#3}}}}%
    \ifblockpermitted
-     \showwarning{\m!textblocks}{5}{\bloktitel}%
-     \def\next%
+     \showwarning\m!textblocks5\bloktitel
+     \def\next
        {\def\dobeforeblock####1####2%
           {\begingroup}%
         \def\doafterblock####1####2%
@@ -768,20 +773,20 @@
         \saveblock{#1}{#3#4}}%
    \else
      \doifinsetelse{+}{#3}
-       {\showwarning{\m!textblocks}{6}{\bloktitel}%
-        \def\next%
+       {\showwarning\m!textblocks6\bloktitel
+        \def\next
           {\def\dobeforeblock####1####2%
              {\begingroup
               \global\visiblefalse}%
            \def\doafterblock####1####2%
-             {{\setbox0=\vbox
+             {{\setbox0\vbox
                  {\catcode`\^^M=\@@endofline\relax
                   \loadoneblock
                   \par}}%
               \endgroup}%
            \saveblock{#1}{#3#4}}}%
-       {\showwarning{\m!textblocks}{7}{\bloktitel}%
-        \def\next%
+       {\showwarning\m!textblocks7\bloktitel
+        \def\next
           {\def\dobeforeblock####1####2%
              {\begingroup
               \globaldefs=-1\relax}%
@@ -797,7 +802,7 @@
         {\bgroup\obeylines\dotripleempty\doverbergblok[##1][#2]}}%
    \processcommalist[#1]\docommando}
 
-\def\verbergblokken%
+\def\verbergblokken
   {\dodoubleempty\doverbergblokken}
 
 \def\doexecuteloadedblock#1#2%
@@ -805,20 +810,20 @@
    \bgroup % before \c!voor (think of: \c!voor=\startitemize)
    \dosetupblockparameters[#1][#2]% voor 'voor'? 
    \getvalue{\??tb#1\c!voor}%
-   \doattributes{\??tb#1}\c!letter\c!kleur{}%
+   \dostartattributes{\??tb#1}\c!letter\c!kleur\empty
    \visibletrue
    \catcode`\^^M=\@@endofline\relax
    \getvalue{\??tb#1\c!binnen}%
    \loadoneblock
    \par
+   \dostopattributes
    \getvalue{\??tb#1\c!na}
    \egroup}
 
 \def\dohandhaafblok[#1][#2][#3]%
   {\doifassignmentelse{#3}
-     {\def\next{\dodohandhaafblok[#1][#2][][#3]}}
-     {\def\next{\dodohandhaafblok[#1][#2][#3][]}}%
-   \next}
+     {\dodohandhaafblok[#1][#2][][#3]}
+     {\dodohandhaafblok[#1][#2][#3][]}}
 
 \def\dodohandhaafblok[#1][#2][#3][#4]%
   {\doifelsenothing{#2}
@@ -827,25 +832,25 @@
      {\doifcommonelse{#2}{#3}
         {\global\blockpermittedtrue
          \edef\bloktitel{#1:#2}}
-        {\doifinsetelse{\v!alles}{#2}
-           {\doifelse{#3}{}
+        {\doifinsetelse\v!alles{#2}
+           {\doifelsenothing{#3}
               {\global\blockpermittedtrue
                \edef\bloktitel{#1}}
               {\global\blockpermittedfalse
                \edef\bloktitel{#1:#3}}}
            {\global\blockpermittedfalse
-            \doifelse{#3}{}
+            \doifelsenothing{#3}
               {\edef\bloktitel{#1}}
               {\edef\bloktitel{#1:#3}}}}}%
    \ifblockpermitted
-     \showwarning{\m!textblocks}{8}{\bloktitel}%
+     \showwarning\m!textblocks8\bloktitel
      \def\dobeforeblock##1##2%
        {\begingroup}%
      \def\doafterblock##1##2%
        {\endgroup
         \doexecuteloadedblock{#1}{#4}}%
    \else
-     \showwarning{\m!textblocks}{9}{\bloktitel}%
+     \showwarning\m!textblocks9\bloktitel
    \fi
    \saveblock{#1}{#3#4}}
 
@@ -891,36 +896,37 @@
        \doifinset{-}{#3}{\settrue\dummyblockstatus}%
      \fi
      \ifconditional\dummyblockstatus
-       \showwarning{\m!textblocks}{10}{\bloktitel}%
+       \showwarning\m!textblocks{10}\bloktitel
        \setvalue{\s!thiswasblock#1}%
          {\par
           \egroup
           \setblocklevel-}%
-       \def\next%
-         {\setbox0=\vbox\bgroup
+       \def\next
+         {\setbox0\vbox\bgroup
           \ifconditional\blockassignmentstatus
             \dosetupblockparameters[#1][#3]%
           \fi}%
      \else
-       \showwarning{\m!textblocks}{11}{\bloktitel}%
+       \showwarning\m!textblocks{11}\bloktitel
        \setvalue{\s!thiswasblock#1}%
          {\par
+          \dostopattributes
           \getvalue{\??tb#1\c!na}%
           \egroup
           \setblocklevel-}%
-       \def\next%
+       \def\next
          {\bgroup
           \ifconditional\blockassignmentstatus
             \dosetupblockparameters[#1][#3]%
           \fi
           \getvalue{\??tb#1\c!voor}%
-          \doattributes{\??tb#1}\c!letter\c!kleur{}%
+          \dostartattributes{\??tb#1}\c!letter\c!kleur\empty
           \visibletrue
           \getvalue{\??tb#1\c!binnen}}%
      \fi
    \else
-     \def\next%
-       {\showwarning{\m!textblocks}{12}{\bloktitel}%
+     \def\next
+       {\showwarning\m!textblocks{12}\bloktitel
         \skipblock{#1}}%
    \fi
    \next}
@@ -938,15 +944,15 @@
      {\loadallblocks{\getvalue{\??tb\commalistelement\c!file}}}%
    \endgroup}
 
-\def\dogebruikblokken%
+\def\dogebruikblokken
   {\begingroup
    \doassign[\??bs][\c!criterium=\v!alles]%
    \dodoubleempty\dodogebruikblokken}
 
-\def\gebruikblokken%
+\def\gebruikblokken
   {\setfalse\processblockstatus\dogebruikblokken}
 
-\def\verwerkblokken%
+\def\verwerkblokken
   {\settrue \processblockstatus\dogebruikblokken}
 
 \def\doselecteerblokken[#1][#2][#3]%
@@ -956,7 +962,7 @@
      {\getparameters[\??bs][#3]%
       \dogebruikblokken[#1][#2]}}%
 
-\def\selecteerblokken%
+\def\selecteerblokken
   {\begingroup
    \doassign[\??bs][\c!criterium=\v!alles]%
    \dotripleempty\doselecteerblokken}
@@ -970,7 +976,8 @@
         {\setblocklevel+\bgroup
          \dodoubleempty\doforceerblok[##1]}%
       \setvalue{\e!eindvan##1}%
-        {\getvalue{\??tb##1\c!na}%
+        {\dostopattributes
+         \getvalue{\??tb##1\c!na}%
          \egroup\setblocklevel-}}%
    \processcommalist[#1]\docommando}
 
@@ -982,7 +989,7 @@
      \dosetupblockparameters[#1][#2]%
    \fi
    \getvalue{\??tb#1\c!voor}%
-   \doattributes{\??tb#1}\c!letter\c!kleur{}%
+   \dostartattributes{\??tb#1}\c!letter\c!kleur\empty
    \getvalue{\??tb#1\c!binnen}}
 
 \def\passeerblokken[#1]%
@@ -996,7 +1003,7 @@
    \processcommalist[#1]\docommando}
 
 \def\dopasseerblok[#1][#2]%
-  {\def\closeblock%
+  {\def\closeblock
      {\egroup\setblocklevel-}%
    \checkcopyingblocks
    \obeylines

@@ -1,0 +1,287 @@
+%D \module
+%D   [       file=unic-001,
+%D        version=2002.12.03,
+%D          title=\CONTEXT\ \UNICODE\ Macros,
+%D       subtitle=Vector 1,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\unprotect
+
+\startunicodevector 1
+  \ifcase#1\or
+    \@@unknownchar\or
+    Abreve\or
+    abreve\or
+    Aogonek\or
+    aogonek\or
+    Cacute\or
+    cacute\or
+    Ccircumflex\or
+    ccircumflex\or
+    Cdotaccent\or
+    cdotaccent\or
+    Ccaron\or
+    ccaron\or
+    Dcaron\or
+    dcaron\or
+    Dstroke\or
+    dstroke\or
+    Emacron\or
+    emacron\or
+    Ebreve\or
+    ebreve\or
+    Edotaccent\or
+    edotaccent\or
+    Eogonek\or
+    eogonek\or
+    Ecaron\or
+    ecaron\or
+    Gcircumflex\or
+    gcircumflex\or
+    Gbreve\or
+    gbreve\or
+    Gdotaccent\or
+    gdotaccent\or
+    \@@unknownchar\or % Gcedilla\or
+    \@@unknownchar\or % gcedilla\or
+    Hcircumflex\or
+    hcircumflex\or
+    Hstroke\or
+    hstroke\or
+    Itilde\or
+    itilde\or
+    Imacron\or
+    imacron\or
+    Ibreve\or
+    ibreve\or
+    Iogonek\or
+    iogonek\or
+    Idotaccent\or
+    dotlessi\or
+    IJligature\or
+    ijligature\or
+    Jcircumflex\or
+    jcircumflex\or
+    Kcedilla\or
+    kcedilla\or
+    \@@unknownchar\or % kra\or
+    Lacute\or
+    lacute\or
+    Lcedilla\or
+    lcedilla\or
+    Lcaron\or
+    lcaron\or
+    \@@unknownchar\or % Ldotmiddle\or
+    \@@unknownchar\or % ldotmiddle\or
+    Lstroke\or
+    lstroke\or
+    Nacute\or
+    nacute\or
+    Ncedilla\or
+    ncedilla\or
+    Ncaron\or
+    ncaron\or
+    napostrophe\or
+    Neng\or
+    neng\or
+    Omacron\or
+    omacron\or
+    Obreve\or
+    obreve\or
+    Ohungarumlaut\or
+    ohungarumlaut\or
+    OEligature\or
+    oeligature\or
+    Racute\or
+    racute\or
+    Rcedilla\or
+    rcedilla\or
+    Rcaron\or
+    rcaron\or
+    Sacute\or
+    sacute\or
+    Scircumflex\or
+    scircumflex\or
+    Scedilla\or
+    scedilla\or
+    Scaron\or
+    scaron\or
+    Tcedilla\or
+    tcedilla\or
+    Tcaron\or
+    tcaron\or
+    Tstroke\or
+    tstroke\or
+    Utilde\or
+    utilde\or
+    Umacron\or
+    umacron\or
+    Ubreve\or
+    ubreve\or
+    Uring\or
+    uring\or
+    Uhungarumlaut\or
+    uhungarumlaut\or
+    Uogonek\or
+    uogonek\or
+    Wcircumflex\or
+    wcircumflex\or
+    Ycircumflex\or
+    ycircumflex\or
+    Ydiaeresis\or
+    Zacute\or
+    zacute\or
+    Zdotaccent\or
+    zdotaccent\or
+    Zcaron\or
+    zcaron\or
+    \@@unknownchar\else % slong\else
+    \@@unknownchar
+  \fi
+\stopunicodevector
+
+%D Faster, watch how we avoid zero and \TEX's 
+%D automatically added \type {\relax}. 
+
+\startunicodevector 1
+  \expandafter\strippedcsname
+  \ifcase\numexpr(#1+1)\or
+    \unknownchar   \or
+    \unknownchar   \or
+    \Abreve        \or
+    \abreve        \or
+    \Aogonek       \or
+    \aogonek       \or
+    \Cacute        \or
+    \cacute        \or
+    \Ccircumflex   \or
+    \ccircumflex   \or
+    \Cdotaccent    \or
+    \cdotaccent    \or
+    \Ccaron        \or
+    \ccaron        \or
+    \Dcaron        \or
+    \dcaron        \or
+    \Dstroke       \or
+    \dstroke       \or
+    \Emacron       \or
+    \emacron       \or
+    \Ebreve        \or
+    \ebreve        \or
+    \Edotaccent    \or
+    \edotaccent    \or
+    \Eogonek       \or
+    \eogonek       \or
+    \Ecaron        \or
+    \ecaron        \or
+    \Gcircumflex   \or
+    \gcircumflex   \or
+    \Gbreve        \or
+    \gbreve        \or
+    \Gdotaccent    \or
+    \gdotaccent    \or
+    \unknownchar   \or % \Gcedilla \or
+    \unknownchar   \or % \gcedilla \or
+    \Hcircumflex   \or
+    \hcircumflex   \or
+    \Hstroke       \or
+    \hstroke       \or
+    \Itilde        \or
+    \itilde        \or
+    \Imacron       \or
+    \imacron       \or
+    \Ibreve        \or
+    \ibreve        \or
+    \Iogonek       \or
+    \iogonek       \or
+    \Idotaccent    \or
+    \dotlessi      \or
+    \IJligature    \or
+    \ijligature    \or
+    \Jcircumflex   \or
+    \jcircumflex   \or
+    \Kcedilla      \or
+    \kcedilla      \or
+    \unknownchar   \or % \kkra \or
+    \Lacute        \or
+    \lacute        \or
+    \Lcedilla      \or
+    \lcedilla      \or
+    \Lcaron        \or
+    \lcaron        \or
+    \unknownchar   \or % \Ldotmiddle \or
+    \unknownchar   \or % \ldotmiddle \or
+    \Lstroke       \or
+    \lstroke       \or
+    \Nacute        \or
+    \nacute        \or
+    \Ncedilla      \or
+    \ncedilla      \or
+    \Ncaron        \or
+    \ncaron        \or
+    \napostrophe   \or
+    \Neng          \or
+    \neng          \or
+    \Omacron       \or
+    \omacron       \or
+    \Obreve        \or
+    \obreve        \or
+    \Ohungarumlaut \or
+    \ohungarumlaut \or
+    \OEligature    \or
+    \oeligature    \or
+    \Racute        \or
+    \racute        \or
+    \Rcedilla      \or
+    \rcedilla      \or
+    \Rcaron        \or
+    \rcaron        \or
+    \Sacute        \or
+    \sacute        \or
+    \Scircumflex   \or
+    \scircumflex   \or
+    \Scedilla      \or
+    \scedilla      \or
+    \Scaron        \or
+    \scaron        \or
+    \Tcedilla      \or
+    \tcedilla      \or
+    \Tcaron        \or
+    \tcaron        \or
+    \Tstroke       \or
+    \tstroke       \or
+    \Utilde        \or
+    \utilde        \or
+    \Umacron       \or
+    \umacron       \or
+    \Ubreve        \or
+    \ubreve        \or
+    \Uring         \or
+    \uring         \or
+    \Uhungarumlaut \or
+    \uhungarumlaut \or
+    \Uogonek       \or
+    \uogonek       \or
+    \Wcircumflex   \or
+    \wcircumflex   \or
+    \Ycircumflex   \or
+    \ycircumflex   \or
+    \Ydiaeresis    \or
+    \Zacute        \or
+    \zacute        \or
+    \Zdotaccent    \or
+    \zdotaccent    \or
+    \Zcaron        \or
+    \zcaron        \or
+    \unknownchar   \else % \slong \else
+    \unknownchar
+  \fi
+\stopunicodevector
+
+\protect \endinput

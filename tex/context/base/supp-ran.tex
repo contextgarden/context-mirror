@@ -86,8 +86,8 @@
   \unprotect 
 
   \def\setrandim#1#2#3% dimen register, minimum length, maximum length
-    {\scratchdimen=#2\edef\!!stringa{\number\scratchdimen}%
-     \scratchdimen=#3\edef\!!stringb{\number\scratchdimen}%
+    {\scratchdimen#2\edef\!!stringa{\number\scratchdimen}%
+     \scratchdimen#3\edef\!!stringb{\number\scratchdimen}%
      \setrannum\ranval\!!stringa\!!stringb
      #1\ranval sp\relax}
 
@@ -95,14 +95,14 @@
 
 \fi
 
-\def\freezerandomseed%
+\def\freezerandomseed
   {\ifcase\randomseedfrozen
-     \nextrandom \global\chardef\randomseedfrozen=1          
+     \nextrandom \global\chardef\randomseedfrozen\plusone
    \fi}
 
-\def\defrostrandomseed%
+\def\defrostrandomseed
   {\ifcase\randomseedfrozen\else
-     \global\chardef\randomseedfrozen=0 \nextrandom
+     \global\chardef\randomseedfrozen\zerocount \nextrandom
    \fi}
 
 \let\getrandomcount = \setrannum

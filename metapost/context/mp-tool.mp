@@ -60,27 +60,27 @@ string semicolor ; semicolor := char 59 ;
 
 % eerste " " er uit 
 
+string space ; space = char 32 ; 
+
 vardef ddecimal primary p =
-  " " & decimal xpart p &
-  " " & decimal ypart p
+  decimal xpart p & " " & decimal ypart p
 enddef ;
 
 extra_endfig := extra_endfig
- & "special "
+  & "special "
        & "("
        & ditto
-       & "%%HiResBoundingBox:"
+       & "%%HiResBoundingBox: "
        & ditto
        & "&ddecimal llcorner currentpicture"
+       & "&space"
        & "&ddecimal urcorner currentpicture"
        & ");";
 
 %D Also handy (when we flush colors):
 
 vardef dddecimal primary c =
-  " " & decimal redpart   c &
-  " " & decimal greenpart c &
-  " " & decimal bluepart  c
+  decimal redpart c & " " & decimal greenpart c & " " & decimal bluepart  c
 enddef ;
 
 %D We have standardized data file names:
@@ -1343,7 +1343,7 @@ vardef anglebetween (expr a, b, str) = % path path string
     curve  := pointa..controls middle..pointb ;
     middle := point .5 along curve ;
   fi ;
-  draw thefreelabel(str, middle, common) withcolor black ;
+  draw thefreelabel(str, middle, common) ; % withcolor black ;
   curve
 enddef ;
 
@@ -1635,37 +1635,106 @@ def remappedcolor(expr c) =
   fi
 enddef ;
 
-def refill  suffix c = do_repath (1) (c) enddef ;
-def redraw  suffix c = do_repath (2) (c) enddef ;
-def recolor suffix c = do_repath (0) (c) enddef ;
+% def refill  suffix c = do_repath (1) (c) enddef ;
+% def redraw  suffix c = do_repath (2) (c) enddef ;
+% def recolor suffix c = do_repath (0) (c) enddef ;
+% 
+% color refillbackground ; refillbackground := (1,1,1) ; 
+% 
+% def do_repath (expr mode) (suffix c) text t = % can it be stroked and filled at the same time ? 
+%   begingroup ;
+%   if mode=0 : save withcolor ; remapcolors ; fi ; 
+%   save _c_, _cc_, _f_, _b_ ; picture _c_, _cc_ ; color _f_ ; path _b_ ; 
+%   _c_ := c ; _b_ := boundingbox c ; c := nullpicture ; 
+%   for i within _c_ : 
+%     _f_ := (redpart i, greenpart i, bluepart i) ;
+%     if     bounded i : 
+%       setbounds c to pathpart i ; 
+%     elseif clipped i : 
+%       clip c to pathpart i ; 
+%     elseif stroked i : 
+%       addto c doublepath pathpart i 
+%         dashed dashpart i withpen penpart i 
+%         withcolor _f_ % (redpart i, greenpart i, bluepart i) 
+%         if mode=2 : t fi ;
+%     elseif filled  i : 
+%       addto c contour pathpart i 
+%         withcolor _f_         
+%         if (mode=1) and (_f_<>refillbackground) : t fi ;
+%     else :
+%       addto c also i ;
+%     fi ;
+%   endfor ;   
+%   setbounds c to _b_ ; 
+%   endgroup ; 
+% enddef ; 
+
+% Thanks to Jens-Uwe Morawski for pointing out that we need 
+% to treat bounded and clipped components as local pictures. 
+
+def recolor suffix p = p := repathed (0,p) enddef ;
+def refill  suffix p = p := repathed (1,p) enddef ;
+def redraw  suffix p = p := repathed (2,p) enddef ;
+def retext  suffix p = p := repathed (3,p) enddef ;
+def untext  suffix p = p := repathed (4,p) enddef ;
+
+primarydef p recolored t = repathed(0,p) t enddef ;
+primarydef p refilled  t = repathed(1,p) t enddef ;
+primarydef p redrawn   t = repathed(2,p) t enddef ;
+primarydef p retexted  t = repathed(3,p) t enddef ;
+primarydef p untexted  t = repathed(4,p) t enddef ;
 
 color refillbackground ; refillbackground := (1,1,1) ; 
 
-def do_repath (expr mode) (suffix c) text t = % can it be stroked and filled at the same time ? 
+vardef repathed (expr mode, p) text t = 
   begingroup ;
   if mode=0 : save withcolor ; remapcolors ; fi ; 
-  save _c_, _f_, _b_ ; picture _c_ ; color _f_ ; path _b_ ; 
-  _c_ := c ; _b_ := boundingbox c ; c := nullpicture ; 
-  for i within _c_ : 
+  save _p_, _pp_, _f_, _b_, _t_ ; 
+  picture _p_, _pp_ ; color _f_ ; path _b_ ; transform _t_ ; 
+  _b_ := boundingbox p ; _p_ := nullpicture ; 
+  for i within p : 
     _f_ := (redpart i, greenpart i, bluepart i) ;
     if     bounded i : 
-      setbounds c to pathpart i ; 
+      _pp_ := repathed(mode,i) t ; 
+      setbounds _pp_ to pathpart i ;
+      addto _p_ also _pp_ ;
     elseif clipped i : 
-      clip c to pathpart i ; 
+      _pp_ := repathed(mode,i) t ; 
+      clip _pp_ to pathpart i ; 
+      addto _p_ also _pp_ ;
     elseif stroked i : 
-      addto c doublepath pathpart i 
+      addto _p_ doublepath pathpart i 
         dashed dashpart i withpen penpart i 
         withcolor _f_ % (redpart i, greenpart i, bluepart i) 
         if mode=2 : t fi ;
     elseif filled  i : 
-      addto c contour pathpart i 
+      addto _p_ contour pathpart i 
         withcolor _f_         
         if (mode=1) and (_f_<>refillbackground) : t fi ;
+    elseif textual i : % textpart i <> "" :
+      if mode <> 4 : 
+        % transform _t_ ;
+        % (xpart _t_, xxpart _t_, xypart _t_)  = (xpart  i, xxpart i, xypart i) ; 
+        % (ypart _t_, yypart _t_, yxpart _t_)  = (ypart  i, yypart i, yxpart i) ; 
+        % addto _p_ also 
+        %   textpart i infont fontpart i % todo : other font
+        %   transformed _t_ 
+        %   withpen penpart i  
+        %   withcolor _f_ 
+        %   if mode=3 : t fi ;
+        addto _p_ also i if mode=3 : t fi ;
+      fi ;
+    else :
+      addto _p_ also i ;
     fi ;
   endfor ;   
-  setbounds c to _b_ ; 
-  endgroup ; 
+  setbounds _p_ to _b_ ; 
+  _p_ 
+  endgroup 
 enddef ; 
+
+
+
 
 % After a question of Denis on how to erase a z variable, Jacko 
 % suggested to assign whatever to x and y. So a clearz 
@@ -1771,7 +1840,7 @@ def [[  = [ [ enddef ; def [[[ = [ [ [ enddef ;
 % not prefect, but useful since it removes redundant points.
 
 vardef dostraightened(expr sign, p) = 
-  if length(p)>1 : 
+  if length(p)>2 : % was 1, but straight lines are ok 
     save pp ; path pp ; 
     pp := point 0 of p ;
     for i=1 upto length(p)-1 : 
@@ -1781,15 +1850,9 @@ vardef dostraightened(expr sign, p) =
     endfor ;
     save n, ok ; numeric n ; boolean ok ;  
     n := length(pp) ; ok := false ; 
+if n>2 : 
     for i=0 upto n : % evt hier ook round 
  
-%%      if unitvector(point i                        of pp  - 
-%%                    point if i=0 : n else : i-1 fi of pp) <> 
-%%  sign * unitvector(point if i=n : 0 else : i+1 fi of pp  - 
-%%                    point i                        of pp) : 
-%%         if ok : -- else : hide ( ok := true ; ) fi point i of pp 
-%%      fi 
-
      if unitvector(round(point i                        of pp  - 
                    point if i=0 : n else : i-1 fi of pp)) <> 
  sign * unitvector(round(point if i=n : 0 else : i+1 fi of pp  - 
@@ -1799,6 +1862,9 @@ vardef dostraightened(expr sign, p) =
 
     endfor   
     if ok and (cycle p) : -- cycle fi 
+else : 
+  pp 
+fi 
   else : 
     p 
   fi 
@@ -1807,8 +1873,16 @@ enddef ;
 % simplified : remove same points as well as redundant points 
 % unspiked   : remove same points as well as areas with zero distance 
 
-vardef simplified expr p = dostraightened(+1,p) enddef ;  
-vardef unspiked   expr p = dostraightened(-1,p) enddef ;  
+% vardef simplified expr p = dostraightened(+1,p) enddef ;  
+% vardef unspiked   expr p = dostraightened(-1,p) enddef ;  
+
+vardef simplified expr p =
+  (reverse dostraightened(+1,dostraightened(+1,reverse p)))
+enddef ;
+
+vardef unspiked   expr p =
+  (reverse dostraightened(-1,dostraightened(-1,reverse p)))
+enddef ;
 
 % path p ; 
 % p := (2cm,1cm) -- (2cm,1cm) -- (2cm,1cm) -- (3cm,1cm) -- 
@@ -1940,7 +2014,39 @@ vardef infinite expr p =
     shifted point length(p) of p)
 enddef ; 
 
+% obscure macros: create var from string and replace - and :
+% (needed for process color id's)
 
+string _clean_ascii[] ;
+
+_clean_ascii[ASCII "-"] := "_" ;  
+_clean_ascii[ASCII ":"] := "_" ;  
+_clean_ascii[ASCII "."] := "_" ;  
+
+vardef cleanstring (expr s) = 
+  save ss ; string ss, si ; ss = "" ;  
+  for i=0 upto length(s) : 
+    si := substring(i,i+1) of s ; 
+    ss := ss & if known _clean_ascii[ASCII si] : _clean_ascii[ASCII si] else : si fi ;
+  endfor ;
+  ss 
+enddef ; 
+
+vardef setunstringed (expr s, v) = 
+  scantokens(cleanstring(s)) := v ; 
+enddef ;
+
+vardef setunstringed (expr s, v) = 
+  scantokens(cleanstring(s)) := v ; 
+enddef ;
+
+vardef getunstringed (expr s) = 
+  scantokens(cleanstring(s)) 
+enddef ;
+
+vardef unstringed (expr s) = 
+  expandafter known scantokens(cleanstring(s)) 
+enddef ;
 
 % done 
 

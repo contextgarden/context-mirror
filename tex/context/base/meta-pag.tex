@@ -63,6 +63,14 @@
     RightMarginWidth    :=  \the\rechtermargebreedte ;
     RightEdgeDistance   := \@the\rechterrandafstand ;
     RightEdgeWidth      :=  \the\rechterrandbreedte ;
+    InnerMarginDistance := \@the\innermargindistance ;
+    InnerMarginWidth    :=  \the\innermarginwidth ;
+    OuterMarginDistance := \@the\outermargindistance ;
+    OuterMarginWidth    :=  \the\outermarginwidth ;
+    InnerEdgeDistance   := \@the\inneredgedistance ;
+    InnerEdgeWidth      :=  \the\inneredgewidth ;
+    OuterEdgeDistance   := \@the\outeredgedistance ;
+    OuterEdgeWidth      :=  \the\outeredgewidth ;
     PageOffset          :=  \the\pageoffset ;
     PageDepth           :=  \the\pagedepth ;
   enddef ;
@@ -143,19 +151,45 @@
 
 \newtoks\MPsavedtextareadata 
 \newtoks\MPtextareadata      
+\newtoks\MPlocaltextareadata      
+
+% optimaliseren voor herhaling 
 
 \def\registerMPtextarea#1%
-  {\bgroup
-   \doglobal\increment\currentMPtextareadata
-   \hpos{gbd:\currentMPtextareadata}{#1}%
-   \edef\!!stringa{gbd:\currentMPtextareadata}%
-   \edef\!!stringa{RegisterTextArea(%
-     \MPx\!!stringa,\MPy\!!stringa,\MPw\!!stringa,\MPh\!!stringa,\MPd\!!stringa);}%
-   \@EA \doglobal \@EA \appendtoks \!!stringa \to \MPtextareadata
-   \egroup}
+  {\ifpositioning 
+     \bgroup
+     \doglobal\increment\currentMPtextareadata
+     \hpos{gbd:\currentMPtextareadata}{#1}%
+     \edef\!!stringa{gbd:\currentMPtextareadata}%
+     \edef\!!stringa{RegisterTextArea(%
+       \MPx\!!stringa,\MPy\!!stringa,%
+       \MPw\!!stringa,\MPh\!!stringa,\MPd\!!stringa);}%
+     \@EA \doglobal \@EA \appendtoks \!!stringa \to \MPtextareadata
+     \egroup
+   \else
+     \hbox{#1}%
+   \fi}
+
+\def\registerMPlocaltextarea#1%
+  {\ifpositioning   
+     \bgroup
+     \doglobal\increment\currentMPtextareadata
+     \hpos{gbd:\currentMPtextareadata}{#1}%
+     \edef\!!stringa{gbd:\currentMPtextareadata}%
+     \edef\!!stringa{RegisterLocalTextArea(%
+       \MPx\!!stringa,\MPy\!!stringa,%
+       \MPw\!!stringa,\MPh\!!stringa,\MPd\!!stringa);}%
+     \global\MPlocaltextareadata\@EA{\!!stringa}%
+     \egroup
+   \else
+     \hbox{#1}%
+   \fi}
+
+\def\resetMPlocaltextarea
+  {\global\MPlocaltextareadata\emptytoks}
 
 \appendtoks
-  \includeMPgraphic{area data}
+  \includeMPgraphic{area data}%
 \to \MPinitializations
 
 \startuseMPgraphic{area data}
@@ -164,11 +198,13 @@
   SaveTextAreas ; 
   ResetTextAreas ; 
   \the\MPtextareadata
+  \the\MPlocaltextareadata
 \stopuseMPgraphic
 
 \appendtoks
   \global\MPsavedtextareadata\MPtextareadata
-  \global\MPtextareadata     \emptytoks
+  \global\MPtextareadata\emptytoks
+  \global\MPlocaltextareadata\emptytoks
 \to \everyshipout
 
 \protect \endinput

@@ -502,6 +502,13 @@
                      inrightside: inrechterrand                    inrightside
                                   imrechtenrand                    napravo
                                   inlatodestro                     inparteadreapta
+ atleftmargin: oplinkermarge                    atleftmargin
+               atleftmargin                     atleftmargin
+               atleftmargin                     atleftmargin
+atrightmargin: oprechtermarge                   atrightmargin
+               atrightmargin                    atrightmargin
+               atrightmargin                    atrightmargin
+
                      woordrechts: woordrechts                      wordright
                                   wortrechts                       slovovpravo
                                   paroladestra                     cuvantdreapta
@@ -607,6 +614,9 @@
                             crlf: crlf                             crlf
                                   crlf                             crlf
                                   crlf                             crlf
+emptylines: legeregels emptylines
+            emptylines emptylines
+            emptylines emptylines
                     stelregelsin: stelregelsin                     setuplines
                                   stellezeilenein                  nastavradky
                                   impostarighe                     seteazalinii
@@ -625,25 +635,25 @@
                    setuptabulate: steltabulatiein                  setuptabulate
                                   stelletabulatorein               nastavtabelaci
                                   impostatabulato                  seteazatabulatori
-                      starttabel: starttabel                       starttable
+                      starttable: starttabel                       starttable
                                   starttabelle                     starttabulka
                                   iniziatabella                    starttabel
-                       stoptabel: stoptabel                        stoptable
+                       stoptable: stoptabel                        stoptable
                                   stoptabelle                      stoptabulka
                                   terminatabella                   stoptabel
-                   starttabellen: starttabellen                    starttables
+                     starttables: starttabellen                    starttables
                                   starttabellen                    starttabulky
                                   iniziatabelle                    starttabele
-                    stoptabellen: stoptabellen                     stoptables
+                      stoptables: stoptabellen                     stoptables
                                   stoptabellen                     stoptabulky
                                   terminatabelle                   stoptabele
-                  steltabellenin: steltabellenin                   setuptables
+                     setuptables: steltabellenin                   setuptables
                                   stelletabellenein                nastavtabulky
                                   impostatabelle                   seteazatabele
              definetabletemplate: definieertabelvorm               definetabletemplate
                                   definieretabellenvorlage         definujsablonutabulky
                                   definiscimodellotabella          definestesablontabel
-                          pagina: pagina                           page
+                            page: pagina                           page
                                   seite                            strana
                                   pagina                           pagina
                     koppelpagina: koppelpagina                     couplepage
@@ -694,7 +704,7 @@
                 setupheadertexts: stelhoofdtekstenin               setupheadertexts
                                   stellekopfzeilentextein          nastavtextyzahlavi
                                   impostatestiintestazioni         seteazatexteantet
-                 stelnummeringin: stelnummeringin                  setuppagenumbering
+              setuppagenumbering: stelpaginanummeringin            setuppagenumbering
                                   stelleseitennummeriernungein     nastavcislovanistran
                                   impostanumerazionepagina         seteazanumerotarepagina
 stelnummerin: stelnummerin setupnumber
@@ -760,7 +770,7 @@ stelnummerin: stelnummerin setupnumber
                   stelkolommenin: stelkolommenin                   setupcolumns
                                   stellespaltenein                 nastavsloupce
                                   impostacolonne                   seteazacoloane
-                           kolom: kolom                            column
+                          column: kolom                            column
                                   spalte                           sloupec
                                   colonna                          coloana
                             head: kop                              head
@@ -896,6 +906,9 @@ stelnummerin: stelnummerin setupnumber
                   setuppapersize: stelpapierformaatin              setuppapersize
                                   stellepapierformatein            nastavvelikostpapiru
                                   impostadimensionicarta           seteazadimensiunihartie
+setuppaper: stelpapierin  setuppaper
+            setuppaper    setuppaper
+            setuppaper    setuppaper
                   setuparranging: stelarrangerenin                 setuparranging
                                   stelleanordnenein                nastavusporadani
                                   impostaparranging                seteazaaranjareapag
@@ -923,6 +936,9 @@ stelnummerin: stelnummerin setupnumber
           blokkeerinteractiemenu: blokkeerinteractiemenu           disableinteractionmenu
                                   inaktiviereinteraktionsmenue     zablokujinterakcnimenu
                                   disabilitamenuinterazione        dezactiveazameniuinteractiune
+                  interactiemenu: interactiemenu                   interactionmenu
+                                  interaktionsmenue                interaktivnimenu
+                                  menuinterattivo                  meniuinteractiune
                interactiebuttons: interactiebuttons                interactionbuttons
                                   interaktionsknopfe               interakcnitlacitka
                                   pulsantinterazione               butoaneinteractiune
@@ -950,6 +966,9 @@ stelnummerin: stelnummerin setupnumber
                     definecolor:  definieerkleur                   definecolor
                                   definierefarbe                   definujbarvu
                                   definiscicolore                  definesteculoare
+%definespotcolor: definespotcolor  definespotcolor
+%                 definespotcolor  definespotcolor    
+%                 definespotcolor  definespotcolor    
                definecolorgroup:  definieerkleurgroep              definecolorgroup
                                   definierefarbengruppe            definujskupinubarev
                                   definiscigruppocolori            definestegrupculori
@@ -1040,9 +1059,15 @@ stelnummerin: stelnummerin setupnumber
     definieersamengesteldelijst:  definieersamengesteldelijst      definecombinedlist
                                   definierezusammengestellteliste  definujkombinovanyseznam
                                   definiscielencocombinato         definestelistacombinata
+listsymbol: lijstsymbool listsymbol
+            listsymbol   listsymbol
+            listsymbol   listsymbol
                     plaatslijst:  plaatslijst                      placelist
                                   platziereliste                   umistiseznam
                                   mettielenco                      punelista
+                plaatsruwelijst:  plaatslruweijst                  placerawlist
+                                  placerawlist                     placerawlist
+                                  placerawlist                     placerawlist
        plaatssamengesteldelijst:  plaatssamengesteldelijst         placecombinedlist
                                   platzierezusammengestellteliste  umistikombinovanyseznam
                                   mettielencocombinato             punelistacombinata
@@ -1103,10 +1128,16 @@ stelnummerin: stelnummerin setupnumber
                       placefloat: plaatsplaatsblok                 placefloat
                                   placefloat                       placefloat
                                   placefloat                       placefloat %%%
-                 startcombinatie: startcombinatie                  startcombination
+movesidefloat: verplaatszijblok  movesidefloat
+               movesidefloat     movesidefloat
+               movesidefloat     movesidefloat
+               definecombination: definieercombinatie              definecombination
+                                  definecombination                definecombination
+                                  definecombination                definecombination
+                startcombination: startcombinatie                  startcombination
                                   startkombination                 startspojeni
                                   iniziacombinazione               startcombinare
-                  stopcombinatie: stopcombinatie                   stopcombination
+                 stopcombination: stopcombinatie                   stopcombination
                                   stopkombination                  stopspojeni
                                   terminacombinazione              stopcombinare
                plaatsnaastelkaar: plaatsnaastelkaar                placesidebyside
@@ -1121,7 +1152,7 @@ stelnummerin: stelnummerin setupnumber
                 stelblokkopjesin: stelblokkopjesin                 setupcaptions
                                   stellebilderunterschriftein      nastavpopisky
                                   impostacaptions                  seteazalegendele % GB
-               stelcombinatiesin: stelcombinatiesin                setupcombinations
+               setupcombinations: stelcombinatiesin                setupcombinations
                                   stellekombinationein             nastavspojeni
                                   impostacombinazioni              seteazacombinari
                     startoverlay: startoverlay                     startoverlay
@@ -1746,13 +1777,20 @@ moveformula: verplaatsformule  moveformula
                                   switchtorawfont                  switchtorawfont
                                   passaafontgrezzo                 trecilafontraw
 
- placeheadtext: plaatskoptekst   placeheadtext 
-                placeheadtext    placeheadtext 
-                posizionatestotesta    placeheadtext 
+  placeheadtext: plaatskoptekst           placeheadtext 
+                 placeheadtext            placeheadtext 
+                 posizionatestotesta      placeheadtext 
 
-placeheadnumber: plaatskopnummer  placeheadnumber
-                 placeheadnumber  placeheadnumber
-                 posizionanumerotesta  placeheadnumber
+placeheadnumber: plaatskopnummer          placeheadnumber
+                 placeheadnumber          placeheadnumber
+                 posizionanumerotesta     placeheadnumber
+
+  definepagebreak: definieerpaginaovergang  definepagebreak 
+                   definepagebreak          definepagebreak 
+                   definepagebreak          definepagebreak 
+definecolumnbreak: definieerkolomovergang  definecolumnbreak 
+                   definecolumnbreak       definecolumnbreak  
+                   definecolumnbreak       definecolumnbreak  
 
 \stopcommands
 
@@ -1833,6 +1871,30 @@ placeheadnumber: plaatskopnummer  placeheadnumber
               rechterrandafstand: rechterrandafstand               rightedgedistance
                                   abstandrechterrand               vzdalenostpravehookraje
                                   distanzabordodestro              distantacoltdreapta
+ innermarginwidth:   binnenmargebreedte  innermarginwidth 
+                     innermarginwidth    innermarginwidth 
+                     innermarginwidth    innermarginwidth
+ outermarginwidth:   buitenmargebreedte  outermarginwidth 
+                     outermarginwidth    outermarginwidth 
+                     outermarginwidth    outermarginwidth
+innermargindistance: binnenmargeafstand  innermargindistance
+                     innermargindistance innermargindistance
+                     innermargindistance innermargindistance
+outermargindistance: buitenmargeafstand  outermargindistance
+                     outermargindistance outermargindistance
+                     outermargindistance outermargindistance
+   inneredgewidth:   binnenrandbreedte  inneredgewidth 
+                     inneredgewidth     inneredgewidth 
+                     inneredgewidth     inneredgewidth
+   outeredgewidth:   buitenrandbreedte  outeredgewidth 
+                     outeredgewidth     outeredgewidth 
+                     outeredgewidth     outeredgewidth
+  inneredgedistance: binnenrandafstand  inneredgedistance
+                     inneredgedistance  inneredgedistance
+                     inneredgedistance  inneredgedistance
+  outeredgedistance: buitenrandafstand  outeredgedistance
+                     outeredgedistance  outeredgedistance
+                     outeredgedistance  outeredgedistance
                     tekstbreedte: tekstbreedte                     textwidth
                                   textbreite                       sirkatextu
                                   ampiezzatesto                    latimetext
@@ -1886,18 +1948,22 @@ placeheadnumber: plaatskopnummer  placeheadnumber
                                   useXMLfilter                     useXMLfilter
                                   useXMLfilter                     useXMLfilter
 
-definecolumnset: definieerkolomgroep definecolumnset 
-                 definecolumnset     definecolumnset 
+definecolumnset: definieerkolomgroep        definecolumnset 
+                 definecolumnset            definecolumnset 
                  definiscigruppocolonne     definecolumnset 
- setupcolumnset: stelkolomgroepin    setupcolumnset 
-                 setupcolumnset      setupcolumnset 
-                 impostagruppocolonne      setupcolumnset 
- startcolumnset: startkolomgroep     startcolumnset 
-                 startcolumnset      startcolumnset 
-                 iniziagruppocolonne      startcolumnset 
-  stopcolumnset: stopkolomgroep      stopcolumnset 
-                 stopcolumnset       stopcolumnset 
+ setupcolumnset: stelkolomgroepin           setupcolumnset 
+                 setupcolumnset             setupcolumnset 
+                 impostagruppocolonne       setupcolumnset 
+ startcolumnset: startkolomgroep            startcolumnset 
+                 startcolumnset             startcolumnset 
+                 iniziagruppocolonne        startcolumnset 
+  stopcolumnset: stopkolomgroep             stopcolumnset 
+                 stopcolumnset              stopcolumnset 
                  terminagruppocolonne       stopcolumnset 
+
+  usetypescript: gebruiktypescript          usetypescript
+                 usetypescript              usetypescript
+                 usetypescript              usetypescript
 
 \stopcommands
 

@@ -90,7 +90,7 @@
 
 \def\dolistreference
   {\immediatewriteutilitycommand
-     {\twopassentry%
+     {\twopassentry 
         {\s!list}%
         {\currentlist}%
         {\currentlist:\noflistelements}}}
@@ -131,7 +131,7 @@
 
 \def\doitemreference#1,#2,#3\\%
   {\ifnum\itemlevel>#1
-     \ifnum#1>0 \tempsymbol \fi
+     \ifnum#1>\zerocount \tempsymbol \fi
      \getvalue{\@@currentitemsymbol{#2}}%
      \doitemreference#2,#3\\%
    \fi}
@@ -140,7 +140,7 @@
   {\expandafter\doitemreference\itemreferences,,\\}
 
 \def\packitems
-  {\ifnum\itemlevel=0 \else \packeditemstrue \fi}
+  {\ifcase\itemlevel \else \packeditemstrue \fi}
 
 \def\dosetupitemgroupvariable[#1]% [#2]%  niveau instellingen
   {\doifelsenothing{#1}
@@ -259,7 +259,7 @@
 %    \fi} 
 
 \def\setitemlevel#1%
-  {\ifnum\itemlevel>0\relax
+  {\ifnum\itemlevel>\zerocount
      \firstlisttrue
      \doifnotinset\v!verder{#1}
        {\doifinset{0}{#1}{\setitemparameter\itemlevel\c!start{0}}%
@@ -267,7 +267,7 @@
           {\setcounter{\@@itemcounter\itemlevel}{\getitemparameter\itemlevel\c!start}%
            \minuscounter{\@@itemcounter\itemlevel}%
            \letitemparameter\itemlevel\c!start\empty}}%
-     \def\tempnumber%
+     \def\tempnumber
        {\countervalue{\@@itemcounter\itemlevel}}%
      \doifelse{\getitemparameter\itemlevel\c!plaatsafsluiter}\v!ja
        {\def\tempsymbol{\getitemparameter\itemlevel\c!afsluiter}}
@@ -295,7 +295,7 @@
            \doifsomething{\getitemparameter\itemlevel\c!linkertekst}
              {\let\tempsymbol\empty}%
          \fi
-         \def\listitem%
+         \def\listitem
            {\getitemparameter\itemlevel
               {\iftextitems\c!linkertekst\else\c!links\fi}%
             \getvalue{\@@localitemsymbol\itemlevel}\tempsymbol
@@ -306,7 +306,7 @@
 
 \def\calculatelistwidth#1#2%
   {#2=\getitemparameter{#1}\c!afstand\relax
-   \ifnum\getitemparameter{#1}\c!factor>0
+   \ifnum\getitemparameter{#1}\c!factor>\zerocount
      \ifdim#2=\zeropoint #2=.5em\fi
    \fi
    \multiply#2 \getitemparameter{#1}\c!factor
@@ -355,31 +355,31 @@
    \doglobal\increment(\itemlevel,\itemincrement)%
    \initializeitemgrouplevel\itemlevel % safeguard 
    \begingroup
-   \ifnum\itemlevel=1 % NIEUW
+   \ifnum\itemlevel=\plusone % NIEUW
      \doadaptleftskip{\getitemparameter1\c!marge}%
    \fi
    \dosetraggedcommand{\getitemparameter\itemlevel\c!uitlijnen}\raggedcommand
    \doifsomething{\getitemparameter\itemlevel\c!inspringen}
      {\expanded{\stelinspringenin[\getitemparameter\itemlevel\c!inspringen]}}%
    \doifinset\v!kolommen{#1}%
-     {\ifbinnenkolommen\else\ifnum\itemcolumndepth=0
-        \global\let\itemcolumndepth\itemlevel
+     {\ifbinnenkolommen\else\ifnum\itemcolumndepth=\zerocount
+        \globallet\itemcolumndepth\itemlevel
         \getitemparameter\itemlevel\c!voor
         \processfirstactioninset
           [#1]
-          [  \v!een=>\!!counta=1\relax,
-            \v!twee=>\!!counta=2\relax,
-            \v!drie=>\!!counta=3\relax,
-            \v!vier=>\!!counta=4\relax,
-            \v!vijf=>\!!counta=5\relax,
+          [  \v!een=>\!!counta1\relax,
+            \v!twee=>\!!counta2\relax,
+            \v!drie=>\!!counta3\relax,
+            \v!vier=>\!!counta4\relax,
+            \v!vijf=>\!!counta5\relax,
          \s!unknown=>\@EA\!!counta\getitemparameter\itemlevel\c!n]%
         % new
         \edef\columneditemleftskip{\the\leftskip}%
         \def\postprocesscolumnbox##1%
-          {\scratchdimen=\columneditemleftskip
+          {\scratchdimen\columneditemleftskip
            \divide\scratchdimen \nofcolumns
            \hbox{\hskip\columneditemleftskip\hbox{\box##1}}}%
-        \scratchdimen=-\columneditemleftskip
+        \scratchdimen-\columneditemleftskip
         \multiply\scratchdimen \nofcolumns
         \advance\scratchdimen \columneditemleftskip
         \advance\scratchdimen \hsize
@@ -401,14 +401,14 @@
    \subitemfalse
    \symbolitemfalse
    \let\marsymbol\relax
-   \global\let\somdestination\empty
+   \globallet\somdestination\empty
    \let\symsymbol\empty
    \the\itemgroupcommands
    \setitemlevel{#1}%
    \getitemparameter\itemlevel\empty
    \doifelsenothing{#1} % iffirstargument
      {\edef\@@opsymbool{\getitemparameter\itemlevel\c!symbool}%
-      \global\letvalue{\@@globalitemsymbol\itemlevel}\empty
+      \letgvalueempty{\@@globalitemsymbol\itemlevel}%
       \global\letitemparameter\itemlevel\v!verder\empty
       \setitemmark\@@opsymbool
       \dosetupitemgroupvariable[\itemlevel][#2]}
@@ -428,7 +428,7 @@
      \itemintrotrue
    \fi\fi
    \ifparagraphitems
-     \ifnum\itemlevel>1 
+     \ifnum\itemlevel>\plusone
        \letitemparameter\itemlevel\c!tussen\empty
      \fi
    \else\ifpackeditems
@@ -447,14 +447,14 @@
    \else
      \par
    \fi
-   \ifnum\itemcolumndepth=0 \dolistreference \fi % beware !
+   \ifnum\itemcolumndepth=\zerocount \dolistreference \fi % beware !
    \iffirstlist \else \endgroup \fi % toegevoegd, eerste \som opent groep
    \ifnum\itemcolumndepth=\itemlevel\relax
      \stopkolommen
      \doglobal\newcounter\itemcolumndepth
      \getitemparameter\itemlevel\c!na
    \else
-     \ifnum\itemlevel=1
+     \ifnum\itemlevel=\plusone
        \doitembreak\allowbreak           % toegevoegd
        \getitemparameter1\c!na
        \doif\@@oospringvolgendein\v!nee\noindentation
@@ -502,7 +502,7 @@
       \unskip}}
 
 \def\itemgroupmargin#1%  
-  {\def\marsymbol%
+  {\def\marsymbol
      {\llap
         {\doitemattributes\itemlevel\c!marletter\c!markleur{#1}%
          \hskip\leftskip\hskip\linkermargeafstand}}%
@@ -533,13 +533,13 @@
    \fi
    \ignorespaces
    \increment\noflistelements
-   \ifnum\itemcolumndepth=0 \ifoptimizeitems
-     \ifnum\noflistelements=1               % tgv bv kolommen/nesting
+   \ifnum\itemcolumndepth=\zerocount \ifoptimizeitems
+     \ifnum\noflistelements=\plusone        % tgv bv kolommen/nesting
        \findtwopassdata\s!list{\noflists:}% % wordt soms de volgorde
      \fi                                    % verstoord, vandaar \find
-\iftwopassdatafound
-  \ifcase0\twopassdata\relax \twopassdatafoundfalse \fi
-\fi  
+     \iftwopassdatafound
+       \ifcase0\twopassdata\relax \twopassdatafoundfalse \fi
+     \fi  
      \iftwopassdatafound
        \ifnum\twopassdata=3
          \ifnum\noflistelements>1
@@ -573,7 +573,7 @@
       \fi\fi}%
    \doifsomething\somdestination
      {\setbox8=\hbox{\naar{\box8}[\somdestination]}}%
-   \global\let\somdestination\empty
+   \globallet\somdestination\empty
    \dimen2=\getitemparameter\itemlevel\c!breedte\relax
    % new, prevents loops when symbol is (not yet found) graphic
    \ht8=\strutheight
@@ -597,9 +597,11 @@
        \fi
      \fi
    \fi
+\forceunexpanded % needed for m conversion (\os) / i need to look into this  
    \setevalue{\@@currentitemsymbol\itemlevel}%
      {\getvalue{\@@localitemsymbol\itemlevel}}% still problems with \uchar ?
     %{\noexpand\getvalue{\@@localitemsymbol\itemlevel}}% no, spoils subrefs
+   \resetunexpanded
    \headitemfalse
    \subitemfalse
    \symbolitemfalse
@@ -750,10 +752,10 @@
       \setvalue{\e!start#1}{\startitemgroup[#1]}%
       \setvalue{\e!stop#1}{\stopitemgroup}%
       \setvalue{\e!stel#1\e!in}{\setupitemgroup[#1]}%
-\getparameters[\??ig#1][\c!niveaus=3,#2]%
-\ifnum\getvalue{\??ig#1\c!niveaus}<\maxitemlevel\relax
-  \letvalue{\??ig#1\c!niveaus}\maxitemlevel
-\fi 
+      \getparameters[\??ig#1][\c!niveaus=3,#2]%
+      \ifnum\getvalue{\??ig#1\c!niveaus}<\maxitemlevel\relax
+        \letvalue{\??ig#1\c!niveaus}\maxitemlevel
+      \fi 
       \dorecurse{\getvalue{\??ig#1\c!niveaus}}{\initializeitemgrouplevel\recurselevel}%
       \popmacro\currentitemgroup}}
 

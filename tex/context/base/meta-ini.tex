@@ -97,12 +97,12 @@
 
 %D We save the number of graphics for the sake of \TEXEXEC.
 
-\newcounter\totalnumberofMPgraphics 
+\newcounter\totalnofMPgraphics 
 
 \def\thenofMPgraphics{\the\nofMPgraphics} % from supp-mps 
 
 \appendtoks 
-  \savecurrentvalue\totalnumberofMPgraphics\thenofMPgraphics
+  \savecurrentvalue\totalnofMPgraphics\thenofMPgraphics
 \to \everybye
 
 %D \macros
@@ -121,7 +121,7 @@
 
 \def\@@meta{meta:}
 
-\def\setupMPvariables%
+\def\setupMPvariables
   {\dodoubleempty\dosetupMPvariables}
 
 \def\dosetupMPvariables[#1][#2]%
@@ -341,15 +341,15 @@
      {\setevalue{#1}{\MPcolor{black}}}
      {\edef\!!stringa{\getvalue{#1}}%
       \convertcommand\!!stringa\to\ascii % otherwise problems 
-      \doifcolorelse{\ascii}             % with 2\bodyfontsize
+      \doifcolorelse \ascii              % with 2\bodyfontsize
         {\setevalue{#1}{\MPcolor{\getvalue{#1}}}}
         {% can be aux macro 
-         \setbox\scratchbox=\hbox{\scratchdimen=\getvalue{#1}sp}%
+         \setbox\scratchbox\hbox{\scratchdimen\getvalue{#1}sp}%
          \ifdim\wd\scratchbox=\zeropoint
-           \scratchcounter=\getvalue{#1}\relax
+           \scratchcounter\getvalue{#1}\relax
            \setevalue{#1}{\the\scratchcounter}%
          \else
-           \scratchdimen=\getvalue{#1}\relax
+           \scratchdimen\getvalue{#1}\relax
            \setevalue{#1}{\the\scratchdimen}%
          \fi}}}
 
@@ -463,14 +463,14 @@
   {\dodoubleempty\dostartMPenvironment} % that reset gives \emptytoks
 
 \long\def\dostartMPenvironment[#1][#2]#3\stopMPenvironment%
-  {\doif{#1}{\s!reset}{\resetMPenvironment}% % reset mp toks
-   \doif{#1}{\v!globaal}{#3}%                % use in main doc too
-   \doif{#1}{+}{#3}%                         % use in main doc too
+  {\doif{#1}\s!reset\resetMPenvironment % reset mp toks
+   \doif{#1}\v!globaal{#3}%             % use in main doc too
+   \doif{#1}+{#3}%                      % use in main doc too
    \convertargument#3\to\ascii
    \expandafter\appendtoks\ascii\to\everyMPTEXgraphic}
 
-\def\resetMPenvironment%
-  {\everyMPTEXgraphic=\emptytoks % = is really needed ! 
+\def\resetMPenvironment
+  {\everyMPTEXgraphic\emptytoks % = is really needed ! 
    \startMPenvironment
      \global\loadfontfileoncetrue
    \stopMPenvironment} 
@@ -516,7 +516,7 @@
    \immediate\write\scratchwrite{end.}%
    \immediate\closeout\scratchwrite}
 
-\def\initializeMPgraphics%
+\def\initializeMPgraphics
   {\bgroup
    \initializeMPgraphicfile
    \ifx\bufferprefix\empty\else
@@ -530,11 +530,11 @@
 
 \def\douseMPlibrary#1%
   {\doifundefined{\c!file\f!javascriptprefix#1}
-     {\setvalue{\c!file\f!javascriptprefix#1}{}
+     {\letvalueempty{\c!file\f!javascriptprefix#1}%
       \makeshortfilename[\f!metapostprefix#1]
-      \showmessage{\m!metapost}{1}{#1}
+      \showmessage\m!metapost1{#1}
       \startreadingfile
-      \readsysfile{\shortfilename}{}{}
+      \readsysfile\shortfilename\donothing\donothing
       \stopreadingfile}}
 
 \def\useMPlibrary[#1]%
@@ -561,20 +561,22 @@
 \def\setMPtext#1#2% todo : #1 must be made : safe 
   {%\forceMPTEXgraphic
    \convertargument#2\to\ascii
-   \setevalue{\@@MPT#1}{\ascii}}
+   \dodoglobal\letvalue{\@@MPT#1}\ascii}
 
-\def\MPtext  #1{\getvalue{\@@MPT#1}} 
-\def\MPstring#1{"\getvalue{\@@MPT#1}"} 
+\def\MPtext       #1{\getvalue{\@@MPT#1}} 
+\def\MPstring    #1{"\getvalue{\@@MPT#1}"} 
 \def\MPbetex #1{btex \getvalue{\@@MPT#1} etex}
 
 %D Unfortunately \METAPOST\ does not have \CMYK\ support 
 %D built in, but by means of specials we can supply the 
 %D information needed to handle them naturaly. 
 
-\newif\ifMPcmyk \MPcmyktrue 
+\newif\ifMPcmykcolors \MPcmykcolorstrue 
+\newif\ifMPspotcolors \MPspotcolorstrue 
 
 \appendtoks
-  cmykcolors := \ifMPcmyk true \else false \fi ;   
+  cmykcolors := \ifMPcmykcolors true \else false \fi ;   
+  spotcolors := \ifMPspotcolors true \else false \fi ;   
 \to \MPinitializations 
 
 %D In order to communicate conveniently with the \TEX\ 
@@ -618,6 +620,7 @@
 \appendtoks
   \baselineskip1\baselineskip
   \lineheight  1\lineheight 
+  \topskip     1\topskip
 \to \everyMPgraphic
 
 % this will become (more efficient) 

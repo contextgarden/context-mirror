@@ -63,12 +63,12 @@
 % idem 
 
 \def\enablenotes
-  {\global\count\footins=1000
-   \global\skip\footins=1\baselineskip\relax}
+  {\global\count\footins1000
+   \global\skip\footins1\baselineskip\relax}
 
 \def\disablenotes
-  {\global\count\footins=0
-   \global\skip\footins=\zeropoint}
+  {\global\count\footins\zerocount
+   \global\skip\footins \zeropoint}
 
 % also 
 
@@ -76,7 +76,7 @@
 %  {\insert\footins{\unvbox\OTRSETsavedfootnotes}}
 %
 %\def\savecolumnfootnotes
-%  {\global\setbox\OTRSETsavedfootnotes=\vbox
+%  {\global\setbox\OTRSETsavedfootnotes\vbox
 %       {\unvbox\OTRSETsavedfootnotes\box\footins}}
 
 \newbox\savednotes
@@ -87,7 +87,7 @@
    \fi}
 
 \def\savenotes
-  {\global\setbox\savednotes=\vbox
+  {\global\setbox\savednotes\vbox
      {\ifvoid\savednotes\else\unvbox\savednotes\fi
       \box\footins}}
 

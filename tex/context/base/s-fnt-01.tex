@@ -36,25 +36,26 @@
   {\dotripleempty\doShowFont}
 
 \def\doShowFont[#1][#2][#3]%
-  {\bgroup
-   \ifthirdargument
-     \definefontsynonym[WhateverName][#2][encoding=#3]
-     \definefont[WhateverFont][WhateverName]
-     \setupheadertexts[\tttf#2\quad#1\quad#3]
-     \WhateverFont
-     \setupinterlinespace
-     \showfont[WhateverName]
-     \showligatures[WhateverName]
-     \doifnotmode{compact}{\showaccents\showcharacters}
-   \else
-     \definefontsynonym[WhateverName][#2]
-     \definefont[WhateverFont][WhateverName]
-     \setupheadertexts[\tttf#2\quad#1\quad(special font)]
-     \WhateverFont
-     \setupinterlinespace
-     \showfont[WhateverName]
-   \fi
-   \page            
-   \egroup}
+  {\doifsomething{#1}
+     {\bgroup
+      \ifthirdargument
+        \definefontsynonym[WhateverName][#2][encoding=#3]
+        \definefont[WhateverFont][WhateverName]
+        \setupheadertexts[\tttf#2\quad#1\quad#3]
+        \WhateverFont
+        \setupinterlinespace
+        \showfont[WhateverName]
+        \showligatures[WhateverName]
+        \doifnotmode{compact}{\showaccents\showcharacters}
+      \else
+        \definefontsynonym[WhateverName][#2]
+        \definefont[WhateverFont][WhateverName]
+        \setupheadertexts[\tttf#2\quad#1\quad(special font)]
+        \WhateverFont
+        \setupinterlinespace
+        \showfont[WhateverName]
+      \fi
+      \page            
+      \egroup}}
 
 \endinput 

@@ -154,6 +154,14 @@
 \installspecial [\dostartgraycolormode] [or] [1]
 \installspecial [\dostopcolormode]      [or] [0]
 
+%D New and experimental:
+
+\installspecial [\dostartspotcolormode]    [or] [2]
+
+\installspecial [\doregistercmykspotcolor] [or] [5]
+\installspecial [\doregisterrgbspotcolor]  [or] [4]
+\installspecial [\doregistergrayspotcolor] [or] [2]
+
 %D For some drivers, the stop special is of no use and can
 %D simply call the start one with zero arguments.
 
@@ -377,8 +385,7 @@
 \installspecial [\dosetupprinter] [and] [5]
 
 %D \macros
-%D   {% dosetuppage,
-%D    dosetupopenaction, dosetupclosaction,
+%D   {dosetupopenaction, dosetupclosaction,
 %D    dosetupopenpageaction, dosetupclospageaction,
 %D    dosetupinteraction,
 %D    dosetupscreen,
@@ -405,10 +412,11 @@
 %D These two setup the actions to be executed when the document
 %D is opened and closed. 
 %D
-%D The next command sets up the screen. It takes five 
-%D arguments:
+%D The next commands sets up the page and screen. They are 
+%D kind of related.
 %D
 %D \starttypen
+%D \dosetuppage   {hoffset} {voffset} {width} {height} {options}
 %D \dosetupscreen {hoffset} {voffset} {width} {height} {options}
 %D \stoptypen
 %D
@@ -428,6 +436,13 @@
 \installspecial [\dosetupclosepageaction] [and] [0]
 \installspecial [\dosetupscreen]          [and] [5]
 \installspecial [\dosetuppageview]        [and] [1]
+
+% new, yet undocumented, replaces \dosetupscreen 
+
+\installspecial [\dosetupcropbox]  [and] [4]
+\installspecial [\dosetuptrimbox]  [and] [4]
+\installspecial [\dosetupartbox]   [and] [4]
+\installspecial [\dosetupbleedbox] [and] [4]
 
 %D \macros
 %D   {dostarthide,
@@ -879,9 +894,12 @@
 \defineoutput [dviwindo] [dvi,ps,yy,win]
 \defineoutput [dvips]    [dvi,ps,tr]
 \defineoutput [dviview]  [dvi,ps,tr,dv]
-\defineoutput [dvipdfm]  [dpm]
 \defineoutput [pdftex]   [tpd]   
-\defineoutput [pdf]      [tpd]   
+\defineoutput [pdf]      [tpd] 
+\defineoutput [dvipdfm]  [dpm]
+\defineoutput [dpm]      [dpm]   
+\defineoutput [dvipdfmx] [dpx]
+\defineoutput [dpx]      [dpx]   
 \defineoutput [acrobat]  [pdf,ps,tr] 
 
 %D Please let me know if we need more. From now on we default

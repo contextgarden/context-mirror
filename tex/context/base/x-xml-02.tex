@@ -60,6 +60,21 @@
 \setupXMLfile
   [level=2]
 
+\startmode[*suffix-rng]
+  \showXMLlin[value]
+\stopmode
+
+\startmode[*suffix-rlg]
+  \showXMLlin
+    [rl:type,rl:state,rl:name,rl:suffix,rl:label,rl:file,rl:original, 
+     rl:width,rl:height,rl:base,rl:page]
+\stopmode
+
+\startmode[*suffix-exa]
+  \showXMLlin
+    [exa:resolve,exa:include]
+\stopmode
+
 \starttext
 
 \showXMLfile{\inputfilename}

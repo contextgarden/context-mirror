@@ -101,13 +101,13 @@
 %D  unwanted results. We can therefore turn all those things
 %D off with \type{\dontinterfere}.
 
-\def\dontinterfere%
-  {\everypar  = {}%
-   \let\par   = \endgraf
-   \parindent = \!!zeropoint
-   \parskip   = \!!zeropoint
-   \leftskip  = \!!zeropoint
-   \rightskip = \!!zeropoint
+\def\dontinterfere
+  {\everypar \emptytoks
+   \let\par  \endgraf
+   \parindent\zeropoint
+   \parskip  \zeropoint
+   \leftskip \zeropoint
+   \rightskip\zeropoint
    \relax}
 
 %D \macros
@@ -117,9 +117,9 @@
 %D don't want to be confronted with to many over- and underfull
 %D messages we introduce \type{\dontcomplain}.
 
-\def\dontcomplain%
-  {\hbadness=\!!tenthousand \vbadness=\hbadness
-   \hfuzz   =\maxdimen      \vfuzz   =\hfuzz}
+\def\dontcomplain
+  {\hbadness\!!tenthousand \vbadness\hbadness
+   \hfuzz   \maxdimen      \vfuzz   \hfuzz}
 
 %D \macros
 %D   {normaloffinterlineskip}
@@ -128,7 +128,7 @@
 %D \type{\offinterlineskip}.  
 
 \ifx\undefined\normaloffinterlineskip 
-  \let\normaloffinterlineskip=\offinterlineskip
+  \let\normaloffinterlineskip\offinterlineskip
 \fi
 
 %D \macros
@@ -200,11 +200,11 @@
 %D offers \type{\hfilneg} and \type{\vfilneg}, we define our
 %D own alternative double \type{ll}'ed ones.
 
-\def\hfillneg%
-  {\normalhskip\!!zeropoint \!!plus-1fill\relax}
+\def\hfillneg
+  {\normalhskip\zeropoint \!!plus-1fill\relax}
 
-\def\vfillneg%
-  {\normalvskip\!!zeropoint \!!plus-1fill\relax}
+\def\vfillneg
+  {\normalvskip\zeropoint \!!plus-1fill\relax}
 
 %D \macros
 %D   {normalhss,normalhfil,normalhfill,
@@ -240,10 +240,10 @@
 
 \ifx\tlap\undefined 
 
-  \def\rlap#1{\normalhbox to \!!zeropoint{#1\normalhss}}
-  \def\llap#1{\normalhbox to \!!zeropoint{\normalhss#1}}
-  \def\blap#1{\normalvbox to \!!zeropoint{#1\normalvss}}
-  \def\tlap#1{\normalvbox to \!!zeropoint{\normalvss#1}}
+  \def\rlap#1{\normalhbox to \zeropoint{#1\normalhss}}
+  \def\llap#1{\normalhbox to \zeropoint{\normalhss#1}}
+  \def\blap#1{\normalvbox to \zeropoint{#1\normalvss}}
+  \def\tlap#1{\normalvbox to \zeropoint{\normalvss#1}}
 
 \fi 
 
@@ -339,20 +339,20 @@
   {\edef\ruledheight{\the\ht#1}%
    \edef\ruleddepth {\the\dp#1}%
    \edef\ruledwidth {\the\wd#1}%
-   \setbox\scratchbox=\normalvbox
+   \setbox\scratchbox\normalvbox
      {\dontcomplain
       \normaloffinterlineskip
       \visualhrule
         \!!height\boxrulewidth
-        \iftoprule\else\!!width\!!zeropoint\fi
+        \iftoprule\else\!!width\zeropoint\fi
       \normalvskip-\boxrulewidth
       \normalhbox to \ruledwidth
         {\visualvrule
            \!!height\ruledheight
            \!!depth\ruleddepth
            \!!width\ifleftrule\else0\fi\boxrulewidth
-         \ifdim\ruledheight>\!!zeropoint \else \baselinerulefalse \fi
-         \ifdim\ruleddepth>\!!zeropoint \else \baselinerulefalse \fi
+         \ifdim\ruledheight>\zeropoint \else \baselinerulefalse \fi
+         \ifdim\ruleddepth>\zeropoint \else \baselinerulefalse \fi
          \ifbaselinerule
            \ifdim\ruledwidth<20\boxrulewidth
              \baselinefilltrue
@@ -376,8 +376,8 @@
        \normalvskip-\boxrulewidth
        \visualhrule
          \!!height\boxrulewidth
-         \ifbottomrule\else\!!width\!!zeropoint\fi}%
-   \wd#1=\!!zeropoint
+         \ifbottomrule\else\!!width\zeropoint\fi}%
+   \wd#1\zeropoint
    \setbox#1=\ifhbox#1\normalhbox\else\normalvbox\fi
      {\normalhbox
         {\box#1%
@@ -416,7 +416,7 @@
 %D
 %D \ShowBufferedExampleBox
 
-\unexpanded\def\ruledhbox%
+\unexpanded\def\ruledhbox
   {\normalhbox\bgroup
    \dowithnextbox{\makeruledbox\nextbox\box\nextbox\egroup}%
    \normalhbox}
@@ -434,7 +434,7 @@
 %D
 %D \ShowBufferedExampleBox
 
-\unexpanded\def\ruledvbox%
+\unexpanded\def\ruledvbox
   {\normalvbox\bgroup
    \dowithnextbox{\makeruledbox\nextbox\box\nextbox\egroup}%
    \normalvbox}
@@ -452,7 +452,7 @@
 %D
 %D \ShowBufferedExampleBox
 
-\unexpanded\def\ruledvtop%
+\unexpanded\def\ruledvtop
   {\normalvtop\bgroup
    \dowithnextbox{\makeruledbox\nextbox\box\nextbox\egroup}%
    \normalvtop}
@@ -469,14 +469,14 @@
 %D
 %D \ShowBufferedExampleBox
 
-\unexpanded\def\ruledvcenter%
+\unexpanded\def\ruledvcenter
   {\normalvbox\bgroup
    \dontinterfere
    \dowithnextbox
-     {\scratchdimen=.5\ht\nextbox
-      \advance\scratchdimen by .5\dp\nextbox
-      \ht\nextbox=\scratchdimen
-      \dp\nextbox=\scratchdimen
+     {\scratchdimen.5\ht\nextbox
+      \advance\scratchdimen .5\dp\nextbox
+      \ht\nextbox\scratchdimen
+      \dp\nextbox\scratchdimen
       \ruledhbox{\box\nextbox}%
       \egroup}%
    \normalvbox}
@@ -504,11 +504,11 @@
 %D At the cost of some extra macros we can implement a
 %D variant that does not need the~\type{=}, but we stick to:
 
-\unexpanded\def\ruledbox%
+\unexpanded\def\ruledbox
   {\dowithnextbox{\makeruledbox\nextbox\box\nextbox}}
 
 \def\setruledbox#1=%
-  {\dowithnextbox{\makeruledbox\nextbox\setbox#1=\nextbox}}
+  {\dowithnextbox{\makeruledbox\nextbox\setbox#1\nextbox}}
 
 %D \macros
 %D   {investigateskip,
@@ -548,30 +548,30 @@
 
 \def\investigateskip#1%
   {\relax
-   \scratchdimen=#1\relax
+   \scratchdimen#1\relax
    \edef\!!stringa{\the\scratchdimen}%
    \edef\!!stringb{\the#1}%
    \ifx\!!stringa\!!stringb \flexiblefalse \else \flexibletrue \fi
-   \ifdim#1=\!!zeropoint\relax
+   \ifdim#1=\zeropoint\relax
      \zerotrue      \else
      \zerofalse     \fi
-   \ifdim#1<\!!zeropoint\relax
+   \ifdim#1<\zeropoint\relax
      \positivefalse \else
      \positivetrue  \fi
-   \ifdim#1>\!!zeropoint\relax
+   \ifdim#1>\zeropoint\relax
      \negativefalse \else
      \negativetrue  \fi}
 
 \def\investigatecount#1%
   {\relax
    \flexiblefalse
-   \ifnum#1=0
+   \ifnum#1=\zerocount
      \zerotrue      \else
      \zerofalse     \fi
-   \ifnum#1<0
+   \ifnum#1<\zerocount
      \positivefalse \else
      \positivetrue  \fi
-   \ifnum#1>0
+   \ifnum#1>\zerocount
      \negativefalse \else
      \negativetrue  \fi}
 
@@ -707,7 +707,7 @@
 %D \type{\hbox}.
 
 \def\setvisiblehfilbox#1\to#2#3#4%
-  {\setbox#1=\normalhbox
+  {\setbox#1\normalhbox
      {\visualvrule
         \!!width#2\testrulewidth
         \!!height#3\testrulewidth
@@ -729,7 +729,7 @@
            {\normalhss\copy0\normalhss}%
          #1%
      \egroup
-     \setbox0=\normalhbox
+     \setbox0\normalhbox
        {\normalhskip-4\testrulewidth\copy0\copy2}%
      \smashbox0%
      \box0
@@ -793,19 +793,19 @@
 %D All five substitutions use the same auxiliary macro. Watch
 %D the positive first -- negative next approach.
 
-\unexpanded\def\ruledhss%
+\unexpanded\def\ruledhss
   {\doruledhfiller\normalhss\normalhfilneg{0}{0}}
 
-\unexpanded\def\ruledhfil%
+\unexpanded\def\ruledhfil
   {\doruledhfiller\normalhfil\normalhfilneg{10}{-6}}
 
-\unexpanded\def\ruledhfill%
+\unexpanded\def\ruledhfill
   {\doruledhfiller\normalhfill\normalhfillneg{18}{-14}}
 
-\unexpanded\def\ruledhfilneg%
+\unexpanded\def\ruledhfilneg
   {\doruledhfiller\normalhfilneg\normalhfil{-6}{10}}
 
-\unexpanded\def\ruledhfillneg%
+\unexpanded\def\ruledhfillneg
   {\doruledhfiller\normalhfillneg\normalhfill{-14}{18}}
 
 %D \macros
@@ -817,7 +817,7 @@
 %D scheme, but are implemented in a slightly different way.
 
 \def\setvisiblevfilbox#1\to#2#3#4%
-  {\setbox#1=\normalhbox
+  {\setbox#1\normalhbox
      {\visualvrule
         \!!width#2\testrulewidth
         \!!height#3\testrulewidth
@@ -831,12 +831,12 @@
      \dontcomplain
      \normaloffinterlineskip
      \setvisiblevfilbox0\to422%
-     \setbox2=\normalvcue 
+     \setbox2\normalvcue 
        {\normalhskip -#3\testrulewidth\copy0}%
      \smashbox2%
      \copy2
      \bgroup
-       \setbox2=\normalvcue 
+       \setbox2\normalvcue 
          {\normalhskip -2\testrulewidth\copy0}%
        \smashbox2%
        \copy2
@@ -844,7 +844,7 @@
          \normalvbox to 12\testrulewidth
            {\normalvss\copy2\normalvss}%
          #1%
-       \setbox2=\normalvbox
+       \setbox2\normalvbox
          {\normalvskip-2\testrulewidth\copy2}%
        \smashbox2%
        \box2
@@ -880,19 +880,19 @@
 %D Keep in mind that \type{\vfillneg} is not part of \PLAIN\
 %D \TEX, but are mimmicked by a macro. 
 
-\unexpanded\def\ruledvss%
+\unexpanded\def\ruledvss
   {\doruledvfiller\normalvss\normalvfilneg{2}}
 
-\unexpanded\def\ruledvfil%
+\unexpanded\def\ruledvfil
   {\doruledvfiller\normalvfil\normalvfilneg{-4}}
 
-\unexpanded\def\ruledvfill%
+\unexpanded\def\ruledvfill
   {\doruledvfiller\normalvfill\normalvfillneg{-12}}
 
-\unexpanded\def\ruledvfilneg%
+\unexpanded\def\ruledvfilneg
   {\doruledvfiller\normalvfilneg\normalvfil{8}}
 
-\unexpanded\def\ruledvfillneg%
+\unexpanded\def\ruledvfillneg
   {\doruledvfiller\normalvfillneg\normalvfill{16}}
 
 %D \macros
@@ -932,20 +932,20 @@
 %D stretch could be drawing the mid line over a length of the
 %D stretch, in positive or negative direction.
 
-\def\doruledhskip%
+\def\doruledhskip
   {\relax
    \dontinterfere
    \dontcomplain
    \investigateskip\scratchskip
    \ifzero
-     \setbox0=\normalhbox
+     \setbox0\normalhbox
        {\normalhskip-\testrulewidth
         \visualvrule
           \!!width4\testrulewidth
           \!!height16\testrulewidth
           \!!depth16\testrulewidth}%
    \else
-     \setbox0=\normalhbox to \ifnegative-\fi\scratchskip
+     \setbox0\normalhbox to \ifnegative-\fi\scratchskip
        {\visualvrule
           \!!width2\testrulewidth
           \ifnegative\!!depth\else\!!height\fi16\testrulewidth
@@ -953,10 +953,10 @@
           \visualhrule
             \ifnegative
               \!!depth2\testrulewidth
-              \!!height\!!zeropoint
+              \!!height\zeropoint
             \else
               \!!height2\testrulewidth
-              \!!depth\!!zeropoint
+              \!!depth\zeropoint
             \fi
           \normalhfill
         \ifflexible
@@ -975,7 +975,7 @@
         \visualvrule
           \!!width2\testrulewidth
           \ifnegative\!!depth\else\!!height\fi16\testrulewidth}%
-     \setbox0=\normalhbox
+     \setbox0\normalhbox
        {\ifnegative\else\normalhskip-\scratchskip\fi
         \box0}%
    \fi
@@ -985,10 +985,10 @@
    \fi
    \ifflexible
      % breaks ok but small displacements can occur
-     \skip2=\scratchskip
-     \advance\skip2 by -1\scratchskip
-     \divide\skip2 by 2
-     \advance\scratchskip by -\skip2
+     \skip2\scratchskip
+     \advance\skip2 -1\scratchskip
+     \divide\skip2 2
+     \advance\scratchskip -\skip2
      \normalhskip\scratchskip
      \normalpenalty\!!tenthousand
      \box0
@@ -999,7 +999,7 @@
    \fi
    \egroup}
 
-\unexpanded\def\ruledhskip%
+\unexpanded\def\ruledhskip
   {\bgroup
    \afterassignment\doruledhskip
    \scratchskip=}
@@ -1068,20 +1068,20 @@
 %D precaution probably is not completely waterproof, it works 
 %D quite well. 
 
-\def\dodoruledvskip%
-  {\nextdepth=\prevdepth
+\def\dodoruledvskip
+  {\nextdepth\prevdepth
    \dontinterfere
    \dontcomplain
    \normaloffinterlineskip
    \investigateskip\scratchskip
    \ifzero
-     \setbox0=\normalvcue
+     \setbox0\normalvcue
        {\visualvrule
           \!!width32\testrulewidth
           \!!height2\testrulewidth
           \!!depth2\testrulewidth}%
    \else
-     \setbox0=\normalvbox to \ifnegative-\fi\scratchskip
+     \setbox0\normalvbox to \ifnegative-\fi\scratchskip
        {\visualhrule
           \!!width16\testrulewidth
           \!!height2\testrulewidth
@@ -1103,42 +1103,42 @@
         \visualhrule
           \!!width16\testrulewidth
           \!!height2\testrulewidth}%
-     \setbox2=\normalvbox to \ht0
+     \setbox2\normalvbox to \ht0
        {\visualhrule
           \!!width2\testrulewidth
           \!!height\ht0}%
      \ifnegative
-       \ht0=\!!zeropoint
-       \setbox0=\normalhbox
+       \ht0\zeropoint
+       \setbox0\normalhbox
          {\normalhskip2\testrulewidth % will be improved
           \normalhskip-\wd0\box0}%
      \fi
      \smashbox0%
      \smashbox2%
-     \setbox0=\normalvcue
+     \setbox0\normalvcue
        {\box2\box0}%
-     \setbox0=\normalvbox
+     \setbox0\normalvbox
        {\ifnegative\normalvskip\scratchskip\fi\box0}%
      \smashbox0%
    \fi
    \ifvisiblestretch
      \ifflexible                      
-       \skip2=\scratchskip            
-       \advance\skip2 by -1\scratchskip
-       \divide\skip2 by 2              
-       \advance\scratchskip by -\skip2 
+       \skip2\scratchskip            
+       \advance\skip2 -1\scratchskip
+       \divide\skip2 2              
+       \advance\scratchskip -\skip2 
        \normalvskip\skip2              
      \fi
    \fi
    \normalpenalty\!!tenthousand
    \box0
-   \prevdepth=\nextdepth % not \dp0=\nextdepth
+   \prevdepth\nextdepth % not \dp0=\nextdepth
    \normalvskip\scratchskip}
 
 %D We try to avoid interfering at the top of a page. Of course
 %D we only do so when we are in the main vertical list.
 
-\def\doruledvskip%
+\def\doruledvskip
   {\endgraf % \par
    \ifdim\pagegoal=\maxdimen
      \ifinner
@@ -1149,7 +1149,7 @@
    \fi
    \egroup}
 
-\unexpanded\def\ruledvskip%
+\unexpanded\def\ruledvskip
   {\bgroup
    \afterassignment\doruledvskip
    \scratchskip=}
@@ -1184,24 +1184,24 @@
 %D visualized a bit different, because we want to see them 
 %D anyhow.
 
-\def\doruledhkern%
+\def\doruledhkern
   {\dontinterfere
    \dontcomplain
    \baselinerulefalse
    \investigateskip\scratchskip
-   \boxrulewidth=2\testrulewidth
+   \boxrulewidth2\testrulewidth
    \ifzero
-     \setbox0=\ruledhbox to 8\testrulewidth
+     \setbox0\ruledhbox to 8\testrulewidth
        {\visualvrule
-          \!!width\!!zeropoint
+          \!!width\zeropoint
           \!!height16\testrulewidth
           \!!depth16\testrulewidth}%
-     \setbox0=\normalhbox
+     \setbox0\normalhbox
        {\normalhskip-4\testrulewidth\box0}%
    \else
-     \setbox0=\ruledhbox to \ifnegative-\fi\scratchskip
+     \setbox0\ruledhbox to \ifnegative-\fi\scratchskip
        {\visualvrule
-          \!!width\!!zeropoint
+          \!!width\zeropoint
           \ifnegative\!!depth\else\!!height\fi16\testrulewidth
         \ifflexible
           \normalhskip2\testrulewidth
@@ -1217,12 +1217,12 @@
         \else
           \normalhfill
         \fi}%
-     \testrulewidth=2\testrulewidth
-     \setbox0=\ruledhbox{\box0}%  \make...
+     \testrulewidth2\testrulewidth
+     \setbox0\ruledhbox{\box0}%  \make...
    \fi
    \smashbox0%
    \normalpenalty\!!tenthousand
-   \normalhbox to \!!zeropoint
+   \normalhbox to \zeropoint
      {\ifnegative\normalhskip1\scratchskip\fi
       \box0}%
    \afterwards\scratchskip
@@ -1230,7 +1230,7 @@
 
 \unexpanded\def\ruledhkern#1%
   {\bgroup
-   \let\afterwards=#1\relax
+   \let\afterwards#1%
    \afterassignment\doruledhkern
    \scratchskip=}
 
@@ -1258,22 +1258,22 @@
 %D Like before, we have to postpone \type{\prevdepth}. If we 
 %D leave out this trick, we got ourselves some wrong spacing. 
 
-\def\dodoruledvkern%
-  {\nextdepth=\prevdepth
+\def\dodoruledvkern
+  {\nextdepth\prevdepth
    \dontinterfere
    \dontcomplain
    \baselinerulefalse
    \normaloffinterlineskip
    \investigateskip\scratchskip
-   \boxrulewidth=2\testrulewidth
+   \boxrulewidth2\testrulewidth
    \ifzero
-     \setbox0=\ruledhbox to 32\testrulewidth
+     \setbox0\ruledhbox to 32\testrulewidth
        {\visualvrule
-          \!!width\!!zeropoint
+          \!!width\zeropoint
           \!!height4\testrulewidth
           \!!depth4\testrulewidth}%
    \else
-     \setbox0=\ruledvbox to \ifnegative-\fi\scratchskip
+     \setbox0\ruledvbox to \ifnegative-\fi\scratchskip
        {\hsize16\testrulewidth
         \ifflexible
           \cleaders
@@ -1289,24 +1289,24 @@
             \normalvfill
         \else
           \visualvrule
-            \!!width\!!zeropoint
+            \!!width\zeropoint
             \!!height\ifnegative-\fi\scratchskip
           \normalhfill
         \fi}
    \fi
-   \testrulewidth=2\testrulewidth
-   \setbox0=\ruledvbox{\box0}%  \make...
+   \testrulewidth2\testrulewidth
+   \setbox0\ruledvbox{\box0}%  \make...
    \smashbox0%
-   \setbox0=\normalvbox
+   \setbox0\normalvbox
      {\ifnegative\normalvskip\scratchskip\fi
       \normalvcue 
        {\ifnegative\normalhskip-16\testrulewidth\fi\box0}}%
    \smashbox0%
    \normalpenalty\!!tenthousand
    \box0
-   \prevdepth=\nextdepth} % not \dp0=\nextdepth
+   \prevdepth\nextdepth} % not \dp0=\nextdepth
 
-\def\doruledvkern%
+\def\doruledvkern
   {\ifdim\pagegoal=\maxdimen
      \ifinner
        \dodoruledvkern
@@ -1319,11 +1319,11 @@
 
 \unexpanded\def\ruledvkern#1%
   {\bgroup
-   \let\afterwards=#1\relax
+   \let\afterwards#1\relax
    \afterassignment\doruledvkern
    \scratchskip=}
 
-\unexpanded\def\ruledkern%
+\unexpanded\def\ruledkern
   {\ifvmode
      \expandafter\ruledvkern
    \else
@@ -1361,16 +1361,16 @@
 %D
 %D \ShowBufferedExample
 
-\def\doruledhglue%
+\def\doruledhglue
   {\leavevmode
-   \scratchcounter=\spacefactor
-   \visualvrule\!!width\!!zeropoint
+   \scratchcounter\spacefactor
+   \visualvrule\!!width\zeropoint
    \normalpenalty\!!tenthousand
    \ruledhkern\normalhskip\scratchskip
-   \spacefactor=\scratchcounter
+   \spacefactor\scratchcounter
    \egroup}
 
-\unexpanded\def\ruledhglue%
+\unexpanded\def\ruledhglue
   {\bgroup
    \afterassignment\doruledhglue\scratchskip=}
 
@@ -1391,16 +1391,16 @@
 %D
 %D \ShowBufferedExample
 
-\def\doruledvglue%
+\def\doruledvglue
   {\endgraf % \par
-   \nextdepth=\prevdepth 
-   \visualhrule\!!height\!!zeropoint
+   \nextdepth\prevdepth 
+   \visualhrule\!!height\zeropoint
    \normalpenalty\!!tenthousand
    \ruledvkern\normalvskip\scratchskip
-   \prevdepth=\nextdepth
+   \prevdepth\nextdepth
    \egroup}
 
-\unexpanded\def\ruledvglue%
+\unexpanded\def\ruledvglue
   {\bgroup
    \afterassignment\doruledvglue\scratchskip=}
 
@@ -1416,9 +1416,9 @@
 \def\dodoruledmkern#1%
   {\dontinterfere
    \dontcomplain
-   \setbox0=\normalhbox
+   \setbox0\normalhbox
      {$\normalmkern\ifnegative-\fi\scratchmuskip$}%
-   \setbox0=\normalhbox to \wd0
+   \setbox0\normalhbox to \wd0
      {\visualvrule
         \!!height16\testrulewidth
         \!!depth16\testrulewidth
@@ -1459,12 +1459,12 @@
 %D
 %D \ShowBufferedExample
 
-\def\doruledmkern%
+\def\doruledmkern
   {\investigatemuskip\scratchmuskip
    \flexiblefalse
    \dodoruledmkern\normalmkern}
 
-\unexpanded\def\ruledmkern%
+\unexpanded\def\ruledmkern
   {\bgroup
    \afterassignment\doruledmkern\scratchmuskip=}
 
@@ -1477,12 +1477,12 @@
 %D
 %D \ShowBufferedExample
 
-\def\doruledmskip%
+\def\doruledmskip
   {\investigatemuskip\scratchmuskip
    \flexibletrue
    \dodoruledmkern\normalmskip}
 
-\unexpanded\def\ruledmskip%
+\unexpanded\def\ruledmskip
   {\bgroup
    \afterassignment\doruledmskip\scratchmuskip=}
 
@@ -1555,7 +1555,7 @@
 %D test
 
 \def\setruledpenaltybox#1#2#3#4#5#6%
-  {\setbox#1=\normalhbox
+  {\setbox#1\normalhbox
      {\ifnum#2=0 \else
         \ifnum#2>0
           \def\sign{+}%
@@ -1593,13 +1593,13 @@
       \fi}%
    \smashbox#1}
 
-\def\doruledhpenalty%
+\def\doruledhpenalty
   {\dontinterfere
    \dontcomplain
    \investigatecount\scratchcounter
-   \testrulewidth=2\testrulewidth
-   \boxrulewidth=\testrulewidth
-   \setbox0=\ruledhbox to 8\testrulewidth
+   \testrulewidth2\testrulewidth
+   \boxrulewidth\testrulewidth
+   \setbox0\ruledhbox to 8\testrulewidth
      {\ifnegative\else\normalhss\fi
       \visualvrule
         \!!depth8\testrulewidth
@@ -1607,7 +1607,7 @@
       \ifpositive\else\normalhss\fi}%
    \setruledpenaltybox{2}{\scratchcounter}{0}{8}{-3.5}{4.5}%
    \normalpenalty\!!tenthousand
-   \setbox0=\normalhbox
+   \setbox0\normalhbox
      {\normalhskip-4\testrulewidth
       \ifnegative
         \box2\box0
@@ -1619,7 +1619,7 @@
    \normalpenalty\scratchcounter
    \egroup}
 
-\unexpanded\def\ruledhpenalty%
+\unexpanded\def\ruledhpenalty
   {\bgroup
    \afterassignment\doruledhpenalty
    \scratchcounter=}
@@ -1643,26 +1643,26 @@
 %D
 %D \ShowBufferedExample
 
-\def\doruledvpenalty%
+\def\doruledvpenalty
   {\ifdim\pagegoal=\maxdimen
    \else
-     \nextdepth=\prevdepth  
+     \nextdepth\prevdepth  
      \dontinterfere
      \dontcomplain
      \investigatecount\scratchcounter
-     \testrulewidth=2\testrulewidth
-     \boxrulewidth=\testrulewidth
-     \setbox0=\ruledhbox
+     \testrulewidth2\testrulewidth
+     \boxrulewidth\testrulewidth
+     \setbox0\ruledhbox
        {\visualvrule
           \!!height4\testrulewidth
           \!!depth4\testrulewidth
-          \!!width\!!zeropoint
+          \!!width\zeropoint
         \visualvrule
           \!!height\ifnegative.5\else4\fi\testrulewidth
           \!!depth\ifpositive.5\else4\fi\testrulewidth
           \!!width8\testrulewidth}%
      \setruledpenaltybox{2}{\scratchcounter}{4}{4}{.5}{.5}%
-     \setbox0=\normalhbox
+     \setbox0\normalhbox
        {\normalhskip-4\testrulewidth
         \ifnegative
           \box2\box0
@@ -1673,19 +1673,19 @@
      \smashbox0%
      \normalpenalty\!!tenthousand
      \nointerlineskip
-     \dp0=\nextdepth  % not \prevdepth=\nextdepth 
+     \dp0\nextdepth  % not \prevdepth=\nextdepth 
      \normalvbox
        {\normalvcue{\box0}}%
    \fi
    \normalpenalty\scratchcounter
    \egroup}
 
-\unexpanded\def\ruledvpenalty%
+\unexpanded\def\ruledvpenalty
   {\bgroup
    \afterassignment\doruledvpenalty
    \scratchcounter=}
 
-\unexpanded\def\ruledpenalty%
+\unexpanded\def\ruledpenalty
   {\ifvmode
      \expandafter\ruledvpenalty
    \else
@@ -1794,7 +1794,7 @@
 
 \newif\ifshowingcomposition
 
-\def\showcomposition%
+\def\showcomposition
   {\ifshowingcomposition
      \showfils
      \showboxes
@@ -1802,7 +1802,7 @@
      \showpenalties
    \fi}
 
-\def\dontshowcomposition%
+\def\dontshowcomposition
   {\ifshowingcomposition
      \dontshowfils
      \dontshowboxes
@@ -1836,8 +1836,8 @@
   \def\defaulttestrulewidth{.02\korpsgrootte}  % still dutch
 \fi
 
-\def\showmakeup%
-  {\testrulewidth=\defaulttestrulewidth
+\def\showmakeup
+  {\testrulewidth\defaulttestrulewidth
    \showingcompositiontrue
    \showcomposition}
 

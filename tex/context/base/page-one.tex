@@ -24,16 +24,22 @@
 
 \newtoks\OTRONEoutput
 
-\def\OTRONEsethsize%
+\def\OTRONEgotonextpage
+  {\ejectpage}
+
+\def\OTRONEgotonextpageX % will become obsolete 
+  {\superejectpage}
+
+\def\OTRONEsethsize
   {\global\hsize\tekstbreedte}
 
-\def\OTRONEsetvsize%
+\def\OTRONEsetvsize
   {\ifdim\vsize=\teksthoogte \else
      \bgroup
      \scratchdimen-\vsize
      \advance\scratchdimen \teksthoogte
      \global\advance\vsize \scratchdimen
-\relax
+     \relax
      \ifdim\pagegoal<\maxdimen
        \advance\scratchdimen \pagegoal
        \global\pagegoal\scratchdimen
@@ -41,35 +47,119 @@
      \egroup
    \fi}
 
-\def\OTRONEdopagecontents#1#2% \box<n> \unvbox<n> 
-  {\bgroup             % niet breedte zetten, kan fractie zijn! 
-   \setbox0=\vbox \ifbottomnotes to \teksthoogte \fi
+% \def\OTRONEdopagecontents#1#2% \box<n> \unvbox<n> 
+%   {\bgroup             % niet breedte zetten, kan fractie zijn! 
+%    \setbox0\vbox \ifbottomnotes to \teksthoogte \fi
+%      {\edef\currentpagedepth{\the\dp#2}% still to be derived from #1
+%       \dotopinsertions
+%       #1#2% 
+%       \pushcolor
+%       \ifgridsnapping
+%         \vskip-\currentpagedepth
+%         \vskip\openstrutdepth % \dp\strutbox
+%         \prevdepth\openstrutdepth % \dp\strutbox
+%         \dobotinsertions
+%         \vfil
+%       \else\ifr@ggedbottom
+%         \vskip-\currentpagedepth
+%         \vskip\openstrutdepth % \dp\strutbox
+%         \prevdepth\openstrutdepth % \dp\strutbox
+%         \dobotinsertions
+%         \vfil
+%       \else\ifb@selinebottom
+%         \kern-\currentpagedepth
+%         \kern\maxdepth
+%         \dobotinsertions
+%       \fi\fi\fi
+%       \fakefootnotes}%
+%    \ifbottomnotes
+%      \ifgridsnapping
+%        \getnoflines\teksthoogte
+%        \advance\noflines -1
+%        \scratchdimen\noflines\lineheight
+%        \advance\scratchdimen \topskip
+%      \else
+%        \scratchdimen\ht0
+%      \fi
+%    \else
+%      \scratchdimen\zeropoint
+%    \fi
+%    \setbox2\hbox
+%      {\checksinglecolumnfootnotes
+%       \lower\scratchdimen\vbox{\placebottomnotes}}%
+%    \smashbox2% % needed here 
+%    \ifbottomnotes
+%      \ht0\zeropoint
+%    \fi
+%    \vbox to \teksthoogte
+%      {\box0\box2\ifbottomnotes\else\vfill\fi}%
+%    \egroup}
+
+%\def\OTRONEregisteredtextarea#1#2#3%
+%  {\ifregistertextareas
+%     % sub optimal, unvbox is nilled here 
+%     \setbox#2\vbox{#1#2}% 
+%     \wd#2\zetbreedte % somehow a space creeps in (in unvbox'd #2)
+%     \vbox{\registeredtextarea00#2}% 
+%     #3%
+%   \else
+%     #1#2#3%
+%   \fi}
+
+\chardef\kindofpagetextareas=2 % whole page
+
+\def\OTRONEregisteredtextarea#1%
+  {\ifregistertextareas
+     \setbox0\vbox{#1}%
+     \wd0\zetbreedte % somehow a space creeps in
+     \vbox{\registeredtextarea000}%
+   \else
+     #1%
+   \fi}
+
+\let\OTRONEregisteredtextareaA\firstofoneargument
+\let\OTRONEregisteredtextareaB\firstofoneargument
+
+\def\OTRONEdopagecontents#1#2% \box<n> \unvbox<n>
+  {\bgroup             % niet breedte zetten, kan fractie zijn!
+   \ifcase\kindofpagetextareas
+   \or % partial page
+     \let\OTRONEregisteredtextareaA\OTRONEregisteredtextarea
+   \or % whole page
+     \let\OTRONEregisteredtextareaB\OTRONEregisteredtextarea
+   \fi
+   \setbox0\vbox \ifbottomnotes to \teksthoogte \fi
      {\edef\currentpagedepth{\the\dp#2}% still to be derived from #1
       \dotopinsertions
-      #1#2% 
-      \pushcolor
       \ifgridsnapping
-        \vskip-\currentpagedepth
-        \vskip\openstrutdepth % \dp\strutbox
-        \prevdepth\openstrutdepth % \dp\strutbox
+        \OTRONEregisteredtextareaA{#1#2}%
+        \vskip-\currentpagedepth\vskip\openstrutdepth
+        \pushcolor % moved from just after #1#2
+        \prevdepth\openstrutdepth
         \dobotinsertions
         \vfil
       \else\ifr@ggedbottom
-        \vskip-\currentpagedepth
-        \vskip\openstrutdepth % \dp\strutbox
-        \prevdepth\openstrutdepth % \dp\strutbox
+        \OTRONEregisteredtextareaA{#1#2}%
+        \vskip-\currentpagedepth\vskip\openstrutdepth
+        \pushcolor % moved from just after #1#2
+        \prevdepth\openstrutdepth
         \dobotinsertions
         \vfil
       \else\ifb@selinebottom
-        \kern-\currentpagedepth
-        \kern\maxdepth
+        \OTRONEregisteredtextareaA{#1#2}%
+        \kern-\currentpagedepth\kern\maxdepth
+        \pushcolor % moved from just after #1#2
         \dobotinsertions
+      \else
+        \OTRONEregisteredtextareaA{#1#2}%
+        \pushcolor % moved from just after #1#2
+        \dobotinsertions % added
       \fi\fi\fi
       \fakefootnotes}%
    \ifbottomnotes
      \ifgridsnapping
        \getnoflines\teksthoogte
-       \advance\noflines -1
+       \advance\noflines \minusone
        \scratchdimen\noflines\lineheight
        \advance\scratchdimen \topskip
      \else
@@ -78,41 +168,42 @@
    \else
      \scratchdimen\zeropoint
    \fi
-   \setbox2=\hbox
+   \setbox2\hbox
      {\checksinglecolumnfootnotes
       \lower\scratchdimen\vbox{\placebottomnotes}}%
-   \smashbox2% % needed here 
+   \smashbox2% % needed here
    \ifbottomnotes
      \ht0\zeropoint
    \fi
-   \vbox to \teksthoogte
-     {\box0\box2\ifbottomnotes\else\vfill\fi}%
+   \OTRONEregisteredtextareaB
+     {\vbox to \teksthoogte
+        {\box0\box2\ifbottomnotes\else\vfill\fi}}%
    \egroup}
 
-\def\OTRONEfinalsidefloatoutput%
+\def\OTRONEfinalsidefloatoutput
   {\finaloutput\unvbox\normalpagebox}
 
-\OTRONEoutput%
+\OTRONEoutput
   {\sidefloatoutput} 
 
 %D Insertions 
 
 \newif\iftopofinsert 
 
-\def\OTRONEdosettopinserts%
+\def\OTRONEdosettopinserts
   {\bgroup
    \ifsomefloatwaiting
-     \noffloatinserts0
+     \noffloatinserts\zerocount
      \let\totaltopinserted\!!zeropoint
      \OTRONEdodosettopinserts
-     \ifnum\@@bknonder=0
-       \ifnum\@@bknregels>0
+     \ifnum\@@bknonder=\zerocount
+       \ifnum\@@bknregels>\zerocount
          \ifdim\totaltopinserted>\zeropoint\relax
            \dimen0=\lineheight
            \dimen0=\@@bknregels\dimen0
            \advance\dimen0 \totaltopinserted\relax
            \ifdim\dimen0>\teksthoogte
-             \showmessage{\m!floatblocks}{8}{\@@bknregels}%
+             \showmessage\m!floatblocks8\@@bknregels
              \vfilll\eject
            \fi
          \fi
@@ -121,7 +212,7 @@
    \fi
    \egroup}
 
-\def\OTRONEdodosettopinserts%
+\def\OTRONEdodosettopinserts
   {\ifnum\noffloatinserts<\noftopfloats
      \dogetfloat
      \ifdim\topinserted=\zeropoint
@@ -146,7 +237,7 @@
           \flushfloatbox
           \blanko[\@@bknawit]}%
        \ifsomefloatwaiting
-         \advance\noffloatinserts 1
+         \advance\noffloatinserts \plusone
        \else
          \noffloatinserts\noftopfloats\relax
        \fi
@@ -163,15 +254,15 @@
    \fi
    \OTRONEdodosettopinserts}
 
-\def\OTRONEdosetbotinserts%
+\def\OTRONEdosetbotinserts
   {\bgroup
    \ifsomefloatwaiting
-     \noffloatinserts0
+     \noffloatinserts\zerocount
      \OTRONEdodosetbotinserts
    \fi
    \egroup}
 
-\def\OTRONEdodosetbotinserts%
+\def\OTRONEdodosetbotinserts
   {\ifnum\noffloatinserts<\nofbotfloats\relax
      \dogetfloat
      \global\advance\botinserted \ht\floatbox\relax
@@ -183,7 +274,7 @@
           \blanko[\@@bkvoorwit]%
           \flushfloatbox}%
        \ifsomefloatwaiting
-         \advance\noffloatinserts 1
+         \advance\noffloatinserts \plusone
        \else
          \noffloatinserts\nofbotfloats
        \fi
@@ -201,7 +292,7 @@
    \fi
    \OTRONEdodosetbotinserts}
 
-\def\OTRONEdosetbothinserts%
+\def\OTRONEdosetbothinserts
   {\ifflushingfloats
      \global\topinserted\zeropoint
      \global\botinserted\zeropoint 
@@ -210,7 +301,7 @@
      \global\botinserted\zeropoint \OTRONEdosetbotinserts
    \fi}
 
-\def\OTRONEdotopinsertions%
+\def\OTRONEdotopinsertions
   {\ifvoid\topins\else
      \ifgridsnapping
        %\topsnaptogrid{\box\topins}
@@ -221,10 +312,10 @@
    \fi
    \global\topinserted\zeropoint}
 
-\def\OTRONEdobotinsertions%
+\def\OTRONEdobotinsertions
   {\ifvoid\botins\else
      \ifgridsnapping
-       \snaptogrid\hbox{\box\botins}
+       \snaptogrid\hbox{\box\botins}%
      \else
        \unvbox\botins
      \fi
@@ -232,24 +323,24 @@
    \global\botinserted\zeropoint
    \global\nofloatpermittedfalse}
 
-\def\OTRONEdoflushfloats%
+\def\OTRONEdoflushfloats
   {\global\flushingfloatstrue
    \ifsomefloatwaiting
      \par
-     \ifvmode\prevdepth=\maxdimen\fi % prevents whitespace
+     \ifvmode \prevdepth\maxdimen \fi % prevents whitespace
      \OTRONEdodoflushfloats
    \fi
-   \global\savednoffloats0
+   \global\savednoffloats\zerocount
    \global\somefloatwaitingfalse
    \global\flushingfloatsfalse}
 
-\def\OTRONEflushfloatbox% nog verder doorvoeren en meer info in marge
+\def\OTRONEflushfloatbox % nog verder doorvoeren en meer info in marge
   {\ifcenterfloatbox \ifdim\wd\floatbox<\hsize
      \setbox\floatbox\hbox to \hsize{\hss\box\floatbox\hss}%
    \fi \fi
    \snaptogrid\hbox{\iftestfloatbox\ruledhbox\fi{\copy\floatbox}}}
 
-% \def\OTRONEdodoflushfloats% moet nog beter: als precies passend, niet onder baseline
+% \def\OTRONEdodoflushfloats % moet nog beter: als precies passend, niet onder baseline
 %   {\ifsomefloatwaiting
 %      \bgroup % \box\floatbox can be in use!
 %      \dogetfloat
@@ -259,7 +350,7 @@
 %      \expandafter\OTRONEdodoflushfloats
 %    \fi}
 
-\def\OTRONEdodoflushfloats% much in common with OTRSET
+\def\OTRONEdodoflushfloats % much in common with OTRSET
   {\ifsomefloatwaiting
      \ifpackflushedfloats
        \centerfloatboxfalse
@@ -311,16 +402,16 @@
      \expandafter\OTRONEdodoflushfloats
    \fi}
  
-\def\OTRONEdocheckiffloatfits% vervangen ivm downward comp
+\def\OTRONEdocheckiffloatfits % vervangen ivm downward comp
   {\ifnofloatpermitted
      \global\roomforfloatfalse
    \else
-     \dimen0=\pagetotal
+     \dimen0         \pagetotal
      \advance\dimen0 \ht\floatbox
      \advance\dimen0 \dp\floatbox
      \advance\dimen0 \floattopskip
      \advance\dimen0 -\pageshrink  % toegevoegd
-%\message{c:\the\mofcolumns,t:\the\pagetotal,g:\the\pagegoal}%\wait
+    %\message{c:\the\mofcolumns,t:\the\pagetotal,g:\the\pagegoal}%\wait
      \ifdim\dimen0>\pagegoal
        \global\roomforfloatfalse
      \else
@@ -337,23 +428,23 @@
    \doinsertfloatinfo
    \doif\@@bkspringvolgendein\v!nee\noindentation} % new 
 
-\def\OTRONEsomefixdfloat% [#1]%
+\def\OTRONEsomefixdfloat % [#1]
   {\docheckiffloatfits
    \ifroomforfloat\else
      \goodbreak
    \fi
    \showmessage\m!floatblocks9\empty
-   \someherefloat} % [#1]}%
+   \someherefloat} % [#1]
 
 \def\OTRONEsomesidefloat[#1]%  links, rechts     NOG TESTEN EN AANPASSEN
   {\ifbinnenkolommen
      \someelsefloat[\v!hier]%
    \else
     %\checkwaitingfloats{#1}%
-     \def\logsidefloat%
+     \def\logsidefloat
        {\doinsertfloatinfo}%
-     \setbox\floatbox=\vbox{\box\floatbox}%
-     \wd\floatbox=\floatwidth
+     \setbox\floatbox\vbox{\box\floatbox}%
+     \wd\floatbox\floatwidth
      \processfirstactioninset
        [#1]
        [     \v!links=>\leftfloat{\box\floatbox},
@@ -366,34 +457,33 @@
        \v!rechterrand=>\rightedgefloat{\box\floatbox},
            \v!inmarge=>{\doinmargenormal\leftmarginfloat
                         \rightmarginfloat{\box\floatbox}}]%
-     \doifinset{\v!lang}{#1}
-       {\flushsidefloatsafterpar}%
+     \doifinset\v!lang{#1}\flushsidefloatsafterpar
    \fi}
 
 \def\OTRONEsomepagefloat[#1]%  
   {%\checkwaitingfloats{#1}%
-   \global\setbox\collectedpagefloats=\vbox
+   \global\setbox\collectedpagefloats\vbox
      {\unvbox\collectedpagefloats
       \vbox to \teksthoogte
-        {\doifnotinset{\v!hoog}{#1}{\vfill}
+        {\doifnotinset\v!hoog{#1}\vfill
          \box\floatbox
-         \doifnotinset{\v!laag}{#1}{\vfill}}
+         \doifnotinset\v!laag{#1}\vfill}%
       \goodbreak}%
    \doinsertfloatinfo}
 
 \def\OTRONEsometopsfloat[#1]%
-  {\ifdim\topinserted=\!!zeropoint\relax
+  {\ifdim\topinserted=\zeropoint
      \topofinserttrue
    \else
      \topofinsertfalse
    \fi
-   \global\advance\topinserted by \ht\floatbox
-   \global\advance\topinserted by \dp\floatbox
-   \global\advance\topinserted by \floatbottomskip
+   \global\advance\topinserted \ht\floatbox
+   \global\advance\topinserted \dp\floatbox
+   \global\advance\topinserted \floatbottomskip
    \insert\topins
      {\forgetall
       \iftopofinsert
-        \kern-\lineskip\par\prevdepth=\maxdimen
+        \kern-\lineskip\par\prevdepth\maxdimen
       \else
         %\blanko[-\@@bknawit,\@@bkvoorwit]% inserts can't look back
         \betweenfloatblanko
@@ -403,14 +493,17 @@
    \doinsertfloatinfo}
 
 \def\OTRONEsomebotsfloat[#1]%
-  {\global\advance\botinserted by \ht\floatbox
-   \global\advance\botinserted by \dp\floatbox
-   \global\advance\botinserted by \floattopskip
+  {\global\advance\botinserted \ht\floatbox
+   \global\advance\botinserted \dp\floatbox
+   \global\advance\botinserted \floattopskip
    \insert\botins
      {\forgetall
       \blanko[\@@bkvoorwit]%
       \flushfloatbox}%
    %\global\nofloatpermittedtrue
    \doinsertfloatinfo}
+
+\def\OTRONEnextcolumn[#1]%
+  {}
 
 \protect \endinput 

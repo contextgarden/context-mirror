@@ -34,10 +34,10 @@
      #2]%
    \setvalue{\e!plaats#1}{\doplaats[\??pl#1]}}
 
-\def\definieerplaats%
+\def\definieerplaats
   {\dodoubleempty\dodefinieerplaats}
 
-\def\doplaats%
+\def\doplaats
   {\dodoubleempty\dodoplaats}
 
 \def\dodoplaats[#1][#2]% correctie moet mooier 
@@ -46,14 +46,14 @@
      {\setlocalhsize
       \getparameters[#1][#2]%
       \getvalue{#1\c!voor}%
-      \doifvalue{#1\c!regelcorrectie}  {\v!aan} {\startbaselinecorrection}%
-      \doifinset{\getvalue{#1\c!marge}}{\v!standaard,\v!ja}{\noindent}% 
+      \doifvalue{#1\c!regelcorrectie}\v!aan \startbaselinecorrection
+      \doifinset{\getvalue{#1\c!marge}}{\v!standaard,\v!ja}\noindent
       \hbox to \localhsize
         {\getvalue{#1\c!links}%
          \box\nextbox
          \getvalue{#1\c!rechts}}%
-      \doifvalue{#1\c!dieptecorrectie} {\v!aan} {\baselinecorrection}%
-      \doifvalue{#1\c!regelcorrectie}  {\v!aan} {\stopbaselinecorrection}%
+      \doifvalue{#1\c!dieptecorrectie}\v!aan\baselinecorrection
+      \doifvalue{#1\c!regelcorrectie }\v!aan\stopbaselinecorrection
       \getvalue{#1\c!na}%
       \egroup}
    \vbox}
