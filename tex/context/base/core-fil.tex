@@ -257,8 +257,10 @@
   {\doifnotflagged{#2}
      {\let#1\undefined
       \startreadingfile
+      \bgroup
       \cleanupfeatures % better \setnormalcatcodes / test first 
       \readfile{#2}\donothing\donothing
+      \egroup
       \stopreadingfile
       \doglobal\setflag{#2}}% 
    \ifx#1\undefined

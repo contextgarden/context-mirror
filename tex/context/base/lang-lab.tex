@@ -99,17 +99,23 @@
 \def\labellanguage{\defaultlanguage\currentmainlanguage}
 \def\headlanguage {\defaultlanguage\currentmainlanguage}
 
-\def\headtext%
+\unexpanded\def\headtext
   {\let\handletextprefix\firstoftwoarguments
    \dogetupsometextprefix\headlanguage\c!titel}
 
-\def\leftlabeltext%
+\unexpanded\def\leftlabeltext
   {\let\handletextprefix\firstoftwoarguments
    \dogetupsometextprefix\labellanguage\c!label}
 
-\def\rightlabeltext%
+\unexpanded\def\rightlabeltext
   {\let\handletextprefix\secondoftwoarguments
    \dogetupsometextprefix\labellanguage\c!label}
+
+\unexpanded\def\LEFTLABELTEXT
+  {\def\handletextprefix##1##2{\uppercase{##1}}\DOLABELTEXT}
+
+\unexpanded\def\RIGHTLABELTEXT
+  {\def\handletextprefix##1##2{\uppercase{##2}}\DOLABELTEXT}
 
 \def\DOLABELTEXT#1%
   {\bgroup
@@ -117,16 +123,11 @@
    \dogetupsometextprefix\labellanguage\c!label{#1}% not \labeltext (see \MONTH)
    \egroup}
 
-\def\LEFTLABELTEXT%
-  {\def\handletextprefix##1##2{\uppercase{##1}}\DOLABELTEXT}
-
-\def\RIGHTLABELTEXT%
-  {\def\handletextprefix##1##2{\uppercase{##2}}\DOLABELTEXT}
-
 \let\labeltext      \leftlabeltext
 \let\LABELTEXT      \LEFTLABELTEXT
-\def\labeltexts#1#2{\leftlabeltext{#1}#2\rightlabeltext{#1}}
-\def\LABELTEXTS#1#2{\LEFTLABELTEXT{#1}#2\RIGHTLABELTEXT{#1}}
+
+\unexpanded\def\labeltexts#1#2{\leftlabeltext{#1}#2\rightlabeltext{#1}}
+\unexpanded\def\LABELTEXTS#1#2{\LEFTLABELTEXT{#1}#2\RIGHTLABELTEXT{#1}}
 
 \newif\iflabeltextdone % needs to be reset elsewhere
 \newif\iftracinglabels % shows missing labels 

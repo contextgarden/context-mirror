@@ -458,7 +458,7 @@
      \prewordbreak\discretionary{\textmodediscretionary}
        {\textmodediscretionary}{\textmodediscretionary}\prewordbreak
    \else\ifx(\next
-     \ifdim\lastskip>\!!zeropoint\relax
+     \ifdim\lastskip>\zeropoint\relax
        (\prewordbreak
      \else
        \prewordbreak\discretionary{}{(-}{(}\prewordbreak
@@ -487,9 +487,9 @@
    \nextnextnext}
 
 \def\checkbeforediscretionary%
-  {\setbox0=\lastbox
-   \ifdim\wd0=\!!zeropoint
-     \let\postwordbreak=\prewordbreak
+  {\setbox0\lastbox
+   \ifdim\wd0=\zeropoint
+     \let\postwordbreak\prewordbreak
    \fi
    \box0\relax}
 
@@ -618,7 +618,7 @@
      \prewordbreak\discretionary{\textmodediscretionary}
        {\textmodediscretionary}{\textmodediscretionary}\prewordbreak
    \else\ifnum\uccode`(=\nextuccode
-     \ifdim\lastskip>\!!zeropoint\relax
+     \ifdim\lastskip>\zeropoint\relax
        (\prewordbreak
      \else
        \prewordbreak\discretionary{}{(-}{(}\prewordbreak
@@ -707,7 +707,7 @@
      \prewordbreak\discretionary{\textmodediscretionary}
        {\textmodediscretionary}{\textmodediscretionary}\prewordbreak
    \else\convertargument(\to\next\ifx\next\discretionarytoken
-     \ifdim\lastskip>\!!zeropoint\relax
+     \ifdim\lastskip>\zeropoint\relax
        (\prewordbreak
      \else
        \prewordbreak\discretionary{}{(-}{(}\prewordbreak

@@ -25,7 +25,12 @@
 
 \newevery \everyresetlanguagespecifics \relax
 
-\def\resetlanguagespecifics{\the\everyresetlanguagespecifics}
+\def\resetlanguagespecifics
+  {\ifcase\protectionlevel
+     \the\everyresetlanguagespecifics
+   \else % to be translated 
+     \writestatus{system}{don't change language in unprotected mode!}%
+   \fi}
 
 \appendtoks
   \resetlanguagespecifics
@@ -163,12 +168,21 @@
      \expanded{\doglobal\noexpand\appendtoks{#1}{\the\catcode`#1}}\to\everyresetlanguagespecifics
    \fi}
 
-\def\dodeactivatetoken#1#2#3%
-  {\def#1{#2}\catcode`#2=#3\relax}
+% \def\dodeactivatetoken#1#2#3%
+%   {\def#1{#2}\catcode`#2=#3\relax}
+
+\def\dodeactivatetoken#1#2#3% tets needed to avoid clash with \unprotect 
+  {\def#1{#2}\ifnum\catcode`#2=\@@active\catcode`#2=#3\relax\fi}
 
 %D We cannot hook this into the installer since language 
 %D specifics can be anything. So far, we have the following 
 %D potentially active characters. 
+
+%D Beware, this should happen under an unprotected regime; 
+%D thanks to Giuseppe Oblomov Bilotta, who first noticed 
+%D that something was wrong. 
+
+\protect 
 
 \deactivatelanguagespecific "
 \deactivatelanguagespecific /
@@ -176,6 +190,8 @@
 \deactivatelanguagespecific ;
 \deactivatelanguagespecific ?
 \deactivatelanguagespecific !
+
+\unprotect 
 
 %D \macros 
 %D   {ordinaldaynumber, highordinalstr, ordinalstr}    

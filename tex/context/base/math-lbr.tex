@@ -135,14 +135,12 @@
 
 \stoprawmathcollection
 
-% Should these be related to the bodyfontsize ? 
-
-\def\LBRbig  #1{{\hbox{$\left#1\vbox to  8.20\p@{}\right.\n@space$}}}
-\def\LBRBig  #1{{\hbox{$\left#1\vbox to 10.80\p@{}\right.\n@space$}}}
-\def\LBRbigg #1{{\hbox{$\left#1\vbox to 13.42\p@{}\right.\n@space$}}}
-\def\LBRBigg #1{{\hbox{$\left#1\vbox to 16.03\p@{}\right.\n@space$}}}
-\def\LBRbiggg#1{{\hbox{$\left#1\vbox to 17.72\p@{}\right.\n@space$}}}
-\def\LBRBiggg#1{{\hbox{$\left#1\vbox to 21.25\p@{}\right.\n@space$}}}
+\def\LBRbig  {\@@dobig{8.20}}
+\def\LBRBig  {\@@dobig{10.80}}
+\def\LBRbigg {\@@dobig{13.42}}
+\def\LBRBigg {\@@dobig{16.03}}
+\def\LBRbiggg{\@@dobig{17.72}}
+\def\LBRBiggg{\@@dobig{21.25}}
 
 \startrawmathcollection[lbr]
 

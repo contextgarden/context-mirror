@@ -132,4 +132,54 @@
         {\chardef\submitoutputformat=3}
         {\chardef\submitoutputformat=1}}} 
 
+%D \macros 
+%D   {escapePSstring}
+%D
+%D \starttypen 
+%D \escapePSstring(t\e\1st)))))\to\crap \crap 
+%D \stoptypen 
+
+% testcase: webschrift met lege regels en unbalanced () 
+
+\bgroup
+
+\catcode`\*=\@@escape
+\catcode`\\=\@@letter
+
+*long*gdef*escapedPSstring#1%
+  {*aftergroup*string
+   *ifnum`#1=12
+    *aftergroup*n%
+   *else*ifnum`#1=13
+    *aftergroup*n%
+   *else*if#1(%
+     *aftergroup*(%
+   *else*if#1)%
+     *aftergroup*)%
+   *else*if#1\%
+     *aftergroup*\%
+   *else
+     *aftergroup#1%
+   *fi*fi*fi*fi*fi}
+
+*egroup
+
+\long\def\escapePSstring#1\to#2%
+  {\convertargument#1\to#2%
+   \bgroup
+   \ifx#2\empty \else
+     \setverbosecscharacters
+     \aftergroup\edef
+     \aftergroup#2%
+     \aftergroup{%
+     \expandafter\handletokens#2\with\escapedPSstring
+     \aftergroup}%
+   \fi
+   \egroup}
+
+\long\def\preservePSpar#1\to#2%
+  {\bgroup
+   \def\par{\rawcharacter{12}}%
+   \expanded{\egroup\noexpand\def\noexpand#2{#1}}}
+
 \protect \endinput

@@ -399,11 +399,9 @@
 %D The current data is loaded with: 
 
 \def\getMPdata
-  {\blabelgroup
-   \startreadingfile
-   \readlocfile{\MPdatafile}{}{}%
-   \stopreadingfile
-   \elabelgroup}
+  {\startreadingfile
+   \readlocfile\MPdatafile\donothing\donothing
+   \stopreadingfile}
 
 %D When we collect graphics in one file, we run into 
 %D troubles, since \METAPOST\ has a built in limit (of 4) 
@@ -411,13 +409,11 @@
 %D better to collect all data in one file and filter it. 
 
 \def\getMPdata
-  {\blabelgroup
-   \long\def\MPdata##1##2%
+  {\long\def\MPdata##1##2%
      {\ifnum##1=\currentMPgraphic\relax##2\fi}%
    \startreadingfile
-   \readlocfile{\MPgraphicfile.mpd}{}{}%
-   \stopreadingfile
-   \elabelgroup}
+   \readlocfile{\MPgraphicfile.mpd}\donothing\donothing
+   \stopreadingfile}
 
 %D We have to enable this mechanism with: 
 
@@ -600,6 +596,7 @@
   LineHeight   := \the\baselineskip ; 
   BodyFontSize := \the\bodyfontsize ;
   %
+  TopSkip     := \the\topskip ;
   StrutHeight := \strutheight ;
   StrutDepth  := \strutdepth ;
   %

@@ -156,17 +156,17 @@
    \dorecurse\tofcolumns
      {\global\setbox\csname\@otr@:\recurselevel:\columnmaxcells\endcsname\copy\placeholderboxa}%
    \global\columnfirstcell=0
-   \global\columnlastcell=\columnfirstcell
-   \global\columnfreecells=\columnfirstcell
+   \global\columnlastcell\columnfirstcell
+   \global\columnfreecells\columnfirstcell
    \egroup}
 
 \endTEX
 
 \def\doOTRSETsetgridcells#1#2#3#4#5#6% placeholder col row wid hei {data}
-  {\!!countd=#2\advance\!!countd#4\advance\!!countd-1
-   \!!counte=#3\advance\!!counte#5\advance\!!counte-1
+  {\!!countd#2\advance\!!countd#4\advance\!!countd-1
+   \!!counte#3\advance\!!counte#5\advance\!!counte-1
    \dostepwiserecurse{#2}{\!!countd}{1}
-     {\!!countf=\recurselevel
+     {\!!countf\recurselevel
       \dostepwiserecurse{#3}{\!!counte}{1}
         {\OTRSETsetgridcell\!!countf\recurselevel#1}}%
    \dostepwiserecurse{#3}{\!!counte}{1}
@@ -180,11 +180,11 @@
   {\doOTRSETsetgridcells{\box\voidb@x}{#1}{#2}{#3}{#4}{\box\voidb@x}}
 
 \def\OTRSETsetfreecells#1#2% col start
-  {\global\columnfirstcell=\ifnum#2=0 1\else#2\fi\relax
+  {\global\columnfirstcell\ifnum#2=0 1\else#2\fi\relax
    \ifnum\columnfirstcell>\columnmaxcells
-     \global\columnfreecells=0
-     \global\columnfirstcell=1
-     \global\columnlastcell=0
+     \global\columnfreecells0
+     \global\columnfirstcell1
+     \global\columnlastcell 0
      \global\somefreecolumncellsfalse
     %\message{no cells a}%
    \else
@@ -196,7 +196,7 @@
             {\global\advance\columnfirstcell 1 }
             {\exitloop}%
         \fi}%
-     \global\columnlastcell=\columnfirstcell
+     \global\columnlastcell\columnfirstcell
      \doloop
        {\ifnum\columnlastcell>\columnmaxcells\relax
           \exitloop
@@ -206,16 +206,16 @@
             {\global\advance\columnlastcell 1 }%
         \fi}%
      \ifnum\columnfirstcell>\columnmaxcells
-       \global\columnfreecells=0
-       \global\columnfirstcell=1
-       \global\columnlastcell=0
+       \global\columnfreecells0
+       \global\columnfirstcell1
+       \global\columnlastcell 0
        \global\somefreecolumncellsfalse
       %\message{no cells b}%
      \else
        \ifnum\columnlastcell>\columnmaxcells
-         \global\columnlastcell=\columnmaxcells
+         \global\columnlastcell\columnmaxcells
        \fi
-       \global\columnfreecells=\columnlastcell
+       \global\columnfreecells\columnlastcell
        \global\advance\columnfreecells -\columnfirstcell
        \global\advance\columnfreecells 1
        \global\somefreecolumncellstrue
@@ -224,7 +224,7 @@
    \fi}
 
 \def\OTRSETgetmaxfreecells#1#2% col start
-  {\scratchcounter=0
+  {\scratchcounter0
    \edef\columnmaxfreecells{0}%
    \edef\columnfrmfreecells{0}%
    \dostepwiserecurse{#2}{\columnmaxcells}{1}
@@ -233,7 +233,7 @@
            \edef\columnmaxfreecells{\the\scratchcounter}%
            \let\columnfrmfreecells\recurselevel
          \fi
-         \scratchcounter=0 }
+         \scratchcounter0 }
         {\advance\scratchcounter 1 }}}
 
 \long\def\OTRSETrecurseRL#1%
@@ -249,18 +249,19 @@
  
 \def\OTRSETdomakegridbox#1#2#3%
   {\hbox\bgroup
-% 
-\ifbalancecolumns     
-  \ifnum\realpageno=\balancingpageno\relax
-    \!!heighta \localcolumnmaxcells\lineheight 
-\xdef\localcolumnmaxcells{0}%
-  \else
-    \!!heighta \teksthoogte
-  \fi
-\else
-  \!!heighta \teksthoogte
-\fi
-%
+   % 
+\forgetall % can go once in flush 
+   \ifbalancecolumns     
+     \ifnum\realpageno=\balancingpageno\relax
+       \!!heighta \localcolumnmaxcells\lineheight 
+       \xdef\localcolumnmaxcells{0}%
+     \else
+       \!!heighta \teksthoogte
+     \fi
+   \else
+     \!!heighta \teksthoogte
+   \fi
+   %
    % test first ! 
    \hbox to \zetbreedte
      {\dostepwiserecurse{#1}{#2}{#3}
@@ -270,10 +271,14 @@
            [\??mc\OTRSETidentifier\number\mofcolumns]%
            [\c!breedte=\localcolumnwidth,\c!hoogte=\!!heighta]%  \teksthoogte]%
            {}%
+\wd\scratchbox\localcolumnwidth
+\ht\scratchbox\!!heighta
          \ifcase\columndirection
-           \hskip\OTRSETgetparameter\c!afstand\recurselevel\box\scratchbox
+           \hskip\OTRSETgetparameter\c!afstand\recurselevel
+           \box\scratchbox
          \else
-           \box\scratchbox\hskip\OTRSETgetparameter\c!afstand\recurselevel
+           \box\scratchbox
+           \hskip\OTRSETgetparameter\c!afstand\recurselevel
          \fi}}%
    \hskip-\zetbreedte
    % main text 
@@ -303,6 +308,26 @@
          \fi}}%
    \egroup}
 
+\ifx\registerMPtextarea\undefined
+  \let\registerMPtextarea\firstofoneargument
+\fi 
+
+\def\OTRSETregistergridbox#1#2%
+  {\bgroup
+   \setbox\nextbox\null
+   \wd\nextbox\wd#2%
+   \ht\nextbox\ht#2%
+   \dp\nextbox\dp#2%
+   \setbox\nextbox\hbox{\lower\dp\strutbox\box\nextbox}%
+   \ifnum#1=1
+     \setbox\nextbox\hbox{\raise\topskip\hbox{\lower\ht\strutbox\box\nextbox}}%
+     \dp\nextbox\dp\strutbox
+   \fi
+   \setbox\nextbox\hbox{\registerMPtextarea{\box\nextbox}}%
+   \smashbox\nextbox
+   \box\nextbox\box#2%
+   \egroup}
+
 \def\OTRSETreducegridbox%
   {\ifnum\localcolumnmaxcells>0
      \let\columnmaxcells\localcolumnmaxcells
@@ -310,10 +335,10 @@
 
 \def\OTRSETflushfinalfootnotes
   {\ifcase\lastcolumnlastcell \else
-     \setbox\scratchbox=\hbox
+     \setbox\scratchbox\hbox
        {\placebottomnotes}%
      \ifdim\ht\scratchbox>\zeropoint
-       \setbox\scratchbox=\hbox
+       \setbox\scratchbox\hbox
          {\hbox to \zeropoint{\OTRSETgetgridcell\nofcolumns\lastcolumnlastcell}%
           \box\scratchbox}%
        \ht\scratchbox\ht\strutbox
@@ -336,7 +361,7 @@
 
 \def\OTRSETdoflush
   {\ifcollectingcontent
-     \global\mofcolumns=1
+     \global\mofcolumns1
    \else
      \OTRSETdofinalflush 
      \OTRSETdofinaloutput
@@ -363,10 +388,10 @@
    \OTRSETcentergridcells
    \bgroup % we want to keep the reduction local  
      \OTRSETreducegridbox
-     \global\setbox\OTRfinalpagebox=\OTRSETmakegridbox
+     \global\setbox\OTRfinalpagebox\OTRSETmakegridbox
    \egroup % otherwise we get the wrong number of free cells 
   %\gdef\localcolumnmaxcells{0}% here ? 
-   \global\mofcolumns=\nofcolumns} % otherwise problems in finaloutput
+   \global\mofcolumns\nofcolumns} % otherwise problems in finaloutput
 
 \def\OTRSETdofinaloutput
   {\ifdim\ht\OTRfinalpagebox=\teksthoogte
@@ -378,7 +403,7 @@
 \appendtoks \OTRSETflushbalancinglist \to \everystoptext
 
 \def\OTRSETflushbalancinglist%
-  {\scratchcounter=0
+  {\scratchcounter0
    \def\docommando##1%
      {\advance\scratchcounter 1
       \immediatewriteutilitycommand
@@ -440,7 +465,7 @@
      \egroup
    \fi
    \page\relax % hack. \page should be page 
-   \OTRSETsethsize}
+}%    \OTRSETsethsize} % no, can be mid smaller (like tabulate) 
 
 \newtoks\OTRSETeverystartofcolumn
 
@@ -500,11 +525,12 @@
 
 \def\OTRSEThandleflushedtext#1%
   {\getnoflines{\ht\scratchbox}%
-   \wd\scratchbox=\hsize
+   \wd\scratchbox=\tekstbreedte % geen \hsize kan < zijn in bv split tabulate 
    \doOTRSETsetgridcells
      {\copy\placeholderboxf}
      {\mofcolumns}{\columnfirstcell}{1}{\noflines}
-     {\copy\scratchbox}% \box 
+    %{\copy\scratchbox}% \box 
+     {\hbox{\OTRSETregistergridbox\columnfirstcell\scratchbox}}%  
    \global\columnlastcell=\columnfirstcell
    \global\advance\columnlastcell \noflines
 \global\lastcolumnlastcell\columnlastcell
@@ -515,7 +541,7 @@
 \fi
    \OTRSETfindnextgap
   %\message{\the\mofcolumns,\the\columnfirstcell,\the\columnfreecells}\wait
-   \OTRSETsethsize
+%   \OTRSETsethsize % no, can be mid smaller (like tabulate) 
    \OTRSETsetvsize}
 
 \def\OTRSETfindnextgap%
@@ -1163,6 +1189,7 @@
      \OTRSETgotonextpage
      \OTRSETgetmanualbalance % here 
      \OTRSETassignwidths
+     \OTRSETsethsize
    \else
      \bgroup
    \fi}
@@ -1638,7 +1665,7 @@
   \advance\!!heighta \topskip
 \fi
    \advance\!!heighta -\lineheight % option 
-   \setbox\scratchbox\ruledvbox
+   \setbox\scratchbox\vbox
      {\donetrue\localframed
         [\??mt#1#2]
         [\c!breedte=\!!widtha,\c!hoogte=\!!heighta]
@@ -1765,8 +1792,9 @@
    \ifnum\!!countc>\!!countd \!!countc\!!countd \fi
    \setcolumnsetspanhsize\mofcolumns\!!countc % a/b used
    \hsize\columnsetspanhsize
-   \setupframedtexts[cs:#1][\c!breedte=\columnsetspanhsize,#2]
-   \setbox\scratchbox\hbox \bgroup 
+   \setupframedtexts[cs:#1][\c!breedte=\columnsetspanhsize,
+\c!regelcorrectie=\v!uit,\c!dieptecorrectie=\v!uit,#2]
+\setbox\scratchbox\vbox\bgroup
    \dostartframedtext[cs:#1][\v!geen]
    \vskip-\lineheight\par\strut\par
    \framedtextparameter{cs:#1}\c!voor
@@ -1776,8 +1804,10 @@
   {\par
    \kern-\lineheight\prevdepth\dp\strutbox\strut
    \framedtextparameter{cs:#1}\c!na
-   \kern\zeropoint 
-   \dostopframedtext \egroup
+   \kern\zeropoint % needed ? 
+   \dostopframedtext 
+\vskip-\strutdepth % awful hack 
+   \egroup
    \chardef\columnslotspacing0 % ! ! !
    \OTRSETstoreincolumnslotHERE\scratchbox
    \egroup}

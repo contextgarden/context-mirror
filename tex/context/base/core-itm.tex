@@ -84,7 +84,7 @@
 \def\@@localitemsymbol  #1{\??op\currentitemgroup\c!symbool\s!local #1}
 \def\@@currentitemsymbol#1{\??op\currentitemgroup\c!symbool         #1}
 
-\def\@@itemcounter {\s!itemcount} % {\s!itemcount\currentitemgroup}
+\def\@@itemcounter{\s!itemcount\currentitemgroup}
 
 \def\doitembreak#1{\iftextitems\else\dosomebreak#1\fi}
 
@@ -632,7 +632,7 @@
        \fi
      \else % 2 en hoger
        \ifparagraphitems \else
-         \let\previtemlevel=\itemlevel
+         \let\previtemlevel\itemlevel
          \decrement\previtemlevel
          \getitemparameter\previtemlevel\c!tussen % = itemlevel-1
        \fi
@@ -713,7 +713,9 @@
    \c!breedte=1.5em,
    \c!factor=0,
    \c!afstand=.5em,
-   \c!uitlijnen=\v!normaal,
+  %\c!uitlijnen=\v!normaal, % definitely not \v!normaal, see mails and
+   \c!uitlijnen=, % debug reports of David A & Patrick G on context list 
+   \c!kleur=,      
    \c!inspringen=, % untouched if empty
    \c!kleur=,
    \c!letter=, % kan tzt weg

@@ -32,11 +32,8 @@
 %D
 %D \showsetup{\y!numbers}
 
-\def\numbers#1%
-  {\number#1}
-
-\def\Numbers#1%
-  {\number#1}
+\def\numbers#1{\number#1}
+\def\Numbers#1{\number#1}
 
 %D \macros
 %D   {romannumerals,Romannumerals}
@@ -133,16 +130,16 @@
 \def\doconvertcharacters#1#2%
   {\ifnum#2>26
      \bgroup
-     \!!counta=#2
-     \ifnum\!!counta>0
-       \advance\!!counta by -1
-       \!!countb=\!!counta
-       \divide\!!counta by 26
-       \!!countc=\!!counta
-       \multiply\!!countc by 26
-       \advance\!!countb by -\!!countc
+     \!!counta#2
+     \ifnum\!!counta>\zerocount
+       \advance\!!counta \minusone
+       \!!countb\!!counta
+       \divide\!!counta 26
+       \!!countc\!!counta
+       \multiply\!!countc 26
+       \advance\!!countb -\!!countc
        \doconvertcharacters#1{\!!counta}%
-       \advance\!!countb by 1
+       \advance\!!countb \plusone
        #1{\the\!!countb}%
      \fi
      \egroup
@@ -150,11 +147,8 @@
      #1{#2}% pure expansion, used in references
    \fi}
 
-\def\characters%
-  {\doconvertcharacters\character}
-
-\def\Characters%
-  {\doconvertcharacters\Character}
+\def\characters{\doconvertcharacters\character}
+\def\Characters{\doconvertcharacters\Character}
 
 %D \macros
 %D   {greeknumerals,Greeknumerals}
@@ -191,7 +185,7 @@
   {{\os\number#1}}
 
 \unexpanded\def\oldstyleromannumerals#1%
-  {{\leftrulefalse\rightrulefalse\ss\txx\boxrulewidth=.15ex
+  {{\leftrulefalse\rightrulefalse\ss\txx\boxrulewidth.15ex
     \ruledhbox spread .15em{\hss\uppercased{\romannumerals{#1}}\hss}}}
 
 %D \macros
@@ -201,7 +195,7 @@
 %D passed to \type{\write} en \type{\message}. That's why we
 %D introduce:
 
-\def\protectconversion%
+\def\protectconversion
   {\def\doconvertcharacters##1{##1}} % was \relax
  %{\def\doconvertcharacters##1{\ifcase0##1 0\else##1\fi}} more save
 
@@ -249,7 +243,7 @@
   {\doconvertmonth}
 
 \def\MONTH#1%
-  {{\let\labeltext=\LABELTEXT\month{#1}}}
+  {{\let\labeltext\LABELTEXT\month{#1}}}
 
 %D We never explicitly needed this, but Tobias Burnus pointed
 %D out that it would be handy to convert to the day of the
@@ -286,9 +280,9 @@
 
 \def\getdayoftheweek#1#2#3%
   {\bgroup
-   \!!counta=#3\relax 
+   \!!counta#3\relax 
    \advance\!!counta -1
-   \!!countb=\!!counta 
+   \!!countb\!!counta 
    \multiply\!!countb 365
    \advance\!!countb \ifcase#2\relax
      0 \or  0 \or 31 \or 59 \or 90 \or120 \or151 \or
@@ -297,16 +291,20 @@
    \ifnum#2>2
      \doifleapyearelse{#3}{\advance\!!countb 1}{}\relax
    \fi
-   \!!countc=\!!counta 
-   \DoDiv\!!countc by4to\!!countc
+   \!!countc\!!counta 
+%  \DoDiv\!!countc by4to\!!countc
+   \dosetdivision\!!countc4\!!countc
    \advance\!!countb \!!countc
-   \!!countc=\!!counta 
-   \DoDiv\!!countc by100to\!!countc
+   \!!countc\!!counta 
+%  \DoDiv\!!countc by100to\!!countc
+   \dosetdivision\!!countc{100}\!!countc
    \advance\!!countb -\!!countc
-   \!!countc=\!!counta 
-   \DoDiv\!!countc by400to\!!countc
+   \!!countc\!!counta 
+%  \DoDiv\!!countc by400to\!!countc
+   \dosetdivision\!!countc{400}\!!countc
    \advance\!!countb \!!countc
-   \DoMod\!!countb by7to\!!countb
+%  \DoMod\!!countb by7to\!!countb
+   \dosetmodulo\!!countb7\!!countb
    \advance\!!countb 1 
    \@EA\egroup\@EA\normalweekday\the\!!countb\relax}
 
@@ -352,7 +350,7 @@
   {\doconvertday}
 
 \def\WEEKDAY#1%
-  {{\let\labeltext=\LABELTEXT\doconvertday{#1}}}
+  {{\let\labeltext\LABELTEXT\doconvertday{#1}}}
 
 %D \macros
 %D   {weekoftheday}
@@ -384,23 +382,25 @@
 %D The number of days is available in the macro \type
 %D {\numberofdays}.
 
-\def\doifleapyearelse#1#2#3%
+\def\doifleapyearelse#1% #2#3%
   {\bgroup
    \!!doneafalse
-   \!!counta=#1%
-   \DoMod\!!counta by4to\!!countb
-   \ifnum\!!countb=0
-     \DoMod\!!counta by100to\!!countb
-     \ifnum\!!countb=0 \else \!!doneatrue \fi
-     \DoMod\!!counta by400to\!!countb
-     \ifnum\!!countb=0 \!!doneatrue \fi
+   \!!counta#1%
+%  \DoMod\!!counta by4to\!!countb
+   \dosetmodulo\!!counta4\!!countb
+   \ifcase\!!countb
+%    \DoMod\!!counta by100to\!!countb
+     \dosetmodulo\!!counta{100}\!!countb
+     \ifcase\!!countb \else \!!doneatrue \fi
+%    \DoMod\!!counta by400to\!!countb
+     \dosetmodulo\!!counta{400}\!!countb
+     \ifcase\!!countb \!!doneatrue \fi
    \fi
    \if!!donea
-     \egroup\def\next{#2}%
+     \egroup\@EA\firstoftwoarguments  % \def\next{#2}%
    \else
-     \egroup\def\next{#3}%
-   \fi
-   \next}
+     \egroup\@EA\secondoftwoarguments % \def\next{#3}%
+   \fi}                               % \next}
 
 \def\getdayspermonth#1#2%
   {\doifleapyearelse{#1}
@@ -511,6 +511,41 @@
 %    \fi
 %    \egroup}
 
+% \def\complexcurrentdate[#1]%
+%   {\bgroup
+%    \let\labellanguage\currentlanguage
+%    \def\betweendates{\let\betweendates\dobetweendates}%
+%    \lowercase{\edef\!!stringa{#1}}% permits usage in \kap 
+%    \@EA\processallactionsinset\@EA
+%      [\!!stringa]
+%      [    \v!dag=>\betweendates\the\normalday,
+%          \v!dag+=>\betweendates\ordinaldaynumber\normalday,
+%         \v!maand=>\betweendates\month\normalmonth,
+%          \v!jaar=>\betweendates\the\normalyear,
+%        \v!spatie=>\unskip\ \hskip\datesignal,% optimization -) 
+%               \ =>\unskip\ \hskip\datesignal,% optimization -) 
+%                d=>\the\normalday,
+%               d+=>\ordinaldaynumber\normalday,
+%                m=>\the\normalmonth,
+%                j=>\the\normalyear,
+%                y=>\the\normalyear,
+%                w=>\betweendates\dayoftheweek\normalday\normalmonth\normalyear,
+%               dd=>\ifnum\normalday  >9 \else0\fi\the\normalday,
+%              dd+=>\ordinaldaynumber{\ifnum\normalday  >9 \else0\fi\the\normalday},
+%               mm=>\ifnum\normalmonth>9 \else0\fi\the\normalmonth,
+%               jj=>\expandafter\gobbletwoarguments\the\normalyear,
+%               yy=>\expandafter\gobbletwoarguments\the\normalyear,
+%       \v!weekdag=>\betweendates\dayoftheweek\normalday\normalmonth\normalyear,
+%       \v!kenmerk=>\expanded{\complexcurrentdate[\kenmerkdatumpatroon]},
+%       \s!unknown=>\unskip
+%                   \commalistelement
+%                   \hskip\datesignal
+%                   \def\betweendates{\let\betweendates\dobetweendates}]%
+%    \ifdim\lastskip=\datesignal\relax
+%      \unskip
+%    \fi
+%    \egroup}
+
 \def\complexcurrentdate[#1]%
   {\bgroup
    \let\labellanguage\currentlanguage
@@ -519,19 +554,22 @@
    \@EA\processallactionsinset\@EA
      [\!!stringa]
      [    \v!dag=>\betweendates\the\normalday,
-         \v!dag+=>\betweendates\ordinaldaynumber\normalday,
+        %\v!dag+=>\betweendates\ordinaldaynumber\normalday,
+         \v!dag+=>\betweendates\convertnumber{\v!day+}\normalday,
         \v!maand=>\betweendates\month\normalmonth,
          \v!jaar=>\betweendates\the\normalyear,
        \v!spatie=>\unskip\ \hskip\datesignal,% optimization -) 
               \ =>\unskip\ \hskip\datesignal,% optimization -) 
-               d=>\the\normalday,
-              d+=>\ordinaldaynumber\normalday,
-               m=>\the\normalmonth,
-               j=>\the\normalyear,
-               y=>\the\normalyear,
+               d=>\convertnumber\v!dag\normalday,
+             %d+=>\ordinaldaynumber\normalday,
+              d+=>\convertnumber{\v!day+}\normalday,
+               m=>\convertnumber\v!maand\normalmonth,
+               j=>\convertnumber\v!jaar\normalyear,
+               y=>\convertnumber\v!jaar\normalyear,
                w=>\betweendates\dayoftheweek\normalday\normalmonth\normalyear,
               dd=>\ifnum\normalday  >9 \else0\fi\the\normalday,
-             dd+=>\ordinaldaynumber{\ifnum\normalday  >9 \else0\fi\the\normalday},
+            %dd+=>\ordinaldaynumber{\ifnum\normalday  >9 \else0\fi\the\normalday},
+             dd+=>\convertnumber{\v!day+}{\ifnum\normalday  >9 \else0\fi\the\normalday},
               mm=>\ifnum\normalmonth>9 \else0\fi\the\normalmonth,
               jj=>\expandafter\gobbletwoarguments\the\normalyear,
               yy=>\expandafter\gobbletwoarguments\the\normalyear,
@@ -555,9 +593,9 @@
   {\bgroup
    \iffirstargument
      \getparameters[\??da][d=\normalday,m=\normalmonth,y=\normalyear,#1]%
-     \normalday  =\@@dad\relax
-     \normalmonth=\@@dam\relax
-     \normalyear =\@@day\relax
+     \normalday  \@@dad\relax
+     \normalmonth\@@dam\relax
+     \normalyear \@@day\relax
      \ifsecondargument
        \currentdate[#2]%
      \else
@@ -579,8 +617,10 @@
 %D keys \type {h}, \type {m} and a separator.  
 
 \def\calculatecurrenttime
-  {\DoDiv\time by60to\scratchcounter\edef\currenthour  {\the\scratchcounter}%
-   \DoMod\time by60to\scratchcounter\edef\currentminute{\the\scratchcounter}}
+% {\DoDiv\time by60to\scratchcounter\edef\currenthour  {\the\scratchcounter}%
+%  \DoMod\time by60to\scratchcounter\edef\currentminute{\the\scratchcounter}}
+  {\dosetdivision\time{60}\scratchcounter\edef\currenthour  {\the\scratchcounter}%
+   \dosetmodulo  \time{60}\scratchcounter\edef\currentminute{\the\scratchcounter}}
 
 \appendtoks \calculatecurrenttime \to \everyjob
 
@@ -610,10 +650,10 @@
 \long\def\processmonth#1#2#3% year month command
   {\bgroup
    \getdayspermonth{#1}{#2}%
-   \dostepwiserecurse{1}{\numberofdays}{1}
-     {\normalyear =#1\relax
-      \normalmonth=#2\relax
-      \normalday  =\recurselevel\relax
+   \dostepwiserecurse1\numberofdays1%
+     {\normalyear #1\relax
+      \normalmonth#2\relax
+      \normalday  \recurselevel\relax
       #3}%
    \egroup}
 
@@ -621,10 +661,10 @@
 
 \long\def\processyear#1#2#3#4% year command before after
   {\bgroup
-   \dorecurse{\lastmonth}
-     {\normalyear =#1\relax
-      \normalmonth=\recurselevel\relax
-      #3\processmonth{\normalyear}{\normalmonth}{#2}#4}%
+   \dorecurse\lastmonth
+     {\normalyear #1\relax
+      \normalmonth\recurselevel\relax
+      #3\processmonth\normalyear\normalmonth{#2}#4}%
    \egroup}
 
 %D \macros
@@ -644,29 +684,121 @@
 %D \defineconversion [roman] [\romannumerals]
 %D \defineconversion [set 1] [$\star$,$\bullet$,$\ast$]
 %D \stoptypen
+%D
+%D You can define a language dependent conversion with: 
+%D
+%D \starttypen
+%D \defineconversion [en] [whatever] [\something]
+%D \stoptypen
 
-\def\dodefineconversion[#1][#2]%
-  {\ConvertConstantAfter\doifinstringelse{,}{#2}
-     {\scratchcounter=0
+% \def\dodefineconversion[#1][#2]%
+%   {\ConvertConstantAfter\doifinstringelse{,}{#2}
+%      {\scratchcounter=0
+%       \def\docommando##1%
+%         {\advance\scratchcounter 1
+%          \setvalue{\??cv#1\the\scratchcounter}{##1}}%
+%       \processcommalist[#2]\docommando
+%       \setvalue{\??cv#1}##1{\csname\??cv#1##1\endcsname}}
+%      {\setvalue{\??cv#1}{#2}}}
+% 
+% \def\defineconversion%
+%   {\dodoubleargument\dodefineconversion}
+
+\def\defineconversion
+  {\dotripleempty\dodefineconversion}
+
+\def\dodefineconversion[#1][#2][#3]%
+  {\ifthirdargument
+     \dododefineconversion[#1][#2][#3]%
+   \else
+     \dododefineconversion[][#1][#2]%
+   \fi}
+
+\def\dododefineconversion[#1][#2][#3]%
+  {\ConvertConstantAfter\doifinstringelse{,}{#3}
+     {\scratchcounter\zerocount
       \def\docommando##1%
-        {\advance\scratchcounter by 1
-         \setvalue{\??cv#1\the\scratchcounter}{##1}}%
-      \processcommalist[#2]\docommando
-      \setvalue{\??cv#1}##1{\csname\??cv#1##1\endcsname}}
-     {\setvalue{\??cv#1}{#2}}}
+        {\advance\scratchcounter \plusone
+         \setvalue{\??cv#1#2\the\scratchcounter}{##1}}%
+      \processcommalist[#3]\docommando
+      \setvalue{\??cv#1#2}##1{\csname\??cv#1#2##1\endcsname}}
+     {\setvalue{\??cv#1#2}{#3}}}
 
-\def\defineconversion%
-  {\dodoubleargument\dodefineconversion}
+% \def\convertnumber#1%
+%   {\csname\??cv#1\endcsname}
+
+% \def\convertnumber#1%
+%   {\csname\??cv
+%      \ifundefined{\??cv\currentlanguage#1}\else\currentlanguage\fi
+%    #1\endcsname}
+
+% \def\doifconversiondefinedelse#1%
+%   {\ifundefined{\??cv#1}%
+%      \@EA\secondoftwoarguments
+%    \else
+%      \@EA\firstoftwoarguments
+%    \fi}
+
+% \def\doifconversiondefinedelse#1%
+%   {\ifundefined{\??cv\ifundefined{\??cv\currentlanguage:#1}\else\currentlanguage\fi#1}%
+%      \@EA\secondoftwoarguments
+%    \else
+%      \@EA\firstoftwoarguments
+%    \fi}
+ 
+\beginETEX \ifcsname
 
 \def\convertnumber#1%
-  {\csname\??cv#1\endcsname}
+  {\csname\??cv
+     \ifcsname\??cv\currentlanguage#1\endcsname
+       \currentlanguage#1%
+     \else\ifcsname\??cv#1\endcsname
+       #1%
+     \else
+       \s!default
+     \fi\fi
+   \endcsname}
 
 \def\doifconversiondefinedelse#1%
-  {\ifundefined{\??cv#1}%
-     \@EA\secondoftwoarguments
+  {\ifcsname\??cv\currentlanguage#1\endcsname
+     \@EA\firstoftwoarguments
+   \else\ifcsname\??cv#1\endcsname
+     \@EAEAEA\firstoftwoarguments
+   \else
+     \@EAEAEA\secondoftwoarguments
+   \fi\fi}
+ 
+\endETEX
+
+\beginTEX
+
+\def\convertnumber#1%
+  {\csname\??cv
+     \@EA\ifx\csname\??cv\currentlanguage#1\endcsname\relax
+       \@EA\ifx\ifcsname\??cv#1\endcsname\relax
+         \s!default
+       \else
+         #1%
+       \fi
+     \else
+       \currentlanguage#1%
+     \fi
+   \endcsname}
+
+\def\doifconversiondefinedelse#1%
+  {\@EA\ifx\csname\??cv\currentlanguage#1\endcsname\relax
+     \@EA\ifx\ifcsname\??cv#1\endcsname\relax
+       \@EAEAEA\secondoftwoarguments
+     \else
+       \@EAEAEA\firstoftwoarguments
+     \fi
    \else
      \@EA\firstoftwoarguments
    \fi}
+
+\endTEX
+
+\defineconversion [\s!default] [\number]
 
 %D As longs as symbols are linked to levels or numbers, we can
 %D also use the conversion mechanism, but in for instance the

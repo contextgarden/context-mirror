@@ -533,11 +533,18 @@
 
 \ifx\\\undefined \let\\\relax \fi
 
+%D This changing catcodes is a direct result from the fact 
+%D that we support some long standing conventions with 
+%D regards to active characters (german ", polish /, 
+%D french : and ;).
+
 \def\startreadingfile% beter een every 
   {\doglobal\increment\readingfilelevel
    \setxvalue{\string\readingfilelevel::\readingfilelevel}%
      {\catcode`/ =\the\catcode`/%
       \catcode`" =\the\catcode`"%
+\catcode`: =\the\catcode`:%
+\catcode`; =\the\catcode`;%
       \catcode`< =\the\catcode`<%
       \catcode`> =\the\catcode`>%
       \catcode`\noexpand\\=\the\catcode`\\%
@@ -546,6 +553,8 @@
       \catcode`\noexpand\%=\the\catcode`\%}%
    \catcode`/ =\@@other
    \catcode`" =\@@other
+\catcode`: =\@@other
+\catcode`; =\@@other
    \catcode`< =\@@other
    \catcode`> =\@@other
    \catcode`\\=\@@escape

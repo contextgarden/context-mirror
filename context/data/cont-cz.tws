@@ -331,7 +331,7 @@ stopsetup
 
 startsetup
 com:opissoubor:
-typ:arg/arg/:
+typ:val/arg/:
 val:*jmeno::
 val:*soubor::
 stopsetup

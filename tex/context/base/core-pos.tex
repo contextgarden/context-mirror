@@ -15,6 +15,8 @@
 
 % todo: topskip als optie voor eerste regel achtergrond 
 
+% todo: build pos layers on top of layers 
+
 %D Although \TEX\ has a rather powerful channel to the outside
 %D world, called \type {\special}, real communication with
 %D other programs is complicated by the fact that no positional
@@ -328,7 +330,7 @@
 %D position as well as execute an action associated with that
 %D position.
 
-\def\initializenextposition%
+\def\initializenextposition
   {\ifpositioning \else
      \global\positioningtrue
      \dosetpositionpapersize
@@ -487,23 +489,64 @@
   {\removelastspace
    \setpositionplus{e:#1}{\parposcounter}\hbox{\strut}}
 
+%\def\ffpos#1%
+%  {\setpositionbox{b:#1}\hbox{\strut}\wpos{#1}%
+%   \ignorespaces}
+%
+%\def\ttpos#1%
+%  {\removelastspace
+%   \setpositionbox{e:#1}\hbox{\strut}}
+
 \def\ffpos#1%
-  {\setpositionbox{b:#1}\hbox{\strut}\wpos{#1}%
+  {\setpositionplus{b:#1}{\parposcounter}\hbox{\strut}\wpos{#1}%
    \ignorespaces}
 
 \def\ttpos#1%
   {\removelastspace
-   \setpositionbox{e:#1}\hbox{\strut}}
+   \setpositionplus{e:#1}{\parposcounter}\hbox{\strut}}
+
+%\def\wpos#1%
+%  {\dontleavehmode\vadjust % may disappear if buried
+%     {\setbox0=\hbox{\raise\dp\strutbox\hbox{\hpos{w:#1}
+%       {\strut
+%        \hskip-\leftskip
+%        \hskip\hsize
+%        \hskip-\rightskip}}}%
+%      \smashbox0
+%      \rlap{\box0}}}
 
 \def\wpos#1%
   {\dontleavehmode\vadjust % may disappear if buried
-     {\setbox0=\hbox{\raise\dp\strutbox\hbox{\hpos{w:#1}
-        {\strut
-         \hskip-\leftskip
-         \hskip\hsize
-         \hskip-\rightskip}}}%
+     {\setbox0\hbox{\raise\dp\strutbox\hbox{\rawwpos{#1}}}%
       \smashbox0
       \rlap{\box0}}}
+
+\def\wwpos#1%
+  {\rlap
+     {\setbox0\hbox{\rawwpos{#1}}%
+      \smashbox0
+      \box0}}
+
+\def\rawwpos#1%
+  {\hpos{w:#1}
+     {\strut
+      \hskip-\leftskip
+      \hskip\hsize
+      \hskip-\rightskip}}
+
+% the next macro disables par positions (in inner boxes) and
+% only registers the width 
+
+\def\setinnerparpositions
+  {\let\fpos\ffpos
+   \let\tpos\ttpos 
+   \let\wpos\wwpos}
+
+% example of usage: (see for application "techniek")
+%
+% \appendtoks 
+%   \setinnerparpositions
+% \to \everytabulate
 
 %D When we want to calculate more complex backgrounds, we
 %D need to know what the current indentation scheme is. At
@@ -772,7 +815,8 @@
 \def\positionoverlay#1%
   {\ifpositioning
      \vbox to \overlayheight
-       {\edef\MPanchor##1{\MPpos{#1::\MPanchoridentifier:\realfolio}}%
+       {\edef\MPanchorid{#1::\MPanchoridentifier:\realfolio}%
+        \edef\MPanchor##1{\MPpos{\MPanchorid}}%
         \the\everyinsertpositionaction
         \copyposition{#1::\MPanchoridentifier}{#1::\MPanchoridentifier:\realfolio}%
         \hpos
@@ -932,7 +976,7 @@
 
 %D Graphics that span two positions.
 
-\def\setMPpositiongraphicrange%
+\def\setMPpositiongraphicrange
   {\doquadruplegroupempty\dosetMPpositiongraphicrange}
 
 \def\dosetMPpositiongraphicrange#1#2#3#4% bpos epos tag vars
@@ -982,7 +1026,8 @@
 \to \MPinitializations
 
 %D Some of these macros are pretty clever but too complicated
-%D to be nice.
+%D to be nice. When things are kind of stable I'll clean up 
+%D this mess.
 
 %D THIS NEEDS A CLEANUP
 
@@ -1072,8 +1117,8 @@
 %        initialize_par(\MPpos{b:\MPvar{self}},
 %                       \MPpos{e:\MPvar{self}},
 %                       \MPpos{text:\realfolio},
-%                       \MPpos{p:\parcounter},
-%                       \MPvv {p:\parcounter}{0,0,0,0,0,0}) ;
+%                       \MPpos{p:\MPparcounter},
+%                       \MPvv {p:\MPparcounter}{0,0,0,0,0,0}) ;
 %        \includeMPgraphic{mpos:par:setup} ;
 %        \includeMPgraphic{\MPvar{mp}} ; % \includeMPgraphic{mpos:par:shape} ;
 %        anchor_par(\MPanchor{b:\MPvar{self}}) ;
@@ -1083,30 +1128,19 @@
 
 %D Less readable but shorter.
 
-\ifx\parcounter\undefined \newcounter\parcounter \fi
+\ifx\MPparcounter\undefined \newcounter\MPparcounter \fi
 
-\def\MPself   {\MPvar{self}}
-\def\MPbself  {b:\MPself}
-\def\MPeself  {e:\MPself}
-\def\MPwself  {w:\MPself}
-\def\paranchor{p:\parcounter}
+\def\MPself     {\MPvar{self}}
+\def\MPbself    {b:\MPself}
+\def\MPeself    {e:\MPself}
+\def\MPwself    {w:\MPself}
+\def\MPparanchor{p:\MPparcounter}
 
-% \startMPpositionmethod{mpos:par}
-%   \edef\parcounter{\MPv\MPbself{1}{0}}%
-%   \startMPpositiongraphic{mpos:par}%
-%       {fillcolor,filloffset,linecolor,gridcolor,linewidth,gridwidth,lineradius}
-%     initialize_par(\MPpos\MPbself, \MPpos\MPeself,
-%                    \MPpos\textanchor, \MPpos\paranchor,
-%                    \MPvv\paranchor{0,0,0,0,0,0}) ;
-%     \includeMPgraphic{mpos:par:setup} ;
-%     \includeMPgraphic{\MPvar{mp}} ; % \includeMPgraphic{mpos:par:shape} ;
-%     anchor_par(\MPanchor\MPbself) ;
-%   \stopMPpositiongraphic
-%   \MPpositiongraphic{mpos:par}{}%
-% \stopMPpositionmethod
+\def\MPl#1{\MPplus{#1}20}
+\def\MPr#1{\MPplus{#1}30}
 
 \startMPpositionmethod{mpos:par}
-  \edef\parcounter{\MPv\MPbself{1}{0}}%
+  \edef\MPparcounter{\MPv\MPbself{1}{0}}%
   \doifpositionelse\MPwself
     {\startMPpositiongraphic{mpos:par}%
          {fillcolor,filloffset,linecolor,gridcolor,linewidth,gridwidth,lineradius}
@@ -1122,8 +1156,8 @@
        initialize_par(\MPpos\MPbself,
                       \MPpos\MPeself,
                       \MPpos\textanchor,
-                      \MPpos\paranchor,
-                      \MPvv \paranchor{0,0,0,0,0,0}) ;
+                      \MPpos\MPparanchor,
+                      \MPvv \MPparanchor{0,0,0,0,0,0}) ;
        \includeMPgraphic{mpos:par:setup} ;
        \includeMPgraphic{\MPvar{mp}} ;
        anchor_par(\MPanchor\MPbself) ;
@@ -1131,7 +1165,32 @@
   \MPpositiongraphic{mpos:par}{}%
 \stopMPpositionmethod
 
-%D So far for the unreadable alternative.
+%D The next alternative works in columnsets :
+
+\startuseMPgraphic{mpos:par:columnset}
+  draw_multi_pars ; 
+  \iftracepositions show_multi_pars ; \fi
+\stopuseMPgraphic
+
+\startMPpositionmethod{mpos:par:columnset}
+  \edef\MPparcounter{\MPv\MPbself{1}{0}}%
+  \startMPpositiongraphic{mpos:par}%
+    {fillcolor,filloffset,linecolor,gridcolor,linewidth,gridwidth,lineradius}
+    \includeMPgraphic{mpos:par:setup} ;
+    prepare_multi_pars(\MPpos\MPbself,\MPpos\MPeself,\MPpos\MPwself, 
+      \MPpos\MPparanchor,\MPvv\MPparanchor{0,0,0,0,0,0}) ; 
+    relocate_multipars(-\MPxy\MPanchorid) ; % inside layerpos 
+    \includeMPgraphic{\MPvar{mp}} ;
+  \stopMPpositiongraphic
+  \MPpositiongraphic{mpos:par}{}%
+\stopMPpositionmethod
+
+%D \starttypen 
+%D \setupbackground
+%D   [test]
+%D   [mp=mpos:par:columnset,
+%D    methode=mpos:par:columnset]
+%D \stoptypen   
 
 \newcounter\textbackgrounddepth
 
@@ -1211,7 +1270,8 @@
        {\setMPpositiongraphicrange % moet veel efficienter
           {b:\currentparbackground}%
           {e:\currentparbackground}%
-          {mpos:par}%
+%          {mpos:par}%
+          {\getvalue{\??td#1\c!methode}}%
           {self=\currentparbackground,
            mp=\getvalue{\??td#1\c!mp},
            gridtype=\getvalue{\??td#1\c!variant},
@@ -1226,7 +1286,7 @@
            lineradius=\getvalue{\??td#1\c!straal}}}%
    \stoppositionoverlay}
 
-\def\stoptextbackground%
+\def\stoptextbackground
   {\dodostoptextbackground
    \carryoverpar\egroup}
 
@@ -1241,6 +1301,7 @@
 
 \def\dostarttextbackgroundpar
   {\getvalue{\??td\currenttextbackground\c!voor}%
+%   {\forgetall\noindent\fpos\currentparbackground}\ignorespaces
    \noindent\fpos\currentparbackground\ignorespaces
    \bgroup
    \nobreak \vskip-\lineheight \nobreak
@@ -1270,7 +1331,7 @@
 \let\textparwidth \!!zeropoint
 
 \def\calculatetextpardimensions
-  {\docalculatetextpardimensions\btbanchor    \etbanchor    \paranchor}
+  {\docalculatetextpardimensions\btbanchor    \etbanchor    \MPparanchor}
 
 \def\calculatenexttextpardimensions
   {\docalculatetextpardimensions\nextbtbanchor\nextetbanchor\relax}
@@ -1281,11 +1342,11 @@
    \edef\textparpages{\the\scratchcounter}%
    \ifcase\scratchcounter
      % one page
-     \scratchdimen        =\MPy#1%\btanchor
+     \scratchdimen         \MPy#1%\btanchor
      \advance\scratchdimen-\MPy#2%\etbanchor
    \else
      % two or more pages
-     \scratchdimen        =\MPy#1%\btanchor
+     \scratchdimen         \MPy#1%\btanchor
      \advance\scratchdimen-\MPy#2%\etbanchor
      \advance\scratchdimen-\MPy\textanchor
      \advance\scratchdimen \MPy\textanchor
@@ -1303,16 +1364,16 @@
    \edef\textparheight{\the\scratchdimen}%
    \ifcase\scratchcounter
      % one page
-     \scratchdimen        =\MPx#2%\etbanchor
+     \scratchdimen         \MPx#2%\etbanchor
      \advance\scratchdimen-\MPx#1%\btanchor
    \else
      % two or more pages / maybe also hang
      \ifx#3\relax
-       \scratchdimen=\tekstbreedte
+       \scratchdimen\zetbreedte % \tekstbreedte
      \else
-       \scratchdimen=\MPw\paranchor
-       \advance\scratchdimen-\MPl\paranchor
-       \advance\scratchdimen-\MPr\paranchor
+       \scratchdimen\MPw\MPparanchor
+       \advance\scratchdimen-\MPl\MPparanchor
+       \advance\scratchdimen-\MPr\MPparanchor
      \fi
    \fi
    \edef\textparwidth{\the\scratchdimen}}
@@ -1343,7 +1404,7 @@
 \def\dodefinetextbackground[#1][#2]%
   {\ifsecondargument
      \copyparameters[\??td#1][\??td]
-       [\c!status,\c!plaats,\c!variant,\c!mp,
+       [\c!status,\c!plaats,\c!variant,\c!mp,\c!methode,
         \c!achtergrond,\c!achtergrondkleur,\c!hoek,\c!niveau,
         \c!achtergrondoffset,
         \c!straal,\c!kader,\c!kaderkleur,\c!lijndikte,
@@ -1389,6 +1450,7 @@
 
 \setuptextbackground
   [\c!mp=mpos:par:shape,
+   \c!methode=mpos:par,
    \c!status=\v!start,
    \c!plaats=\v!tekst,
    \c!linkeroffset=\!!zeropoint, % 1em,
@@ -1599,10 +1661,10 @@
 \newcounter\noftabpositions
 \newtoks   \posXCtoks
 
-\def\tbPOSprefix%
+\def\tbPOSprefix
   {tbp:\noftabpositions:}
 
-\def\tablepos%
+\def\tablepos
   {\scratchtoks\posXCtoks
    \global\posXCtoks\emptytoks
    \the\scratchtoks}

@@ -132,7 +132,7 @@ complex-cartesian=>\let\next\MMLccartesian,
    \next{}{#1}}
 
 \def\MMLcCIdefault#1#2% #1=dummy 
-  {#2\!% \getXMLentity{NegThinSpace}%
+  {#2%\!% \getXMLentity{NegThinSpace}% looks bad in A(x) 
    \doifnextcharelse\xmlr
      {\encapsulatenextXMLRelements{\left(}{\MMLccomma}{\right)}}
      {}}
@@ -410,18 +410,32 @@ complex-cartesian=>\let\next\MMLccartesian,
 \remapXMLsequence [piece]     [CPA] \MMLcPIECE
 \remapXMLsequence [otherwise] [CPA] \MMLcOTHERWISE
 
+\setupMMLappearance[piece][\c!scheider=] 
+
 \def\MMLcPIECEWISE#1#2%
   {\cases{#2}}
 
-\def\MMLcPIECE#1#2%
+%\def\MMLcPIECE#1#2% \@@MMLpiecescheider
+%  {\withnexttwoXMLRelements
+%     {\@EA\XMLRtoks\@EA{\firstXMLRelement\@col@amp@}%
+%      \@EA\appendtoks\@EA\mathematics\@EA{\secondXMLRelement}\to\XMLRtoks
+%      \the\XMLRtoks\crcr}%
+%   #2}%
+%
+%\def\MMLcOTHERWISE#1#2%
+%  {#2\@col@amp@\mathematics{\getXMLentity{otherwise}}\crcr}
+
+\def\MMLcPIECEseparator{\doif\@@MMLpiecescheider\v!ja,}
+
+\def\MMLcPIECE#1#2% 
   {\withnexttwoXMLRelements
-     {\@EA\XMLRtoks\@EA{\firstXMLRelement\@col@amp@}%
+     {\@EA\XMLRtoks\@EA{\firstXMLRelement\MMLcPIECEseparator\@col@amp@}%
       \@EA\appendtoks\@EA\mathematics\@EA{\secondXMLRelement}\to\XMLRtoks
       \the\XMLRtoks\crcr}%
-   #2}%
+   #2}
 
 \def\MMLcOTHERWISE#1#2%
-  {#2\@col@amp@\mathematics{\getXMLentity{otherwise}}\crcr}
+  {#2\MMLcPIECEseparator\@col@amp@\mathematics{\getXMLentity{otherwise}}\crcr}
 
 %%% arithmic, algebra and logic
 
@@ -710,6 +724,14 @@ complex-cartesian=>\let\next\MMLccartesian,
 \def\MMLcEQUIVALENT#1#2{\MMLcrelation\equiv}
 \def\MMLcAPPROX    #1#2{\MMLcrelation\approx}
 \def\MMLcFACTOROF  #1#2{\MMLcrelation\mid}
+
+%%% introduced when making an example for Thorsten Bahne:
+
+\remapXMLsingular [becomes] [CPA] \MMLcBECOMES
+
+\def\MMLcBECOMES#1#2{\MMLcrelation{:=}}
+
+\addtocommalist{becomes/}\MMLcmainresetlist 
 
 %%% calculus and vector calculus
 

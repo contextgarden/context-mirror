@@ -112,11 +112,11 @@
      \setbox\scratchbox=\hbox
        {\pdfrefximage\pdflastximage}%
      \hsize=\wd\scratchbox
-     \advance\hsize by -#3 
-     \advance\hsize by -#4 
+     \advance\hsize -#3 
+     \advance\hsize -#4 
      \vsize=\ht\scratchbox
-     \advance\vsize by -#5 
-     \advance\vsize by -#6 
+     \advance\vsize -#5 
+     \advance\vsize -#6 
      \setbox\scratchbox=\vbox to \vsize
        {\vskip-#5\hbox to \hsize{\hskip-#3\box\scratchbox\hss}}%
      \pdfxform\scratchbox
@@ -1279,44 +1279,46 @@
 %    \edef#2{\withoutpt{\the\dimen18}}% % p_x^\prime
 %    \edef#4{\withoutpt{\the\dimen12}}} % p_y^\prime
 
-\beginETEX
+%D We cannot use \type {\beginETEX} here since in plain we 
+%D get \type {\outer} problems, sigh.  
 
-  \newdimen\MPcriteriumA \MPcriteriumA=512pt
-  \newdimen\MPcriteriumB \MPcriteriumB=  2pt
+% \beginTEX 
 
-\endETEX
+\def\MPcriteriumA {512pt} % scale 
+\def\MPcriteriumB   {2pt} % scale 
 
-%D We don't waste dimen registers when uting normal \TEX:
+% \endTEX
+%
 
-\beginTEX 
-
-  \def\MPcriteriumA{512pt} % position 
-  \def\MPcriteriumB  {2pt} % scale 
-
-\endTEX
+% \ifx\MPcriteriumA\undefined
+% 
+%   \newdimen\MPcriteriumA \MPcriteriumA=512pt
+%   \newdimen\MPcriteriumB \MPcriteriumB=  2pt
+% 
+% \fi
 
 \def\doMPconcat#1#2#3#4%
   {\dimen12=#1pt % p_x
    \dimen14=#3pt % p_y
    %
-\chardef\MPfactor0
-\ifdim\dimen4<\MPcriteriumB\ifdim\dimen4>-\MPcriteriumB
-  \ifdim\dimen6<\MPcriteriumB\ifdim\dimen6>-\MPcriteriumB
-    \ifdim\dimen8<\MPcriteriumB\ifdim\dimen8>-\MPcriteriumB
-      \ifdim\dimen10<\MPcriteriumB\ifdim\dimen10>-\MPcriteriumB
-        \chardef\MPfactor1
-      \fi\fi
-    \fi\fi
-  \fi\fi
-\fi\fi
-\ifcase\MPfactor0 
-  \chardef\MPfactor1
-  \ifdim\dimen12<\MPcriteriumA\ifdim\dimen12>-\MPcriteriumA
-    \ifdim\dimen14<\MPcriteriumA\ifdim\dimen14>-\MPcriteriumA
-      \chardef\MPfactor16
-    \fi\fi
-  \fi\fi
-\fi
+   \chardef\MPfactor0
+   \ifdim\dimen4<\MPcriteriumB\ifdim\dimen4>-\MPcriteriumB
+     \ifdim\dimen6<\MPcriteriumB\ifdim\dimen6>-\MPcriteriumB
+       \ifdim\dimen8<\MPcriteriumB\ifdim\dimen8>-\MPcriteriumB
+         \ifdim\dimen10<\MPcriteriumB\ifdim\dimen10>-\MPcriteriumB
+           \chardef\MPfactor1
+         \fi\fi
+       \fi\fi
+     \fi\fi
+   \fi\fi
+   \ifcase\MPfactor0 
+     \chardef\MPfactor1
+     \ifdim\dimen12<\MPcriteriumA\ifdim\dimen12>-\MPcriteriumA
+       \ifdim\dimen14<\MPcriteriumA\ifdim\dimen14>-\MPcriteriumA
+         \chardef\MPfactor16
+       \fi\fi
+     \fi\fi
+   \fi
    %
    \multiply\dimen12 \MPfactor
    \multiply\dimen14 \MPfactor

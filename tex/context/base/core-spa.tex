@@ -1190,6 +1190,8 @@
 \newdimen\openlineheight
 \newdimen\openstrutheight
 \newdimen\openstrutdepth
+\newdimen\topskipgap
+
 \def\strutheightfactor      {.72}
 \def\strutdepthfactor       {.28}
 
@@ -1227,6 +1229,7 @@
 
 \def\topskipcorrection%
   {\ifdim\topskip>\openstrutheight
+     % == \vskip\topskipgap 
      \vskip\topskip
      \vskip-\openstrutheight
    \fi
@@ -1239,6 +1242,8 @@
      \ifr@ggedbottom\!!plus5\globalbodyfontsize\fi
    \fi
    \relax % the skip
+   \topskipgap\topskip
+   \advance\topskipgap -\openstrutheight\relax
    \ifdim\topskip<\strutheightfactor\openlineheight
      \topskip\strutheightfactor\openlineheight\relax
    \fi}
@@ -1270,7 +1275,8 @@
 
 \def\spacing#1%
   {\ifgridsnapping
-     \doifnot{#1}{1}{\showmessage{\m!layouts}{11}{#1}}%
+    %\doifnot{#1}{1}{\showmessage{\m!layouts}{11}{#1}}%
+     \ifdim#1pt=1pt\else\showmessage{\m!layouts}{11}{#1}\fi
      \edef\spacingfactor{1}%
    \else
      \edef\spacingfactor{#1}%
@@ -1636,7 +1642,7 @@
 % 
 % much faster and important since TABLE uses them a lot:
 
-\def\dodosetraggedcommand#1%
+\def\dodosetraggedcommand#1% beware: #1=empty is ignored, keep that!
   {\let\raggedcommand\relax
    \let\raggedtopcommand\empty
    \let\raggedbottomcommand\empty

@@ -14,19 +14,17 @@
 %D This module looks like crap, is not documented, will 
 %D change, and used to be called modu-*.tex. 
 
-\unprotect 
-
 % todo: 
 % 
 % file inclusions -> hyperlinks 
 
-\newprettytrue
+\mainlanguage[en] % better not here 
 
 \usemodule[eenheid]
 
-\mainlanguage[en]
+\enableactivediscretionaries \newprettytrue
 
-\enableactivediscretionaries
+\unprotect
 
 % beter:
 %
@@ -68,7 +66,8 @@
 
 \def\stopmodule%
   {\pagina  
-   \plaatsregister[\v!index]
+   \plaatsregister
+     [\v!index]
      [\c!balanceren=\v!ja,
       \c!aanduiding=\v!nee,
       \c!criterium=\v!tekst]}
@@ -138,7 +137,7 @@
   [titelpagina]
   [\useMPgraphic{titlepage}]
 
-% When run at \PRAGMA, we use a slightly difgferent graphic,
+% When run at \PRAGMA, we use a slightly different graphic,
 % so that we can recognize an original. Users are not 
 % supposed to mimick this feature. 
 

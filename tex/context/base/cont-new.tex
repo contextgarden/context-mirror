@@ -20,6 +20,30 @@
 
 \unprotect
 
+% we don't register the paragraph characteristics, only the 
+% width 
+
+\appendtoks 
+  \setinnerparpositions % see "techniek" for application 
+\to \everytabulate
+
+\def\OTRSETnaturalflush
+  {\bgroup 
+   \forgetall % new 
+   \setbox0\vbox to \columnfreecells\lineheight
+     {\vskip-\topskip
+      \vskip\lineheight
+      \prevdepth\dp\strutbox
+      \unvbox\normalpagebox
+      \vfill}%
+   \setbox2\hbox
+     {\OTRSETplacebottomnotes}%
+   \setbox\scratchbox\hbox
+     {\wd0=\zeropoint\box0\box2}%
+   \dp\scratchbox\dp\strutbox
+   \OTRSEThandleflushedtext1
+   \egroup}
+
 \appendtoks \checkcurrentlayout \to \everystarttext 
 
 \def\flushfootnotes  {\flushnotes}
@@ -140,11 +164,13 @@
      \boxhasheighttrue
      \!!heighta\localheight
    \fi\fi
+   % this should be an option ! ! ! !
    \ifdim\!!widtha=\hsize
      \parindent\zeropoint
      \setlocalhsize
      \!!widtha\localhsize
    \fi
+   % i.e. disable (colsetbackgroundproblemintechniek)
    \advance\!!widtha  -2\@@localoffset
    \advance\!!heighta -2\@@localoffset
    \ifx\localstrut\v!nee
@@ -268,6 +294,28 @@
    \egroup
    \egroup}
 
+%D This alternative is slower, since it works on top of the 
+%D color (stack) mechanism, but it does provide nesting. 
+
+\def\dosetrastercolor#1%
+  {\edef\@@cl@@s{#1}%
+   \ifx\@@cl@@s\empty
+     \let\@@rsraster
+   \fi
+   \setevalue{\??cr\??rs}{\colorSpattern}}
+
+\def\localstartraster[#1]%
+  {\bgroup\dosetrastercolor{#1}\localstartcolor[\??rs]}
+
+\def\localstopraster
+  {\localstopcolor\egroup}
+
+\def\startraster[#1]%
+  {\bgroup\dosetrastercolor{#1}\startcolor[\??rs]}
+
+\def\stopraster
+  {\stopcolor\egroup}
+
 \def\fontclassname#1#2%
   {\ifcsname\??ff#1#2\endcsname
      \fontclassname{#1}{\csname\??ff#1#2\endcsname}%
@@ -307,44 +355,9 @@
    \box\scratchbox
    \egroup}
 
-% transparency ! 
-
-\def\dodoglobalstopcolor
-  {\ifcase\colorlevel \else
-     \donoglobalstopcolor
-     \global\@EA\let\@EA\previouscolor\csname\@@currentcolorname\endcsname
-     \ifcase\colorlevel\relax
-       \docolormark\empty
-       \dostoptransparency
-       \dostopcolormode
-     \else % let's do a bit redundant testing here
-       \docolormark\previouscolor
-       \ifx\previouscolor\empty
-         \dostoptransparency
-         \dostopcolormode
-       \else
-         \doifcolorelse\previouscolor
-           {\ifx\currentcolor\previouscolor\else
-% alternatively we could let \startcolormode handle this 
-\dostoptransparency % really needed 
-%\dostopcolormode % less safe but more efficient 
-              \startcolormode\previouscolor
-            \fi}
-           {\dostoptransparency
-            \dostopcolormode}%
-       \fi
-     \fi
-   \fi}
-
 \writestatus{\m!systems}{beware: some patches loaded from cont-new.tex!}
 
 % todo : hoe komt box er uit 
-
-% \def\@@itemcounter {\s!itemcount} -> non nested continue 
-%
-% todo : option to merge itemgroup [ig-one a b c] [ig-two d e f]
-
-\def\@@itemcounter {\s!itemcount\currentitemgroup}
 
 \long\def\startexternalfigure
   {\dotripleempty\dostartexternalfigure}
@@ -385,24 +398,26 @@
 
 \def\dodoschrijfregelnummer%
   {% beware of em's, the font is already switched ! 
-   \setbox0=\hbox{\@@rncommando{\regelweergave}}%
-   \vsmashbox0%
-   \ifcase\linenumberlocation
-     \rlap{\hbox to \@@rnbreedte{\box0\hss}}% was \llap, nog testen !! 
-   \or
-     %\llap{\hbox to \@@rnbreedte{\hss\box0\hskip\linkermargeafstand}}%
-     \inleftmargin
-       {\forgetall 
-        \doifelse\@@rnbreedte\v!marge
-          {\hsize\linkermargebreedte}{\hsize\@@rnbreedte}%
-        \alignedline\@@rnuitlijnen\v!rechts{\box0\hskip\@@rnafstand}}%
-   \else
-     \inrightmargin
-       {\forgetall 
-        \doifelse\@@rnbreedte\v!marge
-          {\hsize\rechtermargebreedte}{\hsize\@@rnbreedte}%
-        \alignedline\@@rnuitlijnen\v!links{\hskip\@@rnafstand\box0}}%
-   \fi}
+   \setbox\scratchbox\hbox
+     {\setbox0\hbox{\@@rncommando{\regelweergave}}\vsmashbox0%
+      \ifcase\linenumberlocation
+        \rlap{\hbox to \@@rnbreedte{\box0\hss}}% was \llap, nog testen !! 
+      \or
+       %\llap{\hbox to \@@rnbreedte{\hss\box0\hskip\linkermargeafstand}}%
+        \inleftmargin
+          {\forgetall 
+           \doifelse\@@rnbreedte\v!marge
+             {\hsize\linkermargebreedte}{\hsize\@@rnbreedte}%
+           \alignedline\@@rnuitlijnen\v!rechts{\box0\hskip\@@rnafstand}}%
+      \else
+        \inrightmargin
+          {\forgetall 
+           \doifelse\@@rnbreedte\v!marge
+             {\hsize\rechtermargebreedte}{\hsize\@@rnbreedte}%
+           \alignedline\@@rnuitlijnen\v!links{\hskip\@@rnafstand\box0}}%
+      \fi}%
+   \vsmashbox\scratchbox
+   \box\scratchbox}
 
 \stelregelnummerenin
   [\c!breedte=\ifcase\linenumberlocation2em\else\v!marge\fi,
@@ -587,11 +602,11 @@
         \ifnum\gotocellcounter>#1\relax
           \line{\strut}\crlf 
           \line{\strut}\crlf 
-          \column 
+          \kolom % \column 
           \writestatus{columnset}{quitting goto cell}%
           \exitloop
         \else
-          \column 
+          \kolom % \column 
         \fi 
       \else 
         \exitloop 
@@ -1061,8 +1076,8 @@
      \chuckTABLEautorow
    \else\ifnum\currentTABLEcolumn=0
      \TABLEnoalign
-       {\global\let\checkTABLEautorow=\empty
-        \global\let\chuckTABLEautorow=\empty}%
+       {\global\let\checkTABLEautorow\empty
+        \global\let\chuckTABLEautorow\empty}%
    \else
      \setTABLEerror\TABLEmissingcolumn
      \handleTABLEerror

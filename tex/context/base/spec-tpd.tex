@@ -82,6 +82,12 @@
   \newcount\pdflastximagepages \pdflastximagepages=1
 \fi
 
+%D And: 
+
+\ifx\pdfpageresources\undefined 
+  \newtoks\pdfpageresources
+\fi
+
 %D In order to get high quality \METAPOST\ inclusion, we set
 %D the number of digits to~5 (prevents rounding errors). 
 

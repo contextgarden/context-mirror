@@ -17,6 +17,45 @@
 
 \unprotect
 
+% to be moved code: 
+
+\newif\ifclippagebox \clippageboxtrue
+
+\def\clippedpagebox#1#2%
+  {\ifclippagebox
+     \!!widthc\pagebackgroundoffset
+     \!!widtha \papierbreedte
+     \advance\!!widtha \!!widthc
+     \!!heighta\papierhoogte
+     \advance\!!heighta\!!widthc
+     \advance\!!heighta\!!widthc
+     \setbox#2\vbox to \papierhoogte{\vfill\box#2}%
+     \ht#2\papierhoogte
+     \wd#2\papierbreedte
+     \setbox#2\vbox
+       {\framed
+          [\c!offset=\!!widthc,\c!strut=\v!nee,\c!kader=\v!uit]
+          {\box#2}}%
+     \setbox#2\hbox to \papierbreedte
+       {\ifcase#1\relax
+          \hskip-\!!widthc
+          \lower\!!widthc\hbox
+            {\clip
+               [\c!breedte=\!!widtha,\c!hoogte=\!!heighta,
+                \c!hoffset=\zeropoint,\c!voffset=\zeropoint]
+               {\box#2}}%
+        \or
+          \lower\!!widthc\hbox
+            {\clip
+               [\c!breedte=\!!widtha,\c!hoogte=\!!heighta,
+                \c!hoffset=\!!widthc,\c!voffset=\zeropoint]
+               {\box#2}}%
+        \fi}%
+     \wd#2\papierbreedte
+     \ht#2\papierhoogte
+   \fi
+   \box#2\relax}
+
 % moved code:
 
 \def\myshipout#1%
@@ -419,19 +458,36 @@
      \setbox\scratchbox\vsplit\arrangedpageB to \scratchdimen
    \fi}
 
+% \def\handlearrangedpageTWOUP%
+%   {\splitoffarrangedpagesTWO
+%    \ifswaparranged
+%      \global\setbox\arrangedpageA\hbox
+%        {\box\arrangedpageA\box\arrangedpageB}%
+%      \swaparrangedfalse
+%    \else
+%      \global\setbox\arrangedpageA\hbox
+%        {\box\arrangedpageB\box\arrangedpageA}%
+%      \swaparrangedtrue
+%    \fi
+%    \global\ht\arrangedpageA\papierhoogte
+%    \global\setbox\arrangedpageB\box\scratchbox}
+
 \def\handlearrangedpageTWOUP%
   {\splitoffarrangedpagesTWO
    \ifswaparranged
-     \global\setbox\arrangedpageA\hbox
-       {\box\arrangedpageA\box\arrangedpageB}%
+     \global\setbox\arrangedpageA=\hbox
+       {\clippedpagebox0\arrangedpageA
+        \clippedpagebox1\arrangedpageB}%
      \swaparrangedfalse
    \else
-     \global\setbox\arrangedpageA\hbox
-       {\box\arrangedpageB\box\arrangedpageA}%
+     \global\setbox\arrangedpageA=\hbox
+       {\clippedpagebox0\arrangedpageB
+        \clippedpagebox1\arrangedpageA}%
      \swaparrangedtrue
    \fi
-   \global\ht\arrangedpageA\papierhoogte
-   \global\setbox\arrangedpageB\box\scratchbox}
+   \global\ht\arrangedpageA=\papierhoogte
+   \global\setbox\arrangedpageB=\box\scratchbox}
+
 
 \def\handlearrangedpageTWODOWN%
   {\splitoffarrangedpagesTWO

@@ -459,7 +459,7 @@
 %   \edef\!!stringa{\getvalue{#1\c!escape}}%
 %   \@EA\catcode\@EA`\!!stringa=\@@escape}
 
-\def\setupcommandsintype#1%
+\def\setupcommandsintype#1% can also be \string\ 
   {\setupgroupedtype
    \edef\\{\getvalue{#1\c!escape}}%
    \letvalue{\\}=\\% for instance \/=/ 
@@ -787,7 +787,7 @@
         \c!evenmarge=\!!zeropoint, 
       \c!onevenmarge=\!!zeropoint,
            \c!blanko=\v!regel,
-           \c!escape=/,
+           \c!escape=/, % beware \string\ , should also be accepted
            \c!regels=]
 
 %D \macros
@@ -1097,8 +1097,11 @@
      %\processfileverbatim{\pathplusfile\f!currentpath{#2}}%
       \stopverbatimcolor
       \stopopelkaar}  % includes \egroup
-     {{\tttf[\makemessage{\m!verbatims}{1}{#2}]}% 
-      \showmessage{\m!verbatims}{1}{#2}}%
+     {\bgroup
+      \expanded{\convertargument#2}\to\ascii
+      \tttf[\makemessage{\m!verbatims}{1}\ascii]% 
+      \showmessage{\m!verbatims}{1}\ascii
+      \egroup}%
    \getvalue{\??tp#1\c!na}}
 
 %D \macros 

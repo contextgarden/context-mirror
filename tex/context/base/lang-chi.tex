@@ -24,18 +24,18 @@
 
 \installlanguage[\s!cn][\c!status=\v!start]
 
-\setupheadtext [\s!cn]      [\v!inhoud=\uchar{196}{191}\uchar{194}{188}]
-\setupheadtext [\s!cn]    [\v!tabellen=\uchar{196}{191}\uchar{177}{237}]
-\setupheadtext [\s!cn]     [\v!figuren=\uchar{196}{191}\uchar{205}{188}]
+\setupheadtext [\s!cn]      [\v!inhoud={\cnencodecontents}]
+\setupheadtext [\s!cn]    [\v!tabellen={\cnencodetables}]
+\setupheadtext [\s!cn]     [\v!figuren={\cnencodefigures}]
 \setupheadtext [\s!cn]   [\v!grafieken=Graphics]
 \setupheadtext [\s!cn] [\v!intermezzos=Intermezzos]
-\setupheadtext [\s!cn]       [\v!index=\uchar{203}{247}\uchar{210}{253}]
-\setupheadtext [\s!cn] [\v!afkortingen=Abbreviations]
-\setupheadtext [\s!cn]       [\v!logos=Logos]
-\setupheadtext [\s!cn]    [\v!eenheden=Units]
+\setupheadtext [\s!cn]       [\v!index={\cnencodeindex}]
+\setupheadtext [\s!cn] [\v!afkortingen={\cnencodeabbreviations}]
+\setupheadtext [\s!cn]       [\v!logos={\cnencodelogos}]
+\setupheadtext [\s!cn]    [\v!eenheden={\cnencodeunits}]
 
-\setuplabeltext [\s!cn]      [\v!tabel=\uchar{177}{237} ]
-\setuplabeltext [\s!cn]     [\v!figuur=\uchar{205}{188} ]
+\setuplabeltext [\s!cn]      [\v!tabel={\cnencodetable}]
+\setuplabeltext [\s!cn]     [\v!figuur={\cnencodefigure}]
 \setuplabeltext [\s!cn] [\v!intermezzo=Intermezzo ]
 \setuplabeltext [\s!cn]    [\v!grafiek=Illustration ]
 \setuplabeltext [\s!cn]    [\v!bijlage=]
@@ -57,6 +57,15 @@
 \def\cnencoding{\enableencoding[\chineseencoding]} % ugly and temporary
 
 \startencoding[gbk]
+  \definecommand cnencodecontents {\uchar{196}{191}\uchar{194}{188}}
+  \definecommand cnencodetables   {\uchar{177}{237}\uchar{184}{241}}
+  \definecommand cnencodefigures  {\uchar{205}{188}\uchar{208}{206}}
+  \definecommand cnencodeindex    {\uchar{203}{247}\uchar{210}{253}}
+  \definecommand cnencodeabbreviations {\uchar{203}{245}\uchar{194}{212}\uchar{211}{239}}
+  \definecommand cnencodelogos    {\uchar{187}{213}\uchar{177}{225}}
+  \definecommand cnencodeunits    {\uchar{188}{198}\uchar{193}{191}\uchar{181}{165}\uchar{206}{187}}
+  \definecommand cnencodetable    {\uchar{177}{237}}
+  \definecommand cnencodefigure   {\uchar{205}{188}}
   \definecommand cnencodedintro   {\uchar{181}{218}}
   \definecommand cnencodedpart    {\uchar{178}{191}\uchar{183}{214}}
   \definecommand cnencodedchapter {\uchar{213}{194}}
@@ -64,6 +73,15 @@
 \stopencoding
 
 \startencoding[big5]
+  \definecommand cnencodecontents {\uchar{165}{216}\uchar{191}{253}}
+  \definecommand cnencodetables   {\uchar{170}{237}\uchar{174}{230}}
+  \definecommand cnencodefigures  {\uchar{185}{207}\uchar{167}{206}}
+  \definecommand cnencodeindex    {\uchar{175}{193}\uchar{174}{222}}
+  \definecommand cnencodeabbreviations {\uchar{191}{89}\uchar{178}{164}\uchar{187}{121}}
+  \definecommand cnencodelogos    {\uchar{192}{178}\uchar{188}{208}}
+  \definecommand cnencodeunits    {\uchar{173}{112}\uchar{182}{113}\uchar{179}{230}\uchar{166}{236}}
+  \definecommand cnencodetable    {\uchar{170}{237}}
+  \definecommand cnencodefigure   {\uchar{185}{207}}
   \definecommand cnencodedintro   {\uchar{178}{196}}
   \definecommand cnencodedpart    {\uchar{179}{161}\uchar{164}{192}}
   \definecommand cnencodedchapter {\uchar{179}{185}}
@@ -98,6 +116,7 @@
 \setuplabeltext [\s!cn]  [\v!thursday=\uchar{208}{199}\uchar{198}{218}\uchar{203}{196}]
 \setuplabeltext [\s!cn]    [\v!friday=\uchar{208}{199}\uchar{198}{218}\uchar{206}{229}]
 \setuplabeltext [\s!cn]  [\v!saturday=\uchar{208}{199}\uchar{198}{218}\uchar{193}{249}]
+
 \stopencoding
 
 \startencoding[big5]

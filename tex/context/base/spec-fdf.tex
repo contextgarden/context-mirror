@@ -298,8 +298,8 @@
      {/CropBox [\left\space\bottom\space\width\space\height]}%
    \xdef\currentPDFpagemode
      {/PageMode \ifcase#6 /UseNone\or/FullScreen\or/UseOutlines\else/UseNone\fi}%
-%   \xdef\currentPDFviewerprefs 
-%     {\ifcase#6\or\or\or /ViewerPreferences << /FitWindow true >>\fi}%
+   \xdef\currentPDFviewerprefs 
+     {\ifcase#6\or\or\or /ViewerPreferences << /FitWindow true >>\fi}%
    \egroup}
 
 \global\let\currentPDFcropbox    \empty % page attributes 
@@ -566,6 +566,8 @@
 \def\PDFexecuteexit        {/Named /N /Quit}
 \def\PDFexecuteclose       {/Named /N /Close}
 \def\PDFexecutesave        {/Named /N /Save}
+\def\PDFexecutesavenamed   {/Named /N /SaveAs}
+\def\PDFexecuteopennamed   {/Named /N /Open}
 \def\PDFexecutehelp        {/Named /N /HelpUserGuide}
 \def\PDFexecuteswap        {/Named /N /FullScreen}
 \def\PDFexecutesearch      {/Named /N /Find}
@@ -774,27 +776,34 @@
 %D are used to set states. Personally I hate this bitty way of
 %D doing things. The next six bit determine the field sub type:
 
-\def\FDFflagMultiLine      {4096} % 13
-\def\FDFflagNoToggleToOff {16384} % 15
-\def\FDFflagRadio         {32768} % 16
-\def\FDFflagPushButton    {65536} % 17
-\def\FDFflagPopUp        {131072} % 18
-\def\FDFflagEdit         {262144} % 19
+\def\FDFflagMultiLine          {4096} % 13
+\def\FDFflagNoToggleToOff     {16384} % 15
+\def\FDFflagRadio             {32768} % 16
+\def\FDFflagPushButton        {65536} % 17
+\def\FDFflagPopUp            {131072} % 18
+\def\FDFflagEdit             {262144} % 19
+
+%D A few more (pdf 1.4) flags, what the spell check one: for
+%D obscure reasons for Adobe downward compatibility means 
+%D enabling features that harm old applications like testing.
+
+\def\FDFflagDoNotSpellCheck {4194304} % 23
+\def\FDFflagDoNotScroll     {8388608} % 24
 
 %D The next bits (watch how strange the bits are organized)
 %D take care of the states:
 
-\def\FDFflagReadOnly          {1} %  1
-\def\FDFflagRequired          {2} %  2
-\def\FDFflagNoExport          {4} %  3
-\def\FDFflagPassword       {8192} % 14
-\def\FDFflagSort         {524288} % 20
+\def\FDFflagReadOnly              {1} %  1
+\def\FDFflagRequired              {2} %  2
+\def\FDFflagNoExport              {4} %  3
+\def\FDFflagPassword           {8192} % 14
+\def\FDFflagSort             {524288} % 20
 
 %D There is a second, again bitset oriented, \type{/F} flag:
 
-\def\FDFplusInvisible         {1} %  1
-\def\FDFplusHidden            {2} %  2
-\def\FDFplusPrintable         {4} %  3
+\def\FDFplusInvisible             {1} %  1
+\def\FDFplusHidden                {2} %  2
+\def\FDFplusPrintable             {4} %  3
 
 %D \macros
 %D   {setFDFswitches}
@@ -810,6 +819,8 @@
 \letvalue       {\@@FDFflag\v!beschermd}=\FDFflagPassword
 \letvalue      {\@@FDFflag\v!gesorteerd}=\FDFflagSort
 \letvalue {\@@FDFflag\v!nietbeschikbaar}=\FDFflagNoExport
+\letvalue    {\@@FDFflag\v!geencontrole}=\FDFflagDoNotSpellCheck
+\letvalue            {\@@FDFflag\v!vast}=\FDFflagDoNotScroll
 
 \letvalue       {\@@FDFplus\v!verborgen}=\FDFplusHidden
 \letvalue       {\@@FDFplus\v!printbaar}=\FDFplusPrintable
@@ -1241,11 +1252,13 @@
    \setFDFattributes[#6]%
    \setFDFalignment[#8]%
    \setFDFactions[#9]%
+\expanded{\escapePSstring#4}\to\FDFtext
    \ifcase\currentFDFmode
      \doPDFannotationobject class FDF name #1 width #2 height #3 data
        {/Subtype /Widget /T (#1) /FT /Tx
         /MaxLen \ifcase0#5 1000 \else#5 \fi
-        /DV (#4) /V (#4) % value added
+%        /DV (#4) /V (#4) % value added
+/DV (\FDFtext) /V (\FDFtext) % value added
         /Ff \FDFflag\space
         /F \FDFplus\space
         /DA (\FDFattributes)
@@ -1259,7 +1272,8 @@
        {/T (#1) /FT /Tx
         /MaxLen \ifcase0#5 1000 \else#5 \fi
         /Kids [\FDFkids]
-        /DV (#4) /V (#4) % value added
+%        /DV (#4) /V (#4) % value added
+/DV (\FDFtext) /V (\FDFtext) % value added
         /Ff \FDFflag\space
         /F \FDFplus\space
         /DA (\FDFattributes)

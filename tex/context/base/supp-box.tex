@@ -569,20 +569,22 @@
 %D and depth before being lapped into the margin. The
 %D previous examples ignore this side effect, but beware!
 
-\newif\ifsomeshapeleft
-\newif\ifreshapingbox
-
-\def\shapesignal {.12345678pt}
+\newif    \ifsomeshapeleft
+\newif    \ifreshapingbox
 
 \newbox   \shapebox
 \newcount \shapepenalty
 \newdimen \shapekern
 \newskip  \shapeskip
 
-\newbox\newshapebox
-\newbox\oldshapebox
+\newbox   \newshapebox
+\newbox   \oldshapebox
 
-\newcount\shapecounter
+\newcount \shapecounter
+
+\newevery \everyshapebox \relax
+
+\def\shapesignal{.12345678pt}
 
 \def\reshapebox#1% 
   {\doreshapebox
@@ -606,9 +608,9 @@
    \fi}
 
 \def\dodoreshapebox#1#2#3#4% \shapebox, \shapepenalty, \shapekern, \shapeskip
-  {\ifdim\lastskip=\zeropoint\relax
-     \ifdim\lastkern=\zeropoint\relax
-       \ifcase\lastpenalty % =\zerocount
+  {\ifcase\lastskip % \ifdim\lastskip=\zeropoint\relax
+     \ifcase\lastkern % \ifdim\lastkern=\zeropoint\relax
+       \ifcase\lastpenalty % \ifnum\lastpenalty=\zerocount
          \setbox\shapebox\lastbox
          \ifvoid\shapebox
            \unskip\unpenalty\unkern
@@ -643,19 +645,13 @@
      \advance\shapecounter \plusone
    \fi}
 
-%\def\beginofshapebox%
-%  {\setbox\oldshapebox=\normalvbox
-%     \bgroup
-%     \reshapingboxtrue
-%     \normalhbox to \shapesignal{\hss}}
-
 \def\beginofshapebox%
   {\setbox\oldshapebox\normalvbox
      \bgroup
      \reshapingboxtrue
+     \the\everyshapebox 
      \normalhbox to \shapesignal{\strut\hss}% plus \strut 
-     \prevdepth\dp\strutbox            % hm
-   }%\nointerlineskip}                 % suppress parskip
+     \prevdepth\dp\strutbox} % never \nointerlineskip
 
 \def\endofshapebox%
   {\endgraf
@@ -787,35 +783,35 @@
 
 \def\dohyphenateword#1#2#3%
   {\bgroup
-   \setbox0=\normalhbox
+   \setbox\scratchbox\normalhbox
      {\mindermeldingen
-      \widowpenalty=0
-      \clubpenalty=0
-      \setbox0=\normalvbox
+      \widowpenalty\zerocount
+      \clubpenalty\zerocount
+      \setbox0\normalvbox
         {\hsize\zeropoint \ #3}%
       \ifnum#1>0
         \dorecurse{#1}
-          {\setbox2=\normalhbox
-             {\splittopskip=\openstrutheight
+          {\setbox2\normalhbox
+             {\splittopskip\openstrutheight
               \vsplit0 to \baselineskip}}%
         #2%
       \fi
       \loop
-        \setbox2=\normalhbox
-          {\splittopskip=\openstrutheight
+        \setbox2\normalhbox
+          {\splittopskip\openstrutheight
            \vsplit0 to \baselineskip}%
         \normalhbox
           {\unhbox2
-           \setbox2=\lastbox
+           \setbox2\lastbox
            \normalvbox
              {\unvbox2
-              \setbox2=\lastbox
+              \setbox2\lastbox
               \normalhbox{\unhbox2}}}%
         \ifdim\ht0>\zeropoint
       \repeat}%
-    \ht0=\ht\strutbox
-    \dp0=\dp\strutbox
-    \box0
+    \ht\scratchbox\ht\strutbox
+    \dp\scratchbox\dp\strutbox
+    \box\scratchbox
     \egroup}
 
 \def\hyphenatedword%
@@ -867,20 +863,20 @@
 %       \fi}}
 
 \def\dodoboundtext#1%
-  {\setbox2=\normalhbox{#1}%
-   \advance\dimen0 -\wd2
-   \ifdim\dimen0>\zeropoint\relax#1\fi}%
+  {\setbox0\normalhbox{#1}%
+   \advance\scratchdimen -\wd0
+   \ifdim\scratchdimen>\zeropoint\relax#1\fi}%
 
 \def\doboundtext#1#2#3%
   {\normalhbox
-     {\setbox0=\normalhbox{#1}%
-      \dimen0=#2\relax
-      \ifdim\wd0>\dimen0
-        \setbox0=\normalhbox{#3}%
-        \advance\dimen0 -\wd0
+     {\setbox\scratchbox\normalhbox{#1}%
+      \scratchdimen#2\relax
+      \ifdim\wd\scratchbox>\scratchdimen
+        \setbox\scratchbox\normalhbox{#3}%
+        \advance\scratchdimen -\wd\scratchbox
         \handletokens#1\with\dodoboundtext
       \fi
-      \box0}}
+      \box\scratchbox}}
 
 %D \macros
 %D   {limitatetext}
@@ -1165,7 +1161,7 @@
      #2{\unhbox0}% == #2{#1} % was \unhcopy0 
    \else
      \isolatedwordstrue
-     \setbox0=\normalhbox
+     \setbox0\normalhbox
        {\ignorespaces
         \loop
           \setbox4\normalhbox

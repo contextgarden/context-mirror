@@ -392,7 +392,7 @@
       \c!sectienummer=\@@kjsectienummer,
       \c!scheider=\@@kjscheider,
       \c!conversie=\@@kjconversie]%
-   \doorlabelen
+   \definieernummer % \doorlabelen
      [#1]
      [\c!tekst=#1,
       \c!plaats=\v!intekst,
@@ -1719,38 +1719,6 @@
 
 \appendtoks\the\everytopofpage     \to\everystarttext
 \appendtoks\global\everytopofpage{}\to\everystoptext
-
-%\def\douitstellen%
-%  {\the\everytopofpage
-%   \ifinuitstellen\else\ifcase\nofpostponedblocks\else % The \nof-test is
-%     \global\pagetotal\zeropoint % recently added
-%     \global\inuitstellentrue                          % definitely needed
-%     \dorecurse{\nofpostponedblocks}                   % else we can loose
-%       {\haalbuffer[buf-\recurselevel]}                % or disorder floats
-%     \doflushfloats % new but potential dangerous      % and that is something
-%     \doglobal\newcounter\nofpostponedblocks           % we don't want, do we?
-%     \global\inuitstellenfalse                         % Anyhow, 'uitstellen'
-%   \fi\fi}                                             % is still suboptimal.
-
-% \def\douitstellen%
-%   {\the\everytopofpage
-%    \ifvoid\collectedpagefloats\else
-%      % message
-%      \unvbox\collectedpagefloats
-%    \fi
-%    \ifinuitstellen\else\ifcase\nofpostponedblocks\else % The \nof-test is
-% \bgroup
-% \restoreglobalbodyfont % else problems inside split verbatim
-%      % message
-%      \global\pagetotal\zeropoint % recently added
-%      \global\inuitstellentrue                          % definitely needed
-%      \dorecurse{\nofpostponedblocks}                   % else we can loose
-%        {\haalbuffer[buf-\recurselevel]}                % or disorder floats
-%      \doflushfloats % new but potential dangerous      % and that is something
-%      \doglobal\newcounter\nofpostponedblocks           % we don't want, do we?
-%      \global\inuitstellenfalse                         % Anyhow, 'uitstellen'
-% \egroup
-%    \fi\fi}                                             % is still suboptimal.
 
 \def\douitstellen%
   {\the\everytopofpage

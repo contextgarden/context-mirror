@@ -331,7 +331,7 @@ stopsetup
 
 startsetup
 com:tippedatei:
-typ:arg/arg/:
+typ:val/arg/:
 val:*Name::
 val:*Datei::
 stopsetup

@@ -762,7 +762,8 @@
           \v!marge=>\setvalue{\??lb#1\c!commando}{\inmarge  }]%
    % inefficient, we need to redesign this command 
    \definieernummer 
-     [#1][\c!wijze=\@@nrwijze]% \getvalue{\??lb#1\c!wijze}]%
+     [#1]
+     [\c!wijze=\getvalue{\??lb#1\c!wijze}]%
    % generated commands 
    \setvalue           {#1}{\dodoubleempty\dodoorlabel[#1]}%
    \setvalue{\s!reset   #1}{\resetnummer[#1]}%
@@ -770,7 +771,7 @@
    \setvalue{\e!volgende#1}{\dodoubleempty\dovolgendedoorlabel[#1]}%
    \setvalue{\c!huidige #1}{\huidigenummer[#1]}}
 
-\def\doorlabelen%
+\def\doorlabelen
   {\dodoubleargumentwithset\dodoorlabelen}
 
 \steldoordefinierenin

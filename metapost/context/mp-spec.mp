@@ -158,17 +158,19 @@ fi ;
 
 newinternal shadefactor ; shadefactor := 1 ; 
 
+pair shadeoffset ; shadeoffset := origin ; 
+
 vardef define_linear_shade (expr a, b, ca, cb) =
   flush_special(30, 15, "0 1 " & decimal shadefactor & " " &
-    dddecimal ca & ddecimal a &
-    dddecimal cb & ddecimal b ) ;
+    dddecimal ca & ddecimal (a shifted shadeoffset) &
+    dddecimal cb & ddecimal (b shifted shadeoffset) ) ;
   _special_counter_
 enddef ;
 
 vardef define_circular_shade (expr a, b, ra, rb, ca, cb) =
   flush_special(31, 17, "0 1 " & decimal shadefactor & " " &
-    dddecimal ca & ddecimal a & " " & decimal ra &
-    dddecimal cb & ddecimal b & " " & decimal rb ) ;
+    dddecimal ca & ddecimal (a shifted shadeoffset) & " " & decimal ra &
+    dddecimal cb & ddecimal (b shifted shadeoffset) & " " & decimal rb ) ;
   _special_counter_
 enddef ;
 

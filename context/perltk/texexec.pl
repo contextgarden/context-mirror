@@ -2,12 +2,13 @@ eval '(exit $?0)' && eval 'exec perl -S $0 ${1+"$@"}' && eval 'exec perl -S $0 $
         if 0;
 
 # todo: second run of checksum of mp file with --nomprun changes
-# todo: merge wybo's enhanced help function [along with updating manual]
 # todo: warning if no args
+# todo: <<<< in messages
+# todo: cleanup 
 
 #D \module
 #D   [       file=texexec.pl,
-#D        version=2000.03.25,
+#D        version=2002.05.04,
 #D          title=running \ConTeXt,
 #D       subtitle=\TEXEXEC,
 #D         author=Hans Hagen,
@@ -21,23 +22,26 @@ eval '(exit $?0)' && eval 'exec perl -S $0 ${1+"$@"}' && eval 'exec perl -S $0 $
 #  Thanks to Tobias Burnus    for the german translations.
 #  Thanks to Thomas Esser     for hooking it into web2c
 #  Thanks to Taco   Hoekwater for suggesting improvements
+#  Thanks to Wybo Dekker      for the advanced help interface 
+
+# (I still have to completely understand the help code -)
 
 #D We started with a hack provided by Thomas Esser. This
 #D expression replaces the unix specific line \type
 #D {#!/usr/bin/perl}.
 
-# require "5.005" ;
-
-use Cwd ;
-use Time::Local ; # needed ?
-use Config ;
-use Getopt::Long ;
+use Cwd           ;
+use Time::Local   ;
+use Config        ;
+use Getopt::Long  ;
+use Class::Struct ; # needed for help subsystem
+#   Data::Dumper  ; # needed for help subsystem
 
 my %ConTeXtInterfaces ; # otherwise problems with strict
 my %ResponceInterface ; # since i dunno how to allocate else
-my %Help ;
+# my %Help ;
 
-#use strict ;
+# use strict ;
 
 #D In this script we will launch some programs and other
 #D scripts. \TEXEXEC\ uses an ini||file to sort out where
@@ -232,13 +236,13 @@ if (($LogFile ne '')&&($LogFile =~ /\w+\.log$/io))
     *STDOUT = *LOGFILE ;
     *STDERR = *LOGFILE }
 
-my $Program = " TeXExec 2.8 - ConTeXt / PRAGMA ADE 1997-2002" ;
+my $Program = " TeXExec 3.0 - ConTeXt / PRAGMA ADE 1997-2002" ;
 
-print "\n$Program\n\n";
+print "\n$Program\n\n" ;
 
 my $pathslash = '/' ; if ($0 =~ /\\/) { $pathslash = "\\" }
 my $cur_path  = ".$pathslash" ;
-my $own_path  = $0 ; $own_path =~ s/texexec(\.pl|\.bat|\.exe)//io ;
+my $own_path  = $0 ; $own_path =~ s/texexec(\.pl|\.bat|)//io ;
 my $own_type  = $1 ; 
 my $own_stub  = "" ; 
 
@@ -583,208 +587,352 @@ SetInterfaces ( "no" , "norwegian"    , "norwegian" ) ;
 SetInterfaces ( "ro" , "romanian"     , "romanian"  ) ;
 SetInterfaces ( "xx" , "experimental" , "english"   ) ;
 
-$Help{ARRANGE}     = "             --arrange   process and arrange\n" ;
-$Help{BATCH}       = "               --batch   run in batch mode (don't pause)\n" ;
-$Help{CENTERPAGE}  = "          --centerpage   center the page on the paper\n" ;
-$Help{COLOR}       = "               --color   enable color (when not yet enabled)\n" ;
-$Help{USEMODULE}   = "           --usemodule   load some modules first\n" ;
-$Help{usemodule}   =
-$Help{USEMODULE}   . "                           =name : list of modules\n" ;
-$Help{XMLFILTER}   = "           --xmlfilter   apply XML filter\n" ;
-$Help{xmlfilter}   =
-$Help{XMLFILTER}   . "                           =name : list of filters\n" ;
-$Help{ENVIRONMENT} = "         --environment   load some environments first\n" ;
-$Help{environment} =
-$Help{ENVIRONMENT} . "                           =name : list of environments\n" ;
-$Help{FAST}        = "                --fast   skip as much as possible\n" ;
-$Help{FIGURES}     = "             --figures   typeset figure directory\n" ;
-$Help{figures}     =
-$Help{FIGURES}     . "                           =a : room for corrections\n"
-                   . "                           =b : just graphics\n"
-                   . "                           =c : one (cropped) per page\n"
-                   . "         --paperoffset   room left at paper border\n" ;
-$Help{FINAL}       = "               --final   add a final run without skipping\n" ;
-$Help{FORMAT}      = "              --format   fmt file\n" ;
-$Help{format}      =
-$Help{FORMAT}      . "                           =name : format file (memory dump) \n" ;
-$Help{MPFORMAT}    = "            --mpformat   mem file\n" ;
-$Help{mpformat}    =
-$Help{MPFORMAT}    . "                           =name : format file (memory dump) \n" ;
-$Help{INTERFACE}   = "           --interface   user interface\n" ;
-$Help{interface}   =
-$Help{INTERFACE}   . "                           =en : English\n"
-                   . "                           =nl : Dutch\n"
-                   . "                           =de : German\n"
-                   . "                           =cz : Czech\n"
-                   . "                           =uk : Brittish\n"
-                   . "                           =it : Italian\n" ;
-$Help{LANGUAGE}    = "            --language   main hyphenation language \n" ;
-$Help{language}    =
-$Help{LANGUAGE}    . "                           =xx : standard abbreviation \n" ;
-$Help{LISTING}     = "             --listing   produce a verbatim listing\n" ;
-$Help{listing}     =
-$Help{LISTING}     . "           --backspace   inner margin of the page\n" .
-                     "            --topspace   top/bottom margin of the page\n" .
-                     "              --pretty   enable pretty printing\n" .
-                     "               --color   use color for pretty printing\n" ;
-$Help{MAKE}        = "                --make   build format files \n" ;
-$Help{make}        =
-$Help{MAKE}        . "            --language   patterns to include\n" .
-                     "            --bodyfont   bodyfont to preload\n" .
-                     "            --response   response interface language\n" .
-                     "              --format   TeX format\n" .
-                     "            --mpformat   MetaPost format\n" .
-                     "             --program   TeX program\n" ;
-$Help{MODE}        = "                --mode   running mode \n" ;
-$Help{mode}        =
-$Help{MODE}        . "                           =list : modes to set\n" ;
-$Help{MODULE}      = "              --module   typeset tex/pl/mp module\n" ;
-$Help{MPTEX}       = "               --mptex   run an MetaPost plus btex-etex cycle\n" ;
-$Help{MPXTEX}      = "              --mpxtex   generatet an MetaPostmpx file\n" ;
-$Help{NOARRANGE}   = "           --noarrange   process but ignore arrange\n" ;
-$Help{NOMP}        = "                --nomp   don't run MetaPost at all\n" ;
-$Help{NOMPRUN}     = "             --nomprun   don't run MetaPost at runtime\n" ;
-$Help{AUTOMPRUN}   = "           --automprun   MetaPost at runtime when needed\n" ;
-$Help{ONCE}        = "                --once   run TeX only once (no TeXUtil either)\n" ;
-$Help{OUTPUT}      = "              --output   specials to use\n" ;
-$Help{output}      =
-$Help{OUTPUT}      . "                           =pdftex\n"
-                   . "                           =dvips\n"
-                   . "                           =dvipsone\n"
-                   . "                           =dviwindo\n"
-                   . "                           =dviview\n"
-                   . "                           =dvipdfm\n" ;
-$Help{PASSON}      = '              --passon   switches to pass to TeX ("--src" for MikTeX)' . "\n" ;
-$Help{PAGES}       = "               --pages   pages to output\n" ;
-$Help{pages}       =
-$Help{PAGES}       . "                           =odd   : odd pages\n" .
-                     "                           =even  : even pages\n" .
-                     "                           =x,y:z : pages x and y to z\n" ;
-$Help{PAPER}       = "               --paper   paper input and output format\n" ;
-$Help{paper}       =
-$Help{PAPER}       . "                           =a4a3 : A4 printed on A3\n" .
-                     "                           =a5a4 : A5 printed on A4\n" ;
-$Help{PATH}        = "                --path   document source path\n" ;
-$Help{path}        =
-$Help{PATH}        . "                           =string : path\n" ;
-$Help{PDF}         = "                 --pdf   produce PDF directly using pdf(e)tex\n" ;
-$Help{PDFARRANGE}  = "          --pdfarrange   arrange pdf pages\n" ;
-$Help{pdfarrange}  =
-$Help{PDFARRANGE}  . "         --paperoffset   room left at paper border\n" .
-                     "               --paper   paper format\n" .
-                     "            --noduplex   single sided\n" .
-                     "           --backspace   inner margin of the page\n" .
-                     "            --topspace   top/bottom margin of the page\n" .
-                     "            --markings   add cutmarks\n" .
-                     "          --background     =background graphic\n" .
-                     "            --addempty   add empty page after\n" .
-                     "           --textwidth   width of the original (one sided) text\n" ;
-$Help{PDFCOMBINE}  = "          --pdfcombine   combine pages to one page\n" ;
-$Help{pdfcombine}  =
-$Help{PDFCOMBINE}  . "         --paperformat   paper format\n" .
-                     "         --combination   n*m pages per page\n" .
-                     "         --paperoffset   room left at paper border\n" ;
-$Help{PDFCOPY}     = "             --pdfcopy   scale pages down/up\n" ;
-$Help{pdfcopy}     =
-$Help{PDFCOPY}     . "               --scale   new page scale\n" .
-                     "         --paperoffset   room left at paper border\n" .
-                     "            --markings   add cutmarks\n" .
-                     "          --background     =background graphic\n" ;
-$Help{PDFSELECT}   = "           --pdfselect   select pdf pages\n" ;
-$Help{pdfselect}   =
-$Help{PDFSELECT}   . "           --selection   pages to select\n" .
-                     "                           =odd   : odd pages\n" .
-                     "                           =even  : even pages\n" .
-                     "                           =x,y:z : pages x and y to z\n" .
-                     "         --paperoffset   room left at paper border\n" .
-                     "         --paperformat   paper format\n" .
-                     "           --backspace   inner margin of the page\n" .
-                     "            --topspace   top/bottom margin of the page\n" .
-                     "            --markings   add cutmarks\n" .
-                     "          --background     =background graphic\n" .
-                     "            --addempty   add empty page after\n" .
-                     "           --textwidth   width of the original (one sided) text\n" ;
-$Help{PRINT}       = "               --print   page imposition scheme\n" ;
-$Help{print}       =
-$Help{PRINT}       . "                             =up : 2 pages per sheet doublesided           \n" .
-                     "                           =down : 2 rotated pages per sheet doublesided \n" ;
-$Help{RESULT}      = "              --result   resulting file \n" ;
-$Help{result}      =
-$Help{RESULT}      . "                           =name : filename \n" ;
-$Help{INPUT}       = "               --input   input file (if used)\n" ;
-$Help{input}       =
-$Help{INPUT}       . "                           =name : filename \n" ;
-$Help{SUFFIX}      = "              --suffix   resulting file suffix\n" ;
-$Help{suffix}      =
-$Help{SUFFIX}      . "                         =string : suffix \n" ;
-$Help{RUNS}        = "                --runs   maximum number of TeX runs \n" ;
-$Help{runs}        =
-$Help{RUNS}        . "                           =n : number of runs\n" ;
-$Help{SILENT}      = "              --silent   minimize (status) messages\n" ;
-$Help{TEX}         = "                 --tex   TeX binary \n" ;
-$Help{tex}         =
-$Help{TEX}         . "                           =name : binary of executable \n" ;
-$Help{VERBOSE}     = "             --verbose   shows some additional info \n" ;
-$Help{HELP}        = "                --help   show this or more, e.g. '--help interface'\n" ;
+#### old help system
 
-$Help{ALONE}       = "               --alone   bypass utilities (e.g. fmtutil for non-standard fmt's)\n" ;
-$Help{TEXUTIL}     = "             --texutil   force TeXUtil run\n" ;
-$Help{SETFILE}     = "             --setfile   load environment (batch) file\n" ;
+# $Help{ARRANGE}     = "             --arrange   process and arrange\n" ;
+# $Help{BATCH}       = "               --batch   run in batch mode (don't pause)\n" ;
+# $Help{CENTERPAGE}  = "          --centerpage   center the page on the paper\n" ;
+# $Help{COLOR}       = "               --color   enable color (when not yet enabled)\n" ;
+# $Help{USEMODULE}   = "           --usemodule   load some modules first\n" ;
+# $Help{usemodule}   =
+# $Help{USEMODULE}   . "                           =name : list of modules\n" ;
+# $Help{XMLFILTER}   = "           --xmlfilter   apply XML filter\n" ;
+# $Help{xmlfilter}   =
+# $Help{XMLFILTER}   . "                           =name : list of filters\n" ;
+# $Help{ENVIRONMENT} = "         --environment   load some environments first\n" ;
+# $Help{environment} =
+# $Help{ENVIRONMENT} . "                           =name : list of environments\n" ;
+# $Help{FAST}        = "                --fast   skip as much as possible\n" ;
+# $Help{FIGURES}     = "             --figures   typeset figure directory\n" ;
+# $Help{figures}     =
+# $Help{FIGURES}     . "                           =a : room for corrections\n"
+#                    . "                           =b : just graphics\n"
+#                    . "                           =c : one (cropped) per page\n"
+#                    . "         --paperoffset   room left at paper border\n" ;
+# $Help{FINAL}       = "               --final   add a final run without skipping\n" ;
+# $Help{FORMAT}      = "              --format   fmt file\n" ;
+# $Help{format}      =
+# $Help{FORMAT}      . "                           =name : format file (memory dump) \n" ;
+# $Help{MPFORMAT}    = "            --mpformat   mem file\n" ;
+# $Help{mpformat}    =
+# $Help{MPFORMAT}    . "                           =name : format file (memory dump) \n" ;
+# $Help{INTERFACE}   = "           --interface   user interface\n" ;
+# $Help{interface}   =
+# $Help{INTERFACE}   . "                           =en : English\n"
+#                    . "                           =nl : Dutch\n"
+#                    . "                           =de : German\n"
+#                    . "                           =cz : Czech\n"
+#                    . "                           =uk : Brittish\n"
+#                    . "                           =it : Italian\n" ;
+# $Help{LANGUAGE}    = "            --language   main hyphenation language \n" ;
+# $Help{language}    =
+# $Help{LANGUAGE}    . "                           =xx : standard abbreviation \n" ;
+# $Help{LISTING}     = "             --listing   produce a verbatim listing\n" ;
+# $Help{listing}     =
+# $Help{LISTING}     . "           --backspace   inner margin of the page\n" .
+#                      "            --topspace   top/bottom margin of the page\n" .
+#                      "              --pretty   enable pretty printing\n" .
+#                      "               --color   use color for pretty printing\n" ;
+# $Help{MAKE}        = "                --make   build format files \n" ;
+# $Help{make}        =
+# $Help{MAKE}        . "            --language   patterns to include\n" .
+#                      "            --bodyfont   bodyfont to preload\n" .
+#                      "            --response   response interface language\n" .
+#                      "              --format   TeX format\n" .
+#                      "            --mpformat   MetaPost format\n" .
+#                      "             --program   TeX program\n" ;
+# $Help{MODE}        = "                --mode   running mode \n" ;
+# $Help{mode}        =
+# $Help{MODE}        . "                           =list : modes to set\n" ;
+# $Help{MODULE}      = "              --module   typeset tex/pl/mp module\n" ;
+# $Help{MPTEX}       = "               --mptex   run an MetaPost plus btex-etex cycle\n" ;
+# $Help{MPXTEX}      = "              --mpxtex   generatet an MetaPostmpx file\n" ;
+# $Help{NOARRANGE}   = "           --noarrange   process but ignore arrange\n" ;
+# $Help{NOMP}        = "                --nomp   don't run MetaPost at all\n" ;
+# $Help{NOMPRUN}     = "             --nomprun   don't run MetaPost at runtime\n" ;
+# $Help{AUTOMPRUN}   = "           --automprun   MetaPost at runtime when needed\n" ;
+# $Help{ONCE}        = "                --once   run TeX only once (no TeXUtil either)\n" ;
+# $Help{OUTPUT}      = "              --output   specials to use\n" ;
+# $Help{output}      =
+# $Help{OUTPUT}      . "                           =pdftex\n"
+#                    . "                           =dvips\n"
+#                    . "                           =dvipsone\n"
+#                    . "                           =dviwindo\n"
+#                    . "                           =dviview\n"
+#                    . "                           =dvipdfm\n" ;
+# $Help{PASSON}      = '              --passon   switches to pass to TeX ("--src" for MikTeX)' . "\n" ;
+# $Help{PAGES}       = "               --pages   pages to output\n" ;
+# $Help{pages}       =
+# $Help{PAGES}       . "                           =odd   : odd pages\n" .
+#                      "                           =even  : even pages\n" .
+#                      "                           =x,y:z : pages x and y to z\n" ;
+# $Help{PAPER}       = "               --paper   paper input and output format\n" ;
+# $Help{paper}       =
+# $Help{PAPER}       . "                           =a4a3 : A4 printed on A3\n" .
+#                      "                           =a5a4 : A5 printed on A4\n" ;
+# $Help{PATH}        = "                --path   document source path\n" ;
+# $Help{path}        =
+# $Help{PATH}        . "                           =string : path\n" ;
+# $Help{PDF}         = "                 --pdf   produce PDF directly using pdf(e)tex\n" ;
+# $Help{PDFARRANGE}  = "          --pdfarrange   arrange pdf pages\n" ;
+# $Help{pdfarrange}  =
+# $Help{PDFARRANGE}  . "         --paperoffset   room left at paper border\n" .
+#                      "               --paper   paper format\n" .
+#                      "            --noduplex   single sided\n" .
+#                      "           --backspace   inner margin of the page\n" .
+#                      "            --topspace   top/bottom margin of the page\n" .
+#                      "            --markings   add cutmarks\n" .
+#                      "          --background     =background graphic\n" .
+#                      "            --addempty   add empty page after\n" .
+#                      "           --textwidth   width of the original (one sided) text\n" ;
+# $Help{PDFCOMBINE}  = "          --pdfcombine   combine pages to one page\n" ;
+# $Help{pdfcombine}  =
+# $Help{PDFCOMBINE}  . "         --paperformat   paper format\n" .
+#                      "         --combination   n*m pages per page\n" .
+#                      "         --paperoffset   room left at paper border\n" ;
+# $Help{PDFCOPY}     = "             --pdfcopy   scale pages down/up\n" ;
+# $Help{pdfcopy}     =
+# $Help{PDFCOPY}     . "               --scale   new page scale\n" .
+#                      "         --paperoffset   room left at paper border\n" .
+#                      "            --markings   add cutmarks\n" .
+#                      "          --background     =background graphic\n" ;
+# $Help{PDFSELECT}   = "           --pdfselect   select pdf pages\n" ;
+# $Help{pdfselect}   =
+# $Help{PDFSELECT}   . "           --selection   pages to select\n" .
+#                      "                           =odd   : odd pages\n" .
+#                      "                           =even  : even pages\n" .
+#                      "                           =x,y:z : pages x and y to z\n" .
+#                      "         --paperoffset   room left at paper border\n" .
+#                      "         --paperformat   paper format\n" .
+#                      "           --backspace   inner margin of the page\n" .
+#                      "            --topspace   top/bottom margin of the page\n" .
+#                      "            --markings   add cutmarks\n" .
+#                      "          --background     =background graphic\n" .
+#                      "            --addempty   add empty page after\n" .
+#                      "           --textwidth   width of the original (one sided) text\n" ;
+# $Help{PRINT}       = "               --print   page imposition scheme\n" ;
+# $Help{print}       =
+# $Help{PRINT}       . "                             =up : 2 pages per sheet doublesided           \n" .
+#                      "                           =down : 2 rotated pages per sheet doublesided \n" ;
+# $Help{RESULT}      = "              --result   resulting file \n" ;
+# $Help{result}      =
+# $Help{RESULT}      . "                           =name : filename \n" ;
+# $Help{INPUT}       = "               --input   input file (if used)\n" ;
+# $Help{input}       =
+# $Help{INPUT}       . "                           =name : filename \n" ;
+# $Help{SUFFIX}      = "              --suffix   resulting file suffix\n" ;
+# $Help{suffix}      =
+# $Help{SUFFIX}      . "                         =string : suffix \n" ;
+# $Help{RUNS}        = "                --runs   maximum number of TeX runs \n" ;
+# $Help{runs}        =
+# $Help{RUNS}        . "                           =n : number of runs\n" ;
+# $Help{SILENT}      = "              --silent   minimize (status) messages\n" ;
+# $Help{TEX}         = "                 --tex   TeX binary \n" ;
+# $Help{tex}         =
+# $Help{TEX}         . "                           =name : binary of executable \n" ;
+# $Help{VERBOSE}     = "             --verbose   shows some additional info \n" ;
+# $Help{HELP}        = "                --help   show this or more, e.g. '--help interface'\n" ;
+#
+# $Help{ALONE}       = "               --alone   bypass utilities (e.g. fmtutil for non-standard fmt's)\n" ;
+# $Help{TEXUTIL}     = "             --texutil   force TeXUtil run\n" ;
+# $Help{SETFILE}     = "             --setfile   load environment (batch) file\n" ;
+#
+# if ($HelpAsked)
+#   { if (@ARGV)
+#       { foreach (@ARGV) { s/\-//go ; print "$Help{$_}\n" } }
+#     else
+#       { print $Help{ARRANGE}     ;
+#         print $Help{BATCH}       ;
+#         print $Help{CENTERPAGE}  ;
+#         print $Help{COLOR}       ;
+# #       print $Help{CONVERT}     ;
+#         print $Help{INPUT}       ;
+#         print $Help{USEMODULE}   ;
+#         print $Help{XMLFILTER}   ;
+#         print $Help{ENVIRONMENT} ;
+#         print $Help{FAST}        ;
+#         print $Help{FIGURES}     ;
+#         print $Help{FINAL}       ;
+#         print $Help{FORMAT}      ;
+#         print $Help{INTERFACE}   ;
+#         print $Help{LISTING}     ;
+#         print $Help{LANGUAGE}    ;
+#         print $Help{MAKE}        ;
+#         print $Help{MODE}        ;
+#         print $Help{MODULE}      ;
+#         print $Help{MPTEX}       ;
+#         print $Help{MPXTEX}      ;
+#         print $Help{NOARRANGE}   ;
+#         print $Help{NOMP}        ;
+#         print $Help{NOMPRUN}     ;
+#         print $Help{AUTOMPRUN}   ;
+#         print $Help{ONCE}        ;
+#         print $Help{OUTPUT}      ;
+#         print $Help{PAGES}       ;
+#         print $Help{PAPER}       ;
+#         print $Help{PASSON}      ;
+#         print $Help{PATH}        ;
+#         print $Help{PDFARRANGE}  ;
+#         print $Help{PDFCOMBINE}  ;
+#         print $Help{PDFCOPY}     ;
+#         print $Help{PDFSELECT}   ;
+#         print $Help{PDF}         ;
+#         print $Help{PRINT}       ;
+#         print $Help{RESULT}      ;
+#         print $Help{SUFFIX}      ;
+#         print $Help{RUNS}        ;
+#         print $Help{SILENT}      ;
+#         print $Help{TEX}         ;
+#         print $Help{VERBOSE}     ;
+#         print $Help{ALONE}       ;
+#         print $Help{TEXUTIL}     ;
+#         print $Help{SETFILE}     ;
+#         print "\n"               ;
+#         print $Help{HELP}        ;
+#         print "\n"               }
+#     exit 0 }
+
+#### new help system, written by Wybo Dekker
+
+# Sub-option
+
+struct Subopt => 
+  { desc => '$' ,    # description
+    vals => '%' } ;  # assignable values 
+
+# Main option
+
+struct Opt => 
+  { desc => '$' ,   # desciption
+    vals => '%' ,   # assignable values
+    subs => '%' } ; # suboptions 
+
+# read a main option plus its
+#   description,
+#   assignable values and
+#     sub-options and their
+#       description and
+#       assignable values
+
+sub read_options 
+  { $recurse++ ;
+    my $v = shift;
+    chomp ;
+    my $opt = $recurse ? Subopt->new() : Opt->new() ;
+    $opt->desc($v) ;
+
+    while(@opts) 
+      { $_ = shift @opts ;
+        if (/^--+/) 
+          { unshift @opts, $_ if $recurse ; last }
+        if ($recurse && !/^=/) 
+          { unshift @opts, $_ ; last }
+        chomp ;
+        my ($kk,$vv) = split(/\s+/,$_,2); # was \t 
+        $vv||='' ;
+        if (/^=/) 
+          { $opt->vals($kk,$vv) } 
+        elsif (!$recurse)  
+          { $opt->subs($kk,read_options($vv)) } }
+    $recurse-- ;
+    $opt }
+
+my $helpdone = 0 ; 
+
+sub print_opt 
+  { my ($k,$opt)=@_ ;
+    if ($helpdone) { $shorthelp or print "\n" } $helpdone = 1 ; # hh 
+    $~ = 'H1' ; 
+    write ;
+    return if $shorthelp<0 ;
+    for $k (sort keys %{$opt->vals}) {print_val($k,${$opt->vals}{$k}) }
+    return if $shorthelp>0 ;
+    for $k (sort keys %{$opt->subs}) {print_subopt($k,${$opt->subs}{$k}) }
+format H1 =
+@>>>>>>>>>>>>>>>>>>>>>   @<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+"--$k",$opt->desc
+. 
+  }
+
+sub print_subopt 
+  { my ($k,$opt) = @_ ;
+    $~ = 'H3' ; 
+    write ;
+    for $k (sort keys %{$opt->vals}) 
+      {print_val($k,${$opt->vals}{$k}) }
+format H3 =
+@>>>>>>>>>>>>>>>>>>>>>   @<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+"--$k",$opt->desc
+. 
+  }
+
+sub print_val 
+  { my ($k,$opt) = @_ ;
+    $~ = 'H2' ; write ;
+format H2 =
+                           @<<<<<<< : @<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+$k,$opt
+.
+  }
+
+# read all options
+
+$recurse-- ;
+@opts = <DATA> ;
+while(@opts) 
+  { $_ = shift @opts ;
+    last if /^--+/ ;
+    my ($k,$v) = split(/\s+/,$_,2); # was \t
+    $Help{$k} = read_options($v) }
+
+# help to help
+
+sub show_help_options
+  { print # "\n" .
+      "                --help   overview of all options and their values\n" . 
+      "            --help all   all about all options\n" . 
+      "          --help short   just the main options\n" . 
+      "   --help mode ... pdf   all about a few options\n" . 
+      "        --help '*.pdf'   all about options containing 'pdf'\n" } ;
+
+# determine what user wants to see
 
 if ($HelpAsked)
-  { if (@ARGV)
-      { foreach (@ARGV) { s/\-//go ; print "$Help{$_}\n" } }
-    else
-      { print $Help{ARRANGE}     ;
-        print $Help{BATCH}       ;
-        print $Help{CENTERPAGE}  ;
-        print $Help{COLOR}       ;
-#       print $Help{CONVERT}     ;
-        print $Help{INPUT}       ;
-        print $Help{USEMODULE}   ;
-        print $Help{XMLFILTER}   ;
-        print $Help{ENVIRONMENT} ;
-        print $Help{FAST}        ;
-        print $Help{FIGURES}     ;
-        print $Help{FINAL}       ;
-        print $Help{FORMAT}      ;
-        print $Help{INTERFACE}   ;
-        print $Help{LISTING}     ;
-        print $Help{LANGUAGE}    ;
-        print $Help{MAKE}        ;
-        print $Help{MODE}        ;
-        print $Help{MODULE}      ;
-        print $Help{MPTEX}       ;
-        print $Help{MPXTEX}      ;
-        print $Help{NOARRANGE}   ;
-        print $Help{NOMP}        ;
-        print $Help{NOMPRUN}     ;
-        print $Help{AUTOMPRUN}   ;
-        print $Help{ONCE}        ;
-        print $Help{OUTPUT}      ;
-        print $Help{PAGES}       ;
-        print $Help{PAPER}       ;
-        print $Help{PASSON}      ;
-        print $Help{PATH}        ;
-        print $Help{PDFARRANGE}  ;
-        print $Help{PDFCOMBINE}  ;
-        print $Help{PDFCOPY}     ;
-        print $Help{PDFSELECT}   ;
-        print $Help{PDF}         ;
-        print $Help{PRINT}       ;
-        print $Help{RESULT}      ;
-        print $Help{SUFFIX}      ;
-        print $Help{RUNS}        ;
-        print $Help{SILENT}      ;
-        print $Help{TEX}         ;
-        print $Help{VERBOSE}     ;
-        print $Help{ALONE}       ;
-        print $Help{TEXUTIL}     ;
-        print $Help{SETFILE}     ;
-        print "\n"               ;
-        print $Help{HELP}        ;
-        print "\n"               }
-    exit 0 }
+  { $shorthelp = 0 ;
+    @help = (sort keys %Help) ;
+    if ("@ARGV" eq "all") 
+      { # everything
+      } 
+    elsif ("@ARGV" eq "short") 
+      { # nearly everything 
+        $shorthelp-- }  
+    elsif ("@ARGV" eq "help") 
+      { # help on help 
+        show_help_options ; 
+        exit } 
+    elsif (@ARGV) 
+      { # one or a few options, completely
+        my @h=@ARGV ;
+        @help = () ;
+        for (@h) 
+          { # print "testing $_\n";
+            # next if (/^[\*\?]/) ; # HH, else error
+            if (/^[\*\?]/) { $_ = ".$_" } # HH, else error
+            $Help{$_} and push(@help,$_) or do 
+              { my $unknown = $_ ;
+                for (keys %Help) 
+                  { /$unknown/ and push(@help,$_) } } } } 
+   else 
+     { # all main option and their assignable values
+       $shorthelp++ } }
+
+sub show_help_info
+  { map { print_opt($_,$Help{$_}) } @help } 
+
+# uncomment this to see the structure of a Help element:
+# print Dumper($Help{pdfselect});
+
+#### end of help system
 
 my $FinalRunNeeded = 0 ;
 
@@ -792,9 +940,9 @@ sub MPJobName
   { my $JobName = shift ;
     my $MPfile = shift ;
     my $MPJobName = '' ;
-    if (-s "$JobName-$MPfile.mp">50)
+    if (-s "$JobName-$MPfile.mp">100)
       { $MPJobName = "$JobName-$MPfile.mp" }
-    elsif (-s "$MPfile.mp">50)
+    elsif (-s "$MPfile.mp">100)
       { $MPJobName = "$MPfile.mp" }
     else
       { $MPJobName = "" }
@@ -804,13 +952,11 @@ sub RunPerlScript
   { my ($ScriptName, $Options) = @_ ;
     if ($dosish)
 #      { if (-e "$TeXScriptsPath$ScriptName.pl")
-      { # print "$TeXScriptsPath$ScriptName$own_type" ;
-        if (-e "$TeXScriptsPath$ScriptName$own_type")
+      { if (-e "$TeXScriptsPath$ScriptName$own_type")
 #          { system ("perl $TeXScriptsPath$ScriptName.pl $Options") } }
           { system ("$own_stub$TeXScriptsPath$ScriptName$own_type $Options") } }
     else
       { system ("$ScriptName $Options") } }
-
 
 sub ConvertXMLFile
   { my $FileName = shift ; RunPerlScript($SGMLtoTeX, "$FileName.xml") }
@@ -841,9 +987,7 @@ sub CheckOutputFormat
 
 sub MakeOptionFile
   { my ($FinalRun, $FastDisabled, $JobName, $JobSuffix) = @_ ;
-    unless (open (OPT, ">$JobName.top")) 
-      { print "  problem with writing : $JobName.top\n" ;
-        open (OPT, ">$JobName-opt.log") } 
+    open (OPT, ">$JobName.top") ;
     print OPT "\\unprotect\n" ;
     if ($Result) # no '' test
       { print OPT "\\setupsystem[file=$Result]\n" }
@@ -1018,24 +1162,24 @@ sub CompareFiles # 2 = tuo
       { return 0 } }
 
 sub CheckPositions
-  { return if ($DVIspec eq '') ;
-    my $JobName = shift ; my $TuoName = "$JobName.tuo" ;
-    if (open(POS,"$TuoName"))
-      { seek POS, (-s $TuoName) - 5000, 0 ;
-        while (<POS>)
-          { if (/\% *position commands *\: *(\d*) *\(unresolved\)/io)
-              { if ($1)
-                  { print "         dvi positions : $1 ($DVIspec ." ;
-                    close (POS) ;
-                    open(POS,">>$TuoName") ;
-                    $ENV{uc "$DVIspec.TEXFONTSDIR"} = $TeXFontsPath ;
-                    print POS "\%\n\% extracted from dvi file by $DVIspec:\n\%\n" ;
-                    close(POS) ;
-                    print "." ;
-                    RunPerlScript ($DVIspec, "$JobName >> $TuoName") ;
-                    print ".)\n" }
-                last } }
-        close (POS) } }
+ { return if ($DVIspec eq '') ;
+   my $JobName = shift ; my $TuoName = "$JobName.tuo" ;
+   if (open(POS,"$TuoName"))
+     { seek POS, (-s $TuoName) - 5000, 0 ;
+       while (<POS>)
+         { if (/\% *position commands *\: *(\d*) *\(unresolved\)/io)
+             { if ($1)
+                 { print "         dvi positions : $1 ($DVIspec ." ;
+                   close (POS) ;
+                   open(POS,">>$TuoName") ;
+                   $ENV{uc "$DVIspec.TEXFONTSDIR"} = $TeXFontsPath ;
+                   print POS "\%\n\% extracted from dvi file by $DVIspec:\n\%\n" ;
+                   close(POS) ;
+                   print "." ;
+                   RunPerlScript ($DVIspec, "$JobName >> $TuoName") ;
+                   print ".)\n" }
+               last } }
+       close (POS) } }
 
 # my @ExtraPrograms = () ; 
 # 
@@ -1406,10 +1550,10 @@ sub RunModule
         next unless $Suffix =~ /(tex|mp|pl|pm)/io ;
         DoRunModule($Name, $Suffix) } }
 
-# the next one can be more efficient: directly process ted 
+# the next one can be more efficient: directly process ted
 # file a la --use=abr-01,mod-01
 
-sub DoRunModule 
+sub DoRunModule
   { my ($FileName,$FileSuffix) = @_ ;
     RunPerlScript ($TeXUtil, "--documents $FileName.$FileSuffix" ) ;
     print "                module : $FileName\n\n" ;
@@ -1759,7 +1903,7 @@ sub RunFormats
       { if ($Interface eq $MetaFun)
           { RunMpFormat ($MetaFun) ; $MetaFunDone = 1 }
         elsif ($Interface eq $MpToPdf)
-          { RunOneFormat ("$MpToPdf") }
+          { if ($TeXExecutable =~ /pdf/io) { RunOneFormat ("$MpToPdf") } }
         else
           { RunOneFormat ("$ConTeXtFormatsPrefix$Interface") } }
     #
@@ -1913,8 +2057,8 @@ $TexFound = $MergeBE || /btex .*? etex/o ;
             if ($MergeBE)
               { s/beginfig\s*\((\d+)\)\s*\;/beginfig($1)\;\n$mpbetex{$1}\n/goims }
             # flush
-            unless (/beginfig\s*\(\s*0\s*\)/gmois) 
-              { print MP $mpbetex{0} } 
+            unless (/beginfig\s*\(\s*0\s*\)/gmois)
+              { print MP $mpbetex{0} }
             print MP $_ ;
             print MP "end .\n" ;
             close(MP) }
@@ -2010,14 +2154,16 @@ if ($SetFile ne "")
   { load_set_file ($SetFile,$Verbose) }
 
 # todo : more consistent argv handling
-# 
-# sub ifargs 
-#   { $problems = (@ARGV==0) ;  
+#
+# sub ifargs
+#   { $problems = (@ARGV==0) ;
 #     if ($problems)
 #       { print "               warning : nothing to do\n" }
-#     return $problems } 
+#     return $problems }
 
-if ($TypesetListing)
+   if ($HelpAsked) 
+  { show_help_info } 
+elsif ($TypesetListing)
   { RunListing (@ARGV) }
 elsif ($TypesetFigures)
   { RunFigures (@ARGV) }
@@ -2031,15 +2177,187 @@ elsif ($MakeFormats)
     else
       { RunFormats } }
 elsif (@ARGV)
-  { @ARGV = <@ARGV> ; 
-foreach (@ARGV) { s/\\/\//goi } 
-    RunFiles }
-else
-  { print $Help{HELP} ;
-    unless ($Verbose) { print $Help{VERBOSE} } }
-
+  { @ARGV = <@ARGV> ; RunFiles }
+# else
+#   { # print $Help{HELP} ;
+#     # unless ($Verbose) { print $Help{VERBOSE} } }
+elsif (!$HelpAsked) 
+  { show_help_options } 
+    
 $TotalTime = time - $TotalTime ;
 
-print "\n        total run time : $TotalTime seconds\n" ;
+unless ($HelpAsked) 
+  { print "\n        total run time : $TotalTime seconds\n" }
 
 if ($Problems) { exit 1 }
+
+__DATA__
+arrange process and arrange
+-----------
+batch run in batch mode (don't pause)
+-----------
+centerpage center the page on the paper
+-----------
+color enable color (when not yet enabled)
+-----------
+usemodule load some modules first
+=name list of modules
+-----------
+xmlfilter apply XML filter
+=name list of filters
+-----------
+environment load some environments first
+=name list of environments
+-----------
+fast skip as much as possible
+-----------
+figures typeset figure directory
+=a room for corrections
+=b just graphics
+=c one (cropped) per page
+paperoffset room left at paper border
+-----------
+final add a final run without skipping
+-----------
+format fmt file
+=name format file (memory dump) 
+-----------
+mpformat mem file
+=name format file (memory dump) 
+-----------
+interface user interface
+=en English
+=nl Dutch
+=de German
+=cz Czech
+=uk Brittish
+=it Italian
+-----------
+language main hyphenation language 
+=xx standard abbreviation 
+-----------
+listing produce a verbatim listing
+backspace inner margin of the page
+topspace top/bottom margin of the page 
+pretty enable pretty printing 
+color use color for pretty printing 
+-----------
+make build format files 
+language patterns to include
+bodyfont bodyfont to preload
+response response interface language
+format TeX format
+mpformat MetaPost format
+program TeX program
+-----------
+mode running mode 
+=list modes to set
+-----------
+module typeset tex/pl/mp module
+-----------
+mptex run an MetaPost plus btex-etex cycle
+-----------
+mpxtex generatet an MetaPostmpx file
+-----------
+noarrange process but ignore arrange
+-----------
+nomp don't run MetaPost at all
+-----------
+nomprun don't run MetaPost at runtime
+-----------
+automprun MetaPost at runtime when needed
+-----------
+once run TeX only once (no TeXUtil either)
+-----------
+output specials to use
+=pdftex   Han The Than's pdf backend  
+=dvips    Thomas Rokicky's dvi to ps converter
+=dvipsone YandY's dvi to ps converter 
+=dviwindo YandY's windows previewer
+=dvipdfm  Mark Wicks' dvi to pdf converter 
+-----------
+passon switches to pass to TeX (--src for MikTeX)
+-----------
+pages pages to output
+=odd odd pages
+=even even pages
+=x,y:z pages x and y to z
+-----------
+paper paper input and output format
+=a4a3 A4 printed on A3
+=a5a4 A5 printed on A4
+-----------
+path document source path
+=string path
+-----------
+pdf produce PDF directly using pdf(e)tex
+-----------
+pdfarrange arrange pdf pages
+paperoffset room left at paper border
+paper paper format
+noduplex single sided
+backspace inner margin of the page
+topspace top/bottom margin of the page
+markings add cutmarks
+background  
+=string background graphic
+addempty add empty page after
+textwidth width of the original (one sided) text
+-----------
+pdfcombine combine pages to one page
+paperformat paper format
+combination n*m pages per page
+paperoffset room left at paper border
+-----------
+pdfcopy scale pages down/up
+scale new page scale
+paperoffset room left at paper border
+markings add cutmarks
+background 
+=string background graphic
+-----------
+pdfselect select pdf pages
+selection pages to select
+=odd odd pages
+=even even pages
+=x,y:z pages x and y to z
+paperoffset room left at paper border
+paperformat paper format
+backspace inner margin of the page
+topspace top/bottom margin of the page
+markings add cutmarks
+background  
+=string background graphic
+addempty add empty page after
+textwidth width of the original (one sided) text
+-----------
+print page imposition scheme
+=up 2 pages per sheet doublesided   
+=down 2 rotated pages per sheet doublesided 
+-----------
+result resulting file 
+=name filename 
+-----------
+input input file (if used)
+=name filename 
+-----------
+suffix resulting file suffix
+=string suffix 
+-----------
+runs maximum number of TeX runs 
+=n number of runs
+-----------
+silent minimize (status) messages
+-----------
+tex TeX binary 
+=name binary of executable 
+-----------
+verbose shows some additional info 
+-----------
+help show this or more, e.g. '--help interface'
+-----------
+alone bypass utilities (e.g. fmtutil for non-standard fmt's)
+-----------
+texutil force TeXUtil run
+-----------
+setfile load environment (batch) file

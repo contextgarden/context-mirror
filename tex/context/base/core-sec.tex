@@ -354,16 +354,29 @@
 
 % suited for chinese too:
 
+% \def\@@sectionconversion#1#2% a doublure with \@@shortsectionnumber
+%   {\ifnum#2=0 0\else % else troubles with \uchar
+%      \@EA\ifx\csname\??se#1\@@sectieblok\c!conversie\endcsname\relax
+%        \@EA\ifx\csname\??se#1\c!conversie\endcsname\relax
+%          #2%
+%        \else
+%          \getvalue{\??cv\getvalue{\??se#1\c!conversie}}{#2}%
+%        \fi
+%      \else
+%        \getvalue{\??cv\getvalue{\??se#1\@@sectieblok\c!conversie}}{#2}%
+%      \fi
+%    \fi}
+
 \def\@@sectionconversion#1#2% a doublure with \@@shortsectionnumber
   {\ifnum#2=0 0\else % else troubles with \uchar
      \@EA\ifx\csname\??se#1\@@sectieblok\c!conversie\endcsname\relax
        \@EA\ifx\csname\??se#1\c!conversie\endcsname\relax
          #2%
        \else
-         \getvalue{\??cv\getvalue{\??se#1\c!conversie}}{#2}%
+         \convertnumber{\getvalue{\??se#1\c!conversie}}{#2}%
        \fi
      \else
-       \getvalue{\??cv\getvalue{\??se#1\@@sectieblok\c!conversie}}{#2}%
+       \convertnumber{\getvalue{\??se#1\@@sectieblok\c!conversie}}{#2}%
      \fi
    \fi}
 
@@ -1118,16 +1131,25 @@
          \fi
        \fi}}
 
-           \def   \writtenfullsectionnumber      {\string\fullsectionnumber}
-           \def   \ignoredfullsectionnumber#1#2#3{#3}
-           \let    \storedfullsectionnumber       \relax
-\unexpanded\def   \naturalfullsectionnumber#1#2#3{\sectiebloklabel{#1}{\getvalue{\??cv#2}{#3}}}
-           \def\expandablefullsectionnumber#1#2#3{#3}
-\unexpanded\def   \limitedfullsectionnumber#1#2#3{\getvalue{\??cv#2}{#3}}
+            \def   \writtenfullsectionnumber      {\string\fullsectionnumber}
+            \def   \ignoredfullsectionnumber#1#2#3{#3}
+            \let    \storedfullsectionnumber       \relax 
+%           \def\expandablefullsectionnumber#1#2#3{#3}
+%\unexpanded\def   \naturalfullsectionnumber#1#2#3{\sectiebloklabel{#1}{\getvalue{\??cv#2}{#3}}}
+%\unexpanded\def   \limitedfullsectionnumber#1#2#3{\getvalue{\??cv#2}{#3}}
 
 % under test:
 %
-%          \def\expandablefullsectionnumber#1#2#3{\getvalue{\??cv#2}{#3}}
+%           \def\expandablefullsectionnumber#1#2#3{\getvalue{\??cv#2}{#3}}
+
+\def\expandablefullsectionnumber#1#2#3%
+  {\convertnumber{#2}{#3}}
+
+\unexpanded\def\naturalfullsectionnumber#1#2#3%
+  {\sectiebloklabel{#1}{\convertnumber{#2}{#3}}}
+ 
+\unexpanded\def\limitedfullsectionnumber#1#2#3%
+  {\convertnumber{#2}{#3}}
 
 \def\setfullsectionnumber#1%
   {\doifelsevalue{#1\c!kopconversie}{\v!ja}

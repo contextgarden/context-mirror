@@ -147,15 +147,47 @@
 \gdef\doifelseXMLelement#1%
   {\doifdefinedelse{\@@XMLsave:#1}}
 
-\gdef\flushXMLelement#1%
-  {\csname\@@XMLsave:#1\endcsname}
+\gdef\doifelseXMLelementcontent#1%
+  {\ifcsname\@@XMLsave:#1\endcsname
+     \bgroup
+     \@EA\convertcommand\csname\@@XMLsave:#1\endcsname\to\ascii
+     \setbox\scratchbox\hbox{\ignorespaces\ascii\unskip\unskip\unskip}%
+     \ifdim\wd\scratchbox>\zeropoint
+       \egroup\@EAEAEA\firstoftwoarguments
+     \else
+       \egroup\@EAEAEA\secondoftwoarguments
+     \fi
+   \else
+     \@EA\secondoftwoarguments
+   \fi}
 
-%\gdef\flushXMLelement#1%
-%  {\csname
-%     \@@XMLsave:\ifcsname\@@XMLsave:#1\endcsname#1\else\@@XMLsave\fi
-%   \endcsname}
-%
-%\letvalue{\@@XMLsave:\@@XMLsave}\empty
+\gdef\doifelseXMLelementequals#1#2%
+  {\ifcsname\@@XMLsave:#1\endcsname
+     \bgroup
+     \@EA\convertcommand\csname\@@XMLsave:#1\endcsname\to\asciia
+     \convertargument#2\to\asciib
+     \ifx\asciia\asciib
+       \egroup\@EAEAEA\firstoftwoarguments
+     \else
+       \egroup\@EAEAEA\secondoftwoarguments
+     \fi
+   \else
+     \@EA\secondoftwoarguments
+   \fi}
+
+\gdef\convertXMLelement#1\to#2%
+  {\ifcsname\@@XMLsave:#1\endcsname
+     \@EA\convertcommand\csname\@@XMLsave:#1\endcsname\to#2%
+   \else
+     \let#2\ascii
+   \fi}
+ 
+\gdef\flushXMLelement#1%
+  {\csname
+     \@@XMLsave:\ifcsname\@@XMLsave:#1\endcsname#1\else\@@XMLsave\fi
+   \endcsname}
+
+\global\letvalue{\@@XMLsave:\@@XMLsave}\empty
 
 \gdef\showXMLelement#1%
   {\showvalue{\@@XMLsave:#1}}
@@ -175,6 +207,23 @@
    \scantokens\@EA\@EA\@EA{\csname\@@XMLsave:#1\endcsname}%
    \endgroup}
 
+\gdef\reduceXMLescapeentities
+  {\setXMLentity{amp}{\string&}%
+   \setXMLentity{lt}{\string<}%
+   \setXMLentity{gt}{\string>}%
+   \setXMLentity{quot}{\string'}%
+   \setXMLentity{dquot}{\string"}}
+
+\gdef\reduceXMLelement#1\to#2% 
+  {\ifcsname\@@XMLsave:#1\endcsname
+     \bgroup
+     \reduceXMLescapetokens
+     \reduceXMLescapeentities
+     \expanded{\egroup\noexpand\def\noexpand#2{\csname\@@XMLsave:#1\endcsname}}%
+   \else
+     \let#2\empty
+   \fi}
+  
 \egroup
 
 \def\potentialXMLentity#1%

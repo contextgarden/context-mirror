@@ -331,7 +331,7 @@ stopsetup
 
 startsetup
 com:typefile:
-typ:arg/arg/:
+typ:val/arg/:
 val:*nome::
 val:*file::
 stopsetup

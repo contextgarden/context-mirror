@@ -251,6 +251,19 @@
    .the.everyenableXML
   E
 
+.gdef.reduceXMLescapetokens*
+  B.def#B.string#E*
+   .def$B.string$E*
+   .def%B.string%E*
+   .def\B.string\E*
+   .def^B.string^E*
+   .def_B.string_E*
+   .def{B.string{E*
+   .def}B.string}E*
+   .def|B.string|E*
+   *def~B.string~E*
+  E
+
 * The following macro can be invokes when reading from 
 * an auxiliary file. 
 
@@ -859,11 +872,11 @@
 
 \def\simpleXMLencoding{raw}
 
-\def\simplifyXMLentities%
+\def\simplifyXMLentities
   {\fastenableencoding\simpleXMLencoding
    \XMLsimpleentitiestrue}
 
-\def\defineXMLentity%
+\def\defineXMLentity
   {\dodoubleempty\dodefineXMLentity}
 
 \def\dodefineXMLentity[#1][#2]#3%
@@ -879,6 +892,9 @@
 \def\dododefineXMLentity#1#2%
   {\unspaceargument#1\to\ascii % #1 can be {[} or so 
    \long\setvalue{\@@XMLentity:\@EA\firstofoneargument\ascii}{#2}}
+
+\def\setXMLentity#1% fast one 
+  {\long\@EA\def\csname\@@XMLentity:#1\endcsname}
 
 %D May this wile become dodo (more in tune with rest); 
 %D beware: also remapped in xtag-map. 

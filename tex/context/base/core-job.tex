@@ -31,6 +31,8 @@
 %S
 %S CheckChar     $
 
+% \appendtoks \reportprotectionstate \to \everydump    
+
 \unprotect 
 
 \def\currentproject     {}
@@ -102,16 +104,17 @@
 \doifundefined{preloadfonts}    {\let\preloadfonts=\relax}
 \doifundefined{preloadspecials} {\let\preloadspecials=\relax}
 
-\def\loadsystemfiles%
-  {\readsysfile{\f!newfilename}
-     {\showmessage{\m!systems}{2}{\f!newfilename}}{}%
-   \readsysfile{\f!oldfilename}
-     {\showmessage{\m!systems}{2}{\f!oldfilename}}{}%
-   \readsysfile{\f!filfilename}
-     {\showmessage{\m!systems}{2}{\f!filfilename}}{}%
-   \readsysfile{\f!sysfilename}
-     {\showmessage{\m!systems}{2}{\f!sysfilename}}{}}
-
+% \def\loadsystemfiles%
+%   {\reportprotectionstate
+%    \readsysfile{\f!newfilename}
+%      {\showmessage{\m!systems}{2}{\f!newfilename}}{}%
+%    \readsysfile{\f!oldfilename}
+%      {\showmessage{\m!systems}{2}{\f!oldfilename}}{}%
+%    \readsysfile{\f!filfilename}
+%      {\showmessage{\m!systems}{2}{\f!filfilename}}{}%
+%    \readsysfile{\f!sysfilename}
+%      {\showmessage{\m!systems}{2}{\f!sysfilename}}{}}
+% 
 % test \@@svgebied
 
 \def\loadallsystemfiles#1%
@@ -124,7 +127,8 @@
    \fi}
 
 \def\loadsystemfiles%
-  {\readsysfile{\f!newfilename}
+  {\reportprotectionstate
+   \readsysfile{\f!newfilename}
      {\showmessage{\m!systems}{2}{\f!newfilename}}{}%
    \readsysfile{\f!oldfilename}
      {\showmessage{\m!systems}{2}{\f!oldfilename}}{}%
@@ -150,7 +154,8 @@
 \def\loadoptionfile% 
   {\readjobfile{\jobname.\f!optionextension}
      {\showmessage{\m!systems}{2}{\jobname.\f!optionextension}}%
-     {}}
+    %{\showmessage{\m!systems}{2}{\jobname.\f!optionextension}}}
+     {\writestatus{\m!systems}{no \jobname.\f!optionextension}}}
 
 % \newevery \everyjob \EveryJob
 % \appendtoks ... \to \everyjob
@@ -206,6 +211,9 @@
     %\expandafter\normalend   %
      \expandafter\end
    \fi}
+
+\let\starttext\starttekst 
+\let\stoptext \stoptekst 
 
 \let\normalend=\end
 

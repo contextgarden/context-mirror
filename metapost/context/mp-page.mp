@@ -31,6 +31,150 @@ if unknown InPageBody :
   boolean InPageBody ; InPageBody := false ;
 fi ;
 
+def SaveTextAreas =
+  path    SavedTextAreas  []  ; 
+  path    SavedTextColumns[]  ; 
+  numeric NOfSavedTextAreas   ; 
+  numeric NOfSavedTextColumns ; 
+  for i=1 upto NOfTextAreas :
+    SavedTextAreas[i] := TextAreas[i] ;
+  endfor ;
+  for i=1 upto NOfTextColumns :
+    SavedTextColumns[i] := TextColumns[i] ;
+  endfor ;
+  NOfSavedTextAreas   := NOfTextAreas ;
+  NOfSavedTextColumns := NOfTextColumns ;
+enddef ;
+
+def ResetTextAreas = 
+  path TextAreas[], TextColumns[]; 
+  numeric NOfTextAreas   ; NOfTextAreas   := 0 ;  
+  numeric NOfTextColumns ; NOfTextColumns := 0 ;  
+enddef ; 
+
+ResetTextAreas ; SaveTextAreas ; 
+
+def RegisterTextArea (expr x, y, w, h, d) = 
+  begingroup ; save p ; path p ;  
+    p := unitsquare xyscaled(w,h+d) shifted (x,y-d) ;
+    if NOfTextAreas>0 : 
+      % if needed, concatenate areas 
+      if (round(llcorner TextAreas[NOfTextAreas]) = round(ulcorner p)) and 
+         (round(lrcorner TextAreas[NOfTextAreas]) = round(urcorner p)) : 
+        p := ulcorner TextAreas[NOfTextAreas] --
+             urcorner TextAreas[NOfTextAreas] --
+             lrcorner p --
+             llcorner p --
+             cycle ;
+      else : 
+        NOfTextAreas := NOfTextAreas + 1 ; 
+      fi ; 
+    else : 
+      NOfTextAreas := NOfTextAreas + 1 ; 
+    fi ; 
+    TextAreas[NOfTextAreas] := p ;
+    if NOfTextColumns>0 : 
+      if (round(xpart llcorner TextColumns[NOfTextColumns]) = round(xpart ulcorner p)) and 
+         (round(xpart lrcorner TextColumns[NOfTextColumns]) = round(xpart urcorner p)) : 
+        p := ulcorner TextColumns[NOfTextColumns] --
+             urcorner TextColumns[NOfTextColumns] --
+             lrcorner p --
+             llcorner p --
+             cycle ;
+      else : 
+        NOfTextColumns := NOfTextColumns + 1 ; 
+      fi ; 
+    else : 
+      NOfTextColumns := NOfTextColumns + 1 ; 
+    fi ; 
+    TextColumns[NOfTextColumns] := p ;
+  endgroup ; 
+enddef ; 
+
+vardef InsideTextArea (expr _i_, _xy_) = 
+  ( (round(xpart _xy_) >= round(xpart llcorner TextAreas[_i_])) and 
+    (round(xpart _xy_) <= round(xpart lrcorner TextAreas[_i_])) and 
+    (round(ypart _xy_) >= round(ypart llcorner TextAreas[_i_])) and 
+    (round(ypart _xy_) <= round(ypart urcorner TextAreas[_i_])) )
+enddef ; 
+
+vardef InsideSavedTextArea (expr _i_, _xy_) = 
+  ( (round(xpart _xy_) >= round(xpart llcorner SavedTextAreas[_i_])) and 
+    (round(xpart _xy_) <= round(xpart lrcorner SavedTextAreas[_i_])) and 
+    (round(ypart _xy_) >= round(ypart llcorner SavedTextAreas[_i_])) and 
+    (round(ypart _xy_) <= round(ypart urcorner SavedTextAreas[_i_])) )
+enddef ; 
+
+vardef TextAreaX (expr x) = 
+  numeric _TextAreaX_ ; _TextAreaX_ := 0 ; 
+  for i := 1 upto NOfTextAreas : 
+    if (round(x) >= round(xpart llcorner TextAreas[i])) and 
+       (round(x) <= round(xpart lrcorner TextAreas[i])) : 
+      _TextAreaX_ := xpart llcorner TextAreas[i] ;
+    fi ;
+  endfor ;
+  _TextAreaX_ 
+enddef ; 
+
+vardef TextAreaY (expr y) = 
+  numeric _TextAreaY_ ; _TextAreaY_ := 0 ; 
+  for i := 1 upto NOfTextAreas : 
+    if (round(y) >= round(ypart llcorner TextAreas[NOfTextAreas])) and 
+       (round(y) <= round(ypart ulcorner TextAreas[NOfTextAreas])) : 
+      _TextAreaY_ := ypart llcorner TextAreas[NOfTextAreas] ;
+    fi ;
+  endfor ;
+  _TextAreaY_ 
+enddef ; 
+
+vardef TextAreaXY (expr x, y) = 
+  pair _TextAreaXY_ ; _TextAreaXY_ := origin ; 
+  for i := 1 upto NOfTextAreas : 
+    if (round(x) >= round(xpart llcorner TextAreas[i])) and 
+       (round(x) <= round(xpart lrcorner TextAreas[i])) and 
+       (round(y) >= round(ypart llcorner TextAreas[i])) and 
+       (round(y) <= round(ypart ulcorner TextAreas[i])) : 
+      _TextAreaXY_ := llconer TextAreas[i] ;
+    fi ;
+  endfor ;
+  _TextAreaXY_ 
+enddef ; 
+
+vardef TextAreaW (expr x) = 
+  numeric _TextAreaW_ ; _TextAreaW_ := 0 ; 
+  for i := 1 upto NOfTextAreas : 
+    if (round(x) >= round(xpart llcorner TextAreas[i])) and 
+       (round(x) <= round(xpart lrcorner TextAreas[i])) : 
+      _TextAreaW_ := bbwidth(TextAreas[i]) ;
+    fi ;
+  endfor ;
+  _TextAreaW_ 
+enddef ; 
+
+vardef TextAreaH (expr y) = 
+  numeric _TextAreaH_ ; _TextAreaH_ := 0 ; 
+  for i := 1 upto NOfTextAreas : 
+    if (round(y) >= round(ypart llcorner TextAreas[i])) and 
+       (round(y) <= round(ypart ulcorner TextAreas[i])) : 
+      _TextAreaH_ := bbheight(TextAreas[i]) ;
+    fi ;
+  endfor ;
+  _TextAreaH_ 
+enddef ; 
+
+vardef TextAreaWH (expr x, y) = 
+  pair _TextAreaWH_ ; _TextAreaWH_ := origin ; 
+  for i := 1 upto NOfTextAreas : 
+    if (round(x) >= round(xpart llcorner TextAreas[i])) and 
+       (round(x) <= round(xpart lrcorner TextAreas[i])) and 
+       (round(y) >= round(ypart llcorner TextAreas[i])) and 
+       (round(y) <= round(ypart ulcorner TextAreas[i])) : 
+      _TextAreaWH_ := (bbwidth(TextAreas[i]),bbheight(TextAreas[i])) ;
+    fi ;
+  endfor ;
+  _TextAreaWH_ 
+enddef ; 
+
 PageNumber          := 0 ; 
 PaperHeight         := 845.04684pt  ;
 PaperWidth          := 597.50787pt  ;

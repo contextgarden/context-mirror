@@ -1007,7 +1007,8 @@ BEGIN
     # $pm_path =~ s/texutil\.pl.*// }
     $pm_path = $0 ;
     $pm_path =~ s/\\/\//o ;
-    $pm_path =~ s/texutil\.pl.*//io ;
+    # $pm_path =~ s/texutil\.pl.*//io ;
+    $pm_path =~ s/(.*)texutil.*?$/$1/i ;
     if ($pm_path eq "") { $pm_path = "./" } }
 
 use lib $pm_path ;

@@ -27,9 +27,9 @@
 %D pagebody looks.
 
 \startuseMPgraphic{page data}
-  boolean PageStateAvailable, OnRightPage, InPageBody ; 
+  boolean PageStateAvailable, OnRightPage, InPageBody ;
   PageStateAvailable := OnRightPage := true ;
-  InPageBody         := \ifinpagebody true \else false \fi ; 
+  InPageBody         := \ifinpagebody true \else false \fi ;
   def LoadPageState =
     OnRightPage         :=      \MPonrightpage ;
     RealPageNumber      :=  \the\realpageno ;
@@ -119,5 +119,56 @@
 \appendtoks
   \includeMPgraphic{page data}
 \to \MPinitializations
+
+%D The next feature provides information about for instance
+%D column positions. This is an experimental feature,
+%D introduced when we needed backgrounds in columns (fill||in
+%D questions as implemented in a private module).
+%D
+%D See \type {mp-page.mp} for the definition of the macros:
+%D
+%D \startabulatie[|tl|l|p|]
+%D \NC ResetTextAreas        \NC no arguments \NC 
+%D     reset areas on page                    \NC \NR
+%D \NC RegisterTextArea      \NC x, y, w, h   \NC 
+%D     adds area to the list                  \NC \NR
+%D \NC TextAreaX,Y,W,H,XY,WH \NC x and/or y   \NC 
+%D     reports offsets and dimensions         \NC \NR 
+%D \stoptabulatie
+%D
+%D The \type {TextArea*} macros can be used to determine 
+%D overlap. 
+
+\newcounter\currentMPtextareadata
+
+\newtoks\MPsavedtextareadata 
+\newtoks\MPtextareadata      
+
+\def\registerMPtextarea#1%
+  {\bgroup
+   \doglobal\increment\currentMPtextareadata
+   \hpos{gbd:\currentMPtextareadata}{#1}%
+   \edef\!!stringa{gbd:\currentMPtextareadata}%
+   \edef\!!stringa{RegisterTextArea(%
+     \MPx\!!stringa,\MPy\!!stringa,\MPw\!!stringa,\MPh\!!stringa,\MPd\!!stringa);}%
+   \@EA \doglobal \@EA \appendtoks \!!stringa \to \MPtextareadata
+   \egroup}
+
+\appendtoks
+  \includeMPgraphic{area data}
+\to \MPinitializations
+
+\startuseMPgraphic{area data}
+  ResetTextAreas ; 
+  \the\MPsavedtextareadata
+  SaveTextAreas ; 
+  ResetTextAreas ; 
+  \the\MPtextareadata
+\stopuseMPgraphic
+
+\appendtoks
+  \global\MPsavedtextareadata\MPtextareadata
+  \global\MPtextareadata     \emptytoks
+\to \everyshipout
 
 \protect \endinput

@@ -82,6 +82,7 @@
     %\getparameters[\??tk#1\v!tekst][#2]%
      \getparameters[\??tk#1][#2]%
    \fi
+%   \checkcurrentlayout 
    \calculatevsizes}
 
 \def\setuptop    {\dotripleempty\dosetuplayouttext[\v!boven]}
@@ -702,7 +703,7 @@
 %D \hoofdstuk{tweede} \dorecurse{20}{\input tufte \relax}
 %D \stoptypen 
 
-\def\definetext%
+\def\definetext
   {\doseventupleempty\dodefinetext}
 
 \def\dodefinetext[#1][#2][#3][#4][#5][#6][#7]%

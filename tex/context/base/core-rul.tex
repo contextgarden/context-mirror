@@ -96,17 +96,11 @@
 %D efficient, but sometimes give better results. The dimensions
 %D of the resullting box are set to zero.
 
-\setvalue{\v!punt graybox}%
-  {\processraster\symbol\rasterdot}
+\setvalue{\v!punt graybox}{\processraster\symbol\rasterdot}
+\setvalue{\v!lijn graybox}{\processraster\symbol\rasterbox}
 
-\setvalue{\v!lijn graybox}%
-  {\processraster\symbol\rasterbox}
-
-\def\rasterdot%
-  {\rasterfont.}
-
-\def\rasterbox%
-  {\hss\vrule\!!width.4pt\!!height.4pt\!!depth\zeropoint}
+\def\rasterdot{\rasterfont.}
+\def\rasterbox{\hss\vrule\!!width.4pt\!!height.4pt\!!depth\zeropoint}
 
 %D Now of course we need:
 
@@ -146,7 +140,7 @@
 %D
 %D \showsetup{\y!setupscreens}
 
-\def\setupscreens%
+\def\setupscreens
   {\dodoubleargument\getparameters[\??rs]}
 
 %D The most appropriate way to call for this feature is
@@ -1289,15 +1283,29 @@
        \localbegstrut
        \let\next=}
 
+% \def\doformatboxWidth%
+%   {\vbox
+%      \bgroup
+%        \dopresetformatbox
+%        \hsize\!!widtha
+%        \raggedcommand
+%        \bgroup
+%        \localbegstrut
+%        \aftergroup\localendstrut
+%        \aftergroup\egroup
+%        \let\next=}
+
 \def\doformatboxWidth%
   {\vbox
      \bgroup
        \dopresetformatbox
        \hsize\!!widtha
        \raggedcommand
+       \dobeforeframedbox
        \bgroup
        \localbegstrut
        \aftergroup\localendstrut
+       \aftergroup\doafterframedbox
        \aftergroup\egroup
        \let\next=}
 

@@ -320,13 +320,13 @@
    \dosetFLOWlocation[#2\empty]\includeFLOWy\lastFLOWy
    \xdef\FLOWlocation{\lastFLOWx,\lastFLOWy}}
 
-\def\FLOWshapes%
+\def\FLOWshapes
   {node, action, procedure, product, decision, archive,
    loop, wait, subprocedure, singledocument, multidocument,
    sub procedure, single document, multi document, up, down,
    left, right}
 
-\def\FLOWlines%
+\def\FLOWlines
   {up, down, left, right}
 
 \def\FLOWsetconnect#1%
@@ -361,7 +361,7 @@
 
 \def\@@FLOW@@offset{\@@FLOWoffset}
 
-\def\getFLOWchart%
+\def\getFLOWchart
   {\dodoubleempty\dogetFLOWchart}
 
 \def\dogetFLOWchart[#1][#2]%
@@ -386,8 +386,8 @@
    \doifsomething{\@@FLOWautofocus}
      {\checkFLOWautofocus}%
   %\message{AUTOSHAPE 3: (\@@FLOWx,\@@FLOWy)->(\@@FLOWnx,\@@FLOWny)}\wait
-   \let\FLOWwidth \@@FLOWnx
-   \let\FLOWheight\@@FLOWny
+   \global\let\FLOWwidth \@@FLOWnx
+   \global\let\FLOWheight\@@FLOWny
    \let\startFLOWcell\startFLOWcellA
    \resetFLOWlocation 
    \processFLOWbuffer\currentFLOWnumber
@@ -435,12 +435,12 @@
    \dimen0=\@@FLOWbreedte
    \edef\FLOWshapewidth{\the\dimen0}%
    \dimen2=\@@FLOWdx
-   \advance\dimen0 by 2\dimen2
+   \advance\dimen0 2\dimen2
    \edef\FLOWgridwidth{\the\dimen0}%
    \dimen0=\@@FLOWhoogte
    \edef\FLOWshapeheight{\the\dimen0}%
    \dimen2=\@@FLOWdy
-   \advance\dimen0 by 2\dimen2
+   \advance\dimen0 2\dimen2
    \edef\FLOWgridheight{\the\dimen0}%
    \scratchdimen=\@@FLOSlijndikte
    \edef\@@FLOSlijndikte{\the\scratchdimen}%
@@ -487,8 +487,8 @@
      connection_dash_size   := \@@FLOLstraal ;
 %  \stopMPdrawing
 %  \def\getFLOWlocationX##1,##2\end%
-%    {\ifnum0##1>\FLOWwidth \edef\FLOWwidth {##1}\fi
-%     \ifnum0##2>\FLOWheight\edef\FLOWheight{##2}\fi}%
+%    {\ifnum0##1>\FLOWwidth \xdef\FLOWwidth {##1}\fi
+%     \ifnum0##2>\FLOWheight\xdef\FLOWheight{##2}\fi}%
 %  \long\def\startFLOWcellX##1\stopFLOWcell%
 %    {\resetFLOWcell
 %     \ignorespaces##1\unskip
@@ -624,9 +624,9 @@
    \expandafter\getFLOWlocationA\FLOWlocation\end
    \ignorespaces}
 
-\def\getFLOWlocationA#1,#2\end%
-  {\ifnum0#1>\FLOWwidth \edef\FLOWwidth {#1}\fi
-   \ifnum0#2>\FLOWheight\edef\FLOWheight{#2}\fi}
+\def\getFLOWlocationA#1,#2\end
+  {\ifnum0#1>\FLOWwidth \xdef\FLOWwidth {#1}\fi
+   \ifnum0#2>\FLOWheight\xdef\FLOWheight{#2}\fi}
 
 % Pass B
 %
@@ -772,16 +772,16 @@
          \ifdim\getvalue{\@@MPy\FLOWcomment}bp<\areaMPlly\relax\else
            \ifdim\getvalue{\@@MPy\FLOWcomment}bp>\areaMPury\relax\else
              \dimen0=\getvalue{\@@MPx\FLOWcomment}bp
-             \advance\dimen0 by -\@@FLOW@@offset
-             \advance\dimen0 by -\clipMPllx
+             \advance\dimen0 -\@@FLOW@@offset
+             \advance\dimen0 -\clipMPllx
              \dimen2=\clipMPury
-             \advance\dimen2 by -\@@FLOW@@offset
-             \advance\dimen2 by -\getvalue{\@@MPy\FLOWcomment}bp
+             \advance\dimen2 -\@@FLOW@@offset
+             \advance\dimen2 -\getvalue{\@@MPy\FLOWcomment}bp
              \setbox0=\hbox{\strut#2}%
              \boxoffset=.5\bodyfontsize
              \setbox0=\hbox
                {\hskip\dimen0\lower\dimen2\getvalue{FLOW#1}{\box0}}%
-             \wd0=\!!zeropoint\ht0=\!!zeropoint\dp0=\!!zeropoint
+             \wd0=\zeropoint\ht0=\zeropoint\dp0=\zeropoint
              \box0
            \fi
          \fi

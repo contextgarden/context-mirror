@@ -1523,7 +1523,6 @@
      \setfontcharacteristics
      \the\everyfontswitch
    \fi}
-
 \endTEX
 
 \beginETEX \ifcsname
@@ -2127,8 +2126,8 @@
        \ifdefiningunknownfont \else
          \definingunknownfonttrue
          \def\defineunknownsubfont##1%
-          {\doifundefined{\@size@\getvalue{\??ft#1##1}}
-             {\defineunknownfont{\getvalue{\??ft#1##1}}}}%
+           {\doifundefined{\@size@\getvalue{\??ft#1##1}}
+              {\defineunknownfont{\getvalue{\??ft#1##1}}}}%
          \processcommalist
            [\s!text,\s!script,\s!scriptscript,\c!x,\c!xx,\c!groot,\c!klein]
            \defineunknownsubfont
@@ -2318,10 +2317,10 @@
 \def\dodoswitchpoints#1%
   {\doifundefined{\@size@#1} 
      {\defineunknownfont{#1}}% 
-   \defineunknownfontstyles{#1}%
+  %\defineunknownfontstyles{#1}%
    \doifdefinedelse{\@size@#1}
      {\getvalue{\@size@#1}%
-      \localbodyfontsize=#1\relax
+      \localbodyfontsize#1\relax
       \normalizebodyfontsize\localbodyfontsize\to\normalizedbodyfontsize
       \checkbodyfontenvironment[\normalizedbodyfontsize]}
      {\showmessage{\m!fonts}{4}{#1}}}
@@ -2405,7 +2404,7 @@
         \doswitchpoints[\normalizedbodyfontsize]%
         \doswitchstyle[\fontstyle]%
       \fi}%
-   \chardef\currentxfontsize=0\relax}
+   \chardef\currentxfontsize0\relax}
 
 \def\dodosetfont#1#2%  #1 = set/switch state
   {\dododosetfont{#1}{#2}{\showmessage{\m!fonts}{4}{#2}}}
@@ -2417,11 +2416,11 @@
       \doifundefined{\@size@\normalizedsetfont}
         {\defineunknownfont{#2}}%
       \doifdefinedelse{\@size@\normalizedsetfont}
-        {\localbodyfontsize=\normalizedsetfont
-         \let\normalizedbodyfontsize=\normalizedsetfont}
+        {\localbodyfontsize\normalizedsetfont
+         \let\normalizedbodyfontsize\normalizedsetfont}
         {#3\dosetsubstitutefont{#1}{#2}}}
      {\doifelse{#2}{\v!reset}
-        {\let\fontsize=\empty}
+        {\let\fontsize\empty}
         {\doifdefinedelse{\@style@#2}
            {\edef\fontstyle{#2}}
            {\doreadfontdefinitionfile{#1}{#2}}}}}
@@ -2678,7 +2677,7 @@
 \beginTEX
 
 \def\dosetcurrentfontxxxalternative#1#2#3#4%
-  {\chardef\currentxfontsize=#2
+  {\chardef\currentxfontsize#2
    \ifmmode
      #4%
    \else\expandafter\ifx\csname\bodyfontvariable{\normalizedbodyfontsize#3}\endcsname\relax\else
@@ -2690,7 +2689,7 @@
 \beginETEX \ifcsname
 
 \def\dosetcurrentfontxxxalternative#1#2#3#4%
-  {\chardef\currentxfontsize=#2
+  {\chardef\currentxfontsize#2
    \ifmmode
      #4%
    \else\ifcsname\bodyfontvariable{\normalizedbodyfontsize#3}\endcsname

@@ -272,12 +272,22 @@
 
 \newcount\modcounter
 
-\def\DoMod #1by#2to#3%
-  {\modcounter#1\divide\modcounter#2\multiply\modcounter#2%
-   #3#1\advance#3 -\modcounter}
+%\def\DoMod #1by#2to#3%
+%  {\modcounter#1\divide\modcounter#2\multiply\modcounter#2%
+%   #3#1\advance#3 -\modcounter}
+%
+%\def\DoDiv #1by#2to#3%
+%  {#3#1\divide#3 #2\relax}
 
-\def\DoDiv #1by#2to#3%
+\def\dosetmodulo#1#2#3%
+  {\modcounter#1\divide\modcounter#2\multiply\modcounter#2%
+   #3#1\advance#3-\modcounter}
+
+\def\dosetdivision#1#2#3%
   {#3#1\divide#3 #2\relax}
+
+\def\DoMod#1by#2to#3{\dosetmodulo  {#1}{#2}{#3}}
+\def\DoDiv#1by#2to#3{\dosetdivision{#1}{#2}{#3}}
 
 \def\dounprotected#1\par%
   {#1\protect}

@@ -316,6 +316,154 @@ def do_initialize_par (expr fpos, tpos, mpos, ppos, rw,rl,rr,rh,ra,ri) =
 
 enddef ;
 
+if unknown TopSkip     : TopSkip     := 0 fi ; 
+if unknown StrutHeight : StrutHeight := 0 fi ;    
+
+pair last_multi_par_shift ; last_multi_par_shift := origin ; 
+
+def relocate_multipars (expr xy) = 
+  last_multi_par_shift := xy ; 
+  for i=1 upto nofmultipars : 
+    multipars[i] := multipars[i] shifted last_multi_par_shift ;
+  endfor ; 
+enddef ; 
+ 
+boolean compensate_multi_par_topskip ; 
+compensate_multi_par_topskip := true ; 
+
+boolean span_multi_column_pars ; 
+span_multi_column_pars := false ;
+
+vardef multi_par_at_top (expr i) = 
+  (round (ypart ulcorner multipars[i]) = round (ypart ulcorner 
+     (TextAreas[multirefs[i]] shifted last_multi_par_shift)))
+enddef ; 
+
+def prepare_multi_pars (expr fn,fx,fy,fw,fh,fd,
+                             tn,tx,ty,tw,th,td,
+                             wn,wx,wy,ww,wh,wd,
+                             pn,px,py,pw,ph,pd,
+                             rw,rl,rr,rh,ra,ri) =
+
+  if span_multi_column_pars :
+    begingroup ; 
+    save TextAreas ; path TextAreas[] ; 
+    save NOfTextAreas ; numeric NOfTextAreas ; 
+    for i=1 upto NOfTextColumns : 
+      TextAreas[i] := TextColumns[i] ;  
+    endfor ;  
+    NOfTextAreas := NOfTextColumns ; 
+  fi ; 
+
+  last_multi_par_shift := origin ; 
+
+  % rh/ra/ri not yet supported 
+
+  numeric fpos ; fpos := 1 ; initialize_box_pos(fpos,fn,fx,fy,fw,fh,fd) ;
+  numeric tpos ; tpos := 2 ; initialize_box_pos(tpos,tn,tx,ty,tw,th,td) ;
+  numeric wpos ; wpos := 3 ; initialize_box_pos(wpos,wn,wx,wy,ww,wh,wd) ;
+  numeric ppos ; ppos := 4 ; initialize_box_pos(ppos,pn,px,py,pw,ph,pd) ;
+
+  numeric par_strut_height, par_strut_depth, par_line_height ;
+
+  par_strut_height := ph ; 
+  par_strut_depth  := pd ;
+  par_line_height  := ph + pd ;
+
+  if wxy[wpos]>0 :
+    left_skip  := rl + xpart llxy[wpos] - xpart llxy[ppos] ;
+    right_skip := rw - left_skip - ww ; 
+  else : 
+    left_skip  := rl ; 
+    right_skip := rr ; 
+  fi ;
+
+  path    multipar, multipars[] ; 
+  numeric multiref, multirefs[] ; 
+  numeric multiloc, multilocs[] ; % 1=begin 2=between 3=end
+
+  ii := 0 ; nn := NOfTextAreas+1 ; nofmultipars := 0 ; 
+
+  def set_multipar (expr i) = 
+    ((TextAreas[i] leftenlarged -left_skip) rightenlarged -right_skip)
+  enddef ; 
+
+  def save_multipar (expr i, l, p) = 
+    nofmultipars := nofmultipars + 1 ; 
+    multirefs[nofmultipars] := i ;  
+    multilocs[nofmultipars] := l ;  
+    multipars[nofmultipars] := unspiked simplified p ;
+  enddef ; 
+
+  for i=1 upto NOfTextAreas :
+    multipar := set_multipar(i) ;
+    if (nxy[fpos]=RealPageNumber) and (InsideTextArea(i,llxy[fpos])) :
+      % first one in chain 
+      ii := i ;
+      if (nxy[tpos]=RealPageNumber) and (InsideTextArea(i,llxy[tpos])) :
+        nn := i ;
+
+        if compensate_multi_par_topskip :
+          TopSkipCorrection := TopSkip - StrutHeight ;    
+
+          if round(ypart ulxy[fpos] + TopSkipCorrection) = 
+             round(ypart ulcorner TextAreas[i]) : 
+            ulxy[fpos] := ulxy[fpos] shifted (0,TopSkipCorrection) ;  
+            urxy[fpos] := urxy[fpos] shifted (0,TopSkipCorrection) ;  
+          fi ; 
+        fi ; 
+
+        if ypart llxy[fpos] = ypart llxy[tpos] :
+          multipar := llxy[fpos] --
+                 lrxy[tpos] --
+                 urxy[tpos] --
+                 ulxy[fpos] --
+                 cycle ;
+        else :
+          multipar := (xpart llcorner multipar, ypart llxy[tpos]) --
+                 llxy[tpos] --
+                 ulxy[tpos] --
+                 (xpart lrcorner multipar, ypart ulxy[tpos]) --
+                 (xpart urcorner multipar, ypart urxy[fpos]) --
+                 urxy[fpos] --
+                 lrxy[fpos] --
+                 (xpart ulcorner multipar, ypart lrxy[fpos])--
+                 cycle ;
+        fi ;
+      else :
+        multipar := llcorner multipar --
+               lrcorner multipar --
+               (xpart lrcorner multipar, ypart urxy[fpos]) --
+               urxy[fpos] --
+               lrxy[fpos] --
+               (xpart ulcorner multipar, ypart lrxy[fpos])-- cycle ;
+      fi ;
+      save_multipar (i,1,multipar) ; 
+    elseif (nxy[tpos]=RealPageNumber) and (InsideTextArea(i,llxy[tpos])) :
+      % last one in chain 
+      nn := i ;
+      multipar := ulcorner multipar --
+             urcorner multipar --
+             (xpart lrcorner multipar, ypart urxy[tpos]) --
+             ulxy[tpos] --
+             llxy[tpos] --
+             (xpart llcorner multipar, ypart llxy[tpos]) --
+             cycle ;
+      save_multipar (i,3,multipar) ; 
+    fi ;
+  endfor ;
+
+  for i=ii+1 upto nn-1 :
+    % rest of chain 
+    save_multipar(i,2,set_multipar(i)) ; 
+  endfor ;
+
+  if span_multi_column_pars :
+    endgroup ; 
+  fi ; 
+
+enddef ;
+
 color   boxgridcolor     ; boxgridcolor     := .8red ;
 color   boxlinecolor     ; boxlinecolor     := .8blue ;
 color   boxfillcolor     ; boxfillcolor     := .8white ;
@@ -347,13 +495,14 @@ def draw_par  = % 1 2 11
   endfor ;
 enddef ;
 
+def do_show_par (expr p, r, c) =
+  if length(p) > 2 : for i=0 upto length(p) :
+    draw fullcircle scaled r shifted point i of p 
+      withpen pencircle scaled .5pt withcolor c ;
+  endfor ; fi ;
+enddef ; 
+
 def show_par  =
-  def do_show_par (expr p, r, c) =
-    if length(p) > 2 : for i=0 upto length(p) :
-      draw fullcircle scaled r shifted point i of p 
-        withpen pencircle scaled .5pt withcolor c ;
-    endfor ; fi ;
-  enddef ; 
   if length(mxy) > 2 : 
     draw mxy dashed evenly 
       withpen pencircle scaled .5pt withcolor .5white ; 
@@ -363,6 +512,25 @@ def show_par  =
   do_show_par(pxy, 8pt, .5red  ) ;
   draw pref withpen pencircle scaled 2pt ; 
 enddef ;
+
+def draw_multi_pars  = 
+  for i=1 upto nofmultipars : 
+    do_draw_par(multipars[i]) ; 
+        if boxgridtype= 1 :
+      draw baseline_grid (multipars[i],boxgriddirection,true ) withcolor boxgridcolor ;
+    elseif boxgridtype= 2 :
+      draw baseline_grid (multipars[i],boxgriddirection,false) withcolor boxgridcolor ;
+    elseif boxgridtype=11 :
+      draw graphic_grid(multipars[i],distance,distance,distance/2,distance/2) ;
+    fi ;
+  endfor ; 
+enddef ; 
+
+def show_multi_pars  = 
+  for i=1 upto nofmultipars : 
+    do_show_par(multipars[i], 6pt, .5blue) ;
+  endfor ; 
+enddef ; 
 
 vardef do_draw_par (expr p) =
   if (length p>2) and (bbwidth(p)>1) and (bbheight(p)>1) :

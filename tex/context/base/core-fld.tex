@@ -186,8 +186,11 @@
    \xdef\@@FieldKids   {#5}%
    \xdef\@@FieldGroup  {#6}%
    \setfieldmodes       #7%
-   \xdef\@@FieldValues {#8}%
-   \xdef\@@FieldDefault{#9}}
+   \bgroup
+     \def\par{\string\n\string\n}%
+     \xdef\@@FieldValues {#8}%
+     \xdef\@@FieldDefault{#9}%
+   \egroup}
 
 \def\changefield#1%
   {\setfield{#1}\@@FieldType\@@FieldRoot\@@FieldParent\@@FieldKids\@@FieldGroup
@@ -405,30 +408,30 @@
   {\ifsecondargument
      \edef\currentfieldname{#1}% just in case we're inside a loop
      \doifundefinedelse{define#2field}
-       {\writestatus{\m!fields}{unknown field type #2}}
+       {\writestatus\m!fields{unknown field type #2}}
        {\doifundefined{fielddata\currentfieldname}
           {\getmainfieldkids{\currentfieldname}% 
            \ifdefinemainfield
              \ifx\@@FieldKids\empty
-               \let\@@FieldMode=\fieldlonermode
+               \let\@@FieldMode\fieldlonermode
              \else
-               \let\@@FieldMode=\fieldparentmode
+               \let\@@FieldMode\fieldparentmode
              \fi
              \def\@@FieldAuto{1}%
            \else
-             \let\@@FieldMode=\fieldlonermode
+             \let\@@FieldMode\fieldlonermode
              \def\@@FieldAuto{0}%
            \fi         
            \def\@@FieldFree{0}%
            \getvalue{define#2field}{\currentfieldname}{#2}{#3}{#4}{#5}}}%
    \else
-     \writestatus{\m!fields}{pass fieldname and fieldtype}%
+     \writestatus\m!fields{pass fieldname and fieldtype}%
    \fi}
 
 \def\definelinefield#1#2#3#4#5%
   {\setfield{#1}{#2}{}{}{\@@FieldKids}{#3}{\@@FieldMode\@@FieldFree\@@FieldAuto}{}{#4}}
 
-\let\definetextfield =\definelinefield
+\let\definetextfield=\definelinefield
 
 \def\definechoicefield#1#2#3#4#5%
   {\doifelsenothing{#4}

@@ -224,8 +224,18 @@
    \fi
    \advance\protectionlevel -1 }
 
-\def\reportunprotection{\message{<unprotect \the\protectionlevel>}}
-\def\reportprotection  {\message{<protect   \the\protectionlevel>}}
+\def\reportunprotection   {\message{<unprotect       \protectionstate>}}
+\def\reportprotection     {\message{<protect         \protectionstate>}}
+\def\reportprotectionstate{\message{<protectionstate \protectionstate>}}
+
+\def\protectionstate 
+  {\the\protectionlevel
+   \ifcase\protectionthreshold
+     :\space 
+     @=\the\catcode`@\space\space
+     !=\the\catcode`!\space\space
+     ?=\the\catcode`?%
+   \fi}
 
 \ifx\everyeof\undefined 
 
@@ -233,8 +243,8 @@
 
 \else
   
-  \def\checkprotection%
-    {\everyeof{\writestatus{protection}{level: \the\protectionlevel}}}
+  \def\checkprotection
+    {\everyeof{\writestatus{protection}{state: \protectionstate}}}
 
 \fi 
 
@@ -470,7 +480,7 @@
 %D {\next}.
 
 \long\def\doifnextcharelse#1#2#3% #1 should not be {} !
-  {\let\charactertoken=#1%
+  {\let\charactertoken=#1% = needed here 
    \def\!!stringa{#2}%
    \def\!!stringb{#3}%
    \futurelet\nexttoken\inspectnextcharacter}
