@@ -1603,10 +1603,8 @@
      \doifnotinset\v!margin{#1} % gaat namelijk nog fout
        {\setbox\floatbox\vbox
           {\parindent\zeropoint
-           \ifvoorlopig
-             \inleftmargin{\framed{\infofont\the\totalnoffloats}}%
-           \fi
-          \box\floatbox}}%
+           \doifconcepttracing{\inleftmargin{\framed{\infofont\the\totalnoffloats}}}%
+           \box\floatbox}}%
      \wd\floatbox\floatwidth
      \dimen0=\floatheight
      \advance\dimen0 \lineheight

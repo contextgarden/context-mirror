@@ -1669,14 +1669,15 @@
 \def\reportreferenceerror#1#2%
   {\bgroup
    \the\everyreference % cleanup : etc in french
-   \ifvoorlopig\ifinpagebody\else
-     \doifsomething{#2}
-       {\inleft
-          {\infofont
-           \scratchdimen\leftmarginwidth
-           \advance\scratchdimen -2em
-           \doboundtext{#2}\scratchdimen{..}->}}%
-   \fi\fi
+   \ifinpagebody\else
+     \doifconcepttracing
+       {\doifsomething{#2}
+          {\inleft
+             {\infofont
+              \scratchdimen\leftmarginwidth
+              \advance\scratchdimen -2em
+              \doboundtext{#2}\scratchdimen{..}->}}}%
+   \fi
    \doifpredefinedreferenceelse
      \donothing
      {\predefinereference

@@ -1002,63 +1002,60 @@
 
 % will be installable tracer; better use chardef
 
-\newif\ifvoorlopig \voorlopigfalse
+% this needs a real cleanup
 
 \chardef\conceptmode\zerocount
 
-\def\doplaatsversieaanduiding#1#2%
+\def\doifconcepttracing
+  {\ifnum\conceptmode>\plustwo
+     \expandafter\firstofoneargument
+   \else
+     \expandafter\gobbleoneargument
+   \fi}
+
+\def\doplaceversiontext#1#2%
   {\doifsomething{#2}
      {\@EA\convertargument#2\to\ascii
-      \ #1: \ascii\
+      \space#1:\space\ascii\space
       \!!doneatrue}}
 
-\def\plaatsversieaanduiding% nog engels maken
+\def\placeversioninfo % nog engels maken
   {\ifcase\conceptmode
-     % nothing
+     % 0 : nothing
    \or
-     % simple
+     % 1 : simple
      \vskip\!!sixpoint
      \hbox to \makeupwidth
        {\infofont
-        Concept: \currentdate
+        \v!concept:\space\currentdate
         \hss\reportpagedimensions}%
-   \or
-     % extensive
+   \else
+     % 2/3 : extensive
      \vskip\!!sixpoint
      \hbox to \makeupwidth
        {\infofont
-        \getmessage\m!systems{27}: \currentdate\
-        \doplaatsversieaanduiding{Project}\currentproject
-        \doplaatsversieaanduiding{Produkt}\currentproduct
-        \doplaatsversieaanduiding{Onderdeel}\currentcomponent
-        \if!!donea\else\ File: \jobname\fi
+        \getmessage\m!systems{27}:\space\currentdate\space
+        \doplaceversiontext\v!project  \currentproject
+        \doplaceversiontext\v!product  \currentproduct
+        \doplaceversiontext\v!component\currentcomponent
+        \if!!donea\else\space\v!file:\space\jobname\fi
         \hss\reportpagedimensions}%
    \fi}
 
 % tot hier
 
 \def\doversion[#1]%
-  {\voorlopigfalse
-   \chardef\conceptmode\zerocount
+  {\chardef\conceptmode\zerocount
    \overfullrule\zeropoint
    \processaction % \v!final=>
      [#1]
-     [  \v!concept=>\chardef\conceptmode\plusone,% simple banner
-           \v!file=>\chardef\conceptmode\plustwo,% full banner
-      \v!temporary=>\chardef\conceptmode\plustwo % full banner plus
-                    \overfullrule5\points]}      % info in the margin
+     [  \v!concept=>\chardef\conceptmode\plusone,  % simple banner
+           \v!file=>\chardef\conceptmode\plustwo,  % full banner
+      \v!temporary=>\chardef\conceptmode\plusthree % full banner plus
+                    \overfullrule5\points]}        % info in the margin
 
 \def\version
   {\dosingleargument\doversion}
-
-%\def\addstatusinfo
-%  {\ifvoorlopig
-%     \@EA\doaddstatusinfo
-%   \else\ifcase\conceptmode
-%     \@EAEAEA\gobbleoneargument
-%   \else
-%     \@EAEAEA\doaddstatusinfo
-%   \fi\fi}
 
 \def\addstatusinfo
   {\ifcase\conceptmode
@@ -1075,23 +1072,22 @@
       \hsize\paperwidth
       \hfill\hbox{\placetestinfo\hskip.5cm}\vss
       \settexthoffset\hskip\texthoffset % brrrr
-     %\tlap{\plaatsversieaanduiding}\vskip.5cm}}
-      \vbox to 1cm{\vss\plaatsversieaanduiding\vss}}}
+     %\tlap{\placeversioninfo}\vskip.5cm}}
+      \vbox to 1cm{\vss\placeversioninfo\vss}}}
 
 \def\dotestinfo#1#2#3%
-  {\ifvoorlopig\ifinpagebody\else
+  {\ifinpagebody\else\ifnum\conceptmode=\plusthree
      \begingroup
        \@EA\convertargument#3\to\ascii
        \xdef\extratestinfo
-         {#2 \ascii}%
+         {#2\space\ascii}%
        \gdef\totaltestinfo
          {\global\setbox#1\vbox
             {\unvbox#1\relax
              \infofont \setupinterlinespace
              \hbox
                {\strut
-                \expandafter\doboundtext\expandafter
-                   {\extratestinfo}{12em}{..}%
+                \expanded{\doboundtext{\extratestinfo}{12em}{..}}%
                 \quad}}}%
      \endgroup
      \ifinner
@@ -1116,30 +1112,28 @@
 \def\floatinfo     {\dotestinfo\floatinfobox}
 
 \def\placetestinfo
-  {\ifvoorlopig
-     \vbox to \makeupheight
-       {\forgetall
-        \infofont
-        \hsize10em
-        \ifvoid\floatinfobox\else
-          \strut \getmessage\m!systems{24}%
-          \vskip\!!sixpoint
-          \unvbox\floatinfobox
-          \vskip\!!twelvepoint
-        \fi
-        \ifvoid\referentieinfobox\else
-          \strut \getmessage\m!systems{25}%
-          \vskip\!!sixpoint
-          \unvbox\referentieinfobox
-          \vskip\!!twelvepoint
-        \fi
-        \ifvoid\registerinfobox\else
-          \strut \getmessage\m!systems{26}%
-          \vskip\!!sixpoint
-          \unvbox\registerinfobox
-        \fi
-        \vss}
-   \fi}
+  {\vbox to \makeupheight
+     {\forgetall
+      \infofont
+      \hsize10em
+      \ifvoid\floatinfobox\else
+        \strut \getmessage\m!systems{24}%
+        \vskip\!!sixpoint
+        \unvbox\floatinfobox
+        \vskip\!!twelvepoint
+      \fi
+      \ifvoid\referentieinfobox\else
+        \strut \getmessage\m!systems{25}%
+        \vskip\!!sixpoint
+        \unvbox\referentieinfobox
+        \vskip\!!twelvepoint
+      \fi
+      \ifvoid\registerinfobox\else
+        \strut \getmessage\m!systems{26}%
+        \vskip\!!sixpoint
+        \unvbox\registerinfobox
+      \fi
+      \vss}}
 
 \version[\v!final]
 

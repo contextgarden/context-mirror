@@ -2554,6 +2554,10 @@
 \def\doifXMLownvalelse{\doifXMLvalelse{\rawXMLnamespace\rawXMLidentifier}}
 \def\doifXMLownparelse{\doifXMLparelse{\rawXMLnamespace\rawXMLidentifier}}
 
+\def\letXMLpar #1#2{\@EA \let\csname\@@XMLvariable:#1:#2\endcsname}
+\def\setXMLpar #1#2{\@EA \def\csname\@@XMLvariable:#1:#2\endcsname}
+\def\setXMLepar#1#2{\@EA\edef\csname\@@XMLvariable:#1:#2\endcsname}
+
 \def\ownXMLelement{\rawXMLnamespace\rawXMLidentifier}
 
 \def\XMLop#1% ownpar

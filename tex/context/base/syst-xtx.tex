@@ -18,6 +18,16 @@
 %D For the moment, the only thing needed is to load are the
 %D mappings from lower to uppercase characters.
 
-\input xplain.tex
+\ifx\scratchread\undefined \newread\scratchread \fi
+
+\immediate\openin\scratchread=unicode-letters.tex \ifeof\scratchread
+  \immediate\openin\scratchread=xplain.tex \ifeof\scratchread
+    % no initialization file
+  \else
+    \input xplain.tex
+  \fi
+\else
+  \input unicode-letters.tex
+\fi
 
 \protect \endinput

@@ -967,10 +967,10 @@
   \let\do@@ammenuposition\gobbleoneargument % hook for positional thingies
 \fi
 
-\setvalue{\??am\s!do\v!right}{\@@amvbox{\dodummypageskip\v!right}\rightedgewidth}
-\setvalue{\??am\s!do\v!left }{\@@amvbox{\dodummypageskip\v!left}\leftedgewidth}
-\setvalue{\??am\s!do\v!top }{\@@amhbox{\dodummypageskip\v!top}\topheight}
-\setvalue{\??am\s!do\v!bottom }{\@@amhbox{\dodummypageskip\v!bottom}\bottomheight}
+\setvalue{\??am\s!do\v!right }{\@@amvbox{\dodummypageskip\v!right }\rightedgewidth}
+\setvalue{\??am\s!do\v!left  }{\@@amvbox{\dodummypageskip\v!left  }\leftedgewidth }
+\setvalue{\??am\s!do\v!top   }{\@@amhbox{\dodummypageskip\v!top   }\topheight     }
+\setvalue{\??am\s!do\v!bottom}{\@@amhbox{\dodummypageskip\v!bottom}\bottomheight  }
 
 \def\dointeractionmenu#1#2%
   {\getvalue{\??am\s!do\getvalue{\??am#1\c!location}}{#1}{#2}}
@@ -1333,7 +1333,7 @@
      {\dimen0=\wd0
       \divide\dimen0 3
       \multiply\dimen0 ##2\relax
-      \dimen2=.25em
+      \dimen2=.25em % brrr
       \advance\dimen0 -##3\dimen2
       %\gotodestination
       %  {}{#1}{\syncprefix:##1}{}

@@ -271,9 +271,13 @@
 \def\potentialXMLentity#1%
   {\doifXMLentityelse{#1}{\getXMLentity{#1}}{#1}}
 
-\def\writtenXMLelement#1#2{<#1>#2</#1>}
-\def\writtenXMLstart    #1{<#1>}
-\def\writtenXMLend      #1{</#1>}
-\def\writtenXMLempty    #1{<#1/>}
+% \def\XMLnoschema{standalone='yes'}
+
+\def\writtenXMLelement  #1#2{<#1>#2</#1>}
+\def\writtenXMLstart      #1{<#1>}
+\def\writtenXMLend        #1{</#1>}
+\def\writtenXMLempty      #1{<#1/>}
+\def\writtenXMLelementcs#1#2{\ifx#2\empty\else<#1>#2</#1>\fi}
+\def\writtenXMLemptycs  #1#2{\ifx#2\empty<#1/>\else<#1>#2</#1>\fi}
 
 \protect \endinput

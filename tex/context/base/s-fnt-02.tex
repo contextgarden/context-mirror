@@ -62,7 +62,9 @@
     {\doiffontcharelse{\getvariable{glyphs}{name-1}}{\recurselevel}
        {\doiffontcharelse{\getvariable{glyphs}{name-2}}{\recurselevel}
           {\startstandardmakeup
-           \boxrulewidth=2pt
+           \doifelse{\getvariable{glyphs}{frame}}{on} % too many box calculations when off, but who cares
+             {\boxrulewidth=2pt}
+             {\boxrulewidth=0pt}
            \setbox 0=\hbox{\white\ruledhbox{\FontOne \char\recurselevel}}
            \setbox 2=\hbox{\white\ruledhbox{\FontTwo \char\recurselevel}}
            \setbox 4=\hbox{\FontOne \ColorOne \char\recurselevel}
@@ -70,9 +72,7 @@
            \setbox 8=\hbox{\BackOne \ruledhbox{\FontOne \phantom{\char\recurselevel}}}
            \setbox10=\hbox{\BackTwo \ruledhbox{\FontTwo \phantom{\char\recurselevel}}}
            \vfill
-           \doifelse{\getvariable{glyphs}{frame}}{on} % too many box calculations when off, but who cares
-             {\hbox{\dostepwiserecurse{0}{10}{2}{\hbox to \hsize{\hss\box\recurselevel\hss}\hskip-\hsize}}}
-             {\hbox{\dostepwiserecurse{4} {6}{2}{\hbox to \hsize{\hss\box\recurselevel\hss}\hskip-\hsize}}}
+           \hbox{\dostepwiserecurse{0}{10}{2}{\hbox to \hsize{\hss\box\recurselevel\hss}\hskip-\hsize}}
            \vfill
            \tttf
            \setstrut
@@ -89,6 +89,17 @@
 \doifnotmode{demo}{\endinput}
 
 \starttext
+
+  \setupencoding[default=ec]
+
+  \loadmapline [=][aer10                  <cmr10.pfb]
+  \loadmapline [=][\defaultencoding-lmr10 <\defaultencoding.enc <lmr10.pfb]
+
+  \setvariables
+    [glyphs]
+    [frame=on,
+     name-1=aer10,
+     name-2=\defaultencoding-lmr10]
 
   \setups[show-glyphs]
 

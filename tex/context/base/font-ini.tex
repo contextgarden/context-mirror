@@ -1159,6 +1159,8 @@
 
 \let\stylelist=\empty
 
+\def\fontsizelist{\s!text,\s!script,\s!scriptscript,\c!x,\c!xx,\c!big,\c!small}
+
 %D \macros
 %D   {magfactor,magfactorhalf}
 %D
@@ -2070,7 +2072,7 @@
         \@EA\dododefinebodyfontenvironment\@EA[\tempbodyfontsize][#1][#3]}%
      \@@endfontdef
    \else
-     \definebodyfontenvironment[\fontclass][#1][#2]% changed
+     \definebodyfontenvironment[\fontclass][#1][#2]% change */*
    \fi}
 
 \def\dododefinebodyfontenvironment[#1][#2][#3]% size class settings
@@ -2081,9 +2083,7 @@
          \scratchdimen\csname\??ft\s!default##1\endcsname\scratchdimen
          \normalizebodyfontsize\scratchdimen\to\tempbodyfontsize
          \setevalue{\??ft#2#1##1}{\tempbodyfontsize}}%
-     \processcommalist
-       [\s!text,\s!script,\s!scriptscript,\c!x,\c!xx,\c!big,\c!small]
-       \docommando
+     \processcommacommand[\fontsizelist]\docommando
      \copyparameters
        [\??ft#2#1][\??ft\s!default]
        [\c!interlinespace,\c!em]}%
@@ -2410,41 +2410,87 @@
 
 \newif\ifdefiningunknownfont
 
+% \def\defineunknownfont#1%
+%   {\let\c!savedtext\c!text
+%    \let\c!text\s!text
+%    \donefalse
+%    \def\docommando##1%
+%      {\doifdefined{\??ft\s!default##1}
+%         {\donetrue
+%          \scratchdimen#1\relax
+%          \scratchdimen\csname\??ft\s!default##1\endcsname\scratchdimen
+%          \normalizebodyfontsize\scratchdimen\to\!!stringa
+%          \letvalue{\??ft#1##1}\!!stringa}}%
+%    \processcommacommand[\fontsizelist]\docommando
+%    \let\c!text\c!savedtext
+%    \ifdone
+%      \donefalse
+%      \def\defineunknownbodyfont##1% see ***
+%        %{\doifdefined{\s!default##1}
+%        %   {\donetrue\getvalue{\s!default##1}{#1}}}%
+%        {\doifdefined{\s!default\s!default##1}
+%           {\donetrue\getvalue{\s!default\s!default##1}{#1}{##1}}}%
+%      \processcommacommand
+%        [\stylelist]
+%        \defineunknownbodyfont
+%      \ifdone
+%        \setvalue{\@size@#1}{\docompletefontswitch[#1]}%
+%        \ifdefiningunknownfont \else
+%          \definingunknownfonttrue
+%          \def\defineunknownsubfont##1%
+%            {\doifundefined{\@size@\getvalue{\??ft#1##1}}
+%               {\defineunknownfont{\getvalue{\??ft#1##1}}}}%
+%          \processcommacommand[\fontsizelist]\defineunknownsubfont
+%          \definingunknownfontfalse
+%        \fi
+%      \fi
+%      \ifdone
+%        \showmessage\m!fonts{14}{#1}%
+%      \fi
+%    \fi}
+
+\def\dodefineunknownfont#1#2%
+  {\doifdefined{\??ft\s!default#2}
+     {\donetrue
+      \scratchdimen#1\relax
+      \scratchdimen\csname\??ft\s!default#2\endcsname\scratchdimen
+      \normalizebodyfontsize\scratchdimen\to\!!stringa
+      \letvalue{\??ft#1#2}\!!stringa}}
+
+\def\dodefineunknownbodyfont#1#2% see ***
+  {\doifdefined{\s!default\s!default#2}
+     {\donetrue
+      \getvalue{\s!default\s!default#2}{#1}{#2}}}
+
+% needs to be as follows, but test first:
+%
+% \def\dodefineunknownbodyfont#1#2% see ***
+%   {\doifdefined{\s!default\fontclass#2}% was \s!default\s!default (related to change */*)
+%      {\donetrue
+%       \getvalue{\s!default\fontclass#2}{#1}{#2}}}
+
+\def\dodefineunknownsubfont#1#2%
+  {\doifundefined{\@size@\getvalue{\??ft#1#2}}
+     {\donetrue
+      \defineunknownfont{\getvalue{\??ft#1#2}}}}
+
 \def\defineunknownfont#1%
   {\let\c!savedtext\c!text
    \let\c!text\s!text
    \donefalse
-   \def\docommando##1%
-     {\doifdefined{\??ft\s!default##1}
-        {\donetrue
-         \scratchdimen#1\relax
-         \scratchdimen\csname\??ft\s!default##1\endcsname\scratchdimen
-         \normalizebodyfontsize\scratchdimen\to\!!stringa
-         \letvalue{\??ft#1##1}\!!stringa}}%
-   \processcommalist
-     [\s!text,\s!script,\s!scriptscript,\c!x,\c!xx,\c!big,\c!small]
-     \docommando
+   \processcommacommand[\fontsizelist]{\dodefineunknownfont{#1}}%
    \let\c!text\c!savedtext
    \ifdone
      \donefalse
-     \def\defineunknownbodyfont##1% see ***
-       %{\doifdefined{\s!default##1}
-       %   {\donetrue\getvalue{\s!default##1}{#1}}}%
-       {\doifdefined{\s!default\s!default##1}
-          {\donetrue\getvalue{\s!default\s!default##1}{#1}{##1}}}%
      \processcommacommand
        [\stylelist]
-       \defineunknownbodyfont
+       {\dodefineunknownbodyfont{#1}}%
      \ifdone
+     \donefalse
        \setvalue{\@size@#1}{\docompletefontswitch[#1]}%
        \ifdefiningunknownfont \else
          \definingunknownfonttrue
-         \def\defineunknownsubfont##1%
-           {\doifundefined{\@size@\getvalue{\??ft#1##1}}
-              {\defineunknownfont{\getvalue{\??ft#1##1}}}}%
-         \processcommalist
-           [\s!text,\s!script,\s!scriptscript,\c!x,\c!xx,\c!big,\c!small]
-           \defineunknownsubfont
+         \processcommacommand[\fontsizelist]{\dodefineunknownsubfont{#1}}%
          \definingunknownfontfalse
        \fi
      \fi
@@ -2453,10 +2499,10 @@
      \fi
    \fi}
 
-\def\defineunknownfontstyles#1%
-  {\def\defineunknownbodyfont##1% see ***
-     {\executeifdefined{\s!default\s!default##1}\gobbletwoarguments{#1}{##1}}%
-   \rawprocesscommacommand[\stylelist]\defineunknownbodyfont}
+% \def\defineunknownfontstyles#1%
+%   {\def\defineunknownbodyfont##1% see ***
+%      {\executeifdefined{\s!default\s!default##1}\gobbletwoarguments{#1}{##1}}%
+%    \rawprocesscommacommand[\stylelist]\defineunknownbodyfont}
 
 %D These macros show that quite some definitions take place.
 %D Fonts are not loaded yet! This means that at format
@@ -2637,6 +2683,22 @@
            {\showmessage\m!fonts3{#2}}}%
       \stopreadingfile}}
 
+% \def\doreadfontdefinitionfile#1#2% #1 = set/switch state
+%   {\doifundefined{\c!file\f!fontprefix#2}%
+%      {\ifloadfontfileonce
+%         \letvalue{\c!file\f!fontprefix#2}\empty
+%       \fi
+%       \startreadingfile
+%       \readsysfile{\truefilename{\f!fontprefix#2}}
+%         {\showmessage\m!fonts2}
+%         {\makeshortfilename[\truefilename{\f!fontprefix#2}]%
+%          \readsysfile\shortfilename
+%            {\showmessage\m!fonts2}
+%            {\showmessage\m!fonts3}}%
+%         {#2}% argument to \showmessage
+%       \stopreadingfile}}
+
+
 %D When \type {\loadfontfileoncetrue}, such files are
 %D only loaded once! This permits redundant loading, but at
 %D the same time forced grouping when we want continuously mix
@@ -2725,6 +2787,8 @@
    \doswitchstyle[\fontstyle]%
    \the\everybodyfont
    \global\let\preloadfonts\relax}
+
+% \prependtoks \preloadfonts \to \everydump % saves .1 s on a DELL P60 - 2GHZ
 
 %D Here comes the main font switching macros. These macros
 %D handle changes in size as well as returning to the global
@@ -4268,9 +4332,9 @@
                  *=\currentfontscale, % wildcard
               \c!x=0.8,
              \c!xx=0.6,
-          \c!big=1.2,
+            \c!big=1.2,
           \c!small=0.8,
-     \c!interlinespace=,
+ \c!interlinespace=,
              \c!em=\v!slanted]
 
 \definebodyfontenvironment
@@ -4280,7 +4344,7 @@
    \s!scriptscript=\!!twelvepoint,
               \c!x=17.3pt,
              \c!xx=\!!fourteenpointfour,
-          \c!big=20.7pt,    % !!!!
+            \c!big=20.7pt,    % !!!!
           \c!small=17.3pt]
 
 \definebodyfontenvironment
@@ -4290,7 +4354,7 @@
    \s!scriptscript=\!!tenpoint,
               \c!x=\!!fourteenpointfour,
              \c!xx=\!!twelvepoint,
-          \c!big=20.7pt,
+            \c!big=20.7pt,
           \c!small=\!!fourteenpointfour]
 
 \definebodyfontenvironment
@@ -4300,7 +4364,7 @@
    \s!scriptscript=\!!ninepoint,
               \c!x=\!!twelvepoint,
              \c!xx=\!!tenpoint,
-          \c!big=17.3pt,
+            \c!big=17.3pt,
           \c!small=\!!twelvepoint]
 
 \definebodyfontenvironment
@@ -4310,7 +4374,7 @@
    \s!scriptscript=\!!sevenpoint,
               \c!x=\!!tenpoint,
              \c!xx=\!!eightpoint,
-          \c!big=\!!fourteenpointfour,
+            \c!big=\!!fourteenpointfour,
           \c!small=\!!tenpoint]
 
 \definebodyfontenvironment
@@ -4320,7 +4384,7 @@
    \s!scriptscript=\!!sixpoint,
               \c!x=\!!ninepoint,
              \c!xx=\!!sevenpoint,
-          \c!big=\!!twelvepoint,
+            \c!big=\!!twelvepoint,
           \c!small=\!!ninepoint]
 
 \definebodyfontenvironment
@@ -4330,7 +4394,7 @@
    \s!scriptscript=\!!fivepoint,
               \c!x=\!!eightpoint,
              \c!xx=\!!sixpoint,
-          \c!big=\!!twelvepoint,
+            \c!big=\!!twelvepoint,
           \c!small=\!!eightpoint]
 
 \definebodyfontenvironment
@@ -4340,7 +4404,7 @@
    \s!scriptscript=\!!fivepoint,
               \c!x=\!!sevenpoint,
              \c!xx=\!!fivepoint,
-          \c!big=\!!elevenpoint,
+            \c!big=\!!elevenpoint,
           \c!small=\!!sevenpoint]
 
 \definebodyfontenvironment
@@ -4350,7 +4414,7 @@
    \s!scriptscript=\!!fivepoint,
               \c!x=\!!sixpoint,
              \c!xx=\!!fivepoint,
-          \c!big=\!!tenpoint,
+            \c!big=\!!tenpoint,
           \c!small=\!!sixpoint]
 
 \definebodyfontenvironment
@@ -4360,7 +4424,7 @@
    \s!scriptscript=\!!fivepoint,
               \c!x=\!!sixpoint,
              \c!xx=\!!fivepoint,
-          \c!big=\!!ninepoint,
+            \c!big=\!!ninepoint,
           \c!small=\!!fivepoint]
 
 \definebodyfontenvironment
@@ -4370,7 +4434,7 @@
    \s!scriptscript=\!!fivepoint,
               \c!x=\!!fivepoint,
              \c!xx=\!!fivepoint,
-          \c!big=\!!eightpoint,
+            \c!big=\!!eightpoint,
           \c!small=\!!fivepoint]
 
 \definebodyfontenvironment
@@ -4380,7 +4444,7 @@
    \s!scriptscript=\!!fivepoint,
               \c!x=\!!fivepoint,
              \c!xx=\!!fivepoint,
-          \c!big=\!!sevenpoint,
+            \c!big=\!!sevenpoint,
           \c!small=\!!fivepoint]
 
 \definebodyfontenvironment
@@ -4390,7 +4454,7 @@
    \s!scriptscript=\!!fourpoint,
               \c!x=\!!fourpoint,
              \c!xx=\!!fourpoint,
-          \c!big=\!!sixpoint,
+            \c!big=\!!sixpoint,
           \c!small=\!!fourpoint]
 
 \definebodyfontswitch [fourteenpointfour] [\!!fourteenpointfour]

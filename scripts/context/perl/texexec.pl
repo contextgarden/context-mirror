@@ -1589,6 +1589,7 @@ sub RunTeXutil {
 
     if ( -e "$JobName.tuo" ) {
         CheckPositions($JobName);
+        #~ print "    utility file check : $JobName.tup <-> $JobName.tuo\n";
         $StopRunning = !compare( "$JobName.tup", "$JobName.tuo" );
     } else {
         $StopRunning = 1;
@@ -1897,7 +1898,7 @@ if ($JobSuffix =~ /\_fo$/i) {
         {
             unlink "$JobName.$JobSuffix";
         }
-        if (($dosish) && (!$Problems) && ($PdfOpen)) {
+        if ((!$Problems) && ($PdfOpen)) {
             if ($Result ne '') {
                 system("pdfopen --file $Result.pdf") if -f "$Result.pdf"
             } else {
@@ -2042,7 +2043,7 @@ sub RunListing {
     foreach $FileName (@FileNames) {
         $CleanFileName = lc CleanTeXFileName($FileName);
         print LIS "\\page\n";
-        print LIS "\\setupfootertexts[$CleanFileName][pagenumber]\n";
+        print LIS "\\setupfootertexts[\\tttf $CleanFileName][\\tttf \pagenumber]\n";
         print LIS "\\typefile\{$FileName\}\n";
     }
     print LIS "\\stoptext\n";
@@ -2234,7 +2235,7 @@ sub RunCombine {
         print "               pdffile : $FileName\n";
         my $CleanFileName = CleanTeXFileName($FileName);
         print COM "\\setupfootertexts\n";
-        print COM "  [$CleanFileName\\space---\\space\\currentdate\\space---\\space\\pagenumber]\n";
+        print COM "  [\\tttf $CleanFileName\\quad\\quad\\currentdate\\quad\\quad\\pagenumber]\n";
         print COM "\\combinepages[$FileName][nx=$nx,ny=$ny]\n";
         print COM "\\page\n";
     }

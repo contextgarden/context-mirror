@@ -2,7 +2,9 @@
 
 <!-- foxet test file - Hans Hagen - PRAGMA ADE - www.pragma-ade.com -->
 
-<fo:root xmlns:fo='http://www.w3.org/1999/XSL/Format' xmlns:fe='http://www.pragma-ade.com/schemas/foxet.rng'>
+<fo:root
+    xmlns:fo='http://www.w3.org/1999/XSL/Format'
+    xmlns:fe='http://www.pragma-ade.com/schemas/foxet.rng'>
 
     <fo:layout-master-set>
         <fo:simple-page-master master-name='any' margin='2cm'>
@@ -83,7 +85,7 @@
         </fo:flow>
     </fo:page-sequence>
 
-    <fo:page-sequence master-reference='demo' force-page-count='end-on-even'>
+    <fo:page-sequence master-reference='demo' force-page-count='end-on-odd'>
         <fe:message>starting page sequence 'demo'</fe:message>
         <fo:flow flow-name='xsl-region-body'>
             <fo:block>
@@ -92,7 +94,7 @@
         </fo:flow>
     </fo:page-sequence>
 
-    <fo:page-sequence master-reference='omed' force-page-count='end-on-even'>
+    <fo:page-sequence master-reference='omed' force-page-count='end-on-odd'>
         <fe:message>starting page sequence 'omed'</fe:message>
         <fo:flow flow-name='xsl-region-body'>
             <fo:block>

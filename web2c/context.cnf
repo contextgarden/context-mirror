@@ -71,8 +71,8 @@ OTFFONTS      = .;$TEXMF/fonts/otf/{xetex,}//
 % resource paths, can be used in paranoid situations (can be env vars)
 
 TXRESOURCES=rubish
-MPRESOURCES=rubish
-MFRESOURCES=rubish
+MPRESOURCES=$TXRESOURCES
+MFRESOURCES=$MPRESOURCES
 
 % some extra paths for development trees (can be env vars)
 

@@ -27,6 +27,8 @@
 %D </rl:library>
 %D \stoptyping
 
+\doifnotmode{\systemmodeprefix\v!first}{\endinput}
+
 \unprotect
 
 \def\XMLrlprefix{rl:}
@@ -34,58 +36,52 @@
 \newwrite\XMLrllog
 
 \def\openXMLresourcelog
-  {%\global\let\openXMLresourcelog\relax
-   \immediate\openout\XMLrllog\jobname.rlg\relax
-   \immediate\write\XMLrllog{\XMLbanner\empty}%
+  {\immediate\openout\XMLrllog\jobname.rlg\relax
+   \immediate\write\XMLrllog{\XMLbanner{standalone='yes'}}%
    \immediate\write\XMLrllog{\writtenXMLstart{\XMLrlprefix library}}}
 
 \def\closeXMLresourcelog
-  {%\global\let\closeXMLresourcelog\relax
-   \immediate\write\XMLrllog{\writtenXMLend{\XMLrlprefix library}}%
+  {\immediate\write\XMLrllog{\writtenXMLend{\XMLrlprefix library}}%
    \immediate\closeout\XMLrllog}
 
-\let\figurefilelabel   \empty
-\let\figurefileoriginal\empty
-\let\figurefilefile    \empty
+\let\figurefilelabel     \empty
+\let\figurefileoriginal  \empty
+\let\figurefilefile      \empty
+\let\figurefilepath      \empty
+\let\figurefileconversion\empty
+\let\figurefileprefix    \empty
 
 \def\XMLfeedbackresource#1#2%
   {\convertcommand\currentresourcecomment\to\currentresourcecomment
    \immediate\write\XMLrllog
      {\writtenXMLelement{\XMLrlprefix usage}%
-        {\writtenXMLelement{\XMLrlprefix type}{#2}%
-         \writtenXMLelement{\XMLrlprefix state}{#1}%
+        {\writtenXMLelement{\XMLrlprefix         type}{#2}%
+         \writtenXMLelement{\XMLrlprefix        state}{#1}%
          \ifx\figurefilelabel\empty
-           \ifx\figurelabel\s!dummy
-             % label equals filename
-           \else
-             \writtenXMLelement{\XMLrlprefix label}{\figurelabel}%
+           \ifx\figurelabel\s!dummy \else % otherwise label equals filename
+             \writtenXMLelementcs{\XMLrlprefix  label}\figurelabel
            \fi
-           \writtenXMLelement{\XMLrlprefix file}{\figurefilename}%
-           \ifx\figurefiletype\empty\else
-             \writtenXMLelement{\XMLrlprefix suffix}{\figurefiletype}%
-           \fi
+           \writtenXMLelementcs{\XMLrlprefix     file}\figurefilename
+           \writtenXMLelementcs{\XMLrlprefix   suffix}\figurefiletype
          \else
            % \figurefilelabel is set in x-res-04 and since
            % we fetch from this base using the normal
            % \externalfigure macro, the label becomes the
            % name of the figurebase
-           \writtenXMLelement{\XMLrlprefix base}{\figurefilename}%
-           \writtenXMLelement{\XMLrlprefix label}{\figurefilelabel}%
-\ifx\figurefilefile\empty\else
-  \writtenXMLelement{\XMLrlprefix file}{\figurefilefile}%
-\fi
-\ifx\figurefileoriginal\empty\else
-  \writtenXMLelement{\XMLrlprefix original}{\figurefileoriginal}%
-\fi
+           \writtenXMLelementcs{\XMLrlprefix     base}\figurefilename
+           \writtenXMLelementcs{\XMLrlprefix    label}\figurefilelabel
+           \writtenXMLelementcs{\XMLrlprefix     file}\figurefilefile
          \fi
+         \writtenXMLelementcs{\XMLrlprefix       path}\figurefilepath
+         \writtenXMLelementcs{\XMLrlprefix   original}\figurefileoriginal
+         \writtenXMLelementcs{\XMLrlprefix conversion}\figurefileconversion
+         \writtenXMLelementcs{\XMLrlprefix     prefix}\figurefileprefix
          \ifnum\figurefilepage>\zerocount
-           \writtenXMLelement{\XMLrlprefix page}{\figurefilepage}%
+           \writtenXMLelement{\XMLrlprefix       page}\figurefilepage
          \fi
-\ifx\currentresourcecomment\empty\else
-  \writtenXMLelement{\XMLrlprefix comment}{\currentresourcecomment}%
-\fi
-         \writtenXMLelement{\XMLrlprefix width}{\figurewidth}%
-         \writtenXMLelement{\XMLrlprefix height}{\figureheight}}}}
+         \writtenXMLelementcs{\XMLrlprefix    comment}\currentresourcecomment
+         \writtenXMLelementcs{\XMLrlprefix      width}\figurewidth
+         \writtenXMLelementcs{\XMLrlprefix     height}\figureheight}}}
 
 \def\XMLfeedbackexternalfigure
   {\doifmodeelse{*\v!figure}%

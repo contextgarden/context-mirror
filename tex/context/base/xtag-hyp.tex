@@ -24,6 +24,18 @@
    \enableencoding[\XMLop{encoding}]}
   {\stopnointerference}
 
+\defineXMLsingular [hyphenate]
+  {\-}
+
+\defineXMLgrouped [language] [code=\currentlanguage,scope=local]
+  {\doifelse{\XMLop{scope}}{global}\mainlanguage\language[\XMLop{code}]}
+
+\defineXMLsingular [language] [code=\currentlanguage]
+  {\doifelse{\XMLop{scope}}{global}\mainlanguage\language[\XMLop{code}]}
+
+\defineXMLsingular [compound] [token=-]
+  {\expanded{\directdiscretionary{\XMLop{token}}}}
+
 \endinput
 
 % \mainlanguage[nl] \setupbodyfont[pos] \useXMLfilter[utf,hyp]

@@ -2,7 +2,6 @@
 
 # program   : ctxtools
 # copyright : PRAGMA Advanced Document Engineering
-# version   : 1.2.0 - 2002/2005
 # author    : Hans Hagen
 
 # This script will harbor some handy manipulations on context
@@ -20,6 +19,7 @@ end
 require 'ftools'
 require 'xmpl/switch'
 require 'exa/logger'
+require 'rexml/document'
 
 class String
 
@@ -706,12 +706,14 @@ end
 
 # This script is used to generate hyphenation pattern files
 # that suit ConTeXt. One reason for independent files is that
-# over the years too many uncommunicated chabges took place
+# over the years too many uncommunicated changes took place
 # as well that inconsistency in content, naming, and location
 # in the texmf tree takes more time than I'm willing to spend
 # on it. Pattern files are normally shipped for LaTeX (and
 # partially plain). A side effect of independent files is that
 # we can make them encoding independent.
+#
+# Maybe I'll make this hyptools.tex
 
 class Language
 
@@ -839,30 +841,65 @@ class Language
         @data.gsub!(/\n+/mo)            do "\n"  end
         @read.gsub!(/\n+/mo)            do "\n"  end
 
+        description = ''
+
         begin
-            if f = File.open(logname,'w') then
-                report("saving #{@remapping.length} remap patterns in #{logname}")
-                @remapping.each do |m|
-                    f.puts("#{m[0].inspect} => #{m[1]}\n")
+            desfile = `kpsewhich -progname=context lang-all.xml`.chomp
+            if f = File.new(desfile) then
+                if doc = REXML::Document.new(f) then
+                    if e = REXML::XPath.first(doc.root,"/descriptions/description[@language='#{@language}']") then
+                        description = e.to_s
+                    end
                 end
-                f.close
+            end
+        rescue
+            description = ''
+        else
+            unless description.empty? then
+                str  = "<!-- copied from lang-all.xml\n\n"
+                str << "<?xml version='1.0' standalone='yes'?>\n\n"
+                str << description.chomp
+                str << "\n\nend of copy -->\n"
+                str.gsub!(/^/io, "% ") unless @commandline.option('xml')
+                description =  comment("begin description data")
+                description << str + "\n"
+                description << comment("end description data")
+                report("description found for language #{@language}")
+            end
+        end
+
+        begin
+            if description.empty? || @commandline.option('log') then
+                if f = File.open(logname,'w') then
+                    report("saving #{@remapping.length} remap patterns in #{logname}")
+                    @remapping.each do |m|
+                        f.puts("#{m[0].inspect} => #{m[1]}\n")
+                    end
+                    f.close
+                end
+            else
+                File.delete(logname) if FileTest.file?(logname)
             end
         rescue
         end
 
         begin
-            if f = File.open(rmename,'w') then
-                data = @read.dup
-                data.gsub!(/(\s*\n\s*)+/mo, "\n")
-                f << comment("comment copied from public hyphenation files}")
-                f << comment("source of data: #{@filenames.join(' ')}")
-                f << comment("begin original comment")
-                f << "#{data}\n"
-                f << comment("end original comment")
-                f.close
-                report("comment saved in file #{rmename}")
+            if description.empty? || @commandline.option('log') then
+                if f = File.open(rmename,'w') then
+                    data = @read.dup
+                    data.gsub!(/(\s*\n\s*)+/mo, "\n")
+                    f << comment("comment copied from public hyphenation files}")
+                    f << comment("source of data: #{@filenames.join(' ')}")
+                    f << comment("begin original comment")
+                    f << "#{data}\n"
+                    f << comment("end original comment")
+                    f.close
+                    report("comment saved in file #{rmename}")
+                else
+                    report("file #{rmename} is not writable")
+                end
             else
-                report("file #{rmename} is not writable")
+                File.delete(rmename) if FileTest.file?(rmename)
             end
         rescue
         end
@@ -878,6 +915,7 @@ class Language
                 f << banner
                 f << comment("context pattern file, see #{rmename} for original comment")
                 f << comment("source of data: #{@filenames.join(' ')}")
+                f << description
                 f << comment("begin pattern data")
                 f << content('patterns', data)
                 f << comment("end pattern data")
@@ -901,6 +939,7 @@ class Language
                 f << banner
                 f << comment("context hyphenation file, see #{rmename} for original comment")
                 f.<< comment("source of data: #{@filenames.join(' ')}")
+                f << description
                 f.<< comment("begin hyphenation data")
                 f << content('hyphenation', data)
                 f.<< comment("end hyphenation data")
@@ -1048,23 +1087,23 @@ class Commands
 
     def patternfiles
         language = @commandline.argument('first')
-        if ! language.empty? then
-            if language == 'all' then
-                languages = @@languagedata.keys.sort
-            elsif @@languagedata.key?(language) then
-                languages = [language]
-            else
-                languages = []
-            end
-            languages.each do |language|
-                files    = @@languagedata[language][0] || ''
-                encoding = @@languagedata[language][1] || ''
-                Language::generate(self,language,files,encoding)
-            end
+        if (language == 'all') || language.empty? then
+            languages = @@languagedata.keys.sort
+        elsif @@languagedata.key?(language) then
+            languages = [language]
+        else
+            languages = []
+        end
+        languages.each do |language|
+            files    = @@languagedata[language][0] || ''
+            encoding = @@languagedata[language][1] || ''
+            Language::generate(self,language,files,encoding)
         end
     end
 
     private
+
+    # todo: take fallback list from context
 
     @@languagedata['ba' ] = [['bahyph.tex'],                   'ec']
     @@languagedata['ca' ] = [['cahyph.tex'],                   'ec']
@@ -1133,6 +1172,7 @@ commandline.registervalue('type','')
 commandline.registerflag('pipe')
 commandline.registerflag('all')
 commandline.registerflag('xml')
+commandline.registerflag('log')
 
 commandline.expand
 

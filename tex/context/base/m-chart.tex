@@ -160,13 +160,8 @@
   {\gdef\FLOWoverlay{#1}\ignorespaces}
 
 \def\doFLOWfigure#1%
-  {\defineoverlay
-     [\s!dummy]
-     [{\externalfigure
-         [#1]
-         [\c!width=\overlaywidth,
-          \c!height=\overlayheight]}]%
-   \overlay{\s!dummy}}
+  {\defineoverlay[\s!dummy][\overlayfigure{#1}]%
+   \overlay\s!dummy}
 
 \def\doFLOWtext
   {\dosingleempty\dodoFLOWtext}
@@ -218,8 +213,7 @@
 \def\preparenextFLOWchart#1#2%
   {\doglobal\increment\nofFLOWcharts
    \flowchart{#1}%
-   \setxvalue{\@FLOW@-#1}%
-     {\noexpand\dohandleflowchart[\nofFLOWcharts][#2]}}
+   \setxvalue{\@FLOW@-#1}{\noexpand\dohandleflowchart[\nofFLOWcharts][#2]}}
 
 \def\setupFLOWcharts{\dodoubleargument\getparameters[\@@FLOW]}
 \def\setupFLOWlines {\dodoubleargument\getparameters[\@@FLOL]}
@@ -284,7 +278,7 @@
 \newcounter\includeFLOWx
 \newcounter\includeFLOWy
 
-\def\includeFLOWchart%
+\def\includeFLOWchart
   {\dodoubleempty\doincludeFLOWchart}
 
 \def\doincludeFLOWchart[#1][#2]%
@@ -311,7 +305,7 @@
 %  \scratchcounter=0#2\advance\scratchcounter\includeFLOWy
 %  \xdef\FLOWlocation{\FLOWlocation,\the\scratchcounter}}
 
-\def\resetFLOWlocation%
+\def\resetFLOWlocation
   {\gdef\lastFLOWx{0}%
    \gdef\lastFLOWy{0}}
 
@@ -541,9 +535,11 @@
       \s!unknown=>\startMPdrawing
                     show_\@@FLOWdot_points := true ;
                   \stopMPdrawing]%
+\doglobal\newcounter\FLOWcomment
    \let\startFLOWcell\startFLOWcellB
    \resetFLOWlocation
    \processFLOWbuffer\currentFLOWnumber
+\doglobal\newcounter\FLOWcomment
    \let\startFLOWcell\startFLOWcellC
    \resetFLOWlocation
    \processFLOWbuffer\currentFLOWnumber
@@ -756,7 +752,7 @@
 
 % Pass D
 
-\long\def\startFLOWcellD#1\stopFLOWcell%
+\long\def\startFLOWcellD#1\stopFLOWcell
   {\resetFLOWcell
 \pushmacro\lastFLOWx
 \pushmacro\lastFLOWy
@@ -805,12 +801,13 @@
              \dimen2=\clipMPury
              \advance\dimen2 -\@@FLOW@@offset
              \advance\dimen2 -\getvalue{\@@MPy\FLOWcomment}\s!bp
-             \setbox0=\hbox{\strut#2}%
-             \boxoffset=.5\bodyfontsize
-             \setbox0=\hbox
-               {\hskip\dimen0\lower\dimen2\getvalue{FLOW#1}{\box0}}%
-             \wd0=\zeropoint\ht0=\zeropoint\dp0=\zeropoint
-             \box0
+             \setbox\scratchbox\hbox{\strut#2}%
+             \boxoffset.5\bodyfontsize
+             \setbox\scratchbox\hbox{\hskip\dimen0\lower\dimen2\getvalue{FLOW#1}{\box\scratchbox}}%
+             \smashbox\scratchbox
+             \box\scratchbox
+             \boxoffset\zeropoint
+             \nointerlineskip % really needed
            \fi
          \fi
        \fi
@@ -891,6 +888,9 @@
    \ifdone
      \dophasetwoFLOWcellX
      \doglobal\addtocommalist\FLOWcell\FLOWcells
+     \def\FLOWx{#1}%
+     \def\FLOWy{#2}%
+     \directsetup{flowcell}%
      \setbox0\hbox
        {\ifx\FLOWalign\empty\else
           \setupframed
@@ -906,10 +906,9 @@
         \fi
         \doifelse\FLOWshape{none} % {\v!none}
           {\setupframed[\c!offset=\v!overlay]}
-         %{\setupframed[\c!offset=.5\bodyfontsize]}%
           {\setupframed[\c!offset=\@@FLOSoffset]}%
         \framed
-          [\c!frame=\v!off,
+          [\c!frame=\v!off,\c!background=flowcell,
            \c!width=\FLOWshapewidth,\c!height=\FLOWshapeheight]
           {\FLOWtext}}%
        \showFLOWhelp0
@@ -921,7 +920,7 @@
      \positionFLOWzero
      \dimen0=\FLOWshapewidth \dimen2=.5\dimen0
      \dimen4=\FLOWshapeheight\dimen6=.5\dimen4
-     \boxoffset=.5\bodyfontsize
+     \boxoffset.5\bodyfontsize
      \doFLOWtlabel   \righttopbox0\tFLOWlabel
      \doFLOWblabel\rightbottombox0\bFLOWlabel
      \doFLOWllabel    \lefttopbox0\lFLOWlabel
@@ -934,7 +933,22 @@
      \ifnum#1=\!!countc      \doFLOWrlabel  \rightbox1\rFLOWexit \fi
      \ifnum#2=\@@FLOWy\relax \doFLOWtlabel    \topbox1\tFLOWexit \fi
      \ifnum#2=\!!countd      \doFLOWblabel \bottombox1\bFLOWexit \fi
+     \boxoffset\zeropoint
    \fi}
+
+% For Willy Egger:
+%
+% \startsetups flowcell
+%   \definelayer
+%     [flowcell]
+%     [width=\FLOWshapewidth,
+%      height=\FLOWshapeheight]
+%   \setlayerframed
+%     [flowcell]
+%     [preset=rightbottom,offset=1ex]
+%     [frame=off]
+%     {\tx(\FLOWx,\FLOWy)}
+% \stopsetups
 
 % Pass E
 
@@ -943,120 +957,6 @@
    \ignorespaces#1\unskip
    \let\doprocessFLOWcell\doprocessFLOWcellE
    \expandafter\doprocessFLOWcell\FLOWlocation\end}
-
-\def\dophaseoneFLOWcellX#1#2%
-  {\!!counta#1\relax
-   \!!countb#2\relax
-   \!!countc\@@FLOWx
-   \!!countd\@@FLOWy
-   \advance\!!countc \@@FLOWnx
-   \advance\!!countd \@@FLOWny
-   \advance\!!countc \minusone
-   \advance\!!countd \minusone
-        \ifnum\!!counta<\@@FLOWx\relax  \donefalse
-   \else\ifnum\!!counta>\!!countc       \donefalse
-   \else\ifnum\!!countb<\@@FLOWy\relax  \donefalse
-   \else\ifnum\!!countb>\!!countd       \donefalse
-   \else                                \donetrue
-   \fi\fi\fi\fi}
-
-\def\dophasetwoFLOWcellX
-  {\advance\!!counta -\@@FLOWx
-   \advance\!!counta \plusone
-   \advance\!!countb -\@@FLOWy
-   \advance\!!countb \plusone
-   \dimen0=\FLOWgridwidth
-   \dimen0=\!!counta\dimen0
-   \advance\dimen0 -\FLOWgridwidth
-   \dimen4=\FLOWgridwidth
-   \advance\dimen4 -\FLOWshapewidth
-   \advance\dimen0 .5\dimen4
-   \dimen2=\FLOWgridheight
-   \dimen2=\!!countb\dimen2
-   \dimen4=\FLOWgridheight
-   \advance\dimen4 -\FLOWshapeheight
-   \advance\dimen2 -.5\dimen4
-   \edef\FLOWdx{\the\dimen0}%
-   \edef\FLOWdy{\the\dimen2}}
-
-\def\positionFLOWzero% assumes \FLOWdx and \FLOWdy are set
-  {\setbox0\hbox{\hskip\FLOWdx\lower\FLOWdy\box0}%
-   \smashbox0\box0
-   \nointerlineskip}%
-
-\def\doFLOWtlabel#1#2#3%
-  {\scratchdimen\ifcase#2 \zeropoint\else\@@FLOWdy\fi
-   \setbox0\hbox{\hskip\dimen2\raise\scratchdimen
-     \hbox{\raise\dimen4\hbox{#1{\strut#3}}}}%
-   \positionFLOWzero}%
-
-\def\doFLOWblabel#1#2#3%
-  {\scratchdimen\ifcase#2 \zeropoint\else\@@FLOWdy\fi
-   \setbox0\hbox{\hskip\dimen2\raise-\scratchdimen
-     \hbox{#1{\strut#3}}}%
-   \positionFLOWzero}%
-
-\def\doFLOWllabel#1#2#3%
-  {\scratchdimen\ifcase#2 \zeropoint\else\@@FLOWdx\fi
-   \setbox0\hbox{\hskip-\scratchdimen\raise\dimen6
-     \hbox{#1{\strut#3}}}%
-   \positionFLOWzero}%
-
-\def\doFLOWrlabel#1#2#3%
-  {\scratchdimen\ifcase#2 \zeropoint\else\@@FLOWdx\fi
-   \setbox0\hbox{\hskip\dimen0\hskip\scratchdimen
-   \hbox{\raise\dimen6\hbox{#1{\strut#3}}}}%
-   \positionFLOWzero}
-
-\def\doprocessFLOWcellD#1,#2\end
-  {\dophaseoneFLOWcellX{#1}{#2}%
-   \ifdone
-     \dophasetwoFLOWcellX
-     \doglobal\addtocommalist\FLOWcell\FLOWcells
-     \setbox0\hbox
-       {\ifx\FLOWalign\empty\else
-          \setupframed
-            [\c!align=\v!normal,\c!bottom=\vfill,\c!top=\vfill]%
-          \@EA\processallactionsinset\@EA
-            [\FLOWalign]
-            [t=>{\setupframed[\c!bottom=\vfill,\c!top=]},
-             b=>{\setupframed[\c!bottom=,\c!top=\vfill]},
-             l=>{\setupframed[\c!align=\v!right]},
-             r=>{\setupframed[\c!align=\v!left]},
-             m=>{\setupframed[\c!align=\v!middle]},
-             c=>{\setupframed[\c!align=\v!middle]}]%
-        \fi
-        \doifelse\FLOWshape{none} % {\v!none}
-          {\setupframed[\c!offset=\v!overlay]}
-         %{\setupframed[\c!offset=.5\bodyfontsize]}%
-          {\setupframed[\c!offset=\@@FLOSoffset]}%
-        \framed
-          [\c!frame=\v!off,
-           \c!width=\FLOWshapewidth,\c!height=\FLOWshapeheight]
-          {\FLOWtext}}%
-       \showFLOWhelp0
-       \ifx\FLOWdestination\empty\else
-         \setbox0\hbox
-           {\setupinteraction[\c!color=,\c!contrastcolor=]%
-            \gotobox{\box0}[\FLOWdestination]}%
-       \fi
-     \positionFLOWzero
-     \dimen0=\FLOWshapewidth \dimen2=.5\dimen0
-     \dimen4=\FLOWshapeheight\dimen6=.5\dimen4
-     \boxoffset=.5\bodyfontsize
-     \doFLOWtlabel   \righttopbox0\tFLOWlabel
-     \doFLOWblabel\rightbottombox0\bFLOWlabel
-     \doFLOWllabel    \lefttopbox0\lFLOWlabel
-     \doFLOWrlabel   \righttopbox0\rFLOWlabel
-     \doFLOWtlabel        \topbox0\tcFLOWlabel % for me only
-     \doFLOWblabel     \bottombox0\bcFLOWlabel % for me only
-     \doFLOWllabel       \leftbox0\lcFLOWlabel % for me only
-     \doFLOWrlabel      \rightbox0\rcFLOWlabel % for me only
-     \ifnum#1=\@@FLOWx\relax \doFLOWllabel   \leftbox1\lFLOWexit \fi
-     \ifnum#1=\!!countc      \doFLOWrlabel  \rightbox1\rFLOWexit \fi
-     \ifnum#2=\@@FLOWy\relax \doFLOWtlabel    \topbox1\tFLOWexit \fi
-     \ifnum#2=\!!countd      \doFLOWblabel \bottombox1\bFLOWexit \fi
-   \fi}
 
 \def\doprocessFLOWcellE#1,#2\end  % redundant
   {\ifx\FLOWoverlay\empty \else

@@ -941,14 +941,14 @@ sub HandleFile
  { $RestOfLine =~ s/.*\{(.*)\}/$1/gio ;
    ++$Files{$RestOfLine} }
 
-sub FlushFiles
+sub FlushFiles # hash needs to be sorted, else problem on macosx
   { print TUO "%\n" . "% $Program / Files\n" . "%\n" ;
-    foreach $File (keys %Files)
+    foreach $File (sort keys %Files)
       { print TUO "% $File ($Files{$File})\n" }
     print TUO "%\n" ;
     $NOfFiles = keys %Files ;
     Report("EmbeddedFiles", $NOfFiles) ;
-    foreach $File (keys %Files)
+    foreach $File (sort keys %Files)
       { unless (($Files{$File} % 2) eq 0)
           { ++$NOfBadFiles ;
             Report("BeginEndError", $File) } } }

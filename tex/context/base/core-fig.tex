@@ -12,6 +12,8 @@
 %C details.
 
 % error in calculations : .25% (too much: 1.5pt over full page)
+%
+% this module will be reimplemented(read: cleaned up)
 
 \writestatus{loading}{Context Core Macros / Figure Inclusion}
 
@@ -279,10 +281,7 @@
      \def\@@efcurrentpath{#1}%
      \sanitizefilename#1\to\@@efcurrentpath
      \doiffileinsertionsupportedelse\@@efcurrenttype
-       {\assignfullfilename % needed
-          {\@@efcurrentpath}%
-          {\@@effilename.\figureextension{\@@efcurrenttype}}%
-          \to\@@efcurrentfile
+       {\assignfullfilename{\@@efcurrentpath}{\@@effilename.\figureextension{\@@efcurrenttype}}\to\@@efcurrentfile
         \dodododoanalyzefigurefiles}
        \donothing
    \fi}
@@ -344,9 +343,7 @@
 
 \def\getfiguredimensionsA
   {\ifcase\figurestatus
-     \@@eftrace{analyzing \@@efcurrentfile\space
-                       on \@@efcurrentpath\space
-                       as \@@efcurrenttype}%
+     \@@eftrace{analyzing \@@efcurrentfile\space on \@@efcurrentpath\space as \@@efcurrenttype}%
      \!!widthb\zeropoint % ?
      \doifdefinedelse{\@@dogetfiguresize\@@efcurrenttype}
        {\executedtrue
@@ -410,12 +407,9 @@
   {\ifcase\figurestatus\ifcase\figurefilemode\else
 \doifsomething\@@efcurrentpath
 {%
-    %\def\@@efloadname{\@@efcurrentpath\f!pathseparator\@@exfile}%
      \assignfullfilename\@@efcurrentpath\@@exfile\to\@@efloadname
      \edef\@@effilenametype{\@@effilename.\@@efcurrenttype}%
-     \@@eftrace{analyzing \@@efloadname\space
-                       on \@@efcurrentpath\space
-                      for \@@effilenametype}%
+     \@@eftrace{analyzing \@@efloadname\space on \@@efcurrentpath\space for \@@effilenametype}%
      \pushendofline
      \startreadingfile
      \let\presetfigure\presetfigureA
@@ -448,8 +442,7 @@
             {\edef\@@effilenametype{\@@effilename.\@@efcurrenttype}%
              \@@eftrace{running texutil on \@@effilenametype}%
              \def\@@efloadname{\f!utilityfilename.\f!temporaryextension}%
-             \executesystemcommand
-               {texutil --fig --out=\@@efloadname\space\@@effilenametype}%
+             \executesystemcommand{texutil --fig --out=\@@efloadname\space\@@effilenametype}%
              \@@eftrace{analyzing \@@efloadname\space on \@@effilenametype}%
              \pushendofline
              \startreadingfile
@@ -476,12 +469,9 @@
   {\ifconsultutilityfile\ifcase\figurestatus\ifcase\figurefilemode\else
 \doifsomething\@@efcurrentpath
 {%
-    %\def\@@efloadname{\@@efcurrentpath\f!pathseparator\@@exfile}%
      \assignfullfilename\@@efcurrentpath\@@exfile\to\@@efloadname
      \edef\@@effilenametype{\@@effilename.\figureextension{\@@efcurrenttype}}%
-     \@@eftrace{analyzing \@@efloadname\space
-                       on \@@efcurrentpath\space
-                      for \@@effilenametype}%
+     \@@eftrace{analyzing \@@efloadname\space on \@@efcurrentpath\space for \@@effilenametype}%
      \pushendofline
      \startreadingfile
      \let\presetfigure\presetfigureC
@@ -511,11 +501,8 @@
   {\ifconsultutilityfile\ifcase\figurestatus\ifcase\figurefilemode\else
 \doifsomething\@@efcurrentpath
 {%
-    %\def\@@efloadname{\@@efcurrentpath\f!pathseparator\@@exfile}%
      \assignfullfilename\@@efcurrentpath\@@exfile\to\@@efloadname
-     \@@eftrace{analyzing \@@efloadname\space
-                       on \@@efcurrentpath\space
-                      for \@@effilename.* surrogate}%
+     \@@eftrace{analyzing \@@efloadname\space on \@@efcurrentpath\space for \@@effilename.* surrogate}%
      \pushendofline
      \startreadingfile
      \let\presetfigure\presetfigureD
@@ -533,7 +520,7 @@
         \ExpandBothAfter\doifinsetelse\@@epe\@@efcurrenttype
           {\chardef\figurestatus4
            \let\@@eftype\@@efcurrenttype
-           \let\@@effullname\@@efcurrentfile}
+           \let\@@effullname\@@efcurrentfile}%
           \donothing}
        \donothing
    \else
@@ -567,14 +554,12 @@
 \def\dodolocatepresetfigurefiles#1%
   {\ifcase\figurestatus
      \doiffileinsertionsupportedelse\@@efcurrenttype
-       {\assignfullfilename
-          {#1}{\@@effilename.\figureextension{\@@efcurrenttype}}%
-          \to\@@efcurrentfile
+       {\assignfullfilename{#1}{\@@effilename.\figureextension{\@@efcurrenttype}}\to\@@efcurrentfile
         \@@eftrace{only searching for \@@efcurrentfile}%
         \doiffileelse\@@efcurrentfile
           {\chardef\figurestatus\plusone
            \let\@@eftype\@@efcurrenttype
-           \let\@@effullname\@@efcurrentfile}
+           \let\@@effullname\@@efcurrentfile}%
           \donothing}
        \donothing
    \fi}
@@ -977,9 +962,7 @@
    % nil path search in case of path spec
    \expanded{\checkfilename{\expandedfigurename}}%
    \ifcase\kindoffile\else \let\figurepathlist\empty \fi
-%    \expandafter\beforesplitstring\expandedfigurename\at.\to\@@effilename
-%    \expandafter\aftersplitstring \expandedfigurename\at.\to\@@efextension
-\greedysplitstring\expandedfigurename\at.\to\@@effilename\and\@@efextension
+   \greedysplitstring\expandedfigurename\at.\to\@@effilename\and\@@efextension
    \doifelse\@@effilename{mprun}
      {\edef\@@effilepref{\bufferprefix}}
      {\let \@@effilepref\empty}%
@@ -1005,12 +988,16 @@
       \c!maxwidth=\@@exmaxwidth,\c!maxheight=\@@exmaxheight,
       \c!scale=,\c!width=,\c!height=,\c!display=,\c!lines=,\c!grid=,
      %\c!foregroundcolor=,
-      \c!color=,
+      \c!color=,\c!conversion=,\c!prefix=,
       \c!factor=,\c!hfactor=,\c!wfactor=]%
    \doif\@@efextension\c!mov\presetfiguremov
    \doif\@@efextension\c!avi\presetfigureavi
    \doif\@@efextension\c!svg\presetfiguresvg
    #1[#4][#5][#6]%
+   % prefix in runs > 1
+   % prefix in runs > 1
+\doifnotmode{\systemmodeprefix\v!first}
+  {\doifsomething\@@efprefix{\edef\@@effilename{\@@efprefix\@@effilename}}}%
    % new, somehow needed when \textwidth is used:
    \doifsomething\@@efmaxwidth {\freezedimenmacro\@@efmaxwidth }%
    \doifsomething\@@efmaxheight{\freezedimenmacro\@@efmaxheight}%
@@ -1138,7 +1125,6 @@
         \fi
         \doifelse{#2}\s!figurepreset
           {\chardef\figurestatus4
-          %\def\@@efloadname{\f!currentpath\f!pathseparator\@@exfile}%
            \assignfullfilename\f!currentpath\@@exfile\to\@@efloadname
            \let\@@eftype\@@epe}
           {\chardef\figurestatus\zerocount
@@ -1225,9 +1211,9 @@
    \doifelsenothing\@@efpage % NIEUW ??
      {\let\@@efoptions\empty}
      {\let\@@efoptions\@@efpage}%
-   \doif\@@efpreview\v!yes{\addtocommalist\v!preview\@@efoptions}%
+   \doif\@@efpreview \v!yes{\addtocommalist\v!preview \@@efoptions}%
    \doif\@@efcontrols\v!yes{\addtocommalist\v!controls\@@efoptions}%
-   \doif\@@efrepeat\v!yes{\addtocommalist\v!repeat\@@efoptions}%
+   \doif\@@efrepeat  \v!yes{\addtocommalist\v!repeat  \@@efoptions}%
    \doif\@@eftype\c!mps
      {\ifcase\EPSspecial\else\ifinobject\else
         \@@eftrace{special mps, object forced}%
@@ -1322,6 +1308,7 @@
 \let\figurefilename\empty
 \let\figurefiletype\empty
 \let\figurefilepage\empty
+\let\figurefilepath\empty
 
 \def\finalizeexternalfigure#1#2%
   {\globalpushmacro\figurewidth
@@ -1330,12 +1317,21 @@
    \globalpushmacro\figurefilename
    \globalpushmacro\figurefiletype
    \globalpushmacro\figurefilepage
-   \xdef\figurewidth   {\the\figwid}%
-   \xdef\figureheight  {\the\fighei}%
-   \xdef\figurelabel   {#1}%
-   \xdef\figurefilename{#2}%
-   \xdef\figurefiletype{\@@eftype}%
-   \xdef\figurefilepage{\@@efpage}%
+   \globalpushmacro\figurefileconversion
+   \globalpushmacro\figurefileprefix
+   \globalpushmacro\figurefilepath
+   \xdef\figurewidth         {\the\figwid}%
+   \xdef\figureheight        {\the\fighei}%
+   \xdef\figurelabel         {#1}%
+   \xdef\figurefilename      {#2}%
+   \xdef\figurefiletype      {\@@eftype}%
+   \xdef\figurefilepage      {\@@efpage}%
+   \xdef\figurefileconversion{\@@efconversion}%
+   \xdef\figurefileprefix    {\@@efprefix}%
+   \xdef\figurefilepath      {\@@efcurrentpath}%
+   \doifmodeelse{\systemmodeprefix\v!first}
+     {\let\figurefullname\figurefilename}%
+     {\def\figurefullname{\figurefileprefix\figurefilename}}% no \edef
    \global\setbox\foundexternalfigure\vbox
      {\forgetall
       \ifcase\figurestatus
@@ -1347,7 +1343,7 @@
       \ifconditional\externalfigurelevel % probably background
         \ifskipexternalfigures
           % nothing
-\fakebox\foundexternalfigure
+          \fakebox\foundexternalfigure
         \else\ifcase\figurestatus
           % nothing
         \else\ifnum\splitexternalfigure=2\else
@@ -1358,9 +1354,9 @@
         \feedbackexternalfigure
         \settrue\externalfigurelevel
         \ifskipexternalfigures
-          \externalfigurereplacement{#1}{#2}{skipped}%
+          \externalfigurereplacement\figurelabel\figurefullname{skipped}%
         \else\ifcase\figurestatus
-          \externalfigurereplacement{#1}{#2}{unknown}%
+          \externalfigurereplacement\figurelabel\figurefullname{unknown}%
         \else\ifnum\splitexternalfigure=2
           \backgroundline[\@@efsplitcolor]
             {\fakebox\foundexternalfigure}%
@@ -1387,6 +1383,9 @@
                 \fi}}%
         \fi\fi\fi
       \fi}%
+   \globalpopmacro\figurefilepath
+   \globalpopmacro\figurefileprefix
+   \globalpopmacro\figurefileconversion
    \globalpopmacro\figurefilepage
    \globalpopmacro\figurefiletype
    \globalpopmacro\figurefilename
@@ -1427,7 +1426,6 @@
 \def\appliedfigurefullname  {\@@efcurrentfile}
 \def\appliedfigureidentifier{\@@efobjectname}
 \def\appliedfigureoptions   {\@@efoption}
-
 \def\appliedfigurefilesuffix{\figureextension{\@@efcurrenttype}}
 
 %D In \PDF\ one can specify an alternative graphic. This means
@@ -2100,7 +2098,6 @@
 
 \def\dotypesetbuffer[#1][#2]% beware: this will mix up the mp graphics
   {\bgroup
-   %\def\bufferprefix{\ifprotectbuffers\jobname-\fi typeset-}%
    \def\TEXbufferfile##1{\bufferprefix##1.tex}%
    \expanded{\setbuffer[typeset]%
      \def\noexpand\bufferprefix{\ifprotectbuffers\jobname-\fi typeset-}}%
@@ -2110,7 +2107,7 @@
    \endbuffer
    \doglobal\increment\noftypesetbuffers
    % batch is needed
-   \executesystemcommand{texexec --batch --pdf --result=\bufferprefix typeset-\noftypesetbuffers\space \bufferprefix typeset.tex}%
+   \executesystemcommand{texmfstart texexec --batch --pdf --result=\bufferprefix typeset-\noftypesetbuffers\space \bufferprefix typeset.tex}%
    %\externalfigure[\bufferprefix typeset-\noftypesetbuffers.pdf][\c!object=\v!no,#2]%
    \externalfigure[\bufferprefix typeset-\noftypesetbuffers.pdf][#2]%
    \egroup}

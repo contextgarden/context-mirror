@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 
-<cd:interface xmlns:cd="http://www.pragma-ade.com/commands" name="context" language="it" version="2005.03.02">
+<cd:interface xmlns:cd="http://www.pragma-ade.com/commands" name="context" language="it" version="2005.03.16">
 
   <cd:variables>
     <cd:variable name="one" value="uno"/>
@@ -67,6 +67,7 @@
     <cd:variable name="backpart" value="postfazione"/>
     <cd:variable name="backmatter" value="postambolo"/>
     <cd:variable name="footnote" value="notapdp"/>
+    <cd:variable name="endnote" value="endnote"/>
     <cd:variable name="system" value="sistema"/>
   </cd:variables>
 

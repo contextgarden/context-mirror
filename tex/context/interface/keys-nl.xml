@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 
-<cd:interface xmlns:cd="http://www.pragma-ade.com/commands" name="context" language="nl" version="2005.03.02">
+<cd:interface xmlns:cd="http://www.pragma-ade.com/commands" name="context" language="nl" version="2005.03.16">
 
   <cd:variables>
     <cd:variable name="one" value="een"/>
@@ -67,6 +67,7 @@
     <cd:variable name="backpart" value="uitleiding"/>
     <cd:variable name="backmatter" value="uitleidingen"/>
     <cd:variable name="footnote" value="voetnoot"/>
+    <cd:variable name="endnote" value="eindnoot"/>
     <cd:variable name="system" value="systeem"/>
   </cd:variables>
 

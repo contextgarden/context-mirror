@@ -29,25 +29,15 @@
   \global\collectedlinenotes\emptytoks
 \to \beforeeverylinenumbering
 
-% \def\dohandlelinenote#1#2#3%
-%   {\bgroup
-%    \expanded{\beforesplitstring#2}\at--\to\linenotelinenumber
-%    \ifnum\linenotelinenumber=\linenumber\relax
-%      % todo: \onlyfootnote{#2}{#3}% == configurable
-%      \setupnote[#1][\c!nummercommando=\gobbleoneargument]%
-%      \setnotetext[#1]{#2: #3}%
-%    \fi
-%    \egroup}
-
 \def\dohandlelinenote#1#2#3%
   {\bgroup
    \expanded{\beforesplitstring#2}\at--\to\linenotelinenumber
    \ifnum\linenotelinenumber=\linenumber\relax
-     % todo: \onlyfootnote{#2}{#3}% == configurable
+    % todo: \onlyfootnote{#2}{#3}% == configurable
     % \setupnote[#1][\c!numbercommand=\gobbleoneargument]%
     % \setnotetext[#1]{\rawreference\s!fnt{\s!fnt:f:\internalfootreference}{}#2: #3}%
       \def\linenotelinenumber##1{#2}%
-      \setupnote[#1][\c!numbercommand=\linenotelinenumber]%
+      \setupnote[#1][\c!numbercommand=\linenotelinenumber,\c!textcommand=\gobbleoneargument]%
       \setnote[#1]{#3}%
    \fi
    \egroup}

@@ -299,11 +299,10 @@
    \ifutilitydone\else
      \doifsomething{#3}
        {\showmessage\m!systems9{{#3}}%
-        \ifvoorlopig
-          \blank
-          \type{[\currentmessagetext]}%
-          \blank
-        \fi}%
+        \doifconcepttracing
+          {\blank
+           \type{[\currentmessagetext]}%
+           \blank}}%
    \fi
    \disableinitializevariables
    \endgroup}

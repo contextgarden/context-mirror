@@ -403,6 +403,25 @@
 
 \ifx\@@DriverImageBox\undefined \def\@@DriverImageBox{artbox} \fi
 
+% \def\doguessTPDimagesize#1% does not work as expected
+%   {\ifx\@@DriverImageBox\empty
+%      \global\setbox\foundexternalfigure\hbox{\pdfximage \pdfimagepagenumber ArtBox {#1}\pdfrefximage\pdflastximage}%
+%      \ifdim\ht\foundexternalfigure>\zeropoint
+%        \def\@@DriverImageBox{ArtBox}%
+%      \else
+%        \global\setbox\foundexternalfigure\hbox{\pdfximage \pdfimagepagenumber TrimBox {#1}\pdfrefximage\pdflastximage}%
+%        \ifdim\ht\foundexternalfigure>\zeropoint
+%          \def\@@DriverImageBox{TrimBox}%
+%        \else
+%          \global\setbox\foundexternalfigure\hbox{\pdfximage \pdfimagepagenumber CropBox {#1}\pdfrefximage\pdflastximage}%
+%          \ifdim\ht\foundexternalfigure>\zeropoint
+%            \def\@@DriverImageBox{CropBox}%
+%          \fi
+%        \fi
+%      \fi
+%    \fi
+%    \@@DriverImageBox}
+
 \ifnum\pdftexversion>13
 
 \def\checkpdfimageattributes
@@ -575,13 +594,13 @@
    \let\ascii\empty
    \def\docommand##1%
      {\edef\ascii{\ascii
-       \ifx\nexthandledtoken\space
-         \letterhash20%
-       \else\ifx\nexthandledtoken\blankspace
-         \letterhash20%
-       \else
-         ##1%
-       \fi\fi}}%
+      \ifx\nexthandledtoken\space
+        \letterhash20%
+      \else\ifx\nexthandledtoken\blankspace
+        \letterhash20%
+      \else
+        ##1%
+      \fi\fi}}%
    \expanded{\handletokens#2}\with\docommand
    \letgvalue{@@pdf@@scn@@#1}\ascii
    \egroup}

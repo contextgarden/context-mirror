@@ -156,7 +156,7 @@
 \def\bibdoifnot#1%
   {\ifx#1\relax
      \@EA\firstofoneargument
-   \else\ifx#1\empty
+   \else\ifx\#1\empty
      \@EAEAEA\firstofoneargument
    \else
      \@EAEAEA\gobbleoneargument
@@ -516,9 +516,9 @@
 %D
 
 \def\invertedauthor#1#2#3#4#5%
-  {\bibdoif{#2}{#2\bibalternative\c!vonsep}%
+  {\def\tempraa{#2}\bibdoif\tempraa{#2\bibalternative\c!vonsep}%
    #3\bibalternative\c!surnamesep
-   \bibdoif{#5}{#5\bibalternative\c!juniorsep}%
+   \def\tempraa{#5}\bibdoif\tempraa{\bibalternative\c!juniorsep#5}%
    \bibdoif{#1}{#1\unskip}}
 
 \def\normalauthor#1#2#3#4#5%
@@ -528,9 +528,9 @@
    \bibdoif{#5}{#5\unskip}}
 
 \def\invertedshortauthor#1#2#3#4#5%
-  {\bibdoif{#2}{#2\bibalternative\c!vonsep}%
+  {\def\tempraa{#2}\bibdoif\tempraa{#2\bibalternative\c!vonsep}%
    #3\bibalternative\c!surnamesep
-   \bibdoif{#5}{#5\bibalternative\c!juniorsep}%
+   \def\tempraa{#5}\bibdoif\tempraa{\bibalternative\c!juniorsep#5}%
    \bibdoif{#4}{#4\unskip}}
 
 \def\normalshortauthor#1#2#3#4#5%
@@ -1175,3 +1175,4 @@
 %D \completepublications
 
 \protect \endinput
+

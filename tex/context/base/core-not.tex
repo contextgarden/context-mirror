@@ -822,6 +822,7 @@
      \egroup
    \fi
    \insert\currentnoteins\bgroup\unvbox\localpostponednotes\egroup}
+% \fi} is better
 
 \def\doflushnotes % also called directly, \ifvoid is needed !
   {\ifconditional\processingnote \else \ifconditional\postponednote
@@ -957,7 +958,7 @@
 
 \def\doplacelocalnotes[#1][#2]%
   {\bgroup
-   \dolocalsetupnotes{#1}{#2}
+   \dolocalsetupnotes{#1}{#2}%
    \processnotes
      {\ExpandBothAfter\doifinsetelse\v!none{\noteparameter\c!location}
         \placenotesasnone\placenotesintext\localpostponednotes}%
@@ -1018,7 +1019,7 @@
 
 \def\doplacenotes[#1][#2]%
   {\bgroup
-   \dolocalsetupnotes{#1}{#2}
+   \dolocalsetupnotes{#1}{#2}%
    \processnotes\dodoplacenotes
    \egroup}
 

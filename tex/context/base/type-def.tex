@@ -37,10 +37,30 @@
   \definefontsynonym [Mono]            [DefaultFont]
   \definefontsynonym [MonoBold]        [Mono]
   \definefontsynonym [MonoItalic]      [Mono]
-  \definefontsynonym [MonoSlanted]     [Mono]
+  \definefontsynonym [MonoSlanted]     [MonoItalic]
   \definefontsynonym [MonoBoldItalic]  [Mono]
   \definefontsynonym [MonoBoldSlanted] [MonoBoldItalic]
   \definefontsynonym [MonoCaps]        [Mono]
+\stopsetups
+
+\startsetups [font:allbold:serif]
+  \definefontsynonym [SerifBold]        [DefaultFont]
+  \definefontsynonym [SerifBoldItalic]  [SerifBold]
+  \definefontsynonym [SerifBoldSlanted] [SerifBoldItalic]
+  \definefontsynonym [Serif]            [SerifBold]
+  \definefontsynonym [SerifItalic]      [SerifBoldItalic]
+  \definefontsynonym [SerifSlanted]     [SerifBoldSlanted]
+  \definefontsynonym [SerifCaps]        [SerifBold]
+\stopsetups
+
+\startsetups [font:allbold:sans]
+  \definefontsynonym [SansBold]        [DefaultFont]
+  \definefontsynonym [SansBoldItalic]  [SansBold]
+  \definefontsynonym [SansBoldSlanted] [SansBoldItalic]
+  \definefontsynonym [Sans]            [SansBold]
+  \definefontsynonym [SansItalic]      [SansBoldItalic]
+  \definefontsynonym [SansSlanted]     [SansBoldSlanted]
+  \definefontsynonym [SansCaps]        [SansBold]
 \stopsetups
 
 \endinput

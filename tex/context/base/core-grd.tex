@@ -752,6 +752,8 @@
      \normalstartbaselinecorrection
    \fi}
 
+\chardef\gridboxlinenomode\plusone
+
 \def\setgridbox#1#2#3%
   {\setbox#1\ruledvbox to #3 % given size
      {\forgetall
@@ -767,10 +769,15 @@
          \dorecurse\noflines
            {\strut
             \hskip-.5\lineheight
-            \rlap
-              {\hskip\scratchdimen
-               \hskip2pt\infofont
-               \hbox to 1em{\hss\recurselevel}}%
+            \ifcase\gridboxlinenomode\or
+              \rlap
+                {\hskip.2\bodyfontsize\hskip\scratchdimen
+                 \infofont\hbox to 1em{\hss\recurselevel}}%
+            \or
+              \llap
+                {\infofont\hbox to 1em{\hss\recurselevel}%
+                 \hskip.2\bodyfontsize}%
+            \fi
             \vrule
               \!!height .5\testrulewidth
               \!!depth  .5\testrulewidth

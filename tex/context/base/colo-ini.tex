@@ -252,6 +252,7 @@
 % p n d f : spot
 % h       : hexadecimal
 % t a     : transparency
+% e       : equivalent (spotcolors)
 
 \def\@@resetcolorparameters
   {\let\@@cl@@r\@@cl@@z \let\@@cl@@g\@@cl@@z \let\@@cl@@b\@@cl@@z
@@ -259,7 +260,10 @@
    \let\@@cl@@s\@@cl@@z
    \let\@@cl@@p\@@cl@@o \let\@@cl@@n\empty \let\@@cl@@d\empty \let\@@cl@@f\@@cl@@o
    \let\@@cl@@h\empty
+   \let\@@cl@@e\empty
    \let\@@cl@@t\@@cl@@z \let\@@cl@@a\@@cl@@z}
+
+\@@resetcolorparameters
 
 \def\@@cl@@A{\@@cl@@a} % a hook for symbolic conversion, see below
 
@@ -347,6 +351,10 @@
           {#3{\??cr#5}{\colorRpattern}}%
       \else
         \setxvalue{\??cr#5}{\colorHpattern}%
+      \fi
+      % new: e=external spot color name
+      \ifx\@@cl@@e\empty \else
+        \doregisterspotcolorname{#5}\@@cl@@e
       \fi}
      {\doifdefinedelse{\??cr#6}
         {\doifelse{#5}{#6}
@@ -444,6 +452,7 @@
      \lccode`\-=`\_%
      \lccode`\*=`\_%
      \lccode`\/=`\_%
+%      \lccode`\_=`\_%
      % not needed, other attribute in driver:
      %
      % \@@resetcolorparameters
@@ -451,11 +460,11 @@
      % \ifx\@@cl@@t\@@cl@@z\else
      %   \edef\@@cl@@cl@@N{\@@cl@@cl@@N_\@@cl@@t_\@@cl@@a}%
      % \fi
-     \lowercase\@EA{\@EA\xdef\@EA\multitonecolor\@EA{\@@cl@@cl@@N}}%
+     \lowercase\@EA{\@EA\xdef\@EA\@@cleancolor\@EA{\@@cl@@cl@@N}}%
    \egroup
-   \setxvalue{\??cl\multitonecolor\s!check}{\noexpand\docheckmultitonecolor{\@@cl@@cl@@D}}%
-   \expanded{\defineglobalcolor[\multitonecolor][#3,#4]}%
-   \expanded{\definespotcolor[#1][\multitonecolor][#4,f=\the\scratchcounter,p={\@@cl@@cl@@P},d={\@@cl@@cl@@D}]}}
+   \setxvalue{\??cl\@@cleancolor\s!check}{\noexpand\docheckmultitonecolor{\@@cl@@cl@@D}}%
+   \expanded{\defineglobalcolor[\@@cleancolor][#3,#4]}%
+   \expanded{\definespotcolor[#1][\@@cleancolor][#4,f=\the\scratchcounter,p={\@@cl@@cl@@P},d={\@@cl@@cl@@D}]}}
 
 \def\docheckmultitonecolor#1%
   {\flushatshipout

@@ -168,14 +168,16 @@
      \global\advance\invulput \plusone
      \setgvalue{\r!fillin\the\invulput}{\simpleinvulwoord{#2}}%
    \fi
-   \ifvoorlopig \ifnum\invulput>0
-     \setbox\scratchbox=\hbox{~\ttx(\the\invulput)}%
-     \wd\scratchbox=\!!zeropoint
-     \box\scratchbox \par
-   \fi \fi}
+   \doifconcepttracing
+     {\ifnum\invulput>\zerocount
+        \setbox\scratchbox\hbox{~\ttx(\the\invulput)}%
+        \wd\scratchbox\zeropoint
+        \box\scratchbox
+        \par
+      \fi}}
 
 \def\dosimpleinvulwoord#1%
-  {\ifnum\@@ivnumber>0 \advance\invulteller \plusone \fi
+  {\ifnum\@@ivnumber>\zerocount \advance\invulteller \plusone \fi
    \ifnum\invulteller=\@@ivnumber\relax
      \bgroup
      \doconvertfont\@@ivstyle

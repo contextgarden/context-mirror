@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 
-<cd:interface xmlns:cd="http://www.pragma-ade.com/commands" name="context" language="cz" version="2005.03.02">
+<cd:interface xmlns:cd="http://www.pragma-ade.com/commands" name="context" language="cz" version="2005.03.16">
 
   <cd:variables>
     <cd:variable name="one" value="jedna"/>
@@ -67,6 +67,7 @@
     <cd:variable name="backpart" value="epilog"/>
     <cd:variable name="backmatter" value="epilogy"/>
     <cd:variable name="footnote" value="poznamkapodcarou"/>
+    <cd:variable name="endnote" value="endnote"/>
     <cd:variable name="system" value="system"/>
   </cd:variables>
 

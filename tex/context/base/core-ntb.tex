@@ -1031,10 +1031,12 @@
           \global\pagegoal\scratchdimen
         \fi
         % brrr
-        \beforeTABLEsplitbox
-        \box\finaltblbox
-        \afterTABLEsplitbox
-        \@@tblsplitafter
+        \ifdim\ht\finaltblbox>\zeropoint
+          \beforeTABLEsplitbox
+          \box\finaltblbox
+          \afterTABLEsplitbox
+          \@@tblsplitafter
+        \fi
         \pagina
       \fi}}
 

@@ -11,6 +11,8 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
+%D Optima
+
 \usemodule[pre-60]
 
 \usetypescriptfile[type-ghz]
@@ -176,7 +178,7 @@
 
 \def\doTitlePage#1#2#3%
   {\startstandardmakeup[headerstate=high]
-     \def\\{\def\\{\endgraf\quad\quad}\endgraf\quad#2}%
+     \def\\{\def\\{\endgraf\quad\quad}\endgraf\quad\ignorespaces#2}%
      #1\setstrut\setupinterlinespace\vfil#3\vfil\vfil
    \stopstandardmakeup}
 

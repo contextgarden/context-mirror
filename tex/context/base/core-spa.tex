@@ -2344,7 +2344,7 @@
   {\setvalue{hbox#1}##1%
      {\hbox to #2{\begstrut##1\endstrut\hss}}}
 
-\def\definehbox%
+\def\definehbox
   {\dodoubleargument\dodefinehbox}
 
 \def\iobox#1#2#3#% here #3# is not really needed
@@ -3815,12 +3815,21 @@
      \hspace[][\s!default]%
    \fi\fi}
 
-\def\dodohspace[#1][#2#3]%
+% \def\dodohspace[#1][#2#3]%
+%   {\ifhmode
+%      \removeunwantedspaces
+%      \doifelse{#2}{-}
+%        {{\scratchskip\hspaceamount{#1}{#3}\hskip-\scratchskip}}
+%        {\hskip\hspaceamount{#1}{#2#3}}%
+%      \expandafter\ignorespaces
+%     \fi}
+%
+% not needed, tex handles -- as +
+
+\def\dodohspace[#1][#2]%
   {\ifhmode
      \removeunwantedspaces
-     \doifelse{#2}{-}
-       {{\scratchskip\hspaceamount{#1}{#3}\hskip-\scratchskip}}
-       {\hskip\hspaceamount{#1}{#2#3}}%
+     \hskip\hspaceamount{#1}{#2}%
      \expandafter\ignorespaces
     \fi}
 
@@ -3832,8 +3841,8 @@
 
 \definehspace [\v!small]   [.25\emspaceamount]
 \definehspace [\v!medium]  [.5\emspaceamount]
-\definehspace [\v!big]   [1\emspaceamount]
-\definehspace [\v!normal] [1\spaceamount]
+\definehspace [\v!big]     [1\emspaceamount]
+\definehspace [\v!normal]  [1\spaceamount]
 \definehspace [\v!default] [\spaceamount]
 
 %D Taken from Taco's math module (cq. \AMS\ macros), but

@@ -58,7 +58,6 @@
 
 \stoptypescript
 
-
 \starttypescript [map] [optima,optima-nova] [texnansi,ec,8r]
 
   \loadmapfile[\typescriptthree-linotype-optima.map]
@@ -136,5 +135,39 @@
 \stoptypescript
 
 \stoptypescriptcollection
+
+% melior
+
+\starttypescript [serif] [melior] [name]
+
+  \definefontsynonym [MeliorLT-Roman]   [MeliorLT]
+
+  \definefontsynonym [Serif]            [MeliorLT-Roman]
+  \definefontsynonym [SerifItalic]      [MeliorLT-Italic]
+  \definefontsynonym [SerifBold]        [MeliorLT-Bold]
+  \definefontsynonym [SerifBoldItalic]  [MeliorLT-BoldItalic]
+
+  \definefontsynonym [SerifSlanted]     [SerifItalic]
+  \definefontsynonym [SerifBoldSlanted] [SerifBoldItalic]
+
+  \definefontsynonym [SerifCaps]        [Serif]
+
+\stoptypescript
+
+\starttypescript [serif] [melior] [texnansi,ec,8r]
+
+  \loadmapfile[\typescriptthree-linotype-melior.map]
+
+  \definefontsynonym [MeliorLT]            [texnansi-lte50062] [encoding=\typescriptthree]
+  \definefontsynonym [MeliorLT-Italic]     [texnansi-lte50063] [encoding=\typescriptthree]
+  \definefontsynonym [MeliorLT-Bold]       [texnansi-lte50064] [encoding=\typescriptthree]
+  \definefontsynonym [MeliorLT-BoldItalic] [texnansi-lte50065] [encoding=\typescriptthree]
+
+\stoptypescript
+
+\starttypescript [map] [melior] [texnansi,ec,8r]
+  \loadmapfile[\typescriptthree-linotype-melior.map]
+\stoptypescript
+
 
 \endinput

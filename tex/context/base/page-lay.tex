@@ -1080,42 +1080,40 @@
      \@EA\firstoftwoarguments
    \fi}
 
-\def\outermarginwidth   {\rightorleftpageaction\rightmarginwidth\leftmarginwidth }
-\def\innermarginwidth   {\rightorleftpageaction\leftmarginwidth \rightmarginwidth}
+\def\outermarginwidth   {\rightorleftpageaction\rightmarginwidth   \leftmarginwidth }
+\def\innermarginwidth   {\rightorleftpageaction\leftmarginwidth    \rightmarginwidth}
 \def\outermargindistance{\rightorleftpageaction\rightmargindistance\leftmargindistance }
 \def\innermargindistance{\rightorleftpageaction\leftmargindistance \rightmargindistance}
 
-\def\outeredgewidth     {\rightorleftpageaction\rightedgewidth\leftedgewidth }
-\def\inneredgewidth     {\rightorleftpageaction\leftedgewidth \rightedgewidth}
+\def\outeredgewidth     {\rightorleftpageaction\rightedgewidth   \leftedgewidth }
+\def\inneredgewidth     {\rightorleftpageaction\leftedgewidth    \rightedgewidth}
 \def\outeredgedistance  {\rightorleftpageaction\rightedgedistance\leftedgedistance }
 \def\inneredgedistance  {\rightorleftpageaction\leftedgedistance \rightedgedistance}
 
-\def\outerspacewidth    {\rightorleftpageaction\cutspace\backspace }
-\def\innerspacewidth    {\rightorleftpageaction\backspace \cutspace}
+\def\outerspacewidth    {\rightorleftpageaction\cutspace \backspace }
+\def\innerspacewidth    {\rightorleftpageaction\backspace\cutspace}
 
 \beginETEX \dimexpr
 
-  \def\leftmargintotal {\dimexpr(\leftmarginwidth +\leftmargindistance )}
-  \def\rightmargintotal{\dimexpr(\rightmarginwidth+\rightmargindistance)}
-  \def\leftedgetotal   {\dimexpr(\leftedgewidth  +\leftedgedistance  )}
-  \def\rightedgetotal  {\dimexpr(\rightedgewidth +\rightedgedistance )}
+  \def\leftmargintotal {\dimexpr\leftmarginwidth +\leftmargindistance \relax}
+  \def\rightmargintotal{\dimexpr\rightmarginwidth+\rightmargindistance\relax}
+  \def\leftedgetotal   {\dimexpr\leftedgewidth   +\leftedgedistance   \relax}
+  \def\rightedgetotal  {\dimexpr\rightedgewidth  +\rightedgedistance  \relax}
 
-  \def\leftsidetotal   {\dimexpr(\leftmarginwidth +\leftedgetotal )}
-  \def\rightsidetotal  {\dimexpr(\rightmarginwidth+\rightedgetotal)}
+  \def\leftsidetotal   {\dimexpr\leftmarginwidth +\leftedgetotal \relax}
+  \def\rightsidetotal  {\dimexpr\rightmarginwidth+\rightedgetotal\relax}
+  \def\leftcombitotal  {\dimexpr\leftmargintotal +\leftedgetotal \relax}
+  \def\rightcombitotal {\dimexpr\rightmargintotal+\rightedgetotal\relax}
 
-  \def\leftcombitotal  {\dimexpr(\leftmargintotal +\leftedgetotal )}
-  \def\rightcombitotal {\dimexpr(\rightmargintotal+\rightedgetotal)}
+  \def\innermargintotal{\dimexpr\innermarginwidth+\innermargindistance\relax}
+  \def\outermargintotal{\dimexpr\outermarginwidth+\outermargindistance\relax}
+  \def\inneredgetotal  {\dimexpr\inneredgewidth  +\inneredgedistance  \relax}
+  \def\outeredgetotal  {\dimexpr\outeredgewidth  +\outeredgedistance  \relax}
 
-  \def\innermargintotal{\dimexpr(\innermarginwidth+\innermargindistance)}
-  \def\outermargintotal{\dimexpr(\outermarginwidth+\outermargindistance)}
-  \def\inneredgetotal  {\dimexpr(\inneredgewidth  +\inneredgedistance  )}
-  \def\outeredgetotal  {\dimexpr(\outeredgewidth  +\outeredgedistance  )}
-
-  \def\innercombitotal {\dimexpr(\innermargintotal+\inneredgetotal)}
-  \def\outercombitotal {\dimexpr(\outermargintotal+\outeredgetotal)}
-
-  \def\innersidetotal  {\dimexpr(\innermarginwidth+\inneredgetotal)}
-  \def\outersidetotal  {\dimexpr(\outermarginwidth+\outeredgetotal)}
+  \def\innercombitotal {\dimexpr\innermargintotal+\inneredgetotal\relax}
+  \def\outercombitotal {\dimexpr\outermargintotal+\outeredgetotal\relax}
+  \def\innersidetotal  {\dimexpr\innermarginwidth+\inneredgetotal\relax}
+  \def\outersidetotal  {\dimexpr\outermarginwidth+\outeredgetotal\relax}
 
 \endETEX
 

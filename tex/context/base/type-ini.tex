@@ -624,16 +624,16 @@
   {\ifundefined{\??tf#2\c!default}%
      \pushmacro\fontclass
      \setcurrentfontclass\empty
-     \pushmacro\@@typescriptone \edef\@@typescriptone {\truetypescript{#2}}
+     \pushmacro\@@typescriptone \edef\@@typescriptone {\truetypescript{#2}}%
      \pushmacro\@@typescripttwo  \let\@@typescripttwo  \empty
      \pushmacro\@@typescriptthree\let\@@typescriptthree\empty
      \typescriptfoundfalse
-     \dododousetypescript{\f!typeprefix pre}
+     \dododousetypescript{\f!typeprefix pre}%
      \popmacro\@@typescriptthree
      \popmacro\@@typescripttwo
      \popmacro\@@typescriptone
      \iftypescriptfound \else
-       \normaldoreadfontdefinitionfile{#1}{#2}
+       \normaldoreadfontdefinitionfile{#1}{#2}%
      \fi
      \setcurrentfontclass\empty
      \popmacro\fontclass

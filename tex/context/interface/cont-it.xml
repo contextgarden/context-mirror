@@ -481,6 +481,21 @@
       <cd:parameter name="s">
         <cd:constant type="cd:text"/>
       </cd:parameter>
+      <cd:parameter name="h">
+        <cd:constant type="cd:text"/>
+      </cd:parameter>
+      <cd:parameter name="t">
+        <cd:constant type="cd:text"/>
+      </cd:parameter>
+      <cd:parameter name="a">
+        <cd:constant type="cd:text"/>
+      </cd:parameter>
+      <cd:parameter name="p">
+        <cd:constant type="cd:text"/>
+      </cd:parameter>
+      <cd:parameter name="e">
+        <cd:constant type="cd:text"/>
+      </cd:parameter>
     </cd:assignments>
   </cd:arguments>
 </cd:command>
@@ -1578,9 +1593,14 @@
         <cd:constant type="cd:dimension"/>
       </cd:parameter>
       <cd:parameter name="luogo">
-        <cd:constant type="basso"/>
         <cd:constant type="profondita"/>
         <cd:constant type="sospeso"/>
+        <cd:constant type="alto"/>
+        <cd:constant type="pedap"/>
+        <cd:constant type="basso"/>
+        <cd:constant type="cima"/>
+        <cd:constant type="centro"/>
+        <cd:constant type="fondo"/>
       </cd:parameter>
       <cd:parameter name="opzione">
         <cd:constant type="nessuno"/>

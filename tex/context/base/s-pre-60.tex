@@ -48,7 +48,9 @@
 
 % todo: roll back blank
 
-\def\StepLayer{step:\StepCounter}
+\def\StepLayer     {step:\StepCounter}
+\def\NextStepLayer {step:\the\numexpr\StepCounter+1\relax}
+\def\FirstStepLayer{step:1}
 
 \def\StartStep
   {\ifvmode
@@ -66,8 +68,8 @@
    \stopproperty}
 
 \def\StartSteps{\iftrialtypesetting\else\ResetStep\NextStep\StartStep\fi}
-\def\StopSteps {\iftrialtypesetting\else\StopStep\PrevStep\fi}
-\def\FlushStep {\iftrialtypesetting\else\StopStep\NextStep\StartStep\fi}
+\def\StopSteps {\iftrialtypesetting\else\StopStep \PrevStep          \fi}
+\def\FlushStep {\iftrialtypesetting\else\StopStep \NextStep\StartStep\fi}
 
 \appendtoks
   \ResetStep

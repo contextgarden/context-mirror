@@ -60,7 +60,7 @@
 
 % You can let \CONTEXT\ load the map files for \PDFTEX.
 
-\autoloadmapfilestrue
+\resetmapfiles \autoloadmapfilestrue
 
 % (1) you can prevent loading with:
 %
