@@ -13,6 +13,8 @@
 
 \unprotect
 
+% /Border -> /B, evt meer indirecte objecten!
+
 %D \macros
 %D   {dosetupinteraction,
 %D    dosetupscreen,
@@ -31,8 +33,7 @@
 %D    dostopobject,
 %D    doinsertobject,
 %D    doinsertbookmark,
-%D    dosetpagetransition,
-%D    usepagedestinations}
+%D    dosetpagetransition}
 %D   {}
 %D
 %D These specials are not as beautiful as they should be. The
@@ -89,62 +90,43 @@
   {\showmessage{\m!interactions}{21}{acrobat}}
 
 \definespecial\dostartthisislocation#1%
-  {\ifusepagedestinations \else
-     \setPDFdestination{#1}%
-     \doifsomething{\PDFdestination}
-       {\special
-          {\@@insertpostscriptretain
-             [/Dest /\PDFdestination\space % (\PDFdestination)
-              /View [/Fit]
-              /DEST
-             pdfmark}}%
-   \fi}
+  {\bgroup
+   \setPDFdestination{#1}%
+   \doifsomething{\PDFdestination}
+     {\special
+        {\@@insertpostscriptretain
+           [/Dest /\PDFdestination\space 
+            /View [/Fit]
+            /DEST
+           pdfmark}}%
+   \egroup}
 
 \definespecial\dostartgotolocation#1#2#3#4#5#6%
   {\bgroup
    \ScaledPointsToBigPoints{#1}\width
    \ScaledPointsToBigPoints{#2}\height
    \doifelsenothing{#3}
-     {\doifelsenothing{#4}
-        {\!!doneafalse}
-        {\doifparentfileelse{#4}
-           {\!!doneafalse}
-           {\!!doneatrue}}%
-      \ifusepagedestinations
-        \doifnot{0#6}{0}
-          {\special
-             {\@@insertpostscriptretain
-                [\if!!donea
-                   /Action /GoToR
-                   /File (#4.pdf)
-                 \else
-                   /Action /GoTo
-                 \fi
-                 /Rect [0 0 \width\space \height]
-                 /Border [0 0 0]
-                 /Page #6
-                 /View [/Fit]
-                 /Subtype /Link
-                 /ANN
-                pdfmark}}%
-      \else
-        \setPDFdestination{#5}%
-        \doifsomething{\PDFdestination}
-          {\special
-             {\@@insertpostscriptretain
-                [\if!!donea
-                   /Action /GoToR
-                   /File (#4.pdf)
-                 \else
-                   /Action /GoTo
-                 \fi
-                 /Rect [0 0 \width\space \height]
-                 /Border [0 0 0]
-                 /Dest /\PDFdestination\space % (\PDFdestination)
-                 /Subtype /Link
-                 /ANN
-                pdfmark}}%
-      \fi}
+     {\setPDFdestination{#5}%
+      \doifsomething{\PDFdestination}
+        {\doifelsenothing{#4}
+          {\!!doneafalse}
+          {\doifparentfileelse{#4}
+             {\!!doneafalse}
+             {\!!doneatrue}}%
+         \special
+           {\@@insertpostscriptretain
+              [\if!!donea
+                 /Action /GoToR
+                 /File (#4.pdf)
+               \else
+                 /Action /GoTo
+               \fi
+               /Rect [0 0 \width\space \height]
+               /Border [0 0 0]
+               /Dest /\PDFdestination\space 
+               /Subtype /Link
+               /ANN
+              pdfmark}}}
      {\doifelsenothing{#4}
         {\let\PDFfile=\empty
          \let\PDFdestination=\empty}
@@ -167,13 +149,13 @@
    \ScaledPointsToBigPoints{#1}\width
    \ScaledPointsToBigPoints{#2}\height
    \doifelsenothing{#3}
-     {\doifelsenothing{#4}
-        {\!!doneafalse}
-        {\doifparentfileelse{#4}
+     {\doifnot{0#5}{0}
+        {\doifelsenothing{#4}
            {\!!doneafalse}
-           {\!!doneatrue}}%
-      \doifnot{0#5}{0}
-        {\special
+           {\doifparentfileelse{#4}
+              {\!!doneafalse}
+              {\!!doneatrue}}%
+         \special
            {\@@insertpostscriptretain
               [\if!!donea
                  /Action /GoToR
@@ -187,7 +169,7 @@
                /Page #5
                /Subtype /Link
                /ANN
-              pdfmark}}}
+              pdfmark}}}%
      {\doifelsenothing{#4}
         {\let\PDFfile=\empty}
         {\edef\PDFfile{/#4}}%
@@ -199,6 +181,50 @@
              /Subtype /Link
              /ANN
             pdfmark}}%
+   \egroup}
+
+\definespecial\dostartgotoJS#1#2#3%
+  {\bgroup
+   \ifx\doPSsanitizeJScode\undefined \else
+     \ScaledPointsToBigPoints{#1}\width
+     \ScaledPointsToBigPoints{#2}\height
+     \doPSsanitizeJScode{#3}%
+     \special
+       {\@@insertpostscriptretain 
+          [/Rect [0 0 \width\space \height]
+           /Border [0 0 0]
+           /Action << /Subtype /JavaScript /JS (\sanitizedJScode) >>
+           /Subtype /Link
+           /ANN 
+          pdfmark}%
+   \fi
+   \egroup}
+
+\definespecial\doflushJSpreamble#1%
+  {\bgroup
+   \ifx\doPSsanitizeJScode\undefined \else
+     \special
+       {\@@insertpostscriptretain
+          [ /_objdef{initialize}
+            /type /dict
+            /OBJ pdfmark}%
+     \let\compositeJScode=\empty
+     \def\docommando##1%
+       {\special
+          {\@@insertpostscriptretain
+             [ /_objdef{JS:##1} /type /dict /OBJ pdfmark}%
+        \expanded{\doPSsanitizeJScode{\getJSpreamble{##1}}}%
+        \special
+          {\@@insertpostscriptretain
+             [ {JS:##1} << /S /JavaScript /JS (\sanitizedJScode) >> /PUT pdfmark}%
+        \edef\compositeJScode%
+          {\compositeJScode\space (##1) {JS:##1}}}%
+     \processcommalist[#1]\docommando
+     \special
+       {\@@insertpostscriptretain
+          [ {initialize} << /JavaScript  << /Names [ \compositeJScode ] >> >> /PUT pdfmark
+          [ {Catalog} << /Names {initialize} >> /PUT pdfmark}%
+   \fi
    \egroup}
 
 \def\PDFexecutestart       {/Movie /T (movie \currentmovie) /Operation /Play}
@@ -238,46 +264,6 @@
 
 \definespecial\dostopexecutecommand%
   {}
-
-% \def\translatepdfcommand#1%
-%   {\processaction
-%      [#1]
-%      [     first=>\def\command{First},
-%         previous=>\def\command{Prev},
-%             next=>\def\command{Next},
-%             last=>\def\command{Last},
-%         backward=>\def\command{GoBack},
-%          forward=>\def\command{GoForward},
-%            print=>\def\command{Print},
-%             exit=>\def\command{Quit},
-%             help=>\def\command{HelpUserGuide},
-%            enter=>\def\command{FitPage},
-%             view=>\def\command{FullScreen},
-%       \s!unknown=>\let\command=\s!unknown]}
-%
-% \definespecial\dostartexecutecommand#1#2#3#4%
-%   {\bgroup
-%    \ScaledPointsToBigPoints{#1}\width
-%    \ScaledPointsToBigPoints{#2}\height
-%    \def\nextcommands{}%
-%    \getcommalistsize[#1]%
-%    \dostepwiserecurse{2}{\commalistsize}{1}
-%      {\getfromcommalist[#1][\recurselevel]%
-%       \translatepdfcommand\commalistelement
-%       \edef\nextcommands%
-%         {\nextcommands /Next << /Type /Action /S /Named /N /\command\space}}%
-%    \dostepwiserecurse{2}{\commalistsize}{1}
-%      {\edef\nextcommands{\nextcommands >>}}%
-%    \getfromcommalist[#1][1]%
-%    \translatepdfcommand\commalistelement
-%    \special
-%      {\@@insertpostscriptretain
-%         [/Action << /Subtype /Named /N /\command\space \nextcommands >>
-%          /Rect [0 0 100 100 ]
-%          /Subtype /Link
-%          /ANN
-%         pdfmark}%
-%    \egroup}
 
 \edef\@@psbgroup{\string{}
 \edef\@@psegroup{\string}}
@@ -362,10 +348,10 @@
 
 \definespecial\dostartgotoprofile#1#2#3%
   {\bgroup
-   \ScaledPointsToBigPoints{#1}\width
-   \ScaledPointsToBigPoints{#2}\height
    \doifsomething{#3}
-     {\special
+     {\ScaledPointsToBigPoints{#1}\width
+      \ScaledPointsToBigPoints{#2}\height
+      \special
         {\@@insertpostscriptretain
            [/Action /Article
             /Dest (#3)
@@ -379,13 +365,13 @@
 
 \def\dobeginofprofile#1#2#3#4% label width height page
   {\bgroup
-   \ScaledPointsToBigPoints{#2}\width
-   \ScaledPointsToBigPoints{#3}\height
-   \doifelsenothing{#1}
-     {\!!doneatrue}
-     {\!!doneafalse}%
    \doifnot{0#4}{0}
-     {\special
+     {\ScaledPointsToBigPoints{#2}\width
+      \ScaledPointsToBigPoints{#3}\height
+      \doifelsenothing{#1}
+        {\!!doneatrue}
+        {\!!doneafalse}%
+      \special
         {\@@insertpostscriptretain
            [/Title (#1)
             /Rect [0 0 \width\space\height]
@@ -419,22 +405,6 @@
 \let\doyyinsertmov=\docommoninsertmov
 \let\dotrinsertmov=\docommoninsertmov
 
-%\definespecial\dostartobject#1#2#3#4%
-%  {\bgroup
-%   \setbox\nextbox=\hbox\bgroup
-%     \bgroup
-%     \ScaledPointsToBigPoints{#2}\width
-%     \ScaledPointsToBigPoints{#3}\height
-%     \ScaledPointsToBigPoints{#4}\depth
-%     \escapechar=-1
-%     \setPDFdestination{#1}%
-%     \special
-%       {\@@insertpostscriptretain
-%          [/BBox [0 -\depth\space \width\space \height]
-%           /_objdef {\PDFdestination} 
-%           /BP pdfmark}%
-%     \egroup}
-
 \definespecial\dostartobject#1#2#3#4%
   {\bgroup
    \setbox\nextbox=\hbox\bgroup
@@ -461,30 +431,18 @@
    \flushatshipout{\box\nextbox}%
    \egroup}
 
-%\definespecial\doinsertobject#1%
-%  {\hbox\bgroup
-%     \escapechar=-1
-%     \setPDFdestination{#1}%
-%     \special
-%       {\@@insertpostscriptretain
-%          [{\PDFdestination} /SP pdfmark}%
-%   \egroup}
-
 \definespecial\doinsertobject#1%
-  {\hbox\bgroup
-     \dogetobjectreference{#1}\objectreference
-     \ifx\objectreference\empty \else
-       \special
-         {\@@insertpostscriptretain
-            [{\objectreference} /SP pdfmark}%
-     \fi
-   \egroup}
-
-%\definespecial\dogetobjectreference#1#2%
-%  {\edef#2{#1}}
+  {\hbox
+     {\dogetobjectreference{#1}\objectreference
+      \ifx\objectreference\empty \else
+        \special
+          {\@@insertpostscriptretain
+             [{\objectreference} /SP pdfmark}%
+      \fi}}
 
 \definespecial\doinsertbookmark#1#2#3#4#5% level sublevels text page open (1)
-  {\sanitizePDFstring#3\to\bookmarktext
+  {\bgroup
+   \sanitizePDFstring#3\to\bookmarktext
    \special
      {\@@insertpostscriptretain        
         [/Page #4\space
@@ -492,7 +450,8 @@
          /View [/Fit]
          /Title (\bookmarktext)
          /OUT
-        pdfmark}}
+        pdfmark}%
+   \egroup}
 
 \def\PDFpagesplit       {/S /Split    }      
 \def\PDFpageblinds      {/S /Blinds   }

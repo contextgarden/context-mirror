@@ -26,6 +26,11 @@
 %D \PDF\ destinations should obey the specifications laid down 
 %D in the \PDF\ reference manual. The next macro strips illegal 
 %D characters from the destination name. 
+%D 
+%D The \ACROBAT\ programs are not bug free. By setting the next
+%D switch, we will at least try to prevent problems. 
+
+\newif\ifovercomePDFbugs  \overcomePDFbugstrue
 
 \def\setPDFdestination#1%
   {\bgroup
@@ -33,7 +38,8 @@
    \lccode`\/=`-\lccode`\#=`-\lccode`\<=`-\lccode`\>=`-%
    \lccode`\[=`-\lccode`\]=`-\lccode`\(=`-\lccode`\)=`-%
    \stripcharacter{ }\from#1\to\PDFdestination
-   \@EA\lowercase\@EA{\@EA\xdef\@EA\PDFdestination\@EA{\PDFdestination}}%
+   \@EA\lowercase\@EA{\@EA\xdef\@EA\PDFdestination\@EA
+     {\ifovercomePDFbugs'\fi\PDFdestination\ifovercomePDFbugs'\fi}}%
    \egroup}
 
 %D \macros

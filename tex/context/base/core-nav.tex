@@ -102,9 +102,12 @@
 
 \newif\iflocationstrut
 
-\let\@@ia@@hoogte=\!!zeropoint
-\let\@@ia@@diepte=\!!zeropoint
+\def\resetgoto%
+  {\global\let\@@ia@@hoogte=\!!zeropoint
+   \global\let\@@ia@@diepte=\!!zeropoint}
  
+\resetgoto
+
 \def\presetgoto% 
   {\iflocationstrut
      \setstrut
@@ -148,8 +151,7 @@
       \else 
         \smashbox2\box2\box0
       \fi
-      \global\let\@@ia@@hoogte=\!!zeropoint
-      \global\let\@@ia@@diepte=\!!zeropoint}}
+      \resetgoto}}
 
 %D The width of the active area depends on the dimensions
 %D preset, the actual dimens and/or the height and depth of the
@@ -355,3 +357,4 @@
 \protect 
 
 \endinput 
+

@@ -11,6 +11,8 @@
 %C therefore copyrighted by \PRAGMA. Non||commercial use is
 %C granted.
 
+% /Border -> /B, evt meer indirecte objecten!
+
 %D Being one of the first typographical systems able to support
 %D advances \PDF\ support, \TEX\ is also one of the first
 %D systems to produce high quality \PDF\ code directly. Thanks
@@ -144,7 +146,8 @@
 \newcounter\currentmovie
 
 \def\dotpdinsertmov#1#2#3#4#5#6#7#8%
-  {\ScaledPointsToBigPoints{#6}\width
+  {\bgroup
+   \ScaledPointsToBigPoints{#6}\width
    \ScaledPointsToBigPoints{#7}\height
    \edef\pdf@@posterize{\ifcase#8 \or/Poster true\fi}%
    \doglobal\increment\currentmovie
@@ -155,7 +158,8 @@
      {/Border [0 0 0]
       /Subtype /Movie
       /Movie <</T (movie \currentmovie) /F (#1) /Aspect [\width\space \height\space] \pdf@@posterize>>
-      /A <</ShowControls false>>}}
+      /A <</ShowControls false>>}%
+   \egroup}
 
 %D \macros
 %D  {doovalbox}
@@ -308,11 +312,11 @@
   {} 
 
 \definespecial\dostartthisislocation#1%
-  {\ifusepagedestinations \else
-     \setPDFdestination{#1}%
-     \doifsomething{\PDFdestination}
-       {\pdfdest name {\PDFdestination} fit}%
-   \fi}
+  {\bgroup
+   \setPDFdestination{#1}%
+   \doifsomething{\PDFdestination}
+     {\pdfdest name {\PDFdestination} fit}%
+   \egroup}
 
 %D When going to a location, we obey the time and space saving 
 %D boolean\type{\ifusepagedestination}. Names destinations are 
@@ -321,32 +325,20 @@
 \definespecial\dostartgotolocation#1#2#3#4#5#6% url nog afhandelen 
   {\bgroup
    \doifelsenothing{#3}
-     {\doifelsenothing{#4}
-        {\!!doneafalse}
-        {\doifparentfileelse{#4}
-          {\!!doneafalse}
-          {\!!doneatrue}}%
-      \ifusepagedestinations 
-        \scratchcounter=0#6\relax
-        \edef\PDFdestination{\the\scratchcounter}%
-        \pdfannotlink
-          width #1sp  
-          height #2sp
-          depth 0pt
-          attr {/Border [0 0 0]}
-          goto \if!!donea file {#4.pdf} \fi page \PDFdestination\space{/Fit}%
-        \pdfendlink
-      \else
-        \setPDFdestination{#5}%
-        \doifsomething{\PDFdestination}
-          {\pdfannotlink
-             width #1sp  
-             height #2sp
-             depth 0pt
-             attr {/Border [0 0 0]}
-             goto \if!!donea file {#4.pdf} \fi name {\PDFdestination}%
-           \pdfendlink}%
-      \fi}
+     {\setPDFdestination{#5}%
+      \doifsomething{\PDFdestination}
+        {\doifelsenothing{#4}
+            {\!!doneafalse}
+            {\doifparentfileelse{#4}
+               {\!!doneafalse}
+               {\!!doneatrue}}%
+         \pdfannotlink
+           width #1sp  
+           height #2sp
+           depth 0pt
+           attr {/Border [0 0 0]}
+           goto \if!!donea file {#4.pdf} \fi name {\PDFdestination}%
+         \pdfendlink}}
      {\doifelsenothing{#4}
         {\let\PDFfile=\empty
          \let\PDFdestination=\empty}
@@ -381,7 +373,7 @@
         height #2sp
         depth 0pt
         attr {/Border [0 0 0]}
-        goto \if!!donea file {#4.pdf} \fi page \PDFdestination\space{/Fit}%
+        goto \if!!donea file {#4.pdf} \fi page \PDFdestination {/Fit}%
       \pdfendlink}
      {\doifelsenothing{#4}
         {\let\PDFfile=\empty}
@@ -396,6 +388,40 @@
                     /S /URI 
                     /URI (#3\PDFfile)>>}%
       \pdfendlink}%
+   \egroup}
+
+\definespecial\dostartgotoJS#1#2#3%
+  {\bgroup
+   \ifx\doPSsanitizeJScode\undefined \else
+     \doPSsanitizeJScode{#3}%
+     \pdfannotlink
+       width #1sp
+       height #2sp
+       depth 0pt 
+       user {/Subtype /Link
+             /Border [0 0 0]
+             /A << /Type /Action 
+                   /S /JavaScript 
+                   /JS (\sanitizedJScode) >>}%
+     \pdfendlink
+   \fi
+   \egroup}
+
+%D {\em Tijdelijk hier!}
+
+\definespecial\doflushJSpreamble#1%
+  {\bgroup
+   \ifx\doPSsanitizeJScode\undefined \else
+     \let\compositeJScode=\empty
+     \def\docommando##1%
+       {\expanded{\doPSsanitizeJScode{\getJSpreamble{##1}}}%
+        \pdfobj{<< /S /JavaScript /JS (\sanitizedJScode) >>}%
+        \edef\compositeJScode%
+          {\compositeJScode\space (##1) \the\pdflastobj\space 0 R}}%
+     \processcommalist[#1]\docommando
+     \pdfobj{<< /JavaScript  << /Names [ \compositeJScode ] >> >>}%
+     \pdfcatalog{/Names \the\pdflastobj\space 0 R}%
+   \fi
    \egroup}
 
 %D \macros 
@@ -552,11 +578,13 @@
 %D supplying an alternative one. 
 
 \definespecial\doinsertbookmark#1#2#3#4#5% level sublevels text page open (1)
-  {\sanitizePDFstring#3\to\bookmarktext
+  {\bgroup 
+   \sanitizePDFstring#3\to\bookmarktext
    \pdfoutline
      goto page #4\space 
      \ifnum#2>0 count \ifcase#5-\fi#2\fi\space 
-     {\bookmarktext}}
+     {\bookmarktext}%
+   \egroup}
 
 %D \macros
 %D  {dostartobject,dostopobject,doinsertobject}
@@ -569,16 +597,9 @@
 % Forms can interfere with page dimension settings. Therefore
 % calling macros can best postpone flushing. 
 
-%\definespecial\dostartobject#1#2#3#4%
-%  {\setbox\nextbox=\vbox\bgroup
-%     \def\dodostopobject%
-%       {\egroup
-%        \pdfform\nextbox
-%        \scratchcounter=\pdflastform
-%        \setxvalue{\r!driver#1}{\the\pdflastform}}}
-
 \definespecial\dostartobject#1#2#3#4%
-  {\setbox\nextbox=\vbox\bgroup
+  {\bgroup
+   \setbox\nextbox=\vbox\bgroup
      \def\dodostopobject%
        {\egroup
         \pdfform\nextbox
@@ -586,17 +607,14 @@
         \dosetobjectreference{#1}{\the\pdflastform}}}%
 
 \definespecial\dostopobject%
-  {\dodostopobject}
-
-%\definespecial\doinsertobject#1%
-%  {\expandafter\pdfrefform\csname\r!driver#1\endcsname\relax}
+  {\dodostopobject
+   \egroup}
 
 \definespecial\doinsertobject#1%
-  {\dogetobjectreference{#1}\objectreference
-   \pdfrefform\objectreference}
-
-%\definespecial\dogetobjectreference#1#2%
-%  {\edef#2{\csname\r!driver#1\endcsname}}
+  {\bgroup
+   \dogetobjectreference{#1}\objectreference
+   \pdfrefform\objectreference
+   \egroup}
 
 %D \macros
 %D   {dosetpagetransitions}

@@ -237,7 +237,7 @@
 
 \def\startinterface #1 
   {\doifelse{#1}{\currentinterface}
-     {\let\next=\relax}
+     {\let\next\relax}
      {\long\def\next##1\stopinterface{}}%
    \next}
 
@@ -327,7 +327,7 @@
 %D token is used as message separator.
 
 \def\findinterfacemessage#1#2%
-  {\def#2{}%
+  {\let#2\empty
    \def\dofindinterfacemessage##1 #1: ##2\relax##3\end%
      {\def#2{##2}}%
    \edef\!!stringa{\getvalue{@@ms\currentmessagelibrary} #1: \relax}%
@@ -381,7 +381,7 @@
   {\ifx\next\stopmessages
      \def\next##1{\egroup}%
    \else
-     \let\next=\addinterfacemessage
+     \let\next\addinterfacemessage
    \fi
    \next}
 
@@ -464,29 +464,29 @@
 
 \def\dosetvalue#1#2#3%
   {\p!doifundefined{\c!prefix!#2}% 
-     \let\donottest=\doprocesstest
+     \let\donottest\doprocesstest
      \@EA\def\csname#1#2\endcsname{#3}%
    \else
-     \let\donottest=\doprocesstest
+     \let\donottest\doprocesstest
      \@EA\def\csname#1\csname\c!prefix!#2\endcsname\endcsname{#3}%
    \fi}
 
 \def\dosetevalue#1#2#3%
   {\p!doifundefined{\c!prefix!#2}%
-     \let\donottest=\doprocesstest
+     \let\donottest\doprocesstest
      \@EA\edef\csname#1#2\endcsname{#3}%
    \else
-     \let\donottest=\doprocesstest
+     \let\donottest\doprocesstest
      \@EA\edef\csname#1\csname\c!prefix!#2\endcsname\endcsname{#3}%
    \fi}
 
 \def\docopyvalue#1#2#3%
   {\p!doifundefined{\c!prefix!#3}%
-     \let\donottest=\doprocesstest
+     \let\donottest\doprocesstest
      \@EA\def\csname#1#3\endcsname%
        {\csname#2#3\endcsname}%
    \else
-     \let\donottest=\doprocesstest
+     \let\donottest\doprocesstest
      \@EA\def\csname#1\csname\c!prefix!#3\endcsname\endcsname%
        {\csname#2\csname\c!prefix!#3\endcsname\endcsname}%
    \fi}
@@ -504,11 +504,11 @@
 
 \def\docopyvalue#1#2#3%
   {\p!doifundefined{\c!prefix!#3}%
-     \let\donottest=\doprocesstest
+     \let\donottest\doprocesstest
      \@EA\@EA\@EA\def\@EA\csname\@EA#1\@EA#3\@EA\endcsname
        \@EA{\csname#2#3\endcsname}%
    \else
-     \let\donottest=\doprocesstest
+     \let\donottest\doprocesstest
      \@EA\@EA\@EA\def\@EA
          \csname
            \@EA#1\@EA\csname\@EA\c!prefix!\@EA#3\@EA\endcsname\@EA
@@ -544,18 +544,18 @@
 
 \def\dogetargument#1#2#3#4%
   {\doifnextcharelse{#1}
-     {\let\expectedarguments=\noexpectedarguments
+     {\let\expectedarguments\noexpectedarguments
       #3\dodogetargument}
      {\ifnum\expectedarguments>\noexpectedarguments
         \showmessage{check}{2}{\the\expectedarguments,\the\inputlineno}%
       \fi
-      \let\expectedarguments=\noexpectedarguments
+      \let\expectedarguments\noexpectedarguments
       #4\dodogetargument#1#2}}
 
 \def\dogetgroupargument#1#2% 
   {\def\nextnextargument%
      {\ifx\nextargument\bgroup  
-        \let\expectedarguments=\noexpectedarguments
+        \let\expectedarguments\noexpectedarguments
         \def\nextargument{#1\dodogetargument}%
       %\else\ifx\nextargument\lineending % this can be an option
       %  \def\nextargument{\bgroup\def\\ {\egroup\dogetgroupargument#1#2}\\}%
@@ -565,7 +565,7 @@
         \ifnum\expectedarguments>\noexpectedarguments
           \showmessage{check}{2}{\the\expectedarguments,\the\inputlineno}%
         \fi
-        \let\expectedarguments=\noexpectedarguments
+        \let\expectedarguments\noexpectedarguments
         \def\nextargument{#2\dodogetargument{}}%
       \fi%\fi\fi                 % so let's get rid of it
       \nextargument}%
@@ -864,8 +864,8 @@
 
 \def\startinterfaceobjects#1#2%
   {\!!counta=1
-   \let\dogetinterfaceobject=\dogetinterfacetemplate
-   \let\dowithinterfaceelement=#1%
+   \let\dogetinterfaceobject\dogetinterfacetemplate
+   \let\dowithinterfaceelement#1%
    \def\dodogetinterfaceobjects%
       {\ifx\next#2%
          \def\next####1%
@@ -888,12 +888,12 @@
 
 \def\dogetinterfacetemplate[#1:#2]%
   {\doifinsetelse{#1}{\currentinterface,all}
-     {\let\dogetinterfaceobject=\doskipinterfaceobject}
+     {\let\dogetinterfaceobject\doskipinterfaceobject}
      {\advance\!!counta by 1\relax}}
 
 \def\doskipinterfaceobject[#1:#2#3]%
   {\if#2:%
-     \let\dogetinterfaceobject=\dogetinterfaceelement
+     \let\dogetinterfaceobject\dogetinterfaceelement
      \dogetinterfaceobject[#1:#2#3]%
    \fi}
 
@@ -905,7 +905,7 @@
      \advance\!!countb by 1
      \ifnum\!!countb=\!!counta
        \@EA\dowithinterfaceelement\@EA{\!!stringa}{#1}%
-       \let\dogetinterfaceobject=\doskipinterfaceobject
+       \let\dogetinterfaceobject\doskipinterfaceobject
      \fi
    \fi}
 
@@ -1025,7 +1025,7 @@
 \def\setinterfaceelement#1#2%
   {\doifelse{#2}{\nointerfaceobject}
      {\debuggerinfo{element}{#1 defined as <empty>}%
-      \setvalue{\e!prefix!#1}{}}
+      \resetvalue{\e!prefix!#1}}
      {\doifdefinedelse{\e!prefix!#1}
        {\doifnot{\getvalue{\e!prefix!#1}}{#2}
           {\debuggerinfo{element}{#1 redefined as #2}%
@@ -1146,3 +1146,4 @@
 \protect
 
 \endinput
+

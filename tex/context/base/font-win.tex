@@ -1,0 +1,124 @@
+%D \module
+%D   [       file=font-win,
+%D        version=1997.8.29,
+%D          title=\CONTEXT\ Font Macros,
+%D       subtitle=Windows 1252 ANSI keys,
+%D         author=Hans Hagen / Tobias Burnus,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. Non||commercial use is 
+%C granted. 
+
+%D This module activates the (western) \kap{windows} high \ANSI\ 
+%D characters, such as ë and á. 
+
+\unprotect
+
+\catcode`\À=\@@active \unexpanded\defÀ{\`A} 
+\catcode`\Á=\@@active \unexpanded\defÁ{\'A}
+\catcode`\Â=\@@active \unexpanded\defÂ{\^A}
+\catcode`\Ã=\@@active \unexpanded\defÃ{\~A} 
+\catcode`\Ä=\@@active \unexpanded\defÄ{\"A} 
+\catcode`\Å=\@@active \unexpanded\defÅ{\AA} 
+\catcode`\Æ=\@@active \unexpanded\defÆ{\AE} 
+
+\catcode`\à=\@@active \unexpanded\defà{\`a} 
+\catcode`\á=\@@active \unexpanded\defá{\'a}
+\catcode`\â=\@@active \unexpanded\defâ{\^a}
+\catcode`\ã=\@@active \unexpanded\defã{\~a} 
+\catcode`\ä=\@@active \unexpanded\defä{\"a} 
+\catcode`\å=\@@active \unexpanded\defå{\aa} 
+\catcode`\æ=\@@active \unexpanded\defæ{\ae} 
+
+\catcode`\Ç=\@@active \unexpanded\defÇ{\c C} 
+\catcode`\ç=\@@active \unexpanded\defç{\c c} 
+
+\catcode`\È=\@@active \unexpanded\defÈ{\`E} 
+\catcode`\É=\@@active \unexpanded\defÉ{\'E} 
+\catcode`\Ê=\@@active \unexpanded\defÊ{\^E} 
+\catcode`\Ë=\@@active \unexpanded\defË{\"E} 
+
+\catcode`\è=\@@active \unexpanded\defè{\`e} 
+\catcode`\é=\@@active \unexpanded\defé{\'e} 
+\catcode`\ê=\@@active \unexpanded\defê{\^e} 
+\catcode`\ë=\@@active \unexpanded\defë{\"e} 
+
+\catcode`\Ì=\@@active \unexpanded\defÌ{\`I} 
+\catcode`\Í=\@@active \unexpanded\defÍ{\'I} 
+\catcode`\Î=\@@active \unexpanded\defÎ{\^I} 
+\catcode`\Ï=\@@active \unexpanded\defÏ{\"I} 
+
+\catcode`\ì=\@@active \unexpanded\defì{\`i} 
+\catcode`\í=\@@active \unexpanded\defí{\'i} 
+\catcode`\î=\@@active \unexpanded\defî{\^i} 
+\catcode`\ï=\@@active \unexpanded\defï{\"i} 
+
+\catcode`\Ñ=\@@active \unexpanded\defÑ{\~N}
+\catcode`\ñ=\@@active \unexpanded\defñ{\~n}
+
+\catcode`\Ò=\@@active \unexpanded\defÒ{\`O} 
+\catcode`\Ó=\@@active \unexpanded\defÓ{\'O}
+\catcode`\Ô=\@@active \unexpanded\defÔ{\^O}
+\catcode`\Õ=\@@active \unexpanded\defÕ{\~O} 
+\catcode`\Ö=\@@active \unexpanded\defÖ{\"O} 
+\catcode`\Œ=\@@active \unexpanded\defŒ{\OE}
+\catcode`\Ø=\@@active \unexpanded\defØ{\O}
+
+\catcode`\ò=\@@active \unexpanded\defò{\`o} 
+\catcode`\ó=\@@active \unexpanded\defó{\'o}
+\catcode`\ô=\@@active \unexpanded\defô{\^o}
+\catcode`\õ=\@@active \unexpanded\defõ{\~o} 
+\catcode`\ö=\@@active \unexpanded\defö{\"o} 
+\catcode`\œ=\@@active \unexpanded\defœ{\oe}
+\catcode`\ø=\@@active \unexpanded\defø{\o}
+
+\catcode`\Š=\@@active \unexpanded\defŠ{\v{S}} 
+\catcode`\š=\@@active \unexpanded\defš{\v{s}} 
+\catcode`\ß=\@@active \unexpanded\defß{\SS} 
+
+\catcode`\Ù=\@@active \unexpanded\defÙ{\`U} 
+\catcode`\Ú=\@@active \unexpanded\defÚ{\'U}
+\catcode`\Û=\@@active \unexpanded\defÛ{\^U}
+\catcode`\Ü=\@@active \unexpanded\defÜ{\"U} 
+
+\catcode`\ù=\@@active \unexpanded\defù{\`u} 
+\catcode`\ú=\@@active \unexpanded\defú{\'u}
+\catcode`\û=\@@active \unexpanded\defû{\^u}
+\catcode`\ü=\@@active \unexpanded\defü{\"u} 
+
+\catcode`\Ý=\@@active \unexpanded\defÝ{\'Y}
+\catcode`\ý=\@@active \unexpanded\defý{\'y} 
+\catcode`\ÿ=\@@active \unexpanded\defÿ{\"y} 
+
+\catcode`\¿=\@@active \unexpanded\def¿{?`} 
+\catcode`\¡=\@@active \unexpanded\def¡{!`} 
+\catcode`\†=\@@active \unexpanded\def†{\dag} 
+\catcode`\‡=\@@active \unexpanded\def‡{\ddag} 
+\catcode`\¶=\@@active \unexpanded\def¶{\P} 
+\catcode`\§=\@@active \unexpanded\def§{\S} 
+\catcode`\–=\@@active \unexpanded\def–{--} 
+\catcode`\—=\@@active \unexpanded\def—{---} 
+\catcode`\…=\@@active \unexpanded\def…{\dots}
+\catcode`\©=\@@active \unexpanded\def©{\copyright}
+\catcode`\£=\@@active \unexpanded\def£{\pounds}
+
+\catcode`\„=\@@active \unexpanded\def„{\char44\kern-.1em\char44}
+\catcode`\“=\@@active \unexpanded\def“{\char96\kern-.1em\char96}
+\catcode`\”=\@@active \unexpanded\def”{\char34}
+\catcode`\‘=\@@active \unexpanded\def‘{\upperleftsinglesixquote}
+\catcode`\’=\@@active \unexpanded\def’{\char39}
+\catcode`\›=\@@active \unexpanded\def›{\rightsubguillemot}
+\catcode`\‹=\@@active \unexpanded\def‹{\leftsubguillemot}
+
+\catcode`\«=\@@active 
+\catcode`\»=\@@active 
+
+\unexpanded\def«{\ifvmode\leavevmode\fi\leftguillemot\prewordbreak}
+\unexpanded\def»{\prewordbreak\rightguillemot}
+
+\protect
+
+\endinput
+

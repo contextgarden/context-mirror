@@ -642,26 +642,28 @@
 \def\stelcitatenin%
   {\stelciterenin}
 
-\def\dostartcitaat%
-  {\setbox0=\hbox{\getvalue{\??la\currentlanguage\c!leftquotation}}%
+\def\dostartcitaat[#1]%
+  {\bgroup
+   \@@civoor
+   \doifelsenothing{#1}
+     {\let\dostopcitaat=\relax}
+     {\startsmaller[#1]
+      \let\dostopcitaat=\stopsmaller}%
+   \dostartattributes\??ci{}%
+   \setbox0=\hbox{\getvalue{\??la\currentlanguage\c!leftquotation}}%
    \hskip-\wd0
    \box0\relax
    \ignorespaces}
 
-\def\complexstartcitaat[#1]%
-  {\startsmaller[#1]%
-   \dostartcitaat}
-
-\def\simplestartcitaat%
-  {\startsmaller
-   \dostartcitaat}
-
 \def\stopcitaat%
   {\unskip\hsmash{\getvalue{\??la\currentlanguage\c!rightquotation}}%
-   \stopsmaller}
+   \dostopattributes
+   \dostopcitaat
+   \@@cina
+   \egroup}
 
 \def\startcitaat%
-  {\complexorsimple{startcitaat}}%
+  {\dosingleempty\dostartcitaat}
 
 \def\handlequotation#1%
   {\ifdim\lastkern=\quotationsignal
@@ -1373,8 +1375,11 @@
 \stelciterenin
   [\c!variant=1,
    \c!letter=\v!normaal,
-   \c!kleur=]
+   \c!kleur=,
+   \c!voor=\startsmaller,
+   \c!na=\stopsmaller]
 
 \protect
 
 \endinput
+

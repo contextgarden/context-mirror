@@ -626,8 +626,12 @@
 
 \newif\iflinepar
 
+\let\doopenupverbatimline=\empty
+
 \long\def\dodoverbatimline#1%
-  {\leavevmode\the\everyline\strut\processverbatimline{#1\relax}%
+  {\leavevmode
+   \doopenupverbatimline
+   \the\everyline\strut\processverbatimline{#1\relax}%
    \EveryPar{}%
    \lineparfalse
    \obeyedline\par}
@@ -1555,3 +1559,4 @@
 \protect
 
 \endinput
+

@@ -897,14 +897,46 @@
 
 \newdimen\scaledfont
 
+% \def\docalculatefont#1 sa #2sa#3*#4*#5*% The spaces are needed!
+%   {\edef\fontscale{#2}%
+%    \ifx\fontscale\empty
+%      \expandafter\font\csname#4#5\endcsname=#1\relax
+%    \else
+%      \scaledfont=#4\relax
+%      \expandafter\font\csname#4#5\endcsname=#1 at \fontscale\scaledfont\relax
+%    \fi}
+
+\def\splitfontdefinition#1 #2 #3 #4\end%
+  {\def\somefontname{#1}%
+   \doifelse{#2}{*}
+     {\let\somefontspec=\empty}
+     {\def\somefontspec{ #2 #3}}}
+
 \def\docalculatefont#1 sa #2sa#3*#4*#5*% The spaces are needed!
   {\edef\fontscale{#2}%
-   \ifx\fontscale\empty
-     \expandafter\font\csname#4#5\endcsname=#1\relax
-   \else
+   \expandafter\splitfontdefinition#1 * * \end
+   \ifx\fontscale\empty \else
      \scaledfont=#4\relax
-     \expandafter\font\csname#4#5\endcsname=#1 at \fontscale\scaledfont\relax
-   \fi}
+     \def\somefontspec{ at \fontscale\scaledfont}%
+   \fi
+   \expandafter\font\csname#4#5\endcsname= 
+     \truefilename{\somefontname}\somefontspec\relax}
+
+%D While looking for fonts, filesynonyms are for accessing 
+%D the files!
+
+%D A more ugly but correct alternative for this is:
+%D
+%D \starttypen
+%D \def\docalculatefont#1sa #2sa#3*#4*#5*%
+%D   {\edef\fontscale{#2}%
+%D    \scaledfont=#4\relax
+%D    \expandafter\font\csname#4#5\endcsname=#1
+%D      \ifx\fontscale\empty\else at \fontscale\scaledfont\fi}
+%D \stoptypen
+%D
+%D This one saves a few bytes of memory, but is not particular
+%D faster due to the often unneeded assignment.
 
 %D I considered checking for mistakenly use of \PLAIN's
 %D \type{\magstep}'s but although it would take only a few
@@ -924,19 +956,6 @@
      {\expandafter\hyphenchar\csname#1#2#3\endcsname=
         #4\relax}%
    \getvalue{#1#2#3}}
-
-%D A more ugly but correct alternative for this is:
-%D
-%D \starttypen
-%D \def\docalculatefont#1sa #2sa#3*#4*#5*%
-%D   {\edef\fontscale{#2}%
-%D    \scaledfont=#4\relax
-%D    \expandafter\font\csname#4#5\endcsname=#1
-%D      \ifx\fontscale\empty\else at \fontscale\scaledfont\fi}
-%D \stoptypen
-%D
-%D This one saves a few bytes of memory, but is not particular
-%D faster due to the often unneeded assignment.
 
 %D The loading macro is used in two macros. One of them takes
 %D care of fixed width teletype fonts.
@@ -1018,7 +1037,8 @@
      {\getparameters[\??ft#1]
         [\s!text=#1,\s!script=#1,\s!scriptscript=#1,
          \c!x=#1,\c!xx=#1,
-         \c!groot=#1,\c!klein=#1]}%
+         \c!groot=#1,\c!klein=#1,
+         \c!interlinie=]}%
    \getparameters[\??ft#1][#2]%
    \let\c!text=\c!savedtext
    \setvalue{\@size@#1}{\docompletefontswitch[#1]}}
@@ -1178,7 +1198,7 @@
 %D in other modules. Here we only provide the hooks that
 %D garantees their handling.
 
-\newevery \everybodyfont     \Everybodyfont
+\newevery \everybodyfont \Everybodyfont
 
 %D At the system level one can initialize thing like:
 %D
@@ -1199,9 +1219,9 @@
 %D   {globalbodyfontsize,localbodyfontsize}
 %D   
 %D Next we'll do the tough job of font switching. Here we
-%D have to distinguish between the global (overal) bodyfont size
-%D and the local (sometimes in the textflow) size. We store
-%D these dimensions in two \DIMENSION\ registers.
+%D have to distinguish between the global (overal) bodyfont 
+%D size and the local (sometimes in the textflow) size. We 
+%D store these dimensions in two \DIMENSION\ registers.
 
 \newdimen\globalbodyfontsize  \globalbodyfontsize=12pt
 \newdimen\localbodyfontsize   \localbodyfontsize =\globalbodyfontsize
@@ -1392,9 +1412,11 @@
         {\localbodyfontsize=\normalizedsetfont
          \let\normalizedbodyfontsize=\normalizedsetfont}
         {#2\dosetsubstitutefont{#1}}}
-     {\doifdefinedelse{\@style@#1}
-        {\edef\fontstyle{#1}}
-        {\doreadfontdefinitionfile{#1}}}}
+     {\doifelse{#1}{\v!reset}
+        {\def\fontsize{}}
+        {\doifdefinedelse{\@style@#1}
+           {\edef\fontstyle{#1}}
+           {\doreadfontdefinitionfile{#1}}}}}
 
 %D In the previous macros we use \type{\currentxfontsize} to
 %D hold the current x||size of the font. This enables us to 
@@ -1779,10 +1801,13 @@
    \scriptfont      \mrfam=\scriptfont      \mffam
    \scriptscriptfont\mrfam=\scriptscriptfont\mffam}
 
+\let\fontalternative=\c!tf
+
 \def\dosettypeface#1#2%
   {\doifdefinedelse{@\normalizedbodyfontsize#1#2@}
      {\edef\charactercoding{\getvalue{@\normalizedbodyfontsize#1#2@}}}
      {\let\charactercoding=\@plain@}%
+   \def\fontalternative{#2}%
    \unexpanded\def\tx%
      {\dosetxtypeface{#2\fontsize}}%
    \unexpanded\def\txx%
@@ -1793,6 +1818,16 @@
    \def\mf{\donottest{\dosetmathfont{#2}}}%
    \donottest\getvalue{#1#2}%
    \ifcase\currentxfontsize\or\tx\or\txx\fi}
+
+%D Just an experiment: \type{..\sl..\switchstyleonly\tt..}. 
+
+\def\switchstyleonly#1%
+  {\let\savedfontalternative=\fontalternative
+   \chardef\savedescapechar=\escapechar
+   \escapechar=-1
+   \getvalue{\string#1}%
+   \escapechar=\savedescapechar
+   \getvalue{\savedfontalternative}}
 
 %D \macros
 %D   {os}
@@ -2622,7 +2657,7 @@
 %D Helvetica (\type{phv}) and Courier (\type{pcr}) which are
 %D also available as whole (\type{\setupbodyfont[pos]}).
 
-\setupbodyfont [cmr, 12pt, \v!romaan, ibm, ans]
+\setupbodyfont [cmr, def, 12pt, \v!romaan, ibm, ans]
 
 \protect
 

@@ -74,14 +74,15 @@
 
 \newevery \everybodyfont \Everybodyfont % just to be sure
 
-\appendtoks \setnormalbaselines \to \everybodyfont
-\appendtoks \setstrut           \to \everybodyfont
-\appendtoks \settopskip         \to \everybodyfont
-\appendtoks \setmaxdepth        \to \everybodyfont
-\appendtoks \stelinspringenin   \to \everybodyfont
-\appendtoks \stelblankoin       \to \everybodyfont
-\appendtoks \stelwitruimtein    \to \everybodyfont
-% \appendtoks \setupfootnotes     \to \everybodyfont 
+\appendtoks \presetnormallineheight \to \everybodyfont
+\appendtoks \setnormalbaselines     \to \everybodyfont
+\appendtoks \setstrut               \to \everybodyfont
+\appendtoks \settopskip             \to \everybodyfont
+\appendtoks \setmaxdepth            \to \everybodyfont
+\appendtoks \stelinspringenin       \to \everybodyfont
+\appendtoks \stelblankoin           \to \everybodyfont
+\appendtoks \stelwitruimtein        \to \everybodyfont
+%\appendtoks\setupfootnotes         \to \everybodyfont 
 
 % \appendtoks .. \to \everypar
 % \appendtoks .. \to \everypar
@@ -142,7 +143,7 @@
       8: new version of utility file, second pass needed
       9: -- not found/processed
      10: don't use em in --
-     11: building simple utility-file
+     11: building simple util
      12: the utility-file is not sorted, use texutil
      13: mark -- defined --
      14: forced newpage in list at --
@@ -455,11 +456,11 @@
      \egroup
    \fi}
 
-\def\noindentation%
-  {\indentationfalse
-   \def\checkindentation%
+\def\noindentation% made global 
+  {\global\indentationfalse
+   \gdef\checkindentation%
      {\donoindentation
-      \let\checkindentation=\indentationtrue}}
+      \gdef\checkindentation{\global\indentationtrue}}}
 
 \def\indentation%
   {\ifvmode
@@ -549,6 +550,17 @@
 
 \def\dotextprefix#1%
   {\ConvertToConstant\doifnot{#1}{}{#1~}}
+
+% kan vaker worden toegepast:
+
+\def\doadaptleftskip#1% 
+  {\processaction[#1] % \ExpandFirstAfter
+     [\v!standaard=>\advance\leftskip by 
+                    \ifdim\voorwit=\!!zeropoint\@@sllinks\else\voorwit\fi,
+             \v!ja=>\advance\leftskip by 
+                    \ifdim\voorwit=\!!zeropoint\@@sllinks\else\voorwit\fi,
+            \v!nee=>,
+        \s!unknown=>\advance\leftskip by #1]}
 
 \def\herhaal            {\dorepeat}
 \def\herhaler           {\repeater}
@@ -722,12 +734,24 @@
 % De onderstaande definitie wordt in de font-module overruled
 
 \ifx\globalbodyfontsize\undefined
-  \newdimen\globalbodyfontsize \globalbodyfontsize=12pt
+  \newdimen\globalbodyfontsize 
+  \globalbodyfontsize=12pt
+\fi
+\ifx\normalizedbodyfontsize\undefined
+  \def\normalizedbodyfontsize{12pt}
 \fi
 
 % door een \dimen. Dit is geen probleem omdat (1) de default
 % korpsgrootte 12pt is en (2) de fonts nog niet geladen zijn
 % en de instellingen bij het laden nogmaals plaatsvinden.
+
+\def\topskipcorrection%
+  {\ifdim\topskip>\openstrutheight
+     \vskip\topskip
+     \vskip-\openstrutheight
+   \fi
+   \vbox{\strut}
+   \vskip-\openlineheight}
 
 \def\settopskip% the extra test is needed for the lbr family
   {\topskip=\systemtopskipfactor\globalbodyfontsize
@@ -848,28 +872,6 @@
   \let\normaloffinterlineskip=\offinterlineskip % knuth's original
 \fi
 
-% \newskip\oldbaselineskip
-% \newskip\oldlineskip
-% \newskip\oldlineskiplimit
-%
-% \newif\ifinterlineskipoff
-%
-% \def\offinterlineskip%
-%   {\ifinterlineskipoff\else
-%      \interlineskipofftrue
-%      \oldbaselineskip=\baselineskip
-%      \oldlineskip=\lineskip
-%      \oldlineskiplimit=\lineskiplimit
-%    \fi
-%    \normaloffinterlineskip}
-%
-% \def\oninterlineskip%
-%   {\ifinterlineskipoff
-%      \baselineskip=\oldbaselineskip
-%      \lineskip=\oldlineskip
-%      \lineskiplimit=\oldlineskiplimit
-%    \fi}
-
 \def\offinterlineskip%
   {\edef\oninterlineskip%
      {\baselineskip=\the\baselineskip
@@ -921,16 +923,19 @@
 
 % We stellen enkele penalties anders in dan Plain TEX:
 
-\widowpenalty=2000         % was: 1000
-\clubpenalty=2000          % was:  800
+\def\defaultwidowpenalty{2000} % was: 1000
+\def\defaultclubpenalty {2000} % was:  800
+
+\widowpenalty=\defaultwidowpenalty\relax 
+\clubpenalty =\defaultclubpenalty \relax  
 
 % Bovendien definieren we enkele extra \fill's:
 
 \def\hfilll%
-  {\hskip\!!zeropoint\!!plus1filll}
+  {\hskip\!!zeropoint\!!plus1filll\relax}
 
 \def\vfilll%
-  {\vskip\!!zeropoint\!!plus1filll}
+  {\vskip\!!zeropoint\!!plus1filll\relax}
 
 % De onderstaande hulpmacro's moeten nog eens instelbaar worden
 % gemaakt.
@@ -1379,6 +1384,11 @@
      \dimen0=-\vsize
      \advance\dimen0 by \teksthoogte
      \global\advance\vsize by \dimen0
+%\ifgridsnapping % evt altijd, nog testen 
+%  \getnoflines\vsize
+%  \vsize=\noflines\openlineheight % local is better and ok 
+%  \advance\vsize by .5\openlineheight % collect enough data 
+%\fi
      \ifdim\pagegoal<\maxdimen
        \advance\dimen0 by \pagegoal
        \global\pagegoal=\dimen0
@@ -1677,6 +1687,13 @@
    \doifelse{\@@lygrid}{\v!ja}
      {\gridsnappingtrue}
      {\gridsnappingfalse}%
+\ifgridsnapping
+  \widowpenalty=0 % is gewoon beter 
+  \clubpenalty =0 % zeker bij grids 
+\else
+  \widowpenalty=\defaultwidowpenalty
+  \clubpenalty=\defaultclubpenalty 
+\fi
    \stelwitruimtein
    \stelblankoin
    \doifelse{\@@lybreedte}{\v!midden}
@@ -2617,7 +2634,7 @@
    \setbox0=\vbox to \teksthoogte
      {\edef\currentpagedepth{\the\dp#2}% still to be derived from #1 
       \dotopinsertions 
-      #1#2\relax
+      \fuzzysnappedbox{#1}{#2}%
       \pushcolor
       \ifgridsnapping
         \vskip-\currentpagedepth
@@ -3026,7 +3043,8 @@
    \fi
    \inpagebodytrue  % needed for enabling \blanko !
    \dosetbothinserts
-   \setvsize} % this is needed for interacting components, like floats and multicolumns
+   \setvsize % this is needed for interacting components, like floats and multicolumns
+   \adaptfuzzypagegoal} % watch this hack!
 
 \def\setpagecounters%
   {\setuserpageno{\ruwenummer[\s!page]}%
@@ -3424,6 +3442,7 @@
          \v!vast=>\witruimteflexibelfalse,
      \v!flexibel=>\witruimteflexibeltrue,
         \v!regel=>\tussenwit=\baselineskip,
+   \v!halveregel=>\tussenwit=.5\baselineskip,
       \s!default=>\doifnot{\currentwitruimte}{\v!geen}
                     {\stelwitruimteopnieuwin},
       \s!unknown=>\@EA\assigndimension\@EA{\commalistelement} % \@EA is nodig
@@ -3598,6 +3617,51 @@
 %I In z'n eenvoudigste vorm \stelinterliniein wordt de
 %I interlinie aangepast aan het formaat letter.
 
+%D There are two ways to influence the interline spacing. The 
+%D most general and often most consistent way is using 
+%D 
+%D \showsetup{\y!stelinterliniein}
+%D 
+%D For instance 
+%D 
+%D \starttypen
+%D \setupinterlinespace[line=2.8ex]
+%D \stoptypen
+%D 
+%D This setting adapts itself to the bodyfontsize, while for 
+%D instance saying 
+%D 
+%D \starttypen
+%D \setupinterlinespace[line=12pt]
+%D \stoptypen
+%D 
+%D sets things fixed for all sizes, which is definitely not 
+%D what we want. Therefore one can also say: 
+%D 
+%D \starttypen
+%D \definecorpsenvironment[9pt][interlinespace=11pt] 
+%D \stoptypen
+%D 
+%D One can still use \type{\setupinterlinespace} (without 
+%D arguments) to set the interline space according to the 
+%D current font, e.g. a \type{\bfa}.  
+
+\newif\iflocalinterlinespace
+
+\def\bodyfontinterlinespecs%
+  {\??ft\normalizedbodyfontsize\c!interlinie}
+
+\def\bodyfontinterlinespace%
+  {\csname\bodyfontinterlinespecs\endcsname}
+
+\def\presetnormallineheight%
+  {\edef\normallineheight{\@@itregel}%
+   \iflocalinterlinespace \else
+     \doifdefined{\bodyfontinterlinespecs}
+       {\doifsomething{\bodyfontinterlinespace}
+          {\edef\normallineheight{\bodyfontinterlinespace}}}%
+   \fi}
+
 \def\complexstelinterliniein[#1]% \commalistelement ipv #1
   {\doifassignmentelse{#1}
      {\getparameters[\??it][#1]%
@@ -3611,11 +3675,11 @@
         \let\strutheightfactor=\@@ithoogte
         \let\strutdepthfactor =\@@itdiepte
       \fi
-      \let\normallineheight =\@@itregel
-      \let\topskipfactor    =\@@itboven
-      \let\maxdepthfactor   =\@@itonder
-      \setfontparameters\setstrut}
-     {\processallactionsinset                % \regelwit = dummy !
+      \let\normallineheight=\@@itregel
+      \let\topskipfactor   =\@@itboven
+      \let\maxdepthfactor  =\@@itonder
+      \setfontparameters} % overbodig \setstrut
+     {\processallactionsinset % \regelwit = dummy !
         [#1]
         [     \v!aan=>\oninterlineskip,
               \v!uit=>\offinterlineskip,
@@ -3624,7 +3688,9 @@
                       \spacing{\regelwit}]}}
 
 \def\simplestelinterliniein%
-  {\setfontparameters}
+  {\localinterlinespacetrue
+   \setfontparameters
+   \localinterlinespacefalse}
 
 \definecomplexorsimple\stelinterliniein
 
@@ -3734,7 +3800,7 @@
 \def\geenblanko%
   {\removelastskip}
 
-\def\dosingleblanko#1%
+\def\dosingleblanko#1% ook nog \v!halveregel+fuzzysnap
   {\doifelse{#1}{\v!regel}
      {\blankoskipamount=\openlineheight}
      {\ifgridsnapping
@@ -3745,6 +3811,8 @@
           {\smallskipamount}{\medskipamount}{\bigskipamount}%
       \fi}%
    \global\advance\blankoskip by \blankoskipamount}
+
+\newif\iffuzzyvskip
 
 \def\doblanko#1%
   {\processallactionsinset
@@ -3760,6 +3828,7 @@
        \v!blokkeer=>\global\blankoblokkeertrue,
         \v!forceer=>\endgraf\ifdim\prevdepth>0pt\else\line{}\kern-\lineheight\fi,
           \v!regel=>\global\advance\blankoskip by \lineheight,
+     \v!halveregel=>\global\fuzzyvskiptrue\global\advance\blankoskip by .5\lineheight,
         \s!unknown=>{\herhaalmetcommando[#1]\dosingleblanko}]}
 
 \def\oldprevdepth{\prevdepth}%
@@ -3815,13 +3884,22 @@
            \fi
            \ifdim\prevdepth=\newprevdepth
            \else
-             \removelastskip
-             \vskip\blankoskip
+             \iffuzzyvskip
+               \removelastfuzzyvskip
+               \fuzzyvskip\blankoskip\relax
+             \else
+               \removelastskip
+               \vskip\blankoskip\relax
+             \fi
            \fi
+         \else
+           % Now, what happens to fuzzy skips? 
          \fi
        \fi
      \fi
-   \fi}
+   \fi
+   \global\fuzzyvskipfalse
+   \presetindentation}
 
 \def\complexdoblanko[#1]%
   {\flushfootnotes
@@ -3916,32 +3994,47 @@
 %I waarbij maat staat voor een TeX-maat of het woord klein,
 %I middel, groot of geen.
 
-\def\currentvoorwit{}
+\let\currentvoorwit=\empty
 
 \newdimen\voorwit
 
+\newif\ifindentfirstparagraph % \indentfirstparagraphtrue
+
+\def\presetindentation%
+  {\ifindentfirstparagraph\else\noindentation\fi}
+
 \def\dostelinspringenin[#1]%
-  {\doifsomething{#1}{\def\currentvoorwit{#1}}%
-   \assigndimension{\currentvoorwit}{\voorwit}{1em}{1.5em}{2em}%
+  {\processallactionsinset
+     [#1]
+     [   \v!eerste=>\indentfirstparagraphtrue,
+       \v!volgende=>\indentfirstparagraphfalse,
+        \s!default=>\dodostelinspringenin,
+        \s!unknown=>\let\currentvoorwit=\commalistelement
+                    \dodostelinspringenin]}
+
+\def\dodostelinspringenin%       
+  {\assigndimension{\currentvoorwit}{\voorwit}{1em}{1.5em}{2em}%
    \parindent=\voorwit\relax}
 
 \def\stelinspringenin%
   {\dosingleempty\dostelinspringenin}
 
 \def\doinspringen[#1]%
-  {\processaction
+  {\processallactionsinset
      [#1]
      [    \v!nee=>\parindent=\voorwit\relax\noindent,
          \v!niet=>\parindent=\voorwit\relax\noindent,
            \v!ja=>\parindent=\voorwit\relax,            % geen \indent !
+       \v!eerste=>\indentfirstparagraphtrue,
+     \v!volgende=>\indentfirstparagraphfalse,
        \v!altijd=>\parindent=\voorwit\relax,            % geen \indent !
         \v!nooit=>\parindent=\!!zeropoint\relax]}
 
 \def\inspringen%
   {\dosingleargument\doinspringen}
 
-\def\nietinspringen{\inspringen[\v!nee]}
-\def\welinspringen{\inspringen[\v!ja]}
+\def\nietinspringen{\inspringen[\v!nee,\v!volgende]}
+\def\welinspringen {\inspringen[\v!ja,\v!eerste]}
 
 %I n=Verhogen,Verlagen
 %I c=\laag,\hoog,\laho
@@ -4565,7 +4658,7 @@
    \vbox
      {\forgetall
       \mindermeldingen
-      \switchnaarkorps[\v!klein]
+      \switchtobodyfont[\v!klein]
       \tabskip\!!zeropoint
       \halign
         {\strut##\quad\hss&##\quad\hss&##\quad\hss&##\hss\cr
@@ -4598,9 +4691,9 @@
          \noalign{\blanko}
          \tooninstellingB{korps}  \the   \globalbodyfontsize
          \noalign{\blanko}
-         \tooninstellingB{regel}  \relax \strutheightfactor
-         \tooninstellingB{hoogte} \relax \strutdepthfactor
-         \tooninstellingB{diepte} \relax \normallineheight
+         \tooninstellingB{regel}  \relax \normallineheight
+         \tooninstellingB{hoogte} \relax \strutheightfactor
+         \tooninstellingB{diepte} \relax \strutdepthfactor
          \tooninstellingB{boven}  \relax \topskipfactor
          \tooninstellingB{onder}  \relax \maxdepthfactor}}}
 
@@ -4936,13 +5029,8 @@
    \doglobal\increment(\itemlevel,\itemincrement)%
    \begingroup
    \ifnum\itemlevel=1 % NIEUW
-     \doifelsevalue{\??op1\c!marge}{\v!standaard}
-       {\ifdim\voorwit=\!!zeropoint
-          \advance\leftskip by \@@sllinks
-        \else
-          \advance\leftskip by \voorwit
-        \fi}
-       {\advance\leftskip by \getvalue{\??op1\c!marge}}%
+     \doadaptleftskip{\getvalue{\??op1\c!marge}}%
+     \dosetraggedcommand{\@@oouitlijnen}\raggedcommand
    \fi
    \doifinset{\v!kolommen}{#1}%
      {\ifbinnenkolommen\else
@@ -5057,9 +5145,10 @@
      \stopkolommen
      \getvalue{\??op\itemlevel\c!na}%
    \else
-     \ifnum\itemlevel=1\relax
+     \ifnum\itemlevel=1
        \dosomebreak\allowbreak           % toegevoegd
        \getvalue{\??op1\c!na}%
+       \doif{\@@oospringvolgendein}{\v!nee}{\noindentation}%
      \fi
    \fi
    \endgroup
@@ -5279,178 +5368,25 @@
 % enz. enz.
 %
 % Op die manier is meer mogelijk en worden \par's geskipt.
-
-% De macro's \??dd#1\c!lokaal en \??dd#1\c!commando leveren
-% de koppeling tussen \doornummeren en \doordefinieren. Deze
-% constructie is nodig omdat doornummeren geen argument
-% heeft en omdat subnummers niet worden genest binnen
-% het hogere niveau. Het commando \??dd#1\s!do\c!commando
-% moet in dat geval \v!ja zijn.
-
+% 
+% De macro \??dd#1\s!do\c!commando levert de koppeling tussen
+% \doornummeren en \doordefinieren. Deze constructie is nodig
+% omdat doornummeren geen argument heeft en omdat subnummers
+% niet worden genest binnen het hogere niveau. Het commando
+% \??dd#1\s!do\c!status moet in dat geval \v!start zijn. 
+% 
 % herimplementeren met \nextbox en \unhbox\unvbox
 
 \newbox\@@definitiebox
 
-% \setvalue{@@dodefinitiewoord\v!links}#1%
-%   {\hbox to \!!widtha{#1\hss}}
-% \setvalue{@@dodefinitiewoord\v!rechts}#1%
-%   {\hbox to \!!widtha{\hss#1}}
-% \setvalue{@@dodefinitiewoord\v!midden}#1%
-%   {\hbox to \!!widtha{\hss#1\hss}}
-% \setvalue{@@dodefinitiewoord}#1%
-%   {#1}
-%
-% \def\@@definitiewoord#1%
-%   {\getvalue{\??dd#1\c!commando}{#1}}
-%
-% \def\normal@@definitiewoord#1[#2]#3%
-%   {\bgroup
-%    \getvalue{@@dodefinitiewoord\getvalue{\??dd#1\c!uitlijnen}}
-%      {\doattributes{\??dd#1\v!kop}{\strut\getvalue{\??dd#1\c!tekst}#3}}%
-%    \rawreference{\s!def}{#2}{#3}%
-%    \egroup}
-%
-% \def\@@definitielinks#1[#2]#3%
-%   {\doifelsevaluenothing{\??dd#1\c!hang}
-%      {\@@definitielinkspure{#1}[#2]{#3}}
-%      {\@@definitielinkshang{#1}[#2]{#3}}}
-%
-% \def\@@definitierechts#1[#2]#3%
-%   {\doifelsevaluenothing{\??dd#1\c!hang}
-%      {\@@definitierechtspure{#1}[#2]{#3}}
-%      {\@@definitierechtshang{#1}[#2]{#3}}}
-%
-% \def\@@definitielinkspure#1[#2]#3%
-%   {\@@dostartdefinitie{#1}{#3}%
-%    \advance\leftskip by \!!widtha
-%    \llap
-%      {\hbox to \!!widtha{\@@definitiewoord{#1}[#2]{#3}%
-%       \hss}}%
-%    \@@dodefinitie{#1}}
-%
-% \def\@@definitierechtspure#1[#2]#3%
-%   {\@@dostartdefinitie{#1}{#3}%
-%    \advance\rightskip by \!!widtha
-%    \rlap
-%      {\hskip\hsize
-%       \hskip-\leftskip
-%       \hskip-\rightskip
-%       \hbox to \!!widtha{\hss\@@definitiewoord{#1}[#2]{#3}}}%
-%    \@@dodefinitie{#1}}
-%
-% \def\@@makedefinitiebox#1[#2]#3#4%
-%   {\setbox\@@definitiebox=\vtop    % \vbox gaat fout in hang
-%      {\forgetall
-%       \hsize\!!widtha
-%       #4%
-%       \def\\{\endgraf}%
-%       \@@definitiewoord{#1}[#2]{\begstrut#3\endstrut}}%
-%    \ht\@@definitiebox=\ht\strutbox
-%    \dp\@@definitiebox=\dp\strutbox
-%    \doifinsetelse{\getvalue{\??dd#1\c!hang}}{\v!passend,\v!ruim}
-%      {\dimen0=\ht\@@definitiebox
-%       \advance\dimen0 by \dp\@@definitiebox
-%       \doifvalue{\??dd#1\c!hang}{\v!ruim}
-%         {\advance\dimen0 by .5\ht\strutbox}%
-%       \getnoflines{\dimen0}%
-%       \hangafter=-\noflines}
-%      {\hangafter=-\getvalue{\??dd#1\c!hang}}}%
-%
-% \def\@@definitielinkshang#1[#2]#3%
-%   {\@@dostartdefinitie{#1}{#3}%
-%    \mindermeldingen
-%    \hangindent=\!!widtha\relax
-%    \@@makedefinitiebox{#1}[#2]{#3}{}%
-%    \llap
-%      {\dontshowcomposition
-%       \vtop to \!!zeropoint{\box\@@definitiebox}}%
-%    \@@dodefinitie{#1}}%
-%
-% \def\@@definitierechtshang#1[#2]#3%
-%   {\@@dostartdefinitie{#1}{#3}%
-%    \mindermeldingen
-%    \hangindent=-\!!widtha\relax
-%    \@@makedefinitiebox{#1}[#2]{#3}{\raggedleft}%
-%    \rlap
-%      {\dontshowcomposition
-%       \dimen0=\hsize
-%       \advance\dimen0 by -\leftskip
-%       \advance\dimen0 by -\rightskip
-%       \hbox to \dimen0
-%         {\hss
-%          \vtop to \!!zeropoint{\box\@@definitiebox}}}%
-%    \@@dodefinitie{#1}}
-%
-% \def\@@definitieboven#1[#2]#3%
-%   {%\pagina[\v!voorkeur]%         % Weg ermee!
-%    \dosomebreak{\goodbreak}%      % Dit is beter en nodig!
-%    \@@dostartdefinitie{#1}{#3}%
-%    \@@definitiewoord{#1}[#2]{#3}%
-%    \nobreak
-%    \getvalue{\??dd#1\c!tussen}%
-%    \@@dodefinitie{#1}}
-%
-% \def\@@definitieinmarge#1[#2]#3%
-%   {\@@dostartdefinitie{#1}{#3}%
-%    \inmarge{\@@definitiewoord{#1}[#2]{#3}}%
-%    \@@dodefinitie{#1}}
-%
-% \def\@@definitieinlinker#1[#2]#3%
-%   {\@@dostartdefinitie{#1}{#3}%
-%    \inlinker{\@@definitiewoord{#1}[#2]{#3}}%
-%    \@@dodefinitie{#1}}
-%
-% \def\@@definitieinrechter#1[#2]#3%
-%   {\@@dostartdefinitie{#1}{#3}%
-%    \inrechter{\@@definitiewoord{#1}[#2]{#3}}%
-%    \@@dodefinitie{#1}}
-%
-% \def\@@definitieaanelkaarpassend#1[#2]#3%
-%   {\@@dostartdefinitie{#1}{#3}%
-%    \@@definitiewoord{#1}[#2]{#3}%
-%    \tfskip     % nog afstand implementeren
-%    \@@dodefinitie{#1}}
-%
-% \def\@@definitieaanelkaarbreed#1[#2]#3%
-%   {\@@dostartdefinitie{#1}{#3}%
-%    \ignorespaces
-%    \hbox to \!!widtha
-%      {\@@definitiewoord{#1}[#2]{#3}%
-%       \tfskip
-%       \hss}%   % nog afstand implementeren
-%    \@@dodefinitie{#1}}
-%
-% \def\@@definitieaanelkaar#1[#2]#3%
-%   {\doifinsetelse{\getvalue{\??dd#1\c!breedte}}{\v!passend,\v!ruim}%
-%      {\@@definitieaanelkaarpassend{#1}[#2]{#3}}%
-%      {\@@definitieaanelkaarbreed{#1}[#2]{#3}}}
-%
-% \def\@@dostartdefinitie#1#2%
-%   {\getvalue{\??dd#1\c!voor}%
-%    \begingroup
-%    %\showcomposition
-%    \assignwidth
-%      {\!!widtha}
-%      {\getvalue{\??dd#1\c!breedte}}
-%      {\doattributes
-%         {\??dd#1\v!kop}
-%         {\getvalue{\??dd#1\c!tekst}%
-%          \doifelsevaluenothing{\??dd#1\c!monster}
-%            {#2}
-%            {\getvalue{\??dd#1\c!monster}}}}
-%      {1em}%
-%    \getvalue{\??dd#1\c!lokaal}%
-%    \parindent=\!!zeropoint\relax
-%    \noindent
-%    \ignorespaces}
-
 \def\@@definitiewoord#1%
-  {\getvalue{\??dd#1\c!commando}{#1}}
+  {\getvalue{\??dd#1\s!do\c!commando}{#1}}
 
 \def\normal@@definitiewoord#1[#2]#3%
   {\doattributes
      {\??dd#1\v!kop}
-     {\begstrut\getvalue{\??dd#1\c!tekst}#3\endstrut}%
+     {\getvalue{\??dd#1\c!commando}%
+        {\begstrut\getvalue{\??dd#1\c!tekst}#3\endstrut}}%
    \rawreference{\s!def}{#2}{#3}}
 
 \def\@@definitielinks#1%
@@ -5594,9 +5530,28 @@
        \s!default=>\let\next=\@@definitieaanelkaarruim]%
    \next{#1}[#2]{#3}}
 
+\def\@@definitiehangend#1[#2]#3%
+  {\skip0=-\leftskip                % uggly trick 
+   \@@dostartdefinitie{#1}[#2]{#3}% % adds \c!marge to \leftskip
+   \advance\skip0 by \leftskip      % but useful
+   \ifdim\skip0=\!!zeropoint 
+     \skip0=1.5em                   % just some default
+     \advance\leftskip by \skip0
+   \fi 
+   \hskip-\skip0                    % no hang in the first line
+   \unhcopy\@@definitiebox
+   \ifdim\!!widthb=\!!zeropoint
+     \kern.75em                     % another default 
+   \else
+     \kern\!!widthb
+   \fi
+   \ignorespaces
+   \@@dodefinitie{#1}}
+
 \def\@@dostartdefinitie#1[#2]#3%
   {\getvalue{\??dd#1\c!voor}%
    \begingroup
+   \doadaptleftskip{\getvalue{\??dd#1\c!marge}}%
    \showcomposition
    \setbox\@@definitiebox=\hbox
      {\forgetall
@@ -5616,7 +5571,7 @@
         {\doattributes{\??dd#1\v!kop}
            {\getvalue{\??dd#1\c!tekst}\getvalue{\??dd#1\c!monster}}}}
      {\!!widthb}%
-   \getvalue{\??dd#1\c!lokaal}%
+  %\getvalue{\??dd#1\s!do\c!lokaal}%
    \parindent=\!!zeropoint\relax
    \noindent
    \ignorespaces}
@@ -5627,6 +5582,7 @@
    \endgroup
    \egroup % temporary hack
    \getvalue{\??dd#1\c!na}%
+   \doifvalue{\??dd#1\c!springvolgendein}{\v!nee}{\noindentation}%
    \pagina[\v!voorkeur]}        % toegevoegd maar heroverwegen
 
 \def\@@dodefinitie#1%
@@ -5649,7 +5605,7 @@
 \def\dodosteldoordefinierenin[#1][#2]%
   {\getparameters[\??dd#1][#2]}
 
-\def\dosteldoordefinierenin[#1][#2]%
+\def\dosteldoordefinierenin[#1][#2]% % beter: \ifsingleargument 
   {\ConvertToConstant\doifelse{#2}{}
      {\dodosteldoordefinierenin[][#1]}
      {\dodoubleargumentwithset\dodosteldoordefinierenin[#1][#2]}}
@@ -5667,18 +5623,17 @@
 \def\dodoordefinieren[#1][#2]%
   {\copyparameters[\??dd#1][\??dd]
      [\c!plaats,\c!kopletter,\c!letter,\c!kleur,\c!kopkleur,
-      \c!breedte,\c!hang,\c!monster,\c!voor,\c!tussen,\c!na,
-      \c!uitlijnen,\c!inspringen,\c!tekst,\c!afstand]%
+      \c!breedte,\c!hang,\c!monster,\c!voor,\c!tussen,\c!na,\c!marge, 
+      \c!springvolgendein,\c!uitlijnen,\c!tekst,\c!afstand,\c!commando]%
    \getparameters[\??dd#1]
-     [\s!do\c!commando=\v!nee,
-      \c!commando=\normal@@definitiewoord,
-      \c!lokaal=,
+     [\s!do\c!status=\v!stop,
+      \s!do\c!commando=\normal@@definitiewoord,
       #2]%
    \doifvalue{\??dd#1\c!plaats}{\v!boven}%
      {\doassign[\??dd#1][\c!tussen={\blanko}]}%
    \setvalue{\??dd#1}[##1]%
      {\executedoordefinitie{#1}[##1]}%
-   \doifelsevalue{\??dd#1\s!do\c!commando}{\v!ja}
+   \doifelsevalue{\??dd#1\s!do\c!status}{\v!start}
      {\setvalue{\s!complex\??dd#1}[##1]%
         {\@@somedefinitie{#1}[##1]{}}%
       \setvalue{\s!complex\??dd\s!start#1}[##1]%
@@ -5841,34 +5796,6 @@
      \rawreference{\s!num}{#5}{}%
    \fi}
 
-% De macro's \??dd#1\c!lokaal en \??dd#1\c!commando leveren
-% de koppeling tussen \doornummeren en \doordefinieren. Deze
-% constructie is nodig omdat doornummeren geen argument
-% heeft en omdat subnummers niet worden genest binnen
-% het hogere niveau. Het commando \??dd#1\s!do\c!commando
-% moet in dat geval \v!ja zijn.
-
-\def\@@ddleftskip#1#2%
-  {\do@@ddleftskip{#1}{#2}{}}
-
-\def\do@@ddleftskip#1#2#3%
-  {\ExpandFirstAfter\processaction
-     [\getvalue{\??dd#2#1\c!inspringen}]
-     [    \v!nee=>,
-           \v!ja=>\dodo@@ddleftskip{#1}{#2}{#3}%
-                  \doifnot{#2}{\v!sub#3}
-                    {\do@@ddleftskip{#1}{#2}{\v!sub#3}},
-      \s!unknown=>\advance\leftskip by \getvalue{\??dd#2#1\c!inspringen}]}
-
-\def\dodo@@ddleftskip#1#2#3%
-  {\ExpandFirstAfter\processaction
-     [\getvalue{\??dd#3\v!sub#1\c!inspringen}]
-     [    \v!nee=>,
-           \v!ja=>\ExpandFirstAfter\doifnotinset
-                    {\getvalue{\??dd#3#1\c!breedte}}{\v!passend,\v!ruim}
-                    {\advance\leftskip by \getvalue{\??dd#3#1\c!breedte}},
-      \s!unknown=>\advance\leftskip by \commalistelement]}
-
 \def\@@ddresetsubsubsubnummer#1%
   {\edef\doornummer{\getvalue{\??dd#1\??dd\c!nummer}}%
    \resetnummer[\v!sub\v!sub\v!sub\doornummer]}
@@ -5919,15 +5846,14 @@
 
 \def\dododoornummeren#1#2#3[#4][#5]#6%
   {\dodoordefinieren[#3#1]%
-     [\s!do\c!commando=\v!ja,
-      \c!lokaal=\@@ddleftskip{#1}{#3},
-      \c!commando=\special@@definitiewoord{#1}{#3}{#6}]%
+     [\s!do\c!status=\v!start,
+      \s!do\c!commando=\special@@definitiewoord{#1}{#3}{#6}]%
    \copyparameters[\??dd#3#1][\??dn]
      [\c!plaats,\c!kopletter,\c!letter,\c!kleur,\c!kopkleur,
-      \c!breedte,\c!nummer,\c!afstand,
+      \c!breedte,\c!nummer,\c!afstand,\c!commando,
       \c!monster,\c!hang,\c!uitlijnen,\c!voor,\c!tussen,\c!na,
-      \c!niveaus,\c!wijze,\c!blokwijze,\c!scheider,                % \c!conversie
-      \c!afsluiter,\c!sectienummer,\c!nummer,\c!inspringen]%
+      \c!niveaus,\c!wijze,\c!blokwijze,\c!scheider,\c!marge, 
+      \c!springvolgendein,\c!afsluiter,\c!sectienummer,\c!nummer]%
    \ConvertToConstant\doifinstringelse{=}{#4}
      {\getparameters[\??dd#3#1]%
         [\c!tekst=#1,\??dd\c!nummer=#1,\c!conversie=,
@@ -5938,9 +5864,9 @@
             \c!links=,\c!rechts=,\c!koppeling=,#4]}%
         {\copyparameters[\??dd#3#1][\??dd#3#4]
            [\c!plaats,\c!kopletter,\c!letter,\c!kleur,\c!kopkleur,
-            \c!breedte,\c!nummer,\c!afstand,
-            \c!monster,\c!hang,\c!uitlijnen,\c!voor,\c!tussen,\c!na,
-            \c!links,\c!rechts,\c!koppeling,\c!inspringen]%
+            \c!breedte,\c!nummer,\c!afstand,\c!commando,\c!marge,
+            \c!monster,\c!hang,\c!uitlijnen,\c!voor,\c!tussen,\c!na, 
+            \c!springvolgendein,\c!links,\c!rechts,\c!koppeling]%
          \getparameters[\??dd#3#1]
            [\c!tekst=#1,\??dd\c!nummer=#4,\c!conversie=,#5]}}%
    \ExpandBothAfter\doif{\getvalue{\??dd#3#1\??dd\c!nummer}}{#1}
@@ -6866,8 +6792,8 @@
 
 % dit zijn voorlopig lokale commando's
 
-\def\woordinlinker {\inlinkermarge}
-\def\woordinrechter{\inrechtermarge}
+\def\woordinlinker {\inlinkermarge}  % vervallen 
+\def\woordinrechter{\inrechtermarge} % vervallen 
 
 \def\woordinmarge%
   {\doquintupleempty\doinmarge
@@ -7133,11 +7059,11 @@
                       \dosomebreak\nobreak
                     \fi,
        \v!voorkeur=>{\ifpaginageblokkeerd\else
-                      \ifbinnenkolommen
-                        \dosomebreak\goodbreak
-                      \else
-                        \testpagina[3][\!!zeropoint]%
-                      \fi
+                       \ifbinnenkolommen
+                         \dosomebreak\goodbreak
+                       \else
+                         \testpagina[3][\!!zeropoint]%
+                       \fi
                      \fi},
   \v!grotevoorkeur=>{\ifpaginageblokkeerd\else
                       \ifbinnenkolommen
@@ -8446,7 +8372,7 @@
 
 %
 
-\def\dolocalkopsetup#1%  koppeling met standaard kopcommando
+\def\dolocalkopsetup#1%  koppeling met standaard kopcommando / engels 
   {\forgetall
    \ExpandFirstAfter\steluitlijnenin[\getvalue{\??ko#1\c!uitlijnen}]%
    \def\\{\crlf\strut}}
@@ -8483,10 +8409,13 @@
 
 \def\dodosomekop#1#2#3#4%
   {\iffourthargument
-     \dododosomekop{#1}[#2]{\sectiebloklabel{#1}}{#3}{#4}%
+     \def\next%
+       {\dododosomekop{#1}[#2]{\sectiebloklabel{#1}}{#3}{#4}}%
    \else
-     \dododosomekop{#1}[#2]{\sectiebloklabel{#1}}{\getvalue{\@@sectie\c!nummer}}{#3}%
-   \fi}
+     \def\next%
+       {\dododosomekop{#1}[#2]{\sectiebloklabel{#1}}{\getvalue{\@@sectie\c!nummer}}{#3}}%
+   \fi
+   \next}
 
 \def\dododosomekop#1[#2]#3#4#5% % pas met \ExpandFirstAfter op bij twee||taligheid
   {\flushingcolumnfloatsfalse
@@ -8500,6 +8429,9 @@
    \doifelsevalue{\??ko#1\c!verhoognummer}{\v!ja}
      {\verhoognummertrue}
      {\verhoognummerfalse}%
+   \edef\numberheaddistance   {\getvalue{\??ko#1\c!afstand}}%
+   \edef\numberheadalternative{\getvalue{\??ko#1\c!variant}}%
+   \dostelkopvariantin[\numberheadalternative]%
    \ifsectienummer
      \doifelsevalue{\??sb\@@sectieblok\c!nummer}{\v!ja}
        {\doifelsevalue{\??ko#1\c!nummer}{\v!ja}
@@ -8552,7 +8484,7 @@
           \ExpandFirstAfter\setupreferencing[\c!prefix=\getvalue{\??ko#1\c!prefix}]%
         \fi
         \dosomebreak\nobreak
-        \getvalue{\??ko#1\c!na}%
+        \ifdisplaysectionhead\getvalue{\??ko#1\c!na}\fi
       \else
         \dohandelpaginaafB{#1}% toegevoegd ivm subpaginanr / tug sheets
         \setsectieenkoppeling{#1}% can be changed when [voor=\somehead{..}...]
@@ -8593,12 +8525,13 @@
           {}%
         \writesection{#1}{-}{#5}%
         \dosomebreak\nobreak
-        \getvalue{\??ko#1\c!na}%
+        \ifdisplaysectionhead\getvalue{\??ko#1\c!na}\fi
       \else
         % do nothing
       \fi
     \fi
-    \flushingcolumnfloatstrue}
+    \flushingcolumnfloatstrue
+    \ifdisplaysectionhead\else\expandafter\GotoPar\fi}
 
 % \prevdepth\dp\strutbox is belangrijk, vergelijk naast elkaar:
 %
@@ -8615,7 +8548,7 @@
    \def\localkopsetup%
      {\dolocalkopsetup{#1}}%
    \startsynchronisatie
-   \snaptogrid\hbox
+   \ifdisplaysectionhead\@EA\snaptogrid\@EA\hbox\fi
      {\getvalue{\??ko#1\c!commando}
         {} % no number
         {\doattributes{\??ko#1}{\doattributes{\??ko#1\c!tekst}
@@ -8625,15 +8558,19 @@
             \getvalue{\??ko#1\c!voorcommando}%
             \getvalue{\??ko#1\c!tekstcommando}{\setstrut\begstrut#3\endstrut}%
             \getvalue{\??ko#1\c!nacommando}%
-            \endgraf}}}}
-   \endgraf
-   \nointerlineskip
-   \dosomebreak\nobreak
+            \ifdisplaysectionhead\endgraf\fi}}}}%
+   \ifdisplaysectionhead
+     \endgraf
+     \nointerlineskip
+     \dosomebreak\nobreak
+   \fi
    #4%
-   \prevdepth\openstrutdepth % \dp\strutbox % ivm grid 
+   \ifdisplaysectionhead
+     \prevdepth\openstrutdepth % \dp\strutbox % ivm grid 
+   \fi
    \stopsynchronisatie
    \egroup
-   \noindentation}
+   \doifvalue{\??ko#1\c!springvolgendein}{\v!nee}{\noindentation}}
 
 \def\doplaatskopnummertekst#1#2#3#4#5%
   {\bgroup
@@ -8644,7 +8581,7 @@
    \def\localkopsetup%
      {\dolocalkopsetup{#1}}%
    \startsynchronisatie
-   \snaptogrid\hbox
+   \ifdisplaysectionhead\@EA\snaptogrid\@EA\hbox\fi
      {\getvalue{\??ko#1\c!commando}%
         {\doattributes{\??ko#1}{\doattributes{\??ko#1\c!nummer}
            {\getvalue{\??ko#1\c!voorcommando}%
@@ -8655,15 +8592,19 @@
             #2%
             \getvalue{\??ko#1\c!tekstcommando}{\setstrut\begstrut#4\endstrut}%
             \getvalue{\??ko#1\c!nacommando}%
-            \endgraf}}}}
-   \endgraf
-   \nointerlineskip
-   \dosomebreak\nobreak
+            \ifdisplaysectionhead\endgraf\fi}}}}%
+   \ifdisplaysectionhead
+     \endgraf
+     \nointerlineskip
+     \dosomebreak\nobreak
+   \fi
    #5%
-   \prevdepth\openstrutdepth % \dp\strutbox % important, see comment
+   \ifdisplaysectionhead
+     \prevdepth\openstrutdepth % \dp\strutbox % important, see comment
+   \fi
    \stopsynchronisatie
    \egroup
-   \noindentation}
+   \doifvalue{\??ko#1\c!springvolgendein}{\v!nee}{\noindentation}}
 
 \def\dostelkopnummerin[#1][#2#3]%
   {\bgroup
@@ -8717,7 +8658,7 @@
         {\localkopsetup
          \noindent
          #2}}%
-     {\setbox0=\hbox{{#1}\hskip0.75em}%
+     {\setbox0=\hbox{{#1}\hskip\numberheaddistance}%
       \vbox
         {\localkopsetup
          \hangindent 1\wd0
@@ -8740,8 +8681,16 @@
       \raggedcenter
       \doifsomething{#1}{\strut#1\par}\begstrut#2}}
 
-\def\plaatsgeenkop#1#2%
+\def\plaatskopunknown#1#2%
   {}
+
+\def\plaatskopintekst#1#2%
+  {\bgroup
+   \localkopsetup
+   \doifsomething{#1}{{#1}\hskip\numberheaddistance}%
+   {\begstrut#2}%
+   \hskip\numberheaddistance
+   \egroup}
 
 % default   == instellingen
 % koppeling == koppen, breaks, marks, enz.
@@ -8766,6 +8715,7 @@
          \c!prefix=,
          \c!voor=,
          \c!na=,
+         \c!afstand=,
          \c!pagina=,
          \c!hoofd=,
          \c!letter=,
@@ -8774,9 +8724,11 @@
          \c!eigennummer=\v!nee,
          \c!nummer=\v!ja,
          \c!kleur=,
+         \c!springvolgendein=\v!nee,
          \c!doorgaan=\v!ja,
          \c!plaatskop=\v!ja,
          \c!verhoognummer=\v!ja,
+         \c!variant=\@@kovariant,
          \c!commando=\@@plaatskop,
          #2]%
       \ConvertToConstant\doifnot{#1}{\getvalue{\??ko#1\c!default}}
@@ -8786,7 +8738,7 @@
               [\??ko#1][\??ko\getvalue{\??ko#1\c!default}]
               [\c!voor,\c!na,\c!commando,\c!pagina,\c!doorgaan,\c!hoofd,
                \c!nummer,\c!eigennummer,\c!plaatskop,\c!verhoognummer,
-               \c!letter,\c!kleur,
+               \c!letter,\c!kleur,\c!afstand,\c!variant,\c!springvolgendein,
                %\c!nummerletter,\c!tekstletter,
                \c!nummercommando,\c!tekstcommando]}}%
       \getparameters[\??ko#1][#2]%
@@ -8805,7 +8757,7 @@
            [\c!niveau,\c!sectie,\c!koppeling,\c!prefix,
             \c!voor,\c!na,\c!commando,\c!pagina,\c!doorgaan,\c!hoofd,
             \c!nummer,\c!eigennummer,\c!plaatskop,\c!verhoognummer,
-            \c!letter,\c!kleur,
+            \c!letter,\c!kleur,\c!afstand,\c!variant,\c!springvolgendein,
             %\c!nummerletter,\c!tekstletter,
             \c!nummercommando,\c!tekstcommando]%
          \definieermarkering[#1][#2]%
@@ -8839,18 +8791,25 @@
   {\dodoubleargumentwithset\dostelkopin}
 
 \newif\ifsectienummer  \sectienummertrue
+\newif\ifdisplaysectionhead \displaysectionheadtrue
+
+\def\dostelkopvariantin[#1]%
+  {\displaysectionheadtrue 
+   \processaction
+     [#1]
+     [ \v!normaal=>\def\@@plaatskop{\plaatskopnormaal},
+        \v!midden=>\def\@@plaatskop{\plaatskopmidden},
+         \v!marge=>\def\@@plaatskop{\plaatskopinmarge},
+       \v!inmarge=>\def\@@plaatskop{\plaatskopinmarge},
+         \v!tekst=>\def\@@plaatskop{\plaatskopintekst}\displaysectionheadfalse,
+       \v!unknown=>\def\@@plaatskop{\plaatskopunknown}]}
 
 \def\dostelkoppenin[#1]%
   {\getparameters[\??ko][#1]%
    \doifelse{\@@kosectienummer}{\v!ja}
      {\sectienummertrue}
      {\sectienummerfalse}%
-   \processaction
-     [\@@kovariant]
-     [ \v!normaal=>\def\@@plaatskop{\plaatskopnormaal},
-        \v!midden=>\def\@@plaatskop{\plaatskopmidden},
-         \v!marge=>\def\@@plaatskop{\plaatskopinmarge},
-       \v!inmarge=>\def\@@plaatskop{\plaatskopinmarge}]}
+   \dostelkopvariantin[\@@kovariant]}
 
 \def\stelkoppenin%
   {\dosingleargument\dostelkoppenin}
@@ -9006,13 +8965,14 @@
 
 \def\startlistreferences#1%
   {\thisissomeinternal{\s!lst}{#1\currentsectionformat}%
-   \setxvalue{\v!vorige\c!lokale#1}{\s!lst:#1\previoussectionformat}%
-   \setxvalue{\c!huidige\c!lokale#1}{\s!lst:#1\currentsectionformat}%
+   \setxvalue{\s!lst:#1\currentsectionformat}{\realfolio}%
+   \setxvalue{\v!vorige\v!lokale#1}{\s!lst:#1\previoussectionformat}%
+   \setxvalue{\v!huidige\v!lokale#1}{\s!lst:#1\currentsectionformat}%
    \doifelse{\currentsectionformat}{}
      {\setglobalcrossreference
         {\v!vorige#1}{}{\realfolio}{}}
      {\setglobalsystemreference\rt!list
-        {\v!vorige#1}{\getvalue{\v!vorige\c!lokale#1}}}%
+        {\v!vorige#1}{\getvalue{\v!vorige\v!lokale#1}}}%
    \def\stoplistreferences{\dostoplistreferences}}
 
 \def\dostoplistreferences#1%
@@ -9022,10 +8982,10 @@
      \gdef\updatelistreferences%
        {\def\docommando####1%
           {\setglobalsystemreference\rt!list
-             {\v!vorige####1}{\getvalue{\c!huidige\c!lokale####1}}}%
+             {\v!vorige####1}{\getvalue{\v!huidige\v!lokale####1}}}%
         \processcommacommand[\updatedlistreferences]\docommando
         \global\let\updatelistreferences=\relax
-        \gdef\updatedlistreferences{}}%
+        \global\let\updatedlistreferences=\empty}%
    \fi}
 
 \def\stoplistreferences%
@@ -10110,6 +10070,9 @@
    \global\advance\sidefloatvsize by \dimen3
    \dimen0=\sidefloatvsize
 %   \advance\dimen0 by -\baselineskip
+%\ifgridsnapping
+%  \advance\dimen0 by .5\openlineheight % \vsize slightly too large 
+%\fi
    \ifdim\dimen0>.99\pagegoal          \relax
      \roomforfloatfalse
    \else
@@ -10617,6 +10580,9 @@
      \advance\dimen0 by \dp\floatbox
      \advance\dimen0 by \floattopskip
      \advance\dimen0 by -\pageshrink  % toegevoegd
+%\ifgridsnapping
+%  \advance\dimen0 by .5\openlineheight % \vsize slightly too large 
+%\fi
      \ifdim\dimen0>\pagegoal
        \global\roomforfloatfalse
      \else
@@ -13252,7 +13218,7 @@
      {\let\alllistreferences=\empty
       \def\internallistreference{0}}}
 
-\def\dosetlinkregister#1%
+\def\dosetlinkregister#1% is die page reference echt nodig? 
   {\dosetreglevel{\getvalue{\??id#1\c!criterium}}%
    \setregisterpage{#1}%
    \setvalue{#1\s!entrya}##1%
@@ -13285,7 +13251,7 @@
             \let\midlistreference=\commalistelement
           \fi
         \fi
-        \hskip-.25em\relax
+        % \hskip-.25em\relax ??????
         \getvalue{\??id#1\c!tekstcommando}{##1}%
         \hskip\getvalue{\??id#1\c!afstand}%
         \def\dodocommando[####1-####2]%
@@ -14972,9 +14938,7 @@
    \writestring{more footnote features. Please report any anomalities to pragma@pi.net.}%
    \writeline
    \writestring{At this moment some pdfTeX primitives and functionality are under}%
-   \writestring{reconstruction. Please use the most recent tpd special driver!}%
-   \writeline
-   \writestring{Interactive floats are temporary out of order. Sorry.}}
+   \writestring{reconstruction. Please use the most recent tpd special driver!}}
 
 \appendtoks \meldveranderingen \to \everybye
 
@@ -15852,9 +15816,11 @@
   [\v!deel,\v!hoofdstuk]
   [\c!uitlijnen=\v!normaal,
    \c!doorgaan=\v!nee,
+   \c!springvolgendein=\v!nee,
    \c!pagina=\v!rechts,
    \c!hoofd=,
    \c!letter=\tfc,
+   \c!afstand=.75em,
    \c!voor={\blanko[2*\v!groot]},
    \c!na={\blanko[2*\v!groot]}]
 
@@ -15862,6 +15828,8 @@
   [\v!paragraaf]
   [\c!uitlijnen=\v!normaal,
    \c!letter=\tfa,
+   \c!afstand=.75em,
+   \c!springvolgendein=\v!nee,
    \c!voor={\blanko[2*\v!groot]},
    \c!na=\blanko]
 
@@ -15935,10 +15903,12 @@
 \stelopsommingenin  % undocumented
   [\c!niveaus=6,
    \c!marge=\!!zeropoint,
+   \c!springvolgendein=\v!ja,
    \c!breedte=1.5em,
    \c!factor=0,
    \c!afstand=.5em,
-   \c!marletter=\c!type,
+   \c!uitlijnen=\v!normaal,
+   \c!marletter=\c!type,  % \c! ???
    \c!symletter=,
    \c!kopletter=,
    \c!markleur=,
@@ -16064,10 +16034,11 @@
    \c!hang=,
    \c!monster=,
    \c!uitlijnen=,
-   \c!inspringen=\v!nee,
+   \c!marge=\v!nee,
    \c!voor=\blanko,
    \c!tussen=\blanko,
    \c!na=\blanko,
+   \c!springvolgendein=\v!ja,
    \c!commando=]
 
 \steldoornummerenin
@@ -16081,10 +16052,11 @@
    \c!hang=,
    \c!monster=,
    \c!uitlijnen=,
-   \c!inspringen=\v!nee,
+   \c!marge=\v!nee,
    \c!voor=\blanko,
    \c!tussen=\blanko,
    \c!na=\blanko,
+   \c!springvolgendein=\v!ja,
    \c!tekst=,
    \c!niveaus=3,                % to be upward compatible
    \c!conversie=,               % to be upward compatible
@@ -16092,7 +16064,8 @@
    \c!sectienummer=\v!ja,
    \c!scheider=.,
    \c!afsluiter=,
-   \c!nummer=]
+   \c!nummer=,
+   \c!commando=]
 
 \stelkoppeltekenin
   [\c!teken=\compoundhyphen]
@@ -16240,3 +16213,4 @@
 \protect
 
 \endinput
+

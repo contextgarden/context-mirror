@@ -46,11 +46,7 @@
            \if!!donea 
              file: #4, 
            \fi
-           \ifusepagedestinations 
-             page: #6 
-           \else 
-             "#5" 
-           \fi}}
+           "#5"}}
      {}% nog uri afhandelen 
    \egroup}
 
@@ -68,14 +64,14 @@
            \if!!donea 
              file: #4, 
            \fi 
-           page:#5}}
+           \ifnum0#5=0 \else 
+             page: #5 
+           \fi}}
      {}% nog uri afhandelen 
    \egroup}
 
 \definespecial\dostartthisislocation#1%
-  {\ifusepagedestinations \else
-     \special{mark: "#1"}%
-   \fi}
+  {\special{mark: "#1"}}
 
 \definespecial\dostartthisisrealpage#1%
   {}
@@ -86,12 +82,9 @@
 \let\doyandyinsertmov = \docommoninsertmov
 \let\dotrinsertmov    = \docommoninsertmov
 
-%\def\doyandyinsertmov#1#2#3#4#5#6#7#8%
-%  {\special
-%     {button: 20000000 23000000 launch: w:/play32.exe #1}}
-
 \stopspecials
 
 \protect
 
 \endinput
+

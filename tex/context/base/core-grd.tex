@@ -419,6 +419,8 @@
          \par}
       \vfill}}
 
+%D Some intervention macros:
+
 \def\doverplaatsopgrid[#1]%
   {\processaction
      [#1]
@@ -440,6 +442,124 @@
 \def\plaatsopgrid%
   {\dosingleempty\doplaatsopgrid}
 
+%D Snapping is rather robust as long as we use whole lines.
+%D Half lines of white space can however be handled when they
+%D come in pairs. The corrections needed when crossing page
+%D boundaries in the middle of such a pair, are handled by
+%D macros that are (named) sort of fuzzy. This fuzzy mechanism
+%D was written as an extension to the grid typesetting needed
+%D for typesetting (part of) the \MAPS. 
+%D 
+%D \starttypen
+%D \setuptyping
+%D   [before={\blank[halfline]},
+%D    after={\blank[halfline]}]
+%D \stoptypen
+
+\newif\iffuzzysnapdone
+\newif\iffuzzysnapping
+\newif\iffuzzysnapped
+
+\newsignal\fuzzysnapbegin
+\newsignal\fuzzysnapend
+
+\chardef\fuzzysnappedleft=0 % =1 when fuzzybegin still open
+
+\def\beginfuzzysnapping%
+  {\ifgridsnapping
+     \global\fuzzysnappingtrue 
+     \iffuzzysnapping
+       \kern\fuzzysnapbegin
+       \kern-\fuzzysnapbegin
+     \fi
+   \fi}
+
+\def\endfuzzysnapping%
+  {\ifgridsnapping
+     \global\fuzzysnappingtrue
+     \iffuzzysnapping
+       \kern\fuzzysnapend
+       \kern-\fuzzysnapend
+     \fi
+   \fi}
+
+\def\fuzzyvskip#1%
+  {\iffuzzysnapdone
+     \vskip#1\relax
+     \endfuzzysnapping
+     \global\fuzzysnapdonefalse
+   \else
+     \beginfuzzysnapping
+     \vskip#1\relax
+     \global\fuzzysnapdonetrue
+   \fi}
+
+\def\removelastfuzzyvskip%
+  {\ifgridsnapping 
+     \iffuzzysnapping
+       \ifdim\lastskip<\openlineheight 
+       \else
+         \removelastskip
+       \fi
+     \else
+       \removelastskip
+     \fi
+   \else
+     \removelastskip
+   \fi}
+
+\def\dodocheckfuzzysnap%
+  {\ifdim\shapekern=\fuzzysnapbegin
+     \ifcase\fuzzysnappedleft
+       \global\chardef\fuzzysnappedleft=1
+     \fi
+     \global\fuzzysnappedfalse
+   \else\ifdim\shapekern=\fuzzysnapend
+     \ifcase\fuzzysnappedleft
+       \global\chardef\fuzzysnappedleft=2
+     \fi
+     \global\fuzzysnappedtrue 
+   \fi\fi}
+
+\def\docheckfuzzysnap#1%
+  {\beginofshapebox
+   \unvcopy#1\relax
+   \endofshapebox
+   \global\fuzzysnappedfalse
+   \global\chardef\fuzzysnappedleft=0
+   \doreshapebox{}{}{\dodocheckfuzzysnap}{}}
+
+\def\getfuzzysnapcorrection#1%
+  {\global\let\presnapcorrection =\relax
+   \global\let\postsnapcorrection=\relax
+   \ifgridsnapping\iffuzzysnapping
+     \docheckfuzzysnap{#1}%
+     \iffuzzysnapped
+       \iftracegridsnapping
+         \gdef\presnapcorrection{\color[red]{\hrule\!!height.5\openlineheight}}%
+       \else
+         \gdef\presnapcorrection{\kern.5\openlineheight}%
+       \fi
+       \gdef\postsnapcorrection{\kern.5\openlineheight}%
+     \fi
+   \fi\fi}
+
+\def\fuzzysnappedbox#1#2% \box<n> \unvbox<n> 
+  {\getfuzzysnapcorrection{#2}%
+   \presnapcorrection
+   #1#2%
+   \postsnapcorrection}
+
+\def\adaptfuzzypagegoal%
+  {\ifgridsnapping\iffuzzysnapping\ifcase\fuzzysnappedleft\or % see dopagecontents
+     \scratchdimen=\pagegoal  
+     \advance\scratchdimen by -.5\openlineheight 
+     \global\pagegoal=\scratchdimen
+     \global\advance\vsize by -.5\openlineheight 
+     \global\chardef\fuzzysnappedleft=0
+   \fi\fi\fi}
+
 \protect
 
 \endinput 
+

@@ -21,9 +21,13 @@
 %D things over and over again. If showing them has a learing 
 %D effect for others too, we've surved another purpose too.  
 
+%D First we make sure that some important prefix is defined:
+
+\ifx\doifETEX\undefined \long\def\doifETEX#1\par{} \fi
+\ifx\ifnoETEX\undefined \let\ifnoETEX=\empty       \fi
+
 %D \macros
 %D   {abortinputifdefined}
-%D   {}
 %D
 %D Because this module can be used in a different context, we
 %D want to prevent it being loaded more than once. This can be
@@ -109,7 +113,6 @@
 %D \macros
 %D   [beschermen]
 %D   {protect,unprotect}
-%D   {}
 %D
 %D We can shield macros from users by using some special
 %D characters in their names. Some characters that are normally
@@ -184,7 +187,6 @@
 %D   {@@escape,@@begingroup,@@endgroup,@@mathshift,@@alignment,
 %D    @@endofline,@@parameter,@@superscript,@@subscript,
 %D    @@ignore,@@space,@@letter,@@other,@@active,@@comment}
-%D   {}
 %D
 %D In \CONTEXT\ we sometimes manipulate the \CATCODES\ of
 %D certain characters. Because we are not that good at numbers,
@@ -208,7 +210,6 @@
 
 %D \macros
 %D   {normalspace}
-%D   {}
 %D
 %D We often need a space as defined in \PLAIN\ \TEX. Because 
 %D we cannot be sure of \type{\space} is redefined, we define: 
@@ -221,7 +222,6 @@
 %D    scratchbox,
 %D    scratchtoks
 %D    ifdone}
-%D   {}
 %D
 %D Because we often need counters on a temporary basis, we
 %D define the \COUNTER\ \type{\scratchcounter}. This is a
@@ -238,7 +238,6 @@
 
 %D \macros
 %D   {ifCONTEXT}
-%D   {}
 %D 
 %D In the system and support modules we sometimes show examples
 %D that make use of core commands. We can skip those parts of
@@ -250,7 +249,6 @@
 %D \macros
 %D   {!!count, !!toks, !!dimen, !!box, 
 %D    !!width, !!height, !!depth, !!string, !!done} 
-%D   {}
 %D
 %D We define some more \COUNTERS\ and \DIMENSIONS. We also 
 %D define some shortcuts to the local scatchregisters~0, 2, 4,
@@ -263,15 +261,14 @@
 \newcount\!!counte \toksdef\!!tokse=8 \dimendef\!!dimene=8 \chardef\!!boxe=8
 \newcount\!!countf
 
-\def\!!stringa{} \def\!!stringb{} \def\!!stringc{}
-\def\!!stringd{} \def\!!stringe{} \def\!!stringf{}
+\let\!!stringa=\empty \let\!!stringb=\empty \let\!!stringc=\empty
+\let\!!stringd=\empty \let\!!stringe=\empty \let\!!stringf=\empty
 
 \newdimen\!!widtha \newdimen\!!heighta \newdimen\!!deptha \newif\if!!donea
 \newdimen\!!widthb \newdimen\!!heightb \newdimen\!!depthb \newif\if!!doneb
 
 %D \macros
 %D   {s!,c!,e!,p!,v!,@@,??}
-%D   {}
 %D
 %D To save memory, we use constants (sometimes called
 %D variables). Redefining these constants can have desastrous
@@ -290,7 +287,6 @@
 
 %D \macros
 %D   {@EA,expanded}
-%D   {}
 %D
 %D When in unprotected mode, to be entered with 
 %D \type{\unprotect}, one can use \type{\@EA} as equivalent 
@@ -317,7 +313,6 @@
 
 %D \macros
 %D   {gobbleoneargument,gobble...arguments}
-%D   {}
 %D
 %D The next set of macros just do nothing, except that they
 %D get rid of a number of arguments.
@@ -334,7 +329,6 @@
 
 %D \macros
 %D   {doifnextcharelse}
-%D   {}
 %D
 %D When we started using \TEX\ in the late eighties, our
 %D first experiences with programming concerned a simple shell
@@ -414,7 +408,6 @@
 %D    letvalue,
 %D    getvalue,
 %D    resetvalue}
-%D   {}
 %D
 %D \TEX's primitive \type{\csname} can be used to construct
 %D all kind of commands that cannot be defined with
@@ -454,11 +447,10 @@
   {\expandafter\let\csname#1\endcsname}
 
 \def\resetvalue#1%
-  {\setvalue{#1}{}}
+  {\expandafter\let\csname#1\endcsname=\empty}
 
 %D \macros
 %D   {donottest,unexpanded}
-%D   {}
 %D
 %D When expansion of a macro gives problems, we can precede it
 %D by \type{\donottest}. It seems that protection is one of the
@@ -551,7 +543,6 @@
 %D   {doifundefined,doifdefined,
 %D    doifundefinedelse,doifdefinedelse,
 %D    doifalldefinedelse}
-%D   {}
 %D
 %D The standard way of testing if a macro is defined is
 %D comparing its meaning with another undefined one, usually
@@ -651,44 +642,46 @@
   {\expandafter\ifx\csname#1\endcsname\relax}
 
 \def\p!doifundefined#1%
-  {\let\donottest=\dontprocesstest
+  {\let\donottest\dontprocesstest
    \expandafter\ifx\csname#1\endcsname\relax}
 
 \def\doifundefinedelse#1#2#3%
   {\p!doifundefined{#1}%
-     \let\donottest=\doprocesstest#2%
+     \let\donottest\doprocesstest#2%
    \else
-     \let\donottest=\doprocesstest#3%
+     \let\donottest\doprocesstest#3%
    \fi}
 
 \def\doifdefinedelse#1#2#3%
   {\p!doifundefined{#1}%
-     \let\donottest=\doprocesstest#3%
+     \let\donottest\doprocesstest#3%
    \else
-     \let\donottest=\doprocesstest#2%
+     \let\donottest\doprocesstest#2%
    \fi}
 
 \def\doifundefined#1#2%
   {\p!doifundefined{#1}%
-     \let\donottest=\doprocesstest#2%
+     \let\donottest\doprocesstest#2%
    \else
-     \let\donottest=\doprocesstest
+     \let\donottest\doprocesstest
    \fi}
 
 \def\doifdefined#1#2%
   {\p!doifundefined{#1}%
-     \let\donottest=\doprocesstest
+     \let\donottest\doprocesstest
    \else
-     \let\donottest=\doprocesstest#2%
+     \let\donottest\doprocesstest#2%
    \fi}
-
+
+% NEW: 
+
 \doifETEX \def\ifundefined#1%
   {\unless\ifcsname#1\endcsname}
 
 \doifETEX \def\p!doifundefined#1%
-  {\let\donottest=\dontprocesstest
+  {\let\donottest\dontprocesstest
    \unless\ifcsname#1\endcsname}
-
+
 %D Before we start using this variant, we used another one, 
 %D which is even a bit faster. This one looked like: 
 %D 
@@ -736,19 +729,18 @@
 
 \def\doifalldefinedelse#1#2#3%
   {\begingroup
-   \let\donottest=\dontprocesstest
+   \let\donottest\dontprocesstest
    \donetrue
    \processcommalist[#1]\docheckonedefined
    \ifdone
-     \endgroup\let\donottest=\doprocesstest#2%
+     \endgroup\let\donottest\doprocesstest#2%
    \else
-     \endgroup\let\donottest=\doprocesstest#3%
+     \endgroup\let\donottest\doprocesstest#3%
    \fi}
 
 %D \macros
 %D   {doif,doifelse,doifnot,
 %D    donottest}
-%D   {}
 %D
 %D Programming in \TEX\ differs from programming in procedural
 %D languages like \MODULA. This means that one --- well, let me
@@ -787,29 +779,29 @@
 %D other precautions and or adaptions too.
 
 \long\def\doif#1#2#3%
-  {\let\donottest=\dontprocesstest
+  {\let\donottest\dontprocesstest
    \edef\!!stringa{#1}%
    \edef\!!stringb{#2}%
-   \let\donottest=\doprocesstest
+   \let\donottest\doprocesstest
    \ifx\!!stringa\!!stringb
      #3%
    \fi}
 
 \long\def\doifnot#1#2#3%
-  {\let\donottest=\dontprocesstest
+  {\let\donottest\dontprocesstest
    \edef\!!stringa{#1}%
    \edef\!!stringb{#2}%
-   \let\donottest=\doprocesstest
+   \let\donottest\doprocesstest
    \ifx\!!stringa\!!stringb
    \else
      #3%
    \fi}
 
 \long\def\doifelse#1#2#3#4%
-  {\let\donottest=\dontprocesstest
+  {\let\donottest\dontprocesstest
    \edef\!!stringa{#1}%
    \edef\!!stringb{#2}%
-   \let\donottest=\doprocesstest
+   \let\donottest\doprocesstest
    \ifx\!!stringa\!!stringb
      #3%
    \else
@@ -850,7 +842,6 @@
 
 %D \macros
 %D   {doifempty,doifemptyelse,doifnotempty}
-%D   {}
 %D
 %D We complete our set of conditionals with:
 %D
@@ -885,7 +876,6 @@
 
 %D \macros
 %D   {doifinset,doifnotinset,doifinsetelse}
-%D   {}
 %D
 %D We can check if a string is present in a comma separated
 %D set of strings. Depending on the result, some action is
@@ -932,11 +922,11 @@
   {\edef\!!stringb{#1}%
    \ifx\!!stringa\!!stringb
      \donetrue
-     \let\p!docheckiteminset=\gobbleoneargument
+     \let\p!docheckiteminset\gobbleoneargument
    \fi}
 
 \def\p!doifinsetelse#1#2%
-  {\let\donottest=\dontprocesstest
+  {\let\donottest\dontprocesstest
    \donefalse
    \edef\!!stringa{#1}%
    \ifx\!!stringa\empty
@@ -944,7 +934,7 @@
      \let\p!docheckiteminset=\p!dodocheckiteminset
      \processcommalist[#2]\p!docheckiteminset
    \fi
-   \let\donottest=\doprocesstest
+   \let\donottest\doprocesstest
    \ifdone}
 
 \long\def\doifinsetelse#1#2#3#4%
@@ -967,7 +957,6 @@
 
 %D \macros
 %D   {doifcommon,doifnotcommon,doifcommonelse}
-%D   {}
 %D
 %D Probably the most time consuming tests are those that test
 %D for overlap in sets of strings.
@@ -1056,7 +1045,6 @@
 %D \macros
 %D   {processcommalist,processcommacommand,
 %D    processcommalistwithparameters}
-%D   {}
 %D
 %D We've already seen some macros that take care of comma
 %D separated lists. Such list can be processed with
@@ -1097,9 +1085,9 @@
   %\else\ifx\nexttoken\endoflinetoken
     %\let\nextcommaitem\redoprocesscommaitem
    \else\ifx\nexttoken]%
-     \let\nextcommaitem=\gobbleoneargument
+     \let\nextcommaitem\gobbleoneargument
    \else
-     \let\nextcommaitem=\dododoprocesscommaitem
+     \let\nextcommaitem\dododoprocesscommaitem
    \fi\fi%\fi
    \nextcommaitem}
 
@@ -1118,9 +1106,9 @@
 
 \def\docheckcommaitem%
   {\ifx\nexttoken]%
-     \let\nextcommaitem=\gobbletwoarguments
+     \let\nextcommaitem\gobbletwoarguments
    \else
-     \let\nextcommaitem=\doprocesscommalist
+     \let\nextcommaitem\doprocesscommalist
    \fi
    \nextcommaitem}
 
@@ -1192,7 +1180,6 @@
 %D   {processaction,
 %D    processfirstactioninset,
 %D    processallactionsinset}
-%D   {}
 %D
 %D \CONTEXT\ makes extensive use of a sort of case or switch
 %D command. Depending of the presence of one or more provided
@@ -1317,7 +1304,7 @@
 \def\v!compareprocessactionA[#1=>#2][#3]%
   {\edef\!!stringb{#1}%
    \ifx\!!stringb\s!default
-     \let\commalistelement=\empty
+     \let\commalistelement\empty
      #2%
    \fi}
 
@@ -1326,7 +1313,7 @@
    \ifx\!!stringa\!!stringb
      \def\commalistelement{#3}%
      #2%
-     \let\p!doprocessaction=\gobbleoneargument
+     \let\p!doprocessaction\gobbleoneargument
    \else
      \edef\!!stringb{#1}%
      \ifx\!!stringb\s!unknown
@@ -1336,9 +1323,9 @@
    \fi}
 
 \def\processaction[#1]#2[#3]%
-  {\let\donottest=\dontprocesstest
+  {\let\donottest\dontprocesstest
    \expandedaction\!!stringa{#1}%
-   \let\donottest=\doprocesstest
+   \let\donottest\doprocesstest
    \ifx\!!stringa\empty
      \let\v!compareprocessaction=\v!compareprocessactionA
    \else
@@ -1398,13 +1385,13 @@
    \ifx\!!stringa\empty
      \processaction[][#3]%
    \else
-     \advance\processlevel by 1\relax
+     \advance\processlevel by 1
      \setvalue{\s!do\the\processlevel}##1%
        {\def\p!dodoprocessaction####1%
           {\v!compareprocessactionD[####1][##1]}%
         \processcommalist[#3]\p!dodoprocessaction}%
      \processcommalist[#1]{\getvalue{\s!do\the\processlevel}}%
-     \advance\processlevel by -1\relax
+     \advance\processlevel by -1
    \fi 
    \expandactions}
 
@@ -1412,7 +1399,6 @@
 %D   {unexpandedprocessaction,
 %D    unexpandedprocessfirstactioninset,
 %D    unexpandedprocessallactionsinset}
-%D   {}
 %D
 %D Now what are those expansion commands doing there. Well, 
 %D sometimes we want to compare actions that may consist off
@@ -1426,7 +1412,7 @@
 %D By default we expand actions: 
 
 \def\expandactions%
-  {\let\expandedaction=\edef}
+  {\let\expandedaction\edef}
 
 \expandactions
 
@@ -1440,11 +1426,10 @@
    \@EA\edef\@EA#1\@EA{\@EA\unexpandedaction\meaning\convertedargument}}
 
 \def\dontexpandactions%
-  {\let\expandedaction=\noexpandedaction}
+  {\let\expandedaction\noexpandedaction}
 
 %D \macros
 %D   {getfirstcharacter,firstcharacter}
-%D   {}
 %D
 %D Sometimes the action to be undertaken depends on the
 %D next character. This macro get this character and puts it in
@@ -1467,7 +1452,6 @@
 
 %D \macros
 %D   {doifinstringelse, doifincsnameelse}
-%D   {}
 %D
 %D We can check for the presence of a substring in a given
 %D sequence of characters.
@@ -1556,7 +1540,6 @@
 
 %D \macros
 %D   {doifnumberelse}
-%D   {}
 %D
 %D The next macro executes a command depending of the outcome
 %D of a test on numerals. This is probably one of the fastest
@@ -1572,13 +1555,13 @@
 
 \long\def\doifnumberelse#1#2#3%
   {\getfirstcharacter{#1}%
-   \@EA\ifinstringelse\firstcharacter{1234567890}%
+   \@EA\v!ifinstringelse\@EA{\firstcharacter}{1234567890}%
      #2%
    \else
      #3%
    \fi}
 
-%D Before we had \type{\ifinstringelse} available, we used:
+%D Before we had \type{\v!ifinstringelse} available, we used:
 %D
 %D \starttypen
 %D \def\doifnumberelse#1%
@@ -1611,7 +1594,6 @@
 %D    rawdoinsetelse,
 %D    rawprocesscommalist,
 %D    rawprocessaction}
-%D   {}
 %D
 %D Some of the commands mentioned earlier are effective but
 %D slow. When one is desperately in need of faster alternatives
@@ -1634,13 +1616,25 @@
 %D spoil the search process. The gain in speed depends on the 
 %D length of the argument (the longer the argument, the less 
 %D we gain). 
+%D
+%D The slow alternative looks like:
+%D
+%D \starttypen
+%D \def\makerawcommalist[#1]#2%
+%D   {\def\appendtocommalist##1%
+%D      {\doifelse{#2}{}
+%D         {\edef#2{##1}}
+%D         {\edef#2{#2,##1}}}%
+%D    \def#2{}%
+%D    \processcommalist[#1]\appendtocommalist}
+%D \stoptypen
+%D
+%D But we prefer:
 
 \def\makerawcommalist[#1]#2%
   {\def\appendtocommalist##1%
-     {\doifelse{#2}{}
-        {\edef#2{##1}}
-        {\edef#2{#2,##1}}}%
-   \def#2{}%
+     {\edef#2{##1}\def\appendtocommalist####1{\edef#2{#2,####1}}}%
+   \let#2\empty
    \processcommalist[#1]\appendtocommalist}
 
 \def\rawprocesscommaitem#1,%
@@ -1651,7 +1645,7 @@
 
 \def\rawprocesscommalist[#1]#2%
   {\advance\commalevel by 1\relax
-   \expandafter\let\csname\s!next\the\commalevel\endcsname=#2%
+   \expandafter\let\csname\s!next\the\commalevel\endcsname#2%
    \expandafter\rawprocesscommaitem#1,],% \relax
    \advance\commalevel by -1\relax}
 
@@ -1690,7 +1684,6 @@
 
 %D \macros
 %D   {processunexpandedcommalist}
-%D   {}
 %D
 %D When processing commalists, the arguments are expanded. The
 %D main reason for doing so lays in the fact that these 
@@ -1707,10 +1700,10 @@
 
 \def\processunexpandedcommaitem#1,%
   {\if]\noexpand#1%
-     \let\nextcommaitem=\relax
+     \let\nextcommaitem\relax
    \else
      \handleunexpandedcommaitem{#1}%
-     \let\nextcommaitem=\processunexpandedcommaitem
+     \let\nextcommaitem\processunexpandedcommaitem
    \fi
    \nextcommaitem}
 
@@ -1729,7 +1722,6 @@
 %D \macros
 %D   {dosetvalue,dosetevalue,docopyvalue,doresetvalue,
 %D    dogetvalue}
-%D   {}
 %D
 %D When we are going to do assignments, we have to take
 %D multi||linguality into account. For the moment we keep
@@ -1759,7 +1751,6 @@
 
 %D \macros
 %D   {doassign,undoassign,doassignempty}
-%D   {}
 %D
 %D Assignments are the backbone of \CONTEXT. Abhorred by the
 %D concept of style file hacking, we took a considerable effort
@@ -1793,10 +1784,10 @@
 %D on, when a more advanced message mechanism is implemented. 
 
 %\def\p!doassign#1[#2][#3=#4=#5]%
-%  {\let\donottest=\dontprocesstest
+%  {\let\donottest\dontprocesstest
 %   \edef\!!stringa{#5}%
-%   \let\!!stringb=\relax
-%   \let\donottest=\doprocesstest
+%   \let\!!stringb\relax
+%   \let\donottest\doprocesstest
 %   \ifx\!!stringa\!!stringb
 %     \writestatus
 %       {setup}
@@ -1831,7 +1822,6 @@
 
 %D \macros
 %D   {getparameters,geteparameters,forgetparameters}
-%D   {}
 %D
 %D Using the assignment commands directly is not our
 %D ideal of user friendly interfacing, so we take some further
@@ -1919,7 +1909,6 @@
 
 %D \macros
 %D   {getemptyparameters}
-%D   {}
 %D
 %D Sometimes we explicitly want variables to default to an
 %D empty string, so we welcome:
@@ -1935,7 +1924,6 @@
 
 %D \macros
 %D   {copyparameters}
-%D   {}
 %D
 %D Some \CONTEXT\ commands take their default setups from
 %D others. All commands that are able to provide backgounds
@@ -1973,7 +1961,6 @@
 
 %D \macros
 %D   {doifassignmentelse}
-%D   {}
 %D
 %D A lot of \CONTEXT\ commands take optional arguments, for
 %D instance:
@@ -1997,7 +1984,6 @@
 
 %D \macros
 %D   {ifparameters,checkparameters}
-%D   {}
 %D
 %D A slightly different one is \type{\checkparameters}, which
 %D also checks on the presence of a~\type{=}.
@@ -2022,7 +2008,6 @@
 %D   {getfromcommalist,getfromcommacommand,
 %D    commalistelement,
 %D    getcommalistsize,getcommacommandsize}
-%D   {}
 %D
 %D It's possible to get an element from a commalist or a
 %D command representing a commalist.
@@ -2050,9 +2035,9 @@
 \def\commalistsize{0}
 
 \def\p!dogetcommalistsize#1[#2]%
-  {\scratchcounter=0\relax
+  {\scratchcounter=0
    \def\p!dodogetcommalistsize##1%
-     {\advance\scratchcounter by 1\relax}%
+     {\advance\scratchcounter by 1 }%
    #1[#2]\p!dodogetcommalistsize   % was [{#2}]
    \edef\commalistsize{\the\scratchcounter}}
 
@@ -2063,19 +2048,19 @@
   {\p!dogetcommalistsize\processcommacommand}
 
 \def\p!dodogetfromcommalist#1%
-  {\advance\scratchcounter by -1\relax
+  {\advance\scratchcounter by -1
    \ifnum\scratchcounter=0\relax
      \gdef\globalcommalistelement{#1}%
      \def\doprocesscommaitem##1]{}%
    \fi}
 
 \def\p!dogetfromcommalist#1[#2]#3[#4]%
-  {\global\let\globalcommalistelement=\empty
+  {\global\let\globalcommalistelement\empty
    \bgroup
    \scratchcounter=#4\relax
    #1[#2]\p!dodogetfromcommalist
    \egroup
-   \let\commalistelement=\globalcommalistelement} 
+   \let\commalistelement\globalcommalistelement} 
 
 \def\getfromcommalist%
   {\p!dogetfromcommalist\processcommalist}
@@ -2109,7 +2094,6 @@
 %D \macros
 %D   {dosingleargument,dodoubleargument,dotripleargument,
 %D    doquadrupleargument,doquintupleargument,dosixtupleargument}
-%D   {}
 %D
 %D When working with delimited arguments, spaces and
 %D lineendings can interfere. The next set of macros uses
@@ -2186,7 +2170,6 @@
 %D \macros
 %D   {iffirstagument,ifsecondargument,ifthirdargument,
 %D    iffourthargument,iffifthargument,ifsixthargument}
-%D   {}
 %D
 %D We use some signals for telling the calling macros if all
 %D wanted arguments are indeed supplied by the user.
@@ -2201,7 +2184,6 @@
 %D \macros
 %D   {dosingleempty,dodoubleempty,dotripleempty,
 %D    doquadrupleempty,doquintupleempty}
-%D   {}
 %D
 %D The empty argument supplying macros mentioned before, look
 %D like:
@@ -2232,7 +2214,7 @@
 
 \def\dogetargument#1#2#3#4% redefined in mult-ini
   {\doifnextcharelse{#1}
-     {\let\expectedarguments=\noexpectedarguments
+     {\let\expectedarguments\noexpectedarguments
       #3\dodogetargument}
      {\ifnum\expectedarguments>\noexpectedarguments
         \writestatus
@@ -2240,7 +2222,7 @@
           {\expectedarguments\space argument(s) expected
            in line \the\inputlineno\space}%
       \fi
-      \let\expectedarguments=\noexpectedarguments
+      \let\expectedarguments\noexpectedarguments
       #4\dodogetargument#1#2}}
 
 \def\getsingleempty#1#2#3%
@@ -2315,7 +2297,6 @@
 %D   {dosingleargumentwithset,
 %D    dodoubleargumentwithset,dodoubleemptywithset,
 %D    dotripleargumentwithset,dotripleemptywithset}
-%D   {}
 %D
 %D These maybe too mysterious macros enable us to handle more
 %D than one setup at once.
@@ -2387,7 +2368,6 @@
 
 %D \macros
 %D   {complexorsimple,complexorsimpleempty}
-%D   {}
 %D
 %D Setups can be optional. A command expecting a setup is
 %D prefixed by \type{\complex}, a command without one gets the
@@ -2439,7 +2419,6 @@
 
 %D \macros
 %D   {definecomplexorsimple,definecomplexorsimpleempty}
-%D   {}
 %D
 %D The previous commands are used that often that we found it
 %D worthwile to offer two more alternatives.
@@ -2477,7 +2456,6 @@
 
 %D \macros
 %D   {definestartstopcommand}
-%D   {}
 %D
 %D Those who get the creeps of expansion may skip the next 
 %D one. It's one of the most recent additions and concerns 
@@ -2533,7 +2511,6 @@
 %D \macros
 %D   {dosinglegroupempty,dodoublegroupempty,dotriplegroupempty,
 %D    doquadruplegroupempty}
-%D   {}
 %D 
 %D We've already seen some commands that take care of 
 %D optional arguments between \type{[]}. The next two commands 
@@ -2553,7 +2530,7 @@
 \def\dogetgroupargument#1#2% redefined in mult-ini
   {\def\nextnextargument%
      {\ifx\nextargument\bgroup  
-        \let\expectedarguments=\noexpectedarguments
+        \let\expectedarguments\noexpectedarguments
         \def\nextargument{#1\dodogetargument}%
       %\else\ifx\nextargument\lineending % this can be an option
       %  \def\nextargument{\bgroup\def\\ {\egroup\dogetgroupargument#1#2}\\}%
@@ -2566,7 +2543,7 @@
              {\the\expectedarguments\space argument(s) expected
               in line \the\inputlineno\space}%
         \fi
-        \let\expectedarguments=\noexpectedarguments
+        \let\expectedarguments\noexpectedarguments
         \def\nextargument{#2\dodogetargument{}}%
       \fi%\fi\fi                 % so let's get rid of it
       \nextargument}%
@@ -2604,7 +2581,6 @@
       \dogetgroupargument\secondargumenttrue\secondargumentfalse}%
    \dogetgroupargument\firstargumenttrue\firstargumentfalse}
 
-
 %D These macros explictly take care of spaces, which means 
 %D that the next definition and calls are valid:
 %D 
@@ -2626,7 +2602,6 @@
 
 %D \macros
 %D   {wait}
-%D   {}
 %D
 %D The next macro hardly needs explanation. Because no
 %D nesting is to be expected, we can reuse \type{\wait} within
@@ -2640,7 +2615,6 @@
 %D \macros
 %D   {writestring,writeline,
 %D    writestatus,statuswidth}
-%D   {}
 %D
 %D Maybe one didn't notice, but we've already introduced a
 %D macro for showing messages. In the multi||lingual modules,
@@ -2657,7 +2631,39 @@
 %D of the identification string with the macro
 %D \type{\statuswidth}.
 
-\def\statuswidth {15}
+% \chardef\statuswidth=15
+% 
+% \def\writestring%
+%   {\immediate\write16}
+% 
+% \def\writeline%
+%   {\writestring{}}
+% 
+% \def\dosplitstatus#1#2\end%
+%   {\ifx#1?%
+%      \loop
+%        \advance\scratchcounter by 1
+%        \ifnum\scratchcounter<\statuswidth
+%          \edef\messagecontentA{\messagecontentA\space}%
+%      \repeat
+%    \else
+%      \advance\scratchcounter by 1
+%      \ifnum\scratchcounter<\statuswidth
+%        \edef\messagecontentA{\messagecontentA#1}%
+%      \fi
+%      \dosplitstatus#2\end
+%    \fi}
+% 
+% \def\writestatus#1#2%
+%   {\bgroup
+%    \let\messagecontentA=\empty
+%    \edef\messagecontentB{#2}%  maybe it's \the\scratchcounter
+%    \scratchcounter=0
+%    \expandafter\dosplitstatus#1?\end
+%    \writestring{\messagecontentA\space:\space\messagecontentB}%
+%    \egroup}
+
+\chardef\statuswidth=15
 
 \def\writestring%
   {\immediate\write16}
@@ -2665,33 +2671,32 @@
 \def\writeline%
   {\writestring{}}
 
-\def\dosplitstatus#1#2\end%
-  {\ifx#1?%
-     \loop
-       \advance\scratchcounter by 1
-       \ifnum\scratchcounter<\statuswidth\relax
-         \edef\messagecontentA{\messagecontentA\space}%
-     \repeat
+\def\dosplitstatus#1%
+  {\advance\scratchcounter by 1
+   \ifnum\scratchcounter<\statuswidth
+     \edef\messagecontentA{\messagecontentA#1}%
+     \expandafter\dosplitstatus
    \else
-     \advance\scratchcounter by 1
-     \ifnum\scratchcounter<\statuswidth\relax
-       \edef\messagecontentA{\messagecontentA#1}%
-     \fi
-     \dosplitstatus#2\end
+     \expandafter\nosplitstatus
    \fi}
 
-\def\writestatus#1#2%
+\def\nosplitstatus#1\end%
+  {}
+
+\gdef\writestatus#1#2%
   {\bgroup
-   \edef\messagecontentA{}%
+   \let\messagecontentA=\empty
    \edef\messagecontentB{#2}%  maybe it's \the\scratchcounter
    \scratchcounter=0
-   \expandafter\dosplitstatus#1?\end
+   \expandafter\dosplitstatus#1%
+     \space\space\space\space\space\space\space
+     \space\space\space\space\space\space\space
+     \space\space\space\space\space\space\end
    \writestring{\messagecontentA\space:\space\messagecontentB}%
    \egroup}
 
 %D \macros
 %D   {debuggerinfo}
-%D   {}
 %D
 %D For debugging purposes we can enhance macros with the
 %D next alternative. Here \type{debuggerinfo} stands for both
@@ -2716,4 +2721,3 @@
 \protect
 
 \endinput
-

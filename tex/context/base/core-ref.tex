@@ -357,6 +357,8 @@
      \fi
    \else
      \def\currentdatareference{#2}%
+     \edef\currentrealreference{#3}%
+     \def\currenttextreference{#4}%
      \forwardreferencefalse
    \fi}
 
@@ -782,8 +784,10 @@
 
 \def\thisisdestination#1% destination
   {\iflocation
-     \dostartthisislocation{#1}%
-     \dostopthisislocation
+     \ifusepagedestinations \else
+       \dostartthisislocation{#1}%
+       \dostopthisislocation
+     \fi
    \fi}
 
 \def\thisisrealpage#1% pagenumber
@@ -814,16 +818,20 @@
 
 \def\gotodestination#1#2#3#4#5% url file destination page data
   {\iflocation
-     \dostartgoto
-       \data
-         {#5}%
-       \start
-         \dostartgotolocation
-           {\number\buttonwidth}{\number\buttonheight}
-           {#1}{#2}{#3}{#4}%
-       \stop
-         \dostopgotolocation
-     \dostopgoto
+     \ifusepagedestinations
+       \gotorealpage{#1}{#2}{#4}{#5}%
+     \else
+       \dostartgoto
+         \data
+           {#5}%
+         \start
+           \dostartgotolocation
+             {\number\buttonwidth}{\number\buttonheight}
+             {#1}{#2}{#3}{#4}%
+         \stop
+           \dostopgotolocation
+       \dostopgoto
+     \fi
    \else
      {#5}%
    \fi}
@@ -887,7 +895,7 @@
 
 \def\gotonextinternal#1#2#3#4%
   {\gotodestination{}{}{\s!aut\iftraceinternalreferences:#1\fi:#2}{#3}{#4}}
-
+ 
 %D We already went through a lot of problems to sort out what
 %D kind of reference we're dealing with. Sorting out the user
 %D supplied cross references (show/goto this or that) as well
@@ -1012,12 +1020,15 @@
 \definesystemreferencehandler \rt!page \handlepagereference
 \definesystemreferencehandler \rt!list \handlelistreference
 
-\def\handleexecreference#1{\executecommand     {\currentdatareference}}
-\def\handlepagereference#1{\gotorealpage   {}{}{\currentdatareference}}
-\def\handlelistreference#1{\gotodestination{}{}{\currentdatareference}{}}
+\def\handleexecreference#1%
+  {\executecommand{\currentdatareference}}
 
-%D We first define a whole lot of viewer specific commands. The
-%D references as seen by the user, like \type {CloseDocument}
+\def\handlepagereference#1%
+  {\gotorealpage{}{}{\currentdatareference}}
+
+\def\handlelistreference#1%
+  {\gotodestination{}{}{\currentdatareference}{\getvalue{\currentdatareference}}}
+
 %D (in dutch, egnlish, german of whateverinterface language)
 %D are translated into a bit shorter reference (\type{close})
 %D and passed to the special driver (using \type
@@ -1756,7 +1767,9 @@
 \presetlocalframed[\??bt]
 
 \def\docomplexbutton#1[#2]#3[#4]%
-  {\ConvertConstantAfter\doifelse{#3}{\v!geen}
+  {\bgroup
+   \resetgoto
+   \ConvertConstantAfter\doifelse{#3}{\v!geen}
      {\!!doneafalse}
      {\!!doneatrue}%
    \doifreferencefoundelse{#4}
@@ -1770,27 +1783,8 @@
      {\unknownreference{#4}%
       \if!!donea\hbox\else\hphantom\fi
         {\localframed[#1][#2]
-           {\ignorespaces#3}}}}
-
-% The old one:
-%
-% \def\complexbutton[#1]#2[#3]%
-%   {\ConvertConstantAfter\doifelse{#2}{\v!geen}
-%      {\!!doneafalse}
-%      {\!!doneatrue}%
-%    \doifreferencefoundelse{#3}
-%      {\setbox0=\if!!donea\hbox\else\hphantom\fi
-%         {\localframed[\??bt][#1]
-%            {\doifelsenothing{#3}  % ??? zie eerdere test
-%               {\doattributes{\??bt}{\ignorespaces#2}}
-%               {\dolocationattributes{\??bt}{\ignorespaces#2}}}}%
-%       \startinteractie
-%       \hbox{\gotolocation{#3}{\copy0}}%
-%       \stopinteractie}
-%      {\unknownreference{#3}%
-%       \if!!donea\hbox\else\hphantom\fi
-%         {\localframed[\??bt][#1]
-%            {\ignorespaces#2}}}}
+           {\ignorespaces#3}}}%
+   \egroup}
 
 %D Interaction buttons, in fact a row of tiny buttons, are
 %D typically only used for navigational purposed. The next
@@ -1835,8 +1829,7 @@
        \def\goto##1%
          {\setnostrut
           \edef\localreference{##1}%
-          \docomplexbutton
-            \??ib
+          \docomplexbutton\??ib
             [\c!hoogte=\!!heighta,\c!breedte=\!!widtha]%
             {\dontleavehmode\symbol[\localreference]}%
             [\localreference]%

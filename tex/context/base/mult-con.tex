@@ -1,3 +1,4 @@
+
 %D \module
 %D   [       file=mult-con,
 %D        version=1996.06.01,
@@ -183,12 +184,12 @@
                 aan:  aan                  to                  zu
          aanduiding:  aanduiding           indicator           indikator
         achtergrond:  achtergrond          background          hintergrund
+  achtergronddiepte:  achtergronddiepte    backgrounddepth     hintergrundtiefe
+    achtergrondhoek:  achtergrondhoek      backgroundcorner    hintergrundwinkel
    achtergrondkleur:  achtergrondkleur     backgroundcolor     hintergrundfarbe
   achtergrondoffset:  achtergrondoffset    backgroundoffset    hintergrundoffset
-    achtergrondhoek:  achtergrondhoek      backgroundcorner    hintergrundwinkel
-  achtergrondstraal:  achtergrondstraal    backgroundradius    hintergrundradius
-  achtergronddiepte:  achtergronddiepte    backgrounddepth     hintergrundtiefe
   achtergrondraster:  achtergrondraster    backgroundscreen    hintergrundraster
+  achtergrondstraal:  achtergrondstraal    backgroundradius    hintergrundradius
               adres:  adres                address             adresse
            afmeting:  afmeting             size                abmessung
           afsluiter:  afsluiter            stopper             abschnitttrenner
@@ -224,6 +225,7 @@
               dummy:  dummy                dummy               dummy
             eenheid:  eenheid              unit                einheit
         eigennummer:  eigennummer          ownnumber           eigenenummer
+          evenmarge:  evenmarge            evenmargin          geraderand
            expansie:  expansie             expansion           expansion
              factor:  factor               factor              faktor
                file:  file                 file                datei
@@ -243,14 +245,15 @@
              hoogte:  hoogte               height              hoehe
             huidige:  huidige              current             aktuell
                  in:  in                   in                  in
-         interactie:  interactie           interaction         interaktion
          inspringen:  inspringen           indenting           einziehen
+         interactie:  interactie           interaction         interaktion
+         interlinie:  interlinie           interlinespace      zeilenabstande
               items:  items                items               posten
               kader:  kader                frame               rahmen
-         kaderkleur:  kaderkleur           framecolor          rahmenfarbe
-        kaderoffset:  kaderoffset          frameoffset         rahmenoffset
         kaderdiepte:  kaderdiepte          framedepth          rahmentiefe
           kaderhoek:  kaderhoek            framecorner         rahmenwinkel
+         kaderkleur:  kaderkleur           framecolor          rahmenfarbe
+        kaderoffset:  kaderoffset          frameoffset         rahmenoffset
         kaderstraal:  kaderstraal          frameradius         rahmenradius
            kantlijn:  kantlijn             marginedge          marginal
       kantlijntekst:  kantlijntekst        marginedgetext      marginaltext
@@ -319,12 +322,12 @@
      nummerscheider:  nummerscheider       numberseparator     nummernseperator
              offset:  offset               offset              offset
              omvang:  omvang               size                umfang
-onbekendeverwijzing:  verwijzing           unknownreference    unbekantereferenz
               onder:  onder                bottom              unten
        onderafstand:  onderafstand         bottomdistance      abstandunten
          onderkader:  onderkader           bottomframe         untenrahmen
         onderoffset:  onderoffset          bottomoffset        untenoffset
         onderstatus:  onderstatus          bottomstatus        untenstatus
+        onevenmarge:  onevenmarge          oddmargin           ungeraderand
                  op:  op                   at                  bei
               optie:  optie                option              option
              pagina:  pagina               page                seite
@@ -375,12 +378,14 @@ rechtermargeafstand:  rechtermargeafstand  rightmargindistance rechterrandabstan
               soort:  soort                family              familie
              spatie:  spatie               space               spatium
          spatiering:  spatiering           spacing             spatiumausgleich
+   springvolgendein:  springvolgendein     indentnext          ziehefolgendeein % TOBIAS
                stap:  stap                 step                schritt
               start:  start                start               start
              status:  status               state               status
                stop:  stop                 stop                stop
              straal:  straal               radius              radius
                 sub:  sub                  sub                 unter
+           subtitel:  subtitel             subtitle            untertitel
             symbool:  symbool              symbol              symbol
            symkleur:  symkleur             symcolor            symfarbe
           symletter:  symletter            symstyle            symschrift
@@ -396,7 +401,6 @@ rechtermargeafstand:  rechtermargeafstand  rightmargindistance rechterrandabstan
         tekstletter:  tekstletter          textstyle           textschrift
       tekstscheider:  tekstscheider        textseparator       textseparator
         tekststatus:  tekststatus          textstatus          textstatus
-           subtitel:  subtitel             subtitle            untertitel
               titel:  titel                title               titel
      titeluitlijnen:  titeluitlijnen       aligntitle          titelausrichten
          tolerantie:  tolerantie           tolerance           toleranz
@@ -408,6 +412,7 @@ rechtermargeafstand:  rechtermargeafstand  rightmargindistance rechterrandabstan
             verhoog:  verhoog              increment           erhoehen
       verhoognummer:  verhoognummer        incrementnumber     nummererhoehen
          verwijzing:  verwijzing           reference           referenz
+onbekendeverwijzing:  verwijzing           unknownreference    unbekantereferenz
                voet:  voet                 footer              fusszeile
         voetafstand:  voetafstand          footerdistance      fusszeilenabstand
          voetstatus:  voetstatus           footerstatus        fusszeilenstatus
@@ -419,18 +424,18 @@ rechtermargeafstand:  rechtermargeafstand  rightmargindistance rechterrandabstan
        vorigenummer:  vorigenummer         previousnumber      vorigenummer
               wijze:  wijze                way                 art
                 wit:  wit                  white               weiss
-               xmax:  xmax                 xmax                xmax
-            xschaal:  xschaal              xscale              xformat
-            xoffset:  xoffset              xoffset             xoffset
-              xstap:  xstap                xstep               xschritt
             xfactor:  xfactor              xfactor             xfaktor
-               ymax:  ymax                 ymax                ymax
-            yschaal:  yschaal              yscale              yformat
-            yoffset:  yoffset              yoffset             yoffset
-              ystap:  ystap                ystep               yschritt
+               xmax:  xmax                 xmax                xmax
+            xoffset:  xoffset              xoffset             xoffset
+            xschaal:  xschaal              xscale              xformat
+              xstap:  xstap                xstep               xschritt
             yfactor:  yfactor              yfactor             yfaktor
-                zij:  zij                  side                objektabstand
+               ymax:  ymax                 ymax                ymax
+            yoffset:  yoffset              yoffset             yoffset
+            yschaal:  yschaal              yscale              yformat
+              ystap:  ystap                ystep               yschritt
        zelfdepagina:  zelfdepagina         samepage            selbeseite
+                zij:  zij                  side                objektabstand
 
 \stopconstants
 
@@ -448,12 +453,13 @@ rechtermargeafstand:  rechtermargeafstand  rightmargindistance rechterrandabstan
           aanelkaar:  aanelkaar            serried             kleinerabstand
         aansluitend:  aansluitend          joinedup            keinabstand
            absoluut:  absoluut             absolute            absolut
+        achtergrond:  achtergrond          background          hintergrund
           achteruit:  achteruit            backward            backward % TOBIAS
               actie:  actie                action              aktion % TOBIAS
           afsluiter:  afsluiter            stopper             trenner
-        achtergrond:  achtergrond          background          hintergrund
               alles:  alles                all                 alles
              altijd:  altijd               always              immer
+          autointro:  autointro            autointro           autointro
               beide:  beide                both                beide
              binnen:  binnen               inner               innen
              blanko:  blanko               blank               blanko
@@ -462,15 +468,15 @@ rechtermargeafstand:  rechtermargeafstand  rightmargindistance rechterrandabstan
               breed:  breed                wide                breit
             breedte:  breedte              width               breite
              buiten:  buiten               outer               aussen
-            Cijfers:  Cijfers              Numbers             Ziffern
             cijfers:  cijfers              numbers             ziffern
-          commandos:  commandos            commands            befehle
+            Cijfers:  Cijfers              Numbers             Ziffern
            commando:  commando             command             befehl
+          commandos:  commandos            commands            befehle
             concept:  concept              concept             konzept
                 dag:  dag                  day                 tag
               datum:  datum                date                datum
-             diepte:  diepte               depth               tiefe
          definitief:  definitief           final               endfassung
+             diepte:  diepte               depth               tiefe
        dubbelzijdig:  dubbelzijdig         doublesided         doppelseitig
              eerste:  eerste               first               erste
                 elk:  elk                  each                jede
@@ -484,24 +490,29 @@ rechtermargeafstand:  rechtermargeafstand  rightmargindistance rechterrandabstan
                geen:  geen                 none                kein
       geenmarkering:  geenmarkering        nomarking           keinebeschriftung
             geenwit:  geenwit              nowhite             keinweiss
+          geroteerd:  geroteerd            rotated             rotated  % - TOBIAS
+         gespiegeld:  gespiegeld           mirrored            mirrored % - TOBIAS
             globaal:  globaal              global              global
                grid:  grid                 grid                grid % TOBIAS
               groot:  groot                big                 gross
       grotevoorkeur:  grotevoorkeur        bigpreference       grosszuegig
+         halveregel:  halveregel           halfline            halbezeile % TOBIAS
            handhaaf:  handhaaf             keep                behalte
-            herstel:  herstel              fix                 stellewiederher
+            hangend:  hangend              hanging             haengend
             herhaal:  herhaal              repeat              wiederholen
+            herstel:  herstel              fix                 stellewiederher
                hier:  hier                 here                hier
               hoofd:  hoofd                header              kopfzeile
                hoog:  hoog                 high                hoch
              hoogte:  hoogte               height              hoehe
         horizontaal:  horizontaal          horizontal          horizontal
+            huidige:  huidige              current             aktuell
            inlinker:  inlinker             inleft              imlinken
             inmarge:  inmarge              inmargin            imrand
           inrechter:  inrechter            inright             imrechten
             intekst:  intekst              intext              imtext
-          autointro:  autointro            autointro           autointro
               intro:  intro                intro               intro
+                its:  its                  its                 its
                  ja:  ja                   yes                 ja
                jaar:  jaar                 year                jahr
               kader:  kader                frame               rahmen
@@ -519,25 +530,26 @@ rechtermargeafstand:  rechtermargeafstand  rightmargindistance rechterrandabstan
               kleur:  kleur                color               farbe
            kolommen:  kolommen             columns             spalten
                 kop:  kop                  head                kopf
-              label:  label                label               label
                laag:  laag                 low                 tief
             laatste:  laatste              last                letzte
+              label:  label                label               label
                lang:  lang                 tall                lang
                leeg:  leeg                 empty               leer
-             Letter:  Letter               Character           Buchstabe
              letter:  letter               character           buchstabe
+             Letter:  Letter               Character           Buchstabe
             Letters:  Letters              Characters          Buchstaben
             letters:  letters              characters          buchstaben
             liggend:  liggend              landscape           landscape % - TOBIAS
                lijn:  lijn                 line                linie
              linker:  linker               left                linker
         linkermarge:  linkermarge          leftmargin          linkerrand
-         linkerrand:  linkerrand           leftedge            linkekante
        linkerpagina:  linkerpagina         leftpage            linkerseite
+         linkerrand:  linkerrand           leftedge            linkekante
               links:  links                left                links
              lokaal:  lokaal               local               lokal
-              maand:  maand                month               monat
+             lokale:  lokale               local               lokal
               MAAND:  MAAND                MONTH               MONAT
+              maand:  maand                month               monat
                 mar:  mar                  mar                 mar
               marge:  marge                margin              marginalie
                 max:  max                  max                 max
@@ -563,6 +575,7 @@ rechtermargeafstand:  rechtermargeafstand  rightmargindistance rechterrandabstan
              pagina:  pagina               page                seite
        paginanummer:  paginanummer         pagenumber          seitennummer
              papier:  papier               paper               papier     % - TOBIAS
+             scherm:  papier               screen              bildschirm % - TOBIAS
             passend:  passend              fit                 passend
                 per:  per                  by                  pro
          postscript:  postscript           postscript          postscript
@@ -573,33 +586,28 @@ rechtermargeafstand:  rechtermargeafstand  rightmargindistance rechterrandabstan
               recht:  recht                right               rechts
             rechter:  rechter              right               rechter
        rechtermarge:  rechtermarge         rightmargin         rechterrand
-        rechterrand:  rechterrand          rechterrand         rechterkante
       rechterpagina:  rechterpagina        rightpage           rechterseite
+        rechterrand:  rechterrand          rechterrand         rechterkante
              rechts:  rechts               right               rechts
               regel:  regel                line                zeile
            relatief:  relatief             relative            relativ
               reset:  reset                reset               zuruecksetzten
-        willekeurig:  willekeurig          random              random % - TOBIAS
             Romeins:  Romeins              Romannumerals       Roemischezahlen
             romeins:  romeins              romannumerals       roemischezahlen
                rond:  rond                 round               rund
              roteer:  roteer               rotate              drehe
                ruim:  ruim                 broad               breit
-             scherm:  papier               screen              bildschirm % - TOBIAS
              schuin:  schuin               slanted             geneigt
           schuinvet:  schuinvet            slantedbold         geneigtfett
        sectienummer:  sectienummer         sectionnumber       abschnittsnummer
                smal:  smal                 tall                schmall
              soepel:  soepel               tolerant            tolerant
-         gespiegeld:  gespiegeld           mirrored            mirrored % - TOBIAS
-          geroteerd:  geroteerd            rotated             rotated  % - TOBIAS
           standaard:  standaard            standard            standard
               start:  start                start               start
                stop:  stop                 stop                stop
              streng:  streng               strict              streng
                 sub:  sub                  sub                 sub
                 sym:  sym                  sym                 sym
-                its:  its                  its                 its
             symbool:  symbool              symbol              symbol
               tekst:  tekst                text                text
               terug:  terug                backward            rueckwaerts
@@ -615,14 +623,15 @@ rechtermargeafstand:  rechtermargeafstand  rightmargindistance rechterrandabstan
             viertal:  viertal              quadruple           viertel
                voet:  voet                 footer              fusszeile
            volgende:  volgende             next                folgende
-            vooruit:  vooruit              forward             forward % TOBIAS
            voorkeur:  voorkeur             preference          einstellung
           voorlopig:  voorlopig            temporary           temporaer
+            vooruit:  vooruit              forward             forward % TOBIAS
              vorige:  vorige               previous            vorig
-               week:  week                 week                woche
-            weekdag:  weekdag              weekday             wochentag
-            WEEKDAG:  WEEKDAG              WEEKDAY             WOCHENTAG
              waarde:  waarde               value               wert
+               week:  week                 week                woche
+            WEEKDAG:  WEEKDAG              WEEKDAY             WOCHENTAG
+            weekdag:  weekdag              weekday             wochentag
+        willekeurig:  willekeurig          random              random % - TOBIAS
                 wit:  wit                  white               weiss
                zeer:  zeer                 very                sehr
          zeersoepel:  zeersoepel           verytolerant        sehrtolerant
@@ -823,3 +832,4 @@ rechtermargeafstand:  rechtermargeafstand  rightmargindistance rechterrandabstan
 %D \stopcompressdefinitions
 
 \endinput
+

@@ -68,22 +68,28 @@
 %D runs). Let's just reserve a few points, that probably match
 %D those of the stretch component. 
 
-\newif\ifcleverfootnotes % being [plaats=kolommen]
-
 \def\setupfootnotedefinition%
-  {\steldoordefinierenin[\??vn]}
+  {\steldoordefinierenin[\??vn\??vn]}
 
 \doordefinieren
-  [\??vn]
+  [\??vn\??vn]
   [\c!plaats=\v!inlinker,
    \c!breedte=\v!passend,
-   \c!letter=\@@vnletter,
-   \c!kleur=\@@vnkleur,
+   \c!kopletter=\@@vnletter,
+   \c!kopkleur=\@@vnkleur,
    \c!voor=,
    \c!na=]
 
 \presetlocalframed
   [\??vn]
+
+%D The previous definitions indicate that we can frame 
+%D the footnote area. The footnotes themselves are treated as 
+%D definitions. 
+%D 
+%D \showsetup{\y!setupfootnotes}
+
+\newif\ifcleverfootnotes % being [plaats=kolommen]
 
 \def\setupfootnotes%
   {\dosingleempty\dosetupfootnotes}
@@ -130,23 +136,20 @@
    \multiply\dimen\footins by \scratchcounter}
 
 \def\setcleverfootnotes%
-  {\def\formatfootnumber   {}%
-   \def\startpushfootnote  {\getvalue{\e!start\??vn}}%
-   \def\stoppushfootnote   {\getvalue{\e!stop\??vn}}%
+  {\def\startpushfootnote  {\getvalue{\e!start\??vn\??vn}}%
+   \def\stoppushfootnote   {\getvalue{\e!stop\??vn\??vn}}%
    \def\startpopfootnotes  {}%
    \def\stoppopfootnotes   {}}
 
 \def\setcolumnfootnotes% 
-  {\def\formatfootnumber   {}%
-   \def\startpushfootnote  {\setrigidcolumnhsize\@@vnbreedte\@@vnkolomafstand\@@vnn
-                            \getvalue{\e!start\??vn}}%
-   \def\stoppushfootnote   {\getvalue{\e!stop\??vn}}%
+  {\def\startpushfootnote  {\setrigidcolumnhsize\@@vnbreedte\@@vnkolomafstand\@@vnn
+                            \getvalue{\e!start\??vn\??vn}}%
+   \def\stoppushfootnote   {\getvalue{\e!stop\??vn\??vn}}%
    \def\startpopfootnotes  {\setbox0=\vbox\bgroup}%
    \def\stoppopfootnotes   {\egroup\rigidcolumnbalance0\@@vnn}}
 
 \def\settextfootnotes%
-  {\def\formatfootnumber##1{\noindent##1}%
-   \def\startpushfootnote  {\startvboxtohbox 
+  {\def\startpushfootnote  {\startvboxtohbox 
                             \dostartattributes\??vn\relax}%
    \def\stoppushfootnote   {\hskip\@@vnkolomafstand % plus.5em minus.5em
                             \dostopattributes
@@ -247,7 +250,7 @@
        {\verhoognummer[\v!voetnoot]%
         \maakhetnummer[\v!voetnoot]%
         \rawtextreference{\s!fnt}{#1}{\hetnummer}%
-        \def\footnotenumber{\hoog{\hetnummer}}}%
+        \let\footnotenumber=\hetnummer}%
      \expandafter\dostartfootnote
    \else
      \expandafter\gobbleoneargument
@@ -281,16 +284,16 @@
   {\bgroup
    \unskip\unskip
    \ifdim\lastkern=\footnotesignal
-     \hoog{\kern\@@vnafstand}% gets the font right
+     \hoog{\kern\@@vnafstand}% gets the font right, hack !
    \fi
    \ignorespaces
    \doglobal\increment\internalfootreference
    \nobreak
    \iflocation
-     \naarbox{\footnotenumber}[\s!fnt:t:\internalfootreference]%
+     \naarbox{\hoog{\footnotenumber}}[\s!fnt:t:\internalfootreference]%
      \rawreference{\s!fnt}{\s!fnt:f:\internalfootreference}{}%
    \else
-     \footnotenumber
+     \hoog{\footnotenumber}%
    \fi
    \localfootinsert\footins\bgroup
      \forgetall
@@ -303,12 +306,11 @@
      \def\rechtermargeafstand{\@@vnmargeafstand}%
      \startpushfootnote
        {\ifx\footnotenumber\empty \else
-          \@@vnnummercommando
-            {\iflocation
-               \naarbox{\footnotenumber}[\s!fnt:f:\internalfootreference]%
-             \else
-               \footnotenumber
-             \fi}%
+          \iflocation
+            \naarbox{\@@vnnummercommando\footnotenumber}[\s!fnt:f:\internalfootreference]%
+          \else
+            \@@vnnummercommando\footnotenumber
+          \fi
         \fi
         \iflocation
           \rawreference{\s!fnt}{\s!fnt:t:\internalfootreference}{}%
@@ -618,9 +620,10 @@
    \c!afstand=.125em,
    \c!breedte=\zetbreedte,
    \c!hoogte=\teksthoogte,
-   \c!nummercommando=\formatfootnumber,
+   \c!nummercommando=\hoog,
    \c!n=1]
 
 \protect
 
 \endinput
+

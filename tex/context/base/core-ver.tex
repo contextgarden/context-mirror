@@ -442,16 +442,25 @@
 %D due to the fact that we use \type{\stop...} as delimiter.
 %D The implementation inherits  some features, for instance the
 %D support of linenumbering, which can best be studied in the
-%D documented support module.
+%D documented support module. 
 
 \def\initializetyping#1%
-  {\doifelsevalue{\??tp#1\c!marge}{\v!standaard}
-     {\ifdim\voorwit=\!!zeropoint
-        \advance\leftskip by \@@sllinks
-      \else
-        \advance\leftskip by \voorwit
-      \fi}
-     {\advance\leftskip by \getvalue{\??tp#1\c!marge}}%
+  {\donefalse
+   \skip0=\getvalue{\??tp#1\c!onevenmarge}\relax
+   \ifdim\skip0=\!!zeropoint\relax\else\donetrue\fi
+   \skip0=\getvalue{\??tp#1\c!evenmarge}\relax
+   \ifdim\skip0=\!!zeropoint\relax\else\donetrue\fi
+   \ifdone
+     \def\doopenupverbatimline%
+       {\getpagestatus
+        \ifrightpage 
+          \hskip \getvalue{\??tp#1\c!onevenmarge}\relax
+        \else
+          \hskip \getvalue{\??tp#1\c!evenmarge}\relax
+        \fi}%
+   \else
+     \doadaptleftskip{\getvalue{\??tp#1\c!marge}}%
+   \fi
    \processaction
      [\getvalue{\??tp#1\c!blanko}]
      [\v!standaard=>\skip0=\tussenwit,
@@ -476,7 +485,8 @@
 
 \def\dostoptyping#1%
   {\stopopelkaar  % includes \egroup
-   \getvalue{\??tp#1\c!na}}
+   \getvalue{\??tp#1\c!na}%
+   \doifvalue{\??tp#1\c!springvolgendein}{\v!nee}{\noindentation}}
 
 %D \macros
 %D   {definetyping}
@@ -496,20 +506,15 @@
 %D
 %D The definitions default to the standard typing values. 
 
-\def\presettyping[#1][#2]%
-  {\getparameters
+\def\presettyping[#1][#2]% 
+  {\copyparameters
+     [\??tp#1][\??tp]
+     [\c!voor,\c!na,\c!spatie,\c!pagina,\c!tab,
+      \c!optie,\c!palet,\c!marge,\c!evenmarge,\c!onevenmarge,
+      \c!springvolgendein,\c!blanko,\c!escape]%
+   \getparameters
      [\??tp#1]
-     [\c!voor=\@@tpvoor,
-      \c!na=\@@tpna,
-      \c!spatie=\@@tpspatie,
-      \c!pagina=\@@tppagina,
-      \c!tab=\@@tptab,
-      \c!optie=\@@tpoptie,
-      \c!palet=\@@tppalet,
-      \c!marge=\@@tpmarge,
-      \c!blanko=\@@tpblanko,
-      \c!escape=\@@tpescape,
-      #2]}
+     [#2]}
 
 \def\dodefinetyping[#1][#2]%
   {\setvalue{\e!start#1}{\dostarttyping{#1}}%
@@ -654,16 +659,19 @@
 %D alternative escape character. 
 
 \setuptyping
-  [  \c!voor=\blanko,
-       \c!na=\blanko,
-   \c!spatie=\v!uit,
-   \c!pagina=\v!nee,
-      \c!tab=\v!aan,
-    \c!optie=\v!geen,
-    \c!palet=colorpretty,
-    \c!marge=\!!zeropoint,
-   \c!blanko=\v!regel,
-   \c!escape=/]
+  [          \c!voor=\blanko,
+               \c!na=\blanko,
+           \c!spatie=\v!uit,  
+           \c!pagina=\v!nee,
+              \c!tab=\v!aan,
+            \c!optie=\v!geen,
+            \c!palet=colorpretty,
+ \c!springvolgendein=\v!ja,
+            \c!marge=\!!zeropoint,
+        \c!evenmarge=\!!zeropoint, 
+      \c!onevenmarge=\!!zeropoint,
+           \c!blanko=\v!regel,
+           \c!escape=/]
 
 \permitshiftedendofverbatim
 
@@ -672,3 +680,4 @@
 \protect
 
 \endinput
+

@@ -31,13 +31,13 @@
 %D reset this mechanism with \type{\resetglobal}. 
 
 \def\doglobal%
-  {\let\redoglobal=\global
+  {\let\redoglobal\global
    \def\dodoglobal%
      {\resetglobal\global}}
 
 \def\resetglobal%
-  {\let\redoglobal=\relax
-   \let\dodoglobal=\relax}
+  {\let\redoglobal\relax
+   \let\dodoglobal\relax}
 
 \resetglobal
 
@@ -45,7 +45,7 @@
 
 \def\doglobal%
   {\ifx\redoglobal\relax
-     \let\redoglobal=\global
+     \let\redoglobal\global
      \def\dodoglobal{\resetglobal\global}%
    \else
      \writestatus{system}{global not reset, warn me!}%
@@ -83,10 +83,10 @@
    \escapechar\m@ne
    \expandafter\expandafter\expandafter
      \redoglobal\expandafter\expandafter\expandafter
-       \edef\@if#1{true}{\let\noexpand#1=\noexpand\iftrue}%
+       \edef\@if#1{true}{\let\noexpand#1\noexpand\iftrue}%
    \expandafter\expandafter\expandafter
      \redoglobal\expandafter\expandafter\expandafter  
-       \edef\@if#1{false}{\let\noexpand#1=\noexpand\iffalse}%
+       \edef\@if#1{false}{\let\noexpand#1\noexpand\iffalse}%
    \dodoglobal\@if#1{false}%
    \escapechar\count@} 
 
@@ -352,7 +352,7 @@
 \long\def\dostepwiserecurse#1#2#3#4%
   {\ifnum#2=0
      \def\recurselevel{0}% 
-     \let\next=\relax
+     \let\next\relax
    \else
      \global\advance\outerrecurse by 1
      \innerrecurse=#1\setevalue{\@@irecurse\recursedepth}{\the\innerrecurse}%
@@ -362,13 +362,13 @@
      \else
        \setevalue{\@@drecurse\recursedepth}{>}%
        \long\setvalue{\@@arecurse\recursedepth}{#4}%
-       \let\next=\dodorecurse
+       \let\next\dodorecurse
      \fi\fi
      \ifnum#3<0\relax\ifnum#1<#2\relax
      \else
        \setevalue{\@@drecurse\recursedepth}{<}%
        \long\setvalue{\@@arecurse\recursedepth}{#4}%
-       \let\next=\dodorecurse
+       \let\next\dodorecurse
      \fi\fi
    \fi
    \next}
@@ -1201,9 +1201,9 @@
 
 \def\doGotoPar%
   {\ifx\nextchar\blankspace
-     \let\donext=\GotoPar
+     \let\donext\GotoPar
    \else\ifx\nextchar\endoflinetoken
-     \let\donext=\GotoPar
+     \let\donext\GotoPar
    \else
      \def\donext%
        {\the\BeforePar
@@ -2464,3 +2464,4 @@
 \protect
 
 \endinput
+

@@ -1637,6 +1637,7 @@
       \c!achtergrond=,
       \c!achtergrondkleur=,
       \c!achtergrondraster=\@@rsraster,
+      \c!regelcorrectie=\v!aan,
       #2]%
    \setvalue{\e!start#1}{\dostartframedtext[#1]}%
    \setvalue{\e!stop#1}{\dostopframedtext[#1]}
@@ -1701,7 +1702,8 @@
    \ifinsidefloat
      \box\framebox
    \else
-     \doplaats[\??kd#1][\c!regelcorrectie=\v!aan]{\box\framebox}%
+     %\doplaats[\??kd#1][\c!regelcorrectie=\v!aan]{\box\framebox}%
+     \doplaats[\??kd#1][]{\box\framebox}%
    \fi
    \egroup}
 
@@ -2212,7 +2214,7 @@
 %D \TEX Book\ page 356):
 
 \def\omcirkeld#1%
-  {{\ooalign{\hfil\raise0.07ex\hbox{{\tfx#1}}\hfil\crcr\mathhexbox20D}}}
+  {{\ooalign{\hfil\raise0.07ex\hbox{{\tx#1}}\hfil\crcr\mathhexbox20D}}}
 
 \def\copyright%
   {\omcirkeld{C}}
@@ -2324,3 +2326,4 @@
 \protect
 
 \endinput
+

@@ -49,8 +49,12 @@
 \def\definefilesynonym%
   {\dodoubleempty\dodefinefilesynonym}
 
+%\def\dodefinefilesynonym[#1][#2]%
+%  {\lowercase{\setevalue{\??fs#1}{#2}}}
+
 \def\dodefinefilesynonym[#1][#2]%
-  {\lowercase{\setevalue{\??fs#1}{#2}}}
+  {\lowercase{\edef\!!stringa{#2}}%
+   \setevalue{\??fs#1}{\!!stringa}}
 
 %D \macros 
 %D   {truefilename}
@@ -92,20 +96,23 @@
 %D More information on the specific modules can be found in
 %D their dedicated manuals. 
 
-\def\dodousemodules#1%
-  {\makeshortfilename[\f!moduleprefix\truefilename{#1}]%
+\def\dododousemodules#1#2%
+  {\makeshortfilename[#1\truefilename{#2}]%
    \doifundefinedelse{\shortfilename\v!aan}
      {\setgvalue{\shortfilename\v!aan}{}%
       \startreadingfile
       \readsysfile{\shortfilename}%
-        {\showmessage{\m!systems}{5}{#1}}%
-        {\showmessage{\m!systems}{6}{#1}}%
+        {\showmessage{\m!systems}{5}{#2}}%
+        {\showmessage{\m!systems}{6}{#2}}%
       \stopreadingfile}
-     {\showmessage{\m!systems}{7}{#1}}}
+     {\showmessage{\m!systems}{7}{#2}}}
+
+\def\dodousemodules#1%
+  {\dododousemodules\f!moduleprefix{#1}%
+   \dododousemodules\f!styleprefix {#1}}
 
 \def\dousemodules[#1]%
-  {\doifsomething{#1}
-     {\processcommalist[#1]\dodousemodules}}
+  {\doifsomething{#1}{\processcommalist[#1]\dodousemodules}}
 
 \def\usemodules%
   {\dosingleargument\dousemodules}
@@ -113,8 +120,7 @@
 %D We also support a singular call, which saves us for 
 %D frustrations when we do a typo.
 
-\def\usemodule%
-  {\usemodules}
+\let\usemodule=\usemodules
 
 \protect
 

@@ -266,24 +266,6 @@
 \def\stelinteractieschermin%
   {\complexorsimple{stelinteractieschermin}}
 
-% Bookmarks zijn eigenlijk niet nodig omdat \TeX uitstekend
-% zelf inhoudsopgaven kan genereren.
-%
-% \acrobatacrobatbookmark[verwijzing]{tekst}
-%
-% \def\acrobatbookmark[#1]#2%
-%   {\doifreferencefoundelse{#1}
-%      {\bgroup
-%         \special
-%           {postscript
-%             [/Page \currentrealreference\normalspace
-%              /View [ /Fit ]
-%              /Title (#2)
-%              /OUT
-%             pdfmark}%
-%       \egroup}%
-%      {\unknownreference{#1}}}
-
 %D Due to requests I finally decided to support bookmarks, a
 %D driver dependant way of showing tables of content. The most
 %D simple way of support is hooking bookmark generation into
@@ -530,6 +512,7 @@
   {\global\skippedmenuitemfalse
    \setbox\locationbox=\hbox
      {% anders cyclische aanroep !
+      \resetgoto
       \iflocationdummy
         \edef\locationboxborder{\getvalue{#1\c!kader}}%
         \edef\locationboxbackground{\getvalue{#1\c!achtergrond}}%
@@ -543,28 +526,34 @@
    \hbox{#4{\copy\locationbox}}}
 
 \def\setlocationboxyes#1[#2]#3[#4]%
-  {\ifx\currentouterreference\empty \else
-     \let\currentrealreference=\empty
+  {\ifx\currentouterreference\empty 
+     \doifelse{\currentrealreference}{\realfolio}
+       {\!!doneafalse}
+       {\!!doneatrue}%
+   \else
+     \!!doneatrue
    \fi
-   \doifelse{\currentrealreference}{\realfolio}%
-     {\ifcase\getvalue{#1\c!zelfdepagina}
-        \bgroup
-        \locationdummytrue
-        \setvalue{#1\c!kleur}{}%
-        \dosetlocationbox{#1}[#2,\c!dummy=\v!nee]{#3}{\gotolocation{#4}}%
-        \egroup
-      \or
-        \locationdummytrue
-        \dosetlocationbox{#1}[#2,\c!dummy=\v!ja]{#3}{\gotolocation{#4}}%
-      \or
-        \locationdummyfalse
-        \dosetlocationbox{#1}[#2,\c!dummy=\v!ja]{#3}{\gotolocation{#4}}%
-      \or
-        \locationdummyfalse
-        \global\skippedmenuitemtrue
-      \fi}
-     {\locationdummytrue
-      \dosetlocationbox{#1}[#2,\c!dummy=\v!nee]{#3}{\gotolocation{#4}}}}
+   \if!!donea
+     \ifcase\getvalue{#1\c!zelfdepagina}
+       \bgroup
+       \locationdummytrue
+       \setvalue{#1\c!kleur}{}%
+       \dosetlocationbox{#1}[#2,\c!dummy=\v!nee]{#3}{\gotolocation{#4}}%
+       \egroup
+     \or
+       \locationdummytrue
+       \dosetlocationbox{#1}[#2,\c!dummy=\v!ja]{#3}{\gotolocation{#4}}%
+     \or
+       \locationdummyfalse
+       \dosetlocationbox{#1}[#2,\c!dummy=\v!ja]{#3}{\gotolocation{#4}}%
+     \or
+       \locationdummyfalse
+       \global\skippedmenuitemtrue
+     \fi
+   \else
+     \locationdummytrue
+     \dosetlocationbox{#1}[#2,\c!dummy=\v!nee]{#3}{\gotolocation{#4}}%
+   \fi}
 
 \def\setlocationboxnop#1[#2]#3[#4]%
   {\ifcase\getvalue{#1\c!onbekendeverwijzing}
@@ -655,15 +644,15 @@
      \dimen0=\zetbreedte
      \advance\dimen0 by \pagebackgroundhoffset
      \advance\dimen0 by \pagebackgroundhoffset
-\advance\dimen0 by -\getvalue{\??am#3\c!linkeroffset}%
-\advance\dimen0 by -\getvalue{\??am#3\c!rechteroffset}%
+     \advance\dimen0 by -\getvalue{\??am#3\c!linkeroffset}%
+     \advance\dimen0 by -\getvalue{\??am#3\c!rechteroffset}%
      \setbox0=\hbox to \dimen0
        {\forgetall
         \executeamboxcommands{#3}{#4}\c!links\c!midden\c!rechts}%
      \wd0=\zetbreedte
-% geen \ht=#2 setting (yet)
+     % geen \ht=#2 setting (yet)
      \hskip-\pagebackgroundhoffset
-\hskip \getvalue{\??am#3\c!linkeroffset}%
+     \hskip \getvalue{\??am#3\c!linkeroffset}%
      \box0\relax
      \egroup
    \else
@@ -678,8 +667,8 @@
      \advance\dimen0 by \pagebackgroundvoffset
      \advance\dimen0 by \pagebackgroundvoffset
      \advance\dimen0 by \pagebackgrounddepth
-\advance\dimen0 by -\getvalue{\??am#3\c!bovenoffset}%
-\advance\dimen0 by -\getvalue{\??am#3\c!onderoffset}%
+     \advance\dimen0 by -\getvalue{\??am#3\c!bovenoffset}%
+     \advance\dimen0 by -\getvalue{\??am#3\c!onderoffset}%
      \setbox0=\vbox to \dimen0
        {\forgetall                     % Voor't geval de afstand
         \stelblankoin[\v!standaard]%   % (tijdelijk) is aangepast.
@@ -687,7 +676,7 @@
         \executeamboxcommands{#3}{#4}\c!voor\c!tussen\c!na}%
      \setbox0=\vbox
        {\vskip-\pagebackgroundvoffset
-\vskip\getvalue{\??am#3\c!bovenoffset}%
+     \vskip\getvalue{\??am#3\c!bovenoffset}%
         \ht0=\!!zeropoint
         \box0
         \vskip\pagebackgroundvoffset}% overbodig 
@@ -943,31 +932,8 @@
       \c!kader=#3]%
      {#4}}
 
-\def\efmark(#1,#2)#3(#4,#5)#6[#7]%
-  {\advance\efreference by 1
-   \positioneer(#1,#2)
-     {\hbox{\the\efreference}}%
-   \positioneer(#1,#2)
-     {\doifreferencefoundelse{\s!vwb:#7}
-        {\gotosomeinternal
-           {\s!vwb}{#7}{\currentrealreference}
-           {\efdomarker(#4,#5){\v!aan}{\thisissomeinternal{\s!vwa}{#7}}}}
-        {[?]}}}
-
 \def\effiguur#1%
   {\positioneer(0,0){\naam{#1}}}
-
-\def\eftext#1(#2,#3)#4(#5,#6)#7[#8]%
-  {\advance\efreference by 1
-   \hbox
-     {\thisissomeinternal{\s!vwb}{#8}%
-      \doifreferencefoundelse{\s!vwa:#8}
-        {\gotosomeinternal
-           {\s!vwa}{#8}{\currentrealreference}
-           {\hbox to 1.5em{\the\efreference\presetgoto\hfill}}}
-        {\hbox to 1.5em{[?]\hfill}}%
-      ~#1 (#2,#3) (#5,#6) [#8]\hfill}%
-   \endgraf}
 
 \def\efdoarea(#1,#2)#3#4%    (h,b){kader}{tekst}
   {\start
@@ -984,11 +950,28 @@
   {\setbox0=\vbox{\efdoarea(#1,#2)#3{}}%
    \naarbox{\copy0}[#4]}
 
+\def\efmark(#1,#2)#3(#4,#5)#6[#7]%
+  {\advance\efreference by 1
+   \positioneer(#1,#2)
+     {\hbox{\the\efreference}}%
+   \positioneer(#1,#2)
+     {\gotosomeinternal
+        {\s!vwb}{#7}{\realfolio}
+        {\efdomarker(#4,#5){\v!aan}{\thisissomeinternal{\s!vwa}{#7}}}}}
+
+\def\eftext#1(#2,#3)#4(#5,#6)#7[#8]%
+  {\advance\efreference by 1
+   \hbox
+     {\quad
+      \thisissomeinternal{\s!vwb}{#8}% 
+      \gotosomeinternal
+        {\s!vwa}{#8}{\realfolio}
+        {\hbox to 1.5em{\the\efreference\presetgoto\hfill}}%
+      \quad#1 (#2,#3) (#5,#6) [#8]\hfill}%
+   \endgraf}
+
 \def\efthisis(#1,#2)#3[#4]%
-  {\pagereference[#4]}
-   %\doifreferencefoundelse{#4}
-   %  {\efdoarea(#1,#2){#3}{\thisisinternal{#4}}}
-   %  {\unknownreference{#4}}}
+  {\efdoarea(#1,#2){#3}{\pagereference[#4]}}
 
 \newbox\colorbarbox
 
@@ -2327,3 +2310,4 @@
 \protect
 
 \endinput
+
