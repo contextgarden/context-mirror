@@ -61,7 +61,7 @@
 \def\prettyidentifier {TEX}
 \def\prettypalet      {}
 
-\def\installprettytype%
+\def\installprettytype
   {\dodoubleargument\doinstallprettytype}
 
 \def\doinstallprettytype[#1][#2]% map #1 onto #2
@@ -213,11 +213,15 @@
 %D set the catcodes of \type{<} and \type{>} and then we start
 %D looking ahead.
 
-%\unexpanded\def\type%
-%  {\bgroup
-%   \catcode`\<=\@@other
-%   \catcode`\>=\@@other
-%   \futurelet\next\dotype}
+% \starttyping
+% normal: \par \type{xx<<..xx..<<xx <<xx>> >>..>>xx} \par \type<<....>> \par \type<<..<<xx>>..>> \par
+% normal: \par \type{xx<..xx..<xx <slanted> >..>xx} \par \type{<....>} \par \type{<..<xx>..>}
+% \setuptype[option=slanted]
+% slanted: \par \type{xx<<..sl..<<xx <<sl>> xx>>..sl..>>xx} \par \type<<..xx..>> \par \type<<..<<sl>>..>> \par
+% slanted: \par \type{xx<<..sl..<xx <sl> xx>..sl..>>xx} \par \type<<..xx..>> \par \type<<..<sl>..>> \par
+% \setuptype[option=none]
+% none: \par \type{xx<<..xx..<<xx <<xx>> >>..>>xx} \par \type<<....>> \par \type<<..<<xx>>..>> \par
+% \stoptyping
 
 \unexpanded\def\type
   {\dotype\empty}
@@ -232,63 +236,6 @@
 
 %D Next we distinguish between the three alternatives and call
 %D for the appropriate macros.
-
-% \def\dotype%
-%   {\ifx\next\bgroup
-%      \initializetype
-%      \initializetypegrouping
-%      \def\next%
-%        {\afterassignment\protectfirsttype\let\next=}%
-%    \else\if\next<%
-%      \doifelse{\@@tyoptie}{\v!geen}
-%        {\initializetype
-%         \setupnotypegrouping
-%         \def\next%
-%           {\let\next=}}
-%        {\def\next<##1%
-%           {\initializetype
-%            \if##1<%
-%            \else
-%              \setupalternativetypegrouping
-%              ##1%
-%            \fi}}%
-%    \else
-%      \def\next##1%
-%        {\initializetype
-%         \catcode`##1=\@@endgroup}%
-%    \fi\fi
-%    \verbatimcolor
-%    \next}
-%
-% \def\dodotype%
-%   {\ifx\next\bgroup
-%      \initializetype
-%      \verbatimcolor
-%      \initializetypegrouping
-%      \def\next%
-%        {\afterassignment\protectfirsttype\let\next=}%
-%    \else\if\next<%
-%      \doifelsevalue{\??ty\@@currenttype\c!optie}{\v!geen}
-%        {\initializetype
-%         \verbatimcolor
-%         \setupnotypegrouping
-%         \def\next%
-%           {\let\next=}}
-%        {\def\next<##1%
-%           {\initializetype
-%            \verbatimcolor
-%            \if##1<%
-%            \else
-%              \setupalternativetypegrouping
-%              ##1%
-%            \fi}}%
-%    \else
-%      \def\next##1%
-%        {\initializetype
-%         \verbatimcolor
-%         \catcode`##1=\@@endgroup}%
-%    \fi\fi
-%    \next}
 
 \def\dodotypeA
   {\initializetype
@@ -305,8 +252,10 @@
 \def\dodotypeC<#1%
   {\initializetype
    \verbatimcolor
-   \if#1<\else
-     \setupalternativetypegrouping#1%
+   \if#1<%
+     \@EA\setupalternativetypegrouping
+   \else
+     \@EA#1%
    \fi}
 
 \def\dodotypeD#1%
@@ -349,8 +298,26 @@
 \gdef\setupalternativetypegrouping
   {\catcode`\<=\@@active
    \catcode`\>=\@@active
-   \def<{\bgroup\switchslantedtype}%
-   \def>{\egroup}}
+   \def\doless
+     {\ifx<\next
+        \def\next
+          {\bgroup\switchslantedtype
+           \let\next=}%
+      \else
+        \let\next\lesscharacter
+      \fi
+      \next}%
+   \def\domore
+     {\ifx>\next
+        \def\next
+          {\egroup
+           \let\next=}%
+      \else
+        \let\next\morecharacter
+      \fi
+      \next}%
+   \def<{\futurelet\next\doless}%
+   \def>{\futurelet\next\domore}}
 \egroup
 
 \def\setupnotypegrouping
@@ -376,7 +343,7 @@
 %D         {\ifx\next<%
 %D            \def\next{\bgroup\switchslantedtype\let\next=}%
 %D          \else
-%D            \let\next=\lesscharacter
+%D            \let\next\lesscharacter
 %D          \fi
 %D          \next}%
 %D       \futurelet\next\do}%
@@ -385,7 +352,7 @@
 %D         {\ifx\next>%
 %D            \def\next{\egroup\let\next=}%
 %D          \else
-%D            \let\next=\morecharacter
+%D            \let\next\morecharacter
 %D          \fi
 %D          \next}%
 %D       \futurelet\next\do}}
@@ -394,12 +361,12 @@
 %D
 %D The final implementation looks a bit further and treats the
 %D lone \type{<<} and \type{>>} a bit different. The \type
-%D {\hbox{}} prevents ligatures, which unfortunately turn up
+%D {\null} prevents ligatures, which unfortunately turn up
 %D in Lucida fonts.
 
 \def\doenterdoublelesstype
   {\ifx\next\egroup
-      \lesscharacter\hbox{}\lesscharacter
+      \lesscharacter\null\lesscharacter
    \else
      \bgroup\switchslantedtype
      \let\doenterdoublemoretype\egroup
@@ -408,7 +375,7 @@
 \def\doenterdoublemoretype
   {\def\doenterdoubletype
      {\ifx\next\egroup
-        \morecharacter\hbox{}\morecharacter
+        \morecharacter\null\morecharacter
       \fi}}
 
 \bgroup
@@ -420,19 +387,17 @@
    \def\doless
      {\ifx<\next
         \def\next
-          {\def\enterdoubletype
-             {\futurelet\next\doenterdoublelesstype}%
+          {\def\enterdoubletype{\futurelet\next\doenterdoublelesstype}%
            \afterassignment\enterdoubletype
            \let\next=}%
       \else
-        \let\next=\lesscharacter
+        \let\next\lesscharacter
       \fi
       \next}%
    \def\domore
      {\ifx>\next
         \def\next
-          {\def\enterdoubletype
-             {\futurelet\next\doenterdoublemoretype}%
+          {\def\enterdoubletype{\futurelet\next\doenterdoublemoretype}%
            \afterassignment\enterdoubletype
            \let\next=}%
       \else
@@ -454,11 +419,6 @@
        \slantedtypeactivatedtrue\ttsl
      \fi
    \fi}
-
-%\def\setupcommandsintype#1%
-%  {\setupgroupedtype
-%   \edef\!!stringa{\getvalue{#1\c!escape}}%
-%   \@EA\catcode\@EA`\!!stringa=\@@escape}
 
 \def\setupcommandsintype#1% can also be \string\
   {\setupgroupedtype
@@ -515,11 +475,6 @@
 %D \type{\initializetype} which in return calls for the support
 %D macro \type{\setupinlineverbatim}.
 
-%\def\initializetype%
-%  {\let\obeylines=\ignorelines
-%   \setupcommonverbatim\??ty
-%   \setupinlineverbatim}
-
 \let\@@currenttype\empty
 
 \def\initializetype
@@ -548,13 +503,13 @@
 %D The setups for inline verbatim default to:
 
 \setuptype
-  [\c!space=\v!off,
+  [ \c!space=\v!off,
     \c!color=,
-   \c!style=\tt\tf, % \tttf gives problems with {\tx \type...}
-   \c!page=\v!no,
+    \c!style=\tt\tf, % \tttf gives problems with {\tx \type...}
+     \c!page=\v!no,
       \c!tab=\v!no,
     \c!palet=colorpretty,
-    \c!option=\v!normal]
+   \c!option=\v!normal]
 
 %D \macros
 %D   {typ,obeyhyphens,obeybreakpoints}

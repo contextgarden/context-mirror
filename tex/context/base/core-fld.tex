@@ -486,7 +486,7 @@
      {\def\@@DriverFieldValues{yes,no}}
      {\def\@@DriverFieldValues{#4}}%
    \doifelsenothing{#5}
-     {\dogetcommacommandelement2\from\@@DriverFieldValues\to\@@DriverFieldDefault
+     {\dogetcommacommandelement2\from\@@DriverFieldValues \to\@@DriverFieldDefault
       \dogetcommacommandelement1\from\@@DriverFieldDefault\to\@@DriverFieldDefault}
      {\def\@@DriverFieldDefault{#5}}%
    \setfield{#1}{#2}{}{}{\@@DriverFieldKids}{#3}{\@@DriverFieldMode\@@DriverFieldFree\@@DriverFieldAuto}{\@@DriverFieldValues}{\@@DriverFieldDefault}}

@@ -39,6 +39,7 @@
 
 \def\dodowritetolist#1#2#3#4%
   {\begingroup
+   \expanded{\everylistentry\emptytoks\the\everylistentry}% \emptytoks, else loop
    \def\currentlist{#1}%
    \convertexpanded{\??li\currentlist}{#3}\asciilistentry
    \makesectionformat

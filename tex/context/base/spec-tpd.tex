@@ -11,8 +11,17 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-% todo: nagaan of we met reserveobjnum en useobjnum kunnen werken;
-% driver referenced etc
+% once we can be sure that the latest versions of pdftex are
+% available we can use:
+%
+% \pdfobj reserveobjnum \edef\one{\the\pdflastobj}
+% \pdfobj reserveobjnum \edef\two{\the\pdflastobj}
+%
+% \pdfobj useobjnum \one {x}
+% \pdfobj useobjnum \two {x}
+%
+% we then can rewrite part of spec-fdf because the other drivers
+% already support symbolic references
 
 % layers and links don't work while the spec says they should
 
@@ -219,7 +228,6 @@
 
 \fi
 
-
 %D nasty but needed
 
 \appendtoksonce \loadallfontmapfiles \to \everyPDFximage
@@ -256,7 +264,7 @@
 \definespecial\dogetnofinsertpages#1%
   {\xdef\nofinsertpages{1}% global
    \doifvalidpdfimagefileelse{#1}%
-     {\pdfximage {#1}\xdef\nofinsertpages{\the\pdflastximagepages}}
+     {\pdfximage{#1}\xdef\nofinsertpages{\the\pdflastximagepages}}
      {}}
 
 %D Currently we support \type{pdf} for \PDF\ files, \type{mps}
@@ -400,10 +408,10 @@
      \global\let\pdfimageattributes\empty
    \else
      \immediate\pdfobj
-       {[ << /Image \PDFfigurereference\space0 R
+       {[ << /Image \PDFobjref\PDFfigurereference
              /DefaultForPrinting true >> ]}%
      \xdef\pdfimageattributes
-       {attr {/Alternates \the\pdflastobj\space0 R}}%
+       {attr {/Alternates \PDFobjref\pdflastobj}}%
    \fi}
 
 \global\let\PDFimagecolorreference\empty
@@ -560,15 +568,6 @@
 \definespecial\dostartnonecolormode{\doPDFstartnonecolormode}
 \definespecial\doregisternonecolor {\doPDFregisternonecolor}
 
-% \def\doPDFregistersomespotcolor#1#2#3#4%
-%   {\immediate \pdfobj stream attr
-%      {/FunctionType 4 /Domain [0.0 1.0] /Range #3}{#4}%
-%    \immediate \pdfobj
-%      {[/Separation /#1 /Device#2 \the\pdflastobj\space0 R]}%
-%    \dosetobjectreference{PDFCS}{#1}{\the\pdflastobj}%
-%    \appendtoPDFdocumentcolorspaces
-%      {/#1 \the\pdflastobj\space0 R}}
-
 \def\doPDFregisterspotcolorname#1#2%
   {\bgroup
    \let\ascii\empty
@@ -605,9 +604,9 @@
    \immediate \pdfobj stream attr
      {/FunctionType 4 /Domain [\PDFspotcolordomain] /Range [#6]}{{\spotpops#7}}%
    \immediate \pdfobj
-     {[\PDFspotcolornames\space /Device#5 \the\pdflastobj\space0 R]}%
+     {[\PDFspotcolornames\space /Device#5 \PDFobjref\pdflastobj]}%
    \dosetobjectreference{PDFCS}{#1}{\the\pdflastobj}%
-   \appendtoPDFdocumentcolorspaces{/#1 \the\pdflastobj\space0 R}%
+   \appendtoPDFdocumentcolorspaces{/#1 \PDFobjref\pdflastobj}%
    \egroup}
 
 %D New and very experimental.
@@ -636,10 +635,10 @@
      {/FunctionType 4 /Domain [\PDFspotcolordomain] /Range [#6]}{{\spotpops#7}}%
    \immediate \pdfobj
      {[/Indexed
-         [/DeviceN [\PDFspotcolornames] /Device#5 \the\pdflastobj\space0 R] %
+         [/DeviceN [\PDFspotcolornames] /Device#5 \PDFobjref\pdflastobj] %
          255 <\PDFcolorindexvector>]}%
    \dosetobjectreference{PDFIX}{#1}{\the\pdflastobj}%
-   \appendtoPDFdocumentcolorspaces{/#1_INDEXED \the\pdflastobj\space0 R}%
+   \appendtoPDFdocumentcolorspaces{/#1_INDEXED \PDFobjref\pdflastobj}%
    \egroup}
 
 %D \macros
@@ -660,8 +659,8 @@
 \fi
 
 \def\assignPDFtransparency#1#2%
-  {\def\PDFtransparencyidentifier{/Tr#1}%
-   \def\PDFtransparencyreference{#2 0 R}}
+  {\edef\PDFtransparencyidentifier{/Tr#1}%
+   \edef\PDFtransparencyreference{\PDFobjref{#2}}}
 
 \def\presetPDFtransparency#1#2%
   {\initializePDFtransparency
@@ -671,7 +670,7 @@
   {\global\advance\PDFcurrenttransparency \plusone
    \immediate\pdfobj{\PDFtransparancydictionary{#1}{#2}{}}%
    \edef\PDFtransparencyidentifier{/Tr\the\PDFcurrenttransparency}%
-   \edef\PDFtransparencyreference {\the\pdflastobj\space 0 R}%
+   \edef\PDFtransparencyreference {\PDFobjref\pdflastobj}%
    \setxvalue{\@@PDT#1:#2}%
      {\noexpand\assignPDFtransparency{\the\PDFcurrenttransparency}{\the\pdflastobj}}%
    \appendtoPDFdocumentextgstates
@@ -681,7 +680,7 @@
 \def\initializePDFtransparency
   {\immediate\pdfobj{\PDFtransparancydictionary{1}{1}{/AIS false}}%
    \xdef\PDFtransparencyresetidentifier{/Tr0}%
-   \xdef\PDFtransparencyresetreference{\the\pdflastobj\space 0 R}%
+   \xdef\PDFtransparencyresetreference{\PDFobjref\pdflastobj}%
    \setxvalue{\@@PDT0:0}%
      {\noexpand\assignPDFtransparency{0}{\the\pdflastobj}}%
    \appendtoPDFdocumentextgstates
@@ -758,10 +757,10 @@
       \@EA\doPSsanitizeJScode\sanitizedJScode\to\sanitizedJScode
       \immediate\pdfobj {<< /S /JavaScript /JS (\sanitizedJScode) >>}%
       \edef\compositeJScode
-        {\compositeJScode\space (##1) \the\pdflastobj\space 0 R}}%
+        {\compositeJScode\space (##1) \PDFobjref\pdflastobj}}%
    \processcommalist[#1]\docommando
    \immediate\pdfobj{<< /Names [ \compositeJScode ] >>}%
-   \pdfnames{/JavaScript \the\pdflastobj\space 0 R}%
+   \pdfnames{/JavaScript \PDFobjref\pdflastobj}%
    \egroup}
 
 %D \macros
@@ -1099,7 +1098,7 @@
            \xdef\lastPDFaction{<<#3>>}%
          \or
            \immediate\pdfobj{<<#3>>}%
-           \xdef\lastPDFaction{\the\pdflastobj\space0 R}%
+           \xdef\lastPDFaction{\PDFobjref\pdflastobj}%
          \else
            % leave \lastPDFaction untouched
          \fi
@@ -1126,7 +1125,7 @@
            \xdef\lastPDFaction{<<\lastPDFcontent>>}%
          \or
            \immediate\pdfobj{<<\lastPDFcontent>>}%
-           \xdef\lastPDFaction{\the\pdflastobj\space0 R}%
+           \xdef\lastPDFaction{\PDFobjref\pdflastobj}%
          \else
            % leave \lastPDFaction untouched
          \fi
@@ -1152,7 +1151,7 @@
            \xdef\lastPDFaction{<<#3>>}%
          \or
            \immediate\pdfobj{<<#3>>}%
-           \xdef\lastPDFaction{\the\pdflastobj\space0 R}%
+           \xdef\lastPDFaction{\PDFobjref\pdflastobj}%
          \else
            % leave \lastPDFaction untouched
          \fi
@@ -1248,9 +1247,16 @@
 %      \ifcase#2 \else count \ifcase#5-\fi#2 \fi
 %      {#3}}
 
+% \def\doPDFbookmark level #1 n #2 text #3 page #4 open #5%
+%   {\pdfoutline
+%      user {<</S /GoTo /D [#4\space\PDFpageviewwrd]>>}%
+%      \ifcase#2 \else count \ifcase#5-\fi#2 \fi
+%      {#3}}
+
 \def\doPDFbookmark level #1 n #2 text #3 page #4 open #5%
-  {\pdfoutline
-     user {<</S /GoTo /D [#4\space\PDFpageviewwrd]>>}%
+  {\doPDFgetpagereference{#4}\PDFobjectreference
+   \pdfoutline
+     user {<</S /GoTo /D [\PDFobjectreference\space\PDFpageviewwrd]>>}%
      \ifcase#2 \else count \ifcase#5-\fi#2 \fi
      {#3}}
 
@@ -1282,7 +1288,7 @@
 
 \def\doPDFgetobjectreference#1#2#3%
   {\dogetobjectreference{#1}{#2}#3%
-   \edef#3{\ifx#3\empty null\else#3\space0 R\fi}}
+   \edef#3{\ifx#3\empty null\else\PDFobjref{#3}\fi}}
 
 % \def\doPDFgetobjectpage         #1#2#3{..}
 % \def\doPDFgetobjectpagereference#1#2#3{..}
@@ -1297,7 +1303,7 @@
 \else
 
   \def\doPDFgetpagereference#1#2% number macro
-    {\edef#2{\pdfpageref#1\space\space0 R}}
+    {\edef#2{\ifnum#1>\zerocount\PDFobjref{\pdfpageref#1}\else null\fi}}
 
 \fi
 
@@ -1311,18 +1317,18 @@
 
 \def\initializePDFnegative
   {\immediate\pdfobj stream attr {/FunctionType 4 /Range [0 1] /Domain [0 1]} {{1 exch sub}}%
-   \immediate\pdfobj{<</Type /ExtGState /TR \the\pdflastobj\space0 R>>}%
-   \appendtoPDFdocumentextgstates{/GSnegative \the\pdflastobj\space0 R}%
+   \immediate\pdfobj{<</Type /ExtGState /TR \PDFobjref\pdflastobj>>}%
+   \appendtoPDFdocumentextgstates{/GSnegative \PDFobjref\pdflastobj}%
    \immediate\pdfobj{<</Type /ExtGState /TR /Identity>>}%
-   \appendtoPDFdocumentextgstates{/GSpositive \the\pdflastobj\space0 R}%
+   \appendtoPDFdocumentextgstates{/GSpositive \PDFobjref\pdflastobj}%
    \global\let\initializePDFnegative\relax}
 
 \def\initializePDFoverprint
   {\immediate\pdfobj{<</Type /ExtGState /OP false /OPM 0>>}% /op defaults to /OP
-   \appendtoPDFdocumentextgstates{/GSknockout \the\pdflastobj\space0 R}%
+   \appendtoPDFdocumentextgstates{/GSknockout \PDFobjref\pdflastobj}%
    \immediate\pdfobj{<</Type /ExtGState /OP true /OPM 1>>}% /op defaults to /OP
    \edef\PDFobjectreferenceB{\the\pdflastobj}%
-   \appendtoPDFdocumentextgstates{/GSoverprint \the\pdflastobj\space0 R}%
+   \appendtoPDFdocumentextgstates{/GSoverprint \PDFobjref\pdflastobj}%
    \global\let\initializePDFoverprint\relax}
 
 %D File embedding. Storing the stream identifier is needed
@@ -1338,7 +1344,7 @@
    \edef\PDFlaststreamobject{\the\pdflastobj}%
    \dosetobjectreference{PDFFS}{#2}{\PDFlaststreamobject}%
    \doPDFdictionaryobject class {#1} name {#2} data
-     {/Type /Filespec /F (#3) /EF <</F \PDFlaststreamobject\space0 R>>}}
+     {/Type /Filespec /F (#3) /EF <</F \PDFobjref\PDFlaststreamobject>>}}
 
 \def\doPDFgetfilestreamreference#1#2%
   {\doPDFgetobjectreference{PDFFS}{#1}#2}

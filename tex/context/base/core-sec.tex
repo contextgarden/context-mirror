@@ -1580,7 +1580,7 @@
      {\setglobalsystemreference\rt!list
         {\e!previous#1}{\getvalue{\e!previouslocal#1}}}%
 %
-%         {\definereference[\e!vorige#1][\getvalue{\e!vorigelokale#1}]%
+%         {\definereference[\e!previous#1][\getvalue{\e!previouslocal#1}]%
 %
    \def\stoplistreferences{\dostoplistreferences}}
 
@@ -1594,7 +1594,7 @@
           {\setglobalsystemreference\rt!list
              {\e!previous####1}{\getvalue{\e!currentlocal####1}}}%
 %
-%         {\definereference[\e!vorige####1][\getvalue{\e!huidigelokale####1}]%
+%         {\definereference[\e!previous####1][\getvalue{\e!currentlocal####1}]%
 %
         \processcommacommand[\updatedlistreferences]\docommando
         \globallet\updatelistreferences\relax

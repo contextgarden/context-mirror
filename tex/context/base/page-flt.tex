@@ -1953,7 +1953,7 @@
      \getparameters[\??si][#1]%
      \resetnumber[\??si]%
      \def\floatcaptionsuffix{\convertednumber[\??si]}%
-     \TABLEcaptionheight=\@@silines\lineheight % brrr
+     \TABLEcaptionheight\@@silines\lineheight % brrr
      \simplifypagebreak % \page becomes \goodbreak
      \dowithnextbox
        {\forgetall
@@ -1963,7 +1963,7 @@
            \setbox2\vbox{\unvbox2}
            \ifdim\ht2>\lineheight
              \incrementnumber[\??si]%
-             \ifnum\rawnumber[\??si]=1 \ifdim\nextboxht=\zeropoint
+             \ifcase\rawnumber[\??si]\or \ifdim\nextboxht=\zeropoint
                \let\floatcaptionsuffix\empty
              \fi \fi
              \bgroup
@@ -1981,7 +1981,7 @@
      \vbox
    \fi}
 
-\def\splitfloat%
+\def\splitfloat
   {\dosingleempty\dosplitfloat}
 
 \def\dooutput{\sidefloatoutput}           % redefinition of \dooutput

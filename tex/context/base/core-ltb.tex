@@ -482,8 +482,8 @@
      {\setuplinetable[\c!maxwidth=\zeropoint]}%
    \processaction
      [\linetableparameter\c!stretch]
-     [\v!no=>{\setuplinetable[\c!stretch=\maxdimen]},% no stretch
-       \v!yes=>{\setuplinetable[\c!stretch=\zeropoint]}]% max stretch
+     [ \v!no=>{\setuplinetable[\c!stretch=\maxdimen]},% no stretch
+      \v!yes=>{\setuplinetable[\c!stretch=\zeropoint]}]% max stretch
    \chardef\linetablerepeat\linetableparameter\c!nleft
    \chardef\linetablesplitstate % =
      \ifdim\linetableparameter\c!maxwidth>\zeropoint
@@ -754,14 +754,12 @@
 
 \doifnotmode{demo}{\endinput}
 
-% to be documented, see stan's ledger styles for an example
+\setuplinetable[n=6,m={2,2,2},lines=25] % m ?
 
-\setuplinetable[n=6,m={2,2,2},regels=25]
-
-\setuplinetable[c][1][width=2cm,background=color,backgroundcolor=red]
-\setuplinetable[c][4][width=3cm,background=color,backgroundcolor=yellow]
-\setuplinetable[c][6][width=3cm,background=color,backgroundcolor=magenta]
-\setuplinetable[r][odd][background=color,backgroundcolor=gray]
+\setuplinetable[c][1]   [width=2cm,background=color,backgroundcolor=red]
+\setuplinetable[c][4]   [width=3cm,background=color,backgroundcolor=yellow]
+\setuplinetable[c][6]   [width=3cm,background=color,backgroundcolor=magenta]
+\setuplinetable[r][odd] [background=color,backgroundcolor=gray]
 \setuplinetable[r][even][background=color,backgroundcolor=green]
 
 \starttext
@@ -774,15 +772,20 @@
 
 \startlinetable
 \NC aaa\crlf aaa \NC bb \NC c \NC ddddd \NC eeee \NC ff \NC \NR
-\dorecurse{100}
-  {\NC aaa \NC bb \NC c \NC ddddd \NC eeee \NC ff \NC \NR}
+\dorecurse{100}{\NC aaa \NC bb \NC c \NC ddddd \NC eeee \NC ff \NC \NR}
 \stoplinetable
 
 \startlinetable
 \NC[style=slanted,color=green,background=color,backgroundcolor=darkred,nx=2,uitlijnen=middle] xxx
                  \NC yy \NC ddddd \NC eeee \NC ff \NC \NR
-\dorecurse{100}
-  {\NC aaa \NC bb \NC c \NC ddddd \NC eeee \NC ff \NC \NR}
+\dorecurse{100}{\NC aaa \NC bb \NC c \NC ddddd \NC eeee \NC ff \NC \NR}
 \stoplinetable
+
+% \startbuffer[lt]
+% \NC aaa\crlf aaa \NC bb \NC c  \NC ddddd \NC ee   \NC ff \NC \NR
+% \NC aaa\crlf aaa \NC b  \NC cc \NC ddd   \NC eeee \NC f  \NC \NR
+% \stopbuffer
+%
+% \processlinetablebuffer[lt]
 
 \stoptext

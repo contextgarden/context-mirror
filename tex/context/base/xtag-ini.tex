@@ -2128,7 +2128,19 @@
 \def\XMLflush#1% one level
   {\csname\ifcsname\@@XMLdata:#1\endcsname\@@XMLdata:#1\else\s!empty\fi\endcsname}
 
-\let\XMLflushdata\XMLflush
+%D \starttyping
+%D \defineXMLenvironmentsave[formula]{}{$\XMLtex{formula}$}
+%D
+%D \startXMLdata
+%D <formula>t+3+x+t\neq m\alpha\frac\theta\hbar</formula>
+%D \stopXMLdata
+%D \stoptyping
+
+\def\XMLtex#1%
+  {\begingroup
+   \disableXML
+   \scantokens\@EA\@EA\@EA{\csname\@@XMLdata:#1\endcsname}%
+   \endgroup}
 
 \def\XMLflushdata#1% see m-steps for usage
   {\@EA\ifx\csname\@@XMLdata:#1\endcsname\longempty\else
@@ -2165,6 +2177,7 @@
    \simplifyXMLelements
    \let\getXMLentity\firstofoneargument
    \XMLrawentitiestrue
+   \chardef\utfunicodetracer7% new
    \xdef\@@XML@@string{\csname\@@XMLdata:#2\endcsname}%
    \egroup
    \convertcommand\@@XML@@string\to#1}
@@ -2174,6 +2187,7 @@
    \enableXMLexpansion
    \simplifyXMLelements
    \simplifyXMLentities
+   \chardef\utfunicodetracer7% new
    \let\getXMLentity\expandedXMLentity % should this go in \simplify ?
    \xdef\@@XML@@string{\csname\@@XMLdata:#2\endcsname}%
    \egroup

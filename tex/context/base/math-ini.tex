@@ -300,9 +300,7 @@
 
 \def\tracemathcommand#1%
   {\iftracemathcollection
-     \endgraf
-     \hbox{\tex{#1}~:~{\mathematics{\getvalue{#1}{}}}}
-     \endgraf
+     \endgraf\hbox{\tex{#1}~:~{\mathematics{\getvalue{#1}{}}}}\endgraf
    \fi}
 
 \def\startmathcollection[#1]%
@@ -345,12 +343,17 @@
 
 \def\usemathcollection[#1]%
   {\doinputonce{\truefilename{\f!mathprefix#1}}%
-   \setvalue{\@mc@\fontclass\@mc@}{#1}}
+   \doifsomething\fontclass{\setvalue{\@mc@\fontclass\@mc@}{#1}}}
+
+\letvalue{\@mc@\@mc@}\nomathcollection
+
+% \def\autoenablemathcollection
+%   {\doifdefinedelse{\@mc@\fontclass\@mc@}
+%      {\enablemathcollection[\getvalue{\@mc@\fontclass\@mc@}]}
+%      {\enablemathcollection[\s!default]}} % ? ? ?
 
 \def\autoenablemathcollection
-  {\doifdefinedelse{\@mc@\fontclass\@mc@}
-     {\enablemathcollection[\getvalue{\@mc@\fontclass\@mc@}]}
-     {\enablemathcollection[\s!default]}} % ? ? ?
+  {\expanded{\enablemathcollection[\executeifdefined{\@mc@\fontclass\@mc@}\nomathcollection]}}
 
 \appendtoks\autoenablemathcollection\to\mathstrategies
 
@@ -426,7 +429,10 @@
 \definefamilysynonym [default] [3] [ex]
 
 \enablemathcollection[default]
-\usemathcollection[default]
+
+\usemathcollection[tex] % actually this is 'default'
+\usemathcollection[ams] % actually this is 'default'
+
 \enablemathcollection[default]
 
 %D Some goodies:
@@ -459,11 +465,10 @@
 \protect \endinput
 
 \tracemathcollectiontrue
-
-                                               \input math-tex \page
-\setupbodyfont[ams] \enablemathcollection[ams] \input math-ams \page
-\setupbodyfont[lbr] \enablemathcollection[lbr] \input math-lbr \page
-\setupbodyfont[eul] \enablemathcollection[eul] \input math-eul \stoptext
+                                                   \input math-tex \page
+\setupbodyfont[ams] \enablemathcollection[default] \input math-ams \page
+\setupbodyfont[lbr] \enablemathcollection[lbr]     \input math-lbr \page
+\setupbodyfont[eul] \enablemathcollection[eul]     \input math-eul \stoptext
 
 % to be checked, overloads supp-lan !
 

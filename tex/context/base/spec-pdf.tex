@@ -448,9 +448,10 @@
 %D This is how we force bookmarks entries in the file.
 
 \def\doPDFbookmark level #1 n #2 text #3 page #4 open #5%
-  {\special
+  {\scratchcounter#4\advance\scratchcounter\minusone
+   \special
      {\@@insertpostscriptretain
-        [ /Page #4\space
+        [ /Page \the\scratchcounter\space
           \ifcase#2 \else/Count \ifcase#5-\fi#2 \fi
           \PDFpageview
           /Title (#3)

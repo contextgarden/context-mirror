@@ -778,6 +778,9 @@
    \c!before=\startnarrower,
    \c!after=\stopnarrower]
 
+\appendtoks\def\quotation#1{"#1"}\to\simplifiedcommands
+\appendtoks\def\quote    #1{'#1'}\to\simplifiedcommands
+
 %D The next features was so desperately needed by Giuseppe
 %D Bilotta that he made a module for it. Since this is a
 %D typical example of core functionality, I decided to extend
@@ -2358,9 +2361,9 @@
   {\getparameters[\??ro][#1]%
    \processaction
      [\@@rolocation]
-     [\v!depth=>\!!counta\plusthree\donefalse,% depth   fit   - raw box
-     \v!fit=>\!!counta\plustwo  \donefalse,% depth   tight - raw box
-        \v!broad=>\!!counta\plusone  \donefalse,% nodepth fit   - raw box
+     [ \v!depth=>\!!counta\plusthree\donefalse,% depth   fit   - raw box
+         \v!fit=>\!!counta\plustwo  \donefalse,% depth   tight - raw box
+       \v!broad=>\!!counta\plusone  \donefalse,% nodepth fit   - raw box
         \v!high=>\!!counta\plusone  \donetrue,%  nodepth fit   - framed
      \s!default=>\!!counta\plusthree\donetrue,%  depth   fit   - framed
      \s!unknown=>\!!counta\plusthree\donetrue]%  depth   fit   - framed

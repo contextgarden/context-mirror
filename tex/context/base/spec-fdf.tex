@@ -33,6 +33,16 @@
 \unprotect
 
 %D \macros
+%D   {\PDFobjref}
+%D
+%D Just a shortcut.
+
+% Watch out, \def\PDFobjref#1{\purenumber#1 0 R} also works, but not when
+% #1 == \the\whatever
+
+\def\PDFobjref#1{\purenumber{#1} 0 R}
+
+%D \macros
 %D   {setPDFdestination}
 %D
 %D \PDF\ destinations should obey the specifications laid down
@@ -629,7 +639,7 @@
 %   ==>
 %
 % \advance\scratchcounter 1
-% \edef\PDFdestination{[\pdfpageref \scratchcounter\space 0 R\space\PDFpageviewwrd]}%
+% \edef\PDFdestination{[\pdfpageref \PDFobjref\scratchcounter\PDFpageviewwrd]}%
 %
 % \doPDFgetpagedestination#1#2% pagenumber macro % % fuzzy hack
 
@@ -1007,27 +1017,6 @@
 \def\doPDFgetfilestreamreference#1#2%
   {0 0 R}
 
-% \def\doPDFattachfile#1#2#3#4#5#6#7#8%
-%   {\bgroup % title width height color symbol file
-%    \edef\PDFfile{#8}\convertcommand\PDFfile\to\PDFfile
-%    % beware: the symbol may (indirectly) use the file
-%    % reference when typesetting the object number;
-%    \presetPDFsymbolappearance{#5}{#6}{#2}{#3}{#4}% sets width/height
-%    \startPDFsymbolappearance
-%      \doifnotflagged{a:\PDFfile}%
-%        {\doPDFfilestreamobject
-%           class PDFEF name {\PDFfile} file {#7} source {#8}%
-%         \doglobal\setflag{a:\PDFfile}}%
-%      \doPDFgetobjectreference{PDFEF}\PDFfile\PDFobjectreference
-%      \doPDFannotation width {\width} height {\totalheight} data
-%        {/Subtype /FileAttachment
-%         /FS \PDFobjectreference\space
-%         /Contents (#1)
-%         \PDFsymbol
-%         \PDFattributes}%
-%    \stopPDFsymbolappearance
-%    \egroup}
-
 \def\doPDFattachfile#1#2#3#4#5#6#7#8%
   {\bgroup % title width height color symbol file
    \edef\PDFfile{#8}\convertcommand\PDFfile\to\PDFfile
@@ -1264,11 +1253,8 @@
    % todo, unicode
    \sanitizePDFdocencoding#3\to\bookmarktext % uses scratchcounter
    \stripstring\bookmarktext
-   \scratchcounter#4%
-   \advance\scratchcounter \minusone
   %\sanitizePDFstring#3\to\bookmarktext
-   \doPDFbookmark level #1 n #2 text {\bookmarktext}
-      page {\the\scratchcounter} open #5
+   \doPDFbookmark level #1 n #2 text {\bookmarktext} page {#4} open #5
    \egroup}
 
 %D The next section of this module is dedicated to form
@@ -2553,7 +2539,7 @@
          {/Subtype /Text
           \ifcase#5 \else/Open true\fi
           % pdftex (efficient)
-          % \ifdone /Popup \the\pdflastannot\space 0 R\fi
+          % \ifdone /Popup \PDFobjref\pdflastannot\fi
           % generic (less efficient)
           \ifdone /Popup \PDFobjectreference\fi
           /Contents \ifPDFunicode <\PDFdata> \else(\PDFdata) \fi
@@ -2777,7 +2763,7 @@
 
 % we cannot use /DeviceN since GS <=7.21 breaks on it
 % and Jaws does not handle it at all {[/DeviceN [/All|/None]
-% /Device#2 \the\pdflastobj\space0 R]} so we use separation
+% /Device#2 \PDFobjref\pdflastobj]} so we use separation
 % colors that work and print ok
 
 \def\doPDFregistersomespotcolor#1#2#3#4% implemented in the driver
@@ -3087,7 +3073,7 @@
 \prependtoksonce \flushPDFpagelayers \to \everyshipout
 \prependtoksonce \flushPDFtextlayers \to \everylastshipout
 
-\def\PDFlayeractionlist{null} % \PDFlayeractionlist{5 0 R}
+\def\PDFlayeractionlist{null}
 
 \def\PDFexecutehidelayer   {/SetOCGState /State [/OFF    \PDFlayeractionlist]}
 \def\PDFexecutevidelayer   {/SetOCGState /State [/ON     \PDFlayeractionlist]}

@@ -15,9 +15,9 @@
 
 % maybe we should just include these into the default tex one
 
-%definefamilysynonym [ams] [blackboard] [mb]
+\definefamilysynonym [default] [blackboard]   [mb]
 
-\startmathcollection [default] % [ams]
+\startmathcollection [default]
 
 \definemathsymbol [varGamma]   [ord] [letters] ["00]
 \definemathsymbol [varDelta]   [ord] [letters] ["01]
@@ -33,13 +33,13 @@
 
 \stopmathcollection
 
-\startmathcollection[default] % [ams]
+\startmathcollection[default]
 
 \definemathsymbol [internalAnd] [rel] [operators] ["26]
 
 \stopmathcollection
 
-\startmathcollection [default] % [ams]
+\startmathcollection [default]
 
 \definemathsymbol [boxdot]              [bin]   [ma] ["00]
 \definemathsymbol [boxplus]             [bin]   [ma] ["01]
@@ -180,7 +180,7 @@
 
 \stopmathcollection
 
-\startmathcollection [default] % [ams]
+\startmathcollection [default]
 
 \definemathcommand [integers]       {\blackboard{Z}}
 \definemathcommand [reals]          {\blackboard{R}}
@@ -191,7 +191,7 @@
 
 \stopmathcollection
 
-\startmathcollection [default] % [ams]
+\startmathcollection [default]
 
 \definemathsymbol [lvertneqq]           [rel]   [mb] ["00]
 \definemathsymbol [gvertneqq]           [rel]   [mb] ["01]
@@ -289,12 +289,17 @@
 
 \stopmathcollection
 
-\startmathcollection [default] % [ams]
+\startmathcollection [default]
 
 \definemathcommand [yen]            [nothing] {\mathhexbox{\hexmafam}55}
 \definemathcommand [checkmark]      [nothing] {\mathhexbox{\hexmafam}58}
 \definemathcommand [circledR]       [nothing] {\mathhexbox{\hexmafam}72}
 \definemathcommand [maltese]        [nothing] {\mathhexbox{\hexmafam}7A}
+
+\stopmathcollection
+
+\startmathcollection [default]
+
 \definemathcommand [dashrightarrow] [rel]     {\dabar@\dabar@ \mathchar"0C4B}%
 \definemathcommand [dashleftarrow]  [rel]     {\mathchar"0C4C\dabar@ \dabar@}%
 \definemathcommand [dasharrow]      [rel]     {\dabar@\dabar@ \mathchar"0C4B}%
@@ -321,7 +326,7 @@
      \mathaccent"0\purefamilyhex{ex}65{#1}%
    \fi}
 
-\startmathcollection [default] % [ams]
+\startmathcollection [default]
 
 \definemathcommand [widehat]   {\AMSwidehat}
 \definemathcommand [widetilde] {\AMSwidetilde}

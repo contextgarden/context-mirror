@@ -241,7 +241,8 @@
 
 \gdef\texXMLelement#1%
   {\begingroup
-   \setnormalcatcodes
+%    \setnormalcatcodes
+   \disableXML
    \scantokens\@EA\@EA\@EA{\csname\@@XMLsave:#1\endcsname}%
    \endgroup}
 

@@ -23,6 +23,13 @@
 
 \ifx\normalcompound\undefined \let\normalcompound=| \fi
 
+\def\defXMLattributestring#1#2#3#4%
+  {\ifcsname\@@XMLvariable:#2:#3\endcsname
+     \@EA\convertcommand\csname\@@XMLvariable:#2:#3\endcsname\to#1%
+   \else
+     \convertargument#4\to#1%
+   \fi}
+
 \bgroup \catcode`\<=\active
 
 % usage: \expanded{\rescanXMLatttributes{fo:table-cell}}

@@ -176,13 +176,13 @@
      \processaction
        [\makeupparameter\c!doublesided]
        [  \v!yes=>\null
-                 \page,
-               % \verlaagpaginanummer, % new
+                  \page,
+                % \verlaagpaginanummer, % new
         \v!empty=>{\setupmakeuplayout
                   \page[\v!blank]%
                   \null
                   \page}]%
-               % \verlaagpaginanummer]% % new
+                % \verlaagpaginanummer]% % new
    \fi \fi
  % \verlaagpaginanummer % new
    \globalpopmacro\@@pnstate} % new
@@ -192,7 +192,7 @@
 %D connection between them is made by the following macro
 
 \def\setupmakeuplayout
-  {\setupfooter[\c!state=\makeupparameter\c!footerstate ]%
+  {\setupfooter[\c!state=\makeupparameter\c!footerstate]%
    \setupheader[\c!state=\makeupparameter\c!headerstate]%
    \setuptext  [\c!state=\makeupparameter\c!textstate]%
    \setupbottom[\c!state=\makeupparameter\c!bottomstate]%

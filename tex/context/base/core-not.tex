@@ -635,25 +635,6 @@
    \egroup
    \kern\notesignal\relax} % \relax is needed to honor spaces
 
-% \def\dolastnotesymbol
-%   {\unskip\unskip
-%    \ifdim\lastkern=\notesignal
-%      \high{\kern\noteparameter\c!afstand}% gets the font right, hack !
-%    \fi
-%    \nobreak
-%    \iflocation
-%      \naarbox
-%        {\high{\tx\lastnotenumber\domovednote\v!vorigepagina\v!volgendepagina}}%
-%        [\s!fnt:t:\internalfootreference]%
-%      \rawreference\s!fnt{\s!fnt:f:\internalfootreference}{}%
-%    \else
-%      \high{\tx\lastnotenumber\domovednote\v!vorigepagina\v!volgendepagina}%
-%      \ifconditional\pagewisenotes
-%        \rawreference\s!fnt{\s!fnt:f:\internalfootreference}{}%
-%      \fi
-%    \fi
-%    \globallet\lastnotesymbol\relax}
-
 \def\dolastnotesymbol
   {\unskip\unskip
    \ifdim\lastkern=\notesignal

@@ -28,7 +28,7 @@ require "rbconfig"
 
 $mswindows = Config::CONFIG['host_os'] =~ /mswin/
 $separator = File::PATH_SEPARATOR
-$version   = "1.05"
+$version   = "1.5.2"
 
 if $mswindows then
 
@@ -88,7 +88,6 @@ else
 
 end
 
-
 class File
 
     def File.needsupdate(oldname,newname)
@@ -102,7 +101,7 @@ class File
     def File.syncmtimes(oldname,newname)
         begin
             t = File.mtime(oldname) # i'm not sure if the time is frozen, so we do it here
-            File.utime(0,t,newname)
+            File.utime(0,t,oldname,newname)
         rescue
         end
     end
@@ -172,13 +171,27 @@ def launch(filename)
     end
 end
 
-def expanded(arg)
+def expanded(arg) # no "other text files", too restricted
     arg.gsub(/kpse\:(\S+)/o) do
         original, resolved = $1, ''
+        if $program && ! $program.empty? then
+            pstr = "-progname=#{$program}"
+        else
+            pstr = ''
+        end
+        # auto suffix with texinputs as fall back
         begin
-            resolved = `kpsewhich -progname=#{program} -format=\"other text files\" #{file}`.chomp
+            resolved = `kpsewhich #{pstr} #{original}`.chomp
         rescue
             resolved = ''
+        end
+        # elsewhere in the tree
+        if resolved.empty? then
+            begin
+                resolved = `kpsewhich #{pstr} -format="other text files" #{original}`.chomp
+            rescue
+                resolved = ''
+            end
         end
         if resolved.empty? then
             report("#{original} is not resolved") unless $report
@@ -194,9 +207,10 @@ def runcommand(command)
     if $locate then
         print(command)
     elsif $execute then
-        report("using 'exec' instead of 'system' call") if $verbose
+        report("using 'exec' instead of 'system' call: #{command}") if $verbose
         exec(command)
     else
+        report("using 'system' call: #{command}") if $verbose
         system(command)
     end
 end
@@ -260,6 +274,7 @@ def usage
     print("           texmfstart --program=yourtex yourscript.pl arg-1 arg-2\n")
     print("           texmfstart --direct xsltproc kpse:somefile.xsl somefile.xml\n")
     print("           texmfstart bin:xsltproc kpse:somefile.xsl somefile.xml\n")
+    print("           texmfstart --iftouched=normal,lowres downsample.rb normal lowres\n")
 end
 
 # somehow registration does not work out (at least not under windows)
@@ -538,11 +553,31 @@ $indirect    = $directives['indirect']  || false
 
 $iftouched   = $directives['iftouched'] || false
 
+$openoffice  = $directives['oo']        || false
+
 $applications['unknown']  = ''
 $applications['perl']     = $applications['pl']  = 'perl'
 $applications['ruby']     = $applications['rb']  = 'ruby'
 $applications['python']   = $applications['py']  = 'python'
 $applications['java']     = $applications['jar'] = 'java'
+
+if $openoffice then
+    if ENV['OOPATH'] then
+        if FileTest.directory?(ENV['OOPATH']) then
+            report("using open office python") if $verbose
+            if $mswindows then
+                $applications['python'] = $applications['py']  = "\"#{File.join(ENV['OOPATH'],'program','python.bat')}\""
+            else
+                $applications['python'] = $applications['py']  = File.join(ENV['OOPATH'],'python')
+            end
+            report("python path #{$applications['python']}") if $verbose
+        else
+            report("environment variable 'OOPATH' does not exist") if $verbose
+        end
+    else
+        report("environment variable 'OOPATH' is not set") if $verbose
+    end
+end
 
 if $mswindows then
     $applications['pdf']  = ['',"pdfopen --page #{$page} --file",'acroread']

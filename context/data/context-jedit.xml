@@ -1,0 +1,134 @@
+<?xml version="1.0"?>
+
+<!DOCTYPE MODE SYSTEM "xmode.dtd">
+
+<MODE>
+
+	<!-- complex regexps are way too slow and freeze jedit on large files --> 
+
+	
+	<RULES>
+		<SEQ_REGEXP HASH_CHAR='%' DELEGATE='nl'>^%.*interface=(dutch|nl).*</SEQ_REGEXP>
+		<SEQ_REGEXP HASH_CHAR='%' DELEGATE='en'>^%.*interface=(english|en).*</SEQ_REGEXP>
+		<SEQ_REGEXP HASH_CHAR='%' DELEGATE='de'>^%.*interface=(german|de).*</SEQ_REGEXP>
+		<SEQ_REGEXP HASH_CHAR='%' DELEGATE='cz'>^%.*interface=(czech|cz).*</SEQ_REGEXP>
+		<SEQ_REGEXP HASH_CHAR='%' DELEGATE='it'>^%.*interface=(italian|it).*</SEQ_REGEXP>
+		<SEQ_REGEXP HASH_CHAR='%' DELEGATE='ro'>^%.*interface=(romanian|ro).*</SEQ_REGEXP>
+	
+		<IMPORT DELEGATE="common"/>
+
+	</RULES>
+
+	<RULES SET='common'>
+			
+		<SEQ_REGEXP TYPE='COMMENT2' HASH_CHAR='%'>^%[A-Z](\s|$)</SEQ_REGEXP>
+		
+		<SEQ_REGEXP TYPE='KEYWORD2' HASH_CHAR='\'>\\[@?!]([^@?!a-zA-Z]|$)</SEQ_REGEXP>
+		
+		<SEQ TYPE="KEYWORD2">\\</SEQ>
+
+		<SEQ TYPE="KEYWORD2">\$</SEQ>
+		<SEQ TYPE="KEYWORD2">\{</SEQ>
+		<SEQ TYPE="KEYWORD2">\}</SEQ>
+	
+		<SEQ TYPE="KEYWORD2">\#</SEQ>
+		<SEQ TYPE="KEYWORD2">\(</SEQ>
+		<SEQ TYPE="KEYWORD2">\)</SEQ>
+		<SEQ TYPE="KEYWORD2">\[</SEQ>
+		<SEQ TYPE="KEYWORD2">\]</SEQ>
+		<SEQ TYPE="KEYWORD2">\&lt;</SEQ>
+		<SEQ TYPE="KEYWORD2">\&gt;</SEQ>
+		<SEQ TYPE="KEYWORD2">\=</SEQ>
+	
+		<SEQ TYPE="KEYWORD2">\~</SEQ>
+		<SEQ TYPE="KEYWORD2">\%</SEQ>
+		<SEQ TYPE="KEYWORD2">\^</SEQ>
+		<SEQ TYPE="KEYWORD2">\&amp;</SEQ>
+		<SEQ TYPE="KEYWORD2">\-</SEQ>
+		<SEQ TYPE="KEYWORD2">\+</SEQ>
+		<SEQ TYPE="KEYWORD2">\/</SEQ>
+		<SEQ TYPE="KEYWORD2">\|</SEQ>
+	
+		<SEQ TYPE="KEYWORD2">\`</SEQ>
+		<SEQ TYPE="KEYWORD2">\*</SEQ>
+		<SEQ TYPE="KEYWORD2">\_</SEQ>
+		<SEQ TYPE="KEYWORD2">\:</SEQ>
+		<SEQ TYPE="KEYWORD2">\;</SEQ>
+		<SEQ TYPE="KEYWORD2">\"</SEQ>
+		<SEQ TYPE="KEYWORD2">\'</SEQ>
+		<SEQ TYPE="KEYWORD2">\.</SEQ>
+		<SEQ TYPE="KEYWORD2">\,</SEQ>
+
+		<SEQ TYPE="KEYWORD2">\1</SEQ>
+		<SEQ TYPE="KEYWORD2">\2</SEQ>
+		<SEQ TYPE="KEYWORD2">\3</SEQ>
+		<SEQ TYPE="KEYWORD2">\4</SEQ>
+		<SEQ TYPE="KEYWORD2">\5</SEQ>
+		<SEQ TYPE="KEYWORD2">\6</SEQ>
+		<SEQ TYPE="KEYWORD2">\7</SEQ>
+		<SEQ TYPE="KEYWORD2">\8</SEQ>
+		<SEQ TYPE="KEYWORD2">\9</SEQ>
+		<SEQ TYPE="KEYWORD2">\0</SEQ>			
+						
+		<SEQ TYPE="COMMENT1">$</SEQ>	
+		<SEQ TYPE="COMMENT1">{</SEQ>	
+		<SEQ TYPE="COMMENT1">}</SEQ>	
+	
+		<SEQ TYPE="KEYWORD1">#</SEQ>	
+		<SEQ TYPE="KEYWORD1">(</SEQ>	
+		<SEQ TYPE="KEYWORD1">)</SEQ>    
+		<SEQ TYPE="KEYWORD1">[</SEQ>    
+		<SEQ TYPE="KEYWORD1">]</SEQ>  	
+		<SEQ TYPE="KEYWORD1">&lt;</SEQ>	
+		<SEQ TYPE="KEYWORD1">&gt;</SEQ> 
+		<SEQ TYPE="KEYWORD1">=</SEQ>	
+		<SEQ TYPE="KEYWORD4">"</SEQ>	
+	
+		<SEQ TYPE="COMMENT2">~</SEQ>	
+		<SEQ TYPE="COMMENT2">%</SEQ>	
+		<SEQ TYPE="COMMENT2">^</SEQ>	
+		<SEQ TYPE="COMMENT2">&amp;</SEQ>
+		<SEQ TYPE="COMMENT2">-</SEQ>	
+		<SEQ TYPE="COMMENT2">+</SEQ>	
+		<SEQ TYPE="COMMENT2">/</SEQ>	
+		<SEQ TYPE="COMMENT2">|</SEQ>	
+	
+		<SEQ TYPE="KEYWORD4">`</SEQ>	
+		<SEQ TYPE="KEYWORD4">*</SEQ>	
+		<SEQ TYPE="KEYWORD4">_</SEQ>	
+		<SEQ TYPE="KEYWORD4">'</SEQ>	
+	
+	</RULES>
+
+	<RULES SET='en'>
+		<IMPORT DELEGATE="context-base::context.base"/>
+		<IMPORT DELEGATE="cont-en::MAIN"/>
+		<IMPORT DELEGATE="common"/>
+	</RULES>
+	<RULES SET='nl'>
+		<IMPORT DELEGATE="context-base::context.base"/>
+		<IMPORT DELEGATE="cont-nl::MAIN"/>
+		<IMPORT DELEGATE="common"/>
+	</RULES>
+	<RULES SET='de'>
+		<IMPORT DELEGATE="context-base::context.base"/>
+		<IMPORT DELEGATE="cont-de::MAIN"/>
+		<IMPORT DELEGATE="common"/>
+	</RULES>
+	<RULES SET='cz'>
+		<IMPORT DELEGATE="context-base::context.base"/>
+		<IMPORT DELEGATE="cont-cz::MAIN"/>
+		<IMPORT DELEGATE="common"/>
+	</RULES>
+	<RULES SET='it'>
+		<IMPORT DELEGATE="context-base::context.base"/>
+		<IMPORT DELEGATE="cont-it::MAIN"/>
+		<IMPORT DELEGATE="common"/>
+	</RULES>
+	<RULES SET='ro'>
+		<IMPORT DELEGATE="context-base::context.base"/>
+		<IMPORT DELEGATE="cont-ro::MAIN"/>
+		<IMPORT DELEGATE="common"/>
+	</RULES>
+		
+</MODE>

@@ -1,28 +1,15 @@
 %D \module
 %D   [       file=supp-pdf,
-%D        version=2004.10.26,
+%D        version=2004.12.16,
 %D          title=\CONTEXT\ Support Macros,
 %D       subtitle=\METAPOST\ to \PDF\ conversion,
-%D         author=Hans Hagen,
+%D         author=Hans Hagen \& others (see text),
 %D           date=\currentdate,
-%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%D      copyright=\PRAGMA]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
-
-% This method is not that accurate with small files that use
-% penshapes. I tried several methods but so far I could not
-% come up with a better alternative. \TEX's real calculation
-% options are simply to simple. Using \ETEX's expression
-% mechanism does not lead to better results.
-
-% beware, we cannot use \zeropoint here since it may be
-% defined in the range \dimen 0 - 20 which we happen to use
-% as scratch registers ; inside context we may consider
-% using dedicated registers
-
-% fails: (    ) vect10 9.96265 fshow % \040\040\040\040
 
 %D These macros are written as generic as possible. Some
 %D general support macro's are loaded from a small module
@@ -32,7 +19,19 @@
 %D Ratz I was able to complete this module within reasonable
 %D time. This module has support for \METAPOST\ extensions
 %D built in.
+%D
+%D Daniel H. Luecking came up with a better (more precise)
+%D transformation method. You can recognize his comment by
+%D his initials. (We keep the old code around because it's a
+%D nice illustration on how a module like this evolves.)
 
+% Beware, we cannot use \zeropoint here since it may be
+% defined in the range \dimen 0 - 20 which we happen to use
+% as scratch registers; inside context we may consider
+% using dedicated registers.
+
+% fails: (    ) vect10 9.96265 fshow % \040\040\040\040
+%
 % some optimizations are possible, but we need to be generic
 
 %D First we take care of non||\CONTEXT\ use (newlines needed,
@@ -50,7 +49,7 @@
 %D default engine for \TEX\ distributions, we need a more complex
 %D test.
 
-\writestatus{loading}{Context Support Macros / PDF (2004.10.26)}
+\writestatus{loading}{Context Support Macros / PDF (2004.03.26)}
 
 \unprotect
 
@@ -1069,7 +1068,7 @@
 %D
 %D The last case outputs a \type{gsave fill grestore} before
 %D \type{stroke}. Handling the path outside the main loops
-%D saves about 40\% run time.\footnote{We can save some more by
+%D saves about 40\% run time.\footnoot{We can save some more by
 %D following the \METAPOST\ output routine, but for the moment
 %D we keep things simple.} Switching between the main loop and
 %D the path loop is done by means of the recursely called
@@ -1088,8 +1087,7 @@
 %D split up the routine in two.
 
 \def\flushnormalMPsegment
-%  {\expandafter\ifcase\getMPkeyword\relax % {\the\nofMPsegments}\relax
-  {\ifcase\getMPkeyword\relax % {\the\nofMPsegments}\relax
+  {\ifcase\getMPkeyword\relax
      \PDFcode{\!MPgMPs1 \!MPgMPs2 l}%
    \or
      \PDFcode{\!MPgMPs1 \!MPgMPs2 \!MPgMPs3 \!MPgMPs4 \!MPgMPs5 \!MPgMPs6 c}%
@@ -1102,8 +1100,7 @@
    \fi}
 
 \def\flushconcatMPsegment
-%  {\expandafter\ifcase\getMPkeyword\relax % {\the\nofMPsegments}\relax
-  {\ifcase\getMPkeyword\relax % {\the\nofMPsegments}\relax
+  {\ifcase\getMPkeyword\relax
      \doMPconcat{\gMPs1}\a{\gMPs2}\b%
      \PDFcode{\!MP\a\space\!MP\b\space l}%
    \or
@@ -1159,7 +1156,14 @@
    \doflushsomeMPpath}
 
 \def\flushnormalMPpath{\let\dodoflushsomeMPpath\flushnormalMPsegment\flushsomeMPpath}
-\def\flushconcatMPpath{\let\dodoflushsomeMPpath\flushconcatMPsegment\flushsomeMPpath}
+
+%OLD \def\flushconcatMPpath{\let\dodoflushsomeMPpath\flushconcatMPsegment\flushsomeMPpath}
+
+%NEW pre-calculate 1/D so it needn't be repeated for each control point.
+
+\def\flushconcatMPpath
+  {\MPreciprocaldeterminant
+   \let\dodoflushsomeMPpath\flushconcatMPsegment\flushsomeMPpath}
 
 %D The transformation of the coordinates is handled by one of
 %D the macros Tanmoy posted to the \PDFTEX\ mailing list.
@@ -1182,45 +1186,141 @@
 %D we converted them to pure points, simply because those can
 %D be converted back.
 
-\mathchardef\MPconcatfactor=256 % beware don't remove spaces before it
+%OLD \mathchardef\MPconcatfactor=256 % beware don't remove spaces before it
 
-% \def\doMPreducedimen#1
-%   {\count0\MPconcatfactor
-%    \advance\dimen#1 \ifdim\dimen#1>\zeropoint .5\else -.5\fi\count0
-%    \divide\dimen#1 \count0\relax}
+%OLD \def\doMPreducedimen#1
+%OLD   {\count0\MPconcatfactor
+%OLD    \advance\dimen#1 \ifdim\dimen#1>\zeropoint .5\else -.5\fi\count0
+%OLD    \divide\dimen#1 \count0\relax}
 
-\def\doMPreducedimen#1
-  {\advance\dimen#1 \ifdim\dimen#1>\zeropoint .5\else -.5\fi\MPconcatfactor
-   \divide\dimen#1 \MPconcatfactor}
+%OLD % too inaccurate (see old pragma logo)
+%OLD
+%OLD \def\doMPreducedimen#1
+%OLD   {\count0=\MPconcatfactor
+%OLD    \divide\dimen#1 \count0\relax}
 
-% too inaccurate (see old pragma logo)
-%
-% \def\doMPreducedimen#1
-%   {\count0=\MPconcatfactor
-%    \divide\dimen#1 \count0\relax}
+%OLD \def\doMPreducedimen#1
+%OLD   {\advance\dimen#1 \ifdim\dimen#1>\zeropoint .5\else -.5\fi\MPconcatfactor
+%OLD    \divide\dimen#1 \MPconcatfactor}
 
-\def\doMPexpanddimen#1
-  {\multiply\dimen#1 \MPconcatfactor\relax}
+%D The transformation code is rewritten by Daniel H. Luecking who
+%D describes his patch as follows:
+%D
+%D We would like to divide 1 by $X4, but all divisions are integer so
+%D for accuracy we want to convert to large integers and make sure the
+%D integer quotient has as many significant digits as possible. Thus we
+%D need to replace $1/X$ with $M/N$ where $N$ is as large as possible
+%D and $M/N$ is as large as possible. Also for simplicity $M$ should be
+%D a power of 2. So we make $M = 2^{30}$ \footnote{$2^{31} - 1$ is the
+%D largest legal integer. Using it (and simply ignoring the inaccuracy
+%D caused by $-1$) turns out to be at least as accurate in all cases,
+%D and more accurate in some.} (largest legal power of 2) and adjust
+%D $X4 downward (if necessary) to the the range $1-2^{16}$. This gives
+%D at least 15 significant binary digits, (almost as accurate as
+%D \METAPOST\ for numbers near 1) or almost 5 significant figures
+%D (decimal).
+
+\newcount\MPscratchCnt
+\newdimen\MPscratchDim % will be assigned global
+
+\def\MPadjustdimen   % sets \MPscratchDim and \MPscratchCnt
+  {\MPscratchCnt\zerocount
+   \doMPadjustdimen}
+
+\def\doMPadjustdimen
+  {\ifdim\MPscratchDim>\onepoint
+     \divide\MPscratchDim 2
+     \advance\MPscratchCnt \plusone
+     \expandafter\doMPadjustdimen
+   \fi}
+
+%OLD \def\doMPexpanddimen#1
+%OLD   {\multiply\dimen#1 \MPconcatfactor\relax}
+
+%D DHL: When viewed as an integer, $1 \hbox{pt}=2^{16}$ so $2^{32}/X$
+%D is  the right way to do $(1 \hbox{pt})/(X \hbox{pt})$ and get the
+%D answer  in points. But we are limited to $2^{30}/X$. However, we
+%D actually do  $[ 2^{30} / (X/2^K) ]*2^{2-K}$ where $K$ is the number
+%D of halvings it takes to bring $X4 below $1 \hbox{pt}$. If $K$ is 0
+%D or 1 we readjust by multiplying by 4 or 2, otherwise by halving
+%D $(K-2)$ times \type {\MPscratchCnt} holds the value of $K$ from
+%D \type {\MPadjustdimen}.
+
+\def\MPreadjustdimen  % acts on \MPscratchDim and MPscratchCnt
+  {\ifcase\MPscratchCnt
+     \multiply\MPscratchDim 4
+   \or
+     \multiply\MPscratchDim 2
+   \else
+     \expandafter\doMPreadjustdimen
+   \fi}
+
+\def\doMPreadjustdimen
+  {\ifnum\MPscratchCnt > 2
+     \divide\MPscratchDim 2
+     \advance\MPscratchCnt \minusone
+     \expandafter\doMPreadjustdimen
+   \fi}
+
+\def\MPreciprocaldeterminant
+  {\MPscratchDim\withoutpt\the\dimen0 \dimen6            % s_x*s_y
+   \advance\MPscratchDim - \withoutpt\the\dimen2 \dimen4 % s_x*s_y - r_x*r_y
+   \ifdim\MPscratchDim<\zeropoint  % we need a positive dimension
+     \MPscratchDim-\MPscratchDim   % for \MPadjustdimen
+     \doMPreciprocal
+     \MPscratchDim-\MPscratchDim
+   \else
+     \doMPreciprocal
+   \fi}
+
+\newcount\MPnumerator \MPnumerator = 1073741824 % 2^{30}
+
+% todo: dimexpr
+
+\def\doMPreciprocal % replace \MPscratchDim with its reciprocal
+  {\ifdim\MPscratchDim=\onepoint \else
+     \MPadjustdimen
+     \scratchcounter\MPnumerator
+     \divide\scratchcounter\MPscratchDim
+     \MPscratchDim1\scratchcounter % 1 needed !
+     \MPreadjustdimen
+  \fi}
+
+%OLD \def\presetMPconcat
+%OLD  {\dimen 0=\gMPs1\onepoint \doMPreducedimen 0    % r_x
+%OLD   \dimen 2=\gMPs2\onepoint \doMPreducedimen 2    % s_x
+%OLD   \dimen 4=\gMPs3\onepoint \doMPreducedimen 4    % s_y
+%OLD   \dimen 6=\gMPs4\onepoint \doMPreducedimen 6    % r_y
+%OLD   \dimen 8=\gMPs5\onepoint \doMPreducedimen 8    % t_x
+%OLD   \dimen10=\gMPs6\onepoint \doMPreducedimen10 }  % t_y
+%OLD
+%OLD \def\presetMPscale
+%OLD   {\dimen 0=\gMPs1\onepoint \doMPreducedimen 0
+%OLD    \dimen 2 \zeropoint
+%OLD    \dimen 4 \zeropoint
+%OLD    \dimen 6=\gMPs2\onepoint \doMPreducedimen 6
+%OLD    \dimen 8 \zeropoint
+%OLD    \dimen10 \zeropoint}
 
 \def\presetMPconcat
-  {\dimen 0=\gMPs1 \onepoint \doMPreducedimen 0    % r_x
-   \dimen 2=\gMPs2 \onepoint \doMPreducedimen 2    % s_x
-   \dimen 4=\gMPs3 \onepoint \doMPreducedimen 4    % s_y
-   \dimen 6=\gMPs4 \onepoint \doMPreducedimen 6    % r_y
-   \dimen 8=\gMPs5 \onepoint \doMPreducedimen 8    % t_x
-   \dimen10=\gMPs6 \onepoint \doMPreducedimen10 }  % t_y
+  {\dimen 0=\gMPs1\onepoint   % s_x
+   \dimen 2=\gMPs2\onepoint   % r_x
+   \dimen 4=\gMPs3\onepoint   % r_y
+   \dimen 6=\gMPs4\onepoint   % s_y
+   \dimen 8=\gMPs5\onepoint   % t_x
+   \dimen10=\gMPs6\onepoint}  % t_y
 
 \def\presetMPscale
-  {\dimen 0=\gMPs1 \onepoint \doMPreducedimen 0
-   \dimen 2=\zeropoint
-   \dimen 4=\zeropoint
-   \dimen 6=\gMPs2 \onepoint \doMPreducedimen 6
-   \dimen 8=\zeropoint
-   \dimen10=\zeropoint}
+  {\dimen 0=\gMPs1\onepoint
+   \dimen 2 \zeropoint
+   \dimen 4 \zeropoint
+   \dimen 6=\gMPs2\onepoint
+   \dimen 8 \zeropoint
+   \dimen10 \zeropoint}
 
 \def\noMPtranslate % use this one grouped
-  {\dimen 8=\zeropoint                    % t_x
-   \dimen10=\zeropoint}                   % t_y
+  {\dimen 8 \zeropoint        % t_x
+   \dimen10 \zeropoint}       % t_y
 
 %D \starttyping
 %D \def\doMPconcat#1#2#3#4%
@@ -1378,96 +1478,133 @@
 %D We cannot use \type {\beginETEX} here since in plain we
 %D get \type {\outer} problems, sigh.
 
-% \beginTEX
+%OLD \beginTEX
+%OLD
+%OLD \def\MPcriteriumA {512pt} % scale
+%OLD \def\MPcriteriumB   {2pt} % scale
+%OLD
+%OLD \endTEX
+%OLD
+%OLD \ifx\MPcriteriumA\undefined
+%OLD
+%OLD   \newdimen\MPcriteriumA \MPcriteriumA=512pt
+%OLD   \newdimen\MPcriteriumB \MPcriteriumB=  2pt
+%OLD
+%OLD \fi
 
-\def\MPcriteriumA {512pt} % scale
-\def\MPcriteriumB   {2pt} % scale
+%OLD \def\doMPconcat#1#2#3#4%
+%OLD   {\dimen12=#1pt % p_x
+%OLD    \dimen14=#3pt % p_y
+%OLD    %
+%OLD    \chardef\MPfactor\zerocount
+%OLD    \ifdim\dimen4<\MPcriteriumB\ifdim\dimen4>-\MPcriteriumB
+%OLD      \ifdim\dimen6<\MPcriteriumB\ifdim\dimen6>-\MPcriteriumB
+%OLD        \ifdim\dimen8<\MPcriteriumB\ifdim\dimen8>-\MPcriteriumB
+%OLD          \ifdim\dimen10<\MPcriteriumB\ifdim\dimen10>-\MPcriteriumB
+%OLD            \chardef\MPfactor\plusone
+%OLD          \fi\fi
+%OLD        \fi\fi
+%OLD      \fi\fi
+%OLD    \fi\fi
+%OLD    \ifcase\MPfactor % spurious 0 removed
+%OLD      \chardef\MPfactor\plusone
+%OLD      \ifdim\dimen12<\MPcriteriumA\ifdim\dimen12>-\MPcriteriumA
+%OLD        \ifdim\dimen14<\MPcriteriumA\ifdim\dimen14>-\MPcriteriumA
+%OLD          \chardef\MPfactor16
+%OLD        \fi\fi
+%OLD      \fi\fi
+%OLD    \fi
+%OLD    %
+%OLD    \multiply\dimen12 \MPfactor
+%OLD    \multiply\dimen14 \MPfactor
+%OLD    %
+%OLD    \doMPreducedimen12
+%OLD    \doMPreducedimen14
+%OLD    %
+%OLD    \dimen16  \dimen 0
+%OLD    \multiply \dimen16  \dimen 6
+%OLD    \dimen20  \dimen 2
+%OLD    \multiply \dimen20  \dimen 4
+%OLD    \advance  \dimen16 -\dimen20
+%OLD    %
+%OLD    \dimen18  \dimen12
+%OLD    \multiply \dimen18  \dimen 6
+%OLD    \dimen20  \dimen14
+%OLD    \multiply \dimen20  \dimen 4
+%OLD    \advance  \dimen18 -\dimen20
+%OLD    \dimen20  \dimen 4
+%OLD    \multiply \dimen20  \dimen10
+%OLD    \advance  \dimen18  \dimen20
+%OLD    \dimen20  \dimen 6
+%OLD    \multiply \dimen20  \dimen 8
+%OLD    \advance  \dimen18 -\dimen20
+%OLD    %
+%OLD    \multiply \dimen12 -\dimen 2
+%OLD    \multiply \dimen14  \dimen 0
+%OLD    \advance  \dimen12  \dimen14
+%OLD    \dimen20  \dimen 2
+%OLD    \multiply \dimen20  \dimen 8
+%OLD    \advance  \dimen12  \dimen20
+%OLD    \dimen20  \dimen 0
+%OLD    \multiply \dimen20  \dimen10
+%OLD    \advance  \dimen12 -\dimen20
+%OLD    %
+%OLD    \ifdim\dimen16=\onepoint \else
+%OLD      \ifdim\dimen16>\MPconcatfactor \onepoint \relax
+%OLD        \doMPreducedimen16
+%OLD        \divide \dimen18 \dimen16 \doMPexpanddimen18
+%OLD        \divide \dimen12 \dimen16 \doMPexpanddimen12
+%OLD      \else
+%OLD        \divide \dimen18 \dimen16 \doMPexpanddimen18 \doMPexpanddimen18
+%OLD        \divide \dimen12 \dimen16 \doMPexpanddimen12 \doMPexpanddimen12
+%OLD      \fi
+%OLD    \fi
+%OLD    %
+%OLD    \divide\dimen18 \MPfactor
+%OLD    \divide\dimen12 \MPfactor
+%OLD    %
+%OLD    \edef#2{\withoutpt\the\dimen18}% % p_x^\prime
+%OLD    \edef#4{\withoutpt\the\dimen12}} % p_y^\prime
 
-% \endTEX
-%
-
-% \ifx\MPcriteriumA\undefined
-%
-%   \newdimen\MPcriteriumA \MPcriteriumA=512pt
-%   \newdimen\MPcriteriumB \MPcriteriumB=  2pt
-%
-% \fi
-
-% one day i'll rewrite this to etex's \dimexpr (internally double precission)
+%D DHL: Ideally, $r_x$, $r_y$, $s_x4, $s_y$ should be in macros, not
+%D dimensions (they are scalar quantities after all, not lengths). I
+%D suppose the authors decided to do calculations with integer
+%D arithmetic instead of using real factors because it's faster.
+%D However, the actual macros test slower, possibly because I've
+%D omitted three nested loops. In my test files, my approach is more
+%D accurate. It is also far simpler and overflow does not seem to be a
+%D significant concern. The scale factors written by Metapost are (?)
+%D always $<=1$ (it scales coordinates internally) and coordinates are
+%D always likely to be less than \type {\maxdimen}.
+%D
+%D If this should ever cause problems, the scale factors can be reduced.
 
 \def\doMPconcat#1#2#3#4%
-  {\dimen12=#1pt % p_x
-   \dimen14=#3pt % p_y
-   %
-   \chardef\MPfactor\zerocount
-   \ifdim\dimen4<\MPcriteriumB\ifdim\dimen4>-\MPcriteriumB
-     \ifdim\dimen6<\MPcriteriumB\ifdim\dimen6>-\MPcriteriumB
-       \ifdim\dimen8<\MPcriteriumB\ifdim\dimen8>-\MPcriteriumB
-         \ifdim\dimen10<\MPcriteriumB\ifdim\dimen10>-\MPcriteriumB
-           \chardef\MPfactor\plusone
-         \fi\fi
-       \fi\fi
-     \fi\fi
-   \fi\fi
-   \ifcase\MPfactor % spurious 0 removed
-     \chardef\MPfactor\plusone
-     \ifdim\dimen12<\MPcriteriumA\ifdim\dimen12>-\MPcriteriumA
-       \ifdim\dimen14<\MPcriteriumA\ifdim\dimen14>-\MPcriteriumA
-         \chardef\MPfactor16
-       \fi\fi
-     \fi\fi
-   \fi
-   %
-   \multiply\dimen12 \MPfactor
-   \multiply\dimen14 \MPfactor
-   %
-   \doMPreducedimen12
-   \doMPreducedimen14
-   %
-   \dimen16  \dimen 0
-   \multiply \dimen16  \dimen 6
-   \dimen20  \dimen 2
-   \multiply \dimen20  \dimen 4
-   \advance  \dimen16 -\dimen20
-   %
-   \dimen18  \dimen12
-   \multiply \dimen18  \dimen 6
-   \dimen20  \dimen14
-   \multiply \dimen20  \dimen 4
-   \advance  \dimen18 -\dimen20
-   \dimen20  \dimen 4
-   \multiply \dimen20  \dimen10
-   \advance  \dimen18  \dimen20
-   \dimen20  \dimen 6
-   \multiply \dimen20  \dimen 8
-   \advance  \dimen18 -\dimen20
-   %
-   \multiply \dimen12 -\dimen 2
-   \multiply \dimen14  \dimen 0
-   \advance  \dimen12  \dimen14
-   \dimen20  \dimen 2
-   \multiply \dimen20  \dimen 8
-   \advance  \dimen12  \dimen20
-   \dimen20  \dimen 0
-   \multiply \dimen20  \dimen10
-   \advance  \dimen12 -\dimen20
-   %
-   \ifdim\dimen16=\onepoint \else
-     \ifdim\dimen16>\MPconcatfactor \onepoint \relax
-       \doMPreducedimen16
-       \divide \dimen18 \dimen16 \doMPexpanddimen18
-       \divide \dimen12 \dimen16 \doMPexpanddimen12
-     \else
-       \divide \dimen18 \dimen16 \doMPexpanddimen18 \doMPexpanddimen18
-       \divide \dimen12 \dimen16 \doMPexpanddimen12 \doMPexpanddimen12
-     \fi
-   \fi
-   %
-   \divide\dimen18 \MPfactor
-   \divide\dimen12 \MPfactor
-   %
+  {\dimen12=#1pt % p_x % #1\onepoint
+   \dimen14=#3pt % p_y % #3\onepoint
+   \advance\dimen12 -\dimen8  % p_x - t_x
+   \advance\dimen14 -\dimen10 % p_y - t_y
+   \dimen18=\withoutpt\the\dimen6 \dimen12          % s_y(p_x - t_x)
+   \advance\dimen18 -\withoutpt\the\dimen4 \dimen14 %   - r_y(p_y-t_y)
+   \dimen14=\withoutpt\the\dimen0 \dimen14          % s_x(p_y-t_y)
+   \advance\dimen14 -\withoutpt\the\dimen2 \dimen12 %   - r_x(p_x-t_x)
+   % \MPscratchDim contains precomputed 1/D:
+   \dimen18=\withoutpt\the\MPscratchDim \dimen18
+   \dimen14=\withoutpt\the\MPscratchDim \dimen14
    \edef#2{\withoutpt\the\dimen18}% % p_x^\prime
-   \edef#4{\withoutpt\the\dimen12}} % p_y^\prime
+   \edef#4{\withoutpt\the\dimen14}} % p_y^\prime
+
+%D One reason for Daniel to write this patch was that at small sizes
+%D the accuracy was less than optimal. Here is a test that demonstrates
+%D that his alternative is pretty good:
+%D
+%D \startlinecorrection
+%D \startMPcode
+%D for i = 5cm,1cm,5mm,1mm,.5mm,.1mm,.01mm :
+%D     draw fullcircle scaled i withpen pencircle xscaled (i/10) yscaled (i/20) rotated 45 ;
+%D endfor ;
+%D \stopMPcode
+%D \stoplinecorrection
 
 %D The following explanation of the conversion process was
 %D posted to the \PDFTEX\ mailing list by Tanmoy. The original
@@ -1856,7 +1993,7 @@
      \forgetall
      \offinterlineskip
      \startMPresources
-     \doprocessMPtoPDFfile} % {#1}{#2}{#3}} % {#1}{0#2}{0#3} would be saver
+     \doprocessMPtoPDFfile} %
 
 %D The next one is kind of private and probably will become obsolete):
 

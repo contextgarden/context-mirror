@@ -13,18 +13,21 @@
 
 \unprotect
 
+\ifx\showmathmodern\undefined \global\chardef\showmathmodern\zerocount \fi
+
 \gdef\showmathcharacters% nearly \showcharacters
   {\par
    \bgroup
+   \ifcase\showmathmodern\or\ifx\modern\undefined\chardef\showmathmodern\zerocount\fi\fi
    \setuptextrules[\c!bodyfont=,\c!style=]
-   \starttextrule{math characters}
+   \starttextrule{math characters -- \currentmathcollection}
    \whitespace
    \dontcomplain
    \forgetall
    \def\startmathcollection[##1]{}
    \let\stopmathcollection\relax
-   \dimen0=\!!zeropoint
-   \dimen2=\!!zeropoint
+   \dimen0\zeropoint
+   \dimen2\zeropoint
    \def\definemathsymbol   {\dosixtupleempty\dodefinemathsymbol}
    \def\definemathcharacter{\dosixtupleempty\dodefinemathcharacter}
    \def\definemathcommand  {\dotripleempty  \dodefinemathcommand}
@@ -33,19 +36,19 @@
      {%\doifcolorelse{math \purefamilyhex{##3}}{}
       %  {\increment\mathcolor
       %   \definecolor[math \purefamilyhex{##3}][\mathcolor]}%
-      \setbox0=\hbox spread 1em
-        {$\getvalue{##1}{}$}%
+      \setbox0\hbox spread 1em{\mathematics{\getvalue{##1}{}{}{}}}%
       \ifdim\wd0>\dimen0 \dimen0=\wd0 \fi
-      \setbox2=\hbox spread 1em
-        {\hbox to 1em{\tttf\purefamilyhex{##3}\hss}\box0 ##1}
+      \setbox2\hbox spread 1em{\hbox to 1em{\tttf\purefamilyhex{##3}\hss}\box0 ##1}%
       \ifdim\wd2>\dimen2 \dimen2=\wd2 \fi}
    \def\dodefinemathcharacter[##1][##2][##3][##4][##5][##6]{}
-   \def\dodefinemathcommand[##1][##2][##3]##4{}
-   \readsysfile{\f!mathprefix tex}{}{}
+   \def\dodefinemathcommand  [##1][##2][##3]##4{}
+   \readsysfile{\f!mathprefix tex}\donothing\donothing
+   \readsysfile{\f!mathprefix ams}\donothing\donothing
    \edef\encwidth{\the\dimen0}
    \dimen0=\hsize
    \advance\dimen0 2em
    \advance\dimen2 2em
+   \ifcase\showmathmodern\or\advance\dimen2 2em\fi
    \divide \dimen0 by \dimen2 \advance\dimen0 1sp
    \edef\enccols{\number\dimen0}
    \startcolumns[\c!n=\enccols,\c!distance=2em]
@@ -54,10 +57,13 @@
       %\color
       %  [math \purefamilyhex{##3}]
          {\hbox
-            {\hbox to \encwidth{$\getvalue{##1}{}$\hss}%
+            {\ifcase\showmathmodern\or
+               \hbox to \encwidth{\modern\let\mathcollection\nomathcollection\mathematics{\getvalue{##1}{}{}{}}\hss}%
+             \fi
+             \hbox to \encwidth{\mathematics{\getvalue{##1}{}{}{}}\hss}%
              \hbox to 1em{\tttf\purefamilyhex{##3}\hss}##1}\par}}
-   \readsysfile{\f!mathprefix tex}{}{}
-%   \readsysfile{\f!mathprefix ams}{}{}
+   \readsysfile{\f!mathprefix tex}\donothing\donothing
+   \readsysfile{\f!mathprefix ams}\donothing\donothing
    \stopcolumns
    \stoptextrule
    \egroup}

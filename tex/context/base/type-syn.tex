@@ -108,42 +108,36 @@
 
 \starttypescript [math] [euler] [name]
   \definefontsynonym [MathRoman]     [Euler-Roman]      % mr
-  \definefontsynonym [MathItalic]    [Euler-Roman]      % mi
+  \definefontsynonym [MathItalic]    [Euler-Fraktur]      % mi
   \definefontsynonym [MathExtension] [Euler-Extension]  % ex
   \definefontsynonym [MathSymbol]    [Euler-Symbol]     % sy
-  \definefontsynonym [MathBeta]      [CharterRomanMath]
-  \definefontsynonym [MathGamma]     [Euler-Fraktur]    % mc ?
 \stoptypescript
 
 \starttypescript [boldmath] [euler] [name]
   \definefontsynonym [MathRoman]     [Euler-Roman-Bold]     % mr
-  \definefontsynonym [MathItalic]    [Euler-Roman-Bold]     % mi
+  \definefontsynonym [MathItalic]    [Euler-Fraktur-Bold]     % mi
   \definefontsynonym [MathExtension] [Euler-Extension]      % ex
   \definefontsynonym [MathSymbol]    [Euler-Symbol-Bold]    % sy
-  \definefontsynonym [MathBeta]      [CharterRomanBoldMath]
-  \definefontsynonym [MathGamma]     [Euler-Fraktur-Bold]   % mc ?
 \stoptypescript
 
 \starttypescript [bfmath] [euler] [name]
   \definefontsynonym [MathRomanBold]  [Euler-Roman-Bold]     % mr
-  \definefontsynonym [MathItalicBold] [Euler-Roman-Bold]     % mi
+  \definefontsynonym [MathItalicBold] [Euler-Fraktur-Bold]     % mi
   \definefontsynonym [MathExtension]  [Euler-Extension]      % ex
   \definefontsynonym [MathSymbolBold] [Euler-Symbol-Bold]    % sy
-  \definefontsynonym [MathBetaBold]   [CharterRomanBoldMath]
-  \definefontsynonym [MathGammaBold]  [Euler-Fraktur-Bold]   % mc ?
 \stoptypescript
 
 \starttypescript [math] [euler] [name]
-  \definefontsynonym [OldStyle]     [MathGamma]
-  \definefontsynonym [Fraktur]      [MathGamma]
-  \definefontsynonym [Gothic]       [MathGamma]
+  \definefontsynonym [OldStyle]     [MathItalic]
+  \definefontsynonym [Fraktur]      [MathItalic]
+  \definefontsynonym [Gothic]       [MathItalic]
   \definefontsynonym [Calligraphic] [MathSymbol]
 \stoptypescript
 
 \starttypescript [boldmath] [euler] [name]
-  \definefontsynonym [OldStyle]     [MathGammaBold]
-  \definefontsynonym [Fraktur]      [MathGammaBold]
-  \definefontsynonym [Gothic]       [MathGammaBold]
+  \definefontsynonym [OldStyle]     [MathItalicBold]
+  \definefontsynonym [Fraktur]      [MathItalicBold]
+  \definefontsynonym [Gothic]       [MathItalicBold]
   \definefontsynonym [Calligraphic] [MathSymbolBold]
 \stoptypescript
 
@@ -289,6 +283,14 @@
   \definefontsynonym [MathExtension] [Fourier-Math-Extension]
 \stoptypescript
 
+\starttypescript [math] [fourier] [name] % todo
+  \definefontsynonym [OldStyle]     [Serif-OldStyle] % strange, no oldstyles
+  \definefontsynonym [Fraktur]      [eufm10]
+  \definefontsynonym [Blackboard]   [msbm10]
+  \definefontsynonym [Gothic]       [eufm10]
+  \definefontsynonym [Calligraphic] [eusm10]
+\stoptypescript
+
 % Charter :
 
 \starttypescript [serif] [charter] [name]
@@ -327,6 +329,14 @@
   \definefontsynonym [MathSymbol]    [Times-Math-Symbols]
   \definefontsynonym [MathAlpha]     [Times-Math-SymbolsA]
   \definefontsynonym [MathBeta]      [Times-Math-SymbolsB]
+\stoptypescript
+
+\starttypescript [math] [times] [name]
+  \definefontsynonym [OldStyle]     [MathItalic]
+  \definefontsynonym [Fraktur]      [eufm10]
+  \definefontsynonym [Blackboard]   [MathBeta]
+  \definefontsynonym [Gothic]       [eufm10]
+  \definefontsynonym [Calligraphic] [eusm10]
 \stoptypescript
 
 % Helvetica :
@@ -379,6 +389,14 @@
   \definefontsynonym [MathSymbol]    [Palatino-Math-Symbols]
   \definefontsynonym [MathAlpha]     [Palatino-Math-SymbolsA]
   \definefontsynonym [MathBeta]      [Palatino-Math-SymbolsB]
+\stoptypescript
+
+\starttypescript [math] [palatino] [name]
+  \definefontsynonym [OldStyle]     [MathItalic]
+  \definefontsynonym [Fraktur]      [eufm10]
+  \definefontsynonym [Blackboard]   [MathBeta]
+  \definefontsynonym [Gothic]       [eufm10]
+  \definefontsynonym [Calligraphic] [eusm10]
 \stoptypescript
 
 % bonus definitions

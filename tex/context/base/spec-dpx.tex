@@ -223,7 +223,7 @@
 
 \def\assignPDFtransparency#1#2%
   {\def\PDFtransparencyidentifier{/Tr#1}%
-   %\def\PDFtransparencyreference{#2 0 R}}
+   %\def\PDFtransparencyreference{\PDFobjref{#2}}}
    \def\PDFtransparencyreference{@TR:#2}}
 
 \def\presetPDFtransparency#1#2%
@@ -237,7 +237,7 @@
    \doPDFreserveDPXobject{TR:\the\PDFcurrenttransparency}{<< >>}%
    \special{pdf: \doPDFcheckedDPXobject{TR:\the\PDFcurrenttransparency}\PDFtransparancydictionary{#1}{#2}{}}%
    \edef\PDFtransparencyidentifier{/Tr\the\PDFcurrenttransparency}%
-   %\edef\PDFtransparencyreference {\the\pdflastobj\space 0 R}%
+   %\edef\PDFtransparencyreference {\PDFobjref\pdflastobj}%
    \edef\PDFtransparencyreference {@TR:\the\PDFcurrenttransparency}%
    \setxvalue{\@@PDT#1:#2}%
      {\noexpand\assignPDFtransparency{\the\PDFcurrenttransparency}{\the\PDFcurrenttransparency}}%
@@ -251,7 +251,7 @@
   {\doPDFreserveDPXobject{TR:0}{<< >>}%
    \special{pdf: \doPDFcheckedDPXobject{TR:0}\PDFtransparancydictionary{1}{1}{/AIS false}}%
    \xdef\PDFtransparencyresetidentifier{/Tr0}%
-   %\xdef\PDFtransparencyresetreference{\the\pdflastobj\space 0 R}%
+   %\xdef\PDFtransparencyresetreference{\PDFobjref\pdflastobj}%
    \xdef\PDFtransparencyresetreference{@TR:0}%
    \setxvalue{\@@PDT0:0}%
      %{\noexpand\assignPDFtransparency{0}{\the\pdflastobj}}%
@@ -555,8 +555,8 @@
 \def\doPDFpageresource#1%
   {\special{pdf: put @resources <<#1>>}}
 
-\let\doPDFresetpageresources =\relax
-\let\doPDFresetpageattributes=\relax
+\let\doPDFresetpageresources \relax
+\let\doPDFresetpageattributes\relax
 
 %D \type{\doPDFbookmark} in \type{spec-dpm} had a bug.
 %D The openbookmark option \#5 is not supported yet.
@@ -566,8 +566,10 @@
 
 \def\doPDFbookmark level #1 n #2 text #3 page #4 open #5%
   {\ifcase#1\else
+     \scratchcounter#4\advance\scratchcounter\minusone
      \special{pdf: outline #1 %\ifcase\the#5-\fi#1
-                <</Title (#3) /A <</S /GoTo /D (page:#4)>>>>}%
+        % <</Title (#3) /A <</S /GoTo /D (page:\the\scratchcounter)>>>>}%
+          <</Title (#3) /A <</S /GoTo /D [@page\number#4\space\PDFpageviewwrd]>> >>}%
    \fi}
 
 %D \macros

@@ -409,9 +409,10 @@
 
 \def\doPDFbookmark level #1 n #2 text #3 page #4 open #5%
   {\ifcase#2\else
-     \special
-       {pdf: out \ifcase#5-\fi#2
-          <</Page #4\space /View [/Fit] /Title (#3)>>}%
+     \scratchcounter#4\advance\scratchcounter\minusone
+     \special{pdf: out \ifcase#5-\fi#2
+        % <</Page \the\scratchcounter\space /View [/Fit] /Title (#3)>>}%
+          <</Title (#3) /A <</S /GoTo /D [@page\number#4\space\PDFpageviewwrd]>> >>}%
    \fi}
 
 %D \macros

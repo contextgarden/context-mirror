@@ -143,14 +143,11 @@
 
 %D Some precautions for a \PLAIN\ \TEX\ definition.
 
-\let\normalcap\cap
+\unexpanded\def\normalcap{\dohandlemathtoken{cap}}
+\unexpanded\def\normalCap{\dohandlemathtoken{Cap}}
 
-\def\cap
-  {\ifmmode
-     \expandafter\normalcap
-   \else
-     \expandafter\smallcapped
-   \fi}
+\def\cap{\mathortext\normalcap\smallcapped}
+\def\Cap{\mathortext\normalCap\SmallCapped}
 
 %D \macros
 %D   {setupcapitals}
@@ -501,16 +498,25 @@
 \def\betweenunderbarspaces
   {\hskip\currentspaceskip}
 
-\unexpanded\def\dounderbar#1#2%
+% \unexpanded\def\dounderbar#1#2%
+%   {\let\betweenisolatedwords#1%
+%    \processisolatedwords{#2}\dodounderbar
+%    \egroup}
+
+% \unexpanded\def\underbar
+%   {\bgroup
+%    \increment\underbarlevel
+%    \donetrue
+%    \dounderbar\betweenunderbarwords}
+
+\unexpanded\def\dounderbar#1%
   {\let\betweenisolatedwords#1%
+   \dosingleempty\redounderbar}
+
+\unexpanded\def\redounderbar[#1]#2%
+  {\iffirstargument\setupunderbar[#1]\fi
    \processisolatedwords{#2}\dodounderbar
    \egroup}
-
-\unexpanded\def\underbar
-  {\bgroup
-   \increment\underbarlevel
-   \donetrue
-   \dounderbar\betweenunderbarwords}
 
 \unexpanded\def\underbars
   {\bgroup
@@ -556,6 +562,8 @@
   {\bgroup
    \processisolatedwords{#1}\dooverstrike
    \egroup}
+
+\def\underbarparameter#1{\csname\??on#1\csname}
 
 \def\setupunderbar
   {\dodoubleargument\getparameters[\??on]}

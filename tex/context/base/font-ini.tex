@@ -3106,8 +3106,8 @@
   {\edef\fontstyle{#1}%
    \setcurrentfontstyle\normalizedbodyfontsize}
 
-\chardef\defaultskewcharmi='177
-\chardef\defaultskewcharsy='60
+\chardef\defaultskewcharmi=127 % '177
+\chardef\defaultskewcharsy= 48 % '60
 
 % \def\dosetskewchar#1%
 %   {\skewchar\font\ifx\@@fontskewchar\empty#1\else\@@fontskewchar\fi}
@@ -3345,27 +3345,32 @@
    \the\everybodyfont} % needed ?
 
 %D \macros
-%D   {os}
+%D   {os,frak, goth, cal}
 %D
 %D Old style numerals can be typeset with \type{\os} and look
 %D like {\os 1234567890} instead of the more common looking
 %D 1234567890.
-
-\definefont[os][OldStyle sa *] % \currentfontscale]
-
-\definefontsynonym[OldStyle][Serif]
-
-%D \macros
-%D   {frak, goth, cal}
 %D
 %D On behalf of {\frac Tobias Burnus}, we define some more of
 %D these. Later we will link these names to real file names.
 
-\definefont [frak] [Fraktur      sa *]
-\definefont [goth] [Gothic       sa *]
-\definefont [cal]  [Calligraphic sa *]
-\definefont [bbd]  [Blackboard   sa *]
+% older
+%
+% \definefont [os]   [OldStyle     sa *]
+% \definefont [frak] [Fraktur      sa *]
+% \definefont [goth] [Gothic       sa *]
+% \definefont [cal]  [Calligraphic sa *]
+% \definefont [bbd]  [Blackboard   sa *]
+%
+% newer
 
+\def\os  {\mathortext{\fam\purefamily    {oldstyle}}{\symbolicfont    {OldStyle}}}
+\def\frak{\mathortext{\fam\purefamily     {fraktur}}{\symbolicfont     {Fraktur}}}
+\def\goth{\mathortext{\fam\purefamily      {gothic}}{\symbolicfont      {Gothic}}}
+\def\cal {\mathortext{\fam\purefamily{calligraphic}}{\symbolicfont{Calligraphic}}}
+\def\bbd {\mathortext{\fam\purefamily  {blackboard}}{\symbolicfont  {Blackboard}}}
+
+\definefontsynonym [OldStyle]     [Serif]
 \definefontsynonym [Fraktur]      [Serif]
 \definefontsynonym [Gothic]       [Serif]
 \definefontsynonym [Calligraphic] [Serif]
@@ -3377,17 +3382,37 @@
 %D These macros assume that we use text fonts, and not math
 %D families.
 
-% \def\fraktur     #1{\mathematics{\frak#1}}
-% \def\gothic      #1{\mathematics{\goth#1}}
-% \def\calligraphic#1{\mathematics{\cal #1}}
-% \def\blackboard  #1{\mathematics{\bbd #1}}
-
 \ifx\mathtext\undefined \let\mathtext\hbox \fi
 
-\def\fraktur     #1{\mathortext\mathtext\donothing{\frak#1}}
-\def\gothic      #1{\mathortext\mathtext\donothing{\goth#1}}
-\def\calligraphic#1{\mathortext\mathtext\donothing{\cal #1}}
-\def\blackboard  #1{\mathortext\mathtext\donothing{\bbd #1}}
+\def\fraktur     #1{\mathortext\domathtext\donothing{\frak#1}}
+\def\gothic      #1{\mathortext\domathtext\donothing{\goth#1}}
+\def\calligraphic#1{\mathortext\domathtext\donothing{\cal #1}}
+\def\blackboard  #1{\mathortext\domathtext\donothing{\bbd#1}}
+
+%D Torture test:
+%D
+%D \starttyping
+%D \usetypescript[modern]  [texnansi]
+%D \usetypescript[lucida]  [texnansi]
+%D \usetypescript[palatino][texnansi]
+%D \usetypescript[times]   [texnansi]
+%D \usetypescript[fourier] [ec]
+%D
+%D \startbuffer
+%D \section{\blackboard{T\high{\blackboard{T}}} \blackboard{E}\high{\blackboard{E}} \blackboard{X}\high{\blackboard{X}}}
+%D
+%D {\fontclass: 123 \os123 \cal TEX $\os 123$}
+%D
+%D $\blackboard{T}^{\blackboard{T}} \blackboard{E}^{\blackboard{E}} \blackboard{X}^{\blackboard{X}}$
+%D \blackboard{T}\high{\blackboard{T}} \blackboard{E}\high{\blackboard{E}} \blackboard{X}\high{\blackboard{X}}
+%D \stopbuffer
+%D
+%D {\setupbodyfont[lucida]   \getbuffer}
+%D {\setupbodyfont[modern]   \getbuffer}
+%D {\setupbodyfont[palatino] \getbuffer}
+%D {\setupbodyfont[times]    \getbuffer}
+%D {\setupbodyfont[fourier]  \getbuffer}
+%D \stoptyping
 
 %D \macros
 %D   {definebodyfontswitch}

@@ -209,7 +209,8 @@
         }
 %       exa_filename = exa_filename.replace(/\\\\/g,'/') ;
 %       exa_filelist = exa_filelist.replace(/\\\\/g,'/') ;
-        str = "<exa:request><exa:application>" ;
+        str = "<?xml version='1.0' ?>\\n" ;
+        str = str+"<exa:request xmlns:exa='http://www.pragma-ade.com/schemas/example.rng'><exa:application>" ;
         if (exa_filelist == "") {
             exa_filelist = exa_registered ;
         } else { if (exa_registered != "") {
