@@ -86,6 +86,7 @@
       \c!width=\nextboxwd,\c!height=\nextboxht,
       \c!offset=\!!zeropoint,\c!rotation=, % geen 0 !
       \c!hoffset=\!!zeropoint,\c!voffset=\!!zeropoint,
+      \c!dx=\zeropoint,\c!dy=\zeropoint,
       \c!location=rb,\c!position=\v!no,\c!page=,
       \c!method=\v!overlay,
       \c!sx=1,\c!sy=1,\c!corner=,#2]%
@@ -243,6 +244,8 @@
      {\@@layeryoff\@@layerysiz}{\@@layeryoff\layerparameter\c!voffset}%
    \advance\@@layerxoff\layerparameter\c!offset
    \advance\@@layeryoff\layerparameter\c!offset
+\advance\@@layerxoff\layerparameter\c!dx % internal, can be used in preset
+\advance\@@layeryoff\layerparameter\c!dy % internal, can be used in preset
    \@@layerxpos\layerparameter\c!sx\@@layerxpos
    \@@layerypos\layerparameter\c!sy\@@layerypos
    \@@layerxoff\layerparameter\c!sx\@@layerxoff
@@ -581,7 +584,8 @@
 \def\MPlayerheight{\vsize}
 
 \def\dosetMPlayer[#1][#2][#3]%
-  {\edef\MPlayerwidth {\MPw{#2}}%
+  {\checkpositions % new, else only support after \starttext
+   \edef\MPlayerwidth {\MPw{#2}}%
    \edef\MPlayerheight{\MPh{#2}}%
    \setlayer[#1][\c!x=\MPx{#2},\c!y=\MPy{#2},\c!position=\v!no,#3]}
 

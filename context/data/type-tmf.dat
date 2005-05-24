@@ -8,9 +8,9 @@
 
 --en=? --ve=public --co=antp --so=auto --ro=TEXMFMAIN
 
-# public antt
-
---en=? --ve=public --co=antt --so=auto --ro=TEXMFMAIN
+# no longer needed, public antt
+#
+# --en=? --ve=public --co=antt --so=auto --ro=TEXMFMAIN
 
 # urw helvetica
 

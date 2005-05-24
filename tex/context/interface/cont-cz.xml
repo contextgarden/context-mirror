@@ -4397,6 +4397,10 @@
         <cd:constant type="normalni"/>
         <cd:constant type="radek"/>
       </cd:parameter>
+      <cd:parameter name="cislovani">
+        <cd:constant type="ano"/>
+        <cd:constant type="nocheck"/>
+      </cd:parameter>
       <cd:inherit name="nastavoramovani"/>
     </cd:assignments>
   </cd:arguments>
@@ -8453,6 +8457,12 @@
       </cd:parameter>
       <cd:parameter name="maxvyska">
         <cd:constant type="cd:dimension"/>
+      </cd:parameter>
+      <cd:parameter name="konverze">
+        <cd:constant type="cd:text"/>
+      </cd:parameter>
+      <cd:parameter name="prefix">
+        <cd:constant type="cd:text"/>
       </cd:parameter>
     </cd:assignments>
   </cd:arguments>

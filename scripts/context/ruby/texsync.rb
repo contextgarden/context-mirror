@@ -2,22 +2,29 @@
 
 # program   : texsync
 # copyright : PRAGMA Advanced Document Engineering
-# version   : 1.1 - 2003/2004
+# version   : 2003-2005
 # author    : Hans Hagen
+#
+# project   : ConTeXt / eXaMpLe
+# concept   : Hans Hagen
+# info      : j.hagen@xs4all.nl
+# www       : www.pragma-ade.com
 
 # For the moment this script only handles the 'minimal' context
 # distribution. In due time I will add a few more options, like
 # synchronization of the iso image.
 
-banner = ['TeXSync', 'version 1.1', '2002/2004', 'PRAGMA ADE/POD']
+banner = ['TeXSync', 'version 1.1.1', '2002/2004', 'PRAGMA ADE/POD']
 
 unless defined? ownpath
     ownpath = $0.sub(/[\\\/]\w*?\.rb/i,'')
     $: << ownpath
 end
 
-require 'xmpl/switch'
-require 'exa/logger'
+require 'base/switch'
+require 'base/logger'
+# require 'base/tool'
+
 require 'rbconfig'
 
 class Commands
@@ -134,7 +141,7 @@ class Commands
             texpaths = ['texmf','texmf-local','texmf-fonts','texmf-mswin','texmf-linux','texmf-macos']
         elsif option('terse') then
             texpaths = ['texmf','texmf-local','texmf-fonts']
-            case Config::CONFIG['host_os']
+            case Config::CONFIG['host_os'] # or: Tool.ruby_platform
                 when /mswin/  then texpaths.push('texmf-mswin')
                 when /linux/  then texpaths.push('texmf-linux')
                 when /darwin/ then texpaths.push('texmf-macosx')
@@ -176,7 +183,7 @@ class Commands
 
 end
 
-logger      = EXA::ExaLogger.new(banner.shift)
+logger      = Logger.new(banner.shift)
 commandline = CommandLine.new
 
 commandline.registeraction('update', 'update installed tree')

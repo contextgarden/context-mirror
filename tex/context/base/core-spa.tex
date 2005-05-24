@@ -1169,7 +1169,7 @@
 \def\definespacingmethod[#1]#2{\setvalue{\??sg\??sg#1}{#2}}
 
 \definespacingmethod[\v!packed]{\newfrenchspacing}
-\definespacingmethod[\v!broad    ]{\nonfrenchspacing}
+\definespacingmethod[\v!broad ]{\nonfrenchspacing}
 
 \def\complexsetupspacing[#1]%
   {\executeifdefined{\??sg\??sg#1}\relax
@@ -3625,26 +3625,12 @@
 % beware: \wordright{whatever\kern-\rightskip} should work!
 % so, no funny boxing here
 
-% \def\wordright % zie naw
-%   {% don't change
-%    \groupedcommand
-%      {\removeunwantedspaces
-%       \hfill
-%       \hskip\zeropoint % permit break, \allowbreak fails here
-%       \strut
-%       \hfill
-%       \quad % decent spacing
-%       \hbox}
-%      {% there can be \hskip-\rightskip here
-%       \parfillskip\zeropoint
-%       \par}}
-
 \def\dowordright[#1]%
   {% don't change
    \groupedcommand
      {\removeunwantedspaces
       \hfill
-      \hskip\zeropoint % permit break, \allowbreak fails here
+      \allowbreak % changed back from \hskip\zeropoint
       \strut
       \hfill
       \quad % decent spacing
@@ -3656,6 +3642,14 @@
 \def\wordright
   {\dosingleempty\dowordright}
 
+% \dorecurse{5}{something } \wordright{--someone} \endgraf
+% \dorecurse{6}{something } \wordright{--someone} \endgraf
+% \dorecurse{7}{something } \wordright{--someone} \endgraf
+%
+% \dorecurse{5}{something } \wordright{--someone else entirely} \endgraf
+% \dorecurse{6}{something } \wordright{--someone else entirely} \endgraf
+% \dorecurse{7}{something } \wordright{--someone else entirely} \endgraf
+%
 % \wordright[\rightskip]{whatever}
 
 %D \macros

@@ -65,7 +65,7 @@
 
 \def\setPDFdestination#1%
   {\bgroup
-   \obeylccodes
+   \retainlccodes
    \lccode`\/\safePDFcode \lccode`\#\safePDFcode
    \lccode`\<\safePDFcode \lccode`\>\safePDFcode
    \lccode`\[\safePDFcode \lccode`\]\safePDFcode
@@ -144,7 +144,7 @@
 
 \def\sanitizePDFstring#1\to#2%
   {\bgroup
-   \obeylccodes
+   \retainlccodes
    \lccode`( \plusone \lccode`) \plusone
    \lccode`< \plusone \lccode`> \plusone
    \lccode`[ \plusone \lccode`] \plusone
@@ -1282,7 +1282,9 @@
 \def\FDFflagPopUp            {131072} % 18
 \def\FDFflagEdit             {262144} % 19
 
-\def\FDFflagRadiosInUnison {33554412} % 26
+% bugged anyway, so we need to drop it:
+
+\def\FDFflagRadiosInUnison {33554432} % 26
 
 %D A few more (pdf 1.4) flags, what the spell check one: for
 %D obscure reasons for Adobe downward compatibility means

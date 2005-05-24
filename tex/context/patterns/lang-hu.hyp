@@ -1,0 +1,25 @@
+% context hyphenation file, see lang-all.xml for original comment
+
+% source of data: huhyphn.tex
+
+% begin description data
+
+% <!-- copied from lang-all.xml
+% 
+% <?xml version='1.0' standalone='yes'?>
+% 
+% <description language='hu'>
+%     <sourcefile> huhyphn.tex</sourcefile>
+%     <title>TeX hyphenation patterns for the Hungarian language</title>
+% </description>
+% 
+% end of copy -->
+
+% end description data
+
+% begin hyphenation data
+
+\hyphenation {}
+
+% end hyphenation data
+

@@ -289,14 +289,27 @@
         f = this.getField(fake) ;
         if (f) {
             f.browseForFileToSubmit() ;
-            if (suffixes != "") {
+            if ((suffixes != "") && (f.value != "")) {
+                %
                 s = suffixes.replace(/,/g,"|") ;
                 r = new RegExp() ;
                 s = "\\\\.(" + s + ")$" ;
                 r.compile(s, "i") ;
-                if ((f.value != "")&&(f.value.search(r)<=0)) {
+                if (f.value.search(r)<=0) {
                     f.value = "" ;
                     app.alert('This filetype is not permitted.') ;
+                %
+                % lst = suffixes.split(/,/) ;
+                % ok = false ;
+                % for (i=0;i<lst.length;i++) {
+                %     if (f.value == lst[i]) {
+                %         ok = true ;
+                %     }
+                % }
+                % if (! ok) {
+                %     f.value = "" ;
+                %     app.alert('This filetype is not permitted.') ;
+                %
                 }
             }
             g = this.getField(name) ;

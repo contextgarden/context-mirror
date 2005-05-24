@@ -1094,6 +1094,37 @@
   \definefontsynonym [AntykwaTorunska-CondItalicCap]     [\typescriptthree-anttcri] [encoding=\typescriptthree]
 \stoptypescript
 
+% mabye no -Regular etc
+% dunny reverse of condlight lightcond
+
+\starttypescript [math] [antykwa-torunska] [default]
+  \definefontsynonym [AntykwaTorunska-Math-Letters-Regular]       [rm-anttr]
+  \definefontsynonym [AntykwaTorunska-Math-Letters-RegularItalic] [mi-anttr]
+  \definefontsynonym [AntykwaTorunska-Math-Symbols-Regular]       [sy-anttr]
+  \definefontsynonym [AntykwaTorunska-Math-Extension-Regular]     [ex-anttr]
+\stoptypescript
+
+\starttypescript [math] [antykwa-torunska-light] [default]
+  \definefontsynonym [AntykwaTorunska-Math-Letters-Light]        [rm-anttl]
+  \definefontsynonym [AntykwaTorunska-Math-Letters-LightItalic]  [mi-anttl]
+  \definefontsynonym [AntykwaTorunska-Math-Symbols-Light]        [sy-anttl]
+  \definefontsynonym [AntykwaTorunska-Math-Extension-Light]      [ex-anttr] % [ex-anttl]
+\stoptypescript
+
+\starttypescript [math] [antykwa-torunska-cond] [default]
+  \definefontsynonym [AntykwaTorunska-Math-Letters-CondRegular]       [rm-anttcr]
+  \definefontsynonym [AntykwaTorunska-Math-Letters-CondRegularItalic] [mi-anttcr]
+  \definefontsynonym [AntykwaTorunska-Math-Symbols-CondRegular]       [sy-anttcr]
+  \definefontsynonym [AntykwaTorunska-Math-Extension-CondRegular]     [ex-anttr]
+\stoptypescript
+
+\starttypescript [math] [antykwa-torunska-lightcond] [default]
+  \definefontsynonym [AntykwaTorunska-Math-Letters-CondLight]        [rm-anttcl]
+  \definefontsynonym [AntykwaTorunska-Math-Letters-CondLightItalic]  [mi-anttcl]
+  \definefontsynonym [AntykwaTorunska-Math-Symbols-CondLight]        [sy-anttcl]
+  \definefontsynonym [AntykwaTorunska-Math-Extension-CondLight]      [ex-anttr] % [ex-anttl]
+\stoptypescript
+
 % Antykwa Poltawskiego (GUST)
 
 \starttypescript [serif] [antykwa-poltawskiego] [texnansi,ec,8r]
@@ -1101,6 +1132,70 @@
   \definefontsynonym [AntykwaPoltawskiego-Bold]       [\typescriptthree-antpb]  [encoding=\typescriptthree]
   \definefontsynonym [AntykwaPoltawskiego-Italic]     [\typescriptthree-antpri] [encoding=\typescriptthree]
   \definefontsynonym [AntykwaPoltawskiego-BoldItalic] [\typescriptthree-antpbi] [encoding=\typescriptthree]
+\stoptypescript
+
+% Iwona (JMN)
+
+\starttypescript [sans] [iwona,iwona-light] [texnansi,ec,qx,t5]
+  \definefontsynonym[Iwona-Light]         [\typescriptthree-iwonal]  [encoding=\typescriptthree]
+  \definefontsynonym[Iwona-Regular]       [\typescriptthree-iwonar]  [encoding=\typescriptthree]
+  \definefontsynonym[Iwona-Medium]        [\typescriptthree-iwonam]  [encoding=\typescriptthree]
+  \definefontsynonym[Iwona-Bold]          [\typescriptthree-iwonab]  [encoding=\typescriptthree]
+  \definefontsynonym[Iwona-Heavy]         [\typescriptthree-iwonah]  [encoding=\typescriptthree]
+  \definefontsynonym[Iwona-LightItalic]   [\typescriptthree-iwonali] [encoding=\typescriptthree]
+  \definefontsynonym[Iwona-RegularItalic] [\typescriptthree-iwonari] [encoding=\typescriptthree]
+  \definefontsynonym[Iwona-MediumItalic]  [\typescriptthree-iwonami] [encoding=\typescriptthree]
+  \definefontsynonym[Iwona-BoldItalic]    [\typescriptthree-iwonabi] [encoding=\typescriptthree]
+  \definefontsynonym[Iwona-HeavyItalic]   [\typescriptthree-iwonahi] [encoding=\typescriptthree]
+  \definefontsynonym[Iwona-Light]         [\typescriptthree-iwonal]  [encoding=\typescriptthree]
+  \definefontsynonym[Iwona-Regular]       [\typescriptthree-iwonar]  [encoding=\typescriptthree]
+  \definefontsynonym[Iwona-Medium]        [\typescriptthree-iwonam]  [encoding=\typescriptthree]
+  \definefontsynonym[Iwona-Bold]          [\typescriptthree-iwonab]  [encoding=\typescriptthree]
+  \definefontsynonym[Iwona-Heavy]         [\typescriptthree-iwonah]  [encoding=\typescriptthree]
+  \definefontsynonym[Iwona-LightItalic]   [\typescriptthree-iwonali] [encoding=\typescriptthree]
+  \definefontsynonym[Iwona-RegularItalic] [\typescriptthree-iwonari] [encoding=\typescriptthree]
+  \definefontsynonym[Iwona-MediumItalic]  [\typescriptthree-iwonami] [encoding=\typescriptthree]
+  \definefontsynonym[Iwona-BoldItalic]    [\typescriptthree-iwonabi] [encoding=\typescriptthree]
+  \definefontsynonym[Iwona-HeavyItalic]   [\typescriptthree-iwonahi] [encoding=\typescriptthree]
+\stoptypescript
+
+% Kurier (JMN)
+
+\starttypescript [sans] [kurier,kurier-light] [texnansi,ec,qx,t5]
+  \definefontsynonym[Kurier-Light]         [\typescriptthree-kurl]  [encoding=\typescriptthree]
+  \definefontsynonym[Kurier-Regular]       [\typescriptthree-kurr]  [encoding=\typescriptthree]
+  \definefontsynonym[Kurier-Medium]        [\typescriptthree-kurm]  [encoding=\typescriptthree]
+  \definefontsynonym[Kurier-Bold]          [\typescriptthree-kurb]  [encoding=\typescriptthree]
+  \definefontsynonym[Kurier-Heavy]         [\typescriptthree-kurh]  [encoding=\typescriptthree]
+  \definefontsynonym[Kurier-LightItalic]   [\typescriptthree-kurli] [encoding=\typescriptthree]
+  \definefontsynonym[Kurier-RegularItalic] [\typescriptthree-kurri] [encoding=\typescriptthree]
+  \definefontsynonym[Kurier-MediumItalic]  [\typescriptthree-kurmi] [encoding=\typescriptthree]
+  \definefontsynonym[Kurier-BoldItalic]    [\typescriptthree-kurbi] [encoding=\typescriptthree]
+  \definefontsynonym[Kurier-HeavyItalic]   [\typescriptthree-kurhi] [encoding=\typescriptthree]
+  \definefontsynonym[Kurier-Light]         [\typescriptthree-kurl]  [encoding=\typescriptthree]
+  \definefontsynonym[Kurier-Regular]       [\typescriptthree-kurr]  [encoding=\typescriptthree]
+  \definefontsynonym[Kurier-Medium]        [\typescriptthree-kurm]  [encoding=\typescriptthree]
+  \definefontsynonym[Kurier-Bold]          [\typescriptthree-kurb]  [encoding=\typescriptthree]
+  \definefontsynonym[Kurier-Heavy]         [\typescriptthree-kurh]  [encoding=\typescriptthree]
+  \definefontsynonym[Kurier-LightItalic]   [\typescriptthree-kurli] [encoding=\typescriptthree]
+  \definefontsynonym[Kurier-RegularItalic] [\typescriptthree-kurri] [encoding=\typescriptthree]
+  \definefontsynonym[Kurier-MediumItalic]  [\typescriptthree-kurmi] [encoding=\typescriptthree]
+  \definefontsynonym[Kurier-BoldItalic]    [\typescriptthree-kurbi] [encoding=\typescriptthree]
+  \definefontsynonym[Kurier-HeavyItalic]   [\typescriptthree-kurhi] [encoding=\typescriptthree]
+\stoptypescript
+
+\starttypescript [math] [kurier] [default]
+  \definefontsynonym [Kurier-Math-Letters-Regular]       [rm-kurr]
+  \definefontsynonym [Kurier-Math-Letters-RegularItalic] [mi-kurr]
+  \definefontsynonym [Kurier-Math-Symbols-Regular]       [sy-kurr]
+  \definefontsynonym [Kurier-Math-Extension-Regular]     [ex-kurr]
+\stoptypescript
+
+\starttypescript [math] [kurier-light] [default]
+  \definefontsynonym [Kurier-Math-Letters-Light]        [rm-kurr]
+  \definefontsynonym [Kurier-Math-Letters-LightItalic]  [mi-kurr]
+  \definefontsynonym [Kurier-Math-Symbols-Light]        [sy-kurr]
+  \definefontsynonym [Kurier-Math-Extension-Light]      [ex-kurr]
 \stoptypescript
 
 % Palatino (URW)

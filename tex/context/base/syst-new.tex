@@ -101,24 +101,42 @@
 \def\setownlccode   #1{\lccode#1#1}
 \def\setobeyedlccode#1{\lccode#1\obeyedlccode}
 
-\beginTEX
-
-\def\obeylccodes
+\def\obeylccodes % also eightbitcharacters
   {\let\withcharacter\setownlccode
    \the\withlowercharacters
    \let\withcharacter\setobeyedlccode
    \the\withminorcharacters
-   \ifeightbitcharacters\the\withuppercharacters\fi}
+   \the\withuppercharacters
+   \relax}
 
-\endTEX
+\def\retainlccodes % also eightbitcharacters
+  {\let\withcharacter\setownlccode
+   \the\withlowercharacters
+   \the\withminorcharacters
+   \the\withuppercharacters
+   \relax}
 
-%D This one is much faster in \ETEX:
+% not faster
+%
+% \newtoks \retainedlccodes
+% \dostepwiserecurse{0}{255}{1}
+%   {\appendetoks\lccode\recurselevel=\recurselevel\to\retainedlccodes}
+% \appendetoks\relax\to\retainedlccodes
 
-\beginETEX \lccode
-
-  \def\obeylccodes{\language\zerocount}
-
-\endETEX
+%D This one is much faster in \ETEX. Hm, I misinterpreted
+%D the specs; it does not work.
+%
+% \ifx\normallanguage\undefined \let\normallanguage\language \fi
+% \let\doobeylccodes\obeylccodes
+%
+% \beginETEX \lccode
+%   \begingroup
+%     \normallanguage\zerocount
+%     \doobeylccodes
+%     \patterns{dummy}
+%   \endgroup
+%   \def\obeylccodes{\normallanguage\zerocount}
+% \endETEX
 
 \def\unspaced#1%
   {\dounspaced#1\end}
@@ -367,6 +385,13 @@
 %   \readfile{#2\usersetup}{}{}%
 %   \writestatus{setup}{loading #1 setupfile #2\usersetup}}
 
+% awaiting the definitive implementation
+
+\ifx\resettimer\undefined
+  \let\resettimer \relax
+  \newcount\elapsedtime
+\fi
+
 \newcount\featuretest
 
 \def\testfeature#1#2%
@@ -375,13 +400,19 @@
       \ifnum\featuretest>#1\else#2\expandafter\dotestfeature\fi}%
    \retestfeature}
 
-\def\retestfeature
+\def\retestfeature % timer support is new per 10/5/2005
   {\bgroup
    \ifcase\interactionmode\let\wait\relax\fi
    \writestatus\m!systems{starting feature test}\wait
+   \resettimer
    \featuretest\zerocount \dotestfeature
-   \writestatus\m!systems{feature test done}\wait
+   \scratchdimen\elapsedtime\s!sp
+   \writestatus\m!systems{feature test done (\expandafter\withoutpt\the\scratchdimen s)}%
+   \wait
    \egroup}
+
+%  \edef\elapsedtime{\expandafter\withoutpt\the\dimexpr\elapsedtime\relax s}%
+%  \writestatus\m!systems{feature test done (\elapsedtime)}%
 
 \def\testfeatureonce#1#2%
   {\let\wait\relax\testfeature{#1}{#2}\end}

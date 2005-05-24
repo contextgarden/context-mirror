@@ -370,7 +370,7 @@
 
 \def\presetemptyverbatimline
   {\ifcase\verbatimstatus
-     \global\chardef\verbatimstatus1
+     \global\chardef\verbatimstatus\plusone
    \or
    \or
      \donextemptyverbatimline
@@ -378,31 +378,31 @@
      \doflushverbatimline
      \global\let\savedverbatimline\empty
      \doemptyverbatimline
-     \global\chardef\verbatimstatus2
+     \global\chardef\verbatimstatus\plustwo
    \else
      \kern\zeropoint
      \doverbatimnobreak
      \doflushverbatimline
      \global\let\savedverbatimline\empty
      \doemptyverbatimline
-     \global\chardef\verbatimstatus2
+     \global\chardef\verbatimstatus\plustwo
    \fi}
 
 \def\presetnormalverbatimline
   {\ifcase\verbatimstatus
-     \global\chardef\verbatimstatus2
+     \global\chardef\verbatimstatus\plustwo
    \or
-     \global\chardef\verbatimstatus3
+     \global\chardef\verbatimstatus\plusthree
    \or
-     \global\chardef\verbatimstatus3
+     \global\chardef\verbatimstatus\plusthree
    \or
      \doflushverbatimline
-     \global\chardef\verbatimstatus4
+     \global\chardef\verbatimstatus\plusfour
    \or
      \kern\zeropoint
      \doverbatimnobreak
      \doflushverbatimline
-     \global\chardef\verbatimstatus5
+     \global\chardef\verbatimstatus\plusfive
    \or
      \doverbatimgoodbreak
      \doflushverbatimline

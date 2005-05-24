@@ -703,25 +703,45 @@
 
 \definetwopasslist\s!float
 
+% \def\dofloatreference
+%   {\doglobal\increment\numberedfloat
+%    \edef\dodofloatreference
+%      {\writeutilitycommand
+%         {\twopassentry
+%            {\s!float}%
+%            {\numberedfloat}%
+%            {\hetnummer}}}%
+%    \dodofloatreference}
+
+% \def\redofloatorder#1%
+%   {\doglobal\increment\nofplacedfloats\relax
+%    \gettwopassdata\s!float
+%    \iftwopassdatafound
+%      \doifnot\hetnummer\twopassdata
+%        {\edef\oldhetnummer{\hetnummer}%
+%         \xdef\hetnummer{\twopassdata}%
+%         \showmessage\m!floatblocks1{\nofplacedfloats,#1 \oldhetnummer,\hetnummer}}%
+%    \fi}
+
 \def\dofloatreference
-  {\doglobal\increment\numberedfloat
-   \edef\dodofloatreference
-     {\writeutilitycommand
-        {\twopassentry
-           {\s!float}%
-           {\numberedfloat}%
-           {\hetnummer}}}%
-   \dodofloatreference}
+  {\doifnot\@@bknumbering\v!nocheck
+     {\doglobal\increment\numberedfloat
+      \expanded{\writeutilitycommand
+        {\noexpand\twopassentry
+        {\s!float}%
+        {\numberedfloat}%
+        {\hetnummer}}}}}
 
 \def\redofloatorder#1%
-  {\doglobal\increment\nofplacedfloats\relax
-   \gettwopassdata\s!float
-   \iftwopassdatafound
-     \doifnot\hetnummer\twopassdata
-       {\edef\oldhetnummer{\hetnummer}%
-        \xdef\hetnummer{\twopassdata}%
-        \showmessage\m!floatblocks1{\nofplacedfloats,#1 \oldhetnummer,\hetnummer}}%
-   \fi}
+  {\doifnot\@@bknumbering\v!nocheck
+     {\doglobal\increment\nofplacedfloats\relax
+      \gettwopassdata\s!float
+      \iftwopassdatafound
+        \doifnot\hetnummer\twopassdata
+          {\edef\oldhetnummer{\hetnummer}%
+           \xdef\hetnummer{\twopassdata}%
+           \showmessage\m!floatblocks1{\nofplacedfloats,#1 \oldhetnummer,\hetnummer}}%
+      \fi}}
 
 % In \dofloatinfomessage wordt {{ }} gebruikt omdat anders
 % binnen \startpostponing...\stoppostponing geen goede
@@ -2051,7 +2071,8 @@
    \c!nbottom=0,
    \c!nlines=4,
    \c!local=,
-   \c!default=\v!figure]
+   \c!default=\v!figure,
+   \c!numbering=\v!yes]
 
 \setupfloatsplitting
   [\c!conversion=\v!character, % \v!romannumerals

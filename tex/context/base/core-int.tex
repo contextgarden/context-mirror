@@ -322,12 +322,16 @@
 % with remarks about third party documents and/or associated
 % with documents produced outside our control.
 
-\def\doprepareidentity
-  {\let\!!stringa\@@iakeyword
-   \let\@@iakeyword\empty
-   \def\doprepareidentity##1{\edef\@@iakeyword
-     {\@@iakeyword\ifx\@@iakeyword\empty\else\space\fi##1}}%
-   \@EA\processcommacommand\@EA[\!!stringa]\doprepareidentity
+\def\doprepareidentity        % beware, we need to construct
+  {\let\!!stringa\@@iakeyword % an unexpanded space separated
+   \let\@@iakeyword\empty     % list of keywords from a comma
+   \def\doprepareidentity##1% % separated one
+     {\ifx\@@iakeyword\empty
+        \appended\def\@@iakeyword{##1}%
+      \else
+        \appended\def\@@iakeyword{ ##1}%
+      \fi}%
+   \@EA\processcommalist\@EA[\!!stringa]\doprepareidentity
    \global\let\doprepareidentity\relax}
 
 \def\doinitializeidentity#1%

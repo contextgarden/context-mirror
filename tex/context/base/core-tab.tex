@@ -192,12 +192,12 @@
 %D backgrounds by coloring rules with the height of a row,
 %D skipping upwards and finally drawing the content, like in:
 %D
-%D \gdef\ShowExample%
-%D   {\startfiguurtekst
-%D      {geen}
+%D \gdef\ShowExample
+%D   {\startfiguretext
+%D      {none}
 %D      {\getbuffer}
 %D    \typebuffer
-%D    \stopfiguurtekst}
+%D    \stopfiguretext}
 %D
 %D \startbuffer
 %D \starttable[|c|c|]
@@ -918,6 +918,7 @@
 \def\!ttuse#1%
   {\ifnum#1>\plusone
      \omit
+\global\TABLEdivisionfalse
      \scratchcounter\currentTABLEcolumn                % added
      \advance\scratchcounter #1%                       % added
      \advance\scratchcounter \minusone                 % added
@@ -943,6 +944,14 @@
        {\global\advance\currentTABLEcolumn \plusone}%    % added
    \fi
    \next}                                                % added
+
+% \starttable[|c|c|c|c|]
+% \HL
+% \VL     {test}  \VL \TWO{}     \VL test \VL\FR
+% \DL             \DC                     \DL\DR
+% \VL     {test}  \VL \TWO{}     \VL test \VL\LR
+% \HL
+% \stoptable
 
 %D All commands that are executed between rows are to be put in
 %D \type {\noalign}. We can however not verify if we (that is

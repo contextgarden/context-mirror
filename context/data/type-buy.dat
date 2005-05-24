@@ -113,3 +113,9 @@
 
 --en=? --ve=itc --co=stone --re
 --en=? --ve=itc --co=stone --so=itc/stone --ma --in
+
+# itc bauhaus
+
+--en=? --ve=itc --co=bauhaus --re
+--en=? --ve=itc --co=bauhaus --so=itc/bauhaus --ma --in
+--en=? --ve=itc --co=bauhaus --so=itc/bauhaus --sl=* --pattern=bh*

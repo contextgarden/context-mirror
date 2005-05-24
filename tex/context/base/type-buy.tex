@@ -667,9 +667,23 @@
 
 % itc stone
 
-\starttypescript [map] [stone] [ec,8r,texnansi]
+\starttypescript [map] [stone] [ec,texnansi]
   \loadmapfile[\typescriptthree-itc-stone.map]
 \stoptypescript
+
+% less readable but less parsing
+%
+% \starttypescript [sans,serif] [stone] [name]
+%
+%   \definefontsynonym [\typescriptprefix\typescriptone ]            [Stone\typescriptprefix\typescriptone ITC-Medium]
+%   \definefontsynonym [\typescriptprefix\typescriptone Italic]      [Stone\typescriptprefix\typescriptone ITC-MediumItalic]
+%   \definefontsynonym [\typescriptprefix\typescriptone Slanted]     [Stone\typescriptprefix\typescriptone ITC-MediumItalic]
+%   \definefontsynonym [\typescriptprefix\typescriptone Bold]        [Stone\typescriptprefix\typescriptone ITC-Bold]
+%   \definefontsynonym [\typescriptprefix\typescriptone BoldItalic]  [Stone\typescriptprefix\typescriptone ITC-BoldItalic]
+%   \definefontsynonym [\typescriptprefix\typescriptone BoldSlanted] [Stone\typescriptprefix\typescriptone ITC-BoldItalic]
+%   \definefontsynonym [\typescriptprefix\typescriptone Caps]        [Stone\typescriptprefix\typescriptone SCITC-Medium]
+%
+% \stoptypescript
 
 \starttypescript [sans] [stone] [name]
 
@@ -680,6 +694,18 @@
   \definefontsynonym [SansBoldItalic]  [StoneSansITC-BoldItalic]
   \definefontsynonym [SansBoldSlanted] [StoneSansITC-BoldItalic]
   \definefontsynonym [SansCaps]        [StoneSansSCITC-Medium]
+
+\stoptypescript
+
+\starttypescript [serif] [stone] [name]
+
+  \definefontsynonym [Serif]            [StoneSerifITC-Medium]
+  \definefontsynonym [SerifItalic]      [StoneSerifITC-MediumItalic]
+  \definefontsynonym [SerifSlanted]     [StoneSerifITC-MediumItalic]
+  \definefontsynonym [SerifBold]        [StoneSerifITC-Bold]
+  \definefontsynonym [SerifBoldItalic]  [StoneSerifITC-BoldItalic]
+  \definefontsynonym [SerifBoldSlanted] [StoneSerifITC-BoldItalic]
+  \definefontsynonym [SerifCaps]        [StoneSerifSCITC-Medium]
 
 \stoptypescript
 
@@ -695,7 +721,19 @@
 
 \stoptypescript
 
-\starttypescript [sans] [stone] [ec,8r,texnansi]
+\starttypescript [serif] [stone-oldstyle] [name]
+
+  \definefontsynonym [Serif]            [StoneSerifOSITC-Medium]
+  \definefontsynonym [SerifItalic]      [StoneSerifOSITC-MediumItalic]
+  \definefontsynonym [SerifSlanted]     [StoneSerifOSITC-MediumItalic]
+  \definefontsynonym [SerifBold]        [StoneSerifOSITC-Bold]
+  \definefontsynonym [SerifBoldItalic]  [StoneSerifOSITC-BoldItalic]
+  \definefontsynonym [SerifBoldSlanted] [StoneSerifOSITC-BoldItalic]
+  \definefontsynonym [SerifCaps]        [StoneSerifSCITC-Medium]
+
+\stoptypescript
+
+\starttypescript [sans] [stone] [ec,texnansi]
 
   \definefontsynonym[StoneSansITC-Bold]          [\typescriptthree-stosnb]  [encoding=\typescriptthree]
   \definefontsynonym[StoneSansITC-BoldItalic]    [\typescriptthree-stosnbi] [encoding=\typescriptthree]
@@ -714,15 +752,62 @@
 
 \stoptypescript
 
+\starttypescript [serif] [stone] [ec,texnansi]
+
+  \definefontsynonym[StoneSerifITC-Bold]          [\typescriptthree-stosfb]  [encoding=\typescriptthree]
+  \definefontsynonym[StoneSerifITC-BoldItalic]    [\typescriptthree-stosfbi] [encoding=\typescriptthree]
+  \definefontsynonym[StoneSerifITC-Medium]        [\typescriptthree-stosfm]  [encoding=\typescriptthree]
+  \definefontsynonym[StoneSerifITC-MediumItalic]  [\typescriptthree-stosfmi] [encoding=\typescriptthree]
+  \definefontsynonym[StoneSerifOSITC-Bold]        [\typescriptthree-stosfob] [encoding=\typescriptthree]
+  \definefontsynonym[StoneSerifOSITC-BoldItalic]  [\typescriptthree-stosfobi][encoding=\typescriptthree]
+  \definefontsynonym[StoneSerifOSITC-Medium]      [\typescriptthree-stosfom] [encoding=\typescriptthree]
+  \definefontsynonym[StoneSerifOSITC-MediumItalic][\typescriptthree-stosfomi][encoding=\typescriptthree]
+  \definefontsynonym[StoneSerifSCITC-Medium]      [\typescriptthree-stosfscm][encoding=\typescriptthree]
+  \definefontsynonym[StoneSerifSemITC-Semi]       [\typescriptthree-stosfs]  [encoding=\typescriptthree]
+  \definefontsynonym[StoneSerifSemITC-SemiIta]    [\typescriptthree-stosfsi] [encoding=\typescriptthree]
+  \definefontsynonym[StoneSerifSemOSITC-Semi]     [\typescriptthree-stosfos] [encoding=\typescriptthree]
+  \definefontsynonym[StoneSerifSemOSITC-SemiIta]  [\typescriptthree-stosfosi][encoding=\typescriptthree]
+  \definefontsynonym[StoneSerifSemSCITC-Semi]     [\typescriptthree-stosfscs][encoding=\typescriptthree]
+
+\stoptypescript
+
 % linotype industria
 
-\starttypescript [map] [industria] [ec,8r,texnansi]
+\starttypescript [map] [industria] [ec,texnansi]
   \loadmapfile[\typescriptthree-linotype-industria.map]
 \stoptypescript
 
-\starttypescript [sans] [industria] [ec,8r,texnansi]
+\starttypescript [sans] [industria] [ec,texnansi]
+
+  \loadmapfile[\typescriptthree-linotype-industria.map]
 
   \definefontsynonym[Industria-Solid][\typescriptthree-lt50545][encoding=\typescriptthree]
+
+\stoptypescript
+
+% itc bauhaus
+%
+% texfont --enc=texnansi --ven=itc --col=bauhaus type-buy.dat
+
+\starttypescript [map] [bauhaus] [ec,texnansi]
+  \loadmapfile[\typescriptthree-itc-bauhaus.map]
+\stoptypescript
+
+\starttypescript [sans] [bauhaus] [ec,texnansi]
+
+  \loadmapfile[\typescriptthree-itc-bauhaus.map]
+
+  \definefontsynonym[Bauhaus-Light]         [\typescriptthree-bhl]            [encoding=\typescriptthree]
+  \definefontsynonym[Bauhaus-Medium]        [\typescriptthree-bhm]            [encoding=\typescriptthree]
+  \definefontsynonym[Bauhaus-Demi]          [\typescriptthree-bhd]            [encoding=\typescriptthree]
+  \definefontsynonym[Bauhaus-Bold]          [\typescriptthree-bhb]            [encoding=\typescriptthree]
+  \definefontsynonym[Bauhaus-Heavy]         [\typescriptthree-bhh]            [encoding=\typescriptthree]
+
+  \definefontsynonym[Bauhaus-Bold-Slanted]  [\typescriptthree-bhb-slanted-167][encoding=\typescriptthree]
+  \definefontsynonym[Bauhaus-Demi-Slanted]  [\typescriptthree-bhd-slanted-167][encoding=\typescriptthree]
+  \definefontsynonym[Bauhaus-Heavy-Slanted] [\typescriptthree-bhh-slanted-167][encoding=\typescriptthree]
+  \definefontsynonym[Bauhaus-Light-Slanted] [\typescriptthree-bhl-slanted-167][encoding=\typescriptthree]
+  \definefontsynonym[Bauhaus-Medium-Slanted][\typescriptthree-bhm-slanted-167][encoding=\typescriptthree]
 
 \stoptypescript
 

@@ -2487,13 +2487,16 @@
 \defineXMLsingular [gobblespacetokens] {\gobblespacetokens}
 \defineXMLsingular [disableXML]        {\disableXML}
 
-\def\XMLstr#1%
+\long\def\XMLstr#1%
   {{\enableXML\scantokens{#1}\unskip}}
 
-\def\XMLstr#1% test
-  {\scantokens{\begingroup\enableXML#1<endgroup/>\gobblespacetokens}}
+\long\def\XMLstr#1% test, does not work
+  {\begingroup\enableXML\scantokens{#1<endgroup/><gobblespacetokens/>}}
 
-\def\XMLstrpar#1#2#3% test
+\def\XMLgetvariable#1#2% hooks into generic \getvariable and setvariables
+  {\expanded{\XMLstr{\getvariable{#1}{#2}}}}
+
+\long\def\XMLstrpar#1#2#3% test
   {\ifcsname\@@XMLvariable:#1:#2\endcsname
      \scantokens\@EAEAEA{\@EA\begingroup\@EA\enableXML
        \csname\@@XMLvariable:#1:#2\endcsname<endgroup/>}%

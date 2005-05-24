@@ -21,6 +21,8 @@
 
 \unprotect
 
+% \dochecknote in processnotes
+
 % splitskips setten
 
 %D Footnotes are can be characterized by three components:
@@ -95,7 +97,7 @@
 %D the standard \CONTEXT\ numbering mechanism, and thereby can
 %D be assigned on a per whatever sectioning basis.
 
-\let\noteinsertions\empty
+\ifx\noteinsertions\undefined \let\noteinsertions\empty \fi % permits reload
 
 \def\doprocessnotes#1#2% #1 may be { ... }
   {\def\currentnote{#2}#1}
@@ -115,7 +117,7 @@
 %D ... due to invisibility of inserts ... maybe save them twice
 %D and split new part ... todo ...
 
-\def\doenablenotes
+\def\doenablenotes % brrr
   {\global\count\currentnoteins1000
    \global\skip \currentnoteins1\baselineskip\relax}
 
@@ -167,61 +169,61 @@
      \@EA\newbox\csname\??vn+\currentnote\endcsname % local box
      \@EA\newbox\csname\??vn-\currentnote\endcsname % local box
      \doglobal\addtocommalist{#1}\noteinsertions
-     \definedescription
-       [\??vn\??vn\currentnote]
-       [\c!location=\v!inleft,
-        \c!width=\v!fit,
-        \c!headstyle=\noteparameter\c!style,
-        \c!headcolor=\noteparameter\c!color,
-        \c!before=,
-        \c!after=]%
-     \presetlocalframed
-       [\??vn\currentnote]%
-     \getparameters
-       [\??vn\currentnote]
-       [\c!location=\v!page,
-        \c!way=\v!by\v!part,
-        \c!sectionnumber=\v!no,
-        \c!conversion=,
-        \c!rule=\v!on,
-        \c!before=\blank,
-        \c!bodyfont=\v!small,
-        \c!style=,
-        \c!color=,
-        \c!after=,
-        \c!rulecolor=,
-        \c!rulethickness=\linewidth,
-        \c!frame=\v!off,
-        \c!margindistance=.5em,
-        \c!columndistance=1em,
-        \c!distance=.125em,
-        \c!align=\v!normal,
-        \c!tolerance=\v!tolerant,
-        \c!split=\v!tolerant,
-       %\c!width=\makeupwidth,
-       %\c!width=\ifdim\hsize<\makeupwidth\hsize\else\makeupwidth\fi,
-        \c!width=\defaultnotewidth,
-        \c!height=\textheight,
-        \c!numbercommand=\high,
-        \c!command=\noteparameter\c!numbercommand, % downward compatible
-        \c!separator=\@@koseparator,
-        \c!textcommand=\high,
-        \c!textstyle=\tx,
-        \c!textcolor=,
-        \c!interaction=\v!yes,
-        \c!factor=,
-        \c!scope=, % \v!text \v!page
-        \c!n=1]%
-    \definenumber
-      [\currentnote]
-      [\c!way=\noteparameter\c!way,
-       \c!sectionnumber=\noteparameter\c!way,
-       \c!conversion=\noteparameter\c!conversion]%
-    \letvalue{\??vn\c!rule:\currentnote}\normalnoterule
-    \unexpanded\setvalue{\currentnote}{\setnote[#1]}%
-    \unexpanded\setvalue{\currentnote\v!text}{\setnotetext[#1]}%
-    \setupnote[\currentnote][#2]%
-  \fi}
+   \fi
+   \definedescription
+     [\??vn\??vn\currentnote]
+     [\c!location=\v!inleft,
+      \c!width=\v!fit,
+      \c!headstyle=\noteparameter\c!style,
+      \c!headcolor=\noteparameter\c!color,
+      \c!before=,
+      \c!after=]%
+   \presetlocalframed
+     [\??vn\currentnote]%
+   \getparameters
+     [\??vn\currentnote]
+     [\c!location=\v!page,
+      \c!way=\v!by\v!part,
+      \c!sectionnumber=\v!no,
+      \c!conversion=,
+      \c!rule=\v!on,
+      \c!before=\blank,
+      \c!bodyfont=\v!small,
+      \c!style=,
+      \c!color=,
+      \c!after=,
+      \c!rulecolor=,
+      \c!rulethickness=\linewidth,
+      \c!frame=\v!off,
+      \c!margindistance=.5em,
+      \c!columndistance=1em,
+      \c!distance=.125em,
+      \c!align=\v!normal,
+      \c!tolerance=\v!tolerant,
+      \c!split=\v!tolerant,
+     %\c!width=\makeupwidth,
+     %\c!width=\ifdim\hsize<\makeupwidth\hsize\else\makeupwidth\fi,
+      \c!width=\defaultnotewidth,
+      \c!height=\textheight,
+      \c!numbercommand=\high,
+      \c!command=\noteparameter\c!numbercommand, % downward compatible
+      \c!separator=\@@koseparator,
+      \c!textcommand=\high,
+      \c!textstyle=\tx,
+      \c!textcolor=,
+      \c!interaction=\v!yes,
+      \c!factor=,
+      \c!scope=, % \v!text \v!page
+      \c!n=1]%
+  \definenumber
+    [\currentnote]
+    [\c!way=\noteparameter\c!way,
+     \c!sectionnumber=\noteparameter\c!way,
+     \c!conversion=\noteparameter\c!conversion]%
+  \letvalue{\??vn\c!rule:\currentnote}\normalnoterule
+  \unexpanded\setvalue{\currentnote}{\setnote[#1]}%
+  \unexpanded\setvalue{\currentnote\v!text}{\setnotetext[#1]}%
+  \setupnote[\currentnote][#2]}
 
 \def\setupnotedefinition[#1]%
   {\setupdescriptions[\??vn\??vn#1]}
@@ -260,14 +262,14 @@
        {\edef\noteinsertions{#1}}%
    \fi\fi}
 
-\def\dochecknote
+\def\dochecknote % only to be called locally, some bools will become class-ones
   {% for the moment no mixed text/endnotes modes, so we use
    % \footnoteparameter and not \noteparameter (**)
    \setnotedistance
    \count\currentnoteins\plusthousand
-   \expanded{\doifcommonelse{\v!columns,\v!lastcolumn}{\footnoteparameter\c!location}}% **
+   \expanded{\doifcommonelse{\v!columns,\v!lastcolumn}{\noteparameter\c!location}}% **
        {\chardef\clevernotes\plustwo}
-       {\expanded{\doifinsetelse{\v!firstcolumn}{\footnoteparameter\c!location}}% **
+       {\expanded{\doifinsetelse{\v!firstcolumn}{\noteparameter\c!location}}% **
           {\chardef\clevernotes\plusone}%
           {\chardef\clevernotes\zerocount}}%
    \ifcase\clevernotes\relax
@@ -280,14 +282,13 @@
        \scratchcounter\noteparameter\c!n\relax
        \divide\count\currentnoteins \scratchcounter
      \fi
-     \ExpandBothAfter\doifinsetelse\v!page{\footnoteparameter\c!location}% **
-       {\global\endnotesfalse
-        \ExpandBothAfter\doifinsetelse\v!high{\footnoteparameter\c!location}% **
+     \global\endnotesfalse
+     \expanded{\doifinsetelse{\v!page}{\noteparameter\c!location}}% **
+       {\expanded{\doifinsetelse{\v!high}{\noteparameter\c!location}}% **
           {\global\bottomnotesfalse}
           {\global\bottomnotestrue}}
        {\global\endnotestrue
-        \global\bottomnotestrue
-        \postponenotes}%
+        \global\bottomnotestrue}% not: \postponenotes, else global
     \else
       % notes in column areas
       \ifnum\@@kln=\zerocount % brrr dependency on \??kl
@@ -306,6 +307,11 @@
    \ifnotelimit
      \dimen\currentnoteins\noteparameter\c!height
      \multiply\dimen\currentnoteins \scratchcounter
+   \fi
+   \ifendnotes
+     \dimen\currentnoteins\maxdimen
+     \count\currentnoteins\zerocount
+     \skip \currentnoteins\zeropoint
    \fi}
 
 \def\checknotes
@@ -389,7 +395,7 @@
 
 \def\settextnotes
   {\def\startpushnote  {\startvboxtohbox
-                        \dostartattributes{\??vn\currentnote}\c!style\c!color{}}%
+                        \dostartattributes{\??vn\currentnote}\c!style\c!color\empty}%
    \def\stoppushnote   {\hskip\noteparameter\c!columndistance % plus.5em minus.5em
                         \dostopattributes
                         \stopvboxtohbox}%
@@ -557,8 +563,19 @@
 %D footnotes can be handled by a straight insert, but we do so
 %D by using an indirect call to the \type{\insert} primitive.
 
-\let\localnoteinsert=\insert
+\def\dostartlocalnoteinsert
+  {\dochecknote
+   \ifendnotes
+     \global\setbox\localpostponednotes\vbox\bgroup
+     \ifvoid\localpostponednotes\else\unvbox\localpostponednotes\fi
+   \else
+     \insert\currentnoteins\bgroup
+   \fi}
 
+\let\startlocalnoteinsert\dostartlocalnoteinsert
+\let\stoplocalnoteinsert \egroup
+
+%D Making footnote numbers active is not always that logical,
 %D Making footnote numbers active is not always that logical,
 %D especially when we keep the reference and text at one page.
 %D On the other hand we need interactivity when we refer to
@@ -593,9 +610,8 @@
      \unskip\unskip
      \globallet\lastnotesymbol\dolastnotesymbol
    \fi
-   \ignorespaces
-   \localnoteinsert\currentnoteins\bgroup
-\doif{\noteparameter\c!scope}\v!page{\floatingpenalty\maxdimen}% experiment
+   \startlocalnoteinsert
+     \doif{\noteparameter\c!scope}\v!page{\floatingpenalty\maxdimen}% experiment
      \penalty\notepenalty
      \forgetall
      \setnotebodyfont
@@ -632,7 +648,7 @@
   {\endstrut
    \stoppushnote
    \egroup
-   \egroup
+   \stoplocalnoteinsert
    \kern\notesignal\relax} % \relax is needed to honor spaces
 
 \def\dolastnotesymbol
@@ -718,6 +734,7 @@
 \def\doplacenoteinserts
   {%\ifvoid\currentnoteins \else % unsafe, strange
    \relax\ifdim\ht\currentnoteins>\zeropoint\relax
+     \dochecknote
      \ifendnotes \else
        \noteparameter\c!before
        \placenoterule  % alleen in ..mode
@@ -786,64 +803,57 @@
 \newconditional\postponednote
 
 \def\autopostponenotes
-  {\def\localnoteinsert % not global
+  {\def\startlocalnoteinsert % not global
      {\ifinner
         %\message{[postponed note]}%
         \global\setbox\localpostponednotes\vbox\bgroup
           \global\settrue\postponednote
-          \ifvoid\localpostponednotes\else
-            \unvbox\localpostponednotes
-          \fi
-          \expandafter\gobbletwoarguments
+          \ifvoid\localpostponednotes\else\unvbox\localpostponednotes\fi
       \else
         %\message{[inserted note]}%
-        \expandafter\insert
+        \expandafter\dostartlocalnoteinsert
       \fi}}
 
 \def\postponenotes
   {\let\autopostponenotes\postponenotes
    \let\postponenotes\relax % prevent loops
-   \def\localnoteinsert % not global
+   \def\startlocalnoteinsert % not global
      {%\message{[postponed note]}%
       \global\setbox\localpostponednotes\vbox\bgroup
-        \global\settrue\postponednote
-        \unvbox\localpostponednotes
-        \gobbletwoarguments}}
+      \global\settrue\postponednote
+%         \unvbox\localpostponednotes}}
+      \ifvoid\localpostponednotes\else\unvbox\localpostponednotes\fi}}
 
 \def\dodoflushnotes % per class, todo: handle endnotes here
   {\ifdim\ht\localpostponednotes>\zeropoint
      \bgroup
-     % not that accurate when multiple notes
-     \scratchdimen\pagegoal
-     \advance\scratchdimen -\pagetotal
-     \ifdim\scratchdimen<\ht\localpostponednotes
-       \message{[moved note \currentnote]}%
+     \dochecknote
+     \ifendnotes \else
+       % not that accurate when multiple notes
+       \scratchdimen\pagegoal
+       \advance\scratchdimen -\pagetotal
+       \ifdim\scratchdimen<\ht\localpostponednotes
+         \message{[moved note \currentnote]}%
+       \fi
+       \insert\currentnoteins\bgroup\unvbox\localpostponednotes\egroup
      \fi
      \egroup
-   \fi
-   \insert\currentnoteins\bgroup\unvbox\localpostponednotes\egroup}
-% \fi} is better
+   \fi}
 
 \def\doflushnotes % also called directly, \ifvoid is needed !
   {\ifconditional\processingnote \else \ifconditional\postponednote
-     \ifendnotes
-       % todo: per class
-     \else
-       \let\localnoteinsert\insert % not global
-       \processnotes\dodoflushnotes
-       \global\setfalse\postponednote
-     \fi
+     \let\localnoteinsert\normalnoteinsert % not global
+     \processnotes\dodoflushnotes
+     \global\setfalse\postponednote
    \fi \fi}
 
 \def\flushnotes
   {\ifconditional\processingnote \else \ifconditional\postponednote
-     \ifendnotes
-       % todo: per class
-     \else \ifinner \else \ifinpagebody \else
+     \ifinner \else \ifinpagebody \else
        %\ifvmode % less interference, but also less secure
        \doflushnotes
        %\fi
-     \fi \fi \fi
+     \fi \fi
    \fi \fi}
 
 %D This is a nasty and new secondary footnote flusher. It
@@ -925,14 +935,20 @@
 
 \def\defaultnotewidth{\makeupwidth}
 
+% \def\collectlocalnotes
+%   {\def\localnoteinsert##1% was \gdef, but never reset!
+%      {%\message{[local note]}%
+%       \global\setbox\localpostponednotes\vbox\bgroup
+%         \ifvoid\localpostponednotes \else
+%           \unvbox\localpostponednotes
+%         \fi
+%         \let\next}}
+
 \def\collectlocalnotes
-  {\def\localnoteinsert##1% was \gdef, but never reset!
+  {\def\startlocalnoteinsert% was \gdef, but never reset!
      {%\message{[local note]}%
       \global\setbox\localpostponednotes\vbox\bgroup
-        \ifvoid\localpostponednotes \else
-          \unvbox\localpostponednotes
-        \fi
-        \let\next}}
+      \ifvoid\localpostponednotes\else\unvbox\localpostponednotes\fi}}
 
 \def\startlocalnotes
   {\bgroup % here because we support \vbox\startlocalnotes
@@ -1024,9 +1040,10 @@
    \egroup}
 
 \def\dodoplacenotes
-  {\ifendnotes % hm, todo: per noteclass
+  {\dochecknote
+   \ifendnotes
      \ifinpagebody \else \ifdim\ht\localpostponednotes>\zeropoint
-       \ExpandBothAfter\doifinsetelse\v!none{\noteparameter\c!location}
+       \expanded{\doifinsetelse{\v!none}{\noteparameter\c!location}}
          \placenotesasnone\placenotesintext\localpostponednotes
      \fi \fi
    \else \ifdim\ht\currentnoteins>\zeropoint
@@ -1126,7 +1143,26 @@
 %D column way of showing them. By default we precede them by
 %D a small line.
 
-\definenote[\v!footnote]
+\ifx\v!endnote\undefined \def\v!endnote{endnote} \fi
+
+\definenote [\v!footnote  ]
+\definenote [\v!endnote   ] [\c!location=\v!none] % else no break
+
+% \definenote
+%   [mynote]
+%   [way=bypage,
+%    location={page,high},
+%    factor=0,
+%    width=\leftmarginwidth,
+%    scope=page,
+%    rule=,
+%    before=,
+%    after=]
+%
+% \setuptexttexts
+%   [margin]
+%   [\vbox to \textheight{\placenotes[mynote]\vfill}]
+%   []
 
 %D Compatibility macros:
 

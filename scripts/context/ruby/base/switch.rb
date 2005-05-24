@@ -1,20 +1,25 @@
-# module    : xmpl/switch
-# copyright : PRAGMA Publishing On Demand
-# version   : 1.00 - 2002
+# module    : base/switch
+# copyright : PRAGMA Advanced Document Engineering
+# version   : 2002-2005
 # author    : Hans Hagen
 #
-# project   : eXaMpLe
+# project   : ConTeXt / eXaMpLe
 # concept   : Hans Hagen
 # info      : j.hagen@xs4all.nl
-# www       : www.pragma-pod.com / www.pragma-ade.com
+# www       : www.pragma-ade.com
 
 # we cannot use getoptlong because we want to be more
-# tolerant; also we want to be case insensitive.
+# tolerant; also we want to be case insensitive (2002).
 
 # we could make each option a class itself, but this is
 # simpler; also we can put more in the array
 
 # beware: regexps/o in methods are optimized globally
+
+require "rbconfig"
+
+$mswindows = Config::CONFIG['host_os'] =~ /mswin/
+$separator = File::PATH_SEPARATOR
 
 class String
 
@@ -23,6 +28,48 @@ class String
     end
 
 end
+
+# may move to another module
+
+class File
+
+    def File.needsupdate(oldname,newname)
+        begin
+            if $mswindows then
+                return File.stat(oldname).mtime > File.stat(newname).mtime
+            else
+                return File.stat(oldname).mtime != File.stat(newname).mtime
+            end
+        rescue
+            return true
+        end
+    end
+
+    def File.syncmtimes(oldname,newname)
+        begin
+            if $mswindows then
+                # does not work (yet)
+                t = File.mtime(oldname) # i'm not sure if the time is frozen, so we do it here
+                File.utime(0,t,oldname,newname)
+            else
+                t = File.mtime(oldname) # i'm not sure if the time is frozen, so we do it here
+                File.utime(0,t,oldname,newname)
+            end
+        rescue
+        end
+    end
+
+    def File.timestamp(name)
+        begin
+            "#{File.stat(name).mtime}"
+        rescue
+            return 'unknown'
+        end
+    end
+
+end
+
+# main thing
 
 module CommandBase
 
@@ -43,28 +90,43 @@ module CommandBase
     # only works in 1.8
     #
     # def report(*str)
-        # @logger.report(str)
+    #     @logger.report(str)
     # end
     #
     # def version # just a bit of playing with defs
-        # report(@banner.join(' - '))
-        # def report(*str)
-            # @logger.report
-            # @logger.report(str)
-            # def report(*str)
-                # @logger.report(str)
-            # end
-        # end
-        # def version
-        # end
+    #    report(@banner.join(' - '))
+    #    def report(*str)
+    #        @logger.report
+    #        @logger.report(str)
+    #        def report(*str)
+    #            @logger.report(str)
+    #        end
+    #    end
+    #    def version
+    #    end
     # end
 
     def report(*str)
+        initlogger ; @logger.report(str)
+    end
+
+    def debug(*str)
+        initlogger ; @logger.debug(str)
+    end
+
+    def error(*str)
+        initlogger ; @logger.error(str)
+    end
+
+    def initlogger
         if @forcenewline then
             @logger.report
             @forcenewline = false
         end
-        @logger.report(str)
+    end
+
+    def logger
+        @logger
     end
 
     def version # just a bit of playing with defs
@@ -88,6 +150,18 @@ module CommandBase
 
     def option(key)
         @commandline.option(key)
+    end
+    def oneof(*key)
+        @commandline.oneof(*key)
+    end
+
+    def globfiles(pattern='*',suffix=nil)
+        @commandline.setarguments([pattern].flatten)
+        if files = findfiles(suffix) then
+            @commandline.setarguments(files)
+        else
+            @commandline.setarguments
+        end
     end
 
     private
@@ -190,7 +264,11 @@ class CommandLine
 
     end
 
-    def register (option,shortcut,kind,default=false,action=false,helptext='')
+    def setarguments(args=[])
+        @arguments = if args then args else [] end
+    end
+
+    def register(option,shortcut,kind,default=false,action=false,helptext='')
         if kind == FLAG then
             @options[option] = default
         elsif not default then
@@ -316,8 +394,45 @@ class CommandLine
         end
     end
 
-    def option(str)
-        @options[str] # @options.fetch(str,'')
+    def option(str,default=nil)
+        if @options.key?(str) then
+            @options[str]
+        elsif default then
+            default
+        else
+            @options[str]
+        end
+    end
+
+    def checkedoption(str,default='')
+        if @options.key?(str) then
+            if @options[str].empty? then default else @options[str] end
+        else
+            default
+        end
+    end
+
+    def foundoption(str,default='')
+        str = str.split(',') if str.class == String
+        str.each do |s|
+            return str if @options.key?(str)
+        end
+        return default
+    end
+
+    def oneof(*key)
+        [*key].flatten.compact.each do |k|
+           return true if @options.key?(k) && @options[k]
+        end
+        return false
+    end
+
+    def setoption(str,value)
+        @options[str] = value
+    end
+
+    def getoption(str,value='') # value ?
+        @options[str]
     end
 
     def argument(n=0)
@@ -336,7 +451,7 @@ class CommandLine
         end
     end
 
-      # a few local methods, cannot be defined nested (yet)
+    # a few local methods, cannot be defined nested (yet)
 
     private
 
@@ -387,11 +502,6 @@ class CommandLine
         end
         if foundkey then
             @provided[foundkey] = true
-            # if value.class == FalseClass then
-                # @options[foundkey] = true
-            # else
-                # @options[foundkey] = if foundkind == VALUE then cleanvalue(value) else true end
-            # end
             if foundkind == VALUE then
                 @options[foundkey] = cleanvalue(value)
             else

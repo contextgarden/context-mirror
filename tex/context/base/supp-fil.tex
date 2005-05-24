@@ -209,7 +209,9 @@
    \edef:{\string:}%
    \edef~{\string~}%
    \edef_{\string_}%
-   \expanded{\xdef\noexpand\sanitizedfilename{#1}}%
+   \retainlccodes
+   \lccode`\\=`\/
+   \lowercase{\expanded{\xdef\noexpand\sanitizedfilename{#1}}}%
    \egroup
    % maybe \convertcommand\sanitizedfilename\to#2%
    \let#2\sanitizedfilename}
@@ -561,6 +563,8 @@
 %   {\doifsamestringelse{#1}{\jobname       }{#2}
 %   {\doifsamestringelse{#1}{\jobname.\c!tex}{#2}
 %   {\doifsamestringelse{#1}{\outputfilename}{#2}{#3}}}}
+%
+% todo: split name
 
 \def\doifparentfileelse#1%
   {\doifsamestringelse{#1}{\jobname       }\firstoftwoarguments
@@ -644,13 +648,22 @@
 %D
 %D \start \typebuffer \getbuffer \stop
 
+\def\splitoffroot{.} \chardef\splitoffkind\zerocount
+
 \def\splitfilename#1%
   {\edef\splitofffull{#1}% normally outside this call: \sanitizefilename#1\to\sanitizedfilename
    \greedysplitstring\splitofffull\at/\to\splitoffpath\and\splitoffbase
-   \ifx\splitoffbase\empty\let\splitoffbase\splitofffull\fi
+   \ifx\splitoffbase\empty
+     \let\splitoffpath\empty
+     \let\splitoffbase\splitofffull
+   \fi
    \greedysplitstring\splitoffbase\at.\to\splitoffname\and\splitofftype
-   \ifx\splitoffpath\empty\def\splitoffpath{.}\fi
-   \ifx\splitoffname\empty\let\splitoffname\splitoffbase\fi}
+   \chardef\splitoffkind % can be used to test if pathpart was empty
+     \ifx\splitoffpath\empty        \zerocount \else
+     \ifx\splitoffpath\splitoffroot \plusone   \else
+                                    \plustwo   \fi\fi
+   \ifx\splitoffname\empty\let\splitoffname\splitoffbase\fi
+   \ifx\splitoffpath\empty\let\splitoffpath\splitoffroot\fi}
 
 \def\splitfiletype#1%
   {\edef\splitofffull{#1}% normally outside this call: \sanitizefilename#1\to\sanitizedfilename

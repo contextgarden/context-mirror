@@ -122,19 +122,27 @@
 
 \pdfdecimaldigits=10
 
-\ifx\pdfoptionpdfinclusionerrorlevel\undefined
-    \newcount\pdfoptionpdfinclusionerrorlevel
+\ifx\pdfinclusionerrorlevel\undefined
+  \ifx\pdfoptionpdfinclusionerrorlevel\undefined
+    \newcount\pdfinclusionerrorlevel
+  \else
+    \let\pdfinclusionerrorlevel\pdfoptionpdfinclusionerrorlevel
+  \fi
 \fi
 
-\pdfoptionpdfinclusionerrorlevel=0
+\pdfinclusionerrorlevel=0
 
-\ifx\pdfoptionpdfminorversion\undefined
-  \newcount\pdfoptionpdfminorversion
+\ifx\pdfminorversion\undefined
+  \ifx\pdfoptionpdfminorversion\undefined
+    \newcount\pdfminorversion
+  \else
+    \let\pdfminorversion\pdfoptionpdfminorversion
+  \fi
 \fi
 
-\pdfoptionpdfminorversion=5
+\pdfminorversion=5
 
-\def\PDFversion{1.\the\pdfoptionpdfminorversion}%
+\def\PDFversion{1.\number\pdfminorversion}
 
 % %D Why are the Acrobat viewers so buggy? To prevent font cache
 % %D mismatches, we say:
@@ -298,12 +306,20 @@
 \definefileinsertion{tpd}{jpg}{\handlepdfimage}
 %definefileinsertion{tpd}{tif}{\handlepdfimage} % unstable
 
+%D Experimental:
+
+% \definefileinsertion{tpd}{svg}{\doPDFinsertsvg}
+% \definefileinsertion{tpd}{svgz}{\doPDFinsertsvg}
+
+\def\doPDFinsertsvg#1#2#3#4#5#6#7#8#9%
+  {\externalfigureplaceholder{#1}{#7}{#8}}
+
 %D The main file insertion macro is as follows. Because
 %D \PDFTEX\ does not support arbitrary suffixes, we double
 %D check on a user supplied filename, because \PDFTEX\ chokes
 %D on unknown suffixes.
 
-\def\doifvalidpdfimagefileelse#1%
+\def\doifvalidpdfimagefileelse#1% todo: greedy split
   {\doiffileelse{#1}
      {\edef\filesuffix{#1}%
       \doloop

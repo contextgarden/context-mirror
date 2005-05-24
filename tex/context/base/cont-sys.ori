@@ -51,7 +51,7 @@
 %
 % or, if you also want other encodings:
 
-\usetypescript [berry] [\defaultencoding,t5,8r] % texnansi is never present
+\usetypescript [berry] [ec,t5,8r] % texnansi is never present
 
 % If you run into missing font metrics kind of problems,
 % you may want to uncomment:
@@ -60,7 +60,7 @@
 
 % You can let \CONTEXT\ load the map files for \PDFTEX.
 
-\resetmapfiles \autoloadmapfilestrue
+\autoloadmapfilestrue
 
 % (1) you can prevent loading with:
 %
@@ -154,10 +154,6 @@
 % 'kpsewhich plain.mem').
 
 \useMETAFUNformattrue
-
-% Enabling nested pretty printing
-
-\newprettytrue
 
 % This can be a way to get things working on system with
 % name clashes. (Some \TeX's tend do search system wide.)

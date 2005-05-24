@@ -1,0 +1,35 @@
+% context hyphenation file, see lang-all.xml for original comment
+
+% source of data: lahyph.tex
+
+% begin description data
+
+% <!-- copied from lang-all.xml
+% 
+% <?xml version='1.0' standalone='yes'?>
+% 
+% <description language='la'>
+%     <sourcefile>lahyph.tex</sourcefile>
+%     <title>TeX hyphenation patterns for the Latin language</title>
+%     <remarks>v3.0b</remarks>
+%     <copyright>
+%         <year>1999-2001</year>
+%         <owner>Claudio Beccari</owner>
+%     </copyright>
+%     <copyright>
+%         <year>1993, 1994, 1998, 1999</year>
+%         <owner>Bernd Raichle/DANTE e.V.</owner>
+%         <comment>Macro code in 'dehypht.tex'</comment>
+%     </copyright>
+% </description>
+% 
+% end of copy -->
+
+% end description data
+
+% begin hyphenation data
+
+\hyphenation {}
+
+% end hyphenation data
+

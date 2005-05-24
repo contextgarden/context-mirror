@@ -124,6 +124,7 @@
 \defineconstant size            formaat          groesse
 \defineconstant number          getal            nummer
 \defineconstant height          hoogte           hoehe
+\defineconstant factor          factor           faktor
 \defineconstant frame           kader            rahmen
 %defineconstant framecolor      kaderkleur       rahmenfarbe
 \defineconstant color           kleur            farbe

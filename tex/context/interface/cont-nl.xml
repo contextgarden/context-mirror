@@ -4397,6 +4397,10 @@
         <cd:constant type="normaal"/>
         <cd:constant type="regel"/>
       </cd:parameter>
+      <cd:parameter name="nummeren">
+        <cd:constant type="ja"/>
+        <cd:constant type="geencontrole"/>
+      </cd:parameter>
       <cd:inherit name="stelomlijndin"/>
     </cd:assignments>
   </cd:arguments>
@@ -8453,6 +8457,12 @@
       </cd:parameter>
       <cd:parameter name="maxhoogte">
         <cd:constant type="cd:dimension"/>
+      </cd:parameter>
+      <cd:parameter name="conversie">
+        <cd:constant type="cd:text"/>
+      </cd:parameter>
+      <cd:parameter name="prefix">
+        <cd:constant type="cd:text"/>
       </cd:parameter>
     </cd:assignments>
   </cd:arguments>

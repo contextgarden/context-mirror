@@ -198,7 +198,7 @@
 %D filetype is specified, we scan for the next set of files.
 %D As one can see, we prefer outlines over bitmaps.
 
-\def\figuretypes{\c!eps,\c!mps,\c!pdf,\c!png,\c!jpg,\c!tif} % ,\c!tex,\c!tmp} % \c!mov
+\def\figuretypes{\c!eps,\c!mps,\c!pdf,\c!svg,\c!svg z,\c!png,\c!jpg,\c!tif} % ,\c!tex,\c!tmp} % \c!mov
 
 %D Instead of using a comma separated list, we could have use a
 %D faster alternative, but the current implementation is not
@@ -245,14 +245,20 @@
    \let\@@efcurrenttype\empty
    \let\@@efcurrentpath\empty
    \let\@@efcurrentfile\empty
+   % empty path list if hard coded path
    \doanalyzefigurefiles\doanalyzefigurefilesA
    \doanalyzefigurefiles\doanalyzefigurefilesB
    \doanalyzefigurefiles\doanalyzefigurefilesC
    % new, permits rather raw names like e:/....
+\ifx\@@effilepath\empty
+   % we don't want a global search (happens with empty path)
+\else
+   \@@eftrace{checking filepath "\@@effilepath"}%
    \let\dodoanalyzefigurefiles\redoanalyzefigurefiles
    \doanalyzefigurefiles\doanalyzefigurefilesA
    \doanalyzefigurefiles\doanalyzefigurefilesB
-   \doanalyzefigurefiles\doanalyzefigurefilesC}
+   \doanalyzefigurefiles\doanalyzefigurefilesC
+\fi}
 
 %D The previous macro suggests that there are three main
 %D methods applied. First we pass over all types and
@@ -280,6 +286,7 @@
   {\ifcase\figurestatus
      \def\@@efcurrentpath{#1}%
      \sanitizefilename#1\to\@@efcurrentpath
+     \@@eftrace{checking path "\@@efcurrentpath"}%
      \doiffileinsertionsupportedelse\@@efcurrenttype
        {\assignfullfilename{\@@efcurrentpath}{\@@effilename.\figureextension{\@@efcurrenttype}}\to\@@efcurrentfile
         \dodododoanalyzefigurefiles}
@@ -312,7 +319,7 @@
 % never change the vsize / hsize here, is taken from env
 
 \def\dogetfiguresizetex#1#2#3#4#5#6% file pagina ...
-  {\doifinsetelse\@@efextension{\c!tex,\c!tmp}
+  {\doifinsetelse\@@effiletype{\c!tex,\c!tmp}
      {\ifx\@@efcurrentpath\empty\executedfalse\else\executedtrue\fi}
      \executedfalse
    \ifexecuted
@@ -374,7 +381,7 @@
           \fi}%
      \fi
      \ifexecuted
-       \chardef\figurestatus=3
+       \chardef\figurestatus\plusthree
        \doifelse\@@efcurrenttype\c!eps
          {\ifcase\EPScreator
             \@@eftrace{found}%
@@ -402,6 +409,26 @@
 
 \def\dogetfiguresizemps
   {\dogetfiguresizeeps}
+
+\def\dogetfiguresizesvg#1#2#3#4#5#6%
+  {\doifelse\@@effiletype\c!svg\executedtrue\executedfalse
+   \ifexecuted
+     #3\zeropoint
+     #4\zeropoint
+     \startnointerference
+       \startXMLignore
+         \defineXMLcommand[svg][width=100,height=75]
+           {\global\dimen1=\XMLop{width}\onebasepoint
+            \global\dimen3=\XMLop{height}\onebasepoint
+            \endinput}%
+         \processXMLfilegrouped{#1}%
+       \stopXMLignore
+     \stopnointerference
+     #5=\dimen1\relax
+     #6=\dimen3\relax
+   \else
+     \@@eftrace{ignored}%
+   \fi}
 
 \def\getfiguredimensionsB
   {\ifcase\figurestatus\ifcase\figurefilemode\else
@@ -437,7 +464,7 @@
      \ifcase\figurestatus\ifcase\figurefilemode\else
 \doifsomething\@@efcurrentpath
 {%
-      \doifnotinset\@@efextension{\c!tex,\c!tmp}
+      \doifnotinset\@@effiletype{\c!tex,\c!tmp}
          {\doiffileelse\@@efcurrentfile
             {\edef\@@effilenametype{\@@effilename.\@@efcurrenttype}%
              \@@eftrace{running texutil on \@@effilenametype}%
@@ -527,7 +554,7 @@
      \endinput
    \fi}
 
-%D While loading the utlity file (often \type {texutil.tuf})
+%D While loading the utility file (often \type {texutil.tuf})
 %D the next command (when present) aborts reading when the
 %D versions don't match.
 
@@ -562,6 +589,19 @@
            \let\@@effullname\@@efcurrentfile}%
           \donothing}
        \donothing
+   \fi}
+
+%D Here we locate the to-be converted images (if needed).
+
+\def\locatefigureconversionfile
+  {\processcommacommand[\figurepathlist]\dolocatefigureconversionfile}
+
+\def\dolocatefigureconversionfile#1%
+  {\ifcase\figurestatus
+     \sanitizefilename#1\to\@@efconversionpath
+     \assignfullfilename{\@@efconversionpath}{\@@efconversionfile.\@@efconversiontype}\to\@@efconversionfull
+     \@@eftrace{searching for original \@@efconversionfull}%
+     \doiffileelse\@@efconversionfull{\chardef\figurestatus\plusone}\donothing
    \fi}
 
 %D All these macros are in some way called by the macro \type
@@ -691,8 +731,12 @@
    \or % globaal
      \let\figurepathlist\@@exdirectory
    \or % lokaal,globaal / non empty gebied
-     \edef\figurepathlist{\f!currentpath\ifx\@@exdirectory\empty\else,\fi\@@exdirectory}%
+     \edef\figurepathlist{\f!currentpath\ifx\@@exdirectory\empty\else,\@@exdirectory\fi}%
    \fi
+%
+\doifnotmode{\systemmodeprefix\v!first}% first cache, else no lowres etc
+  {\ifx\@@excache\empty\else\edef\figurepathlist{\@@excache,\figurepathlist}\fi}%
+%
    \ExpandBothAfter\doifinset\v!default\@@exlocation
      {\edef\figurepathlist{\figurepathlist,}}% default tex path search
    \ifx\@@exfile\empty
@@ -706,6 +750,7 @@
      [\c!option=,\c!maxwidth=,\c!maxheight=,
      %\c!splitcolor=,% needed ?
       \c!foregroundcolor=,\c!color=,
+     %\c!conversion=,\c!prefix=,
       \c!frame=\v!off,\c!background=]}
 
 %D Since we only need to reset some parameters, we can
@@ -716,6 +761,7 @@
      [\c!option=,\c!maxwidth=,\c!maxheight=,
      %\c!splitcolor=,% needed ?
       \c!foregroundcolor=,\c!color=,
+     %\c!conversion=,\c!prefix=,
       \c!frame=\v!off,\c!background=]}
 
 %D This one dropped the runtime of the \MAPS\ bibliography
@@ -726,9 +772,12 @@
   {\let\@@efoption         \empty
    \let\@@efmaxwidth       \empty
    \let\@@efmaxheight      \empty
-   \let\@@efframe          \v!off
-   \let\@@efcolor          \empty
    \let\@@efforegroundcolor\empty
+   \let\@@efcolor          \empty
+   \let\@@efconversion     \empty
+  %\let\@@efprefix         \empty
+  %\let\@@efcache          \empty
+  %\let\@@efframe          \v!off
    \let\@@efbackground     \empty}
 
 % The following code will move:
@@ -883,7 +932,7 @@
 
 % \def\presetundefinedfigure#1%
 %   {\let\@@eftype      #1%
-%    \let\@@efextension #1%
+%    \let\@@effiletype #1%
 %    \let\@@efobject    \v!no
 %    \let\@@efpreset    \v!no
 %    \ifx\@@efwidth\empty
@@ -897,22 +946,18 @@
 % \def\presetfigureavi{\presetundefinedfigure\c!avi}
 
 \def\presetundefinedfigure#1#2%
-  {\let\@@eftype      #2%
-   \let\@@efextension #2%
-   \let\@@efobject    \v!no
+  {\let\@@eftype    #2%
+   \let\@@effiletype#2%
+   \let\@@efobject  \v!no
    \ifcase#1\or
-     \let\@@efpreset \v!no
-     \ifx\@@efwidth\empty
-       \def\@@efwidth{8\lineheight}% 4cm
-     \fi
-     \ifx\@@efwidth\empty
-       \def\@@efwidth{6\lineheight}%  3cm
-     \fi
+     \let\@@efpreset\v!no
+     \ifx\@@efwidth\empty\def\@@efwidth{8\lineheight}\fi
+     \ifx\@@efwidth\empty\def\@@efwidth{6\lineheight}\fi
    \fi}
 
-\def\presetfiguresvg{\presetundefinedfigure0\c!svg}
-\def\presetfiguremov{\presetundefinedfigure1\c!mov}
-\def\presetfigureavi{\presetundefinedfigure1\c!avi}
+\def\presetfiguresvg{\presetundefinedfigure\zerocount\c!svg}
+\def\presetfiguremov{\presetundefinedfigure\plusone  \c!mov}
+\def\presetfigureavi{\presetundefinedfigure\plusone  \c!avi}
 
 % The page number (frame) is passed as first option.
 
@@ -962,11 +1007,20 @@
    % nil path search in case of path spec
    \expanded{\checkfilename{\expandedfigurename}}%
    \ifcase\kindoffile\else \let\figurepathlist\empty \fi
-   \greedysplitstring\expandedfigurename\at.\to\@@effilename\and\@@efextension
+%    \greedysplitstring\expandedfigurename\at.\to\@@effilename\and\@@effiletype
+\splitfilename\expandedfigurename
+\let\@@effilepath\splitoffpath
+\let\@@effilename\splitoffname
+\let\@@effiletype\splitofftype
+\ifcase\splitoffkind\let\@@effilepath\empty\fi
    \doifelse\@@effilename{mprun}
      {\edef\@@effilepref{\bufferprefix}}
      {\let \@@effilepref\empty}%
    \edef\@@effilename{\@@effilepref\@@effilename}%
+\ifx\@@effilepath\empty\else
+% \addtocommalist\@@effilepath\figurepathlist
+  \edef\@@effilename{\@@effilepath/\@@effilename}%
+\fi
    \restorecatcodes  % recently added; we presume local use
    \def\@@eflabel{#2}%
    \global\let\externalfigurelog\empty
@@ -988,16 +1042,19 @@
       \c!maxwidth=\@@exmaxwidth,\c!maxheight=\@@exmaxheight,
       \c!scale=,\c!width=,\c!height=,\c!display=,\c!lines=,\c!grid=,
      %\c!foregroundcolor=,
-      \c!color=,\c!conversion=,\c!prefix=,
+      \c!color=,\c!conversion=\@@exconversion,\c!prefix=\@@exprefix,\c!cache=\@@excache,
       \c!factor=,\c!hfactor=,\c!wfactor=]%
-   \doif\@@efextension\c!mov\presetfiguremov
-   \doif\@@efextension\c!avi\presetfigureavi
-   \doif\@@efextension\c!svg\presetfiguresvg
+   % make into an installable list
+   \doifnothing\@@efconversion
+     {\doif\@@effiletype\c!mov\presetfiguremov
+      \doif\@@effiletype\c!avi\presetfigureavi
+      \doif\@@effiletype\c!svg\presetfiguresvg}%
    #1[#4][#5][#6]%
    % prefix in runs > 1
    % prefix in runs > 1
-\doifnotmode{\systemmodeprefix\v!first}
-  {\doifsomething\@@efprefix{\edef\@@effilename{\@@efprefix\@@effilename}}}%
+   \doifnotmode{\systemmodeprefix\v!first}
+     {\doifsomething\@@efprefix{\edef\@@effilename{\@@efprefix\@@effilename}}%
+      \let\@@effiletype\empty}% beware, walks over the whole suffixlist
    % new, somehow needed when \textwidth is used:
    \doifsomething\@@efmaxwidth {\freezedimenmacro\@@efmaxwidth }%
    \doifsomething\@@efmaxheight{\freezedimenmacro\@@efmaxheight}%
@@ -1030,29 +1087,31 @@
         \donothing
    %
    \doif\@@efreset\v!yes\resetexternalfigures
+   % todo: nop when conversion
    \doif\@@eftype \c!mov\presetfiguremov
    \doif\@@eftype \c!avi\presetfigureavi
    \doif\@@eftype \c!svg\presetfiguresvg
    % hack
-   \doif\@@efmethod\c!mov{\doifsomething\@@efextension{\presetundefinedfigure1\@@efextension}}%
-   \doif\@@efmethod\c!svg{\doifsomething\@@efextension{\presetundefinedfigure0\@@efextension}}%
+   \doif\@@efmethod\c!mov{\doifsomething\@@effiletype{\presetundefinedfigure1\@@effiletype}}%
+   \doif\@@efmethod\c!svg{\doifsomething\@@effiletype{\presetundefinedfigure0\@@effiletype}}%
    %
    \doif\@@eftype\v!buffer
-     {\ifx\@@efextension\empty
-        \let\@@efextension\c!tmp
+     {\ifx\@@effiletype\empty
+        \let\@@effiletype\c!tmp
       \fi
       \let\@@eftype\c!tex}%
-   \@EA\doifnumberelse\@EA{\@@efextension} % new, test first
-   {\def\@@eftype{\c!mps}}
-   {\processaction
-     [\@@efextension]
-     [   \c!tex=>\let\@@eftype\c!tex,
-         \c!tmp=>\let\@@eftype\c!tex
-                 \edef\@@effilepref{\bufferprefix}%
-                 \edef\@@effilename{\@@effilepref\@@effilename},
-         \c!avi=>\presetfigureavi,
-         \c!mov=>\presetfiguremov,
-         \c!svg=>\presetfiguresvg]}%
+   \@EA\doifnumberelse\@EA{\@@effiletype}% new, test first
+     {\let\@@eftype\c!mps}
+     {\processaction
+       [\@@effiletype]
+       [   \c!tex=>\let\@@eftype\c!tex,
+           \c!tmp=>\let\@@eftype\c!tex
+                   \edef\@@effilepref{\bufferprefix}%
+                   \edef\@@effilename{\@@effilepref\@@effilename},
+           % todo: nop when conversion
+           \c!avi=>\presetfigureavi,
+           \c!mov=>\presetfiguremov,
+           \c!svg=>\presetfiguresvg]}%
    \edef\figuretypes{\figuretypes,\c!tex}%
    \ifx\@@eftype\c!tex
      % Since tex code can have positional stuff and worse,
@@ -1060,7 +1119,7 @@
      % up in files, therefore:
      \let\@@efobject\v!no
    \fi
-   \edef\@@efobjectname{\@@effilename-\@@eftype-\@@efextension-\@@efpage}%
+   \edef\@@efobjectname{\@@effilename-\@@eftype-\@@effiletype-\@@efpage}%
    \doifelse\@@efobject\v!no
      \donefalse
      {\doifspecialavailableelse\dostartscaling
@@ -1071,7 +1130,7 @@
    % too strict:
    %    \doifparentfileelse\@@effilename
    %      {\@EA\removefromcommalist\@EA{\jobsuffix}\figuretypes
-   %       \let\@@efextension\empty
+   %       \let\@@effiletype\empty
    %       \showmessage\m!figures9\@@effilename
    %       \donefalse}
    %      \donothing
@@ -1095,42 +1154,57 @@
      \edef\@@effullname{\@@effilepref\expandedfigurename}%
    \else
      \doifelse{#2}\s!figurepreset
-       {\def\figureextension##1{\@@efextension}%
+       {\def\figureextension##1{\@@effiletype}%
         \edef\@@effullname{\@@effilepref\expandedfigurename}}%
-       {\ifx\@@efextension\empty
+       {\ifx\@@effiletype\empty
           \dogetcommacommandelement1\from\@@eftype\to\commalistelement
           \edef\@@effullname{\@@effilename.\commalistelement}%
           \def\figureextension##1{##1}%
         \else
-          \@EA\doifnumberelse\@EA{\@@efextension}
+          \@EA\doifnumberelse\@EA{\@@effiletype}
             {\let\@@eftype\c!mps}\donothing
-          \edef\@@effullname{\@@effilename.\@@efextension}%
-          \def\figureextension##1{\@@efextension}%
+          \edef\@@effullname{\@@effilename.\@@effiletype}%
+          \def\figureextension##1{\@@effiletype}%
         \fi}%
+% begin prelocate to be converted image
+\let\@@efconversionpath\empty
+\let\@@efconversionfile\@@effilename
+\let\@@efconversiontype\@@effiletype
+\doifmodeelse{\systemmodeprefix\v!first}
+  {\doifelsenothing\@@efconversion\donefalse\donetrue}%
+  {\donefalse}%
+\ifdone
+   \chardef\figurestatus\zerocount
+   \locatefigureconversionfile
+   \chardef\figurestatus\zerocount
+\fi
+% end
      \doifelse\@@efpreset\v!no
        {\doifelse\@@eftype\s!unknown
-          {\chardef\figurestatus0
+          {\chardef\figurestatus\zerocount
            \let\@@eftype\figuretypes
            \locatepresetfigurefiles}
-          {\chardef\figurestatus1 }}
+          {\chardef\figurestatus\plusone}}
        {\doifelse\@@eftype\s!unknown
           {\let\@@eftype\figuretypes}
           {\@EA\removefromcommalist\@EA{\@@eftype}\figuretypes
            \edef\@@eftype{\ifx\@@eftype\empty\else\@@eftype,\fi\figuretypes}}%
-        \ifx\@@efextension\empty\else
-          \ExpandBothAfter\doifinsetelse\@@efextension\@@eftype
-            {\@EA\removefromcommalist\@EA{\@@efextension}\@@eftype
-             \edef\@@eftype{\@@efextension,\@@eftype}}%
+        \ifx\@@effiletype\empty\else
+          \ExpandBothAfter\doifinsetelse\@@effiletype\@@eftype
+            {\@EA\removefromcommalist\@EA{\@@effiletype}\@@eftype
+             \edef\@@eftype{\@@effiletype,\@@eftype}}%
             \donothing
         \fi
         \doifelse{#2}\s!figurepreset
-          {\chardef\figurestatus4
+          {\chardef\figurestatus\plusfour
            \assignfullfilename\f!currentpath\@@exfile\to\@@efloadname
            \let\@@eftype\@@epe}
           {\chardef\figurestatus\zerocount
-           \analyzefigurefiles}}%
+           \ifconditional\externalfigureflush
+             \analyzefigurefiles
+           \fi}}%
      \let\@@epe\@@eftype
-     \edef\@@efextension{\figureextension{\@@eftype}}% dirty trick
+     \edef\@@effiletype{\figureextension{\@@eftype}}% dirty trick
      \global\figwid\zeropoint \figxsca\plusone
      \global\fighei\zeropoint \figysca\plusone
      \doif\v!frame\@@exoption
@@ -1151,8 +1225,8 @@
    \or % no message
      \doifnot\@@efsymbol\v!yes{\showmessage\m!figures8\@@effullname}%
    \fi
-   \ifdim\@@epw=\zeropoint \chardef\figurestatus1 \fi
-   \ifdim\@@eph=\zeropoint \chardef\figurestatus1 \fi
+   \ifdim\@@epw=\zeropoint \chardef\figurestatus\plusone \fi
+   \ifdim\@@eph=\zeropoint \chardef\figurestatus\plusone \fi
    \global\gridfigurefalse
    \ifnum\figurestatus=1 % unknown dimensions, take width or height or scale
      \setnaturalfiguresize
@@ -1320,6 +1394,7 @@
    \globalpushmacro\figurefileconversion
    \globalpushmacro\figurefileprefix
    \globalpushmacro\figurefilepath
+   \globalpushmacro\figurefilecache
    \xdef\figurewidth         {\the\figwid}%
    \xdef\figureheight        {\the\fighei}%
    \xdef\figurelabel         {#1}%
@@ -1329,6 +1404,7 @@
    \xdef\figurefileconversion{\@@efconversion}%
    \xdef\figurefileprefix    {\@@efprefix}%
    \xdef\figurefilepath      {\@@efcurrentpath}%
+   \xdef\figurefilecache     {\@@efcache}%
    \doifmodeelse{\systemmodeprefix\v!first}
      {\let\figurefullname\figurefilename}%
      {\def\figurefullname{\figurefileprefix\figurefilename}}% no \edef
@@ -1340,6 +1416,13 @@
       \else
         \setsystemmode  \v!figure % beter resource
       \fi
+% begin force convertable image into file
+\doifmode{\systemmodeprefix\v!first}{\doifsomething\@@efconversion
+  {\let\figurefilepath\@@efconversionpath
+   \let\figurefilename\@@efconversionfile
+   \let\figurefiletype\@@efconversiontype}}%
+% end
+\ifconditional\externalfigureflush
       \ifconditional\externalfigurelevel % probably background
         \ifskipexternalfigures
           % nothing
@@ -1382,7 +1465,11 @@
                   \box\foundexternalfigure
                 \fi}}%
         \fi\fi\fi
-      \fi}%
+      \fi
+\else
+  \feedbackexternalfigure % maybe also; \the\externalfigurepostprocessors
+\fi}%
+   \globalpopmacro\figurefilecache
    \globalpopmacro\figurefilepath
    \globalpopmacro\figurefileprefix
    \globalpopmacro\figurefileconversion
@@ -1409,6 +1496,22 @@
         name:  \expanded{\verbatimstring{#1}}\\%
         file:  \expanded{\verbatimstring{#2}}\\%
         state: \expanded{\verbatimstring{#3}}}}
+
+\def\externalfigureplaceholder#1#2#3%
+  {\localframed[\??ef]
+     [\c!width=#2,\c!height=#3,\c!frame=\v!on]%
+     {\tt\tfxx \nohyphens
+        name:  \expanded{\verbatimstring{#1}}\\%
+        state: \expanded{\verbatimstring{placeholder}}}}
+
+\def\registerexternalfigure % no placement, handy for preprocessing
+  {\dotripleempty\doregisterexternalfigure}
+
+\def\doregisterexternalfigure[#1][#2][#3]%
+  {\bgroup
+   \setfalse\externalfigureflush
+   \externalfigure[#1][#2][#3]% or \doexternalfigure
+   \egroup}
 
 \newtoks\externalfigureresets
 \newtoks\externalfigurepostprocessors
@@ -1488,7 +1591,11 @@
 
 \presetlocalframed[\??ef]
 
-\newconditional\externalfigurelevel
+\newconditional\externalfigurelevel % true=background false=normal
+\newconditional\externalfigureflush % true=place false=ignore
+
+\setfalse\externalfigurelevel
+\settrue \externalfigureflush
 
 \def\doplaceexternalfigure % used direct and indirect
   {\dosixtupleempty\dodoplaceexternalfigure}
@@ -2131,8 +2238,8 @@
    \externalfigure[\typesetfilename.pdf][#2,#4]}
 
 \appendtoks \setupexternalfigures[\c!option=\v!empty] \to \everyfastmode
-\appendtoks \runMPgraphicsfalse                     \to \everyfastmode
-\appendtoks \insertMPgraphicsfalse                  \to \everyfastmode
+\appendtoks \runMPgraphicsfalse                       \to \everyfastmode
+\appendtoks \insertMPgraphicsfalse                    \to \everyfastmode
 
 \appendtoks \flushMPgraphics \to \everygoodbye  % \everylastshipout
 
@@ -2150,6 +2257,9 @@
    \c!frame=\v!off,
    \c!background=, % new
    \c!splitcolor=\s!white,
+   \c!conversion=,
+   \c!prefix=,
+   \c!cache=,
 %  \c!grid=,
    \c!location={\v!local,\v!global}]
 

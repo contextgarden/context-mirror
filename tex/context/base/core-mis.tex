@@ -566,8 +566,13 @@
    \nobreak
    \hskip\hspaceamount\currentlanguage{#2}}
 
+% \def\rightboundarycharacter#1#2%
+%   {\nobreak
+%    \hskip\hspaceamount\currentlanguage{#2}%
+%    \languageparameter#1}
+
 \def\rightboundarycharacter#1#2%
-  {\nobreak
+  {\prewordbreak %\nobreak
    \hskip\hspaceamount\currentlanguage{#2}%
    \languageparameter#1}
 

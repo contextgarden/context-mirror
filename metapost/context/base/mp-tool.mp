@@ -21,6 +21,41 @@ if known context_tool : endinput ; fi ;
 
 boolean context_tool ; context_tool := true ;
 
+%D New, version number testing:
+%D
+%D \starttyping
+%D fill fullcircle scaled 2cm withcolor if mpversiongt("0.6") : red  else : green fi ;
+%D fill fullcircle scaled 1cm withcolor if mpversionlt(0.6)   : blue else : white fi ;
+%D \stoptyping
+
+if not known mpversion : string mpversion ; mpversion := "0.641" ; fi ;
+
+% vardef mpversiongt(expr s) =
+%     scantokens (mpversion & " > " & if numeric s : decimal s else : s fi)
+% enddef ;
+% vardef mpversionlt(expr s) =
+%     scantokens (mpversion & " < " & if numeric s : decimal s else : s fi)
+% enddef ;
+% vardef mpversioneq(expr s) =
+%     scantokens (mpversion & " = " & if numeric s : decimal s else : s fi)
+% enddef ;
+
+%D More interesting:
+%D
+%D \starttyping
+%D fill fullcircle scaled 4cm withcolor if mpversiongt("0.6")     : red    else : green fi ;
+%D fill fullcircle scaled 2cm withcolor if mpversionlt(0.6)       : blue   else : white fi ;
+%D fill fullcircle scaled 1cm withcolor if mpversioncmp(0.6,">=") : yellow else : black fi ;
+%D \stoptyping
+
+vardef mpversioncmp(expr s, c) =
+    scantokens (mpversion & c & if numeric s : decimal s else : s fi)
+enddef ;
+
+vardef mpversionlt (expr s) = mpversioncmp(s, "<") enddef ;
+vardef mpversioneq (expr s) = mpversioncmp(s, "=") enddef ;
+vardef mpversiongt (expr s) = mpversioncmp(s, ">") enddef ;
+
 %D We always want \EPS\ conforming output, so we say:
 
 prologues    := 2 ; % 1 = troff, 2 = tex

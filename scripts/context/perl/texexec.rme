@@ -51,7 +51,7 @@ set  TeXShell  to  tetex
 %
 % Here are some general defaults. They can be overruled later.
 
-set  UseEnginePath      to  false
+set  UseEnginePath      to  true
 
 set  UsedInterfaces     to  en nl metafun mptopdf
 set  UserInterface      to  en

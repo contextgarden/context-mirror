@@ -1,0 +1,39 @@
+% context hyphenation file, see lang-all.xml for original comment
+
+% source of data: sihyph.tex
+
+% begin description data
+
+% <!-- copied from lang-all.xml
+% 
+% <?xml version='1.0' standalone='yes'?>
+% 
+% <description language='sl'>
+%     <sourcefile>sihyph.tex</sourcefile>
+%     <title>TeX hyphenation patterns for the Slovenian language</title>
+%     <copyright>
+%         <year>1990</year>
+%         <owner>TeXCeX (SLO),TeXCeH Norbert Schwarz</owner>
+%     </copyright>
+% 	<copyright>
+%         <year>1994</year>
+%         <owner>Leon "Zlajpah (leon.zlajpah@ijs.si)</owner>
+%         <comment>Use of code page 852 in patterns</comment>
+%     </copyright>
+%     <copyright>
+%         <year>1995,1997</year>
+%         <owner>Leon "Zlajpah (leon.zlajpah@ijs.si)</owner>
+%         <comment>Adaptaion of Slovenian hyphenation pattens, macros</comment>
+%     </copyright>
+% </description>
+% 
+% end of copy -->
+
+% end description data
+
+% begin hyphenation data
+
+\hyphenation {}
+
+% end hyphenation data
+

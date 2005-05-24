@@ -23,21 +23,48 @@
 
 \unprotect
 
-\chardef\inlinedirection\zerocount % 0==notset 1==LR 2==RL
+\chardef \inlinedirection      \zerocount % 0==notset 1==LR 2==RL
+\let     \checkinlinedirection \donothing
 
 \beginETEX \beginL
 
-  \def\pardir#1#2#3% messages end up in a higher level command
-    {\global\TeXXeTstate\plusone
-     \if#2L\chardef\inlinedirection\plusone\else
-     \if#2R\chardef\inlinedirection\plustwo\fi\fi
-     \checkinlinedirection} % needed / added
+    \ifx\pardir \undefined
 
- %\appendtoks \checkinlinedirection \to \everypar % see core-ini.tex
+      \def\pardir#1#2#3% messages end up in a higher level command
+        {\global\TeXXeTstate\plusone
+         \if#2L\chardef\inlinedirection\plusone\else
+         \if#2R\chardef\inlinedirection\plustwo\fi\fi
+         \checkinlinedirection} % needed / added
 
-  \def\checkinlinedirection
-    {\ifcase\inlinedirection\or\beginL\or\beginR\fi}
+      \let\normalpardir\pardir
+
+      \def\checkinlinedirection
+        {\ifcase\inlinedirection\or\beginL\or\beginR\fi}
+
+    \else
+
+%       \let\normalpardir\pardir
+
+%       \def\pardir#1#2#3%
+%         {\if#2L\chardef\inlinedirection\plusone\else
+%          \if#2R\chardef\inlinedirection\plustwo\fi\fi
+%          \normalpardir#1#2#3}
+
+%       \def\beginL
+%         {} % todo: \normalpardir...
+
+%       \def\beginR
+%         {} % todo: \normalpardir...
+
+%      \def\checkinlinedirection
+%        {\ifcase\inlinedirection\or\beginL\or\beginR\fi}
+
+    \fi
 
 \endETEX
+
+% see core-ini.tex
+%
+% \appendtoks \checkinlinedirection \to \everypar
 
 \protect \endinput

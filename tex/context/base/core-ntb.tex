@@ -401,6 +401,7 @@
 \def\bTABLE
   {\dosingleempty\dobTABLE}
 
+
 \def\dobTABLE[#1]%
   {\pushTBL
    % box not here
@@ -410,6 +411,7 @@
    \getparameters
      [\@@tbl\@@tbl]
      [\c!align={\v!right,\v!broad,\v!high},#1]%
+   \hsize\tbltbltextwidth
    \processaction
      [\tbltblsplit]
      [     \v!yes=>\enableTBLbreaktrue,
@@ -1166,7 +1168,7 @@
 
 \long\def\doTBLcharalign#1#2% column data
   {\edef\alignmentclass{#1}%
-   \edef\alignmentcharacter{\tbltblaligncharacter}%
+   \edef\alignmentcharacter{\tbltblalignmentcharacter}%
    \ifcase\TBLpass\or
      \setfirstpasscharacteralign\checkalignment{#2}% {\strut#2\unskip}%
    \fi % force hsize, so always a second
@@ -1298,6 +1300,7 @@
    \c!header=,
    \c!spaceinbetween=,
    \c!maxwidth=8em,
+   \c!textwidth=\hsize,
    \c!split=\v!no,
    \c!splitoffset=0pt,
    \c!splitmethod=a]

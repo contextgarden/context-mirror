@@ -134,10 +134,37 @@ my $dosish = ($Config{'osname'} =~ /^(ms)?dos|^os\/2|^(ms|cyg)win/i) ;
    "verbose"        => \$ProcessVerbose,
    "interface=s"    => \$UserInterface) ;
 
+# A bit old, this code, could be an array. Anyhow, we will
+# replace texutil soon.
+
+$InputFile = "@ARGV" ; # niet waterdicht
+
 #D We need some hacks to suppress terminal output. This
 #D piece of code is based on page~193 of "Programming Perl".
 
 $ProgramLog = "texutil.log" ;
+
+# Well, it seems that unix' symlinks are sensitive for being
+# hijacked. The assumption is that a known file can be a problem.
+# Of course when one knows that certains files are processed,
+# the names are always known and hijacking can always take
+# place. But let's use a slightly less predictable name here:
+#
+# if ((@ARGV[0]) && (@ARGV[0] ne "")) {
+#    $ProgramLog = "@ARGV[0]-$ProgramLog" ;
+# } else {
+#    # no need to be silent
+#    $ProcessSilent = 0 ;
+# }
+#
+# or better, let's drop this feature, since i'm not in the mood
+# now to test hacks like this (i'll just wait till the age of
+# computer anarchy has ended).
+
+$ProgramLog = "/dev/null" ;
+
+# Maybe we should just write to the nul device. (In the rewritten
+# version I can treat unix more strick.)
 
 sub RedirectTerminal
   { open SAVEDSTDOUT, ">&STDOUT" ;
@@ -165,8 +192,6 @@ sub CloseTerminal
 #D By default wildcards are expanded into a list. The
 #D subroutine below is therefore only needed when no file or
 #D pattern is given.
-
-$InputFile = "@ARGV" ; # niet waterdicht
 
 sub CompFileName
   { my ($a,$b) = @_ ;
@@ -1360,6 +1385,7 @@ sub FlushSavedLine
             print TUO "\\registerto$SavedTo" }
         else
           { print TUO "\\registerpage$SavedFrom" } }
+    $SavedHow   = "" ;
     $SavedFrom  = "" ;
     $SavedTo    = "" ;
     $SavedEntry = "" }
@@ -1383,6 +1409,7 @@ sub FlushRegisters
     $SavedFrom  = "" ;
     $SavedTo    = "" ;
     $SavedEntry = "" ;
+    $SavedHow   = "" ;
 
     for ($n=1 ; $n<=$NOfEntries ; ++$n)
       { ($Class, $LCKey, $Key, $Entry, $TextHow, $RegisterState,
@@ -1393,7 +1420,6 @@ sub FlushRegisters
         #
         if ($SortN)
           { $AlfKey = $Key ;
-#            $AlfKey =~ s/(.).*\x00(.).*/$1$2/o ;
             $AlfKey =~ s/(.).*\x00(.).*/$2/o ;
             if (defined($ALF{$AlfKey}))
               { $TestAlfa = $ALF{$AlfKey} } }
@@ -1445,11 +1471,16 @@ sub FlushRegisters
             print TUO "\\registersee{$Class}{$PageHow,$TextHow}{$SeeToo}{$Page}\n" ;
             $LastPage = $Page ;
             $LastRealPage = $RealPage }
-        elsif (($Copied) ||
-              ! (($LastPage eq $Page) and ($LastRealPage eq $RealPage)))
+        else {
+if (($SavedHow ne $PageHow) && ($PageHow ne "")) {
+    # last valid page attribute counts
+    $SavedHow = $PageHow ;
+}
+        if (($Copied) || ! (($LastPage eq $Page) && ($LastRealPage eq $RealPage)))
           { # print "$LastPage / $Page // $LastRealPage / $RealPage\n" ;
             $NextEntry = "{$Class}{$PreviousA}{$PreviousB}{$PreviousC}{$PageHow,$TextHow}" ;
-            $SavedLine = "{$Class}{$PageHow,$TextHow}{$Location}{$Page}{$RealPage}\n" ;
+            #~ $SavedLine = "{$Class}{$PageHow,$TextHow}{$Location}{$Page}{$RealPage}\n" ;
+            $SavedLine = "{$Class}{$SavedHow,$TextHow}{$Location}{$Page}{$RealPage}\n" ;
             if ($RegisterState eq $RegStat{"f"})
               { FlushSavedLine ;
                 print TUO "\\registerfrom$SavedLine" }
@@ -1468,7 +1499,7 @@ sub FlushRegisters
               }
             ++$NOfSanePages ;
             $LastPage = $Page ;
-            $LastRealPage = $RealPage } }
+            $LastRealPage = $RealPage } } }
 
 FlushSavedLine ;
 
@@ -2205,10 +2236,10 @@ sub HandlePdfFigure
           { if (($MediaBoxFound < 2) && ($SomeLine =~ /\/ArtBox\s*\[/io))
               { $MediaBoxFound = 3 ;
                 $MediaBox = $SomeLine }
-            elsif (($MediaBoxFound < 2) && ($SomeLine =~ /\/CropBox\s*\[ /io))
+            elsif (($MediaBoxFound < 2) && ($SomeLine =~ /\/CropBox\s*\[/io))
               { $MediaBoxFound = 2 ;
                 $MediaBox = $SomeLine }
-            elsif (($MediaBoxFound == 0) && ($SomeLine =~ /\/MediaBox\s*\[ /io))
+            elsif (($MediaBoxFound == 0) && ($SomeLine =~ /\/MediaBox\s*\[/io))
               { $MediaBoxFound = 1 ;
                 $MediaBox = $SomeLine } } }
     close ( PDF ) ;

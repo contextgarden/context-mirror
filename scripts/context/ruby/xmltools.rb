@@ -2,21 +2,26 @@
 
 # program   : xmltools
 # copyright : PRAGMA Advanced Document Engineering
-# version   : 1.0 - 2002/2004
+# version   : 2002-2005
 # author    : Hans Hagen
+#
+# project   : ConTeXt / eXaMpLe
+# concept   : Hans Hagen
+# info      : j.hagen@xs4all.nl
+# www       : www.pragma-ade.com
 
 # This script will harbor some handy manipulations on tex
 # related files.
 
-banner = ['XMLTools', 'version 1.1', '2002/2004', 'PRAGMA ADE/POD']
+banner = ['XMLTools', 'version 1.1.1', '2002/2005', 'PRAGMA ADE/POD']
 
 unless defined? ownpath
     ownpath = $0.sub(/[\\\/][a-z0-9\-]*?\.rb/i,'')
     $: << ownpath
 end
 
-require 'xmpl/switch'
-require 'exa/logger'
+require 'base/switch'
+require 'base/logger'
 
 class String
 
@@ -312,7 +317,7 @@ class Commands
 
 end
 
-logger      = EXA::ExaLogger.new(banner.shift)
+logger      = Logger.new(banner.shift)
 commandline = CommandLine.new
 
 commandline.registeraction('dir',     'generate directory listing')

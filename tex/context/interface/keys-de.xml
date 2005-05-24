@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 
-<cd:interface xmlns:cd="http://www.pragma-ade.com/commands" name="context" language="de" version="2005.03.16">
+<cd:interface xmlns:cd="http://www.pragma-ade.com/commands" name="context" language="de" version="2005.05.25">
 
   <cd:variables>
     <cd:variable name="one" value="eins"/>
@@ -211,6 +211,7 @@
     <cd:constant name="autofocus" value="autofocus"/>
     <cd:constant name="focus" value="focus"/>
     <cd:constant name="directory" value="verzeichnis"/>
+    <cd:constant name="cache" value="cache"/>
     <cd:constant name="grid" value="gritter"/>
     <cd:constant name="big" value="gross"/>
     <cd:constant name="get" value="hole"/>

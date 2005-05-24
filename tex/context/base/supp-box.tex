@@ -1640,7 +1640,7 @@
 %D When omitted, the current \type {\hsize} and \type
 %D {\vsize} are used. Local dimensions are supported.
 
-\def\centerbox#1#%   optional height +/-dimen width +/-dimen
+\long\def\centerbox#1#%   optional height +/-dimen width +/-dimen
   {\bgroup
    \dowithnextbox
      {\setlocalhsize
@@ -1703,26 +1703,44 @@
         \splittopskip\openstrutheight
         \setbox\scratchbox\vsplit\rigidcolumnbox to \zeropoint
         \ifcase\rigidcolumnlines\relax
-          \scratchdimen\ht\rigidcolumnbox
-          \divide\scratchdimen \rigidcolumns
-          \getnoflines\scratchdimen
+          % \iffalse
+          %  % maybe some day an option
+          %  \scratchskip\ht\rigidcolumnbox
+          %  \advance\scratchskip\dp\rigidcolumnbox
+          %  \getnoflines\scratchskip
+          %  \ifodd\noflines
+          %    \advance\noflines\plusone
+          %  \fi
+          %  \divide\noflines\rigidcolumns
+          %\else
+            \scratchdimen\ht\rigidcolumnbox
+            \divide\scratchdimen \rigidcolumns
+            \getnoflines\scratchdimen
+          %\fi
         \else
           \noflines\rigidcolumnlines % to be sure
         \fi
         \scratchdimen\noflines\lineheight
-        \setbox\scratchbox\normalhbox to \savedrigidhsize
-          {\dorecurse\rigidcolumns
-             {\setbox\scratchbox\vsplit\rigidcolumnbox to \scratchdimen
-               \dp\scratchbox\openstrutdepth
-              \setbox\scratchbox\normalvtop
-                 \ifalignrigidcolumns to
-                   \ifstretchrigidcolumns\vsize\else\scratchdimen\fi
-                 \fi
-                {\unvbox\scratchbox}%
-              \wd\scratchbox\hsize
-              \box\scratchbox
-              \hfill}%
-           \hfillneg}%
+        % new: we now loop so that we don't loose content
+        % since in practice we also use this macro for
+        % funny lineheights and border cases
+        \setbox0=\box\rigidcolumnbox
+        \doloop
+          {\setbox\rigidcolumnbox=\copy0
+           \setbox\scratchbox\normalhbox to \savedrigidhsize
+             {\dorecurse\rigidcolumns
+                {\setbox\scratchbox\vsplit\rigidcolumnbox to \scratchdimen
+                   \dp\scratchbox\openstrutdepth
+                   \setbox\scratchbox\normalvtop
+                     \ifalignrigidcolumns to
+                       \ifstretchrigidcolumns\vsize\else\scratchdimen\fi
+                     \fi
+                     {\unvbox\scratchbox}%
+                 \wd\scratchbox\hsize
+                 \box\scratchbox
+                 \hfill}%
+              \hfillneg}%
+          \ifvoid\rigidcolumnbox\exitloop\else\advance\scratchdimen\lineheight\fi}%
        \iftightrigidcolumns
          \setbox\scratchbox\normalhbox{\raise\dp\scratchbox\box\scratchbox}%
        \else

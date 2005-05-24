@@ -660,7 +660,7 @@
   {\copyparameters
      [\??chemical][\??chemical\s!chemical]
      [\c!width,\c!height,\c!left,\c!right,\c!top,\c!bottom,
-      \c!bodyfont,\c!size,\c!scale,\c!state,\c!frame,\c!axis,
+      \c!bodyfont,\c!size,\c!scale,\c!state,\c!frame,\c!axis,\c!factor,
       \c!location,\c!option,\c!alternative,\c!resolution,\c!offset,\c!style,
       \c!color,\c!rulecolor,\c!rulethickness]%
    \getparameters
@@ -1267,7 +1267,7 @@
 
 \chardef\chemicallinetype=0
 
-\def\doplotchemicalline%
+\def\doplotchemicalline
   {\!!counte=\!!countc \advance\!!counte by -\!!counta
    \!!countf=\!!countd \advance\!!countf by -\!!countb
    \bgroup
@@ -1361,6 +1361,14 @@
   {\!!counta=#1\!!countb=#2\!!countc=#3\!!countd=#4\relax
    \doplotchemicalline}
 
+\def\plotchemicalfactorline#1#2#3#4%
+  {\!!counta=#1\!!countb=#2\!!countc=#3\!!countd=#4\relax
+   \ifdim\@@chemicalfactor\onepoint=\onepoint \else
+     \scratchdimen\!!counta\s!sp \multiply\scratchdimen1000 \scratchdimen\@@chemicalfactor\scratchdimen \divide\scratchdimen1000 \!!counta\scratchdimen
+     \scratchdimen\!!countc\s!sp \multiply\scratchdimen1000 \scratchdimen\@@chemicalfactor\scratchdimen \divide\scratchdimen1000 \!!countc\scratchdimen
+   \fi
+   \doplotchemicalline}
+
 \def\plotchemicalzline#1#2#3#4%
   {\!!counta=#1\!!countb=#2\!!countc=#3\!!countd=#4\relax
    \ifnum\chemicaldrawingmode=2
@@ -1445,6 +1453,9 @@
 \def\setchemicallinesegment #1 #2 #3 #4 #5
   {\setvalue{\s!chemicallinesegment#1}{\plotchemicalline{#2}{#3}{#4}{#5}}}
 
+\def\setchemicalfactorlinesegment #1 #2 #3 #4 #5
+  {\setvalue{\s!chemicallinesegment#1}{\plotchemicalfactorline{#2}{#3}{#4}{#5}}}
+
 \def\getchemicallinesegment[#1][#2]%
   {\chemicalrotate[#1]%
    \dochemicaloffset{#1}%
@@ -1452,6 +1463,7 @@
    \getvalue{\s!chemicallinesegment#21}%
    \getvalue{\s!chemicallinesegment#22}%
    \undochemicaloffset}
+
 
 \def\getprivatechemicallinesegment[#1][#2]%
   {\chemicalrotate[#1]%
@@ -1477,7 +1489,7 @@
                  {\doprocess[##2##3##4##5]}}}}}%
    \doprocess[#5]}
 
-\def\processchemicallinesegment%
+\def\processchemicallinesegment
   {\doprocesschemicallinesegment0c\getchemicallinesegment}
 
 \def\processchemicalzlinesegment#1#2%
@@ -3311,7 +3323,8 @@ RT##3##4##5=>\processchemicaltextelement{RN}{##3##4##5}{#1}{0}{},
    \c!alternative=1,
    \c!color=,
    \c!rulethickness=,
-   \c!rulecolor=]
+   \c!rulecolor=,
+   \c!factor=1]
 
 % Tijdelijk plaatsen we deze extra macro's hier.
 %

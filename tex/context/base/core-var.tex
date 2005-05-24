@@ -207,7 +207,7 @@
 \def\globalsetvariables % obsolete
   {\dotripleargument\dosetvariables[\globalgetrawparameters]}
 
-\def\dosetvariables[#1][#2][#3]%
+\long\def\dosetvariables[#1][#2][#3]%
   {\errorisfataltrue
    \def\currentvariableclass{#2}%
    \getvariable{#2}\s!reset

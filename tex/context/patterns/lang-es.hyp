@@ -1,0 +1,32 @@
+% context hyphenation file, see lang-all.xml for original comment
+
+% source of data: eshyph.tex
+
+% begin description data
+
+% <!-- copied from lang-all.xml
+% 
+% <?xml version='1.0' standalone='yes'?>
+% 
+% <description language='es'>
+%     <sourcefile>eshyph.tex</sourcefile>
+%     <title>TeX hyphenation patterns for the Spanish language</title>
+%     <copyright>
+%         <year>1993</year>
+%         <owner>Francesc Carmona (franc@porthos.bio.ub.es)</owner>
+%     </copyright>
+% </description>
+% 
+% end of copy -->
+
+% end description data
+
+% begin hyphenation data
+
+\hyphenation {
+no-s-o-tros
+vo-s-o-tros
+}
+
+% end hyphenation data
+

@@ -4397,6 +4397,10 @@
         <cd:constant type="normale"/>
         <cd:constant type="riga"/>
       </cd:parameter>
+      <cd:parameter name="numerazione">
+        <cd:constant type="si"/>
+        <cd:constant type="nocheck"/>
+      </cd:parameter>
       <cd:inherit name="impostaincorniciato"/>
     </cd:assignments>
   </cd:arguments>
@@ -8453,6 +8457,12 @@
       </cd:parameter>
       <cd:parameter name="altezzamax">
         <cd:constant type="cd:dimension"/>
+      </cd:parameter>
+      <cd:parameter name="conversione">
+        <cd:constant type="cd:text"/>
+      </cd:parameter>
+      <cd:parameter name="prefisso">
+        <cd:constant type="cd:text"/>
       </cd:parameter>
     </cd:assignments>
   </cd:arguments>

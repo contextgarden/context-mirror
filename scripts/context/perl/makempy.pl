@@ -18,8 +18,8 @@ eval '(exit $?0)' && eval 'exec perl -S $0 ${1+"$@"}' && eval 'exec perl -S $0 $
 # of binaries on UNIX as well as did some usefull suggestions
 # to improve the functionality.
 
-#  This script uses GhostScript and PStoEdit as well as
-#  pdfTeX, and if requested TeXEdit and ConTeXt.
+# This script uses GhostScript and PStoEdit as well as
+# pdfTeX, and if requested TeXEdit and ConTeXt.
 
 # todo: we can nowadays do without the intermediate step, because GS
 # can now handle PDF quite good

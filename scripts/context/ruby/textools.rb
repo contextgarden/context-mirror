@@ -2,22 +2,28 @@
 
 # program   : textools
 # copyright : PRAGMA Advanced Document Engineering
-# version   : 1.1 - 2002/2004
+# version   : 2002-2005
 # author    : Hans Hagen
+#
+# project   : ConTeXt / eXaMpLe
+# concept   : Hans Hagen
+# info      : j.hagen@xs4all.nl
+# www       : www.pragma-ade.com
 
 # This script will harbor some handy manipulations on tex
 # related files.
 
-banner = ['TeXTools', 'version 1.2', '2002/2004', 'PRAGMA ADE/POD']
+banner = ['TeXTools', 'version 1.2.1', '2002/2005', 'PRAGMA ADE/POD']
 
 unless defined? ownpath
     ownpath = $0.sub(/[\\\/][a-z0-9\-]*?\.rb/i,'')
     $: << ownpath
 end
 
+require 'base/switch'
+require 'base/logger'
+
 require 'ftools'
-require 'xmpl/switch'
-require 'exa/logger'
 
 # Remark
 #
@@ -717,7 +723,7 @@ class Commands
 
 end
 
-logger      = EXA::ExaLogger.new(banner.shift)
+logger      = Logger.new(banner.shift)
 commandline = CommandLine.new
 
 commandline.registeraction('removemapnames'   , '[pattern]   [--recurse]')

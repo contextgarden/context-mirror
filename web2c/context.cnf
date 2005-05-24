@@ -26,7 +26,7 @@ VARTEXFONTS   = $TEMPFONTPATH/varfonts
 % In the case of an multi-os setup, this one can be set
 % by the environment.
 
-TEXFORMATS    = .;$TEXMF/web2c
+TEXFORMATS    = .;$TEXMF/web2c/{$ENGINE,}
 MFBASES       = .;$TEXFORMATS
 MPMEMS        = .;$TEXFORMATS
 TEXPOOL       = .;$TEXFORMATS
@@ -34,8 +34,6 @@ MFPOOL        = .;$TEXFORMATS
 MPPOOL        = .;$TEXFORMATS
 
 WEB2C         = $TEXMF/web2c
-
-TEXFORMATS.xetex = .;$TEXMF/web2c/{xetex,}//
 
 % fonts, for the moment we also support the old enc/map locations
 
@@ -46,17 +44,17 @@ TEXFONTMAPS   = .;$TEXMF/{fonts/map//,fontname};$TEXMF/{pdftex,dvips}/config;$TE
 
 VFFONTS       = .;$TEXMF/fonts/vf//
 TFMFONTS      = .;{$TEXMF/fonts,$VARTEXFONTS}/tfm//
-T1FONTS       = .;$TEXMF/fonts/{type1,pfb}//;$TEXMF/fonts/misc/hbf//;$OSFONTDIR//
-AFMFONTS      = .;$TEXMF/fonts/afm//;$OSFONTDIR//
-LIGFILES      = .;$TEXMF/fonts/lig//
-TTFONTS       = .;$TEXMF/fonts/{truetype,ttf}//;$OSFONTDIR//
+T1FONTS       = .;$TEXMF/fonts/{type1,pfb}//;$TEXMF/fonts/misc/hbf//;$OSFONTDIR
+AFMFONTS      = .;$TEXMF/fonts/afm//;$OSFONTDIR
+LIGFONTS      = .;$TEXMF/fonts/lig//
+TTFONTS       = .;$TEXMF/fonts/{truetype,ttf}//;$OSFONTDIR
 TTF2TFMINPUTS = .;$TEXMF/ttf2pk//
 T42FONTS      = .;$TEXMF/fonts/type42//
 MISCFONTS     = .;$TEXMF/fonts/misc//
 ENCFONTS      = .;$TEXMF/{fonts/enc,dvips,pdftex}//
 CMAPFONTS     = .;$TEXMF/fonts/cmap//
 SFDFONTS      = .;$TEXMF/fonts/sfd//
-OPENTYPEFONTS = .;$TEXMF/fonts/opentype//;$OSFONTDIR//
+OPENTYPEFONTS = .;$TEXMF/fonts/opentype//;$OSFONTDIR
 
 OFMFONTS      = .;{$TEXMF/fonts,$VARTEXFONTS}/{ofm,tfm}//;$TFMFONTS
 OPLFONTS      = .;{$TEXMF/fonts,$VARTEXFONTS}/opl//
@@ -144,7 +142,7 @@ pdf_mem_size.context     =  500000 % 524288
 dest_names_size.context  =  300000 % 131072
 param_size.context       =   10000
 pool_free.context        =   47500
-pool_size.context        = 1250000
+pool_size.context        = 1500000
 save_size.context        =   50000
 stack_size.context       =   10000
 string_vacancies.context =   90000

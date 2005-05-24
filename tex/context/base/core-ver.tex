@@ -58,6 +58,8 @@
 %D are hooked into the support macros via the \type{\obey}
 %D macros.
 
+\newprettytrue % movet to here from cont-sys.tex
+
 \def\prettyidentifier {TEX}
 \def\prettypalet      {}
 
@@ -71,7 +73,7 @@
 
 \def\setupprettiesintype#1%
   {\uppercasestring#1\to\ascii
-   \edef\prettyidentifier%
+   \edef\prettyidentifier
      {\ifundefined{\??ty\??ty\ascii}TEX%
       \else\getvalue{\??ty\??ty\ascii}\fi}%
    \doifundefined{setuppretty\prettyidentifier type}%

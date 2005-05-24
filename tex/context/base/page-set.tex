@@ -114,7 +114,6 @@
    \relax % needed ! ! ! ! else lookahead over \fi and \@EA
    \@EA\egroup\@EA\scratchdimen\the\!!dimena\relax}
 
-
 \beginETEX \ifcsname
 
 \def\columnerasegridboxes % maybe dedicated loops
@@ -316,8 +315,8 @@
 \def\OTRSETsetfreecells#1#2% col start
   {\bgroup
    \global\columnfirstcell\ifnum#2=0 1\else#2\fi\relax
-\OTRSETsetcorrectnofcells\currentcolumnmaxcells % sets \scratchcounter
-\edef\columnmaxcells{\the\scratchcounter}%
+   \OTRSETsetcorrectnofcells\currentcolumnmaxcells % sets \scratchcounter
+   \edef\columnmaxcells{\the\scratchcounter}%
    \ifnum\columnfirstcell>\columnmaxcells
      \global\columnfreecells\zerocount
      \global\columnfirstcell\plusone
@@ -594,11 +593,23 @@
 
 \newtoks   \OTRSEToutput
 
-\def\OTRSETgetparameter#1#2{\getvalue{\??mc\OTRSETidentifier\number#2#1}}
+\def\OTRSETgetparameter#1#2{\csname\??mc\OTRSETidentifier\number#2#1\endcsname}
 \def\OTRSETsetparameter#1#2{\setvalue{\??mc\OTRSETidentifier\number#2#1}}
 
+\def\OTRSETskipstart
+  {\scratchcounter\executeifdefined{\??mc\OTRSETidentifier\c!start}\zerocount
+   \relax % needed !
+   \ifcase\scratchcounter\else
+     \advance\scratchcounter\plusone
+     \doOTRSETsetgridcells
+       {\copy\placeholderboxe}
+       \plusone\plusone\nofcolumns\scratchcounter
+       \null
+   \fi}
+
 \def\OTRSETsetvsize % snap per sectie (gap here?)
   {\ifcollectingcontent \else % can be assigndimen
+\OTRSETskipstart % not that well tested
      \OTRSETcheckinsert % added
      \OTRSETsetfreecells\mofcolumns\columnfirstcell
      \ifsomefreecolumncells
@@ -1375,6 +1386,7 @@
    \def\OTRSETsavebox##1{\!!doneafalse}%
    \doloop
      {\ifsomefloatwaiting
+\OTRSETskipstart
         \dogetfloat
         \ifdim\wd\floatbox>\zeropoint
           \!!doneatrue
@@ -1502,6 +1514,7 @@
       \c!nright=\getvalue{\??mc#1\c!n},
       \c!width=\v!fit,
       \c!lines=0,
+      \c!start=0,
       #2]%
    \dorecurse{\getvalue{\??mc#1\c!nleft}} % todo
      {\dododefinecolumnset[#1][\recurselevel]}%
@@ -1551,40 +1564,6 @@
 
 \def\OTRSETgotocolumn
   {\dosingleempty\doOTRSETgotocolumn}
-
-% \def\doOTRSETgotocolumn[#1]% first|last|yes|<number>
-%   {\doifnumberelse{#1}
-%      {\OTRSETdummycolumn
-%       \doloop
-%         {\ifnum\mofcolumns<#1\relax
-%            \OTRSETdummycolumn
-%          \else
-%            \exitloop
-%          \fi}}
-%      {\processallactionsinset
-%         [#1]
-%         [     \v!ja=>\OTRSETdummycolumn,
-%          \v!forceer=>\OTRSETdummycolumn,
-%           \v!eerste=>{\doOTRSETgotocolumn[1]},
-%          \v!laatste=>\expanded{\doOTRSETgotocolumn[\the\nofcolumns]},
-%          \s!default=>\OTRSETdummycolumn]}}
-
-% \def\doOTRSETgotocolumn[#1]% first|last|yes|<number>
-%   {\doifnumberelse{#1}
-%      {\ifnum\mofcolumns<#1\relax
-%         \vfill\eject % \doejectpage\eject
-%         \doloop
-%           {\ifnum\mofcolumns<#1\relax
-%              \OTRSETdummycolumn \else \exitloop
-%            \fi}%
-%       \fi}
-%      {\processallactionsinset
-%         [#1]
-%         [     \v!ja=>\OTRSETdummycolumn,
-%          \v!forceer=>\OTRSETdummycolumn,
-%           \v!eerste=>{\doOTRSETgotocolumn[1]},
-%          \v!laatste=>\expanded{\doOTRSETgotocolumn[\the\nofcolumns]},
-%          \s!default=>\OTRSETdummycolumn]}}
 
 \def\doOTRSETgotoCOLROW#1% <number>|<number>*<number>
   {\bgroup % really needed
@@ -2425,7 +2404,7 @@
             \v!repeat=>\donetrue,
            \s!unknown=>\doperformtest\commalistelement\donetrue\donefalse]%
         \ifdone
-          \dodoplacecolumntextareas{##1}{#2}
+          \dodoplacecolumntextareas{##1}{#2}%
         \else
           \doglobal\removefromcommalist{##1}#1%
         \fi
@@ -2708,3 +2687,26 @@
 % \stopcolumnset
 
 \protect \endinput
+
+% extreme examples (1)
+%
+% \setupfloats[numbering=nocheck]
+%
+% \definecolumnset [first] [n=2,start=0]
+% \definecolumnset [next]  [n=2,start=3]
+%
+% \setuptexttexts[\vbox to \textheight{\topskipcorrection \hsize\makeupwidth left \hfill right\vfill}]
+%
+% \setuphead[chapter][text=empty]
+%
+% \starttext
+%
+% \startcolumnset[first,next]
+%   \placefigure[btrl]{}{}
+%   \placefigure[tblr]{}{}
+%   \chapter{thuan} \dorecurse{25}{\recurselevel: \input thuan \endgraf}
+% \stopcolumnset
+%
+% \startcolumnset[first,next]
+%   \chapter{thuan} \dorecurse{25}{\input thuan \endgraf\placefigure{}{}}
+% \stopcolumnset

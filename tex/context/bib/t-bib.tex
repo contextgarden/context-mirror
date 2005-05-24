@@ -156,7 +156,7 @@
 \def\bibdoifnot#1%
   {\ifx#1\relax
      \@EA\firstofoneargument
-   \else\ifx\#1\empty
+   \else\ifx#1\empty
      \@EAEAEA\firstofoneargument
    \else
      \@EAEAEA\gobbleoneargument
@@ -516,9 +516,9 @@
 %D
 
 \def\invertedauthor#1#2#3#4#5%
-  {\def\tempraa{#2}\bibdoif\tempraa{#2\bibalternative\c!vonsep}%
+  {\bibdoif{#2}{#2\bibalternative\c!vonsep}%
    #3\bibalternative\c!surnamesep
-   \def\tempraa{#5}\bibdoif\tempraa{\bibalternative\c!juniorsep#5}%
+   \bibdoif{#5}{#5\bibalternative\c!juniorsep}%
    \bibdoif{#1}{#1\unskip}}
 
 \def\normalauthor#1#2#3#4#5%
@@ -528,9 +528,9 @@
    \bibdoif{#5}{#5\unskip}}
 
 \def\invertedshortauthor#1#2#3#4#5%
-  {\def\tempraa{#2}\bibdoif\tempraa{#2\bibalternative\c!vonsep}%
+  {\bibdoif{#2}{#2\bibalternative\c!vonsep}%
    #3\bibalternative\c!surnamesep
-   \def\tempraa{#5}\bibdoif\tempraa{\bibalternative\c!juniorsep#5}%
+   \bibdoif{#5}{#5\bibalternative\c!juniorsep}%
    \bibdoif{#4}{#4\unskip}}
 
 \def\normalshortauthor#1#2#3#4#5%
@@ -675,7 +675,9 @@
      \setuplist[pubs][\c!numbercommand=,\c!textcommand=\outdented]
    \else
      \setuplist[pubs][\c!numbercommand=\@@pblimitednumber,\c!textcommand=]
-   \fi}
+   \fi
+   \forgetall % bugfix 2005/03/18
+}
 
 \def\outdented#1% move to supp-box ?
   {\hskip -\hangindent
@@ -1175,4 +1177,3 @@
 %D \completepublications
 
 \protect \endinput
-

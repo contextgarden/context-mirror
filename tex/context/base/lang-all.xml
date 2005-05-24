@@ -98,7 +98,7 @@
     </copyright>
 </description>
 
-<description language='de'>
+<description language='deo'>
     <sourcefile>dehypht.tex</sourcefile>
     <title>TeX hyphenation patterns for the German language (traditional orthography)</title>
     <copyright>
@@ -207,7 +207,7 @@
     </copyright>
 </description>
 
-<description language='la`'>
+<description language='la'>
     <sourcefile>lahyph.tex</sourcefile>
     <title>TeX hyphenation patterns for the Latin language</title>
     <remarks>v3.0b</remarks>
@@ -315,7 +315,7 @@
     </copyright>
 </description>
 
-<description language='tk'>
+<description language='tr'>
     <sourcefile>tkhyph.tex</sourcefile>
     <title>TeX hyphenation patterns for the modern Turkish language</title>
     <copyright>

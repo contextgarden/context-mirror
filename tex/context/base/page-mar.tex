@@ -334,7 +334,8 @@
 \def\nofmargincontentlines  {0}
 
 \def\doplacemargintext#1#2#3#4%
-  {\strut
+  {\dontcomplain
+   \strut
    \doifsomething{#1}
      {\def\margincontenttag{#1}}%
    \doifinsetelse{\margincontenttag}{\v!left,\v!right} % ugly hack
@@ -679,10 +680,10 @@
    \xdef\nofmargincontentlines{\the\noflines}%
    \egroup}
 
-\def\fillupmargincontentlines
+\def\fillupmargincontentlines % etex ! ! !
   {\endgraf
    \begingroup
-   \scratchcounter\numexpr(\nofmargincontentlines-\prevgraf)\relax
+   \scratchcounter\numexpr\nofmargincontentlines-\prevgraf\relax\relax
    \ifnum\scratchcounter>\zerocount
      \forgetall\dorecurse\scratchcounter{\nobreak\crlf}%
    \fi

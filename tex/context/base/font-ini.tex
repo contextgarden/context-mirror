@@ -1620,6 +1620,27 @@
 
 \endETEX
 
+% \definetypeface[palatino][rm][serif][palatino,allbold][default]
+%
+% \startfontclass[palatino]
+%   \definefontsynonym [Serif]        [SerifBold]
+%   \definefontsynonym [SerifItalic]  [SerifBoldItalic]
+%   \definefontsynonym [SerifSlanted] [SerifBoldSlanted]
+%   \definefontsynonym [SerifCaps]    [SerifBold]
+% \stopfontclass
+%
+% \setupbodyfont[palatino]
+
+\def\startfontclass
+  {\dosingleempty\dostartfontclass}
+
+\def\dostartfontclass[#1]%
+  {\pushmacro\fontclass
+   \doifsomething{#1}{\def\fontclass{#1}}}
+
+\def\stopfontclass
+  {\popmacro\fontclass}
+
 %D \macros
 %D   {tracedfontname}
 %D
@@ -3853,6 +3874,8 @@
 %D look for something that looks like a dash, in which case we
 %D don't correct.
 
+\let\italiccorrection=\/
+
 \def\emphasiscorrection
   {\ifhmode
      \expandafter\emphasislook
@@ -3885,10 +3908,10 @@
 
 \def\dododoemphasiscorrection
   {\scratchskip\lastskip
-   \ifdim\scratchskip=\zeropoint\relax
-     \/\relax
+   \ifdim\scratchskip=\zeropoint\relax % == \ifzeropt\scratchskip
+     \italiccorrection\relax
    \else
-     \unskip\/\hskip\scratchskip
+     \unskip\italiccorrection\hskip\scratchskip
    \fi
    \endgroup}
 

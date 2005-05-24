@@ -2,7 +2,7 @@
 
 # program   : texmfstart
 # copyright : PRAGMA Advanced Document Engineering
-# version   : 1.05 - 2003/2004
+# version   : 1.5.5 - 2003/2005
 # author    : Hans Hagen
 #
 # project   : ConTeXt / eXaMpLe
@@ -24,16 +24,74 @@
 # --exec          => exec instead of system
 # --iftouched=a,b => only if timestamp a<>b
 
+# we don't depend on other libs
+
 require "rbconfig"
 
 $mswindows = Config::CONFIG['host_os'] =~ /mswin/
 $separator = File::PATH_SEPARATOR
-$version   = "1.5.2"
+$version   = "1.6.0"
 
 if $mswindows then
 
     require "win32ole"
     require "Win32API"
+
+end
+
+exit if defined?(REQUIRE2LIB)
+
+$stdout.sync = true
+$stderr.sync = true
+
+$applications = Hash.new
+$suffixinputs = Hash.new
+$predefined   = Hash.new
+
+$suffixinputs['pl']  = 'PERLINPUTS'
+$suffixinputs['rb']  = 'RUBYINPUTS'
+$suffixinputs['py']  = 'PYTHONINPUTS'
+$suffixinputs['jar'] = 'JAVAINPUTS'
+$suffixinputs['pdf'] = 'PDFINPUTS'
+
+$predefined['texexec']  = 'texexec.pl'
+$predefined['texutil']  = 'texutil.pl'
+$predefined['texfont']  = 'texfont.pl'
+$predefined['examplex'] = 'examplex.rb'
+$predefined['concheck'] = 'concheck.rb'
+$predefined['textools'] = 'textools.rb'
+$predefined['ctxtools'] = 'ctxtools.rb'
+$predefined['rlxtools'] = 'rlxtools.rb'
+$predefined['pdftools'] = 'pdftools.rb'
+$predefined['exatools'] = 'exatools.rb'
+$predefined['xmltools'] = 'xmltools.rb'
+$predefined['pstopdf']  = 'pstopdf.rb'
+
+$scriptlist   = 'rb|pl|py|jar'
+$documentlist = 'pdf|ps|eps|htm|html'
+
+$crossover = true # to other tex tools, else only local
+
+$applications['unknown']  = ''
+$applications['perl']     = $applications['pl']  = 'perl'
+$applications['ruby']     = $applications['rb']  = 'ruby'
+$applications['python']   = $applications['py']  = 'python'
+$applications['java']     = $applications['jar'] = 'java'
+
+if $mswindows then
+    $applications['pdf']  = ['',"pdfopen --page #{$page} --file",'acroread']
+    $applications['html'] = ['','netscape','mozilla','opera','iexplore']
+    $applications['ps']   = ['','gview32','gv','gswin32','gs']
+else
+    $applications['pdf']  = ["pdfopen --page #{$page} --file",'acroread']
+    $applications['html'] = ['netscape','mozilla','opera']
+    $applications['ps']   = ['gview','gv','gs']
+end
+
+$applications['htm']      = $applications['html']
+$applications['eps']      = $applications['ps']
+
+if $mswindows then
 
     GetShortPathName = Win32API.new('kernel32', 'GetShortPathName', ['P','P','N'], 'N')
     GetLongPathName  = Win32API.new('kernel32', 'GetLongPathName',  ['P','P','N'], 'N')
@@ -92,7 +150,11 @@ class File
 
     def File.needsupdate(oldname,newname)
         begin
-            return File.stat(oldname).mtime != File.stat(newname).mtime
+            if $mswindows then
+                return File.stat(oldname).mtime > File.stat(newname).mtime
+            else
+                return File.stat(oldname).mtime != File.stat(newname).mtime
+            end
         rescue
             return true
         end
@@ -100,38 +162,25 @@ class File
 
     def File.syncmtimes(oldname,newname)
         begin
-            t = File.mtime(oldname) # i'm not sure if the time is frozen, so we do it here
-            File.utime(0,t,oldname,newname)
+            if $mswindows then
+                # does not work (yet)
+            else
+                t = File.mtime(oldname) # i'm not sure if the time is frozen, so we do it here
+                File.utime(0,t,oldname,newname)
+            end
         rescue
         end
     end
 
+    def File.timestamp(name)
+        begin
+            "#{File.stat(name).mtime}"
+        rescue
+            return 'unknown'
+        end
+    end
+
 end
-
-$applications = Hash.new
-$suffixinputs = Hash.new
-$predefined   = Hash.new
-
-$suffixinputs['pl']  = 'PERLINPUTS'
-$suffixinputs['rb']  = 'RUBYINPUTS'
-$suffixinputs['py']  = 'PYTHONINPUTS'
-$suffixinputs['jar'] = 'JAVAINPUTS'
-$suffixinputs['pdf'] = 'PDFINPUTS'
-
-$predefined['texexec']  = 'texexec.pl'
-$predefined['texutil']  = 'texutil.pl'
-$predefined['texfont']  = 'texfont.pl'
-$predefined['examplex'] = 'examplex.rb'
-$predefined['concheck'] = 'concheck.rb'
-$predefined['textools'] = 'textools.rb'
-$predefined['ctxtools'] = 'ctxtools.rb'
-$predefined['pdftools'] = 'pdftools.rb'
-$predefined['exatools'] = 'exatools.rb'
-$predefined['xmltools'] = 'xmltools.rb'
-$predefined['pstopdf']  = 'pstopdf.rb'
-
-$scriptlist   = 'rb|pl|py|jar'
-$documentlist = 'pdf|ps|eps|htm|html'
 
 def hashed (arr=[])
     arg = if arr.class == String then arr.split(' ') else arr.dup end
@@ -158,7 +207,7 @@ end
 
 def launch(filename)
     if $browser && $mswindows then
-        filename.gsub!(/\.[\/\\]/) do
+        filename = filename.gsub(/\.[\/\\]/) do
             Dir.getwd + '/'
         end
         report("launching #{filename}")
@@ -172,54 +221,89 @@ def launch(filename)
 end
 
 def expanded(arg) # no "other text files", too restricted
-    arg.gsub(/kpse\:(\S+)/o) do
-        original, resolved = $1, ''
-        if $program && ! $program.empty? then
-            pstr = "-progname=#{$program}"
+    arg.gsub(/(env)\:([a-zA-Z\-\_\.0-9]+)/o) do
+        method, original, resolved = $1, $2, ''
+        if resolved = ENV[original] then
+            report("environment variable #{original} expands to #{resolved}") unless $report
+            resolved
         else
-            pstr = ''
+            report("environment variable #{original} cannot be resolved") unless $report
+            original
+        end
+    end . gsub(/(kpse|loc)\:([a-zA-Z\-\_\.0-9]+)/o) do # was: \S
+        method, original, resolved = $1, $2, ''
+        if $program && ! $program.empty? then
+            pstrings = ["-progname=#{$program}"]
+        else
+            pstrings = ['','progname=context']
         end
         # auto suffix with texinputs as fall back
-        begin
-            resolved = `kpsewhich #{pstr} #{original}`.chomp
-        rescue
-            resolved = ''
-        end
-        # elsewhere in the tree
-        if resolved.empty? then
-            begin
-                resolved = `kpsewhich #{pstr} -format="other text files" #{original}`.chomp
-            rescue
-                resolved = ''
-            end
-        end
-        if resolved.empty? then
-            report("#{original} is not resolved") unless $report
-            original
-        else
-            report("#{original} is resolved to #{resolved}") unless $report
+        if ENV["_CTX_K_V_#{original}_"] then
+            resolved = ENV["_CTX_K_V_#{original}_"]
+            report("environment provides #{original} as #{resolved}") unless $report
             resolved
+        else
+            pstrings.each do |pstr|
+                if resolved.empty? then
+                    command = "kpsewhich #{pstr} #{original}"
+                    report("running #{command}")
+                    begin
+                        resolved = `#{command}`.chomp
+                    rescue
+                        resolved = ''
+                    end
+                end
+                # elsewhere in the tree
+                if resolved.empty? then
+                    command = "kpsewhich #{pstr} -format=\"other text files\" #{original}"
+                    report("running #{command}")
+                    begin
+                        resolved = `#{command}`.chomp
+                    rescue
+                        resolved = ''
+                    end
+                end
+            end
+            if resolved.empty? then
+                report("#{original} is not resolved") unless $report
+                ENV["_CTX_K_V_#{original}_"] = original if $crossover
+                original
+            else
+                report("#{original} is resolved to #{resolved}") unless $report
+                ENV["_CTX_K_V_#{original}_"] = resolved if $crossover
+                resolved
+            end
         end
     end
 end
 
 def runcommand(command)
     if $locate then
-        print(command)
+        command = command.split(' ').collect do |c|
+            if c =~ /\//o then
+                begin
+                    cc = File.expand_path(c)
+                    c = cc if FileTest.file?(cc)
+                rescue
+                end
+            end
+            c
+        end . join(' ')
+        print command # to stdout and no newline
     elsif $execute then
-        report("using 'exec' instead of 'system' call: #{command}") if $verbose
+        report("using 'exec' instead of 'system' call: #{command}")
         begin
             Dir.chdir($path) if ! $path.empty?
         rescue
-            report("unable to chdir to: #{$path}") if $verbose
+            report("unable to chdir to: #{$path}")
         end
         exec(command)
     else
-        report("using 'system' call: #{command}") if $verbose
+        report("using 'system' call: #{command}")
         begin
             Dir.chdir($path) if ! $path.empty?
         rescue
-            report("unable to chdir to: #{$path}") if $verbose
+            report("unable to chdir to: #{$path}")
         end
         system(command)
     end
@@ -230,29 +314,27 @@ def runoneof(application,fullname,browserpermitted)
         return true
     else
         report("starting #{$filename}") unless $report
-        print "\n" if $report && $verbose
+        ouput("\n") if $report && $verbose
         applications = $applications[application]
         if applications.class == Array then
             if $report then
-                print [fullname,expanded($arguments)].join(' ')
+                output([fullname,expanded($arguments)].join(' '))
                 return true
             else
                 applications.each do |a|
-                    if runcommand([a,fullname,expanded($arguments)].join(' ')) then
-                        return true
-                    end
+                    return true if runcommand([a,fullname,expanded($arguments)].join(' '))
                 end
             end
         elsif applications.empty? then
             if $report then
-                print [fullname,expanded($arguments)].join(' ')
+                output([fullname,expanded($arguments)].join(' '))
                 return true
             else
                 return runcommand([fullname,expanded($arguments)].join(' '))
             end
         else
             if $report then
-                print [applications,fullname,expanded($arguments)].join(' ')
+                output([applications,fullname,expanded($arguments)].join(' '))
                 return true
             else
                 return runcommand([applications,fullname,expanded($arguments)].join(' '))
@@ -263,7 +345,11 @@ def runoneof(application,fullname,browserpermitted)
 end
 
 def report(str)
-    print str + "\n" if $verbose ;
+    $stderr.puts(str) if $verbose
+end
+
+def output(str)
+    $stderr.puts(str)
 end
 
 def usage
@@ -283,23 +369,35 @@ def usage
     print("           texmfstart --page=2 --file=showcase.pdf\n")
     print("           texmfstart --program=yourtex yourscript.pl arg-1 arg-2\n")
     print("           texmfstart --direct xsltproc kpse:somefile.xsl somefile.xml\n")
-    print("           texmfstart bin:xsltproc kpse:somefile.xsl somefile.xml\n")
+    print("           texmfstart bin:xsltproc env:somepreset kpse:somefile.xsl somefile.xml\n")
     print("           texmfstart --iftouched=normal,lowres downsample.rb normal lowres\n")
 end
 
 # somehow registration does not work out (at least not under windows)
 
 def registered?(filename)
-    return ENV["texmfstart.#{filename}"] != nil
+    if $crossover then
+        return ENV["_CTX_K_S_#{filename}_"] != nil
+    else
+        return ENV["texmfstart.#{filename}"] != nil
+    end
 end
 
 def registered(filename)
-    return ENV["texmfstart.#{filename}"]
+    if $crossover then
+        return ENV["_CTX_K_S_#{filename}_"]
+    else
+        return ENV["texmfstart.#{filename}"]
+    end
 end
 
 def register(filename,fullname)
     if fullname && ! fullname.empty? then # && FileTest.file?(fullname)
-        ENV["texmfstart.#{filename}"] = fullname
+        if $crossover then
+            ENV["_CTX_K_S_#{filename}_"] = fullname
+        else
+            ENV["texmfstart.#{filename}"] = fullname
+        end
         return true
     else
         return false
@@ -307,6 +405,7 @@ def register(filename,fullname)
 end
 
 def find(filename,program)
+    filename = filename.sub(/script:/o, '') # so we have bin: and script: and nothing
     if $predefined.key?(filename) then
         report("expanding '#{filename}' to '#{$predefined[filename]}'")
         filename = $predefined[filename]
@@ -333,13 +432,17 @@ def find(filename,program)
         end
     end
     filename.sub!(/^.*[\\\/]/, '')
-    # next we look at the current path
-    suffixlist.each do |suffix|
-        report("locating '#{filename}.#{suffix}' in currentpath")
-        fullname = './'+filename+'.'+suffix
-        if FileTest.file?(fullname) && register(filename,fullname) then
-            report("'#{filename}.#{suffix}' located in currentpath")
-            return shortpathname(fullname)
+    # next we look at the current path and the callerpath
+    ownpath = $0.sub(/[\\\/][a-z0-9\-]*?\.rb/i,'')
+    [['.','current'],[ownpath,'caller']].each do |p|
+        suffixlist.each do |suffix|
+            fname = "#{filename}.#{suffix}"
+            fullname = File.join(p[0],fname)
+            report("locating '#{fname}' in #{p[1]} path")
+            if FileTest.file?(fullname) && register(filename,fullname) then
+                report("'#{fname}' located in #{p[1]} path")
+                return shortpathname(fullname)
+            end
         end
     end
     # now we consult environment settings
@@ -408,7 +511,18 @@ def find(filename,program)
             return shortpathname(fullname) if register(filename,fullname)
         end
     end
-    return fullname if register(filename,fullname)
+    return shortpathname(fullname) if register(filename,fullname)
+    # let's take a look at the path
+    paths = ENV['PATH'].split($separator)
+    suffixlist.each do |s|
+        paths.each do |p|
+            report("checking #{p} for suffix #{s}")
+            if FileTest.file?(File.join(p,"#{filename}.#{s}")) then
+                fullname = File.join(p,"#{filename}.#{s}")
+                return  shortpathname(fullname) if register(filename,fullname)
+            end
+        end
+    end
     # bad luck, we need to search the tree ourselves
     if (suffixlist.length == 1) && (suffixlist.first =~ /(#{$documentlist})/) then
         report("aggressively locating '#{filename}' in document trees")
@@ -540,78 +654,19 @@ def make(filename,windows=false,linux=false)
     return false
 end
 
-$stdout.sync = true
-$directives  = hashed(ARGV)
-
-$help        = $directives['help']      || false
-$filename    = $directives['file']      || ''
-$program     = $directives['program']   || 'context'
-$direct      = $directives['direct']    || false
-$page        = $directives['page']      || 0
-$browser     = $directives['browser']   || false
-$report      = $directives['report']    || false
-$verbose     = $directives['verbose']   || false
-$arguments   = $directives['arguments'] || ''
-$execute     = $directives['execute']   || $directives['exec'] || false
-$locate      = $directives['locate']    || false
-
-$path        = $directives['path']      || ''
-
-$make        = $directives['make']      || false
-$unix        = $directives['unix']      || false
-$windows     = $directives['windows']   || false
-$stubpath    = $directives['stubpath']  || ''
-$indirect    = $directives['indirect']  || false
-
-$iftouched   = $directives['iftouched'] || false
-
-$openoffice  = $directives['oo']        || false
-
-$applications['unknown']  = ''
-$applications['perl']     = $applications['pl']  = 'perl'
-$applications['ruby']     = $applications['rb']  = 'ruby'
-$applications['python']   = $applications['py']  = 'python'
-$applications['java']     = $applications['jar'] = 'java'
-
-if $openoffice then
-    if ENV['OOPATH'] then
-        if FileTest.directory?(ENV['OOPATH']) then
-            report("using open office python") if $verbose
-            if $mswindows then
-                $applications['python'] = $applications['py']  = "\"#{File.join(ENV['OOPATH'],'program','python.bat')}\""
-            else
-                $applications['python'] = $applications['py']  = File.join(ENV['OOPATH'],'python')
-            end
-            report("python path #{$applications['python']}") if $verbose
-        else
-            report("environment variable 'OOPATH' does not exist") if $verbose
-        end
-    else
-        report("environment variable 'OOPATH' is not set") if $verbose
-    end
-end
-
-if $mswindows then
-    $applications['pdf']  = ['',"pdfopen --page #{$page} --file",'acroread']
-    $applications['html'] = ['','netscape','mozilla','opera','iexplore']
-    $applications['ps']   = ['','gview32','gv','gswin32','gs']
-else
-    $applications['pdf']  = ["pdfopen --page #{$page} --file",'acroread']
-    $applications['html'] = ['netscape','mozilla','opera']
-    $applications['ps']   = ['gview','gv','gs']
-end
-
-$applications['htm']      = $applications['html']
-$applications['eps']      = $applications['ps']
-
 def process(&block)
 
     if $iftouched then
         files = $directives['iftouched'].split(',')
         oldname, newname = files[0], files[1]
         if oldname && newname && File.needsupdate(oldname,newname) then
+            report("file #{oldname}: #{File.timestamp(oldname)}")
+            report("file #{newname}: #{File.timestamp(newname)}")
+            report("file is touched, processing started")
             yield
             File.syncmtimes(oldname,newname)
+        else
+            report("file #{oldname} is untouched")
         end
     else
         yield
@@ -619,29 +674,84 @@ def process(&block)
 
 end
 
-# system("perl -V")
+def main
 
-if $help || ! $filename || $filename.empty? then
-    usage
-else
-    report("texmfstart version #{$version}") if $verbose
-    if $make then
-        if $windows then
-            make($filename,true,false)
-        elsif $unix then
-            make($filename,false,true)
-        else
-            make($filename,$mswindows,!$mswindows)
-        end
-    elsif $browser && $filename =~ /^http\:\/\// then
-        launch($filename)
-    else
-        process do
-            if $direct || $filename =~ /^bin\:/ then
-                direct($filename)
+    $directives  = hashed(ARGV)
+
+    $help        = $directives['help']      || false
+    $batch       = $directives['batch']     || false
+    $filename    = $directives['file']      || ''
+    $program     = $directives['program']   || 'context'
+    $direct      = $directives['direct']    || false
+    $page        = $directives['page']      || 0
+    $browser     = $directives['browser']   || false
+    $report      = $directives['report']    || false
+    $verbose     = $directives['verbose']   || (ENV['_CTX_VERBOSE_'] =~ /(y|yes|t|true|on)/io) || false
+    $arguments   = $directives['arguments'] || ''
+    $execute     = $directives['execute']   || $directives['exec'] || false
+    $locate      = $directives['locate']    || false
+
+    $path        = $directives['path']      || ''
+
+    $make        = $directives['make']      || false
+    $unix        = $directives['unix']      || false
+    $windows     = $directives['windows']   || false
+    $stubpath    = $directives['stubpath']  || ''
+    $indirect    = $directives['indirect']  || false
+
+    $iftouched   = $directives['iftouched'] || false
+
+    $openoffice  = $directives['oo']        || false
+
+    $crossover   = false if $directives['clear']
+
+    ENV['_CTX_VERBOSE_'] = 'yes' if $verbose
+
+    if $openoffice then
+        if ENV['OOPATH'] then
+            if FileTest.directory?(ENV['OOPATH']) then
+                report("using open office python")
+                if $mswindows then
+                    $applications['python'] = $applications['py']  = "\"#{File.join(ENV['OOPATH'],'program','python.bat')}\""
+                else
+                    $applications['python'] = $applications['py']  = File.join(ENV['OOPATH'],'python')
+                end
+                report("python path #{$applications['python']}")
             else
-                run(find(shortpathname($filename),$program))
+                report("environment variable 'OOPATH' does not exist")
+            end
+        else
+            report("environment variable 'OOPATH' is not set")
+        end
+    end
+
+    if $help || ! $filename || $filename.empty? then
+        usage
+    elsif $batch && $filename && ! $filename.empty? then
+        # todo, take commands from file and avoid multiple starts and checks
+    else
+        report("texmfstart version #{$version}")
+        if $make then
+            if $windows then
+                make($filename,true,false)
+            elsif $unix then
+                make($filename,false,true)
+            else
+                make($filename,$mswindows,!$mswindows)
+            end
+        elsif $browser && $filename =~ /^http\:\/\// then
+            launch($filename)
+        else
+            process do
+                if $direct || $filename =~ /^bin\:/ then
+                    direct($filename)
+                else # script: or no prefix
+                    run(find(shortpathname($filename),$program))
+                end
             end
         end
     end
+
 end
+
+main

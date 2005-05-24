@@ -132,8 +132,12 @@
 %   \loadmapfile[\typescriptthree-public-antt.map]
 % \stoptypescript
 
-\starttypescript [map] [antykwa-torunska,antykwa-torunska-light,antykwa-torunska-cond,antykwa-torunska-lightcond] [texnansi,ec,qx,t5,t2a,t2b,t2c]
+\starttypescript [map] [antykwa-torunska,antykwa-torunska-light,antykwa-torunska-cond,antykwa-torunska-lightcond] [texnansi,ec,qx,t5,t2a,t2b,t2c,default]
   \loadmapfile[\typescriptthree-antt.map]
+  \loadmapfile[rm-antt.map]
+  \loadmapfile[mi-antt.map]
+  \loadmapfile[sy-antt.map]
+  \loadmapfile[ex-antt.map]
 \stoptypescript
 
 % obsolete
@@ -142,8 +146,20 @@
 %   \loadmapfile[cork-antt.map]
 % \stoptypescript
 
-\starttypescript [map] [antykwa-poltawskiego] [ec,texnansi,t5,8r]
+\starttypescript [map] [antykwa-poltawskiego] [ec,texnansi,qx,t5]
   \loadmapfile[\typescriptthree-public-antp.map]
+\stoptypescript
+
+\starttypescript [map] [iwona,iwona-light] [ec,texnansi,qx,t5]
+  \loadmapfile[\typescriptthree-iwona.map]
+\stoptypescript
+
+\starttypescript [map] [kurier,kurier-light] [ec,texnansi,qx,t5,default]
+  \loadmapfile[\typescriptthree-kurier.map]
+  \loadmapfile[rm-kurier.map]
+  \loadmapfile[mi-kurier.map]
+  \loadmapfile[sy-kurier.map]
+  \loadmapfile[ex-kurier.map]
 \stoptypescript
 
 \starttypescript [map] [bookman] [ec,texnansi,t5,8r]

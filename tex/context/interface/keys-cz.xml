@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 
-<cd:interface xmlns:cd="http://www.pragma-ade.com/commands" name="context" language="cz" version="2005.03.16">
+<cd:interface xmlns:cd="http://www.pragma-ade.com/commands" name="context" language="cz" version="2005.05.25">
 
   <cd:variables>
     <cd:variable name="one" value="jedna"/>
@@ -211,6 +211,7 @@
     <cd:constant name="autofocus" value="autoostreni"/>
     <cd:constant name="focus" value="zaostreni"/>
     <cd:constant name="directory" value="adresar"/>
+    <cd:constant name="cache" value="cache"/>
     <cd:constant name="grid" value="mrizka"/>
     <cd:constant name="big" value="velky"/>
     <cd:constant name="get" value="ziskat"/>

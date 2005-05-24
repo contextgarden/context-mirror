@@ -1625,7 +1625,7 @@
   {\ejectinsert
    \gotonextpage
    \doifnotvalue{\??tk\v!header\c!state}\v!stop{\setupheader[\c!state=\v!empty]}%
-   \doifnotvalue{\??tk\v!footer \c!state}\v!stop{\setupfooter[\c!state=\v!empty]}%
+   \doifnotvalue{\??tk\v!footer\c!state}\v!stop{\setupfooter[\c!state=\v!empty]}%
    \ejectdummypage}
 
 \installpagebreakhandler \v!left
@@ -1695,7 +1695,7 @@
   {\doifnotvalue{\??tk\v!header\c!state}\v!stop{\setupheader[\c!state=\v!empty]}}
 
 \installpagebreakhandler \v!footer
-  {\doifnotvalue{\??tk\v!footer \c!state}\v!stop{\setupfooter[\c!state=\v!empty]}}
+  {\doifnotvalue{\??tk\v!footer\c!state}\v!stop{\setupfooter[\c!state=\v!empty]}}
 
 % \definepagebreak
 %   [chapter]

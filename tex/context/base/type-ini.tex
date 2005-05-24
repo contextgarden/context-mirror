@@ -113,7 +113,10 @@
 
 % method 2 is for Hans van der Meer
 
+\newtoks\documenttypescripts
+
 \chardef\typescriptmethod\plusone % 1: empty==all==true  2: empty==false
+\chardef\typescriptstate \plustwo % 1: process 2: store
 
 \unexpanded\def\usetypescript     {\chardef\typescriptmethod\plusone\dotripleempty\dousetypescript}
 \unexpanded\def\usetypescriptexact{\chardef\typescriptmethod\plustwo\dotripleempty\dousetypescript}
@@ -129,12 +132,15 @@
    \pushmacro\typescripttwo
    \pushmacro\typescriptthree
    \pushmacro\typescriptmethod
+   \pushmacro\typescriptstate  \chardef\typescriptstate\plusone % process
    \pushmacro\stoptypescript
    \typescriptfoundfalse
    \iftracetypescripts\writestatus\m!fonts{[\@@typescriptone] [\@@typescripttwo] [\@@typescriptthree]}\fi
    \processcommacommand[\typescriptfiles]\dododousetypescript
+   \the\documenttypescripts
    \firsttypescriptpassfalse % testen
    \popmacro\stoptypescript
+   \popmacro\typescriptstate
    \popmacro\typescriptmethod
    \popmacro\typescriptthree
    \popmacro\typescripttwo
@@ -254,81 +260,25 @@
 
 \newif\iftracetypescripts
 
-% \def\starttypescript
-%   {\dotripleempty\dostarttypescript}
-%
-% \long\def\dostarttypescript[#1][#2][#3]% #4\stoptypescript
-%   {\iftracetypescripts\writestatus\m!fonts{enter [#1] [#2] [#3]}\fi%
-%    \iffirstargument
-%      \iftracetypescripts\writestatus\m!fonts{check [\@@typescriptone] [\@@typescripttwo] [\@@typescriptthree]}\fi
-%      \let\typescriptone  \@@typescriptone
-%      \let\typescripttwo  \@@typescripttwo
-%      \let\typescriptthree\@@typescriptthree
-%      \dochecktypescript{#1}\@@typescriptone\typescriptone
-%      \ifdone
-%        \dochecktypescript{#2}\@@typescripttwo\typescripttwo
-%        \ifdone
-%          \dochecktypescript{#3}\@@typescriptthree\typescriptthree
-%          \ifdone
-%            \typescriptfoundtrue
-%            \let\next\dostarttypescriptA
-%          \else
-%            \let\next\dostarttypescriptC
-%          \fi
-%        \else
-%          \let\next\dostarttypescriptC
-%        \fi
-%      \else
-%        \let\next\dostarttypescriptC
-%      \fi
-%      \iftracetypescripts
-%        \writestatus\m!fonts{\ifdone match\else pass\fi ed}%
-%      \fi
-%    \else\iffirsttypescriptpass
-%      \iftracetypescripts\writestatus\m!fonts{honored}\fi
-%      \let\next\dostarttypescriptB
-%    \else
-%      % skip this since it may do unwanted resets, like
-%      % setting symbolic font names to unknown, especially
-%      % in run time user type scripts
-%      \iftracetypescripts\writestatus\m!fonts{ignored}\fi
-%      \let\next\dostarttypescriptC
-%    \fi\fi
-%    \next}
-%
-% \def\dochecktypescript#1#2#3% script use value
-%   {\donefalse
-%    \def\@@typescriptcheck{#1}%
-%    \ifx\@@typescriptcheck\empty % no longer needed / met
-%      \ifcase\typescriptmethod\or\donetrue\else\donefalse\fi
-%    \else\ifx#2\typescript@@all
-%      \donetrue
-%    \else\ifx\@@typescriptcheck\typescript@@all
-%      \donetrue
-%    \else\expanded{\doifcommonelse{\@@typescriptcheck}{#2}}\donetrue\donefalse\ifdone
-%      \let#3\commalistelement
-%    \fi\fi\fi\fi}
-%
-% \def\dostarttypescriptA
-%   {\pushmacro\fontclass}
-%
-% \def\dostarttypescriptB
-%   {\pushmacro\fontclass}
-%
-% \long\def\dostarttypescriptC#1\stoptypescript
-%   {}
-%
-% \def\stoptypescript
-%   {\popmacro\fontclass}
-%
-% not faster (and demands leading spaces at each line)
-%
-% \def\dostarttypescriptC
-%   {\bgroup \catcode32=\@@comment \let\stoptypescript\egroup}
-%
-% sligthly faster but less readable
-
 \def\starttypescript
+  {\ifcase\typescriptstate
+     % 0 = skip
+     \@EA\gobbleuntil\@EA\stoptypescript
+   \or
+     % 1 = process
+     \expandafter\dostarttypescript
+   \or
+     % 2 = store
+     \expandafter\nostarttypescript
+   \else
+     % ? = skip
+     \@EA\gobbleuntil\@EA\stoptypescript
+   \fi}
+
+\long\def\nostarttypescript#1\stoptypescript
+  {\appendtoks\starttypescript#1\stoptypescript\to\documenttypescripts}
+
+\def\dostarttypescript
   {\let\typescriptone  \@@typescriptone
    \let\typescripttwo  \@@typescripttwo
    \let\typescriptthree\@@typescriptthree
@@ -453,9 +403,13 @@
 
 \fi \fi
 
+\let\usedmapfile\gobbletwoarguments
+\let\usedmapline\gobbletwoarguments
+
 \def\doloadfontmapfile#1%
   {\ifundefined{#1\c!state}%
      \writestatus\m!fonts{using map file: #1}%
+     \immediatewriteutilitycommand{\usedmapfile{=}{#1}}%
      \doloadmapfile{=}{#1.\f!fontmapextension}% +/add =/replace -/remove
      \setxvalue{#1\c!state}{1}%
    \fi}
@@ -486,7 +440,14 @@
 
 \def\dodoloadmapline[#1][#2]%
   {\loadallfontmapfiles % ! ! !
-   \doloadmapline{#1}{#2}} % special
+   \ifsecondargument
+     \immediatewriteutilitycommand{\usedmapline{#1}{#2}}%
+     \doloadmapline{#1}{#2}% special
+   \else
+     \loadmapline[=][#1]%
+     %\immediatewriteutilitycommand{\usedmapline{=}{#2}}%
+     %\doloadmapline{=}{#1}% special
+   \fi}
 
 % since this is driver dependent, and since we may set map files
 % before an output format is defined, we need to postpone it
@@ -511,6 +472,34 @@
   {\resetmapfiles
    \forgetmapfiles}
 
+%D A handy shortcut:
+
+% \definetypescriptprefix[serif][Serif]
+% \definetypescriptprefix[sans] [Sans]
+% \definetypescriptprefix[mono] [Mono]
+%
+%\starttypescript [serif,sans,mono] [handling,hanging,hz] [pure,normal,hz,quality]
+%  \setupfontsynonym [\typescriptprefix\typescriptone] [handling=\typescriptthree]
+% \stoptypescript
+
+\def\definetypescriptprefix
+  {\dodoubleargument\dodefinetypescriptprefix}
+
+\def\dodefinetypescriptprefix[#1][#2]%
+  {\setvalue{\??ts::#1}{#2}}
+
+% without testing:
+
+\def\typescriptprefix#1%
+  {\csname\??ts::#1\endcsname}
+
+% with testing:
+%
+% \def\typescriptprefix#1%
+%   {\executeifdefined{\??ts::#1}{#1}}
+
+% defining typefaces:
+%
 % \definetypeface [#1:joke] [#2:rm]
 % \definetypeface [#1:joke] [#2:rm] [#3:...]
 % \definetypeface [#1:joke] [#2:rm] [#3:serif] [#4:lucida] [#5:size] [#6:...]
@@ -518,7 +507,7 @@
 \def\definetypeface
   {\dosixtupleargument\dodefinetypeface}
 
-\def\tsvar#1#2%
+\def\tsvar#1#2% \executeifdefined{\??ts#1}{#2}
   {\@EA\ifx\csname\??ts#1\endcsname\empty
      #2%
    \else
@@ -557,11 +546,13 @@
 %      \getparameters[\??tf#1#2][#3]%
 %    \fi\fi\fi}
 
+% we can use \rawgetparameters or \rawgeteparameters
+
 \def\dodefinetypeface[#1][#2][#3][#4][#5][#6]%
   {\dododefinetypeface[#1][#2]%
    \iffifthargument % sixth is optional
      % we need to expand since in #6 there can be a \typescripttwo
-     \expanded{\getparameters[\??ts][\s!rscale=\plusone,\s!encoding=\defaultencoding,#6]}%
+     \expanded{\getparameters[\??ts][\s!rscale=\plusone,\s!encoding=\defaultencoding,#6]}% \geteparameters
      \pushmacro\relativefontsize
      \pushmacro\typefaceencoding
      \pushmacro\fontclass

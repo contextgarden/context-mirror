@@ -11,6 +11,10 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
+\definetypescriptprefix [serif] [Serif]
+\definetypescriptprefix [sans]  [Sans]
+\definetypescriptprefix [mono]  [Mono]
+
 \definefontsynonym [DefaultFont] [cmvtt10]
 
 \startsetups [font:fallback:serif]
@@ -44,23 +48,17 @@
 \stopsetups
 
 \startsetups [font:allbold:serif]
-  \definefontsynonym [SerifBold]        [DefaultFont]
-  \definefontsynonym [SerifBoldItalic]  [SerifBold]
-  \definefontsynonym [SerifBoldSlanted] [SerifBoldItalic]
   \definefontsynonym [Serif]            [SerifBold]
   \definefontsynonym [SerifItalic]      [SerifBoldItalic]
   \definefontsynonym [SerifSlanted]     [SerifBoldSlanted]
-  \definefontsynonym [SerifCaps]        [SerifBold]
+  %definefontsynonym [SerifCaps]        [SerifBold]
 \stopsetups
 
 \startsetups [font:allbold:sans]
-  \definefontsynonym [SansBold]        [DefaultFont]
-  \definefontsynonym [SansBoldItalic]  [SansBold]
-  \definefontsynonym [SansBoldSlanted] [SansBoldItalic]
   \definefontsynonym [Sans]            [SansBold]
   \definefontsynonym [SansItalic]      [SansBoldItalic]
   \definefontsynonym [SansSlanted]     [SansBoldSlanted]
-  \definefontsynonym [SansCaps]        [SansBold]
+  %definefontsynonym [SansCaps]        [SansBold]
 \stopsetups
 
 \endinput

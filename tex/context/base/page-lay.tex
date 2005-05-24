@@ -901,11 +901,16 @@
 \def\addpagecutmarks % #1
   {\doifelse\@@lymarking\v!on
      \makepagecutbox
-     {\doifelse\@@lymarking\v!text
+     {\doifelse\@@lymarking\v!empty
         {\let\pagecutmarksymbol\empty
-         \let\pagecutmarkbottomtext\extrapagecutmarkbottomtext
+         \let\pagecutmarktoptext\empty
+         \let\pagecutmarkbottomtext\empty
          \makepagecutbox}
-        \gobbleoneargument}}
+        {\doifelse\@@lymarking\v!text
+           {\let\pagecutmarksymbol\empty
+            \let\pagecutmarkbottomtext\extrapagecutmarkbottomtext
+            \makepagecutbox}
+           \gobbleoneargument}}}
 
 \def\addpagecolormarks % #1
   {\doifelse\@@lymarking\v!color
@@ -1340,6 +1345,26 @@
 \definepapersize [DL]          [\c!width=110mm,\c!height=220mm] % [\c!width=220mm,\c!height=110mm]
 \definepapersize [E4]          [\c!width=280mm,\c!height=400mm]
 
+%D The next three sets are supplied by Taco:
+
+\definepapersize [RA0]  [\c!width=860mm,\c!height=1220mm]
+\definepapersize [RA1]  [\c!width=610mm,\c!height=860mm]
+\definepapersize [RA2]  [\c!width=430mm,\c!height=610mm]
+\definepapersize [RA3]  [\c!width=305mm,\c!height=430mm]
+\definepapersize [RA4]  [\c!width=215mm,\c!height=305mm]
+
+%D ISO SRA (supplementary raw A) sizes:
+
+\definepapersize [SRA0]  [\c!width=900mm,\c!height=1280mm]
+\definepapersize [SRA1]  [\c!width=640mm,\c!height=900mm]
+\definepapersize [SRA2]  [\c!width=450mm,\c!height=640mm]
+\definepapersize [SRA3]  [\c!width=320mm,\c!height=450mm]
+\definepapersize [SRA4]  [\c!width=225mm,\c!height=320mm]
+
+%D Industry invention:
+
+\definepapersize [A3plus] [\c!width=329mm,\c!height=483mm]
+
 %D We can now default to a reasonable size. We match the print
 %D paper size with the typeset paper size. This setting should
 %D come after the first layout specification (already done).
@@ -1365,6 +1390,13 @@
   [doubleoversized]
   [\c!width=\dimexpr(\paperheight+1.5cm),
    \c!height=\dimexpr(2\paperwidth+1.5cm)]
+
+%D For orthogonality:
+
+\definepapersize
+  [undersized]
+  [\c!width=\dimexpr(\paperwidth-1.5cm),
+   \c!height=\dimexpr(\paperheight-1.5cm)]
 
 \endETEX
 

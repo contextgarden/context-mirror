@@ -28,6 +28,8 @@
 
 \starttypescriptcollection[microsoft windows]
 
+% verdana
+
 \starttypescript [sans] [verdana] [name]
 
   \setups[font:fallback:sans]
@@ -51,6 +53,34 @@
 \starttypescript [map] [verdana] [texnansi]
 
   \loadmapfile[texnansi-microsoft-verdana.map]
+
+\stoptypescript
+
+% arial
+
+\starttypescript [sans] [arial] [name]
+
+  \setups[font:fallback:sans]
+
+  \definefontsynonym [Sans]           [ArialMT]
+  \definefontsynonym [SansBold]       [Arial-BoldMT]
+  \definefontsynonym [SansItalic]     [Arial-ItalicMT]
+  \definefontsynonym [SansBoldItalic] [Arial-BoldItalicMT]
+
+\stoptypescript
+
+\starttypescript [sans] [arial] [texnansi]
+
+  \definefontsynonym [ArialMT]            [\typescriptthree-arial]   [encoding=\typescriptthree]
+  \definefontsynonym [Arial-BoldMT]       [\typescriptthree-arialbd] [encoding=\typescriptthree]
+  \definefontsynonym [Arial-ItalicMT]     [\typescriptthree-ariali]  [encoding=\typescriptthree]
+  \definefontsynonym [Arial-BoldItalicMT] [\typescriptthree-arialbi] [encoding=\typescriptthree]
+
+\stoptypescript
+
+\starttypescript [map] [arial] [texnansi]
+
+  \loadmapfile[texnansi-microsoft-arial.map]
 
 \stoptypescript
 

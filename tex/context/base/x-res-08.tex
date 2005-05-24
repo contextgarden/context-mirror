@@ -76,18 +76,35 @@
          \writtenXMLelementcs{\XMLrlprefix   original}\figurefileoriginal
          \writtenXMLelementcs{\XMLrlprefix conversion}\figurefileconversion
          \writtenXMLelementcs{\XMLrlprefix     prefix}\figurefileprefix
+         \writtenXMLelementcs{\XMLrlprefix      cache}\figurefilecache
          \ifnum\figurefilepage>\zerocount
            \writtenXMLelement{\XMLrlprefix       page}\figurefilepage
          \fi
          \writtenXMLelementcs{\XMLrlprefix    comment}\currentresourcecomment
-         \writtenXMLelementcs{\XMLrlprefix      width}\figurewidth
-         \writtenXMLelementcs{\XMLrlprefix     height}\figureheight}}}
+         \ifconditional\externalfigureflush
+           \writtenXMLelementcs{\XMLrlprefix      width}\figurewidth
+           \writtenXMLelementcs{\XMLrlprefix     height}\figureheight
+         \fi}}}
 
 \def\XMLfeedbackexternalfigure
-  {\doifmodeelse{*\v!figure}%
+  {\externalfigureflush\doifmodeelse{*\v!figure}%
      {\XMLfeedbackresource{found}}%
-     {\XMLfeedbackresource{missing}}%
-   {figure}}
+     {\XMLfeedbackresource{\ifconditional\externalfigureflush missing\else registered\fi}}%
+     {figure}}
+
+\setvariables
+  [rl:manipulate]
+  [file=rlxtools.rlx]
+
+\startsetups[rl:manipulate]
+
+% \immediatewriteutilitycommand{\writestatus{system}{we force multiple runs at \normaltime}}
+
+  \doiflocfileelse{\jobname.rlx}
+    {\installprogram{texmfstart rlxtools --manipulate kpse:\jobname.rlx \jobname.rlg}}
+    {\installprogram{texmfstart rlxtools --manipulate kpse:\getvariabledefault{rl:manipulate}{file}{rlxtools.rlx} \jobname.rlg}}
+
+\stopsetups
 
 \appendtoks \openXMLresourcelog  \to \everystarttext
 \appendtoks \closeXMLresourcelog \to \everystoptext

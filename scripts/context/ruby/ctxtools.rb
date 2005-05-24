@@ -2,24 +2,37 @@
 
 # program   : ctxtools
 # copyright : PRAGMA Advanced Document Engineering
+# version   : 2004-2005
 # author    : Hans Hagen
+#
+# project   : ConTeXt / eXaMpLe
+# concept   : Hans Hagen
+# info      : j.hagen@xs4all.nl
+# www       : www.pragma-ade.com
 
 # This script will harbor some handy manipulations on context
 # related files.
 
 # todo: move scite here
+#
+# todo: move kpse call to kpse class/module
 
-banner = ['CtxTools', 'version 1.2.1', '2004/2005', 'PRAGMA ADE/POD']
+
+banner = ['CtxTools', 'version 1.2.2', '2004/2005', 'PRAGMA ADE/POD']
 
 unless defined? ownpath
     ownpath = $0.sub(/[\\\/][a-z0-9\-]*?\.rb/i,'')
     $: << ownpath
 end
 
-require 'ftools'
-require 'xmpl/switch'
-require 'exa/logger'
+require 'base/switch'
+require 'base/logger'
+require 'base/system'
+
 require 'rexml/document'
+require 'ftools'
+
+exit if defined?(REQUIRE2LIB)
 
 class String
 
@@ -362,18 +375,19 @@ class Commands
 
     public
 
-    def purgefiles
+    def purgefiles(all=false)
 
         pattern = @commandline.arguments
-        purgeall = @commandline.option("all")
+        purgeall = @commandline.option("all") || all
 
         $dontaskprefixes.push(Dir.glob("mpx-*"))
         $dontaskprefixes.flatten!
         $dontaskprefixes.sort!
 
         if purgeall then
-          forsuresuffixes.push(texnonesuffixes)
-          texnonesuffixes = []
+          $forsuresuffixes.push($texnonesuffixes)
+          $texnonesuffixes = []
+          $forsuresuffixes.flatten!
         end
 
         if ! pattern || pattern.empty? then
@@ -440,6 +454,10 @@ class Commands
             report("reclaimed bytes : #{$reclaimedbytes}")
         end
 
+    end
+
+    def purgeall
+        purgefiles(true) # for old times sake
     end
 
     private
@@ -680,25 +698,29 @@ class Commands
         pdffile = "#{filename}.pdf"
         tuofile = "#{filename}.tuo"
         if FileTest.file?(pdffile) then
-            prevline, n = '', 0
-            if (pdf = File.open(pdffile)) && (tuo = File.open(tuofile,'a')) then
-                report('filtering page object numbers')
-                pdf.binmode
-                while line = pdf.gets do
-                    line.chomp
-                    # typical pdftex search
-                    if (line =~ /\/Type \/Page/o) && (prevline =~ /^(\d+)\s+0\s+obj/o) then
-                        p = $1
-                        n += 1
-                        tuo.puts("\\objectreference{PDFP}{#{n}}{#{p}}{#{n}}\n")
-                    else
-                        prevline = line
+            begin
+                prevline, n = '', 0
+                if (pdf = File.open(pdffile)) && (tuo = File.open(tuofile,'a')) then
+                    report('filtering page object numbers')
+                    pdf.binmode
+                    while line = pdf.gets do
+                        line.chomp
+                        # typical pdftex search
+                        if (line =~ /\/Type \/Page/o) && (prevline =~ /^(\d+)\s+0\s+obj/o) then
+                            p = $1
+                            n += 1
+                            tuo.puts("\\objectreference{PDFP}{#{n}}{#{p}}{#{n}}\n")
+                        else
+                            prevline = line
+                        end
                     end
                 end
+                pdf.close
+                tuo.close
+                report("number of pages : #{n}")
+            rescue
+                report("fatal error in filtering pages")
             end
-            pdf.close
-            tuo.close
-            report("number of pages : #{n}")
         end
     end
 
@@ -836,15 +858,18 @@ class Language
         rmename = "lang-#{@language}.rme"
         logname = "lang-#{@language}.log"
 
+        desname = "lang-all.xml"
+
         @data.gsub!(/\\[nc]\{(.+?)\}/)  do $1    end
         @data.gsub!(/\{\}/)             do ''    end
         @data.gsub!(/\n+/mo)            do "\n"  end
         @read.gsub!(/\n+/mo)            do "\n"  end
 
         description = ''
+        commentfile = rmename.dup
 
         begin
-            desfile = `kpsewhich -progname=context lang-all.xml`.chomp
+            desfile = `kpsewhich -progname=context #{desname}`.chomp
             if f = File.new(desfile) then
                 if doc = REXML::Document.new(f) then
                     if e = REXML::XPath.first(doc.root,"/descriptions/description[@language='#{@language}']") then
@@ -856,6 +881,7 @@ class Language
             description = ''
         else
             unless description.empty? then
+                commentfile = desname.dup
                 str  = "<!-- copied from lang-all.xml\n\n"
                 str << "<?xml version='1.0' standalone='yes'?>\n\n"
                 str << description.chomp
@@ -913,7 +939,7 @@ class Language
                 end
                 data.gsub!(/(\s*\n\s*)+/mo, "\n")
                 f << banner
-                f << comment("context pattern file, see #{rmename} for original comment")
+                f << comment("context pattern file, see #{commentfile} for original comment")
                 f << comment("source of data: #{@filenames.join(' ')}")
                 f << description
                 f << comment("begin pattern data")
@@ -937,7 +963,7 @@ class Language
                 end
                 data.gsub!(/(\s*\n\s*)+/mo, "\n")
                 f << banner
-                f << comment("context hyphenation file, see #{rmename} for original comment")
+                f << comment("context hyphenation file, see #{commentfile} for original comment")
                 f.<< comment("source of data: #{@filenames.join(' ')}")
                 f << description
                 f.<< comment("begin hyphenation data")
@@ -1142,7 +1168,7 @@ class Commands
 
 end
 
-logger      = EXA::ExaLogger.new(banner.shift)
+logger      = Logger.new(banner.shift)
 commandline = CommandLine.new
 
 commandline.registeraction('touchcontextfile', 'update context version')
@@ -1158,21 +1184,24 @@ commandline.registeraction('purgefiles', 'remove temporary files [--all] [basena
 
 commandline.registeraction('documentation', 'generate documentation file [--type=] [filename]')
 
-commandline.registeraction('filterpages') # no help, hidden temporary feature
+commandline.registeraction('filterpages')   # no help, hidden temporary feature
+commandline.registeraction('purgeallfiles') # no help, compatibility feature
 
 commandline.registeraction('patternfiles', 'generate pattern files [languagecode|all]')
 
-commandline.registeraction('help')
-commandline.registeraction('version')
-
 commandline.registervalue('type','')
 
-# commandline.registerflag('recurse')
-# commandline.registerflag('force')
+commandline.registerflag('recurse')
+commandline.registerflag('force')
 commandline.registerflag('pipe')
 commandline.registerflag('all')
 commandline.registerflag('xml')
 commandline.registerflag('log')
+
+# general
+
+commandline.registeraction('help')
+commandline.registeraction('version')
 
 commandline.expand
 

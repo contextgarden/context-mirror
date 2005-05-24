@@ -2476,7 +2476,6 @@
 %   \dogreedysplitstring
 %   \ifx#3\empty\let#3\asciic\fi}
 
-
 %D \macros
 %D   {beforetestandsplitstring,
 %D    aftertestandsplitstring,
@@ -4679,7 +4678,16 @@
 \def\dodefinemeasure[#1][#2]%
   {\setvalue{\??dm#1}{#2}}
 
-\def\setmeasure#1{\setvalue{\??dm#1}} % quick way
+% #2 could be omitted, but we want to support spaces
+%
+% \setmeasure {x}  {1cm}
+% \setmeasure {xx} {1cm}
+% \setmeasure {xxx}{1cm}
+
+\def\setmeasure #1#2{\setvalue{\??dm#1}{#2}} % quick way
+\def\setemeasure#1#2{\setevalue{\??dm#1}{#2}} % quick way
+\def\setgmeasure#1#2{\setgvalue{\??dm#1}{#2}} % quick way
+\def\setxmeasure#1#2{\setxvalue{\??dm#1}{#2}} % quick way
 
 \def\measure#1%
   {\ifcsname\??dm#1\endcsname\csname\??dm#1\endcsname\else\zeropoint\fi}

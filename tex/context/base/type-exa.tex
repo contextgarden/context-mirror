@@ -159,38 +159,51 @@
 
 \stoptypescript
 
-\starttypescript [serif] [hanging] [pure,normal]
+% \starttypescript [serif] [hanging] [pure,normal]
+%
+%   \setupfontsynonym [Serif]            [handling=\typescriptthree]
+%   \setupfontsynonym [SerifBold]        [handling=\typescriptthree bold]
+%   \setupfontsynonym [SerifSlanted]     [handling=\typescriptthree slanted]
+%   \setupfontsynonym [SerifItalic]      [handling=\typescriptthree italic]
+%   \setupfontsynonym [SerifBoldSlanted] [handling=\typescriptthree boldslanted]
+%   \setupfontsynonym [SerifBoldItalic]  [handling=\typescriptthree bolditalic]
+%
+% \stoptypescript
+%
+% \starttypescript [sans] [hanging] [pure,normal]
+%
+%   \setupfontsynonym [Sans]            [handling=\typescriptthree]
+%   \setupfontsynonym [SansBold]        [handling=\typescriptthree bold]
+%   \setupfontsynonym [SansSlanted]     [handling=\typescriptthree slanted]
+%   \setupfontsynonym [SansItalic]      [handling=\typescriptthree italic]
+%   \setupfontsynonym [SansBoldSlanted] [handling=\typescriptthree boldslanted]
+%   \setupfontsynonym [SansBoldItalic]  [handling=\typescriptthree bolditalic]
+%
+% \stoptypescript
+%
+% \starttypescript [mono] [hanging] [pure,normal]
+%
+%   \setupfontsynonym [Mono]            [handling=\typescriptthree]
+%   \setupfontsynonym [MonoBold]        [handling=\typescriptthree bold]
+%   \setupfontsynonym [MonoSlanted]     [handling=\typescriptthree slanted]
+%   \setupfontsynonym [MonoItalic]      [handling=\typescriptthree italic]
+%   \setupfontsynonym [MonoBoldSlanted] [handling=\typescriptthree boldslanted]
+%   \setupfontsynonym [MonoBoldItalic]  [handling=\typescriptthree bolditalic]
+%
+% \stoptypescript
 
-  \setupfontsynonym [Serif]            [handling=\typescriptthree]
-  \setupfontsynonym [SerifBold]        [handling=\typescriptthree bold]
-  \setupfontsynonym [SerifSlanted]     [handling=\typescriptthree slanted]
-  \setupfontsynonym [SerifItalic]      [handling=\typescriptthree italic]
-  \setupfontsynonym [SerifBoldSlanted] [handling=\typescriptthree boldslanted]
-  \setupfontsynonym [SerifBoldItalic]  [handling=\typescriptthree bolditalic]
+\starttypescript [serif,sans,mono] [handling,hanging,hz] [pure,normal,hz,quality]
+
+  \setupfontsynonym [\typescriptprefix\typescriptone ]            [handling=\typescriptthree]
+  \setupfontsynonym [\typescriptprefix\typescriptone Bold]        [handling=\typescriptthree bold]
+  \setupfontsynonym [\typescriptprefix\typescriptone Slanted]     [handling=\typescriptthree slanted]
+  \setupfontsynonym [\typescriptprefix\typescriptone Italic]      [handling=\typescriptthree italic]
+  \setupfontsynonym [\typescriptprefix\typescriptone BoldSlanted] [handling=\typescriptthree boldslanted]
+  \setupfontsynonym [\typescriptprefix\typescriptone BoldItalic]  [handling=\typescriptthree bolditalic]
 
 \stoptypescript
 
-\starttypescript [sans] [hanging] [pure,normal]
-
-  \setupfontsynonym [Sans]            [handling=\typescriptthree]
-  \setupfontsynonym [SansBold]        [handling=\typescriptthree bold]
-  \setupfontsynonym [SansSlanted]     [handling=\typescriptthree slanted]
-  \setupfontsynonym [SansItalic]      [handling=\typescriptthree italic]
-  \setupfontsynonym [SansBoldSlanted] [handling=\typescriptthree boldslanted]
-  \setupfontsynonym [SansBoldItalic]  [handling=\typescriptthree bolditalic]
-
-\stoptypescript
-
-\starttypescript [mono] [hanging] [pure,normal]
-
-  \setupfontsynonym [Mono]            [handling=\typescriptthree]
-  \setupfontsynonym [MonoBold]        [handling=\typescriptthree bold]
-  \setupfontsynonym [MonoSlanted]     [handling=\typescriptthree slanted]
-  \setupfontsynonym [MonoItalic]      [handling=\typescriptthree italic]
-  \setupfontsynonym [MonoBoldSlanted] [handling=\typescriptthree boldslanted]
-  \setupfontsynonym [MonoBoldItalic]  [handling=\typescriptthree bolditalic]
-
-\stoptypescript
+% handy
 
 \starttypescript [serif] [simple] [name] % bad, will be changed but in sycn with manuals that use it
 
@@ -205,6 +218,15 @@
   \definetypeface [modernvariable] [ss] [sans]  [modern] [default] [encoding=\typescripttwo]
   \definetypeface [modernvariable] [tt] [mono]  [modern] [default] [encoding=\typescripttwo]
   \definetypeface [modernvariable] [mm] [math]  [modern] [default]
+
+\stoptypescript
+
+\starttypescript [optima] [texnansi,ec,qx]
+
+  \definetypeface[optima][ss][sans] [optima-nova][default][encoding=texnansi]
+  \definetypeface[optima][rm][serif][palatino]   [default][encoding=texnansi]
+  \definetypeface[optima][tt][mono] [modern]     [default][encoding=texnansi,rscale=1.1]
+  \definetypeface[optima][mm][math] [palatino]   [default][encoding=texnansi]
 
 \stoptypescript
 

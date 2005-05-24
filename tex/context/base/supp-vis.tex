@@ -11,6 +11,19 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
+\ifx\contextversion\undefined
+
+  \let \normalunexpanded \unexpanded
+  \let \unexpanded       \protected
+
+\fi
+
+\ifx\unexpanded\undefined
+
+   \let\unexpanded\relax
+
+\fi
+
 %D \gdef\ShowBufferedExample% private typeseting macro
 %D   {\startlinecorrection
 %D    \bgroup
@@ -1903,5 +1916,11 @@
 %D show us how and where things happen. When somehow the last
 %D lines in this two column index don't allign, then this is
 %D due to some still unknown interference.
+
+\ifx\contextversion\undefined
+
+  \let \unexpanded \normalunexpanded
+
+\fi
 
 \endinput

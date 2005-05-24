@@ -982,6 +982,16 @@
 \def\patterns   {\pathypsettings\normalpatterns   }
 \def\hyphenation{\pathypsettings\normalhyphenation}
 
+%D Because we don't want to use the second command grouped, we
+%D (re)define it as follows:
+
+\def\hyphenation
+  {\begingroup\def\hyphenation{\normalhyphenation{\the\scratchtoks}\endgroup}%
+   \pathypsettings\afterassignment\hyphenation\scratchtoks=}
+
+%D This is not needed for patterns because they are loaded grouped
+%D anyway and it saves us an assignment.
+
 \def\startpatternloading#1#2#3% % we should use \everypatternloading
   {\startreadingfile
    \bgroup
@@ -1388,29 +1398,15 @@
 \newevery \everysanitize \EverySanitize
 
 %D \macros
-%D   {obeylccodes}
+%D   {retainlccodes}
 %D
 %D One way of manipulating characters is changing the their
 %D \type{\lccode} and applying \type{\lowcase}. An example of
 %D this can be found in \type{spec-mis}.
 
-\ifx\obeylccodes\undefined
+\ifx\retainlccodes\undefined
 
-  \def\obeylccodes
-    {\scratchcounter32
-     \loop
-       \ifnum\scratchcounter<127
-         \lccode\scratchcounter\scratchcounter
-         \advance\scratchcounter \plusone
-     \repeat
-     \ifeightbitcharacters
-       \scratchcounter128
-       \loop
-         \ifnum\scratchcounter<255
-           \lccode\scratchcounter`.
-           \advance\scratchcounter \plusone
-       \repeat
-   \fi}
+  \def\retainlccodes{\dostepwiserecurse{0}{255}{1}{\lccode\recurselevel=\recurselevel}\relax}
 
 \fi
 

@@ -123,10 +123,16 @@
   \ifcase\numexpr(#1-57)
     \strippedcsname \guilsingleleft   \or   % U+2039 SINGLE LEFT-POINTING ANGLE QUOTATION MARK
     \strippedcsname \guilsingleright  \else % U+203A SINGLE RIGHT-POINTING ANGLE QUOTATION MARK
+  \ifcase\numexpr(#1-95)
+    \strippedcsname \thickspace       \or   % U+205F MEDIUM MATHEMATICAL SPACE
+    \strippedcsname \unknownchar      \or   %
+    \strippedcsname \unknownchar      \or   % U+2061 FUNCTION APPLICATION
+    \strippedcsname \times            \or   % U+2062 INVISIBLE TIMES
+    \strippedcsname \unknownchar      \else % U+2063 INVISIBLE COMMA
   \ifcase\numexpr(#1-172)
     \strippedcsname \texteuro         \else
     \strippedcsname \unknownchar
-  \fi\fi\fi\fi
+  \fi\fi\fi\fi\fi
 \stopunicodevector
 
 \protect \endinput

@@ -26,6 +26,7 @@
    \splitstring\ascii\at.\to\jobfilename\and\jobfilesuffix
    \lowercasestring\jobfilesuffix\to\jobfilesuffix
    \doifnothing\jobfilename  {\let\jobfilename  \jobname}%
+   % todo and totest: \convertcommand\jobfilename\to\jobfilename
    \doifnothing\jobfilesuffix{\let\jobfilesuffix\c!tex}%
    \setsystemmode{suffix-\jobfilesuffix}}
 
@@ -53,13 +54,13 @@
    \ifcase\@@svn
      %                        % 0 : unknown
    \or
-     \setsystemmode\v!first  % 1 : first run
+     \setsystemmode\v!first   % 1 : first run
    \or
      %                        % 2 : successive run
    \or
-     \setsystemmode\v!first  % 3 : first and only run
+     \setsystemmode\v!first   % 3 : first and only run
    \or
-     \setsystemmode\v!last % 4 : extra last run
+     \setsystemmode\v!last    % 4 : extra last run
    \fi
    \splitjobfilename}
 

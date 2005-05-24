@@ -34,6 +34,8 @@ eval '(exit $?0)' && eval 'exec perl -w -S $0 ${1+"$@"}' && eval 'exec perl -w -
 
 use strict ;
 
+my $OriginalArgs = join(' ',@ARGV) ;
+
 #~ use warnings ; # strange warnings, todo
 
 # todo: second run of checksum of mp file with --nomprun changes
@@ -48,6 +50,9 @@ use Getopt::Long;
 use Class::Struct;    # needed for help subsystem
 use FindBin;
 use File::Compare;
+use File::Temp;
+
+use IO::Handle; autoflush STDOUT 1;
 
 my %ConTeXtInterfaces;    # otherwise problems with strict
 my %ResponseInterface;    # since i dunno how to allocate else
@@ -195,10 +200,14 @@ my $Paranoid         = 0 ;
 my $NotParanoid      = 0 ;
 my $BoxType          = '' ;
 
+my $TempDir          = '' ;
+
 my $StartLine        = 0 ;
 my $StartColumn      = 0 ;
 my $EndLine          = 0 ;
 my $EndColumn        = 0 ;
+
+my $MpEngineSupport  = 0 ; # not now, we also need to patch executemp in context itself
 
 # makempy :
 
@@ -303,6 +312,8 @@ my $MakeMpy = '';
     "paranoid"       => \$Paranoid,
     "notparanoid"    => \$NotParanoid,
     "boxtype=s"      => \$BoxType, # media art crop bleed trim
+    #### unix is unsafe (symlink viruses)
+    "tempdir=s"      => \$TempDir,
     #### experiment
     "startline=s"    => \$StartLine,
     "startcolumn=s"  => \$StartColumn,
@@ -409,7 +420,7 @@ if ( ( $LogFile ne '' ) && ( $LogFile =~ /\w+\.log$/io ) ) {
     *STDERR = *LOGFILE;
 }
 
-my $Program = " TeXExec 5.2.5 - ConTeXt / PRAGMA ADE 1997-2005";
+my $Program = " TeXExec 5.3.2 - ConTeXt / PRAGMA ADE 1997-2005";
 
 print "\n$Program\n\n";
 
@@ -742,7 +753,9 @@ my $MpVirginFlag      = IniValue( 'MpVirginFlag',      '-ini' );
 my $MpPassString      = IniValue( 'MpPassString',      '' );
 my $MpFormat          = IniValue( 'MpFormat',          $MetaFun );
 my $MpFormatPath      = IniValue( 'MpFormatPath',      $TeXFormatPath );
-my $UseEnginePath     = IniValue( 'UseEnginePath',     $TheEnginePath);
+my $UseEnginePath     = IniValue( 'UseEnginePath',     '');
+
+if ($TheEnginePath) { $UseEnginePath = 1 }
 
 my $FmtLanguage = IniValue( 'FmtLanguage', '' );
 my $FmtBodyFont = IniValue( 'FmtBodyFont', '' );
@@ -787,18 +800,20 @@ if ( $MpFormatFlag eq "" ) {
         $MpFormatFlag = "-mem=" ;
 }
 
-if ($UseEnginePath && (! $MakeFormats)) {
-    $MpFormatFlag .= $MpExecutable . '/' ;
-    $TeXFormatFlag .= $TeXExecutable . '/' ;
-}
+#~ if ($UseEnginePath && (! $MakeFormats)) {
+    #~ if ($MpEngineSupport) {
+        #~ $MpFormatFlag .= $MpExecutable . '/' ;
+    #~ } ;
+    #~ $TeXFormatFlag .= $TeXExecutable . '/' ;
+#~ }
 
 #~ if ( $TeXFormatFlag eq "" ) { $TeXFormatFlag = "&" }
 #~ if ( $MpFormatFlag  eq "" ) { $MpFormatFlag  = "&" }
 
-unless ( $dosish && !$escapeshell ) {
-    if ( $TeXFormatFlag eq "&" ) { $TeXFormatFlag = "\\&" }
-    if ( $MpFormatFlag  eq "&" ) { $MpFormatFlag  = "\\&" }
-}
+#~ unless ( $dosish && !$escapeshell ) {
+    #~ if ( $TeXFormatFlag eq "&" ) { $TeXFormatFlag = "\\&" }
+    #~ if ( $MpFormatFlag  eq "&" ) { $MpFormatFlag  = "\\&" }
+#~ }
 
 if ($TeXProgram) { $TeXExecutable = $TeXProgram }
 
@@ -1490,6 +1505,10 @@ sub PrepRunTeX {
     if ( $TeXTranslation ne '' ) { $cmd .= "-translate-file=$TeXTranslation " }
     $cmd .= "$TeXFormatFlag$TeXFormatPath$Format $JobName.$JobSuffix $PipeString";
     if ($Verbose)        { print "\n$cmd\n\n" }
+unless ( $dosish && ! $escapeshell ) {
+    #~ $cmd =~ s/[^\\]\&/\\\&/io ;
+    $cmd =~ s/([^\\])\&/$1\\\&/io ;
+}
 	return $cmd;
 }
 
@@ -1497,6 +1516,7 @@ sub RunTeX {
     my ( $JobName, $JobSuffix ) = @_;
     my $StartTime = time;
     my $cmd = PrepRunTeX($JobName, $JobSuffix, '');
+    print $cmd if ($Verbose) ;
     if ($EnterBatchMode) {
         $Problems = system("$cmd");
     } else {
@@ -1667,7 +1687,7 @@ sub CopyFile {    # agressive copy, works for open files like in gs
     close(OUT);
 }
 
-sub CheckChanges {    # also tub
+sub CheckMPChanges {
     my $JobName   = shift;
     my $checksum  = 0;
     my $MPJobName = MPJobName( $JobName, "mpgraph" );
@@ -1687,6 +1707,18 @@ sub CheckChanges {    # also tub
             }
         }
         close(MP);
+    }
+    return $checksum;
+}
+
+sub CheckTubChanges {
+    my $JobName   = shift;
+    my $checksum  = 0;
+    if ( open( TUB, "$JobName.tub" ) ) {
+        while (<TUB>) {
+            $checksum += do { unpack( "%32C*", <TUB> ) % 65535 }
+        }
+        close(TUB);
     }
     return $checksum;
 }
@@ -1854,9 +1886,12 @@ if ($JobSuffix =~ /\_fo$/i) {
                 }
                 print "               TeX run : $TeXRuns\n\n";
                 my ( $mpchecksumbefore, $mpchecksumafter ) = ( 0, 0 );
-                if ($AutoMPRun) { $mpchecksumbefore = CheckChanges($JobName) }
+                my ( $tubchecksumbefore, $tubchecksumafter ) = ( 0, 0 );
+                if ($AutoMPRun) { $mpchecksumbefore = CheckMPChanges($JobName) }
+                $tubchecksumbefore = CheckTubChanges($JobName) ;
                 $Problems = RunTeX( $JobName, $JobSuffix );
-                if ($AutoMPRun) { $mpchecksumafter = CheckChanges($JobName) }
+                $tubchecksumafter = CheckTubChanges($JobName) ;
+                if ($AutoMPRun) { $mpchecksumafter = CheckMPChanges($JobName) }
                 if ( ( !$Problems ) && ( $NOfRuns > 1 ) ) {
                     if ( !$NoMPMode ) {
                         $MPrundone = RunTeXMP( $JobName, "mpgraph" );
@@ -1868,6 +1903,9 @@ if ($JobSuffix =~ /\_fo$/i) {
                           ( $StopRunning
                               && ( $mpchecksumafter == $mpchecksumbefore ) );
                     }
+                    $StopRunning =
+                          ( $StopRunning
+                              && ( $tubchecksumafter == $tubchecksumbefore ) );
                 }
             }
             if ( ( $NOfRuns == 1 ) && $ForceTeXutil ) {
@@ -2043,7 +2081,7 @@ sub RunListing {
     foreach $FileName (@FileNames) {
         $CleanFileName = lc CleanTeXFileName($FileName);
         print LIS "\\page\n";
-        print LIS "\\setupfootertexts[\\tttf $CleanFileName][\\tttf \pagenumber]\n";
+        print LIS "\\setupfootertexts[\\tttf $CleanFileName][\\tttf \\pagenumber]\n";
         print LIS "\\typefile\{$FileName\}\n";
     }
     print LIS "\\stoptext\n";
@@ -2248,33 +2286,76 @@ sub RunCombine {
 sub LocatedFormatPath {
     my $FormatPath = shift;
     my $EnginePath = shift;
+    my $EngineDone = shift;
     if ( ( $FormatPath eq '' ) && ( $kpsewhich ne '' ) ) {
-        $FormatPath = `$kpsewhich --expand-var=\$TEXFORMATS` ;
-        chomp $FormatPath;
-        if ($FormatPath eq '') {
-            $FormatPath = `$kpsewhich --show-path=fmt`;
-            chomp $FormatPath;
+        unless ($EngineDone) {
+            my $str = $ENV{"TEXFORMATS"} ;
+            $str =~ s/\$ENGINE//io ;
+            $ENV{"TEXFORMATS"} = $str ;
         }
-        $FormatPath =~ s/\.+\;//o;     # should be a sub
-        $FormatPath =~ s/\;.*//o;
-        $FormatPath =~ s/\!//go;
+        # expanded paths
+        print "       assuming engine : $EnginePath\n";
+        if (($UseEnginePath)&&($EngineDone)) {
+            $FormatPath = `$kpsewhich --engine=$EnginePath --show-path=fmt` ;
+        } else {
+            $FormatPath = `$kpsewhich --show-path=fmt` ;
+        }
+        chomp $FormatPath ;
+        if ( ( $FormatPath ne '' ) && $Verbose ) {
+            print "located formatpath (1) : $FormatPath\n";
+        }
+        # fall back
+        if ($FormatPath eq '') {
+            if (($UseEnginePath)&&($EngineDone)) {
+                if ($dosish) {
+                    $FormatPath = `$kpsewhich --engine=$EnginePath --expand-var=\$TEXFORMATS` ;
+                } else {
+                    $FormatPath = `$kpsewhich --engine=$EnginePath --expand-var=\\\$TEXFORMATS` ;
+                }
+            } else {
+                if ($dosish) {
+                    $FormatPath = `$kpsewhich --expand-var=\$TEXFORMATS` ;
+                } else {
+                    $FormatPath = `$kpsewhich --expand-var=\\\$TEXFORMATS` ;
+                }
+            }
+        }
+        chomp $FormatPath ;
+        if ( ( $FormatPath ne '' ) && $Verbose ) {
+            print "located formatpath (2) : $FormatPath\n";
+        }
+        #
+        if ( ( $FormatPath ne '' ) && ($FormatPath =~ /unsetengine/) ) {
+            $FormatPath =~ s/unsetengine/$EnginePath/;
+            if ( ( $FormatPath ne '' ) && $Verbose ) {
+                print "located formatpath (!) : $FormatPath (unbugged)\n";
+            }
+        }
+        # take first one
+        if ($dosish) {
+            $FormatPath =~ s/\;.*//o;
+        } else {
+            $FormatPath =~ s/\:.*//o;
+        }
+        # remove clever things
+        $FormatPath =~ s/[\!\{\}\,]//go;
         $FormatPath =~ s/\\/\//go;
         $FormatPath =~ s/\/\//\//go;
         $FormatPath =~ s/[\/\\]$//;
         if ( ( $FormatPath ne '' ) && $Verbose ) {
-            print "    located formatpath : $FormatPath\n";
+            print "located formatpath (3) : $FormatPath\n";
         }
         $FormatPath .= '/';
     }
 
-    if ($UseEnginePath && ($FormatPath ne '' && ($FormatPath !~ /$EnginePath\/$/))) {
+    if ($UseEnginePath && $EngineDone && ($FormatPath ne '') && ($FormatPath !~ /$EnginePath\/$/)) {
         $FormatPath .= $EnginePath ;
         unless (-d $FormatPath) {
             mkdir $FormatPath ;
         }
         $FormatPath .= '/' ;
     }
-
+    print "      using formatpath : $FormatPath\n" if $Verbose ;
     return $FormatPath;
 }
 
@@ -2300,7 +2381,7 @@ sub RunOneFormat {
             $TeXPrefix = "*";
         }
         my $CurrentPath = cwd();
-        my $TheTeXFormatPath = LocatedFormatPath($TeXFormatPath, $TeXExecutable);
+        my $TheTeXFormatPath = LocatedFormatPath($TeXFormatPath, $TeXExecutable,1);
         if ( $TheTeXFormatPath ne '' ) { chdir $TheTeXFormatPath }
         MakeUserFile;
         MakeResponseFile;
@@ -2314,6 +2395,12 @@ sub RunOneFormat {
         RestoreUserFile;
 
         if ( ( $TheTeXFormatPath ne '' ) && ( $CurrentPath ne '' ) ) {
+            print "\n";
+            if ($UseEnginePath) {
+                print " used engineformatpath : $TheTeXFormatPath\n";
+            } else {
+                print "       used formatpath : $TheTeXFormatPath\n";
+            }
             chdir $CurrentPath;
         }
     }
@@ -2355,31 +2442,110 @@ sub RunFormats {
 }
 
 sub RunMpFormat {
+    # engine is not supported by MP
     my $MpFormat = shift;
     return if ( $MpFormat eq '' );
     my $CurrentPath = cwd();
-    my $TheMpFormatPath = LocatedFormatPath($MpFormatPath, $MpExecutable);
+    my $TheMpFormatPath = LocatedFormatPath($MpFormatPath,$MpExecutable,$MpEngineSupport);
     if ( $TheMpFormatPath ne '' ) { chdir $TheMpFormatPath }
     $own_quote = ($MpExecutable =~ m/^[^\"].* / ? "\"" : "") ;
     my $cmd =
       "$own_quote$MpExecutable$own_quote $MpVirginFlag $MpPassString $MpFormat";
+
+unless ( $dosish && !$escapeshell ) {
+    $cmd =~ s/[^\\]\&/\\\&/io ;
+}
+
     if ($Verbose) { print "\n$cmd\n\n" }
     system($cmd ) ;
 
     if ( ( $TheMpFormatPath ne '' ) && ( $CurrentPath ne '' ) ) {
+        print "\n";
+            #~ if ($UseEnginePath) {
+                #~ print " used engineformatpath : $TheMpFormatPath\n";
+            #~ } else {
+                print "       used formatpath : $TheMpFormatPath\n";
+            #~ }
         chdir $CurrentPath;
+    }
+}
+
+
+my $dir = File::Temp::tempdir(CLEANUP=>1) ;
+my ($fh, $filename) = File::Temp::tempfile(DIR=>$dir, UNLINK=>1);
+
+sub checktexformatpath {
+    # engine support is either broken of not implemented in some
+    # distributions, so we need to take care of it ourselves
+    my $texformats ;
+    if (defined($ENV{'TEXFORMATS'})) {
+        $texformats = $ENV{'TEXFORMATS'} ;
+    } else{
+        $texformats = '' ;
+    }
+    if ($texformats eq '') {
+        if ($dosish) {
+            $texformats = `kpsewhich --expand-var=\$TEXFORMATS`.chomp ;
+        } else {
+            $texformats = `kpsewhich --expand-var=\\\$TEXFORMATS`.chomp ;
+        }
+    }
+    if ($texformats !~ /web2c[\/\\].*\$ENGINE/) {
+        $texformats =~ s/web2c/web2c\/{\$ENGINE,}/ ;
+        $ENV{'TEXFORMATS'} = $texformats ;
+        print " fixing texformat path : $ENV{'TEXFORMATS'}\n";
+    }
+    if (! defined($ENV{'ENGINE'})) {
+        if ($MpEngineSupport) {
+            $ENV{'ENGINE'} .= $MpExecutable ;
+        } ;
+        $ENV{'ENGINE'} = $TeXExecutable ;
     }
 }
 
 sub RunFiles {
     my $currentpath = cwd() ;
+    my $oldrunpath = $RunPath ;
+    # new
+    checktexformatpath ;
     # test if current path is writable
     if (! -w "$currentpath") {
         print " current path readonly : $currentpath\n";
-        if ($ENV{"TEMP"} && -e $ENV{"TEMP"}) {
-            $RunPath = $ENV{"TEMP"} ;
-        } elsif ($ENV{"TMP"} && -e $ENV{"TMP"}) {
-            $RunPath = $ENV{"TMP"} ;
+        #
+        # we cannot use the following because then the result will
+        # also be removed and users will not know where to look
+        #
+        # $RunPath = File::Temp::tempdir(CLEANUP=>1) ;
+        # if ($RunPath) {
+        #     print "       using temp path : $RunPath\n";
+        # } else {
+        #     print " problematic temp path : $currentpath\n";
+        #     exit ;
+        # }
+        #
+        foreach my $d ($ENV{"TMPDIR"},$ENV{"TEMP"},$ENV{"TMP"},"/tmp") {
+            if ($d && -e $d) { $RunPath = $d ; last ; }
+        }
+        if ($TempDir eq '') {
+            print " provide temp path for : $RunPath\n";
+            exit ;
+        } elsif ($RunPath ne $oldrunpath) {
+            chdir ($RunPath) ;
+            unless (-e $TempDir) {
+                print " creating texexec path : $TempDir\n";
+                mkdir ("$TempDir", 077)
+            }
+            if (-e $TempDir) {
+                $RunPath += $TempDir ;
+            } else {
+                # we abort this run because on unix an invalid tmp
+                # path can be an indication of a infected system
+                print " problematic temp path : $RunPath\n";
+                exit ;
+            }
+        } else {
+            print " no writable temp path : $RunPath\n";
+            exit ;
         }
     }
     # test if we need to change paths
@@ -2640,6 +2806,7 @@ sub doRunMP {    ###########
         }
         # prevent nameclash, experimental
         my $MpMpName = "$MpName";
+        print "$cmd $MpMpName" if ($Verbose) ;
         $Problems = system("$cmd $MpMpName");
         open( MPL, "$MpName.log" );
         while (<MPL>)    # can be one big line unix under win
@@ -2732,45 +2899,6 @@ sub load_set_file {
 
 if ( $SetFile ne "" ) { load_set_file( $SetFile, $Verbose ) }
 
-# todo : more consistent argv handling
-#
-# sub ifargs
-#   { $problems = (@ARGV==0) ;
-#     if ($problems)
-#       { print "               warning : nothing to do\n" }
-#     return $problems }
-
-# sub check_texmf_root
-#   { return if ($TeXRoot eq "") ;
-#     my $root = $TeXRoot ;
-#     $root =~ s/\\/\//goi ;
-#     if (-d $root)
-#       { print "        using tex root : $root \n" ;
-#         $ENV{TEXROOT}    = $root ;
-#         $ENV{TEXMFCNF}   = "$root/texmf-local/web2c" ;
-#         $ENV{TEXMFFONTS} = "$root/texmf-fonts" ;
-#         $ENV{TEXMFLOCAL} = "$root/texmf-local" ;
-#         $ENV{TEXMFMAIN}  = "$root/texmf" }
-#     else
-#       { print "      invalid tex root : $root \n" } }
-#
-# sub check_texmf_tree
-#   { return if ($TeXTree eq "") ;
-#     my $tree = $TeXTree ;
-#     unless (-d $tree)
-#       { $tree = $ENV{TEXMFLOCAL} ;
-#         $tree =~ s/texmf.*//io ;
-#         $tree .= $TeXTree }
-#     if (-d $tree)
-#       { print "      using texmf tree : $tree \n" ;
-#         $ENV{TEXMFPROJECT} = $tree ;
-#         if ((-f "$tree/web2c/cont-en.efmt")||
-#             (-f "$tree/web2c/cont-nl.efmt"))
-#           { $ENV{TEXFORMATS} = "$tree/web2c" }
-#         $ENV{TEXMF} = '{$TEXMFPROJECT,$TEXMFFONTS,$TEXMFLOCAL,!!$TEXMFMAIN}' }
-#     else
-#       { print "    invalid texmf tree : $tree \n" } }
-
 sub check_texmf_root { }
 sub check_texmf_tree { }
 
@@ -2834,6 +2962,7 @@ if ($HelpAsked) {
     show_help_info
 } elsif ($Version) {
     show_version_info
+    #~ system("texmfstart ctxtools --check $OriginalArgs") ;
 } elsif ($TypesetListing) {
     check_texmf_root;
     check_texmf_tree;
@@ -2859,23 +2988,12 @@ if ($HelpAsked) {
     else {
         RunFormats ;
     }
+    #~ system("texmfstart ctxtools $OriginalArgs") ;
 } elsif (@ARGV) {
     check_texmf_root;
     check_texmf_tree;
     @ARGV = <@ARGV>;
     RunFiles;
-#~ } else {
-    #~ if ($Modules ne "") { # kind of fall back: texexec --use=set-02 --pdf
-        #~ my @tmp = split(',', $Modules) ;
-        #~ @ARGV[0] = @tmp[0] ;
-    #~ }
-    #~ if (@ARGV) {
-        #~ check_texmf_root;
-        #~ check_texmf_tree;
-        #~ RunFiles;
-    #~ } elsif ( !$HelpAsked ) {
-        #~ show_help_options;
-#~ } }
 } elsif ( !$HelpAsked ) {
     show_help_options;
 }
