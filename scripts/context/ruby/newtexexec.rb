@@ -495,7 +495,11 @@ class Commands
             job.setvariable('backend','standard')
         end
 
-        job.setvariable('mpsengine',@commandline.option('engine'))
+        if (str = @commandline.option('engine')) && ! str.standard? && ! str.empty? then
+            job.setvariable('mpsengine',@commandline.option('engine'))
+        else
+            job.setvariable('mpsengine','standard')
+        end
 
     end
 

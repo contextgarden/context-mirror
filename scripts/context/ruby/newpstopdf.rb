@@ -19,6 +19,9 @@ end
 
 # todo: paden/prefix in magick and inkscape
 # todo: clean up method handling (pass strings, no numbers)
+# --method=crop|bounded|raw|...
+# --resolution=low|normal|medium|high|printer|print|screen|ebook|default
+# + downward compatible flag handling
 
 require 'base/switch'
 require 'base/tool'

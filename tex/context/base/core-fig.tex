@@ -2117,23 +2117,23 @@
         \!!dimenb\@@cpsy\!!dimenb
         \advance\!!dimend \nextboxht
       \fi
-      \setbox\nextbox\hbox                         % old
-        {\advance\!!dimenc -\@@cpleftoffset      % new !
-         \advance\!!dimend -\@@cpbottomoffset       % new ! % - added
+      \setbox\nextbox\hbox                            % old
+        {\advance\!!dimenc -\@@cpleftoffset           % new !
+         \advance\!!dimend -\@@cpbottomoffset         % new ! % - added
          \hskip-\!!dimenc\lower\!!dimend\flushnextbox}% old
       \nextboxwd\zeropoint
       \nextboxht\zeropoint
       \nextboxdp\zeropoint
       \setbox\nextbox\hbox
-        {\advance\!!dimena \@@cpleftoffset        % new !
-         \advance\!!dimena \@@cprightoffset       % new !
-         \advance\!!dimenb \@@cpbottomoffset         % new !
-         \advance\!!dimenb \@@cptopoffset         % new !
-         \dostartclipping\@@cpmp\!!dimena\!!dimenb  % old
+        {\advance\!!dimena \@@cpleftoffset         % new !
+         \advance\!!dimena \@@cprightoffset        % new !
+         \advance\!!dimenb \@@cpbottomoffset       % new !
+         \advance\!!dimenb \@@cptopoffset          % new !
+         \dostartclipping\@@cpmp\!!dimena\!!dimenb % old
            \flushnextbox
          \dostopclipping}%
-      \setbox\nextbox\hbox                      % new !
-        {\!!dimena-\@@cpleftoffset            % new !
+      \setbox\nextbox\hbox                       % new !
+        {\!!dimena-\@@cpleftoffset               % new !
          \!!dimenb \@@cpbottomoffset             % new ! % - removed
          \hskip\!!dimena\lower\!!dimenb\flushnextbox}% new !
       \nextboxwd\!!dimena

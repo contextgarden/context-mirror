@@ -10,6 +10,10 @@
 
 # rename this one to environment
 
+require 'rbconfig'
+
+# beware $engine is lowercase in kpse
+
 module Kpse
 
     @@located      = Hash.new
@@ -119,6 +123,7 @@ module Kpse
     end
 
     def Kpse.formatpaths
+        # maybe we should check for writeability
         unless @@paths.key?('formatpaths') then
             begin
                 setpath('formatpaths',run("--show-path=fmt").gsub(/\\/,'/').split(File::PATH_SEPARATOR))
@@ -135,61 +140,72 @@ module Kpse
 
     def Kpse.formatpath(engine='pdfetex',enginepath=true)
 
+        # because engine support in distributions is not always
+        # as we expect, we need to check for it;
+
+        # todo: miktex
+
         unless @@paths.key?(engine) then
-            # overcome a bug/error in web2c/distributions/kpse
-            if ENV['TEXFORMATS'] then
-                ENV['TEXFORMATS'] = ENV['TEXFORMATS'].sub(/\$ENGINE/io,'')
+            # savedengine = ENV['engine']
+            if ENV['TEXFORMATS'] && ! ENV['TEXFORMATS'].empty? then
+                # make sure that we have a lowercase entry
+                ENV['TEXFORMATS'] = ENV['TEXFORMATS'].sub(/\$engine/io,"\$engine")
+                # well, we will append anyway, so we could also strip it
+                # ENV['TEXFORMATS'] = ENV['TEXFORMATS'].sub(/\$engine/io,"")
             end
             # use modern method
             if enginepath then
                 formatpath = run("--engine=#{engine} --show-path=fmt")
             else
+                # ENV['engine'] = engine if engine
                 formatpath = run("--show-path=fmt")
             end
             # use ancient method
             if formatpath.empty? then
                 if enginepath then
                     if @@mswindows then
-                        formatpath = run("--engine=#{engine} --expand-var=\$TEXFORMATS")
+                        formatpath = run("--engine=#{engine} --expand-path=\$TEXFORMATS")
                     else
-                        formatpath = run("--engine=#{engine} --expand-var=\\\$TEXFORMATS")
+                        formatpath = run("--engine=#{engine} --expand-path=\\\$TEXFORMATS")
                     end
-                else
-                    if enginepath then
-                        formatpath = run("--expand-var=\$TEXFORMATS")
+                end
+                # either no enginepath or failed run
+                if formatpath.empty? then
+                    if @@mswindows then
+                        formatpath = run("--expand-path=\$TEXFORMATS")
                     else
-                        formatpath = run("--expand-var=\\\$TEXFORMATS")
+                        formatpath = run("--expand-path=\\\$TEXFORMATS")
                     end
                 end
             end
-            # overcome a bug/error in web2c/distributions/kpse
-            formatpath.sub!(/unsetengine/, engine)
-            # take first one
+            # locate writable path
             if ! formatpath.empty? then
-                formatpath = formatpath.split(File::PATH_SEPARATOR).first
-                # remove clever things
-                formatpath.gsub!(/[\!\{\}\,]/, '')
-                unless formatpath.empty? then
-                    if enginepath then
-                        newformatpath = File.join(formatpath,engine).gsub(/[\/\\]+/, '/')
-                        if FileTest.directory?(newformatpath) then
-                            formatpath = newformatpath
-                        else
-                            begin
-                                File.makedirs(newformatpath)
-                            rescue
-                            else
-                                formatpath = newformatpath if FileTest.directory?(newformatpath)
-                            end
+                formatpath.split(File::PATH_SEPARATOR).each do |fp|
+                    fp.gsub!(/\\/,'/')
+                    # remove funny patterns
+                    fp.sub!(/^!!/,'')
+                    fp.sub!(/\/+$/,'')
+                    fp.sub!(/unsetengine/,if enginepath then engine else '' end)
+                    if ! fp.empty? && (fp != '.') then
+                        # strip (possible engine) and test for writeability
+                        fpp = fp.sub(/#{engine}\/*$/,'')
+                        if FileTest.directory?(fpp) && FileTest.writable?(fpp) then
+                            # use this path
+                            formatpath = fp.dup
+                            break
                         end
-                    else
-                        formatpath = formatpath.gsub(/[\/\\]+/, '/').gsub(/\/$/, '')
                     end
                 end
             end
+            # fall back to current path
+            formatpath = '.' if formatpath.empty? || ! FileTest.writable?(formatpath)
+            # append engine but prevent duplicates
+            formatpath = File.join(formatpath.sub(/\/*#{engine}\/*$/,''), engine) if enginepath
+            begin File.makedirs(formatpath) ; rescue ; end ;
             setpath(engine,formatpath)
+            # ENV['engine'] = savedengine
         end
-        return @@paths[engine]
+        return @@paths[engine].first
     end
 
     def Kpse.update
@@ -221,23 +237,49 @@ module Kpse
     end
 
     # engine support is either broken of not implemented in some
-    # distributions, so we need to take care of it ourselves
+    # distributions, so we need to take care of it ourselves (without
+    # delays due to kpse calls); there can be many paths in the string
+    #
+    # in a year or so, i will drop this check
 
     def Kpse.fixtexmfvars(engine=nil)
         ENV['ENGINE'] = engine if engine
         texformats = if ENV['TEXFORMATS'] then ENV['TEXFORMATS'].dup else '' end
-        if @@mswindows then
-            texformats = `kpsewhich --expand-var=\$TEXFORMATS`.chomp if texformats.empty?
-        else
-            texformats = `kpsewhich --expand-var=\\\$TEXFORMATS`.chomp if texformats.empty?
+        if texformats.empty? then
+            if engine then
+                if @@mswindows then
+                    texformats = `kpsewhich --engine=#{engine} --expand-var=\$TEXFORMATS`.chomp
+                else
+                    texformats = `kpsewhich --engine=#{engine} --expand-var=\\\$TEXFORMATS`.chomp
+                end
+            else
+                if @@mswindows then
+                    texformats = `kpsewhich --expand-var=\$TEXFORMATS`.chomp
+                else
+                    texformats = `kpsewhich --expand-var=\\\$TEXFORMATS`.chomp
+                end
+            end
         end
-        if texformats !~ /web2c[\/\\].*\$ENGINE/ then
-            ENV['TEXFORMATS'] = texformats.gsub(/web2c/, "web2c/{\$ENGINE,}")
-            return true
+        if engine then
+            texformats.sub!(/unsetengine/,engine)
         else
+            texformats.sub!(/unsetengine/,"\$engine")
+        end
+        if engine && (texformats =~ /web2c[\/\\].*#{engine}/o) then
+            # ok, engine is seen
             return false
+        elsif texformats =~ /web2c[\/\\].*\$engine/io then
+            # shouldn't happen
+            return false
+        else
+            ENV['TEXFORMATS'] = texformats.gsub(/(web2c\/\{)(,\})/o) do
+                "#{$1}\$engine#{$2}"
+            end
+            if texformats !~ /web2c[\/\\].*\$engine/io then
+                ENV['TEXFORMATS'] = texformats.gsub(/web2c\/*/, "web2c/{\$engine,}")
+            end
+            return true
         end
-
     end
 
     def Kpse.runscript(name,filename=[],options=[])
@@ -263,7 +305,9 @@ module Kpse
     end
 
     def Kpse.setpath(key,value)
-        @@paths[key] = [value].flatten.uniq
+        @@paths[key] = [value].flatten.uniq.collect do |p|
+            p.sub(/^!!/,'').sub(/\/*$/,'')
+        end
         ENV["_CTX_K_P_#{key}_"] = @@paths[key].join(';') if @@crossover
     end
 

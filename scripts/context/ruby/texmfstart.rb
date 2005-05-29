@@ -23,14 +23,18 @@
 # --locate        => provides location
 # --exec          => exec instead of system
 # --iftouched=a,b => only if timestamp a<>b
+#
+# file: path: bin:
 
 # we don't depend on other libs
+
+$ownpath = File.expand_path(File.dirname($0)) unless defined? $ownpath
 
 require "rbconfig"
 
 $mswindows = Config::CONFIG['host_os'] =~ /mswin/
 $separator = File::PATH_SEPARATOR
-$version   = "1.6.0"
+$version   = "1.6.2"
 
 if $mswindows then
 
@@ -221,7 +225,7 @@ def launch(filename)
 end
 
 def expanded(arg) # no "other text files", too restricted
-    arg.gsub(/(env)\:([a-zA-Z\-\_\.0-9]+)/o) do
+    arg.gsub(/(env|environment)\:([a-zA-Z\-\_\.0-9]+)/o) do
         method, original, resolved = $1, $2, ''
         if resolved = ENV[original] then
             report("environment variable #{original} expands to #{resolved}") unless $report
@@ -230,7 +234,7 @@ def expanded(arg) # no "other text files", too restricted
             report("environment variable #{original} cannot be resolved") unless $report
             original
         end
-    end . gsub(/(kpse|loc)\:([a-zA-Z\-\_\.0-9]+)/o) do # was: \S
+    end . gsub(/(kpse|loc|file|path)\:([a-zA-Z\-\_\.0-9]+)/o) do # was: \S
         method, original, resolved = $1, $2, ''
         if $program && ! $program.empty? then
             pstrings = ["-progname=#{$program}"]
@@ -265,10 +269,12 @@ def expanded(arg) # no "other text files", too restricted
                 end
             end
             if resolved.empty? then
+                original = File.dirname(original) if method =~ /path/
                 report("#{original} is not resolved") unless $report
                 ENV["_CTX_K_V_#{original}_"] = original if $crossover
                 original
             else
+                resolved = File.dirname(resolved) if method =~ /path/
                 report("#{original} is resolved to #{resolved}") unless $report
                 ENV["_CTX_K_V_#{original}_"] = resolved if $crossover
                 resolved
@@ -314,7 +320,7 @@ def runoneof(application,fullname,browserpermitted)
         return true
     else
         report("starting #{$filename}") unless $report
-        ouput("\n") if $report && $verbose
+        output("\n") if $report && $verbose
         applications = $applications[application]
         if applications.class == Array then
             if $report then
@@ -379,7 +385,7 @@ def registered?(filename)
     if $crossover then
         return ENV["_CTX_K_S_#{filename}_"] != nil
     else
-        return ENV["texmfstart.#{filename}"] != nil
+        return ENV["TEXMFSTART.#{filename}"] != nil
     end
 end
 
@@ -387,7 +393,7 @@ def registered(filename)
     if $crossover then
         return ENV["_CTX_K_S_#{filename}_"]
     else
-        return ENV["texmfstart.#{filename}"]
+        return ENV["TEXMFSTART.#{filename}"]
     end
 end
 
@@ -396,7 +402,7 @@ def register(filename,fullname)
         if $crossover then
             ENV["_CTX_K_S_#{filename}_"] = fullname
         else
-            ENV["texmfstart.#{filename}"] = fullname
+            ENV["TEXMFSTART.#{filename}"] = fullname
         end
         return true
     else
@@ -433,15 +439,16 @@ def find(filename,program)
     end
     filename.sub!(/^.*[\\\/]/, '')
     # next we look at the current path and the callerpath
-    ownpath = $0.sub(/[\\\/][a-z0-9\-]*?\.rb/i,'')
-    [['.','current'],[ownpath,'caller']].each do |p|
-        suffixlist.each do |suffix|
-            fname = "#{filename}.#{suffix}"
-            fullname = File.join(p[0],fname)
-            report("locating '#{fname}' in #{p[1]} path")
-            if FileTest.file?(fullname) && register(filename,fullname) then
-                report("'#{fname}' located in #{p[1]} path")
-                return shortpathname(fullname)
+    [['.','current'],[$ownpath,'caller'],[registered("THREAD"),'thread']].each do |p|
+        if p && ! p.empty? then
+            suffixlist.each do |suffix|
+                fname = "#{filename}.#{suffix}"
+                fullname = File.expand_path(File.join(p[0],fname))
+                report("locating '#{fname}' in #{p[1]} path '#{p[0]}'")
+                if FileTest.file?(fullname) && register(filename,fullname) then
+                    report("'#{fname}' located in #{p[1]} path")
+                    return shortpathname(fullname)
+                end
             end
         end
     end
@@ -611,7 +618,7 @@ end
 
 def direct(fullname)
     begin
-        return runcommand([fullname.sub(/^bin\:/, ''),expanded($arguments)].join(' '))
+        return runcommand([fullname.sub(/^(bin|binary)\:/, ''),expanded($arguments)].join(' '))
     rescue
         return false
     end
@@ -674,9 +681,11 @@ def process(&block)
 
 end
 
-def main
+def execute(arguments)
 
-    $directives  = hashed(ARGV)
+    arguments = arguments.split(/\s+/) if arguments.class == String
+
+    $directives = hashed(arguments)
 
     $help        = $directives['help']      || false
     $batch       = $directives['batch']     || false
@@ -698,6 +707,9 @@ def main
     $windows     = $directives['windows']   || false
     $stubpath    = $directives['stubpath']  || ''
     $indirect    = $directives['indirect']  || false
+
+    $before      = $directives['before']    || ''
+    $after       = $directives['after']     || ''
 
     $iftouched   = $directives['iftouched'] || false
 
@@ -742,16 +754,22 @@ def main
         elsif $browser && $filename =~ /^http\:\/\// then
             launch($filename)
         else
-            process do
-                if $direct || $filename =~ /^bin\:/ then
-                    direct($filename)
-                else # script: or no prefix
-                    run(find(shortpathname($filename),$program))
+            begin
+                process do
+                    if $direct || $filename =~ /^bin\:/ then
+                        direct($filename)
+                    else # script: or no prefix
+                        command = find(shortpathname($filename),$program)
+                        register("THREAD",File.dirname(command))
+                        run(command)
+                    end
                 end
+            rescue
+                report('fatal error in starting process')
             end
         end
     end
 
 end
 
-main
+execute(ARGV)

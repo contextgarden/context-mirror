@@ -24,9 +24,9 @@ TEXMFDBS      = $TEXMF;$VARTEXFONTS
 VARTEXFONTS   = $TEMPFONTPATH/varfonts
 
 % In the case of an multi-os setup, this one can be set
-% by the environment.
+% by the environment. watch out, lowercase engine !
 
-TEXFORMATS    = .;$TEXMF/web2c/{$ENGINE,}
+TEXFORMATS    = .;$TEXMF/web2c/{$engine,}
 MFBASES       = .;$TEXFORMATS
 MPMEMS        = .;$TEXFORMATS
 TEXPOOL       = .;$TEXFORMATS
