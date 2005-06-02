@@ -26,6 +26,8 @@
 #
 # file: path: bin:
 
+# texmfstart --exec bin:scite *.tex
+
 # we don't depend on other libs
 
 $ownpath = File.expand_path(File.dirname($0)) unless defined? $ownpath
@@ -375,35 +377,30 @@ def usage
     print("           texmfstart --page=2 --file=showcase.pdf\n")
     print("           texmfstart --program=yourtex yourscript.pl arg-1 arg-2\n")
     print("           texmfstart --direct xsltproc kpse:somefile.xsl somefile.xml\n")
-    print("           texmfstart bin:xsltproc env:somepreset kpse:somefile.xsl somefile.xml\n")
+    print("           texmfstart bin:xsltproc env:somepreset path:somefile.xsl somefile.xml\n")
     print("           texmfstart --iftouched=normal,lowres downsample.rb normal lowres\n")
+    print("           texmfstart texmfstart bin:scite kpse:texmf.cnf\n")
+    print("           texmfstart texmfstart --exec bin:scite *.tex\n")
 end
 
 # somehow registration does not work out (at least not under windows)
 
+def tag(name)
+    if $crossover then "_CTX_K_S_#{name}_" else "TEXMFSTART.#{name}" end
+end
+
 def registered?(filename)
-    if $crossover then
-        return ENV["_CTX_K_S_#{filename}_"] != nil
-    else
-        return ENV["TEXMFSTART.#{filename}"] != nil
-    end
+    return ENV[tag(filename)] != nil
 end
 
 def registered(filename)
-    if $crossover then
-        return ENV["_CTX_K_S_#{filename}_"]
-    else
-        return ENV["TEXMFSTART.#{filename}"]
-    end
+    return ENV[tag(filename)]
 end
 
 def register(filename,fullname)
     if fullname && ! fullname.empty? then # && FileTest.file?(fullname)
-        if $crossover then
-            ENV["_CTX_K_S_#{filename}_"] = fullname
-        else
-            ENV["TEXMFSTART.#{filename}"] = fullname
-        end
+        ENV[tag(filename)] = fullname
+        report("registering '#{filename}' as '#{fullname}'")
         return true
     else
         return false
@@ -760,7 +757,7 @@ def execute(arguments)
                         direct($filename)
                     else # script: or no prefix
                         command = find(shortpathname($filename),$program)
-                        register("THREAD",File.dirname(command))
+                        register("THREAD",File.dirname(File.expand_path(command)))
                         run(command)
                     end
                 end

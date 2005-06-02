@@ -52,7 +52,7 @@ use FindBin;
 use File::Compare;
 use File::Temp;
 
-use IO::Handle; autoflush STDOUT 1;
+#~ use IO::Handle; autoflush STDOUT 1;
 
 my %ConTeXtInterfaces;    # otherwise problems with strict
 my %ResponseInterface;    # since i dunno how to allocate else
@@ -199,6 +199,7 @@ my $TheEnginePath    = 0 ;
 my $Paranoid         = 0 ;
 my $NotParanoid      = 0 ;
 my $BoxType          = '' ;
+my $Local            = '' ;
 
 my $TempDir          = '' ;
 
@@ -258,7 +259,9 @@ my $MakeMpy = '';
     "autopath"       => \$AutoPath,
     "pdf"            => \$ProducePdfT,
     "pdm"            => \$ProducePdfM,
+    "dpm"            => \$ProducePdfM,
     "pdx"            => \$ProducePdfX,
+    "dpx"            => \$ProducePdfX,
     "xtx"            => \$ProducePdfXTX,
     "pdfarrange"     => \$PdfArrange,
     "pdfselect"      => \$PdfSelect,
@@ -312,6 +315,7 @@ my $MakeMpy = '';
     "paranoid"       => \$Paranoid,
     "notparanoid"    => \$NotParanoid,
     "boxtype=s"      => \$BoxType, # media art crop bleed trim
+    "local"          => \$Local,
     #### unix is unsafe (symlink viruses)
     "tempdir=s"      => \$TempDir,
     #### experiment
@@ -420,7 +424,7 @@ if ( ( $LogFile ne '' ) && ( $LogFile =~ /\w+\.log$/io ) ) {
     *STDERR = *LOGFILE;
 }
 
-my $Program = " TeXExec 5.4.1 - ConTeXt / PRAGMA ADE 1997-2005";
+my $Program = " TeXExec 5.4.2 - ConTeXt / PRAGMA ADE 1997-2005";
 
 print "\n$Program\n\n";
 
@@ -775,7 +779,7 @@ $SetFile = IniValue( 'SetFile', $SetFile );
 if ( ($Verbose) && ( $kpsewhich ne '' ) ) {
     print "\n";
     my $CnfFile = `$kpsewhich -progname=context texmf.cnf`;
-    chomp $CnfFile;
+    chomp($CnfFile);
     print " applications will use : $CnfFile\n";
 }
 
@@ -866,16 +870,29 @@ $SetupPath =~ s/\\/\//go;
 
 my %OutputFormats;
 
-$OutputFormats{pdf}      = "pdftex";
-$OutputFormats{pdftex}   = "pdftex";
+# the mother of all drivers
+
 $OutputFormats{dvips}    = "dvips";
-$OutputFormats{dvipsone} = "dvipsone";
+
+# needs an update
+
 $OutputFormats{acrobat}  = "acrobat";
+
+# the core drivers
+
+$OutputFormats{pdftex}   = "pdftex";    $OutputFormats{pdf}      = "pdftex";
+$OutputFormats{dvipdfm}  = "dvipdfm";   $OutputFormats{dpm}      = "dvipdfm";
+$OutputFormats{dvipdfmx} = "dvipdfmx";  $OutputFormats{dpx}      = "dvipdfmx";
+$OutputFormats{xetex}    = "xetex";     $OutputFormats{xtx}      = "xetex";
+
+# kind of obsolete now that yandy is gone
+
+$OutputFormats{dvipsone} = "dvipsone";
 $OutputFormats{dviwindo} = "dviwindo";
+
+# it was never finished
+
 $OutputFormats{dviview}  = "dviview";
-$OutputFormats{dvipdfm}  = "dvipdfm";
-$OutputFormats{dvipdfmx} = "dvipdfmx";
-$OutputFormats{xetex}    = "xetex";
 
 my @ConTeXtFormats = ( "nl", "en", "de", "cz", "uk", "it", "ro", "xx");
 
@@ -1075,6 +1092,18 @@ sub System {
 	system($cmd)
 }
 
+sub Pipe {
+    my $cmd = shift ;
+    unless ( $dosish && ! $escapeshell ) {
+        $cmd =~ s/([^\\])\&/$1\\\&/io ;
+    }
+    if ($Verbose) {
+        print "\n$cmd\n\n" ;
+    }
+	return `$cmd`
+}
+
+
 sub RunPerlScript {
     my ( $ScriptName, $Options ) = @_;
     my $cmd = '';
@@ -1117,9 +1146,7 @@ sub CheckOutputFormat {
             }
         }
         if ( !$Ok ) {
-            print $Help{'output'};
-        } elsif ($FullFormat) {
-            # print OPT "\\setupoutput[$FullFormat]\n";
+            print(" unknown output format : $OutputFormat\n");
         }
     }
     unless ($FullFormat) { $FullFormat = $OutputFormat }
@@ -1656,23 +1683,23 @@ sub isXMLfile {
 
 sub RunConTeXtFile {
     my ( $JobName, $JobSuffix ) = @_;
-if ($AutoPath) {
-    if ($JobName =~ /^(.*)[\/\\](.*?)$/o) {
-        $InpPath = $1 ;
-        $JobName = $2 ;
+    if ($AutoPath) {
+        if ($JobName =~ /^(.*)[\/\\](.*?)$/o) {
+            $InpPath = $1 ;
+            $JobName = $2 ;
+        }
     }
-}
     $JobName =~ s/\\/\//goi;
     $InpPath =~ s/\\/\//goi;
     my $OriSuffix = $JobSuffix;
-if ($JobSuffix =~ /\_fo$/i) {
-    if (! -f $JobName) {
-        print "stripping funny suffix : _fo\n";
-        $JobName =~ s/\_fo$//io ;
-        $JobSuffix =~ s/\_fo$//io ;
-        $OriSuffix =~ s/\_fo$//io ;
+    if ($JobSuffix =~ /\_fo$/i) {
+        if (! -f $JobName) {
+            print "stripping funny suffix : _fo\n";
+            $JobName =~ s/\_fo$//io ;
+            $JobSuffix =~ s/\_fo$//io ;
+            $OriSuffix =~ s/\_fo$//io ;
+        }
     }
-}
     if (($dosish) && ($PdfClose)) {
         my $ok = System("pdfclose --file $JobName.pdf") if -e "$JobName.pdf" ;
         if (($Result ne '') && (-e "$Result.pdf")) {
@@ -1841,10 +1868,16 @@ if ($JobSuffix =~ /\_fo$/i) {
             unlink "$JobName.tup";    # previous tuo file
             unlink "$JobName.top";    # runtime option file
             if ($ProducePdfX) {
-                System("dvipdfmx -f dvipdfmx.map -d 4 $JobName") ;
+                $ENV{'backend'} = $ENV{'progname'} = 'dvipdfm' ;
+                $ENV{'TEXFONTMAPS'} = '.;$TEXMF/fonts/map/{dvipdfm,dvips,}//' ;
+                System("dvipdfmx -d 4 $JobName") ;
             } elsif ($ProducePdfM) {
+                $ENV{'backend'} = $ENV{'progname'} = 'dvipdfm' ;
+                $ENV{'TEXFONTMAPS'} = '.;$TEXMF/fonts/map/{dvipdfm,dvips,}//' ;
                 System("dvipdfm $JobName") ;
             } elsif ($ProducePdfXTX) {
+                $ENV{'backend'} = $ENV{'progname'} = 'xetex' ;
+                $ENV{'TEXFONTMAPS'} = '.;$TEXMF/fonts/map/{xetex,pdftex,dvips,}//' ;
                 System("xdv2pdf $JobName.xdv") ;
             }
             PopResult($JobName);
@@ -2205,86 +2238,92 @@ sub LocatedFormatPath { # watch out $engine is lowercase in kpse
     my $FormatPath = shift;
     my $EnginePath = shift;
     my $EngineDone = shift;
-    if ( ( $FormatPath eq '' ) && ( $kpsewhich ne '' ) ) {
-        unless ($EngineDone) {
-            my $str = $ENV{"TEXFORMATS"} ;
-            $str =~ s/\$engine//io ;
-            $ENV{"TEXFORMATS"} = $str ;
-        }
-        # expanded paths
-        print "       assuming engine : $EnginePath\n";
-        if (($UseEnginePath)&&($EngineDone)) {
-            $FormatPath = `$kpsewhich --engine=$EnginePath --show-path=fmt` ;
-        } else {
-            $FormatPath = `$kpsewhich --show-path=fmt` ;
-        }
-        chomp $FormatPath ;
-        if ( ( $FormatPath ne '' ) && $Verbose ) {
-            print "located formatpath (1) : $FormatPath\n";
-        }
-        # fall back
-        if ($FormatPath eq '') {
+    if ($Local) {
+        $FormatPath = '.' ; # for patrick
+    } else {
+        if ( ( $FormatPath eq '' ) && ( $kpsewhich ne '' ) ) {
+            unless ($EngineDone) {
+                my $str = $ENV{"TEXFORMATS"} ;
+                $str =~ s/\$engine//io ;
+                $ENV{"TEXFORMATS"} = $str ;
+            }
+            # expanded paths
+            print "       assuming engine : $EnginePath\n";
             if (($UseEnginePath)&&($EngineDone)) {
-                if ($dosish) {
-                    $FormatPath = `$kpsewhich --engine=$EnginePath --expand-path=\$TEXFORMATS` ;
-                } else {
-                    $FormatPath = `$kpsewhich --engine=$EnginePath --expand-path=\\\$TEXFORMATS` ;
-                }
-            }
-            # either no enginepath or failed run
-            if ($FormatPath eq '') {
-                if ($dosish) {
-                    $FormatPath = `$kpsewhich --expand-path=\$TEXFORMATS` ;
-                } else {
-                    $FormatPath = `$kpsewhich --expand-path=\\\$TEXFORMATS` ;
-                }
-            }
-        }
-        chomp $FormatPath ;
-        if ( ( $FormatPath ne '' ) && $Verbose ) {
-            print "located formatpath (2) : $FormatPath\n";
-        }
-        $FormatPath =~ s/\\/\//g ;
-        if ($FormatPath ne '') {
-            my @fpaths ;
-            if ($dosish) {
-                @fpaths = split(';', $FormatPath) ;
+                $FormatPath = `$kpsewhich --engine=$EnginePath --show-path=fmt` ;
             } else {
-                @fpaths = split(':', $FormatPath) ;
+                $FormatPath = `$kpsewhich --show-path=fmt` ;
             }
-            #  take first writable unless current
-            foreach my $fp (@fpaths) {
-                # remove funny patterns
-                $fp =~ s/\/+$// ;
-                $fp =~ s/^!!// ;
-                $fp =~ s/unsetengine/$EnginePath/ ;
-                if (($fp ne '') && ($fp ne '.')) {
-                    # correct if needed
-                    # append engine unless engine is already there
-                    $fp =~ "$fp/$EnginePath" if ($fp =~ /[\\\/]$EnginePath[\\\/]*$/) ;
-                    # path may not yet be present
-                    # check if usable format path
-                    my $fpp = $fp ;
-                    $fpp =~ s/\/*$EnginePath\/*// ;
-                    if ((-d $fpp) && (-w $fpp)) {
-                        $FormatPath = $fpp ;
-                        last ;
+            chomp($FormatPath) ;
+            if ( ( $FormatPath ne '' ) && $Verbose ) {
+                print "located formatpath (1) : $FormatPath\n";
+            }
+            # fall back
+            if ($FormatPath eq '') {
+                if (($UseEnginePath)&&($EngineDone)) {
+                    if ($dosish) {
+                        $FormatPath = `$kpsewhich --engine=$EnginePath --expand-path=\$TEXFORMATS` ;
+                    } else {
+                        $FormatPath = `$kpsewhich --engine=$EnginePath --expand-path=\\\$TEXFORMATS` ;
+                    }
+                }
+                chomp($FormatPath) ;
+                # either no enginepath or failed run
+                if ($FormatPath eq '') {
+                    if ($dosish) {
+                        $FormatPath = `$kpsewhich --expand-path=\$TEXFORMATS` ;
+                    } else {
+                        $FormatPath = `$kpsewhich --expand-path=\\\$TEXFORMATS` ;
+                    }
+                }
+                chomp $FormatPath ;
+            }
+            chomp($FormatPath) ;
+            if ( ( $FormatPath ne '' ) && $Verbose ) {
+                print "located formatpath (2) : $FormatPath\n";
+            }
+            $FormatPath =~ s/\\/\//g ;
+            if ($FormatPath ne '') {
+                my @fpaths ;
+                if ($dosish) {
+                    @fpaths = split(';', $FormatPath) ;
+                } else {
+                    @fpaths = split(':', $FormatPath) ;
+                }
+                #  take first writable unless current
+                foreach my $fp (@fpaths) {
+                    # remove funny patterns
+                    $fp =~ s/\/+$// ;
+                    $fp =~ s/^!!// ;
+                    $fp =~ s/unsetengine/$EnginePath/ ;
+                    if (($fp ne '') && ($fp ne '.')) {
+                        # correct if needed
+                        # append engine unless engine is already there
+                        $fp =~ "$fp/$EnginePath" if ($fp =~ /[\\\/]$EnginePath[\\\/]*$/) ;
+                        # path may not yet be present
+                        # check if usable format path
+                        my $fpp = $fp ;
+                        $fpp =~ s/\/*$EnginePath\/*// ;
+                        if ((-d $fpp) && (-w $fpp)) {
+                            $FormatPath = $fpp ;
+                            last ;
+                        }
                     }
                 }
             }
+            $FormatPath = '.' if (($FormatPath eq '') || (! -w $FormatPath)) ;
+            if ( ( $FormatPath ne '' ) && $Verbose ) {
+                print "located formatpath (3) : $FormatPath\n";
+            }
+            $FormatPath .= '/';
         }
-        $FormatPath = '.' if (($FormatPath eq '') || (! -w $FormatPath)) ;
-        if ( ( $FormatPath ne '' ) && $Verbose ) {
-            print "located formatpath (3) : $FormatPath\n";
+        if ($UseEnginePath && $EngineDone && ($FormatPath ne '') && ($FormatPath !~ /$EnginePath\/$/)) {
+            $FormatPath .= $EnginePath ;
+            unless (-d $FormatPath) {
+                mkdir $FormatPath ;
+            }
+            $FormatPath .= '/' ;
         }
-        $FormatPath .= '/';
-    }
-    if ($UseEnginePath && $EngineDone && ($FormatPath ne '') && ($FormatPath !~ /$EnginePath\/$/)) {
-        $FormatPath .= $EnginePath ;
-        unless (-d $FormatPath) {
-            mkdir $FormatPath ;
-        }
-        $FormatPath .= '/' ;
     }
     print "      using formatpath : $FormatPath\n" if $Verbose ;
     return $FormatPath;
@@ -2405,17 +2444,18 @@ sub checktexformatpath {
     if ($texformats eq '') {
         if ($UseEnginePath) {
             if ($dosish) {
-                $texformats = `kpsewhich --engine=$TeXExecutable --expand-var=\$TEXFORMATS`.chomp ;
+                $texformats = `kpsewhich --engine=$TeXExecutable --expand-var=\$TEXFORMATS` ;
             } else {
-                $texformats = `kpsewhich --engine=$TeXExecutable --expand-var=\\\$TEXFORMATS`.chomp ;
+                $texformats = `kpsewhich --engine=$TeXExecutable --expand-var=\\\$TEXFORMATS` ;
             }
         } else {
             if ($dosish) {
-                $texformats = `kpsewhich --expand-var=\$TEXFORMATS`.chomp ;
+                $texformats = `kpsewhich --expand-var=\$TEXFORMATS` ;
             } else {
-                $texformats = `kpsewhich --expand-var=\\\$TEXFORMATS`.chomp ;
+                $texformats = `kpsewhich --expand-var=\\\$TEXFORMATS` ;
             }
         }
+        chomp($texformats) ;
     }
     if (($texformats !~ /web2c\/.*$TeXExecutable/) && ($texformats !~ /web2c[\/\\].*\$engine/i)) {
         $texformats =~ s/(web2c\/\{)(\,\})/$1\$engine$2/ ; # needed for empty engine flags
@@ -2839,7 +2879,7 @@ sub AnalyzeVersion
     my ($texengine,$type) = ('unknown', 'unknown');
     open (LOG, "<texvers.log") ;
     while (<LOG>)
-       { /^\s*This is (.*pdf(|e|x)TeX.*?)$/o and $texengine = $1 ;
+       { /^\s*This is (.*(pdf)?(|e|x)TeX.*?)$/o and $texengine = $1 ;
 	    /^\s*ConTeXt  (.*int: ([a-z]+).*?)\s*$/o and  $type   = $1; }
 	 $type =~ s/  int: ([a-z]+)//;
 	 $texengine =~ s/ Version//;
@@ -2870,16 +2910,16 @@ sub show_version_info {
   $EnterBatchMode = 1;
   $Format = 'cont-en';
   my $cmd = PrepRunTeX("texvers","tex",'') ;
-  ($texengine,$type) = AnalyzeVersion(`$cmd`) ;
+  ($texengine,$type) = AnalyzeVersion(Pipe($cmd)) ;
   print "                   tex : $texengine\n" ;
   print "               context : ver: $contextversion\n" ;
   print "               cont-en : $type\n" ;
   foreach my $a (qw(cz de it nl ro uk xx)) {
-	my $test = `$kpsewhich -format='fmt' cont-$a`;
+	my $test = Pipe("$kpsewhich -format='fmt' cont-$a") ;
 	if (defined $test && $test) {
 	  $Format = 'cont-' . $a;
 	  $cmd = PrepRunTeX("texvers","tex",'');
-	  ($texengine,$type) = AnalyzeVersion(`$cmd`) ;
+	  ($texengine,$type) = AnalyzeVersion(Pipe($cmd)) ;
 	  print "               cont-$a : $type\n" ;
 	}
   }

@@ -75,19 +75,21 @@
 
 \def\dogetEPSboundingbox#1#2#3#4#5%
   {\bgroup
-   \global\chardef\EPSfound  0
-   \global\chardef\EPScreator0
-   \global\chardef\EPSspecial0
-   \global\chardef\EPSstatus 0
+   \global\chardef\EPSfound  \zerocount
+   \global\chardef\EPScreator\zerocount
+   \global\chardef\EPSspecial\zerocount
+   \global\chardef\EPSstatus \zerocount
    \global\let\EPScreatorstring\empty
    \the\extraEPSpreambleresets
    \uncatcodespecials
    \catcode`\^^M=\@@ignore
    \def\doprocessEPSline
-     {\expandafter\checkEPSboundingbox\fileline\empty\empty:.:.\end}%
+     {\advance\scratchcounter\plusone
+      \expandafter\checkEPSboundingbox\fileline\empty\empty:.:.\end}%
+   \scratchcounter\zerocount
    \doprocessfile\scratchread{#1}\doprocessEPSline
    \egroup
-   \ifnum\EPSfound>0
+   \ifnum\EPSfound>\zerocount
      #2=\EPSllx bp% Using \EPSllx bp instead of
      #4=\EPSurx bp% \dimen0=1bp and \EPSllx\dimen0
      #3=\EPSlly bp% is more accurate (.005pt).
@@ -95,10 +97,10 @@
      \scratchdimen\EPSllx bp\advance#4 -\scratchdimen
      \scratchdimen\EPSlly bp\advance#5 -\scratchdimen
    \else
-     #2=\zeropoint
-     #3=\zeropoint
-     #4=\zeropoint
-     #5=\zeropoint
+     #2\zeropoint
+     #3\zeropoint
+     #4\zeropoint
+     #5\zeropoint
    \fi
   %\message{[bbox #1: \EPSllx\space\EPSurx\space\EPSlly\space\EPSury]}\wait
    \global\let\MPllx\EPSllx \global\let\MPlly\EPSlly
@@ -118,6 +120,15 @@
 \let\EPSspecialstring \empty
 \let\EPSspecialcontent\empty
 
+% new metapost construct (hires bb followed by creator + version)
+%
+%!PS
+%%BoundingBox: -71 -1 651 496
+%%HiResBoundingBox: -70.9945 -0.5 650.5 495.24907
+%%Creator: MetaPost 0.901
+%%CreationDate: 2005.06.02:1633
+%%Pages: 1
+
 \long\def\checkEPSboundingbox#1#2#3:#4:.#5\end
   {\if\string#1\letterpercent
      \if\string#2\letterpercent
@@ -127,35 +138,38 @@
          \getEPScreatorspec
        \else\ifx\EPSspecialstring\EPSboundingboxtag
          \getEPSboundingboxspec
-         \global\chardef\EPSfound 1
+         \global\chardef\EPSfound\plusone
        \else\ifx\EPSspecialstring\EPShiresboundingboxtag
          \getEPSboundingboxspec
-         \global\chardef\EPSfound 2
-         \dofinishEPSfile
+         \global\chardef\EPSfound\plustwo
+          \scratchcounter\zerocount
        \else\ifx\EPSspecialstring\EPSexactboundingboxtag
          \getEPSboundingboxspec
-         \global\chardef\EPSfound 2
-         \dofinishEPSfile
+         \global\chardef\EPSfound\plustwo
+         \scratchcounter\zerocount
        \else\ifx\EPSspecialstring\EPSmetapostspecialtag % only before finish!
-         \global\chardef\EPSspecial 1 % ah, we've met some MP extensions
+         \global\chardef\EPSspecial\plusone % ah, we've met some MP extensions
        \else\ifx\EPSspecialstring\EPSmetapostspecialstag % only before finish!
-         \global\chardef\EPSspecial 1 % ah, we've met some MP extensions
+         \global\chardef\EPSspecial\plusone % ah, we've met some MP extensions
        \else\ifx\EPSspecialstring\EPSpagetag
-         \global\chardef\EPSstatus  1 % we passed MP font defs
+         \global\chardef\EPSstatus \plusone % we passed MP font defs
        \else
          \the\extraEPSpreambleparsers
        \fi\fi\fi\fi\fi\fi\fi
      \fi
-   \else\ifnum\EPSfound>0
-     \ifnum\EPScreator=1 % that is, we are dealing with MP output
+   \else\ifnum\EPSfound>\zerocount
+     % bb found
+     \ifnum\EPScreator=\plusone % that is, we are dealing with MP output
        \ifcase\EPSstatus
          % we've run into MP fontdefs
        \or
          \dofinishEPSfile
        \fi
-     \else
+     \else\ifnum\scratchcounter>\plusthree
+       % too late for mps creator (we don't want to run into crap data)
        \dofinishEPSfile
-     \fi
+     \else
+     \fi\fi
    \fi\fi}
 
 \def\getEPSboundingboxspec
@@ -172,19 +186,43 @@
      \gdef\EPSury{#4}%
   \fi}
 
+% \def\getEPScreatorspec
+%   {\edef\EPSspecialstring{\EPSspecialcontent. . . .}%
+%    \expandafter\dogetEPScreatorspec\EPSspecialstring\end}
+
+% \def\dogetEPScreatorspec#1#2 . . #3\end
+%   {\edef\EPSspecialstring{#1}%
+%    \ifx\EPSspecialstring\empty
+%      \dogetEPScreatorspec#2 . . #3\end
+%    \else\ifx\EPSspecialstring\space
+%      \dogetEPScreatorspec#2 . . #3\end
+%    \else
+%      \edef\EPScreatorstring{#1#2}%
+%      \global\chardef\EPScreator
+%        \ifx\EPScreatorstring\EPSmetaposttag\plusone\else\zerocount\fi\relax
+%    \fi\fi}
+
+% adapted to new metapost output
+
 \def\getEPScreatorspec
-  {\edef\EPSspecialstring{\EPSspecialcontent. . .}%
+  {\edef\EPSspecialstring{\EPSspecialcontent\space . .}%
    \expandafter\dogetEPScreatorspec\EPSspecialstring\end}
 
-\def\dogetEPScreatorspec#1#2. . #3\end
-  {\edef\EPSspecialstring{#1}%
-   \ifx\EPSspecialstring\empty
-     \dogetEPScreatorspec#2. . #3\end
-   \else
-     \edef\EPScreatorstring{#1#2}%
-     \global\chardef\EPScreator
-       \ifx\EPScreatorstring\EPSmetaposttag1\else0\fi\relax
-   \fi}
+% \def\dogetEPScreatorspec#1#2 #3\end
+%   {\edef\EPSspecialstring{#1}%
+%    \ifx\EPSspecialstring\empty
+%      \dogetEPScreatorspec#2 #3\end
+%    \else\ifx\EPSspecialstring\space
+%      \dogetEPScreatorspec#2 #3\end
+%    \else
+%      \edef\EPScreatorstring{#1#2}%
+%      \global\chardef\EPScreator
+%        \ifx\EPScreatorstring\EPSmetaposttag\plusone\else\zerocount\fi\relax
+%    \fi\fi}
+
+\def\dogetEPScreatorspec#1#2 #3\end
+  {\edef\EPScreatorstring{#1#2}%
+   \global\chardef\EPScreator\ifx\EPScreatorstring\EPSmetaposttag\plusone\else\zerocount\fi\relax}
 
 \def\dogetEPSpreambledata#1% can be combined with \extraEPSpreambleparsers
   {\bgroup

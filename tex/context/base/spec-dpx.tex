@@ -37,6 +37,11 @@
 
 \setjobsuffix{pdf}
 
+%D Map files (experimental)
+
+\definespecial\doloadmapfile#1#2%
+  {\flushatshipout{\special{pdf: mapfile +#2}}}
+
 %D DVIPDFMx supports the special command \type{pdf: literal ...}
 %D since the version \type{dvipdfmx-20021028}.
 %D

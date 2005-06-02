@@ -767,26 +767,51 @@ class Language
         @remapping.push([from,to])
     end
 
+    # def load(filenames=@filenames)
+        # begin
+            # if filenames then
+                # @filenames = [filenames].flatten
+                # @filenames.each do |filename|
+                    # begin
+                        # if filename = located(filename) then
+                            # data = IO.read(filename)
+                            # @data += data.gsub(/\%.*$/, '')
+                            # data.gsub!(/(\\patterns|\\hyphenation)\s*\{.*/mo) do '' end
+                            # @read += "\n% preamble of file #{filename}\n\n#{data}\n"
+                        # else
+                            # report("file #{filename} is not found")
+                        # end
+                    # rescue
+                        # report("file #{filename} is not readable")
+                    # else
+                        # report("file #{filename} is loaded")
+                    # end
+                # end
+            # end
+        # rescue
+        # end
+    # end
+
     def load(filenames=@filenames)
         begin
             if filenames then
-                @filenames = [filenames].flatten
-                @filenames.each do |filename|
-                    begin
-                        if filename = located(filename) then
-                            data = IO.read(filename)
-                            @data += data.gsub(/\%.*$/, '')
-                            data.gsub!(/(\\patterns|\\hyphenation)\s*\{.*/mo) do '' end
-                            @read += "\n% preamble of file #{filename}\n\n#{data}\n"
-                        else
-                            report("file #{filename} is not found")
+                @filenames.each do |fileset|
+                    [fileset].flatten.each do |filename|
+                        begin
+                            if filename = located(filename) then
+                                data = IO.read(filename)
+                                @data += data.gsub(/\%.*$/, '')
+                                data.gsub!(/(\\patterns|\\hyphenation)\s*\{.*/mo) do '' end
+                                @read += "\n% preamble of file #{filename}\n\n#{data}\n"
+                                report("file #{filename} is loaded")
+                                break # next fileset
+                            else
+                                report("file #{filename} is not found")
+                            end
+                        rescue
+                            report("file #{filename} is not readable")
                         end
-                    rescue
-                        report("file #{filename} is not readable")
-                    else
-                        report("file #{filename} is loaded")
                     end
-                    # @data.gsub!(/\s\\[nc]\{(.*?)\}\s/o) do $1 end
                 end
             end
         rescue
@@ -1146,7 +1171,8 @@ class Commands
     # ghyphen.readme ghyph31.readme grphyph
     @@languagedata['hr' ] = [['hrhyph.tex'],                   'ec']
     @@languagedata['hu' ] = [['huhyphn.tex'],                  'ec']
-    @@languagedata['en' ] = [['hyphen.tex'],                   'default']
+    @@languagedata['en' ] = [[['ushyph','hyphen.tex']],        'default']
+    @@languagedata['en' ] = [['ushyph.tex'],                   'default']
     # inhyph.tex
     @@languagedata['is' ] = [['ishyph.tex'],                   'ec']
     @@languagedata['it' ] = [['ithyph.tex'],                   'ec']
@@ -1164,7 +1190,95 @@ class Commands
     # srhyphc.tex / cyrillic
     @@languagedata['sv' ] = [['svhyph.tex'],                   'ec']
     @@languagedata['tr' ] = [['tkhyph.tex'],                   'ec']
-    @@languagedata['uk' ] = [['ukhyphen.tex'],                 'default']
+    @@languagedata['uk' ] = [[['ukhyph','ukhyphen.tex']],      'default']
+
+end
+
+class Commands
+
+    include CommandBase
+
+    def dpxmapfiles
+
+        force  = @commandline.option("force")
+
+        texmfroot = @commandline.argument('first')
+        texmfroot = '.' if texmfroot.empty?
+        maproot   = "#{texmfroot}/fonts/map/pdftex/context"
+
+        if File.directory?(maproot) then
+            if files = Dir.glob("#{maproot}/*.map") and files.size > 0 then
+                files.each do |pdffile|
+                    next if File.basename(pdffile) == 'pdftex.map'
+                    pdffile = File.expand_path(pdffile)
+                    dpxfile = File.expand_path(pdffile.sub(/pdftex/i,'dvipdfm'))
+                    unless pdffile == dpxfile then
+                        begin
+                            if data = File.read(pdffile) then
+                                report("< #{File.basename(pdffile)} - pdf(e)tex")
+                                n = 0
+                                data = data.collect do |line|
+                                    if line =~ /^[\%\#]+/mo then
+                                        ''
+                                    else
+                                        encoding = if line =~ /([a-z0-9\-]+)\.enc/io       then $1 else ''  end
+                                        fontfile = if line =~ /([a-z0-9\-]+)\.(pfb|ttf)/io then $1 else nil end
+                                        metrics  = if line =~ /^([a-z0-9\-]+)[\s\<]+/io    then $1 else nil end
+                                        if metrics && encoding && fontfile then
+                                            n += 1
+                                            "#{metrics} #{encoding} #{fontfile}"
+                                        else
+                                            ''
+                                        end
+                                    end
+                                end
+                                data.delete_if do |line|
+                                    line.gsub(/\s+/,'').empty?
+                                end
+                                begin
+                                    if force then
+                                        if n > 0 then
+                                            File.makedirs(File.dirname(dpxfile))
+                                            if f = File.open(dpxfile,'w') then
+                                                report("> #{File.basename(dpxfile)} - dvipdfm(x) - #{n}")
+                                                f.puts(data)
+                                                f.close
+                                            else
+                                                report("? #{File.basename(dpxfile)} - dvipdfm(x)")
+                                            end
+                                        else
+                                            report("- #{File.basename(dpxfile)} - dvipdfm(x)")
+                                            begin File.delete(dpxname) ; rescue ; end
+                                        end
+                                    else
+                                        report(". #{File.basename(dpxfile)} - dvipdfm(x) - #{n}")
+                                    end
+                                rescue
+                                    report("error in saving dvipdfm file")
+                                end
+                            else
+                                report("error in loading pdftex file")
+                            end
+                        rescue
+                            report("error in processing pdftex file")
+                        end
+                    end
+                end
+                if force then
+                    begin
+                        report("regenerating database for #{texmfroot}")
+                        system("mktexlsr #{texmfroot}")
+                    rescue
+                    end
+                end
+            else
+                report("no mapfiles found in #{maproot}")
+            end
+        else
+            report("provide proper texmfroot")
+        end
+
+    end
 
 end
 
@@ -1182,12 +1296,14 @@ commandline.registeraction('rawinterface', 'generate raw syntax files [--pipe]')
 commandline.registeraction('translateinterface', 'generate interface files (xml) [nl de ..]')
 commandline.registeraction('purgefiles', 'remove temporary files [--all] [basename]')
 
-commandline.registeraction('documentation', 'generate documentation file [--type=] [filename]')
+commandline.registeraction('documentation', 'generate documentation [--type=] [filename]')
 
 commandline.registeraction('filterpages')   # no help, hidden temporary feature
 commandline.registeraction('purgeallfiles') # no help, compatibility feature
 
-commandline.registeraction('patternfiles', 'generate pattern files [languagecode|all]')
+commandline.registeraction('patternfiles', 'generate pattern files [--all] [languagecode]')
+
+commandline.registeraction('dpxmapfiles', 'convert pdftex mapfiles to dvipdfmx [--force] [texmfroot]')
 
 commandline.registervalue('type','')
 

@@ -83,12 +83,21 @@
 \def\definesymbol
   {\dotripleempty\dodefinesymbol}
 
+% \def\dodefinesymbol[#1][#2][#3]% class name meaning
+%   {\ifthirdargument
+%      \setvalue{\??ss:#1:#2}{#3}%
+%      \doifsomething{#1}{\addvalue{\??ss*#1}{#2}}%
+%    \else
+%      \setvalue{\??ss:\currentsymboldef:#1}{#2}%
+%    \fi}
+
 \def\dodefinesymbol[#1][#2][#3]% class name meaning
   {\ifthirdargument
      \setvalue{\??ss:#1:#2}{#3}%
      \doifsomething{#1}{\addvalue{\??ss*#1}{#2}}%
    \else
      \setvalue{\??ss:\currentsymboldef:#1}{#2}%
+     \addvalue{\??ss*\currentsymboldef}{#1}%
    \fi}
 
 \def\doifinsymbolsetelse#1#2{\doifdefinedelse{\??ss:#1:#2}}

@@ -13,7 +13,7 @@
 # This script will harbor some handy manipulations on tex
 # related files.
 
-banner = ['TeXTools', 'version 1.2.1', '2002/2005', 'PRAGMA ADE/POD']
+banner = ['TeXTools', 'version 1.2.2', '2002/2005', 'PRAGMA ADE/POD']
 
 unless defined? ownpath
     ownpath = $0.sub(/[\\\/][a-z0-9\-]*?\.rb/i,'')
@@ -721,6 +721,81 @@ class Commands
 
     end
 
+    public
+
+    def merge
+
+        nocheck = @commandline.option('nocheck')
+        force   = @commandline.option('force')
+        root    = @commandline.argument('first')
+        path    = @commandline.argument('second')
+
+        if FileTest.directory?(root) then
+            report("scanning #{root}")
+            rootfiles = Dir.glob("#{root}/**/*")
+        else
+            report("provide sourse root")
+            return
+        end
+        if rootfiles.size > 0 then
+            report("#{rootfiles.size} files")
+        else
+            report("no files")
+            return
+        end
+
+        if FileTest.directory?(path) then
+            report("scanning #{path}")
+            pathfiles = Dir.glob("#{path}/**/*")
+        else
+            report("provide destination root")
+            return
+        end
+        if pathfiles.size > 0 then
+            report("#{pathfiles.size} files")
+        else
+            report("no files")
+            return
+        end
+
+        roothash = Hash.new
+        pathhash = Hash.new
+
+        rootfiles.each do |f|
+            if File.file?(f) then
+                fd, fb = File.dirname(f), File.basename(f)
+                roothash[fb] = if roothash.key?(fb) then nil else fd end
+            end
+        end
+
+        pathfiles.each do |f|
+            if File.file?(f) then
+                fd, fb = File.dirname(f), File.basename(f)
+                pathhash[fb] = if pathhash.key?(fb) then nil else fd end
+            end
+        end
+
+        pathhash.keys.each do |f|
+            if pathhash[f] && roothash[f] then
+                p = File.expand_path(File.join(pathhash[f],f))
+                r = File.expand_path(File.join(roothash[f],f))
+                if p != r then
+                    if nocheck or File.mtime(p) < File.mtime(r) then
+                        report("copying '#{r}' to '#{p}'")
+                        begin
+                            File.copy(r,p) if force
+                        rescue
+                            report("copying failed")
+                        end
+                    else
+                        report("skipping '#{r}' to '#{p}'")
+                    end
+                end
+            end
+        end
+
+    end
+
 end
 
 logger      = Logger.new(banner.shift)
@@ -736,6 +811,7 @@ commandline.registeraction('fixafmfiles'      , '[pattern]   [--recurse]')
 commandline.registeraction('mactodos'         , '[pattern]   [--recurse]')
 commandline.registeraction('fixtexmftrees'    , '[texmfroot] [--force]')
 commandline.registeraction('replace'          , 'filename    [--force]')
+commandline.registeraction('merge'            , 'fromroot toroot [--force --nocheck]')
 commandline.registeraction('downcasefilenames', '[--recurse] [--force]') # not yet documented
 commandline.registeraction('stripformfeeds'   , '[--recurse] [--force]') # not yet documented
 commandline.registeraction('showfont'         , 'filename')
@@ -745,6 +821,7 @@ commandline.registeraction('version')
 
 commandline.registerflag('recurse')
 commandline.registerflag('force')
+commandline.registerflag('nocheck')
 
 commandline.expand
 

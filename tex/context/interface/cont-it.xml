@@ -820,6 +820,19 @@
       <cd:parameter name="escape">
         <cd:constant type="cd:character"/>
       </cd:parameter>
+      <cd:parameter name="spazio">
+        <cd:constant type="attivo"/>
+        <cd:constant type="disattivo"/>
+      </cd:parameter>
+      <cd:parameter name="tab">
+        <cd:constant type="cd:number"/>
+        <cd:constant type="si"/>
+        <cd:constant type="no"/>
+      </cd:parameter>
+      <cd:parameter name="pagina">
+        <cd:constant type="si"/>
+        <cd:constant type="no"/>
+      </cd:parameter>
       <cd:parameter name="rientrasuccessivo">
         <cd:constant type="si"/>
         <cd:constant type="no"/>

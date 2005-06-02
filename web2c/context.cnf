@@ -8,6 +8,10 @@
 % the binaries are located elsewhere. In case of multiple
 % trees, one can best set the following ones manually.
 
+progname = unsetprogname
+engine   = unsetengine
+backend  = unsetbackend
+
 TEXMFMAIN     = $SELFAUTOPARENT/texmf
 TEXMFLOCAL    = $SELFAUTOPARENT/texmf-local
 TEXMFFONTS    = $SELFAUTOPARENT/texmf-fonts
@@ -39,8 +43,15 @@ WEB2C         = $TEXMF/web2c
 
 OSFONTDIR =
 
+TEXFONTMAPS.dvipdfm  = .;$TEXMF/fonts/map/{dvipdfm,dvips,}//
+TEXFONTMAPS.dvipdfmx = .;$TEXMF/fonts/map/{dvipdfm,dvips,}//
+TEXFONTMAPS.pdftex   = .;$TEXMF/fonts/map/{pdftex,dvips,}//
+TEXFONTMAPS.pdfetex  = .;$TEXMF/fonts/map/{pdftex,dvips,}//
+TEXFONTMAPS.xetex    = .;$TEXMF/fonts/map/{xetex,pdftex,dvips,}//
+TEXFONTMAPS.dvips    = .;$TEXMF/fonts/map/{dvips,pdftex,}//
+
 TEXPSHEADERS  = .;$TEXMF/{fonts/{enc,map,type1,truetype},dvips,pdftex,tex}//;$TEXMF/{etex,tex,pdftex,dvips,fonts/type1}//
-TEXFONTMAPS   = .;$TEXMF/{fonts/map//,fontname};$TEXMF/{pdftex,dvips}/config;$TEXMF/{pdftex,dvips}//
+TEXFONTMAPS   = .;$TEXMF/{fonts/map/{$backend,pdftex,dvips,}//,fontname};$TEXMF/{pdftex,dvips}/config;$TEXMF/{pdftex,dvips}//
 
 VFFONTS       = .;$TEXMF/fonts/vf//
 TFMFONTS      = .;{$TEXMF/fonts,$VARTEXFONTS}/tfm//
@@ -51,7 +62,8 @@ TTFONTS       = .;$TEXMF/fonts/{truetype,ttf}//;$OSFONTDIR
 TTF2TFMINPUTS = .;$TEXMF/ttf2pk//
 T42FONTS      = .;$TEXMF/fonts/type42//
 MISCFONTS     = .;$TEXMF/fonts/misc//
-ENCFONTS      = .;$TEXMF/{fonts/enc,dvips,pdftex}//
+% ENCFONTS    = .;$TEXMF/fonts/enc//
+ENCFONTS      = .;$TEXMF/{fonts/enc,dvips,pdftex,dvipdfm}//
 CMAPFONTS     = .;$TEXMF/fonts/cmap//
 SFDFONTS      = .;$TEXMF/fonts/sfd//
 OPENTYPEFONTS = .;$TEXMF/fonts/opentype//;$OSFONTDIR
@@ -84,7 +96,7 @@ MFINPUTS          = .;{$MPRESOURCES}//;{$CTXDEVMFPATH}//;$TEXMF/metafont/{contex
 
 TEXCONFIG     = .;$TEXMF/{fonts/map,dvips,pdftex,dvipdfmx,dvipdfm}//
 PDFTEXCONFIG  = .;$TEXMF/pdftex/{$progname,}//
-DVIPDFMINPUTS = .;$TEXMF/{fonts/map,dvips,pdftex,dvipdfmx,dvipdfm}//
+DVIPDFMINPUTS = .;$TEXMF/{fonts/{map,enc,lig}/dvipdfm,fonts/type1,dvips,pdftex,dvipdfmx,dvipdfm}//
 
 % this way we can hook in development paths
 

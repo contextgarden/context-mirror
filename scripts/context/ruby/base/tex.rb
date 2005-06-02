@@ -71,7 +71,7 @@ class TEX
         'batchmode', 'nonstopmode', 'fastmode', 'fastdisabled', 'silentmode', 'final',
         'paranoid', 'notparanoid', 'nobanner', 'once', 'allpatterrns',
         'nompmode', 'nomprun', 'automprun',
-        'nomapfiles',
+        'nomapfiles', 'local',
         'arrange', 'noarrange',
         'forcexml', 'foxet',
         'mpyforce', 'forcempy',
@@ -236,8 +236,15 @@ class TEX
     end
 
     def openedfile(name)
-        cleanuplater(name) if f = File.open(name, 'w')
-        return f
+        begin
+            f = File.open(name,'w')
+        rescue
+            report("file '#{File.expand_path(name)}' cannot be opened for writing")
+            return nil
+        else
+            cleanuplater(name) if f
+            return f
+        end
     end
 
     def prefixed(format,engine)
@@ -395,7 +402,7 @@ class TEX
         # generate tex formats
         if texformats && texengine && (progname = validprogname(getvariable('progname'),texengine)) then
             report("using tex engine #{texengine}")
-            texformatpath = Kpse.formatpath(texengine,true)
+            texformatpath = if getvariable('local') then '.' else Kpse.formatpath(texengine,true) end
             # can be empty, to do
             report("using tex format path #{texformatpath}")
             begin
@@ -421,7 +428,7 @@ class TEX
         # generate mps formats
         if mpsformats && mpsengine && (progname = validprogname(getvariable('progname'),mpsengine)) then
             report("using mp engine #{mpsengine}")
-            mpsformatpath = Kpse.formatpath(mpsengine,false)
+            mpsformatpath = if getvariable('local') then '.' else Kpse.formatpath(mpsengine,false) end
             report("using mps format path #{mpsformatpath}")
             begin
                 Dir.chdir(mpsformatpath)
@@ -998,6 +1005,12 @@ class TEX
         Kpse.runscript('texexec',filename,options)
     end
 
+    def fixbackendvars(backend)
+        ENV['backend']     = backend ;
+        ENV['progname']    = backend unless validtexengine(backend)
+        ENV['TEXFONTMAPS'] = ".;\$TEXMF/fonts/map/{#{backend},pdftex,dvips,}//"
+    end
+
     def processcontextfile
 
         takeprecautions
@@ -1098,10 +1111,20 @@ class TEX
                 ['tup','top'].each do |s| # previous tuo file / runtime option file
                      File.silentdelete(File.suffixed(jobname,s))
                 end
-                case validbackend(getvariable('driver'))
-                    when 'dvipdfmx' then system("dvipdfmx -f dvipdfmx.map -d 4 #{File.unsuffixed(jobname)}")
-                    when 'xetex'    then system("xdv2pdf #{File.suffixed(jobname,'xdv')}")
-                    when 'dvips'    then system("dvips #{File.unsuffixed(jobname)}")
+                case validbackend(getvariable('backend'))
+                    when 'dvipdfmx' then
+                        fixbackendvars('dvipdfm')
+                        system("dvipdfmx -d 4 #{File.unsuffixed(jobname)}")
+                    when 'xetex'    then
+                        fixbackendvars('xetex')
+                        system("xdv2pdf #{File.suffixed(jobname,'xdv')}")
+                    when 'dvips'    then
+                        fixbackendvars('dvips')
+                        system("dvips #{File.unsuffixed(jobname)}")
+                    when 'pdftex'   then
+                        # no need for postprocessing
+                    else
+                        report("no postprocessing needed")
                 end
                 popresult(jobname,result)
             end

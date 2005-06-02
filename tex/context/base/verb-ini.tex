@@ -195,6 +195,10 @@
    \catcode`\^^I\@@active
    \let^^I\doprocesstabskip}
 
+\gdef\setfixedtabskips#1%
+  {\catcode`\^^I\@@active
+   \def^^I{\kern#1\spaceskip}}
+
 \egroup
 
 %D \macros

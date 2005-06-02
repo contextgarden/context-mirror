@@ -142,11 +142,17 @@
    \def\prettyvariablefont  {\getvalue{#1\c!vcommand}}%
    \def\prettynaturalfont   {\getvalue{#1\c!ccommand}}%
    %
-   \doifvalue{#1\c!space }\v!on   {\def\obeyspaces{\setcontrolspaces}}%
-   %doifvalue{#1\c!tab   }\v!on   {\def\obeytabs  {\settabskips}}%
-   \doifnotvalue{#1\c!tab}\v!off  {\def\obeytabs  {\settabskips}}%
-   \doifvalue{#1\c!tab   }\s!ascii{\chardef\tabskipmode\plustwo}% quit on >127
-   \doifvalue{#1\c!page  }\v!no   {\def\obeypages {\ignorepages}}%
+   \doifvalue{#1\c!space}\v!on
+     {\def\obeyspaces{\setcontrolspaces}}%
+   \doifvalue{#1\c!page }\v!no
+     {\def\obeypages {\ignorepages}}%
+   %
+   \doifelsevalue{#1\c!tab}\v!yes
+     {\def\obeytabs{\settabskips}}%
+     {\doifvalue{#1\c!tab}\s!ascii
+        {\chardef\tabskipmode\plustwo % quit on >127
+         \def\obeytabs{\settabskips}}%
+        {}}
    %
    \ignorehyphens % default
    \ExpandFirstAfter\processaction
@@ -168,6 +174,9 @@
         \s!unknown=>\setupprettiesintype{\getvalue{#1\c!option}}%
                     \let\obeycharacters\setupprettytype
                     \let\obeytabs\ignoretabs]%
+   \doifnumberelse{\getvalue{#1\c!tab}}
+     {\def\obeytabs{\setfixedtabskips{\getvalue{#1\c!tab}}}}%
+     \donothing
    \def\verbatimfont{\getvalue{#1\c!style}}%
    \setupverbatimcolor{#1}}
 
@@ -509,7 +518,7 @@
     \c!color=,
     \c!style=\tt\tf, % \tttf gives problems with {\tx \type...}
      \c!page=\v!no,
-      \c!tab=\v!no,
+      \c!tab=\v!yes,
     \c!palet=colorpretty,
    \c!option=\v!normal]
 
