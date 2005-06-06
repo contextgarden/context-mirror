@@ -86,10 +86,10 @@
    \ifduplicate\getlastregisterentry{#3}\fi
    \convertexpanded{\registerparameter\c!keyexpansion}{#1}\asciiregisterentryA
    \convertexpanded{\registerparameter\c!expansion   }{#3}\asciiregisterentryB
-\doifsomething{\registerparameter\c!keyexpansion}
-  {\ifx\asciiregisterentryA\empty
-     \convertexpanded{\registerparameter\c!keyexpansion}{#3}\asciiregisterentryA
-   \fi}%
+   \doifsomething{\registerparameter\c!keyexpansion}
+     {\ifx\asciiregisterentryA\empty
+       \convertexpanded{\registerparameter\c!keyexpansion}{#3}\asciiregisterentryA
+      \fi}%
    \makesectionformat
    \doifelse{\registerparameter\c!ownnumber}\v!yes
      \donetrue\donefalse

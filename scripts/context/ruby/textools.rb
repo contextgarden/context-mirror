@@ -723,7 +723,7 @@ class Commands
 
     public
 
-    def merge
+    def mergeupdate
 
         nocheck = @commandline.option('nocheck')
         force   = @commandline.option('force')
@@ -811,7 +811,7 @@ commandline.registeraction('fixafmfiles'      , '[pattern]   [--recurse]')
 commandline.registeraction('mactodos'         , '[pattern]   [--recurse]')
 commandline.registeraction('fixtexmftrees'    , '[texmfroot] [--force]')
 commandline.registeraction('replace'          , 'filename    [--force]')
-commandline.registeraction('merge'            , 'fromroot toroot [--force --nocheck]')
+commandline.registeraction('mergeupdate'      , 'fromroot toroot [--force --nocheck]')
 commandline.registeraction('downcasefilenames', '[--recurse] [--force]') # not yet documented
 commandline.registeraction('stripformfeeds'   , '[--recurse] [--force]') # not yet documented
 commandline.registeraction('showfont'         , 'filename')

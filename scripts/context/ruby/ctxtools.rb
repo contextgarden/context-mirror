@@ -767,31 +767,6 @@ class Language
         @remapping.push([from,to])
     end
 
-    # def load(filenames=@filenames)
-        # begin
-            # if filenames then
-                # @filenames = [filenames].flatten
-                # @filenames.each do |filename|
-                    # begin
-                        # if filename = located(filename) then
-                            # data = IO.read(filename)
-                            # @data += data.gsub(/\%.*$/, '')
-                            # data.gsub!(/(\\patterns|\\hyphenation)\s*\{.*/mo) do '' end
-                            # @read += "\n% preamble of file #{filename}\n\n#{data}\n"
-                        # else
-                            # report("file #{filename} is not found")
-                        # end
-                    # rescue
-                        # report("file #{filename} is not readable")
-                    # else
-                        # report("file #{filename} is loaded")
-                    # end
-                # end
-            # end
-        # rescue
-        # end
-    # end
-
     def load(filenames=@filenames)
         begin
             if filenames then
@@ -1146,51 +1121,54 @@ class Commands
             languages = []
         end
         languages.each do |language|
-            files    = @@languagedata[language][0] || ''
-            encoding = @@languagedata[language][1] || ''
+            encoding = @@languagedata[language][0] || ''
+            files    = @@languagedata[language][1] || []
             Language::generate(self,language,files,encoding)
         end
     end
 
     private
 
-    # todo: take fallback list from context
+    # todo: filter the fallback list from context
 
-    @@languagedata['ba' ] = [['bahyph.tex'],                   'ec']
-    @@languagedata['ca' ] = [['cahyph.tex'],                   'ec']
-    @@languagedata['cy' ] = [['cyhyph.tex'],                   'ec']
-    @@languagedata['cz' ] = [['czhyphen.tex','czhyphen.ex'],   'ec']
-    @@languagedata['de' ] = [['dehyphn.tex'],                  'ec']
-    @@languagedata['deo'] = [['dehypht.tex'],                  'ec']
-    @@languagedata['da' ] = [['dkspecial.tex','dkcommon.tex'], 'ec']
+    # The first entry in the array is the encoding which will be used
+    # when interpreting th eraw patterns. The second entry is a list of
+    # filesets (string|aray), each first match of a set is taken.
+
+    @@languagedata['ba' ] = [ 'ec'      , ['bahyph.tex'] ]
+    @@languagedata['ca' ] = [ 'ec'      , ['cahyph.tex'] ]
+    @@languagedata['cy' ] = [ 'ec'      , ['cyhyph.tex'] ]
+    @@languagedata['cz' ] = [ 'ec'      , ['czhyphen.tex','czhyphen.ex'] ]
+    @@languagedata['de' ] = [ 'ec'      , ['dehyphn.tex'] ]
+    @@languagedata['deo'] = [ 'ec'      , ['dehypht.tex'] ]
+    @@languagedata['da' ] = [ 'ec'      , ['dkspecial.tex','dkcommon.tex'] ]
     # elhyph.tex
-    @@languagedata['es' ] = [['eshyph.tex'],                   'ec']
-    @@languagedata['fi' ] = [['ethyph.tex'],                   'ec']
-    @@languagedata['fi' ] = [['fihyph.tex'],                   'ec']
-    @@languagedata['fr' ] = [['frhyph.tex'],                   'ec']
+    @@languagedata['es' ] = [ 'ec'      , ['eshyph.tex'] ]
+    @@languagedata['fi' ] = [ 'ec'      , ['ethyph.tex'] ]
+    @@languagedata['fi' ] = [ 'ec'      , ['fihyph.tex'] ]
+    @@languagedata['fr' ] = [ 'ec'      , ['frhyph.tex'] ]
     # ghyphen.readme ghyph31.readme grphyph
-    @@languagedata['hr' ] = [['hrhyph.tex'],                   'ec']
-    @@languagedata['hu' ] = [['huhyphn.tex'],                  'ec']
-    @@languagedata['en' ] = [[['ushyph','hyphen.tex']],        'default']
-    @@languagedata['en' ] = [['ushyph.tex'],                   'default']
+    @@languagedata['hr' ] = [ 'ec'      , ['hrhyph.tex'] ]
+    @@languagedata['hu' ] = [ 'ec'      , ['huhyphn.tex'] ]
+    @@languagedata['en' ] = [ 'default' , [['ushyphmax.tex','ushyph.tex','hyphen.tex']] ]
     # inhyph.tex
-    @@languagedata['is' ] = [['ishyph.tex'],                   'ec']
-    @@languagedata['it' ] = [['ithyph.tex'],                   'ec']
-    @@languagedata['la' ] = [['lahyph.tex'],                   'ec']
+    @@languagedata['is' ] = [ 'ec'      , ['ishyph.tex'] ]
+    @@languagedata['it' ] = [ 'ec'      , ['ithyph.tex'] ]
+    @@languagedata['la' ] = [ 'ec'      , ['lahyph.tex'] ]
     # mnhyph
-    @@languagedata['nl' ] = [['nehyph96.tex'],                 'ec']
-    @@languagedata['no' ] = [['nohyph.tex'],                   'ec']
+    @@languagedata['nl' ] = [ 'ec'      , ['nehyph96.tex'] ]
+    @@languagedata['no' ] = [ 'ec'      , ['nohyph.tex'] ]
     # oldgrhyph.tex
-    @@languagedata['pl' ] = [['plhyph.tex'],                   'ec']
-    @@languagedata['pt' ] = [['pthyph.tex'],                   'ec']
-    @@languagedata['ro' ] = [['rohyph.tex'],                   'ec']
-    @@languagedata['sl' ] = [['sihyph.tex'],                   'ec']
-    @@languagedata['sk' ] = [['skhyphen.tex','skhyphen.ex'],   'ec']
+    @@languagedata['pl' ] = [ 'ec'      , ['plhyph.tex'] ]
+    @@languagedata['pt' ] = [ 'ec'      , ['pthyph.tex'] ]
+    @@languagedata['ro' ] = [ 'ec'      , ['rohyph.tex'] ]
+    @@languagedata['sl' ] = [ 'ec'      , ['sihyph.tex'] ]
+    @@languagedata['sk' ] = [ 'ec'      , ['skhyphen.tex','skhyphen.ex'] ]
     # sorhyph.tex / upper sorbian
     # srhyphc.tex / cyrillic
-    @@languagedata['sv' ] = [['svhyph.tex'],                   'ec']
-    @@languagedata['tr' ] = [['tkhyph.tex'],                   'ec']
-    @@languagedata['uk' ] = [[['ukhyph','ukhyphen.tex']],      'default']
+    @@languagedata['sv' ] = [ 'ec'      , ['svhyph.tex'] ]
+    @@languagedata['tr' ] = [ 'ec'      , ['tkhyph.tex'] ]
+    @@languagedata['uk' ] = [ 'default' , [['ukhyphen.tex','ukhyph.tex']] ]
 
 end
 

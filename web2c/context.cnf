@@ -43,6 +43,8 @@ WEB2C         = $TEXMF/web2c
 
 OSFONTDIR =
 
+TEXPSHEADERS  = .;$TEXMF/{fonts/{enc,map,type1,truetype},dvips,pdftex,tex}//;$TEXMF/{etex,tex,pdftex,dvips,fonts/type1}//
+
 TEXFONTMAPS.dvipdfm  = .;$TEXMF/fonts/map/{dvipdfm,dvips,}//
 TEXFONTMAPS.dvipdfmx = .;$TEXMF/fonts/map/{dvipdfm,dvips,}//
 TEXFONTMAPS.pdftex   = .;$TEXMF/fonts/map/{pdftex,dvips,}//
@@ -50,8 +52,8 @@ TEXFONTMAPS.pdfetex  = .;$TEXMF/fonts/map/{pdftex,dvips,}//
 TEXFONTMAPS.xetex    = .;$TEXMF/fonts/map/{xetex,pdftex,dvips,}//
 TEXFONTMAPS.dvips    = .;$TEXMF/fonts/map/{dvips,pdftex,}//
 
-TEXPSHEADERS  = .;$TEXMF/{fonts/{enc,map,type1,truetype},dvips,pdftex,tex}//;$TEXMF/{etex,tex,pdftex,dvips,fonts/type1}//
-TEXFONTMAPS   = .;$TEXMF/{fonts/map/{$backend,pdftex,dvips,}//,fontname};$TEXMF/{pdftex,dvips}/config;$TEXMF/{pdftex,dvips}//
+# TEXFONTMAPS = .;$TEXMF/fonts/map/{$backend,pdftex,dvips,}//;$TEXMF/{$progname,pdftex,dvips}/{config,}//
+TEXFONTMAPS   = .;$TEXMF/fonts/map/{$progname,pdftex,dvips,}//;$TEXMF/{$progname,pdftex,dvips}/{config,}//
 
 VFFONTS       = .;$TEXMF/fonts/vf//
 TFMFONTS      = .;{$TEXMF/fonts,$VARTEXFONTS}/tfm//

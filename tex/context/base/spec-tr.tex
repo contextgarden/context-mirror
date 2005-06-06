@@ -107,7 +107,11 @@
 %D Relatively new:
 
 \definespecial\dosetuppaper#1#2#3%
-  {\special{papersize=#2,#3}}
+  {\begingroup
+   \!!dimena#2%
+   \!!dimenb#3%
+   \special{papersize=\the\!!dimena,\the\!!dimenb}%
+   \endgroup}
 
 \stopspecials
 

@@ -167,10 +167,10 @@
    \doifelse\@@kktitle\v!yes
      {\definealternativestyle[\v!capital][\normalsmallcapped][\normalsmallcapped]%
       \definealternativestyle[\v!smallcaps][\sc][\sc]%
-      \let\smallcapped\normalsmallcapped}
+      \unexpanded\def\smallcapped{\normalsmallcapped}}
      {\definealternativestyle[\v!capital][\normalsmallcapped][\uppercased]%
       \definealternativestyle[\v!smallcaps][\sc][\uppercased]%
-      \def\smallcapped{\doconvertfont\v!capital}}%
+      \unexpanded\def\smallcapped{\doconvertfont\v!capital}}%
    \doifelse\@@kksc\v!yes
      \userealcaps
      \usepseudocaps}
