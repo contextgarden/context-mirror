@@ -656,7 +656,7 @@
    \else % Why was this strange expansion needed?
      \edef\!!stringa{\showdnpuretext}% nog eens testen binnen \expanded
      \expanded{\doattributes{\??dd\currentdescription}\noexpand\c!headstyle\noexpand\c!headcolor
-       {\noexpand\descriptionparameter\c!command{\!!stringa}}}%
+       {\noexpand\descriptionparameter\noexpand\c!command{\!!stringa}}}%
      \doifnot{#1}{-}{\rawreference\s!num{#1}{}}%
    \fi}
 

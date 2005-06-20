@@ -311,8 +311,12 @@
    % better:
    \let\synchronizepatterns\relax % needed?
    \let\enabledmapping     \empty % needed?
+   % old (original) patterns
    \doifelsenothing{#3}{\enableencoding[\s!default]}{\enableencoding[#3]}%
    \doifelsenothing{#4}{\enablemapping [\s!default]}{\enablemapping [#4]}%
+   % new patterns
+   % \enableregime[utf]%
+   %
    \ifundefined{\??la\??la:\currentencoding:\currentmapping:#2}%
      \let\showpatterns\relax
      \edef\alreadyloadedlanguage

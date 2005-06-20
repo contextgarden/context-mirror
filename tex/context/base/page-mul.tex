@@ -144,7 +144,7 @@
 %D \interface \type{\openlineheight} \\
 %D     the lineheight (including \type{\spacing}) \\
 %D
-%D \interface \type{\Everybodyfont} \\
+%D \interface \type{\EveryBodyFont} \\
 %D     communication channel to font switching routines \\
 %D
 %D \interface \type{\global\settopskip} \\
@@ -380,12 +380,37 @@
    \multiply\mcscratchdimen \plustwo
    \advance\mcscratchdimen \columntextheight
    \ifdim\precolumnboxheight>\zeropoint
-     \advance\mcscratchdimen -\precolumnboxheight
+      \advance\mcscratchdimen -\precolumnboxheight
    \fi
    \settotalinsertionheight
    \advance\mcscratchdimen -\totalinsertionheight
    \getnoflines\mcscratchdimen
+   % added 30/7/2004
+   \ifnum\layoutlines>\zerocount \ifnum\noflines>\layoutlines
+     \noflines\layoutlines
+   \fi \fi
    \nofcolumnlines\noflines}
+
+% probaby better, test first, don't replace yet
+%
+% \def\getmulticolumnlines
+%   {\mcscratchdimen-\columntextoffset
+%    \multiply\mcscratchdimen \plustwo
+% %  \advance\mcscratchdimen \columntextheight
+%    \ifdim\precolumnboxheight>\zeropoint
+%       \advance\mcscratchdimen -\precolumnboxheight
+%    \fi
+%    \settotalinsertionheight
+%    \advance\mcscratchdimen -\totalinsertionheight
+%    \getnoflines\mcscratchdimen
+% \ifnum\layoutlines>\zerocount
+% \noflines-\noflines
+% \advance\noflines\layoutlines
+% \ifnum\noflines<\zerocount
+%    \noflines\zerocount
+% \fi
+% \fi
+%    \nofcolumnlines\noflines}
 
 \def\setcolumnvsize
   {\getmulticolumnlines
@@ -450,7 +475,8 @@
      \break % Sometimes fails
    \fi
    \appendtoks\topskip1\topskip\to\everybodyfont
-   \the\everybodyfont
+   \the\everybodyfont % ugly here
+\saveinterlinespace % uglu here
    \initializecolumns\nofcolumns
    \hangafter\zerocount
    \hangindent\zeropoint

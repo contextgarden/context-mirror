@@ -733,10 +733,6 @@
    \or % lokaal,globaal / non empty gebied
      \edef\figurepathlist{\f!currentpath\ifx\@@exdirectory\empty\else,\@@exdirectory\fi}%
    \fi
-%
-\doifnotmode{\systemmodeprefix\v!first}% first cache, else no lowres etc
-  {\ifx\@@excache\empty\else\edef\figurepathlist{\@@excache,\figurepathlist}\fi}%
-%
    \ExpandBothAfter\doifinset\v!default\@@exlocation
      {\edef\figurepathlist{\figurepathlist,}}% default tex path search
    \ifx\@@exfile\empty

@@ -142,10 +142,20 @@
   StopPage ;
 \stopuniqueMPgraphic
 
-\NormalizeFontHeight \HeadFont        {\setstrut\strut\quad} {1.0\headerheight} {SansBold}
-\NormalizeFontHeight \TitleFont       {\setstrut\strut\quad} {2.0\headerheight} {SansBold}
-\NormalizeFontHeight \SubTitleFont    {\setstrut\strut\quad} {1.5\headerheight} {SansBold}
-\NormalizeFontHeight \SubSubTitleFont {\setstrut\strut\quad} {1.0\headerheight} {SansBold}
+% this needs to be sorted out !
+
+\appendtoks
+    \NormalizeFontHeight \HeadFont        {\setstrut\strut\quad} {1.0\headerheight} {SansBold}
+    \NormalizeFontHeight \TitleFont       {\setstrut\strut\quad} {2.0\headerheight} {SansBold}
+    \NormalizeFontHeight \SubTitleFont    {\setstrut\strut\quad} {1.5\headerheight} {SansBold}
+    \NormalizeFontHeight \SubSubTitleFont {\setstrut\strut\quad} {1.0\headerheight} {SansBold}
+\to \everystarttext
+\appendtoks
+    \NormalizeFontHeight \HeadFont        {\setstrut\strut\quad} {1.0\headerheight} {SansBold}
+    \NormalizeFontHeight \TitleFont       {\setstrut\strut\quad} {2.0\headerheight} {SansBold}
+    \NormalizeFontHeight \SubTitleFont    {\setstrut\strut\quad} {1.5\headerheight} {SansBold}
+    \NormalizeFontHeight \SubSubTitleFont {\setstrut\strut\quad} {1.0\headerheight} {SansBold}
+\to \everystoptext
 
 \setuphead
   [chapter]
@@ -170,7 +180,7 @@
 
 \setupitemize
   [each]
-  [loose,serried,joinedup]
+  [loose,serried,joinedup,broad]
   [symbol=emdash]
 
 \setupalign
@@ -208,6 +218,8 @@
   [background=topics]
 
 \doifnotmode{demo}{\endinput}
+
+\starttext
 
 \TitlePage{Stepwise\\Refinement}
 

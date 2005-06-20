@@ -319,8 +319,11 @@
 \def\dostartsetups
   {\ifthirdargument\@EA\startsetupsC\else\@EA\startsetupsD\fi}
 
+% \long\def\dodostartsetups#1#2#3% watch out: not \grabuntil
+%   {\dograbuntil#1{\egroup\long\setvalue{\??su#2:#3}}}
+
 \long\def\dodostartsetups#1#2#3% watch out: not \grabuntil
-  {\dograbuntil#1{\egroup\long\setvalue{\??su#2:#3}}}
+  {\dograbuntil#1{\egroup\dodoglobal\long\setvalue{\??su#2:#3}}} % \doglobal
 
 \def\systemsetupsprefix{*}
 
@@ -328,9 +331,9 @@
 
 \def\resetsetups[#1]% see x-fo for usage
   {\ifundefined{\??su\ifgridsnapping\v!grid\fi:#1}%
-     \letbeundefined{\??su:#1}%
+     \dodoglobal\letbeundefined{\??su:#1}%
    \else
-     \letbeundefined{\??su\ifgridsnapping\v!grid\fi:#1}%
+     \dodoglobal\letbeundefined{\??su\ifgridsnapping\v!grid\fi:#1}%
    \fi}
 
 % or

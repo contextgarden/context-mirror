@@ -17,7 +17,7 @@
 
 \unprotect
 
-\newevery \everybodyfont    \Everybodyfont   % just to be sure
+\newevery \everybodyfont    \EveryBodyFont   % just to be sure
 \newevery \everyfontswitch  \EveryFontSwitch % just to be sure
 \newevery \everydefinedfont \relax           % just to be sure
 
@@ -159,7 +159,7 @@
    \fi
    \let\minimumstrutheight \@@itminheight
    \let\minimumstrutdepth  \@@itmindepth
-   \let\minimallinedistance\@@itdistance
+   \let\minimumlinedistance\@@itdistance
    \let\normallineheight   \@@itline % let ! ! ! ! ! ivm ex
    \doifelse\@@ittop\v!height % new, topskip does more bad than good
      {\let\topskipfactor   \@@itheight}
@@ -1673,7 +1673,7 @@
 \def\minimumstrutdepth      {0pt}
 
 \def\normallineheight       {\baselinefactor ex}
-\def\minimallinedistance    {\lineskip}
+\def\minimumlinedistance    {\lineskip}
 
 \def\strutheight            {0pt}
 \def\strutdepth             {0pt}
@@ -1771,7 +1771,7 @@
 %    \normalbaselineskip\openlineheight
 %      \!!plus\baselinegluefactor\openlineheight
 %      \!!minus\baselinegluefactor\openlineheight
-%    \normallineskip\minimallinedistance\relax % \onepoint\relax
+%    \normallineskip\minimumlinedistance\relax % \onepoint\relax
 %    \normallineskiplimit\zeropoint\relax
 %    \normalbaselines}
 
@@ -1805,7 +1805,7 @@
      \!!plus \baselinegluefactor\openlineheight
      \!!minus\baselinegluefactor\openlineheight
 \fi
-   \normallineskip\minimallinedistance\relax % \onepoint\relax
+   \normallineskip\minimumlinedistance\relax % \onepoint\relax
    \normallineskiplimit\zeropoint\relax
    \normalbaselines}
 
@@ -1832,6 +1832,26 @@
    \strutdimen#2\strutdimen           % is omdat een strut lokaal
    \strutdimen#3\strutdimen           % kan afwijken van de globale
    \edef#1{\the\strutdimen}} % macro  % strut
+
+%D Sometimes one needs to freeze the interlinespacing
+%D
+%D \starttyping
+%D \rm \freezeinterlinespace .... {\ss \frozeninterlinespace .... \endgraf}
+%D \stoptyping
+
+\let\restoreinterlinespace\relax
+
+\def\saveinterlinespace
+  {\edef\restoreinterlinespace
+     {\lineheight         \the\lineheight
+      \openstrutheight    \the\openstrutheight
+      \openstrutdepth     \the\openstrutdepth
+      \openlineheight     \the\openlineheight
+      \normalbaselineskip \the\normalbaselineskip
+      \normallineskip     \the\normallineskip
+      \normallineskiplimit\the\normallineskiplimit
+      \noexpand\def\noexpand\normallineheight{\the\dimexpr\normallineheight\relax}%
+      \noexpand\normalbaselines}}
 
 % plain definition:
 %
@@ -2090,6 +2110,7 @@
    \setstrut}
 
 \ifx\setfontparameters\undefined
+  % problems ! ! ! !
   \def\setfontparameters{\the\everybodyfont}
 \fi
 
@@ -2186,6 +2207,29 @@
     {\ifnum#1>\zerocount#2\@EA\doexpandedrecurse\@EA{\the\numexpr#1-1\relax}{#2}\fi}
 
 \endETEX
+
+%D \macros
+%D   {keeplinestogether}
+%D
+%D Dirty hack, needed in margin content that can run of a page.
+
+\beginETEX
+
+  \def\keeplinestogether#1%
+    {\xdef\restoreinterlinepenalty{\global\resetpenalties\interlinepenalties}%
+     \global\setpenalties\interlinepenalties{#1}\!!tenthousand}
+
+\endETEX
+
+\beginTEX
+
+  \def\keeplinestogether#1%
+    {\xdef\restoreinterlinepenalty
+       {\global\let\restoreinterlinepenalty\relax
+        \global\interlinepenalty=\the\interlinepenalty}% keep = here
+     \global\interlinepenalty\!!tenthousand}
+
+\endTEX
 
 \newif\ifgridsnapping % to be sure
 
@@ -2649,6 +2693,7 @@
 \appendtoks \forgetparindent    \to \everyforgetall
 \appendtoks \forgetbothskips    \to \everyforgetall
 \appendtoks \forgetspacing      \to \everyforgetall % i.v.m. funny spacing in pagebody
+\appendtoks \spacing\!!plusone  \to \everyforgetall % new per 10/08/2004, else problems in otr / !! needed
 \appendtoks \everypar\emptytoks \to \everyforgetall % indeed!
 
 \def\localvbox#1#%
@@ -3267,15 +3312,30 @@
 %D To prevent unwanted side effects, we also have to check
 %D for hyphens here:
 
+% \def\setraggedness#1%
+%   {\ifnum\tolerance<1500\relax    % small values have
+%      \tolerance1500\relax         % unwanted side effects
+%    \fi
+%    \spaceskip2.5\hsize            % we misuse these registers
+%    \xspaceskip#1\relax            % for temporary storage;
+%    \divide\spaceskip \xspaceskip  % they are changed anyway
+%    \ifx\dohyphens\relax
+%      \hyphenpenalty\spaceskip     % \else no hyphens is active
+%    \fi}
+
+\newskip\@@raggedskipa
+\newskip\@@raggedskipb
+
 \def\setraggedness#1%
   {\ifnum\tolerance<1500\relax    % small values have
      \tolerance1500\relax         % unwanted side effects
    \fi
-   \spaceskip2.5\hsize            % we misuse these registers
-   \xspaceskip#1\relax            % for temporary storage;
-   \divide\spaceskip \xspaceskip  % they are changed anyway
    \ifx\dohyphens\relax
-     \hyphenpenalty\spaceskip     % \else no hyphens is active
+     % this code will be reconsidered / kind of fuzzy (and old)
+     \@@raggedskipa 2.5\hsize
+     \@@raggedskipb  #1\relax
+     \divide\@@raggedskipa \@@raggedskipb
+     \hyphenpenalty\@@raggedskipa
    \fi}
 
 \let\updateraggedskips\relax

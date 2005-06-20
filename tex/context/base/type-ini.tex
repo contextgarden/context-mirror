@@ -423,6 +423,7 @@
 \def\loadallfontmapfiles
   {%\message{[\allfontmapsfiles]}%
    \ifconditional\resettingmapfile
+     \writestatus\m!fonts{resetting map file list}%
      \doresetmapfilelist
      \global\setfalse\resettingmapfile
    \fi
@@ -450,11 +451,24 @@
    \fi}
 
 % since this is driver dependent, and since we may set map files
-% before an output format is defined, we need to postpone it
+% before an output format is defined, we need to postpone it; we
+% cannot use starttext as hook because an output switch can be part
+% of a style; an alternative is to no longer permit driver switching
+% after the first \starttext, but that will break compatibility
+% because \startcomponent ... \environment ... is pretty legal.
 
-%appendtoks \loadallfontmapfiles \to \everyPDFximage
-\appendtoks \loadallfontmapfiles \to \everystarttext
-\appendtoks \loadallfontmapfiles \to \everybeforepagebody
+% the map directives need to end up in the right place in the stream
+
+% \appendtoks \loadallfontmapfiles \to \everyPDFximage
+% \appendtoks \loadallfontmapfiles \to \everystarttext
+% \appendtoks \loadallfontmapfiles \to \everybeforepagebody
+
+\everybeforeshipout \expandafter
+  {\expandafter\appendtoks
+   \expandafter\loadallfontmapfiles
+   \expandafter\to
+   \expandafter\pageboundsettings
+   \the\everybeforeshipout}
 
 \newif\ifautoloadmapfiles
 

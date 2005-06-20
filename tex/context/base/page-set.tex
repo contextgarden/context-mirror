@@ -84,11 +84,29 @@
 %   \startcolumnset [three] \dorecurse {1}{\input tufte \par} \stopcolumnset
 % \stoptext
 
+%D test case of Vit Zika (context list):
+%D
+%D \starttyping
+%D \setuplayout[height=middle,width=middle,grid=yes]
+%D
+%D \starttext
+%D   \startcolumnset
+%D     \dorecurse{10}
+%D       {\input thuan \endgraf
+%D        \bgroup
+%D        \ss\restoreinterlinespace
+%D        \dorecurse{3}{\input hawking \endgraf}
+%D        \egroup
+%D        \input bryson \endgraf}
+%D   \stopcolumnset
+%D \stoptext
+%D \stoptyping
+
 \def\OTRSETsetcorrectnofcells#1%
   {\bgroup
    \!!counta#1\relax
    \ifdim\globalbodyfontsize=\localbodyfontsize
-     % already ok
+     \restoreinterlinespace
    \else
      \!!dimena-\!!counta\lineheight
      \restoreglobalbodyfont % slow, we need a fast one
@@ -106,7 +124,7 @@
   {\bgroup
    \!!dimena-\strutht\relax
    \ifdim\globalbodyfontsize=\localbodyfontsize
-     % already ok
+     \restoreinterlinespace
    \else
      \restoreglobalbodyfont
    \fi
@@ -1349,13 +1367,32 @@
 \def\OTRSETstoreincolumnslotUNKNOWN#1%
   {\OTRSETprepareforcolumnslot2{#1}\copy#1} % {} ?
 
+% \def\OTRSETprepareforcolumnslot#1#2% 1=hoog 2=midden 3=laag
+%   {\dp#2\zeropoint
+%    \ifcase\columnslotspacing\else
+%      \scratchdimen\columnslotspacing\lineheight
+%      \ifnum#1=2 \scratchdimen2\scratchdimen \fi
+%      \setbox#2\vbox spread \scratchdimen
+%        {\ifnum#1>1\vss\fi\box#2\relax\ifnum#1<3\vss\fi}%
+%    \fi}
+
 \def\OTRSETprepareforcolumnslot#1#2% 1=hoog 2=midden 3=laag
   {\dp#2\zeropoint
    \ifcase\columnslotspacing\else
      \scratchdimen\columnslotspacing\lineheight
      \ifnum#1=2 \scratchdimen2\scratchdimen \fi
-     \setbox#2\vbox spread \scratchdimen
-       {\ifnum#1>1\vss\fi\box#2\relax\ifnum#1<3\vss\fi}%
+     \begingroup
+     \advance\scratchdimen\ht#2\relax
+     \ifdim\scratchdimen<\columnmaxcells\lineheight
+       \endgroup \setbox#2\vbox spread \scratchdimen \bgroup
+     \else
+       \endgroup \setbox#2\vbox to \columnmaxcells\lineheight \bgroup
+       \vskip\strutdepth
+     \fi
+     \ifnum#1>1\vss\fi
+     \box#2\relax
+     \ifnum#1<3\vss\fi
+     \egroup
    \fi}
 
 \def\OTRSETdocheckiffloatfits % eigenlijk moet else float anders
@@ -1673,6 +1710,7 @@
    \global\chardef\OTRSETfinish\zerocount
    \ifnum\columnsetlevel=\plusone
      \bgroup
+     \saveinterlinespace
      \globallet\columnsetpage\!!plusone
      \def\currentcolumnset{#2}%
      \insidecolumnstrue % will be different flag
@@ -1805,6 +1843,30 @@
 
 % so this will be changed
 
+% \def\OTRSETnobalance
+%   {\iflastcolumnfootnotes % testen ! optie
+%      % inhibit flush of floats !
+%      % todo: nothing if no footnotes, else empty page
+%      \dostepwiserecurse\mofcolumns\nofcolumns\plusone
+%        {\vskip-\struttotal\verticalstrut\vfill\eject}%
+%    \else
+%      \ifdim\pagetotal>\zeropoint % no, see example **
+%        \ifnum\mofcolumns=\nofcolumns
+%          \OTRSETflushfinalfootnotes
+%        \else
+%          % probably todo
+%        \fi
+%        \vfill
+%        \eject
+%        % brr, may result in empty page after nicely fit text
+%        % or if left, then lost of first column only text
+%        \ifnum\mofcolumns>1
+%          \OTRSETdofinalflush
+%          \OTRSETdofinaloutput
+%        \fi
+%      \fi
+%    \fi}
+
 \def\OTRSETnobalance
   {\iflastcolumnfootnotes % testen ! optie
      % inhibit flush of floats !
@@ -1812,7 +1874,14 @@
      \dostepwiserecurse\mofcolumns\nofcolumns\plusone
        {\vskip-\struttotal\verticalstrut\vfill\eject}%
    \else
-     \ifdim\pagetotal>\zeropoint % no, see example **
+     \ifnum\mofcolumns>\plusone
+      \donetrue
+     \else\ifdim\pagetotal>\zeropoint % too dangerous, we loose data
+       \donetrue
+     \else
+       \donefalse
+     \fi\fi
+     \ifdone
        \ifnum\mofcolumns=\nofcolumns
          \OTRSETflushfinalfootnotes
        \else
@@ -1822,7 +1891,7 @@
        \eject
        % brr, may result in empty page after nicely fit text
        % or if left, then lost of first column only text
-       \ifnum\mofcolumns>1
+       \ifnum\mofcolumns>\plusone
          \OTRSETdofinalflush
          \OTRSETdofinaloutput
        \fi
@@ -1876,9 +1945,10 @@
       \egroup}}
 
 \OTRSEToutput
-  {\OTRSETnaturalflush
+  {\dontcomplain % new, get rid of overfull message (to be sorted out)
+   \OTRSETnaturalflush
   %\OTRSETstartnextpage
-   \OTRSETdoflushfloats % zou eigenlijk in \flushsavedfloats moeten (gaat fout)
+   \OTRSETdoflushfloats % actually belongs in \flushsavedfloats (but goes wrong)
    \OTRSETcheckfreelines
    \OTRSETchecksidefloat}
 

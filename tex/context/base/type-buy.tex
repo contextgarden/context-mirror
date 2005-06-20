@@ -811,6 +811,56 @@
 
 \stoptypescript
 
+
+% ef swift
+%
+% texfont --enc=texnansi --ven=ef --col=swift type-buy.dat
+
+\starttypescript [map] [swift] [ec,texnansi]
+  \loadmapfile[\typescriptthree-itc-bauhaus.map]
+\stoptypescript
+
+\starttypescript [serif] [swift] [ec,texnansi]
+
+  \loadmapfile[\typescriptthree-ef-swift.map]
+
+  \definefontsynonym[SwiftEF-Light]        [\typescriptthree-swlt] [encoding=\typescriptthree]
+  \definefontsynonym[SwiftEF-Regular]      [\typescriptthree-swrg] [encoding=\typescriptthree]
+  \definefontsynonym[SwiftEF-Bold]         [\typescriptthree-swbd] [encoding=\typescriptthree]
+  \definefontsynonym[SwiftEF-ExtraBold]    [\typescriptthree-swxb] [encoding=\typescriptthree]
+
+  \definefontsynonym[SwiftEF-LightItalic]  [\typescriptthree-swlti][encoding=\typescriptthree]
+  \definefontsynonym[SwiftEF-RegularItalic][\typescriptthree-swrgi][encoding=\typescriptthree]
+
+  \definefontsynonym[SwiftEF-BoldCondensed][\typescriptthree-swbdc][encoding=\typescriptthree]
+  \definefontsynonym[SwiftSCEF-Regular]    [\typescriptthree-swrgs][encoding=\typescriptthree]
+
+\stoptypescript
+
+\starttypescript [serif] [swift] [name]
+
+  \definefontsynonym [Serif]            [SwiftEF-Regular]
+  \definefontsynonym [SerifItalic]      [SwiftEF-RegularItalic]
+  \definefontsynonym [SerifSlanted]     [SwiftEF-RegularItalic]
+  \definefontsynonym [SerifBold]        [SwiftEF-Bold]
+  \definefontsynonym [SerifBoldItalic]  [SwiftEF-Bold]
+  \definefontsynonym [SerifBoldSlanted] [SwiftEF-Bold]
+  \definefontsynonym [SerifCaps]        [SwiftSCEF-Regular]
+
+\stoptypescript
+
+\starttypescript [serif] [swift-light] [name]
+
+  \definefontsynonym [Serif]            [SwiftEF-Light]
+  \definefontsynonym [SerifItalic]      [SwiftEF-LightItalic]
+  \definefontsynonym [SerifSlanted]     [SwiftEF-LightItalic]
+  \definefontsynonym [SerifBold]        [SwiftEF-Regular]
+  \definefontsynonym [SerifBoldItalic]  [SwiftEF-RegularItalic]
+  \definefontsynonym [SerifBoldSlanted] [SwiftEF-RegularItalic]
+  \definefontsynonym [SerifCaps]        [SwiftSCEF-Regular]
+
+\stoptypescript
+
 \stoptypescriptcollection
 
 \endinput

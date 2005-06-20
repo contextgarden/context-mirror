@@ -179,12 +179,18 @@
 
 \let\enabledregime\empty
 
+% \def\enableregime[#1]%
+%   {\edef\characterregime{@#1@}%
+%    \ifx\enabledregime\characterregime \else
+%      \doifdefined{\@reg@\characterregime}
+%        {\the\csname\@reg@\characterregime\endcsname}%
+%      \let\enabledregime\characterregime
+%    \fi}
+
 \def\enableregime[#1]%
   {\edef\characterregime{@#1@}%
    \ifx\enabledregime\characterregime \else
-     \doifdefined{\@reg@\characterregime}
-       {\the\csname\@reg@\characterregime\endcsname}%
-     \let\enabledregime\characterregime
+     \the\executeifdefined{\@reg@\characterregime}\emptytoks
    \fi}
 
 %D \macros
@@ -965,6 +971,10 @@
 
 % we need to postpone catcode changes, e.g. hr patterns
 % have \catcode" -> which fails when " is letter
+
+% new patterns, some day
+%
+% \enableregime[utf]%
 
 \def\pathypsettings
   {\ifx \enablepatterntokens\undefined

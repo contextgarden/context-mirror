@@ -284,12 +284,14 @@ module Kpse
 
     def Kpse.runscript(name,filename=[],options=[])
         setscript(name,`texmfstart --locate #{name}`) unless @@scripts.key?(name)
-        system("#{@@scripts[name]} #{[options].flatten.join(' ')} #{[filename].flatten.join(' ')}")
+        cmd = "#{@@scripts[name]} #{[options].flatten.join(' ')} #{[filename].flatten.join(' ')}"
+        system(cmd)
     end
 
     def Kpse.pipescript(name,filename=[],options=[])
         setscript(name,`texmfstart --locate #{name}`) unless @@scripts.key?(name)
-        `#{@@scripts[name]} #{[options].flatten.join(' ')} #{[filename].flatten.join(' ')}`
+        cmd = "#{@@scripts[name]} #{[options].flatten.join(' ')} #{[filename].flatten.join(' ')}"
+        `#{cmd}`
     end
 
     private

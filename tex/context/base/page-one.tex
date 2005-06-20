@@ -520,10 +520,42 @@
    \doinsertfloatinfo
    \dochecknextindentation\??bk}
 
+% \def\OTRONEsomefixdfloat % [#1]
+%   {\docheckiffloatfits
+%    \ifroomforfloat\else
+%      \goodbreak
+%    \fi
+%    \showmessage\m!floatblocks9\empty
+%    \someherefloat} % [#1]
+%
+% better:
+%
+% \dorecurse{50}
+%   {[before normal] \input thuan
+%    \placefigure{normal}{\framed[height=1cm,width=8cm]{}}
+%    \placefigure{normal}{\framed[height=2cm,width=8cm]{}}
+%    [before force] \input thuan
+%    \placefigure[force]{force}{\framed[height=8cm,width=8cm]{}}}
+
+\chardef\fixedfloatmethod=3
+
 \def\OTRONEsomefixdfloat % [#1]
   {\docheckiffloatfits
    \ifroomforfloat\else
-     \goodbreak
+     \ifzeropt\pagetotal
+       % let's assume that there is room
+     \else
+       \ifcase\fixedfloatmethod
+         % disabled
+       \or % 1 (old method)
+         \goodbreak
+       \or % 2 (safe method)
+         \page
+       \or % 3 (keeps in stream)
+         \vskip-.5\floatheight % play safe
+         \vskip\textheight
+       \fi
+     \fi
    \fi
    \showmessage\m!floatblocks9\empty
    \someherefloat} % [#1]

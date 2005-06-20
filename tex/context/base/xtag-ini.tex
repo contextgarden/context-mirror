@@ -307,17 +307,30 @@
    .catcode`.|=.@@active
   E
 
-.gdef.entitleXMLescapetokens
-  B.activateXMLescapetokens
-   .def#B&tex-hash;E*
-   .def$B&tex-dollar;E*
-   .def%B&tex-percent;E*
-   .def\B&tex-backslash;E*
-   .def^B&tex-hat;E*
-   .def_B&tex-underscore;E*
-   .def{B&tex-leftbrace;E*
-   .def}B&tex-rightbrace;E*
-   .def|B&tex-bar;E*
+* .gdef.entitleXMLescapetokens
+*   B.activateXMLescapetokens
+*    .def#B&tex-hash;E*
+*    .def$B&tex-dollar;E*
+*    .def%B&tex-percent;E*
+*    .def\B&tex-backslash;E*
+*    .def^B&tex-hat;E*
+*    .def_B&tex-underscore;E*
+*    .def{B&tex-leftbrace;E*
+*    .def}B&tex-rightbrace;E*
+*    .def|B&tex-bar;E*
+*   E
+
+.xdef.entitleXMLescapetokens
+  B.noexpand.activateXMLescapetokens
+   .noexpand.def.noexpand#B.noexpand&.string#035;E*
+   .noexpand.def.noexpand$B.noexpand&.string#036;E*
+   .noexpand.def.noexpand%B.noexpand&.string#037;E*
+   .noexpand.def.noexpand\B.noexpand&.string#092;E*
+   .noexpand.def.noexpand^B.noexpand&.string#094;E*
+   .noexpand.def.noexpand_B.noexpand&.string#095;E*
+   .noexpand.def.noexpand{B.noexpand&.string#123;E*
+   .noexpand.def.noexpand}B.noexpand&.string#125;E*
+   .noexpand.def.noexpand|B.noexpand&.string#124;E*
   E
 
 .gdef.reduceXMLescapetokens
@@ -883,7 +896,7 @@
 %    \fi}
 
 \def\XMLpureancestor#1%
-  {\ifnum\numexpr\XMLdepth-#1\relax>\zerocount
+  {\ifcase\numexpr\XMLdepth-#1\relax\or
      \csname\@@XMLdepth:\the\numexpr\XMLdepth-#1\relax\endcsname
    \fi}
 

@@ -34,8 +34,8 @@
    \whitespace
   %\page[\v!preference]} gaat mis na koppen, nieuw: later \nobreak
    \begingroup
-   \def\@@rgstepyes{\parindent\zeropoint}%
-   \def\@@rgstepno {\parindent\zeropoint}%
+   \def \@@rgstepyes  {\parindent\zeropoint}%
+   \def \@@rgstepno   {\parindent\zeropoint}%
    \edef\@@rgparindent{\the\parindent}%
    \globallet\@@rglinesteptoggle\!!plusone
    \processaction
@@ -71,12 +71,46 @@
         \@@rgstepno
       \fi
       \futurelet\next\dobetweenthelines}%
-   % new
-   \processaction
-     [\@@rgspace]
-     [ \v!on=>\obeyspaces\def\obeyedspace{\mathortext\normalspace{\dontleavehmode{\tt\controlspace}}},
-      \v!yes=>\obeyspaces\def\obeyedspace{\mathortext\normalspace{\dontleavehmode\normalspace}}]%
+   \activatespacehandler\@@rgspace
    \GotoPar}
+
+%D When spacing is active we need to handle commands in
+%D a special way:
+%D
+%D \starttyping
+%D \setuplines[space=on]
+%D
+%D \startlines
+%D Let's talk about this{\ttsl\gobbleoneargument or}that.
+%D \stoplines
+%D
+%D \startlines
+%D Let's talk about this{\getvalue{ttsl}or}that.
+%D \stoplines
+%D \stoptyping
+
+% this is not the natural place
+
+\def\installspacehandler#1#2% needs to set \obeyedspace
+  {\setvalue{\??sr#1}{#2}}
+
+\installspacehandler \v!on
+  {\obeyspaces
+   \def\obeyedspace{\mathortext\normalspace{\dontleavehmode{\tt\controlspace}}}%
+   \let\ =\obeyedspace}
+
+\installspacehandler \v!yes
+  {\obeyspaces
+   \def\obeyedspace{\mathortext\normalspace{\dontleavehmode    \normalspace  }}%
+   \let\ =\obeyedspace}
+
+\installspacehandler \v!off
+  {\normalspaces
+   \let\obeyedspace\normalspace
+   \let\ \normalspacetoken}
+
+\def\activatespacehandler#1%
+  {\executeifdefined{\??sr#1}{\activatespacehandler\v!off}}
 
 % \def\dobetweenthelines%
 %   {\convertcommand \next      \to\!!stringa % very ugly and fuzzy

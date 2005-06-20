@@ -4,7 +4,11 @@ class File
 
     def File.suffixed(name,sufa,sufb=nil)
         if sufb then
-            unsuffixed(name) + "-#{sufa}.#{sufb}"
+            if sufa.empty? then
+                unsuffixed(name) + ".#{sufb}"
+            else
+                unsuffixed(name) + "-#{sufa}.#{sufb}"
+            end
         else
             unsuffixed(name) + ".#{sufa}"
         end

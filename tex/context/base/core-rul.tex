@@ -448,6 +448,8 @@
 \def\backgroundwidth {\the\hsize}
 \def\backgroundheight{\the\vsize}
 
+%  todo: also \def\theforegroundbox{#1}
+
 \def\dobackgroundbox#1\background#2\color#3\raster#4\offset#5\corner
     #6\radius#7\depth#8\component#9\\%
   {\vbox
@@ -953,6 +955,65 @@
 %D ...,bottom=\kern0pt,...
 %D \stoptyping
 
+% \def\stoplocalframed
+%   {\dontshowcomposition
+%    \@@stopframedorientation
+%    \ifboxhasformat
+%      \ifx\localwidth\v!fit
+%        \ifreshapeframebox\doreshapeframedbox\fi
+%        \boxhaswidthfalse
+%      \else\ifx\localwidth\v!fixed
+%        \boxhaswidthfalse
+%      \else
+%        \resetshapeframebox
+%      \fi\fi
+%    \else
+%      \resetshapeframebox
+%    \fi
+%    \ifboxhaswidth
+%      \wd\framebox\!!widtha
+%    \fi
+%    \ifboxhasheight
+%      \ht\framebox\!!heighta
+%    \fi
+%    \doifvalue{\@@framed\c!empty}\v!yes
+%      {\setbox\scratchbox\null
+%       \wd\scratchbox\wd\framebox
+%       \ht\scratchbox\ht\framebox
+%       \dp\scratchbox\dp\framebox
+%       \setbox\framebox\box\scratchbox}%
+%    \stopregistercolor
+%    \docolorframebox
+%    \ifboxhasoffset
+%      \dooffsetframebox
+%    \fi
+%    \ifboxisoverlaid \else
+%      \dolocateframebox
+%    \fi
+%    \ifx\postprocessframebox\relax \else
+%      \let\next\postprocessframebox
+%      \let\postprocessframebox\relax % prevent nesting
+%      \next\framebox
+%    \fi
+%    \edef\overlaylinecolor{\framedparameter\c!framecolor}%
+%    \edef\overlaylinewidth{\the\ruledlinewidth}% \@@...
+%    \ifboxhasframe % real or invisible frame
+%      \doframedbox
+%    \fi
+%    \doifvaluesomething{\@@framed\c!background}\dobackedbox
+%    \ifx\@@locallocation\v!low
+%      \doinlineframedbox
+%    \else\ifx\@@locallocation\v!depth
+%      \doloweredframedbox
+%    \else\ifx\@@locallocation\v!hanging
+%      \dohangingframedbox
+%    \fi\fi\fi
+%    \box\framebox
+%    \egroup
+%    \egroup}
+%
+% new version, installable handler:
+
 \def\stoplocalframed
   {\dontshowcomposition
    \@@stopframedorientation
@@ -999,16 +1060,109 @@
      \doframedbox
    \fi
    \doifvaluesomething{\@@framed\c!background}\dobackedbox
-   \ifx\@@locallocation\v!low
-     \doinlineframedbox
-   \else\ifx\@@locallocation\v!depth
-     \doloweredframedbox
-   \else\ifx\@@locallocation\v!hanging
-     \dohangingframedbox
-   \fi\fi\fi
+   \handleframedlocator\@@locallocation
    \box\framebox
    \egroup
    \egroup}
+
+\def\installframedlocator#1#2%
+  {\setvalue{\??ol:\c!location:#1}{#2}}
+
+\def\handleframedlocator#1%
+  {\getvalue{\??ol:\c!location:#1}}
+
+\def\doprelocframedbox#1%
+  {\scratchdimen#1\relax
+   \advance\scratchdimen \ruledlinewidth
+   \ifboxhasoffset
+     \advance\scratchdimen \framedparameter\c!offset
+   \fi
+   \scratchskip\ht\framebox
+   \advance\scratchskip-\scratchdimen}
+
+% \ruledhbox
+%   {A
+%    \framed[width=2cm,align=middle,location=hanging]{location\\equals\\hanging}
+%    \framed[width=2cm,align=middle,location=depth]  {location\\equals\\depth}
+%    \framed[width=2cm,align=middle,location=height] {location\\equals\\height}
+%    B}
+% \vskip2cm
+% \ruledhbox
+%   {A
+%    \framed[width=2cm,align=middle,location=low]    {location\\equals\\low}
+%    \framed[width=2cm,align=middle,location=line]   {location\\equals\\line}
+%    \framed[width=2cm,align=middle,location=high]   {location\\equals\\high}
+%    B}
+% \vskip2cm
+% \ruledhbox
+%  {A
+%   \framed[width=2cm,align=middle,location=top]    {location\\equals\\top}
+%   \framed[width=2cm,align=middle,location=bottom] {location\\equals\\bottom}
+%   \framed[width=2cm,align=middle,location=lohi]   {location\\equals\\lohi}
+%   \framed[width=2cm,align=middle,location=middle] {location\\equals\\middle}
+%   B}
+
+\installframedlocator \v!hanging % best with strut=no
+  {\dp\framebox\ht\framebox
+   \ht\framebox\zeropoint}
+
+\installframedlocator \v!depth
+  {\scratchdimen\ht\framebox
+   \advance\scratchdimen -\strutdp
+   \ht\framebox\scratchdimen
+   \dp\framebox\strutdp
+   \box\framebox}
+
+\installframedlocator \v!height
+  {\scratchdimen\ht\framebox
+   \advance\scratchdimen -\strutht
+   \ht\framebox\strutht
+   \dp\framebox\scratchdimen
+   \box\framebox}
+
+\installframedlocator \v!high
+  {\doprelocframedbox\strutht
+   \setbox\framebox\hbox{\lower\scratchskip\box\framebox}%
+   \ht\framebox\strutht
+   \dp\framebox\strutdp
+   \hbox{\box\framebox}}
+
+\installframedlocator \v!line
+  {\setbox\framebox\hbox{\lower.5\ht\framebox\box\framebox}%
+   \ht\framebox.5\lineheight
+   \dp\framebox.5\lineheight
+   \hbox{\box\framebox}}
+
+\installframedlocator \v!low
+  {\doprelocframedbox\strutdp
+   \setbox\framebox\hbox{\lower\scratchdimen\box\framebox}%
+   \ht\framebox\strutht
+   \dp\framebox\strutdp
+   \box\framebox}
+
+\installframedlocator \v!top
+  {\doprelocframedbox\strutht
+   \setbox\framebox\hbox{\lower\scratchskip\box\framebox}%
+   \ht\framebox\scratchdimen
+   \dp\framebox\scratchskip
+   \hbox{\box\framebox}}
+
+\installframedlocator \v!middle
+  {\scratchdimen.5\ht\framebox
+   \setbox\framebox\hbox{\lower\scratchdimen\box\framebox}%
+   \ht\framebox\scratchdimen
+   \dp\framebox\scratchdimen
+   \hbox{\box\framebox}}
+
+\installframedlocator \v!lohi
+  {\handleframedlocator\v!middle}
+
+\installframedlocator \v!bottom
+  {\doprelocframedbox\strutdp
+   \setbox\framebox\hbox{\lower\scratchdimen\box\framebox}%
+   \ht\framebox\scratchskip
+   \dp\framebox\scratchdimen
+   \hbox{\box\framebox}}
 
 % \let\@@startframedorientation\relax
 % \let\@@stopframedorientation \relax

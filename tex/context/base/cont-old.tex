@@ -23,21 +23,6 @@
 \def\substitutecommand#1#2%
   {\gdef#1{\dosubstitutecommand{#1}{#2}}}
 
-%substitutecommand \stelopsomminginopniveau \stelopsommingin
-%substitutecommand \stelopsommingvolledigin \stelopsommingin
-%substitutecommand \stelsomsymboolin        \definieersymbool
-%substitutecommand \somsymbool              \symbool
-
-%substitutecommand \stelzetspiegelin        \stellayoutin
-%substitutecommand \stelmargesin            \stellayoutin
-%substitutecommand \steloffsetin            \stellayoutin
-
-              %def \edgewidth             {\rightedgewidth}
-
-%substitutecommand \steldoordefinitiein     \steldoordefinierenin
-%substitutecommand \steldoornummerin        \steldoornummerenin
-%substitutecommand \steldoorsprongin        \steldoorspringenin
-
 \substitutecommand \volgendehoofdstuk       {\setupheadnumber[hoofdstuk][+1]}
 \substitutecommand \volgendeparagraaf       {\setupheadnumber[paragraaf][+1]}
 \substitutecommand \volgendesubparagraaf    {\setupheadnumber[subparagraaf][+1]}
@@ -54,33 +39,8 @@
 
 \substitutecommand \definieersynoniem       \definesynonyms
 
-%substitutecommand \stelvoetnootin          \stelvoetnotenin
-
-%substitutecommand \karakters               \uitgerekt
-
-%substitutecommand \diepevoetnoot           \voetnoot
-
-% english:
-
-%substitutecommand \setupformulas           \setupformulae
-
-%substitutecommand \useexternalfigures      \setupexternalfigures
-
 \substitutecommand \setupintermezzos        \setupintermezzi
 
-%substitutecommand \leftlined               \leftaligned
-%substitutecommand \middlelined             \midaligned
-%substitutecommand \rightlined              \rightaligned
-
-%substitutecommand \setupcorps              \setupbodyfont
-%substitutecommand \switchtocorps           \switchtobodyfont
-%substitutecommand \definecorps             \definebodyfont
-%substitutecommand \definecorpsenvironment  \definebodyfontenvironment
-%substitutecommand \showcorps               \showbodyfont
-%substitutecommand \showcorpsenvironment    \showbodyfontenvironment
-
-              %def \corpssize               {\bodyfontsize}
-
-\substitutecommand \showencoding            {\showaccents\showcharacters}
+\let               \Everybodyfont           \EveryBodyFont
 
 \protect \endinput

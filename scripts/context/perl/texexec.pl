@@ -155,6 +155,7 @@ my $ProducePdfT      = 0;
 my $ProducePdfM      = 0;
 my $ProducePdfX      = 0;
 my $ProducePdfXTX    = 0;
+my $ProducePs        = 0;
 my $Input            = "";
 my $Result           = '';
 my $Suffix           = '';
@@ -263,6 +264,7 @@ my $MakeMpy = '';
     "pdx"            => \$ProducePdfX,
     "dpx"            => \$ProducePdfX,
     "xtx"            => \$ProducePdfXTX,
+    "ps"             => \$ProducePs,
     "pdfarrange"     => \$PdfArrange,
     "pdfselect"      => \$PdfSelect,
     "pdfcombine"     => \$PdfCombine,
@@ -380,6 +382,7 @@ if ( $DoMPTeX || $DoMPXTeX ) {
     $ProducePdfX   = 0;
     $ProducePdfM   = 0;
     $ProducePdfXTX = 0;
+    $ProducePs     = 0;
 }
 
 if ( $PdfArrange || $PdfSelect || $PdfCopy || $PdfTrim || $PdfCombine ) {
@@ -391,6 +394,7 @@ if    ($ProducePdfT)   { $OutputFormat = "pdftex" }
 elsif ($ProducePdfM)   { $OutputFormat = "dvipdfm" }
 elsif ($ProducePdfX)   { $OutputFormat = "dvipdfmx" }
 elsif ($ProducePdfXTX) { $OutputFormat = "xetex" }
+elsif ($ProducePs)     { $OutputFormat = "dvips" }
 
 if ( $ProducePdfXTX ) {
     $TeXProgram = 'xetex'  ; # ignore the default pdfetex engine
@@ -884,6 +888,7 @@ $OutputFormats{pdftex}   = "pdftex";    $OutputFormats{pdf}      = "pdftex";
 $OutputFormats{dvipdfm}  = "dvipdfm";   $OutputFormats{dpm}      = "dvipdfm";
 $OutputFormats{dvipdfmx} = "dvipdfmx";  $OutputFormats{dpx}      = "dvipdfmx";
 $OutputFormats{xetex}    = "xetex";     $OutputFormats{xtx}      = "xetex";
+$OutputFormats{dvips}    = "dvips";     $OutputFormats{ps}       = "dvips";
 
 # kind of obsolete now that yandy is gone
 
@@ -1405,6 +1410,7 @@ sub ScanTeXPreamble {
     $ProducePdfM   = ($OutputFormat eq "dvipdfm") ;
     $ProducePdfX   = ($OutputFormat eq "dvipdfmx") ;
     $ProducePdfXTX = ($OutputFormat eq "xetex") ;
+    $ProducePs     = ($OutputFormat eq "dvips") ;
 }
 
 sub ScanContent {
@@ -1480,14 +1486,17 @@ sub PrepRunTeX {
 	return $cmd;
 }
 
+my $emergencyend = "" ;
+#~ my $emergencyend = "\\emergencyend" ;
+
 sub RunTeX {
     my ( $JobName, $JobSuffix ) = @_;
     my $StartTime = time;
     my $cmd = PrepRunTeX($JobName, $JobSuffix, '');
     if ($EnterBatchMode) {
-        $Problems = System("$cmd");
+        $Problems = System("$cmd $emergencyend");
     } else {
-        $Problems = System("$cmd");
+        $Problems = System("$cmd $emergencyend");
     }
     my $StopTime = time - $StartTime;
     print "\n           return code : $Problems";
@@ -1729,7 +1738,7 @@ sub RunConTeXtFile {
                 } elsif (/\<\?context\-directive\s+(.+?)\s+(.+?)\s+(.+?)\s*\?\>/o) {
                     my ($class, $key, $value) = ($1, $2, $3) ;
                     if ($class eq 'job') {
-                        if ($key eq 'stylefile') {
+                        if (($key eq 'stylefile') || ($key eq 'environment')) {
                             print TMP "\\environment $value\n" ;
                         } elsif ($key eq 'module') {
                             print TMP "\\usemodule[$value]\n" ;
@@ -1838,7 +1847,7 @@ sub RunConTeXtFile {
                 $tubchecksumafter = CheckTubChanges($JobName) ;
                 if ($AutoMPRun) { $mpchecksumafter = CheckMPChanges($JobName) }
                 if ( ( !$Problems ) && ( $NOfRuns > 1 ) ) {
-                    if ( !$NoMPMode ) {
+                    unless ( $NoMPMode ) {
                         $MPrundone = RunTeXMP( $JobName, "mpgraph" );
                         $MPrundone = RunTeXMP( $JobName, "mprun" );
                     }
@@ -1879,6 +1888,21 @@ sub RunConTeXtFile {
                 $ENV{'backend'} = $ENV{'progname'} = 'xetex' ;
                 $ENV{'TEXFONTMAPS'} = '.;$TEXMF/fonts/map/{xetex,pdftex,dvips,}//' ;
                 System("xdv2pdf $JobName.xdv") ;
+            } elsif ($ProducePs) {
+                $ENV{'backend'} = $ENV{'progname'} = 'dvips' ;
+                $ENV{'TEXFONTMAPS'} = '.;$TEXMF/fonts/map/{dvips,pdftex,}//' ;
+                # temp hack, some day there will be map file loading in specials
+                my $mapfiles = '' ;
+                if (-f "$JobName.tui") {
+                    open(TUI,"$JobName.tui") ;
+                    while (<TUI>) {
+                        if (/c \\usedmapfile\{.\}\{(.*?)\}/o) {
+                            $mapfiles .= "-u +$1 " ;
+                        }
+                    }
+                    close(TUI) ;
+                }
+                System("dvips $mapfiles $JobName.dvi") ;
             }
             PopResult($JobName);
         }
@@ -1938,6 +1962,50 @@ sub RunModule {
 # the next one can be more efficient: directly process ted
 # file a la --use=abr-01,mod-01
 
+sub checktexformatpath {
+    # engine support is either broken of not implemented in some
+    # distributions, so we need to take care of it ourselves
+    my $texformats ;
+    if (defined($ENV{'TEXFORMATS'})) {
+        $texformats = $ENV{'TEXFORMATS'} ;
+    } else {
+        $texformats = '' ;
+    }
+    if ($texformats eq '') {
+        if ($UseEnginePath) {
+            if ($dosish) {
+                $texformats = `kpsewhich --engine=$TeXExecutable --expand-var=\$TEXFORMATS` ;
+            } else {
+                $texformats = `kpsewhich --engine=$TeXExecutable --expand-var=\\\$TEXFORMATS` ;
+            }
+        } else {
+            if ($dosish) {
+                $texformats = `kpsewhich --expand-var=\$TEXFORMATS` ;
+            } else {
+                $texformats = `kpsewhich --expand-var=\\\$TEXFORMATS` ;
+            }
+        }
+        chomp($texformats) ;
+    }
+    if (($texformats !~ /web2c\/.*$TeXExecutable/) && ($texformats !~ /web2c[\/\\].*\$engine/i)) {
+        $texformats =~ s/(web2c\/\{)(\,\})/$1\$engine$2/ ; # needed for empty engine flags
+        if ($texformats !~ /web2c[\/\\].*\$ENGINE/) {
+            $texformats =~ s/web2c/web2c\/{\$engine,}/ ; # needed for me
+        }
+        $ENV{'TEXFORMATS'} = $texformats ;
+        print " fixing texformat path : $ENV{'TEXFORMATS'}\n";
+    } else {
+        print "  using texformat path : $ENV{'TEXFORMATS'}\n" if ($Verbose) ;
+    }
+    if (! defined($ENV{'ENGINE'})) {
+        if ($MpEngineSupport) {
+            $ENV{'ENGINE'} .= $MpExecutable ;
+        } ;
+        $ENV{'ENGINE'} = $TeXExecutable ;
+        print "fixing engine variable : $ENV{'ENGINE'}\n";
+    }
+}
+
 sub DoRunModule {
     my ( $FileName, $FileSuffix ) = @_;
     RunPerlScript( $TeXUtil, "--documents $FileName.$FileSuffix" );
@@ -1959,8 +2027,8 @@ sub DoRunModule {
     print MOD "\\readlocfile{$FileName.ted}{}{}\n";
     print MOD "\\stoptext\n";
     close(MOD);
+    checktexformatpath ;
     RunConTeXtFile( $ModuleFile, "tex" );
-
     if ( $FileName ne $ModuleFile ) {
         foreach my $FileSuffix ( "dvi", "pdf", "tui", "tuo", "log" ) {
             unlink("$FileName.$FileSuffix");
@@ -1998,6 +2066,7 @@ sub RunFigures {
     print FIG "\\stoptext\n";
     close(FIG);
     $ConTeXtInterface = "en";
+    checktexformatpath ;
     RunConTeXtFile( $FiguresFile, "tex" );
     unlink('texutil.tuf') if ( -f 'texutil.tuf' );
 }
@@ -2038,6 +2107,7 @@ sub RunListing {
     print LIS "\\stoptext\n";
     close(LIS);
     $ConTeXtInterface = "en";
+    checktexformatpath ;
     RunConTeXtFile( $ListingFile, "tex" );
 }
 
@@ -2083,6 +2153,7 @@ sub RunArrange {
     print ARR "\\stoptext\n";
     close(ARR);
     $ConTeXtInterface = "en";
+    checktexformatpath ;
     RunConTeXtFile( $ModuleFile, "tex" );
 }
 
@@ -2131,6 +2202,7 @@ sub RunSelect {
     print SEL "\\stoptext\n";
     close(SEL);
     $ConTeXtInterface = "en";
+    checktexformatpath ;
     RunConTeXtFile( $SelectFile, "tex" );
 }
 
@@ -2181,6 +2253,7 @@ sub RunCopy {
     print COP "\\stoptext\n";
     close(COP);
     $ConTeXtInterface = "en";
+    checktexformatpath ;
     RunConTeXtFile( $CopyFile, "tex" );
 }
 
@@ -2231,6 +2304,7 @@ sub RunCombine {
     print COM "\\stoptext\n";
     close(COM);
     $ConTeXtInterface = "en";
+    checktexformatpath ;
     RunConTeXtFile( $CombineFile, "tex" );
 }
 
@@ -2431,50 +2505,6 @@ sub RunMpFormat {
 
 my $dir = File::Temp::tempdir(CLEANUP=>1) ;
 my ($fh, $filename) = File::Temp::tempfile(DIR=>$dir, UNLINK=>1);
-
-sub checktexformatpath {
-    # engine support is either broken of not implemented in some
-    # distributions, so we need to take care of it ourselves
-    my $texformats ;
-    if (defined($ENV{'TEXFORMATS'})) {
-        $texformats = $ENV{'TEXFORMATS'} ;
-    } else {
-        $texformats = '' ;
-    }
-    if ($texformats eq '') {
-        if ($UseEnginePath) {
-            if ($dosish) {
-                $texformats = `kpsewhich --engine=$TeXExecutable --expand-var=\$TEXFORMATS` ;
-            } else {
-                $texformats = `kpsewhich --engine=$TeXExecutable --expand-var=\\\$TEXFORMATS` ;
-            }
-        } else {
-            if ($dosish) {
-                $texformats = `kpsewhich --expand-var=\$TEXFORMATS` ;
-            } else {
-                $texformats = `kpsewhich --expand-var=\\\$TEXFORMATS` ;
-            }
-        }
-        chomp($texformats) ;
-    }
-    if (($texformats !~ /web2c\/.*$TeXExecutable/) && ($texformats !~ /web2c[\/\\].*\$engine/i)) {
-        $texformats =~ s/(web2c\/\{)(\,\})/$1\$engine$2/ ; # needed for empty engine flags
-        if ($texformats !~ /web2c[\/\\].*\$ENGINE/) {
-            $texformats =~ s/web2c/web2c\/{\$engine,}/ ; # needed for me
-        }
-        $ENV{'TEXFORMATS'} = $texformats ;
-        print " fixing texformat path : $ENV{'TEXFORMATS'}\n";
-    } else {
-        print "  using texformat path : $ENV{'TEXFORMATS'}\n" if ($Verbose) ;
-    }
-    if (! defined($ENV{'ENGINE'})) {
-        if ($MpEngineSupport) {
-            $ENV{'ENGINE'} .= $MpExecutable ;
-        } ;
-        $ENV{'ENGINE'} = $TeXExecutable ;
-        print "fixing engine variable : $ENV{'ENGINE'}\n";
-    }
-}
 
 sub RunFiles {
     my $currentpath = cwd() ;
@@ -2819,6 +2849,7 @@ sub RunMPX {
                 open( TMP, ">>$MpTex" );
                 print TMP "\\end\n";    # to be sure
                 close(TMP);
+                checktexformatpath ;
                 if ( ( $Format eq '' ) || ( $Format =~ /^cont.*/io ) ) {
                     RunConTeXtFile( $MpTmp, "tex" );
                 } else {

@@ -1,4 +1,4 @@
-banner = ['TeXExec', 'version 6.0.1', '1997-2005', 'PRAGMA ADE/POD']
+banner = ['TeXExec', 'version 6.1.0', '1997-2005', 'PRAGMA ADE/POD']
 
 unless defined? ownpath
     ownpath = $0.sub(/[\\\/][a-z0-9\-]*?\.rb/i,'')
@@ -11,6 +11,7 @@ require 'base/variables'
 require 'base/system'
 
 require 'base/tex'
+require 'base/texutil'
 
 require 'ftools'     # needed ?
 
@@ -25,13 +26,6 @@ class Commands
 
     def make
         if job = TEX.new(logger) then
-            # prepare, move to TEX ?
-            if @commandline.option('fast') then
-                report('using existing database')
-            else
-                report('updating file database')
-                Kpse.update
-            end
             prepare(job)
             # bonus, overloads language switch !
             job.setvariable('language','all') if @commandline.option('all')
@@ -56,20 +50,20 @@ class Commands
         end
     end
 
+    def main
+        if @commandline.arguments.length>0 then
+            process
+        else
+            help
+        end
+    end
+
     def process
         if job = TEX.new(logger) then
             job.setvariable('files',@commandline.arguments)
             prepare(job)
             job.processtex
             job.inspect && Kpse.inspect if @commandline.option('verbose')
-        end
-    end
-
-    def main
-        if @commandline.arguments.length>0 then
-            process
-        else
-            help
         end
     end
 
@@ -181,11 +175,11 @@ class Commands
     end
 
     def modules
-        msuffixes = ['tex','mp','pl','pm','rb']
         if job = TEX.new(logger) then
             prepare(job)
             job.cleanuptemprunfiles
             files = @commandline.arguments.sort
+            msuffixes = ['tex','mp','pl','pm','rb']
             if files.length > 0 then
                 files.each do |fname|
                     fnames = Array.new
@@ -491,6 +485,8 @@ class Commands
             job.setvariable('backend','xetex')
         elsif @commandline.oneof('aleph') then
             job.setvariable('backend','dvipdfmx')
+        elsif @commandline.oneof('dvips','ps') then
+            job.setvariable('backend','dvips')
         else
             job.setvariable('backend','standard')
         end
@@ -511,8 +507,6 @@ end
 
 logger      = Logger.new(banner.shift)
 commandline = CommandLine.new
-
-# actions
 
 commandline.registeraction('make',    'make formats')
 commandline.registeraction('check',   'check versions')
@@ -571,6 +565,9 @@ commandline.registerflag('dvipdfmx')
 commandline.registerflag('dvipdfm')
 commandline.registerflag('dpx')
 commandline.registerflag('dpm')
+
+commandline.registerflag('dvips')
+commandline.registerflag('ps')
 
 commandline.registerflag('xetex')
 commandline.registerflag('xtx')

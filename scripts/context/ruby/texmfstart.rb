@@ -361,7 +361,7 @@ def output(str)
 end
 
 def usage
-    print "version  : #{$version} - 2003/2004 - www.pragma-ade.com\n"
+    print "version  : #{$version} - 2003/2005 - www.pragma-ade.com\n"
     print("\n")
     print("usage    : texmfstart [switches] filename [optional arguments]\n")
     print("\n")

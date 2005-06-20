@@ -31,6 +31,7 @@ require 'base/system'
 
 require 'rexml/document'
 require 'ftools'
+require 'kconv'
 
 exit if defined?(REQUIRE2LIB)
 
@@ -746,12 +747,15 @@ class Language
         @language = language
         @filenames = filenames
         @remapping = Array.new
+        @unicode = Hash.new
         @encoding = encoding
         @data = ''
         @read = ''
         preload_accents()
+        preload_unicode() if @commandline.option('utf8')
         case @encoding.downcase
             when 't1', 'ec', 'cork' then preload_vector('ec')
+            when 'y', 'texnansi'    then preload_vector('texnansi')
         end
     end
 
@@ -773,15 +777,13 @@ class Language
                 @filenames.each do |fileset|
                     [fileset].flatten.each do |filename|
                         begin
-                            if filename = located(filename) then
-                                data = IO.read(filename)
+                            if fname = located(filename) then
+                                data = IO.read(fname)
                                 @data += data.gsub(/\%.*$/, '')
                                 data.gsub!(/(\\patterns|\\hyphenation)\s*\{.*/mo) do '' end
-                                @read += "\n% preamble of file #{filename}\n\n#{data}\n"
-                                report("file #{filename} is loaded")
+                                @read += "\n% preamble of file #{fname}\n\n#{data}\n"
+                                report("file #{fname} is loaded")
                                 break # next fileset
-                            else
-                                report("file #{filename} is not found")
                             end
                         rescue
                             report("file #{filename} is not readable")
@@ -808,9 +810,17 @@ class Language
                 end
             end
             report("#{n} changes in patterns and exceptions")
-            return n
+            if @commandline.option('utf8') then
+                n = 0
+                @data.gsub!(/\[(.*?)\]/o) do
+                    n += 1
+                    @unicode[$1] || $1
+                end
+                report("#{n} unicode utf8 entries")
+            end
+            return true
         else
-            return 0
+            return false
         end
     end
 
@@ -847,6 +857,22 @@ class Language
     def banner
         if @commandline.option('xml') then
             "<?xml version='1.0' standalone='yes' ?>\n\n"
+        end
+    end
+
+    def triggerunicode
+        if @commandline.option('utf8') then
+            "% xetex needs utf8 encoded patterns and for patterns\n" +
+            "% coded as such we need to enable this regime when\n" +
+            "% not in xetex; this code will be moved into context\n" +
+            "% as soon as we've spread the generic patterns\n" +
+            "\n" +
+            "\\ifx\\XeTeXversion\\undefined \\else\n" +
+            "  \\ifx\\enableregime\\undefined \\else\n" +
+            "    \\enableregime[utf]\n" +
+            "  \\fi\n" +
+            "\\fi\n" +
+            "\n"
         end
     end
 
@@ -938,11 +964,13 @@ class Language
                     data += $1 + "\n"
                 end
                 data.gsub!(/(\s*\n\s*)+/mo, "\n")
+
                 f << banner
                 f << comment("context pattern file, see #{commentfile} for original comment")
                 f << comment("source of data: #{@filenames.join(' ')}")
                 f << description
                 f << comment("begin pattern data")
+                f << triggerunicode
                 f << content('patterns', data)
                 f << comment("end pattern data")
                 f.close
@@ -964,11 +992,12 @@ class Language
                 data.gsub!(/(\s*\n\s*)+/mo, "\n")
                 f << banner
                 f << comment("context hyphenation file, see #{commentfile} for original comment")
-                f.<< comment("source of data: #{@filenames.join(' ')}")
+                f << comment("source of data: #{@filenames.join(' ')}")
                 f << description
-                f.<< comment("begin hyphenation data")
+                f << comment("begin hyphenation data")
+                f << triggerunicode
                 f << content('hyphenation', data)
-                f.<< comment("end hyphenation data")
+                f << comment("end hyphenation data")
                 f.close
                 report("exceptions saved in file #{hypname}")
             else
@@ -1005,10 +1034,10 @@ class Language
 
     def located(filename)
         begin
-            filename = `kpsewhich -progname=context #{filename}`.chomp
-            if FileTest.file?(filename) then
-                report("using file #{filename}")
-                return filename
+            fname = `kpsewhich -progname=context #{filename}`.chomp
+            if FileTest.file?(fname) then
+                report("using file #{fname}")
+                return fname
             else
                 report("file #{filename} is not present")
                 return nil
@@ -1037,6 +1066,26 @@ class Language
                 end
             end
         rescue
+        end
+
+    end
+
+    def preload_unicode
+
+        # \definecharacter Agrave {\uchar0{192}}
+
+        begin
+            if filename = located("enco-uc.tex") then
+                if data = IO.read(filename) then
+                    report("preloading unicode conversions")
+                    data.scan(/\\definecharacter\s*(.+?)\s*\{\\uchar\{*(\d+)\}*\s*\{(\d+)\}/o) do
+                        one, two, three = $1, $2.to_i, $3.to_i
+                        @unicode[one] = [(two*256 + three)].pack("U")
+                    end
+                end
+            end
+        rescue
+            report("error in loading unicode mapping (#{$!})")
         end
 
     end
@@ -1279,7 +1328,7 @@ commandline.registeraction('documentation', 'generate documentation [--type=] [f
 commandline.registeraction('filterpages')   # no help, hidden temporary feature
 commandline.registeraction('purgeallfiles') # no help, compatibility feature
 
-commandline.registeraction('patternfiles', 'generate pattern files [--all] [languagecode]')
+commandline.registeraction('patternfiles', 'generate pattern files [--all --xml --utf8] [languagecode]')
 
 commandline.registeraction('dpxmapfiles', 'convert pdftex mapfiles to dvipdfmx [--force] [texmfroot]')
 
@@ -1291,6 +1340,7 @@ commandline.registerflag('pipe')
 commandline.registerflag('all')
 commandline.registerflag('xml')
 commandline.registerflag('log')
+commandline.registerflag('utf8')
 
 # general
 

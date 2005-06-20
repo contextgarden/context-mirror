@@ -263,6 +263,10 @@
      \expandafter\normalend
    \fi}
 
+\def\emergencyend
+  {\writestatus\m!systems{invalid \@EA\string\csname\e!start\v!text\endcsname...\@EA\string\csname\e!stop\v!text\endcsname\space structure}%
+   \stoptext}
+
 \def\currentfile{\inputfilename}
 
 \def\doexecutefileonce#1%

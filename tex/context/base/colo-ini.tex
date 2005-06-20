@@ -1384,8 +1384,13 @@
      \startcolormode\maintextcolor
    \fi}
 
+% \def\localstoptextcolor
+%   {\stopcolormode}
+%
+% better:
+
 \def\localstoptextcolor
-  {\stopcolormode}
+  {\restorecolormode}
 
 \def\restoretextcolor
   {\ifx\maintextcolor\empty

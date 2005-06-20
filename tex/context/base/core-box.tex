@@ -659,6 +659,22 @@
 \definelayerpreset
   [\v!middle\v!right]
   [\c!location=\v!left,\c!hoffset=\layerwidth,\c!voffset=.5\layerheight]
+
+\definelayerpreset
+  [\v!middle\v!top]
+  [\c!location=\v!bottom,\c!corner=\v!top,\c!dx=.5\layerwidth]
+
+\definelayerpreset
+  [\v!middle\v!bottom]
+  [\c!location=\v!top,\c!corner=\v!bottom,\c!dx=.5\layerwidth]
+
+\definelayerpreset
+  [\v!middle\v!left]
+  [\c!location=\v!right,\c!corner=\v!left,\c!dy=.5\layerwidth]
+
+\definelayerpreset
+  [\v!middle\v!right]
+  [\c!location=\v!left,\c!corner=\v!right,\c!dy=.5\layerheight]
 
 \def\alignedbox
   {\dodoubleempty\doalignedbox[]}

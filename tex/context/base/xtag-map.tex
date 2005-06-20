@@ -376,8 +376,13 @@
 \def\doremapXMLentity
   {\xmlrent}
 
+% \unexpanded\def\xmlrent#1%
+%   {\getXMLentity{#1}}
+%
+% replaced by:
+
 \unexpanded\def\xmlrent#1%
-  {\getXMLentity{#1}}
+  {\doXMLentity#1;}
 
 %D The remapping is taken care of by the following macro,
 %D which takes three arguments.

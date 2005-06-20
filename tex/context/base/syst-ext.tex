@@ -638,8 +638,11 @@
 
 \endTEX
 
+\def\expandrecursecontent
+  {\csname\@@arecurse\recursedepth\endcsname}
+
 \def\redostepwiserecurse
-  {\csname\@@arecurse\recursedepth\endcsname\dodostepwiserecurse}
+  {\expandrecursecontent\dodostepwiserecurse}
 
 \beginETEX \numexpr
 
@@ -668,7 +671,7 @@
 \endTEX
 
 \def\redostepwisereverse
-  {\csname\@@arecurse\recursedepth\endcsname\dodostepwisereverse}
+  {\expandrecursecontent\dodostepwisereverse}
 
 \def\exitstepwiserecurse
   {\nodostepwiserecurse\relax}
@@ -752,7 +755,7 @@
 \endTEX
 
 \def\redorecurse
-  {\csname\@@arecurse\recursedepth\endcsname\dodorecurse}
+  {\expandrecursecontent\dodorecurse}
 
 \def\nodorecurse#1#2#3%
   {\@EA\let\@EA\recurselevel\csname\@@irecurse\recursedepth\endcsname
@@ -897,7 +900,7 @@
 \endTEX
 
 \def\redoloop
-  {\csname\@@arecurse\recursedepth\endcsname\endofloop}
+  {\expandrecursecontent\endofloop}
 
 \def\nodoloop#1%
   {\let\endofloop\dodoloop % new, permits nested \doloop's
@@ -2442,21 +2445,23 @@
       \fi}%
    \@EA\dosplitstring#1\empty\empty\empty#2\empty\empty\empty\\}
 
-\def\greedysplitstring#1\at#2\to#3\and#4%
-  {\edef\asciib{#1}%
-   \let\asciic\asciib
-   \let#3\empty
-   \let#4\empty
-   \doloop
-     {\expandafter\splitstring\asciib\at#2\to\asciia\and\asciib
-      \ifx\asciib\empty
-        \exitloop
-      \else
-        \edef#3{\ifx#3\empty\else#3#2\fi\asciia}%
-        \let#4\asciib
-      \fi}%
-  \ifx#3\empty\let#3\asciic\fi}
-
+% Ok, but not for all cases:
+%
+% \def\greedysplitstring#1\at#2\to#3\and#4%
+%   {\edef\asciib{#1}%
+%    \let\asciic\asciib
+%    \let#3\empty
+%    \let#4\empty
+%    \doloop
+%      {\expandafter\splitstring\asciib\at#2\to\asciia\and\asciib
+%       \ifx\asciib\empty
+%         \exitloop
+%       \else
+%         \edef#3{\ifx#3\empty\else#3#2\fi\asciia}%
+%         \let#4\asciib
+%       \fi}%
+%   \ifx#3\empty\let#3\asciic\fi}
+%
 % The next one is some 25\% faster, but it hardly matters because
 % we seldom use this macro.
 %
@@ -2475,6 +2480,25 @@
 %       \fi}%
 %   \dogreedysplitstring
 %   \ifx#3\empty\let#3\asciic\fi}
+%
+% The better alternative:
+
+\def\greedysplitstring#1\at#2\to#3\and#4%
+  {\edef\asciib{#1}%
+   \let\asciic\asciib
+   \let#3\empty
+   \let#4\empty
+   \doloop
+     {\expandafter\splitstring\asciib\at#2\to\asciia\and\asciib
+      \ifx\asciib\empty
+        \exitloop
+      \else
+        % not \edef#3{\ifx#3\empty\else#3#2\fi\asciia} else
+        % /root/path fails because then #3==empty
+        \edef#3{\ifcase\recurselevel\or\else#3#2\fi\asciia}%
+        \let#4\asciib
+      \fi}%
+  \ifx#3\empty\let#3\asciic\fi}
 
 %D \macros
 %D   {beforetestandsplitstring,

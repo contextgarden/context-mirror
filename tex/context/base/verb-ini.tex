@@ -123,7 +123,9 @@
 %D spaces (control spaces) we only have to adapt the definition
 %D of \type{\obeyedspace} to:
 
-\def\controlspace {\hbox{\char32}}
+\def\controlspace{\hbox{\char32}}
+\let\normalspacetoken=\
+\def\normalspaces{\catcode`\ =\@@space}
 
 \bgroup
 \catcode`\ =\@@active

@@ -969,6 +969,8 @@
    \afterfinaloutput
    \popproperties}  % ... and here
 
+% beware: \ifverwerken is in use
+
 \def\finaloutput#1#2%
   {\checkpageversion
    \ifverwerken
@@ -1870,8 +1872,8 @@
 \def\doprocesspage[#1][#2]%
   {\processaction
      [#2]
-     [ \v!yes=>\global\verwerkentrue,
-      \v!no=>\global\verwerkenfalse]%
+     [\v!yes=>\global\verwerkentrue,
+       \v!no=>\global\verwerkenfalse]%
    \gdef\selectie{#1}%
    \global\selecterentrue
    \global\geselecteerdfalse}

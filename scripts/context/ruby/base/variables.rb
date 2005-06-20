@@ -26,6 +26,14 @@ module Variables
         if @variables.key?(key) then @variables[key] else default end
     end
 
+    def checkedvariable(str,default='')
+        if @variables.key?(key) then
+            if @variables[key].empty? then default else @variables[key] end
+        else
+            default
+        end
+    end
+
     def report(*str)
         @logger.report(*str)
     end

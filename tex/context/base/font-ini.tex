@@ -2478,17 +2478,17 @@
       \normalizebodyfontsize\scratchdimen\to\!!stringa
       \letvalue{\??ft#1#2}\!!stringa}}
 
-\def\dodefineunknownbodyfont#1#2% see ***
-  {\doifdefined{\s!default\s!default#2}
-     {\donetrue
-      \getvalue{\s!default\s!default#2}{#1}{#2}}}
-
-% needs to be as follows, but test first:
-%
 % \def\dodefineunknownbodyfont#1#2% see ***
-%   {\doifdefined{\s!default\fontclass#2}% was \s!default\s!default (related to change */*)
+%   {\doifdefined{\s!default\s!default#2}
 %      {\donetrue
-%       \getvalue{\s!default\fontclass#2}{#1}{#2}}}
+%       \getvalue{\s!default\s!default#2}{#1}{#2}}}
+%
+% but ... it needs to be as follows:
+
+\def\dodefineunknownbodyfont#1#2% see ***
+  {\doifdefined{\s!default\fontclass#2}% was \s!default\s!default (related to change */*)
+     {\donetrue
+      \getvalue{\s!default\fontclass#2}{#1}{#2}}}
 
 \def\dodefineunknownsubfont#1#2%
   {\doifundefined{\@size@\getvalue{\??ft#1#2}}
@@ -2555,7 +2555,7 @@
 %D garantees their handling.
 
 \ifx\everybodyfont\undefined % permits reloading
-  \newevery \everybodyfont \Everybodyfont
+  \newevery \everybodyfont \EveryBodyFont
 \fi
 
 %D At the system level one can initialize thing like:
@@ -2567,7 +2567,7 @@
 %D While users can add their own non standard commands like:
 %D
 %D \starttyping
-%D \Everybodyfont{\message{changing to bodyfont \the\bodyfontsize}}
+%D \EveryBodyFont{\message{changing to bodyfont \the\bodyfontsize}}
 %D \stoptyping
 %D
 %D Personnaly I never felt the need for such extensions, but
@@ -2682,6 +2682,8 @@
 \let\fontstyle       = \defaultfontstyle
 \let\fontsize        = \defaultfontsize
 
+%D {\em The following approach is obsolete.}
+%D
 %D All things related to fonts are grouped into files with
 %D names like \type{font-cmr}. These files are loaded by:
 
@@ -2718,7 +2720,6 @@
 %            {\showmessage\m!fonts3}}%
 %         {#2}% argument to \showmessage
 %       \stopreadingfile}}
-
 
 %D When \type {\loadfontfileoncetrue}, such files are
 %D only loaded once! This permits redundant loading, but at
@@ -2801,12 +2802,13 @@
 %D sequence of a session. After the loading job is done, the
 %D macro relaxes itself and reset the signal.
 
-\def\preloadfonts
+\def\preloadfonts % never called, needs a clean up
   {\showmessage\m!fonts6{\normalizedbodyfontsize\normalspace\fontstyle}%
    \global\loadingfontsfalse
    \doswitchpoints[\normalizedbodyfontsize]%
    \doswitchstyle[\fontstyle]%
    \the\everybodyfont
+   \saveinterlinespace
    \global\let\preloadfonts\relax}
 
 % \prependtoks \preloadfonts \to \everydump % saves .1 s on a DELL P60 - 2GHZ
@@ -3328,12 +3330,16 @@
 %D Both macros look alike. The second one also has to take
 %D all kind of keywords into account.
 
+\ifx\saveinterlinespace   \undefined \let\saveinterlinespace   \relax \fi
+\ifx\restoreinterlinespace\undefined \let\restoreinterlinespace\relax \fi
+
 \chardef\bodyfontsetstate=0
 
 \definecomplexorsimple\setupbodyfont
 
 \def\simplesetupbodyfont
-  {\restoreglobalbodyfont}
+  {\restoreglobalbodyfont
+   \saveinterlinespace}
 
 \def\complexsetupbodyfont[#1]%
   {\doifsomething{#1}
@@ -3343,6 +3349,7 @@
       \let\globalfontstyle\fontstyle
       \ifloadingfonts\else
         \the\everybodyfont % indeed needed in case \dosetfont is not executed
+        \saveinterlinespace
       \fi}}
 
 \unexpanded\def\switchtobodyfont[#1]%
@@ -3452,8 +3459,11 @@
 %D The next auxilliary macro is an alternative to \type
 %D {\fontname}.
 
-\def\purefontname#1%
-  {\expandafter\splitoffpurefontname\fontname#1 \\}
+% \def\purefontname#1{\expandafter\splitoffpurefontname\fontname#1 \\}
+%
+% extra level is needed:
+
+\def\purefontname#1{\@EA\splitoffpurefontname\@EA{\@EA{\@EA\unstringed\fontname#1}} \\}
 
 \def\splitoffpurefontname#1 #2\\{#1}
 
@@ -3587,12 +3597,13 @@
    \doswitchstyle[\fontstyle]}
 
 \unexpanded\def\setsmallbodyfont{\setbodyfontstep\v!small\the\everybodyfont}
-\unexpanded\def\setbigbodyfont  {\setbodyfontstep\v!big\the\everybodyfont}
+\unexpanded\def\setbigbodyfont  {\setbodyfontstep\v!big  \the\everybodyfont}
 
 \unexpanded\def\setmainbodyfont
   {\doswitchpoints[\normalizedbodyfontsize]%
    \doswitchstyle[\fontstyle]%
-   \the\everybodyfont}
+   \the\everybodyfont
+   \saveinterlinespace}
 
 %D \macros
 %D   {restoreglobalbodyfont}
@@ -3612,14 +3623,16 @@
    \doswitchpoints[\normalizedglobalbodyfontsize]%
    \doswitchstyle[\globalfontstyle]%
    \redoconvertfont % just in case a pagebreak occurs
-   \tf \the\everybodyfont}
+   \tf \the\everybodyfont
+   \saveinterlinespace}
 
 \def\partialrestoreglobalbodyfont
   {\let\fontsize\defaultfontsize
    \let\fontbody\defaultfontbody
    \chardef\currentxfontsize\zerocount
    \redoconvertfont
-   \tf}
+   \tf
+   \saveinterlinespace}
 
 \def\restoreglobalbodyfont % ook style etc
   {\ifx\fontclass\globalfontclass

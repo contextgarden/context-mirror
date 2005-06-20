@@ -11,12 +11,38 @@
 # todo: write systemcall for mpost to file so that it can be run
 # faster
 
+# report ?
+
 require 'base/variables'
 require 'base/kpse'
 require 'base/system'
 require 'base/state'
 require 'base/pdf'
 require 'base/file'
+
+class String
+
+    def standard?
+        begin
+            self == 'standard'
+        rescue
+            false
+        end
+    end
+
+end
+
+class Array
+
+    def standard?
+        begin
+            self.include?('standard')
+        rescue
+            false
+        end
+    end
+
+end
 
 class TEX
 
@@ -33,42 +59,65 @@ class TEX
     @@texformats = Hash.new
     @@mpsformats = Hash.new
     @@prognames  = Hash.new
+    @@texmakestr = Hash.new
+    @@texprocstr = Hash.new
+    @@mpsmakestr = Hash.new
+    @@mpsprocstr = Hash.new
 
-    ['tex','pdftex','pdfetex','standard']          .each do |e| @@texengines[e] = 'pdfetex'  end
-    ['aleph','omega']                              .each do |e| @@texengines[e] = 'aleph'    end
-    ['xetex']                                      .each do |e| @@texengines[e] = 'xetex'    end
+    @@texmethods = Hash.new
+    @@mpsmethods = Hash.new
 
-    ['metapost','mpost','standard']                .each do |e| @@mpsengines[e] = 'mpost'    end
+    ['tex','pdftex','pdfetex','standard']          .each do |e| @@texengines[e] = 'pdfetex'   end
+    ['aleph','omega']                              .each do |e| @@texengines[e] = 'aleph'     end
+    ['xetex']                                      .each do |e| @@texengines[e] = 'xetex'     end
 
-    ['pdfetex','pdftex','pdf','pdftex','standard'] .each do |b| @@backends[b]   = 'pdftex'   end
-    ['dvipdfmx','dvipdfm','dpx','dpm']             .each do |b| @@backends[b]   = 'dvipdfmx' end
-    ['xetex','xtx']                                .each do |b| @@backends[b]   = 'xetex'    end
-    ['dvips','ps']                                 .each do |b| @@backends[b]   = 'dvips'    end
-    ['dvipsone']                                   .each do |b| @@backends[b]   = 'dvipsone' end
-    ['acrobat','adobe','distiller']                .each do |b| @@backends[b]   = 'acrobat'  end
+    ['metapost','mpost','standard']                .each do |e| @@mpsengines[e] = 'mpost'     end
+
+    ['pdfetex','pdftex','pdf','pdftex','standard'] .each do |b| @@backends[b]   = 'pdftex'    end
+    ['dvipdfmx','dvipdfm','dpx','dpm']             .each do |b| @@backends[b]   = 'dvipdfmx'  end
+    ['xetex','xtx']                                .each do |b| @@backends[b]   = 'xetex'     end
+    ['dvips','ps']                                 .each do |b| @@backends[b]   = 'dvips'     end
+    ['dvipsone']                                   .each do |b| @@backends[b]   = 'dvipsone'  end
+    ['acrobat','adobe','distiller']                .each do |b| @@backends[b]   = 'acrobat'   end
 
     # todo norwegian (no)
 
-    ['plain']                                      .each do |f| @@texformats[f] = 'plain'    end
-    ['cont-en','en','english','context','standard'].each do |f| @@texformats[f] = 'cont-en'  end
-    ['cont-nl','nl','dutch']                       .each do |f| @@texformats[f] = 'cont-nl'  end
-    ['cont-de','de','german']                      .each do |f| @@texformats[f] = 'cont-de'  end
-    ['cont-it','it','italian']                     .each do |f| @@texformats[f] = 'cont-it'  end
-    ['cont-cz','cz','czech']                       .each do |f| @@texformats[f] = 'cont-cz'  end
-    ['cont-ro','ro','romanian']                    .each do |f| @@texformats[f] = 'cont-ro'  end
-    ['cont-uk','uk','brittish']                    .each do |f| @@texformats[f] = 'cont-uk'  end
-    ['mptopdf']                                    .each do |f| @@texformats[f] = 'mptopdf'  end
+    ['plain']                                      .each do |f| @@texformats[f] = 'plain'     end
+    ['cont-en','en','english','context','standard'].each do |f| @@texformats[f] = 'cont-en'   end
+    ['cont-nl','nl','dutch']                       .each do |f| @@texformats[f] = 'cont-nl'   end
+    ['cont-de','de','german']                      .each do |f| @@texformats[f] = 'cont-de'   end
+    ['cont-it','it','italian']                     .each do |f| @@texformats[f] = 'cont-it'   end
+    ['cont-cz','cz','czech']                       .each do |f| @@texformats[f] = 'cont-cz'   end
+    ['cont-ro','ro','romanian']                    .each do |f| @@texformats[f] = 'cont-ro'   end
+    ['cont-uk','uk','brittish']                    .each do |f| @@texformats[f] = 'cont-uk'   end
+    ['mptopdf']                                    .each do |f| @@texformats[f] = 'mptopdf'   end
 
-    ['plain','mpost']                              .each do |f| @@mpsformats[f] = 'plain'    end
-    ['metafun','context','standard']               .each do |f| @@mpsformats[f] = 'metafun'  end
+    ['latex']                                      .each do |f| @@texformats[f] = 'latex.ltx' end
 
-    ['pdfetex','aleph','omega']                    .each do |p| @@prognames[p]  = 'context'  end
-    ['mpost']                                      .each do |p| @@prognames[p]  = 'metafun'  end
+    ['plain','mpost']                              .each do |f| @@mpsformats[f] = 'plain'     end
+    ['metafun','context','standard']               .each do |f| @@mpsformats[f] = 'metafun'   end
+
+    ['pdfetex','aleph','omega']                    .each do |p| @@prognames[p]  = 'context'   end
+    ['mpost']                                      .each do |p| @@prognames[p]  = 'metafun'   end
+
+    ['plain','default','standard','mptopdf']       .each do |f| @@texmethods[f] = 'plain'     end
+    ['cont-en','cont-nl','cont-de','cont-it',
+     'cont-cz','cont-ro','cont-uk']                .each do |f| @@texmethods[f] = 'context'   end
+    ['latex']                                      .each do |f| @@texmethods[f] = 'latex'     end
+
+    ['plain','default','standard']                 .each do |f| @@mpsmethods[f] = 'plain'     end
+    ['metafun']                                    .each do |f| @@mpsmethods[f] = 'metafun'   end
+
+    @@texmakestr['plain'] = "\\dump"
+    @@mpsmakestr['plain'] = "\\dump"
+
+    ['cont-en','cont-nl','cont-de','cont-it',
+     'cont-cz','cont-ro','cont-uk']                .each do |f| @@texprocstr[f] = "\\emergencyend"  end
 
     @@runoptions['xetex'] = ['--no-pdf']
 
     @@booleanvars = [
-        'batchmode', 'nonstopmode', 'fastmode', 'fastdisabled', 'silentmode', 'final',
+        'batchmode', 'nonstopmode', 'fast', 'fastdisabled', 'silentmode', 'final',
         'paranoid', 'notparanoid', 'nobanner', 'once', 'allpatterrns',
         'nompmode', 'nomprun', 'automprun',
         'nomapfiles', 'local',
@@ -77,7 +126,7 @@ class TEX
         'mpyforce', 'forcempy',
         'forcetexutil', 'texutil',
         'globalfile', 'autopath',
-        'purge', 'pdfopen', 'simplerun',
+        'purge', 'pdfopen', 'simplerun', 'verbose',
     ]
     @@stringvars = [
         'modefile', 'result', 'suffix', 'response', 'path',
@@ -120,7 +169,15 @@ class TEX
     @@temptexfile = 'texexec.tex'
 
     def initialize(logger)
-        @logger      = logger
+        if @logger = logger then
+            def report(str='')
+                @logger.report(str)
+            end
+        else
+            def report(str='')
+                puts(str)
+            end
+        end
         @cleanups    = Array.new
         @variables   = Hash.new
         @startuptime = Time.now
@@ -139,12 +196,16 @@ class TEX
         setvariable('mpsformats',   defaultmpsformats)
         setvariable('progname',     'context')
         setvariable('interface',    'standard')
-        setvariable('engine',       'standard')
+        setvariable('engine',       'standard') # replaced by tex/mpsengine
         setvariable('backend',      'pdftex')
         setvariable('runs',         '8')
-        setvariable('randomseed',    rand(1440))
+        setvariable('randomseed',    rand(1440).to_s)
         # files
-        setvariable('files', [])
+        setvariable('files',        [])
+        # defaults
+        setvariable('texengine',    'standard')
+        setvariable('mpsengine',    'standard')
+        setvariable('backend',      'standard')
     end
 
     def runtime
@@ -193,33 +254,23 @@ class TEX
         end
     end
 
-    def texengines
-        @@texengines.keys.sort
-    end
+    def backends() @@backends.keys.sort end
 
-    def mpsengines
-        @@mpsengines.keys.sort
-    end
+    def texengines() @@texengines.keys.sort end
+    def mpsengines() @@mpsengines.keys.sort end
+    def texformats() @@texformats.keys.sort end
+    def mpsformats() @@mpsformats.keys.sort end
 
-    def backends
-        @@backends.keys.sort
-    end
+    def defaulttexformats() ['en','nl','mptopdf'] end
+    def defaultmpsformats() ['metafun']           end
 
-    def texformats
-        @@texformats.keys.sort
-    end
+    def texmakeextras(format) @@texmakestr[format] || '' end
+    def mpsmakeextras(format) @@mpsmakestr[format] || '' end
+    def texprocextras(format) @@texprocstr[format] || '' end
+    def mpsprocextras(format) @@mpsprocstr[format] || '' end
 
-    def mpsformats
-        @@mpsformats.keys.sort
-    end
-
-    def defaulttexformats
-        ['en','nl','mptopdf']
-    end
-
-    def defaultmpsformats
-        ['metafun']
-    end
+    def texmethod(format) @@texmethods[str] || @@texmethods['standard'] end
+    def mpsmethod(format) @@mpsmethods[str] || @@mpsmethods['standard'] end
 
     def runoptions(engine)
         if @@runoptions.key?(engine) then @@runoptions[engine].join(' ') else '' end
@@ -265,18 +316,14 @@ class TEX
         if str.class == String then str.split(',') else str.flatten end
     end
 
-    def validtexformat(str)
-        validsomething(str,@@texformats)
-    end
-    def validmpsformat(str)
-        validsomething(str,@@mpsformats)
-    end
-    def validtexengine(str)
-        validsomething(str,@@texengines)
-    end
-    def validmpsengine(str)
-        validsomething(str,@@mpsengines)
-    end
+    def validtexformat(str) validsomething(str,@@texformats) end
+    def validmpsformat(str) validsomething(str,@@mpsformats) end
+    def validtexengine(str) validsomething(str,@@texengines) end
+    def validmpsengine(str) validsomething(str,@@mpsengines) end
+
+    def validtexmethod(str) [validsomething(str,@@texmethods)].flatten.first end
+    def validmpsmethod(str) [validsomething(str,@@mpsmethods)].flatten.first end
+
     def validsomething(str,something)
         if str then
             list = [str].flatten.collect do |s|
@@ -320,11 +367,11 @@ class TEX
                             else return ""
         end
         if format then
-            if engine then
-                "#{prefix}=#{engine}/#{format}"
-            else
+            # if engine then
+                # "#{prefix}=#{engine}/#{format}"
+            # else
                 "#{prefix}=#{format}"
-            end
+            # end
         else
             prefix
         end
@@ -362,12 +409,8 @@ class TEX
         end
     end
 
-    def iniflag
-        "--ini"
-    end
-    def tcxflag
-        "--translate-file=natural.tcx"
-    end
+    def iniflag() "--ini" end
+    def tcxflag() "--translate-file=natural.tcx" end
 
     def filestate(file)
         File.mtime(file).strftime("%d/%m/%Y %H:%M:%S")
@@ -388,6 +431,12 @@ class TEX
     end
 
     def makeformats
+        if getvariable('fast') then
+            report('using existing database')
+        else
+            report('updating file database')
+            Kpse.update
+        end
         # goody
         if getvariable('texformats') == 'standard' then
             setvariable('texformats',[getvariable('interface')]) unless getvariable('interface').empty?
@@ -413,14 +462,11 @@ class TEX
                 makeuserfile
                 makeresponsefile
             end
-            texformats.each do |format|
-                if texformat = validtexformat(format) then
-                    report("generating tex format #{texformat}")
-                    # report("some texmf environment variables are fixed") if Kpse.fixtexmfvars(texengine)
-                    command = [quoted(texengine),prognameflag(progname),iniflag,tcxflag,prefixed(texformat,texengine)].join(' ')
-                    report(command) if getvariable('verbose')
-                    system(command)
-                end
+            texformats.each do |texformat|
+                report("generating tex format #{texformat}")
+                command = [quoted(texengine),prognameflag(progname),iniflag,tcxflag,prefixed(texformat,texengine),texmakeextras(texformat)].join(' ')
+                report(command) if getvariable('verbose')
+                system(command)
             end
         else
             texformatpath = ''
@@ -434,14 +480,11 @@ class TEX
                 Dir.chdir(mpsformatpath)
             rescue
             end
-            mpsformats.each do |format|
-                if mpsformat = validmpsformat(format) then
-                    report("generating mps format #{mpsformat}")
-                    # report("some texmf environment variables are fixed") if Kpse.fixtexmfvars(mpsengine)
-                    command = [quoted(mpsengine),prognameflag(progname),iniflag,tcxflag,mpsformat].join(' ')
-                    report(command) if getvariable('verbose')
-                    system(command)
-                end
+            mpsformats.each do |mpsformat|
+                report("generating mps format #{mpsformat}")
+                command = [quoted(mpsengine),prognameflag(progname),iniflag,tcxflag,mpsformat,mpsmakeextras(mpsformat)].join(' ')
+                report(command) if getvariable('verbose')
+                system(command)
             end
         else
             mpsformatpath = ''
@@ -482,11 +525,12 @@ class TEX
         globpattern = "**/{#{formatpaths.join(',')}}/*/*.{fmt,efmt,ofmt,xfmt,mem}"
         report("format path: #{formatpaths.join(' ')}")
         # utilities
-        report
+        report('start of analysis')
+        results = Array.new
         ['texexec','texutil','ctxtools'].each do |program|
             result = `texmfstart #{program} --help`
             result.sub!(/.*?(#{program}[^\n]+)\n.*/mi) do $1 end
-            report("#{result}")
+            results.push("#{result}")
         end
         # formats
         cleanuptemprunfiles
@@ -511,24 +555,23 @@ class TEX
                         case format
                             when /cont\-([a-z]+)/ then
                                 interface = $1.sub(/cont\-/,'')
-                                report
-                                report("testing interface #{interface}")
+                                results.push('')
+                                results.push("testing interface #{interface}")
                                 flags = ['--process','--batch','--once',"--interface=#{interface}",engineflag]
-# to be adapted !
-result = Kpse.pipescript('newtexexec',tempfilename,flags)
-# to just texexec
+                                # result = Kpse.pipescript('newtexexec',tempfilename,flags)
+                                result = runtexexec([tempfilename], flags, 1)
                                 if FileTest.file?("#{@@temprunfile}.log") then
                                     logdata = IO.read("#{@@temprunfile}.log")
                                     if logdata =~ /^\s*This is (.*?)[\s\,]+(.*?)$/mois then
                                         if validtexengine($1.downcase) then
-                                            report("#{$1} #{$2.gsub(/\(format.*$/,'')}".strip)
+                                            results.push("#{$1} #{$2.gsub(/\(format.*$/,'')}".strip)
                                         end
                                     end
                                     if logdata =~ /^\s*(ConTeXt)\s+(.*int:\s+[a-z]+.*?)\s*$/mois then
-                                        report("#{$1} #{$2}".gsub(/\s+/,' ').strip)
+                                        results.push("#{$1} #{$2}".gsub(/\s+/,' ').strip)
                                     end
                                 else
-                                    report("format #{format} does not work")
+                                    results.push("format #{format} does not work")
                                 end
                             when /metafun/ then
                                 # todo
@@ -536,11 +579,16 @@ result = Kpse.pipescript('newtexexec',tempfilename,flags)
                                 # todo
                         end
                     else
-                        report("error in creating #{tempfilename('tex')}")
+                        results.push("error in creating #{tempfilename('tex')}")
                     end
                 end
                 cleanuptemprunfiles
             end
+        end
+        report('end of analysis')
+        report
+        results.each do |line|
+            report(line)
         end
         cleanuptemprunfiles
 
@@ -628,8 +676,8 @@ result = Kpse.pipescript('newtexexec',tempfilename,flags)
 
     def scantexcontent(filename)
         if tex = File.open(filename) then
-            while str = tex.gets.chomp do
-                case str
+            while str = tex.gets do
+                case str.chomp
                     when /^\%/o then
                         # next
                     when /\\(starttekst|stoptekst|startonderdeel|startdocument|startoverzicht)/o then
@@ -709,13 +757,16 @@ result = Kpse.pipescript('newtexexec',tempfilename,flags)
                             break
                         elsif line =~ /<\?context\-directive\s+(.+?)\s+(.+?)\s+(.+?)\s*\?>/o then
                             category, key, value = $1, $2, $3
-                            if category == 'job' then
-                                if key == 'stylefile' then
-                                    tmp << "\\environment $value\n"
-                                elsif key == 'module' then
-                                    tmp << "\\usemodule[$value]\n"
-                                elsif key == 'interface' then
-                                    contextinterface = value
+                            case category
+                                when 'job' then
+                                    case key
+                                        when 'stylefile', 'environment' then
+                                            tmp << "\\environment $value\n"
+                                        when 'module' then
+                                            tmp << "\\usemodule[$value]\n"
+                                        when 'interface' then
+                                            contextinterface = value
+                                    end
                                 end
                             end
                         end
@@ -742,7 +793,7 @@ class TEX
         getarrayvariable('files').each do |filename|
             setvariable('filename',filename)
             report("processing document '#{filename}'")
-            processcontextfile
+            processfile
         end
         reportruntime
     end
@@ -804,7 +855,7 @@ class TEX
             if getvariable('nompmode') || getvariable('nomprun') || getvariable('automprun') then
                 opt << "\\runMPgraphicsfalse\n"
             end
-            if getvariable('fastmode') && ! getvariable('fastdisabled') then
+            if getvariable('fast') && ! getvariable('fastdisabled') then
                 opt << "\\fastmode\n"
             end
             if getvariable('silent') then
@@ -942,7 +993,7 @@ class TEX
         report("tex format: #{texformat}")
         report("progname: #{progname}")
         if texengine && texformat && progname then
-            command = [quoted(texengine),prognameflag(progname),formatflag(texengine,texformat),runoptions(texengine),filename].join(' ')
+            command = [quoted(texengine),prognameflag(progname),formatflag(texengine,texformat),runoptions(texengine),filename,texprocextras(texformat)].join(' ')
             report(command) if getvariable('verbose')
             system(command)
         else
@@ -955,7 +1006,7 @@ class TEX
         mpsformat = validmpsformat(getarrayvariable('mpsformats').first)
         progname  = validprogname(getvariable('progname'))
         if mpsengine && mpsformat && progname then
-            command = [quoted(mpsengine),prognameflag(progname),formatflag(mpsengine,mpsformat),runoptions(mpsengine),filename].join(' ')
+            command = [quoted(mpsengine),prognameflag(progname),formatflag(mpsengine,mpsformat),runoptions(mpsengine),filename,mpsprocextras(mpsformat)].join(' ')
             report(command) if getvariable('verbose')
             system(command)
         else
@@ -982,8 +1033,8 @@ class TEX
         mpfile = File.suffixed(filename,filetype,'mp')
         if File.atleast?(mpfile,25) && (data = File.silentread(mpfile)) then
             textranslation = if data =~ /^\%\s+translate.*?\=([\w\d\-]+)/io then $1 else '' end
-            mpjobname = if data =~ /collected graphics of job \"(.+)\"/io then $1 else '' end
-            if File.unsuffixed(filename) =~ /#{mpjobname}/ then # don't optimize
+            mpjobname = if data =~ /collected graphics of job \"(.+?)\"/io then $1 else '' end
+            if ! mpjobname.empty? and File.unsuffixed(filename) =~ /#{mpjobname}/ then # don't optimize
                 options = Array.new
                 options.push("--mptex")
                 options.push("--nomp")
@@ -991,18 +1042,52 @@ class TEX
                 options.push("--translate=#{textranslation}") unless textranslation.empty?
                 options.push("--batch") if getvariable('batchmode')
                 options.push("--nonstop") if getvariable('nonstopmode')
-                return runtexexec(mpfile,options)
+                options.push("--output=ps")
+                return runtexexec(mpfile,options,2)
             end
         end
         return false
     end
 
     def runtexutil(filename=[], options=['--ref','--ij','--high'])
-        Kpse.runscript('texutil',filename,options)
+        begin
+            filename.each do |fname|
+                logger = Logger.new('TeXUtil')
+                if tu = TeXUtil::Converter.new(logger) and tu.loaded(fname) then
+                    tu.saved if tu.processed
+                end
+            end
+        rescue
+            Kpse.runscript('texutil',filename,options)
+        end
     end
 
-    def runtexexec(filename=[], options=[])
-        Kpse.runscript('texexec',filename,options)
+    # 1=tex 2=mptex 3=mpxtex
+
+    def runtexexec(filename=[], options=[], mode=nil)
+        begin
+            if mode and job = TEX.new(@logger) then
+                options.each do |option|
+                    if option=~ /^\-*(.*?)\=(.*)$/o then
+                        job.setvariable($1,$2)
+                    else
+                        job.setvariable(option,true)
+                    end
+                end
+                job.setvariable("files",filename)
+                case mode
+                    when 1 then job.processtex
+                    when 2 then job.processmptex
+                    when 3 then job.processmpxtex
+                end
+                job.inspect && Kpse.inspect if getvariable('verbose')
+                return true
+            else
+                Kpse.runscript('texexec',filename,options)
+            end
+        rescue
+            Kpse.runscript('texexec',filename,options)
+        end
     end
 
     def fixbackendvars(backend)
@@ -1011,15 +1096,44 @@ class TEX
         ENV['TEXFONTMAPS'] = ".;\$TEXMF/fonts/map/{#{backend},pdftex,dvips,}//"
     end
 
-    def processcontextfile
+    def runbackend(jobname)
+        case validbackend(getvariable('backend'))
+            when 'dvipdfmx' then
+                fixbackendvars('dvipdfm')
+                system("dvipdfmx -d 4 #{File.unsuffixed(jobname)}")
+            when 'xetex'    then
+                fixbackendvars('xetex')
+                system("xdv2pdf #{File.suffixed(jobname,'xdv')}")
+            when 'dvips'    then
+                fixbackendvars('dvips')
+                mapfiles = ''
+                begin
+                    if tuifile = File.suffixed(jobname,'tui') and FileTest.file?(tuifile) then
+                        IO.read(tuifile).scan(/^c \\usedmapfile\{.\}\{(.*?)\}\s*$/o) do
+                            mapfiles += "-u +#{$1} " ;
+                        end
+                    end
+                rescue
+                    mapfiles = ''
+                end
+                system("dvips #{mapfiles} #{File.unsuffixed(jobname)}")
+            when 'pdftex'   then
+                # no need for postprocessing
+            else
+                report("no postprocessing needed")
+        end
+    end
+
+    def processfile
 
         takeprecautions
 
         jobname = getvariable('filename')
-        suffix = getvariable('suffix')
-        result = getvariable('result')
+        suffix  = getvariable('suffix')
+        result  = getvariable('result')
 
-        final = getvariable('final')
+        runonce   = getvariable('once')
+        finalrun  = getvariable('final') || (getvariable('arrange') && ! getvariable('noarrange'))
 
         if getvariable('autopath') then
             jobname = File.basename(jobname)
@@ -1036,9 +1150,12 @@ class TEX
 
         orisuffix = jobsuffix # still needed ?
 
+        setvariable('nomprun',true) if orisuffix == 'mpx' # else cylic run
+
         PDFview.closeall if getvariable('pdfopen')
 
         forcexml = jobsuffix === /(xml|fo|fox|rlg|exa|)/io # === returns true|false, =~ returns position
+
         dummyfile = false
 
         # fuzzy code snippet: (we kunnen kpse: prefix gebruiken)
@@ -1055,81 +1172,89 @@ class TEX
 
             unless dummyfile # we don't need this for xml
                 scantexpreamble(File.suffixed(jobname,jobsuffix))
-                scantexcontent(File.suffixed(jobname,jobsuffix)) if getvariable('texformat').standard?
+                scantexcontent(File.suffixed(jobname,jobsuffix)) if getvariable('texformats').standard?
             end
 
             result = File.suffixed(jobname,suffix) unless suffix.empty?
 
             pushresult(jobname,result)
 
-            if getvariable('simplerun') then
-                makeoptionfile(jobname,orisuffix,true,true,3)
-                problems = runtex(File.suffixed(jobname,jobsuffix))
-                if problems then
-                    ok = runtexutil(jobname) if getvariable('texutil') || getvariable('forcetexutil')
-                    popresult(jobname,result)
-                end
-                File.silentrename(File.suffixed(jobname,'top'),File.suffixed(jobname,'tmp'))
-            else
-                mprundone, ok, stoprunning = false, true, false
-                texruns, nofruns = 0, getvariable('runs').to_i
-                state = FileState.new
-                ['tub','tuo'].each do |s|
-                    state.register(File.suffixed(jobname,s))
-                end
-                ['mprun','mpgraph'].each do |s|
-                    state.register(File.suffixed(jobname,s,'mp'),'randomseed')
-                    # state.register(File.suffixed(jobname,s,'mpo'))
-                end
-                while ! stoprunning && (texruns < nofruns) && ok do
-                    texruns += 1
-                    report("TeX run #{texruns}")
-                    if texruns == 1 then
-                        makeoptionfile(jobname,orisuffix,false,false,1)
-                    else
-                        makeoptionfile(jobname,orisuffix,false,false,2)
-                    end
-                    ok = runtex(File.suffixed(jobname,jobsuffix))
-                    if ok && (nofruns > 1) then
-                        unless getvariable('nomprun') then
-                            mprundone = runtexmpjob(jobname, "mpgraph")
-                            mprundone = runtexmpjob(jobname, "mprun")
-                        end
-                        ok = runtexutil(jobname)
-                        state.update
-                        stoprunning = state.stable?
-                    end
-                end
-                ok = runtexutil(jobname) if (nofruns == 1) && getvariable('texutil')
-                finalrun = getvariable('arrange') && ! getvariable('noarrange')
-                if ! problems && finalrun && (nofruns > 1) then
-                    makeoptionfile(jobname,orisuffix,true,finalrun,4)
-                    report("final TeX run #{texruns}")
-                    problems = runtex(File.suffixed(jobname,jobsuffix))
-                end
-                File.silentcopy(File.suffixed(jobname,'top'),File.suffixed(jobname,'tmp'))
-                ['tup','top'].each do |s| # previous tuo file / runtime option file
-                     File.silentdelete(File.suffixed(jobname,s))
-                end
-                case validbackend(getvariable('backend'))
-                    when 'dvipdfmx' then
-                        fixbackendvars('dvipdfm')
-                        system("dvipdfmx -d 4 #{File.unsuffixed(jobname)}")
-                    when 'xetex'    then
-                        fixbackendvars('xetex')
-                        system("xdv2pdf #{File.suffixed(jobname,'xdv')}")
-                    when 'dvips'    then
-                        fixbackendvars('dvips')
-                        system("dvips #{File.unsuffixed(jobname)}")
-                    when 'pdftex'   then
-                        # no need for postprocessing
-                    else
-                        report("no postprocessing needed")
-                end
-                popresult(jobname,result)
-            end
+            method = validtexmethod(validtexformat(getvariable('texformats')))
 
-            Kpse.runscript('ctxtools',jobname,'--purge') if getvariable('purge')
+            report("tex processing method: #{method}")
+
+            case method
+
+                when 'context' then
+
+                    if getvariable('simplerun') || runonce then
+                        makeoptionfile(jobname,orisuffix,true,true,3)
+                        problems = runtex(File.suffixed(jobname,jobsuffix))
+                        unless problems then
+                            ok = runtexutil(jobname) if getvariable('texutil') || getvariable('forcetexutil')
+                            runbackend(jobname)
+                            popresult(jobname,result)
+                        end
+                        File.silentrename(File.suffixed(jobname,'top'),File.suffixed(jobname,'tmp'))
+                    else
+                        mprundone, ok, stoprunning = false, true, false
+                        texruns, nofruns = 0, getvariable('runs').to_i
+                        state = FileState.new
+                        ['tub','tuo'].each do |s|
+                            state.register(File.suffixed(jobname,s))
+                        end
+                        if getvariable('automprun') then # check this
+                            ['mprun','mpgraph'].each do |s|
+                                state.register(File.suffixed(jobname,s,'mp'),'randomseed')
+                                # state.register(File.suffixed(jobname,s,'mpo'))
+                            end
+                        end
+                        while ! stoprunning && (texruns < nofruns) && ok do
+                            texruns += 1
+                            report("TeX run #{texruns}")
+                            if texruns == 1 then
+                                makeoptionfile(jobname,orisuffix,false,false,1)
+                            else
+                                makeoptionfile(jobname,orisuffix,false,false,2)
+                            end
+                            ok = runtex(File.suffixed(jobname,jobsuffix))
+                            if ok && (nofruns > 1) then
+                                unless getvariable('nompmode') then
+                                    mprundone = runtexmpjob(jobname, "mpgraph")
+                                    mprundone = runtexmpjob(jobname, "mprun")
+                                end
+                                ok = runtexutil(jobname)
+                                state.update
+                                stoprunning = state.stable?
+                            end
+                        end
+                        ok = runtexutil(jobname) if (nofruns == 1) && getvariable('texutil')
+                        if ! problems && finalrun && (nofruns > 1) then
+                            makeoptionfile(jobname,orisuffix,true,finalrun,4)
+                            report("final TeX run #{texruns}")
+                            problems = runtex(File.suffixed(jobname,jobsuffix))
+                        end
+                        File.silentcopy(File.suffixed(jobname,'top'),File.suffixed(jobname,'tmp'))
+                        ['tup','top'].each do |s| # previous tuo file / runtime option file
+                             File.silentdelete(File.suffixed(jobname,s))
+                        end
+                        unless problems then
+                            runbackend(jobname)
+                            popresult(jobname,result)
+                        end
+                    end
+
+                    Kpse.runscript('ctxtools',jobname,'--purge') if getvariable('purge')
+
+                when 'latex' then
+
+                    problems = runtex(File.suffixed(jobname,jobsuffix))
+
+                else
+
+                    problems = runtex(File.suffixed(jobname,jobsuffix))
+
+            end
 
             begin
                 File.delete(File.suffixed(jobname,jobsuffix)) if dummyfile || forcexml
@@ -1287,18 +1412,6 @@ class TEX
             return labels if labels.size>0
         end
         return nil
-    end
-
-end
-
-class String
-
-    def standard?
-        begin
-            self == 'standard'
-        rescue
-            false
-        end
     end
 
 end

@@ -1248,41 +1248,42 @@
 
 \def\MPreadjustdimen  % acts on \MPscratchDim and MPscratchCnt
   {\ifcase\MPscratchCnt
-     \multiply\MPscratchDim 4
+     \multiply\scratchdimen 4
    \or
-     \multiply\MPscratchDim 2
+     \multiply\scratchdimen 2
    \else
      \expandafter\doMPreadjustdimen
    \fi}
 
 \def\doMPreadjustdimen
-  {\ifnum\MPscratchCnt > 2
-     \divide\MPscratchDim 2
+  {\ifnum\MPscratchCnt>2
+     \divide\scratchdimen 2
      \advance\MPscratchCnt \minusone
      \expandafter\doMPreadjustdimen
    \fi}
 
 \def\MPreciprocaldeterminant
-  {\MPscratchDim\withoutpt\the\dimen0 \dimen6            % s_x*s_y
-   \advance\MPscratchDim - \withoutpt\the\dimen2 \dimen4 % s_x*s_y - r_x*r_y
-   \ifdim\MPscratchDim<\zeropoint  % we need a positive dimension
-     \MPscratchDim-\MPscratchDim   % for \MPadjustdimen
+  {\scratchdimen\withoutpt\the\dimen0 \dimen6            % s_x*s_y
+   \advance\scratchdimen - \withoutpt\the\dimen2 \dimen4 % s_x*s_y - r_x*r_y
+   \ifdim\scratchdimen<\zeropoint  % we need a positive dimension
+     \scratchdimen-\scratchdimen   % for \MPadjustdimen (?)
      \doMPreciprocal
-     \MPscratchDim-\MPscratchDim
+     \scratchdimen-\scratchdimen
    \else
      \doMPreciprocal
-   \fi}
+   \fi
+   \edef\MPreciprocal{\withoutpt\the\scratchdimen}}
 
 \newcount\MPnumerator \MPnumerator = 1073741824 % 2^{30}
 
 % todo: dimexpr
 
-\def\doMPreciprocal % replace \MPscratchDim with its reciprocal
-  {\ifdim\MPscratchDim=\onepoint \else
+\def\doMPreciprocal % replace \scratchdimen with its reciprocal
+  {\ifdim\scratchdimen=\onepoint \else
      \MPadjustdimen
      \scratchcounter\MPnumerator
-     \divide\scratchcounter\MPscratchDim
-     \MPscratchDim1\scratchcounter % 1 needed !
+     \divide\scratchcounter\scratchdimen
+     \scratchdimen1\scratchcounter % 1 needed !
      \MPreadjustdimen
   \fi}
 
@@ -1579,6 +1580,21 @@
 %D
 %D If this should ever cause problems, the scale factors can be reduced.
 
+% \def\doMPconcat#1#2#3#4%
+%   {\dimen12=#1pt % p_x % #1\onepoint
+%    \dimen14=#3pt % p_y % #3\onepoint
+%    \advance\dimen12 -\dimen8  % p_x - t_x
+%    \advance\dimen14 -\dimen10 % p_y - t_y
+%    \dimen18=\withoutpt\the\dimen6 \dimen12          % s_y(p_x - t_x)
+%    \advance\dimen18 -\withoutpt\the\dimen4 \dimen14 %   - r_y(p_y-t_y)
+%    \dimen14=\withoutpt\the\dimen0 \dimen14          % s_x(p_y-t_y)
+%    \advance\dimen14 -\withoutpt\the\dimen2 \dimen12 %   - r_x(p_x-t_x)
+%    % \MPscratchDim contains precomputed 1/D:
+%    \dimen18=\withoutpt\the\MPscratchDim \dimen18
+%    \dimen14=\withoutpt\the\MPscratchDim \dimen14
+%    \edef#2{\withoutpt\the\dimen18}% % p_x^\prime
+%    \edef#4{\withoutpt\the\dimen14}} % p_y^\prime
+
 \def\doMPconcat#1#2#3#4%
   {\dimen12=#1pt % p_x % #1\onepoint
    \dimen14=#3pt % p_y % #3\onepoint
@@ -1588,11 +1604,21 @@
    \advance\dimen18 -\withoutpt\the\dimen4 \dimen14 %   - r_y(p_y-t_y)
    \dimen14=\withoutpt\the\dimen0 \dimen14          % s_x(p_y-t_y)
    \advance\dimen14 -\withoutpt\the\dimen2 \dimen12 %   - r_x(p_x-t_x)
-   % \MPscratchDim contains precomputed 1/D:
-   \dimen18=\withoutpt\the\MPscratchDim \dimen18
-   \dimen14=\withoutpt\the\MPscratchDim \dimen14
+   % \MPreciprocal contains precomputed 1/D:
+   \dimen18=\MPreciprocal\dimen18
+   \dimen14=\MPreciprocal\dimen14
    \edef#2{\withoutpt\the\dimen18}% % p_x^\prime
    \edef#4{\withoutpt\the\dimen14}} % p_y^\prime
+
+% faster but not that often used
+%
+% \def\doMPconcat#1#2#3#4%
+%   {\dimen12\dimexpr#1\points-\dimen 8\relax % p_x-t_x
+%    \dimen14\dimexpr#3\points-\dimen10\relax % p_y-t_y
+%    \dimen18\dimexpr\withoutpt\the\dimen6\dimen12-\withoutpt\the\dimen4\dimen14\relax % s_y(p_x-t_x)-r_y(p_y-t_y)
+%    \dimen14\dimexpr\withoutpt\the\dimen0\dimen14-\withoutpt\the\dimen2\dimen12\relax % s_x(p_y-t_y)-r_x(p_x-t_x)
+%    \edef#2{\withoutpt\the\dimexpr\MPreciprocal\dimen18\relax}% % p_x^\prime
+%    \edef#4{\withoutpt\the\dimexpr\MPreciprocal\dimen14\relax}} % p_y^\prime
 
 %D One reason for Daniel to write this patch was that at small sizes
 %D the accuracy was less than optimal. Here is a test that demonstrates

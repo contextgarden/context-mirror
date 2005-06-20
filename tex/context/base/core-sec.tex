@@ -162,6 +162,9 @@
    \dochecknummer{#1}%
    \egroup}
 
+\def\rawsectionnumber#1%
+  {\countervalue{\??se#1}}
+
 \def\domakeprecedingsectionnumber[#1]% will become ugly after speed up
   {\bgroup % added
    \globallet\precedingsectionnumber\empty

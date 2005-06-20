@@ -24,229 +24,9 @@
 
 \writestatus{\m!systems}{beware: some patches loaded from cont-new.tex}
 
+\let\cs\getvalue
+
 \ifx\normalcompound\undefined \let\normalcompound=| \fi
-
-% accepts \head test \type{x{x}x} test ...
-
-\def\dostartitemattributes#1{\dostartattributes{\??op\currentitemgroup#1}}
-\def\dostopitemattributes   {\dostopattributes}
-
-\def\complexdoitemgrouphead[#1]% beter in \complexdosom hangen met een if
-  {\iffirstlist\else\doitembreak\allowbreak\fi
-   \ifpackeditems\else\getitemparameter\itemlevel\c!beforehead\fi
-   \iffirstlist\ifitemintro\else\ifcase\itemlevel % incr in \complexdosom
-     \doitembreak\allowbreak
-   \fi\fi\fi
-   \complexdoitemgroupitem[#1]%
-     \bgroup
-     \dostartitemattributes\itemlevel\c!headstyle\c!headcolor\empty
-     \ignorespaces
-     \let\par\enditemhead} % brrrr but simple anyway
-
-\def\enditemhead
-  {\removeunwantedspaces
-   \dostopitemattributes
-   \egroup
-   \iftextitems
-     \space\ignorespaces
-   \else
-     \par
-   \fi
-   \doitembreak\nobreak
-   \ifpackeditems\else\getitemparameter\itemlevel\c!afterhead\fi
-   \doitembreak\nobreak
-   \noindentation}
-
-\def\greedysplitstring#1\at#2\to#3\and#4%
-  {\edef\asciib{#1}%
-   \let\asciic\asciib
-   \let#3\empty
-   \let#4\empty
-   \doloop
-     {\expandafter\splitstring\asciib\at#2\to\asciia\and\asciib
-      \ifx\asciib\empty
-        \exitloop
-      \else
-        % not \edef#3{\ifx#3\empty\else#3#2\fi\asciia} else
-        % /root/path fails because then #3==empty
-        \edef#3{\ifcase\recurselevel\or\else#3#2\fi\asciia}%
-        \let#4\asciib
-      \fi}%
-  \ifx#3\empty\let#3\asciic\fi}
-
-% \splitfilename{oeps/test.pdf}  [\splitoffpath\quad\splitoffname\quad\splitofftype]
-% \splitfilename{/oeps/test.pdf} [\splitoffpath\quad\splitoffname\quad\splitofftype]
-% \splitfilename{/test.pdf}      [\splitoffpath\quad\splitoffname\quad\splitofftype]
-
-\def\splitfilename#1%
-  {\edef\splitofffull{#1}% normally outside this call: \sanitizefilename#1\to\sanitizedfilename
-   \greedysplitstring\splitofffull\at/\to\splitoffpath\and\splitoffbase
-   \ifx\splitoffpath\splitofffull
-     \let\splitoffpath\empty
-   \fi
-   \ifx\splitoffbase\empty
-     \let\splitoffpath\empty
-     \let\splitoffbase\splitofffull
-   \fi
-   \greedysplitstring\splitoffbase\at.\to\splitoffname\and\splitofftype
-   \chardef\splitoffkind % can be used to test if pathpart was empty
-     \ifx\splitoffpath\empty        \zerocount \else
-     \ifx\splitoffpath\splitoffroot \plusone   \else
-                                    \plustwo   \fi\fi
-   \ifx\splitoffname\empty\let\splitoffname\splitoffbase\fi
-   \ifx\splitoffpath\empty\let\splitoffpath\splitoffroot\fi}
-
-\def\stoplocalframed
-  {\dontshowcomposition
-   \@@stopframedorientation
-   \ifboxhasformat
-     \ifx\localwidth\v!fit
-       \ifreshapeframebox\doreshapeframedbox\fi
-       \boxhaswidthfalse
-     \else\ifx\localwidth\v!fixed
-       \boxhaswidthfalse
-     \else
-       \resetshapeframebox
-     \fi\fi
-   \else
-     \resetshapeframebox
-   \fi
-   \ifboxhaswidth
-     \wd\framebox\!!widtha
-   \fi
-   \ifboxhasheight
-     \ht\framebox\!!heighta
-   \fi
-   \doifvalue{\@@framed\c!empty}\v!yes
-     {\setbox\scratchbox\null
-      \wd\scratchbox\wd\framebox
-      \ht\scratchbox\ht\framebox
-      \dp\scratchbox\dp\framebox
-      \setbox\framebox\box\scratchbox}%
-   \stopregistercolor
-   \docolorframebox
-   \ifboxhasoffset
-     \dooffsetframebox
-   \fi
-   \ifboxisoverlaid \else
-     \dolocateframebox
-   \fi
-   \ifx\postprocessframebox\relax \else
-     \let\next\postprocessframebox
-     \let\postprocessframebox\relax % prevent nesting
-     \next\framebox
-   \fi
-   \edef\overlaylinecolor{\framedparameter\c!framecolor}%
-   \edef\overlaylinewidth{\the\ruledlinewidth}% \@@...
-   \ifboxhasframe % real or invisible frame
-     \doframedbox
-   \fi
-   \doifvaluesomething{\@@framed\c!background}\dobackedbox
-   \handleframedlocator\@@locallocation
-   \box\framebox
-   \egroup
-   \egroup}
-
-\def\installframedlocator#1#2%
-  {\setvalue{\??ol:\c!location:#1}{#2}}
-
-\def\handleframedlocator#1%
-  {\getvalue{\??ol:\c!location:#1}}
-
-\def\doprelocframedbox#1%
-  {\scratchdimen#1\relax
-   \advance\scratchdimen \ruledlinewidth
-   \ifboxhasoffset
-     \advance\scratchdimen \framedparameter\c!offset
-   \fi
-   \scratchskip\ht\framebox
-   \advance\scratchskip-\scratchdimen}
-
-\installframedlocator \v!hanging % best with strut=no
-  {\dp\framebox\ht\framebox
-   \ht\framebox\zeropoint}
-
-\installframedlocator \v!depth
-  {\scratchdimen\ht\framebox
-   \advance\scratchdimen -\strutdp
-   \ht\framebox\scratchdimen
-   \dp\framebox\strutdp
-   \box\framebox}
-
-\installframedlocator \v!height
-  {\scratchdimen\ht\framebox
-   \advance\scratchdimen -\strutht
-   \ht\framebox\strutht
-   \dp\framebox\scratchdimen
-   \box\framebox}
-
-\installframedlocator \v!high
-  {\doprelocframedbox\strutht
-   \setbox\framebox\hbox{\lower\scratchskip\box\framebox}%
-   \ht\framebox\strutht
-   \dp\framebox\strutdp
-   \hbox{\box\framebox}}
-
-\installframedlocator \v!line
-  {\setbox\framebox\hbox{\lower.5\ht\framebox\box\framebox}%
-   \ht\framebox.5\lineheight
-   \dp\framebox.5\lineheight
-   \hbox{\box\framebox}}
-
-\installframedlocator \v!low
-  {\doprelocframedbox\strutdp
-   \setbox\framebox\hbox{\lower\scratchdimen\box\framebox}%
-   \ht\framebox\strutht
-   \dp\framebox\strutdp
-   \box\framebox}
-
-\installframedlocator \v!top
-  {\doprelocframedbox\strutht
-   \setbox\framebox\hbox{\lower\scratchskip\box\framebox}%
-   \ht\framebox\scratchdimen
-   \dp\framebox\scratchskip
-   \hbox{\box\framebox}}
-
-\installframedlocator \v!middle
-  {\scratchdimen.5\ht\framebox
-   \setbox\framebox\hbox{\lower\scratchdimen\box\framebox}%
-   \ht\framebox\scratchdimen
-   \dp\framebox\scratchdimen
-   \hbox{\box\framebox}}
-
-\installframedlocator \v!lohi
-  {\handleframedlocator\v!middle}
-
-\installframedlocator \v!bottom
-  {\doprelocframedbox\strutdp
-   \setbox\framebox\hbox{\lower\scratchdimen\box\framebox}%
-   \ht\framebox\scratchskip
-   \dp\framebox\scratchdimen
-   \hbox{\box\framebox}}
-
-% \starttext
-% \ruledhbox
-%   {A
-%    \framed[width=2cm,align=middle,location=hanging]{location\\equals\\hanging}
-%    \framed[width=2cm,align=middle,location=depth]  {location\\equals\\depth}
-%    \framed[width=2cm,align=middle,location=height] {location\\equals\\height}
-%    B}
-% \vskip2cm
-% \ruledhbox
-%   {A
-%    \framed[width=2cm,align=middle,location=low]    {location\\equals\\low}
-%    \framed[width=2cm,align=middle,location=line]   {location\\equals\\line}
-%    \framed[width=2cm,align=middle,location=high]   {location\\equals\\high}
-%    B}
-% \vskip2cm
-% \ruledhbox
-%  {A
-%   \framed[width=2cm,align=middle,location=top]    {location\\equals\\top}
-%   \framed[width=2cm,align=middle,location=bottom] {location\\equals\\bottom}
-%   \framed[width=2cm,align=middle,location=lohi]   {location\\equals\\lohi}
-%   \framed[width=2cm,align=middle,location=middle] {location\\equals\\middle}
-%   B}
-% \stoptext
 
 % experimental so this may change
 
@@ -341,66 +121,6 @@
 %\defineshapesynonym[m][n]
 %
 % \shapesynonym{eacute}
-
-\def\OTRSETnobalance
-  {\iflastcolumnfootnotes % testen ! optie
-     % inhibit flush of floats !
-     % todo: nothing if no footnotes, else empty page
-     \dostepwiserecurse\mofcolumns\nofcolumns\plusone
-       {\vskip-\struttotal\verticalstrut\vfill\eject}%
-   \else
-\ifnum\mofcolumns>\plusone
-  \donetrue
-\else\ifdim\pagetotal>\zeropoint % too dangerous, we loose data
-  \donetrue
-\else
-  \donefalse
-\fi\fi
-     \ifdone
-       \ifnum\mofcolumns=\nofcolumns
-         \OTRSETflushfinalfootnotes
-       \else
-         % probably todo
-       \fi
-       \vfill
-       \eject
-       % brr, may result in empty page after nicely fit text
-       % or if left, then lost of first column only text
-       \ifnum\mofcolumns>\plusone
-         \OTRSETdofinalflush
-         \OTRSETdofinaloutput
-       \fi
-     \fi
-   \fi}
-
-% move from page-mar -> cors-spa
-
-\beginETEX
-
-  \def\keeplinestogether#1%
-    {\xdef\restoreinterlinepenalty{\global\resetpenalties\interlinepenalties}%
-     \global\setpenalties\interlinepenalties{#1}\!!tenthousand}
-
-\endETEX
-
-\beginTEX
-
-  \def\keeplinestogether#1%
-    {\xdef\restoreinterlinepenalty
-       {\global\let\restoreinterlinepenalty\relax
-        \global\interlinepenalty=\the\interlinepenalty}% keep = here
-     \global\interlinepenalty\!!tenthousand}
-
-\endTEX
-
-\def\setmargincontentpenalties
-  {\getnoflines\margincontentheight
-   \keeplinestogether\noflines}
-
-\def\undepthed
-  {\dowithnextbox{\nextboxdp\zeropoint\flushnextbox}\hbox}
-
-\def\rawsectionnumber#1{\countervalue{\??se#1}}
 
 % new: \forcebaselinecorrection --> core-spa & core-grd
 
@@ -544,10 +264,6 @@
 
 \egroup
 
-% in xtag-map:
-
-\unexpanded\def\xmlrent#1{\doXMLentity#1;}
-
 % \page[left]
 % \definecolumntextarea[intro][left][x=1,y=1,nx=4,ny=20,state=start,background=introlayer]
 % \setupcolumntextareatext[intro][left][\setups{intro}]
@@ -674,88 +390,6 @@
 \def\setXMLexpandedmark#1#2% using a tok prevents unwanted expansion in mark
   {\XMLexpanded{\scratchtoks{\enableXML#2}}%
    \expanded{\normalsetnormalmark{#1}{\the\scratchtoks}}}
-
-\def\checksoundtrack#1%
-  {\iflocation
-     \doifdefined{\??sd:#1}{\doifvaluesomething{\??sd:#1}
-       {\doinsertsoundtrack{\getvalue{\??sd:#1}}{#1}\@@sdoption
-        % brr, \..empty not really needed and maybe even wrong;
-        % also, not here but in driver
-        % well, no: sounds need to be reinitialize each time (i.e., be on page), so no
-        }}% \letgvalueempty{\??sd:#1}}}%
-   \fi}
-
-\def\placemargincontent
-  {\ifcase\margintextcollected\else % was level check
-     \bgroup
-       \redoconvertfont % !!
-       \chardef\graphicvadjustmode\zerocount
-       \doflushmargincontents
-     \egroup
-   \fi}
-
-\def\noconvertfont#1% #2%
-  {\doifdefinedelse{\@noletter@#1}
-     {\doifelsenothing{#1}\gobbleoneargument\@@donoconvertfont}\gobbleoneargument
-   {#1}} % {#2}}
-
-\appendtoks
-  \spacing\!!plusone % new per 10/08/2004, else problems in otr / !! needed
-\to \everyforgetall
-
-% \dorecurse{50}
-%   {[before normal] \input thuan
-%    \placefigure{normal}{\framed[height=1cm,width=8cm]{}}
-%    \placefigure{normal}{\framed[height=2cm,width=8cm]{}}
-%    [before force] \input thuan
-%    \placefigure[force]{force}{\framed[height=8cm,width=8cm]{}}}
-
-\chardef\fixedfloatmethod=3
-
-\def\OTRONEsomefixdfloat % [#1]
-  {\docheckiffloatfits
-   \ifroomforfloat\else
-     \ifzeropt\pagetotal
-       % let's assume that there is room
-     \else
-       \ifcase\fixedfloatmethod
-         % disabled
-       \or % 1 (old method)
-         \goodbreak
-       \or % 2 (safe method)
-         \page
-       \or % 3 (keeps in stream)
-         \vskip-.5\floatheight % play safe
-         \vskip\textheight
-       \fi
-     \fi
-   \fi
-   \showmessage\m!floatblocks9\empty
-   \someherefloat} % [#1]
-
-%D \starttyping
-%D {\sanitizePDFdocencoding test \CONTEXT\  test \to\oeps\stripstring\oeps\tttf[\oeps]}
-%D \stoptyping
-
-\def\stripstring#1% #1 is \cs
-  {\bgroup
-   \convertcommand#1\to\ascii
-   \global\let\globalascii\empty
-   \donefalse
-   \expandafter\handletokens\ascii\with\dostripstring
-   \egroup
-   \let#1\globalascii}
-
-\def\dostripstring#1%
-  {\ifx#1\blankspace
-     \donetrue
-   \else
-     \ifdone\ifx\globalascii\empty\else
-       \xdef\globalascii{\globalascii\space}%
-       \donefalse
-     \fi\fi
-     \xdef\globalascii{\globalascii#1}%
-   \fi}
 
 %D Ok, I got tired of making dedicated clean up macros using the
 %D same mechanism again and again, so now we have:
@@ -1032,21 +666,6 @@
 %
 % \defineXMLenvironment[showpardata] \startshowpardata \stopshowpardata
 % \defineXMLsingular   [showpardata] \showpardata
-
-\newskip\@@raggedskipa
-\newskip\@@raggedskipb
-
-\def\setraggedness#1%
-  {\ifnum\tolerance<1500\relax    % small values have
-     \tolerance1500\relax         % unwanted side effects
-   \fi
-   \ifx\dohyphens\relax
-     % this code will be reconsidered / kind of fuzzy (and old)
-     \@@raggedskipa 2.5\hsize
-     \@@raggedskipb  #1\relax
-     \divide\@@raggedskipa \@@raggedskipb
-     \hyphenpenalty\@@raggedskipa
-   \fi}
 
 % todo : test low level translation (nl->en) and optimize script
 

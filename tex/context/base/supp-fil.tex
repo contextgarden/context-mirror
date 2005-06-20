@@ -650,9 +650,33 @@
 
 \def\splitoffroot{.} \chardef\splitoffkind\zerocount
 
+% \def\splitfilename#1%
+%   {\edef\splitofffull{#1}% normally outside this call: \sanitizefilename#1\to\sanitizedfilename
+%    \greedysplitstring\splitofffull\at/\to\splitoffpath\and\splitoffbase
+%    \ifx\splitoffbase\empty
+%      \let\splitoffpath\empty
+%      \let\splitoffbase\splitofffull
+%    \fi
+%    \greedysplitstring\splitoffbase\at.\to\splitoffname\and\splitofftype
+%    \chardef\splitoffkind % can be used to test if pathpart was empty
+%      \ifx\splitoffpath\empty        \zerocount \else
+%      \ifx\splitoffpath\splitoffroot \plusone   \else
+%                                     \plustwo   \fi\fi
+%    \ifx\splitoffname\empty\let\splitoffname\splitoffbase\fi
+%    \ifx\splitoffpath\empty\let\splitoffpath\splitoffroot\fi}
+%
+% better, since it also handles leading /'s
+%
+% \splitfilename{oeps/test.pdf}  [\splitoffpath\quad\splitoffname\quad\splitofftype]
+% \splitfilename{/oeps/test.pdf} [\splitoffpath\quad\splitoffname\quad\splitofftype]
+% \splitfilename{/test.pdf}      [\splitoffpath\quad\splitoffname\quad\splitofftype]
+
 \def\splitfilename#1%
   {\edef\splitofffull{#1}% normally outside this call: \sanitizefilename#1\to\sanitizedfilename
    \greedysplitstring\splitofffull\at/\to\splitoffpath\and\splitoffbase
+   \ifx\splitoffpath\splitofffull
+     \let\splitoffpath\empty
+   \fi
    \ifx\splitoffbase\empty
      \let\splitoffpath\empty
      \let\splitoffbase\splitofffull

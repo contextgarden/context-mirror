@@ -76,16 +76,16 @@
 \def\definelayer
   {\dodoubleargument\dodefinelayer}
 
-\def\dodefinelayer[#1][#2]%
+\def\dodefinelayer[#1][#2]% \zeropoint ipv \!!zeropoint
   {\setuplayer
      [#1]
      [\c!doublesided=,\c!preset=,
       \c!state=\v!start,\c!direction=\v!normal,\c!option=,
-      \c!x=\!!zeropoint,\c!y=\!!zeropoint,\c!position=\v!no,
+      \c!x=\zeropoint,\c!y=\zeropoint,\c!position=\v!no,
       \c!line=0,\c!column=0,
       \c!width=\nextboxwd,\c!height=\nextboxht,
-      \c!offset=\!!zeropoint,\c!rotation=, % geen 0 !
-      \c!hoffset=\!!zeropoint,\c!voffset=\!!zeropoint,
+      \c!offset=\zeropoint,\c!rotation=, % geen 0 !
+      \c!hoffset=\zeropoint,\c!voffset=\zeropoint,
       \c!dx=\zeropoint,\c!dy=\zeropoint,
       \c!location=rb,\c!position=\v!no,\c!page=,
       \c!method=\v!overlay,
@@ -486,10 +486,11 @@
      \else
         \if!!donec\box\else\copy\fi\layerbox % sorry for the delay due to copying
      \fi
+     % todo: method=offset => overlayoffset right/down (handy for backgrounds with offset)
      \iftracelayers \ruledvbox \else \vbox \fi \if!!donea to \overlayheight \fi
        {\hbox \if!!donea to \overlaywidth \fi
           {% klopt dit? #3 en niet #2 ?
-           \doifvalue{\??ll#3\realfolio\c!position}\v!yes     {\xypos{lyr:#3:\realfolio}}%
+           \doifvalue{\??ll#3\realfolio\c!position}\v!yes{\xypos{lyr:#3:\realfolio}}%
            \doifoverlayelse{#3}
              {\box\nextbox}
              {\startlayoutcomponent{l:#3}{layer #3}\box\nextbox\stoplayoutcomponent}%

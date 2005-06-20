@@ -207,6 +207,7 @@
 %D This token register is flushed before an ximage is loaded.
 
 \newevery \everyPDFximage \relax
+\let      \everyPDFxform  \everyPDFximage
 
 %D \macros
 %D   {dosetuppaper}
@@ -970,6 +971,7 @@
           % resources end up there; otherwise transparencies
           % won't work in xforms; some day I will optimize
           % this.
+          \the\everyPDFxform
           \immediate\pdfxform
             resources {\currentPDFresources\the\pdfpageresources}%
             \nextbox
@@ -1006,6 +1008,7 @@
      \setbox\nextbox\vbox\bgroup
      \def\dodostopobject
        {\egroup
+        \the\everyPDFxform
         \pdfform\nextbox
         \dosetobjectreference{#1}{#2}{\the\pdflastform}}}
 

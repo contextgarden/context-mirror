@@ -673,6 +673,10 @@
    \fi
    \egroup}
 
+\def\setmargincontentpenalties
+  {\getnoflines\margincontentheight
+   \keeplinestogether\noflines}
+
 \def\savemargincontentlines
   {\bgroup
    \advance\margincontentheight \margincontentextralines\lineheight % 1 by default
@@ -696,9 +700,20 @@
    \global\chardef\margintextcollected\zerocount
    \global\collectedmargintexts\emptytoks}
 
+% \def\placemargincontent
+%   {\ifcase\margintextcollected\else
+%      \bgroup
+%        \chardef\graphicvadjustmode\zerocount
+%        \doflushmargincontents
+%      \egroup
+%    \fi}
+%
+% font fix:
+
 \def\placemargincontent
-  {\ifcase\margintextcollected\else
+  {\ifcase\margintextcollected\else % was level check
      \bgroup
+       \redoconvertfont % !!
        \chardef\graphicvadjustmode\zerocount
        \doflushmargincontents
      \egroup

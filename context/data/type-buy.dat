@@ -119,3 +119,8 @@
 --en=? --ve=itc --co=bauhaus --re
 --en=? --ve=itc --co=bauhaus --so=itc/bauhaus --ma --in
 --en=? --ve=itc --co=bauhaus --so=itc/bauhaus --sl=* --pattern=bh*
+
+# ef swift
+
+--en=? --ve=ef --co=swift --re
+--en=? --ve=ef --co=swift --so=ef/swift --ma --in --pattern=sw*
