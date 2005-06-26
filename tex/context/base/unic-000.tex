@@ -30,7 +30,7 @@
 
 \startunicodevector 0
   \expandafter\strippedcsname
-  \ifcase\numexpr(#1-159) % space needed, terminates expr
+  \ifcase\numexpr#1-159\relax
     \unknownchar       \or
     \nonbreakablespace \or
     \exclamdown        \or

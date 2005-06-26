@@ -213,7 +213,7 @@ class GhostScript
                 else report("invalid conversion method #{gsmethod}")
             end
         rescue
-            report('job aborted due to some error')
+            report("job aborted due to some error #{$!}")
             begin
                 File.delete(resultfile) if test(?e,resultfile)
             rescue
@@ -321,7 +321,7 @@ class GhostScript
         arguments = ''
         arguments << "\@gsprofile.ini "
         arguments << "-q -sDEVICE=pdfwrite -dNOPAUSE -dNOCACHE -dBATCH "
-arguments << "#{gsdefaults} "
+        arguments << "#{gsdefaults} "
         arguments << "#{gscolorswitch} "
         arguments << "-sOutputFile=#{outfile} #{inpfile} -c quit "
 
@@ -352,14 +352,14 @@ arguments << "#{gsdefaults} "
         arguments << "\@gsprofile.ini "
         arguments << "-q -sDEVICE=pdfwrite -dNOPAUSE -dNOCACHE -dBATCH -dSAFER"
         arguments << "#{gscolorswitch} "
-arguments << "#{gsdefaults} "
+        arguments << "#{gsdefaults} "
         arguments << "-sOutputFile=#{outfile} #{gsstream} -c quit "
 
         debug("ghostscript: #{arguments}")
         debug('opening input file')
 
         @rs = Tool.line_separator(inpfile)
-        debug("platform #{mac}") if @rs == "\r"
+        debug("platform mac") if @rs == "\r"
 
         return false unless tmp = open(inpfile, 'rb')
 
@@ -402,6 +402,7 @@ arguments << "#{gsdefaults} "
                     report('no output file due to error')
                     File.delete(outfile) if test(?e,outfile)
                 rescue
+                    # debug("fatal error: #{$!}")
                     debug('file',outfile,'may be invalid')
                 end
             end
@@ -483,14 +484,11 @@ arguments << "#{gsdefaults} "
 
         epsbbox, skip, buffer = false, false, ''
 
-        debug('stripping preamble crap')
-
         while str = eps.gets(rs=@rs) do
-            if str =~ /%!PS/mois
-                str =  str.sub(/(.*)%!PS/mois, "%!PS")
-                out.puts(str)
+            if str =~ /^%!PS/oi then
+                debug("looks like a valid ps file")
                 break
-            elsif str =~ /%PDF\-\d+\.\d+/mois
+            elsif str =~ /%PDF\-\d+\.\d+/oi then
                 debug("looks like a pdf file, so let\'s quit")
                 return false
             end
@@ -500,21 +498,33 @@ arguments << "#{gsdefaults} "
 
         # why no BeginData check
 
-        while str = eps.gets(rs=@rs)
+        eps.rewind
+
+        while str = eps.gets(rs=@rs) do
             case str
                 when /^%%Page:/io then
                     break
-                when /^%%(Crop|HiResBounding|ExactBounding)Box:#{@@bboxspec}/mois then
+                when /^%%(Crop|HiResBounding|ExactBounding)Box:#{@@bboxspec}/moi then
                     debug('high res boundingbox found')
                     setdimensions($2,$3,$4,$5)
                     break
-                when /^%%BoundingBox:#{@@bboxspec}/mois then
+                when /^%%BoundingBox:#{@@bboxspec}/moi then
                     debug('low res boundingbox found')
                     setdimensions($1,$2,$3,$4)
             end
         end
 
+        debug('no boundingbox found') if @width == 0
+
         eps.rewind
+
+        while str = eps.gets(rs=@rs) do
+            if str.sub!(/^(.*)%!PS/moi, "%!PS") then
+                debug("removing pre banner data")
+                out.puts(str)
+                break
+            end
+        end
 
         while str = eps.gets(rs=@rs) do
             if skip then
@@ -608,7 +618,7 @@ arguments << "#{gsdefaults} "
             arguments = ''
             arguments << "-dPDFSETTINGS=/#{method} -dEmbedAllFonts=true "
             arguments << "#{gscolorswitch} "
-arguments << "#{gsdefaults} "
+            arguments << "#{gsdefaults} "
             arguments << "-q -sDEVICE=pdfwrite -dNOPAUSE -dNOCACHE -dBATCH -dSAFER "
             arguments << "-sOutputFile=#{outfile} #{inpfile} -c quit "
             unless ok = System.run('ghostscript',arguments) then

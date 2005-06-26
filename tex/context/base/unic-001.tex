@@ -28,8 +28,7 @@
 
 \startunicodevector 1
   \expandafter\strippedcsname
-  \ifcase\numexpr(#1+1) % space needed, terminates expr
-    \unknownchar   \or
+  \ifcase\numexpr#1\relax
     \Amacron       \or
     \amacron       \or
     \Abreve        \or

@@ -15,7 +15,7 @@
 
 \startunicodevector 4
   \expandafter\strippedcsname
-  \ifcase\numexpr(#1)               % space needed, terminates expr
+  \ifcase\numexpr#1\relax
     \cyrillicEgrave             \or % 04-00 \uchar0{200} aswell
     \cyrillicYO                 \or % 04-01 Capital YO (or IO)
     \cyrillicDJE                \or % 04-02
@@ -121,7 +121,7 @@
     \cyrillicLITTLEYUS          \or % 0466 Little Yus not in enco-enc.tex
     \cyrilliclittleyus          \or % 0467 Little yus not in enco-enc.tex
     \cyrillicLITTLEYUSiotified  \or % 0468 Little Yus iotified not in enco-enc.tex
-    \cyrilliclittleyusiotified  \o  % 0469 Little yus iotified not in enco-enc.tex
+    \cyrilliclittleyusiotified  \or % 0469 Little yus iotified not in enco-enc.tex
     \cyrillicBIGYUS             \or % 046A Big Yus not in enco-enc.tex
     \cyrillicbigyus             \or % 046B Big yus not in enco-enc.tex
     \cyrillicBIGYUSiotified     \or % 046C Big Yus iotified not in enco-enc.tex

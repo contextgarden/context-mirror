@@ -14,10 +14,10 @@
 \unprotect
 
 \startunicodevector 2
-  \ifcase\numexpr(#1-198)
+  \ifcase\numexpr#1-198\relax
     \strippedcsname \textcircumflex   \or
     \strippedcsname \textcaron        \else
-  \ifcase\numexpr(#1-216)
+  \ifcase\numexpr#1-216\relax
     \strippedcsname \textbreve        \or
     \strippedcsname \textdotaccent    \or
     \strippedcsname \unknownchar      \or

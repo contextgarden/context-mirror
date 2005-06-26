@@ -74,7 +74,7 @@
 \ifx\undefined\zerowidthspace \unexpanded\def\zerowidthspace{\kern\zeropoint} \fi
 
 \startunicodevector 32
-  \ifcase\numexpr(#1)
+  \ifcase\numexpr#1\relax
     \strippedcsname \enspace          \or   % U+2000 EN QUAD
     \strippedcsname \emspace          \or   % U+2001 EM QUAD
     \strippedcsname \enspace          \or   % U+2002 EN SPACE
@@ -114,22 +114,22 @@
     \strippedcsname \unknownchar      \or   % U+2024 ONE DOT LEADER
     \strippedcsname \unknownchar      \or   % U+2025 TWO DOT LEADER
     \strippedcsname \textellipsis     \else % U+2026 HORIZONTAL ELLIPSIS
-  \ifcase\numexpr(#1-48)
+  \ifcase\numexpr#1-48\relax
     \strippedcsname \perthousand      \or   % U+2030 PER MILLE SIGN
     \strippedcsname \unknownchar      \or   % U+2031 PER TEN THOUSAND SIGN
     \strippedcsname \prime            \or   % U+2032 PRIME
     \strippedcsname \doubleprime      \or   % U+2033 DOUBLE PRIME
     \strippedcsname \tripleprime      \else % U+2034 TRIPLE PRIME
-  \ifcase\numexpr(#1-57)
+  \ifcase\numexpr#1-57\relax
     \strippedcsname \guilsingleleft   \or   % U+2039 SINGLE LEFT-POINTING ANGLE QUOTATION MARK
     \strippedcsname \guilsingleright  \else % U+203A SINGLE RIGHT-POINTING ANGLE QUOTATION MARK
-  \ifcase\numexpr(#1-95)
+  \ifcase\numexpr#1-95\relax
     \strippedcsname \thickspace       \or   % U+205F MEDIUM MATHEMATICAL SPACE
     \strippedcsname \unknownchar      \or   %
     \strippedcsname \unknownchar      \or   % U+2061 FUNCTION APPLICATION
     \strippedcsname \times            \or   % U+2062 INVISIBLE TIMES
     \strippedcsname \unknownchar      \else % U+2063 INVISIBLE COMMA
-  \ifcase\numexpr(#1-172)
+  \ifcase\numexpr#1-172\relax
     \strippedcsname \texteuro         \else
     \strippedcsname \unknownchar
   \fi\fi\fi\fi\fi

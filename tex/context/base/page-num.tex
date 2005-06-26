@@ -40,7 +40,7 @@
 
 % hard to sync
 %
-% \def\resetsubpagenumber%
+% \def\resetsubpagenumber
 %   {\resetnumber[\s!subpage]%
 %    \global\subpageno=\rawnumber[\s!subpage]}
 %
@@ -94,24 +94,20 @@
 \def\savenofsubpages
   {\ifsubpaging
      \showmessage\m!layouts6{\newnofsubpages,\the\subpageno}%
-     \immediatewriteutilitycommand
-        {\twopassentry%
-           {\s!subpage}%
-           {\newnofsubpages}%
-           {\the\subpageno}}%
+     \immediatewriteutilitycommand{\twopassentry{\s!subpage}{\newnofsubpages}{\the\subpageno}}%
    \fi}
 
 \def\setsubpagenumbers
   {\iftwopassdatafound
      \bgroup
-     \xdef\nofsubpages  {\twopassdata}%
-     \xdef\firstsubpage {\realfolio}%
-     \advance\realpageno \nofsubpages
-     \advance\realpageno \minusone
-     \xdef\lastsubpage  {\realfolio}%
+     \xdef   \nofsubpages  {\twopassdata}%
+     \xdef   \firstsubpage {\realfolio}%
+     \advance\realpageno    \nofsubpages
+     \advance\realpageno    \minusone
+     \xdef   \lastsubpage  {\realfolio}%
      \egroup
    \else
-     \xdef\nofsubpages{0}%
+     \xdef   \nofsubpages{0}%
    \fi}
 
 \def\gotonextsubpage % overlapt behoorlijk met realpage macro

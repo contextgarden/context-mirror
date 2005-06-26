@@ -177,7 +177,7 @@
    \doifnumberelse{\getvalue{#1\c!tab}}
      {\def\obeytabs{\setfixedtabskips{\getvalue{#1\c!tab}}}}%
      \donothing
-   \def\verbatimfont{\getvalue{#1\c!style}}%
+   \def\verbatimfont{\getvalue{#1\c!style}\normalnoligatures\font}%
    \setupverbatimcolor{#1}}
 
 %D The verbatim commands have a rather long and turbulent

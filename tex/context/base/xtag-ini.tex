@@ -228,8 +228,13 @@
 %D a way around this, but for convenience \TEXEXEC\ will take
 %D care of processing raw \XML\ files in a transparant way.
 
-\chardef\XMLtokensreduction\zerocount % cmr as default
-\chardef\XMLtokensreduction\plustwo   % lmr as default
+% cmr -- best for tui and such
+%
+% \chardef\XMLtokensreduction\zerocount
+%
+% lmr -- best but problematic for tui file:
+
+\chardef\XMLtokensreduction\plustwo
 
 % \def\alwaysreduceXMLtokens   {\XMLtokensreduction\plusone}
 % \def\permanentreduceXMLtokens{\XMLtokensreduction\plustwo}
@@ -277,14 +282,16 @@
    .catcode`.?=.@@other
    .catcode`.:=.@@other * active in french
    .catcode`.;=.@@other * active in french
-   .catcode`.&=.@@active .let&=.doXMLentity
-   .catcode`.<=.@@active .unexpanded.def<B.doXMLelementE
+   .catcode`.&=.@@active
+   .catcode`.<=.@@active
    .catcode`.>=.@@other
    .catcode`."=.@@other
    .catcode`./=.@@other
    .catcode`.'=.@@other
    .catcode`.~=.@@other
    .catcode`.#=.@@other
+   .let           &=.doXMLentity
+   .unexpanded.def<B.doXMLelementE*
    .ifcase.XMLtokensreduction
      .entitleXMLescapetokens
    .or

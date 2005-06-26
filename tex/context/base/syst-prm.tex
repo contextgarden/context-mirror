@@ -131,4 +131,13 @@
 
 \def\dump{\the\everydump\normaldump}
 
+%D Ligature prevention (for instance, ec encoding has ligatures
+%D in mono spaced fonts).
+
+\ifx\noligatures\undefined
+  \def\noligatures#1{}
+\fi
+
+\let\normalnoligatures\noligatures
+
 \protect \endinput

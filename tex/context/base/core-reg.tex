@@ -251,14 +251,14 @@
    \getvalue{\??id#1\c!pagecommand}{#2}%
    \dostopattributes}
 
-\def\registerentry #1{\executeifdefined{#1\s!entry }\gobbleoneargument  }
-\def\registerentrya#1{\executeifdefined{#1\s!entrya}\gobbleoneargument  }
-\def\registerentryb#1{\executeifdefined{#1\s!entryb}\gobbleoneargument  }
-\def\registerentryc#1{\executeifdefined{#1\s!entryc}\gobbleoneargument  }
-\def\registersee   #1{\executeifdefined{#1\s!see   }\gobblethrearguments}
-\def\registerpage  #1{\executeifdefined{#1\s!page  }\gobblefourarguments}
-\def\registerfrom  #1{\executeifdefined{#1\s!from  }\gobblefourarguments}
-\def\registerto    #1{\executeifdefined{#1\s!to    }\gobblefourarguments}
+\def\registerentry #1{\executeifdefined{#1\s!entry }\gobbleoneargument   }
+\def\registerentrya#1{\executeifdefined{#1\s!entrya}\gobbleoneargument   }
+\def\registerentryb#1{\executeifdefined{#1\s!entryb}\gobbleoneargument   }
+\def\registerentryc#1{\executeifdefined{#1\s!entryc}\gobbleoneargument   }
+\def\registersee   #1{\executeifdefined{#1\s!see   }\gobblethreearguments}
+\def\registerpage  #1{\executeifdefined{#1\s!page  }\gobblefourarguments }
+\def\registerfrom  #1{\executeifdefined{#1\s!from  }\gobblefourarguments }
+\def\registerto    #1{\executeifdefined{#1\s!to    }\gobblefourarguments }
 
 \def\doresetregister#1%
   {\letvalue{#1\s!entrya}\gobbleoneargument

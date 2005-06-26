@@ -15,8 +15,7 @@
 
 \startunicodevector 30
   \expandafter\strippedcsname
-  \ifcase\numexpr(#1-159) % space needed, terminates expr
-    \unknownchar          \or
+  \ifcase\numexpr#1-158\relax
     \Adotbelow            \or
     \adotbelow            \or
     \Ahook                \or

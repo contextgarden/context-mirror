@@ -135,7 +135,7 @@
    \pushmacro\typescriptstate  \chardef\typescriptstate\plusone % process
    \pushmacro\stoptypescript
    \typescriptfoundfalse
-   \iftracetypescripts\writestatus\m!fonts{[\@@typescriptone] [\@@typescripttwo] [\@@typescriptthree]}\fi
+   \iftracetypescripts\writestatus\m!fonts{request: [\@@typescriptone] [\@@typescripttwo] [\@@typescriptthree]}\fi
    \processcommacommand[\typescriptfiles]\dododousetypescript
    \the\documenttypescripts
    \firsttypescriptpassfalse % testen
@@ -282,6 +282,7 @@
   {\let\typescriptone  \@@typescriptone
    \let\typescripttwo  \@@typescripttwo
    \let\typescriptthree\@@typescriptthree
+   \let\typescriptmatch\empty
    \doifnextcharelse[\dostarttypescriptone\dostarttypescriptall}
 
 \long\def\dostarttypescriptall
@@ -297,6 +298,7 @@
 \long\def\dostarttypescriptyes
   {\ifdone
      \typescriptfoundtrue
+     \iftracetypescripts\writestatus\m!fonts{match: \ifx\currenttypefile\relax-\fi \typescriptmatch}\fi
      \expandafter\doprocesstypescript
    \else
      \expandafter\noprocesstypescript
@@ -329,6 +331,8 @@
 \long\def\noprocesstypescript#1\stoptypescript
   {}
 
+\let\typescriptmatch\empty
+
 \def\dochecktypescript#1#2#3[#4]% script use value next
   {\donefalse
    \def\@@typescriptcheck{#4}%
@@ -342,6 +346,7 @@
      \let#2\commalistelement
    \fi\fi\fi\fi
    \ifdone
+     \edef\typescriptmatch{\typescriptmatch\space[#4]}%
      \expandafter#3%
    \else
      \expandafter\noprocesstypescript
@@ -503,14 +508,14 @@
   {\setvalue{\??ts::#1}{#2}}
 
 % without testing:
-
-\def\typescriptprefix#1%
-  {\csname\??ts::#1\endcsname}
-
-% with testing:
 %
 % \def\typescriptprefix#1%
-%   {\executeifdefined{\??ts::#1}{#1}}
+%   {\csname\??ts::#1\endcsname}
+%
+% with testing:
+
+\def\typescriptprefix#1%
+  {\executeifdefined{\??ts::#1}{#1}}
 
 % defining typefaces:
 %
@@ -574,7 +579,7 @@
      \let\typefaceencoding\@@tsencoding
      \setcurrentfontclass{#1}%
      \saverelativefontsize{#2}{\relativefontsize}% fall back
-     \iftracetypescripts\writestatus\m!fonts{[#1] [#2] [#3] [#4] / \typefaceencoding}\fi
+     \iftracetypescripts\writestatus\m!fonts{define: [#1] [#2] [#3] [#4] / \typefaceencoding}\fi
      %\usetypescript[map][\typefaceencoding]% latest versions of pdftex can load after first page
      \usetypescript[#3,\t!map][#4][\t!name,\t!default,\typefaceencoding,\t!special]% is default needed
      \usetypescript[#3][#5][\t!size]%

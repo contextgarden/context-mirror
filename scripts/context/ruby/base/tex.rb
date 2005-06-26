@@ -767,7 +767,6 @@ class TEX
                                         when 'interface' then
                                             contextinterface = value
                                     end
-                                end
                             end
                         end
                     end

@@ -855,7 +855,7 @@ foreach my $file (@files)
         print "$command\n" if $trace ;
         $font = `$command` ;
         chomp $font ;
-        $cleanfont = $font }
+        $cleanname = $cleanfont = $font }
     else
       { my $command = "afm2tfm \"$file\" -p texnansi.enc texfont.tfm" ;
         print "$command\n" if $trace ;
@@ -1035,8 +1035,8 @@ foreach my $file (@files)
                     report("no mapfile from otftotfm : texfont.map") ;
                 }
                 if ($preproc) {
-                    $mapline =~ s/^(\S+)/$1 </;
-                    $mapline =~ s/<<(\S+)\.otf$// ;
+                    $mapline =~ s/<\[/</;
+                    $mapline =~ s/<<(\S+)\.otf$/<$1\.pfb/ ;
                 } else {
                     $mapline =~ s/<<(\S+)\.otf$/<< $ttfpath\/$fontname.$extension/ ;
                 }

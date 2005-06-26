@@ -1414,9 +1414,9 @@
       \fi
 % begin force convertable image into file
 \doifmode{\systemmodeprefix\v!first}{\doifsomething\@@efconversion
-  {\let\figurefilepath\@@efconversionpath
-   \let\figurefilename\@@efconversionfile
-   \let\figurefiletype\@@efconversiontype}}%
+  {% needs to be sorted out
+   \ifx\@@efconversionfile\undefined\else\let\figurefilename\@@efconversionfile\fi
+   \ifx\@@efconversiontype\undefined\else\let\figurefiletype\@@efconversiontype\fi}}%
 % end
 \ifconditional\externalfigureflush
       \ifconditional\externalfigurelevel % probably background

@@ -1,0 +1,78 @@
+%D \module
+%D   [       file=math-uni,
+%D        version=2005.06.11,
+%D          title=\CONTEXT\ Math Macros,
+%D       subtitle=unicode support,
+%D         author=Nikolai Weibull,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Nikolai Weibull}]
+
+\unprotect
+
+% needed for unic-033
+
+\startmathcollection[default]
+
+  \definemathcommand [unic@leftarrowtobar]        {\mapstochar\leftarrow}
+
+\stopmathcollection
+
+% needed for unic-034
+
+\startmathcollection[default]
+
+  \definemathcommand [unic@in]                    {\in}
+  \definemathcommand [unic@nin]                   {\not\in}
+  \definemathcommand [unic@nni]                   {\not\ni}
+  \definemathcommand [unic@minus]                 {-}
+  \definemathcommand [unic@divisionslash]         {/}
+  \definemathcommand [unic@sqrt]                  {\sqrt{}}
+  \definemathcommand [unic@cubesqrt]              {\root 3 \of {}}
+  \definemathcommand [unic@fourthsqrt]            {\root 4 \of {}}
+  \definemathcommand [unic@divides]       [op]    {|} % TODO
+  \definemathcommand [unic@ndivides]      [rel]   {\mathop{\not|}} % TODO: horrible
+  \definemathcommand [unic@cap]                   {\cap}
+  \definemathcommand [unic@dblint]                {\int\!\!\!\int}
+  \definemathcommand [unic@triint]                {\int\!\!\!\int\!\!\!\int}
+  \definemathcommand [unic@ratio]         [rel]   {:}
+  \definemathcommand [unic@proportion]    [rel]   {::}
+  \definemathcommand [unic@excess]        [op]    {-\!\!:}
+  \definemathcommand [unic@geomprop]      [op]    {:\!\!\!-\!\!\!:}
+  \definemathcommand [unic@homothetic]    [op]    {\sim\!\!\!:}
+  \definemathcommand [unic@nsimeq]                {\not\simeq}
+  \definemathcommand [unic@cong]                  {\cong}
+  \definemathcommand [unic@napproxeq]             {\not\approxeq}
+  \definemathcommand [unic@napprox]               {\not\approx}
+  \definemathcommand [unic@doteq]                 {\doteq}
+  \definemathcommand [unic@correspondsto]         {\buildrel \frown \over =}
+  \definemathcommand [unic@estimates]             {\buildrel \wedge \over =}
+  \definemathcommand [unic@equiangularto]         {\buildrel \vee \over =}
+  \definemathcommand [unic@stareq]                {\buildrel \star \over =}
+  \definemathcommand [unic@eqbydef]               {\buildrel \rm def \over =}
+  \definemathcommand [unic@measuredby]            {\buildrel \rm m \over =}
+  \definemathcommand [unic@questionedeq]          {\buildrel \rm ? \over =}
+  \definemathcommand [unic@nequiv]                {\not\equiv}
+  \definemathcommand [unic@nasymp]                {\not\asymp}
+  \definemathcommand [unic@nlesssim]              {\not\lesssim}
+  \definemathcommand [unic@ngtrsim]               {\not\gtrsim}
+  \definemathcommand [unic@nlessgtr]              {\not\lessgtr}
+  \definemathcommand [unic@ngtrless]              {\not\gtrless}
+  \definemathcommand [unic@nsubset]               {\not\subset}
+  \definemathcommand [unic@nsupset]               {\not\supset}
+  \definemathcommand [unic@nsqsubseteq]           {\not\sqsubseteq}
+  \definemathcommand [unic@nsqsupseteq]           {\not\sqsupseteq}
+
+\stopmathcollection
+
+% needed for unic-039
+
+\startmathcollection[default]
+
+  \definemathcommand [unic@Lbracket]  [open]  {[\![}
+  \definemathcommand [unic@Rbracket]  [close] {]\!]}
+  \definemathcommand [unic@Langle]    [open]  {\langle\!\langle}
+  \definemathcommand [unic@Rangle]    [close] {\rangle\!\rangle}
+
+\stopmathcollection
+
+\protect \endinput

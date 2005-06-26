@@ -503,23 +503,26 @@
 
 % todo: store each entry in hash, an load all uti commands at once
 
-\def\dogettwopassdata[#1,#2]#3%
+% todo: use \expanded
+
+\def\dogettwopassdata[#1,#2]#3#4%
   {\edef\twopassdata{#1}%
    \ifx\twopassdata\notwopassdata
      \twopassdatafoundfalse
      \let\twopassdata\empty
    \else
      \twopassdatafoundtrue
-     \setxvalue{#3:\s!list}{#2}%
+     \ifcase#4\or\setxvalue{#3:\s!list}{#2}\fi
    \fi}
 
 \def\gettwopassdata#1%
-  {\loadtwopassdata
-   \@EAEAEA\dogettwopassdata\@EA\@EA\@EA[\csname#1:\s!list\endcsname]{#1}}
+  {\loadtwopassdata \@EAEAEA\dogettwopassdata\@EA\@EA\@EA[\csname#1:\s!list\endcsname]{#1}\plusone}
+
+\def\checktwopassdata#1%
+  {\loadtwopassdata \@EAEAEA\dogettwopassdata\@EA\@EA\@EA[\csname#1:\s!list\endcsname]{#1}\zerocount}
 
 \def\findtwopassdata#1#2%
-  {\loadtwopassdata
-   \expanded{\dofindtwopassdata{#1}{#2}}}
+  {\loadtwopassdata \expanded{\dofindtwopassdata{#1}{#2}}}
 
 \def\dofindtwopassdata#1#2%
   {\def\dodofindtwopassdata[##1,##2#2##3,##4]{\edef\twopassdata{##3}}%

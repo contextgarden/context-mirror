@@ -125,7 +125,7 @@
    \ifx\MMLpopen\empty\else\right.\fi
    \else\doMMLright\MMLpclose\fi}
 
-\def\resetMMLseparator%
+\def\resetMMLseparator
   {\newcounter\MMLxxcounter
    \let\lastMMLseparator\empty}
 
@@ -134,7 +134,7 @@
    \newcounter\MMLyycounter
    \expanded{\dograbMMLseparator#1\noexpand\relax}}
 
-\def\dograbMMLseparator%
+\def\dograbMMLseparator
   {\increment\MMLyycounter
    \doifnextcharelse\relax
      {\lastMMLseparator\gobbleoneargument}
@@ -191,7 +191,7 @@
 
 \getXMLarguments
   {mstyle}
-  {fontweight="" fontstyle="" mathstyle="" background="" color=""}%
+  {fontweight="" fontstyle="" mathstyle="" mathvariant="" background="" color=""}
 
 \def\MMLpSTYLE#1#2%
   {\getXMLarguments{mstyle}{#1}#2}
@@ -203,7 +203,8 @@
 
 \def\MMLpTEXT#1#2%
   {\hbox
-     {\getXMLarguments{mstyle}{#1}%
+     {\tf % else encoding problems
+      \getXMLarguments{mstyle}{#1}%
       \doMMPpbackground{mstyle}
         {\doMMPpcolor{mstyle}
            {\setMMLptextstyle{mstyle}%
@@ -518,3 +519,49 @@
 \stopXMLmapping
 
 \protect \endinput
+
+% extra samples
+
+\startXMLdata
+<formula>
+    <dmath>
+        <mfrac>
+            <mrow>
+                <mfrac>
+                    <mrow>
+                        <mtext>Q</mtext>
+                    </mrow>
+                    <mrow>
+                        <mtext>P</mtext>
+                    </mrow>
+                </mfrac>
+            </mrow>
+            <mrow>
+                <mtext>R</mtext>
+            </mrow>
+        </mfrac>
+    </dmath>
+</formula>
+\stopXMLdata
+
+\startXMLdata
+<formula>
+    <dmath>
+        <mfrac>
+            <mrow>
+                <mfrac>
+                    <mrow>
+                        <mi mathvariant='normal'>R</mi>
+                    </mrow>
+                    <mrow>
+                        <mi mathvariant='normal'>P</mi>
+                    </mrow>
+                </mfrac>
+            </mrow>
+            <mrow>
+                <mi mathvariant='normal'>R</mi>
+            </mrow>
+        </mfrac>
+    </dmath>
+</formula>
+\stopXMLdata

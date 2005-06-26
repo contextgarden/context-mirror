@@ -1,6 +1,6 @@
 %D \module
 %D   [       file=unic-034,
-%D        version=2005.05.20,
+%D        version=2005.06.11,
 %D          title=\CONTEXT\ \UNICODE\ Macros,
 %D       subtitle=Vector 34,
 %D         author=Nikolai Weibull,
@@ -9,46 +9,9 @@
 
 \unprotect
 
-% TODO NW: everything should be wrapped in \mathematics I suppose...
-% TODO HH: move definitions like this to a default vector
-
-\unexpanded\def\unic@nin          {\not\in}
-\unexpanded\def\unic@nni          {\not\ni}
-\unexpanded\def\unic@minus        {-}
-\unexpanded\def\unic@divisionslash{/}
-\unexpanded\def\unic@cubesqrt     {\sqrt^{3}}
-\unexpanded\def\unic@fourthsqrt   {\sqrt^{4}}
-\unexpanded\def\unic@divides      {\mathop{|}} % TODO
-\unexpanded\def\unic@ndivides     {\mathrel{\mathop{\not|}}} % TODO: horrible
-\unexpanded\def\unic@dblint       {\int\!\!\int}
-\unexpanded\def\unic@triint       {\int\!\!\int\!\!\int}
-\unexpanded\def\unic@ratio        {\mathrel{:}}
-\unexpanded\def\unic@proportion   {\mathrel{::}}
-\unexpanded\def\unic@nsimeq       {\not\simeq}
-\unexpanded\def\unic@napproxeq    {\not\approxeq}
-\unexpanded\def\unic@napprox      {\not\approx}
-\unexpanded\def\unic@correspondsto{\buildrel \frown  \over =}
-\unexpanded\def\unic@estimates    {\buildrel \wedge  \over =}
-\unexpanded\def\unic@equiangularto{\buildrel \vee    \over =}
-\unexpanded\def\unic@stareq       {\buildrel \star   \over =}
-\unexpanded\def\unic@eqbydef      {\buildrel \rm def \over =}
-\unexpanded\def\unic@measuredby   {\buildrel \rm m   \over =}
-\unexpanded\def\unic@questionedeq {\buildrel \rm ?   \over =}
-\unexpanded\def\unic@nequiv       {\not\equiv}
-\unexpanded\def\unic@nasymp       {\not\asymp}
-\unexpanded\def\unic@nlesssim     {\not\lesssim}
-\unexpanded\def\unic@ngtrsim      {\not\gtrsim}
-\unexpanded\def\unic@nlessgtr     {\not\lessgtr}
-\unexpanded\def\unic@ngtrless     {\not\gtrless}
-\unexpanded\def\unic@nsubset      {\not\subset}
-\unexpanded\def\unic@nsupset      {\not\supset}
-\unexpanded\def\unic@nsqsubseteq  {\not\sqsubseteq}
-\unexpanded\def\unic@nsqsupseteq  {\not\sqsupseteq}
-
 \startunicodevector 34
   \expandafter\strippedcsname
-  \ifcase\numexpr(#1+1)     % space needed, terminates expr
-    \unknownchar        \or % hack for getting forall working
+  \ifcase\numexpr#1\relax
     \forall             \or % FOR ALL
     \complement         \or % COMPLEMENT
     \partial            \or % PARTIAL DIFFERENTIAL
@@ -57,7 +20,7 @@
     \emptyset           \or % EMPTY SET
     \vartriangle        \or % INCREMENT
     \nabla              \or % NABLA
-    \in                 \or % ELEMENT OF
+    \unic@in            \or % ELEMENT OF
     \unic@nin           \or % NOT AN ELEMENT OF
     \unknownchar        \or % SMALL ELEMENT OF
     \ni                 \or % CONTAINS AS MEMBER
@@ -75,7 +38,7 @@
     \ast                \or % ASTERISK OPERATOR
     \circ               \or % RING OPERATOR
     \bullet             \or % BULLET OPERATOR
-    \sqrt               \or % SQUARE ROOT
+    \unic@sqrt          \or % SQUARE ROOT
     \unic@cubesqrt      \or % CUBE ROOT
     \unic@fourthsqrt    \or % FOURTH ROOT
     \propto             \or % PROPORTIONAL TO
@@ -90,7 +53,7 @@
     \nparallel          \or % NOT PARALLEL TO
     \land               \or % LOGICAL AND
     \lor                \or % LOGICAL OR
-    \cap                \or % INTERSECTION
+    \unic@cap           \or % INTERSECTION
     \cup                \or % UNION
     \int                \or % INTEGRAL
     \unic@dblint        \or % DOUBLE INTEGRAL
@@ -106,9 +69,9 @@
     \unic@ratio         \or % RATIO
     \unic@proportion    \or % PROPORTION
     \unknownchar        \or % DOT MINUS
-    \mathop{-\!\!:}     \or % EXCESS
-    \mathop{:\!\!\!-\!\!\!:} \or % GEOMETRIC PROPORTION
-    \mathop{\sim\!\!\!:}\or % HOMOTHETIC
+    \unic@excess        \or % EXCESS
+    \unic@geompropr     \or % GEOMETRIC PROPORTION
+    \unic@homothetic    \or % HOMOTHETIC
     \sim                \or % TILDE OPERATOR
     \backsim            \or % REVERSED TILDE
     \unknownchar        \or % INVERTED LAZY S
@@ -119,7 +82,7 @@
     \simeq              \or % ASYMPTOTICALLY EQUAL TO
     \nsimeq             \or % NOT ASYMPTOTICALLY EQUAL TO
     \approxeq           \or % APPROXIMATELY EQUAL TO
-    \cong               \or % APPROXIMATELY BUT NOT ACTUALLY EQUAL TO
+    \unic@cong          \or % APPROXIMATELY BUT NOT ACTUALLY EQUAL TO
     \unic@napproxeq     \or % NEITHER APPROXIMATELY NOR ACTUALLY EQUAL TO
     \approx             \or % ALMOST EQUAL TO
     \unic@napprox       \or % NOT ALMOST EQUAL TO
@@ -129,7 +92,7 @@
     \asymp              \or % EQUIVALENT TO
     \Bumpeq             \or % GEOMETRICALLY EQUIVALENT TO
     \bumpeq             \or % DIFFERENCE BETWEEN
-    \doteq              \or % APPROACHES THE LIMIT
+    \unic@doteq         \or % APPROACHES THE LIMIT
     \doteqdot           \or % GEOMETRICALLY EQUAL TO
     \fallingdotseq      \or % APPROXIMATELY EQUAL TO OR THE IMAGE OF
     \risingdotseq       \or % IMAGE OF OR APPROXIMATELY EQUAL TO

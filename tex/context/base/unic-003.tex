@@ -14,7 +14,7 @@
 \unprotect
 
 \startunicodevector 3
-  \ifcase\numexpr(#1-132) % keep space
+  \ifcase\numexpr#1-132\relax
     % special greek
     \strippedcsname \greektonos              \or
     \strippedcsname \greekdialytikatonos     \or
@@ -28,7 +28,7 @@
     \strippedcsname \unknownchar             \or
     \strippedcsname \greekUpsilontonos       \or
     \strippedcsname \greekOmegatonos         \or
-    \strippedscname \greekiotadialytikatonos \or
+    \strippedcsname \greekiotadialytikatonos \or
     % normal greek
     \strippedcsname \greekAlpha     \or
     \strippedcsname \greekBeta      \or
@@ -94,7 +94,46 @@
     \strippedcsname \greekupsilondialytika \or
     \strippedcsname \greekomicrontonos     \or
     \strippedcsname \greekupsilontonos     \or
-    \strippedcsname \greeekomegatonos      \else
+    \strippedcsname \greekomegatonos       \or % was greeek!
+    \strippedcsname \unknownchar           \or
+    \strippedcsname \unknownchar           \or % beta alt
+    \strippedcsname \greekthetaalt         \or
+    \strippedcsname \unknownchar           \or % upsilon hook
+    \strippedcsname \unknownchar           \or
+    \strippedcsname \unknownchar           \or
+    \strippedcsname \greekphialt           \or
+    \strippedcsname \greekpialt            \or
+    \strippedcsname \unknownchar           \or
+    \strippedcsname \unknownchar           \or
+    \strippedcsname \unknownchar           \or
+    \strippedcsname \unknownchar           \or
+    \strippedcsname \unknownchar           \or
+    \strippedcsname \unknownchar           \or
+    \strippedcsname \unknownchar           \or
+    \strippedcsname \unknownchar           \or
+    \strippedcsname \unknownchar           \or
+    \strippedcsname \unknownchar           \or % Sampi
+    \strippedcsname \unknownchar           \or % sampi
+    \strippedcsname \unknownchar           \or
+    \strippedcsname \unknownchar           \or
+    \strippedcsname \unknownchar           \or
+    \strippedcsname \unknownchar           \or
+    \strippedcsname \unknownchar           \or
+    \strippedcsname \unknownchar           \or
+    \strippedcsname \unknownchar           \or
+    \strippedcsname \unknownchar           \or
+    \strippedcsname \unknownchar           \or
+    \strippedcsname \unknownchar           \or
+    \strippedcsname \unknownchar           \or
+    \strippedcsname \unknownchar           \or
+    \strippedcsname \unknownchar           \or
+    \strippedcsname \unknownchar           \or
+    \strippedcsname \unknownchar           \or % kappa alt
+    \strippedcsname \greekrhoalt           \or
+    \strippedcsname \unknownchar           \or
+    \strippedcsname \unknownchar           \or
+    \strippedcsname \unknownchar           \or
+    \strippedcsname \greekepsilonalt       \else
     \strippedcsname \unknownchar
     \fi
 \stopunicodevector

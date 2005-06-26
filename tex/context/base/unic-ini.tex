@@ -152,8 +152,18 @@
 %D                    `#4-\utf@g)}
 %D \stoptyping
 
-\def\utfdiv#1{\the\numexpr(#1-\utf@g)/\utf@h\relax}
+\def\utfdiv#1{\the\numexpr           (#1-\utf@g)/\utf@h \relax}
 \def\utfmod#1{\the\numexpr#1-\utf@h*((#1-\utf@g)/\utf@h)\relax}
+
+%D The next one also handles the zero case well:
+
+\def\utfdiv#1{\the\numexpr\ifcase\numexpr#1\relax0\else           (#1-\utf@g)/\utf@h \fi\relax}
+\def\utfmod#1{\the\numexpr\ifcase\numexpr#1\relax0\else#1-\utf@h*((#1-\utf@g)/\utf@h)\fi\relax}
+
+% or
+%
+% \def\utfdiv#1{\ifcase\numexpr#1\relax0\else\the\numexpr(#1-\utf@g)/\utf@h\relax\fi}
+% \def\utfmod#1{\ifcase\numexpr#1\relax0\else\the\numexpr#1-\utf@h*((#1-\utf@g)/\utf@h)\relax\fi}
 
 %D When tracing we also need:
 
@@ -295,11 +305,7 @@
 \def\unicodepair#1%
   {\utfdiv{#1}:\utfmod{#1}}
 
-\let\unicodenumber\firstofoneargument
-
-%\def\unicodehexnumber#1%
-%  {\expanded{\uchexnumbers{\utfdiv{#1}}}%
-%   \expanded{\uchexnumbers{\utfmod{#1}}}}
+\def\unicodenumber#1{\number#1}
 
 \def\unicodehexnumber#1%
   {\ifnum#1>\maxcard
@@ -316,9 +322,9 @@
 %D problems; somehow \type {\numexpr} cannot look beyond this
 %D sign, and expects a number.
 
-\def\utfunichar   #1{{\tttf U\low{\unicodenumber{#1}}}}
-\def\utfunisplit  #1{{\tttf U\low{\unicodepair{#1}}}}
-\def\utfuniboth   #1{{\tttf U\low{\unicodenumber{#1\relax}->\unicodepair{#1}}}}
+\def\utfunichar   #1{{\tttf U\low{\tx\unicodenumber{#1}}}}
+\def\utfunisplit  #1{{\tttf U\low{\tx\unicodepair{#1}}}}
+\def\utfuniboth   #1{{\tttf U\low{\tx\unicodenumber{#1}->\unicodepair{#1}}}}
 \def\utfunientity #1{{\tttf\&\#x\unicodehexnumber{#1};}}
 
 %D The character itself is accessed and typeset by:
@@ -408,12 +414,11 @@
 
 \def\utfuniglyphname#1%
   {{\tttf
-    \expandafter\string\csname
-      \ifnum#1<\utf@i
-        \strippedcsname\unicodeasciicharacter\endcsname{#1}%
-      \else
-        \@EA\doutfunihash\@EA{\number\utfdiv{#1}}{#1}\endcsname
-      \fi}}
+    \ifnum#1<\utf@i
+      \unicodeasciicharacter{#1}%
+    \else
+      \expandafter\string\csname\doutfunihash{\number\utfdiv{#1}}{#1}\endcsname
+    \fi}}
 
 %D The combined presentation is implemented by:
 
@@ -424,7 +429,7 @@
   {\utfunihash{#1}\low{\infofont\unicodepair{#1}}}
 
 \def\utfunihashboth #1%
-  {\utfunihash{#1}\low{\infofont\unicodenumber{#1\relax}->\unicodepair{#1}}}
+  {\utfunihash{#1}\low{\infofont\unicodenumber{#1}->\unicodepair{#1}}}
 
 %D Unknown characters get a placeholder.
 
@@ -443,12 +448,15 @@
 %D sense to postpone loading, so let's start doing this
 %D with \UNICODE.
 
+\def\doifunicodevector#1%
+  {\doifdefined{\@@univector#1}}
+
 \def\useunicodevector[#1]%
   {\processcommalist[#1]\douseunicodevector}
 
 \def\douseunicodevector#1%
   {\ifundefined{\@@univector#1}%
-     \readsysfile{unic-\ifnum#1<10 00\else\ifnum#1<100 0\fi\fi#1}
+     \readsysfile{\f!unicprefix\threedigits{#1}}
        {\writestatus{unicode}{loading vector #1}}
        {\writestatus{unicode}{unknown vector #1}}%
    \fi}
@@ -510,7 +518,7 @@
      \noindent \hbox
        {\hbox to 4em{\tttf\unicodehexnumber{#1}\hss}\quad
         \hbox to 1em{#2\hss}\quad
-        \hbox to 9em{\tttf\unicodenumber{#1\relax}->\unicodepair{#1}\hss}\quad
+        \hbox to 9em{\tttf\unicodenumber{#1}->\unicodepair{#1}\hss}\quad
         \hbox to 9em{\tttf\let\utfunihash\utfunihashcommand#2\hss}\quad % tricky
         \lowercase  {\tttf#3}}\par
    \fi}
@@ -578,10 +586,15 @@
      \@EA\utfunifontcommand
    \fi}
 
+%D Goodies:
+
+\fetchruntimecommand \showunicodevector {\f!unicprefix\s!run}
+\fetchruntimecommand \showunicodetable  {\f!unicprefix\s!run}
+
 %D Well, let's at least preload a few familiar ones. Here we
 %D also load the \UTF\ regime.
 
-\useunicodevector[0,1,2,3,4,5,30,32,33] \useregime[utf]
+\useunicodevector[0,1,2,3,4,5,30,32,33,34,39] \useregime[utf]
 
 % 31, text mem usage first
 

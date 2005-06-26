@@ -88,6 +88,7 @@ module Tool
         begin
             if f = open(filename,'rb') then
                 str = f.read(4000)
+                str.gsub!(/(.*?)\%\!PS/mo, "%!PS") # don't look into preamble crap
                 f.close
                 nn = str.count("\n")
                 nr = str.count("\r")

@@ -199,4 +199,13 @@
 
 \egroup
 
+%D \macros
+%D   {threedigits}
+%D
+%D This one provides three digits always.
+
+\def\threedigits#1%
+  {\ifnum#1<10 00\else\ifnum#1<100 0\fi\fi\number#1}
+
+
 \protect \endinput

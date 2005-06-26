@@ -419,7 +419,7 @@
 
 %D Here we implement the second step in the element grabber.
 
-\long\def\XMLremapdata%
+\long\def\XMLremapdata
   {\dosingleempty\doXMLremapdata}
 
 \long\def\doXMLremapdata[#1]#2#3#4%
@@ -456,7 +456,10 @@
    \catcode`\^^M=\@@space
    \catcode`\^^L=\@@space
    \catcode`\^^Z=\@@space
+\pushmacro\unicodechar
+\let\unicodechar\relax
    \xdef\remappedXMLdata{#4\empty}%
+\popmacro\unicodechar
    \let\par\endgraf
    \popmacro\doXMLentity % needed ?
    \disableXMLexpansion
@@ -464,7 +467,7 @@
    \catcode`\}=\@@endgroup
    \catcode`\\=\@@escape
    \iftraceXMLremapping
-     \bgroup
+     \ifmmode\vbox\fi\bgroup
      \convertcommand\remappedXMLdata\to\ascii
      \tttf\veryraggedright\ascii\par
      \writestatus{xml-remap}{\ascii}%
@@ -473,6 +476,27 @@
    #2\scantokens\@EA{\remappedXMLdata\empty\empty}#3%
    \stopXMLmapping
    \egroup}
+
+% testcase:
+%
+% aap‒noot coördinatie – één
+%
+% \startXMLdata
+% aap‒noot coördinatie – één
+% <formula><math><mtext>aap‒noot coördinatie – één</mtext></math></formula>
+% \stopXMLdata
+%
+% weird case:
+%
+% \chardef\XMLtokensreduction\zerocount
+% \startXMLdata
+% <formula><math><mtext>\"{a}\"{o}\"{u}\v{c}\v{s}\v{z}</mtext></math></formula>
+% \stopXMLdata
+%
+% \chardef\XMLtokensreduction\plustwo
+% \startXMLdata
+% <formula><math><mtext>\"{a}\"{o}\"{u}\v{c}\v{s}\v{z}</mtext></math></formula>
+% \stopXMLdata
 
 % rename to better names
 

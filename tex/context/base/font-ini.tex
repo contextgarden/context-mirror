@@ -2484,11 +2484,18 @@
 %       \getvalue{\s!default\s!default#2}{#1}{#2}}}
 %
 % but ... it needs to be as follows:
+%
+% \def\dodefineunknownbodyfont#1#2% see ***
+%   {\doifdefined{\s!default\fontclass#2}% was \s!default\s!default (related to change */*)
+%      {\donetrue
+%       \getvalue{\s!default\fontclass#2}{#1}{#2}}}
+%
+% eh ... this does not work so we revert back to:
 
 \def\dodefineunknownbodyfont#1#2% see ***
-  {\doifdefined{\s!default\fontclass#2}% was \s!default\s!default (related to change */*)
+  {\doifdefined{\s!default\s!default#2}% somehow related to */*
      {\donetrue
-      \getvalue{\s!default\fontclass#2}{#1}{#2}}}
+      \getvalue{\s!default\s!default#2}{#1}{#2}}}
 
 \def\dodefineunknownsubfont#1#2%
   {\doifundefined{\@size@\getvalue{\??ft#1#2}}

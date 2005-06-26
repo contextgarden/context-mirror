@@ -409,16 +409,6 @@ complex-cartesian=>\let\next\MMLccartesian,
 \def\MMLcPIECEWISE#1#2%
   {\cases{#2}}
 
-%\def\MMLcPIECE#1#2% \@@MMLpieceseparator
-%  {\withnexttwoXMLRelements
-%     {\@EA\XMLRtoks\@EA{\firstXMLRelement\@col@amp@}%
-%      \@EA\appendtoks\@EA\mathematics\@EA{\secondXMLRelement}\to\XMLRtoks
-%      \the\XMLRtoks\crcr}%
-%   #2}%
-%
-%\def\MMLcOTHERWISE#1#2%
-%  {#2\@col@amp@\mathematics{\getXMLentity{otherwise}}\crcr}
-
 \def\MMLcPIECEseparator{\doif\@@MMLpieceseparator\v!yes,}
 
 \def\MMLcPIECE#1#2%
@@ -552,13 +542,6 @@ complex-cartesian=>\let\next\MMLccartesian,
         {#3\empty}}}
 
 \remapXMLsingular [root] [CPA] \MMLcROOT
-
-% \def\MMLcROOT#1#2#3\empty
-%   {\doifXMLRchildelse{degree}{#3}
-%      {\root\processXMLRchild{degree}{#3}\of
-%         {\let\MMLcDEGREE\ignoreXMLRelement
-%          \MMLcreset\processXMLRchildren{#3}}}
-%      {\sqrt{\MMLcreset\processXMLRchildren{#3}}}}
 
 \setupMMLappearance[root][\c!symbol=\v!yes]
 

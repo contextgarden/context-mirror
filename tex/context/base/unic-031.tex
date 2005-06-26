@@ -10,8 +10,7 @@
 
 \startunicodevector 31
   \expandafter\strippedcsname
-  \ifcase\numexpr(#1+1) % space needed, terminates expr
-    \unknownchar \or
+  \ifcase\numexpr#1\relax
     \greekalphapsili \or                            %1f00
     \greekalphadasia \or
     \greekalphapsilivaria \or

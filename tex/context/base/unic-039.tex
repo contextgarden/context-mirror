@@ -1,0 +1,68 @@
+%D \module
+%D   [       file=unic-039,
+%D        version=2005.06.16,
+%D          title=\CONTEXT\ \UNICODE\ Macros,
+%D       subtitle=Vector 39,
+%D         author=Nikolai Weibull,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Nikolai Weibull}]
+
+\unprotect
+
+\startunicodevector 39
+  \expandafter\strippedcsname
+  \ifcase\numexpr#1-192\relax
+    \unknownchar        \or % THREE DIMENSIONAL ANGLE
+    \unknownchar        \or % WHITE TRIANGLE CONTAINING SMALL WHITE TRIANGLE
+    \perp               \or % PERPENDICULAR
+    \unknownchar        \or % OPEN SUBSET
+    \unknownchar        \or % OPEN SUPERSET
+    \lbag               \or % LEFT S-SHAPED BAG DELIMITER
+    \rbag               \or % RIGHT S-SHAPED BAG DELIMITER
+    \unknownchar        \or % <reserved>
+    \unknownchar        \or % <reserved>
+    \unknownchar        \or % <reserved>
+    \unknownchar        \or % <reserved>
+    \unknownchar        \or % <reserved>
+    \unknownchar        \or % <reserved>
+    \unknownchar        \or % <reserved>
+    \unknownchar        \or % <reserved>
+    \unknownchar        \or % <reserved>
+    \unknownchar        \or % WHITE DIAMOND WITH CENTRED DOT
+    \unknownchar        \or % AND WITH DOT
+    \unknownchar        \or % ELEMENT OF OPENING UPWARDS
+    \unknownchar        \or % LOWER RIGHT CORNER WITH DOT
+    \unknownchar        \or % UPPER LEFT CORNER WITH DOT
+    \unknownchar        \or % LEFT OUTER JOIN
+    \unknownchar        \or % RIGHT OUTER JOIN
+    \unknownchar        \or % FULL OUTER JOIN
+    \unknownchar        \or % LARGE UP TACK
+    \unknownchar        \or % LARGE DOWN TACK
+    \unknownchar        \or % LEFT AND RIGHT DOUBLE TURNSTILE
+    \unknownchar        \or % LEFT AND RIGHT TACK
+    \unknownchar        \or % LEFT MULTIMAP
+    \unknownchar        \or % LONG RIGHT TACK
+    \unknownchar        \or % LONG LEFT TACK
+    \unknownchar        \or % UP TACK WITH CIRCLE ABOVE
+    \unknownchar        \or % LOZENGE DIVIDED BY HORIZONTAL RULE
+    \unknownchar        \or % WHITE CONCAVE-SIDED DIAMOND
+    \unknownchar        \or % WHITE CONCAVE-SIDED DIAMOND WITH LEFTWARDS TICK
+    \unknownchar        \or % WHITE CONCAVE-SIDED DIAMOND WITH RIGHTWARDS TICK
+    \unknownchar        \or % WHITE SQUARE WITH LEFTWARDS TICK
+    \unknownchar        \or % WHITE SQUARE WITH RIGHTWARDS TICK
+    \unic@Lbracket      \or % MATHEMATICAL LEFT WHITE SQUARE BRACKET
+    \unic@Rbracket      \or % MATHEMATICAL RIGHT WHITE SQUARE BRACKET
+    \langle             \or % MATHEMATICAL LEFT ANGLE BRACKET
+    \rangle             \or % MATHEMATICAL RIGHT ANGLE BRACKET
+    \unic@Langle        \or % MATHEMATICAL LEFT DOUBLE ANGLE BRACKET
+    \unic@Rangle        \or % MATHEMATICAL RIGHT DOUBLE ANGLE BRACKET
+    \unknownchar        \or % <reserved>
+    \unknownchar        \or % <reserved>
+    \unknownchar        \or % <reserved>
+    \unknownchar        \or % <reserved>
+    \unknownchar        \else % <reserved>
+    \unknownchar
+  \fi
+\stopunicodevector
+
+\protect \endinput
