@@ -52,16 +52,46 @@
     {\writestatus{loading}{Donald Arseneau's 'random.tex'     (found)}}
     {\writestatus{loading}{Donald Arseneau's 'random.tex' (not found)}}
 
+  % avoid scratch dimens 0 and 2 (already recoded in third-ran)
+  %
+  % \def\setrandim#1#2#3% dimen register, minimum length, maximum length
+  %   {\scratchdimen#2\edef\!!stringa{\number\scratchdimen}%
+  %    \scratchdimen#3\edef\!!stringb{\number\scratchdimen}%
+  %    \setrannum\ranval\!!stringa\!!stringb
+  %    #1\ranval\s!sp\relax}
+
 \fi
 
 \ifx\nextrandom\undefined
 
-  \def\setrannum#1#2#3{#1\plusone}
-  \def\setrandim#1#2#3{#1\onepoint}
+  \writestatus{loading}{using fake randomizer}
 
-\else
+  \newcount\randomi
 
-  \let\verynormalnextrandom = \nextrandom
+  \def\setrandim#1#2#3{\scratchdimen  #2\relax#1\scratchdimen  }
+  \def\setrannum#1#2#3{\scratchcounter#2\relax#1\scratchcounter}
+
+  \let\nextrandom\relax
+
+%              \def\getrandomdimen #1#2#3{\scratchdimen  #2\relax#1\scratchdimen  }
+%              \def\getrandomcount #1#2#3{\scratchcounter#2\relax#1\scratchcounter}
+%              \def\getrandomnumber#1#2#3{\edef#1{0}}
+%              \def\getrandomfloat #1#2#3{\edef#1{0}}
+%   \unexpanded\def\setrandomseed      #1{}
+%   \unexpanded\def\getrandomseed      #1{\edef#1{0}}
+
+%   \chardef\randomseedfrozen\zerocount
+
+%   \def\freezerandomseed {\global\chardef\randomseedfrozen\plusone  }
+%   \def\defrostrandomseed{\global\chardef\randomseedfrozen\zerocount}
+
+\fi
+
+\ifx\nextrandom\undefined \endinput \fi
+
+\ifx\ptexuniformdeviate\undefined
+
+  \let\verynormalnextrandom\nextrandom
 
   \def\normalnextrandom
     {\bgroup
@@ -72,27 +102,44 @@
      \verynormalnextrandom
      \egroup}
 
-  \chardef\randomseedfrozen\zerocount
+\else
 
-  \def\nextrandom
-    {\bgroup
-     \normalnextrandom
-     \gdef\nextrandom{\ifcase\randomseedfrozen\normalnextrandom\fi}%
-     \egroup}
+  % Yet untested.
 
-  % avoid scratch dimens 0 and 2 (already recoded in third-ran
-  %
-  % \unprotect
-  %
-  % \def\setrandim#1#2#3% dimen register, minimum length, maximum length
-  %   {\scratchdimen#2\edef\!!stringa{\number\scratchdimen}%
-  %    \scratchdimen#3\edef\!!stringb{\number\scratchdimen}%
-  %    \setrannum\ranval\!!stringa\!!stringb
-  %    #1\ranval\s!sp\relax}
-  %
-  % \protect
+  \writestatus{loading}{using tex's built in randomizer (overloading macro)}
+
+  % For the meaning of the magic number, see \type {thrd-ran.tex}.
+
+  % \def\normalnextrandom
+  %   {\setrandomseed\randomi
+  %    \global\randomi\ptexuniformdeviate2147483647\relax}
+
+  % Taco suggested to use the following alternative because \type
+  % {\ptexuniformdeviate} can return a zero (as expected) while
+  % Donalds's alternative has a minimum of~1.
+
+  \beginTEX
+    \def\nextrandom
+      {\ptexsetrandomseed\randomi
+       \global\randomi\ptexuniformdeviate2147483646%
+       \global\advance\randomi\plusone}
+  \endTEX
+
+  \beginETEX \numexpr
+    \def\nextrandom
+      {\ptexsetrandomseed\randomi
+       \global\randomi\numexpr\ptexuniformdeviate2147483646+1\relax}
+  \endETEX
 
 \fi
+
+\def\nextrandom
+  {\bgroup
+   \normalnextrandom
+   \gdef\nextrandom{\ifcase\randomseedfrozen\normalnextrandom\fi}%
+   \egroup}
+
+\chardef\randomseedfrozen\zerocount
 
 \def\freezerandomseed
   {\ifcase\randomseedfrozen
@@ -104,8 +151,8 @@
      \global\chardef\randomseedfrozen\zerocount \nextrandom
    \fi}
 
-\let\getrandomcount = \setrannum
-\let\getrandomdimen = \setrandim
+\let\getrandomcount\setrannum
+\let\getrandomdimen\setrandim
 
 \def\getrandomnumber#1#2#3%
   {\getrandomcount\scratchcounter{#2}{#3}%

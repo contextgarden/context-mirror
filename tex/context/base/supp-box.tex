@@ -2878,4 +2878,29 @@
 \def\getboxllx#1{\executeifdefined{b@@x\number#1}\zeropoint}
 \def\getboxlly#1{\executeifdefined{b@@y\number#1}\zeropoint}
 
+%D \macros
+%D   {shownextbox}
+%D
+%D Handy for tracing
+%D
+%D \starttyping
+%D \shownextbox\vbox{test}
+%D \shownextbox\vbox{test\endgraf}
+%D \shownextbox\vbox{test\endgraf\strut\endgraf}
+%D \shownextbox\vbox{test\endgraf\thinrule}
+%D \shownextbox\vbox{\setupwhitespace[big]test\endgraf\thinrule}
+%D \stoptyping
+
+\def\shownextbox
+  {\dowithnextbox
+     {\bgroup
+      \showboxbreadth\maxdimen
+      \showboxdepth  \maxdimen
+      \scratchcounter\interactionmode
+      \batchmode
+      \showbox\nextbox
+      \box\nextbox
+      \interactionmode\scratchcounter
+      \egroup}}
+
 \protect \endinput

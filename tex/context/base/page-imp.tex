@@ -915,12 +915,6 @@
          \processcommalist[#2]\docommando}}%
    \egroup}
 
-\def\dowithrange#1#2% #2 takes number
-  {\beforesplitstring#1\at:\to\fromrange
-   \aftersplitstring #1\at:\to\torange
-   \ifx\torange\empty\let\torange\fromrange\fi
-   \dostepwiserecurse\fromrange\torange1{#2{\recurselevel}}}
-
 \def\dofilterpage#1#2%
   {\hbox to \textwidth
      {\ifdubbelzijdig\ifdim\@@ipwidth>\zeropoint\relax\ifodd\realpageno\else

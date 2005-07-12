@@ -1246,6 +1246,12 @@
 \catcode`\}=\@@active
 \catcode`B=\@@begingroup
 \catcode`E=\@@endgroup
+\gdef\keepMPspecials|
+  B\let%\letterpercent|
+   \def[B\noexpand[E|
+   \def]B\noexpand]E|
+   \def{B\noexpand{E|
+   \def}B\noexpand}EE
 \gdef\ignoreMPspecials|
   B\let%\letterpercent|
    \def[BE|

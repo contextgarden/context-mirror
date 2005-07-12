@@ -97,8 +97,8 @@
 \newevery \everydefinedfont \relax
 
 \def\dodefinedfont[#1]%
-  {\iffirstargument\definefont[\string\definedfont][#1]\fi
-   \csname\string\definedfont\endcsname
+  {\iffirstargument\definefont[\string\thedefinedfont][#1]\fi
+   \csname\string\thedefinedfont\endcsname % can be \relax
    \the\everydefinedfont}
 
 \unexpanded\def\definedfont
@@ -4171,14 +4171,16 @@
 %D Since we know what scaling it to be applied, we can
 %D implement a much faster alternative:
 
+\let\thedefinedfont\relax
+
 \def\symbolicscaledfont#1#2%
   {\scaledfont\fontbody
    \scaledfont#1\scaledfont
-   \font\definedfont\truefontname{\glyphfontfile{#2}} at
+   \font\thedefinedfont\truefontname{\glyphfontfile{#2}} at
      \currentfontbodyscale\scaledfont
-   \definedfont}
+   \thedefinedfont}
 
-\def\symbolicfont
+\unexpanded\def\symbolicfont
   {\symbolicscaledfont\plusone}
 
 \unexpanded\def\getglyph#1#2% slow, faster, much faster
@@ -4192,9 +4194,8 @@
 
 \unexpanded\def\getrawglyph#1#2% for simple symbols
   {{\scaledfont\fontbody
-    \font\definedfont=#1 at \currentfontbodyscale\scaledfont
-   %\definedfont#2}}
-    \definedfont\doifnumberelse{#2}\char\donothing#2}}
+    \font\thedefinedfont=#1 at \currentfontbodyscale\scaledfont
+    \thedefinedfont\doifnumberelse{#2}\char\donothing#2}}
 
 %D The last implementation of \type {\getglyph} permits
 %D definitions like:
@@ -4666,8 +4667,9 @@
 
 \definefont[tinyfont][Mono at 1ex]
 
-\protect \endinput
-
+%D \macros
+%D   {doiffontpresentelse}
+%D
 %D Some unused left||overs:
 %D
 %D \starttyping
@@ -4680,3 +4682,43 @@
 %D \def\abortiffontnotfound#1%
 %D   {\doiffontpresentelse{#1}{}{\showmessage\m!fonts{10}{\truefontname{#1}}\endinput}}
 %D \stoptyping
+%D
+%D We now provide (slow, but sometimes handy):
+%D
+%D \starttyping
+%D \doiffontpresentelse{texnansi-lmr10}{YES}{NO}
+%D \doiffontpresentelse{adam-lindsay-modern-serif}{YES}{NO}
+%D \stoptyping
+
+\beginTEX
+
+\def\doiffontpresentelse#1%
+  {\bgroup
+   \batchmode\font\dummy=\truefontname{#1}\errorstopmode
+   \edef\lastfontname{\fontname\dummy}%
+   \ifx\lastfontname\nullfontname
+     \egroup\expandafter\secondoftwoarguments
+   \else
+     \egroup\expandafter\firstoftwoarguments
+  \fi}
+
+\endTEX
+
+\beginETEX \interactionmode
+
+\def\doiffontpresentelse#1%
+  {\bgroup
+   \scratchcounter\interactionmode
+   \batchmode
+   \font\dummy=\truefontname{#1}\relax
+   \interactionmode\scratchcounter
+   \edef\lastfontname{\fontname\dummy}%
+   \ifx\lastfontname\nullfontname
+     \egroup\expandafter\secondoftwoarguments
+   \else
+     \egroup\expandafter\firstoftwoarguments
+   \fi}
+
+\endETEX
+
+\protect \endinput

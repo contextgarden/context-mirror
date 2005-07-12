@@ -17,6 +17,14 @@
 %
 % \preloadtypescripts
 
+% If you want another default font:
+%
+% \let\preloadfonts\relax
+% \usetypescript[palatino][\defaultencoding]
+% \setupbodyfont[palatino,rm,12pt]
+%
+% Please make sure that this defines rm, ss, tt and mm.
+
 % Occasionally we will support both A4 and letter in
 % styles. If you want letter size paper to be the default,
 % uncomment:

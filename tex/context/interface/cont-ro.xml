@@ -6075,6 +6075,7 @@
       <cd:constant type="inmargine"/>
       <cd:constant type="autointro"/>
       <cd:constant type="larg"/>
+      <cd:constant type="repetat"/>
       <cd:variable type="cd:section"/>
       <cd:constant type="intext"/>
     </cd:keywords>

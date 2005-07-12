@@ -6075,6 +6075,7 @@
       <cd:constant type="naokraji"/>
       <cd:constant type="autouvod"/>
       <cd:constant type="uvolnene"/>
+      <cd:constant type="opakovat"/>
       <cd:variable type="cd:section"/>
       <cd:constant type="dotextu"/>
     </cd:keywords>

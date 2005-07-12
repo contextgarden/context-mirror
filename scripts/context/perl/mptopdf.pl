@@ -26,14 +26,15 @@ use strict ;
 $Getopt::Long::passthrough = 1 ; # no error message
 $Getopt::Long::autoabbrev  = 1 ; # partial switch accepted
 
-my $Help = my $Latex = my $RawMP = 0 ;
+my $Help = my $Latex = my $RawMP = my $MetaFun = 0 ;
 my $PassOn = '' ;
 
 &GetOptions
-  ( "help"   => \$Help  ,
-    "rawmp"  => \$RawMP,
-    "passon" => \$PassOn,
-    "latex"  => \$Latex ) ;
+  ( "help"    => \$Help  ,
+    "rawmp"   => \$RawMP,
+    "metafun" => \$MetaFun,
+    "passon"  => \$PassOn,
+    "latex"   => \$Latex ) ;
 
 my $program = "MPtoPDF 1.3" ;
 my $pattern = $ARGV[0] ;
@@ -70,7 +71,12 @@ elsif ($pattern =~ /\.mp$/io)
     if ($RawMP)
       { if ($Latex)
           { $rest .= " $mplatexswitch" }
-        $mpbin = 'mpost' }
+        if ($MetaFun) {
+            $mpbin = 'mpost --mem=mpost' ;
+        } else {
+            $mpbin = 'mpost --mem=metafun' ;
+        }
+    }
     else
       { if ($Latex)
           { $rest .= " $texlatexswitch" }
@@ -93,19 +99,15 @@ foreach my $file (@files)
   { $_ = $file ;
     if (s/\.(\d+|mps)$// && -e $file)
       { if ($miktex)
-          { if ($dosish)
-              { $command = "pdfetex   &mptopdf" }
-            else
-              { $command = "pdfetex \\&mptopdf" } }
+          { $command = "pdfetex -fmt=mptopdf" }
         else
-          { if ($dosish)
-              { $command = "pdfetex -progname=context &mptopdf" }
-            else
-              { $command = "pdfetex -progname=context \\&mptopdf" } }
+          { $command = "pdfetex -progname=context -fmt=mptopdf" }
         if ($dosish)
-          { system ("$command   \\relax $file") }
+          { $command = "$command \\relax $file" }
         else
-          { system ("$command \\\\relax $file") }
+          { $command = "$command \\\\relax $file" }
+        #~ print $command ;
+        system($command) ;
         rename ("$_.pdf", "$_-$1.pdf") ;
         if (-e "$_.pdf") { CopyFile ("$_.pdf", "$_-$1.pdf") }
         if ($done) { $report .= " +" }

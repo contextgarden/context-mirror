@@ -519,7 +519,7 @@
 \def\dodofreevlistelement#1#2#3#4#5#6%          % \nointerlineskip needed,
   {\dodofreelistelement{#1}{#2}{#3}{#4}{#5}{#6} % otherwise wrong spacing
      {\ifvmode\nointerlineskip\fi}              % at multi-line lists
-     {\nointerlineskip\endgraf\allowbreak}}     %
+     {\ifvmode\nointerlineskip\fi\endgraf\allowbreak}} % test is saveguard
 
 % to be documented: align, hang
 

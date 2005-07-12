@@ -306,13 +306,13 @@ class TeXUtil
             def MyExtras::writer(logger,handle)
                 handle << logger.banner("programs: #{@@programs.size}")
                 @@programs.each do |p|
-                    handle << "% #{p} (#{@@programs[p]})\n"
+                    handle << "% #{p} (#{@@programs[p.to_i]})\n"
                 end
             end
 
             def MyExtras::processor(logger)
                 @@programs.each do |p|
-                    cmd = "texmfstart #{@@programs[p]}"
+                    cmd = "texmfstart #{@@programs[p.to_i]}"
                     logger.report("running #{cmd}")
                     system(cmd)
                 end
@@ -741,7 +741,7 @@ class TeXUtil
                 File.open(File.suffixed(filename,'tui')).each do |line|
                     case line.chomp
                         when /^f (.*)$/o then @plugins.reader('MyFiles',    $1.splitdata)
-                        when /^c (.*)$/o then @plugins.reader('MyCommands', $1.splitdata)
+                        when /^c (.*)$/o then @plugins.reader('MyCommands', [$1])
                         when /^e (.*)$/o then @plugins.reader('MyExtras',   $1.splitdata)
                         when /^s (.*)$/o then @plugins.reader('MySynonyms', $1.splitdata)
                         when /^r (.*)$/o then @plugins.reader('MyRegisters',$1.splitdata)
@@ -751,7 +751,7 @@ class TeXUtil
                     end
                 end
             rescue
-                report("fatal error in parsing file (#{$!})")
+                report("fatal error in parsing #{filename}")
                 @filename = 'texutil'
             else
                 @filename = filename

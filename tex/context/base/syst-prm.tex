@@ -132,10 +132,17 @@
 \def\dump{\the\everydump\normaldump}
 
 %D Ligature prevention (for instance, ec encoding has ligatures
-%D in mono spaced fonts).
+%D in mono spaced fonts). Alas, we need to do some testing in order
+%S to get to the ptex'd one.
 
-\ifx\noligatures\undefined
-  \def\noligatures#1{}
+\ifx\ptexnoligatures\undefined
+  \ifx\noligatures\undefined
+    \def\noligatures#1{}
+  \else
+    % let's assume that it takes a font tag as argument
+  \fi
+\else
+  \let\noligatures\ptexnoligatures
 \fi
 
 \let\normalnoligatures\noligatures

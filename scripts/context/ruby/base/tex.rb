@@ -126,7 +126,7 @@ class TEX
         'mpyforce', 'forcempy',
         'forcetexutil', 'texutil',
         'globalfile', 'autopath',
-        'purge', 'pdfopen', 'simplerun', 'verbose',
+        'purge', 'autopdf', 'simplerun', 'verbose',
     ]
     @@stringvars = [
         'modefile', 'result', 'suffix', 'response', 'path',
@@ -1151,9 +1151,9 @@ class TEX
 
         setvariable('nomprun',true) if orisuffix == 'mpx' # else cylic run
 
-        PDFview.closeall if getvariable('pdfopen')
+        PDFview.closeall if getvariable('autopdf')
 
-        forcexml = jobsuffix === /(xml|fo|fox|rlg|exa|)/io # === returns true|false, =~ returns position
+        forcexml = jobsuffix.match(/^(xml|fo|fox|rlg|exa)$/io) # nil or match
 
         dummyfile = false
 
@@ -1261,8 +1261,8 @@ class TEX
                 report("unable to delete stub file")
             end
 
-            if ! problems && getvariable('pdfopen') then
-                PDFview.open(if resultname.empty? then jobname else resultname end)
+            if ! problems && getvariable('autopdf') then
+                PDFview.open(File.suffixed(if result.empty? then jobname else result end,'pdf'))
             end
 
         end

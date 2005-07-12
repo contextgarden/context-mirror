@@ -63,18 +63,27 @@ $suffixinputs['pdf'] = 'PDFINPUTS'
 $predefined['texexec']  = 'texexec.pl'
 $predefined['texutil']  = 'texutil.pl'
 $predefined['texfont']  = 'texfont.pl'
+$predefined['mptopdf']  = 'mptopdf.pl'
 $predefined['examplex'] = 'examplex.rb'
 $predefined['concheck'] = 'concheck.rb'
 $predefined['textools'] = 'textools.rb'
 $predefined['ctxtools'] = 'ctxtools.rb'
 $predefined['rlxtools'] = 'rlxtools.rb'
 $predefined['pdftools'] = 'pdftools.rb'
+$predefined['mpstools'] = 'mpstools.rb'
 $predefined['exatools'] = 'exatools.rb'
 $predefined['xmltools'] = 'xmltools.rb'
 $predefined['pstopdf']  = 'pstopdf.rb'
 
+if ENV['TEXMFSTART_MODE'] = 'experimental' then
+    $predefined['texexec'] = 'newtexexec.rb'
+    $predefined['pstopdf'] = 'newpstopdf.rb'
+end
+
 $scriptlist   = 'rb|pl|py|jar'
 $documentlist = 'pdf|ps|eps|htm|html'
+
+$editor = ENV['EDITOR'] || ENV['editor'] || 'scite'
 
 $crossover = true # to other tex tools, else only local
 
@@ -381,6 +390,7 @@ def usage
     print("           texmfstart --iftouched=normal,lowres downsample.rb normal lowres\n")
     print("           texmfstart texmfstart bin:scite kpse:texmf.cnf\n")
     print("           texmfstart texmfstart --exec bin:scite *.tex\n")
+    print("           texmfstart texmfstart --edit texmf.cnf\n")
 end
 
 # somehow registration does not work out (at least not under windows)
@@ -621,6 +631,14 @@ def direct(fullname)
     end
 end
 
+def edit(filename)
+    begin
+        return runcommand([$editor,expanded(filename),expanded($arguments)].join(' '))
+    rescue
+        return false
+    end
+end
+
 def make(filename,windows=false,linux=false)
     basename = filename.dup
     basename.sub!(/\.[^.]+?$/, '')
@@ -689,6 +707,7 @@ def execute(arguments)
     $filename    = $directives['file']      || ''
     $program     = $directives['program']   || 'context'
     $direct      = $directives['direct']    || false
+    $edit        = $directives['edit']      || false
     $page        = $directives['page']      || 0
     $browser     = $directives['browser']   || false
     $report      = $directives['report']    || false
@@ -755,6 +774,8 @@ def execute(arguments)
                 process do
                     if $direct || $filename =~ /^bin\:/ then
                         direct($filename)
+                    elsif $edit && ! $editor.empty? then
+                        edit($filename)
                     else # script: or no prefix
                         command = find(shortpathname($filename),$program)
                         register("THREAD",File.dirname(File.expand_path(command)))

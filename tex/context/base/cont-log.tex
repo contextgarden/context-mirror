@@ -126,17 +126,23 @@
 %D The \METAFONT\ and \METAPOST\ logos adapt themselves to the
 %D current fontsize, an ugly but usefull hack.
 
-\unexpanded\def\setMFPfont
-  {\font\logofont=logo%
-     \ifnum\fam=\bffam bf\else
-     \ifnum\fam=\slfam sl\else
-     \ifnum\fam=\itfam sl\else
-     \ifnum\fam=\bsfam bf\else
-     \ifnum\fam=\bifam bf\else
-     \fi\fi\fi\fi\fi
-     10 at \currentfontscale\bodyfontsize
-   \logofont}
-
+% rather hard coded
+%
+% \loadmapfile[original-base.map] % \loadmapfile[original-vogel-symbol]
+%
+% \unexpanded\def\setMFPfont
+%   {\font\logofont=logo%
+%      \ifnum\fam=\bffam\c!bf\else
+%      \ifnum\fam=\slfam\c!sl\else
+%      \ifnum\fam=\itfam\c!sl\else
+%      \ifnum\fam=\bsfam\c!bf\else
+%      \ifnum\fam=\bifam\c!bf\else
+%      \fi\fi\fi\fi\fi
+%      10 at \currentfontscale\bodyfontsize
+%    \logofont}
+%
+% or:
+%
 % \definefontsynonym [MetaLogo]            [logo10]
 % \definefontsynonym [MetaLogoBold]        [logobf10]
 % \definefontsynonym [MetaLogoSlanted]     [logosl10]
@@ -144,9 +150,13 @@
 % \definefontsynonym [MetaLogoBoldSlanted] [logobf10]
 % \definefontsynonym [MetaLogoBoldtalic]   [logobf10]
 %
+% \loadmapfile[original-base.map] % \loadmapfile[original-vogel-symbol]
+%
 % \def\setMFPfont{\symbolicfont{MetaLogo}}
 
 \let\logofont\nullfont
+
+\loadmapfile[original-base.map]
 
 \unexpanded\def\setMFPfont% more sensitive for low level changes
   {\font\logofont=logo%

@@ -809,4 +809,15 @@
      \xdef\globalascii{\globalascii#1}%
    \fi}
 
+%D \macros
+%D   {dowithrange}
+%D
+%D This one is for Mojca Miklavec, who made me aware of the fact that
+%D \type {page-imp.tex} was not the best place to hide it.
+
+\def\dowithrange#1#2% #2 takes number
+  {\splitstring#1\at:\to\fromrange\and\torange
+   \ifx\torange\empty\let\torange\fromrange\fi
+   \dostepwiserecurse\fromrange\torange1{#2{\recurselevel}}}
+
 \protect \endinput

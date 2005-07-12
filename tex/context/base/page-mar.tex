@@ -106,8 +106,11 @@
 \definemarginline[atleftmargin] [\c!location=\v!left, \c!command=\lrlap,\c!width=\zeropoint,\c!distance=\zeropoint,\c!hoffset=\zeropoint]
 \definemarginline[atrightmargin][\c!location=\v!right,\c!command=\rllap,\c!width=\zeropoint,\c!distance=\zeropoint,\c!hoffset=\zeropoint]
 
-\ifx\lrlap\undefined \def\lrlap#1{\llap{\rlap{#1}\hskip\leftskip}}               \fi
-\ifx\rllap\undefined \def\rllap#1{\rlap{\hskip\hsize\hskip-\rightskip\llap{#1}}} \fi
+\ifx\lrlap\undefined \def\lrlap#1{\llap{\rlap{#1}}} \fi
+\ifx\rllap\undefined \def\rllap#1{\rlap{\llap{#1}}} \fi
+
+\def\lrlap#1{\llap{\rlap{#1}}}
+\def\rllap#1{\rlap{\hskip\hsize\llap{#1}}}
 
 %D We want to keep things efficient and therefore only handle
 %D situations like:

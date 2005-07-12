@@ -6075,6 +6075,7 @@
       <cd:constant type="inmarge"/>
       <cd:constant type="autointro"/>
       <cd:constant type="los"/>
+      <cd:constant type="herhaal"/>
       <cd:variable type="cd:section"/>
       <cd:constant type="intekst"/>
     </cd:keywords>

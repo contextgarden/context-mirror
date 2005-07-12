@@ -1,22 +1,96 @@
-require 'base/logger'
-require 'base/texutil'
+banner = ['TeXUtil  ', 'version 9.1.0', '1997-2005', 'PRAGMA ADE/POD']
 
-logger = Logger.new('TeXUtil')
-
-filename = ARGV[0] || 'tuitest'
-
-if tu = TeXUtil::Converter.new(logger) and tu.loaded(filename) then
-    tu.saved if tu.processed
+unless defined? ownpath
+    ownpath = $0.sub(/[\\\/][a-z0-9\-]*?\.rb/i,'')
+    $: << ownpath
 end
 
-# if     ($UnknownOptions   ) { ShowHelpInfo     } # not yet done
-# elsif  ($ProcessReferences) { HandleReferences }
-# elsif  ($ProcessFigures   ) { HandleFigures    }
-# elsif  ($ProcessLogFile   ) { HandleLogFile    }
-# elsif  ($PurgeFiles       ) { my $args = @ARGV.join(' ') ; system("texmfstart ctxtools --purge    $args") }
-# elsif  ($PurgeAllFiles    ) { my $args = @ARGV.join(' ') ; system("texmfstart ctxtools --purgeall $args") }
-# elsif  ($ProcessDocuments ) { my $args = @ARGV.join(' ') ; system("texmfstart ctxtools --document $args") }
-# elsif  ($AnalyzeFile      ) { my $args = @ARGV.join(' ') ; system("texmfstart pdftools --analyze  $args") }
-# elsif  ($FilterPages      ) { my $args = @ARGV.join(' ') ; system("texmfstart ctxtools --filter   $args") }
-# elsif  ($ProcessHelp      ) { ShowHelpInfo     } # redundant
-# else                        { ShowHelpInfo     }
+require 'base/switch'
+require 'base/logger'
+require 'base/file'
+require 'base/texutil'
+
+class Commands
+
+    include CommandBase
+
+    def references
+        filename = @commandline.argument('first')
+        if not filename.empty? and FileTest.file?(File.suffixed(filename,'tuo')) then
+            if tu = TeXUtil::Converter.new(logger) and tu.loaded(filename) then
+                tu.saved if tu.processed
+            end
+        end
+    end
+
+    def main
+        if @commandline.arguments.length>0 then
+            references
+        else
+            help
+        end
+    end
+
+    def purgefiles
+        system("texmfstart ctxtools --purge #{@commandline.argument.join(' ')}")
+    end
+
+    def purgeallfiles
+        system("texmfstart ctxtools --purgeall #{@commandline.argument.join(' ')}")
+    end
+
+    def documentation
+        system("texmfstart ctxtools --document #{@commandline.argument.join(' ')}")
+    end
+
+    def analyzefile
+        system("texmfstart pdftools --analyze #{@commandline.argument.join(' ')}")
+    end
+
+    def filterpages # obsolete
+        system("texmfstart ctxtools --purge #{@commandline.argument.join(' ')}")
+    end
+
+    def figures
+        report("this code is not yet converted from perl to ruby")
+    end
+
+    def logfile
+        report("this code is not yet converted from perl to ruby")
+    end
+
+end
+
+logger      = Logger.new(banner.shift)
+commandline = CommandLine.new
+
+# main feature
+
+commandline.registeraction('references', 'convert tui file into tuo file')
+
+# todo features
+
+commandline.registeraction('figures', 'generate figure dimensions file')
+commandline.registeraction('logfile', 'filter essential log messages')
+
+# backward compatibility features
+
+commandline.registeraction('purgefiles', 'remove most temporary files')
+commandline.registeraction('purgeallfiles', 'remove all temporary files')
+commandline.registeraction('documentation', 'generate documentation file from source')
+commandline.registeraction('analyzefile', 'analyze pdf file')
+
+# old feature, not needed any longer due to extension of pdftex
+
+commandline.registeraction('filterpages')
+
+# generic features
+
+commandline.registeraction('help')
+commandline.registeraction('version')
+
+commandline.registerflag('verbose')
+
+commandline.expand
+
+Commands.new(commandline,logger,banner).send(commandline.action || 'main')

@@ -3089,7 +3089,7 @@
       \ifcase#4 \or
         /Intent /Design % disable layer hiding by user
       \fi
-      \ifcase#5 \or
+      \ifnum#5=\zerocount
         /Usage << /Print << /PrintState /OFF >> >> % printable or not
       \fi
       /Name (#2)}%

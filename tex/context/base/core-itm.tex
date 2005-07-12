@@ -182,6 +182,7 @@
      #2*\v!serried*=>\setitemparameter{#1}\c!factor{-#2},
         \v!stopper*=>\setitemparameter{#1}\c!placestopper\v!yes,
        \v!unpacked*=>\packeditemsfalse,
+         \v!repeat*=>\settrue\repeatlistitem, % new
        \v!standard*=>\dosetupstandarditemgroup{#1}]}
 
 \def\dosetupstandarditemgroup#1%
@@ -654,6 +655,7 @@
    \ht8=\strutheight
    \dp8=\strutdepth
    % so that content differs per run (esp mp graphics afterwards)
+\checkforrepeatedlistitem
    \ifdim\dimen2<\zeropoint\relax
      \llap{\ifsubitem\llap{+}\fi\box8\hskip\leftmargindistance}%
    \else
@@ -683,6 +685,27 @@
    \symbolitemfalse
    \EveryPar{\ignorespaces}%
    \ignorespaces}
+
+% For Frank Grieshaber and Mojca Miklavec:
+
+\newconditional\repeatlistitem
+
+\def\checkforrepeatedlistitem
+  {\ifnum\itemlevel=\plusone \ifnum\itemlevel=\plusone
+     \initializeboxstack{item}%
+   \fi \fi
+   \ifconditional\repeatlistitem
+     \savebox{item}{\itemlevel}{\hbox{\ifnum\itemlevel>\plusone \copy8\else\fi}}%
+     \setbox8\hbox
+       {\setbox\scratchbox\hbox{\foundbox{item}{\itemlevel}}%
+        \ifnum\itemlevel>\plusone
+          \hskip-\wd\scratchbox
+          \ifnum\countervalue{\@@itemcounter\itemlevel}>\plusone
+            \llap{\box\scratchbox}%
+          \fi
+        \fi
+        \box8}%
+   \fi}
 
 \chardef\autoitemgroupspacing=2 % 0 = voor/na, 1=tussen als geen voor 2=(prev)tussen=old/normal
 

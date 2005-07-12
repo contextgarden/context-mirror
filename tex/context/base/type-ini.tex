@@ -630,23 +630,45 @@
   \let\normaldoreadfontdefinitionfile\doreadfontdefinitionfile
 \fi
 
+% old and obsolete
+%
+% \def\doreadfontdefinitionfile#1#2% #1 = set/switch state
+%   {\ifundefined{\??tf#2\c!default}%
+%      \pushmacro\fontclass
+%      \setcurrentfontclass\empty
+%      \pushmacro\@@typescriptone \edef\@@typescriptone {\truetypescript{#2}}%
+%      \pushmacro\@@typescripttwo  \let\@@typescripttwo  \empty
+%      \pushmacro\@@typescriptthree\let\@@typescriptthree\empty
+%      \typescriptfoundfalse
+%      \dododousetypescript{\f!typeprefix pre}%
+%      \popmacro\@@typescriptthree
+%      \popmacro\@@typescripttwo
+%      \popmacro\@@typescriptone
+%      \iftypescriptfound \else
+%        \normaldoreadfontdefinitionfile{#1}{#2}%
+%      \fi
+%      \setcurrentfontclass\empty
+%      \popmacro\fontclass
+%    \else\ifcase#1\relax
+%      \switchtotypeface[#2]%
+%    \else
+%      \setuptypeface[#2]%
+%    \fi\fi}
+%
+% new and obeying fontclasses (but still obsolete)
+
 \def\doreadfontdefinitionfile#1#2% #1 = set/switch state
   {\ifundefined{\??tf#2\c!default}%
-     \pushmacro\fontclass
-     \setcurrentfontclass\empty
-     \pushmacro\@@typescriptone \edef\@@typescriptone {\truetypescript{#2}}%
-     \pushmacro\@@typescripttwo  \let\@@typescripttwo  \empty
-     \pushmacro\@@typescriptthree\let\@@typescriptthree\empty
-     \typescriptfoundfalse
-     \dododousetypescript{\f!typeprefix pre}%
-     \popmacro\@@typescriptthree
-     \popmacro\@@typescripttwo
-     \popmacro\@@typescriptone
-     \iftypescriptfound \else
-       \normaldoreadfontdefinitionfile{#1}{#2}%
-     \fi
-     \setcurrentfontclass\empty
-     \popmacro\fontclass
+     \pushmacro\starttypescript
+     \scratchtoks\emptytoks
+     % locate downward compatibility definitions, one argument !
+     \long\def\starttypescript[##1]##2\stoptypescript
+       {\doif{##1}{#2}{\scratchtoks{##2}}}
+     \startreadingfile
+     \readfile{\f!typeprefix pre}\donothing\donothing
+     \stopreadingfile
+     \popmacro\starttypescript
+     \the\scratchtoks
    \else\ifcase#1\relax
      \switchtotypeface[#2]%
    \else

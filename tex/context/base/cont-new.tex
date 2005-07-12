@@ -24,7 +24,88 @@
 
 \writestatus{\m!systems}{beware: some patches loaded from cont-new.tex}
 
+% The following may be a solution for the fact that one cannot
+% change catcodes of characters like : and ; inside an environment.
+
+\appendtoks
+  \enablelanguagespecifics[\currentlanguage]%
+\to \everystarttext
+
+% Peter M\"unster's test case:
+%
+% \defineoverlay[Draft][{\scale[factor=max]{\rotate[rotation=60]{~MY||DRAFT~}}}]
+% \setupbackgrounds[page][background=Draft]
+% \starttext
+% \starttables[|l|]
+% \dorecurse{200}{\NC hallo \NC\AR}
+% \stoptables
+% \stoptext
+%
+% \let\normalactivetilde~
+% \let\normalactivebar  |
+%
+% \appendtoks\let~\normalactivetilde\to\everypagebody
+% \appendtoks\let|\normalactivebar  \to\everypagebody
+
 \let\cs\getvalue
+
+%D Krzysztof Leszczynski suggested to provide access to the level by
+%D means of a \type {#1}. I decided to pass the more frquently used
+%D level as \type {#1} and the less favoured depth as \type {#2}. The
+%D intended usage is:
+%D
+%D \starttyping
+%D \dorecurse{3}{\definesymbol[test-#1][xx-#1]}
+%D
+%D \def\test{\dorecurse{3}{\definesymbol[test-##1][xx-##1]}} \test
+%D
+%D \symbol[test-1]\quad\symbol[test-2]\quad\symbol[test-3]
+%D \stoptyping
+%D
+%D Since the hashed arguments are expanded, we don't need tricky
+%D expansion here.
+%D
+%D \starttyping
+%D \dorecurse{3}{\expanded{\definesymbol[test-\recurselevel][xx-\recurselevel]}}
+%D \stoptyping
+
+\def\expandrecursecontent
+  {\csname\@@arecurse\recursedepth\@EA\@EA\@EA\endcsname\@EA\@EA\@EA{\@EA\recurselevel\@EA}\@EA{\recursedepth}}
+
+\long\def\xdorecurse#1#2%
+  {\global\advance\outerrecurse \plusone
+   \long\global\@EA\def\csname\@@arecurse\recursedepth\endcsname##1##2{#2}%
+   \global\@EA\let\csname\@@irecurse\recursedepth\endcsname\recurselevel
+   \@EA\dodorecurse\@EA1\@EA{\number#1}}
+
+\long\def\dostepwiserecurse#1#2#3#4% can be made faster by postponing #4
+  {\global\advance\outerrecurse \plusone
+   \long\global\@EA\def\csname\@@arecurse\recursedepth\endcsname##1##2{#4}%
+   \global\@EA\let\csname\@@irecurse\recursedepth\endcsname\recurselevel
+   \ifnum#3>0\relax
+     \ifnum#2<#1\relax
+       \let\nextrecurse\exitstepwiserecurse
+     \else
+       \let\nextrecurse\dodostepwiserecurse
+     \fi
+   \else
+     \ifnum#3<0\relax
+       \ifnum#1<#2\relax
+         \let\nextrecurse\exitstepwiserecurse
+       \else
+         \let\nextrecurse\dodostepwisereverse
+       \fi
+     \else
+       \let\nextrecurse\exitstepwiserecurse
+     \fi
+   \fi\expanded{\nextrecurse{\number#1}{\number#2}{\number#3}}}
+
+\long\def\doloop#1%
+  {\global\advance\outerrecurse \plusone
+   \long\global\@EA\def\csname\@@arecurse\recursedepth\endcsname##1##2{#1}%
+   \global\@EA\let\csname\@@irecurse\recursedepth\endcsname\recurselevel
+   \let\endofloop\dodoloop
+   \dodoloop1} % no \plusone else \recurselevel wrong
 
 \ifx\normalcompound\undefined \let\normalcompound=| \fi
 

@@ -20,31 +20,31 @@
 
 % todo: internationalize + setups
 
-\setuphead[paragraaf][expansie=commando]
+\setuphead[paragraaf][expansion=command]
 
 \def\complexmodule[#1]% redefined
   {\startglobal % i.v.m. \bgroup in \startdocumentation
    \getparameters[Module][#1]
    \stopglobal  % i.v.m. \bgroup in \startdocumentation
-   \paragraaf{\Modulesubtitle}
-   \SchrijfLijstenWeg}
+   \section{\Modulesubtitle}
+   \WriteLists}
 
-\def\stopmodule% redefined
+\def\stopmodule % redefined
   {\page
    \determineregistercharacteristics
      [index]
-     [criterium=paragraaf]
+     [criterium=section]
    \ifutilitydone
      \pagereference
        [index]
      \placeregister
        [index]
-       [balanceren=ja,
-        aanduiding=nee,
-        criterium=paragraaf]
+       [balance=yes,
+        indicator=no,
+        criterium=section]
    \fi}
 
-\let\StelLijstenSamen=\relax
+\let\ComposeLists=\relax
 
 \newcounter\ModuleNumber
 
@@ -52,54 +52,56 @@
 
 \def\WriteBatchFile
   {\doglobal\increment\ModuleNumber
-   \immediate\write\BatchFile{call modu-run \FileName\space \ModuleNumber}}
+%    \immediate\write\BatchFile{call modu-run \FileName\space \ModuleNumber}}
+%    \immediate\write\BatchFile{texmfstart texutil --modu \FileName}}
+   \immediate\write\BatchFile{texmfstart texexec --pdf --modu \FileName}}
 
 \newif\ifProcessingPublic
 
-\def\SchrijfLijstenWeg
+\def\WriteLists
   {\writetolist[FileNames] {}{\FileName}
    \writetolist[GroupItems]{}{\GroupItem}}
 
-\def\moduletitel{}
+\def\moduletitle{}
 
 \def\TypeZeroModule#1%
-  {\paragraaf{[to be extracted: #1]}
+  {\section{[to be extracted: #1]}
    {\em This module is not yet split off.}
-   \SchrijfLijstenWeg}
+   \WriteLists}
 
 \def\TypeOneModule#1%
-  {\paragraaf{[to be documented: #1]}
+  {\section{[to be documented: #1]}
    {\em This module is not yet fully documented.}
-   \SchrijfLijstenWeg}
+   \WriteLists}
 
 \def\TypeTwoModule#1%
   {\ifProcessingPublic
      \readfile{#1.ted}{}{}%
      \WriteBatchFile
    \else
-     \paragraaf{[not yet public: #1]}
+     \section{[not yet public: #1]}
      {\em This module is documented but not yet public.}
-     \SchrijfLijstenWeg
+     \WriteLists
    \fi}
 
 \def\TypeThreeModule#1%
   {\readfile{#1.ted}{}{}%
    \WriteBatchFile}
 
-\def\verwerkmodule#1#2%
+\def\processmodule#1#2%
   {\page
    \bgroup
    \def\FileName{#1}
    \setupreferencing[prefix=#1]
    \useexternaldocument[PaperVersion][#1][]
    \aftersplitstring#1\at-\to\GroupItem
-   \StelLijstenSamen
+   \ComposeLists
    \ifcase#2
      \TypeZeroModule{#1}
    \or
      \TypeOneModule{#1}
    \or
-     \TypeTwoModule{#1}  % \TypeThreeModule{#1}
+     \TypeTwoModule{#1}
    \or
      \TypeThreeModule{#1}
    \fi
@@ -107,51 +109,48 @@
    \setupreferencing[prefix=]
    \egroup}
 
-\def\ModuleGroep#1#2%
+\def\ModuleGroup#1#2%
   {\page
    \let\Modulefile=\empty
    \setupreferencing[prefix=#1]
    \def\FileGroup{#1}
    \writetolist[FileGroups]{}{\FileGroup}
-   \hoofdstuk[inhoud]{#2}
-   \MaakLijstMetItems
-   \MaakLijstMetNames
-   \MaakLijstMetGroups
-   \plaatsinhoud[criterium=hoofdstuk,niveau=paragraaf]}
+   \chapter[content]{#2}
+   \MakeListOfItems
+   \MakeListOfNames
+   \MakeListOfGroups
+   \placecontent[criterium=chapter,level=section]}
 
 % Layout
 
 \setupbodyfont
-  [9pt,ams]
-
-\mainlanguage
-  [en]
+  [9pt]
 
 \setuppapersize
   [S6][S6]
 
 \setuplayout
-  [rugwit=72.5pt,
-   linkermarge=50pt,
-   linkermargeafstand=12.5pt,
-   rechtermarge=0pt,
-   rechterrand=80pt,
-   rechterrandafstand=10pt,
-   linkerrand=0pt,
-   breedte=430pt,
-   kopwit=10pt,
-   hoofd=0pt,
-   voet=30pt,
-   onderafstand=10pt,
-   onder=15pt,
-   hoogte=410pt,
-   letter=\ss]
+  [backspace=72.5pt,
+   leftmargin=50pt,
+   leftmargindistance=12.5pt,
+   rightmargin=0pt,
+   rightedge=80pt,
+   rightedgedistance=10pt,
+   leftedge=0pt,
+   width=430pt,
+   topspace=10pt,
+   header=0pt,
+   footer=30pt,
+   bottomdistance=10pt,
+   bottom=15pt,
+   height=410pt,
+   style=\ss]
 
 \setuptyping
   [palet=colorpretty]
 
 \setupsetup
-  [verwijzing=3]
+  [reference=3]
 
 \definecolor [AchtergrondKleur] [s=.6]
 \definecolor [ButtonKleur]      [r=.2,g=.2,b=.6]
@@ -163,83 +162,83 @@
 \definecolor [colorprettyfour]  [r=.6,g=.6,b=.0]  % yellow
 
 \setupinteraction
-  [status=start,
-   pagina=ja,
-   contrastkleur=,
-   menu=aan,
-   kleur=]
+  [state=start,
+   page=yes,
+   contrastcolor=,
+   menu=on,
+   color=]
 
 \setupbackgrounds
-  [pagina]
-  [achtergrond=kleur,
-   achtergrondkleur=AchtergrondKleur,
+  [page]
+  [background=color,
+   backgroundcolor=AchtergrondKleur,
    offset=2.5pt]  % this offset influences the menus!
 
 \setupbackgrounds
-  [tekst,voet]
-  [tekst,linkermarge]
-  [achtergrond=kleur,
-   achtergrondkleur=wit]
+  [text,footer]
+  [text,leftmargin]
+  [background=color,
+   backgroundcolor=white]
 
 \setupsubpagenumber
-  [wijze=perparagraaf,
-   status=start]
+  [way=bysection,
+   state=start]
 
 \setupinteractionbar
-  [kader=uit,
+  [frame=off,
    offset=0pt,
-   hoogte=passend]
+   height=fit]
 
 \setupwhitespace
-  [groot]
+  [big]
 
 \setuptyping
-  [typen]
-  [optie=kleur]
+  [typing]
+  [option=color]
 
 \setuptyping
   [definition]
-  [optie=kleur]
+  [option=color]
 
 \setuptyping
   [file]
-  [optie=kleur]
+  [option=color]
 
 \setuppagenumbering
-  [variant=enkelzijdig,
-   wijze=perparagraaf,
-   status=geen]
+  [alternative=singlesided,
+   way=bysection,
+   state=none]
 
 \setupinmargin
-  [plaats=links]
+  [location=left]
 
 \setupheads
-  [variant=inmarge]
+  [alternative=inmargin]
 
 \setuphead
-  [hoofdstuk]
-  [letter=\ssc,
-   pagina=rechts]
+  [chapter]
+  [style=\ssc,
+   page=right]
 
 \setuphead
-  [paragraaf]
-  [letter=\ssb,
-   pagina=rechts]
+  [section]
+  [style=\ssb,
+   page=right]
 
 \setuplist
-  [hoofdstuk]
-  [letter=vet,
-   na=\blank]
+  [chapter]
+  [style=bold,
+   after=\blank]
 
 \setupcontent
-  [breedte=2em]
+  [width=2em]
 
 \setupindex
-  [balanceren=ja,
-   aanduiding=nee]
+  [balance=yes,
+   indicator=no]
 
 \setupcolors
-  [status=start]
+  [state=start]
 
 \def\TitelBlad#1%
   {\startstandardmakeup
@@ -256,24 +255,25 @@
      \vfilll
      \midaligned{\KleinFont\setstrut\strut    PRAGMA ADE}
      \vskip24pt
-     \midaligned{\KleinFont\setstrut\strut    www.pragma-ade.nl --- \currentdate}
+     \midaligned{\KleinFont\setstrut\strut    www.pragma-ade.com --- \currentdate}
      \vskip12pt
      \stopcolor
    \stopstandardmakeup}
 
-\def\ColofonBlad%
+\def\ColofonBlad
   {\startmode[atpragma]
    \page
    \bgroup
      \def\PragmaHoogte {\makeupheight}
      \def\PragmaBreedte{\textwidth}
      \def\PragmaKopwit {\topspace}
-     \def\PragmaRugwit {\rugwit}
+     \def\PragmaRugwit {\backspace}
      \def\PragmaMarge  {0pt}
      \PragmaLijnentrue
      \PlaatsPragmaLogo[ADE]
      \vfill
-     \startnarrower[3*midden]
+     todo: colofon
+     \startnarrower[3*middle]
      This is the official documentation of \CONTEXT\ version
      \referraldate, a \TEX\ macropackage developed by J.~Hagen
      \& A.F.~Otten, who both hold the copyrights.
@@ -282,10 +282,13 @@
      \page
    \egroup
    \stopmode}
+
+\def\ColofonBlad
+  {}
 
-\newbox\LijstMetItems
-\newbox\LijstMetGroups
-\newbox\LijstMetNames
+\newbox\ListOfItems
+\newbox\ListOfGroups
+\newbox\ListOfNames
 
 \definelist[FileNames]   \def\FileName  {}
 \definelist[FileGroups]  \def\FileGroup {}
@@ -293,48 +296,48 @@
 
 \setuplist
   [FileNames,FileGroups,FileGroups]
-  [expansie=ja,
-   paginanummer=nee,
-   letter=\ss\bf]
+  [expansion=yes,
+   pagenumber=no,
+   style=\ss\bf]
 
 \setuplist
   [FileNames]
-  [commando=\FileNameEntry,
-   na=\endgraf,
-   variant=geen]
+  [command=\FileNameEntry,
+   after=\endgraf,
+   alternative=none] % horizontal
 
 \setuplist
   [FileGroups]
-  [commando=\FileGroupEntry,
-   na=\hss,
-   variant=geen]
+  [command=\FileGroupEntry,
+   after=\hss,
+   alternative=horizontal]
 
 \def\FileNameEntry#1#2#3%
   {\strut\hbox{#2}\endgraf}
 
 \def\FileGroupEntry#1#2#3%
-  {\strut#2\endgraf}
+  {\strut\hbox{#2}\endgraf}
 
-\def\MaakLijstMetItems
-  {\setbox\LijstMetItems=\vbox
+\def\MakeListOfItems
+  {\setbox\ListOfItems=\vbox
      {\ss\bf
-      \placelist[GroupItems][kleur=ButtonKleur,contrastkleur=wit,criterium=hoofdstuk]}}
+      \placelist[GroupItems][color=ButtonKleur,contrastcolor=white,criterium=chapter]}}
 
-\def\MaakLijstMetNames
-  {\setbox\LijstMetNames=\vbox
+\def\MakeListOfNames
+  {\setbox\ListOfNames=\vbox
      {\hsize\rightedgewidth
-      \ss\bf\stelinterliniein
-      \startsimplecolumns[afstand=10pt]
-        \placelist[FileNames][kleur=ButtonKleur,contrastkleur=wit,criterium=hoofdstuk]
+      \ss\bf\setupinterlinespace
+      \startsimplecolumns[distance=10pt]
+        \placelist[FileNames][color=ButtonKleur,contrastcolor=white,criterium=chapter]
       \stopsimplecolumns}}
 
-\def\MaakLijstMetGroups
-  {\setbox\LijstMetGroups=\hbox to \textwidth
+\def\MakeListOfGroups
+  {\setbox\ListOfGroups=\hbox to \textwidth
      {\ss\bf
-      \setupinteraction[kleur=ButtonKleur]%
-      \placelist[FileGroups][kleur=ButtonKleur,contrastkleur=wit,criterium=alles]\unskip\unskip}}
+      \setupinteraction[color=ButtonKleur]%
+      \placelist[FileGroups][color=ButtonKleur,contrastcolor=white,criterium=all]\unskip\unskip}}
 
-\setbox\LijstMetGroups=\hbox{}
+\setbox\ListOfGroups=\hbox{}
 
 %\setupfootertexts
 %  [rand]
@@ -342,73 +345,73 @@
 %  [{\interactiebalk[variant=g]}]
 
 \setupinteractionmenu
-  [rechts,onder]
-  [status=start,
-   kader=uit,
-   kleur=AchtergrondKleur,
-   contrastkleur=wit,
-   letter=\ss\bf,
-   hoogte=15pt,
+  [right,bottom]
+  [state=start,
+   frame=off,
+   color=AchtergrondKleur,
+   contrastcolor=white,
+   style=\ss\bf,
+   height=15pt,
    offset=0pt,
-   tussen=\vskip5pt,
-   achtergrond=kleur,
-   achtergrondkleur=ButtonKleur]
+   inbetween=\vskip5pt,
+   background=color,
+   backgroundcolor=ButtonKleur]
 
-\startinteractionmenu[rechts]
-  \boxofsize \vbox \textheight \voetafstand \voethoogte 5pt
+\startinteractionmenu[right]
+  \boxofsize \vbox \textheight \footerdistance \footerheight 5pt
     \bgroup
-      \copy\LijstMetNames
+      \copy\ListOfNames
       \vfill
-      \but [\FileGroup:inhoud]   local contents \\
+      \but [\FileGroup:content]  local contents \\
       \but [\FileName:index]     local register \\
       \but [PaperVersion::begin] paper version  \\
-      \but [inhoud]              main contents  \\
+      \but [content]             main contents  \\
       \but [index]               main register  \\
-      \but [VorigeSprong]        previous jump  \\
-      \but [VerlaatViewer]       close document \\
+      \but [PreviousJump]        previous jump  \\
+      \but [CloseDocument]       close document \\
       \unskip
     \egroup
 \stopinteractionmenu
 
-\startinteractionmenu[onder]
-  \unhcopy\LijstMetGroups
+\startinteractionmenu[bottom]
+  \unhcopy\ListOfGroups
 \stopinteractionmenu
 
-\def\plaatsmoduleregister
+\def\placemoduleregister
   {\startbackmatter
    \setupsubpagenumber[reset]
    \title[-:index]{Register}
    \placeregister[index]
    \stopbackmatter}
 
-\def\plaatsmoduleinhoud
+\def\placemodulecontent
   {\startfrontmatter
-   \title[-:inhoud]{Contents}
-   \setupinteractionbar[status=stop]
-   \placecontent[criterium=tekst,niveau=hoofdstuk]
+   \title[-:content]{Contents}
+   \setupinteractionbar[state=stop]
+   \placecontent[criterium=text,level=chapter]
    \stopfrontmatter}
 
 \setupcontent
-  [paginanummer=nee,
-   niveau=hoofdstuk,
-   interactie=alles,
-   letter=,
-   voor=,
-   na=]
+  [pagenumber=no,
+   level=chapter,
+   interaction=all,
+   style=,
+   before=,
+   after=]
 
 \setupfootertexts
-  [marge]
+  [margin]
   [\tt\Modulefile]
   []
 
 \setupfootertexts
-  [tekst]
-  [hoofdstuk][paragraaf]
+  [text]
+  [chapter][chapter]
 
 \setupindex
-  [symbool=1]
+  [symbol=1]
 
 \setuptolerance
-  [zeersoepel]
+  [verytolerant]
 
 \endinput

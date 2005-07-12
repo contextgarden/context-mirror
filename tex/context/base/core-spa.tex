@@ -1139,8 +1139,8 @@
 
 \def\checknextindentation[#1]%
   {\processaction[#1][%\v!keep=>,
-      \v!yes=>\doindentation,
-     \v!no=>\noindentation,
+     \v!yes=>\doindentation,
+      \v!no=>\noindentation,
     \v!auto=>\autoindentation]}
 
 \def\doindentation% too simple
@@ -1836,7 +1836,7 @@
 %D Sometimes one needs to freeze the interlinespacing
 %D
 %D \starttyping
-%D \rm \freezeinterlinespace .... {\ss \frozeninterlinespace .... \endgraf}
+%D \rm \saveinterlinespace .... {\ss \restoreinterlinespace .... \endgraf}
 %D \stoptyping
 
 \let\restoreinterlinespace\relax
@@ -3720,7 +3720,7 @@
 \newbox\indentationboxA
 \newbox\indentationboxB
 
-\def\pushindentation%
+\def\pushindentation
   {\bgroup
    \ifhmode
      \unskip
@@ -3735,7 +3735,7 @@
      \setbox\indentationboxB\box\voidb@x
    \fi}
 
-\def\popindentation%
+\def\popindentation
   {\box\indentationboxB\box\indentationboxA % put back the boxes
    \egroup}
 

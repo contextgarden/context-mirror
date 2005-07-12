@@ -3002,8 +3002,12 @@ leader-pattern-width=12pt,
   \doifsomething{\XMLop{column-width}}
     {%\setlocalhsize
      %\FOtableW\localhsize
-     \FOtableW\textwidth % hm, we need to set localhsize earlier
-     \setpercentdimen\FOtableW{\XMLop{column-width}}
+     \analyzefunction{\XMLop{column-width}}%
+     % hm, we need to set localhsize earlier
+     \doifelse\functionname{proportional-column-width}
+       {\FOtableW\functionA\textwidth}
+       {\FOtableW\textwidth
+        \setpercentdimen\FOtableW{\XMLop{column-width}}}%
      \expanded{\setupTABLE[column][\FOtablecolumn][width=\the\FOtableW]}}
 
   \doif{\XMLop{border-style}}{none}

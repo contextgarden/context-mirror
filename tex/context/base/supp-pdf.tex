@@ -431,6 +431,9 @@
 %D percent characters in a string. So, from now on we have
 %D to prefix the following strings with percentages.
 
+%D Some day I'll figure out a better solution (line by line reading
+%D using \ETEX).
+
 \edef \PSBoundingBox      {\letterpercent\letterpercent BoundingBox:}
 \edef \PSHiResBoundingBox {\letterpercent\letterpercent HiResBoundingBox:}
 \edef \PSExactBoundingBox {\letterpercent\letterpercent ExactBoundingBox:}
@@ -571,6 +574,25 @@
 \def\octalMPcharacter#1#2#3%
   {\char'#1#2#3\relax}
 
+
+%D curly braces and squarly brackets are stored in the argument stack
+%D as part  of strings, for instance in:
+%D
+%D \starttyping
+%D /fshow {exch findfont exch scalefont setfont show}bind def
+%D [3 3 ] 0 setdash
+%D \stoptyping
+%D
+%D but we need to keep them in situation like
+%D
+%D \starttyping
+%D ([bla bla] bla bla) ec-lmr10 9.96265 fshow
+%D ({bla bla} bla bla) ec-lmr10 9.96265 fshow
+%D \stoptyping
+%D
+%D So, when we store the snippets, we keep the special tokens, and
+%D when needed we either ignore or obey them
+
 \bgroup
 \catcode`\|=\@@comment
 \catcode`\%=\@@active
@@ -580,6 +602,12 @@
 \catcode`\}=\@@active
 \catcode`B=\@@begingroup
 \catcode`E=\@@endgroup
+\gdef\keepMPspecials|
+  B\let%\letterpercent|
+   \def[B\noexpand[E|
+   \def]B\noexpand]E|
+   \def{B\noexpand{E|
+   \def}B\noexpand}EE
 \gdef\ignoreMPspecials|
   B\let%\letterpercent|
    \def[BE|
@@ -640,7 +668,7 @@
 %D \type{\input} primitive.)
 
 \def\startMPconversion
-  {\ignoreMPspecials
+  {\keepMPspecials
    \handleMPsequence}
 
 %D Here comes the main loop. Most arguments are numbers. This
@@ -836,6 +864,9 @@
      \dimen2=\MPyscale\dimen2
      \xdef\MPheight{\the\dimen2}%
      \chardef\currentMPboundingbox#1\relax
+   \else
+     \xdef\MPheight{\zeropoint}%
+     \xdef\MPwidth {\zeropoint}%
    \fi
    \doresetMPstack
    \let\handleMPsequence\dohandleMPsequence
@@ -896,6 +927,7 @@
   {\bgroup
    \setbox\scratchbox\hbox
      {\obeyMPspecials
+      \let\ \relax % mp breaks long lines and appends a \
       \edef\size{\gMPa\nofMParguments}%
       \ifx\size\PSnfont % round font size (to pt)
         \advance\nofMParguments \minusone
@@ -996,6 +1028,7 @@
 
 \def\handleMPsetdash
   {\bgroup
+   \ignoreMPspecials
    \def\somestring{[}%
    \scratchcounter\plusone
    \loop
