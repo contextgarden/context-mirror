@@ -864,9 +864,6 @@
      \dimen2=\MPyscale\dimen2
      \xdef\MPheight{\the\dimen2}%
      \chardef\currentMPboundingbox#1\relax
-   \else
-     \xdef\MPheight{\zeropoint}%
-     \xdef\MPwidth {\zeropoint}%
    \fi
    \doresetMPstack
    \let\handleMPsequence\dohandleMPsequence
@@ -2049,6 +2046,8 @@
   {\bgroup
    \ifx\pdfdecimaldigits\undefined\else \pdfdecimaldigits=5 \fi % new
    \setbox\scratchbox\vbox\bgroup
+     \xdef\MPheight{\zeropoint}%
+     \xdef\MPwidth {\zeropoint}%
      \forgetall
      \offinterlineskip
      \startMPresources

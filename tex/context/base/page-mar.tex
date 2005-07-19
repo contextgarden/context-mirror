@@ -552,8 +552,16 @@
 %D \dorecurse{10}{\margintext{test\\test\\test} \input thuan \endgraf}
 %D \stoptyping
 
+% Test case:
+%
+% \setuppagenumbering[alternative=doublesided] \setupwhitespace[medium]
+%
+% \placefigure[right]{}{\externalfigure[dummy][width=2cm]}
+% \input tufte \inothermargin{test} \input tufte
+
 \def\dodoinmargin[#1][#2][#3][#4][#5]#6%
   {\bgroup
+   \forgetall % otherwise sidefloat problems, added 2005/07/20, maybe dangerous
    \postponefootnotes % group is (somehow) needed
    \doifinsetelse\v!low{#4}
      {\chardef\margincontentdisplacement\plusone}

@@ -491,9 +491,13 @@
 
 \unprotect
 
-\def\showsetup
-  {\doglobal\newcounter\CurrentArgument
-   \setup}
+% \def\showsetup
+%   {\doglobal\newcounter\CurrentArgument
+%    \setup}
+
+\def\showsetup#1%
+  {{\def\y##1{\writestatus{setups}{warning: remove y! from #1}}%
+    \setup{#1}}}
 
 \setupframedtexts
   [setuptext]

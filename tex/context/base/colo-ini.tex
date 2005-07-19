@@ -196,7 +196,7 @@
 %D We will enable users to specify colors in \cap{RGB} and
 %D \cap{CMYK} color spaces or gray scales using
 %D
-%D \showsetup{\y!definecolor}
+%D \showsetup{definecolor}
 %D
 %D For example:
 %D
@@ -567,7 +567,7 @@
 %D where \type{\f!colorprefix} is \unprotect {\tttf \f!colorprefix}.
 %D Loading such a file is done by \protect
 %D
-%D \showsetup{\y!setupcolor}
+%D \showsetup{setupcolor}
 %D
 %D Some default colors are specified in \type{colo-rgb.tex},
 %D which is loaded into the format by:
@@ -1706,7 +1706,7 @@
 %D The more save method, the one that saves the current color
 %D state and returns to this state afterward, is activated by:
 %D
-%D \showsetup{\y!startcolor}
+%D \showsetup{startcolor}
 
 \def\startcolor
   {\ifincolor
@@ -2015,8 +2015,8 @@
 %D
 %D This leaves the simple color command:
 %D
-%D \showsetup{\y!color}
-%D \showsetup{\y!graycolor}
+%D \showsetup{color}
+%D \showsetup{graycolor}
 %D
 %D Which can be used straightforward: \color[green]{green as gras}.
 %D We want color support to be similar to font support and
@@ -2203,7 +2203,7 @@
 %D
 %D It's formal definition is:
 %D
-%D \showsetup{\y!definepalet}
+%D \showsetup{definepalet}
 %D
 %D Visualized, such a palet looks like:
 %D
@@ -2261,7 +2261,7 @@
 %D Colors are taken from the current palet, if defined.
 %D Setting the current palet is done by:
 %D
-%D \showsetup{\y!setuppalet}
+%D \showsetup{setuppalet}
 
 \let\currentpalet\empty
 
@@ -2291,7 +2291,7 @@
 %D
 %D This commands is defined as:
 %D
-%D \showsetup{\y!showpalet}
+%D \showsetup{showpalet}
 
 \fetchruntimecommand \showpalet {\f!colorprefix\s!run}
 
@@ -2316,7 +2316,7 @@
 %D
 %D In such a color group colors are numbered from~$1$ to~$n$.
 %D
-%D \showsetup{\y!definecolorgroup}
+%D \showsetup{definecolorgroup}
 %D
 %D This kind of specification is not only more compact than
 %D defining each color separate, it also loads faster and takes
@@ -2369,7 +2369,7 @@
 %D
 %D which uses:
 %D
-%D \showsetup{\y!showcolorgroup}
+%D \showsetup{showcolorgroup}
 
 \fetchruntimecommand \showcolorgroup {\f!colorprefix\s!run}
 
@@ -2428,7 +2428,7 @@
 %D
 %D The formal definition is:
 %D
-%D \showsetup{\y!comparepalet}
+%D \showsetup{comparepalet}
 
 \fetchruntimecommand \comparepalet {\f!colorprefix\s!run}
 
@@ -2451,7 +2451,7 @@
 %D
 %D this commands are defined as:
 %D
-%D \showsetup{\y!comparecolorgroup}
+%D \showsetup{comparecolorgroup}
 
 \fetchruntimecommand \comparecolorgroup {\f!colorprefix\s!run}
 
@@ -2467,7 +2467,7 @@
 %D
 %D Where \type{name} for instance can be \type{rgb}.
 %D
-%D \showsetup{\y!showcolor}
+%D \showsetup{showcolor}
 
 \fetchruntimecommand \showcolor {\f!colorprefix\s!run}
 

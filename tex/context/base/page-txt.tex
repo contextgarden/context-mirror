@@ -58,11 +58,11 @@
 %D than needed, which is a direct result of the fact that their
 %D ancestors are quite old and upward compatibility is a must.
 %D
-%D \showsetup{\y!setuptop}
-%D \showsetup{\y!setupheader}
-%D \showsetup{\y!setuptext}
-%D \showsetup{\y!setupfooter}
-%D \showsetup{\y!setupbottom}
+%D \showsetup{setuptop}
+%D \showsetup{setupheader}
+%D \showsetup{setuptext}
+%D \showsetup{setupfooter}
+%D \showsetup{setupbottom}
 
 \def\setuplayouttext
   {\dotripleempty\dosetuplayouttext}
@@ -89,8 +89,8 @@
 %D Although not really needed, the following shortcuts
 %D sometimes come in handy.
 %D
-%D \showsetup{\y!noheaderandfooterlines}
-%D \showsetup{\y!notopandbottomlines}
+%D \showsetup{noheaderandfooterlines}
+%D \showsetup{notopandbottomlines}
 
 \def\noheaderandfooterlines
   {\setupheader[\c!state=\v!empty]%
@@ -110,11 +110,11 @@
 %D When margin and edge texts as well as middle texts showed
 %D up, the current odd|/|even scheme surfaced.
 %D
-%D \showsetup{\y!setuptoptexts}
-%D \showsetup{\y!setupheadertexts}
-%D \showsetup{\y!setuptexttexts}
-%D \showsetup{\y!setupfootertexts}
-%D \showsetup{\y!setupbottomtexts}
+%D \showsetup{setuptoptexts}
+%D \showsetup{setupheadertexts}
+%D \showsetup{setuptexttexts}
+%D \showsetup{setupfootertexts}
+%D \showsetup{setupbottomtexts}
 
 \def\setuptoptexts    {\dosixtupleempty\dosetuptexts[\v!top]}
 \def\setupheadertexts {\dosixtupleempty\dosetuptexts[\v!header]}
@@ -595,7 +595,7 @@
 %D \type {unknown}. This one is used to take care of
 %D symbolic texts handlers.
 %D
-%D \showsetup{\y!definetext}
+%D \showsetup{definetext}
 %D
 %D The next example demonstrates how we can use this
 %D mechanism to provide page (event) dependent text lines.

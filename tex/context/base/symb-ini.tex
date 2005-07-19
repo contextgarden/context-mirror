@@ -65,8 +65,8 @@
 %D First we take care of symbols. These are for instance used
 %D in enumerations and itemizations. We have:
 %D
-%D \showsetup{\y!definesymbol}
-%D \showsetup{\y!symbol}
+%D \showsetup{definesymbol}
+%D \showsetup{symbol}
 %D
 %D Symbols are simply linked to a tag. Such tags can be numbers
 %D or strings.
@@ -167,7 +167,7 @@
 %D
 %D To simplify defining figure symbols, we offer:
 %D
-%D \showsetup{\y!definefiguresymbol}
+%D \showsetup{definefiguresymbol}
 %D
 %D By default, such symbols scale along the current bodyfont
 %D size or running font size (which is better).
@@ -256,8 +256,8 @@
 %D
 %D Formally:
 %D
-%D \showsetup{\y!setupsymbolset}
-%D \showsetup{\y!startsymbolset}
+%D \showsetup{setupsymbolset}
+%D \showsetup{startsymbolset}
 
 \let\currentsymboldef\empty
 
@@ -281,14 +281,14 @@
 %D \macros
 %D   {showsymbolset}
 %D
-%D \showsetup{\y!showsymbolset}
+%D \showsetup{showsymbolset}
 
 \fetchruntimecommand \showsymbolset {\f!symbolprefix\s!run}
 
 %D \macros
 %D   {usesymbols}
 %D
-%D \showsetup{\y!usesymbols}
+%D \showsetup{usesymbols}
 
 \def\dousesymbols#1%
   {\makeshortfilename[\f!symbolprefix#1]%

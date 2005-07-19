@@ -457,7 +457,7 @@ class Commands
 
     end
 
-    def purgeall
+    def purgeallfiles
         purgefiles(true) # for old times sake
     end
 

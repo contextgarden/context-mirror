@@ -29,28 +29,67 @@
 \def\setuplines
   {\dodoubleargument\getparameters[\??rg]}
 
+% old
+%
+% \def\startlines
+%   {\@@rgbefore
+%    \whitespace
+%   %\page[\v!preference]} gaat mis na koppen, nieuw: later \nobreak
+%    \begingroup
+%    \def \@@rgstepyes  {\parindent\zeropoint}%
+%    \def \@@rgstepno   {\parindent\zeropoint}%
+%    \edef\@@rgparindent{\the\parindent}%
+%    \globallet\@@rglinesteptoggle\!!plusone
+%    \processaction
+%      [\@@rgindenting]
+%      [  \v!yes=>\def\@@rgstepyes{\parindent\@@rgparindent}%
+%                 \def\@@rgstepno {\parindent\@@rgparindent},
+%         \v!odd=>\def\@@rgstepyes{\parindent\zeropoint    }%
+%                 \def\@@rgstepno {\parindent\@@rgparindent},
+%        \v!even=>\def\@@rgstepno {\parindent\zeropoint    }%
+%                 \def\@@rgstepyes{\parindent\@@rgparindent}]%
+%    \typesettinglinestrue
+%    \setupwhitespace[\v!none]%
+%    \obeylines
+%    \let\checkindentation\relax
+%    \@@rgstepno
+%    \ignorespaces
+%    \gdef\afterfirstobeyedline % tzt two pass, net als opsomming
+%      {\gdef\afterfirstobeyedline
+%         {\nobreak
+%          \global\let\afterfirstobeyedline\relax}}%
+%    \def\obeyedline
+%      {\par
+%       \let\checkindentation\relax % else problems with odd/even
+%       \afterfirstobeyedline
+%       \ifdim\lastskip>\zeropoint
+%         \globallet\@@rglinesteptoggle\!!zerocount
+%       \else
+%         \doglobal\increment\@@rglinesteptoggle
+%       \fi
+%       \ifodd\@@rglinesteptoggle\relax
+%         \@@rgstepyes
+%       \else
+%         \@@rgstepno
+%       \fi
+%       \futurelet\next\dobetweenthelines}%
+%    \activatespacehandler\@@rgspace
+%    \GotoPar}
+%
+% \def\stoplines
+%   {\endgroup
+%    \@@rgafter}
+
 \def\startlines
   {\@@rgbefore
+   \pushmacro\checkindentation
    \whitespace
   %\page[\v!preference]} gaat mis na koppen, nieuw: later \nobreak
    \begingroup
-   \def \@@rgstepyes  {\parindent\zeropoint}%
-   \def \@@rgstepno   {\parindent\zeropoint}%
-   \edef\@@rgparindent{\the\parindent}%
-   \globallet\@@rglinesteptoggle\!!plusone
-   \processaction
-     [\@@rgindenting]
-     [  \v!yes=>\def\@@rgstepyes{\parindent\@@rgparindent}%
-                \def\@@rgstepno {\parindent\@@rgparindent},
-        \v!odd=>\def\@@rgstepyes{\parindent\zeropoint    }%
-                \def\@@rgstepno {\parindent\@@rgparindent},
-       \v!even=>\def\@@rgstepno {\parindent\zeropoint    }%
-                \def\@@rgstepyes{\parindent\@@rgparindent}]%
+   \setupindenting[\@@rgindenting]%
    \typesettinglinestrue
    \setupwhitespace[\v!none]%
    \obeylines
-   \let\checkindentation\relax
-   \@@rgstepno
    \ignorespaces
    \gdef\afterfirstobeyedline % tzt two pass, net als opsomming
      {\gdef\afterfirstobeyedline
@@ -58,21 +97,15 @@
          \global\let\afterfirstobeyedline\relax}}%
    \def\obeyedline
      {\par
-      \let\checkindentation\relax % else problems with odd/even
       \afterfirstobeyedline
-      \ifdim\lastskip>\zeropoint
-        \globallet\@@rglinesteptoggle\!!zerocount
-      \else
-        \doglobal\increment\@@rglinesteptoggle
-      \fi
-      \ifodd\@@rglinesteptoggle\relax
-        \@@rgstepyes
-      \else
-        \@@rgstepno
-      \fi
       \futurelet\next\dobetweenthelines}%
    \activatespacehandler\@@rgspace
    \GotoPar}
+
+\def\stoplines
+  {\endgroup
+   \popmacro\checkindentation
+   \@@rgafter}
 
 %D When spacing is active we need to handle commands in
 %D a special way:
@@ -86,6 +119,19 @@
 %D
 %D \startlines
 %D Let's talk about this{\getvalue{ttsl}or}that.
+%D \stoplines
+%D \stoptyping
+%D
+%D One can indent in several ways:
+%D
+%D \starttyping
+%D \setupindenting[medium] \setuplines[indenting=odd] % no yes odd even
+%D
+%D \startlines
+%D first
+%D second
+%D third
+%D fourth
 %D \stoplines
 %D \stoptyping
 
@@ -107,7 +153,7 @@
 \installspacehandler \v!off
   {\normalspaces
    \let\obeyedspace\normalspace
-   \let\ \normalspacetoken}
+   \let\ =\normalspace}
 
 \def\activatespacehandler#1%
   {\executeifdefined{\??sr#1}{\activatespacehandler\v!off}}
@@ -121,10 +167,6 @@
 
 \def\dobetweenthelines
   {\doifmeaningelse\next\obeyedline\@@rginbetween\donothing}
-
-\def\stoplines
-  {\endgroup
-   \@@rgafter}
 
 % het gebruik van \setlocalreference scheelt een hash entry
 

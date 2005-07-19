@@ -935,7 +935,7 @@
 %D
 %D Now is this is a handy feature or not?
 %D
-%D \showsetup{\y!definereference}
+%D \showsetup{definereference}
 %D
 %D We can trace references by setting the next switch to
 %D true.
@@ -2169,7 +2169,7 @@
 \setglobalsystemreference \rt!exec \v!StopSound        {stopsound}
 \setglobalsystemreference \rt!exec \v!StopRendering    {stoprendering}
 \setglobalsystemreference \rt!exec \v!SubmitForm       {submitform}
-\setglobalsystemreference \rt!exec \v!SwapViewer       {swap}
+\setglobalsystemreference \rt!exec \v!ToggleViewer     {toggle}
 \setglobalsystemreference \rt!exec \v!ViewerHelp       {help}
 \setglobalsystemreference \rt!exec \v!HideField        {hide}
 \setglobalsystemreference \rt!exec \v!ShowField        {show}
@@ -2214,7 +2214,7 @@
 
 %D These settings are accomplished by:
 %D
-%D \showsetup{\y!setupreferencing}
+%D \showsetup{setupreferencing}
 %D
 %D In interactive documents verbose references don't always
 %D make sense (what is a page number in an unnumbered
@@ -2702,7 +2702,7 @@
 %D previous macros are implemented using the goto
 %D functionality.
 %D
-%D \showsetup{\y!goto}
+%D \showsetup{goto}
 %D
 %D One important chaacteristic is that the first argument of
 %D \type{\goto} (and therefore \type{\at} and \type{\in} is
@@ -2809,7 +2809,7 @@
 %D are made, so in most cases such a document reference in an
 %D indirect one.
 %D
-%D \showsetup{\y!useexternaldocument}
+%D \showsetup{useexternaldocument}
 %D
 %D For example:
 %D
@@ -2853,7 +2853,7 @@
 
 %D The \URL\ alternative takes four arguments:
 %D
-%D \showsetup{\y!useURL}
+%D \showsetup{useURL}
 %D
 %D like:
 %D
@@ -2923,7 +2923,7 @@
 %D
 %D An \URL\ can be set up with
 %D
-%D \showsetup{\y!setupurl}
+%D \showsetup{setupurl}
 
 \def\setupurl
   {\dodoubleargument\getparameters[\??ur]}
@@ -3014,7 +3014,7 @@
 %D also specify a suitable name (the last argument). This name
 %D can be called upon with:
 %D
-%D \showsetup{\y!from}
+%D \showsetup{from}
 %D
 %D As can be expected, this macro used \type{\goto} to
 %D perform its task.
@@ -3131,9 +3131,9 @@
 %D very system dependant references are implemented by abusing
 %D some of the previous macros.
 %D
-%D \showsetup{\y!setupprograms}
-%D \showsetup{\y!defineprogram}
-%D \showsetup{\y!program}
+%D \showsetup{setupprograms}
+%D \showsetup{defineprogram}
+%D \showsetup{program}
 %D
 %D The latter gives access to the description of the program,
 %D being the last argument to the definition command.
@@ -3213,7 +3213,7 @@
 %D
 %D Here location is a keyword like \type{nextpage}.
 %D
-%D \showsetup{\y!gotopage}
+%D \showsetup{gotopage}
 
 \def\dodefinepage[#1][#2]%
   {\setvalue{\v!page:::#1}{#2}}
@@ -3386,7 +3386,7 @@
 
 %D We can cross link documents by using:
 %D
-%D \showsetup{\y!coupledocument}
+%D \showsetup{coupledocument}
 %D
 %D like:
 %D
@@ -3467,11 +3467,11 @@
 %D
 %D This command is formally specified as:
 %D
-%D \showsetup{\y!button}
+%D \showsetup{button}
 %D
 %D The characteristics can be set with:
 %D
-%D \showsetup{\y!setupbuttons}
+%D \showsetup{setupbuttons}
 
 \def\setupbuttons
   {\dodoubleargument\getparameters[\??bt]}

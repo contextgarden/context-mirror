@@ -47,7 +47,7 @@
 %D We can influence footnote typesetting with the setup
 %D command:
 %D
-%D \showsetup{\y!setupfootnotes} % ! !
+%D \showsetup{setupfootnotes} % ! !
 %D
 %D It's sort of a custom to precede footnotes by a horizontal
 %D rule and although fancy rules like
@@ -74,7 +74,7 @@
 %D The next definitions indicate that we can frame the footnote
 %D area. The footnotes themselves are treated as definitions.
 %D
-%D \showsetup{\y!setupfootnotes}
+%D \showsetup{setupfootnotes}
 
 \let\currentnote\v!footnote
 
@@ -429,7 +429,7 @@
 %D A footnote can have a reference as optional argument and
 %D therefore its formal specification looks like:
 %D
-%D \showsetup{\y!footnote}
+%D \showsetup{footnote}
 %D
 %D This command has one optional command: the reference. By
 %D saying \type{[-]} the number is omitted. The footnote
@@ -676,7 +676,7 @@
 %D Refering to a note is accomplished by the rather short
 %D command:
 %D
-%D \showsetup{\y!note}
+%D \showsetup{note}
 %D
 %D This command is implemented rather straightforward as:
 
@@ -930,8 +930,8 @@
 %D The next two macros can be used in for instance tables, as
 %D we'll demonstrate later on.
 %D
-%D \showsetup{\y!startlocalfootnotes}
-%D \showsetup{\y!placelocalfootnotes}
+%D \showsetup{startlocalfootnotes}
+%D \showsetup{placelocalfootnotes}
 
 \def\defaultnotewidth{\makeupwidth}
 
@@ -1014,7 +1014,7 @@
 %D user action is needed). Footnotes (endnotes) can be
 %D placed by using
 %D
-%D \showsetup{\y!placefootnotes}
+%D \showsetup{placefootnotes}
 
 \def\placebottomnotes
   {\processnotes\dodoplacenotes}

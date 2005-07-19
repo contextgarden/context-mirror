@@ -135,16 +135,18 @@
 %D in mono spaced fonts). Alas, we need to do some testing in order
 %S to get to the ptex'd one.
 
-\ifx\ptexnoligatures\undefined
-  \ifx\noligatures\undefined
-    \def\noligatures#1{}
-  \else
-    % let's assume that it takes a font tag as argument
-  \fi
-\else
-  \let\noligatures\ptexnoligatures
-\fi
+\def\checkpdftexprimitive #1
+  {\expandafter\ifx\csname     #1\endcsname\relax
+   \expandafter\ifx\csname  pdf#1\endcsname\relax
+   \expandafter\ifx\csname ptex#1\endcsname\relax
+     \expandafter\let\csname normal#1\endcsname            \undefined                   \else
+     \expandafter\let\csname normal#1\expandafter\endcsname\csname ptex#1\endcsname \fi \else
+     \expandafter\let\csname normal#1\expandafter\endcsname\csname  pdf#1\endcsname \fi \else
+     \expandafter\let\csname normal#1\expandafter\endcsname\csname     #1\endcsname \fi}
 
-\let\normalnoligatures\noligatures
+\checkpdftexprimitive quitvmode
+\checkpdftexprimitive noligatures
+\checkpdftexprimitive setrandomseed
+\checkpdftexprimitive uniformdeviate
 
 \protect \endinput

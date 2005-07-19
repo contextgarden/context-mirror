@@ -22,7 +22,7 @@
 %D \starttabulate[|lB|l|]
 %D \NC Czech     \NC Tom Hidec, Petr Sojka \NC \NR
 %D \NC Polish    \NC Grzegorz Sapijaszko   \NC \NR
-%D \NC Croatian  \NC Zeljko Vrba           \NC \NR
+%D \NC Croatian  \NC \Zcaron eljko Vrba    \NC \NR
 %D \NC Slovenian \NC Mojca Miklavec        \NC \NR
 %D \stoptabulate
 
@@ -93,11 +93,11 @@
 
 \installlanguage
   [\s!sl]
-  [\c!spacing=\v!packed, % ? copied from german - don't know what this means
-   \c!leftsentence={\hbox{--~}}, % ?
-   \c!rightsentence={\hbox{~--}}, % ?
-   \c!leftsubsentence={--}, % ?
-   \c!rightsubsentence={--}, % ?
+  [\c!spacing=\v!packed,
+   \c!leftsentence={\hbox{--~}},
+   \c!rightsentence={\hbox{~--}},
+   \c!leftsubsentence={--},
+   \c!rightsubsentence={--},
    \c!leftquote=\lowerleftsingleninequote,
    \c!rightquote=\upperrightsinglesixquote,
    \c!leftquotation=\lowerleftdoubleninequote,
@@ -210,10 +210,10 @@
 
 % labels
 
-\setupheadtext [\s!pl] [\v!content=Spis tre\'sci]
+\setupheadtext [\s!pl] [\v!content=Spis tre\sacute ci]
 \setupheadtext [\s!cz] [\v!content=Obsah]
 \setupheadtext [\s!sk] [\v!content=Obsah]
-\setupheadtext [\s!hr] [\v!content=Sadr\v{z}aj]
+\setupheadtext [\s!hr] [\v!content=Sadr\zcaron aj]
 \setupheadtext [\s!sl] [\v!content=Vsebina]
 
 \setupheadtext [\s!pl] [\v!tables=Tabele]
@@ -223,8 +223,8 @@
 \setupheadtext [\s!sl] [\v!tables=Tabele]
 
 \setupheadtext [\s!pl] [\v!figures=Ilustracje]
-\setupheadtext [\s!cz] [\v!figures=Obr\'azk\r{u}]
-\setupheadtext [\s!sk] [\v!figures=Obr\'azkov]
+\setupheadtext [\s!cz] [\v!figures=Obr\aacute zk\uring]
+\setupheadtext [\s!sk] [\v!figures=Obr\aacute zkov]
 \setupheadtext [\s!hr] [\v!figures=Slike]
 \setupheadtext [\s!sl] [\v!figures=Slike]
 
@@ -241,12 +241,12 @@
 \setupheadtext [\s!sl] [\v!intermezzi=Intermezzi]
 
 \setupheadtext [\s!pl] [\v!index=Indeks]
-\setupheadtext [\s!cz] [\v!index=Rejst\v{r}\'{\i}k]
+\setupheadtext [\s!cz] [\v!index=Rejst\rcaron\iacute k]
 \setupheadtext [\s!sk] [\v!index=Zoznam]
 \setupheadtext [\s!hr] [\v!index=Indeks]
 \setupheadtext [\s!sl] [\v!index=Kazalo]
 
-\setupheadtext [\s!pl] [\v!abbreviations=Skr\'ocenie]
+\setupheadtext [\s!pl] [\v!abbreviations=Skr\oacute cenie]
 \setupheadtext [\s!cz] [\v!abbreviations=...]
 \setupheadtext [\s!sk] [\v!abbreviations=...]
 \setupheadtext [\s!hr] [\v!abbreviations=Kratice]
@@ -266,12 +266,12 @@
 
 \setuplabeltext [\s!pl] [\v!table=Tabela ]
 \setuplabeltext [\s!cz] [\v!table=Tabulka ]
-\setuplabeltext [\s!sk] [\v!table=Tabu\v{l}ka ]
-\setuplabeltext [\s!hr] [\v!table=T\'abl\'azat ] % [\v!table=Tablica ]
+\setuplabeltext [\s!sk] [\v!table=Tabu\lcaron ka ]
+\setuplabeltext [\s!hr] [\v!table=T\aacute bl\aacute zat ] % [\v!table=Tablica ]
 \setuplabeltext [\s!sl] [\v!table=Tabela ]
 
 \setuplabeltext [\s!pl] [\v!figure=Ilustracja ]
-\setuplabeltext [\s!cz] [\v!figure=Obr\'azek ]
+\setuplabeltext [\s!cz] [\v!figure=Obr\aacute zek ]
 \setuplabeltext [\s!sk] [\v!figure=... ]
 \setuplabeltext [\s!hr] [\v!figure=Slika ]
 \setuplabeltext [\s!sl] [\v!figure=Slika ]
@@ -292,13 +292,13 @@
 \setuplabeltext [\s!cz] [\v!chapter=] % Kapitola
 \setuplabeltext [\s!sk] [\v!chapter=] % Kapitola
 \setuplabeltext [\s!hr] [\v!chapter=] % Rozdzia\l
-\setuplabeltext [\s!sl] [\v!chapter=]
+\setuplabeltext [\s!sl] [\v!chapter=] % Poglavje
 
 \setuplabeltext [\s!pl] [\v!section=] % Podrozdzia\l
 \setuplabeltext [\s!cz] [\v!section=]
 \setuplabeltext [\s!sk] [\v!section=]
 \setuplabeltext [\s!hr] [\v!section=] % Podrozdzia\l
-\setuplabeltext [\s!sl] [\v!section=] % Odstavek
+\setuplabeltext [\s!sl] [\v!section=]
 
 \setuplabeltext [\s!pl] [\v!subsection=]
 \setuplabeltext [\s!cz] [\v!subsection=]
@@ -324,9 +324,9 @@
 \setuplabeltext [\s!hr] [\v!appendix=Dodatak ]
 \setuplabeltext [\s!sl] [\v!appendix=Dodatek ]
 
-\setuplabeltext [\s!pl] [\v!part=Ust\k{e}p]
-\setuplabeltext [\s!cz] [\v!part=\v{C}\'ast]
-\setuplabeltext [\s!sk] [\v!part=\v{C}as\v{t}]
+\setuplabeltext [\s!pl] [\v!part=Ust\eogonek p]
+\setuplabeltext [\s!cz] [\v!part=\Ccaron \aacute st]
+\setuplabeltext [\s!sk] [\v!part=\Ccaron as\tcaron{}]
 \setuplabeltext [\s!hr] [\v!part=Dio]
 \setuplabeltext [\s!sl] [\v!part=Del ]
 
@@ -350,40 +350,40 @@
 \setuplabeltext [\s!pl]      [\v!june=czerwca]
 \setuplabeltext [\s!pl]      [\v!july=lipca]
 \setuplabeltext [\s!pl]    [\v!august=sierpnia]
-\setuplabeltext [\s!pl] [\v!september=wrze\'snia]
-\setuplabeltext [\s!pl]   [\v!october=pa\'zdziernika]
+\setuplabeltext [\s!pl] [\v!september=wrze\sacute nia]
+\setuplabeltext [\s!pl]   [\v!october=pa\zacute dziernika]
 \setuplabeltext [\s!pl]  [\v!november=listopada]
 \setuplabeltext [\s!pl]  [\v!december=grudnia]
 
 \setuplabeltext [\s!cz]   [\v!january=ledna]
-\setuplabeltext [\s!cz]  [\v!february=\'unora]
-\setuplabeltext [\s!cz]     [\v!march=b\v{r}ezna]
+\setuplabeltext [\s!cz]  [\v!february=\uacute nora]
+\setuplabeltext [\s!cz]     [\v!march=b\rcaron ezna]
 \setuplabeltext [\s!cz]     [\v!april=dubna]
-\setuplabeltext [\s!cz]       [\v!may=kv\v{e}tna]
-\setuplabeltext [\s!cz]      [\v!june=\v{c}ervna]
-\setuplabeltext [\s!cz]      [\v!july=\v{c}ervence]
+\setuplabeltext [\s!cz]       [\v!may=kv\ecaron tna]
+\setuplabeltext [\s!cz]      [\v!june=\ccaron ervna]
+\setuplabeltext [\s!cz]      [\v!july=\ccaron ervence]
 \setuplabeltext [\s!cz]    [\v!august=srpna]
-\setuplabeltext [\s!cz] [\v!september=z\'a\v{r}\'\i]
-\setuplabeltext [\s!cz]   [\v!october=\v{r}\'{\i}jna]
+\setuplabeltext [\s!cz] [\v!september=z\aacute\rcaron\iacute{}]
+\setuplabeltext [\s!cz]   [\v!october=\rcaron\iacute jna]
 \setuplabeltext [\s!cz]  [\v!november=listopadu]
 \setuplabeltext [\s!cz]  [\v!december=prosince]
 
-\setuplabeltext [\s!sk]   [\v!january=janu\'ara]
-\setuplabeltext [\s!sk]  [\v!february=febru\'ara]
+\setuplabeltext [\s!sk]   [\v!january=janu\aacute ra]
+\setuplabeltext [\s!sk]  [\v!february=febru\aacute ra]
 \setuplabeltext [\s!sk]     [\v!march=marca]
-\setuplabeltext [\s!sk]     [\v!april=apr\'{\i}la]
-\setuplabeltext [\s!sk]       [\v!may=m\'aja]
-\setuplabeltext [\s!sk]      [\v!june=j\'una]
-\setuplabeltext [\s!sk]      [\v!july=j\'ula]
+\setuplabeltext [\s!sk]     [\v!april=apr\iacute la]
+\setuplabeltext [\s!sk]       [\v!may=m\aacute ja]
+\setuplabeltext [\s!sk]      [\v!june=j\uacute na]
+\setuplabeltext [\s!sk]      [\v!july=j\uacute la]
 \setuplabeltext [\s!sk]    [\v!august=augusta]
 \setuplabeltext [\s!sk] [\v!september=septembra]
-\setuplabeltext [\s!sk]   [\v!october=okt\'obra]
+\setuplabeltext [\s!sk]   [\v!october=okt\oacute bra]
 \setuplabeltext [\s!sk]  [\v!november=novembra]
 \setuplabeltext [\s!sk]  [\v!december=decembra]
 
-\setuplabeltext [\s!hr]   [\v!january=sije\v{c}anj]
-\setuplabeltext [\s!hr]  [\v!february=velja\v{c}a]
-\setuplabeltext [\s!hr]     [\v!march=o\v{z}ujak]
+\setuplabeltext [\s!hr]   [\v!january=sije\ccaron anj]
+\setuplabeltext [\s!hr]  [\v!february=velja\ccaron a]
+\setuplabeltext [\s!hr]     [\v!march=o\zcaron ujak]
 \setuplabeltext [\s!hr]     [\v!april=travanj]
 \setuplabeltext [\s!hr]       [\v!may=svibanj]
 \setuplabeltext [\s!hr]      [\v!june=lipanj]
@@ -408,18 +408,18 @@
 \setuplabeltext [\s!sl]  [\v!december=december]
 
 \setuplabeltext [\s!pl]    [\v!sunday=niedziela]
-\setuplabeltext [\s!pl]    [\v!monday=poniedzia\l ek]
+\setuplabeltext [\s!pl]    [\v!monday=poniedzia\lstroke ek]
 \setuplabeltext [\s!pl]   [\v!tuesday=wtorek]
-\setuplabeltext [\s!pl] [\v!wednesday=\'sroda]
+\setuplabeltext [\s!pl] [\v!wednesday=\sacute roda]
 \setuplabeltext [\s!pl]  [\v!thursday=czwartek]
-\setuplabeltext [\s!pl]    [\v!friday=pi\k{a}tek]
+\setuplabeltext [\s!pl]    [\v!friday=pi\aogonek tek]
 \setuplabeltext [\s!pl]  [\v!saturday=sobota]
 
 \setuplabeltext [\s!hr]    [\v!sunday=nedjelja]
 \setuplabeltext [\s!hr]    [\v!monday=ponedjeljak]
 \setuplabeltext [\s!hr]   [\v!tuesday=utorak]
 \setuplabeltext [\s!hr] [\v!wednesday=srijeda]
-\setuplabeltext [\s!hr]  [\v!thursday=\v{c}etvrtak]
+\setuplabeltext [\s!hr]  [\v!thursday=\ccaron etvrtak]
 \setuplabeltext [\s!hr]    [\v!friday=petak]
 \setuplabeltext [\s!hr]  [\v!saturday=subota]
 
@@ -427,7 +427,7 @@
 \setuplabeltext [\s!sl]    [\v!monday=ponedeljek]
 \setuplabeltext [\s!sl]   [\v!tuesday=torek]
 \setuplabeltext [\s!sl] [\v!wednesday=sreda]
-\setuplabeltext [\s!sl]  [\v!thursday=\v{c}etrtek]
+\setuplabeltext [\s!sl]  [\v!thursday=\ccaron etrtek]
 \setuplabeltext [\s!sl]    [\v!friday=petek]
 \setuplabeltext [\s!sl]  [\v!saturday=sobota]
 

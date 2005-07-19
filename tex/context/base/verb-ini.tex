@@ -97,7 +97,9 @@
 %D complete font||style switch. There we could have stuck with
 %D \type{\tttf}.
 
-\ifx \undefined \verbatimfont \def\verbatimfont {\tt\normalnoligatures\font} \fi
+\ifx\verbatimfont\undefined \def\verbatimfont{\tt\normalnoligatures\font} \fi
+
+\ifx\normalnoligatures\undefined \let\normalnoligatures\gobbleoneargument \fi
 
 %D \macros
 %D   {obeyedspace, obeyedtab, obeyedline, obeyedpage}
@@ -124,7 +126,7 @@
 %D of \type{\obeyedspace} to:
 
 \def\controlspace{\hbox{\char32}}
-\let\normalspacetoken=\
+\def\normalspace { }
 \def\normalspaces{\catcode`\ =\@@space}
 
 \bgroup

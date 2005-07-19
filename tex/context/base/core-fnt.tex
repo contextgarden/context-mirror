@@ -71,11 +71,11 @@
 %D This at first sight unusual capitilization is completely
 %D legal.
 %D
-%D \showsetup{\y!smallcapped}
-%D \showsetup{\y!notsmallcapped}
-%D \showsetup{\y!CAPPED}
-%D \showsetup{\y!SmallCapped}
-%D \showsetup{\y!SmallCaps}
+%D \showsetup{smallcapped}
+%D \showsetup{notsmallcapped}
+%D \showsetup{CAPPED}
+%D \showsetup{SmallCapped}
+%D \showsetup{SmallCaps}
 %D
 %D The difference between pseudo and real caps is demonstrated
 %D below:
@@ -216,10 +216,10 @@
 %D \stoplines
 %D \stopvoorbeeld
 %D
-%D \showsetup{\y!Word}
-%D \showsetup{\y!Words}
-%D \showsetup{\y!WORD}
-%D \showsetup{\y!WORDS}
+%D \showsetup{Word}
+%D \showsetup{Words}
+%D \showsetup{WORD}
+%D \showsetup{WORDS}
 
 \def\doWord#1%
   {\bgroup
@@ -276,7 +276,7 @@
 %D \getbuffer
 %D \stopvoorbeeld
 %D
-%D \showsetup{\y!stretched}
+%D \showsetup{stretched}
 
 \def\stretched#1%
   {\ifvmode\hbox to \hsize\else\ifinner\else\hbox\fi\fi
@@ -421,17 +421,17 @@
 %D also supports nesting. The \type{$} keeps us in horizontal
 %D mode and at the same time applies grouping.
 %D
-%D \showsetup{\y!underbar}
-%D \showsetup{\y!underbars}
-%D \showsetup{\y!overbar}
-%D \showsetup{\y!overbars}
-%D \showsetup{\y!overstrike}
-%D \showsetup{\y!overstrikes}
+%D \showsetup{underbar}
+%D \showsetup{underbars}
+%D \showsetup{overbar}
+%D \showsetup{overbars}
+%D \showsetup{overstrike}
+%D \showsetup{overstrikes}
 %D
 %D Although underlining is ill advised, we permit some
 %D alternatives, that can be set up by:
 %D
-%D \showsetup{\y!setupunderbar}
+%D \showsetup{setupunderbar}
 %D
 %D The alternatives show up as
 %D   {\setupunderbar [alternativevariant=a]\underbar{alternative a}},

@@ -180,6 +180,8 @@
    \def\verbatimfont{\getvalue{#1\c!style}\normalnoligatures\font}%
    \setupverbatimcolor{#1}}
 
+\ifx\normalnoligatures\undefined \let\normalnoligatures\gobbleoneargument \fi
+
 %D The verbatim commands have a rather long and turbulent
 %D history. Most users of \CONTEXT\ probably will never use
 %D some of the features, but I've kept in mind that when one is

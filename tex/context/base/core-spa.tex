@@ -99,7 +99,7 @@
 %D There are two ways to influence the interline spacing. The
 %D most general and often most consistent way is using
 %D
-%D \showsetup{\y!setupinterlinespace}
+%D \showsetup{setupinterlinespace}
 %D
 %D For instance
 %D
@@ -1081,74 +1081,237 @@
 \defineblank [\v!height]  [\strutheight]
 \defineblank [\v!depth]   [\strutdepth]
 
-\let\currentindentation=\empty
+% old implementation
+%
+% \let\currentindentation=\empty
+%
+% \newdimen\ctxparindent
+%
+% \newif\ifindentfirstparagraph % \indentfirstparagraphtrue
+%
+% \def\presetindentation
+%   {\doifoutervmode{\ifindentfirstparagraph\else\noindentation\fi}}
+%
+% \definecomplexorsimple\setupindenting
+%
+% \def\complexsetupindenting[#1]%
+%   {\processallactionsinset
+%      [#1]
+%      [  \v!first=>\indentfirstparagraphtrue,
+%          \v!next=>\indentfirstparagraphfalse,
+%       \s!default=>\simplesetupindenting,
+%       \s!unknown=>\edef\currentindentation{\commalistelement}%
+%                   \simplesetupindenting]}
+%
+% \def\simplesetupindenting
+%   {\assigndimension\currentindentation\ctxparindent{1em}{1.5em}{2em}%
+%    \parindent\ctxparindent\relax}
+%
+% \def\indenting % watch out: \dodo and no \do
+%   {\dosingleargument\dodoindenting}
+%
+% \def\dodoindenting[#1]% oeps, we needed a commalist handler here!
+%   {\edef\currentindenting{#1}%
+%    \processcommacommand[#1]\dododoindenting}
+%
+% \def\dododoindenting#1%
+%   {\executeifdefined{\??in:#1}\donothing}
+%
+% \let\currentindenting\empty
+%
+% \def\defineindentingmethod[#1]#2%
+%   {\setvalue{\??in:#1}{#2}}
+%
+% \defineindentingmethod [\v!no]     {\parindent\ctxparindent\noindent}
+% \defineindentingmethod [\v!not]    {\parindent\ctxparindent\noindent}
+%
+% \defineindentingmethod [\v!first]  {\indentfirstparagraphtrue}
+% \defineindentingmethod [\v!next]   {\indentfirstparagraphfalse}
+%
+% \defineindentingmethod [\v!yes]    {\parindent\ctxparindent\relax}   % no \indent !
+% \defineindentingmethod [\v!always] {\parindent\ctxparindent\relax}   % no \indent !
+%
+% \defineindentingmethod [\v!never]  {\parindent\zeropoint\relax} % no \indent !
+%
+% \def\noindenting{\indenting[\v!no,\v!next]}   % was \nietinspringen
+% \def\doindenting{\indenting[\v!yes,\v!first]} % was \welinspringen
+%
+% \def\dochecknextindentation#1% internal one
+%   {\checknextindentation[\getvalue{#1\c!indentnext}]}
+%
+% \def\checknextindentation[#1]%
+%   {\processaction[#1][%\v!keep=>,
+%      \v!yes=>\doindentation,
+%       \v!no=>\noindentation,
+%     \v!auto=>\autoindentation]}
+%
+% \def\doindentation% too simple
+%   {\gdef\checkindentation{\global\indentationtrue}}
+%
+% \ifx\autoindentation\undefined
+%   \let\autoindentation\relax
+% \fi
+%
+% \newif\ifindentation \indentationtrue  % documenteren, naar buiten
+%
+% \let\checkindentation=\relax
+%
+% \def\donoindentation
+%   {\ifdim\parindent=\zeropoint \else
+%      \bgroup \setbox\scratchbox\lastbox \egroup
+%    \fi}
+%
+% \def\noindentation % made global
+%   {\ifinpagebody \else
+%      \global\indentationfalse
+%      \gdef\checkindentation
+%        {\donoindentation
+%         \gdef\checkindentation{\global\indentationtrue}}%
+%    \fi}
+%
+% \def\nonoindentation % bv bij floats
+%   {\ifinpagebody \else
+%      \global\indentationtrue
+%      \gdef\checkindentation{\global\indentationtrue}%
+%    \fi}
+%
+% \def\indentation
+%   {\ifvmode \ifdim\parindent=\zeropoint \else
+%      % was : \hskip\parindent
+%      % can be: \indent
+%      % but we test:
+%      \noindent\hskip\parindent
+%    \fi \fi}
+
+\let\currentindentation\empty % amount
+\let\currentindenting  \empty % method
 
 \newdimen\ctxparindent
 
 \newif\ifindentfirstparagraph % \indentfirstparagraphtrue
 
+\chardef\indentingtoggle\zerocount
+
+%D After a blank or comparable situation (left side floats) we
+%D need to check if the next paragraph has to be indented.
+
 \def\presetindentation
   {\doifoutervmode{\ifindentfirstparagraph\else\noindentation\fi}}
+
+%D This sets up the indentation method as well as the amounts.
 
 \definecomplexorsimple\setupindenting
 
 \def\complexsetupindenting[#1]%
-  {\processallactionsinset
-     [#1]
-     [  \v!first=>\indentfirstparagraphtrue,
-         \v!next=>\indentfirstparagraphfalse,
-      \s!default=>\simplesetupindenting,
-      \s!unknown=>\edef\currentindentation{\commalistelement}%
-                  \simplesetupindenting]}
-
-\def\simplesetupindenting
-  {\assigndimension\currentindentation\ctxparindent{1em}{1.5em}{2em}%
-   \parindent\ctxparindent\relax}
-
-\def\indenting % watch out: \dodo and no \do
-  {\dosingleargument\dodoindenting}
-
-\def\dodoindenting[#1]% oeps, we needed a commalist handler here!
   {\edef\currentindenting{#1}%
-   \processcommacommand[#1]\dododoindenting}
+   \indentfirstparagraphtrue
+   \parindent\ctxparindent
+   \chardef\indentingtoggle\zerocount
+   \processcommalist[#1]\docomplexsetupindenting
+   \toggleindentation}
 
-\def\dododoindenting#1%
-  {\executeifdefined{\??in:#1}\donothing}
+\def\docomplexsetupindenting#1%
+  {\edef\!!stringa{#1}% catch #1=\somedimen
+   \convertcommand\!!stringa\to\!!stringa
+   \executeifdefined{\??in:\!!stringa}{\edef\currentindentation{#1}\simplesetupindenting}}
 
-\let\currentindenting\empty
+\def\simplesetupindenting % empty case
+  {\assigndimension\currentindentation\ctxparindent{1em}{1.5em}{2em}}
+
+\def\indenting % kind of obsolete
+  {\dosingleargument\complexsetupindenting}
+
+% use \noindentation to suppress next indentation
 
 \def\defineindentingmethod[#1]#2%
   {\setvalue{\??in:#1}{#2}}
 
-\defineindentingmethod [\v!no]     {\parindent\ctxparindent\noindent}
-\defineindentingmethod [\v!not]    {\parindent\ctxparindent\noindent}
+\defineindentingmethod [\v!no]     {\parindent\zeropoint}% was: \ctxparindent\noindent}
+\defineindentingmethod [\v!not]    {\parindent\zeropoint}% was: \ctxparindent\noindent}
 
 \defineindentingmethod [\v!first]  {\indentfirstparagraphtrue}
 \defineindentingmethod [\v!next]   {\indentfirstparagraphfalse}
 
-\defineindentingmethod [\v!yes]    {\parindent\ctxparindent\relax}   % no \indent !
-\defineindentingmethod [\v!always] {\parindent\ctxparindent\relax}   % no \indent !
+\defineindentingmethod [\v!yes]    {\parindent\ctxparindent\relax} % no \indent !
+\defineindentingmethod [\v!always] {\parindent\ctxparindent\relax} % no \indent !
 
-\defineindentingmethod [\v!never]  {\parindent\zeropoint\relax} % no \indent !
+\defineindentingmethod [\v!never]  {\parindent\zeropoint\relax}    % no \indent !
 
-\def\noindenting{\indenting[\v!no,\v!next]}   % was \nietinspringen
+\defineindentingmethod [\v!odd]    {\chardef\indentingtoggle\plusone}
+\defineindentingmethod [\v!even]   {\chardef\indentingtoggle\plustwo}
+
+\def\noindenting{\indenting[\v!no, \v!next ]} % was \nietinspringen
 \def\doindenting{\indenting[\v!yes,\v!first]} % was \welinspringen
+
+%D This one sets up the local indentation behaviour (i.e. either or not
+%D a next paragraph will be indented).
 
 \def\dochecknextindentation#1% internal one
   {\checknextindentation[\getvalue{#1\c!indentnext}]}
 
 \def\checknextindentation[#1]%
-  {\processaction[#1][%\v!keep=>,
-     \v!yes=>\doindentation,
-      \v!no=>\noindentation,
-    \v!auto=>\autoindentation]}
+  {\processaction
+     [#1]
+     [%\v!keep=>,
+        \v!yes=>\doindentation,
+         \v!no=>\noindentation,
+       \v!auto=>\autoindentation]}
 
-\def\doindentation% too simple
+%D Here come the handlers.
+
+\newif\ifindentation \indentationtrue  % documenteren, naar buiten
+
+\let\checkindentation\relax
+
+\ifx\autoindentation\undefined \let\autoindentation\relax \fi % hook
+
+\def\doindentation
   {\gdef\checkindentation{\global\indentationtrue}}
 
-\ifx\autoindentation\undefined
-  \let\autoindentation\relax
-\fi
+\def\noindentation % made global
+  {\ifinpagebody \else
+     \global\indentationfalse
+     \gdef\checkindentation
+       {\donoindentation
+        \gdef\checkindentation{\global\indentationtrue}}%
+   \fi}
+
+\def\nonoindentation % bv bij floats
+  {\ifinpagebody \else
+     \global\indentationtrue
+     \gdef\checkindentation{\global\indentationtrue}%
+   \fi}
+
+\def\donoindentation
+  {\ifdim\parindent=\zeropoint \else
+     \bgroup \setbox\scratchbox\lastbox \egroup
+   \fi}
+
+\def\indentation
+  {\ifvmode \ifdim\parindent=\zeropoint \else
+     % was : \hskip\parindent
+     % can be: \indent
+     % but we test:
+     \noindent\hskip\parindent
+   \fi \fi}
+
+\def\toggleindentation
+  {\ifcase\indentingtoggle
+     % nothing
+   \or
+     \notoggleindentation
+   \or
+     \dotoggleindentation
+   \fi}
+
+\def\dokillindentation
+  {\gdef\checkindentation{\global\indentationfalse\donoindentation}}
+
+\def\dotoggleindentation
+  {\gdef\checkindentation{\global\indentationfalse\notoggleindentation\donoindentation}}
+
+\def\notoggleindentation
+  {\gdef\checkindentation{\global\indentationtrue\dotoggleindentation}}
 
 % \frenchspacing leidt soms tot afbreken tussen -, vandaar
 % de variant \newfrenchspacing.
@@ -2601,56 +2764,6 @@
         \vskip\scratchskip
       \fi}}
 
-% Idem:
-%
-% \springin
-
-%\def\noindentation% vervallen
-%   {\EveryPar
-%     {\ifdim\parindent=\zeropoint
-%      \else
-%        \bgroup
-%        \setbox\scratchbox\lastbox
-%        \egroup
-%      \fi
-%      \EveryPar{}}}
-
-\newif\ifindentation \indentationtrue  % documenteren, naar buiten
-
-\let\checkindentation=\relax
-
-\def\donoindentation
-  {\ifdim\parindent=\zeropoint \else
-     \bgroup \setbox\scratchbox\lastbox \egroup
-   \fi}
-
-\def\noindentation % made global
-  {\ifinpagebody \else
-     \global\indentationfalse
-     \gdef\checkindentation
-       {\donoindentation
-        \gdef\checkindentation{\global\indentationtrue}}%
-   \fi}
-
-\def\nonoindentation % bv bij floats
-  {\ifinpagebody \else
-     \global\indentationtrue
-     \gdef\checkindentation{\global\indentationtrue}%
-   \fi}
-
-\def\indentation
-  {\ifvmode \ifdim\parindent=\zeropoint \else
-     % was : \hskip\parindent
-     % can be: \indent
-     % but we test:
-     \noindent\hskip\parindent
-   \fi \fi}
-
-% vergeten
-
-%\def\forgeteverypar
-%  {\everypar\emptytoks}
-
 \def\forgeteverypar
   {\everypar{\the\neverypar}}
 
@@ -2894,19 +3007,19 @@
   {\leftskipadaption\zeropoint
    \processaction[#1]
      [\v!standard=>\leftskipadaption
-                    \ifdim\ctxparindent=\zeropoint\@@slleft\else\ctxparindent\fi,
-             \v!yes=>\leftskipadaption
-                    \ifdim\ctxparindent=\zeropoint\@@slleft\else\ctxparindent\fi,
+                   \ifdim\ctxparindent=\zeropoint\@@slleft\else\ctxparindent\fi,
+           \v!yes=>\leftskipadaption
+                   \ifdim\ctxparindent=\zeropoint\@@slleft\else\ctxparindent\fi,
             \v!no=>,
-        \s!unknown=>\leftskipadaption#1]}
+       \s!unknown=>\leftskipadaption#1]}
 
 \def\dosetrightskipadaption#1%
   {\rightskipadaption\zeropoint
    \processaction[#1]
      [\v!standard=>\rightskipadaption\@@slright,
-             \v!yes=>\rightskipadaption\@@slright,
+           \v!yes=>\rightskipadaption\@@slright,
             \v!no=>,
-        \s!unknown=>\rightskipadaption#1]}
+       \s!unknown=>\rightskipadaption#1]}
 
 \endTEX
 
@@ -2914,19 +3027,14 @@
 
 % installation
 
-\setvalue{@lsa@\v!standard}%
-  {\ifdim\ctxparindent=\zeropoint\@@slleft\else\ctxparindent\fi}
-
-\setvalue{@lsa@\v!yes}%
-  {\ifdim\ctxparindent=\zeropoint\@@slleft\else\ctxparindent\fi}
-
+\setvalue{@lsa@\v!standard}{\ifdim\ctxparindent=\zeropoint\@@slleft\else\ctxparindent\fi}
+\setvalue{@lsa@\v!yes     }{\ifdim\ctxparindent=\zeropoint\@@slleft\else\ctxparindent\fi}
 \letvalue{@lsa@\v!no      }\zeropoint
-\letvalue{@lsa@\empty      }\zeropoint
-
+\letvalue{@lsa@\empty     }\zeropoint
 \setvalue{@rsa@\v!standard}{\@@slright}
-\setvalue{@rsa@\v!yes       }{\@@slright}
+\setvalue{@rsa@\v!yes     }{\@@slright}
 \letvalue{@rsa@\v!no      }\zeropoint
-\letvalue{@rsa@\empty      }\zeropoint
+\letvalue{@rsa@\empty     }\zeropoint
 
 % not safe for 2\parindent
 %

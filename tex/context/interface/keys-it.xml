@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 
-<cd:interface xmlns:cd="http://www.pragma-ade.com/commands" name="context" language="it" version="2005.07.13">
+<cd:interface xmlns:cd="http://www.pragma-ade.com/commands" name="context" language="it" version="2005.07.20">
 
   <cd:variables>
     <cd:variable name="one" value="uno"/>
@@ -580,6 +580,7 @@
     <cd:variable name="smallboldslanted" value="piccolograssettoinclinato"/>
     <cd:variable name="smallbolditalic" value="piccolograssettocorsivo"/>
     <cd:variable name="smallbodyfont" value="piccolofontdelcorpo"/>
+    <cd:variable name="toggle" value="toggle"/>
     <cd:variable name="color" value="colore"/>
     <cd:variable name="column" value="colonna"/>
     <cd:variable name="columns" value="colonne"/>
@@ -859,7 +860,7 @@
     <cd:variable name="LastPage" value="UltimaPagina"/>
     <cd:variable name="PreviousJump" value="SaltoPrecedente"/>
     <cd:variable name="NextJump" value="SaltoSuccessivo"/>
-    <cd:variable name="SwapViewer" value="ScambiaVisualizzatore"/>
+    <cd:variable name="ToggleViewer" value="ScambiaVisualizzatore"/>
     <cd:variable name="ExitViewer" value="EsciVisualizzatore"/>
     <cd:variable name="CloseDocument" value="ChiudiDocumento"/>
     <cd:variable name="SaveDocument" value="SalvaDocumento"/>

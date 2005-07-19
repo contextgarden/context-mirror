@@ -187,8 +187,23 @@
 %      \let\enabledregime\characterregime
 %    \fi}
 
+% \def\enableregime[#1]%
+%   {\edef\characterregime{@#1@}%
+%    \ifx\enabledregime\characterregime \else
+%      \the\executeifdefined{\@reg@\characterregime}\emptytoks
+%    \fi}
+
+\def\defineregimesynonym
+  {\dodoubleargument\dodefineregimesynonym}
+
+\def\dodefineregimesynonym[#1][#2]%
+  {\setevalue{\@reg@::#1}{#2}}
+
+\def\trueregimename#1%
+  {\executeifdefined{\@reg@::#1}{#1}}
+
 \def\enableregime[#1]%
-  {\edef\characterregime{@#1@}%
+  {\edef\characterregime{@\trueregimename{#1}@}%
    \ifx\enabledregime\characterregime \else
      \the\executeifdefined{\@reg@\characterregime}\emptytoks
    \fi}
@@ -356,7 +371,7 @@
 %D Encodings things are defined in separate files and are
 %D loaded only once, using:
 %D
-%D \showsetup{\y!useencoding}
+%D \showsetup{useencoding}
 
 \def\douseencoding#1%
   {\doifundefined{\c!file\f!encodingprefix#1}%

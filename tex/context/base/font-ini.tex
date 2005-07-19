@@ -2023,7 +2023,7 @@
 %D The relationship between the several sizes of a font, is
 %D defined by:
 %D
-%D \showsetup{\y!definebodyfontenvironment}
+%D \showsetup{definebodyfontenvironment}
 %D
 %D Later on we will see how these parameters are used, so for
 %D the moment we stick with an example:
@@ -2046,7 +2046,7 @@
 %D
 %D Afterwards, one can change values with
 %D
-%D \showsetup{\y!setupbodyfontenvironment}
+%D \showsetup{setupbodyfontenvironment}
 %D
 %D Due to the fact that \type{\c!text} and \type{\s!text} can
 %D have a similar meaning, and therefore can lead to an
@@ -2220,7 +2220,7 @@
 %D \type{tfm}. Installing those file is often beyond the
 %D scope of the user and up to the system administrator.
 %D
-%D \showsetup{\y!definebodyfont}
+%D \showsetup{definebodyfont}
 %D
 %D This commands takes three arguments: a (series of) bodyfont
 %D size(s), the style group to which the definitions belong,
@@ -3331,8 +3331,8 @@
 %D
 %D So we've got:
 %D
-%D \showsetup{\y!setupbodyfont}
-%D \showsetup{\y!switchtobodyfont}
+%D \showsetup{setupbodyfont}
+%D \showsetup{switchtobodyfont}
 %D
 %D Both macros look alike. The second one also has to take
 %D all kind of keywords into account.
@@ -4011,7 +4011,7 @@
 %D One can call for a rather simple overview of a bodyfont and the
 %D relations between its alternative fonts.
 %D
-%D \showsetup{\y!showbodyfont}
+%D \showsetup{showbodyfont}
 %D
 %D The current bodyfont (here we omitted the argument) looks like:
 %D
@@ -4053,7 +4053,7 @@
 %D
 %D This overview is generated using:
 %D
-%D \showsetup{\y!showbodyfontenvironment}
+%D \showsetup{showbodyfontenvironment}
 
 \fetchruntimecommand \showbodyfontenvironment {\f!fontprefix\s!run}
 
@@ -4640,16 +4640,41 @@
 
 \def\fontvariant#1#2{\executeifdefined{\??fv#1#2}\empty}
 
-\def\variant[#1]%
-  {\expanded{\definedfont
+% original:
+%
+% \def\variant[#1]%
+%   {\expanded{\definedfont
+%      [\truefontname{\fontstringA\fontstylesuffix\fontvariant\fontstringA{#1}}
+%         at \currentfontscale\bodyfontsize]}}
+%
+% \beginXETEX  \font
+%
+%   \def\variant[#1]%
+%     {\font\variantfont\truefontname{\fontstringA\fontstylesuffix\fontvariant\fontstringA{#1}}
+%        at \currentfontscale\bodyfontsize
+%      \variantfont}
+%
+% \endXETEX
+%
+% better
+
+\def\dosetscaledfont
+  {\checkrelativefontsize\fontstyle
+   \scaledfont\currentfontscale\bodyfontsize
+   \scaledfont\relativefontsize\scaledfont}
+
+\def\variant[#1]% slow
+  {\dosetscaledfont
+   \expanded{\definedfont
      [\truefontname{\fontstringA\fontstylesuffix\fontvariant\fontstringA{#1}}
-        at \currentfontscale\bodyfontsize]}}
+        at \scaledfont]}}
 
 \beginXETEX  \font
 
   \def\variant[#1]%
-    {\font\variantfont\truefontname{\fontstringA\fontstylesuffix\fontvariant\fontstringA{#1}}
-       at \currentfontscale\bodyfontsize
+    {\dosetscaledfont
+     \font\variantfont\truefontname{\fontstringA\fontstylesuffix\fontvariant\fontstringA{#1}}
+        at \scaledfont
      \variantfont}
 
 \endXETEX

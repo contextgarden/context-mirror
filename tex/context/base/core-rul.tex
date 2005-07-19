@@ -22,7 +22,7 @@
 %D we introduce two macros that can be used to set some common
 %D characteristics.
 %D
-%D \showsetup{\y!setuplinewidth}
+%D \showsetup{setuplinewidth}
 %D
 %D The linewidth is available in \type{\linewidth}. The
 %D preset value of .4pt equals the default hard coded \TEX\
@@ -138,7 +138,7 @@
 %D The previous macro uses a predefined constant
 %D \type{\@@rsfactor}. This factor can be set by:
 %D
-%D \showsetup{\y!setupscreens}
+%D \showsetup{setupscreens}
 
 \def\setupscreens
   {\dodoubleargument\getparameters[\??rs]}
@@ -281,7 +281,7 @@
 %D
 %D The formal definition is:
 %D
-%D \showsetup{\y!defineoverlay}
+%D \showsetup{defineoverlay}
 %D
 %D This macro's definition is a bit obscure, due the many
 %D non||used arguments and the two step call that enable the
@@ -615,8 +615,8 @@
 %D is quite versatile and, although some users will probably
 %D seldom use it, one cannot overlook its features.
 %D
-%D \showsetup{\y!setupframed}
-%D \showsetup{\y!framed}
+%D \showsetup{setupframed}
+%D \showsetup{framed}
 %D
 %D This general macro is a special version of an even more
 %D general case, that can easily be linked into other macros
@@ -2016,7 +2016,7 @@
 %D \type{\vrule}, but they save us some tokens. The
 %D characteristics of these rule drawing command can be set by:
 %D
-%D \showsetup{\y!setupblackrules}
+%D \showsetup{setupblackrules}
 
 \def\setupblackrules
   {\dodoubleargument\getparameters[\??bj]}
@@ -2029,7 +2029,7 @@
 %D the width, height or depth to \type {max}, one gets the
 %D natural dimensions.
 %D
-%D \showsetup{\y!blackrule}
+%D \showsetup{blackrule}
 
 \def\doblackrule[#1]%
   {\hbox\bgroup
@@ -2055,7 +2055,7 @@
 %D One can call for a sequence of black rules, if needed
 %D equally spaced over the given width.
 %D
-%D \showsetup{\y!blackrules}
+%D \showsetup{blackrules}
 %D
 %D The two alternative calls are therefore:
 %D
@@ -2127,7 +2127,7 @@
 %D The first method gobbles words and simply puts a bar in the
 %D margin. This method is not entirely robust.
 %D
-%D \showsetup{\y!marginrule}
+%D \showsetup{marginrule}
 
 \definecomplexorsimple\marginrule
 
@@ -2152,7 +2152,7 @@
 %D level, which is matched against the previous set one. The
 %D level can be set up with
 %D
-%D \showsetup{\y!setupmarginrules}
+%D \showsetup{setupmarginrules}
 
 \def\setupmarginrules
   {\dodoubleargument\getparameters[\??ka]}
@@ -2163,7 +2163,7 @@
 %D The second method collects text and reformats it afterwards,
 %D using the shapebox macros. We prevent local margin rules.
 %D
-%D \showsetup{\y!startmarginrule}
+%D \showsetup{startmarginrule}
 
 \definecomplexorsimple\startmarginrule
 
@@ -2233,8 +2233,8 @@
 %D multiplied with the optional factor. The horizontal rule is
 %D drawn on top of the baseline.
 %D
-%D \showsetup{\y!vl}
-%D \showsetup{\y!hl}
+%D \showsetup{vl}
+%D \showsetup{hl}
 
 \def\complexvl[#1]%
   {\bgroup
@@ -2293,16 +2293,16 @@
 %D
 %D So we've got
 %D
-%D \showsetup{\y!hairline}
-%D \showsetup{\y!thinrule}
+%D \showsetup{hairline}
+%D \showsetup{thinrule}
 %D
 %D Both can be set up with:
 %D
-%D \showsetup{\y!setupthinrules}
+%D \showsetup{setupthinrules}
 %D
 %D We also have
 %D
-%D \showsetup{\y!thinrules}
+%D \showsetup{thinrules}
 %D
 %D which looks like: \thinrules[n=2]
 
@@ -2550,16 +2550,16 @@
 %D Here we can see that we have a predefined framed text class
 %D as well as the tools for defining our own. So we have:
 %D
-%D \showsetup{\y!setupframedtexts}
+%D \showsetup{setupframedtexts}
 %D
 %D as well as the definition command:
 %D
-%D \showsetup{\y!defineframedtext}
+%D \showsetup{defineframedtext}
 %D
 %D that generates two commands:
 %D
-%D \showsetup{\e!start<<\y!framedtext>>}
-%D \showsetup{<<\y!framedtext>>}
+%D \showsetup{\e!start<<framedtext>>}
+%D \showsetup{<<framedtext>>}
 %D
 %D The next definition shows the defaults.
 
@@ -2745,7 +2745,7 @@
 %D
 %D One can also define simple framed texts, using:
 %D
-%D \showsetup{\y!defineframed}
+%D \showsetup{defineframed}
 
 \def\defineframed
   {\dodoubleempty\dodefineframed}
@@ -2799,9 +2799,9 @@
 %D
 %D The formal definition of these commands is:
 %D
-%D \showsetup{\y!textrule}
-%D \showsetup{\y!starttextrule}
-%D \showsetup{\y!setuptextrules}
+%D \showsetup{textrule}
+%D \showsetup{starttextrule}
+%D \showsetup{setuptextrules}
 %D
 %D The implementation looks a bit complicated due to the
 %D optional arguments.
@@ -2936,8 +2936,8 @@
 %D one and an optional second argument and sets a paragraph with
 %D empty visualized lines.
 %D
-%D \showsetup{\y!fillinrules}
-%D \showsetup{\y!setupfillinrules}
+%D \showsetup{fillinrules}
+%D \showsetup{setupfillinrules}
 
 \def\setupfillinrules
   {\dodoubleargument\getparameters[\??il]}
@@ -2986,7 +2986,7 @@
 %D mixed, one can typeset a paragraph by using the command
 %D \type{\fillintext}.
 %D
-%D \showsetup{\y!fillintext}
+%D \showsetup{fillintext}
 
 \definecomplexorsimpleempty\fillintext
 
@@ -3018,8 +3018,8 @@
 %D
 %D The two commands that take care of this are:
 %D
-%D \showsetup{\y!fillinline}
-%D \showsetup{\y!setupfillinlines}
+%D \showsetup{fillinline}
+%D \showsetup{setupfillinlines}
 
 \def\setupfillinlines
   {\dodoubleargument\getparameters[\??iv]}
@@ -3088,7 +3088,7 @@
 %D Specifying the background is more or less the same as
 %D specifying a framed box.
 %D
-%D \showsetup{\y!setupbackground}
+%D \showsetup{setupbackground}
 
 \presetlocalframed[\??ag]
 
@@ -3109,7 +3109,7 @@
 %D straightforward. We need to handle some spacing as well as
 %D the (often) a bit smaller horizontal size.
 %D
-%D \showsetup{\y!startbackground}
+%D \showsetup{startbackground}
 %D
 %D Although we could have used a scratch one, we first
 %D declare a boolean.
@@ -3196,7 +3196,7 @@
 %D As a bonus we also have a short command, that is of not
 %D much use, but kept there for historic reasons.
 %D
-%D \showsetup{\y!background}
+%D \showsetup{background}
 
 \def\dobackground
   {\bgroup

@@ -409,8 +409,20 @@ class TEX
         end
     end
 
-    def iniflag() "--ini" end
-    def tcxflag() "--translate-file=natural.tcx" end
+    def iniflag() # should go to kpse and kpse should become texenv
+        if Kpse.miktex? then
+            "-initialize"
+        else
+            "--ini"
+        end
+    end
+    def tcxflag(file="natural.tcx")
+        if Kpse.miktex? then
+            "-tcx=#{file}"
+        else
+            "--translate-file=#{file}"
+        end
+    end
 
     def filestate(file)
         File.mtime(file).strftime("%d/%m/%Y %H:%M:%S")
@@ -655,7 +667,7 @@ class TEX
     ]
 
     def scantexpreamble(filename)
-        if tex = File.open(filename) then
+        if FileTest.file?(filename) and tex = File.open(filename) then
             while str = tex.gets.chomp do
                 if str =~ /^\%\s*(.*)/o then
                     vars = Hash.new
@@ -675,7 +687,7 @@ class TEX
     end
 
     def scantexcontent(filename)
-        if tex = File.open(filename) then
+        if FileTest.file?(filename) and  tex = File.open(filename) then
             while str = tex.gets do
                 case str.chomp
                     when /^\%/o then
@@ -719,12 +731,12 @@ class TEX
         fname = File.unsuffixed(filename)
         rname = File.unsuffixed(resultname)
         if ! rname.empty? && (rname != fname) then
-            report("outputfile #{result}")
+            report("outputfile #{rname}")
             ['tuo','log','dvi','pdf'].each do |s|
                 File.silentrename(File.suffixed(fname,s),File.suffixed('texexec',s))
             end
             ['tuo'].each do |s|
-                File.silentrename(File.suffixed(rname,s),File.suffixed(fname,s)) if FileTest(suffixed(rname,s))
+                File.silentrename(File.suffixed(rname,s),File.suffixed(fname,s)) if FileTest.file?(File.suffixed(rname,s))
             end
         end
     end
@@ -1048,16 +1060,20 @@ class TEX
         return false
     end
 
-    def runtexutil(filename=[], options=['--ref','--ij','--high'])
-        begin
-            filename.each do |fname|
-                logger = Logger.new('TeXUtil')
-                if tu = TeXUtil::Converter.new(logger) and tu.loaded(fname) then
-                    tu.saved if tu.processed
+    def runtexutil(filename=[], options=['--ref','--ij','--high'], old=false)
+        filename.each do |fname|
+            if old then
+                Kpse.runscript('texutil',fname,options)
+            else
+                begin
+                    logger = Logger.new('TeXUtil')
+                    if tu = TeXUtil::Converter.new(logger) and tu.loaded(fname) then
+                        tu.saved if tu.processed
+                    end
+                rescue
+                    Kpse.runscript('texutil',fname,options)
                 end
             end
-        rescue
-            Kpse.runscript('texutil',filename,options)
         end
     end
 
@@ -1131,8 +1147,9 @@ class TEX
         suffix  = getvariable('suffix')
         result  = getvariable('result')
 
-        runonce   = getvariable('once')
-        finalrun  = getvariable('final') || (getvariable('arrange') && ! getvariable('noarrange'))
+        runonce    = getvariable('once')
+        finalrun   = getvariable('final') || (getvariable('arrange') && ! getvariable('noarrange'))
+        globalfile = getvariable('globalfile')
 
         if getvariable('autopath') then
             jobname = File.basename(jobname)
@@ -1167,9 +1184,9 @@ class TEX
 
         jobsuffix = makestubfile(jobname,jobsuffix,forcexml) if dummyfile || forcexml
 
-        if getvariable('globalfile') || FileTest.file?(File.suffixed(jobname,jobsuffix)) then
+        if globalfile || FileTest.file?(File.suffixed(jobname,jobsuffix)) then
 
-            unless dummyfile # we don't need this for xml
+            if not dummyfile and not globalfile then
                 scantexpreamble(File.suffixed(jobname,jobsuffix))
                 scantexcontent(File.suffixed(jobname,jobsuffix)) if getvariable('texformats').standard?
             end

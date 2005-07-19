@@ -30,7 +30,7 @@
 %D rid of unwanted braces. For the savety we also define a
 %D non||sence uppercase alternative.
 %D
-%D \showsetup{\y!numbers}
+%D \showsetup{numbers}
 %D
 %D \starttyping
 %D \def\numbers#1{\number#1}
@@ -52,8 +52,8 @@
 %D of course be programmed in \TEX\ itself, but I guess Knuth
 %D found the programming trick worth presenting.
 %D
-%D \showsetup{\y!romannumerals}
-%D \showsetup{\y!Romannumerals}
+%D \showsetup{romannumerals}
+%D \showsetup{Romannumerals}
 %D
 %D When upcasing the result, we just follow the text book rules
 %D of expansion. Later on we'll see some more uppercase tricks.
@@ -105,8 +105,8 @@
 %D
 %D But we prefer a simpel \type{\case}.
 %D
-%D \showsetup{\y!character}
-%D \showsetup{\y!Character}
+%D \showsetup{character}
+%D \showsetup{Character}
 
 \def\unknowncharacter{-} % else in lists \relax
 
@@ -133,8 +133,8 @@
 %D macros. This time we just count on: $\cdots$~x, y, z, aa,
 %D ab, ac~$\cdots$.
 %D
-%D \showsetup{\y!characters}
-%D \showsetup{\y!Characters}
+%D \showsetup{characters}
+%D \showsetup{Characters}
 
 \beginTEX
 
@@ -316,8 +316,8 @@
 
 %D We redefine the \TEX\ primitive \type{\month} as:
 %D
-%D \showsetup{\y!month}
-%D \showsetup{\y!MONTH}
+%D \showsetup{month}
+%D \showsetup{MONTH}
 
 \def\month
   {\doconvertmonth}
@@ -419,8 +419,8 @@
 %D The first one is sort of redundant. It takes the day
 %D number argument.
 %D
-%D \showsetup{\y!weekday}
-%D \showsetup{\y!WEEKDAY}
+%D \showsetup{weekday}
+%D \showsetup{WEEKDAY}
 
 \def\weekday
   {\doconvertday}
@@ -489,7 +489,7 @@
 %D We use these conversion macros in the date formatting
 %D macro:
 %D
-%D \showsetup{\y!currentdate}
+%D \showsetup{currentdate}
 %D
 %D This macro takes care of proper spacing and delivers for
 %D instance:
@@ -522,7 +522,7 @@
 %D When no argument is passed, the current date is given as
 %D specified per language (using \type{\installlanguage}).
 %D
-%D \showsetup{\y!currentdate}
+%D \showsetup{currentdate}
 %D
 %D \startbuffer
 %D \date
@@ -724,8 +724,8 @@
 %D Conversion involves the macros that we implemented earlier
 %D in this module.
 %D
-%D \showsetup{\y!defineconversion}
-%D \showsetup{\y!convertnumber}
+%D \showsetup{defineconversion}
+%D \showsetup{convertnumber}
 %D
 %D We can feed this command with conversion macros as well as
 %D a set of conversion symbols. Both need a bit different

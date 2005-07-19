@@ -89,7 +89,7 @@
 
 \ifx\nextrandom\undefined \endinput \fi
 
-\ifx\ptexuniformdeviate\undefined
+\ifx\normaluniformdeviate\undefined
 
   \let\verynormalnextrandom\nextrandom
 
@@ -112,24 +112,26 @@
 
   % \def\normalnextrandom
   %   {\setrandomseed\randomi
-  %    \global\randomi\ptexuniformdeviate2147483647\relax}
+  %    \global\randomi\normaluniformdeviate2147483647\relax}
 
   % Taco suggested to use the following alternative because \type
-  % {\ptexuniformdeviate} can return a zero (as expected) while
+  % {\normaluniformdeviate} can return a zero (as expected) while
   % Donalds's alternative has a minimum of~1.
 
   \beginTEX
     \def\nextrandom
-      {\ptexsetrandomseed\randomi
-       \global\randomi\ptexuniformdeviate2147483646%
+      {\normalsetrandomseed\randomi
+       \global\randomi\normaluniformdeviate2147483646%
        \global\advance\randomi\plusone}
   \endTEX
 
   \beginETEX \numexpr
     \def\nextrandom
-      {\ptexsetrandomseed\randomi
-       \global\randomi\numexpr\ptexuniformdeviate2147483646+1\relax}
+      {\normalsetrandomseed\randomi
+       \global\randomi\numexpr\normaluniformdeviate2147483646+1\relax}
   \endETEX
+
+  \let\normalnextrandom\nextrandom
 
 \fi
 
