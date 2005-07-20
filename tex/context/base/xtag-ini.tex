@@ -2512,7 +2512,8 @@
 
 \long\def\XMLstr#1% test, does not work
   {\ifprocessingXML
-     \begingroup\enableXML\scantokens{#1<endgroup/><gobblespacetokens/>}%
+   % \begingroup\enableXML\scantokens{#1<endgroup/><gobblespacetokens/>}%
+     \scantokens{#1<gobblespacetokens/>}%
    \else
      \begingroup\enableXML\scantokens{#1<endgroup/>\ignorespaces}%
    \fi}

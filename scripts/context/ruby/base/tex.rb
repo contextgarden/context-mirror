@@ -1205,8 +1205,8 @@ class TEX
 
                     if getvariable('simplerun') || runonce then
                         makeoptionfile(jobname,orisuffix,true,true,3)
-                        problems = runtex(File.suffixed(jobname,jobsuffix))
-                        unless problems then
+                        ok = runtex(File.suffixed(jobname,jobsuffix))
+                        if ok then
                             ok = runtexutil(jobname) if getvariable('texutil') || getvariable('forcetexutil')
                             runbackend(jobname)
                             popresult(jobname,result)
@@ -1245,16 +1245,16 @@ class TEX
                             end
                         end
                         ok = runtexutil(jobname) if (nofruns == 1) && getvariable('texutil')
-                        if ! problems && finalrun && (nofruns > 1) then
+                        if ok && finalrun && (nofruns > 1) then
                             makeoptionfile(jobname,orisuffix,true,finalrun,4)
                             report("final TeX run #{texruns}")
-                            problems = runtex(File.suffixed(jobname,jobsuffix))
+                            ok = runtex(File.suffixed(jobname,jobsuffix))
                         end
                         File.silentcopy(File.suffixed(jobname,'top'),File.suffixed(jobname,'tmp'))
                         ['tup','top'].each do |s| # previous tuo file / runtime option file
                              File.silentdelete(File.suffixed(jobname,s))
                         end
-                        unless problems then
+                        if ok then
                             runbackend(jobname)
                             popresult(jobname,result)
                         end
@@ -1264,11 +1264,11 @@ class TEX
 
                 when 'latex' then
 
-                    problems = runtex(File.suffixed(jobname,jobsuffix))
+                    ok = runtex(File.suffixed(jobname,jobsuffix))
 
                 else
 
-                    problems = runtex(File.suffixed(jobname,jobsuffix))
+                    ok = runtex(File.suffixed(jobname,jobsuffix))
 
             end
 
@@ -1278,7 +1278,7 @@ class TEX
                 report("unable to delete stub file")
             end
 
-            if ! problems && getvariable('autopdf') then
+            if ok && getvariable('autopdf') then
                 PDFview.open(File.suffixed(if result.empty? then jobname else result end,'pdf'))
             end
 

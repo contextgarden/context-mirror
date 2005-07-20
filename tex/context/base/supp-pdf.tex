@@ -537,6 +537,10 @@
 \def\getMPkeyword% #1%
   {\csname\@@MP\the\nofMPsegments0\endcsname} % {\csname\@@MP#10\endcsname}
 
+\def\docleanupMPargument#1% we need this because args can have [ or ] pre/appended
+  {\expandafter\edef\csname\@@MP\the\nofMPsegments\number#1\endcsname
+     {\csname\@@MP\the\nofMPsegments\number#1\endcsname}}
+
 %D When we reset the stack, we can assume that all further
 %D comment is to be ignored and handled in strings.
 %D By redefining the reset macro after the first call, we
@@ -725,6 +729,7 @@
      % already handled in dtransform
      \resetMPstack
    \else\ifx\somestring\PSconcat
+     \cleanupMPconcat
      \PDFcode{\gMPa1 \gMPa2 \gMPa3 \gMPa4 \gMPa5 \gMPa6 cm}%
      \resetMPstack
    \else\ifx\somestring\PSsetrgbcolor
@@ -1332,6 +1337,12 @@
 %OLD    \dimen 6=\gMPs2\onepoint \doMPreducedimen 6
 %OLD    \dimen 8 \zeropoint
 %OLD    \dimen10 \zeropoint}
+
+\def\cleanupMPconcat
+  {\ignoreMPspecials
+   \docleanupMPargument1%
+   \docleanupMPargument6%
+   \keepMPspecials}
 
 \def\presetMPconcat
   {\dimen 0=\gMPs1\onepoint   % s_x
@@ -1989,6 +2000,7 @@
    \else\ifx\somestring\PSclosepath
      \def\closeMPpath{\PDFcode{h}}%
    \else\ifx\somestring\PSconcat
+     \cleanupMPconcat
      \let\flushMPpath\flushconcatMPpath
      \handleMPpathconcat
    \else\ifx\somestring\PSscale

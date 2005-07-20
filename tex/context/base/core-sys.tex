@@ -240,7 +240,7 @@
 %D Since this feature is used in XML processing, it made sense
 %D to support this faster alternative. It's installable as well.
 
-\def\installexpander#1{\setvalue{\s!do\c!expansion#1}}
+\def\installexpander#1#2{\setvalue{\s!do\c!expansion#1}{#2}}
 
 % \long\def\convertexpanded#1#2#3% hm, first we need to make sure
 %   {\csname   % that we assign all exp a value
@@ -272,7 +272,7 @@
 \installexpander\v!no     {\convertargument}
 \installexpander\v!yes    {\convertmeaning }
 \installexpander\v!yes    {\convertmeaning } % something lost ?
-\installexpander\v!strict {\reduceargument}
+\installexpander\v!strict {\reduceargument }
 
 \def\convertmeaning#1\to % watch the double expansion !
   {\bgroup

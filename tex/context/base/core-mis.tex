@@ -535,24 +535,30 @@
 % \test hans \\ ton \\ \subtot{nihil,--} \\
 % \stopopelkaar
 
-\def\doorsnede
-  {\hbox{\rlap/$\circ$} }
+\def\periodswidth  {.5em}
+\def\periodsdefault{3}    % was 5, but now it's like \unknown
 
 \unexpanded\def\periods
   {\dosingleempty\doperiods}
 
 \def\doperiods[#1]%
-  {\scratchdimen.5em%
-   \hbox to \iffirstargument#1\else5\fi \scratchdimen
-     {\leaders\hbox to \scratchdimen{\hss.\hss}\hss}}
+  {\dontleavehmode
+   \begingroup
+   \scratchdimen\periodswidth
+   \hbox to \iffirstargument#1\else\periodsdefault\fi \scratchdimen
+     {\leaders\hbox to \scratchdimen{\hss.\hss}\hss}
+   \endgroup}
+
+\unexpanded\def\unknown
+  {\periods\relax} % relax prevents lookahead for []
+
+% compatibility macros
+
+\def\doorsnede
+  {\hbox{\rlap/$\circ$} }
 
 \unexpanded\def\ongeveer
   {\mathematics\pm}
-
-% for compatibility
-
-\unexpanded\def\unknown
-  {\dontleavehmode\periods[3]}
 
 \def\midboundarycharacter#1#2%
   {%\nobreak
