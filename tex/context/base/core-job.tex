@@ -249,12 +249,12 @@
     %\the\everybye            %
     %\the\everygoodbye        % == \end (new)
     %\expandafter\normalend   %
-     \expandafter\end
+     \expandafter\finalend
    \fi}
 
-\let\normalend=\end
+\let\normalend\end
 
-\def\end
+\def\finalend
   {\ifnum\textlevel>\zerocount \else
      \the\everybye
      \the\everygoodbye
@@ -262,6 +262,8 @@
      \global\everygoodbye\emptytoks % but for sure
      \expandafter\normalend
    \fi}
+
+\let\end\finalend
 
 \def\emergencyend
   {\writestatus\m!systems{invalid \@EA\string\csname\e!start\v!text\endcsname...\@EA\string\csname\e!stop\v!text\endcsname\space structure}%

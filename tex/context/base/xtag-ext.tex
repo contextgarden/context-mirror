@@ -280,4 +280,52 @@
 \def\writtenXMLelementcs#1#2{\ifx#2\empty\else<#1>#2</#1>\fi}
 \def\writtenXMLemptycs  #1#2{\ifx#2\empty<#1/>\else<#1>#2</#1>\fi}
 
+%D This one can be used to get sound tuo files.
+%D
+%D \starttyping
+%D \setuphead[chapter][expansion=xml]
+%D % \setuplist[chapter][textcommand=\enableXML]
+%D
+%D \enableregime[utf] \autoXMLentitiestrue
+%D \stoptyping
+%D
+%D with:
+%D
+%D \starttyping
+%D <chapter>test &#xEB; test &ediaeresis; test <e>ediaeresis</e></chapter>
+%D \stoptyping
+%D
+%D This gives:
+%D
+%D \starttyping
+%D test Äk <b>test</b> <e>ediaeresis</e> test <e>ediaeresis</e>
+%D \stoptyping
+
+\def\XMLprocessingparameter#1%
+  {\csname\??xp#1\endcsname}
+
+\appendtoks
+  \defineXMLargument[\XMLprocessingparameter\c!escape]\getXMlentity
+\to \aftersetupXMLprocessing
+
+\setupXMLprocessing
+  [\c!escape=e]
+
+\bgroup \catcode`\<=\active
+
+\long\gdef\expandxmlargument#1\to
+  {\begingroup
+   \let\uppercase\firstofoneargument
+   \def\getXMLhexcharacter##1{\numbertoutf{"##1}}%
+   \def\getXMLdeccharacter##1{\numbertoutf{##1}}%
+   \def\getXMLentity##1{<e>##1</e>}%
+   \def<{\noexpand<}%
+   \xdef\@@globalexpanded{#1}%
+   \endgroup
+   \convertcommand\@@globalexpanded\to}
+
+\egroup
+
+\installexpander \v!xml {\expandxmlargument}
+
 \protect \endinput

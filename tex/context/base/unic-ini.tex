@@ -95,17 +95,16 @@
 %D which saves tokens and is faster. In this case we gain
 %D some 10\% time.
 
-\chardef       \utf@a=64
-\mathchardef   \utf@b=4096
+\chardef       \utf@a=    64
+\mathchardef   \utf@b=  4096
 \newcount\utf@c\utf@c=262144
-
-\chardef       \utf@d=192
-\chardef       \utf@e=224
-\chardef       \utf@f=240
-
-\chardef       \utf@g=128
-\mathchardef   \utf@h=256
-\chardef       \utf@i=127
+\chardef       \utf@d=   192
+\chardef       \utf@e=   224
+\chardef       \utf@f=   240
+\chardef       \utf@g=   128
+\mathchardef   \utf@h=   256
+\chardef       \utf@i=   127
+\mathchardef   \utf@j=  2048
 
 %D The definitions now become:
 %D
@@ -585,6 +584,73 @@
    \else
      \@EA\utfunifontcommand
    \fi}
+
+%D We can convert from a number to some UTF code with the folowing
+%D conversion macro.
+
+% The first, na\"ive version:
+%
+% \def\numbertoutf#1%
+%   {\ifnum#1<128
+%      \rawcharacter{#1}%
+%    \else\ifnum#1<2048
+%      \rawcharacter{\the\numexpr192+#1/64\relax}%
+%      \rawcharacter{\the\numexpr128+#1-(#1/64)*64\relax}%
+%    \else               % 3 bytes
+%      \rawcharacter{\the\numexpr224+#1/4096\relax}%
+%      \rawcharacter{\the\numexpr128+(#1-(#1/4096)*4096)/128\relax}%
+%      \rawcharacter{\the\numexpr128+(#1-(#1/4096)*4096)+(#1-(#1/4096)*4096)/128\relax}%
+%    \fi\fi}
+
+% We have to compensate for etex's rounding (thanks to Taco and
+% Nanning) for pointing/sorting this out:
+
+% \def\numbertoutf#1%
+%   {\ifnum#1<128
+%      \rawcharacter{#1}%
+%    \else\ifnum#1<2048
+%      \rawcharacter{\the\numexpr192+(#1-32)/64\relax}%
+%      \rawcharacter{\the\numexpr128+(#1-((#1-32)/64)*64)\relax}%
+%    \else
+%      \rawcharacter{\the\numexpr224+(#1-2048)/4096\relax}%
+%      \rawcharacter{\the\numexpr128+(#1-(((#1-2048)/4096)*4096)-32)/64\relax}%
+%      \rawcharacter{\the\numexpr128+(#1-(((#1-2048)/4096)*4096)-((#1-(((#1-2048)/4096)*4096)-32)/64)*64)\relax}%
+%    \fi\fi}
+
+\beginETEX \numexpr
+
+\chardef       \utf@a=    64
+\mathchardef   \utf@b=  4096
+\newcount\utf@c\utf@c=262144
+\chardef       \utf@d=   192
+\chardef       \utf@e=   224
+\chardef       \utf@f=   240
+\chardef       \utf@g=   128
+\mathchardef   \utf@h=   256
+\chardef       \utf@i=   127
+\mathchardef   \utf@j=  2048
+\chardef       \utf@k=    32
+
+\def\numbertoutf#1%
+  {\ifnum#1<\utf@g
+     \rawcharacter{#1}%
+   \else\ifnum#1<\utf@j
+     \rawcharacter{\the\numexpr\utf@d+(#1-\utf@k)/\utf@a\relax}%
+     \rawcharacter{\the\numexpr\utf@g+(#1-((#1-\utf@k)/\utf@a)*\utf@a)\relax}%
+   \else
+     \rawcharacter{\the\numexpr\utf@e+(#1-\utf@j)/\utf@b\relax}%
+     \rawcharacter{\the\numexpr\utf@g+(#1-(((#1-\utf@j)/\utf@b)*\utf@b)-\utf@k)/\utf@a\relax}%
+     \rawcharacter{\the\numexpr\utf@g+(#1-(((#1-\utf@j)/\utf@b)*\utf@b)-((#1-(((#1-\utf@j)/\utf@b)*\utf@b)-\utf@k)/\utf@a)*\utf@a)\relax}%
+   \fi\fi}
+
+\endETEX
+
+\beginTEX
+
+\def\numbertoutf#1%
+  {[\number#1]}
+
+\endTEX
 
 %D Goodies:
 

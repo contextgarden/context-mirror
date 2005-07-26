@@ -51,6 +51,7 @@ use Class::Struct;    # needed for help subsystem
 use FindBin;
 use File::Compare;
 use File::Temp;
+use Digest::MD5;
 
 #~ use IO::Handle; autoflush STDOUT 1;
 
@@ -428,7 +429,7 @@ if ( ( $LogFile ne '' ) && ( $LogFile =~ /\w+\.log$/io ) ) {
     *STDERR = *LOGFILE;
 }
 
-my $Program = " TeXExec 5.4.2 - ConTeXt / PRAGMA ADE 1997-2005";
+my $Program = " TeXExec 5.4.3 - ConTeXt / PRAGMA ADE 1997-2005";
 
 print "\n$Program\n\n";
 
@@ -1641,41 +1642,68 @@ sub CopyFile {    # agressive copy, works for open files like in gs
     close(OUT);
 }
 
+#~ sub CheckMPChanges {
+    #~ my $JobName   = shift;
+    #~ my $checksum  = 0;
+    #~ my $MPJobName = MPJobName( $JobName, "mpgraph" );
+    #~ if ( open( MP, $MPJobName ) ) {
+        #~ while (<MP>) {
+            #~ unless (/random/oi) {
+                #~ $checksum += do { unpack( "%32C*", <MP> ) % 65535 }
+            #~ }
+        #~ }
+        #~ close(MP);
+    #~ }
+    #~ $MPJobName = MPJobName( $JobName, "mprun" );
+    #~ if ( open( MP, $MPJobName ) ) {
+        #~ while (<MP>) {
+            #~ unless (/random/oi) {
+                #~ $checksum += do { unpack( "%32C*", <MP> ) % 65535 }
+            #~ }
+        #~ }
+        #~ close(MP);
+    #~ }
+    #~ print "         mpgraph/mprun : $checksum\n";
+    #~ return $checksum;
+#~ }
+
 sub CheckMPChanges {
-    my $JobName   = shift;
-    my $checksum  = 0;
+    my $JobName = shift; my $str = '' ;
     my $MPJobName = MPJobName( $JobName, "mpgraph" );
     if ( open( MP, $MPJobName ) ) {
-        while (<MP>) {
-            unless (/random/oi) {
-                $checksum += do { unpack( "%32C*", <MP> ) % 65535 }
-            }
-        }
-        close(MP);
+        $str .= do { local $/ ; <MP> ; } ;
+        close(MP) ;
     }
     $MPJobName = MPJobName( $JobName, "mprun" );
     if ( open( MP, $MPJobName ) ) {
-        while (<MP>) {
-            unless (/random/oi) {
-                $checksum += do { unpack( "%32C*", <MP> ) % 65535 }
-            }
-        }
-        close(MP);
+        $str .= do { local $/ ; <MP> ; } ;
+        close(MP) ;
     }
-    return $checksum;
+    $str =~ s/^.*?random.*?$//oim ;
+    return Digest::MD5::md5_hex($str) ;
 }
 
+#~ sub CheckTubChanges {
+    #~ my $JobName   = shift;
+    #~ my $checksum  = 0;
+    #~ if ( open( TUB, "$JobName.tub" ) ) {
+        #~ while (<TUB>) {
+            #~ $checksum += do { unpack( "%32C*", <TUB> ) % 65535 }
+        #~ }
+        #~ close(TUB);
+    #~ }
+    #~ return $checksum;
+#~ }
+
 sub CheckTubChanges {
-    my $JobName   = shift;
-    my $checksum  = 0;
+    my $JobName   = shift; my $str = '' ;
     if ( open( TUB, "$JobName.tub" ) ) {
-        while (<TUB>) {
-            $checksum += do { unpack( "%32C*", <TUB> ) % 65535 }
-        }
+        $str = do { local $/ ; <TUB> ; } ;
         close(TUB);
     }
-    return $checksum;
+    return Digest::MD5::md5_hex($str);
 }
+
 
 my $DummyFile = 0;
 
@@ -1839,8 +1867,8 @@ sub RunConTeXtFile {
                     MakeOptionFile( 0, 0, $JobName, $OriSuffix, 2 );
                 }
                 print "               TeX run : $TeXRuns\n\n";
-                my ( $mpchecksumbefore, $mpchecksumafter ) = ( 0, 0 );
-                my ( $tubchecksumbefore, $tubchecksumafter ) = ( 0, 0 );
+                my ( $mpchecksumbefore, $mpchecksumafter ) = ( '', '' );
+                my ( $tubchecksumbefore, $tubchecksumafter ) = ( '', '' );
                 if ($AutoMPRun) { $mpchecksumbefore = CheckMPChanges($JobName) }
                 $tubchecksumbefore = CheckTubChanges($JobName) ;
                 $Problems = RunTeX( $JobName, $JobSuffix );
@@ -1855,11 +1883,11 @@ sub RunConTeXtFile {
                     if ($AutoMPRun) {
                         $StopRunning =
                           ( $StopRunning
-                              && ( $mpchecksumafter == $mpchecksumbefore ) );
+                              && ( $mpchecksumafter eq $mpchecksumbefore ) );
                     }
                     $StopRunning =
                           ( $StopRunning
-                              && ( $tubchecksumafter == $tubchecksumbefore ) );
+                              && ( $tubchecksumafter eq $tubchecksumbefore ) );
                 }
             }
             if ( ( $NOfRuns == 1 ) && $ForceTeXutil ) {
@@ -2669,7 +2697,30 @@ sub RunMP {                  ###########
     }
 }
 
-my $mpochecksum = 0;
+my $mpochecksum = '';
+
+#~ sub checkMPgraphics {    # also see makempy
+    #~ my $MpName = shift;
+    #~ if ( $MakeMpy ne '' ) { $MpName .= " --$MakeMpy " }    # extra switches
+    #~ if ($MpyForce)        { $MpName .= " --force " }       # dirty
+    #~ else {
+        #~ return 0 unless -s "$MpName.mpo" > 32;
+        #~ return 0 unless ( open( MPO, "$MpName.mpo" ) );
+        #~ $mpochecksum = do { local $/; unpack( "%32C*", <MPO> ) % 65535 };
+        #~ close(MPO);
+        #~ if ( open( MPY, "$MpName.mpy" ) ) {
+            #~ my $str = <MPY>;
+            #~ chomp $str;
+            #~ close(MPY);
+            #~ if ( $str =~ /^\%\s*mpochecksum\s*\:\s*(\d+)/o ) {
+                #~ return 0 if ( ( $mpochecksum eq $1 ) && ( $mpochecksum ne 0 ) );
+            #~ }
+        #~ }
+    #~ }
+    #~ RunPerlScript( "makempy", "$MpName" );
+    #~ print "  second MP run needed : text graphics found\n";
+    #~ return 1;
+#~ }
 
 sub checkMPgraphics {    # also see makempy
     my $MpName = shift;
@@ -2678,14 +2729,14 @@ sub checkMPgraphics {    # also see makempy
     else {
         return 0 unless -s "$MpName.mpo" > 32;
         return 0 unless ( open( MPO, "$MpName.mpo" ) );
-        $mpochecksum = do { local $/; unpack( "%32C*", <MPO> ) % 65535 };
+        $mpochecksum = do { local $/; Digest::MD5::md5_hex(<MPO>) ; };
         close(MPO);
         if ( open( MPY, "$MpName.mpy" ) ) {
             my $str = <MPY>;
             chomp $str;
             close(MPY);
-            if ( $str =~ /^\%\s*mpochecksum\s*\:\s*(\d+)/o ) {
-                return 0 if ( ( $mpochecksum eq $1 ) && ( $mpochecksum ne 0 ) );
+            if ( $str =~ /^\%\s*mpochecksum\s*\:\s*([a-fA-F0-9]+)/o ) {
+                return 0 if ( ( $mpochecksum eq $1 ) && ( $mpochecksum ne '' ) );
             }
         }
     }

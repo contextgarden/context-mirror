@@ -572,6 +572,25 @@
 %D
 %D The \type {\resetMPenvironment} is a quick way to erase
 %D the token list.
+%D
+%D You should be aware of independencies. For instance, if you use a font
+%D in a graphic that is not used in the main document, you need to load the
+%D typescript at the outer level (either directly or by using the global
+%D option).
+%D
+%D \starttyping
+%D \usetypescript[palatino][texnansi]
+%D
+%D \startMPenvironment
+%D     \usetypescript[palatino][texnansi]
+%D     \enableregime[utf]
+%D     \setupbodyfont[palatino]
+%D \stopMPenvironment
+%D
+%D \startMPpage
+%D     draw btex aap‒noot coördinatie – één etex ;
+%D \stopMPpage
+%D \stoptyping
 
 %D We don't want spurious files, do we?
 

@@ -5758,6 +5758,9 @@
       <cd:constant type="velke"/>
       <cd:constant type="dalsi"/>
       <cd:constant type="prvni"/>
+      <cd:constant type="normalni"/>
+      <cd:constant type="liche"/>
+      <cd:constant type="sude"/>
       <cd:constant type="cd:dimension"/>
     </cd:keywords>
   </cd:arguments>

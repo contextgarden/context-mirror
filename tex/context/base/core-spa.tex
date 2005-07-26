@@ -992,8 +992,8 @@
    \ifblankflexible \else
      \bigskipamount1\bigskipamount
    \fi
-   \medskipamount  \bigskipamount \divide\medskipamount   2
-   \smallskipamount\bigskipamount \divide\smallskipamount 4 }%
+   \medskipamount  \bigskipamount \divide\medskipamount  \plustwo
+   \smallskipamount\bigskipamount \divide\smallskipamount\plusfour}%
 
 \def\complexsetupblank[#1]% more \let's
   {\ifgridsnapping
@@ -1183,7 +1183,8 @@
 %      \noindent\hskip\parindent
 %    \fi \fi}
 
-\let\currentindentation\empty % amount
+\let\currentindentation\empty % amount/keyword
+% \let\normalindentation \empty % used for reinstating normal indentation
 \let\currentindenting  \empty % method
 
 \newdimen\ctxparindent
@@ -1215,6 +1216,14 @@
    \convertcommand\!!stringa\to\!!stringa
    \executeifdefined{\??in:\!!stringa}{\edef\currentindentation{#1}\simplesetupindenting}}
 
+\def\docomplexsetupindenting#1%
+  {\edef\!!stringa{#1}% catch #1=\somedimen
+   \convertcommand\!!stringa\to\!!stringa
+   \executeifdefined{\??in:\!!stringa}
+     {\edef\currentindentation{#1}%
+      \let\normalindentation\currentindentation
+      \simplesetupindenting}}
+
 \def\simplesetupindenting % empty case
   {\assigndimension\currentindentation\ctxparindent{1em}{1.5em}{2em}}
 
@@ -1239,6 +1248,11 @@
 
 \defineindentingmethod [\v!odd]    {\chardef\indentingtoggle\plusone}
 \defineindentingmethod [\v!even]   {\chardef\indentingtoggle\plustwo}
+
+\defineindentingmethod [\v!normal] {\ifx\normalindentation\empty\else
+                                      \let\currentindentation\normalindentation
+                                      \simplesetupindenting
+                                    \fi}
 
 \def\noindenting{\indenting[\v!no, \v!next ]} % was \nietinspringen
 \def\doindenting{\indenting[\v!yes,\v!first]} % was \welinspringen
@@ -1410,9 +1424,10 @@
 \def\packed
   {\nointerlineskip}
 
-\def\godown[#1]% nog eens mooier, relateren aan blanko
-  {\nointerlineskip
-   \vskip#1 }
+\def\godown[#1]%
+  {\relax
+   \ifhmode\endgraf\fi
+   \ifvmode\nointerlineskip\vskip#1\relax}
 
 %D A couple of plain macros:
 
@@ -4339,7 +4354,7 @@
   \!!minus#3\fontdimen4\font}
 
 \def\fixedspaceamount#1%
-         {#1\fontdimen2\font}
+  {#1\fontdimen2\font}
 
 \setupwhitespace
   [\v!none]

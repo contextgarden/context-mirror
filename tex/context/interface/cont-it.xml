@@ -5758,6 +5758,9 @@
       <cd:constant type="grande"/>
       <cd:constant type="successivo"/>
       <cd:constant type="primo"/>
+      <cd:constant type="normale"/>
+      <cd:constant type="dispari"/>
+      <cd:constant type="pari"/>
       <cd:constant type="cd:dimension"/>
     </cd:keywords>
   </cd:arguments>

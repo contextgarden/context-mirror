@@ -231,7 +231,7 @@
    \hsize\getvalue{\??im#1\c!width}\relax
    \doifnumberelse\margincontenttag
      {\ifcase\margincontenttag\relax
-        \let\margincontenttag#1% first one is setups id as well
+        \edef\margincontenttag{#1}% first one is setups id as well
       \fi}
      \donothing
    \doifnumberelse\margincontenttag

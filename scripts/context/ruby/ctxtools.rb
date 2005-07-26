@@ -17,7 +17,6 @@
 #
 # todo: move kpse call to kpse class/module
 
-
 banner = ['CtxTools', 'version 1.2.2', '2004/2005', 'PRAGMA ADE/POD']
 
 unless defined? ownpath

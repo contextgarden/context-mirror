@@ -5758,6 +5758,9 @@
       <cd:constant type="groot"/>
       <cd:constant type="volgende"/>
       <cd:constant type="eerste"/>
+      <cd:constant type="normaal"/>
+      <cd:constant type="oneven"/>
+      <cd:constant type="even"/>
       <cd:constant type="cd:dimension"/>
     </cd:keywords>
   </cd:arguments>

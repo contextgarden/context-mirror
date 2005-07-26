@@ -124,7 +124,7 @@
   {\donefalse % we use boolean due to \par
    \doifundefined{\pdffontresource}% should be \long
      {\doif{#1}{\currentencoding}{\donetrue}}%
-   \ifdone
+   \ifdone % pdftex !
      \immediate\pdfobj stream {#2}%
      \setxvalue{\pdffontresource}{\the\pdflastobj}%
    \fi}
@@ -189,7 +189,7 @@
      \dodoincludepdffontresource
    \fi}
 
-\def\dodoincludepdffontresource%
+\def\dodoincludepdffontresource
   {\ifx\currentencoding\empty \else \ifx\currentencoding\s!default \else
      \@EA\ifx\csname\pdffontfileresource\endcsname\relax\else
        \edef\xpdffontfileresource{\csname\pdffontfileresource\endcsname}%
@@ -209,13 +209,21 @@
 
 \endTEX
 
-
 %D For the moment, we keep this definition here, if only
 %D because \type {\usepdffontencoding} is not defined in the
-%D core. In the end, this will go to enco-il2.
+%D core. In the end, this will go to \type {enco-*.tex}.
+%D
+%D Test:
+%D
+%D \starttyping
+%D \useencoding[pfr] \usetypescript[palatino][ec] \setupbodyfont[palatino]
+%D
+%D \starttext
+%D fi ff ffi
+%D \stoptext
+%D \stoptyping
 
-\startencoding [il2]
-  \usepdffontresource il2
-\stopencoding
+\startencoding [il2] \usepdffontresource il2 \stopencoding
+\startencoding [ec]  \usepdffontresource ec  \stopencoding
 
 \protect \endinput

@@ -138,24 +138,24 @@
 
 \beginTEX
 
-\def\doconvertcharacters#1#2%
-  {\ifnum#2>26
+\def\dodoconvertcharacters#1#2#3%
+  {\ifnum#3>#1
      \bgroup
-     \!!counta#2\relax
+     \!!counta#3\relax
      \ifnum\!!counta>\zerocount
        \advance\!!counta \minusone
        \!!countb\!!counta
-       \divide\!!counta 26
+       \divide\!!counta #1%
        \!!countc\!!counta
-       \multiply\!!countc 26
+       \multiply\!!countc #1%
        \advance\!!countb -\!!countc
-       \doconvertcharacters#1{\!!counta}%
+       \doconvertcharacters#3{\!!counta}%
        \advance\!!countb \plusone
-       #1{\the\!!countb}%
+       #3{\the\!!countb}%
      \fi
      \egroup
    \else
-     #1{#2}% pure expansion, used in references
+     #2{#3}% pure expansion, used in references
    \fi}
 
 \endTEX
@@ -164,17 +164,19 @@
 
 \beginETEX \numexpr
 
-\def\doconvertcharacters#1#2%
-  {\ifcase#2\else
-     \ifnum#2>26
-       \expandafter\doconvertcharacters\expandafter#1\expandafter{\the\numexpr(#2+12)/26-1\relax}%
-       \expandafter#1\expandafter{\the\numexpr#2-((#2+12)/26-)*26\relax}%
+\def\dodoconvertcharacters#1#2#3%
+  {\ifcase#3\else
+     \ifnum#3>#1
+       \expandafter\doconvertcharacters\expandafter#2\expandafter{\the\numexpr(#3+12)/#1-1\relax}%
+       \expandafter#2\expandafter{\the\numexpr#3-((#3+12)/#1-1)*#1\relax}%
      \else
-       \expandafter#1\expandafter{\number#2}%
+       \expandafter#2\expandafter{\number#3}%
      \fi
    \fi}
 
 \endETEX
+
+\def\doconvertcharacters{\dodoconvertcharacters{26}}
 
 \def\characters{\doconvertcharacters\character}
 \def\Characters{\doconvertcharacters\Character}
@@ -184,8 +186,8 @@
 %D
 %D Why should we only honour the romans, and not the greek?
 
-\def\greeknumerals#1% watch the \normalxi
-  {\mathematics
+\def\greeknumerals#1%
+  {% no longer needed: \mathematics
      {\ifcase#1\unknowncharacter\or
         \alpha      \or \beta  \or \gamma   \or \delta   \or
         \varepsilon \or \zeta  \or \eta     \or \theta   \or
@@ -198,7 +200,7 @@
       \fi}}
 
 \def\Greeknumerals#1%
-  {\mathematics
+  {% no longer needed: \mathematics
      {\ifcase#1\unknowncharacter \or
         \Alpha   \or \Beta  \or \Gamma   \or \Delta   \or
         \Epsilon \or \Zeta  \or \Eta     \or \Theta   \or

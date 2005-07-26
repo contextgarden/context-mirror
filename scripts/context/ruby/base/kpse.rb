@@ -198,6 +198,8 @@ module Kpse
                         end
                     end
                 end
+                # needed !
+                begin File.makedirs(formatpath) ; rescue ; end ;
                 # fall back to current path
                 formatpath = '.' if formatpath.empty? || ! FileTest.writable?(formatpath)
                 # append engine but prevent duplicates

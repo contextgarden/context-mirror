@@ -5758,6 +5758,9 @@
       <cd:constant type="gross"/>
       <cd:constant type="folgende"/>
       <cd:constant type="erste"/>
+      <cd:constant type="normal"/>
+      <cd:constant type="ungerade"/>
+      <cd:constant type="gerade"/>
       <cd:constant type="cd:dimension"/>
     </cd:keywords>
   </cd:arguments>

@@ -5758,6 +5758,9 @@
       <cd:constant type="big"/>
       <cd:constant type="next"/>
       <cd:constant type="first"/>
+      <cd:constant type="normal"/>
+      <cd:constant type="odd"/>
+      <cd:constant type="even"/>
       <cd:constant type="cd:dimension"/>
     </cd:keywords>
   </cd:arguments>

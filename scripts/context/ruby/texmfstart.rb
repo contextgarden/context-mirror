@@ -57,6 +57,7 @@ $predefined   = Hash.new
 $suffixinputs['pl']  = 'PERLINPUTS'
 $suffixinputs['rb']  = 'RUBYINPUTS'
 $suffixinputs['py']  = 'PYTHONINPUTS'
+$suffixinputs['lua'] = 'LUAINPUTS'
 $suffixinputs['jar'] = 'JAVAINPUTS'
 $suffixinputs['pdf'] = 'PDFINPUTS'
 
@@ -80,7 +81,7 @@ if ENV['TEXMFSTART_MODE'] = 'experimental' then
     $predefined['pstopdf'] = 'newpstopdf.rb'
 end
 
-$scriptlist   = 'rb|pl|py|jar'
+$scriptlist   = 'rb|pl|py|lua|jar'
 $documentlist = 'pdf|ps|eps|htm|html'
 
 $editor = ENV['EDITOR'] || ENV['editor'] || 'scite'
@@ -91,6 +92,7 @@ $applications['unknown']  = ''
 $applications['perl']     = $applications['pl']  = 'perl'
 $applications['ruby']     = $applications['rb']  = 'ruby'
 $applications['python']   = $applications['py']  = 'python'
+$applications['lua']      = $applications['lua'] = 'lua'
 $applications['java']     = $applications['jar'] = 'java'
 
 if $mswindows then

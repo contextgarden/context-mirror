@@ -45,8 +45,6 @@ module PDFview
 
 end
 
-puts ('' || false)
-
 # PDFview.open("t:/document/show-exa.pdf")
 # PDFview.open("t:/document/show-gra.pdf")
 # PDFview.close("t:/document/show-exa.pdf")

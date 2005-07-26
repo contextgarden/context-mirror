@@ -445,4 +445,52 @@
 %D \ShowAllLanguageValues [\s!hr] [croatian]  {Croatian}  {heartthrob}
 %D \ShowAllLanguageValues [\s!sl] [slovenian] {Slovenian} {mountains}
 
+%D A present from Brooks Moses and Hans hagen for Mojca Miklavec:
+
+\def\doconvertsloveniancharacters{\dodoconvertcharacters{25}}
+
+\def\sloveniancharacters{\doconvertsloveniancharacters\sloveniancharacter}
+\def\slovenianCharacters{\doconvertsloveniancharacters\slovenianCharacter}
+
+%D Define general-purpose macros for Slovenian character enumerations:
+
+\defineconversion [sloveniancharacter]  [\sloveniancharacter]
+\defineconversion [slovenianCharacter]  [\slovenianCharacter]
+
+\defineconversion [sloveniancharacters] [\sloveniancharacters]
+\defineconversion [slovenianCharacters] [\slovenianCharacters]
+
+%D Define these as the general character enumeration when
+%D language is Slovenian. If you feel uncomfortable with this,
+%D mail Mojca, since she promised to to take the heat.
+
+\defineconversion [sl] [character]  [\sloveniancharacter]
+\defineconversion [sl] [Character]  [\slovenianCharacter]
+
+\defineconversion [sl] [characters] [\sloveniancharacters]
+\defineconversion [sl] [Characters] [\slovenianCharacters]
+
+\defineconversion [sl] [a]          [\sloveniancharacters]
+\defineconversion [sl] [A]          [\slovenianCharacters]
+\defineconversion [sl] [AK]         [\smallcapped\sloveniancharacters]
+\defineconversion [sl] [KA]         [\smallcapped\sloveniancharacters]
+
+%D This may move to \type {core-con.tex}.
+
+\def\sloveniancharacter#1%
+  {\ifcase#1\unknowncharacter
+     \or a\or b\or c\or \ccaron\or d\or e\or f\or g\or h\or i\or j\or k\or l\or m%
+     \or n\or o\or p\or r\or s\or \scaron\or t\or u\or v\or z\or \zcaron
+   \else
+     \unknowncharacter
+   \fi}
+
+\def\slovenianCharacter#1%
+  {\ifcase#1\unknowncharacter
+     \or A\or B\or C\or \Ccaron\or D\or E\or F\or G\or H\or I\or J\or K\or L\or M%
+     \or N\or O\or P\or R\or S\or \Scaron\or T\or U\or V\or Z\or \Zcaron
+   \else
+     \unknowncharacter
+   \fi}
+
 \protect \endinput

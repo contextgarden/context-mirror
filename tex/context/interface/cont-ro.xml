@@ -5758,6 +5758,9 @@
       <cd:constant type="mare"/>
       <cd:constant type="urmatorul"/>
       <cd:constant type="primul"/>
+      <cd:constant type="normal"/>
+      <cd:constant type="impar"/>
+      <cd:constant type="par"/>
       <cd:constant type="cd:dimension"/>
     </cd:keywords>
   </cd:arguments>

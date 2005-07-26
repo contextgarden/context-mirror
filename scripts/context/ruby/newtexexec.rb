@@ -16,7 +16,7 @@ require 'base/texutil'
 require 'ftools'     # needed ?
 
 require 'base/kpse'  # needed ?
-require 'base/pdf'   # needed ?
+# require 'base/pdf'   # needed ?
 require 'base/state' # needed ?
 require 'base/file'  # needed ?
 
