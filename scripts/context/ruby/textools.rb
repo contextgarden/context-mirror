@@ -356,7 +356,7 @@ class Commands
 
     end
 
-    def replace
+    def replacefile
 
         report('replace file')
 
@@ -723,12 +723,14 @@ class Commands
 
     public
 
-    def mergeupdate
+    def updatetree
 
-        nocheck = @commandline.option('nocheck')
-        force   = @commandline.option('force')
-        root    = @commandline.argument('first')
-        path    = @commandline.argument('second')
+        nocheck  = @commandline.option('nocheck')
+        merge    = @commandline.option('merge')
+        prune    = @commandline.option('prune')
+        force    = @commandline.option('force')
+        root     = @commandline.argument('first')
+        path     = @commandline.argument('second')
 
         if FileTest.directory?(root) then
             report("scanning #{root}")
@@ -775,20 +777,63 @@ class Commands
             end
         end
 
+        donehash = Hash.new
+        copied   = Array.new
+
         pathhash.keys.each do |f|
-            if pathhash[f] && roothash[f] then
-                p = File.expand_path(File.join(pathhash[f],f))
+            if pathhash[f] and roothash[f] then
+                p = File.expand_path(File.join(pathhash[f],f)) # destination
                 r = File.expand_path(File.join(roothash[f],f))
                 if p != r then
-                    if nocheck or File.mtime(p) < File.mtime(r) then
-                        report("copying '#{r}' to '#{p}'")
+                    if not FileTest.file?(p) then
+                        if merge then
+                            report("merging '#{r}' to '#{p}'")
+                            begin
+                                File.copy(r,p) if force
+                                copied << p
+                            rescue
+                                report("merging failed")
+                            else
+                                donehash[File.dirname(r)] = File.dirname(p)
+                            end
+                        else
+                            report("skipping '#{r}' to '#{p}'")
+                        end
+                    elsif nocheck or File.mtime(p) < File.mtime(r) then
+                        report("updating '#{r}' to '#{p}'")
                         begin
                             File.copy(r,p) if force
+                            copied << p
                         rescue
-                            report("copying failed")
+                            report("updating failed")
+                        else
+                            donehash[File.dirname(r)] = File.dirname(p)
                         end
                     else
                         report("skipping '#{r}' to '#{p}'")
+                    end
+                end
+            end
+        end
+
+        report("")
+        donehash.keys.sort.each do |d|
+            rootfiles = Dir.glob("#{d}/**/*")
+            pathfiles = Dir.glob("#{donehash[d]}/**/*")
+            pathfiles.collect! do |file| File.expand_path(file) end
+            rootfiles.collect! do |file| File.expand_path(file) end
+            difference = pathfiles - rootfiles - copied
+            if difference.length > 0 then
+                length = 0
+                difference.each do |file|
+                    if l = File.basename(file).length and l > length then length = l end
+                end
+                report("")
+                difference.sort.each do |file|
+                    if prune then
+                        report("deleting '#{file.ljust(length)}'")
+                    else
+                        report("keeping '#{file.ljust(length)}'")
                     end
                 end
             end
@@ -810,8 +855,8 @@ commandline.registeraction('unzipfiles'       , '[pattern]   [--recurse]')
 commandline.registeraction('fixafmfiles'      , '[pattern]   [--recurse]')
 commandline.registeraction('mactodos'         , '[pattern]   [--recurse]')
 commandline.registeraction('fixtexmftrees'    , '[texmfroot] [--force]')
-commandline.registeraction('replace'          , 'filename    [--force]')
-commandline.registeraction('mergeupdate'      , 'fromroot toroot [--force --nocheck]')
+commandline.registeraction('replacefile'      , 'filename    [--force]')
+commandline.registeraction('updatetree'       , 'fromroot toroot [--force --nocheck --merge --prune]')
 commandline.registeraction('downcasefilenames', '[--recurse] [--force]') # not yet documented
 commandline.registeraction('stripformfeeds'   , '[--recurse] [--force]') # not yet documented
 commandline.registeraction('showfont'         , 'filename')
@@ -821,6 +866,7 @@ commandline.registeraction('version')
 
 commandline.registerflag('recurse')
 commandline.registerflag('force')
+commandline.registerflag('prune')
 commandline.registerflag('nocheck')
 
 commandline.expand

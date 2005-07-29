@@ -377,7 +377,7 @@ class Commands
 
     def purgefiles(all=false)
 
-        pattern = @commandline.arguments
+        pattern  = @commandline.arguments
         purgeall = @commandline.option("all") || all
 
         $dontaskprefixes.push(Dir.glob("mpx-*"))
@@ -407,10 +407,7 @@ class Commands
         files.sort!
 
         $dontaskprefixes.each do |file|
-            removecontextfile(file) if FileTest.file?(file)
-        end
-        $dontasksuffixes.each do |file|
-            removecontextfile(file) if FileTest.file?(file)
+            removecontextfile(file)
         end
         $dontasksuffixes.each do |suffix|
             files.each do |file|
@@ -447,6 +444,13 @@ class Commands
             end
         end
 
+        files = Dir.glob("*.*")
+        $dontasksuffixes.each do |suffix|
+            files.each do |file|
+                removecontextfile(file) if file =~ /^#{suffix}$/i
+            end
+        end
+
         if $removedfiles || $keptfiles || $persistentfiles then
             report("removed files : #{$removedfiles}")
             report("kept files : #{$keptfiles}")
@@ -474,9 +478,9 @@ class Commands
         "cont-opt.tex", "cont-opt.bak"
     ]
     $dontasksuffixes = [
-        "mpgraph.mp", "mpgraph.mpd", "mpgraph.mpo", "mpgraph.mpy",
-        "mprun.mp", "mprun.mpd", "mprun.mpo", "mprun.mpy",
-        "xlscript.xsl"
+        "mp(graph|run)\\.mp", "mp(graph|run)\\.mpd", "mp(graph|run)\\.mpo", "mp(graph|run)\\.mpy",
+        "mp(graph|run)\\.\\d+",
+        "xlscript\\.xsl"
     ]
     $forsuresuffixes = [
         "tui", "tup", "ted", "tes", "top",

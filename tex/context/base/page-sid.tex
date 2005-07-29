@@ -309,6 +309,19 @@
       \brokenpenalty\the\brokenpenalty
       \let\poppenalties\relax}}
 
+% shouldn;t that be:
+%
+% \def\pushpenalties % needed?
+%   {\let\pushpenalties\relax
+%    \edef\poppenalties
+%      {\widowpenalty \the\widowpenalty
+%       \clubpenalty  \the\clubpenalty
+%       \brokenpenalty\the\brokenpenalty
+%       \let\poppenalties\relax}%
+%    \widowpenalty\plusone
+%    \clubpenalty\plustwo
+%    \brokenpenalty\plusone}
+
 \let\poppenalties=\relax
 
 \def\restorepenalties
@@ -767,7 +780,7 @@
        \else
          \scratchcounter\sidefloatlinesdone
          \advance\scratchcounter-\!!counta
-         \global\sidefloatsidelines-\scratchcounter
+         \global\advance\sidefloatsidelines-\scratchcounter
        \fi
      \fi
      \ifnum\sidefloatsidelines>\zerocount

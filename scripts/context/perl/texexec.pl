@@ -1763,15 +1763,19 @@ sub RunConTeXtFile {
             while (<XML>) {
                 if (/\<[a-z]+/io) {
                     last ;
-                } elsif (/\<\?context\-directive\s+(.+?)\s+(.+?)\s+(.+?)\s*\?\>/o) {
-                    my ($class, $key, $value) = ($1, $2, $3) ;
+                } elsif (/\<\?context\-directive\s+(\S+)\s+(\S+)\s+(\S+)\s*(.*?)\s*\?\>/o) {
+                    my ($class, $key, $value, $rest) = ($1, $2, $3, $4) ;
                     if ($class eq 'job') {
-                        if (($key eq 'stylefile') || ($key eq 'environment')) {
+                        if (($key eq 'mode') || ($key eq 'modes')) {
+                            print TMP "\\enablemode[$value]\n" ;
+                        } elsif (($key eq 'stylefile') || ($key eq 'environment')) {
                             print TMP "\\environment $value\n" ;
                         } elsif ($key eq 'module') {
                             print TMP "\\usemodule[$value]\n" ;
                         } elsif ($key eq 'interface') {
                             $ConTeXtInterface = $value ;
+                        } elsif ($key eq 'control') {
+                            if ($rest == 'purge') { $Purge = 1 }
                         }
                     }
                 }

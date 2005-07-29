@@ -791,7 +791,7 @@
      \else
        \boxhaswidthfalse
      \fi
-   \else\ifx\localwidth\v!fixed % equals \v!broad
+   \else\ifx\localwidth\v!fixed % equals \v!fix but no shapebox
      \ifboxhasformat
        \boxhaswidthtrue
        \!!widtha\hsize
@@ -1744,7 +1744,7 @@
 \newdimen\framedlastlength
 
 \def\resetshapeframebox
-  {\framednoflines\zerocount
+  {\framednoflines  \zerocount
    \framedlastlength\zeropoint}
 
 % The next implementation is frozen! It preserves the depth,
@@ -3300,7 +3300,7 @@
    \hskip\getvalue{\??fc#1\c!rightoffset}%
    \egroup
    \doifvalue{\??fc#1\c!width}\v!fit
-     {\letvalue{\??fc#1\c!width}\v!fixed}%
+     {\letvalue{\??fc#1\c!width}\v!fixed}% no shapebox
    \ifinsidefloat
      \donefalse
    \else

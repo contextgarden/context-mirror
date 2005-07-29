@@ -126,7 +126,7 @@ class TEX
         'mpyforce', 'forcempy',
         'forcetexutil', 'texutil',
         'globalfile', 'autopath',
-        'purge', 'autopdf', 'simplerun', 'verbose',
+        'purge', 'purgeall', 'autopdf', 'simplerun', 'verbose',
     ]
     @@stringvars = [
         'modefile', 'result', 'suffix', 'response', 'path',
@@ -767,15 +767,19 @@ class TEX
                     xml.each do |line|
                         if line =~ /<[a-z]+/io then
                             break
-                        elsif line =~ /<\?context\-directive\s+(.+?)\s+(.+?)\s+(.+?)\s*\?>/o then
-                            category, key, value = $1, $2, $3
+                        elsif line =~ /<\?context\-directive\s+(\S+)\s+(\S+)\s+(\S+)\s*(.*?)\s*\?>/o then
+                            category, key, value, rest = $1, $2, $3, $4
                             case category
                                 when 'job' then
                                     case key
+                                        when 'control' then
+                                            setvariable(value,if rest.empty? then true else rest end)
+                                        when 'mode', 'modes' then
+                                            tmp << "\\enablemode[#{value}]\n"
                                         when 'stylefile', 'environment' then
-                                            tmp << "\\environment $value\n"
+                                            tmp << "\\environment #{value}\n"
                                         when 'module' then
-                                            tmp << "\\usemodule[$value]\n"
+                                            tmp << "\\usemodule[#{value}]\n"
                                         when 'interface' then
                                             contextinterface = value
                                     end
@@ -1260,7 +1264,8 @@ class TEX
                         end
                     end
 
-                    Kpse.runscript('ctxtools',jobname,'--purge') if getvariable('purge')
+                    Kpse.runscript('ctxtools',jobname,'--purge')    if getvariable('purge')
+                    Kpse.runscript('ctxtools',jobname,'--purgeall') if getvariable('purgeall')
 
                 when 'latex' then
 
@@ -1272,13 +1277,15 @@ class TEX
 
             end
 
-            begin
-                File.delete(File.suffixed(jobname,jobsuffix)) if dummyfile || forcexml
-            rescue
-                report("unable to delete stub file")
+            if (dummyfile or forcexml) and FileTest.file?(File.suffixed(jobname,jobsuffix)) then
+                begin
+                    File.delete(File.suffixed(jobname,jobsuffix))
+                rescue
+                    report("unable to delete stub file")
+                end
             end
 
-            if ok && getvariable('autopdf') then
+            if ok and getvariable('autopdf') then
                 PDFview.open(File.suffixed(if result.empty? then jobname else result end,'pdf'))
             end
 

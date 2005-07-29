@@ -738,17 +738,20 @@ class TeXUtil
         def loaded(filename)
             begin
                 report("parsing file #{filename}")
-                File.open(File.suffixed(filename,'tui')).each do |line|
-                    case line.chomp
-                        when /^f (.*)$/o then @plugins.reader('MyFiles',    $1.splitdata)
-                        when /^c (.*)$/o then @plugins.reader('MyCommands', [$1])
-                        when /^e (.*)$/o then @plugins.reader('MyExtras',   $1.splitdata)
-                        when /^s (.*)$/o then @plugins.reader('MySynonyms', $1.splitdata)
-                        when /^r (.*)$/o then @plugins.reader('MyRegisters',$1.splitdata)
-                        when /^p (.*)$/o then @plugins.reader('MyPlugins',  $1.splitdata)
-                        when /^x (.*)$/o then @plugins.reader('MyKeys',     $1.splitdata)
-                        else report("unknown entry #{line[0,1]} in line #{line.chomp}")
+                if f = open(File.suffixed(filename,'tui')) then
+                    f.each do |line|
+                        case line.chomp
+                            when /^f (.*)$/o then @plugins.reader('MyFiles',    $1.splitdata)
+                            when /^c (.*)$/o then @plugins.reader('MyCommands', [$1])
+                            when /^e (.*)$/o then @plugins.reader('MyExtras',   $1.splitdata)
+                            when /^s (.*)$/o then @plugins.reader('MySynonyms', $1.splitdata)
+                            when /^r (.*)$/o then @plugins.reader('MyRegisters',$1.splitdata)
+                            when /^p (.*)$/o then @plugins.reader('MyPlugins',  $1.splitdata)
+                            when /^x (.*)$/o then @plugins.reader('MyKeys',     $1.splitdata)
+                            else report("unknown entry #{line[0,1]} in line #{line.chomp}")
+                        end
                     end
+                    f.close
                 end
             rescue
                 report("fatal error in parsing #{filename}")

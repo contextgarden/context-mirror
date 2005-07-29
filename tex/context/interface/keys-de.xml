@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 
-<cd:interface xmlns:cd="http://www.pragma-ade.com/commands" name="context" language="de" version="2005.07.27">
+<cd:interface xmlns:cd="http://www.pragma-ade.com/commands" name="context" language="de" version="2005.07.30">
 
   <cd:variables>
     <cd:variable name="one" value="eins"/>

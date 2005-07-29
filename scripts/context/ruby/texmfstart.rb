@@ -64,9 +64,13 @@ $suffixinputs['pdf'] = 'PDFINPUTS'
 $predefined['texexec']  = 'texexec.pl'
 $predefined['texutil']  = 'texutil.pl'
 $predefined['texfont']  = 'texfont.pl'
+
 $predefined['mptopdf']  = 'mptopdf.pl'
+$predefined['pstopdf']  = 'pstopdf.rb'
+
 $predefined['examplex'] = 'examplex.rb'
 $predefined['concheck'] = 'concheck.rb'
+
 $predefined['textools'] = 'textools.rb'
 $predefined['ctxtools'] = 'ctxtools.rb'
 $predefined['rlxtools'] = 'rlxtools.rb'
@@ -74,7 +78,7 @@ $predefined['pdftools'] = 'pdftools.rb'
 $predefined['mpstools'] = 'mpstools.rb'
 $predefined['exatools'] = 'exatools.rb'
 $predefined['xmltools'] = 'xmltools.rb'
-$predefined['pstopdf']  = 'pstopdf.rb'
+
 
 if ENV['TEXMFSTART_MODE'] = 'experimental' then
     $predefined['texexec'] = 'newtexexec.rb'
@@ -143,21 +147,21 @@ if $mswindows then
         end
     end
 
-    def shortpathname (filename)
-        dowith_pathname(filename,GetShortPathName)
-    end
-
     def longpathname (filename)
         dowith_pathname(filename,GetLongPathName)
     end
 
+    def shortpathname (filename)
+        dowith_pathname(filename,GetShortPathName)
+    end
+
 else
 
-    def shortpathname (filename)
+    def longpathname (filename)
         filename
     end
 
-    def longpathname (filename)
+    def shortpathname (filename)
         filename
     end
 
@@ -177,6 +181,14 @@ class File
         end
     end
 
+    def File.timestamp(name)
+        begin
+            "#{File.stat(name).mtime}"
+        rescue
+            return 'unknown'
+        end
+    end
+
     def File.syncmtimes(oldname,newname)
         begin
             if $mswindows then
@@ -186,14 +198,6 @@ class File
                 File.utime(0,t,oldname,newname)
             end
         rescue
-        end
-    end
-
-    def File.timestamp(name)
-        begin
-            "#{File.stat(name).mtime}"
-        rescue
-            return 'unknown'
         end
     end
 
@@ -376,9 +380,9 @@ def usage
     print("\n")
     print("usage    : texmfstart [switches] filename [optional arguments]\n")
     print("\n")
-    print("switches : --verbose --report --browser --direct --execute --locate\n")
-    print("           --program --file   --page    --arguments\n")
-    print("           --make    --lmake  --wmake\n")
+    print("switches : --verbose --report --browser --direct --execute --locate --iftouched\n")
+    print("           --program --file --page --arguments --batch --edit --report --clear\n")
+    print("           --make --lmake --wmake --path --stubpath --indirect --before --after\n")
     print("\n")
     print("example  : texmfstart pstopdf.rb cow.eps\n")
     print("           texmfstart --locate examplex.rb\n")
