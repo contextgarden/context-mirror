@@ -797,7 +797,7 @@ class Commands
                                 donehash[File.dirname(r)] = File.dirname(p)
                             end
                         else
-                            report("skipping '#{r}' to '#{p}'")
+                            report("not merging '#{r}'")
                         end
                     elsif nocheck or File.mtime(p) < File.mtime(r) then
                         report("updating '#{r}' to '#{p}'")
@@ -810,7 +810,9 @@ class Commands
                             donehash[File.dirname(r)] = File.dirname(p)
                         end
                     else
-                        report("skipping '#{r}' to '#{p}'")
+                        report("not updating '#{r}'")
+                        report("old > #{File.mtime(p)}")
+                        report("new > #{File.mtime(r)}")
                     end
                 end
             end

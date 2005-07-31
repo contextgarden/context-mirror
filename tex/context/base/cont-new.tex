@@ -24,6 +24,84 @@
 
 \writestatus{\m!systems}{beware: some patches loaded from cont-new.tex}
 
+% supp-fil.tex
+
+\let\preprocessfile\gobbleoneargument
+
+\def\dodoreadfile % we provide hooks, for instance for \enableXML
+  {\ifconditional\trackfilenames
+     \setxvalue{fn..\trackedfilename}{\readfilename}%
+   \fi
+   \preprocessfile\readfilename % new
+   \the\everybeforereadfile
+   \normalinput\readfilename\relax
+   \the\everyafterreadfile}
+
+% core-fil.tex
+
+% \let\checkpreprocessor\relax
+%
+% \appendtoks\relax{\appendtoks \checkpreprocessor \to \everyjob}\to\everydump
+
+% core-job.tex
+
+\definesystemvariable {fz}  % file preprocessing
+
+\definefileconstant {prepprefix} {prep-}
+
+\chardef\preprocessmode\zerocount
+
+\def\processlocalfile#1#2%
+  {% #1=\readlocfile|\readsetfile{dir} #2=filename
+   % #1{#2}\donothing\donothing
+   \chardef\preprocessmode\plusone
+   #1{#2}\donothing{\readfile{#2}\donothing\donothing}}
+
+\let\oldfilename\empty
+\let\newfilename\empty
+
+\def\preprocessfile#1%
+  {\ifcase\preprocessmode\else
+     \chardef\preprocessmode\zerocount % one time shot
+     \doifsomething{\filepreprocessor}
+       {\def\oldfilename{#1}%
+        \splitfilename\oldfilename % whatever path
+        \ifx\splitofftype\empty
+          \let\splitofftype\c!tex
+          \edef\oldfilename{\oldfilename.\splitofftype}%
+        \fi
+        \edef\newfilename{\f!prepprefix\splitoffname.\splitofftype}% local path
+        \doifundefined{fp..\oldfilename}
+          {\doifmode{\systemmodeprefix\v!first}
+             {\bgroup
+              \enableXML
+              \let\executeXMLentity\expandedXMLentity
+              \defineXMLentity[gt]\lettermore
+              \defineXMLentity[lt]\letterless
+              \writestatus\m!systems{\filepreprocessor}%
+              \executesystemcommand{\filepreprocessor}%
+              \egroup}%
+           \setxvalue{fp..\oldfilename}{\newfilename}}%
+        \let#1\newfilename}%
+   \fi}
+
+\def\filepreprocessor{\XMLflush{ctx:preprocessor}}
+
+\defineXMLenvironment[ctx:job]          \startXMLignore \stopXMLignore
+\defineXMLgsave      [ctx:preprocessor]
+\defineXMLargument   [ctx:message]     {\writestatus\m!systems}
+\defineXMLentity     [ctx:oldfilename]  \oldfilename
+\defineXMLentity     [ctx:newfilename]  \newfilename
+
+\def\checkpreprocessor
+  {\global\let\checkpreprocessor\empty
+   \processXMLfilegrouped{./\jobname.ctx}%
+   \doifsomething\filepreprocessor
+     {\chardef\preprocessmode\plusone
+      \preprocessfile\inputfilename
+      \endinput
+      \normalinput\inputfilename\relax}}
+
 % The following may be a solution for the fact that one cannot
 % change catcodes of characters like : and ; inside an environment.
 

@@ -673,7 +673,7 @@
    \else\ifcase\lastdigit{#1}%
      \ordinalstr{th}%
    \or % 1
-     \ordinalstr{rst}%
+     \ordinalstr{st}%
    \or % 2
      \ordinalstr{nd}%
    \or % 3
@@ -681,6 +681,10 @@
    \else
      \ordinalstr{th}%
    \fi\fi}
+
+% \def\enordinaldaynumber#1%
+%   {#1\ordinalstr{\ifnum\lasttwodigits{#1}=11 th\else\ifcase\lastdigit{#1}
+%          th\or st\or nd\or rd\else th\fi\fi}}
 
 \def\nlordinaldaynumber#1%
   {#1\highordinalstr{e}}

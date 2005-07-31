@@ -257,6 +257,12 @@
    \fi
    #1}
 
+%D Experimental:
+
+\let\checkpreprocessor\relax
+
+\appendtoks\relax{\appendtoks \checkpreprocessor \to \everyjob}\to\everydump
+
 %D To be documented and probably moved
 
 \def\documentresources{\@@erurl}

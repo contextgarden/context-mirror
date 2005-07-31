@@ -810,24 +810,24 @@
    \expanded{\processallactionsinset[#1]}
      [\v!standard=>,
         \v!normal=>, % to be sure
-             \v!yes=>, % to be sure
-          \v!top=>\gridwarning+\positiveextrasnap\extrasnapbefore,
-          \v!bottom=>\gridwarning+\positiveextrasnap\extrasnapafter,
+           \v!yes=>, % to be sure
+           \v!top=>\gridwarning+\positiveextrasnap\extrasnapbefore,
+        \v!bottom=>\gridwarning+\positiveextrasnap\extrasnapafter,
           \v!both=>\positiveextrasnap\extrasnaparound,
-         -\v!top=>\gridwarning-\negativeextrasnap\extrasnapbefore,
-         -\v!bottom=>\gridwarning-\negativeextrasnap\extrasnapafter,
+          -\v!top=>\gridwarning-\negativeextrasnap\extrasnapbefore,
+       -\v!bottom=>\gridwarning-\negativeextrasnap\extrasnapafter,
          -\v!both=>\negativeextrasnap\extrasnaparound,
           \v!text=>\global\chardef\@@alignsnapmethod\plusone, % accurate calculations
-         \v!page=>\global\chardef\@@alignsnap1, % topskip
-           \v!high=>\global\chardef\@@alignsnap2,
-         \v!middle=>\global\chardef\@@alignsnap3,
+          \v!page=>\global\chardef\@@alignsnap1, % topskip
+          \v!high=>\global\chardef\@@alignsnap2,
+        \v!middle=>\global\chardef\@@alignsnap3,
            \v!low=>\global\chardef\@@alignsnap4,
-        \v!fit=>\global\chardef\@@alignsnapbox1, % new
-           \v!broad=>\global\chardef\@@alignsnapbox2, % new
+           \v!fit=>\global\chardef\@@alignsnapbox1, % new
+         \v!broad=>\global\chardef\@@alignsnapbox2, % new
          \v!depth=>\global\chardef\@@alignsnapdepth1, % new
           \v!line=>\global\chardef\@@alignsnapbox3
-%                   \global\chardef\@@alignsnapdepth1
-                    \global\chardef\@@alignsnap4,
+%                  \global\chardef\@@alignsnapdepth1
+                   \global\chardef\@@alignsnap4,
           \v!reset=>\positiveextrasnap\extrasnapreset,
            \v!none=>\global\chardef\@@alignsnap0
                     \global\chardef\@@alignsnapbox0,

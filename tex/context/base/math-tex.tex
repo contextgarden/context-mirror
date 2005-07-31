@@ -456,6 +456,17 @@
 
 \stopmathcollection
 
+%D For brooks:
+%D
+%D \starttyping
+%D $\sqrt[3]{10}$
+%D \stoptyping
+
+\let\normalsqrt     \sqrt       % just set to: \dohandlemathtoken {sqrt}
+\def\notsosqrt [#1]{\root#1\of}
+
+\def\sqrt{\doifnextcharelse[\notsosqrt\normalsqrt}
+
 \def\PLAINbig {\@@dobig{0.85}}
 \def\PLAINBig {\@@dobig{1.15}}
 \def\PLAINbigg{\@@dobig{1.45}}

@@ -731,7 +731,12 @@
    \or % globaal
      \let\figurepathlist\@@exdirectory
    \or % lokaal,globaal / non empty gebied
-     \edef\figurepathlist{\f!currentpath\ifx\@@exdirectory\empty\else,\@@exdirectory\fi}%
+     % was:
+     % \edef\figurepathlist{\f!currentpath\ifx\@@exdirectory\empty\else,\@@exdirectory\fi}%
+     % but test is to weak (can be empty \allinputpaths)
+     \doifelsenothing\@@exdirectory
+       {\edef\figurepathlist{\f!currentpath}}%
+       {\edef\figurepathlist{\f!currentpath,\@@exdirectory}}%
    \fi
    \ExpandBothAfter\doifinset\v!default\@@exlocation
      {\edef\figurepathlist{\figurepathlist,}}% default tex path search
