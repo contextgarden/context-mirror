@@ -12,6 +12,8 @@ fmvri8x MarVoSym ".167 SlantFont"  <marvosym.pfb
 % context
 
 contnav ContextNavigation          <contnav.pfb
+hans    Hans-Regular               <hans.pfb
+hans-sh Hans-sh-Regular            <hans-sh.pfb
 
 % dingbats
 

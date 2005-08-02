@@ -26,6 +26,12 @@
 
 % supp-fil.tex
 
+% <?xml version='1.0' standalone='yes'?>
+% <ctx:job>
+%     <ctx:message>loading preprocessor definition</ctx:message>
+%     <ctx:preprocessor>texmfstart --direct iconv "--binary -f CP1250 -t UTF-8 kpse:&ctx:oldfilename; &gt; &ctx:newfilename;"</ctx:preprocessor>
+% </ctx:job>
+
 \let\preprocessfile\gobbleoneargument
 
 \def\dodoreadfile % we provide hooks, for instance for \enableXML

@@ -204,7 +204,7 @@ class FastCD
         end
     end
 
-    def choose
+    def choose(args=[])
         unless @pattern.empty? then
             begin
                 case @result.size
@@ -214,6 +214,16 @@ class FastCD
                         chdir(@result[0])
                     else
                         list = @result.dup
+                        begin
+                            if answer = args[1] then
+                                index = answer[0] - ?a
+                                if dir = list[index] then
+                                    chdir(dir)
+                                    return
+                                end
+                            end
+                        rescue
+                        end
                         loop do
                             print("\n")
                             list.each_index do |i|
@@ -228,8 +238,7 @@ class FastCD
                             if answer = wait then
                                 if answer >= ?a and answer <= ?z then
                                     index = answer - ?a
-                                    dir = list[index]
-                                    if dir then
+                                    if dir = list[index] then
                                         print("#{answer.chr} ")
                                         chdir(dir)
                                     else
@@ -248,6 +257,7 @@ class FastCD
                         end
                     end
             rescue
+                # report($!)
             end
         end
     end
@@ -341,7 +351,7 @@ case action
     when 30 then
         fcd.load
         fcd.find(args)
-        fcd.choose
+        fcd.choose(args)
     when 40
         fcd.check
 end

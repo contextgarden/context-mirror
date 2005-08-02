@@ -1,0 +1,200 @@
+%D \module
+%D   [       file=symb-jmn,
+%D        version=2004.08.02,
+%D          title=\CONTEXT\ Symbol Libraries,
+%D       subtitle=Special Navigational Symbols,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright=PRAGMA ADE]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D This file defines a few navigational symbol vectors. The font used
+%D here is designed by Janusz M.~Nowacki, one of the Polish Font
+%D Gurus who made this font specially for me, hence the name. If you
+%D you want to meet its designer, come to Bachotek! In case you're
+%D not familiar with his work, take a look at the Antikwa, Iwona and
+%D Kurier fonts!
+%D
+%D \usesymbols[jmn]
+%D
+%D \showsymbolset[navigation 1]
+%D \showsymbolset[navigation 3]
+%D \showsymbolset[navigation 2]
+%D \showsymbolset[navigation 4]
+%D
+%D \page
+%D \showfont[NavigationNormal]
+%D \page
+%D \showfont[NavigationShadowed]
+%D \page
+
+% needed:
+%
+% - inverted crossed
+% - curved diamond
+
+\unprotect
+
+\loadmapfile[original-base.map] % \loadmapfile [original-context-symbol.map]
+
+\definefontsynonym[NavigationNormal]   [hans]
+\definefontsynonym[NavigationShadowed] [hans-sh]
+
+\definefontsynonym[NavigationFont] [NavigationNormal]
+%definefontsynonym[NavigationFont] [NavigationShadowed]
+
+\def\NavigationGlyph#1{\getglyph{NavigationFont}{\char#1}}
+
+\unprotect
+
+\startsymbolset [navigation 1]
+
+  \definesymbol [\v!previouspage]      [\NavigationGlyph {65}]
+  \definesymbol [\v!PreviousJump]      [\NavigationGlyph{128}]
+  \definesymbol [\v!firstpage]         [\NavigationGlyph{129}]
+
+  \definesymbol [\v!nextpage]          [\NavigationGlyph {66}]
+  \definesymbol [\v!NextJump]          [\NavigationGlyph{130}]
+  \definesymbol [\v!lastpage]          [\NavigationGlyph{131}]
+
+  \definesymbol [\v!CloseDocument]     [\NavigationGlyph{160}]
+
+  \definesymbol [\v!firstsubpage]      [\NavigationGlyph{178}]
+  \definesymbol [\v!previoussubpage]   [\NavigationGlyph{208}]
+  \definesymbol [\v!nextsubpage]       [\NavigationGlyph{209}]
+  \definesymbol [\v!lastsubpage]       [\NavigationGlyph{178}]
+
+  \definesymbol [\v!StartSound]        [\NavigationGlyph {66}]
+  \definesymbol [\v!PauseSound]        [\NavigationGlyph{168}]
+  \definesymbol [\v!StopSound]         [\NavigationGlyph{170}]
+
+  \definesymbol [\v!StartMovie]        [\NavigationGlyph {66}]
+  \definesymbol [\v!PauseMovie]        [\NavigationGlyph{168}]
+  \definesymbol [\v!StopMovie]         [\NavigationGlyph{170}]
+
+  \definesymbol [\v!StartRendering]    [\NavigationGlyph {66}]
+  \definesymbol [\v!PauseRendering]    [\NavigationGlyph{168}]
+  \definesymbol [\v!StopRendering]     [\NavigationGlyph{170}]
+  \definesymbol [\v!ResumeRendering]   [\NavigationGlyph {66}]
+
+\stopsymbolset
+
+\startsymbolset [navigation 2]
+
+  \definesymbol [\v!previouspage]      [\NavigationGlyph {67}]
+  \definesymbol [\v!PreviousJump]      [\NavigationGlyph{132}]
+  \definesymbol [\v!firstpage]         [\NavigationGlyph{133}]
+
+  \definesymbol [\v!nextpage]          [\NavigationGlyph {68}]
+  \definesymbol [\v!NextJump]          [\NavigationGlyph{134}]
+  \definesymbol [\v!lastpage]          [\NavigationGlyph{135}]
+
+  \definesymbol [\v!CloseDocument]     [\NavigationGlyph{160}]
+
+  \definesymbol [\v!firstsubpage]      [\NavigationGlyph{176}]
+  \definesymbol [\v!previoussubpage]   [\NavigationGlyph{210}]
+  \definesymbol [\v!nextsubpage]       [\NavigationGlyph{211}]
+  \definesymbol [\v!lastsubpage]       [\NavigationGlyph{176}]
+
+  \definesymbol [\v!StartSound]        [\NavigationGlyph {68}]
+  \definesymbol [\v!PauseSound]        [\NavigationGlyph{170}]
+  \definesymbol [\v!StopSound]         [\NavigationGlyph{168}]
+
+  \definesymbol [\v!StartMovie]        [\NavigationGlyph {68}]
+  \definesymbol [\v!PauseMovie]        [\NavigationGlyph{170}]
+  \definesymbol [\v!StopMovie]         [\NavigationGlyph{168}]
+
+  \definesymbol [\v!StartRendering]    [\NavigationGlyph {68}]
+  \definesymbol [\v!PauseRendering]    [\NavigationGlyph{170}]
+  \definesymbol [\v!StopRendering]     [\NavigationGlyph{168}]
+  \definesymbol [\v!ResumeRendering]   [\NavigationGlyph {68}]
+
+\stopsymbolset
+
+\startsymbolset [navigation 3]
+
+  \definesymbol [\v!previouspage]      [\NavigationGlyph {73}]
+  \definesymbol [\v!PreviousJump]      [\NavigationGlyph{144}]
+  \definesymbol [\v!firstpage]         [\NavigationGlyph{145}]
+
+  \definesymbol [\v!nextpage]          [\NavigationGlyph {74}]
+  \definesymbol [\v!NextJump]          [\NavigationGlyph{146}]
+  \definesymbol [\v!lastpage]          [\NavigationGlyph{147}]
+
+  \definesymbol [\v!CloseDocument]     [\NavigationGlyph{160}]
+
+  \definesymbol [\v!firstsubpage]      [\NavigationGlyph{178}]
+  \definesymbol [\v!previoussubpage]   [\NavigationGlyph{212}]
+  \definesymbol [\v!nextsubpage]       [\NavigationGlyph{213}]
+  \definesymbol [\v!lastsubpage]       [\NavigationGlyph{178}]
+
+  \definesymbol [\v!StartSound]        [\NavigationGlyph {73}]
+  \definesymbol [\v!PauseSound]        [\NavigationGlyph{168}]
+  \definesymbol [\v!StopSound]         [\NavigationGlyph{170}]
+
+  \definesymbol [\v!StartMovie]        [\NavigationGlyph {73}]
+  \definesymbol [\v!PauseMovie]        [\NavigationGlyph{168}]
+  \definesymbol [\v!StopMovie]         [\NavigationGlyph{170}]
+
+  \definesymbol [\v!StartRendering]    [\NavigationGlyph {73}]
+  \definesymbol [\v!PauseRendering]    [\NavigationGlyph{168}]
+  \definesymbol [\v!StopRendering]     [\NavigationGlyph{170}]
+  \definesymbol [\v!ResumeRendering]   [\NavigationGlyph {73}]
+
+\stopsymbolset
+
+
+% 1 left  : 065 067 073 075
+% 2 left  : 128 132 144 148
+% 3 left  : 129 133 145 149
+
+% 1 right : 066 068 074 076
+% 2 right : 130 134 146 150
+% 3 right : 131 135 147 151
+
+% crossed : 160 160 160 160
+% opened  : 152 152 156 156
+% closed  : 154 154 158 158
+
+% larrow  : 208 210 212 214
+% rarrow  : 209 211 213 215
+% barrow  : 178 178 178 178
+% ocircle : 168 168 168 168
+% ccircle : 170 170 170 170
+
+\startsymbolset [navigation 4]
+
+  \definesymbol [\v!previouspage]      [\NavigationGlyph {75}]
+  \definesymbol [\v!PreviousJump]      [\NavigationGlyph{148}]
+  \definesymbol [\v!firstpage]         [\NavigationGlyph{149}]
+
+  \definesymbol [\v!nextpage]          [\NavigationGlyph {76}]
+  \definesymbol [\v!NextJump]          [\NavigationGlyph{150}]
+  \definesymbol [\v!lastpage]          [\NavigationGlyph{151}]
+
+  \definesymbol [\v!CloseDocument]     [\NavigationGlyph{160}]
+
+  \definesymbol [\v!firstsubpage]      [\NavigationGlyph{176}]
+  \definesymbol [\v!previoussubpage]   [\NavigationGlyph{214}]
+  \definesymbol [\v!nextsubpage]       [\NavigationGlyph{215}]
+  \definesymbol [\v!lastsubpage]       [\NavigationGlyph{176}]
+
+  \definesymbol [\v!StartSound]        [\NavigationGlyph {75}]
+  \definesymbol [\v!PauseSound]        [\NavigationGlyph{170}]
+  \definesymbol [\v!StopSound]         [\NavigationGlyph{168}]
+
+  \definesymbol [\v!StartMovie]        [\NavigationGlyph {75}]
+  \definesymbol [\v!PauseMovie]        [\NavigationGlyph{170}]
+  \definesymbol [\v!StopMovie]         [\NavigationGlyph{168}]
+
+  \definesymbol [\v!StartRendering]    [\NavigationGlyph {75}]
+  \definesymbol [\v!PauseRendering]    [\NavigationGlyph{170}]
+  \definesymbol [\v!StopRendering]     [\NavigationGlyph{168}]
+  \definesymbol [\v!ResumeRendering]   [\NavigationGlyph {75}]
+
+\stopsymbolset
+
+\protect \endinput
