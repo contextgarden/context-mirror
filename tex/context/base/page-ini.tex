@@ -1685,6 +1685,14 @@
    \od
    \filluparrangedpages}
 
+\installpagebreakhandler \v!lastpage % handy for backpage preceded by empty pages
+  {\executepagebreakhandler\v!yes
+   \ifdubbelzijdig
+     \executepagebreakhandler\v!left
+     \executepagebreakhandler\v!empty
+     \executepagebreakhandler\v!empty
+   \fi}
+
 \installpagebreakhandler \v!start
   {\globallet\shipout\normalshipout}
 
@@ -1708,6 +1716,10 @@
 %   [page=chapter,
 %    header=empty,
 %    footer=chapter]
+%
+% \definepagebreak % untested
+%   [lastpage]
+%   [left,{empty,right},{empty,left}]
 
 % public page handler, beware: definepage already in use (core-ref)
 %

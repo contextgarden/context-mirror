@@ -391,6 +391,7 @@
       <KEYWORD2>\startinteractionmenu</KEYWORD2>
       <KEYWORD2>\startmarginrule</KEYWORD2>
       <KEYWORD2>\startpacked</KEYWORD2>
+      <KEYWORD2>\startproduct</KEYWORD2>
       <KEYWORD2>\startproject</KEYWORD2>
       <KEYWORD2>\startquotation</KEYWORD2>
       <KEYWORD2>\starttextrule</KEYWORD2>
@@ -405,6 +406,7 @@
       <KEYWORD2>\stopinteractionmenu</KEYWORD2>
       <KEYWORD2>\stopmarginrule</KEYWORD2>
       <KEYWORD2>\stoppacked</KEYWORD2>
+      <KEYWORD2>\stopproduct</KEYWORD2>
       <KEYWORD2>\stopproject</KEYWORD2>
       <KEYWORD2>\stopquotation</KEYWORD2>
       <KEYWORD2>\stoptextrule</KEYWORD2>

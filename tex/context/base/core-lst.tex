@@ -212,6 +212,7 @@
       \c!textcommand=\listtextcommand,
       \c!pagecommand=\listpagecommand,
       \c!pagenumber=\v!yes,
+\c!sectionnumber=\v!yes,
       \c!pageboundaries=,
       \c!margin=\!!zeropoint,
       \c!aligntitle=,
@@ -236,6 +237,7 @@
             \c!textstyle,\c!textcolor,\c!textcommand,
             \c!pagestyle,\c!pagecommand,\c!pagecolor,
             \c!numberstyle,\c!numbercolor,\c!numbercommand,
+\c!sectionnumber,
             \c!pagenumber,\c!pageboundaries,\c!margin,\c!symbol,\c!limittext,
             \c!aligntitle,\c!before,\c!after,\c!inbetween,\v!part\c!number,\c!label]%
          \getparameters[\??li#1][#3]}}%
@@ -429,6 +431,27 @@
 \setvalue{\@@dodolistelement\v!horizontal}{\def\dosomelistelement{\dodofreehlistelement}}
 \setvalue{\@@dodolistelement\v!command   }{\let\dosomelistelement\dodocommandlistelement}
 
+% \setuplist
+%   [section]
+%   [alternative=MyListItem,
+%    after=\blank,
+%    before=\blank]
+%
+% \definelistplacement[MyListItem][none]#1#2#3%
+%   {(#1) (#2) (#3)}
+
+\def\definelistplacement
+  {\dodoubleempty\dodefinelistplacement}
+
+\def\dodefinelistplacement[#1][#2]%
+  {\setvalue{\@@dodolistelement#1}%
+     {\doifelsenothing{#2}
+        {\getvalue{\@@dodolistelement\v!command}}%
+        {\executeifdefined{\@@dodolistelement#2}
+           {\getvalue{\@@dodolistelement\v!command}}}%
+      \setvalue{\??li\currentlist\c!command}{\getvalue{\@@dodolistelement::#1}}}%
+   \setvalue{\@@dodolistelement::#1}}
+
 % don't mess arround with endgraf/grouping else we loose leftskip
 
 % \strippedcsname\dodolistelement
@@ -494,9 +517,12 @@
       \vbox
         {\forgetall
          \makelistelement\v!all
-           {\makelistelement\v!sectionnumber
-              {\donestedlistattributes\c!numberstyle\c!numbercolor
-                 {\listparameter\c!numbercommand{\currentlistsymbol}}}%
+           {%
+\doif{\listparameter\c!sectionnumber}\v!yes
+              {\makelistelement\v!sectionnumber
+                 {\donestedlistattributes\c!numberstyle\c!numbercolor
+                    {\listparameter\c!numbercommand{\currentlistsymbol}}}%
+}%
             \makelistelement\v!text
               {\donestedlistattributes\c!textstyle\c!textcolor
                  {\let\\=\newlineinlist
@@ -559,15 +585,23 @@
  % \dontleavehmode % new, else no margin, but wrong, better (else \indent as well):
    \noindent
    \makelistelement\v!all
-     {\setlocalhsize \hsize\localhsize \hbox to \hsize
+     {\setlocalhsize
+      \hsize\localhsize
+      \hbox to \hsize
         {\forgetall
          \dostartlistattributes\c!style\c!color\empty
          \!!widthb\hsize
+\doifelse{\listparameter\c!sectionnumber}\v!yes{%
          \setbox2\hbox \ifdim\!!widtha>\zeropoint to \!!widtha \fi
            {\makelistelement\v!sectionnumber
               {\donestedlistattributes\c!numberstyle\c!numbercolor
                  {\listparameter\c!numbercommand{\currentlistsymbol}}%
             \hfill}}%
+}{%
+        \!!widtha\zeropoint
+        \!!widthc\zeropoint
+        \setbox2\hbox{}%
+}
          \setbox4\hbox
            {\doif{\listparameter\c!pagenumber}\v!yes
               {\doifsomething{#5}    % \listwidth is new ; temp hack
@@ -676,6 +710,7 @@
                  {\listparameter\c!pagecommand
                     {\pageprefix\??li\currentlist[#5]%
                      \translatednumber[#5]}}}}}}%
+\doif{\listparameter\c!sectionnumber}\v!yes{%
    \donetrue
    \doifnothing{#3}{\doifnothing{\listparameter\c!symbol}\donefalse}%
    % == \doifnothing{#3\listparameter\c!symbol}\donefalse
@@ -689,6 +724,7 @@
         \hskip.5em}%
      \nobreak
    \fi
+}%
    \tolerance3500 % niet zomaar veranderen
    \donestedlistattributes\c!textstyle\c!textcolor
      {\let\\=\newlineinlist

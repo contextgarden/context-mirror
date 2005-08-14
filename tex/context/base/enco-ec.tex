@@ -23,27 +23,24 @@
 
 \startmapping[ec]
 
-%D The case mappings are fairly simple.
+\resetcaserange 141 to 141
+\resetcaserange 149 to 149
+\definecasemap  159 to 159
+\resetcaserange 173 to 173
+\resetcaserange 180 to 181
+\resetcaserange 184 to 184
+\resetcaserange 189 to 191
 
-%\definecasemaps 128 to 156 lc 0 uc 0
+\definecasemap  157 `i 157
+\definecasemap  158 158 `D
 
-%D 157 Idotaccent
-%D 158 dcroat (with bar)
-%D 159 sectionmark
+\definecasemaps 128 to 156 lc +32 uc   0
+\definecasemaps 160 to 188 lc   0 uc -32
 
-\definecasemaps 160 to 188 lc +32 uc 0
+\definecasemaps 192 to 222 lc +32 uc   0
+\definecasemaps 224 to 254 lc   0 uc -32
 
-%D 189 exclamdown
-%D 190 questiondown
-%D 191 sterling pound
-
-\definecasemaps 192 to 255 lc 0 uc -32
-
-%D Less systematic (probably incomplete)
-
-\definecasemap 187 187 155 % z dotaccent
-\definecasemap 155 187 155 % Z dotaccent
-\definecasemap 158 158  68 % dmacron
+\definecaseswap 255 223
 
 %D Some languages need this:
 

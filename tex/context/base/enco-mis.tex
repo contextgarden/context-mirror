@@ -61,7 +61,7 @@
 %    \egroup}
 
 \def\pseudoencodeddj % like in babel, but safer
-  {\leavevmode\hbox\bgroup
+  {\dontleavehmode\hbox\bgroup
    \setbox\scratchbox\hbox{d}%
    \scratchdimen\ht\scratchbox
    \advance\scratchdimen 1ex
@@ -73,17 +73,32 @@
       \raise\scratchdimen\hbox{\kern\dimen2\vbox{\hrule\!!height0.1ex\!!width0.3em}}}%
    \egroup}
 
-\def\pseudoencodedDJ % like in babel, but safer
-  {\leavevmode
+% \def\pseudoencodedDJ % like in babel, but safer
+%   {\leavevmode
+%    \hbox\bgroup
+%    \setbox\scratchbox\hbox{D}%
+%    \scratchdimen.55\ht\scratchbox
+%    \dimen2=\withoutpt\the\fontdimen1\font\scratchdimen
+%    \advance\dimen2 .15ex
+%    \advance\dimen2 -.15\fontdimen7\font
+%    \hbox to \wd\scratchbox
+%      {\box\scratchbox\hss
+%       \raise\scratchdimen\hbox{\kern\dimen2\vbox{\hrule\!!height0.1ex\!!width0.3em}}}%
+%    \egroup}
+
+\def\pseudoencodedDJ % design: taco; quality assurance: mojca; cleanup: hans
+  {\dontleavehmode
    \hbox\bgroup
    \setbox\scratchbox\hbox{D}%
-   \scratchdimen.55\ht\scratchbox
-   \dimen2=\withoutpt\the\fontdimen1\font\scratchdimen
-   \advance\dimen2 .15ex
-   \advance\dimen2 -.15\fontdimen7\font
+   \dimen2=1.1ex
+   \dimen2=\withoutpt\the\fontdimen1\font\dimen2
    \hbox to \wd\scratchbox
-     {\box\scratchbox\hss
-      \raise\scratchdimen\hbox{\kern\dimen2\vbox{\hrule\!!height0.1ex\!!width0.3em}}}%
+     {\rlap
+        {\raise.52\ht\scratchbox
+         \hbox
+           {\kern\dimen2
+            \vbox{\hrule\!!height.04ex\!!depth.04ex\!!width.4\wd\scratchbox}}}%
+     \box\scratchbox}%
    \egroup}
 
 % currency

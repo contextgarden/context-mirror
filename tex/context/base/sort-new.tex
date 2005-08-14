@@ -1,0 +1,59 @@
+% temporary overloading
+
+\unprotect
+
+\def\strippedcsname
+  {\expandafter\dostrippedcsname\string}
+
+\def\dostrippedcsname#1%
+  {\if\noexpand#1\letterbackslash\else#1\fi}
+
+\def\doregisterreference[#1]#2%
+  {\doifvalue{\??id#1\c!referencing}\v!on
+     {\pagereference[#1:\strippedcsname#2]}}
+
+\def\doprocesspageregister[#1]#2#3% key altnum entry
+  {\begingroup
+   \thisisnextinternal\s!ind
+   \ifduplicate\getlastregisterentry{#3}\fi
+   \convertexpanded{\registerparameter\c!keyexpansion}{#1}\asciiregisterentryA
+   \convertexpanded{\registerparameter\c!expansion   }{#3}\asciiregisterentryB
+   \doifsomething{\registerparameter\c!keyexpansion}
+     {\ifx\asciiregisterentryA\empty
+       \convertexpanded{\registerparameter\c!keyexpansion}{#3}\asciiregisterentryA
+      \fi}%
+   \makesectionformat
+   \doifelse{\registerparameter\c!ownnumber}\v!yes
+     \donetrue\donefalse
+   % the spaces between } { are essential for texutil's split
+   \expanded
+     {\writeutility%
+        {r \ifcase\registerpagestatus\space\or e \or f \or t \fi
+         {\currentregister} %
+         {\nextinternalreference} %
+         {\asciiregisterentryA} %
+         {\asciiregisterentryB} %
+         {\sectionformat\sectionseparator\sectionseparator
+          \ifdone#2\else\noexpand\pagenumber\fi} %
+         {\noexpand\realfolio}}}%
+   \getfirstcharacter\currentregister
+   \registerinfo{> \firstcharacter}{#3}%
+   \endgroup}
+
+\def\convertmeaning#1\to % watch the double expansion !
+  {\bgroup
+     \honorunexpanded
+     %dontexpandencoding    % new
+     \literateencodedtokens % newer
+     \xdef\@@globalexpanded{#1}%
+     \xdef\@@globalexpanded{\@@globalexpanded}%
+   \egroup
+   \convertcommand\@@globalexpanded\to}
+
+\def\reduceargument#1\to#2%
+  {\begingroup
+   \reducetocoding[raw]%
+   \edef\ascii{#1}%
+   \expandafter\endgroup\expandafter\edef\expandafter#2\expandafter{\ascii}}
+
+\protect

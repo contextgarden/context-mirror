@@ -705,3 +705,71 @@ enddef ;
 % spotcolor is already scaled
 
 endinput ;
+
+% just an exercise (due to a question by Chof on the context mailing list); scaling of
+% 'special' colors is not possible and the next solution is incomplete (spot colors,
+% transparency, etc); watch the the tricky chained macro construction
+
+% vardef normalgray(expr s      ) = (s,s,s) enddef ;
+% vardef normalrgb (expr r,g,b  ) = (r,g,b) enddef ;
+% vardef normalcmyk(expr c,m,y,k) = if cmykcolors : save ok ; boolean ok ; if unknown cmykcolorhash[c][m][y][k] : ok := false ; elseif cmykcolorhash[c][m][y][k] = -1 : ok := false ; else : ok := true ; fi ; if not ok : save s ; string s ; s := dddecimal (c,m,y) & " " & decimal k ; _cmyk_counter_ := _cmyk_counter_ + 1 ; cmykcolorpattern[_cmyk_counter_/1000] := s ; cmykcolorhash[c][m][y][k] := _cmyk_counter_ ; flush_special(1, 7, decimal _cmyk_counter_ & " " & s) ; _local_specials_ := _local_specials_ & " cmykcolorhash[" & decimal c & "][" & decimal m & "][" & decimal y & "][" & decimal k & "] := -1 ; " ; fi ; (_special_signal_/1000,1/1000,cmykcolorhash[c][m][y][k]/1000) else : (1-c-k,1-m-k,1-y-k) fi enddef ;
+
+% vardef gray(expr s)       = normalgray(s      ) enddef ;
+% vardef rgb (expr r,g,b)   = normalrgb (r,g,b  ) enddef ;
+% vardef cmyk(expr c,m,y,k) = normalcmyk(c,m,y,k) enddef ;
+
+% numeric _scaled_color_t_ ;
+% color   _scaled_color_c_ ;
+
+% def withscaledcolor =
+%     hide (
+%         _scaled_color_t_ := 0 ; % direct
+%         def gray(expr s) =
+%             hide (
+%                 _gray_s_ := s ;
+%                 _scaled_color_t_ := 1; % gray
+%             )
+%             0
+%         enddef ;
+%         def rgb (expr r,g,b) =
+%             hide (
+%                 _rgb_r_ := r ; _rgb_g_ := g ; _rgb_b_ := b ;
+%                 _scaled_color_t_ := 2 ; % rgb
+%             )
+%             0
+%         enddef ;
+%         def cmyk (expr c,m,y,k) =
+%             hide (
+%                 _cmyk_c_ := c ; _cmyk_m_ := m ; _cmyk_y_ := y ; _cmyk_k_ := k ;
+%                 _scaled_color_t_ := 3 ; % cmyk
+%             )
+%             0
+%         enddef ; )
+%     dowithscaledcolor
+% enddef ;
+
+% def dowithscaledcolor expr t =
+%     hide (
+%         if color t : _scaled_color_c_ := t fi ;
+%         vardef gray(expr s)       = normalgray(s)       enddef ;
+%         vardef rgb (expr r,g,b)   = normalrgb (r,g,b)   enddef ;
+%         vardef cmyk(expr c,m,y,k) = normalcmyk(c,m,y,k) enddef ;
+%     )
+% enddef ;
+
+% def by expr s =
+%     if     _scaled_color_t_ = 0 :
+%         withcolor s*_scaled_color_c_
+%     elseif _scaled_color_t_ = 1 :
+%         withcolor gray(s*_gray_s_)
+%     elseif _scaled_color_t_ = 2 :
+%         withcolor rgb (s*_rgb_r_, s*_rgb_g_, s*_rgb_b_)
+%     elseif _scaled_color_t_ = 3 :
+%         withcolor cmyk(s*_cmyk_c_, s*_cmyk_m_, s*_cmyk_y_, s*_cmyk_k_)
+%     fi
+% enddef ;
+
+% fill fullcircle scaled 10cm withscaledcolor cmyk(0,0,1,0) by .5 ;
+% fill fullcircle scaled  8cm withscaledcolor rgb (0,0,1)   by .5 ;
+% fill fullcircle scaled  6cm withscaledcolor gray(1)       by .5 ;
+% fill fullcircle scaled  4cm withscaledcolor     (0,1,0)   by .5 ;

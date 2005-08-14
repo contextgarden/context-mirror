@@ -1,3 +1,13 @@
+# module    : base/file
+# copyright : PRAGMA Advanced Document Engineering
+# version   : 2002-2005
+# author    : Hans Hagen
+#
+# project   : ConTeXt / eXaMpLe
+# concept   : Hans Hagen
+# info      : j.hagen@xs4all.nl
+# www       : www.pragma-ade.com
+
 require 'ftools'
 
 class File

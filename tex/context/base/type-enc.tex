@@ -16,7 +16,7 @@
 % texfont --ven=urw    --col=palatino --enc=ec --sou=auto
 % texfont --ven-lucas  --col=sun      --enc=ec --sou=.
 
-% \usetypescript [all] [latin-modern] [texnansi]
+% \usetypescript [all] [modern] [texnansi]
 % \setupbodyfont[reset] \setupbodyfont[cmr]
 % \starttext \showfont[Serif] \stoptext
 
@@ -26,7 +26,7 @@
 
 \starttypescriptcollection[encodings]
 
-\starttypescript [serif] [latin-modern,computer-modern] [texnansi,ec,qx,pl0,il2,t5]
+\starttypescript [serif] [modern,latin-modern,computer-modern] [texnansi,ec,qx,pl0,il2,t5]
 
   \definefontsynonym [cmr5]     [\typescriptthree-lmr5]     [encoding=\typescriptthree]
   \definefontsynonym [cmr6]     [\typescriptthree-lmr6]     [encoding=\typescriptthree]
@@ -66,7 +66,7 @@
 
 \stoptypescript
 
-\starttypescript [sans] [latin-modern,computer-modern] [texnansi,ec,qx,pl0,il2,t5]
+\starttypescript [sans] [modern,latin-modern,computer-modern] [texnansi,ec,qx,pl0,il2,t5]
 
   \definefontsynonym [cmss8]    [\typescriptthree-lmss8]    [encoding=\typescriptthree]
   \definefontsynonym [cmss9]    [\typescriptthree-lmss9]    [encoding=\typescriptthree]
@@ -92,7 +92,7 @@
 
 \stoptypescript
 
-\starttypescript [mono] [latin-modern,computer-modern] [texnansi,ec,qx,pl0,il2,t5]
+\starttypescript [mono] [modern,latin-modern,computer-modern] [texnansi,ec,qx,pl0,il2,t5]
 
   \definefontsynonym [cmtt8]    [\typescriptthree-lmtt8]    [encoding=\typescriptthree]
   \definefontsynonym [cmtt9]    [\typescriptthree-lmtt9]    [encoding=\typescriptthree]
@@ -636,7 +636,7 @@
   \definefontsynonym [cmvtt10]  [lhvtt10]  [encoding=lcy]
 \stoptypescript
 
-\starttypescript [serif] [computer-modern,latin-modern] [default]
+\starttypescript [serif] [modern,computer-modern,latin-modern] [default]
   \definefontsynonym [ComputerModern]             [cmr10]
   \definefontsynonym [ComputerModern-Italic]      [cmti10]
   \definefontsynonym [ComputerModern-Slanted]     [cmsl10]
@@ -646,7 +646,7 @@
   \definefontsynonym [ComputerModern-Caps]        [cmcsc10]
 \stoptypescript
 
-\starttypescript [sans] [computer-modern,latin-modern] [default]
+\starttypescript [sans] [modern,computer-modern,latin-modern] [default]
   \definefontsynonym [ComputerModernSans]             [cmss10]
   \definefontsynonym [ComputerModernSans-Italic]      [cmssi10]
   \definefontsynonym [ComputerModernSans-Slanted]     [cmssi10]
@@ -656,7 +656,7 @@
   \definefontsynonym [ComputerModernSans-Caps]        [cmss10]
 \stoptypescript
 
-\starttypescript [mono] [computer-modern,latin-modern] [default]
+\starttypescript [mono] [modern,computer-modern,latin-modern] [default]
   \definefontsynonym [ComputerModernMono]             [cmtt10]
   \definefontsynonym [ComputerModernMono-Italic]      [cmitt10]
   \definefontsynonym [ComputerModernMono-Slanted]     [cmsltt10]
@@ -667,7 +667,7 @@
   \definefontsynonym [ComputerModernMono-Variable]    [cmvtt10]
 \stoptypescript
 
-\starttypescript [math] [computer-modern,latin-modern] [default]
+\starttypescript [math] [modern,computer-modern,latin-modern] [default]
   % watch the space, it prevents remapping
   \definefontsynonym [ComputerModernMath-Roman]     [cmr10 ]
   \definefontsynonym [ComputerModernMath-Extension] [cmex10]
@@ -675,7 +675,7 @@
   \definefontsynonym [ComputerModernMath-Symbol]    [cmsy10]
 \stoptypescript
 
-\starttypescript [boldmath,bfmath] [computer-modern,latin-modern] [default]
+\starttypescript [boldmath,bfmath] [modern,computer-modern,latin-modern] [default]
   % watch the space, it prevents remapping
   \definefontsynonym [ComputerModernMath-Roman-Bold]  [cmb10 ]
   \definefontsynonym [ComputerModernMath-Extension]   [cmex10]
@@ -713,7 +713,7 @@
 
 % AMS (AMS)
 
-\starttypescript [math] [computer-modern,latin-modern,ams] [default]
+\starttypescript [math] [modern,computer-modern,latin-modern,ams] [default]
   \definefontsynonym [AMS-SymbolA] [msam10]
   \definefontsynonym [AMS-SymbolB] [msbm10]
 \stoptypescript
@@ -985,7 +985,9 @@
 
 % Iwona (JMN)
 
-\starttypescript [sans] [iwona,iwona-light] [texnansi,ec,qx,t5]
+% maybe this will change in Iwona-Math-Letters and Iwona-Math-Letters-Italic
+
+\starttypescript [sans] [iwona,iwona-light,iwona-medium] [texnansi,ec,qx,t5]
   \definefontsynonym[Iwona-Light]         [\typescriptthree-iwonal]  [encoding=\typescriptthree]
   \definefontsynonym[Iwona-Regular]       [\typescriptthree-iwonar]  [encoding=\typescriptthree]
   \definefontsynonym[Iwona-Medium]        [\typescriptthree-iwonam]  [encoding=\typescriptthree]
@@ -996,55 +998,63 @@
   \definefontsynonym[Iwona-MediumItalic]  [\typescriptthree-iwonami] [encoding=\typescriptthree]
   \definefontsynonym[Iwona-BoldItalic]    [\typescriptthree-iwonabi] [encoding=\typescriptthree]
   \definefontsynonym[Iwona-HeavyItalic]   [\typescriptthree-iwonahi] [encoding=\typescriptthree]
-  \definefontsynonym[Iwona-Light]         [\typescriptthree-iwonal]  [encoding=\typescriptthree]
-  \definefontsynonym[Iwona-Regular]       [\typescriptthree-iwonar]  [encoding=\typescriptthree]
-  \definefontsynonym[Iwona-Medium]        [\typescriptthree-iwonam]  [encoding=\typescriptthree]
-  \definefontsynonym[Iwona-Bold]          [\typescriptthree-iwonab]  [encoding=\typescriptthree]
-  \definefontsynonym[Iwona-Heavy]         [\typescriptthree-iwonah]  [encoding=\typescriptthree]
-  \definefontsynonym[Iwona-LightItalic]   [\typescriptthree-iwonali] [encoding=\typescriptthree]
-  \definefontsynonym[Iwona-RegularItalic] [\typescriptthree-iwonari] [encoding=\typescriptthree]
-  \definefontsynonym[Iwona-MediumItalic]  [\typescriptthree-iwonami] [encoding=\typescriptthree]
-  \definefontsynonym[Iwona-BoldItalic]    [\typescriptthree-iwonabi] [encoding=\typescriptthree]
-  \definefontsynonym[Iwona-HeavyItalic]   [\typescriptthree-iwonahi] [encoding=\typescriptthree]
+\stoptypescript
+
+\starttypescript [math] [iwona] [default]
+  \definefontsynonym [Iwona-Math-Letters-Regular]       [rm-iwonar]
+  \definefontsynonym [Iwona-Math-Letters-RegularItalic] [mi-iwonari]
+  \definefontsynonym [Iwona-Math-Symbols-Regular]       [sy-iwonari]
+  \definefontsynonym [Iwona-Math-Extension-Regular]     [ex-iwonar]
+\stoptypescript
+
+\starttypescript [math] [iwona-light] [default]
+  \definefontsynonym [Iwona-Math-Letters-Light]       [rm-iwonal]
+  \definefontsynonym [Iwona-Math-Letters-LightItalic] [mi-iwonali]
+  \definefontsynonym [Iwona-Math-Symbols-Light]       [sy-iwonali]
+  \definefontsynonym [Iwona-Math-Extension-Light]     [ex-iwonal]
+\stoptypescript
+
+\starttypescript [math] [iwona-medium] [default]
+  \definefontsynonym [Iwona-Math-Letters-Medium]       [rm-iwonam]
+  \definefontsynonym [Iwona-Math-Letters-MediumItalic] [mi-iwonami]
+  \definefontsynonym [Iwona-Math-Symbols-Medium]       [sy-iwonami]
+  \definefontsynonym [Iwona-Math-Extension-Medium]     [ex-iwonam]
 \stoptypescript
 
 % Kurier (JMN)
 
-\starttypescript [sans] [kurier,kurier-light] [texnansi,ec,qx,t5]
-  \definefontsynonym[Kurier-Light]         [\typescriptthree-kurl]  [encoding=\typescriptthree]
-  \definefontsynonym[Kurier-Regular]       [\typescriptthree-kurr]  [encoding=\typescriptthree]
-  \definefontsynonym[Kurier-Medium]        [\typescriptthree-kurm]  [encoding=\typescriptthree]
-  \definefontsynonym[Kurier-Bold]          [\typescriptthree-kurb]  [encoding=\typescriptthree]
-  \definefontsynonym[Kurier-Heavy]         [\typescriptthree-kurh]  [encoding=\typescriptthree]
-  \definefontsynonym[Kurier-LightItalic]   [\typescriptthree-kurli] [encoding=\typescriptthree]
-  \definefontsynonym[Kurier-RegularItalic] [\typescriptthree-kurri] [encoding=\typescriptthree]
-  \definefontsynonym[Kurier-MediumItalic]  [\typescriptthree-kurmi] [encoding=\typescriptthree]
-  \definefontsynonym[Kurier-BoldItalic]    [\typescriptthree-kurbi] [encoding=\typescriptthree]
-  \definefontsynonym[Kurier-HeavyItalic]   [\typescriptthree-kurhi] [encoding=\typescriptthree]
-  \definefontsynonym[Kurier-Light]         [\typescriptthree-kurl]  [encoding=\typescriptthree]
-  \definefontsynonym[Kurier-Regular]       [\typescriptthree-kurr]  [encoding=\typescriptthree]
-  \definefontsynonym[Kurier-Medium]        [\typescriptthree-kurm]  [encoding=\typescriptthree]
-  \definefontsynonym[Kurier-Bold]          [\typescriptthree-kurb]  [encoding=\typescriptthree]
-  \definefontsynonym[Kurier-Heavy]         [\typescriptthree-kurh]  [encoding=\typescriptthree]
-  \definefontsynonym[Kurier-LightItalic]   [\typescriptthree-kurli] [encoding=\typescriptthree]
-  \definefontsynonym[Kurier-RegularItalic] [\typescriptthree-kurri] [encoding=\typescriptthree]
-  \definefontsynonym[Kurier-MediumItalic]  [\typescriptthree-kurmi] [encoding=\typescriptthree]
-  \definefontsynonym[Kurier-BoldItalic]    [\typescriptthree-kurbi] [encoding=\typescriptthree]
-  \definefontsynonym[Kurier-HeavyItalic]   [\typescriptthree-kurhi] [encoding=\typescriptthree]
+\starttypescript [sans] [kurier-light,kurier,kurier-medium] [texnansi,ec,qx,t5]
+  \definefontsynonym[Kurier-Light]         [\typescriptthree-kurierl]  [encoding=\typescriptthree]
+  \definefontsynonym[Kurier-Regular]       [\typescriptthree-kurierr]  [encoding=\typescriptthree]
+  \definefontsynonym[Kurier-Medium]        [\typescriptthree-kurierm]  [encoding=\typescriptthree]
+  \definefontsynonym[Kurier-Bold]          [\typescriptthree-kurierb]  [encoding=\typescriptthree]
+  \definefontsynonym[Kurier-Heavy]         [\typescriptthree-kurierh]  [encoding=\typescriptthree]
+  \definefontsynonym[Kurier-LightItalic]   [\typescriptthree-kurierli] [encoding=\typescriptthree]
+  \definefontsynonym[Kurier-RegularItalic] [\typescriptthree-kurierri] [encoding=\typescriptthree]
+  \definefontsynonym[Kurier-MediumItalic]  [\typescriptthree-kuriermi] [encoding=\typescriptthree]
+  \definefontsynonym[Kurier-BoldItalic]    [\typescriptthree-kurierbi] [encoding=\typescriptthree]
+  \definefontsynonym[Kurier-HeavyItalic]   [\typescriptthree-kurierhi] [encoding=\typescriptthree]
 \stoptypescript
 
 \starttypescript [math] [kurier] [default]
-  \definefontsynonym [Kurier-Math-Letters-Regular]       [rm-kurr]
-  \definefontsynonym [Kurier-Math-Letters-RegularItalic] [mi-kurr]
-  \definefontsynonym [Kurier-Math-Symbols-Regular]       [sy-kurr]
-  \definefontsynonym [Kurier-Math-Extension-Regular]     [ex-kurr]
+  \definefontsynonym [Kurier-Math-Letters-Regular]       [rm-kurierr]
+  \definefontsynonym [Kurier-Math-Letters-RegularItalic] [mi-kurierri]
+  \definefontsynonym [Kurier-Math-Symbols-Regular]       [sy-kurierri]
+  \definefontsynonym [Kurier-Math-Extension-Regular]     [ex-kurierr]
 \stoptypescript
 
 \starttypescript [math] [kurier-light] [default]
-  \definefontsynonym [Kurier-Math-Letters-Light]        [rm-kurr]
-  \definefontsynonym [Kurier-Math-Letters-LightItalic]  [mi-kurr]
-  \definefontsynonym [Kurier-Math-Symbols-Light]        [sy-kurr]
-  \definefontsynonym [Kurier-Math-Extension-Light]      [ex-kurr]
+  \definefontsynonym [Kurier-Math-Letters-Light]       [rm-kurierl]
+  \definefontsynonym [Kurier-Math-Letters-LightItalic] [mi-kurierli]
+  \definefontsynonym [Kurier-Math-Symbols-Light]       [sy-kurierli]
+  \definefontsynonym [Kurier-Math-Extension-Light]     [ex-kurierl]
+\stoptypescript
+
+\starttypescript [math] [kurier-medium] [default]
+  \definefontsynonym [Kurier-Math-Letters-Medium]       [rm-kurierm]
+  \definefontsynonym [Kurier-Math-Letters-MediumItalic] [mi-kuriermi]
+  \definefontsynonym [Kurier-Math-Symbols-Medium]       [sy-kuriermi]
+  \definefontsynonym [Kurier-Math-Extension-medium]     [ex-kurierm]
 \stoptypescript
 
 % Palatino (URW)
@@ -1183,4 +1193,6 @@
   \definefontsynonym [MartinVogel]           [fmvr8x]
 \stoptypescript
 
-\stoptypescriptcollection \endinput
+\stoptypescriptcollection
+
+\endinput

@@ -2019,6 +2019,25 @@
 
 \let\restoreinterlinespace\relax
 
+\beginTEX
+
+\def\saveinterlinespace
+  {\scratchdimen\normallineheight
+   \edef\restoreinterlinespace
+     {\lineheight         \the\lineheight
+      \openstrutheight    \the\openstrutheight
+      \openstrutdepth     \the\openstrutdepth
+      \openlineheight     \the\openlineheight
+      \normalbaselineskip \the\normalbaselineskip
+      \normallineskip     \the\normallineskip
+      \normallineskiplimit\the\normallineskiplimit
+      \noexpand\def\noexpand\normallineheight{\the\scratchdimen}%
+      \noexpand\normalbaselines}}
+
+\endTEX
+
+\beginETEX
+
 \def\saveinterlinespace
   {\edef\restoreinterlinespace
      {\lineheight         \the\lineheight
@@ -2030,6 +2049,8 @@
       \normallineskiplimit\the\normallineskiplimit
       \noexpand\def\noexpand\normallineheight{\the\dimexpr\normallineheight\relax}%
       \noexpand\normalbaselines}}
+
+\endETEX
 
 % plain definition:
 %

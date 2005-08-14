@@ -874,13 +874,13 @@
 \newif\ifsynchronizemathfonts \synchronizemathfontstrue
 
 \def\synchronizetext % stylish text in mmode
-  {\ifsynchronizemathfonts\the\textstrategies\fam\mrfam\fi}
+  {\ifsynchronizemathfonts\the\textstrategies\fam\minusone\fi}
 
 \def\synchronizemath % math stuff in mmode
-  {\ifsynchronizemathfonts\the\mathstrategies\fam\mrfam\fi}
+  {\ifsynchronizemathfonts\the\mathstrategies\fam\minusone\fi}
 
 \def\synchronizesymb % stylish math stuff in mmode
-  {\ifsynchronizemathfonts\the\symbstrategies\fam\mrfam\fi}
+  {\ifsynchronizemathfonts\the\symbstrategies\fam\minusone\fi}
 
 %D \macros
 %D   {textonly}
@@ -4099,23 +4099,50 @@
 %D definitions.
 
 \def\fontstringA
-  {\ifx\fontstyle\c!rm     \s!Serif \else
-   \ifx\fontstyle\c!ss      \s!Sans \else
-   \ifx\fontstyle\c!tt      \s!Mono \else
-                           \s!Serif \fi\fi\fi}
+  {\ifx\fontstyle\c!rm \s!Serif \else
+   \ifx\fontstyle\c!ss \s!Sans  \else
+   \ifx\fontstyle\c!tt \s!Mono  \else
+                       \s!Serif \fi\fi\fi}
 
 \def\fontstringB
-  {\ifx\fontstyle\c!rm   \s!Regular \else
-   \ifx\fontstyle\c!ss   \s!Support \else
-   \ifx\fontstyle\c!tt      \s!Type \else
-                           \s!Serif \fi\fi\fi}
+  {\ifx\fontstyle\c!rm \s!Regular \else
+   \ifx\fontstyle\c!ss \s!Support \else
+   \ifx\fontstyle\c!tt \s!Type    \else
+                       \s!Serif   \fi\fi\fi}
 
 \def\fontstringC
-  {\ifx\fontalternative\c!bf        \s!Bold \else
-   \ifx\fontalternative\c!sl     \s!Slanted \else
-   \ifx\fontalternative\c!it      \s!Italic \else
+  {\ifx\fontalternative\c!bf \s!Bold        \else
+   \ifx\fontalternative\c!sl \s!Slanted     \else
+   \ifx\fontalternative\c!it \s!Italic      \else
    \ifx\fontalternative\c!bs \s!BoldSlanted \else
-   \ifx\fontalternative\c!bi  \s!BoldItalic \fi\fi\fi\fi\fi}
+   \ifx\fontalternative\c!bi \s!BoldItalic  \fi\fi\fi\fi\fi}
+
+\def\fontstringD % default fontstyle
+  {\expandafter\ifx\csname\??tf\fontclass\s!default\endcsname\c!rm \s!Serif \else
+   \expandafter\ifx\csname\??tf\fontclass\s!default\endcsname\c!ss \s!Sans  \else
+   \expandafter\ifx\csname\??tf\fontclass\s!default\endcsname\c!tt \s!Mono  \else
+                                                                   \s!Serif \fi\fi\fi}
+
+% potential generalization:
+
+% \letvalue{\??ff:t:\c!rm}\s!Serif
+% \letvalue{\??ff:t:\c!ss}\s!Sans
+% \letvalue{\??ff:t:\c!tt}\s!Mono
+%
+% \letvalue{\??ff:s:\c!bf}\s!Bold
+% \letvalue{\??ff:s:\c!sl}\s!Slanted
+% \letvalue{\??ff:s:\c!it}\s!Italic
+% \letvalue{\??ff:s:\c!bs}\s!BoldSlanted
+% \letvalue{\??ff:s:\c!bi}\s!BoldItalic
+%
+% \letvalue{\??ff:a:\c!rm}\s!Regular
+% \letvalue{\??ff:a:\c!ss}\s!Support
+% \letvalue{\??ff:a:\c!tt}\s!Type
+%
+% \def\fontstringA{\executeifdefined{\??ff:t:\fontstyle}\s!Serif}
+% \def\fontstringB{\executeifdefined{\??ff:a:\fontstyle}\s!Serif}
+% \def\fontstringC{\executeifdefined{\??ff:s:\fontstyle}\empty}
+% \def\fontstringD{\executeifdefined{\??ff:t:\csname\??tf\fontclass\s!default\endcsname}\s!Serif}
 
 \beginETEX \ifcsname
 

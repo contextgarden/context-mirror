@@ -1772,25 +1772,77 @@ enddef ;
 % Thanks to Jens-Uwe Morawski for pointing out that we need
 % to treat bounded and clipped components as local pictures.
 
-def recolor suffix p = p := repathed (0,p) enddef ;
-def refill  suffix p = p := repathed (1,p) enddef ;
-def redraw  suffix p = p := repathed (2,p) enddef ;
-def retext  suffix p = p := repathed (3,p) enddef ;
-def untext  suffix p = p := repathed (4,p) enddef ;
+def recolor   suffix p = p := repathed (0,p) enddef ;
+def refill    suffix p = p := repathed (1,p) enddef ;
+def redraw    suffix p = p := repathed (2,p) enddef ;
+def retext    suffix p = p := repathed (3,p) enddef ;
+def untext    suffix p = p := repathed (4,p) enddef ;
 
-primarydef p recolored t = repathed(0,p) t enddef ;
-primarydef p refilled  t = repathed(1,p) t enddef ;
-primarydef p redrawn   t = repathed(2,p) t enddef ;
-primarydef p retexted  t = repathed(3,p) t enddef ;
-primarydef p untexted  t = repathed(4,p) t enddef ;
+% primarydef p recolored t = repathed(0,p) t enddef ;
+% primarydef p refilled  t = repathed(1,p) t enddef ;
+% primarydef p redrawn   t = repathed(2,p) t enddef ;
+% primarydef p retexted  t = repathed(3,p) t enddef ;
+% primarydef p untexted  t = repathed(4,p) t enddef ;
 
 color refillbackground ; refillbackground := (1,1,1) ;
+
+% vardef repathed (expr mode, p) text t =
+%   begingroup ;
+%   if mode=0 : save withcolor ; remapcolors ; fi ;
+%   save _p_, _pp_, _f_, _b_, _t_ ;
+%   picture _p_, _pp_ ; color _f_ ; path _b_ ; transform _t_ ;
+%   _b_ := boundingbox p ; _p_ := nullpicture ;
+%   for i within p :
+%     _f_ := (redpart i, greenpart i, bluepart i) ;
+%     if     bounded i :
+%       _pp_ := repathed(mode,i) t ;
+%       setbounds _pp_ to pathpart i ;
+%       addto _p_ also _pp_ ;
+%     elseif clipped i :
+%       _pp_ := repathed(mode,i) t ;
+%       clip _pp_ to pathpart i ;
+%       addto _p_ also _pp_ ;
+%     elseif stroked i :
+%       addto _p_ doublepath pathpart i
+%         dashed dashpart i withpen penpart i
+%         withcolor _f_ % (redpart i, greenpart i, bluepart i)
+%         if mode=2 : t fi ;
+%     elseif filled  i :
+%       addto _p_ contour pathpart i
+%         withcolor _f_
+%         if (mode=1) and (_f_<>refillbackground) : t fi ;
+%     elseif textual i : % textpart i <> "" :
+%       if mode <> 4 :
+%         % transform _t_ ;
+%         % (xpart _t_, xxpart _t_, xypart _t_)  = (xpart  i, xxpart i, xypart i) ;
+%         % (ypart _t_, yypart _t_, yxpart _t_)  = (ypart  i, yypart i, yxpart i) ;
+%         % addto _p_ also
+%         %   textpart i infont fontpart i % todo : other font
+%         %   transformed _t_
+%         %   withpen penpart i
+%         %   withcolor _f_
+%         %   if mode=3 : t fi ;
+%         addto _p_ also i if mode=3 : t fi ;
+%       fi ;
+%     else :
+%       addto _p_ also i ;
+%     fi ;
+%   endfor ;
+%   setbounds _p_ to _b_ ;
+%   _p_
+%   endgroup
+% enddef ;
+
+def restroke  suffix p = p := repathed (21,p) enddef ; % keep attributes
+def reprocess suffix p = p := repathed (22,p) enddef ; % no attributes
+
+% also 11 and 12
 
 vardef repathed (expr mode, p) text t =
   begingroup ;
   if mode=0 : save withcolor ; remapcolors ; fi ;
-  save _p_, _pp_, _f_, _b_, _t_ ;
-  picture _p_, _pp_ ; color _f_ ; path _b_ ; transform _t_ ;
+  save _p_, _pp_, _ppp_, _f_, _b_, _t_ ;
+  picture _p_, _pp_, _ppp_ ; color _f_ ; path _b_ ; transform _t_ ;
   _b_ := boundingbox p ; _p_ := nullpicture ;
   for i within p :
     _f_ := (redpart i, greenpart i, bluepart i) ;
@@ -1803,14 +1855,33 @@ vardef repathed (expr mode, p) text t =
       clip _pp_ to pathpart i ;
       addto _p_ also _pp_ ;
     elseif stroked i :
-      addto _p_ doublepath pathpart i
-        dashed dashpart i withpen penpart i
-        withcolor _f_ % (redpart i, greenpart i, bluepart i)
-        if mode=2 : t fi ;
+      if mode=21 :
+        _ppp_ := i ; % indirectness is needed
+        addto _p_ also image(scantokens(t & " pathpart _ppp_")
+          dashed dashpart i withpen penpart i
+          withcolor _f_ ; ) ;
+      elseif mode=22 :
+        _ppp_ := i ; % indirectness is needed
+        addto _p_ also image(scantokens(t & " pathpart _ppp_")) ;
+      else :
+        addto _p_ doublepath pathpart i
+          dashed dashpart i withpen penpart i
+          withcolor _f_ % (redpart i, greenpart i, bluepart i)
+          if mode=2 : t fi ;
+      fi ;
     elseif filled  i :
-      addto _p_ contour pathpart i
-        withcolor _f_
+      if mode=11 :
+        _ppp_ := i ; % indirectness is needed
+        addto _p_ also image(scantokens(t & " pathpart _ppp_")
+          withcolor _f_ ; ) ;
+      elseif mode=12 :
+        _ppp_ := i ; % indirectness is needed
+        addto _p_ also image(scantokens(t & " pathpart _ppp_")) ;
+      else :
+        addto _p_ contour pathpart i
+          withcolor _f_
         if (mode=1) and (_f_<>refillbackground) : t fi ;
+      fi ;
     elseif textual i : % textpart i <> "" :
       if mode <> 4 :
         % transform _t_ ;

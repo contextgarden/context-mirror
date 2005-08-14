@@ -16,25 +16,37 @@
 
 \startmapping[pl0]
 
-\definecasemap 161 161 129 % a ogonek
-\definecasemap 162 162 130 % c acute
-\definecasemap 166 166 134 % e ogonek
-\definecasemap 170 170 138 % l crossed
-\definecasemap 171 171 139 % n acute
-\definecasemap 243 243 211 % o acute
-\definecasemap 177 177 145 % s acute
-\definecasemap 185 185 153 % z acute
-\definecasemap 187 187 155 % z dotaccent
+\resetcaserange 128 to 255
 
-\definecasemap 129 161 129  % A ogonek
-\definecasemap 130 162 130  % C acute
-\definecasemap 134 166 134  % E ogonek
-\definecasemap 138 170 138  % L crossed
-\definecasemap 139 171 139  % N acute
-\definecasemap 211 243 211  % O acute
-\definecasemap 145 177 145  % S acute
-\definecasemap 153 185 153  % Z acute
-\definecasemap 155 187 155  % Z dotaccent
+\definecaseswap 161 129 % a ogonek
+\definecaseswap 162 130 % c acute
+\definecaseswap 166 134 % e ogonek
+\definecaseswap 170 138 % l crossed
+\definecaseswap 171 139 % n acute
+\definecaseswap 177 145 % s acute
+\definecaseswap 185 153 % z acute
+\definecaseswap 187 155 % z dotaccent
+\definecaseswap 243 211 % o acute
+
+% \definecasemap 161 161 129 % a ogonek
+% \definecasemap 162 162 130 % c acute
+% \definecasemap 166 166 134 % e ogonek
+% \definecasemap 170 170 138 % l crossed
+% \definecasemap 171 171 139 % n acute
+% \definecasemap 177 177 145 % s acute
+% \definecasemap 185 185 153 % z acute
+% \definecasemap 187 187 155 % z dotaccent
+% \definecasemap 243 243 211 % o acute
+
+% \definecasemap 129 161 129  % A ogonek
+% \definecasemap 130 162 130  % C acute
+% \definecasemap 134 166 134  % E ogonek
+% \definecasemap 138 170 138  % L crossed
+% \definecasemap 139 171 139  % N acute
+% \definecasemap 145 177 145  % S acute
+% \definecasemap 153 185 153  % Z acute
+% \definecasemap 155 187 155  % Z dotaccent
+% \definecasemap 211 243 211  % O acute
 
 \stopmapping
 
@@ -112,6 +124,9 @@
 
 % \startmapping[pl1]
 %
+%
+% \resetcaserange 128 to 255
+%
 % \definecasemap 185 185 165  % a ogonek
 % \definecasemap 230 230 198  % c acute
 % \definecasemap 234 234 202  % e ogonek
@@ -183,6 +198,8 @@
 %D Polish ISO-8859-2 encoding.
 
 % \startmapping[pl2]
+%
+% \resetcaserange 128 to 255
 %
 % \definecasemap 177 177 161  % a ogonek
 % \definecasemap 230 230 198  % c acute

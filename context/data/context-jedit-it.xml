@@ -400,6 +400,7 @@
       <KEYWORD2>\startlineamargine</KEYWORD2>
       <KEYWORD2>\startlineatesto</KEYWORD2>
       <KEYWORD2>\startmenuinterattivo</KEYWORD2>
+      <KEYWORD2>\startprodotto</KEYWORD2>
       <KEYWORD2>\startprogetto</KEYWORD2>
       <KEYWORD2>\startsfondo</KEYWORD2>
       <KEYWORD2>\startversione</KEYWORD2>
@@ -415,6 +416,7 @@
       <KEYWORD2>\stoplineamargine</KEYWORD2>
       <KEYWORD2>\stoplineatesto</KEYWORD2>
       <KEYWORD2>\stopmenuinterattivo</KEYWORD2>
+      <KEYWORD2>\stopprodotto</KEYWORD2>
       <KEYWORD2>\stopprogetto</KEYWORD2>
       <KEYWORD2>\stopsfondo</KEYWORD2>
       <KEYWORD2>\stopversione</KEYWORD2>

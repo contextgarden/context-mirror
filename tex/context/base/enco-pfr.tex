@@ -1,6 +1,6 @@
 %D \module
 %D   [       file=enco-pfr,
-%D        version=2000.12.10,
+%D        version=2000.12.10, % adapted 2005.08.14 to more delayed loading
 %D          title=\CONTEXT\ Encoding Macros,
 %D       subtitle=PDF Font Resource Inclusion,
 %D         author=Hans Hagen,
@@ -10,6 +10,10 @@
 %C This module is part of the \CONTEXT\ macro||package and is
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
+
+\ifx\pdffontresource\undefined\else\endinput\fi
+
+\writestatus{loading}{Context Encoding Macros (pdf)}
 
 %D This is an experimental module in which we implement
 %D font resource inclusion in \PDF. One reason to include
@@ -49,6 +53,15 @@
 %D You can turn of this feature using the following switch.
 
 \newif\ifincludepdffontresources \includepdffontresourcestrue
+
+% a problem is that there is always an ec vector added even when
+% we switch to texnansi early; this has to do with the fact that
+% we need to setup fonts at startup; this a pain when we have
+% textless documents, so we should have a way around, i.e. an
+% extension to pdftex where we can tag numbers inside user specs
+% and attributes.
+%
+% currently we need to use immediate so we end up with entries
 
 %D The name of the resource is stored in a macro, as is its
 %D object reference. A resource is only processed once. When
@@ -111,7 +124,7 @@
 
 \def\usepdffontresource #1 %
   {\doifundefinedelse{\pdffontfileresource} % okay, undefined, so either
-     {\setxvalue{\pdffontfileresource}{#1}} % band new, or not yet loaded
+     {\setxvalue{\pdffontfileresource}{#1}} % brand new, or not yet loaded
      {\doifvaluesomething{\pdffontfileresource}  % only if not loaded in which
         {\setxvalue{\pdffontfileresource}{#1}}}} % case it's made empty
 
@@ -120,20 +133,21 @@
 %D we save its reference. Normally a document will have one
 %D such a resource.
 
-\long\def\startpdffontresource[#1]#2\stoppdffontresource%
-  {\donefalse % we use boolean due to \par
-   \doifundefined{\pdffontresource}% should be \long
-     {\doif{#1}{\currentencoding}{\donetrue}}%
-   \ifdone % pdftex !
-     \immediate\pdfobj stream {#2}%
-     \setxvalue{\pdffontresource}{\the\pdflastobj}%
-   \fi}
+% \long\def\startpdffontresource[#1]#2\stoppdffontresource
+%   {\doif{#1}\currentencoding
+%     {\immediate\pdfobj useobjnum \getvalue{\pdffontresource} stream {#2}}}
+
+\long\def\startpdffontresource[#1]#2\stoppdffontresource
+  {\doif{#1}\currentencoding{\doifdefined\pdffontresource
+     {\immediate\pdfobj useobjnum \getvalue{\pdffontresource} stream {#2}}}}
 
 %D The reference to such a vector is to be handled at font
 %D definition time, which is why we hook it into the font
 %D loading routine. A little bit of indirectness speeds up
 %D the process when this feature is disabled and keeps the
 %D macros readable.
+
+% \newevery \everyfont \relax
 
 \appendtoksonce \includepdffontresource \to \everyfont
 
@@ -148,6 +162,15 @@
      \fi\fi
    \fi}
 
+\def\dododoincludepdffontresource#1% encoding
+  {\bgroup
+   \def\currentencoding{#1}%
+   \startreadingfile
+     \readsysfile{pdfr-\getvalue\pdffontfileresource}\donothing\donothing
+   \stopreadingfile
+   \letgvalue\pdffontfileresource\empty
+   \egroup}
+
 \beginETEX
 
 \def\doincludepdffontresource
@@ -155,57 +178,53 @@
      \dodoincludepdffontresource
    \fi}
 
-\def\dodoincludepdffontresource%
-  {% does this font has an encoding specified
-   \ifx\currentencoding\empty \else \ifx\currentencoding\s!default \else
-     % is there a pdf font encoding resource file defined
-     \ifcsname\pdffontfileresource\endcsname
-       % load the pdf font resource
-       \edef\xpdffontfileresource{\csname\pdffontfileresource\endcsname}%
-       \ifx\xpdffontfileresource\empty \else
-         % but load it only once
-         \startreadingfile
-           \readsysfile{pdfr-\xpdffontfileresource}{}{}% messages
-         \stopreadingfile
-         % but do that only once, so forget the flag, empty==loaded
-         \global\@EA\let\csname\pdffontfileresource\endcsname\empty
-       \fi
-     \fi
-     % is there a resource indeed, i.e. an object reference
-     \ifcsname\pdffontresource\endcsname
-       % if so, create a reference to the object
-       \expanded{\pdffontattr\font % current font
-         {/ToUnicode \csname\pdffontresource\endcsname\space0 R}}%
-     \fi
-     \global\@EA\let\csname\s!ucmap\fontfile\endcsname\empty
-   \fi \fi}
+\def\dodoincludepdffontresource
+  {% does this font has an encoding specified vector
+   \doifsomething\currentencoding % no \ifx
+     {% is there a pdf font encoding resource file defined
+      \ifcsname\pdffontresource\endcsname
+        % (fake) object defined
+      \else\ifcsname\pdffontfileresource\endcsname
+        % is there a resource already included
+        \doifsomething\pdffontfileresource
+          {\pdfobj reserveobjnum {}%
+           \setxvalue\pdffontresource{\the\pdflastobj}%
+           \doglobal\appendetoks
+             \noexpand\dododoincludepdffontresource{\currentencoding}%
+           \to \everybeforeshipout}% prevent multiple loading
+      \fi\fi
+      \ifcsname\pdffontresource\endcsname
+        \expanded{\pdffontattr\font{/ToUnicode \csname\pdffontresource\endcsname\space0 R}}%
+        % do it only once for each font
+        \letgvalue{\s!ucmap\fontfile}\empty
+      \fi}}
 
 \endETEX
 
 \beginTEX
 
 \def\doincludepdffontresource
-  {\@EA\ifx\csname\s!ucmap\fontfile\endcsname\relax
+  {\expandafter\ifcsname\s!ucmap\fontfile\endcsname\relax
      \dodoincludepdffontresource
    \fi}
 
 \def\dodoincludepdffontresource
-  {\ifx\currentencoding\empty \else \ifx\currentencoding\s!default \else
-     \@EA\ifx\csname\pdffontfileresource\endcsname\relax\else
-       \edef\xpdffontfileresource{\csname\pdffontfileresource\endcsname}%
-       \ifx\xpdffontfileresource\empty \else
-         \startreadingfile
-           \readsysfile{pdfr-\xpdffontfileresource}{}{}%
-         \stopreadingfile
-         \global\@EA\let\csname\pdffontfileresource\endcsname\empty
-       \fi
-     \fi
-     \@EA\ifx\csname\pdffontresource\endcsname\relax\else
-       \expanded{\pdffontattr\font
-         {/ToUnicode \csname\pdffontresource\endcsname\space0 R}}%
-     \fi
-     \global\@EA\let\csname\s!ucmap\fontfile\endcsname\empty
-   \fi\fi}
+  {\doifsomething\currentencoding % no \ifx
+     {\expandafter\ifx\csname\pdffontresource\endcsname\relax
+        \expandafter\ifx\csname\pdffontfileresource\endcsname\relax\else
+          \doifsomething\pdffontfileresource
+            {\pdfobj reserveobjnum {}%
+             \setxvalue\pdffontresource{\the\pdflastobj}%
+             \doglobal\appendetoks
+               \noexpand\dododoincludepdffontresource{\currentencoding}%
+             \to \everybeforeshipout}% prevent multiple loading
+        \fi
+      \fi
+      \expandafter\ifx\csname\pdffontresource\endcsname\relax\else
+        \expanded{\pdffontattr\font{/ToUnicode \csname\pdffontresource\endcsname\space0 R}}%
+        % do it only once for each font
+        \letgvalue{\s!ucmap\fontfile}\empty
+      \fi}}
 
 \endTEX
 

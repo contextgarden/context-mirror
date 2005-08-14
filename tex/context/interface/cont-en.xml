@@ -5019,6 +5019,10 @@
         <cd:constant type="yes"/>
         <cd:constant type="no"/>
       </cd:parameter>
+      <cd:parameter name="sectionnumber">
+        <cd:constant type="yes"/>
+        <cd:constant type="no"/>
+      </cd:parameter>
       <cd:parameter name="cd:sectionnumber">
         <cd:constant type="yes"/>
         <cd:constant type="no"/>
@@ -5942,6 +5946,13 @@
         <cd:constant type="inmargin"/>
         <cd:constant type="middle"/>
         <cd:variable type="cd:text"/>
+      </cd:parameter>
+      <cd:parameter name="hang">
+        <cd:constant type="none"/>
+        <cd:constant type="broad"/>
+        <cd:constant type="fit"/>
+        <cd:constant type="line"/>
+        <cd:variable type="cd:number"/>
       </cd:parameter>
       <cd:parameter name="command">
         <cd:constant type="cd:twoarguments"/>

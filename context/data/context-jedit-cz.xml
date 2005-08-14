@@ -321,6 +321,7 @@
       <KEYWORD2>\startkomponenta</KEYWORD2>
       <KEYWORD2>\startmarginalnilinka</KEYWORD2>
       <KEYWORD2>\startpozadi</KEYWORD2>
+      <KEYWORD2>\startprodukt</KEYWORD2>
       <KEYWORD2>\startprojekt</KEYWORD2>
       <KEYWORD2>\startprostredi</KEYWORD2>
       <KEYWORD2>\starttextovalinka</KEYWORD2>
@@ -335,6 +336,7 @@
       <KEYWORD2>\stopkomponenta</KEYWORD2>
       <KEYWORD2>\stopmarginalnilinka</KEYWORD2>
       <KEYWORD2>\stoppozadi</KEYWORD2>
+      <KEYWORD2>\stopprodukt</KEYWORD2>
       <KEYWORD2>\stopprojekt</KEYWORD2>
       <KEYWORD2>\stopprostredi</KEYWORD2>
       <KEYWORD2>\stoptextovalinka</KEYWORD2>

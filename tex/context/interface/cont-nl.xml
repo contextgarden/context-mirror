@@ -3972,7 +3972,7 @@
 
 <cd:command name="product" type="environment">
   <cd:sequence>
-    <cd:string value="product"/>
+    <cd:string value="produkt"/>
   </cd:sequence>
   <cd:arguments>
     <cd:file/>
@@ -5019,6 +5019,10 @@
         <cd:constant type="ja"/>
         <cd:constant type="nee"/>
       </cd:parameter>
+      <cd:parameter name="sectienummer">
+        <cd:constant type="ja"/>
+        <cd:constant type="nee"/>
+      </cd:parameter>
       <cd:parameter name="cd:sectionnumber">
         <cd:constant type="ja"/>
         <cd:constant type="nee"/>
@@ -5942,6 +5946,13 @@
         <cd:constant type="inmarge"/>
         <cd:constant type="midden"/>
         <cd:variable type="cd:text"/>
+      </cd:parameter>
+      <cd:parameter name="hang">
+        <cd:constant type="geen"/>
+        <cd:constant type="ruim"/>
+        <cd:constant type="passend"/>
+        <cd:constant type="regel"/>
+        <cd:variable type="cd:number"/>
       </cd:parameter>
       <cd:parameter name="commando">
         <cd:constant type="cd:twoarguments"/>

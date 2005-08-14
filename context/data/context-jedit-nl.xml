@@ -258,6 +258,7 @@
       <KEYWORD2>\startomgeving</KEYWORD2>
       <KEYWORD2>\startonderdeel</KEYWORD2>
       <KEYWORD2>\startopelkaar</KEYWORD2>
+      <KEYWORD2>\startprodukt</KEYWORD2>
       <KEYWORD2>\startproject</KEYWORD2>
       <KEYWORD2>\starttekstlijn</KEYWORD2>
       <KEYWORD2>\startversie</KEYWORD2>
@@ -392,6 +393,7 @@
       <KEYWORD2>\stopomgeving</KEYWORD2>
       <KEYWORD2>\stoponderdeel</KEYWORD2>
       <KEYWORD2>\stopopelkaar</KEYWORD2>
+      <KEYWORD2>\stopprodukt</KEYWORD2>
       <KEYWORD2>\stopproject</KEYWORD2>
       <KEYWORD2>\stoptekstlijn</KEYWORD2>
       <KEYWORD2>\stopversie</KEYWORD2>

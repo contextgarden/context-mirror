@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 
-<cd:interface xmlns:cd="http://www.pragma-ade.com/commands" name="context" language="nl" version="2005.08.03">
+<cd:interface xmlns:cd="http://www.pragma-ade.com/commands" name="context" language="nl" version="2005.08.15">
 
   <cd:variables>
     <cd:variable name="one" value="een"/>
@@ -1407,7 +1407,7 @@
     <cd:command name="setups" value="instellingen"/>
     <cd:command name="project" value="project"/>
     <cd:command name="component" value="onderdeel"/>
-    <cd:command name="produxt" value="produkt"/>
+    <cd:command name="product" value="produkt"/>
     <cd:command name="environment" value="omgeving"/>
     <cd:command name="nomorefiles" value="geenfilesmeer"/>
     <cd:command name="getbuffer" value="haalbuffer"/>

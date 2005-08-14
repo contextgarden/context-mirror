@@ -104,7 +104,7 @@
 
 % latin modern
 
-\starttypescript [map] [computer-modern,latin-modern] [ec,texnansi,qx,t5,pl0,il2]
+\starttypescript [map] [modern,computer-modern,latin-modern] [ec,texnansi,qx,t5,pl0,il2]
   \loadmapfile[\typescriptthree-public-lm.map]
 \stoptypescript
 
@@ -157,11 +157,15 @@
   \loadmapfile[\typescriptthree-public-antp.map]
 \stoptypescript
 
-\starttypescript [map] [iwona,iwona-light] [ec,texnansi,qx,t5]
+\starttypescript [map] [iwona,iwona-light,iwona-medium,iwona-heavy] [ec,texnansi,qx,t5]
   \loadmapfile[\typescriptthree-iwona.map]
+  \loadmapfile[rm-iwona.map]
+  \loadmapfile[mi-iwona.map]
+  \loadmapfile[sy-iwona.map]
+  \loadmapfile[ex-iwona.map]
 \stoptypescript
 
-\starttypescript [map] [kurier,kurier-light] [ec,texnansi,qx,t5,default]
+\starttypescript [map] [kurier,kurier-light,kurier-medium,kurier-heavy] [ec,texnansi,qx,t5,default]
   \loadmapfile[\typescriptthree-kurier.map]
   \loadmapfile[rm-kurier.map]
   \loadmapfile[mi-kurier.map]

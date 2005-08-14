@@ -318,7 +318,7 @@
         \ht\layerpagebox\zeropoint
         \dp\layerpagebox\zeropoint
         \wd\layerpagebox\zeropoint
-        \doifnotvalue{\layerparameter\c!direction}\v!reverse{\box\layerpagebox}%
+        \doifnot{\layerparameter\c!direction}\v!reverse{\box\layerpagebox}%
       \fi
       % don't move
       \xdef\lastlayerwd{\the\nextboxwd}%

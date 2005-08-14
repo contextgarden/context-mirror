@@ -64,6 +64,28 @@
 \definefontsynonym [Handwriting]        [unknown]
 \definefontsynonym [Calligraphic]       [unknown]
 
+%D This permit us to define (use) fonts that refer to the default
+%D style (so, Bold may expand to SansBold or SerifBold, depending
+%D on the default style in the typeface).
+
+% \def\setfontsynonym[#1]#2[#3]{\setvalue{\??ff\fontclass#1}{#3}}
+%
+% \setfontsynonym[\s!Normal]     [\fontstringD]
+% \setfontsynonym[\s!Bold]       [\fontstringD\s!Bold]
+% \setfontsynonym[\s!Italic]     [\fontstringD\s!Italic]
+% \setfontsynonym[\s!Slanted]    [\fontstringD\s!Slanted]
+% \setfontsynonym[\s!BoldItalic] [\fontstringD\s!BoldItalic]
+% \setfontsynonym[\s!BoldSlanted][\fontstringD\s!BoldSlanted]
+% \setfontsynonym[\s!Caps]       [\fontstringD\s!Caps]
+
+\definefontsynonym[\s!Normal]     [\noexpand\fontstringD]
+\definefontsynonym[\s!Bold]       [\noexpand\fontstringD\noexpand\s!Bold]
+\definefontsynonym[\s!Italic]     [\noexpand\fontstringD\noexpand\s!Italic]
+\definefontsynonym[\s!Slanted]    [\noexpand\fontstringD\noexpand\s!Slanted]
+\definefontsynonym[\s!BoldItalic] [\noexpand\fontstringD\noexpand\s!BoldItalic]
+\definefontsynonym[\s!BoldSlanted][\noexpand\fontstringD\noexpand\s!BoldSlanted]
+\definefontsynonym[\s!Caps]       [\noexpand\fontstringD\noexpand\s!Caps]
+
 %D Also handy:
 
 \definefontsynonym [Regular]            [Serif]

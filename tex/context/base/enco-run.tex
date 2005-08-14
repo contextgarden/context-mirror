@@ -134,4 +134,16 @@
    \NC sample   \NC \hyphenatedword{#1} \NC \NR
    \stoptabulate}
 
+\gdef\showmapping
+  {\dostepwiserecurse{128}{255}{1}
+      {\hbox\bgroup
+         \hbox to 2em{\hss\recurselevel}%
+         \hbox to 2em{\hss\char\recurselevel\hss}%
+         \hbox to 3em{\hss\ifcase\lccode\recurselevel\else\the \lccode\recurselevel\fi}%
+         \hbox to 2em{\hss\ifcase\lccode\recurselevel\else\char\lccode\recurselevel\fi\hss}%
+         \hbox to 3em{\hss\ifcase\lccode\recurselevel\else\the \uccode\recurselevel\fi}%
+         \hbox to 2em{\hss\ifcase\uccode\recurselevel\else\char\uccode\recurselevel\fi\hss}%
+       \egroup
+       \endgraf}}
+
 \protect \endinput

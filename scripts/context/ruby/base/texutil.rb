@@ -127,12 +127,13 @@ class TeXUtil
     class Sorter
 
         def initialize(max=12)
-            @rep, @map, @exp = Hash.new, Hash.new, Hash.new
+            @rep, @map, @exp, @div = Hash.new, Hash.new, Hash.new, Hash.new
             @max = max
             @rexa, @rexb = nil, nil
         end
 
         def replacer(from,to='') # and expand
+            @max = [@max,to.length+1].max if to
             @rep[from.escaped] = to || ''
         end
 
@@ -140,6 +141,7 @@ class TeXUtil
         # sorter.reducer('ij', 'y')
 
         def reducer(from,to='')
+            @max = [@max,to.length+1].max if to
             @map[from] = to || ''
         end
 
@@ -147,7 +149,15 @@ class TeXUtil
         # sorter.expander('ijligature', 'y')
 
         def expander(from,to=nil)
+            from, to = converted(from), converted(to)
+            @max = [@max,to.length+1].max if to
             @exp[from] = to || from || ''
+        end
+
+        def division(from,to=nil)
+            from, to = converted(from), converted(to)
+            @max = [@max,to.length+1].max if to
+            @div[from] = to || from || ''
         end
 
         # shortcut("\\ab\\cd\\e\\f", 'iacute')
@@ -172,9 +182,14 @@ class TeXUtil
         end
 
         def remap(str)
-            str.gsub(@rexa) do
+            s = str.dup
+            s.gsub!(/(\d+)/o) do
+                $1.rjust(10,'a') # rest is b .. k
+            end
+            s.gsub!(@rexa) do
                 @rep[$1.escaped]
-            end.gsub(@rexb) do
+            end
+            s.gsub!(@rexb) do
                 token = $1.sub(/\\/o, '')
                 if @exp.key?(token) then
                     @exp[token].ljust(@max,' ')
@@ -184,15 +199,20 @@ class TeXUtil
                     ''
                 end
             end
+            s
         end
 
-        def preset(shortcuts=[],expansions=[],reductions=[])
-            'a'.upto('z') do |c|
-                expander(c)
-            end
+        def preset(shortcuts=[],expansions=[],reductions=[],divisions=[])
+            # maybe we should move this to sort-def.tex
+            'a'.upto('z') do |c| expander(c) ; division(c) end
+            expander('1','b') ; expander('2','c') ; expander('3','e') ; expander('4','f')
+            expander('5','g') ; expander('6','h') ; expander('7','i') ; expander('8','i')
+            expander('9','j') ; expander('0','a') ; expander('-','-') ;
+            # end potential move
             shortcuts.each  do |s| shortcut(s[0],s[1]) end
             expansions.each do |e| expander(e[0],e[1]) end
             reductions.each do |r| reducer(r[0],r[1]) end
+            divisions.each  do |d| division(d[0],d[1]) end
         end
 
         def simplify(str)
@@ -214,6 +234,33 @@ class TeXUtil
             # unknown \cs
             s.gsub!(/\\[a-z][a-z]+\s*\{(.*?)\}/o) do $1 end
             return s
+        end
+
+        def getdivision(str)
+            @div[str] || str
+        end
+
+        def division?(str)
+            @div.key?(str)
+        end
+
+        private
+
+        def converted(str)
+            if str then
+                str.gsub(/([\+\-]*\d+)/o) do
+                    n = $1.to_i
+                    if n > 0 then
+                        'z'*n
+                    elsif n < 0 then
+                        '-'*(-n) # '-' precedes 'a'
+                    else
+                        ''
+                    end
+                end
+            else
+                nil
+            end
         end
 
     end
@@ -328,6 +375,7 @@ class TeXUtil
 
             class Synonym
 
+                @@debug = false
                 @@debug = true
 
                 def initialize(t, c, k, d)
@@ -386,7 +434,7 @@ class TeXUtil
 
             def MySynonyms::processor(logger)
                 sorter = Sorter.new
-                sorter.preset(eval("MyKeys").shortcuts,eval("MyKeys").expansions,eval("MyKeys").reductions)
+                sorter.preset(eval("MyKeys").shortcuts,eval("MyKeys").expansions,eval("MyKeys").reductions,eval("MyKeys").divisions)
                 sorter.prepare
                 @@synonyms.keys.each do |s|
                     @@synonyms[s].each_index do |i|
@@ -406,6 +454,7 @@ class TeXUtil
 
             class Register
 
+                @@debug = false
                 @@debug = true
 
                 @@howto = /^(.*?)\:\:(.*)$/o
@@ -474,30 +523,43 @@ class TeXUtil
                     @@savedhowto, @@savedfrom, @@savedto, @@savedentry = '', '', '', ''
                 end
 
-                def Register.flush(list,handle)
-                    #
+                def Register.flush(list,handle,sorter)
+                    # a bit messy, quite old mechanism, maybe some day ...
                     # alphaclass can go, now flushed per class
-                    #
                     if list.size > 0 then
                         @nofentries, @nofpages = 0, 0
                         current, previous, howto  = Array.new, Array.new, Array.new
                         lastpage, lastrealpage = '', ''
                         alphaclass, alpha = '', ''
                         @@savedhowto, @@savedfrom, @@savedto, @@savedentry = '', '', '', ''
-
                         if @@debug then
                             list.each do |entry|
-                                handle << "% [#{entry.sortkey[0,1]}] [#{entry.sortkey.gsub(/#{@@split}/o,'] [')}]\n"
+                                handle << "% [#{entry.sortkey.gsub(/#{@@split}/o,'] [')}]\n"
                             end
                         end
                         list.each do |entry|
-                            testalpha = entry.sortkey[0,1].downcase
+                            if entry.sortkey =~ /^(\S+)/o then
+                                if sorter.division?($1) then
+                                    testalpha = sorter.getdivision($1)
+                                else
+                                    testalpha = entry.sortkey[0,1].downcase
+                                end
+                            else
+                                testalpha = entry.sortkey[0,1].downcase
+                            end
                             if testalpha != alpha.downcase or alphaclass != entry.class then
                                 alpha = testalpha
                                 alphaclass = entry.class
                                 if alpha != ' ' then
                                     flushsavedline(handle)
-                                    character = alpha.sub(/([^a-zA-Z])/o) do "\\" + $1 end
+                                    if alpha =~ /^[a-zA-Z]$/o then
+                                        character = alpha.dup
+                                    elsif alpha.length > 1 then
+                                        # character = "\\getvalue\{#{alpha}\}"
+                                        character = "\\#{alpha}"
+                                    else
+                                        character = "\\#{alpha}"
+                                    end
                                     handle << "\\registerentry{#{entry.type}}{#{character}}\n"
                                 end
                             end
@@ -556,6 +618,7 @@ class TeXUtil
                                 elsif entry.state == 3 then # to
                                     Register.flushsavedline(handle)
                                     handle << "\\registerto#{savedline}\n"
+                                    @@savedhowto = '' # test
                                 elsif @@collapse then
                                     if savedentry != nextentry then
                                         savedFrom = savedline
@@ -564,6 +627,7 @@ class TeXUtil
                                     end
                                 else
                                     handle << "\\registerpage#{savedline}\n"
+                                    @@savedhowto = '' # test
                                 end
                                 @nofpages += 1
                                 lastpage, lastrealpage = entry.page, entry.realpage
@@ -576,9 +640,11 @@ class TeXUtil
             end
 
             @@registers = Hash.new
+            @@sorter = Sorter.new
 
             def MyRegisters::reset(logger)
                 @@registers = Hash.new
+                @@sorter = Sorter.new
             end
 
             def MyRegisters::reader(logger,data)
@@ -602,19 +668,18 @@ class TeXUtil
                 if @@registers.size > 0 then
                     @@registers.keys.sort.each do |s|
                         handle << logger.banner("registers: #{s} #{@@registers[s].size}")
-                        Register.flush(@@registers[s],handle)
+                        Register.flush(@@registers[s],handle,@@sorter)
                         # report("register #{@@registers[s].class}: #{@@registers[s].@nofentries} entries and #{@@registers[s].@nofpages} pages")
                     end
                 end
             end
 
             def MyRegisters::processor(logger)
-                sorter = Sorter.new
-                sorter.preset(eval("MyKeys").shortcuts,eval("MyKeys").expansions,eval("MyKeys").reductions)
-                sorter.prepare
+                @@sorter.preset(eval("MyKeys").shortcuts,eval("MyKeys").expansions,eval("MyKeys").reductions,eval("MyKeys").divisions)
+                @@sorter.prepare
                 @@registers.keys.each do |s|
                     @@registers[s].each_index do |i|
-                        @@registers[s][i].build(sorter)
+                        @@registers[s][i].build(@@sorter)
                     end
                     @@registers[s] = @@registers[s].sort
                 end
@@ -668,6 +733,7 @@ class TeXUtil
             @@shortcuts  = Array.new
             @@expansions = Array.new
             @@reductions = Array.new
+            @@divisions  = Array.new
 
             def MyKeys::shortcuts
                 @@shortcuts
@@ -677,6 +743,9 @@ class TeXUtil
             end
             def MyKeys::reductions
                 @@reductions
+            end
+            def MyKeys::divisions
+                @@divisions
             end
 
             def MyKeys::reset(logger)
@@ -692,6 +761,7 @@ class TeXUtil
                     when 's' then @@shortcuts.push(data)
                     when 'e' then @@expansions.push(data)
                     when 'r' then @@reductions.push(data)
+                    when 'd' then @@divisions.push(data)
                 end
             end
 
@@ -699,9 +769,10 @@ class TeXUtil
             end
 
             def MyKeys::processor(logger)
-                logger.report("shortcuts: #{@@shortcuts.size}")   # logger.report(@@shortcuts.inspect)
+                logger.report("shortcuts : #{@@shortcuts.size}")  # logger.report(@@shortcuts.inspect)
                 logger.report("expansions: #{@@expansions.size}") # logger.report(@@expansions.inspect)
                 logger.report("reductions: #{@@reductions.size}") # logger.report(@@reductions.inspect)
+                logger.report("divisions : #{@@divisions.size}")  # logger.report(@@divisions.inspect)
             end
 
         end

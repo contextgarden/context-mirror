@@ -1,0 +1,107 @@
+%D \module
+%D   [       file=sort-lan,
+%D        version=2005.08.08,
+%D          title=\CONTEXT\ Sort Macros,
+%D       subtitle=Language Definitions,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D This module replaces existing sort key handling and is meant to be
+%D used with the new texutil functionality. Here we define the language
+%D specific sort rules.
+
+% slovenian
+%
+% a-c, ccaron, cacute, d, dstroke, e-s, scaron, t-z, zcaron
+
+% \startmode[sortorder-sl]
+%     \exportsortexpansion {ccaron}  {cz}
+%     \exportsortexpansion {cacute}  {czz}
+%     \exportsortexpansion {dstroke} {dz}
+%     \exportsortexpansion {scaron}  {sz}
+%     \exportsortexpansion {zacron}  {zz}
+
+%     \exportsortdivision  {cz}  {ccaron}
+%     \exportsortdivision  {czz} {cacute}
+%     \exportsortdivision  {dz}  {dstroke}
+%     \exportsortdivision  {sz}  {scaron}
+%     \exportsortdivision  {zz}  {zacron}
+% \stopmode
+%
+% \startmode[sortorder-sl]
+%     \exportsortexpansion {ccaron}  {c+1}
+%     \exportsortexpansion {cacute}  {c+2}
+%     \exportsortexpansion {dstroke} {d+1}
+%     \exportsortexpansion {scaron}  {s+1}
+%     \exportsortexpansion {zacron}  {z+1}
+%
+%     \exportsortdivision  {c+1} {ccaron}
+%     \exportsortdivision  {c+2} {cacute}
+%     \exportsortdivision  {d+1} {dstroke}
+%     \exportsortdivision  {s+1} {scaron}
+%     \exportsortdivision  {z+1} {zacron}
+% \stopmode
+
+\startmode[sortorder-sl]
+    \exportsortrule {ccaron}  {c+1}
+    \exportsortrule {cacute}  {c+2}
+    \exportsortrule {dstroke} {d+1}
+    \exportsortrule {scaron}  {s+1}
+    \exportsortrule {zacron}  {z+1}
+\stopmode
+
+% finnish
+%
+% a-u, v+w sorted together, x-z, aring, adiaeresis, odiaeresis
+
+\startmode[sortorder-fi]
+    \exportsortrule {v}          {w}
+    \exportsortrule {aring}      {z+1}
+    \exportsortrule {adiaeresis} {z+2}
+    \exportsortrule {odiaeresis} {z+3}
+\stopmode
+
+% swedish
+%
+% a-z, aring, adiaeresis, odiaeresis
+
+\startmode[sortorder-sv]
+    \exportsortrule {aring}      {z+1}
+    \exportsortrule {adiaeresis} {z+2}
+    \exportsortrule {odiaeresis} {z+3}
+\stopmode
+
+% norwegian, danish
+%
+% a-z, aeligature, oslash, aring
+
+\startmode[sortorder-no,sortorder-da]
+    \exportsortrule {aeligature} {z+1}
+    \exportsortrule {oslash}     {z+2}
+    \exportsortrule {aring}      {z+3}
+\stopmode
+
+% islandic
+%
+% a, aacute, b, c, d, eth, e, eacute, f-i, iacute, j-o, oacute, p-u, uacute, v, w (?), x, y, yacute, z, aeligature, oslash, thorn
+
+% estonian
+%
+% a-s, scaron, z, zcaron, t-w, otilde, adiaeresis, odiaeresis, udiaeresis, x, y
+
+% czech
+%
+%
+
+\startmode[sortorder-no,sortorder-da]
+    \exportsortreduction{ch}{c}
+\stopmode
+
+
+
+\endinput

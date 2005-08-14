@@ -407,6 +407,7 @@
       <KEYWORD2>\startliniemargine</KEYWORD2>
       <KEYWORD2>\startmediu</KEYWORD2>
       <KEYWORD2>\startmeniuinteractiune</KEYWORD2>
+      <KEYWORD2>\startprodus</KEYWORD2>
       <KEYWORD2>\startproiect</KEYWORD2>
       <KEYWORD2>\startriglatext</KEYWORD2>
       <KEYWORD2>\startversiune</KEYWORD2>
@@ -422,6 +423,7 @@
       <KEYWORD2>\stopliniemargine</KEYWORD2>
       <KEYWORD2>\stopmediu</KEYWORD2>
       <KEYWORD2>\stopmeniuinteractiune</KEYWORD2>
+      <KEYWORD2>\stopprodus</KEYWORD2>
       <KEYWORD2>\stopproiect</KEYWORD2>
       <KEYWORD2>\stopriglatext</KEYWORD2>
       <KEYWORD2>\stopversiune</KEYWORD2>

@@ -1637,9 +1637,9 @@
    \fi\fi
    \processaction
      [\@@clstate]
-     [\v!global=>\ifincolor\else\showmessage\m!colors1\colorstyle\fi
+     [ \v!global=>\ifincolor\else\showmessage\m!colors1\colorstyle\fi
                   \incolortrue\localcolorfalse,
-       \v!local=>\ifincolor\else\showmessage\m!colors2\colorstyle\fi
+        \v!local=>\ifincolor\else\showmessage\m!colors2\colorstyle\fi
                   \incolortrue\localcolortrue,
         \v!start=>\ifincolor\else\showmessage\m!colors1\colorstyle\fi
                   \incolortrue\localcolorfalse
@@ -1741,7 +1741,7 @@
 
 \def\@@currentcolorname  {\??cl\the\colorlevel C}
 \def\@@currentcolorstop  {\??cl\the\colorlevel S}
-\def\@@currenttransparent{\??cl\the\colorlevel T}
+%def\@@currenttransparent{\??cl\the\colorlevel T}
 
 \def\currentcolor
   {\csname

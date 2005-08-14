@@ -120,6 +120,7 @@
 \def\@map@{@m@ap@} % mapping prefix
 \def\@reg@{@r@eg@} % regime prefix
 \def\@fha@{@f@ha@} % font prefix
+\def\@cas@{@c@as@} % casecom prefix
 
 \ifx\currentlanguage\undefined \let\currentlanguage\s!en \fi
 
@@ -411,17 +412,72 @@
 
 % quite slow, esp when done at runtime
 
-\def\startmapping[#1]%
-  {\pushmacro\charactermapping
+% \def\startmapping[#1]%
+%   {\pushmacro\charactermapping
+%    \edef\charactermapping{@#1@}%
+%    \ifundefined{\@map@\charactermapping}%
+%      \expandafter\newtoks\csname\@map@\charactermapping\endcsname
+%    \fi}
+
+% \def\stopmapping
+%   {%\setmappingtoks\showthe\mappingtoks
+%    \popmacro\charactermapping}
+
+\def\startsavingmappingtoks#1%
+  {\bgroup
    \edef\charactermapping{@#1@}%
-   \doifundefined{\@map@\charactermapping}
-     {\expanded{\newtoks\csname\@map@\charactermapping\endcsname}}}
+   \checkmappingtoks
+   \setmappingtoks
+   \the\mappingtoks}
+
+\def\stopsavingmappingtoks
+  {\global\mappingtoks\emptytoks
+   \dostepwiserecurse{128}{255}\plusone
+     {\edef\@@expanded
+        {\the\mappingtoks
+         \noexpand\checkregimecode\recurselevel\space
+         \lccode\recurselevel\ifnum\lccode\recurselevel=\zerocount\zerocount\else\space\the\lccode\recurselevel\space\fi
+         \uccode\recurselevel\ifnum\uccode\recurselevel=\zerocount\zerocount\else\space\the\uccode\recurselevel\space\fi
+         \ifnum\sfcode\recurselevel=\plusthousand\else\sfcode\recurselevel=\the\sfcode\recurselevel\space\fi
+        }%
+      \global\mappingtoks\expandafter{\@@expanded}}%
+   \egroup
+   \let\enabledmapping\empty
+   \enablemapping[\currentmapping]}
+
+\def\startmapping[#1]%
+  {\startsavingmappingtoks{#1}}
 
 \def\stopmapping
-  {\popmacro\charactermapping}
+  {\stopsavingmappingtoks}
+
+\def\optimizemapping[#1]%
+  {\startsavingmappingtoks{#1}%
+   % nothing, just an automatic cleanup
+   \stopsavingmappingtoks
+   % we need to resync
+   %\let\enabledmapping\relax
+  }%\enablemapping[\currentmapping]}
 
 \def\setmappingtoks
-  {\@EA\let\@EA\mappingtoks\csname\@map@\charactermapping\endcsname}
+  {\@EA\let\@EA\mappingtoks\csname\@map@\charactermapping\endcsname
+   \@EA\let\@EA\casecomtoks\csname\@cas@\charactermapping\endcsname}
+
+\def\checkmappingtoks
+  {\ifundefined{\@map@\charactermapping}%
+     \expandafter\newtoks\csname\@map@\charactermapping\endcsname
+   \fi
+   \ifundefined{\@cas@\charactermapping}%
+     \expandafter\newtoks\csname\@cas@\charactermapping\endcsname
+   \fi}
+
+\def\checkregimecode#1 %
+  {\ifprotectregime\ifnum\catcode#1=\active\else
+     \catcode#1\@@letter
+   \fi\else
+     \catcode#1\@@letter
+   \fi
+   \relax}
 
 % \def\definecasemap #1 #2 #3 % code lower upper
 %   {\setmappingtoks
@@ -432,65 +488,95 @@
 %
 % faster
 
+% \def\definecasemap #1 #2 #3 % code lower upper
+%   {\setmappingtoks
+%    \doifelse{#2}{to}
+%      {\mappingtoks\@EA{\the\mappingtoks\presetcaserange{#1}{#3}}}
+%      {\mappingtoks\@EA{\the\mappingtoks\setcasemap #1 #2 #3 }}%
+%    \ignorespaces}
+
 \def\definecasemap #1 #2 #3 % code lower upper
-  {\setmappingtoks
-   \doifelse{#2}{to}
-     {\mappingtoks\@EA{\the\mappingtoks\presetcaserange{#1}{#3}}}
-     {\mappingtoks\@EA{\the\mappingtoks\setcasemap #1 #2 #3 }}%
+  {\doifelse{#2}{to}
+     {\presetcaserange{#1}{#3}}
+     {\lccode#1=#2\relax
+      \uccode#1=#3\relax}%
    \ignorespaces}
 
 %D Saves a few tokens
 
+% \def\definecaseswap #1 #2 % lower upper
+%   {\setmappingtoks
+%    \mappingtoks\@EA{\the\mappingtoks\setcaseswap #1 #2 }%
+%    \ignorespaces}
+
+\def\definecaseswap #1 #2 % lower upper
+  {\lccode#1=#1\relax
+   \uccode#2=#2\relax
+   \lccode#2=#1\relax
+   \uccode#1=#2\relax
+   \ignorespaces}
+
+% \def\definecaseself #1 % lower=upper=self
+%   {\setmappingtoks
+%    \mappingtoks\@EA{\the\mappingtoks\setcaseself #1 }%
+%    \ignorespaces}
+
 \def\definecaseself #1 % lower=upper=self
-  {\setmappingtoks
-   \mappingtoks\@EA{\the\mappingtoks\setcaseself #1 }%
+  {\lccode #1=#1\relax
+   \uccode #1=#1\relax
    \ignorespaces}
 
 %D Watch the \type {\definecasemap 127 to 255} option!
 %D Dedicated to Taco there is also:
 
+% \def\definecasemaps #1 to #2 lc #3 uc #4 % from to lc+ uc+
+%   {\dostepwiserecurse{#1}{#2}\plusone
+%      {\!!counta\recurselevel\advance\!!counta #3\relax
+%       \!!countb\recurselevel\advance\!!countb #4\relax
+%       \expanded{\definecasemap
+%         \recurselevel\space\the\!!counta\space\the\!!countb\space}}%
+%    \ignorespaces}
+
+% \beginETEX
+
+%   % much faster, prelude to run time loading
+
+%   % \def\doexpandcasemaps#1#2#3#4%
+%   %   {\ifnum#1>#2 %
+%   %      \expandafter\gobblefivearguments
+%   %    \else
+%   %      \noexpand\setcasemap#1\space\the\numexpr#1+#3\relax\space\the\numexpr#1+#4\relax\space
+%   %      \expandafter\expandafter\expandafter\doexpandcasemaps\expandafter
+%   %    \fi\expandafter{\the\numexpr#1+1\relax}{#2}{#3}{#4}}
+%   %
+%   % \def\definecasemaps #1 to #2 lc #3 uc #4 % from to lc+ uc+
+%   %   {\setmappingtoks
+%   %    \expanded{\mappingtoks{\the\mappingtoks\doexpandcasemaps{#1}{#2}{#3}{#4}}}%
+%   %    \ignorespaces}
+
+%   \def\doexpandcasemaps#1%
+%     {\ifnum#1>\scratchcounter
+%        \expandafter\gobbletwoarguments
+%      \else
+%        \noexpand\setcasemap#1\space\the\numexpr#1+\!!counta\relax\space\the\numexpr#1+\!!countb\relax\space
+%        \expandafter\expandafter\expandafter\doexpandcasemaps\expandafter
+%      \fi\expandafter{\the\numexpr#1+\plusone\relax}}
+
+%   \def\definecasemaps #1 to #2 lc #3 uc #4 % from to lc+ uc+
+%     {\setmappingtoks
+%      \scratchcounter#2\relax
+%      \!!counta#3\relax
+%      \!!countb#4\relax
+%      \expanded{\mappingtoks{\the\mappingtoks\doexpandcasemaps{#1}}}%
+%      \ignorespaces}
+
+% \endETEX
+
 \def\definecasemaps #1 to #2 lc #3 uc #4 % from to lc+ uc+
   {\dostepwiserecurse{#1}{#2}\plusone
-     {\!!counta\recurselevel\advance\!!counta #3\relax
-      \!!countb\recurselevel\advance\!!countb #4\relax
-      \expanded{\definecasemap
-        \recurselevel\space\the\!!counta\space\the\!!countb\space}}%
+     {\scratchcounter\recurselevel\advance\scratchcounter#3\lccode\recurselevel=\scratchcounter
+      \scratchcounter\recurselevel\advance\scratchcounter#4\uccode\recurselevel=\scratchcounter}%
    \ignorespaces}
-
-\beginETEX
-
-  % much faster, prelude to run time loading
-
-  % \def\doexpandcasemaps#1#2#3#4%
-  %   {\ifnum#1>#2 %
-  %      \expandafter\gobblefivearguments
-  %    \else
-  %      \noexpand\setcasemap#1\space\the\numexpr#1+#3\relax\space\the\numexpr#1+#4\relax\space
-  %      \expandafter\expandafter\expandafter\doexpandcasemaps\expandafter
-  %    \fi\expandafter{\the\numexpr#1+1\relax}{#2}{#3}{#4}}
-  %
-  % \def\definecasemaps #1 to #2 lc #3 uc #4 % from to lc+ uc+
-  %   {\setmappingtoks
-  %    \expanded{\mappingtoks{\the\mappingtoks\doexpandcasemaps{#1}{#2}{#3}{#4}}}%
-  %    \ignorespaces}
-
-  \def\doexpandcasemaps#1%
-    {\ifnum#1>\scratchcounter
-       \expandafter\gobbletwoarguments
-     \else
-       \noexpand\setcasemap#1\space\the\numexpr#1+\!!counta\relax\space\the\numexpr#1+\!!countb\relax\space
-       \expandafter\expandafter\expandafter\doexpandcasemaps\expandafter
-     \fi\expandafter{\the\numexpr#1+\plusone\relax}}
-
-  \def\definecasemaps #1 to #2 lc #3 uc #4 % from to lc+ uc+
-    {\setmappingtoks
-     \scratchcounter#2\relax
-     \!!counta#3\relax
-     \!!countb#4\relax
-     \expanded{\mappingtoks{\the\mappingtoks\doexpandcasemaps{#1}}}%
-     \ignorespaces}
-
-\endETEX
 
 %D This can be used like:
 %D
@@ -516,56 +602,76 @@
 %
 % faster:
 
+% \def\resetcaserange #1 to #2
+%   {\setmappingtoks
+%    \dostepwiserecurse{#1}{#2}\plusone
+%      {\edef\@@expanded{\recurselevel\space}%
+%       \mappingtoks\@EA\@EA\@EA{\@EA\the\@EA\mappingtoks\@EA\setcasemap\@@expanded 0 0 }}%
+%    \ignorespaces}
+
+% \beginETEX
+
+%   % much faster, prelude to run time loading
+
+%   % \def\doexpandcaserange#1#2%
+%   %   {\ifnum#1>#2 %
+%   %      \expandafter\gobblethreearguments
+%   %    \else
+%   %      \noexpand\setcasemap #1 0 0 %
+%   %      \expandafter\expandafter\expandafter\doexpandcaserange\expandafter
+%   %    \fi\expandafter{\the\numexpr#1+1\relax}{#2}}
+%   %
+%   % \def\resetcaserange #1 to #2
+%   %   {\setmappingtoks
+%   %    \expanded{\mappingtoks{\the\mappingtoks\doexpandcaserange{#1}{#2}}}%
+%   %    \ignorespaces}
+
+%   \def\doexpandcaserange#1%
+%     {\ifnum#1>\scratchcounter
+%        \expandafter\gobbletwoarguments
+%      \else
+%        \noexpand\setcasemap #1 0 0 %
+%        \expandafter\expandafter\expandafter\doexpandcaserange\expandafter
+%      \fi\expandafter{\the\numexpr#1+\plusone\relax}}
+
+%   \def\resetcaserange #1 to #2
+%     {\setmappingtoks
+%      \scratchcounter#2\relax
+%      \expanded{\mappingtoks{\the\mappingtoks\doexpandcaserange{#1}}}%
+%      \ignorespaces}
+
+% \endETEX
+
 \def\resetcaserange #1 to #2
-  {\setmappingtoks
-   \dostepwiserecurse{#1}{#2}\plusone
-     {\edef\@@expanded{\recurselevel\space}%
-      \mappingtoks\@EA\@EA\@EA{\@EA\the\@EA\mappingtoks\@EA\setcasemap\@@expanded 0 0 }}%
+  {\dostepwiserecurse{#1}{#2}\plusone
+     {\lccode\recurselevel\zerocount
+      \uccode\recurselevel\zerocount}%
    \ignorespaces}
 
-\beginETEX
-
-  % much faster, prelude to run time loading
-
-  % \def\doexpandcaserange#1#2%
-  %   {\ifnum#1>#2 %
-  %      \expandafter\gobblethreearguments
-  %    \else
-  %      \noexpand\setcasemap #1 0 0 %
-  %      \expandafter\expandafter\expandafter\doexpandcaserange\expandafter
-  %    \fi\expandafter{\the\numexpr#1+1\relax}{#2}}
-  %
-  % \def\resetcaserange #1 to #2
-  %   {\setmappingtoks
-  %    \expanded{\mappingtoks{\the\mappingtoks\doexpandcaserange{#1}{#2}}}%
-  %    \ignorespaces}
-
-  \def\doexpandcaserange#1%
-    {\ifnum#1>\scratchcounter
-       \expandafter\gobbletwoarguments
-     \else
-       \noexpand\setcasemap #1 0 0 %
-       \expandafter\expandafter\expandafter\doexpandcaserange\expandafter
-     \fi\expandafter{\the\numexpr#1+\plusone\relax}}
-
-  \def\resetcaserange #1 to #2
-    {\setmappingtoks
-     \scratchcounter#2\relax
-     \expanded{\mappingtoks{\the\mappingtoks\doexpandcaserange{#1}}}%
-     \ignorespaces}
-
-\endETEX
+% \def\presetcaserange#1#2% could be pre-expanded
+%   {\dostepwiserecurse{#1}{#2}\plusone
+%      {\setregimecode\recurselevel\@@letter
+%       \lccode \recurselevel=\recurselevel
+%       \uccode \recurselevel=\recurselevel}}
 
 \def\presetcaserange#1#2% could be pre-expanded
   {\dostepwiserecurse{#1}{#2}\plusone
-     {\setregimecode\recurselevel\@@letter
-      \lccode \recurselevel=\recurselevel
-      \uccode \recurselevel=\recurselevel}}
+     {\lccode\recurselevel=\recurselevel
+      \uccode\recurselevel=\recurselevel}%
+   \ignorespaces}
 
 \def\setcasemap #1 #2 #3 %
   {\setregimecode{#1}\@@letter
    \lccode #1=#2
    \uccode #1=#3 }
+
+\def\setcaseswap #1 #2 %
+  {\setregimecode{#1}\@@letter
+   \setregimecode{#2}\@@letter
+   \lccode #1=#1
+   \uccode #2=#2
+   \lccode #2=#1
+   \uccode #1=#2 }
 
 \def\setcaseself #1 %
   {\setregimecode{#1}\@@letter
@@ -576,12 +682,16 @@
 %   {\setmappingtoks
 %    \appendtoks\setspacemap #1 #2 \to\mappingtoks
 %    \ignorespaces}
-%
+
 % faster:
 
+% \def\definespacemap #1 #2 % code sfcode
+%   {\setmappingtoks
+%    \mappingtoks\expandafter{\the\mappingtoks\setspacemap #1 #2 }%
+%    \ignorespaces}
+
 \def\definespacemap #1 #2 % code sfcode
-  {\setmappingtoks
-   \mappingtoks\expandafter{\the\mappingtoks\setspacemap #1 #2 }%
+  {\sfcode#1=#2%
    \ignorespaces}
 
 \def\setspacemap #1 #2 %
@@ -602,14 +712,32 @@
 %
 % faster
 
+% \def\defineuppercasecom#1#2%
+%   {\setmappingtoks
+%    \mappingtoks\expandafter{\the\mappingtoks\setuppercasecom#1{#2}}%
+%    \ignorespaces}
+
+% \def\definelowercasecom#1#2%
+%   {\setmappingtoks
+%    \mappingtoks\expandafter{\the\mappingtoks\setlowercasecom#1{#2}}%
+%    \ignorespaces}
+
+% \def\defineuppercasecom#1#2%
+%   {\setmappingtoks
+%    \mappingtoks\expandafter{\the\mappingtoks\setuppercasecom#1{#2}}%
+%    \ignorespaces}
+
+% \def\definelowercasecom#1#2%
+%   {\setmappingtoks
+%    \mappingtoks\expandafter{\the\mappingtoks\setlowercasecom#1{#2}}%
+%    \ignorespaces}
+
 \def\defineuppercasecom#1#2%
-  {\setmappingtoks
-   \expandafter\mappingtoks{\the\mappingtoks\setuppercasecom#1{#2}}%
+  {\global\casecomtoks\expandafter{\the\casecomtoks\setuppercasecom#1{#2}}%
    \ignorespaces}
 
 \def\definelowercasecom#1#2%
-  {\setmappingtoks
-   \expandafter\mappingtoks{\the\mappingtoks\setlowercasecom#1{#2}}%
+  {\global\casecomtoks\expandafter{\the\casecomtoks\setlowercasecom#1{#2}}%
    \ignorespaces}
 
 \let\setuppercasecom\gobbletwoarguments
@@ -1037,10 +1165,20 @@
   {\egroup
    \stopreadingfile}
 
+% \def\definecharacter#1 #2 %
+%   {\ifundefined{#1}\setvalue{#1}{\dohandlecharacter{#1}}\fi
+%    \doifnumberelse{\string#2}
+%      {\setvalue{\characterprefix\characterencoding\string#1}{\char#2 }% watch the space
+%       \doautosetregime{#1}{#2}}
+%      {\setvalue{\characterprefix\characterencoding\string#1}{#2}}}
+
+\def\numcharacter#1{\char#1 }
+\let\dochar\numcharacter
+
 \def\definecharacter#1 #2 %
   {\ifundefined{#1}\setvalue{#1}{\dohandlecharacter{#1}}\fi
    \doifnumberelse{\string#2}
-     {\setvalue{\characterprefix\characterencoding\string#1}{\char#2 }% watch the space
+     {\setevalue{\characterprefix\characterencoding\string#1}{\dochar{#2}}%
       \doautosetregime{#1}{#2}}
      {\setvalue{\characterprefix\characterencoding\string#1}{#2}}}
 
@@ -1355,6 +1493,7 @@
 \fetchruntimecommand \showcharacters      {\f!encodingprefix\s!run}
 \fetchruntimecommand \showcharacterbounds {\f!encodingprefix\s!run}
 \fetchruntimecommand \showhyphenations    {\f!encodingprefix\s!run}
+\fetchruntimecommand \showmapping         {\f!encodingprefix\s!run}
 
 %D \macros
 %D   {everyuppercase, EveryUppercase,
@@ -1374,8 +1513,13 @@
 %D This magic trick maps takes care of mapping from lower to
 %D upper case and reverse.
 
+\def\reloadmapping{\the\executeifdefined{\@cas@\charactermapping}\emptytoks}
+
 \appendtoks\let\setuppercasecom\setcasecom\to\everyuppercase
 \appendtoks\let\setlowercasecom\setcasecom\to\everylowercase
+
+\appendtoks\reloadmapping\to\everyuppercase % slow, will be sped up
+\appendtoks\reloadmapping\to\everylowercase % slow, will be sped up
 
 \newtoks\everyULmap
 
@@ -1412,6 +1556,50 @@
 %    \def\!!stringa{@#2}\@EA\letvalue\@EA\!!stringa\csname#2\endcsname
 %    \setvalue{#1}{\getvalue{@\ifuppercase#2\else#1\fi}}%
 %    \setvalue{#2}{\getvalue{@\iflowercase#1\else#2\fi}}}
+
+% 2 = tricky, since expanding \definedfont[lowcasename] ... goes wrong
+
+\chardef\uppercasemode\plusthree % 0=ignore 1=normal 2=expand 3=auto
+\chardef\casecommode  \plusone   % 0=noexpand 1=expand
+
+\def\setcasecom #1#2{\def#1{\ifcase\casecommode\noexpand#1\else#2\fi}}
+
+% \def\OEPS{whatever}
+%
+% \startmapping[ec]
+%   \defineuppercasecom \oeps {\getvalue{OEPS}}
+% \stopmapping
+%
+% \WORD{xx \oeps}
+
+\def\douppercase#1%
+  {\bgroup
+   \let\douppercase\firstofoneargument
+   \the\everyuppercase % currently also checks uppercasemode
+   \let\dochar\rawcharacter
+   \ifcase\uppercasemode
+     #1%
+   \or % No expansion here, otherwise \getvalue problems! Default!!!
+    %\edef\next{#1}% keep this to prevent roll back
+    %\uppercase\expandafter{\next}% keep this to prevent roll back
+     \uppercase{#1}%
+   \or
+     \chardef\casecommode\zerocount
+     \let\docasecom\firstoftwoarguments
+     \edef\ascii{#1}%
+     \edef\ascii{\expandafter\uppercase\expandafter{\ascii}}% needed when in regime
+     \chardef\casecommode\plusone
+     \ascii
+   \else
+     % mode three may trigger setting 2 elsewhere (e.g. regime test)
+     \uppercase{#1}%
+   \fi
+   \egroup}
+
+\prependtoksonce
+  \doifnot\currentregime\s!default
+    {\ifnum\uppercasemode=\plusthree \chardef\uppercasemode\plustwo \fi}%
+\to \everyuppercase
 
 %D \macros
 %D   {everysanitize, EverySanitize}
@@ -1779,8 +1967,6 @@
 \useencoding[def,acc,raw,com,cas,mis] % mis should come first
 
 \useencoding[ans,il2,ec,tbo,pdf,uc,pol,qx,t5,cyr]
-
-% \useencoding[vna]
 
 \setupencoding[\s!default=ec] % was: [\s!default=\s!default]
 

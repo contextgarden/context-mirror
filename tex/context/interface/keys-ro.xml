@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 
-<cd:interface xmlns:cd="http://www.pragma-ade.com/commands" name="context" language="ro" version="2005.08.03">
+<cd:interface xmlns:cd="http://www.pragma-ade.com/commands" name="context" language="ro" version="2005.08.15">
 
   <cd:variables>
     <cd:variable name="one" value="unu"/>
@@ -1407,7 +1407,7 @@
     <cd:command name="setups" value="setari"/>
     <cd:command name="project" value="proiect"/>
     <cd:command name="component" value="componenta"/>
-    <cd:command name="produxt" value="produs"/>
+    <cd:command name="product" value="produs"/>
     <cd:command name="environment" value="mediu"/>
     <cd:command name="nomorefiles" value="farafisiere"/>
     <cd:command name="getbuffer" value="adubuffer"/>

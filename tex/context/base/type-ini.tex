@@ -298,7 +298,7 @@
 \long\def\dostarttypescriptyes
   {\ifdone
      \typescriptfoundtrue
-     \iftracetypescripts\writestatus\m!fonts{match: \ifx\currenttypefile\relax-\fi \typescriptmatch}\fi
+     \iftracetypescripts\writestatus\m!fonts{match:\ifx\currenttypefile\relax\space *\fi \typescriptmatch}\fi
      \expandafter\doprocesstypescript
    \else
      \expandafter\noprocesstypescript

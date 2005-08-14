@@ -246,12 +246,9 @@
 
 \unexpanded\def\WORD#1%
   {\bgroup
-   \the\everyuppercase
    \let\smallcapped\firstofoneargument
    \let\WORD\firstofoneargument
-   \uppercase{#1}% No expansion here, otherwise \getvalue problems!
-   %\edef\next{#1}% keep this to prevent roll back
-   %\uppercase\expandafter{\next}% keep this to prevent roll back
+   \douppercase{#1}%
    \egroup}
 
 \unexpanded\def\WORDS#1%

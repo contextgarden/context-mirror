@@ -1079,6 +1079,10 @@
   {\xdef\@@kolevel{\getvalue{\??se\@@sectie\c!level}}%
    \nobreak}
 
+\def\localheadheight    {\strutht}
+\def\localheaddepth     {\strutdp}
+\def\localheadlineheight{\lineheight}
+
 \def\dolocalheadsetup#1%  koppeling met standaard kopcommando / engels
   {\forgetall         %  traag dus ...
    \doifvaluesomething{\??ko#1\c!align} % wordt al expanded in spa
@@ -1300,6 +1304,9 @@
 
 \let\localkopprefix\empty
 
+% \def\headparameter#1% to do: everywhere in core-sec
+%   {\csname\??ko\currenthead#1\endcsname}
+
 \def\dodododosomekop#1[#2]#3#4% [ref] {number} {title}
   {\def\currenthead{#1}% dus #1 overal vervangen
    \let\finalsectionnumber\dofinalsectionnumber % overloaded ungrouped -)
@@ -1478,7 +1485,7 @@
          \rawreference\s!sec{#2}{{#3}{\asciititle}}%
          \dowritetolist\@@koppeling{#3}{#4}\v!head
          \writesection{#1}{#3}{#4}%
-       \else
+       \else % hm, also no own number
          \rawreference\s!sec{#2}{{#3}{\asciititle}}%
          \dowritetolist\@@koppeling{}{#4}\v!head
          \writesection{#1}{-}{#4}%
@@ -1675,8 +1682,10 @@
                \placeheadmargintexts{#1}% binnen #3?
                \ifdisplaysectionhead
                  \getvalue{\??ko#1\c!textcommand}%
-                   {\setstrut\begstrut#3\endstrut}%
-                 \xdef\localheaddepth{\the\strutdp}%
+                   {\setstrut\begstrut#3\endstrut}% can be nilled with \setnostrut
+                 \xdef\localheadheight    {\the\strutht}%
+                 \xdef\localheaddepth     {\the\strutdp}%
+                 \xdef\localheadlineheight{\the\lineheight}%
                 % == \globallet\localheaddepth\strutdepth
                \else
                  \getvalue{\??ko#1\c!textcommand}{#3}%
@@ -1714,7 +1723,7 @@
                \placeheadmargintexts{#1}% binnen #3?
                \ifdisplaysectionhead
                  \getvalue{\??ko#1\c!numbercommand}%
-                   {\setstrut\begstrut#3\endstrut}%
+                   {\setstrut\begstrut#3\endstrut}% can be nilled with \setnostrut
                \else
                  \getvalue{\??ko#1\c!numbercommand}{#3}%
                \fi
@@ -1733,8 +1742,10 @@
                \placeheadmargintexts{#1}% binnen #3?
                \ifdisplaysectionhead
                  \getvalue{\??ko#1\c!textcommand}%
-                   {\setstrut\begstrut#4\endstrut}%
-                 \xdef\localheaddepth{\the\strutdp}%
+                   {\setstrut\begstrut#4\endstrut}% can be nilled with \setnostrut
+                 \xdef\localheadheight    {\the\strutht}%
+                 \xdef\localheaddepth     {\the\strutdp}%
+                 \xdef\localheadlineheight{\the\lineheight}%
                  % == \globallet\localheaddepth\strutdepth
                \else
                  \getvalue{\??ko#1\c!textcommand}{#4}%
@@ -1753,7 +1764,9 @@
   {\bgroup
    \setsystemmode{#1}% to be documented
    \ifgridsnapping\iftracegridsnapping\showstruts\fi\fi
-   \gdef\localheaddepth{\strutdp}%
+   \xdef\localheadheight   {\the\strutht}%
+   \xdef\localheaddepth    {\the\strutdp}%
+   \xdef\localheadlineheight{\the\lineheight}%
    % == \globallet\localheaddepth\strutdp
    \everypar\emptytoks % needed indeed
    \noindent           % ipv \whitespace elders, na \forgetall !
@@ -1779,13 +1792,125 @@
    \def\localheadsetup{\dolocalheadsetup{#1}}%
    \startsynchronization}
 
+% \def\endheadplacement#1#2%
+%   {\doifelsevalue{\??rf#1\c!state}\v!start
+%      {\doifvaluenothing{\??ko#1\c!file}{\autocrossdocumentfalse}}
+%      {\autocrossdocumentfalse}%
+%    % no message needed here, should be a proper switch
+%    % \let\unknownreference\gobbleoneargument
+%    \ifdisplaysectionhead
+%      \let\headlastlinewidth\!!zeropoint
+%      \snaptogrid[\getvalue{\??ko#1\c!grid}]\hbox
+%        {\hskip\localheadskip
+%         \hskip\getvalue{\??ko#1\c!margin}\relax
+%         \iflocation
+%           \ifautocrossdocument
+%             \doifreferencefoundelse{\getvalue{\??ko#1\c!file}::#1}
+%               {\edef\currentinnerreference{\s!aut:\currenttextreference}% stored in
+%                \gotoouterlocation{}{\box0}}                             % text slot
+%               {\hbox{\box0}}%
+%           \else
+%             \hbox{\box0}%
+%           \fi
+%         \else
+%           \hbox{\box0}%
+%         \fi}%
+%      \doflushnotes % new, not really needed
+%      \endgraf
+%      \nointerlineskip
+%      \dosomebreak\nobreak
+%      #2%
+%    \else
+%      \strut
+%      \doflushnotes % new, here since we're in par mode
+%      \iflocation
+%        \ifautocrossdocument
+%          \hhboxindent=\ifcontinuoushead\headlastlinewidth\else\zeropoint\fi
+%          \unhhbox0\with{\gotobox{\box\hhbox}[\getvalue{\??ko#1\c!file}::#1]}%
+%          \advance\lasthhboxwidth by \numberheaddistance
+%          \xdef\headlastlinewidth{\the\lasthhboxwidth}%
+%        \else
+%          \unhbox0
+%          \globallet\headlastlinewidth\!!zeropoint
+%        \fi
+%      \else
+%        \unhbox0
+%        \globallet\headlastlinewidth\!!zeropoint
+%      \fi
+%      #2%
+%      \dimen0=\numberheaddistance
+%      \hskip\dimen0 \!!plus \dimen0 \!!minus .25\dimen0
+%      \hskip\headsignal\ignorespaces
+%    \fi
+%    \ifdisplaysectionhead \ifvmode
+%      \ifgridsnapping % important, font related depth, see comment
+%        \prevdepth\strutdp
+%      \else
+%        \prevdepth\localheaddepth
+%      \fi
+%    \fi \fi
+%    \stopsynchronization
+%    \egroup
+%    \egroup
+%    \ifdisplaysectionhead
+%      \dochecknextindentation{\??ko#1}%
+%    \else
+%      \nonoindentation % recently added, was a bug
+%    \fi}
+
+% \setuphead[chapter]         [style=\bfd,after=,hang=line] % fit broad 2
+% \setuphead[section]         [style=\bfc,after=,hang=line]
+% \setuphead[subsection]      [style=\bfb,after=,hang=line]
+% \setuphead[subsubsection]   [style=\bfa,after=,hang=line]
+% \setuphead[subsubsubsection][style=\bf ,after=,hang=line]
+%
+% \chapter         {Test} \input tufte \page
+% \section         {Test} \input tufte \page
+% \subsection      {Test} \input tufte \page
+% \subsubsection   {Test} \input tufte \page
+% \subsubsubsection{Test} \input tufte \page
+%
+% \chapter         {Test\\Test} \input tufte \page
+% \section         {Test\\Test} \input tufte \page
+% \subsection      {Test\\Test} \input tufte \page
+% \subsubsection   {Test\\Test} \input tufte \page
+% \subsubsubsection{Test\\Test} \input tufte \page
+
+\def\hangheadplacement
+  {\scratchdimen\localheadlineheight
+   \bgroup
+   \openlineheight\scratchdimen
+   \scratchdimen\ht0
+   \advance\scratchdimen\dp0
+   \getnoflines\scratchdimen
+   \advance\noflines\minusone
+   \expanded{\egroup\noflines\the\noflines}% brrr
+   \setbox0\hbox{\lower\noflines\scratchdimen\box0}%
+   \scratchdimen\ht0
+   \advance\scratchdimen\dp0
+   \advance\scratchdimen-\localheadheight
+   \advance\scratchdimen+\strutdp
+   \ht0 \strutht
+   \dp0 \strutdp
+   \edef\localheaddepth{\the\strutdp}}
+
 \def\endheadplacement#1#2%
   {\doifelsevalue{\??rf#1\c!state}\v!start
      {\doifvaluenothing{\??ko#1\c!file}{\autocrossdocumentfalse}}
      {\autocrossdocumentfalse}%
    % no message needed here, should be a proper switch
-   % \let\unknownreference\gobbleoneargument
+\noflines\zerocount
    \ifdisplaysectionhead
+% new
+\processaction
+  [\getvalue{\??ko#1\c!hang}]
+  [    \v!line=>\hangheadplacement\noflines\zerocount,
+      \v!broad=>\hangheadplacement\getnoflines\scratchdimen,
+        \v!fit=>\hangheadplacement\getrawnoflines\scratchdimen,
+       \v!none=>\noflines\zerocount,
+    \v!default=>\noflines\zerocount,
+    \v!unknown=>\hangheadplacement\noflines0\commalistelement\advance\noflines\minusone]%
+% so far
      \let\headlastlinewidth\!!zeropoint
      \snaptogrid[\getvalue{\??ko#1\c!grid}]\hbox
        {\hskip\localheadskip
@@ -1804,6 +1929,9 @@
         \fi}%
      \doflushnotes % new, not really needed
      \endgraf
+\ifnum\noflines>\zerocount
+  \dorecurse\noflines{\nointerlineskip\dosomebreak\nobreak\strut\endgraf}%
+\fi
      \nointerlineskip
      \dosomebreak\nobreak
      #2%
@@ -2039,6 +2167,7 @@
          \c!aligntitle=\@@koaligntitle,
          \c!tolerance=\@@kotolerance,
          \c!indentnext=\@@koindentnext,
+         \c!hang=\@@kohang,
          \c!file=,
          \c!expansion=,
          \c!grid=,
@@ -2056,7 +2185,7 @@
                % new per 20/03/3002 (o-pbu-l) / was too confusing
                % \c!numberstyle,\c!textstyle,\c!expansion,
                % again too confusing
-               \c!align,\c!aligntitle,\c!tolerance,\c!grid,
+               \c!align,\c!aligntitle,\c!tolerance,\c!grid,\c!hang,
                \c!numbercommand,\c!textcommand,\c!margintext,\c!margin]}}%
       \getparameters[\??ko#1][#2]%
       \doifsomething{\getvalue{\??ko#1\c!section}}
@@ -2082,7 +2211,7 @@
             % new per 20/03/3002 (o-pbu-l) / was too confusing
             % \c!numberstyle,\c!textstyle,\c!expansion,
             % again too confusing
-            \c!align,\c!aligntitle,\c!tolerance,\c!grid,
+            \c!align,\c!aligntitle,\c!tolerance,\c!grid,\c!hang,
             \c!numbercommand,\c!textcommand,\c!margintext,\c!margin]%
 \getparameters[\??ko#1][\c!expansion=]% iig een value, rather fuzzy
          \definemarking[#1][#2]%
@@ -2144,6 +2273,7 @@
    \c!tolerance=,
    \c!indentnext=\v!no,
    \c!margin=\zeropoint,
+   \c!hang=\v!none,
    \c!command=]
 
 \definesectionblock [\v!frontpart] [\v!frontmatter] [\c!number=\v!no]

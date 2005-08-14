@@ -22,7 +22,17 @@
 %D range, and spurious box behaviour of boxes adressed in the extended
 %D box space made us a bit careful. It's hard to to track down such
 %D bugs, especially if one has a mind set of \TEX\ being bug free. If
-%D you encounter unexpected behaviour let me know.
+%D you encounter unexpected behaviour let me know. Currently the
+%D scantokens mechanism can handle only one||liners, but Taco will
+%D provide an alternative some day.
+%D
+%D \starttyping
+%D \bgroup
+%D   \lccode`a=12\lowercase{\xdef\whatever{a}}\egroup
+%D   \def\whatever{test \whatever test}
+%D   \scantokens\expandafter{\whatever}
+%D \egroup
+%D \stoptyping
 
 \unprotect
 
@@ -31,7 +41,13 @@
 
 \long\def\gobbleoneargument#1{}
 
-\mathchardef\etexversion=\numexpr(\eTeXversion*100+\expandafter\gobbleoneargument\eTeXrevision)
+\beginETEX
+  \mathchardef\etexversion=\numexpr\eTeXversion*100+\expandafter\gobbleoneargument\eTeXrevision\relax
+\endETEX
+
+\beginTEX
+  \mathchardef\etexversion=0
+\endTEX
 
 %D Constants to be used with \type {\grouptype}.
 

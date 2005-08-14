@@ -24,6 +24,9 @@
 
 \writestatus{\m!systems}{beware: some patches loaded from cont-new.tex}
 
+\def\headparameter#1% to do: everywhere in core-sec
+  {\csname\??ko\currenthead#1\endcsname}
+
 % supp-fil.tex
 
 % <?xml version='1.0' standalone='yes'?>
@@ -62,6 +65,8 @@
    % #1{#2}\donothing\donothing
    \chardef\preprocessmode\plusone
    #1{#2}\donothing{\readfile{#2}\donothing\donothing}}
+
+\beginETEX
 
 \let\oldfilename\empty
 \let\newfilename\empty
@@ -107,6 +112,15 @@
       \preprocessfile\inputfilename
       \endinput
       \normalinput\inputfilename\relax}}
+
+\endETEX
+
+\beginTEX
+
+\def\preprocessfile#1%
+  {\chardef\preprocessmode\zerocount}
+
+\endTEX
 
 % The following may be a solution for the fact that one cannot
 % change catcodes of characters like : and ; inside an environment.
@@ -2003,6 +2017,8 @@
    \ifx\@@cl@@s\empty
      \let\@@cl@@s\@@rsscreen
    \fi
+   \let\@@cl@@t\@@cl@@z % else we get rogue
+   \let\@@cl@@a\@@cl@@z % transpancies
    \setevalue{\??cr\??rs}{\colorSpattern}}
 
 % beware, don't add extra grouping, else color in tables

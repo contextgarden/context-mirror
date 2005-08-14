@@ -118,7 +118,7 @@ class TEX
 
     @@booleanvars = [
         'batchmode', 'nonstopmode', 'fast', 'fastdisabled', 'silentmode', 'final',
-        'paranoid', 'notparanoid', 'nobanner', 'once', 'allpatterrns',
+        'paranoid', 'notparanoid', 'nobanner', 'once', 'allpatterns',
         'nompmode', 'nomprun', 'automprun',
         'nomapfiles', 'local',
         'arrange', 'noarrange',
@@ -873,7 +873,7 @@ class TEX
             if getvariable('fast') && ! getvariable('fastdisabled') then
                 opt << "\\fastmode\n"
             end
-            if getvariable('silent') then
+            if getvariable('silentmode') then
                 opt << "\\silentmode\n"
             end
             if (str = getvariable('separation')) && ! str.empty? then

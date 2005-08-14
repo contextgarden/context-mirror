@@ -115,7 +115,15 @@ RUBYINPUTS   = .;$CTXDEVRBPATH//;$TEXMF/scripts/context/ruby//;$TEXMF/{context/r
 LUAINPUTS    = .;$CTXDEVJVPATH//;$TEXMF/scripts/context/lua//;$TEXMF/{context/lua,lua}//
 JAVAINPUTS   = .;$CTXDEVJVPATH//;$TEXMF/scripts/context/java//;$TEXMF/{context/java,java}//
 
-TEXMFSCRIPTS = .;$CTXDEVRBPATH//;$CTXDEVPLPATH//;$TEXMF/scripts/context//;$TEXMF/scripts//
+TEXMFSCRIPTS = .;$CTXDEVRBPATH//;$CTXDEVLUPATH//;$CTXDEVPLPATH//;$TEXMF/scripts/context//;$TEXMF/scripts//
+
+% RUBYINPUTS   = .;$CTXDEVPLPATH//;$TEXMF/scripts/{$progname,$engine,}/ruby//;$TEXMF/{context/ruby,ruby}//
+% LUAINPUTS    = .;$CTXDEVPYPATH//;$TEXMF/scripts/{$progname,$engine,}/lua//;$TEXMF/{context/lua,lua}//
+% PYTHONINPUTS = .;$CTXDEVRBPATH//;$TEXMF/scripts/{$progname,$engine,}/python//;$TEXMF/{context/python,python}//
+% PERLINPUTS   = .;$CTXDEVJVPATH//;$TEXMF/scripts/{$progname,$engine,}/perl//;$TEXMF/{context/perl,context/perltk,perl,perltk}//
+% JAVAINPUTS   = .;$CTXDEVJVPATH//;$TEXMF/scripts/{$progname,$engine,}/java//;$TEXMF/{context/java,java}//
+
+% TEXMFSCRIPTS = .;$CTXDEVRBPATH//;$CTXDEVLUPATH//;$CTXDEVPLPATH//;$TEXMF/scripts/{$engine,$progname,}//
 
 % features
 

@@ -1486,7 +1486,7 @@ if (($SavedHow ne $PageHow) && ($PageHow ne "")) {
                 print TUO "\\registerfrom$SavedLine" }
             elsif ($RegisterState eq $RegStat{"t"})
               { FlushSavedLine ;
-                print TUO "\\registerto$SavedLine" }
+                print TUO "\\registerto$SavedLine" ; $SavedHow = '' ; }
             else
               { if ($CollapseEntries)
                   { if ($SavedEntry ne $NextEntry)
@@ -1495,7 +1495,7 @@ if (($SavedHow ne $PageHow) && ($PageHow ne "")) {
                       { $SavedTo = $SavedLine }
                     $SavedEntry = $NextEntry }
                 else
-                 { print TUO "\\registerpage$SavedLine" }
+                 { print TUO "\\registerpage$SavedLine" ; $SavedHow = '' ; }
               }
             ++$NOfSanePages ;
             $LastPage = $Page ;

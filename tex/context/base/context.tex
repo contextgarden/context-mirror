@@ -31,7 +31,7 @@
 %D 2004.8.30 the low level interface is english. Watch out and adapt
 %D your styles an modules.
 
-\def\contextversion{2005.08.03}
+\def\contextversion{2005.08.15}
 
 %D Welcome to the main module. When this module is ran through
 %D \type{initex} or \type {tex -i} or \type {whatevertex} using
@@ -315,6 +315,8 @@
 \input font-uni.tex
 \input font-bfm.tex
 
+\input enco-pfr.tex % uses \everyfont
+
 \input type-ini.tex
 \input type-def.tex
 
@@ -340,6 +342,10 @@
 %D Language specific spacing.
 
 \input lang-spa.tex
+
+%D Sorting:
+
+% not yet: \input sort-ini.tex
 
 %D Only the basic XML parser and remapper are part of the core.
 %D These macrosa re loaded last since they overload and|/|or

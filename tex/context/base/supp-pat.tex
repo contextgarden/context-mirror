@@ -44,7 +44,21 @@
 
 \fi \fi
 
-%D Any\TEX:
+%D First we define the \ETEX\ variant. We cannot do that inside
+%D the if statement because normal \TEX\ gets confused over the
+%D csname test (which it does not see as if but it does see the
+%D else's and fi's).
+
+\def\etexfetchpatterntoken#1%
+  {\csname
+     \ifcsname @pattok@#1\endcsname
+       @pattok@#1%
+     \else\ifcsname#1\endcsname
+       #1%
+     \else
+       @pattok@default%
+     \fi\fi
+  \endcsname}
 
 \ifx \fetchpatterntoken \undefined
 
@@ -54,9 +68,9 @@
           {\csname
              \expandafter\ifx\csname @pattok@#1\endcsname\relax
                \expandafter\ifx\csname#1\endcsname\relax
-                 #1%
-               \else
                  @pattok@default%
+               \else
+                 #1%
                \fi
              \else
                 @pattok@#1%
@@ -65,16 +79,7 @@
 
     \else
 
-        \def\fetchpatterntoken#1%
-          {\csname
-             \ifcsname @pattok@#1\endcsname
-               @pattok@#1%
-             \else\ifcsname#1\endcsname
-               #1%
-             \else
-               @pattok@default%
-             \fi\fi
-          \endcsname}
+        \let\fetchpatterntoken\etexfetchpatterntoken
 
     \fi
 

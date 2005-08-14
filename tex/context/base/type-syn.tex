@@ -47,7 +47,7 @@
 
 % Computer Modern Roman : Donald Knuth
 
-\starttypescript [serif] [computer-modern,latin-modern] [name]
+\starttypescript [serif] [modern,computer-modern,latin-modern] [name]
   \definefontsynonym [Serif]            [ComputerModern]
   \definefontsynonym [SerifBold]        [ComputerModern-Bold]
   \definefontsynonym [SerifItalic]      [ComputerModern-Italic]
@@ -57,7 +57,7 @@
   \definefontsynonym [SerifCaps]        [ComputerModern-Caps]
 \stoptypescript
 
-\starttypescript [sans] [computer-modern,latin-modern] [name]
+\starttypescript [sans] [modern,computer-modern,latin-modern] [name]
   \definefontsynonym [Sans]             [ComputerModernSans]
   \definefontsynonym [SansBold]         [ComputerModernSans-Bold]
   \definefontsynonym [SansItalic]       [ComputerModernSans-Italic]
@@ -67,7 +67,7 @@
   \definefontsynonym [SansCaps]         [ComputerModernSans-Caps]
 \stoptypescript
 
-\starttypescript [mono] [computer-modern,latin-modern] [name]
+\starttypescript [mono] [modern,computer-modern,latin-modern] [name]
   \definefontsynonym [Mono]             [ComputerModernMono]
   \definefontsynonym [MonoBold]         [ComputerModernMono-Bold]
   \definefontsynonym [MonoItalic]       [ComputerModernMono-Italic]
@@ -77,28 +77,28 @@
   \definefontsynonym [MonoCaps]         [ComputerModernMono-Caps]
 \stoptypescript
 
-\starttypescript [math] [computer-modern,latin-modern] [name]
+\starttypescript [math] [modern,computer-modern,latin-modern] [name]
   \definefontsynonym [MathRoman]        [ComputerModernMath-Roman]
   \definefontsynonym [MathExtension]    [ComputerModernMath-Extension]
   \definefontsynonym [MathItalic]       [ComputerModernMath-Italic]
   \definefontsynonym [MathSymbol]       [ComputerModernMath-Symbol]
 \stoptypescript
 
-\starttypescript [boldmath] [computer-modern,latin-modern] [name]
+\starttypescript [boldmath] [modern,computer-modern,latin-modern] [name]
   \definefontsynonym [MathRoman]        [ComputerModernMath-Roman-Bold]
   \definefontsynonym [MathExtension]    [ComputerModernMath-Extension]
   \definefontsynonym [MathItalic]       [ComputerModernMath-Italic-Bold]
   \definefontsynonym [MathSymbol]       [ComputerModernMath-Symbol-Bold]
 \stoptypescript
 
-\starttypescript [bfmath] [computer-modern,latin-modern] [name]
+\starttypescript [bfmath] [modern,computer-modern,latin-modern] [name]
   \definefontsynonym [MathRomanBold]    [ComputerModernMath-Roman-Bold]
   \definefontsynonym [MathExtension]    [ComputerModernMath-Extension]
   \definefontsynonym [MathItalicBold]   [ComputerModernMath-Italic-Bold]
   \definefontsynonym [MathSymbolBold]   [ComputerModernMath-Symbol-Bold]
 \stoptypescript
 
-\starttypescript [serif] [computer-modern-vari,latin-modern-vari] [name]
+\starttypescript [serif] [modern,computer-modern-vari,latin-modern-vari] [name]
   \definefontsynonym [Serif]            [ComputerModernMono-Variable]
   \definefontsynonym [SerifBold]        [Serif]
   \definefontsynonym [SerifItalic]      [Serif]
@@ -110,7 +110,7 @@
 
 % This will change some day.
 
-\starttypescript [math] [computer-modern,latin-modern] [name]
+\starttypescript [math] [modern,computer-modern,latin-modern] [name]
   \definefontsynonym [OldStyle]     [MathItalic]
   \definefontsynonym [Fraktur]      [eufm10]
   \definefontsynonym [Blackboard]   [msbm10]
@@ -169,7 +169,7 @@
 
 % American Math Society : Michael Spivak
 
-\starttypescript [math] [computer-modern,latin-modern,ams] [name]
+\starttypescript [math] [modern,computer-modern,latin-modern,ams] [name]
   \definefontsynonym [MathAlpha] [AMS-SymbolA]
   \definefontsynonym [MathBeta]  [AMS-SymbolB]
 \stoptypescript
@@ -448,6 +448,34 @@
   \definefontsynonym [SansBoldItalic] [Iwona-BoldItalic]    [encoding=\typescriptthree]
 \stoptypescript
 
+\starttypescript [sans] [iwona-medium] [name]
+  \definefontsynonym [Sans]           [Iwona-Medium]       [encoding=\typescriptthree]
+  \definefontsynonym [SansItalic]     [Iwona-MediumItalic] [encoding=\typescriptthree]
+  \definefontsynonym [SansBold]       [Iwona-Heavy]        [encoding=\typescriptthree]
+  \definefontsynonym [SansBoldItalic] [Iwona-HeavyItalic]  [encoding=\typescriptthree]
+\stoptypescript
+
+\starttypescript [math] [iwona-light] [name]
+  \definefontsynonym [MathRoman]     [Iwona-Math-Letters-Light]
+  \definefontsynonym [MathItalic]    [Iwona-Math-Letters-LightItalic]
+  \definefontsynonym [MathSymbol]    [Iwona-Math-Symbols-Light]
+  \definefontsynonym [MathExtension] [Iwona-Math-Extension-Light]
+\stoptypescript
+
+\starttypescript [math] [iwona] [name]
+  \definefontsynonym [MathRoman]     [Iwona-Math-Letters-Regular]
+  \definefontsynonym [MathItalic]    [Iwona-Math-Letters-RegularItalic]
+  \definefontsynonym [MathSymbol]    [Iwona-Math-Symbols-Regular]
+  \definefontsynonym [MathExtension] [Iwona-Math-Extension-Regular]
+\stoptypescript
+
+\starttypescript [math] [iwona-medium] [name]
+  \definefontsynonym [MathRoman]     [Iwona-Math-Letters-Medium]
+  \definefontsynonym [MathItalic]    [Iwona-Math-Letters-MediumItalic]
+  \definefontsynonym [MathSymbol]    [Iwona-Math-Symbols-Medium]
+  \definefontsynonym [MathExtension] [Iwona-Math-Extension-Medium]
+\stoptypescript
+
 % Kurier
 
 \starttypescript [sans] [kurier-light] [name]
@@ -464,6 +492,13 @@
   \definefontsynonym [SansBoldItalic] [Kurier-BoldItalic]    [encoding=\typescriptthree]
 \stoptypescript
 
+\starttypescript [sans] [kurier-medium] [name]
+  \definefontsynonym [Sans]           [Kurier-Medium]       [encoding=\typescriptthree]
+  \definefontsynonym [SansItalic]     [Kurier-MediumItalic] [encoding=\typescriptthree]
+  \definefontsynonym [SansBold]       [Kurier-Heavy]        [encoding=\typescriptthree]
+  \definefontsynonym [SansBoldItalic] [Kurier-HeavyItalic]  [encoding=\typescriptthree]
+\stoptypescript
+
 \starttypescript [math] [kurier-light] [name]
   \definefontsynonym [MathRoman]     [Kurier-Math-Letters-Light]
   \definefontsynonym [MathItalic]    [Kurier-Math-Letters-LightItalic]
@@ -476,6 +511,13 @@
   \definefontsynonym [MathItalic]    [Kurier-Math-Letters-RegularItalic]
   \definefontsynonym [MathSymbol]    [Kurier-Math-Symbols-Regular]
   \definefontsynonym [MathExtension] [Kurier-Math-Extension-Regular]
+\stoptypescript
+
+\starttypescript [math] [kurier-medium] [name]
+  \definefontsynonym [MathRoman]     [Kurier-Math-Letters-Medium]
+  \definefontsynonym [MathItalic]    [Kurier-Math-Letters-MediumItalic]
+  \definefontsynonym [MathSymbol]    [Kurier-Math-Symbols-Medium]
+  \definefontsynonym [MathExtension] [Kurier-Math-Extension-Medium]
 \stoptypescript
 
 % Bookman :

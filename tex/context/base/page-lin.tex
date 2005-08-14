@@ -185,7 +185,7 @@
   {\dosingleargument\dosetuplinenumbering}
 
 \def\dostartnummerenLINE
-  {\EveryPar{placelinenumber}}
+  {\EveryPar{\placelinenumber}} % why not append to everypar ? better
 
 \def\dostopnummerenLINE
   {\the\aftereverylinenumbering
@@ -233,24 +233,24 @@
    \chardef\linenumberlocation\zerocount
    \processaction
      [\@@rnlocation]
-     [  \v!inmargin=>\chardef\linenumberlocation1,
-       \v!inleft=>\chardef\linenumberlocation1,
-      \v!inright=>\chardef\linenumberlocation2,
-          \v!margin=>\chardef\linenumberlocation1]%
-       %  \v!text=>\chardef\linenumberlocation0,
-       %\s!unknown=>\chardef\linenumberlocation0,
-       %\s!default=>\chardef\linenumberlocation0]%
+     [  \v!inmargin=>\chardef\linenumberlocation\plusone,
+          \v!inleft=>\chardef\linenumberlocation\plusone,
+         \v!inright=>\chardef\linenumberlocation\plustwo,
+          \v!margin=>\chardef\linenumberlocation\plusone]%
+       %   \v!text=>\chardef\linenumberlocation\zerocount,
+       %\s!unknown=>\chardef\linenumberlocation\zerocount,
+       %\s!default=>\chardef\linenumberlocation\zerocount]%
    \ifcase\linenumberlocation % text
      \advance\leftskip \@@rnwidth\relax
    \fi
    \chardef\@@rn@@rnmethod
-     \ifprocessingverbatim0\else\iftypesettinglines1\else2\fi\fi
+     \ifprocessingverbatim\zerocount\else\iftypesettinglines\plusone\else\plustwo\fi\fi
    \processaction
      [\@@rnmethod]
-     [ \v!type=>\chardef\@@rn@@rnmethod0,
-      \v!line=>\chardef\@@rn@@rnmethod1,
-      \v!text=>\chardef\@@rn@@rnmethod2,
-       \v!file=>\chardef\@@rn@@rnmethod3]%
+     [ \v!type=>\chardef\@@rn@@rnmethod\zerocount,
+       \v!line=>\chardef\@@rn@@rnmethod\plusone,
+       \v!text=>\chardef\@@rn@@rnmethod\plustwo,
+       \v!file=>\chardef\@@rn@@rnmethod\plusthree]%
    \ifcase\@@rn@@rnmethod % verbatim, line by line
      \typesettinglinestrue
      \let\dostartnummeren\dostartnummerenVERB

@@ -727,10 +727,10 @@ class Commands
 
         nocheck  = @commandline.option('nocheck')
         merge    = @commandline.option('merge')
-        prune    = @commandline.option('prune')
+        delete   = @commandline.option('delete')
         force    = @commandline.option('force')
-        root     = @commandline.argument('first')
-        path     = @commandline.argument('second')
+        root     = @commandline.argument('first').gsub(/\\/,'/')
+        path     = @commandline.argument('second').gsub(/\\/,'/')
 
         if FileTest.directory?(root) then
             report("scanning #{root}")
@@ -744,6 +744,12 @@ class Commands
         else
             report("no files")
             return
+        end
+        rootfiles.collect! do |rf|
+            rf.gsub(/\\/o, '/').sub(/#{root}\//o, '')
+        end
+        rootfiles = rootfiles.delete_if do |rf|
+            FileTest.directory?(File.join(root,rf))
         end
 
         if FileTest.directory?(path) then
@@ -759,83 +765,85 @@ class Commands
             report("no files")
             return
         end
-
-        roothash = Hash.new
-        pathhash = Hash.new
-
-        rootfiles.each do |f|
-            if File.file?(f) then
-                fd, fb = File.dirname(f), File.basename(f)
-                roothash[fb] = if roothash.key?(fb) then nil else fd end
-            end
+        pathfiles.collect! do |pf|
+            pf.gsub(/\\/o, '/').sub(/#{path}\//o, '')
+        end
+        pathfiles = pathfiles.delete_if do |pf|
+            FileTest.directory?(File.join(path,pf))
         end
 
-        pathfiles.each do |f|
-            if File.file?(f) then
-                fd, fb = File.dirname(f), File.basename(f)
-                pathhash[fb] = if pathhash.key?(fb) then nil else fd end
-            end
-        end
+        root = File.expand_path(root)
+        path = File.expand_path(path)
 
-        donehash = Hash.new
-        copied   = Array.new
+        donepaths   = Hash.new
+        copiedfiles = Hash.new
 
-        pathhash.keys.each do |f|
-            if pathhash[f] and roothash[f] then
-                p = File.expand_path(File.join(pathhash[f],f)) # destination
-                r = File.expand_path(File.join(roothash[f],f))
+        # update existing files, assume similar paths
+
+        report("")
+        pathfiles.each do |f| # destination
+            p = File.join(path,f)
+            if rootfiles.include?(f) then
+                r = File.join(root,f)
                 if p != r then
-                    if not FileTest.file?(p) then
-                        if merge then
-                            report("merging '#{r}' to '#{p}'")
-                            begin
-                                File.copy(r,p) if force
-                                copied << p
-                            rescue
-                                report("merging failed")
-                            else
-                                donehash[File.dirname(r)] = File.dirname(p)
-                            end
-                        else
-                            report("not merging '#{r}'")
-                        end
-                    elsif nocheck or File.mtime(p) < File.mtime(r) then
+                    if nocheck or File.mtime(p) < File.mtime(r) then
+                        copiedfiles[File.expand_path(p)] = true
                         report("updating '#{r}' to '#{p}'")
                         begin
+                            begin File.makedirs(File.dirname(p)) if force ; rescue ; end
                             File.copy(r,p) if force
-                            copied << p
                         rescue
                             report("updating failed")
-                        else
-                            donehash[File.dirname(r)] = File.dirname(p)
                         end
                     else
                         report("not updating '#{r}'")
-                        report("old > #{File.mtime(p)}")
-                        report("new > #{File.mtime(r)}")
                     end
                 end
             end
         end
 
+        # merging non existing files
+
         report("")
-        donehash.keys.sort.each do |d|
-            rootfiles = Dir.glob("#{d}/**/*")
-            pathfiles = Dir.glob("#{donehash[d]}/**/*")
-            pathfiles.collect! do |file| File.expand_path(file) end
-            rootfiles.collect! do |file| File.expand_path(file) end
-            difference = pathfiles - rootfiles - copied
-            if difference.length > 0 then
-                length = 0
-                difference.each do |file|
-                    if l = File.basename(file).length and l > length then length = l end
-                end
-                report("")
-                difference.sort.each do |file|
-                    if prune then
-                        report("deleting '#{file.ljust(length)}'")
+        rootfiles.each do |f|
+            donepaths[File.dirname(f)] = true
+            r = File.join(root,f)
+            if not pathfiles.include?(f) then
+                p = File.join(path,f)
+                if p != r then
+                    if merge then
+                        copiedfiles[File.expand_path(p)] = true
+                        report("merging '#{r}' to '#{p}'")
+                        begin
+                            begin File.makedirs(File.dirname(p)) if force ; rescue ; end
+                            File.copy(r,p) if force
+                        rescue
+                            report("merging failed")
+                        end
                     else
-                        report("keeping '#{file.ljust(length)}'")
+                        report("not merging '#{r}'")
+                    end
+                end
+            end
+        end
+
+        # deleting obsolete files
+
+        report("")
+        donepaths.keys.sort.each do |d|
+            pathfiles = Dir.glob("#{path}/#{d}/**/*")
+            pathfiles.each do |p|
+                r = File.join(root,d,File.basename(p))
+                if FileTest.file?(p) and not FileTest.file?(r) and not copiedfiles.key?(File.expand_path(p)) then
+                    if delete then
+                        report("deleting '#{p}'")
+                        begin
+                            File.delete(p) if force
+                        rescue
+                            report("deleting failed")
+                        end
+                    else
+                        report("not deleting '#{p}'")
                     end
                 end
             end
@@ -858,7 +866,7 @@ commandline.registeraction('fixafmfiles'      , '[pattern]   [--recurse]')
 commandline.registeraction('mactodos'         , '[pattern]   [--recurse]')
 commandline.registeraction('fixtexmftrees'    , '[texmfroot] [--force]')
 commandline.registeraction('replacefile'      , 'filename    [--force]')
-commandline.registeraction('updatetree'       , 'fromroot toroot [--force --nocheck --merge --prune]')
+commandline.registeraction('updatetree'       , 'fromroot toroot [--force --nocheck --merge --delete]')
 commandline.registeraction('downcasefilenames', '[--recurse] [--force]') # not yet documented
 commandline.registeraction('stripformfeeds'   , '[--recurse] [--force]') # not yet documented
 commandline.registeraction('showfont'         , 'filename')
@@ -868,7 +876,8 @@ commandline.registeraction('version')
 
 commandline.registerflag('recurse')
 commandline.registerflag('force')
-commandline.registerflag('prune')
+commandline.registerflag('merge')
+commandline.registerflag('delete')
 commandline.registerflag('nocheck')
 
 commandline.expand

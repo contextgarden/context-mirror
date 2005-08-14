@@ -246,6 +246,7 @@
       <KEYWORD2>\startkommentar</KEYWORD2>
       <KEYWORD2>\startkomponente</KEYWORD2>
       <KEYWORD2>\startmarginallinie</KEYWORD2>
+      <KEYWORD2>\startprodukt</KEYWORD2>
       <KEYWORD2>\startprojekt</KEYWORD2>
       <KEYWORD2>\starttextlinie</KEYWORD2>
       <KEYWORD2>\startumgebung</KEYWORD2>
@@ -372,6 +373,7 @@
       <KEYWORD2>\stopkommentar</KEYWORD2>
       <KEYWORD2>\stopkomponente</KEYWORD2>
       <KEYWORD2>\stopmarginallinie</KEYWORD2>
+      <KEYWORD2>\stopprodukt</KEYWORD2>
       <KEYWORD2>\stopprojekt</KEYWORD2>
       <KEYWORD2>\stoptextlinie</KEYWORD2>
       <KEYWORD2>\stopumgebung</KEYWORD2>

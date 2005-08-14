@@ -16,16 +16,22 @@
 %D We predefine some common symbols and conversions that will
 %D be understood by many commands.
 
+% \mathematics no longer needed
+
 \definesymbol [\v!none]   []
 \definesymbol [bullet]    [\mathematics{\bullet}]
 \definesymbol [dash]      [\mathematics{-}]
 \definesymbol [star]      [\mathematics{\star}]
 \definesymbol [triangle]  [\mathematics{\triangleright}]
 \definesymbol [circle]    [\mathematics{\circ}]
-\definesymbol [medcircle] [\hbox{\setsmallbodyfont\raise\onepoint\hbox{$\bigcirc$}}]
-\definesymbol [bigcircle] [\mathematics{\bigcirc}]
+%definesymbol [medcircle] [\hbox{\setsmallbodyfont\raise\onepoint\hbox{\mathematics{\bigcirc}}}]
 \definesymbol [square]    [\mathematics{\square}]
 \definesymbol [diamond]   [\mathematics{\diamond}]
+
+\definesymbol [smallcircle] [\hbox{\raise.1ex\hbox{\mathematics{\scriptscriptstyle\bigcirc}}}]
+\definesymbol [medcircle]   [\hbox{\raise.1ex\hbox{\mathematics{\scriptstyle      \bigcirc}}}]
+\definesymbol [bigcircle]   [\mathematics{\bigcirc}]
+
 
 \definesymbol [1] [{\symbol[bullet]}]
 \definesymbol [2] [{\symbol[dash]}]

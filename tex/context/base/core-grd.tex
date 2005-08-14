@@ -317,12 +317,22 @@
 %      \expandafter\dodosnaptogrid
 %    \fi}
 
+% \def\dosnaptogrid[#1]%
+%   {\resetlastlinewidth % maybe in more places, otherwise spacing gets messed up
+%    \ifgridsnapping
+%      \iffirstargument\doifsomething{#1}{\moveongrid[#1]}\fi
+%      \expandafter\dodosnaptogrid
+%    \fi}
+
 \def\dosnaptogrid[#1]%
   {\resetlastlinewidth % maybe in more places, otherwise spacing gets messed up
-   \ifgridsnapping
-     \iffirstargument\doifsomething{#1}{\moveongrid[#1]}\fi
-     \expandafter\dodosnaptogrid
-   \fi}
+   \doifinsetelse\v!force{#1}%
+     {\moveongrid[#1]%
+      \dodosnaptogrid}
+     {\ifgridsnapping
+        \doifsomething{#1}{\moveongrid[#1]}%
+        \expandafter\dodosnaptogrid
+      \fi}}
 
 % \def\forcedpresnapcorrection % test this on 'details'
 %   {\ifforcepresnap
@@ -793,12 +803,11 @@
 \global\chardef\@@alignsnapdepth0
 
 \def\@@unknowngriddisplacement
-  {\global\chardef\@@alignsnapbox3
+  {\global\chardef\@@alignsnapbox\plusthree
    \global\let\@@alignsnapamount\commalistelement}
 
 \def\domoveongrid[#1]%
   {\ifgridsnapping\doifsomething{#1}{\dodomoveongrid[#1]}\fi}
-
 
 \def\dodomoveongrid[#1]% some day : speed up
   {\global\chardef\@@alignsnap\zerocount
@@ -818,21 +827,22 @@
        -\v!bottom=>\gridwarning-\negativeextrasnap\extrasnapafter,
          -\v!both=>\negativeextrasnap\extrasnaparound,
           \v!text=>\global\chardef\@@alignsnapmethod\plusone, % accurate calculations
-          \v!page=>\global\chardef\@@alignsnap1, % topskip
-          \v!high=>\global\chardef\@@alignsnap2,
-        \v!middle=>\global\chardef\@@alignsnap3,
-           \v!low=>\global\chardef\@@alignsnap4,
-           \v!fit=>\global\chardef\@@alignsnapbox1, % new
-         \v!broad=>\global\chardef\@@alignsnapbox2, % new
-         \v!depth=>\global\chardef\@@alignsnapdepth1, % new
-          \v!line=>\global\chardef\@@alignsnapbox3
-%                  \global\chardef\@@alignsnapdepth1
-                   \global\chardef\@@alignsnap4,
-          \v!reset=>\positiveextrasnap\extrasnapreset,
-           \v!none=>\global\chardef\@@alignsnap0
-                    \global\chardef\@@alignsnapbox0,
-        \s!default=>,
-        \s!unknown=>\@@unknowngriddisplacement]}
+          \v!page=>\global\chardef\@@alignsnap\plusone, % topskip
+          \v!high=>\global\chardef\@@alignsnap\plustwo,
+        \v!middle=>\global\chardef\@@alignsnap\plusthree,
+           \v!low=>\global\chardef\@@alignsnap\plusfour,
+           \v!fit=>\global\chardef\@@alignsnapbox\plusone, % new
+         \v!broad=>\global\chardef\@@alignsnapbox\plustwo, % new
+         \v!depth=>\global\chardef\@@alignsnapdepth\plusone, % new
+          \v!line=>\global\chardef\@@alignsnapbox\plusthree
+%                  \global\chardef\@@alignsnapdepth\plusone
+                   \global\chardef\@@alignsnap\plusfour,
+         \v!reset=>\positiveextrasnap\extrasnapreset,
+          \v!none=>\global\chardef\@@alignsnap\zerocount
+                   \global\chardef\@@alignsnapbox\zerocount,
+         \v!force=>, % turns on grid snapping even when not on
+       \s!default=>,
+       \s!unknown=>\@@unknowngriddisplacement]}
 
 \def\moveongrid
   {\dosingleempty\domoveongrid}

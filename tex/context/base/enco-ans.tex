@@ -17,40 +17,19 @@
 
 \startmapping[texnansi]
 
-\definecasemap 231 231 199 \definecasemap 199 231 199
+\resetcaserange 128 to 158
+\resetcaserange 160 to 191
+\resetcaserange 215 to 215
+\resetcaserange 247 to 247
 
-\definecasemap 228 228 196 \definecasemap 196 228 196
-\definecasemap 235 235 203 \definecasemap 203 235 203
-\definecasemap 239 239 207 \definecasemap 207 239 207
-\definecasemap 246 246 214 \definecasemap 214 246 214
-\definecasemap 252 252 220 \definecasemap 220 252 220
-\definecasemap 255 255 159 \definecasemap 159 255 159
+\definecasemaps 192 to 214 lc +32 uc   0
+\definecasemaps 224 to 246 lc   0 uc -32
+\definecasemaps 216 to 222 lc +32 uc   0
+\definecasemaps 248 to 254 lc   0 uc -32
 
-\definecasemap 225 225 193 \definecasemap 193 225 193
-\definecasemap 233 233 201 \definecasemap 201 233 201
-\definecasemap 237 237 205 \definecasemap 205 237 205
-\definecasemap 243 243 211 \definecasemap 211 243 211
-\definecasemap 250 250 218 \definecasemap 218 250 218
-\definecasemap 253 253 221 \definecasemap 221 253 221
-
-\definecasemap 224 224 192 \definecasemap 192 224 192
-\definecasemap 232 232 200 \definecasemap 200 232 200
-\definecasemap 236 236 204 \definecasemap 204 236 204
-\definecasemap 242 242 210 \definecasemap 210 242 210
-\definecasemap 249 249 217 \definecasemap 217 249 217
-
-\definecasemap 226 226 194 \definecasemap 194 226 194
-\definecasemap 234 234 202 \definecasemap 202 234 202
-\definecasemap 238 238 206 \definecasemap 206 238 206
-\definecasemap 244 244 212 \definecasemap 212 244 212
-\definecasemap 251 251 219 \definecasemap 219 251 219
-
-\definecasemap 227 227 195 \definecasemap 195 227 195
-\definecasemap 241 241 209 \definecasemap 209 241 209
-\definecasemap 245 245 213 \definecasemap 213 245 213
-
-\definecasemap 240 240 208 \definecasemap 208 240 208
-\definecasemap 254 254 222 \definecasemap 222 254 222
+\definecaseself 223
+\definecaseswap 156 140
+\definecaseswap 255 159
 
 % needed by some patterns:
 
@@ -62,8 +41,6 @@
 % \definecaseself 130 % quotesinglebase
 % \definecaseself 145 % quoteleft
 % \definecaseself 146 % quoteright
-
-\definecaseself 223
 
 \stopmapping
 

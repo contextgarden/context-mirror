@@ -496,6 +496,26 @@
 %D needed for sin, cos etc
 
 \def\mfunction#1{{\mr#1}}
+
+%D Taco posted this solution as response to a mail by Olivier, so
+%D let's integrate it here.
+
+\def\setmathfunctionstyle#1% \rm \ss \tt
+  {\def\mfunction##1% no families, just scaling a la text
+     {\mathchoice
+        {\hbox{\csname#1\endcsname\tf  ##1}}
+        {\hbox{\csname#1\endcsname\tf  ##1}}
+        {\hbox{\csname#1\endcsname\tfx ##1}}
+        {\hbox{\csname#1\endcsname\tfxx##1}}}}
+
+%D Usage:
+%D
+%D \starttyping
+%D \setmathfunctionstyle\fontstyle % or {rm} or {ss} or ..
+%D \rm test $\sin{(x^{\sin(x^{\sin(x)})})}$ test
+%D \ss test $\sin{(x^{\sin(x^{\sin(x)})})}$ test
+%D \tt test $\sin{(x^{\sin(x^{\sin(x)})})}$ test
+%D \stoptyping
 
 \edef\hexmrfam {0} \edef\hexbsfam {8}
 \edef\hexmifam {1} \edef\hexbifam {9}

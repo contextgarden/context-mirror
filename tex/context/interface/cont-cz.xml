@@ -3972,7 +3972,7 @@
 
 <cd:command name="product" type="environment">
   <cd:sequence>
-    <cd:string value="product"/>
+    <cd:string value="produkt"/>
   </cd:sequence>
   <cd:arguments>
     <cd:file/>
@@ -5019,6 +5019,10 @@
         <cd:constant type="ano"/>
         <cd:constant type="ne"/>
       </cd:parameter>
+      <cd:parameter name="cislooddilu">
+        <cd:constant type="ano"/>
+        <cd:constant type="ne"/>
+      </cd:parameter>
       <cd:parameter name="cd:sectionnumber">
         <cd:constant type="ano"/>
         <cd:constant type="ne"/>
@@ -5942,6 +5946,13 @@
         <cd:constant type="naokraji"/>
         <cd:constant type="nastred"/>
         <cd:variable type="cd:text"/>
+      </cd:parameter>
+      <cd:parameter name="zaveseni">
+        <cd:constant type="zadny"/>
+        <cd:constant type="siroky"/>
+        <cd:constant type="prizpusobive"/>
+        <cd:constant type="radek"/>
+        <cd:variable type="cd:number"/>
       </cd:parameter>
       <cd:parameter name="prikaz">
         <cd:constant type="cd:twoarguments"/>
