@@ -20,19 +20,23 @@ require 'rbconfig'
 
 module Kpse
 
-    @@located      = Hash.new
-    @@paths        = Hash.new
-    @@scripts      = Hash.new
-    @@formats      = ['tex','texmfscripts','other text files']
-    @@progname     = 'context'
-    @@ownpath      = $0.sub(/[\\\/][a-z0-9\-]*?\.rb/i,'')
-    @@problems     = false
-    @@tracing      = false
-    @@distribution = 'web2c'
-    @@crossover    = true
-    @@mswindows    = Config::CONFIG['host_os'] =~ /mswin/
+    @@located       = Hash.new
+    @@paths         = Hash.new
+    @@scripts       = Hash.new
+    @@formats       = ['tex','texmfscripts','other text files']
+    @@progname      = 'context'
+    @@ownpath       = $0.sub(/[\\\/][a-z0-9\-]*?\.rb/i,'')
+    @@problems      = false
+    @@tracing       = false
+    @@distribution  = 'web2c'
+    @@crossover     = true
+    @@mswindows     = Config::CONFIG['host_os'] =~ /mswin/
 
-    @@distribution = 'miktex' if ENV['PATH'] =~ /miktex[\\\/]bin/o
+    @@distribution  = 'miktex' if ENV['PATH'] =~ /miktex[\\\/]bin/o
+
+    @@usekpserunner = false || ENV['KPSEFAST'] == 'yes'
+
+    require 'base/tool' if @@usekpserunner
 
     if @@crossover then
         ENV.keys.each do |k|
@@ -101,7 +105,7 @@ module Kpse
     end
 
     def Kpse.which
-        Kpse.Kpsewhich
+        Kpse.kpsewhich
     end
 
     def Kpse.run(arguments)
@@ -110,7 +114,11 @@ module Kpse
             if @@problems then
                 results = ''
             else
-                results = `kpsewhich #{arguments}`.chomp
+                if @@usekpserunner then
+                    results = KpseRunner.kpsewhich(arguments).chomp
+                else
+                    results = `kpsewhich #{arguments}`.chomp
+                end
             end
         rescue
             puts "unable to run kpsewhich" if @@tracing

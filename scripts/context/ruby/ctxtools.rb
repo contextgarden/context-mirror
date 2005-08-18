@@ -1251,12 +1251,13 @@ class Commands
                                     if line =~ /^[\%\#]+/mo then
                                         ''
                                     else
-                                        encoding = if line =~ /([a-z0-9\-]+)\.enc/io       then $1 else ''  end
-                                        fontfile = if line =~ /([a-z0-9\-]+)\.(pfb|ttf)/io then $1 else nil end
-                                        metrics  = if line =~ /^([a-z0-9\-]+)[\s\<]+/io    then $1 else nil end
+                                        encoding = if line =~ /([a-z0-9\-]+)\.enc/io        then $1 else ''  end
+                                        fontfile = if line =~ /([a-z0-9\-]+)\.(pfb|ttf)/io  then $1 else nil end
+                                        metrics  = if line =~ /^([a-z0-9\-]+)[\s\<]+/io     then $1 else nil end
+                                        slant    = if line =~ /\"([\d\.]+)\s+SlantFont\"/io then "-s #{$1}" else '' end
                                         if metrics && encoding && fontfile then
                                             n += 1
-                                            "#{metrics} #{encoding} #{fontfile}"
+                                            "#{metrics} #{encoding} #{fontfile} #{slant}"
                                         else
                                             ''
                                         end

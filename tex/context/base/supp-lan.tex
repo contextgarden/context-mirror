@@ -715,7 +715,7 @@
 
 \def\activedododotextmodediscretionary#1#2%
   {\convertargument#2\to\discretionarytoken
-   \def\textmodediscretionary%
+   \def\textmodediscretionary
      {\getvalue{\strippedcsname\textmodediscretionary\string#1}}%
    \ifx#1\nextnext % takes care of ||| and +++ and ......
      \prewordbreak\discretionary{\hbox{$#1$}}{}{\hbox{$#1$}}%
@@ -823,8 +823,9 @@
   {\prewordbreak\discretionary{-}{}{\thinspace}\postwordbreak}
 
 \definetextmodediscretionary _
-  {\prewordbreak\discretionary{\textmodediscretionary}
-     {\textmodediscretionary}{\textmodediscretionary}\prewordbreak}
+  {\prewordbreak
+   \discretionary{\compoundhyphen}{\compoundhyphen}{\compoundhyphen}%
+   \prewordbreak}
 
 \definetextmodediscretionary (
   {\ifdim\lastskip>\zeropoint

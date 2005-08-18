@@ -180,6 +180,7 @@ class KPSEFAST
         @found      = Hash.new
         @kpsevars   = Hash.new
         @lsrfiles   = Array.new
+        @cnffiles   = Array.new
         @verbose    = true
         @remember   = true
         @scandisk   = true
@@ -192,7 +193,21 @@ class KPSEFAST
         @cachefile  = 'tmftools.log'
     end
 
+    # {$SELFAUTOLOC,$SELFAUTODIR,$SELFAUTOPARENT}{,{/share,}/texmf{-local,}/web2c}
+    #
+    # $SELFAUTOLOC    : /usr/tex/bin/platform
+    # $SELFAUTODIR    : /usr/tex/bin
+    # $SELFAUTOPARENT : /usr/tex
+    #
+    # since we live in scriptpath we need a slightly different method
+
     def load_cnf
+        ownpath = File.expand_path($0)
+        if ownpath.gsub!(/texmf.*?$/o, '') then
+            ENV['SELFAUTOPARENT'] = ownpath
+        else
+            ENV['SELFAUTOPARENT'] = '.'
+        end
         unless @treepath.empty? then
             unless @rootpath.empty? then
                 @treepath = @treepath.split(',').collect do |p| File.join(@rootpath,p) end.join(',')
@@ -205,7 +220,16 @@ class KPSEFAST
             ENV['SELFAUTOPARENT'] = @rootpath
             @isolate = true
         end
-        filenames = [File.join(ENV['TEXMFCNF'] || '.','texmf.cnf')]
+        filenames = Array.new
+        if ENV['TEXMFCNF'] and not ENV['TEXMFCNF'].empty? then
+            filenames << File.join(ENV['TEXMFCNF'],'texmf.cnf')
+        elsif ENV['SELFAUTOPARENT'] == '.' then
+            filenames << File.join('.','texmf.cnf')
+        else
+            ['texmf-local','texmf'].each do |tree|
+                filenames << File.join(ENV['SELFAUTOPARENT'],tree,'web2c','texmf.cnf')
+            end
+        end
         # <root>/texmf/web2c/texmf.cnf
         @rootpath = filenames.first
         3.times do
@@ -216,6 +240,7 @@ class KPSEFAST
         end
         filenames.each do |fname|
             if FileTest.file?(fname) and f = File.open(fname) then
+                @cnffiles << fname
                 while line = f.gets do
                     loop do
                         # concatenate lines ending with \
@@ -659,9 +684,10 @@ class KPSEFAST
     end
 
     def analyze_files(filter='',strict=false,sort='',delete=false)
-        puts("command = #{ARGV.join(' ')}")
-        puts("files   = #{@files.size}")
-        puts("filter  = #{filter}")
+        puts("command line     = #{ARGV.join(' ')}")
+        puts("number of files  = #{@files.size}")
+        puts("filter pattern   = #{filter}")
+        puts("loaded cnf files = #{@cnffiles.join(' ')}")
         puts('')
         if filter.gsub!(/^not:/,'') then
             def the_same(filter,filename)
@@ -733,6 +759,79 @@ class KPSEFAST
                 end
             end
         end
+    end
+
+end
+
+module KpseRunner
+
+    @@kpse = nil
+
+    def KpseRunner.kpsewhich(arg='')
+        options, arguments = split_args(arg)
+        unless @@kpse then
+            @@kpse = KPSEFAST.new
+            @@kpse.load_cnf
+            @@kpse.progname = options['progname'] || ''
+            @@kpse.engine   = options['engine']   || ''
+            @@kpse.format   = options['format']   || ''
+            @@kpse.expand_variables
+            @@kpse.load_lsr
+        else
+            @@kpse.progname = options['progname'] || ''
+            @@kpse.engine   = options['engine']   || ''
+            @@kpse.format   = options['format']   || ''
+            @@kpse.expand_variables
+        end
+        if    option = options['expand-braces'] and not option.empty? then
+            @@kpse.expand_braces(option)
+        elsif option = options['expand-path']   and not option.empty? then
+            @@kpse.expand_path(option)
+        elsif option = options['expand-var']    and not option.empty? then
+            @@kpse.expand_var(option)
+        elsif option = options['show-path']     and not option.empty? then
+            @@kpse.show_path(option)
+        elsif option = options['var-value']     and not option.empty? then
+            @@kpse.expand_var(option)
+        elsif arguments.size > 0 then
+            files = Array.new
+            arguments.each do |option|
+                if file = @@kpse.find_file(option) and not file.empty? then
+                    files << file
+                end
+            end
+            files.join("\n")
+        else
+            ''
+        end
+    end
+
+    def KpseRunner.kpsereset
+        @@kpse = nil
+    end
+
+    private
+
+    def KpseRunner.split_args(arg)
+        vars, args = Hash.new, Array.new
+        arg.gsub!(/([\"\'])(.*?)\1/o) do
+            $2.gsub(' ','<space/>')
+        end
+        arg = arg.split(/\s+/o)
+        arg.collect! do |a|
+            a.gsub('<space/>',' ')
+        end
+        arg.each do |a|
+            if a =~ /^(.*?)\=(.*?)$/o then
+                k, v = $1, $2
+                vars[k.sub(/^\-+/,'')] = v
+            else
+                args << a
+            end
+        end
+        # puts vars.inspect
+        # puts args.inspect
+        return vars, args
     end
 
 end

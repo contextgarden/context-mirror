@@ -874,13 +874,21 @@
 \newif\ifsynchronizemathfonts \synchronizemathfontstrue
 
 \def\synchronizetext % stylish text in mmode
-  {\ifsynchronizemathfonts\the\textstrategies\fam\minusone\fi}
+  {\ifsynchronizemathfonts\the\textstrategies\fi} % \if...\fam\minusone\fi}
 
 \def\synchronizemath % math stuff in mmode
-  {\ifsynchronizemathfonts\the\mathstrategies\fam\minusone\fi}
+  {\ifsynchronizemathfonts\the\mathstrategies\fi} % \if...\fam\minusone\fi}
 
 \def\synchronizesymb % stylish math stuff in mmode
-  {\ifsynchronizemathfonts\the\symbstrategies\fam\minusone\fi}
+  {\ifsynchronizemathfonts\the\symbstrategies\fi} % \if...\fam\minusone\fi}
+
+%D By not setting the family we can append a font switch to \tyep
+%D {\everymath}. On the other hand, one never knows in what family
+%D state the strategies brought us.
+%D
+%D \starttyping
+%D {\bfa $\the\fam$} {\bfa \everymath{} $\the\fam$}
+%D \stoptyping
 
 %D \macros
 %D   {textonly}

@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 
-<cd:interface xmlns:cd="http://www.pragma-ade.com/commands" name="context" language="it" version="2005.08.15">
+<cd:interface xmlns:cd="http://www.pragma-ade.com/commands" name="context" language="it" version="2005.08.19">
 
   <cd:variables>
     <cd:variable name="one" value="uno"/>
@@ -327,6 +327,7 @@
     <cd:constant name="pagecolor" value="colorepagina"/>
     <cd:constant name="pagestyle" value="stilepagina"/>
     <cd:constant name="pagenumber" value="numeropagina"/>
+    <cd:constant name="headnumber" value="numerotesta"/>
     <cd:constant name="pageboundaries" value="limitipagina"/>
     <cd:constant name="pagestate" value="statopagina"/>
     <cd:constant name="palet" value="tavolozza"/>
@@ -543,6 +544,8 @@
     <cd:variable name="halfline" value="mezzariga"/>
     <cd:variable name="keep" value="mantieni"/>
     <cd:variable name="hanging" value="sospeso"/>
+    <cd:variable name="spacing" value="spaziatura"/>
+    <cd:variable name="nospacing" value="nospacing"/>
     <cd:variable name="repeat" value="ripeti"/>
     <cd:variable name="fix" value="fisso"/>
     <cd:variable name="here" value="qui"/>

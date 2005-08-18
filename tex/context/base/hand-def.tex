@@ -524,6 +524,41 @@
 
 \definefonthandling [noligs]          [noligs]                     [\c!type=tag]
 
+% experimental values !
+%
+% \definefontsynonym[myfont][Serif][handling=prespacing]
+% \definefont[whatever][myfont sa 1]
+% \setupalign[spacing]
+%
+% \whatever look at this: we now have a proper spacing feature and, hurray,
+% get rid of active punctuation!
+
+\startfonthandling [flexspacing]
+
+  \definespacefactor  : 0 1.25 .25 .25
+
+  \definespacefactor  , 0 1 .25 .25
+  \inheritspacefactor ; ,
+
+  \definespacefactor  . 0 1.5 .25 .25
+  \inheritspacefactor ! .
+  \inheritspacefactor ? .
+
+\stopfonthandling
+
+\definefonthandling[flexspacing][flexspacing][\c!type=\v!spacing]
+
+\startfonthandling [prespacing] % better name needed
+
+  \definespacefactor  : .25 .25 0 0
+  \inheritspacefactor ; :
+  \inheritspacefactor ! :
+  \inheritspacefactor ? :
+
+\stopfonthandling
+
+\definefonthandling[prespacing][prespacing][\c!type=\v!spacing] % factor=.5
+
 % A special case of guillemots, beware: when used ungrouped,
 % it overloads all successive (current) encoding vector
 % instances! Will be obsolete soon.

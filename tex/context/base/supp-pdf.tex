@@ -1103,7 +1103,7 @@
 %D
 %D The last case outputs a \type{gsave fill grestore} before
 %D \type{stroke}. Handling the path outside the main loops
-%D saves about 40\% run time.\footnoot{We can save some more by
+%D saves about 40\% run time.\footnote{We can save some more by
 %D following the \METAPOST\ output routine, but for the moment
 %D we keep things simple.} Switching between the main loop and
 %D the path loop is done by means of the recursely called
@@ -1241,7 +1241,7 @@
 %D The transformation code is rewritten by Daniel H. Luecking who
 %D describes his patch as follows:
 %D
-%D We would like to divide 1 by $X4, but all divisions are integer so
+%D We would like to divide 1 by $X$, but all divisions are integer so
 %D for accuracy we want to convert to large integers and make sure the
 %D integer quotient has as many significant digits as possible. Thus we
 %D need to replace $1/X$ with $M/N$ where $N$ is as large as possible
@@ -1250,7 +1250,7 @@
 %D largest legal integer. Using it (and simply ignoring the inaccuracy
 %D caused by $-1$) turns out to be at least as accurate in all cases,
 %D and more accurate in some.} (largest legal power of 2) and adjust
-%D $X4 downward (if necessary) to the the range $1-2^{16}$. This gives
+%D $X$ downward (if necessary) to the the range $1-2^{16}$. This gives
 %D at least 15 significant binary digits, (almost as accurate as
 %D \METAPOST\ for numbers near 1) or almost 5 significant figures
 %D (decimal).
@@ -1276,7 +1276,7 @@
 %D is  the right way to do $(1 \hbox{pt})/(X \hbox{pt})$ and get the
 %D answer  in points. But we are limited to $2^{30}/X$. However, we
 %D actually do  $[ 2^{30} / (X/2^K) ]*2^{2-K}$ where $K$ is the number
-%D of halvings it takes to bring $X4 below $1 \hbox{pt}$. If $K$ is 0
+%D of halvings it takes to bring $X$ below $1 \hbox{pt}$. If $K$ is 0
 %D or 1 we readjust by multiplying by 4 or 2, otherwise by halving
 %D $(K-2)$ times \type {\MPscratchCnt} holds the value of $K$ from
 %D \type {\MPadjustdimen}.
@@ -1608,7 +1608,7 @@
 %OLD    \edef#2{\withoutpt\the\dimen18}% % p_x^\prime
 %OLD    \edef#4{\withoutpt\the\dimen12}} % p_y^\prime
 
-%D DHL: Ideally, $r_x$, $r_y$, $s_x4, $s_y$ should be in macros, not
+%D DHL: Ideally, $r_x$, $r_y$, $s_x$, $s_y$ should be in macros, not
 %D dimensions (they are scalar quantities after all, not lengths). I
 %D suppose the authors decided to do calculations with integer
 %D arithmetic instead of using real factors because it's faster.

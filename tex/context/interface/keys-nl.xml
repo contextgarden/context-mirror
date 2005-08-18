@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 
-<cd:interface xmlns:cd="http://www.pragma-ade.com/commands" name="context" language="nl" version="2005.08.15">
+<cd:interface xmlns:cd="http://www.pragma-ade.com/commands" name="context" language="nl" version="2005.08.19">
 
   <cd:variables>
     <cd:variable name="one" value="een"/>
@@ -327,6 +327,7 @@
     <cd:constant name="pagecolor" value="paginakleur"/>
     <cd:constant name="pagestyle" value="paginaletter"/>
     <cd:constant name="pagenumber" value="paginanummer"/>
+    <cd:constant name="headnumber" value="kopnummer"/>
     <cd:constant name="pageboundaries" value="paginaovergangen"/>
     <cd:constant name="pagestate" value="paginastatus"/>
     <cd:constant name="palet" value="palet"/>
@@ -543,6 +544,8 @@
     <cd:variable name="halfline" value="halveregel"/>
     <cd:variable name="keep" value="handhaaf"/>
     <cd:variable name="hanging" value="hangend"/>
+    <cd:variable name="spacing" value="spatiering"/>
+    <cd:variable name="nospacing" value="geenspatiering"/>
     <cd:variable name="repeat" value="herhaal"/>
     <cd:variable name="fix" value="herstel"/>
     <cd:variable name="here" value="hier"/>

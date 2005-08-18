@@ -5019,7 +5019,7 @@
         <cd:constant type="ja"/>
         <cd:constant type="nein"/>
       </cd:parameter>
-      <cd:parameter name="abschnittsnummer">
+      <cd:parameter name="kopfnummer">
         <cd:constant type="ja"/>
         <cd:constant type="nein"/>
       </cd:parameter>

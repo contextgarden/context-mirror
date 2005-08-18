@@ -172,10 +172,14 @@ class TeXUtil
         end
 
         def prepare
-            @rexa = /(#{@rep.keys.join('|')})/o
+            if @rep.size > 0 then
+                @rexa = /(#{@rep.keys.join('|')})/ # o
+            else
+                @rexa = nil
+            end
             if @map.size > 0 then
                 # watch out, order of match matters
-                @rexb = /(\\[a-zA-Z]+|#{@map.keys.join('|')}|.)\s*/o
+                @rexb = /(\\[a-zA-Z]+|#{@map.keys.join('|')}|.)\s*/ # o
             else
                 @rexb = /(\\[a-zA-Z]+|.)\s*/o
             end
@@ -186,17 +190,21 @@ class TeXUtil
             s.gsub!(/(\d+)/o) do
                 $1.rjust(10,'a') # rest is b .. k
             end
-            s.gsub!(@rexa) do
-                @rep[$1.escaped]
+            if @rexa then
+                s.gsub!(@rexa) do
+                    @rep[$1.escaped]
+                end
             end
-            s.gsub!(@rexb) do
-                token = $1.sub(/\\/o, '')
-                if @exp.key?(token) then
-                    @exp[token].ljust(@max,' ')
-                elsif @map.key?(token) then
-                    @map[token].ljust(@max,' ')
-                else
-                    ''
+            if @rexb then
+                s.gsub!(@rexb) do
+                    token = $1.sub(/\\/o, '')
+                    if @exp.key?(token) then
+                        @exp[token].ljust(@max,' ')
+                    elsif @map.key?(token) then
+                        @map[token].ljust(@max,' ')
+                    else
+                        ''
+                    end
                 end
             end
             s

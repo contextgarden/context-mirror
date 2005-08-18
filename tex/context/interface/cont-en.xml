@@ -5019,7 +5019,7 @@
         <cd:constant type="yes"/>
         <cd:constant type="no"/>
       </cd:parameter>
-      <cd:parameter name="sectionnumber">
+      <cd:parameter name="headnumber">
         <cd:constant type="yes"/>
         <cd:constant type="no"/>
       </cd:parameter>

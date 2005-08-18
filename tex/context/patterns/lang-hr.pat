@@ -5,9 +5,9 @@
 % begin description data
 
 % <!-- copied from lang-all.xml
-% 
+%
 % <?xml version='1.0' standalone='yes'?>
-% 
+%
 % <description language='hr'>
 %     <sourcefile> hrhyph.tex</sourcefile>
 %     <title>TeX hyphenation patterns for the Croatian language</title>
@@ -16,7 +16,7 @@
 %         <owner>Marinovi\'c Igor (migor@student.math.hr)</owner>
 %     </copyright>
 % </description>
-% 
+%
 % end of copy -->
 
 % end description data
@@ -79,11 +79,11 @@ a1d[zcaron]e
 a1d[zcaron]i
 a1d[zcaron]o
 a1d[zcaron]u
-a1[dmacron]a
-a1[dmacron]e
-a1[dmacron]i
-a1[dmacron]o
-a1[dmacron]u
+a1[dstroke]a
+a1[dstroke]e
+a1[dstroke]i
+a1[dstroke]o
+a1[dstroke]u
 a1fa
 a1fe
 a1fi
@@ -204,11 +204,11 @@ e1d[zcaron]e
 e1d[zcaron]i
 e1d[zcaron]o
 e1d[zcaron]u
-e1[dmacron]a
-e1[dmacron]e
-e1[dmacron]i
-e1[dmacron]o
-e1[dmacron]u
+e1[dstroke]a
+e1[dstroke]e
+e1[dstroke]i
+e1[dstroke]o
+e1[dstroke]u
 e1fa
 e1fe
 e1fi
@@ -329,11 +329,11 @@ i1d[zcaron]e
 i1d[zcaron]i
 i1d[zcaron]o
 i1d[zcaron]u
-i1[dmacron]a
-i1[dmacron]e
-i1[dmacron]i
-i1[dmacron]o
-i1[dmacron]u
+i1[dstroke]a
+i1[dstroke]e
+i1[dstroke]i
+i1[dstroke]o
+i1[dstroke]u
 i1fa
 i1fe
 i1fi
@@ -454,11 +454,11 @@ o1d[zcaron]e
 o1d[zcaron]i
 o1d[zcaron]o
 o1d[zcaron]u
-o1[dmacron]a
-o1[dmacron]e
-o1[dmacron]i
-o1[dmacron]o
-o1[dmacron]u
+o1[dstroke]a
+o1[dstroke]e
+o1[dstroke]i
+o1[dstroke]o
+o1[dstroke]u
 o1fa
 o1fe
 o1fi
@@ -579,11 +579,11 @@ u1d[zcaron]e
 u1d[zcaron]i
 u1d[zcaron]o
 u1d[zcaron]u
-u1[dmacron]a
-u1[dmacron]e
-u1[dmacron]i
-u1[dmacron]o
-u1[dmacron]u
+u1[dstroke]a
+u1[dstroke]e
+u1[dstroke]i
+u1[dstroke]o
+u1[dstroke]u
 u1fa
 u1fe
 u1fi
@@ -680,7 +680,7 @@ b1[ccaron]
 b1[cacute]
 b1d
 b1d[zcaron]
-b1[dmacron]
+b1[dstroke]
 b1f
 b1g
 b1h
@@ -709,7 +709,7 @@ c1[ccaron]
 c1[cacute]
 c1d
 c1d[zcaron]
-c1[dmacron]
+c1[dstroke]
 c1f
 c1g
 c1h
@@ -738,7 +738,7 @@ c1[zcaron]
 [ccaron]1[cacute]
 [ccaron]1d
 [ccaron]1d[zcaron]
-[ccaron]1[dmacron]
+[ccaron]1[dstroke]
 [ccaron]1f
 [ccaron]1g
 [ccaron]1h
@@ -767,7 +767,7 @@ c1[zcaron]
 [cacute]1[cacute]
 [cacute]1d
 [cacute]1d[zcaron]
-[cacute]1[dmacron]
+[cacute]1[dstroke]
 [cacute]1f
 [cacute]1g
 [cacute]1h
@@ -795,7 +795,7 @@ d1[ccaron]
 d1[cacute]
 d1d
 d2[zcaron]
-d1[dmacron]
+d1[dstroke]
 d1f
 2d1g
 d1h
@@ -822,7 +822,7 @@ d[zcaron]1[ccaron]
 d[zcaron]1[cacute]
 d[zcaron]1d
 d[zcaron]1d[zcaron]
-d[zcaron]1[dmacron]
+d[zcaron]1[dstroke]
 d[zcaron]1f
 d[zcaron]1g
 d[zcaron]1h
@@ -845,42 +845,42 @@ d[zcaron]1t
 2d[zcaron]v.
 d[zcaron]1z
 d[zcaron]1[zcaron]
-[dmacron]1b
-[dmacron]1c
-[dmacron]1[ccaron]
-[dmacron]1[cacute]
-[dmacron]1d
-[dmacron]1d[zcaron]
-[dmacron]1[dmacron]
-[dmacron]1f
-[dmacron]1g
-[dmacron]1h
-1[dmacron]j
-2[dmacron]j.
-[dmacron]1k
-1[dmacron]l
-2[dmacron]l.
-2[dmacron]1lj
-[dmacron]1m
-[dmacron]1n
-[dmacron]1nj
-[dmacron]1p
-1[dmacron]r
-2[dmacron]r.
-[dmacron]1s
-[dmacron]1[scaron]
-[dmacron]1t
-1[dmacron]v
-2[dmacron]v.
-[dmacron]1z
-[dmacron]1[zcaron]
+[dstroke]1b
+[dstroke]1c
+[dstroke]1[ccaron]
+[dstroke]1[cacute]
+[dstroke]1d
+[dstroke]1d[zcaron]
+[dstroke]1[dstroke]
+[dstroke]1f
+[dstroke]1g
+[dstroke]1h
+1[dstroke]j
+2[dstroke]j.
+[dstroke]1k
+1[dstroke]l
+2[dstroke]l.
+2[dstroke]1lj
+[dstroke]1m
+[dstroke]1n
+[dstroke]1nj
+[dstroke]1p
+1[dstroke]r
+2[dstroke]r.
+[dstroke]1s
+[dstroke]1[scaron]
+[dstroke]1t
+1[dstroke]v
+2[dstroke]v.
+[dstroke]1z
+[dstroke]1[zcaron]
 f1b
 f1c
 f1[ccaron]
 f1[cacute]
 f1d
 f1d[zcaron]
-f1[dmacron]
+f1[dstroke]
 f1f
 f1g
 f1h
@@ -909,7 +909,7 @@ g1[ccaron]
 g1[cacute]
 g1d
 g1d[zcaron]
-g1[dmacron]
+g1[dstroke]
 g1f
 g1g
 g1h
@@ -938,7 +938,7 @@ h1[ccaron]
 h1[cacute]
 h1d
 h1d[zcaron]
-h1[dmacron]
+h1[dstroke]
 h1f
 h1g
 h1h
@@ -967,7 +967,7 @@ j1[ccaron]
 j1[cacute]
 j1d
 j1d[zcaron]
-j1[dmacron]
+j1[dstroke]
 j1f
 j1g
 j1h
@@ -992,7 +992,7 @@ k1[ccaron]
 k1[cacute]
 k1d
 k1d[zcaron]
-k1[dmacron]
+k1[dstroke]
 k1f
 k1g
 k1h
@@ -1020,7 +1020,7 @@ l1[ccaron]
 l1[cacute]
 l1d
 l1d[zcaron]
-l1[dmacron]
+l1[dstroke]
 l1f
 l1g
 l1h
@@ -1044,7 +1044,7 @@ lj1[ccaron]
 lj1[cacute]
 lj1d
 lj1d[zcaron]
-lj1[dmacron]
+lj1[dstroke]
 lj1f
 lj1g
 lj1h
@@ -1071,7 +1071,7 @@ m1[ccaron]
 m1[cacute]
 m1d
 m1d[zcaron]
-m1[dmacron]
+m1[dstroke]
 m1f
 m1g
 m1h
@@ -1100,7 +1100,7 @@ n1[ccaron]
 n1[cacute]
 n1d
 n1d[zcaron]
-n1[dmacron]
+n1[dstroke]
 n1f
 n1g
 n1h
@@ -1127,7 +1127,7 @@ nj1[ccaron]
 nj1[cacute]
 nj1d
 nj1d[zcaron]
-nj1[dmacron]
+nj1[dstroke]
 nj1f
 nj1g
 nj1h
@@ -1156,7 +1156,7 @@ p1[ccaron]
 p1[cacute]
 p1d
 p1d[zcaron]
-p1[dmacron]
+p1[dstroke]
 p1f
 p1g
 2p1h
@@ -1185,7 +1185,7 @@ r1[ccaron]
 r1[cacute]
 r1d
 r1d[zcaron]
-r1[dmacron]
+r1[dstroke]
 r1f
 r1g
 r1h
@@ -1215,8 +1215,8 @@ s1c
 2sd.
 1sd[zcaron]
 2sd[zcaron].
-1s[dmacron]
-2s[dmacron].
+1s[dstroke]
+2s[dstroke].
 1sf
 2sf.
 1sg
@@ -1260,8 +1260,8 @@ s1t
 2[scaron]d.
 1[scaron]d[zcaron]
 2[scaron]d[zcaron].
-1[scaron][dmacron]
-2[scaron][dmacron].
+1[scaron][dstroke]
+2[scaron][dstroke].
 1[scaron]f
 2[scaron]f.
 1[scaron]g
@@ -1300,7 +1300,7 @@ t1[ccaron]
 t1[cacute]
 t1d
 t1d[zcaron]
-t1[dmacron]
+t1[dstroke]
 t1f
 t1g
 t1h
@@ -1329,7 +1329,7 @@ v1[ccaron]
 v1[cacute]
 v1d
 v1d[zcaron]
-v1[dmacron]
+v1[dstroke]
 v1f
 v1g
 v1h
@@ -1360,8 +1360,8 @@ z1b
 z1d
 1zd[zcaron]
 2zd[zcaron].
-1z[dmacron]
-2z[dmacron].
+1z[dstroke]
+2z[dstroke].
 1zf
 2zf.
 z1g
@@ -1403,8 +1403,8 @@ z1s
 2[zcaron]d.
 1[zcaron]d[zcaron]
 2[zcaron]d[zcaron].
-1[zcaron][dmacron]
-2[zcaron][dmacron].
+1[zcaron][dstroke]
+2[zcaron][dstroke].
 1[zcaron]f
 2[zcaron]f.
 1[zcaron]g

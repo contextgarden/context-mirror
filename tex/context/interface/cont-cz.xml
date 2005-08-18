@@ -5019,7 +5019,7 @@
         <cd:constant type="ano"/>
         <cd:constant type="ne"/>
       </cd:parameter>
-      <cd:parameter name="cislooddilu">
+      <cd:parameter name="cislonadpisu">
         <cd:constant type="ano"/>
         <cd:constant type="ne"/>
       </cd:parameter>

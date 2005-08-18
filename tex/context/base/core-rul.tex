@@ -71,7 +71,7 @@
 %D rounded corners are used, so:
 %D
 %D \startbuffer
-%D \periodgraybox
+%D \dotgraybox
 %D   \width.5\hsize\height1cm\depth0cm\raster.85\corner\v!no\radius0pt\\
 %D \stopbuffer
 %D
@@ -86,7 +86,7 @@
 %D \startlinecorrection
 %D   \unprotect
 %D   \vbox to 1cm
-%D     {\getvalue{period graybox}%
+%D     {\dotgraybox
 %D        \width.5\hsize\height1cm\depth0cm\raster.85\corner\v!no\radius0pt\\}
 %D   \protect
 %D \stoplinecorrection
@@ -791,7 +791,7 @@
      \else
        \boxhaswidthfalse
      \fi
-   \else\ifx\localwidth\v!fixed % equals \v!fix but no shapebox
+   \else\ifx\localwidth\v!fixed % equals \v!fit but no shapebox
      \ifboxhasformat
        \boxhaswidthtrue
        \!!widtha\hsize
@@ -1688,7 +1688,7 @@
 %D formatting. Watch the visualized struts. \footnote {Here we
 %D used \type {\showstruts}.}
 %D
-%D \startuitstellen
+%D \startpostponing
 %D \bgroup
 %D \showstruts
 %D \dontcomplain
@@ -1729,9 +1729,9 @@
 %D   \framed[width=fit,      height=broad,    align=middle] {a\par b\par c}&
 %D   \framed[width=fit,      height=fit,      align=middle] {a\par b\par c}\cr}
 %D \stoplinecorrection
-%D \blank[2*groot]
+%D \blank[2*big]
 %D \egroup
-%D \stopuitstellen
+%D \stoppostponing
 
 %D \macros
 %D   {framednoflines, framedlastlength}
@@ -1798,7 +1798,7 @@
 %D visualization of the resulting box, that is, we applied
 %D \type{\ruledhbox} to the result.
 
-%D \startuitstellen
+%D \startpostponing
 %D \bgroup
 %D \unprotect
 %D \dontcomplain
@@ -1845,7 +1845,7 @@
 %D
 %D \protect
 %D \egroup
-%D \stopuitstellen
+%D \stoppostponing
 
 %D When typesetting the framed box inline, we have to keep the
 %D baseline intact outside as well as inside the framed box.
@@ -1975,32 +1975,32 @@
 %D \setuptyping[margin=0pt]
 %D \startlinecorrection
 %D \startbuffer
-%D \framed[offset=overlay,frame=on]               {\donkerrood\blackrule}
+%D \framed[offset=overlay,frame=on]{\darkred\blackrule}
 %D \stopbuffer
 %D \hbox{\getbuffer\vbox{\typebuffer}}
 %D
 %D \startbuffer
-%D \framed[offset=overlay,frame=on,bottomframe=off]{\donkerrood\blackrule}
+%D \framed[offset=overlay,frame=on,bottomframe=off]{\darkred\blackrule}
 %D \stopbuffer
 %D \hbox{\getbuffer\vbox{\typebuffer}}
 %D
 %D \startbuffer
-%D \framed[offset=overlay,frame=on,bottomframe=on]{\donkerrood\blackrule}
+%D \framed[offset=overlay,frame=on,bottomframe=on]{\darkred\blackrule}
 %D \stopbuffer
 %D \hbox{\getbuffer\vbox{\typebuffer}}
 %D
 %D \startbuffer
-%D \framed[offset=overlay,frame=off]               {\donkerrood\blackrule}
+%D \framed[offset=overlay,frame=off]{\darkred\blackrule}
 %D \stopbuffer
 %D \hbox{\getbuffer\vbox{\typebuffer}}
 %D
 %D \startbuffer
-%D \framed[offset=overlay,frame=off,bottomframe=off]{\donkerrood\blackrule}
+%D \framed[offset=overlay,frame=off,bottomframe=off]{\darkred\blackrule}
 %D \stopbuffer
 %D \hbox{\getbuffer\vbox{\typebuffer}}
 %D
 %D \startbuffer
-%D \framed[offset=overlay,frame=off,bottomframe=on]{\donkerrood\blackrule}
+%D \framed[offset=overlay,frame=off,bottomframe=on]{\darkred\blackrule}
 %D \stopbuffer
 %D \hbox{\getbuffer\vbox{\typebuffer}}
 %D \stoplinecorrection
@@ -2493,13 +2493,13 @@
 %D    width=\hsize,
 %D    background=screen]
 %D
-%D \startkadertekst
+%D \startframedtext
 %D By default the framed text is centered \dots
-%D \stopkadertekst
+%D \stopframedtext
 %D
-%D \startkadertekst[right]
+%D \startframedtext[right]
 %D \dots\ but we can also align left, middle and right.
-%D \stopkadertekst
+%D \stopframedtext
 %D \stopbuffer
 %D
 %D \startbuffer[framed-1]
@@ -2558,7 +2558,7 @@
 %D
 %D that generates two commands:
 %D
-%D \showsetup{\e!start<<framedtext>>}
+%D \showsetup{start<<framedtext>>}
 %D \showsetup{<<framedtext>>}
 %D
 %D The next definition shows the defaults.

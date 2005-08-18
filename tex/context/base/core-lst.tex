@@ -212,7 +212,7 @@
       \c!textcommand=\listtextcommand,
       \c!pagecommand=\listpagecommand,
       \c!pagenumber=\v!yes,
-\c!sectionnumber=\v!yes,
+\c!headnumber=\v!yes,
       \c!pageboundaries=,
       \c!margin=\!!zeropoint,
       \c!aligntitle=,
@@ -237,7 +237,7 @@
             \c!textstyle,\c!textcolor,\c!textcommand,
             \c!pagestyle,\c!pagecommand,\c!pagecolor,
             \c!numberstyle,\c!numbercolor,\c!numbercommand,
-\c!sectionnumber,
+\c!headnumber,
             \c!pagenumber,\c!pageboundaries,\c!margin,\c!symbol,\c!limittext,
             \c!aligntitle,\c!before,\c!after,\c!inbetween,\v!part\c!number,\c!label]%
          \getparameters[\??li#1][#3]}}%
@@ -518,7 +518,7 @@
         {\forgetall
          \makelistelement\v!all
            {%
-\doif{\listparameter\c!sectionnumber}\v!yes
+\doif{\listparameter\c!headnumber}\v!yes
               {\makelistelement\v!sectionnumber
                  {\donestedlistattributes\c!numberstyle\c!numbercolor
                     {\listparameter\c!numbercommand{\currentlistsymbol}}}%
@@ -591,7 +591,7 @@
         {\forgetall
          \dostartlistattributes\c!style\c!color\empty
          \!!widthb\hsize
-\doifelse{\listparameter\c!sectionnumber}\v!yes{%
+\doifelse{\listparameter\c!headnumber}\v!yes{%
          \setbox2\hbox \ifdim\!!widtha>\zeropoint to \!!widtha \fi
            {\makelistelement\v!sectionnumber
               {\donestedlistattributes\c!numberstyle\c!numbercolor
@@ -710,7 +710,7 @@
                  {\listparameter\c!pagecommand
                     {\pageprefix\??li\currentlist[#5]%
                      \translatednumber[#5]}}}}}}%
-\doif{\listparameter\c!sectionnumber}\v!yes{%
+\doif{\listparameter\c!headnumber}\v!yes{%
    \donetrue
    \doifnothing{#3}{\doifnothing{\listparameter\c!symbol}\donefalse}%
    % == \doifnothing{#3\listparameter\c!symbol}\donefalse

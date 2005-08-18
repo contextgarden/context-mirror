@@ -73,6 +73,8 @@
 
 \newif\ifskiphandlingdef  \skiphandlingdeffalse
 
+\newtoks\everyenablefonthandling
+
 % much in common with hz/protruding defs
 % todo: fix others
 
@@ -100,11 +102,45 @@
            \let\char\normalchar}}%
    \fi}
 
-\def\doinhsomehandling#1#2 #3 %
+% \def\dosettriplethandling#1#2#3 #4 #5 #6 % no define since directly set
+%   {\ifskiphandlingdef \else
+%      \doifnumberelse{\string#2}
+%        {#1{#2#3}{#4}{#5}{#6}}
+%        {\doifelsenothing{#3}
+%           {#1{`#2}{#4}{#5}{#6}}
+%           {\let\char\empty
+%            \doifnumberelse{\csname#2#3\endcsname}{#1{\csname#2#3\endcsname}{#4}{#5}{#6}}\donothing
+%            \let\char\normalchar}}%
+%    \fi}
+
+\def\dosetquartethandling#1#2#3 #4 #5 #6 #7 % no define since directly set
   {\ifskiphandlingdef \else
-     \let\char\empty
-     \doifnumberelse{\csname#2\endcsname}{#1{\csname#2\endcsname}{`#3}}\donothing
-     \let\char\normalchar
+     \doifnumberelse{\string#2}
+       {#1{#2#3}{#4}{#5}{#6}{#7}}
+       {\doifelsenothing{#3}
+          {#1{`#2}{#4}{#5}{#6}{#7}}
+          {\let\char\empty
+           \doifnumberelse{\csname#2#3\endcsname}{#1{\csname#2#3\endcsname}{#4}{#5}{#6}{#7}}\donothing
+           \let\char\normalchar}}%
+   \fi}
+
+
+% \def\doinhsomehandling#1#2 #3 %
+%   {\ifskiphandlingdef \else
+%      \let\char\empty
+%      \doifnumberelse{\csname#2\endcsname}{#1{\csname#2\endcsname}{`#3}}\donothing
+%      \let\char\normalchar
+%    \fi}
+
+\def\doinhsomehandling#1#2#3 #4 % to be checked
+  {\ifskiphandlingdef \else
+     \if#3\relax\relax
+       #1{`#2}{`#4}%
+     \else
+       \let\char\empty
+       \doifnumberelse{\csname#2#3\endcsname}{#1{\csname#2#3\endcsname}{`#4}}\donothing
+       \let\char\normalchar
+     \fi
    \fi}
 
 % adjustspacing
@@ -178,6 +214,12 @@
        \fontname\handledfont}}
 \fi
 
+\ifx\setfontadjusting\gobbleoneargument \else
+  \appendtoks
+    \setfontadjusting\askedfonthandling
+  \to \everyenablefonthandling
+\fi
+
 % protruding
 
 \newif\ifembasedprotruding \embasedprotrudingfalse
@@ -238,28 +280,28 @@
 
     \newdimen\protrudethreshold \protrudethreshold=36pt
 
-%     keep this
+    % keep this
 
-%     \def\redodefineprotrudefactor#1%
-%       {\ifdim\fontdimen6\font>\protrudethreshold
-%          \divide\scratchdimen\fontdimen6\font
-%          \multiply\scratchdimen\fontcharwd\handledfont#1\relax
-%        \else
-%          \multiply\scratchdimen\fontcharwd\handledfont#1\relax
-%          \divide\scratchdimen\fontdimen6\font
-%        \fi}
+    % \def\redodefineprotrudefactor#1%
+    %   {\ifdim\fontdimen6\font>\protrudethreshold
+    %      \divide\scratchdimen\fontdimen6\font
+    %      \multiply\scratchdimen\fontcharwd\handledfont#1\relax
+    %    \else
+    %      \multiply\scratchdimen\fontcharwd\handledfont#1\relax
+    %      \divide\scratchdimen\fontdimen6\font
+    %    \fi}
 
-%     \def\dododefineprotrudefactor#1#2#3%
-%       {\scratchdimen#2\lproddimen
-%        \ifembasedprotruding \else
-%          \redodefineprotrudefactor{#1}%
-%        \fi
-%        \lpcode\handledfont#1\scratchdimen
-%        \scratchdimen#3\rproddimen
-%        \ifembasedprotruding \else
-%          \redodefineprotrudefactor{#1}%
-%        \fi
-%        \rpcode\handledfont#1\scratchdimen}
+    % \def\dododefineprotrudefactor#1#2#3%
+    %   {\scratchdimen#2\lproddimen
+    %    \ifembasedprotruding \else
+    %      \redodefineprotrudefactor{#1}%
+    %    \fi
+    %    \lpcode\handledfont#1\scratchdimen
+    %    \scratchdimen#3\rproddimen
+    %    \ifembasedprotruding \else
+    %      \redodefineprotrudefactor{#1}%
+    %    \fi
+    %    \rpcode\handledfont#1\scratchdimen}
 
     \def\dododefineprotrudefactor#1#2#3%
       {\lpcode\handledfont#1\dimexpr#2\lproddimen
@@ -328,6 +370,81 @@
 
 \fi
 
+\ifx\setprotrudingfactor\gobbleoneargument \else
+  \appendtoks
+     \setprotrudingfactor\askedfonthandling
+  \to \everyenablefonthandling
+\fi
+
+% Basic support for a new pdftex feature: space factors
+%
+% \knbccode -- kern before char code
+% \knbscode -- kern before space code
+% \stbscode -- stretch before space code
+% \shbscode -- shrink before space code
+%
+% Setting \knsbcode\font`\.=200 means that if a period sits before
+% a interword space (glue), then the interword glue will be increased
+% by an amount of 1em*200/1000, i.e. the value is given in thousandths
+% of an em. (HTT)
+
+\newdimen\spfacdimen
+
+\ifx\undefined\pdfadjustinterwordglue % we don't use pdftex
+
+  \let\enablespacehandling  \relax
+  \let\disablespacehandling \relax
+
+  \let\setspacehandling     \gobbleoneargument
+
+  \def\definespacefactor    #1 #2 #3 #4 #5 {}
+  \def\inheritspacefactor   #1 #2 {}
+
+\else
+
+  \def\enablespacehandling {\pdfadjustinterwordglue\plusone }
+  \def\disablespacehandling{\pdfadjustinterwordglue\minusone}
+
+  \appendtoks \disablespacehandling \to \everyforgetall % Here or not here?
+
+  \def\dosetspacehandling#1%
+    {\spfacdimen\csname\@fha@\@fha@#1\c!factor\endcsname\s!pt
+     \multiply\spfacdimen\plusthousand\divide\spfacdimen\maxcard\relax}
+
+  \def\setspacehandling#1%
+    {\doifvalue{\@fha@\@fha@#1\c!type}\v!spacing{\dosetspacehandling{#1}}}
+
+  \def\dododefinespacefactor#1#2#3#4#5%
+    {\sfcode#1\plusthousand
+     \knbccode\handledfont#1\dimexpr#2\spfacdimen\relax
+     \knbscode\handledfont#1\dimexpr#3\spfacdimen\relax
+     \stbscode\handledfont#1\dimexpr#4\spfacdimen\relax
+     \shbscode\handledfont#1\dimexpr#5\spfacdimen\relax}
+
+  \def\dodoinheritspacefactor#1#2%
+    {\sfcode#1\plusthousand
+     \knbccode\handledfont#1\knbccode\handledfont#2\relax
+     \knbscode\handledfont#1\knbscode\handledfont#2\relax
+     \stbscode\handledfont#1\stbscode\handledfont#2\relax
+     \shbscode\handledfont#1\shbscode\handledfont#2\relax}
+
+  \def\definespacefactor#1 #2 #3 #4 #5 %
+    {\setfonttoks
+     \let\inherithandling\inheritspacefactor
+     \appendtoks\dosetquartethandling\dododefinespacefactor#1 #2 #3 #4 #5 \to\fonttoks}
+
+  \def\inheritspacefactor#1 #2 %
+    {\setfonttoks
+     \appendtoks\doinhsomehandling\dodoinheritspacefactor#1 #2 \to\fonttoks}
+
+\fi
+
+\ifx\setspacehandling\gobbleoneargument \else
+  \appendtoks
+    \setspacehandling\askedfonthandling
+  \to \everyenablefonthandling
+\fi
+
 % font attributes
 
 \let\notagcode\minusone
@@ -385,7 +502,13 @@
 \def\dodefinefonthandling[#1][#2][#3]%
   {\ifthirdargument
      \setvalue{\@fha@\@fha@#1}{#2}%
-     \getparameters[\@fha@\@fha@#1][\c!type=\v!hanging,\c!left=1,\c!right=1,\c!min=20,\c!max=20,\c!step=5,#3]%
+     \getparameters
+       [\@fha@\@fha@#1]
+       [\c!type=\v!hanging,%
+        \c!left=1,\c!right=1,%
+        \c!min=20,\c!max=20,\c!step=5,%
+        \c!factor=1,%
+        #3]%
    \else
      \setvalue{\@fha@\@fha@\@fha@#1}{#2}%
    \fi}
@@ -449,20 +572,6 @@
    \fi}
 
 \endETEX
-
-\newtoks\everyenablefonthandling
-
-\ifx\setprotrudingfactor\gobbleoneargument \else
-  \appendtoks
-     \setprotrudingfactor\askedfonthandling
-  \to \everyenablefonthandling
-\fi
-
-\ifx\setfontadjusting\gobbleoneargument \else
-  \appendtoks
-    \setfontadjusting\askedfonthandling
-  \to \everyenablefonthandling
-\fi
 
 \def\redofastenablehandling
   {\edef\fonthandling{\csname\@fha@\@fha@\@fha@\askedfonthandling\endcsname}%

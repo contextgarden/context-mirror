@@ -1,0 +1,32 @@
+%D \module
+%D   [     file=enco-fsl,
+%D      version=2005.08.17,
+%D        title=\CONTEXT\ Encoding Macros,
+%D     subtitle=Slovenian Specialities,
+%D       author={Hans Hagen, Mojka Miklavec},
+%D         date=\currentdate,
+%D    copyright=Hans Hagen]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D Usage:
+%D
+%D \starttyping
+%D \useencoding[fsl]
+%D
+%D \starttext
+%D   \dstroke \language[sl] \dstroke
+%D \stoptext
+%D \stoptyping
+
+\unprotect
+
+\startlanguagespecifics[\s!sl]
+  \startencoding[\s!default]
+    \definecharacter dstroke {d\zcaron} % hm, expects a space delimiter
+  \stopencoding
+\stoplanguagespecifics
+
+\protect \endinput

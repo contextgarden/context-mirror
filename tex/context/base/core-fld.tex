@@ -875,6 +875,8 @@
      \fi
    \egroup}
 
+\chardef\fitfieldmode\plusone % 3 = best
+
 \def\dohandlefitfield[#1][#2][#3][#4][#5]% alleen check
   {\presetlocalframed[\??fd]%
    \localframed
@@ -894,8 +896,17 @@
       \setbox\scratchbox\hbox{\dogetfieldsymbol\@@DriverFieldValue}%
       \scratchdimen\wd\scratchbox \edef\@@DriverFieldWidth {\the\scratchdimen}%
       \scratchdimen\ht\scratchbox \edef\@@DriverFieldHeight{\the\scratchdimen}%
-      \vbox to \ht\scratchbox
-        {\vfill\hbox to \wd\scratchbox{\typesetfield\hfill}\vss}}}
+      \ifcase\fitfieldmode
+        \typesetfield
+      \or % 1 = ignore depth (original, assumed no depth, actually a bug)
+        \vbox to \ht\scratchbox{\vfill\hbox to \wd\scratchbox{\typesetfield\hfill}\vss}%
+      \or % 2 = add depth to height, but no depth in result
+        \advance\scratchdimen\dp\scratchbox \edef\@@DriverFieldHeight{\the\scratchdimen}%
+        \vbox to \ht\scratchbox{\vfill\hbox to \wd\scratchbox{\typesetfield\hfill}\vss}%
+      \or % 3 = add depth to height, and apply depth to result
+        \advance\scratchdimen\dp\scratchbox \edef\@@DriverFieldHeight{\the\scratchdimen}%
+        \hbox to \wd\scratchbox{\lower\dp\scratchbox\hbox{\typesetfield}\hfill}%
+      \fi}}
 
 %D Common stuff
 
