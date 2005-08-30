@@ -820,4 +820,13 @@
 \ifx\leftguillemet \undefined \def\leftguillemet {\leftguillemot } \fi
 \ifx\rightguillemet\undefined \def\rightguillemet{\rightguillemot} \fi
 
+%D New:
+
+\startencoding[\s!default]
+
+\definecharacter schwa      {\hbox{\rotate[\c!rotation=180,\c!location=\v!high]{\hbox{e}}}}
+\definecharacter schwagrave {\buildtextgrave\schwa}
+
+\stopencoding
+
 \endinput

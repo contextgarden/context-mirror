@@ -3060,7 +3060,7 @@
 
 <cd:command name="enumeration" generated="yes">
   <cd:sequence>
-    <cd:variable value="enumeration"/>
+    <cd:variable value="doornummering"/>
   </cd:sequence>
   <cd:arguments>
     <cd:nothing interactive="yes"/>
@@ -3069,7 +3069,7 @@
 
 <cd:command name="enumeration" type="environment" generated="yes">
   <cd:sequence>
-    <cd:variable value="enumeration"/>
+    <cd:variable value="doornummering"/>
   </cd:sequence>
 </cd:command>
 
@@ -3089,7 +3089,7 @@
 
 <cd:command name="description" generated="yes">
   <cd:sequence>
-    <cd:variable value="description"/>
+    <cd:variable value="doordefinitie"/>
   </cd:sequence>
   <cd:arguments>
     <cd:content/>
@@ -3099,7 +3099,7 @@
 
 <cd:command name="description" type="environment" generated="yes">
   <cd:sequence>
-    <cd:variable value="description"/>
+    <cd:variable value="doordefinitie"/>
   </cd:sequence>
   <cd:arguments>
     <cd:content/>

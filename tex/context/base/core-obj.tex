@@ -212,7 +212,8 @@
          \else\ifdim\wd\scratchbox>#4\scaledpoint
            \vss\hbox to #4\scaledpoint{\hss\box\scratchbox\hss}\vss
          \else
-           \vss\box\scratchbox
+          %\vss\box\scratchbox
+           \vss\hbox to #4\scaledpoint{\box\scratchbox\hss}% fix Chof
          \fi\fi}}%
    \box\scratchbox
    \elabelgroup}

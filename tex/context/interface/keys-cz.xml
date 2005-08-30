@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 
-<cd:interface xmlns:cd="http://www.pragma-ade.com/commands" name="context" language="cz" version="2005.08.19">
+<cd:interface xmlns:cd="http://www.pragma-ade.com/commands" name="context" language="cz" version="2005.08.31">
 
   <cd:variables>
     <cd:variable name="one" value="jedna"/>
@@ -404,6 +404,7 @@
     <cd:constant name="tab" value="tab"/>
     <cd:constant name="sign" value="znak"/>
     <cd:constant name="text" value="text"/>
+    <cd:constant name="listtext" value="listtext"/>
     <cd:constant name="textwidth" value="sirkatextu"/>
     <cd:constant name="textcommand" value="textovyprikaz"/>
     <cd:constant name="textsize" value="velikosttextu"/>
@@ -412,6 +413,9 @@
     <cd:constant name="textseparator" value="oddelovactextu"/>
     <cd:constant name="textstate" value="statustextu"/>
     <cd:constant name="title" value="titul"/>
+    <cd:constant name="titlestyle" value="styltitulek"/>
+    <cd:constant name="titlecolor" value="barvatitulek"/>
+    <cd:constant name="titledistance" value="vzdalenosttitulek"/>
     <cd:constant name="aligntitle" value="zarovnejtitul"/>
     <cd:constant name="tolerance" value="tolerance"/>
     <cd:constant name="inbetween" value="mezi"/>
@@ -759,6 +763,8 @@
     <cd:variable name="overprint" value="overprint"/>
     <cd:variable name="knockout" value="knockout"/>
     <cd:variable name="xml" value="xml"/>
+    <cd:variable name="enumeration" value="vycet"/>
+    <cd:variable name="description" value="popis"/>
   </cd:variables>
 
   <cd:constants>

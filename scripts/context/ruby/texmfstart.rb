@@ -72,6 +72,7 @@ $predefined['examplex'] = 'examplex.rb'
 $predefined['concheck'] = 'concheck.rb'
 
 $predefined['textools'] = 'textools.rb'
+$predefined['tmftools'] = 'tmftools.rb'
 $predefined['ctxtools'] = 'ctxtools.rb'
 $predefined['rlxtools'] = 'rlxtools.rb'
 $predefined['pdftools'] = 'pdftools.rb'

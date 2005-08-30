@@ -601,7 +601,7 @@
         \!!widtha\zeropoint
         \!!widthc\zeropoint
         \setbox2\hbox{}%
-}
+}%
          \setbox4\hbox
            {\doif{\listparameter\c!pagenumber}\v!yes
               {\doifsomething{#5}    % \listwidth is new ; temp hack
@@ -979,7 +979,7 @@
   {\getparameters[\??ih#1][#2]%
    \expanded{\setuplist[\getvalue{\??ih#1\c!list}]}[#2]}
 
-\def\setupcombinedlist%
+\def\setupcombinedlist
   {\dodoubleargument\dosetupcombinedlist}
 
 \def\doplacecombinedlist[#1][#2]%
@@ -995,14 +995,17 @@
          \getfromcommacommand[\combinedlist][\!!counta]%
          \edef\maximumlist{\commalistelement}}%
         {\edef\maximumlist{\getvalue{\??ih#1\c!level}}}%
-      \!!counta\getvalue{\??se\getvalue{\??ko\maximumlist\c!section}\c!level}}%
+      \doifdefinedelse{\??ko\maximumlist\c!section}
+        {\!!counta\getvalue{\??se\getvalue{\??ko\maximumlist\c!section}\c!level}}%
+        {\!!counta\zerocount}}
    \let\!!stringa\combinedlist
    \let\combinedlist\empty
    \def\docommand##1%
-     {\ifnum\getvalue{\??se\getvalue{\??ko##1\c!section}\c!level}>\!!counta
-      \else
-        \addtocommalist{##1}\combinedlist
-      \fi}%
+     {\doifdefinedelse{\??ko##1\c!section}
+        {\ifnum\getvalue{\??se\getvalue{\??ko##1\c!section}\c!level}>\!!counta\else
+           \addtocommalist{##1}\combinedlist
+         \fi}%
+        {\addtocommalist{##1}\combinedlist}}%
    \processcommacommand[\!!stringa]\docommand
    \doifvalue{\??ih#1\c!coupling}\v!on
      {\startlistreferences{#1}}%

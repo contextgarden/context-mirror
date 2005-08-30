@@ -235,7 +235,7 @@
      {\setlocalfloathsize
       \getvalue{\??fl#1\c!inner}%
       \fuzzysnappingfalse
-      \postponefootnotes} % new
+      \postponenotes} % new
      {\xdocompletefloat{#1}{#3}{#1}{#2}{#1}{#4}% ** not yet done
        % we need to carry over the par because of side floats
       \doifnotinset\v!text{#2}{\carryoverpar\endgroup}%
@@ -1268,7 +1268,7 @@
   \swapdimens\hsize\vsize
 \fi
    \forgetall
-   \postponefootnotes
+   \postponenotes
    \dontcomplain
    \setbox\tempfloatbox\vbox{\borderedfloatbox{#4}}%
    \def\locatefloat
@@ -1550,7 +1550,7 @@
 \def\dosetparfloat#1#2#3#4%
   {\bgroup
    \forgetall
-   \postponefootnotes
+   \postponenotes
    \dontcomplain
    %\showcomposition
    \setbox\tempfloatbox\vbox{\borderedfloatbox{#4}}%

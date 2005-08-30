@@ -1816,7 +1816,7 @@
 % some fake ones, name will change into build
 
 \unexpanded\def\bottomaccent#1#2#3#4#5% down right slantcorrection accent char
-  {\leavevmode
+  {\dontleavehmode % why this align mess
    \vtop
      {\forgetall
       \baselineskip\zeropoint
@@ -1847,6 +1847,25 @@
 \definecommand b {\buildtextmacron}
 \definecommand d {\buildtextbottomdot}
 \definecommand k {\buildtextogonek}
+
+%D Rarely needed but there:
+
+\unexpanded\def\topaccent#1#2#3#4#5% down right slantcorrection accent char
+  {\dontleavehmode
+   \bgroup
+     \setbox0\hbox{#4}%
+     \setbox2\hbox{#5}%
+     \hbox to \wd2 \bgroup
+        \hss\copy2\hss
+        \hskip-\wd2
+        \hss\hskip#2\wd0\hskip-#3\fontdimen1\font\raise#1\hbox{#4}\hss
+     \egroup
+   \egroup}
+
+\def\buildtextgrave{\topaccent{0pt}{0}{15}{\textgrave}} % e.g.
+
+% \definecharacter schwa      {\hbox{\rotate[rotation=180,location=high]{\hbox{e}}}}
+% \definecharacter schwagrave {\buildtextgrave\schwa}
 
 % math stuff, will change
 

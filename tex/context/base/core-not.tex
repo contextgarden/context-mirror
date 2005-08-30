@@ -652,7 +652,8 @@
    \kern\notesignal\relax} % \relax is needed to honor spaces
 
 \def\dolastnotesymbol
-  {\unskip\unskip
+  {\removeunwantedspaces
+   \doifitalicelse\/\donothing % Charles IV \footnote{the fourth}
    \ifdim\lastkern=\notesignal
      \dodonotesymbol{\kern\noteparameter\c!distance}% gets the font right, hack !
    \fi

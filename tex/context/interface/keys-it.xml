@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 
-<cd:interface xmlns:cd="http://www.pragma-ade.com/commands" name="context" language="it" version="2005.08.19">
+<cd:interface xmlns:cd="http://www.pragma-ade.com/commands" name="context" language="it" version="2005.08.31">
 
   <cd:variables>
     <cd:variable name="one" value="uno"/>
@@ -404,6 +404,7 @@
     <cd:constant name="tab" value="tab"/>
     <cd:constant name="sign" value="segno"/>
     <cd:constant name="text" value="testo"/>
+    <cd:constant name="listtext" value="listtext"/>
     <cd:constant name="textwidth" value="ampiezzatesto"/>
     <cd:constant name="textcommand" value="comandotesto"/>
     <cd:constant name="textsize" value="dimensionetesto"/>
@@ -412,6 +413,9 @@
     <cd:constant name="textseparator" value="separatoretesto"/>
     <cd:constant name="textstate" value="statotesto"/>
     <cd:constant name="title" value="titolo"/>
+    <cd:constant name="titlestyle" value="stiletitolo"/>
+    <cd:constant name="titlecolor" value="coloretitolo"/>
+    <cd:constant name="titledistance" value="distanzatitolo"/>
     <cd:constant name="aligntitle" value="allineatitolo"/>
     <cd:constant name="tolerance" value="tolleranza"/>
     <cd:constant name="inbetween" value="tra"/>
@@ -759,6 +763,8 @@
     <cd:variable name="overprint" value="overprint"/>
     <cd:variable name="knockout" value="knockout"/>
     <cd:variable name="xml" value="xml"/>
+    <cd:variable name="enumeration" value="enumerazione"/>
+    <cd:variable name="description" value="descrizione"/>
   </cd:variables>
 
   <cd:constants>

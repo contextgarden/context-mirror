@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 
-<cd:interface xmlns:cd="http://www.pragma-ade.com/commands" name="context" language="nl" version="2005.08.19">
+<cd:interface xmlns:cd="http://www.pragma-ade.com/commands" name="context" language="nl" version="2005.08.31">
 
   <cd:variables>
     <cd:variable name="one" value="een"/>
@@ -404,6 +404,7 @@
     <cd:constant name="tab" value="tab"/>
     <cd:constant name="sign" value="teken"/>
     <cd:constant name="text" value="tekst"/>
+    <cd:constant name="listtext" value="lijsttekst"/>
     <cd:constant name="textwidth" value="tekstbreedte"/>
     <cd:constant name="textcommand" value="tekstcommando"/>
     <cd:constant name="textsize" value="tekstformaat"/>
@@ -412,6 +413,9 @@
     <cd:constant name="textseparator" value="tekstscheider"/>
     <cd:constant name="textstate" value="tekststatus"/>
     <cd:constant name="title" value="titel"/>
+    <cd:constant name="titlestyle" value="titelletter"/>
+    <cd:constant name="titlecolor" value="titelkleur"/>
+    <cd:constant name="titledistance" value="titelafstand"/>
     <cd:constant name="aligntitle" value="titeluitlijnen"/>
     <cd:constant name="tolerance" value="tolerantie"/>
     <cd:constant name="inbetween" value="tussen"/>
@@ -759,6 +763,8 @@
     <cd:variable name="overprint" value="overprint"/>
     <cd:variable name="knockout" value="knockout"/>
     <cd:variable name="xml" value="xml"/>
+    <cd:variable name="enumeration" value="doornummering"/>
+    <cd:variable name="description" value="doordefinitie"/>
   </cd:variables>
 
   <cd:constants>

@@ -131,9 +131,15 @@
 \def\enablemode {\unprotect\doenablemode }
 \def\disablemode{\unprotect\dodisablemode}
 
-\def\dopreventmode[#1]{\protect\rawprocesscommalist[#1]\dodopreventmode}
-\def\doenablemode [#1]{\protect\rawprocesscommalist[#1]\dodoenablemode }
-\def\dodisablemode[#1]{\protect\rawprocesscommalist[#1]\dododisablemode}
+% \def\dopreventmode[#1]{\protect\rawprocesscommalist[#1]\dodopreventmode}
+% \def\doenablemode [#1]{\protect\rawprocesscommalist[#1]\dodoenablemode }
+% \def\dodisablemode[#1]{\protect\rawprocesscommalist[#1]\dododisablemode}
+%
+% better:
+
+\def\dopreventmode[#1]{\protect\cleanuplabel{#1}\rawprocesscommalist[\cleanlabel]\dodopreventmode}
+\def\doenablemode [#1]{\protect\cleanuplabel{#1}\rawprocesscommalist[\cleanlabel]\dodoenablemode }
+\def\dodisablemode[#1]{\protect\cleanuplabel{#1}\rawprocesscommalist[\cleanlabel]\dododisablemode}
 
 \def\dodopreventmode#1%
   {\@EA\let\csname\@mode@#1\endcsname\preventedmode}
@@ -155,16 +161,30 @@
 \def\dodocheckformode#1%
   {\ifcase0\csname\@mode@#1\endcsname\or\checkedmodetrue\fi}
 
+% \def\docheckformode#1#2#3% will be sped up with a quit
+%   {\protect\checkedmodefalse\rawprocesscommalist[#3]\dodocheckformode
+%    \ifcheckedmode\@EA#1\else\@EA#2\fi}
+%
+% better:
+
 \def\docheckformode#1#2#3% will be sped up with a quit
-  {\protect\checkedmodefalse\rawprocesscommalist[#3]\dodocheckformode
+  {\cleanuplabel{#3}%
+   \protect\checkedmodefalse\rawprocesscommacommand[\cleanlabel]\dodocheckformode
    \ifcheckedmode\@EA#1\else\@EA#2\fi}
 
 \def\dodocheckforallmodes#1%
   {\ifcase0\csname\@mode@#1\endcsname\relax
      \checkedmodefalse\or\or\checkedmodefalse\fi}
 
+% \def\docheckforallmodes#1#2#3% will be sped up with a quit
+%   {\protect\checkedmodetrue\rawprocesscommalist[#3]\dodocheckforallmodes
+%    \ifcheckedmode\@EA#1\else\@EA#2\fi}
+%
+% better:
+
 \def\docheckforallmodes#1#2#3% will be sped up with a quit
-  {\protect\checkedmodetrue\rawprocesscommalist[#3]\dodocheckforallmodes
+  {\cleanuplabel{#3}%
+   \protect\checkedmodetrue\rawprocesscommacommand[\cleanlabel]\dodocheckforallmodes
    \ifcheckedmode\@EA#1\else\@EA#2\fi}
 
 % simple ones
@@ -284,9 +304,15 @@
 \unexpanded \def\setups{\doifnextcharelse\bgroup\dosetupsA\dosetupsB} % {..} or [..]
 \unexpanded \def\setup {\doifnextcharelse\bgroup\dosetups \dosetupsC} % {..} or [..]
 
-\def\dosetupsA  #1{\processcommacommand[#1]\dosetups} % {..}
-\def\dosetupsB[#1]{\processcommacommand[#1]\dosetups} % [..]
-\def\dosetupsC[#1]{\dosetups{#1}} % [..]
+% \def\dosetupsA  #1{\processcommacommand[#1]\dosetups} % {..}
+% \def\dosetupsB[#1]{\processcommacommand[#1]\dosetups} % [..]
+% \def\dosetupsC[#1]{\dosetups{#1}} % [..]
+%
+% better:
+
+\def\dosetupsA  #1{\cleanuplabel{#1}\processcommacommand[\cleanlabel]\dosetups} % {..}
+\def\dosetupsB[#1]{\cleanuplabel{#1}\processcommacommand[\cleanlabel]\dosetups} % [..]
+\def\dosetupsC[#1]{\cleanuplabel{#1}\dosetups\cleanlabel} % [..]
 
 \def\dosetups#1% the grid option will be extended to other main modes
   {\executeifdefined{\??su\ifgridsnapping\v!grid\fi:#1}{\csname\??su:#1\endcsname}\empty}
@@ -320,10 +346,12 @@
   {\ifthirdargument\@EA\startsetupsC\else\@EA\startsetupsD\fi}
 
 % \long\def\dodostartsetups#1#2#3% watch out: not \grabuntil
-%   {\dograbuntil#1{\egroup\long\setvalue{\??su#2:#3}}}
+%   {\dograbuntil#1{\egroup\dodoglobal\long\setvalue{\??su#2:#3}}} % \doglobal
+%
+% better:
 
 \long\def\dodostartsetups#1#2#3% watch out: not \grabuntil
-  {\dograbuntil#1{\egroup\dodoglobal\long\setvalue{\??su#2:#3}}} % \doglobal
+  {\cleanuplabel{\??su#2:#3}\dograbuntil#1{\egroup\dodoglobal\long\setvalue\cleanlabel}} % \doglobal
 
 \def\systemsetupsprefix{*}
 

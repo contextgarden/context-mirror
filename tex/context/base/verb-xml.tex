@@ -84,8 +84,8 @@
 \gdef\XMLsetcontrols%
   {\saveprettycontrols
    \def\obeyedspace%
-     {\ifinXMLvalue 
-      \else % more tests ? 
+     {\ifinXMLvalue
+      \else % more tests ?
         \XMLstartattribute
       \fi
       \oldobeyedspace
@@ -107,7 +107,8 @@
    \setpretty`\"=20
    \setpretty`\(=30 \setpretty`\)=30 \setpretty`\,=30
    \setpretty`\*=30 \setpretty`\+=30 \setpretty`\#=30
-   \setpretty`\:=30
+%  \setpretty`\:=30
+   \setpretty`\:=10 % better for tags
    \setpretty`\&=41 \setpretty`\;=42 }
 
 \gdef\XMLsethandlers%
@@ -224,7 +225,7 @@
 
 \gdef\XMLstartattribute%
   {\ifinXMLcomment \else
-     \ifinXMLpi 
+     \ifinXMLpi
        \ifXMLmarkkeys\else\endXMLtagname\fi % option
      \else
        \endXMLtagname

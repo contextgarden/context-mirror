@@ -721,7 +721,7 @@
 %    \fi
 %    \if!!donea
 %      \ifcase\csname\??am\??am\csname#1\c!samepage\endcsname\endcsname\relax
-%        \copycsname#1\c!color\endcsname\csname#1\c!contrastkleur\endcsname
+%        \copycsname#1\c!color\endcsname\csname#1\c!contrastcolor\endcsname
 %        \@EAEAEA\dosetlocationboxyes
 %      \or
 %        \@EAEAEA\dosetlocationboxempty
@@ -1396,7 +1396,7 @@
 
 \newbox\meterbox
 
-\newif\ifbalksymbool
+\newif\ifbarsymbol
 
 \def\doganaareenpagina#1#2#3% nog checken !
   {\checkreferences  % nodig ??
@@ -1532,7 +1532,7 @@
        \bgroup
       %\setupinteraction[\c!width=\!!zeropoint]%
        \setinteractionparameter\c!width\!!zeropoint
-       \ifbalksymbool % beter: 3 chars assign en 3*box
+       \ifbarsymbol % beter: 3 chars assign en 3*box
          \setupsymbolset[\@@iasymbolset]%
          \setbox0\hbox{\symbol[\v!previous]}%
          \setbox2\hbox{\symbol[\v!somewhere]}%
@@ -1586,7 +1586,7 @@
          \noindent
          \hbox to \@@ibwidth
            \bgroup
-             \ifbalksymbool
+             \ifbarsymbol
                \setupsymbolset[\@@iasymbolset]%
                \setbox0\hbox{\symbol[\v!previous]}%
                \setbox2\hbox{\symbol[\v!somewhere]}%
@@ -1652,7 +1652,7 @@
 \advance\!!widtha \@@ibwidth
 \advance\!!countc \plusone
 \divide\!!widtha \!!countc
-       \ifbalksymbool
+       \ifbarsymbol
          \setupsymbolset[\@@iasymbolset]%
          \setbox0\hbox{\symbol[\v!previous]}%
          \setbox4\hbox{\symbol[\v!somewhere]}%
@@ -1748,7 +1748,7 @@
                \s!default=>\checkinteractionbar{10em}\v!broad\!!zeropoint,
                \s!unknown=>\checkinteractionbar{10em}\v!broad\!!zeropoint]%
             \doifelse\@@ibsymbol\v!yes
-              \balksymbooltrue\balksymboolfalse
+              \barsymboltrue\barsymbolfalse
             \getvalue{interactionbar\@@ibalternative}%
             \stopinteraction}%
        \fi
@@ -2308,7 +2308,7 @@
 % \useattachment[whatever][newname][test.tex]
 % \useattachment[whatever][title][newname][test.tex]
 %
-% % \setupattachments[\c!symbool={symbol-normal,symbol-down}]
+% % \setupattachments[\c!symbol={symbol-normal,symbol-down}]
 %
 % \starttext \attachment[whatever] \stoptext
 
@@ -2351,7 +2351,7 @@
        \doifundefined{\??at:#2}
          {\showmessage\m!interactions6{#2}%
           \useattachment[#2]}%
-       \doif\@@atstatus\v!start
+       \doif\@@atstate\v!start
          {\bgroup
           \getattachmentdata[#2]%
           \doiffileelse\attachmentfile
@@ -2360,7 +2360,7 @@
 \struttedbox{\tbox{%
              \doattachfile
                \attachmenttitle
-               {1em}\strutheight\strutdepth\@@atkleur\@@atsymbool
+               {1em}\strutheight\strutdepth\@@atcolor\@@atsymbol
                \attachmentname
                \attachmentfile}%
 }}%
@@ -2372,7 +2372,7 @@
    \fi}
 
 \def\presetattachmentvariables
-  {\let\@@DriverAttachmentLayer\@@attekstlaag}
+  {\let\@@DriverAttachmentLayer\@@attextlayer}
 
 \def\setupattachments
   {\dodoubleempty\getparameters[\??at]}
