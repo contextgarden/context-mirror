@@ -1,63 +1,69 @@
-% LM Support for VN fonts, thanks to Jacko
-
-vnb10    LMRomanDemi10-Regular          <t5-lm.enc <lmb10.pfb
-vnbx5    LMRoman5-Bold                  <t5-lm.enc <lmbx5.pfb
-vnbx6    LMRoman6-Bold                  <t5-lm.enc <lmbx6.pfb
-vnbx7    LMRoman7-Bold                  <t5-lm.enc <lmbx7.pfb
-vnbx8    LMRoman8-Bold                  <t5-lm.enc <lmbx8.pfb
-vnbx9    LMRoman9-Bold                  <t5-lm.enc <lmbx9.pfb
-vnbx10   LMRoman10-Bold                 <t5-lm.enc <lmbx10.pfb
-vnbx12   LMRoman12-Bold                 <t5-lm.enc <lmbx12.pfb
-vnbxsl10 LMSlanted10-BoldItalic         <t5-lm.enc <lmbxo10.pfb
-vnbxti10 LMRoman10-BoldItalic           <t5-lm.enc <lmbxi10.pfb
-vncsc10  LMCaps10-Regular               <t5-lm.enc <lmcsc10.pfb
-vnitt10  LMTypewriter10-Italic          <t5-lm.enc <lmtti10.pfb
-vnr5     LMRoman5-Regular               <t5-lm.enc <lmr5.pfb
-vnr6     LMRoman6-Regular               <t5-lm.enc <lmr6.pfb
-vnr7     LMRoman7-Regular               <t5-lm.enc <lmr7.pfb
-vnr8     LMRoman8-Regular               <t5-lm.enc <lmr8.pfb
-vnr9     LMRoman9-Regular               <t5-lm.enc <lmr9.pfb
-vnr10    LMRoman10-Regular              <t5-lm.enc <lmr10.pfb
-vnr12    LMRoman12-Regular              <t5-lm.enc <lmr12.pfb
-vnr17    LMRoman17-Regular              <t5-lm.enc <lmr17.pfb
-vnsl8    LMSlanted8-Italic              <t5-lm.enc <lmro8.pfb
-vnsl9    LMSlanted9-Italic              <t5-lm.enc <lmro9.pfb
-vnsl10   LMSlanted10-Italic             <t5-lm.enc <lmro10.pfb
-vnsl12   LMSlanted12-Italic             <t5-lm.enc <lmro12.pfb
-vnsltt10 LMTypewriterSlanted10-Italic   <t5-lm.enc <lmtto10.pfb
-vnss8    LMSans8-Regular                <t5-lm.enc <lmss8.pfb
-vnss9    LMSans9-Regular                <t5-lm.enc <lmss9.pfb
-vnss10   LMSans10-Regular               <t5-lm.enc <lmss10.pfb
-vnss12   LMSans12-Regular               <t5-lm.enc <lmss12.pfb
-vnss17   LMSans17-Regular               <t5-lm.enc <lmss17.pfb
-vnssbx10 LMSans10-Bold                  <t5-lm.enc <lmssbx10.pfb
-vnssdc10 LMSansDemiCond10-Regular       <t5-lm.enc <lmssdc10.pfb
-vnssi8   LMSans8-Italic                 <t5-lm.enc <lmssi8.pfb
-vnssi9   LMSans9-Italic                 <t5-lm.enc <lmssi9.pfb
-vnssi10  LMSans10-Italic                <t5-lm.enc <lmssi10.pfb
-vnssi12  LMSans12-Italic                <t5-lm.enc <lmssi12.pfb
-vnssi17  LMSans17-Italic                <t5-lm.enc <lmssi17.pfb
-vnssq8   LMSansQuotation8-Regular       <t5-lm.enc <lmssq8.pfb
-vnssqi8  LMSansQuotation8-Italic        <t5-lm.enc <lmssqo8.pfb
-vntcsc10 LMTypewriterCaps10-Regular     <t5-lm.enc <lmtcsc10.pfb
-vnti7    LMRoman7-Italic                <t5-lm.enc <lmri7.pfb
-vnti8    LMRoman8-Italic                <t5-lm.enc <lmri8.pfb
-vnti9    LMRoman9-Italic                <t5-lm.enc <lmri9.pfb
-vnti10   LMRoman10-Italic               <t5-lm.enc <lmri10.pfb
-vnti12   LMRoman12-Italic               <t5-lm.enc <lmri12.pfb
-vntt8    LMTypewriter8-Regular          <t5-lm.enc <lmtt8.pfb
-vntt9    LMTypewriter9-Regular          <t5-lm.enc <lmtt9.pfb
-vntt10   LMTypewriter10-Regular         <t5-lm.enc <lmtt10.pfb
-vntt12   LMTypewriter12-Regular         <t5-lm.enc <lmtt12.pfb
-vnvtt10  LMTypewriterVarWd10-Regular    <t5-lm.enc <lmvtt10.pfb
-
-% a weird one, not used in context
-
-vnu10  LMRoman10-Italic "-0.25 SlantFont" <t5-lm.enc <lmri10.pfb
-
-% unsupported
-
-% vndunh10
-% vnff10
-% vnfi10
-% vnfib8
+t5-lmb10 LMRoman10-Demi "enclmt5 ReEncodeFont" <lm-t5.enc <lmb10.pfb
+t5-lmbo10 LMRoman10-DemiOblique "enclmt5 ReEncodeFont" <lm-t5.enc <lmbo10.pfb
+t5-lmbx10 LMRoman10-Bold "enclmt5 ReEncodeFont" <lm-t5.enc <lmbx10.pfb
+t5-lmbx12 LMRoman12-Bold "enclmt5 ReEncodeFont" <lm-t5.enc <lmbx12.pfb
+t5-lmbx5 LMRoman5-Bold "enclmt5 ReEncodeFont" <lm-t5.enc <lmbx5.pfb
+t5-lmbx6 LMRoman6-Bold "enclmt5 ReEncodeFont" <lm-t5.enc <lmbx6.pfb
+t5-lmbx7 LMRoman7-Bold "enclmt5 ReEncodeFont" <lm-t5.enc <lmbx7.pfb
+t5-lmbx8 LMRoman8-Bold "enclmt5 ReEncodeFont" <lm-t5.enc <lmbx8.pfb
+t5-lmbx9 LMRoman9-Bold "enclmt5 ReEncodeFont" <lm-t5.enc <lmbx9.pfb
+t5-lmbxi10 LMRoman10-BoldItalic "enclmt5 ReEncodeFont" <lm-t5.enc <lmbxi10.pfb
+t5-lmbxo10 LMRoman10-BoldOblique "enclmt5 ReEncodeFont" <lm-t5.enc <lmbxo10.pfb
+t5-lmcsc10 LMRoman10-CapsRegular "enclmt5 ReEncodeFont" <lm-t5.enc <lmcsc10.pfb
+t5-lmcsco10 LMRoman10-CapsOblique "enclmt5 ReEncodeFont" <lm-t5.enc <lmcsco10.pfb
+t5-lmr10 LMRoman10-Regular "enclmt5 ReEncodeFont" <lm-t5.enc <lmr10.pfb
+t5-lmr12 LMRoman12-Regular "enclmt5 ReEncodeFont" <lm-t5.enc <lmr12.pfb
+t5-lmr17 LMRoman17-Regular "enclmt5 ReEncodeFont" <lm-t5.enc <lmr17.pfb
+t5-lmr5 LMRoman5-Regular "enclmt5 ReEncodeFont" <lm-t5.enc <lmr5.pfb
+t5-lmr6 LMRoman6-Regular "enclmt5 ReEncodeFont" <lm-t5.enc <lmr6.pfb
+t5-lmr7 LMRoman7-Regular "enclmt5 ReEncodeFont" <lm-t5.enc <lmr7.pfb
+t5-lmr8 LMRoman8-Regular "enclmt5 ReEncodeFont" <lm-t5.enc <lmr8.pfb
+t5-lmr9 LMRoman9-Regular "enclmt5 ReEncodeFont" <lm-t5.enc <lmr9.pfb
+t5-lmri10 LMRoman10-Italic "enclmt5 ReEncodeFont" <lm-t5.enc <lmri10.pfb
+t5-lmri12 LMRoman12-Italic "enclmt5 ReEncodeFont" <lm-t5.enc <lmri12.pfb
+t5-lmri7 LMRoman7-Italic "enclmt5 ReEncodeFont" <lm-t5.enc <lmri7.pfb
+t5-lmri8 LMRoman8-Italic "enclmt5 ReEncodeFont" <lm-t5.enc <lmri8.pfb
+t5-lmri9 LMRoman9-Italic "enclmt5 ReEncodeFont" <lm-t5.enc <lmri9.pfb
+t5-lmro10 LMRoman10-Oblique "enclmt5 ReEncodeFont" <lm-t5.enc <lmro10.pfb
+t5-lmro12 LMRoman12-Oblique "enclmt5 ReEncodeFont" <lm-t5.enc <lmro12.pfb
+t5-lmro17 LMRoman17-Oblique "enclmt5 ReEncodeFont" <lm-t5.enc <lmro17.pfb
+t5-lmro8 LMRoman8-Oblique "enclmt5 ReEncodeFont" <lm-t5.enc <lmro8.pfb
+t5-lmro9 LMRoman9-Oblique "enclmt5 ReEncodeFont" <lm-t5.enc <lmro9.pfb
+t5-lmss10 LMSans10-Regular "enclmt5 ReEncodeFont" <lm-t5.enc <lmss10.pfb
+t5-lmss12 LMSans12-Regular "enclmt5 ReEncodeFont" <lm-t5.enc <lmss12.pfb
+t5-lmss17 LMSans17-Regular "enclmt5 ReEncodeFont" <lm-t5.enc <lmss17.pfb
+t5-lmss8 LMSans8-Regular "enclmt5 ReEncodeFont" <lm-t5.enc <lmss8.pfb
+t5-lmss9 LMSans9-Regular "enclmt5 ReEncodeFont" <lm-t5.enc <lmss9.pfb
+t5-lmssbo10 LMSans10-BoldOblique "enclmt5 ReEncodeFont" <lm-t5.enc <lmssbo10.pfb
+t5-lmssbx10 LMSans10-Bold "enclmt5 ReEncodeFont" <lm-t5.enc <lmssbx10.pfb
+t5-lmssdc10 LMSans10-DemiCondensed "enclmt5 ReEncodeFont" <lm-t5.enc <lmssdc10.pfb
+t5-lmssdo10 LMSans10-DemiCondensedOblique "enclmt5 ReEncodeFont" <lm-t5.enc <lmssdo10.pfb
+t5-lmsso10 LMSans10-Oblique "enclmt5 ReEncodeFont" <lm-t5.enc <lmsso10.pfb
+t5-lmsso12 LMSans12-Oblique "enclmt5 ReEncodeFont" <lm-t5.enc <lmsso12.pfb
+t5-lmsso17 LMSans17-Oblique "enclmt5 ReEncodeFont" <lm-t5.enc <lmsso17.pfb
+t5-lmsso8 LMSans8-Oblique "enclmt5 ReEncodeFont" <lm-t5.enc <lmsso8.pfb
+t5-lmsso9 LMSans9-Oblique "enclmt5 ReEncodeFont" <lm-t5.enc <lmsso9.pfb
+t5-lmssq8 LMSansQuotation8-Regular "enclmt5 ReEncodeFont" <lm-t5.enc <lmssq8.pfb
+t5-lmssqbo8 LMSansQuotation8-BoldOblique "enclmt5 ReEncodeFont" <lm-t5.enc <lmssqbo8.pfb
+t5-lmssqbx8 LMSansQuotation8-Bold "enclmt5 ReEncodeFont" <lm-t5.enc <lmssqbx8.pfb
+t5-lmssqo8 LMSansQuotation8-Oblique "enclmt5 ReEncodeFont" <lm-t5.enc <lmssqo8.pfb
+t5-lmtcsc10 LMTypewriter10-CapsRegular "enclmt5 ReEncodeFont" <lm-t5.enc <lmtcsc10.pfb
+t5-lmtcso10 LMTypewriter10-CapsOblique "enclmt5 ReEncodeFont" <lm-t5.enc <lmtcso10.pfb
+t5-lmtl10 LMTypewriter10-Light "enclmt5 ReEncodeFont" <lm-t5.enc <lmtl10.pfb
+t5-lmtlo10 LMTypewriter10-LightOblique "enclmt5 ReEncodeFont" <lm-t5.enc <lmtlo10.pfb
+t5-lmtlc10 LMTypewriter10-LightCondensed "enclmt5 ReEncodeFont" <lm-t5.enc <lmtlc10.pfb
+t5-lmtlco10 LMTypewriter10-LightCondensedOblique "enclmt5 ReEncodeFont" <lm-t5.enc <lmtlco10.pfb
+t5-lmtk10 LMTypewriter10-Dark "enclmt5 ReEncodeFont" <lm-t5.enc <lmtk10.pfb
+t5-lmtko10 LMTypewriter10-DarkOblique "enclmt5 ReEncodeFont" <lm-t5.enc <lmtko10.pfb
+t5-lmtt10 LMTypewriter10-Regular "enclmt5 ReEncodeFont" <lm-t5.enc <lmtt10.pfb
+t5-lmtt12 LMTypewriter12-Regular "enclmt5 ReEncodeFont" <lm-t5.enc <lmtt12.pfb
+t5-lmtt8 LMTypewriter8-Regular "enclmt5 ReEncodeFont" <lm-t5.enc <lmtt8.pfb
+t5-lmtt9 LMTypewriter9-Regular "enclmt5 ReEncodeFont" <lm-t5.enc <lmtt9.pfb
+t5-lmtti10 LMTypewriter10-Italic "enclmt5 ReEncodeFont" <lm-t5.enc <lmtti10.pfb
+t5-lmtto10 LMTypewriter10-Oblique "enclmt5 ReEncodeFont" <lm-t5.enc <lmtto10.pfb
+t5-lmvtt10 LMTypewriterVarWd10-Regular "enclmt5 ReEncodeFont" <lm-t5.enc <lmvtt10.pfb
+t5-lmvtto10 LMTypewriterVarWd10-Oblique "enclmt5 ReEncodeFont" <lm-t5.enc <lmvtto10.pfb
+t5-lmvtl10 LMTypewriterVarWd10-Light "enclmt5 ReEncodeFont" <lm-t5.enc <lmvtl10.pfb
+t5-lmvtlo10 LMTypewriterVarWd10-LightOblique "enclmt5 ReEncodeFont" <lm-t5.enc <lmvtlo10.pfb
+t5-lmvtk10 LMTypewriterVarWd10-Dark "enclmt5 ReEncodeFont" <lm-t5.enc <lmvtk10.pfb
+t5-lmvtko10 LMTypewriterVarWd10-DarkOblique "enclmt5 ReEncodeFont" <lm-t5.enc <lmvtko10.pfb

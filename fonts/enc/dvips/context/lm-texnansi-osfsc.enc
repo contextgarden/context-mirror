@@ -53,16 +53,16 @@
 /hyphen             %  45
 /period             %  46
 /slash              %  47
-/zerooldstyle       %  48
-/oneoldstyle        %  49
-/twooldstyle        %  50
-/threeoldstyle      %  51
-/fouroldstyle       %  52
-/fiveoldstyle       %  53
-/sixoldstyle        %  54
-/sevenoldstyle      %  55
-/eightoldstyle      %  56
-/nineoldstyle       %  57
+/zero.oldstyle      %  48
+/one.oldstyle       %  49
+/two.oldstyle       %  50
+/three.oldstyle     %  51
+/four.oldstyle      %  52
+/five.oldstyle      %  53
+/six.oldstyle       %  54
+/seven.oldstyle     %  55
+/eight.oldstyle     %  56
+/nine.oldstyle      %  57
 /colon              %  58
 /semicolon          %  59
 /less               %  60 /exclamdown in TeX text

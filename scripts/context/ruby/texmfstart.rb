@@ -703,6 +703,49 @@ def process(&block)
 
 end
 
+def checktree(tree)
+    unless tree.empty? then
+        begin
+            setuptex = File.join(tree,'setuptex.tmf')
+            if FileTest.file?(setuptex) then
+                report('')
+                report("tex tree : #{setuptex}")
+                ENV['TEXPATH'] = tree.sub(/\/+$/,'') # + '/'
+                ENV['TMP'] = ENV['TMP'] || ENV['TEMP'] || ENV['TMPDIR'] || ENV['HOME']
+                case RUBY_PLATFORM
+                    when /(mswin|bccwin|mingw|cygwin)/i then ENV['TEXOS'] = ENV['TEXOS'] || 'texmf-mswin'
+                    when /(linux)/i                     then ENV['TEXOS'] = ENV['TEXOS'] || 'texmf-linux'
+                    when /(darwin|rhapsody|nextstep)/i  then ENV['TEXOS'] = ENV['TEXOS'] || 'texmf-macosx'
+                #   when /(netbsd|unix)/i               then # todo
+                    else                                     # todo
+                end
+                ENV['TEXMFOS'] = "#{ENV['TEXPATH']}/#{ENV['TEXOS']}"
+                report('')
+                report("preset   : TEXPATH => #{ENV['TEXPATH']}")
+                report("preset   : TEXOS   => #{ENV['TEXOS']}")
+                report("preset   : TEXMFOS => #{ENV['TEXMFOS']}")
+                report("preset   : TMP => #{ENV['TMP']}")
+                report('')
+                IO.readlines(File.join(tree,'setuptex.tmf')).each do |line|
+                    case line
+                        when /^[\#\%]/ then
+                            # comment
+                        when /^(.*?)\s+\=\s+(.*)\s*$/ then
+                            k, v = $1, $2
+                            ENV[k] = v.gsub(/\%(.*?)\%/) do
+                                ENV[$1] || ''
+                            end
+                            report("user set : #{k} => #{ENV[k]}")
+                    end
+                end
+            else
+                report("no setup file '#{setuptex}'")
+            end
+        rescue
+        end
+    end
+end
+
 def execute(arguments)
 
     arguments = arguments.split(/\s+/) if arguments.class == String
@@ -724,6 +767,8 @@ def execute(arguments)
     $locate      = $directives['locate']    || false
 
     $path        = $directives['path']      || ''
+    $tree        = $directives['tree']      || ''
+
 
     $make        = $directives['make']      || false
     $unix        = $directives['unix']      || false
@@ -762,10 +807,12 @@ def execute(arguments)
 
     if $help || ! $filename || $filename.empty? then
         usage
+        checktree($tree)
     elsif $batch && $filename && ! $filename.empty? then
         # todo, take commands from file and avoid multiple starts and checks
     else
         report("texmfstart version #{$version}")
+        checktree($tree)
         if $make then
             if $windows then
                 make($filename,true,false)

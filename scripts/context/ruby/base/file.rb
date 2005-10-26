@@ -37,7 +37,7 @@ class File
     end
 
     def File.splitname(name,suffix='')
-        if name =~ /(.*)\.([^\.]*?)$/o then
+        if name =~ /^(.*)\.([^\.]*?)$/o then
             [$1, $2]
         else
             [name, suffix]

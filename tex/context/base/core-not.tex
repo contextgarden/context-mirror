@@ -704,17 +704,30 @@
 \def\dodonotesymbol#1%
   {\noteparameter\c!textcommand{\doattributes{\??vn\currentnote}\c!textstyle\c!textcolor{#1}}}
 
+% \def\donotesymbol[#1][#2]%
+%   {\bgroup
+%    \ifnotesenabled
+%      \def\currentnote{#1}%
+%      \ifsecondargument
+%        \ifx\lastnotesymbol\relax % bugged
+%          \unskip
+%          \gotobox{\dodonotesymbol\currenttextreference}[#2]%
+%        \else
+%          \lastnotesymbol
+%        \fi
+%      \else
+%        \lastnotesymbol
+%      \fi
+%    \fi
+%    \egroup}
+
 \def\donotesymbol[#1][#2]%
   {\bgroup
    \ifnotesenabled
      \def\currentnote{#1}%
      \ifsecondargument
-       \ifx\lastnotesymbol\relax
-         \unskip
-         \gotobox{\dodonotesymbol\currenttextreference}[#2]%
-       \else
-         \lastnotesymbol
-       \fi
+       \unskip
+       \gotobox{\dodonotesymbol\currenttextreference}[#2]%
      \else
        \lastnotesymbol
      \fi

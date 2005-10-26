@@ -1,0 +1,320 @@
+%D \module
+%D   [       file=type-old,
+%D        version=2005.09.07, % moved from type-*.tex
+%D          title=\CONTEXT\ Typescript Macros,
+%D       subtitle=Ghosts from the Past,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\endinput
+
+% \starttypescript[all][modern,latin-modern,computer-modern][pl0]
+%
+%   \definefontsynonym[pl0-lmb10]   [plb10]    [encoding=pl0]
+%   \definefontsynonym[pl0-lmbo10]  [plbsl10]  [encoding=pl0]
+%   \definefontsynonym[pl0-lmbx10]  [plbx10]   [encoding=pl0]
+%   \definefontsynonym[pl0-lmbx12]  [plbx12]   [encoding=pl0]
+%   \definefontsynonym[pl0-lmbx5]   [plbx5]    [encoding=pl0]
+%   \definefontsynonym[pl0-lmbx6]   [plbx6]    [encoding=pl0]
+%   \definefontsynonym[pl0-lmbx7]   [plbx7]    [encoding=pl0]
+%   \definefontsynonym[pl0-lmbx8]   [plbx8]    [encoding=pl0]
+%   \definefontsynonym[pl0-lmbx9]   [plbx9]    [encoding=pl0]
+%   \definefontsynonym[pl0-lmbxi10] [plbxti10] [encoding=pl0]
+%   \definefontsynonym[pl0-lmbxo10] [plbxsl10] [encoding=pl0]
+%   \definefontsynonym[pl0-lmcsc10] [plcsc10]  [encoding=pl0]
+%   \definefontsynonym[pl0-lmcsco10][plcscsl10][encoding=pl0]
+%   \definefontsynonym[pl0-lmr10]   [plr10]    [encoding=pl0]
+%   \definefontsynonym[pl0-lmr12]   [plr12]    [encoding=pl0]
+%   \definefontsynonym[pl0-lmr17]   [plr17]    [encoding=pl0]
+%   \definefontsynonym[pl0-lmr5]    [plr5]     [encoding=pl0]
+%   \definefontsynonym[pl0-lmr6]    [plr6]     [encoding=pl0]
+%   \definefontsynonym[pl0-lmr7]    [plr7]     [encoding=pl0]
+%   \definefontsynonym[pl0-lmr8]    [plr8]     [encoding=pl0]
+%   \definefontsynonym[pl0-lmr9]    [plr9]     [encoding=pl0]
+%   \definefontsynonym[pl0-lmri10]  [plti10]   [encoding=pl0]
+%   \definefontsynonym[pl0-lmri12]  [plti12]   [encoding=pl0]
+%   \definefontsynonym[pl0-lmri7]   [plti7]    [encoding=pl0]
+%   \definefontsynonym[pl0-lmri8]   [plti8]    [encoding=pl0]
+%   \definefontsynonym[pl0-lmri9]   [plti9]    [encoding=pl0]
+%   \definefontsynonym[pl0-lmro10]  [plsl10]   [encoding=pl0]
+%   \definefontsynonym[pl0-lmro12]  [plsl12]   [encoding=pl0]
+%   \definefontsynonym[pl0-lmro8]   [plsl8]    [encoding=pl0]
+%   \definefontsynonym[pl0-lmro9]   [plsl9]    [encoding=pl0]
+%   \definefontsynonym[pl0-lmss10]  [plss10]   [encoding=pl0]
+%   \definefontsynonym[pl0-lmss12]  [plss12]   [encoding=pl0]
+%   \definefontsynonym[pl0-lmss17]  [plss17]   [encoding=pl0]
+%   \definefontsynonym[pl0-lmss8]   [plss8]    [encoding=pl0]
+%   \definefontsynonym[pl0-lmss9]   [plss9]    [encoding=pl0]
+%   \definefontsynonym[pl0-lmssbo10][plssbi10] [encoding=pl0]
+%   \definefontsynonym[pl0-lmssbx10][plssbx10] [encoding=pl0]
+%   \definefontsynonym[pl0-lmssdc10][plssdc10] [encoding=pl0]
+%   \definefontsynonym[pl0-lmssdo10][plssdi10] [encoding=pl0]
+%   \definefontsynonym[pl0-lmsso10] [plssi10]  [encoding=pl0]
+%   \definefontsynonym[pl0-lmsso12] [plssi12]  [encoding=pl0]
+%   \definefontsynonym[pl0-lmsso17] [plssi17]  [encoding=pl0]
+%   \definefontsynonym[pl0-lmsso8]  [plssi8]   [encoding=pl0]
+%   \definefontsynonym[pl0-lmsso9]  [plssi9]   [encoding=pl0]
+%   \definefontsynonym[pl0-lmssq8]  [plssq8]   [encoding=pl0]
+%   \definefontsynonym[pl0-lmssqbo8][plssqbi8] [encoding=pl0]
+%   \definefontsynonym[pl0-lmssqbx8][plssqb8]  [encoding=pl0]
+%   \definefontsynonym[pl0-lmssqo8] [plssqi8]  [encoding=pl0]
+%   \definefontsynonym[pl0-lmtcsc10][pltcsc10] [encoding=pl0]
+%   \definefontsynonym[pl0-lmtt10]  [pltt10]   [encoding=pl0]
+%   \definefontsynonym[pl0-lmtt12]  [pltt12]   [encoding=pl0]
+%   \definefontsynonym[pl0-lmtt8]   [pltt8]    [encoding=pl0]
+%   \definefontsynonym[pl0-lmtt9]   [pltt9]    [encoding=pl0]
+%   \definefontsynonym[pl0-lmtti10] [pltti10]  [encoding=pl0]
+%   \definefontsynonym[pl0-lmtto10] [plsltt10] [encoding=pl0]
+%   \definefontsynonym[pl0-lmvtt10] [plvtt10]  [encoding=pl0]
+%   \definefontsynonym[pl0-lmvtto10][plvtti10] [encoding=pl0]
+%
+% \stoptypescript
+
+% \starttypescript[all][modern,latin-modern,computer-modern][il2]
+%
+%   \definefontsynonym[il2-lmb10]   [csb10]    [encoding=il2]
+%   \definefontsynonym[il2-lmbo10]  [csbsl10]  [encoding=il2]
+%   \definefontsynonym[il2-lmbx10]  [csbx10]   [encoding=il2]
+%   \definefontsynonym[il2-lmbx12]  [csbx12]   [encoding=il2]
+%   \definefontsynonym[il2-lmbx5]   [csbx5]    [encoding=il2]
+%   \definefontsynonym[il2-lmbx6]   [csbx6]    [encoding=il2]
+%   \definefontsynonym[il2-lmbx7]   [csbx7]    [encoding=il2]
+%   \definefontsynonym[il2-lmbx8]   [csbx8]    [encoding=il2]
+%   \definefontsynonym[il2-lmbx9]   [csbx9]    [encoding=il2]
+%   \definefontsynonym[il2-lmbxi10] [csbxti10] [encoding=il2]
+%   \definefontsynonym[il2-lmbxo10] [csbxsl10] [encoding=il2]
+%   \definefontsynonym[il2-lmcsc10] [cscsc10]  [encoding=il2]
+%   \definefontsynonym[il2-lmcsco10][cscscls10][encoding=il2]
+%   \definefontsynonym[il2-lmr10]   [csr10]    [encoding=il2]
+%   \definefontsynonym[il2-lmr12]   [csr12]    [encoding=il2]
+%   \definefontsynonym[il2-lmr17]   [csr17]    [encoding=il2]
+%   \definefontsynonym[il2-lmr5]    [csr5]     [encoding=il2]
+%   \definefontsynonym[il2-lmr6]    [csr6]     [encoding=il2]
+%   \definefontsynonym[il2-lmr7]    [csr7]     [encoding=il2]
+%   \definefontsynonym[il2-lmr8]    [csr8]     [encoding=il2]
+%   \definefontsynonym[il2-lmr9]    [csr9]     [encoding=il2]
+%   \definefontsynonym[il2-lmri10]  [csti10]   [encoding=il2]
+%   \definefontsynonym[il2-lmri12]  [csti12]   [encoding=il2]
+%   \definefontsynonym[il2-lmri7]   [csti7]    [encoding=il2]
+%   \definefontsynonym[il2-lmri8]   [csti8]    [encoding=il2]
+%   \definefontsynonym[il2-lmri9]   [csti9]    [encoding=il2]
+%   \definefontsynonym[il2-lmro10]  [cssl10]   [encoding=il2]
+%   \definefontsynonym[il2-lmro12]  [cssl12]   [encoding=il2]
+%   \definefontsynonym[il2-lmro8]   [cssl8]    [encoding=il2]
+%   \definefontsynonym[il2-lmro9]   [cssl9]    [encoding=il2]
+%   \definefontsynonym[il2-lmss10]  [csss10]   [encoding=il2]
+%   \definefontsynonym[il2-lmss12]  [csss12]   [encoding=il2]
+%   \definefontsynonym[il2-lmss17]  [csss17]   [encoding=il2]
+%   \definefontsynonym[il2-lmss8]   [csss8]    [encoding=il2]
+%   \definefontsynonym[il2-lmss9]   [csss9]    [encoding=il2]
+%   \definefontsynonym[il2-lmssbo10][csssbi10] [encoding=il2]
+%   \definefontsynonym[il2-lmssbx10][csssbx10] [encoding=il2]
+%   \definefontsynonym[il2-lmssdc10][csssdc10] [encoding=il2]
+%   \definefontsynonym[il2-lmssdo10][csssdi10] [encoding=il2]
+%   \definefontsynonym[il2-lmsso10] [csssi10]  [encoding=il2]
+%   \definefontsynonym[il2-lmsso12] [csssi12]  [encoding=il2]
+%   \definefontsynonym[il2-lmsso17] [csssi17]  [encoding=il2]
+%   \definefontsynonym[il2-lmsso8]  [csssi8]   [encoding=il2]
+%   \definefontsynonym[il2-lmsso9]  [csssi9]   [encoding=il2]
+%   \definefontsynonym[il2-lmssq8]  [csssq8]   [encoding=il2]
+%   \definefontsynonym[il2-lmssqbo8][csssqbi8] [encoding=il2]
+%   \definefontsynonym[il2-lmssqbx8][csssqb8]  [encoding=il2]
+%   \definefontsynonym[il2-lmssqo8] [csssqi8]  [encoding=il2]
+%   \definefontsynonym[il2-lmtcsc10][cstcsc10] [encoding=il2]
+%   \definefontsynonym[il2-lmtt10]  [cstt10]   [encoding=il2]
+%   \definefontsynonym[il2-lmtt12]  [cstt12]   [encoding=il2]
+%   \definefontsynonym[il2-lmtt8]   [cstt8]    [encoding=il2]
+%   \definefontsynonym[il2-lmtt9]   [cstt9]    [encoding=il2]
+%   \definefontsynonym[il2-lmtti10] [cstti10]  [encoding=il2]
+%   \definefontsynonym[il2-lmtto10] [cssltt10] [encoding=il2]
+%   \definefontsynonym[il2-lmvtt10] [csvtt10]  [encoding=il2]
+%   \definefontsynonym[il2-lmvtto10][csvtti10] [encoding=il2]
+%
+% \stoptypescript
+
+% \starttypescript[all][modern,latin-modern,computer-modern][t5]
+%
+%   \definefontsynonym[t5-lmb10]   [vnb10]    [encoding=t5]
+%   \definefontsynonym[t5-lmbo10]  [vnbsl10]  [encoding=t5]
+%   \definefontsynonym[t5-lmbx10]  [vnbx10]   [encoding=t5]
+%   \definefontsynonym[t5-lmbx12]  [vnbx12]   [encoding=t5]
+%   \definefontsynonym[t5-lmbx5]   [vnbx5]    [encoding=t5]
+%   \definefontsynonym[t5-lmbx6]   [vnbx6]    [encoding=t5]
+%   \definefontsynonym[t5-lmbx7]   [vnbx7]    [encoding=t5]
+%   \definefontsynonym[t5-lmbx8]   [vnbx8]    [encoding=t5]
+%   \definefontsynonym[t5-lmbx9]   [vnbx9]    [encoding=t5]
+%   \definefontsynonym[t5-lmbxi10] [vnbxti10] [encoding=t5]
+%   \definefontsynonym[t5-lmbxo10] [vnbxsl10] [encoding=t5]
+%   \definefontsynonym[t5-lmcsc10] [vncsc10]  [encoding=t5]
+%   \definefontsynonym[t5-lmcsco10][vncscsl10][encoding=t5]
+%   \definefontsynonym[t5-lmr10]   [vnr10]    [encoding=t5]
+%   \definefontsynonym[t5-lmr12]   [vnr12]    [encoding=t5]
+%   \definefontsynonym[t5-lmr17]   [vnr17]    [encoding=t5]
+%   \definefontsynonym[t5-lmr5]    [vnr5]     [encoding=t5]
+%   \definefontsynonym[t5-lmr6]    [vnr6]     [encoding=t5]
+%   \definefontsynonym[t5-lmr7]    [vnr7]     [encoding=t5]
+%   \definefontsynonym[t5-lmr8]    [vnr8]     [encoding=t5]
+%   \definefontsynonym[t5-lmr9]    [vnr9]     [encoding=t5]
+%   \definefontsynonym[t5-lmri10]  [vnti10]   [encoding=t5]
+%   \definefontsynonym[t5-lmri12]  [vnti12]   [encoding=t5]
+%   \definefontsynonym[t5-lmri7]   [vnti7]    [encoding=t5]
+%   \definefontsynonym[t5-lmri8]   [vnti8]    [encoding=t5]
+%   \definefontsynonym[t5-lmri9]   [vnti9]    [encoding=t5]
+%   \definefontsynonym[t5-lmro10]  [vnsl10]   [encoding=t5]
+%   \definefontsynonym[t5-lmro12]  [vnsl12]   [encoding=t5]
+%   \definefontsynonym[t5-lmro8]   [vnsl8]    [encoding=t5]
+%   \definefontsynonym[t5-lmro9]   [vnsl9]    [encoding=t5]
+%   \definefontsynonym[t5-lmss10]  [vnss10]   [encoding=t5]
+%   \definefontsynonym[t5-lmss12]  [vnss12]   [encoding=t5]
+%   \definefontsynonym[t5-lmss17]  [vnss17]   [encoding=t5]
+%   \definefontsynonym[t5-lmss8]   [vnss8]    [encoding=t5]
+%   \definefontsynonym[t5-lmss9]   [vnss9]    [encoding=t5]
+%   \definefontsynonym[t5-lmssbo10][vnssbi10] [encoding=t5]
+%   \definefontsynonym[t5-lmssbx10][vnssbx10] [encoding=t5]
+%   \definefontsynonym[t5-lmssdc10][vnssdc10] [encoding=t5]
+%   \definefontsynonym[t5-lmssdo10][vnssdi10] [encoding=t5]
+%   \definefontsynonym[t5-lmsso10] [vnssi10]  [encoding=t5]
+%   \definefontsynonym[t5-lmsso12] [vnssi12]  [encoding=t5]
+%   \definefontsynonym[t5-lmsso17] [vnssi17]  [encoding=t5]
+%   \definefontsynonym[t5-lmsso8]  [vnssi8]   [encoding=t5]
+%   \definefontsynonym[t5-lmsso9]  [vnssi9]   [encoding=t5]
+%   \definefontsynonym[t5-lmssq8]  [vnssq8]   [encoding=t5]
+%   \definefontsynonym[t5-lmssqbo8][vnssqbi8] [encoding=t5]
+%   \definefontsynonym[t5-lmssqbx8][vnssqb8]  [encoding=t5]
+%   \definefontsynonym[t5-lmssqo8] [vnssqi8]  [encoding=t5]
+%   \definefontsynonym[t5-lmtcsc10][vntcsc10] [encoding=t5]
+%   \definefontsynonym[t5-lmtt10]  [vntt10]   [encoding=t5]
+%   \definefontsynonym[t5-lmtt12]  [vntt12]   [encoding=t5]
+%   \definefontsynonym[t5-lmtt8]   [vntt8]    [encoding=t5]
+%   \definefontsynonym[t5-lmtt9]   [vntt9]    [encoding=t5]
+%   \definefontsynonym[t5-lmtti10] [vntti10]  [encoding=t5]
+%   \definefontsynonym[t5-lmtto10] [vnsltt10] [encoding=t5]
+%   \definefontsynonym[t5-lmvtt10] [vnvtt10]  [encoding=t5]
+%   \definefontsynonym[t5-lmvtto10][vnvtti10] [encoding=t5]
+%
+% \stoptypescript
+
+% \starttypescript [cmr]
+%   \usetypescript [serif,sans,mono,math] [computer-modern,latin-modern] [default,name,size]
+%   \usemathcollection[default]
+% \stoptypescript
+
+% \starttypescript [aer]
+%   \usetypescript [serif,sans,mono,math] [computer-modern,latin-modern] [default,name,size,ec]
+%   \usemathcollection[default]
+% \stoptypescript
+
+% \starttypescript [csr]
+%   \usetypescript [serif,sans,mono,math] [computer-modern,latin-modern] [default,name,size,il2]
+%   \usemathcollection[default]
+% \stoptypescript
+
+% \starttypescript [plr]
+%   \usetypescript [serif,sans,mono,math] [computer-modern,latin-modern] [default,name,size,pl0]
+%   \usemathcollection[default]
+% \stoptypescript
+
+% \starttypescript [vnr]
+%   \usetypescript [serif,sans,mono,math] [computer-modern,latin-modern] [default,name,size,t5]
+%   \usemathcollection[default]
+% \stoptypescript
+
+% \starttypescript [map] [il2,csr]
+%   \loadmapfile[original-public-csr.map]
+% \stoptypescript
+
+% \starttypescript [map] [pl0,plr]
+%   \loadmapfile[original-public-plr.map]
+% \stoptypescript
+
+% \starttypescript [map] [vnr]
+%   \loadmapfile[original-public-vnr.map]
+% \stoptypescript
+
+% \starttypescript [map] [il2,csr]
+%   \loadmapfile[il2-public-lm.map]
+% \stoptypescript
+
+% \starttypescript [map] [pl0,plr]
+%   \loadmapfile[pl0-public-lm.map]
+% \stoptypescript
+
+% \starttypescript [map] [t5,vnr]
+%   \loadmapfile[t5-public-lm.map]
+% \stoptypescript
+
+% support for alternative shapes has been removed from latin modern
+%
+% \starttypescript [map] [latin-modern-var] [ec,texnansi,qx,t5,pl0,il2]
+%   \loadmapfile[\typescriptthree-var-exclusive-public-lm.map]
+% \stoptypescript
+
+% \starttypescript [map] [cmr]
+%   \loadmapfile[original-ams-cmr.map]
+%   \loadmapfile[original-ams-euler.map]
+% \stoptypescript
+% \starttypescript [map] [lm,lmr]
+%   \loadmapfile[original-public-lm.map]
+% \stoptypescript
+
+% per 20050201 we moved to latin modern for plr/csr/vnr
+%
+% \starttypescript [map] [base] [all]
+%   \loadmapfile[original-public-plr.map]
+%   \loadmapfile[original-public-csr.map]
+%   \loadmapfile[original-public-vnr.map]
+% \stoptypescript
+
+% \starttypescript [cmr]
+%   \usetypescript [serif,sans,mono,math] [computer-modern,latin-modern] [default,name,size]
+%   \usemathcollection[default]
+% \stoptypescript
+
+% \starttypescript [plr]
+%   \usetypescript [serif,sans,mono,math] [computer-modern,latin-modern] [default,name,size,pl0]
+%   \usemathcollection[default]
+% \stoptypescript
+
+% \starttypescript [csr]
+%   \usetypescript [serif,sans,mono,math] [computer-modern,latin-modern] [default,name,size,il2]
+%   \usemathcollection[default]
+% \stoptypescript
+
+% \starttypescript [aer]
+%   \usetypescript [serif,sans,mono,math] [computer-modern,latin-modern] [default,name,size,ec]
+%   \usemathcollection[default]
+% \stoptypescript
+
+% \starttypescript [vnr]
+%   \usetypescript [serif,sans,mono,math] [computer-modern,latin-modern] [default,name,size,t5]
+%   \usemathcollection[default]
+% \stoptypescript
+
+% \starttypescript [ant]
+%   \usetypescript [serif] [antykwa-torunska] [name,\defaultencoding]
+%   \usetypescript [serif] [default]          [size]
+%   \usetypescript [all] [antykwa-torunska] [\defaultencoding]
+% \stoptypescript
+
+% \starttypescript [ppl]
+%   \usetypescript [serif] [palatino] [name,\defaultencoding]
+%   \usetypescript [serif] [default]  [size]
+%   \usetypescript [all]   [palatino] [\defaultencoding]
+% \stoptypescript
+
+% %D With thanks to Berthold Horn from YandY for providing me
+% %D evaluation copies of the MathTimePlus fonts.
+%
+% \starttypescript [tim]
+%   \usetypescript [math] [times]   [all]
+%   \usetypescript [math] [default] [size]
+%   \usemathcollection[tim]
+%   \usetypescript [all] [times] [\defaultencoding]
+% \stoptypescript
+
+\endinput

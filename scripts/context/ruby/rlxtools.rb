@@ -197,6 +197,7 @@ class Commands
         str.gsub!(/&lt;/o, '<')
         str.gsub!(/&gt;/o, '>')
         str.gsub!(/&amp;/o, '&')
+        str.gsub!(/&quot;/o, '"')
         str.gsub!(/[\/\\]+/o, '/')
         return str.strip
     end

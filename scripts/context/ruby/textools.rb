@@ -736,7 +736,7 @@ class Commands
             report("scanning #{root}")
             rootfiles = Dir.glob("#{root}/**/*")
         else
-            report("provide sourse root")
+            report("provide source root")
             return
         end
         if rootfiles.size > 0 then

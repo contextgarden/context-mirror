@@ -15,7 +15,7 @@
 
 \starttypescriptcollection[examples]
 
-\starttypescript [fallback] [texnansi,ec,qx,il2,pl0,t5,default]
+\starttypescript [fallback] [texnansi,ec,qx,t5,default]
 
   % no fontclass, so this is the fall back
 
@@ -28,7 +28,7 @@
 
 \stoptypescript
 
-\starttypescript [modern] [texnansi,ec,qx,il2,pl0,t5,default]
+\starttypescript [modern] [texnansi,ec,qx,t5,default]
 
   \definetypeface [modern] [rm] [serif] [modern] [computer-modern] [encoding=\typescripttwo]
   \definetypeface [modern] [ss] [sans]  [modern] [computer-modern] [encoding=\typescripttwo]
@@ -39,7 +39,7 @@
 
 \stoptypescript
 
-\starttypescript [modern-base] [texnansi,ec,qx,pl0,il2,t5,default]
+\starttypescript [modern-base] [texnansi,ec,qx,t5,default]
 
   \definetypeface [modern] [rm] [serif] [modern] [default] [encoding=\typescripttwo]
   \definetypeface [modern] [ss] [sans]  [modern] [default] [encoding=\typescripttwo]
@@ -61,7 +61,16 @@
 
 \stoptypescript
 
-\starttypescript [postscript] [texnansi,ec,qx,8r,t5,uc]
+\starttypescript [fallback,modern,modern-base] [il2]
+  \usetypescript[\typescriptone][ec]
+  \enableregime[il2]
+\stoptypescript
+\starttypescript [fallback,modern,modern-base] [pl0]
+  \usetypescript[\typescriptone][qx]
+  \enableregime[pl0]
+\stoptypescript
+
+\starttypescript [postscript] [texnansi,ec,qx,t5,uc,8r]
 
   \definetypeface [postscript] [rm] [serif] [times]     [default] [encoding=\typescripttwo]
   \definetypeface [postscript] [ss] [sans]  [helvetica] [default] [rscale=.9,encoding=\typescripttwo]

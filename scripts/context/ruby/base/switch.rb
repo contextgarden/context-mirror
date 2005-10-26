@@ -141,9 +141,15 @@ module CommandBase
         version # is nilled when already given
         @commandline.helpkeys.each do |k|
             if @commandline.help?(k) then
+                kstr = ('--'+k).ljust(@commandline.helplength+2)
                 message = @commandline.helptext(k)
                 message = '' if message == CommandLine::NOHELP
-                report("#{('--'+k).ljust(@commandline.helplength+2)} #{message}")
+                message = message.split(/\s*\n\s*/)
+                loop do
+                    report("#{kstr} #{message.shift}")
+                    kstr = ' '*kstr.length
+                    break if message.length == 0
+                end
             end
         end
     end

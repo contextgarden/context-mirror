@@ -716,7 +716,7 @@ class KPSEFAST
                                 data << FileData.new(2,filename,File.size(filename),File.mtime(filename))
                             end
                         else
-                            data << FileData.new(3,filename)
+                            # data << FileData.new(3,filename)
                         end
                     end
                 end
@@ -727,7 +727,13 @@ class KPSEFAST
                             # data.each do |d| puts d.report end
                             # puts ''
                         # end
-                        data.sort! do |a,b| b.size <=> a.size end
+                        data.sort! do |a,b|
+                            if a.size and b.size then
+                                b.size <=> a.size
+                            else
+                                0
+                            end
+                        end
                         bunch = Array.new
                         done = false
                         data.each do |d|

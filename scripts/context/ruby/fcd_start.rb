@@ -28,6 +28,15 @@
 # You can create a stub with:
 #
 # ruby fcd_start.rb --stub --verbose
+#
+# usage:
+#
+# fcd --make t:\
+# fcd --add f:\project
+# fcd [--find] whatever
+# fcd [--find] whatever c (c being a list entry)
+# fcd [--find] whatever . (last choice with this pattern)
+# fcd --list
 
 require 'rbconfig'
 
@@ -87,13 +96,16 @@ class FastCD
 
     @@selfpath = File.dirname($0)
     @@datafile = File.join(@@rootpath,'fcd_state.dat')
+    @@histfile = File.join(@@rootpath,'fcd_state.his')
     @@cdirfile = File.join(@@rootpath,if @@mswindows then 'fcd_stage.cmd' else 'fcd_stage.sh' end)
     @@stubfile = File.join(@@selfpath,if @@mswindows then 'fcd.cmd'       else 'fcd'          end)
 
     def initialize(verbose=false)
         @list = Array.new
+        @hist = Hash.new
         @result = Array.new
         @pattern = ''
+        @result = ''
         @verbose = verbose
         if f = File.open(@@cdirfile,'w') then
             f << "#{if @@mswindows then 'rem' else '#' end} no dir to change to"
@@ -113,6 +125,20 @@ class FastCD
 
     def flush(str,verbose=@verbose)
         print(str) if verbose
+    end
+
+    def clear
+        if FileTest.file?(@@histfile)
+            begin
+                File.delete(@@histfile)
+            rescue
+                report("error in deleting history file '#{@histfile}'")
+            else
+                report("history file '#{@histfile}' is deleted")
+            end
+        else
+            report("no history file '#{@histfile}'")
+        end
     end
 
     def scan(dir='.')
@@ -147,10 +173,33 @@ class FastCD
                     f.puts(l)
                 end
                 f.close
+                report("#{@list.size} status bytes saved in #{@@datafile}")
+            else
+                report("unable to save status in #{@@datafile}")
             end
-            report("#{@list.size} status bytes saved in #{@@datafile}")
         rescue
             report("error in saving status in #{@@datafile}")
+        end
+    end
+
+    def remember
+        if @hist[@pattern] == @result then
+            # no need to save result
+        else
+            begin
+                if f = File.open(@@histfile,'w') then
+                    @hist[@pattern] = @result
+                    @hist.keys.each do |k|
+                        f.puts("#{k} #{@hist[k]}")
+                    end
+                    f.close
+                    report("#{@hist.size} history entries saved in #{@@histfile}")
+                else
+                    report("unable to save history in #{@@histfile}")
+                end
+            rescue
+                report("error in saving history in #{@@histfile}")
+            end
         end
     end
 
@@ -161,12 +210,38 @@ class FastCD
         rescue
             report("error in loading status from #{@@datafile}")
         end
+        begin
+            IO.readlines(@@histfile).each do |line|
+                if line =~ /^(.*?)\s+(.*)$/i then
+                    @hist[$1] = $2
+                end
+            end
+            report("#{@hist.length} history entries loaded from #{@@histfile}")
+        rescue
+            report("error in loading history from #{@@histfile}")
+        end
     end
 
     def show
         begin
-            @list.each do |l|
-                puts(l)
+            puts("directories:")
+            puts("\n")
+            if @list.length > 0 then
+                @list.each do |l|
+                    puts(l)
+                end
+            else
+                puts("no entries")
+            end
+            puts("\n")
+            puts("history:")
+            puts("\n")
+            if @hist.length > 0 then
+                @hist.keys.sort.each do |h|
+                    puts("#{h} >> #{@hist[h]}")
+                end
+            else
+                puts("no entries")
             end
         rescue
         end
@@ -196,6 +271,7 @@ class FastCD
                         f.puts("cd #{dir.gsub("\\",'/')}")
                     end
                 end
+                @result = dir
                 report("changing to #{dir}",true)
             else
                 report("not changing dir")
@@ -215,11 +291,19 @@ class FastCD
                     else
                         list = @result.dup
                         begin
-                            if answer = args[1] then
-                                index = answer[0] - ?a
-                                if dir = list[index] then
-                                    chdir(dir)
-                                    return
+                            if answer = args[1] then # assignment & test
+                                if answer == '.' and @hist.key?(@pattern) then
+                                    if FileTest.directory?(@hist[@pattern]) then
+                                        print("last choice ")
+                                        chdir(@hist[@pattern])
+                                        return
+                                    end
+                                else
+                                    index = answer[0] - ?a
+                                    if dir = list[index] then
+                                        chdir(dir)
+                                        return
+                                    end
                                 end
                             end
                         rescue
@@ -241,6 +325,9 @@ class FastCD
                                     if dir = list[index] then
                                         print("#{answer.chr} ")
                                         chdir(dir)
+                                    elsif @hist.key?(@pattern) and FileTest.directory?(@hist[@pattern]) then
+                                        print("last choice ")
+                                        chdir(@hist[@pattern])
                                     else
                                         print("quit\n")
                                     end
@@ -249,6 +336,10 @@ class FastCD
                                     @@maxlength.times do |i| list.shift end
                                     print("next set")
                                     print("\n")
+                                elsif @hist.key?(@pattern) and FileTest.directory?(@hist[@pattern]) then
+                                    print("last choice ")
+                                    chdir(@hist[@pattern])
+                                    break
                                 else
                                     print("quit\n")
                                     break
@@ -312,19 +403,20 @@ class FastCD
 
 end
 
-verbose, action, args = false, 30, Array.new
+verbose, action, args = false, :find, Array.new
 
 usage = "fcd [--make|add|show|find] [--verbose] [pattern]"
 
 ARGV.each do |a|
     case a
         when '-v', '--verbose' then verbose = true
-        when '-m', '--make'    then action = 10
-        when '-a', '--add'     then action = 11
-        when '-s', '--show'    then action = 20
-        when '-l', '--list'    then action = 20
-        when '-f', '--find'    then action = 30
-        when       '--stub'    then action = 40
+        when '-m', '--make'    then action = :make
+        when '-c', '--clear'   then action = :clear
+        when '-a', '--add'     then action = :add
+        when '-s', '--show'    then action = :show
+        when '-l', '--list'    then action = :show
+        when '-f', '--find'    then action = :find
+        when       '--stub'    then action = :stub
         when '-h', '--help'    then puts "usage: #{usage}" ; exit
         when /^\-\-.*/         then puts "unknown switch: #{a}" + "\n" + "usage: #{usage}" ; exit
                                else args << a
@@ -338,20 +430,24 @@ fcd = FastCD.new(verbose)
 fcd.report("Fast Change Dir / version 1.0")
 
 case action
-    when 10 then
+    when :make then
+        fcd.clear
         fcd.scan(args)
         fcd.save
-    when 11 then
+    when :clear then
+        fcd.clear
+    when :add then
         fcd.load
         fcd.scan(args)
         fcd.save
-    when 20 then
+    when :show then
         fcd.load
         fcd.show
-    when 30 then
+    when :find then
         fcd.load
         fcd.find(args)
         fcd.choose(args)
-    when 40
+        fcd.remember
+    when :stub
         fcd.check
 end

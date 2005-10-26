@@ -31,17 +31,9 @@
   \loadmapfile[original-public-lm.map]
 \stoptypescript
 
-% per 20050201 we moved to latin modern for plr/csr/vnr
-%
-% \starttypescript [map] [base] [all]
-%   \loadmapfile[original-public-plr.map]
-%   \loadmapfile[original-public-csr.map]
-%   \loadmapfile[original-public-vnr.map]
-% \stoptypescript
-
 % This is the base map file, load it to be sure.
 
-\starttypescript [map] [all] [ec,8r,texnansi,qx,t5,pl0,il2]
+\starttypescript [map] [all] [ec,8r,texnansi,qx,t5]
   \loadmapfile[original-base.map]
   \loadmapfile[\typescriptthree-base.map]
 \stoptypescript
@@ -54,45 +46,10 @@
 
 % cmr and related
 
-% \starttypescript [map] [cmr]
-%   \loadmapfile[original-ams-cmr.map]
-%   \loadmapfile[original-ams-euler.map]
-% \stoptypescript
-%
-% \starttypescript [map] [lm,lmr]
-%   \loadmapfile[original-public-lm.map]
-% \stoptypescript
-
 \starttypescript [map] [cmr,lm,lmr]
   \loadmapfile[original-public-lm.map]
   \loadmapfile[original-ams-base.map]
   \loadmapfile[original-ams-euler.map]
-\stoptypescript
-
-% per 20050201 we moved to latin modern for plr/csr/vnr
-%
-% \starttypescript [map] [il2,csr]
-%   \loadmapfile[original-public-csr.map]
-% \stoptypescript
-%
-% \starttypescript [map] [pl0,plr]
-%   \loadmapfile[original-public-plr.map]
-% \stoptypescript
-%
-% \starttypescript [map] [vnr]
-%   \loadmapfile[original-public-vnr.map]
-% \stoptypescript
-
-\starttypescript [map] [il2,csr]
-  \loadmapfile[il2-public-lm.map]
-\stoptypescript
-
-\starttypescript [map] [pl0,plr]
-  \loadmapfile[pl0-public-lm.map]
-\stoptypescript
-
-\starttypescript [map] [t5,vnr]
-  \loadmapfile[t5-public-lm.map]
 \stoptypescript
 
 % cyrillic
@@ -102,26 +59,20 @@
   \loadmapfile[cm-super-\typescriptthree.map]
 \stoptypescript
 
-% latin modern
+% latin modern (watch the unfortunate \quote {lm-encoding} order
+% in the name; for the moment we ship copies of the map files.
 
-\starttypescript [map] [modern,computer-modern,latin-modern] [ec,texnansi,qx,t5,pl0,il2]
+\starttypescript [map] [modern,modern-vari,modern-cond,computer-modern,latin-modern,latin-modern-vari,latin-modern-cond,] [ec,texnansi,qx,t5]
+% \loadmapfile[lm-\typescriptthree.map] % maybe some day
   \loadmapfile[\typescriptthree-public-lm.map]
 \stoptypescript
 
-% \usetypescript [map] [latin-modern-var] [\defaultencoding]
-%
-% example:
-%
 % \usetypescript [map] [latin-modern-os] [ec] % lm is loaded under ec regime
 % \starttext
 %     Is onze Frans nu 41, 52, 63, 74, 85 of 96 jaar \quote {old}?
 % \stoptext
 
-\starttypescript [map] [latin-modern-var] [ec,texnansi,qx,t5,pl0,il2]
-  \loadmapfile[\typescriptthree-var-exclusive-public-lm.map]
-\stoptypescript
-
-\starttypescript [map] [latin-modern-os] [ec,texnansi,qx,t5,pl0,il2]
+\starttypescript [map] [latin-modern-os] [ec,texnansi,qx,t5]
   \loadmapfile[\typescriptthree-os-public-lm.map]
 \stoptypescript
 
@@ -146,12 +97,6 @@
   \loadmapfile[sy-antt.map]
   \loadmapfile[ex-antt.map]
 \stoptypescript
-
-% obsolete
-%
-% \starttypescript [map] [antykwa-torunska,antykwa-torunska-light,antykwa-torunska-cond,antykwa-torunska-lightcond] [ec]
-%   \loadmapfile[cork-antt.map]
-% \stoptypescript
 
 \starttypescript [map] [antykwa-poltawskiego] [ec,texnansi,qx,t5]
   \loadmapfile[\typescriptthree-public-antp.map]

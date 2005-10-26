@@ -255,7 +255,7 @@ my $MakeMpy = '';
     "once"           => \$RunOnce,
     "output=s"       => \$OutputFormat,
     "pages=s"        => \$Pages,
-    "paper=s"        => \$PaperFormat,
+    "paperformat=s"  => \$PaperFormat,
     "passon=s"       => \$PassOn,
     "path=s"         => \$InpPath,
     "autopath"       => \$AutoPath,
@@ -1207,9 +1207,11 @@ sub MakeOptionFile {
     $_ = $PaperFormat;
     #unless (($PdfArrange)||($PdfSelect)||($PdfCombine)||($PdfCopy))
     unless ( ($PdfSelect) || ($PdfCombine) || ($PdfCopy) || ($PdfTrim) ) {
-        if    (/.4.3/goi)     { print OPT "\\setuppapersize[A4][A3]\n" }
-        elsif (/.5.4/goi)     { print OPT "\\setuppapersize[A5][A4]\n" }
-        elsif ( !/standard/ ) {
+        if (/.4.3/goi) {
+            print OPT "\\setuppapersize[A4][A3]\n" ;
+        } elsif (/.5.4/goi) {
+            print OPT "\\setuppapersize[A5][A4]\n" ;
+        } elsif ( !/standard/ ) {
             s/x/\*/io;
             if (/\w+\d+/) { $_ = uc $_ }
             my ( $from, $to ) = split(/\*/);
@@ -1761,9 +1763,7 @@ sub RunConTeXtFile {
             # scan xml preamble
             open(XML,"<$JobName.$JobSuffix") ;
             while (<XML>) {
-                if (/\<[a-z]+/io) {
-                    last ;
-                } elsif (/\<\?context\-directive\s+(\S+)\s+(\S+)\s+(\S+)\s*(.*?)\s*\?\>/o) {
+                if (/\<\?context\-directive\s+(\S+)\s+(\S+)\s+(\S+)\s*(.*?)\s*\?\>/o) {
                     my ($class, $key, $value, $rest) = ($1, $2, $3, $4) ;
                     if ($class eq 'job') {
                         if (($key eq 'mode') || ($key eq 'modes')) {
@@ -1778,6 +1778,8 @@ sub RunConTeXtFile {
                             if ($rest == 'purge') { $Purge = 1 }
                         }
                     }
+                } elsif (/\<[a-z]+/io) {
+                    last ;
                 }
             }
             close(XML) ;
@@ -2199,18 +2201,23 @@ sub RunSelect {
     else { print "             textwidth : $TextWidth\n" }
     open( SEL, ">$SelectFile.tex" );
     print SEL "% format=english\n";
-
-    if ( $PaperFormat ne 'standard' ) {
+    print SEL "\\definepapersize\n";
+    print SEL "  [offset=$PaperOffset]\n";
+    if ($PaperFormat =~ /fit/) {
+        print SEL "\\getfiguredimensions[$FileName]\n" ;
+        print SEL "\\expanded{\\definepapersize[fit][width=\\figurewidth,height=\\figureheight]}\n" ;
+        print SEL "\\setuppapersize[fit][fit]\n";
+        $PaperFormat = '' ; # avoid overloading in option file
+    } elsif ( $PaperFormat ne 'standard' ) {
         $_ = $PaperFormat;    # NO UPPERCASE !
         s/x/\*/io;
         my ( $from, $to ) = split(/\*/);
         if ( $to eq "" ) { $to = $from }
         print "             papersize : $PaperFormat\n";
         print SEL "\\setuppapersize[$from][$to]\n";
+        $PaperFormat = '' ; # avoid overloading in option file
     }
     #
-    print SEL "\\definepapersize\n";
-    print SEL "  [offset=$PaperOffset]\n";
     print SEL "\\setuplayout\n";
     print SEL "  [backspace=$BackSpace,\n";
     print SEL "    topspace=$TopSpace,\n";

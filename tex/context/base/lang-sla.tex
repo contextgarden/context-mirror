@@ -35,6 +35,35 @@
 
 \unprotect
 
+% \unexpanded\def\textormathglue#1#2#3% submitted original
+%   {\begingroup
+%    \scratchdimen=#1\hspaceamount\empty{#3}%
+%    \scratchskip=\zeropoint\!!plus.5\scratchdimen\!!minus.3\scratchdimen\relax
+%    \ifmmode
+%      \mskip#1#2%
+%    \else
+%      \kern#1\hspaceamount\empty{#3}%
+%      \hskip\scratchskip
+%    \fi
+%    \endgroup}
+
+% actually we could use the new pdftex features
+
+\unexpanded\def\textormathglue#1#2#3% cleaned up one
+  {\begingroup
+   \ifmmode
+     \mskip#1#2%
+   \else
+     \scratchdimen#1\hspaceamount\empty{#3}%
+     \scratchskip\scratchdimen\!!plus.5\scratchdimen\!!minus.3\scratchdimen
+     \hskip\scratchskip
+   \fi
+   \endgroup}
+
+\def\thinglue {\textormathglue+\thinmuskip 1}
+\def\medglue  {\textormathglue+\medmuskip  2}
+\def\thickglue{\textormathglue+\thickmuskip3}
+
 \installlanguage
   [\s!pl]
   [\c!spacing=\v!packed,
@@ -52,10 +81,10 @@
 \installlanguage
   [\s!cz]
   [\c!spacing=\v!packed,
-   \c!leftsentence=---,
-   \c!rightsentence=---,
-   \c!leftsubsentence=---,
-   \c!rightsubsentence=---,
+   \c!leftsentence=\thickglue--\thickglue\penalty-20\relax, % hh, \relax added
+   \c!rightsentence=\thickglue--\thickglue\penalty-20\relax,
+   \c!leftsubsentence=~---~\penalty-20\relax,
+   \c!rightsubsentence=~---~\penalty-20\relax,
    \c!leftquote=\lowerleftsingleninequote,
    \c!rightquote=\upperrightsinglesixquote,
    \c!leftquotation=\lowerleftdoubleninequote,
@@ -229,13 +258,13 @@
 \setupheadtext [\s!sl] [\v!figures=Slike]
 
 \setupheadtext [\s!pl] [\v!graphics=Grafika]
-\setupheadtext [\s!cz] [\v!graphics=...]
+\setupheadtext [\s!cz] [\v!graphics=Grafika] % new
 \setupheadtext [\s!sk] [\v!graphics=...]
 \setupheadtext [\s!hr] [\v!graphics=Slike]
 \setupheadtext [\s!sl] [\v!graphics=Slike]
 
 \setupheadtext [\s!pl] [\v!intermezzi=Intermezza]
-\setupheadtext [\s!cz] [\v!intermezzi=...]
+\setupheadtext [\s!cz] [\v!intermezzi=Intermezza]
 \setupheadtext [\s!sk] [\v!intermezzi=...]
 \setupheadtext [\s!hr] [\v!intermezzi=Intermezza]
 \setupheadtext [\s!sl] [\v!intermezzi=Intermezzi]
@@ -247,19 +276,19 @@
 \setupheadtext [\s!sl] [\v!index=Kazalo]
 
 \setupheadtext [\s!pl] [\v!abbreviations=Skr\oacute cenie]
-\setupheadtext [\s!cz] [\v!abbreviations=...]
+\setupheadtext [\s!cz] [\v!abbreviations=Zkratky] % new
 \setupheadtext [\s!sk] [\v!abbreviations=...]
 \setupheadtext [\s!hr] [\v!abbreviations=Kratice]
 \setupheadtext [\s!sl] [\v!abbreviations=Kratice]
 
 \setupheadtext [\s!pl] [\v!logos=Znaki]
-\setupheadtext [\s!cz] [\v!logos=...]
+\setupheadtext [\s!cz] [\v!logos=Loga] % new
 \setupheadtext [\s!sk] [\v!logos=...]
 \setupheadtext [\s!hr] [\v!logos=Znakovi]
 \setupheadtext [\s!sl] [\v!logos=Logotipi]
 
 \setupheadtext [\s!pl] [\v!units=Jednostki]
-\setupheadtext [\s!cz] [\v!units=...]
+\setupheadtext [\s!cz] [\v!units=Jednotky] % new
 \setupheadtext [\s!sk] [\v!units=...]
 \setupheadtext [\s!hr] [\v!units=Jednostki]
 \setupheadtext [\s!sl] [\v!units=Enote]
@@ -277,7 +306,7 @@
 \setuplabeltext [\s!sl] [\v!figure=Slika ]
 
 \setuplabeltext [\s!pl] [\v!intermezzo=Intermezzo ]
-\setuplabeltext [\s!cz] [\v!intermezzo=... ]
+\setuplabeltext [\s!cz] [\v!intermezzo=Intermezzo ]
 \setuplabeltext [\s!sk] [\v!intermezzo=... ]
 \setuplabeltext [\s!hr] [\v!intermezzo=Intermezzo ]
 \setuplabeltext [\s!sl] [\v!intermezzo=Intermezzo ]
@@ -295,31 +324,31 @@
 \setuplabeltext [\s!sl] [\v!chapter=] % Poglavje
 
 \setuplabeltext [\s!pl] [\v!section=] % Podrozdzia\l
-\setuplabeltext [\s!cz] [\v!section=]
+\setuplabeltext [\s!cz] [\v!section=] % Sekce % new
 \setuplabeltext [\s!sk] [\v!section=]
 \setuplabeltext [\s!hr] [\v!section=] % Podrozdzia\l
 \setuplabeltext [\s!sl] [\v!section=]
 
 \setuplabeltext [\s!pl] [\v!subsection=]
-\setuplabeltext [\s!cz] [\v!subsection=]
+\setuplabeltext [\s!cz] [\v!subsection=] % Podsekce % new
 \setuplabeltext [\s!sk] [\v!subsection=]
 \setuplabeltext [\s!hr] [\v!subsection=]
 \setuplabeltext [\s!sl] [\v!subsection=]
 
 \setuplabeltext [\s!pl] [\v!subsubsection=]
-\setuplabeltext [\s!cz] [\v!subsubsection=]
+\setuplabeltext [\s!cz] [\v!subsubsection=] % Podpodsekce % new
 \setuplabeltext [\s!sk] [\v!subsubsection=]
 \setuplabeltext [\s!hr] [\v!subsubsection=]
 \setuplabeltext [\s!sl] [\v!subsubsection=]
 
 \setuplabeltext [\s!pl] [\v!subsubsubsection=]
-\setuplabeltext [\s!cz] [\v!subsubsubsection=]
+\setuplabeltext [\s!cz] [\v!subsubsubsection=] % Podpodpodsekce % new
 \setuplabeltext [\s!sk] [\v!subsubsubsection=]
 \setuplabeltext [\s!hr] [\v!subsubsubsection=]
 \setuplabeltext [\s!sl] [\v!subsubsubsection=]
 
 \setuplabeltext [\s!pl] [\v!appendix=] % Dodatek
-\setuplabeltext [\s!cz] [\v!appendix=]
+\setuplabeltext [\s!cz] [\v!appendix=P\rcaron\iacute loha] % new
 \setuplabeltext [\s!sk] [\v!appendix=]
 \setuplabeltext [\s!hr] [\v!appendix=Dodatak ]
 \setuplabeltext [\s!sl] [\v!appendix=Dodatek ]
@@ -331,13 +360,13 @@
 \setuplabeltext [\s!sl] [\v!part=Del ]
 
 \setuplabeltext [\s!pl] [\v!line=wiersz ]
-\setuplabeltext [\s!cz] [\v!line=... ]
+\setuplabeltext [\s!cz] [\v!line=\rcaron\aacute dek] % new
 \setuplabeltext [\s!sk] [\v!line=... ]
 \setuplabeltext [\s!hr] [\v!line=red ]
 \setuplabeltext [\s!sl] [\v!line=vrstica ]
 
 \setuplabeltext [\s!pl] [\v!lines=wiersze ]
-\setuplabeltext [\s!cz] [\v!lines=... ]
+\setuplabeltext [\s!cz] [\v!lines=\rcaron\aacute dky] % new
 \setuplabeltext [\s!sk] [\v!lines=... ]
 \setuplabeltext [\s!hr] [\v!lines=redovi ]
 \setuplabeltext [\s!sl] [\v!lines=vrstice ]
@@ -415,6 +444,15 @@
 \setuplabeltext [\s!pl]    [\v!friday=pi\aogonek tek]
 \setuplabeltext [\s!pl]  [\v!saturday=sobota]
 
+% new
+\setuplabeltext [\s!cz]    [\v!sunday=ned\ecaron le]
+\setuplabeltext [\s!cz]    [\v!monday=pond\ecaron l\iacute]
+\setuplabeltext [\s!cz]   [\v!tuesday=\uacute ter\yacute]
+\setuplabeltext [\s!cz] [\v!wednesday=st\rcaron eda]
+\setuplabeltext [\s!cz]  [\v!thursday=\ccaron tvrtek]
+\setuplabeltext [\s!cz]    [\v!friday=p\aacute tek]
+\setuplabeltext [\s!cz]  [\v!saturday=sobota]
+
 \setuplabeltext [\s!hr]    [\v!sunday=nedjelja]
 \setuplabeltext [\s!hr]    [\v!monday=ponedjeljak]
 \setuplabeltext [\s!hr]   [\v!tuesday=utorak]
@@ -432,12 +470,33 @@
 \setuplabeltext [\s!sl]  [\v!saturday=sobota]
 
 %D Rather new ...
+%\installlanguage
+%  [\s!cz]
+%  [\c!spacing=\v!packed,
+%   \c!leftsentence=---,
+%   \c!rightsentence=---,
+%   \c!leftsubsentence=---,
+%   \c!rightsubsentence=---,
+%   \c!leftquote=\lowerleftsingleninequote,
+%   \c!rightquote=\upperrightsinglesixquote,
+%   \c!leftquotation=\lowerleftdoubleninequote,
+%   \c!rightquotation=\upperrightdoublesixquote,
+%   \c!date={\v!day,\ ,\v!month,\ ,\v!year},
+%   \c!state=\v!stop]
+
 
 \setuplabeltext [\s!sl]    [\v!page=stran ]
 \setuplabeltext [\s!sl]  [\v!atpage=na strani ]
 \setuplabeltext [\s!sl] [\v!hencefore=glej zgoraj]
 \setuplabeltext [\s!sl] [\v!hereafter=glej spodaj]
 \setuplabeltext [\s!sl]       [\v!see=glej ]
+
+% new
+\setuplabeltext [\s!cz]    [\v!page=strna ]
+\setuplabeltext [\s!cz]  [\v!atpage=na stran\ecaron\ ]
+\setuplabeltext [\s!cz] [\v!hencefore=viz v\yacute\scaron e ]
+\setuplabeltext [\s!cz] [\v!hereafter=viz n\iacute\zcaron e ]
+\setuplabeltext [\s!cz]       [\v!see=viz ]
 
 %D \ShowAllLanguageValues [\s!pl] [polish]    {Polish}    {furniture}
 %D \ShowAllLanguageValues [\s!cz] [czech]     {Czech}     {mate}

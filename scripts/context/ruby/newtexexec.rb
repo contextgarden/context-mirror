@@ -117,6 +117,7 @@ class Commands
                     f.close
                     job.setvariable('interface','english')
                     job.setvariable('simplerun',true)
+                    # job.setvariable('nooptionfile',true)
                     job.setvariable('files',[job.tempfilename])
                     job.processtex
                 else
@@ -161,6 +162,7 @@ class Commands
                     f.close
                     job.setvariable('interface','english')
                     job.setvariable('simplerun',true)
+                    # job.setvariable('nooptionfile',true)
                     job.setvariable('files',[job.tempfilename])
                     job.processtex
                     File.silentdelete('texutil.tuf')
@@ -215,6 +217,7 @@ class Commands
                                 mod.close
                                 job.setvariable('interface','english') # redundant
                                 job.setvariable('simplerun',true)
+                                # job.setvariable('nooptionfile',true)
                                 job.setvariable('files',[job.tempfilename])
                                 job.processtex
                                 ["dvi", "pdf","tuo"].each do |s|
@@ -239,10 +242,10 @@ class Commands
             if files.length > 0 then
                 if f = File.open(job.tempfilename('tex'),'w') then
                     emptypages  = @commandline.checkedoption('addempty', '')
-                    paperoffset = @commandline.checkedoption('paperoffset', '1cm')
+                    paperoffset = @commandline.checkedoption('paperoffset', '0cm')
                     textwidth   = @commandline.checkedoption('textwidth', '0cm')
-                    backspace   = @commandline.checkedoption('backspace', '1.5cm')
-                    topspace    = @commandline.checkedoption('topspace', '1.5cm')
+                    backspace   = @commandline.checkedoption('backspace', '0cm')
+                    topspace    = @commandline.checkedoption('topspace', '0cm')
                     f << "\\definepapersize\n"
                     f << "  [offset=#{paperoffset}]\n"
                     f << "\\setuplayout\n"
@@ -270,6 +273,7 @@ class Commands
                     f.close
                     job.setvariable('interface','english')
                     job.setvariable('simplerun',true)
+                    # job.setvariable('nooptionfile',true)
                     job.setvariable('files',[job.tempfilename])
                     job.processtex
                 else
@@ -290,12 +294,24 @@ class Commands
             if files.length > 0 then
                 if f = File.open(job.tempfilename('tex'),'w') then
                     selection   = @commandline.checkedoption('selection', '')
-                    paperoffset = @commandline.checkedoption('paperoffset', '1cm')
+                    paperoffset = @commandline.checkedoption('paperoffset', '0cm')
                     textwidth   = @commandline.checkedoption('textwidth', '0cm')
-                    backspace   = @commandline.checkedoption('backspace', '1.5cm')
-                    topspace    = @commandline.checkedoption('topspace', '1.5cm')
-                    paperformat = @commandline.checkedoption('paperoffset', 'A4*A4').split(/[\*x]/o)
+                    backspace   = @commandline.checkedoption('backspace', '0cm')
+                    topspace    = @commandline.checkedoption('topspace', '0cm')
+                    paperformat = @commandline.checkedoption('paperformat', 'A4*A4').split(/[\*x]/o)
                     from, to = paperformat[0] || 'A4', paperformat[1] || paperformat[0] || 'A4'
+                    if from == 'fit' or to == 'fit' then
+                        f << "\\getfiguredimensions[#{files.first}]\n"
+                        if from == 'fit' then
+                            f << "\\expanded{\\definepapersize[from-fit][width=\\figurewidth,height=\\figureheight]}\n"
+                            from = 'from-fit'
+                        end
+                        if to == 'fit' then
+                            f << "\\expanded{\\definepapersize[to-fit][width=\\figurewidth,height=\\figureheight]}\n"
+                            to = 'to-fit'
+                        end
+                    end
+                    job.setvariable('paperformat','') # else overloaded later on
                     f << "\\setuppapersize[#{from}][#{to}]\n"
                     f << "\\definepapersize\n";
                     f << "  [offset=#{paperoffset}]\n";
@@ -319,6 +335,7 @@ class Commands
                     f.close
                     job.setvariable('interface','english')
                     job.setvariable('simplerun',true)
+                    # job.setvariable('nooptionfile',true)
                     job.setvariable('files',[job.tempfilename])
                     job.processtex
                 else
@@ -348,7 +365,7 @@ class Commands
                 if f = File.open(job.tempfilename('tex'),'w') then
                     scale = @commandline.checkedoption('scale')
                     scale = (scale * 1000).to_i if scale < 10
-                    paperoffset = @commandline.checkedoption('paperoffset', '1cm')
+                    paperoffset = @commandline.checkedoption('paperoffset', '0cm')
                     f << "\\starttext\n"
                     files.each do |filename|
                         result = @commandline.checkedoption('result','texexec')
@@ -381,6 +398,7 @@ class Commands
                     f.close
                     job.setvariable('interface','english')
                     job.setvariable('simplerun',true)
+                    # job.setvariable('nooptionfile',true)
                     job.setvariable('files',[job.tempfilename])
                     job.processtex
                 else
@@ -400,7 +418,7 @@ class Commands
             files = @commandline.arguments.sort
             if files.length > 0 then
                 if f = File.open(job.tempfilename('tex'),'w') then
-                    paperoffset = @commandline.checkedoption('paperoffset', '1cm')
+                    paperoffset = @commandline.checkedoption('paperoffset', '0cm')
                     combination = @commandline.checkedoption('combination','2*2').split(/[\*x]/o)
                     paperformat = @commandline.checkedoption('paperoffset', 'A4*A4').split(/[\*x]/o)
                     nx, ny = combination[0] || '2', combination[1] || combination[0] || '2'
@@ -435,6 +453,7 @@ class Commands
                     f.close
                     job.setvariable('interface','english')
                     job.setvariable('simplerun',true)
+                    # job.setvariable('nooptionfile',true)
                     job.setvariable('files',[job.tempfilename])
                     job.processtex
                 else

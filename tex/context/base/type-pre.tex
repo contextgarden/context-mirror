@@ -14,8 +14,6 @@
 %D This file is obsolete. We now have latin modern and proper
 %D typescripts. Forget about this file.
 
-% alas, i'd love to do: \endinput
-
 %D This file defines some typescripts that simulate the pre-typescript way
 %D of defining fonts. This file will not be extended.
 
@@ -24,11 +22,6 @@
 %D The Computer Modern Roman is derived from the Monotype~8a
 %D Times Roman. In this module, that is loaded by default, we
 %D define all relevant alternatives.
-
-% \starttypescript [cmr]
-%   \usetypescript [serif,sans,mono,math] [computer-modern,latin-modern] [default,name,size]
-%   \usemathcollection[default]
-% \stoptypescript
 
 \starttypescript [cmr]
   \usetypescript[modern][default]
@@ -39,48 +32,31 @@
 %D onto the EC ones, so that hyphenations work well. (The proper
 %D latin modern ec variants have replaed the ae ones.)
 
-% \starttypescript [aer]
-%   \usetypescript [serif,sans,mono,math] [computer-modern,latin-modern] [default,name,size,ec]
-%   \usemathcollection[default]
-% \stoptypescript
-
 \starttypescript [aer]
   \usetypescript[modern][ec]
   \setupbodyfont[modern]
+ %\enableregime[ec]
 \stoptypescript
 
-%D This script defines the Computer Modern Roman with iso
-%D latin 2 encoding, as needed for Czech and other languages.
-
-% \starttypescript [csr]
-%   \usetypescript [serif,sans,mono,math] [computer-modern,latin-modern] [default,name,size,il2]
-%   \usemathcollection[default]
-% \stoptypescript
+%D This script defines the Computer Modern Roman with a pseudo kind
+%D of iso latin 2 encoding.
 
 \starttypescript [csr]
-  \usetypescript[modern][il2]
+  \usetypescript[modern][ec]
   \setupbodyfont[modern]
+  \enableregime[il2]
 \stoptypescript
 
 %D This script defines the Computer Modern Roman with a
-%D polish encoding, as needed for Czech and other languages.
-
-% \starttypescript [plr]
-%   \usetypescript [serif,sans,mono,math] [computer-modern,latin-modern] [default,name,size,pl0]
-%   \usemathcollection[default]
-% \stoptypescript
+%D polish encoding.
 
 \starttypescript [plr]
   \usetypescript[modern][qx]
   \setupbodyfont[modern]
+  \enableregime[pl0]
 \stoptypescript
 
 %D Vietnamese.
-
-% \starttypescript [vnr]
-%   \usetypescript [serif,sans,mono,math] [computer-modern,latin-modern] [default,name,size,t5]
-%   \usemathcollection[default]
-% \stoptypescript
 
 \starttypescript [vnr]
   \usetypescript[modern][t5]
@@ -165,18 +141,10 @@
 % \stoptypescript
 
 \starttypescript [lbr]
-    \usetypescript[lucida][\defaultencoding]
+  \usetypescript[lucida][\defaultencoding]
 \stoptypescript
 
-% %D With thanks to Berthold Horn from YandY for providing me
-% %D evaluation copies of the MathTimePlus fonts.
-
-% \starttypescript [tim]
-%   \usetypescript [math] [times]   [all]
-%   \usetypescript [math] [default] [size]
-%   \usemathcollection[tim]
-%   \usetypescript [all] [times] [\defaultencoding]
-% \stoptypescript
+%D Times
 
 \starttypescript [tim]
   \usetypescript [times] [\defaultencoding]
@@ -186,12 +154,6 @@
 %D The Antikwa Torunska font family is a rather nice
 %D and subtle one. Although primary meant for the polish
 %D language, it can be used for other languages as well.
-
-% \starttypescript [ant]
-%   \usetypescript [serif] [antykwa-torunska] [name,\defaultencoding]
-%   \usetypescript [serif] [default]          [size]
-%   \usetypescript [all] [antykwa-torunska] [\defaultencoding]
-% \stoptypescript
 
 \starttypescript [ant]
   \usetypescript [antykwa-torunska] [\defaultencoding]
@@ -254,12 +216,6 @@
 \stoptypescript
 
 %D This script defines the Palatino font.
-
-% \starttypescript [ppl]
-%   \usetypescript [serif] [palatino] [name,\defaultencoding]
-%   \usetypescript [serif] [default]  [size]
-%   \usetypescript [all]   [palatino] [\defaultencoding]
-% \stoptypescript
 
 \starttypescript [ppl]
   \usetypescript [palatino] [\defaultencoding]

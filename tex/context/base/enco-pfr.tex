@@ -123,10 +123,10 @@
 %D This macro is defined as follows.
 
 \def\usepdffontresource #1 %
-  {\doifundefinedelse{\pdffontfileresource} % okay, undefined, so either
-     {\setxvalue{\pdffontfileresource}{#1}} % brand new, or not yet loaded
-     {\doifvaluesomething{\pdffontfileresource}  % only if not loaded in which
-        {\setxvalue{\pdffontfileresource}{#1}}}} % case it's made empty
+  {\doifundefinedelse\pdffontfileresource % okay, undefined, so either
+     {\setxvalue\pdffontfileresource{#1}} % brand new, or not yet loaded
+     {\doifvaluesomething\pdffontfileresource  % only if not loaded in which
+        {\setxvalue\pdffontfileresource{#1}}}} % case it's made empty
 
 %D Watch how we check for duplicated loading. The resource
 %D itself, when asked for, is included immediately, after which
@@ -165,10 +165,11 @@
 \def\dododoincludepdffontresource#1% encoding
   {\bgroup
    \def\currentencoding{#1}%
-   \startreadingfile
-     \readsysfile{pdfr-\getvalue\pdffontfileresource}\donothing\donothing
-   \stopreadingfile
-   \letgvalue\pdffontfileresource\empty
+   \doifvaluesomething\pdffontfileresource
+     {\startreadingfile
+        \readsysfile{pdfr-\getvalue\pdffontfileresource}\donothing\donothing
+      \stopreadingfile
+      \letgvalue\pdffontfileresource\empty}%
    \egroup}
 
 \beginETEX

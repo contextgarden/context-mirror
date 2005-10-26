@@ -261,7 +261,8 @@
 
 \let\checkpreprocessor\relax
 
-\appendtoks\relax{\appendtoks \checkpreprocessor \to \everyjob}\to\everydump
+% \appendtoks\relax{\appendtoks \checkpreprocessor \to \everyjob}\to\everydump
+\appendtoks\everyjob\expandafter{\the\everyjob\checkpreprocessor}\to\everydump
 
 %D To be documented and probably moved
 

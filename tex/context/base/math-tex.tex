@@ -462,8 +462,9 @@
 %D $\sqrt[3]{10}$
 %D \stoptyping
 
-\let\normalsqrt     \sqrt       % just set to: \dohandlemathtoken {sqrt}
-\def\notsosqrt [#1]{\root#1\of}
+\ifx\normalsqrt\undefined  \let\normalsqrt\sqrt \fi      % just set to: \dohandlemathtoken {sqrt}
+
+\def\notsosqrt[#1]{\root#1\of}
 
 \def\sqrt{\doifnextcharelse[\notsosqrt\normalsqrt}
 

@@ -290,14 +290,20 @@
 \def\verwerkfile#1 %
   {\doexecutefile{#1}}
 
+\def\useenvironment[#1]% maybe commalist
+  {\environment #1 }
+
 \def\environment #1 % at outermost level only
   {\def\startenvironment ##1 {}%
    \let\stopenvironment\relax
+   % why not \doexecutefile ?
+   \registerfileinfo[begin]{#1}%
    \dostarttextfile{#1}%
    \startreadingfile
    \processfile{#1}% was : \readlocfile{#1}{}{}
    \stopreadingfile
-   \dostoptextfile}
+   \dostoptextfile
+   \registerfileinfo[end]{#1}}
 
 \def\component #1 % at outermost level only
   {\dostarttextfile{#1}%

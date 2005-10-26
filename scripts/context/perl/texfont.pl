@@ -587,7 +587,12 @@ foreach my $path ($afmpath, $pfbpath)
       { print "file = $file\n";
 	system ("gzip -d $file") } }
 
-system ("mktexlsr $fontroot");  # needed ?
+# For gerben, we only generate a new database when an lsr file is present but for
+# myself we force this when texmf-fonts is used (else I get compatibility problems).
+
+if (($fontroot =~ /texmf\-fonts/o) || (-e "$fontroot/ls-R") || (-e "$fontroot/ls-r") || (-e "$fontroot/LS-R")) {
+    system ("mktexlsr $fontroot") ;
+}
 
 sub do_make_path
   { my $str = shift ;
@@ -897,7 +902,7 @@ foreach my $file (@files)
                 rename $encout, "$encpath/$use$cleanfont.bak" }
     	    UnLink "texfont.map" ;
             $tfmout = "$use$cleanfont$fontsuffix" ;
-            my $otfcommand = "otftotfm -a $varstr $encstr $passon $shape --name=\'$tfmout\' --encoding-dir=\'$encpath/\' --tfm-dir=\'$tfmpath/\' --vf-dir=\'$vfpath/\' --no-type1 --map-file=./texfont.map \'$file\'" ;
+            my $otfcommand = "otftotfm -a $varstr $encstr $passon $shape --name=\"$tfmout\" --encoding-dir=\"$encpath/\" --tfm-dir=\"$tfmpath/\" --vf-dir=\"$vfpath/\" --no-type1 --map-file=./texfont.map \"$file\"" ;
             print "$otfcommand\n"  if $trace ;
             system("$otfcommand") ;
             $encfil = $encout }

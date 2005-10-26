@@ -1295,6 +1295,39 @@
    \else
      \speciallimitatetext{#1}\leftlimit\rightlimit{#3}%
    \fi}
+
+%D Undocumented bonus (see wiki):
+%D
+%D \starttyping
+%D \limitatefirstline{\input tufte\relax}{10cm}{\unknown}
+%D \stoptyping
+
+\def\limitatefirstline#1#2#3%
+  {\hbox\bgroup\strut
+   \setbox\scratchbox\hbox{\begstrut#1\endstrut}%
+   \ifdim\wd\scratchbox>#2\relax
+     \setbox\scratchbox\hbox{#3}%
+     \hsize#2\relax
+     \advance\hsize-\wd\scratchbox
+     \setbox\scratchbox\vbox{\forgetall\veryraggedright#1}%
+     \setbox\scratchbox\vsplit\scratchbox to \lineheight
+     \vbox
+       {\unvbox\scratchbox
+        \global\setbox\plusone\lastbox
+        \global\setbox\plusone\hbox{\strut\unhbox\plusone}%
+        \hbox % to #2
+          {\ifx\clip\undefined
+             \box\plusone
+           \else\ifdim\wd\plusone>\hsize
+             \lower\strutdepth\hbox{\clip[\c!width=\hsize,\c!height=\lineheight]{\hbox{\raise\strutdepth\box\plusone}}}%
+           \else
+             \box\plusone
+           \fi\fi
+           \removeunwantedspaces#3}}% \removeunwantedspaces\hss#3}}%
+   \else
+     #1%
+   \fi
+   \egroup}
 
 %D \macros
 %D   {processisolatedwords,

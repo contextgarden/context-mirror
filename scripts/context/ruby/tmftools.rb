@@ -13,6 +13,8 @@
 # The script based alternative is not slower than the kpse one.
 # Loading is a bit faster when the log file is used.
 
+# todo: create database
+
 # tmftools [some of the kpsewhich switches]
 
 # tmftools --analyze
@@ -118,7 +120,7 @@ commandline.registerflag('strict')
 commandline.registerflag('delete')
 commandline.registerflag('force')
 
-commandline.registeraction('analyze')
+commandline.registeraction('analyze', "[--strict --sort --rootpath --treepath]\n[--delete [--force]] [pattern]")
 
 # general purpose options
 

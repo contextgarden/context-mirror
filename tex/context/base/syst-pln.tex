@@ -148,7 +148,7 @@
 %D occur.
 %D \stopnarrower
 %D
-%D We well overload some macros in \ETEX\ mode.
+%D We will overload some macros in \ETEX\ mode.
 
 \count10 = 22 % allocates \count    registers 23,  24, ...
 \count11 =  9 % allocates \dimen    registers 10,  11, ...
@@ -507,6 +507,8 @@
    \omit
    \advance\mscount\m@ne}
 
+% begin of tab code
+
 \def\cleartabs
   {\global\setbox\tabsyet\null
    \setbox\tabs\null}
@@ -524,30 +526,30 @@
    \let\next\relax
    \nxt}
 
-\def\s@tt@b%
+\def\s@tt@b
   {\let\nxt\relax
    \us@false\m@ketabbox}
 
-\def\tabalign%
+\def\tabalign
   {\us@true\m@ketabbox}
 
 \let\+\tabalign % no outer here
 
-\def\s@tcols#1\columns%
+\def\s@tcols#1\columns
   {\count@#1%
    \dimen@\hsize
    \loop
      \ifnum\count@>\z@ \@nother
    \repeat}
 
-\def\@nother%
+\def\@nother
   {\dimen@ii\dimen@
    \divide\dimen@ii\count@
    \setbox\tabs\hbox{\hbox to\dimen@ii{}\unhbox\tabs}%
    \advance\dimen@-\dimen@ii
    \advance\count@\m@ne}
 
-\def\m@ketabbox%
+\def\m@ketabbox
   {\begingroup
    \global\setbox\tabsyet\copy\tabs
    \global\setbox\tabsdone\null
@@ -577,6 +579,8 @@
   \fi
   \box\z@}
 
+% end to tab code
+
 %D Users are advised not to use the following macros:
 
 \def\hang
@@ -587,7 +591,7 @@
    \llap{#1\enspace}%
    \ignorespaces}
 
-\def\narrower%
+\def\narrower
   {\advance\leftskip \parindent
    \advance\rightskip\parindent}
 

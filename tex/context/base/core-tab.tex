@@ -371,6 +371,39 @@
 
 \newif\ifForgetTableBarAndQuote \ForgetTableBarAndQuotetrue
 
+% Old crappy code (live has changed):
+%
+% \bgroup
+%
+% \catcode`\|=\@@active
+% \catcode`\"=\@@active
+%
+% \gdef\pushouterbarandquote
+%   {\ifForgetTableBarAndQuote
+%      \ifnum\catcode`\|=\@@active \else
+%        \catcode`\|=\@@active
+%        \def|{\ifmmode\vert\else\char`\|\fi}%
+%      \fi
+%      \let\outertablebar=|%
+%      \ifnum\catcode`\"=\@@active \else
+%        \catcode`\"=\@@active
+%        \def"{\char`\"}%
+%      \fi
+%      \let\outertablequote="%
+%    \fi}
+%
+% \gdef\popouterbarandquote
+%   {\ifForgetTableBarAndQuote
+%      \let|\outertablebar
+%      \let"\outertablequote
+%    \else
+%      \redefinetablebarandquote
+%    \fi}
+%
+% \egroup
+%
+% probably better (untested):
+
 \bgroup
 
 \catcode`\|=\@@active
@@ -378,33 +411,33 @@
 
 \gdef\pushouterbarandquote
   {\ifForgetTableBarAndQuote
-     \ifnum\catcode`\|=\@@active \else
-       \catcode`\|=\@@active
-       \def|{\ifmmode\vert\else\char`\|\fi}%
+     \ifnum\catcode`\|=\@@active
+        \let\outertablebar|%
+     \else
+        \let\outertablebar\relax
      \fi
-     \let\outertablebar=|%
-     \ifnum\catcode`\"=\@@active \else
-       \catcode`\"=\@@active
-       \def"{\char`\"}%
+     \ifnum\catcode`\"=\@@active
+       \let\outertablequote"%
+     \else
+       \let\outertablequote\relax
      \fi
-     \let\outertablequote="%
    \fi}
 
 \gdef\popouterbarandquote
   {\ifForgetTableBarAndQuote
-     \let|\outertablebar
-     \let"\outertablequote
+     \ifx\outertablebar  \relax\else\let|\outertablebar  \fi
+     \ifx\outertablequote\relax\else\let"\outertablequote\fi
    \else
      \redefinetablebarandquote
    \fi}
 
-\gdef\ObeyTableBarAndQuote
+\egroup
+
+\def\ObeyTableBarAndQuote
   {\ForgetTableBarAndQuotefalse
    \ifintable
      \redefinetablebarandquote
    \fi}
-
-\egroup
 
 %D \macros
 %D   {ObeyTableBarAndQuote}
@@ -790,6 +823,12 @@
    \ReadFormatKeys \LeftGlue\hfil \RightGlue\empty}
 
 \appendtoks \TABLEparalignment \to \EveryTableParBox
+
+\def\!tfReFormat#1%
+  {\the \!taLeftGlue
+   \vbox{\forgetall\ialign{\span\the\!taDataColumnTemplate\cr#1\cr}}%
+   \the \!taRightGlue
+   \kern\zeropoint} % prevents \unskip / really needed
 
 %D Later on, we're going to implement multiple page table
 %D support, therefore the next \TABLE\ macro needs to be
@@ -2461,7 +2500,7 @@
      [  \v!none=>\OpenUp00\def\LOW{\Lower6 },
        \v!small=>\OpenUp00\def\LOW{\Lower6 }, % == baseline
       \v!medium=>\OpenUp11\def\LOW{\Lower7 },
-       \v!big=>\OpenUp22\def\LOW{\Lower8 }]%
+         \v!big=>\OpenUp22\def\LOW{\Lower8 }]%
    \doifelse\@@tidistance\v!none
      {\chardef\TABLErowfactor\zerocount}
      {\chardef\TABLErowfactor\plustwo  }}

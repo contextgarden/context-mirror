@@ -19,6 +19,7 @@ require 'base/system'
 require 'base/state'
 require 'base/pdf'
 require 'base/file'
+require 'base/ctx'
 
 class String
 
@@ -127,12 +128,13 @@ class TEX
         'forcetexutil', 'texutil',
         'globalfile', 'autopath',
         'purge', 'purgeall', 'autopdf', 'simplerun', 'verbose',
+        'nooptionfile'
     ]
     @@stringvars = [
         'modefile', 'result', 'suffix', 'response', 'path',
         'filters', 'usemodules', 'environments', 'separation', 'setuppath',
         'arguments', 'input', 'output', 'randomseed', 'modes', 'filename',
-        'modefile',
+        'modefile', 'ctxfile'
     ]
     @@standardvars = [
         'mainlanguage', 'bodyfont', 'language'
@@ -168,7 +170,7 @@ class TEX
     @@temprunfile = 'texexec'
     @@temptexfile = 'texexec.tex'
 
-    def initialize(logger)
+    def initialize(logger=nil)
         if @logger = logger then
             def report(str='')
                 @logger.report(str)
@@ -524,7 +526,7 @@ class TEX
         # finalize
         cleanup
         reportruntime
-   end
+    end
 
     def checkcontext
 
@@ -660,29 +662,39 @@ class TEX
     private  # will become baee/context
 
     @@preamblekeys = [
-        ['tex','texengine'],['program','texengine'],
-        ['ctx','ctxfilter'],['translate','ctxfilter'],
-        ['output','backend'],['modes','modes'],['version','contextversion'],
-        ['format','texformat'],['interface','texformat']
+        ['tex','texengine'],
+        ['program','texengine'],
+        ['translate','tcxfilter'],
+        ['tcx','tcxfilter'],
+        ['output','backend'],
+        ['mode','mode'],
+        ['ctx','ctxfile'],
+        ['version','contextversion'],
+        ['format','texformat'],
+        ['interface','texformat']
     ]
 
     def scantexpreamble(filename)
-        if FileTest.file?(filename) and tex = File.open(filename) then
-            while str = tex.gets.chomp do
-                if str =~ /^\%\s*(.*)/o then
-                    vars = Hash.new
-                    $1.split(/\s+/o).each do |s|
-                        k, v = s.split('=')
-                        vars[k] = v
+        begin
+            if FileTest.file?(filename) and tex = File.open(filename) then
+                while str = tex.gets and str.chomp! do
+                    if str =~ /^\%\s*(.*)/o then
+                        vars = Hash.new
+                        $1.split(/\s+/o).each do |s|
+                            k, v = s.split('=')
+                            vars[k] = v
+                        end
+                        @@preamblekeys.each do |v|
+                            setvariable(v[1],vars[v[0]]) if vars.key?(v[0])
+                        end
+                    else
+                        break
                     end
-                    @@preamblekeys.each do |v|
-                        setvariable(v[1],vars[v[0]]) if vars.key?(v[0])
-                    end
-                else
-                    break
                 end
+                tex.close
             end
-            tex.close
+        rescue
+            # well, let's not worry too much
         end
     end
 
@@ -758,45 +770,46 @@ class TEX
         end
     end
 
-    def makestubfile(jobname,jobsuffix,forcexml=false)
-        if tmp = File.open(File.suffixed(jobname,'run'),'w') then
-            fullname = File.suffixed(jobname,jobsuffix)
+    def makestubfile(rawname,forcexml=false)
+        if tmp = File.open(File.suffixed(rawname,'run'),'w') then
             tmp << "\\starttext\n"
             if forcexml then
-                if FileTest.file?(fullname) && (xml = File.open(fullname)) then
+                if FileTest.file?(rawname) && (xml = File.open(rawname)) then
                     xml.each do |line|
-                        if line =~ /<[a-z]+/io then
-                            break
-                        elsif line =~ /<\?context\-directive\s+(\S+)\s+(\S+)\s+(\S+)\s*(.*?)\s*\?>/o then
-                            category, key, value, rest = $1, $2, $3, $4
-                            case category
-                                when 'job' then
-                                    case key
-                                        when 'control' then
-                                            setvariable(value,if rest.empty? then true else rest end)
-                                        when 'mode', 'modes' then
-                                            tmp << "\\enablemode[#{value}]\n"
-                                        when 'stylefile', 'environment' then
-                                            tmp << "\\environment #{value}\n"
-                                        when 'module' then
-                                            tmp << "\\usemodule[#{value}]\n"
-                                        when 'interface' then
-                                            contextinterface = value
-                                    end
-                            end
+                        case line
+                            when /<\?context\-directive\s+(\S+)\s+(\S+)\s+(\S+)\s*(.*?)\s*\?>/o then
+                                category, key, value, rest = $1, $2, $3, $4
+                                case category
+                                    when 'job' then
+                                        case key
+                                            when 'control' then
+                                                setvariable(value,if rest.empty? then true else rest end)
+                                            when 'mode', 'modes' then
+                                                tmp << "\\enablemode[#{value}]\n"
+                                            when 'stylefile', 'environment' then
+                                                tmp << "\\environment #{value}\n"
+                                            when 'module' then
+                                                tmp << "\\usemodule[#{value}]\n"
+                                            when 'interface' then
+                                                contextinterface = value
+                                        end
+                                end
+                            when /<[a-z]+/io then # beware of order, first pi test
+                                break
                         end
                     end
                     xml.close
                 end
-                tmp << "\\processXMLfilegrouped{#{fullname}}\n"
+                tmp << "\\processXMLfilegrouped{#{rawname}}\n"
             else
-                tmp << "\\processfile{#{fullname}}\n"
+                tmp << "\\processfile{#{rawname}}\n"
             end
             tmp << "\\stoptext\n"
             tmp.close
-            jobsuffix = "run"
+            return "run"
+        else
+            return File.splitname(rawname)[1]
         end
-        return jobsuffix
     end
 
 end
@@ -831,13 +844,21 @@ class TEX
         reportruntime
     end
 
-    def makeoptionfile(jobname, jobsuffix, finalrun, fastdisabled, kindofrun)
-        if opt = File.open(File.suffixed(jobname,'top'),'w') then
+    def deleteoptionfile(rawname)
+        begin
+            File.delete(File.suffixed(rawname,'top'))
+        rescue
+        end
+    end
+
+    def makeoptionfile(rawname, jobname, jobsuffix, finalrun, fastdisabled, kindofrun)
+        # jobsuffix = orisuffix
+        if topname = File.suffixed(rawname,'top') and opt = File.open(topname,'w') then
             # local handies
-            opt << "\% $JobName.top\n"
+            opt << "\% #{topname}\n"
             opt << "\\unprotect\n"
             opt << "\\setupsystem[\\c!n=#{kindofrun}]\n"
-            opt << "\\def\\MPOSTformatswitch\{#{prognameflag('metafun')} #{formatflag('mpost')}=\}"
+            opt << "\\def\\MPOSTformatswitch\{#{prognameflag('metafun')} #{formatflag('mpost')}=\}\n"
             if getvariable('batchmode') then
                 opt << "\\batchmode\n"
             end
@@ -853,7 +874,7 @@ class TEX
             if (str = File.unixfied(getvariable('result'))) && ! str.empty? then
                 opt << "\\setupsystem[file=#{str}]\n"
             elsif (str = getvariable('suffix')) && ! str.empty? then
-                opt << "\\setupsystem[file=#{File.suffixed(jobname,str,nil)}]\n"
+                opt << "\\setupsystem[file=#{jobname}.#{str}]\n"
             end
             if (str = File.unixfied(getvariable('path'))) && ! str.empty? then
                 opt << "\\usepath[#{str}]\n" unless str.empty?
@@ -930,7 +951,7 @@ class TEX
             if (str = getvariable('input')) && ! str.empty? then
                 opt << "\\setupsystem[inputfile=#{str}]\n"
             else
-                opt << "\\setupsystem[inputfile=#{File.suffixed(jobname,jobsuffix)}]\n"
+                opt << "\\setupsystem[inputfile=#{rawname}]\n"
             end
             if (str = getvariable('pages')) && ! str.empty? then
                 if str.downcase == 'odd' then
@@ -953,18 +974,11 @@ class TEX
                 end
             end
             opt << "\\protect\n";
-            begin
-                getvariable('filters').split(',').each do |f| opt << "\\useXMLfilter[#{f}]\n" end
-            rescue
-            end
-            begin
-                getvariable('usemodules').split(',').each do |m| opt << "\\usemodule[#{m}]\n" end
-            rescue
-            end
-            begin
-                getvariable('environments').split(',').each do |e| opt << "\\usemodule[#{e}]\n" end
-            rescue
-            end
+            begin getvariable('filters'     ).split(',').uniq.each do |f| opt << "\\useXMLfilter[#{f}]\n"   end ; rescue ; end
+            begin getvariable('usemodules'  ).split(',').uniq.each do |m| opt << "\\usemodule[#{m}]\n"      end ; rescue ; end
+            begin getvariable('environments').split(',').uniq.each do |e| opt << "\\environment #{e}\n"     end ; rescue ; end
+          # this will become:
+          # begin getvariable('environments').split(',').uniq.each do |e| opt << "\\useenvironment[#{e}]\n" end ; rescue ; end
             opt << "\\endinput\n"
             opt.close
         end
@@ -976,12 +990,12 @@ class TEX
             ENV['SHELL_ESCAPE'] = ENV['SHELL_ESCAPE'] || 'f'
             ENV['OPENOUT_ANY']  = ENV['OPENOUT_ANY']  || 'p'
             ENV['OPENIN_ANY']   = ENV['OPENIN_ANY']   || 'p'
-        else
+        elsif getvariable('notparanoid') then
             ENV['SHELL_ESCAPE'] = ENV['SHELL_ESCAPE'] || 't'
-            ENV['OPENOUT_ANY']  = ENV['OPENOUT_ANY']  || 'p'
+            ENV['OPENOUT_ANY']  = ENV['OPENOUT_ANY']  || 'a'
             ENV['OPENIN_ANY']   = ENV['OPENIN_ANY']   || 'a'
         end
-        if (ENV['OPENIN_ANY'] == 'p') || (ENV['OPENOUT_ANY'] == 'p') then
+        if ENV['OPENIN_ANY'] && (ENV['OPENIN_ANY'] == 'p') then # first test redundant
             setvariable('paranoid', true)
         end
         if ENV.key?('SHELL_ESCAPE') && (ENV['SHELL_ESCAPE'] == 'f') then
@@ -1115,19 +1129,19 @@ class TEX
         ENV['TEXFONTMAPS'] = ".;\$TEXMF/fonts/map/{#{backend},pdftex,dvips,}//"
     end
 
-    def runbackend(jobname)
+    def runbackend(rawname)
         case validbackend(getvariable('backend'))
             when 'dvipdfmx' then
                 fixbackendvars('dvipdfm')
-                system("dvipdfmx -d 4 #{File.unsuffixed(jobname)}")
+                system("dvipdfmx -d 4 #{File.unsuffixed(rawname)}")
             when 'xetex'    then
                 fixbackendvars('xetex')
-                system("xdv2pdf #{File.suffixed(jobname,'xdv')}")
+                system("xdv2pdf #{File.suffixed(jrawname,'xdv')}")
             when 'dvips'    then
                 fixbackendvars('dvips')
                 mapfiles = ''
                 begin
-                    if tuifile = File.suffixed(jobname,'tui') and FileTest.file?(tuifile) then
+                    if tuifile = File.suffixed(rawname,'tui') and FileTest.file?(tuifile) then
                         IO.read(tuifile).scan(/^c \\usedmapfile\{.\}\{(.*?)\}\s*$/o) do
                             mapfiles += "-u +#{$1} " ;
                         end
@@ -1135,7 +1149,7 @@ class TEX
                 rescue
                     mapfiles = ''
                 end
-                system("dvips #{mapfiles} #{File.unsuffixed(jobname)}")
+                system("dvips #{mapfiles} #{File.unsuffixed(rawname)}")
             when 'pdftex'   then
                 # no need for postprocessing
             else
@@ -1146,6 +1160,8 @@ class TEX
     def processfile
 
         takeprecautions
+
+        rawname = getvariable('filename')
 
         jobname = getvariable('filename')
         suffix  = getvariable('suffix')
@@ -1181,23 +1197,63 @@ class TEX
         # fuzzy code snippet: (we kunnen kpse: prefix gebruiken)
 
         unless FileTest.file?(File.suffixed(jobname,jobsuffix)) then
-            inppath.split(',').each do |ip|
-                break if dummyfile = FileTest.file?(File.join(ip,File.suffixed(jobname,jobsuffix)))
+            if FileTest.file?(rawname + '.tex') then
+                jobname = rawname.dup
+                jobsuffix  = 'tex'
             end
         end
 
-        jobsuffix = makestubfile(jobname,jobsuffix,forcexml) if dummyfile || forcexml
+        # we can have funny names, like 2005.10.10 (given without suffix)
 
-        if globalfile || FileTest.file?(File.suffixed(jobname,jobsuffix)) then
+        rawname = jobname + '.' + jobsuffix
+
+        unless FileTest.file?(rawname) then
+            inppath.split(',').each do |ip|
+                break if dummyfile = FileTest.file?(File.join(ip,rawname))
+            end
+        end
+
+        # preprocess files
+
+        ctx = CtxRunner.new(rawname,@logger)
+        if getvariable('ctxfile').empty? then
+            ctx.manipulate(File.suffixed(rawname,'ctx'),'jobname.ctx')
+        else
+            ctx.manipulate(File.suffixed(getvariable('ctxfile'),'ctx'))
+        end
+        ctx.savelog(File.suffixed(rawname,'ctl'))
+
+        envs = ctx.environments
+        mods = ctx.modules
+
+        # merge environment and module specs
+
+        envs << getvariable('environments') unless getvariable('environments').empty?
+        mods << getvariable('modules')      unless getvariable('modules')     .empty?
+
+        envs = envs.uniq.join(',')
+        mods = mods.uniq.join(',')
+
+        report("using environments #{envs}") if envs.length > 0
+        report("using modules #{mods}")      if mods.length > 0
+
+        setvariable('environments', envs)
+        setvariable('modules',      mods)
+
+        # end of preprocessing and merging
+
+        jobsuffix = makestubfile(rawname,forcexml) if dummyfile || forcexml
+
+        if globalfile || FileTest.file?(rawname) then
 
             if not dummyfile and not globalfile then
-                scantexpreamble(File.suffixed(jobname,jobsuffix))
-                scantexcontent(File.suffixed(jobname,jobsuffix)) if getvariable('texformats').standard?
+                scantexpreamble(rawname)
+                scantexcontent(rawname) if getvariable('texformats').standard?
             end
 
-            result = File.suffixed(jobname,suffix) unless suffix.empty?
+            result = File.suffixed(rawname,suffix) unless suffix.empty?
 
-            pushresult(jobname,result)
+            pushresult(rawname,result)
 
             method = validtexmethod(validtexformat(getvariable('texformats')))
 
@@ -1206,87 +1262,86 @@ class TEX
             case method
 
                 when 'context' then
-
                     if getvariable('simplerun') || runonce then
-                        makeoptionfile(jobname,orisuffix,true,true,3)
-                        ok = runtex(File.suffixed(jobname,jobsuffix))
+                        makeoptionfile(rawname,jobname,orisuffix,true,true,3) unless getvariable('nooptionfile')
+                        ok = runtex(rawname)
                         if ok then
-                            ok = runtexutil(jobname) if getvariable('texutil') || getvariable('forcetexutil')
-                            runbackend(jobname)
-                            popresult(jobname,result)
+                            ok = runtexutil(rawname) if getvariable('texutil') || getvariable('forcetexutil')
+                            runbackend(rawname)
+                            popresult(rawname,result)
                         end
-                        File.silentrename(File.suffixed(jobname,'top'),File.suffixed(jobname,'tmp'))
+                        File.silentdelete(File.suffixed(rawname,'tmp'))
+                        File.silentrename(File.suffixed(rawname,'top'),File.suffixed(rawname,'tmp'))
                     else
                         mprundone, ok, stoprunning = false, true, false
                         texruns, nofruns = 0, getvariable('runs').to_i
                         state = FileState.new
                         ['tub','tuo'].each do |s|
-                            state.register(File.suffixed(jobname,s))
+                            state.register(File.suffixed(rawname,s))
                         end
                         if getvariable('automprun') then # check this
                             ['mprun','mpgraph'].each do |s|
-                                state.register(File.suffixed(jobname,s,'mp'),'randomseed')
-                                # state.register(File.suffixed(jobname,s,'mpo'))
+                                state.register(File.suffixed(rawname,s,'mp'),'randomseed')
                             end
                         end
                         while ! stoprunning && (texruns < nofruns) && ok do
                             texruns += 1
                             report("TeX run #{texruns}")
                             if texruns == 1 then
-                                makeoptionfile(jobname,orisuffix,false,false,1)
+                                makeoptionfile(rawname,jobname,orisuffix,false,false,1) unless getvariable('nooptionfile')
                             else
-                                makeoptionfile(jobname,orisuffix,false,false,2)
+                                makeoptionfile(rawname,jobname,orisuffix,false,false,2) unless getvariable('nooptionfile')
                             end
-                            ok = runtex(File.suffixed(jobname,jobsuffix))
+                            ok = runtex(File.suffixed(rawname,jobsuffix))
                             if ok && (nofruns > 1) then
                                 unless getvariable('nompmode') then
-                                    mprundone = runtexmpjob(jobname, "mpgraph")
-                                    mprundone = runtexmpjob(jobname, "mprun")
+                                    mprundone = runtexmpjob(rawname, "mpgraph")
+                                    mprundone = runtexmpjob(rawname, "mprun")
                                 end
-                                ok = runtexutil(jobname)
+                                ok = runtexutil(rawname)
                                 state.update
                                 stoprunning = state.stable?
                             end
                         end
-                        ok = runtexutil(jobname) if (nofruns == 1) && getvariable('texutil')
+                        ok = runtexutil(rawname) if (nofruns == 1) && getvariable('texutil')
                         if ok && finalrun && (nofruns > 1) then
-                            makeoptionfile(jobname,orisuffix,true,finalrun,4)
+                            makeoptionfile(rawname,jobname,orisuffix,true,finalrun,4) unless getvariable('nooptionfile')
                             report("final TeX run #{texruns}")
-                            ok = runtex(File.suffixed(jobname,jobsuffix))
+                            ok = runtex(File.suffixed(rawname,jobsuffix))
                         end
-                        File.silentcopy(File.suffixed(jobname,'top'),File.suffixed(jobname,'tmp'))
-                        ['tup','top'].each do |s| # previous tuo file / runtime option file
-                             File.silentdelete(File.suffixed(jobname,s))
+                        ['tmp','top'].each do |s| # previous tuo file / runtime option file
+                             File.silentdelete(File.suffixed(rawname,s))
                         end
+                        File.silentrename(File.suffixed(rawname,'top'),File.suffixed(rawname,'tmp'))
                         if ok then
-                            runbackend(jobname)
-                            popresult(jobname,result)
+                            runbackend(rawname)
+                            popresult(rawname,result)
                         end
                     end
 
-                    Kpse.runscript('ctxtools',jobname,'--purge')    if getvariable('purge')
-                    Kpse.runscript('ctxtools',jobname,'--purgeall') if getvariable('purgeall')
+                    Kpse.runscript('ctxtools',rawname,'--purge')    if getvariable('purge')
+                    Kpse.runscript('ctxtools',rawname,'--purgeall') if getvariable('purgeall')
 
                 when 'latex' then
 
-                    ok = runtex(File.suffixed(jobname,jobsuffix))
+                    ok = runtex(rawname)
 
                 else
 
-                    ok = runtex(File.suffixed(jobname,jobsuffix))
+                    ok = runtex(rawname)
 
             end
 
-            if (dummyfile or forcexml) and FileTest.file?(File.suffixed(jobname,jobsuffix)) then
+            if (dummyfile or forcexml) and FileTest.file?(rawname) then
                 begin
-                    File.delete(File.suffixed(jobname,jobsuffix))
+                    File.delete(File.suffixed(rawname,'run'))
                 rescue
                     report("unable to delete stub file")
                 end
             end
 
             if ok and getvariable('autopdf') then
-                PDFview.open(File.suffixed(if result.empty? then jobname else result end,'pdf'))
+                PDFview.open(File.suffixed(if result.empty? then rawname else result end,'pdf'))
             end
 
         end

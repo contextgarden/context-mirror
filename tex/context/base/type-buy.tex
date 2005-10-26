@@ -861,6 +861,33 @@
 
 \stoptypescript
 
+% linotype syntax
+
+\starttypescript [sans] [syntax] [ec,texnansi]
+
+  \loadmapfile[\typescriptthree-linotype-syntax.map]
+
+  \definefontsynonym [SyntaxLT-Roman]      [\typescriptthree-lte50617] [encoding=\typescriptthree]
+  \definefontsynonym [SyntaxLT-Italic]     [\typescriptthree-lte50618] [encoding=\typescriptthree]
+  \definefontsynonym [SyntaxLT-Bold]       [\typescriptthree-lte50619] [encoding=\typescriptthree]
+  \definefontsynonym [SyntaxLT-Black]      [\typescriptthree-lte50620] [encoding=\typescriptthree]
+  \definefontsynonym [SyntaxLT-UltraBlack] [\typescriptthree-lte50621] [encoding=\typescriptthree]
+
+\stoptypescript
+
+\starttypescript [sans] [syntax] [name]
+
+  \loadmapfile[\typescriptthree-linotype-syntax.map]
+
+  \definefontsynonym [Sans]           [SyntaxLT-Roman]
+  \definefontsynonym [SansItalic]     [SyntaxLT-Italic]
+  \definefontsynonym [SansSlanted]    [SyntaxLT-Italic]
+  \definefontsynonym [SansBold]       [SyntaxLT-Black]
+  \definefontsynonym [SansBoldItalic] [SyntaxLT-Black]
+
+\stoptypescript
+
+
 \stoptypescriptcollection
 
 \endinput

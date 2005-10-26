@@ -11,6 +11,8 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
+% This encoding will go but the regime will remain.
+
 %D This Czech/Slovak encoding is dedicated to Han The Thanh.
 %D The numbers are derived from some files he sent me. This
 %D definition file is (still) sort of beta.
@@ -45,7 +47,7 @@
 
 \stopmapping
 
-\startcoding[il2][il2]
+\startencoding[il2][il2]
 
 \definecharacter textgrave          18
 \definecharacter textacute          19
@@ -133,21 +135,23 @@
 \definecharacter Lstroke       {\ilencodedL}
 \definecharacter lstroke       {\ilencodedl}
 
-\def\ilencodedrA%
-  {\leavevmode\hbox\bgroup
+\def\ilencodedrA
+  {\dontleavehmode\hbox\bgroup
    \setbox0\hbox{h}%
    \dimen0=\ht0
    \advance\dimen0 by -1ex
    \rlap{\raise.67\dimen0\hbox{\char'27}}A%
    \egroup}
 
-\def\ilencodedl%
-  {{\char32l}}
+\def\ilencodedl
+  {\dontleavehmode{\char32l}}
 
-\def\ilencodedL% I don't like the \leavevmode here, better \enterhmode
-  {\leavevmode\hbox\bgroup
+\def\ilencodedL
+  {\dontleavehmode\hbox\bgroup
    \setbox0\hbox{L}%
    \hbox to\wd0{\hss\char32L}%
    \egroup}
 
-\stopcoding
+\stopencoding
+
+\endinput

@@ -72,9 +72,9 @@ elsif ($pattern =~ /\.mp$/io)
       { if ($Latex)
           { $rest .= " $mplatexswitch" }
         if ($MetaFun) {
-            $mpbin = 'mpost --mem=mpost' ;
+            $mpbin = 'mpost --progname=mpost --mem=metafun' ;
         } else {
-            $mpbin = 'mpost --mem=metafun' ;
+            $mpbin = 'mpost --mem=mpost' ;
         }
     }
     else
@@ -99,7 +99,7 @@ foreach my $file (@files)
   { $_ = $file ;
     if (s/\.(\d+|mps)$// && -e $file)
       { if ($miktex)
-          { $command = "pdfetex -fmt=mptopdf" }
+          { $command = "pdfetex -undump=mptopdf" }
         else
           { $command = "pdfetex -progname=context -fmt=mptopdf" }
         if ($dosish)

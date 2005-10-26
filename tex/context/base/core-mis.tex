@@ -546,7 +546,7 @@
    \begingroup
    \scratchdimen\periodswidth
    \hbox to \iffirstargument#1\else\periodsdefault\fi \scratchdimen
-     {\leaders\hbox to \scratchdimen{\hss.\hss}\hss}
+     {\leaders\hbox to \scratchdimen{\hss.\hss}\hss}%
    \endgroup}
 
 \unexpanded\def\unknown
@@ -2477,8 +2477,9 @@
    \dowithnextbox
      {\dontshowcomposition
       \scratchdimen\nextboxwd
-      \setbox\nextbox\vbox
-        {\dostartmirroring\hskip-\nextboxwd\flushnextbox\dostopmirroring}%
+      % better use an hbox (if no \forgetall, leftskip etc may creep in)
+     %\setbox\nextbox\vbox{\forgetall\dostartmirroring\hskip-\nextboxwd\flushnextbox\dostopmirroring}%
+      \setbox\nextbox\hbox{\dostartmirroring\hskip-\nextboxwd\flushnextbox\dostopmirroring}%
       \nextboxwd\scratchdimen
       \flushnextbox
       \egroup}}

@@ -26,6 +26,12 @@
 %D But we can speed things up, watch how we avoid zero and \TEX's
 %D automatically added \type {\relax}.
 
+% remark:
+% - gcommaaccent, kcomaaccent, lcomaaccent, ncomaaccent, rcomaaccent
+% bear the name "WITH CEDILLA" in Unicode
+% - scomaaccent and tcomaaccent point to the "WITH CEDILLA" in the
+% Adobe Glyph List
+
 \startunicodevector 1
   \expandafter\strippedcsname
   \ifcase\numexpr#1\relax
@@ -63,8 +69,8 @@
     \gbreve        \or
     \Gdotaccent    \or
     \gdotaccent    \or
-    \Gcedilla      \or % \Gcedilla \or
-    \gcedilla      \or % \gcedilla \or
+    \Gcommaaccent  \or % WITH CEDILLA
+    \gcommaaccent  \or % WITH CEDILLA
     \Hcircumflex   \or
     \hcircumflex   \or
     \Hstroke       \or
@@ -83,13 +89,13 @@
     \ijligature    \or
     \Jcircumflex   \or
     \jcircumflex   \or
-    \Kcedilla      \or
-    \kcedilla      \or
+    \Kcommaaccent  \or % WITH CEDILLA
+    \kcommaaccent  \or % WITH CEDILLA
     \kkra          \or % \kkra \or
     \Lacute        \or
     \lacute        \or
-    \Lcedilla      \or
-    \lcedilla      \or
+    \Lcommaaccent  \or % WITH CEDILLA
+    \lcommaaccent  \or % WITH CEDILLA
     \Lcaron        \or
     \lcaron        \or
     \Ldotmiddle    \or % \Ldotmiddle \or
@@ -98,8 +104,8 @@
     \lstroke       \or
     \Nacute        \or
     \nacute        \or
-    \Ncedilla      \or
-    \ncedilla      \or
+    \Ncommaaccent  \or % WITH CEDILLA
+    \ncommaaccent  \or % WITH CEDILLA
     \Ncaron        \or
     \ncaron        \or
     \napostrophe   \or
@@ -115,8 +121,8 @@
     \oeligature    \or
     \Racute        \or
     \racute        \or
-    \Rcedilla      \or
-    \rcedilla      \or
+    \Rcommaaccent  \or % WITH CEDILLA
+    \rcommaaccent  \or % WITH CEDILLA
     \Rcaron        \or
     \rcaron        \or
     \Sacute        \or

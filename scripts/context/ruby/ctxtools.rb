@@ -379,6 +379,7 @@ class Commands
 
         pattern  = @commandline.arguments
         purgeall = @commandline.option("all") || all
+        recurse  = @commandline.option("recurse")
 
         $dontaskprefixes.push(Dir.glob("mpx-*"))
         $dontaskprefixes.flatten!
@@ -391,14 +392,14 @@ class Commands
         end
 
         if ! pattern || pattern.empty? then
-            globbed = "*.*"
+            globbed = if recurse then "**/*.*" else "*.*" end
             files = Dir.glob(globbed)
             report("purging files : #{globbed}")
         else
             pattern.each do |pat|
-                globbed = "#{pat}-*.*"
+                globbed = if recurse then "**/#{pat}-*.*" else "#{pat}-*.*" end
                 files = Dir.glob(globbed)
-                globbed = "#{pat}.*"
+                globbed = if recurse then "**/#{pat}.*" else "#{pat}.*" end
                 files.push(Dir.glob(globbed))
             end
             report("purging files : #{pattern.join(' ')}")
@@ -1313,6 +1314,53 @@ class Commands
 
 end
 
+class Commands
+
+    include CommandBase
+
+    # usage   : ctxtools --listentities entities.xml
+    # document: <!DOCTYPE something SYSTEM "entities.xml">
+
+    def flushentities(handle,entities,doctype=nil) # 'stylesheet'
+        tab = if doctype then "\t" else "" end
+        handle.puts("<!DOCTYPE #{doctype} [") if doctype
+        entities.keys.sort.each do |k|
+            handle.puts("#{tab}<!ENTITY #{k} \"\&\##{entities[k]};\">")
+        end
+        handle.puts("]>") if doctype
+    end
+
+    def listentities
+
+      # filename   = `texmfstart tmftools.rb --progname=context enco-uc.tex`.chomp
+        filename   = `kpsewhich --progname=context enco-uc.tex`.chomp
+        outputname = @commandline.argument('first')
+
+        if filename and not filename.empty? and FileTest.file?(filename) then
+            entities = Hash.new
+            IO.readlines(filename).each do |line|
+                if line =~ /\\definecharacter\s+([a-zA-Z]+)\s+\{\\uchar\{*(\d+)\}*\{(\d+)\}\}/o then
+                    name, low, high = $1, $2.to_i, $3.to_i
+                    entities[name] = low*256 + high
+                end
+            end
+            if outputname and not outputname.empty? then
+                if f = File.open(outputname,'w') then
+                    flushentities(f,entities)
+                    f.close
+                else
+                    flushentities($stdout,entities)
+                end
+            else
+                flushentities($stdout,entities)
+            end
+        end
+
+    end
+
+end
+
+
 logger      = Logger.new(banner.shift)
 commandline = CommandLine.new
 
@@ -1325,7 +1373,7 @@ commandline.registeraction('sciteinterface', 'generate scite syntax files [--pip
 commandline.registeraction('rawinterface', 'generate raw syntax files [--pipe]')
 
 commandline.registeraction('translateinterface', 'generate interface files (xml) [nl de ..]')
-commandline.registeraction('purgefiles', 'remove temporary files [--all] [basename]')
+commandline.registeraction('purgefiles', 'remove temporary files [--all --recurse] [basename]')
 
 commandline.registeraction('documentation', 'generate documentation [--type=] [filename]')
 
@@ -1335,6 +1383,7 @@ commandline.registeraction('purgeallfiles') # no help, compatibility feature
 commandline.registeraction('patternfiles', 'generate pattern files [--all --xml --utf8] [languagecode]')
 
 commandline.registeraction('dpxmapfiles', 'convert pdftex mapfiles to dvipdfmx [--force] [texmfroot]')
+commandline.registeraction('listentities', 'create doctype entity definition from enco-uc.tex')
 
 commandline.registervalue('type','')
 

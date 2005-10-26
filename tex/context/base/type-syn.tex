@@ -55,6 +55,7 @@
   \definefontsynonym [SerifBoldItalic]  [ComputerModern-BoldItalic]
   \definefontsynonym [SerifBoldSlanted] [ComputerModern-BoldSlanted]
   \definefontsynonym [SerifCaps]        [ComputerModern-Caps]
+  \definefontsynonym [SerifCapsSlanted] [ComputerModern-CapsSlanted]
 \stoptypescript
 
 \starttypescript [sans] [modern,computer-modern,latin-modern] [name]
@@ -65,6 +66,7 @@
   \definefontsynonym [SansBoldItalic]   [ComputerModernSans-BoldItalic]
   \definefontsynonym [SansBoldSlanted]  [ComputerModernSans-BoldSlanted]
   \definefontsynonym [SansCaps]         [ComputerModernSans-Caps]
+  \definefontsynonym [SansCapsSlanted]  [ComputerModernSans-CapsSlanted]
 \stoptypescript
 
 \starttypescript [mono] [modern,computer-modern,latin-modern] [name]
@@ -75,6 +77,7 @@
   \definefontsynonym [MonoBoldItalic]   [ComputerModernMono-BoldItalic]
   \definefontsynonym [MonoBoldSlanted]  [ComputerModernMono-BoldSlanted]
   \definefontsynonym [MonoCaps]         [ComputerModernMono-Caps]
+  \definefontsynonym [MonoCapsSlanted]  [ComputerModernMono-CapsSlanted]
 \stoptypescript
 
 \starttypescript [math] [modern,computer-modern,latin-modern] [name]
@@ -99,13 +102,36 @@
 \stoptypescript
 
 \starttypescript [serif] [modern-vari,computer-modern-vari,latin-modern-vari] [name]
-  \definefontsynonym [Serif]            [ComputerModernMono-Variable]
-  \definefontsynonym [SerifBold]        [Serif]
-  \definefontsynonym [SerifItalic]      [Serif]
-  \definefontsynonym [SerifSlanted]     [SerifItalic]
-  \definefontsynonym [SerifBoldItalic]  [SerifItalic]
-  \definefontsynonym [SerifBoldSlanted] [SerifSlanted]
-  \definefontsynonym [SerifCaps]        [Serif]
+  \definefontsynonym [Serif]            [LMTypewriterVarWd-Regular]
+  \definefontsynonym [SerifBold]        [LMTypewriterVarWd-Oblique]
+  \definefontsynonym [SerifItalic]      [LMTypewriterVarWd-Oblique]
+  \definefontsynonym [SerifSlanted]     [LMTypewriterVarWd-Dark]
+  \definefontsynonym [SerifBoldItalic]  [LMTypewriterVarWd-DarkOblique]
+  \definefontsynonym [SerifBoldSlanted] [LMTypewriterVarWd-DarkOblique]
+  \definefontsynonym [SerifCaps]        [LMTypewriterVarWd-Regular]
+  \definefontsynonym [SerifCapsSlanted] [LMTypewriterVarWd-Oblique]
+\stoptypescript
+
+\starttypescript [mono] [modern-cond,computer-modern-cond,latin-modern-cond,modern-lightcond,computer-modern-lightcond,latin-modern-lightcond] [name]
+  \definefontsynonym [Mono]             [LMTypewriter-LightCondensed]
+  \definefontsynonym [MonoBold]         [LMTypewriter-LightCondensed]
+  \definefontsynonym [MonoItalic]       [LMTypewriter-LightCondensedOblique]
+  \definefontsynonym [MonoSlanted]      [LMTypewriter-LightCondensedOblique]
+  \definefontsynonym [MonoBoldItalic]   [LMTypewriter-LightCondensed]
+  \definefontsynonym [MonoBoldSlanted]  [LMTypewriter-LightCondensed]
+  \definefontsynonym [MonoCaps]         [LMTypewriter-LightCondensed]
+  \definefontsynonym [MonoCapsSlanted]  [LMTypewriter-LightCondensed]
+\stoptypescript
+
+\starttypescript [mono] [modern-light,computer-modern-light,latin-modern-light] [name]
+  \definefontsynonym [Mono]             [LMTypewriter-Light]
+  \definefontsynonym [MonoBold]         [LMTypewriter-Light]
+  \definefontsynonym [MonoItalic]       [LMTypewriter-LightOblique]
+  \definefontsynonym [MonoSlanted]      [LMTypewriter-LightOblique]
+  \definefontsynonym [MonoBoldItalic]   [LMTypewriter-Light]
+  \definefontsynonym [MonoBoldSlanted]  [LMTypewriter-Light]
+  \definefontsynonym [MonoCaps]         [LMTypewriter-Light]
+  \definefontsynonym [MonoCapsSlanted]  [LMTypewriter-Light]
 \stoptypescript
 
 % This will change some day.
@@ -134,21 +160,21 @@
 
 \starttypescript [math] [euler] [name]
   \definefontsynonym [MathRoman]     [Euler-Roman]      % mr
-  \definefontsynonym [MathItalic]    [Euler-Fraktur]      % mi
+  \definefontsynonym [MathItalic]    [Euler-Fraktur]    % mi
   \definefontsynonym [MathExtension] [Euler-Extension]  % ex
   \definefontsynonym [MathSymbol]    [Euler-Symbol]     % sy
 \stoptypescript
 
 \starttypescript [boldmath] [euler] [name]
   \definefontsynonym [MathRoman]     [Euler-Roman-Bold]     % mr
-  \definefontsynonym [MathItalic]    [Euler-Fraktur-Bold]     % mi
+  \definefontsynonym [MathItalic]    [Euler-Fraktur-Bold]   % mi
   \definefontsynonym [MathExtension] [Euler-Extension]      % ex
   \definefontsynonym [MathSymbol]    [Euler-Symbol-Bold]    % sy
 \stoptypescript
 
 \starttypescript [bfmath] [euler] [name]
   \definefontsynonym [MathRomanBold]  [Euler-Roman-Bold]     % mr
-  \definefontsynonym [MathItalicBold] [Euler-Fraktur-Bold]     % mi
+  \definefontsynonym [MathItalicBold] [Euler-Fraktur-Bold]   % mi
   \definefontsynonym [MathExtension]  [Euler-Extension]      % ex
   \definefontsynonym [MathSymbolBold] [Euler-Symbol-Bold]    % sy
 \stoptypescript
@@ -175,16 +201,6 @@
 \stoptypescript
 
 % Antykwa Torunska :
-
-% \starttypescript [serif] [antykwa-torunska] [name]
-%   \definefontsynonym [Serif]            [AntykwaTorunska-Regular]
-%   \definefontsynonym [SerifBold]        [AntykwaTorunska-Bold]
-%   \definefontsynonym [SerifItalic]      [AntykwaTorunska-Italic]
-%   \definefontsynonym [SerifSlanted]     [AntykwaTorunska-Italic]
-%   \definefontsynonym [SerifBoldItalic]  [AntykwaTorunska-Bold]
-%   \definefontsynonym [SerifBoldSlanted] [AntykwaTorunska-Bold]
-%   \definefontsynonym [SerifCaps]        [AntykwaTorunska-Regular]
-% \stoptypescript
 
 \starttypescript [serif] [antykwa-torunska] [name]
   \definefontsynonym [Serif]            [AntykwaTorunska-Regular]
@@ -435,6 +451,7 @@
 % Iwona
 
 \starttypescript [sans] [iwona-light] [name]
+  \setups[font:fallback:sans]
   \definefontsynonym [Sans]           [Iwona-Light]        [encoding=\typescriptthree]
   \definefontsynonym [SansItalic]     [Iwona-LightItalic]  [encoding=\typescriptthree]
   \definefontsynonym [SansBold]       [Iwona-Medium]       [encoding=\typescriptthree]
@@ -442,6 +459,7 @@
 \stoptypescript
 
 \starttypescript [sans] [iwona] [name]
+  \setups[font:fallback:sans]
   \definefontsynonym [Sans]           [Iwona-Regular]       [encoding=\typescriptthree]
   \definefontsynonym [SansItalic]     [Iwona-RegularItalic] [encoding=\typescriptthree]
   \definefontsynonym [SansBold]       [Iwona-Bold]          [encoding=\typescriptthree]
@@ -449,6 +467,7 @@
 \stoptypescript
 
 \starttypescript [sans] [iwona-medium] [name]
+  \setups[font:fallback:sans]
   \definefontsynonym [Sans]           [Iwona-Medium]       [encoding=\typescriptthree]
   \definefontsynonym [SansItalic]     [Iwona-MediumItalic] [encoding=\typescriptthree]
   \definefontsynonym [SansBold]       [Iwona-Heavy]        [encoding=\typescriptthree]
@@ -479,6 +498,7 @@
 % Kurier
 
 \starttypescript [sans] [kurier-light] [name]
+  \setups[font:fallback:sans]
   \definefontsynonym [Sans]           [Kurier-Light]        [encoding=\typescriptthree]
   \definefontsynonym [SansItalic]     [Kurier-LightItalic]  [encoding=\typescriptthree]
   \definefontsynonym [SansBold]       [Kurier-Medium]       [encoding=\typescriptthree]
@@ -486,6 +506,7 @@
 \stoptypescript
 
 \starttypescript [sans] [kurier] [name]
+  \setups[font:fallback:sans]
   \definefontsynonym [Sans]           [Kurier-Regular]       [encoding=\typescriptthree]
   \definefontsynonym [SansItalic]     [Kurier-RegularItalic] [encoding=\typescriptthree]
   \definefontsynonym [SansBold]       [Kurier-Bold]          [encoding=\typescriptthree]
@@ -493,6 +514,7 @@
 \stoptypescript
 
 \starttypescript [sans] [kurier-medium] [name]
+  \setups[font:fallback:sans]
   \definefontsynonym [Sans]           [Kurier-Medium]       [encoding=\typescriptthree]
   \definefontsynonym [SansItalic]     [Kurier-MediumItalic] [encoding=\typescriptthree]
   \definefontsynonym [SansBold]       [Kurier-Heavy]        [encoding=\typescriptthree]

@@ -421,8 +421,7 @@
 	 \hbox to #3{\hss\lower.5\scratchdimen\box\nextbox\hss}%
          \ifx\currentPDFresources\empty
          \else
-           \special{pdf:put @resources
-	     <<\currentPDFresources\the\pdfpageresources>>}%
+           \special{pdf:put @resources <<\currentPDFresources\the\pdfpageresources>>}%
            \global\let\currentPDFresources\empty
          \fi
          \special{pdf:exobj}}%

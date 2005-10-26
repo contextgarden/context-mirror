@@ -24,103 +24,160 @@
 
 \writestatus{\m!systems}{beware: some patches loaded from cont-new.tex}
 
-\def\headparameter#1% to do: everywhere in core-sec
-  {\csname\??ko\currenthead#1\endcsname}
+% \tracefilestrue
+%
+% \unexpanded\def\readfile#1#2#3%
+%   {\readlocfile{#1}{#2}
+%      {\readjobfile{#1}{#2}
+%         {\readsysfile{#1}{#2}{#3}}}}
+
+\unexpanded\def\readfile#1#2#3%
+  {\readlocfile{#1}{#2}{\readsysfile{#1}{#2}{#3}}}
 
-% supp-fil.tex
+\chardef\preprocessmethod 2 % 0=no check 1=present_check 2=log_check
+\chardef\preprocessstate  0 % 1=found 2=not_present (skip)
+\def    \preprocesssuffix {.prep}
 
-% <?xml version='1.0' standalone='yes'?>
-% <ctx:job>
-%     <ctx:message>loading preprocessor definition</ctx:message>
-%     <ctx:preprocessor>texmfstart --direct iconv "--binary -f CP1250 -t UTF-8 kpse:&ctx:oldfilename; &gt; &ctx:newfilename;"</ctx:preprocessor>
-% </ctx:job>
+\def\loadctxpreplist
+  {\ifcase\preprocessmethod
+     % no checking
+   \or
+     % simple checking
+   \or
+     \doiffileexistselse{./\jobname.ctl}
+       {\bgroup
+        \defineXMLenvironment[ctx:preplist]
+          {\writestatus\m!systems{loading ctx log file}}
+          {}%
+        \defineXMLenvironmentsave[ctx:prepfile][done=no]
+          {}
+          {\writestatus\m!systems{registering \XMLflush{ctx:prepfile} -> \XMLop{done}}%
+           \setxvalue{fp..\XMLflush{ctx:prepfile}}{\XMLop{done}}}%
+        \processXMLfile{./\jobname.ctl}%
+        \egroup}%
+       {\global\chardef\preprocessmode\plusone}%
+   \fi
+   \global\let\loadctxpreplist\relax}
 
-\let\preprocessfile\gobbleoneargument
+\appendtoks\loadctxpreplist\to\everystarttext % will become: \prependtoks\loadctxpreplist\to\everyjob
+
+\def\docheckprepfile
+  {\ifcase\preprocessmethod
+     % no preprocessing
+   \or
+     % only check for existence
+     \doiffileexistselse{\readfilename\preprocesssuffix}
+       {\chardef\preprocessstate\plusone}
+       \donothing
+   \or
+     % check when in list, otherwise assume normal file
+     \bgroup
+     \splitfilename\readfilename
+     \ifx\splitofftype\empty
+       % saveguard and speed up
+       \egroup
+     \else
+       \doifdefinedelse{fp..\splitoffname.\splitofftype}
+         {\egroup
+          \doiffileexistselse{\readfilename\preprocesssuffix}
+            {\chardef\preprocessstate\plusone}
+            {\chardef\preprocessstate\plustwo}}%
+         {\egroup}%
+     \fi
+   \fi}
+
+% beware, \readfilename keeps the original one, but we load and store the
+% suffixed with .prep file (if present)
+
+\def\doreadfile#1#2#3#4% beware, this one already works at format generation time!
+  {\sanitizefilename#2\to\readfilename
+   \ifx\readfilename\empty
+     % silently ignore
+   \else
+     \let\trackedfilename\readfilename
+     \chardef\preprocessstate\zerocount
+     \ifconditional\trackfilenames
+       \doifundefinedelse{fn..\trackedfilename}\donetrue\donefalse
+     \else
+       \donetrue
+     \fi
+     \ifdone
+       \checkfilename\readfilename
+       \ifcase\kindoffile
+         % not a full path or url, check for existence
+         \doifelsenothing{#1}
+           {\iftracefiles\writestatus\m!systems{searching for \readfilename\space on tex path}\fi
+            \def\next{\redoreadfile\readfilename{#3}{#4}}}%
+           {\iftracefiles\writestatus\m!systems{searching for \readfilename\space on #1}\fi
+            \def\next{\redoreadfile{\pathplusfile{#1}{\readfilename}}{#3}{#4}}}%
+       \else
+         % a full path or url, no further checking done
+         \docheckprepfile
+         \ifcase\preprocessstate
+           \doiffileexistselse\readfilename
+             {\iftracefiles\writestatus\m!systems{located \readfilename}\fi
+              \def\next{#3\dodoreadfile}}%
+             {\iftracefiles\writestatus\m!systems{not found \readfilename}\fi
+              \def\next{#4}}%
+         \or
+           \iftracefiles\writestatus\m!systems{located \readfilename\preprocesssuffix}\fi
+           \def\next{#3\dodoreadfile}%
+         \or
+           \iftracefiles\writestatus\m!systems{not found \readfilename\preprocesssuffix}\fi
+           \def\next{#4}%
+         \fi
+       \fi
+     \else
+       \edef\readfilename{\getvalue{fn..\readfilename}}%
+       \iftracefiles\writestatus\m!systems{already located \readfilename}\fi
+       \def\next{#3\dodoreadfile}%
+     \fi
+     \expandafter\next
+   \fi}
+
+\def\redoreadfile#1#2#3%
+  {\docheckprepfile
+   \ifcase\preprocessstate
+     \doiffileexistselse{#1}%
+       {\edef\readfilename{#1}%
+        \iftracefiles\writestatus\m!systems{#1 located}\fi
+        \def\next{#2\dodoreadfile}}%
+       {\iftracefiles\writestatus\m!systems{cannot locate #1}\fi
+        \decrement\readlevel\relax
+        \ifnum\readlevel>\zerocount
+          \edef\readfilename{\pathplusfile{\f!parentpath}{\readfilename}}%
+          \def\next{\redoreadfile\readfilename{#2}{#3}}%
+        \else
+          \def\next{#3}%
+        \fi}%
+   \or
+     \edef\readfilename{#1}%
+     \iftracefiles\writestatus\m!systems{#1\preprocesssuffix\space located}\fi
+     \def\next{#2\dodoreadfile}%
+   \or
+     \def\next{#3}%
+   \fi
+   \next}
 
 \def\dodoreadfile % we provide hooks, for instance for \enableXML
   {\ifconditional\trackfilenames
-     \setxvalue{fn..\trackedfilename}{\readfilename}%
+     \setxvalue{fn..\trackedfilename}{\readfilename\ifcase\preprocessstate\or\preprocesssuffix\fi}%
    \fi
-   \preprocessfile\readfilename % new
    \the\everybeforereadfile
-   \normalinput\readfilename\relax
+   \ifcase\preprocessstate
+     % no checking or not found when using method 1
+     \normalinput\readfilename
+   \or
+     % found when using method 1 or 2
+     \normalinput\readfilename\preprocesssuffix
+   \or
+     % not found when using method 2
+   \fi
+   \relax
    \the\everyafterreadfile}
-
-% core-fil.tex
-
-% \let\checkpreprocessor\relax
-%
-% \appendtoks\relax{\appendtoks \checkpreprocessor \to \everyjob}\to\everydump
-
-% core-job.tex
-
-\definesystemvariable {fz}  % file preprocessing
-
-\definefileconstant {prepprefix} {prep-}
-
-\chardef\preprocessmode\zerocount
-
-\def\processlocalfile#1#2%
-  {% #1=\readlocfile|\readsetfile{dir} #2=filename
-   % #1{#2}\donothing\donothing
-   \chardef\preprocessmode\plusone
-   #1{#2}\donothing{\readfile{#2}\donothing\donothing}}
-
-\beginETEX
-
-\let\oldfilename\empty
-\let\newfilename\empty
-
-\def\preprocessfile#1%
-  {\ifcase\preprocessmode\else
-     \chardef\preprocessmode\zerocount % one time shot
-     \doifsomething{\filepreprocessor}
-       {\def\oldfilename{#1}%
-        \splitfilename\oldfilename % whatever path
-        \ifx\splitofftype\empty
-          \let\splitofftype\c!tex
-          \edef\oldfilename{\oldfilename.\splitofftype}%
-        \fi
-        \edef\newfilename{\f!prepprefix\splitoffname.\splitofftype}% local path
-        \doifundefined{fp..\oldfilename}
-          {\doifmode{\systemmodeprefix\v!first}
-             {\bgroup
-              \enableXML
-              \let\executeXMLentity\expandedXMLentity
-              \defineXMLentity[gt]\lettermore
-              \defineXMLentity[lt]\letterless
-              \writestatus\m!systems{\filepreprocessor}%
-              \executesystemcommand{\filepreprocessor}%
-              \egroup}%
-           \setxvalue{fp..\oldfilename}{\newfilename}}%
-        \let#1\newfilename}%
-   \fi}
-
-\def\filepreprocessor{\XMLflush{ctx:preprocessor}}
-
-\defineXMLenvironment[ctx:job]          \startXMLignore \stopXMLignore
-\defineXMLgsave      [ctx:preprocessor]
-\defineXMLargument   [ctx:message]     {\writestatus\m!systems}
-\defineXMLentity     [ctx:oldfilename]  \oldfilename
-\defineXMLentity     [ctx:newfilename]  \newfilename
-
-\def\checkpreprocessor
-  {\global\let\checkpreprocessor\empty
-   \processXMLfilegrouped{./\jobname.ctx}%
-   \doifsomething\filepreprocessor
-     {\chardef\preprocessmode\plusone
-      \preprocessfile\inputfilename
-      \endinput
-      \normalinput\inputfilename\relax}}
-
-\endETEX
-
-\beginTEX
-
-\def\preprocessfile#1%
-  {\chardef\preprocessmode\zerocount}
-
-\endTEX
+
+\def\headparameter#1% to do: everywhere in core-sec
+  {\csname\??ko\currenthead#1\endcsname}
 
 % The following may be a solution for the fact that one cannot
 % change catcodes of characters like : and ; inside an environment.

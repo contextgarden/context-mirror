@@ -41,6 +41,8 @@
 
 \appendtoks \simplesetupspacing     \to \everydefinedfont
 
+% if you want to hyphenate the first word of a paragraph ... \appendtoks\hskip0pt\to\everypar
+
 \def\stelfactorenin
   {\simplesetupwhitespace
    \simplesetupblank
@@ -1199,7 +1201,8 @@
 \def\presetindentation
   {\doifoutervmode{\ifindentfirstparagraph\else\noindentation\fi}}
 
-%D This sets up the indentation method as well as the amounts.
+%D This sets up the (normally) global indentation behavior as well
+%D as the amounts.
 
 \definecomplexorsimple\setupindenting
 
@@ -1209,12 +1212,13 @@
    \parindent\ctxparindent
    \chardef\indentingtoggle\zerocount
    \processcommalist[#1]\docomplexsetupindenting
+   \ifindentfirstparagraph\else\noindentation\fi % added
    \toggleindentation}
 
-\def\docomplexsetupindenting#1%
-  {\edef\!!stringa{#1}% catch #1=\somedimen
-   \convertcommand\!!stringa\to\!!stringa
-   \executeifdefined{\??in:\!!stringa}{\edef\currentindentation{#1}\simplesetupindenting}}
+% \def\docomplexsetupindenting#1%
+%   {\edef\!!stringa{#1}% catch #1=\somedimen
+%    \convertcommand\!!stringa\to\!!stringa
+%    \executeifdefined{\??in:\!!stringa}{\edef\currentindentation{#1}\simplesetupindenting}}
 
 \def\docomplexsetupindenting#1%
   {\edef\!!stringa{#1}% catch #1=\somedimen
@@ -1254,8 +1258,8 @@
                                       \simplesetupindenting
                                     \fi}
 
-\def\noindenting{\indenting[\v!no, \v!next ]} % was \nietinspringen
-\def\doindenting{\indenting[\v!yes,\v!first]} % was \welinspringen
+\def\noindenting{\indenting[\v!no, \v!next ]}
+\def\doindenting{\indenting[\v!yes,\v!first]}
 
 %D This one sets up the local indentation behaviour (i.e. either or not
 %D a next paragraph will be indented).

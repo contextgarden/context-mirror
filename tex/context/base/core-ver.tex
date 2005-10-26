@@ -463,6 +463,11 @@
   {\setupgroupedtype
    \slantedtypepermittedtrue}
 
+% the next one was \string, but this prevents coloring, one can make
+% it \string again if needed
+
+\let\protectedfirsttype\relax
+
 \bgroup
 \catcode`\<=\active
 \catcode`\>=\active
@@ -476,7 +481,7 @@
    \else\ifx\next\activeleftargument
      \let\next\relax
    \else
-     \let\next\string
+     \let\next\protectedfirsttype
    \fi\fi\fi\fi
    \next}
 \egroup
