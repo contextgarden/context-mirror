@@ -3001,6 +3001,81 @@
 \def\doeassign [#1][#2]{\p!doassign\dosetevalue #1\@relax@#2==\empty\@relax@}
 \def\undoassign[#1][#2]{\p!doassign\doresetvalue#1\@relax@#2==\empty\@relax@}
 
+%D When someone asked on the mailing list if it's possible to
+%D use the current value of a parameter, Taco posted a small module
+%D which is included here. Instead of redefining \type {\getparameters}
+%D as well, we opt for using \type {\expanded}; see examnple below.
+
+%D This variant redefines the parameter assignment engine in \CONTEXT\
+%D so that the special macro \type {\currentvalue} can be used to get
+%D at the current value of the parameter to be assigned to. If the
+%D parameter is not set, it's expansion will be empty.
+%D
+%D Example document:
+%D
+%D \startbuffer
+%D \getparameters[a][b=d]
+%D \expanded{\getparameters[a][b=c\currentvalue]}
+%D \framed{\ab}
+%D \stopbuffer
+%D \typebuffer
+%D
+%D Gives: \getbuffer
+
+%D \macros{currentvalue}
+%D
+%D Just in case a \type{\getparameter} argument itself ends up
+%D inside a \type{\write} or other expandable location, our
+%D new macro needs a default value.
+
+\let\currentvalue\empty
+
+%D \macros{p!doassignwithcurrent}
+%D
+%D The next definition does the work of re-creating
+%D the expandable \type{\currentvalue} again and again.
+%D The macro is \type{\let} instead of \type{\def}-ed
+%D because that is a little easier on resources, and
+%D faster as well.
+
+\beginTEX
+
+\def\p!doassign#1#2\@relax@#3=#4=#5#6\@relax@
+  {\ifx#5\empty
+     \@EA\xshowassignerror
+   \else\ifx#5=%
+     \@EA\ifx\csname#2#3\endcsname\relax
+       \let\currentvalue\empty
+     \else
+       \@EA\let\@EA\currentvalue\csname#2#3\endcsname
+     \fi
+     \@EAEAEA#1%
+   \else
+     \@EAEAEA\xshowassignerror
+   \fi\fi
+   {#2}{#3}{#4}}
+
+\endTEX
+
+\beginETEX
+
+\def\p!doassign#1#2\@relax@#3=#4=#5#6\@relax@
+  {\ifx#5\empty
+     \@EA\xshowassignerror
+   \else\ifx#5=%
+     \ifcsname#2#3\endcsname
+       \@EA\let\@EA\currentvalue\csname#2#3\endcsname
+     \else
+       \let\currentvalue\empty
+     \fi
+     \@EAEAEA#1%
+   \else
+     \@EAEAEA\xshowassignerror
+   \fi\fi
+   {#2}{#3}{#4}}
+
+\endETEX
+
 %D \macros
 %D   {getemptyparameters}
 %D

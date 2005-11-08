@@ -99,14 +99,12 @@ foreach my $file (@files)
   { $_ = $file ;
     if (s/\.(\d+|mps)$// && -e $file)
       { if ($miktex)
-          { $command = "pdfetex -undump=mptopdf" }
+           { $command = "pdfetex -undump=mptopdf" }
         else
-          { $command = "pdfetex -progname=context -fmt=mptopdf" }
+           { $command = "pdfetex  -fmt=mptopdf -progname=context" }
         if ($dosish)
-          { $command = "$command \\relax $file" }
-        else
-          { $command = "$command \\\\relax $file" }
-        #~ print $command ;
+           { $command = "$command \\relax $file" }
+        else         #~ print $command ;
         system($command) ;
         rename ("$_.pdf", "$_-$1.pdf") ;
         if (-e "$_.pdf") { CopyFile ("$_.pdf", "$_-$1.pdf") }

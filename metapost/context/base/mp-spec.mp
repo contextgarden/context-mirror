@@ -48,11 +48,30 @@ boolean _inline_specials_ ; _inline_specials_ := false ;
 string _global_specials_ ; _global_specials_ := "" ;
 string _local_specials_  ; _local_specials_  := "" ;
 
+% vardef add_special_signal = % write the version number
+%   if (length _global_specials_>0) or (length _local_specials_ >0) :
+%     special ("%%MetaPostSpecials: 1.0 " & decimal _special_signal_ ) ;
+%   fi ;
+% enddef ;
+%
+% After some reported problems at the \CONTEXT\ mailing list,
+% Taco's came up with:
+
+% TH: \quotation {Ok, got it. There is a bug in mp-spec.mp (inside metafun).
+% Because of a wrapping number, it fails to recognize the fact that there
+% are embedded specials at all.} The corrected definition is:
+
 vardef add_special_signal = % write the version number
-  if (length _global_specials_>0) or (length _local_specials_ >0) :
+  if (length _global_specials_ <> 0) or (length _local_specials_ <> 0) :
     special ("%%MetaPostSpecials: 1.0 " & decimal _special_signal_ ) ;
   fi ;
 enddef ;
+
+% \quotation {It now tests for \quote {not equal to zero} instead of
+% \quote {larger than zero}: because of all the included files, the
+% string \type {_local_specials_} becomes longer than the maximum number
+% \quote {length} can return, so it returns -32768 instead, and that is
+% of course less than zero.}
 
 vardef add_extra_specials =
   scantokens _global_specials_ ;

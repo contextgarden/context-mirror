@@ -100,10 +100,12 @@
 
 \def\settblwid#1#2{\setxvalue{\@@tblprefix#1:w}{#2}} % global !
 \def\settblhei#1#2{\setxvalue{\@@tblprefix#1:h}{#2}} % global !
+\def\settbldis#1#2{\setxvalue{\@@tblprefix#1:d}{#2}} % global !
 \def\settblaut#1#2{\setxvalue{\@@tblprefix#1:a}{#2}} % global !
 
 \def\gettblwid#1{\executeifdefined{\@@tblprefix#1:w}\zeropoint}
 \def\gettblhei#1{\executeifdefined{\@@tblprefix#1:h}\zeropoint}
+\def\gettbldis#1{\executeifdefined{\@@tblprefix#1:d}\zeropoint}
 \def\gettblaut#1{\csname\@@tblprefix#1:a\endcsname}
 
 \def\doiftbltag    #1#2{\doifdefined    {\@@tblprefix#1:#2:s}}
@@ -366,6 +368,51 @@
 \long\def\parseTN[#1]#2\eTN
   {\parseTD[#1]\digits#2\relax\eTD}
 
+%D Vit Zyka needed the option to create a distance between columns, so I
+%D added support for individual column distances.
+%D
+%D \startbuffer
+%D % \setupTABLE[c][each][distance=2em]
+%D \setupTABLE[c][1][distance=2em]
+%D \setupTABLE[c][2][distance=3em]
+%D
+%D \bTABLE
+%D \bTR \bTD test \eTD  \bTD test \eTD  \bTD test \eTD \eTR
+%D \bTR \bTD[nx=2] test \eTD  \bTD test \eTD \eTR
+%D \bTR \bTD test \eTD  \bTD[nx=2] test \eTD \eTR
+%D \eTABLE
+%D
+%D \bTABLE[option=stretch]
+%D \bTR \bTD test \eTD  \bTD test \eTD  \bTD test \eTD \eTR
+%D \bTR \bTD[nx=2] test \eTD  \bTD test \eTD \eTR
+%D \bTR \bTD test \eTD  \bTD[nx=2] test \eTD \eTR
+%D \eTABLE
+%D \stopbuffer
+%D
+%D \typebuffer \startlinecorrection \getbuffer \stoplinecorrection
+%D
+%D and he provided patches for the global left and right margin distances
+%D as well as the columndistance (although i changed the names -). Here
+%D is his testcase:
+%D
+%D \startbuffer
+%D \framed[offset=overlay]\bgroup
+%D     \setupTABLE[column][2][align=left]%
+%D     \setupTABLE[column][3][align=right]%
+%D     \bTABLE[margindistance=2cm,leftmargindistance=.3cm,margindistance=.5cm]
+%D         \bTR \bTH[nc=3] Table head\eTH \eTR
+%D         \bTR \bTD[nc=2] AB\eTD \bTD C\eTD \eTR
+%D         \bTR \bTD[nc=2,align=left] AB\eTD \bTD C\eTD \eTR
+%D         \bTR \bTD[nc=2,align=middle] AB\eTD \bTD C\eTD \eTR
+%D         \bTR \bTD A\eTD \bTD B\eTD \bTD C\eTD \eTR
+%D         \bTR \bTD Aa\eTD \bTD Bb\eTD \bTD Cccc\eTD \eTR
+%D         \bTR \bTD[nc=3,align=middle] ABC\eTD \eTR
+%D     \eTABLE
+%D \egroup
+%D \stopbuffer
+%D
+%D \typebuffer \startlinecorrection \getbuffer \stoplinecorrection
+
 \newtoks\TBLhead
 \newtoks\TBLnext
 \newtoks\TBLbody
@@ -573,7 +620,9 @@
   {\doglobal\increment\colTBL}
 
 \def\nexttblcol
-  {\doglobal\increment\colTBL&}
+  {\doglobal\increment\colTBL
+   \kern\tbltblcolumndistance
+   &}
 
 \def\spantblcol
   {\span}
@@ -582,10 +631,14 @@
   {\noalign
      {\doglobal\increment\rowTBL
       \doglobal\newcounter\colTBL}%
-   \nexttblcol}
+   \nexttblcol
+   \kern\tbltblleftmargindistance
+   \kern-\tbltblcolumndistance}
 
 \def\endtblrow
-  {\crcr
+  {\kern-\tbltblcolumndistance
+   \kern\tbltblrightmargindistance
+   \crcr
    \noalign
      {\nointerlineskip
       \allowbreak
@@ -659,7 +712,8 @@
         {\settblwd \recurselevel\xcol\!!zeropoint
          \settblht \recurselevel\xcol\!!zeropoint}%
       % till here
-      \settblwid\recurselevel\!!zeropoint}%
+      \settblwid\recurselevel\!!zeropoint
+      \settbldis\recurselevel\!!zeropoint}%
    \dorecurse\maximumrow
      {\settblhei\recurselevel\maxdimen}%
    \chardef\TBLpass\plusone
@@ -674,6 +728,7 @@
            \settblaut\colTBL\localwidth
          \fi}}%
    \setbox0\vbox{\trialtypesettingtrue \the\tbltoks}%
+\settbldis\maximumcol{\zeropoint}%
    \ifautoTBLspread
      % experimental, stretch non fixed cells to \hsize
      \checktblwidthsone   % trial run
@@ -703,7 +758,10 @@
       \globalpushmacro\colTBL
       \dorecurse{\gettblcol{##1}{##2}}
         {\advance\dimen2 \gettblwid\colTBL
+         \advance\dimen2 \tbltblcolumndistance
+\ifnum\recurselevel<\gettblcol{##1}{##2}\relax \advance\dimen2  \gettbldis\colTBL\fi
          \increment\colTBL}%
+      \advance\dimen2 -\tbltblcolumndistance
       \edef\widthTBL{\the\dimen2}%
       \globalpopmacro\colTBL
       \setbox\scratchbox\hbox{\gettbltxt{##1}{##2}}%
@@ -739,7 +797,10 @@
       \scratchdimen\zeropoint
       \dorecurse{\gettblcol{##1}{##2}}
         {\advance\scratchdimen \gettblwid\colTBL
+         \advance\scratchdimen \tbltblcolumndistance
+\ifnum\recurselevel<\gettblcol{##1}{##2}\relax \advance\scratchdimen  \gettbldis\colTBL\fi
          \increment\colTBL}%
+      \advance\scratchdimen -\tbltblcolumndistance
       \edef\widthTBL{\the\scratchdimen}%
       \globalpopmacro\colTBL
       % cell
@@ -765,11 +826,17 @@
 
 \def\stretchtblwidths
   {\!!dimend\zeropoint
+   \!!dimene\hsize
    \dorecurse\maximumcol
-     {\advance\!!dimend\gettblwid\recurselevel}%
+     {\advance\!!dimend \gettblwid\recurselevel
+      \advance\!!dimend \tbltblcolumndistance
+      \advance\!!dimene-\gettbldis\recurselevel}%
+   \advance\!!dimend-\tbltblcolumndistance
+   \advance\!!dimend\tbltblleftmargindistance
+   \advance\!!dimend\tbltblrightmargindistance
    % distribute width (stretch)
-   \ifdim\!!dimend<\hsize
-     \advance\!!dimend-\hsize
+   \ifdim\!!dimend<\!!dimene
+     \advance\!!dimend-\!!dimene
      \!!dimend-\!!dimend
      \divide\!!dimend\maximumcol
      \dorecurse\maximumcol
@@ -1060,6 +1127,7 @@
    \!!counta\zerocount
    \dorecurse\maximumcol
      {\scratchdimen\gettblaut\recurselevel\relax
+% test: \advance\!!dimena-\gettbldis\recurselevel\relax
       \ifdim\scratchdimen>\zeropoint\relax
         \advance\!!dimena -\scratchdimen
       \else
@@ -1179,6 +1247,10 @@
 \long\def\dohandleTBLcellA#1#2[#3]#4%
   {\setbox\scratchbox\hbox
      {\setupTBLcell{#1}{#2}%
+\scratchdimen\tbltbldistance\relax
+\ifdim\scratchdimen>\gettbldis{#2}\relax
+  \settbldis{#2}{\the\scratchdimen}%
+\fi
       \localframed
         [\@@tbl\@@tbl]
         [#3,\c!background=,\c!frame=\v!off]% 25% faster
@@ -1282,7 +1354,8 @@
           [\@@tbl\@@tbl]
           [\c!color=,\c!width=\widthTBL,\c!height=\heightTBL]
           {\bTBLCELL\TBLcharalign{#2}{#4}\eTBLCELL}%
-      \fi}}
+      \fi}%
+   \hskip\gettbldis{#2}}
 
 \setupTABLE
   [\c!frameoffset=.5\linewidth,
@@ -1302,6 +1375,10 @@
    \c!textwidth=\hsize,
    \c!split=\v!no,
    \c!splitoffset=0pt,
+   \c!distance=\zeropoint,           % individual column
+   \c!columndistance=\zeropoint,     % each column (whole table)
+   \c!leftmargindistance=\zeropoint, % whole table
+   \c!rightmargindistance=\zeropoint,% whole table
    \c!splitmethod=a]
 
 %D We have already prepared the previous macros for nesting,
@@ -1426,6 +1503,8 @@
 \def\TableTB{\doTableinterline{TB}}
 
 \appendtoks\let\TB\TableTB   \to\everytable
-\appendtoks\let\TB\TabulateTB\to\everytabulate
+\appendtoks\let\TB\TabulateTB\to\everytabulate % strange place
+
+\appendtoks \chardef\recodeverbatimmode\plustwo \to \everytable
 
 \protect \endinput

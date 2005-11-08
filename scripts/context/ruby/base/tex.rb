@@ -1136,7 +1136,7 @@ class TEX
                 system("dvipdfmx -d 4 #{File.unsuffixed(rawname)}")
             when 'xetex'    then
                 fixbackendvars('xetex')
-                system("xdv2pdf #{File.suffixed(jrawname,'xdv')}")
+                system("xdv2pdf #{File.suffixed(rawname,'xdv')}")
             when 'dvips'    then
                 fixbackendvars('dvips')
                 mapfiles = ''

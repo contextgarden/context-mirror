@@ -63,8 +63,12 @@
 % in the name; for the moment we ship copies of the map files.
 
 \starttypescript [map] [modern,modern-vari,modern-cond,computer-modern,latin-modern,latin-modern-vari,latin-modern-cond,] [ec,texnansi,qx,t5]
-% \loadmapfile[lm-\typescriptthree.map] % maybe some day
-  \loadmapfile[\typescriptthree-public-lm.map]
+  % this was what we had at the start and what fits best into our naming scheme
+  % \loadmapfile[\typescriptthree-public-lm.map]
+  % this one also fits into the naming scheme but has been dropped by the distributers
+  \loadmapfile[\typescriptthree-lm.map]
+  % this is what teh latest distributions provide
+  % \loadmapfile[lm-\typescriptthree.map] % maybe some day
 \stoptypescript
 
 % \usetypescript [map] [latin-modern-os] [ec] % lm is loaded under ec regime

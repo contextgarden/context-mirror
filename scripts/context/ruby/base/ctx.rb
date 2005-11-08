@@ -101,7 +101,7 @@ class CtxRunner
                 @modules << justtext(mod)
             end
             REXML::XPath.each(@xmldata.root,"/ctx:job/ctx:process/ctx:resources/ctx:filter") do |fil|
-                @filters << justtext(mod)
+                @filters << justtext(fil)
             end
             REXML::XPath.each(@xmldata.root,"/ctx:job/ctx:preprocess/ctx:files") do |files|
                 REXML::XPath.each(files,"ctx:file") do |pattern|

@@ -213,6 +213,7 @@ class TeXUtil
         def preset(shortcuts=[],expansions=[],reductions=[],divisions=[])
             # maybe we should move this to sort-def.tex
             'a'.upto('z') do |c| expander(c) ; division(c) end
+            'A'.upto('Z') do |c| expander(c) ; division(c) end
             expander('1','b') ; expander('2','c') ; expander('3','e') ; expander('4','f')
             expander('5','g') ; expander('6','h') ; expander('7','i') ; expander('8','i')
             expander('9','j') ; expander('0','a') ; expander('-','-') ;
@@ -240,7 +241,7 @@ class TeXUtil
             # what to do with xml and utf-8
             # \"e etc
             # unknown \cs
-            s.gsub!(/\\[a-z][a-z]+\s*\{(.*?)\}/o) do $1 end
+            s.gsub!(/\\[a-zA-Z][a-zA-Z]+\s*\{(.*?)\}/o) do $1 end
             return s
         end
 
@@ -384,7 +385,7 @@ class TeXUtil
             class Synonym
 
                 @@debug = false
-                @@debug = true
+                # @@debug = true
 
                 def initialize(t, c, k, d)
                     @type, @command, @key, @sortkey, @data = t, c, k, k, d
@@ -463,7 +464,7 @@ class TeXUtil
             class Register
 
                 @@debug = false
-                @@debug = true
+                # @@debug = true
 
                 @@howto = /^(.*?)\:\:(.*)$/o
                 @@split = ' && '
@@ -505,7 +506,7 @@ class TeXUtil
                         @sortkey,
                         @texthowto.ljust(10,' '),
                         @state,
-                        @realpage.rjust(6,' '),
+                        (@realpage ||'').rjust(6,' '),
                         @pagehowto
                     ].join(@@split)
                 end
@@ -555,7 +556,7 @@ class TeXUtil
                             else
                                 testalpha = entry.sortkey[0,1].downcase
                             end
-                            if testalpha != alpha.downcase or alphaclass != entry.class then
+                            if testalpha != alpha.downcase || alphaclass != entry.class then
                                 alpha = testalpha
                                 alphaclass = entry.class
                                 if alpha != ' ' then
@@ -614,6 +615,7 @@ class TeXUtil
                                 Register.flushsavedline(handle)
                                 handle << "\\registersee{#{entry.type}}{#{entry.pagehowto},#{entry.texthowto}}{#{entry.seetoo}}{#{entry.page}}\n" ;
                                 lastpage, lastrealpage = entry.page, entry.realpage
+                                copied = false # no page !
                             elsif @@savedhowto != entry.pagehowto and ! entry.pagehowto.empty? then
                                 @@savedhowto = entry.pagehowto
                             end

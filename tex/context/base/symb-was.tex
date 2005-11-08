@@ -1,0 +1,205 @@
+%D \module
+%D   [       file=symb-was,
+%D        version=2005.10.15,
+%D          title=\CONTEXT\ Symbol Libraries,
+%D       subtitle=Roland Waldi's Symbols (wasy-2),
+%D         author=Henning Hraban Ramm,
+%D           date=\currentdate,
+%D      copyright={public domain}]
+%C
+%C This module is in the public domain.
+
+%D This module implements the Roland Waldi Symbole font
+%D (wasy). The names are derived from the \LATEX\ package
+%D \type {wasysym} by Axel Kielhorn. The symbols are
+%D available as Type~1 font and are included in \TEX\ distributions.
+%D
+%D This symbol font offers basic sets of astronomical, astrological,
+%D geometrical, musical and general symbols, plus those needed
+%D for the APL programming language and some more.
+%D This module leaves out most of the math stuff, such as operators
+%D and integrals.
+%D
+%D The font was designed by Robert Waldi and is in the public domain.
+%D The PS Type 1 fonts are by Taco Hoekwater, \hyphenatedurl
+%D {taco.hoekwater@wkap.nl}, and also in the public domain.
+%D The wasysym \LATEX\ package is (c) Axel Kielhorn, \hyphenatedurl
+%D {A.Kielhorn@web.de}, under the LaTeX Project Public License.
+%D This stuff lives in \hyphenatedurl {http://dante.ctan.org/CTAN/fonts/wasy2/}.
+%D
+%D This \CONTEXT\ module is by Henning Hraban Ramm, \hyphenatedurl
+%D {hraban@fiee.net}, given to the public domain as far as allowed
+%D (some parts are copied from the \LATEX\ package).
+
+%D Slightly patched by HH.
+
+\loadmapfile[original-wasy.map]
+
+% there are also fonts for 6, 7, 8, 9 pt; how can we access these automatically?
+% how about the bold wasy font?
+
+\definefontsynonym [WaldiSymbol]     [wasy10]
+\definefontsynonym [WaldiSymbolBold] [wasyb10]
+
+\def\WaldiSymbol#1{\getglyph{WaldiSymbol}{\char#1}}
+
+\def\wasy@over#1#2{{\setbox0\hbox{$#2$}\hbox to \wd0{\hss$#1$\hss}\kern-\wd0\box0}}
+
+% general symbols
+
+\startsymbolset [wasy general]
+    \definesymbol [male]        [\WaldiSymbol {26}]
+    \definesymbol [female]      [\WaldiSymbol {25}]
+    \definesymbol [currency]    [\WaldiSymbol {27}]
+    \definesymbol [cent]        [\WaldiSymbol{103}]
+    \definesymbol [lozenge]     [\WaldiSymbol {53}]
+    \definesymbol [kreuz]       [\WaldiSymbol {54}]
+    \definesymbol [smiley]      [\WaldiSymbol {44}]
+    \definesymbol [blacksmiley] [\WaldiSymbol {45}]
+    \definesymbol [frownie]     [\WaldiSymbol {47}]
+    \definesymbol [sun]         [\WaldiSymbol {46}]
+    \definesymbol [checked]     [\WaldiSymbol  {8}]
+    \definesymbol [brokenvert]  [\WaldiSymbol{124}]
+    \definesymbol [diameter]    [\WaldiSymbol {31}]
+    \definesymbol [invdiameter] [\WaldiSymbol {21}]
+    \definesymbol [phone]       [\WaldiSymbol  {7}]
+    \definesymbol [recorder]    [\WaldiSymbol  {6}]
+    \definesymbol [clock]       [\WaldiSymbol {28}]
+    \definesymbol [permil]      [\WaldiSymbol{104}]
+    \definesymbol [bell]        [\WaldiSymbol {10}]
+    \definesymbol [ataribox]    [\WaldiSymbol{109}]
+    \definesymbol [pointer]     [\WaldiSymbol  {9}]
+    \definesymbol [lightning]   [\WaldiSymbol {18}]
+    \definesymbol [agemO]       [\WaldiSymbol {48}]
+\stopsymbolset
+
+\startsymbolset [wasy music]
+    \definesymbol [eighthnote]  [\WaldiSymbol{11}]
+    \definesymbol [quarternote] [\WaldiSymbol{12}]
+    \definesymbol [halfnote]    [\WaldiSymbol{13}]
+    \definesymbol [fullnote]    [\WaldiSymbol{14}]
+    \definesymbol [twonotes]    [\WaldiSymbol{15}]
+\stopsymbolset
+
+\startsymbolset [wasy astronomy]
+    \definesymbol [ascnode]     [\WaldiSymbol{19}]
+    \definesymbol [descnode]    [\WaldiSymbol{20}]
+    \definesymbol [astrosun]    [\mathematics{\odot}]
+    \definesymbol [sun]         [\WaldiSymbol{46}] % additional
+    \definesymbol [newmoon]     [\WaldiSymbol{32}]
+    \definesymbol [fullmoon]    [\WaldiSymbol{35}]
+    \definesymbol [rightmoon]   [\WaldiSymbol{37}]
+    \definesymbol [leftmoon]    [\WaldiSymbol{36}]
+    \definesymbol [vernal]      [\WaldiSymbol{23}]
+    \definesymbol [mercury]     [\WaldiSymbol{39}]
+    \definesymbol [mars]        [\dontleavehmode\lower.2ex\hbox{\WaldiSymbol{26}}]
+    \definesymbol [saturn]      [\WaldiSymbol{89}]
+    \definesymbol [neptune]     [\WaldiSymbol{91}]
+    \definesymbol [earth]       [\dontleavehmode\lower.3ex\hbox{\WaldiSymbol{38}}]
+    \definesymbol [venus]       [\dontleavehmode\raise.2ex\hbox{\WaldiSymbol{25}}]
+    \definesymbol [jupiter]     [\WaldiSymbol{88}]
+    \definesymbol [uranus]      [\WaldiSymbol{90}]
+    \definesymbol [pluto]       [\WaldiSymbol{92}]
+\stopsymbolset
+
+\startsymbolset [wasy astrology]
+    \definesymbol [conjunction] [\WaldiSymbol {86}]
+    \definesymbol [opposition]  [\WaldiSymbol {87}]
+    \definesymbol [aries]       [\WaldiSymbol {23}]
+    \definesymbol [libra]       [\WaldiSymbol {97}]
+    \definesymbol [taurus]      [\WaldiSymbol {93}]
+    \definesymbol [scorpio]     [\WaldiSymbol {98}]
+    \definesymbol [gemini]      [\WaldiSymbol {94}]
+    \definesymbol [sagittarius] [\WaldiSymbol {99}]
+    \definesymbol [cancer]      [\WaldiSymbol {95}]
+    \definesymbol [capricornus] [\WaldiSymbol{100}]
+    \definesymbol [leo]         [\WaldiSymbol {19}]
+    \definesymbol [aquarius]    [\WaldiSymbol{101}]
+    \definesymbol [virgo]       [\WaldiSymbol {96}]
+    \definesymbol [pisces]      [\WaldiSymbol{102}]
+\stopsymbolset
+
+\startsymbolset [wasy geometry]
+    \definesymbol [fivestar]    [\WaldiSymbol {69}] % HHR additional
+    \definesymbol [hexstar]     [\WaldiSymbol {65}]
+    \definesymbol [varhexstar]  [\WaldiSymbol {66}]
+    \definesymbol [davidsstar]  [\WaldiSymbol {67}]
+    \definesymbol [Circle]      [\WaldiSymbol {35}]
+    \definesymbol [CIRCLE]      [\WaldiSymbol {32}]
+    \definesymbol [Leftcircle]  [\WaldiSymbol {73}]
+    \definesymbol [LEFTCIRCLE]  [\WaldiSymbol {71}]
+    \definesymbol [Rightcircle] [\WaldiSymbol {74}]
+    \definesymbol [RIGHTCIRCLE] [\WaldiSymbol {72}]
+    \definesymbol [LEFTcircle]  [\dontleavehmode\hbox to \zeropoint{\WaldiSymbol{71}\hss}\WaldiSymbol{35}]
+    \definesymbol [RIGHTcircle] [\dontleavehmode\hbox to \zeropoint{\WaldiSymbol{72}\hss}\WaldiSymbol{35}]
+    \definesymbol [LEFTarrow]   [\WaldiSymbol {16}]
+    \definesymbol [RIGHTarrow]  [\WaldiSymbol {17}]
+    \definesymbol [UParrow]     [\WaldiSymbol {75}]
+    \definesymbol [DOWNarrow]   [\WaldiSymbol {76}]
+    \definesymbol [Box]         [\WaldiSymbol {32}]
+    \definesymbol [APLbox]      [\WaldiSymbol{126}]
+    \definesymbol [XBox]        [\WaldiSymbol {52}]
+    \definesymbol [Bowtie]      [\WaldiSymbol {49}]
+    \definesymbol [Diamond]     [\WaldiSymbol {51}]
+    \definesymbol [octagon]     [\WaldiSymbol {56}]
+    \definesymbol [hexagon]     [\WaldiSymbol {55}]
+    \definesymbol [varhexagon]  [\WaldiSymbol {57}]
+    \definesymbol [pentagon]    [\WaldiSymbol {68}]
+    \definesymbol [pentastar]   [\dontleavehmode\hbox to \zeropoint{\WaldiSymbol{68}\hss}\lower.04em\hbox{\WaldiSymbol{69}}] % HHR additional
+\stopsymbolset
+
+\startsymbolset [wasy physics]
+    \definesymbol [varangle]    [\WaldiSymbol{30}]
+    \definesymbol [invneg]      [\WaldiSymbol{24}]
+    \definesymbol [leftturn]    [\WaldiSymbol{34}]
+    \definesymbol [rightturn]   [\WaldiSymbol{33}]
+    \definesymbol [diameter]    [\WaldiSymbol{31}]
+    \definesymbol [invdiameter] [\WaldiSymbol{21}] % additional
+    \definesymbol [therefore]   [\WaldiSymbol {5}]
+    \definesymbol [AC]          [\mbox{\kern.05em\WaldiSymbol{58}\kern.05em}]
+    \definesymbol [HF]          [\dontleavehmode
+                                 \lower.09em\hbox to \zeropoint{\kern.05em\WaldiSymbol{58}\hss}%
+                                 \raise.09em\hbox{\kern.05em\WaldiSymbol{58}\kern.05em}]
+    \definesymbol [VHF]         [\WaldiSymbol{64}]
+    \definesymbol [photon]      [\hbox{\WaldiSymbol{58}\WaldiSymbol{58}\WaldiSymbol{58}\WaldiSymbol{58}}]
+    \definesymbol [gluon]       [\hbox{\WaldiSymbol{80}\WaldiSymbol{80}\WaldiSymbol{80}\WaldiSymbol{80}\WaldiSymbol{80}\WaldiSymbol{80}}]
+\stopsymbolset
+
+\startsymbolset [wasy apl]
+    \definesymbol [APLup]           [\WaldiSymbol{0}]
+    \definesymbol [APLdown]         [\WaldiSymbol{70}]
+    \definesymbol [APLbox]          [\WaldiSymbol{126}]
+    \definesymbol [APLinv]          [\dontleavehmode\hbox to \zeropoint{$\div$\hss}\WaldiSymbol{126}]
+    \definesymbol [APLleftarrowbox] [\WaldiSymbol{112}]
+    \definesymbol [APLrightarrowbox][\WaldiSymbol{113}]
+    \definesymbol [APLuparrowbox]   [\WaldiSymbol{110}]
+    \definesymbol [APLdownarrowbox] [\WaldiSymbol{111}]
+    \definesymbol [APLinput]        [\WaldiSymbol{125}]
+    \definesymbol [APLminus]        [\dontleavehmode\raise.7ex\hbox{$-$}]
+    \definesymbol [APLlog]          [\WaldiSymbol{22}]
+    \definesymbol [APLstar]         [\WaldiSymbol{69}]
+    \definesymbol [APLcomment]      [\WaldiSymbol{127}]
+    \definesymbol [notslash]        [\wasy@over{/}{-}]
+    \definesymbol [notbackslash]    [\wasy@over{\backslash}{-}]
+    %
+    %definesymbol [APLvert]         [\WaldiSymbol{}]
+    %definesymbol [APLnot]          [\WaldiSymbol{}]
+    %definesymbol [APLcirc]         [\WaldiSymbol{}]
+    %
+    % HH: messy, best define all combinations (todo)
+    %
+    \def\APLnot #1{\wasy@over{\sim }{#1}}
+    \def\APLcirc#1{\wasy@over{\circ}{#1}}
+    \def\APLvert#1{\wasy@over{\vert}{#1}}
+    %
+\stopsymbolset
+
+%D \showsymbolset[wasy general]
+%D \showsymbolset[wasy music]
+%D \showsymbolset[wasy astronomy]
+%D \showsymbolset[wasy astrology]
+%D \showsymbolset[wasy geometry]
+%D \showsymbolset[wasy physics]
+%D \showsymbolset[wasy apl]
+
+\endinput

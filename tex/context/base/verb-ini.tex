@@ -348,7 +348,7 @@
 %D \type{\goodbreaks}. And this is how it's done:
 
 \def\doverbatimnobreak
-  {\ifoptimizeverbatim\penalty500\fi}
+  {\ifoptimizeverbatim\penalty500 \fi}
 
 \def\doverbatimgoodbreak
   {\ifoptimizeverbatim\penalty\linepenalty\fi}

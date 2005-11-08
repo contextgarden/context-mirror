@@ -36,7 +36,7 @@ require "rbconfig"
 
 $mswindows = Config::CONFIG['host_os'] =~ /mswin/
 $separator = File::PATH_SEPARATOR
-$version   = "1.6.2"
+$version   = "1.7.0"
 
 if $mswindows then
 
@@ -71,6 +71,7 @@ $predefined['pstopdf']  = 'pstopdf.rb'
 $predefined['examplex'] = 'examplex.rb'
 $predefined['concheck'] = 'concheck.rb'
 
+$predefined['runtools'] = 'runtools.rb'
 $predefined['textools'] = 'textools.rb'
 $predefined['tmftools'] = 'tmftools.rb'
 $predefined['ctxtools'] = 'ctxtools.rb'
@@ -384,6 +385,7 @@ def usage
     print("switches : --verbose --report --browser --direct --execute --locate --iftouched\n")
     print("           --program --file --page --arguments --batch --edit --report --clear\n")
     print("           --make --lmake --wmake --path --stubpath --indirect --before --after\n")
+    print("           --tree\n")
     print("\n")
     print("example  : texmfstart pstopdf.rb cow.eps\n")
     print("           texmfstart --locate examplex.rb\n")
@@ -562,7 +564,7 @@ def find(filename,program)
                     fullname = result[0]
                 end
             rescue
-                report("locating '#{filename}.#{suffix}' in tree '#{texroot}' aborted")
+                report("locating '#{filename}.#{suffixlist.join('|')}' in tree '#{texroot}' aborted")
             end
         end
         return shortpathname(fullname) if register(filename,fullname)

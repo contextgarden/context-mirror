@@ -154,8 +154,9 @@
 % no time now, will do a better test later (based on dimendef)
 
 \def\!!stringa{plain}       \ifx\!!stringa\fmtname \donetrue  \else
+\def\!!stringa{eplain}      \ifx\!!stringa\fmtname \donetrue  \else
 \def\!!stringa{babel-plain} \ifx\!!stringa\fmtname \donetrue  \else
-                                                   \donefalse \fi \fi
+                                                   \donefalse \fi \fi \fi
 
 \ifdone
   % plain defines some 15 dimens, so we need to define a few

@@ -2677,6 +2677,19 @@
   {\rawdoifinsetelse{#1}#2\resetglobal
      {\dodoglobal\edef#2{#1\ifx#2\empty\else,#2\fi}}}
 
+\def\robustdoifinsetelse#1#2%
+  {\expanded{\convertargument#1}\to\!!stringa
+   \expanded{\convertargument#2}\to\!!stringb
+   \rawdoifinsetelse\!!stringa\!!stringb}
+
+\def\robustaddtocommalist#1#2% {item} \cs
+  {\robustdoifinsetelse{#1}#2\resetglobal
+     {\dodoglobal\edef#2{\ifx#2\empty\else#2,\fi#1}}}
+
+\def\robustpretocommalist#1#2% {item} \cs
+  {\robustdoifinsetelse{#1}#2\resetglobal
+     {\dodoglobal\edef#2{#1\ifx#2\empty\else,#2\fi}}}
+
 \def\xsplitstring#1#2% \cs {str}
   {\def\dosplitstring##1,#2,##2,#2,##3\\%
      {\edef\!!stringa{\bcleanedupcommalist##1\empty\empty\relax}%
