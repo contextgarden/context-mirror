@@ -129,33 +129,41 @@
 \def\writetoregister[#1]% to be documented
   {\doregister{#1}}
 
+% \def\startregister
+%   {\dodoubleargument\dostartregister}
+
+% \def\dostartregister[#1][#2]#3%
+%   {\chardef\registerpagestatus\plustwo
+%    \def\currentregister{#1}%
+%    \setgvalue{\??id#1\??id#2}{\dodostopregister[#1][#2]{#3}}%
+%    \donoregister[#2]{#3}}
+
 \def\startregister
-  {\dodoubleargument\dostartregister}
+  {\dotripleempty\dostartregister}
 
-%\def\dostartregister[#1][#2]#3%
-%  {\chardef\registerpagestatus=2
-%   \def\currentregister{#1}%
-%   \setgvalue{\??id#1\??id#2}{\dodostopregister[#1][#2]{#3}}%
-%   \complexdoregister[#2]{#3}}
-
-\def\dostartregister[#1][#2]#3%
-  {\chardef\registerpagestatus2
+\def\dostartregister[#1][#2][#3]#4%
+  {\chardef\registerpagestatus\plustwo
    \def\currentregister{#1}%
-   \setgvalue{\??id#1\??id#2}{\dodostopregister[#1][#2]{#3}}%
-   \donoregister[#2]{#3}}
+   \setgvalue{\??id#1\??id#2}{\dodostopregister[#1][#3]{#4}}%
+   \dodoregister[#3]{}{#4}}
 
 \def\stopregister
   {\dodoubleargument\dostopregister}
 
 \def\dostopregister[#1][#2]%
-  {\getvalue{\??id#1\??id#2}\setgvalue{\??id#1\??id#2}{}}
+  {\getvalue{\??id#1\??id#2}\letgvalue{\??id#1\??id#2}\relax}
 
-\def\dodostopregister[#1][#2]%
-  {\chardef\registerpagestatus3
+% \def\dodostopregister[#1][#2]%
+%   {\chardef\registerpagestatus\plusthree
+%    \def\currentregister{#1}%
+%    \donoregister[#2]}
+
+\def\dodostopregister[#1][#2]#3%
+  {\chardef\registerpagestatus\plusthree
    \def\currentregister{#1}%
-   \donoregister[#2]}
+   \dodoregister[#2]{}{#3}} % key altnum entry
 
-\def\complexdozieregister[#1]#2#3%
+\def\complexdoseeregister[#1]#2#3%
   {\begingroup
      \thisisnextinternal\s!ind
      \ifduplicate\getlastregisterentry{#2}\fi
@@ -177,12 +185,12 @@
            {\asciiregisterentryC} %
            {\sectionformat}}}%
    \endgroup
-   \registerinfo{> zie}{#2}%
+   \registerinfo{> see}{#2}%
    \GotoPar}
 
-\def\dozieregister#1%
+\def\doseeregister#1%
   {\def\currentregister{#1}%
-   \complexorsimpleempty\dozieregister}
+   \complexorsimpleempty\doseeregister}
 
 \def\dowritetoregister[#1]%  % de twee-traps-aanroep is nodig
   {\edef\currentregister{#1}%    % om gebruik van \ExpandBothAfter
@@ -896,7 +904,7 @@
    \setvalue{\e!coupled#1}{\dolinkedregister{#1}}%
    \setvalue{\s!set#1}{\dosetregister{#1}}%
    \setvalue{\s!reset#1}{\doresetregister{#1}}%
-   \setvalue{\e!see#1}{\dozieregister{#1}}%
+   \setvalue{\e!see#1}{\doseeregister{#1}}%
    \setvalue{\e!place#1}{\placeregister[#1]}%
    \setvalue{\e!complete#1}{\completeregister[#1]}%
    \setvalue{\e!setup#1\e!endsetup}[##1]{\getparameters[\??id#1][##1]}}

@@ -82,6 +82,8 @@
 
 \resetmapfiles
 
+% more recent versions of pdftex support map loading on each page
+
 \donefalse \ifx\pdftexversion\undefined \else \ifnum\number\pdftexversion>119
   \donetrue
 \fi \fi \ifdone

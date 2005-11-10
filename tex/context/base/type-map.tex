@@ -64,10 +64,11 @@
 
 \starttypescript [map] [modern,modern-vari,modern-cond,computer-modern,latin-modern,latin-modern-vari,latin-modern-cond,] [ec,texnansi,qx,t5]
   % this was what we had at the start and what fits best into our naming scheme
-  % \loadmapfile[\typescriptthree-public-lm.map]
+  % well, all those changes in lm gave too many user problem reports so i revert to:
+  \loadmapfile[\typescriptthree-public-lm.map]
   % this one also fits into the naming scheme but has been dropped by the distributers
-  \loadmapfile[\typescriptthree-lm.map]
-  % this is what teh latest distributions provide
+  % \loadmapfile[\typescriptthree-lm.map]
+  % this is what the latest distributions provide
   % \loadmapfile[lm-\typescriptthree.map] % maybe some day
 \stoptypescript
 

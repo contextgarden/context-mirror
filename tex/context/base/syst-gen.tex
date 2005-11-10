@@ -3002,25 +3002,9 @@
 \def\undoassign[#1][#2]{\p!doassign\doresetvalue#1\@relax@#2==\empty\@relax@}
 
 %D When someone asked on the mailing list if it's possible to
-%D use the current value of a parameter, Taco posted a small module
-%D which is included here. Instead of redefining \type {\getparameters}
-%D as well, we opt for using \type {\expanded}; see examnple below.
-
-%D This variant redefines the parameter assignment engine in \CONTEXT\
-%D so that the special macro \type {\currentvalue} can be used to get
-%D at the current value of the parameter to be assigned to. If the
-%D parameter is not set, it's expansion will be empty.
-%D
-%D Example document:
-%D
-%D \startbuffer
-%D \getparameters[a][b=d]
-%D \expanded{\getparameters[a][b=c\currentvalue]}
-%D \framed{\ab}
-%D \stopbuffer
-%D \typebuffer
-%D
-%D Gives: \getbuffer
+%D use the current value of a parameter, Taco posted a small module. His
+%D method had the disadvantage of making all assignments expanded and thereby
+%D fragile. The following alternative uses a prefix.
 
 %D \macros{currentvalue}
 %D
@@ -3030,17 +3014,19 @@
 
 \let\currentvalue\empty
 
-%D \macros{p!doassignwithcurrent}
-%D
-%D The next definition does the work of re-creating
-%D the expandable \type{\currentvalue} again and again.
-%D The macro is \type{\let} instead of \type{\def}-ed
-%D because that is a little easier on resources, and
-%D faster as well.
+\def\p!n!doassign#1#2\@relax@#3=#4=#5#6\@relax@% normal
+  {\ifx#5\empty
+     \@EA\xshowassignerror
+   \else\ifx#5=%
+     \@EAEAEA#1%
+   \else
+     \@EAEAEA\xshowassignerror
+   \fi\fi
+   {#2}{#3}{#4}}
 
 \beginTEX
 
-\def\p!doassign#1#2\@relax@#3=#4=#5#6\@relax@
+\def\p!e!doassign#1#2\@relax@#3=#4=#5#6\@relax@
   {\ifx#5\empty
      \@EA\xshowassignerror
    \else\ifx#5=%
@@ -3059,7 +3045,7 @@
 
 \beginETEX
 
-\def\p!doassign#1#2\@relax@#3=#4=#5#6\@relax@
+\def\p!e!doassign#1#2\@relax@#3=#4=#5#6\@relax@
   {\ifx#5\empty
      \@EA\xshowassignerror
    \else\ifx#5=%
@@ -3075,6 +3061,57 @@
    {#2}{#3}{#4}}
 
 \endETEX
+
+%D We default to:
+
+\let\p!doassign\p!n!doassign
+
+%D Here are the initializers. Later we will apply them.
+
+\def\doset@p@expanded
+  {\let\dosetpvalue     \dosetevalue         % expand values
+   \let\p!doassign      \p!e!doassign        % provide \currentvalue
+   \let\reset@p@expanded\doreset@p@expanded} % reset afterwards
+
+\def\doreset@p@expanded
+  {\let\currentvalue    \empty        % prevent carry over
+   \let\dosetpvalue     \dosetvalue   % don't expand
+   \let\p!doassign      \p!n!doassign % don't provide \currentvalue
+   \let\set@p@expanded  \relax        % don't prepare
+   \let\reset@p@expanded\relax}       % speed up next round
+
+\doreset@p@expanded \def\expandparameters{\let\set@p@expanded\doset@p@expanded}
+
+%D We overload some previously defined macros:
+
+\def\getparameters{\dogetparameters\dosetpvalue}
+
+\let\dosetpvalue\dosetvalue % normal behaviour
+
+%D \macros {expandparameters}
+%D
+%D Example usage:
+%D
+%D \startbuffer
+%D \getparameters[taco][name=taco]
+%D \convertcommand\taconame\to\ascii \ascii
+%D \expandparameters \getparameters[taco][name=\currentvalue\space hoekwater]
+%D \convertcommand\taconame\to\ascii \ascii
+%D \getparameters[taco][name=\currentvalue\space hoekwater]
+%D \convertcommand\taconame\to\ascii \ascii
+%D \stopbuffer
+%D
+%D \typebuffer
+%D \startlines
+%D \getbuffer
+%D \stoplines
+
+%D Here we hook in the code:
+
+\def\xdogetparameters#1]%
+  {\set@p@expanded
+   \xprocesscommaitem#1,],\@relax@
+   \reset@p@expanded}
 
 %D \macros
 %D   {getemptyparameters}

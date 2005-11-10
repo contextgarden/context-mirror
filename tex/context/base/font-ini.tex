@@ -3441,6 +3441,18 @@
 \def\dosetmathfont
   {\def\rm{\fam\mrfam}\dodosetmathfont}
 
+\def\enableencodinginmath
+  {\appendtoks
+     \everyhbox{\mr\everyhbox\emptytoks}%
+     \everyvbox{\mr\everyvbox\emptytoks}%
+   \to \everymath}
+
+% \enableencodinginmath % too untested to enable by default
+
+%D \startyping
+%D $\cases{& \ccaron}$ $x=\hbox{\ccaron $x=\hbox{\ccaron}$}$
+%D \stoptyping
+
 %D The font specific features are bound to the filename.
 
 \def\updatefontparameters

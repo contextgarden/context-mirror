@@ -104,7 +104,8 @@ foreach my $file (@files)
            { $command = "pdfetex  -fmt=mptopdf -progname=context" }
         if ($dosish)
            { $command = "$command \\relax $file" }
-        else         #~ print $command ;
+        else
+           { $command = "$command \\\\relax $file" }
         system($command) ;
         rename ("$_.pdf", "$_-$1.pdf") ;
         if (-e "$_.pdf") { CopyFile ("$_.pdf", "$_-$1.pdf") }
