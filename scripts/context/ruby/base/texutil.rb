@@ -183,6 +183,11 @@ class TeXUtil
             else
                 @rexb = /(\\[a-zA-Z]+|.)\s*/o
             end
+            if true then
+                @exp.keys.each do |e|
+                    @exp[e].downcase!
+                end
+            end
         end
 
         def remap(str)
@@ -211,7 +216,6 @@ class TeXUtil
         end
 
         def preset(shortcuts=[],expansions=[],reductions=[],divisions=[])
-            # maybe we should move this to sort-def.tex
             'a'.upto('z') do |c| expander(c) ; division(c) end
             'A'.upto('Z') do |c| expander(c) ; division(c) end
             expander('1','b') ; expander('2','c') ; expander('3','e') ; expander('4','f')
@@ -385,7 +389,7 @@ class TeXUtil
             class Synonym
 
                 @@debug = false
-                # @@debug = true
+                @@debug = true
 
                 def initialize(t, c, k, d)
                     @type, @command, @key, @sortkey, @data = t, c, k, k, d
@@ -464,7 +468,7 @@ class TeXUtil
             class Register
 
                 @@debug = false
-                # @@debug = true
+                @@debug = true
 
                 @@howto = /^(.*?)\:\:(.*)$/o
                 @@split = ' && '
@@ -567,7 +571,7 @@ class TeXUtil
                                         # character = "\\getvalue\{#{alpha}\}"
                                         character = "\\#{alpha}"
                                     else
-                                        character = "\\#{alpha}"
+                                        character = "\\unknown"
                                     end
                                     handle << "\\registerentry{#{entry.type}}{#{character}}\n"
                                 end

@@ -120,7 +120,7 @@
       \c!beforehead,\c!afterhead,\c!before,\c!inbetween,\c!after,
       \c!stopper,\c!placestopper,\c!indenting,
       \c!n,\c!inner,\c!symbol,\c!margin,\c!items,
-      \c!leftmargin,\c!rightmargin,
+      \c!leftmargin,\c!rightmargin,\c!indentnext,
       \c!start,\c!lefttext,\c!righttext]}
 
 \def\setupitemgroups
@@ -401,20 +401,21 @@
             \v!four=>\!!counta4\relax,
             \v!five=>\!!counta5\relax,
          \s!unknown=>\@EA\!!counta\getitemparameter\itemlevel\c!n]%
-        % new
-% now handled in column routines
-%         \edef\columneditemleftskip{\the\leftskip}%
-%         \def\postprocesscolumnbox##1%
-%           {\scratchdimen\columneditemleftskip
-%            \divide\scratchdimen \nofcolumns
-%            \hbox{\hskip\columneditemleftskip\hbox{\box##1}}}%
-%         \scratchdimen-\columneditemleftskip
-%         \multiply\scratchdimen \nofcolumns
-%         \advance\scratchdimen \columneditemleftskip
-%         \advance\scratchdimen \hsize
-%         \edef\columntextwidth{\the\scratchdimen}%
-%         \leftskip\zeropoint
-        % so far
+        %
+        % now handled in column routines
+        %
+        % \edef\columneditemleftskip{\the\leftskip}%
+        % \def\postprocesscolumnbox##1%
+        %   {\scratchdimen\columneditemleftskip
+        %    \divide\scratchdimen \nofcolumns
+        %    \hbox{\hskip\columneditemleftskip\hbox{\box##1}}}%
+        % \scratchdimen-\columneditemleftskip
+        % \multiply\scratchdimen \nofcolumns
+        % \advance\scratchdimen \columneditemleftskip
+        % \advance\scratchdimen \hsize
+        % \edef\columntextwidth{\the\scratchdimen}%
+        % \leftskip\zeropoint
+        %
         \startcolumns
           [\c!n=\!!counta, % netter \??op\itemlevel\c!n
            \c!height=,
@@ -508,7 +509,8 @@
      \ifnum\itemlevel=\plusone
        \doitembreak\allowbreak           % toegevoegd
        \getitemparameter1\c!after
-       \dochecknextindentation\??oo
+       % was: \dochecknextindentation\??oo, is now:
+       \dochecknextindentation{\??op\currentitemgroup\itemlevel}%
      \else
        % nieuw, not yet nobreak handling
        \ifcase\autoitemgroupspacing

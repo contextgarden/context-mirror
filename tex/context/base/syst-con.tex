@@ -207,5 +207,54 @@
 \def\threedigits#1%
   {\ifnum#1<10 00\else\ifnum#1<100 0\fi\fi\number#1}
 
+%D \macros{modulonumber}
+%D
+%D In the conversion macros described in \type {core-con} we
+%D need a wrap||around method. The following solution is
+%D provided by Taco.
+%D
+%D The \type {modulonumber} macro expands to the mathematical
+%D modulo of a positive integer. It is crucial for it's
+%D application that this macro is fully exandable.
+%D
+%D The expression inside the \type {\numexpr} itself is
+%D somewhat bizarre because \ETEX\ uses a rounding
+%D division instead of truncation. If \ETEX's division
+%D would have behaved like \TEX's normal\type{\divide}, then
+%D the expression could have been somewhat simpler, like
+%D \type {#2-(#2/#1)*#1}. This works just as well, but a bit
+%D more complex.
+
+\beginETEX
+
+\def\modulonumber#1#2%
+   {\the\numexpr#2-((((#2+(#1/2))/#1)-1)*#1)\relax}
+
+\endETEX
+
+%D \macros{modulatednumber}
+%D
+%D Modulo numbers run from zero to one less than the limit,
+%D but for conversion sets, we need a value between 1 and the
+%D limit. The \type{\modulatednumber} arranges that. This
+%D macro also needs to be fully expandable, resulting in
+%D two \type{\numexpr}s.
+
+\beginETEX
+
+\def\modulatednumber#1#2%
+  {\ifnum\the\numexpr\modulonumber{#1}{#2}\relax=0 #1%
+   \else \the\numexpr\modulonumber{#1}{#2}\relax  \fi}
+
+\endETEX
+
+%D When not running \ETEX\ you're left with the maximum:
+
+\beginTEX
+
+\def\modulatednumber#1#2%
+  {\ifnum#2>#1 #1\else#2\fi}
+
+\endTEX
 
 \protect \endinput

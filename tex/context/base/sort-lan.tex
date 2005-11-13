@@ -96,11 +96,25 @@
 
 % czech
 %
-% a-c ccaron d-
+% a) make a single group for: "a", "á", "A", "Á"
+% b) make a different two groups for: "c", "C" and "c", "C"
+% c) sorting rule: "A" < "Á" < "a" < "á" < "C" < "c" < "C" < "c"
+% d) sorting rule: "h" < "ch" < "i" ("c" < "h")
+
+\def\czsortdivisionch{ch}
+\def\czsortdivisionCh{Ch}
 
 \startmode[sortorder-cz]
-    \exportsortrule {ccaron}  {c+1}
-    \exportsortreduction {ch} {c}
+    \exportsortexpansion{aacute}{a}
+    \exportsortexpansion{Aacute}{A}
+    \exportsortexpansion{ccaron}{c+1}
+    \exportsortexpansion{Ccaron}{c+1}
+    \exportsortdivision{c+1}{ccaron}
+    \exportsortreduction{ch}{h+1}
+    \exportsortexpansion{ch}{h+1}
+    \exportsortreduction{Ch}{h+1}
+    \exportsortexpansion{Ch}{h+1}
+    \exportsortdivision{h+1}{czsortdivisionch}
 \stopmode
 
 \endinput

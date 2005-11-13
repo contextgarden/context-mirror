@@ -2209,6 +2209,7 @@
    \else\ifnum\pdftexversion<14
      \def\getMPPDFobject{\box#2}%
    \else
+     \ifx\everyPDFxform\undefined\else\the\everyPDFxform\fi
      \immediate\pdfxform resources{#1}#2%
      \edef\getMPPDFobject{\noexpand\pdfrefxform\the\pdflastxform}%
    \fi\fi\fi}

@@ -382,7 +382,7 @@
 \def\loadmapfile[#1]%
   {\expanded{\processcommalist[#1]}\loadthemapfile}
 
-%  too soon, no driver known, \ifproductionrun \loadallfontmapfiles \fi}
+%  too soon, no driver known, \ifproductionrun \loadallfontmapfiles \fi
 
 % temp hack, will become just \addto
 
@@ -461,6 +461,9 @@
 % because \startcomponent ... \environment ... is pretty legal.
 
 % the map directives need to end up in the right place in the stream
+
+% hm, the timing of when pdftex needs the map file info keeps changing;
+% it's really time to move to map line support
 
 % \appendtoks \loadallfontmapfiles \to \everyPDFximage
 % \appendtoks \loadallfontmapfiles \to \everystarttext

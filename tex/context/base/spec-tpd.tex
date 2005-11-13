@@ -241,7 +241,7 @@
 
 %D nasty but needed
 
-\appendtoksonce \loadallfontmapfiles \to \everyPDFximage
+\appendtoksonce \loadallfontmapfiles \to \everyPDFximage % currently == \everyPDFxform
 
 %D \macros
 %D   {doinsertfile,dogetnofinsertpages}
@@ -1450,7 +1450,8 @@
 \else
 
   \def\setMPPDFobject#1#2% resources boxnumber
-    {\immediate\pdfxform resources{#1}#2%
+    {\the\everyPDFxform
+     \immediate\pdfxform resources{#1}#2%
      \edef\getMPPDFobject{\noexpand\pdfrefxform\the\pdflastxform}}
 
 \fi

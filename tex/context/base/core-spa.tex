@@ -1206,11 +1206,24 @@
 
 \definecomplexorsimple\setupindenting
 
+% \def\complexsetupindenting[#1]%
+%   {\edef\currentindenting{#1}%
+%    \indentfirstparagraphtrue
+%    \parindent\ctxparindent
+%    \chardef\indentingtoggle\zerocount
+%    \processcommalist[#1]\docomplexsetupindenting
+%    \ifindentfirstparagraph\else\noindentation\fi % added
+%    \toggleindentation}
+
+\indentfirstparagraphtrue
+\parindent\ctxparindent
+\chardef\indentingtoggle\zerocount
+
 \def\complexsetupindenting[#1]%
   {\edef\currentindenting{#1}%
-   \indentfirstparagraphtrue
-   \parindent\ctxparindent
-   \chardef\indentingtoggle\zerocount
+   % not here: \indentfirstparagraphtrue
+   % not here: \parindent\ctxparindent
+   % not here: \chardef\indentingtoggle\zerocount
    \processcommalist[#1]\docomplexsetupindenting
    \ifindentfirstparagraph\else\noindentation\fi % added
    \toggleindentation}
@@ -1257,6 +1270,10 @@
                                       \let\currentindentation\normalindentation
                                       \simplesetupindenting
                                     \fi}
+
+\defineindentingmethod [\v!reset]  {\parindent\zeropoint
+                                    \indentfirstparagraphtrue
+                                    \chardef\indentingtoggle\zerocount}
 
 \def\noindenting{\indenting[\v!no, \v!next ]}
 \def\doindenting{\indenting[\v!yes,\v!first]}
@@ -2639,8 +2656,21 @@
 \def\dosetraggedcommand#1%
   {\expanded{\dodosetraggedcommand{#1}}}
 
+% \def\dodosetraggedcommand#1% beware: #1=empty is ignored, keep that!
+%   {\let\raggedcommand      \relax
+%    \let\raggedtopcommand   \empty
+%    \let\raggedbottomcommand\empty
+%    \chardef\raggedoneliner\zerocount
+%    \doifsomething{#1}
+%      {\doifinsetelse\v!broad{#1}\!!doneatrue\!!doneafalse
+%       \doifinsetelse\v!wide {#1}\!!donebtrue\!!donebfalse
+%       \!!donectrue
+%       \rawprocesscommalist[#1]\dododosetraggedcommand}}
+
+\newtoks\everyraggedcommand \def\raggedcommand{\the\everyraggedcommand}
+
 \def\dodosetraggedcommand#1% beware: #1=empty is ignored, keep that!
-  {\let\raggedcommand      \relax
+  {\everyraggedcommand     \emptytoks
    \let\raggedtopcommand   \empty
    \let\raggedbottomcommand\empty
    \chardef\raggedoneliner\zerocount
@@ -2655,23 +2685,36 @@
 
 \def\@@ragged@@command{@@raggedcommand}
 
+\setvalue{\@@ragged@@command\v!hanging      }{\appendtoks\enableprotruding    \to\everyraggedcommand}
+\setvalue{\@@ragged@@command\v!nothanging   }{\appendtoks\disableprotruding   \to\everyraggedcommand}
+\setvalue{\@@ragged@@command\v!hz           }{\appendtoks\enableadjusting     \to\everyraggedcommand}
+\setvalue{\@@ragged@@command\v!nohz         }{\appendtoks\disableadjusting    \to\everyraggedcommand}
+\setvalue{\@@ragged@@command\v!spacing      }{\appendtoks\enablespacehandling \to\everyraggedcommand}
+\setvalue{\@@ragged@@command\v!nospacing    }{\appendtoks\disablespacehandling\to\everyraggedcommand}
+\setvalue{\@@ragged@@command\v!hyphenated   }{\appendtoks\dohyphens           \to\everyraggedcommand}
+\setvalue{\@@ragged@@command\v!nothyphenated}{\appendtoks\nohyphens           \to\everyraggedcommand}
+
+\setvalue{\@@ragged@@command\v!tolerant    }{\appendtoks\tolerance3000\relax  \to\everyraggedcommand}
+\setvalue{\@@ragged@@command\v!verytolerant}{\appendtoks\tolerance4500\relax  \to\everyraggedcommand}
+\setvalue{\@@ragged@@command\v!stretch     }{\appendtoks\emergencystretch\bodyfontsize\to\everyraggedcommand}
+
 \setvalue{\@@ragged@@command\v!left}%
-  {\if!!donea \def\raggedcommand{\veryraggedleft}%
-   \else      \def\raggedcommand{\raggedleft}%
+  {\if!!donea \appendtoks\veryraggedleft\to\everyraggedcommand
+   \else      \appendtoks\raggedleft    \to\everyraggedcommand
    \fi
    \!!donecfalse}
 
 \setvalue{\@@ragged@@command\v!right}%
-  {\if!!donea \def\raggedcommand{\veryraggedright}%
-   \else      \def\raggedcommand{\raggedright}%
+  {\if!!donea \appendtoks\veryraggedright\to\everyraggedcommand
+   \else      \appendtoks\raggedright    \to\everyraggedcommand
    \fi
    \!!donecfalse}
 
 \setvalue{\@@ragged@@command\v!middle}%
   {\if!!donec
-     \if!!doneb      \def\raggedcommand{\raggedwidecenter}%
-     \else\if!!donea \def\raggedcommand{\veryraggedcenter}%
-     \else           \def\raggedcommand{\raggedcenter}%
+     \if!!doneb      \appendtoks\raggedwidecenter\to\everyraggedcommand
+     \else\if!!donea \appendtoks\veryraggedcenter\to\everyraggedcommand
+     \else           \appendtoks\raggedcenter    \to\everyraggedcommand
      \fi\fi
      \!!donecfalse
    \else
@@ -2694,13 +2737,13 @@
    \let\raggedtopcommand\vfilll}     % ugly laho (lohi)
 
 \setvalue{\@@ragged@@command\v!no}%
-  {\def\raggedcommand{\raggedright}}
+  {\appendtoks\raggedright\to\everyraggedcommand}
 
 \setvalue{\@@ragged@@command\v!yes}%
-  {\let\raggedcommand\notragged}
+  {\appendtoks\notragged\to\everyraggedcommand}
 
 \setvalue{\@@ragged@@command\v!normal}%
-  {\let\raggedcommand\notragged}
+  {\appendtoks\notragged\to\everyraggedcommand}
 
 \setvalue{\@@ragged@@command\v!inner}% not yet perfect
   {\signalrightpage % may interfere
@@ -3669,6 +3712,10 @@
 \setvalue{@@align@@\v!nothyphenated}{\nohyphens}
 \setvalue{@@align@@\v!new          }{\@@asraggedfalse} % so new will give you consistency
 \setvalue{@@align@@\v!reset        }{\notragged\normalbottom}
+
+\setvalue{@@align@@\v!tolerant    }{\tolerance3000   \relax}
+\setvalue{@@align@@\v!verytolerant}{\tolerance4500   \relax}
+\setvalue{@@align@@\v!stretch     }{\emergencystretch\bodyfontsize}
 
 \setvalue{@@ngila@@\v!broad        }{\!!doneatrue}
 \setvalue{@@ngila@@\v!wide         }{\!!donebtrue}

@@ -820,4 +820,48 @@
    \ifx\torange\empty\let\torange\fromrange\fi
    \dostepwiserecurse\fromrange\torange1{#2{\recurselevel}}}
 
+%D \macros {uncompresslist}
+%D
+%D When given a list like \type{1,4-7,9} as argument, this macro
+%D will store the expanded commalist in \type{\uncompressedlist}.
+%D
+%D \startbuffer
+%D \def\MojcaHasToDoTheTasks[#1]#2%
+%D   {{\uncompresslist[#1]%
+%D     \def\processitem##1{I have to do ##1 #2\par}%
+%D     \processcommacommand[\uncompressedlist]\processitem}}
+%D
+%D \MojcaHasToDoTheTasks [1-4,7,9-11] {until tomorrow}
+%D \stopbuffer
+%D
+%D Here is an example of how to use \type {\uncompresslist}:
+%D \typebuffer
+%D
+%D The output of this is:
+%D
+%D \getbuffer
+
+\beginETEX \numexpr
+
+\def\uncompresslist[#1]% by TH
+  {\let\uncompressedlist\empty
+   \def\docompressedlistitem##1-##2-%
+     {\@EA\dorecurse\@EA
+        {\the\numexpr1+##2-##1\relax}%
+        {\@EA\appendtocommalist\@EA{\the\numexpr##1-1+####1\relax}\uncompressedlist}}%
+   \def\douncompresslist##1%
+     {\doifinstringelse{-}{##1}
+        {\docompressedlistitem##1-}
+        {\appendtocommalist{##1}\uncompressedlist}}%
+   \processcommalist[#1]\douncompresslist}
+
+\endETEX
+
+\def\uncompresslist[#1]%
+  {\def\uncompressedlist{#1}}
+
+\beginTEX
+
+\endTEX
+
 \protect \endinput

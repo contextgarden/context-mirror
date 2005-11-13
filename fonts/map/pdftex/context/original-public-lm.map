@@ -2,129 +2,129 @@
 
 % official
 %
-% cmb10     LMRomanDemi10-Regular        <cmrm.enc  <lmb10.pfb
-% cmbx10    LMRoman10-Bold               <cmrm.enc  <lmbx10.pfb
-% cmbx12    LMRoman12-Bold               <cmrm.enc  <lmbx12.pfb
-% cmbx5     LMRoman5-Bold                <cmrm.enc  <lmbx5.pfb
-% cmbx6     LMRoman6-Bold                <cmrm.enc  <lmbx6.pfb
-% cmbx7     LMRoman7-Bold                <cmrm.enc  <lmbx7.pfb
-% cmbx8     LMRoman8-Bold                <cmrm.enc  <lmbx8.pfb
-% cmbx9     LMRoman9-Bold                <cmrm.enc  <lmbx9.pfb
-% cmbxsl10  LMSlanted10-BoldItalic       <cmrm.enc  <lmbxo10.pfb
-% cmbxti10  LMRoman10-BoldItalic         <cmit.enc  <lmbxi10.pfb
-% cmbxti12  LMRoman10-BoldItalic         <cmit.enc  <lmbxti10.pfb
-% cmbxti7   LMRoman10-BoldItalic         <cmit.enc  <lmbxti10.pfb
-% cmcsc10   LMCaps10-Regular             <cmsc.enc  <lmcsc10.pfb
-% cmcsc8    LMCaps10-Regular             <cmsc.enc  <lmcsc10.pfb
-% cmcsc9    LMCaps10-Regular             <cmsc.enc  <lmcsc10.pfb
-% cminch    LMSans10-Bold                <cmin.enc  <lmssbx10.pfb
-% cmitt10   LMTypewriter10-Italic        <cmitt.enc <lmtti10.pfb
-% cmitt12   LMTypewriter10-Italic        <cmitt.enc <lmtti10.pfb
-% cmitt9    LMTypewriter10-Italic        <cmitt.enc <lmtti10.pfb
-% cmr10     LMRoman10-Regular            <cmrm.enc  <lmr10.pfb
-% cmr12     LMRoman12-Regular            <cmrm.enc  <lmr12.pfb
-% cmr17     LMRoman17-Regular            <cmrm.enc  <lmr17.pfb
-% cmr5      LMRoman5-Regular             <cmsc.enc  <lmr5.pfb
-% cmr6      LMRoman6-Regular             <cmrm.enc  <lmr6.pfb
-% cmr7      LMRoman7-Regular             <cmrm.enc  <lmr7.pfb
-% cmr8      LMRoman8-Regular             <cmrm.enc  <lmr8.pfb
-% cmr9      LMRoman9-Regular             <cmrm.enc  <lmr9.pfb
-% cmsl10    LMSlanted10-Italic           <cmrm.enc  <lmro10.pfb
-% cmsl12    LMSlanted12-Italic           <cmrm.enc  <lmro12.pfb
-% cmsl6     LMSlanted8-Italic            <cmrm.enc  <lmro8.pfb
-% cmsl8     LMSlanted8-Italic            <cmrm.enc  <lmro8.pfb
-% cmsl9     LMSlanted9-Italic            <cmrm.enc  <lmro9.pfb
-% cmsltt10  LMTypewriterSlanted10-Italic <cmtt.enc  <lmtto10.pfb
-% cmsltt9   LMTypewriterSlanted10-Italic <cmtt.enc  <lmtto10.pfb
-% cmss10    LMSans10-Regular             <cmrm.enc  <lmss10.pfb
-% cmss12    LMSans12-Regular             <cmrm.enc  <lmss12.pfb
-% cmss17    LMSans17-Regular             <cmrm.enc  <lmss17.pfb
-% cmss8     LMSans8-Regular              <cmrm.enc  <lmss8.pfb
-% cmss9     LMSans9-Regular              <cmrm.enc  <lmss9.pfb
-% cmssbx10  LMSans10-Bold                <cmrm.enc  <lmssbx10.pfb
-% cmssbxo10 LMSans10-BoldItalic          <cmrm.enc  <lmssbo10.pfb
-% cmssdc10  LMSansDemiCond10-Regular     <cmrm.enc  <lmssdc10.pfb
-% cmssi10   LMSans10-Italic              <cmrm.enc  <lmsso10.pfb
-% cmssi12   LMSans12-Italic              <cmrm.enc  <lmsso12.pfb
-% cmssi17   LMSans17-Italic              <cmrm.enc  <lmsso17.pfb
-% cmssi8    LMSans8-Italic               <cmrm.enc  <lmsso8.pfb
-% cmssi9    LMSans9-Italic               <cmrm.enc  <lmsso9.pfb
-% cmssq8    LMSansQuotation8-Regular     <cmrm.enc  <lmssq8.pfb
-% cmssqi8   LMSansQuotation8-Italic      <cmrm.enc  <lmssqo8.pfb
-% cmtcsc10  LMTypewriterCaps10-Regular   <cmtt.enc  <lmtcsc10.pfb
-% cmti10    LMRoman10-Italic             <cmit.enc  <lmri10.pfb
-% cmti12    LMRoman12-Italic             <cmit.enc  <lmri12.pfb
-% cmti7     LMRoman7-Italic              <cmit.enc  <lmri7.pfb
-% cmti8     LMRoman8-Italic              <cmit.enc  <lmri8.pfb
-% cmti9     LMRoman9-Italic              <cmit.enc  <lmri9.pfb
-% cmtt10    LMTypewriter10-Regular       <cmtt.enc  <lmtt10.pfb
-% cmtt12    LMTypewriter12-Regular       <cmtt.enc  <lmtt12.pfb
-% cmtt8     LMTypewriter8-Regular        <cmtt.enc  <lmtt8.pfb
-% cmtt9     LMTypewriter9-Regular        <cmtt.enc  <lmtt9.pfb
-% cmvtt10   LMTypewriterVarWd10-Regular  <cmrm.enc  <lmvtt10.pfb
+% cmb10     LMRomanDemi10-Regular        <lm-rep-cmrm.enc  <lmb10.pfb
+% cmbx10    LMRoman10-Bold               <lm-rep-cmrm.enc  <lmbx10.pfb
+% cmbx12    LMRoman12-Bold               <lm-rep-cmrm.enc  <lmbx12.pfb
+% cmbx5     LMRoman5-Bold                <lm-rep-cmrm.enc  <lmbx5.pfb
+% cmbx6     LMRoman6-Bold                <lm-rep-cmrm.enc  <lmbx6.pfb
+% cmbx7     LMRoman7-Bold                <lm-rep-cmrm.enc  <lmbx7.pfb
+% cmbx8     LMRoman8-Bold                <lm-rep-cmrm.enc  <lmbx8.pfb
+% cmbx9     LMRoman9-Bold                <lm-rep-cmrm.enc  <lmbx9.pfb
+% cmbxsl10  LMSlanted10-BoldItalic       <lm-rep-cmrm.enc  <lmbxo10.pfb
+% cmbxti10  LMRoman10-BoldItalic         <lm-rep-cmit.enc  <lmbxi10.pfb
+% cmbxti12  LMRoman10-BoldItalic         <lm-rep-cmit.enc  <lmbxti10.pfb
+% cmbxti7   LMRoman10-BoldItalic         <lm-rep-cmit.enc  <lmbxti10.pfb
+% cmcsc10   LMCaps10-Regular             <lm-rep-cmsc.enc  <lmcsc10.pfb
+% cmcsc8    LMCaps10-Regular             <lm-rep-cmsc.enc  <lmcsc10.pfb
+% cmcsc9    LMCaps10-Regular             <lm-rep-cmsc.enc  <lmcsc10.pfb
+% cminch    LMSans10-Bold                <lm-rep-cmin.enc  <lmssbx10.pfb
+% cmitt10   LMTypewriter10-Italic        <lm-rep-cmitt.enc <lmtti10.pfb
+% cmitt12   LMTypewriter10-Italic        <lm-rep-cmitt.enc <lmtti10.pfb
+% cmitt9    LMTypewriter10-Italic        <lm-rep-cmitt.enc <lmtti10.pfb
+% cmr10     LMRoman10-Regular            <lm-rep-cmrm.enc  <lmr10.pfb
+% cmr12     LMRoman12-Regular            <lm-rep-cmrm.enc  <lmr12.pfb
+% cmr17     LMRoman17-Regular            <lm-rep-cmrm.enc  <lmr17.pfb
+% cmr5      LMRoman5-Regular             <lm-rep-cmsc.enc  <lmr5.pfb
+% cmr6      LMRoman6-Regular             <lm-rep-cmrm.enc  <lmr6.pfb
+% cmr7      LMRoman7-Regular             <lm-rep-cmrm.enc  <lmr7.pfb
+% cmr8      LMRoman8-Regular             <lm-rep-cmrm.enc  <lmr8.pfb
+% cmr9      LMRoman9-Regular             <lm-rep-cmrm.enc  <lmr9.pfb
+% cmsl10    LMSlanted10-Italic           <lm-rep-cmrm.enc  <lmro10.pfb
+% cmsl12    LMSlanted12-Italic           <lm-rep-cmrm.enc  <lmro12.pfb
+% cmsl6     LMSlanted8-Italic            <lm-rep-cmrm.enc  <lmro8.pfb
+% cmsl8     LMSlanted8-Italic            <lm-rep-cmrm.enc  <lmro8.pfb
+% cmsl9     LMSlanted9-Italic            <lm-rep-cmrm.enc  <lmro9.pfb
+% cmsltt10  LMTypewriterSlanted10-Italic <lm-rep-cmtt.enc  <lmtto10.pfb
+% cmsltt9   LMTypewriterSlanted10-Italic <lm-rep-cmtt.enc  <lmtto10.pfb
+% cmss10    LMSans10-Regular             <lm-rep-cmrm.enc  <lmss10.pfb
+% cmss12    LMSans12-Regular             <lm-rep-cmrm.enc  <lmss12.pfb
+% cmss17    LMSans17-Regular             <lm-rep-cmrm.enc  <lmss17.pfb
+% cmss8     LMSans8-Regular              <lm-rep-cmrm.enc  <lmss8.pfb
+% cmss9     LMSans9-Regular              <lm-rep-cmrm.enc  <lmss9.pfb
+% cmssbx10  LMSans10-Bold                <lm-rep-cmrm.enc  <lmssbx10.pfb
+% cmssbxo10 LMSans10-BoldItalic          <lm-rep-cmrm.enc  <lmssbo10.pfb
+% cmssdc10  LMSansDemiCond10-Regular     <lm-rep-cmrm.enc  <lmssdc10.pfb
+% cmssi10   LMSans10-Italic              <lm-rep-cmrm.enc  <lmsso10.pfb
+% cmssi12   LMSans12-Italic              <lm-rep-cmrm.enc  <lmsso12.pfb
+% cmssi17   LMSans17-Italic              <lm-rep-cmrm.enc  <lmsso17.pfb
+% cmssi8    LMSans8-Italic               <lm-rep-cmrm.enc  <lmsso8.pfb
+% cmssi9    LMSans9-Italic               <lm-rep-cmrm.enc  <lmsso9.pfb
+% cmssq8    LMSansQuotation8-Regular     <lm-rep-cmrm.enc  <lmssq8.pfb
+% cmssqi8   LMSansQuotation8-Italic      <lm-rep-cmrm.enc  <lmssqo8.pfb
+% cmtcsc10  LMTypewriterCaps10-Regular   <lm-rep-cmtt.enc  <lmtcsc10.pfb
+% cmti10    LMRoman10-Italic             <lm-rep-cmit.enc  <lmri10.pfb
+% cmti12    LMRoman12-Italic             <lm-rep-cmit.enc  <lmri12.pfb
+% cmti7     LMRoman7-Italic              <lm-rep-cmit.enc  <lmri7.pfb
+% cmti8     LMRoman8-Italic              <lm-rep-cmit.enc  <lmri8.pfb
+% cmti9     LMRoman9-Italic              <lm-rep-cmit.enc  <lmri9.pfb
+% cmtt10    LMTypewriter10-Regular       <lm-rep-cmtt.enc  <lmtt10.pfb
+% cmtt12    LMTypewriter12-Regular       <lm-rep-cmtt.enc  <lmtt12.pfb
+% cmtt8     LMTypewriter8-Regular        <lm-rep-cmtt.enc  <lmtt8.pfb
+% cmtt9     LMTypewriter9-Regular        <lm-rep-cmtt.enc  <lmtt9.pfb
+% cmvtt10   LMTypewriterVarWd10-Regular  <lm-rep-cmrm.enc  <lmvtt10.pfb
 %
 % but more efficient since to-be-included old files have those names
 
-cmb10     CMB10     <cmrm.enc  <lmb10.pfb
-cmbx10    CMBX10    <cmrm.enc  <lmbx10.pfb
-cmbx12    CMBX12    <cmrm.enc  <lmbx12.pfb
-cmbx5     CMBX5     <cmrm.enc  <lmbx5.pfb
-cmbx6     CMBX6     <cmrm.enc  <lmbx6.pfb
-cmbx7     CMBX7     <cmrm.enc  <lmbx7.pfb
-cmbx8     CMBX8     <cmrm.enc  <lmbx8.pfb
-cmbx9     CMBX9     <cmrm.enc  <lmbx9.pfb
-cmbxsl10  CMBXSL10  <cmrm.enc  <lmbxo10.pfb
-cmbxti10  CMBXTI10  <cmit.enc  <lmbxi10.pfb
-cmbxti12  CMBXTI12  <cmit.enc  <lmbxti10.pfb
-cmbxti7   CMBXTI7   <cmit.enc  <lmbxti10.pfb
-cmcsc10   CMCSC10   <cmsc.enc  <lmcsc10.pfb
-cmcsc8    CMCSC8    <cmsc.enc  <lmcsc10.pfb
-cmcsc9    CMCSC9    <cmsc.enc  <lmcsc10.pfb
-cminch    CMINCH    <cmin.enc  <lmssbx10.pfb
-cmitt10   CMITT10   <cmitt.enc <lmtti10.pfb
-cmitt12   CMITT12   <cmitt.enc <lmtti10.pfb
-cmitt9    CMITT9    <cmitt.enc <lmtti10.pfb
-cmr10     CMR10     <cmrm.enc  <lmr10.pfb
-cmr12     CMR12     <cmrm.enc  <lmr12.pfb
-cmr17     CMR17     <cmrm.enc  <lmr17.pfb
-cmr5      CMR5      <cmsc.enc  <lmr5.pfb
-cmr6      CMR6      <cmrm.enc  <lmr6.pfb
-cmr7      CMR7      <cmrm.enc  <lmr7.pfb
-cmr8      CMR8      <cmrm.enc  <lmr8.pfb
-cmr9      CMR9      <cmrm.enc  <lmr9.pfb
-cmsl10    CMSL10    <cmrm.enc  <lmro10.pfb
-cmsl12    CMSL12    <cmrm.enc  <lmro12.pfb
-cmsl6     CMSL6     <cmrm.enc  <lmro8.pfb
-cmsl8     CMSL8     <cmrm.enc  <lmro8.pfb
-cmsl9     CMSL9     <cmrm.enc  <lmro9.pfb
-cmsltt10  CMSLTT10  <cmtt.enc  <lmtto10.pfb
-cmsltt9   CMSLTT9   <cmtt.enc  <lmtto10.pfb
-cmss10    CMS10     <cmrm.enc  <lmss10.pfb
-cmss12    CMS12     <cmrm.enc  <lmss12.pfb
-cmss17    CMS17     <cmrm.enc  <lmss17.pfb
-cmss8     CMS8      <cmrm.enc  <lmss8.pfb
-cmss9     CMS9      <cmrm.enc  <lmss9.pfb
-cmssbx10  CMSSBX10  <cmrm.enc  <lmssbx10.pfb
-cmssbxo10 CMSSBXO10 <cmrm.enc  <lmssbo10.pfb
-cmssdc10  CMSSDC10  <cmrm.enc  <lmssdc10.pfb
-cmssi10   CMSI10    <cmrm.enc  <lmsso10.pfb
-cmssi12   CMSI12    <cmrm.enc  <lmsso12.pfb
-cmssi17   CMSI17    <cmrm.enc  <lmsso17.pfb
-cmssi8    CMSSI8    <cmrm.enc  <lmsso8.pfb
-cmssi9    CMSSI9    <cmrm.enc  <lmsso9.pfb
-cmssq8    CMSQ8     <cmrm.enc  <lmssq8.pfb
-cmssqi8   CMSSQI8   <cmrm.enc  <lmssqo8.pfb
-cmtcsc10  CMTCSC10  <cmtt.enc  <lmtcsc10.pfb
-cmti10    CMTI10    <cmit.enc  <lmri10.pfb
-cmti12    CMTI12    <cmit.enc  <lmri12.pfb
-cmti7     CMTI7     <cmit.enc  <lmri7.pfb
-cmti8     CMTI8     <cmit.enc  <lmri8.pfb
-cmti9     CMTI9     <cmit.enc  <lmri9.pfb
-cmtt10    CMTT10    <cmtt.enc  <lmtt10.pfb
-cmtt12    CMTT12    <cmtt.enc  <lmtt12.pfb
-cmtt8     CMTT8     <cmtt.enc  <lmtt8.pfb
-cmtt9     CMTT9     <cmtt.enc  <lmtt9.pfb
-cmvtt10   CMVTT10   <cmrm.enc  <lmvtt10.pfb
+cmb10     CMB10     <lm-rep-cmrm.enc  <lmb10.pfb
+cmbx10    CMBX10    <lm-rep-cmrm.enc  <lmbx10.pfb
+cmbx12    CMBX12    <lm-rep-cmrm.enc  <lmbx12.pfb
+cmbx5     CMBX5     <lm-rep-cmrm.enc  <lmbx5.pfb
+cmbx6     CMBX6     <lm-rep-cmrm.enc  <lmbx6.pfb
+cmbx7     CMBX7     <lm-rep-cmrm.enc  <lmbx7.pfb
+cmbx8     CMBX8     <lm-rep-cmrm.enc  <lmbx8.pfb
+cmbx9     CMBX9     <lm-rep-cmrm.enc  <lmbx9.pfb
+cmbxsl10  CMBXSL10  <lm-rep-cmrm.enc  <lmbxo10.pfb
+cmbxti10  CMBXTI10  <lm-rep-cmit.enc  <lmbxi10.pfb
+cmbxti12  CMBXTI12  <lm-rep-cmit.enc  <lmbxti10.pfb
+cmbxti7   CMBXTI7   <lm-rep-cmit.enc  <lmbxti10.pfb
+cmcsc10   CMCSC10   <lm-rep-cmsc.enc  <lmcsc10.pfb
+cmcsc8    CMCSC8    <lm-rep-cmsc.enc  <lmcsc10.pfb
+cmcsc9    CMCSC9    <lm-rep-cmsc.enc  <lmcsc10.pfb
+cminch    CMINCH    <lm-rep-cmin.enc  <lmssbx10.pfb
+cmitt10   CMITT10   <lm-rep-cmitt.enc <lmtti10.pfb
+cmitt12   CMITT12   <lm-rep-cmitt.enc <lmtti10.pfb
+cmitt9    CMITT9    <lm-rep-cmitt.enc <lmtti10.pfb
+cmr10     CMR10     <lm-rep-cmrm.enc  <lmr10.pfb
+cmr12     CMR12     <lm-rep-cmrm.enc  <lmr12.pfb
+cmr17     CMR17     <lm-rep-cmrm.enc  <lmr17.pfb
+cmr5      CMR5      <lm-rep-cmsc.enc  <lmr5.pfb
+cmr6      CMR6      <lm-rep-cmrm.enc  <lmr6.pfb
+cmr7      CMR7      <lm-rep-cmrm.enc  <lmr7.pfb
+cmr8      CMR8      <lm-rep-cmrm.enc  <lmr8.pfb
+cmr9      CMR9      <lm-rep-cmrm.enc  <lmr9.pfb
+cmsl10    CMSL10    <lm-rep-cmrm.enc  <lmro10.pfb
+cmsl12    CMSL12    <lm-rep-cmrm.enc  <lmro12.pfb
+cmsl6     CMSL6     <lm-rep-cmrm.enc  <lmro8.pfb
+cmsl8     CMSL8     <lm-rep-cmrm.enc  <lmro8.pfb
+cmsl9     CMSL9     <lm-rep-cmrm.enc  <lmro9.pfb
+cmsltt10  CMSLTT10  <lm-rep-cmtt.enc  <lmtto10.pfb
+cmsltt9   CMSLTT9   <lm-rep-cmtt.enc  <lmtto10.pfb
+cmss10    CMS10     <lm-rep-cmrm.enc  <lmss10.pfb
+cmss12    CMS12     <lm-rep-cmrm.enc  <lmss12.pfb
+cmss17    CMS17     <lm-rep-cmrm.enc  <lmss17.pfb
+cmss8     CMS8      <lm-rep-cmrm.enc  <lmss8.pfb
+cmss9     CMS9      <lm-rep-cmrm.enc  <lmss9.pfb
+cmssbx10  CMSSBX10  <lm-rep-cmrm.enc  <lmssbx10.pfb
+cmssbxo10 CMSSBXO10 <lm-rep-cmrm.enc  <lmssbo10.pfb
+cmssdc10  CMSSDC10  <lm-rep-cmrm.enc  <lmssdc10.pfb
+cmssi10   CMSI10    <lm-rep-cmrm.enc  <lmsso10.pfb
+cmssi12   CMSI12    <lm-rep-cmrm.enc  <lmsso12.pfb
+cmssi17   CMSI17    <lm-rep-cmrm.enc  <lmsso17.pfb
+cmssi8    CMSSI8    <lm-rep-cmrm.enc  <lmsso8.pfb
+cmssi9    CMSSI9    <lm-rep-cmrm.enc  <lmsso9.pfb
+cmssq8    CMSQ8     <lm-rep-cmrm.enc  <lmssq8.pfb
+cmssqi8   CMSSQI8   <lm-rep-cmrm.enc  <lmssqo8.pfb
+cmtcsc10  CMTCSC10  <lm-rep-cmtt.enc  <lmtcsc10.pfb
+cmti10    CMTI10    <lm-rep-cmit.enc  <lmri10.pfb
+cmti12    CMTI12    <lm-rep-cmit.enc  <lmri12.pfb
+cmti7     CMTI7     <lm-rep-cmit.enc  <lmri7.pfb
+cmti8     CMTI8     <lm-rep-cmit.enc  <lmri8.pfb
+cmti9     CMTI9     <lm-rep-cmit.enc  <lmri9.pfb
+cmtt10    CMTT10    <lm-rep-cmtt.enc  <lmtt10.pfb
+cmtt12    CMTT12    <lm-rep-cmtt.enc  <lmtt12.pfb
+cmtt8     CMTT8     <lm-rep-cmtt.enc  <lmtt8.pfb
+cmtt9     CMTT9     <lm-rep-cmtt.enc  <lmtt9.pfb
+cmvtt10   CMVTT10   <lm-rep-cmrm.enc  <lmvtt10.pfb
 
 % original
 
@@ -167,4 +167,4 @@ cmtex9    CMTEX9   <cmtex9.pfb
 
 % a weird one, not used in context
 
-cmu10     LMRoman10-Italic "-0.25 SlantFont" <cmit.enc <lmri10.pfb
+cmu10     LMRoman10-Italic "-0.25 SlantFont" <lm-rep-cmit.enc <lmri10.pfb

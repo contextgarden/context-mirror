@@ -1204,6 +1204,7 @@ class Commands
     @@languagedata['hr' ] = [ 'ec'      , ['hrhyph.tex'] ]
     @@languagedata['hu' ] = [ 'ec'      , ['huhyphn.tex'] ]
     @@languagedata['en' ] = [ 'default' , [['ushyphmax.tex','ushyph.tex','hyphen.tex']] ]
+    @@languagedata['us' ] = [ 'default' , [['ushyphmax.tex','ushyph.tex','hyphen.tex']] ]
     # inhyph.tex
     @@languagedata['is' ] = [ 'ec'      , ['ishyph.tex'] ]
     @@languagedata['it' ] = [ 'ec'      , ['ithyph.tex'] ]
@@ -1235,10 +1236,11 @@ class Commands
 
         texmfroot = @commandline.argument('first')
         texmfroot = '.' if texmfroot.empty?
-        maproot   = "#{texmfroot}/fonts/map/pdftex/context"
+        maproot   = "#{texmfroot.gsub(/\\/,'/')}/fonts/map/pdftex/context"
 
         if File.directory?(maproot) then
-            if files = Dir.glob("#{maproot}/*.map") and files.size > 0 then
+            files = Dir.glob("#{maproot}/*.map")
+            if files.size > 0 then
                 files.each do |pdffile|
                     next if File.basename(pdffile) == 'pdftex.map'
                     pdffile = File.expand_path(pdffile)
@@ -1266,6 +1268,12 @@ class Commands
                                 end
                                 data.delete_if do |line|
                                     line.gsub(/\s+/,'').empty?
+                                end
+                                data.collect! do |line|
+                                    # remove line with "name name" lines
+                                    line.gsub(/^(\S+)\s+\1\s*$/) do
+                                        $1
+                                    end
                                 end
                                 begin
                                     if force then

@@ -90,7 +90,7 @@ end
 $scriptlist   = 'rb|pl|py|lua|jar'
 $documentlist = 'pdf|ps|eps|htm|html'
 
-$editor = ENV['EDITOR'] || ENV['editor'] || 'scite'
+$editor = ENV['TEXMFSTART_EDITOR'] || ENV['EDITOR'] || ENV['editor'] || 'scite'
 
 $crossover = true # to other tex tools, else only local
 
@@ -385,7 +385,7 @@ def usage
     print("switches : --verbose --report --browser --direct --execute --locate --iftouched\n")
     print("           --program --file --page --arguments --batch --edit --report --clear\n")
     print("           --make --lmake --wmake --path --stubpath --indirect --before --after\n")
-    print("           --tree\n")
+    print("           --tree --autotree\n")
     print("\n")
     print("example  : texmfstart pstopdf.rb cow.eps\n")
     print("           texmfstart --locate examplex.rb\n")
@@ -768,9 +768,10 @@ def execute(arguments)
     $execute     = $directives['execute']   || $directives['exec'] || false
     $locate      = $directives['locate']    || false
 
-    $path        = $directives['path']      || ''
-    $tree        = $directives['tree']      || ''
+    $autotree    = if $directives['autotree'] then (ENV['TEXMFSTART_TREE'] || '') else '' end
 
+    $path        = $directives['path']      || ''
+    $tree        = $directives['tree']      || $autotree || ''
 
     $make        = $directives['make']      || false
     $unix        = $directives['unix']      || false

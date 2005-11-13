@@ -1,5 +1,25 @@
 <?xml version="1.0"?>
 
+<!--
+    todo: framed and similar align keys now supports more keys
+
+    <cd:common name='align'>
+        <cd:constant type="hangend"/>
+        <cd:constant type="nohanging"/>
+        <cd:constant type="hz"/>
+        <cd:constant type="geenhz"/>
+        <cd:constant type="spatiering"/>
+        <cd:constant type="geenspatiering"/>
+        <cd:constant type="afgebroken"/>
+        <cd:constant type="nietafgebroken"/>
+        <cd:constant type="soepel"/>
+        <cd:constant type="zeersoepel"/>
+        <cd:constant type="rek"/>
+    </cd:common>
+
+    <cd:share name='align'/>
+-->
+
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands" name="context" language="en" version="2004.11.17">
 
 <cd:command name="installlanguage" file="lang-ini.tex">

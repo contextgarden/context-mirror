@@ -767,6 +767,22 @@
      \dododefineconversion[][#1][#2]%
    \fi}
 
+%D \starttyping
+%D \def\dododefineconversion[#1][#2][#3]%
+%D   {\ConvertConstantAfter\doifinstringelse{,}{#3}
+%D      {\scratchcounter\zerocount
+%D       \def\docommando##1%
+%D         {\advance\scratchcounter \plusone
+%D          \setvalue{\??cv#1#2\the\scratchcounter}{##1}}%
+%D       \processcommalist[#3]\docommando
+%D       \setvalue{\??cv#1#2}##1{\executeifdefined{\??cv#1#2##1}\unknown}} % catch out-of-range numbers
+%D      {\setvalue{\??cv#1#2}{#3}}}
+%D \stoptyping
+
+%D This approach has the disadvantage that when you run out of
+%D symbols you get unknown results. The following implementation
+%D permits overloading of the converter:
+
 \def\dododefineconversion[#1][#2][#3]%
   {\ConvertConstantAfter\doifinstringelse{,}{#3}
      {\scratchcounter\zerocount
@@ -774,30 +790,22 @@
         {\advance\scratchcounter \plusone
          \setvalue{\??cv#1#2\the\scratchcounter}{##1}}%
       \processcommalist[#3]\docommando
-      \setvalue{\??cv#1#2}##1{\csname\??cv#1#2##1\endcsname}}
+      \setevalue{\??cv#1#2}##1%
+        {\noexpand\docheckedconversion{#1#2}{\the\scratchcounter}{##1}}}
      {\setvalue{\??cv#1#2}{#3}}}
 
-% \def\convertnumber#1%
-%   {\csname\??cv#1\endcsname}
+\def\docheckedconversion#1#2#3% class maxnumber number
+  {\executeifdefined{\??cv#1#3}\unknown}
 
-% \def\convertnumber#1%
-%   {\csname\??cv
-%      \ifundefined{\??cv\currentlanguage#1}\else\currentlanguage\fi
-%    #1\endcsname}
+%D When Gerben reported problems with footnote numbering per page,
+%D Taco came with the following wrap around solution. So, let's
+%D overload the checked conversion macro:
 
-% \def\doifconversiondefinedelse#1%
-%   {\ifundefined{\??cv#1}%
-%      \@EA\secondoftwoarguments
-%    \else
-%      \@EA\firstoftwoarguments
-%    \fi}
+\def\docheckedconversion#1#2#3% class maxnumber number
+  {\executeifdefined{\??cv#1\modulatednumber{#2}{#3}}\unknown}
 
-% \def\doifconversiondefinedelse#1%
-%   {\ifundefined{\??cv\ifundefined{\??cv\currentlanguage:#1}\else\currentlanguage\fi#1}%
-%      \@EA\secondoftwoarguments
-%    \else
-%      \@EA\firstoftwoarguments
-%    \fi}
+%D Taco's modulo code is implemented in the system module
+%D \type {syst-con}.
 
 \beginETEX \ifcsname
 
