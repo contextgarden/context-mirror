@@ -197,7 +197,7 @@
 
 % \def\makesectionnumber[#1]%
 %   {\makeprecedingsectionnumber[#1]%
-%    \xdef\hetnummer%
+%    \xdef\composedsectionnumber%
 %      {\precedingsectionnumber\convertednumber[#1]}}%
 %
 % hack needed for chinese and oldstyle in normal tex, will change
@@ -206,7 +206,7 @@
   {\bgroup
    \forceunexpanded % i don't like this hack
    \makeprecedingsectionnumber[#1]%
-   \xdef\hetnummer% was \xdef maar dat gaat fout met font switches
+   \xdef\composedsectionnumber% was \xdef maar dat gaat fout met font switches
      {\precedingsectionnumber\convertednumber[#1]}%
    \egroup}
 
@@ -218,17 +218,17 @@
       \edef\numberseparator{\getvalue{#1\c!separator}}%
       \edef#3{\@EA\separatednumber\@EA{#2}}}}  % hm, etex
 
-\def\lossenummer[#1]%
+\def\sectionnumberonly[#1]%
   {\makesectionnumber[#1]%
-   \hetnummer}
+   \composedsectionnumber}
 
 \def\currentnumber[#1]% kan tekst hier weg ?
-  {\dotextprefix{\getvalue{\@@thenumber{#1}\c!text}}\lossenummer[#1]}
+  {\dotextprefix{\getvalue{\@@thenumber{#1}\c!text}}\sectionnumberonly[#1]}
 
 \def\nextnumber[#1][#2][#3]%
   {\incrementnumber[#1]%
    \currentnumber[#1]%
-   \rawreference{#2}{#3}{\hetnummer}}
+   \rawreference{#2}{#3}{\composedsectionnumber}}
 
 % sectioning
 
@@ -1266,23 +1266,23 @@
 
 \let\fullsectionnumber\limitedfullsectionnumber
 
-% \dodododosomekop IS NON GROUPED, SO WE NEED TO RESTORE !!!!
+% \dodododoconstructhead IS NON GROUPED, SO WE NEED TO RESTORE !!!!
 %
 % dit kan dus beter \everyaroundhead zijn
 
 \let\currentheadnumber\empty
 \let\currentheadtext  \empty
 
-\def\dodosomekop#1[#2]#3% [ref] {title}
+\def\dodoconstructhead#1[#2]#3% [ref] {title}
   {\doifelsevalue{\??ko#1\c!ownnumber}\v!yes
-     {\doquadruplegroupempty\dododosomekop{#1}{#2}{#3}}
-     {\fourthargumentfalse  \dododosomekop{#1}{#2}{#3}{}}}
+     {\doquadruplegroupempty\dododoconstructhead{#1}{#2}{#3}}
+     {\fourthargumentfalse  \dododoconstructhead{#1}{#2}{#3}{}}}
 
-\def\dododosomekop#1#2#3#4% [ref] {own} {title}
+\def\dododoconstructhead#1#2#3#4% [ref] {own} {title}
   {\iffourthargument
-     \def\next{\dodododosomekop{#1}[#2]{#3}{#4}}%
+     \def\next{\dodododoconstructhead{#1}[#2]{#3}{#4}}%
    \else
-     \def\next{\dodododosomekop{#1}[#2]{\finalsectionnumber}{#3}}%
+     \def\next{\dodododoconstructhead{#1}[#2]{\finalsectionnumber}{#3}}%
    \fi
    \next}
 
@@ -1307,7 +1307,7 @@
 % \def\headparameter#1% to do: everywhere in core-sec
 %   {\csname\??ko\currenthead#1\endcsname}
 
-\def\dodododosomekop#1[#2]#3#4% [ref] {number} {title}
+\def\dodododoconstructhead#1[#2]#3#4% [ref] {number} {title}
   {\def\currenthead{#1}% dus #1 overal vervangen
    \let\finalsectionnumber\dofinalsectionnumber % overloaded ungrouped -)
    \unexpanded\def\\{\space}%
@@ -2194,9 +2194,7 @@
            {\definemarking[#1]%
             \couplemarking[#1][\getvalue{\??ko#1\c!section}]%
             \definemarking[#1\v!number]%
-% klopt dit wel ?
             \couplemarking[#1\v!number][\getvalue{\??ko#1\c!section}]}}%
-%            \couplemarking[#1\v!nummer][\getvalue{\??ko#1\c!sectie}\v!nummer]}}%
       \doifundefined{\??li#1}{\definelist[#1]}}
      {\ConvertToConstant\doifelse{#1}{#2}
         {\doifundefined{\??li#1}{\definelist[#1]}}
@@ -2221,13 +2219,13 @@
    \setevalue{\??sk#1}{\getvalue{\??ko#1\c!coupling}}%
    \setevalue{\??by#1}{\getvalue{\??ko#1\c!section}}%
    \setevalue{\??by\v!by#1}{\getvalue{\??ko#1\c!section}}%
-   \setvalue{#1}{\dodoubleempty\dosomekop[#1]}}
+   \setvalue{#1}{\dodoubleempty\doconstructhead[#1]}}
 
 \def\definehead
   {\dodoubleemptywithset\dodefinehead}
 
-\def\dosomekop[#1][#2]%
-  {\dowithpargument{\dodosomekop{#1}[#2]}}
+\def\doconstructhead[#1][#2]%
+  {\dowithpargument{\dodoconstructhead{#1}[#2]}}
 
 \def\dosetuphead[#1][#2]%
   {\getparameters[\??ko#1][#2]%
@@ -2281,50 +2279,47 @@
 \definesectionblock [\v!appendix]  [\v!appendices]  [\c!number=\v!yes]
 \definesectionblock [\v!backpart]  [\v!backmatter]  [\c!number=\v!no]
 
-\definesection[\v!sectionlevel-1]   % part
-\definesection[\v!sectionlevel-2]   % chapter
-\definesection[\v!sectionlevel-3]   % section
-\definesection[\v!sectionlevel-4]   % subsection
-\definesection[\v!sectionlevel-5]   % subsubsection
-\definesection[\v!sectionlevel-6]   % subsubsubsection
-\definesection[\v!sectionlevel-7]   % subsubsubsubsection
+\definesection[\s!section-1]   % part
+\definesection[\s!section-2]   % chapter
+\definesection[\s!section-3]   % section
+\definesection[\s!section-4]   % subsection
+\definesection[\s!section-5]   % subsubsection
+\definesection[\s!section-6]   % subsubsubsection
+\definesection[\s!section-7]   % subsubsubsubsection
 
 % \c!eigennummer ook hier?
 
 \definehead
   [\v!part]
-  [\c!section=\v!sectionlevel-1]
+  [\c!section=\s!section-1]
 
 \definehead
   [\v!chapter]
-  [\c!section=\v!sectionlevel-2]
+  [\c!section=\s!section-2]
 
 \definehead
   [\v!section]
-  [\c!section=\v!sectionlevel-3]
+  [\c!section=\s!section-3]
 
 \definehead
   [\v!subsection]
-  [\c!section=\v!sectionlevel-4,
+  [\c!section=\s!section-4,
    \c!default=\v!section]
 
 \definehead
   [\v!subsubsection]
-  [\c!section=\v!sectionlevel-5,
-  %\c!default=\v!section]
-   \c!default=\v!subsection]             % nieuw
+  [\c!section=\s!section-5,
+   \c!default=\v!subsection]
 
 \definehead
   [\v!subsubsubsection]
-  [\c!section=\v!sectionlevel-6,
-  %\c!default=\v!section]
-   \c!default=\v!subsubsection]       % nieuw
+  [\c!section=\s!section-6,
+   \c!default=\v!subsubsection]
 
 \definehead
   [\v!subsubsubsubsection]
-  [\c!section=\v!sectionlevel-7,
-  %\c!default=\v!section]
-   \c!default=\v!subsubsubsection] % nieuw
+  [\c!section=\s!section-7,
+   \c!default=\v!subsubsubsection]
 
 \definehead
   [\v!title]
@@ -2363,7 +2358,7 @@
    \c!incrementnumber=\v!no]
 
 \setupsection
-  [\v!sectionlevel-2]
+  [\s!section-2]
   [\v!appendix\c!conversion=\v!Character,
    \c!previousnumber=\v!no]
 

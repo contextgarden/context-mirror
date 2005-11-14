@@ -710,17 +710,17 @@
 %         {\twopassentry
 %            {\s!float}%
 %            {\numberedfloat}%
-%            {\hetnummer}}}%
+%            {\composedsectionnumber}}}%
 %    \dodofloatreference}
 
 % \def\redofloatorder#1%
 %   {\doglobal\increment\nofplacedfloats\relax
 %    \gettwopassdata\s!float
 %    \iftwopassdatafound
-%      \doifnot\hetnummer\twopassdata
-%        {\edef\oldhetnummer{\hetnummer}%
-%         \xdef\hetnummer{\twopassdata}%
-%         \showmessage\m!floatblocks1{\nofplacedfloats,#1 \oldhetnummer,\hetnummer}}%
+%      \doifnot\composedsectionnumber\twopassdata
+%        {\edef\oldcomposedsectionnumber{\composedsectionnumber}%
+%         \xdef\composedsectionnumber{\twopassdata}%
+%         \showmessage\m!floatblocks1{\nofplacedfloats,#1 \oldcomposedsectionnumber,\composedsectionnumber}}%
 %    \fi}
 
 \def\dofloatreference
@@ -730,17 +730,17 @@
         {\noexpand\twopassentry
         {\s!float}%
         {\numberedfloat}%
-        {\hetnummer}}}}}
+        {\composedsectionnumber}}}}}
 
 \def\redofloatorder#1%
   {\doifnot\@@bknumbering\v!nocheck
      {\doglobal\increment\nofplacedfloats\relax
       \gettwopassdata\s!float
       \iftwopassdatafound
-        \doifnot\hetnummer\twopassdata
-          {\edef\oldhetnummer{\hetnummer}%
-           \xdef\hetnummer{\twopassdata}%
-           \showmessage\m!floatblocks1{\nofplacedfloats,#1 \oldhetnummer,\hetnummer}}%
+        \doifnot\composedsectionnumber\twopassdata
+          {\edef\oldcomposedsectionnumber{\composedsectionnumber}%
+           \xdef\composedsectionnumber{\twopassdata}%
+           \showmessage\m!floatblocks1{\nofplacedfloats,#1 \oldcomposedsectionnumber,\composedsectionnumber}}%
       \fi}}
 
 % In \dofloatinfomessage wordt {{ }} gebruikt omdat anders
@@ -1135,20 +1135,20 @@
    \else
      \incrementnumber[#1]%
      \makesectionnumber[#1]%
-   % \globallet\flhetnummer\hetnummer % beware, not unique should be done on a per class base
-     \letgvalue{@fl@n@#1}\hetnummer
+   % \globallet\flcomposedsectionnumber\composedsectionnumber % beware, not unique should be done on a per class base
+     \letgvalue{@fl@n@#1}\composedsectionnumber
      % indirect macro can be more efficient
      \setgvalue{@fl@r@#1}%
        {\dofloatreference
         \redofloatorder{#1}%
-      % \dowritetolist{#1}{\flhetnummer}{#3}{#1}%
+      % \dowritetolist{#1}{\flcomposedsectionnumber}{#3}{#1}%
         \dowritetolist{#1}{\getvalue{@fl@n@#1}}{#3}{#1}%
         \doglobal\convertargument#3\to\flasciititle % \asciititle is global
-      % \doifsomething{#2}{\rawreference\s!flt{#2}{{\flhetnummer}{\flasciititle}}}%
+      % \doifsomething{#2}{\rawreference\s!flt{#2}{{\flcomposedsectionnumber}{\flasciititle}}}%
         \doifsomething{#2}{\rawreference\s!flt{#2}{{\getvalue{@fl@n@#1}}{\flasciititle}}}%
         \letgvalue{@fl@r@#1}\relax}% nils
      \setgvalue{@fl@t@#1}%
-     % {\preparethenumber{\??kj#1}\flhetnummer\preparednumber
+     % {\preparethenumber{\??kj#1}\flcomposedsectionnumber\preparednumber
        {\preparethenumber{\??kj#1}{\getvalue{@fl@n@#1}}\preparednumber
         \doattributes{\??kj#1}\c!style\c!color
           {\doattributes{\??kj#1}\c!headstyle\c!headcolor
@@ -1696,10 +1696,10 @@
          {\unvbox\floatbox % no \vss, keep the depth
           \dofloatreference
           \redofloatorder{#1}%
-          \rawreference\s!flt{#2}{{\hetnummer}{\asciititle}}%
-          \dowritetolist{#3}{\hetnummer}{#6}{#3}}%
+          \rawreference\s!flt{#2}{{\composedsectionnumber}{\asciititle}}%
+          \dowritetolist{#3}{\composedsectionnumber}{#6}{#3}}%
        \egroup
-       \preparethenumber{\??kj#1}\hetnummer\preparednumber
+       \preparethenumber{\??kj#1}\composedsectionnumber\preparednumber
        \dofloat{#4}{\labeltexts{#5}{\preparednumber}}{#6}{#1}%
      \fi
    \fi

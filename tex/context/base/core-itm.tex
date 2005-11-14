@@ -505,6 +505,7 @@
      \stopcolumns
      \doglobal\newcounter\itemcolumndepth
      \getitemparameter\itemlevel\c!after
+     \dontrechecknextindentation
    \else
      \ifnum\itemlevel=\plusone
        \doitembreak\allowbreak           % toegevoegd
@@ -518,13 +519,15 @@
        \or
          \getitemparameter\itemlevel\c!after
        \fi
+       \dontrechecknextindentation
      \fi
    \fi
    \endgroup
    \doglobal\decrement(\itemlevel,\itemincrement)%
    \egroup
    % new needed in sidefloats (surfaced in volker's proceedings)
-   \iftextitems\else\par\fi}
+   \iftextitems\else\par\fi
+   \dorechecknextindentation}
 
 \newtoks\itemgroupcommands
 

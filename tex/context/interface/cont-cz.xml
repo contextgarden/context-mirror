@@ -6463,6 +6463,11 @@
         <cd:constant type="A"/>
         <cd:constant type="B"/>
       </cd:parameter>
+      <cd:parameter name="prefix">
+        <cd:constant type="obe"/>
+        <cd:constant type="prvni"/>
+        <cd:constant type="zadny"/>
+      </cd:parameter>
     </cd:assignments>
   </cd:arguments>
 </cd:command>

@@ -509,8 +509,9 @@ class TeXUtil
                         @sortkey.downcase,
                         @sortkey,
                         @texthowto.ljust(10,' '),
-                        @state,
-                        (@realpage ||'').rjust(6,' '),
+                        # @state, # no, messes up things
+                        (@realpage ||'').rjust(6,' ').gsub(/0/,' '),
+                        # (@realpage ||'').rjust(6,' '),
                         @pagehowto
                     ].join(@@split)
                 end

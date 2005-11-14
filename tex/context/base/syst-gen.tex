@@ -3066,27 +3066,9 @@
 
 \let\p!doassign\p!n!doassign
 
-%D Here are the initializers. Later we will apply them.
+%D And set:
 
-\def\doset@p@expanded
-  {\let\dosetpvalue     \dosetevalue         % expand values
-   \let\p!doassign      \p!e!doassign        % provide \currentvalue
-   \let\reset@p@expanded\doreset@p@expanded} % reset afterwards
-
-\def\doreset@p@expanded
-  {\let\currentvalue    \empty        % prevent carry over
-   \let\dosetpvalue     \dosetvalue   % don't expand
-   \let\p!doassign      \p!n!doassign % don't provide \currentvalue
-   \let\set@p@expanded  \relax        % don't prepare
-   \let\reset@p@expanded\relax}       % speed up next round
-
-\doreset@p@expanded \def\expandparameters{\let\set@p@expanded\doset@p@expanded}
-
-%D We overload some previously defined macros:
-
-\def\getparameters{\dogetparameters\dosetpvalue}
-
-\let\dosetpvalue\dosetvalue % normal behaviour
+\let\currentvalue\empty
 
 %D \macros {expandparameters}
 %D
@@ -3106,12 +3088,24 @@
 %D \getbuffer
 %D \stoplines
 
-%D Here we hook in the code:
+%D Here we hook in the code (beware, this is the optimized get **):
 
-\def\xdogetparameters#1]%
-  {\set@p@expanded
+\def\xdoget@n@parameters#1]%
+  {\xprocesscommaitem#1,],\@relax@}
+
+\def\xdoget@e@parameters#1]%
+  {\let\dosetnvalue\dosetvalue
+   \let\dosetvalue\dosetevalue
+   \let\p!doassign\p!e!doassign
    \xprocesscommaitem#1,],\@relax@
-   \reset@p@expanded}
+   \let\p!doassign\p!n!doassign
+   \let\dosetvalue\dosetnvalue
+   \let\xdogetparameters\xdoget@n@parameters
+   \let\currentvalue\empty}
+
+\let\xdogetparameters\xdoget@n@parameters % **
+
+\def\expandparameters{\let\xdogetparameters\xdoget@e@parameters}
 
 %D \macros
 %D   {getemptyparameters}

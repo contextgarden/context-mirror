@@ -250,12 +250,12 @@
    \def\registertexthowto{#2}}%
 
 \def\doregistertexthowto#1#2%
-  {\dostartattributes{\??id#1\registertexthowto}\c!textstyle\c!textcolor{}%
+  {\dostartattributes{\??id#1\registertexthowto}\c!textstyle\c!textcolor\empty
    \getvalue{\??id#1\c!textcommand}{#2}%
    \dostopattributes}
 
 \def\doregisterpagehowto#1#2%
-  {\dostartattributes{\??id#1\registerpagehowto}\c!pagestyle\c!pagecolor{}%
+  {\dostartattributes{\??id#1\registerpagehowto}\c!pagestyle\c!pagecolor\empty
    \getvalue{\??id#1\c!pagecommand}{#2}%
    \dostopattributes}
 
@@ -348,6 +348,13 @@
       \donetrue
     \fi\fi\fi
     \ifdone
+      \begingroup
+%
+\doifelsevalue{\??id#2\c!prefix}\v!none % default v!both
+  {\chardef\pageprefixmode\zerocount}%
+  {\doifvalue{\??id#2\c!prefix}\v!first % only first in range (1.2-4)
+     {\ifnum#1=3 \chardef\pageprefixmode\zerocount \fi}}%
+%
       \doifelsevalue{\??id#2\c!interaction}\v!pagenumber
         {\bgroup
          \setbox0\hbox
@@ -355,6 +362,7 @@
          \gotonextinternal{\s!ind}{#4}{#6}{\box0}%{\copy0}%
          \egroup}
         {\hbox{\doregisterpage{#2}[#5]\ifnum#1=2\/\fi}}%
+\endgroup
       \ignorespaces
       \global\chardef\lastregisterpagestatus#1\relax
     \fi
@@ -762,10 +770,8 @@
    \global\let\currentregisterentry\empty
    \global\firstsubentrytrue % not needed
    \global\firstsubsubentrytrue % not needed too
-   \setvalue{#1\s!entrya}##1%
-     {\dosetautoregisterentrya{#1}{##1}}%
-   \setvalue{#1\s!entry}##1%
-     {\dosetpageregisterletter{#1}{##1}}}
+   \setvalue{#1\s!entrya}##1{\dosetautoregisterentrya{#1}{##1}}%
+   \setvalue{#1\s!entry }##1{\dosetpageregisterletter{#1}{##1}}}
 
 \def\dosetautoregisterentrya#1#2%
   {\global\utilitydonetrue
@@ -896,6 +902,7 @@
       \c!maxwidth=,
       \c!number=\v!no,
       \c!unknownreference=\v!empty,
+      \c!prefix=\v!both,
       \c!expansion=,
       \c!keyexpansion=]%
    \presetheadtext[#1=\Word{#1}]%

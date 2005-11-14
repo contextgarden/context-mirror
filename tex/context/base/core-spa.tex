@@ -1348,6 +1348,101 @@
 \def\notoggleindentation
   {\gdef\checkindentation{\global\indentationtrue\dotoggleindentation}}
 
+% we need to save the state if we want to adapt behaviour to empty lines
+%
+% \def\setlasthvmode
+%   {\global\chardef\savedhvmode\ifhmode\plusone\else\ifvmode\plustwo\else\zerocount\fi\fi}
+%
+% \def\resetlasthvmode
+%   {\global\chardef\savedhvmode\zerocount}
+%
+% \chardef\savedhvmode\zerocount
+
+% This is a user requested hack (using the auto-hook).
+
+\chardef\recheckindentationmode\zerocount
+
+\def\dontrechecknextindentation
+  {\global\chardef\recheckindentationmode\zerocount}
+
+\def\dorechecknextindentation
+  {\ifcase\recheckindentationmode
+     % nothing
+   \or
+     \dontrechecknextindentation
+     \expandafter\doautoindentation
+   \fi}
+
+\def\doautoindentation
+  {\doifnextcharelse\par\donothing\noindentation}
+
+\def\autoindentation
+  {\global\chardef\recheckindentationmode\plusone}
+
+%D An example of usage:
+%D
+%D \starttyping
+%D \setupindenting[small,yes]
+%D
+%D \setupitemize [indentnext=auto]
+%D \setuptyping  [indentnext=auto]
+%D \setupformulas[indentnext=auto]
+%D
+%D \input tufte
+%D
+%D \startitemize
+%D \item itemize
+%D \stopitemize
+%D \input tufte
+%D
+%D \startitemize
+%D \item itemize
+%D \stopitemize
+%D
+%D \input tufte
+%D
+%D \startitemize
+%D \item itemize
+%D \stopitemize
+%D
+%D \page
+%D
+%D \input tufte
+%D
+%D \starttyping
+%D verbatim
+%D \stoptyping
+%D \input tufte
+%D
+%D \starttyping
+%D verbatim
+%D \stoptyping
+%D
+%D \input tufte
+%D
+%D \starttyping
+%D verbatim
+%D \stoptyping
+%D
+%D \page
+%D
+%D \input tufte
+%D
+%D \startformula
+%D a = b
+%D \stopformula
+%D \input tufte
+%D
+%D \startformula
+%D a = b
+%D \stopformula
+%D
+%D \input tufte
+%D
+%D \startformula
+%D a = b
+%D \stopformula
+
 % \frenchspacing leidt soms tot afbreken tussen -, vandaar
 % de variant \newfrenchspacing.
 

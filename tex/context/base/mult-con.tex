@@ -175,9 +175,6 @@
                            german                    czech
                            italian                   romanian
 
-             sectionlevel: sectie                    section
-                           abschnitt                 oddil
-                           paragrafo                 sectiune
                      part: deel                      part
                            teil                      cast
                            parte                     parte
@@ -1185,6 +1182,7 @@ process: proces   process
                     scope: scope                     scope
                            bereich                   rozsah
                            scope                     scop % GB
+        % beware: section is already used for 'paragraph'
                   section: sectie                    section
                            abschnitt                 oddil
                            sezione                   sectiune
@@ -2522,6 +2520,7 @@ process: proces   process
              combinedlist: samengesteldelijst        combinedlist
                            kombiniereliste           kombinovanyseznam
                            elencocombinato           listacombinata
+        % beware: section clashes with sectionlevel
                   section: sectie                    section
                            abschnitt                 oddil
                            sezione                   sectiune

@@ -150,18 +150,18 @@
      \else
        \let\hetsubnummer\empty
      \fi
-     \doifsomething{#1}{\rawreference{\s!for}{#1}{\hetnummer\hetsubnummer}}%
+     \doifsomething{#1}{\rawreference{\s!for}{#1}{\composedsectionnumber\hetsubnummer}}%
      \setbox0\hbox{\ignorespaces#4\unskip}%
      \ifdim\wd0>\zeropoint
        \edef\hetsubnummer{#4}%
      \fi
-     \doifsomething{#3}{\rawreference\s!for{#3}{\hetnummer\hetsubnummer}}%
+     \doifsomething{#3}{\rawreference\s!for{#3}{\composedsectionnumber\hetsubnummer}}%
      \rm % nodig ?
      \@@fmnumbercommand
        {\dostartattributes\??fm\c!numberstyle\c!numbercolor
         \strut
         \@@fmleft
-        \preparethenumber\??fm\hetnummer\preparednumber
+        \preparethenumber\??fm\composedsectionnumber\preparednumber
         \labeltexts\v!formula
           {\ignorespaces\preparednumber\ignorespaces\hetsubnummer\unskip}%
         \@@fmright
@@ -333,7 +333,8 @@
    \resetlastlinewidth
    \nonoindentation
    \dochecknextindentation{\??fm\currentformula}%
-   \egroup}
+   \egroup
+   \dorechecknextindentation} % here ?
 
 \newif\ifinformula
 

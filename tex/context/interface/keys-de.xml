@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 
-<cd:interface xmlns:cd="http://www.pragma-ade.com/commands" name="context" language="de" version="2005.11.14">
+<cd:interface xmlns:cd="http://www.pragma-ade.com/commands" name="context" language="de" version="2005.11.15">
 
   <cd:variables>
     <cd:variable name="one" value="eins"/>
@@ -49,7 +49,6 @@
   </cd:variables>
 
   <cd:variables>
-    <cd:variable name="sectionlevel" value="abschnitt"/>
     <cd:variable name="part" value="teil"/>
     <cd:variable name="chapter" value="kapitel"/>
     <cd:variable name="subject" value="thema"/>

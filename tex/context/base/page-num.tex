@@ -489,13 +489,19 @@
   {\dodopageprefix{#1}%
    \donexttracklevel{#1}}
 
+\chardef\pageprefixmode\plusone
+
 \def\pageprefix#1[#2]%
-  {\bgroup
-   \edef\pageprefixtype{#1}%
-   \edef\postprefix{\@@filternumberpart[#2]}%
-   \let\donexttrackcommando\dopageprefix
-   \donexttrackcommando\firstsection
-   \egroup}
+  {\ifcase\pageprefixmode
+      % skip
+   \or
+     \bgroup
+     \edef\pageprefixtype{#1}%
+     \edef\postprefix{\@@filternumberpart[#2]}%
+     \let\donexttrackcommando\dopageprefix
+     \donexttrackcommando\firstsection
+     \egroup
+   \fi}
 
 %D It was Marco Kuhlmann who uncovered the missing strut. This
 %D was a pretty old bug kind of covered up by the fact that non

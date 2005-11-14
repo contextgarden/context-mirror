@@ -670,8 +670,8 @@ class TEX
         ['mode','mode'],
         ['ctx','ctxfile'],
         ['version','contextversion'],
-        ['format','texformat'],
-        ['interface','texformat']
+        ['format','texformats'],
+        ['interface','texformats']
     ]
 
     def scantexpreamble(filename)
@@ -699,37 +699,37 @@ class TEX
     end
 
     def scantexcontent(filename)
-        if FileTest.file?(filename) and  tex = File.open(filename) then
+        if FileTest.file?(filename) and tex = File.open(filename) then
             while str = tex.gets do
                 case str.chomp
                     when /^\%/o then
                         # next
                     when /\\(starttekst|stoptekst|startonderdeel|startdocument|startoverzicht)/o then
-                        setvariable('texformat','nl') ; break
+                        setvariable('texformats','nl') ; break
                     when /\\(stelle|verwende|umgebung|benutze)/o then
-                        setvariable('texformat','de') ; break
+                        setvariable('texformats','de') ; break
                     when /\\(stel|gebruik|omgeving)/o then
-                        setvariable('texformat','nl') ; break
+                        setvariable('texformats','nl') ; break
                     when /\\(use|setup|environment)/o then
-                        setvariable('texformat','en') ; break
+                        setvariable('texformats','en') ; break
                     when /\\(usa|imposta|ambiente)/o then
-                        setvariable('texformat','it') ; break
+                        setvariable('texformats','it') ; break
                     when /(height|width|style)=/o then
-                        setvariable('texformat','en') ; break
+                        setvariable('texformats','en') ; break
                     when /(hoehe|breite|schrift)=/o then
-                        setvariable('texformat','de') ; break
+                        setvariable('texformats','de') ; break
                     when /(hoogte|breedte|letter)=/o then
-                        setvariable('texformat','nl') ; break
+                        setvariable('texformats','nl') ; break
                     when /(altezza|ampiezza|stile)=/o then
-                        setvariable('texformat','it') ; break
+                        setvariable('texformats','it') ; break
                     when /externfiguur/o then
-                        setvariable('texformat','nl') ; break
+                        setvariable('texformats','nl') ; break
                     when /externalfigure/o then
-                        setvariable('texformat','en') ; break
+                        setvariable('texformats','en') ; break
                     when /externeabbildung/o then
-                        setvariable('texformat','de') ; break
+                        setvariable('texformats','de') ; break
                     when /figuraesterna/o then
-                        setvariable('texformat','it') ; break
+                        setvariable('texformats','it') ; break
                 end
             end
             tex.close
@@ -1250,7 +1250,6 @@ class TEX
                 scantexpreamble(rawname)
                 scantexcontent(rawname) if getvariable('texformats').standard?
             end
-
             result = File.suffixed(rawname,suffix) unless suffix.empty?
 
             pushresult(rawname,result)
