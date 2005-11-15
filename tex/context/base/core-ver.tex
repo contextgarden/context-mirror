@@ -328,35 +328,12 @@
    \ifx\scantokens\undefined\ascii\else\everyeof{\hskip-\spaceskip}\scantokens\expandafter{\ascii}\fi
    \egroup}
 
-% bugged
-%
-% \bgroup
-% \catcode`\[=\@@begingroup
-% \catcode`\]=\@@endgroup
-% \catcode`\{=\@@active
-% \catcode`\}=\@@active
-% \gdef\initializetypegrouping%
-%   [\catcode`\{=\@@active
-%    \catcode`\}=\@@endgroup         % otherwise things go wrong ...
-%    \def\activerightargument%
-%      [\rightargument
-%       \egroup]%
-%    \def\activeleftargument%
-%      [\bgroup
-%       \leftargument               %% this way TeXEdit can check: {
-%       \catcode`\}=\@@active        % ... in alignments (tables)
-%       \let}=\activerightargument]%
-%    \let{=\activeleftargument]%    %% this way TeXEdit can check: }
-% \egroup
-%
-% ok:
-
 \bgroup
 \catcode`\[=\@@begingroup
 \catcode`\]=\@@endgroup
 \catcode`\{=\@@active
 \catcode`\}=\@@active
-\gdef\initializetypegrouping%
+\gdef\initializetypegrouping
   [\ifnum\catcode`\{=\@@active
      \let\normalactivebgroup{%
      \let\normalactiveegroup}%
@@ -366,17 +343,17 @@
      \let\normalactivebgroup\leftargument
      \let\normalactiveegroup\rightargument
    \fi
-   \def\activeleftargument%
+   \def\activeleftargument
      [\bgroup
+      \catcode`\}=\@@active
       \let}\activerightargument
-      \normalactivebgroup
-     ]%
-   \def\activerightargument%
+      \normalactivebgroup]%
+   \def\activerightargument
      [\normalactiveegroup
       \egroup]%
    \let{=\activeleftargument
-   \let}=\egroup
-  ]
+   % not \let}=\egroup, otherwise things go wrong in alignments (???)
+   \catcode`\}=\@@endgroup]
 \egroup
 
 \bgroup

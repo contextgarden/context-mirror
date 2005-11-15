@@ -56,7 +56,7 @@ class FileState
         sum = ''
         begin
             if FileTest.file?(filename) && (data = IO.read(filename)) then
-                data.gsub!(/\n.*?(#{[omit].flatten.join('|')}).*?\n/ms,"\n") if omit
+                data.gsub!(/\n.*?(#{[omit].flatten.join('|')}).*?\n/) do "\n" end if omit
                 sum = MD5.new(data).hexdigest.upcase
             end
         rescue

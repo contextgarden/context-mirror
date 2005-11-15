@@ -771,7 +771,7 @@ class TEX
     end
 
     def makestubfile(rawname,forcexml=false)
-        if tmp = File.open(File.suffixed(rawname,'run'),'w') then
+        if tmp = openedfile(File.suffixed(rawname,'run')) then
             tmp << "\\starttext\n"
             if forcexml then
                 if FileTest.file?(rawname) && (xml = File.open(rawname)) then
@@ -1361,13 +1361,15 @@ class TEX
             mpdata.gsub!(/^\#.*\n/o,'')
             File.silentrename(mpfile,mpcopy)
             texfound = mergebe || mpdata =~ /btex .*? etex/o
-            if mp = File.silentopen(mpfile,'w') then
+            if mp = openedfile(mpfile) then
                 mpdata.gsub!(/(btex.*?)\;(.*?etex)/o) do "#{$1}@@@#{$2}" end
-                mpdata.gsub!(/(\".*?)\;(.*?\")/o) do "#{$1}@@@#{$2}" end
+                # mpdata.gsub!(/(\".*?)\;(.*?\")/o) do "#{$1}@@@#{$2}" end
+                mpdata.gsub!(/(\".*?\")/o) do "#{$1.gsub(/\;/o,'@@@')}" end
                 mpdata.gsub!(/\;/o, "\;\n")
-                mpdata.gsub!(/\n+/o, "\n")
-                mpdata.gsub!(/(btex.*?)@@@(.*?etex)/o) do "#{$1}\;#{$2}" end
-                mpdata.gsub!(/(\".*?)@@@(.*?\")/o) do "#{$1};#{$2}" end
+                # mpdata.gsub!(/\n+/o, "\n")
+                # mpdata.gsub!(/(btex.*?)\@\@\@(.*?etex)/o) do "#{$1}\;#{$2}" end
+                # mpdata.gsub!(/(\".*?)\@\@\@(.*?\")/mo) do "#{$1};#{$2}" end
+                mpdata.gsub!(/\@\@\@/o) do ";" end
                 if mergebe then
                     mpdata.gsub!(/beginfig\s*\((\d+)\)\s*\;(.*?)endfig\s*\;/o) do
                         n, str = $1, $2
@@ -1451,12 +1453,12 @@ class TEX
             mponame = File.suffixed(mpname,'mpo')
             mpyname = File.suffixed(mpname,'mpy')
             return false unless File.atleast?(mponame,32)
-            mpochecksum = State.new.checksum(mponame)
+            mpochecksum = FileState.new.checksum(mponame)
             return false if mpochecksum.empty?
             # where does the checksum get into the file?
             # maybe let texexec do it?
             # solution: add one if not present or update when different
-            if f = File.open(mpyname) then
+            if f = File.silentopen(mpyname) then
                 str = f.gets.chomp
                 f.close
                 if str =~ /^\%\s*mpochecksum\s*\:\s*(\d+)/o then
@@ -1469,15 +1471,12 @@ class TEX
 
     def checkmplabels(mpname)
         mpname = File.suffixed(mpname,'mpt')
-        if File.atleast?(mpname,10) && (mp = File.open(mpname)) then
+        if File.atleast?(mpname,10) && (mp = File.silentopen(mpname)) then
             labels = Hash.new
             while str = mp.gets do
-                if str =~ /%\s*setup\s*:\s*(.*)/o then
-                    t = $1
-                else
-                    t = ''
-                end
+                t = if str =~ /%\s*setup\s*:\s*(.*)/o then $1 else '' end
                 if str =~ /%\s*figure\s*(\d+)\s*:\s*(.*)/o then
+                    labels[$1] = labels[$1] || ''
                     unless t.empty? then
                         labels[$1] += "#{t}\n"
                         t = ''

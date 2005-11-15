@@ -46,6 +46,8 @@
 %D Which is implemented as:
 
 \def\mathematics#1{\relax\ifmmode#1\else$#1$\fi} % lookahead bug reported by brooks
+\def\displaymath#1{\relax\ifmmode#1\else$$#1$$\fi}
+\def\inlinemath #1{\relax\ifmmode#1\else$#1$\fi}
 
 \def\startmathmode
   {\ifmmode

@@ -17,7 +17,7 @@
 #
 # todo: move kpse call to kpse class/module
 
-banner = ['CtxTools', 'version 1.2.2', '2004/2005', 'PRAGMA ADE/POD']
+banner = ['CtxTools', 'version 1.3.0', '2004/2005', 'PRAGMA ADE/POD']
 
 unless defined? ownpath
     ownpath = $0.sub(/[\\\/][a-z0-9\-]*?\.rb/i,'')
@@ -1322,6 +1322,114 @@ class Commands
 
 end
 
+class Array
+
+    def add_shebang(filename,program)
+        unless self[0] =~ /^\#!/ then
+            self.insert(0,"\#!/usr/env #{program}")
+        end
+        unless self[2] =~ /^\#.*?copyright\=/ then
+            self.insert(1,"\#")
+            self.insert(2,"\# copyright=pragma-ade readme=readme.pdf licence=cc-gpl")
+            self.insert(3,"") unless self[3].chomp.strip.empty?
+            self[2].gsub!(/ +/, ' ')
+            return true
+        else
+            return false
+        end
+    end
+
+    def add_directive(filename,program)
+        unless self[0] =~ /^\%/ then
+            self.insert(0,"\% content=#{program}")
+        end
+        unless self[2] =~ /^\%.*?copyright\=/ then
+            self.insert(1,"\%")
+            if File.expand_path(filename) =~ /[\\\/](doc|manuals)[\\\/]/ then
+                self.insert(2,"\% copyright=pragma-ade readme=readme.pdf licence=cc-by-nc-sa")
+            else
+                self.insert(2,"\% copyright=pragma-ade readme=readme.pdf licence=cc-gpl")
+            end
+            self.insert(3,"") unless self[3].chomp.strip.empty?
+            self[0].gsub!(/ +/, ' ')
+            return true
+        else
+            return false
+        end
+    end
+
+    def add_comment(filename)
+        if self[0] =~ /<\?xml.*?\?>/ && self[2] !~ /^<\!\-\-.*?copyright\=.*?\-\->/ then
+            self.insert(1,"")
+            if File.expand_path(filename) =~ /[\\\/](doc|manuals)[\\\/]/ then
+                self.insert(2,"<!-- copyright='pragma-ade' readme='readme.pdf' licence='cc-by-nc-sa' -->")
+            else
+                self.insert(2,"<!-- copyright='pragma-ade' readme='readme.pdf' licence='cc-gpl' -->")
+            end
+            self.insert(3,"") unless self[3].chomp.strip.empty?
+            return true
+        else
+            return false
+        end
+    end
+
+end
+
+class Commands
+
+    include CommandBase
+
+    def brandfiles
+
+        force = @commandline.option("force")
+        files = @commandline.arguments # Dir.glob("**/*.*")
+        done  = false
+
+        files.each do |filename|
+            ok = false
+            begin
+                data = IO.readlines(filename)
+                case filename
+                    when /\.rb$/ then
+                        ok = data.add_shebang(filename,'ruby')
+                    when /\.pl$/ then
+                        ok = data.add_shebang(filename,'perl')
+                    when /\.py$/ then
+                        ok = data.add_shebang(filename,'python')
+                    when /\.lua$/ then
+                        ok = data.add_shebang(filename,'lua')
+                    when /\.tex$/ then
+                        ok = data.add_directive(filename,'tex')
+                    when /\.mp$/ then
+                        ok = data.add_directive(filename,'metapost')
+                    when /\.mf$/ then
+                        ok = data.add_directive(filename,'metafont')
+                    when /\.(xml|xsl|fo|fx|rlx|rng|exa)$/ then
+                        ok = data.add_comment(filename)
+                end
+            rescue
+                report("fatal error in processing #{filename}") # maybe this catches the mac problem taco reported
+            else
+                if ok then
+                    report()
+                    report(filename)
+                    report()
+                    for i in 0..4 do
+                       report('  ' + data[i].chomp)
+                    end
+                    if force && f = File.open(filename,'w') then
+                        f.puts data
+                        f.close
+                    end
+                    done = true
+                end
+            end
+        end
+        report() if done
+    end
+
+end
+
 class Commands
 
     include CommandBase
@@ -1392,6 +1500,8 @@ commandline.registeraction('patternfiles', 'generate pattern files [--all --xml 
 
 commandline.registeraction('dpxmapfiles', 'convert pdftex mapfiles to dvipdfmx [--force] [texmfroot]')
 commandline.registeraction('listentities', 'create doctype entity definition from enco-uc.tex')
+
+commandline.registeraction('brandfiles', 'add context copyright notice [--force]')
 
 commandline.registervalue('type','')
 

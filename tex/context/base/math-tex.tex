@@ -466,7 +466,7 @@
 
 \def\notsosqrt[#1]{\root#1\of}
 
-\def\sqrt{\doifnextcharelse[\notsosqrt\normalsqrt}
+\unexpanded\def\sqrt{\doifnextcharelse[\notsosqrt\normalsqrt}
 
 \def\PLAINbig {\@@dobig{0.85}}
 \def\PLAINBig {\@@dobig{1.15}}

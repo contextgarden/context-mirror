@@ -994,6 +994,7 @@ enddef ;
 
 vardef arrowheadonpath (expr p, s) =
   save autoarrows ; boolean autoarrows ; autoarrows := true ;
+  set_ahlength(scaled ahfactor) ; % added
   arrowhead p if s<1 : cutafter (point (s*arclength(p)+.5ahlength) on p) fi
 enddef ;
 
@@ -1204,7 +1205,6 @@ enddef ;
 vardef pointarrow (expr pat, loc, len, off) =
   save l, r, s, t ; path l, r ; numeric s ; pair t ;
   t := if pair loc : loc else : point loc along pat fi ;
-% draw t withpen pencircle scaled 10 withcolor .5white ;
   s := len/2 - off ; if s<=0 : s := 0 elseif s>len : s := len fi ;
   r := pat cutbefore t ;
   r := (r cutafter point (arctime s of r) of r) ;

@@ -1742,8 +1742,11 @@
 %D For those who want to manipulate the visual cues in detail,
 %D we have grouped them.
 
+\newif\ifshowingcomposition % see later why we need this
+
 \def\showfils
-  {\let\hss      \ruledhss
+  {\showingcompositiontrue
+   \let\hss      \ruledhss
    \let\hfil     \ruledhfil
    \let\hfill    \ruledhfill
    \let\hfilneg  \ruledhfilneg
@@ -1767,7 +1770,8 @@
    \let\vfillneg \normalvfillneg}
 
 \def\showboxes
-  {\baselineruletrue
+  {\showingcompositiontrue
+   \baselineruletrue
    \let\hbox     \ruledhbox
    \let\vbox     \ruledvbox
    \let\vtop     \ruledvtop
@@ -1780,7 +1784,8 @@
    \let\vcenter  \normalvcenter}
 
 \def\showskips
-  {\let\hskip    \ruledhskip
+  {\showingcompositiontrue
+   \let\hskip    \ruledhskip
    \let\vskip    \ruledvskip
    \let\kern     \ruledkern
    \let\mskip    \ruledmskip
@@ -1798,7 +1803,8 @@
    \let\vglue    \normalvglue}
 
 \def\showpenalties
-  {\let\penalty  \ruledpenalty}
+  {\showingcompositiontrue
+   \let\penalty  \ruledpenalty}
 
 \def\dontshowpenalties
   {\let\penalty  \normalpenalty}
