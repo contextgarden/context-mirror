@@ -50,16 +50,16 @@
 % - [0] voor start op 0
 % - start=2
 
-\newif\ifsubitem        \subitemfalse
-\newif\ifsymbolitem     \symbolitemfalse
-\newif\ifheaditem       \headitemfalse
-\newif\ifitemintro      \itemintrofalse
-\newif\ifautoitemintro  \autoitemintrofalse
-\newif\ifoptimizeitems  \optimizeitemstrue
-\newif\ifpackeditems    \packeditemsfalse
-\newif\iffirstlist      \firstlistfalse
-\newif\ifparagraphitems \paragraphitemsfalse
-\newif\iftextitems      \textitemsfalse
+\newconditional\sublistitem       \setfalse\sublistitem
+\newconditional\symbollistitem    \setfalse\symbollistitem
+\newconditional\headlistitem      \setfalse\headlistitem
+\newconditional\introlistitem     \setfalse\introlistitem
+\newconditional\autointrolistitem \setfalse\autointrolistitem
+\newconditional\optimizelistitem  \settrue \optimizelistitem
+\newconditional\packlistitem      \setfalse\packlistitem
+\newconditional\paragraphlistitem \setfalse\paragraphlistitem
+\newconditional\textlistitem      \setfalse\textlistitem
+\newconditional\firstlistitem     \setfalse\firstlistitem
 
 \newcounter\noflists
 \newcounter\itemlevel
@@ -86,11 +86,11 @@
 
 \def\@@itemcounter{\s!itemcount\currentitemgroup}
 
-% \def\doitembreak#1{\iftextitems\else\dosomebreak#1\fi}
+% \def\doitembreak#1{\ifconditional\textlistitem\else\dosomebreak#1\fi}
 %
 % s-pre-61 / pre-dis, test extensively, 2004/5
 
-\def\doitembreak#1{\ifoptimizeitems\iftextitems\else\dosomebreak#1\fi\fi}
+\def\doitembreak#1{\ifconditional\optimizelistitem\ifconditional\textlistitem\else\dosomebreak#1\fi\fi}
 
 \def\dolistreference
   {\immediatewriteutilitycommand
@@ -145,7 +145,7 @@
   {\expandafter\doitemreference\itemreferences,,\\}
 
 \def\packitems
-  {\ifcase\itemlevel \else \packeditemstrue \fi}
+  {\ifcase\itemlevel \else \settrue\packlistitem \fi}
 
 \def\dosetupitemgroupvariable[#1]% [#2]%  niveau instellingen
   {\doifelsenothing{#1}
@@ -158,12 +158,12 @@
   {\processaction
      [#2#3#4]
      [   \v!packed*=>\packitems,
-          \v!intro*=>\itemintrotrue,
-      \v!autointro*=>\autoitemintrotrue,
+          \v!intro*=>\settrue\introlistitem,
+      \v!autointro*=>\settrue\autointrolistitem,
           \v!broad*=>\setitemparameter{#1}\c!factor{1},
      #2#3*\v!broad*=>\setitemparameter{#1}\c!factor{#2#3},
        #2*\v!broad*=>\setitemparameter{#1}\c!factor{#2},
-           \v!text*=>\textitemstrue
+           \v!text*=>\settrue\textlistitem
                      \settrue\inlinelistitem
                      \dosetuppackeditemgroup{#1}%
                      \packitems,
@@ -173,7 +173,7 @@
        \v!atmargin*=>\doifnot{#1}{1}{\setitemparameter{#1}\c!width{0em}}, % signal
          \v!intext*=>\settrue\inlinelistitem, % new
           \v!loose*=>\optimizeitemsfalse,
-      \v!paragraph*=>\paragraphitemstrue
+      \v!paragraph*=>\settrue\paragraphlistitem
                      \packitems,
        \v!joinedup*=>\dosetuppackeditemgroup{#1}%
                      \packitems,
@@ -181,7 +181,7 @@
    #2#3*\v!serried*=>\setitemparameter{#1}\c!factor{-#2#3},
      #2*\v!serried*=>\setitemparameter{#1}\c!factor{-#2},
         \v!stopper*=>\setitemparameter{#1}\c!placestopper\v!yes,
-       \v!unpacked*=>\packeditemsfalse,
+       \v!unpacked*=>\setfalse\packlistitem,
          \v!repeat*=>\settrue\repeatlistitem, % new
        \v!standard*=>\dosetupstandarditemgroup{#1}]}
 
@@ -258,13 +258,13 @@
   {\doquadrupleempty\dosetupitemgroup}
 
 \def\doadvanceitem
-  {\ifsubitem\else\ifsymbolitem\else
+  {\ifconditional\sublistitem\else\ifconditional\symbollistitem\else
      \pluscounter{\@@itemcounter\itemlevel}%
    \fi\fi}
 
 % \def\setitemlevel#1%
 %   {\ifnum\itemlevel>0\relax
-%      \firstlisttrue
+%      \settrue\firstlistitem
 %      \doifnotinset\v!verder{#1}
 %        {\resetcounter{\@@itemcounter\itemlevel}}%
 %      \def\tempnumber%
@@ -276,7 +276,7 @@
 
 \def\setitemlevel#1%
   {\ifnum\itemlevel>\zerocount
-     \firstlisttrue
+     \settrue\firstlistitem
      \doifnotinset\v!continue{#1}
        {\doifinset{0}{#1}{\setitemparameter\itemlevel\c!start{0}}%
         \doifsomething{\getitemparameter\itemlevel\c!start}
@@ -306,16 +306,16 @@
          \setxvalue{\@@globalitemsymbol\itemlevel}{\currentitemsymbol}%
          \setgvalue{\@@localitemsymbol \itemlevel}%
            {\convertnumber{\currentitemsymbol}{\countervalue{\@@itemcounter\itemlevel}}}%
-         \iftextitems
+         \ifconditional\textlistitem
            \doifsomething{\getitemparameter\itemlevel\c!lefttext}
              {\let\tempsymbol\empty}%
          \fi
          \def\listitem
            {\getitemparameter\itemlevel
-              {\iftextitems\c!lefttext\else\c!left\fi}%
+              {\ifconditional\textlistitem\c!lefttext\else\c!left\fi}%
             \getvalue{\@@localitemsymbol\itemlevel}\tempsymbol
             \getitemparameter\itemlevel
-              {\iftextitems\c!righttext\else\c!right\fi}}%
+              {\ifconditional\textlistitem\c!righttext\else\c!right\fi}}%
         \let\@@opsymbol\empty}%\let\docommando\gobbleoneargument}
        {}}}
 
@@ -371,13 +371,14 @@
 \def\redostartitemgroup[#1][#2]%
   {\setfalse\inlinelistitem % new, no indent (leftskip)
    \setfalse\concatnextitem % new, concat
+   \setfalse\txtlistitem
    \ifhmode
      \ifconditional\autoconcatnextitem % new, concat
        \ifdim\lastskip=\itemsignal     % new, concat
          \settrue\concatnextitem       % new, concat
        \fi                             % new, concat
      \fi                               % new, concat
-     \iftextitems\else\doifnotinset\v!text{#1}\par\fi % suboptimal
+     \ifconditional\textlistitem\else\doifnotinset\v!text{#1}\par\fi % suboptimal
    \fi
    \begingroup
    \ifnum\itemlevel=\plusone % NIEUW
@@ -423,13 +424,14 @@
            \c!balance=\v!yes,
            \c!align=\v!no]%
       \fi\fi}%
-   \doifinsetelse\v!intro{#1}\itemintrotrue\itemintrofalse
+   \doifinsetelse\v!intro{#1}{\settrue\introlistitem}{\setfalse\introlistitem}%
+   % == \doifinsetelse\v!intro{#1}\settrue\setfalse\introlistitem
    \doglobal\increment\noflists
    \let\currentlist\noflists
    \newcounter\noflistelements
-   \headitemfalse
-   \subitemfalse
-   \symbolitemfalse
+   \setfalse\headlistitem
+   \setfalse\sublistitem
+   \setfalse\symbollistitem
    \let\marsymbol\relax
    \globallet\somdestination\empty
    \let\symsymbol\empty
@@ -462,14 +464,14 @@
        \edef\currentitemsymbol{\itemlevel}% ** fall back
      \fi
    \fi
-   \ifautoitemintro\ifnum\prevgraf<3
-     \itemintrotrue
+   \ifconditional\autointrolistitem\ifnum\prevgraf<3
+     \settrue\introlistitem
    \fi\fi
-   \ifparagraphitems
+   \ifconditional\paragraphlistitem
      \ifnum\itemlevel>\plusone
        \letitemparameter\itemlevel\c!inbetween\empty
      \fi
-   \else\ifpackeditems
+   \else\ifconditional\packlistitem
      \letitemparameter\itemlevel\c!inbetween\empty
    \fi\fi
    \calculatelistwidth\itemlevel{\dimen0}%
@@ -494,13 +496,13 @@
 % \stopitemize \blank
 
 \def\stopitemgroup
-  {\iftextitems
+  {\ifconditional\textlistitem
      \removeunwantedspaces\space\ignorespaces
    \else
      \par
    \fi
    \ifnum\itemcolumndepth=\zerocount \dolistreference \fi % beware !
-   \iffirstlist \else \endgroup \fi % toegevoegd, eerste \som opent groep
+   \ifconditional\firstlistitem \else \endgroup \fi % toegevoegd, eerste \som opent groep
    \ifnum\itemcolumndepth=\itemlevel\relax
      \stopcolumns
      \doglobal\newcounter\itemcolumndepth
@@ -526,7 +528,7 @@
    \doglobal\decrement(\itemlevel,\itemincrement)%
    \egroup
    % new needed in sidefloats (surfaced in volker's proceedings)
-   \iftextitems\else\par\fi
+   \ifconditional\textlistitem\else\par\fi
    \dorechecknextindentation}
 
 \newtoks\itemgroupcommands
@@ -542,11 +544,12 @@
   {\itemgroupsymbol{\strut}\strut}
 
 \def\itemgroupsubitem
-  {\subitemtrue\itemgroupitem}
+  {\settrue\sublistitem
+   \itemgroupitem}
 
 \def\itemgroupsymbol#1%
   {\def\symsymbol{\doitemattributes\itemlevel\c!symstyle\c!symcolor{#1}}%
-   \symbolitemtrue
+   \settrue\symbollistitem
    \itemgroupitem}
 
 \def\itemgroupedge#1%
@@ -556,7 +559,7 @@
         {#1\hskip\getitemparameter\itemlevel\c!distance}}}
 
 \def\itemgrouphead
-  {\headitemtrue\doitemgrouphead}
+  {\settrue\headlistitem\doitemgrouphead}
 
 \def\itemgroupitems
   {\dosingleempty\doitemgroupitems}
@@ -592,13 +595,33 @@
 %   \headsym{xx} test \par test
 % \stopitemize
 
+\appendtoks \let\headsym    \itemgroupheadsym \to \itemgroupcommands
+
 \def\itemgroupheadsym#1%
   {\def\symsymbol{\doitemattributes\itemlevel\c!symstyle\c!symcolor{#1}}%
-   \symbolitemtrue
-   \headitemtrue
+   \settrue\symbollistitem
+   \settrue\headlistitem
    \doitemgrouphead}
 
-\appendtoks \let\headsym    \itemgroupheadsym \to \itemgroupcommands
+% \defineitemgroup[gbitemize]
+% \setupitemgroup[gbitemize][each][headstyle=bold]
+
+% \startgbitemize
+% \txt{italian} some italians like this kind of cross||breed between
+%   an itemize and a description
+% \txt{sicilians} i wonder how many sicilian mathematicians do a thesis
+%   on the math involved in predicting the next big bang of the vulcano
+% \stopgbitemize
+
+\appendtoks \letvalue\v!txt  \itemgrouptext  \to \itemgroupcommands
+
+\newconditional\txtlistitem \setfalse\txtlistitem
+
+\def\itemgrouptext#1%
+  {\def\symsymbol{\doitemattributes\itemlevel\c!headstyle\c!headcolor{#1}}%
+   \settrue\symbollistitem
+   \settrue\txtlistitem
+   \itemgroupitem}
 
 \def\itembreak   % -10
   {\flushnotes\penalty-5\relax}
@@ -607,14 +630,14 @@
   {\flushnotes\penalty+5\ifinsidecolumns\else00\fi\relax}
 
 \def\dolistitem % evt aantal items opslaan per niveau, scheelt zoeken
-  {\iftextitems
+  {\ifconditional\textlistitem
     % begin of item
    \else
      \par
    \fi
    \ignorespaces
    \increment\noflistelements
-   \ifnum\itemcolumndepth=\zerocount \ifoptimizeitems
+   \ifnum\itemcolumndepth=\zerocount \ifconditional\optimizelistitem
      \ifnum\noflistelements=\plusone        % tgv bv kolommen/nesting
        \findtwopassdata\s!list{\noflists:}% % wordt soms de volgorde
      \fi                                    % verstoord, vandaar \find
@@ -628,7 +651,7 @@
          \fi
        \else\ifnum\twopassdata>3
          \ifnum\noflistelements=2
-           \ifitemintro
+           \ifconditional\introlistitem
              \doitembreak\nobreak
            \else
              \doitembreak\itemnobreak
@@ -638,20 +661,26 @@
          \else\ifnum\noflistelements>2
            \doitembreak\itembreak
          \else
-           \ifitemintro\else\doitembreak\itembreak\fi
+           \ifconditional\introlistitem\else\doitembreak\itembreak\fi
          \fi\fi\fi
        \fi\fi
      \fi
    \fi\fi
    \noindent
    \setbox8\hbox
-     {\ifheaditem
-        \doitemattributes\itemlevel\c!headstyle\c!headcolor{\listitem}%
-      \else\ifsymbolitem
-        \symsymbol
+     {\ifconditional\headlistitem
+        \ifconditional\symbollistitem
+          \symsymbol
+        \else
+          \doitemattributes\itemlevel\c!headstyle\c!headcolor{\listitem}%
+        \fi
       \else
-        \doitemattributes\itemlevel\c!style\c!color{\listitem}%
-      \fi\fi}%
+        \ifconditional\symbollistitem
+          \symsymbol % no attributes, why?
+        \else
+          \doitemattributes\itemlevel\c!style\c!color{\listitem}%
+        \fi
+      \fi}%
    \doifsomething\somdestination
      {\setbox8\hbox{\goto{\box8}[\somdestination]}}%
    \globallet\somdestination\empty
@@ -662,32 +691,35 @@
    % so that content differs per run (esp mp graphics afterwards)
 \checkforrepeatedlistitem
    \ifdim\dimen2<\zeropoint\relax
-     \llap{\ifsubitem\llap{+}\fi\box8\hskip\leftmargindistance}%
+     \llap{\ifconditional\sublistitem\llap{+}\fi\box8\hskip\leftmargindistance}%
    \else
      \ifdim\dimen2=\zeropoint\relax
        \calculatelistwidth1{\dimen0}%
      \else
        \calculatelistwidth\itemlevel{\dimen0}%
      \fi
-     \iftextitems
-       \hbox{\ifsubitem+\fi\box8\hskip\fontdimen2\font}\nobreak
+     \ifconditional\textlistitem
+       \hbox{\ifconditional\sublistitem+\fi\box8\hskip\fontdimen2\font}\nobreak
+     \else\ifconditional\inlinelistitem
+       \hbox to \dimen0{\ifconditional\sublistitem\llap{+}\fi\box8\hfill}%
+     \else\ifconditional\txtlistitem
+       \scratchdimen\wd8
+       \llap{\hbox to \dimen0{\ifconditional\sublistitem\llap{+}\fi\box8\hfill}}%
+       \hskip\scratchdimen
+       % \hskip-\dimen0 this makes them touch
      \else
-       \ifconditional\inlinelistitem
-         \hbox to \dimen0{\ifsubitem\llap{+}\fi\box8\hfill}%
-       \else
-         % todo: align+marge binnen de hbox
-         \llap{\hbox to \dimen0{\ifsubitem\llap{+}\fi\box8\hfill}}%
-       \fi
-     \fi
+       % todo: align+marge binnen de hbox
+       \llap{\hbox to \dimen0{\ifconditional\sublistitem\llap{+}\fi\box8\hfill}}%
+     \fi\fi\fi
    \fi
 \forceunexpanded % needed for m conversion (\os) / i need to look into this
    \setevalue{\@@currentitemsymbol\itemlevel}%
      {\getvalue{\@@localitemsymbol\itemlevel}}% still problems with \uchar ?
     %{\noexpand\getvalue{\@@localitemsymbol\itemlevel}}% no, spoils subrefs
    \resetunexpanded
-   \headitemfalse
-   \subitemfalse
-   \symbolitemfalse
+   \setfalse\headlistitem
+   \setfalse\sublistitem
+   \setfalse\symbollistitem
    \EveryPar{\ignorespaces}%
    \ignorespaces}
 
@@ -715,7 +747,7 @@
 \chardef\autoitemgroupspacing=2 % 0 = voor/na, 1=tussen als geen voor 2=(prev)tussen=old/normal
 
 \def\complexdoitemgroupitem[#1]%
-  {\iftextitems
+  {\ifconditional\textlistitem
      % begin of item
    \else
      \par
@@ -728,18 +760,18 @@
    \ifnum\itemcolumndepth=0\relax\ifnum\noflistelements>0\relax
      \doitembreak\nobreak
    \fi\fi
-   \iffirstlist
-     \firstlistfalse
+   \ifconditional\firstlistitem
+     \setfalse\firstlistitem
      \begingroup
      \ifcase\itemlevel
      \or % 1
        \ifnum\itemcolumndepth=0\relax
-         \ifitemintro\doitembreak\nobreak\fi
+         \ifconditional\introlistitem\doitembreak\nobreak\fi
          \getitemparameter1\c!before
-         \ifitemintro\doitembreak\nobreak\fi
+         \ifconditional\introlistitem\doitembreak\nobreak\fi
        \fi
      \else % 2 en hoger
-       \ifparagraphitems \else
+       \ifconditional\paragraphlistitem \else
          \let\previtemlevel\itemlevel
          \decrement\previtemlevel
          \ifcase\autoitemgroupspacing\relax % nieuw
@@ -763,7 +795,7 @@
    \fi                           % new, concat
    \ignorespaces
    \dolistitem
-   \ifpackeditems
+   \ifconditional\packlistitem
      \setupwhitespace[\v!none]%
    \fi
    \getitemparameter\itemlevel\c!inner
@@ -794,20 +826,20 @@
    \stopitemgroup}
 
 % \def\complexdoitemgrouphead[#1]#2\par% % beter in \complexdosom hangen met een if
-%   {\iffirstlist\else\doitembreak\allowbreak\fi
-%    \ifpackeditems\else\getitemparameter\itemlevel\c!beforehead\fi
-%    \iffirstlist\ifitemintro\else\ifcase\itemlevel % incr in \complexdosom
+%   {\ifconditional\firstlistitem\else\doitembreak\allowbreak\fi
+%    \ifconditional\packlistitem\else\getitemparameter\itemlevel\c!beforehead\fi
+%    \ifconditional\firstlistitem\ifconditional\introlistitem\else\ifcase\itemlevel % incr in \complexdosom
 %       \doitembreak\allowbreak
 %    \fi\fi\fi
 %    \complexdoitemgroupitem[#1]{\doitemattributes\itemlevel\c!headstyle\c!headcolor
 %      {\ignorespaces#2}}%
-%    \iftextitems
+%    \ifconditional\textlistitem
 %      \removeunwantedspaces\space\ignorespaces
 %    \else
 %      \par
 %    \fi
 %    \doitembreak\nobreak
-%    \ifpackeditems\else\getitemparameter\itemlevel\c!afterhead\fi
+%    \ifconditional\packlistitem\else\getitemparameter\itemlevel\c!afterhead\fi
 %    \doitembreak\nobreak
 %    \noindentation}
 %
@@ -817,9 +849,9 @@
 \def\dostopitemattributes   {\dostopattributes}
 
 \def\complexdoitemgrouphead[#1]% beter in \complexdosom hangen met een if
-  {\iffirstlist\else\doitembreak\allowbreak\fi
-   \ifpackeditems\else\getitemparameter\itemlevel\c!beforehead\fi
-   \iffirstlist\ifitemintro\else\ifcase\itemlevel % incr in \complexdosom
+  {\ifconditional\firstlistitem\else\doitembreak\allowbreak\fi
+   \ifconditional\packlistitem\else\getitemparameter\itemlevel\c!beforehead\fi
+   \ifconditional\firstlistitem\ifconditional\introlistitem\else\ifcase\itemlevel % incr in \complexdosom
      \doitembreak\allowbreak
    \fi\fi\fi
    \complexdoitemgroupitem[#1]%
@@ -832,13 +864,13 @@
   {\removeunwantedspaces
    \dostopitemattributes
    \egroup
-   \iftextitems
+   \ifconditional\textlistitem
      \space\ignorespaces
    \else
      \par
    \fi
    \doitembreak\nobreak
-   \ifpackeditems\else\getitemparameter\itemlevel\c!afterhead\fi
+   \ifconditional\packlistitem\else\getitemparameter\itemlevel\c!afterhead\fi
    \doitembreak\nobreak
    \noindentation}
 

@@ -720,7 +720,7 @@
      {\csname\r!cross\referenceprefix#1\endcsname}%
    \egroup}
 
-\def\checkfirstreferenceoccurance#1#2%
+\def\checkfirstreferenceoccurance#1#2% etex
   {\ifcsname\r!cross\referenceprefix#1\endcsname
      \getreferenceelements{#1}%
      \ifnum\currentreferencetype=\rt!cross
@@ -1712,7 +1712,7 @@
 
 \def\predefinereference
   {\global\@EA\let\csname\r!cross\predefinedreference    \endcsname\dummypredefinedreference
-   \global\@EA\let\csname\r!cross\unharmedreferenceprefix\endcsname\dummypredefinedreference}
+   \global\@EA\let\csname\r!cross\unharmedreferenceprefix\endcsname\dummypredefinedreference} % bug!
 
 %D Testing on existance then becomes:
 

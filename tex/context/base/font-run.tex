@@ -28,7 +28,7 @@
      {\doifnot{[\fontclass]}\title
         {\edef\title{[\fontclass]\space\title}}}}
 
-\gdef\showbodyfont%
+\gdef\showbodyfont
   {\dosingleempty\doshowbodyfont}
 
 \gdef\doshowbodyfont[#1]%
@@ -81,7 +81,7 @@
          &&\getvalue{\bodyfontvariable{##1\c!xx}}%
          &&\getvalue{\bodyfontvariable{##1\interfaced\v!small}}%
          &&\getvalue{\bodyfontvariable{##1\interfaced\v!big}}%
-         &&\getvalue{\bodyfontvariable{##1\c!interlinespace}}&\cr
+         &&\edef\next{\getvalue{\bodyfontvariable{##1\c!interlinespace}}}\ifx\next\empty not set\else\next\fi&\cr
          \noalign{\hrule}}
       \halign to \localhsize
         {##&\vrule##\strut
@@ -105,7 +105,7 @@
 
 \beginTEX \iffontchar
 
-\gdef\iffontchar#1#2{\iftrue}
+  \gdef\iffontchar#1#2{\iftrue}
 
 \endTEX
 
@@ -178,15 +178,15 @@
    \nointerlineskip
    \vskip2pt
    % the \noexpand before \blank is needed for non etex
-   \edef\ascii         {name:     {\noexpand\black\fontname\font}}
+   \edef\ascii{name: {\noexpand\black\fontname\font}}
    \doifelse\v!unknown{#2}
      {\edef\theshowfontspecs
-        {name:     {\noexpand\black\fontname\font}}}
+        {name: {\noexpand\black\fontname\font}}}
      {\edef\theshowfontspecs
-        {name:     {\noexpand\black\fontname\font  }\noexpand\quad
+        {name: {\noexpand\black\fontname\font}\noexpand\quad
          encoding: {\noexpand\black\currentencoding}\noexpand\quad
-         mapping:  {\noexpand\black\currentmapping }\noexpand\quad
-         handling: {\noexpand\black\fonthandling   }}}%
+         mapping: {\noexpand\black\currentmapping }\noexpand\quad
+         handling: {\noexpand\black\fonthandling}}}%
    \tf % also sets em
    \hbox to 40em{\blue\hfill\tinyfont\setstrut\strut\theshowfontspecs}
    \egroup

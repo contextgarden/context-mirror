@@ -383,7 +383,7 @@
 % Omdat een markering kan worden herdefinieerd moeten we
 % eerst testen of er wel een keten||afhankelijkheid is.
 
-\def\resetsectionmarks#1%
+\def\resetsectionmarks#1% can invoke a break
   {\ifundefined{\??se#1}%
      \fastresetmarker[\mainmarking{#1}]% % redundant \mainmarking
    \else
@@ -1629,7 +1629,7 @@
 
 \chardef\headtimingmode=0
 
-% \chardef\headtimingmode=1
+% \chardef\headtimingmode=1 % 0 also works ok now too
 %
 % Martin Kolarik's problem:
 %
@@ -1665,7 +1665,7 @@
         % outerside font determines distance
         \dosetfontattribute{\??ko#1}\c!style
         % but we don't want color to influence user commands
-% todo: get the if-else out of it
+        % todo: get the if-else out of it
         \getvalue{\??ko#1\c!command}
           {} % no number
           {\dostartattributes{\??ko#1}\c!style\c!color\empty
@@ -1676,18 +1676,18 @@
                \else
                  \setupspacing
                \fi
-% overwegen \dontleavehmode, else unwanted cr due to #2
-               \ifcase\headtimingmode#2\fi
+               % \ifcase\headtimingmode#2\fi % can introduce cr
                \getvalue{\??ko#1\c!commandbefore}%
                \placeheadmargintexts{#1}% binnen #3?
                \ifdisplaysectionhead
-                 \getvalue{\??ko#1\c!textcommand}%
-                   {\setstrut\begstrut#3\endstrut}% can be nilled with \setnostrut
+                 \getvalue{\??ko#1\c!textcommand}% struts can be nilled with \setnostrut
+                   {\setstrut\begstrut\ifcase\headtimingmode\hbox{#2}\fi#3\endstrut}% \hbox prevents break
                  \xdef\localheadheight    {\the\strutht}%
                  \xdef\localheaddepth     {\the\strutdp}%
                  \xdef\localheadlineheight{\the\lineheight}%
-                % == \globallet\localheaddepth\strutdepth
+                 % == \globallet\localheaddepth\strutdepth
                \else
+                 \ifcase\headtimingmode#2\fi
                  \getvalue{\??ko#1\c!textcommand}{#3}%
                \fi
                \getvalue{\??ko#1\c!commandafter}%
@@ -1719,7 +1719,7 @@
         \getvalue{\??ko#1\c!command}%
           {\dostartattributes{\??ko#1}\c!style\c!color\empty
              \dostartattributes{\??ko#1}\c!numberstyle\c!numbercolor\empty
-               \getvalue{\??ko#1\c!commandbefore}%
+               % \getvalue{\??ko#1\c!commandbefore}% strange, why here? moved 21/11/2005
                \placeheadmargintexts{#1}% binnen #3?
                \ifdisplaysectionhead
                  \getvalue{\??ko#1\c!numbercommand}%
@@ -1737,17 +1737,18 @@
                \else
                  \setupspacing
                \fi
-% overwegen \dontleavehmode, else unwanted cr due to #2
-               \ifcase\headtimingmode#2\fi
+               % \ifcase\headtimingmode#2\fi % can introduce cr
+               \getvalue{\??ko#1\c!commandbefore}% makes more sense here
                \placeheadmargintexts{#1}% binnen #3?
                \ifdisplaysectionhead
-                 \getvalue{\??ko#1\c!textcommand}%
-                   {\setstrut\begstrut#4\endstrut}% can be nilled with \setnostrut
+                 \getvalue{\??ko#1\c!textcommand}% struts can be nilled with \setnostrut
+                   {\setstrut\begstrut\ifcase\headtimingmode\hbox{#2}\fi#4\endstrut}% \hbox prevents break
                  \xdef\localheadheight    {\the\strutht}%
                  \xdef\localheaddepth     {\the\strutdp}%
                  \xdef\localheadlineheight{\the\lineheight}%
                  % == \globallet\localheaddepth\strutdepth
                \else
+                 \ifcase\headtimingmode#2\fi % inside textcommand ?
                  \getvalue{\??ko#1\c!textcommand}{#4}%
                \fi
                \getvalue{\??ko#1\c!commandafter}%
@@ -1764,8 +1765,8 @@
   {\bgroup
    \setsystemmode{#1}% to be documented
    \ifgridsnapping\iftracegridsnapping\showstruts\fi\fi
-   \xdef\localheadheight   {\the\strutht}%
-   \xdef\localheaddepth    {\the\strutdp}%
+   \xdef\localheadheight    {\the\strutht}%
+   \xdef\localheaddepth     {\the\strutdp}%
    \xdef\localheadlineheight{\the\lineheight}%
    % == \globallet\localheaddepth\strutdp
    \everypar\emptytoks % needed indeed

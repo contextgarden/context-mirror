@@ -28,7 +28,7 @@
    \dostepwiserecurse{0}{15}{1}{\unicodechar{\numexpr#1*256+#2+\recurselevel*16\relax}\VL}%
    \AR}
 
-\gdef\showunicodevector#1%
+\gdef\showunicodevector[#1]%
   {\starttable[|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|]
      \NC\NC\dostepwiserecurse{0}{15}{1}{\ttx\uchexnumber\recurselevel\NC}\AR
      \DC\DL[16]\DR
@@ -42,17 +42,17 @@
 %D \chardef\utfunicodetracer=0
 %D \chardef\utfunicodetracer=7
 %D
-%D \showunicodevector{000}
-%D \showunicodevector{001}
-%D \showunicodevector{002}
-%D \showunicodevector{003}
-%D \showunicodevector{004}
-%D \showunicodevector{005}
-%D \showunicodevector{030}
-%D \showunicodevector{031}
-%D \showunicodevector{032}
-%D \showunicodevector{033}
-%D \showunicodevector{034}
+%D \showunicodevector[000]
+%D \showunicodevector[001]
+%D \showunicodevector[002]
+%D \showunicodevector[003]
+%D \showunicodevector[004]
+%D \showunicodevector[005]
+%D \showunicodevector[030]
+%D \showunicodevector[031]
+%D \showunicodevector[032]
+%D \showunicodevector[033]
+%D \showunicodevector[034]
 %D \stoptyping
 
 %D \macros
@@ -66,7 +66,7 @@
    \dostepwiserecurse{0}{15}{1}
      {\bTD
       \edef\entrypoint{\the\numexpr#1*256+#2+##1*16\relax}%
-      \chardef\utfunicodetracer0{\dontleavehmode   \strut\unicodechar\entrypoint\endgraf}%
+      \chardef\utfunicodetracer0{\dontleavehmode    \strut\unicodechar\entrypoint\endgraf}%
       \tt
       \chardef\utfunicodetracer7{\dontleavehmode\txx\strut\unicodechar\entrypoint\endgraf}%
       \chardef\utfunicodetracer3{\dontleavehmode\txx\strut\unicodechar\entrypoint\endgraf}%
@@ -75,8 +75,9 @@
    \bTD\uchexnumber{#2}\eTD
    \eTR}
 
-\gdef\showunicodetable#1%
+\gdef\showunicodetable[#1]%
   {\vbox\bgroup
+   \setupcolors[\c!state=\v!start]%
    \setupTABLE[\c!background=\v!screen,\c!backgroundscreen=.90,\c!frame=\v!off,\c!frameoffset=0pt,\c!width=8em,\c!height=6em]%
    \setupTABLE[c]     [\v!each] [\c!align={middle,lohi}]%
    \setupTABLE[c]     [\v!first][\c!background=\v!screen,\c!backgroundscreen=.85,\c!style=\tt\tfa]%

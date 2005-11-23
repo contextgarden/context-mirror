@@ -72,7 +72,7 @@
   title: kleur
       1: systeem -- is globaal actief
       2: systeem -- is lokaal actief
-      3: -- is niet gedefinieerd
+      3: -- is niet gedefinieerd --
       4: systeem -- wordt geladen
       5: onbekend systeem --
       6: palet -- is beschikbaar
@@ -88,7 +88,7 @@
   title: color
       1: system -- is global activated
       2: system -- is local activated
-      3: -- is not defined
+      3: -- is not defined --
       4: system -- is loaded
       5: unknown system --
       6: palette -- is available
@@ -104,7 +104,7 @@
   title: farbe
       1: system -- ist global aktiviert
       2: system -- ist lokal aktiviert
-      3: -- ist undefiniert
+      3: -- ist undefiniert --
       4: system -- ist geladen
       5: unbekanntes System --
       6: palette -- ist verfuegbar
@@ -120,7 +120,7 @@
   title: barva
       1: system -- je globalne aktivovana
       2: system -- je lokalne activovana
-      3: -- neni definovana
+      3: -- neni definovana --
       4: system -- je nacten
       5: neznamy system --
       6: palette -- je k dispozici
@@ -136,7 +136,7 @@
   title: colore
       1: sistema -- attivato globalmente
       2: sistema -- attivato localmente
-      3: -- non definito
+      3: -- non definito --
       4: sistema -- caricato
       5: sistema -- sconosciuto
       6: tavolozza -- resa disponibile
@@ -152,7 +152,7 @@
   title: farge
       1: system -- er aktivert globalt
       2: system -- er aktivert lokalt
-      3: -- er udefinert
+      3: -- er udefinert --
       4: system -- er lest inn
       5: ukjent system --
       6: palett -- er tilgjengelig
@@ -168,7 +168,7 @@
   title: culori
       1: sistem -- este activata global
       2: sistem -- este activata local
-      3: -- nu este definita
+      3: -- nu este definita --
       4: sistem -- este incarcata
       5: sistem -- necunoscuta
       6: paleta -- este disponibila
@@ -332,7 +332,7 @@
 %             \iffreezecolors\setevalue{\??cr#1}{\getvalue{\??cr#2}}\fi}
 %            {\iffreezecolors\@EA\setevalue\else\@EA\setvalue\fi
 %               {\??cr#1}{\getvalue{\??cr#2}}}}
-%         {\showmessage\m!colors3{#1}}}%
+%         {\showmessage\m!colors3{#1}\empty}}%
 %    \unexpanded\setvalue{#1}{\color[#1]}} % \unexpanded toegevoegd
 
 \def\dododefinecolor#1#2#3#4[#5][#6]% #2==set(g)value #3==set[e|x]value
@@ -363,7 +363,7 @@
             \iffreezecolors#3{\??cr#5}{\getvalue{\??cr#6}}\fi}
            {\iffreezecolors\@EA#3\else\@EA#2\fi
               {\??cr#5}{\getvalue{\??cr#6}}}}
-        {\showmessage\m!colors3{#5}}}%
+        {\showmessage\m!colors3{#5}{(def)}}}%
    \ifcase#4\or
      \unexpanded#2{#5}{\switchtocolor[#5]}% \unexpanded toegevoegd
    \fi}
@@ -1766,7 +1766,7 @@
         \global\@EA\let\csname\@@currentcolorstop\endcsname\dodoglobalstopcolor
         \startcolormode\@@askedcolor}
        {\global\@EA\let\csname\@@currentcolorstop\endcsname\donoglobalstopcolor
-        \showmessage\m!colors3\@@askedcolor}%
+        \showmessage\m!colors3\@@askedcolor\empty}%
    \fi\fi}
 
 \def\doglobalstartcolor[#1]%

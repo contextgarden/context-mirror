@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 
-<cd:interface xmlns:cd="http://www.pragma-ade.com/commands" name="context" language="it" version="2005.11.16">
+<cd:interface xmlns:cd="http://www.pragma-ade.com/commands" name="context" language="it" version="2005.11.24">
 
   <cd:variables>
     <cd:variable name="one" value="uno"/>
@@ -688,6 +688,7 @@
     <cd:variable name="strut" value="strut"/>
     <cd:variable name="sub" value="sotto"/>
     <cd:variable name="sym" value="sim"/>
+    <cd:variable name="txt" value="txt"/>
     <cd:variable name="symbol" value="simbolo"/>
     <cd:variable name="text" value="testo"/>
     <cd:variable name="back" value="dietro"/>
@@ -1190,6 +1191,7 @@
     <cd:command name="nop" value="nop"/>
     <cd:command name="mar" value="mar"/>
     <cd:command name="sym" value="sim"/>
+    <cd:command name="txt" value="txt"/>
     <cd:command name="its" value="el"/>
     <cd:command name="ran" value="ran"/>
     <cd:command name="headsym" value="headsym"/>

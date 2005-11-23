@@ -543,6 +543,28 @@ commandline.registeraction('copy',    'copy pages from file(s)')
 commandline.registeraction('trim',    'trim pages from file(s)')
 commandline.registeraction('combine', 'combine multiple pages')
 
+# compatibility switch
+
+class Commands
+
+    include CommandBase
+
+    alias pdfarrange :arrange
+    alias pdfselect  :select
+    alias pdfcopy    :copy
+    alias pdftrim    :trim
+    alias pdfcombine :combine
+
+end
+
+commandline.registeraction('pdfarrange')
+commandline.registeraction('pdfselect')
+commandline.registeraction('pdfcopy')
+commandline.registeraction('pdftrim')
+commandline.registeraction('pdfcombine')
+
+# so far for compatibility
+
 @@extrastringvars = [
     'pages', 'background', 'backspace', 'topspace', 'boxtype', 'tempdir',
     'printformat', 'paperformat', 'method', 'scale', 'selection',

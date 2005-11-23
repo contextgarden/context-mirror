@@ -127,11 +127,12 @@
 
 \gdef\showhyphenations#1%
   {\starttabulate[|le|l|]
-   \NC language \NC \currentlanguage (code:\the\normallanguage) \NC \NR
-   \NC font     \NC \fontname\font      \NC \NR
-   \NC encoding \NC \currentencoding    \NC \NR
-   \NC mapping  \NC \currentencoding    \NC \NR
-   \NC sample   \NC \hyphenatedword{#1} \NC \NR
+   \NC language \NC \currentlanguage\ (internal code:\the\normallanguage)    \NC \NR
+   \NC font     \NC \fontname\font                                           \NC \NR
+   \NC encoding \NC \ifx\@@fontencoding\empty not set\else\@@fontencoding\fi \NC \NR
+   \NC mapping  \NC \ifx\@@fontmapping \empty not set\else\@@fontmapping \fi \NC \NR
+   \NC handling \NC \ifx\@@fonthandling\empty not set\else\@@fonthandling\fi \NC \NR
+   \NC sample   \NC \hyphenatedword{#1}                                      \NC \NR
    \stoptabulate}
 
 \gdef\showmapping

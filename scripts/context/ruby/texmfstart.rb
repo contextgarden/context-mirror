@@ -81,6 +81,18 @@ $predefined['mpstools'] = 'mpstools.rb'
 $predefined['exatools'] = 'exatools.rb'
 $predefined['xmltools'] = 'xmltools.rb'
 
+$makelist = [
+    'texexec',
+    'texutil',
+    'pstopdf',
+    'mptopdf',
+    'ctxtools',
+    'pdftools',
+    'xmltools',
+    'textools',
+    'mpstools',
+    'tmftools'
+]
 
 if ENV['TEXMFSTART_MODE'] = 'experimental' then
     $predefined['texexec'] = 'newtexexec.rb'
@@ -400,6 +412,8 @@ def usage
     print("           texmfstart texmfstart bin:scite kpse:texmf.cnf\n")
     print("           texmfstart texmfstart --exec bin:scite *.tex\n")
     print("           texmfstart texmfstart --edit texmf.cnf\n")
+    print("           texmfstart texmfstart --stubpath=/usr/local/bin --make texexec\n")
+    print("           texmfstart texmfstart --stubpath=auto --make all\n")
 end
 
 # somehow registration does not work out (at least not under windows)
@@ -413,7 +427,7 @@ def registered?(filename)
 end
 
 def registered(filename)
-    return ENV[tag(filename)]
+    return ENV[tag(filename)] || 'unknown'
 end
 
 def register(filename,fullname)
@@ -427,186 +441,192 @@ def register(filename,fullname)
 end
 
 def find(filename,program)
-    filename = filename.sub(/script:/o, '') # so we have bin: and script: and nothing
-    if $predefined.key?(filename) then
-        report("expanding '#{filename}' to '#{$predefined[filename]}'")
-        filename = $predefined[filename]
-    end
-    if registered?(filename) then
-        report("already located '#{filename}'")
-        return registered(filename)
-    end
-    # create suffix list
-    if filename =~ /^(.*)\.(.+)$/ then
-        filename = $1
-        suffixlist = [$2]
-    else
-        suffixlist = [$scriptlist.split('|'),$documentlist.split('|')].flatten
-    end
-    # first we honor a given path
-    if filename =~ /[\\\/]/ then
-        report("trying to honor '#{filename}'")
-        suffixlist.each do |suffix|
-            fullname = filename+'.'+suffix
-            if FileTest.file?(fullname) && register(filename,fullname)
-                return shortpathname(fullname)
-            end
+    begin
+        filename = filename.sub(/script:/o, '') # so we have bin: and script: and nothing
+        if $predefined.key?(filename) then
+            report("expanding '#{filename}' to '#{$predefined[filename]}'")
+            filename = $predefined[filename]
         end
-    end
-    filename.sub!(/^.*[\\\/]/, '')
-    # next we look at the current path and the callerpath
-    [['.','current'],[$ownpath,'caller'],[registered("THREAD"),'thread']].each do |p|
-        if p && ! p.empty? then
+        if registered?(filename) then
+            report("already located '#{filename}'")
+            return registered(filename)
+        end
+        # create suffix list
+        if filename =~ /^(.*)\.(.+)$/ then
+            filename = $1
+            suffixlist = [$2]
+        else
+            suffixlist = [$scriptlist.split('|'),$documentlist.split('|')].flatten
+        end
+        # first we honor a given path
+        if filename =~ /[\\\/]/ then
+            report("trying to honor '#{filename}'")
             suffixlist.each do |suffix|
-                fname = "#{filename}.#{suffix}"
-                fullname = File.expand_path(File.join(p[0],fname))
-                report("locating '#{fname}' in #{p[1]} path '#{p[0]}'")
-                if FileTest.file?(fullname) && register(filename,fullname) then
-                    report("'#{fname}' located in #{p[1]} path")
+                fullname = filename+'.'+suffix
+                if FileTest.file?(fullname) && register(filename,fullname)
                     return shortpathname(fullname)
                 end
             end
         end
-    end
-    # now we consult environment settings
-    fullname = nil
-    suffixlist.each do |suffix|
-        begin
-            break unless $suffixinputs[suffix]
-            environment = ENV[$suffixinputs[suffix]] || ENV[$suffixinputs[suffix]+".#{$program}"]
-            if ! environment || environment.empty? then
-                begin
-                    environment = `kpsewhich -expand-path=\$#{$suffixinputs[suffix]}`.chomp
-                rescue
-                    environment = nil
-                else
-                    if environment && ! environment.empty? then
-                        report("using kpsewhich variable #{$suffixinputs[suffix]}")
-                    end
-                end
-            elsif environment && ! environment.empty? then
-                report("using environment variable #{$suffixinputs[suffix]}")
-            end
-            if environment && ! environment.empty? then
-                environment.split($separator).each do |e|
-                    e.strip!
-                    e = '.' if e == '\.' # somehow . gets escaped
-                    e += '/' unless e =~ /[\\\/]$/
-                    fullname = e + filename + '.' + suffix
-                    report("testing '#{fullname}'")
-                    if FileTest.file?(fullname) then
-                        break
-                    else
-                        fullname = nil
+        filename.sub!(/^.*[\\\/]/, '')
+        # next we look at the current path and the callerpath
+        [['.','current'],[$ownpath,'caller'],[registered("THREAD"),'thread']].each do |p|
+            if p && ! p.empty? && ! (p[0] == 'unknown') then
+                suffixlist.each do |suffix|
+                    fname = "#{filename}.#{suffix}"
+                    fullname = File.expand_path(File.join(p[0],fname))
+                    report("locating '#{fname}' in #{p[1]} path '#{p[0]}'")
+                    if FileTest.file?(fullname) && register(filename,fullname) then
+                        report("'#{fname}' located in #{p[1]} path")
+                        return shortpathname(fullname)
                     end
                 end
             end
-        rescue
-            report("environment string '#{$suffixinputs[suffix]}' cannot be used to locate '#{filename}'")
-            fullname = nil
-        else
-            return shortpathname(fullname) if register(filename,fullname)
         end
-    end
-    return shortpathname(fullname) if register(filename,fullname)
-    # then we fall back on kpsewhich
-    suffixlist.each do |suffix|
-        # TDS script scripts location as per 2004
-        if suffix =~ /(#{$scriptlist})/ then
+        # now we consult environment settings
+        fullname = nil
+        suffixlist.each do |suffix|
             begin
-                report("using 'kpsewhich' to locate '#{filename}' in suffix space '#{suffix}' (1)")
-                fullname = `kpsewhich -progname=#{program} -format=texmfscripts #{filename}.#{suffix}`.chomp
+                break unless $suffixinputs[suffix]
+                environment = ENV[$suffixinputs[suffix]] || ENV[$suffixinputs[suffix]+".#{$program}"]
+                if ! environment || environment.empty? then
+                    begin
+                        environment = `kpsewhich -expand-path=\$#{$suffixinputs[suffix]}`.chomp
+                    rescue
+                        environment = nil
+                    else
+                        if environment && ! environment.empty? then
+                            report("using kpsewhich variable #{$suffixinputs[suffix]}")
+                        end
+                    end
+                elsif environment && ! environment.empty? then
+                    report("using environment variable #{$suffixinputs[suffix]}")
+                end
+                if environment && ! environment.empty? then
+                    environment.split($separator).each do |e|
+                        e.strip!
+                        e = '.' if e == '\.' # somehow . gets escaped
+                        e += '/' unless e =~ /[\\\/]$/
+                        fullname = e + filename + '.' + suffix
+                        report("testing '#{fullname}'")
+                        if FileTest.file?(fullname) then
+                            break
+                        else
+                            fullname = nil
+                        end
+                    end
+                end
             rescue
-                report("kpsewhich cannot locate '#{filename}' in suffix space '#{suffix}' (1)")
+                report("environment string '#{$suffixinputs[suffix]}' cannot be used to locate '#{filename}'")
                 fullname = nil
             else
                 return shortpathname(fullname) if register(filename,fullname)
             end
         end
-        # old TDS location: .../texmf/context/...
-        begin
-            report("using 'kpsewhich' to locate '#{filename}' in suffix space '#{suffix}' (2)")
-            fullname = `kpsewhich -progname=#{program} -format="other text files" #{filename}.#{suffix}`.chomp
-        rescue
-            report("kpsewhich cannot locate '#{filename}' in suffix space '#{suffix}' (2)")
-            fullname = nil
-        else
-            return shortpathname(fullname) if register(filename,fullname)
-        end
-    end
-    return shortpathname(fullname) if register(filename,fullname)
-    # let's take a look at the path
-    paths = ENV['PATH'].split($separator)
-    suffixlist.each do |s|
-        paths.each do |p|
-            report("checking #{p} for suffix #{s}")
-            if FileTest.file?(File.join(p,"#{filename}.#{s}")) then
-                fullname = File.join(p,"#{filename}.#{s}")
-                return  shortpathname(fullname) if register(filename,fullname)
-            end
-        end
-    end
-    # bad luck, we need to search the tree ourselves
-    if (suffixlist.length == 1) && (suffixlist.first =~ /(#{$documentlist})/) then
-        report("aggressively locating '#{filename}' in document trees")
-        begin
-            texroot = `kpsewhich -expand-var=$SELFAUTOPARENT`.chomp
-        rescue
-            texroot = ''
-        else
-            texroot.sub!(/[\\\/][^\\\/]*?$/, '')
-        end
-        if not texroot.empty? then
-            sffxlst = suffixlist.join(',')
-            begin
-                report("locating '#{filename}' in document tree '#{texroot}/doc*'")
-                if (result = Dir.glob("#{texroot}/doc*/**/#{filename}.{#{sffxlst}}")) && result && result[0] && FileTest.file?(result[0]) then
-                    fullname = result[0]
+        return shortpathname(fullname) if register(filename,fullname)
+        # then we fall back on kpsewhich
+        suffixlist.each do |suffix|
+            # TDS script scripts location as per 2004
+            if suffix =~ /(#{$scriptlist})/ then
+                begin
+                    report("using 'kpsewhich' to locate '#{filename}' in suffix space '#{suffix}' (1)")
+                    fullname = `kpsewhich -progname=#{program} -format=texmfscripts #{filename}.#{suffix}`.chomp
+                rescue
+                    report("kpsewhich cannot locate '#{filename}' in suffix space '#{suffix}' (1)")
+                    fullname = nil
+                else
+                    return shortpathname(fullname) if register(filename,fullname)
                 end
+            end
+            # old TDS location: .../texmf/context/...
+            begin
+                report("using 'kpsewhich' to locate '#{filename}' in suffix space '#{suffix}' (2)")
+                fullname = `kpsewhich -progname=#{program} -format="other text files" #{filename}.#{suffix}`.chomp
             rescue
-                report("locating '#{filename}.#{suffixlist.join('|')}' in tree '#{texroot}' aborted")
+                report("kpsewhich cannot locate '#{filename}' in suffix space '#{suffix}' (2)")
+                fullname = nil
+            else
+                return shortpathname(fullname) if register(filename,fullname)
             end
         end
         return shortpathname(fullname) if register(filename,fullname)
-    end
-    report("aggressively locating '#{filename}' in tex trees")
-    begin
-        textrees = `kpsewhich -expand-var=$TEXMF`.chomp
-    rescue
-        textrees = ''
-    end
-    if not textrees.empty? then
-        textrees.gsub!(/[\{\}\!]/, '')
-        textrees = textrees.split(',')
-        if (suffixlist.length == 1) && (suffixlist.first =~ /(#{$documentlist})/) then
-            speedup = ['doc**','**']
-        else
-            speedup = ['**']
-        end
-        sffxlst = suffixlist.join(',')
-        speedup.each do |speed|
-            textrees.each do |tt|
-                tt.gsub!(/[\\\/]$/, '')
-                if FileTest.directory?(tt) then
-                    begin
-                        report("locating '#{filename}' in tree '#{tt}/#{speed}/#{filename}.{#{sffxlst}}'")
-                        if (result = Dir.glob("#{tt}/#{speed}/#{filename}.{#{sffxlst}}")) && result && result[0] && FileTest.file?(result[0]) then
-                            fullname = result[0]
-                            break
-                        end
-                    rescue
-                        report("locating '#{filename}' in tree '#{tt}' aborted")
-                        next
-                    end
+        # let's take a look at the path
+        paths = ENV['PATH'].split($separator)
+        suffixlist.each do |s|
+            paths.each do |p|
+                report("checking #{p} for suffix #{s}")
+                if FileTest.file?(File.join(p,"#{filename}.#{s}")) then
+                    fullname = File.join(p,"#{filename}.#{s}")
+                    return  shortpathname(fullname) if register(filename,fullname)
                 end
             end
-            break if fullname && ! fullname.empty?
         end
-    end
-    if register(filename,fullname) then
-        return shortpathname(fullname)
-    else
-        return ''
+        # bad luck, we need to search the tree ourselves
+        if (suffixlist.length == 1) && (suffixlist.first =~ /(#{$documentlist})/) then
+            report("aggressively locating '#{filename}' in document trees")
+            begin
+                texroot = `kpsewhich -expand-var=$SELFAUTOPARENT`.chomp
+            rescue
+                texroot = ''
+            else
+                texroot.sub!(/[\\\/][^\\\/]*?$/, '')
+            end
+            if not texroot.empty? then
+                sffxlst = suffixlist.join(',')
+                begin
+                    report("locating '#{filename}' in document tree '#{texroot}/doc*'")
+                    if (result = Dir.glob("#{texroot}/doc*/**/#{filename}.{#{sffxlst}}")) && result && result[0] && FileTest.file?(result[0]) then
+                        fullname = result[0]
+                    end
+                rescue
+                    report("locating '#{filename}.#{suffixlist.join('|')}' in tree '#{texroot}' aborted")
+                end
+            end
+            return shortpathname(fullname) if register(filename,fullname)
+        end
+        report("aggressively locating '#{filename}' in tex trees")
+        begin
+            textrees = `kpsewhich -expand-var=$TEXMF`.chomp
+        rescue
+            textrees = ''
+        end
+        if not textrees.empty? then
+            textrees.gsub!(/[\{\}\!]/, '')
+            textrees = textrees.split(',')
+            if (suffixlist.length == 1) && (suffixlist.first =~ /(#{$documentlist})/) then
+                speedup = ['doc**','**']
+            else
+                speedup = ['**']
+            end
+            sffxlst = suffixlist.join(',')
+            speedup.each do |speed|
+                textrees.each do |tt|
+                    tt.gsub!(/[\\\/]$/, '')
+                    if FileTest.directory?(tt) then
+                        begin
+                            report("locating '#{filename}' in tree '#{tt}/#{speed}/#{filename}.{#{sffxlst}}'")
+                            if (result = Dir.glob("#{tt}/#{speed}/#{filename}.{#{sffxlst}}")) && result && result[0] && FileTest.file?(result[0]) then
+                                fullname = result[0]
+                                break
+                            end
+                        rescue
+                            report("locating '#{filename}' in tree '#{tt}' aborted")
+                            next
+                        end
+                    end
+                end
+                break if fullname && ! fullname.empty?
+            end
+        end
+        if register(filename,fullname) then
+            return shortpathname(fullname)
+        else
+            return ''
+        end
+    rescue
+        # error, trace = $!, $@.join("\n")
+        # report("fatal error: #{error}\n#{trace}")
+        report("fatal error")
     end
 end
 
@@ -652,7 +672,11 @@ def make(filename,windows=false,linux=false)
     basename = filename.dup
     basename.sub!(/\.[^.]+?$/, '')
     basename.sub!(/^.*[\\\/]/, '')
-    basename = $stubpath + '/' + basename unless $stubpath.empty?
+    if $stubpath == 'auto' then
+        basename = File.dirname($0) + '/' + basename
+    else
+        basename = $stubpath + '/' + basename unless $stubpath.empty?
+    end
     if basename == filename then
         report('nothing made')
     else
@@ -817,12 +841,19 @@ def execute(arguments)
         report("texmfstart version #{$version}")
         checktree($tree)
         if $make then
-            if $windows then
-                make($filename,true,false)
-            elsif $unix then
-                make($filename,false,true)
+            if $filename == 'all' then
+                makelist = $makelist
             else
-                make($filename,$mswindows,!$mswindows)
+                makelist = [$filename]
+            end
+            makelist.each do |filename|
+                if $windows then
+                    make(filename,true,false)
+                elsif $unix then
+                    make(filename,false,true)
+                else
+                    make(filename,$mswindows,!$mswindows)
+                end
             end
         elsif $browser && $filename =~ /^http\:\/\// then
             launch($filename)
@@ -835,8 +866,12 @@ def execute(arguments)
                         edit($filename)
                     else # script: or no prefix
                         command = find(shortpathname($filename),$program)
-                        register("THREAD",File.dirname(File.expand_path(command)))
-                        run(command)
+                        if command then
+                            register("THREAD",File.dirname(File.expand_path(command)))
+                            run(command)
+                        else
+                            report('unable to locate program')
+                        end
                     end
                 end
             rescue

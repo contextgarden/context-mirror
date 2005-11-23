@@ -1325,7 +1325,7 @@ end
 class Array
 
     def add_shebang(filename,program)
-        unless self[0] =~ /^\#!/ then
+        unless self[0] =~ /^\#/ then
             self.insert(0,"\#!/usr/env #{program}")
         end
         unless self[2] =~ /^\#.*?copyright\=/ then
@@ -1386,43 +1386,47 @@ class Commands
         done  = false
 
         files.each do |filename|
-            ok = false
-            begin
-                data = IO.readlines(filename)
-                case filename
-                    when /\.rb$/ then
-                        ok = data.add_shebang(filename,'ruby')
-                    when /\.pl$/ then
-                        ok = data.add_shebang(filename,'perl')
-                    when /\.py$/ then
-                        ok = data.add_shebang(filename,'python')
-                    when /\.lua$/ then
-                        ok = data.add_shebang(filename,'lua')
-                    when /\.tex$/ then
-                        ok = data.add_directive(filename,'tex')
-                    when /\.mp$/ then
-                        ok = data.add_directive(filename,'metapost')
-                    when /\.mf$/ then
-                        ok = data.add_directive(filename,'metafont')
-                    when /\.(xml|xsl|fo|fx|rlx|rng|exa)$/ then
-                        ok = data.add_comment(filename)
+            if FileTest.file?(filename) then
+                ok = false
+                begin
+                    data = IO.readlines(filename)
+                    case filename
+                        when /\.rb$/ then
+                            ok = data.add_shebang(filename,'ruby')
+                        when /\.pl$/ then
+                            ok = data.add_shebang(filename,'perl')
+                        when /\.py$/ then
+                            ok = data.add_shebang(filename,'python')
+                        when /\.lua$/ then
+                            ok = data.add_shebang(filename,'lua')
+                        when /\.tex$/ then
+                            ok = data.add_directive(filename,'tex')
+                        when /\.mp$/ then
+                            ok = data.add_directive(filename,'metapost')
+                        when /\.mf$/ then
+                            ok = data.add_directive(filename,'metafont')
+                        when /\.(xml|xsl|fo|fx|rlx|rng|exa)$/ then
+                            ok = data.add_comment(filename)
+                    end
+                rescue
+                    report("fatal error in processing #{filename}") # maybe this catches the mac problem taco reported
+                else
+                    if ok then
+                        report()
+                        report(filename)
+                        report()
+                        for i in 0..4 do
+                           report('  ' + data[i].chomp)
+                        end
+                        if force && f = File.open(filename,'w') then
+                            f.puts data
+                            f.close
+                        end
+                        done = true
+                    end
                 end
-            rescue
-                report("fatal error in processing #{filename}") # maybe this catches the mac problem taco reported
             else
-                if ok then
-                    report()
-                    report(filename)
-                    report()
-                    for i in 0..4 do
-                       report('  ' + data[i].chomp)
-                    end
-                    if force && f = File.open(filename,'w') then
-                        f.puts data
-                        f.close
-                    end
-                    done = true
-                end
+                report("no file named #{filename}")
             end
         end
         report() if done
