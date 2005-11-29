@@ -32,7 +32,11 @@ module Kpse
     @@crossover     = true
     @@mswindows     = Config::CONFIG['host_os'] =~ /mswin/
 
-    @@distribution  = 'miktex' if ENV['PATH'] =~ /miktex[\\\/]bin/o
+    # @@distribution  = 'miktex' if ENV['PATH'] =~ /miktex[\\\/]bin/o
+
+    if ENV['PATH'] =~ /(.*?)miktex[\\\/]bin/i then
+        @@distribution = 'miktex' unless $1 =~ /(texmf\-mswin[\/\\]bin|bin[\/\\]win32)/i
+    end
 
     @@usekpserunner = false || ENV['KPSEFAST'] == 'yes'
 

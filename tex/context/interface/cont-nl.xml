@@ -3974,7 +3974,7 @@
 
 <cd:command name="project" type="environment">
   <cd:sequence>
-    <cd:string value="project"/>
+    <cd:string value="projekt"/>
   </cd:sequence>
   <cd:arguments>
     <cd:file/>
@@ -4024,6 +4024,7 @@
       <cd:constant type="reset"/>
       <cd:constant type="klein" default="yes"/>
       <cd:constant type="middel"/>
+      <cd:constant type="auto"/>
       <cd:constant type="groot"/>
       <cd:constant type="aan"/>
       <cd:constant type="uit"/>

@@ -2709,6 +2709,7 @@
    \stopcolor
    \egroup
    \doif{#2}\v!none\insidefloattrue % new
+   \doif{\framedtextparameter{#1}\c!location}\v!none\insidefloattrue % newer
    \ifinsidefloat
      \box\framebox
    \else
@@ -3126,8 +3127,10 @@
    \setbox0\vbox\bgroup
      \vbox to \lineheight{}\vskip\zeropoint
      \blank[\v!disable]
-     \advance\hsize -\@@agleftoffset
-     \advance\hsize -\@@agrightoffset}
+     % \advance\hsize -\@@agleftoffset
+     % \advance\hsize -\@@agrightoffset
+     \leftskip \@@agleftoffset   % new **
+     \rightskip\@@agrightoffset} % new **
 
 %D This dummy line is removed by \type{\setbox2=\vsplit0 to
 %D \lineheight}. That way \type{\topskip} takes care of the
@@ -3138,6 +3141,7 @@
   {\endgraf
    \removelastskip
    \egroup
+   \dimen2\leftskip % new **
    \forgetall
    \splitmaxdepth\boxmaxdepth
    \splittopskip\topskip
@@ -3172,14 +3176,13 @@
           \vfill}
        \@@agbefore
        \ifcase\backgroundsplit\or\or % partial split
-\ifdim\pagegoal<\maxdimen
-         \pagegoal=1.2\pagegoal % be a bit more tolerant
-\fi
+         \ifdim\pagegoal<\maxdimen
+           \pagegoal=1.2\pagegoal % be a bit more tolerant
+         \fi
        \fi
        \startlinecorrection
-         \localframed
-           [\??ag][\c!offset=\v!overlay]
-           {\hskip\@@agleftoffset\box2\hskip\@@agrightoffset}%
+        %\localframed[\??ag][\c!offset=\v!overlay]{\hskip\@@agleftoffset\box2\hskip\@@agrightoffset}%
+         \hskip\dimen2\localframed[\??ag][\c!offset=\v!overlay]{\box2}% new **
        \stoplinecorrection
        \ifcase\backgroundsplit % no split
          \@@agafter

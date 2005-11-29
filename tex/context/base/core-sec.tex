@@ -305,6 +305,29 @@
 \def\decouplemarking[#1]%
   {\couplemarking[#1][]}
 
+% \def\definesection[#1]%
+%   {\doifundefined{\??se#1}
+%      {\doifelsenothing\firstsection
+%         {\def\firstsection{#1}%
+%          \setevalue{\??se#1\c!before}{\v!text}%
+%          \setevalue{\??se\v!text\c!after}{#1}}
+%         {\setevalue{\??se\commalistelement\c!after}{#1}%
+%          \setevalue{\??se#1\c!before}{\lastsection}%
+%          \setevalue{\??se\lastsection\c!after}{#1}}%
+%       \advance\nofsections \plusone
+%       \setevalue{\??se#1\c!level}{\the\nofsections}%
+%       \letvalue{\??se#1\c!after}\empty
+%       \setvalue{\e!next#1}{\@@nextsectionnumber{#1}}%
+%       \setvalue{#1\c!number}{\@@longsectionnumber{#1}}%
+%       \setvalue{#1\s!format}{\@@longformatnumber{#1}}%
+%       \setevalue{\??by#1}{#1}%
+%       \setevalue{\??by\v!by#1}{#1}%
+%       \makecounter{\??se#1}%
+%       \edef\lastsection{#1}%
+%       \setvalue{\??sk#1}{#1}%
+%       \letvalue{\??se#1\c!marking}\empty
+%       \setupsection[#1][\c!previousnumber=\v!yes]}}%
+
 \def\definesection[#1]%
   {\doifundefined{\??se#1}
      {\doifelsenothing\firstsection
@@ -323,6 +346,7 @@
       \setevalue{\??by#1}{#1}%
       \setevalue{\??by\v!by#1}{#1}%
       \makecounter{\??se#1}%
+      \makecounter{\??se\v!last#1}% GB
       \edef\lastsection{#1}%
       \setvalue{\??sk#1}{#1}%
       \letvalue{\??se#1\c!marking}\empty
@@ -331,16 +355,46 @@
 \def\previoussection#1{\csname\??se#1\c!before\endcsname}
 \def\nextsection    #1{\csname\??se#1\c!after  \endcsname}
 
+\let\preservedsection\v!unknown % \def\preservedsection{\firstsection}
+
+\def\checkpreservevalueafter#1% GB
+  {\ifnum\getvalue{\??se#1\c!level}<\nofsections
+     \edef\preservedsection{\getvalue{\??se#1\c!after}}%
+     \ifconditional\@@resetsubheadnumbers
+       \setcounter{\??se\v!last\preservedsection}\zerocount % {0}%
+     \else
+       \setcounter{\??se\v!last\preservedsection}{\countervalue{\??se\preservedsection}}%
+     \fi
+   \fi}
+
+% \def\@@setsectionnumber#1#2%
+%   {\letgvalueempty{\??se#1\s!start}% signal i.p.v. boolean
+%    \setcounter{\??se#1}{#2}%
+%    \ifconditional\@@resetsubheadnumbers\resetsectioncounters{#1}\fi
+%    \checkpagecounter}
+
 \def\@@setsectionnumber#1#2%
   {\letgvalueempty{\??se#1\s!start}% signal i.p.v. boolean
    \setcounter{\??se#1}{#2}%
-   \ifconditional\@@resetsubheadnumbers\resetsectioncounters{#1}\fi
+   \checkpreservevalueafter{#1}% GB
+   \resetsectioncounters{#1}%
    \checkpagecounter}
 
-\def\@@nextsectionnumber#1%
+% \def\@@nextsectionnumber#1%
+%   {\letgvalueempty{\??se#1\s!start}% signal i.p.v. boolean
+%    \pluscounter{\??se#1}%
+%    \ifconditional\@@resetsubheadnumbers\resetsectioncounters{#1}\fi
+%    \checkpagecounter}
+
+\def\@@nextsectionnumber#1% patched by GB
   {\letgvalueempty{\??se#1\s!start}% signal i.p.v. boolean
+   \ifnum\countervalue{\??se\v!last#1}>\zerocount
+     \setcounter{\??se#1}{\countervalue{\??se\v!last#1}}%
+     \setcounter{\??se\v!last#1}\zerocount % {0}%
+   \fi
    \pluscounter{\??se#1}%
-   \ifconditional\@@resetsubheadnumbers\resetsectioncounters{#1}\fi
+   \checkpreservevalueafter{#1}%
+   \resetsectioncounters{#1}%
    \checkpagecounter}
 
 \def\@@sectionvalue#1%       % nog niet overal doorgevoerd
@@ -868,7 +922,7 @@
 
 \def\dosetlocalsectionblock#1#2#3% new \edef's
   {\edef\@@sectiontype  {#1}%
-   \edef\@@sectionblock   {#2}%
+   \edef\@@sectionblock {#2}%
    \edef\@@sectionblocks{#3}}
 
 % beware, the \resetsectionmarks generates some nodes that
@@ -1722,8 +1776,8 @@
                % \getvalue{\??ko#1\c!commandbefore}% strange, why here? moved 21/11/2005
                \placeheadmargintexts{#1}% binnen #3?
                \ifdisplaysectionhead
-                 \getvalue{\??ko#1\c!numbercommand}%
-                   {\setstrut\begstrut#3\endstrut}% can be nilled with \setnostrut
+                 % can be nilled with \setnostrut
+                 \getvalue{\??ko#1\c!numbercommand}{\setstrut\begstrut#3\endstrut}%
                \else
                  \getvalue{\??ko#1\c!numbercommand}{#3}%
                \fi

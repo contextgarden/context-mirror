@@ -478,7 +478,7 @@
    \else
      \global\notesymboltrue
    \fi
-   \ifvisible
+   \ifvisible % misty feature, make it obsolete
      \ifreshapingbox
        \@EAEAEA\gobbletwoarguments
      \else
@@ -505,6 +505,8 @@
 %D to Han The Thanh, who needed it first.
 
 \newif\ifnotesenabled \notesenabledtrue
+
+\appendtoks \notesenabledfalse \to \everymarking
 
 \newconditional\pagewisenotes % saves two hash entries
 

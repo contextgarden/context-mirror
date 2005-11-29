@@ -160,13 +160,29 @@
 %D version and revision number are not used. Any version number
 %D greater than zero will enable special support.
 
-\def\handleMPspecialscomment #1.#2 #3 % version.revision signal
+\newconditional\manyMPspecials % \settrue\manyMPspecials
+
+\def\handleMPspecialscomment #1.#2 #3 % version.revision signal #4=div=1000|10000
   {\doresetMPstack
    \chardef\MPspecialversion #1%
    \chardef\MPspecialrevision#2%
    \chardef\MPspecialsignal  #3%
    \let\handleMPsequence\dohandleMPsequence
+   \ifnum#1=\plusone
+     \expandafter\handleMPsequence
+   \else
+     \expandafter\handleMPspecialscommentx
+   \fi}
+
+\def\handleMPspecialscommentx #1 % version 2
+  {\doifelse{#1}{10000}{\settrue\manyMPspecials}{\setfalse\manyMPspecials}% local
    \handleMPsequence}
+
+% one can say (in meta-ini):
+%
+% \prependtoks
+%   _special_div_ := 1000\ifconditional\manyMPspecials0\fi ;
+% \to \MPextensions
 
 %D In case of \PDF, we need to prepare resourcs.
 
@@ -256,8 +272,20 @@
 %D Now we can handle special color signals. We only do this
 %D when special are detected.
 
-\def\MPrgbnumber#1{\expandafter\doMPrgbnumber#1000.0000\relax}
-\def\doMPrgbnumber#1.#2#3#4#5\relax{#2#3#4}
+% \def\MPrgbnumber#1{\expandafter\doMPrgbnumber#1000.0000\relax}
+% \def\doMPrgbnumber#1.#2#3#4#5\relax{#2#3#4}
+
+%D We cannot use \type {\everyMPtoPDFconversion} because in \MPTOPDF\
+%D we don't have the \type {\appendtoks} macro available.
+
+\def\setMPextensions
+  {\ifconditional\manyMPspecials
+     \def\MPrgbnumber##1{\expandafter\doMPrgbnumber##10000.00000\relax}%
+     \def\doMPrgbnumber##1.##2##3##4##5##6\relax{##2##3##4##5}%
+   \else
+     \def\MPrgbnumber##1{\expandafter\doMPrgbnumber##1000.0000\relax}%
+     \def\doMPrgbnumber##1.##2##3##4##5\relax{##2##3##4}%
+  \fi}
 
 %D The naive case looks like:
 %D

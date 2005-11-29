@@ -321,8 +321,8 @@
 
 \def\@@stopdescription#1%
   {\def\currentdescription{#1}%
-   \dostopattributes
-   \par % maybe better after \dostopattributes
+   % was \par \dostopattributes % here, else problems with interlinespace and font change
+   \dostopparbasedattributes % == \settrue\parbasedattributes \dostopattributes
    \endgroup
    \descriptionparameter\c!after
    \egroup % temporary hack

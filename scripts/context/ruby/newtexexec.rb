@@ -525,6 +525,13 @@ class Commands
 
 end
 
+# we will make this pluggable, i.e. load plugins from base/tex that
+# extend the class and may even add switches
+#
+# commandline.load_plugins('base/tex')
+#
+# maybe it's too slow so for a while keep the --pdf* in here
+
 logger      = Logger.new(banner.shift)
 commandline = CommandLine.new
 

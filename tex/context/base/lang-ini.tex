@@ -165,11 +165,31 @@
 %D the languages. The current langage is saved in the macro
 %D \type {\currentlanguage}. The setup macro is mainly used
 %D for cosmetic purposes.
+%D
+%D \starttyping
+%D \dorecurse{3}
+%D   {\language[nl]
+%D    \startmode[*en] english \stopmode
+%D    \startmode[*nl] dutch   \stopmode
+%D    \language[en]
+%D    \startmode[*en] english \stopmode
+%D    \startmode[*nl] dutch   \stopmode}
+%D \stoptyping
 
 \let\currentlanguage    \empty
 \let\currentmainlanguage\empty
 
-\def\setupcurrentlanguage[#1]{\def\currentlanguage{#1}}
+\def\setupcurrentlanguage[#1]{\setcurrentlanguage\currentmainlanguage{#1}}
+
+\def\setcurrentlanguage#1#2% sets modes: **id (currentmain) *id (current)
+  {\doifsomething{#1}
+     {\ifx\currentmainlanguage\empty\else\resetsystemmode{\systemmodeprefix\currentmainlanguage}\fi
+      \edef\currentmainlanguage{#1}%
+      \setsystemmode{\systemmodeprefix\currentmainlanguage}}%
+   \doifsomething{#2}
+     {\ifx\currentlanguage\empty\else\resetsystemmode\currentlanguage\fi
+      \edef\currentlanguage{#2}%
+      \setsystemmode\currentlanguage}}
 
 %D The internal macros will be defined later.
 
@@ -593,7 +613,7 @@
      \ifcsname\l!prefix!\askedlanguage\endcsname
        \edef\askedlanguage{\csname\l!prefix!\askedlanguage\endcsname}%
        \ifx\currentlanguage\askedlanguage \else
-         \let\currentlanguage\askedlanguage
+         \setcurrentlanguage\currentmainlanguage\askedlanguage
          \docomplexlanguage
        \fi
      \else
@@ -613,7 +633,7 @@
      \else
        \edef\askedlanguage{\csname\l!prefix!\askedlanguage\endcsname}%
        \ifx\currentlanguage\askedlanguage \else
-         \let\currentlanguage\askedlanguage
+         \setcurrentlanguage\currentmainlanguage\askedlanguage
          \docomplexlanguage
        \fi
      \fi
@@ -633,8 +653,7 @@
      \ifcsname\l!prefix!\askedlanguage\endcsname
        \edef\askedlanguage{\csname\l!prefix!\askedlanguage\endcsname}%
        \ifx\currentmainlanguage\askedlanguage \else
-         \let\currentmainlanguage\askedlanguage
-         \let\currentlanguage\askedlanguage
+         \setcurrentlanguage\askedlanguage\askedlanguage
          \docomplexlanguage
        \fi
      \fi
@@ -650,8 +669,7 @@
      \@EA\ifx\csname\l!prefix!\askedlanguage\endcsname\relax\else
        \edef\askedlanguage{\csname\l!prefix!\askedlanguage\endcsname}%
        \ifx\currentmainlanguage\askedlanguage \else
-         \let\currentmainlanguage\askedlanguage
-         \let\currentlanguage\askedlanguage
+         \setcurrentlanguage\askedlanguage\askedlanguage
          \docomplexlanguage
        \fi
      \fi

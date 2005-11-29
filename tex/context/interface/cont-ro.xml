@@ -4024,6 +4024,7 @@
       <cd:constant type="reset"/>
       <cd:constant type="mic" default="yes"/>
       <cd:constant type="mediu"/>
+      <cd:constant type="auto"/>
       <cd:constant type="mare"/>
       <cd:constant type="on"/>
       <cd:constant type="dezactivat"/>

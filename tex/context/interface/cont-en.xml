@@ -4024,6 +4024,7 @@
       <cd:constant type="reset"/>
       <cd:constant type="small" default="yes"/>
       <cd:constant type="medium"/>
+      <cd:constant type="auto"/>
       <cd:constant type="big"/>
       <cd:constant type="on"/>
       <cd:constant type="off"/>

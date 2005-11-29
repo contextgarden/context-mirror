@@ -35,6 +35,8 @@
 \appendtoks \simplesetupspacing     \to \everybodyfont % nieuw
 \appendtoks \setdisplayskips        \to \everybodyfont % nieuw
 
+\appendtoks \setrelativeinterlinespace \to \everybodyfont
+
 \appendtoks \updateraggedskips      \to \everyfontswitch  % under test
 
 \prependtoks \let\par\endgraf       \to \everypagebody % see \fillinline
@@ -171,14 +173,43 @@
    \setfontparameters % redundant, can be \setstrut, test first
    \updateraggedskips} % yes indeed
 
+% \let\currentrelativeinterlinespace\empty
+%
+% \def\setuprelativeinterlinespace[#1]%
+%   {\processallactionsinset
+%      [#1]
+%      [      \v!on=>\oninterlineskip,
+%            \v!off=>\offinterlineskip,
+%          \v!reset=>\let\currentrelativeinterlinespace\empty
+%                    \setfontparameters,% just \setstrut, test first
+%        \s!unknown=>\assignvalue{#1}\currentrelativeinterlinespace{1.00}{1.25}{1.50}%
+%                    \spacing\currentrelativeinterlinespace]}
+
+% \setupinterlinespace[big]      \switchtobodyfont[11pt] -> forgotten
+% \setupinterlinespace[auto,big] \switchtobodyfont[11pt] -> remembered
+
+\let\currentrelativeinterlinespace\empty
+
 \def\setuprelativeinterlinespace[#1]%
-  {\processallactionsinset % \regelwit = dummy !
+  {\processallactionsinset
      [#1]
      [      \v!on=>\oninterlineskip,
            \v!off=>\offinterlineskip,
-         \v!reset=>\setfontparameters,% just \setstrut, test first
-       \s!unknown=>\assignvalue{#1}\regelwit{1.00}{1.25}{1.50}%
-                   \spacing\regelwit]}
+         \v!reset=>\let\currentrelativeinterlinespace\empty
+                   \let\setrelativeinterlinespace\relax
+                   \setfontparameters,
+          \v!auto=>\let\setrelativeinterlinespace\dosetrelativeinterlinespace,
+       \s!unknown=>\assignvalue\commalistelement\currentrelativeinterlinespace{1.00}{1.25}{1.50}%
+                   \spacing\currentrelativeinterlinespace]}
+
+\def\dosetrelativeinterlinespace
+  {\ifx\currentrelativeinterlinespace\empty\else
+     \spacing\currentrelativeinterlinespace
+   \fi}
+
+\let\setrelativeinterlinespace\relax
+
+% \appendtoks \setrelativeinterlinespace \to \everybodyfont
 
 \def\complexsetupinterlinespace[#1]% \commalistelement ipv #1
   {\doifassignmentelse{#1}\setupspecifiedinterlinespace\setuprelativeinterlinespace[#1]}
@@ -3060,12 +3091,26 @@
 
 \endETEX
 
+\newconditional \parbasedattributes
+
+\def\finishparbasedattributes
+  {\ifconditional\parbasedattributes
+     \setfalse\parbasedattributes
+     \par
+   \fi}
+
+\def\dostopparbasedattributes
+  {\settrue\parbasedattributes
+   \dostopattributes}
+
 \unexpanded\def\@@dostopattributes
   {\stopcolor
+   \finishparbasedattributes
    \endgroup}
 
 \unexpanded\def\@@nostopattributes
-  {\endgroup}
+  {\finishparbasedattributes
+   \endgroup}
 
 \unexpanded\def\doattributes#1#2#3#4%
   {\dostartattributes{#1}{#2}{#3}{#4}\dostopattributes}
@@ -3088,10 +3133,12 @@
 %
 % \unexpanded\def\@@dostopattributes%
 %   {\stopcolor
+%    \finishparbasedattributes
 %    \endgroup}
 %
 % \unexpanded\def\@@nostopattributes%
-%   {\endgroup}
+%   {\finishparbasedattributes
+%    \endgroup}
 
 \unexpanded\def\dostartattributes#1#2#3%
   {\begingroup  % geen \bgroup, anders in mathmode lege \hbox
@@ -3112,10 +3159,12 @@
 
 \unexpanded\def\@@dostopattributes
   {\doglobalstopcolor
+   \finishparbasedattributes
    \endgroup}
 
 \unexpanded\def\@@nostopattributes
-  {\endgroup}
+  {\finishparbasedattributes
+   \endgroup}
 
 \endETEX
 

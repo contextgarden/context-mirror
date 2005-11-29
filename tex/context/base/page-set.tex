@@ -84,6 +84,72 @@
 %   \startcolumnset [three] \dorecurse {1}{\input tufte \par} \stopcolumnset
 % \stoptext
 
+%D Marks in columnsets:
+%D
+%D \starttyping
+%D \definemarking[M]
+%D \setupheadertexts[\setups{show-M-marks}]
+%D \definecolumnset[test][n=3]
+%D
+%D \startsetups show-M-marks
+%D \getmarking[M][1][previous]/\getmarking[M][1][first]/\getmarking[M][1][last]\quad
+%D \getmarking[M][2][previous]/\getmarking[M][2][first]/\getmarking[M][2][last]\quad
+%D \getmarking[M][3][previous]/\getmarking[M][3][first]/\getmarking[M][3][last]\quad
+%D \getmarking[M][1][previous]/\getmarking[M][1][first]/\getmarking[M][last]\quad
+%D \getsavedmarking[M][previous]/\getsavedmarking[M][first]/\getsavedmarking[M][last]
+%D \stopsetups
+%D
+%D \startbuffer
+%D \section{Knuth} [K1]\marking[M]{k1} [K2]\marking[M]{k2} \input knuth
+%D \section{Zapf}  [Z]\marking[M]{z} \input zapf
+%D \stopbuffer
+%D
+%D \startbuffer
+%D \section{Ward} [W]\marking[M]{w} \input ward
+%D \placefigure[here]{none}{\externalfigure[a][height=2cm]}
+%D \section{Davis} [D]\marking[M]{d} \input davis
+%D \section{Zapf} [Z]\marking[M]{z} \input zapf
+%D \stopbuffer
+%D
+%D \startbuffer
+%D \section{Ward} [W]\marking[M]{w} \input ward
+%D \placefigure[here]{none}{\externalfigure[a][height=2cm]}
+%D \section{Davis} [D]\marking[M]{d} \input davis
+%D \section{Zapf} [Z]\marking[M]{z} \input zapf
+%D \section{Douglas} [O]\marking[M]{o} \input douglas
+%D \stopbuffer
+%D
+%D \starttext
+%D   \startcolumnset[test]
+%D     \dorecurse{5}{\getbuffer}
+%D     \placefigure[here]{none}{\externalfigure[a][height=2cm]}
+%D     % \column % sometimes needed
+%D   \stopcolumnset
+%D \stoptext
+%D \stoptyping
+
+% not ok yet, for column sets we need a special case: within a column we
+% need to bubble-up the marks; the indirectness permits overloading here
+
+\let\saveOTRSETmark  \refreshsavedmark
+\let\bubbleOTRSETmark\bubblesavedmark
+\let\resetOTRSETmark \resetsavedmark
+\let\presetOTRSETmark\presetsavedmark
+
+\def\doregisterOTRSETmarks#1{\saveOTRSETmark  [#1][\number\mofcolumns]}
+\def\dobubbleOTRSETmarks  #1{\bubbleOTRSETmark[#1][\number\mofcolumns]}
+\def\doresetOTRSETmarks   #1{\resetOTRSETmark [#1][\recurselevel]}
+\def\dopresetOTRSETmarks  #1{\presetOTRSETmark[#1][\recurselevel]}
+
+\def\registerOTRSETmarks
+  {\processcommacommand[\alldefinedmarks]\doregisterOTRSETmarks}
+\def\bubbleOTRSETmarks
+  {\processcommacommand[\alldefinedmarks]\dobubbleOTRSETmarks}
+\def\resetOTRSETmarks
+  {\dorecurse\nofcolumns{\processcommacommand[\alldefinedmarks]\doresetOTRSETmarks}}
+\def\presetOTRSETmarks
+  {\dorecurse\nofcolumns{\processcommacommand[\alldefinedmarks]\dopresetOTRSETmarks}}
+
 %D test case of Vit Zika (context list):
 %D
 %D \starttyping
@@ -529,17 +595,19 @@
 
 \def\OTRSETdoflush
   {\ifcollectingcontent
+     \registerOTRSETmarks
      \global\mofcolumns\plusone
    \else
      \OTRSETdofinalflush
      \OTRSETdofinaloutput
-\ifnum\columnsetpage>0
-  \dorecurse\nofcolumns{\doresetcolumnsetlines\recurselevel}%
-\fi
-\doglobal\increment\columnsetpage
+     \ifnum\columnsetpage>0
+       \dorecurse\nofcolumns{\doresetcolumnsetlines\recurselevel}%
+     \fi
+     \doglobal\increment\columnsetpage
      \OTRSETinitializecolumns
     %\OTRSETdoflushfloats
      \OTRSETstartnextpage
+\presetOTRSETmarks
      \initializecolumntextareas
    \fi}
 
@@ -893,7 +961,9 @@
   {\OTRSETsetfreecells\mofcolumns\columnlastcell
    \ifsomefreecolumncells
      % okay
+     \bubbleOTRSETmarks % not robust because we reenter
    \else
+     \registerOTRSETmarks % not robust because we reenter
      \global\advance\mofcolumns \plusone
      \ifnum\mofcolumns>\nofcolumns
        \OTRSETdoflush
@@ -1708,6 +1778,7 @@
   {\increment\columnsetlevel\relax
    \globallet\localcolumnmaxcells\!!zerocount
    \global\chardef\OTRSETfinish\zerocount
+   \resetOTRSETmarks
    \ifnum\columnsetlevel=\plusone
      \bgroup
      \saveinterlinespace
@@ -1875,7 +1946,7 @@
        {\vskip-\struttotal\verticalstrut\vfill\eject}%
    \else
      \ifnum\mofcolumns>\plusone
-      \donetrue
+       \donetrue
      \else\ifdim\pagetotal>\zeropoint % too dangerous, we loose data
        \donetrue
      \else
@@ -1889,6 +1960,7 @@
        \fi
        \vfill
        \eject
+\registerOTRSETmarks
        % brr, may result in empty page after nicely fit text
        % or if left, then lost of first column only text
        \ifnum\mofcolumns>\plusone

@@ -46,8 +46,6 @@ my $format  = "plain" ; # can be "context" for plain users too
     "force"       => \$force   ,
     "pdftops"     => \$pmethod ,
     "xpdf"        => \$pmethod ,
-#   "acrobat"     => \$amethod , # nowadays the reader is not that clear about this being permitted
-    "reader"      => \$amethod ,
     "gs"          => \$gmethod ,
     "ghostscript" => \$gmethod ,
     "noclean"     => \$noclean ) ;
@@ -202,15 +200,13 @@ sub show_help_info
     report ("--force : force processing (ignore checksum)" ) ;
     report ("--silent : don't show messages" ) ;
     print "\n" ;
-    report ("--acrobat : use acrobat (reader) for pdf->ps (on unix)") ;
     report ("--pdftops : use pdftops (xpdf) pdf->ps") ;
     report ("--ghostscript : use ghostscript (gs) for pdf->ps") ;
     print "\n" ;
     report ("input file : metapost file with graphics") ;
     report ("programs needed : texexec and english context") ;
     report (" : pdftops from the xpdf suite, or") ; # page size buggy
-    report (" : pdf2ps and ghostscript, or") ;
-    report (" : acrobat reader for unix, and") ;
+    report (" : pdf2ps and ghostscript, and") ;
     report (" : pstoedit and ghostscript") ;
     report ("output file : metapost file with pictures") ;
     exit }

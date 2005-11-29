@@ -2072,6 +2072,8 @@
    \let\finishMPgraphic\egroup
    \doprocessMPtoPDFfile}
 
+\let\setMPextensions\relax
+
 \def\doprocessMPtoPDFfile#1#2#3% file xscale yscale
   {% the following line is needed for latex where onepoint is not
    % onepoint but a number (maxdimen); some day i'll make a latex
@@ -2082,6 +2084,7 @@
    \let\onepoint\onerealpoint
    %
    \setMPspecials
+   \setMPextensions
    \the\everyMPtoPDFconversion
    \catcode`\^^M=\@@endofline
    \startMPscanning

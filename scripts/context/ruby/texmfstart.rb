@@ -2,7 +2,7 @@
 
 # program   : texmfstart
 # copyright : PRAGMA Advanced Document Engineering
-# version   : 1.5.5 - 2003/2005
+# version   : 1.7.1 - 2003/2005
 # author    : Hans Hagen
 #
 # project   : ConTeXt / eXaMpLe
@@ -36,7 +36,7 @@ require "rbconfig"
 
 $mswindows = Config::CONFIG['host_os'] =~ /mswin/
 $separator = File::PATH_SEPARATOR
-$version   = "1.7.0"
+$version   = "1.7.1"
 
 if $mswindows then
 
@@ -65,6 +65,7 @@ $predefined['texexec']  = 'texexec.pl'
 $predefined['texutil']  = 'texutil.pl'
 $predefined['texfont']  = 'texfont.pl'
 
+$predefined['makempy']  = 'makempy.pl'
 $predefined['mptopdf']  = 'mptopdf.pl'
 $predefined['pstopdf']  = 'pstopdf.rb'
 
@@ -82,10 +83,15 @@ $predefined['exatools'] = 'exatools.rb'
 $predefined['xmltools'] = 'xmltools.rb'
 
 $makelist = [
+    # context
     'texexec',
     'texutil',
+    'texfont',
+    # mp/ps
     'pstopdf',
     'mptopdf',
+    'makempy',
+    # misc
     'ctxtools',
     'pdftools',
     'xmltools',

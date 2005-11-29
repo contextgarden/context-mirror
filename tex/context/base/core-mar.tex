@@ -103,14 +103,17 @@
 
 \ifx\decouplemarking\undefined \def\decouplemarking[#1]{} \fi
 
+\let\alldefinedmarks\empty
+
 \def\dododefinemarking[#1][#2]%
   {\getparameters[\??mk#1]
-     [\c!expansion=\v!no,  % saves a macro
-      \c!separator={ --- }, % watch the spaces
+     [\c!expansion=\v!no, % saves a macro
+      \c!separator={\space\emdash\space},
       \c!limittext=\@@kolimittext,
           \c!state=\v!start]%
    \decouplemarking[#1]%  % no coupling with sections
    \setevalue{\??mk#1\c!coupling}{#2}%
+   \doglobal\addtocommalist{#2}\alldefinedmarks
    \expandafter\newmark\csname\??mk#2\endcsname
    \showmessage\m!systems{13}{#1,[#2]}}
 
@@ -138,64 +141,221 @@
   {\doifdefinedelse{\??mk#1}}
 
 % \def\fetchmark[#1][#2]% never \unexpanded
-%   {\@EA\@EA\csname\??mk\??mk#2\endcsname
-%      \csname\??mk\mainmarking{#1}\endcsname}
+%   {\@EA\csname\??mk\??mk#2\@EA\endcsname\csname\??mk\mainmarking{#1}\endcsname}
+
+% \beginTEX
+%
+% \def\fetchmark[#1][#2]% never \unexpanded
+%   {\@EA\ifx\csname\??mk#1\c!coupling\endcsname\relax\else
+%      \csname\??mk\??mk#2\@EA\endcsname
+%      \csname\??mk\csname\??mk#1\c!coupling\endcsname\endcsname
+%    \fi}
+%
+% \endTEX
+%
+% \beginETEX \ifcsname
+%
+% \def\fetchmark[#1][#2]% never \unexpanded
+%   {\ifcsname\??mk#1\c!coupling\endcsname
+%      \csname\??mk\??mk#2\@EA\endcsname
+%      \csname\??mk\csname\??mk#1\c!coupling\endcsname\endcsname
+%    \fi}
+%
+% \endETEX
+%
+% \def\fetchtwomarks[#1]%
+%   {\doifsomething{\fetchmark[#1][\v!first]}
+%      {\fetchmark[#1][\v!first]%
+%       \doifsomething{\fetchmark[#1][\v!last]}
+%         {\doifnot{\fetchmark[#1][\v!first]}{\fetchmark[#1][\v!last]}
+%             {\getvalue{\??mk#1\c!separator}\fetchmark[#1][\v!last]}}}}
+%
+% \def\fetchallmarks[#1]%
+%   {\doifsomething{\fetchmark[#1][\v!first]}
+%      {\doifsomething{\fetchmark[#1][\v!previous]}
+%         {\doifnot{\fetchmark[#1][\v!previous]}{\fetchmark[#1][\v!first]}
+%            {\fetchmark[#1][\v!previous]\getvalue{\??mk#1\c!separator}}}}%
+%       \fetchtwomarks[#1]}
+%
+% \def\dogetmarking[#1][#2]%
+%   {\doifvalue{\??mk#1\c!state}\v!start
+%      {\bgroup
+%      %\def\nomarking##1{\unknown\ }%
+%       \def\nomarking{\splitsequence{\getvalue{\??mk#1\c!limittext}}}%
+%       \setfullsectionnumber{\??mk#1}%
+%       \processaction % slow
+%         [#2]
+%         [   \v!both=>{\fetchtwomarks[#1]},
+%              \v!all=>{\fetchallmarks[#1]},
+%          \s!default=>{\fetchmark    [#1][\v!first]},
+%          \s!unknown=>{\fetchmark    [#1][#2]}]%
+%       \egroup}}
+%
+% \def\nogetmarking[#1][#2]%
+%   {}
+%
+% \unexpanded\def\getmarking
+%   {\dodoubleargument\dogetmarking}
 
 \beginTEX
 
-\def\fetchmark[#1][#2]% never \unexpanded
-  {\@EA\ifx\csname\??mk#1\c!coupling\endcsname\else
-     \@EA\@EA\csname\??mk\??mk#2\endcsname
-     \csname\??mk\csname\??mk#1\c!coupling\endcsname\endcsname
+\def\fetchmark[#1][#2]% % expandable / never use \unexpanded
+  {\@EA\ifx\csname\??mk::#1\endcsname\relax
+     \@EA\ifx\csname\??mk#1\c!coupling\endcsname\relax
+       % nothing
+     \else
+       \csname\??mk\??mk#2\@EA\endcsname
+       \csname\??mk\csname\??mk#1\c!coupling\endcsname\endcsname
+     \fi
+   \else
+     \csname\??mk::\??mk::#2\@EA\@EA\@EA\endcsname
+     \csname\??mk::#1\endcsname
    \fi}
 
 \endTEX
 
 \beginETEX \ifcsname
 
-\def\fetchmark[#1][#2]% never \unexpanded
-  {\ifcsname\??mk#1\c!coupling\endcsname
-   % \@EA\@EA\csname\??mk\??mk#2\endcsname
-   % \csname\??mk\csname\??mk#1\c!coupling\endcsname\endcsname
+\def\fetchmark[#1][#2]% % expandable / never use \unexpanded
+  {\ifcsname\??mk::#1\endcsname % saved mark
+     \csname\??mk::\??mk::#2\@EA\@EA\@EA\endcsname
+     \csname\??mk::#1\endcsname
+   \else\ifcsname\??mk#1\c!coupling\endcsname % real mark
      \csname\??mk\??mk#2\@EA\endcsname
      \csname\??mk\csname\??mk#1\c!coupling\endcsname\endcsname
-   \fi}
+   \fi\fi}
 
 \endETEX
 
+\def\fetchmark[#1][#2]% % expandable / never use \unexpanded
+  {\ifcsname\??mk::#1\endcsname % saved mark
+     \csname\??mk::\??mk::#2\@EA\@EA\@EA\endcsname
+     \csname\??mk::#1\endcsname
+   \else\ifcsname\??mk#1\c!coupling\endcsname % real mark
+     \csname\??mk\??mk#2\@EA\endcsname
+     \csname\??mk\csname\??mk#1\c!coupling\endcsname\endcsname
+   \fi\fi}
+
+\letvalue{\??mk::\??mk::\v!previous}\firstoffourarguments
+\letvalue{\??mk::\??mk::\v!first   }\secondoffourarguments
+\letvalue{\??mk::\??mk::\v!last    }\thirdoffourarguments
+\letvalue{\??mk::\??mk::\v!current }\fourthoffourarguments
+
+% this version can be used when a page is built up in steps without
+% feedback of the otr'd list to the mvl (i.e.\ a page made of pages,
+% as in column sets where content is buffered)
+
+% reset at begin
+% preset before page
+% bubble in column
+% refresh at end
+
+\def\refreshsavedmark[#1][#2]% mark tag (packing saves many hash entries)
+  {\setxvalue{\??mk::#1:#2}%
+     {{\@EA\ifx\csname\??mk::#1:pp\endcsname\relax
+         % empty
+       \else
+         \csname\??mk::#1:pp\endcsname
+       \fi}%
+      {\@EA\ifx\csname\??mk::#1:ff\endcsname\relax
+         \fetchmark[#1][\v!first]%
+       \else
+         \csname\??mk::#1:ff\endcsname
+       \fi}%
+      {\fetchmark[#1][\v!last]}%
+      {\fetchmark[#1][\v!current]}}%
+    \setxvalue{\??mk::#1:pp}{\fetchmark[#1][\v!first]}%
+    \letgvalue{\??mk::#1:ff}\relax
+    }
+
+\def\bubblesavedmark[#1][#2]% no packing (not now, maybe make a six-pack later)
+  {\@EA\ifx\csname\??mk::#1:ff\endcsname\relax
+     \setxvalue{\??mk::#1:ff}{\fetchmark[#1][\v!first]}%
+   \fi}
+
+\def\resetsavedmark[#1][#2]% mark tag
+  {\doifelsenothing{\fetchmark[#1][\v!previous]}
+     {\letgvalue{\??mk::#1:pp}\relax}
+     {\setxvalue{\??mk::#1:pp}{\fetchmark[#1][\v!previous]}}%
+   \doifelsenothing{\fetchmark[#1][\v!first]}
+     {\letgvalue{\??mk::#1:ff}\relax}
+     {\setxvalue{\??mk::#1:ff}{\fetchmark[#1][\v!first]}}%
+   \letgvalue{\??mk::#1:#2}\emptysavedmark}
+
+\def\presetsavedmark[#1][#2]% mark tag
+  {\letgvalue{\??mk::#1:#2}\emptysavedmark}
+
+\def\emptysavedmark{{}{}{}{}}
+
+% new (can be used in column sets)
+%
+% \getsavedmarking[M][previous]
+% \getsavedmarking[M][first]
+% \getsavedmarking[M][last]
+
+\def\getsavedmarking
+  {\dodoubleargument\dogetsavedmarking}
+
+\def\dogetsavedmarking[#1][#2]%
+  {\doifelse{#2}\v!previous
+     {\getmarking[#1][1][\v!previous]}
+     {\doifelse{#2}\v!first
+        {\getmarking[#1][1][\v!first]}
+        {\getmarking[#1][\v!last]}}}
+
+% fetching
+
 \def\fetchtwomarks[#1]%
-  {\doifsomething{\fetchmark[#1][\v!first]}
-     {\fetchmark[#1][\v!first]%
-      \doifsomething{\fetchmark[#1][\v!last]}
-        {\doifnot{\fetchmark[#1][\v!first]}{\fetchmark[#1][\v!last]}
-            {\getvalue{\??mk#1\c!separator}\fetchmark[#1][\v!last]}}}}
+  {\dofetchtwomarks[#1][#1]}
 
 \def\fetchallmarks[#1]%
-  {\doifsomething{\fetchmark[#1][\v!first]}
-     {\doifsomething{\fetchmark[#1][\v!previous]}
-        {\doifnot{\fetchmark[#1][\v!previous]}{\fetchmark[#1][\v!first]}
-           {\fetchmark[#1][\v!previous]\getvalue{\??mk#1\c!separator}}}}%
-      \fetchtwomarks[#1]}
+  {\dofetchallmarks[#1][#1]}
 
-\def\dogetmarking[#1][#2]%
+\def\dofetchtwomarks[#1][#2]% class class:tag
+  {\doifsomething{\fetchmark[#2][\v!first]}
+     {\fetchmark[#2][\v!first]%
+      \doifsomething{\fetchmark[#2][\v!last]}
+        {\doifnot{\fetchmark[#2][\v!first]}{\fetchmark[#2][\v!last]}
+            {\getvalue{\??mk#1\c!separator}\fetchmark[#2][\v!last]}}}}
+
+\def\dofetchallmarks[#1][#2]%
+  {\doifsomething{\fetchmark[#2][\v!first]}
+     {\doifsomething{\fetchmark[#2][\v!previous]}
+        {\doifnot{\fetchmark[#2][\v!previous]}{\fetchmark[#2][\v!first]}
+           {\fetchmark[#2][\v!previous]\getvalue{\??mk#1\c!separator}}}}%
+      \fetchtwomarks[#1][#2]}
+
+% \newtoks \everymarking
+
+\def\dogetmarking[#1][#2][#3]%
   {\doifvalue{\??mk#1\c!state}\v!start
      {\bgroup
+      \the\everymarking
      %\def\nomarking##1{\unknown\ }%
       \def\nomarking{\splitsequence{\getvalue{\??mk#1\c!limittext}}}%
       \setfullsectionnumber{\??mk#1}%
-      \processaction % slow
-        [#2]
-        [   \v!both=>{\fetchtwomarks[#1]},
-             \v!all=>{\fetchallmarks[#1]},
-         \s!default=>{\fetchmark    [#1][\v!first]},
-         \s!unknown=>{\fetchmark    [#1][#2]}]%
+      \ifthirdargument
+        \processaction % slow
+          [#3]
+          [   \v!both=>{\dofetchtwomarks[#1][#1:#2]},
+               \v!all=>{\dofetchallmarks[#1][#1:#2]},
+           \s!default=>{\fetchmark          [#1:#2][\v!first]},
+           \s!unknown=>{\fetchmark          [#1:#2][#3]}]%
+      \else
+        \processaction % slow
+          [#2]
+          [   \v!both=>{\dofetchtwomarks[#1][#1]},
+               \v!all=>{\dofetchallmarks[#1][#1]},
+           \s!default=>{\fetchmark          [#1][\v!first]},
+           \s!unknown=>{\fetchmark          [#1][#2]}]%
+      \fi
       \egroup}}
 
-\def\nogetmarking[#1][#2]%
+\def\nogetmarking[#1][#2][#3]%
   {}
 
 \unexpanded\def\getmarking
-  {\dodoubleargument\dogetmarking}
+  {\dotripleargument\dogetmarking}
 
 \let\setsomemark\setmark
 

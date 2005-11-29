@@ -2352,7 +2352,7 @@
 \def\resetcounter#1%
   {\letgvalue{#1}\zerocountervalue}
 
-\def\setcounter#1#2%
+\def\setcounter#1#2% or: \setxvalue{#1}{\number#2}
   {\scratchcounter#2%
    \setxvalue{#1}{\the\scratchcounter}}
 

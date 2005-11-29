@@ -121,6 +121,7 @@
       \c!stopper,\c!placestopper,\c!indenting,
       \c!n,\c!inner,\c!symbol,\c!margin,\c!items,
       \c!leftmargin,\c!rightmargin,\c!indentnext,
+      \c!command,
       \c!start,\c!lefttext,\c!righttext]}
 
 \def\setupitemgroups
@@ -635,7 +636,7 @@
    \else
      \par
    \fi
-   \ignorespaces
+%    \ignorespaces
    \increment\noflistelements
    \ifnum\itemcolumndepth=\zerocount \ifconditional\optimizelistitem
      \ifnum\noflistelements=\plusone        % tgv bv kolommen/nesting
@@ -720,7 +721,7 @@
    \setfalse\headlistitem
    \setfalse\sublistitem
    \setfalse\symbollistitem
-   \EveryPar{\ignorespaces}%
+   \EveryPar{\ignorespaces}% needed ?
    \ignorespaces}
 
 % For Frank Grieshaber and Mojca Miklavec:
@@ -752,7 +753,7 @@
    \else
      \par
    \fi
-   \ignorespaces
+%    \ignorespaces
    \ifconditional\concatnextitem % new, concat
      \doitembreak\nobreak        % new, concat
    \fi                           % new, concat
@@ -793,8 +794,9 @@
      \vskip-\lineheight          % new, concat
      \nobreak                    % new, concat
    \fi                           % new, concat
-   \ignorespaces
+%    \ignorespaces
    \dolistitem
+   \relax
    \ifconditional\packlistitem
      \setupwhitespace[\v!none]%
    \fi
@@ -810,7 +812,23 @@
    \strut % added 11-08-99
    \setfalse\concatnextitem % new, concat
    \hskip\itemsignal        % new, concat
+   \getitemparameter\itemlevel\c!command} % \defaultitemcommand
+
+\def\defaultitemcommand
+  {\EveryPar{\ignorespaces}% needed ?
    \ignorespaces}
+
+% For Giuseppe "Oblomov" Bilotta, inspired on a suggestion by Taco
+% Hoekwater.
+%
+% \def\MyItemCommand#1{{\bf#1}\quad}
+% \setupitemgroup[itemize][command=\MyItemCommand]
+%
+% \startitemize
+% \item {test} is this okay?
+% \item {test} is this okay?
+% \item {test} is this okay?
+% \stopitemize
 
 \def\complexitem[#1]#2\par % todo: no two pass data
   {\startitemgroup[#1]
@@ -932,6 +950,7 @@
    \c!righttext=),
    \c!start=1,
    \c!option=,
+   \c!command=\defaultitemcommand,
    \c!symbol=\itemlevel] % \v!niveau
 
 \def\defineitemgroup

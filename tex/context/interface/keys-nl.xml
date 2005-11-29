@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 
-<cd:interface xmlns:cd="http://www.pragma-ade.com/commands" name="context" language="nl" version="2005.11.24">
+<cd:interface xmlns:cd="http://www.pragma-ade.com/commands" name="context" language="nl" version="2005.11.30">
 
   <cd:variables>
     <cd:variable name="one" value="een"/>
@@ -1412,10 +1412,10 @@
     <cd:command name="stopcomponent" value="stoponderdeel"/>
     <cd:command name="startproduct" value="startprodukt"/>
     <cd:command name="stopproduct" value="stopprodukt"/>
-    <cd:command name="startproject" value="startproject"/>
-    <cd:command name="stopproject" value="stopproject"/>
+    <cd:command name="startproject" value="startprojekt"/>
+    <cd:command name="stopproject" value="stopprojekt"/>
     <cd:command name="setups" value="instellingen"/>
-    <cd:command name="project" value="project"/>
+    <cd:command name="project" value="projekt"/>
     <cd:command name="component" value="onderdeel"/>
     <cd:command name="product" value="produkt"/>
     <cd:command name="environment" value="omgeving"/>

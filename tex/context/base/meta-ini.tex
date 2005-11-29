@@ -668,9 +668,13 @@
    \convertargument#2\to\ascii
    \dodoglobal\letvalue{\@@MPT#1}\ascii}
 
-\def\MPtext       #1{\getvalue{\@@MPT#1}}
-\def\MPstring    #1{"\getvalue{\@@MPT#1}"}
-\def\MPbetex #1{btex \getvalue{\@@MPT#1} etex}
+% \def\MPtext       #1{\getvalue{\@@MPT#1}}
+% \def\MPstring    #1{"\getvalue{\@@MPT#1}"}
+% \def\MPbetex #1{btex \getvalue{\@@MPT#1} etex}
+
+\def\MPtext       #1{\executeifdefined{\@@MPT#1}\empty}
+\def\MPstring    #1{"\executeifdefined{\@@MPT#1}\empty"}
+\def\MPbetex #1{btex \executeifdefined{\@@MPT#1}\empty etex}
 
 %D Unfortunately \METAPOST\ does not have \CMYK\ support
 %D built in, but by means of specials we can supply the
@@ -960,6 +964,14 @@
 %D New:
 
 % \appendtoks \closeMPgraphicfiles \to \everystoptext
+
+%D New:
+
+\newconditional\manyMPspecials % when set to true, > 1000 specials can be used
+
+\prependtoks
+  _special_div_ := 1000\ifconditional\manyMPspecials0\fi ;
+\to \MPextensions
 
 \protect \endinput
 

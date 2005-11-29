@@ -35,6 +35,8 @@ numeric _special_counter_ ; _special_counter_ :=   0 ;
 numeric _color_counter_   ; _color_counter_   :=  11 ; % < 10 reserved
 numeric _special_signal_  ; _special_signal_  := 123 ;
 
+numeric _special_div_ ; _special_div_ := 1000 ;
+
 %D When set to \type {true}, shading will be supported. Some
 %D day I will also write an additional directive.
 
@@ -63,7 +65,7 @@ string _local_specials_  ; _local_specials_  := "" ;
 
 vardef add_special_signal = % write the version number
   if (length _global_specials_ <> 0) or (length _local_specials_ <> 0) :
-    special ("%%MetaPostSpecials: 1.0 " & decimal _special_signal_ ) ;
+    special ("%%MetaPostSpecials: 2.0 " & decimal _special_signal_ & " " & decimal _special_div_) ;
   fi ;
 enddef ;
 
@@ -282,12 +284,12 @@ enddef ;
 
 primarydef p withshade sc = % == p withcolor shadecolor(sh)
   hide (_color_counter_ := _color_counter_ + 1)
-  p withcolor (_special_signal_/1000,_color_counter_/1000,sc/1000)
+  p withcolor (_special_signal_/_special_div_,_color_counter_/_special_div_,sc/_special_div_)
 enddef ;
 
 vardef shadecolor(expr sc) =
   hide (_color_counter_ := _color_counter_ + 1)
-  (_special_signal_/1000,_color_counter_/1000,sc/1000)
+  (_special_signal_/_special_div_,_color_counter_/_special_div_,sc/_special_div_)
 enddef ;
 
 %D Figure inclusion.
@@ -307,8 +309,7 @@ def doexternalfigure (expr filename) text transformation =
   addto p contour unitsquare scaled 0 ;
   setbounds p to unitsquare transformed t ;
   _color_counter_ := _color_counter_ + 1 ;
-  draw p withcolor (_special_signal_/1000,_color_counter_/1000,_special_counter_/1000) ;
-%draw p withcolor (_special_signal_/1000,cef/1000,_special_counter_/1000) ;
+  draw p withcolor (_special_signal_/_special_div_,_color_counter_/_special_div_,_special_counter_/_special_div_) ;
   endgroup ;
 enddef ;
 
@@ -331,11 +332,9 @@ def dohyperpath (expr destination) expr somepath =
   flush_special(20, 7,
     ddecimal (xpart llcorner somepath, ypart llcorner somepath) & " " &
     ddecimal (xpart urcorner somepath, ypart urcorner somepath) & " " & destination) ;
-%  currenthyperlink := currenthyperlink + 1 ;
   _color_counter_ := _color_counter_ + 1 ;
   fill boundingbox unitsquare scaled 0 withcolor
-    (_special_signal_/1000,_color_counter_/1000,_special_counter_/1000) ;
-%    (_special_signal_/1000,currenthyperlink/1000,_special_counter_/1000) ;
+    (_special_signal_/_special_div_,_color_counter_/_special_div_,_special_counter_/_special_div_) ;
   endgroup ;
 enddef ;
 
@@ -399,14 +398,14 @@ vardef cmyk(expr c,m,y,k) =
     if not ok :
       save s ; string s ; s := dddecimal (c,m,y) & " " & decimal k ;
       _cmyk_counter_ := _cmyk_counter_ + 1 ;
-      cmykcolorpattern[_cmyk_counter_/1000] := s ;
+      cmykcolorpattern[_cmyk_counter_/_special_div_] := s ;
       cmykcolorhash[c][m][y][k] := _cmyk_counter_ ;
       flush_special(1, 7, decimal _cmyk_counter_ & " " & s) ;
       _local_specials_ := _local_specials_ &
         " cmykcolorhash[" & decimal c & "][" & decimal m &
         "][" & decimal y & "][" & decimal k & "] := -1 ; " ;
     fi ;
-    (_special_signal_/1000,1/1000,cmykcolorhash[c][m][y][k]/1000)
+    (_special_signal_/_special_div_,1/_special_div_,cmykcolorhash[c][m][y][k]/_special_div_)
   else :
     (1-c-k,1-m-k,1-y-k)
   fi
@@ -432,68 +431,6 @@ enddef ;
 resetspotcolors ; boolean spotcolors ; spotcolors := false ; % true
 
 string spotcolorpattern[] ; % needed for transparancies
-
-% vardef spotcolor(expr p, s) =
-%   if spotcolors :
-%     save ok, pc_tag ; boolean ok ; string pc_tag ;
-%     pc_tag := "_pct_"&p ;
-%     if not unstringed(pc_tag) :
-%       _spotcolor_number_ := _spotcolor_number_ + 1 ;
-%       setunstringed(pc_tag,_spotcolor_number_) ;
-%     fi ;
-%     pp := getunstringed(pc_tag) ;
-%     if unknown spotcolorhash[pp][s] :
-%       ok := false ; % not yet defined
-%     elseif spotcolorhash[pp][s] = -1 :
-%       ok := false ; % locally defined and undefined
-%     else :
-%       ok := true ;  % globally already defined
-%     fi ;
-%     if not ok :
-%       save ss ; string ss ; ss := p & " " & decimal s ;
-%       _spotcolor_counter_ := _spotcolor_counter_ + 1 ;
-%       spotcolorpattern[_spotcolor_counter_/1000] := ss ;
-%       spotcolorhash[pp][s] := _spotcolor_counter_ ;
-%       flush_special(2, 5, decimal _spotcolor_counter_ & " " & ss) ;
-%       _local_specials_ := _local_specials_ &
-%         "spotcolorhash["&decimal pp&"]["&decimal s&"]:=-1;" ;
-%     fi ;
-%     (_special_signal_/1000,2/1000,spotcolorhash[pp][s]/1000)
-%   else :
-%     (1-s,1-s,1-s)
-%   fi
-% enddef ;
-
-% vardef spotcolor(expr p, s) =
-%   if spotcolors :
-%     save ok, pc_tag ; boolean ok ; string pc_tag ;
-%     pc_tag := "_pct_"&p ;
-%     if not unstringed(pc_tag) :
-%       _spotcolor_number_ := _spotcolor_number_ + 1 ;
-%       setunstringed(pc_tag,_spotcolor_number_) ;
-%     fi ;
-%     pp := getunstringed(pc_tag) ;
-%     if unknown spotcolorhash[pp][s] :
-%       ok := false ; % not yet defined
-%     elseif spotcolorhash[pp][s] = -1 :
-%       ok := false ; % locally defined and undefined
-%     else :
-%       ok := true ;  % globally already defined
-%     fi ;
-%     if not ok :
-%       save ss ; string ss ; ss := p & " " & decimal s ;
-%       _spotcolor_counter_ := _spotcolor_counter_ + 1 ;
-%       spotcolorpattern[_spotcolor_counter_/1000] := ss ;
-%       spotcolorhash[pp][s] := _spotcolor_counter_ ;
-%       flush_special(2, 5, decimal _spotcolor_counter_ & " " & ss) ;
-%       _local_specials_ := _local_specials_ &
-%         "spotcolorhash["&decimal pp&"]["&decimal s&"]:=-1;" ;
-%     fi ;
-%     (_special_signal_/1000,2/1000,spotcolorhash[pp][s]/1000)
-%   else :
-%     (1-s,1-s,1-s)
-%   fi
-% enddef ;
 
 vardef spotcolor(expr p, s) =
   multitonecolor(p, 1, "", decimal s)
@@ -524,13 +461,13 @@ vardef multitonecolor(expr n, f, d, p) = % name fractions names factors
     if not ok :
       save ss ; string ss ; ss := n & " " & decimal f & " " & if d = "" : n else : d fi & " " & p ;
       _spotcolor_counter_ := _spotcolor_counter_ + 1 ;
-      spotcolorpattern[_spotcolor_counter_/1000] := ss ;
+      spotcolorpattern[_spotcolor_counter_/_special_div_] := ss ;
       spotcolorhash[pp][ps] := _spotcolor_counter_ ;
       flush_special(2, 7, decimal _spotcolor_counter_ & " " & ss) ;
       _local_specials_ := _local_specials_ &
         "spotcolorhash["&decimal pp&"]["&decimal ps&"]:=-1;" ;
     fi ;
-    (_special_signal_/1000,2/1000,spotcolorhash[pp][ps]/1000)
+    (_special_signal_/_special_div_,2/_special_div_,spotcolorhash[pp][ps]/_special_div_)
   else :
    .5white
   fi
@@ -550,63 +487,6 @@ differencetransparent := 11 ; exclusiontransparent  := 12 ;
 
 % fill fullcircle scaled 10cm withcolor transparant(.8,3,color) ;
 
-% vardef transparent(expr n, t, c) =
-%   save s, ss, nn, cc, is_cmyk, is_spot, ok ;
-%   string s, ss ; numeric nn ; color cc ; boolean is_cmyk, is_spot, ok ;
-%   % transparancy type
-%   if string n :
-%     if expandafter known scantokens(n&"transparent") :
-%       nn := scantokens(n&"transparent") ;
-%     else :
-%       nn := 0 ;
-%     fi
-%   else : % nn := min(n,13)
-%     nn := if n<13 : n else : nn := 0 fi ;
-%   fi ;
-%   % we need to expand the color (can be cmyk(..) or predefined)
-%   cc := c ; % expand color
-%   % check for cmyk special
-%   is_cmyk := (redpart   cc = _special_signal_/1000)
-%          and (greenpart cc = 1/1000) ;
-%   is_spot := (redpart   cc = _special_signal_/1000)
-%          and (greenpart cc = 2/1000) ;
-%   % build special string, fetch cmyk components
-%   s := decimal nn & " " & decimal t & " " &
-%        if     is_cmyk : cmykcolorpattern[bluepart cc]
-%        elseif is_spot : spotcolorpattern[bluepart cc]
-%        else           : dddecimal cc fi ;
-%   % check if this one is already used
-%   ss := "tr_" & s ;
-%   % efficiency hack
-%   if expandafter unknown scantokens(ss) :
-%     ok := false ; % not yet defined
-%   elseif scantokens(ss) < 0  :
-%     ok := false ; % locally defined and undefined
-%   else :
-%     ok := true ;  % globally already defined
-%   fi ;
-%   if not ok :
-%     if is_spot  :
-%       flush_special(5, 6, s) ;
-%     elseif is_cmyk :
-%       flush_special(4, 8, s) ;
-%     else :
-%       flush_special(3, 7, s) ;
-%     fi ;
-%     scantokens(ss) := _special_counter_ ;
-%     _local_specials_ := _local_specials_ &
-%       "scantokens(" & ditto & ss & ditto & ") := -1 ;" ;
-%   fi ;
-%   % go ahead
-%   if is_spot :
-%     (_special_signal_/1000,5/1000,scantokens(ss)/1000)
-%   elseif is_cmyk :
-%     (_special_signal_/1000,4/1000,scantokens(ss)/1000)
-%   else :
-%     (_special_signal_/1000,3/1000,scantokens(ss)/1000)
-%   fi
-% enddef ;
-
 vardef transparent(expr n, t, c) =
   save s, ss, nn, cc, is_cmyk, is_spot, ok ;
   string s, ss ; numeric nn ; color cc ; boolean is_cmyk, is_spot, ok ;
@@ -623,10 +503,10 @@ vardef transparent(expr n, t, c) =
   % we need to expand the color (can be cmyk(..) or predefined)
   cc := c ; % expand color
   % check for cmyk special
-  is_cmyk := (redpart   cc = _special_signal_/1000)
-         and (greenpart cc = 1/1000) ;
-  is_spot := (redpart   cc = _special_signal_/1000)
-         and (greenpart cc = 2/1000) ;
+  is_cmyk := (redpart   cc = _special_signal_/_special_div_)
+         and (greenpart cc = 1/_special_div_) ;
+  is_spot := (redpart   cc = _special_signal_/_special_div_)
+         and (greenpart cc = 2/_special_div_) ;
   % build special string, fetch cmyk components
   s := decimal nn & " " & decimal t & " " &
        if     is_cmyk : cmykcolorpattern[bluepart cc]
@@ -661,11 +541,11 @@ vardef transparent(expr n, t, c) =
   fi ;
   % go ahead
   if is_spot :
-    (_special_signal_/1000,5/1000,scantokens(ss)/1000)
+    (_special_signal_/_special_div_,5/_special_div_,scantokens(ss)/_special_div_)
   elseif is_cmyk :
-    (_special_signal_/1000,4/1000,scantokens(ss)/1000)
+    (_special_signal_/_special_div_,4/_special_div_,scantokens(ss)/_special_div_)
   else :
-    (_special_signal_/1000,3/1000,scantokens(ss)/1000)
+    (_special_signal_/_special_div_,3/_special_div_,scantokens(ss)/_special_div_)
   fi
 enddef ;
 
@@ -731,7 +611,7 @@ endinput ;
 
 % vardef normalgray(expr s      ) = (s,s,s) enddef ;
 % vardef normalrgb (expr r,g,b  ) = (r,g,b) enddef ;
-% vardef normalcmyk(expr c,m,y,k) = if cmykcolors : save ok ; boolean ok ; if unknown cmykcolorhash[c][m][y][k] : ok := false ; elseif cmykcolorhash[c][m][y][k] = -1 : ok := false ; else : ok := true ; fi ; if not ok : save s ; string s ; s := dddecimal (c,m,y) & " " & decimal k ; _cmyk_counter_ := _cmyk_counter_ + 1 ; cmykcolorpattern[_cmyk_counter_/1000] := s ; cmykcolorhash[c][m][y][k] := _cmyk_counter_ ; flush_special(1, 7, decimal _cmyk_counter_ & " " & s) ; _local_specials_ := _local_specials_ & " cmykcolorhash[" & decimal c & "][" & decimal m & "][" & decimal y & "][" & decimal k & "] := -1 ; " ; fi ; (_special_signal_/1000,1/1000,cmykcolorhash[c][m][y][k]/1000) else : (1-c-k,1-m-k,1-y-k) fi enddef ;
+% vardef normalcmyk(expr c,m,y,k) = if cmykcolors : save ok ; boolean ok ; if unknown cmykcolorhash[c][m][y][k] : ok := false ; elseif cmykcolorhash[c][m][y][k] = -1 : ok := false ; else : ok := true ; fi ; if not ok : save s ; string s ; s := dddecimal (c,m,y) & " " & decimal k ; _cmyk_counter_ := _cmyk_counter_ + 1 ; cmykcolorpattern[_cmyk_counter_/_special_div_] := s ; cmykcolorhash[c][m][y][k] := _cmyk_counter_ ; flush_special(1, 7, decimal _cmyk_counter_ & " " & s) ; _local_specials_ := _local_specials_ & " cmykcolorhash[" & decimal c & "][" & decimal m & "][" & decimal y & "][" & decimal k & "] := -1 ; " ; fi ; (_special_signal_/_special_div_,1/_special_div_,cmykcolorhash[c][m][y][k]/_special_div_) else : (1-c-k,1-m-k,1-y-k) fi enddef ;
 
 % vardef gray(expr s)       = normalgray(s      ) enddef ;
 % vardef rgb (expr r,g,b)   = normalrgb (r,g,b  ) enddef ;
