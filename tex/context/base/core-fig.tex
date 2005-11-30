@@ -1436,7 +1436,7 @@
           \box\foundexternalfigure
         \fi\fi\fi
       \else
-        \feedbackexternalfigure
+        \iftrialtypesetting \else \feedbackexternalfigure \fi
         \settrue\externalfigurelevel
         \ifskipexternalfigures
           \externalfigurereplacement\figurelabel\figurefullname{skipped}%
@@ -1469,7 +1469,8 @@
         \fi\fi\fi
       \fi
 \else
-  \feedbackexternalfigure % maybe also; \the\externalfigurepostprocessors
+  % maybe also \the\externalfigurepostprocessors
+  \iftrialtypesetting \else \feedbackexternalfigure \fi
 \fi}%
    \globalpopmacro\figurefilecache
    \globalpopmacro\figurefilepath
