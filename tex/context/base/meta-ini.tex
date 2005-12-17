@@ -815,7 +815,10 @@
 %D However, on a 1 Gig Pentium, the next alternative saves
 %D us 20 seconds run time for the 300 page \METAFUN\ manual:
 
-\def\insertMPfile#1#2{\doinsertMPfile{#1}}
+\let\insertMPfileARG\insertMPfile
+
+\def\insertMPfile#1#2% in context #2 is empty
+  {\doifelsenothing{#2}{\doinsertMPfile{#1}}{\insertMPfileARG{#1}{#2}}}
 
 \def\includeMPasEPS#1%
   {\bgroup

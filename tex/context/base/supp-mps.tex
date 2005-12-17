@@ -1640,7 +1640,7 @@
 \def\getMPdrawing
   {\ifMPdrawingdone
      \expandafter\startMPgraphic\MPdrawingdata\stopMPgraphic
-     \loadcurrentMPgraphic\empty
+     \loadcurrentMPgraphic{}%
      \deallocateMPslot\currentMPgraphic
      \placeMPgraphic
    \fi}

@@ -3149,13 +3149,13 @@
    \loop
      \ifdim\pagetotal=\zeropoint % empty page
        \scratchdimen\textheight
-       \chardef\backgroundsplit1 % split to max height
+       \chardef\backgroundsplit\plusone % split to max height
      \else
        \scratchdimen\pagegoal
        \setbox\scratchbox\vbox{\@@agbefore}%
        \advance\scratchdimen -\ht\scratchbox
        \advance\scratchdimen -\pagetotal
-       \chardef\backgroundsplit2 % split to partial height
+       \chardef\backgroundsplit\plustwo % split to partial height
      \fi
      \advance\scratchdimen -\@@agtopoffset
      \advance\scratchdimen -\@@agbottomoffset \relax
@@ -3164,7 +3164,7 @@
          \setbox2\vsplit0 to \scratchdimen
        \else
          \setbox2\box0
-         \chardef\backgroundsplit0 % no split
+         \chardef\backgroundsplit\zerocount % no split
        \fi
        \setbox2\vbox \ifcase\backgroundsplit\or to \textheight \fi % max split
          {\vskip\@@agtopoffset

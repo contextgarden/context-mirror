@@ -35,15 +35,15 @@
 --     check=check_text
 --
 -- ctx.spellcheck.language=auto
--- ctx.spellcheck.wordsize=3
+-- ctx.spellcheck.wordsize=4
 -- ctx.spellcheck.wordpath=ENV(CTXSPELLPATH)
 --
 -- ctx.spellcheck.wordfile.all=spell-uk.txt,spell-nl.txt
 --
 -- ctx.spellcheck.wordfile.uk=spell-uk.txt
 -- ctx.spellcheck.wordfile.nl=spell-nl.txt
--- ctx.spellcheck.wordsize.uk=3
--- ctx.spellcheck.wordsize.nl=3
+-- ctx.spellcheck.wordsize.uk=4
+-- ctx.spellcheck.wordsize.nl=4
 --
 -- command.name.21.*=CTX Action List
 -- command.subsystem.21.*=3
@@ -487,7 +487,7 @@ local wordsize = props["ctx.spellcheck.wordsize"]
 local wordpath = props["ctx.spellcheck.wordpath"]
 
 if language == '' then language = 'uk' end
-if wordsize == '' then wordsize = 3    else wordsize = tonumber(wordsize) end
+if wordsize == '' then wordsize = 4    else wordsize = tonumber(wordsize) end
 
 local wordfile = ""
 local wordlist = {}

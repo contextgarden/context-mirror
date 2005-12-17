@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 
-<cd:interface xmlns:cd="http://www.pragma-ade.com/commands" name="context" language="ro" version="2005.12.01">
+<cd:interface xmlns:cd="http://www.pragma-ade.com/commands" name="context" language="ro" version="2005.12.18">
 
   <cd:variables>
     <cd:variable name="one" value="unu"/>
@@ -509,6 +509,7 @@
     <cd:variable name="top" value="sus"/>
     <cd:variable name="wide" value="larg"/>
     <cd:variable name="width" value="latime"/>
+    <cd:variable name="minwidth" value="latimeminima"/>
     <cd:variable name="outer" value="extern"/>
     <cd:variable name="numbers" value="numere"/>
     <cd:variable name="Numbers" value="Numere"/>
@@ -555,6 +556,7 @@
     <cd:variable name="header" value="antet"/>
     <cd:variable name="high" value="inalt"/>
     <cd:variable name="height" value="inaltime"/>
+    <cd:variable name="minheight" value="inaltimeminima"/>
     <cd:variable name="horizontal" value="orizontal"/>
     <cd:variable name="current" value="curent"/>
     <cd:variable name="hz" value="hz"/>
@@ -1586,6 +1588,7 @@
     <cd:command name="startcolumnmakeup" value="startcolumnmakeup"/>
     <cd:command name="stopcolumnmakeup" value="stopcolumnmakeup"/>
     <cd:command name="usetypescript" value="usetypescript"/>
+    <cd:command name="usetypescriptfile" value="usetypescriptfile"/>
   </cd:commands>
 
   <cd:commands>

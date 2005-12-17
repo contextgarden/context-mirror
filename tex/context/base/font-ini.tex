@@ -4710,15 +4710,16 @@
    \scaledfont\currentfontscale\bodyfontsize
    \scaledfont\relativefontsize\scaledfont}
 
-\def\variant[#1]% slow
+\unexpanded\def\variant[#1]% slow
   {\dosetscaledfont
    \expanded{\definedfont
      [\truefontname{\fontstringA\fontstylesuffix\fontvariant\fontstringA{#1}}
-        at \scaledfont]}}
+        at \scaledfont]}%
+   \ignoreimplicitspaces}
 
 \beginXETEX  \font
 
-  \def\variant[#1]%
+  \unexpanded\def\variant[#1]%
     {\dosetscaledfont
      \font\variantfont\truefontname{\fontstringA\fontstylesuffix\fontvariant\fontstringA{#1}}
         at \scaledfont

@@ -123,8 +123,13 @@
 %    \ifvmode\nobreak\fi
 %    \GotoPar}
 
+\long\def\doflushatpar#1%
+%   {\dogotopar{#1}}
+%   {\dogotopar{\dontleavehmode#1}}   % this one can introduce empty lines
+  {\dogotopar{#1\ifvmode\nobreak\fi}} % while this one can mess up vertical space
+
 \def\dodoregister[#1]#2#3%
-  {\dogotopar{\doprocesspageregister[#1]{#2}{#3}}}
+  {\doflushatpar{\doprocesspageregister[#1]{#2}{#3}}}
 
 \def\writetoregister[#1]% to be documented
   {\doregister{#1}}
@@ -163,17 +168,42 @@
    \def\currentregister{#1}%
    \dodoregister[#2]{}{#3}} % key altnum entry
 
-\def\complexdoseeregister[#1]#2#3%
+% \def\complexdoseeregister[#1]#2#3%
+%   {\begingroup
+%      \thisisnextinternal\s!ind
+%      \ifduplicate\getlastregisterentry{#2}\fi
+%      \convertexpanded{\registerparameter\c!keyexpansion}{#1}\asciiregisterentryA
+%      \convertexpanded{\registerparameter\c!expansion   }{#2}\asciiregisterentryB
+%      \convertexpanded{\registerparameter\c!expansion   }{#3}\asciiregisterentryC
+%      \doifsomething{\registerparameter\c!keyexpansion}
+%        {\ifx\asciiregisterentryA\empty
+%           \convertexpanded{\registerparameter\c!keyexpansion}{#2}\asciiregisterentryA
+%         \fi}%
+%      \makesectionformat
+%      \expanded
+%        {\writeutility%
+%           {r s %
+%            {\currentregister} %
+%            {\nextinternalreference} %
+%            {\asciiregisterentryA} %
+%            {\asciiregisterentryB} %
+%            {\asciiregisterentryC} %
+%            {\sectionformat}}}%
+%    \endgroup
+%    \registerinfo{> see}{#2}%
+%    \GotoPar}
+
+\def\doprocessseeregister[#1]#2#3%
   {\begingroup
      \thisisnextinternal\s!ind
      \ifduplicate\getlastregisterentry{#2}\fi
      \convertexpanded{\registerparameter\c!keyexpansion}{#1}\asciiregisterentryA
      \convertexpanded{\registerparameter\c!expansion   }{#2}\asciiregisterentryB
      \convertexpanded{\registerparameter\c!expansion   }{#3}\asciiregisterentryC
-\doifsomething{\registerparameter\c!keyexpansion}
-  {\ifx\asciiregisterentryA\empty
-     \convertexpanded{\registerparameter\c!keyexpansion}{#2}\asciiregisterentryA
-   \fi}%
+     \doifsomething{\registerparameter\c!keyexpansion}
+       {\ifx\asciiregisterentryA\empty
+          \convertexpanded{\registerparameter\c!keyexpansion}{#2}\asciiregisterentryA
+        \fi}%
      \makesectionformat
      \expanded
        {\writeutility%
@@ -185,16 +215,18 @@
            {\asciiregisterentryC} %
            {\sectionformat}}}%
    \endgroup
-   \registerinfo{> see}{#2}%
-   \GotoPar}
+   \registerinfo{> see}{#2}}
+
+\def\complexdoseeregister[#1]#2#3%
+  {\doflushatpar{\doprocessseeregister[#1]{#2}{#3}}}
 
 \def\doseeregister#1%
   {\def\currentregister{#1}%
-   \complexorsimpleempty\doseeregister}
+   \complexorsimpleempty\doseeregister} % = \dosingleempty\doseeregister
 
-\def\dowritetoregister[#1]%  % de twee-traps-aanroep is nodig
-  {\edef\currentregister{#1}%    % om gebruik van \ExpandBothAfter
-   \doprocesspageregister{}}     % mogelijk te maken
+\def\dowritetoregister[#1]%   % de twee-traps-aanroep is nodig
+  {\edef\currentregister{#1}% % om gebruik van \ExpandBothAfter
+   \doprocesspageregister}    % mogelijk te maken
 
 \def\writetoregister
   {\dodoubleempty\dowritetoregister}
@@ -742,11 +774,29 @@
          \docommandoprolinrefB{#1}\nextlistreference\v!next
        \fi}}
 
-\def\dodolinkedregister[#1][#2]#3% page auto link
+% \def\dodolinkedregister[#1][#2]#3% page auto link
+%   {\bgroup
+%    \chardef\registerpagestatus\plusone
+%    \def\currentregister{#1}%
+%    \iflocation
+%      \ifautoregisterhack
+%        \def\next{\doprocessautoregister[#1][#2]}%
+%      \else
+%        \def\next{\doprocesslinkregister[#1][#2]}%
+%      \fi
+%    \else
+%      \def\next{\doprocesspageregister[#2]{}}%
+%    \fi
+%    \next{#3}%
+%    \egroup
+%    \ifvmode\nobreak\fi
+%    \GotoPar}
+
+\def\doprocesslinkedregister[#1][#2]#3% page auto link
   {\bgroup
    \chardef\registerpagestatus\plusone
    \def\currentregister{#1}%
-   \iflocation
+   \iflocation % \next is not needed
      \ifautoregisterhack
        \def\next{\doprocessautoregister[#1][#2]}%
      \else
@@ -756,9 +806,10 @@
      \def\next{\doprocesspageregister[#2]{}}%
    \fi
    \next{#3}%
-   \egroup
-   \ifvmode\nobreak\fi
-   \GotoPar}
+   \egroup}
+
+\def\dodolinkedregister[#1][#2]#3% page auto link
+  {\doflushatpar{\doprocesslinkedregister[#1][#2]{#3}}}
 
 \def\dolinkedregister#1%
   {\dodoubleempty\dodolinkedregister[#1]}

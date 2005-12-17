@@ -135,8 +135,9 @@
   {\convertargument            #7\to\asciia
    \convertcommand \DroppedString\to\asciib
    \ExpandBothAfter\doifinstringelse\asciia\asciib
-     {\dontleavehmode
-      \ifhmode\hskip-\parindent\fi
+     {\noindenting
+      \dontleavehmode
+     %\ifhmode\hskip-\parindent\fi % sensitive for context mechanism
       \keeplinestogether{#6}%
       \setbox0\hbox{\definedfont[#2 at #3]#1{#7}\hskip#4}%
       \ifdim\dp0>\strutdp % one of those Q's , will be option

@@ -52,7 +52,7 @@
 # linotype optima-nova
 
 --en=? --ve=linotype --co=optima-nova --re
---en=? --ve=linotype --co=optima-nova --so=ghz/optima-nova --ma --in
+--en=? --ve=linotype --co=optima-nova --so=linotype/optima-nova --ma --in
 
 # linotype orion
 

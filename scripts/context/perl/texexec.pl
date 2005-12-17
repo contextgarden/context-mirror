@@ -11,7 +11,7 @@ eval '(exit $?0)' && eval 'exec perl -w -S $0 ${1+"$@"}' && eval 'exec perl -w -
 #D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
 #C
 #C This module is part of the \CONTEXT\ macro||package and is
-#C therefore copyrighted by \PRAGMA. See licen-en.pdf for
+#C therefore copyrighted by \PRAGMA. See readme.pdf for
 #C details.
 
 #  Thanks to Tobias  Burnus    for the german translations.
@@ -2010,7 +2010,11 @@ sub checktexformatpath {
     if ($texformats eq '') {
         if ($UseEnginePath) {
             if ($dosish) {
-                $texformats = `kpsewhich --engine=$TeXExecutable --expand-var=\$TEXFORMATS` ;
+                if ( $TeXShell =~ /MikTeX/io ) {
+                    $texformats = `kpsewhich --alias=$TeXExecutable --expand-var=\$TEXFORMATS` ;
+                } else {
+                    $texformats = `kpsewhich --engine=$TeXExecutable --expand-var=\$TEXFORMATS` ;
+                }
             } else {
                 $texformats = `kpsewhich --engine=$TeXExecutable --expand-var=\\\$TEXFORMATS` ;
             }
@@ -2365,7 +2369,11 @@ sub LocatedFormatPath { # watch out $engine is lowercase in kpse
             # expanded paths
             print "       assuming engine : $EnginePath\n";
             if (($UseEnginePath)&&($EngineDone)) {
-                $FormatPath = `$kpsewhich --engine=$EnginePath --show-path=fmt` ;
+                if ( $TeXShell =~ /MikTeX/io ) {
+                    $FormatPath = `$kpsewhich --alias=$EnginePath --show-path=fmt` ;
+                } else {
+                    $FormatPath = `$kpsewhich --engine=$EnginePath --show-path=fmt` ;
+                }
             } else {
                 $FormatPath = `$kpsewhich --show-path=fmt` ;
             }
@@ -2377,7 +2385,11 @@ sub LocatedFormatPath { # watch out $engine is lowercase in kpse
             if ($FormatPath eq '') {
                 if (($UseEnginePath)&&($EngineDone)) {
                     if ($dosish) {
-                        $FormatPath = `$kpsewhich --engine=$EnginePath --expand-path=\$TEXFORMATS` ;
+                        if ( $TeXShell =~ /MikTeX/io ) {
+                            $FormatPath = `$kpsewhich --alias=$EnginePath --expand-path=\$TEXFORMATS` ;
+                        } else {
+                            $FormatPath = `$kpsewhich --engine=$EnginePath --expand-path=\$TEXFORMATS` ;
+                        }
                     } else {
                         $FormatPath = `$kpsewhich --engine=$EnginePath --expand-path=\\\$TEXFORMATS` ;
                     }

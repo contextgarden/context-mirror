@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 
-<cd:interface xmlns:cd="http://www.pragma-ade.com/commands" name="context" language="cz" version="2005.12.01">
+<cd:interface xmlns:cd="http://www.pragma-ade.com/commands" name="context" language="cz" version="2005.12.18">
 
   <cd:variables>
     <cd:variable name="one" value="jedna"/>
@@ -509,6 +509,7 @@
     <cd:variable name="top" value="vrsek"/>
     <cd:variable name="wide" value="siroce"/>
     <cd:variable name="width" value="sirka"/>
+    <cd:variable name="minwidth" value="minsirka"/>
     <cd:variable name="outer" value="vnejsi"/>
     <cd:variable name="numbers" value="cisla"/>
     <cd:variable name="Numbers" value="Cisla"/>
@@ -555,6 +556,7 @@
     <cd:variable name="header" value="zahlavi"/>
     <cd:variable name="high" value="vysoko"/>
     <cd:variable name="height" value="vyska"/>
+    <cd:variable name="minheight" value="minvyska"/>
     <cd:variable name="horizontal" value="horizontalne"/>
     <cd:variable name="current" value="aktualni"/>
     <cd:variable name="hz" value="hz"/>
@@ -1586,6 +1588,7 @@
     <cd:command name="startcolumnmakeup" value="startcolumnmakeup"/>
     <cd:command name="stopcolumnmakeup" value="stopcolumnmakeup"/>
     <cd:command name="usetypescript" value="usetypescript"/>
+    <cd:command name="usetypescriptfile" value="usetypescriptfile"/>
   </cd:commands>
 
   <cd:commands>

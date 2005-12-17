@@ -120,7 +120,7 @@ for  miktex  set  TeXVirginFlag     to  --initialize
 for  miktex  set  TeXPassString     to  --alias=context --translate-file=natural.tcx
 for  miktex  set  TeXBatchFlag      to  --interaction=batchmode
 for  miktex  set  TeXNonStopFlag    to  --interaction=nonstopmode
-for  miktex  set  MpToTeXExecutable to  mptotex
+for  miktex  set  MpToTeXExecutable to  mpto
 for  miktex  set  MpVirginFlag      to  --initialize
 for  miktex  set  MpPassString      to  --alias=mpost --translate-file=natural.tcx
 for  miktex  set  MpBatchFlag       to  --interaction=batchmode

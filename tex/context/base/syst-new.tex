@@ -857,11 +857,26 @@
 
 \endETEX
 
+\beginTEX
+
 \def\uncompresslist[#1]%
   {\def\uncompressedlist{#1}}
 
-\beginTEX
-
 \endTEX
+
+%D \macros
+%D   {ignoreimplicitspaces}
+%D
+%D \startbuffer
+%D \def\whatever[#1]{\expanded{\definedfont[#1 at 12pt]}\ignorespaces}
+%D {a\whatever[Serif]b a\whatever[Serif] b a\whatever[Serif]\space b}
+%D \def\whatever[#1]{\expanded{\definedfont[#1 at 12pt]}\ignoreimplicitspaces}
+%D {a\whatever[Serif]b a\whatever[Serif] b a\whatever[Serif]\space b}
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
+
+\def\ignoreimplicitspaces
+  {\doifnextcharelse\relax\relax\relax}
 
 \protect \endinput

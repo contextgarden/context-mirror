@@ -13,13 +13,123 @@
 
 % actually this is also a filter -> enco-fcn.tex
 
-%D This is an experimental definition. Since we are dealing 
-%D with unicode's, the registered values are not saved, so 
-%D actually we're dealing with an pseudo encoding. The digits 
-%D on the other hand are encoding specific. 
+%D This is an experimental definition. Since we are dealing
+%D with unicode's, the registered values are not saved, so
+%D actually we're dealing with an pseudo encoding. The digits
+%D on the other hand are encoding specific.
 
 % chinese classes: left=1|right=2|center=3
- 
+
+% untested, probably wrong
+
+\startencoding[c-uni]
+
+\defineuclass 1  32 24
+\defineuclass 1  32 28
+\defineuclass 1  48 20
+\defineuclass 1  48  8
+\defineuclass 1  48 10
+\defineuclass 1  48 12
+\defineuclass 1  48 14
+\defineuclass 1  48 22
+\defineuclass 1  48 16
+\defineuclass 1 255  8
+\defineuclass 1 255 59
+\defineuclass 1 255 64
+\defineuclass 1 255 91
+
+\defineuclass 3   0 183
+\defineuclass 3   0 168
+\defineuclass 3  32  38
+\defineuclass 3 255  30
+
+\defineuclass 2  48   1
+\defineuclass 2  48   2
+\defineuclass 2  32  20
+\defineuclass 2 255  94
+\defineuclass 2  32  25
+\defineuclass 2  32  29
+\defineuclass 2  48  21
+\defineuclass 2  48   9
+\defineuclass 2  48  11
+\defineuclass 2  48  13
+\defineuclass 2  48  15
+\defineuclass 2  48  23
+\defineuclass 2  48  17
+\defineuclass 2  34  55
+\defineuclass 2   0 176
+\defineuclass 2  32  50
+\defineuclass 2  32  51
+\defineuclass 2 255   1
+\defineuclass 2 255   2
+\defineuclass 2 255   7
+\defineuclass 2 255   9
+\defineuclass 2 255  12
+\defineuclass 2 255  14
+\defineuclass 2 255  26
+\defineuclass 2 255  27
+\defineuclass 2 255  31
+\defineuclass 2 255  61
+\defineuclass 2 255  93
+
+\defineudigit         0   37 203
+\defineudigit         1   78   0
+\defineudigit         2   78 140
+\defineudigit         3   78   9
+\defineudigit         4   86 219
+\defineudigit         5   78 148
+\defineudigit         6   81 109
+\defineudigit         7   78   3
+\defineudigit         8   81 107
+\defineudigit         9   78  93
+\defineudigit        10   83  65
+\defineudigit       100  118 126
+\defineudigit      1000   83  67
+\defineudigit     10000   78   7
+\defineudigit 100000000   78 191
+
+\defineudigit         0* 150 246
+\defineudigit         1*  88 249
+\defineudigit         2* 141  48
+\defineudigit         3*  83 193
+\defineudigit         4* 128 134
+\defineudigit         5*  79  13
+\defineudigit         6* 150  70
+\defineudigit         7* 103 210
+\defineudigit         8*  99  76
+\defineudigit         9* 115 150
+\defineudigit        10*  98 254
+\defineudigit       100*  79 112
+\defineudigit      1000*  78 223
+\defineudigit     10000* 132  44
+\defineudigit 100000000*  78 191
+
+\defineudigit 20 94 255
+\defineudigit 21 78   0
+\defineudigit 22 78 140
+\defineudigit 23 78   9
+\defineudigit 24 86 219
+\defineudigit 25 78 148
+\defineudigit 26 81 109
+\defineudigit 27 78   3
+\defineudigit 28 81 107
+\defineudigit 29 78  93
+
+\defineudigit 30 83  69
+\defineudigit 31 78   0
+\defineudigit 32 78 140
+\defineudigit 33 78   9
+\defineudigit 34 86 219
+\defineudigit 35 78 148
+\defineudigit 36 81 109
+\defineudigit 37 78   3
+\defineudigit 38 81 107
+\defineudigit 39 78  93
+
+\stopencoding
+
+% \doif \currentregime {utf} \endinput
+
 \startencoding[big5]
 
 \defineuclass 1 161  93
@@ -138,7 +248,7 @@
 \defineudigit        27  164  67
 \defineudigit        28  164  75
 \defineudigit        29  164  69
-       
+
 \defineudigit        30  164 202
 \defineudigit        31  164  64
 \defineudigit        32  164  71
@@ -258,4 +368,4 @@
 
 \stopencoding
 
-\endinput 
+\endinput

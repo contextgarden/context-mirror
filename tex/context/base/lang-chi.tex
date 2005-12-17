@@ -95,6 +95,53 @@
 
 \def\cnencoding{\enableencoding[\chineseencoding]} % ugly and temporary
 
+\startencoding[uni-c]
+  \definecommand cnleftsentence            {\uchar{32}{20}\uchar{32}{20}}
+  \definecommand cnrightsentence           {\uchar{32}{20}\uchar{32}{20}}
+  \definecommand cnleftsubsentence         {\uchar{32}{20}\uchar{32}{20}}
+  \definecommand cnrightsubsentence        {\uchar{32}{20}\uchar{32}{20}}
+  \definecommand cnupperleftsinglequote    {\uchar{32}{24}}
+  \definecommand cnupperrightsinglequote   {\uchar{32}{25}}
+  \definecommand cnupperleftdoublequote    {\uchar{32}{28}}
+  \definecommand cnupperrightdoublequote   {\uchar{32}{29}}
+  \definecommand cnupperleftsinglequote-v  {\uchar{48}{12}}
+  \definecommand cnupperrightsinglequote-v {\uchar{48}{13}}
+  \definecommand cnupperleftdoublequote-v  {\uchar{48}{14}}
+  \definecommand cnupperrightdoublequote-v {\uchar{48}{15}}
+  \definecommand cnencodedcontents         {\uchar{118}{238}\uchar{95}{85}}
+  \definecommand cnencodedtables           {\uchar{136}{104}\uchar{104}{60}}
+  \definecommand cnencodedfigures          {\uchar{86}{254}\uchar{95}{98}}
+  \definecommand cnencodedindex            {\uchar{125}{34}\uchar{95}{21}}
+  \definecommand cnencodedabbreviations    {\uchar{127}{41}\uchar{117}{101}\uchar{139}{237}}
+  \definecommand cnencodedlogos            {\uchar{95}{189}\uchar{141}{44}}
+  \definecommand cnencodedunits            {\uchar{139}{161}\uchar{145}{207}\uchar{83}{85}\uchar{79}{77}}
+  \definecommand cnencodedtable            {\uchar{136}{104}}
+  \definecommand cnencodedfigure           {\uchar{86}{254}}
+  \definecommand cnencodedintro            {\uchar{123}{44}}
+  \definecommand cnencodedpart             {\uchar{144}{232}\uchar{82}{6}}
+  \definecommand cnencodedchapter          {\uchar{122}{224}}
+  \definecommand cnencodedsection          {\uchar{130}{130}}
+  \definecommand cnencodedjanuary          {\uchar{78}{0}\uchar{103}{8}}
+  \definecommand cnencodedfebrary          {\uchar{78}{140}\uchar{103}{8}}
+  \definecommand cnencodedmarch            {\uchar{78}{9}\uchar{103}{8}}
+  \definecommand cnencodedapril            {\uchar{86}{219}\uchar{103}{8}}
+  \definecommand cnencodedmay              {\uchar{78}{148}\uchar{103}{8}}
+  \definecommand cnencodedjune             {\uchar{81}{109}\uchar{103}{8}}
+  \definecommand cnencodedjuly             {\uchar{78}{3}\uchar{103}{8}}
+  \definecommand cnencodedaugust           {\uchar{81}{107}\uchar{103}{8}}
+  \definecommand cnencodedseptember        {\uchar{78}{93}\uchar{103}{8}}
+  \definecommand cnencodedoctober          {\uchar{83}{65}\uchar{103}{8}}
+  \definecommand cnencodednovember         {\uchar{83}{65}\uchar{78}{0}\uchar{103}{8}}
+  \definecommand cnencodeddecember         {\uchar{83}{65}\uchar{78}{140}\uchar{103}{8}}
+  \definecommand cnencodedsunday           {\uchar{102}{31}\uchar{103}{31}\uchar{101}{229}}
+  \definecommand cnencodedmonday           {\uchar{102}{31}\uchar{103}{31}\uchar{78}{0}}
+  \definecommand cnencodedtuesday          {\uchar{102}{31}\uchar{103}{31}\uchar{78}{140}}
+  \definecommand cnencodedwednesday        {\uchar{102}{31}\uchar{103}{31}\uchar{78}{9}}
+  \definecommand cnencodedthursday         {\uchar{102}{31}\uchar{103}{31}\uchar{86}{219}}
+  \definecommand cnencodedfriday           {\uchar{102}{31}\uchar{103}{31}\uchar{78}{148}}
+  \definecommand cnencodedsaturday         {\uchar{102}{31}\uchar{103}{31}\uchar{81}{109}}
+\stopencoding
+
 \startencoding[gbk]
   \definecommand cnleftsentence            {\uchar{161}{170}\uchar{161}{170}}
   \definecommand cnrightsentence           {\uchar{161}{170}\uchar{161}{170}}

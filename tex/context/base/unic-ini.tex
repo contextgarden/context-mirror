@@ -235,6 +235,7 @@
 %D and testing these macros) another 10\%.
 
 \def\@@univector  {univ}
+\def\@@unicommand {unic}
 \def\@@unknownchar{unknownchar}
 
 %D Now comes the nice part: turning codes into glyphs. The
@@ -401,11 +402,43 @@
        \@EA\doutfunihash\@EA{\number\utfdiv{#1}}{#1}\endcsname
      \fi}
 
+%D Well, we also want a plug-in mechanism, so:
+
+\def\utfunihashglyph#1%
+  {\@EA\doutfunihashglyph\@EA{\number\utfdiv{#1}}{#1}} % only div once
+
+\def\doutfunihashglyph#1#2% div raw
+  {\csname
+     \ifnum#2<\utf@i
+       \strippedcsname\unicodeasciicharacter
+     \else\ifcsname\@@unicommand#1\endcsname
+       \@@unicommand#1%
+     \else\ifcsname\@@univector#1\endcsname
+       \@@univector#1%
+     \else
+       \strippedcsname\unicodeunknowncharacter
+     \fi\fi\fi
+     \@EA\endcsname\@EA{\number\utfmod{#2}}}
+
+\def\unicodeunknowncharacter#1%
+  {\unknownchar}
+
 %D With:
 
 \let\unicodeasciicharacter\rawcharacter
 
-%D Now we can say:
+%D Commands are defined with:
+
+\def\defineunicodecommand #1 #2% #2{range number}{char number}
+  {\setvalue{\@@unicommand#1}##1{#2{#1}{##1}}}
+
+%D For instance:
+%D
+%D \starttyping
+%D \defineutfcommand 81 {\uchar}
+%D \stoptyping
+
+%D Now we can also say:
 
 \let\utfunihash\utfunihashglyph
 
@@ -455,7 +488,8 @@
 
 \def\douseunicodevector#1%
   {\ifundefined{\@@univector#1}%
-     \readsysfile{\f!unicprefix\threedigits{#1}}
+   % \readsysfile{\f!unicprefix\threedigits{#1}}
+     \readsysfile{\f!unicprefix\doifnumberelse{#1}{\threedigits{#1}}{#1}}
        {\writestatus{unicode}{loading vector #1}}
        {\writestatus{unicode}{unknown vector #1}}%
    \fi}
@@ -665,3 +699,5 @@
 % 31, text mem usage first
 
 \protect  \endinput
+
+\unprotect

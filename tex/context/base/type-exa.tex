@@ -168,40 +168,7 @@
 
 \stoptypescript
 
-% \starttypescript [serif] [hanging] [pure,normal]
-%
-%   \setupfontsynonym [Serif]            [handling=\typescriptthree]
-%   \setupfontsynonym [SerifBold]        [handling=\typescriptthree bold]
-%   \setupfontsynonym [SerifSlanted]     [handling=\typescriptthree slanted]
-%   \setupfontsynonym [SerifItalic]      [handling=\typescriptthree italic]
-%   \setupfontsynonym [SerifBoldSlanted] [handling=\typescriptthree boldslanted]
-%   \setupfontsynonym [SerifBoldItalic]  [handling=\typescriptthree bolditalic]
-%
-% \stoptypescript
-%
-% \starttypescript [sans] [hanging] [pure,normal]
-%
-%   \setupfontsynonym [Sans]            [handling=\typescriptthree]
-%   \setupfontsynonym [SansBold]        [handling=\typescriptthree bold]
-%   \setupfontsynonym [SansSlanted]     [handling=\typescriptthree slanted]
-%   \setupfontsynonym [SansItalic]      [handling=\typescriptthree italic]
-%   \setupfontsynonym [SansBoldSlanted] [handling=\typescriptthree boldslanted]
-%   \setupfontsynonym [SansBoldItalic]  [handling=\typescriptthree bolditalic]
-%
-% \stoptypescript
-%
-% \starttypescript [mono] [hanging] [pure,normal]
-%
-%   \setupfontsynonym [Mono]            [handling=\typescriptthree]
-%   \setupfontsynonym [MonoBold]        [handling=\typescriptthree bold]
-%   \setupfontsynonym [MonoSlanted]     [handling=\typescriptthree slanted]
-%   \setupfontsynonym [MonoItalic]      [handling=\typescriptthree italic]
-%   \setupfontsynonym [MonoBoldSlanted] [handling=\typescriptthree boldslanted]
-%   \setupfontsynonym [MonoBoldItalic]  [handling=\typescriptthree bolditalic]
-%
-% \stoptypescript
-
-\starttypescript [serif,sans,mono] [handling,hanging,hz] [pure,normal,hz,quality]
+\starttypescript [serif,sans,mono] [handling,hanging] [pure,normal]
 
   \setupfontsynonym [\typescriptprefix\typescriptone ]            [handling=\typescriptthree]
   \setupfontsynonym [\typescriptprefix\typescriptone Bold]        [handling=\typescriptthree bold]
@@ -211,6 +178,18 @@
   \setupfontsynonym [\typescriptprefix\typescriptone BoldItalic]  [handling=\typescriptthree bolditalic]
 
 \stoptypescript
+
+\starttypescript [serif,sans,mono] [handling,hz] [hz,quality,highquality]
+
+  \setupfontsynonym [\typescriptprefix\typescriptone ]            [handling=\typescriptthree]
+  \setupfontsynonym [\typescriptprefix\typescriptone Bold]        [handling=\typescriptthree]
+  \setupfontsynonym [\typescriptprefix\typescriptone Slanted]     [handling=\typescriptthree]
+  \setupfontsynonym [\typescriptprefix\typescriptone Italic]      [handling=\typescriptthree]
+  \setupfontsynonym [\typescriptprefix\typescriptone BoldSlanted] [handling=\typescriptthree]
+  \setupfontsynonym [\typescriptprefix\typescriptone BoldItalic]  [handling=\typescriptthree]
+
+\stoptypescript
+
 
 \starttypescript [serif,sans,mono] [handling] [noligs]
 

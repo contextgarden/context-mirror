@@ -24,6 +24,10 @@
 
 \writestatus{\m!systems}{beware: some patches loaded from cont-new.tex}
 
+% just in case we load something from a file (pdfr-ec for instance)
+
+\prependtoks \restoreendofline \to \everybeforeshipout
+
 % \tracefilestrue
 %
 % \unexpanded\def\readfile#1#2#3%

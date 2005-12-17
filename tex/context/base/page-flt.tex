@@ -866,7 +866,7 @@
    \setbox0\vbox{\strut\blank[\@@bkspacebefore]\strut}%
    \setbox2\vbox{\strut\blank[\@@bkspaceafter  ]\strut}%
    \ifdim\ht0>\ht2
-     \blank[-\@@bkspaceafter,\@@bkspacebefore]
+     \blank[-\@@bkspaceafter,\@@bkspacebefore]%
    \fi
    \egroup}
 
@@ -2100,7 +2100,7 @@
         \let\floatrow\empty
         \edef\floatmethod{#2}}%
      \doifundefined{\string\floatmethod\floatmethod}
-        {\let\floatmethod\v!here}%
+       {\let\floatmethod\v!here}%
      \getvalue{\string\floatmethod\floatmethod}[#1]%
    \fi}
 

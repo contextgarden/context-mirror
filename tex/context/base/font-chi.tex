@@ -36,7 +36,6 @@
 %M \def\WangLei{\purechinese{\uchar{205}{245}\uchar{192}{218}}}
 
 \useencoding[chi]
-\loadmapfile[gbk]
 
 %D When \WangLei\ sent me a mail asking if \CONTEXT\ was able
 %D to support Chinese, I wasn't sure if the answer could be
@@ -154,66 +153,6 @@
      \horizontalchineseunicodeglyph
    \fi\fi}
 
-% This is a previous, very encoding specific, attempt. The
-% current implementation is more versatile.
-%
-% \starttypen
-% \def\chineseleftglyph   {\chardef\chineseSstatus=1 }
-% \def\chineserightglyph  {\chardef\chineseSstatus=2 }
-% \def\chinesecenterglyph {\chardef\chineseSstatus=3 }
-%
-% \def\analyzechineseunicodeglyph%
-%   {% left
-%    \ifnum\unicodeposition=161174 \chineseleftglyph   \else
-%    \ifnum\unicodeposition=161176 \chineseleftglyph   \else
-%    \ifnum\unicodeposition=161178 \chineseleftglyph   \else
-%    \ifnum\unicodeposition=161180 \chineseleftglyph   \else
-%    \ifnum\unicodeposition=161182 \chineseleftglyph   \else
-%    \ifnum\unicodeposition=161184 \chineseleftglyph   \else
-%    \ifnum\unicodeposition=161186 \chineseleftglyph   \else
-%    \ifnum\unicodeposition=161188 \chineseleftglyph   \else
-%    \ifnum\unicodeposition=161190 \chineseleftglyph   \else
-%    \ifnum\unicodeposition=163168 \chineseleftglyph   \else
-%    \ifnum\unicodeposition=163219 \chineseleftglyph   \else
-%    \ifnum\unicodeposition=163224 \chineseleftglyph   \else
-%    \ifnum\unicodeposition=163251 \chineseleftglyph   \else
-%    % right
-%    \ifnum\unicodeposition=161162 \chineserightglyph  \else
-%    \ifnum\unicodeposition=161163 \chineserightglyph  \else
-%    \ifnum\unicodeposition=161175 \chineserightglyph  \else
-%    \ifnum\unicodeposition=161177 \chineserightglyph  \else
-%    \ifnum\unicodeposition=161179 \chineserightglyph  \else
-%    \ifnum\unicodeposition=161181 \chineserightglyph  \else
-%    \ifnum\unicodeposition=161183 \chineserightglyph  \else
-%    \ifnum\unicodeposition=161185 \chineserightglyph  \else
-%    \ifnum\unicodeposition=161187 \chineserightglyph  \else
-%    \ifnum\unicodeposition=161189 \chineserightglyph  \else
-%    \ifnum\unicodeposition=161191 \chineserightglyph  \else
-%    \ifnum\unicodeposition=161227 \chineserightglyph  \else
-%    \ifnum\unicodeposition=161228 \chineserightglyph  \else
-%    \ifnum\unicodeposition=161229 \chineserightglyph  \else
-%    \ifnum\unicodeposition=163161 \chineserightglyph  \else
-%    \ifnum\unicodeposition=163162 \chineserightglyph  \else
-%    \ifnum\unicodeposition=163167 \chineserightglyph  \else
-%    \ifnum\unicodeposition=163169 \chineserightglyph  \else
-%    \ifnum\unicodeposition=163172 \chineserightglyph  \else
-%    \ifnum\unicodeposition=163174 \chineserightglyph  \else
-%    \ifnum\unicodeposition=163186 \chineserightglyph  \else
-%    \ifnum\unicodeposition=163187 \chineserightglyph  \else
-%    \ifnum\unicodeposition=163191 \chineserightglyph  \else
-%    \ifnum\unicodeposition=163221 \chineserightglyph  \else
-%    \ifnum\unicodeposition=163253 \chineserightglyph  \else
-%    % center
-%    \ifnum\unicodeposition=161164 \chinesecenterglyph \else
-%    \ifnum\unicodeposition=161167 \chinesecenterglyph \else
-%    \ifnum\unicodeposition=161173 \chinesecenterglyph \else
-%    \ifnum\unicodeposition=163190 \chinesecenterglyph \else
-%    % unknown
-%    \chardef\chineseSstatus=0
-%    \fi\fi\fi\fi\fi \fi\fi\fi\fi\fi \fi\fi\fi\fi\fi \fi\fi\fi\fi\fi \fi
-%    \fi\fi\fi\fi\fi \fi\fi\fi\fi\fi \fi\fi\fi\fi\fi \fi\fi\fi\fi\fi \fi}
-% \stoptypen
-%
 % chinese classes: left=1|right=2|center=3
 
 \chardef\plusfour=4
@@ -918,12 +857,12 @@
 %D \defineunicodefont
 %D   [SimChi]
 %D   [SimplifiedChinese]
-%D   [   \c!scale=\chineseunicodescale,
-%D       \c!height=\chineseunicodeheight,
-%D       \c!depth=\chineseunicodedepth,
+%D   [\c!scale=\chineseunicodescale,
+%D    \c!height=\chineseunicodeheight,
+%D    \c!depth=\chineseunicodedepth,
 %D    \c!conversion=\chinesenumber,
 %D    \c!commands=\setchineseencoding, % needed for digits
-%D     \c!command=\handlechineseunicodeglyph]
+%D    \c!command=\handlechineseunicodeglyph]
 %D \stoptyping
 %D
 %D However, the former definitions is more general. Next we
@@ -942,6 +881,44 @@
 \definefontsynonym [TraditionalChineseBold]        [b5hei]    [encoding=big5]
 \definefontsynonym [TraditionalChineseBoldSlanted] [b5heisl]  [encoding=big5]
 \definefontsynonym [TraditionalChineseBoldItalic]  [b5heisl]  [encoding=big5]
+
+% we need to move this to typescripts
+
+\doifelse \currentregime {utf} {
+
+    \useunicodevector[chi]
+
+    \definefontsynonym [SimplifiedChineseRegular]     [ChineseRegular]
+    \definefontsynonym [SimplifiedChineseSlanted]     [ChineseSlanted]
+    \definefontsynonym [SimplifiedChineseItalic]      [ChineseItalic]
+    \definefontsynonym [SimplifiedChineseBold]        [ChineseBold]
+    \definefontsynonym [SimplifiedChineseBoldSlanted] [ChineseBoldSlanted]
+    \definefontsynonym [SimplifiedChineseBoldItalic]  [ChineseBoldItalic]
+
+    \definefontsynonym [TraditionalChineseRegular]    [ChineseRegular]
+    \definefontsynonym [TraditionalChineseSlanted]    [ChineseSlanted]
+    \definefontsynonym [TraditionalChineseItalic]     [ChineseItalic]
+    \definefontsynonym [TraditionalChineseBold]       [ChineseBold]
+    \definefontsynonym [TraditionalChineseBoldSlanted][ChineseBoldSlanted]
+    \definefontsynonym [TraditionalChineseBoldItalic] [ChineseBoldItalic]
+
+    \definefontsynonym [ChineseRegular]    [uni-htsong-][encoding=c-uni]
+    \definefontsynonym [ChineseSlanted]    [uni-htsong-][encoding=c-uni]
+    \definefontsynonym [ChineseItalic]     [uni-htsong-][encoding=c-uni]
+    \definefontsynonym [ChineseBold]       [uni-hthei-] [encoding=c-uni]
+    \definefontsynonym [ChineseBoldSlanted][uni-hthei-] [encoding=c-uni]
+    \definefontsynonym [ChineseBoldItalic] [uni-hthei-] [encoding=c-uni]
+
+    \loadmapfile[uni-htsong.map]
+    \loadmapfile[uni-htfs.map]
+    \loadmapfile[uni-hthei.map]
+    \loadmapfile[uni-htkai.map]
+
+} {
+
+    \loadmapfile[gbk]
+
+}
 
 \defineunicodefont [SimChi] [SimplifiedChinese]  [chinese]
 \defineunicodefont [TraChi] [TraditionalChinese] [chinese]

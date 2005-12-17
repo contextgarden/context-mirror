@@ -17,6 +17,9 @@
 
 \unprotect
 
+\gdef\@@onlyenglish#1%
+  {\blank{\tttf \type {#1} is only available in the english interface}\blank}
+
 \gdef\dosetshowfonttitle#1%
   {\tabskip\zeropoint
    \parindent\zeropoint
@@ -227,7 +230,7 @@
 
 \gdef\showligatures[#1]%
   {\ifx\starttabulate\undefined
-     \blank{\tttf \type {\showligatures} is only available in thr english interface}\blank
+     \@@onlyenglish\showligatures
    \else
      \bgroup
      \setupcolors[\c!state=\v!local]%
@@ -247,7 +250,7 @@
 
 \gdef\doshowfontstrip[#1]%
   {\ifx\starttabulate\undefined
-     \blank{\tttf \type {\showfontstrip} is only available in thr english interface}\blank
+     \@@onlyenglish\showfontstrip
    \else
      \bgroup
      \def\dofontstripa##1##2%
@@ -303,7 +306,7 @@
 
 \gdef\showminimalbaseline
   {\ifx\starttabulate\undefined
-     \blank{\tttf \type {\showminimalbaseline} is only available in thr english interface}\blank
+     \@@onlyenglish\showminimalbaseline
    \else
      \starttabulate[||T|T|T|T|T|T|T|T|T|]
      \testminimalbaseline{\hbox to 1em{\hss\showstruts\strut\hss}}%

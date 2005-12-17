@@ -133,8 +133,8 @@ class TEX
     @@stringvars = [
         'modefile', 'result', 'suffix', 'response', 'path',
         'filters', 'usemodules', 'environments', 'separation', 'setuppath',
-        'arguments', 'input', 'output', 'randomseed', 'modes', 'filename',
-        'modefile', 'ctxfile'
+        'arguments', 'input', 'output', 'randomseed', 'modes', 'mode', 'filename',
+        'ctxfile'
     ]
     @@standardvars = [
         'mainlanguage', 'bodyfont', 'language'
@@ -939,8 +939,13 @@ class TEX
                 end
                 opt << "\\setuparranging[#{arrangement.flatten.join(',')}]\n" if arrangement.size > 0
             end
+            # we handle both "--mode" and "--modes", else "--mode" is
+            # mapped onto "--modefile"
             if (str = getvariable('modes')) && ! str.empty? then
-                opt << "\\enablemode[#{modes}]\n"
+                opt << "\\enablemode[#{str}]\n"
+            end
+            if (str = getvariable('mode')) && ! str.empty? then
+                opt << "\\enablemode[#{str}]\n"
             end
             if (str = getvariable('arguments')) && ! str.empty? then
                 opt << "\\setupenv[#{str}]\n"

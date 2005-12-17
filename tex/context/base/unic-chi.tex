@@ -1,0 +1,26 @@
+%D \module
+%D   [       file=unic-chi,
+%D        version=2005.12.14,
+%D          title=\CONTEXT\ \UNICODE\ Macros,
+%D       subtitle=Chinese Vectors,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+% \def\chineseglyph#1#2#3% #1=hex (we know the font anyway), #2=dec, #3=chr
+%   {\uchar{#2}{#3}}
+%
+% \dostepwiserecurse{78}{159}{1} % 4E-9F
+%   {\expanded{\defineunicodecommand \recurselevel\space {\noexpand\chineseglyph{\lchexnumbers{\recurselevel}}}}}
+
+% \dostepwiserecurse{78}{159}{1}{\defineunicodecommand #1 {\uchar}} % 4E-9F
+
+% temp: we need proper ranges
+
+\dostepwiserecurse{40}{159}{1}{\defineunicodecommand #1 {\uchar}}
+
+\endinput

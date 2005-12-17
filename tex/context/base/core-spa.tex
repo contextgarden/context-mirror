@@ -1574,7 +1574,7 @@
 \def\godown[#1]%
   {\relax
    \ifhmode\endgraf\fi
-   \ifvmode\nointerlineskip\vskip#1\relax}
+   \ifvmode\nointerlineskip\vskip#1\relax\fi}
 
 %D A couple of plain macros:
 
@@ -4438,6 +4438,22 @@
           \v!each=>\ifcase\everyparagraphintro\global\chardef\everyparagraphintro\plustwo\fi
                    \doglobal\appendtoks#2\to\everyfirstparagraphintro
                    \doglobal\appendtoks#2\to\everynextparagraphintro]}
+
+%D We can say:
+%D
+%D \starttyping
+%D \setupparagraphintro[first][\index{Knuth}]
+%D \stoptyping
+%D
+%D Maybe more convenient is:
+%D
+%D \starttyping
+%D \flushatparagraph{\index{Zapf}}
+%D \stoptyping
+
+\def\flushatparagraph#1%
+  {\global\chardef\everyparagraphintro\plusone
+   \global\appendtoks{#1}\to\everyfirstparagraphintro}
 
 % \def\doinsertparagraphintro
 %   {\ifcase\everyparagraphintro\relax

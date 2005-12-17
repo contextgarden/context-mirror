@@ -421,12 +421,12 @@
 %D \starttyping
 %D \defineunicodefont
 %D   [SimChi] [SimplifiedChinese]
-%D   [   \c!scale=0.85,
-%D       \c!height=1.25,
-%D       \c!depth=1.00,
-%D   \c!interlinespaceinterlinie=yes,
+%D   [\c!scale=0.85,
+%D    \c!height=1.25,
+%D    \c!depth=1.00,
+%D    \c!interlinespaceinterlinie=yes,
 %D    \c!conversion=\chinesenumber,
-%D     \c!command=\handlechineseunicodeglyph]
+%D    \c!command=\handlechineseunicodeglyph]
 %D \stoptyping
 %D
 %D Together with:
@@ -502,7 +502,8 @@
    \def\unicodedepth             {\getvalue{\??uc#1\c!depth}}%
    \def\unicodedigits            {\getvalue{\??uc#1\c!conversion}}%
    \def\handleunicodeglyph       {\getvalue{\??uc#1\c!command}}%
-   \enableregime[unicode]% the following \relax's are realy needed
+   \doifnot\currentregime{utf}{\enableregime[unicode]}%
+   % the following \relax's are realy needed
    \doifvalue{\??uc#1\c!interlinespace}\v!yes\setupinterlinespace\relax
    \getvalue{\??uc#1\c!commands}\relax}
 
