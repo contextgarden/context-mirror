@@ -2815,8 +2815,10 @@
 \setvalue{\@@ragged@@command\v!nothanging   }{\appendtoks\disableprotruding   \to\everyraggedcommand}
 \setvalue{\@@ragged@@command\v!hz           }{\appendtoks\enableadjusting     \to\everyraggedcommand}
 \setvalue{\@@ragged@@command\v!nohz         }{\appendtoks\disableadjusting    \to\everyraggedcommand}
-\setvalue{\@@ragged@@command\v!spacing      }{\appendtoks\enablespacehandling \to\everyraggedcommand}
-\setvalue{\@@ragged@@command\v!nospacing    }{\appendtoks\disablespacehandling\to\everyraggedcommand}
+\setvalue{\@@ragged@@command\v!spacing      }{\appendtoks\enablespacehandling
+                                                         \enablekernhandling  \to\everyraggedcommand}
+\setvalue{\@@ragged@@command\v!nospacing    }{\appendtoks\disablespacehandling
+                                                         \disablekernhandling \to\everyraggedcommand}
 \setvalue{\@@ragged@@command\v!hyphenated   }{\appendtoks\dohyphens           \to\everyraggedcommand}
 \setvalue{\@@ragged@@command\v!nothyphenated}{\appendtoks\nohyphens           \to\everyraggedcommand}
 
@@ -3850,8 +3852,8 @@
 \setvalue{@@align@@\v!nothanging   }{\disableprotruding}
 \setvalue{@@align@@\v!hz           }{\enableadjusting}
 \setvalue{@@align@@\v!nohz         }{\disableadjusting}
-\setvalue{@@align@@\v!spacing      }{\enablespacehandling}
-\setvalue{@@align@@\v!nospacing    }{\disablespacehandling}
+\setvalue{@@align@@\v!spacing      }{\enablespacehandling \enablekernhandling}
+\setvalue{@@align@@\v!nospacing    }{\disablespacehandling\disablekernhandling}
 \setvalue{@@align@@\v!hyphenated   }{\dohyphens}
 \setvalue{@@align@@\v!nothyphenated}{\nohyphens}
 \setvalue{@@align@@\v!new          }{\@@asraggedfalse} % so new will give you consistency

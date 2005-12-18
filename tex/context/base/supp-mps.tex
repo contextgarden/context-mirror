@@ -852,6 +852,18 @@
 
 \newcount\MPobjectcounter
 
+% \def\douseMPbox#1%
+%   {\global\advance\MPobjectcounter\plusone
+%    \setobject{MP}{\number\MPobjectcounter}\vbox
+%      {\forgetall
+%       \loadMPgraphic{\MPgraphicfile.\the\currentMPgraphic}{}%
+%       \deallocateMPslot\currentMPgraphic
+%       \placeMPgraphic}%
+%    \setxvalue{#1}{\noexpand\getobject{MP}{\number\MPobjectcounter}}}
+%
+% The next one saves the boundingbox. This helps positioning reused
+% graphics in layers.
+
 \def\douseMPbox#1%
   {\global\advance\MPobjectcounter\plusone
    \setobject{MP}{\number\MPobjectcounter}\vbox
@@ -859,7 +871,15 @@
       \loadMPgraphic{\MPgraphicfile.\the\currentMPgraphic}{}%
       \deallocateMPslot\currentMPgraphic
       \placeMPgraphic}%
-   \setxvalue{#1}{\noexpand\getobject{MP}{\number\MPobjectcounter}}}
+   \setxvalue{#1}%
+     {\noexpand\dodouseMPbox{\number\MPobjectcounter}{\MPllx}{\MPlly}{\MPurx}{\MPury}}}
+
+\def\dodouseMPbox#1#2#3#4#5% space delimiting would save some tokens
+  {\xdef\MPllx{#2}%          but it's not worth the effort and looks
+   \xdef\MPlly{#3}%          ugly as well
+   \xdef\MPurx{#4}%
+   \xdef\MPury{#5}%
+   \getobject{MP}{#1}}
 
 \def\nouseMPbox#1%
   {\setxvalue{#1}%

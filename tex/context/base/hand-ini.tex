@@ -394,6 +394,8 @@
 
   \let\enablespacehandling  \relax
   \let\disablespacehandling \relax
+  \let\enablekernhandling   \relax
+  \let\disablekernhandling  \relax
 
   \let\setspacehandling     \gobbleoneargument
 
@@ -404,6 +406,8 @@
 
   \def\enablespacehandling {\pdfadjustinterwordglue\plusone }
   \def\disablespacehandling{\pdfadjustinterwordglue\minusone}
+  \def\enablekernhandling  {\pdfprependkern        \plusone }
+  \def\disablekernhandling {\pdfprependkern        \minusone}
 
   \appendtoks \disablespacehandling \to \everyforgetall % Here or not here?
 

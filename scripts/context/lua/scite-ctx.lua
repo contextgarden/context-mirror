@@ -475,7 +475,6 @@ function compound_text()
         editor:ReplaceSel(string.gsub(editor:GetSelText(),"([^\|])([-\/]+)([^\|])","%1|%2|%3"))
     end
 
-
 end
 
 -- written while listening to Alanis Morissette's acoustic
@@ -639,6 +638,17 @@ function reset_text()
     editor:StartStyling(0,INDICS_MASK)
     editor:SetStyling(editor.TextLength,INDIC_PLAIN)
 end
+
+-- templates
+
+--~ function insert_text()
+
+--~     local templatelist = props["ctx.template.list"]
+
+--~     editor:insert(editor.CurrentPos,templatelist)
+--~     show_menu(templatelist)
+--~ end
+
 
 -- menu
 

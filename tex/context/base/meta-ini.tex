@@ -934,7 +934,7 @@
 
 %D New:
 
-\definelayerpreset
+\definelayerpreset % no dx,dy - else nasty non-mp placement
   [mp]
   [\c!y=-\MPury bp,
    \c!x=\MPllx bp,
@@ -961,6 +961,26 @@
 %D \setlayer[mp]{\property[one]{\useMPgraphic{step-1}}}
 %D \setlayer[mp]{\property[two]{\useMPgraphic{step-2}}}
 %D
+%D \ruledhbox{\flushlayer[mp]}
+%D \stoptyping
+%D
+%D Reusing graphics is also possible (now):
+%D
+%D \starttyping
+%D \startreusableMPgraphic{axis}
+%D   tickstep := 1cm ; ticklength := 2mm ;
+%D   drawticks unitsquare xscaled 4cm yscaled 3cm shifted (-1cm,-1cm) ;
+%D   tickstep := tickstep/2 ; ticklength := ticklength/2 ;
+%D   drawticks unitsquare xscaled 4cm yscaled 3cm shifted (-1cm,-1cm) ;
+%D \stopreusableMPgraphic
+%D
+%D \startuseMPgraphic{demo}
+%D   drawpoint "1cm,1.5cm" ;
+%D \stopuseMPgraphic
+%D
+%D \definelayer[mp][preset=mp]
+%D \setlayer[mp]{\reuseMPgraphic{axis}}
+%D \setlayer[mp]{\useMPgraphic{demo}}
 %D \ruledhbox{\flushlayer[mp]}
 %D \stoptyping
 

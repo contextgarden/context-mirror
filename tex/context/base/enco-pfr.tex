@@ -164,7 +164,7 @@
 
 \def\dododoincludepdffontresource#1% encoding
   {\bgroup
-   \def\currentencoding{#1}%
+   \edef\currentencoding{#1}%
    \doifvaluesomething\pdffontfileresource
      {\startreadingfile
         \readsysfile{pdfr-\getvalue\pdffontfileresource}\donothing\donothing
@@ -190,15 +190,17 @@
         \doifsomething\pdffontfileresource
           {\pdfobj reserveobjnum {}%
            \setxvalue\pdffontresource{\the\pdflastobj}%
-           \doglobal\appendetoks
-             \noexpand\dododoincludepdffontresource{\currentencoding}%
-           \to \everybeforeshipout}% prevent multiple loading
+           \flushatshipout{\dododoincludepdffontresource{\currentencoding}}}%
+%            \doglobal\appendetoks
+%              \noexpand\dododoincludepdffontresource{\currentencoding}%
+%            \to \everybeforeshipout}% prevent multiple loading
       \fi\fi
       \ifcsname\pdffontresource\endcsname
         \expanded{\pdffontattr\font{/ToUnicode \csname\pdffontresource\endcsname\space0 R}}%
         % do it only once for each font
         \letgvalue{\s!ucmap\fontfile}\empty
       \fi}}
+
 
 \endETEX
 
@@ -216,9 +218,10 @@
           \doifsomething\pdffontfileresource
             {\pdfobj reserveobjnum {}%
              \setxvalue\pdffontresource{\the\pdflastobj}%
-             \doglobal\appendetoks
-               \noexpand\dododoincludepdffontresource{\currentencoding}%
-             \to \everybeforeshipout}% prevent multiple loading
+             \flushatshipout{\dododoincludepdffontresource{\currentencoding}}}%
+%              \doglobal\appendetoks
+%                \noexpand\dododoincludepdffontresource{\currentencoding}%
+%              \to \everybeforeshipout}% prevent multiple loading
         \fi
       \fi
       \expandafter\ifx\csname\pdffontresource\endcsname\relax\else

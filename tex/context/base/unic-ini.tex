@@ -402,23 +402,23 @@
        \@EA\doutfunihash\@EA{\number\utfdiv{#1}}{#1}\endcsname
      \fi}
 
-%D Well, we also want a plug-in mechanism, so:
+%D Well, we also want a plug-in mechanism, so we en dup with
+%D a messy:
 
 \def\utfunihashglyph#1%
-  {\@EA\doutfunihashglyph\@EA{\number\utfdiv{#1}}{#1}} % only div once
+  {\@EA\doutfunihashglyph\@EA{\number\numexpr\utfdiv{#1}\@EA\relax\@EA}\@EA{\number\utfmod{#1}}{#1}}
 
-\def\doutfunihashglyph#1#2% div raw
+\def\doutfunihashglyph#1#2#3% div mod raw
   {\csname
-     \ifnum#2<\utf@i
-       \strippedcsname\unicodeasciicharacter
+     \ifnum#3<\utf@i
+       \strippedcsname\unicodeasciicharacter\endcsname{#2}%
      \else\ifcsname\@@unicommand#1\endcsname
-       \@@unicommand#1%
+       \@@unicommand#1\endcsname{#2}%
      \else\ifcsname\@@univector#1\endcsname
-       \@@univector#1%
+       \csname\@@univector#1\endcsname{#2}\endcsname % watch the nested csname; it's a speed up
      \else
-       \strippedcsname\unicodeunknowncharacter
-     \fi\fi\fi
-     \@EA\endcsname\@EA{\number\utfmod{#2}}}
+       \strippedcsname\unicodeunknowncharacter\endcsname{#2}%
+     \fi\fi\fi}
 
 \def\unicodeunknowncharacter#1%
   {\unknownchar}
