@@ -1087,7 +1087,6 @@
 %   \catcode`\|=\@@other
 %   \dodoubleargument\dodefinetabletemplate}
 
-
 % \TABLEnoalign{\page}\TABLEhead is valid
 
 \def\douseTABLEtemplate#1#2#3%
@@ -1171,7 +1170,10 @@
 
 %D We immediately use this register:
 
-\appendtoks \fixedspaces \to \everytable
+\appendtoks
+    \fixedspaces
+    \let\_\normalunderscore
+\to \everytable
 
 %D Now we can start the table.
 

@@ -902,7 +902,7 @@ $OutputFormats{dviwindo} = "dviwindo";
 
 $OutputFormats{dviview}  = "dviview";
 
-my @ConTeXtFormats = ( "nl", "en", "de", "cz", "uk", "it", "ro", "xx");
+my @ConTeXtFormats = ( "nl", "en", "de", "fr", "cz", "uk", "it", "ro", "xx");
 
 sub SetInterfaces {
     my ( $short, $long, $full ) = @_;
@@ -917,6 +917,7 @@ sub SetInterfaces {
 SetInterfaces( "nl", "dutch",        "dutch" );
 SetInterfaces( "en", "english",      "english" );
 SetInterfaces( "de", "german",       "german" );
+SetInterfaces( "fr", "french",       "french" );
 SetInterfaces( "cz", "czech",        "czech" );
 SetInterfaces( "uk", "brittish",     "english" );
 SetInterfaces( "it", "italian",      "italian" );
@@ -1205,6 +1206,11 @@ sub MakeOptionFile {
         print OPT "\\setupcolors[\\c!split=$Separation]\n";
     }
     if ($SetupPath) { print OPT "\\setupsystem[\\c!directory=\{$SetupPath\}]\n" }
+    if ($dosish) {
+        print OPT "\\setupsystem[\\c!type=mswin]\n"
+    } else { # no darwin handling in old texexec
+        print OPT "\\setupsystem[\\c!type=unix]\n"
+    }
     print OPT "\\setupsystem[\\c!n=$KindOfRun]\n";
     $_ = $PaperFormat;
     #unless (($PdfArrange)||($PdfSelect)||($PdfCombine)||($PdfCopy))
@@ -3021,7 +3027,7 @@ sub show_version_info {
   print "                   tex : $texengine\n" ;
   print "               context : ver: $contextversion\n" ;
   print "               cont-en : $type\n" ;
-  foreach my $a (qw(cz de it nl ro uk xx)) {
+  foreach my $a (qw(cz de fr it nl ro uk xx)) {
 	my $test = Pipe("$kpsewhich -format='fmt' cont-$a") ;
 	if (defined $test && $test) {
 	  $Format = 'cont-' . $a;
@@ -3122,6 +3128,7 @@ interface user interface
 =en English
 =nl Dutch
 =de German
+=fr French
 =cz Czech
 =uk Brittish
 =it Italian

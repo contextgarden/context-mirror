@@ -169,7 +169,8 @@ end
 
 function string.replace(original,pattern,replacement)
     local str = string.gsub(original,pattern,replacement)
-    print(str) -- indirect, since else str + nofsubs
+--~     print(str) -- indirect, since else str + nofsubs
+    return str -- indirect, since else str + nofsubs
 end
 
 -- support functions, maybe editor namespace
@@ -236,6 +237,30 @@ function getfiletype()
     else
         return 'unknown'
     end
+end
+
+-- inspired by LuaExt's scite_Files
+
+function get_dir_list(mask)
+    local f
+    if props['PLAT_GTK'] and props['PLAT_GTK'] ~= "" then
+        f = io.popen('ls -1 ' .. mask)
+    else
+        mask = string.gsub(mask, '/','\\')
+        local tmpfile = 'scite-ctx.tmp'
+        local cmd = 'dir /b "' .. mask .. '" > ' .. tmpfile
+        os.execute(cmd)
+        f = io.open(tmpfile)
+    end
+    local files = {}
+    if not f then -- path check added
+        return files
+    end
+    for line in f:lines() do
+        table.insert(files, line)
+    end
+    f:close()
+    return files
 end
 
 -- banner
@@ -639,58 +664,252 @@ function reset_text()
     editor:SetStyling(editor.TextLength,INDIC_PLAIN)
 end
 
--- templates
-
---~ function insert_text()
-
---~     local templatelist = props["ctx.template.list"]
-
---~     editor:insert(editor.CurrentPos,templatelist)
---~     show_menu(templatelist)
---~ end
-
-
 -- menu
 
-local menuactions = {}
-local menutrigger = 12
+local menuactions   = {}
+local menufunctions = {}
 
-function UserListShow(menuspec)
+function UserListShow(menutrigger, menulist)
     local menuentries = {}
-    local list = string.grab(menuspec,'[^%|]+')
-    props["ctx.menulist.saved"] = menuspec
+    local list = string.grab(menulist,"[^%|]+")
+    menuactions = {}
     for i=1, table.len(list) do
         if list[i] ~= '' then
             for key, val in string.gfind(list[i],"%s*(.+)=(.+)%s*") do
-                if not string.find(val,"%(%)$") then
-                    val = val .. "()"
-                end
                 table.insert(menuentries,key)
                 rawset(menuactions,key,val)
             end
         end
     end
-    editor.AutoCSeparator = string.byte('|')
-    editor:UserListShow(menutrigger,table.join(menuentries,'|'))
-    editor.AutoCSeparator = string.byte(' ')
-end
-
-function DoOnUserListSelection(trigger,choice,redoonerror)
-    if trigger == menutrigger then
-        if menuactions[choice] then
-            assert(loadstring(menuactions[choice]))()
-        elseif redoonerror then -- handy when reloaded lua script
-        --  traceln("unknown action '" .. choice .. "', retrying")
-            UserListShow(props["ctx.menulist.saved"])
-            DoOnUserListSelection (trigger,choice,false)
-        end
+    local menustring = table.join(menuentries,'|')
+    if menustring == "" then
+        traceln("There are no templates defined for this file type.")
+    else
+        editor.AutoCSeparator = string.byte('|')
+        editor:UserListShow(menutrigger,menustring)
+        editor.AutoCSeparator = string.byte(' ')
     end
 end
 
 function OnUserListSelection(trigger,choice)
-    DoOnUserListSelection(trigger,choice,true)
+    if menufunctions[trigger] and menuactions[choice] then
+        return menufunctions[trigger](menuactions[choice])
+    else
+        return false
+    end
 end
 
+-- main menu
+
+local menutrigger = 12
+
 function show_menu(menulist)
-    UserListShow(menulist)
+    UserListShow(menutrigger, menulist)
 end
+
+function process_menu(action)
+    if not string.find(action,"%(%)$") then
+        assert(loadstring(action .. "()"))()
+    else
+        assert(loadstring(action))()
+    end
+end
+
+menufunctions[12] = process_menu
+
+-- templates
+
+local templatetrigger = 13
+
+--~ local ctx_template_paths = { "./ctx-templates", "../ctx-templates", "../../ctx-templates" }
+--~ local ctx_auto_templates = false
+--~ local ctx_template_list  = ""
+--~ local ctx_dir_list       = { }
+--~ local ctx_dir_name       = "./ctx-templates"
+
+--~ local ctx_path_list      = {}
+--~ local ctx_path_done      = {}
+
+--~ function ctx_list_loaded()
+--~     return ctx_dir_list and table.getn(ctx_dir_list) > 0
+--~ end
+
+--~ function insert_template(templatelist)
+--~     if props["ctx.template.scan"] == "yes" then
+--~         local current = props["FileDir"] .. "+" .. props["FileExt"] -- no name
+--~         local rescan  = props["ctx.template.rescan"] == "yes"
+--~         local suffix  = props["ctx.template.suffix."..props["FileExt"]] -- alas, no suffix expansion here
+--~         if rescan then
+--~             print("re-scanning enabled")
+--~         end
+--~         if current ~= ctx_file_path then
+--~             rescan = true
+--~             ctx_file_path = current
+--~             ctx_file_done = false
+--~             ctx_template_list = ""
+--~         end
+--~         if not ctx_file_done or rescan then
+--~             local pattern = "*.*"
+--~             for i, pathname in ipairs(ctx_template_paths) do
+--~                 print("scanning " .. pathname .. " for " .. pattern)
+--~                 ctx_dir_name = pathname
+--~                 ctx_dir_list = get_dir_list(pathname .. "/" .. pattern)
+--~                 if ctx_list_loaded() then
+--~                     break
+--~                 end
+--~             end
+--~             ctx_file_done = true
+--~         end
+--~         if ctx_list_loaded() then
+--~             ctx_template_list = ""
+--~             local pattern = "%." .. suffix .. "$"
+--~             for j, filename in ipairs(ctx_dir_list) do
+--~                 if string.find(filename,pattern) then
+--~                     local menuname = string.gsub(filename,"%..-$","")
+--~                     if ctx_template_list ~= "" then
+--~                         ctx_template_list = ctx_template_list .. "|"
+--~                     end
+--~                     ctx_template_list = ctx_template_list .. menuname .. "=" .. ctx_dir_name .. "/" .. filename
+--~                 end
+--~             end
+--~         else
+--~             print("no template files found")
+--~         end
+--~         if ctx_template_list == "" then
+--~             ctx_auto_templates = false
+--~             print("no file related templates found")
+--~         else
+--~             ctx_auto_templates = true
+--~             templatelist = ctx_template_list
+--~         end
+--~     end
+--~     if templatelist ~= "" then
+--~         UserListShow(templatetrigger, templatelist)
+--~     end
+--~ end
+
+local ctx_template_paths = { "./ctx-templates", "../ctx-templates", "../../ctx-templates" }
+local ctx_auto_templates = false
+local ctx_template_list  = ""
+
+local ctx_path_list      = {}
+local ctx_path_done      = {}
+local ctx_path_name      = {}
+
+function ctx_list_loaded(path)
+    return ctx_path_list[path] and table.getn(ctx_path_list[path]) > 0
+end
+
+function insert_template(templatelist)
+    if props["ctx.template.scan"] == "yes" then
+        local path    = props["FileDir"]
+        local rescan  = props["ctx.template.rescan"] == "yes"
+        local suffix  = props["ctx.template.suffix." .. props["FileExt"]] -- alas, no suffix expansion here
+        local current = path .. "+" .. props["FileExt"]
+        if rescan then
+            print("re-scanning enabled")
+        end
+        ctx_template_list = ""
+        if not ctx_path_done[path] or rescan then
+            local pattern = "*.*"
+            for i, pathname in ipairs(ctx_template_paths) do
+                print("scanning " .. string.gsub(path,"\\","/") .. "/" .. pathname)
+                ctx_path_name[path] = pathname
+                ctx_path_list[path] = get_dir_list(pathname .. "/" .. pattern)
+                if ctx_list_loaded(path) then
+                    print("finished locating template files")
+                    break
+                end
+            end
+            if ctx_list_loaded(path) then
+                print(table.getn(ctx_path_list[path]) .. " template files found")
+            else
+                print("no template files found")
+            end
+        end
+        if ctx_list_loaded(path) then
+            ctx_template_list = ""
+            local pattern = "%." .. suffix .. "$"
+            local n = 0
+            for j, filename in ipairs(ctx_path_list[path]) do
+                if string.find(filename,pattern) then
+                    n = n + 1
+                    local menuname = string.gsub(filename,"%..-$","")
+                    if ctx_template_list ~= "" then
+                        ctx_template_list = ctx_template_list .. "|"
+                    end
+                    ctx_template_list = ctx_template_list .. menuname .. "=" .. ctx_path_name[path] .. "/" .. filename
+                end
+            end
+            if not ctx_path_done[path] then
+                print(n .. " suitable template files found")
+            end
+        end
+        ctx_path_done[path] = true
+        if ctx_template_list == "" then
+            ctx_auto_templates = false
+        else
+            ctx_auto_templates = true
+            templatelist = ctx_template_list
+        end
+    else
+        ctx_auto_templates = false
+    end
+    if templatelist ~= "" then
+        UserListShow(templatetrigger, templatelist)
+    end
+end
+
+
+-- ctx.template.[whatever].[filetype]
+-- ctx.template.[whatever].data.[filetype]
+-- ctx.template.[whatever].file.[filetype]
+-- ctx.template.[whatever].list.[filetype]
+
+function process_template_one(action)
+    local text = nil
+    if ctx_auto_templates then
+        local f = io.open(action,"r")
+        if f then
+            text = string.gsub(f:read("*all"),"\n$","")
+            f:close()
+        else
+            print("unable to auto load template file " .. text)
+            text = nil
+        end
+    end
+    if not text or text == "" then
+        text = props["ctx.template." .. action .. ".file"]
+        if not text or text == "" then
+            text = props["ctx.template." .. action .. ".data"]
+            if not text or text == "" then
+                text = props["ctx.template." .. action]
+            end
+        else
+            local f = io.open(text,"r")
+            if f then
+                text = string.gsub(f:read("*all"),"\n$","")
+                f:close()
+            else
+                print("unable to load template file " .. text)
+                text = nil
+            end
+        end
+    end
+    if text then
+        text = string.replace(text,"\\n","\n")
+        local pos = string.find(text,"%?")
+        text = string.replace(text,"%?","")
+        editor:insert(editor.CurrentPos,text)
+        if pos then
+            editor.CurrentPos = editor.CurrentPos + pos - 1
+            editor.SelectionStart = editor.CurrentPos
+            editor.SelectionEnd = editor.CurrentPos
+            editor:GotoPos(editor.CurrentPos)
+        end
+    end
+end
+
+menufunctions[13] = process_template_one
+menufunctions[14] = process_template_two
+

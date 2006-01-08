@@ -791,11 +791,14 @@
 \def\noblankpsignal{1010101}
 
 \def\inhibitgridblank % was doinhibitblank
-  {\ifnum\lastpenalty<10000
-     \kern-\noblanksignal % new
-     \kern \noblanksignal
-   \else
-     \penalty\noblankpsignal
+  {\ifvmode\else\endgraf\fi
+   \ifvmode
+     \ifnum\lastpenalty<10000
+       \kern-\noblanksignal % new
+       \kern \noblanksignal
+     \else
+       \penalty\noblankpsignal
+     \fi
    \fi}
 
 \def\inhibittextblank % was inhibitblank

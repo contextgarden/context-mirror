@@ -69,6 +69,13 @@
       3: unknown font handling --
 \stopmessages
 
+\startmessages  french  library: handlings
+  title: handling
+      1: manipulation -- de police
+      2: la manipulation -- de police est chargée
+      3: manipulation -- inconnue de police
+\stopmessages
+
 \newif\iftracefonthandling % \tracefonthandlingtrue
 
 \newif\ifskiphandlingdef  \skiphandlingdeffalse
@@ -642,11 +649,11 @@
 \def\dousehandling#1% is the same as encoding
   {\doifundefined{\c!file\f!handlingprefix#1}%
      {\letvalueempty{\c!file\f!handlingprefix#1}%
-      \makeshortfilename[\f!handlingprefix#1]%
+      \makeshortfilename[\truefilename{\f!handlingprefix#1}]%
       \startreadingfile
-      \readsysfile\shortfilename
-        {\showmessage\m!handlings2{#1}}
-        {\showmessage\m!handlings3{#1}}%
+        \readsysfile\shortfilename
+          {\showmessage\m!handlings2{#1}}
+          {\showmessage\m!handlings3{#1}}%
       \stopreadingfile}}
 
 \def\usehandling[#1]%

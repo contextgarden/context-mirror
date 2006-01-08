@@ -15,8 +15,9 @@
 
 \unprotect
 
-\def\outputfilename{\@@svfile}
-\def\inputfilename {\@@svinputfile}
+\def\outputfilename {\@@svfile}
+\def\inputfilename  {\@@svinputfile}
+\def\operatingsystem{\@@svtype}
 
 \let\jobfilesuffix\c!tex
 
@@ -62,7 +63,16 @@
    \or
      \setsystemmode\v!last    % 4 : extra last run
    \fi
+   \processaction
+     [\@@svtype]
+     [     mswin=>\def\@@svline{\rawcharacter{13}\rawcharacter{10}}, % crlf
+          darwin=>\def\@@svline{\rawcharacter{13}},                  % cr
+      \s!unknown=>\def\@@svline{\rawcharacter{10}}]%                 % lf
    \splitjobfilename}
+
+\def\@@svline{\rawcharacter{10}} % unix is the most critical/sensitive system
+
+\def\systemendofline{\@@svline}
 
 \def\setupsystem
   {\dosingleargument\dosetupsystem}
@@ -89,8 +99,8 @@
         [#1]
         [  \v!small=>\divide\normaltime 15, %  900,
           \v!medium=>\divide\normaltime 30, % 1800,
-           \v!big=>\divide\normaltime 60, % 3600,
-         \v!normal=>,
+             \v!big=>\divide\normaltime 60, % 3600,
+          \v!normal=>,
          \s!default=>,
          \s!unknown=>\normaltime=#1]%
       \nextrandom
@@ -103,7 +113,12 @@
    \c!random=,
    \c!file=\jobname,
    \c!inputfile=\outputfilename,
+   \c!type=unix, % windows is normally less sensitive to handle
    \c!bodyfont=\normalizedlocalbodyfontsize] % of iets anders
+
+%D Remark: windows programs normally handle \type {cr|lf|crlf} but unix
+%D is more picky, so we default to the \type {cr}. I never understood why
+%D \type {crlf} was not used in all systems, since it makes most sense.
 
 %D
 

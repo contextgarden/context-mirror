@@ -54,6 +54,11 @@
        1: sinonimul fisierelor -- este folosit deja pentru --
 \stopmessages
 
+\startmessages  french  library: files
+   title: files
+       1: le synonyme de fichier -- est déjà utilisé pour --
+\stopmessages
+
 %D \macros
 %D   {definefilesynonym}
 %D
@@ -158,7 +163,7 @@
    \ifconditional\moduleisloaded % sometimes (see xtag-map)
      \let\next\relax % or: \expandafter\gobbleoneargument
    \else
-     \makeshortfilename[#1\truefilename{#2}]%
+     \makeshortfilename[#1\truefilename{#2}]% beware: *- is not part of syn
      \doifelseflagged\shortfilename
        {\showmessage\m!systems7{#2}%
         \settrue\moduleisloaded

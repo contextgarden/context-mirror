@@ -115,6 +115,13 @@
       3: codificarea -- este necunoscuta
 \stopmessages
 
+\startmessages  french  library: encodings
+  title: encoding
+      1: encodage --
+      2: l'encodage -- est chargé
+      3: encodage -- inconnu
+\stopmessages
+
 %D First we define a few local or not yet initialized constants.
 
 \def\@map@{@m@ap@} % mapping prefix
@@ -377,11 +384,11 @@
 \def\douseencoding#1%
   {\doifundefined{\c!file\f!encodingprefix#1}%
      {\letvalue{\c!file\f!encodingprefix#1}\empty
-      \makeshortfilename[\f!encodingprefix#1]%
+      \makeshortfilename[\truefilename{\f!encodingprefix#1}]%
       \startreadingfile
-      \readsysfile\shortfilename
-        {\showmessage\m!encodings2{#1}}
-        {\showmessage\m!encodings3{#1}}%
+        \readsysfile\shortfilename
+          {\showmessage\m!encodings2{#1}}
+          {\showmessage\m!encodings3{#1}}%
       \stopreadingfile}}
 
 \def\useencoding[#1]%

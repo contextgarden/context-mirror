@@ -55,6 +55,11 @@
       1: se incarca biblioteca metapost --
 \stopmessages
 
+\startmessages  french  library: metapost
+  title: metapost
+      1: chargement de la bibliothèque metapost --
+\stopmessages
+
 %D This module extends the functionality of the support module
 %D \type {supp-mps}, the module that is responsible for
 %D \METAPOST\ inclusion in \CONTEXT. Some basic macros will be
@@ -635,10 +640,9 @@
 \def\douseMPlibrary#1%
   {\ifundefined{\c!file\f!javascriptprefix#1}%
      \letvalueempty{\c!file\f!javascriptprefix#1}%
-     \makeshortfilename[\f!metapostprefix#1]
-     \showmessage\m!metapost1{#1}
+     \makeshortfilename[\truefilename{\f!metapostprefix#1}]%
      \startreadingfile
-     \readsysfile\shortfilename\donothing\donothing
+       \readsysfile\shortfilename{\showmessage\m!metapost1{#1}}\donothing
      \stopreadingfile
    \fi}
 
@@ -674,7 +678,7 @@
 
 \def\MPtext       #1{\executeifdefined{\@@MPT#1}\empty}
 \def\MPstring    #1{"\executeifdefined{\@@MPT#1}\empty"}
-\def\MPbetex #1{btex \executeifdefined{\@@MPT#1}\empty etex}
+\def\MPbetex #1{btex \executeifdefined{\@@MPT#1}\empty\space etex}
 
 %D Unfortunately \METAPOST\ does not have \CMYK\ support
 %D built in, but by means of specials we can supply the

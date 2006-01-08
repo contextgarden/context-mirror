@@ -353,6 +353,10 @@ class Commands
             data.i_translate('cd:inherit'  , 'name' , strings)
             # data.i_translate('cd:command'  , 'name' , strings)
 
+            data.gsub!(/(\<cd\:interface[^\>]*?language=")en(")/) do
+                $1 + interface + $2
+            end
+
             report("saving #{outfile}")
 
             begin

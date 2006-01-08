@@ -13,6 +13,7 @@
 
 % nagaan : \ifinstringelse in syst-ext.tex
 % do => p! dodo pp! dododo ppp!
+% todo: \donetrue etc local maken
 
 %D The following macros are responsible for the interaction
 %D with \CONTEXT. These macros have proven their use. These
@@ -441,7 +442,7 @@
 
 \newtoks\everysafeexpanded
 
-\long\def\safeexpanded#1%
+\long\def\safeexpanded#1% why the \noexpand
   {\begingroup
    \the\everysafeexpanded\long\xdef\@@expanded{\noexpand#1}%
    \endgroup

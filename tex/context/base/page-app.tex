@@ -155,8 +155,10 @@
    \else % pdf
      \executesystemcommand{dvips \bufferprefix\@@texapp}%
      \executesystemcommand{ps2pdf \bufferprefix\@@texapp.ps \bufferprefix\@@texapp.pdf}%
+%      \executesystemcommand{texmfstart pstopdf \bufferprefix\@@texapp.ps \bufferprefix\@@texapp.pdf}%
    \fi
    \restoreTEXapplication % dimensions
+   \doifelse\jobsuffix{dvi}\donetrue\donefalse
    \setbox\scratchbox\hbox
      {\expanded{\externalfigure
         [\bufferprefix\@@texapp.\ifdone eps\else pdf\fi]

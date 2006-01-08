@@ -145,6 +145,8 @@
 \long\def\dosetlanguagespecifics#1#2%
   {%ifundefined{\??la\languageencoding#2\??la}\letvalue{\??la\languageencoding#2\??la}\empty\fi
    \ifundefined{\??la\languageencoding#2\??la}\forgetlanguagespecifics[#2]\fi
+   % the next line catches the case that specifics are enabled *before* they are defined
+   \expandafter\ifx\csname\??la\languageencoding#2\??la\endcsname\relax\forgetlanguagespecifics[#2]\fi
    \appendvalue{\??la\languageencoding#2\??la}{#1}%
    \bgroup
    \setbox\scratchbox\hbox{\enablelanguagespecifics[#2]}%

@@ -57,17 +57,15 @@
 
 \unprotect
 
-\startXMLmapping [mml]
-
 \def\convertasciiafter#1#2%
   {\convertargument#2\to\asciiafter
    \@EA#1\@EA{\asciiafter}}
 
-%
-
 \def\checkMMLoperator#1#2% temp hack
   {\unspaceargument#1\to\ascii
    \doifXMLentityelse\ascii{\getXMLentity\ascii}{#2}}
+
+\startXMLmapping [mml]
 
 \remapXMLsequence [mi] [CPA] \MMLpMI
 \remapXMLsequence [mn] [CPA] \MMLpMN

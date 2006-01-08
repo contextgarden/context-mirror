@@ -22,11 +22,11 @@
 \def\douseregime#1% nearly identical to encoding
   {\doifundefined{\c!file\f!regimeprefix#1}%
      {\setvalue{\c!file\f!regimeprefix#1}{}%
-      \makeshortfilename[\f!regimeprefix#1]%
+      \makeshortfilename[\truefilename{\f!regimeprefix#1}]%
       \startreadingfile
-      \readsysfile\shortfilename
-        {\showmessage\m!encodings2{#1}}
-        {\showmessage\m!encodings3{#1}}%
+        \readsysfile\shortfilename
+          {\showmessage\m!encodings2{#1}}
+          {\showmessage\m!encodings3{#1}}%
       \stopreadingfile}}
 
 \def\useregime[#1]%

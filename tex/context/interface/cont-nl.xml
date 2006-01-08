@@ -20,7 +20,7 @@
     <cd:share name='align'/>
 -->
 
-<cd:interface xmlns:cd="http://www.pragma-ade.com/commands" name="context" language="en" version="2004.11.17">
+<cd:interface xmlns:cd="http://www.pragma-ade.com/commands" name="context" language="nl" version="2004.11.17">
 
 <cd:command name="installlanguage" file="lang-ini.tex">
   <cd:sequence>
@@ -640,7 +640,7 @@
       <cd:constant type="vertikaal"/>
       <cd:constant type="naam"/>
       <cd:constant type="waarde"/>
-      <cd:variable type="cd:number"/>
+      <cd:constant type="cd:number"/>
     </cd:keywords>
   </cd:arguments>
 </cd:command>
@@ -919,7 +919,7 @@
       </cd:parameter>
       <cd:parameter name="plaats">
         <cd:constant type="pagina"/>
-        <cd:variable type="cd:text"/>
+        <cd:constant type="cd:text"/>
         <cd:constant type="kolommen"/>
         <cd:constant type="eerstekolom"/>
         <cd:constant type="laatstekolom"/>
@@ -2381,7 +2381,7 @@
   </cd:sequence>
   <cd:arguments>
     <cd:keywords optional="yes">
-      <cd:variable type="cd:text"/>
+      <cd:constant type="cd:text"/>
       <cd:constant type="marge"/>
       <cd:constant type="rand"/>
     </cd:keywords>
@@ -3008,13 +3008,13 @@
         <cd:constant type="rechts"/>
         <cd:constant type="boven"/>
         <cd:constant type="aanelkaar"/>
-        <cd:variable type="cd:command"/>
         <cd:constant type="inmarge"/>
         <cd:constant type="inlinker"/>
         <cd:constant type="inrechter"/>
         <cd:constant type="hangend"/>
       </cd:parameter>
       <cd:parameter name="kopcommando">
+        <cd:constant type="cd:command"/>
       </cd:parameter>
       <cd:parameter name="hang">
         <cd:constant type="passend"/>
@@ -3296,7 +3296,7 @@
       <cd:parameter name="uitlijnen">
         <cd:constant type="ja"/>
         <cd:constant type="nee"/>
-        <cd:variable type="cd:text"/>
+        <cd:constant type="cd:text"/>
       </cd:parameter>
       <cd:parameter name="blanko">
         <cd:constant type="vast"/>
@@ -3360,7 +3360,7 @@
   </cd:sequence>
   <cd:arguments>
     <cd:keywords optional="yes">
-      <cd:variable type="cd:text" default="yes"/>
+      <cd:constant type="cd:text" default="yes"/>
       <cd:constant type="marge"/>
       <cd:constant type="rand"/>
     </cd:keywords>
@@ -3499,7 +3499,7 @@
   </cd:sequence>
   <cd:arguments>
     <cd:keywords optional="yes">
-      <cd:variable type="cd:text" default="yes"/>
+      <cd:constant type="cd:text" default="yes"/>
       <cd:constant type="marge"/>
       <cd:constant type="rand"/>
     </cd:keywords>
@@ -3526,7 +3526,7 @@
   </cd:sequence>
   <cd:arguments>
     <cd:keywords optional="yes">
-      <cd:variable type="cd:text" default="yes"/>
+      <cd:constant type="cd:text" default="yes"/>
       <cd:constant type="marge"/>
       <cd:constant type="rand"/>
     </cd:keywords>
@@ -3553,7 +3553,7 @@
   </cd:sequence>
   <cd:arguments>
     <cd:keywords optional="yes">
-      <cd:variable type="cd:text" default="yes"/>
+      <cd:constant type="cd:text" default="yes"/>
       <cd:constant type="marge"/>
       <cd:constant type="rand"/>
     </cd:keywords>
@@ -3580,7 +3580,7 @@
   </cd:sequence>
   <cd:arguments>
     <cd:keywords optional="yes">
-      <cd:variable type="cd:text" default="yes"/>
+      <cd:constant type="cd:text" default="yes"/>
       <cd:constant type="marge"/>
       <cd:constant type="rand"/>
     </cd:keywords>
@@ -3607,7 +3607,7 @@
   </cd:sequence>
   <cd:arguments>
     <cd:keywords optional="yes">
-      <cd:variable type="cd:text" default="yes"/>
+      <cd:constant type="cd:text" default="yes"/>
       <cd:constant type="marge"/>
       <cd:constant type="rand"/>
     </cd:keywords>
@@ -3839,7 +3839,7 @@
         <cd:constant type="uit"/>
         <cd:constant type="kleur"/>
         <cd:constant type="raster"/>
-        <cd:variable type="cd:text"/>
+        <cd:constant type="cd:text"/>
       </cd:parameter>
       <cd:parameter name="plaats">
         <cd:constant type="links"/>
@@ -3956,7 +3956,7 @@
       <cd:constant type="-top"/>
       <cd:constant type="-both"/>
       <cd:constant type="-bottom"/>
-      <cd:variable type="cd:text"/>
+      <cd:constant type="cd:text"/>
       <cd:constant type="hoog"/>
       <cd:constant type="midden"/>
       <cd:constant type="laag"/>
@@ -4213,14 +4213,14 @@
     <cd:assignments list="yes">
       <cd:parameter name="sectienummer">
         <cd:constant type="ja"/>
-        <cd:variable type="cd:number"/>
+        <cd:constant type="cd:number"/>
         <cd:constant type="nee"/>
       </cd:parameter>
       <cd:parameter name="variant">
         <cd:constant type="normaal"/>
         <cd:constant type="marge"/>
         <cd:constant type="midden"/>
-        <cd:variable type="cd:text"/>
+        <cd:constant type="cd:text"/>
         <cd:constant type="alinea"/>
       </cd:parameter>
       <cd:parameter name="scheider">
@@ -4674,7 +4674,7 @@
       </cd:parameter>
       <cd:parameter name="interactie">
         <cd:constant type="label"/>
-        <cd:variable type="cd:text"/>
+        <cd:constant type="cd:text"/>
         <cd:constant type="alles"/>
         <cd:constant type="symbool"/>
       </cd:parameter>
@@ -4935,7 +4935,7 @@
         <cd:constant type="c"/>
         <cd:constant type="..."/>
         <cd:constant type="geen"/>
-        <cd:variable type="cd:command"/>
+        <cd:constant type="commando"/>
       </cd:parameter>
       <cd:parameter name="koppeling">
         <cd:constant type="aan"/>
@@ -5007,8 +5007,8 @@
         <cd:constant type="cd:oneargument"/>
       </cd:parameter>
       <cd:parameter name="interactie">
-        <cd:variable type="cd:sectionnumber"/>
-        <cd:variable type="cd:text"/>
+        <cd:constant type="cd:sectionnumber"/>
+        <cd:constant type="cd:text"/>
         <cd:constant type="paginanummer"/>
         <cd:constant type="alles"/>
       </cd:parameter>
@@ -5088,7 +5088,7 @@
       <cd:parameter name="expansie">
         <cd:constant type="ja"/>
         <cd:constant type="nee"/>
-        <cd:variable type="cd:command"/>
+        <cd:constant type="commando"/>
       </cd:parameter>
       <cd:parameter name="maxbreedte">
         <cd:constant type="cd:dimension"/>
@@ -5345,7 +5345,7 @@
         <cd:constant type="Letters"/>
         <cd:constant type="romeins"/>
         <cd:constant type="Romeins"/>
-        <cd:variable type="cd:text"/>
+        <cd:constant type="cd:text"/>
       </cd:parameter>
       <cd:parameter name="start">
         <cd:constant type="cd:number"/>
@@ -5966,14 +5966,14 @@
         <cd:constant type="normaal"/>
         <cd:constant type="inmarge"/>
         <cd:constant type="midden"/>
-        <cd:variable type="cd:text"/>
+        <cd:constant type="cd:text"/>
       </cd:parameter>
       <cd:parameter name="hang">
         <cd:constant type="geen"/>
         <cd:constant type="ruim"/>
         <cd:constant type="passend"/>
         <cd:constant type="regel"/>
-        <cd:variable type="cd:number"/>
+        <cd:constant type="cd:number"/>
       </cd:parameter>
       <cd:parameter name="commando">
         <cd:constant type="cd:twoarguments"/>
@@ -5997,7 +5997,7 @@
       <cd:parameter name="verhoognummer">
         <cd:constant type="ja"/>
         <cd:constant type="nee"/>
-        <cd:variable type="cd:list"/>
+        <cd:constant type="cd:list"/>
         <cd:constant type="cd:file"/>
       </cd:parameter>
       <cd:parameter name="resetnummer">
@@ -6009,8 +6009,8 @@
       </cd:parameter>
       <cd:parameter name="expansie">
         <cd:constant type="ja"/>
-        <cd:variable type="cd:command"/>
         <cd:constant type="nee"/>
+        <cd:constant type="commando"/>
       </cd:parameter>
       <cd:parameter name="margetekst">
         <cd:constant type="ja"/>
@@ -6111,7 +6111,7 @@
       <cd:constant type="autointro"/>
       <cd:constant type="los"/>
       <cd:constant type="herhaal"/>
-      <cd:variable type="cd:section"/>
+      <cd:constant type="cd:section"/>
       <cd:constant type="intekst"/>
     </cd:keywords>
     <cd:assignments optional="yes" list="yes">
@@ -6432,12 +6432,12 @@
       </cd:parameter>
       <cd:parameter name="interactie">
         <cd:constant type="paginanummer"/>
-        <cd:variable type="cd:text"/>
+        <cd:constant type="cd:text"/>
       </cd:parameter>
       <cd:parameter name="expansie">
         <cd:constant type="ja"/>
-        <cd:variable type="cd:command"/>
         <cd:constant type="nee"/>
+        <cd:constant type="commando"/>
       </cd:parameter>
       <cd:parameter name="refereren">
         <cd:constant type="aan"/>
@@ -6664,8 +6664,8 @@
       </cd:parameter>
       <cd:parameter name="expansie">
         <cd:constant type="ja"/>
-        <cd:variable type="cd:command"/>
         <cd:constant type="nee"/>
+        <cd:constant type="commando"/>
       </cd:parameter>
       <cd:parameter name="commando">
         <cd:constant type="cd:threearguments"/>
@@ -6763,8 +6763,8 @@
       </cd:parameter>
       <cd:parameter name="expansie">
         <cd:constant type="ja"/>
-        <cd:variable type="cd:command"/>
         <cd:constant type="nee"/>
+        <cd:constant type="commando"/>
       </cd:parameter>
     </cd:assignments>
   </cd:arguments>
@@ -7006,7 +7006,7 @@
       <cd:constant type="reset"/>
       <cd:constant type="regel"/>
       <cd:constant type="halveregel"/>
-      <cd:variable type="cd:formula"/>
+      <cd:constant type="cd:formula"/>
       <cd:constant type="vast"/>
       <cd:constant type="flexibel"/>
       <cd:constant type="geen"/>
@@ -7234,7 +7234,7 @@
     <cd:keywords optional="yes">
       <cd:constant type="boven"/>
       <cd:constant type="hoofd"/>
-      <cd:variable type="cd:text"/>
+      <cd:constant type="cd:text"/>
       <cd:constant type="voet"/>
       <cd:constant type="onder"/>
       <cd:constant type="pagina"/>
@@ -7245,7 +7245,7 @@
     <cd:keywords optional="yes" list="yes">
       <cd:constant type="linkerrand"/>
       <cd:constant type="linkermarge"/>
-      <cd:variable type="cd:text"/>
+      <cd:constant type="cd:text"/>
       <cd:constant type="rechtermarge"/>
       <cd:constant type="rechterrand"/>
     </cd:keywords>
@@ -7253,7 +7253,7 @@
       <cd:parameter name="status">
         <cd:constant type="start"/>
         <cd:constant type="stop"/>
-        <cd:variable type="cd:repeat"/>
+        <cd:constant type="cd:repeat"/>
       </cd:parameter>
       <cd:inherit name="stelomlijndin"/>
     </cd:assignments>
@@ -7890,7 +7890,7 @@
         <cd:constant type="cd:name"/>
       </cd:parameter>
       <cd:parameter name="plaats">
-        <cd:variable type="cd:text"/>
+        <cd:constant type="cd:text"/>
         <cd:constant type="marge"/>
       </cd:parameter>
     </cd:assignments>
@@ -8442,7 +8442,7 @@
         <cd:constant type="png"/>
         <cd:constant type="jpg"/>
         <cd:constant type="mov"/>
-        <cd:variable type="cd:tex"/>
+        <cd:constant type="cd:tex"/>
       </cd:parameter>
       <cd:parameter name="methode">
         <cd:constant type="eps"/>
@@ -8452,7 +8452,7 @@
         <cd:constant type="png"/>
         <cd:constant type="jpg"/>
         <cd:constant type="mov"/>
-        <cd:variable type="cd:tex"/>
+        <cd:constant type="cd:tex"/>
       </cd:parameter>
     </cd:assignments>
   </cd:arguments>
@@ -8655,13 +8655,13 @@
   <cd:arguments>
     <cd:assignments list="yes">
       <cd:parameter name="voor">
-        <cd:variable type="cd:command"/>
+        <cd:constant type="cd:command"/>
       </cd:parameter>
       <cd:parameter name="tussen">
-        <cd:variable type="cd:command"/>
+        <cd:constant type="cd:command"/>
       </cd:parameter>
       <cd:parameter name="na">
-        <cd:variable type="cd:command"/>
+        <cd:constant type="cd:command"/>
       </cd:parameter>
       <cd:parameter name="afstand">
         <cd:constant type="cd:dimension"/>
@@ -8954,7 +8954,8 @@
         <cd:constant type="vetschuin"/>
         <cd:constant type="type"/>
         <cd:constant type="kap"/>
-        <cd:constant type="small...cd:command"/>
+        <cd:constant type="klein"/>
+        <cd:constant type="cd:command"/>
       </cd:parameter>
       <cd:parameter name="kleur">
         <cd:constant type="cd:name"/>

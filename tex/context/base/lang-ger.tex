@@ -671,18 +671,22 @@
 
 \def\enordinaldaynumber#1%
   {#1\ifnum\lasttwodigits{#1}=11
-     \ordinalstr{th}%
+     \highordinalstr{th}%
+   \else\ifnum\lasttwodigits{#1}=12
+     \highordinalstr{th}%
+   \else\ifnum\lasttwodigits{#1}=13
+     \highordinalstr{th}%
    \else\ifcase\lastdigit{#1}%
-     \ordinalstr{th}%
+     \highordinalstr{th}%
    \or % 1
-     \ordinalstr{st}%
+     \highordinalstr{st}%
    \or % 2
-     \ordinalstr{nd}%
+     \highordinalstr{nd}%
    \or % 3
-     \ordinalstr{rd}%
+     \highordinalstr{rd}%
    \else
-     \ordinalstr{th}%
-   \fi\fi}
+     \highordinalstr{th}%
+   \fi\fi\fi\fi}
 
 % \def\enordinaldaynumber#1%
 %   {#1\ordinalstr{\ifnum\lasttwodigits{#1}=11 th\else\ifcase\lastdigit{#1}

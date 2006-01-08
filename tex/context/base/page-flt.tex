@@ -159,6 +159,22 @@
      11: nu este dat nici un bloc
      12: nedefinit
 \stopmessages
+
+\startmessages  french  library: floatblocks
+ title: floatblocks
+      1: -- renuméroté / -- => --
+      2: -- sauvegardé
+      3: -- déplacé
+      4: -- placé
+      5: ordre adapté
+      6: n flottants de haut de page limité à --
+      7: n flottants de bas de page limité à --
+      8: moins de -- lignes
+      9: ordre perturbé
+     10: -- limité
+     11: pas de bloc donné
+     12: indéfini
+\stopmessages
 
 \def\setupfloats
   {\dodoubleargument\getparameters[\??bk]}
@@ -395,7 +411,7 @@
 % new : \place...[leftmargin,-2*line]; we need to catch fxtb:2*3
 % watch out: line alone aligns on the line ! ! !
 
-\def\movesidefloat[#1]% (-)line|x=,y=
+\def\movesidefloat[#1]% (-)n*line|x=,y=
   {\global\sidefloatdownshift \zeropoint
    \global\sidefloatextrashift\zeropoint
    \doifassignmentelse{#1}%
@@ -416,17 +432,26 @@
    \cleanupfeatures
    \doifinstringelse{:}{#1}
      \donothing
-     {\donefalse
-      \def\movedownsidefloat##1%
+     {\def\docommand##1%
         {\processaction
            [##1]%
-           [ \v!line=>\docommando+,%
-            +\v!line=>\docommando+,%
-            -\v!line=>\docommando-]}%
-      \def\docommando##1%
+           [ \v!line=>\dodocommand+,%
+            +\v!line=>\dodocommand+,%
+            -\v!line=>\dodocommand-]}%
+      \def\dodocommand##1%
         {\ifdone\else\global\sidefloatdownshift\zeropoint\donetrue\fi
          \global\advance\sidefloatdownshift##1\lineheight}%
-      \expanded{\dorepeatwithcommand[#1]}\movedownsidefloat}%
+      \donefalse\expanded{\dorepeatwithcommand[#1]}\docommand
+      \def\docommand##1%
+        {\processaction
+           [##1]%
+           [ \v!hang=>\dodocommand+,%
+            +\v!hang=>\dodocommand+,%
+            -\v!hang=>\dodocommand-]}%
+      \def\dodocommand##1% inefficient but who cares
+        {\ifdone\else\global\sidefloatsidelines\zeropoint\donetrue\fi
+         \global\advance\sidefloatsidelines\plusone\relax}%
+      \donefalse\expanded{\dorepeatwithcommand[#1]}\docommand}%
    \egroup}
 
 \def\hangsidefloat[#1]%
@@ -442,17 +467,17 @@
         % already be set at this point
         \processallactionsinset
           [#4] % ininner/inouter : for old times sake
-          [     \v!inner=>\xxdocompletefloat\v!left       \v!right,
-                \v!outer=>\xxdocompletefloat\v!right      \v!left,
+          [      \v!inner=>\xxdocompletefloat\v!left       \v!right,
+                 \v!outer=>\xxdocompletefloat\v!right      \v!left,
            \v!innermargin=>\xxdocompletefloat\v!leftmargin \v!rightmargin,
            \v!outermargin=>\xxdocompletefloat\v!rightmargin\v!leftmargin,
-            \v!inneredge=>\xxdocompletefloat\v!leftedge  \v!rightedge,
-            \v!outeredge=>\xxdocompletefloat\v!rightedge \v!leftedge,
-                \v!backspace=>\xxdocompletefloat\v!backspace      \v!cutspace,
-               \v!cutspace=>\xxdocompletefloat\v!cutspace     \v!backspace,
-                 \v!left=>\xxdocompletefloat\v!left       \v!left,
-                \v!right=>\xxdocompletefloat\v!right      \v!right,
-                 \v!line=>, % only -n*line is handled (see ***)
+             \v!inneredge=>\xxdocompletefloat\v!leftedge  \v!rightedge,
+             \v!outeredge=>\xxdocompletefloat\v!rightedge \v!leftedge,
+             \v!backspace=>\xxdocompletefloat\v!backspace      \v!cutspace,
+              \v!cutspace=>\xxdocompletefloat\v!cutspace     \v!backspace,
+                  \v!left=>\xxdocompletefloat\v!left       \v!left,
+                 \v!right=>\xxdocompletefloat\v!right      \v!right,
+                  \v!line=>, % only -n*line is handled (see ***)
                \s!unknown=>{\movedownsidefloat[\commalistelement]}]%
         \ifx\@@extrafloat\empty
           \docompletefloat{#1}{#2}{#3}{#4}{#5}{#6}\nextbox

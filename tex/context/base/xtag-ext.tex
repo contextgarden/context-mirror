@@ -225,6 +225,11 @@
      \@@XMLsave:\ifcsname\@@XMLsave:#1\endcsname#1\else\@@XMLsave\fi
    \endcsname}
 
+\gdef\defXMLelement#1#2%
+  {\@EA\def\@EA#1\csname
+     \@@XMLsave:\ifcsname\@@XMLsave:#2\endcsname#2\else\@@XMLsave\fi
+   \endcsname}
+
 \letgvalueempty{\@@XMLsave:\@@XMLsave}
 
 \gdef\showXMLelement#1%

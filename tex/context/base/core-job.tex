@@ -54,7 +54,7 @@
   {% #1=\readlocfile|\readsetfile{dir} #2=filename
    % #1{#2}\donothing\donothing
    #1{#2}\donothing{\readfile{#2}\donothing\donothing}}
-
+
 \def\processfile#1%
   {\ifx\allinputpaths\empty
      \def\next{\processlocalfile\readlocfile}%
@@ -73,6 +73,22 @@
      \fi
    \fi
    \next{#1}}
+
+\def\doifinputfileelse#1% rarely used
+  {\ifx\allinputpaths\empty
+     \@EA\secondoftwoarguments
+   \else
+     \let\filepath\empty
+     \def\docommando##1%
+       {\doiffileelse{\pathplusfile{##1}{#1}}{\donetrue\def\filepath{##1}}\donefalse
+        \ifdone\expandafter\quitcommalist\fi}%
+     \processcommacommand[.,\allinputpaths]\docommando
+     \ifx\filepath\empty
+       \@EAEAEA\secondoftwoarguments
+     \else
+       \@EAEAEA\firstoftwoarguments
+     \fi
+   \fi}
 
 \let\allinputpaths\empty
 

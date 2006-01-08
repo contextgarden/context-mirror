@@ -20,7 +20,7 @@
     <cd:share name='align'/>
 -->
 
-<cd:interface xmlns:cd="http://www.pragma-ade.com/commands" name="context" language="en" version="2004.11.17">
+<cd:interface xmlns:cd="http://www.pragma-ade.com/commands" name="context" language="cz" version="2004.11.17">
 
 <cd:command name="installlanguage" file="lang-ini.tex">
   <cd:sequence>
@@ -640,7 +640,7 @@
       <cd:constant type="vertikalne"/>
       <cd:constant type="jmeno"/>
       <cd:constant type="hodnota"/>
-      <cd:variable type="cd:number"/>
+      <cd:constant type="cd:number"/>
     </cd:keywords>
   </cd:arguments>
 </cd:command>
@@ -919,7 +919,7 @@
       </cd:parameter>
       <cd:parameter name="misto">
         <cd:constant type="stranka"/>
-        <cd:variable type="cd:text"/>
+        <cd:constant type="cd:text"/>
         <cd:constant type="sloupce"/>
         <cd:constant type="firstcolumn"/>
         <cd:constant type="lastcolumn"/>
@@ -2381,7 +2381,7 @@
   </cd:sequence>
   <cd:arguments>
     <cd:keywords optional="yes">
-      <cd:variable type="cd:text"/>
+      <cd:constant type="cd:text"/>
       <cd:constant type="marginalie"/>
       <cd:constant type="hrana"/>
     </cd:keywords>
@@ -3008,13 +3008,13 @@
         <cd:constant type="vpravo"/>
         <cd:constant type="vrsek"/>
         <cd:constant type="semknuto"/>
-        <cd:variable type="cd:command"/>
         <cd:constant type="naokraji"/>
         <cd:constant type="vlevo"/>
         <cd:constant type="vpravo"/>
         <cd:constant type="visici"/>
       </cd:parameter>
       <cd:parameter name="headcommand">
+        <cd:constant type="cd:command"/>
       </cd:parameter>
       <cd:parameter name="zaveseni">
         <cd:constant type="prizpusobive"/>
@@ -3296,7 +3296,7 @@
       <cd:parameter name="zarovnani">
         <cd:constant type="ano"/>
         <cd:constant type="ne"/>
-        <cd:variable type="cd:text"/>
+        <cd:constant type="cd:text"/>
       </cd:parameter>
       <cd:parameter name="prazdny">
         <cd:constant type="fixne"/>
@@ -3360,7 +3360,7 @@
   </cd:sequence>
   <cd:arguments>
     <cd:keywords optional="yes">
-      <cd:variable type="cd:text" default="yes"/>
+      <cd:constant type="cd:text" default="yes"/>
       <cd:constant type="marginalie"/>
       <cd:constant type="hrana"/>
     </cd:keywords>
@@ -3499,7 +3499,7 @@
   </cd:sequence>
   <cd:arguments>
     <cd:keywords optional="yes">
-      <cd:variable type="cd:text" default="yes"/>
+      <cd:constant type="cd:text" default="yes"/>
       <cd:constant type="marginalie"/>
       <cd:constant type="hrana"/>
     </cd:keywords>
@@ -3526,7 +3526,7 @@
   </cd:sequence>
   <cd:arguments>
     <cd:keywords optional="yes">
-      <cd:variable type="cd:text" default="yes"/>
+      <cd:constant type="cd:text" default="yes"/>
       <cd:constant type="marginalie"/>
       <cd:constant type="hrana"/>
     </cd:keywords>
@@ -3553,7 +3553,7 @@
   </cd:sequence>
   <cd:arguments>
     <cd:keywords optional="yes">
-      <cd:variable type="cd:text" default="yes"/>
+      <cd:constant type="cd:text" default="yes"/>
       <cd:constant type="marginalie"/>
       <cd:constant type="hrana"/>
     </cd:keywords>
@@ -3580,7 +3580,7 @@
   </cd:sequence>
   <cd:arguments>
     <cd:keywords optional="yes">
-      <cd:variable type="cd:text" default="yes"/>
+      <cd:constant type="cd:text" default="yes"/>
       <cd:constant type="marginalie"/>
       <cd:constant type="hrana"/>
     </cd:keywords>
@@ -3607,7 +3607,7 @@
   </cd:sequence>
   <cd:arguments>
     <cd:keywords optional="yes">
-      <cd:variable type="cd:text" default="yes"/>
+      <cd:constant type="cd:text" default="yes"/>
       <cd:constant type="marginalie"/>
       <cd:constant type="hrana"/>
     </cd:keywords>
@@ -3839,7 +3839,7 @@
         <cd:constant type="vyp"/>
         <cd:constant type="barevne"/>
         <cd:constant type="rastr"/>
-        <cd:variable type="cd:text"/>
+        <cd:constant type="cd:text"/>
       </cd:parameter>
       <cd:parameter name="misto">
         <cd:constant type="vlevo"/>
@@ -3956,7 +3956,7 @@
       <cd:constant type="-top"/>
       <cd:constant type="-both"/>
       <cd:constant type="-bottom"/>
-      <cd:variable type="cd:text"/>
+      <cd:constant type="cd:text"/>
       <cd:constant type="vysoko"/>
       <cd:constant type="nastred"/>
       <cd:constant type="nizko"/>
@@ -4213,14 +4213,14 @@
     <cd:assignments list="yes">
       <cd:parameter name="cislooddilu">
         <cd:constant type="ano"/>
-        <cd:variable type="cd:number"/>
+        <cd:constant type="cd:number"/>
         <cd:constant type="ne"/>
       </cd:parameter>
       <cd:parameter name="alternativa">
         <cd:constant type="normalni"/>
         <cd:constant type="marginalie"/>
         <cd:constant type="nastred"/>
-        <cd:variable type="cd:text"/>
+        <cd:constant type="cd:text"/>
         <cd:constant type="odstavec"/>
       </cd:parameter>
       <cd:parameter name="oddelovac">
@@ -4674,7 +4674,7 @@
       </cd:parameter>
       <cd:parameter name="interakce">
         <cd:constant type="popisek"/>
-        <cd:variable type="cd:text"/>
+        <cd:constant type="cd:text"/>
         <cd:constant type="vse"/>
         <cd:constant type="symbol"/>
       </cd:parameter>
@@ -4935,7 +4935,7 @@
         <cd:constant type="c"/>
         <cd:constant type="..."/>
         <cd:constant type="zadny"/>
-        <cd:variable type="cd:command"/>
+        <cd:constant type="prikaz"/>
       </cd:parameter>
       <cd:parameter name="propojeni">
         <cd:constant type="zap"/>
@@ -5007,8 +5007,8 @@
         <cd:constant type="cd:oneargument"/>
       </cd:parameter>
       <cd:parameter name="interakce">
-        <cd:variable type="cd:sectionnumber"/>
-        <cd:variable type="cd:text"/>
+        <cd:constant type="cd:sectionnumber"/>
+        <cd:constant type="cd:text"/>
         <cd:constant type="cislostranky"/>
         <cd:constant type="vse"/>
       </cd:parameter>
@@ -5088,7 +5088,7 @@
       <cd:parameter name="expanzen">
         <cd:constant type="ano"/>
         <cd:constant type="ne"/>
-        <cd:variable type="cd:command"/>
+        <cd:constant type="prikaz"/>
       </cd:parameter>
       <cd:parameter name="maxsirka">
         <cd:constant type="cd:dimension"/>
@@ -5345,7 +5345,7 @@
         <cd:constant type="Pismena"/>
         <cd:constant type="rimskecislice"/>
         <cd:constant type="Rimskecislice"/>
-        <cd:variable type="cd:text"/>
+        <cd:constant type="cd:text"/>
       </cd:parameter>
       <cd:parameter name="start">
         <cd:constant type="cd:number"/>
@@ -5966,14 +5966,14 @@
         <cd:constant type="normalni"/>
         <cd:constant type="naokraji"/>
         <cd:constant type="nastred"/>
-        <cd:variable type="cd:text"/>
+        <cd:constant type="cd:text"/>
       </cd:parameter>
       <cd:parameter name="zaveseni">
         <cd:constant type="zadny"/>
         <cd:constant type="siroky"/>
         <cd:constant type="prizpusobive"/>
         <cd:constant type="radek"/>
-        <cd:variable type="cd:number"/>
+        <cd:constant type="cd:number"/>
       </cd:parameter>
       <cd:parameter name="prikaz">
         <cd:constant type="cd:twoarguments"/>
@@ -5997,7 +5997,7 @@
       <cd:parameter name="zvysujicicislo">
         <cd:constant type="ano"/>
         <cd:constant type="ne"/>
-        <cd:variable type="cd:list"/>
+        <cd:constant type="cd:list"/>
         <cd:constant type="cd:file"/>
       </cd:parameter>
       <cd:parameter name="resetnumber">
@@ -6009,8 +6009,8 @@
       </cd:parameter>
       <cd:parameter name="expanzen">
         <cd:constant type="ano"/>
-        <cd:variable type="cd:command"/>
         <cd:constant type="ne"/>
+        <cd:constant type="prikaz"/>
       </cd:parameter>
       <cd:parameter name="textmarginalie">
         <cd:constant type="ano"/>
@@ -6111,7 +6111,7 @@
       <cd:constant type="autouvod"/>
       <cd:constant type="uvolnene"/>
       <cd:constant type="opakovat"/>
-      <cd:variable type="cd:section"/>
+      <cd:constant type="cd:section"/>
       <cd:constant type="dotextu"/>
     </cd:keywords>
     <cd:assignments optional="yes" list="yes">
@@ -6432,12 +6432,12 @@
       </cd:parameter>
       <cd:parameter name="interakce">
         <cd:constant type="cislostranky"/>
-        <cd:variable type="cd:text"/>
+        <cd:constant type="cd:text"/>
       </cd:parameter>
       <cd:parameter name="expanzen">
         <cd:constant type="ano"/>
-        <cd:variable type="cd:command"/>
         <cd:constant type="ne"/>
+        <cd:constant type="prikaz"/>
       </cd:parameter>
       <cd:parameter name="odkazujici">
         <cd:constant type="zap"/>
@@ -6664,8 +6664,8 @@
       </cd:parameter>
       <cd:parameter name="expanzen">
         <cd:constant type="ano"/>
-        <cd:variable type="cd:command"/>
         <cd:constant type="ne"/>
+        <cd:constant type="prikaz"/>
       </cd:parameter>
       <cd:parameter name="prikaz">
         <cd:constant type="cd:threearguments"/>
@@ -6763,8 +6763,8 @@
       </cd:parameter>
       <cd:parameter name="expanzen">
         <cd:constant type="ano"/>
-        <cd:variable type="cd:command"/>
         <cd:constant type="ne"/>
+        <cd:constant type="prikaz"/>
       </cd:parameter>
     </cd:assignments>
   </cd:arguments>
@@ -7006,7 +7006,7 @@
       <cd:constant type="reset"/>
       <cd:constant type="radek"/>
       <cd:constant type="pulradku"/>
-      <cd:variable type="cd:formula"/>
+      <cd:constant type="cd:formula"/>
       <cd:constant type="fixne"/>
       <cd:constant type="prizpusobive"/>
       <cd:constant type="zadny"/>
@@ -7234,7 +7234,7 @@
     <cd:keywords optional="yes">
       <cd:constant type="vrsek"/>
       <cd:constant type="zahlavi"/>
-      <cd:variable type="cd:text"/>
+      <cd:constant type="cd:text"/>
       <cd:constant type="upati"/>
       <cd:constant type="spodek"/>
       <cd:constant type="stranka"/>
@@ -7245,7 +7245,7 @@
     <cd:keywords optional="yes" list="yes">
       <cd:constant type="levahrana"/>
       <cd:constant type="levyokraj"/>
-      <cd:variable type="cd:text"/>
+      <cd:constant type="cd:text"/>
       <cd:constant type="pravyokraj"/>
       <cd:constant type="pravahrana"/>
     </cd:keywords>
@@ -7253,7 +7253,7 @@
       <cd:parameter name="status">
         <cd:constant type="start"/>
         <cd:constant type="stop"/>
-        <cd:variable type="cd:repeat"/>
+        <cd:constant type="cd:repeat"/>
       </cd:parameter>
       <cd:inherit name="nastavoramovani"/>
     </cd:assignments>
@@ -7890,7 +7890,7 @@
         <cd:constant type="cd:name"/>
       </cd:parameter>
       <cd:parameter name="misto">
-        <cd:variable type="cd:text"/>
+        <cd:constant type="cd:text"/>
         <cd:constant type="marginalie"/>
       </cd:parameter>
     </cd:assignments>
@@ -8442,7 +8442,7 @@
         <cd:constant type="png"/>
         <cd:constant type="jpg"/>
         <cd:constant type="mov"/>
-        <cd:variable type="cd:tex"/>
+        <cd:constant type="cd:tex"/>
       </cd:parameter>
       <cd:parameter name="metoda">
         <cd:constant type="eps"/>
@@ -8452,7 +8452,7 @@
         <cd:constant type="png"/>
         <cd:constant type="jpg"/>
         <cd:constant type="mov"/>
-        <cd:variable type="cd:tex"/>
+        <cd:constant type="cd:tex"/>
       </cd:parameter>
     </cd:assignments>
   </cd:arguments>
@@ -8655,13 +8655,13 @@
   <cd:arguments>
     <cd:assignments list="yes">
       <cd:parameter name="pred">
-        <cd:variable type="cd:command"/>
+        <cd:constant type="cd:command"/>
       </cd:parameter>
       <cd:parameter name="mezi">
-        <cd:variable type="cd:command"/>
+        <cd:constant type="cd:command"/>
       </cd:parameter>
       <cd:parameter name="po">
-        <cd:variable type="cd:command"/>
+        <cd:constant type="cd:command"/>
       </cd:parameter>
       <cd:parameter name="vzdalenost">
         <cd:constant type="cd:dimension"/>
@@ -8954,7 +8954,8 @@
         <cd:constant type="tucnesklonene"/>
         <cd:constant type="opis"/>
         <cd:constant type="kap"/>
-        <cd:constant type="small...cd:command"/>
+        <cd:constant type="male"/>
+        <cd:constant type="cd:command"/>
       </cd:parameter>
       <cd:parameter name="barva">
         <cd:constant type="cd:name"/>

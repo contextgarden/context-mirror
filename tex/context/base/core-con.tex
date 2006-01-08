@@ -596,7 +596,9 @@
   {\bgroup
    \let\labellanguage\currentlanguage
    \def\betweendates{\let\betweendates\dobetweendates}%
-   \processcommacommand[#1]\docomplexcurrentdate
+   % was \processcommacommandp[#1]\docomplexcurrentdate
+   \safeedef\ascii{\empty#1}% keep encoded chars
+   \@EA\processcommalist\@EA[\ascii]\docomplexcurrentdate
    \ifdim\lastskip=\datesignal\relax
      \unskip
    \fi
@@ -604,8 +606,7 @@
 
 \def\docomplexcurrentdate#1%
   {\lowercase{\edef\!!stringa{#1}}% permits usage in \smallcapped
-   \processaction
-     [#1]
+   \expanded{\processaction[\!!stringa]}% [#1]
      [    \v!day=>\betweendates\the\normalday,
         %\v!day+=>\betweendates\ordinaldaynumber\normalday,
          \v!day+=>\betweendates\convertnumber{\v!day+}\normalday,

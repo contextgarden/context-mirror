@@ -48,6 +48,11 @@
       1: fisierul -- nu exista
 \stopmessages
 
+\startmessages  french  library: verbatims
+  title: verbatim
+      1: le fichier -- n'existe pas
+\stopmessages
+
 \unprotect
 
 % \type{ <crlf> char} geeft bagger
@@ -1156,10 +1161,61 @@
    \c!step=1,
    \c!nlines=]
 
+% \def\dodotypefile[#1][#2]#3%
+%   {\getvalue{\??tp#1\c!before}%
+%    \doiflocfileelse{#3}
+%      {\startpacked % includes \bgroup
+%       \dosetuptypelinenumbering{#1}{#2}%
+%       \doifinset{\getvalue{\??tp#1\c!option}}{\v!commands,\v!slanted,\v!normal}
+%         {\setuptyping[#1][\c!option=\v!none]}%
+%       \doifvalue{\??tp#1\c!option}\v!color
+%         {\expandafter\aftersplitstring#3\at.\to\prettyidentifier
+%          \letvalue{\??tp#1\c!option}\prettyidentifier}%
+%       \initializetyping{#1}%
+%       \startverbatimcolor
+%       \makelocreadfilename{#3}%
+%       \doifundefinedelse{\??tp#3\v!global\c!start}
+%         {\scratchcounter\zerocount}
+%         {\scratchcounter\getvalue{\??tp#3\v!global\c!start}}%
+%       \advance\scratchcounter\plusone
+%       \setxvalue{\??tp#3\v!global\c!start}{\the\scratchcounter}%
+%       \doifelsevaluenothing{\??tp#1\c!start}
+%         {\processfileverbatim\readfilename}
+%         {\doifvalue{\??tp#1\c!start}\v!continue
+%            {\setevalue{\??tp#1\c!start}%
+%               {\getvalue{\??tp#3\v!global\c!start}}}%
+%          \doifelsevaluenothing{\??tp#1\c!stop}
+%            {\doifelsevaluenothing{\??tp#1\c!nlines}
+%               {\processfileverbatim\readfilename}
+%               {\scratchcounter\getvalue{\??tp#1\c!start}%
+%                \advance\scratchcounter\getvalue{\??tp#1\c!nlines}%
+%                \advance\scratchcounter\minusone
+%                \setxvalue{\??tp#3\v!global\c!start}%
+%                  {\the\scratchcounter}%
+%                \processfilelinesverbatim\readfilename
+%                  {\getvalue{\??tp#1\c!start}}
+%                  {\getvalue{\??tp#3\v!global\c!start}}}}%
+%            {\processfilelinesverbatim\readfilename
+%               {\getvalue{\??tp#1\c!start}}
+%               {\getvalue{\??tp#1\c!stop }}}}%
+%       \stopverbatimcolor
+%       \stoppacked}  % includes \egroup
+%      {\ifmmode\hbox\fi\bgroup
+%       \expanded{\convertargument#3}\to\ascii
+%       \tttf[\makemessage\m!verbatims1\ascii]%
+%       \showmessage\m!verbatims1\ascii
+%       \egroup}%
+%    \getvalue{\??tp#1\c!after}}
+
 \def\dodotypefile[#1][#2]#3%
   {\getvalue{\??tp#1\c!before}%
    \doiflocfileelse{#3}
-     {\startpacked % includes \bgroup
+     \donetrue % sets \readfilename
+     {\doifinputfileelse{#3}
+        {\donetrue\let\readfilename\filepath}
+        \donefalse}%
+   \ifdone
+     \startpacked % includes \bgroup
       \dosetuptypelinenumbering{#1}{#2}%
       \doifinset{\getvalue{\??tp#1\c!option}}{\v!commands,\v!slanted,\v!normal}
         {\setuptyping[#1][\c!option=\v!none]}%
@@ -1194,14 +1250,17 @@
               {\getvalue{\??tp#1\c!start}}
               {\getvalue{\??tp#1\c!stop }}}}%
       \stopverbatimcolor
-      \stoppacked}  % includes \egroup
-     {\ifmmode\hbox\fi\bgroup
+      \stoppacked  % includes \egroup
+   \else
+      \ifmmode\hbox\fi\bgroup
       \expanded{\convertargument#3}\to\ascii
       \tttf[\makemessage\m!verbatims1\ascii]%
       \showmessage\m!verbatims1\ascii
-      \egroup}%
+      \egroup
+   \fi
    \getvalue{\??tp#1\c!after}}
-
+
+
 %D \macros
 %D   {filename}
 %D

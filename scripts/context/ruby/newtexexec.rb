@@ -234,7 +234,7 @@ class Commands
         end
     end
 
-    def arrange
+    def arrangeoutput
         if job = TEX.new(logger) then
             prepare(job)
             job.cleanuptemprunfiles
@@ -266,7 +266,7 @@ class Commands
                         report("arranging file #{filename}")
                         f << "\\insertpages\n"
                         f << "  [#{filename}]\n"
-                        f << "  [#{addempty}]\n" unless addempty.empty?
+                        f << "  [#{emptypages}]\n" unless emptypages.empty?
                         f << "  [width=#{textwidth}]\n"
                     end
                     f << "\\stoptext\n"
@@ -286,7 +286,7 @@ class Commands
         end
     end
 
-    def select
+    def selectoutput
         if job = TEX.new(logger) then
             prepare(job)
             job.cleanuptemprunfiles
@@ -348,11 +348,11 @@ class Commands
         end
     end
 
-    def copy
+    def copyoutput
         copyortrim(false,'copy')
     end
 
-    def trim
+    def trimoutput
         copyortrim(true,'trim')
     end
 
@@ -411,7 +411,7 @@ class Commands
         end
     end
 
-    def combine
+    def combineoutput
         if job = TEX.new(logger) then
             prepare(job)
             job.cleanuptemprunfiles
@@ -541,14 +541,14 @@ commandline.registeraction('process', 'process file')
 commandline.registeraction('mptex',   'process mp file')
 commandline.registeraction('mpxtex',  'process mpx file')
 
-commandline.registeraction('listing', 'list of file content')
-commandline.registeraction('figures', 'generate overview of figures')
-commandline.registeraction('modules', 'generate module documentation')
-commandline.registeraction('arrange', 'impose pages (booklets)')
-commandline.registeraction('select',  'select pages from file(s)')
-commandline.registeraction('copy',    'copy pages from file(s)')
-commandline.registeraction('trim',    'trim pages from file(s)')
-commandline.registeraction('combine', 'combine multiple pages')
+commandline.registeraction('listing',    'list of file content')
+commandline.registeraction('figures',    'generate overview of figures')
+commandline.registeraction('modules',    'generate module documentation')
+commandline.registeraction('pdfarrange', 'impose pages (booklets)')
+commandline.registeraction('pdfselect',  'select pages from file(s)')
+commandline.registeraction('pdfcopy',    'copy pages from file(s)')
+commandline.registeraction('pdftrim',    'trim pages from file(s)')
+commandline.registeraction('pdfcombine', 'combine multiple pages')
 
 # compatibility switch
 
@@ -556,19 +556,13 @@ class Commands
 
     include CommandBase
 
-    alias pdfarrange :arrange
-    alias pdfselect  :select
-    alias pdfcopy    :copy
-    alias pdftrim    :trim
-    alias pdfcombine :combine
+    alias pdfarrange :arrangeoutput
+    alias pdfselect  :selectoutput
+    alias pdfcopy    :copyoutput
+    alias pdftrim    :trimoutput
+    alias pdfcombine :combineoutput
 
 end
-
-commandline.registeraction('pdfarrange')
-commandline.registeraction('pdfselect')
-commandline.registeraction('pdfcopy')
-commandline.registeraction('pdftrim')
-commandline.registeraction('pdfcombine')
 
 # so far for compatibility
 

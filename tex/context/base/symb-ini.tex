@@ -54,6 +54,11 @@
       1: se incarca setul de simboluri --
 \stopmessages
 
+\startmessages  french  library: symbols
+  title: symbols
+      1: chargement du jeu de symbole --
+\stopmessages
+
 %D \macros
 %D   {definesymbol, symbol}
 %D
@@ -291,10 +296,11 @@
 %D \showsetup{usesymbols}
 
 \def\dousesymbols#1%
-  {\makeshortfilename[\f!symbolprefix#1]%
-   \showmessage\m!symbols1{#1}%
+  {\makeshortfilename[\truefilename{\f!symbolprefix#1}]%
    \startreadingfile
-     \readsysfile\shortfilename\donothing\donothing
+     \readsysfile\shortfilename
+       {\showmessage\m!symbols1{#1}}
+       \donothing
    \stopreadingfile}
 
 \def\usesymbols[#1]%

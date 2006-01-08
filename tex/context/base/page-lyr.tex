@@ -300,7 +300,7 @@
       \doifundefined{\@@layerbox#2\currentlayer\layerpage}
         {\global\expandafter\newbox\csname\@@layerbox#2\currentlayer\layerpage\endcsname}}%
    \dontcomplain % more comfortable
-   \chardef\layerpagebox\csname\@@layerbox#2\currentlayer\layerpage\endcsname
+   \mathchardef\layerpagebox\csname\@@layerbox#2\currentlayer\layerpage\endcsname
    \ifvoid\layerpagebox
      \gsetboxllx\layerpagebox\zeropoint
      \gsetboxlly\layerpagebox\zeropoint
@@ -470,7 +470,7 @@
          {\doifvalue{\??ll#2\c!repeat}\v!yes\!!donecfalse
           \doifvalue{\??ll#2\c!state}\v!repeat\!!donecfalse}%
      \fi
-     \chardef\layerbox\csname\@@layerbox#3\endcsname
+     \mathchardef\layerbox\csname\@@layerbox#3\endcsname
      % we need to copy in order to retain the negative offsets for a next
      % stage of additions, i.e. llx/lly accumulate in repeat mode and the
      % compensation may differ each flush depending on added content

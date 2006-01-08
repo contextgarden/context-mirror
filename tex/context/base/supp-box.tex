@@ -1023,8 +1023,8 @@
            \def\obeyedspace{\hskip\zeropoint\hbox to \onepoint{}\hskip\zeropoint}%
            \let\obeyedline  \obeyedspace
            \ifcase-#1\or
-             \def\next{#3}\scantokens\expandafter{\next}%
-             % also ok: \scantokens{#3}%
+             \def\next{#3\relax}\scantokens\expandafter{\next}% relax catches lookahead problem
+             % also ok: \scantokens{#3}%                      % as in \hyphenatedword{spanish|?|}
            \or
              \readfile{#3}\donothing\donothing
            \else

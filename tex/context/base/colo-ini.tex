@@ -180,6 +180,22 @@
      12: -- is registered
 \stopmessages
 
+\startmessages  french  library: colors
+  title: color
+      1: le système -- est globalement activé
+      2: le système -- est localement activé
+      3: -- n'est pas défini --
+      4: le système -- est chargé
+      5: système -- inconnu
+      6: la palette -- est disponible
+      7: le palette -- n'est pas disponible
+      8: la spécification -- de la couleur -- devient noire
+      9: l'espace de couleur -- n'est pas supporté
+     10: -- l'espace de couleur est supporté
+     11: la couleur est convertie en niveau de gris
+     12: -- est enregistré
+\stopmessages
+
 %D We use a couple of local registers. That way we don't have
 %D to group when converting colors. By the way, this is not
 %D really faster. We can sqeeze half a second runtime for 50K
@@ -587,10 +603,12 @@
       \processcommalist[#1]\dodosetupcolor}}
 
 \def\dodosetupcolor#1%
-  {\makeshortfilename[\f!colorprefix\truefilename{#1}]%
-   \readsysfile\shortfilename
-     {\showmessage\m!colors4\colorstyle}
-     {\showmessage\m!colors5\colorstyle}}
+  {\makeshortfilename[\truefilename{\f!colorprefix#1}]%
+   \startreadingfile
+     \readsysfile\shortfilename
+       {\showmessage\m!colors4\colorstyle}
+       {\showmessage\m!colors5\colorstyle}%
+   \stopreadingfile}
 
 \let\usecolors\setupcolor
 
@@ -1708,14 +1726,14 @@
 %D
 %D \showsetup{startcolor}
 
-\def\startcolor
+\unexpanded\def\startcolor
   {\ifincolor
      \expandafter\doglobalstartcolor
    \else
      \expandafter\noglobalstartcolor
    \fi}
 
-\def\stopcolor
+\unexpanded\def\stopcolor
   {\ifincolor
      \doglobalstopcolor
    \else

@@ -44,6 +44,10 @@
       9: acum nu se supota mai mult de -- nivele de adancime la iteratii
 \stopmessages
 
+\startmessages  french  library: layouts
+      9: pas plus de -- niveaux pour l'instant dans les élémentarisations
+\stopmessages
+
 \unprotect
 
 % - instellingen in macro
@@ -369,6 +373,121 @@
    \fi
    \expanded{\redostartitemgroup[\itemgroupoptions]}}% [#2]
 
+% \def\redostartitemgroup[#1][#2]%
+%   {\setfalse\inlinelistitem % new, no indent (leftskip)
+%    \setfalse\concatnextitem % new, concat
+%    \setfalse\txtlistitem
+%    \ifhmode
+%      \ifconditional\autoconcatnextitem % new, concat
+%        \ifdim\lastskip=\itemsignal     % new, concat
+%          \settrue\concatnextitem       % new, concat
+%        \fi                             % new, concat
+%      \fi                               % new, concat
+%      \ifconditional\textlistitem\else\doifnotinset\v!text{#1}\par\fi % suboptimal
+%    \fi
+%    \begingroup
+%    \ifnum\itemlevel=\plusone % NIEUW
+%      \doadaptleftskip {\getitemparameter1\c!margin}%
+%      \doadaptleftskip {\getitemparameter1\c!leftmargin}%
+%      \doadaptrightskip{\getitemparameter1\c!rightmargin}%
+%    \fi
+%    \dosetraggedcommand{\getitemparameter\itemlevel\c!align}\raggedcommand
+%    \doifsomething{\getitemparameter\itemlevel\c!indenting}
+%      {% is \expanded needed?
+%       \expanded{\setupindenting[\getitemparameter\itemlevel\c!indenting]}}%
+%    \doifinset\v!columns{#1}%
+%      {\ifinsidecolumns\else\ifnum\itemcolumndepth=\zerocount
+%         \globallet\itemcolumndepth\itemlevel
+%         \getitemparameter\itemlevel\c!before
+%         \processfirstactioninset
+%           [#1]
+%           [  \v!one=>\!!counta1\relax,
+%              \v!two=>\!!counta2\relax,
+%            \v!three=>\!!counta3\relax,
+%             \v!four=>\!!counta4\relax,
+%             \v!five=>\!!counta5\relax,
+%          \s!unknown=>\@EA\!!counta\getitemparameter\itemlevel\c!n]%
+%         %
+%         % now handled in column routines
+%         %
+%         % \edef\columneditemleftskip{\the\leftskip}%
+%         % \def\postprocesscolumnbox##1%
+%         %   {\scratchdimen\columneditemleftskip
+%         %    \divide\scratchdimen \nofcolumns
+%         %    \hbox{\hskip\columneditemleftskip\hbox{\box##1}}}%
+%         % \scratchdimen-\columneditemleftskip
+%         % \multiply\scratchdimen \nofcolumns
+%         % \advance\scratchdimen \columneditemleftskip
+%         % \advance\scratchdimen \hsize
+%         % \edef\columntextwidth{\the\scratchdimen}%
+%         % \leftskip\zeropoint
+%         %
+%         \startcolumns
+%           [\c!n=\!!counta, % netter \??op\itemlevel\c!n
+%            \c!height=,
+%            \c!rule=\v!off,
+%            \c!balance=\v!yes,
+%            \c!align=\v!no]%
+%       \fi\fi}%
+%    \doifinsetelse\v!intro{#1}{\settrue\introlistitem}{\setfalse\introlistitem}%
+%    % == \doifinsetelse\v!intro{#1}\settrue\setfalse\introlistitem
+%    \doglobal\increment\noflists
+%    \let\currentlist\noflists
+%    \newcounter\noflistelements
+%    \setfalse\headlistitem
+%    \setfalse\sublistitem
+%    \setfalse\symbollistitem
+%    \let\marsymbol\relax
+%    \globallet\somdestination\empty
+%    \let\symsymbol\empty
+%    \the\itemgroupcommands
+%    \setitemlevel{#1}%
+%   %\getitemparameter\itemlevel\empty
+%    \let\listitem\empty % ** start value
+%    \doifelsenothing{#1} % iffirstargument
+%      {\edef\@@opsymbol{\getitemparameter\itemlevel\c!symbol}%
+%       \letgvalueempty{\@@globalitemsymbol\itemlevel}%
+%       \global\letitemparameter\itemlevel\v!continue\empty
+%     % \setitemmark\@@opsymbol % ** default value
+%       \dosetupitemgroupvariable[\itemlevel][#2]}
+%      {\dosetupitemgroupconstant[\itemlevel][#1]%
+%       \dosetupitemgroupvariable[\itemlevel][#2]%
+%       \doifinsetelse\v!continue{#1}% \noexpand, else problems in non-etex with chinese
+%         {\edef\@@opsymbol{\noexpand\getvalue{\@@globalitemsymbol\itemlevel}}%
+%          \getitemparameter\itemlevel\v!continue}
+%         {\edef\@@opsymbol{\noexpand\getitemparameter{\itemlevel}{\c!symbol}}%
+%          \global\setitemparameter\itemlevel\v!continue
+%            {\dosetupitemgroupconstant[\itemlevel][#1]%
+%             \dosetupitemgroupvariable[\itemlevel][#2]}}%
+%       \def\docommando##1% \setitemmark resets \docommando
+%         {\doifnot{##1}{0}{\setitemmark{##1}}}%
+%     % \processcommalist[#1,\@@opsymbol]\docommando
+%       \processcommalist[#1]\docommando}% ** preset sequence or provided sequence
+%    \ifx\listitem\empty
+%      \setitemmark\@@opsymbol % ** default value
+%      \ifx\listitem\empty
+%        \edef\currentitemsymbol{\itemlevel}% ** fall back
+%      \fi
+%    \fi
+%    \ifconditional\autointrolistitem\ifnum\prevgraf<3
+%      \settrue\introlistitem
+%    \fi\fi
+%    \ifconditional\paragraphlistitem
+%      \ifnum\itemlevel>\plusone
+%        \letitemparameter\itemlevel\c!inbetween\empty
+%      \fi
+%    \else\ifconditional\packlistitem
+%      \letitemparameter\itemlevel\c!inbetween\empty
+%    \fi\fi
+%    \calculatelistwidth\itemlevel{\dimen0}%
+%    \ifdim\dimen0>\zeropoint\relax
+%      \ifconditional\inlinelistitem\else
+%        \advance\leftskip \dimen0\relax
+%      \fi
+%    \fi}
+%
+% column code moved so that it obeys packed and such
+
 \def\redostartitemgroup[#1][#2]%
   {\setfalse\inlinelistitem % new, no indent (leftskip)
    \setfalse\concatnextitem % new, concat
@@ -391,40 +510,7 @@
    \doifsomething{\getitemparameter\itemlevel\c!indenting}
      {% is \expanded needed?
       \expanded{\setupindenting[\getitemparameter\itemlevel\c!indenting]}}%
-   \doifinset\v!columns{#1}%
-     {\ifinsidecolumns\else\ifnum\itemcolumndepth=\zerocount
-        \globallet\itemcolumndepth\itemlevel
-        \getitemparameter\itemlevel\c!before
-        \processfirstactioninset
-          [#1]
-          [  \v!one=>\!!counta1\relax,
-             \v!two=>\!!counta2\relax,
-           \v!three=>\!!counta3\relax,
-            \v!four=>\!!counta4\relax,
-            \v!five=>\!!counta5\relax,
-         \s!unknown=>\@EA\!!counta\getitemparameter\itemlevel\c!n]%
-        %
-        % now handled in column routines
-        %
-        % \edef\columneditemleftskip{\the\leftskip}%
-        % \def\postprocesscolumnbox##1%
-        %   {\scratchdimen\columneditemleftskip
-        %    \divide\scratchdimen \nofcolumns
-        %    \hbox{\hskip\columneditemleftskip\hbox{\box##1}}}%
-        % \scratchdimen-\columneditemleftskip
-        % \multiply\scratchdimen \nofcolumns
-        % \advance\scratchdimen \columneditemleftskip
-        % \advance\scratchdimen \hsize
-        % \edef\columntextwidth{\the\scratchdimen}%
-        % \leftskip\zeropoint
-        %
-        \startcolumns
-          [\c!n=\!!counta, % netter \??op\itemlevel\c!n
-           \c!height=,
-           \c!rule=\v!off,
-           \c!balance=\v!yes,
-           \c!align=\v!no]%
-      \fi\fi}%
+   % old location of column code
    \doifinsetelse\v!intro{#1}{\settrue\introlistitem}{\setfalse\introlistitem}%
    % == \doifinsetelse\v!intro{#1}\settrue\setfalse\introlistitem
    \doglobal\increment\noflists
@@ -475,6 +561,42 @@
    \else\ifconditional\packlistitem
      \letitemparameter\itemlevel\c!inbetween\empty
    \fi\fi
+   % new location of column code
+   \doifinset\v!columns{#1}%
+     {\ifinsidecolumns\else\ifnum\itemcolumndepth=\zerocount
+        \globallet\itemcolumndepth\itemlevel
+        \getitemparameter\itemlevel\c!before
+        \processfirstactioninset
+          [#1]
+          [  \v!one=>\!!counta1\relax,
+             \v!two=>\!!counta2\relax,
+           \v!three=>\!!counta3\relax,
+            \v!four=>\!!counta4\relax,
+            \v!five=>\!!counta5\relax,
+         \s!unknown=>\@EA\!!counta\getitemparameter\itemlevel\c!n]%
+        %
+        % now handled in column routines
+        %
+        % \edef\columneditemleftskip{\the\leftskip}%
+        % \def\postprocesscolumnbox##1%
+        %   {\scratchdimen\columneditemleftskip
+        %    \divide\scratchdimen \nofcolumns
+        %    \hbox{\hskip\columneditemleftskip\hbox{\box##1}}}%
+        % \scratchdimen-\columneditemleftskip
+        % \multiply\scratchdimen \nofcolumns
+        % \advance\scratchdimen \columneditemleftskip
+        % \advance\scratchdimen \hsize
+        % \edef\columntextwidth{\the\scratchdimen}%
+        % \leftskip\zeropoint
+        %
+        \startcolumns
+          [\c!n=\!!counta, % netter \??op\itemlevel\c!n
+           \c!height=,
+           \c!rule=\v!off,
+           \c!balance=\v!yes,
+           \c!align=\v!no]%
+      \fi\fi}
+   % end of column code
    \calculatelistwidth\itemlevel{\dimen0}%
    \ifdim\dimen0>\zeropoint\relax
      \ifconditional\inlinelistitem\else
@@ -630,6 +752,17 @@
 \def\itemnobreak %  +5
   {\flushnotes\penalty+5\ifinsidecolumns\else00\fi\relax}
 
+\def\dodotxtitem
+  {\scratchdimen\wd8
+   \advance \scratchdimen \getitemparameter\itemlevel\c!distance\relax
+   \ifdim\scratchdimen>\dimen0
+     \advance\scratchdimen -\dimen0
+   \else
+     \scratchdimen\z@
+   \fi
+   \llap{\hbox to \dimen0{\ifconditional\sublistitem\llap{+}\fi\box8\hfill}}%
+   \hskip\scratchdimen}
+
 \def\dolistitem % evt aantal items opslaan per niveau, scheelt zoeken
   {\ifconditional\textlistitem
     % begin of item
@@ -690,7 +823,7 @@
    \ht8=\strutheight
    \dp8=\strutdepth
    % so that content differs per run (esp mp graphics afterwards)
-\checkforrepeatedlistitem
+   \checkforrepeatedlistitem
    \ifdim\dimen2<\zeropoint\relax
      \llap{\ifconditional\sublistitem\llap{+}\fi\box8\hskip\leftmargindistance}%
    \else
@@ -704,16 +837,13 @@
      \else\ifconditional\inlinelistitem
        \hbox to \dimen0{\ifconditional\sublistitem\llap{+}\fi\box8\hfill}%
      \else\ifconditional\txtlistitem
-       \scratchdimen\wd8
-       \llap{\hbox to \dimen0{\ifconditional\sublistitem\llap{+}\fi\box8\hfill}}%
-       \hskip\scratchdimen
-       % \hskip-\dimen0 this makes them touch
+       \dodotxtitem
      \else
        % todo: align+marge binnen de hbox
        \llap{\hbox to \dimen0{\ifconditional\sublistitem\llap{+}\fi\box8\hfill}}%
      \fi\fi\fi
    \fi
-\forceunexpanded % needed for m conversion (\os) / i need to look into this
+   \forceunexpanded % needed for m conversion (\os) / i need to look into this
    \setevalue{\@@currentitemsymbol\itemlevel}%
      {\getvalue{\@@localitemsymbol\itemlevel}}% still problems with \uchar ?
     %{\noexpand\getvalue{\@@localitemsymbol\itemlevel}}% no, spoils subrefs
@@ -729,21 +859,45 @@
 \newconditional\repeatlistitem
 
 \def\checkforrepeatedlistitem
-  {\ifnum\itemlevel=\plusone \ifnum\itemlevel=\plusone
+  {\ifnum\itemlevel=\plusone
      \initializeboxstack{item}%
-   \fi \fi
+   \fi
    \ifconditional\repeatlistitem
-     \savebox{item}{\itemlevel}{\hbox{\ifnum\itemlevel>\plusone \copy8\else\fi}}%
-     \setbox8\hbox
-       {\setbox\scratchbox\hbox{\foundbox{item}{\itemlevel}}%
+      \savebox{item}{\itemlevel}{\hbox{\copy8}}%
+      \setbox8\hbox to \wd8
+       {\setbox\scratchbox\hbox
+          {\scratchcounter\itemlevel
+           \advance\scratchcounter\minusone
+           \dorecurse\scratchcounter{\foundbox{item}{\recurselevel}}}%
         \ifnum\itemlevel>\plusone
-          \hskip-\wd\scratchbox
-          \ifnum\countervalue{\@@itemcounter\itemlevel}>\plusone
-            \llap{\box\scratchbox}%
+          \ifdim\wd\scratchbox>\zeropoint
+            \hskip-\dimen2
+            \box\scratchbox
           \fi
         \fi
-        \box8}%
+        \box8 }%
    \fi}
+
+% \startbuffer
+% \item
+%   \startitemize[n]
+%   \item item 1.1
+%   \item item 1.2
+%   \startitemize[n] \item item 1.2.1 \item item 1.2.2 \stopitemize
+%   \item item 1.3
+%   \stopitemize
+% \item
+%   \startitemize[n] \item item 2.1 \item item 2.2 \stopitemize
+% \item item 3
+%   \startitemize[n] \item item 3.1 \item item 3.2 \stopitemize
+% \item
+%   \startitemize[n] \item item 4.1 \item item 4.2 \stopitemize
+% \stopbuffer
+%
+% \startitemize[n,repeat,6*broad,packed] \getbuffer \stopitemize \blank[3*big]
+% \startitemize[n,repeat,packed]         \getbuffer \stopitemize \blank[3*big]
+% \setupitemize[each][atmargin][width=3em]
+% \startitemize[n,repeat,packed]         \getbuffer \stopitemize
 
 \chardef\autoitemgroupspacing=2 % 0 = voor/na, 1=tussen als geen voor 2=(prev)tussen=old/normal
 

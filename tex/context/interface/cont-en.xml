@@ -640,7 +640,7 @@
       <cd:constant type="vertical"/>
       <cd:constant type="name"/>
       <cd:constant type="value"/>
-      <cd:variable type="cd:number"/>
+      <cd:constant type="cd:number"/>
     </cd:keywords>
   </cd:arguments>
 </cd:command>
@@ -919,7 +919,7 @@
       </cd:parameter>
       <cd:parameter name="location">
         <cd:constant type="page"/>
-        <cd:variable type="cd:text"/>
+        <cd:constant type="cd:text"/>
         <cd:constant type="columns"/>
         <cd:constant type="firstcolumn"/>
         <cd:constant type="lastcolumn"/>
@@ -2381,7 +2381,7 @@
   </cd:sequence>
   <cd:arguments>
     <cd:keywords optional="yes">
-      <cd:variable type="cd:text"/>
+      <cd:constant type="cd:text"/>
       <cd:constant type="margin"/>
       <cd:constant type="edge"/>
     </cd:keywords>
@@ -3008,13 +3008,13 @@
         <cd:constant type="right"/>
         <cd:constant type="top"/>
         <cd:constant type="serried"/>
-        <cd:variable type="cd:command"/>
         <cd:constant type="inmargin"/>
         <cd:constant type="inleft"/>
         <cd:constant type="inright"/>
         <cd:constant type="hanging"/>
       </cd:parameter>
       <cd:parameter name="headcommand">
+        <cd:constant type="cd:command"/>
       </cd:parameter>
       <cd:parameter name="hang">
         <cd:constant type="fit"/>
@@ -3296,7 +3296,7 @@
       <cd:parameter name="align">
         <cd:constant type="yes"/>
         <cd:constant type="no"/>
-        <cd:variable type="cd:text"/>
+        <cd:constant type="cd:text"/>
       </cd:parameter>
       <cd:parameter name="blank">
         <cd:constant type="fixed"/>
@@ -3360,7 +3360,7 @@
   </cd:sequence>
   <cd:arguments>
     <cd:keywords optional="yes">
-      <cd:variable type="cd:text" default="yes"/>
+      <cd:constant type="cd:text" default="yes"/>
       <cd:constant type="margin"/>
       <cd:constant type="edge"/>
     </cd:keywords>
@@ -3499,7 +3499,7 @@
   </cd:sequence>
   <cd:arguments>
     <cd:keywords optional="yes">
-      <cd:variable type="cd:text" default="yes"/>
+      <cd:constant type="cd:text" default="yes"/>
       <cd:constant type="margin"/>
       <cd:constant type="edge"/>
     </cd:keywords>
@@ -3526,7 +3526,7 @@
   </cd:sequence>
   <cd:arguments>
     <cd:keywords optional="yes">
-      <cd:variable type="cd:text" default="yes"/>
+      <cd:constant type="cd:text" default="yes"/>
       <cd:constant type="margin"/>
       <cd:constant type="edge"/>
     </cd:keywords>
@@ -3553,7 +3553,7 @@
   </cd:sequence>
   <cd:arguments>
     <cd:keywords optional="yes">
-      <cd:variable type="cd:text" default="yes"/>
+      <cd:constant type="cd:text" default="yes"/>
       <cd:constant type="margin"/>
       <cd:constant type="edge"/>
     </cd:keywords>
@@ -3580,7 +3580,7 @@
   </cd:sequence>
   <cd:arguments>
     <cd:keywords optional="yes">
-      <cd:variable type="cd:text" default="yes"/>
+      <cd:constant type="cd:text" default="yes"/>
       <cd:constant type="margin"/>
       <cd:constant type="edge"/>
     </cd:keywords>
@@ -3607,7 +3607,7 @@
   </cd:sequence>
   <cd:arguments>
     <cd:keywords optional="yes">
-      <cd:variable type="cd:text" default="yes"/>
+      <cd:constant type="cd:text" default="yes"/>
       <cd:constant type="margin"/>
       <cd:constant type="edge"/>
     </cd:keywords>
@@ -3839,7 +3839,7 @@
         <cd:constant type="off"/>
         <cd:constant type="color"/>
         <cd:constant type="screen"/>
-        <cd:variable type="cd:text"/>
+        <cd:constant type="cd:text"/>
       </cd:parameter>
       <cd:parameter name="location">
         <cd:constant type="left"/>
@@ -3956,7 +3956,7 @@
       <cd:constant type="-top"/>
       <cd:constant type="-both"/>
       <cd:constant type="-bottom"/>
-      <cd:variable type="cd:text"/>
+      <cd:constant type="cd:text"/>
       <cd:constant type="high"/>
       <cd:constant type="middle"/>
       <cd:constant type="low"/>
@@ -4213,14 +4213,14 @@
     <cd:assignments list="yes">
       <cd:parameter name="sectionnumber">
         <cd:constant type="yes"/>
-        <cd:variable type="cd:number"/>
+        <cd:constant type="cd:number"/>
         <cd:constant type="no"/>
       </cd:parameter>
       <cd:parameter name="alternative">
         <cd:constant type="normal"/>
         <cd:constant type="margin"/>
         <cd:constant type="middle"/>
-        <cd:variable type="cd:text"/>
+        <cd:constant type="cd:text"/>
         <cd:constant type="paragraph"/>
       </cd:parameter>
       <cd:parameter name="separator">
@@ -4674,7 +4674,7 @@
       </cd:parameter>
       <cd:parameter name="interaction">
         <cd:constant type="label"/>
-        <cd:variable type="cd:text"/>
+        <cd:constant type="cd:text"/>
         <cd:constant type="all"/>
         <cd:constant type="symbol"/>
       </cd:parameter>
@@ -4935,7 +4935,7 @@
         <cd:constant type="c"/>
         <cd:constant type="..."/>
         <cd:constant type="none"/>
-        <cd:variable type="cd:command"/>
+        <cd:constant type="command"/>
       </cd:parameter>
       <cd:parameter name="coupling">
         <cd:constant type="on"/>
@@ -5007,8 +5007,8 @@
         <cd:constant type="cd:oneargument"/>
       </cd:parameter>
       <cd:parameter name="interaction">
-        <cd:variable type="cd:sectionnumber"/>
-        <cd:variable type="cd:text"/>
+        <cd:constant type="cd:sectionnumber"/>
+        <cd:constant type="cd:text"/>
         <cd:constant type="pagenumber"/>
         <cd:constant type="all"/>
       </cd:parameter>
@@ -5088,7 +5088,7 @@
       <cd:parameter name="expansion">
         <cd:constant type="yes"/>
         <cd:constant type="no"/>
-        <cd:variable type="cd:command"/>
+        <cd:constant type="command"/>
       </cd:parameter>
       <cd:parameter name="maxwidth">
         <cd:constant type="cd:dimension"/>
@@ -5345,7 +5345,7 @@
         <cd:constant type="Characters"/>
         <cd:constant type="romannumerals"/>
         <cd:constant type="Romannumerals"/>
-        <cd:variable type="cd:text"/>
+        <cd:constant type="cd:text"/>
       </cd:parameter>
       <cd:parameter name="start">
         <cd:constant type="cd:number"/>
@@ -5966,14 +5966,14 @@
         <cd:constant type="normal"/>
         <cd:constant type="inmargin"/>
         <cd:constant type="middle"/>
-        <cd:variable type="cd:text"/>
+        <cd:constant type="cd:text"/>
       </cd:parameter>
       <cd:parameter name="hang">
         <cd:constant type="none"/>
         <cd:constant type="broad"/>
         <cd:constant type="fit"/>
         <cd:constant type="line"/>
-        <cd:variable type="cd:number"/>
+        <cd:constant type="cd:number"/>
       </cd:parameter>
       <cd:parameter name="command">
         <cd:constant type="cd:twoarguments"/>
@@ -5997,7 +5997,7 @@
       <cd:parameter name="incrementnumber">
         <cd:constant type="yes"/>
         <cd:constant type="no"/>
-        <cd:variable type="cd:list"/>
+        <cd:constant type="cd:list"/>
         <cd:constant type="cd:file"/>
       </cd:parameter>
       <cd:parameter name="resetnumber">
@@ -6009,8 +6009,8 @@
       </cd:parameter>
       <cd:parameter name="expansion">
         <cd:constant type="yes"/>
-        <cd:variable type="cd:command"/>
         <cd:constant type="no"/>
+        <cd:constant type="command"/>
       </cd:parameter>
       <cd:parameter name="margintext">
         <cd:constant type="yes"/>
@@ -6111,7 +6111,7 @@
       <cd:constant type="autointro"/>
       <cd:constant type="loose"/>
       <cd:constant type="repeat"/>
-      <cd:variable type="cd:section"/>
+      <cd:constant type="cd:section"/>
       <cd:constant type="intext"/>
     </cd:keywords>
     <cd:assignments optional="yes" list="yes">
@@ -6432,12 +6432,12 @@
       </cd:parameter>
       <cd:parameter name="interaction">
         <cd:constant type="pagenumber"/>
-        <cd:variable type="cd:text"/>
+        <cd:constant type="cd:text"/>
       </cd:parameter>
       <cd:parameter name="expansion">
         <cd:constant type="yes"/>
-        <cd:variable type="cd:command"/>
         <cd:constant type="no"/>
+        <cd:constant type="command"/>
       </cd:parameter>
       <cd:parameter name="referencing">
         <cd:constant type="on"/>
@@ -6664,8 +6664,8 @@
       </cd:parameter>
       <cd:parameter name="expansion">
         <cd:constant type="yes"/>
-        <cd:variable type="cd:command"/>
         <cd:constant type="no"/>
+        <cd:constant type="command"/>
       </cd:parameter>
       <cd:parameter name="command">
         <cd:constant type="cd:threearguments"/>
@@ -6763,8 +6763,8 @@
       </cd:parameter>
       <cd:parameter name="expansion">
         <cd:constant type="yes"/>
-        <cd:variable type="cd:command"/>
         <cd:constant type="no"/>
+        <cd:constant type="command"/>
       </cd:parameter>
     </cd:assignments>
   </cd:arguments>
@@ -7006,7 +7006,7 @@
       <cd:constant type="reset"/>
       <cd:constant type="line"/>
       <cd:constant type="halfline"/>
-      <cd:variable type="cd:formula"/>
+      <cd:constant type="cd:formula"/>
       <cd:constant type="fixed"/>
       <cd:constant type="flexible"/>
       <cd:constant type="none"/>
@@ -7234,7 +7234,7 @@
     <cd:keywords optional="yes">
       <cd:constant type="top"/>
       <cd:constant type="header"/>
-      <cd:variable type="cd:text"/>
+      <cd:constant type="cd:text"/>
       <cd:constant type="footer"/>
       <cd:constant type="bottom"/>
       <cd:constant type="page"/>
@@ -7245,7 +7245,7 @@
     <cd:keywords optional="yes" list="yes">
       <cd:constant type="leftedge"/>
       <cd:constant type="leftmargin"/>
-      <cd:variable type="cd:text"/>
+      <cd:constant type="cd:text"/>
       <cd:constant type="rightmargin"/>
       <cd:constant type="rightedge"/>
     </cd:keywords>
@@ -7253,7 +7253,7 @@
       <cd:parameter name="state">
         <cd:constant type="start"/>
         <cd:constant type="stop"/>
-        <cd:variable type="cd:repeat"/>
+        <cd:constant type="cd:repeat"/>
       </cd:parameter>
       <cd:inherit name="setupframed"/>
     </cd:assignments>
@@ -7890,7 +7890,7 @@
         <cd:constant type="cd:name"/>
       </cd:parameter>
       <cd:parameter name="location">
-        <cd:variable type="cd:text"/>
+        <cd:constant type="cd:text"/>
         <cd:constant type="margin"/>
       </cd:parameter>
     </cd:assignments>
@@ -8442,7 +8442,7 @@
         <cd:constant type="png"/>
         <cd:constant type="jpg"/>
         <cd:constant type="mov"/>
-        <cd:variable type="cd:tex"/>
+        <cd:constant type="cd:tex"/>
       </cd:parameter>
       <cd:parameter name="method">
         <cd:constant type="eps"/>
@@ -8452,7 +8452,7 @@
         <cd:constant type="png"/>
         <cd:constant type="jpg"/>
         <cd:constant type="mov"/>
-        <cd:variable type="cd:tex"/>
+        <cd:constant type="cd:tex"/>
       </cd:parameter>
     </cd:assignments>
   </cd:arguments>
@@ -8655,13 +8655,13 @@
   <cd:arguments>
     <cd:assignments list="yes">
       <cd:parameter name="before">
-        <cd:variable type="cd:command"/>
+        <cd:constant type="cd:command"/>
       </cd:parameter>
       <cd:parameter name="inbetween">
-        <cd:variable type="cd:command"/>
+        <cd:constant type="cd:command"/>
       </cd:parameter>
       <cd:parameter name="after">
-        <cd:variable type="cd:command"/>
+        <cd:constant type="cd:command"/>
       </cd:parameter>
       <cd:parameter name="distance">
         <cd:constant type="cd:dimension"/>
@@ -8954,7 +8954,8 @@
         <cd:constant type="boldslanted"/>
         <cd:constant type="type"/>
         <cd:constant type="cap"/>
-        <cd:constant type="small...cd:command"/>
+        <cd:constant type="small"/>
+        <cd:constant type="cd:command"/>
       </cd:parameter>
       <cd:parameter name="color">
         <cd:constant type="cd:name"/>

@@ -88,6 +88,7 @@ class TEX
     ['cont-nl','nl','dutch']                       .each do |f| @@texformats[f] = 'cont-nl'   end
     ['cont-de','de','german']                      .each do |f| @@texformats[f] = 'cont-de'   end
     ['cont-it','it','italian']                     .each do |f| @@texformats[f] = 'cont-it'   end
+    ['cont-fr','fr','french']                      .each do |f| @@texformats[f] = 'cont-fr'   end
     ['cont-cz','cz','czech']                       .each do |f| @@texformats[f] = 'cont-cz'   end
     ['cont-ro','ro','romanian']                    .each do |f| @@texformats[f] = 'cont-ro'   end
     ['cont-uk','uk','brittish']                    .each do |f| @@texformats[f] = 'cont-uk'   end
@@ -103,7 +104,7 @@ class TEX
 
     ['plain','default','standard','mptopdf']       .each do |f| @@texmethods[f] = 'plain'     end
     ['cont-en','cont-nl','cont-de','cont-it',
-     'cont-cz','cont-ro','cont-uk']                .each do |f| @@texmethods[f] = 'context'   end
+     'cont-fr','cont-cz','cont-ro','cont-uk']      .each do |f| @@texmethods[f] = 'context'   end
     ['latex']                                      .each do |f| @@texmethods[f] = 'latex'     end
 
     ['plain','default','standard']                 .each do |f| @@mpsmethods[f] = 'plain'     end
@@ -113,7 +114,7 @@ class TEX
     @@mpsmakestr['plain'] = "\\dump"
 
     ['cont-en','cont-nl','cont-de','cont-it',
-     'cont-cz','cont-ro','cont-uk']                .each do |f| @@texprocstr[f] = "\\emergencyend"  end
+     'cont-fr','cont-cz','cont-ro','cont-uk']      .each do |f| @@texprocstr[f] = "\\emergencyend"  end
 
     @@runoptions['xetex'] = ['--no-pdf']
 
@@ -134,7 +135,7 @@ class TEX
         'modefile', 'result', 'suffix', 'response', 'path',
         'filters', 'usemodules', 'environments', 'separation', 'setuppath',
         'arguments', 'input', 'output', 'randomseed', 'modes', 'mode', 'filename',
-        'ctxfile'
+        'ctxfile', 'printformat', 'paperformat'
     ]
     @@standardvars = [
         'mainlanguage', 'bodyfont', 'language'
@@ -876,6 +877,7 @@ class TEX
             elsif (str = getvariable('suffix')) && ! str.empty? then
                 opt << "\\setupsystem[file=#{jobname}.#{str}]\n"
             end
+            opt << "\\setupsystem[\\c!type=#{Tool.ruby_platform()}]\n"
             if (str = File.unixfied(getvariable('path'))) && ! str.empty? then
                 opt << "\\usepath[#{str}]\n" unless str.empty?
             end
@@ -928,7 +930,7 @@ class TEX
                 arrangement = Array.new
                 if finalrun then
                     arrangement << "\\v!doublesided" unless getvariable('noduplex')
-                    case printformat
+                    case getvariable('printformat')
                         when ''         then arrangement << "\\v!normal"
                         when /.*up/oi   then arrangement << "\\v!rotated"
                         when /.*down/oi then arrangement << ["2DOWN","\\v!rotated"]

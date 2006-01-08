@@ -2766,10 +2766,10 @@
 \def\douseXMLfilter#1%
   {\doifundefined{\c!file\f!xtagprefix#1}
      {\letvalue{\c!file\f!xtagprefix#1}\empty
-      \makeshortfilename[\f!xtagprefix#1]%
-      \writestatus{xml}{loading module #1}% will be \showmessage
+      \makeshortfilename[\truefilename{\f!xtagprefix#1}]%
       \startreadingfile
-      \readsysfile\shortfilename\donothing\donothing
+        % will be \showmessage
+        \readsysfile\shortfilename{\writestatus{xml}{loading module #1}}\donothing
       \stopreadingfile}}
 
 %D Temporarily here.
@@ -2798,23 +2798,14 @@
    \let\dodogetgrouped\relax
    \getXMLgrouped{#1}}
 
-%\long\gdef\docountXMLgrouped#1\end#2\end % @@ => \relax\relax
-%  {\long\def\dosplitstring##1#1##2@@##3\end%
-%     {\def\ascii{##2}%
-%      \ifx\ascii\empty \else
-%        \advance\scratchcounter 1
-%        \dosplitstring##2@@#1@@\end
-%      \fi}%
-%   \dosplitstring#2@@#1@@\end}
-
 \long\gdef\docountXMLgrouped#1\end#2\end % 1 relax is enough since it's
-  {\long\def\dosplitstring##1#1##2\relax\relax##3\end % another regime
+  {\long\def\dosplitXMLstring##1#1##2\relax\relax##3\end % another regime
      {\def\ascii{##2}%
       \ifx\ascii\empty \else
         \advance\scratchcounter \plusone
-        \dosplitstring##2\relax\relax#1\relax\relax\end
+        \dosplitXMLstring##2\relax\relax#1\relax\relax\end
       \fi}%
-   \dosplitstring#2\relax\relax#1\relax\relax\end}
+   \dosplitXMLstring#2\relax\relax#1\relax\relax\end}
 
 \long\unexpanded\gdef\getXMLgrouped#1% #1 kan weg % klopt dit nu?
   {\groupedtoks\emptytoks

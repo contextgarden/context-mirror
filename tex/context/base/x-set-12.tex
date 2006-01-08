@@ -18,19 +18,46 @@
 
 \loadsetups
 
-\startinterface dutch    \definecolor[LocalColor][green]     \stopinterface
-\startinterface english  \definecolor[LocalColor][red]       \stopinterface
-\startinterface german   \definecolor[LocalColor][blue]      \stopinterface
-\startinterface czech    \definecolor[LocalColor][magenta]   \stopinterface
-\startinterface italian  \definecolor[LocalColor][cyan]      \stopinterface
-\startinterface romanian \definecolor[LocalColor][yellow]    \stopinterface
+\definecolor[TitleColor][r=.375,g=.125,b=.125]
+\definecolor[TitleColor][r=.125,g=.375,b=.125]
+\definecolor[TitleColor][r=.125,g=.125,b=.375]
+\definecolor[TitleColor][r=.375,g=.375,b=.125]
+\definecolor[TitleColor][r=.375,g=.125,b=.375]
+\definecolor[TitleColor][r=.125,g=.375,b=.375]
 
-\startinterface english  \definecolor[TitleColor][g=.5,b=.5] \stopinterface
-\startinterface dutch    \definecolor[TitleColor][r=.5,b=.5] \stopinterface
-\startinterface german   \definecolor[TitleColor][r=.5,g=.5] \stopinterface
-\startinterface italian  \definecolor[TitleColor][r=.5]      \stopinterface
-\startinterface czech    \definecolor[TitleColor][g=.5]      \stopinterface
-\startinterface romanian \definecolor[TitleColor][b=.5]      \stopinterface
+\definecolor[TitleColor][r=.25,g=.20,b=.15]
+\definecolor[TitleColor][r=.25,g=.15,b=.20]
+\definecolor[TitleColor][r=.20,g=.15,b=.25]
+\definecolor[TitleColor][r=.20,g=.25,b=.15]
+\definecolor[TitleColor][r=.15,g=.20,b=.25]
+\definecolor[TitleColor][r=.15,g=.25,b=.20]
+
+
+\startinterface dutch    \definecolor[LocalColor][r=.75,g=.25,b=.25]    \stopinterface
+\startinterface english  \definecolor[LocalColor][r=.25,g=.75,b=.25]    \stopinterface
+\startinterface german   \definecolor[LocalColor][r=.25,g=.25,b=.75]    \stopinterface
+\startinterface french   \definecolor[LocalColor][r=.75,g=.75,b=.25]    \stopinterface
+\startinterface czech    \definecolor[LocalColor][r=.75,g=.25,b=.75]    \stopinterface
+\startinterface italian  \definecolor[LocalColor][r=.25,g=.75,b=.75]    \stopinterface
+\startinterface romanian \definecolor[LocalColor][r=.5,g=.4,b=.3]       \stopinterface
+%                        \definecolor[LocalColor][r=.5,g=.3,b=.4]
+%                        \definecolor[LocalColor][r=.4,g=.3,b=.5]
+%                        \definecolor[LocalColor][r=.4,g=.5,b=.3]
+%                        \definecolor[LocalColor][r=.3,g=.4,b=.5]
+%                        \definecolor[LocalColor][r=.3,g=.5,b=.4]
+
+\startinterface english  \definecolor[TitleColor][r=.375,g=.125,b=.125] \stopinterface
+\startinterface dutch    \definecolor[TitleColor][r=.125,g=.375,b=.125] \stopinterface
+\startinterface german   \definecolor[TitleColor][r=.125,g=.125,b=.375] \stopinterface
+\startinterface french   \definecolor[TitleColor][r=.375,g=.375,b=.125] \stopinterface
+\startinterface italian  \definecolor[TitleColor][r=.375,g=.125,b=.375] \stopinterface
+\startinterface czech    \definecolor[TitleColor][r=.125,g=.375,b=.375] \stopinterface
+\startinterface romanian \definecolor[TitleColor][r=.25,g=.20,b=.15]    \stopinterface
+%                        \definecolor[TitleColor][r=.25,g=.15,b=.20]
+%                        \definecolor[TitleColor][r=.20,g=.15,b=.25]
+%                        \definecolor[TitleColor][r=.20,g=.25,b=.15]
+%                        \definecolor[TitleColor][r=.15,g=.20,b=.25]
+%                        \definecolor[TitleColor][r=.15,g=.25,b=.20]
 
 \definecolor [lightgray] [s=.9]
 \definecolor [darkgray]  [s=.1]
@@ -133,6 +160,7 @@
   \startinterface dutch    \strut commando's   \par \stopinterface
   \startinterface english  \strut commands     \par \stopinterface
   \startinterface german   \strut befehle      \par \stopinterface
+  \startinterface french   \strut .......      \par \stopinterface
   \startinterface czech    \strut prikaz\'y    \par \stopinterface
   \startinterface italian  \strut comandi      \par \stopinterface
   \startinterface romanian \strut comenzile    \par \stopinterface
@@ -141,6 +169,7 @@
   \startinterface dutch    NL\stopinterface
   \startinterface english  EN\stopinterface
   \startinterface german   DE\stopinterface
+  \startinterface french   FR\stopinterface
   \startinterface czech    CZ\stopinterface
   \startinterface italian  IT\stopinterface
   \startinterface romanian RO\stopinterface
@@ -163,6 +192,7 @@
   \startinterface dutch    \strut commando's     \par \stopinterface
   \startinterface english  \strut commands       \par \stopinterface
   \startinterface german   \strut befehle        \par \stopinterface
+  \startinterface french   \strut .......        \par \stopinterface
   \startinterface czech    \strut prikaz\'y      \par \stopinterface
   \startinterface italian  \strut comandi        \par \stopinterface
   \startinterface romanian \strut comenzile      \par \stopinterface
@@ -171,6 +201,7 @@
   \startinterface dutch    \strut nl / nederlands     \par \stopinterface
   \startinterface english  \strut en / english        \par \stopinterface
   \startinterface german   \strut de / deutsch        \par \stopinterface
+  \startinterface french   \strut fr / fran\,c ais    \par \stopinterface
   \startinterface czech    \strut cz / \^cesk\'y      \par \stopinterface
   \startinterface italian  \strut it / italiano       \par \stopinterface
   \startinterface romanian \strut ro / rom\^{a}n\u{a} \par \stopinterface

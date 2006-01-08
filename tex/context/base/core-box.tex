@@ -164,7 +164,7 @@
 
 \def\dodosetcollector[#1][#2]% todo: keep reference point
   {\def\currentcollector{#1}%
-   \chardef\collectorbox\csname\@@collectorbox#1\endcsname
+   \mathchardef\collectorbox\csname\@@collectorbox#1\endcsname
    \getparameters[\??cb#1][#2]%
    \@@layerxsiz\wd\collectorbox
    \@@layerysiz\ht\collectorbox
@@ -261,7 +261,7 @@
 \def\doadaptcollector[#1][#2]%
   {\bgroup
    \def\currentcollector{#1}%
-   \chardef\collectorbox\csname\@@collectorbox#1\endcsname
+   \mathchardef\collectorbox\csname\@@collectorbox#1\endcsname
    \getparameters
      [\??cb#1][\c!voffset=\zeropoint,\c!hoffset=\zeropoint,#2]%
    \scratchdimen\wd\collectorbox

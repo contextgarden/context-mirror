@@ -20,7 +20,7 @@
     <cd:share name='align'/>
 -->
 
-<cd:interface xmlns:cd="http://www.pragma-ade.com/commands" name="context" language="en" version="2004.11.17">
+<cd:interface xmlns:cd="http://www.pragma-ade.com/commands" name="context" language="ro" version="2004.11.17">
 
 <cd:command name="installlanguage" file="lang-ini.tex">
   <cd:sequence>
@@ -640,7 +640,7 @@
       <cd:constant type="vertical"/>
       <cd:constant type="nume"/>
       <cd:constant type="valoare"/>
-      <cd:variable type="cd:number"/>
+      <cd:constant type="cd:number"/>
     </cd:keywords>
   </cd:arguments>
 </cd:command>
@@ -919,7 +919,7 @@
       </cd:parameter>
       <cd:parameter name="locatie">
         <cd:constant type="pagina"/>
-        <cd:variable type="cd:text"/>
+        <cd:constant type="cd:text"/>
         <cd:constant type="coloane"/>
         <cd:constant type="firstcolumn"/>
         <cd:constant type="lastcolumn"/>
@@ -2381,7 +2381,7 @@
   </cd:sequence>
   <cd:arguments>
     <cd:keywords optional="yes">
-      <cd:variable type="cd:text"/>
+      <cd:constant type="cd:text"/>
       <cd:constant type="margine"/>
       <cd:constant type="bordura"/>
     </cd:keywords>
@@ -3008,13 +3008,13 @@
         <cd:constant type="dreapta"/>
         <cd:constant type="sus"/>
         <cd:constant type="serried"/>
-        <cd:variable type="cd:command"/>
         <cd:constant type="inmargine"/>
         <cd:constant type="instanga"/>
         <cd:constant type="indreapta"/>
         <cd:constant type="suspendat"/>
       </cd:parameter>
       <cd:parameter name="headcommand">
+        <cd:constant type="cd:command"/>
       </cd:parameter>
       <cd:parameter name="suspenda">
         <cd:constant type="ajustat"/>
@@ -3296,7 +3296,7 @@
       <cd:parameter name="aliniere">
         <cd:constant type="da"/>
         <cd:constant type="nu"/>
-        <cd:variable type="cd:text"/>
+        <cd:constant type="cd:text"/>
       </cd:parameter>
       <cd:parameter name="blanc">
         <cd:constant type="fixat"/>
@@ -3360,7 +3360,7 @@
   </cd:sequence>
   <cd:arguments>
     <cd:keywords optional="yes">
-      <cd:variable type="cd:text" default="yes"/>
+      <cd:constant type="cd:text" default="yes"/>
       <cd:constant type="margine"/>
       <cd:constant type="bordura"/>
     </cd:keywords>
@@ -3499,7 +3499,7 @@
   </cd:sequence>
   <cd:arguments>
     <cd:keywords optional="yes">
-      <cd:variable type="cd:text" default="yes"/>
+      <cd:constant type="cd:text" default="yes"/>
       <cd:constant type="margine"/>
       <cd:constant type="bordura"/>
     </cd:keywords>
@@ -3526,7 +3526,7 @@
   </cd:sequence>
   <cd:arguments>
     <cd:keywords optional="yes">
-      <cd:variable type="cd:text" default="yes"/>
+      <cd:constant type="cd:text" default="yes"/>
       <cd:constant type="margine"/>
       <cd:constant type="bordura"/>
     </cd:keywords>
@@ -3553,7 +3553,7 @@
   </cd:sequence>
   <cd:arguments>
     <cd:keywords optional="yes">
-      <cd:variable type="cd:text" default="yes"/>
+      <cd:constant type="cd:text" default="yes"/>
       <cd:constant type="margine"/>
       <cd:constant type="bordura"/>
     </cd:keywords>
@@ -3580,7 +3580,7 @@
   </cd:sequence>
   <cd:arguments>
     <cd:keywords optional="yes">
-      <cd:variable type="cd:text" default="yes"/>
+      <cd:constant type="cd:text" default="yes"/>
       <cd:constant type="margine"/>
       <cd:constant type="bordura"/>
     </cd:keywords>
@@ -3607,7 +3607,7 @@
   </cd:sequence>
   <cd:arguments>
     <cd:keywords optional="yes">
-      <cd:variable type="cd:text" default="yes"/>
+      <cd:constant type="cd:text" default="yes"/>
       <cd:constant type="margine"/>
       <cd:constant type="bordura"/>
     </cd:keywords>
@@ -3839,7 +3839,7 @@
         <cd:constant type="dezactivat"/>
         <cd:constant type="culoare"/>
         <cd:constant type="ecran"/>
-        <cd:variable type="cd:text"/>
+        <cd:constant type="cd:text"/>
       </cd:parameter>
       <cd:parameter name="locatie">
         <cd:constant type="stanga"/>
@@ -3956,7 +3956,7 @@
       <cd:constant type="-top"/>
       <cd:constant type="-both"/>
       <cd:constant type="-bottom"/>
-      <cd:variable type="cd:text"/>
+      <cd:constant type="cd:text"/>
       <cd:constant type="inalt"/>
       <cd:constant type="centru"/>
       <cd:constant type="jos"/>
@@ -4213,14 +4213,14 @@
     <cd:assignments list="yes">
       <cd:parameter name="numarsectiune">
         <cd:constant type="da"/>
-        <cd:variable type="cd:number"/>
+        <cd:constant type="cd:number"/>
         <cd:constant type="nu"/>
       </cd:parameter>
       <cd:parameter name="alternativ">
         <cd:constant type="normal"/>
         <cd:constant type="margine"/>
         <cd:constant type="centru"/>
-        <cd:variable type="cd:text"/>
+        <cd:constant type="cd:text"/>
         <cd:constant type="paragraf"/>
       </cd:parameter>
       <cd:parameter name="separator">
@@ -4674,7 +4674,7 @@
       </cd:parameter>
       <cd:parameter name="interactiune">
         <cd:constant type="eticheta"/>
-        <cd:variable type="cd:text"/>
+        <cd:constant type="cd:text"/>
         <cd:constant type="tot"/>
         <cd:constant type="simbol"/>
       </cd:parameter>
@@ -4935,7 +4935,7 @@
         <cd:constant type="c"/>
         <cd:constant type="..."/>
         <cd:constant type="niciunul"/>
-        <cd:variable type="cd:command"/>
+        <cd:constant type="comanda"/>
       </cd:parameter>
       <cd:parameter name="cuplare">
         <cd:constant type="on"/>
@@ -5007,8 +5007,8 @@
         <cd:constant type="cd:oneargument"/>
       </cd:parameter>
       <cd:parameter name="interactiune">
-        <cd:variable type="cd:sectionnumber"/>
-        <cd:variable type="cd:text"/>
+        <cd:constant type="cd:sectionnumber"/>
+        <cd:constant type="cd:text"/>
         <cd:constant type="numarpagina"/>
         <cd:constant type="tot"/>
       </cd:parameter>
@@ -5088,7 +5088,7 @@
       <cd:parameter name="expansiune">
         <cd:constant type="da"/>
         <cd:constant type="nu"/>
-        <cd:variable type="cd:command"/>
+        <cd:constant type="comanda"/>
       </cd:parameter>
       <cd:parameter name="latimemaxima">
         <cd:constant type="cd:dimension"/>
@@ -5345,7 +5345,7 @@
         <cd:constant type="Caractere"/>
         <cd:constant type="numereromane"/>
         <cd:constant type="Numereromane"/>
-        <cd:variable type="cd:text"/>
+        <cd:constant type="cd:text"/>
       </cd:parameter>
       <cd:parameter name="start">
         <cd:constant type="cd:number"/>
@@ -5966,14 +5966,14 @@
         <cd:constant type="normal"/>
         <cd:constant type="inmargine"/>
         <cd:constant type="centru"/>
-        <cd:variable type="cd:text"/>
+        <cd:constant type="cd:text"/>
       </cd:parameter>
       <cd:parameter name="suspenda">
         <cd:constant type="niciunul"/>
         <cd:constant type="broad"/>
         <cd:constant type="ajustat"/>
         <cd:constant type="linie"/>
-        <cd:variable type="cd:number"/>
+        <cd:constant type="cd:number"/>
       </cd:parameter>
       <cd:parameter name="comanda">
         <cd:constant type="cd:twoarguments"/>
@@ -5997,7 +5997,7 @@
       <cd:parameter name="numarincrement">
         <cd:constant type="da"/>
         <cd:constant type="nu"/>
-        <cd:variable type="cd:list"/>
+        <cd:constant type="cd:list"/>
         <cd:constant type="cd:file"/>
       </cd:parameter>
       <cd:parameter name="resetnumber">
@@ -6009,8 +6009,8 @@
       </cd:parameter>
       <cd:parameter name="expansiune">
         <cd:constant type="da"/>
-        <cd:variable type="cd:command"/>
         <cd:constant type="nu"/>
+        <cd:constant type="comanda"/>
       </cd:parameter>
       <cd:parameter name="textmargine">
         <cd:constant type="da"/>
@@ -6111,7 +6111,7 @@
       <cd:constant type="autointro"/>
       <cd:constant type="larg"/>
       <cd:constant type="repetat"/>
-      <cd:variable type="cd:section"/>
+      <cd:constant type="cd:section"/>
       <cd:constant type="intext"/>
     </cd:keywords>
     <cd:assignments optional="yes" list="yes">
@@ -6432,12 +6432,12 @@
       </cd:parameter>
       <cd:parameter name="interactiune">
         <cd:constant type="numarpagina"/>
-        <cd:variable type="cd:text"/>
+        <cd:constant type="cd:text"/>
       </cd:parameter>
       <cd:parameter name="expansiune">
         <cd:constant type="da"/>
-        <cd:variable type="cd:command"/>
         <cd:constant type="nu"/>
+        <cd:constant type="comanda"/>
       </cd:parameter>
       <cd:parameter name="referinta">
         <cd:constant type="on"/>
@@ -6664,8 +6664,8 @@
       </cd:parameter>
       <cd:parameter name="expansiune">
         <cd:constant type="da"/>
-        <cd:variable type="cd:command"/>
         <cd:constant type="nu"/>
+        <cd:constant type="comanda"/>
       </cd:parameter>
       <cd:parameter name="comanda">
         <cd:constant type="cd:threearguments"/>
@@ -6763,8 +6763,8 @@
       </cd:parameter>
       <cd:parameter name="expansiune">
         <cd:constant type="da"/>
-        <cd:variable type="cd:command"/>
         <cd:constant type="nu"/>
+        <cd:constant type="comanda"/>
       </cd:parameter>
     </cd:assignments>
   </cd:arguments>
@@ -7006,7 +7006,7 @@
       <cd:constant type="reset"/>
       <cd:constant type="linie"/>
       <cd:constant type="jumatatelinie"/>
-      <cd:variable type="cd:formula"/>
+      <cd:constant type="cd:formula"/>
       <cd:constant type="fixat"/>
       <cd:constant type="flexibil"/>
       <cd:constant type="niciunul"/>
@@ -7234,7 +7234,7 @@
     <cd:keywords optional="yes">
       <cd:constant type="sus"/>
       <cd:constant type="antet"/>
-      <cd:variable type="cd:text"/>
+      <cd:constant type="cd:text"/>
       <cd:constant type="subsol"/>
       <cd:constant type="subsol"/>
       <cd:constant type="pagina"/>
@@ -7245,7 +7245,7 @@
     <cd:keywords optional="yes" list="yes">
       <cd:constant type="bordurastanga"/>
       <cd:constant type="marginestanga"/>
-      <cd:variable type="cd:text"/>
+      <cd:constant type="cd:text"/>
       <cd:constant type="marginedreapta"/>
       <cd:constant type="borduradreapta"/>
     </cd:keywords>
@@ -7253,7 +7253,7 @@
       <cd:parameter name="stare">
         <cd:constant type="start"/>
         <cd:constant type="stop"/>
-        <cd:variable type="cd:repeat"/>
+        <cd:constant type="cd:repeat"/>
       </cd:parameter>
       <cd:inherit name="seteazainconjurat"/>
     </cd:assignments>
@@ -7890,7 +7890,7 @@
         <cd:constant type="cd:name"/>
       </cd:parameter>
       <cd:parameter name="locatie">
-        <cd:variable type="cd:text"/>
+        <cd:constant type="cd:text"/>
         <cd:constant type="margine"/>
       </cd:parameter>
     </cd:assignments>
@@ -8442,7 +8442,7 @@
         <cd:constant type="png"/>
         <cd:constant type="jpg"/>
         <cd:constant type="mov"/>
-        <cd:variable type="cd:tex"/>
+        <cd:constant type="cd:tex"/>
       </cd:parameter>
       <cd:parameter name="metoda">
         <cd:constant type="eps"/>
@@ -8452,7 +8452,7 @@
         <cd:constant type="png"/>
         <cd:constant type="jpg"/>
         <cd:constant type="mov"/>
-        <cd:variable type="cd:tex"/>
+        <cd:constant type="cd:tex"/>
       </cd:parameter>
     </cd:assignments>
   </cd:arguments>
@@ -8655,13 +8655,13 @@
   <cd:arguments>
     <cd:assignments list="yes">
       <cd:parameter name="inainte">
-        <cd:variable type="cd:command"/>
+        <cd:constant type="cd:command"/>
       </cd:parameter>
       <cd:parameter name="intre">
-        <cd:variable type="cd:command"/>
+        <cd:constant type="cd:command"/>
       </cd:parameter>
       <cd:parameter name="dupa">
-        <cd:variable type="cd:command"/>
+        <cd:constant type="cd:command"/>
       </cd:parameter>
       <cd:parameter name="distanta">
         <cd:constant type="cd:dimension"/>
@@ -8954,7 +8954,8 @@
         <cd:constant type="aldininclinat"/>
         <cd:constant type="type"/>
         <cd:constant type="cap"/>
-        <cd:constant type="small...cd:command"/>
+        <cd:constant type="mic"/>
+        <cd:constant type="cd:command"/>
       </cd:parameter>
       <cd:parameter name="culoare">
         <cd:constant type="cd:name"/>

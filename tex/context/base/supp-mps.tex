@@ -50,6 +50,8 @@
 
 \bgroup \catcode`\%=\@@other \xdef\letterpercent{\string%} \egroup
 
+% todo : sort out ^^M, \par and ; mess
+
 %D \macros
 %D   {startMPgraphic}
 %D
@@ -394,16 +396,27 @@
 %      \the\MPTEXgraphicchecks\relax % \relax is end condition!
 %    \fi}
 
+% \long\def\writecheckedMPgraphic#1%
+%   {\ifforceMPTEXgraphic
+%      \global\MPTEXgraphictrue
+%    \else
+%      \global\MPTEXgraphicfalse
+%      \expandafter\convertargument#1\to\MPascii
+%      \the\MPTEXgraphicchecks\relax % \relax is end condition!
+%    \fi
+%    \flushMPTEXgraphic % verbatimtex etc
+%    \writeMPgraphic{#1}}
+
 \long\def\writecheckedMPgraphic#1%
   {\ifforceMPTEXgraphic
      \global\MPTEXgraphictrue
    \else
      \global\MPTEXgraphicfalse
-     \expandafter\convertargument#1\to\MPascii
+     \edef\ascii{#1}\convertcommand\ascii\to\MPascii
      \the\MPTEXgraphicchecks\relax % \relax is end condition!
    \fi
    \flushMPTEXgraphic % verbatimtex etc
-   \writeMPgraphic{#1}}
+   \writeMPgraphic{#1}} % potential optimization: pass \ascii
 
 %D We could have used a kind of array approach using a
 %D counter appended to \type {MPascii}, but this is an
@@ -546,6 +559,7 @@
 \fi
 
 \endTEX
+
 % buggy (at least in collected graphics, lazy expansion)
 %
 % \def\startwritingMPgraphic

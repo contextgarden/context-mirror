@@ -1,4 +1,5 @@
 %D \module
+%D \module
 %D   [       file=type-ini,
 %D        version=2001.03.05,
 %D          title=\CONTEXT\ Typescript Macros,
@@ -84,7 +85,7 @@
 \usetypescriptfile[\f!typeprefix exa] % some examples
 \usetypescriptfile[\f!typeprefix syn] % font file synonyms
 \usetypescriptfile[\f!typeprefix enc] % files and encodings
-\usetypescriptfile[\f!typeprefix dis] % funny name remappings
+%usetypescriptfile[\f!typeprefix dis] % funny name remappings, obsolete
 \usetypescriptfile[\f!typeprefix siz] % specific font sizes
 \usetypescriptfile[\f!typeprefix map] % pdftex mapping
 \usetypescriptfile[\f!typeprefix spe] % special macros
@@ -623,6 +624,30 @@
 
 \def\usetypefile[#1]% recurses on path !
   {\readfile{\f!typeprefix#1}\donothing\donothing}
+
+%D For Taco:
+%D
+%D \starttyping
+%D \inherittypeface[palatino][rm][postscript]
+%D \inherittypeface[palatino][rm][\fontclass]
+%D \inherittypeface[palatino][rm] % == \fontclass
+%D \inherittypeface[palatino] % == [rm,ss,tt,mm]
+%D \starttyping
+
+\def\inherittypeface
+  {\dotripleempty\doinherittypeface}
+
+\def\doinherittypeface[#1][#2][#3]%
+  {\doifelsenothing{#2}
+     {\doinherittypeface[#1][\c!rm,\c!ss,\c!tt,\c!mm][\fontclass]}
+     {\doifnot{#1}{#3}
+        {\def\docommand##1{\setevalue{#1-##1}{#3}}%
+         \processcommalist[#2]\docommand}}}
+
+%D This hook sinto the font mechanism with:
+
+\def\checkfontclass#1%
+  {\edef\fontclass{\executeifdefined{\fontclass-#1}{\fontclass}}}
 
 %D For backward compatibility we reimplement the font file
 %D loading macro.

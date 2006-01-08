@@ -31,14 +31,15 @@
    \c!rightquote=\cnencoding\cnupperrightsinglequote,
    \c!leftquotation=\cnencoding\cnupperleftdoublequote,
    \c!rightquotation=\cnencoding\cnupperrightdoublequote,
-   \c!date={\v!month,\ ,\v!day,{,\ },\v!year},
+   \c!date={\v!year,\cnyear,\ ,\v!month,\v!day,\cnday},
    \c!state=\v!stop]
+
 
 \setupheadtext [\s!cn]       [\v!content={\cnencoding\cnencodedcontents}]
 \setupheadtext [\s!cn]        [\v!tables={\cnencoding\cnencodedtables}]
 \setupheadtext [\s!cn]       [\v!figures={\cnencoding\cnencodedfigures}]
-\setupheadtext [\s!cn]      [\v!graphics=Graphics]
-\setupheadtext [\s!cn]    [\v!intermezzi=Intermezzos]
+\setupheadtext [\s!cn]      [\v!graphics={\cnencoding\cnencodedgraphics}]% RG & XJF
+\setupheadtext [\s!cn]    [\v!intermezzi={\cnencoding\cnencodedintermezzo}]% RG & XJF
 \setupheadtext [\s!cn]         [\v!index={\cnencoding\cnencodedindex}]
 \setupheadtext [\s!cn] [\v!abbreviations={\cnencoding\cnencodedabbreviations}]
 \setupheadtext [\s!cn]         [\v!logos={\cnencoding\cnencodedlogos}]
@@ -46,14 +47,14 @@
 
 \setuplabeltext [\s!cn]        [\v!table={\cnencoding\cnencodedtable}]
 \setuplabeltext [\s!cn]       [\v!figure={\cnencoding\cnencodedfigure}]
-\setuplabeltext [\s!cn]   [\v!intermezzo=Intermezzo ]
-\setuplabeltext [\s!cn]      [\v!graphic=Illustration ]
-\setuplabeltext [\s!cn]     [\v!appendix=]
+\setuplabeltext [\s!cn]   [\v!intermezzo={\cnencoding\cnencodedintermezzo}]% RG & XJF
+\setuplabeltext [\s!cn]      [\v!graphic={\cnencoding\cnencodedillustration}]% RG & XJF
+\setuplabeltext [\s!cn]     [\v!appendix={\cnencoding\cnencodedappendix}]% RG
 \setuplabeltext [\s!cn]         [\v!part={\cnencoding\cnencodedintro,\cnencoding\cnencodedpart}]
 \setuplabeltext [\s!cn]      [\v!chapter={\cnencoding\cnencodedintro,\cnencoding\cnencodedchapter}]
 \setuplabeltext [\s!cn]      [\v!section={\cnencoding\cnencodedintro,\cnencoding\cnencodedsection}]
-\setuplabeltext [\s!cn]         [\v!line=line ]
-\setuplabeltext [\s!cn]        [\v!lines=lines ]
+\setuplabeltext [\s!cn]         [\v!line={\cnencoding\cnencodedline}]% RG & XJF
+\setuplabeltext [\s!cn]        [\v!lines={\cnencoding\cnencodedline}]% RG & XJF
 
 \setuplabeltext [\s!cn]       [\v!subsection=]
 \setuplabeltext [\s!cn]    [\v!subsubsection=]
@@ -93,9 +94,9 @@
 %D the glyphs of both part depend on the encoding. Therefore,
 %D we have an encoding section here.
 
-\def\cnencoding{\enableencoding[\chineseencoding]} % ugly and temporary
+\unexpanded\def\cnencoding{\enableencoding[\chineseencoding]} % ugly and temporary
 
-\startencoding[uni-c]
+\startencoding[c-uni]
   \definecommand cnleftsentence            {\uchar{32}{20}\uchar{32}{20}}
   \definecommand cnrightsentence           {\uchar{32}{20}\uchar{32}{20}}
   \definecommand cnleftsubsentence         {\uchar{32}{20}\uchar{32}{20}}
@@ -140,6 +141,16 @@
   \definecommand cnencodedthursday         {\uchar{102}{31}\uchar{103}{31}\uchar{86}{219}}
   \definecommand cnencodedfriday           {\uchar{102}{31}\uchar{103}{31}\uchar{78}{148}}
   \definecommand cnencodedsaturday         {\uchar{102}{31}\uchar{103}{31}\uchar{81}{109}}
+  % RG & XJF
+  \definecommand cnencodedgraphics	   {\uchar{86}{254}}
+  \definecommand cnencodedintermezzo	   {\uchar{210}{99}\uchar{242}{102}}
+  \definecommand cnencodedillustration	   {\uchar{99}{210}\uchar{86}{254}}
+  \definecommand cnencodedappendix	   {\uchar{150}{68}\uchar{95}{85}}
+  \definecommand cnencodedline		   {\uchar{136}{76}}
+  % Tobias Burnus & XJF
+  \definecommand cnyear                    {\uchar{94}{116}}
+  \definecommand cnmonth                   {\uchar{103}{8}}
+  \definecommand cnday                     {\uchar{101}{229}}
 \stopencoding
 
 \startencoding[gbk]
@@ -187,6 +198,16 @@
   \definecommand cnencodedthursday         {\uchar{208}{199}\uchar{198}{218}\uchar{203}{196}}
   \definecommand cnencodedfriday           {\uchar{208}{199}\uchar{198}{218}\uchar{206}{229}}
   \definecommand cnencodedsaturday         {\uchar{208}{199}\uchar{198}{218}\uchar{193}{249}}
+  % RG & XJF
+  \definecommand cnencodedgraphics	   {\uchar{205}{188}}
+  \definecommand cnencodedintermezzo	   {\uchar{178}{229}\uchar{199}{250}}
+  \definecommand cnencodedillustration	   {\uchar{178}{229}\uchar{205}{188}}
+  \definecommand cnencodedappendix	   {\uchar{184}{189}\uchar{194}{188}}
+  \definecommand cnencodedline		   {\uchar{208}{208}}
+  % Tobias Burnus & XJF
+  \definecommand cnyear                    {\uchar{196}{234}}
+  \definecommand cnmonth                   {\uchar{212}{194}}
+  \definecommand cnday                     {\uchar{200}{213}}
 \stopencoding
 
 \startencoding[big5]
@@ -234,6 +255,53 @@
   \definecommand cnencodedthursday         {\uchar{172} {80}\uchar{180}{193}\uchar{165}{124}}
   \definecommand cnencodedfriday           {\uchar{172} {80}\uchar{180}{193}\uchar{164}{173}}
   \definecommand cnencodedsaturday         {\uchar{172} {80}\uchar{180}{193}\uchar{164}{187}}
+  % Tobias Burnus &\XJF
+  \definecommand cnyear                    {\uchar{166}{126}}
+  \definecommand cnmonth                   {\uchar{164}{235}}
+  \definecommand cnday                     {\uchar{164}{233}}
+
+% Traditional Chinese characters (only where they differ to the
+% simplified ones) for lang-chi.tex and font-chi.tex.
+
+% \startencoding[c-uni]
+%   \defineudigit     10000 132  44
+%   \defineudigit 100000000  81   4
+
+%   \definecommand cnencodedsection          {\uchar{123}{192}}
+%   \definecommand cnencodedfigure           {\uchar{87}{22}}
+%   \definecommand cnencodedunits            {\uchar{138}{8}\uchar{145}{207}\uchar{85}{174}\uchar{79}{77}}
+%   \definecommand cnencodedlogos            {\uchar{95}{189}\uchar{140}{182}}
+%   \definecommand cnencodedabbreviations    {\uchar{126}{46}\uchar{117}{101}\uchar{138}{158}}
+%   \definecommand cnencodedfigures          {\uchar{87}{22}\uchar{95}{98}}
+%   \definecommand cnencodedcontents         {\uchar{118}{238}\uchar{147}{4}}
+% \stopencoding
+
+% \startencoding[gbk]
+%   \defineudigit     10000 200 102
+%   \defineudigit 100000000 131 124
+
+%   \definecommand cnencodedsection          {\uchar{185}{157}}
+%   \definecommand cnencodedfigure           {\uchar{136}{68}}
+%   \definecommand cnencodedunits            {\uchar{211}{139}\uchar{193}{191}\uchar{134}{206}\uchar{206}{187}}
+%   \definecommand cnencodedlogos            {\uchar{187}{213}\uchar{217}{72}
+%   \definecommand cnencodedabbreviations    {\uchar{191}{115}\uchar{194}{212}\uchar{213}{90}}
+%   \definecommand cnencodedfigures          {\uchar{136}{68}\uchar{208}{206}}
+%   \definecommand cnencodedcontents         {\uchar{196}{191}\uchar{228}{155}}
+% \stopencoding
+
+% \startencoding[big5]
+%   \defineudigit     10000 184  85
+%   \defineudigit 100000000 187 245
+
+%   \definecommand cnencodedsection          {\uchar{184}{96}}
+%   \definecommand cnencodedfigure           {\uchar{185}{207}}
+%   \definecommand cnencodedunits            {\uchar{173}{112}\uchar{182}{113}\uchar{179}{230}\uchar{166}{236}}
+%   \definecommand cnencodedlogos            {\uchar{192}{178}\uchar{182}{83}}
+%   \definecommand cnencodedabbreviations    {\uchar{193}{89}\uchar{178}{164}\uchar{187}{121}}
+%   \definecommand cnencodedfigures          {\uchar{185}{207}\uchar{167}{206}}
+%   \definecommand cnencodedcontents         {\uchar{165}{216}\uchar{191}{253}}
+% \stopencoding
+
 \stopencoding
 
 \protect \endinput

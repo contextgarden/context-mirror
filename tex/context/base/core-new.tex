@@ -42,14 +42,14 @@
 %
 % \expanded
 %   {\long\noexpand\def\noexpand\xdostartsetups##1##2\csname\e!stop\v!instellingen\endcsname
-%      {\egroup
+%      {\endgroup
 %       \long\noexpand\setvalue{\??su##1}{##2}}}
 %
 % \def\startsetups % for international purposes
-%   {\bgroup\doifnextcharelse[{\startsetupsA\stopsetups}{\startsetupsB\stopsetups}}
+%   {\begingroup\doifnextcharelse[{\startsetupsA\stopsetups}{\startsetupsB\stopsetups}}
 %
 % \def\startlocalsetups % for nested purposes
-%   {\bgroup\doifnextcharelse[{\startsetupsA\stoplocalsetups}{\startsetupsB\stoplocalsetups}}
+%   {\begingroup\doifnextcharelse[{\startsetupsA\stoplocalsetups}{\startsetupsB\stoplocalsetups}}
 %
 % \def\startsetupsA#1[#2]%
 %   {\catcode`\^^M=\@@ignore
@@ -59,7 +59,7 @@
 %   {\startsetupsA#1[#2]}%
 %
 % \long\def\dostartsetups#1#2% watch out: not \grabuntil
-%   {\dograbuntil#1{\egroup\long\setvalue{\??su#2}}}
+%   {\dograbuntil#1{\endgroup\long\setvalue{\??su#2}}}
 
 % todo : \startsetups[name][XML] \setups[name][XML]
 
@@ -67,7 +67,7 @@
 
 \expanded
   {\long\def\@EA\noexpand\csname\e!start\v!setups\endcsname
-     {\bgroup\noexpand\doifnextcharelse[%
+     {\begingroup\noexpand\doifnextcharelse[%
         {\noexpand\startsetupsA\@EA\noexpand\csname\e!stop\v!setups\endcsname}
         {\noexpand\startsetupsB\@EA\noexpand\csname\e!stop\v!setups\endcsname}}}
 
@@ -101,7 +101,7 @@
 \def\startrawsetups  {\xxstartsetups\zerocount\stoprawsetups  } \let\stoprawsetups  \relax
 
 \def\xxstartsetups#1#2%
-  {\bgroup\chardef\setupseolmode#1\doifnextcharelse[{\startsetupsA#2}{\startsetupsB#2}}
+  {\begingroup\chardef\setupseolmode#1\doifnextcharelse[{\startsetupsA#2}{\startsetupsB#2}}
 
 \def\startsetupsA#1% [ ] delimited
   {\ifcase\setupseolmode\or\catcode`\^^M\@@ignore\fi
@@ -118,12 +118,12 @@
   {\ifthirdargument\@EA\startsetupsC\else\@EA\startsetupsD\fi}
 
 % \long\def\dodostartsetups#1#2#3% watch out: not \grabuntil
-%   {\dograbuntil#1{\egroup\dodoglobal\long\setvalue{\??su#2:#3}}} % \doglobal
+%   {\dograbuntil#1{\endgroup\dodoglobal\long\setvalue{\??su#2:#3}}} % \doglobal
 %
 % better:
 
 \long\def\dodostartsetups#1#2#3% watch out: not \grabuntil
-  {\cleanuplabel{\??su#2:#3}\dograbuntil#1{\egroup\dodoglobal\long\setvalue\cleanlabel}} % \doglobal
+  {\cleanuplabel{\??su#2:#3}\dograbuntil#1{\endgroup\dodoglobal\long\setvalue\cleanlabel}} % \doglobal
 
 \def\systemsetupsprefix{*}
 
@@ -345,25 +345,25 @@
 \gdef\cleanedupcolon{:} \catcode`:=\@@active
 
 \gdef\cleanuplabel#1%
-  {\bgroup\let:\cleanedupcolon
+  {\begingroup\let:\cleanedupcolon
    \xdef\cleanlabel{#1}%
-   \egroup}
+   \endgroup}
 
 \gdef\cleanupprefixedlabel#1#2%
-  {\bgroup\let:\cleanedupcolon
+  {\begingroup\let:\cleanedupcolon
    \xdef\cleanprefix{#1}%
    \xdef\cleanlabel {#2}%
-   \egroup}
+   \endgroup}
 
 \gdef\protectlabels
   {\let:\cleanedupcolon}
 
-\global\def\blabelgroup {\bgroup \let:\cleanedupcolon}
-\global\let\elabelgroup  \egroup
+\global\def\blabelgroup {\begingroup \let:\cleanedupcolon}
+\global\let\elabelgroup  \endgroup
 
 \gdef\labelcsname
-  {\bgroup\let:\cleanedupcolon
-   \expandafter\egroup\csname}
+  {\begingroup\let:\cleanedupcolon
+   \expandafter\endgroup\csname}
 
 \gdef\labelvalue#1%
   {\labelcsname#1\endcsname}

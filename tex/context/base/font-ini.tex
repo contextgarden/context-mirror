@@ -226,6 +226,21 @@
      14: bodyfont -- is defined (can better be done global)
 \stopmessages
 
+\startmessages  french  library: fonts
+  title: bodyfont
+      1: encodage --
+      2: la variante -- est chargée
+      3: variante -- inconnue
+      4: policecorps -- n'est pas définie
+      5: le style -- n'est pas défini
+      6: -- est chargé
+      7: format -- inconnu
+      8: style -- defini
+%     9: mapping -- is loaded
+     10: fichier de police -- inconnu
+     14: policecorps -- est défini (une définition globale pourrait être plus adéquat)
+\stopmessages
+
 %D This module is one of the oldest modules of \CONTEXT. The
 %D macros below evolved out of the \PLAIN\ \TEX\ macros and
 %D therefore use a similar naming scheme (\type{\rm},
@@ -2712,29 +2727,12 @@
      {\ifloadfontfileonce
         \letvalue{\c!file\f!fontprefix#2}\empty
       \fi
+      \makeshortfilename[\truefilename{\f!fontprefix#2}]%
       \startreadingfile
-      \readsysfile{\truefilename{\f!fontprefix#2}}
-        {\showmessage\m!fonts2{#2}}
-        {\makeshortfilename[\truefilename{\f!fontprefix#2}]%
-         \readsysfile\shortfilename
-           {\showmessage\m!fonts2{#2}}
-           {\showmessage\m!fonts3{#2}}}%
+        \readsysfile\shortfilename
+          {\showmessage\m!fonts2{#2}}
+          {\showmessage\m!fonts3{#2}}%
       \stopreadingfile}}
-
-% \def\doreadfontdefinitionfile#1#2% #1 = set/switch state
-%   {\doifundefined{\c!file\f!fontprefix#2}%
-%      {\ifloadfontfileonce
-%         \letvalue{\c!file\f!fontprefix#2}\empty
-%       \fi
-%       \startreadingfile
-%       \readsysfile{\truefilename{\f!fontprefix#2}}
-%         {\showmessage\m!fonts2}
-%         {\makeshortfilename[\truefilename{\f!fontprefix#2}]%
-%          \readsysfile\shortfilename
-%            {\showmessage\m!fonts2}
-%            {\showmessage\m!fonts3}}%
-%         {#2}% argument to \showmessage
-%       \stopreadingfile}}
 
 %D When \type {\loadfontfileoncetrue}, such files are
 %D only loaded once! This permits redundant loading, but at
@@ -2980,11 +2978,22 @@
    \edef\fontbody{#1}%
    \synchronizefont}
 
+% \def\setcurrentfontstyle#1%
+%   {%\message{[3 #1]}%
+%    \edef\fontstyle{#1}%
+%    \ifmmode\mr\fi % otherwise \rm not downward compatible
+%    \synchronizefont}
+%
+% For Taco: optional fall backs:
+
 \def\setcurrentfontstyle#1%
   {%\message{[3 #1]}%
+   \checkfontclass{#1}%
    \edef\fontstyle{#1}%
    \ifmmode\mr\fi % otherwise \rm not downward compatible
    \synchronizefont}
+
+\let\checkfontclass\gobbleoneargument % implemented in type-ini
 
 \def\setcurrentfontbodyalternative#1#2%
   {%\message{[4 #1 #2]}%

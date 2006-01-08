@@ -112,6 +112,17 @@
       7: driver necunoscut --
 \stopmessages
 
+\startmessages  french  library: specials
+  title: specials
+      1: -- chargé
+      2: pas d'imbracations plus profondes ne sont permises --
+      3: -- est remis à zéro
+      4: la commande -- n'existe pas
+      5: chargement du fichier de définition --
+      6: l'imbrication n'est pas permise
+      7: pilote -- inconnu
+\stopmessages
+
 \startmessages  dutch  library: interactions
      21: -- code tussengevoegd
 \stopmessages
@@ -138,6 +149,10 @@
 
 \startmessages  romanian  library: interactions
      21: -- cod inserat
+\stopmessages
+
+\startmessages  french  library: interactions
+     21: -- code inseré
 \stopmessages
 
 %D \TEX\ produces files in the \DVI\ format. This format is
@@ -393,10 +408,9 @@
      {\doifdefinedelse{\@@specfil@@#1}
         {\edef\currentspecialfile{\getvalue{\@@specfil@@#1}}}
         {\edef\currentspecialfile{#1}}%
-      \makeshortfilename[\f!specialprefix\currentspecialfile]%
-      \showmessage\m!specials5\currentspecialfile
+      \makeshortfilename[\truefilename{\f!specialprefix\currentspecialfile}]%
       \startreadingfile
-      \readsysfile\shortfilename\donothing\donothing
+        \readsysfile\shortfilename{\showmessage\m!specials5\currentspecialfile}\donothing
       \stopreadingfile
       \showmessage\m!specials1\preloadedspecials}}
 

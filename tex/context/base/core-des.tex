@@ -752,9 +752,14 @@
               [\c!conversion=\descriptionparameter\c!conversion]}}}% % sake
    \doifvaluesomething{\??dd#3#1\c!list}
      {\definelist[\getvalue{\??dd#3#1\c!type}:\getvalue{\??dd#3#1\c!list}]}% new
-   \setvalue{\s!set  #3#1}{\dosetenumerationnumber[#1][#3]}%
-   \setvalue{\s!reset#3#1}{\doresetenumerationnumber[#1][#3]}%
-   \setvalue{\e!next #3#1}{\dotripleempty\donextenumerationnumber[#1][#3]}}
+   % should work ...
+   %setvalue{\s!set  #3#1}{\dosetenumerationnumber[#1][#3]}%
+   %setvalue{\s!reset#3#1}{\doresetenumerationnumber[#1][#3]}%
+   %setvalue{\e!next #3#1}{\dotripleempty\donextenumerationnumber[#1][#3]}}
+   % but since we use \currentdescription, we need ...
+   \setevalue{\s!set  #3#1}{\noexpand                       \dosetenumerationnumber  [#1][#3]}%
+   \setevalue{\s!reset#3#1}{\noexpand                       \doresetenumerationnumber[#1][#3]}%
+   \setevalue{\e!next #3#1}{\noexpand\dotripleempty\noexpand\donextenumerationnumber [#1][#3]}}
 
 \def\descriptionparentparameter#1{\csname\??dd\currentdescriptionnumber#1\endcsname}
 

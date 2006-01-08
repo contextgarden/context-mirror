@@ -20,6 +20,13 @@
 
 \unprotect
 
+\startlanguagespecifics[fr]
+    \definetextmodediscretionary : {\removeunwantedspaces\prewordbreak\kern\hspaceamount\empty{:}:}
+    \definetextmodediscretionary ; {\removeunwantedspaces\prewordbreak\kern\hspaceamount\empty{;};}
+    \definetextmodediscretionary ? {\removeunwantedspaces\prewordbreak\kern\hspaceamount\empty{?}?}
+    \definetextmodediscretionary ! {\removeunwantedspaces\prewordbreak\kern\hspaceamount\empty{!}!}
+\stoplanguagespecifics
+
 \startlanguagespecifics[\s!fr]
 
   \defineactivecharacter : {\mathortext{:}{\directdiscretionary{:}}}

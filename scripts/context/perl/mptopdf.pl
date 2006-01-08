@@ -37,7 +37,7 @@ my $PassOn = '' ;
     "latex"   => \$Latex ) ;
 
 my $program = "MPtoPDF 1.3" ;
-my $pattern = $ARGV[0] ;
+my $pattern = "@ARGV" ; # was $ARGV[0]
 my $done    = 0 ;
 my $report  = '' ;
 my $texlatexswitch = " --tex=latex --format=latex " ;

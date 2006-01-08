@@ -65,45 +65,45 @@
 \def\startPSTRICKS
   {\dosingleempty\dostartPSTRICKS}
 
-\ifx\startTEXapplication\undefined
-
-\long\def\dostartPSTRICKS[#1]#2\stopPSTRICKS
-  {\doifelse{\jobsuffix}{dvi}
-     {#2}
-     {\bgroup
-      \setbuffer[pstricks]%
-        \usemodule[pstric]%
-        \setbox\scratchbox\hbox{#2}%
-        % There is probably a nicer way to handle this
-        \immediate\openout\scratchwrite=\bufferprefix dim.tmp
-        \immediate\write\scratchwrite{\dimen0=\the\ht\scratchbox}%
-        \immediate\write\scratchwrite{\dimen2=\the\wd\scratchbox}%
-        \immediate\closeout\scratchwrite
-        % Quick and dirty
-        \startTEXpage[#1]\box\scratchbox\stopTEXpage
-      \endbuffer
-      % Here we go!
-      %\immediate\write18{texexec \bufferprefix pstricks.tmp --once --batch}%
-      %\immediate\write18{dvips -G0 -Ppdf \bufferprefix pstricks -o}%
-      %\immediate\write18{ps2pdf  \bufferprefix pstricks.ps \bufferprefix pstricks.pdf}%
-      \executesystemcommand{texexec \bufferprefix pstricks.tmp --once --batch}%
-      \executesystemcommand{dvips -G0 -Ppdf \bufferprefix pstricks -o}%
-      \executesystemcommand{ps2pdf  \bufferprefix pstricks.ps \bufferprefix pstricks.pdf}%
-      % We pick up the dimensions from the scratch file.
-      \readlocfile{\bufferprefix pstricks-dim.tmp}{}{}%
-      % Since the graphic is put on a page (sigh) by dvips/gs
-      % we need to shift it around a bit.
-      \setbox\scratchbox\hbox
-        {\externalfigure[\bufferprefix pstricks.pdf][\c!object=\v!no]}%
-      \setbox\scratchbox\hbox
-        {\lower\ht\scratchbox\hbox{\raise\dimen2\box\scratchbox}}%
-      \wd\scratchbox\dimen0
-      \ht\scratchbox\dimen2
-      \dp\scratchbox\zeropoint
-      \box\scratchbox
-      \egroup}}
-
-\fi
+% \ifx\startTEXapplication\undefined
+%
+% \long\def\dostartPSTRICKS[#1]#2\stopPSTRICKS
+%   {\doifelse{\jobsuffix}{dvi}
+%      {#2}
+%      {\bgroup
+%       \setbuffer[pstricks]%
+%         \usemodule[pstric]%
+%         \setbox\scratchbox\hbox{#2}%
+%         % There is probably a nicer way to handle this
+%         \immediate\openout\scratchwrite=\bufferprefix dim.tmp
+%         \immediate\write\scratchwrite{\dimen0=\the\ht\scratchbox}%
+%         \immediate\write\scratchwrite{\dimen2=\the\wd\scratchbox}%
+%         \immediate\closeout\scratchwrite
+%         % Quick and dirty
+%         \startTEXpage[#1]\box\scratchbox\stopTEXpage
+%       \endbuffer
+%       % Here we go!
+%       %\immediate\write18{texexec \bufferprefix pstricks.tmp --once --batch}%
+%       %\immediate\write18{dvips -G0 -Ppdf \bufferprefix pstricks -o}%
+%       %\immediate\write18{ps2pdf  \bufferprefix pstricks.ps \bufferprefix pstricks.pdf}%
+%       \executesystemcommand{texexec \bufferprefix pstricks.tmp --once --batch}%
+%       \executesystemcommand{dvips -G0 -Ppdf \bufferprefix pstricks -o}%
+%       \executesystemcommand{texmfstart pstopdf \bufferprefix pstricks.ps \bufferprefix pstricks.pdf}%
+%       % We pick up the dimensions from the scratch file.
+%       \readlocfile{\bufferprefix pstricks-dim.tmp}{}{}%
+%       % Since the graphic is put on a page (sigh) by dvips/gs
+%       % we need to shift it around a bit.
+%       \setbox\scratchbox\hbox
+%         {\externalfigure[\bufferprefix pstricks.pdf][\c!object=\v!no]}%
+%       \setbox\scratchbox\hbox
+%         {\lower\ht\scratchbox\hbox{\raise\dimen2\box\scratchbox}}%
+%       \wd\scratchbox\dimen0
+%       \ht\scratchbox\dimen2
+%       \dp\scratchbox\zeropoint
+%       \box\scratchbox
+%       \egroup}}
+%
+% \fi
 
 \long\def\dostartPSTRICKS[#1]#2\stopPSTRICKS
   {\doifelse{\jobsuffix}{dvi} % will some day move to app as switch

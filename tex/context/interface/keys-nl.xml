@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 
-<cd:interface xmlns:cd="http://www.pragma-ade.com/commands" name="context" language="nl" version="2005.12.19">
+<cd:interface xmlns:cd="http://www.pragma-ade.com/commands" name="context" language="nl" version="2006.01.09">
 
   <cd:variables>
     <cd:variable name="one" value="een"/>
@@ -661,6 +661,7 @@
     <cd:variable name="rightedge" value="rechterrand"/>
     <cd:variable name="right" value="rechts"/>
     <cd:variable name="line" value="regel"/>
+    <cd:variable name="hang" value="hang"/>
     <cd:variable name="register" value="register"/>
     <cd:variable name="relative" value="relatief"/>
     <cd:variable name="reset" value="reset"/>

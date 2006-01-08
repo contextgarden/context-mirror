@@ -52,6 +52,7 @@
 %       3: incercati LaTeX
 % \stopmessages
 %
+
 % %D You would not expect the next macro in \CONTEXT,
 % %D wouldn't you? It's there to warn \LATEX\ users that
 % %D something is wrong.
@@ -500,10 +501,13 @@
    \resetsubscripts
    \egroup}
 
-\def\celsius#1{#1\mathematics{^\circ}C}
-\def\graden   {\mathematics{^\circ}}
-\def\inch     {\hbox{\rm\char125\relax}}
-\def\fraction#1#2{\mathematics{#1\over#2}}
+\unexpanded\def\celsius   #1{#1\mathematics{^\circ}C}
+\unexpanded\def\inch        {\mathematics{\prime\prime}} % was: \hbox{\rm\char125\relax}
+\unexpanded\def\fraction#1#2{\mathematics{#1\over#2}}
+
+% very dutch
+
+\unexpanded\def\graden      {\mathematics{^\circ}}
 
 \def\bedragprefix {\euro\normalfixedspace}
 \def\bedragsuffix {}
@@ -1373,6 +1377,10 @@
 
 \startmessages  romanian  library: systems
      41: fisierul extern -- din grupul -- nu exista
+\stopmessages
+
+\startmessages  french  library: systems
+     41: le fichier externe -- du groupe -- n'existe pas
 \stopmessages
 
 \definetabulate

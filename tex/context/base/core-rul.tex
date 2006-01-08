@@ -2647,8 +2647,11 @@
      \localhsize\hsize
    \fi\fi}
 
-\def\dododostartframedtext[#1][#2][#3]%
-  {\doifsomething{#2}{\setvalue{\??kd#1\c!location}{#2}}%
+\setfalse\framedtextlocationnone
+
+\def\dododostartframedtext[#1][#2][#3]% #3 only passed to framed, not to framedtext
+  {\doifsomething{#2}{\setvalue{\??kd#1\c!location}{#2}}% does not listen to #3
+   \setfalse\framedtextlocationnone
    \processaction % \v!low en \v!depth are already taken !
      [\framedtextparameter{#1}\c!location]
      [   \v!left=>\letvalue{\??kd#1\c!left }\relax
@@ -2658,7 +2661,8 @@
        \v!middle=>\letvalue{\??kd#1\c!left }\hfill
                   \letvalue{\??kd#1\c!right}\hfill,
          \v!none=>\letvalue{\??kd#1\c!left }\relax % new
-                  \letvalue{\??kd#1\c!right}\relax]% new
+                  \letvalue{\??kd#1\c!right}\relax % new
+                  \settrue\framedtextlocationnone]%
    \letvalue{\??kd#1\c!location}\empty
    % removed 06/2001
    % \forgetparindent
@@ -2707,15 +2711,32 @@
       \verticalstrut}
    \stopboxedcontent
    \stopcolor
-   \egroup
-   \doif{#2}\v!none\insidefloattrue % new
-   \doif{\framedtextparameter{#1}\c!location}\v!none\insidefloattrue % newer
-   \ifinsidefloat
+   \ifconditional\framedtextlocationnone
+     \egroup
+     \box\framebox
+   \else\ifinsidefloat
+     \egroup
      \box\framebox
    \else
+     \egroup
      \doplacement[\??kd#1][\c!depthcorrection=\v!off]{\box\framebox}%
-   \fi
+   \fi\fi
    \egroup}
+
+%D Placement can be ignored:
+%D
+%D \starttyping
+%D \hbox to \hsize \bgroup
+%D     \startframedtext[none][width=.5\textwidth] \input tufte \stopframedtext
+%D     \startframedtext[none][width=.5\textwidth] \input zapf  \stopframedtext
+%D \egroup
+%D
+%D \hbox to \hsize \bgroup
+%D     \setupframedtexts[location=none]%
+%D     \startframedtext[width=.5\textwidth] \input zapf  \stopframedtext
+%D     \startframedtext[width=.5\textwidth] \input tufte \stopframedtext
+%D \egroup
+%D \stoptyping
 
 %D The simple brace (or group) delimited case is typeset
 %D slightly different and is not aligned.

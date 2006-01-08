@@ -1,0 +1,156 @@
+%D \module
+%D   [       file=m-gnuplot,
+%D        version=2006.01.04,
+%D          title=\CONTEXT\ Extra Modules,
+%D       subtitle=\GNUPLOT\ Inclusion,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright=\PRAGMA]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+% todo: reuse (only if really needed)
+
+% \enablemode[demo]
+
+%D example:
+%D
+%D \starttyping
+%D texexec --pdf --mode=demo m-gnuplot
+%D \stoptyping
+
+\unprotect
+
+\ifx\operatingsystem\undefined \def\operatingsystem{unix} \fi % texexec will set that
+
+\newcounter\GNUPLOTnumber
+
+\def\startGNUPLOTinclusions
+  {\bgroup
+   \obeylines
+   \dostartGNUPLOTinclusions}
+
+\def\dostartGNUPLOTinclusions#1\stopGNUPLOTinclusions
+  {\gdef\GNUPLOTinclusions{#1}%
+   \egroup}
+
+\let\GNUPLOTinclusions\empty
+
+\def\startGNUPLOTgraphic#1%
+  {\bgroup
+   \obeylines
+   \dostartGNUPLOTgraphic{#1}}
+
+\def\dostartGNUPLOTgraphic#1#2\stopGNUPLOTgraphic
+  {\doglobal\increment\GNUPLOTnumber
+   \letgvalue{gpg:n:#1}\GNUPLOTnumber
+   \setgvalue{gpg:d:\GNUPLOTnumber}{#2}%
+   \egroup}
+
+\def\useGNUPLOTgraphic
+  {\dodoubleempty\douseGNUPLOTgraphic}
+
+\def\douseGNUPLOTgraphic[#1][#2]%
+  {\iffirstargument
+     \@EA\dodouseGNUPLOTgraphic % like \externalfigure[name][optional args]
+   \else
+     \@EA\redouseGNUPLOTgraphic % like \useMPgraphic{name}
+   \fi[#1][#2]}
+
+\def\redouseGNUPLOTgraphic[#1][#2]#3%
+  {\dodouseGNUPLOTgraphic[#3][]}
+
+% \bgroup
+%     \obeylines
+%     \gdef\fixGNUPLOTnewlines%
+%       {\def\par{;\@@svline}%
+%        \def ^^M{;\@@svline}}
+% \egroup
+
+\ifx\systemendofline\undefined \def\systemendofline{\rawcharacter{10}} \fi
+
+\bgroup
+    \gdef\fixGNUPLOTnewlines{\obeylines\def\obeyedline{;\systemendofline}}
+\egroup
+
+\def\dodouseGNUPLOTgraphic[#1][#2]%
+  {\bgroup
+   \doifdefined{gpg:n:#1}
+     {\edef\GNUPLOTnumber{\getvalue{gpg:n:#1}}%
+      \edef\GNUPLOTfile  {\bufferprefix gnuplot-\GNUPLOTnumber}%
+      \bgroup
+      % hm, gnuplot only seems to handle lf so we cannot use \mappartolineend
+      % also, in order to prevent fuzzy runs (or no runs) we add a ; to each line
+      \fixGNUPLOTnewlines
+      \immediate\openout\scratchwrite=\GNUPLOTfile.gpd
+      \immediate\write\scratchwrite{set terminal \@@GNUPLOTmethod\space\@@GNUPLOToption}%
+      \doifnotempty
+        {\GNUPLOTinclusions}{\immediate\write\scratchwrite{\GNUPLOTinclusions}}%
+      \immediate\write\scratchwrite{set output "\GNUPLOTfile.\@@GNUPLOTsuffix"}%
+      \immediate\write\scratchwrite{\getvalue{gpg:d:\GNUPLOTnumber}}%
+      \immediate\write\scratchwrite{quit}%
+      \immediate\closeout\scratchwrite
+      \egroup
+      \processGNUPLOTgraphic
+      \convertGNUPLOTgraphic
+      \externalfigure[\@@GNUPLOTresult][#2]}%
+   \egroup}
+
+% we assume pdf inclusion, eps wil be implemented when applicable
+
+\def\setupGNUPLOT
+  {\dodoubleempty\getparameters[@@GNUPLOT]}
+
+\def\processGNUPLOTgraphic
+  {\doifelse\operatingsystem{mswin}
+     {\executesystemcommand{start /MIN pgnuplot \GNUPLOTfile.gpd}} % start is needed else gp fails
+     {\executesystemcommand{gnuplot \GNUPLOTfile.gpd}}}
+
+\def\convertGNUPLOTgraphic
+  {\doifsomething\@@GNUPLOThandle{\executesystemcommand{\@@GNUPLOThandle}}}
+
+\def\defineGNUPLOThandle#1#2#3#4#5% name output suffix conversion-method result
+  {\setvalue{@@GNUPLOT-#1}{{#2}{#3}{#4}{#5}}}
+
+\def\@@GNUPLOToutput{\filterfromvalue{@@GNUPLOT-\@@GNUPLOTmethod}41}
+\def\@@GNUPLOTsuffix{\filterfromvalue{@@GNUPLOT-\@@GNUPLOTmethod}42}
+\def\@@GNUPLOThandle{\filterfromvalue{@@GNUPLOT-\@@GNUPLOTmethod}43}
+\def\@@GNUPLOTresult{\filterfromvalue{@@GNUPLOT-\@@GNUPLOTmethod}44}
+
+\defineGNUPLOThandle{postscript}{postscript}{ps} {texmfstart newpstopdf --method=raw \GNUPLOTfile.ps}{\GNUPLOTfile.pdf}
+\defineGNUPLOThandle{ps}        {postscript}{ps} {texmfstart newpstopdf --method=raw \GNUPLOTfile.ps}{\GNUPLOTfile.pdf}
+\defineGNUPLOThandle{pdf}       {pdf}       {pdf}{}                                                  {\GNUPLOTfile.pdf}
+\defineGNUPLOThandle{metapost}  {mp}        {mp} {texmfstart mptopdf    \GNUPLOTfile.mp}             {\GNUPLOTfile-0.pdf}
+\defineGNUPLOThandle{mp}        {mp}        {mp} {texmfstart mptopdf    \GNUPLOTfile.mp}             {\GNUPLOTfile-0.pdf}
+\defineGNUPLOThandle{png}       {png}       {png}{}                                                  {\GNUPLOTfile.png}
+
+\setupGNUPLOT[\c!method=ps,\c!option=]
+
+\protect \doifnotmode{demo}{\endinput}
+
+\starttext
+
+\startGNUPLOTinclusions
+    set title "trigonometry"
+\stopGNUPLOTinclusions
+
+\startGNUPLOTgraphic{sin}
+    plot sin(x)
+\stopGNUPLOTgraphic
+
+\startGNUPLOTgraphic{cos}
+    plot cos(x)
+\stopGNUPLOTgraphic
+
+\useGNUPLOTgraphic{sin} \endgraf
+\useGNUPLOTgraphic{cos} \endgraf
+\useGNUPLOTgraphic[cos] \endgraf
+
+\setupGNUPLOT[method=ps]  \useGNUPLOTgraphic[sin][object=no,height=2cm] \blank
+%setupGNUPLOT[method=pdf] \useGNUPLOTgraphic[sin][object=no,height=2cm] \blank
+\setupGNUPLOT[method=png] \useGNUPLOTgraphic[sin][object=no,height=2cm] \blank
+\setupGNUPLOT[method=mp]  \useGNUPLOTgraphic[sin][object=no,height=2cm,option=color] \blank
+
+\stoptext

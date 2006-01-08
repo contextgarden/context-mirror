@@ -75,6 +75,13 @@
       2: preambul necunoscut --
 \stopmessages
 
+\startmessages  french  library: javascript
+  title: javascript
+      1: chargement du jeu de script --
+      2: préambule -- inconnu
+\stopmessages
+
+
 %D \TEX\ is not the right tool to check the \JAVA\ code; the
 %D most we can do is reporting some passed variables:
 
@@ -754,9 +761,8 @@
         {\startnointerference
            \letgvalueempty{\c!file\f!javascriptprefix#1}%
            \makeshortfilename[\f!javascriptprefix#1]%
-           \showmessage\m!javascript1{#1}%
            \startreadingfile
-           \readsysfile\shortfilename\donothing\donothing
+             \readsysfile\shortfilename{\showmessage\m!javascript1{#1}}\donothing
            \stopreadingfile
          \stopnointerference}}}
 

@@ -58,6 +58,13 @@
       2: filtro sconosciuto --
 \stopmessages
 
+\startmessages  french  library: filters
+  title: filter
+      1: le filtre -- est chargé
+      2: filtre -- inconnu
+\stopmessages
+
+
 %D \macros
 %D   {definefiltersynonym}
 
@@ -129,11 +136,11 @@
 \def\dousefilter#1%
   {\doifundefined{\c!file\f!filterprefix#1}%
      {\letvalue{\c!file\f!filterprefix#1}\empty
-      \makeshortfilename[\f!filterprefix#1]%
+      \makeshortfilename[\truefilename{\f!filterprefix#1}]%
       \startreadingfile
-      \readsysfile\shortfilename
-        {\showmessage\m!filters1{#1}}
-        {\showmessage\m!filters2{#1}}%
+        \readsysfile\shortfilename
+          {\showmessage\m!filters1{#1}}
+          {\showmessage\m!filters2{#1}}%
       \stopreadingfile}}
 
 \def\usefilter[#1]%

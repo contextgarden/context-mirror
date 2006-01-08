@@ -264,6 +264,44 @@
       content:  text
 \stopmessages
 
+\startmessages  french  library: setup
+        title:  setup
+      formula:  formule
+       number:  numero
+         list:  liste
+    dimension:  dimension
+         mark:  marquage
+    reference:  reference
+      command:  commande
+         file:  fichier
+         name:  nom
+   identifier:  identificateur
+         text:  texte
+      section:  section
+     singular:  nom singulier
+       plural:  nom pluriel
+       matrix:  n*m
+          see:  vois
+     inherits:  herite de
+            1:  les caracteres < et > sont globalement actifs !
+            2:  -- est traite
+            3:  -- n'est pas defini
+            4:  -- est traite de nouveau
+     optional:  optionel
+  displaymath:  formule
+        index:  entree
+         math:  formule
+      nothing:  vide
+         file:  fichier
+     position:  position
+    reference:  reference
+       csname:  nom
+  destination:  destination
+      triplet:  triplet
+         word:  mot
+      content:  texte
+\stopmessages
+
 \def\c!setup!internal!#1%
   {{\dogetmessage{setup}{#1}%
     \expanded{\setupintfont{\currentmessagetext}}}}

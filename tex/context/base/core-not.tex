@@ -29,7 +29,7 @@
 %D
 %D \startitemize[packed]
 %D \item a small number \footnote {a footnote number} or
-%D      symbol {\setupfootnotes [conversionconversie=set 2]\footnote
+%D      symbol {\setupfootnotes [conversion=set 2]\footnote
 %D      {a footnote}}
 %D \item and a similar mark at the bottom of the page
 %D \item followed by some additional text
@@ -450,7 +450,7 @@
 %D
 %D \bgroup
 %D \startnarrower
-%D \setupfootnotes[conversionconversie=set 1]
+%D \setupfootnotes[conversion=set 1]
 %D \getbuffer
 %D \stopnarrower
 %D \egroup
@@ -1203,6 +1203,75 @@
 \def\footins              {\noteinsertion\currentnote}
 \def\postponefootnotes    {\postponenotes}
 \def\autopostponefootnotes{\autopostponenotes}
+
+%D New trickery:
+
+\def\ownnotesymbol#1% #1 gets number passed
+  {\executeifdefined{\??vn::\currentnote}\empty}
+
+\def\setnotesymbol[#1]#2#3%
+  {\prewordbreak % prevent lookback
+   \gdef\lastnotenumber{#2}%
+   \setgvalue{\??vn::#1}{#3}
+   \dolastnotesymbol}
+
+\def\ownnote[#1]#2#3#4%
+  {\setnotesymbol[#1]{#2}{#3}%
+   \setnotetext  [#1]{#4}}
+
+\defineconversion
+  [ownnote]
+  [\ownnotesymbol]
+
+%D Usage:
+
+% maybe we should predefine this one
+
+% \definenote
+%   [glossary]
+%   [way=bypage,
+%    location={page,high},
+%    factor=0,
+%    width=\leftmarginwidth,
+%    scope=page,
+%    conversion=ownnote,
+%    numbercommand=,
+%    textcommand=,
+%    textstyle=,
+%    rule=,
+%    before=,
+%    after=]
+%
+% \setupnotedefinition
+%   [glossary]
+%   [location=left,
+%    width=fit,
+%    distance=.5em,
+%    align={right,tolerant,stretch},
+%    headstyle=bold,
+%    hang=1]
+%
+% \setuplayout
+%   [width=middle,
+%    height=middle,
+%    backspace=5cm,
+%    margin=4cm,
+%    margindistance=.25cm,
+%    cutspace=2cm]
+%
+% \setuptexttexts
+%   [margin]
+%   [\setups{glossary}]
+%   [\setups{glossary}]
+%
+% \startsetups glossary
+%     \vbox to \textheight {\placenotes[glossary]\vfill}
+% \stopsetups
+%
+% \dorecurse{10}
+%   {\dorecurse{5}
+%      {\ownnote[glossary]{whow}{whatever needs to be glossed:~\recurselevel}%
+%       \input tufte \relax}}
 
 \protect \endinput
 

@@ -28,6 +28,20 @@
 
 \prependtoks \restoreendofline \to \everybeforeshipout
 
+\newtoks\XMLdatatoks
+
+\bgroup \catcode`\<=\active
+
+\gdef\saveXMLdatainelement#1#2#3% name element data
+  {\XMLdatatoks\@EAEAEA{\csname\@@XMLdata:#3\endcsname}% no check
+   \dodoglobal\setevalue{\@@XMLsave:#1}{<#2 \currentXMLarguments>\the\XMLdatatoks</#2>}}
+
+\gdef\saveXMLdatastructure#1#2#3#4#5#6% name element args before data after
+  {\XMLdatatoks\@EAEAEA{\csname\@@XMLdata:#5\endcsname}% no check
+   \dodoglobal\setevalue{\@@XMLsave:#1}{<#2 #3 \currentXMLarguments>#4\the\XMLdatatoks#6</#2>}}
+
+\egroup
+
 % \tracefilestrue
 %
 % \unexpanded\def\readfile#1#2#3%
@@ -592,7 +606,7 @@
 %D \getbuffer[c]
 
 \long\def\rescan#1{\scantokens{#1\ignorespaces}}
-\long\def\rescanwithsetup#1#2{\bgroup\directsetup{#1}\scantokens{#2\ignorespaces}\egroup}
+\long\def\rescanwithsetup#1#2{\begingroup\directsetup{#1}\scantokens{#2\ignorespaces}\endgroup}
 
 % In 2005 we will abandon support for font encodings that don't have
 % the ascii characters { } $ etc in their normal slot, i.e. latin modern
