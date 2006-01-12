@@ -132,6 +132,10 @@ complex-cartesian=>\let\next\MMLccartesian,
      {\encapsulatenextXMLRelements{\left(}{\MMLccomma}{\right)}}
      {}}
 
+% \def\MMLcFNdefault#1#2% neg space needed because of \left
+%   {#2\!% \getXMLentity{NegThinSpace}%
+%    \MMLcreset\encapsulatenextXMLRelements{\left(}{\MMLccomma}{\right)}}
+
 \def\MMLcCN#1% #2% can be sped up with \doifundefined ...
   {\getXMLarguments{cn}{type="" #1}%
    \doifXMLparelse{cn}{type}

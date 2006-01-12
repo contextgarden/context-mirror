@@ -3,7 +3,7 @@
 %D        version=2006.01.04,
 %D          title=\CONTEXT\ Extra Modules,
 %D       subtitle=\GNUPLOT\ Inclusion,
-%D         author=Hans Hagen,
+%D         author={Tobias Burnus, Hans Hagen, Taco Hoekwater, Mojca Miklavec},
 %D           date=\currentdate,
 %D      copyright=\PRAGMA]
 %C
@@ -30,6 +30,7 @@
 \def\startGNUPLOTinclusions
   {\bgroup
    \obeylines
+   \catcode`\%=\@@letter
    \dostartGNUPLOTinclusions}
 
 \def\dostartGNUPLOTinclusions#1\stopGNUPLOTinclusions
@@ -41,6 +42,7 @@
 \def\startGNUPLOTgraphic#1%
   {\bgroup
    \obeylines
+   \catcode`\%=\@@letter
    \dostartGNUPLOTgraphic{#1}}
 
 \def\dostartGNUPLOTgraphic#1#2\stopGNUPLOTgraphic
@@ -84,8 +86,9 @@
       % hm, gnuplot only seems to handle lf so we cannot use \mappartolineend
       % also, in order to prevent fuzzy runs (or no runs) we add a ; to each line
       \fixGNUPLOTnewlines
+      \let\%\letterpercent
       \immediate\openout\scratchwrite=\GNUPLOTfile.gpd
-      \immediate\write\scratchwrite{set terminal \@@GNUPLOTmethod\space\@@GNUPLOToption}%
+      \immediate\write\scratchwrite{set terminal \@@GNUPLOToutput\space\@@GNUPLOToption}%
       \doifnotempty
         {\GNUPLOTinclusions}{\immediate\write\scratchwrite{\GNUPLOTinclusions}}%
       \immediate\write\scratchwrite{set output "\GNUPLOTfile.\@@GNUPLOTsuffix"}%

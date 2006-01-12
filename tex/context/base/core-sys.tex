@@ -15,6 +15,21 @@
 
 \unprotect
 
+%D Version checking:
+
+\def\newcontextversion#1%
+  {\doifelse{#1}\contextversion
+      {\let\newcontextversion\gobbleoneargument}
+      {\writeline
+       \writestatus{Fatal Error}{Your format does not match the base files!}%
+       \writeline
+       \writestatus{Format Version}{\contextversion}%
+       \writestatus{Files Version}{#1}%
+       \batchmode
+       \normalend}}
+
+%D Job names.
+
 \def\outputfilename {\@@svfile}
 \def\inputfilename  {\@@svinputfile}
 \def\operatingsystem{\@@svtype}

@@ -2305,6 +2305,20 @@
 \def\setcapstrut% could be M, but Q has descender
   {\setcharstrut{Q}}
 
+%D Handy for math (used in mathml):
+
+\def\charhtstrut
+  {\begingroup
+   \setcharstrut{GJY}%
+   \vrule\!!width\zeropoint\!!depth\zeropoint\!!height\strutht
+   \endgroup}
+
+\def\chardpstrut
+  {\begingroup
+   \setcharstrut{gjy}%
+   \vrule\!!width\zeropoint\!!depth\strutdp\!!height\zeropoint
+   \endgroup}
+
 %D Centered looks nicer:
 
 \def\dosetstrut

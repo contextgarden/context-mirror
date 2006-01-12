@@ -1596,6 +1596,21 @@
 \def\positive  {\doraisedmathord{positive}}
 \def\zeroamount{\donumbermathord{zeroamount}}
 
+%D The following macros are used in the MathML interpreter, so
+%D there is a good change of them never being documented for
+%D other usage.
+
+\let\normalordelimiter\secondoftwoarguments
+\let\normalorfiller   \firstoftwoarguments
+
+\def\enabledelimiter {\let\normalordelimiter\secondoftwoarguments}
+\def\disabledelimiter{\let\normalordelimiter\firstoftwoarguments}
+
+\def\enablefiller    {\let\normalorfiller\secondoftwoarguments}
+\def\disablefiller   {\let\normalorfiller\firstoftwoarguments}
+
+\def\mathopnolimits#1{\mathop{\rm#1}\nolimits}
+
 %D How negative such a symbol looks is demonstrated in:
 %D $\negative 10^{\negative 10^{\negative 10}}$.
 

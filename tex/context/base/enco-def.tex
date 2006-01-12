@@ -41,6 +41,8 @@
 \definecharacter textring          23
 \definecharacter texttilde        126
 
+\definecharacter textbottomcomma  {\hbox{\lower.35ex\hbox{\tx,}}} % for mojca
+
 \definecharacter dotlessi         {\char"10 }
 \definecharacter dotlessj         {\char"11 }
 \definecharacter dotlessI         {I}
@@ -62,8 +64,9 @@
 \definecharacter thorn            {\unknownchar}
 \definecharacter Thorn            {\unknownchar}
 
-\definecharacter eth              {\dstroke} % wrong but better that nothing
-\definecharacter Eth              {\Dstroke} % wrong but better that nothing
+\definecharacter eth              {\unknownchar} % mojca prefers this (was \dstroke)
+%definecharacter Eth              {\unknownchar}
+\definecharacter Eth              {\Dstroke}     % mojca prefers this too
 
 \definecharacter exclamdown        60
 \definecharacter questiondown      62
@@ -347,10 +350,10 @@
 \definecharacter Oumlaut          {\smashaccent\Odiaeresis}
 \definecharacter Uumlaut          {\smashaccent\Udiaeresis}
 
-\definecharacter scommaaccent     {s\quoteright}
-\definecharacter Scommaaccent     {S\quoteright}
-\definecharacter tcommaaccent     {t\quoteright}
-\definecharacter Tcommaaccent     {T\quoteright}
+\definecharacter scommaaccent     {\buildtextbottomcomma s}
+\definecharacter Scommaaccent     {\buildtextbottomcomma S}
+\definecharacter tcommaaccent     {\buildtextbottomcomma t}
+\definecharacter Tcommaaccent     {\buildtextbottomcomma T}
 
 \definecharacter Etilde           {\buildtextaccent\texttilde E}
 \definecharacter etilde           {\buildtextaccent\texttilde e}
@@ -414,10 +417,11 @@
 \definecharacter udotbelow           {\buildtextbottomdot u}
 \definecharacter Ydotbelow           {\buildtextbottomdot Y}
 \definecharacter ydotbelow           {\buildtextbottomdot y}
-\definecharacter Ohorndotbelow       {\buildtextbottomdot O}
-\definecharacter ohorndotbelow       {\buildtextbottomdot o}
-\definecharacter Uhorndotbelow       {\buildtextbottomdot U}
-\definecharacter uhorndotbelow       {\buildtextbottomdot u}
+
+\definecharacter Ohorndotbelow       {\buildtextbottomdot\Ohorn}
+\definecharacter ohorndotbelow       {\buildtextbottomdot\ohorn}
+\definecharacter Uhorndotbelow       {\buildtextbottomdot\Uhorn}
+\definecharacter uhorndotbelow       {\buildtextbottomdot\uhorn}
 
 \definecharacter Acircumflexdotbelow {\buildtextbottomdot\Acircumflex}
 \definecharacter acircumflexdotbelow {\buildtextbottomdot\acircumflex}
@@ -448,6 +452,17 @@
 \definecharacter uhornacute          {\uacute}
 \definecharacter uhorntilde          {\utilde}
 \definecharacter uhornhook           {u}
+
+\stopencoding
+
+%D Needed for transliterated chinese (provided by Tobias Burnus).
+
+\startencoding[default]
+
+\definecharacter acaron {\buildtextaccent\textcaron a}         % U+01CE
+\definecharacter icaron {\buildtextaccent\textcaron \dotlessi} % U+01D0
+\definecharacter ocaron {\buildtextaccent\textcaron o}         % U+01D2
+\definecharacter ucaron {\buildtextaccent\textcaron u}         % U+01D4
 
 \stopencoding
 
@@ -694,18 +709,27 @@
 
 %D A few goodies:
 
-\def\eszett  {\ssharp}
-\def\Eszett  {\Ssharp}
+\def\eszett{\ssharp}
+\def\Eszett{\Ssharp}
 
-\def\lslash  {\lstroke}
-\def\Lslash  {\Lstroke}
-\def\dslash  {\dstroke}
-\def\Dslash  {\Dstroke}
-\def\oslash  {\ostroke}
-\def\Oslash  {\Ostroke}
+\def\lslash{\lstroke}
+\def\Lslash{\Lstroke}
+\def\dslash{\dstroke}
+\def\Dslash{\Dstroke}
+\def\oslash{\ostroke}
+\def\Oslash{\Ostroke}
 
-\def\dcroat  {\dstroke}
-\def\Dcroat  {\Dstroke}
+\def\dcroat{\dstroke}
+\def\Dcroat{\Dstroke}
+
+% \startencoding [default]
+%
+% \definecharacter scommaaccent {\scedilla}
+% \definecharacter Scommaaccent {\Scedilla}
+% \definecharacter tcommaaccent {\tcedilla}
+% \definecharacter Tcommaaccent {\Tcedilla}
+%
+% \stopencoding
 
 % for plain tex's sake
 
@@ -829,7 +853,7 @@
 
 \stopencoding
 
-%D Also new, from Taco, for Mojka, who wanted another 8~regimes.
+%D Also new, from Taco, for Mojca, who wanted another 8~regimes.
 
 \startencoding[\s!default]
 

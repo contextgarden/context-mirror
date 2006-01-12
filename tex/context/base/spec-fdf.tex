@@ -453,13 +453,17 @@
 \def\doPDFsetupidentity#1#2#3#4#5#6%
   {\bgroup
    \enablePDFdocencoding
+   \edef\!!stringa{#5}%
+   \ifx\!!stringa\empty \ifx\pdfdate\undefined\else
+     \edef\!!stringa{D:\pdfdate}%
+   \fi \fi
    \expanded{\doPDFaddtoinfo
      {/Title (#1)
       /Subject (#2)
       /Author (#3)
       /Creator (#4)
-      /ModDate (#5)
-      /ID (\jobname.#5) % needed for pdf/x
+      /ModDate (\!!stringa)
+      /ID (\jobname.\!!stringa) % needed for pdf/x
       /Keywords (#6)}}%
    \egroup}
 

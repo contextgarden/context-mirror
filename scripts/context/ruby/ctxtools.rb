@@ -84,24 +84,32 @@ class Commands
             end
         end
         unless maincontextfile.empty? then
+            nextcontextfile = maincontextfile.sub(/context\.tex$/,"cont-new.tex")
             case action
-                when 1 then touchfile(maincontextfile)
-                when 2 then reportversion(maincontextfile)
+                when 1 then
+                    touchfile(maincontextfile)
+                    touchfile(nextcontextfile,@@newcontextversion)
+                when 2 then
+                    reportversion(maincontextfile)
+                    reportversion(nextcontextfile,@@newcontextversion)
             end
         end
 
     end
 
-    def touchfile(filename)
+    @@contextversion    = "\\\\contextversion"
+    @@newcontextversion = "\\\\newcontextversion"
+
+    def touchfile(filename,command=@@contextversion)
 
         if FileTest.file?(filename) then
             if data = IO.read(filename) then
-                timestamp = Time.now.strftime('%Y.%m.%d')
+                timestamp = Time.now.strftime('%Y.%m.%d %H:%M')
                 prevstamp = ''
                 begin
-                    data.gsub!(/\\contextversion\{(\d+\.\d+\.\d+)\}/) do
+                    data.gsub!(/#{command}\{(\d+\.\d+\.\d+.*?)\}/) do
                         prevstamp = $1
-                        "\\contextversion{#{timestamp}}"
+                        "#{command.sub(/(\\)+/,"\\")}{#{timestamp}}"
                     end
                 rescue
                 else
@@ -133,11 +141,11 @@ class Commands
 
     end
 
-    def reportversion(filename)
+    def reportversion(filename,command=@@contextversion)
 
         version = 'unknown'
         begin
-            if FileTest.file?(filename) && IO.read(filename).match(/\\contextversion\{(\d+\.\d+\.\d+)\}/) then
+            if FileTest.file?(filename) && IO.read(filename).match(/#{command}\{(\d+\.\d+\.\d+.*?)\}/) then
                 version = $1
             end
         rescue

@@ -437,7 +437,7 @@ class TEX
         filename = Kpse.found('context.tex')
         version = 'unknown'
         begin
-            if FileTest.file?(filename) && IO.read(filename).match(/\\contextversion\{(\d+\.\d+\.\d+)\}/) then
+            if FileTest.file?(filename) && IO.read(filename).match(/\\contextversion\{(\d+\.\d+\.\d+.*?)\}/) then
                 version = $1
             end
         rescue

@@ -3018,7 +3018,7 @@ sub show_version_info {
 	  $contextversion = <IN>;
 	  close IN;
 	}
-	$contextversion =~ s/.*contextversion\{([0-9.]+)\}.*/$1/s;
+	$contextversion =~ s/.*contextversion\{([0-9\.\:\s]+)\}.*/$1/s;
   }
   $EnterBatchMode = 1;
   $Format = 'cont-en';

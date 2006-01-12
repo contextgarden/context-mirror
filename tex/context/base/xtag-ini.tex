@@ -2863,4 +2863,23 @@
 
 \def\XMLyes#1{\XMLownifequalelse{#1}{yes}{#1}{}}
 
+%D The next macro will set the variable \type {\flattenedXMLcontent}
+%D to the content with elements removed and entity names.
+
+\bgroup
+
+\catcode`\<\active
+\catcode`\&\active
+
+\gdef\flattenXMLcontent#1% we need taco's 'over one group'
+  {\begingroup
+   \def<##1>{}%
+   \def&##1;{##1}%
+   \edef\flattenedXMLcontent{#1}%
+   \edef\flattenedXMLcontent{\expandafter\dounspaced\flattenedXMLcontent\end}%
+   \@EA\endgroup
+   \@EA\def\@EA\flattenedXMLcontent\@EA{\flattenedXMLcontent}}
+
+\egroup
+
 \protect \endinput
