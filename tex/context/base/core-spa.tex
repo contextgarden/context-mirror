@@ -499,9 +499,21 @@
 \defineblankmethod  [\v!joinedup] {\ifvmode\nointerlineskip\fi}
 
 % happens often, so we speed this up:
+%
+% \defineblankmethod    [2*\v!line] {\addblankskip+{2\openlineheight}{2\openlineheight}}
+% \defineblankmethod     [2*\v!big] {\addblankskip+{2\bigskipamount }{2\openlineheight}}
+%
+% no, with 2\whatever we loose the stretch and shrink! Taco's alternative:
 
-\defineblankmethod    [2*\v!line] {\addblankskip+{2\openlineheight}{2\openlineheight}}
-\defineblankmethod     [2*\v!big] {\addblankskip+{2\bigskipamount }{2\openlineheight}}
+\defineblankmethod
+  [2*line]
+  {\addblankskip+\openlineheight\openlineheight
+   \addblankskip+\openlineheight\openlineheight}
+
+\defineblankmethod
+  [2*big]
+  {\addblankskip+\bigskipamount\openlineheight
+   \addblankskip+\bigskipamount\openlineheight}
 
 % ETEX ! ! !
 

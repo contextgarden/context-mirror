@@ -1,0 +1,239 @@
+%D \module
+%D   [       file=lang-jap,
+%D        version=2006.01.13,
+%D          title=\CONTEXT\ Language Macros,
+%D       subtitle=Japanese,
+%D         author={Richard Gabriel},
+%D           date=\currentdate,
+%D      copyright={PRAGMA / RG}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+% rgabriel@kerio.com
+
+\writestatus{loading}{Context Language Macros / Japanese}
+
+\unprotect
+
+\definesystemconstant {japanese} \definesystemconstant {ja}
+
+\installlanguage
+  [\s!ja]
+  [\c!leftsentence=\jaencoding\jaleftsentence,
+   \c!rightsentence=\jaencoding\jarightsentence,
+   \c!leftsubsentence=\jaencoding\jaleftsubsentence,
+   \c!rightsubsentence=\jaencoding\jarightsubsentence,
+   \c!leftquote=\jaencoding\jaencodedsinglestartquote,
+   \c!rightquote=\jaencoding\jaencodedsingleendquote,
+   \c!leftquotation=\jaencoding\jaencodedstartquote,
+   \c!rightquotation=\jaencoding\jaencodedendquote,
+   \c!date={\jaencodedchristiandate,\v!year,\jaencodedyear,\v!month,\jaencodedmonth,\v!day,\jaencodedday},
+   \c!state=\v!stop]
+
+\setupheadtext [\s!ja]       [\v!content={\jaencoding\jaencodedtableofcontents}]
+\setupheadtext [\s!ja]        [\v!tables={\jaencoding\jaencodedtables}]
+\setupheadtext [\s!ja]       [\v!figures={\jaencoding\jaencodedfigures}]
+\setupheadtext [\s!ja]      [\v!graphics={\jaencoding\jaencodedgraphics}]
+\setupheadtext [\s!ja]    [\v!intermezzi={\jaencoding\jaencodedintermezzos}]
+\setupheadtext [\s!ja]         [\v!index={\jaencoding\jaencodedindex}]
+\setupheadtext [\s!ja] [\v!abbreviations={\jaencoding\jaencodedabbreviations}]
+\setupheadtext [\s!ja]         [\v!logos={\jaencoding\jaencodedlogos}]
+\setupheadtext [\s!ja]         [\v!units={\jaencoding\jaencodedunits}]
+
+\setuplabeltext [\s!ja]        [\v!table={\jaencoding\jaencodedtable}]
+\setuplabeltext [\s!ja]       [\v!figure={\jaencoding\jaencodedfigure}]
+\setuplabeltext [\s!ja]   [\v!intermezzo={\jaencoding\jaencodedintermezzo}]
+\setuplabeltext [\s!ja]      [\v!graphic={\jaencoding\jaencodedillustration}]
+\setuplabeltext [\s!ja]     [\v!appendix={\jaencoding\jaencodedappendix}]
+\setuplabeltext [\s!ja]         [\v!part={\jaencoding\jaencodedintro,\jaencoding\jaencodedpart}]
+\setuplabeltext [\s!ja]      [\v!chapter={\jaencoding\jaencodedintro,\jaencoding\jaencodedchapter}]
+\setuplabeltext [\s!ja]      [\v!section={\jaencoding\jaencodedintro,\jaencoding\jaencodedsection}]
+\setuplabeltext [\s!ja]         [\v!line={\jaencoding\jaencodedline}]
+\setuplabeltext [\s!ja]        [\v!lines={\jaencoding\jaencodedline}]
+
+\setuplabeltext [\s!ja]       [\v!subsection=]
+\setuplabeltext [\s!ja]    [\v!subsubsection=]
+\setuplabeltext [\s!ja] [\v!subsubsubsection=]
+
+%D Why are these languagespecifics ?
+
+% \startlanguagespecifics[\s!ja]
+
+\setuplabeltext [\s!ja]   [\v!january=1]
+\setuplabeltext [\s!ja]  [\v!february=2]
+\setuplabeltext [\s!ja]     [\v!march=3]
+\setuplabeltext [\s!ja]     [\v!april=4]
+\setuplabeltext [\s!ja]       [\v!may=5]
+\setuplabeltext [\s!ja]      [\v!june=6]
+\setuplabeltext [\s!ja]      [\v!july=7]
+\setuplabeltext [\s!ja]    [\v!august=8]
+\setuplabeltext [\s!ja] [\v!september=9]
+\setuplabeltext [\s!ja]   [\v!october=10]
+\setuplabeltext [\s!ja]  [\v!november=11]
+\setuplabeltext [\s!ja]  [\v!december=12]
+
+\setuplabeltext [\s!ja]    [\v!sunday=\jaencoding\jaencodedsunday   ]
+\setuplabeltext [\s!ja]    [\v!monday=\jaencoding\jaencodedmonday   ]
+\setuplabeltext [\s!ja]   [\v!tuesday=\jaencoding\jaencodedtuesday  ]
+\setuplabeltext [\s!ja] [\v!wednesday=\jaencoding\jaencodedwednesday]
+\setuplabeltext [\s!ja]  [\v!thursday=\jaencoding\jaencodedthursday ]
+\setuplabeltext [\s!ja]    [\v!friday=\jaencoding\jaencodedfriday   ]
+\setuplabeltext [\s!ja]  [\v!saturday=\jaencoding\jaencodedsaturday ]
+
+% \stoplanguagespecifics
+
+% Hardcoded - \japaneseencoding should be defined similarly to \chineseencoding
+
+\unexpanded\def\jaencoding{\enableencoding[j-uni]}
+
+%D This list is taken from DocBook XSL stylesheets (http://docbook.sourceforge.net/).
+
+\startencoding[j-uni]
+
+  \definecommand jaencodedabstract              {\uchar{105}{130}\uchar{137}{129}}
+  \definecommand jaencodedand                   {\uchar{48}{1}}
+  \definecommand jaencodedanswer                {\uchar{123}{84}\uchar{255}{26}}
+  \definecommand jaencodedappendix              {\uchar{78}{216}\uchar{147}{50}}
+  \definecommand jaencodedarticle               {\uchar{152}{5}\uchar{118}{238}}
+  \definecommand jaencodedbibliography          {\uchar{83}{194}\uchar{128}{3}\uchar{101}{135}\uchar{115}{46}}
+  \definecommand jaencodedbook                  {\uchar{48}{214}\uchar{48}{195}\uchar{48}{175}}
+  \definecommand jaencodedbridgehead            {\uchar{152}{5}}
+  \definecommand jaencodedbullet                {\uchar{37}{207}}
+  \definecommand jaencodedby                    {\uchar{255}{26}}
+  \definecommand jaencodedcaution               {\uchar{108}{232}\uchar{97}{15}}
+  \definecommand jaencodedcolophon              {\uchar{89}{101}\uchar{78}{216}}
+  \definecommand jaencodedcopyright             {\uchar{136}{253}\uchar{79}{92}\uchar{132}{87}\uchar{79}{92}}
+  \definecommand jaencodeddedication            {\uchar{139}{29}\uchar{143}{158}}
+  \definecommand jaencodededited                {\uchar{125}{232}\uchar{128}{5}}
+  \definecommand jaencodededitedby              {\uchar{125}{232}\uchar{128}{5}\uchar{255}{26}}
+  \definecommand jaencodededition               {\uchar{125}{232}\uchar{150}{198}}
+  \definecommand jaencodedendquote              {\uchar{48}{13}}
+  \definecommand jaencodedequation              {\uchar{95}{15}}
+  \definecommand jaencodedexample               {\uchar{79}{139}}
+  \definecommand jaencodedfigure                {\uchar{86}{243}}
+  \definecommand jaencodedglossary              {\uchar{117}{40}\uchar{138}{158}\uchar{150}{198}}
+  \definecommand jaencodedglosssee              {\uchar{83}{194}\uchar{113}{103}}
+  \definecommand jaencodedglossseealso          {\uchar{83}{194}\uchar{113}{103}}
+  \definecommand jaencodedchapter               {\uchar{122}{224}}
+  \definecommand jaencodedimportant             {\uchar{145}{205}\uchar{137}{129}\uchar{152}{5}\uchar{118}{238}}
+  \definecommand jaencodedindex                 {\uchar{118}{238}\uchar{107}{33}}
+  \definecommand jaencodedindexsymbols          {\uchar{48}{183}\uchar{48}{243}\uchar{48}{220}\uchar{48}{235}}
+  \definecommand jaencodedintro                 {\uchar{123}{44}}
+  \definecommand jaencodedlistofequations       {\uchar{95}{15}\uchar{118}{238}\uchar{107}{33}}
+  \definecommand jaencodedlistofexamples        {\uchar{79}{139}\uchar{118}{238}\uchar{107}{33}}
+  \definecommand jaencodedlistoffigures         {\uchar{86}{243}\uchar{118}{238}\uchar{107}{33}}
+  \definecommand jaencodedlistoftables          {\uchar{136}{104}\uchar{118}{238}\uchar{107}{33}}
+  \definecommand jaencodedlistofunknown         {\uchar{78}{13}\uchar{102}{14}\uchar{118}{238}\uchar{107}{33}}
+  \definecommand jaencodedmsgaud                {\uchar{91}{254}\uchar{140}{97}\uchar{128}{5}}
+  \definecommand jaencodedmsglevel              {\uchar{48}{236}\uchar{48}{217}\uchar{48}{235}}
+  \definecommand jaencodedmsgorig               {\uchar{118}{122}\uchar{79}{225}\uchar{81}{67}}
+  \definecommand jaencodednavhome               {\uchar{48}{219}\uchar{48}{252}\uchar{48}{224}}
+  \definecommand jaencodednavnext               {\uchar{107}{33}\uchar{48}{110}\uchar{48}{218}\uchar{48}{252}\uchar{48}{184}}
+  \definecommand jaencodednavnextsibling        {\uchar{101}{233}\uchar{144}{1}\uchar{48}{138}}
+  \definecommand jaencodednavprev               {\uchar{82}{77}\uchar{48}{110}\uchar{48}{218}\uchar{48}{252}\uchar{48}{184}}
+  \definecommand jaencodednavprevsibling        {\uchar{93}{251}\uchar{98}{59}\uchar{48}{87}}
+  \definecommand jaencodednavup                 {\uchar{78}{10}\uchar{48}{107}\uchar{98}{59}\uchar{48}{139}}
+  \definecommand jaencodednestedendquote        {\uchar{48}{15}}
+  \definecommand jaencodednestedstartquote      {\uchar{48}{14}}
+  \definecommand jaencodednonexistantelement    {\uchar{137}{129}\uchar{125}{32}\uchar{48}{76}\uchar{91}{88}\uchar{87}{40}\uchar{48}{87}\uchar{48}{126}\uchar{48}{91}\uchar{48}{147}}
+  \definecommand jaencodednote                  {\uchar{108}{232}\uchar{97}{15}}
+  \definecommand jaencodednotes                 {\uchar{108}{232}\uchar{97}{15}}
+  \definecommand jaencodedpages                 {\uchar{80}{103}\uchar{115}{46}}
+  \definecommand jaencodedpart                  {\uchar{48}{209}\uchar{48}{252}\uchar{48}{200}}
+  \definecommand jaencodedpreface               {\uchar{94}{143}\uchar{101}{135}}
+  \definecommand jaencodedprocedure             {\uchar{98}{75}\uchar{152}{6}}
+  \definecommand jaencodedprocedureformal       {\uchar{98}{75}\uchar{152}{6}}
+  \definecommand jaencodedproductionset         {\uchar{48}{215}\uchar{48}{237}\uchar{48}{192}\uchar{48}{175}\uchar{48}{183}\uchar{48}{231}\uchar{48}{243}}
+  \definecommand jaencodedproductionsetformal   {\uchar{48}{215}\uchar{48}{237}\uchar{48}{192}\uchar{48}{175}\uchar{48}{183}\uchar{48}{231}\uchar{48}{243}}
+  \definecommand jaencodedpublished             {\uchar{118}{122}\uchar{136}{76}}
+  \definecommand jaencodedqandadiv              {\uchar{85}{79}\uchar{255}{26}\uchar{48}{1}\uchar{123}{84}\uchar{255}{26}}
+  \definecommand jaencodedqandaentry            {\uchar{85}{79}\uchar{255}{26}}
+  \definecommand jaencodedquestion              {\uchar{85}{79}\uchar{255}{26}}
+  \definecommand jaencodedreference             {\uchar{83}{194}\uchar{113}{103}}
+  \definecommand jaencodedrefname               {\uchar{84}{13}\uchar{82}{77}}
+  \definecommand jaencodedrefsection            {\uchar{152}{5}}
+  \definecommand jaencodedrefsynopsisdiv        {\uchar{105}{130}\uchar{137}{129}}
+  \definecommand jaencodedrevhistory            {\uchar{101}{57}\uchar{138}{2}\uchar{92}{101}\uchar{107}{116}}
+  \definecommand jaencodedrevision              {\uchar{101}{57}\uchar{138}{2}}
+  \definecommand jaencodedsection               {\uchar{152}{5}}
+  \definecommand jaencodedsee                   {\uchar{83}{194}\uchar{113}{103}}
+  \definecommand jaencodedseealso               {\uchar{83}{194}\uchar{113}{103}}
+  \definecommand jaencodedseparator             {\uchar{48}{1}}
+  \definecommand jaencodedset                   {\uchar{138}{45}\uchar{91}{154}}
+  \definecommand jaencodedsetindex              {\uchar{118}{238}\uchar{107}{33}\uchar{138}{45}\uchar{91}{154}}
+  \definecommand jaencodedsidebar               {\uchar{48}{181}\uchar{48}{164}\uchar{48}{201}\uchar{48}{208}\uchar{48}{252}}
+  \definecommand jaencodedsimplesect            {\uchar{152}{5}}
+  \definecommand jaencodedsingleendquote        {\uchar{32}{25}}
+  \definecommand jaencodedsinglestartquote      {\uchar{32}{24}}
+  \definecommand jaencodedstartquote            {\uchar{48}{12}}
+  \definecommand jaencodedstep                  {\uchar{48}{185}\uchar{48}{198}\uchar{48}{195}\uchar{48}{215}}
+  \definecommand jaencodedtable                 {\uchar{136}{104}}
+  \definecommand jaencodedtablenotes            {\uchar{108}{232}\uchar{97}{15}}
+  \definecommand jaencodedtableofcontents       {\uchar{118}{238}\uchar{107}{33}}
+  \definecommand jaencodedtip                   {\uchar{48}{198}\uchar{48}{163}\uchar{48}{195}\uchar{48}{215}}
+  \definecommand jaencodedunexpectedelementname {\uchar{78}{13}\uchar{102}{14}\uchar{48}{106}\uchar{137}{129}\uchar{125}{32}\uchar{84}{13}}
+  \definecommand jaencodedunsupported           {\uchar{48}{181}\uchar{48}{221}\uchar{48}{252}\uchar{48}{200}\uchar{48}{87}\uchar{48}{126}\uchar{48}{91}\uchar{48}{147}}
+  \definecommand jaencodedwarning               {\uchar{139}{102}\uchar{84}{74}}
+
+  \definecommand jaencodedyear                  {\uchar{94}{116}}
+  \definecommand jaencodedmonth                 {\uchar{103}{8}}
+  \definecommand jaencodedday                   {\uchar{101}{229}}
+
+\stopencoding
+
+%D Taken from Chinese (will be investigated yet...)
+
+\startencoding[j-uni]
+
+  \definecommand jaencodedleftsentence     {\uchar{32}{20}\uchar{32}{20}}
+  \definecommand jaencodedrightsentence    {\uchar{32}{20}\uchar{32}{20}}
+  \definecommand jaencodedleftsubsentence  {\uchar{32}{20}\uchar{32}{20}}
+  \definecommand jaencodedrightsubsentence {\uchar{32}{20}\uchar{32}{20}}
+
+\stopencoding
+
+%D Special thanxx to Eizo Tsuchihashi (eizo@arcbrain.jp) for the following stuff
+
+\startencoding[j-uni]
+
+  \definecommand jaencodedchristiandate {\uchar{137}{127}\uchar{102}{166}}
+
+  \definecommand jaencodedtables        {\uchar{103}{58}}
+  \definecommand jaencodedfigures       {\uchar{86}{243}}
+  \definecommand jaencodedabbreviations {\uchar{117}{101}\uchar{138}{158}}
+  \definecommand jaencodedlogos         {\uchar{116}{6}\uchar{96}{39}}
+  \definecommand jaencodedunits         {\uchar{48}{230}\uchar{48}{203}\uchar{48}{195}\uchar{48}{196}}
+
+  \definecommand jaencodedgraphics      {\uchar{48}{176}\uchar{48}{233}\uchar{48}{213}}
+  \definecommand jaencodedintermezzo    {\uchar{149}{147}\uchar{89}{79}\uchar{102}{242}}
+  \definecommand jaencodedintermezzos   {\uchar{149}{147}\uchar{89}{79}\uchar{102}{242}}
+  \definecommand jaencodedillustration  {\uchar{48}{164}\uchar{48}{233}\uchar{48}{185}\uchar{48}{200}}
+  \definecommand jaencodedline          {\uchar{125}{218}}
+  \definecommand jaencodedlines         {\uchar{125}{218}}
+
+  \definecommand jaencodedjanuary       {\uchar{78}{0}\uchar{103}{8}}
+  \definecommand jaencodedfebruary      {\uchar{78}{140}\uchar{103}{8}}
+  \definecommand jaencodedmarch         {\uchar{78}{9}\uchar{103}{8}}
+  \definecommand jaencodedapril         {\uchar{86}{219}\uchar{103}{8}}
+  \definecommand jaencodedmay           {\uchar{78}{148}\uchar{103}{8}}
+  \definecommand jaencodedjune          {\uchar{81}{109}\uchar{103}{8}}
+  \definecommand jaencodedjuly          {\uchar{78}{3}\uchar{103}{8}}
+  \definecommand jaencodedaugust        {\uchar{81}{107}\uchar{103}{8}}
+  \definecommand jaencodedseptember     {\uchar{78}{93}\uchar{103}{8}}
+  \definecommand jaencodedoctober       {\uchar{83}{65}\uchar{103}{8}}
+  \definecommand jaencodednovember      {\uchar{83}{65}\uchar{78}{0}\uchar{103}{8}}
+  \definecommand jaencodeddecember      {\uchar{83}{65}\uchar{78}{140}\uchar{103}{8}}
+
+  \definecommand jaencodedsunday        {\uchar{103}{8}\uchar{102}{220}\uchar{101}{229}}
+  \definecommand jaencodedmonday        {\uchar{112}{107}\uchar{102}{220}\uchar{101}{229}}
+  \definecommand jaencodedtuesday       {\uchar{108}{52}\uchar{102}{220}\uchar{101}{229}}
+  \definecommand jaencodedwednesday     {\uchar{103}{40}\uchar{102}{220}\uchar{101}{229}}
+  \definecommand jaencodedthursday      {\uchar{145}{209}\uchar{102}{220}\uchar{101}{229}}
+  \definecommand jaencodedfriday        {\uchar{87}{31}\uchar{102}{220}\uchar{101}{229}}
+  \definecommand jaencodedsaturday      {\uchar{101}{229}\uchar{102}{220}\uchar{101}{229}}
+
+\stopencoding
+
+\protect \endinput

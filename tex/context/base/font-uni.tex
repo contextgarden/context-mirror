@@ -176,7 +176,7 @@
 
 \unexpanded\def\uchar#1#2% use as standalone glyph
   {\bgroup
-   \let\nextglyph\relax
+   % wrong: \let\nextglyph\relax % needed for lookahead chinese
    \edef\unicodeone{#1}%
    \edef\unicodetwo{#2}%
 %   \unicodeposition=\unicodeone\unicodetwo\relax

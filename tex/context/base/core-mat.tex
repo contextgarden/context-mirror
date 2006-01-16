@@ -520,22 +520,22 @@
 % \defineformulaalternative[multi][\begindmath][\enddmath]
 %
 % \fakewords{20}{40}\epar
-% \plaatsformule {a} $$              \fakespacingformula $$
+% \placeformula {a} $$              \fakespacingformula $$
 % \fakewords{20}{40}\epar
-% \plaatsformule {b} \startformule   \fakespacingformula \stopformule
-% \plaatsformule {b} \startformule   \fakespacingformula \stopformule
+% \placeformula {b} \startformule   \fakespacingformula \stopformule
+% \placeformula {b} \startformule   \fakespacingformula \stopformule
 % \fakewords{20}{40}\epar
-% \plaatsformule {c} \startmdformule \fakespacingformula \stopmdformule
-% \plaatsformule {c} \startmdformule \fakespacingformula \stopmdformule
+% \placeformula {c} \startmdformule \fakespacingformula \stopmdformule
+% \placeformula {c} \startmdformule \fakespacingformula \stopmdformule
 % \fakewords{20}{40}\epar
-% \plaatsformule {d} \startmpformule \fakespacingformula \stopmpformule
-% \plaatsformule {d} \startmpformule \fakespacingformula \stopmpformule
+% \placeformula {d} \startmpformule \fakespacingformula \stopmpformule
+% \placeformula {d} \startmpformule \fakespacingformula \stopmpformule
 % \fakewords{20}{40}\epar
-% \plaatsformule {e} \startsdformule \fakespacingformula \stopsdformule
-% \plaatsformule {e} \startsdformule \fakespacingformula \stopsdformule
+% \placeformula {e} \startsdformule \fakespacingformula \stopsdformule
+% \placeformula {e} \startsdformule \fakespacingformula \stopsdformule
 % \fakewords{20}{40}\epar
-% \plaatsformule {f} \startspformule \fakespacingformula \stopspformule
-% \plaatsformule {f} \startspformule \fakespacingformula \stopspformule
+% \placeformula {f} \startspformule \fakespacingformula \stopspformule
+% \placeformula {f} \startspformule \fakespacingformula \stopspformule
 % \fakewords{20}{40}
 
 % \convertcommand\next\to\ascii \getfirstcharacter\ascii
@@ -550,30 +550,30 @@
    \dodoubleempty\doplaceformula}
 
 \def\doplaceformula[#1][#2]% #2 = dummy, gobbles spaces
-  {\def\redoplaatsformule
+  {\def\redoplaceformula
      {\bgroup\def\dostartformula####1{\relax}%
       \ifx\next\bgroup
-        \@EA\moreplaatsformule % [ref]{}
+        \@EA\moreplaceformula % [ref]{}
       \else
         \expandafter\convertargument\e!start\to\asciiA
         \expandafter\convertargument\next   \to\asciiB
         \ExpandBothAfter\doifincsnameelse\asciiA\asciiB
           {\egroup \@EA\dodoplaceformula}% [ref]\start
-          {\egroup \@EA\dispplaatsformule}% [ref]$$
+          {\egroup \@EA\dispplaceformula}% [ref]$$
       \fi[#1]{}}%
-   \futurelet\next\redoplaatsformule}
+   \futurelet\next\redoplaceformula}
 
-\long\def\moreplaatsformule[#1]#2#3#4% #2 dummy #4 gobbles spaces
-  {\def\redoplaatsformule
+\long\def\moreplaceformula[#1]#2#3#4% #2 dummy #4 gobbles spaces
+  {\def\redoplaceformula
      {\expandafter\convertargument\e!start\to\asciiA
       \expandafter\convertargument\next   \to\asciiB
       \ExpandBothAfter\doifincsnameelse\asciiA\asciiB
         {\egroup \dodoplaceformula}% [ref]\start
-        {\egroup \dispplaatsformule}% [ref]$$
+        {\egroup \dispplaceformula}% [ref]$$
       [#1]{#3}}%
-   \futurelet\next\redoplaatsformule#4}
+   \futurelet\next\redoplaceformula#4}
 
-\def\dispplaatsformule[#1]#2$$#3$$%
+\def\dispplaceformula[#1]#2$$#3$$%
   {\dodoplaceformula[#1]{#2}\dostartformula{}#3\dostopformula}
 
 \let\normalreqno\eqno
@@ -673,8 +673,8 @@
    \fi \fi
    \egroup}
 
-\defineinnermathhandler\v!right{\startmathbox\empty1}{\stopmathbox\hfill0}
-\defineinnermathhandler\v!left {\startmathbox\hfill0}{\stopmathbox\empty1}
+\defineinnermathhandler\v!right {\startmathbox\empty1}{\stopmathbox\hfill0}
+\defineinnermathhandler\v!left  {\startmathbox\hfill0}{\stopmathbox\empty1}
 \defineinnermathhandler\v!middle{\startmathbox\hfill0}{\stopmathbox\hfill0}
 
 %D [The examples below are in english and don't process in the

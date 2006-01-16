@@ -1741,14 +1741,19 @@
                \placeheadmargintexts{#1}% binnen #3?
                \ifdisplaysectionhead
                  \getvalue{\??ko#1\c!textcommand}% struts can be nilled with \setnostrut
-                   {\setstrut\begstrut\ifcase\headtimingmode\hbox{#2}\fi#3\endstrut}% \hbox prevents break
+                   {\setstrut
+                    \begstrut
+                    \ifcase\headtimingmode\hbox{#2}\fi
+                    \executeifdefined{\??ko#1\c!deeptextcommand}\firstofoneargument{#3}
+                    \endstrut}% \hbox prevents break
                  \xdef\localheadheight    {\the\strutht}%
                  \xdef\localheaddepth     {\the\strutdp}%
                  \xdef\localheadlineheight{\the\lineheight}%
                  % == \globallet\localheaddepth\strutdepth
                \else
                  \ifcase\headtimingmode#2\fi
-                 \getvalue{\??ko#1\c!textcommand}{#3}%
+                 \getvalue{\??ko#1\c!textcommand}%
+                    {\executeifdefined{\??ko#1\c!deeptextcommand}\firstofoneargument{#3}}%
                \fi
                \getvalue{\??ko#1\c!commandafter}%
                \ifdisplaysectionhead\endgraf\fi
@@ -1783,9 +1788,14 @@
                \placeheadmargintexts{#1}% binnen #3?
                \ifdisplaysectionhead
                  % can be nilled with \setnostrut
-                 \getvalue{\??ko#1\c!numbercommand}{\setstrut\begstrut#3\endstrut}%
+                 \getvalue{\??ko#1\c!numbercommand}%
+                   {\setstrut
+                    \begstrut
+                    \executeifdefined{\??ko#1\c!deepnumbercommand}\firstofoneargument{#3}%
+                    \endstrut}%
                \else
-                 \getvalue{\??ko#1\c!numbercommand}{#3}%
+                 \getvalue{\??ko#1\c!numbercommand}%
+                   {\executeifdefined{\??ko#1\c!deepnumbercommand}\firstofoneargument{#3}}%
                \fi
              \dostopattributes
            \dostopattributes}
@@ -1802,14 +1812,19 @@
                \placeheadmargintexts{#1}% binnen #3?
                \ifdisplaysectionhead
                  \getvalue{\??ko#1\c!textcommand}% struts can be nilled with \setnostrut
-                   {\setstrut\begstrut\ifcase\headtimingmode\hbox{#2}\fi#4\endstrut}% \hbox prevents break
+                   {\setstrut
+                    \begstrut
+                    \ifcase\headtimingmode\hbox{#2}\fi
+                    \executeifdefined{\??ko#1\c!deeptextcommand}\firstofoneargument{#4}%
+                    \endstrut}% \hbox prevents break
                  \xdef\localheadheight    {\the\strutht}%
                  \xdef\localheaddepth     {\the\strutdp}%
                  \xdef\localheadlineheight{\the\lineheight}%
                  % == \globallet\localheaddepth\strutdepth
                \else
                  \ifcase\headtimingmode#2\fi % inside textcommand ?
-                 \getvalue{\??ko#1\c!textcommand}{#4}%
+                 \getvalue{\??ko#1\c!textcommand}%
+                   {\executeifdefined{\??ko#1\c!deeptextcommand}\firstofoneargument{#4}}%
                \fi
                \getvalue{\??ko#1\c!commandafter}%
                \ifdisplaysectionhead\endgraf\fi
@@ -1817,6 +1832,18 @@
           \dostopattributes}}%
    \fi
    \endheadplacement{#1}{#5}}
+
+%D \starttyping
+%D \def\StretchedBox#1%
+%D   {\framed
+%D      [frame=off,offset=.5em,align=middle,width=broad]
+%D      {\sc\def\stretchedspaceamount{.3em}\stretchednormalcase{#1}}}
+%D
+%D \definehead[MySubject]
+%D \setuphead [MySubject][deeptextcommand=\StretchedBox]
+%D
+%D \MySubject{feeling stretched feeling stretched feeling stretched feeling stretched}
+%D \stoptyping
 
 \newsignal\headsignal
 \let\headlastlinewidth\!!zeropoint

@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 
-<cd:interface xmlns:cd="http://www.pragma-ade.com/commands" name="context" language="nl" version="2006.01.12 10:38">
+<cd:interface xmlns:cd="http://www.pragma-ade.com/commands" name="context" language="nl" version="2006.01.16 18:35">
 
   <cd:variables>
     <cd:variable name="one" value="een"/>
@@ -481,6 +481,8 @@
     <cd:constant name="textdistance" value="tekstafstand"/>
     <cd:constant name="textmargin" value="tekstmarge"/>
     <cd:constant name="keyword" value="trefwoord"/>
+    <cd:constant name="deeptextcommand" value="dieptekstcommando"/>
+    <cd:constant name="deepnumbercommand" value="diepnummercommando"/>
   </cd:constants>
 
   <cd:constants>

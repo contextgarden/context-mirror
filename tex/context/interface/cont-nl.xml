@@ -5984,6 +5984,12 @@
       <cd:parameter name="tekstcommando">
         <cd:constant type="cd:oneargument"/>
       </cd:parameter>
+      <cd:parameter name="diepnummercommando">
+        <cd:constant type="cd:oneargument"/>
+      </cd:parameter>
+      <cd:parameter name="dieptekstcommando">
+        <cd:constant type="cd:oneargument"/>
+      </cd:parameter>
       <cd:parameter name="prefix">
         <cd:constant type="+"/>
         <cd:constant type="-"/>

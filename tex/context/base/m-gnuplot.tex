@@ -73,9 +73,21 @@
 
 \ifx\systemendofline\undefined \def\systemendofline{\rawcharacter{10}} \fi
 
-\bgroup
-    \gdef\fixGNUPLOTnewlines{\obeylines\def\obeyedline{;\systemendofline}}
-\egroup
+\newtoks\everyGNUPLOTgraphic
+
+% gnuplot only seems to handle lf so we cannot use \mappartolineend
+% also, in order to prevent fuzzy runs (or no runs) we add a ; to
+% each line
+
+\appendtoks
+    \obeylines
+    \def\obeyedline{;\systemendofline}%
+\to \everyGNUPLOTgraphic
+
+\appendtoks
+    \let\%\letterpercent
+    \def\ {\letterbackslash\systemendofline}%
+\to \everyGNUPLOTgraphic
 
 \def\dodouseGNUPLOTgraphic[#1][#2]%
   {\bgroup
@@ -83,10 +95,7 @@
      {\edef\GNUPLOTnumber{\getvalue{gpg:n:#1}}%
       \edef\GNUPLOTfile  {\bufferprefix gnuplot-\GNUPLOTnumber}%
       \bgroup
-      % hm, gnuplot only seems to handle lf so we cannot use \mappartolineend
-      % also, in order to prevent fuzzy runs (or no runs) we add a ; to each line
-      \fixGNUPLOTnewlines
-      \let\%\letterpercent
+      \the\everyGNUplotgraphic
       \immediate\openout\scratchwrite=\GNUPLOTfile.gpd
       \immediate\write\scratchwrite{set terminal \@@GNUPLOToutput\space\@@GNUPLOToption}%
       \doifnotempty

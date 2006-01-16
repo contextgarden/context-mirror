@@ -198,7 +198,22 @@
 %D passing them to \type{\MPinclusions}:
 %D
 %D \starttyping
+%D \startMPinclusions
+%D    input mp-mine ;
+%D \stopMPinclusions
+%D \stoptyping
+%D
+%D \starttyping
 %D \MPinclusions{input mp-mine}
+%D \stoptyping
+%D
+%D These commands reset their content each time. You can append
+%D code as follows:
+%D
+%D \starttyping
+%D \startMPinclusions[+]
+%D    input mp-mine ;
+%D \stopMPinclusions
 %D \stoptyping
 %D
 %D The token register \type {\MPinitializations} is expanded
@@ -208,14 +223,24 @@
 \newtoks \MPinitializations % each graphic
 \newtoks \MPextensions      % once per run (can be multiple graphics)
 
-\long\def\startMPinclusions#1\stopMPinclusions % document wide
-  {\long\def\theMPinclusions
-     {% \expanded !
-      \@EA\expanded\@EA{\@EA\writeMPgraphic\@EA{\the\MPextensions;}}% new
-      \writeMPgraphic{#1}}}
+\def\startMPinclusions
+  {\dosingleempty\dostartMPinclusions}
 
-\long\def\MPinclusions#1%
-  {\startMPinclusions#1\stopMPinclusions}
+\long\def\dostartMPinclusions[#1]#2\stopMPinclusions % document wide
+  {\doifelse{#1}{+}
+     {\@EA\long\@EA\def\@EA\theMPinclusions\@EA
+        {\theMPinclusions
+         \writeMPgraphic{#2}}}
+     {\long\def\theMPinclusions
+        {% \expanded !
+         \@EA\expanded\@EA{\@EA\writeMPgraphic\@EA{\the\MPextensions;}}% new
+         \writeMPgraphic{#2}}}}
+
+\def\MPinclusions
+  {\dosingleempty\doMPinclusions}
+
+\long\def\doMPinclusions[#1]#2%
+  {\startMPinclusions[#1]#2\stopMPinclusions}
 
 \startMPinclusions \stopMPinclusions
 

@@ -14,6 +14,12 @@
 
 % NOT YET ADAPTED TO THE NEW FONT MACROS
 
+%D The first implementation (most of which is here) is based on
+%D the specific font layout. This is because not all glyphs are
+%D available in uniciode, which means that we cannot use
+%D unicode codepoints (yet); if it were possible we could use
+%D just one table per input encoding.
+
 \writestatus{loading}{Context Font Macros / Chinese}
 
 % much will to typo-chi.tex
@@ -108,8 +114,8 @@
 \def\chineseunicodescale  {1.00} % not smaller than .85
 \def\chineseunicodeheight {1.00}
 \def\chineseunicodedepth  {1.00}
-\def\chineseinterglyphskip{0pt   plus .05em minus .01em}
-\def\chinesesurroundskip  {.25em plus .15em minus .05em}
+\def\chineseinterglyphskip{0pt   \!!plus .05em \!!minus .01em}
+\def\chinesesurroundskip  {.25em \!!plus .15em \!!minus .05em}
 
 %D We define a few signals. As said, another example of
 %D using signals can be found in the module \type {m-units}.
@@ -211,6 +217,8 @@
      \else
        \insertunicodeglyph
      \fi
+   \else\ifx\nextglyph\relax
+       \insertunicodeglyph
    \else
      \analyzechineseunicodeglyph
      \analyzechineseunicodeenviroment
@@ -277,7 +285,7 @@
        \insertchineseglyph
        \hskip\chineseinterglyphskip
        \hskip\chineseRsignal
-     \fi
+     \fi\fi
      \aftergroup\ignorespaces            % watch this
    \fi}
 
@@ -288,30 +296,38 @@
    \else
      \setunicodescale\chineseunicodescale
      \setunicodestrut\chineseunicodeheight\chineseunicodedepth
-     \analyzechineseunicodeglyph
-     \setbox\scratchbox\hbox to \hsize
-       {\hss
-        \ifcase\chineseSstatus\relax
-          \insertchineseglyph
-        \else % left / right
-          \setbox\scratchbox\hbox{\insertchineseglyph}%
-          \rotate[\c!rotation=270]{\box\scratchbox}%
-        \fi
-        \hss}%
-     \ht\scratchbox\unicodeheight\strutht
-     \dp\scratchbox\unicodedepth \strutdp
-     \ifvmode % catches \hbox{...}, actually \hbox should be \vbox -)
-       \nointerlineskip
+     \ifx\nextglyph\relax
+       \insertchineseglyph
+       \ifvmode % catches \hbox{...}, actually \hbox should be \vbox -)
+         \nointerlineskip
+       \fi
+       \allowbreak
+     \else
+       \analyzechineseunicodeglyph
+       \setbox\scratchbox\hbox to \hsize
+         {\hss
+          \ifcase\chineseSstatus\relax
+            \insertchineseglyph
+          \else % left / right
+            \setbox\scratchbox\hbox{\insertchineseglyph}%
+            \rotate[\c!rotation=270]{\box\scratchbox}%
+          \fi
+          \hss}%
+       \ht\scratchbox\unicodeheight\strutht
+       \dp\scratchbox\unicodedepth \strutdp
+       \ifvmode % catches \hbox{...}, actually \hbox should be \vbox -)
+         \nointerlineskip
+       \fi
+       \ifcase\prevchineseSstatus\relax
+         \ifnum\chineseSstatus=\plustwo \par\nobreak\else\allowbreak\fi
+       \or % left
+         \par\nobreak
+       \or % right
+         \ifnum\chineseSstatus=\plustwo \par\nobreak\else\allowbreak\fi
+       \fi
+       \global\chardef\prevchineseSstatus\chineseSstatus % pagebody ...
+       \box\scratchbox\par
      \fi
-     \ifcase\prevchineseSstatus\relax
-       \ifnum\chineseSstatus=\plustwo \par\nobreak\else\allowbreak\fi
-     \or % left
-       \par\nobreak
-     \or % right
-       \ifnum\chineseSstatus=\plustwo \par\nobreak\else\allowbreak\fi
-     \fi
-     \global\chardef\prevchineseSstatus\chineseSstatus % pagebody ...
-     \box\scratchbox\par
      \aftergroup\ignorespaces                           % watch this
    \fi}
 
@@ -475,7 +491,7 @@
    \stopdummy}
 
 \def\tracedchineseglyph
-  {\leavevmode
+  {\dontleavehmode
    \ruledhbox
      {\setbox\scratchbox\hbox{\insertunicodeglyph}%
       \hbox to \wd\scratchbox
@@ -1120,7 +1136,7 @@
 %D \stopnarrower
 
 %D This package is written in the city of Hasselt, a pretty
-%D small town in the |<|compare to China real small|>|
+%D small town in the |<|compared to China real small|>|
 %D Netherlands. Like most dutch cities, even this small one
 %D has a chinese restaurant, run by chinese, speaking chinese,
 %D and |<|indeed|>| writing chinese. Eating there will never

@@ -22,6 +22,7 @@ eval '(exit $?0)' && eval 'exec perl -S $0 ${1+"$@"}' && eval 'exec perl -S $0 $
 use Config ;
 use Getopt::Long ;
 use strict ;
+use File::Basename ;
 
 $Getopt::Long::passthrough = 1 ; # no error message
 $Getopt::Long::autoabbrev  = 1 ; # partial switch accepted
@@ -43,7 +44,7 @@ my $report  = '' ;
 my $texlatexswitch = " --tex=latex --format=latex " ;
 my $mplatexswitch = " --tex=latex " ;
 
-my $dosish      = ($Config{'osname'} =~ /^(ms)?dos|^os\/2|^(ms|cyg)win/i) ;
+my $dosish      = ($Config{'osname'} =~/^(ms)?dos|^os\/2|^mswin/i) ;
 my $miktex      = ($ENV{"TEXSYSTEM"} =~ /miktex/io);
 my $escapeshell = ( ($ENV{'SHELL'}) && ($ENV{'SHELL'} =~ m/sh/i ));
 
@@ -107,8 +108,12 @@ foreach my $file (@files)
         else
            { $command = "$command \\\\relax $file" }
         system($command) ;
-        rename ("$_.pdf", "$_-$1.pdf") ;
-        if (-e "$_.pdf") { CopyFile ("$_.pdf", "$_-$1.pdf") }
+        # rename ("$_.pdf", "$_-$1.pdf") ;
+        # if (-e "$_.pdf") { CopyFile ("$_.pdf", "$_-$1.pdf") }
+        my $pdfsrc = basename($_).".pdf";
+        rename ($pdfsrc, "$_-$1.pdf") ;
+        if (-e $pdfsrc) { CopyFile ($pdfsrc, "$_-$1.pdf") }
+        # end of patch
         if ($done) { $report .= " +" }
         $report .= " $_-$1.pdf" ;
         ++$done } }

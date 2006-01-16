@@ -5984,6 +5984,12 @@
       <cd:parameter name="textovyprikaz">
         <cd:constant type="cd:oneargument"/>
       </cd:parameter>
+      <cd:parameter name="deepnumbercommand">
+        <cd:constant type="cd:oneargument"/>
+      </cd:parameter>
+      <cd:parameter name="deeptextcommand">
+        <cd:constant type="cd:oneargument"/>
+      </cd:parameter>
       <cd:parameter name="prefix">
         <cd:constant type="+"/>
         <cd:constant type="-"/>
