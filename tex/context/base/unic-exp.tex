@@ -51,31 +51,29 @@
 %D For this purpose, we need to redefine the resolver.
 
 \def\doutfunihash#1#2%
-  {\ifcsname\@@univector\@@univector\number#1\endcsname
-     \csname\@@univector\@@univector\number#1\endcsname{\utfmod{#2}}%
-   \else\ifcsname\@@univector\number#1\endcsname
-     \csname\@@univector#1\endcsname{\utfmod{#2}}%
-   \else
-     \@@unknownchar
-   \fi\fi}
+  {\csname \@@univector
+     \ifcsname\@@univector\@@univector#1\endcsname \@@univector#1\else
+     \ifcsname\@@univector            #1\endcsname             #1\else
+                                                       \s!unknown\fi\fi
+   \endcsname{\utfmod{#2}}}
 
-% or:
-%
-% \def\doutfunihash#1#2%
-%   {\csname
-%      \ifcsname\@@univector\@@univector\number#1\endcsname
-%        \@@univector\@@univector\number#1%
-%      \else\ifcsname\@@univector\number#1\endcsname
-%        \@@univector#1%
-%      \else
-%        \strippedcsname\noutfunihash
-%      \fi\fi
-%    \endcsname{\utfmod{#2}}}
-%
-% \def\noutfunihash#1%
-%   {\unknowncharacter}
+\setvalue{\@@univector\s!unknown}#1%
+  {\@@unknownchar}
 
-\let\utfunihash\utfunihashglyph
+\def\doutfunihashglyph#1#2#3% div mod raw
+  {\csname                     utf!\ifnum#3<\utf@i1\else
+                \ifcsname\@@unicommand#1\endcsname2\else
+     \ifcsname\@@univector\@@univector#1\endcsname3\else
+                \ifcsname\@@univector #1\endcsname4\else
+                                                  5\fi\fi\fi\fi !\endcsname{#1}{#2}}
+
+\setvalue{utf!1!}#1{\unicodeasciicharacter} % {#2}
+\setvalue{utf!2!}#1{\csname\@@unicommand#1\endcsname} % {#2}
+\setvalue{utf!3!}#1#2{\csname\csname\@@univector\@@univector#1\endcsname{#2}\endcsname} % watch the nested csname; it's a speed up
+\setvalue{utf!4!}#1#2{\csname\csname\@@univector#1\endcsname{#2}\endcsname} % watch the nested csname; it's a speed up
+\setvalue{utf!5!}#1#2{\unicodeunknowncharacter}
+
+% \let\utfunihash\utfunihashglyph
 
 %D Let's use it:
 

@@ -383,7 +383,17 @@
 \let\plaatssetup    \placesetup
 \let\plaatselkesetup\placeeverysetup
 
-\def\dosetup#1{{\enableXML\flushXMLelement{stp:#1}}}
+\bgroup \catcode`\<=\active
+
+\gdef\dosetup#1%
+  {\bgroup
+   \def<<##1>>{##1}%
+   \edef\ascii{#1}%
+   \enableXML
+   \expanded{\flushXMLelement{stp:\ascii}}%
+   \egroup}
+
+\egroup
 
 \defineXMLenvironment [cd:command] [name=,type=,generated=,interactive=]
   {}

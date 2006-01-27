@@ -2244,7 +2244,7 @@
   {\let\expandedaction\noexpandedaction}
 
 %D \macros
-%D   {getfirstcharacter,firstcharacter, doiffirstcharacter}
+%D   {getfirstcharacter, firstcharacter, remainingcharacters, doiffirstcharacter}
 %D
 %D Sometimes the action to be undertaken depends on the
 %D next character. This macro get this character and puts it in
@@ -2258,12 +2258,13 @@
 %D complicated arguments, for instance arguments that
 %D consist of two or more expandable tokens.
 
-\def\dogetfirstcharacter#1#2\\%
-  {\def\firstcharacter{#1}}
+\def\dogetfirstcharacter#1#2\relax
+  {\def\firstcharacter{#1}%
+   \def\remainingcharacters{#2}}
 
 \def\getfirstcharacter#1%
   {\edef\!!stringa{#1}%
-   \expandafter\dogetfirstcharacter\!!stringa\\}
+   \expandafter\dogetfirstcharacter\!!stringa\relax}
 
 \def\doiffirstcharelse#1#2% char string
 % kort (maar onleesbaar)
@@ -4386,11 +4387,16 @@
 \chardef\statuswidth=15
 \chardef\statuswrite=16
 
-\def\writestring
-  {\immediate\write\statuswrite}
+\newtoks\everywritestring
+
+\def\writestring#1%
+  {\begingroup
+   \the\everywritestring
+   \immediate\write\statuswrite{#1}%
+   \endgroup}
 
 \def\writeline
-  {\writestring{}}
+  {\immediate\write\statuswrite{}}
 
 %D First we present the normal \TEX\ variant, later we will
 %D show the \ETEX-way.
@@ -4419,7 +4425,6 @@
      \space\space\space\space\space\space\space
      \space\space\space\space\space\space\space
      \space\space\space\space\space\space\end
-  %\expanded{\writestring{\the\scratchtoks\space:\space#2}}%
    \@EA\writestring\@EA{\the\scratchtoks\space:\space#2}%
    \endgroup}
 

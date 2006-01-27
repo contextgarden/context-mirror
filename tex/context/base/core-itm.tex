@@ -45,7 +45,7 @@
 \stopmessages
 
 \startmessages  french  library: layouts
-      9: pas plus de -- niveaux pour l'instant dans les élémentarisations
+      9: pas plus de -- niveaux pour l'instant dans les Ã©lÃ©mentarisations
 \stopmessages
 
 \unprotect
@@ -177,7 +177,7 @@
        \v!inmargin*=>\setitemparameter{#1}\c!width{-2em}, % signal
        \v!atmargin*=>\doifnot{#1}{1}{\setitemparameter{#1}\c!width{0em}}, % signal
          \v!intext*=>\settrue\inlinelistitem, % new
-          \v!loose*=>\optimizeitemsfalse,
+          \v!loose*=>\setfalse\optimizelistitem,
       \v!paragraph*=>\settrue\paragraphlistitem
                      \packitems,
        \v!joinedup*=>\dosetuppackeditemgroup{#1}%

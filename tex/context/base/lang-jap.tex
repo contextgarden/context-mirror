@@ -59,8 +59,6 @@
 
 %D Why are these languagespecifics ?
 
-% \startlanguagespecifics[\s!ja]
-
 \setuplabeltext [\s!ja]   [\v!january=1]
 \setuplabeltext [\s!ja]  [\v!february=2]
 \setuplabeltext [\s!ja]     [\v!march=3]
@@ -82,15 +80,13 @@
 \setuplabeltext [\s!ja]    [\v!friday=\jaencoding\jaencodedfriday   ]
 \setuplabeltext [\s!ja]  [\v!saturday=\jaencoding\jaencodedsaturday ]
 
-% \stoplanguagespecifics
-
 % Hardcoded - \japaneseencoding should be defined similarly to \chineseencoding
 
-\unexpanded\def\jaencoding{\enableencoding[j-uni]}
+\unexpanded\def\jaencoding{\enableencoding[cjk-uni]}
 
 %D This list is taken from DocBook XSL stylesheets (http://docbook.sourceforge.net/).
 
-\startencoding[j-uni]
+\startencoding[cjk-uni]
 
   \definecommand jaencodedabstract              {\uchar{105}{130}\uchar{137}{129}}
   \definecommand jaencodedand                   {\uchar{48}{1}}
@@ -185,7 +181,7 @@
 
 %D Taken from Chinese (will be investigated yet...)
 
-\startencoding[j-uni]
+\startencoding[cjk-uni]
 
   \definecommand jaencodedleftsentence     {\uchar{32}{20}\uchar{32}{20}}
   \definecommand jaencodedrightsentence    {\uchar{32}{20}\uchar{32}{20}}
@@ -196,7 +192,7 @@
 
 %D Special thanxx to Eizo Tsuchihashi (eizo@arcbrain.jp) for the following stuff
 
-\startencoding[j-uni]
+\startencoding[cjk-uni]
 
   \definecommand jaencodedchristiandate {\uchar{137}{127}\uchar{102}{166}}
 

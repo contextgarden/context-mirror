@@ -485,7 +485,7 @@ differencetransparent := 11 ; exclusiontransparent  := 12 ;
 % nottransparent        :=  0 ;
 % compatibletransparent := 99 ;
 
-% fill fullcircle scaled 10cm withcolor transparant(.8,3,color) ;
+% fill fullcircle scaled 10cm withcolor transparant(8,.3,red) ;
 
 vardef transparent(expr n, t, c) =
   save s, ss, nn, cc, is_cmyk, is_spot, ok ;

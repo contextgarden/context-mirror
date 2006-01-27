@@ -12,6 +12,8 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
+\ifx\handlechineseunicodeglyph\undefined \else \endinput \fi
+
 % NOT YET ADAPTED TO THE NEW FONT MACROS
 
 %D The first implementation (most of which is here) is based on
@@ -111,6 +113,8 @@
 %D There are a few variables, that can be (re|)|set
 %D depending on the current font. They default to:
 
+% hm, why don't we use the normal unicodestrut mechanism?
+
 \def\chineseunicodescale  {1.00} % not smaller than .85
 \def\chineseunicodeheight {1.00}
 \def\chineseunicodedepth  {1.00}
@@ -164,25 +168,25 @@
 \chardef\plusfour=4
 
 \def\analyzechineseunicodeglyph % beware, no zerocount !
-  {\chardef\chineseSstatus0\getvalue{uc\the\unicodeposition}\relax}
+  {\chardef\chineseSstatus0\getvalue{uc\number\unicodeposition}\relax}
 
 \def\analyzechineseunicodeenviroment
   {% left
-   \ifx (\nextglyph              \chardef\chineseAstatus\plusone   \else
-   \ifx [\nextglyph              \chardef\chineseAstatus\plusone   \else
+   \ifx (\nextutoken              \chardef\chineseAstatus\plusone   \else
+   \ifx [\nextutoken              \chardef\chineseAstatus\plusone   \else
    % right
-   \ifx ,\nextglyph              \chardef\chineseAstatus\plustwo   \else
-   \ifx .\nextglyph              \chardef\chineseAstatus\plustwo   \else
-   \ifx ?\nextglyph              \chardef\chineseAstatus\plustwo   \else
-   \ifx ;\nextglyph              \chardef\chineseAstatus\plustwo   \else
-   \ifx :\nextglyph              \chardef\chineseAstatus\plustwo   \else
-   \ifx !\nextglyph              \chardef\chineseAstatus\plustwo   \else
-   \ifx )\nextglyph              \chardef\chineseAstatus\plustwo   \else
-   \ifx ]\nextglyph              \chardef\chineseAstatus\plustwo   \else
+   \ifx ,\nextutoken              \chardef\chineseAstatus\plustwo   \else
+   \ifx .\nextutoken              \chardef\chineseAstatus\plustwo   \else
+   \ifx ?\nextutoken              \chardef\chineseAstatus\plustwo   \else
+   \ifx ;\nextutoken              \chardef\chineseAstatus\plustwo   \else
+   \ifx :\nextutoken              \chardef\chineseAstatus\plustwo   \else
+   \ifx !\nextutoken              \chardef\chineseAstatus\plustwo   \else
+   \ifx )\nextutoken              \chardef\chineseAstatus\plustwo   \else
+   \ifx ]\nextutoken              \chardef\chineseAstatus\plustwo   \else
    % space
-   \ifx\nextglyph\blankspace     \chardef\chineseAstatus\plusthree \else
-   \ifx\nextglyph\space          \chardef\chineseAstatus\plusthree \else
-                                 \chardef\chineseAstatus\zerocount
+   \ifx\nextutoken\blankspace     \chardef\chineseAstatus\plusthree \else
+   \ifx\nextutoken\space          \chardef\chineseAstatus\plusthree \else
+                                  \chardef\chineseAstatus\zerocount
    % unknown
    \fi\fi\fi\fi\fi \fi\fi\fi\fi\fi \fi\fi
    % maybe save the last skip?
@@ -209,15 +213,15 @@
 \def\horizontalchineseunicodeglyph
   {\relax
    \ifhmode\else\dontleavehmode\fi % added
-   \setunicodescale\chineseunicodescale
-   \setunicodestrut\chineseunicodeheight\chineseunicodedepth
+   \setunicodescale\chineseunicodescale % redundant
+   \setunicodestrut\chineseunicodeheight\chineseunicodedepth % redundant
    \ifprocessingverbatim
      \iftracechinese
        \ruledhbox{\insertunicodeglyph}%
      \else
        \insertunicodeglyph
      \fi
-   \else\ifx\nextglyph\relax
+   \else\ifx\nextutoken\relax
        \insertunicodeglyph
    \else
      \analyzechineseunicodeglyph
@@ -294,9 +298,9 @@
    \ifprocessingverbatim % to do
      \horizontalchineseunicodeglyph
    \else
-     \setunicodescale\chineseunicodescale
-     \setunicodestrut\chineseunicodeheight\chineseunicodedepth
-     \ifx\nextglyph\relax
+     \setunicodescale\chineseunicodescale % redundant
+     \setunicodestrut\chineseunicodeheight\chineseunicodedepth % redundant
+     \ifx\nextutoken\relax
        \insertchineseglyph
        \ifvmode % catches \hbox{...}, actually \hbox should be \vbox -)
          \nointerlineskip
@@ -848,12 +852,14 @@
 
 \setupunicodefont
   [chinese]
-  [     \c!scale=\chineseunicodescale,
-       \c!height=\chineseunicodeheight,
-        \c!depth=\chineseunicodedepth,
-   \c!conversion=\chinesenumber,
-     \c!commands=\setchineseencoding, % needed for digits
-      \c!command=\handlechineseunicodeglyph]
+  [       \c!scale=\chineseunicodescale,
+         \c!height=\chineseunicodeheight,
+          \c!depth=\chineseunicodedepth,
+          \c!strut=\v!yes,
+ \c!interlinespace=\v!yes,
+     \c!conversion=\chinesenumber,
+       \c!commands=\setchineseencoding, % needed for digits
+        \c!command=\handlechineseunicodeglyph]
 
 %D For the moment, this encoding is implemented rather ugly. The
 %D trick is to move the encoding value from the current font
@@ -902,8 +908,6 @@
 
 \doifelse \currentregime {utf} {
 
-    \useunicodevector[chi]
-
     \definefontsynonym [SimplifiedChineseRegular]     [ChineseRegular]
     \definefontsynonym [SimplifiedChineseSlanted]     [ChineseSlanted]
     \definefontsynonym [SimplifiedChineseItalic]      [ChineseItalic]
@@ -918,12 +922,12 @@
     \definefontsynonym [TraditionalChineseBoldSlanted][ChineseBoldSlanted]
     \definefontsynonym [TraditionalChineseBoldItalic] [ChineseBoldItalic]
 
-    \definefontsynonym [ChineseRegular]    [uni-htsong-][encoding=c-uni]
-    \definefontsynonym [ChineseSlanted]    [uni-htsong-][encoding=c-uni]
-    \definefontsynonym [ChineseItalic]     [uni-htsong-][encoding=c-uni]
-    \definefontsynonym [ChineseBold]       [uni-hthei-] [encoding=c-uni]
-    \definefontsynonym [ChineseBoldSlanted][uni-hthei-] [encoding=c-uni]
-    \definefontsynonym [ChineseBoldItalic] [uni-hthei-] [encoding=c-uni]
+    \definefontsynonym [ChineseRegular]    [uni-htsong-][encoding=cjk-uni]
+    \definefontsynonym [ChineseSlanted]    [uni-htsong-][encoding=cjk-uni]
+    \definefontsynonym [ChineseItalic]     [uni-htsong-][encoding=cjk-uni]
+    \definefontsynonym [ChineseBold]       [uni-hthei-] [encoding=cjk-uni]
+    \definefontsynonym [ChineseBoldSlanted][uni-hthei-] [encoding=cjk-uni]
+    \definefontsynonym [ChineseBoldItalic] [uni-hthei-] [encoding=cjk-uni]
 
     \loadmapfile[uni-htsong.map]
     \loadmapfile[uni-htfs.map]

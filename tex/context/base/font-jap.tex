@@ -12,6 +12,9 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
+\ifx\handlejapaneseunicodeglyph\undefined \else \endinput              \fi
+\ifx\handlechineseunicodeglyph \undefined          \input font-chi.tex \fi
+
 \writestatus{loading}{Context Font Macros / Japanese}
 
 \unprotect
@@ -26,44 +29,46 @@
      \let\japaneseencoding\currentfontfileencoding
    \fi}
 
-\def\japaneseunicodescale  {1.00}
-\def\japaneseunicodeheight {1.00}
-\def\japaneseunicodedepth  {1.00}
+\def\japaneseunicodescale  {\chineseunicodescale  }
+\def\japaneseunicodeheight {\chineseunicodeheight }
+\def\japaneseunicodedepth  {\chineseunicodedepth  }
+\def\japaneseinterglyphskip{\chineseinterglyphskip}
+\def\japanesesurroundskip  {\chinesesurroundskip  }
 
 \setupunicodefont
   [japanese]
-  [     \c!scale=\japaneseunicodescale,
-       \c!height=\japaneseunicodeheight,
-        \c!depth=\japaneseunicodedepth,
-   \c!conversion=\japanesenumber,
-     \c!commands=\setjapaneseencoding, % needed for digits
-      \c!command=\handlejapaneseunicodeglyph]
+  [       \c!scale=\japaneseunicodescale,
+         \c!height=\japaneseunicodeheight,
+          \c!depth=\japaneseunicodedepth,
+          \c!strut=\v!yes,
+ \c!interlinespace=\v!yes,
+     \c!conversion=\japanesenumber,
+       \c!commands=\setjapaneseencoding, % needed for digits
+        \c!command=\handlejapaneseunicodeglyph]
 
 \def\japanesenumber{\numbers}
 
 \def\handlejapaneseunicodeglyph
-  {\relax
-   \ifhmode\else\dontleavehmode\fi
-   \setunicodescale\japaneseunicodescale
-   \setunicodestrut\japaneseunicodeheight\japaneseunicodedepth
-   \iftracejapanese
-     \ruledhbox{\insertunicodeglyph}%
-   \else
-     \insertunicodeglyph
-   \fi
-   \allowbreak
-   \ignorespaces}
+  {\begingroup
+%    \let\chineseunicodescale  \japaneseunicodescale
+%    \let\chineseunicodeheight \japaneseunicodeheight
+%    \let\chineseunicodedepth  \japaneseunicodedepth
+%    \let\chineseinterglyphskip\japaneseinterglyphskip
+%    \let\chinesesurroundskip  \japanesesurroundskip
+   \iftracejapanese\tracechinesetrue\else\tracechinesefalse\fi
+   \handlechineseunicodeglyph
+   \endgroup}
 
 \doifelse \currentregime {utf} {
 
     % todo: typescripts
 
-    \definefontsynonym [JapaneseRegular]    [uni-cybercjk-][encoding=j-uni]
-    \definefontsynonym [JapaneseSlanted]    [uni-cybercjk-][encoding=j-uni]
-    \definefontsynonym [JapaneseItalic]     [uni-cybercjk-][encoding=j-uni]
-    \definefontsynonym [JapaneseBold]       [uni-cybercjk-][encoding=j-uni]
-    \definefontsynonym [JapaneseBoldSlanted][uni-cybercjk-][encoding=j-uni]
-    \definefontsynonym [JapaneseBoldItalic] [uni-cybercjk-][encoding=j-uni]
+    \definefontsynonym [JapaneseRegular]    [uni-cybercjk-][encoding=cjk-uni]
+    \definefontsynonym [JapaneseSlanted]    [uni-cybercjk-][encoding=cjk-uni]
+    \definefontsynonym [JapaneseItalic]     [uni-cybercjk-][encoding=cjk-uni]
+    \definefontsynonym [JapaneseBold]       [uni-cybercjk-][encoding=cjk-uni]
+    \definefontsynonym [JapaneseBoldSlanted][uni-cybercjk-][encoding=cjk-uni]
+    \definefontsynonym [JapaneseBoldItalic] [uni-cybercjk-][encoding=cjk-uni]
 
     \loadmapfile[uni-cybercjk.map]
 
@@ -72,5 +77,7 @@
 } {
     \writestatus{Japanese}{No fonts defined}
 }
+
+\Japanese
 
 \protect \endinput

@@ -169,32 +169,32 @@ end
 
 function string.replace(original,pattern,replacement)
     local str = string.gsub(original,pattern,replacement)
---~     print(str) -- indirect, since else str + nofsubs
+--     print(str) -- indirect, since else str + nofsubs
     return str -- indirect, since else str + nofsubs
 end
 
 -- support functions, maybe editor namespace
 
---~ function column_of_position(position)
---~     local line = editor:LineFromPosition(position)
---~     local oldposition = editor.CurrentPos
---~     local column = 0
---~     editor:GotoPos(position)
---~     while editor.CurrentPos ~= 0 and line == editor:LineFromPosition(editor.CurrentPos) do
---~         editor:CharLeft()
---~         column = column + 1
---~     end
---~     editor:GotoPos(oldposition)
---~     if line > 0 then
---~         return column -1
---~     else
---~         return column
---~     end
---~ end
+-- function column_of_position(position)
+--     local line = editor:LineFromPosition(position)
+--     local oldposition = editor.CurrentPos
+--     local column = 0
+--     editor:GotoPos(position)
+--     while editor.CurrentPos ~= 0 and line == editor:LineFromPosition(editor.CurrentPos) do
+--         editor:CharLeft()
+--         column = column + 1
+--     end
+--     editor:GotoPos(oldposition)
+--     if line > 0 then
+--         return column -1
+--     else
+--         return column
+--     end
+-- end
 
---~ function line_of_position(position)
---~     return editor:LineFromPosition(position)
---~ end
+-- function line_of_position(position)
+--     return editor:LineFromPosition(position)
+-- end
 
 function extend_to_start()
     local selectionstart = editor.SelectionStart
@@ -285,7 +285,7 @@ if props['ctx.helpinfo'] ~= '' then
     print("")
     print(string.replace(string.strip(props['ctx.helpinfo']),"%s*\|%s*","\n")) -- indirect, since else str + nofsubs
 end
---~ print("") -- why not needed?
+print("")
 print("-  recognized first lines:")
 print("")
 print("xml   <?xml version='1.0' language='nl'")
@@ -330,7 +330,7 @@ function wrap_text()
     local endcolumn   = props['SelectionEndColumn']   - 1
 
     local indentation = string.rep(' ', startcolumn)
---~ local selection   = string.gsub(editor:GetSelText(),"[\n\r][\n\r]+", ' ' .. magicstring .. ' ')
+--  local selection   = string.gsub(editor:GetSelText(),"[\n\r][\n\r]+", ' ' .. magicstring .. ' ')
     local selection   = string.gsub(editor:GetSelText(),"[\n\r][\n\r]", "\n")
     local selection   = string.gsub(selection,"\n\n+", ' ' .. magicstring .. ' ')
     local replacement = ''
@@ -520,21 +520,21 @@ local worddone = 0
 -- we use wordlist as a hash so that we can add entries without the
 -- need to sort and also use a fast (built in) search
 
---~ function kpsewhich_file(filename,filetype,progname)
---~     local progflag, typeflag = '', ''
---~     local tempname = os.tmpname()
---~     if progname then
---~         progflag = " --progname=" .. progname .. " "
---~     end
---~     if filetype then
---~         typeflag = " --format=" .. filetype .. " "
---~     end
---~     local command = "kpsewhich" .. progflag .. typeflag .. " " .. filename .. " > " .. tempname
---~     os.execute(command)
---~     for line in io.lines(tempname) do
---~         return string.gsub(line, "\s*$", '')
---~     end
---~ end
+-- function kpsewhich_file(filename,filetype,progname)
+--     local progflag, typeflag = '', ''
+--     local tempname = os.tmpname()
+--     if progname then
+--         progflag = " --progname=" .. progname .. " "
+--     end
+--     if filetype then
+--         typeflag = " --format=" .. filetype .. " "
+--     end
+--     local command = "kpsewhich" .. progflag .. typeflag .. " " .. filename .. " > " .. tempname
+--     os.execute(command)
+--     for line in io.lines(tempname) do
+--         return string.gsub(line, "\s*$", '')
+--     end
+-- end
 
 function check_text()
 
@@ -721,72 +721,72 @@ menufunctions[12] = process_menu
 
 local templatetrigger = 13
 
---~ local ctx_template_paths = { "./ctx-templates", "../ctx-templates", "../../ctx-templates" }
---~ local ctx_auto_templates = false
---~ local ctx_template_list  = ""
---~ local ctx_dir_list       = { }
---~ local ctx_dir_name       = "./ctx-templates"
+-- local ctx_template_paths = { "./ctx-templates", "../ctx-templates", "../../ctx-templates" }
+-- local ctx_auto_templates = false
+-- local ctx_template_list  = ""
+-- local ctx_dir_list       = { }
+-- local ctx_dir_name       = "./ctx-templates"
 
---~ local ctx_path_list      = {}
---~ local ctx_path_done      = {}
+-- local ctx_path_list      = {}
+-- local ctx_path_done      = {}
 
---~ function ctx_list_loaded()
---~     return ctx_dir_list and table.getn(ctx_dir_list) > 0
---~ end
+-- function ctx_list_loaded()
+--     return ctx_dir_list and table.getn(ctx_dir_list) > 0
+-- end
 
---~ function insert_template(templatelist)
---~     if props["ctx.template.scan"] == "yes" then
---~         local current = props["FileDir"] .. "+" .. props["FileExt"] -- no name
---~         local rescan  = props["ctx.template.rescan"] == "yes"
---~         local suffix  = props["ctx.template.suffix."..props["FileExt"]] -- alas, no suffix expansion here
---~         if rescan then
---~             print("re-scanning enabled")
---~         end
---~         if current ~= ctx_file_path then
---~             rescan = true
---~             ctx_file_path = current
---~             ctx_file_done = false
---~             ctx_template_list = ""
---~         end
---~         if not ctx_file_done or rescan then
---~             local pattern = "*.*"
---~             for i, pathname in ipairs(ctx_template_paths) do
---~                 print("scanning " .. pathname .. " for " .. pattern)
---~                 ctx_dir_name = pathname
---~                 ctx_dir_list = get_dir_list(pathname .. "/" .. pattern)
---~                 if ctx_list_loaded() then
---~                     break
---~                 end
---~             end
---~             ctx_file_done = true
---~         end
---~         if ctx_list_loaded() then
---~             ctx_template_list = ""
---~             local pattern = "%." .. suffix .. "$"
---~             for j, filename in ipairs(ctx_dir_list) do
---~                 if string.find(filename,pattern) then
---~                     local menuname = string.gsub(filename,"%..-$","")
---~                     if ctx_template_list ~= "" then
---~                         ctx_template_list = ctx_template_list .. "|"
---~                     end
---~                     ctx_template_list = ctx_template_list .. menuname .. "=" .. ctx_dir_name .. "/" .. filename
---~                 end
---~             end
---~         else
---~             print("no template files found")
---~         end
---~         if ctx_template_list == "" then
---~             ctx_auto_templates = false
---~             print("no file related templates found")
---~         else
---~             ctx_auto_templates = true
---~             templatelist = ctx_template_list
---~         end
---~     end
---~     if templatelist ~= "" then
---~         UserListShow(templatetrigger, templatelist)
---~     end
---~ end
+-- function insert_template(templatelist)
+--     if props["ctx.template.scan"] == "yes" then
+--         local current = props["FileDir"] .. "+" .. props["FileExt"] -- no name
+--         local rescan  = props["ctx.template.rescan"] == "yes"
+--         local suffix  = props["ctx.template.suffix."..props["FileExt"]] -- alas, no suffix expansion here
+--         if rescan then
+--             print("re-scanning enabled")
+--         end
+--         if current ~= ctx_file_path then
+--             rescan = true
+--             ctx_file_path = current
+--             ctx_file_done = false
+--             ctx_template_list = ""
+--         end
+--         if not ctx_file_done or rescan then
+--             local pattern = "*.*"
+--             for i, pathname in ipairs(ctx_template_paths) do
+--                 print("scanning " .. pathname .. " for " .. pattern)
+--                 ctx_dir_name = pathname
+--                 ctx_dir_list = get_dir_list(pathname .. "/" .. pattern)
+--                 if ctx_list_loaded() then
+--                     break
+--                 end
+--             end
+--             ctx_file_done = true
+--         end
+--         if ctx_list_loaded() then
+--             ctx_template_list = ""
+--             local pattern = "%." .. suffix .. "$"
+--             for j, filename in ipairs(ctx_dir_list) do
+--                 if string.find(filename,pattern) then
+--                     local menuname = string.gsub(filename,"%..-$","")
+--                     if ctx_template_list ~= "" then
+--                         ctx_template_list = ctx_template_list .. "|"
+--                     end
+--                     ctx_template_list = ctx_template_list .. menuname .. "=" .. ctx_dir_name .. "/" .. filename
+--                 end
+--             end
+--         else
+--             print("no template files found")
+--         end
+--         if ctx_template_list == "" then
+--             ctx_auto_templates = false
+--             print("no file related templates found")
+--         else
+--             ctx_auto_templates = true
+--             templatelist = ctx_template_list
+--         end
+--     end
+--     if templatelist ~= "" then
+--         UserListShow(templatetrigger, templatelist)
+--     end
+-- end
 
 local ctx_template_paths = { "./ctx-templates", "../ctx-templates", "../../ctx-templates" }
 local ctx_auto_templates = false
@@ -913,3 +913,13 @@ end
 menufunctions[13] = process_template_one
 menufunctions[14] = process_template_two
 
+-- command.name.26.*=Open Logfile
+-- command.subsystem.26.*=3
+-- command.26.*=open_log
+-- command.save.before.26.*=2
+-- command.groupundo.26.*=yes
+-- command.shortcut.26.*=Ctrl+E
+
+function open_log()
+   scite.Open(props['FileName'] .. ".log")
+end

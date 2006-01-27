@@ -229,16 +229,16 @@
 \startmessages  french  library: fonts
   title: bodyfont
       1: encodage --
-      2: la variante -- est chargée
+      2: la variante -- est chargÃ©e
       3: variante -- inconnue
-      4: policecorps -- n'est pas définie
-      5: le style -- n'est pas défini
-      6: -- est chargé
+      4: policecorps -- n'est pas dÃ©finie
+      5: le style -- n'est pas dÃ©fini
+      6: -- est chargÃ©
       7: format -- inconnu
       8: style -- defini
 %     9: mapping -- is loaded
      10: fichier de police -- inconnu
-     14: policecorps -- est défini (une définition globale pourrait être plus adéquat)
+     14: policecorps -- est dÃ©fini (une dÃ©finition globale pourrait Ãªtre plus adÃ©quat)
 \stopmessages
 
 %D This module is one of the oldest modules of \CONTEXT. The
@@ -863,7 +863,7 @@
 %D defining it here, we have at least an safeguard for utility
 %D file reading.
 
-\unexpanded\def\uchar#1#2{[#1,#2]}
+\ifx\uchar\undefined \unexpanded\def\uchar#1#2{[#1,#2]} \fi
 
 %D We define some (very private) constants to improve speed,
 %D memory usage and consistency.

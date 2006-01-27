@@ -95,7 +95,7 @@
      {\edef\GNUPLOTnumber{\getvalue{gpg:n:#1}}%
       \edef\GNUPLOTfile  {\bufferprefix gnuplot-\GNUPLOTnumber}%
       \bgroup
-      \the\everyGNUplotgraphic
+      \the\everyGNUPLOTgraphic
       \immediate\openout\scratchwrite=\GNUPLOTfile.gpd
       \immediate\write\scratchwrite{set terminal \@@GNUPLOToutput\space\@@GNUPLOToption}%
       \doifnotempty

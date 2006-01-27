@@ -45,9 +45,9 @@
 %D
 %D Which is implemented as:
 
-\def\mathematics#1{\relax\ifmmode#1\else$#1$\fi} % lookahead bug reported by brooks
-\def\displaymath#1{\relax\ifmmode#1\else$$#1$$\fi}
-\def\inlinemath #1{\relax\ifmmode#1\else$#1$\fi}
+\long\def\mathematics#1{\relax\ifmmode#1\else $#1$\fi} % lookahead bug reported by brooks
+\long\def\displaymath#1{\relax\ifmmode#1\else$$#1$$\fi}
+\long\def\inlinemath #1{\relax\ifmmode#1\else $#1$\fi}
 
 \def\startmathmode
   {\ifmmode
@@ -60,6 +60,15 @@
   {\ifmmode\hbox{#1}\else#1\fi}
 
 \let\math\mathematics
+
+%D \macros
+%D   {displaymathematics,inlinemathematics,automathematics}
+%D
+%D An example of usage of the following can be found in the MathML module:
+
+\long\def\displaymathematics#1{\relax\ifmmode#1\else\dostartformula{}#1\dostopformula\fi}
+     \let\inlinemathematics    \mathematics
+     \def\automathematics     {\relax\ifhmode\@EA\inlinemathematics\else\@EA\displaymathematics\fi}
 
 %D \macros
 %D   {dimension, nodimension}

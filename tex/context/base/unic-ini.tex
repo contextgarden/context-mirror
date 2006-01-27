@@ -22,6 +22,18 @@
 
 \unprotect
 
+% ÀÁÂÃÄÅàáâãäå
+% ÆÇæç
+% ÈÉÊËèéêë
+% ÌÍÎÏÞìíîïþ
+% Ðð
+% Ññ
+% ÒÓÔÕÖòóôõö
+% Øø
+% ÙÚÛÜùúû
+% Ýýÿ
+% ß
+
 %D This module deals with unicode, and in particular with
 %D \UTF-8 conversion. The prelude to this module was \type
 %D {xtag-utf}, which is now replaced by a one||liner. The
@@ -218,6 +230,8 @@
 %D
 %D Less parsing, and therefore faster:
 
+% beware, this may change: #1 rawchar (=> `#1 and such, saves tokens)
+
 \def\utftwouniglph#1#2%
   {\@EA\unicodechar\@EA{\the\numexpr\utf@a*(#1-\utf@d)+%
      `#2-\utf@g\relax}}
@@ -229,6 +243,23 @@
 \def\utffouruniglph#1#2#3#4%
   {\@EA\unicodechar\@EA{\the\numexpr\utf@c*(#1-\utf@f)+%
       \utf@b*(`#2-\utf@g)+\utf@a*(`#3-\utf@g)+`#4-\utf@g\relax}}
+
+% \def\keeputfcharacters
+%   {\def\utftwouniglph        ##1##2{\rawcharacter{##1}\string##2}%
+%    \def\utfthreeuniglph   ##1##2##3{\rawcharacter{##1}\string##2\string##3}%
+%    \def\utffouruniglph ##1##2##3##4{\rawcharacter{##1}\string##2\string##3\string##4}}
+
+\def\keeputfcharacters
+  {\let\utftwouniglph  \rawcharacter
+   \let\utfthreeuniglph\rawcharacter
+   \let\utffouruniglph \rawcharacter}
+
+\appendtoks \keeputfcharacters \to \everywritestring
+
+% \bgroup
+% \keeputfcharacters
+% \expanded{\index{\XMLflush{whatever}}}
+% \egroup
 
 %D Now we come to the unicode handler itself. We will use a few
 %D constants, which saves us (at least at the time of writing
@@ -408,19 +439,35 @@
 \def\utfunihashglyph#1%
   {\@EA\doutfunihashglyph\@EA{\number\numexpr\utfdiv{#1}\@EA\relax\@EA}\@EA{\number\utfmod{#1}}{#1}}
 
-\def\doutfunihashglyph#1#2#3% div mod raw
-  {\csname
-     \ifnum#3<\utf@i
-       \strippedcsname\unicodeasciicharacter\endcsname{#2}%
-     \else\ifcsname\@@unicommand#1\endcsname
-       \@@unicommand#1\endcsname{#2}%
-     \else\ifcsname\@@univector#1\endcsname
-       \csname\@@univector#1\endcsname{#2}\endcsname % watch the nested csname; it's a speed up
-     \else
-       \strippedcsname\unicodeunknowncharacter\endcsname{#2}%
-     \fi\fi\fi}
+% \def\doutfunihashglyph#1#2#3% div mod raw
+%   {\csname
+%      \ifnum#3<\utf@i
+%        \strippedcsname\unicodeasciicharacter\endcsname{#2}%
+%      \else\ifcsname\@@unicommand#1\endcsname
+%        \@@unicommand#1\endcsname{#2}%
+%      \else\ifcsname\@@univector#1\endcsname
+%        \csname\@@univector#1\endcsname{#2}\endcsname % watch the nested csname; it's a speed up
+%      \else
+%        \strippedcsname\unicodeunknowncharacter\endcsname{#2}%
+%      \fi\fi\fi}
+%
+% \def\unicodeunknowncharacter#1%
+%   {\unknownchar}
+%
+% The next one permits lookahead
 
-\def\unicodeunknowncharacter#1%
+\def\doutfunihashglyph#1#2#3% div mod raw
+  {\csname utf!\ifnum#3<\utf@i                   1\else
+               \ifcsname\@@unicommand#1\endcsname2\else
+               \ifcsname\@@univector #1\endcsname3\else
+                                                 4\fi\fi\fi !\endcsname{#1}{#2}}
+
+\setvalue{utf!1!}#1{\unicodeasciicharacter} % {#2}
+\setvalue{utf!2!}#1{\csname\@@unicommand#1\endcsname} % {#2}
+\setvalue{utf!3!}#1#2{\csname\csname\@@univector#1\endcsname{#2}\endcsname} % watch the nested csname; it's a speed up
+\setvalue{utf!4!}#1#2{\unicodeunknowncharacter}
+
+\def\unicodeunknowncharacter
   {\unknownchar}
 
 %D With:
@@ -569,7 +616,7 @@
 
 \def\unidiv{0} \def\unimod{0}
 
-\chardef\utfunihashmode=0 % 0=hash glyph 1=font glyph
+\chardef\utfunihashmode=0 % 0=hash glyph / 1=font glyph
 
 \def\utfunifontglyph#1%
   {\xdef\unidiv{\number\utfdiv{#1}}%
@@ -613,7 +660,6 @@
 
 \def\utfunihashcommand
   {\ifcase\utfunihashmode
-   % \@EA\@EAEAEA\@EA\string\@EA\utfunihashglyph
      \@EA\utfunihushcommand
    \else
      \@EA\utfunifontcommand
@@ -686,6 +732,9 @@
 
 \endTEX
 
+\def\uchartoutf#1#2%
+  {\expandafter\numbertoutf\expandafter{\the\numexpr#1*256+#2\relax}}
+
 %D Goodies:
 
 \fetchruntimecommand \showunicodevector {\f!unicprefix\s!run}
@@ -694,10 +743,14 @@
 %D Well, let's at least preload a few familiar ones. Here we
 %D also load the \UTF\ regime.
 
-\useunicodevector[0,1,2,3,4,5,30,32,33,34,39] \useregime[utf]
+\useunicodevector[0,1,2,3,4,5,30,32,33,34,39]
+\useunicodevector[cjk]
+
+\useregime[utf]
 
 % 31, text mem usage first
 
 \protect  \endinput
 
 \unprotect
+

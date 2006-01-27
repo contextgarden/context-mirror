@@ -716,100 +716,99 @@
   [\c!middlespeech]
   [\leftboundarycharacter\c!middlespeech{speech}]
 
-%%%%% will be replaced by delimitedtext %%%%%
-
-\def\leftquotationmark
-  {\setbox\scratchbox\hbox{\symbol[\c!leftquotation]}%
-   \doif\@@cilocation\v!margin{\hskip-\wd\scratchbox}%
-   \box\scratchbox}
-
-\def\rightquotationmark
-  {\hsmash{\symbol[\c!rightquotation]}}
-
-\newsignal\quotationsignal
-
-\def\setupquote
-  {\dodoubleargument\getparameters[\??ci]}
-
-% \def\setuoquotation
-%   {\setupquote}
-
-\def\startquotation
-  {\bgroup\dosingleempty\dostartquotation}
-
-\def\dostartquotation[#1]%
-  {\@@cibefore
-   \doifelsenothing{#1}
-     {\let\dostopquotation\relax}
-     {\startnarrower[#1]%
-      \let\dostopquotation\stopnarrower}%
-   \dostartattributes\??ci\c!style\c!color\empty
-   \leftquotationmark
-   \ignorespaces}
-
-\def\stopquotation
-  {\removeunwantedspaces
-   \removelastskip
-   \rightquotationmark
-   \dostopattributes
-   \dostopquotation
-   \@@ciafter
-   \egroup}
-
-\def\dohandlequotation#1#2%
-  {\ifdim\lastskip=\quotationsignal
-     \unskip\hskip\hspaceamount\currentlanguage{interquotation}%
-   \else
-     #2%
-   \fi
-   \ifhmode % else funny pagebeaks
-     \penalty\!!tenthousand\hskip\zeropoint      % == \prewordbreak
-   \fi
-   \strut % new, needed below
-   \symbol[#1]%
-   \penalty\!!tenthousand\hskip\quotationsignal} % +- \prewordbreak
-
-\def\handlequotation#1%
-  {\dohandlequotation{#1}\relax}
-
-\unexpanded\def\quotation
-  {\groupedcommand
-     {\dohandlequotation\c!leftquotation \relax}
-     {\dohandlequotation\c!rightquotation\removelastskip}}
-
-\unexpanded\def\quote
-  {\doifelse\@@cistyle\v!normal\doquotedcite\doattributedcite}
-
-\def\doquotedcite
-  {\groupedcommand
-     {\dohandlequotation\c!leftquote \relax}
-     {\dohandlequotation\c!rightquote\removelastskip}}
-
-\def\doattributedcite
-  {\groupedcommand
-     {\dostartattributes\??ci\c!style\c!color}
-     {\dostopattributes}}
+% has been replaced by delimitedtext
+%
+% \def\leftquotationmark
+%   {\setbox\scratchbox\hbox{\symbol[\c!leftquotation]}%
+%    \doif\@@cilocation\v!margin{\hskip-\wd\scratchbox}%
+%    \box\scratchbox}
+%
+% \def\rightquotationmark
+%   {\hsmash{\symbol[\c!rightquotation]}}
+%
+% \newsignal\quotationsignal
+%
+% \def\setupquote
+%   {\dodoubleargument\getparameters[\??ci]}
+%
+% \def\startquotation
+%   {\bgroup\dosingleempty\dostartquotation}
+%
+% \def\dostartquotation[#1]%
+%   {\@@cibefore
+%    \doifelsenothing{#1}
+%      {\let\dostopquotation\relax}
+%      {\startnarrower[#1]%
+%       \let\dostopquotation\stopnarrower}%
+%    \dostartattributes\??ci\c!style\c!color\empty
+%    \leftquotationmark
+%    \ignorespaces}
+%
+% \def\stopquotation
+%   {\removeunwantedspaces
+%    \removelastskip
+%    \rightquotationmark
+%    \dostopattributes
+%    \dostopquotation
+%    \@@ciafter
+%    \egroup}
+%
+% \def\dohandlequotation#1#2%
+%   {\ifdim\lastskip=\quotationsignal
+%      \unskip\hskip\hspaceamount\currentlanguage{interquotation}% hardcoded
+%    \else
+%      #2%
+%    \fi
+%    \ifhmode % else funny pagebeaks
+%      \penalty\!!tenthousand\hskip\zeropoint      % == \prewordbreak
+%    \fi
+%    \strut % new, needed below
+%    \symbol[#1]%
+%    \penalty\!!tenthousand\hskip\quotationsignal} % +- \prewordbreak
+%
+% \def\handlequotation#1%
+%   {\dohandlequotation{#1}\relax}
+%
+% \unexpanded\def\quotation
+%   {\groupedcommand
+%      {\dohandlequotation\c!leftquotation \relax}
+%      {\dohandlequotation\c!rightquotation\removelastskip}}
+%
+% \unexpanded\def\quote
+%   {\doifelse\@@cistyle\v!normal\doquotedcite\doattributedcite}
+%
+% \def\doquotedcite
+%   {\groupedcommand
+%      {\dohandlequotation\c!leftquote \relax}
+%      {\dohandlequotation\c!rightquote\removelastskip}}
+%
+% \def\doattributedcite
+%   {\groupedcommand
+%      {\dostartattributes\??ci\c!style\c!color}
+%      {\dostopattributes}}
 
 %D The previous one fails in \placefloat[left]{}{}, so instead
 %D we use the next alternative, where the first one is handled
 %D outside group. Watch the strut.
 
-\unexpanded\def\quotation
-  {\dohandlequotation\c!leftquotation\relax
-   \groupedcommand \donothing
-     {\dohandlequotation\c!rightquotation\removelastskip}}
-
-\def\doquotedcite
-  {\dohandlequotation\c!leftquote\relax
-   \groupedcommand \donothing
-     {\dohandlequotation\c!rightquote\removelastskip}}
-
-\setupquote
-  [\c!location=\v!margin,
-   \c!style=\v!normal,
-   \c!color=,
-   \c!before=\startnarrower,
-   \c!after=\stopnarrower]
+% has been replaced by delimitedtext
+%
+% \unexpanded\def\quotation
+%   {\dohandlequotation\c!leftquotation\relax
+%    \groupedcommand \donothing
+%      {\dohandlequotation\c!rightquotation\removelastskip}}
+%
+% \def\doquotedcite
+%   {\dohandlequotation\c!leftquote\relax
+%    \groupedcommand \donothing
+%      {\dohandlequotation\c!rightquote\removelastskip}}
+%
+% \setupquote
+%   [\c!location=\v!margin,
+%    \c!style=\v!normal,
+%    \c!color=,
+%    \c!before=\startnarrower,
+%    \c!after=\stopnarrower]
 
 \appendtoks\def\quotation#1{"#1"}\to\simplifiedcommands
 \appendtoks\def\quote    #1{'#1'}\to\simplifiedcommands
@@ -822,38 +821,38 @@
 %D closing symbols are defined per language. Italian is an
 %D example of a language that has them set.
 
-%%%%% will be replaced by delimitedtext %%%%%
-
-\newcounter\speechlevel \newconditional\insidespeech
-
-\def\startspeech
-  {\doglobal\increment\speechlevel\relax
-   \dohandlequotation\c!leftspeech\relax
-   \global\settrue\insidespeech
-   \ignorespaces}
-
-\def\stopspeech
-  {\dohandlequotation\c!rightspeech\removelastskip
-   \doglobal\decrement\speechlevel\relax
-   \ifcase\speechlevel\relax \global\setfalse\insidespeech \fi}
-
-\def\dohandlespeech % indirect since called in everypar
-  {\relax % still needed?
-   \ifcase\speechlevel\or\dodohandlespeech\fi}
-
-\def\dodohandlespeech
-  {\ifconditional\insidespeech
-     \dohandlequotation\c!middlespeech\relax
-   \else
-     \global\settrue\insidespeech
-   \fi}
-
-\unexpanded\def\speech
-  {\doglobal\increment\speechlevel\relax
-   \dohandlequotation\c!leftspeech\relax
-   \groupedcommand \ignorespaces
-     {\dohandlequotation\c!rightspeech\removelastskip
-      \doglobal\decrement\speechlevel\relax}}
+% has been be replaced by delimitedtext
+%
+% \newcounter\speechlevel \newconditional\insidespeech
+%
+% \def\startspeech
+%   {\doglobal\increment\speechlevel\relax
+%    \dohandlequotation\c!leftspeech\relax
+%    \global\settrue\insidespeech
+%    \ignorespaces}
+%
+% \def\stopspeech
+%   {\dohandlequotation\c!rightspeech\removelastskip
+%    \doglobal\decrement\speechlevel\relax
+%    \ifcase\speechlevel\relax \global\setfalse\insidespeech \fi}
+%
+% \def\dohandlespeech % indirect since called in everypar
+%   {\relax % still needed?
+%    \ifcase\speechlevel\or\dodohandlespeech\fi}
+%
+% \def\dodohandlespeech
+%   {\ifconditional\insidespeech
+%      \dohandlequotation\c!middlespeech\relax
+%    \else
+%      \global\settrue\insidespeech
+%    \fi}
+%
+% \unexpanded\def\speech
+%   {\doglobal\increment\speechlevel\relax
+%    \dohandlequotation\c!leftspeech\relax
+%    \groupedcommand \ignorespaces
+%      {\dohandlequotation\c!rightspeech\removelastskip
+%       \doglobal\decrement\speechlevel\relax}}
 
 % \appendtoks \dohandlespeech \to \everypar
 
@@ -887,6 +886,7 @@
          \c!right=,
          \c!level=0,
          \c!repeat=\v!no,
+         \c!method=\s!font,
         #2]}%
      {\doifdefined{#2}
         {\copyparameters[\??ci#1][\??ci#2]
@@ -913,13 +913,20 @@
      \dohandledelimitedtext\c!middle
    \fi}
 
+\let\dohandlerepeatdelimitedtext\relax
+
 \def\startdelimitedtext[#1]%
   {\bgroup
    \def\currentdelimitedtext{#1}%
-   \doif{\delimitedtextparameter\c!repeat}\v!yes
-     {\appendtoks \dorepeatdelimitedtext \to \everypar}%
-   \doifinsetelse{\delimitedtextparameter\c!location}{\v!paragraph,\v!margin}%
-     {\dosingleempty\dostartdelimitedtextpar}\dostartdelimitedtexttxt}
+   \doifelse{\delimitedtextparameter\c!method}\s!font
+     {\doglobal\decrementvalue{\??ci\currentdelimitedtext\c!level}%
+      \def\dostopdelimitedtext{\nohandledelimitedtext\c!right}%
+      \nohandledelimitedtext\c!left}
+     {\doifelse{\delimitedtextparameter\c!repeat}\v!yes
+        {\let\dohandlerepeatdelimitedtext\dorepeatdelimitedtext}%
+        {\let\dohandlerepeatdelimitedtext\relax}%
+      \doifinsetelse{\delimitedtextparameter\c!location}{\v!paragraph,\v!margin}%
+        {\dosingleempty\dostartdelimitedtextpar}\dostartdelimitedtexttxt}}
 
 \def\dostartdelimitedtextpar[#1]%
   {\let\dostopdelimitedtext\dostopdelimitedtextpar
@@ -971,8 +978,10 @@
 \def\delimitedtext[#1]%
   {\pushmacro\currentdelimitedtext
    \def\currentdelimitedtext{#1}%
-   \doifinsetelse{\delimitedtextparameter\c!location}{\v!paragraph,\v!margin}%
-     \dodelimitedtextpar\dodelimitedtexttxt}
+   \doifelse{\delimitedtextparameter\c!method}\s!font
+     {\dofontdrivendelimited}
+     {\doifinsetelse{\delimitedtextparameter\c!location}{\v!paragraph,\v!margin}%
+      \dodelimitedtextpar\dodelimitedtexttxt}}
 
 % shortcuts
 
@@ -990,8 +999,8 @@
   {\hsmash{\delimitedtextparameter\c!right}}
 
 \def\dohandledelimitedtext#1#2%
-  {\bgroup
-   \setbox\scratchbox\hbox{#1}%
+  {\begingroup
+   \setbox\scratchbox\hbox{\delimitedtextparameter#1}%
    \ifdim\wd\scratchbox>\zeropoint
      \ifdim\lastskip=\delimitedtextsignal
        \unskip\hskip\hspaceamount\currentlanguage{interquotation}%
@@ -1002,10 +1011,13 @@
        \penalty\!!tenthousand\hskip\zeropoint % == \prewordbreak
      \fi
      \strut % new, needed below
-     \delimitedtextparameter#1%
+     \delimitedtextparameter#1% unhbox\scratchbox
      \penalty\!!tenthousand\hskip\delimitedtextsignal % +- \prewordbreak
    \fi
-   \egroup}
+   \endgroup}
+
+\def\nohandledelimitedtext#1#2%
+  {\delimitedtextparameter#1}
 
 \def\handledelimitedtext#1%
   {\dohandledelimitedtext{#1}\relax}
@@ -1033,32 +1045,38 @@
      {\dostartattributes{\??ci\currentdelimitedtext}\c!style\c!color}
      {\dostopattributes
       \popmacro\currentdelimitedtext}}
+
+\def\dofontdrivendelimited
+  {\groupedcommand
+     {\dohandledelimitedtext\c!left\relax}
+     {\dohandledelimitedtext\c!right\relax
+      \popmacro\currentdelimitedtext}}
 
-% \definedelimitedtext
-%   [\v!quotation]
-%   [\c!left={\symbol[\c!leftquotation]},
-%    \c!right={\symbol[\c!rightquotation]},
-%    \c!leftmargin=\v!standard]
-%
-% \definedelimitedtext
-%   [\v!quote][\v!quotation]
-%
-% \setupdelimitedtext
-%   [\v!quote]
-%   [\c!location=\v!text,
-%    \c!left={\symbol[\c!leftquote]},
-%    \c!right={\symbol[\c!rightquote]}]
-%
-% \definedelimitedtext
-%   [\v!speech][\v!quotation]
-%
-% \setupdelimitedtext
-%   [\v!speech]
-%   [\c!repeat=\v!yes,
-%    \c!left={\symbol[\c!leftspeech]},
-%    \c!middle={\symbol[\c!middlespeech]},
-%    \c!right={\symbol[\c!rightspeech]}]
-%
+\definedelimitedtext
+  [\v!quotation]
+  [\c!left={\symbol[\c!leftquotation]},
+   \c!right={\symbol[\c!rightquotation]},
+   \c!leftmargin=\v!standard]
+
+\definedelimitedtext
+  [\v!quote][\v!quotation]
+
+\setupdelimitedtext
+  [\v!quote]
+  [\c!location=\v!text,
+   \c!left={\symbol[\c!leftquote]},
+   \c!right={\symbol[\c!rightquote]}]
+
+\definedelimitedtext
+  [\v!speech][\v!quotation]
+
+\setupdelimitedtext
+  [\v!speech]
+  [\c!repeat=\v!yes,
+   \c!left={\symbol[\c!leftspeech]},
+   \c!middle={\symbol[\c!middlespeech]},
+   \c!right={\symbol[\c!rightspeech]}]
+
 % how do we call an tight quote
 %
 % \definedelimitedtext
@@ -1068,9 +1086,9 @@
 %   [\v!quotation]
 %   [\c!indentnext=\v!no,
 %    \c!spacebefore=\v!nowhite]
-%
-% \def\setupquotation{\setupdelimitedtext[\v!quotation]}
-% \def\setupquote    {\setupdelimitedtext[\v!quote]}
+
+\def\setupquotation{\setupdelimitedtext[\v!quotation]}
+\def\setupquote    {\setupdelimitedtext[\v!quote]}
 
 % seldom used, move from kernel to run time module
 
@@ -1775,15 +1793,15 @@
      \getparameters[\??co][#1]%
    \fi}
 
-\def\startcombination
-  {\dodoubleempty\dostartcombination}
-
 \def\combinationparameter#1%
   {\csname\??co\currentcombination#1\endcsname}%
 
+\def\startcombination
+  {\bgroup % so we can grab a group
+   \dodoubleempty\dostartcombination}
+
 \def\dostartcombination[#1][#2]%
-  {\bgroup
-   \global\setsystemmode{combination}%
+  {\global\setsystemmode{combination}%
    \ifsecondargument
      \def\currentcombination{#1}%
    \else

@@ -587,6 +587,8 @@
 %D start with defining some booleans. These give an impression
 %D of what we are going to take into account.
 
+% todo: chardefs
+
 \newif\ifboxhasoffset
 \newif\ifboxhaswidth
 \newif\ifboxhasheight
@@ -594,6 +596,7 @@
 \newif\ifboxhasstrut
 \newif\ifboxisoverlaid
 \newif\ifboxhasframe
+\newif\ifdelayedstrut
 
 %D We also need a few \DIMENSIONS:
 
@@ -644,7 +647,7 @@
       \c!topframe,\c!bottomframe,\c!leftframe,\c!rightframe,%
       \c!rulethickness,\c!frameoffset,\c!background,\c!component,%
       \c!backgroundoffset,\c!backgroundscreen,\c!backgroundcolor,%
-      \c!align,\c!bottom,\c!top,\c!strut,\c!location,\c!setups,\c!extras]%
+      \c!align,\c!bottom,\c!top,\c!strut,\c!autostrut,\c!location,\c!setups,\c!extras]%
    \copyparameters[#1\c!background][#1]%
      [\c!radius,\c!corner,\c!depth]%
    \copyparameters[#1\c!frame][#1]%
@@ -733,6 +736,7 @@
    \edef\localformat{\framedparameter\c!align}%
    \edef\localstrut {\framedparameter\c!strut}%
    % these are not
+   \edef\@@localautostrut  {\framedparameter\c!autostrut}%
    \edef\@@localframing    {\framedparameter\c!frame}%
    \edef\@@locallocation   {\framedparameter\c!location}%
    \edef\@@localorientation{\framedparameter\c!orientation}%
@@ -843,6 +847,7 @@
      \setstrut
    \else\ifx\localstrut\v!local
      \setfontstrut
+   \else
    \fi\fi\fi
    \ifboxhasstrut
      \setstrut
@@ -854,9 +859,21 @@
      \let\localendstrut\pseudoendstrut % was: \relax
      \let\localstrut   \pseudostrut    % was: \relax
     %\ifboxhasheight\ifdim\!!heighta<\strutht % saveguard
-    %  \let\localbegstrut\relax                   % but not that
-    %  \let\localstrut   \relax                   % save afterall
+    %  \let\localbegstrut\relax               % but not that
+    %  \let\localstrut   \relax               % save after all
     %\fi\fi
+   \fi
+   \ifx\@@localautostrut\v!yes
+     \let\delayedbegstrut\relax
+     \let\delayedendstrut\relax
+     \let\delayedstrut   \relax
+   \else
+     \let\delayedbegstrut\localbegstrut
+     \let\delayedendstrut\localendstrut
+     \let\delayedstrut   \localstrut
+     \let\localbegstrut  \relax
+     \let\localendstrut  \relax
+     \let\localstrut     \relax
    \fi
    \ifboxhasheight
      \let\\\vboxednewline
@@ -1472,99 +1489,6 @@
 %D We handle left, right or middle alignment as well as fixed
 %D or free widths and heights. Each combination gets its own
 %D macro.
-
-% \def\dopresetformatbox
-%   {\forgetall
-%    \oninterlineskip}
-
-% \def\doformatboxSomeFormat
-%   {\vbox to \!!heighta
-%      \bgroup
-%        \dopresetformatbox
-%        \hsize\!!widtha
-%        \vsize\!!heighta
-%        \raggedcommand
-%        \dobeforeframedbox
-%        \bgroup
-%        \localbegstrut
-%        \aftergroup\localendstrut
-%        \aftergroup\doafterframedbox
-%        \aftergroup\egroup
-%        \let\next=}
-
-% \def\doformatboxNoFormat
-%   {\vbox to \!!heighta
-%      \bgroup
-%        \dopresetformatbox
-%        \hsize\!!widtha
-%        \vsize\!!heighta
-%        \raggedcenter
-%        \vss
-%        \bgroup
-%        \localbegstrut
-%        \aftergroup\localendstrut
-%        \aftergroup\vss
-%        \aftergroup\egroup
-%        \let\next=}
-
-% \def\doformatboxHeight
-%   {\vbox to \!!heighta
-%      \bgroup
-%        \dopresetformatbox
-%        \raggedcommand
-%        \vss
-%        \bgroup
-%        \aftergroup\localendstrut
-%        \aftergroup\vss
-%        \aftergroup\egroup
-%        \localbegstrut
-%        \let\next=}
-
-% \def\doformatboxWidth
-%   {\vbox
-%      \bgroup
-%        \dopresetformatbox
-%        \hsize\!!widtha
-%        \raggedcommand
-%        \dobeforeframedbox
-%        \bgroup
-%        \localbegstrut
-%        \aftergroup\localendstrut
-%        \aftergroup\doafterframedbox
-%        \aftergroup\egroup
-%        \let\next=}
-
-% \def\doformatboxVSize
-%   {\vbox to \!!heighta
-%      \bgroup
-%        \forgetall
-%        \vsize\!!heighta
-%        \vss
-%        \bgroup
-%        \aftergroup\vss
-%        \aftergroup\egroup
-%        \hbox
-%          \bgroup
-%          \aftergroup\egroup
-%          \localstrut
-%          \let\next=}
-
-% \def\doformatboxHSize
-%   {\hbox to \!!widtha
-%      \bgroup
-%        \forgetall
-%        \hss
-%        \localstrut
-%        \bgroup
-%        \aftergroup\hss
-%        \aftergroup\egroup
-%        \let\next=}
-
-% \def\doformatboxNoSize
-%   {\hbox
-%      \bgroup
-%        \localstrut
-%        \let\next=}
 
 \def\doformatboxSomeFormat
   {\vbox to \!!heighta
@@ -2675,7 +2599,7 @@
     %  \insidefloattrue % ? better
        \expanded{\switchtobodyfont[\framedtextparameter{#1}\c!bodyfont]}%
        \startcolor[\framedtextparameter{#1}\c!color]%
-       \localframed[\??kd#1][\c!strut=\v!no,#3]%
+       \localframed[\??kd#1][\c!strut=\v!no,#3]% todo: use delayedstrut
        \bgroup
          \let\\=\endgraf
          \framedtextparameter{#1}\c!inner % oud spul
@@ -3409,6 +3333,7 @@
    \c!bottom=\vss,
    \c!top=,
    \c!strut=\v!yes,
+   \c!autostrut=\v!yes,
    \c!location=\v!normal,
    \c!orientation=,
    \c!setups=]

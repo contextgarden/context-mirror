@@ -1,14 +1,34 @@
 module PDFview
 
-    @files = Hash.new
+    @files      = Hash.new
+    @opencalls  = Hash.new
+    @closecalls = Hash.new
+    @allcalls   = Hash.new
+
+    @method     = 'default' # 'xpdf'
+
+    @opencalls['default']  = "pdfopen --file"
+    @opencalls['xpdf']     = "xpdfopen"
+
+    @closecalls['default'] = "pdfclose --file"
+    @closecalls['xpdf']    = nil
+
+    @allcalls['default']   = "pdfclose --all"
+    @allcalls['xpdf']      = nil
+
+    def PDFview.setmethod(method)
+        @method = method
+    end
 
     def PDFview.open(*list)
         begin
             [*list].flatten.each do |file|
                 filename = fullname(file)
                 if FileTest.file?(filename) then
-                    result = `pdfopen --file #{filename} 2>&1`
-                    @files[filename] = true
+                    if @opencalls[@method] then
+                        result = `#{@opencalls[@method]} #{filename} 2>&1`
+                        @files[filename] = true
+                    end
                 end
             end
         rescue
@@ -20,7 +40,9 @@ module PDFview
             filename = fullname(file)
             begin
                 if @files.key?(filename) then
-                    result = `pdfclose --file #{filename} 2>&1`
+                    if @closecalls[@method] then
+                        result = `#{@closecalls[@method]} #{filename} 2>&1`
+                    end
                 else
                     closeall
                     return
@@ -33,7 +55,9 @@ module PDFview
 
     def PDFview.closeall
         begin
-            result = `pdfclose --all 2>&1`
+            if @allcalls[@method] then
+                result = `#{@allcalls[@method]} 2>&1`
+            end
         rescue
         end
         @files.clear

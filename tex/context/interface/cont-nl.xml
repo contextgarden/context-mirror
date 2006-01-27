@@ -385,20 +385,6 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="setupstrut" file="core-spa.tex">
-  <cd:sequence>
-    <cd:string value="stelstrutin"/>
-  </cd:sequence>
-  <cd:arguments>
-    <cd:keywords optional="yes" list="yes">
-      <cd:constant type="ja" default="yes"/>
-      <cd:constant type="nee"/>
-      <cd:constant type="kap"/>
-      <cd:constant type="cd:text"/>
-    </cd:keywords>
-  </cd:arguments>
-</cd:command>
-
 <cd:command name="setupcolor" file="colo-ini.tex">
   <cd:sequence>
     <cd:string value="stelkleurin"/>
@@ -4885,7 +4871,7 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="placecombinedlist" file="core-lst.tex">
+<cd:command name="placecombinedlist" variant="1" file="core-lst.tex">
   <cd:sequence>
     <cd:string value="plaatssamengesteldelijst"/>
   </cd:sequence>
@@ -5137,7 +5123,7 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="placecombinedlist" generated="yes" file="core-lst.tex">
+<cd:command name="placecombinedlist" variant="2" generated="yes" file="core-lst.tex">
   <cd:sequence>
     <cd:string value="place"/>
     <cd:variable value="combinedlist"/>
@@ -5205,6 +5191,9 @@
         <cd:constant type="links"/>
         <cd:constant type="midden"/>
         <cd:constant type="rechts"/>
+      </cd:parameter>
+      <cd:parameter name="optie">
+        <cd:constant type="midden"/>
       </cd:parameter>
       <cd:parameter name="strut">
         <cd:constant type="ja"/>
@@ -6543,7 +6532,7 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="placeregister" file="core-reg.tex">
+<cd:command name="placeregister" variant="1" file="core-reg.tex">
   <cd:sequence>
     <cd:string value="plaatsregister"/>
   </cd:sequence>
@@ -6583,7 +6572,7 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="placeregister" generated="yes" file="core-reg.tex">
+<cd:command name="placeregister" variant="2" generated="yes" file="core-reg.tex">
   <cd:sequence>
     <cd:string value="place"/>
     <cd:variable value="register"/>
@@ -8916,7 +8905,7 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="defineinteractionmenu" file="core-int.tex">
+<cd:command name="defineinteractionmenu" variant="1" file="core-int.tex">
   <cd:sequence>
     <cd:string value="definieerinteractiemenu"/>
   </cd:sequence>
@@ -9003,7 +8992,7 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="defineinteractionmenu" file="core-int.tex">
+<cd:command name="defineinteractionmenu" variant="1" file="core-int.tex">
   <cd:sequence>
     <cd:string value="definieerinteractiemenu"/>
   </cd:sequence>

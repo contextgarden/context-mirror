@@ -303,6 +303,8 @@
 \installexpander\v!yes    {\convertmeaning }
 \installexpander\v!yes    {\convertmeaning } % something lost ?
 \installexpander\v!strict {\reduceargument }
+\installexpander {utf}    {\reducetoutf}
+%installexpander {xml}    {see xtag-ext}
 
 \def\convertmeaning#1\to % watch the double expansion !
   {\bgroup
@@ -316,6 +318,16 @@
 \def\reduceargument#1\to#2%
   {\begingroup
    \reducetocoding[raw]%
+   \edef\ascii{#1}%
+   \expandafter\endgroup\expandafter\edef\expandafter#2\expandafter{\ascii}}
+
+% \setupindex[expansion=utf]\index{\eacute}
+
+\def\reducetoutf#1\to#2%
+  {\begingroup
+   \reducetocoding[uc]%
+   \let\uchar\uchartoutf
+   \let\unicodechar\numbertoutf
    \edef\ascii{#1}%
    \expandafter\endgroup\expandafter\edef\expandafter#2\expandafter{\ascii}}
 

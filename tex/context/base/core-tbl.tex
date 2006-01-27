@@ -961,9 +961,9 @@
    \globallet\tabulateruleheight\!!zeropoint
    \ExpandFirstAfter\processaction % use \setalignmentswitch instead
      [\getvalue{\??tt\currenttabulate\c!align}]
-     [\v!normal=>\def\@@tabulatealign{0},% = default value
-       \v!right=>\def\@@tabulatealign{1},% chardefs gebruiken
-        \v!left=>\def\@@tabulatealign{2},%
+     [ \v!normal=>\def\@@tabulatealign{0},% = default value
+        \v!right=>\def\@@tabulatealign{1},% chardefs gebruiken
+         \v!left=>\def\@@tabulatealign{2},%
        \v!middle=>\def\@@tabulatealign{3},%
       \s!default=>\def\@@tabulatealign{0},%
       \s!unknown=>\def\@@tabulatealign{0}]%

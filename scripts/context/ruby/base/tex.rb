@@ -128,7 +128,7 @@ class TEX
         'mpyforce', 'forcempy',
         'forcetexutil', 'texutil',
         'globalfile', 'autopath',
-        'purge', 'purgeall', 'autopdf', 'simplerun', 'verbose',
+        'purge', 'purgeall', 'autopdf', 'xpdf', 'simplerun', 'verbose',
         'nooptionfile'
     ]
     @@stringvars = [
@@ -1194,6 +1194,8 @@ class TEX
         orisuffix = jobsuffix # still needed ?
 
         setvariable('nomprun',true) if orisuffix == 'mpx' # else cylic run
+
+        PDFview.setmethod('xpdf') if getvariable('xpdf')
 
         PDFview.closeall if getvariable('autopdf')
 

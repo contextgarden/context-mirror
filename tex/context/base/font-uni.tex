@@ -46,7 +46,7 @@
 \stopmessages
 
 \startmessages  french  library: fonts
-     21: l'utilisation de (pdf)eTeX est plus économe (more save)
+     21: l'utilisation de (pdf)eTeX est plus Ã©conome (more save)
 \stopmessages
 
 \unprotect
@@ -97,7 +97,7 @@
 %D
 %D \starttyping
 %D \def\handleunicodeglyph
-%D   {take actions based on \unicodeone-two-position cq. \nextglyph
+%D   {take actions based on \unicodeone-two-position cq. \nextutoken
 %D    redefine \unicodecharcommand if needed
 %D    expand \insertunicodeglyph
 %D    take some final actions}
@@ -105,84 +105,41 @@
 
 \newcount\unicodeposition
 
-% \def\handleunicodeflowglyph#1#2%
-%   {\def\dohandleunicodeflowglyph{\dodohandleunicodeflowglyphA{#1}{#2}}%
-%    \futurelet\nextglyph\dohandleunicodeflowglyph}
-%
-% %D The first alternative (A) takes a character as second
-% %D argument and is used in the primary handler introduced
-% %D earlier.
-%
-% \def\dodohandleunicodeflowglyphA#1#2%
-%   {\bgroup
-%    \def\unicodeone{#1}%
-%    \edef\unicodetwo{\number\expandafter`\string#2}% takes also <128 !
-%    \unicodeposition=\unicodeone\unicodetwo\relax
-%    \handleunicodeglyph
-%    \egroup}
-%
-% %D The second alternative (B) takes numbers and is used in
-% %D the \type {\uchar} command. This command takes two
-% %D decimal numbers.
-%
-% \def\dodohandleunicodeflowglyphB#1#2%
-%   {\bgroup
-%    \def\unicodeone{#1}%
-%    \def\unicodetwo{#2}%
-%    \unicodeposition=\unicodeone\unicodetwo\relax
-%    \handleunicodeglyph
-%    \egroup}
-%
-% \unexpanded\def\uchar%
-%   {\let\nextglyph\relax
-%    \dodohandleunicodeflowglyphB}
-
 %D The multistep approach is needed to pick up the second
 %D token, since this token can have any value and any
 %D catcode.
-
-%\def\handleunicodeflowglyph#1%
-%  {\bgroup
-%   \edef\unicodeone{#1}%
-%   \@EA\afterassignment\@EA\dohandleunicodeflowglyph
-%     \@EA\chardef\@EA\nexttoken\@EA`\string}
-%
-%\def\dohandleunicodeflowglyph
-%  {\futurelet\nextglyph\dodohandleunicodeflowglyph}
-%
-%\def\dodohandleunicodeflowglyph%
-%  {\edef\unicodetwo{\the\nexttoken}%
-%   \unicodeposition\unicodeone\unicodetwo\relax
-%   \handleunicodeglyph
-%   \egroup}
 
 % the \relax trick prevents eating up the space (needed for
 % korean
 
 \def\handleunicodeflowglyph#1#2%
-  {\bgroup
+  {\begingroup
    \edef\unicodeone{#1}%
-   \@EA\afterassignment\@EA\dohandleunicodeflowglyph
+   \@EA\afterassignment\@EA\dohandleunicodeflowglyph % two redundant ea's
      \@EA\chardef\@EA\nexttoken\@EA`\string#2\relax}
 
 \def\dohandleunicodeflowglyph\relax
-  {\futurelet\nextglyph\dodohandleunicodeflowglyph}
+  {\futurelet\nextutoken\dodohandleunicodeflowglyph}
 
-\def\dodohandleunicodeflowglyph
+\def\dodohandleunicodeflowglyph % todo tex (or maybe no longer)
   {\edef\unicodetwo{\the\nexttoken}%
-   \unicodeposition\unicodeone\unicodetwo\relax
+   \unicodeposition\numexpr\unicodeone*256+\unicodetwo\relax
    \handleunicodeglyph
-   \egroup}
+   \endgroup}
 
 \unexpanded\def\uchar#1#2% use as standalone glyph
-  {\bgroup
-   % wrong: \let\nextglyph\relax % needed for lookahead chinese
+  {\begingroup
    \edef\unicodeone{#1}%
    \edef\unicodetwo{#2}%
-%   \unicodeposition=\unicodeone\unicodetwo\relax
-   \unicodeposition\unicodeone\unicodetwo\relax
+   \unicodeposition\numexpr\unicodeone*256+\unicodetwo\relax
    \handleunicodeglyph
-   \egroup}
+   \endgroup}
+
+\let\nextutoken\relax
+
+\unexpanded\def\lookaheaduchar#1#2%
+  {\def\dolookaheaduchar{\uchar{#1}{#2}\let\nextutoken\relax}%
+   \futurelet\nextutoken\dolookaheaduchar}
 
 %D In \XETEX, unicode support is straightforward, so we
 %D simply output a \type {\char} with a 16||bit number.
@@ -198,63 +155,20 @@
 \endXETEX
 
 \def\dohandleucflowglyph
-%  {\unicodeposition=\unicodeone\unicodetwo\relax
-  {\unicodeposition\unicodeone\unicodetwo\relax
+  {\unicodeposition\numexpr\unicodeone*256+\unicodetwo\relax
    \handleunicodeglyph
-   \egroup}
+   \endgroup}
 
 \unexpanded\def\uc#1#2% used in tricky situations
-  {\bgroup
+  {\begingroup
    \edef\unicodeone{#1}%
    \edef\unicodetwo{#2}%
-   \futurelet\nextglyph\dohandleucflowglyph}
-
-% Alternative, handles [char >127]{number} too.
-%
-% \def\handleunicodeflowglyph#1%
-%   {\bgroup
-%    \edef\unicodeone{#1}%
-%    \futurelet\nexttoken\dohandleunicodeflowglyph}
-%
-% \def\dohandleunicodeflowglyph%
-%   {\ifx\nexttoken\bgroup
-%      \expandafter\dohandleunicodeflowglyphA
-%    \else
-%      \expandafter\dohandleunicodeflowglyphB
-%    \fi}
-%
-% \def\dohandleunicodeflowglyphA#1%
-%   {\chardef\nexttoken=#1\relax
-%    \dodohandleunicodeflowglyph}
-%
-% \def\dohandleunicodeflowglyphB%
-%   {\@EA\afterassignment\@EA\dodohandleunicodeflowglyph
-%      \@EA\chardef\@EA\nexttoken\@EA=\@EA`\string}
-%
-% \def\dodohandleunicodeflowglyph%
-%   {\futurelet\nextglyph\dododohandleunicodeflowglyph}
-%
-% \def\dododohandleunicodeflowglyph%
-%   {\edef\unicodetwo{\the\nexttoken}%
-%    \unicodeposition=\unicodeone\unicodetwo\relax
-%    \handleunicodeglyph
-%    \egroup}
-%
-% Can be used with (the less byte hungry alternative):
-%
-% sub unirecode
-%  { my ($a,$b) = @_ ;
-%    if ((ord($b)<0x80)&&($b !~ /[a-zA-Z0-9]/))
-%      { print "$b" ; ++$recoded ;
-%       #return "\\uc\{" . ord($a) . "\}\{". ord($b) . "\}" }
-%        return "$a\{". ord($b) . "\}" }
-%    else
-%      { return "$a$b" } }
+   \futurelet\nextutoken\dohandleucflowglyph}
 
 \def\insertunicodeglyph
   {\unicodeglyph\unicodeone\unicodetwo}
 
-\let\handleunicodeglyph=\insertunicodeglyph
+\let\handleunicodeglyph\insertunicodeglyph
 
 %D One can use the \type {\unicodeposition} in the macros
 %D that handle pre and post material.
@@ -307,22 +221,43 @@
 
 \let\unicodecharcommand\firstofoneargument
 
-% \unexpanded\def\unicodeglyph#1#2% watch the double mapping
-%   {\bgroup
-%    \bodyfontsize=\unicodescale\bodyfontsize
-%    \font\unicodefont=\truefontname{\truefontname\unicodestyle\lchexnumbers{#1}}
-%      at \currentfontscale\bodyfontsize
-%    \unicodestrut\unicodefont\unicodecharcommand{\char#2\relax}%
-%    \egroup}
-
 \unexpanded\def\unicodeglyph#1#2% watch the double mapping
-  {\bgroup
-   \getvalue{@@\currentucharmapping\strippedcsname\uchar}{#1}{#2}%
+  {\begingroup
+   \getvalue{@@\currentucharmapping\strippedcsname\uchar}{#1}{#2}% map to a to hex font range
    \bodyfontsize\unicodescale\bodyfontsize
-   \font\unicodefont=\truefontname{\truefontname\unicodestyle\unicodeone}
-     at \currentfontscale\bodyfontsize
-   \unicodestrut\unicodefont\unicodecharcommand{\char\unicodetwo\relax}%
-   \egroup}
+   % readable:
+   % \doifelsefontsynonym{\unicodestyle\unicodeone}
+   %   {\font\unicodefont=\truefontname{\unicodestyle\unicodeone}
+   %       at \currentfontscale\bodyfontsize}
+   %   {\font\unicodefont=\truefontname{\truefontname\unicodestyle\unicodeone}
+   %       at \currentfontscale\bodyfontsize}%
+   % unreadable but more efficient:
+   \font\unicodefont=\truefontname{\doifelsefontsynonym{\unicodestyle
+     \unicodeone}\empty\truefontname\unicodestyle\unicodeone}
+      at \currentfontscale\bodyfontsize
+   \unicodestrut % off by default
+   \unicodefont\unicodecharcommand{\char\unicodetwo\relax}%
+   \endgroup}
+
+%D This handler is used by default, for instance in:
+%D
+%D \starttyping
+%D \defineunicodefont [MySwitch] [MyFont] % [strut=no,command=\insertunicodeglyph]
+%D
+%D \definefontsynonym [MyFontRegular40] [Sans]
+%D \definefontsynonym [MyFontBold40]    [SansBold]
+%D
+%D {\MySwitch     \uchar{"40}{`a}}
+%D {\MySwitch \bf \uchar{"40}{`a}}
+%D \stoptyping
+%D
+%D \starttyping
+%D \definefontsynonym [MyFontRegular] [Sans]
+%D \definefontsynonym [MyFontBold]    [SansBold]
+%D \stoptyping
+%D
+%D Is also possible, but in that case the number is appended to the raw font
+%D name!
 
 %D \macros
 %D   {currentucharmapping,defineucharmapping}
@@ -357,15 +292,13 @@
 
 \def\dorepositionunicode
   {\dosetdivision\unicodeposition{256}\scratchcounter
-  %\DoDiv\unicodeposition by256to\scratchcounter
    \advance\scratchcounter \plusone
    \edef\unicodeone{\ifnum\scratchcounter<10 0\fi\the\scratchcounter}%
    \dosetmodulo\unicodeposition{256}\scratchcounter
-  %\DoMod\unicodeposition by256to\scratchcounter
    \edef\unicodetwo{\the\scratchcounter}}
 
 %D \macros
-%D   {setunicodestrut, setunicodescale, nextglyph,
+%D   {setunicodestrut, setunicodescale, nextutoken,
 %D    handleunicodeglyph, insertunicodeglyph}
 %D
 %D A careful analysis of the previous macros, learns that the
@@ -405,15 +338,22 @@
      \let\unicodestrut\empty
    \fi\fi}
 
+\def\resetunicodestrut
+  {\let\unicodestrut\empty}
+
 %D The additional scaling and strut default to:
 
 \setunicodescale{1}
 \setunicodestrut{1}{1}
 
+%D But better is not to have a strut added by default:
+
+\resetunicodestrut
+
 %D The actual code for the additional actions as well as
 %D specific spacing is handled outside these routines. The
 %D character after the two that are under treatment is
-%D available in \type {\nextglyph}.
+%D available in \type {\nextutoken}.
 
 %D \macros
 %D   {defineunicodefont, setupunicodefont}
@@ -475,7 +415,7 @@
         {\setupunicodefont[#1][#3]}
         {\copyparameters
            [\??uc#1][\??uc#3]
-           [\c!height,\c!depth,\c!scale,\c!commands,
+           [\c!height,\c!depth,\c!scale,\c!commands,\c!strut,
             \c!interlinespace,\c!command,\c!conversion]}}%
    \doifelsenothing{#2}
      {\setvalue{#1}{[uc font #1 undefined]}}
@@ -495,7 +435,7 @@
   {\doifundefined{\??uc#1\c!command}
      {\copyparameters
         [\??uc#1][\??uc\s!default]
-        [\c!height,\c!depth,\c!scale,\c!commands,
+        [\c!height,\c!depth,\c!scale,\c!commands,\v!strut,
          \c!interlinespace,\c!command,\c!conversion]}%
    \getparameters[\??uc#1][#2]}
 
@@ -508,7 +448,11 @@
    \def\handleunicodeglyph       {\getvalue{\??uc#1\c!command}}%
    \doifnot\currentregime{utf}{\enableregime[unicode]}%
    % the following \relax's are realy needed
-   \doifvalue{\??uc#1\c!interlinespace}\v!yes\setupinterlinespace\relax
+   \doifvalue{\??uc#1\c!interlinespace}\v!yes
+      \setupinterlinespace\relax
+   \doifvalue{\??uc#1\c!strut}\v!yes
+      {\setunicodestrut\unicodeheight\unicodedepth}
+      {\resetunicodestrut}%
    \getvalue{\??uc#1\c!commands}\relax}
 
 %D \macros
@@ -533,7 +477,8 @@
   [\c!height=1,
    \c!depth=1,
    \c!scale=1,
-   \c!interlinespace=\v!yes,
+   \c!strut=\v!no,
+   \c!interlinespace=\v!no,
    \c!command=\insertunicodeglyph,
    \c!conversion=\number]
 

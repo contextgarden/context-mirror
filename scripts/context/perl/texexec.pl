@@ -151,6 +151,7 @@ my $PdfCombine       = 0;
 my $PdfOpen          = 0;
 my $PdfClose         = 0;
 my $AutoPdf          = 0;
+my $UseXPdf          = 0;
 my $PrintFormat      = 'standard';
 my $ProducePdfT      = 0;
 my $ProducePdfM      = 0;
@@ -312,6 +313,7 @@ my $MakeMpy = '';
     "pdfclose"       => \$PdfClose,
     "pdfopen"        => \$PdfOpen,
     "autopdf"        => \$AutoPdf,
+    "xpdf"           => \$UseXPdf,
     "modefile=s"     => \$ModeFile,         # additional modes file
     "globalfile"     => \$GlobalFile,
     "nomapfiles"     => \$NoMapFiles,
@@ -406,6 +408,16 @@ if ( $ProducePdfXTX ) {
 
 if ($AutoPdf) {
     $PdfOpen = $PdfClose = 1 ;
+}
+
+my $PdfOpenCall = "" ;
+
+if ($PdfOpen) {
+    $PdfOpenCall = "pdfopen --file" ;
+}
+
+if ($UseXPdf && !$dosish) {
+    $PdfOpenCall = "xpdfopen" ;
 }
 
 # this is our hook into paranoid path extensions, assumes that
@@ -1953,11 +1965,11 @@ sub RunConTeXtFile {
         {
             unlink "$JobName.$JobSuffix";
         }
-        if ((!$Problems) && ($PdfOpen)) {
+        if ((!$Problems) && ($PdfOpen) && ($PdfOpenCall)) {
             if ($Result ne '') {
-                System("pdfopen --file $Result.pdf") if -f "$Result.pdf"
+                System("$PdfOpenCall $Result.pdf") if -f "$Result.pdf"
             } else {
-                System("pdfopen --file $JobName.pdf") if -f "$JobName.pdf"
+                System("$PdfOpenCall $JobName.pdf") if -f "$JobName.pdf"
             }
         }
     }

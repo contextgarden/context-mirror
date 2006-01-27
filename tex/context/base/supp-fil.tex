@@ -617,11 +617,17 @@
    \catcode`\\=\@@escape
    \catcode`\{=\@@begingroup
    \catcode`\}=\@@endgroup
-   \catcode`\%=\@@comment}
+   \catcode`\%=\@@comment
+   \pushendofline
+   \restoreendofline}
 
 \def\stopreadingfile
-  {\getvalue{\string\readingfilelevel::\readingfilelevel}%
+  {\popendofline
+   \getvalue{\string\readingfilelevel::\readingfilelevel}%
    \doglobal\decrement\readingfilelevel}
+
+\let\normalstartreadingfile\startreadingfile
+\let\normalstopreadingfile \stopreadingfile
 
 %D \macros
 %D   {splitfilename}

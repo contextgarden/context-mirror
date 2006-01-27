@@ -118,7 +118,7 @@
 \startmessages  french  library: encodings
   title: encoding
       1: encodage --
-      2: l'encodage -- est chargé
+      2: l'encodage -- est chargÃ©
       3: encodage -- inconnu
 \stopmessages
 
@@ -1184,8 +1184,9 @@
 
 \def\definecharacter#1 #2 %
   {\ifundefined{#1}\setvalue{#1}{\dohandlecharacter{#1}}\fi
+%    \doifnumberelse{\string#2}
    \doifnumberelse{\string#2}
-     {\setevalue{\characterprefix\characterencoding\string#1}{\dochar{#2}}%
+     {\setvalue{\characterprefix\characterencoding\string#1}{\dochar{#2}}%
       \doautosetregime{#1}{#2}}
      {\setvalue{\characterprefix\characterencoding\string#1}{#2}}}
 
@@ -1654,7 +1655,19 @@
 %D The next few macros are experimental and needed for unicoded
 %D chinese characters.
 
-\def\defineuclass #1 #2 #3 {\setvalue{uc#2#3}{#1}}
+\beginETEX
+    \def\defineuclass #1 #2 #3 %
+      {\setvalue{uc\the\numexpr#2*256+#3\relax}{#1}}
+\endETEX
+
+\beginTEX
+    \def\defineuclass #1 #2 #3 %
+      {\scratchcounter256\relax
+       \multiply\scratchcounter#2\relax
+       \advance\scratchcounter#3\relax
+       \setvalue{uc\the\scratchcounter}{#1}}
+\endTEX
+
 \def\defineudigit #1 #2 #3 {\setvalue{\characterencoding uc#1}{\uchar{#2}{#3}}}
 
 %D It may look strange, but for the moment, we want the encoding

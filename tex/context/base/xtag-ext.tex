@@ -310,7 +310,7 @@
   {\csname\??xp#1\endcsname}
 
 \appendtoks
-  \defineXMLargument[\XMLprocessingparameter\c!escape]\getXMlentity
+  \defineXMLargument[\XMLprocessingparameter\c!escape]\getXMLentity
 \to \aftersetupXMLprocessing
 
 \setupXMLprocessing
@@ -325,12 +325,25 @@
    \def\getXMLdeccharacter##1{\numbertoutf{##1}}%
    \def\getXMLentity##1{<e>##1</e>}%
    \def<{\noexpand<}%
+   \ifcase\xmlexpandmode
+   \or
+      % 1 = default
+   \or
+      % 2 = keep utf
+      \keeputfcharacters % new, needed for chinese and such
+   \fi
+   \let\uchar\relax
+   \let\unicodechar\relax
    \xdef\@@globalexpanded{#1}%
    \endgroup
    \convertcommand\@@globalexpanded\to}
 
 \egroup
 
-\installexpander \v!xml {\expandxmlargument}
+\chardef\xmlexpandmode\plusone
+
+\installexpander {xml}     {\chardef\xmlexpandmode\plusone\expandxmlargument}
+\installexpander {xml:cmd} {\chardef\xmlexpandmode\plusone\expandxmlargument}
+\installexpander {xml:utf} {\chardef\xmlexpandmode\plustwo\expandxmlargument}
 
 \protect \endinput

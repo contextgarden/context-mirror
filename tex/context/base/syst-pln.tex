@@ -374,21 +374,15 @@
 
 %D Extra dimension parameters.
 
-\newskip  \bigskipamount
-\newdimen \jot
-\newskip  \medskipamount
-\newskip  \normalbaselineskip
-\newskip  \normallineskip
-\newdimen \normallineskiplimit
-\newskip  \smallskipamount
+\newskip  \bigskipamount          \bigskipamount       = 12pt plus 4pt minus 4pt
+\newskip  \medskipamount          \medskipamount       =  6pt plus 2pt minus 2pt
+\newskip  \smallskipamount        \smallskipamount     =  3pt plus 1pt minus 1pt
 
-\bigskipamount       = 12pt plus 4pt minus 4pt
-\jot                 =  3pt
-\medskipamount       =  6pt plus 2pt minus 2pt
-\normalbaselineskip  = 12pt
-\normallineskip      =  1pt
-\normallineskiplimit =  0pt
-\smallskipamount     =  3pt plus 1pt minus 1pt
+\newskip  \normalbaselineskip     \normalbaselineskip  = 12pt
+\newskip  \normallineskip         \normallineskip      =  1pt
+\newdimen \normallineskiplimit    \normallineskiplimit =  0pt
+
+\newdimen \jot                    \jot                 =  3pt
 
 %D The following shortcuts are rather standard:
 
@@ -595,7 +589,7 @@
   {\advance\leftskip \parindent
    \advance\rightskip\parindent}
 
-%D Useful, used too,  but sometimes dangerous:
+%D Useful, used too, but sometimes dangerous:
 
 \def\leavevmode{\unhbox\voidb@x}
 

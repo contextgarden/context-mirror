@@ -1144,6 +1144,20 @@
 \def\convertvalue#1\to
   {\expandafter\convertcommand\csname#1\endcsname\to}
 
+%D \macros
+%D   {convertasciiafter}
+%D
+%D Sometimes we need to convert an argument to a string (letters
+%D only), for instance when we compare it with another string:
+%D
+%D \starttyping
+%D \convertasciiafter\doifinstringelse{em}{\ascii}{...}
+%D \stoptyping
+
+\def\convertasciiafter#1#2%
+  {\convertargument#2\to\asciiafter
+   \@EA#1\@EA{\asciiafter}}
+
 %D In \ETEX\ we can use \type {\detokenize} and gain some
 %D speed, but in general far less that 1\% for \type
 %D {\convertargument} and nil for \type {\convertcommand}.

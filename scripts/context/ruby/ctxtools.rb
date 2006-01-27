@@ -191,7 +191,7 @@ class Commands
         interfaces = @commandline.arguments
 
         if interfaces.empty? then
-            interfaces = ['en', 'cz','de','it','nl','ro']
+            interfaces = ['en','cz','de','it','nl','ro','fr']
         end
 
         interfaces.each do |interface|
@@ -289,7 +289,7 @@ class Commands
         interfaces = @commandline.arguments
 
         if interfaces.empty? then
-            interfaces = ['cz','de','it','nl','ro']
+            interfaces = ['cz','de','it','nl','ro','fr']
         else
             interfaces.delete('en')
         end

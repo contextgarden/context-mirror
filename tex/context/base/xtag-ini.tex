@@ -1857,7 +1857,8 @@
    \@EA\let\csname\@@XMLelement:#1/\endcsname\donothing}
 
 \long\gdef\dododefineXMLnestedenvironment#1#2#3%
-  {\long\@EA\def\csname\@@XMLelement:#1\endcsname{\getXMLgroupedenvironment{#1}{#2}{#3}}}
+  {\long\@EA\def\csname\@@XMLelement:#1\endcsname{\getXMLgroupedenvironment{#1}{#2}{#3}}%
+   \long\@EA\def\csname\@@XMLelement:#1/\endcsname{#2#3}}
 
 \long\gdef\dododefineXMLnestedargument#1#2%
   {\long\@EA\def\csname\@@XMLelement:#1\endcsname{\getXMLgroupedargument{#1}{#2}}%
@@ -2253,6 +2254,12 @@
    \xdef\@@XML@@string{\csname\@@XMLdata:#2\endcsname}%
    \egroup
    \convertcommand\@@XML@@string\to#1}
+
+\def\defXMLpar#1#2#3% to be documented
+  {\@EA\def\@EA#1\csname\ifcsname\@@XMLvariable:#2:#3\endcsname\@@XMLvariable:#2:#3\else\s!empty\fi\endcsname}
+
+\def\setvalueXMLpar#1#2#3% to be documented
+  {\@EA\let\csname#1\@EA\endcsname\csname\ifcsname\@@XMLvariable:#2:#3\endcsname\@@XMLvariable:#2:#3\else\s!empty\fi\endcsname}
 
 \def\XMLshow#1%
   {\showvalue{\@@XMLdata:#1}}

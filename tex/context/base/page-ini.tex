@@ -245,31 +245,31 @@
 
 \startmessages  french  library: systems
   title: system
-      1: chargement de fichier utilitaire reporté (typemode)
-      2: -- chargé
+      1: chargement de fichier utilitaire reportÃ© (typemode)
+      2: -- chargÃ©
 %     3: try LaTeX
-      4: la commande -- est déjà définie
-      5: module -- chargé
-      6: module -- non trouvé
-      7: module -- déjà chargé
-      8: nouvelle version de fichier utilitaire, seconde passe nécessaire
-      9: -- non trouvé/traité
+      4: la commande -- est dÃ©jÃ  dÃ©finie
+      5: module -- chargÃ©
+      6: module -- non trouvÃ©
+      7: module -- dÃ©jÃ  chargÃ©
+      8: nouvelle version de fichier utilitaire, seconde passe nÃ©cessaire
+      9: -- non trouvÃ©/traitÃ©
      10: n'utilisez pas em dans --
      11: construction util simple
-     12: le fichier utilitaire n'est pas trié, utilise texutil
+     12: le fichier utilitaire n'est pas triÃ©, utilise texutil
      13: marquage -- defini --
-     14: nouvellepage forcée dans la liste à --
+     14: nouvellepage forcÃ©e dans la liste Ã  --
      15: sauvegarde du tampon (buffer) --
      16: composition du tampon (buffer) --
      17: composition textuelle du tampon (buffer) --
      18: le synonyme -- -- n'existe pas
-     19: signification (synonymes) de -- chargée
-     20: signification (tris) de -- chargée
-     21: pas de données utilitaires chargées
+     19: signification (synonymes) de -- chargÃ©e
+     20: signification (tris) de -- chargÃ©e
+     21: pas de donnÃ©es utilitaires chargÃ©es
      22: utilise un fichier utilitaire valide
-     23: -- arrangé à --
+     23: -- arrangÃ© Ã  --
      24: blocsflottants
-     25: Réferences
+     25: RÃ©ferences
      26: Registres
      27: Version
 \stopmessages
@@ -374,12 +374,12 @@
 
 \startmessages  french  library: layouts
   title: layout
-      1: hauteurtexte adaptée avec -- à la page --
+      1: hauteurtexte adaptÃ©e avec -- Ã  la page --
       2: -- times postponed text placed
       3: -- times text postponed
       4: blocsmarge actifs
       5: blocsmarge inactifs
-      6: jeu de souspage -- traité (taille --)
+      6: jeu de souspage -- traitÃ© (taille --)
 %      7: calculating logospace
 %      8: calculating backgrounds
      10: -- and -- don't add up to 1.0
@@ -611,17 +611,17 @@
   title: columns
       1: seules -- colonnes possibles
       2: utilisez \string\filbreak\space en tant qu'alternative
-      3: problèmes, désactive l'équilibrage
-      4: flottant en partie supérieure pas encore supporté
-      5: flottant en partie inférieure pas encore supporté
-      6: -- flottant(s) reporté(s)postponed
-      7: équilibrage abandonné après 100 pas
-      8: équilibré en -- pas
-      9: vérification des irrégularités
+      3: problÃ¨mes, dÃ©sactive l'Ã©quilibrage
+      4: flottant en partie supÃ©rieure pas encore supportÃ©
+      5: flottant en partie infÃ©rieure pas encore supportÃ©
+      6: -- flottant(s) reportÃ©(s)postponed
+      7: Ã©quilibrage abandonnÃ© aprÃ¨s 100 pas
+      8: Ã©quilibrÃ© en -- pas
+      9: vÃ©rification des irrÃ©gularitÃ©s
      10: (moins de) 1 ligne restante
-     11: flottant mis à la largeur de la colonne
-     12: flottant déplacé à la colonne suivante / --
-     13: flottant large déplacé dans la partie supérieure de la colonne
+     11: flottant mis Ã  la largeur de la colonne
+     12: flottant dÃ©placÃ© Ã  la colonne suivante / --
+     13: flottant large dÃ©placÃ© dans la partie supÃ©rieure de la colonne
 \stopmessages
 
 \ifx\dosetuplayout\undefined % overloaded in page-lay !
@@ -1557,8 +1557,7 @@
 
 % was: \resetsectionmarks\firstsection, zie \handlepagebreak
 
-\def\page  {\pagebreak} % the short form of \pagebreak (mult-com one)
-\def\page{\pagebreak} % for the moment, keep this one
+\def\page{\pagebreak} % the short form of \pagebreak (mult-com one)
 
 \def\resetpagebreak
   {\global\paginageblokkeerdfalse}
@@ -1586,7 +1585,7 @@
 %   {\flushnotes           % see head's; watch how we group
 %    \doifsomething{#1}{\bgroup\executepagebreakhandlers{#1}\egroup}}
 
-\def\pagebreak
+\unexpanded\def\pagebreak
   {\dosingleempty\dopagebreak}
 
 \def\dopagebreak[#1]% so, page ornaments are reset after a pagebreak command, unless set

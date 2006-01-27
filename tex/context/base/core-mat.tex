@@ -268,7 +268,8 @@
    \fi
    \advance\displaywidth-\displayindent
    \advance\displaywidth-\rightdisplayskip
-   \advance\displaywidth-\rightdisplaymargin}
+   \advance\displaywidth-\rightdisplaymargin
+   \hsize\displaywidth} % new, else overfull in itemize
 
 \newif\ifoptimizedisplayspacing
 
@@ -294,7 +295,12 @@
    \switchtoformulabodyfont[#2]%
    \parskip\formulaparskip
    \def\currentformula{#1}%
-   \doifsomething{\formulaparameter\c!margin}% so we test first
+% may look better in itemizations
+\doif{\formulaparameter\c!option}\v!middle
+  {\def\leftdisplayskip{\zeropoint}%
+   \def\rightdisplayskip{\zeropoint}}%
+% this was an experiment
+   \doif{\formulaparameter\c!margin}% so we test first
      {\dosetleftskipadaption{\formulaparameter\c!margin}%
       \edef\leftdisplaymargin{\the\leftskipadaption}}% overloaded
    \long\def\dostartformula##1{\bgroup\let\dostopformula\egroup}%
@@ -549,29 +555,79 @@
   {\setfalse\incrementformulanumber
    \dodoubleempty\doplaceformula}
 
+% \def\doplaceformula[#1][#2]% #2 = dummy, gobbles spaces
+%   {\def\redoplaceformula
+%      {\bgroup\def\dostartformula####1{\relax}%
+%       \ifx\next\bgroup
+%         \@EA\moreplaceformula % [ref]{}
+%       \else
+%         \expandafter\convertargument\e!start\to\asciiA % actually, \next's meaning is \dostartformula
+%         \expandafter\convertargument\next   \to\asciiB
+%         \ExpandBothAfter\doifincsnameelse\asciiA\asciiB
+%           {\egroup \@EA\dodoplaceformula}% [ref]\start
+%           {\egroup \@EA\dispplaceformula}% [ref]$$
+%       \fi[#1]{}}%
+%    \futurelet\next\redoplaceformula}
+%
+% \long\def\moreplaceformula[#1]#2#3#4% #2 dummy #4 gobbles spaces
+%   {\def\redoplaceformula
+%      {\expandafter\convertargument\e!start\to\asciiA
+%       \expandafter\convertargument\next   \to\asciiB
+%       \ExpandBothAfter\doifincsnameelse\asciiA\asciiB
+%         {\egroup \dodoplaceformula}% [ref]\start
+%         {\egroup \dispplaceformula}% [ref]$$
+%       [#1]{#3}}%
+%    \futurelet\next\redoplaceformula#4}
+%
+% BEGIN OF PATCH (CORE-MAT.TEX)
+
 \def\doplaceformula[#1][#2]% #2 = dummy, gobbles spaces
   {\def\redoplaceformula
-     {\bgroup\def\dostartformula####1{\relax}%
+     {\bgroup
       \ifx\next\bgroup
-        \@EA\moreplaceformula % [ref]{}
+        \egroup \@EA\moreplaceformula % [ref]{}
       \else
-        \expandafter\convertargument\e!start\to\asciiA
-        \expandafter\convertargument\next   \to\asciiB
-        \ExpandBothAfter\doifincsnameelse\asciiA\asciiB
-          {\egroup \@EA\dodoplaceformula}% [ref]\start
-          {\egroup \@EA\dispplaceformula}% [ref]$$
+        \def\nextnext{$}%
+        \ifx\next\nextnext
+          \egroup \@EAEAEA\dispplaceformula % [ref]$$
+        \else
+          \egroup \@EAEAEA\dodoplaceformula % [ref]\start
+        \fi
       \fi[#1]{}}%
    \futurelet\next\redoplaceformula}
 
 \long\def\moreplaceformula[#1]#2#3#4% #2 dummy #4 gobbles spaces
   {\def\redoplaceformula
-     {\expandafter\convertargument\e!start\to\asciiA
-      \expandafter\convertargument\next   \to\asciiB
-      \ExpandBothAfter\doifincsnameelse\asciiA\asciiB
-        {\egroup \dodoplaceformula}% [ref]\start
-        {\egroup \dispplaceformula}% [ref]$$
+     {\bgroup
+      \def\nextnext{$}%
+      \ifx\next\nextnext
+        \egroup \@EA\dispplaceformula % [ref]$$
+      \else
+        \egroup \@EA\dodoplaceformula % [ref]\start
+      \fi
       [#1]{#3}}%
    \futurelet\next\redoplaceformula#4}
+
+% END OF PATCH
+
+\def\startformulas#1\stopformulas % new / to be internationalized
+  {\bgroup
+   \forgetdisplayskips
+   \startdisplaymath
+   \setlocalhsize
+   \long\def\startformula##1\stopformula{\advance\scratchcounter\plusone}%
+   \scratchcounter\zerocount #1% preroll
+   \divide \hsize \scratchcounter
+   \hbox to \localhsize \bgroup
+     \hss
+     \def\normalstartformula{\vskip-\strutdepth$$}% i hate this
+     \def\normalstopformula {$$}%
+     \def\startformula{$\vcenter\bgroup\normalstartformula}%
+     \def\stopformula {\normalstopformula\egroup$\hss}%
+     #1%
+     \egroup
+     \stopdisplaymath
+   \egroup}
 
 \def\dispplaceformula[#1]#2$$#3$$%
   {\dodoplaceformula[#1]{#2}\dostartformula{}#3\dostopformula}
@@ -1420,6 +1476,588 @@
 %D macros, we say:
 
 \appendtoks \let\text\mathtext \to \everymathematics
+
+%D \macros
+%D   {\definemathalignment, setupmathalignment, startmathalignment}
+%D
+%D Modules may provide additional alignment features. The following
+%D mechanisms are provided by the core.
+
+% n>1 #### needed, strange # interaction in recurse
+
+\def\presetdisplaymath{\displ@y} % some day i will relocate the plain stuff
+
+\def\buildeqalign
+  {\scratchtoks\emptytoks
+   \dorecurse{\mathalignmentparameter\c!m}
+     {\ifnum\recurselevel>\plusone
+        \appendtoks
+          \tabskip\mathalignmentparameter\c!distance&\tabskip\zeropoint
+        \to\scratchtoks
+      \fi
+      \expanded{\scratchtoks{\the\scratchtoks\the\!!toksa}}%
+      \dorecurse{\numexpr\mathalignmentparameter\c!n-\plusone\relax}
+        {\expanded{\scratchtoks{\the\scratchtoks\the\!!toksb}}}}%
+   \expanded{\scratchtoks{\the\scratchtoks\the\!!toksc}}}
+
+\def\forgetalign
+  {\tabskip\zeropoint\everycr\emptytoks}
+
+\let\firstineqalign\empty
+\let\nextineqalign \empty
+\let\leftofeqalign \empty
+\let\rightofeqalign\empty
+
+\def\mathineqalign#1{$\forgetalign\displaystyle{{}#1{}}$}
+\def\textineqalign#1{$\forgetalign#1$}
+
+\def\eqalign#1% why no halign here, probably because of displaywidth
+  {\!!toksa{\strut\hfil$\displaystyle{##}$}%
+   \!!toksb{&$\displaystyle{{}##{}}$\hfil}%
+   \!!toksc\emptytoks
+   \buildeqalign
+   \null\,\vcenter
+     {\openup{.25\bodyfontsize}% was: \openup\jot
+      \mathsurround\zeropoint
+      \expandafter \ialign \expandafter {\the\scratchtoks\crcr#1\crcr}%
+   }\,}
+
+% preamble is scanned for tabskips so we need the span to prevent an error message
+
+\def\prepareeqalignno
+  {\!!toksa{\strut\firstineqalign\hfil\leftofeqalign\span\mathineqalign{##}\rightofeqalign\tabskip\zeropoint}%
+   \!!toksb{&\nextineqalign\leftofeqalign\span\mathineqalign{##}\rightofeqalign\tabskip\zeropoint}%
+   \!!toksc{\hfil\tabskip\centering&\llap{\span\textineqalign{##}}\tabskip\zeropoint}%
+   \buildeqalign
+   \presetdisplaymath
+   \tabskip\centering}
+
+\def\prepareleqalignno
+  {\!!toksa{\strut\firstineqalign\hfil\leftofeqalign\span\mathineqalign{##}\rightofeqalign\tabskip\zeropoint}%
+   \!!toksb{&\nextineqalign\leftofeqalign\span\mathineqalign{##}\rightofeqalign\tabskip\zeropoint}%
+   \!!toksc{\hfil\tabskip\centering&\kern-\displaywidth\rlap{\span\textineqalign{##}}\tabskip\displaywidth}%
+   \buildeqalign
+   \presetdisplaymath
+   \tabskip\centering}
+
+\chardef\eqalignmode=1
+
+\def\eqalignno#1%
+  {\prepareeqalignno
+   \halign \ifcase\eqalignmode \or to \displaywidth \fi \@EA {\the\scratchtoks\crcr#1\crcr}}
+
+\def\leqalignno#1%
+  {\prepareleqaligno
+   \halign \ifcase\eqalignmode \or to \displaywidth \fi \@EA {\the\scratchtoks\crcr#1\crcr}}
+
+\def\aligneqalignno
+  {\prepareeqalignno
+   \halign \ifcase\eqalignmode \or to \displaywidth \fi \@EA \bgroup\the\scratchtoks\crcr}
+
+\def\alignleqalignno
+  {\prepareleqalignno
+   \halign \ifcase\eqalignmode \or to \displaywidth \fi \@EA \bgroup\the\scratchtoks\crcr}
+
+\def\finishalignno
+  {\crcr\egroup}
+
+%D Here we implement teh user interface part.
+
+\def\setupmathalignment
+  {\dodoubleempty\dosetupmathalignment}
+
+\def\dosetupmathalignment[#1][#2]%
+  {\ifsecondargument
+     \getparameters[\??eq#1][#2]%
+   \else
+     \getparameters[\??eq][#1]%
+   \fi}
+
+\let\currentmathalignment\empty
+
+\def\mathalignmentparameter#1%
+  {\executeifdefined{\??eq\currentmathalignment#1}{\executeifdefined{\??eq#1}\empty}}
+
+\setupmathalignment
+  [\c!n=2,
+   \c!m=1,
+   \c!distance=1em]
+
+\def\numberedeqalign
+  {\doifelse\@@fmlocation\v!left\alignleqalignno\aligneqalignno}
+
+\def\doxxdoubleempty#1#2%
+  {\ifx#2[\expandafter\dodoxxdoubleempty\else\expandafter\noxxdoubleempty\fi#1#2}
+
+\def\dodoxxdoubleempty#1[#2]#3%
+  {\ifx#3[\else\expandafter\nonoxxdoubleempty\fi#1[#2]#3}
+
+\def\noxxdoubleempty      #1{#1[][]}
+\def\nonoxxdoubleempty#1[#2]{#1[#2][]}
+
+\newcount\eqaligncolumn
+
+\def\firstineqalign{\global\eqaligncolumn\plusone}
+\def\nextineqalign {\global\advance\eqaligncolumn\plusone}
+\def\leftofeqalign {\getvalue{\??eq:\v!left :\number\eqaligncolumn}}
+\def\rightofeqalign{\getvalue{\??eq:\v!right:\number\eqaligncolumn}}
+
+\def\doseteqaligncolumn#1%
+  {\letvalue{\??eq:\v!left :\number\eqaligncolumn}\empty
+   \letvalue{\??eq:\v!right:\number\eqaligncolumn}\empty
+   \doif{#1}\v!left  {\letvalue{\??eq:\v!right:\number\eqaligncolumn}\hfill}%
+   \doif{#1}\v!right {\letvalue{\??eq:\v!left :\number\eqaligncolumn}\hfill}%
+   \doif{#1}\v!middle{\letvalue{\??eq:\v!right:\number\eqaligncolumn}\hfill
+                      \letvalue{\??eq:\v!left :\number\eqaligncolumn}\hfill}}
+
+\def\dodoalignNC
+  {\gdef\doalignNC##1{&##1}}
+
+\def\doalignNR[#1][#2]%
+  {\doifsomething{#1}
+     {\doifelse{#1}{+}
+        {\doformulanumber[][#2][]{}}
+        {\doformulanumber[#1][#2][]{}}}%
+   \crcr}
+
+% todo: pop in cell
+
+\def\dostartmathalignment[#1][#2]%
+  {\begingroup
+   \pushmacro\doalignNC
+   \edef\currentmathalignment{#1}%
+   \doifassignmentelse{#2}{\setupmathalignment[#1][#2]}\donothing
+   \def\NC{\doalignNC}%
+   \global\let\doalignNC\dodoalignNC
+   \def\EQ{&=}%
+   \def\NR{&\global\let\doalignNC\dodoalignNC\doxxdoubleempty\doalignNR}%
+   % amstex compatibility mode: (ugly, will disappear)
+   \def\notag{\def\\{&\crcr}}%
+   \doifelse{#2}{*}{\def\\{&\crcr}}{\def\\{&\doalignNR[+][]\crcr}}%
+   % end of compatibility mode
+   \eqaligncolumn\zerocount
+   \processcommacommand[\mathalignmentparameter\c!align]{\advance\eqaligncolumn\plusone\doseteqaligncolumn}%
+   % the real action
+   \global\eqaligncolumn\plusone
+   \numberedeqalign}
+
+\def\dostopmathalignment
+  {\finishalignno
+   \popmacro\doalignNC
+   \endgroup}
+
+\def\definemathalignment
+  {\dodoubleempty\dodefinemathalignment}
+
+\def\dodefinemathalignment[#1]% [#2]%
+  {\setvalue{\e!start#1}{\dodoubleempty\dostartmathalignment[#1]}%
+   \setvalue{\e!stop #1}{\dostopmathalignment}%
+   \setupmathalignment[#1]}% [#2]
+
+%D For the moment we only provide english commands.
+
+\definemathalignment[align]            % default case (this is what amstex users expect)
+\definemathalignment[\v!mathalignment] % prefered case (this is cleaner, less clashing)
+
+% \def\startsplit
+%   {\startalign[*]} % no number by default
+%
+% \def\stopsplit
+%   {&\doalignNR[+][]\crcr % for a number on last line
+%    \stopalign}
+
+%D \startbuffer
+%D \placeformula \startformula \eqalignno {
+%D  a &= b & \formulanumber \cr
+%D  c &= d \cr
+%D    &= e \cr
+%D    &= f & \formulanumber
+%D } \stopformula
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
+%D
+%D \startbuffer
+%D \placeformula \startformula \startalign
+%D \NC  a \EQ b \NR[+]
+%D \NC  c \EQ d \NR
+%D \NC    \EQ f \NR[for:demo-a-1]
+%D \NC    \EQ g \NR[for:demo-a-2][a]
+%D \NC    \EQ h \NR[for:demo-a-3][b]
+%D \NC    \EQ i \NR
+%D \stopalign \stopformula
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
+%D
+%D \startbuffer
+%D \placeformula \startformula \startalign
+%D \NC a \EQ b \NR[+]
+%D \NC c \EQ d \NR
+%D \NC   \EQ f \NR
+%D \NC   \EQ g \NR
+%D \NC   \EQ h \NR
+%D \NC   \EQ i \NR[+]
+%D \stopalign \stopformula
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
+%D
+%D \startbuffer
+%D \placeformula \startformula \startalign
+%D a &= b \\
+%D c &= d \notag \\
+%D   &= e \notag \\
+%D   &= f \\
+%D \stopalign \stopformula
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
+%D
+%D \startbuffer
+%D \placeformula \startformula \startalign
+%D \NC  a \NC \eq  b \NR[+]
+%D \NC  c \NC \neq d \NR
+%D \NC    \NC \neq f \NR[for:demo-b-1]
+%D \NC    \NC \geq g \NR[for:demo-b-2][a]
+%D \NC    \NC \leq h \NR[for:demo-b-3][b]
+%D \NC    \NC \neq i \NR
+%D \stopalign \stopformula
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
+%D
+%D \startbuffer
+%D \placeformula \startformula \startalign[*]
+%D a &= b \\
+%D c &= d \\
+%D   &= e \\
+%D   &= f \\
+%D \stopalign \stopformula
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
+%D
+%D \startbuffer
+%D \placeformula \startformula \startalign
+%D     x &= y \\
+%D     a &= b \\
+%D \stopalign \stopformula
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
+%D
+%D \startbuffer
+%D \placeformula \startformula \startalign[m=3]
+%D     x &= y & x &= y & z &= t \\
+%D     a &= b & p &= q & w &= s \\
+%D \stopalign \stopformula
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
+%D
+%D \startbuffer
+%D \placeformula \startformula \startalign[m=3,distance=0pt]
+%D     x &= y &= x &= y &= z &= t \\
+%D     a &= b &= p &= q &= w &= s \\
+%D \stopalign \stopformula
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
+%D
+%D \startbuffer
+%D \placeformula \startformula \startalign[n=5,distance=0pt]
+%D     x &= yy &= xx &= yy &= zz \\
+%D     a &= b  &= p  &= q  &= w  \\
+%D \stopalign \stopformula
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
+%D
+%D \startbuffer
+%D \placeformula \startformula \startalign[n=3,align={left,middle,right}]
+%D \NC       l \NC = \NC r     \NR
+%D \NC    left \NC = \NC right \NR
+%D \stopalign \stopformula
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
+%D
+%D \startbuffer
+%D \placeformula \startformula \startalign[n=3,align={right,middle,left}]
+%D \NC       l \NC = \NC r     \NR
+%D \NC    left \NC = \NC right \NR
+%D \stopalign \stopformula
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
+%D
+%D \startbuffer
+%D \placeformula \startformula \startalign[n=3,align={middle,middle,middle}]
+%D \NC       l \NC = \NC r     \NR
+%D \NC    left \NC = \NC right \NR
+%D \stopalign \stopformula
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
+%D
+%D \startbuffer
+%D \placeformula
+%D \startformula
+%D     \startalign[n=3,align={middle,middle,middle}]
+%D         \NC a  \NC = \NC b  \NR[+]
+%D         \NC 2a \NC = \NC 2b \NR
+%D     \stopalign
+%D \stopformula
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
+%D
+%D \startbuffer
+%D \placeformula
+%D \startformulas
+%D     \setupmathalignment[n=3,align={middle,middle,middle}]%
+%D     \startformula
+%D         \startalign
+%D             \NC a  \NC = \NC b  \NR[+]
+%D             \NC 2a \NC = \NC 2b \NR
+%D         \stopalign
+%D     \stopformula
+%D     \startformula
+%D         \startalign
+%D             \NC a  \NC = \NC b  \NR[+]
+%D             \NC 2a \NC = \NC 2b \NR
+%D         \stopalign
+%D     \stopformula
+%D \stopformulas
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
+%D
+%D \startbuffer
+%D \placeformula
+%D \startformulas
+%D     \dorecurse{5}{\startformula
+%D         \startalign[n=3,align={middle,middle,middle}]
+%D             \NC a  \NC = \NC b  \NR[+]
+%D             \NC 2a \NC = \NC 2b \NR
+%D         \stopalign
+%D     \stopformula}
+%D \stopformulas
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
+
+%D \macros
+%D   {definemathcases, setupmathcases, startmathcases}
+%D
+%D Another wish \unknown
+
+\def\setupmathcases
+  {\dodoubleempty\dosetupmathcases}
+
+\def\dosetupmathcases[#1][#2]%
+  {\ifsecondargument
+     \getparameters[\??ce#1][#2]%
+   \else
+     \getparameters[\??ce][#1]%
+   \fi}
+
+\let\currentmathcases\empty
+
+\def\mathcasesparameter#1%
+  {\executeifdefined{\??ce\currentmathcases#1}{\executeifdefined{\??ce#1}\empty}}
+
+\setupmathcases
+  [\c!distance=1em,
+   \c!numberdistance=2.5em,
+   \c!left={\left\{\,},
+   \c!right={\right.}]
+
+\def\dodocasesNC
+  {\gdef\docasesNC{\endmath&}}
+
+\let\docasesNR\doalignNR
+
+\def\dostartmathcases[#1][#2]%
+  {\begingroup
+   \edef\currentmathcases{#1}%
+   \doifassignmentelse{#2}{\setupmathcases[#1][#2]}\donothing
+   \mathcasesparameter\c!left
+   \vcenter\bgroup
+   \pushmacro\docasesNC
+   \let\endmath\relax
+   \def\NC{\docasesNC}%
+   \def\MC{\docasesNC\ifmmode\else$\def\endmath{$}\fi}%
+   \global\let\docasesNC\dodocasesNC
+   \def\NR{\endmath&\global\let\docasesNC\dodocasesNC\doxxdoubleempty\docasesNR}%
+   \normalbaselines
+   \mathsurround\zeropoint
+   \everycr\emptytoks
+   \tabskip\zeropoint
+   \global\eqaligncolumn\plusone
+   \halign\bgroup
+        $##$\hfil
+       &\hskip\mathcasesparameter\c!distance\relax\popmacro\docasesNC##\hfil
+       &\hskip\mathcasesparameter\c!numberdistance\relax\span\textineqalign{##}%
+     \crcr} % todo: number
+
+\def\dostopmathcases
+  {\crcr
+   \egroup
+   \popmacro\docasesNC
+   \egroup
+   \mathcasesparameter\c!right
+   \endgroup}
+
+\def\definemathcases
+  {\dodoubleempty\dodefinemathcases}
+
+\def\dodefinemathcases[#1]% [#2]%
+  {\setvalue{\e!start#1}{\dodoubleempty\dostartmathcases[#1]}%
+   \setvalue{\e!stop #1}{\dostopmathcases}%
+   \setupmathcases[#1]}% [#2]
+
+\definemathcases[cases]
+\definemathcases[\v!mathcases]
+
+%D \startbuffer
+%D \placeformula \startformula \startcases
+%D \NC 2 \NC $ y > 0 $ \NR
+%D \NC 7 \NC $ x = 7 $ \NR[+]
+%D \NC 4 \NC otherwise \NR
+%D \stopcases \stopformula
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
+%D
+%D \startbuffer
+%D \placeformula \startformula x \startcases
+%D \NC 2 \NC $ y > 0 $ \NR[+]
+%D \NC 7 \NC $ x = 7 $ \NR
+%D \NC 4 \NC otherwise \NR
+%D \stopcases \stopformula
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
+%D
+%D \startbuffer
+%D \placeformula \startformula \startcases
+%D \NC 2 \NC $ y > 0 $ \NR
+%D \NC 7 \NC $ x = 7 $ \NR
+%D \NC 4 \NC otherwise \NR
+%D \stopcases \stopformula
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
+%D
+%D \startbuffer
+%D \placeformula \startformula x \startcases
+%D \NC 2 \NC $ y > 0 $ \NR
+%D \NC 7 \NC $ x = 7 $ \NR
+%D \NC 4 \NC otherwise \NR
+%D \stopcases \stopformula
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
+
+%D \macros
+%D   {definemathmatrix, setupmathmatrix, startmathmatrix}
+%D
+%D Yet another one \unknown
+
+\def\setupmathmatrix
+  {\dodoubleempty\dosetupmathmatrix}
+
+\def\dosetupmathmatrix[#1][#2]%
+  {\ifsecondargument
+     \getparameters[\??mx#1][#2]%
+   \else
+     \getparameters[\??mx][#1]%
+   \fi}
+
+\let\currentmathmatrix\empty
+
+\def\mathmatrixparameter#1%
+  {\executeifdefined{\??mx\currentmathmatrix#1}{\executeifdefined{\??mx#1}\empty}}
+
+\setupmathmatrix
+  [\c!distance=1em,
+   \c!left=,
+   \c!right=]
+
+\def\definemathmatrix
+  {\dodoubleempty\dodefinemathmatrix}
+
+\def\dodefinemathmatrix[#1]% [#2]%
+  {\setvalue{\e!start#1}{\dodoubleempty\dostartmathmatrix[#1]}%
+   \setvalue{\e!stop #1}{\dostopmathmatrix}%
+   \setupmathmatrix[#1]}% [#2]
+
+\definemathmatrix[matrix]
+\definemathmatrix[\v!mathmatrix]
+
+\def\dodomatrixNC
+  {\gdef\domatrixNC{\endmath&}}
+
+% \let\domatrixNR\doalignNR
+
+\def\dostartmathmatrix[#1][#2]%
+  {\begingroup
+   \edef\currentmathmatrix{#1}%
+   \doifassignmentelse{#2}{\setupmathmatrix[#1][#2]}\donothing
+   \null
+   \mathmatrixparameter\c!left
+   \vcenter\bgroup
+   \pushmacro\domatrixNC
+   \let\endmath\relax
+   \def\NC{\domatrixNC}%
+   \def\MC{\domatrixNC\ifmmode\else$\def\endmath{$}\fi}%
+   \global\let\domatrixNC\dodomatrixNC
+  %\def\NR{\endmath&\global\let\domatrixNC\dodomatrixNC\doxxdoubleempty\domatrixNR}%
+   \def\NR{\endmath\global\let\domatrixNC\dodomatrixNC\crcr}%
+   \normalbaselines
+   \mathsurround\zeropoint
+   \everycr\emptytoks
+   \tabskip\zeropoint
+   \global\eqaligncolumn\plusone
+   \halign\bgroup
+      \hfil$##$\hfil
+    &&\hskip\mathmatrixparameter\c!distance\relax\hfil$##$\hfil\crcr
+      \mathstrut\crcr
+      \noalign{\kern-\baselineskip}}
+
+\def\dostopmathmatrix
+  {\crcr
+   \mathstrut\crcr
+   \noalign{\kern-\baselineskip}%
+   \egroup
+   \popmacro\domatrixNC
+   \egroup
+   \mathmatrixparameter\c!right
+   \endgroup}
+
+%D \startbuffer
+%D \placeformula \startformula[-] \startmatrix
+%D \NC 1 \NC x \NC a \NR
+%D \NC 2 \NC y \NC b \NR
+%D \NC 3 \NC z \NC c \NR
+%D \stopmatrix \stopformula
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
+%D
+%D \definemathmatrix[bmatrix][left={\left[\,},right={\,\right]}]
+%D
+%D \startbuffer
+%D \placeformula \startformula[-] \startbmatrix
+%D \NC 1 \NC x \NC a \NR
+%D \NC 2 \NC y \NC b \NR
+%D \NC 3 \NC z \NC c \NR
+%D \stopbmatrix \stopformula
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
 
 %D \macros
 %D   {frac, xfrac, xxfrac}

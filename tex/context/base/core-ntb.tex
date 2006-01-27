@@ -62,11 +62,11 @@
 %D and following white space.
 
 \def\bTBLCELL % why not \doinhibitblank
-  {\inhibitblank\doconvertfont\tbltblstyle\empty\everypar{\begstrut}}
+  {\inhibitblank\doconvertfont\tbltblstyle\empty\everypar{\delayedbegstrut}}
 
 \def\eTBLCELL
   {\ifhmode
-     \endstrut
+     \delayedendstrut
    \else
      \par
      \ifdim\prevdepth<\zeropoint % =-1000pt ?
@@ -259,9 +259,9 @@
      \executeifdefined{\@@tblprefix\v!header#2}\donothing
    \fi
    \executeifdefined{\@@tblprefix\c!y#1}\donothing
-\getvalue{\@@tbl\@@tbl\c!extras}\letvalue{\@@tbl\@@tbl\c!extras}\relax % new, see x-fo
+   \getvalue{\@@tbl\@@tbl\c!extras}\letvalue{\@@tbl\@@tbl\c!extras}\relax % new, see x-fo
    \executeifdefined{\@@tblprefix\c!x#2}\donothing
-\getvalue{\@@tbl\@@tbl\c!extras}\letvalue{\@@tbl\@@tbl\c!extras}\relax % new, see x-fo
+   \getvalue{\@@tbl\@@tbl\c!extras}\letvalue{\@@tbl\@@tbl\c!extras}\relax % new, see x-fo
    \executeifdefined{\@@tblprefix\c!x#2\c!y#1}\donothing
    \global\letcscsname\@@tblsplitafter\csname\@@tbl\@@tbl\c!after\endcsname
    \relax}
@@ -347,7 +347,7 @@
          \increment\col}%
       \increment\row}%
    % check max column
-   \decrement\col
+   \decrement\col\relax
    \ifnum\col>\maximumcol\relax
      \let\maximumcol\col
    \fi
@@ -567,22 +567,24 @@
          \doifnottblcol\row\col{\settblcol\row\col\!!zerocount}%
          \doifnottbltag\row\col{\settbltag\row\col\tblnone}}}%
    % check and do
-   \startTBLprocessing
-     \begTBL
-       \dorecurse\maximumrow
-         {\bTBL
-            \let\row\recurselevel
-            \dorecurse\maximumcol
-              {\let\col\recurselevel
-               \expanded{\doTBL{\row}{\col}}}%
-          \eTBL}%
-       \removeunwantedspaces % only if hmode
-     \endTBL
-   \stopTBLprocessing
-   % wrong ! ! ! better to have an auto-offset-overlay
-   % \ifnum\TBLlevel>1
-   %   \vskip-\strutdp
-   % \fi
+   \ifcase\maximumcol\else
+     \startTBLprocessing
+       \begTBL
+         \dorecurse\maximumrow
+           {\bTBL
+              \let\row\recurselevel
+              \dorecurse\maximumcol
+                {\let\col\recurselevel
+                 \expanded{\doTBL{\row}{\col}}}%
+            \eTBL}%
+         \removeunwantedspaces % only if hmode
+       \endTBL
+     \stopTBLprocessing
+     % wrong ! ! ! better to have an auto-offset-overlay
+     % \ifnum\TBLlevel>1
+     %   \vskip-\strutdp
+     % \fi
+   \fi
    \egroup
    \popTBL}
 
@@ -825,24 +827,26 @@
     \fi\fi{\the\tbltoks}}
 
 \def\stretchtblwidths
-  {\!!dimend\zeropoint
-   \!!dimene\hsize
-   \dorecurse\maximumcol
-     {\advance\!!dimend \gettblwid\recurselevel
-      \advance\!!dimend \tbltblcolumndistance
-      \advance\!!dimene-\gettbldis\recurselevel}%
-   \advance\!!dimend-\tbltblcolumndistance
-   \advance\!!dimend\tbltblleftmargindistance
-   \advance\!!dimend\tbltblrightmargindistance
-   % distribute width (stretch)
-   \ifdim\!!dimend<\!!dimene
-     \advance\!!dimend-\!!dimene
-     \!!dimend-\!!dimend
-     \divide\!!dimend\maximumcol
+  {\ifcase\maximumcol\else % else division by zero
+     \!!dimend\zeropoint
+     \!!dimene\hsize
      \dorecurse\maximumcol
-       {\scratchdimen\gettblwid\recurselevel
-        \advance\scratchdimen\!!dimend
-        \settblwid\recurselevel{\the\scratchdimen}}%
+       {\advance\!!dimend \gettblwid\recurselevel
+        \advance\!!dimend \tbltblcolumndistance
+        \advance\!!dimene-\gettbldis\recurselevel}%
+     \advance\!!dimend-\tbltblcolumndistance
+     \advance\!!dimend\tbltblleftmargindistance
+     \advance\!!dimend\tbltblrightmargindistance
+     % distribute width (stretch)
+     \ifdim\!!dimend<\!!dimene
+       \advance\!!dimend-\!!dimene
+       \!!dimend-\!!dimend
+       \divide\!!dimend\maximumcol
+       \dorecurse\maximumcol
+         {\scratchdimen\gettblwid\recurselevel
+          \advance\scratchdimen\!!dimend
+          \settblwid\recurselevel{\the\scratchdimen}}%
+     \fi
    \fi}
 
 \newbox\finaltblbox
@@ -1365,7 +1369,8 @@
    \c!style=,
    \c!headstyle=\v!bold,
    \c!headcolor=,
-   \c!strut=\v!no,
+   \c!strut=\v!yes,
+   \c!autostrut=\v!no,
    \c!aligncharacter=\v!no,
    \c!alignmentcharacter={,},
    \c!option=, % \v!stretch
