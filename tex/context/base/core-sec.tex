@@ -1099,9 +1099,11 @@
    \xdef\@@kolevel{\getvalue{\??se\@@sectie\c!level}}}
 
 \def\dohandlepagebreakBB#1#2#3%
-  {\doifinset{\getvalue{\??tk#2\c!state}}{\v!normal,\v!start}
+  {%\doifinsetelse{\getvalue{\??tk#2\c!state}}{\v!normal,\v!start}
+   \doifelselayouttextline{#2}
      {\doifvaluesomething{\??ko#1#3}
-        {\setuplayouttext[#2][\c!state=\getvalue{\??ko#1#3}]}}}
+        {\setuplayouttext[#2][\c!state=\getvalue{\??ko#1#3}]}}
+     \donothing}
 
 \def\dohandlepagebreakB#1%
   {\doifvaluesomething{\??ko#1\c!page}
@@ -1364,8 +1366,8 @@
 
 \let\localkopprefix\empty
 
-% \def\headparameter#1% to do: everywhere in core-sec
-%   {\csname\??ko\currenthead#1\endcsname}
+\def\headparameter#1% to do: everywhere in core-sec
+  {\csname\??ko\currenthead#1\endcsname}
 
 \def\dodododoconstructhead#1[#2]#3#4% [ref] {number} {title}
   {\def\currenthead{#1}% dus #1 overal vervangen

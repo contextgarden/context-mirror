@@ -928,25 +928,19 @@
 \newif\ifdubbelzijdig \dubbelzijdigfalse
 \newif\ifenkelzijdig  \enkelzijdigtrue
 
-\def\doifsometextlineelse#1%
-  {\edef\!!stringa{\csname\??tk#1\c!state\endcsname}%
-   \ifx\!!stringa\v!none
-     \@EA\secondoftwoarguments
-   \else\ifx\!!stringa\v!high
-     \@EAEAEA\secondoftwoarguments
-   \else
-     \@EAEAEA\firstoftwoarguments
-   \fi\fi}
-
 % NOG EENS NAGAAN WANNEER NU GLOBAL EN WANNEER NIET
+
+\ifx\doifelselayoutsomeline\undefined % defined in page-txt
+    \let\doifelselayoutsomeline\secondofthreearguments
+\fi
 
 \def\calculatevsizes % global needed in \recalculatelayoutregel
   {\redoglobal\textheight\makeupheight
-   \doifsometextlineelse \v!header
+   \doifelselayoutsomeline \v!header
      {\redoglobal\advance\textheight -\headerheight
       \redoglobal\advance\textheight -\headerdistance}%
      \donothing
-   \doifsometextlineelse \v!footer
+   \doifelselayoutsomeline \v!footer
      {\redoglobal\advance\textheight -\footerheight
       \redoglobal\advance\textheight -\footerdistance}%
      \donothing
@@ -965,12 +959,12 @@
 
 \def\calculatereducedvsizes
   {\textheight\makeupheight
-   \doifsometextlineelse \v!header
+   \doifelselayoutsomeline \v!header
      {\advance\textheight -\headerheight
       \advance\textheight -\headerdistance}%
      {\headerheight\zeropoint
       \setlayoutdistances}%
-   \doifsometextlineelse \v!footer
+   \doifelselayoutsomeline \v!footer
      {\advance\textheight -\footerheight
       \advance\textheight -\footerdistance}%
      {\footerheight\zeropoint

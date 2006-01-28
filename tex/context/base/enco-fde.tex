@@ -11,8 +11,6 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-%D These definitions used to be part of lang-ger.tex.
-
 \unprotect
 
 \startlanguagespecifics[\s!de]
@@ -61,8 +59,8 @@
 
 \startlanguagespecifics[\s!de]
 
-  \installcompoundcharacter "` {\handlequotation\c!leftquotation}
-  \installcompoundcharacter "' {\handlequotation\c!rightquotation}
+  \installcompoundcharacter "` {\startdelimitedtext[\v!quotation]}
+  \installcompoundcharacter "' {\stopdelimitedtext}
   \installcompoundcharacter ". {\kern.1em\ignorespaces}
 
   \def\setupDElanguage

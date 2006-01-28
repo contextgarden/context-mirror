@@ -72,10 +72,14 @@
      \getparameters[\??tk#1#2][#3]%
    \else
     %\getparameters[\??tk#1\v!text][#2]%
+     \edef\previoustextstate{\getvalue{\??tk#1\c!state}}%
      \getparameters[\??tk#1][#2]%
-   \fi
-  %\checkcurrentlayout % no
-   \calculatevsizes}
+     \doifnotvalue{\??tk#1\c!state}\previoustextstate
+       {%\checkcurrentlayout % no
+        \calculatevsizes
+        \recalculatebackgrounds
+        \recalculatelogos}%
+   \fi}
 
 \def\setuptop    {\dotripleempty\dosetuplayouttext[\v!top]}
 \def\setupheader {\dotripleempty\dosetuplayouttext[\v!header]}
@@ -220,7 +224,7 @@
 \appendtoks \placelayouttextline\v!footer\footerheight \to \footertextcontent
 \appendtoks \placelayouttextline\v!bottom\bottomheight \to \bottomtextcontent
 
-%D Texts can be disables, moved up and ignored, depending in
+%D Texts can be disabled, moved up and ignored, depending in
 %D the \type {status} variable. This is handled by the next
 %D couple of macros.
 
@@ -237,10 +241,31 @@
      \fi
    \endcsname{#1}} % {#2}
 
-\setvalue{\string\placelayouttextline\v!normal}{\doplacelayouttextline}
+\def\doifelselayouttextline#1% shown or not
+  {\doifinsetelse{\getvalue{\??tk#1\c!state}}{\v!normal,\v!start}}
+
+\def\doifelselayoutsomeline#1% present or not
+  {\edef\!!stringa{\csname\??tk#1\c!state\endcsname}%
+   \ifx\!!stringa\v!none
+     \@EA\secondoftwoarguments
+   \else\ifx\!!stringa\v!high
+     \@EAEAEA\secondoftwoarguments
+   \else
+     \@EAEAEA\firstoftwoarguments
+   \fi\fi}
+
+% \doplacelayouttextline does the actual placement (when a non-zero height)
+
+\newconditional\resyncaftertextline
+
+\setvalue{\string\placelayouttextline\v!normal }{\doplacelayouttextline}
 \setvalue{\string\placelayouttextline          }{\doplacelayouttextline}
-\letvalue{\string\placelayouttextline\v!none   }\gobbletwoarguments
-\letvalue{\string\placelayouttextline\v!high   }\gobbletwoarguments
+
+\setvalue{\string\placelayouttextline\v!none}#1#2%
+  {}
+
+\setvalue{\string\placelayouttextline\v!high}#1#2%
+  {\global\settrue\resyncaftertextline}
 
 \setvalue{\string\placelayouttextline\v!empty}#1#2%
   {\resettextlinestatus{#1}}
@@ -260,40 +285,45 @@
    \egroup}
 
 \setvalue{\string\placelayouttextline\s!unknown}#1#2%
-  {\bgroup % new
+  {\global\settrue\resyncaftertextline
+   \bgroup % new
    \resettextlinestatus{#1}%
    \getvalue{\??tk#1\textlinestatus}%
-   \getvalue{\??tk#1\v!text\textlinestatus}%
+   \getvalue{\??tk#1\v!text  \textlinestatus}%
    \getvalue{\??tk#1\v!margin\textlinestatus}%
-   \getvalue{\??tk#1\v!edge\textlinestatus}%
+   \getvalue{\??tk#1\v!edge  \textlinestatus}%
    \doplacelayouttextline{#1}{#2}%
    \egroup}
 
 %D The following macro has to be called after a page
 %D is flushed.
 
-\def\resetlayouttextline#1% beware: global assignment
+\def\resetlayouttextline#1%
   {\doifvalue{\??tk#1\c!state}\v!high
-     {\resettextlinestatus{#1}%
-      \donetrue}}
+     {\global\settrue\resyncaftertextline
+      \resettextlinestatus{#1}}}
 
 \def\resetlayouttextlines
-  {\donefalse
-   \resetlayouttextline\v!top
+  {\resetlayouttextline\v!top
    \resetlayouttextline\v!header
    \resetlayouttextline\v!text
    \resetlayouttextline\v!footer
    \resetlayouttextline\v!bottom
-   \ifdone
+   \ifconditional\resyncaftertextline
      \doglobal\calculatevsizes
      \recalculatebackgrounds
      \recalculatelogos
+     \global\setfalse\resyncaftertextline
    \fi}
 
 %D The next series of macros is not that easy to read,
 %D because they hook into the main page building macros. By
 %D using token list registers for the text content, we can
 %D easily hook in other code, like menu generators.
+%D
+%D Beware: the token lists are always expanded, also when the
+%D height of an area is zero. This is because reset actions can
+%D be part of them.
 
 \newbox\scratchpagebox
 
@@ -305,15 +335,11 @@
       \offinterlineskip
       \vskip-\topheight
       \vskip-\topdistance
-      \ifdim\topheight>\zeropoint
-        \the\toptextcontent
-        \vskip\topheight
-      \fi
+      \the\toptextcontent
+      \vskip\topheight
       \vskip\topdistance
-      \ifdim\headerheight>\zeropoint
-        \the\headertextcontent
-        \vskip\headerheight
-      \fi
+      \the\headertextcontent
+      \vskip\headerheight
       \vskip\headerdistance
       \placepositionanchors
       \vskip-\textheight
@@ -321,15 +347,11 @@
       \vskip\textheight
       \the\everyendoftextbody
       \vskip\footerdistance
-      \ifdim\footerheight>\zeropoint
-        \the\footertextcontent
-        \vskip\footerheight
-      \fi
+      \the\footertextcontent
+      \vskip\footerheight
       \vskip\bottomdistance
-      \ifdim\bottomheight>\zeropoint
-        \the\bottomtextcontent
-        \vskip\bottomheight
-      \fi
+      \the\bottomtextcontent
+      \vskip\bottomheight
       \vfilll}%
   \smashbox\scratchpagebox
   \box\scratchpagebox}

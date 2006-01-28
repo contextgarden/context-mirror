@@ -359,7 +359,7 @@
 %D
 %D \starttyping
 %D \startlanguagespecifics[de]
-%D   \installcompoundcharacter "a {\moveaccent{-.1ex}\"a\midworddiscretionary}
+%D   \installcompoundcharacter "a {{\moveaccent{-.1ex}\"a\midworddiscretionary}}
 %D \stoplanguagespecifics
 %D \stoptyping
 %D
@@ -964,16 +964,16 @@
 \def\@cc@{@cc@} % compound character
 \def\@cs@{@cs@} % compound characters
 
-% \def\installcompoundcharacter #1#2#3 #4% {{#4}} keeps move local
+% \def\installcompoundcharacter #1#2#3 #4% {#4} no grouping
 %   {\setvalue{\@nc@\string#1}{\char`#1}%
 %    \ifnum\catcode`#1=\@@active \else
 %      \setevalue{\@nn@\string#1}{\number\catcode`#1}% new
 %    \fi
 %    \def\!!stringa{#3}%
 %    \ifx\!!stringa\empty
-%      \setvalue{\@cc@\string#1\string#2}{{#4}}%
+%      \setvalue{\@cc@\string#1\string#2}{#4}%
 %    \else
-%      \setvalue{\@cs@\string#1\string#2\string#3}{{#4}}%
+%      \setvalue{\@cs@\string#1\string#2\string#3}{#4}%
 %    \fi
 %    \catcode`#1=\@@active
 %    \scratchcounter=\the\uccode`~
@@ -981,7 +981,7 @@
 %    \uppercase{\unexpanded\def~{\handlecompoundcharacter~}}%
 %    \uccode`~=\scratchcounter}
 
-\def\installcompoundcharacter #1#2#3 #4% {{#4}} keeps move local
+\def\installcompoundcharacter #1#2#3 #4% {#4} no grouping
   {\chardef\thecompoundcharacter`#1%
   %\@EA\def\csname\@nc@\string#1\endcsname{\char`#1}%
    \@EA\chardef\csname\@nc@\string#1\endcsname\thecompoundcharacter
@@ -994,7 +994,7 @@
      \@cc@\string#1\string#2%
    \else
      \@cs@\string#1\string#2\string#3%
-   \fi\endcsname{{#4}}%
+   \fi\endcsname{#4}%
    \catcode\thecompoundcharacter\@@active
    \scratchcounter\uccode\activehackcode
    \uccode\activehackcode\thecompoundcharacter

@@ -163,13 +163,25 @@
 \gdef\saveXMLdata#1#2% name data-name ; definitely no \edef
   {\dodoglobal\copycsname\@@XMLsave:#1\endcsname\csname\@@XMLdata:#2\endcsname}
 
+% \gdef\saveXMLdatainelement#1#2#3% name element data
+%   {\dodoglobal\setevalue{\@@XMLsave:#1}% todo: one level expansion
+%      {<#2 \currentXMLarguments>\XMLflush{#3}</#2>}}
+%
+% \gdef\saveXMLdatastructure#1#2#3#4#5#6% name element args before data after
+%   {\dodoglobal\setevalue{\@@XMLsave:#1}% todo: one level expansion
+%      {<#2 #3 \currentXMLarguments>#4\XMLflush{#5}#6</#2>}}
+%
+% better (no expansion):
+
+\newtoks\XMLdatatoks
+
 \gdef\saveXMLdatainelement#1#2#3% name element data
-  {\dodoglobal\setevalue{\@@XMLsave:#1}% todo: one level expansion
-     {<#2 \currentXMLarguments>\XMLflush{#3}</#2>}}
+  {\XMLdatatoks\@EAEAEA{\csname\@@XMLdata:#3\endcsname}% no check
+   \dodoglobal\setevalue{\@@XMLsave:#1}{<#2 \currentXMLarguments>\the\XMLdatatoks</#2>}}
 
 \gdef\saveXMLdatastructure#1#2#3#4#5#6% name element args before data after
-  {\dodoglobal\setevalue{\@@XMLsave:#1}% todo: one level expansion
-     {<#2 #3 \currentXMLarguments>#4\XMLflush{#5}#6</#2>}}
+  {\XMLdatatoks\@EAEAEA{\csname\@@XMLdata:#5\endcsname}% no check
+   \dodoglobal\setevalue{\@@XMLsave:#1}{<#2 #3 \currentXMLarguments>#4\the\XMLdatatoks#6</#2>}}
 
 \gdef\gsaveXMLasdata       {\doglobal\saveXMLasdata}
 \gdef\gsaveXMLdata         {\doglobal\saveXMLdata}

@@ -24,7 +24,7 @@
            \normalend}}
 \fi
 
-\newcontextversion{2006.01.27 13:58}
+\newcontextversion{2006.01.28 10:09}
 
 %D This file is loaded at runtime, thereby providing an
 %D excellent place for hacks, patches, extensions and new
@@ -42,20 +42,6 @@
 % just in case we load something from a file (pdfr-ec for instance)
 
 \prependtoks \restoreendofline \to \everybeforeshipout
-
-\newtoks\XMLdatatoks
-
-\bgroup \catcode`\<=\active
-
-\gdef\saveXMLdatainelement#1#2#3% name element data
-  {\XMLdatatoks\@EAEAEA{\csname\@@XMLdata:#3\endcsname}% no check
-   \dodoglobal\setevalue{\@@XMLsave:#1}{<#2 \currentXMLarguments>\the\XMLdatatoks</#2>}}
-
-\gdef\saveXMLdatastructure#1#2#3#4#5#6% name element args before data after
-  {\XMLdatatoks\@EAEAEA{\csname\@@XMLdata:#5\endcsname}% no check
-   \dodoglobal\setevalue{\@@XMLsave:#1}{<#2 #3 \currentXMLarguments>#4\the\XMLdatatoks#6</#2>}}
-
-\egroup
 
 % \tracefilestrue
 %
@@ -208,9 +194,6 @@
    \fi
    \relax
    \the\everyafterreadfile}
-
-\def\headparameter#1% to do: everywhere in core-sec
-  {\csname\??ko\currenthead#1\endcsname}
 
 % The following may be a solution for the fact that one cannot
 % change catcodes of characters like : and ; inside an environment.
