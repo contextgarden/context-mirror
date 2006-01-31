@@ -20,11 +20,13 @@
   {\bgroup
    \def\doshowpatterns##1##2##3##4% language number encoding mapping
      {\NC##1\NC##3\NC##4\NC##2\NC
-      \xxlanguageparameter{##1}\s!lefthyphenmin\NC\xxlanguageparameter{##1}\s!righthyphenmin\NC\NR}%
+      \specificlanguageparameter{##1}\s!lefthyphenmin \NC
+      \specificlanguageparameter{##1}\s!righthyphenmin\NC\NR}%
    \starttabulate[|c|c|c|c|c|c|]
    \HL
    \NC \bf language \NC \bf encoding \NC \bf mapping \NC \bf number \NC
-       \bf left\low{min} \NC \bf right\low{min} \NC \NR
+       \bf left\low{min}  \NC
+       \bf right\low{min} \NC \NR
    \HL
    \preloadedpmessage
    \HL

@@ -718,28 +718,34 @@
 % \starttext \dorecurse{30}{test \recurselevel \page} \stoptext
 
 \def\pusharrangedpageXY#1%
-  {\doglobal\increment\arrangedpageN
-   \reportarrangedpage\arrangedpageN
-   \doglobal\increment\arrangedpageM
-   \global\setbox\arrangedpageB\hbox
-     \ifdim\@@ppwidth>\zeropoint to \@@ppwidth \fi
-     {\ifvoid\arrangedpageB\else
-        \unhbox\arrangedpageB\hss\hskip\@@ppdx\hss
-      \fi
-      \box#1}%
-   \ifnum\arrangedpageM<\arrangedpageX\else
-     \global\setbox\arrangedpageA\vbox
-          \ifdim\@@ppheight>\zeropoint to \@@ppheight \fi
-       {\offinterlineskip
-        \ifvoid\arrangedpageA\else
-          \unvbox\arrangedpageA\vss\vskip\@@ppdy\vss
-        \fi
-        \box\arrangedpageB}%
-     \doglobal\newcounter\arrangedpageM
-   \fi
-   \ifnum\arrangedpageN<\arrangedpageT\else
-     \poparrangedpages
-   \fi}
+   {\doglobal\increment\arrangedpageN
+    \reportarrangedpage\arrangedpageN
+    \doglobal\increment\arrangedpageM
+    \global\setbox\arrangedpageB\hbox
+      \ifdim\@@ppwidth>\zeropoint to \@@ppwidth \fi
+      {\ifvoid\arrangedpageB\else
+         \unhbox\arrangedpageB
+         \ifdim\@@ppdx>\zeropoint \else \hss\fi
+         \hskip\@@ppdx
+         \ifdim\@@ppdx>\zeropoint \else \hss\fi
+       \fi
+       \box#1}%
+    \ifnum\arrangedpageM<\arrangedpageX\else
+      \global\setbox\arrangedpageA\vbox
+        \ifdim\@@ppheight>\zeropoint to \@@ppheight \fi
+        {\offinterlineskip
+         \ifvoid\arrangedpageA\else
+           \unvbox\arrangedpageA
+           \ifdim\@@ppdy>\zeropoint \else \vss\fi
+           \vskip\@@ppdy
+           \ifdim\@@ppdy>\zeropoint \else \vss\fi
+         \fi
+         \box\arrangedpageB}%
+      \doglobal\newcounter\arrangedpageM
+    \fi
+    \ifnum\arrangedpageN<\arrangedpageT\else
+      \poparrangedpages
+    \fi}
 
 \def\poparrangedpagesXY
   {\ifnum\arrangedpageN>\zerocount

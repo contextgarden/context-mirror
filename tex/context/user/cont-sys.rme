@@ -90,6 +90,7 @@
 
   \loadmapfile[original-base.map]
   \loadmapfile[original-ams-base.map]
+  \loadmapfile[original-ams-euler.map]
   \loadmapfile[original-public-lm.map]
 
 \else

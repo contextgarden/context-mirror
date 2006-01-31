@@ -886,7 +886,7 @@
          \c!right=,
          \c!level=0,
          \c!repeat=\v!no,
-         \c!method=\s!font,
+         \c!method=,
         #2]}%
      {\doifdefined{#2}
         {\copyparameters[\??ci#1][\??ci#2]
@@ -920,8 +920,8 @@
    \def\currentdelimitedtext{#1}%
    \doifelse{\delimitedtextparameter\c!method}\s!font
      {\doglobal\decrementvalue{\??ci\currentdelimitedtext\c!level}%
-      \def\dostopdelimitedtext{\nohandledelimitedtext\c!right}%
-      \nohandledelimitedtext\c!left}
+      \def\dostopdelimitedtext{\removeunwantedspaces\ignoredelimitedtext\c!right}%
+      \ignoredelimitedtext\c!left\ignorespaces}
      {\doifelse{\delimitedtextparameter\c!repeat}\v!yes
         {\let\dohandlerepeatdelimitedtext\dorepeatdelimitedtext}%
         {\let\dohandlerepeatdelimitedtext\relax}%
@@ -1016,7 +1016,7 @@
    \fi
    \endgroup}
 
-\def\nohandledelimitedtext#1#2%
+\def\ignoredelimitedtext#1%
   {\delimitedtextparameter#1}
 
 \def\handledelimitedtext#1%

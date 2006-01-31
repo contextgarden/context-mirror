@@ -2,21 +2,21 @@
 %D   [       file=m-gamma,
 %D        version=2002.05.15,
 %D          title=\CONTEXT\ Extra Modules,
-%D       subtitle=Basic \OMEGA\ Support, 
+%D       subtitle=Basic \OMEGA\ Support,
 %D         author={Idris Samawi Hamid, Hans Hagen},
 %D           date=\currentdate,
 %D      copyright={PRAGMA-ADE, Idris Samawi Hamid}]
 %D
 %C This module is part of the \CONTEXT\ macro||package and is
-%C therefore copyrighted by \PRAGMA. See mreadme.pdf for 
-%C details. 
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
 
-%D Most of this module is written by Idris Samawi Hamid. 
+%D Most of this module is written by Idris Samawi Hamid.
 
-%D We define a couple of symbolic \OTP\ filters and 
-%D sequences. First the filters: 
-%D 
-%D Todo: better names, no funny abbreviations. 
+%D We define a couple of symbolic \OTP\ filters and
+%D sequences. First the filters:
+%D
+%D Todo: better names, no funny abbreviations.
 
 \definefiltersynonym [utf8 to unicode16]  [inutf8]
 \definefiltersynonym [IdOCP]              [id]
@@ -90,12 +90,12 @@
   [SindhiOCP]
   [SindhiUni,UniCUni,CUniArab]
 
-%D We wrap a couple of languages in environmen tmacros. 
+%D We wrap a couple of languages in environmen tmacros.
 %D beware: this solution is far from perfect!
-%D 
-%D Todo: better interface to directional primitives. 
 %D
-%D Todo: proper language support (labels etc). 
+%D Todo: better interface to directional primitives.
+%D
+%D Todo: proper language support (labels etc).
 
 \definestartstop
   [latin]
@@ -108,7 +108,7 @@
   [commands=%
     {\usefiltersequence[GreekOCP]%
      \switchtobodyfont[omlgc]%
-     \language=3\lefthyphenmin=2\righthyphenmin=2}]
+     \language=3\lefthyphenmin2\righthyphenmin=2}]
 
 \definestartstop
   [arab]
@@ -183,14 +183,14 @@
 
 \let\typeout\message \input grlccode.tex
 
-%D We (pre)define a couple of fonts: 
+%D We (pre)define a couple of fonts:
 
 \usetypescriptfile[type-omg]
 
 \usetypescript[OmegaArab]
 \usetypescript[OmegaLGC]
 
-%D Dangerous definitions: 
+%D Dangerous definitions:
 
 \startencoding[omega]
 
@@ -201,7 +201,7 @@
   \definecharacter dotlessi       {^^^^0131}
   \definecharacter ssharp         {^^^^00df}
 
-\stopencoding 
+\stopencoding
 
 \enableencoding [omega]
 
@@ -210,20 +210,20 @@
 \unexpanded \def\OMEGA {{\switchtobodyfont[omlgc]^^^^03a9}}
 \unexpanded \def\OTP   {\OMEGA TP}
 
-%D A few funny definitions: 
+%D A few funny definitions:
 
 \def\#{^^^^f023}
 \def\${^^^^f024}
 \def\%{^^^^f025}
 \def\&{^^^^f026}
 
-%D I have no idea what this has to do with omega: 
+%D I have no idea what this has to do with omega:
 
 \def\heshe {\lohi{he} {she}}
 \def\himher{\lohi{him}{her}}
 \def\hisher{\lohi{his}{her}}
 
-% Brrr 
+% Brrr
 
 \setuptolerance [verytolerant]
 

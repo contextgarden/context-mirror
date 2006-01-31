@@ -107,11 +107,14 @@
         linecolor=\getvalue{\??sr#1\c!rulecolor},
         distance=\the\sidebardistance}}%
    \stoppositionoverlay
-   \edef\stopsidebar{\noexpand\dostopsidebar{\currentsidebar}}%
+%    \edef\stopsidebar{\noexpand\dostopsidebar{\currentsidebar}}%
    \bpos{side:\currentsidebar}\ignorespaces}
 
-\def\dostopsidebar#1%
-  {\removelastspace\tpos{side:#1}\carryoverpar\egroup}
+% \def\dostopsidebar#1%
+%   {\removelastspace\tpos{side:#1}\carryoverpar\egroup}
+
+\def\stopsidebar
+  {\removelastspace\tpos{side:\currentsidebar}\carryoverpar\egroup}
 
 \startMPpositionmethod{mpos:bar}
   \startMPpositiongraphic{mpos:bar}{linecolor,linewidth,distance}%
@@ -165,7 +168,12 @@
   [\v!margin]
   [\c!rulecolor=\s!black,
    \c!rulethickness=\@@karulethickness,
-   \c!distance=\dimexpr(\leftmargindistance-\@@karulethickness/2)]
+   \c!distance=\dimexpr\leftmargindistance-\@@karulethickness/2\relax]
+
+\definecomplexorsimple\startmarginrule
+
+\def\simplestartmarginrule
+  {\complexstartmarginrule[1]}
 
 \def\complexstartmarginrule[#1]%
   {\bgroup
@@ -180,5 +188,7 @@
 \def\dostopmarginrule
   {\stopsidebar
    \egroup}
+
+
 
 \protect \endinput

@@ -182,7 +182,8 @@
    \doifnumberelse{\getvalue{#1\c!tab}}
      {\def\obeytabs{\setfixedtabskips{\getvalue{#1\c!tab}}}}%
      \donothing
-   \def\verbatimfont{\getvalue{#1\c!style}\normalnoligatures\font}%
+%    \def\verbatimfont{\getvalue{#1\c!style}\normalnoligatures\font}%
+   \def\verbatimfont{\dosetfontattribute{#1}\c!style\normalnoligatures\font}%
    \setupverbatimcolor{#1}}
 
 \ifx\normalnoligatures\undefined \let\normalnoligatures\gobbleoneargument \fi

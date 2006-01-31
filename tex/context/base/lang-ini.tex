@@ -283,6 +283,8 @@
             \s!patterns=,
             \s!mapping=,
             \s!encoding=,
+            \s!lefthyphenmin=\defaultlanguageparameter\s!lefthyphenmin,
+            \s!righthyphenmin=\defaultlanguageparameter\s!righthyphenmin,
             #2]}%
       \doifvalue{\??la#1\c!default}{#1}{\letvalue{\??la#1\c!default}\empty}%
       % loop in deo: \doifvalue{\??la#1\s!patterns}{#1}{\letvalue{\??la#1\c!default}\empty}%
@@ -407,13 +409,8 @@
 %D Quick and dirty, but useful:
 %D
 %D \showsetup{setuplanguage}
-
-% \def\setuplanguage
-%   {\dodoubleargument\dosetuplanguage}
-
-% \def\dosetuplanguage[#1][#2]%
-%   {\getparameters[\??la#1][#2]%
-%    \doif{#1}\currentlanguage\docomplexlanguage}
+%D
+%D Beware, this command can only be used when a language is installed.
 
 \unprotected \def\setuplanguage
   {\dodoubleempty\dosetuplanguage}
@@ -712,11 +709,17 @@
 % \def\languageparameter#1%
 %   {\csname\??la\defaultlanguage\currentlanguage#1\endcsname}
 
-\def\languageparameter
+\def\languageparameter % @EA = speedup
   {\@EA\dolanguageparameter\@EA{\defaultlanguage\currentlanguage}}
 
-\def\xxlanguageparameter#1%
+\def\specificlanguageparameter#1% @EA = speedup
+  {\@EA\dospecificlanguageparameter\@EA{\defaultlanguage{#1}}{#1}}
+
+\def\xxlanguageparameter#1% @EA = speedup
   {\@EA\dolanguageparameter\@EA{\defaultlanguage{#1}}}
+
+\def\defaultlanguageparameter#1%
+  {\csname\??la\s!default#1\endcsname}
 
 \beginETEX
 
@@ -730,6 +733,17 @@
          \s!default
        \fi\fi
      #2\endcsname}
+
+  \def\dospecificlanguageparameter#1#2#3%
+    {\csname\??la
+       \ifcsname\??la#2#3\endcsname
+         \@EA\ifx\csname\??la#2#3\endcsname\empty\s!default\else#2\fi
+       \else\ifcsname\??la#1#3\endcsname
+         \@EA\ifx\csname\??la#1#3\endcsname\empty\s!default\else#1\fi
+       \else
+         \s!default
+       \fi\fi
+     #3\endcsname}
 
 \endETEX
 
@@ -747,6 +761,19 @@
          \currentlanguage
        \fi
      #2\endcsname}
+
+  \def\dospecificlanguageparameter#1#2#3%
+    {\csname\??la
+       \@EA\ifx\csname\??la#2#3\endcsname\relax
+         \@EA\ifx\csname\??la#1#3\endcsname\relax
+           \s!default
+         \else
+           \@EA\ifx\csname\??la#1#3\endcsname\empty\s!default\else#1\fi
+         \fi
+       \else
+         \@EA\ifx\csname\??la#2#3\endcsname\empty\s!default\else#2\fi
+       \fi
+     #3\endcsname}
 
 \endTEX
 

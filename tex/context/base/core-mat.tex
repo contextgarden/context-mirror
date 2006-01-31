@@ -1517,7 +1517,7 @@
    \!!toksc\emptytoks
    \buildeqalign
    \null\,\vcenter
-     {\openup{.25\bodyfontsize}% was: \openup\jot
+     {\openup.25\bodyfontsize% was: \openup\jot
       \mathsurround\zeropoint
       \expandafter \ialign \expandafter {\the\scratchtoks\crcr#1\crcr}%
    }\,}
@@ -1623,7 +1623,7 @@
 % todo: pop in cell
 
 \def\dostartmathalignment[#1][#2]%
-  {\begingroup
+  {% \begingroup not permitted ($$...assignments...\halign... )
    \pushmacro\doalignNC
    \edef\currentmathalignment{#1}%
    \doifassignmentelse{#2}{\setupmathalignment[#1][#2]}\donothing
@@ -1643,8 +1643,7 @@
 
 \def\dostopmathalignment
   {\finishalignno
-   \popmacro\doalignNC
-   \endgroup}
+   \popmacro\doalignNC}
 
 \def\definemathalignment
   {\dodoubleempty\dodefinemathalignment}

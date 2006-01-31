@@ -2145,7 +2145,7 @@
   {\setvalue{\??ko:#1}{#2}%
    \setvalue{\??ko::#1}}
 
-\def\@@placehead
+\def\normalplacehead
   {\executeifdefined
      {\??ko::\numberheadalternative}
      {\getvalue{\??ko::\v!normal}}}
@@ -2251,7 +2251,7 @@
          \c!resetnumber=\v!yes,
          \c!incrementnumber=\v!yes,
          \c!alternative=\@@koalternative,
-         \c!command=\@@placehead,
+         \c!command=\normalplacehead,
          \c!separator=\@@koseparator,
          \c!align=\@@koalign,
          \c!aligntitle=\@@koaligntitle,
@@ -2323,7 +2323,7 @@
    % set \c!command to nothing and (quite natural) got the
    % wrong references etc. The whole bunch should be boxed!
    \expandafter\convertcommand\csname\??ko#1\c!command\endcsname\to\ascii
-   \doifnothing\ascii{\setvalue{\??ko#1\c!command}{\@@placehead}}}
+   \doifnothing\ascii{\setvalue{\??ko#1\c!command}{\normalplacehead}}}
 
 \def\setuphead
   {\dodoubleargumentwithset\dosetuphead}

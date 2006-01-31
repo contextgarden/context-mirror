@@ -355,6 +355,12 @@ if ( $ARGV[0] && $ARGV[0] =~ /\.mpx$/io ) {    # catch -tex=.... bug in mpost
 
 ####
 
+if ($Version) {
+    $Purge = 1 ;
+    }
+
+####
+
 if ($Paranoid) {
     $ENV{shell_escape} = 'f' ;
     $ENV{openout_any}  = 'p' ;
