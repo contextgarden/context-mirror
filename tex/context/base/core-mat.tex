@@ -1511,15 +1511,22 @@
 \def\mathineqalign#1{$\forgetalign\displaystyle{{}#1{}}$}
 \def\textineqalign#1{$\forgetalign#1$}
 
+% \def\eqalign#1% why no halign here, probably because of displaywidth
+%   {\!!toksa{\strut\hfil$\displaystyle{##}$}%
+%    \!!toksb{&$\displaystyle{{}##{}}$\hfil}%
+%    \!!toksc\emptytoks
+%    \buildeqalign
+%    \null\,\vcenter
+%      {\openup.25\bodyfontsize% was: \openup\jot
+%       \mathsurround\zeropoint
+%       \expandafter \ialign \expandafter {\the\scratchtoks\crcr#1\crcr}%
+%    }\,}
+
 \def\eqalign#1% why no halign here, probably because of displaywidth
-  {\!!toksa{\strut\hfil$\displaystyle{##}$}%
-   \!!toksb{&$\displaystyle{{}##{}}$\hfil}%
-   \!!toksc\emptytoks
-   \buildeqalign
-   \null\,\vcenter
+  {\null\,\vcenter
      {\openup.25\bodyfontsize% was: \openup\jot
       \mathsurround\zeropoint
-      \expandafter \ialign \expandafter {\the\scratchtoks\crcr#1\crcr}%
+      \ialign{\strut\hfil$\displaystyle{##}$&$\displaystyle{{}##{}}$\hfil\crcr#1\crcr}%
    }\,}
 
 % preamble is scanned for tabskips so we need the span to prevent an error message
