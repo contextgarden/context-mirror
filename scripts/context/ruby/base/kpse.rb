@@ -38,9 +38,12 @@ module Kpse
         @@distribution = 'miktex' unless $1 =~ /(texmf\-mswin[\/\\]bin|bin[\/\\]win32)/i
     end
 
-    @@usekpserunner = false || ENV['KPSEFAST'] == 'yes'
-
-    require 'base/tool' if @@usekpserunner
+    if ENV['KPSEFAST'] == 'no' then
+        @@usekpserunner = false
+    else
+        @@usekpserunner = true
+        require 'base/kpsefast'
+    end
 
     if @@crossover then
         ENV.keys.each do |k|
@@ -285,6 +288,10 @@ module Kpse
         setscript(name,`texmfstart --locate #{name}`) unless @@scripts.key?(name)
         cmd = "#{@@scripts[name]} #{[options].flatten.join(' ')} #{[filename].flatten.join(' ')}"
         `#{cmd}`
+    end
+
+    def Kpse.searchmethod
+        if @@usekpserunner then 'kpsefast' else 'kpsewhich' end
     end
 
     private

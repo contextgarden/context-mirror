@@ -446,6 +446,7 @@ class TEX
     end
 
     def makeformats
+        report("using search method '#{Kpse.searchmethod}'")
         if getvariable('fast') then
             report('using existing database')
         else
@@ -1168,6 +1169,8 @@ class TEX
 
         takeprecautions
 
+        report("using search method '#{Kpse.searchmethod}'") if getvariable('verbose')
+
         rawname = getvariable('filename')
 
         jobname = getvariable('filename')
@@ -1243,6 +1246,7 @@ class TEX
         envs = envs.uniq.join(',')
         mods = mods.uniq.join(',')
 
+        report("using search method '#{Kpse.searchmethod}'") if verbose
         report("using environments #{envs}") if envs.length > 0
         report("using modules #{mods}")      if mods.length > 0
 

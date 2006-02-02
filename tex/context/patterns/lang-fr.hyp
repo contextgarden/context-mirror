@@ -1,0 +1,34 @@
+% context hyphenation file, see lang-all.xml for original comment
+
+% source of data: frhyph.tex
+
+% begin description data
+
+% <!-- copied from lang-all.xml
+% 
+% <?xml version='1.0' standalone='yes'?>
+% 
+% <description language='fr'>
+%     <sourcefile>frhyph.tex</sourcefile>
+%     <title>TeX hyphenation patterns for the French language</title>
+%     <remarks>V2.11</remarks>
+%     <copyright>
+%         <owner>Jacques Desarmenien, Norman Buckle, Michael Ferguson, Justin Bur, Daniel Flipo and Bernard Gaulle</owner>
+%     </copyright>
+%     <copyright>
+%         <year>1996</year>
+%         <owner>Bernd Raichle/DANTE e.V.</owner>
+%         <comment>Adaption for TeX 3.x and MLTeX 3.x (2.x)</comment>
+%     </copyright>
+% </description>
+% 
+% end of copy -->
+
+% end description data
+
+% begin hyphenation data
+
+\hyphenation {}
+
+% end hyphenation data
+

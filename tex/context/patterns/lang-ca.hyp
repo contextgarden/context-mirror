@@ -1,0 +1,61 @@
+% context hyphenation file, see lang-all.xml for original comment
+
+% source of data: cahyph.tex
+
+% begin description data
+
+% <!-- copied from lang-all.xml
+% 
+% <?xml version='1.0' standalone='yes'?>
+% 
+% <description language='ca'>
+%     <sourcefile>cahyph.tex</sourcefile>
+%     <title>TeX hyphenation patterns for the Catalan language</title>
+%     <remarks>Version 1.11</remarks>
+%     <copyright>
+%         <year>1991-1995 </year>
+%         <owner>Gon\c{c}al Badenes,Francina Turon</owner>
+%     </copyright>
+%     <copyright>
+%         <year>1991-2003</year>
+%         <owner>Gon\c{c}al Badenes</owner>
+%     </copyright>
+% </description>
+% 
+% end of copy -->
+
+% end description data
+
+% begin hyphenation data
+
+\hyphenation {
+cu-rie
+cu-ries
+gei-sha
+gei-shes
+goua-che
+goua-ches
+hip-py
+hip-pies
+hob-by
+hob-bies
+jeep
+jeeps
+joule
+joules
+klee-nex
+klee-nexs
+lar-ghet-ti
+lar-ghet-to
+lied
+lieder
+nos-al-tres
+ro-yal-ties
+ro-yal-ty
+vos-al-tres
+whis-ky
+whis-kies
+}
+
+% end hyphenation data
+

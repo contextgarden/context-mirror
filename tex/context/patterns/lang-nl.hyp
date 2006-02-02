@@ -1,0 +1,75 @@
+% context hyphenation file, see lang-all.xml for original comment
+
+% source of data: nehyph96.tex
+
+% begin description data
+
+% <!-- copied from lang-all.xml
+% 
+% <?xml version='1.0' standalone='yes'?>
+% 
+% <description language='nl'>
+%     <sourcefile>nehyph96.tex</sourcefile>
+%     <title>TeX hyphenation patterns for the Dutch language</title>
+%     <copyright>
+%         <year>1996</year>
+%         <owner> Piet Tutelaers (P.T.H.Tutelaers@tue.nl)</owner>
+%         <comment>8-bit hyphenation patterns for TeX based upon the new Dutch
+%           spelling, officially since 1 August 1996. These patterns follow
+%           the new hyphenation rules in the `Woordenlijst Nederlandse
+%           Taal, SDU Uitgevers, Den Haag 1995' (the so called `Groene
+%           Boekje') described in section 5.2 (Het afbreekteken)</comment>
+%     </copyright>
+% </description>
+% 
+% end of copy -->
+
+% end description data
+
+% begin hyphenation data
+
+\hyphenation {
+aan-dachts-trek-ker
+aan-dachts-trek-kers
+acht-en-der
+acht-en-ders
+acht-en-der-tig
+acht-en-der-tig-ste
+be-heers-ta-ken
+be-scherm-en-gel
+be-scherm-en-ge-len
+be-stuurs-la-gen
+be-stuurs-ta-ken
+bij-stands-trek-ker
+bij-stands-trek-kers
+bui-ten-an-ten-ne
+bui-ten-an-ten-nes
+don-der-aal
+han-dels-taal
+her-e-nen
+ket-ting-ste-ken
+lands-taal
+meest-al
+mi-nis-ters-por-te-feuil-le
+mi-nis-ters-por-te-feuil-les
+ont-hoof-din-gen
+pa-ling-ste-ken
+rechts-taal
+schil-ders-ta-lent
+sou-ve-niertje
+sou-ve-niertjes
+spie-gel-ei
+ver-en-gels-te
+ver-hol-lands-te
+ver-in-lands-te
+ver-kinds-te
+ver-ne-der-lands-te
+ver-rechts-te
+ver-steeds-te
+wals-te
+wa-ter-staats-in-ge-ni-eur
+wa-ter-staats-in-ge-ni-eurs
+}
+
+% end hyphenation data
+

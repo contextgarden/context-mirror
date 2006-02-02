@@ -1,0 +1,25 @@
+% context hyphenation file, see lang-us.rme for original comment
+
+% source of data: ushyphmax.tex ushyph.tex hyphen.tex
+
+% begin hyphenation data
+
+\hyphenation {
+as-so-ciate
+as-so-ciates
+dec-li-na-tion
+oblig-a-tory
+phil-an-thropic
+present
+presents
+project
+projects
+reci-procity
+re-cog-ni-zance
+ref-or-ma-tion
+ret-ri-bu-tion
+ta-ble
+}
+
+% end hyphenation data
+

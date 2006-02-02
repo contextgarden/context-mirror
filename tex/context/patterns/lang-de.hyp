@@ -1,0 +1,40 @@
+% context hyphenation file, see lang-all.xml for original comment
+
+% source of data: dehyphn.tex
+
+% begin description data
+
+% <!-- copied from lang-all.xml
+% 
+% <?xml version='1.0' standalone='yes'?>
+% 
+% <description language='de'>
+%     <sourcefile>dehyphn.tex</sourcefile>
+%     <title>TeX hyphenation patterns for the German language (new orthography)</title>
+%     <copyright>
+%         <year>1988, 1991</year>
+%         <owner>Rechenzentrum der Ruhr-Universitaet Bochum</owner>
+%         <comment>German hyphen patterns</comment>
+%     </copyright>
+%     <copyright>
+%         <year>1993, 1994, 1999</year>
+%         <owner>Bernd Raichle/DANTE e.V.</owner>
+%         <comment>Macros, adaption for TeX 2</comment>
+%     </copyright>
+%     <copyright>
+%         <year>1998-2001</year>
+%         <owner>Walter Schmidt</owner>
+%         <comment>Adaption to new German orthography</comment>
+%     </copyright>
+% </description>
+% 
+% end of copy -->
+
+% end description data
+
+% begin hyphenation data
+
+\hyphenation {}
+
+% end hyphenation data
+

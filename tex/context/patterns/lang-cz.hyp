@@ -1,0 +1,53 @@
+% context hyphenation file, see lang-all.xml for original comment
+
+% source of data: czhyphen.tex czhyphen.ex
+
+% begin description data
+
+% <!-- copied from lang-all.xml
+% 
+% <?xml version='1.0' standalone='yes'?>
+% 
+% <description language='cz'>
+%     <sourcefile>czhyphen.tex</sourcefile>
+%     <title>TeX hyphenation patterns for the Czech language</title>
+%     <copyright>
+%         <year>1991</year>
+%         <owner>Karel Horak</owner>
+%         <comment>List of exceptions</comment>
+%     </copyright>
+%     <copyright>
+%         <year>1995</year>
+%         <owner>Pavel Sevecek (\v{S}eve\v{c}ek) (pavel@lingea.cz)</owner>
+%         <comment>Macros, adaption for TeX 2</comment>
+%     </copyright>
+%     <!-- samples>
+%         <sample>au-to-ma-tic-ký</sample>
+%         <sample>bram-bo-rák</sample>
+%         <sample>da-ta-bá-ze</sample>
+%         <sample>kr-ka-vec</sample>
+%         <sample>Kro-me-ríš</sample>
+%         <sample>ob-hos-po-da-ro-vat</sample>
+%         <sample>rem-dich</sample>
+%         <sample>scvrk-nout</sample>
+%         <sample>za-les-nit</sample>
+%         <sample>že-žu-lic-ka</sample>
+%     </samples -->
+% </description>
+% 
+% end of copy -->
+
+% end description data
+
+% begin hyphenation data
+
+\hyphenation {
+koe-fi-ci-ent
+koe-fi-ci-en-ty
+pro-jek-[ccaron]n[iacute]
+[uacute]hlo-p[rcaron][iacute][ccaron]-ka
+[uacute]hlo-p[rcaron][iacute][ccaron]-ky
+}
+
+% end hyphenation data
+
