@@ -2016,12 +2016,26 @@
            \donothing{\OTRSETsetgridcell\mofcolumns\recurselevel\copy\placeholderboxe}}%
       \egroup}}
 
+% \OTRSEToutput
+%   {\dontcomplain % new, get rid of overfull message (to be sorted out)
+%    \OTRSETnaturalflush
+%   %\OTRSETstartnextpage
+%    \OTRSETdoflushfloats % actually belongs in \flushsavedfloats (but goes wrong)
+%    \OTRSETcheckfreelines
+%    \OTRSETchecksidefloat}
+
 \OTRSEToutput
   {\dontcomplain % new, get rid of overfull message (to be sorted out)
-   \OTRSETnaturalflush
-  %\OTRSETstartnextpage
-   \OTRSETdoflushfloats % actually belongs in \flushsavedfloats (but goes wrong)
-   \OTRSETcheckfreelines
+   \doloop
+     {\OTRSETnaturalflush
+     %\OTRSETstartnextpage %  no
+      \OTRSETdoflushfloats % actually belongs in \flushsavedfloats (but goes wrong)
+      \OTRSETcheckfreelines
+      \ifsomefreecolumncells
+        \exitloop
+      \else
+        % flush page and get rid of more floats if present
+      \fi}%
    \OTRSETchecksidefloat}
 
 \def\OTRSETinitializefeatures

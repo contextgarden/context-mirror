@@ -59,9 +59,12 @@
 
 \startlanguagespecifics[\s!de]
 
-  \installcompoundcharacter "` {\delimitedtext[\v!quotation]}
-  \installcompoundcharacter "' {}
+  \installcompoundcharacter "` {\startdelimitedtext[\v!quotation]}
+  \installcompoundcharacter "' {\stopdelimitedtext}
   \installcompoundcharacter ". {\kern.1em\ignorespaces}
+
+  %installcompoundcharacter "` {\languageparameter\c!leftquotation }
+  %installcompoundcharacter "' {\languageparameter\c!rightquotation}
 
   \def\setupDElanguage
     {\setuplanguage

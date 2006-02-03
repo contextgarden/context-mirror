@@ -564,27 +564,42 @@
 \unexpanded\def\ongeveer
   {\mathematics\pm}
 
+\chardef\boundarycharactermode\plusone
+
 \def\midboundarycharacter#1#2%
-  {%\nobreak
-   \hskip\hspaceamount\currentlanguage{#2}%
-   \languageparameter#1%
-   %\nobreak
-   \hskip\hspaceamount\currentlanguage{#2}}
+  {\ifcase\boundarycharactermode
+   \or
+     %\nobreak
+     \hskip\hspaceamount\currentlanguage{#2}%
+     \languageparameter#1%
+     %\nobreak
+      \hskip\hspaceamount\currentlanguage{#2}%
+   \or
+     \languageparameter#1%
+   \fi
+   \chardef\boundarycharactermode\plusone}
 
 \def\leftboundarycharacter#1#2%
-  {\languageparameter#1%
-   \nobreak
-   \hskip\hspaceamount\currentlanguage{#2}}
-
-% \def\rightboundarycharacter#1#2%
-%   {\nobreak
-%    \hskip\hspaceamount\currentlanguage{#2}%
-%    \languageparameter#1}
+  {\ifcase\boundarycharactermode
+   \or
+     \languageparameter#1%
+     \nobreak
+     \hskip\hspaceamount\currentlanguage{#2}%
+   \or
+     \languageparameter#1%
+   \fi
+   \chardef\boundarycharactermode\plusone}
 
 \def\rightboundarycharacter#1#2%
-  {\prewordbreak %\nobreak
-   \hskip\hspaceamount\currentlanguage{#2}%
-   \languageparameter#1}
+  {\ifcase\boundarycharactermode
+   \or
+     \prewordbreak %\nobreak
+     \hskip\hspaceamount\currentlanguage{#2}%
+     \languageparameter#1
+   \or
+     \languageparameter#1%
+   \fi
+   \chardef\boundarycharactermode\plusone}
 
 % actually this is pretty old, but temporary moved here
 %
@@ -1046,10 +1061,16 @@
      {\dostopattributes
       \popmacro\currentdelimitedtext}}
 
+% \def\dofontdrivendelimited#1% thanks to Taco for sorting out the kerning interference
+%   {\languageparameter{\c!left\currentdelimitedtext}%
+%    #1% sorry, no verbatim support
+%    \languageparameter{\c!right\currentdelimitedtext}%
+%    \popmacro\currentdelimitedtext}
+
 \def\dofontdrivendelimited
-  {\groupedcommand
-     {\dohandledelimitedtext\c!left\relax}
-     {\dohandledelimitedtext\c!right\relax
+  {\simplegroupedcommand
+     {\languageparameter{\c!left\currentdelimitedtext}}
+     {\languageparameter{\c!right\currentdelimitedtext}%
       \popmacro\currentdelimitedtext}}
 
 \definedelimitedtext

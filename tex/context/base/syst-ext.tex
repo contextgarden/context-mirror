@@ -1633,6 +1633,14 @@
    \afterassignment\BeforeGroup
    \let\next=}
 
+\long\def\HandleSimpleGroup#1#2% no inner group (so no kerning interference)
+  {\bgroup
+   \long\def\BeforeGroup{\bgroup#1\aftergroup\AfterGroup}% interferes
+   \long\def\BeforeGroup{\bgroup\aftergroup\AfterGroup#1}%
+   \long\def\AfterGroup {#2\egroup}%
+   \afterassignment\BeforeGroup
+   \let\next=}
+
 \long\def\HandleNoGroup#1#2%
   {\long\def\AfterGroup{#2\egroup}%
    \bgroup\aftergroup\AfterGroup#1}
@@ -1683,6 +1691,10 @@
 \long\unexpanded\def\groupedcommand#1#2%
   {\doifnextcharelse\bgroup
      {\HandleGroup{#1}{#2}}{\HandleNoGroup{#1}{#2}}}
+
+\long\unexpanded\def\simplegroupedcommand#1#2%
+  {\doifnextcharelse\bgroup
+     {\HandleSimpleGroup{#1}{#2}}{\HandleNoGroup{#1}{#2}}}
 
 %D Users should be aware of the fact that grouping can
 %D interfere with ones paragraph settings that are executed

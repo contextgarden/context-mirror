@@ -59,7 +59,14 @@
 
 \newif\ifovercomePDFbugs  \overcomePDFbugsfalse % dest sort problem / 3-
 \newif\ifovercomePDFspace \overcomePDFspacetrue % dest sort problem / 3-
-\newif\ifovercomePDFpage  \overcomePDFpagetrue  % pdf  spec change  / 5+
+
+% the pdf spec changed cq. viewers started behaving differently / 5+
+
+\chardef\overcomePDFpage\plusone   % page numbers/ beware: optimizers remove this one
+\chardef\overcomePDFpage\plustwo   % page:number
+%chardef\overcomePDFpage\plusthree % pdftex page ref feature
+
+\ifx\pdfpageref\undefined \else \chardef\overcomePDFpage\plusthree \fi
 
 \chardef\safePDFcode=`-
 
@@ -657,7 +664,6 @@
    \doifelsenothing{#3}% #1 = url
      {\scratchcounter0#5\relax
       \ifnum\scratchcounter>0
-        \advance\scratchcounter \minusone % pdf starts numbering at zero
         \doifelsenothing{#4}
           {\let\PDFfile\empty}
           {\expanded{\beforesplitstring#4}\at.\to\PDFfile
@@ -667,12 +673,18 @@
              {\@EA\setreferencefilename\PDFfile.\locationfilesuffix\to\PDFfile
               \edef\PDFfile{R /F (\PDFfile)\PDFgotonewwindow}}}%
         \ifx\PDFfile\empty
-          \ifovercomePDFpage % a named page ref
-            \edef\PDFdestination{(page:\the\scratchcounter)}%
-          \else % beware: optimizers remove this one
+          \ifcase\overcomePDFpage
+          \or % pdf starts numbering at zero
+            \advance\scratchcounter \minusone
             \edef\PDFdestination{[\the\scratchcounter\space\PDFpageviewwrd]}%
+          \or % pdf starts numbering at zero
+            \advance\scratchcounter \minusone
+            \edef\PDFdestination{(page:\the\scratchcounter)}%
+          \or % pdftex starts numbering at one
+            \edef\PDFdestination{[\pdfpageref\scratchcounter\space0 R \PDFpageviewwrd]}%
           \fi
-        \else % across files it's a page number
+        \else % across files it's a page number / pdf starts numbering at zero
+          \advance\scratchcounter \minusone
           \edef\PDFdestination{[\the\scratchcounter\space\PDFpageviewwrd]}%
         \fi
         \edef\action{/S /GoTo\PDFfile\space /D \PDFdestination}%
@@ -698,7 +710,7 @@
 \let\lastfakedPDFpage\!!zerocount
 
 \def\fakePDFpagedestination % as in pdf, we start numbering at zero
-  {\iflocation \ifovercomePDFpage \ifarrangingpages \else
+  {\iflocation \ifarrangingpages \ifnum\overcomePDFpage=\plustwo \else
      \ifnum\lastfakedPDFpage<\realpageno
        \bgroup
          \xdef\lastfakedPDFpage{\realfolio}%

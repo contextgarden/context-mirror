@@ -17,7 +17,7 @@
 #
 # todo: move kpse call to kpse class/module
 
-banner = ['CtxTools', 'version 1.3.0', '2004/2005', 'PRAGMA ADE/POD']
+banner = ['CtxTools', 'version 1.3.1', '2004/2006', 'PRAGMA ADE/POD']
 
 unless defined? ownpath
     ownpath = $0.sub(/[\\\/][a-z0-9\-]*?\.rb/i,'')
@@ -1493,6 +1493,41 @@ class Commands
 end
 
 
+class Commands
+
+    include CommandBase
+
+    def platformize
+
+        pattern = if @commandline.arguments.empty? then "*.{rb,pl,py}" else @commandline.arguments end
+        recurse = @commandline.option("recurse")
+        force = @commandline.option("force")
+        pattern = "#{if recurse then '**/' else '' end}#{pattern}"
+        Dir.glob(pattern).each do |file|
+            if File.file?(file) then
+                size = File.size(file)
+                data = IO.readlines(file)
+                if force then
+                    if f = File.open(file,'w')
+                        data.each do |line|
+                            f.puts(line.chomp)
+                        end
+                        f.close
+                    end
+                    if File.size(file) == size then # not robust
+                        report("file '#{file}' is unchanged")
+                    else
+                        report("file '#{file}' is platformized")
+                    end
+                else
+                    report("file '#{file}' is a candidate")
+                end
+            end
+        end
+    end
+
+end
+
 logger      = Logger.new(banner.shift)
 commandline = CommandLine.new
 
@@ -1518,6 +1553,8 @@ commandline.registeraction('dpxmapfiles', 'convert pdftex mapfiles to dvipdfmx [
 commandline.registeraction('listentities', 'create doctype entity definition from enco-uc.tex')
 
 commandline.registeraction('brandfiles', 'add context copyright notice [--force]')
+
+commandline.registeraction('platformize', 'replace line-endings [--recurse --force] [pattern]')
 
 commandline.registervalue('type','')
 
