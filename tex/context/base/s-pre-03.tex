@@ -99,7 +99,7 @@
 %   path p; p := superellipse(r,t,l,b,.8) ;
 %   fill p withcolor \MPcolor{Backgroundcolor} ;
 %   draw p withcolor \MPcolor{OrnamentColor} ;
-%   color contrastcolor ; contrastcolor = 2/3 * \MPcolor{OrnamentColor} ; 
+%   color contrastcolor ; contrastcolor = 2/3 * \MPcolor{OrnamentColor} ;
 %   if (pos>0) and (tot>0):
 %     pair pa ; pa := point 5 of p ;
 %     pair pb ; pb := point 7 of p ;
@@ -117,28 +117,28 @@
 
 \startuseMPgraphic{PageShape}
   StartPage ;
-    path p ; pair pa, pb ; numeric len ; color contrastcolor ; 
-    fill Page withcolor \MPcolor {PageColor} ; 
+    path p ; pair pa, pb ; numeric len ; color contrastcolor ;
+    fill Page withcolor \MPcolor {PageColor} ;
     pickup pencircle rotated 45 xscaled 10pt yscaled 20pt ;
     p := Page enlarged (-10pt,-15pt) superellipsed .8 ;
-    p := p shifted (-1.5pt,0) ; % looks better 
+    p := p shifted (-1.5pt,0) ; % looks better
     fill p withcolor \MPcolor{BackgroundColor} ;
     draw p withcolor \MPcolor{OrnamentColor} ;
-    contrastcolor = 2/3 * \MPcolor{OrnamentColor} ; 
+    contrastcolor = 2/3 * \MPcolor{OrnamentColor} ;
     if (PageNumber>0) and (NOfPages>0):
       draw point 5 of p withcolor contrastcolor ;
       draw point 7 of p withcolor contrastcolor ;
       len := 2/NOfPages ;
       pa := point (5+len*PageNumber) of p ;
       pb := point (5+len*(PageNumber-1)) of p ;
-      draw (p cutafter pa) cutbefore pb 
+      draw (p cutafter pa) cutbefore pb
         withcolor contrastcolor ;
     fi ;
   StopPage ;
 \stopuseMPgraphic
 
 %D We use the viewer provided feature to go to the previous or
-%D next page. 
+%D next page.
 
 \defineoverlay[PrevButton][\overlaybutton{PreviousPage}]
 \defineoverlay[NextButton][\overlaybutton{NextPage}]
@@ -151,11 +151,11 @@
   [text][text]
   [background=NextButton]
 
-% or using hard coded next/prev pages: 
+% or using hard coded next/prev pages:
 %
 % \defineoverlay[PrevButton][\overlaybutton{previouspage}]
 % \defineoverlay[NextButton][\overlaybutton{nextpage}]
-% 
+%
 % \setupbackgrounds[state=repeat]
 % \setupbackground[text][text][background=NextButton]
 %
@@ -234,4 +234,24 @@
 \def\TitlePage#1%
   {\StartTitlePage#1\StopTitlePage}
 
-\endinput
+\doifnotmode{demo}{\endinput}
+
+%D The (rather silly) demo section.
+
+\starttext
+
+\TitlePage{Title Page\\pre-funny}
+
+\Topics{Some Nice Quotes}
+
+\Topic{A Few}
+
+\Subject{Knuth} \input knuth
+\Subject{Tufte} \input tufte
+
+\Topic{Some More}
+
+\Subject{Zapf}   \input zapf
+\Subject{Bryson} \input bryson
+
+\stoptext

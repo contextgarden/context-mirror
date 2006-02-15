@@ -27,7 +27,7 @@
 
 \usemodule[pre-general]
 
-%D \macros 
+%D \macros
 %D   {setupbodyfont}
 %D
 %D As said, we will use the Antikwa Torunska, and because we
@@ -36,7 +36,7 @@
 \setupbodyfont
   [ant,14.4pt]
 
-%D \macros 
+%D \macros
 %D   {definecolor, setupcolors}
 %D
 %D Thus style only uses gray scales, but nevertheless we turn
@@ -49,7 +49,7 @@
 \definecolor [ContrastColor]    [s=.9]
 \definecolor [InteractionColor] [s=.6]
 
-%D \macros 
+%D \macros
 %D   {setuppapersize}
 %D
 %D As (nearly) always, we use a 600 pt times 450 pt screen
@@ -268,9 +268,9 @@
 %D
 %D We use a nested \type {\everypar}; everything in there
 %D will be put in front of each paragraph. The nesting prevents
-%D the first paragraph from indenting. The struts give the 
+%D the first paragraph from indenting. The struts give the
 %D lines a decent height, which looks better inrelation to the
-%D next pages. 
+%D next pages.
 
 \def\StartTitlePage%
   {\startstandardmakeup
@@ -292,4 +292,34 @@
 \def\TitlePage#1%
   {\StartTitlePage#1\StopTitlePage}
 
-\endinput
+\doifnotmode{demo}{\endinput}
+
+%D The (rather silly) demo section.
+
+\usemodule[pre-antikwa]
+
+\starttext
+
+\TitlePage{Title Page\\pre-polish}
+
+\Topics{Some Nice Lists}
+
+\Topic{Some Lists}
+
+\Subject{A list}
+
+\startitemize
+\item first
+\item second
+\stopitemize
+
+\Subject{A bigger list}
+
+\startitemize
+\item first
+\item second
+\item third
+\item fourth
+\stopitemize
+
+\stoptext

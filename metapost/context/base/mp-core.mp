@@ -720,14 +720,24 @@ fi ;
 
   % fallback
 
-     multipar :=
+    % multipar :=
+    %   llxy[fpos] --
+    %   lrxy[tpos] --
+    %   urxy[tpos] --
+    %   ulxy[fpos] -- cycle ;
+    %
+    % save_multipar (1,1,multipar) ;
 
-      llxy[fpos] --
-      lrxy[tpos] --
+    % we need to take the boundingbox because there can be
+    % more lines and we want a proper rectange
+
+    multipar :=
+      ulxy[fpos] --
       urxy[tpos] --
-      ulxy[fpos] -- cycle ;
+      lrxy[fpos] --
+      llxy[tpos] -- cycle ;
 
-      save_multipar (1,1,multipar) ;
+    save_multipar (1,1,boundingbox(multipar)) ;
 
   else :
 
@@ -962,6 +972,14 @@ fi ;
   if span_multi_column_pars :
     endgroup ;
   fi ;
+
+  % potential safeguard:
+
+  % for i=1 upto nofmultipars :
+  %   if length p <= 4 :
+  %     multipars[i] := boundingbox(multipars[i]) ;
+  %   fi ;
+  % end ;
 
   % quick hack for gb:
 

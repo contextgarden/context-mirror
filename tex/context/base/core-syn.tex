@@ -55,6 +55,8 @@
      {\setvalue{#1\s!entry}{\getvalue{\??sm#1\c!command}}} % 3 argumenten
      {\setvalue{#1\s!entry}{\dohandlesynonymentry{#1}}}}
 
+\def\synonymparameter#1{\csname\??sm\currentsynonym#1\endcsname}
+
 \def\doplacelistofsynonyms#1#2%
   {\whitespace
    \begingroup
@@ -110,15 +112,30 @@
    \immediatewriteutility{s e {#1} {#2} {\asciisynonym} {\asciimeaning}}%
    \endgroup}
 
+% \def\preexecutesynonym#1#2#3#4%
+%   {\ifdoinpututilities \else
+%      \dowritesynonym{#1}{#2}{#3}{#4}%
+%      \unexpanded\setgvalue{#2}{\processsynonym{#1}{#3}{#4}}%
+%    \fi}
+%
+% \def\executesynonym#1#2#3#4%
+%   {\preexecutesynonym{#1}{#2}{#3}{#4}%
+%    \processsynonym{#1}{#3}{#4}}
+
+\def\reprocesssynonym#1#2#3%
+  {\processsynonym{#1}{#2}{#3}%
+   \getvalue{\??sm#1\c!next}} % not formally documented
+
 \def\preexecutesynonym#1#2#3#4%
   {\ifdoinpututilities \else
      \dowritesynonym{#1}{#2}{#3}{#4}%
-     \unexpanded\setgvalue{#2}{\processsynonym{#1}{#3}{#4}}%
+     \unexpanded\setgvalue{#2}{\reprocesssynonym{#1}{#3}{#4}}%
    \fi}
 
 \def\executesynonym#1#2#3#4%
   {\preexecutesynonym{#1}{#2}{#3}{#4}%
-   \processsynonym{#1}{#3}{#4}}
+   \processsynonym{#1}{#3}{#4}%
+   \getvalue{\??sm#1\c!next}} % not formally documented
 
 \def\expandsynonym#1#2#3#4%
   {{\synonymmeaningtrue
@@ -241,9 +258,9 @@
 
 \def\processsort#1#2#3%
   {\explicithmode
-   \bgroup
+   \begingroup % was \bgroup
    \doattributes{\??so#1}\c!style\c!color{#2}%
-   \egroup}
+   \endgroup}  % was \egroup
 
 \def\dowritesort#1#2#3%
   {\bgroup
@@ -254,18 +271,36 @@
 \def\synonymentry#1%
   {\executeifdefined{#1\s!entry}\gobblethreearguments}
 
+% \def\preexecutesort#1#2#3%
+%   {\ifdoinpututilities \else
+%      \dowritesort{#1}{#2}{#3}%
+%      \unexpanded\setgvalue{#2}{\processsort{#1}{#3}{#2}}%
+%    \fi}
+%
+% \def\executesort#1#2#3%
+%   {\begingroup
+%    \let\executesort\thirdofthreearguments % Trick needed for nested logo's.
+%    \preexecutesort{#1}{#2}{#3}%
+%    \processsort{#1}{#3}{#2}%
+%    \endgroup}
+
+\def\reprocesssort#1#2#3%
+  {\processsort{#1}{#2}{#3}%
+   \getvalue{\??so#1\c!next}}
+
 \def\preexecutesort#1#2#3%
   {\ifdoinpututilities \else
      \dowritesort{#1}{#2}{#3}%
-     \unexpanded\setgvalue{#2}{\processsort{#1}{#3}{#2}}%
+     \unexpanded\setgvalue{#2}{\reprocesssort{#1}{#3}{#2}}%
    \fi}
 
 \def\executesort#1#2#3%
-  {\bgroup
-   \def\executesort##1##2##3{##3}% Trick needed for nested logo's.
+  {\begingroup
+   \let\executesort\thirdofthreearguments % Trick needed for nested logo's.
    \preexecutesort{#1}{#2}{#3}%
    \processsort{#1}{#3}{#2}%
-   \egroup}
+   \endgroup
+   \getvalue{\??so#1\c!next}} % not formally documented
 
 \def\doloadsort#1%
   {\setvalue{#1\s!entry}##1##2##3%

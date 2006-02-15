@@ -2,7 +2,7 @@
 
 # program   : texmfstart
 # copyright : PRAGMA Advanced Document Engineering
-# version   : 1.7.1 - 2003/2005
+# version   : 1.8.3 - 2003/2006
 # author    : Hans Hagen
 #
 # project   : ConTeXt / eXaMpLe
@@ -36,13 +36,11 @@ require "rbconfig"
 
 $mswindows = Config::CONFIG['host_os'] =~ /mswin/
 $separator = File::PATH_SEPARATOR
-$version   = "1.7.1"
+$version   = "1.8.3"
 
 if $mswindows then
-
     require "win32ole"
     require "Win32API"
-
 end
 
 exit if defined?(REQUIRE2LIB)
@@ -97,7 +95,9 @@ $makelist = [
     'xmltools',
     'textools',
     'mpstools',
-    'tmftools'
+    'tmftools',
+    'exatools',
+    'runtools'
 ]
 
 if ENV['TEXMFSTART_MODE'] = 'experimental' then
@@ -388,22 +388,22 @@ def runoneof(application,fullname,browserpermitted)
 end
 
 def report(str)
-    $stderr.puts(str) if $verbose
+    $stdout.puts(str) if $verbose
 end
 
 def output(str)
-    $stderr.puts(str)
+    $stdout.puts(str)
 end
 
 def usage
-    print "version  : #{$version} - 2003/2005 - www.pragma-ade.com\n"
+    print "version  : #{$version} - 2003/2006 - www.pragma-ade.com\n"
     print("\n")
     print("usage    : texmfstart [switches] filename [optional arguments]\n")
     print("\n")
     print("switches : --verbose --report --browser --direct --execute --locate --iftouched\n")
     print("           --program --file --page --arguments --batch --edit --report --clear\n")
     print("           --make --lmake --wmake --path --stubpath --indirect --before --after\n")
-    print("           --tree --autotree\n")
+    print("           --tree --autotree --showenv\n")
     print("\n")
     print("example  : texmfstart pstopdf.rb cow.eps\n")
     print("           texmfstart --locate examplex.rb\n")
@@ -560,9 +560,10 @@ def find(filename,program)
         paths = ENV['PATH'].split($separator)
         suffixlist.each do |s|
             paths.each do |p|
-                report("checking #{p} for suffix #{s}")
-                if FileTest.file?(File.join(p,"#{filename}.#{s}")) then
-                    fullname = File.join(p,"#{filename}.#{s}")
+                suffixedname = "#{filename}.#{s}"
+                report("checking #{p} for #{filename}")
+                if FileTest.file?(File.join(p,suffixedname)) then
+                    fullname = File.join(p,suffixedname)
                     return  shortpathname(fullname) if register(filename,fullname)
                 end
             end
@@ -696,13 +697,15 @@ def make(filename,windows=false,linux=false)
             if windows && f = open(basename+'.bat','w') then
                 f.binmode
                 f.write("@echo off\015\012")
-                f.write("#{program} #{filename} %*\015\012")
+                # f.write("#{program} #{filename} %*\015\012")
+                f.write("#{program} %~n0 %*\015\012")
                 f.close
                 report("windows stub '#{basename}.bat' made")
             elsif linux && f = open(basename,'w') then
                 f.binmode
                 f.write("#!/bin/sh\012")
                 f.write("#{program} #{filename} $@\012")
+                # f.write("#{program} `basename $0` $@\012")
                 f.close
                 report("unix stub '#{basename}' made")
             end
@@ -736,8 +739,8 @@ def process(&block)
 end
 
 def checktree(tree)
-    unless tree.empty? then
-        begin
+    begin
+        unless tree.empty? then
             setuptex = File.join(tree,'setuptex.tmf')
             if FileTest.file?(setuptex) then
                 report('')
@@ -753,28 +756,57 @@ def checktree(tree)
                 end
                 ENV['TEXMFOS'] = "#{ENV['TEXPATH']}/#{ENV['TEXOS']}"
                 report('')
-                report("preset   : TEXPATH => #{ENV['TEXPATH']}")
-                report("preset   : TEXOS   => #{ENV['TEXOS']}")
-                report("preset   : TEXMFOS => #{ENV['TEXMFOS']}")
-                report("preset   : TMP => #{ENV['TMP']}")
+                report("preset : TEXPATH => #{ENV['TEXPATH']}")
+                report("preset : TEXOS   => #{ENV['TEXOS']}")
+                report("preset : TEXMFOS => #{ENV['TEXMFOS']}")
+                report("preset : TMP => #{ENV['TMP']}")
                 report('')
                 IO.readlines(File.join(tree,'setuptex.tmf')).each do |line|
-                    case line
+                    case line.chomp
                         when /^[\#\%]/ then
                             # comment
-                        when /^(.*?)\s+\=\s+(.*)\s*$/ then
-                            k, v = $1, $2
-                            ENV[k] = v.gsub(/\%(.*?)\%/) do
-                                ENV[$1] || ''
+                        when /^(.*?)\s*(\>|\=|\<)\s*(.*)\s*$/ then
+                            # = assign | > prepend | < append
+                            key, how, value = $1, $2, $3
+                            begin
+                                # $SAFE = 0
+                                value.gsub!(/\%(.*?)\%/) do
+                                    ENV[$1] || ''
+                                end
+                                # value.gsub!(/\;/,$separator) if key =~ /PATH/i then
+                                case how
+                                    when '=' then ENV[key] = value
+                                    when '<' then ENV[key] = (ENV[key] ||'') + $separator + value
+                                    when '>' then ENV[key] = value + $separator + (ENV[key] ||'')
+                                end
+                            rescue
+                                report("user set failed : #{key} (#{$!})")
+                            else
+                                report("user set : #{key} => #{ENV[key]}")
                             end
-                            report("user set : #{k} => #{ENV[k]}")
                     end
                 end
             else
                 report("no setup file '#{setuptex}'")
             end
-        rescue
         end
+    rescue
+        # maybe tree is empty or boolean (no arg given)
+    end
+end
+
+def show_environment
+    if $showenv then
+        keys = ENV.keys.sort
+        size = 0
+        keys.each do |k|
+            size = k.size if k.size > size
+        end
+        report('')
+        keys.each do |k|
+            report("#{k.rjust(size)} => #{ENV[k]}")
+        end
+        report('')
     end
 end
 
@@ -793,12 +825,12 @@ def execute(arguments)
     $page        = $directives['page']      || 0
     $browser     = $directives['browser']   || false
     $report      = $directives['report']    || false
-    $verbose     = $directives['verbose']   || (ENV['_CTX_VERBOSE_'] =~ /(y|yes|t|true|on)/io) || false
+    $verbose     = $directives['verbose']   || false
     $arguments   = $directives['arguments'] || ''
     $execute     = $directives['execute']   || $directives['exec'] || false
     $locate      = $directives['locate']    || false
 
-    $autotree    = if $directives['autotree'] then (ENV['TEXMFSTART_TREE'] || '') else '' end
+    $autotree    = if $directives['autotree'] then (ENV['TEXMFSTART_TREE'] || ENV['TEXMFSTARTTREE'] || '') else '' end
 
     $path        = $directives['path']      || ''
     $tree        = $directives['tree']      || $autotree || ''
@@ -817,6 +849,11 @@ def execute(arguments)
     $openoffice  = $directives['oo']        || false
 
     $crossover   = false if $directives['clear']
+
+    $showenv     = $directives['showenv']   || false
+    $verbose     = true if $showenv
+
+    $verbose = true if (ENV['_CTX_VERBOSE_'] =~ /(y|yes|t|true|on)/io) && ! $locate && ! $report
 
     ENV['_CTX_VERBOSE_'] = 'yes' if $verbose
 
@@ -841,11 +878,13 @@ def execute(arguments)
     if $help || ! $filename || $filename.empty? then
         usage
         checktree($tree)
+        show_environment()
     elsif $batch && $filename && ! $filename.empty? then
         # todo, take commands from file and avoid multiple starts and checks
     else
         report("texmfstart version #{$version}")
         checktree($tree)
+        show_environment()
         if $make then
             if $filename == 'all' then
                 makelist = $makelist

@@ -864,6 +864,11 @@
         <cd:constant type="nein"/>
         <cd:constant type="hyphenate"/>
       </cd:parameter>
+      <cd:parameter name="leer">
+        <cd:constant type="ja"/>
+        <cd:constant type="alles"/>
+        <cd:constant type="nein"/>
+      </cd:parameter>
     </cd:assignments>
   </cd:arguments>
 </cd:command>
@@ -6243,6 +6248,9 @@
       <cd:constant type="imrand"/>
       <cd:constant type="intro"/>
       <cd:constant type="spalten"/>
+      <cd:constant type="text"/>
+      <cd:constant type="absatz"/>
+      <cd:constant type="wiederholen"/>
     </cd:keywords>
     <cd:assignments optional="yes" list="yes">
       <cd:inherit name="setupitemgroup"/>

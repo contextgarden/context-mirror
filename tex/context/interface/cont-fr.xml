@@ -864,6 +864,11 @@
         <cd:constant type="non"/>
         <cd:constant type="hyphenated"/>
       </cd:parameter>
+      <cd:parameter name="vide">
+        <cd:constant type="oui"/>
+        <cd:constant type="tout"/>
+        <cd:constant type="non"/>
+      </cd:parameter>
     </cd:assignments>
   </cd:arguments>
 </cd:command>
@@ -6243,6 +6248,9 @@
       <cd:constant type="dansmarge"/>
       <cd:constant type="intro"/>
       <cd:constant type="colonnes"/>
+      <cd:constant type="texte"/>
+      <cd:constant type="paragraphe"/>
+      <cd:constant type="repete"/>
     </cd:keywords>
     <cd:assignments optional="yes" list="yes">
       <cd:inherit name="setupitemgroup"/>

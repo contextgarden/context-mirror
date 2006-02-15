@@ -523,7 +523,7 @@
    \globallet\somdestination\empty
    \let\symsymbol\empty
    \the\itemgroupcommands
-   \setitemlevel{#1}%
+%\setitemlevel{#1}% moved from here
   %\getitemparameter\itemlevel\empty
    \let\listitem\empty % ** start value
    \doifelsenothing{#1} % iffirstargument
@@ -545,6 +545,7 @@
         {\doifnot{##1}{0}{\setitemmark{##1}}}%
     % \processcommalist[#1,\@@opsymbol]\docommando
       \processcommalist[#1]\docommando}% ** preset sequence or provided sequence
+\setitemlevel{#1}% moved to here
    \ifx\listitem\empty
      \setitemmark\@@opsymbol % ** default value
      \ifx\listitem\empty

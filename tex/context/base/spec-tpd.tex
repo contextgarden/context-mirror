@@ -93,13 +93,14 @@
   \pdfvorigin=1 true in
 \fi
 
-%D We default to 300 dots per inch image resolution.
+%D We default to 300 dots per inch image resolution and 600 dpi
+%D bitmap fonts (when asked for).
 
-\ifx\pdfimageresolution\undefined
-  \newcount\pdfimageresolution
-\fi
+\ifx\pdfimageresolution\undefined \newcount\pdfimageresolution \fi
+\ifx\pdfimageresolution\undefined \newcount\pdfpkresolution    \fi
 
 \pdfimageresolution=300
+\pdfpkresolution   =600
 
 %D Another downward compatible hack:
 

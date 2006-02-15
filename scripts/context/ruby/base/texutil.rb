@@ -372,7 +372,7 @@ class TeXUtil
 
             def MyExtras::processor(logger)
                 @@programs.each do |p|
-                    cmd = "texmfstart #{@@programs[p.to_i]}"
+                    cmd = @@programs[p.to_i]
                     logger.report("running #{cmd}")
                     system(cmd)
                 end

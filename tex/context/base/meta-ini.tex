@@ -549,7 +549,7 @@
 \long\def\dostartMPenvironment[#1][#2]#3\stopMPenvironment
   {\egroup
    \doif{#1}\s!reset\resetMPenvironment % reset mp toks
-   \doif{#1}\v!global{#3}%             % use in main doc too
+   \doif{#1}\v!global{#3}%              % use in main doc too
    \doif{#1}+{#3}%                      % use in main doc too
    \convertargument#3\to\ascii
    \expandafter\appendtoks\ascii\to\everyMPTEXgraphic}
@@ -1001,6 +1001,14 @@
 \to \MPextensions
 
 \protect \endinput
+
+%D Experimental:
+
+\appendtoks
+  \ifrunMPgraphics \ifcase\systemcommandmode \or
+    \runMPgraphicsfalse
+  \fi \fi
+\to \everyjob
 
 % also:
 %

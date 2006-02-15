@@ -8,13 +8,13 @@
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
-%C therefore copyrighted by \PRAGMA. See mreadme.pdf for 
-%C details. 
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
 
-\usemodule[pre-general] 
+\usemodule[pre-general]
 
-%D As all styles sofar, this one has the same structuring 
-%D commands. 
+%D As all styles sofar, this one has the same structuring
+%D commands.
 
 \startmode[asintended] \setupbodyfont[lbr] \stopmode
 
@@ -22,7 +22,7 @@
 
 \setupcolors [state=start]
 
-\definecolor [BackgroundColor] [s=.95] 
+\definecolor [BackgroundColor] [s=.95]
 \definecolor [OrnamentColor]   [r=.6,g=.7,b=.8]
 
 \setuppapersize
@@ -68,7 +68,7 @@
    color=OrnamentColor,
    contrastcolor=OrnamentColor]
 
-%D Watch how we use a list alternative that matches the 
+%D Watch how we use a list alternative that matches the
 %D menu.
 
 \setupinteractionmenu
@@ -77,7 +77,7 @@
    style=smallbold,
    frame=off,
    offset=10pt,
-   height=35pt, 
+   height=35pt,
    before=,
    after=,
    inbetween=\endgraf,
@@ -96,7 +96,7 @@
   \setupinteractionmenu
     [right]
     [height=30pt]
-  \but [CloseDocument] Close \\ 
+  \but [CloseDocument] Close \\
 \stopinteractionmenu
 
 \setupwhitespace
@@ -140,19 +140,19 @@
 \def\TitlePage#1%
   {\StartTitlePage#1\StopTitlePage}
 
-%D \macros 
+%D \macros
 %D   {Topics,Subjects}
 %D
-%D Since the lists are in the menu, we don't honor list 
-%D placement macros. 
+%D Since the lists are in the menu, we don't honor list
+%D placement macros.
 
 \def\Topics#1{}
 \def\Subjects{}
 
 %D \macros
-%D   {Topic, Nopic, Subject} 
+%D   {Topic, Nopic, Subject}
 %D
-%D Since t his style is meant for rather flat structured 
+%D Since t his style is meant for rather flat structured
 %D documents, only \type {\Topic} makes sense.
 
 \definehead [Topic]   [chapter]
@@ -175,27 +175,27 @@
    continue=no,
    style=\tfa]
 
-%D We use only one kind of base graphic, which is sligthly 
-%D tuned for the different usage. 
+%D We use only one kind of base graphic, which is sligthly
+%D tuned for the different usage.
 
 \startMPinclusions
-  def random_hash_frame (expr width, height, offset, linewidth ) =  
+  def random_hash_frame (expr width, height, offset, linewidth ) =
 
     def delta = ((uniformdeviate .5offset) + .25offset) enddef ;
     x1 := offset ; y1 := offset ; x2 := width-offset ; y2 := height-offset ;
 
-    drawoptions(withpen pencircle scaled linewidth withcolor \MPcolor{BackgroundColor}) ; 
+    drawoptions(withpen pencircle scaled linewidth withcolor \MPcolor{BackgroundColor}) ;
     fill z1--(x2,y1)--z2--(x1,y2)--cycle ;
 
-    drawoptions(withpen pencircle scaled linewidth withcolor \MPcolor{OrnamentColor}) ; 
+    drawoptions(withpen pencircle scaled linewidth withcolor \MPcolor{OrnamentColor}) ;
     draw (x1-delta,y1)--(x2+delta,y1) ;
     draw (x2,y1-delta)--(x2,y2+delta) ;
     draw (x2+delta,y2)--(x1-delta,y2) ;
     draw (x1,y2+delta)--(x1,y1-delta) ;
 
-    drawoptions(); 
+    drawoptions();
     setbounds currentpicture to unitsquare xscaled width yscaled height ;
-  enddef ; 
+  enddef ;
 \stopMPinclusions
 
 \startuseMPgraphic{HashFrameA}
@@ -207,14 +207,34 @@
 \stopuseMPgraphic
 
 \startuseMPgraphic{TitleGraphic}
-  for i=1 upto 300 : 
-    offset := uniformdeviate 10pt ; 
-    width  := 2*offset + 30pt + uniformdeviate 30pt ; 
-    height := 2*offset + 10pt + uniformdeviate 10pt ; 
-    addto currentpicture also 
-      image(random_hash_frame(width,height,offset,1pt)) shifted  
-      (uniformdeviate OverlayWidth, uniformdeviate OverlayHeight) ; 
-  endfor ;  
+  for i=1 upto 300 :
+    offset := uniformdeviate 10pt ;
+    width  := 2*offset + 30pt + uniformdeviate 30pt ;
+    height := 2*offset + 10pt + uniformdeviate 10pt ;
+    addto currentpicture also
+      image(random_hash_frame(width,height,offset,1pt)) shifted
+      (uniformdeviate OverlayWidth, uniformdeviate OverlayHeight) ;
+  endfor ;
 \stopuseMPgraphic
 
-\endinput
+\doifnotmode{demo}{\endinput}
+
+%D The (rather silly) demo section.
+
+\starttext
+
+\TitlePage{Title Page\\pre-fuzzy}
+
+\Topics{Some Nice Quotes}
+
+\Topic{A Few}
+
+\Subject{Knuth} \input knuth
+\Subject{Tufte} \input tufte
+
+\Topic{Some More}
+
+\Subject{Zapf}   \input zapf
+\Subject{Bryson} \input bryson
+
+\stoptext

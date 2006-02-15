@@ -470,23 +470,23 @@
 \def\executesystemcommand{\immediate\write18}
 
 % soon, when pdftex 1.22 is out in the field:
-%
-% \chardef\systemcommandmode\zerocount % 0=unknown 1=disabled 2=enabled
-%
-% \ifx\pdftexversion\undefined \else \ifnum\number\pdftexversion>122
-%   \prependtoks
-%     \chardef\systemcommandmode \ifeof18 \plusone \else \plustwo \fi
-%   \to \everyjob
-% \fi
-%
-% maybe in meta-ini
-%
-% \appendtoks
-%   \ifrunMPgraphics \ifcase\systemcommandmode \or
-%     \writestatus\m!systems{system commands are disabled}%
-%     \runMPgraphicsfalse
-%   \fi \fi
-% \to \everyjob
+
+\chardef\systemcommandmode\zerocount % 0=unknown 1=disabled 2=enabled
+
+\ifx\pdfshellescape\undefined \else
+  \prependtoks
+    \chardef\systemcommandmode \ifcase\pdfshellescape \plusone \else \plustwo \fi
+  \to \everyjob
+\fi
+
+\appendtoks
+  \ifcase\systemcommandmode
+  \or
+    \writestatus\m!systems{system commands are disabled}%
+  \or
+    \writestatus\m!systems{system commands are enabled}%
+  \fi
+\to \everyjob
 
 \ifx\etexversion\undefined \else \ifnum\etexversion<202
   \prependtoks

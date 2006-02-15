@@ -42,9 +42,18 @@
   {\doifsomethingXMLop{name}
      {\processaction
          [\XMLop{type}]
-         [xml=>\readfile{\XMLop{name}}\donothing,
+         [xml=>\readfile{\XMLop{name}}\donothing\donothing,
           tex=>{{\disableXML\readfile{\XMLop{name}}\donothing\donothing}},
-          txt=>{{\disableXML\typefile{\XMLop{name}}\donothing\donothing}}]}}
+          txt=>{{\disableXML\typefile{\XMLop{name}}}}]}}
+
+% or, nicer:
+%
+% \defineXMLsingular [context:include] [name=unknown,type=txt]
+%   {\XMLval{include:type}{\XMLop{type}}{}}
+%
+% \mapXMLvalue {include:type} {xml}             {\readfile{\XMLop{name}}\donothing\donothing}
+% \mapXMLvalue {include:type} {tex} {{\disableXML\readfile{\XMLop{name}}\donothing\donothing}}
+% \mapXMLvalue {include:type} {txt} {{\disableXML\typefile{\XMLop{name}}}}
 
 %D \elements {compound}
 %D

@@ -12,7 +12,7 @@
 %C details.
 
 %D This is again one of the \EUROTEX\ 99 styles. It's one of
-%D the quick and dirty styles supporting basic structuring. 
+%D the quick and dirty styles supporting basic structuring.
 
 \setuppapersize
   [S6][S6]
@@ -27,14 +27,14 @@
    topspace=2cm,
    backspace=2cm]
 
-%D This style is meant to be used with lucida handwriting 
-%D fonts. If you don't have that font, you may reconsider 
-%D using this style. 
+%D This style is meant to be used with lucida handwriting
+%D fonts. If you don't have that font, you may reconsider
+%D using this style.
 
 \startmode[asintended] \setupbodyfont[lbr,hw] \stopmode
 
 %D These colors will mostly be used in the graphics drawn by
-%D \METAPOST. 
+%D \METAPOST.
 
 \setupcolors
   [state=start]
@@ -44,8 +44,8 @@
 \definecolor[LineColor]  [g=.4]
 \definecolor[SymbolColor][r=.4]
 
-%D When interacting, we will use button shaped that are 
-%D quite random and thereby regenerated for each instance. 
+%D When interacting, we will use button shaped that are
+%D quite random and thereby regenerated for each instance.
 
 \setupinteractionscreen
   [option=max]
@@ -66,23 +66,23 @@
 
 \startinteractionmenu[bottom]
   \hfill
-  \got [previouspage]  \symbol[prevmark] \\ 
-  \got [nextpage]      \symbol[nextmark] \\ 
-  \got [CloseDocument] \symbol[stopmark] \\ 
-  \txt \tfd \SymbolColor \pagenumber     \\ 
+  \got [previouspage]  \symbol[prevmark] \\
+  \got [nextpage]      \symbol[nextmark] \\
+  \got [CloseDocument] \symbol[stopmark] \\
+  \txt \tfd \SymbolColor \pagenumber     \\
 \stopinteractionmenu
 
 %D When not processed at runtime, the itemmark graphics can
 %D result in processing loops due to funny dimensions.
 %D Therefore, from now on, the itemize macros limit the height
-%D and depth. 
+%D and depth.
 
 \definesymbol[itemmark][\useMPgraphic{itemmark}]
 \definesymbol[stopmark][\useMPgraphic{stopmark}]
 \definesymbol[nextmark][\useMPgraphic{nextmark}]
 \definesymbol[prevmark][\useMPgraphic{prevmark}]
 
-%D Of course we have some backgrounds. 
+%D Of course we have some backgrounds.
 
 \defineoverlay [page] [\useMPgraphic{page}]
 \defineoverlay [next] [\overlaybutton{forward}]
@@ -90,11 +90,11 @@
 
 \setupbackgrounds
   [page]
-  [background={page,prev}] 
+  [background={page,prev}]
 
 \setupbackgrounds
   [text]
-  [background=next] 
+  [background=next]
 
 \setuphead
   [chapter]
@@ -114,7 +114,7 @@
    width=3\bodyfontsize]
 
 \def\StartTitlePage%
-  {\setupinteractionmenu[bottom][state=stop] % will be named page block 
+  {\setupinteractionmenu[bottom][state=stop] % will be named page block
    \startstandardmakeup
      \setupalign[middle]
      \def\\%
@@ -149,11 +149,11 @@
 \def\Topics#1%
  {\Nopic{#1}
   \bgroup
-  \setupinteraction  
+  \setupinteraction
     [color=,
      contrastcolor=]
    \determinelistcharacteristics[Topic]
-   \ifnum\utilitylistlength>12  
+   \ifnum\utilitylistlength>12
      \startcolumns[n=2]
        \placelist[Topic]
      \stopcolumns
@@ -162,35 +162,35 @@
    \fi
   \egroup}
 
-%D We don't support another level of structuring. 
+%D We don't support another level of structuring.
 
 \let\Subject \Topic
 \let\Subjects\relax
 
-%D Most of this style is \METAPOST\ definitions. We could 
-%D have shared some code, but it would not on forehand make 
-%D things more readable, so we stick to the following 
-%D definitions. 
+%D Most of this style is \METAPOST\ definitions. We could
+%D have shared some code, but it would not on forehand make
+%D things more readable, so we stick to the following
+%D definitions.
 
 \startuseMPgraphic{page}
 
- width  := \overlaywidth ; 
- height := \overlayheight ; 
+ width  := \overlaywidth ;
+ height := \overlayheight ;
 
- d := 15 ; dd := d ;          dd := 10 ; 
+ d := 15 ; dd := d ;          dd := 10 ;
 
- def fuzzy (expr p,dx,dy) = 
+ def fuzzy (expr p,dx,dy) =
    (xpart p +dx-uniformdeviate dx,ypart p+dy-uniformdeviate dy)
- enddef ; 
+ enddef ;
 
- pair ll, lr, ur, ul ; 
+ pair ll, lr, ur, ul ;
 
  ll := (d,d) ;
  lr := (width-d,d) ;
  ur := (width-d,height-d) ;
  ul := (d,height-d) ;
 
- path p, q, r, s ; 
+ path p, q, r, s ;
 
  p := ll.. for i=.1 step .1 until .9 : fuzzy (i[ll,lr],0,+dd).. endfor lr ;
  q := lr.. for i=.1 step .1 until .9 : fuzzy (i[lr,ur],-dd,0).. endfor ur ;
@@ -201,27 +201,27 @@
 
  fill p & q & r & s -- cycle withcolor \MPcolor{TextColor} ;
 
- color c ; c := \MPcolor{LineColor} ; 
+ color c ; c := \MPcolor{LineColor} ;
 
- draw p withpen pencircle xscaled 20 yscaled  5 rotated 30 withcolor c ;   
- draw q withpen pencircle xscaled  5 yscaled 20 rotated 30 withcolor c ;   
- draw r withpen pencircle xscaled 20 yscaled  5 rotated 30 withcolor c ;   
- draw s withpen pencircle xscaled  5 yscaled 20 rotated 30 withcolor c ;   
+ draw p withpen pencircle xscaled 20 yscaled  5 rotated 30 withcolor c ;
+ draw q withpen pencircle xscaled  5 yscaled 20 rotated 30 withcolor c ;
+ draw r withpen pencircle xscaled 20 yscaled  5 rotated 30 withcolor c ;
+ draw s withpen pencircle xscaled  5 yscaled 20 rotated 30 withcolor c ;
 
 \stopuseMPgraphic
 
 \startuseMPgraphic{itemmark}
-  width     := BodyFontSize ; height := width/4 ; 
+  width     := BodyFontSize ; height := width/4 ;
   maxheight := StrutHeight  ; line   := 3width/2 ;
 
-  def fuzzy = -(height/4)+uniformdeviate (height/2) enddef ; 
+  def fuzzy = -(height/4)+uniformdeviate (height/2) enddef ;
 
-  draw 
-    ((0,0+fuzzy)--(width,height+fuzzy/2)) 
-      shifted (line/2,0) 
-    withpen pencircle 
-      xscaled line yscaled (line/4) 
-      rotated (25+uniformdeviate 10) withcolor \MPcolor{SymbolColor} ;   
+  draw
+    ((0,0+fuzzy)--(width,height+fuzzy/2))
+      shifted (line/2,0)
+    withpen pencircle
+      xscaled line yscaled (line/4)
+      rotated (25+uniformdeviate 10) withcolor \MPcolor{SymbolColor} ;
 
   setbounds currentpicture to unitsquare xyscaled(width,maxheight) ;
 \stopuseMPgraphic
@@ -229,15 +229,15 @@
 \startuseMPgraphic{nextmark}
   LoadPageState ; width := BottomHeight ; height := line := width/2 ;
 
-  def fuzzy = -(height/8)+uniformdeviate (height/4) enddef ; 
+  def fuzzy = -(height/8)+uniformdeviate (height/4) enddef ;
 
   z1 = (0,0+fuzzy) ; z2 = (width,height/2+fuzzy/2) ; z3 = (0,height+fuzzy) ;
 
-  draw 
+  draw
     (z1..{right}z2 & z2{left}..z3)
-    withpen pencircle 
-      xscaled line yscaled (line/4) 
-      rotated 30 withcolor \MPcolor{SymbolColor} ;    
+    withpen pencircle
+      xscaled line yscaled (line/4)
+      rotated 30 withcolor \MPcolor{SymbolColor} ;
 
   setbounds currentpicture to unitsquare xyscaled(width,height) ;
 \stopuseMPgraphic
@@ -245,15 +245,15 @@
 \startuseMPgraphic{prevmark}
   LoadPageState ; width := BottomHeight ; height := line := width/2 ;
 
-  def fuzzy = -(height/8)+uniformdeviate (height/4) enddef ; 
+  def fuzzy = -(height/8)+uniformdeviate (height/4) enddef ;
 
   z1 = (width,0+fuzzy) ; z2 = (0,height/2+fuzzy/2) ; z3 = (width,height+fuzzy) ;
 
-  draw 
+  draw
     (z1..{left}z2 & z2{right}..z3)
-    withpen pencircle 
-      xscaled line yscaled (line/4) 
-      rotated 30 withcolor \MPcolor{SymbolColor} ;    
+    withpen pencircle
+      xscaled line yscaled (line/4)
+      rotated 30 withcolor \MPcolor{SymbolColor} ;
 
   setbounds currentpicture to unitsquare xyscaled(width,height) ;
 \stopuseMPgraphic
@@ -261,7 +261,7 @@
 \startuseMPgraphic{stopmark}
   LoadPageState ; width := BottomHeight ; height := line := width/2 ;
 
-  def fuzzy = -(height/8)+uniformdeviate (height/4) enddef ; 
+  def fuzzy = -(height/8)+uniformdeviate (height/4) enddef ;
 
   z1 = (0,0+fuzzy) ;
   z2 = (width,height+fuzzy) ;
@@ -269,14 +269,34 @@
   z4 = (0,height+fuzzy) ;
   z5 = (width/2,height/2) ;
 
-  drawoptions 
-   (withpen pencircle 
-      xscaled line yscaled (line/4) 
-      rotated 30 withcolor \MPcolor{SymbolColor}) ;   
+  drawoptions
+   (withpen pencircle
+      xscaled line yscaled (line/4)
+      rotated 30 withcolor \MPcolor{SymbolColor}) ;
 
   draw z1..{right}z5..z2 ; draw z3..{left}z5..z4 ;
 
   setbounds currentpicture to unitsquare xyscaled(width,height) ;
 \stopuseMPgraphic
 
-\endinput 
+\doifnotmode{demo}{\endinput}
+
+%D The (rather silly) demo section.
+
+\starttext
+
+\TitlePage{Title Page\\pre-writing}
+
+\Topics{Some Nice Quotes}
+
+\Topic{A Few}
+
+\Subject{Knuth} \input knuth
+\Subject{Tufte} \input tufte
+
+\Topic{Some More}
+
+\Subject{Zapf}   \input zapf
+\Subject{Bryson} \input bryson
+
+\stoptext

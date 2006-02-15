@@ -128,7 +128,7 @@ class TEX
         'mpyforce', 'forcempy',
         'forcetexutil', 'texutil',
         'globalfile', 'autopath',
-        'purge', 'purgeall', 'autopdf', 'xpdf', 'simplerun', 'verbose',
+        'purge', 'purgeall', 'keep', 'autopdf', 'xpdf', 'simplerun', 'verbose',
         'nooptionfile'
     ]
     @@stringvars = [
@@ -847,148 +847,157 @@ class TEX
     end
 
     def deleteoptionfile(rawname)
-        begin
-            File.delete(File.suffixed(rawname,'top'))
-        rescue
+        ['top','top.keep'].each do |suffix|
+            begin
+                File.delete(File.suffixed(rawname,suffix))
+            rescue
+            end
         end
     end
 
     def makeoptionfile(rawname, jobname, jobsuffix, finalrun, fastdisabled, kindofrun)
-        # jobsuffix = orisuffix
-        if topname = File.suffixed(rawname,'top') and opt = File.open(topname,'w') then
-            # local handies
-            opt << "\% #{topname}\n"
-            opt << "\\unprotect\n"
-            opt << "\\setupsystem[\\c!n=#{kindofrun}]\n"
-            opt << "\\def\\MPOSTformatswitch\{#{prognameflag('metafun')} #{formatflag('mpost')}=\}\n"
-            if getvariable('batchmode') then
-                opt << "\\batchmode\n"
-            end
-            if getvariable('nonstopmode') then
-                opt << "\\nonstopmode\n"
-            end
-            if getvariable('paranoid') then
-                opt << "\\def\\maxreadlevel{1}\n"
-            end
-            if (str = File.unixfied(getvariable('modefile'))) && ! str.empty? then
-                opt << "\\readlocfile{#{str}}{}{}\n"
-            end
-            if (str = File.unixfied(getvariable('result'))) && ! str.empty? then
-                opt << "\\setupsystem[file=#{str}]\n"
-            elsif (str = getvariable('suffix')) && ! str.empty? then
-                opt << "\\setupsystem[file=#{jobname}.#{str}]\n"
-            end
-            opt << "\\setupsystem[\\c!type=#{Tool.ruby_platform()}]\n"
-            if (str = File.unixfied(getvariable('path'))) && ! str.empty? then
-                opt << "\\usepath[#{str}]\n" unless str.empty?
-            end
-            if (str = getvariable('mainlanguage').downcase) && ! str.empty? && ! str.standard? then
-                opt << "\\setuplanguage[#{str}]\n"
-            end
-            if str = validbackend(getvariable('backend')) then
-                opt << "\\setupoutput[#{str}]\n"
-            end
-            if getvariable('color') then
-                opt << "\\setupcolors[\\c!state=\\v!start]\n"
-            end
-            if getvariable('nompmode') || getvariable('nomprun') || getvariable('automprun') then
-                opt << "\\runMPgraphicsfalse\n"
-            end
-            if getvariable('fast') && ! getvariable('fastdisabled') then
-                opt << "\\fastmode\n"
-            end
-            if getvariable('silentmode') then
-                opt << "\\silentmode\n"
-            end
-            if (str = getvariable('separation')) && ! str.empty? then
-                opt << "\\setupcolors[\\c!split=#{str}]\n"
-            end
-            if (str = getvariable('setuppath')) && ! str.empty? then
-                opt << "\\setupsystem[\\c!directory=\{#{str}\}]\n"
-            end
-            if (str = getvariable('paperformat')) && ! str.empty? && ! str.standard? then
-                if str =~ /^([a-z]+\d+)([a-z]+\d+)$/io then # A5A4 A4A3 A2A1 ...
-                    opt << "\\setuppapersize[#{$1.upcase}][#{$2.upcase}]\n"
-                else # ...*...
-                    pf = str.upcase.split(/[x\*]/o)
-                    pf << pf[0] if pd.size == 1
-                    opt << "\\setuppapersize[#{pf[0]}][#{pf[1]}]\n"
+        begin
+            # jobsuffix = orisuffix
+            if topname = File.suffixed(rawname,'top') and opt = File.open(topname,'w') then
+                report("writing option file #{topname}")
+                # local handies
+                opt << "\% #{topname}\n"
+                opt << "\\unprotect\n"
+                opt << "\\setupsystem[\\c!n=#{kindofrun}]\n"
+                opt << "\\def\\MPOSTformatswitch\{#{prognameflag('metafun')} #{formatflag('mpost')}=\}\n"
+                if getvariable('batchmode') then
+                    opt << "\\batchmode\n"
                 end
-            end
-            if (str = getvariable('background')) && ! str.empty? then
-                opt << "\\defineoverlay[whatever][{\\externalfigure[#{str}][\\c!factor=\\v!max]}]\n"
-                opt << "\\setupbackgrounds[\\v!page][\\c!background=whatever]\n"
-            end
-            if getvariable('centerpage') then
-                opt << "\\setuplayout[\\c!location=\\v!middle,\\c!marking=\\v!on]\n"
-            end
-            if getvariable('nomapfiles') then
-                opt << "\\disablemapfiles\n"
-            end
-            if getvariable('noarrange') then
-                opt << "\\setuparranging[\\v!disable]\n"
-            elsif getvariable('arrange') then
-                arrangement = Array.new
-                if finalrun then
-                    arrangement << "\\v!doublesided" unless getvariable('noduplex')
-                    case getvariable('printformat')
-                        when ''         then arrangement << "\\v!normal"
-                        when /.*up/oi   then arrangement << "\\v!rotated"
-                        when /.*down/oi then arrangement << ["2DOWN","\\v!rotated"]
-                        when /.*side/oi then arrangement << ["2SIDE","\\v!rotated"]
+                if getvariable('nonstopmode') then
+                    opt << "\\nonstopmode\n"
+                end
+                if getvariable('paranoid') then
+                    opt << "\\def\\maxreadlevel{1}\n"
+                end
+                if (str = File.unixfied(getvariable('modefile'))) && ! str.empty? then
+                    opt << "\\readlocfile{#{str}}{}{}\n"
+                end
+                if (str = File.unixfied(getvariable('result'))) && ! str.empty? then
+                    opt << "\\setupsystem[file=#{str}]\n"
+                elsif (str = getvariable('suffix')) && ! str.empty? then
+                    opt << "\\setupsystem[file=#{jobname}.#{str}]\n"
+                end
+                opt << "\\setupsystem[\\c!type=#{Tool.ruby_platform()}]\n"
+                if (str = File.unixfied(getvariable('path'))) && ! str.empty? then
+                    opt << "\\usepath[#{str}]\n" unless str.empty?
+                end
+                if (str = getvariable('mainlanguage').downcase) && ! str.empty? && ! str.standard? then
+                    opt << "\\setuplanguage[#{str}]\n"
+                end
+                if str = validbackend(getvariable('backend')) then
+                    opt << "\\setupoutput[#{str}]\n"
+                end
+                if getvariable('color') then
+                    opt << "\\setupcolors[\\c!state=\\v!start]\n"
+                end
+                if getvariable('nompmode') || getvariable('nomprun') || getvariable('automprun') then
+                    opt << "\\runMPgraphicsfalse\n"
+                end
+                if getvariable('fast') && ! getvariable('fastdisabled') then
+                    opt << "\\fastmode\n"
+                end
+                if getvariable('silentmode') then
+                    opt << "\\silentmode\n"
+                end
+                if (str = getvariable('separation')) && ! str.empty? then
+                    opt << "\\setupcolors[\\c!split=#{str}]\n"
+                end
+                if (str = getvariable('setuppath')) && ! str.empty? then
+                    opt << "\\setupsystem[\\c!directory=\{#{str}\}]\n"
+                end
+                if (str = getvariable('paperformat')) && ! str.empty? && ! str.standard? then
+                    if str =~ /^([a-z]+\d+)([a-z]+\d+)$/io then # A5A4 A4A3 A2A1 ...
+                        opt << "\\setuppapersize[#{$1.upcase}][#{$2.upcase}]\n"
+                    else # ...*...
+                        pf = str.upcase.split(/[x\*]/o)
+                        pf << pf[0] if pd.size == 1
+                        opt << "\\setuppapersize[#{pf[0]}][#{pf[1]}]\n"
                     end
-                else
-                    arrangement << "\\v!disable"
                 end
-                opt << "\\setuparranging[#{arrangement.flatten.join(',')}]\n" if arrangement.size > 0
-            end
-            # we handle both "--mode" and "--modes", else "--mode" is
-            # mapped onto "--modefile"
-            if (str = getvariable('modes')) && ! str.empty? then
-                opt << "\\enablemode[#{str}]\n"
-            end
-            if (str = getvariable('mode')) && ! str.empty? then
-                opt << "\\enablemode[#{str}]\n"
-            end
-            if (str = getvariable('arguments')) && ! str.empty? then
-                opt << "\\setupenv[#{str}]\n"
-            end
-            if (str = getvariable('randomseed')) && ! str.empty? then
-                opt << "\\setupsystem[\\c!random=#{str}]\n"
-            end
-            if (str = getvariable('input')) && ! str.empty? then
-                opt << "\\setupsystem[inputfile=#{str}]\n"
-            else
-                opt << "\\setupsystem[inputfile=#{rawname}]\n"
-            end
-            if (str = getvariable('pages')) && ! str.empty? then
-                if str.downcase == 'odd' then
-                    opt << "\\chardef\\whichpagetoshipout=1\n"
-                elsif str.downcase == 'even' then
-                    opt << "\\chardef\\whichpagetoshipout=2\n"
-                else
-                    pagelist = Array.new
-                    str.split(/\,/).each do |page|
-                        pagerange = page.split(/(\:|\.\.)/o )
-                        if pagerange.size > 1 then
-                            pagerange.first.to_i.upto(pagerange.last.to_i) do |p|
-                                pagelist << p.to_s
-                            end
-                        else
-                            pagelist << page
+                if (str = getvariable('background')) && ! str.empty? then
+                    opt << "\\defineoverlay[whatever][{\\externalfigure[#{str}][\\c!factor=\\v!max]}]\n"
+                    opt << "\\setupbackgrounds[\\v!page][\\c!background=whatever]\n"
+                end
+                if getvariable('centerpage') then
+                    opt << "\\setuplayout[\\c!location=\\v!middle,\\c!marking=\\v!on]\n"
+                end
+                if getvariable('nomapfiles') then
+                    opt << "\\disablemapfiles\n"
+                end
+                if getvariable('noarrange') then
+                    opt << "\\setuparranging[\\v!disable]\n"
+                elsif getvariable('arrange') then
+                    arrangement = Array.new
+                    if finalrun then
+                        arrangement << "\\v!doublesided" unless getvariable('noduplex')
+                        case getvariable('printformat')
+                            when ''         then arrangement << "\\v!normal"
+                            when /.*up/oi   then arrangement << "\\v!rotated"
+                            when /.*down/oi then arrangement << ["2DOWN","\\v!rotated"]
+                            when /.*side/oi then arrangement << ["2SIDE","\\v!rotated"]
                         end
+                    else
+                        arrangement << "\\v!disable"
                     end
-                    opt << "\\def\\pagestoshipout\{pagelist.join(',')\}\n";
+                    opt << "\\setuparranging[#{arrangement.flatten.join(',')}]\n" if arrangement.size > 0
                 end
+                # we handle both "--mode" and "--modes", else "--mode" is
+                # mapped onto "--modefile"
+                if (str = getvariable('modes')) && ! str.empty? then
+                    opt << "\\enablemode[#{str}]\n"
+                end
+                if (str = getvariable('mode')) && ! str.empty? then
+                    opt << "\\enablemode[#{str}]\n"
+                end
+                if (str = getvariable('arguments')) && ! str.empty? then
+                    opt << "\\setupenv[#{str}]\n"
+                end
+                if (str = getvariable('randomseed')) && ! str.empty? then
+                    opt << "\\setupsystem[\\c!random=#{str}]\n"
+                end
+                if (str = getvariable('input')) && ! str.empty? then
+                    opt << "\\setupsystem[inputfile=#{str}]\n"
+                else
+                    opt << "\\setupsystem[inputfile=#{rawname}]\n"
+                end
+                if (str = getvariable('pages')) && ! str.empty? then
+                    if str.downcase == 'odd' then
+                        opt << "\\chardef\\whichpagetoshipout=1\n"
+                    elsif str.downcase == 'even' then
+                        opt << "\\chardef\\whichpagetoshipout=2\n"
+                    else
+                        pagelist = Array.new
+                        str.split(/\,/).each do |page|
+                            pagerange = page.split(/(\:|\.\.)/o )
+                            if pagerange.size > 1 then
+                                pagerange.first.to_i.upto(pagerange.last.to_i) do |p|
+                                    pagelist << p.to_s
+                                end
+                            else
+                                pagelist << page
+                            end
+                        end
+                        opt << "\\def\\pagestoshipout\{pagelist.join(',')\}\n";
+                    end
+                end
+                opt << "\\protect\n";
+                begin getvariable('filters'     ).split(',').uniq.each do |f| opt << "\\useXMLfilter[#{f}]\n"   end ; rescue ; end
+                begin getvariable('usemodules'  ).split(',').uniq.each do |m| opt << "\\usemodule[#{m}]\n"      end ; rescue ; end
+                begin getvariable('environments').split(',').uniq.each do |e| opt << "\\environment #{e}\n"     end ; rescue ; end
+              # this will become:
+              # begin getvariable('environments').split(',').uniq.each do |e| opt << "\\useenvironment[#{e}]\n" end ; rescue ; end
+                opt << "\\endinput\n"
+                opt.close
+            else
+                report("unable to write option file #{topname}")
             end
-            opt << "\\protect\n";
-            begin getvariable('filters'     ).split(',').uniq.each do |f| opt << "\\useXMLfilter[#{f}]\n"   end ; rescue ; end
-            begin getvariable('usemodules'  ).split(',').uniq.each do |m| opt << "\\usemodule[#{m}]\n"      end ; rescue ; end
-            begin getvariable('environments').split(',').uniq.each do |e| opt << "\\environment #{e}\n"     end ; rescue ; end
-          # this will become:
-          # begin getvariable('environments').split(',').uniq.each do |e| opt << "\\useenvironment[#{e}]\n" end ; rescue ; end
-            opt << "\\endinput\n"
-            opt.close
+        rescue
+            report("fatal error in writing option file #{topname}")
         end
     end
 
@@ -1009,6 +1018,7 @@ class TEX
         if ENV.key?('SHELL_ESCAPE') && (ENV['SHELL_ESCAPE'] == 'f') then
             setvariable('automprun',true)
         end
+        done = false
         ['TXRESOURCES','MPRESOURCES','MFRESOURCES'].each do |res|
             [getvariable('runpath'),getvariable('path')].each do |pat|
                 unless pat.empty? then
@@ -1017,8 +1027,10 @@ class TEX
                     else
                         ENV[res] = pat
                     end
+                    report("setting #{res} to #{ENV[res]}") unless done
                 end
             end
+            done = true
         end
     end
 
@@ -1282,8 +1294,11 @@ class TEX
                             runbackend(rawname)
                             popresult(rawname,result)
                         end
-                        File.silentdelete(File.suffixed(rawname,'tmp'))
-                        File.silentrename(File.suffixed(rawname,'top'),File.suffixed(rawname,'tmp'))
+                        if getvariable('keep') then
+                            ['top','log'].each do |suffix|
+                                File.silentrename(File.suffixed(rawname,suffix),File.suffixed(rawname,suffix+'.keep'))
+                            end
+                        end
                     else
                         mprundone, ok, stoprunning = false, true, false
                         texruns, nofruns = 0, getvariable('runs').to_i
@@ -1321,10 +1336,16 @@ class TEX
                             report("final TeX run #{texruns}")
                             ok = runtex(File.suffixed(rawname,jobsuffix))
                         end
-                        ['tmp','top'].each do |s| # previous tuo file / runtime option file
-                             File.silentdelete(File.suffixed(rawname,s))
+                        if getvariable('keep') then
+                            ['top','log'].each do |suffix|
+                                File.silentrename(File.suffixed(rawname,suffix),File.suffixed(rawname,suffix+'.keep'))
+                            end
+                        else
+                            File.silentrename(File.suffixed(rawname,'top'),File.suffixed(rawname,'tmp'))
                         end
-                        File.silentrename(File.suffixed(rawname,'top'),File.suffixed(rawname,'tmp'))
+                        # ['tmp','top','log'].each do |s| # previous tuo file / runtime option file / log file
+                             # File.silentdelete(File.suffixed(rawname,s))
+                        # end
                         if ok then
                             runbackend(rawname)
                             popresult(rawname,result)
@@ -1422,7 +1443,7 @@ class TEX
                 end
                 f.close
             end
-            File.silentrename(mpfile,"mptrace.tmp")
+            File.silentrename(mpfile,mpfile+'.keep')
             File.silentrename(mpcopy, mpfile)
         end
     end

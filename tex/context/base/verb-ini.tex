@@ -374,14 +374,41 @@
   {\global\let\savedverbatimline\empty
    \global\chardef\verbatimstatus\ifskipfirstverbatimline0 \else1 \fi}
 
-\let\donextemptyverbatimline\relax
+% \let\donextemptyverbatimline\relax
+
+% \def\presetemptyverbatimline
+%   {\ifcase\verbatimstatus
+%      \global\chardef\verbatimstatus\plusone
+%    \or
+%    \or
+%      \donextemptyverbatimline
+%    \or
+%      \doflushverbatimline
+%      \global\let\savedverbatimline\empty
+%      \doemptyverbatimline
+%      \global\chardef\verbatimstatus\plustwo
+%    \else
+%      \kern\zeropoint
+%      \doverbatimnobreak
+%      \doflushverbatimline
+%      \global\let\savedverbatimline\empty
+%      \doemptyverbatimline
+%      \global\chardef\verbatimstatus\plustwo
+%    \fi}
+
+\chardef\verbatimemptylinemode\zerocount
 
 \def\presetemptyverbatimline
   {\ifcase\verbatimstatus
      \global\chardef\verbatimstatus\plusone
    \or
+     \ifcase\verbatimemptylinemode\or\or
+      \doemptyverbatimline
+     \fi
    \or
-     \donextemptyverbatimline
+     \ifcase\verbatimemptylinemode\else
+       \doemptyverbatimline
+     \fi
    \or
      \doflushverbatimline
      \global\let\savedverbatimline\empty
@@ -417,13 +444,28 @@
    \fi
    \global\let\savedverbatimline\verbatimline}
 
+% \def\presetlastverbatimline
+%   {\ifcase\verbatimstatus \or \or \or
+%      \doflushverbatimline
+%    \else
+%      \kern\zeropoint
+%      \doverbatimnobreak
+%      \doflushverbatimline
+%    \fi}
+
 \def\presetlastverbatimline
-  {\ifcase\verbatimstatus \or \or \or
+  {\ifcase \verbatimstatus
+   \or
+   \or
+   \or
      \doflushverbatimline
    \else
-     \kern\zeropoint
+     \kern \zeropoint
      \doverbatimnobreak
      \doflushverbatimline
+   \fi
+   \ifcase\verbatimemptylinemode\or\else
+     \kern \zeropoint
    \fi}
 
 %D \macros
@@ -830,8 +872,14 @@
    {\setbox0\hbox{\the\everyline}}%
    \global\linepartrue}
 
-\def\obeyemptylines
-  {\let\donextemptyverbatimline\doemptyverbatimline}
+% \def\obeyemptylines
+%   {\let\donextemptyverbatimline\doemptyverbatimline}
+
+\def\obeyemptylines % tricky, only in verbatim (should be token list)!
+  {\chardef\verbatimemptylinemode\plusone}
+
+\def\obeyallemptylines % tricky, only in verbatim (should be token list)!
+  {\chardef\verbatimemptylinemode\plustwo}
 
 %D \TEX\ does not offer \type{\everyline}, which is a direct
 %D result of its advanced multi||pass paragraph typesetting

@@ -16,12 +16,12 @@
 %D This is just one way of implementing such a style. Today
 %D we have more \METAPOST\ interfacing available, and
 %D thereby moore tools and alternative ways to reach such a
-%D goal. I must admit that the main macro looks fuzzy. On 
-%D the other hand, the presentation can look quite structured. 
-%D 
+%D goal. I must admit that the main macro looks fuzzy. On
+%D the other hand, the presentation can look quite structured.
+%D
 %D \starttyping
 %D \Topics{...}
-%D 
+%D
 %D \StartIdeas
 %D   \Topic{...}
 %D   \StartIdea ... \StopIdea
@@ -54,7 +54,7 @@
 %D keep the random seed reasonable constant.
 
 \setupsystem
-  [random=big] 
+  [random=big]
 
 \setupcolors
   [state=start]
@@ -193,4 +193,20 @@
 \def\StopIdeas%
   {}
 
-\endinput
+\doifnotmode{demo}{\endinput}
+
+%D The (rather silly) demo section.
+
+\starttext
+
+\Topics{This is about \unknown}
+
+\StartIdeas
+    \Topic{Some topic}
+    \StartIdea An idea \unknown \StopIdea
+    \StartIdea \unknown\ and another \StopIdea
+\StopIdeas
+
+\stoptext
+
+

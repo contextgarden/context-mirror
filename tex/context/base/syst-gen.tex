@@ -4111,76 +4111,74 @@
 %D \type {\if} and friends, in practice we will use a
 %D slightly more complicated macro.
 
-\let\normalif       \if
-\let\normalifx      \ifx
-\let\normalifnum    \ifnum
-\let\normalifdim    \ifdim
-\let\normalifcat    \ifcat
-\let\normalifcase   \ifcase
-\let\normalifcsname \ifcsname
-\let\normalifhmode  \ifhmode
-\let\normalifvmode  \ifvmode
-\let\normalor       \or
-\let\normalelse     \else
-\let\normalfi       \fi
+\let\normalif         \if
+\let\normalifcat      \ifcat
+\let\normalifnum      \ifnum
+\let\normalifdim      \ifdim
+\let\normalifodd      \ifodd
+\let\normalifvmode    \ifvmode
+\let\normalifhmode    \ifhmode
+\let\normalifmmode    \ifmmode
+\let\normalifinner    \ifinner
+\let\normalifvoid     \ifvoid
+\let\normalifhbox     \ifhbox
+\let\normalifvbox     \ifvbox
+\let\normalifx        \ifx
+\let\normalifeof      \ifeof
+\let\normaliftrue     \iftrue
+\let\normaliffalse    \iffalse
+\let\normalifcase     \ifcase
+\let\normalifdefined  \ifdefined
+\let\normalifcsname   \ifcsname
+\let\normaliffontchar \iffontchar
+\let\normalifincsname \ifincsname
+\let\normalifprimitive\ifprimitive
+\let\normalifabsnum   \ifabsnum
+\let\normalifabsdim   \ifabsdim
+
+\let\normalelse       \else
+\let\normalor         \or
+\let\normalfi         \fi
+
+\newtoks \everyrobusttest
+
+\everyrobusttest
+  {\let\if         \relax
+   \let\ifcat      \relax
+   \let\ifnum      \relax
+   \let\ifdim      \relax
+   \let\ifodd      \relax
+   \let\ifvmode    \relax
+   \let\ifhmode    \relax
+   \let\ifmmode    \relax
+   \let\ifinner    \relax
+   \let\ifvoid     \relax
+   \let\ifhbox     \relax
+   \let\ifvbox     \relax
+   \let\ifx        \relax
+   \let\ifeof      \relax
+   \let\iftrue     \relax
+   \let\iffalse    \relax
+   \let\ifcase     \relax
+   \let\ifdefined  \relax
+   \let\ifcsname   \relax
+   \let\iffontchar \relax
+   \let\ifincsname \relax
+   \let\ifprimitive\relax
+   \let\ifabsnum   \relax
+   \let\ifabsdim   \relax
+   \let\else       \relax
+   \let\or         \relax
+   \let\fi         \relax}
 
 \def\beginrobusttest
   {\begingroup
-   \let\if      \relax
-   \let\ifx     \relax
-   \let\ifnum   \relax
-   \let\ifdim   \relax
-   \let\ifcat   \relax
-   \let\ifcase  \relax
-   \let\ifcsname\relax
-   \let\or      \relax
-   \let\else    \relax
-   \let\fi      \relax}
+   \the\everyrobusttest}
 
 \let\endrobusttest\endgroup
 
-% \def\dogetgroupargument#1#2%
-%   {\def\nextnextargument%
-%      {\normalifx\nextargument\bgroup
-%         \endrobusttest
-%         \let\expectedarguments\noexpectedarguments
-%         \def\nextargument{#1\dodogetargument}%
-%      %\normalelse\normalifx\nextargument\lineending % this can be an option
-%      %  \def\nextargument{\begingroup\def\\ {\endgroup\dogetgroupargument#1#2}\\}%
-%      %\normalelse\normalifx\nextargument\blankspace % but may never be default
-%      %  \def\nextargument{\begingroup\def\\ {\endgroup\dogetgroupargument#1#2}\\}%
-%       \normalelse
-%         \endrobusttest
-%         \ifnum\expectedarguments>\noexpectedarguments
-%           \showargumenterror{\number\expectedarguments}{\number\inputlineno}%
-%         \fi
-%         \let\expectedarguments\noexpectedarguments
-%         \def\nextargument{#2\dodogetargument{}}%
-%       \normalfi%\normalfi\normalfi                  % so let's get rid of it
-%       \nextargument}%
-%    \beginrobusttest
-%    \futurelet\nextargument\nextnextargument}
-
-% \def\dogetgroupargument#1#2%
-%   {\def\nextnextargument%
-%      {\normalifx\nextargument\bgroup
-%         \endrobusttest
-%         \noshowargumenterror
-%         \def\nextargument{#1\dodogetargument}%
-%      %\normalelse\normalifx\nextargument\lineending % this can be an option
-%      %  \def\nextargument{\begingroup\def\\ {\endgroup\dogetgroupargument#1#2}\\}%
-%      %\normalelse\normalifx\nextargument\blankspace % but may never be default
-%      %  \def\nextargument{\begingroup\def\\ {\endgroup\dogetgroupargument#1#2}\\}%
-%       \normalelse
-%         \endrobusttest
-%         \doshowargumenterror
-%         \def\nextargument{#2\dodogetargument{}}%
-%       \normalfi%\normalfi\normalfi                  % so let's get rid of it
-%       \nextargument}%
-%    \beginrobusttest
-%    \futurelet\nextargument\nextnextargument}
-
-% we need to use an \ifcase in order to honor the \normal...
+%D We can add additional definitions later when we have defined
+%D \type {\appendtoks}.
 
 \def    \permitspacesbetweengroups{\chardef\@@permitspacesbetweengroups=0 }
 \def\dontpermitspacesbetweengroups{\chardef\@@permitspacesbetweengroups=1 }

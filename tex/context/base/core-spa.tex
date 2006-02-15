@@ -3661,6 +3661,8 @@
 \def\rightraggedness  {2\bodyfontsize}
 \def\middleraggedness {6\bodyfontsize}
 
+\def\middleraggedness {.5\hsize} % was: 6\bodyfontsize, fails on: \placefigure{x $x=x$ x}{}
+
 %D More hyphenation control, will be combined with align
 %D setup.
 
@@ -4620,6 +4622,34 @@
 
 \def\fixedspaceamount#1%
   {#1\fontdimen2\font}
+
+%D This is a dangerous feature because it makes the \TEX\ source
+%D less portable, i.e. any parser now needs to apply exactly the
+%D same algorithm when it wants to interpret the source. We
+%D strongly recommend not to mention this feature in manuals! It's
+%D provided for users who are hooked to such a mechanism.
+%D
+%D \starttyping
+%D \setupsorting[logo][next=\autoinsertnextspace] \logo[TEX]{\TeX}
+%D
+%D bla bla \TEX bla bla \TEX (bla) bla (\TEX)
+%D \stoptyping
+
+\def\autoinsertnextspace{\futurelet\nexttoken\doautoinsertnextspace}
+
+\def\doautoinsertnextspace % slightly extended version of a user supplied macro
+  {\ifx\nexttoken \bgroup\else \ifx\nexttoken\begingroup\else
+   \ifx\nexttoken \egroup\else \ifx\nexttoken  \endgroup\else
+   \ifx\nexttoken      \/\else \ifx\nexttoken           /\else \ifx\nexttoken      ~\else
+   \ifx\nexttoken      \ \else \ifx\nexttoken \blankspace\else \ifx\nexttoken \space\else
+   \ifx\nexttoken       .\else \ifx\nexttoken           ,\else
+   \ifx\nexttoken       !\else \ifx\nexttoken           ?\else
+   \ifx\nexttoken       :\else \ifx\nexttoken           ;\else
+   \ifx\nexttoken       '\else \ifx\nexttoken           "\else
+   \ifx\nexttoken       )\else \ifx\nexttoken           -\else \ifx\nexttoken      |\else
+   \ifx\nexttoken      \%\else \ifx\nexttoken          \&\else
+     \space
+   \fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi}
 
 \setupwhitespace
   [\v!none]

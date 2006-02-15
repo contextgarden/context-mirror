@@ -3991,6 +3991,15 @@
      \setbox\@@dlhbox\hbox{\mathsurround\zeropoint\everymath\emptytoks$ $}\unhbox\@@dlhbox
    \fi \fi}
 
+% Also ok, but more sensitive to lookahead expansion is:
+%
+% \def\dontleavehmode{\ifvmode \indent \fi}
+%
+% which assumes indent is kept unchanged. Protecting the macro is only
+% possible in etex (watch out: \unexpanded in context is eq to \protected).
+%
+% \unexpanded \def\dontleavehmode{\ifvmode \indent \fi} % functional spec TH
+
 %D But, if you run a recent version of \TEX, we can use the new
 %D primitive:
 

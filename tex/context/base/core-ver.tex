@@ -164,6 +164,10 @@
      [\getvalue{#1\c!lines}]
      [        \v!yes=>\obeybreakpoints,
        \v!hyphenated=>\obeyhyphens]%
+   \processaction
+     [\getvalue{#1\c!empty}]
+     [\v!yes=>\obeyemptylines,
+      \v!all=>\obeyallemptylines]%
    %
    \ExpandFirstAfter\processaction
      [\getvalue{#1\c!option}]
@@ -295,7 +299,6 @@
 % Verbatim does not work when passed as an argument, so here is a
 % workaround. Beware, spaces are introduced after a \type {\csname}.
 
-\chardef\recodeverbatimmode\zerocount % 0=nothing 1=rescan 2=autorescan
 \chardef\recodeverbatimmode\zerocount % 0=nothing 1=rescan 2=autorescan
 
 % \appendtoks \chardef\recodeverbatimmode\plustwo \to \everytabulate
@@ -522,26 +525,52 @@
 
 \let\protectedfirsttype\string % \relax for special cases
 
+% \bgroup
+% \catcode`\<=\active
+% \catcode`\>=\active
+% \gdef\doprotectfirsttype
+%   {\ifx\next<%
+%      \let\next\relax
+%    \else\ifx\next\bgroup
+%      \let\next\relax
+%    \else\ifx\next\egroup % takes care of \type{}
+%      \let\next\relax
+%    \else\ifx\next\activeleftargument
+%      \let\next\relax
+%    \else
+%      \let\next\protectedfirsttype
+%    \fi\fi\fi\fi
+%    \next}
+% \egroup
+%
+% \def\protectfirsttype
+%   {\futurelet\next\doprotectfirsttype}
+%
+% The next one is safe for:
+%
+% \def\xx#1{\type{#1}} \xx{\ifx}
+
 \bgroup
 \catcode`\<=\active
 \catcode`\>=\active
 \gdef\doprotectfirsttype
-  {\ifx\next<%
-     \let\next\relax
-   \else\ifx\next\bgroup
-     \let\next\relax
-   \else\ifx\next\egroup % takes care of \type{}
-     \let\next\relax
-   \else\ifx\next\activeleftargument
-     \let\next\relax
-   \else
-     \let\next\protectedfirsttype
-   \fi\fi\fi\fi
+  {\normalifx\next<%
+     \endrobusttest \let\next\relax
+   \normalelse\normalifx\next\bgroup
+     \endrobusttest \let\next\relax
+   \normalelse\normalifx\next\egroup % takes care of \type{}
+     \endrobusttest \let\next\relax
+   \normalelse\normalifx\next\activeleftargument
+     \endrobusttest \let\next\relax
+   \normalelse
+     \endrobusttest \let\next\protectedfirsttype
+   \normalfi\normalfi\normalfi\normalfi
    \next}
 \egroup
 
 \def\protectfirsttype
-  {\futurelet\next\doprotectfirsttype}
+  {\beginrobusttest
+   \futurelet\next\doprotectfirsttype}
 
 %D The neccessary initializations are done by calling
 %D \type{\initializetype} which in return calls for the support
@@ -838,7 +867,8 @@
            \c!blank=\v!line,
           \c!escape=/, % beware \string\ , should also be accepted
        \c!numbering=\v!no,
-           \c!lines=]
+           \c!lines=,
+           \c!empty=]
 
 %D \macros
 %D   {definetype}
@@ -877,7 +907,7 @@
   {\copyparameters
      [\??tp#1][\??tp]
      [\c!before,\c!after,\c!space,\c!page,\c!tab,\c!color,\c!style,
-      \c!text,\c!icommand,\c!vcommand,\c!ccommand,\c!bodyfont,
+      \c!text,\c!icommand,\c!vcommand,\c!ccommand,\c!bodyfont,\c!empty,
       \c!option,\c!palet,\c!margin,\c!evenmargin,\c!oddmargin,
       \c!indentnext,\c!blank,\c!escape,\c!lines,\c!numbering]%
    \getparameters

@@ -864,6 +864,11 @@
         <cd:constant type="ne"/>
         <cd:constant type="hyphenated"/>
       </cd:parameter>
+      <cd:parameter name="prazdne">
+        <cd:constant type="ano"/>
+        <cd:constant type="vse"/>
+        <cd:constant type="ne"/>
+      </cd:parameter>
     </cd:assignments>
   </cd:arguments>
 </cd:command>
@@ -6243,6 +6248,9 @@
       <cd:constant type="naokraji"/>
       <cd:constant type="uvod"/>
       <cd:constant type="sloupce"/>
+      <cd:constant type="text"/>
+      <cd:constant type="odstavec"/>
+      <cd:constant type="opakovat"/>
     </cd:keywords>
     <cd:assignments optional="yes" list="yes">
       <cd:inherit name="setupitemgroup"/>

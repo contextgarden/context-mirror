@@ -8,12 +8,12 @@
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
-%C therefore copyrighted by \PRAGMA. See mreadme.pdf for 
-%C details. 
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
 
 %D This environment can be used to typeset interactive
-%D presentations. This module was first used at the 1998 
-%D publishers conference of the European Portable Document 
+%D presentations. This module was first used at the 1998
+%D publishers conference of the European Portable Document
 %D Association (now merged into a graphics association).
 
 \usemodule[pre-general]
@@ -21,8 +21,8 @@
 %D \macros
 %D   {setupbodyfont, switchtobodyfont, setuplayout}
 %D
-%D At \PRAGMA\ we prefer using the Lucida Bright fonts, but 
-%D one can of course load another typeface. 
+%D At \PRAGMA\ we prefer using the Lucida Bright fonts, but
+%D one can of course load another typeface.
 
 \startmode[asintended] \setupbodyfont[lbr] \stopmode
 
@@ -34,7 +34,7 @@
 %D \macros
 %D   {setuppapersize, setuplayout}
 %D
-%D The papersize suits the screen dimensions. The layout is 
+%D The papersize suits the screen dimensions. The layout is
 %D rather simple. We use the whole width of the screen and only
 %D have navigational tools at the bottom of the screen.
 
@@ -55,8 +55,8 @@
 %D \macros
 %D   {setupwhitespace, setuptyping}
 %D
-%D We don't have much height, so we use a more cramped 
-%D spacing. Verbatim text looks better when indented. 
+%D We don't have much height, so we use a more cramped
+%D spacing. Verbatim text looks better when indented.
 %D
 
 \setupwhitespace
@@ -69,7 +69,7 @@
 %D   {definecolor, setupcolors}
 %D
 %D Of course we enable color. We define some logical colors,
-%D of which most default to the same green shade. 
+%D of which most default to the same green shade.
 
 \definecolor [BackgroundColor]  [r=.8, g=.8, b=.8]
 \definecolor [OrnamentColor]    [r= 0, g=.7, b=.4]
@@ -79,8 +79,8 @@
 
 %D \macros
 %D   {setupinteraction, setupinteractionscreen}
-%D   
-%D We still have to enable interaction mode. We go full 
+%D
+%D We still have to enable interaction mode. We go full
 %D screen!
 
 \setupinteraction
@@ -103,31 +103,31 @@
 
 %D \macros
 %D   {defineoverlay, setupbackgrounds}
-%D 
-%D The navigational elements and the backgrounds are 
+%D
+%D The navigational elements and the backgrounds are
 %D provided by \METAPOST.
-%D 
+%D
 %D When \METAPOST\ is used, it makes sense to generate the
 %D graphics at runtime. This is supported when one enables
 %D system calls in the local \type {texmf.cnf} file and add the
 %D switch \type {\runMPgraphicstrue} to the local file \type
-%D {cont-sys.tex}. When direct processing is disabled or not 
-%D supported, \TEXEXEC\ will take care of graphic generation. 
+%D {cont-sys.tex}. When direct processing is disabled or not
+%D supported, \TEXEXEC\ will take care of graphic generation.
 
 \startuniqueMPgraphic{PageBackground}
   fill unitsquare
-    xyscaled(OverlayWidth,OverlayHeight) 
-    withcolor OverlayColor ; 
+    xyscaled(OverlayWidth,OverlayHeight)
+    withcolor OverlayColor ;
   draw unitsquare
-    xyscaled(OverlayWidth,OverlayHeight) 
+    xyscaled(OverlayWidth,OverlayHeight)
     enlarged (-2*OverlayLineWidth)
     withpen pencircle scaled OverlayLineWidth
-    withcolor OverlayLineColor ; 
+    withcolor OverlayLineColor ;
 \stopuniqueMPgraphic
 
 \defineoverlay
   [PageBackground]
-  [\uniqueMPgraphic{PageBackground}] 
+  [\uniqueMPgraphic{PageBackground}]
 
 \setupbackgrounds
   [page]
@@ -139,15 +139,15 @@
 %D \macros
 %D   {setuptexttexts}
 %D
-%D By clicking on the text area, one goes to the next page. 
-%D We hook this feature into the text backgrounds. 
+%D By clicking on the text area, one goes to the next page.
+%D We hook this feature into the text backgrounds.
 
 \startuniqueMPgraphic{TextBackground}
   draw unitsquare
-    xyscaled(OverlayWidth,OverlayHeight) 
+    xyscaled(OverlayWidth,OverlayHeight)
     enlarged (4*OverlayLineWidth)
     withpen pencircle scaled OverlayLineWidth
-    withcolor OverlayLineColor ;  
+    withcolor OverlayLineColor ;
 \stopuniqueMPgraphic
 
 \defineoverlay
@@ -214,14 +214,14 @@
   [menu=on]
 
 \def\WhateverButton
-  {\doifreferencefoundelse{Whatever} 
-     {\raw [Whatever] \uniqueMPgraphic{UpArrow} \\}   
+  {\doifreferencefoundelse{Whatever}
+     {\raw [Whatever] \uniqueMPgraphic{UpArrow} \\}
      {}}
 
 \startinteractionmenu[bottom]
-  \but [Topics]                                     \\ % secret button 
+  \but [Topics]                                     \\ % secret button
   \hfill
-  \WhateverButton                                      % user specific 
+  \WhateverButton                                      % user specific
   \kern2\bottomheight
   \raw [previouspage]  \uniqueMPgraphic{LeftArrow}  \\
   \kern.5\bottomheight
@@ -253,23 +253,23 @@
 %D \macros
 %D  {StartTitlePage, TitlePage}
 %D
-%D The titlepage is rather simple and can be typeset in two 
-%D ways: 
+%D The titlepage is rather simple and can be typeset in two
+%D ways:
 %D
 %D \starttyping
 %D \StartTitlePage
-%D text \\ text \\ text 
+%D text \\ text \\ text
 %D \StopTitlepage
 %D \stoptyping
 %D
 %D or as one||liner:
 %D
 %D \starttyping
-%D \TitlePage{text\\text\\text} 
+%D \TitlePage{text\\text\\text}
 %D \stoptyping
-%D 
-%D The first alternative can be used for more complicated 
-%D title pages.  
+%D
+%D The first alternative can be used for more complicated
+%D title pages.
 
 \def\StartTitlePage%
   {\startstandardmakeup
@@ -289,8 +289,8 @@
 %D   {definehead}
 %D
 %D The commands \type{\Topic} and \type{\Subject} are defined
-%D as copies of head. We use \type{\Nopic} for internal 
-%D purposes. 
+%D as copies of head. We use \type{\Nopic} for internal
+%D purposes.
 
 \definehead [Topic]   [chapter]
 \definehead [Subject] [section]
@@ -323,8 +323,8 @@
 %D \macros
 %D   {setuplist}
 %D
-%D When found, the subject list is automatically placed 
-%D after the topic head. 
+%D When found, the subject list is automatically placed
+%D after the topic head.
 
 \setuplist
   [Topic,Subject]
@@ -337,7 +337,7 @@
   [Topic]
   [criterium=all]
 
-\def\Topics#1% 
+\def\Topics#1%
   {\determinelistcharacteristics[Topic]
    \doifmode{*list}
      {\Nopic[Topics]{#1}
@@ -349,7 +349,7 @@
   [Subject]
   [criterium=Topic]
 
-\def\Subjects% 
+\def\Subjects%
   {\determinelistcharacteristics[Subject]
    \doifmode{*list}
      {\placelist[Subject]}}
@@ -358,4 +358,24 @@
   [Topic]
   [after={\blank[3*medium]\Subjects}]
 
-\endinput
+\doifnotmode{demo}{\endinput}
+
+%D The (rather silly) demo section.
+
+\starttext
+
+\TitlePage{Title Page\\pre-green}
+
+\Topics{Some Nice Quotes}
+
+\Topic{A Few}
+
+\Subject{Knuth} \input knuth
+\Subject{Tufte} \input tufte
+
+\Topic{Some More}
+
+\Subject{Zapf}   \input zapf
+\Subject{Bryson} \input bryson
+
+\stoptext
