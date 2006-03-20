@@ -493,15 +493,21 @@ class CommandLine
         unless foundkey then
             @registered.each do |option, shortcut, kind|
                 n = 0
-                if option =~ /^#{key}/i then
-                    case n
-                        when 0
-                            foundkey, foundkind = option, kind
-                            n = 1
-                        when 1
-                            # ambiguous matches, like --fix => --fixme --fixyou
-                            foundkey, foundkind = nil, nil
-                            break
+                begin
+                    re = /^#{key}/i
+                rescue
+                    key = key.inspect.sub(/^\"(.*)\"$/) do $1 end
+                    re = /^#{key}/i
+                ensure
+                    if option =~ re then
+                        case n
+                            when 0
+                                foundkey, foundkind, n = option, kind, 1
+                            when 1
+                                # ambiguous matches, like --fix => --fixme --fixyou
+                                foundkey, foundkind = nil, nil
+                                break
+                        end
                     end
                 end
             end

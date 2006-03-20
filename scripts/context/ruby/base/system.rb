@@ -74,7 +74,7 @@ module System
         end
         program = program + ' ' + arguments if ! arguments.empty?
         program.gsub!(/\s+/io, ' ')
-        program.gsub!(/(\.\/)+/io, '')
+        #program.gsub!(/(\/\.\/)+/io, '/')
         program.gsub!(/\\/io, '/')
         return program
     end

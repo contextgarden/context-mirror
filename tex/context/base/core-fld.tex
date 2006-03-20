@@ -28,6 +28,19 @@
 
 \unprotect
 
+%D First we hook fields into the (viewer based) layering mechanism
+%D (implemented as properties).
+
+\ifx\currentlayerproperty\undefined\else \let\currentlayerproperty\empty\fi
+
+\appendtoks
+  \doif\@@iafieldlayer\v!auto
+    {\def\@@iafieldlayer{\currentlayerproperty}}%
+\to \everysetupinteraction
+
+\setupinteraction
+  [\c!fieldlayer=\v!auto] % auto by default
+
 %D Internal command, linked to \type{\definesymbol}.
 
 \def\dogetfieldsymbol#1%
@@ -92,7 +105,6 @@
      {\@@DriverFieldClickIn,\@@DriverFieldClickOut,\@@DriverFieldRegionIn,\@@DriverFieldRegionOut,%
       \@@DriverFieldAfterKey,\@@DriverFieldFormat,\@@DriverFieldValidate,\@@DriverFieldCalculate,%
       \@@DriverFieldFocusIn,\@@DriverFieldFocusOut}}
-
 
 \def\presettextfield
   {\preparefieldvariables
@@ -771,7 +783,7 @@
           {\setvalue{\strippedcsname\setupfield##1}{\dosetupfield[##1][#1,##2][#2,##3][#3,##4][#4,##5]}}}%
    \else\iffirstargument
      \doifelse{#1}\v!reset
-       {\let\dodosetupfield\normaldodosetupfield}
+       {\resetfields}
        {\setupfields[][][][#1]}% checken
    \else
      \writestatus\m!fields{provide either 1 or 4 arguments}%
@@ -779,6 +791,11 @@
 
 \def\setupfields
   {\doquadrupleempty\dosetupfields}
+
+\def\resetfields
+  {\let\dodosetupfield\normaldodosetupfield}
+
+% \setupfields[\v!reset]
 
 % opties: veld, label, kader, vertikaal/horizontaal
 
@@ -798,8 +815,8 @@
                       \HorizontalFieldfalse\VerticalFieldfalse,
             \v!label=>\ShowFieldLabeltrue,
             \v!frame=>\ShowFieldFrametrue,
-      \v!horizontal=>\HorizontalFieldtrue,
-        \v!vertical=>\VerticalFieldtrue]%
+       \v!horizontal=>\HorizontalFieldtrue,
+         \v!vertical=>\VerticalFieldtrue]%
    \ifVerticalField
      \getparameters[\??fd]
        [\c!distance=\!!zeropoint,\c!inbetween=\vskip\@@localoffset,
@@ -846,7 +863,7 @@
               \c!afterkey=,\c!format=,\c!validate=,\c!calculate=,
               \c!focusin=,\c!focusout=,
               \c!fieldoffset=\!!zeropoint,\c!fieldbackgroundcolor=,
-              \c!fieldframecolor=,\c!fieldlayer=,#5]%
+              \c!fieldframecolor=,\c!fieldlayer=\@@iafieldlayer,#5]%
             \scratchdimen\framedwidth \edef\@@DriverFieldWidth {\the\scratchdimen}%
             \scratchdimen\framedheight\edef\@@DriverFieldHeight{\the\scratchdimen}%
             \vfill
@@ -887,7 +904,7 @@
       \c!focusin=,\c!focusout=,
       \c!afterkey=,\c!format=,\c!validate=,\c!calculate=,
       \c!fieldoffset=\!!zeropoint,\c!fieldbackgroundcolor=,
-      \c!fieldframecolor=,\c!fieldlayer=,#5,\c!align=]
+      \c!fieldframecolor=,\c!fieldlayer=\@@iafieldlayer,#5,\c!align=]
      {\dogetcommacommandelement1\from\@@DriverFieldValues\to\@@DriverFieldValue
       \ifx\@@DriverFieldValue\empty
         \let\@@DriverFieldValue\@@DriverFieldDefault
@@ -995,7 +1012,8 @@
         [\c!frame=\v!off,
          \c!option=,
          \c!regionin=JS(Vide_Field{\currentsystemfield:txt}),
-         \c!regionout=JS(Hide_Field{\currentsystemfield:txt})]%
+         \c!regionout=JS(Hide_Field{\currentsystemfield:txt}),
+         \c!fieldlayer=\@@iafieldlayer]%
        \lower2ex\hbox to \zeropoint
          {\fitfield[\currentsystemfield:but]}%
       #2}%
@@ -1004,7 +1022,7 @@
 
 %D And one more:
 
-\def\definefieldstack%
+\def\definefieldstack
   {\dotripleargument\dodefinefieldstack}
 
 \def\dodefinefieldstack[#1][#2][#3]% name, symbols, settings

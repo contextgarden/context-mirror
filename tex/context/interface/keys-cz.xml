@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 
-<cd:interface xmlns:cd="http://www.pragma-ade.com/commands" name="context" language="cz" version="2006.02.15 17:41">
+<cd:interface xmlns:cd="http://www.pragma-ade.com/commands" name="context" language="cz" version="2006.03.20 10:19">
 
   <cd:variables>
     <cd:variable name="one" value="jedna"/>
@@ -526,6 +526,7 @@
     <cd:variable name="date" value="datum"/>
     <cd:variable name="default" value="implicitni"/>
     <cd:variable name="final" value="finalni"/>
+    <cd:variable name="float" value="plvouciobjekt"/>
     <cd:variable name="depth" value="podlehloubky"/>
     <cd:variable name="doublesided" value="dvoustranny"/>
     <cd:variable name="first" value="prvni"/>

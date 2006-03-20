@@ -869,6 +869,11 @@
         <cd:constant type="all"/>
         <cd:constant type="no"/>
       </cd:parameter>
+      <cd:parameter name="numbering">
+        <cd:constant type="line"/>
+        <cd:constant type="file"/>
+        <cd:constant type="no"/>
+      </cd:parameter>
     </cd:assignments>
   </cd:arguments>
 </cd:command>
@@ -4225,6 +4230,7 @@
       </cd:parameter>
       <cd:parameter name="aligntitle">
         <cd:constant type="yes"/>
+        <cd:constant type="float"/>
         <cd:constant type="no"/>
       </cd:parameter>
       <cd:parameter name="tolerance">
@@ -8391,6 +8397,12 @@
       <cd:parameter name="scale">
         <cd:constant type="cd:number"/>
       </cd:parameter>
+      <cd:parameter name="yscale">
+        <cd:constant type="cd:number"/>
+      </cd:parameter>
+      <cd:parameter name="yscale">
+        <cd:constant type="cd:number"/>
+      </cd:parameter>
       <cd:parameter name="factor">
         <cd:constant type="max"/>
         <cd:constant type="fit"/>
@@ -8908,6 +8920,11 @@
       </cd:parameter>
       <cd:parameter name="keyword">
         <cd:constant type="cd:text"/>
+      </cd:parameter>
+      <!-- maybe this will move elsewhere -->
+      <cd:parameter name="fieldlayer">
+        <cd:constant type="auto"/>
+        <cd:constant type="cd:name"/>
       </cd:parameter>
     </cd:assignments>
   </cd:arguments>

@@ -771,12 +771,12 @@
      {\edef\!!stringa{\csname\??tp#1\c!blank\endcsname}}%
    \processaction
      [\!!stringa]
-     [\v!standard=>\scratchskip\ctxparskip,
+     [ \v!standard=>\scratchskip\ctxparskip,
           \v!small=>\scratchskip\blankokleinmaat,
          \v!medium=>\scratchskip\blankomiddelmaat,
-          \v!big=>\scratchskip\blankogrootmaat,
-     \v!halfline=>\scratchskip.5\baselineskip,
-          \v!line=>\scratchskip\baselineskip,
+            \v!big=>\scratchskip\blankogrootmaat,
+       \v!halfline=>\scratchskip.5\baselineskip,
+           \v!line=>\scratchskip\baselineskip,
            \v!none=>\scratchskip\zeropoint,
         \s!unknown=>\scratchskip\commalistelement]%
    \ifgridsnapping
@@ -794,9 +794,17 @@
 %D indirect way. As we will see, they are a specific case of a
 %D more general mechanism.
 
+% \def\dostarttyping#1%
+%   {\getvalue{\??tp#1\c!before}%
+%    \startpacked % includes \bgroup
+%    \initializetyping{#1}%
+%    \startverbatimcolor
+%    \expandafter\processdisplayverbatim\expandafter{\s!stop#1}}
+
 \def\dostarttyping#1%
   {\getvalue{\??tp#1\c!before}%
    \startpacked % includes \bgroup
+   \dosetuptypelinenumbering{#1}{}%
    \initializetyping{#1}%
    \startverbatimcolor
    \expandafter\processdisplayverbatim\expandafter{\s!stop#1}}
@@ -1165,7 +1173,7 @@
      \dodotypefile[\v!file][]{#3}%
    \fi\fi}
 
-\unprotected \def\dosetuptypelinenumbering#1#2%
+\def\dosetuptypelinenumbering#1#2%
   {\doifundefined{\??tp#1\c!start}{\setuptyping[#1][\c!start=1,\c!stop=,\c!step=1,\c!nlines=,#2]}%
    \doifelsevalue{\??tp#1\c!numbering}\v!file
      {\setuplinenumbering[\c!method=\v!file]%
@@ -1176,11 +1184,14 @@
          \doifvaluenothing{\??tp#1\c!step }{\setvalue{\??tp#1\c!step }{1}}%
          \setuplinenumbering
            [\c!method=\v!type,
+            \c!continue=\getvalue{\??tp#1\c!continue},
             \c!start=\getvalue{\??tp#1\c!start},
             \c!step=\getvalue{\??tp#1\c!step}]%
          \donetrue}
         {\donefalse}}%
    \ifdone
+     \ifx\startlinenumbering\undefined \let\startlinenumbering\relax \fi
+     \ifx\stoplinenumbering \undefined \let\stoplinenumbering \relax \fi
      \def\beginofverbatimlines{\startlinenumbering}%
      \def\endofverbatimlines  {\stoplinenumbering }%
    \fi}

@@ -21,10 +21,11 @@
 # tmftools --analyze > kpsewhat.log
 # tmftools --analyze --strict > kpsewhat.log
 # tmftools --analyze --delete --force "texmf-local/fonts/.*/somename"
+# tmftools --serve
 
 # the real thing
 
-banner = ['TMFTools', 'version 1.0.0 (experimental, no help yet)', '2005', 'PRAGMA ADE/POD']
+banner = ['TMFTools', 'version 1.1.0 (experimental, no help yet)', '2005/2006', 'PRAGMA ADE/POD']
 
 unless defined? ownpath
     ownpath = $0.sub(/[\\\/][a-z0-9\-]*?\.rb/i,'')
@@ -33,25 +34,56 @@ end
 
 require 'base/switch'
 require 'base/logger'
-require 'base/kpsefast'
 
 class Commands
 
     include CommandBase
 
     def init_kpse
-        k = KPSEFAST.new
-        k.rootpath   = @commandline.option('rootpath')
-        k.treepath   = @commandline.option('treepath')
-        k.progname   = @commandline.option('progname')
-        k.engine     = @commandline.option('engine')
-        k.format     = @commandline.option('format')
-        k.diskcache  = @commandline.option('diskcache')
-        k.renewcache = @commandline.option('renewcache')
-        k.load_cnf
-        k.expand_variables
-        k.load_lsr
+        # require 'base/kpseremote'
+        # if KpseRemote::available? then
+        if ENV['KPSEMETHOD'] && ENV['KPSEPORT'] then
+            require 'base/kpseremote'
+            k = KpseRemote.new
+        else
+            k = nil
+        end
+        if k && k.okay? then
+            k.progname = @commandline.option('progname')
+            k.engine   = @commandline.option('engine')
+            k.format   = @commandline.option('format')
+        else
+            require 'base/kpsefast'
+            k = KpseFast.new
+            k.rootpath   = @commandline.option('rootpath')
+            k.treepath   = @commandline.option('treepath')
+            k.progname   = @commandline.option('progname')
+            k.engine     = @commandline.option('engine')
+            k.format     = @commandline.option('format')
+            k.diskcache  = @commandline.option('diskcache')
+            k.renewcache = @commandline.option('renewcache')
+            k.load_cnf
+            k.expand_variables
+            k.load_lsr
+        end
         return k
+    end
+
+    def serve
+        if ENV['KPSEMETHOD'] && ENV['KPSEPORT'] then
+            require 'base/kpseremote'
+            begin
+                KpseRemote::start_server
+            rescue
+            end
+        end
+    end
+
+    def reload
+        begin
+            init_kpse.load
+        rescue
+        end
     end
 
     def main
@@ -127,6 +159,9 @@ commandline.registeraction('analyze', "[--strict --sort --rootpath --treepath]\n
 commandline.registerflag('verbose')
 commandline.registeraction('help')
 commandline.registeraction('version')
+
+commandline.registeraction('reload')
+commandline.registeraction('serve')
 
 commandline.expand
 

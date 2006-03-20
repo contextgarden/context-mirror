@@ -52,43 +52,54 @@
 \def\resetinteractionparameter#1% use with case, no checking done
   {\letvalue{\??ia#1}\empty}
 
+% \def\interactionparameter#1%
+%   {\csname\??ia#1\endcsname}
+
+\newtoks\everysetupinteraction
+
 \def\setupinteraction
   {\dosingleargument\dodosetupinteraction}
 
 \def\dodosetupinteraction[#1]% % \dosetupinteraction == special
   {\getparameters[\??ia][#1]%
-   \doifelse\@@iastate\v!start
-     {\iflocation\else
-        \showmessage\m!interactions2{\ifusepagedestinations\space(PAGE)\fi}%
-        \global\locationtrue
-      \fi}
-     {\iflocation
-        \showmessage\m!interactions3{\ifusepagedestinations\space(PAGE)\fi}%
-        \global\locationfalse
-      \fi}%
-   \iflocation
-     \setsystemmode  \v!interaction
-   \else
-     \resetsystemmode\v!interaction
-   \fi
-   \dosetuppageview\@@iafocus
-   \doifsomething\@@iacalculate
-     {\doregistercalculationset\@@iacalculate}%
-   \doifelse\@@iastrut\v!yes
-     \locationstruttrue
-     \locationstrutfalse
-   \doifelse\@@iaclick\v!yes
-     \highlighthyperlinkstrue
-     \highlighthyperlinksfalse
-   \doifelse\@@iasplit\v!yes
-     \locationsplittrue
-     \locationsplitfalse
-   \doifelse\@@iadisplay\v!new
-     \gotonewwindowtrue
-     \gotonewwindowfalse
-   \doifelse\@@iapage\v!yes
-     {\global\usepagedestinationstrue}
-     {\global\usepagedestinationsfalse}}
+   \the\everysetupinteraction}
+
+% todo, move partial append to where the action happens
+
+\appendtoks
+  \doifelse\@@iastate\v!start
+    {\iflocation\else
+       \showmessage\m!interactions2{\ifusepagedestinations\space(PAGE)\fi}%
+       \global\locationtrue
+     \fi}
+    {\iflocation
+       \showmessage\m!interactions3{\ifusepagedestinations\space(PAGE)\fi}%
+       \global\locationfalse
+     \fi}%
+  \iflocation
+    \setsystemmode  \v!interaction
+  \else
+    \resetsystemmode\v!interaction
+  \fi
+  \dosetuppageview\@@iafocus
+  \doifsomething\@@iacalculate
+    {\doregistercalculationset\@@iacalculate}%
+  \doifelse\@@iastrut\v!yes
+    \locationstruttrue
+    \locationstrutfalse
+  \doifelse\@@iaclick\v!yes
+    \highlighthyperlinkstrue
+    \highlighthyperlinksfalse
+  \doifelse\@@iasplit\v!yes
+    \locationsplittrue
+    \locationsplitfalse
+  \doifelse\@@iadisplay\v!new
+    \gotonewwindowtrue
+    \gotonewwindowfalse
+  \doifelse\@@iapage\v!yes
+    {\global\usepagedestinationstrue}
+    {\global\usepagedestinationsfalse}%
+\to \everysetupinteraction
 
 %D We have to make sure of some settings:
 

@@ -175,7 +175,8 @@
    \fi}
 
 \def\handleMPspecialscommentx #1 % version 2
-  {\doifelse{#1}{10000}{\settrue\manyMPspecials}{\setfalse\manyMPspecials}% local
+% {\doifelsedoifelse{#1}{10000}{\settrue\manyMPspecials}{\setfalse\manyMPspecials}% local
+  {\ifnum10000=0#1\relax\settrue\manyMPspecials\else\setfalse\manyMPspecials\fi
    \handleMPsequence}
 
 % one can say (in meta-ini):

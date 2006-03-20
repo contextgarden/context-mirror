@@ -869,6 +869,11 @@
         <cd:constant type="alles"/>
         <cd:constant type="nee"/>
       </cd:parameter>
+      <cd:parameter name="nummeren">
+        <cd:constant type="regel"/>
+        <cd:constant type="file"/>
+        <cd:constant type="nee"/>
+      </cd:parameter>
     </cd:assignments>
   </cd:arguments>
 </cd:command>
@@ -4225,6 +4230,7 @@
       </cd:parameter>
       <cd:parameter name="titeluitlijnen">
         <cd:constant type="ja"/>
+        <cd:constant type="blok"/>
         <cd:constant type="nee"/>
       </cd:parameter>
       <cd:parameter name="tolerantie">
@@ -7526,7 +7532,7 @@
 <cd:command name="placefloat" generated="yes" file="page-flt.tex">
   <cd:sequence>
     <cd:string value="place"/>
-    <cd:variable value="float"/>
+    <cd:variable value="blok"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords optional="yes">
@@ -7572,7 +7578,7 @@
 <cd:command name="reservefloat" generated="yes">
   <cd:sequence>
     <cd:string value="reserve"/>
-    <cd:variable value="float"/>
+    <cd:variable value="blok"/>
   </cd:sequence>
   <cd:arguments>
     <cd:assignments optional="yes" list="yes">
@@ -7657,7 +7663,7 @@
 
 <cd:command name="floattext" type="environment" generated="yes">
   <cd:sequence>
-    <cd:variable value="float"/>
+    <cd:variable value="blok"/>
     <cd:string value="text"/>
   </cd:sequence>
   <cd:arguments>
@@ -8391,6 +8397,12 @@
       <cd:parameter name="schaal">
         <cd:constant type="cd:number"/>
       </cd:parameter>
+      <cd:parameter name="yschaal">
+        <cd:constant type="cd:number"/>
+      </cd:parameter>
+      <cd:parameter name="yschaal">
+        <cd:constant type="cd:number"/>
+      </cd:parameter>
       <cd:parameter name="factor">
         <cd:constant type="max"/>
         <cd:constant type="passend"/>
@@ -8908,6 +8920,11 @@
       </cd:parameter>
       <cd:parameter name="trefwoord">
         <cd:constant type="cd:text"/>
+      </cd:parameter>
+      <!-- maybe this will move elsewhere -->
+      <cd:parameter name="veldlaag">
+        <cd:constant type="auto"/>
+        <cd:constant type="cd:name"/>
       </cd:parameter>
     </cd:assignments>
   </cd:arguments>

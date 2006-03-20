@@ -2040,8 +2040,42 @@
 %     \initializeverbatimline
 %     \copyverbatimline}
 
+%   \def\doprocessdisplayverbatim#1#2%
+%     {\par
+%      \bgroup
+%      \escapechar-1
+%      \xdef\verbatimname{\string#2}%
+%      \egroup
+%      \ifcase#1%
+%        \let\endofdisplayverbatim\relax
+%      \else
+%        \def\endofdisplayverbatim{\csname\verbatimname\endcsname}%
+%      \fi
+%      \bgroup
+%      \parindent\zeropoint
+%      \ifdim\lastskip<\parskip
+%        \removelastskip
+%        \vskip\parskip
+%      \fi
+%      \parskip\zeropoint
+%      \processingverbatimtrue
+%      \ifcase#1%
+%        \convertargument#2\to\endofverbatimcommand
+%      \else
+%        \expandafter\let\csname\verbatimname\endcsname=\relax
+%        \expandafter\convertargument\csname\verbatimname\endcsname
+%          \to\endofverbatimcommand
+%      \fi
+%      \verbatimfont
+%      \setverbatimspaceskip
+%      \global\linepartrue % needed for paragraph numbering
+%      \setupcopyverbatim
+%      \initializeverbatimline
+%      \copyverbatimline}
+
   \def\doprocessdisplayverbatim#1#2%
     {\par
+     \beginofverbatimlines
      \bgroup
      \escapechar-1
      \xdef\verbatimname{\string#2}%
@@ -2049,7 +2083,7 @@
      \ifcase#1%
        \let\endofdisplayverbatim\relax
      \else
-       \def\endofdisplayverbatim{\csname\verbatimname\endcsname}%
+       \def\endofdisplayverbatim{\endofverbatimlines\csname\verbatimname\endcsname}%
      \fi
      \bgroup
      \parindent\zeropoint

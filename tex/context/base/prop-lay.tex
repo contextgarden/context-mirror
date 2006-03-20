@@ -36,11 +36,15 @@
      {0}% type (1=frozen)
      {\printviewerlayer}}% 1=printable
 
+\let\currentlayerproperty\empty
+
 \def\startlayerproperty
-  {\dostartviewerlayer\currentproperty}
+  {\let\currentlayerproperty\currentproperty
+   \dostartviewerlayer\currentproperty}
 
 \def\stoplayerproperty
-  {\dostopviewerlayer}
+  {\dostopviewerlayer
+   \let\currentlayerproperty\previousproperty}
 
 \setglobalsystemreference \rt!exec \v!HideLayer   {hidelayer}
 \setglobalsystemreference \rt!exec \v!VideLayer   {videlayer}

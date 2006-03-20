@@ -89,7 +89,8 @@
 \appendtoks                  \def\MetaPost{MetaPost}\to\simplifiedcommands
 \appendtoks                  \def\MetaFont{MetaFont}\to\simplifiedcommands
 \appendtoks                    \def\MetaFun{MetaFun}\to\simplifiedcommands
-\appendtoks                                \def||{-}\to\simplifiedcommands
+%appendtoks                                \def||{-}\to\simplifiedcommands
+\appendtoks  \def|#1|{\ifx#1\empty\empty-\else#1\fi}\to\simplifiedcommands
 
 \appendtoks\let\buildtextaccent\secondoftwoarguments\to\simplifiedcommands
 
@@ -2455,15 +2456,18 @@
 % scale
 
 \def\doscalelikeafigure % quite dirty and potential interference possible
-  {\doifsomething{\@@xyfactor\@@xyhfactor\@@xywfactor\@@xyscale
+  {\doifsomething{\@@xyscale\@@xyxscale\@@xyyscale
+                  \@@xyfactor\@@xyhfactor\@@xywfactor
                   \@@xywidth\@@xyheight\@@xylines}
-     {\let \@@efscale \@@xyscale
+     {\let \@@efscale  \@@xyscale
+      \let \@@efxscale \@@xyxscale
+      \let \@@efyscale \@@xyyscale
       \let \@@effactor \@@xyfactor
       \let \@@efwfactor\@@xywfactor
       \let \@@efhfactor\@@xyhfactor
-      \let \@@efwidth\@@xywidth
+      \let \@@efwidth  \@@xywidth
       \let \@@efheight \@@xyheight
-      \let \@@eflines \@@xylines
+      \let \@@eflines  \@@xylines
       \let \@@efgrid   \@@xygrid
       \let \@@epx      \!!zeropoint
       \let \@@epy      \!!zeropoint
@@ -2482,12 +2486,12 @@
       \scratchdimen\scay\points \divide\scratchdimen \plushundred
       \edef\@@xysy{\withoutpt\the\scratchdimen}}}
 
-\def\doscale[#1]%
+\def\doscale[#1]% todo: xscale/yscale
   {\bgroup
    \forgetall
    \getparameters
      [\??xy]
-     [\c!scale=,\c!width=,\c!height=,\c!lines=,
+     [\c!scale=,\c!xscale=,\c!yscale=,\c!width=,\c!height=,\c!lines=,
       \c!factor=,\c!hfactor=,\c!wfactor=,\c!grid=,
       \c!sx=1,\c!sy=1,#1]%
    \dowithnextbox

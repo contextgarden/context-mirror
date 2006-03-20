@@ -129,7 +129,7 @@ class TEX
         'forcetexutil', 'texutil',
         'globalfile', 'autopath',
         'purge', 'purgeall', 'keep', 'autopdf', 'xpdf', 'simplerun', 'verbose',
-        'nooptionfile'
+        'nooptionfile', 'nobackend'
     ]
     @@stringvars = [
         'modefile', 'result', 'suffix', 'response', 'path',
@@ -223,6 +223,7 @@ class TEX
         if ! name || name.empty? then
             name = [booleanvars,stringvars,standardvars,knownvars]
         end
+        str = '' # allocate
         [name].flatten.each do |n|
             if str = getvariable(n) then
                 unless (str.class == String) && str.empty? then
@@ -855,7 +856,7 @@ class TEX
         end
     end
 
-    def makeoptionfile(rawname, jobname, jobsuffix, finalrun, fastdisabled, kindofrun)
+    def makeoptionfile(rawname, jobname, jobsuffix, finalrun, fastdisabled, kindofrun, currentrun=1)
         begin
             # jobsuffix = orisuffix
             if topname = File.suffixed(rawname,'top') and opt = File.open(topname,'w') then
@@ -863,7 +864,7 @@ class TEX
                 # local handies
                 opt << "\% #{topname}\n"
                 opt << "\\unprotect\n"
-                opt << "\\setupsystem[\\c!n=#{kindofrun}]\n"
+                opt << "\\setupsystem[\\c!n=#{kindofrun},\\c!m=#{currentrun}]\n"
                 opt << "\\def\\MPOSTformatswitch\{#{prognameflag('metafun')} #{formatflag('mpost')}=\}\n"
                 if getvariable('batchmode') then
                     opt << "\\batchmode\n"
@@ -973,7 +974,7 @@ class TEX
                     else
                         pagelist = Array.new
                         str.split(/\,/).each do |page|
-                            pagerange = page.split(/(\:|\.\.)/o )
+                            pagerange = page.split(/\D+/o)
                             if pagerange.size > 1 then
                                 pagerange.first.to_i.upto(pagerange.last.to_i) do |p|
                                     pagelist << p.to_s
@@ -1050,12 +1051,13 @@ class TEX
         end
     end
 
-    def runmp(filename)
+    def runmp(filename,mpx=false)
         mpsengine = validmpsengine(getvariable('mpsengine'))
         mpsformat = validmpsformat(getarrayvariable('mpsformats').first)
         progname  = validprogname(getvariable('progname'))
         if mpsengine && mpsformat && progname then
             command = [quoted(mpsengine),prognameflag(progname),formatflag(mpsengine,mpsformat),runoptions(mpsengine),filename,mpsprocextras(mpsformat)].join(' ')
+            ENV["MPXCOMMAND"] = "0" unless mpx
             report(command) if getvariable('verbose')
             system(command)
         else
@@ -1150,30 +1152,32 @@ class TEX
     end
 
     def runbackend(rawname)
-        case validbackend(getvariable('backend'))
-            when 'dvipdfmx' then
-                fixbackendvars('dvipdfm')
-                system("dvipdfmx -d 4 #{File.unsuffixed(rawname)}")
-            when 'xetex'    then
-                fixbackendvars('xetex')
-                system("xdv2pdf #{File.suffixed(rawname,'xdv')}")
-            when 'dvips'    then
-                fixbackendvars('dvips')
-                mapfiles = ''
-                begin
-                    if tuifile = File.suffixed(rawname,'tui') and FileTest.file?(tuifile) then
-                        IO.read(tuifile).scan(/^c \\usedmapfile\{.\}\{(.*?)\}\s*$/o) do
-                            mapfiles += "-u +#{$1} " ;
-                        end
-                    end
-                rescue
+        unless getvariable('nobackend') then
+            case validbackend(getvariable('backend'))
+                when 'dvipdfmx' then
+                    fixbackendvars('dvipdfm')
+                    system("dvipdfmx -d 4 #{File.unsuffixed(rawname)}")
+                when 'xetex'    then
+                    fixbackendvars('xetex')
+                    system("xdv2pdf #{File.suffixed(rawname,'xdv')}")
+                when 'dvips'    then
+                    fixbackendvars('dvips')
                     mapfiles = ''
-                end
-                system("dvips #{mapfiles} #{File.unsuffixed(rawname)}")
-            when 'pdftex'   then
-                # no need for postprocessing
-            else
-                report("no postprocessing needed")
+                    begin
+                        if tuifile = File.suffixed(rawname,'tui') and FileTest.file?(tuifile) then
+                            IO.read(tuifile).scan(/^c \\usedmapfile\{.\}\{(.*?)\}\s*$/o) do
+                                mapfiles += "-u +#{$1} " ;
+                            end
+                        end
+                    rescue
+                        mapfiles = ''
+                    end
+                    system("dvips #{mapfiles} #{File.unsuffixed(rawname)}")
+                when 'pdftex'   then
+                    # no need for postprocessing
+                else
+                    report("no postprocessing needed")
+            end
         end
     end
 
@@ -1287,7 +1291,7 @@ class TEX
 
                 when 'context' then
                     if getvariable('simplerun') || runonce then
-                        makeoptionfile(rawname,jobname,orisuffix,true,true,3) unless getvariable('nooptionfile')
+                        makeoptionfile(rawname,jobname,orisuffix,true,true,3,1) unless getvariable('nooptionfile')
                         ok = runtex(rawname)
                         if ok then
                             ok = runtexutil(rawname) if getvariable('texutil') || getvariable('forcetexutil')
@@ -1314,10 +1318,14 @@ class TEX
                         while ! stoprunning && (texruns < nofruns) && ok do
                             texruns += 1
                             report("TeX run #{texruns}")
-                            if texruns == 1 then
-                                makeoptionfile(rawname,jobname,orisuffix,false,false,1) unless getvariable('nooptionfile')
-                            else
-                                makeoptionfile(rawname,jobname,orisuffix,false,false,2) unless getvariable('nooptionfile')
+                            unless getvariable('nooptionfile') then
+                                if texruns == nofruns then
+                                    makeoptionfile(rawname,jobname,orisuffix,false,false,4,texruns) # last
+                                elsif texruns == 1 then
+                                    makeoptionfile(rawname,jobname,orisuffix,false,false,1,texruns) # first
+                                else
+                                    makeoptionfile(rawname,jobname,orisuffix,false,false,2,texruns) # unknown
+                                end
                             end
                             ok = runtex(File.suffixed(rawname,jobsuffix))
                             if ok && (nofruns > 1) then
@@ -1332,7 +1340,7 @@ class TEX
                         end
                         ok = runtexutil(rawname) if (nofruns == 1) && getvariable('texutil')
                         if ok && finalrun && (nofruns > 1) then
-                            makeoptionfile(rawname,jobname,orisuffix,true,finalrun,4) unless getvariable('nooptionfile')
+                            makeoptionfile(rawname,jobname,orisuffix,true,finalrun,4,texruns) unless getvariable('nooptionfile')
                             report("final TeX run #{texruns}")
                             ok = runtex(File.suffixed(rawname,jobsuffix))
                         end
@@ -1394,7 +1402,7 @@ class TEX
         if mpdata = File.silentread(mpfile) then
             mpdata.gsub!(/^\#.*\n/o,'')
             File.silentrename(mpfile,mpcopy)
-            texfound = mergebe || mpdata =~ /btex .*? etex/o
+            texfound = mergebe || mpdata =~ /btex .*? etex/mo
             if mp = openedfile(mpfile) then
                 mpdata.gsub!(/(btex.*?)\;(.*?etex)/o) do "#{$1}@@@#{$2}" end
                 # mpdata.gsub!(/(\".*?)\;(.*?\")/o) do "#{$1}@@@#{$2}" end
@@ -1408,14 +1416,16 @@ class TEX
                     mpdata.gsub!(/beginfig\s*\((\d+)\)\s*\;(.*?)endfig\s*\;/o) do
                         n, str = $1, $2
                         if str =~ /(.*?)(verbatimtex.*?etex)\s*\;(.*)/o then
-                            "beginfig(#{n})\;\n$1$2\;\n#{mpbetex(n)}\n$3\;endfig\;\n"
+                            "beginfig(#{n})\;\n#{$1}#{$2}\;\n#{mpbetex(n)}\n#{$3}\;endfig\;\n"
                         else
                             "beginfig(#{n})\;\n#{mpbetex(n)}\n#{str}\;endfig\;\n"
                         end
                     end
                 end
+                mpdata.gsub!(/\n+/mo, "\n")
+                mpdata.gsub!(/^\s*\;\s*\n/o, "")
                 unless mpdata =~ /beginfig\s*\(\s*0\s*\)/o then
-                    mp << mpbetex[0] if mpbetex.key?(0)
+                    mp << mpbetex['0'] if mpbetex.key?('0')
                 end
                 mp << mpdata # ??
                 mp << "\n"
@@ -1443,7 +1453,7 @@ class TEX
                 end
                 f.close
             end
-            File.silentrename(mpfile,mpfile+'.keep')
+            File.silentrename(mpfile, mpfile+'.keep')
             File.silentrename(mpcopy, mpfile)
         end
     end
@@ -1456,13 +1466,26 @@ class TEX
                     mptex = File.suffixed(mpname,'temp','tex')
                     mpdvi = File.suffixed(mpname,'temp','dvi')
                     mplog = File.suffixed(mpname,'temp','log')
-                    mpmpx = File.suffixed(mpname,'temp','mpx')
+                    mpmpx = File.suffixed(mpname,'mpx')
                     ok = system("mpto #{mpname} > #{mptex}")
                     if ok && File.appended(mptex, "\\end\n") then
-                        if context then
-                            ok = RunConTeXtFile(mptex)
+                        if localjob = TEX.new(@logger) then
+                            localjob.setvariable('files',mptex)
+                            localjob.setvariable('backend','dvips')
+                            localjob.setvariable('engine',getvariable('engine')) unless getvariable('engine').empty?
+                            localjob.setvariable('once',true)
+                            localjob.setvariable('nobackend',true)
+                            if context then
+                                localjob.setvariable('texformats',[getvariable('interface')]) unless getvariable('interface').empty?
+                            elsif getvariable('interface').empty? then
+                                localjob.setvariable('texformats',['plain'])
+                            else
+                                localjob.setvariable('texformats',[getvariable('interface')])
+                            end
+                            localjob.processtex
+                            ok = true # todo
                         else
-                            ok = RunSomeTeXFile(mptex)
+                            ok = false
                         end
                         ok = ok && FileTest.file?(mpdvi) && system("dvitomp #{mpdvi} #{mpmpx}")
                         [mptex,mpdvi,mplog].each do |mpfil|
@@ -1508,18 +1531,22 @@ class TEX
         if File.atleast?(mpname,10) && (mp = File.silentopen(mpname)) then
             labels = Hash.new
             while str = mp.gets do
-                t = if str =~ /%\s*setup\s*:\s*(.*)/o then $1 else '' end
-                if str =~ /%\s*figure\s*(\d+)\s*:\s*(.*)/o then
+                t = if str =~ /^%\s*setup\s*:\s*(.*)$/o then $1 else '' end
+                if str =~ /^%\s*figure\s*(\d+)\s*:\s*(.*)$/o then
                     labels[$1] = labels[$1] || ''
                     unless t.empty? then
                         labels[$1] += "#{t}\n"
                         t = ''
                     end
-                    labels[$1] += "$2\n"
+                    labels[$1] += "#{$2}\n"
                 end
             end
             mp.close
-            return labels if labels.size>0
+            if labels.size>0 then
+                return labels
+            else
+                return nil
+            end
         end
         return nil
     end

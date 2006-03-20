@@ -557,8 +557,8 @@
   {\presetlocalframed[\??fl#1]%
    \setupfloat
      [#1]
-     [\c!width=8\lineheight, % 15\korpsgrootte,
-      \c!height=6\lineheight,  % 10\korpsgrootte,
+     [\c!width=8\lineheight, % 15\bodyfontsize,
+      \c!height=6\lineheight,  % 10\bodyfontsize,
       \c!minwidth=,
       \c!maxwidth=,
       \c!maxheight=,
@@ -1339,7 +1339,7 @@
   \def\addlocalbackgroundtobox{\resetglobal\gobbleoneargument}%
 \fi
 
-\def\captionminwidth  {15\korpsgrootte}
+\def\captionminwidth  {15\bodyfontsize}
 \def\captionovershoot {2em}
 
 \def\dopreparenocaption#1#2#3#4%
@@ -2068,7 +2068,7 @@
    \c!height=\v!fit,
    \c!offset=\v!overlay,
    \c!frame=\v!off,
-   \c!radius=.5\korpsgrootte,
+   \c!radius=.5\bodyfontsize,
    \c!corner=\v!rectangular,
    \c!background=,
    \c!backgroundscreen=\@@rsscreen,

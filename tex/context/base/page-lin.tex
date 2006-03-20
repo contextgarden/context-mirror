@@ -200,12 +200,39 @@
 
 \newevery \everylinenumber \relax
 
+% \def\dodoplacelinenumber
+%   {% beware of em's, the font is already switched !
+%    \setbox\scratchbox\hbox
+%      {\setbox0\hbox{\@@rncommand{\completelinenumber}}\vsmashbox0%
+%       \ifcase\linenumberlocation
+%         \rlap{\hbox to \@@rnwidth{\box0\hss}}% was \llap, nog testen !!
+%       \or
+%         \inleftmargin
+%           {\forgetall
+%            \doifelse\@@rnwidth\v!margin
+%              {\hsize\leftmarginwidth}{\hsize\@@rnwidth}%
+%            \alignedline\@@rnalign\v!right{\box0\hskip\@@rndistance}}%
+%       \else
+%         \inrightmargin
+%           {\forgetall
+%            \doifelse\@@rnwidth\v!margin
+%              {\hsize\rightmarginwidth}{\hsize\@@rnwidth}%
+%            \alignedline\@@rnalign\v!left{\hskip\@@rndistance\box0}}%
+%       \fi}%
+%    \vsmashbox\scratchbox
+%    \box\scratchbox
+%    \the\everylinenumber}
+
 \def\dodoplacelinenumber
   {% beware of em's, the font is already switched !
    \setbox\scratchbox\hbox
      {\setbox0\hbox{\@@rncommand{\completelinenumber}}\vsmashbox0%
       \ifcase\linenumberlocation
-        \rlap{\hbox to \@@rnwidth{\box0\hss}}% was \llap, nog testen !!
+        \iftypesettinglines % hack
+          \expandafter\llap
+        \else
+          \expandafter\rlap
+        \fi{\hbox to \@@rnwidth{\box0\hss}}% was \llap, nog testen !!
       \or
         \inleftmargin
           {\forgetall
@@ -240,9 +267,12 @@
        %   \v!text=>\chardef\linenumberlocation\zerocount,
        %\s!unknown=>\chardef\linenumberlocation\zerocount,
        %\s!default=>\chardef\linenumberlocation\zerocount]%
-   \ifcase\linenumberlocation % text
-     \advance\leftskip \@@rnwidth\relax
-   \fi
+   \doifnot\@@rnwidth\v!margin
+     {\freezedimenmacro\@@rnwidth
+      \ifcase\linenumberlocation % text
+        \advance\leftskip\@@rnwidth\relax
+      \fi}%
+   \freezedimenmacro\@@rndistance
    \chardef\@@rn@@rnmethod
      \ifprocessingverbatim\zerocount\else\iftypesettinglines\plusone\else\plustwo\fi\fi
    \processaction
@@ -431,7 +461,7 @@
 
 \newcount\internalparagraphnumber
 
-\def\setupparagraphnumbering%
+\def\setupparagraphnumbering
   {\dosingleempty\dosetupparagraphnumbering}
 
 \def\dosetupparagraphnumbering[#1]%

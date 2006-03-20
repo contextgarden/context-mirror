@@ -1078,10 +1078,14 @@
      \global\paginageblokkeerdtrue
    \fi}
 
+% \setuphead[section][aligntitle=float] % permits title next to sidefloat
+%
+% \placefigure[left]{}{} \section{\dorecurse{10}{bagger }} \input tufte
+
 \def\dohandlepagebreakAB#1% will be replaced by a more clever (signaling) mechanism (in beta)
-  {\flushsidefloats
+  {\doifnotvalue{\??ko#1\c!aligntitle}\v!float\flushsidefloats
    \getvalue{\??ko#1\c!before}%
-   %\whitespace vervangen door \noindent elders
+   % \whitespace vervangen door \noindent elders
    \relax
    \ifpaginageblokkeerd
      \global\paginageblokkeerdfalse
@@ -1096,6 +1100,7 @@
        \dosomebreak\allowbreak
      \fi
    \fi
+   \doifvalue{\??ko#1\c!aligntitle}\v!float\indent
    \xdef\@@kolevel{\getvalue{\??se\@@sectie\c!level}}}
 
 \def\dohandlepagebreakBB#1#2#3%
@@ -1861,7 +1866,7 @@
    \everypar\emptytoks % needed indeed
    \noindent           % ipv \whitespace elders, na \forgetall !
    \bgroup
-   \doifelsevalue{\??ko#1\c!aligntitle}\v!yes % new
+   \doifinsetelse{\getvalue{\??ko#1\c!aligntitle}}{\v!yes,\v!float}% new
      {\skip0 1\leftskip
       \skip2 1\rightskip
       \xdef\localheadskip{\the\skip0}%
@@ -1989,18 +1994,18 @@
      {\doifvaluenothing{\??ko#1\c!file}{\autocrossdocumentfalse}}
      {\autocrossdocumentfalse}%
    % no message needed here, should be a proper switch
-\noflines\zerocount
+   \noflines\zerocount
    \ifdisplaysectionhead
-% new
-\processaction
-  [\getvalue{\??ko#1\c!hang}]
-  [    \v!line=>\hangheadplacement\noflines\zerocount,
-      \v!broad=>\hangheadplacement\getnoflines\scratchdimen,
-        \v!fit=>\hangheadplacement\getrawnoflines\scratchdimen,
-       \v!none=>\noflines\zerocount,
-    \v!default=>\noflines\zerocount,
-    \v!unknown=>\hangheadplacement\noflines0\commalistelement\advance\noflines\minusone]%
-% so far
+     % new
+     \processaction
+       [\getvalue{\??ko#1\c!hang}]
+       [    \v!line=>\hangheadplacement\noflines\zerocount,
+           \v!broad=>\hangheadplacement\getnoflines\scratchdimen,
+             \v!fit=>\hangheadplacement\getrawnoflines\scratchdimen,
+            \v!none=>\noflines\zerocount,
+         \v!default=>\noflines\zerocount,
+         \v!unknown=>\hangheadplacement\noflines0\commalistelement\advance\noflines\minusone]%
+     % so far
      \let\headlastlinewidth\!!zeropoint
      \snaptogrid[\getvalue{\??ko#1\c!grid}]\hbox
        {\hskip\localheadskip
@@ -2019,11 +2024,13 @@
         \fi}%
      \doflushnotes % new, not really needed
      \endgraf
-\ifnum\noflines>\zerocount
-  \dorecurse\noflines{\nointerlineskip\dosomebreak\nobreak\strut\endgraf}%
-\fi
-     \nointerlineskip
-     \dosomebreak\nobreak
+     \ifvmode
+       \ifnum\noflines>\zerocount
+         \dorecurse\noflines{\nointerlineskip\dosomebreak\nobreak\strut\endgraf}%
+       \fi
+       \nointerlineskip
+       \dosomebreak\nobreak
+     \fi
      #2%
    \else
      \strut

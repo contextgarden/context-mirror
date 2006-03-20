@@ -27,7 +27,7 @@
 \let\OTRMULsetvsize            \OTRONEsetvsize
 \let\OTRMULsethsize            \OTRONEsethsize
 \let\OTRMULdopagecontents      \OTRONEdopagecontents
-\let\OTRMULfinalsidefloatoutput\OTRONEfinalsidefloatoutput
+\let\OTRMULfinalsidefloatoutput\OTRONEfinalsidefloatoutput % ???
 \let\OTRMULflushfloatbox       \OTRONEflushfloatbox
 
 \let\OTRMULdosettopinserts   \relax
@@ -36,6 +36,9 @@
 \let\OTRMULdobotinsertions   \relax
 \let\OTRMULdosetbothinserts  \relax
 \let\OTRMULflushsavedfloats  \relax
+
+\let\OTRMULflushsidefloats      \forgetsidefloats % \relax
+\let\OTRMULsynchronizesidefloats\forgetsidefloats % \relax
 
 \newtoks \OTRMULoutput
 
@@ -632,6 +635,8 @@
         \edef\maxcolumndepth{\the\dp\currentcolumnbox}%
       \fi}}
 
+\chardef\columnedtopflushmethod\plusone
+
 \def\flushcolumnedpage
   {\bgroup
    \forgetall
@@ -698,14 +703,26 @@
    \global\precolumnboxheight\zeropoint
    \setvsize
    \dosomebreak\nobreak
-   % wrong, but keep it as a reminder
-   % \ifgridsnapping \else
-   %   \scratchdimen\topskip
-   %   \advance\scratchdimen -\openstrutheight
-   %   \nointerlineskip
-   %   \vskip-\scratchdimen
-   % \fi
-   % so that we don't add it again
+   \ifgridsnapping \else
+     \ifcase\columnedtopflushmethod
+       % sometimes method 1 goes wrong, so we need a way out; best sort this out
+       % when we run into it again
+     \or
+       % \input tufte \startcolumns \showbaselines \input tufte \stopcolumns \input tufte
+       \scratchdimen\topskip
+       \advance\scratchdimen -\openstrutheight
+       \nointerlineskip
+       \vskip-\scratchdimen
+     \or
+       % untested but maybe handy
+       \scratchdimen\topskip
+       \advance\scratchdimen -\openstrutheight
+       \nointerlineskip
+       \vskip-\scratchdimen
+       \vskip-\lineheight
+       \vbox{\strut}%
+     \fi
+   \fi
    \prevdepth\openstrutdepth
    \nointerlineskip
    \dp\columnpagebox\zeropoint
@@ -984,7 +1001,7 @@
    \getmulticolumnlines
    \dimen0=\nofcolumnlines\openlineheight
    \dohandleallcolumns
-     {\splitcurrentcolumn from \box\normalpagebox to \dimen0}
+     {\splitcurrentcolumn from \box\normalpagebox to \dimen0}%
    \setbox\restofpage\vbox{\unvbox\normalpagebox}%
    \ifinheritcolumns
      \ifr@ggedbottom % vreemd
@@ -1038,6 +1055,8 @@
 %D \type{\box4} garantees a more robust check when skips are
 %D used.
 
+\def\multicolumnsbalancemax{250} % 100 is too small when floats are involved
+
 \def\balancedmulticolumnsout
   {\bgroup
    \setmulticolumnsout
@@ -1083,49 +1102,58 @@
        \dimen2=\onepoint % RUBISH
        \dimen2=\spacingfactor\dimen2
      \fi
-     \loop
-       \advance\count255 \plusone
-       \global\setbox\restofpage\copy0\relax
-       \splitfirstcolumn from \box\restofpage to \dimen0
-       \dohandlemidcolumns
-         {\splitcurrentcolumn from \box\restofpage to \dimen0}%
-       \splitlastcolumn from \box\restofpage to \dimen0
-       \setbox2\vbox{\unvcopy\firstcolumnbox}%
-       \dimen4\zeropoint
-       \dohandleallcolumns
-         {\setbox4\vbox
-            {\unvcopy\currentcolumnbox
-            %rather new, test this on pdftex-z.tex
-             \unpenalty\unskip\unpenalty\unskip}% maybe better in main splitter
-            %\writestatus{balance}{\the\currentcolumnbox: \the\ht4}%
-             \dimen6\ht4
-             \ifdim\dimen6>\dimen4 \dimen4=\dimen6 \fi}%
-       \advance\dimen4 -.0005pt % get rid of accurracy problem, pretty new
-       \ifnum\count255>100
-         \donefalse
-       \else\ifdim\dimen4>\ht2
-         \donetrue
-       \else
-         \donefalse
-       \fi\fi
-       \ifdone
-         \advance\dimen0 \dimen2\relax
-     \repeat
+     \doloop
+       {\advance\count255 \plusone
+        \global\setbox\restofpage\copy0\relax
+        \splitfirstcolumn from \box\restofpage to \dimen0
+        \dohandlemidcolumns
+          {\splitcurrentcolumn from \box\restofpage to \dimen0}%
+        \splitlastcolumn from \box\restofpage to \dimen0
+        \setbox2\vbox{\unvcopy\firstcolumnbox}%
+        \dimen4\zeropoint
+        \dohandleallcolumns
+          {\setbox4\vbox
+             {\unvcopy\currentcolumnbox
+             %rather new, test this on pdftex-z.tex
+              \unpenalty\unskip\unpenalty\unskip}% maybe better in main splitter
+          %\writestatus{balance}{\the\currentcolumnbox: \the\ht4}%
+%            \dimen6\ht4 \ifdim\dimen6>\dimen4 \dimen4=\dimen6 \fi}%
+           \ifdim\ht4>\dimen4 \dimen4=\ht4 \fi}%
+        \advance\dimen4 -.0005pt % get rid of accurracy problem, pretty new
+        \ifnum\count255>\multicolumnsbalancemax\relax
+          \exitloop
+        \else\ifdim\dimen4>\ht2
+          \advance\dimen0 \dimen2\relax
+        \else
+          \exitloop
+        \fi\fi}%
      \dohandleallcolumns
        {\global\setbox\currentcolumnbox\vbox{\unvcopy\currentcolumnbox}}% NIEUW
-     \ifnum\count255>100\relax
+     \ifnum\count255>\multicolumnsbalancemax\relax
        \showmessage\m!columns7\empty
      \else
        \showmessage\m!columns8{\the\count255\space}%
      \fi
      \egroup
      \ifinheritcolumns
-       \dimen0\ht\firstcolumnbox
-       \dimen2\ht\firstcolumnbox
+       % We cannot assume that the first column is the tallest, if
+       % only because we may have an aborted balance (one line in the
+       % first column and a graphic in the second one).
+       %
+       % \dimen0\ht\firstcolumnbox
+       % \dimen2\ht\firstcolumnbox
+       %
+       \dimen0=\zeropoint
+       \dohandleallcolumns
+         {\ifdim\ht\currentcolumnbox>\dimen0
+            \dimen0=\ht\currentcolumnbox
+          \fi}%
+       \dimen2\dimen0
+       % so far
        \advance\dimen2 -\openlineheight
        \dohandleallcolumns
          {\dimen4\ht\currentcolumnbox
-          \dimen6=10\openlineheight
+          \dimen6=10\openlineheight % funny value
           \global\setbox\currentcolumnbox\vbox to \dimen0
             {\unvbox\currentcolumnbox
              \ifdim\dimen4>\dimen6
@@ -1175,7 +1203,11 @@
    \global\output{\balancingerror}%
    \b@selinebottomtrue % forces depth in separation rule
    \flushcolumnedpage
+\ifdim\pagetotal>\textheight
+   \eject % new
+\else
    \allowbreak
+\fi
    \egroup}
 
 %D The multicolumn mechanism is incorporated in a \CONTEXT\
@@ -1238,8 +1270,7 @@
    \let\flushcolumnfloats\noflushcolumnfloats}
 
 \def\setlocalcolumnfloats
-  {\everypar
-     {\flushnotes\flushcolumnfloat\flushmargincontents\checkindentation}%
+  {\everypar{\flushnotes\flushcolumnfloat\flushmargincontents\checkindentation}%
    \let\flushcolumnfloat\doflushcolumnfloat
   %\let\doroomfloat\docolumnroomfloat
    \let\docheckiffloatfits\docolumnroomfloat
@@ -1490,6 +1521,24 @@
      \egroup
    \fi}
 
+%D The next macro can be used to flush floats in the current
+%D stream. No width checking is (yet) done.
+
+\def\insertcolumnfloats
+  {\doloop
+     {\ifsomefloatwaiting
+        \bgroup
+        \forgetall
+        % no check for width
+        \dogetfloat
+        \blank[\@@bkspacebefore]
+        \snaptogrid\vbox{\copy\floatbox}
+        \blank[\@@bkspaceafter]
+        \egroup
+      \else
+        \exitloop
+      \fi}}
+
 %D This were the multi||column routines. They can and need to
 %D be improved but at the moment their behaviour is acceptable.
 %D
@@ -1632,9 +1681,9 @@
   {\goodbreak}
 
 \installcolumnbreakhandler {MUL} \v!yes
-  {\par                                              % todo: since
+  {\par                                             % todo: since
    {\testrulewidth\zeropoint\ruledvskip\textheight} % we misuse a
-   \penalty-200                                      % side effect
+   \penalty-200                                     % side effect
    \vskip-\textheight
    \prevdepth-\thousandpoint} % signals top of column to \blank
 
@@ -1645,14 +1694,14 @@
    \c!direction=\v!right,
    \c!rule=\v!off,
    \c!tolerance=\v!tolerant,
-   \c!distance=1.5\korpsgrootte, % influenced by switching
+   \c!distance=1.5\bodyfontsize, % influenced by switching
    \c!height=,
    \c!balance=\v!yes,
    \c!align=\v!text,
    \c!blank={\v!line,\v!fixed},
    \c!option=,
    \c!rulethickness=\linewidth,
-   \c!offset=.5\korpsgrootte]
+   \c!offset=.5\bodyfontsize]
 
 %D Undocumented and still under development.
 
@@ -1663,7 +1712,7 @@
   {\bgroup
    \nopenalties
    \getparameters[\??kl]
-     [\c!width=\hsize,\c!distance=1.5\korpsgrootte,%
+     [\c!width=\hsize,\c!distance=1.5\bodyfontsize,%
       \c!n=2,\c!lines=0,#1]%
    \let\rigidcolumnlines\@@kllines
    \setrigidcolumnhsize\@@klwidth\@@kldistance\@@kln

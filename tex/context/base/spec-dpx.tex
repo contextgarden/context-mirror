@@ -412,13 +412,13 @@
       \scratchdimen#4\edef\height{\the\scratchdimen\space}%
       \setbox\nextbox\vbox
         {\special{pdf:bxobj @#1::#2 width \width height \height}%
-	 % we need to compensate for the box offset (ugly, sigh)
-	 \scratchdimen\nextboxht
-	 \advance\scratchdimen\nextboxdp
-	 \advance\scratchdimen-#4\relax
-	 \nextboxdp\zeropoint
-	 \nextboxht\zeropoint
-	 \hbox to #3{\hss\lower.5\scratchdimen\box\nextbox\hss}%
+     % we need to compensate for the box offset (ugly, sigh)
+     \scratchdimen\nextboxht
+     \advance\scratchdimen\nextboxdp
+     \advance\scratchdimen-#4\relax
+     \nextboxdp\zeropoint
+     \nextboxht\zeropoint
+     \hbox to #3{\hss\lower.5\scratchdimen\box\nextbox\hss}%
          \ifx\currentPDFresources\empty
          \else
            \special{pdf:put @resources <<\currentPDFresources\the\pdfpageresources>>}%
@@ -753,9 +753,9 @@
      {\vbox to \zeropoint
         {\vss
          \hbox to \zeropoint
-	   {\special{pdf:btrans matrix #1 #2 #3 #4 #5 #6}%
+           {\special{pdf:btrans matrix #1 #2 #3 #4 #5 #6}%
             \rlap{\special{pdf:image width 1bp height 1bp (#7)}}
-	    \special{pdf:etrans}\hss}}}
+      \special{pdf:etrans}\hss}}}
      {\message{[unknown figure #7]}}}
 
 %D 5. Modified codes from \type{supp-pdf}
@@ -809,7 +809,7 @@
            \vss\hbox to #4\scaledpoint{\hss\box\scratchbox\hss}\vss
          \else
 	   %\vss\box\scratchbox
-           \vss\hbox to #4\scaledpoint{\box\scratchbox\hss}
+           \vss\hbox to #4\scaledpoint{\box\scratchbox\hss}%
          \fi\fi}}%
    \box\scratchbox
    \elabelgroup}

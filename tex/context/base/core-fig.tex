@@ -617,7 +617,11 @@
      {\global\fighei\@@efheight}%
    \doifsomething\@@efscale
      {\figxsca\@@efscale
-      \figysca\@@efscale}}
+      \figysca\@@efscale}%
+   \doifsomething\@@efxscale
+     {\figxsca\@@efxscale}%
+   \doifsomething\@@efyscale
+     {\figxsca\@@efyscale}}
 
 \def\setfactorfiguresize
   {\doifinsetelse\@@effactor{\v!max,\v!fit,\v!broad}
@@ -655,9 +659,9 @@
    \fi}
 
 \def\setscalefiguresize
-  {\doifsomething\@@efscale
-     {\doapplyfigurescale\figwid\@@epw\figxsca
-      \doapplyfigurescale\fighei\@@eph\figysca
+  {\doifsomething{\@@efscale\@@efxscale\@@efxscale}
+     {\doapplyfigurescale\figwid\@@epw\figxsca\@@efxscale
+      \doapplyfigurescale\fighei\@@eph\figysca\@@efyscale
       \global\figwid\zeropoint
       \global\fighei\zeropoint
       \doifelsenothing\@@efmaxwidth
@@ -700,8 +704,8 @@
          {\docalculatefigurescales\fighei\@@eph\figwid\@@epw}%
      \else
        \dosetdimensionfiguresize
-         {\doapplyfigurescale\figwid\@@epw\figxsca
-          \doapplyfigurescale\fighei\@@eph\figysca}%
+         {\doapplyfigurescale\figwid\@@epw\figxsca\@@efxscale
+          \doapplyfigurescale\fighei\@@eph\figysca\@@efyscale}%
          {\docalculatefigurescales\figwid\@@epw\fighei\@@eph}%
          {\docalculatefigurescales\fighei\@@eph\figwid\@@epw}%
      \fi
@@ -821,13 +825,29 @@
      \divide\dimen0 \dimen2
      #3=\dimen0 }                         % #3 = schaal
 
-  \def\doapplyfigurescale#1#2#3%
+%   \def\doapplyfigurescale#1#2#3%
+%     {\global#1=#2\relax
+%      \ifcase0\@@efscale\relax % beter: doifnum...
+%        #3=\plusthousand
+%      \else
+%        #3=\@@efscale
+%      \fi\relax % important !
+%      \ifnum#3=\plusthousand\else
+%        \global\divide  #1 \plusthousand
+%        \global\multiply#1 #3\relax
+%      \fi}
+
+  \def\doapplyfigurescale#1#2#3#4%
     {\global#1=#2\relax
-     \ifcase0\@@efscale\relax % beter: doifnum...
-       #3=\plusthousand
+     \ifcase0#4\relax % @@ef.scale kan empty zijn
+       \ifcase0\@@efscale\relax % @@efscale kan empty zijn
+         #3=\plusthousand
+       \else
+         #3=\@@efscale
+       \fi
      \else
-       #3=\@@efscale
-     \fi\relax % important !
+       #3=#4%
+     \fi
      \ifnum#3=\plusthousand\else
        \global\divide  #1 \plusthousand
        \global\multiply#1 #3\relax
@@ -839,6 +859,8 @@
 
 \beginETEX \dimexpr
 
+  % todo: use \relax instead of ()
+
   \def\docalculatefigurescales#1#2#3#4%
     {\scratchdimen\dimexpr(#1/\dimexpr(#2/\plusthousand))%
      \figxsca\scratchdimen
@@ -848,14 +870,28 @@
   \def\docalculatefigurescale#1#2#3%
     {#3\dimexpr(#1/\dimexpr(#2/\plusthousand))}
 
-  \def\doapplyfigurescale#1#2#3%
-    {% #3=\ifnum0\number\@@efscale=\zerocount\plusthousand\else\@@efscale\fi
-     \ifcase0\@@efscale\relax % @@efschaal kan empty zijn
-       #3=\plusthousand
+%   \def\doapplyfigurescale#1#2#3%
+%     {% #3=\ifnum0\number\@@efscale=\zerocount\plusthousand\else\@@efscale\fi
+%      \ifcase0\@@efscale\relax % @@efscale kan empty zijn
+%        #3=\plusthousand
+%      \else
+%        #3=\@@efscale
+%      \fi\relax % important !
+%      \global#1\ifnum#3=\plusthousand#2\else\dimexpr(#3\dimexpr(#2/\plusthousand))\fi
+%      \relax}
+
+  \def\doapplyfigurescale#1#2#3#4% todo: also #5 being sx/sy (\ifdim0#5=0pt ...)
+    {\ifcase0#4\relax % @@ef.scale kan empty zijn
+       \ifcase0\@@efscale\relax % @@efscale kan empty zijn
+         #3=\plusthousand
+       \else
+         #3=\@@efscale
+       \fi
      \else
-       #3=\@@efscale
-     \fi\relax % important !
-     \global#1\ifnum#3=\plusthousand#2\else\dimexpr(#3\dimexpr(#2/\plusthousand))\fi
+       #3=#4%
+     \fi
+     \relax % important !
+     \global#1\ifnum#3=\plusthousand#2\else\dimexpr#3\dimexpr#2/\plusthousand\relax\relax\fi
      \relax}
 
 \endETEX
@@ -1031,7 +1067,7 @@
    \getparameters
      [\??ep]
      [\c!e=\s!unknown,
-     %\c!w=15\korpsgrootte,\c!h=10\korpsgrootte,
+     %\c!w=15\bodyfontsize,\c!h=10\bodyfontsize,
       \c!w=8\lineheight,\c!h=6\lineheight,
       \c!x=\!!zeropoint,\c!y=\!!zeropoint,
       \c!t=,\c!s=,\c!a=,\c!f=\@@effilename]%
@@ -1041,7 +1077,7 @@
       \c!object=\@@exobject,\c!preset=\v!yes,\c!split=,\c!size=,
       \c!page=0,\c!controls=\v!no,\c!preview=\v!no,\c!repeat=\v!no,
       \c!maxwidth=\@@exmaxwidth,\c!maxheight=\@@exmaxheight,
-      \c!scale=,\c!width=,\c!height=,\c!display=,\c!lines=,\c!grid=,
+      \c!scale=,\c!xscale=,\c!yscale=,\c!width=,\c!height=,\c!display=,\c!lines=,\c!grid=,
      %\c!foregroundcolor=,
       \c!color=,\c!conversion=\@@exconversion,\c!prefix=\@@exprefix,\c!cache=\@@excache,
       \c!factor=,\c!hfactor=,\c!wfactor=]%
@@ -1105,8 +1141,8 @@
      {\let\@@eftype\c!mps}
      {\processaction
        [\@@effiletype]
-       [   \c!tex=>\let\@@eftype\c!tex,
-           \c!tmp=>\let\@@eftype\c!tex
+       [   \c!tex=>\let\@@eftype\c!tex, % check
+           \c!tmp=>\let\@@eftype\c!tex  % check
                    \edef\@@effilepref{\bufferprefix}%
                    \edef\@@effilename{\@@effilepref\@@effilename},
            % todo: nop when conversion
@@ -1167,19 +1203,19 @@
           \edef\@@effullname{\@@effilename.\@@effiletype}%
           \def\figureextension##1{\@@effiletype}%
         \fi}%
-% begin prelocate to be converted image
-\let\@@efconversionpath\empty
-\let\@@efconversionfile\@@effilename
-\let\@@efconversiontype\@@effiletype
-\doifmodeelse{\systemmodeprefix\v!first}
-  {\doifelsenothing\@@efconversion\donefalse\donetrue}%
-  {\donefalse}%
-\ifdone
-   \chardef\figurestatus\zerocount
-   \locatefigureconversionfile
-   \chardef\figurestatus\zerocount
-\fi
-% end
+     % begin prelocate to be converted image
+     \let\@@efconversionpath\empty
+     \let\@@efconversionfile\@@effilename
+     \let\@@efconversiontype\@@effiletype
+     \doifmodeelse{\systemmodeprefix\v!first}
+       {\doifelsenothing\@@efconversion\donefalse\donetrue}%
+       {\donefalse}%
+     \ifdone
+        \chardef\figurestatus\zerocount
+        \locatefigureconversionfile
+        \chardef\figurestatus\zerocount
+     \fi
+     % end
      \doifelse\@@efpreset\v!no
        {\doifelse\@@eftype\s!unknown
           {\chardef\figurestatus\zerocount
@@ -2252,10 +2288,10 @@
    \c!reset=\v!no,
    \c!maxwidth=\@@efwidth,
    \c!maxheight=\@@efheight,
-   \c!bodyfont=\korpsgrootte,
+   \c!bodyfont=\bodyfontsize,
    \c!directory=,
    \c!file=\f!utilityfilename.\f!figureextension,
-   \c!radius=.5\korpsgrootte,
+   \c!radius=.5\bodyfontsize,
    \c!corner=\v!rectangular,
    \c!frame=\v!off,
    \c!background=, % new

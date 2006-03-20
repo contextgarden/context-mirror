@@ -23,12 +23,14 @@
 \def\StartLatexHack
   {\edef\StopLatexHack
      {\catcode`\noexpand/=\the\catcode`/
+      \catcode`\noexpand-=\the\catcode`-
       \catcode`\noexpand:=\the\catcode`:
       \catcode`\noexpand;=\the\catcode`;
       \catcode`\noexpand"=\the\catcode`"
       \catcode`\noexpand<=\the\catcode`<
       \catcode`\noexpand>=\the\catcode`>}%
-  \catcode`/=12 \catcode`:=12 \catcode`;=12
+  \catcode`/=12 \catcode`-=12
+  \catcode`:=12 \catcode`;=12
   \catcode`"=12 \catcode`<=12 \catcode`>=12 }
 
 %D This hack is needed especially for \LATEX\ users who use

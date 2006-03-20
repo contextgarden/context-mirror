@@ -24,7 +24,7 @@
            \normalend}}
 \fi
 
-\newcontextversion{2006.02.15 17:41}
+\newcontextversion{2006.03.20 10:19}
 
 %D This file is loaded at runtime, thereby providing an
 %D excellent place for hacks, patches, extensions and new
@@ -670,8 +670,13 @@
 
 % temp hack, else no proper default fall back (like \textmultiply); todo: sync encoding
 
+\def\dealwithmathtextencoding
+  {\expanded{\everyhbox{\the\everyhbox\noexpand\fastenableencoding{\currentencoding}}}%
+   \def\dealwithmathtextencoding{\let\characterencoding\nocharacterencoding}%
+   \dealwithmathtextencoding}
+
 \appendtoks
-   \let\characterencoding\nocharacterencoding
+  \dealwithmathtextencoding
 \to \everymathematics
 
 % \separatestring123 456\to\test [\test]

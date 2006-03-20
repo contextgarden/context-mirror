@@ -37,13 +37,57 @@ class File
 
 end
 
-class KPSEFAST
+module KpseUtil
+
+    @@texmfcnf  = 'texmf.cnf'
+
+    def KpseUtil::identify
+        ownpath = File.expand_path($0)
+        if ownpath.gsub!(/texmf.*?$/o, '') then
+            ENV['SELFAUTOPARENT'] = ownpath
+        else
+            ENV['SELFAUTOPARENT'] = '.'
+        end
+        filenames = Array.new
+        if ENV['TEXMFCNF'] and not ENV['TEXMFCNF'].empty? then
+            ENV['TEXMFCNF'].split(File::PATH_SEPARATOR).each do |path|
+                filenames << File.join(path,@@texmfcnf)
+            end
+        elsif ENV['SELFAUTOPARENT'] == '.' then
+            filenames << File.join('.',@@texmfcnf)
+        else
+            ['texmf-local','texmf'].each do |tree|
+                filenames << File.join(ENV['SELFAUTOPARENT'],tree,'web2c',@@texmfcnf)
+            end
+        end
+        loop do
+            busy = false
+            filenames.collect! do |f|
+                f.gsub(/\$([a-zA-Z0-9\_\-]*)/o) do
+                    busy = true
+                    ENV[$1] || ("$#{$1}")
+                end
+            end
+            break unless busy
+        end
+        return filenames
+    end
+
+    def KpseUtil::environment
+        Hash.new.merge(ENV)
+    end
+
+end
+
+class KpseFast
 
     # formats are an incredible inconsistent mess
 
     @@suffixes  = Hash.new
     @@formats   = Hash.new
     @@suffixmap = Hash.new
+
+    @@texmfcnf  = 'texmf.cnf'
 
     @@suffixes['gf']                       = ['.<resolution>gf'] # todo
     @@suffixes['pk']                       = ['.<resolution>pk'] # todo
@@ -121,7 +165,7 @@ class KPSEFAST
     @@formats['bst']                      = ''
     @@formats['cnf']                      = ''
     @@formats['ls-R']                     = ''
-    @@formats['fmt']                      = ''
+    @@formats['fmt']                      = 'TEXFORMATS'
     @@formats['map']                      = 'TEXFONTMAPS'
     @@formats['mem']                      = 'MPMEMS'
     @@formats['mf']                       = 'MFINPUTS'
@@ -170,27 +214,41 @@ class KPSEFAST
     @@cacheversion = '1'
 
     def initialize
-        @rootpath   = ''
-        @treepath   = ''
-        @progname   = 'kpsewhich'
-        @engine     = 'pdfetex'
-        @variables  = Hash.new
-        @expansions = Hash.new
-        @files      = Hash.new
-        @found      = Hash.new
-        @kpsevars   = Hash.new
-        @lsrfiles   = Array.new
-        @cnffiles   = Array.new
-        @verbose    = true
-        @remember   = true
-        @scandisk   = true
-        @diskcache  = true
-        @renewcache = false
-        @isolate    = false
+        @rootpath    = ''
+        @treepath    = ''
+        @progname    = 'kpsewhich'
+        @engine      = 'pdfetex'
+        @variables   = Hash.new
+        @expansions  = Hash.new
+        @files       = Hash.new
+        @found       = Hash.new
+        @kpsevars    = Hash.new
+        @lsrfiles    = Array.new
+        @cnffiles    = Array.new
+        @verbose     = true
+        @remember    = true
+        @scandisk    = true
+        @diskcache   = true
+        @renewcache  = false
+        @isolate     = false
 
-        @diskcache  = false
-        @cachepath  = nil
-        @cachefile  = 'tmftools.log'
+        @diskcache   = false
+        @cachepath   = nil
+        @cachefile   = 'tmftools.log'
+
+        @environment = ENV
+    end
+
+    def set(key,value)
+        case key
+            when 'progname' then @progname = value
+            when 'engine'   then @engine   = value
+            when 'format'   then @format   = value
+        end
+    end
+
+    def push_environment(env)
+        @environment = env
     end
 
     # {$SELFAUTOLOC,$SELFAUTODIR,$SELFAUTOPARENT}{,{/share,}/texmf{-local,}/web2c}
@@ -201,36 +259,41 @@ class KPSEFAST
     #
     # since we live in scriptpath we need a slightly different method
 
-    def load_cnf
-        ownpath = File.expand_path($0)
-        if ownpath.gsub!(/texmf.*?$/o, '') then
-            ENV['SELFAUTOPARENT'] = ownpath
-        else
-            ENV['SELFAUTOPARENT'] = '.'
-        end
-        unless @treepath.empty? then
-            unless @rootpath.empty? then
-                @treepath = @treepath.split(',').collect do |p| File.join(@rootpath,p) end.join(',')
+    def load_cnf(filenames=nil)
+        unless filenames then
+            ownpath = File.expand_path($0)
+            if ownpath.gsub!(/texmf.*?$/o, '') then
+                @environment['SELFAUTOPARENT'] = ownpath
+            else
+                @environment['SELFAUTOPARENT'] = '.'
             end
-            ENV['TEXMF'] = @treepath
-            ENV['TEXMFCNF'] = File.join(@treepath.split(',').first,'texmf/web2c')
-        end
-        unless @rootpath.empty? then
-            ENV['TEXMFCNF'] = File.join(@rootpath,'texmf/web2c')
-            ENV['SELFAUTOPARENT'] = @rootpath
-            @isolate = true
-        end
-        filenames = Array.new
-        if ENV['TEXMFCNF'] and not ENV['TEXMFCNF'].empty? then
-            filenames << File.join(ENV['TEXMFCNF'],'texmf.cnf')
-        elsif ENV['SELFAUTOPARENT'] == '.' then
-            filenames << File.join('.','texmf.cnf')
-        else
-            ['texmf-local','texmf'].each do |tree|
-                filenames << File.join(ENV['SELFAUTOPARENT'],tree,'web2c','texmf.cnf')
+            unless @treepath.empty? then
+                unless @rootpath.empty? then
+                    @treepath = @treepath.split(',').collect do |p| File.join(@rootpath,p) end.join(',')
+                end
+                @environment['TEXMF'] = @treepath
+                @environment['TEXMFCNF'] = File.join(@treepath.split(',').first,'texmf/web2c')
+            end
+            unless @rootpath.empty? then
+                @environment['TEXMFCNF'] = File.join(@rootpath,'texmf/web2c')
+                @environment['SELFAUTOPARENT'] = @rootpath
+                @isolate = true
+            end
+            filenames = Array.new
+            if @environment['TEXMFCNF'] and not @environment['TEXMFCNF'].empty? then
+                @environment['TEXMFCNF'].split(File::PATH_SEPARATOR).each do |path|
+                    filenames << File.join(path,@@texmfcnf)
+                end
+            elsif @environment['SELFAUTOPARENT'] == '.' then
+                filenames << File.join('.',@@texmfcnf)
+            else
+                ['texmf-local','texmf'].each do |tree|
+                    filenames << File.join(@environment['SELFAUTOPARENT'],tree,'web2c',@@texmfcnf)
+                end
             end
         end
         # <root>/texmf/web2c/texmf.cnf
+        filenames = _expanded_path_(filenames)
         @rootpath = filenames.first
         3.times do
             @rootpath = File.dirname(@rootpath)
@@ -280,9 +343,9 @@ class KPSEFAST
         @files = Hash.new
         if @diskcache then
             ['HOME','TEMP','TMP','TMPDIR'].each do |key|
-                if ENV[key] then
-                    if FileTest.directory?(ENV[key]) then
-                        @cachepath = ENV[key]
+                if @environment[key] then
+                    if FileTest.directory?(@environment[key]) then
+                        @cachepath = @environment[key]
                         @cachefile = [@rootpath.gsub(/[^A-Z0-9]/io, '-').gsub(/\-+/,'-'),File.basename(@cachefile)].join('-')
                         break
                     end
@@ -342,14 +405,14 @@ class KPSEFAST
     def expand_variables
         @expansions = Hash.new
         if @isolate then
-            @variables['TEXMFCNF'] = ENV['TEXMFCNF'].dup
-            @variables['SELFAUTOPARENT'] = ENV['SELFAUTOPARENT'].dup
+            @variables['TEXMFCNF'] = @environment['TEXMFCNF'].dup
+            @variables['SELFAUTOPARENT'] = @environment['SELFAUTOPARENT'].dup
         else
-            ENV.keys.each do |e|
+            @environment.keys.each do |e|
                 if e =~ /^([a-zA-Z]+)\_(.*)\s*$/o then
-                    @expansions["#{$1}.#{$2}"] = ENV[e].dup
+                    @expansions["#{$1}.#{$2}"] = (@environment[e] ||'').dup
                 else
-                    @expansions[e] = ENV[e].dup
+                    @expansions[e] = (@environment[e] ||'').dup
                 end
             end
         end
@@ -465,7 +528,8 @@ class KPSEFAST
             end
         end
         pathlist = pathlist.uniq.collect do |path|
-            p = path.gsub(/^\/+/o) do '' end
+            p = path
+            # p.gsub(/^\/+/o) do '' end
             # p.gsub!(/(.)\/\/(.)/o) do "#{$1}/#{$2}" end
             # p.gsub!(/\/\/+$/o) do '//' end
             p.gsub!(/\/\/+/o) do '//' end
@@ -485,8 +549,8 @@ class KPSEFAST
     end
 
     def var_of_format_or_suffix(str)
-        if @@formats.key?(@format) then
-            @@formats[@format]
+        if @@formats.key?(str) then
+            @@formats[str]
         elsif @@suffixmap.key?(File.extname(str)) then # extname includes .
             @@formats[@@suffixmap[File.extname(str)]]  # extname includes .
         else
@@ -496,7 +560,7 @@ class KPSEFAST
 
 end
 
-class KPSEFAST
+class KpseFast
 
     # test things
 
@@ -543,7 +607,7 @@ class KPSEFAST
 
 end
 
-class KPSEFAST
+class KpseFast
 
     # kpse stuff
 
@@ -560,7 +624,8 @@ class KPSEFAST
     end
 
     def show_path(str)     # output search path for file type NAME
-        expanded_path(var_of_format(str)).join(File::PATH_SEPARATOR)
+        # expanded_path(var_of_format(str)).join(File::PATH_SEPARATOR)
+        expanded_path(str).join(File::PATH_SEPARATOR)
     end
 
     def var_value(str)     # output the value of variable $STRING.
@@ -569,97 +634,117 @@ class KPSEFAST
 
 end
 
-class KPSEFAST
+class KpseFast
+
+    def _is_cnf_?(filename)
+        filename == File.basename((@cnffiles.first rescue @@texmfcnf))
+    end
 
     def find_file(filename)
-        find_files(filename,true)
+        if _is_cnf_?(filename) then
+            @cnffiles.first rescue ''
+        else
+            [find_files(filename,true)].flatten.first || ''
+        end
     end
 
     def find_files(filename,first=false)
-        if @remember then
-            stamp = "#{filename}--#{@format}--#{@engine}--#{@progname}"
-            return @found[stamp] if @found.key?(stamp)
-        end
-        pathlist = expanded_path(filename)
-        result = []
-        filelist = if @files.key?(filename) then @files[filename].uniq else nil end
-        done = false
-        pathlist.each do |path|
-            doscan = if path =~ /^\!\!/o then false else true end
-            recurse = if path =~ /\/\/$/o then true else false end
-            pathname = path.dup
-            pathname.gsub!(/^\!+/o, '')
+        if _is_cnf_?(filename) then
+            result = @cnffiles.dup
+        else
+            if @remember then
+                # stamp = "#{filename}--#{@format}--#{@engine}--#{@progname}"
+                stamp = "#{filename}--#{@engine}--#{@progname}"
+                return @found[stamp] if @found.key?(stamp)
+            end
+            pathlist = expanded_path(filename)
+            result = []
+            filelist = if @files.key?(filename) then @files[filename].uniq else nil end
             done = false
-            if not done and filelist then
-                # checking for exact match
-                if filelist.include?(pathname) then
-                    result << pathname
+            if pathlist.size == 0 then
+                if FileTest.file?(filename) then
                     done = true
+                    result << '.'
                 end
-                if not done and recurse then
-                    # checking for fuzzy //
-                    pathname.gsub!(/\/+$/o, '/.*')
-                    # pathname.gsub!(/\/\//o,'/[\/]*/')
-                    pathname.gsub!(/\/\//o,'/.*?/')
-                    re = /^#{pathname}/
-                    filelist.each do |f|
-                        if re =~ f then
-                            result << f # duplicates will be filtered later
+            else
+                pathlist.each do |path|
+                    doscan = if path =~ /^\!\!/o then false else true end
+                    recurse = if path =~ /\/\/$/o then true else false end
+                    pathname = path.dup
+                    pathname.gsub!(/^\!+/o, '')
+                    done = false
+                    if not done and filelist then
+                        # checking for exact match
+                        if filelist.include?(pathname) then
+                            result << pathname
                             done = true
                         end
-                        break if done
-                    end
-                end
-            end
-            if not done and doscan then
-                # checking for path itself
-                pname = pathname.sub(/\.\*$/,'')
-                if not pname =~ /\*/o and FileTest.file?(File.join(pname,filename)) then
-                    result << pname
-                    done = true
-                end
-            end
-            break if done and first
-        end
-        if not done and @scandisk then
-            pathlist.each do |path|
-                pathname = path.dup
-                unless pathname.gsub!(/^\!+/o, '') then # !! prevents scan
-                    recurse = pathname.gsub!(/\/+$/o, '')
-                    complex = pathname.gsub!(/\/\//o,'/*/')
-                    if recurse then
-                        if complex then
-                            if ok = File.glob_file("#{pathname}/**/#{filename}") then
-                                result << File.dirname(ok)
-                                done = true
+                        if not done and recurse then
+                            # checking for fuzzy //
+                            pathname.gsub!(/\/+$/o, '/.*')
+                            # pathname.gsub!(/\/\//o,'/[\/]*/')
+                            pathname.gsub!(/\/\//o,'/.*?/')
+                            re = /^#{pathname}/
+                            filelist.each do |f|
+                                if re =~ f then
+                                    result << f # duplicates will be filtered later
+                                    done = true
+                                end
+                                break if done
                             end
-                        elsif ok = File.locate_file(pathname,filename) then
-                            result << File.dirname(ok)
+                        end
+                    end
+                    if not done and doscan then
+                        # checking for path itself
+                        pname = pathname.sub(/\.\*$/,'')
+                        if not pname =~ /\*/o and FileTest.file?(File.join(pname,filename)) then
+                            result << pname
                             done = true
                         end
-                    elsif complex then
-                        if ok = File.glob_file("#{pathname}/#{filename}") then
-                            result << File.dirname(ok)
-                            done = true
-                        end
-                    elsif FileTest.file?(File.join(pathname,filename)) then
-                        result << pathname
-                        done = true
                     end
                     break if done and first
                 end
             end
+            if not done and @scandisk then
+                pathlist.each do |path|
+                    pathname = path.dup
+                    unless pathname.gsub!(/^\!+/o, '') then # !! prevents scan
+                        recurse = pathname.gsub!(/\/+$/o, '')
+                        complex = pathname.gsub!(/\/\//o,'/*/')
+                        if recurse then
+                            if complex then
+                                if ok = File.glob_file("#{pathname}/**/#{filename}") then
+                                    result << File.dirname(ok)
+                                    done = true
+                                end
+                            elsif ok = File.locate_file(pathname,filename) then
+                                result << File.dirname(ok)
+                                done = true
+                            end
+                        elsif complex then
+                            if ok = File.glob_file("#{pathname}/#{filename}") then
+                                result << File.dirname(ok)
+                                done = true
+                            end
+                        elsif FileTest.file?(File.join(pathname,filename)) then
+                            result << pathname
+                            done = true
+                        end
+                        break if done and first
+                    end
+                end
+            end
+            result = result.uniq.collect do |pathname|
+                File.join(pathname,filename)
+            end
+            @found[stamp] = result if @remember
         end
-        result = result.uniq.collect do |pathname|
-            File.join(pathname,filename)
-        end
-        @found[stamp] = result if @remember
         return result # redundant
     end
 
 end
 
-class KPSEFAST
+class KpseFast
 
     class FileData
         attr_accessor :tag, :name, :size, :date
@@ -673,12 +758,9 @@ class KPSEFAST
         end
         def report
             case @tag
-                when 1
-                    "deleted  | #{@size.to_s.rjust(8)} | #{@date.strftime('%m/%d/%Y %I:%M')} | #{@name}"
-                when 2
-                    "present  | #{@size.to_s.rjust(8)} | #{@date.strftime('%m/%d/%Y %I:%M')} | #{@name}"
-                when 3
-                    "obsolete | #{' '*8} | #{' '*16} | #{@name}"
+                when 1 then "deleted  | #{@size.to_s.rjust(8)} | #{@date.strftime('%m/%d/%Y %I:%M')} | #{@name}"
+                when 2 then "present  | #{@size.to_s.rjust(8)} | #{@date.strftime('%m/%d/%Y %I:%M')} | #{@name}"
+                when 3 then "obsolete | #{' '*8} | #{' '*16} | #{@name}"
             end
         end
     end
@@ -769,88 +851,16 @@ class KPSEFAST
 
 end
 
-module KpseRunner
+# if false then
 
-    @@kpse = nil
+    # k = KpseFast.new # (root)
+    # k.set_test_patterns
+    # k.load_cnf
+    # k.expand_variables
+    # k.load_lsr
 
-    def KpseRunner.kpsewhich(arg='')
-        options, arguments = split_args(arg)
-        unless @@kpse then
-            @@kpse = KPSEFAST.new
-            @@kpse.load_cnf
-            @@kpse.progname = options['progname'] || ''
-            @@kpse.engine   = options['engine']   || ''
-            @@kpse.format   = options['format']   || ''
-            @@kpse.expand_variables
-            @@kpse.load_lsr
-        else
-            @@kpse.progname = options['progname'] || ''
-            @@kpse.engine   = options['engine']   || ''
-            @@kpse.format   = options['format']   || ''
-            @@kpse.expand_variables
-        end
-        if    option = options['expand-braces'] and not option.empty? then
-            @@kpse.expand_braces(option)
-        elsif option = options['expand-path']   and not option.empty? then
-            @@kpse.expand_path(option)
-        elsif option = options['expand-var']    and not option.empty? then
-            @@kpse.expand_var(option)
-        elsif option = options['show-path']     and not option.empty? then
-            @@kpse.show_path(option)
-        elsif option = options['var-value']     and not option.empty? then
-            @@kpse.expand_var(option)
-        elsif arguments.size > 0 then
-            files = Array.new
-            arguments.each do |option|
-                if file = @@kpse.find_file(option) and not file.empty? then
-                    files << file
-                end
-            end
-            files.join("\n")
-        else
-            ''
-        end
-    end
+    # k.show_test_patterns
 
-    def KpseRunner.kpsereset
-        @@kpse = nil
-    end
-
-    private
-
-    def KpseRunner.split_args(arg)
-        vars, args = Hash.new, Array.new
-        arg.gsub!(/([\"\'])(.*?)\1/o) do
-            $2.gsub(' ','<space/>')
-        end
-        arg = arg.split(/\s+/o)
-        arg.collect! do |a|
-            a.gsub('<space/>',' ')
-        end
-        arg.each do |a|
-            if a =~ /^(.*?)\=(.*?)$/o then
-                k, v = $1, $2
-                vars[k.sub(/^\-+/,'')] = v
-            else
-                args << a
-            end
-        end
-        # puts vars.inspect
-        # puts args.inspect
-        return vars, args
-    end
-
-end
-
-if false then
-
-    k = KPSEFAST.new # (root)
-    k.set_test_patterns
-    k.load_cnf
-    k.expand_variables
-    k.load_lsr
-
-    k.show_test_patterns
     # puts k.list_variables
     # puts k.list_expansions
     # k.list_lsr
@@ -876,6 +886,6 @@ if false then
     # puts "expand value $TEXINPUTS.context"
     # puts k.var_value("$TEXINPUTS.context")
 
-    exit
+    # exit
 
-end
+# end

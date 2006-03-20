@@ -44,7 +44,7 @@ eval '(exit $?0)' && eval 'exec perl -S $0 ${1+"$@"}' && eval 'exec perl -S $0 $
 #D binary version, like scanning illustrations other than \EPS.
 #D I would suggest to keep an eye on the version number:
 
-$Program = "TeXUtil 9.0.0 - ConTeXt / PRAGMA ADE 1992-2004" ;
+$Program = "TeXUtil 9.0.1 - ConTeXt / PRAGMA ADE 1992-2006" ;
 
 #D By the way, this is my first \PERL\ script, which means
 #D that it will be improved as soon as I find new and/or more
@@ -53,6 +53,11 @@ $Program = "TeXUtil 9.0.0 - ConTeXt / PRAGMA ADE 1992-2004" ;
 #D the \CONTEXT\ suite, and therefore can communicate with the
 #D users in english as well as some other languages. One can
 #D set his favourite language by saying something like:
+
+#D This one has a real old date, 1992. This is because it is
+#D a converted modula program that was used in the very early
+#D days of our \TEX\ history (macros for proper inclusion of
+#D graphics were among the first thatwe wrote).
 
 #D \starttypen
 #D perl texutil.pl --int=de --fig *.eps *.tif *.pdf *.png *.jpg
@@ -823,7 +828,7 @@ sub InitializeKeys
   { my $filename = $ARGV[0] ;
     return unless (open(TEX,"$filename.tex")) ;
     for ($i=0;$i<=255;$i++)
-      { @Filter[$i] = $i }
+      { $Filter[$i] = $i }
     if ($TcXPath eq '')
       { foreach (@paths)
           { my $p = checked_path($_) . 'kpsewhich' ;
@@ -848,7 +853,7 @@ sub InitializeKeys
                   { Report ("LoadedFilter", $Translation) ;
                     while (<ASC>)
                       { if (/^(\d+)\s*(\d+)/)
-                          { @Filter[$2] = $1 } }
+                          { $Filter[$2] = $1 } }
                     close (ASC) }
                 elsif ($TcXPath ne '')
                   { Report ("WrongFilterPath", $TcXPath) }
@@ -861,7 +866,7 @@ sub HandleKey
   { ++$SortN ;
     $RestOfLine =~ s/\{(.*)\}/$1/o ;
     my ($lan, $enc, $str, $chr, $map, $alf) = split(/\}\s*\{/, $RestOfLine) ;
-    if ($str =~ /^(\d+)/) { $str = ''.chr(@Filter[$1]) }
+    if ($str =~ /^(\d+)/) { $str = ''.chr($Filter[$1]) }
     $map = chr(ord($MAP[$i])+128) ;
     $STR[$SortN] = $str ;
     $CHR[$SortN] = $chr ;
@@ -1279,8 +1284,8 @@ sub HandleRegister # the } { makes sure that local {} is ok
     #
     if ($Key eq "")
       { $Key = SanitizedString($Entry) }
-    if ($SortMethod ne '')
-      { $ProcessHigh = 0 }
+    # if ($SortMethod ne '')
+    #   { $ProcessHigh = 0 }
     if ($ProcessHigh)
       { $Key = HighConverted($Key) }
     $KeyTag = substr $Key, 0, 1 ;
@@ -2075,7 +2080,7 @@ sub SaveFigurePresets
           { $Figures[$NOfFigures] .= ",t=\{$FTit\}" }
         if ($FCre)
           { $Figures[$NOfFigures] .= ",c=\{$FCre\}" }
-        $Figures[$NOfFigures] .= ",s=$FSiz]\n" } }
+        $Figures[$NOfFigures] .= ",s=$FSiz]" } }
 
 #D The \EPS\ to \PDF\ conversion pipe to \GHOSTSCRIPT\ is
 #D inspired by a script posted by Sebastian Ratz at the
@@ -2580,8 +2585,10 @@ sub FlushFigures
     open ( TUF, ">$OutputFile" ) ;
     print TUF "%\n" . "% $Program / Figures\n" . "%\n" ;
     print TUF "\\thisisfigureversion\{1996.06.01\}\n" . "%\n" ;
+    # a joins is nicer
     for ($n=1 ; $n<=$NOfFigures ; ++$n)
-      { print TUF $Figures[$n] }
+      { print TUF "$Figures[$n]%\n" }
+    print TUF "\\endinput";
     close (TUF) ;
     if ($NOfFigures)
      { Report("OutputFile", $OutputFile ) }
@@ -2772,7 +2779,9 @@ if ($PurgeAllFiles)
   { push @forsuresuffixes, @texnonesuffixes  ; @texnonesuffixes = [] }
 
 sub PurgeFiles # no my in foreach
-  { my $pattern = $ARGV[0] ; my $strippedname, $basename ;
+  { my $pattern = $ARGV[0] ;
+    my $strippedname ;
+    my $basename ;
     my @files = () ;
     if ($pattern eq '')
       { $pattern = "*.*" ;
@@ -2895,7 +2904,6 @@ elsif  ($PurgeFiles       ) { PurgeFiles       }
 elsif  ($PurgeAllFiles    ) { PurgeFiles       }
 elsif  ($AnalyzeFile      ) { AnalyzeFile      }
 elsif  ($FilterPages      ) { FilterPages      }
-elsif  ($SciteApi         ) { GenerateSciteApi }
 elsif  ($ProcessHelp      ) { ShowHelpInfo     } # redundant
 else                        { ShowHelpInfo     }
 

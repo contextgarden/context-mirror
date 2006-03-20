@@ -864,4 +864,22 @@
    \kern-\!!counta\baselineskip
    \penalty\zerocount }
 
+% We need to hook it into the other otr's. This code will move.
+
+\let\OTRONEflushsidefloats      \flushsidefloats
+\let\OTRONEsynchronizesidefloats\synchronizesidefloats
+
+% page-set
+%
+% \let\OTRSETflushsidefloats      \forgetsidefloats
+% \let\OTRSETsynchronizesidefloats\forgetsidefloats
+
+% page-mul
+%
+% \let\OTRMULflushsidefloats      \forgetsidefloats
+% \let\OTRMULsynchronizesidefloats\forgetsidefloats
+
+\def\synchronizesidefloats{\OTRcommand\synchronizesidefloats}
+\def\flushsidefloats      {\OTRcommand\flushsidefloats}
+
 \protect \endinput

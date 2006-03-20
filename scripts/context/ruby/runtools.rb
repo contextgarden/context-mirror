@@ -456,7 +456,7 @@ class Job
                         end
                     end
                 else
-                    error("no setup file '#{setuptex}'")
+                    warning("no setup file '#{setuptex}', tree not initialized") # no error
                 end
             rescue
                 warning("error in setup: #{$!}")

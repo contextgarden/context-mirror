@@ -724,8 +724,8 @@
   {\doifelselayerdata{OTRTEXT}
      {\setbox#1\hbox to \makeupwidth
         {\startoverlay
+           {\tightlayer[OTRTEXT]} % first, otherwise problems with toc
            {\normalsettextpagecontent{#1}{#2}{#3}\box#1}
-           {\tightlayer[OTRTEXT]}
          \stopoverlay}%
       \dp#1\zeropoint}%
      {\normalsettextpagecontent{#1}{#2}{#3}}}

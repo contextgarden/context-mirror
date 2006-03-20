@@ -15,7 +15,7 @@
 
 # todo: move scite here
 #
-# todo: move kpse call to kpse class/module
+# todo: move kpse call to kpse class/module, faster and better
 
 banner = ['CtxTools', 'version 1.3.1', '2004/2006', 'PRAGMA ADE/POD']
 
@@ -1528,33 +1528,386 @@ class Commands
 
 end
 
+class TexDeps
+
+    @@cs_tex = %q/
+        above abovedisplayshortskip abovedisplayskip
+        abovewithdelims accent adjdemerits advance afterassignment
+        aftergroup atop atopwithdelims
+        badness baselineskip batchmode begingroup
+        belowdisplayshortskip belowdisplayskip binoppenalty botmark
+        box boxmaxdepth brokenpenalty
+        catcode char chardef cleaders closein closeout clubpenalty
+        copy count countdef cr crcr csname
+        day deadcycles def defaulthyphenchar defaultskewchar
+        delcode delimiter delimiterfactor delimeters
+        delimitershortfall delimeters dimen dimendef discretionary
+        displayindent displaylimits displaystyle
+        displaywidowpenalty displaywidth divide
+        doublehyphendemerits dp dump
+        edef else emergencystretch end endcsname endgroup endinput
+        endlinechar eqno errhelp errmessage errorcontextlines
+        errorstopmode escapechar everycr everydisplay everyhbox
+        everyjob everymath everypar everyvbox exhyphenpenalty
+        expandafter
+        fam fi finalhyphendemerits firstmark floatingpenalty font
+        fontdimen fontname futurelet
+        gdef global group globaldefs
+        halign hangafter hangindent hbadness hbox hfil horizontal
+        hfill horizontal hfilneg hfuzz hoffset holdinginserts hrule
+        hsize hskip hss horizontal ht hyphenation hyphenchar
+        hyphenpenalty hyphen
+        if ifcase ifcat ifdim ifeof iffalse ifhbox ifhmode ifinner
+        ifmmode ifnum ifodd iftrue ifvbox ifvmode ifvoid ifx
+        ignorespaces immediate indent input inputlineno input
+        insert insertpenalties interlinepenalty
+        jobname
+        kern
+        language lastbox lastkern lastpenalty lastskip lccode
+        leaders left lefthyphenmin leftskip leqno let limits
+        linepenalty line lineskip lineskiplimit long looseness
+        lower lowercase
+        mag mark mathaccent mathbin mathchar mathchardef mathchoice
+        mathclose mathcode mathinner mathop mathopen mathord
+        mathpunct mathrel mathsurround maxdeadcycles maxdepth
+        meaning medmuskip message mkern month moveleft moveright
+        mskip multiply muskip muskipdef
+        newlinechar noalign noboundary noexpand noindent nolimits
+        nonscript scriptscript nonstopmode nulldelimiterspace
+        nullfont number
+        omit openin openout or outer output outputpenalty over
+        overfullrule overline overwithdelims
+        pagedepth pagefilllstretch pagefillstretch pagefilstretch
+        pagegoal pageshrink pagestretch pagetotal par parfillskip
+        parindent parshape parskip patterns pausing penalty
+        postdisplaypenalty predisplaypenalty predisplaysize
+        pretolerance prevdepth prevgraf
+        radical raise read relax relpenalty right righthyphenmin
+        rightskip romannumeral
+        scriptfont scriptscriptfont scriptscriptstyle scriptspace
+        scriptstyle scrollmode setbox setlanguage sfcode shipout
+        show showbox showboxbreadth showboxdepth showlists showthe
+        skewchar skip skipdef spacefactor spaceskip span special
+        splitbotmark splitfirstmark splitmaxdepth splittopskip
+        string
+        tabskip textfont textstyle the thickmuskip thinmuskip time
+        toks toksdef tolerance topmark topskip tracingcommands
+        tracinglostchars tracingmacros tracingonline tracingoutput
+        tracingpages tracingparagraphs tracingrestores tracingstats
+        uccode uchyph underline unhbox unhcopy unkern unpenalty
+        unskip unvbox unvcopy uppercase
+        vadjust valign vbadness vbox vcenter vfil vfill vfilneg
+        vfuzz voffset vrule vsize vskip vsplit vss vtop
+        wd widowpenalty write
+        xdef xleaders xspaceskip
+        year
+    /.split
+
+    @@cs_etex = %q/
+        beginL beginR botmarks
+        clubpenalties currentgrouplevel currentgrouptype
+        currentifbranch currentiflevel currentiftype
+        detokenize dimexpr displaywidowpenalties
+        endL endR eTeXrevision eTeXversion everyeof
+        firstmarks fontchardp fontcharht fontcharic fontcharwd
+        glueexpr glueshrink glueshrinkorder gluestretch
+        gluestretchorder gluetomu
+        ifcsname ifdefined iffontchar interactionmode
+        interactionmode interlinepenalties
+        lastlinefit lastnodetype
+        marks topmarks middle muexpr mutoglue
+        numexpr
+        pagediscards parshapedimen parshapeindent parshapelength
+        predisplaydirection
+        savinghyphcodes savingvdiscards scantokens showgroups
+        showifs showtokens splitdiscards splitfirstmarks
+        TeXXeTstate tracingassigns tracinggroups tracingifs
+        tracingnesting tracingscantokens
+        unexpanded unless
+        widowpenalties
+    /.split
+
+    @@cs_pdftex = %q/
+        pdfadjustspacing pdfannot pdfavoidoverfull
+        pdfcatalog pdfcompresslevel
+        pdfdecimaldigits pdfdest pdfdestmargin
+        pdfendlink pdfendthread
+        pdffontattr pdffontexpand pdffontname pdffontobjnum pdffontsize
+        pdfhorigin
+        pdfimageresolution pdfincludechars pdfinfo
+        pdflastannot pdflastdemerits pdflastobj
+        pdflastvbreakpenalty pdflastxform pdflastximage
+        pdflastximagepages pdflastxpos pdflastypos
+        pdflinesnapx pdflinesnapy pdflinkmargin pdfliteral
+        pdfmapfile pdfmaxpenalty pdfminpenalty pdfmovechars
+        pdfnames
+        pdfobj pdfoptionpdfminorversion pdfoutline pdfoutput
+        pdfpageattr pdfpageheight pdfpageresources pdfpagesattr
+        pdfpagewidth pdfpkresolution pdfprotrudechars
+        pdfrefobj pdfrefxform pdfrefximage
+        pdfsavepos pdfsnaprefpoint pdfsnapx pdfsnapy pdfstartlink
+        pdfstartthread
+        pdftexrevision pdftexversion pdfthread pdfthreadmargin
+        pdfuniqueresname
+        pdfvorigin
+        pdfxform pdfximage
+    /.split
+
+    @@cs_omega = %q/
+        odelimiter omathaccent omathchar oradical omathchardef omathcode odelcode
+        leftghost rightghost
+        charwd charht chardp charit
+        localleftbox localrightbox
+        localinterlinepenalty localbrokenpenalty
+        pagedir bodydir pardir textdir mathdir
+        boxdir nextfakemath
+        pagewidth pageheight pagerightoffset pagebottomoffset
+        nullocp nullocplist ocp externalocp ocplist pushocplist popocplist clearocplists ocptracelevel
+        addbeforeocplist addafterocplist removebeforeocplist removeafterocplist
+        OmegaVersion
+        InputTranslation OutputTranslation DefaultInputTranslation DefaultOutputTranslation
+        noInputTranslation noOutputTranslation
+        InputMode OutputMode DefaultInputMode DefaultOutputMode
+        noInputMode noOutputMode noDefaultInputMode noDefaultOutputMode
+    /.split
+
+    @@cs_plain = %q/
+        TeX
+        bgroup egroup endgraf space empty null
+        newcount newdimen newskip newmuskip newbox newtoks newhelp newread newwrite newfam newlanguage newinsert newif
+        maxdimen magstephalf magstep
+        frenchspacing nonfrenchspacing normalbaselines obeylines obeyspaces raggedright ttraggedright
+        thinspace negthinspace enspace enskip quad qquad
+        smallskip medskip bigskip removelastskip topglue vglue hglue
+        break nobreak allowbreak filbreak goodbreak smallbreak medbreak bigbreak
+        line leftline rightline centerline rlap llap underbar strutbox strut
+        cases matrix pmatrix bordermatrix eqalign displaylines eqalignno leqalignno
+        pageno folio tracingall showhyphens fmtname fmtversion
+        hphantom vphantom phantom smash
+    /.split
+
+    @@cs_eplain = %q/
+        eTeX
+        newmarks grouptype interactionmode nodetype iftype
+        tracingall loggingall tracingnone
+    /.split
+
+    # let's ignore \dimendef etc
+
+    @@primitives_def = "def|edef|xdef|gdef|let|newcount|newdimen|newskip|newbox|newtoks|newmarks|chardef|mathchardef|newconditional"
+
+    @@cs_global  = [@@cs_tex,@@cs_etex,@@cs_pdftex,@@cs_omega].sort.flatten
+    @@types      = [['invalid','*'],['okay','='],['forward','>'],['backward','<'],['unknown','?']]
+
+    def initialize(logger=nil)
+        @cs_local = Hash.new
+        @cs_new   = Hash.new
+        @cs_defd  = Hash.new
+        @cs_used  = Hash.new
+        @filename = 'context.tex'
+        @files    = Array.new # keep load order !
+        @compact  = false
+        @logger   = logger
+    end
+
+    def load(filename='context.tex',omitlist=['mult-com.tex'])
+        begin
+            @filename = filename
+            File.open(filename) do |f|
+                f.each do |line|
+                    if line =~ /^\\input\s+(\S+)\s*/o then
+                        @files.push($1) unless omitlist.include?(File.basename($1))
+                    end
+                end
+            end
+        rescue
+            @files = Array.new
+        end
+    end
+
+    def analyze
+        @files.each do |filename|
+            if f = File.open(filename) then
+                @logger.report("loading #{filename}") if @logger
+                defs, uses, n = 0, 0, 0
+                f.each do |line|
+                    n += 1
+                    case line
+                        when /^%/
+                            # skip
+                        when /\\newif\s*\\if([a-zA-Z@\?\!]+)/ then
+                            pushdef(filename,n,"if:#{$1}")
+                        when /\\([a-zA-Z@\?\!]+)(true|false)/ then
+                            pushuse(filename,n,"if:#{$1}")
+                        when /^\s*\\(#{@primitives_def})\\([a-zA-Z@\?\!]{3,})/o
+                            pushdef(filename,n,$2)
+                        when /\\([a-zA-Z@\?\!]{3,})/o
+                            pushuse(filename,n,$1)
+                    end
+                end
+                f.close
+            end
+        end
+    end
+
+    def feedback(compact=false)
+        begin
+            outputfile = File.basename(@filename).sub(/\.tex$/,'')+'.dep'
+            File.open(outputfile,'w') do |f|
+                @compact = compact
+                @logger.report("saving analysis in #{outputfile}") if @logger
+                list, len = @cs_local.keys.sort, 0
+                if @compact then
+                    list.each do |cs|
+                        if cs.length > len then len = cs.length end
+                    end
+                    len += 1
+                else
+                    f.puts "<?xml version='1.0'?>\n"
+                    f.puts "<dependencies xmlns='http://www.pragma-ade.com/schemas/texdeps.rng' rootfile='#{@filename}'>\n"
+                end
+                list.each do |cs|
+                    if @cs_new.key?(cs) then
+                        if @cs_new[cs] == @cs_local[cs] then
+                            f.puts some_struc(cs,len,1,some_str(@cs_new,@cs_defd,cs))
+                        elsif @cs_new[cs].first == @cs_local[cs].first then
+                            f.puts some_struc(cs,len,2,some_str(@cs_new,@cs_defd,cs),some_str(@cs_local,@cs_used,cs))
+                        else
+                            f.puts some_struc(cs,len,3,some_str(@cs_new,@cs_defd,cs),some_str(@cs_local,@cs_used,cs))
+                        end
+                    else
+                        f.puts some_struc(cs,len,4,some_str(@cs_local,@cs_used,cs))
+                    end
+                end
+                if @compact then
+                    # nothing
+                else
+                    "</dependencies>\n" unless @compact
+                end
+            end
+        rescue
+        end
+    end
+
+    private
+
+    def some_struc(cs,len,type=1,defstr='',usestr='')
+        if @compact then
+            "#{cs.ljust(len)} #{@@types[type][1]} #{defstr} #{usestr}"
+        else
+            "<macro name='#{cs}' type='#{type}'>\n" +
+            if defstr.empty? then "  <defined/>\n" else "  <defined>\n#{defstr}  <\defined>\n" end +
+            if usestr.empty? then "  <used/>\n"    else "  <used>#{usestr}\n  <\used>\n" end +
+            "</macro>\n"
+        end
+    end
+
+    def some_str(files, lines, cs)
+        return '' unless files[cs]
+        if @compact then
+            str = '[ '
+            files[cs].each do |c|
+                str += c
+                str += " (#{lines[cs][c].join(' ')}) " if lines[cs][c]
+                str += ' '
+            end
+            str += ']'
+            str.gsub(/ +/, ' ')
+        else
+            str = ''
+            files[cs].each do |c|
+                if lines[cs][c] then
+                    str += "    <file name='#{c}'>\n"
+                    str += "      "
+                    lines[cs][c].each do |l|
+                        # str += "      <line n='#{l}'/>\n"
+                        str += "<line n='#{l}'/>"
+                    end
+                    str += "\n"
+                    str += "    </file>\n"
+                else
+                    str += "    <file name='#{c}'/>\n"
+                end
+            end
+            str
+        end
+    end
+
+    def pushdef(filename,n,cs)
+        unless @cs_new.key?(cs) then
+            @cs_new[cs] = Array.new
+            @cs_defd[cs] = Hash.new unless @cs_defd.key?(cs)
+        end
+        @cs_defd[cs][filename] = Array.new unless @cs_defd[cs][filename]
+        @cs_new[cs].push(filename) unless @cs_new[cs].include?(filename)
+        @cs_defd[cs][filename] << n
+    end
+
+    def pushuse(filename,n,cs)
+        unless @@cs_global.include?(cs.to_s) then
+            unless @cs_local[cs] then
+                @cs_local[cs] = Array.new
+                @cs_used[cs] = Hash.new unless @cs_used.key?(cs)
+            end
+            @cs_used[cs][filename] = Array.new unless @cs_used[cs][filename]
+            @cs_local[cs].push(filename) unless @cs_local[cs].include?(filename)
+            @cs_used[cs][filename] << n
+        end
+    end
+
+end
+
+class Commands
+
+    include CommandBase
+
+    def dependencies
+
+        filename = if @commandline.arguments.empty? then 'context.tex' else @commandline.arguments.first end
+        compact  = @commandline.option('compact')
+
+        ['progname=context',''].each do |progname|
+            unless FileTest.file?(filename) then
+                name = `kpsewhich #{progname} #{filename}`.chomp
+                if FileTest.file?(name) then
+                    filename = name
+                    break
+                end
+            end
+        end
+
+        if FileTest.file?(filename) && deps = TexDeps.new(logger) then
+            deps.load
+            deps.analyze
+            deps.feedback(compact)
+        else
+            report("unknown file #{filename}")
+        end
+
+    end
+
+end
+
 logger      = Logger.new(banner.shift)
 commandline = CommandLine.new
 
-commandline.registeraction('touchcontextfile', 'update context version')
-commandline.registeraction('contextversion', 'report context version')
-
-commandline.registeraction('jeditinterface', 'generate jedit syntax files [--pipe]')
-commandline.registeraction('bbeditinterface', 'generate bbedit syntax files [--pipe]')
-commandline.registeraction('sciteinterface', 'generate scite syntax files [--pipe]')
-commandline.registeraction('rawinterface', 'generate raw syntax files [--pipe]')
-
+commandline.registeraction('touchcontextfile'  , 'update context version')
+commandline.registeraction('contextversion'    , 'report context version')
+commandline.registeraction('jeditinterface'    , 'generate jedit syntax files [--pipe]')
+commandline.registeraction('bbeditinterface'   , 'generate bbedit syntax files [--pipe]')
+commandline.registeraction('sciteinterface'    , 'generate scite syntax files [--pipe]')
+commandline.registeraction('rawinterface'      , 'generate raw syntax files [--pipe]')
 commandline.registeraction('translateinterface', 'generate interface files (xml) [nl de ..]')
-commandline.registeraction('purgefiles', 'remove temporary files [--all --recurse] [basename]')
-
-commandline.registeraction('documentation', 'generate documentation [--type=] [filename]')
-
-commandline.registeraction('filterpages')   # no help, hidden temporary feature
-commandline.registeraction('purgeallfiles') # no help, compatibility feature
-
-commandline.registeraction('patternfiles', 'generate pattern files [--all --xml --utf8] [languagecode]')
-
-commandline.registeraction('dpxmapfiles', 'convert pdftex mapfiles to dvipdfmx [--force] [texmfroot]')
-commandline.registeraction('listentities', 'create doctype entity definition from enco-uc.tex')
-
-commandline.registeraction('brandfiles', 'add context copyright notice [--force]')
-
-commandline.registeraction('platformize', 'replace line-endings [--recurse --force] [pattern]')
+commandline.registeraction('purgefiles'        , 'remove temporary files [--all --recurse] [basename]')
+commandline.registeraction('documentation'     , 'generate documentation [--type=] [filename]')
+commandline.registeraction('filterpages'       ) # no help, hidden temporary feature
+commandline.registeraction('purgeallfiles'     ) # no help, compatibility feature
+commandline.registeraction('patternfiles'      , 'generate pattern files [--all --xml --utf8] [languagecode]')
+commandline.registeraction('dpxmapfiles'       , 'convert pdftex mapfiles to dvipdfmx [--force] [texmfroot]')
+commandline.registeraction('listentities'      , 'create doctype entity definition from enco-uc.tex')
+commandline.registeraction('brandfiles'        , 'add context copyright notice [--force]')
+commandline.registeraction('platformize'       , 'replace line-endings [--recurse --force] [pattern]')
+commandline.registeraction('dependencies'      , 'analyze depedencies witin context [--compact] [rootfile]')
 
 commandline.registervalue('type','')
 

@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 
-<cd:interface xmlns:cd="http://www.pragma-ade.com/commands" name="context" language="en" version="2006.02.15 17:41">
+<cd:interface xmlns:cd="http://www.pragma-ade.com/commands" name="context" language="en" version="2006.03.20 10:19">
 
   <cd:variables>
     <cd:variable name="one" value="one"/>
@@ -526,6 +526,7 @@
     <cd:variable name="date" value="date"/>
     <cd:variable name="default" value="default"/>
     <cd:variable name="final" value="final"/>
+    <cd:variable name="float" value="float"/>
     <cd:variable name="depth" value="depth"/>
     <cd:variable name="doublesided" value="doublesided"/>
     <cd:variable name="first" value="first"/>

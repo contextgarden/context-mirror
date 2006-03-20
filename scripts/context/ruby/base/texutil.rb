@@ -823,8 +823,9 @@ class TeXUtil
 
         def loaded(filename)
             begin
-                report("parsing file #{filename}")
-                if f = open(File.suffixed(filename,'tui')) then
+                tuifile = File.suffixed(filename,'tui')
+                report("parsing file #{tuifile}")
+                if f = open(tuifile) then
                     f.each do |line|
                         case line.chomp
                             when /^f (.*)$/o then @plugins.reader('MyFiles',    $1.splitdata)

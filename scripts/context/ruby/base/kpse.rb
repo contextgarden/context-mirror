@@ -43,6 +43,7 @@ module Kpse
     else
         @@usekpserunner = true
         require 'base/kpsefast'
+        require 'base/kpserunner'
     end
 
     if @@crossover then
@@ -120,12 +121,10 @@ module Kpse
         begin
             if @@problems then
                 results = ''
+            elsif @@usekpserunner then
+                results = KpseRunner.kpsewhich(arguments).chomp
             else
-                if @@usekpserunner then
-                    results = KpseRunner.kpsewhich(arguments).chomp
-                else
-                    results = `kpsewhich #{arguments}`.chomp
-                end
+                results = `kpsewhich #{arguments}`.chomp
             end
         rescue
             puts "unable to run kpsewhich" if @@tracing

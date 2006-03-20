@@ -1,4 +1,4 @@
-banner = ['TeXExec', 'version 6.1.1', '1997-2006', 'PRAGMA ADE/POD']
+banner = ['TeXExec', 'version 6.1.2', '1997-2006', 'PRAGMA ADE/POD']
 
 unless defined? ownpath
     ownpath = $0.sub(/[\\\/][a-z0-9\-]*?\.rb/i,'')

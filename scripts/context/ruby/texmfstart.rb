@@ -2,7 +2,7 @@
 
 # program   : texmfstart
 # copyright : PRAGMA Advanced Document Engineering
-# version   : 1.8.3 - 2003/2006
+# version   : 1.8.5 - 2003/2006
 # author    : Hans Hagen
 #
 # project   : ConTeXt / eXaMpLe
@@ -32,11 +32,16 @@
 
 $ownpath = File.expand_path(File.dirname($0)) unless defined? $ownpath
 
+$: << $ownpath
+
 require "rbconfig"
+
+require 'base/kpseremote'
+require 'base/kpsedirect'
 
 $mswindows = Config::CONFIG['host_os'] =~ /mswin/
 $separator = File::PATH_SEPARATOR
-$version   = "1.8.3"
+$version   = "1.8.5"
 
 if $mswindows then
     require "win32ole"
@@ -79,6 +84,9 @@ $predefined['pdftools'] = 'pdftools.rb'
 $predefined['mpstools'] = 'mpstools.rb'
 $predefined['exatools'] = 'exatools.rb'
 $predefined['xmltools'] = 'xmltools.rb'
+
+$predefined['newpstopdf']  = 'newpstopdf.rb'
+$predefined['newtexexec']  = 'newtexexec.rb'
 
 $makelist = [
     # context
@@ -131,6 +139,25 @@ end
 
 $applications['htm']      = $applications['html']
 $applications['eps']      = $applications['ps']
+
+$kpse = nil
+
+def check_kpse
+    if $kpse then
+        # already done
+    elsif KpseRemote::available? then
+        $kpse = KpseRemote.new
+        if $kpse.okay? then
+            puts("using remote kpse") if $verbose
+        else
+            $kpse = KpseDirect.new
+            puts("forcing direct kpse") if $verbose
+        end
+    else
+        $kpse = KpseDirect.new
+        puts("using direct kpse") if $verbose
+    end
+end
 
 if $mswindows then
 
@@ -274,9 +301,11 @@ def expanded(arg) # no "other text files", too restricted
     end . gsub(/(kpse|loc|file|path)\:([a-zA-Z\-\_\.0-9]+)/o) do # was: \S
         method, original, resolved = $1, $2, ''
         if $program && ! $program.empty? then
-            pstrings = ["-progname=#{$program}"]
+            # pstrings = ["-progname=#{$program}"]
+pstrings = [$program]
         else
-            pstrings = ['','progname=context']
+            # pstrings = ['','-progname=context']
+pstrings = ['','context']
         end
         # auto suffix with texinputs as fall back
         if ENV["_CTX_K_V_#{original}_"] then
@@ -284,22 +313,31 @@ def expanded(arg) # no "other text files", too restricted
             report("environment provides #{original} as #{resolved}") unless $report
             resolved
         else
+            check_kpse
             pstrings.each do |pstr|
                 if resolved.empty? then
-                    command = "kpsewhich #{pstr} #{original}"
-                    report("running #{command}")
+                    # command = "kpsewhich #{pstr} #{original}"
+                    # report("running #{command}")
+                    report("locating '#{original}' in program space '#{pstr}'")
                     begin
-                        resolved = `#{command}`.chomp
+                        # resolved = `#{command}`.chomp
+                        $kpse.progname = pstr
+                        $kpse.format = ''
+                        resolved = $kpse.find_file(original)
                     rescue
                         resolved = ''
                     end
                 end
                 # elsewhere in the tree
                 if resolved.empty? then
-                    command = "kpsewhich #{pstr} -format=\"other text files\" #{original}"
-                    report("running #{command}")
+                    # command = "kpsewhich #{pstr} -format=\"other text files\" #{original}"
+                    # report("running #{command}")
+                    report("locating '#{original}' in program space '#{pstr}' using format 'other text files'")
                     begin
-                        resolved = `#{command}`.chomp
+                        # resolved = `#{command}`.chomp
+                        $kpse.progname = pstr
+                        $kpse.format = 'other text files'
+                        resolved = $kpse.find_file(original)
                     rescue
                         resolved = ''
                     end
@@ -403,7 +441,7 @@ def usage
     print("switches : --verbose --report --browser --direct --execute --locate --iftouched\n")
     print("           --program --file --page --arguments --batch --edit --report --clear\n")
     print("           --make --lmake --wmake --path --stubpath --indirect --before --after\n")
-    print("           --tree --autotree --showenv\n")
+    print("           --tree --autotree --environment --showenv\n")
     print("\n")
     print("example  : texmfstart pstopdf.rb cow.eps\n")
     print("           texmfstart --locate examplex.rb\n")
@@ -416,10 +454,11 @@ def usage
     print("           texmfstart bin:xsltproc env:somepreset path:somefile.xsl somefile.xml\n")
     print("           texmfstart --iftouched=normal,lowres downsample.rb normal lowres\n")
     print("           texmfstart texmfstart bin:scite kpse:texmf.cnf\n")
-    print("           texmfstart texmfstart --exec bin:scite *.tex\n")
-    print("           texmfstart texmfstart --edit texmf.cnf\n")
-    print("           texmfstart texmfstart --stubpath=/usr/local/bin --make texexec\n")
-    print("           texmfstart texmfstart --stubpath=auto --make all\n")
+    print("           texmfstart --exec bin:scite *.tex\n")
+    print("           texmfstart --edit texmf.cnf\n")
+    print("           texmfstart --stubpath=/usr/local/bin --make texexec\n")
+    print("           texmfstart --stubpath=auto --make all\n")
+    print("           texmfstart --serve\n")
 end
 
 # somehow registration does not work out (at least not under windows)
@@ -491,13 +530,16 @@ def find(filename,program)
         end
         # now we consult environment settings
         fullname = nil
+        check_kpse
+        $kpse.progname = program
         suffixlist.each do |suffix|
             begin
                 break unless $suffixinputs[suffix]
                 environment = ENV[$suffixinputs[suffix]] || ENV[$suffixinputs[suffix]+".#{$program}"]
                 if ! environment || environment.empty? then
                     begin
-                        environment = `kpsewhich -expand-path=\$#{$suffixinputs[suffix]}`.chomp
+                        # environment = `kpsewhich -expand-path=\$#{$suffixinputs[suffix]}`.chomp
+                        environment = $kpse.expand_path("\$#{$suffixinputs[suffix]}")
                     rescue
                         environment = nil
                     else
@@ -536,7 +578,9 @@ def find(filename,program)
             if suffix =~ /(#{$scriptlist})/ then
                 begin
                     report("using 'kpsewhich' to locate '#{filename}' in suffix space '#{suffix}' (1)")
-                    fullname = `kpsewhich -progname=#{program} -format=texmfscripts #{filename}.#{suffix}`.chomp
+                    # fullname = `kpsewhich -progname=#{program} -format=texmfscripts #{filename}.#{suffix}`.chomp
+                    $kpse.format = 'texmfscripts'
+                    fullname = $kpse.find_file("#{filename}.#{suffix}")
                 rescue
                     report("kpsewhich cannot locate '#{filename}' in suffix space '#{suffix}' (1)")
                     fullname = nil
@@ -547,7 +591,9 @@ def find(filename,program)
             # old TDS location: .../texmf/context/...
             begin
                 report("using 'kpsewhich' to locate '#{filename}' in suffix space '#{suffix}' (2)")
-                fullname = `kpsewhich -progname=#{program} -format="other text files" #{filename}.#{suffix}`.chomp
+                # fullname = `kpsewhich -progname=#{program} -format="other text files" #{filename}.#{suffix}`.chomp
+                $kpse.format = 'other text files'
+                fullname = $kpse.find_file("#{filename}.#{suffix}")
             rescue
                 report("kpsewhich cannot locate '#{filename}' in suffix space '#{suffix}' (2)")
                 fullname = nil
@@ -572,7 +618,8 @@ def find(filename,program)
         if (suffixlist.length == 1) && (suffixlist.first =~ /(#{$documentlist})/) then
             report("aggressively locating '#{filename}' in document trees")
             begin
-                texroot = `kpsewhich -expand-var=$SELFAUTOPARENT`.chomp
+                # texroot = `kpsewhich -expand-var=$SELFAUTOPARENT`.chomp
+                texroot = $kpse.expand_var("$SELFAUTOPARENT")
             rescue
                 texroot = ''
             else
@@ -593,7 +640,8 @@ def find(filename,program)
         end
         report("aggressively locating '#{filename}' in tex trees")
         begin
-            textrees = `kpsewhich -expand-var=$TEXMF`.chomp
+            # textrees = `kpsewhich -expand-var=$TEXMF`.chomp
+            textrees = $kpse.expand_var("$TEXMF")
         rescue
             textrees = ''
         end
@@ -719,7 +767,6 @@ def make(filename,windows=false,linux=false)
 end
 
 def process(&block)
-
     if $iftouched then
         files = $directives['iftouched'].split(',')
         oldname, newname = files[0], files[1]
@@ -735,63 +782,96 @@ def process(&block)
     else
         yield
     end
-
 end
 
-def checktree(tree)
+def checkenvironment(tree)
+    report('')
+    ENV['TMP'] = ENV['TMP'] || ENV['TEMP'] || ENV['TMPDIR'] || ENV['HOME']
+    case RUBY_PLATFORM
+        when /(mswin|bccwin|mingw|cygwin)/i then ENV['TEXOS'] = ENV['TEXOS'] || 'texmf-mswin'
+        when /(linux)/i                     then ENV['TEXOS'] = ENV['TEXOS'] || 'texmf-linux'
+        when /(darwin|rhapsody|nextstep)/i  then ENV['TEXOS'] = ENV['TEXOS'] || 'texmf-macosx'
+    #   when /(netbsd|unix)/i               then # todo
+        else                                     # todo
+    end
+    ENV['TEXOS']   = "#{ENV['TEXOS'].sub(/^[\\\/]*/, '').sub(/[\\\/]*$/, '')}"
+    ENV['TEXPATH'] = tree.sub(/\/+$/,'') # + '/'
+    ENV['TEXMFOS'] = "#{ENV['TEXPATH']}/#{ENV['TEXOS']}"
+    report('')
+    report("preset : TEXPATH => #{ENV['TEXPATH']}")
+    report("preset : TEXOS   => #{ENV['TEXOS']}")
+    report("preset : TEXMFOS => #{ENV['TEXMFOS']}")
+    report("preset : TMP => #{ENV['TMP']}")
+    report('')
+end
+
+def loadfile(filename)
+    begin
+        IO.readlines(filename).each do |line|
+            case line.chomp
+                when /^[\#\%]/ then
+                    # comment
+                when /^(.*?)\s*(\>|\=|\<)\s*(.*)\s*$/ then
+                    # = assign | > prepend | < append
+                    key, how, value = $1, $2, $3
+                    begin
+                        # $SAFE = 0
+                        value.gsub!(/\%(.*?)\%/) do
+                            ENV[$1] || ''
+                        end
+                        # value.gsub!(/\;/,$separator) if key =~ /PATH/i then
+                        case how
+                            when '=', '<<' then ENV[key] = value
+                            when '?', '??' then ENV[key] = ENV[key] || value
+                            when '<', '+=' then ENV[key] = (ENV[key] || '') + $separator + value
+                            when '>', '=+' then ENV[key] = value + $separator + (ENV[key] ||'')
+                        end
+                    rescue
+                        report("user set failed : #{key} (#{$!})")
+                    else
+                        report("user set : #{key} => #{ENV[key]}")
+                    end
+            end
+        end
+    rescue
+        report("error in reading file '#{filename}'")
+    end
+end
+
+def loadtree(tree)
     begin
         unless tree.empty? then
-            setuptex = File.join(tree,'setuptex.tmf')
+            if File.directory?(tree) then
+                setuptex = File.join(tree,'setuptex.tmf')
+            else
+                setuptex = tree.dup
+            end
             if FileTest.file?(setuptex) then
-                report('')
-                report("tex tree : #{setuptex}")
-                ENV['TEXPATH'] = tree.sub(/\/+$/,'') # + '/'
-                ENV['TMP'] = ENV['TMP'] || ENV['TEMP'] || ENV['TMPDIR'] || ENV['HOME']
-                case RUBY_PLATFORM
-                    when /(mswin|bccwin|mingw|cygwin)/i then ENV['TEXOS'] = ENV['TEXOS'] || 'texmf-mswin'
-                    when /(linux)/i                     then ENV['TEXOS'] = ENV['TEXOS'] || 'texmf-linux'
-                    when /(darwin|rhapsody|nextstep)/i  then ENV['TEXOS'] = ENV['TEXOS'] || 'texmf-macosx'
-                #   when /(netbsd|unix)/i               then # todo
-                    else                                     # todo
-                end
-                ENV['TEXMFOS'] = "#{ENV['TEXPATH']}/#{ENV['TEXOS']}"
-                report('')
-                report("preset : TEXPATH => #{ENV['TEXPATH']}")
-                report("preset : TEXOS   => #{ENV['TEXOS']}")
-                report("preset : TEXMFOS => #{ENV['TEXMFOS']}")
-                report("preset : TMP => #{ENV['TMP']}")
-                report('')
-                IO.readlines(File.join(tree,'setuptex.tmf')).each do |line|
-                    case line.chomp
-                        when /^[\#\%]/ then
-                            # comment
-                        when /^(.*?)\s*(\>|\=|\<)\s*(.*)\s*$/ then
-                            # = assign | > prepend | < append
-                            key, how, value = $1, $2, $3
-                            begin
-                                # $SAFE = 0
-                                value.gsub!(/\%(.*?)\%/) do
-                                    ENV[$1] || ''
-                                end
-                                # value.gsub!(/\;/,$separator) if key =~ /PATH/i then
-                                case how
-                                    when '=' then ENV[key] = value
-                                    when '<' then ENV[key] = (ENV[key] ||'') + $separator + value
-                                    when '>' then ENV[key] = value + $separator + (ENV[key] ||'')
-                                end
-                            rescue
-                                report("user set failed : #{key} (#{$!})")
-                            else
-                                report("user set : #{key} => #{ENV[key]}")
-                            end
-                    end
-                end
+                report("tex tree definition: #{setuptex}")
+                checkenvironment(File.dirname(setuptex))
+                loadfile(setuptex)
             else
                 report("no setup file '#{setuptex}'")
             end
         end
     rescue
         # maybe tree is empty or boolean (no arg given)
+    end
+end
+
+def loadenvironment(environment)
+    begin
+        unless environment.empty? then
+            filename = if $path.empty? then environment else File.expand_path(File.join($path,environment)) end
+            if FileTest.file?(filename) then
+                report("environment : #{environment}")
+                loadfile(filename)
+            else
+                report("no environment file '#{environment}'")
+            end
+        end
+    rescue
+        report("problem while loading '#{environment}'")
     end
 end
 
@@ -816,42 +896,45 @@ def execute(arguments)
 
     $directives = hashed(arguments)
 
-    $help        = $directives['help']      || false
-    $batch       = $directives['batch']     || false
-    $filename    = $directives['file']      || ''
-    $program     = $directives['program']   || 'context'
-    $direct      = $directives['direct']    || false
-    $edit        = $directives['edit']      || false
-    $page        = $directives['page']      || 0
-    $browser     = $directives['browser']   || false
-    $report      = $directives['report']    || false
-    $verbose     = $directives['verbose']   || false
-    $arguments   = $directives['arguments'] || ''
-    $execute     = $directives['execute']   || $directives['exec'] || false
-    $locate      = $directives['locate']    || false
+    $help        = $directives['help']        || false
+    $batch       = $directives['batch']       || false
+    $filename    = $directives['file']        || ''
+    $program     = $directives['program']     || 'context'
+    $direct      = $directives['direct']      || false
+    $edit        = $directives['edit']        || false
+    $page        = $directives['page']        || 0
+    $browser     = $directives['browser']     || false
+    $report      = $directives['report']      || false
+    $verbose     = $directives['verbose']     || false
+    $arguments   = $directives['arguments']   || ''
+    $execute     = $directives['execute']     || $directives['exec'] || false
+    $locate      = $directives['locate']      || false
 
     $autotree    = if $directives['autotree'] then (ENV['TEXMFSTART_TREE'] || ENV['TEXMFSTARTTREE'] || '') else '' end
 
-    $path        = $directives['path']      || ''
-    $tree        = $directives['tree']      || $autotree || ''
+    $path        = $directives['path']        || ''
+    $tree        = $directives['tree']        || $autotree || ''
+    $environment = $directives['environment'] || ''
 
-    $make        = $directives['make']      || false
-    $unix        = $directives['unix']      || false
-    $windows     = $directives['windows']   || false
-    $stubpath    = $directives['stubpath']  || ''
-    $indirect    = $directives['indirect']  || false
+    $make        = $directives['make']        || false
+    $unix        = $directives['unix']        || false
+    $windows     = $directives['windows']     || false
+    $stubpath    = $directives['stubpath']    || ''
+    $indirect    = $directives['indirect']    || false
 
-    $before      = $directives['before']    || ''
-    $after       = $directives['after']     || ''
+    $before      = $directives['before']      || ''
+    $after       = $directives['after']       || ''
 
-    $iftouched   = $directives['iftouched'] || false
+    $iftouched   = $directives['iftouched']   || false
 
-    $openoffice  = $directives['oo']        || false
+    $openoffice  = $directives['oo']          || false
 
     $crossover   = false if $directives['clear']
 
-    $showenv     = $directives['showenv']   || false
+    $showenv     = $directives['showenv']     || false
     $verbose     = true if $showenv
+
+    $serve       = $directives['serve']       || false
 
     $verbose = true if (ENV['_CTX_VERBOSE_'] =~ /(y|yes|t|true|on)/io) && ! $locate && ! $report
 
@@ -875,15 +958,27 @@ def execute(arguments)
         end
     end
 
-    if $help || ! $filename || $filename.empty? then
+    if $serve then
+        if ENV['KPSEMETHOD'] && ENV['KPSEPORT'] then
+            require 'base/kpseremote'
+            begin
+                KpseRemote::start_server
+            rescue
+            end
+        else
+            usage
+        end
+    elsif $help || ! $filename || $filename.empty? then
         usage
-        checktree($tree)
+        loadtree($tree)
+        loadenvironment($environment)
         show_environment()
     elsif $batch && $filename && ! $filename.empty? then
         # todo, take commands from file and avoid multiple starts and checks
     else
         report("texmfstart version #{$version}")
-        checktree($tree)
+        loadtree($tree)
+        loadenvironment($environment)
         show_environment()
         if $make then
             if $filename == 'all' then
