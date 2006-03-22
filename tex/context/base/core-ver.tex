@@ -135,60 +135,59 @@
 \installnewpretty I {\setupprettiesintype{EIF}\setupprettytype} % E taken
 \installnewpretty X {\setupprettiesintype{XML}\setupprettytype}
 
-\def\setupcommonverbatim#1%
+\def\setupcommonverbatim
   {\eightbitcharactersfalse % obey regime / encoding
    %
    \def\prettyidentifier{TEX}%
    %
-   \doifelsevalue{#1\c!text}\v!yes
+   \doifelse{\typingparameter\c!text}\v!yes
      \naturaltextexttrue
      \naturaltextextfalse
-   \def\prettyidentifierfont{\getvalue{#1\c!icommand}}%
-   \def\prettyvariablefont  {\getvalue{#1\c!vcommand}}%
-   \def\prettynaturalfont   {\getvalue{#1\c!ccommand}}%
+   \def\prettyidentifierfont{\typingparameter\c!icommand}%
+   \def\prettyvariablefont  {\typingparameter\c!vcommand}%
+   \def\prettynaturalfont   {\typingparameter\c!ccommand}%
    %
-   \doifvalue{#1\c!space}\v!on
+   \doif{\typingparameter\c!space}\v!on
      {\def\obeyspaces{\setcontrolspaces}}%
-   \doifvalue{#1\c!page }\v!no
+   \doif{\typingparameter\c!page }\v!no
      {\def\obeypages {\ignorepages}}%
    %
-   \doifelsevalue{#1\c!tab}\v!yes
+   \doifelse{\typingparameter\c!tab}\v!yes
      {\def\obeytabs{\settabskips}}%
-     {\doifvalue{#1\c!tab}\s!ascii
+     {\doif{\typingparameter\c!tab}\s!ascii
         {\chardef\tabskipmode\plustwo % quit on >127
-         \def\obeytabs{\settabskips}}%
-        {}}%
+         \def\obeytabs{\settabskips}}}%
    %
    \ignorehyphens % default
    \ExpandFirstAfter\processaction
-     [\getvalue{#1\c!lines}]
+     [\typingparameter\c!lines]
      [        \v!yes=>\obeybreakpoints,
        \v!hyphenated=>\obeyhyphens]%
    \processaction
-     [\getvalue{#1\c!empty}]
+     [\typingparameter\c!empty]
      [\v!yes=>\obeyemptylines,
       \v!all=>\obeyallemptylines]%
    %
    \ExpandFirstAfter\processaction
-     [\getvalue{#1\c!option}]
+     [\typingparameter\c!option]
      [     \v!none=>\let\obeycharacters\relax,
           \v!color=>\setupprettiesintype{TEX}%
                     \let\obeycharacters\setupprettytype
                     \let\obeytabs\ignoretabs,
          \v!normal=>\let\obeycharacters\setupgroupedtype,
-       \v!commands=>\def\obeycharacters{\setupcommandsintype{#1}}%
+       \v!commands=>\def\obeycharacters{\setupcommandsintype}% \let
                     \let\obeytabs\ignoretabs,
         \v!slanted=>\let\obeycharacters\setupslantedtype
                     \let\obeytabs\ignoretabs,
-        \s!unknown=>\setupprettiesintype{\getvalue{#1\c!option}}%
+        \s!unknown=>\setupprettiesintype{\typingparameter\c!option}%
                     \let\obeycharacters\setupprettytype
                     \let\obeytabs\ignoretabs]%
-   \doifnumberelse{\getvalue{#1\c!tab}}
-     {\def\obeytabs{\setfixedtabskips{\getvalue{#1\c!tab}}}}%
+   \doifnumberelse{\typingparameter\c!tab}
+     {\def\obeytabs{\setfixedtabskips{\typingparameter\c!tab}}}%
      \donothing
-%    \def\verbatimfont{\getvalue{#1\c!style}\normalnoligatures\font}%
-   \def\verbatimfont{\dosetfontattribute{#1}\c!style\normalnoligatures\font}%
-   \setupverbatimcolor{#1}}
+%    \def\verbatimfont{\typingparameter\c!style\normalnoligatures\font}%
+   \def\verbatimfont{\dosetfontattribute{\currenttypingclass\currenttyping}\c!style\normalnoligatures\font}%
+   \setupverbatimcolor}
 
 \ifx\normalnoligatures\undefined \let\normalnoligatures\gobbleoneargument \fi
 
@@ -252,7 +251,8 @@
 \def\dotype#1%
   {\bgroup
    \strut % new, enables leading space in \type { abc } at par start
-   \edef\@@currenttype{#1}%
+   \let\currenttypingclass\??ty
+   \edef\currenttyping{#1}%
    \catcode`\<=\@@other
    \catcode`\>=\@@other
    \futurelet\next\dodotype}
@@ -290,7 +290,7 @@
   {\ifx\next\bgroup
      \@EA\dodotypeA
    \else\if\next<%
-     \doifelsevalue{\??ty\@@currenttype\c!option}\v!none
+     \doifelse{\typingparameter\c!option}\v!none
        {\@EAEAEA\dodotypeB}{\@EAEAEA\dodotypeC}%
    \else
      \@EAEAEA\dodotypeD
@@ -493,9 +493,9 @@
      \fi
    \fi}
 
-\def\setupcommandsintype#1% can also be \string\
+\def\setupcommandsintype% can also be \string\
   {\setupgroupedtype
-   \edef\\{\getvalue{#1\c!escape}}%
+   \edef\\{\typingparameter\c!escape}%
    \letvalue{\\}=\\% for instance \/=/
    \@EA\catcode\@EA`\\=\@@escape
    \def\BTEX##1\ETEX##2% ##2 gobbles active space
@@ -576,20 +576,15 @@
 %D \type{\initializetype} which in return calls for the support
 %D macro \type{\setupinlineverbatim}.
 
-\let\@@currenttype\empty
-
 \def\initializetype
   {\let\obeylines\ignorelines
-   \setupcommonverbatim{\??ty\@@currenttype}%
+   \setupcommonverbatim
    \setupinlineverbatim}
 
 %D \macros
 %D   {setuptype}
 %D
 %D Some characteristics of \type{\type} can be set up by:
-
-%\def\setuptype%
-%  {\dodoubleargument\getparameters[\??ty]}
 
 \def\setuptype
   {\dodoubleempty\dosetuptype}
@@ -729,7 +724,8 @@
 %D however
 
 \def\setgroupedtype
-  {\initializetype
+  {\let\currenttypingclass\??ty
+   \initializetype
    \catcode`\{=\@@begingroup
    \catcode`\}=\@@endgroup}
 
@@ -747,28 +743,39 @@
 %D support of linenumbering, which can best be studied in the
 %D documented support module.
 
-\def\initializetyping#1%
+\let\currenttyping     \empty
+\let\currenttypingclass\??ty  % saveguard
+
+\def\typingparameter#1%
+  {\executeifdefined
+     {\currenttypingclass\currenttyping#1}%
+     {\executeifdefined{\currenttypingclass#1}\empty}}
+
+\def\settypingparameter#1#2%
+  {\setvalue{\currenttypingclass\currenttyping#1}{#2}}
+
+\def\initializetyping
   {%\donefalse
-   \switchtobodyfont[\getvalue{\??tp#1\c!bodyfont}]%
+   \switchtobodyfont[\typingparameter\c!bodyfont]%
    \donefalse
-   \scratchskip\getvalue{\??tp#1\c!oddmargin}\relax
+   \scratchskip\typingparameter\c!oddmargin\relax
    \ifzeropt\scratchskip\else\donetrue\fi
-   \scratchskip\getvalue{\??tp#1\c!evenmargin}\relax
+   \scratchskip\typingparameter\c!evenmargin\relax
    \ifzeropt\scratchskip\else\donetrue\fi
    \ifdone
      \def\doopenupverbatimline
        {\getpagestatus
         \ifrightpage
-          \hskip\getvalue{\??tp#1\c!oddmargin}\relax
+          \hskip\typingparameter\c!oddmargin\relax
         \else
-          \hskip\getvalue{\??tp#1\c!evenmargin}\relax
+          \hskip\typingparameter\c!evenmargin\relax
         \fi}%
    \else
-     \doadaptleftskip{\getvalue{\??tp#1\c!margin}}%
+     \doadaptleftskip{\typingparameter\c!margin}%
    \fi
-   \doifdefinedelse{\??bo\getvalue{\??tp#1\c!blank}}
-     {\edef\!!stringa{\csname\??bo\csname\??tp#1\c!blank\endcsname\endcsname}}
-     {\edef\!!stringa{\csname\??tp#1\c!blank\endcsname}}%
+   \doifdefinedelse{\??bo\typingparameter\c!blank}
+     {\edef\!!stringa{\csname\??bo\typingparameter\c!blank\endcsname}}
+     {\edef\!!stringa{\typingparameter\c!blank}}%
    \processaction
      [\!!stringa]
      [ \v!standard=>\scratchskip\ctxparskip,
@@ -788,31 +795,26 @@
    \else
      \edef\verbatimbaselineskip{\the\scratchskip}%
    \fi
-   \setupcommonverbatim{\??tp#1}}
+   \setupcommonverbatim}
 
 %D The basic display verbatim commands are defined in an
 %D indirect way. As we will see, they are a specific case of a
 %D more general mechanism.
 
-% \def\dostarttyping#1%
-%   {\getvalue{\??tp#1\c!before}%
-%    \startpacked % includes \bgroup
-%    \initializetyping{#1}%
-%    \startverbatimcolor
-%    \expandafter\processdisplayverbatim\expandafter{\s!stop#1}}
-
 \def\dostarttyping#1%
-  {\getvalue{\??tp#1\c!before}%
+  {\let\currenttypingclass\??tp
+   \edef\currenttyping{#1}%
+   \typingparameter\c!before
    \startpacked % includes \bgroup
-   \dosetuptypelinenumbering{#1}{}%
-   \initializetyping{#1}%
+   \dosetuptypelinenumbering{}%
+   \initializetyping
    \startverbatimcolor
    \expandafter\processdisplayverbatim\expandafter{\s!stop#1}}
 
 \def\dostoptyping#1%
   {\stopverbatimcolor
    \stoppacked  % includes \egroup
-   \getvalue{\??tp#1\c!after}%
+   \typingparameter\c!after
    \dochecknextindentation{\??tp#1}%
    \dorechecknextindentation}
 
@@ -889,9 +891,9 @@
 
 \def\dodefinetype[#1][#2]%
   {\unexpanded\setvalue{#1}{\dotype{#1}}%
-   \copyparameters
-     [\??ty#1][\??ty]
-     [\c!space,\c!palet,\c!color,\c!style,\c!page,\c!tab,\c!option]%
+%    \copyparameters % maybe no longer needed, implicit inheritance now
+%      [\??ty#1][\??ty]
+%      [\c!space,\c!palet,\c!color,\c!style,\c!page,\c!tab,\c!option]%
    \getparameters[\??ty#1][#2]}
 
 %D \macros
@@ -911,21 +913,22 @@
 %D
 %D The definitions default to the standard typing values.
 
-\def\presettyping[#1][#2]%
-  {\copyparameters
-     [\??tp#1][\??tp]
-     [\c!before,\c!after,\c!space,\c!page,\c!tab,\c!color,\c!style,
-      \c!text,\c!icommand,\c!vcommand,\c!ccommand,\c!bodyfont,\c!empty,
-      \c!option,\c!palet,\c!margin,\c!evenmargin,\c!oddmargin,
-      \c!indentnext,\c!blank,\c!escape,\c!lines,\c!numbering]%
-   \getparameters
-     [\??tp#1]
-     [#2]}
+% \def\presettyping[#1][#2]%
+%   {%\copyparameters
+%    %  [\??tp#1][\??tp]
+%    %  [\c!before,\c!after,\c!space,\c!page,\c!tab,\c!color,\c!style,
+%    %   \c!text,\c!icommand,\c!vcommand,\c!ccommand,\c!bodyfont,\c!empty,
+%    %   \c!option,\c!palet,\c!margin,\c!evenmargin,\c!oddmargin,
+%    %   \c!indentnext,\c!blank,\c!escape,\c!lines,\c!numbering]%
+%    \getparameters
+%      [\??tp#1]
+%      [#2]}
 
 \def\dodefinetyping[#1][#2]%
   {\setvalue{\e!start#1}{\dostarttyping{#1}}%
    \setvalue{\e!stop #1}{\dostoptyping {#1}}%
-   \presettyping[#1][#2]}
+%    \presettyping[#1][#2]}
+   \getparameters[\??tp#1][#2]}
 
 \def\definetyping
   {\dodoubleempty\dodefinetyping}
@@ -1005,8 +1008,8 @@
 %D line basis.
 %D
 %D \starttyping
-%D \def\setupverbatimcolor#1%
-%D   {\edef\prettypalet{\prettyidentifier\getvalue{#1\c!palet}}%
+%D \def\setupverbatimcolor%
+%D   {\edef\prettypalet{\prettyidentifier\typingparameter\c!palet}%
 %D    \def\beginofpretty[##1]{\startcolormode{\prettypalet:##1}}%
 %D    \def\endofpretty       {\stopcolormode}}
 %D \stoptyping
@@ -1014,8 +1017,8 @@
 %D Since we support a global color too, the folowing
 %D definition is better:
 
-\def\setupverbatimcolor#1% fast and local versus slow and global
-  {\doifelsevaluenothing{#1\c!color}
+\def\setupverbatimcolor% fast and local versus slow and global
+  {\doifelsenothing{\typingparameter\c!color}
      {\def\beginofpretty[##1]{\startcolormode{\prettypalet:##1}}%
       \let\endofpretty        \restorecolormode % \stopcolormode
       \let\startverbatimcolor \relax
@@ -1023,14 +1026,14 @@
       \let\verbatimcolor      \relax}
      {\def\beginofpretty[##1]{\startcolor[\prettypalet:##1]}%
       \let\endofpretty        \stopcolor
-      \def\startverbatimcolor{\startcolor[\getvalue{#1\c!color}]}%
+      \def\startverbatimcolor{\startcolor[\typingparameter\c!color]}%
       \let\stopverbatimcolor  \stopcolor
-      \def\verbatimcolor     {\getvalue{\getvalue{#1\c!color}}}}%
-   \doifelsevaluenothing{#1\c!palet}
+      \def\verbatimcolor     {\typingparameter\c!color}}%
+   \doifelsenothing{\typingparameter\c!palet}
      {\let\prettypalet\empty
       \let\endofpretty\relax
       \def\beginofpretty[##1]{}}
-     {\edef\prettypalet{\prettyidentifier\getvalue{#1\c!palet}}}}
+     {\edef\prettypalet{\prettyidentifier\typingparameter\c!palet}}}
 
 \let\prettypalet       \empty
 \let\startverbatimcolor\relax
@@ -1157,7 +1160,7 @@
 % \typefile[start=4,step=3]{zapf}
 % \typefile{zapf}
 
-\presettyping[\v!file][]
+% \presettyping[\v!file][]
 
 \def\typefile
   {\dodoubleempty\dotypefile}
@@ -1173,20 +1176,22 @@
      \dodotypefile[\v!file][]{#3}%
    \fi\fi}
 
-\def\dosetuptypelinenumbering#1#2%
-  {\doifundefined{\??tp#1\c!start}{\setuptyping[#1][\c!start=1,\c!stop=,\c!step=1,\c!nlines=,#2]}%
-   \doifelsevalue{\??tp#1\c!numbering}\v!file
+\def\dosetuptypelinenumbering#1% fuzzy
+  {\doifundefined{\currenttypingclass\currenttyping\c!start}
+     {\setuptyping[\currenttyping][\c!start=1,\c!stop=,\c!step=1,\c!nlines=,#1]}%
+   \doifelse{\typingparameter\c!numbering}\v!file
      {\setuplinenumbering[\c!method=\v!file]%
       \donetrue}
-     {\doifelsevalue{\??tp#1\c!numbering}\v!line
+     {\doifelse{\typingparameter\c!numbering}\v!line
         {% \setuplinenumbering defaults start/step to 1/1, so we need
-         \doifvaluenothing{\??tp#1\c!start}{\setvalue{\??tp#1\c!start}{1}}%
-         \doifvaluenothing{\??tp#1\c!step }{\setvalue{\??tp#1\c!step }{1}}%
+         \doifnothing{\typingparameter\c!start   }{\settypingparameter\c!start   {1}}%
+         \doifnothing{\typingparameter\c!step    }{\settypingparameter\c!step    {1}}%
+         \doifnothing{\typingparameter\c!continue}{\settypingparameter\c!continue{}}%
          \setuplinenumbering
            [\c!method=\v!type,
-            \c!continue=\getvalue{\??tp#1\c!continue},
-            \c!start=\getvalue{\??tp#1\c!start},
-            \c!step=\getvalue{\??tp#1\c!step}]%
+            \c!continue=\typingparameter\c!continue,
+            \c!start=\typingparameter\c!start,
+            \c!step=\typingparameter\c!step]%
          \donetrue}
         {\donefalse}}%
    \ifdone
@@ -1196,61 +1201,26 @@
      \def\endofverbatimlines  {\stoplinenumbering }%
    \fi}
 
+% \setuptyping % not needed
+%   [\v!file]
+%   [\c!start=1,
+%    \c!stop=,
+%    \c!step=1,
+%    \c!continue=,
+%    \c!nlines=]
+
 \setuptyping
-  [\v!file]
   [\c!start=1,
    \c!stop=,
    \c!step=1,
+   \c!continue=,
    \c!nlines=]
 
-% \def\dodotypefile[#1][#2]#3%
-%   {\getvalue{\??tp#1\c!before}%
-%    \doiflocfileelse{#3}
-%      {\startpacked % includes \bgroup
-%       \dosetuptypelinenumbering{#1}{#2}%
-%       \doifinset{\getvalue{\??tp#1\c!option}}{\v!commands,\v!slanted,\v!normal}
-%         {\setuptyping[#1][\c!option=\v!none]}%
-%       \doifvalue{\??tp#1\c!option}\v!color
-%         {\expandafter\aftersplitstring#3\at.\to\prettyidentifier
-%          \letvalue{\??tp#1\c!option}\prettyidentifier}%
-%       \initializetyping{#1}%
-%       \startverbatimcolor
-%       \makelocreadfilename{#3}%
-%       \doifundefinedelse{\??tp#3\v!global\c!start}
-%         {\scratchcounter\zerocount}
-%         {\scratchcounter\getvalue{\??tp#3\v!global\c!start}}%
-%       \advance\scratchcounter\plusone
-%       \setxvalue{\??tp#3\v!global\c!start}{\the\scratchcounter}%
-%       \doifelsevaluenothing{\??tp#1\c!start}
-%         {\processfileverbatim\readfilename}
-%         {\doifvalue{\??tp#1\c!start}\v!continue
-%            {\setevalue{\??tp#1\c!start}%
-%               {\getvalue{\??tp#3\v!global\c!start}}}%
-%          \doifelsevaluenothing{\??tp#1\c!stop}
-%            {\doifelsevaluenothing{\??tp#1\c!nlines}
-%               {\processfileverbatim\readfilename}
-%               {\scratchcounter\getvalue{\??tp#1\c!start}%
-%                \advance\scratchcounter\getvalue{\??tp#1\c!nlines}%
-%                \advance\scratchcounter\minusone
-%                \setxvalue{\??tp#3\v!global\c!start}%
-%                  {\the\scratchcounter}%
-%                \processfilelinesverbatim\readfilename
-%                  {\getvalue{\??tp#1\c!start}}
-%                  {\getvalue{\??tp#3\v!global\c!start}}}}%
-%            {\processfilelinesverbatim\readfilename
-%               {\getvalue{\??tp#1\c!start}}
-%               {\getvalue{\??tp#1\c!stop }}}}%
-%       \stopverbatimcolor
-%       \stoppacked}  % includes \egroup
-%      {\ifmmode\hbox\fi\bgroup
-%       \expanded{\convertargument#3}\to\ascii
-%       \tttf[\makemessage\m!verbatims1\ascii]%
-%       \showmessage\m!verbatims1\ascii
-%       \egroup}%
-%    \getvalue{\??tp#1\c!after}}
-
 \def\dodotypefile[#1][#2]#3%
-  {\getvalue{\??tp#1\c!before}%
+  {\bgroup
+   \let\currenttypingclass\??tp
+   \edef\currenttyping{#1}%
+   \typingparameter\c!before
    \doiflocfileelse{#3}
      \donetrue % sets \readfilename
      {\doifinputfileelse{#3}
@@ -1258,39 +1228,39 @@
         \donefalse}%
    \ifdone
      \startpacked % includes \bgroup
-      \dosetuptypelinenumbering{#1}{#2}%
-      \doifinset{\getvalue{\??tp#1\c!option}}{\v!commands,\v!slanted,\v!normal}
+      \dosetuptypelinenumbering{#2}%
+      \doifinset{\\currenttyping\c!option}{\v!commands,\v!slanted,\v!normal}
         {\setuptyping[#1][\c!option=\v!none]}%
-      \doifvalue{\??tp#1\c!option}\v!color
+      \doif{\currenttyping\c!option}\v!color
         {\expandafter\aftersplitstring#3\at.\to\prettyidentifier
-         \letvalue{\??tp#1\c!option}\prettyidentifier}%
-      \initializetyping{#1}%
+         \settypingparameter\c!option{\prettyidentifier}}%
+      \initializetyping
       \startverbatimcolor
       \makelocreadfilename{#3}%
-      \doifundefinedelse{\??tp#3\v!global\c!start}
+      \doifundefinedelse{\currenttypingclass#3\v!global\c!start}
         {\scratchcounter\zerocount}
-        {\scratchcounter\getvalue{\??tp#3\v!global\c!start}}%
+        {\scratchcounter\getvalue{\currenttypingclass#3\v!global\c!start}}%
       \advance\scratchcounter\plusone
-      \setxvalue{\??tp#3\v!global\c!start}{\the\scratchcounter}%
-      \doifelsevaluenothing{\??tp#1\c!start}
+      \setxvalue{\currenttypingclass#3\v!global\c!start}{\the\scratchcounter}%
+      \doifelsenothing{\currenttyping\c!start}
         {\processfileverbatim\readfilename}
-        {\doifvalue{\??tp#1\c!start}\v!continue
-           {\setevalue{\??tp#1\c!start}%
-              {\getvalue{\??tp#3\v!global\c!start}}}%
-         \doifelsevaluenothing{\??tp#1\c!stop}
-           {\doifelsevaluenothing{\??tp#1\c!nlines}
+        {\doif{\currenttyping\c!start}\v!continue
+           {\setevalue{\currenttypingclass#1\c!start}%
+              {\getvalue{\currenttypingclass#3\v!global\c!start}}}%
+         \doifelsenothing{\currenttyping\c!stop}
+           {\doifelsenothing{\currenttyping\c!nlines}
               {\processfileverbatim\readfilename}
-              {\scratchcounter\getvalue{\??tp#1\c!start}%
-               \advance\scratchcounter\getvalue{\??tp#1\c!nlines}%
+              {\scratchcounter\currenttyping\c!start
+               \advance\scratchcounter\currenttyping\c!nlines
                \advance\scratchcounter\minusone
-               \setxvalue{\??tp#3\v!global\c!start}%
+               \setxvalue{\currenttypingclass#3\v!global\c!start}%
                  {\the\scratchcounter}%
                \processfilelinesverbatim\readfilename
-                 {\getvalue{\??tp#1\c!start}}
-                 {\getvalue{\??tp#3\v!global\c!start}}}}%
+                 {\currenttyping\c!start}}
+                 {\getvalue{\currenttypingclass#3\v!global\c!start}}}}%
            {\processfilelinesverbatim\readfilename
-              {\getvalue{\??tp#1\c!start}}
-              {\getvalue{\??tp#1\c!stop }}}}%
+              {\currenttyping\c!start}
+              {\currenttyping\c!stop }}%
       \stopverbatimcolor
       \stoppacked  % includes \egroup
    \else
@@ -1300,8 +1270,8 @@
       \showmessage\m!verbatims1\ascii
       \egroup
    \fi
-   \getvalue{\??tp#1\c!after}}
-
+   \currenttyping\c!after
+   \egroup}
 
 %D \macros
 %D   {filename}

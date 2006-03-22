@@ -358,4 +358,14 @@
 \installexpander {xml:cmd} {\chardef\xmlexpandmode\plusone\expandxmlargument}
 \installexpander {xml:utf} {\chardef\xmlexpandmode\plustwo\expandxmlargument}
 
+\def\XMLtexmath#1{\begingroup\setnormalcatcodes\scantokens{\mathematics{#1}\ignorespaces}\endgroup}
+
+% \defineXMLargument[tm]{\XMLtexmath}
+%
+% \startbuffer[test]
+% Sometimes it makes sense to use simple math, as in: <tm>e=mc^2</tm>.
+% \stopbuffer
+%
+% \processXMLbuffer[test]
+
 \protect \endinput

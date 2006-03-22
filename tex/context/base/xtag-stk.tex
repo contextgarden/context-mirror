@@ -26,7 +26,7 @@
 \ifx\XMLRtoks     \undefined \newtoks \XMLRtoks      \fi
 \ifx\XMLstacklevel\undefined \newcount\XMLstacklevel \fi
 
-\def\@@xmlstack{@@xmlstk}
+\def\@@xmlstack{xmlstack}
 
 \let\XMLstackid\empty
 
@@ -42,14 +42,14 @@
   {\let\executeXMLelement\normalexecuteXMLelement}
 
 \defineXMLnestedenvironmentsave
-  [xmlstack]
+  [\@@xmlstack]
   {}
   {\pushXMLdataonstack}
 
 \startXMLmapping[xmlstack:test]
 
     \defineXMLnestedenvironmentsave
-      [xmlstack]
+      [\@@xmlstack]
       {}
       {\pushXMLnameonstack}
 
