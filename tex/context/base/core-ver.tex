@@ -913,22 +913,18 @@
 %D
 %D The definitions default to the standard typing values.
 
-% \def\presettyping[#1][#2]%
-%   {%\copyparameters
-%    %  [\??tp#1][\??tp]
-%    %  [\c!before,\c!after,\c!space,\c!page,\c!tab,\c!color,\c!style,
-%    %   \c!text,\c!icommand,\c!vcommand,\c!ccommand,\c!bodyfont,\c!empty,
-%    %   \c!option,\c!palet,\c!margin,\c!evenmargin,\c!oddmargin,
-%    %   \c!indentnext,\c!blank,\c!escape,\c!lines,\c!numbering]%
-%    \getparameters
-%      [\??tp#1]
-%      [#2]}
+\def\presettyping[#1][#2]%
+  {\copyparameters
+     [\??tp#1][\??tp]
+     [\c!color,\c!style]%
+   \getparameters
+     [\??tp#1]
+     [#2]}
 
 \def\dodefinetyping[#1][#2]%
   {\setvalue{\e!start#1}{\dostarttyping{#1}}%
    \setvalue{\e!stop #1}{\dostoptyping {#1}}%
-%    \presettyping[#1][#2]}
-   \getparameters[\??tp#1][#2]}
+   \presettyping[#1][#2]}
 
 \def\definetyping
   {\dodoubleempty\dodefinetyping}
@@ -1160,7 +1156,7 @@
 % \typefile[start=4,step=3]{zapf}
 % \typefile{zapf}
 
-% \presettyping[\v!file][]
+\presettyping[\v!file][]
 
 \def\typefile
   {\dodoubleempty\dotypefile}

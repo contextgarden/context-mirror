@@ -217,23 +217,22 @@
      {\edef\floatlocation{#2}}%
    \expanded{\dodocomplexplacefloat[\floattype][\floatlocation]}}
 
+\def\flushfloatslist
+  {\v!left,\v!right,\v!inner,\v!outer,%
+   \v!backspace,\v!cutspace,%
+   \v!inleft,\v!inright,\v!inmargin,%
+   \v!leftmargin,\v!rightmargin,\v!leftedge,\v!rightedge,%
+   \v!innermargin,\v!outermargin,\v!inneredge,\v!outeredge,%
+   \v!text,\v!opposite}% \v!page
+
 \def\dodocomplexplacefloat[#1][#2][#3]#4%
   {\flushnotes
-\flushsidefloats % here !
+   \flushsidefloats % here !
    \ifsomefloatwaiting
      % this was \checkwaitingfloats spread all over
      \doifinsetelse\v!always{#2}
        {\showmessage\m!floatblocks5\empty}
-       {\doifcommonelse
-          {#2}
-          {\v!left,\v!right,\v!inner,\v!outer,%
-           \v!backspace,\v!cutspace,%
-           \v!inleft,\v!inright,\v!inmargin,%
-           \v!leftmargin,\v!rightmargin,\v!leftedge,\v!rightedge,%
-           \v!innermargin,\v!outermargin,\v!inneredge,\v!outeredge,%
-           \v!text,\v!opposite}% \v!page
-          {\doflushfloats}
-          {}}%
+       {\expanded{\doifcommonelse{#2}{\flushfloatslist}}\doflushfloats\donothing}%
      % but which should be done before using box \floatbox
    \fi
    \ifmargeblokken % waarschijnlijk gebroken ! ! ! !
@@ -471,10 +470,10 @@
                  \v!outer=>\xxdocompletefloat\v!right      \v!left,
            \v!innermargin=>\xxdocompletefloat\v!leftmargin \v!rightmargin,
            \v!outermargin=>\xxdocompletefloat\v!rightmargin\v!leftmargin,
-             \v!inneredge=>\xxdocompletefloat\v!leftedge  \v!rightedge,
-             \v!outeredge=>\xxdocompletefloat\v!rightedge \v!leftedge,
-             \v!backspace=>\xxdocompletefloat\v!backspace      \v!cutspace,
-              \v!cutspace=>\xxdocompletefloat\v!cutspace     \v!backspace,
+             \v!inneredge=>\xxdocompletefloat\v!leftedge   \v!rightedge,
+             \v!outeredge=>\xxdocompletefloat\v!rightedge  \v!leftedge,
+             \v!backspace=>\xxdocompletefloat\v!backspace  \v!cutspace,
+              \v!cutspace=>\xxdocompletefloat\v!cutspace   \v!backspace,
                   \v!left=>\xxdocompletefloat\v!left       \v!left,
                  \v!right=>\xxdocompletefloat\v!right      \v!right,
                   \v!line=>, % only -n*line is handled (see ***)
