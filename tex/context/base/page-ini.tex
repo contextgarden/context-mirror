@@ -630,6 +630,9 @@
 
 \fi
 
+\def\normalejectpenalty{-\@M}   \let\ejectpenalty\normalejectpenalty
+\def\normalsuperpenalty{-\@MM}  \let\superpenalty\normalsuperpenalty
+
 %D In case we're not running \ETEX, we need to bypass a
 %D couple of primitives.
 
@@ -930,8 +933,8 @@
 % \def\eject         {\par\penalty-\@M } % == {\par\break} % plain
 % \def\supereject    {\par\penalty-\@MM} % also plain
 
-\def\eject         {\par\ifvmode\penalty-\@M \fi\resetpagebreak} % == {\par\break} % plain
-\def\supereject    {\par\ifvmode\penalty-\@MM\fi\resetpagebreak} % also plain
+\def\eject         {\par\ifvmode\penalty\ejectpenalty\fi\resetpagebreak} % == {\par\break} % plain
+\def\supereject    {\par\ifvmode\penalty\superpenalty\fi\resetpagebreak} % also plain
 
 \def\doejectpage   {\par\ifvmode\ifdim\pagetotal>\pagegoal\else\normalvfil\fi\fi}
 \def\ejectpage     {\doejectpage\eject}
@@ -980,7 +983,7 @@
      \penalty\outputpenalty
    \fi
    % not really needed, replaced by \flushsavedfloats
-   \ifnum\outputpenalty>-\@MM \else % better use a proper otr signal
+   \ifnum\outputpenalty>\superpenalty \else % better use a proper otr signal
      \dosupereject
    \fi
    % but does not hurt either (we're still in the otr!)
@@ -1051,7 +1054,7 @@
    \resetselectiepagina
    \verhoogpaginanummer
    \checkpagedimensions
-   \ifnum\outputpenalty>-\@MM \else
+   \ifnum\outputpenalty>\superpenalty \else
      \dosupereject
    \fi
    \doflushspread

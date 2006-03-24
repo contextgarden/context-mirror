@@ -1621,9 +1621,9 @@
 
 \ifx\allowbreak\undefined
 
-  \def\break     {\penalty-\@M}
-  \def\nobreak   {\penalty \@M}
-  \def\allowbreak{\penalty \z@}
+  \def\break     {\penalty\ifhmode-\plustenthousand\else\ejectpenalty\fi}
+  \def\nobreak   {\penalty \plustenthousand}
+  \def\allowbreak{\penalty \zeropoint}
   \def\filbreak  {\par\vfil\penalty-200\vfilneg}
   \def\goodbreak {\par\penalty-500 }
 
@@ -1661,7 +1661,7 @@
 
 \ifx\supereject\undefined
 
-  \def\supereject{\par\penalty-\@MM}
+  \def\supereject{\par\penalty\superpenalty}
 
 \fi
 
@@ -2398,7 +2398,7 @@
 % \def\begstrut
 %   {\relax\ifcase\strutht\else
 %      \strut
-%      \normalpenalty\@M % \!!tenthousand
+%      \normalpenalty\plustenthousand
 %      \normalhskip\zeropoint
 %      \ignorespaces
 %    \fi}
@@ -2406,7 +2406,7 @@
 % \def\endstrut
 %   {\relax\ifhmode\ifcase\strutht\else
 %      \removeunwantedspaces
-%      \normalpenalty\@M % \!!tenthousand
+%      \normalpenalty\plustenthousand
 %      \normalhskip\zeropoint
 %      \strut
 %    \fi\fi}
@@ -2420,12 +2420,12 @@
   {\relax\ifcase\strutht\else
      \ifconditional\sigstruts
        \noindent\horizontalstrut
-       \normalpenalty\@M % \!!tenthousand
+       \normalpenalty\plustenthousand
        \normalhskip-\strutsignal
        \normalhskip\strutsignal
      \else
        \strut
-       \normalpenalty\@M % \!!tenthousand
+       \normalpenalty\plustenthousand
        \normalhskip\zeropoint
      \fi
      \ignorespaces
@@ -2437,13 +2437,13 @@
        \ifdim\lastskip=\strutsignal
          \unskip\unskip\unpenalty\setbox\scratchbox\lastbox
        \else
-         \normalpenalty\@M % \!!tenthousand
+         \normalpenalty\plustenthousand
          \normalhskip\zeropoint
          \strut
        \fi
      \else
        \removeunwantedspaces
-       \normalpenalty\@M % \!!tenthousand
+       \normalpenalty\plustenthousand
        \normalhskip\zeropoint
        \strut
      \fi
@@ -2592,7 +2592,7 @@
 
   \def\keeplinestogether#1%
     {\xdef\restoreinterlinepenalty{\global\resetpenalties\interlinepenalties}%
-     \global\setpenalties\interlinepenalties{#1}\!!tenthousand}
+     \global\setpenalties\interlinepenalties{#1}\plustenthousand}
 
 \endETEX
 
@@ -2602,7 +2602,7 @@
     {\xdef\restoreinterlinepenalty
        {\global\let\restoreinterlinepenalty\relax
         \global\interlinepenalty=\the\interlinepenalty}% keep = here
-     \global\interlinepenalty\!!tenthousand}
+     \global\interlinepenalty\plustenthousand}
 
 \endTEX
 
@@ -3672,8 +3672,8 @@
        {\hyphenpenalty\the\hyphenpenalty
         \exhyphenpenalty\the\exhyphenpenalty\relax}%
    \fi
-   \hyphenpenalty\@M
-   \exhyphenpenalty\@M}
+   \hyphenpenalty\plustenthousand
+   \exhyphenpenalty\plustenthousand}
 
 \let\dohyphens\relax
 

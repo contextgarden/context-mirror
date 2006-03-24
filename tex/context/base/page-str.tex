@@ -1,0 +1,359 @@
+%D \module
+%D   [       file=page-str,
+%D        version=2006.03.21,
+%D          title=\CONTEXT\ Core Macros,
+%D       subtitle=Page Streams,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright=PRAGMA-ADE]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{Context Page Macros / Page Streams}
+
+%D The first version of this component of \CONTEXT\ was written
+%D for Thomas Schmitz who asked for parallel page streams. While
+%D playing with the code, I decided to make it into a component
+%D that can be used to construct all kind of stream related
+%D mechanisms. Because I could apply this feature in a project,
+%D there is some additional code here (related to graphics).
+%D
+%D These macros were written while listening to and watching the DVD
+%D \quotation {Rush In Rio}.
+
+\unprotect
+
+% taco, what is the best way to append a otr chunk (insert pagediscards?)
+
+\let\currentoutputstream\s!default
+
+\newtoks\defaultstreamoutput \defaultstreamoutput=\OTRONEoutput
+
+\newtoks\normalstreamoutput  \normalstreamoutput={\saveoutputstream[\currentoutputstream]}
+
+\newcount\streampenalty \streampenalty=-101010101
+
+\ifx\multicolumnseject\undefined \else
+  \let\normalmulticolumnseject\multicolumnseject
+  \def\multicolumnseject{\ifinoutputstream\else\normalmulticolumnseject\fi}
+\fi
+
+\newif\ifinoutputstream
+
+\def\enableoutputstream[#1]%
+  {\finishoutputstream
+   \writestatus{otr}{switching to output stream #1}%
+   \inoutputstreamtrue
+   \xdef\currentoutputstream{#1}}
+
+\def\disableoutputstream
+  {\finishoutputstream
+   \writestatus{otr}{switching to default output stream}%
+   \inoutputstreamfalse
+   \global\let\currentoutputstream\s!default}
+
+\def\useoutputstream[#1]%
+  {\writestatus{otr}{using output stream #1}%
+   \xdef\currentoutputstream{#1}}
+
+\def\handlestreamoutput
+  {\doifelse\currentoutputstream\s!default
+     {\ifnum\outputpenalty=\streampenalty
+        \ifvoid\normalpagebox \else
+          \unvbox\normalpagebox
+        \fi
+      \else
+        \the\defaultstreamoutput
+      \fi}
+     {\the\normalstreamoutput}}
+
+\OTRONEoutput{\handlestreamoutput}
+
+\def\defineoutputstream[#1]%
+  {\doifundefined{otrs:#1}{\expandafter\newbox\csname otrs:#1\endcsname}}
+
+\def\outputstreamtag#1%
+  {\csname otrs:#1\endcsname}
+
+\def\finishoutputstream % todo: installoutput
+  {\endgraf
+   \penalty\streampenalty
+   \endgraf}
+
+\def\saveoutputstream[#1]%
+  {\writestatus{otr}{saving otr stream #1}%
+   \ifvoid\normalpagebox
+     \global\setbox\outputstreamtag{#1}\voidbox
+   \else
+     \global\setbox\outputstreamtag{#1}\vbox
+       {\presetoutputstream
+        \ifvoid\outputstreamtag{#1}\else\unvbox\outputstreamtag{#1}\fi
+        \scratchdimen\dp\normalpagebox
+        \unvbox\normalpagebox
+        \vskip-\scratchdimen
+        \kern\strutdepth}%
+   \fi}
+
+% \def\presetoutputstream
+%   {\pdffirstlineheight\strutheight
+%    \pdflastlinedepth  \strutdepth
+%    \pdfeachlineheight \strutheight
+%    \pdfeachlinedepth  \strutdepth}
+
+\let\presetoutputstream\relax
+
+\def\outputstreambox [#1]{\ifvoid\outputstreamtag{#1}\else\box \outputstreamtag{#1}\fi}
+\def\outputstreamcopy[#1]{\ifvoid\outputstreamtag{#1}\else\copy\outputstreamtag{#1}\fi}
+\def\outputstreamht  [#1]{\ht\outputstreamtag{#1}}
+\def\outputstreamdp  [#1]{\dp\outputstreamtag{#1}}
+\def\outputstreamwd  [#1]{\wd\outputstreamtag{#1}}
+
+%D Footnotes don't go along with streams, simply because there is no
+%D way to re-split inserts. A dirty way out is to use marks and store
+%D notes that way.
+
+\def\definemarknote
+  {\dodoubleempty\dodefinemarknote}
+
+\def\dodefinemarknote[#1][#2]%
+  {\definemarking[mn:#1]%
+   \setvalue{mn:#1:n}{0}%
+   \getparameters
+     [mn:#1]
+     [\c!before=,
+      \c!after=,
+      \c!inbetween=\endgraf,
+      \c!command=\firstofoneargument,
+      #2]}
+
+\def\setmarknote[#1]#2%
+  {\doglobal\incrementvalue{mn:#1:n}%
+   \setgvalue{mn:#1:t:\getvalue{mn:#1:n}}{#1}%
+   \expanded{\marking[#1]{\getvalue{mn:#1:n}}}}
+
+\def\flushmarknotes[#1]% assumes split
+  {\begingroup
+   \edef\firstmarknote{0\fetchmark[mn:#1][column:first]}%
+   \edef\lastmarknote {0\fetchmark[mn:#1][column:last]}%
+   \ifnum\firstmarknote<\lastmarknote\relax
+     \getvalue{mn:#1\c!before}%
+     \dostepwiserecurse\firstmarknote\lastmarknote\plusone
+       {\ifnum\recurselevel>\firstmarknote\relax
+          \ifnum\recurselevel<\lastmarknote\relax
+            \getvalue{mn:#1\c!inbetween}%
+          \fi
+        \fi
+        \getvalue{mn:#1\c!command}{\getvalue{mn:#1:t:\recurselevel}}}%
+     \getvalue{mn:#1\c!after}%
+   \fi
+   \endgroup}
+
+\def\erasemarknotes[#1]%
+  {\begingroup
+   \edef\firstmarknote{0\fetchmark[mn:#1][column:first]}%
+   \edef\lastmarknote {0\fetchmark[mn:#1][column:last]}%
+   \dostepwiserecurse\firstmarknote\lastmarknote\plusone
+     {\global\letvalue{mn:#1:t:\recurselevel}\empty}%
+   \endgroup}
+
+%D The next section implements synchronization of (currently
+%D two) output streams. In due time we will implement both a
+%D vertical and horizontal system, as well as alternative
+%D splitters (firstpagevsize, succesivevsize etc).
+
+\def\synchronizeoutputstreams[#1]% [one,two] [left,right]
+  {\bgroup
+   \getfromcommalist[#1][\plusone]\let\firstoutputstream \commalistelement
+   \getfromcommalist[#1][\plustwo]\let\secondoutputstream\commalistelement
+   \forgeteverypar
+   \def\roundingeps{50sp}%
+   \getboxheight\dimen0\of\box\outputstreamtag\firstoutputstream
+   \getboxheight\dimen2\of\box\outputstreamtag\secondoutputstream
+   \scratchdimen\dimexpr\dimen0-\dimen2\relax
+   \ifdim\scratchdimen<-\roundingeps\relax
+     \scratchdimen-\scratchdimen
+     \writestatus{sync}{compensating first stream: \the\scratchdimen/\number\scratchdimen}%
+     \getroundednoflines\scratchdimen
+     \global\setbox\outputstreamtag\firstoutputstream\vbox
+       {\presetoutputstream
+        \unvbox\outputstreamtag\firstoutputstream\dorecurse\noflines\crlf}%
+   \else\ifdim\scratchdimen>\roundingeps\relax
+     \writestatus{sync}{compensating second stream: \the\scratchdimen/\number\scratchdimen}%
+     \getroundednoflines\scratchdimen
+     \global\setbox\outputstreamtag\secondoutputstream\vbox
+       {\presetoutputstream
+        \unvbox\outputstreamtag\secondoutputstream\dorecurse\noflines\crlf}%
+   \else
+      \writestatus{sync}{no need to compensate streams: \the\scratchdimen/\number\scratchdimen}%
+   \fi\fi
+   \egroup}
+
+\def\nofoutputstreamsplitlines  {\v!auto} % {40}
+\def\outputstreamsplittolerance {-5}
+
+\def\flushoutputstreampages[#1]%
+  {\bgroup
+   \getfromcommalist[#1][\plusone]\let\firstoutputstream \commalistelement
+   \getfromcommalist[#1][\plustwo]\let\secondoutputstream\commalistelement
+   \doloop
+     {\flushoutputstreams[#1]%
+      \ifvoid\outputstreamtag\firstoutputstream
+        \ifvoid\outputstreamtag\secondoutputstream
+          \exitloop
+        \else
+          \global\setbox\outputstreamtag\firstoutputstream\vbox{\strut}%
+        \fi
+      \else
+        \ifvoid\outputstreamtag\secondoutputstream
+          \global\setbox\outputstreamtag\secondoutputstream\vbox{\strut}%
+        \else
+          % okay
+        \fi
+      \fi}%
+   \egroup}
+
+\def\flushoutputstreams[#1]%
+  {\bgroup
+   \getfromcommalist[#1][\plusone]\let\firstoutputstream \commalistelement
+   \getfromcommalist[#1][\plustwo]\let\secondoutputstream\commalistelement
+   \doif\nofoutputstreamsplitlines\v!auto
+     {\getrawnoflines\textheight
+      \edef\nofoutputstreamsplitlines{\the\noflines}}%
+   \splittopskip\strutheight
+   \scratchdimen\nofoutputstreamsplitlines\lineheight\relax
+   \unless\iffalse
+     \dimen0\scratchdimen
+     \doloop
+       {\setbox4\copy\outputstreamtag\firstoutputstream
+        \setbox0\vsplit4 to \dimen0
+        \setbox0\vbox
+          {\directsetup{stream:\firstoutputstream:top}%
+           \unvbox0
+           \directsetup{stream:\firstoutputstream:bottom}}%
+        \ifdim\ht0>\scratchdimen
+          \advance\dimen0-\lineheight
+        \else
+          \exitloop
+        \fi}%
+     \scratchdimen\dimen0
+     \dimen2\scratchdimen
+     \doloop
+       {\setbox6\copy\outputstreamtag\secondoutputstream
+        \setbox2\vsplit6 to \dimen2
+        \setbox2\vbox
+          {\directsetup{stream:\secondoutputstream:top}%
+           \unvbox0
+           \directsetup{stream:\secondoutputstream:bottom}}%
+        \ifdim\ht2>\scratchdimen
+          \advance\dimen2-\lineheight
+        \else
+          \exitloop
+        \fi}%
+     \scratchdimen\dimen2
+   \fi
+   \setbox4\copy\outputstreamtag\firstoutputstream
+   \setbox6\copy\outputstreamtag\secondoutputstream
+   \scratchcounter\zerocount
+   \doloop
+     {\setbox0\vsplit4 to \scratchdimen
+      \setbox0\vbox{\unvbox0}%
+      \setbox2\vsplit6 to \scratchdimen
+      \setbox2\vbox{\unvbox2}%
+      \ifvoid4
+        \exitloop
+      \else\ifvoid6
+        \exitloop
+      \else
+          \dimen8=\dimexpr\ht4-\ht6\relax
+          \ifdim\dimen8<\zeropoint\dimen8=-\dimen8\relax\fi
+          \advance\scratchcounter\plusone
+          \ifdim\dimen8<.5\lineheight
+            \exitloop
+          \else\ifnum\outputstreamsplittolerance>\zeropoint
+            \ifnum\scratchcounter>\outputstreamsplittolerance\relax
+              \exitloop
+            \else
+              \advance\scratchdimen\lineheight
+            \fi
+          \else\ifnum\outputstreamsplittolerance<\zeropoint
+            \ifnum-\scratchcounter<\outputstreamsplittolerance\relax
+              \exitloop
+            \else
+              \advance\scratchdimen-\lineheight
+            \fi
+          \else\ifnum\outputstreamsplittolerance=\zeropoint
+            \exitloop
+          \fi\fi\fi\fi
+       \fi\fi}%
+   \setbox0\vsplit\outputstreamtag\firstoutputstream to \scratchdimen
+   \setbox0\vbox to \textheight
+     {\presetoutputstream
+      \directsetup{stream:\firstoutputstream:top}%
+      \unvbox0
+      \vfill
+      \directsetup{stream:\firstoutputstream:bottom}}%
+   \setbox2\vsplit\outputstreamtag\secondoutputstream to \scratchdimen
+   \setbox2\vbox to \textheight
+     {\presetoutputstream
+      \directsetup{stream:\secondoutputstream:top}%
+      \unvbox2
+      \vfill
+      \directsetup{stream:\secondoutputstream:bottom}}%
+   \directsetup{stream:\firstoutputstream:reset}%
+   \directsetup{stream:\secondoutputstream:reset}%
+   \page[even]
+   \box0\vfill\page
+   \box2\vfill\page
+   \egroup}
+
+%D Although one can put floats in a stream, it sometimes makes sense
+%D to keep them apart and this is what local floats do.
+
+\definesystemvariable{lf}
+
+\def\setuplocalfloats
+  {\getparameters[\??lf]}
+
+\setuplocalfloats
+  [%before=\blank,
+   %after=\blank,
+   inbetween=\blank]
+
+\installfloathandler \v!local \somelocalfloat
+
+\initializeboxstack{localfloats}
+
+\newcounter\noflocalfloats
+
+\def\resetlocalfloats
+  {\doglobal\newcounter\noflocalfloats
+   \initializeboxstack{localfloats}}
+
+\def\somelocalfloat[#1]%
+  {\doglobal\increment\noflocalfloats
+   \savebox{localfloats}{\noflocalfloats}{\box\floatbox}}
+
+\def\getlocalfloats
+  {\dorecurse\noflocalfloats
+     {\ifnum\recurselevel=1\relax
+        \getvalue{\??lf\c!before}%
+      \else
+        \getvalue{\??lf\c!inbetween}%
+      \fi
+      \dontleavehmode\hbox{\foundbox{localfloats}\recurselevel}%
+      \ifnum\recurselevel=\noflocalfloats\relax
+        \getvalue{\??lf\c!after}%
+      \fi}}
+
+\def\flushlocalfloats
+  {\getlocalfloats
+   \resetlocalfloats}
+
+\def\getlocalfloat#1{\foundbox{localfloats}{\number#1}}
+
+%D Because many arrangements are possible, we will implement
+%D some examples in a runtime loadable module \type {m-streams}.
+
+\protect \endinput

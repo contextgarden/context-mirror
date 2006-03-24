@@ -479,7 +479,7 @@
    \fi
    \appendtoks\topskip1\topskip\to\everybodyfont
    \the\everybodyfont % ugly here
-\saveinterlinespace % ugly here
+   \saveinterlinespace % ugly here
    \initializecolumns\nofcolumns
    \hangafter\zerocount
    \hangindent\zeropoint
@@ -1203,12 +1203,15 @@
    \global\output{\balancingerror}%
    \b@selinebottomtrue % forces depth in separation rule
    \flushcolumnedpage
-\ifdim\pagetotal>\textheight
-   \eject % new
-\else
-   \allowbreak
-\fi
+   \multicolumnseject
    \egroup}
+
+\def\multicolumnseject
+  {\ifdim\pagetotal>\textheight
+     \eject % new
+   \else
+     \allowbreak
+   \fi}
 
 %D The multicolumn mechanism is incorporated in a \CONTEXT\
 %D interface, which acts like:
@@ -1560,8 +1563,8 @@
 % \stopcolumns
 
 \newif\ifinsidecolumns
-\newif\if@@klbalanceren
-\newif\if@@kluitlijnen
+% \newif\if@@klbalanceren
+% \newif\if@@kluitlijnen
 
 \insidecolumnsfalse
 

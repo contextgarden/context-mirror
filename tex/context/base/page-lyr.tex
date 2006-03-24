@@ -130,6 +130,19 @@
 
 \def\currentlayerdata{0}
 
+\let\currentlayerwidth \!!zeropoint
+\let\currentlayerheight\!!zeropoint
+
+\def\setcurrentlayerdimensions
+  {\dodoubleempty\dosetcurrentlayerdimensions}
+
+\def\dosetcurrentlayerdimensions[#1][#2]% name left|right
+  {\edef\currentlayerwidth {\thelayerwidth {#2#1}}%
+   \edef\currentlayerheight{\thelayerheight{#2#1}}}
+
+\def\thelayerwidth #1{\the\wd\executeifdefined{\@@layerbox#1}\voidbox}
+\def\thelayerheight#1{\the\ht\executeifdefined{\@@layerbox#1}\voidbox}
+
 \def\setlayer
   {\dotripleempty\dosetlayer}
 
