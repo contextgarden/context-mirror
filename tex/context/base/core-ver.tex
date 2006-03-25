@@ -1225,9 +1225,9 @@
    \ifdone
      \startpacked % includes \bgroup
       \dosetuptypelinenumbering{#2}%
-      \doifinset{\\currenttyping\c!option}{\v!commands,\v!slanted,\v!normal}
+      \doifinset{\typingparameter\c!option}{\v!commands,\v!slanted,\v!normal}
         {\setuptyping[#1][\c!option=\v!none]}%
-      \doif{\currenttyping\c!option}\v!color
+      \doif{\typingparameter\c!option}\v!color
         {\expandafter\aftersplitstring#3\at.\to\prettyidentifier
          \settypingparameter\c!option{\prettyidentifier}}%
       \initializetyping
@@ -1238,25 +1238,25 @@
         {\scratchcounter\getvalue{\currenttypingclass#3\v!global\c!start}}%
       \advance\scratchcounter\plusone
       \setxvalue{\currenttypingclass#3\v!global\c!start}{\the\scratchcounter}%
-      \doifelsenothing{\currenttyping\c!start}
+      \doifelsenothing{\typingparameter\c!start}
         {\processfileverbatim\readfilename}
-        {\doif{\currenttyping\c!start}\v!continue
+        {\doif{\typingparameter\c!start}\v!continue
            {\setevalue{\currenttypingclass#1\c!start}%
               {\getvalue{\currenttypingclass#3\v!global\c!start}}}%
-         \doifelsenothing{\currenttyping\c!stop}
-           {\doifelsenothing{\currenttyping\c!nlines}
+         \doifelsenothing{\typingparameter\c!stop}
+           {\doifelsenothing{\typingparameter\c!nlines}
               {\processfileverbatim\readfilename}
-              {\scratchcounter\currenttyping\c!start
-               \advance\scratchcounter\currenttyping\c!nlines
+              {\scratchcounter\typingparameter\c!start
+               \advance\scratchcounter\typingparameter\c!nlines
                \advance\scratchcounter\minusone
                \setxvalue{\currenttypingclass#3\v!global\c!start}%
                  {\the\scratchcounter}%
                \processfilelinesverbatim\readfilename
-                 {\currenttyping\c!start}}
+                 {\typingparameter\c!start}
                  {\getvalue{\currenttypingclass#3\v!global\c!start}}}}%
            {\processfilelinesverbatim\readfilename
-              {\currenttyping\c!start}
-              {\currenttyping\c!stop }}%
+              {\typingparameter\c!start}
+              {\typingparameter\c!stop }}}%
       \stopverbatimcolor
       \stoppacked  % includes \egroup
    \else
@@ -1266,7 +1266,7 @@
       \showmessage\m!verbatims1\ascii
       \egroup
    \fi
-   \currenttyping\c!after
+   \typingparameter\c!after
    \egroup}
 
 %D \macros

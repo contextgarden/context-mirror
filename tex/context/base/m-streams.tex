@@ -1,5 +1,3 @@
-\ifx\definestreamlayer\undefined \input page-str \fi
-
 %D First we implement a simple left||right synchronization
 %D mechanism, which we may perfect and extend over time.
 
@@ -128,6 +126,7 @@
 
 \def\startstreamlayer[#1]%
   {\bgroup
+   \def\startstreamlayer[##1]{\bgroup\let\stopstreamlayer\egroup}%
    \edef\currentstreamlayer{#1}%
    \enableoutputstream[main]%
    \synchronizeoutput
@@ -319,14 +318,12 @@
 
 \starttext
 
-    \startstreamlayer[block]
-        \title{Sample \recurselevel}
-        \startcolumns
-            \dorecurse{4}{\input tufte \par}
-        \stopcolumns
-    \stopstreamlayer
-
-% \stoptext
+% \startstreamlayer[block]
+%     \title{Sample \recurselevel}
+%     \startcolumns
+%         \dorecurse{4}{\input tufte \par}
+%     \stopcolumns
+% \stopstreamlayer
 
 \dorecurse {10} {
     \startstreamlayer[block]

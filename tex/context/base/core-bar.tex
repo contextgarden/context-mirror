@@ -1,8 +1,8 @@
 %D \module
-%D   [       file=plus-rul,
+%D   [       file=core-bar,
 %D        version=2003.03.16,
-%D          title=\CONTEXT\ Plus Macros,
-%D       subtitle=Ruled Stuff Handling,
+%D          title=\CONTEXT\ Core Macros,
+%D       subtitle=Margin Bars and alike,
 %D         author=Hans Hagen,
 %D           date=\currentdate,
 %D      copyright=PRAGMA-ADE]
@@ -11,10 +11,14 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-\writestatus{loading}{Context Plus Macros / Ruled Content Handling}
+\writestatus{loading}{Context Plus Macros / Margin Bars etc}
 
 \unprotect
 
+%D We will implement a sidebar mechanism using the
+%D functionality from \type {core-pos}.
+%D
+%D \starttyping
 %D \definesidebar[whow][rulecolor=green,distance=]
 %D
 %D \input tufte \par
@@ -47,20 +51,19 @@
 %D   \input tufte
 %D   \input tufte
 %D \stopsidebar
+%D \stoptyping
 
 \newcounter\currentsidebar
 \newdimen  \sidebardistance
-
-\definesystemvariable{sr}
 
 \def\setupsidebars
   {\dodoubleargument\dosetupsidebars}
 
 \def\dosetupsidebars[#1][#2]%
   {\ifsecondargument
-     \getparameters[\??sr#1][#2]%
+     \getparameters[\??br#1][#2]%
    \else
-     \getparameters[\??sr][#1]%
+     \getparameters[\??br][#1]%
    \fi}
 
 % \setupMPvariables
@@ -79,10 +82,10 @@
 
 \def\dodefinesidebar[#1][#2]%
   {\copyparameters
-     [\??sr#1][\??sr]
+     [\??br#1][\??br]
      [\c!rulethickness,\c!rulecolor,\c!distance]%
    \getparameters
-     [\??sr#1][#2]}
+     [\??br#1][#2]}
 
 \def\startsidebar
   {\dosingleempty\dostartsidebar}
@@ -93,18 +96,18 @@
    \checktextbackgrounds
    \doglobal\increment\currentsidebar
    \doifelsenothing{#1}
-     {\advance\sidebardistance\@@srdistance}
-     {\doifelsevaluenothing{\??sr#1\c!distance}
-        {\advance\sidebardistance\@@srdistance}
-        {\sidebardistance\getvalue{\??sr#1\c!distance}}}%
+     {\advance\sidebardistance\@@brdistance}
+     {\doifelsevaluenothing{\??br#1\c!distance}
+        {\advance\sidebardistance\@@brdistance}
+        {\sidebardistance\getvalue{\??br#1\c!distance}}}%
    \startpositionoverlay{text-1}%
      \expanded{\setMPpositiongraphicrange
        {b:side:\currentsidebar}%
        {e:side:\currentsidebar}%
        {mpos:bar}%
        {self=side:\currentsidebar,
-        linewidth=\getvalue{\??sr#1\c!rulethickness},
-        linecolor=\getvalue{\??sr#1\c!rulecolor},
+        linewidth=\getvalue{\??br#1\c!rulethickness},
+        linecolor=\getvalue{\??br#1\c!rulecolor},
         distance=\the\sidebardistance}}%
    \stoppositionoverlay
 %    \edef\stopsidebar{\noexpand\dostopsidebar{\currentsidebar}}%
@@ -188,7 +191,5 @@
 \def\dostopmarginrule
   {\stopsidebar
    \egroup}
-
-
 
 \protect \endinput
