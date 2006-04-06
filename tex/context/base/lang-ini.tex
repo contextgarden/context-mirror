@@ -352,6 +352,12 @@
    % old (original) patterns
    \doifelsenothing{#3}{\enableencoding[\s!default]}{\enableencoding[#3]}%
    \doifelsenothing{#4}{\enablemapping [\s!default]}{\enablemapping [#4]}%
+%    \iftrue
+%      \dostepwiserecurse{0}{255}{1}
+%        {\ifnum\lccode\recurselevel>0
+%           \writestatus{lccodes}{#4: \recurselevel: \the\lccode\recurselevel}%
+%         \fi}
+%    \fi
    % new patterns
    % \enableregime[utf]%
    %

@@ -351,6 +351,39 @@
 %         {\showmessage\m!colors3{#1}\empty}}%
 %    \unexpanded\setvalue{#1}{\color[#1]}} % \unexpanded toegevoegd
 
+% \def\dododefinecolor#1#2#3#4[#5][#6]% #2==set(g)value #3==set[e|x]value
+%   {#1\addtocommalist{#5}\colorlist % optional
+%    \doifassignmentelse{#6}
+%      {\@@resetcolorparameters
+%       \getparameters[\??cl @@][#6]%
+%       \ifx\@@cl@@h\empty
+%         \doifelse{\@@cl@@r\@@cl@@g\@@cl@@b}{\@@cl@@z\@@cl@@z\@@cl@@z}
+%           {\doifelse{\@@cl@@c\@@cl@@m\@@cl@@y\@@cl@@k}{\@@cl@@z\@@cl@@z\@@cl@@z\@@cl@@z}
+%              {\doifelse\@@cl@@s\@@cl@@z
+%                 {\showmessage\m!colors8{{[#6]},#5}%
+%                  #3{\??cr#5}{\colorZpattern}}
+%                 {#3{\??cr#5}{\colorSpattern}}}
+%              {#3{\??cr#5}{\colorCpattern}}}
+%           {#3{\??cr#5}{\colorRpattern}}%
+%       \else
+%         \setxvalue{\??cr#5}{\colorHpattern}%
+%       \fi
+%       % new: e=external spot color name
+%       \ifx\@@cl@@e\empty \else
+%         \doregisterspotcolorname{#5}\@@cl@@e
+%       \fi}
+%      {\doifdefinedelse{\??cr#6}
+%         {\doifelse{#5}{#6}
+%            {% this way we can freeze \definecolor[somecolor][somecolor]
+%             % and still prevent cyclic definitions
+%             \iffreezecolors#3{\??cr#5}{\getvalue{\??cr#6}}\fi}
+%            {\iffreezecolors\@EA#3\else\@EA#2\fi
+%               {\??cr#5}{\getvalue{\??cr#6}}}}
+%         {\showmessage\m!colors3{#5 (def)}}}%
+%    \ifcase#4\or
+%      \unexpanded#2{#5}{\switchtocolor[#5]}% \unexpanded toegevoegd
+%    \fi}
+
 \def\dododefinecolor#1#2#3#4[#5][#6]% #2==set(g)value #3==set[e|x]value
   {#1\addtocommalist{#5}\colorlist % optional
    \doifassignmentelse{#6}
@@ -372,17 +405,29 @@
       \ifx\@@cl@@e\empty \else
         \doregisterspotcolorname{#5}\@@cl@@e
       \fi}
-     {\doifdefinedelse{\??cr#6}
-        {\doifelse{#5}{#6}
-           {% this way we can freeze \definecolor[somecolor][somecolor]
-            % and still prevent cyclic definitions
-            \iffreezecolors#3{\??cr#5}{\getvalue{\??cr#6}}\fi}
-           {\iffreezecolors\@EA#3\else\@EA#2\fi
-              {\??cr#5}{\getvalue{\??cr#6}}}}
-        {\showmessage\m!colors3{#5 (def)}}}%
+     {\doifelsenothing\currentpalet
+         \donefalse
+        {\doifdefinedelse{\??cr\currentpalet#6}\donetrue\donefalse}
+      \ifdone
+        \doifnot{#5}{#6}
+           {#2{\??cr#5}{\paletcolorspec{#6}}}%
+      \else
+        \doifdefinedelse{\??cr#6}
+           {\doifelse{#5}{#6}
+              {% this way we can freeze \definecolor[somecolor][somecolor]
+               % and still prevent cyclic definitions
+               \iffreezecolors#3{\??cr#5}{\getvalue{\??cr#6}}\fi}
+              {\iffreezecolors\@EA#3\else\@EA#2\fi
+                 {\??cr#5}{\getvalue{\??cr#6}}}}
+           {\showmessage\m!colors3{#5 (def)}}%
+       \fi}%
    \ifcase#4\or
      \unexpanded#2{#5}{\switchtocolor[#5]}% \unexpanded toegevoegd
    \fi}
+
+\def\paletcolorspec#1%
+% {\executeifdefined{\??cr\currentpalet#1}{\executeifdefined{\??cr#1}\empty}}
+  {\getvalue{\??cr\currentpalet#1}}
 
 %D Hex color support is not enabled by default. You need to say \setupcolor
 %D [hex] to get this working.
@@ -2257,10 +2302,16 @@
         {\doifvaluesomething{\??pa#1}
            {\setevalue{\??pa#1}{\getvalue{\??pa#1},}}%
          \setevalue{\??pa#1}{\getvalue{\??pa#1}##1}%
-         \doifdefinedelse{\??cr##2}
-           {\iffreezecolors\@EA\setevalue\else\@EA\setvalue\fi
-              {\??cr#1:##1}{\getvalue{\??cr##2}}}
-           {\letvalue{\??cr#1:##1}\colorXpattern}}%
+         \doifassignmentelse{##2}
+           {% == \definepalet[test][xx={y=.4}]
+            \definecolor[\??pa#1:##1][##2]%
+            \iffreezecolors\@EA\setevalue\else\@EA\setvalue\fi
+              {\??cr#1:##1}{\getvalue{\??cr\??pa#1:##1}}}
+           {% == \definepalet[test][xx=green]
+            \doifdefinedelse{\??cr##2}
+              {\iffreezecolors\@EA\setevalue\else\@EA\setvalue\fi
+                 {\??cr#1:##1}{\getvalue{\??cr##2}}}
+              {\letvalue{\??cr#1:##1}\colorXpattern}}}%
       \def\dododefinepalet##1%
         {\dodododefinepalet[##1]}%
       \processcommalist[#2]\dododefinepalet}
@@ -2272,6 +2323,14 @@
 \def\getpaletsize[#1]%
   {\getcommacommandsize[\getvalue{\??pa\??pa#1}]%
    \edef\paletsize{\number\commalistsize}}
+
+%D Instead of refering to colors, one can also directly specify
+%D a color:
+%D
+%D \starttyping
+%D \definepalet[test][xx=green]
+%D \definepalet[test][xx={y=.4}]
+%D \stoptyping
 
 %D \macros
 %D   {setuppalet}

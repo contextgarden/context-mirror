@@ -40,16 +40,6 @@
    \registerinfo{> \firstcharacter}{#3}%
    \endgroup}
 
-\def\convertmeaning#1\to % watch the double expansion !
-  {\bgroup
-     \honorunexpanded
-     %dontexpandencoding    % new
-     \literateencodedtokens % newer
-     \xdef\@@globalexpanded{#1}%
-     \xdef\@@globalexpanded{\@@globalexpanded}%
-   \egroup
-   \convertcommand\@@globalexpanded\to}
-
 \def\reduceargument#1\to#2%
   {\begingroup
    \reducetocoding[raw]%

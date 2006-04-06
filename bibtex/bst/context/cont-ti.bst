@@ -11,7 +11,7 @@
 % only two lines: the ITERATEs right before the two SORTs can
 % have different values, sorting by either one of
 % 
-% -------------------------- cont-master.bst  title
+% -------------------------- cont-master.bst  author
 % - the author (+year, title)  : cont-au.bst  author 
 % - the title  (+author, year) : cont-ti.bst  title
 % - the short key a la abbrev  : cont-ab.bst  clabel
@@ -58,6 +58,7 @@
 % \chapter
 % \city
 % \comment
+% \country
 % \crossref
 % \edition
 % \isbn
@@ -70,6 +71,7 @@
 % \month
 % \names
 % \note
+% \notes
 % \organization
 % \pages
 % \pubname
@@ -78,11 +80,23 @@
 % \size
 % \thekey
 % \title
-% \type
+% \bibtype
 % \volume
 % \eprint
 % \doi
 % \howpublished
+% \biburl
+% \lastchecked
+% for ieee:
+
+% \nationality
+% \assignee
+% \bibnumber
+% \day
+% \dayfiled
+% \monthfiled
+% \yearfiled
+% \revision
  
 ENTRY
   { abstract
@@ -92,6 +106,7 @@ ENTRY
     booktitle
     chapter
     comment
+    country
     doi
     edition
     editor
@@ -105,9 +120,11 @@ ENTRY
     keyword
     keywords
     language
+    lastchecked
 	month
     names
     note
+    notes
     number
     organization
     pages
@@ -117,8 +134,17 @@ ENTRY
     size
     title
     type
+    url
     volume
     year
+ nationality
+ assignee
+ bibnumber
+ day
+ dayfiled
+ monthfiled
+ yearfiled
+ revision
   }
   {}
   { label extra.label sort.label clabel sort.clabel ordinal.label}
@@ -197,11 +223,19 @@ FUNCTION {start.entry}
   doi empty$
     {}
     {
-     "o=" write$
+     "o={" write$
      doi write$
-     "," write$
+     "}," write$
      } if$ 
   newline$
+  url empty$
+    {}
+    {
+     "u={" write$
+     url write$
+     "}," write$
+    newline$
+     } if$ 
   "n=" write$
   ordinal.label write$
   ",s=" write$
@@ -212,7 +246,9 @@ FUNCTION {start.entry}
 }
  
 FUNCTION {stop.entry}
-{   "" "\note" note do.out
+{   "" "\country" country do.out
+    "" "\note" note do.out
+	"" "\notes" notes do.out
 	"" "\annotate" annotate do.out
 	"" "\eprint" eprint do.out
 	"" "\doi" doi do.out
@@ -222,6 +258,8 @@ FUNCTION {stop.entry}
 	"" "\abstract" abstract do.out
 	"" "\names" names do.out
 	"" "\size" size do.out
+	"" "\biburl" url do.out
+	"" "\lastchecked" lastchecked do.out
 	"\stoppublication" write$
   newline$
 }
@@ -380,7 +418,7 @@ FUNCTION {format.vol.num.page}
 FUNCTION {format.type.chapter.pages}
 { chapter empty$
     'format.pages
-    { "" "\type" type do.out
+    { "" "\bibtype" type do.out
       "" "\chapter" chapter do.out 
     }
   if$
@@ -413,7 +451,7 @@ FUNCTION {format.in.booktitle.or.series}
  
  
 FUNCTION {format.tr.number}
-{"" "\type" type do.out
+{"" "\bibtype" type do.out
  "" "\volume" number do.out
 }
  
@@ -566,7 +604,7 @@ FUNCTION {mastersthesis}
   format.authors
   format.year
   format.t.title
-  "" "\type" type do.out
+  "" "\bibtype" type do.out
   "" "\pubname" school do.out
   "" "\month" month do.out
   "" "\city" address do.out
@@ -591,7 +629,7 @@ FUNCTION {phdthesis}
   format.authors
   format.title
   format.year
-  "" "\type" type do.out
+  "" "\bibtype" type do.out
   "" "\month" month do.out
   "" "\pubname" school do.out
   "" "\city" address do.out
@@ -629,6 +667,64 @@ FUNCTION {unpublished}
   "" "\month" month do.out
   stop.entry
 }
+
+% 4 additions from IEEEtran
+
+FUNCTION {electronic}
+{ start.entry
+  format.authors
+  format.year
+  format.t.title
+  "" "\month" month do.out
+  "" "\city" address do.out
+  "" "\organization" organization do.out
+  "" "\howpublished" howpublished do.out
+  stop.entry
+}
+FUNCTION {patent}
+{ start.entry
+  format.authors
+  format.year
+  format.t.title
+  "" "\city" address do.out
+  "" "\nationality" nationality do.out
+  "" "\assignee" assignee do.out
+  "" "\bibtype" type do.out
+  "" "\month" month do.out
+  "" "\monthfiled" monthfiled do.out
+  "" "\yearfiled" yearfiled do.out
+  "" "\day" day do.out
+  "" "\dayfiled" dayfiled do.out
+  stop.entry
+}
+FUNCTION {periodical}
+{ start.entry
+  format.editors
+  format.year
+  format.title
+  format.number.series
+  "" "\bibnumber" number do.out
+  "" "\month" month do.out
+  "" "\organization" organization do.out
+  stop.entry
+}
+FUNCTION {standard}
+{ start.entry
+  format.authors
+  format.year
+  format.title
+  "" "\bibtype" type do.out
+  "" "\organization" organization do.out
+  "" "\city" address do.out
+  "" "\revision" revision do.out
+  "" "\pubname" institution do.out
+  "" "\howpublished" howpublished do.out
+  "" "\bibnumber" number do.out
+  "" "\month" month do.out
+  stop.entry
+}
+
+FUNCTION {IEEEtranBSTCTL} { }
 
  
 FUNCTION {default.type} { misc }
@@ -677,14 +773,20 @@ FUNCTION {chop.word}
 FUNCTION {format.lab.names}
 { 's :=
   s #1 "{vv~}{ll}" format.name$
+  "{" swap$ * "}" *
+  s num.names$ duplicate$
+  #1 > 
+    { pop$ "," * }
+    { pop$ }
+  if$
   s num.names$ duplicate$
   #2 >
-    { pop$ " et~al." * }
+    { pop$ "{}" * }
     { #2 <
         'skip$
         { s #2 "{ff }{vv }{ll}{ jj}" format.name$ "others" =
-            { " et~al." * }
-            { " and " * s #2 "{vv~}{ll}" format.name$ * }
+            { "{}" * }
+            { s #2 "{vv~}{ll}" format.name$ "{" swap$ * "}" * * }
           if$
         }
       if$

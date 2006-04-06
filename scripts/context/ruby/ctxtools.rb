@@ -17,7 +17,34 @@
 #
 # todo: move kpse call to kpse class/module, faster and better
 
-banner = ['CtxTools', 'version 1.3.1', '2004/2006', 'PRAGMA ADE/POD']
+# Taco Hoekwater on patterns and lig building (see 'agr'):
+#
+# Any direct use of a ligature (as accessed by \char or through active
+# characters) is wrong and will create faulty hypenation. Normally,
+# when TeX sees "office", it has six tokens, and it knows from the
+# patterns that it can hyphenate between the "ff". It will build an
+# internal list of four nodes, like this:
+#
+# [char, o  , ffi ]
+# [lig , ffi, c   ,[f,f,i]]
+# [char, c  , e   ]
+# [char, e  , NULL]
+#
+# as you can see from the ffi line, it has remembered the original
+# characters. While hyphenating, it temporarily changes back to
+# that, then re-instates the ligature afterwards.
+#
+# If you feed it the ligature directly, like so:
+#
+# [char, o   , ffi ]
+# [char, ffi , c   ]
+# [char, c   , e   ]
+# [char, e   , NULL]
+#
+# it cannot do that (it tries to hyphenate as if the "ffi" was a
+# character), and the result is wrong hyphenation.
+
+banner = ['CtxTools', 'version 1.3.2', '2004/2006', 'PRAGMA ADE/POD']
 
 unless defined? ownpath
     ownpath = $0.sub(/[\\\/][a-z0-9\-]*?\.rb/i,'')
@@ -772,6 +799,7 @@ class Language
         case @encoding.downcase
             when 't1', 'ec', 'cork' then preload_vector('ec')
             when 'y', 'texnansi'    then preload_vector('texnansi')
+            when 'agr', 'agreek'    then preload_vector('agr')
         end
     end
 
@@ -818,11 +846,32 @@ class Language
     def convert
         if @data then
             n = 0
-            @remapping.each do |k|
-                @data.gsub!(k[0]) do
-                    # report("#{k[0]} => #{k[1]}")
-                    n += 1
-                    k[1]
+            if true then
+                @data.gsub!(/\\(patterns|hypenation)\{(.*?)\}/mois) do
+                    command, content = $1, $2
+                    @remapping.each_index do |i|
+                        from, to, m = @remapping[i][0], @remapping[i][1], 0
+                        content.gsub!(from) do
+                            m += 1
+                            "[#{i}]"
+                        end
+                        report("#{m.to_s.rjust(5)} entries remapped to #{to}") unless m == 0
+                        n += m
+                    end
+                    content.gsub!(/\[(\d+)\]/) do
+                        @remapping[$1.to_i][1]
+                    end
+                    "\\#{command}\{#{content}\}"
+                end
+            else
+                @remapping.each do |k|
+                    from, to, m = k[0], k[1], 0
+                    @data.gsub!(from) do
+                        m += 1
+                        to
+                    end
+                    report("#{m.to_s.rjust(5)} entries remapped to #{to}") unless m == 0
+                    n += m
                 end
             end
             report("#{n} changes in patterns and exceptions")
@@ -1147,6 +1196,198 @@ class Language
                 remap(/\\c\{.*?\}/, "")
                 remap(/\\a\s*/, "[aeligature]")
                 remap(/\\o\s*/, "[oeligature]")
+            when 'agr' then
+                remap(/\<\'a\|/, "[greekalphaiotasubdasiatonos]")
+                # remap(/\<\'a\|/, "[greekdasiatonos][greekAlpha][greekiota]")
+                remap(/\>\'a\|/, "[greekalphaiotasubpsilitonos]")
+                remap(/\<\`a\|/, "[greekalphaiotasubdasiavaria]")
+                remap(/\>\`a\|/, "[greekalphaiotasubpsilivaria]")
+                remap(/\<\~a\|/, "[greekalphaiotasubdasiaperispomeni]")
+                remap(/\>\~a\|/, "[greekalphaiotasubpsiliperispomeni]")
+                remap(/\'a\|/,   "[greekalphaiotasubtonos]")
+                remap(/\`a\|/,   "[greekalphaiotasubvaria]")
+                remap(/\~a\|/,   "[greekalphaiotasubperispomeni]")
+                remap(/\<a\|/,   "[greekalphaiotasubdasia]")
+                remap(/\>a\|/,   "[greekalphaiotasubpsili]")
+                remap(/a\|/,     "[greekalphaiotasub]")
+                remap(/\<\'h\|/, "[greeketaiotasubdasiatonos]")
+                remap(/\>\'h\|/, "[greeketaiotasubpsilitonos]")
+                remap(/\<\`h\|/, "[greeketaiotasubdasiavaria]")
+                remap(/\>\`h\|/, "[greeketaiotasubpsilivaria]")
+                remap(/\<\~h\|/, "[greeketaiotasubdasiaperispomeni]")
+                remap(/\>\~h\|/, "[greeketaiotasubpsiliperispomeni]")
+                remap(/\'h\|/,   "[greeketaiotasubtonos]")
+                remap(/\`h\|/,   "[greeketaiotasubvaria]")
+                remap(/\~h\|/,   "[greeketaiotasubperispomeni]")
+                remap(/\<h\|/,   "[greeketaiotasubdasia]")
+                remap(/\>h\|/,   "[greeketaiotasubpsili]")
+                remap(/h\|/,     "[greeketaiotasub]")
+                remap(/\<'w\|/,  "[greekomegaiotasubdasiatonos]")
+                remap(/\>'w\|/,  "[greekomegaiotasubpsilitonos]")
+                remap(/\<`w\|/,  "[greekomegaiotasubdasiavaria]")
+                remap(/\>`w\|/,  "[greekomegaiotasubpsilivaria]")
+                remap(/\<~w\|/,  "[greekomegaiotasubdasiaperispomeni]")
+                remap(/\>~w\|/,  "[greekomegaiotasubpsiliperispomeni]")
+                remap(/\<w\|/,   "[greekomegaiotasubdasia]")
+                remap(/\>w\|/,   "[greekomegaiotasubpsili]")
+                remap(/\'w\|/,   "[greekomegaiotasubtonos]")
+                remap(/\`w\|/,   "[greekomegaiotasubvaria]")
+                remap(/\~w\|/,   "[greekomegaiotasubperispomeni]")
+                remap(/w\|/,     "[greekomegaiotasub]")
+                remap(/\<\'i/,   "[greekiotadasiatonos]")
+                remap(/\>\'i/,   "[greekiotapsilitonos]")
+                remap(/\<\`i/,   "[greekiotadasiavaria]")
+                remap(/\>\`i/,   "[greekiotapsilivaria]")
+                remap(/\<\~i/,   "[greekiotadasiaperispomeni]")
+                remap(/\>\~i/,   "[greekiotapsiliperispomeni]")
+                remap(/\"\'i/,   "[greekiotadialytikatonos]")
+                remap(/\"\`i/,   "[greekiotadialytikavaria]")
+                remap(/\"\~i/,   "[greekiotadialytikaperispomeni]")
+                remap(/\<i/,     "[greekiotadasia]")
+                remap(/\>i/,     "[greekiotapsili]")
+                remap(/\'i/,     "[greekiotaoxia]")
+                remap(/\`i/,     "[greekiotavaria]")
+                remap(/\~i/,     "[greekiotaperispomeni]")
+                remap(/\"i/,     "[greekiotadialytika]")
+                remap(/\>\~e/,   "[greekepsilonpsiliperispomeni]")
+                remap(/\<\~e/,   "[greekepsilondasiaperispomeni]")
+                remap(/\<\'e/,   "[greekepsilondasiatonos]")
+                remap(/\>\'e/,   "[greekepsilonpsilitonos]")
+                remap(/\<\`e/,   "[greekepsilondasiavaria]")
+                remap(/\>\`e/,   "[greekepsilonpsilivaria]")
+                remap(/\<e/,     "[greekepsilondasia]")
+                remap(/\>e/,     "[greekepsilonpsili]")
+                remap(/\'e/,     "[greekepsilonoxia]")
+                remap(/\`e/,     "[greekepsilonvaria]")
+                remap(/\~e/,     "[greekepsilonperispomeni]")
+                remap(/\<\'a/,   "[greekalphadasiatonos]")
+                remap(/\>\'a/,   "[greekalphapsilitonos]")
+                remap(/\<\`a/,   "[greekalphadasiavaria]")
+                remap(/\>\`a/,   "[greekalphapsilivaria]")
+                remap(/\<\~a/,   "[greekalphadasiaperispomeni]")
+                remap(/\>\~a/,   "[greekalphapsiliperispomeni]")
+                remap(/\<a/,     "[greekalphadasia]")
+                remap(/\>a/,     "[greekalphapsili]")
+                remap(/\'a/,     "[greekalphaoxia]")
+                remap(/\`a/,     "[greekalphavaria]")
+                remap(/\~a/,     "[greekalphaperispomeni]")
+                remap(/\<\'h/,   "[greeketadasiatonos]")
+                remap(/\>\'h/,   "[greeketapsilitonos]")
+                remap(/\<\`h/,   "[greeketadasiavaria]")
+                remap(/\>\`h/,   "[greeketapsilivaria]")
+                remap(/\<\~h/,   "[greeketadasiaperispomeni]")
+                remap(/\>\~h/,   "[greeketapsiliperispomeni]")
+                remap(/\<h/,     "[greeketadasia]")
+                remap(/\>h/,     "[greeketapsili]")
+                remap(/\'h/,     "[greeketaoxia]")
+                remap(/\`h/,     "[greeketavaria]")
+                remap(/\~h/,     "[greeketaperispomeni]")
+                remap(/\<\~o/,   "[greekomicrondasiaperispomeni]")
+                remap(/\>\~o/,   "[greekomicronpsiliperispomeni]")
+                remap(/\<\'o/,   "[greekomicrondasiatonos]")
+                remap(/\>\'o/,   "[greekomicronpsilitonos]")
+                remap(/\<\`o/,   "[greekomicrondasiavaria]")
+                remap(/\>\`o/,   "[greekomicronpsilivaria]")
+                remap(/\<o/,     "[greekomicrondasia]")
+                remap(/\>o/,     "[greekomicronpsili]")
+                remap(/\'o/,     "[greekomicronoxia]")
+                remap(/\`o/,     "[greekomicronvaria]")
+                remap(/\~o/,     "[greekomicronperispomeni]")
+                remap(/\<\'u/,   "[greekupsilondasiatonos]")
+                remap(/\>\'u/,   "[greekupsilonpsilitonos]")
+                remap(/\<\`u/,   "[greekupsilondasiavaria]")
+                remap(/\>\'u/,   "[greekupsilonpsilivaria]")
+                remap(/\<\~u/,   "[greekupsilondasiaperispomeni]")
+                remap(/\>\~u/,   "[greekupsilonpsiliperispomeni]")
+                remap(/\"\'u/,   "[greekupsilondialytikatonos]")
+                remap(/\"\`u/,   "[greekupsilondialytikavaria]")
+                remap(/\"\~u/,   "[greekupsilondialytikaperispomeni]")
+                remap(/\<u/,     "[greekupsilondasia]")
+                remap(/\>u/,     "[greekupsilonpsili]")
+                remap(/\'u/,     "[greekupsilonoxia]")
+                remap(/\`u/,     "[greekupsilonvaria]")
+                remap(/\~u/,     "[greekupsilonperispomeni]")
+                remap(/\"u/,     "[greekupsilondiaeresis]")
+                remap(/\<\'w/,   "[greekomegadasiatonos]")
+                remap(/\>\'w/,   "[greekomegapsilitonos]")
+                remap(/\<\`w/,   "[greekomegadasiavaria]")
+                remap(/\>\`w/,   "[greekomegapsilivaria]")
+                remap(/\<\~w/,   "[greekomegadasiaperispomeni]")
+                remap(/\>\~w/,   "[greekomegapsiliperispomeni]")
+                remap(/\<w/,     "[greekomegadasia]")
+                remap(/\>w/,     "[greekomegapsili]")
+                remap(/\'w/,     "[greekomegaoxia]")
+                remap(/\`w/,     "[greekomegavaria]")
+                remap(/\~w/,     "[greekomegaperispomeni]")
+                remap(/\<r/,     "[greekrhodasia]")
+                remap(/\>r/,     "[greekrhopsili]")
+                remap(/\<\~/,    "[greekdasiaperispomeni]")
+                remap(/\>\~/,    "[greekpsiliperispomeni]")
+                remap(/\<\'/,    "[greekdasiatonos]")
+                remap(/\>\'/,    "[greekpsilitonos]")
+                remap(/\<\`/,    "[greekdasiavaria]")
+                remap(/\>\`/,    "[greekpsilivaria]")
+                remap(/\"\'/,    "[greekdialytikatonos]")
+                remap(/\"\`/,    "[greekdialytikavaria]")
+                remap(/\"\~/,    "[greekdialytikaperispomeni]")
+                remap(/\</,      "[dasia]")
+                remap(/\>/,      "[psili]")
+                remap(/\'/,      "[oxia]")
+                remap(/\`/,      "[greekvaria]")
+                remap(/\~/,      "[perispomeni]")
+                remap(/\"/,      "[dialytika]")
+                # unknown
+                remap(/\|/,      "[greekIotadialytika]")
+                # next
+                remap(/A/, "[greekAlpha]")
+                remap(/B/, "[greekBeta]")
+                remap(/D/, "[greekDelta]")
+                remap(/E/, "[greekEpsilon]")
+                remap(/F/, "[greekPhi]")
+                remap(/G/, "[greekGamma]")
+                remap(/H/, "[greekEta]")
+                remap(/I/, "[greekIota]")
+                remap(/J/, "[greekTheta]")
+                remap(/K/, "[greekKappa]")
+                remap(/L/, "[greekLambda]")
+                remap(/M/, "[greekMu]")
+                remap(/N/, "[greekNu]")
+                remap(/O/, "[greekOmicron]")
+                remap(/P/, "[greekPi]")
+                remap(/Q/, "[greekChi]")
+                remap(/R/, "[greekRho]")
+                remap(/S/, "[greekSigma]")
+                remap(/T/, "[greekTau]")
+                remap(/U/, "[greekUpsilon]")
+                remap(/W/, "[greekOmega]")
+                remap(/X/, "[greekXi]")
+                remap(/Y/, "[greekPsi]")
+                remap(/Z/, "[greekZeta]")
+                remap(/a/, "[greekalpha]")
+                remap(/b/, "[greekbeta]")
+                remap(/c/, "[greekfinalsigma]")
+                remap(/d/, "[greekdelta]")
+                remap(/e/, "[greekepsilon]")
+                remap(/f/, "[greekphi]")
+                remap(/g/, "[greekgamma]")
+                remap(/h/, "[greeketa]")
+                remap(/i/, "[greekiota]")
+                remap(/j/, "[greektheta]")
+                remap(/k/, "[greekkappa]")
+                remap(/l/, "[greeklambda]")
+                remap(/m/, "[greekmu]")
+                remap(/n/, "[greeknu]")
+                remap(/o/, "[greekomicron]")
+                remap(/p/, "[greekpi]")
+                remap(/q/, "[greekchi]")
+                remap(/r/, "[greekrho]")
+                remap(/s/, "[greeksigma]")
+                remap(/t/, "[greektau]")
+                remap(/u/, "[greekupsilon]")
+                remap(/w/, "[greekomega]")
+                remap(/x/, "[greekxi]")
+                remap(/y/, "[greekpsi]")
+                remap(/z/, "[greekzeta]")
             else
         end
 
@@ -1197,7 +1438,7 @@ class Commands
     # todo: filter the fallback list from context
 
     # The first entry in the array is the encoding which will be used
-    # when interpreting th eraw patterns. The second entry is a list of
+    # when interpreting the raw patterns. The second entry is a list of
     # filesets (string|aray), each first match of a set is taken.
 
     @@languagedata['ba' ] = [ 'ec'      , ['bahyph.tex'] ]
@@ -1224,7 +1465,7 @@ class Commands
     # mnhyph
     @@languagedata['nl' ] = [ 'ec'      , ['nehyph96.tex'] ]
     @@languagedata['no' ] = [ 'ec'      , ['nohyph.tex'] ]
-    # oldgrhyph.tex
+    @@languagedata['agr'] = [ 'agr'     , [['grahyph4.tex','oldgrhyph.tex']] ] # new, todo
     @@languagedata['pl' ] = [ 'ec'      , ['plhyph.tex'] ]
     @@languagedata['pt' ] = [ 'ec'      , ['pthyph.tex'] ]
     @@languagedata['ro' ] = [ 'ec'      , ['rohyph.tex'] ]
@@ -1235,7 +1476,6 @@ class Commands
     @@languagedata['sv' ] = [ 'ec'      , ['svhyph.tex'] ]
     @@languagedata['tr' ] = [ 'ec'      , ['tkhyph.tex'] ]
     @@languagedata['uk' ] = [ 'default' , [['ukhyphen.tex','ukhyph.tex']] ]
-
 end
 
 class Commands

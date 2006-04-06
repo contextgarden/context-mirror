@@ -1,6 +1,6 @@
 %D \module
 %D   [       file=t-bib,
-%D        version=2005.01.04,
+%D        version=2006.02.08,
 %D          title=\CONTEXT\ Publication Module,
 %D       subtitle=Publications,
 %D         author=Taco Hoekwater,
@@ -9,35 +9,52 @@
 %C
 %C Donated to the public domain.
 
-\usemodule[bibltx] % bibtex files can contain latex left-overs
 
-%D Slightly adapted by HH (2005/01). For \BIBTEX\ relate questions,
-%D contact Taco, if you expect interference with core macros, bother
-%D Hans. This file will be cleaned up in due time.
+%D The original was developed independantly by Taco Hoekwater while still working for Kluwer
+%D Academic publishers (it still used the dutch interface then). Development continued after
+%D he left Kluwer, and in Januari 2005, the then already internationalized file was merged
+%D with the core distribution by Hans Hagen.  The current version is once again by Taco.
 %D
-%D Documentation and additional resources can be found at
-%D Taco's website: \url{tex.aanhet.net}.
+%D More documentation and additional resources can be found on the contextgarden:
+%D \hyphenatedurl{http://wiki.contextgarden.net//Bibliography}.
 
-%D \subject{DONE}
+%D \subject{DONE (dd/mm/yyyy)}
 %D
 %D \startitemize
-%D \item minor bugfixes today (25/6)
-%D \item add finalnamesep support for Oxford comma (17/9)
-%D \item add \insert... for: doi, eprint, howpublished (17-19/9)
-%D \item minor fix (26/5/2004):
-%D \item add author definition (and associated system variable)
+%D \item add author definition (and associated system variable) (26/05/2005)
+%D \item add finalnamesep support for Oxford comma (17/09/2005)
+%D \item add \type{\insert...} for: doi, eprint, howpublished (19/09/2005)
+%D \item allow a defaulted \type{\setupcite} (19/11/2005)
+%D \item renamed citation type 'number' to 'serial' (19/11/2005)
+%D \item better definition of \type{\inverted...author} (19/11/2005)
+%D \item don't reset [numbercommand] in \type {\setuppublication} by default (20/11/2005)
+%D \item don't disable other \type {\setuppublication} keys if alternative is present (20/11/2005)
+%D \item drop \type{\sanitizeaccents} (20/11/2005)
+%D \item added \type{\nocite} and \type{\cite[none]} (21/11/2005)
+%D \item added headtext for it  (23/11/2005)
+%D \item make \type{\cite[url]} and \type{\cite[doi]} interactive (23/11/2005)
+%D \item make right-aligned labels in the list work even when autohang=no
+%D \item use 'et al.' instead of 'et.al.'. Pointed out by Peter Münster (30/12/2005)
+%D \item added headtext for cz (31/12/2005)
+%D \item Keep whitespace after \type{\cite} with single argument (31/12/2005)
+%D \item Fix broken \type{\cite{}} support (31/12/2005)
+%D \item Use \type{\readfile} inside \type{\usepublications} instead of \type{\readsysfile} (12/01/2006)
+%D \item Use \type{\currentbibyear} and \type{\currentbibauthor} instead of \type{\YR} and \type{\AU} (05/02/2006)
+%D \item Fix compressed version of authoryear style (05/02/2006)
+%D \item Rename the clashing data fields \type{\url} and \type{\type} to \type{\biburl} and \type{\bibtype} (05/02/2006)
+%D \item Added two french bibl files from Renaud Aubin (06/02/2006)
+%D \item Five new bib class and eight extra bib fields, for IEEEtran (07/02/2006)
+%D \item French keyword translation, provided by Renaud (08/02/2006)
+%D \item fix underscores in undefined keys (22/02/2006)
+%D \item Destroy interactivity in labels of the publication list (13/03/2006)
 %D \stopitemize
-
-%D \subject{TODO}
+%D
+%D \subject{WISHLIST}
 %D
 %D \startitemize
+%D \item link back from publication list to citation
 %D \item export \type {\citation{<cited item>}}
-%D \item export a \type {\bibalternative{lastpubsep}} from BST instead of 'and'
-%D \item don't reset [numbercommand] in \type {\setuppublication} by default
 %D \item sort out different APS versions: PR A/B/L vs. RPM
-%D \item (implement sub-options? / \type {\setupcitationstyle} ?)
-%D \item worry about localization at same time
-%D \item add hyperlinking to the doi->URL and \type {\cite}->list, in general
 %D \item don't load the whole lot, but filter entries instead
 %D \stopitemize
 
@@ -70,7 +87,6 @@
              sorttype: sorttype             sorttype
              compress: compress             compress
              autohang: autohang             autohang
-       %       author: author               author
             artauthor: artauthor            artauthor
                editor: editor               editor
       authoretallimit: authoretallimit      authoretallimit
@@ -82,6 +98,8 @@
        authoretaltext: authoretaltext       authoretaltext
     artauthoretaltext: artauthoretaltext    artauthoretaltext
        editoretaltext: editoretaltext       editoretaltext
+           otherstext: otherstext           otherstext
+              andtext: andtext              andtext
           totalnumber: totalnumber          totalnumber
          firstnamesep: firstnamesep         firstnamesep
                vonsep: vonsep               vonsep
@@ -98,69 +116,119 @@
 \stopconstants
 
 \startvariables       dutch                 english
-
                       german                czech
                       italian               romanian
+                      french
                title: titel                 title
                       titel                 titul
                       titolo                titlu
+                      titre
                short: kort                  short
                       kurz                  short
                       short                 short
+                      short
                 cite: cite                  cite
                       cite                  cite
                       cite                  cite
+                      cite
                  bbl: bbl                   bbl
                       bbl                   bbl
                       bbl                   bbl
+                      bbl
                  bib: bib                   bib
                       bib                   bib
                       bib                   bib
+                      bib
               author: auteur                author
                       autor                 autor
                       autore                autor
+                      auteur
 
 \stopvariables
 
+%D how to load the references. There is some new stuff here
+%D to support Idris' (incorrect :-)) use of projects
+
+\def\biblistname{pubs}
+
+\let\preloadbiblist\relax
+
+
+\ifx\currentcomponent\v!text
+  % single file
+  \edef\temp{\the\everystarttext}%
+  \ifx\temp\empty
+    % post-starttext
+    \def\preloadbiblist{\dousepublications\jobname }%
+  \else
+    % pre-starttext
+    \appendtoks \dousepublications\jobname \to \everystarttext
+  \fi
+  %
+\else \ifx\currentcomponent\v!project
+  % a project file, have to set up the partial products!
+  \def\startproduct #1 %
+    {\doateverystarttext
+     \dousepublications{#1}%
+     \donextlevel\v!product\currentproduct
+     \doexecutefileonce\doexecutefileonce
+     \donotexecutefile\doexecutefile#1\\}%
+  %
+\else \ifx\currentcomponent\v!product
+  % a product file
+  \def\preloadbiblist{\dousepublications\jobname }%
+  %
+\else
+  % a component? not sure what to do
+  \def\preloadbiblist{\dousepublications\jobname }%
+  %
+\fi \fi \fi
+
+\expanded{\definelist[\biblistname][\biblistname]}
+
 %D The text string for the publication list header
 
-\setupheadtext[en][pubs=References]
-\setupheadtext[nl][pubs=Literatuur]
-\setupheadtext[de][pubs=Literatur]
+\setupheadtext[en][\biblistname=References]
+\setupheadtext[nl][\biblistname=Literatuur]
+\setupheadtext[de][\biblistname=Literatur]
+\setupheadtext[it][\biblistname=Bibliografia]
+\setupheadtext[sl][\biblistname=Literatura]
+\setupheadtext[fr][\biblistname=Bibliographie]
 
-%D \macros{bibdoifelse}
+%D \macros{bibdoif,bibdoifnot,bibdoifelse}
 %D
-%D Here is a really small helper that is used a lot (which is why it
-%D makes sense to use \type{\ifx} instead of \type{\doif..}).
-%D This test is used in all the typesetting commands
+%D Here are a few small helpers that are used a lot
+%D in all the typesetting commands
 %D (\type{\insert...}) we will encounter later.
+%D
+%D TH: Hans, don't replace these! It is vital that
+%D there is a precisly one level of expansion of
+%D the argument.
 
-\def\bibdoifelse#1%
-  {\ifx#1\relax
-     \@EA\secondoftwoarguments
-   \else\ifx#1\empty
-     \@EAEAEA\secondoftwoarguments
+\long\def\bibdoifelse#1%
+  {\@EA\def\@EA\!!stringa\@EA{#1}%
+   \ifx\!!stringa\empty
+     \expandafter\secondoftwoarguments
    \else
-     \@EAEAEA\firstoftwoarguments
-   \fi\fi}
+     \expandafter\firstoftwoarguments
+   \fi}
 
-\def\bibdoif#1%
-  {\ifx#1\relax
-     \@EA\gobbleoneargument
-   \else\ifx#1\empty
-     \@EAEAEA\gobbleoneargument
+\long\def\bibdoifnot#1%
+  {\@EA\def\@EA\!!stringa\@EA{#1}%
+   \ifx\!!stringa\empty
+     \expandafter\firstofoneargument
    \else
-     \@EAEAEA\firstofoneargument
-   \fi\fi}
+     \expandafter\gobbleoneargument
+   \fi}
 
-\def\bibdoifnot#1%
-  {\ifx#1\relax
-     \@EA\firstofoneargument
-   \else\ifx#1\empty
-     \@EAEAEA\firstofoneargument
+\long\def\bibdoif#1%
+  {\@EA\def\@EA\!!stringa\@EA{#1}%
+   \ifx\!!stringa\empty
+     \expandafter\gobbleoneargument
    \else
-     \@EAEAEA\gobbleoneargument
-   \fi\fi}
+     \expandafter\firstofoneargument
+   \fi}
+
 
 %D Bibtex settings separated out
 
@@ -236,48 +304,48 @@
 \def\bibleftnumber#1%
   {#1\hfill~}
 
+
 \def\dosetuppublications[#1]%
   {\getparameters
      [\??pb]
-     [\c!numbercommand=\bibleftnumber,\c!alternative=,#1]%
+     [\c!alternative=,#1]%
    \doifsomething\@@pbalternative
      {\readsysfile{bibl-\@@pbalternative.tex}
         {\showmessage\m!bib{6}{bibl-\@@pbalternative}\let\@@pbalternative\empty}
         {\showmessage\m!bib{1}{bibl-\@@pbalternative}\let\@@pbalternative\empty}}%
-   \doifnothing{\@@pbalternative}
-     {\processaction
-        [\@@pbcriterium]
-        [    \v!all=>\typesetalltrue,
-         \s!unknown=>\typesetallfalse]%
-      \processaction
-        [\@@pbautohang]
-        [    \v!yes=>\autohangtrue,
-         \s!unknown=>\autohangfalse]%
-      \processaction
-        [\@@pbsorttype]
-        [   \v!cite=>\sortbycitetrue,
-             \v!bbl=>\sortbycitefalse,
-         \s!default=>\sortbycitetrue,
-         \s!unknown=>\sortbycitefalse]%
-      \processaction
-        [\@@pbnumbering]
-        [    \v!yes=>\let\@@pbinumbercommand\firstofoneargument,
-              \v!no=>\let\@@pbinumbercommand\gobbleoneargument,
-           \v!short=>\def\@@pbinumbercommand##1{\@@pbs},
-             \v!bib=>\def\@@pbinumbercommand##1{\@@pbn},
-         \s!unknown=>\let\@@pbinumbercommand\firstofoneargument]%
-      \processaction
-        [\@@pbrefcommand]
-        [\s!default=>\edef\@@citedefault{\@@pbrefcommand},
-         \s!unknown=>\edef\@@citedefault{\@@pbrefcommand}]}}
+  \getparameters
+     [\??pb]
+     [#1]%
+    \processaction
+     [\@@pbcriterium]
+     [    \v!all=>\typesetalltrue,
+      \s!unknown=>\typesetallfalse]%
+   \processaction
+     [\@@pbautohang]
+     [    \v!yes=>\autohangtrue,
+      \s!unknown=>\autohangfalse]%
+   \processaction
+     [\@@pbsorttype]
+     [   \v!cite=>\sortbycitetrue,
+          \v!bbl=>\sortbycitefalse,
+      \s!default=>\sortbycitetrue,
+      \s!unknown=>\sortbycitefalse]%
+   \processaction
+     [\@@pbnumbering]
+     [    \v!yes=>\let\@@pbinumbercommand\firstofoneargument,
+           \v!no=>\let\@@pbinumbercommand\gobbleoneargument,
+        \v!short=>\def\@@pbinumbercommand##1{\getvalue{pbds-\@@pbk}},
+          \v!bib=>\def\@@pbinumbercommand##1{\getvalue{pbdn-\@@pbk}},
+      \s!unknown=>\let\@@pbinumbercommand\firstofoneargument]%
+   \processaction
+     [\@@pbrefcommand]
+     [\s!default=>\edef\@@citedefault{\@@pbrefcommand},
+      \s!unknown=>\edef\@@citedefault{\@@pbrefcommand}]}
 
 % initialize
 
 \def\@@pbrefcommand{num}
-
-%D how to load the references:
-
-\appendtoks \dousepublications\jobname \to \everystarttext
+\def\@@pbnumbercommand{\bibleftnumber}
 
 %D \macros{usepublications}
 %D
@@ -289,7 +357,7 @@
   {\usereferences[#1]\processcommalist[#1]\dousepublications}
 
 \def\dousepublications#1%
-  {\readsysfile{#1.\f!bibextension}
+  {\readfile{#1.\f!bibextension}
      {\showmessage\m!bib{4}{#1.\f!bibextension}}
      {\showmessage\m!bib{2}{#1.\f!bibextension}}}
 
@@ -309,18 +377,16 @@
 \def\setuppublicationlist
   {\dosingleempty\dosetuppublicationlist}
 
-\definelist[pubs][pubs]
-
 \def\dosetuppublicationlist[#1]%
   {\getparameters
      [@@pvdata]
      [\c!samplesize={AA99},\c!totalnumber={99},#1]% for sample & totalnumber & firstnamesep etc.
    \setuplist
-     [pubs]
-     [\c!alternative=a,\c!pagenumber=\v!no,#1]}
+     [\biblistname]
+     [\c!alternative=a,\c!interaction=,\c!pagenumber=\v!no,#1]}
 
-\def\setuppublicationlayout[#1]%
-  {\setvalue{@@pvdata#1}}
+\def\setuppublicationlayout[#1]#2%
+  {\setvalue{@@pvdata#1}{#2\unskip}}
 
 %D \macros{bibalternative}
 %D
@@ -350,26 +416,34 @@
 
 \def\simplebibdef#1% hh: funny expansion ?
   {\@EA\long\@EA\def\csname bib@#1\endcsname##1%
-     {\setvalue{\??pb @#1}{##1}\ignorespaces}%
+     {\setvalue{\??pb @#1}{##1}%
+      \ignorespaces}%
       \@EA\def\csname insert#1\endcsname##1##2##3%
         {\@EA\bibdoifelse
            \@EA{\csname @@pb@#1\endcsname}%
            {##1\csname @@pb@#1\endcsname##2}%
-           {##3}}}
+           {##3}%
+      }}
 
 \def\bibcommandlist
-  {arttitle,title,journal,notes,
-   volume,issue,pubname,city,country,
-   type,organization,institute,series,thekey,
-   edition,month,pubyear,note,annotate,pages,
-   keyword,keywords,comment,abstract,names,size,
-   issn,isbn,chapter,eprint,doi,howpublished}
+  {arttitle, title, journal, notes, volume, issue, pubname, city,
+   country, bibtype, organization, series, thekey, edition, month,
+   pubyear, note, annotate, pages, keyword, keywords, comment,
+   abstract, names, size, issn, isbn, chapter, eprint, doi,
+   howpublished, biburl, lastchecked,
+   % ieee
+   nationality, assignee, bibnumber, day, dayfiled, monthfiled,
+   yearfiled,  revision}
+
 
 \processcommacommand[\bibcommandlist]\simplebibdef
 
+\let\inserturl \insertbiburl  % for backward compat.
+\let\inserttype\insertbibtype % for backward compat.
+
 \def\newbibfield[#1]%
   {\simplebibdef{#1}%
-   \edef\bibcommalist{\bibcommandlist,#1}}
+   \edef\bibcommandlist{\bibcommandlist,#1}}
 
 %D \macros{bib@crossref}
 %D
@@ -407,9 +481,9 @@
 %D things: increment the counter \type{\author@num} (let's say to 2)
 %D and next store it's arguments in the macro \type{\@@pb@author2}.
 %D And it defines \type{\insertauthors} to expand into
-%D \starttypen
+%D \starttyping
 %D \specialbibinsert{author}{\author@num}{<before>}{<after>}{<not>}
-%D \stoptypen
+%D \stoptyping
 
 % hh: use a context counter instead, more options
 
@@ -420,7 +494,7 @@
       \setvalue{\??pb @#1\csname #1@num\endcsname}%
         {{##2}{##4}{##5}{##3}{##1}}\ignorespaces}%
    \@EA\def\csname insert#1s\endcsname##1##2##3%
-     {\specialbibinsert{#1}{\csname #1@num\endcsname}{##1}{##2}{##3}}}
+     {\specialbibinsert{#1}{\csname #1@num\endcsname}{##1}{\unskip ##2}{##3}}}
 
 \processcommalist[author,artauthor,editor]\complexbibdef
 
@@ -515,29 +589,29 @@
 %D }
 %D
 
-\def\invertedauthor#1#2#3#4#5%
-  {\bibdoif{#2}{#2\bibalternative\c!vonsep}%
-   #3\bibalternative\c!surnamesep
-   \bibdoif{#5}{#5\bibalternative\c!juniorsep}%
-   \bibdoif{#1}{#1\unskip}}
-
 \def\normalauthor#1#2#3#4#5%
   {\bibdoif{#1}{#1\bibalternative\c!firstnamesep}%
    \bibdoif{#2}{#2\bibalternative\c!vonsep}%
    #3\bibalternative\c!surnamesep
    \bibdoif{#5}{#5\unskip}}
 
-\def\invertedshortauthor#1#2#3#4#5%
-  {\bibdoif{#2}{#2\bibalternative\c!vonsep}%
-   #3\bibalternative\c!surnamesep
-   \bibdoif{#5}{#5\bibalternative\c!juniorsep}%
-   \bibdoif{#4}{#4\unskip}}
-
 \def\normalshortauthor#1#2#3#4#5%
   {\bibdoif{#4}{#4\bibalternative\c!firstnamesep}%
    \bibdoif{#2}{#2\bibalternative\c!vonsep}%
    #3\bibalternative\c!surnamesep
    \bibdoif{#5}{#5\unskip}}
+
+\def\invertedauthor#1#2#3#4#5%
+  {\bibdoif{#2}{#2\bibalternative\c!vonsep}%
+   #3%
+   \bibdoif{#5}{\bibalternative\c!juniorsep #5}%
+   \bibdoif{#1}{\bibalternative\c!surnamesep #1\unskip}}
+
+\def\invertedshortauthor#1#2#3#4#5%
+  {\bibdoif{#2}{#2\bibalternative\c!vonsep}%
+   #3%
+   \bibdoif{#5}{\bibalternative\c!juniorsep #5}%
+   \bibdoif{#4}{\bibalternative\c!surnamesep #4\unskip}}
 
 %D \macros{clearbibitem,clearbibitemtwo,bibitemdefs}
 %D
@@ -555,18 +629,14 @@
          \advance\scratchcounter\plusone}%
         {\exitloop}}}
 
-\def\bibitemdefs#1{\setvalue{#1}{\csname bib@#1\endcsname}}
+\def\bibitemdefs#1%
+   {\@EA\let\@EA\tempa \csname bib@#1\endcsname
+    \@EA\let\csname #1\endcsname \tempa }
 
 %D \macros{startpublication}
 %D
 %D We are coming to the end of this module, to the macros that
 %D do typesetting and read the \type{bbl} file.
-%D
-%D The stuff between \type{\startpublication} ... \type{\stoppublication}
-%D is simply stored into a macro: either
-%D \type{\publist} (potentially huge) or separate macros
-%D for each of them, depending on whether
-%D or not we do \type{\sortbycite}, as explained above.
 
 \newcounter\bibcounter
 
@@ -593,51 +663,40 @@
 \long\def\dostartpublication[#1]#2\stoppublication%
   {\increment\bibcounter
    \bgroup
-   \bgroup\honorunexpanded
    \doifassignmentelse{#1}%
-     {\egroup\getparameters[\??pb][k=,t=article,n=,s=,a=,y=,o=,#1]}%
-     {\egroup\getparameters[\??pb][k=#1,t=article,n=,s=,a=,y=,o=]}%
-     \toks0={\ignorespaces #2}%
-     \@EA\toks\@EA2\@EA{\@@pba}%
-     \@EA\toks\@EA4\@EA{\@@pbs}%
-     \setxvalue{pbd-\@@pbk}%
-       {{\the\toks2}% \@@pba (author)
-        {\@@pby}%
-        {\the\toks4}% \@@pbs (short)
-        {\@@pbn}%
-        {\@@pbt}%
-        {\the\toks0}% (data)
-        {\@@pbo}}%    doi
-    \xdef\allrefs{\allrefs,\@@pbk}%
-    \egroup}
+     {\getparameters[\??pb][k=,t=article,n=,s=,a=,y=,o=,u=,#1]}%
+     {\getparameters[\??pb][k=#1,t=article,n=,s=,a=,y=,o=,u=]}%
+   \@EA\toks\@EA2\@EA{\@@pba}%
+   \@EA\toks\@EA4\@EA{\@@pbs}%
+   \toks0={\ignorespaces #2}%
+   \setxvalue{pbdk-\@@pbk}{\@@pbk}
+   \setxvalue{pbda-\@@pbk}{\the\toks2}
+   \setxvalue{pbdy-\@@pbk}{\@@pby}
+   \setxvalue{pbds-\@@pbk}{\the\toks4}
+   \setxvalue{pbdn-\@@pbk}{\@@pbn}
+   \setxvalue{pbdt-\@@pbk}{\@@pbt}
+   \setxvalue{pbdo-\@@pbk}{\@@pbo}
+   \setxvalue{pbdu-\@@pbk}{\@@pbu}
+   \setxvalue{pbdd-\@@pbk}{\the\toks0}
+   \xdef\allrefs{\allrefs,\@@pbk}%
+   \egroup }
 
 % intialization of the order-list:
 
 \let\allrefs\empty
 
-% how to get stuff from a pbd-*** macro:
+%D The next macro is needed because the number command of the
+%D publist sometimes needs to fetch something from the current
+%D item (like the 'short' key). For this, the ID of the current
+%D item is passed in the implict parameter \type{\@@pbk}
 
-\def\restorebibdata#1%
-  {\def\@@pbk{#1}%
-   \@EA\dorestorebibdata\csname pbd-#1\endcsname}
+\def\makepbkvalue#1{\def\@@pbk{#1}}
 
-\def\dorestorebibdata#1%
-  {\@EA\dodorestorebibdata#1{}{}{}{}{}{}{}\relax}
-
-\def\dodorestorebibdata#1#2#3#4#5#6#7#8\relax%
-  {\def\@@pba{#1}%
-   \def\@@pby{#2}%
-   \def\@@pbs{#3}%
-   \def\@@pbn{#4}%
-   \def\@@pbt{#5}%
-   \def\@@pbd{#6}%
-   \def\@@pbo{#7}}
-
-%D The \writeutility trick is dodgy at best, but it is needed
-%D to make sure that \placepublications\stoptext works as
-%D advertised. (without the \immediate, there *has* to be at
-%D least one page break between \placepublications and \stoptext)
 %D
+
+\newif\ifinpublist
+
+\let\@@pvdatawidth\empty
 
 \def\preinitializepubslist
   {\let\bibcounter\!!zerocount
@@ -666,22 +725,24 @@
        \setbox\scratchbox\hbox{\@@pbnumbercommand{\numreferred}}%
      \fi\fi
      \edef\samplewidth{\the\wd\scratchbox}%
-     \setuplist[pubs][\c!width=\samplewidth,\c!distance=0pt]%
+     \setuplist[\biblistname][\c!width=\samplewidth,\c!distance=0pt]%
      \def\@@pblimitednumber##1{\hbox to \samplewidth{\@@pbnumbercommand{##1}}}%
    \else
-     \def\@@pblimitednumber##1{\hbox{\@@pbnumbercommand{##1}}}%
+     \doifemptyelse
+        {\@@pvdatawidth}
+        {\def\@@pblimitednumber##1{\hbox{\@@pbnumbercommand{##1}}}}%
+        {\def\@@pblimitednumber##1{\hbox to \@@pvdatawidth{\@@pbnumbercommand{##1}}}}%
    \fi
    \ifx\@@pbnumbering\v!no
-     \setuplist[pubs][\c!numbercommand=,\c!textcommand=\outdented]
+     \setuplist[\biblistname][\c!numbercommand=,\c!textcommand=\outdented]
    \else
-     \setuplist[pubs][\c!numbercommand=\@@pblimitednumber,\c!textcommand=]
+     \setuplist[\biblistname][\c!numbercommand=\@@pblimitednumber]%
    \fi
    \forgetall % bugfix 2005/03/18
 }
 
 \def\outdented#1% move to supp-box ?
-  {\hskip -\hangindent
-   \strut#1\strut}
+  {\hskip -\hangindent #1}
 
 %D The full list of publications
 
@@ -690,10 +751,12 @@
 
 \def\docompletepublications[#1]%
   {\preinitializepubslist
-   \ifcase\bibcounter\else % HERE it said "\or" instead of "\else"
+   \ifcase\bibcounter\else
      \initializepubslist
      \let\bibcounter\!!zerocount
-     \completelist[pubs][\c!criterium=all,#1]%
+     \inpublisttrue
+     \completelist[\biblistname][\c!criterium=\v!current,#1]%
+     \inpublistfalse
    \fi}
 
 %D And the portion with the entries only.
@@ -703,19 +766,21 @@
 
 \def\doplacepublications[#1]%
   {\preinitializepubslist
-   \ifcase\bibcounter\else % HERE it said "\or" instead of "\else"
+   \ifcase\bibcounter\else
      \initializepubslist
      \let\bibcounter\!!zerocount
-     \placelist[pubs][\c!criterium=\v!all,#1]%
+     \inpublisttrue
+     \placelist[\biblistname][\c!criterium=\v!current,#1]%
+     \inpublistfalse
    \fi}
 
 \def\dowritebiblist#1#2%
-  {\restorebibdata{#2}%
+  {\makepbkvalue{#2}%
    \edef\pbnumbercommand{\@@pbinumbercommand{#1}}%
    \@EA\dodowritebiblist\@EA{\pbnumbercommand}{\typesetapublication{#2}}}
 
 \def\dodowritebiblist
-  {\writetolist[pubs]}
+  {\writetolist[\biblistname]}
 
 \def\writepublist#1%
   {\doifnotempty{#1}
@@ -734,31 +799,55 @@
       \increment\bibcounter
       \@EA\dowritebiblist\@EA{\bibcounter}{#1}}}
 
-%D \subonderwerp{What's in a publication}
+%D \subsubject{What's in a publication}
 %D
 
-\def\typesetapublication
+\unexpanded\def\typesetapublication
   {\doglobal\increment\bibcounter
    \dotypesetapublication}
+
+%D quick hack to make sure stuff isn't typeset twice:
+
 
 \def\dotypesetapublication#1%
   {\bgroup
    \def\@@currentalternative{data}%
-   \restorebibdata{#1}%
+   \makepbkvalue{#1}%
    \processcommacommand[\bibcommandlist,crossref]\clearbibitem
    \processcommalist   [artauthor,author,editor]\clearbibitemtwo
    \processcommacommand[\bibcommandlist]\bibitemdefs
    \processcommalist   [artauthor,author,editor,crossref]\bibitemdefs
-   \expanded{\reference[\@@pbk]{\bibcounter}}%
-   \@@pbd % execute data
-   \bibalternative{\@@pbt}% do typesetting
+   \ifinpublist
+     \@EA\ifx\csname #1-is-typeset\endcsname \relax
+        \setgvalue{#1-is-typeset}{1}%
+        \expanded{\reference[#1]{\bibcounter}}%
+        \getvalue{pbdd-#1}%
+        \strut \ifcsname pbdt-#1\endcsname \bibalternative{\getvalue{pbdt-#1}}\fi\strut
+     \else
+       \endgraf
+       \setbox0=\lastbox \unskip
+     \fi
+   \else
+     \getvalue{pbdd-#1}% execute data
+     %\bibalternative{\getvalue{pbdt-#1}}% do typesetting
+     \ifcsname pbdt-#1\endcsname \bibalternative{\getvalue{pbdt-#1}}\fi
+   \fi
    \egroup}
+
 
 %D An afterthought
 
 \def\maybeyear#1{}
 
-%D \onderwerp{Citations}
+%D An another
+
+\def\noopsort#1{}
+
+%D This is the result of bibtex's `language' field.
+
+\def\lang#1{}
+
+%D \subject{Citations}
 
 %D \macros{cite,bibref}
 %D
@@ -768,21 +857,49 @@
 
 \def\cite
   {\doifnextcharelse{[}
-     {\dodoubleempty\docite}
+     {\dodocite}
      {\dobibref}}
 
 \def\dobibref#1%
-  {\docite[#1]}
+  {\docite[#1][]}
+
+\def\dodocite[#1]%
+  {\startstrictinspectnextcharacter
+   \dodoubleempty\dododocite[#1]}
+
+\def\dododocite[#1][#2]{%
+   \stopstrictinspectnextcharacter
+   \docite[#1][#2]}
 
 \def\docite#1[#2]#3[#4]%
-  {\ifsecondargument
-     \def\@@currentalternative{#2}%
-     \expanded{\processaction[\csname @@pv#2compress\endcsname]}
-       [    \v!yes=>\bibcitecompresstrue,
-             \v!no=>\bibcitecompressfalse,
-        \s!default=>\bibcitecompresstrue,
-        \s!unknown=>\bibcitecompresstrue]%
-     \getvalue{bib#2ref}[#4]%
+  {\begingroup
+   \ifsecondargument
+	 \doifassignmentelse
+       {#2}%
+       {\getparameters[LO][\c!alternative=,\c!extras=,#2]%
+        \edef\@@currentalternative{\LOalternative}%
+	    \ifx\@@currentalternative\empty
+          \edef\@@currentalternative{\@@citedefault}%
+        \fi
+	    \ifx\LOextras\empty
+          \setupcite[\@@currentalternative][#2]%
+        \else
+	      \expandafter\ifx\csname LOright\endcsname \relax
+              \edef\LOextras{{\LOextras\bibalternative\c!right}}%
+          \else
+              \edef\LOextras{{\LOextras\LOright}}%
+          \fi
+          \expanded{\setupcite[\@@currentalternative][#2,\c!right=\LOextras]}%
+        \fi
+       }%
+       {\def\@@currentalternative{#2}}%
+      \expanded{%
+         \processaction[\csname @@pv\@@currentalternative compress\endcsname]}
+             [    \v!yes=>\bibcitecompresstrue,
+                   \v!no=>\bibcitecompressfalse,
+              \s!default=>\bibcitecompresstrue,
+              \s!unknown=>\bibcitecompresstrue]%
+      \getvalue{bib\@@currentalternative ref}[#4]%
    \else
      \expanded{\processaction[\csname @@pv\@@citedefault compress\endcsname]}
        [    \v!yes=>\bibcitecompresstrue,
@@ -791,14 +908,46 @@
         \s!unknown=>\bibcitecompresstrue]%
      \edef\@@currentalternative{\@@citedefault}%
      \getvalue{bib\@@citedefault ref}[#2]%
-   \fi}
+   \fi
+   \endgroup}
 
-\def\setupcite#1[#2]#3[#4]%
-  {\def\getciteargs##1{\getparameters[\??pv##1][#4]}%
-   \processcommalist[#2]\dosetupcite}
+%D \macros{nocite}
 
-\def\dosetupcite#1%
-  {\getciteargs{#1}}
+\def\nocite[#1]%
+  {\processcommalist[#1]\addthisref}
+
+%D \macros{setupcite}
+
+
+\def\setupcite{\dodoubleempty\dosetupcite}
+
+\def\dosetupcite[#1][#2]%
+  {\ifsecondargument
+     \def\dodosetupcite##1{\getparameters[\??pv##1][#2]}%
+     \processcommalist[#1]\dodosetupcite
+   \else % default case
+     \getparameters[\??pv\@@citedefault][#1]%
+   \fi }
+
+
+%D Low-level stuff
+
+\def\getcitedata#1[#2]#3[#4]#5to#6%
+    {\bgroup
+     \addthisref{#4}%
+     \dofetchapublication{#4}%
+     \xdef#6{\csname insert#2\endcsname{}{}{}}%
+     \egroup }
+
+
+\def\dofetchapublication#1%
+  {\makepbkvalue{#1}%
+   \processcommacommand[\bibcommandlist,crossref]\clearbibitem
+   \processcommalist   [artauthor,author,editor]\clearbibitemtwo
+   \processcommacommand[\bibcommandlist]\bibitemdefs
+   \processcommalist   [artauthor,author,editor,crossref]\bibitemdefs
+   \getvalue{pbdd-#1}}
+
 
 %D \macros{numreferred,doifreferredelse,addthisref,publist}
 %D
@@ -827,8 +976,8 @@
 %D \type{\startpublication}.
 
 \def\doifbibreferencefoundelse#1#2#3%
-  {\doifdefinedelse{pbd-#1}
-     {\restorebibdata{#1}#2}
+  {\doifdefinedelse{pbdk-#1}
+     {#2}
      {\showmessage\m!bib{5}{#1 is unknown}#3}}
 
 %D \macros{ixbibauthoryear,thebibauthors,thebibyears}
@@ -856,19 +1005,15 @@
 %D
 %D In `normal' \TeX, of course there are expansion problems again.
 
-\def\gobble#1{\def#1##1{##1}}
-
-\def\sanitizeaccents{\processcommalist[\',\`,\",\.,\c,\d,\~,\=]\gobble}
+\def\gobbledef#1{\def#1##1{##1}}
 
 \def\ixbibauthoryear#1#2#3#4%
   {\bgroup
-   \sanitizeaccents
    \gdef\ixlastcommand  {#4}%
    \gdef\ixsecondcommand{#3}%
    \gdef\ixfirstcommand {#2}%
    \glet\thebibauthors  \empty
    \glet\thebibyears    \empty
-   \glet\theauthorssize \empty
    \getcommalistsize[#1]%
    \ifbibcitecompress
      \dorecurse\commalistsize{\xdef\thebibyears{\thebibyears,}}%
@@ -876,8 +1021,6 @@
    \else
      \processcommalist[#1]\donormalbibauthoryear
    \fi
-   \getcommacommandsize[\thebibauthors]%
-   \xdef\theauthorssize{\commalistsize}%
    \egroup
    \dobibauthoryear}
 
@@ -895,8 +1038,8 @@
   {\advance\scratchcounter\plusone
    \edef\wantednumber{\the\scratchcounter}%
    \getfromcommacommand[\thebibyears][\wantednumber]%
-   \def\AU{#1}% brr
-   \@EA\def\@EA\YR\@EA{\commalistelement}%
+   \@EA\def\@EA\currentbibyear\@EA{\commalistelement}%
+   \def\@currentbibauthor{#1}% brr
    \ifnum\scratchcounter=\plusone
      \ixfirstcommand
    \else\ifnum \scratchcounter=\commalistsize\relax
@@ -905,6 +1048,33 @@
      \ixsecondcommand
    \fi\fi}
 
+\def\currentbibauthor%
+ {\getcommacommandsize[\@currentbibauthor]%
+  \ifcase\commalistsize
+   % anonymous?
+  \or
+   \@currentbibauthor
+  \or
+   \expanded{\docurrentbibauthor\@currentbibauthor}%
+  \else
+   % this can't happen/
+  \fi }
+
+
+\def\docurrentbibauthor#1,#2%
+  {\doifemptyelse{#2}
+      {#1\bibalternative{otherstext}}
+      {#1\bibalternative{andtext}#2}}
+
+%D This is not the one Hans made for me, because I need a global
+%D edef, and the \type{\robustdoifinsetelse} doesn't listen to
+%D \type{\doglobal }
+
+\def\robustaddtocommalist#1#2% {item} \cs
+  {\robustdoifinsetelse{#1}#2\resetglobal
+     {\dodoglobal\xdef#2{\ifx#2\empty\else#2,\fi#1}}}
+
+
 %D \macros{donormalbibauthoryear}
 %D
 %D Now we get to the macros that fill the two lists.
@@ -912,14 +1082,14 @@
 
 \def\donormalbibauthoryear#1%
   {\addthisref{#1}%
-   \xdef\myauthor{Xxxxxxxxxx}%
-   \xdef\myyear{0000}%
+   \def\myauthor{Xxxxxxxxxx}%
+   \def\myyear{0000}%
    \doifbibreferencefoundelse{#1}
-     {\@EA\gdef\@EA\myauthor\@EA{\@@pba}%
-      \@EA\gdef\@EA\myyear  \@EA{\@@pby}}
+     {\def\myauthor{{\getvalue{pbda-#1}}}%
+      \def\myyear  {\getvalue{pbdy-#1}}}%
      {}%
-   \@EA\doglobal\@EA\addtocommalist\@EA{\myauthor}\thebibauthors
-   \@EA\doglobal\@EA\addtocommalist\@EA{\myyear  }\thebibyears}
+   \@EA\doglobal\@EA\appendtocommalist\@EA{\myauthor}\thebibauthors
+   \@EA\doglobal\@EA\appendtocommalist\@EA{\myyear  }\thebibyears}
 
 %D \macros{docompressbibauthoryear}
 %D
@@ -929,11 +1099,11 @@
 
 \def\docompressbibauthoryear#1%
   {\addthisref{#1}%
-   \xdef\myauthor{Xxxxxxxxxx}%
-   \xdef\myyear  {0000}%
+   \def\myauthor{Xxxxxxxxxx}%
+   \def\myyear  {0000}%
    \doifbibreferencefoundelse{#1}
-     {\@EA\gdef\@EA\myauthor\@EA{\@@pba}%
-      \@EA\gdef\@EA\myyear  \@EA{\@@pby}}
+     {\xdef\myauthor{\csname pbda-#1\endcsname }%
+      \xdef\myyear  {\csname pbdy-#1\endcsname }}
      {}%
     \ifx\myauthor\empty\else
       \checkifmyauthoralreadyexists
@@ -953,12 +1123,15 @@
 
 \def\checkifmyauthoralreadyexists
   {\doifemptyelsevalue{thebibauthors}
-     {\global\bibitemcounter\plusone
-      \global\bibitemwanted \plusone
-      \@EA\gdef\@EA\thebibauthors\@EA{\myauthor}} % hh: one level
-     {\getcommacommandsize[\thebibauthors]%
-      \global\bibitemwanted\zerocount
+     {\global\bibitemwanted  \plusone
+      \global\bibitemcounter \plusone
+      \xdef\thebibauthors{{\myauthor}}}
+     {% the next weirdness is because according to \getcommalistsize,
+      % the length of \type{[{{},{}}]} is 2.
+      \@EA\getcommalistsize\@EA[\thebibauthors,]%
       \global\bibitemcounter\commalistsize
+      \global\advance\bibitemcounter\minusone
+      \global\bibitemwanted \zerocount
       \processcommacommand[\thebibauthors]\docomparemyauthor}}
 
 %D The outer \type{\ifnum} accomplishes the addition of
@@ -971,16 +1144,15 @@
 \def\docomparemyauthor#1%
   {\global\advance\bibitemwanted \plusone
    \def\mytempc{#1}%
-   \ifnum\bibitemwanted = \commalistsize\relax
-     \ifx\mytempc\myauthor \else
+%   \message{authors: \myauthor <=>\mytempc \ifx\mytempc\myauthor :Y \else :N
+%          \meaning \myauthor, \meaning\mytempc\fi (\the\bibitemwanted = \the\bibitemcounter)}%
+   \ifx\mytempc\myauthor
+     \quitcommalist
+   \else
+     \ifnum\bibitemwanted = \bibitemcounter\relax
        \global\advance\bibitemwanted \plusone
        \global\bibitemcounter\bibitemwanted\relax
-       \@EA\doglobal\@EA\addtocommalist\@EA{\myauthor}\thebibauthors
-       \quitcommalist
-     \fi
-   \else
-     \ifx\mytempc\myauthor
-       \quitcommalist
+       \@EA\doglobal\@EA\robustaddtocommalist\@EA{\myauthor}\thebibauthors
      \fi
    \fi}
 
@@ -988,6 +1160,7 @@
 
 \def\findmatchingyear
   {\edef\wantednumber{\the\bibitemwanted}%
+%    \message{year needed: \wantednumber (\thebibyears)}%
    \getfromcommacommand[\thebibyears][\wantednumber]%
    \ifx\commalistelement\empty
      \edef\myyear{{\myyear}}%
@@ -995,50 +1168,51 @@
      \edef\myyear{{\commalistelement, \myyear}}%
    \fi
    \edef\newcommalistelement{\myyear}%
+%   \message{bibyears \wantednumber = \newcommalistelement}%
    \doglobal\replaceincommalist \thebibyears \wantednumber}
 
 %D \macros{bibauthoryearref,bibauthoryearsref,bibauthorref,bibyearref}
 %D
 %D Now that all the hard work has been done, these are simple.
 %D \type{\ixbibauthoryearref} stores the data in the macros
-%D \type{\AU} and \type{\YR}.
+%D \type{\currentbibauthor} and \type{\currentbibyear}.
 
 \def\bibauthoryearref[#1]%
  {\ixbibauthoryear{#1}%
-   {{\AU}\bibalternative\c!inbetween
-    \bibalternative\v!left{\YR}\bibalternative\v!right}
-   {\bibalternative\c!pubsep{\AU}\bibalternative\c!inbetween
-    \bibalternative\v!left  {\YR}\bibalternative\v!right}
-   {\bibalternative\c!lastpubsep{\AU}\bibalternative\c!inbetween
-    \bibalternative\v!left      {\YR}\bibalternative\v!right}}
+   {{\currentbibauthor}\bibalternative\c!inbetween
+    \bibalternative\v!left{\currentbibyear}\bibalternative\v!right}
+   {\bibalternative\c!pubsep{\currentbibauthor}\bibalternative\c!inbetween
+    \bibalternative\v!left  {\currentbibyear}\bibalternative\v!right}
+   {\bibalternative\c!lastpubsep{\currentbibauthor}\bibalternative\c!inbetween
+    \bibalternative\v!left      {\currentbibyear}\bibalternative\v!right}}
 
 \def\bibauthoryearsref[#1]%
   {\bibalternative\v!left
    \ixbibauthoryear{#1}
-     {{\AU}\bibalternative\c!inbetween{\YR}}
-     {\bibalternative\c!pubsep    {\AU}\bibalternative\c!inbetween{\YR}}
-     {\bibalternative\c!lastpubsep{\AU}\bibalternative\c!inbetween{\YR}}%
+     {{\currentbibauthor}\bibalternative\c!inbetween{\currentbibyear}}
+     {\bibalternative\c!pubsep    {\currentbibauthor}\bibalternative\c!inbetween{\currentbibyear}}%
+     {\bibalternative\c!lastpubsep{\currentbibauthor}\bibalternative\c!inbetween{\currentbibyear}}%
    \bibalternative\v!right}
 
 \def\bibauthorref[#1]%
   {\bibalternative\v!left
    \ixbibauthoryear{#1}%
-    {{\AU}}
-    {\bibalternative\c!pubsep    {\AU}}
-    {\bibalternative\c!lastpubsep{\AU}}%
+    {{\currentbibauthor}}
+    {\bibalternative\c!pubsep    {\currentbibauthor}}
+    {\bibalternative\c!lastpubsep{\currentbibauthor}}%
    \bibalternative\v!right}
 
 \def\bibyearref[#1]%
   {\bibalternative\v!left
    \ixbibauthoryear{#1}%
-      {{\YR}}
-      {\bibalternative\c!pubsep    {\YR}}
-      {\bibalternative\c!lastpubsep{\YR}}%
+      {{\currentbibyear}}
+      {\bibalternative\c!pubsep    {\currentbibyear}}
+      {\bibalternative\c!lastpubsep{\currentbibyear}}%
    \bibalternative\v!right}
 
 %D ML problems:
 
-%D \macros{bibshortref,bibkeyref,bibpageref,bibtyperef,bibnumberref}
+%D \macros{bibshortref,bibkeyref,bibpageref,bibtyperef,bibserialref}
 %D
 %D There is hardly any point in trying to compress these. The only
 %D thing that needs to be done is making sure that
@@ -1051,22 +1225,22 @@
 
 \def\bibshortref[#1]%
   {\bibalternative\v!left
-   \firstreftrue\processcommalist[#1]\dobibshort
+   \firstreftrue\processcommalist[#1]\dobibshortref
    \bibalternative\v!right}
 
-\def\dobibshort#1%
+\def\dobibshortref#1%
   {\addthisref{#1}\refsep
-   \doifbibreferencefoundelse{#1}{\@@pbs}{??}}
+   \doifbibreferencefoundelse{#1}{\goto{\getvalue{pbds-#1}}[#1]}{??}}
 
 
-\def\bibnumberref[#1]%
+\def\bibserialref[#1]%
   {\bibalternative\v!left
-   \firstreftrue\processcommalist[#1]\dobibnumbered
+   \firstreftrue\processcommalist[#1]\dobibserialref
    \bibalternative\v!right}
 
-\def\dobibnumbered#1%
+\def\dobibserialref#1%
   {\addthisref{#1}\refsep
-   \doifbibreferencefoundelse{#1}{\@@pbn}{??}}
+   \doifbibreferencefoundelse{#1}{\getvalue{pbdn-#1}}{??}}
 
 \def\bibkeyref[#1]%
   {\bibalternative\v!left
@@ -1076,13 +1250,28 @@
 \def\dobibkeyref#1%
   {\addthisref{#1}\refsep#1}
 
+\def\gotoDOI#1#2{\useURL[bibfoo#1][http://dx.doi.org/#2]\goto{\url[bibfoo#1]}[url(bibfoo#1)]}
+
 \def\bibdoiref[#1]%
   {\bibalternative\v!left
    \firstreftrue\processcommalist[#1]\dobibdoiref
    \bibalternative\v!right}
 
 \def\dobibdoiref#1%
-  {\addthisref{#1}\refsep#1}
+  {\addthisref{#1}\refsep
+   \doifbibreferencefoundelse{#1}{\expanded{\gotoDOI{#1}{\getvalue{pbdo-#1}}}}{??}}
+
+
+\def\biburlref[#1]%
+  {\bibalternative\v!left
+   \firstreftrue\processcommalist[#1]\dobiburlref
+   \bibalternative\v!right}
+
+\def\gotoURL#1#2{\useURL[bibfoo#1][#2]\goto{\url[bibfoo#1]}[url(bibfoo#1)]}
+
+\def\dobiburlref#1%
+  {\addthisref{#1}\refsep
+   \doifbibreferencefoundelse{#1}{\expanded{\gotoURL{#1}{\getvalue{pbdu-#1}}}}{??}}
 
 \def\bibtyperef[#1]%
   {\bibalternative\v!left
@@ -1091,7 +1280,7 @@
 
 \def\dobibtyperef#1%
   {\addthisref{#1}\refsep
-   \doifbibreferencefoundelse{#1}{\@@pbt}{??}}
+   \doifbibreferencefoundelse{#1}{\getvalue{pbdt-#1}}{??}}
 
 \def\bibpageref[#1]%
   {\bibalternative\v!left
@@ -1109,6 +1298,8 @@
 \def\dobibdata#1%
   {\addthisref{#1}\refsep
    \doifbibreferencefoundelse{#1}{\dotypesetapublication{#1}}{??}}
+
+\let\bibnoneref\nocite
 
 %D \macros{bibnumref}
 %D
@@ -1131,11 +1322,6 @@
 %D a list with exactly one entry fails to return anything, which
 %D is why the \type{\ifx} is needed).
 
-\ifx\compresscommacommandnrs\undefined
-  \usemodule[list]
-  \let\compresscommacommandnrs\compresscommacommand
-\fi
-
 \def\bibnumref[#1]%
   {\bibalternative\v!left
    \penalty\!!tenthousand
@@ -1149,14 +1335,11 @@
        \let\therefs\sortedcommalist
      \fi
      \compresscommacommandnrs[\therefs]%
-   % \message{\meaning\therefs, \meaning\compressedlist}%
      \processcommacommand[\compressedlist]\verysimplebibnumref
    \else
      \processcommalist[#1]\dosimplebibnumref
    \fi
    \bibalternative\v!right}
-
-%D Here is the simple case first:
 
 \def\dosimplebibnumref  #1{\refsep\in[#1]}
 \def\verysimplebibnumref#1{\doverysimplebibnumref#1}
@@ -1174,6 +1357,6 @@
 \setuppublications
   [\c!alternative=apa]
 
-%D \completepublications
+\preloadbiblist
 
 \protect \endinput

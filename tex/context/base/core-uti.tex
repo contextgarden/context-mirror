@@ -98,12 +98,6 @@
 \def\cwriteutilitycommand#1%
   {\write\uti{\noexpand\checkedutility{\number\nofshipouts}{c \string#1}}}
 
-% \def\cimmediatewriteutility
-%   {\immediate\write\uti}
-%
-% \def\cimmediatewriteutilitycommand#1%
-%   {\immediate\write\uti{c \string#1}}
-
 \let\checkedutility\secondoftwoarguments
 
 \def\docheckedutility#1#2{\ifnum#1=\nofshipouts#2\else\letterpercent\fi}

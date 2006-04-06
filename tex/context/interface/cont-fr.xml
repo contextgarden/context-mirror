@@ -7562,6 +7562,7 @@
       <cd:constant type="page"/>
       <cd:constant type="opposition"/>
       <cd:constant type="toujours"/>
+      <cd:constant type="auto"/>
       <cd:constant type="force"/>
       <cd:constant type="long"/>
       <cd:constant type="raz"/>
@@ -9346,6 +9347,8 @@
       <cd:constant type="cd:name"/>
     </cd:keywords>
     <cd:keywords optional="yes" list="yes">
+      <cd:constant type="cd:name"/>
+      <cd:constant type="tout"/>
     </cd:keywords>
   </cd:arguments>
 </cd:command>

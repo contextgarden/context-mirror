@@ -100,7 +100,7 @@
   {\defXMLstackiddata#1\XMLstackid}
 
 \def\showXMLstacknames
-  {[\space\dorecurse\XMLstacklevel{\getXMLstackname\recurselevel\space}]}
+  {\hbox{[\space\dorecurse\XMLstacklevel{\getXMLstackname\recurselevel\space}]}}
 
 \def\flushXMLstackfrom#1%
   {\dostepwiserecurse{#1}\XMLstacklevel\plusone
@@ -162,5 +162,21 @@
              \expandafter\appendtoks\globalascii\to\XMLRtoks
              \!!doneatrue
          \fi}}}
+
+\def\XMLcopydata#1#2% to from
+  {\@EA\let\csname\@@XMLdata:#1\@EA\endcsname\csname\@@XMLdata:#2\endcsname}
+\def\XMLcopysave#1#2% to from
+  {\@EA\let\csname\@@XMLsave:#1\@EA\endcsname\csname\@@XMLsave:#2\endcsname}
+
+\def\removeXMLdatafromstack#1%
+  {\dorecurse\XMLstacklevel
+     {\doif{\getXMLstackname\recurselevel}{#1}
+        {\dostepwiserecurse\recurselevel{\numexpr\XMLstacklevel+\minusone}\plusone
+           {\scratchcounter\numexpr\recurselevel+\plusone\relax
+            \@EA\let\csname\@@xmlstack:n:\XMLstackid:\recurselevel\@EA\endcsname\csname\@@xmlstack:n:\XMLstackid:\number\scratchcounter\endcsname
+            \XMLcopysave{\@@xmlstack:t:\XMLstackid:\recurselevel}{\@@xmlstack:t:\XMLstackid:\number\scratchcounter}%
+            \XMLcopysave{\@@xmlstack:d:\XMLstackid:\recurselevel}{\@@xmlstack:d:\XMLstackid:\number\scratchcounter}}%
+         \advance\XMLstacklevel\minusone
+         \exitloop}}}
 
 \protect \endinput

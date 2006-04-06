@@ -11,7 +11,7 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-\newcontextversion{2006.03.25 13:21}
+\newcontextversion{2006.04.06 23:00}
 
 %D This file is loaded at runtime, thereby providing an
 %D excellent place for hacks, patches, extensions and new
@@ -25,6 +25,39 @@
 \unprotect
 
 \writestatus{\m!systems}{beware: some patches loaded from cont-new.tex}
+
+\def\convertencodedtokens{\stringifyencodedtokens}
+
+% test case:
+%
+% \enableregime[cp1250]
+% \mainlanguage[cz]
+%
+% \starttext
+%
+% \title{éluùouËcÌ konÏ ˙pÌ}
+% \placelist[chapter][criterium=all]
+%
+% \startbuffer
+% <chapter>
+%     <title>éluùouËcÌ konÏ ˙pÌ</title>
+% </chapter>
+% \stopbuffer
+%
+% \defineXMLenvironment
+%   [chapter]
+%   {\defineXMLsave[title]}
+%   {\expanded{\chapter{\XMLflush{title}}}}
+% \processXMLbuffer
+%
+% \setuphead[chapter][expansion=yes]
+% \defineXMLenvironment
+%   [chapter]
+%   {\defineXMLsave[title]}
+%   {\chapter{\XMLflush{title}}}
+% \processXMLbuffer
+%
+% \stoptext
 
 % just in case we load something from a file (pdfr-ec for instance)
 
@@ -2399,10 +2432,6 @@
 \def\stopgeheel
   {\stoplinecorrection}
 
-%D No more news.
-
-\protect
-
 %D Next we load a few local optimizations and new features. They
 %D live on on my machine and are not distributed, but they may end
 %D up in the distributed files.
@@ -2410,4 +2439,4 @@
 \readsysfile {cont-loc} {} {} % local improvements, patches, new features
 \readsysfile {cont-exp} {} {} % experimental features (e.g. local speed-ups)
 
-\endinput
+\protect \endinput

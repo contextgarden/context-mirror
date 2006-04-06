@@ -211,8 +211,15 @@
 \def\definelayerpreset
  {\dodoubleargument\dodefinelayerpreset}
 
+% \def\dodefinelayerpreset[#1][#2]%
+%   {\setvalue{\??ll\??ll#1}{\dopresetlayer{#2}}}
+%
+% more fun: \definelayerpreset[whatever][lefttop]
+
 \def\dodefinelayerpreset[#1][#2]%
-  {\setvalue{\??ll\??ll#1}{\dopresetlayer{#2}}}
+  {\doifassignmentelse{#2}
+     {\setvalue{\??ll\??ll#1}{\dopresetlayer{#2}}}
+     {\setvalue{\??ll\??ll#1}{\getvalue{\??ll\??ll#2}}}}
 
 \def\dopresetlayer#1#2#3% #1=list #2=tag #3=list
   {\getparameters[\??ll#2][#1,#3]}

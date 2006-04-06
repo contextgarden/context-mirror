@@ -85,8 +85,9 @@ $predefined['mpstools'] = 'mpstools.rb'
 $predefined['exatools'] = 'exatools.rb'
 $predefined['xmltools'] = 'xmltools.rb'
 
-$predefined['newpstopdf']  = 'newpstopdf.rb'
-$predefined['newtexexec']  = 'newtexexec.rb'
+$predefined['newpstopdf']   = 'newpstopdf.rb'
+$predefined['newtexexec']   = 'newtexexec.rb'
+$predefined['pdftrimwhite'] = 'pdftrimwhite.pl'
 
 $makelist = [
     # context

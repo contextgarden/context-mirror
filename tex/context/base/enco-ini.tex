@@ -210,9 +210,17 @@
 \def\trueregimename#1%
   {\executeifdefined{\@reg@::#1}{#1}}
 
+% \def\enableregime[#1]%
+%   {\edef\characterregime{@\trueregimename{#1}@}%
+%    \ifx\enabledregime\characterregime \else
+%      \the\executeifdefined{\@reg@\characterregime}\emptytoks
+%    \fi}
+
 \def\enableregime[#1]%
   {\edef\characterregime{@\trueregimename{#1}@}%
    \ifx\enabledregime\characterregime \else
+     \doifundefined{\@reg@\characterregime}
+       {\expanded{\useregime[\pureencodingname\characterregime]}}% auto load
      \the\executeifdefined{\@reg@\characterregime}\emptytoks
    \fi}
 
@@ -439,10 +447,12 @@
 
 \def\stopsavingmappingtoks
   {\global\mappingtoks\emptytoks
-   \dostepwiserecurse{128}{255}\plusone
+   \dostepwiserecurse{0}{255}\plusone
      {\edef\@@expanded
         {\the\mappingtoks
-         \noexpand\checkregimecode\recurselevel\space
+         \ifnum\recurselevel>127
+           \noexpand\checkregimecode\recurselevel\space
+         \fi
          \lccode\recurselevel\ifnum\lccode\recurselevel=\zerocount\zerocount\else\space\the\lccode\recurselevel\space\fi
          \uccode\recurselevel\ifnum\uccode\recurselevel=\zerocount\zerocount\else\space\the\uccode\recurselevel\space\fi
          \ifnum\sfcode\recurselevel=\plusthousand\else\sfcode\recurselevel=\the\sfcode\recurselevel\space\fi
@@ -758,7 +768,8 @@
   {\edef\charactermapping{@#1@}%
    \ifx\enabledmapping\charactermapping \else
      \doifdefined{\@map@\charactermapping}
-       {\the\csname\@map@\charactermapping\endcsname}%
+       {%\expandafter\showthe\csname\@map@\charactermapping\endcsname\endcsname
+        \the\csname\@map@\charactermapping\endcsname}%
      % == \the\executeifdefined{\@map@\charactermapping}\emptytoks
      \edef\enabledmapping{\charactermapping}%
      \enablelanguagespecifics[\currentlanguage]% new
@@ -1179,8 +1190,13 @@
 %       \doautosetregime{#1}{#2}}
 %      {\setvalue{\characterprefix\characterencoding\string#1}{#2}}}
 
-\def\numcharacter#1{\char#1 }
-\let\dochar\numcharacter
+% \def\numcharacter#1{\char#1 }
+% \let\dochar\numcharacter
+
+\unexpanded\def\numchr#1{\char#1\relax}
+\unexpanded\def\strchr#1{\csname#1\endcsname}
+
+\let\dochar\numchr
 
 \def\definecharacter#1 #2 %
   {\ifundefined{#1}\setvalue{#1}{\dohandlecharacter{#1}}\fi
@@ -1466,11 +1482,13 @@
 %D When we show 'm, we don't want to see the protection
 %D measures.
 
-\def\currentencoding{\@EA\docurrentencoding\characterencoding}
-\def\currentregime  {\@EA\docurrentencoding\characterregime  }
-\def\currentmapping {\@EA\docurrentencoding\charactermapping }
+\def\currentencoding{\@EA\dopureencodingname\characterencoding}
+\def\currentregime  {\@EA\dopureencodingname\characterregime  }
+\def\currentmapping {\@EA\dopureencodingname\charactermapping }
 
-\def\docurrentencoding @#1@{#1}
+\def\dopureencodingname @#1@{#1}
+
+\def\pureencodingname#1{\@EA\dopureencodingname#1}
 
 %D \macros
 %D   {showaccents, showcharacters,
@@ -1945,14 +1963,26 @@
 
 % new, to be documented (oeps, conflicts with existing code)
 
+\def\donthandleaccent        #1{\expandafter\string\csname#1\endcsname\space}
+\def\donthandlecommand       #1{\expandafter\string\csname#1\endcsname\space}
+\def\donthandlecharacter     #1{\expandafter\string\csname#1\endcsname\space}
+
+\def\stringifyhandleaccent   #1{\strchr{#1}}
+\def\stringifyhandlecommand  #1{\strchr{#1}}
+\def\stringifyhandlecharacter#1{\strchr{#1}}
+
+\def\keephandleaccent        #1{\expandafter\noexpand\csname#1\endcsname}
+\def\keephandlecommand       #1{\expandafter\noexpand\csname#1\endcsname}
+\def\keephandlecharacter     #1{\expandafter\noexpand\csname#1\endcsname}
+
+\def\handleaccent            #1{\csname#1\endcsname}
+\def\handlecommand           #1{\csname#1\endcsname}
+\def\handlecharacter         #1{\csname#1\endcsname}
+
 \def\dontexpandencoding
   {\let\dohandleaccent   \donthandleaccent
    \let\dohandlecommand  \donthandlecommand
    \let\dohandlecharacter\donthandlecharacter}
-
-\def\donthandleaccent   #1{\expandafter\string\csname#1\endcsname\space}
-\def\donthandlecommand  #1{\expandafter\string\csname#1\endcsname\space}
-\def\donthandlecharacter#1{\expandafter\string\csname#1\endcsname\space}
 
 \def\keepencodedtokens
   {\let\dohandleaccent   \keephandleaccent
@@ -1964,13 +1994,10 @@
    % \let\dohandlecommand  \keephandlecommand
    \let\dohandlecharacter\keephandlecharacter}
 
-\def\keephandleaccent   #1{\expandafter\noexpand\csname#1\endcsname}
-\def\keephandlecommand  #1{\expandafter\noexpand\csname#1\endcsname}
-\def\keephandlecharacter#1{\expandafter\noexpand\csname#1\endcsname}
-
-\def\handleaccent   #1{\csname#1\endcsname}
-\def\handlecommand  #1{\csname#1\endcsname}
-\def\handlecharacter#1{\csname#1\endcsname}
+\def\stringifyencodedtokens
+  {% \let\dohandleaccent   \stringifyhandleaccent
+   % \let\dohandlecommand  \stringifyhandlecommand
+   \let\dohandlecharacter\stringifyhandlecharacter}
 
 \unexpanded\def\uhandleaccent   #1{\csname#1\endcsname}
 \unexpanded\def\uhandlecommand  #1{\csname#1\endcsname}
@@ -1981,16 +2008,18 @@
    \def\dohandlecommand  {\uhandlecommand}%
    \def\dohandlecharacter{\uhandlecharacter}}
 
+\def\convertencodedtokens{\dontexpandencoding}
+
 %D Still valid? To be checked:
+
+\def\doignoreaccent #1#2{\string#1\string#2}%
+\def\doignorecommand  #1{\string#1}
+\def\doignorecharacter#1{\string#1}
 
 \def\ignoreencoding
   {\let\dohandleaccent   \doignoreaccent
    \let\dohandlecommand  \doignorecommand
    \let\dohandlecharacter\doignorecharacter}
-
-\def\doignoreaccent #1#2{\string#1\string#2}%
-\def\doignorecommand  #1{\string#1}
-\def\doignorecharacter#1{\string#1}
 
 \appendtoks
   \ignoreencoding
@@ -2009,7 +2038,9 @@
 
 \useencoding[def,acc,raw,com,cas,mis] % mis should come first
 
-\useencoding[ans,il2,ec,tbo,pdf,uc,pol,qx,t5,cyr]
+\useencoding[ans,il2,ec,tbo,pdf,uc,pol,qx,t5,cyr,agr] % pol and il2 will go away
+
+\useencoding[032,033,037]
 
 \setupencoding[\s!default=ec] % was: [\s!default=\s!default]
 

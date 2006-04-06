@@ -42,8 +42,15 @@
 
 \newif\ifinoutputstream
 
+\newtoks \everyenableoutputstream
+
+\appendtoks
+  \flushsidefloats
+\to \everyenableoutputstream
+
 \def\enableoutputstream[#1]%
-  {\finishoutputstream
+  {\the\everyenableoutputstream
+   \finishoutputstream
    \writestatus{otr}{switching to output stream #1}%
    \inoutputstreamtrue
    \xdef\currentoutputstream{#1}}

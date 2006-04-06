@@ -2880,6 +2880,7 @@
 
 \gdef\flattenXMLcontent#1% we need taco's 'over one group'
   {\begingroup
+   \keeputfcharacters
    \def<##1>{}%
    \def&##1;{##1}%
    \edef\flattenedXMLcontent{#1}%

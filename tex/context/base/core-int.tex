@@ -508,7 +508,9 @@
      \iffirstargument
        \bgroup
        \ifsecondargument
-         \edef\openbookmarklist{#2}%
+         \doifelse{#2}\v!all
+           {\edef\openbookmarklist{#1}}
+           {\edef\openbookmarklist{#2}}%
        \else
          \let\openbookmarklist\empty
        \fi

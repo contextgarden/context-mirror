@@ -13,70 +13,70 @@
 
 \writestatus{loading}{Context XML Macros (phys ml)}
 
-%D This filter runs on top of the mathml and units modules. 
+%D This filter runs on top of the mathml and units modules.
 
-\useXMLfilter[mml,mmp,mmc,unt]
+\useXMLfilter[mml,mmp,mmc]
 
 \defineXMLargument [phys]  \doXMLphys
 \defineXMLargument [iphys] \doXMLiphys
 \defineXMLargument [dphys] \doXMLdphys
 
-\unprotect 
+\unprotect
 
 \unexpanded\def\doXMLphys {\ifhmode\@EA\doXMLiphys\else\@EA\doXMLdphys\fi}
 \unexpanded\def\doXMLiphys{\XMLremapdata[mml]{$\ignorespaces}{\unskip$}}
 \unexpanded\def\doXMLdphys{\XMLremapdata[mml]{\dostartformula{}}{\dostopformula}}
 
-\protect 
+\protect
 
 \doifnotmode{demo}{\endinput}
 
 \usemodule[units]
 
-\starttext 
+\starttext
 
 \startXMLdata
-<phys> 
-  <apply> <times/> 
+<phys>
+  <apply> <times/>
     <cn> 10 </cn>
     <ci><unit><Milli/><Sec/><Per/><Square/><Kilo/><Meter/></unit> </ci>
-  </apply> 
+  </apply>
 </phys>
 \stopXMLdata
 
 \startXMLdata
-<phys> 
-  <apply> <divide/> 
+<phys>
+  <apply> <divide/>
     <cn> 10 </cn>
     <ci> <unit><Unit/><Milli/><Sec/><Per/><Square/><Kilo/><Meter/></unit> </ci>
-  </apply> 
+  </apply>
 </phys>
 \stopXMLdata
 
 \startXMLdata
-<phys> 
-  <apply> <times/> 
+<phys>
+  <apply> <times/>
     <cn> 10 </cn>
     <ci> <unit> <Milli/> <Sec/> <Per/> <Square/> <Kilo/> <Meter/> </unit> </ci>
-  </apply> 
+  </apply>
 </phys>
 \stopXMLdata
 
 \startXMLdata
-<phys> 
-  <apply> <times/> 
+<phys>
+  <apply> <times/>
     <cn> 10 </cn>
     <ci> <unit><Milli/><Sec/><Per/><Square/><Kilo/><Meter/></unit> </ci>
-  </apply> 
+  </apply>
 </phys>
 \stopXMLdata
 
 \startXMLdata
-<phys> 
-  <apply> <times/> 
+<phys>
+  <apply> <times/>
     <cn> 10 </cn>
     <ci> <unit> <Milli/> <Sec/> <Per/> <Square/> <Kilo/> <Meter/> </unit> </ci>
-  </apply> 
+  </apply>
 </phys>
 \stopXMLdata
 

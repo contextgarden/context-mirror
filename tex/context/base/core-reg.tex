@@ -123,25 +123,26 @@
 %    \ifvmode\nobreak\fi
 %    \GotoPar}
 
-\long\def\doflushatpar#1%
-%   {\dogotopar{#1}}
-%   {\dogotopar{\dontleavehmode#1}}   % this one can introduce empty lines
-  {\dogotopar{#1\ifvmode\nobreak\fi}} % while this one can mess up vertical space
+% \long\def\doflushatpar#1%
+%  %{\dogotopar{#1}}
+%  %{\dogotopar{\dontleavehmode#1}}   % this one can introduce empty lines
+%   {\dogotopar{#1\ifvmode\nobreak\fi}} % while this one can mess up vertical space
+%
+% fails when [text] \index{test} [empty line] [text] so we now have
+% Taco's test based solution:
+
+\def\doflushatpar
+   {\ifvmode
+      \expandafter\dogotopar
+    \else
+      \expandafter\firstofoneargument
+    \fi}
 
 \def\dodoregister[#1]#2#3%
   {\doflushatpar{\doprocesspageregister[#1]{#2}{#3}}}
 
 \def\writetoregister[#1]% to be documented
   {\doregister{#1}}
-
-% \def\startregister
-%   {\dodoubleargument\dostartregister}
-
-% \def\dostartregister[#1][#2]#3%
-%   {\chardef\registerpagestatus\plustwo
-%    \def\currentregister{#1}%
-%    \setgvalue{\??id#1\??id#2}{\dodostopregister[#1][#2]{#3}}%
-%    \donoregister[#2]{#3}}
 
 \def\startregister
   {\dotripleempty\dostartregister}
@@ -158,40 +159,10 @@
 \def\dostopregister[#1][#2]%
   {\getvalue{\??id#1\??id#2}\letgvalue{\??id#1\??id#2}\relax}
 
-% \def\dodostopregister[#1][#2]%
-%   {\chardef\registerpagestatus\plusthree
-%    \def\currentregister{#1}%
-%    \donoregister[#2]}
-
 \def\dodostopregister[#1][#2]#3%
   {\chardef\registerpagestatus\plusthree
    \def\currentregister{#1}%
    \dodoregister[#2]{}{#3}} % key altnum entry
-
-% \def\complexdoseeregister[#1]#2#3%
-%   {\begingroup
-%      \thisisnextinternal\s!ind
-%      \ifduplicate\getlastregisterentry{#2}\fi
-%      \convertexpanded{\registerparameter\c!keyexpansion}{#1}\asciiregisterentryA
-%      \convertexpanded{\registerparameter\c!expansion   }{#2}\asciiregisterentryB
-%      \convertexpanded{\registerparameter\c!expansion   }{#3}\asciiregisterentryC
-%      \doifsomething{\registerparameter\c!keyexpansion}
-%        {\ifx\asciiregisterentryA\empty
-%           \convertexpanded{\registerparameter\c!keyexpansion}{#2}\asciiregisterentryA
-%         \fi}%
-%      \makesectionformat
-%      \expanded
-%        {\writeutility%
-%           {r s %
-%            {\currentregister} %
-%            {\nextinternalreference} %
-%            {\asciiregisterentryA} %
-%            {\asciiregisterentryB} %
-%            {\asciiregisterentryC} %
-%            {\sectionformat}}}%
-%    \endgroup
-%    \registerinfo{> see}{#2}%
-%    \GotoPar}
 
 \def\doprocessseeregister[#1]#2#3%
   {\begingroup

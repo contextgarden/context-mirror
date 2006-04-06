@@ -190,9 +190,9 @@
 \def\dodimensionpower#1%
   {\iftextdimensions\expandafter\high\else\expandafter^\fi{#1}}
 
-\def\ustartmathmode      {\iftextdimensions\else\startmathmode      \fi}
-\def\ustopmathmode       {\iftextdimensions\else\stopmathmode       \fi}
-\def\umathematicstypeface{\iftextdimensions\else\mathematicstypeface\fi}
+\def\ustartmathmode      {\iftextdimensions\else\expandafter\startmathmode      \fi}
+\def\ustopmathmode       {\iftextdimensions\else\expandafter\stopmathmode       \fi}
+\def\umathematicstypeface{\iftextdimensions\else\expandafter\mathematicstypeface\fi}
 
 %D In forced text mode, we ignore spacing in monospaced fonts.
 
@@ -202,8 +202,8 @@
 \def\dodimensionspace
   {\iftextdimensions
      \begingroup
-     \setbox0=\hbox{i}%
-     \setbox2=\hbox{m}%
+     \setbox0\hbox{i}%
+     \setbox2\hbox{m}%
      \ifdim\wd0=\wd2
        \endgroup
        \@EAEAEA\gobbleoneargument
@@ -222,7 +222,7 @@
    \let\dimensionsuffix\dimension
    \let\dimensionpower \dimension
    \global\nesteddimensionfalse
-   \setbox0=\hbox{\ustartmathmode#1\ustopmathmode}%
+   \setbox\scratchbox\hbox{\ustartmathmode#1\ustopmathmode}% pre-roll
    \global\let\thedimensionprefix\savedthedimensionprefix
    \global\let\thedimensionpower \savedthedimensionpower
    \endgroup
@@ -276,8 +276,8 @@
 %D
 %D Here are some auxilliary macros.
 
-\def\dontbreakdimension%
-  {\scratchdimen=\lastskip
+\def\dontbreakdimension
+  {\scratchdimen\lastskip
    \unskip
    \nobreak
    \hskip\scratchdimen

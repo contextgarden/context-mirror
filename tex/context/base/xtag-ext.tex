@@ -285,6 +285,33 @@
 
 \egroup
 
+% \defineXMLcommand
+%   [whatever]
+%   [test=unknown]
+%   {\XMLop{test}}
+%
+% \startXMLdata
+% <whatever test="{\bf test}"/>
+% \stopXMLdata
+%
+% \defineXMLcommand
+%   [whatever]
+%   [test=unknown]
+%   {\defXMLtex\SomethingTex{\XMLop{test}}%
+%    \SomethingTex}
+%
+% \startXMLdata
+% <whatever test="{\bf test}"/>
+% \stopXMLdata
+
+\def\defXMLtex#1#2% the appended space will go away when
+  {\begingroup    % \scantokens is fixed
+   \disableXML
+   \everyeof{\noexpand}% br's hack
+   \edef\ascii{#2}%
+   \edef\ascii{\scantokens\expandafter{\ascii}}% space appended
+   \expandafter\endgroup\expandafter\def\expandafter#1\expandafter{\ascii}}
+
 \def\potentialXMLentity#1%
   {\doifXMLentityelse{#1}{\getXMLentity{#1}}{#1}}
 

@@ -92,6 +92,8 @@
 \def\setupsystem
   {\dosingleargument\dosetupsystem}
 
+\def\systemparameter#1{\executeifdefined{\??sv#1}\empty}
+
 %D The system modes set by the setup command can be used in
 %D situations like:
 %D
@@ -309,7 +311,7 @@
 \def\convertmeaning#1\to % watch the double expansion !
   {\bgroup
      \honorunexpanded
-     \dontexpandencoding % new
+     \convertencodedtokens % can be overloaded
      \xdef\@@globalexpanded{#1}%
      \xdef\@@globalexpanded{\@@globalexpanded}%
    \egroup

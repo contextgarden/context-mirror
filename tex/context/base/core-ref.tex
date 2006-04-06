@@ -724,22 +724,41 @@
 
 \def\rt!crossdone#1#2#3#4{\rt!done{#1}{#2}{#3}{#4}}
 
+% \def\dohandleduplicatereference#1%
+%   {\bgroup
+%    \let\rt!cross\rt!crossdone
+%    \@EA\xdef\csname\r!cross\referenceprefix#1\endcsname
+%      {\csname\r!cross\referenceprefix#1\endcsname}%
+%    \egroup}
+
 \def\dohandleduplicatereference#1%
   {\bgroup
    \let\rt!cross\rt!crossdone
-   \@EA\xdef\csname\r!cross\referenceprefix#1\endcsname
+   \@EA\xdef\csname\r!cross\referenceprefix#1\endcsname % no let !
      {\csname\r!cross\referenceprefix#1\endcsname}%
    \egroup}
 
+% \def\checkfirstreferenceoccurance#1#2% etex
+%   {\ifcsname\r!cross\referenceprefix#1\endcsname
+%      \getreferenceelements{#1}%
+%      \ifnum\currentreferencetype=\rt!cross
+%        \dohandleduplicatereference{#1}%
+%        #2%
+%      \fi
+%    \else
+%      #2%
+%    \fi}
+
 \def\checkfirstreferenceoccurance#1#2% etex
-  {\ifcsname\r!cross\referenceprefix#1\endcsname
+  {\@EA\ifx\csname\r!cross\referenceprefix#1\endcsname\relax % no ifcsname needed here
+     \predefinereference{#1}%
+     #2%
+   \else
      \getreferenceelements{#1}%
      \ifnum\currentreferencetype=\rt!cross
        \dohandleduplicatereference{#1}%
        #2%
      \fi
-   \else
-     #2%
    \fi}
 
 \def\doiffirstreferenceoccurance
@@ -1677,6 +1696,24 @@
 %D An unknown reference is reported on the screen, in the log
 %D file and, when enabled, in the left margin of the text.
 
+% \def\reportreferenceerror#1#2%
+%   {\bgroup
+%    \the\everyreference % cleanup : etc in french
+%    \ifinpagebody\else
+%      \doifconcepttracing
+%        {\doifsomething{#2}
+%           {\inleft
+%              {\infofont
+%               \scratchdimen\leftmarginwidth
+%               \advance\scratchdimen -2em
+%               \doboundtext{#2}\scratchdimen{..}->}}}%
+%    \fi
+%    \doifpredefinedreferenceelse
+%      \donothing
+%      {\predefinereference
+%       \showmessage\m!references{#1}{[\unharmedreferenceprefix][#2]}}%
+%    \egroup}
+
 \def\reportreferenceerror#1#2%
   {\bgroup
    \the\everyreference % cleanup : etc in french
@@ -1691,7 +1728,7 @@
    \fi
    \doifpredefinedreferenceelse
      \donothing
-     {\predefinereference
+     {\predefinereference\predefinedreference
       \showmessage\m!references{#1}{[\unharmedreferenceprefix][#2]}}%
    \egroup}
 
@@ -1719,11 +1756,20 @@
 %   {\setgvalue{\r!cross\predefinedreference}{\rt!cross{}{}{}{}}%
 %    \setgvalue{\r!cross\unharmedreferenceprefix\predefinedreference}{\rt!cross{}{}{}{}}}
 
-\def\dummypredefinedreference{\r!cross{}{}{}{}}
+% \def\dummypredefinedreference{\r!cross{}{}{}{}}
+%
+% \def\predefinereference
+%   {\global\@EA\let\csname\r!cross\predefinedreference    \endcsname\dummypredefinedreference
+%    \global\@EA\let\csname\r!cross\unharmedreferenceprefix\endcsname\dummypredefinedreference} % bug!
+%
+% we need to predefine in order to make dup checking possible (when no ref
+% is defined yet)
 
-\def\predefinereference
-  {\global\@EA\let\csname\r!cross\predefinedreference    \endcsname\dummypredefinedreference
-   \global\@EA\let\csname\r!cross\unharmedreferenceprefix\endcsname\dummypredefinedreference} % bug!
+\def\predefinereference#1% takes now an argument
+  {\global\@EA\let\csname\r!cross                        #1\endcsname\dummypredefinedreference
+   \global\@EA\let\csname\r!cross\unharmedreferenceprefix#1\endcsname\dummypredefinedreference}
+
+\def\dummypredefinedreference{\rt!done{}{}{}{}}
 
 %D Testing on existance then becomes:
 

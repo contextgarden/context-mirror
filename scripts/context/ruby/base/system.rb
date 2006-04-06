@@ -41,6 +41,18 @@ module System
         end
     end
 
+    def System.prependengine(str)
+        if str =~ /^\S+\.(pl|rb|lua|py)/io then
+            case $1
+                when 'pl'  then return "perl #{str}"
+                when 'rb'  then return "ruby #{str}"
+                when 'lua' then return "lua #{str}"
+                when 'py'  then return "python #{str}"
+            end
+        end
+        return str
+    end
+
     def System.locatedprogram(program)
         if @@located.key?(program) then
             return @@located[program]
@@ -49,7 +61,7 @@ module System
                 if binname =~ /\..*$/io then
                     @@binpaths.each do |path|
                         if FileTest.file?(str = File.join(path,binname)) then
-                            return @@located[program] = str
+                            return @@located[program] = System.prependengine(str)
                         end
                     end
                 end
@@ -57,7 +69,7 @@ module System
                 @@binpaths.each do |path|
                     @@binsuffixes.each do |suffix|
                         if FileTest.file?(str = File.join(path,"#{binname}#{suffix}")) then
-                            return @@located[program] = str
+                            return @@located[program] = System.prependengine(str)
                         end
                     end
                 end

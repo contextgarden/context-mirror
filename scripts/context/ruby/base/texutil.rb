@@ -126,6 +126,8 @@ class TeXUtil
 
     class Sorter
 
+        @@downcase = true
+
         def initialize(max=12)
             @rep, @map, @exp, @div = Hash.new, Hash.new, Hash.new, Hash.new
             @max = max
@@ -149,7 +151,7 @@ class TeXUtil
         # sorter.expander('ijligature', 'y')
 
         def expander(from,to=nil)
-            from, to = converted(from), converted(to)
+            to = converted(to) # not from !!!
             @max = [@max,to.length+1].max if to
             @exp[from] = to || from || ''
         end
@@ -179,15 +181,37 @@ class TeXUtil
             end
             if @map.size > 0 then
                 # watch out, order of match matters
-                @rexb = /(\\[a-zA-Z]+|#{@map.keys.join('|')}|.)\s*/ # o
+                if @@downcase then
+                    @rexb = /(\\[a-zA-Z]+|#{@map.keys.join('|')}|.)\s*/i # o
+                else
+                    @rexb = /(\\[a-zA-Z]+|#{@map.keys.join('|')}|.)\s*/ # o
+                end
             else
-                @rexb = /(\\[a-zA-Z]+|.)\s*/o
+                if @@downcase then
+                    @rexb = /(\\[a-zA-Z]+|.)\s*/io
+                else
+                    @rexb = /(\\[a-zA-Z]+|.)\s*/o
+                end
             end
-            if true then
+            if false then
                 @exp.keys.each do |e|
                     @exp[e].downcase!
                 end
             end
+        end
+
+        def replace(str)
+            str.gsub(@rexa) do
+                @rep[$1.escaped]
+            end
+        end
+
+        def normalize(str)
+            replace(str).gsub(/ +/,' ')
+        end
+
+        def tokenize(str)
+            str.gsub(/\\strchr\{(.*?)\}/o) do "\\#{$1}" end
         end
 
         def remap(str)
@@ -203,6 +227,9 @@ class TeXUtil
             if @rexb then
                 s.gsub!(@rexb) do
                     token = $1.sub(/\\/o, '')
+if @@downcase then
+    token.downcase!
+end
                     if @exp.key?(token) then
                         @exp[token].ljust(@max,' ')
                     elsif @map.key?(token) then
@@ -220,7 +247,7 @@ class TeXUtil
             'A'.upto('Z') do |c| expander(c) ; division(c) end
             expander('1','b') ; expander('2','c') ; expander('3','e') ; expander('4','f')
             expander('5','g') ; expander('6','h') ; expander('7','i') ; expander('8','i')
-            expander('9','j') ; expander('0','a') ; expander('-','-') ;
+            expander('9','j') ; expander('0','a') ; expander('-',"-") ;
             # end potential move
             shortcuts.each  do |s| shortcut(s[0],s[1]) end
             expansions.each do |e| expander(e[0],e[1]) end
@@ -261,6 +288,7 @@ class TeXUtil
 
         def converted(str)
             if str then
+                # puts str
                 str.gsub(/([\+\-]*\d+)/o) do
                     n = $1.to_i
                     if n > 0 then
@@ -400,6 +428,7 @@ class TeXUtil
                 attr_writer :sortkey
 
                 def build(sorter)
+@sortkey = sorter.normalize(sorter.tokenize(@sortkey))
                     @sortkey = sorter.remap(sorter.simplify(@key.downcase))
                     if @sortkey.empty? then
                         @sortkey = sorter.remap(@command.downcase)
@@ -487,6 +516,8 @@ class TeXUtil
                 attr_writer :sortkey
 
                 def build(sorter)
+@entry, @key = sorter.normalize(@entry), sorter.normalize(sorter.tokenize{@key})
+if false then
                     @entry, @key = [@entry, @key].collect do |target|
                         # +a+b+c &a&b&c a+b+c a&b&c
                         case target[0,1]
@@ -501,19 +532,30 @@ class TeXUtil
                             target
                         # end
                     end
+else
+    @entry, @key = cleanupsplit(@entry), cleanupsplit(@key)
+end
                     @sortkey = sorter.simplify(@key)
                     @sortkey = @sortkey.split(@@split).collect do |c| sorter.remap(c) end.join(@@split)
-                    # if ($Key eq "")  { $Key = SanitizedString($Entry) }
-                    # if ($ProcessHigh){ $Key = HighConverted($Key) }
                     @sortkey = [
                         @sortkey.downcase,
                         @sortkey,
+                        @entry,
                         @texthowto.ljust(10,' '),
                         # @state, # no, messes up things
                         (@realpage ||'').rjust(6,' ').gsub(/0/,' '),
                         # (@realpage ||'').rjust(6,' '),
                         @pagehowto
                     ].join(@@split)
+                end
+
+                def cleanupsplit(target)
+                    # +a+b+c &a&b&c a+b+c a&b&c
+                    case target[0,1]
+                        when '&' then target.sub(/^./o,'').gsub(/([^\\])\&/o)     do "#{$1}#{@@split}" end
+                        when '+' then target.sub(/^./o,'').gsub(/([^\\])\+/o)     do "#{$1}#{@@split}" end
+                        else          target              .gsub(/([^\\])[\&\+]/o) do "#{$1}#{@@split}" end
+                    end
                 end
 
                 def <=> (other)
@@ -561,7 +603,7 @@ class TeXUtil
                             else
                                 testalpha = entry.sortkey[0,1].downcase
                             end
-                            if testalpha != alpha.downcase || alphaclass != entry.class then
+                            if (testalpha != alpha.downcase) || (alphaclass != entry.class) then
                                 alpha = testalpha
                                 alphaclass = entry.class
                                 if alpha != ' ' then

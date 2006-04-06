@@ -1,11 +1,11 @@
 %D \module
 %D   [       file=core-mat,
-%D        version=1998.12.07,
+%D        version=2006.03.27, % 1998.12.07
 %D          title=\CONTEXT\ Core Macros,
 %D       subtitle=Math Fundamentals,
-%D         author=Hans Hagen,
+%D         author={Hans Hagen \& Taco Hoekwater},
 %D           date=\currentdate,
-%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%D      copyright=PRAGMA]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
@@ -636,6 +636,8 @@
 \let\normalreqno\eqno
 \let\normalleqno\leqno
 
+\let\donestedformulanumber\gobbletwoarguments
+
 \def\dodoplaceformula[#1]#2% messy, needs a clean up
   {\doifelse{#1}{-}
      {\setfalse\handleformulanumber}
@@ -646,6 +648,9 @@
      \def\formulanumber
        {%\global\let\subformulanumber\doformulanumber % no, bug
         \doformulanumber[#1][#2]}%
+     \def\donestedformulanumber##1##2%
+       {\doifsomething{##1}
+          {\doifelse{##1}{+}{\doformulanumber[#1]}{\doformulanumber[##1]}[##2][]{}}}%
      \def\subformulanumber
        {\setfalse\incrementformulanumber
         \formulanumber}%
@@ -656,7 +661,8 @@
           {\normalreqno{\doformulanumber[#1][#2][]{}}}}%
    \else
      \def\formulanumber{\doformulanumber[#1][#2]}%
-     \global\let\subformulanumber\doformulanumber
+     \let\donestedformulanumber\gobbletwoarguments
+     \let\subformulanumber\doformulanumber % was \global
      \global\let\doplaceformulanumber\empty
    \fi}
 
@@ -1621,12 +1627,22 @@
 \def\dodoalignNC
   {\gdef\doalignNC##1{&##1}}
 
+% \def\doalignNR[#1][#2]%
+%   {\doifsomething{#1}
+%      {\doifelse{#1}{+}
+%         {\doformulanumber[][#2][]{}}
+%         {\doformulanumber[#1][#2][]{}}}%
+%    \crcr}
+
 \def\doalignNR[#1][#2]%
-  {\doifsomething{#1}
-     {\doifelse{#1}{+}
-        {\doformulanumber[][#2][]{}}
-        {\doformulanumber[#1][#2][]{}}}%
-   \crcr}
+  {\donestedformulanumber{#1}{#2}\crcr}
+
+%D \starttyping
+%D \placeformula[eqn0]\startformula \startalign[n=1] a\NR       \stopalign \stopformula See \in[eqn0]
+%D \placeformula[eqn1]\startformula \startalign[n=1] a\NR       \stopalign \stopformula See \in[eqn1]
+%D \placeformula      \startformula \startalign[n=1] a\NR[eqn2] \stopalign \stopformula See \in[eqn2]
+%D \placeformula[eqn3]\startformula \startalign[n=1] a\NR[+]    \stopalign \stopformula See \in[eqn3]
+%D \stoptyping
 
 % todo: pop in cell
 
@@ -1991,7 +2007,35 @@
 \setupmathmatrix
   [\c!distance=1em,
    \c!left=,
-   \c!right=]
+   \c!right=,
+   \c!align=\v!middle]
+
+\def\dosetmatrixcolumn#1% hh: todo: \definematrixalign
+  {\letvalue{\??eq:\v!left :\number\eqaligncolumn}\hfil
+   \letvalue{\??eq:\v!right:\number\eqaligncolumn}\hfil
+   \doif{#1}\v!left  {\letvalue{\??eq:\v!left :\number\eqaligncolumn}\relax
+                      \letvalue{\??eq:\v!right:\number\eqaligncolumn}\hfil}%
+   \doif{#1}\v!right {\letvalue{\??eq:\v!left :\number\eqaligncolumn}\hfil
+                      \letvalue{\??eq:\v!right:\number\eqaligncolumn}\relax }%
+   \doif{#1}\v!middle{\letvalue{\??eq:\v!left :\number\eqaligncolumn}\hfil
+                      \letvalue{\??eq:\v!right:\number\eqaligncolumn}\hfil}}
+
+\def\buildmathmatrix % beware: etex only
+  {\scratchtoks\emptytoks
+   \expanded{\scratchtoks{\the\scratchtoks\the\!!toksa}}%
+   \dorecurse{\numexpr\scratchcounter-\plusone\relax}
+     {\expanded{\scratchtoks{\the\scratchtoks\the\!!toksb}}}%
+   \expanded{\scratchtoks{\the\scratchtoks\the\!!toksc }}}
+
+\def\preparemathmatrix
+  {\!!toksa{\strut
+            \firstineqalign\leftofeqalign \span \textineqalign{##}\rightofeqalign}%
+   \!!toksb{&\hskip\mathmatrixparameter\c!distance
+            \nextineqalign\leftofeqalign \span \textineqalign{##}\rightofeqalign}%
+   \!!toksc{&&\hskip\mathmatrixparameter\c!distance
+            \leftofeqalign \span \textineqalign{##}\rightofeqalign}%
+   \buildmathmatrix
+   \halign \@EA \bgroup\the\scratchtoks \crcr}
 
 \def\definemathmatrix
   {\dodoubleempty\dodefinemathmatrix}
@@ -2009,6 +2053,31 @@
 
 % \let\domatrixNR\doalignNR
 
+% \def\dostartmathmatrix[#1][#2]%
+%   {\begingroup
+%    \edef\currentmathmatrix{#1}%
+%    \doifassignmentelse{#2}{\setupmathmatrix[#1][#2]}\donothing
+%    \null
+%    \mathmatrixparameter\c!left
+%    \vcenter\bgroup
+%    \pushmacro\domatrixNC
+%    \let\endmath\relax
+%    \def\NC{\domatrixNC}%
+%    \def\MC{\domatrixNC\ifmmode\else$\def\endmath{$}\fi}%
+%    \global\let\domatrixNC\dodomatrixNC
+%   %\def\NR{\endmath&\global\let\domatrixNC\dodomatrixNC\doxxdoubleempty\domatrixNR}%
+%    \def\NR{\endmath\global\let\domatrixNC\dodomatrixNC\crcr}%
+%    \normalbaselines
+%    \mathsurround\zeropoint
+%    \everycr\emptytoks
+%    \tabskip\zeropoint
+%    \global\eqaligncolumn\plusone
+%    \halign\bgroup
+%       \hfil$##$\hfil
+%     &&\hskip\mathmatrixparameter\c!distance\relax\hfil$##$\hfil\crcr
+%       \mathstrut\crcr
+%       \noalign{\kern-\baselineskip}}
+
 \def\dostartmathmatrix[#1][#2]%
   {\begingroup
    \edef\currentmathmatrix{#1}%
@@ -2021,18 +2090,16 @@
    \def\NC{\domatrixNC}%
    \def\MC{\domatrixNC\ifmmode\else$\def\endmath{$}\fi}%
    \global\let\domatrixNC\dodomatrixNC
-  %\def\NR{\endmath&\global\let\domatrixNC\dodomatrixNC\doxxdoubleempty\domatrixNR}%
    \def\NR{\endmath\global\let\domatrixNC\dodomatrixNC\crcr}%
    \normalbaselines
    \mathsurround\zeropoint
    \everycr\emptytoks
    \tabskip\zeropoint
+   \eqaligncolumn\zerocount % could be \scratchcounter
+   \processcommacommand[\mathmatrixparameter\c!align]{\advance\eqaligncolumn\plusone\dosetmatrixcolumn}%
+   \scratchcounter=\ifnum\eqaligncolumn>\scratchcounter \eqaligncolumn \else \plusone \fi
    \global\eqaligncolumn\plusone
-   \halign\bgroup
-      \hfil$##$\hfil
-    &&\hskip\mathmatrixparameter\c!distance\relax\hfil$##$\hfil\crcr
-      \mathstrut\crcr
-      \noalign{\kern-\baselineskip}}
+   \preparemathmatrix } % uses scratchcounter
 
 \def\dostopmathmatrix
   {\crcr
@@ -2065,6 +2132,127 @@
 %D \stopbuffer
 %D
 %D \typebuffer \getbuffer
+%D
+%D Taco added some code (dedicated to Aditya Mahajan) that gives more
+%D control over aligments:
+
+%D \startbuffer
+%D \startformula
+%D   \startmatrix
+%D    \NC a + x \NC = \NC a + d \NR
+%D    \NC y     \NC = \NC d     \NR
+%D   \stopmatrix
+%D \stopformula
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
+
+%D \startbuffer
+%D \startformula
+%D   \startmatrix [distance=3pt,align={right,left}]
+%D    \NC a + x \NC = a + d \NR
+%D    \NC y     \NC = d     \NR
+%D   \stopmatrix
+%D \stopformula
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
+
+%D \startbuffer
+%D \startformula
+%D   \startmatrix [left=\left(,right=\right)]
+%D    \NC a + x \NR
+%D    \NC y    \NR
+%D   \stopmatrix
+%D \stopformula
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
+%D
+%D A bit more complex code:
+%D
+%D \startbuffer
+%D \startformula
+%D \startformula
+%D    \text{Let }{\cal R} = \bigcup_{P_{X_1},P_{X_2}}
+%D    \left\{ (R_1, R_2) :
+%D    \startmatrix[distance=1em,align={left,left,right}]
+%D      \NC R_1        \NC < I(X_1 ; Y \mid X_2)      \NC R_1       \NR
+%D      \NC \hfill Q_2 \NC < I(X_2 ; Y \mid X_1)      \NC R_2       \NR
+%D      \NC R_1 + R_2  \NC < I(X_1 ; Y)               \NC R_1 + R_2 \NR
+%D    \stopmatrix
+%D    \right\}
+%D \stopformula
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
+
+%D \macros
+%D   {startintertext}
+%D
+%D Preliminary feature:
+%D
+%D {\em example code}
+
+% \def\startintertext#1\stopintertext
+%   {\noalign{\dointertext{#1}}\NR}
+
+% \unexpanded\def\dointertext#1%
+%   {\penalty\postdisplaypenalty
+%    \afterdisplayspace  % the matching \before... is not needed
+%    \vbox{\forgetall\noindent#1\par}%
+%    \penalty\postdisplaypenalty}
+
+\def\startintertext#1\stopintertext
+  {\noalign{\dointertext{#1}}}
+
+\unexpanded\def\dointertext#1%
+    {\penalty\postdisplaypenalty
+     \afterdisplayspace
+     \vbox{\forgetall\noindent#1\par}%
+     \penalty\predisplaypenalty
+     \beforedisplayspace}
+
+%D \macros
+%D   {substack}
+%D
+%D Preliminary code:
+%D
+%D \starttyping
+%D \startformula
+%D    \sum_{%
+%D      \startsubstack
+%D       i = 1 \NR
+%D       i \neq n \NR
+%D       i \neq m
+%D       \stopsubstack
+%D     }a_i
+%D \stopformula
+%D \stoptyping
+
+\def\startsubstack
+   {\begingroup
+    \null
+    \vcenter\bgroup
+    \pushmacro\domatrixNC
+    \let\stopmathmode\relax
+    \def\NC{\domatrixNC}%
+    \def\MC{\domatrixNC\startmathmode}%
+    \global\let\domatrixNC\dodomatrixNC
+    \def\NR
+      {\stopmathmode
+       \global\let\domatrixNC\dodomatrixNC
+       \crcr\noalign{\nointerlineskip}}%
+    \mathsurround\zeropoint
+    \everycr\emptytoks
+    \halign\bgroup\hfil$\scriptstyle\mathstrut##$\hfil\crcr}
+
+\def\stopsubstack
+   {\crcr
+    \egroup
+    \popmacro\domatrixNC
+    \egroup
+    \endgroup}
 
 %D \macros
 %D   {frac, xfrac, xxfrac}

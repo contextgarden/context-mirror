@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 
-<cd:interface xmlns:cd="http://www.pragma-ade.com/commands" name="context" language="it" version="2006.03.25 13:21">
+<cd:interface xmlns:cd="http://www.pragma-ade.com/commands" name="context" language="it" version="2006.04.06 23:00">
 
   <cd:variables>
     <cd:variable name="one" value="uno"/>
@@ -236,6 +236,7 @@
     <cd:constant name="interaction" value="interazione"/>
     <cd:constant name="interlinespace" value="interlinea"/>
     <cd:constant name="items" value="elementi"/>
+    <cd:constant name="fallback" value="fallback"/>
     <cd:constant name="frame" value="cornice"/>
     <cd:constant name="framedepth" value="profonditacornice"/>
     <cd:constant name="framecorner" value="angolocornice"/>

@@ -574,16 +574,15 @@
        [#1]
        [     \v!left=>\leftfloat       {\box\floatbox},
             \v!right=>\rightfloat      {\box\floatbox},
-          \v!inleft=>\leftmarginfloat {\box\floatbox},
-         \v!inright=>\rightmarginfloat{\box\floatbox},
+           \v!inleft=>\leftmarginfloat {\box\floatbox},
+          \v!inright=>\rightmarginfloat{\box\floatbox},
        \v!leftmargin=>\leftmarginfloat {\box\floatbox},
       \v!rightmargin=>\rightmarginfloat{\box\floatbox},
-        \v!leftedge=>\leftedgefloat   {\box\floatbox},
-       \v!rightedge=>\rightedgefloat  {\box\floatbox},
-            \v!backspace=>\backspacefloat  {\box\floatbox},
-           \v!cutspace=>\cutspacefloat   {\box\floatbox},
-           \v!inmargin=>{\doinmargenormal\leftmarginfloat
-                       \rightmarginfloat{\box\floatbox}}]%
+         \v!leftedge=>\leftedgefloat   {\box\floatbox},
+        \v!rightedge=>\rightedgefloat  {\box\floatbox},
+        \v!backspace=>\backspacefloat  {\box\floatbox},
+         \v!cutspace=>\cutspacefloat   {\box\floatbox},
+         \v!inmargin=>\cutspacefloat   {\box\floatbox}]%
      \doifinset\v!tall{#1}\flushsidefloatsafterpar
    \fi}
 

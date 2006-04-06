@@ -11,9 +11,15 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
+% dodo: autokeyexpansion => igv utf: \setupregister[index][keyexpansion=yes]
+
 %D This module replaces existing sort key handling and is meant to be
 %D used with the new texutil functionality. This module defines a few
 %D auxiliary macros.
+
+\ifx\exportsortaction\undefined \else \endinput \fi
+
+\writestatus{loading}{Context Sorting Macros (ini)}
 
 %D The sorting method is largely bases on the one used in the old version
 %D of texutil but i've changed the interface a bit. It all boils down to
@@ -84,6 +90,17 @@
   {\exportsortexpansion{#1}{#2}%
    \exportsortdivision {#2}{#1}}
 
+\def\exportutfsortexpansion#1#2#3%
+  {\bgroup
+   \edef\utfsorta{\string\unknownchar}%
+   \dostepwiserecurse{#2}{#3}\plusone
+     {\edef\utfsortb{\@EA\string\csname\doutfunihash{#1}{\recurselevel}\endcsname}%
+      \ifx\utfsortb\utfsorta \else
+        \edef\utfsortc{\numbertoutf{\numexpr#1*256+\recurselevel\relax}}%
+        \expanded{\exportsortshortcut{\utfsortc}{\utfsortb}}%
+      \fi}%
+   \egroup}
+
 % Next we overload some macros defined in enco-ini and core-uti. This
 % will change.
 
@@ -92,6 +109,17 @@
 \def\savesortkeys
   {\globallet\savesortkeys\relax
    \enablemode[sortorder-\currentmainlanguage]%
+   \bgroup
+     \doifelse \currentregime {utf}
+        {\exportutfsortexpansion{0}{128}{255}%
+         \exportutfsortexpansion{1}{0}{255}}
+       {\def\defineactivecharacter##1 ##2%
+          {\expanded{\exportsortshortcut{\rawcharacter{##1}}}{##2}}%
+        \doifelse{\characterregime}\nocharacterregime
+          {\doifnot{\characterencoding}\nocharacterencoding % to be sure, autoregime
+             {\the\executeifdefined{\@reg@\characterencoding}\emptytoks}}%
+          {\the\executeifdefined{\@reg@\characterregime}\emptytoks}}%
+   \egroup
    \readfile{\f!sortprefix new}\donothing\donothing % temporary hacks
    \readfile{\f!sortprefix def}\donothing\donothing % defaults
    \readfile{\f!sortprefix lan}\donothing\donothing}% language specifics

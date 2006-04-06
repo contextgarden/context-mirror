@@ -337,4 +337,16 @@
     <comment>Vietnamese needs no patterns.</comment>
 </description>
 
+<description language='agr'>
+    <sourcefile>grahyph4.tex</sourcefile>
+    <title>TeX hyphenation patterns for the ancient Greek language</title>
+    <copyright>
+        <year>2004</year>
+        <owner>Dimitrios Filippou</owner>
+        <comment>These hyphenation patterns are explained in "ancient.pdf".
+            Hyphenation examples are given in the file "anc-test.pdf".
+            Some doubtful patterns are marked by three question marks "???".</comment>
+    </copyright>
+</description>
+
 </descriptions>

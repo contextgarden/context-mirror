@@ -129,7 +129,7 @@ class TEX
         'forcetexutil', 'texutil',
         'globalfile', 'autopath',
         'purge', 'purgeall', 'keep', 'autopdf', 'xpdf', 'simplerun', 'verbose',
-        'nooptionfile', 'nobackend'
+        'nooptionfile', 'nobackend', 'noctx'
     ]
     @@stringvars = [
         'modefile', 'result', 'suffix', 'response', 'path',
@@ -386,20 +386,20 @@ class TEX
         # upward compatibility problems) but stuck to the bas/mem/fmt flags
         if engine then
             case validmpsengine(engine)
-                when /mpost/ then "--mem"
-                when /mfont/ then "--bas"
-                else              "--fmt"
+                when /mpost/ then "-mem"
+                when /mfont/ then "-bas"
+                else              "-fmt"
             end
         else
-            "--fmt"
+            "-fmt"
         end
     end
 
     def prognameflag(progname=nil)
         case getvariable('distribution')
-            when 'standard' then prefix = "--progname"
-            when /web2c/io  then prefix = "--progname"
-            when /miktex/io then prefix = "--alias"
+            when 'standard' then prefix = "-progname"
+            when /web2c/io  then prefix = "-progname"
+            when /miktex/io then prefix = "-alias"
                             else return ""
         end
         if progname then
@@ -424,7 +424,7 @@ class TEX
         if Kpse.miktex? then
             "-tcx=#{file}"
         else
-            "--translate-file=#{file}"
+            "-translate-file=#{file}"
         end
     end
 
@@ -574,7 +574,7 @@ class TEX
                                 interface = $1.sub(/cont\-/,'')
                                 results.push('')
                                 results.push("testing interface #{interface}")
-                                flags = ['--process','--batch','--once',"--interface=#{interface}",engineflag]
+                                flags = ['--noctx','--process','--batch','--once',"--interface=#{interface}",engineflag]
                                 # result = Kpse.pipescript('newtexexec',tempfilename,flags)
                                 result = runtexexec([tempfilename], flags, 1)
                                 if FileTest.file?("#{@@temprunfile}.log") then
@@ -842,7 +842,7 @@ class TEX
         getarrayvariable('files').each do |filename|
             setvariable('filename',filename)
             report("processing text of graphic '#{filename}'")
-            processmpx(filename,true)
+            processmpx(filename,false,true)
         end
         reportruntime
     end
@@ -883,6 +883,7 @@ class TEX
                 elsif (str = getvariable('suffix')) && ! str.empty? then
                     opt << "\\setupsystem[file=#{jobname}.#{str}]\n"
                 end
+                opt << "\\setupsystem[\\c!method=2]\n" # 1=oldtexexec 2=newtexexec
                 opt << "\\setupsystem[\\c!type=#{Tool.ruby_platform()}]\n"
                 if (str = File.unixfied(getvariable('path'))) && ! str.empty? then
                     opt << "\\usepath[#{str}]\n" unless str.empty?
@@ -1043,9 +1044,10 @@ class TEX
         report("tex format: #{texformat}")
         report("progname: #{progname}")
         if texengine && texformat && progname then
-            command = [quoted(texengine),prognameflag(progname),formatflag(texengine,texformat),runoptions(texengine),filename,texprocextras(texformat)].join(' ')
+            command = [quoted(texengine),prognameflag(progname),formatflag(texengine,texformat),tcxflag,runoptions(texengine),filename,texprocextras(texformat)].join(' ')
             report(command) if getvariable('verbose')
             system(command)
+            true
         else
             false
         end
@@ -1056,10 +1058,12 @@ class TEX
         mpsformat = validmpsformat(getarrayvariable('mpsformats').first)
         progname  = validprogname(getvariable('progname'))
         if mpsengine && mpsformat && progname then
-            command = [quoted(mpsengine),prognameflag(progname),formatflag(mpsengine,mpsformat),runoptions(mpsengine),filename,mpsprocextras(mpsformat)].join(' ')
             ENV["MPXCOMMAND"] = "0" unless mpx
+            # command = [quoted(mpsengine),prognameflag(progname),formatflag(mpsengine,mpsformat),tcxflag,runoptions(mpsengine),filename,mpsprocextras(mpsformat)].join(' ')
+            command = [quoted(mpsengine),"-progname=mpost",formatflag(mpsengine,mpsformat),tcxflag,runoptions(mpsengine),filename,mpsprocextras(mpsformat)].join(' ')
             report(command) if getvariable('verbose')
             system(command)
+            true
         else
             false
         end
@@ -1070,12 +1074,14 @@ class TEX
         if File.atleast?(mpfile,25) then
             # first run needed
             File.silentdelete(File.suffixed(mpfile,'mpt'))
-            doruntexmp(mpfile,false)
+            doruntexmp(mpfile)
             mpgraphics = checkmpgraphics(mpfile)
             mplabels = checkmplabels(mpfile)
             if mpgraphics || mplabels then
                 # second run needed
                 doruntexmp(mpfile,mplabels)
+            else
+                # no labels
             end
         end
     end
@@ -1123,10 +1129,11 @@ class TEX
         begin
             if mode and job = TEX.new(@logger) then
                 options.each do |option|
-                    if option=~ /^\-*(.*?)\=(.*)$/o then
-                        job.setvariable($1,$2)
-                    else
-                        job.setvariable(option,true)
+                    case option
+                        when /^\-*(.*?)\=(.*)$/o then
+                            job.setvariable($1,$2)
+                        when /^\-*(.*?)$/o then
+                            job.setvariable($1,true)
                     end
                 end
                 job.setvariable("files",filename)
@@ -1243,31 +1250,33 @@ class TEX
 
         # preprocess files
 
-        ctx = CtxRunner.new(rawname,@logger)
-        if getvariable('ctxfile').empty? then
-            ctx.manipulate(File.suffixed(rawname,'ctx'),'jobname.ctx')
-        else
-            ctx.manipulate(File.suffixed(getvariable('ctxfile'),'ctx'))
+        unless getvariable('noctx') then
+            ctx = CtxRunner.new(rawname,@logger)
+            if getvariable('ctxfile').empty? then
+                ctx.manipulate(File.suffixed(rawname,'ctx'),'jobname.ctx')
+            else
+                ctx.manipulate(File.suffixed(getvariable('ctxfile'),'ctx'))
+            end
+            ctx.savelog(File.suffixed(rawname,'ctl'))
+
+            envs = ctx.environments
+            mods = ctx.modules
+
+            # merge environment and module specs
+
+            envs << getvariable('environments') unless getvariable('environments').empty?
+            mods << getvariable('modules')      unless getvariable('modules')     .empty?
+
+            envs = envs.uniq.join(',')
+            mods = mods.uniq.join(',')
+
+            report("using search method '#{Kpse.searchmethod}'") if getvariable('verbose')
+            report("using environments #{envs}") if envs.length > 0
+            report("using modules #{mods}")      if mods.length > 0
+
+            setvariable('environments', envs)
+            setvariable('modules',      mods)
         end
-        ctx.savelog(File.suffixed(rawname,'ctl'))
-
-        envs = ctx.environments
-        mods = ctx.modules
-
-        # merge environment and module specs
-
-        envs << getvariable('environments') unless getvariable('environments').empty?
-        mods << getvariable('modules')      unless getvariable('modules')     .empty?
-
-        envs = envs.uniq.join(',')
-        mods = mods.uniq.join(',')
-
-        report("using search method '#{Kpse.searchmethod}'") if getvariable('verbose')
-        report("using environments #{envs}") if envs.length > 0
-        report("using modules #{mods}")      if mods.length > 0
-
-        setvariable('environments', envs)
-        setvariable('modules',      mods)
 
         # end of preprocessing and merging
 
@@ -1389,11 +1398,12 @@ class TEX
 
     end
 
-    # mp specific
+    # The labels are collected in the mergebe hash. Here we merge the relevant labels
+    # into beginfig/endfig. We could as well do this in metafun itself. Maybe some
+    # day ... (it may cost a bit of string space but that is cheap nowadays).
 
-    def doruntexmp(mpname,mergebe=true,context=true)
+    def doruntexmp(mpname,mergebe=nil,context=true)
         texfound = false
-        mpbetex = Hash.new
         mpfile = File.suffixed(mpname,'mp')
         mpcopy = File.suffixed(mpname,'copy','mp')
         setvariable('mp.file',mpfile)
@@ -1402,38 +1412,28 @@ class TEX
         if mpdata = File.silentread(mpfile) then
             mpdata.gsub!(/^\#.*\n/o,'')
             File.silentrename(mpfile,mpcopy)
-            texfound = mergebe || mpdata =~ /btex .*? etex/mo
+            texfound = mergebe || (mpdata =~ /btex .*? etex/mo)
             if mp = openedfile(mpfile) then
-                mpdata.gsub!(/(btex.*?)\;(.*?etex)/o) do "#{$1}@@@#{$2}" end
-                # mpdata.gsub!(/(\".*?)\;(.*?\")/o) do "#{$1}@@@#{$2}" end
-                mpdata.gsub!(/(\".*?\")/o) do "#{$1.gsub(/\;/o,'@@@')}" end
-                mpdata.gsub!(/\;/o, "\;\n")
-                # mpdata.gsub!(/\n+/o, "\n")
-                # mpdata.gsub!(/(btex.*?)\@\@\@(.*?etex)/o) do "#{$1}\;#{$2}" end
-                # mpdata.gsub!(/(\".*?)\@\@\@(.*?\")/mo) do "#{$1};#{$2}" end
-                mpdata.gsub!(/\@\@\@/o) do ";" end
                 if mergebe then
-                    mpdata.gsub!(/beginfig\s*\((\d+)\)\s*\;(.*?)endfig\s*\;/o) do
+                    mpdata.gsub!(/beginfig\s*\((\d+)\)\s*\;(.+?)endfig\s*\;/mo) do
                         n, str = $1, $2
-                        if str =~ /(.*?)(verbatimtex.*?etex)\s*\;(.*)/o then
-                            "beginfig(#{n})\;\n#{$1}#{$2}\;\n#{mpbetex(n)}\n#{$3}\;endfig\;\n"
+                        if str =~ /^(.*?)(verbatimtex.*?etex)\s*\;(.*)$/mo then
+                            "beginfig(#{n})\;\n#{$1}#{$2}\;\n#{mergebe[n]}\n#{$3}\;endfig\;\n"
                         else
-                            "beginfig(#{n})\;\n#{mpbetex(n)}\n#{str}\;endfig\;\n"
+                            "beginfig(#{n})\;\n#{mergebe[n]}\n#{str}\;endfig\;\n"
                         end
                     end
+                    unless mpdata =~ /beginfig\s*\(\s*0\s*\)/o then
+                        mp << mergebe['0'] if mergebe.key?('0')
+                    end
                 end
-                mpdata.gsub!(/\n+/mo, "\n")
-                mpdata.gsub!(/^\s*\;\s*\n/o, "")
-                unless mpdata =~ /beginfig\s*\(\s*0\s*\)/o then
-                    mp << mpbetex['0'] if mpbetex.key?('0')
-                end
-                mp << mpdata # ??
+                mp << splitmplines(mpdata)
                 mp << "\n"
                 mp << "end"
                 mp << "\n"
                 mp.close
             end
-            processmpx(mpname) if texfound
+            processmpx(mpname,true) if texfound
             if getvariable('batchmode') then
                 options = ' --interaction=batch'
             elsif getvariable('nonstopmode') then
@@ -1458,39 +1458,50 @@ class TEX
         end
     end
 
-    def processmpx(mpname,context=true)
-        mpname = File.suffixed(mpname,'mp')
-        if File.atleast?(mpname,10) && (data = File.silentread(mpname)) then
+    def processmpx(mpname,force=false,context=true)
+        unless force then
+            mpname = File.suffixed(mpname,'mp')
+            if File.atleast?(mpname,10) && (data = File.silentread(mpname)) then
+                if data =~ /(btex|etex|verbatimtex|textext)/o then
+                    force = true
+                end
+            end
+        end
+        if force then
             begin
-                if data =~ /(btex|etex|verbatimtex)/o then
-                    mptex = File.suffixed(mpname,'temp','tex')
-                    mpdvi = File.suffixed(mpname,'temp','dvi')
-                    mplog = File.suffixed(mpname,'temp','log')
-                    mpmpx = File.suffixed(mpname,'mpx')
-                    ok = system("mpto #{mpname} > #{mptex}")
-                    if ok && File.appended(mptex, "\\end\n") then
-                        if localjob = TEX.new(@logger) then
-                            localjob.setvariable('files',mptex)
-                            localjob.setvariable('backend','dvips')
-                            localjob.setvariable('engine',getvariable('engine')) unless getvariable('engine').empty?
-                            localjob.setvariable('once',true)
-                            localjob.setvariable('nobackend',true)
-                            if context then
-                                localjob.setvariable('texformats',[getvariable('interface')]) unless getvariable('interface').empty?
-                            elsif getvariable('interface').empty? then
-                                localjob.setvariable('texformats',['plain'])
-                            else
-                                localjob.setvariable('texformats',[getvariable('interface')])
-                            end
-                            localjob.processtex
-                            ok = true # todo
+                mptex = File.suffixed(mpname,'temp','tex')
+                mpdvi = File.suffixed(mpname,'temp','dvi')
+                mplog = File.suffixed(mpname,'temp','log')
+                mpmpx = File.suffixed(mpname,'mpx')
+                command = "mpto #{mpname} > #{mptex}"
+                report(command) if getvariable('verbose')
+                ok = system(command)
+                if ok && File.appended(mptex, "\\end\n") then
+                    # to be replaced by runtexexec([filenames],options,1)
+                    if localjob = TEX.new(@logger) then
+                        localjob.setvariable('files',mptex)
+                        localjob.setvariable('backend','dvips')
+                        localjob.setvariable('engine',getvariable('engine')) unless getvariable('engine').empty?
+                        localjob.setvariable('once',true)
+                        localjob.setvariable('nobackend',true)
+                        if context then
+                            localjob.setvariable('texformats',[getvariable('interface')]) unless getvariable('interface').empty?
+                        elsif getvariable('interface').empty? then
+                            localjob.setvariable('texformats',['plain'])
                         else
-                            ok = false
+                            localjob.setvariable('texformats',[getvariable('interface')])
                         end
-                        ok = ok && FileTest.file?(mpdvi) && system("dvitomp #{mpdvi} #{mpmpx}")
-                        [mptex,mpdvi,mplog].each do |mpfil|
-                            File.silentdelete(mpfil)
-                        end
+                        localjob.processtex
+                        ok = true # todo
+                    else
+                        ok = false
+                    end
+                    # so far
+                    command = "dvitomp #{mpdvi} #{mpmpx}"
+                    report(command) if getvariable('verbose')
+                    ok = ok && FileTest.file?(mpdvi) && system(command)
+                    [mptex,mpdvi,mplog].each do |mpfil|
+                        File.silentdelete(mpfil)
                     end
                 end
             rescue
@@ -1549,6 +1560,44 @@ class TEX
             end
         end
         return nil
+    end
+
+    # mp specific (todo: mp module)
+
+    def splitmplines(str)
+        btex, verbatimtex, strings, result = Array.new, Array.new, Array.new, str.dup
+        # protect texts
+        result.gsub!(/btex\s*(.*?)\s*etex/) do
+            btex << $1
+            "btex(#{btex.length-1})"
+        end
+        result.gsub!(/verbatimtex\s*(.*?)\s*etex/) do
+            verbatimtex << $1
+            "verbatimtex(#{verbatimtex.length-1})"
+        end
+        result.gsub!(/\"(.*?)\"/) do
+            strings << $1
+            "\"#{strings.length-1}\""
+        end
+        result.gsub!(/\;/) do
+            ";\n"
+        end
+        result.gsub!(/(.{80,})(\-\-\-|\-\-|\.\.\.|\.\.)/) do
+            "#{$1}#{$2}\n"
+        end
+        result.gsub!(/\n[\s\n]+/mois) do
+            "\n"
+        end
+        result.gsub!(/btex\((\d+)\)/) do
+            "btex #{btex[$1.to_i]} etex"
+        end
+        result.gsub!(/verbatimtex\((\d+)\)/) do
+            "verbatimtex #{verbatimtex[$1.to_i]} etex"
+        end
+        result.gsub!(/\"(\d+)\"/) do
+            "\"#{strings[$1.to_i]}\""
+        end
+        result
     end
 
 end

@@ -1073,6 +1073,8 @@
   \def\executesystemcommand#1{\immediate\write18{#1}}
 \fi
 
+\ifx\TEXEXECcommand \undefined \def\TEXEXECcommand{texexec} \fi
+
 \ifx\undefined\executeMetaPost
 
   \ifx\undefined\interactionmode \chardef\interactionmode=255 \fi
@@ -1088,7 +1090,7 @@
       \space\ifuseMETAFUNformat \MPOSTformatswitch metafun \fi #1}
 
   \def\executeMPTEX#1%
-    {texexec
+    {\TEXEXECcommand\space
        --batch \ifcase\interactionmode --logfile='mptex.log' \fi
        --output=\MPOSTdriver\space
        \ifuseMETAFUNformat --mpformat=metafun \fi --mptex --nomp --once #1}

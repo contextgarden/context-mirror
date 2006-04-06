@@ -165,7 +165,7 @@
    \else
      \makeshortfilename[#1\truefilename{#2}]% beware: *- is not part of syn
      \doifelseflagged\shortfilename
-       {\showmessage\m!systems7{#2}%
+       {\showmessage\m!systems7{#2 (line \number\inputlineno)}%
         \settrue\moduleisloaded
         \let\next\relax}
        {\doglobal\setflag\shortfilename
@@ -192,22 +192,91 @@
      \showmessage\m!systems6{#2}%
    \fi}
 
-\def\dousemodules[#1][#2]%
-  {\ifsecondargument
-     \doifelsenothing{#2}
-       {\let\next\relax}
-       {\def\next{\processcommalist[#2]{\dodousemodules{#1}}}}%
-   \else
-     \def\next{\usemodules[][#1]}%
-   \fi
-   \next}
+% \def\usemodules
+%   {\dodoubleempty\dousemodules}
+%
+% \def\dousemodules[#1][#2]%
+%   {\ifsecondargument
+%      \doifelsenothing{#2}
+%        {\let\next\relax}
+%        {\def\next{\processcommalist[#2]{\dodousemodules{#1}}}}%
+%    \else
+%      \def\next{\usemodules[][#1]}%
+%    \fi
+%    \next}
+%
+% \let\usemodule\usemodules
 
 \def\usemodules
-  {\dodoubleempty\dousemodules}
+  {\dotripleempty\dousemodules}
 
-\let\usemodule\usemodules
+\def\dousemodules[#1][#2][#3]%
+  {\pushmacro\currentmodule
+   \pushmacro\currentmoduleparameters
+   \let\currentmoduleparameters\empty
+   \ifthirdargument
+     \doifelsenothing{#2}
+       {\let\next\relax}
+       {\def\currentmoduleparameters{#3}%
+        \def\next{\processcommalist[#2]{\dodousemodules{#1}}}}%
+   \else\ifsecondargument
+     \doifelsenothing{#2}
+       {\let\next\relax}
+       {\doifassignmentelse{#2}
+          {\def\currentmoduleparameters{#2}%
+           \def\next{\processcommalist[#1]{\dodousemodules{}}}}
+          {\def\next{\processcommalist[#2]{\dodousemodules{#1}}}}}%
+   \else
+     \def\next{\processcommalist[#1]{\dodousemodules{}}}%
+   \fi\fi
+   \next
+   \popmacro\currentmoduleparameters
+   \popmacro\currentmodule}
 
-% \usemodule[t][speech]
+\let\currentmoduleparameters\empty
+\let\currentmodule          \s!unknown
+
+\def\startmodule
+  {\doifnextcharelse[\dostartmodule\nostartmodule}
+
+\def\nostartmodule #1 %
+  {\dostartmodule[#1]}
+
+\def\dostartmodule[#1]%
+  {\pushmacro\currentmodule
+   \pushmacro\currentmoduleparameters
+   \def\currentmodule{#1}}
+
+\def\stopmodule
+  {\popmacro\currentmoduleparameters
+   \popmacro\currentmodule}
+
+\def\setupmodule
+  {\dodoubleempty\dosetupmodule}
+
+\def\dosetupmodule[#1][#2]%
+  {\scratchtoks\expandafter{\currentmoduleparameters}%
+   \ifsecondargument
+     \getparameters[\??md:#1:][#2]%
+     \expanded{\getparameters[\??md:#1:][\the\scratchtoks]}%
+   \else
+     \getparameters[\??md:\currentmodule:][#1]%
+     \expanded{\getparameters[\??md:\currentmodule:][\the\scratchtoks]}%
+   \fi
+   \let\currentmoduleparameters\empty}
+
+\def\moduleparameter     #1#2{\csname\??md:#1:#2\endcsname}
+\def\currentmoduleparameter#1{\csname\??md:\currentmodule:#1\endcsname}
+
+% \usemodule[newmml]
+% \usemodule[newmml][a=b]
+% \usemodule[x][newmml]
+% \usemodule[x][newmml][a=b]
+%
+% \startmodule [mathml]
+%   \setupmodule[a=c] [\currentmoduleparameter{a}] % user vars will be set afterwards
+%   \setupmodule[a=c] [\currentmoduleparameter{a}] % user vars are now forgotten
+% \stopmodule
 
 %D We also support a singular call, which saves us for
 %D frustrations when we do a typo.

@@ -180,6 +180,7 @@ my $thisisunix  = $Config{'osname'} !~ /dos|mswin/i ;
 
 my $figurefile = "" ;
 my $resultfile = "" ;
+my $tempfile   = "" ;
 
 my $programname = "cropcrap" ;
 
@@ -224,7 +225,7 @@ my $width = my $height = my $llx = my $lly = my $urx = my $ury = 0 ;
 #D help information.
 
 sub PrintHelp
-  { print "This is CropCrap\n\n" .
+  { print "This is PdfTrimWhite\n\n" .
           "usage:\n\n" .
           "cropcrap [switches] filename result\n\n" .
           "switches:\n\n" .
@@ -246,6 +247,7 @@ sub GetItRight
       { PrintHelp() ; exit }
     $figurefile = $ARGV[0] ; $figurefile =~ s/\.pdf$//oi ;
     $resultfile = $ARGV[1] ; $resultfile =~ s/\.pdf$//oi ;
+    $tempfile = "pdftrimwhite-$resultfile" ;
     if ($figurefile eq '')
       { PrintHelp() ; exit }
     unless ($thisisunix)
@@ -257,7 +259,7 @@ sub GetItRight
         exit }
     if (($resultfile eq '')||($resultfile=~/(^\-|\.)/io))
       { $resultfile = $programname }
-$pipe = "2>&1" ;
+    $pipe = "2>&1" ;
     if ($thisisunix)
       { $pipe = "2>&1" } }
 
@@ -376,7 +378,7 @@ sub PreparePlainTeX
 \\figureheight=\\ht0\n" }
 
 sub PrepareFirstPass
-  { open (TEX, ">$resultfile.tex") ;
+  { open (TEX, ">$tempfile.tex") ;
     if ($UsePlain)
       { print TEX
           PreparePlainTeX  .
@@ -406,7 +408,7 @@ sub SetupPlainTeX
   {\\immediate\\pdfximage page $Page {$figurefile.pdf}\\pdfrefximage\\pdflastximage}\n" }
 
 sub PrepareSecondPass
-  { open (TEX, ">$resultfile.tex") ;
+  { open (TEX, ">$tempfile.tex") ;
     if ($UsePlain)
       { print TEX
           SetupPlainTeX    .
@@ -438,30 +440,18 @@ sub FetchPaperSize
 
 sub RunTeX
   { if ($UsePlain)
-      { $result =
-          `pdftex -prog=pdftex -fmt=plain -int=batchmode $resultfile` }
+      { $result = `pdftex -prog=pdftex -fmt=plain -int=batchmode $tempfile` }
     else
-      { $result =
-          `texexec --batch --once --purge $resultfile` }
-#    print $result if $Verbose ; $results .= "$result\n" ;
-#   $result = `texutil --purge` ;
-    print $result if $Verbose ; $results .= "$result\n" }
-
-sub MakePSFile
-  { $result =
-      `$pdfps -paperw $pwidth -paperh $pheight $resultfile.pdf $resultfile.ps` ;
+      { $result = `texexec --batch --once --purge $tempfile` }
     print $result if $Verbose ; $results .= "$result\n" }
 
 sub FindBoundingBox
-  { $result =
-#     `$gs -sDEVICE=bbox -dNOPAUSE -dBATCH $resultfile.ps $pipe` ;
-      `$gs -sDEVICE=bbox -dNOPAUSE -dBATCH $resultfile.pdf $pipe` ;
+  { $result = `$gs -sDEVICE=bbox -dNOPAUSE -dBATCH $tempfile.pdf $pipe` ;
     print $result if $Verbose ; $results .= "$result\n" }
 
 sub IdentifyCropBox
   { RunTeX() ;
     FetchPaperSize () ;
-#    MakePSFile() ;
     FindBoundingBox() }
 
 #D Just to be sure, we check if there is some image data, so
@@ -495,6 +485,10 @@ sub FixCropBox
 
 #D For error tracing we save the log information in a file.
 
+sub RenameResult
+  { unlink "$resultfile.pdf" ;
+    rename "$tempfile.pdf", "$resultfile.pdf" }
+
 sub SaveLogInfo
   { open (LOG, ">$resultfile.log") ;
     print LOG $results ;
@@ -504,10 +498,9 @@ sub SaveLogInfo
 
 sub CleanUp
   { unless ($Verbose)
-      { unlink "$resultfile.tex" ;
-        unlink "$resultfile.tuo" ;
-        unlink "$resultfile.tui" ;
-        unlink "$resultfile.ps"  ;
+      { unlink "$tempfile.tex" ;
+        unlink "$tempfile.tuo" ;
+        unlink "$tempfile.tui" ;
         unlink "$figurefile.tmp" } }
 
 #D Here it all comes together.
@@ -526,6 +519,7 @@ if (ValidatedCropBox())
   { PrepareSecondPass() ;
     FixCropBox() }
 
+RenameResult() ;
 SaveLogInfo() ;
 
 CleanUp () ;

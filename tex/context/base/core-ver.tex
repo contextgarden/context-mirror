@@ -753,6 +753,8 @@
 
 \def\settypingparameter#1#2%
   {\setvalue{\currenttypingclass\currenttyping#1}{#2}}
+\def\setxtypingparameter#1#2%
+  {\setxvalue{\currenttypingclass\currenttyping#1}{#2}}
 
 \def\initializetyping
   {%\donefalse
@@ -801,22 +803,77 @@
 %D indirect way. As we will see, they are a specific case of a
 %D more general mechanism.
 
-\def\dostarttyping#1%
-  {\let\currenttypingclass\??tp
+% formal version
+%
+% \def\dostarttyping#1%
+%   {\let\currenttypingclass\??tp
+%    \edef\currenttyping{#1}%
+%    \typingparameter\c!before
+%    \startpacked % includes \bgroup
+%    \dosetuptypelinenumbering{}%
+%    \initializetyping
+%    \startverbatimcolor
+%    \expandafter\processdisplayverbatim\expandafter{\s!stop#1}}
+
+% we need this hack because otherwise verbatim skips
+% the first line (everything after the initial command)
+
+\def\dostarttyping#1% tricky non standard lookahead
+  {\bgroup
+   \let\currenttypingclass\??tp
    \edef\currenttyping{#1}%
-   \typingparameter\c!before
+   \obeylines
+   \futurelet\nexttoken\dodostarttyping}
+
+\def\dodostarttyping
+  {\ifx\nexttoken[%
+     \expandafter\dododostarttyping
+   \else
+     \expandafter\nododostarttyping
+   \fi}
+
+\def\nododostarttyping
+  {\dododostarttyping[]}
+
+\def\dododostarttyping[#1]%
+  {\typingparameter\c!before
    \startpacked % includes \bgroup
-   \dosetuptypelinenumbering{}%
+   \dosetuptypelinenumbering{#1}%
    \initializetyping
    \startverbatimcolor
-   \expandafter\processdisplayverbatim\expandafter{\s!stop#1}}
+   \expanded{\processdisplayverbatim{\s!stop\currenttyping}}}
 
 \def\dostoptyping#1%
   {\stopverbatimcolor
    \stoppacked  % includes \egroup
    \typingparameter\c!after
+   \egroup
    \dochecknextindentation{\??tp#1}%
    \dorechecknextindentation}
+
+%D Line numbering for files is combined with filtering, while
+%D display verbatim has the ability to continue.
+%D
+%D \starttyping
+%D \typefile[numbering=file,start=10,stop=12]{test.tex}
+%D
+%D \definetyping[code][numbering=line]
+%D
+%D \starttext
+%D \startcode
+%D ...
+%D ...
+%D \stopcode
+%D
+%D \startcode[continue]
+%D ...
+%D ...
+%D \stopcode
+%D
+%D \startcode[start=10]
+%D ...
+%D \stopcode
+%D \stoptyping
 
 %D \macros
 %D   {setuptyping}
@@ -1024,7 +1081,7 @@
       \let\endofpretty        \stopcolor
       \def\startverbatimcolor{\startcolor[\typingparameter\c!color]}%
       \let\stopverbatimcolor  \stopcolor
-      \def\verbatimcolor     {\typingparameter\c!color}}%
+      \def\verbatimcolor     {\getvalue{\typingparameter\c!color}}}% command !
    \doifelsenothing{\typingparameter\c!palet}
      {\let\prettypalet\empty
       \let\endofpretty\relax
@@ -1172,21 +1229,50 @@
      \dodotypefile[\v!file][]{#3}%
    \fi\fi}
 
+% \def\dosetuptypelinenumbering#1% fuzzy
+%   {\doifundefined{\currenttypingclass\currenttyping\c!start}
+%      {\setuptyping[\currenttyping][\c!start=1,\c!stop=,\c!step=1,\c!nlines=,#1]}%
+%    \doifelse{\typingparameter\c!numbering}\v!file
+%      {\setuplinenumbering[\c!method=\v!file]%
+%       \donetrue}
+%      {\doifelse{\typingparameter\c!numbering}\v!line
+%         {% \setuplinenumbering defaults start/step to 1/1, so we need
+%          \doifnothing{\typingparameter\c!start   }{\settypingparameter\c!start   {1}}%
+%          \doifnothing{\typingparameter\c!step    }{\settypingparameter\c!step    {1}}%
+%          \doifnothing{\typingparameter\c!continue}{\settypingparameter\c!continue{}}%
+%          \setuplinenumbering
+%            [\c!method=\v!type,
+%             \c!continue=\typingparameter\c!continue,
+%             \c!start=\typingparameter\c!start,
+%             \c!step=\typingparameter\c!step]%
+%          \donetrue}
+%         {\donefalse}}%
+%    \ifdone
+%      \ifx\startlinenumbering\undefined \let\startlinenumbering\relax \fi
+%      \ifx\stoplinenumbering \undefined \let\stoplinenumbering \relax \fi
+%      \def\beginofverbatimlines{\startlinenumbering}%
+%      \def\endofverbatimlines  {\stoplinenumbering }%
+%    \fi}
+
 \def\dosetuptypelinenumbering#1% fuzzy
   {\doifundefined{\currenttypingclass\currenttyping\c!start}
-     {\setuptyping[\currenttyping][\c!start=1,\c!stop=,\c!step=1,\c!nlines=,#1]}%
+     {\setuptyping[\currenttyping][\c!start=1,\c!stop=,\c!step=1,\c!nlines=]}%
+   \setuptyping[\currenttyping][#1]%
    \doifelse{\typingparameter\c!numbering}\v!file
-     {\setuplinenumbering[\c!method=\v!file]%
+     {% kind of special: filters lines !
+      \setuplinenumbering[\c!method=\v!file]%
       \donetrue}
      {\doifelse{\typingparameter\c!numbering}\v!line
         {% \setuplinenumbering defaults start/step to 1/1, so we need
-         \doifnothing{\typingparameter\c!start   }{\settypingparameter\c!start   {1}}%
-         \doifnothing{\typingparameter\c!step    }{\settypingparameter\c!step    {1}}%
-         \doifnothing{\typingparameter\c!continue}{\settypingparameter\c!continue{}}%
+         \doifinsetelse\v!continue{#1,\typingparameter\c!start}
+           {\scratchcounter0\typingparameter\c!n
+            \setxtypingparameter\c!start{\ifnum\scratchcounter=0 1\else\number\scratchcounter\fi}}%
+           {\doifnothing{\typingparameter\c!start}{\settypingparameter\c!start{1}}}%
+         \doifnothing{\typingparameter\c!step}{\settypingparameter\c!step{1}}%
          \setuplinenumbering
            [\c!method=\v!type,
-            \c!continue=\typingparameter\c!continue,
             \c!start=\typingparameter\c!start,
+            \c!stop=\typingparameter\c!stop,
             \c!step=\typingparameter\c!step]%
          \donetrue}
         {\donefalse}}%
@@ -1194,7 +1280,7 @@
      \ifx\startlinenumbering\undefined \let\startlinenumbering\relax \fi
      \ifx\stoplinenumbering \undefined \let\stoplinenumbering \relax \fi
      \def\beginofverbatimlines{\startlinenumbering}%
-     \def\endofverbatimlines  {\stoplinenumbering }%
+     \def\endofverbatimlines  {\stoplinenumbering\setxtypingparameter\c!n{\number\linenumber}}%
    \fi}
 
 % \setuptyping % not needed

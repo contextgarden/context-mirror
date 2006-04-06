@@ -1275,6 +1275,16 @@
 
 \endETEX
 
+%D We also save:
+
+\def\savemathtextstyle#1% #1=rm|ss|..
+  {\doifsomething{#1}{\setxvalue{\fontclass\c!mm\s!text}{#1}}}
+
+\def\currentmathtextstyle % we default to empty !
+  {\executeifdefined{\fontclass\c!mm\s!text}\empty}
+
+%D Scaling macros:
+
 \newdimen\scaledfont
 
 \let\somefontspec\empty

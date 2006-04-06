@@ -184,8 +184,8 @@
 %D compound characters like |-| or || to be separated from the
 %D words. \TEX\ hackers will recognise the next two macro's:
 
-\def\prewordbreak  {\penalty10000\hskip0pt\relax}
-\def\postwordbreak {\penalty0\prewordbreak}
+\def\prewordbreak  {\penalty\plustenthousand\hskip\zeropoint\relax}
+\def\postwordbreak {\penalty\zerocount\prewordbreak}
 
 %D We first show the original implementation, which only
 %D supports \type{|} as command and delimiter. Before
@@ -507,11 +507,16 @@
    \nextnextnext}
 
 \def\checkbeforediscretionary
-  {\setbox0\lastbox
-   \ifdim\wd0=\zeropoint
-     \let\postwordbreak\prewordbreak
-   \fi
-   \box0\relax}
+  {\ifvmode\dontleavehmode\fi
+   \ifhmode
+     \begingroup
+     \setbox\scratchbox\lastbox
+     \ifdim\wd\scratchbox=\zeropoint
+       \let\postwordbreak\prewordbreak
+     \fi
+     \box\scratchbox\relax
+     \endgroup
+  \fi}
 
 \def\checkafterdiscretionary
   {\ifx,\nextnext
@@ -604,8 +609,8 @@
   {\uccode`'=`'\relax \uccode`~=`~\relax \uccode`_=`_\relax
    \uccode`(=`(\relax \uccode`)=`)\relax \uccode`==`=\relax
    \uccode`<=`<\relax \uccode`>=`>\relax
-   \let\dotextmodediscretionary     = \activedotextmodediscretionary
-   \let\dododotextmodediscretionary = \activedododotextmodediscretionary}
+   \let\dotextmodediscretionary    \activedotextmodediscretionary
+   \let\dododotextmodediscretionary\activedododotextmodediscretionary}
 
 %D We only have to redefine two macros. While saving the
 %D \type{\uccode} in a macro we have to take care of empty
@@ -673,7 +678,7 @@
        \allowbreak\postwordbreak
      \egroup
    \fi\fi\fi\fi\fi\fi\fi\fi\fi
-   \nextnextnext}
+   \nextnextnext} % no lookahead in commands
 
 %D Now we can safely do things like: \enableactivediscretionaries
 %D
@@ -769,11 +774,12 @@
        \allowbreak\postwordbreak
      \egroup
    \fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi
-   \nextnextnext}
+   \nextnextnext} % no lookahead in commands
 
 %D Since most things in \CONTEXT\ are configurable, we
 %D slightly change the previous definition so that we can
-%D install new functionality outside this module.
+%D install new functionality outside this module. We also
+%D support lookahead (over the egroup).
 
 \def\@tmd@{@@tmd@@}
 
@@ -804,10 +810,14 @@
        \discretionary{\hbox{#2}}{}{\hbox{#2}}%
        \allowbreak\postwordbreak
      \egroup
+   \else\ifx\nextnextnext\egroup % so we can properly do things afterward
+     \@EA\egroup
+     \@EA\let\@EA\nextnextnext\@EA\empty
+     \csname\@tmd@\discretionarytoken\endcsname
    \else
      \csname\@tmd@\discretionarytoken\endcsname
-   \fi\fi
-   \nextnextnext} % can be \egroup so \aftergroup\ignorespaces
+   \fi\fi\fi
+   \nextnextnext} % lookahead in commands
 
 \def\definetextmodediscretionary #1
   {\convertargument#1\to\ascii
@@ -863,19 +873,15 @@
 
 \definetextmodediscretionary :
   {\removeunwantedspaces\prewordbreak\kern\hspaceamount\empty{:}:}
-  %\space\aftergroup\ignorespaces}
 
 \definetextmodediscretionary ;
   {\removeunwantedspaces\prewordbreak\kern\hspaceamount\empty{;};}
-  %\space\aftergroup\ignorespaces}
 
 \definetextmodediscretionary ?
   {\removeunwantedspaces\prewordbreak\kern\hspaceamount\empty{?}?}
-  %\space\aftergroup\ignorespaces}
 
 \definetextmodediscretionary !
   {\removeunwantedspaces\prewordbreak\kern\hspaceamount\empty{!}!}
-  %\space\aftergroup\ignorespaces}
 
 \definetextmodediscretionary *
   {\prewordbreak\discretionary{-}{}{\kern.05em}\prewordbreak}
@@ -907,6 +913,10 @@
 %D
 %D In those situations where the nature of characters is
 %D less predictable, we can use the more direct approach:
+
+%D Beware: an \type {\ignorespaces} in a definition works
+%D okay here, but not in the main mechanism because there
+%D we have \type {\nextnextnext}.
 
 \unexpanded\def\directdiscretionary#1%
   {\convertargument#1\to\discretionarytoken
@@ -1197,7 +1207,7 @@
 %D
 %D The following macro is taken from plain \TEX.
 
-\def\nonbreakablespace{\penalty\!!tenthousand\ }
+\def\nonbreakablespace{\penalty\plustenthousand\ }
 
 \let~\nonbreakablespace
 
@@ -1366,6 +1376,8 @@
       \else
         \prewordbreak\discretionary{}{##1{}{}}{##1{}{}}\prewordbreak
       \fi}%
+   \def\splitanyway##1%
+     {\prewordbreak##1\prewordbreak}%
    \def\flushurl%
      {\savedurl\let\savedurl\empty}%
    \def\\%
@@ -1439,7 +1451,13 @@
 
 \def\scanurl#1%
   {\advance\scratchcounter\plusone
-   \ifx#1\~%
+   \ifx#1\blankspace
+     \flushurl\splitanyway\normalspace
+   \else\ifx#1\ %
+     \flushurl\splitanyway\normalspace
+   \else\ifx#1\space
+     \flushurl\splitanyway\normalspace
+   \else\ifx#1\~%
      \flushurl\splitbefore\~%
    \else\ifx#1\#%
      \flushurl\splitbefore\#%
@@ -1493,7 +1511,7 @@
          #1%
        \fi
      \fi
-   \fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi}
+   \fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi}
 
 % \setupinteraction[state=start]
 % \def\gotoURL#1{\useURL[foo][#1]\goto{\url[foo]}[url(foo)]}

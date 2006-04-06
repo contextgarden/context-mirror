@@ -11,6 +11,16 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
+% for testing:
+
+\startmode[sortorder-en]
+    \exportsortexpansion{aacute}{a+1}
+    \exportsortexpansion{Aacute}{A+2}
+    \exportsortexpansion{agrave}{a+1}
+    \exportsortexpansion{Agrave}{A+2}
+\stopmode
+
+
 %D This module replaces existing sort key handling and is meant to be
 %D used with the new texutil functionality. Here we define the language
 %D specific sort rules.
@@ -18,6 +28,18 @@
 % slovenian
 %
 % a-c, ccaron, cacute, d, dstroke, e-s, scaron, t-z, zcaron
+
+% \enableregime[utf]
+% \mainlanguage[sl]
+% \starttext
+%     \ccaron\index{\ccaron\space 1}
+%     \Ccaron\index{\Ccaron\space 1}
+%     Ä\index{Ä 2}
+%     ÄŒ\index{ÄŒ 2}
+%     \v c\index{\v c 3}
+%     \v C\index{\v C 3}
+%     \placeindex
+% \stoptext
 
 % \startmode[sortorder-sl]
 %     \exportsortexpansion {ccaron}  {cz}
@@ -69,6 +91,36 @@
 % swedish
 %
 % a-z, aring, adiaeresis, odiaeresis
+
+% \mainlanguage[sv]
+% \starttext
+%     a\index{a}
+%     a\index{a}
+%     z\index{z}
+%     z\index{z}
+%     q\index{q}
+%     q\index{q}
+%     å\index{å}
+%     å\index{å}
+%     å\index{å}
+%     ä\index{ä}
+%     ä\index{ä}
+%     ä\index{ä}
+%     ä\index{ä}
+%     ö\index{ö}
+%     ö\index{ö}
+%     \aring\index{\aring}
+%     \adiaeresis\index{\adiaeresis}
+%     \odiaeresis\index{\odiaeresis}
+%     A\index{A}
+%     Å\index{Å}
+%     Ä\index{Ä}
+%     Ö\index{Ö}
+%     \Aring\index{\Aring}
+%     \Adiaeresis\index{\Adiaeresis}
+%     \Odiaeresis\index{\Odiaeresis}
+%     \placeindex
+% \stoptext
 
 \startmode[sortorder-sv]
     \exportsortrule {aring}      {z+1}

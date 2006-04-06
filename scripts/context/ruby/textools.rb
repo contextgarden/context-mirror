@@ -13,7 +13,7 @@
 # This script will harbor some handy manipulations on tex
 # related files.
 
-banner = ['TeXTools', 'version 1.2.2', '2002/2005', 'PRAGMA ADE/POD']
+banner = ['TeXTools', 'version 1.3.1', '2002/2006', 'PRAGMA ADE/POD']
 
 unless defined? ownpath
     ownpath = $0.sub(/[\\\/][a-z0-9\-]*?\.rb/i,'')
@@ -36,6 +36,70 @@ require 'ftools'
 # 'texmfscripts' instead of  'other text files' (texmfstart is already
 # aware of this). Files will only be moved when --force is given. Let
 # me know if more fixes need to be made.
+
+class Commands
+
+    include CommandBase
+
+    def tpmmake
+        if filename = @commandline.argument('first') then
+            filename = File.join('tpm',filename) unless filename =~ /^tpm[\/\\]/
+            filename += '.tpm' unless filename =~ /\.tpm$/
+            if FileTest.file?(filename) then
+                data = IO.read(filename) rescue ''
+                data, fn, n = calculate_tpm(data,"TPM:RunFiles")
+                data, fm, m = calculate_tpm(data,"TPM:DocFiles")
+                data = replace_tpm(data,"TPM:Size",n+m)
+                report("total size #{n+m}")
+                begin
+                    File.open(filename, 'w') do |f|
+                        f << data
+                    end
+                rescue
+                    report("unable to save '#{filename}'")
+                else
+                    report("file '#{filename}' is updated")
+                    filename = File.basename(filename).sub(/\..*$/,'')
+                    zipname = sprintf("%s-%04i.%02i.%02i%s",filename,Time.now.year,Time.now.month,Time.now.day,'.zip')
+                    File.delete(zipname) rescue true
+                    report("zipping file '#{zipname}'")
+                    system("zip -r -9 -q #{zipname} #{[fn,fm].flatten.join(' ')}")
+                end
+            else
+                report("no file '#{filename}'")
+            end
+        end
+    end
+
+    def calculate_tpm(data, tag='')
+        size, ok = 0, Array.new
+        data.gsub!(/<#{tag}.*>(.*?)<\/#{tag}>/m) do
+            content = $1
+            files = content.split(/\s+/)
+            files.each do |file|
+                unless file =~ /^\s*$/ then
+                    if FileTest.file?(file) then
+                        report("found file #{file}")
+                        size += FileTest.size(file) rescue 0
+                        ok << file
+                    else
+                        report("missing file #{file}")
+                    end
+                end
+            end
+            "<#{tag} size=\"#{size}\">#{content}</#{tag}>"
+        end
+        [data, ok, size]
+    end
+
+    def replace_tpm(data, tag='', txt='')
+        data.gsub(/(<#{tag}.*>)(.*?)(<\/#{tag}>)/m) do
+            $1 + txt.to_s + $3
+        end
+    end
+
+
+end
 
 class Commands
 
@@ -870,6 +934,8 @@ commandline.registeraction('updatetree'       , 'fromroot toroot [--force --noch
 commandline.registeraction('downcasefilenames', '[--recurse] [--force]') # not yet documented
 commandline.registeraction('stripformfeeds'   , '[--recurse] [--force]') # not yet documented
 commandline.registeraction('showfont'         , 'filename')
+
+commandline.registeraction('tpmmake'          , 'tpm file (run in texmf root)')
 
 commandline.registeraction('help')
 commandline.registeraction('version')

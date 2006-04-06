@@ -13,7 +13,7 @@
 
 \writestatus{loading}{Context XML Macros (units)}
 
-%D Quick and dirty in||line units: 
+%D Quick and dirty in||line units:
 %D
 %D \startbuffer
 %D <phys>
@@ -21,72 +21,72 @@
 %D   <cu> <Newton/> <Square/> <Meter/> <Per/> <Sec/> </cu>
 %D </phys>
 %D \stopbuffer
-%D 
+%D
 %D \typebuffer \processXMLbuffer
-%D 
-%D A more \MATHML||like unit application: 
+%D
+%D A more \MATHML||like unit application:
 %D
 %D \startbuffer
-%D <phys> <apply> <unit/> 
-%D   <cn> 10 </cn> 
+%D <phys> <apply> <unit/>
+%D   <cn> 10 </cn>
 %D   <csymbol> <Square/> <Meter/> <Per/> <Sec/> </csymbol>
-%D </apply> </phys> 
+%D </apply> </phys>
 %D \stopbuffer
-%D 
+%D
 %D \typebuffer \processXMLbuffer
-%D 
-%D A bit more compact: 
+%D
+%D A bit more compact:
 %D
 %D \startbuffer
-%D <phys> <apply> <unit/> 
-%D   <cn> 10 </cn> 
+%D <phys> <apply> <unit/>
+%D   <cn> 10 </cn>
 %D   <cu> <Square/> <Meter/> <Per/> <Sec/> </cu>
-%D </apply> </phys> 
+%D </apply> </phys>
 %D \stopbuffer
-%D 
+%D
 %D \typebuffer \processXMLbuffer
 %D
-%D A bit more complicated: 
-%D 
+%D A bit more complicated:
+%D
 %D \startbuffer
-%D <phys> <apply> <unit/> 
-%D   <apply> <divide/> <ci> a </ci> <cn> 10 </cn> </apply> 
+%D <phys> <apply> <unit/>
+%D   <apply> <divide/> <ci> a </ci> <cn> 10 </cn> </apply>
 %D   <cu> <Square/> <Meter/> <Per/> <Sec/> </cu>
-%D </apply> </phys> 
+%D </apply> </phys>
 %D \stopbuffer
-%D 
+%D
 %D \typebuffer \processXMLbuffer
-%D 
-%D An alternative (equivalent) for \type {</cu>}: 
+%D
+%D An alternative (equivalent) for \type {</cu>}:
 %D
 %D \startbuffer
-%D <phys> <apply> <unit/> 
+%D <phys> <apply> <unit/>
 %D   <cn> 10 </cn> <cunseq> <Square/> <Meter/> <Per/> <Sec/> </cunseq>
-%D </apply> </phys> 
+%D </apply> </phys>
 %D \stopbuffer
-%D 
+%D
 %D \typebuffer \processXMLbuffer
 
 \defineXMLsingular [unitmeaning] [label=] \doPMLunitmeaning
 
-\def\doPMLunitmeaning%
+\def\doPMLunitmeaning
   {\expanded{\unitmeaning{\XMLop{label}}}}
- 
+
 \startXMLmapping [mml]
 
-\remapXMLsequence [unit]   [CPA] \doPMLuseq 
-\remapXMLsingular [unit]   [CPA] \doPMLunit % #2\empty 
+\remapXMLsequence [unit]   [CPA] \doPMLuseq
+\remapXMLsingular [unit]   [CPA] \doPMLunit % #2\empty
 \remapXMLsequence [cunseq] [CPA] \doPMLuseq % #2
-\remapXMLsequence [cu]     [CPA] \doPMLuseq % #2 
+\remapXMLsequence [cu]     [CPA] \doPMLuseq % #2
 
 \newif\ifPMLunit \PMLunittrue
 
 \def\doPMLuseq#1#2{\PMLunittrue\ignorespaces#2\unskip\PMLunitfalse}
-\def\doPMLunit#1#2\empty{\ignorespaces#2\unskip} 
+\def\doPMLunit#1#2\empty{\ignorespaces#2\unskip}
 
 \def\handlePMLunit#1{\ifPMLunit\ignorespaces#1\fi\ignorespaces}
 
-%D All unit commands are remapped in a similar way. 
+%D All unit commands are remapped in a similar way.
 
 \remapXMLsingular [Atto]       [C] {\handlePMLunit\Atto}
 \remapXMLsingular [Femto]      [C] {\handlePMLunit\Femto}
@@ -180,9 +180,9 @@
 \remapXMLsingular [Promille]   [C] {\handlePMLunit\Promille}
 \remapXMLsingular [Permille]   [C] {\handlePMLunit\Permille}
 
-\remapXMLsingular [Unit]       [C] {\handlePMLunit\Unit}  
+\remapXMLsingular [Unit]       [C] {\handlePMLunit\Unit}
 \remapXMLsingular [NoUnit]     [C] {\handlePMLunit\NoUnit}
 
 \stopXMLmapping
 
-\endinput 
+\endinput

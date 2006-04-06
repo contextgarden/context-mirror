@@ -13,7 +13,9 @@
 
 \setupcite
        [author,year]
-       [\c!pubsep={, },
+       [\c!andtext={ and },
+        \c!otherstext={ et al.},
+        \c!pubsep={, },
         \c!lastpubsep={ and },
         \c!compress=\v!no,
         \c!inbetween={ },
@@ -22,7 +24,9 @@
 
 \setupcite
        [authoryear]
-       [\c!pubsep={, },
+       [\c!andtext={ and },
+        \c!otherstext={ et al.},
+        \c!pubsep={, },
         \c!lastpubsep={ and },
         \c!compress=\v!yes,
         \c!inbetween={ },
@@ -31,7 +35,9 @@
 
 \setupcite
        [authoryears]
-       [\c!pubsep={, },
+       [\c!andtext={ and },
+        \c!otherstext={ et al.},
+        \c!pubsep={, },
         \c!lastpubsep={ and },
         \c!compress=\v!yes,
         \c!inbetween={, },
@@ -39,8 +45,10 @@
         \c!right={)}]
 
 \setupcite
-       [key,number,page,short,type,doi]
-       [\c!pubsep={, },
+       [key,serial,page,short,type,doi,url]
+       [\c!andtext={ and },
+        \c!otherstext={ et al.},
+        \c!pubsep={, },
         \c!lastpubsep={ and },
         \c!compress=\v!no,
         \c!inbetween={ },
@@ -49,7 +57,9 @@
 
 \setupcite
        [num]
-       [\c!pubsep={, },
+       [\c!andtext={ and },
+        \c!otherstext={ et al.},
+        \c!pubsep={, },
         \c!lastpubsep={ and },
         \c!compress=\v!yes,
         \c!inbetween={--},
@@ -98,7 +108,7 @@
  
 \def\insertchap#1#2#3%
   {\insertchapter
-    {#1\inserttype{}{\ }{chapter\ }}{#2}%
+    {#1\insertbibtype{}{\ }{chapter\ }}{#2}%
     {#3}}
 
 \def\insertpublisher#1#2#3%
@@ -137,10 +147,10 @@
    \inserttitle
         {\bgroup\it }%
         {\/\egroup 
-    \ifeditedbook
+         \ifeditedbook
            \global\editedbookfalse
-       \insertvolume
-        { Number~}%
+           \insertvolume
+                { Number~}%
                 {\insertseries
                     { in~\bgroup}%
                     {\egroup. }%
@@ -161,16 +171,16 @@
                       {}}
                    {}%
                    \insertchap{, }{}{}%
-                   \insertpages{, pages }{. }{. }%
+                   \insertpages{, pages }{.}{.}%
                 }%
         \fi}%
-        { }%
+        {}%
    \insertpublisher
-    {}%
-    {\insertedition{, }{ edition. }{. }}%
-    {\insertedition{, }{ edition. }{}}%
-   \insertpages{}{p. }{}%
-   \insertnote{ }{.}{}%
+    { }%
+    {\insertedition{, }{ edition.}{.}}%
+    {\insertedition{, }{ edition.}{}}%
+   \insertpages{ }{p. }{}%
+   \insertnote{}{.}{}%
 }
 
 \setuppublicationlayout[inbook]{%
@@ -331,7 +341,7 @@
    \insertauthors{}{ }{}%
    \insertpubyear{(}{). }{}%
    \inserttitle{\bgroup }{\egroup \insertseries{ (}{)}{}. }{}%
-   \inserttype{}{, }{Master's thesis, }%
+   \insertbibtype{}{, }{Master's thesis, }%
    \insertpublisher{}{. }{}%
    \insertpages{}{p. }{}%
    \insertnote{ }{.}{}%
@@ -341,7 +351,7 @@
    \insertauthors{}{ }{}%
    \insertpubyear{(}{). }{}%
    \inserttitle{\bgroup\it }{\egroup \insertseries{ (}{)}{}. }{}%
-   \inserttype{}{, }{PhD thesis, }%
+   \insertbibtype{}{, }{PhD thesis, }%
    \insertpublisher{}{. }{}%
    \insertpages{}{p. }{}%
    \insertnote{ }{.}{}%
@@ -360,7 +370,7 @@
    \insertauthors{}{ }{}%
    \insertpubyear{(}{). }{}%
    \inserttitle{\bgroup }{\egroup \insertseries{ (}{)}{}. }{}%
-   \inserttype{}{\insertvolume{ }{, }{, }}{Technical Report, }%
+   \insertbibtype{}{\insertvolume{ }{, }{, }}{Technical Report, }%
    \insertpublisher{}{. }{}%
    \insertpages{}{p. }{}%
    \insertnote{ }{.}{}%
@@ -372,7 +382,7 @@
    \inserttitle{\bgroup }{\egroup \insertseries{ (}{)}{}. }{}%
    \insertpublisher{}{. }{}%
    \insertpages{}{p. }{}%
-   \inserttype{(}{)}{}%
+   \insertbibtype{(}{)}{}%
    \insertnote{ }{.}{}%
 }
 

@@ -3467,6 +3467,19 @@
 %D As we can see below, spaces following a control sequence are
 %D to enclosed in \type{{}}.
 
+% keep this one:
+%
+% \def\stripcharacter#1\from#2\to#3%
+%   {\def\dostripcharacter##1#1##2\end
+%      {\edef\!!strippedstring{\!!strippedstring##1}%
+%       \doifnotempty{##2}{\dostripcharacter##2\end}}%
+%    \let\!!strippedstring\empty
+%    \edef\!!stringa{#2}%
+%    \@EA\dostripcharacter\!!stringa#1\end
+%    \dodoglobal\let#3\!!strippedstring}
+%
+% the following is better (comes from syst-loc):
+
 \def\stripcharacter#1\from#2\to#3%
   {\def\dostripcharacter##1#1##2\end
      {\edef\!!strippedstring{\!!strippedstring##1}%

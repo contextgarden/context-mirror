@@ -2361,6 +2361,12 @@ vardef c_phantom (expr b) (text t) =
    fi ;
 enddef ;
 
+% mark paths (for external progs to split)
+
+% def somepath(expr p)
+%     p
+% enddef ;
+
 % done
 
 endinput ;

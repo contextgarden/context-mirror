@@ -1,0 +1,386 @@
+<?xml version="1.0"?>
+
+<cd:interface xmlns:cd="http://www.pragma-ade.com/commands" 
+              name="context/third/t-bib" 
+              language="all" version="2006.02.08">
+
+<cd:command name="setuppublications" file="t-bib.tex">
+  <cd:sequence>
+    <cd:string value="setuppublications"/>
+  </cd:sequence>
+  <cd:arguments>
+    <cd:assignments list="yes">
+      <cd:parameter name="alternative">
+        <cd:constant type="ams"/>
+        <cd:constant type="apa" default="yes"/>
+        <cd:constant type="apa-de"/>
+        <cd:constant type="apa-fr"/>
+        <cd:constant type="aps"/>
+        <cd:constant type="num"/>
+        <cd:constant type="num-fr"/>
+        <cd:constant type="ssa"/>
+      </cd:parameter>
+      <cd:parameter name="refcommand">
+        <cd:constant type="author"/>
+        <cd:constant type="authoryear"/>
+        <cd:constant type="authoryears" default="yes"/>
+        <cd:constant type="key"/>
+        <cd:constant type="num"/>
+        <cd:constant type="serial"/>
+        <cd:constant type="page"/>
+        <cd:constant type="short"/>
+        <cd:constant type="type"/>
+        <cd:constant type="year"/>
+        <cd:constant type="data"/>
+        <cd:constant type="doi"/>
+        <cd:constant type="url"/>
+      </cd:parameter>
+      <cd:parameter name="sorttype">
+        <cd:constant type="cite" default="yes"/>
+        <cd:constant type="bbl"/>
+      </cd:parameter>
+      <cd:parameter name="criterium">
+        <cd:constant type="all" />
+        <cd:constant type="cite" default="yes"/>
+      </cd:parameter>
+      <cd:parameter name="numbering">
+        <cd:constant type="yes"/>
+        <cd:constant type="no" default="yes"/>
+        <cd:constant type="short"/>
+        <cd:constant type="bib"/>
+      </cd:parameter>
+      <cd:parameter name="autohang">
+        <cd:constant type="yes"/>
+        <cd:constant type="no" default="yes"/>
+      </cd:parameter>
+    </cd:assignments>
+  </cd:arguments>
+</cd:command>
+
+<cd:command name="setuppublicationlist" file="t-bib.tex">
+  <cd:sequence>
+    <cd:string value="setuppublicationlist"/>
+  </cd:sequence>
+  <cd:arguments>
+    <cd:assignments list="yes">
+      <cd:parameter name="totalnumber">
+        <cd:constant type="cd:number"/>
+      </cd:parameter>
+      <cd:parameter name="samplesize">
+        <cd:constant type="cd:text"/>
+      </cd:parameter>
+      <cd:parameter name="alternative">
+        <cd:constant type="a" default="yes"/>
+        <cd:constant type="b"/>
+        <cd:constant type="c"/>
+        <cd:constant type="..."/>
+        <cd:constant type="none"/>
+        <cd:constant type="command"/>
+      </cd:parameter>
+       <cd:parameter name="criterium">
+        <cd:constant type="cd:section"/>
+        <cd:constant type="local"/>
+        <cd:constant type="previous"/>
+        <cd:constant type="current" default="yes"/>
+        <cd:constant type="all"/>
+      </cd:parameter>
+      <cd:parameter name="pagenumber">
+        <cd:constant type="yes"/>
+        <cd:constant type="no" default="yes"/>
+      </cd:parameter>
+      <cd:parameter name="artauthor">
+        <cd:constant type="\normalauthor"/>
+        <cd:constant type="\normalshortauthor"/>
+        <cd:constant type="\invertedauthor"/>
+        <cd:constant type="\invertedshortauthor" default="yes"/>
+      </cd:parameter>
+      <cd:parameter name="author">
+        <cd:constant type="\normalauthor"/>
+        <cd:constant type="\normalshortauthor"/>
+        <cd:constant type="\invertedauthor"/>
+        <cd:constant type="\invertedshortauthor" default="yes"/>
+      </cd:parameter>
+      <cd:parameter name="editor">
+        <cd:constant type="\normalauthor"/>
+        <cd:constant type="\normalshortauthor"/>
+        <cd:constant type="\invertedauthor"/>
+        <cd:constant type="\invertedshortauthor" default="yes"/>
+      </cd:parameter>
+      <cd:parameter name="namesep">
+        <cd:constant type="cd:text"/>
+      </cd:parameter>
+      <cd:parameter name="lastnamesep">
+        <cd:constant type="cd:text"/>
+      </cd:parameter>
+      <cd:parameter name="finalnamesep">
+        <cd:constant type="cd:text"/>
+      </cd:parameter>
+      <cd:parameter name="firstnamesep">
+        <cd:constant type="cd:text"/>
+      </cd:parameter>
+      <cd:parameter name="juniorsep">
+        <cd:constant type="cd:text"/>
+      </cd:parameter>
+      <cd:parameter name="vonsep">
+        <cd:constant type="cd:text"/>
+      </cd:parameter>
+      <cd:parameter name="surnamesep">
+        <cd:constant type="cd:text"/>
+      </cd:parameter>
+      <cd:parameter name="authoretallimit">
+        <cd:constant type="cd:number"/>
+      </cd:parameter>
+      <cd:parameter name="authoretaltext">
+        <cd:constant type="cd:text"/>
+      </cd:parameter>
+      <cd:parameter name="authoretaldisplay">
+        <cd:constant type="cd:number"/>
+      </cd:parameter>
+      <cd:parameter name="artauthoretallimit">
+        <cd:constant type="cd:number"/>
+      </cd:parameter>
+      <cd:parameter name="artauthoretaltext">
+        <cd:constant type="cd:text"/>
+      </cd:parameter>
+      <cd:parameter name="artauthoretaldisplay">
+        <cd:constant type="cd:number"/>
+      </cd:parameter>
+      <cd:parameter name="editoretallimit">
+        <cd:constant type="cd:number"/>
+      </cd:parameter>
+      <cd:parameter name="editoretaltext">
+        <cd:constant type="cd:text"/>
+      </cd:parameter>
+      <cd:parameter name="editoretaldisplay">
+        <cd:constant type="cd:number"/>
+      </cd:parameter>
+      <cd:inherit name="setuplist"/>
+    </cd:assignments>
+  </cd:arguments>
+</cd:command>
+
+
+<cd:command name="setupcite" file="t-bib.tex">
+  <cd:sequence>
+    <cd:string value="setupcite"/>
+  </cd:sequence>
+  <cd:arguments>
+    <cd:keywords list="yes">
+      <cd:constant type="author"/>
+      <cd:constant type="year"/>
+      <cd:constant type="authoryear"/>
+      <cd:constant type="authoryears"/>
+      <cd:constant type="key"/>
+      <cd:constant type="serial"/>
+      <cd:constant type="page"/>
+      <cd:constant type="short"/>
+      <cd:constant type="type"/>
+      <cd:constant type="data"/>
+      <cd:constant type="doi"/>
+      <cd:constant type="url"/>
+      <cd:constant type="num"/>
+    </cd:keywords>
+    <cd:assignments list="yes">
+      <cd:parameter name="andtext">
+        <cd:constant type="cd:text"/>
+      </cd:parameter>
+      <cd:parameter name="otherstext">
+        <cd:constant type="cd:text"/>
+      </cd:parameter>
+      <cd:parameter name="pubsep">
+        <cd:constant type="cd:text"/>
+      </cd:parameter>
+      <cd:parameter name="lastpubsep">
+        <cd:constant type="cd:text"/>
+      </cd:parameter>
+      <cd:parameter name="compress">
+        <cd:constant type="yes" default="yes"/>
+        <cd:constant type="no"/>
+      </cd:parameter>
+      <cd:parameter name="inbetween">
+        <cd:constant type="cd:text"/>
+      </cd:parameter>
+      <cd:parameter name="left">
+        <cd:constant type="cd:text"/>
+      </cd:parameter>
+      <cd:parameter name="right">
+        <cd:constant type="cd:text"/>
+      </cd:parameter>
+    </cd:assignments>
+  </cd:arguments>
+</cd:command>
+
+<cd:command name="setuppublicationlayout" file="t-bib.tex">
+  <cd:sequence>
+    <cd:string value="setuppublicationlayout"/>
+  </cd:sequence>
+  <cd:arguments>
+    <cd:keywords list="yes">
+      <cd:constant type="article"/>
+      <cd:constant type="book"/>
+      <cd:constant type="booklet"/>
+      <cd:constant type="conference"/>
+      <cd:constant type="electronic"/>
+      <cd:constant type="inbook"/>
+      <cd:constant type="incollection"/>
+      <cd:constant type="inproceedings"/>
+      <cd:constant type="manual"/>
+      <cd:constant type="mastersthesis"/>
+      <cd:constant type="misc"/>
+      <cd:constant type="patent"/>
+      <cd:constant type="periodical"/>
+      <cd:constant type="phdthesis"/>
+      <cd:constant type="proceedings"/>
+      <cd:constant type="standard"/>
+      <cd:constant type="techreport"/>
+      <cd:constant type="unpublished"/>
+    </cd:keywords>
+    <cd:content/>
+  </cd:arguments>
+</cd:command>
+
+
+<cd:command name="setupbibtex" file="t-bib.tex">
+  <cd:sequence>
+    <cd:string value="setupbibtex"/>
+  </cd:sequence>
+  <cd:arguments>
+    <cd:assignments list="yes">
+      <cd:parameter name="database">
+        <cd:constant type="cd:file"/>
+      </cd:parameter>
+      <cd:parameter name="sort">
+        <cd:constant type="title"/>
+        <cd:constant type="author"/>
+        <cd:constant type="short"/>
+        <cd:constant type="no" default="yes"/>
+      </cd:parameter>
+    </cd:assignments>
+  </cd:arguments>
+</cd:command>
+
+
+<cd:command name="usepublications" file="t-bib.tex">
+  <cd:sequence>
+    <cd:string value="usepublications"/>
+  </cd:sequence>
+  <cd:arguments list="yes">
+    <cd:keywords>
+      <cd:constant type="cd:file"/>
+    </cd:keywords>
+  </cd:arguments>
+</cd:command>
+
+
+<cd:command name="publication" file="t-bib.tex" type="environment">
+  <cd:sequence>
+    <cd:string value="publication"/>
+  </cd:sequence>
+  <cd:arguments>
+    <cd:assignments list="yes">
+      <cd:parameter name="k">
+        <cd:constant type="cd:text"/>
+      </cd:parameter>
+      <cd:parameter name="a">
+        <cd:constant type="cd:text"/>
+      </cd:parameter>
+      <cd:parameter name="y">
+        <cd:constant type="cd:text"/>
+      </cd:parameter>
+      <cd:parameter name="n">
+        <cd:constant type="cd:text"/>
+      </cd:parameter>
+      <cd:parameter name="s">
+        <cd:constant type="cd:text"/>
+      </cd:parameter>
+      <cd:parameter name="t">
+        <cd:constant type="cd:text"/>
+      </cd:parameter>
+      <cd:parameter name="u">
+        <cd:constant type="cd:text"/>
+      </cd:parameter>
+      <cd:parameter name="o">
+        <cd:constant type="cd:text"/>
+      </cd:parameter>
+    </cd:assignments>
+  </cd:arguments>
+</cd:command>
+
+<cd:command name="cite" file="t-bib.tex">
+  <cd:sequence>
+    <cd:string value="cite"/>
+  </cd:sequence>
+  <cd:arguments>
+    <cd:keywords optional="yes">
+      <cd:constant type="author"/>
+      <cd:constant type="year"/>
+      <cd:constant type="authoryear"/>
+      <cd:constant type="authoryears"/>
+      <cd:constant type="key"/>
+      <cd:constant type="serial"/>
+      <cd:constant type="page"/>
+      <cd:constant type="short"/>
+      <cd:constant type="type"/>
+      <cd:constant type="doi"/>
+      <cd:constant type="data"/>
+      <cd:constant type="url"/>
+      <cd:constant type="num"/>
+    </cd:keywords>
+    <cd:reference list="yes"/>
+  </cd:arguments>
+</cd:command>
+
+<cd:command name="citealt" file="t-bib.tex">
+  <cd:sequence>
+    <cd:string value="cite"/>
+  </cd:sequence>
+  <cd:arguments>
+    <cd:assignments optional="yes" list="yes">
+      <cd:parameter name="alternative">
+        <cd:constant type="author"/>
+        <cd:constant type="year"/>
+        <cd:constant type="authoryear"/>
+        <cd:constant type="authoryears"/>
+        <cd:constant type="key"/>
+        <cd:constant type="serial"/>
+        <cd:constant type="page"/>
+        <cd:constant type="short"/>
+        <cd:constant type="type"/>
+        <cd:constant type="doi"/>
+        <cd:constant type="data"/>
+        <cd:constant type="url"/>
+        <cd:constant type="num"/>
+      </cd:parameter>
+      <cd:parameter name="extras">
+        <cd:constant type="cd:text"/>
+      </cd:parameter>
+      <cd:inherit name="setupcite"/>
+    </cd:assignments>
+     <cd:reference list="yes"/>
+  </cd:arguments>
+</cd:command>
+
+<cd:command name="placepublications" file="t-bib.tex">
+  <cd:sequence>
+    <cd:string value="placepublications"/>
+  </cd:sequence>
+  <cd:arguments>
+    <cd:assignments optional="yes" list="yes">
+      <cd:inherit name="setuplist"/>
+    </cd:assignments>
+  </cd:arguments>
+</cd:command>
+
+<cd:command name="completepublications" file="t-bib.tex">
+  <cd:sequence>
+    <cd:string value="completepublications"/>
+  </cd:sequence>
+  <cd:arguments>
+    <cd:assignments optional="yes" list="yes">
+      <cd:inherit name="setuplist"/>
+    </cd:assignments>
+  </cd:arguments>
+</cd:command>
+
+
+</cd:interface>

@@ -1,0 +1,665 @@
+
+\usemodule[int-load]
+\def\loadsetups{}
+\setupinteraction[state=start]
+\setupcolors[state=start]
+
+\usemodule[bib,set-11,mod-01]
+\setuppublications[alternative=num]
+
+\startXMLmapping[zero]
+\processXMLfilegrouped{t-bib.xml}
+\stopXMLmapping
+
+\setupitemize[each][packed]
+
+\setuphead[section][page=]
+
+\setupoutput[pdftex]
+
+\def\BIBTEX{Bib\TeX}
+\def\MAPS{Maps}
+
+
+\startbuffer[bibexample]
+\startpublication[k=me,
+                  t=manual,
+                  a=Hoekwater,
+                  y=2006,
+                  s=TH2006,
+                  n=1,
+                  u=http://contextgarden.net/Bibliography]
+\author[]{Taco}[T.]{}{Hoekwater}
+\title{\CONTEXT\ Publication Module, The user documententation}
+\pubyear{2006}
+\note{In case you didn't know: it's the document you are reading now}
+\pages{12}
+\stoppublication
+\stopbuffer
+
+\getbuffer[bibexample]
+
+\startmodule[type=tex]
+
+\startdocumentation
+
+\module
+  [       file=bibmod-doc,
+       version=2006.03.13,
+         title=Module Documentation,
+      subtitle=Bibliographies,
+        author={Taco Hoekwater},
+          date=\currentdate,
+     copyright=Taco Hoekwater]
+
+\completecontent
+
+\section{Introduction}
+
+The bibliographic module (\type{t-bib.tex}) takes care of references
+to publications and the typesetting of publication lists, as well as
+providing an interface between \BIBTEX and \CONTEXT. This manual
+documents version 2006.03.13.
+
+The bibliographic subsystem consists of the main module
+\type{t-bib.tex}; four \BIBTEX\ styles (\type{cont-xx.bst}); and a set
+of example configuration files (\type{bibl-xxx.tex}) that set up
+specific formatting styles for both the citations and the list of
+references.
+
+
+\subsection{General overview}
+
+A typical input file obeys following structure:
+\startitemize[n]
+\item A call to \type{\usemodule[bib]}.
+\item Optionally, a few setup commands for the bibliographic module.
+\item A number of definitions of publications to be referenced in the
+main text of the article. The source of these definitions can be
+a combination of:
+    \startitemize
+    \item THe \type{\jobname.bbl} file (automatically read at \type{\starttext})
+    \item extra bbl files
+    \item a file or inline macros before \type{\starttext}
+    \stopitemize
+    These possibilities will be explained below. For now, it is
+    only important to realize that of all these definitions have to be known
+    {\it before} the first citation in the text.
+\item \type{\starttext}
+\item The body text, with a number of \type{\cite} commands.
+\item The list of publications, called using the command
+    \type{\placepublications} or the command\break \type{\completepublications}.
+\item \type{\stoptext}
+\stopitemize
+
+\section{Setup commands}
+
+Bibliographic references use a specific `style', a collection of rules
+for the use of \type{\cite} as well as for the formatting that is
+applied to the publication list. The \CONTEXT\ bibliographic module
+expects you to define all of these style options in one single
+file of which the names starts with the prefix \type{bibl-}. 
+
+Unlike the normal situation in \LATEX, this style {\it also\/}
+includes the formatting of the items themselves. Because of this, the
+\type{.bbl} file is set up as a database of entries with fields.
+
+\subsection{Global settings: \type{\setuppublications}}
+
+The most important user-level command is
+\type{\setuppublications}. Most of the options to this command
+shoudl be set by the bibliography style file, but a few of them are of
+immediate interest to the casual user as well. 
+
+Like all setup commands, thus command should be given before
+\type{\starttext}, as it sets up global information about the
+bibliographic references used in the document. \CONTEXT\ needs this
+information in order to function correctly.
+
+\setup{setuppublications}
+
+\starttabulate[|l|p|]
+\NC alternative\NC This gives the name of a bibliography style. \crlf
+    The chosen style defines the other default options, the options
+    given in this documentation are the defaults as they are set up 
+    by the `apa' style. When this argument is given, the newly set
+style is read in first, before the other options are processed. Thus
+allowing you to override specific settings from the chosen style.\NC\NR
+\NC refcommand    \NC the default option for \type{\cite}\NC \NR 
+\NC sorttype\NC How the publications in the final publication
+     list should be sorted. `cite' means: by the order in which
+     they were first cited in your text. `bbl' tells the
+     module to keep the relative ordering in which the publication 
+     definitions were found\crlf
+     The current default for apa is `cite'\NC\NR 
+\NC criterium\NC Whether to list only the referenced
+     publications or all of them.\crlf
+     If this value is `all', then if `sorttype' equals `cite', this 
+     means that all referred-to publications are listed 
+     before all others, otherwise (if `sorttype' equals `bbl') you will
+     just get a typeset version of the used database(s).\crlf
+     The default for apa is `used'\NC\NR
+\NC numbering\NC Whether or not the  publication list
+     should be labelled and if so, how. \type{yes} uses the item number in
+     the publication list as label. \type{short} uses the short
+     label. \type{bib}
+     uses the original number in the \BIBTEX\ database as a label. 
+     Anything else turns labelling off.\crlf
+     The default for apa is `no'\NC\NR 
+\NC autohang\NC Whether or not the
+     hanging indent should be re-calculated based on the real size of the
+     label. This option only applies if numbering is turned on.\crlf
+     The default is `no'.\NC\NR  
+\stoptabulate
+
+\subsection{How the entries are formatted: \type{\setuppublicationlist}}
+
+\setup{setuppublicationlist}
+
+The list of publications at the end of the article is essentially a
+normal context `list' that behaves much like the list that defines the
+table of contents, with the following changes:
+
+The module defines a set of extra options. These option names are static, they
+do {\it not} change to follow the selected \CONTEXT\ interface language.
+
+The first two options provide default widths for `autohang':
+\starttabulate[|l|p|]
+\NC totalnumber\NC The total number of items in the following list (used for autohang).\NC\NR
+\NC samplesize\NC The longest short label in the list (used for autohang)\NC\NR
+\stoptabulate
+
+The other extra options are needed to control micro||typesetting
+of things that are buried deep within macros. There is a separate
+command to handle the larger layout options
+(\type{\setuppublicationlayout}, explained below), but the options
+here are the only way to make changes in the formatting used for
+editors', authors', and article authors' names.
+\starttabulate[|l|p|]
+\NC editor    \NC command to typeset one editor  in the publication list.\NC \NR 
+\NC author    \NC command to typeset one author  in the publication list.\NC \NR 
+\NC artauthor \NC command to typeset one article author  in the publication list.\NC \NR 
+\NC namesep   \NC the separation between consecutive names (either
+                  editors, authors or artauthors).\NC \NR 
+\NC lastnamesep   \NC the separation before the last name in a list of names.\NC \NR 
+\NC firstnamesep \NC the separation following the fistname or inits within a name in the publication list.\NC \NR 
+\NC juniorsep     \NC likewise for `junior'.\NC \NR 
+\NC vonsep        \NC likewise for `von'.\NC \NR 
+\NC surnamesep     \NC likewise for surname.\NC \NR 
+\stoptabulate
+The commands after `editor' e.g. are predefined
+macros that control how a single name is typeset. The four supplied
+macros provide formatting that looks like this:
+
+{\setvalue{@@currentalternative}{data}
+\starttabulate[|l|p|]
+\NC\tex{invertedauthor}\NC         \invertedauthor{Taco}{von}{Hoekwater}{T}{jr}\NC\NR
+\NC\tex{invertedshortauthor}\NC    \invertedshortauthor{Taco}{von}{Hoekwater}{T}{jr}\NC\NR
+\NC\tex{normalauthor}\NC           \normalauthor{Taco}{von}{Hoekwater}{T}{jr}\NC\NR
+\NC\tex{normalshortauthor}\NC      \normalshortauthor{Taco}{von}{Hoekwater}{T}{jr}\NC\NR
+\stoptabulate
+}
+As you can see in the examples, there is a connection between certain
+styles of displaying a name and the punctuation used. Punctuation in
+this document has been set up by the `ap' style, and that style makes
+sure that \type{\invertedshortauthor} looks good, since that is the default
+command for `apa' style. (Keep in mind that the comma at the end of the
+author will be inserted by either `namesep' or `lastnamesep'.)
+
+In case you are not happy with the predefined macros; it is quite simple to
+define one of these macros yourself, it is a simple macro with 5
+arguments: firstnames, von-part, surname, inits, junior.
+
+For example, here is the definition of \type{\normalauthor},
+\starttyping
+\def\normalauthor#1#2#3#4#5%
+  {\bibdoif{#1}{#1\bibalternative{firstnamesep}}%
+   \bibdoif{#2}{#2\bibalternative{vonsep}}%
+   #3\bibalternative{surnamesep}%
+   \bibdoif{#5}{#5\unskip}}
+\stoptyping
+but commands can be a lot simpler, like this:
+\starttyping
+\def\surnameonly#1#2#3#4#5{#3}
+\setuppublicationlist[editor=\surnameonly]
+\stoptyping
+
+
+Apart from these extra options,
+the module itself sets some of the options to the internal call to
+\type{\setuplist} itself.
+
+To get a reasonable layout for the reference list, the following are
+set as a precaution:
+\starttabulate[|l|p|]
+\NC alternative\NC Always re-initialized to `a'. This makes sure that no
+space is allocated for the page number.\NC\NR
+\NC pagenumber\NC Always re-initialized to `no'. The list is a bit of
+a special one, and page numbers don't make much sense. All entries
+will have the same page number: the number of the page on
+which \type{\placepublications} was called.\NC\NR
+\NC interaction\NC Alway made empty. There should never be any
+interactivity in the list of publications, because the entries all
+point to themselves (this limitation is similar to one for `pagenumber').
+\stoptabulate
+
+
+And also, the following options are initialized depending on the
+global settings for `numbering' and `autohang':
+\starttabulate[|l|p|]
+\NC width\NC Set to the calculated width of the largest label, but only if autohang is `yes'\NC\NR
+\NC distance\NC Set to 0pt, but only if autohang is `yes'\NC\NR
+\NC numbercommand\NC A command given in `setuppublications' if numbering is turned on, otherwise empty.\NC\NR
+\NC textcommand\NC Set to a macro that outdents the body text if numbering is turned off, otherwise empty\NC\NR
+\stoptabulate
+
+
+\subsection{Setting citation options: \type{\setupcite}}
+
+The \type{\cite} command has a lot of alternatives, as could be seen
+above in the setting of `refcommand'. And these alternatives have
+their own options:
+
+\setup{setupcite}
+
+\starttabulate[|l|p|]
+\NC andtext  \NC separation between two authors (for \type{\cite[author]} styles)\NC \NR 
+\NC otherstext  \NC text used for `et.al.' (for \type{\cite[author]} styles)\NC \NR 
+\NC pubsep       \NC separator between publication references in a 
+                  \type{\cite} command.\NC \NR 
+\NC lastpubsep   \NC same, but for the 
+                    last publication in the list.\NC \NR 
+\NC left  \NC left side of a \type{\cite} (like \type{[})\NC \NR 
+\NC inbetween \NC the separator between parts of a single citation.\NC\NR
+\NC right     \NC right side of a \type{\cite} (like \type{]})\NC \NR 
+\NC compress \NC Whether \type{\cite} should try to
+compress it's argument list. \NC\NR
+\stoptabulate
+Not all options apply to all types of \type{\cite} commands.
+E.g. `compress'  does not apply to the citation
+list for all options of \type{\cite}, since sometimes compression does
+not make sense or is not possible. The `num' version compresses
+into a condensed sorted list, and the various `author' styles try
+to compress all publications by one author, but e.g. years are
+never compressed.
+
+Likewise, `inbetween' only applies to three types: `authoryear' (a
+space), `authoryears' (a comma followed by a space), and `num' (where
+it is `--' (an endash), the character used to separate number ranges).
+
+\subsection{Setting up \BIBTEX: \type{\setupbibtex}}
+
+\BIBTEX\ bibliographic databases are converted into \type{.bbl} files,
+and the generated file is just a more \TEX-minded representation of
+the full database(s).
+
+The four \type{.bst} files do not do any actual formatting on the
+entries, and they do not subset the database either. Instead, the
+{\it entire} database is converted into \TEX-parseable records. About the
+only thing the \type{.bst} files do is sorting the entries (and
+\BIBTEX\ itself resolves any `STRING' specifications, of course).
+
+The module will read the created \type{\jobname.bbl} file
+and select the parts that are needed for the current article.
+
+\setup{setupbibtex}
+
+\starttabulate[|l|p|]
+\NC database\NC List of bibtex database file names to be
+     used. The module will write a very short \type{.aux} file instructing
+     \BIBTEX\ to create a (possibly very large) \type{\jobname.bbl} file,
+     that will be \type{\input} by the module (at \type{\starttext}).\NC\NR
+\NC sort\NC How the publications in the
+     \BIBTEX\ database file should be sorted.\crlf
+     The default here is `no' (\type{cont-no.bst}), meaning no sorting at all. 
+     `author' (\type{cont-au.bst}) sorts alphabetically on author and within that on year,
+     `title' (\type{cont-ti.bst}) sorts alphabetically on title and then on author and
+     year, and `short' (\type{cont-ab.bst}) sorts on the short key that is generated
+     by \BIBTEX.\NC\NR 
+\stoptabulate
+
+For now, you need to run \BIBTEX\ by hand to create the
+\type{\jobname.bbl} file (\type{texutil} will hopefully do this for
+you in the future). 
+
+You may want to create the \type{\jobname.bbl} yourself. The
+\type{.bbl} syntax is explained below. There is no default
+database of course, and you do not {\it have} to use one: it is
+perfectly OK to just \type{\input} a file with the bibliographic
+records, as long as it has the right input syntax. Or even to include
+the definitions themselves in the preamble of your document.
+
+The most efficient calling order when using \BIBTEX\ is:
+\starttyping
+texexec --once myfile
+bibtex myfile
+texexec myfile
+\stoptyping
+
+Texexec should be smart enough to recognize how many
+runs are needed in the final part, but it seems it
+sometimes does one iteration too few. So you might
+have to call texexec one last time to get the page references
+correct. Numbered references always need at least one run more
+than author, year references, because the final number in
+the reference list is usually not decided upon yet at the 
+moment the \type{\cite} command is encountered.
+
+
+\subsection{Borrowing publications: \type{\usepublications}}
+
+It is also possible to instruct the module to use the bibliographic 
+references belonging to another document. This is done by using the command
+\type{\usepublications[files]}, where \type{files} is a list of other
+\CONTEXT\ documents (without extension). 
+
+\setup{usepublications}
+
+To be precise, this command will use the \type{.bbl} and \type{.tuo}
+files from the other document(s), and will therefore not work if these
+files cannot be found (the \type{.tuo} file is needed to get correct
+page references for \type{\cite[page]}).
+
+
+\section{Citations}
+
+Citations are handled through the \type{\cite} command.
+
+\type{\cite} has two basic appearances:
+
+\subsection{Default and explicit citations}
+
+\setup{cite}
+
+The single-argument form executes the style-defined default citation
+command. This is the preferred way of usage, since some styles might
+use numeric citations while others might use a variation of the
+(author,year) style. 
+
+The two-argument form allows you to manually select the style you want.
+
+\subsubsection{Citation types}
+
+Following is the full list of recognized keywords for \type{\cite},
+with a short explanation where the data comes from. Most of the
+information that is usable within \type{\cite} comes from the argument
+to \type{\startpublication}. This command is covered in detail below. 
+
+
+All of these options are {\it valid} in all publication styles, since
+\CONTEXT\ always has the needed information available. But not all of
+these are {\it sensible} in a particular style: using numbered references if
+the list of publications itself is not numbered is not a good idea, for
+instance. Also, some of the keys are somewhat strange and only
+provided for future extensions.
+
+First, here are the simple ones:
+\starttabulate[|l|l|p|]
+\NC author\NC      \cite[author][me] \NC(from `a')\hfil\NC\NR
+\NC doi\NC         \cite[doi][me]\NC (from `d')\hfil\NC\NR
+\NC key\NC         \cite[key][me]\NC (from `k')\hfil\NC\NR
+\NC serial\NC      \cite[serial][me]\NC (from `n')\hfil\NC\NR
+\NC short\NC       \cite[short][me]\NC (from `s')\hfil\NC\NR
+\NC type\NC        \cite[type][me]\NC (from `t')\hfil\NC\NR
+\NC year\NC        \cite[year][me]\NC (from `y')\hfil\NC\NR
+\NC url\NC         \cite[url][me]\NC (from `u')\hfil\NC\NR
+\stoptabulate
+Keep in mind that `n' is a database sequence number, and not
+necesarily the same number that is used in the list of
+publications. For instance, if `sorttype' is cite, the list will be
+re-ordered, but the `n' value will remain the same. To get to the
+number that is finally used, use
+\starttabulate[|l|l|p|]
+\NC num\NC         \cite[num][me]\NC (this is a reference to
+                                        the sequence number used in the publication list)\hfil\NC\NR
+\stoptabulate
+If the list of publications is not numbered visually, there will still
+be a number available.
+
+Three of the options are combinations:
+\starttabulate[|l|l|p|]
+\NC authoryear\NC  \cite[authoryear][me]\NC(from `a' and `y')\hfil\NC\NR
+\NC authoryears\NC \cite[authoryears][me]\NC(from `a' and `y')\hfil\NC\NR
+\NC data\NC        \vtop{\hsize .45\hsize \cite[data][me]}\NC The data content of the entry\hfil\NC\NR
+\stoptabulate
+
+And the last one is a page reference to the page where the 
+the entry is typeset within the publication list.
+
+\starttabulate[|l|l|p|]
+\NC page\NC        \cite[page][me]\NC (a page reference)\hfil\NC\NR
+\stoptabulate
+
+\subsection{Citations with local setups}
+
+\setup{citealt}
+
+The arguments in this form are inherited from \type{\setupcite},
+except for \type{extras}. The argument of `\type{extras}' is typeset 
+at the end of the reference, but before a potential `\type{right}', so
+it can be used for e.g. page or chapter specifiers.
+
+
+\section{Placing the publication list}
+
+This is really simple: use \type{\completepublications} 
+or \type{\placepublications} at the location in your
+text where you want the publication list to appear. As is normal in
+\CONTEXT, \type{\placepublications} gives you a raw list, and
+\type{\completepublications} a list with a heading. The module uses
+the following defaults for the generated head:
+\starttyping
+\setupheadtext[en][\biblistname=References]
+\setupheadtext[nl][\biblistname=Literatuur]
+\setupheadtext[de][\biblistname=Literatur]
+\setupheadtext[it][\biblistname=Bibliografia]
+\setupheadtext[sl][\biblistname=Literatura]
+\setupheadtext[fr][\biblistname=Bibliographie]
+\stoptyping
+
+These (or new ones) can be redefined as needed.
+
+\section{The bbl file}
+
+A typical bbl file consists of one initial command 
+(\type{\setuppublicationlist}) that sets some information
+about the number of entries in the bbl file and the widths
+of the labels for the list, and that command is followed by a number of
+appearances of \type{\startpublication ... \stoppublication}
+
+The full appearance version of \type{\cite} 
+accepts a number of option keywords, and we saw earlier that
+the argument of the \type{\startpublication} command
+defines most of the things we can reference to. This section explains
+the precise syntax for \type{\startpublication}.
+
+Each single block defines one bibliographic entry. I apologise
+for the use of single||letter keys, but these have the advantage of
+being a)\quad short and b)\quad safe w.r.t. the multi-lingual interface.
+
+\setup{startpublication}
+
+Here is the full example that has been used throughout this document:
+
+\typebuffer[bibexample]
+
+\subsection{Defining a publication}
+
+The list of commands that is allowed to appear between \type{\startpublication}
+and \type{\stoppublication} is given below. 
+
+Order within an entry is irrelevant, except for the relative ordering
+within each of the three commands that might appear more than once:
+\type{\artauthor}, \type{\author} and \type{\editor}.
+
+Most of these are `normal' \BIBTEX\ field names (in lowercase), but
+some are extra special, either because they come from non-standard
+databases that I know of, or because the bst file has pre-processed
+the contents of the field. 
+
+\subsubsection{Complex fields}
+
+The three fields that contain names are extra special, because they
+have more than one argument. These are: \type{\artauthor},
+\type{\author} and \type{\editor}.  At the moment, these 
+commands require exactly 5 arguments (of which two look like
+optional arguments, but they are not)
+
+
+\starttabulate[|l|l|p|]
+\NC\tex{artauthor[\#1]\{\#2\}[\#3]\{\#4\}\{\#5\}}\NC\tfx AUTHOR\NC For an author of any publication
+    that appears within a larger publication, like an article that appears
+    within a journal or as part of a proceedings. \NC\NR
+\NC\tex{author[\#1]\{\#2\}[\#3]\{\#4\}\{\#5\}}\NC\tfx AUTHOR\NC The author of a standalone
+    publication, like a monograph.\NC\NR
+\NC\tex{editor[\#1]\{\#2\}[\#3]\{\#4\}\{\#5\}}\NC\tfx EDITOR\NC The editor of e.g.
+    an edited volume.\NC\NR
+\stoptabulate
+
+\subsubsection{Simple fields}
+
+Rather a large list, this is caused by the desire to support as many
+existing \BIBTEX\ databases as possible.  Please note that a few of
+the fields have names that are not the same as in \BIBTEX, because a
+1~on~1 mapping causes conflicts with predefined macro names in 
+\CONTEXT.
+
+\starttabulate[|l|p(2.5cm)|p|]
+\NC\type{\abstract}\NC\tfx ABSTRACT\NC just text.\NC\NR
+\NC\type{\annotate}\NC\tfx ANNOTATE \NC just text.\NC\NR
+\NC\type{\arttitle}\NC\tfx TITLE\NC The title of a partial publication (one that has \type{\artauthor}s).\NC\NR
+\NC\type{\assignee}\NC\tfx ASSIGNEE\NC Assigned person for a patent\NC\NR
+\NC\type{\bibnumber}\NC\tfx NUMBER \NC \NC\NR
+\NC\type{\bibtype}\NC\tfx TYPE \NC See the \BIBTEX\ 
+    documentation for it's use. This is {\it not} related
+    to the type of entry that is used for deciding on the
+    layout.\NC\NR
+\NC\type{\biburl}\NC\tfx URL \NC Location on the internet. \NC\NR
+\NC\type{\chapter}\NC\tfx CHAPTER \NC the chapter number, if this entry is
+referring to a smaller section of a publication. It might actually
+be a part number or a (sub)section number. The field \type{\bibtype} (above)
+differentiates between these.\NC\NR
+\NC\type{\city}\NC\tfx CITY\NC city of publication.\NC\NR
+\NC\type{\comment}\NC\tfx COMMENT\NC just text.\NC\NR
+\NC\type{\country}\NC\tfx COUNTRY\NC country of publication.\NC\NR
+\NC\type{\crossref}\NC\tfx CROSSREF\NC A cross-reference to another 
+    bibliographic entry. It will insert a citation
+    to that entry, forcing it to be typeset as well.\NC\NR
+\NC\type{\day}\NC\tfx DAY \NC Date of publication (for a patent)\NC\NR
+\NC\type{\dayfiled}\NC\tfx DAYFILED\NC Filing date for a patent\NC\NR
+\NC\type{\doi}\NC\tfx DOI \NC Document Object Identifier\NC\NR
+\NC\type{\eprint}\NC\tfx EPRINT\NC E-print information\NC\NR
+\NC\type{\edition}\NC\tfx EDITION\NC The edition.\NC\NR
+\NC\type{\howpublished}\NC\tfx HOWPUBLISHED\NC \NC\NR
+\NC\type{\isbn}\NC\tfx ISNB\NC isbn number (for books)\NC\NR
+\NC\type{\issn}\NC\tfx ISSN\NC issn number (for journals)\NC\NR
+\NC\type{\issue}\NC\tfx ISSUE\NC issue number (for journals)\NC\NR
+\NC\type{\journal}\NC\tfx JOURNAL \NC The journal's name.\NC\NR
+\NC\type{\keyword}\NC\tfx KEYWORD \NC just text (for use in indices).\NC\NR
+\NC\type{\keywords}\NC\tfx KEYWORDS \NC just text (for use in indices).\NC\NR
+\NC\type{\lang}\NC\tfx LANGUAGE \NC The language of the
+    current bibliographic record (ignored at the moment)\NC\NR 
+\NC\type{\month}\NC\tfx MONTH\NC Month of publication\NC\NR
+\NC\type{\monthfiled}\NC\tfx MONTHFILED\NC Filing month for a patent\NC\NR
+\NC\type{\names}\NC\tfx NAMES\NC just text (for use in indices).\NC\NR
+\NC\type{\nationality}\NC\tfx NATIONALITY\NC Nationality information for a patent\NC\NR
+\NC\type{\note}\NC\tfx NOTE \NC just text (this is the `standard' \BIBTEX\ commentary field).\NC\NR
+\NC\type{\notes}\NC\tfx NOTES \NC just text.\NC\NR
+\NC\type{\organization}\NC\tfx ORGANIZATION\NC Like institute, but for e.g. companies.\NC\NR
+\NC\type{\pages}\NC\tfx PAGES\NC Either the number of pages, or the page range
+         for a partial publication. The `t' key to startpublication
+         will decide automatically what is meant.\NC\NR
+\NC\type{\pubname}\NC\tfx INSTITUTION,\crlf PUBLISHER,\crlf SCHOOL\NC Publisher or institution name.\NC\NR
+\NC\type{\pubyear}\NC\tfx YEAR \NC Year of publication. Within this command,
+        the \BIBTEX\ bst files will sometimes insert the command
+        \type{\maybeyear}, which is needed to make sure that 
+        the bbl file stay flexible enough to allow all styles of
+        formatting.\NC\NR
+\NC\type{\revision}\NC\tfx REVISION \NC Release version\NC\NR
+\NC\type{\series}\NC\tfx SERIES \NC Possible book series information.\NC\NR
+\NC\type{\size}\NC\tfx SIZE \NC Size in KB of a PDF file (this came from
+        the NTG \MAPS\ database)\NC\NR
+\NC\type{\thekey}\NC\tfx KEY \NC See the \BIBTEX\ 
+    documentation for it's use. This is {\it not} related to
+    the key used for citing this entry.\NC\NR
+\NC\type{\title}\NC\tfx TITLE,\crlf BOOKTITLE \NC The title of a book.\NC\NR
+\NC\type{\volume}\NC\tfx VOLUME \NC Volume number for multi-part books or 
+    journals.\NC\NR
+\NC\type{\yearfiled}\NC\tfx YEARFILED\NC Filing year for a patent\NC\NR
+\stoptabulate
+
+Adding in one of your own fields is reasonably simple:
+
+\starttyping
+\newbibfield[mycommand]
+\stoptyping
+This will define \type{\mycommand} for use within
+a publication (plus \type{\bib@mycommand}, it's internal form) as
+well as the command \type{\insertmycommand} that can be used
+within \type{\setuppublicationlayout} to fetch the supplied
+value (see below). 
+
+
+\section{Defining a publication type layout}
+
+Publication style files of course take care of setting defaults for the
+commands as explained earlier, but the largest part of a such a
+publication style is concerned with specifying layouts for various
+types of publications.
+
+The command that does the work is \type{\setuppublicationlayout}:
+
+\setup{setuppublicationlayout}
+
+The first argument that is a publication (\BIBTEX\ entry) type, and
+all publications that have this type given as argument to the `t' key
+of \type{\startpublication} will be typeset by executing the commands
+that appear in the group following the command.
+
+For example, here is a possible way to typeset an article: from \type{bibl-apa}:
+\starttyping
+\setuppublicationlayout[article]{%
+   \insertartauthors{}{ }{\insertthekey{}{ }{}}%
+   \insertpubyear{(}{). }{\unskip.}%
+   \insertarttitle{\bgroup }{\egroup. }{}%
+   \insertjournal{\bgroup \it}{\egroup}
+    {\insertcrossref{In }{}{}}%
+   \insertvolume
+    {, }
+    {\insertissue{(}{)}{}\insertpages{:}{.}{.}}
+    {\insertpages{, pages }{.}{.}}%
+   \insertnote{ }{.}{}%
+   \insertcomment{}{.}{}%
+}
+\stoptyping
+For every command in the long list given in the previous paragraph, there is 
+a corresponding \type{\insertxxx} command. (As usual, \type{\author}
+etc. are special: they have a macro called \type{\insertxxxs}
+instead). All of these \type{\insertxxx} macros use the same logic:
+
+\starttyping
+\insertartauthors{<before>}{<after>}{<not found>}
+\stoptyping
+
+Sounds easy? It is! But it is also often tedious: database entries can
+be tricky things: some without issue numbers, others without page
+numbers, some even without authors. So, you often need to nest rather
+a lot of commands in the \type{<not found>} section of the `upper'
+command, and \type{\unskip} and \type{\ignorespaces} are good friends
+as well.
+
+Incidentally, the distributed \type{bibl-xxx} files define layouts for
+the `standard' publication types that are defined in the example
+bibliography that comes with \BIBTEX. The list of possbile types is in
+no way limited to that list, but it provides a reasonable starting
+point.
+
+\section{References}
+
+\placepublications
+
+\stopdocumentation
+
+\stopmodule
+
+\stoptext

@@ -31,7 +31,7 @@
 %D 2004.8.30 the low level interface is english. Watch out and adapt
 %D your styles an modules.
 
-\def\contextversion{2006.03.25 13:21}
+\def\contextversion{2006.04.06 23:00}
 
 %D For those who want to use this:
 
@@ -355,7 +355,7 @@
 
 %D Sorting:
 
-% not yet: \input sort-ini.tex
+% \input sort-ini.tex
 
 %D Only the basic XML parser and remapper are part of the core.
 %D These macrosa re loaded last since they overload and|/|or
@@ -375,6 +375,18 @@
 %D How about this:
 
 \input meta-xml.tex  % to be documented
+
+%D Temporary hack, will go when we move to newtexexec:
+
+\unprotect
+
+\appendtoks % newtexexec/newtexutil, after option file is loaded:
+  \doif{\systemparameter\c!method} {2}
+    {\def\TEXEXECcommand{texmfstart newtexexec} %
+     \readsysfile {sort-ini} {} {}}%
+\to \everyjob
+
+\protect
 
 % %D The next two modules implement some additional
 % %D functionality concerning classes of documents and output.

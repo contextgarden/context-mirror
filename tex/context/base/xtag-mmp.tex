@@ -492,29 +492,16 @@
 \def\pMULTISCRIPTmmlPRE#1#2#3#4%
   {\ifdone
      \ifodd\scratchcounter
-       ^{\naturalxmlr{#1}{#2}{#3}{#4}}{}%
-     \else
        _{\naturalxmlr{#1}{#2}{#3}{#4}}%
+     \else
+       ^{\naturalxmlr{#1}{#2}{#3}{#4}}{}%
      \fi
    \else
      \doif{mprescripts/}{#1}{\donetrue{}}% weak, the / here
    \fi
-   \ifdone \advance\scratchcounter 1 \fi}
+   \ifdone \advance\scratchcounter \plusone \fi}
 
-\def\pMULTISCRIPTmmlPOST#1#2#3#4%
-  {\ifdone
-     \ifnum\scratchcounter=0
-       \naturalxmlr{#1}{#2}{#3}{#4}%
-     \else\ifodd\scratchcounter
-       _{\naturalxmlr{#1}{#2}{#3}{#4}}%
-     \else
-       ^{\naturalxmlr{#1}{#2}{#3}{#4}}{}%
-     \fi\fi
-   \fi
-   \doif{mprescripts/}{#1}{\donefalse}% weak, the / here
-   \ifdone \advance\scratchcounter 1 \fi}
-
-\let\pMULTISCRIPTmmlPRE\pMULTISCRIPTmmlPOST
+\let\pMULTISCRIPTmmlPOST\pMULTISCRIPTmmlPRE
 
 \stopXMLmapping
 

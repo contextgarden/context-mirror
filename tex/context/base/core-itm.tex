@@ -82,6 +82,16 @@
 \def\setitemparameter #1#2{\@EA\def\csname\??op\currentitemgroup#1#2\endcsname}
 \def\letitemparameter #1#2{\@EA\let\csname\??op\currentitemgroup#1#2\endcsname}
 
+% test this: saves hash entries and is also faster
+%
+% \let\doinitializeitemgrouplevel\gobbleoneargument % todo ! ! !
+
+\def\getitemparameter#1#2%
+  {\executeifdefined{\??op\currentitemgroup#1#2}%
+  {\executeifdefined{\??op\currentitemgroup  #2}%
+  {\executeifdefined{\??oo                   #2}%
+  {}}}}
+
 \def\doitemattributes   #1{\doattributes{\??op\currentitemgroup#1}}
 
 \def\@@globalitemsymbol #1{\??op\currentitemgroup\c!symbol\s!global#1}

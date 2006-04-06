@@ -103,8 +103,12 @@
 \to \MPextensions
 
 %D Some safeguards:
-
-\appendtoks \cleanupfeatures \to \everyMPgraphic
+%D
+%D \starttyping
+%D \appendtoks \cleanupfeatures \to \everyMPgraphic
+%D \stoptyping
+%D
+%D No, we don't want that (else we loose UTF etc).
 
 %D Another one:
 
@@ -995,6 +999,8 @@
 %D New:
 
 \newconditional\manyMPspecials % when set to true, > 1000 specials can be used
+
+\settrue \manyMPspecials % per 1/4/2006
 
 \prependtoks
   _special_div_ := 1000\ifconditional\manyMPspecials0\fi ;

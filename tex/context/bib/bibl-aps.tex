@@ -13,7 +13,9 @@
 
 \setupcite
        [author,year]
-       [\c!pubsep={, },
+       [\c!andtext={ and },
+        \c!otherstext={ et al.},
+        \c!pubsep={, },
         \c!lastpubsep={ and },
         \c!compress=\v!no,
         \c!inbetween={ },
@@ -22,7 +24,9 @@
 
 \setupcite
        [authoryear]
-       [\c!pubsep={, },
+       [\c!andtext={ and },
+        \c!otherstext={ et al.},
+        \c!pubsep={, },
         \c!lastpubsep={ and },
         \c!compress=\v!yes,
         \c!inbetween={ },
@@ -31,7 +35,9 @@
 
 \setupcite
        [authoryears]
-       [\c!pubsep={, },
+       [\c!andtext={ and },
+        \c!otherstext={ et al.},
+        \c!pubsep={, },
         \c!lastpubsep={ and },
         \c!compress=\v!yes,
         \c!inbetween={, },
@@ -39,8 +45,10 @@
         \c!right={)}]
 
 \setupcite
-       [key,number,page,short,type,doi]
-       [\c!pubsep={, },
+       [key,serial,page,short,type,doi,url]
+       [\c!andtext={ and },
+        \c!otherstext={ et al.},
+        \c!pubsep={, },
         \c!lastpubsep={ and },
         \c!compress=\v!no,
         \c!inbetween={ },
@@ -49,7 +57,9 @@
 
 \setupcite
        [num]
-       [\c!pubsep={, },
+       [\c!andtext={ and },
+        \c!otherstext={ et al.},
+        \c!pubsep={, },
         \c!lastpubsep={ and },
         \c!compress=\v!yes,
         \c!inbetween={--},
@@ -60,11 +70,11 @@
     \c!sorttype=,
     \c!criterium=,
     \c!refcommand=num,
-    \c!numbercommand=\tester,
+    \c!numbercommand=\bibalignednumber,
     \c!numbering=\v!yes,
     \c!autohang=\v!yes]
 
-\def\tester#1{\hfill[#1]~~}
+\def\bibalignednumber#1{\hfill[#1]~~}
 
 \setuppublicationlist
    [\c!width=24pt,
@@ -115,7 +125,7 @@
  
 \def\insertchap#1#2#3%
   {\insertchapter
-    {#1\inserttype{}{\ }{chapter\ }}{#2}%
+    {#1\insertbibtype{}{\ }{chapter\ }}{#2}%
     {#3}}
 
 \def\insertpublisher#1#2#3%
@@ -371,7 +381,7 @@
 
 \setuppublicationlayout[mastersthesis]{%
    \insertauthors{}{, }{}%
-   \inserttype{}{, }{Master's thesis, }%
+   \insertbibtype{}{, }{Master's thesis, }%
    \insertpublisher{}{, }{}%
    \insertpubyear{(}{)}{}%
    \insertpages{\unskip, }{}{}%
@@ -380,7 +390,7 @@
 
 \setuppublicationlayout[phdthesis]{%
    \insertauthors{}{, }{}%
-   \inserttype{}{, }{Ph.D. thesis, }%
+   \insertbibtype{}{, }{Ph.D. thesis, }%
    \insertpublisher{}{, }{}%
    \insertpubyear{(}{)}{}%
    \insertpages{\unskip, }{}{}%
@@ -411,7 +421,7 @@
 \setuppublicationlayout[techreport]{%
    \insertauthors{}{, }{}%
    \inserttitle{\bgroup \it }{\egroup \insertseries{ (}{)}{} }{}%
-   \inserttype{}{}{Tech. Rep.}%
+   \insertbibtype{}{}{Tech. Rep.}%
    \insertvolume{ }{, }{, }%
    \insertpublisher{}{ }{}%
    \insertpubyear{(}{)}{}%
@@ -422,7 +432,7 @@
 \setuppublicationlayout[unpublished]{%
    \insertauthors{}{}{}%
    \inserttitle{\bgroup \it }{\egroup \insertseries{ (}{)}{}}{}%
-   \inserttype{ (}{)}{}%
+   \insertbibtype{ (}{)}{}%
    \insertpubyear{ (unpublished,}{)}{ (unpublished)}%
    \insertpages{\unskip, }{ }{}%
    \insertNote{\unskip. }{.}{\unskip.}%

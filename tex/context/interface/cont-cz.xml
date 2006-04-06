@@ -7562,6 +7562,7 @@
       <cd:constant type="stranka"/>
       <cd:constant type="naproti"/>
       <cd:constant type="vzdy"/>
+      <cd:constant type="auto"/>
       <cd:constant type="sila"/>
       <cd:constant type="vysoko"/>
       <cd:constant type="reset"/>
@@ -9346,6 +9347,8 @@
       <cd:constant type="cd:name"/>
     </cd:keywords>
     <cd:keywords optional="yes" list="yes">
+      <cd:constant type="cd:name"/>
+      <cd:constant type="vse"/>
     </cd:keywords>
   </cd:arguments>
 </cd:command>

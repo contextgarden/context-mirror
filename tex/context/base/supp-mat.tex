@@ -49,15 +49,24 @@
 \long\def\displaymath#1{\relax\ifmmode#1\else$$#1$$\fi}
 \long\def\inlinemath #1{\relax\ifmmode#1\else $#1$\fi}
 
-\def\startmathmode
-  {\ifmmode
+\let\stopmathmode\relax
+
+\def\startmathmode % cannot be used nested
+  {\relax\ifmmode
      \let\stopmathmode\relax
    \else
      $\def\stopmathmode{$}%  \let\stopmathmode=$
    \fi}
 
+\def\startmathmode % nested variant
+  {\relax\ifmmode
+     \begingroup\let\stopmathmode\endgroup
+   \else
+     $\let\stopmathmode$%
+   \fi}
+
 \def\nomathematics#1%
-  {\ifmmode\hbox{#1}\else#1\fi}
+  {\relax\ifmmode\hbox{#1}\else#1\fi}
 
 \let\math\mathematics
 

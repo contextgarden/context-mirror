@@ -20,20 +20,18 @@
 
 \unprotect
 
-\startlanguagespecifics[fr]
-    \definetextmodediscretionary : {\removeunwantedspaces\prewordbreak\kern\hspaceamount\empty{:}:}
-    \definetextmodediscretionary ; {\removeunwantedspaces\prewordbreak\kern\hspaceamount\empty{;};}
-    \definetextmodediscretionary ? {\removeunwantedspaces\prewordbreak\kern\hspaceamount\empty{?}?}
-    \definetextmodediscretionary ! {\removeunwantedspaces\prewordbreak\kern\hspaceamount\empty{!}!}
+\startlanguagespecifics[\s!fr]
+    \definetextmodediscretionary : {\removeunwantedspaces\prewordbreak\kern\hspaceamount\currentmainlanguage{:}:}
+    \definetextmodediscretionary ; {\removeunwantedspaces\prewordbreak\kern\hspaceamount\currentmainlanguage{;};}
+    \definetextmodediscretionary ? {\removeunwantedspaces\prewordbreak\kern\hspaceamount\currentmainlanguage{?}?}
+    \definetextmodediscretionary ! {\removeunwantedspaces\prewordbreak\kern\hspaceamount\currentmainlanguage{!}!}
 \stoplanguagespecifics
 
 \startlanguagespecifics[\s!fr]
-
   \defineactivecharacter : {\mathortext{:}{\directdiscretionary{:}}}
   \defineactivecharacter ; {\mathortext{;}{\directdiscretionary{;}}}
   \defineactivecharacter ! {\mathortext{!}{\directdiscretionary{!}}}
   \defineactivecharacter ? {\mathortext{?}{\directdiscretionary{?}}}
-
 \stoplanguagespecifics
 
 % maybe tricky due to possible name clashes:

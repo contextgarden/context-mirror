@@ -609,13 +609,21 @@
 %
 % \startstandardmakeup[page=blank] ... \stopstandardmakeup
 
+% \def\checkcurrentlayout % public and used in naw, so keep this name
+%   {\ifundefined{\??ly\realfolio\c!state}%
+%      \doifoddpageelse\checkcurrentoddlayout\checkcurrentevenlayout
+%    \else
+%      \doifvalue{\??ly\realfolio\c!state}\v!start
+%        {\xdef\currentlayout{\realfolio}\recalculatelayout}% new, global
+%    \fi}
+
 \def\checkcurrentlayout % public and used in naw, so keep this name
-  {\ifundefined{\??ly\realfolio\c!state}%
-     \doifoddpageelse\checkcurrentoddlayout\checkcurrentevenlayout
-   \else
-     \doifvalue{\??ly\realfolio\c!state}\v!start
-       {\xdef\currentlayout{\realfolio}\recalculatelayout}% new, global
-   \fi}
+  {\doifundefinedelse{\??ly\realfolio\c!state}
+     {\doifundefinedelse{\??ly\v!current\c!state}
+        {\doifoddpageelse\checkcurrentoddlayout\checkcurrentevenlayout}
+        {\globallet\currentlayout\v!current\recalculatelayout}}
+     {\doifvalue{\??ly\realfolio\c!state}\v!start
+        {\xdef\currentlayout{\realfolio}\recalculatelayout}}} % new, global
 
 \def\checkcurrentoddlayout
   {\ifundefined{\??ly\v!odd\c!state}\else
@@ -629,7 +637,15 @@
        {\globallet\currentlayout\v!even\recalculatelayout}% new, global
    \fi}
 
-\appendtoks \checkcurrentlayout \to \everyaftershipout
+% \appendtoks \checkcurrentlayout \to \everyaftershipout
+
+\appendtoks
+  \ifx\currentlayout\v!current
+    \globallet\currentlayout\empty
+    \global\letbeundefined{\??ly\v!current\c!state}%
+    \checkcurrentlayout
+  \fi
+\to \everyaftershipout
 
 \newif\ifdoublesidedprint
 

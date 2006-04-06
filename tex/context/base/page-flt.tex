@@ -474,6 +474,7 @@
              \v!outeredge=>\xxdocompletefloat\v!rightedge  \v!leftedge,
              \v!backspace=>\xxdocompletefloat\v!backspace  \v!cutspace,
               \v!cutspace=>\xxdocompletefloat\v!cutspace   \v!backspace,
+%               \v!margin=>\xxdocompletefloat\v!cutspace   \v!backspace,
                   \v!left=>\xxdocompletefloat\v!left       \v!left,
                  \v!right=>\xxdocompletefloat\v!right      \v!right,
                   \v!line=>, % only -n*line is handled (see ***)
@@ -551,6 +552,9 @@
    \else
      \dododefinefloat[#1][#1]%
    \fi\fi}
+
+% todo: \floatparameter + \currentfloat - saves many hash entries
+%
 
 \def\dododefinefloat[#1][#2]%
   {\presetlocalframed[\??fl#1]%
@@ -790,6 +794,29 @@
 \def\doinsertfloatinfo
   {\dofloatinfomessage<4{\the\totalnoffloats}}
 
+% \def\dogetfloat
+%   {\ifsomefloatwaiting
+%      \global\setbox\floatlist\vbox
+%        {\unvbox\floatlist
+%         \global\setbox\globalscratchbox\lastbox}%
+%      \ifcenterfloatbox
+%        \ifdim\wd\globalscratchbox<\hsize
+%          \setbox\floatbox\hbox to \hsize{\hss\box\globalscratchbox\hss}%
+%        \else
+%          \setbox\floatbox\box\globalscratchbox % local !
+%        \fi
+%      \else
+%        \setbox\floatbox\box\globalscratchbox % local !
+%      \fi
+%      \global\advance\savednoffloats \minusone
+%      \ifcase\savednoffloats
+%        \global\somefloatwaitingfalse
+%      \fi
+%    \else
+%      \global\savednoffloats\zerocount
+%      \global\setbox\floatbox\box\voidb@x
+%    \fi}
+
 \def\dogetfloat
   {\ifsomefloatwaiting
      \global\setbox\floatlist\vbox
@@ -800,6 +827,12 @@
          \setbox\floatbox\hbox to \hsize{\hss\box\globalscratchbox\hss}%
        \else
          \setbox\floatbox\box\globalscratchbox % local !
+         % retain special alignments
+         \ifinsidecolumns
+             \ifdim\wd\floatbox>\makeupwidth
+                 \wd\floatbox\makeupwidth
+             \fi
+         \fi
        \fi
      \else
        \setbox\floatbox\box\globalscratchbox % local !
@@ -981,7 +1014,7 @@
            {\doifinset\v!offset{#1}{\whitespace\blank}%
             \box\floattext
             \vfill}}}%
-   \doifinsetelse\v!right{#1}%
+   \doifinsetelse\v!right{#1}% \floatmethod
      {\setbox\floatbox\hbox to \hsize
         {\box\floattext
          \hfill
@@ -1030,31 +1063,45 @@
      {\doifinsetelse\v!always{#1}
         {\docheckiffloatfits
          \ifroomforfloat
-           \doifinsetelse\v!top{#1}
-            {\placesometopsfloat[#1]}
-            {\doifinsetelse\v!bottom{#1}
-               {\placesomebotsfloat[#1]}
-               {\placesomeherefloat[#1]}}%
-         % more compact and efficient, but quite ugly
-         % \doifinsetelse\v!top{#1}
-         %   \placesometopsfloat
-         %   {\doifinsetelse\v!bottom{#1}
-         %      \placesomebotsfloat
-         %      \placesomeherefloat}[#1]%
+           \sometopbottomfloat[#1]
          \else
            \showmessage\m!floatblocks9\empty
            \doreversesavefloat
          \fi}
         {\docheckiffloatfits
          \ifroomforfloat
-           \doifinsetelse\v!top{#1}
-             {\placesometopsfloat[#1]}
-             {\doifinsetelse\v!bottom{#1}
-                {\placesomebotsfloat[#1]}
-                {\placesomeherefloat[#1]}}%
+           \sometopbottomfloat[#1]
          \else
            \dosavefloat
          \fi}}}
+
+\def\floatautofactor{.5}
+
+% \def\sometopbottomfloat[#1]%
+%   {\doifinsetelse\v!auto{#1}
+%      {\ifdim\pagetotal<\floatautofactor\pagegoal % when empty page, maxdimen
+%         \placesometopsfloat[#1]%
+%       \else
+%         \placesomebotsfloat[#1]%
+%       \fi}
+%      {\doifinsetelse\v!top{#1}
+%         {\placesometopsfloat[#1]}
+%         {\doifinsetelse\v!bottom{#1}
+%            {\placesomebotsfloat[#1]}
+%            {\placesomeherefloat[#1]}}}}
+
+\def\sometopbottomfloat[#1]%
+  {\doifelse\floatmethod\v!auto
+     {\ifdim\pagetotal<\floatautofactor\pagegoal % when empty page, maxdimen
+        \placesometopsfloat[#1]%
+      \else
+        \placesomebotsfloat[#1]%
+      \fi}
+     {\doifelse\floatmethod\v!top
+        {\placesometopsfloat[#1]}
+        {\doifelse\floatmethod\v!bottom
+           {\placesomebotsfloat[#1]}
+           {\placesomeherefloat[#1]}}}}
 
 % De onderstaande macro wordt gebruikt bij de macros
 % voor het plaatsen van tabellen en figuren (klopt niet
@@ -1670,7 +1717,8 @@
      {\dogetfloatbox{#1}\empty}
      {\ifdim\wd\floatbox>\getvalue{\??fl#4\c!criterium}\relax
         \postcenterfloatbox{\wd\floatbox}% else we get left aligned
-        \dogetfloatbox{#1}\v!here        % see details/pascal
+        %dogetfloatbox{#1}\v!here        % see details/pascal
+        \dogetfloatbox{#1}{\executeifdefined{\??fl#4\c!fallback}\v!here}%
       \else
         \dogetfloatbox{#1}\empty
       \fi}}
@@ -2125,7 +2173,8 @@
         \edef\floatmethod{#2}}%
      \doifundefined{\string\floatmethod\floatmethod}
        {\let\floatmethod\v!here}%
-     \getvalue{\string\floatmethod\floatmethod}[#1]%
+    %\getvalue{\string\floatmethod\floatmethod}[#1]%
+     \getvalue{\string\floatmethod\floatmethod}[\floatmethod,#1]%
    \fi}
 
 \def\installfloathandler#1#2% #1=keyword #2=handler
@@ -2138,6 +2187,7 @@
 \installfloathandler \v!text        \sometextfloat
 \installfloathandler \v!top         \sometopfloat
 \installfloathandler \v!bottom      \somebottomfloat
+\installfloathandler \v!auto        \someautofloat
 \installfloathandler \v!margin      \somemarginfloat
 \installfloathandler \v!opposite    \somefacefloat
 \installfloathandler \v!page        \somepagefloat
@@ -2176,6 +2226,7 @@
 \def\somerightsidefloat    [#1]{\somesidefloat[#1]}
 \def\sometopfloat          [#1]{\someelsefloat[#1]\nonoindentation}
 \def\somebottomfloat       [#1]{\someelsefloat[#1]}
+\def\someautofloat         [#1]{\someelsefloat[#1]}
 \def\somemarginfloat       [#1]{\somenextfloat[#1]\nonoindentation}
 \def\someinleftmarginfloat [#1]{\somesidefloat[#1]}
 \def\someinrightmarginfloat[#1]{\somesidefloat[#1]}

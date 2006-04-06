@@ -143,18 +143,18 @@
 
 % perthings
 
-\def\fakeperthousand
-  {\mathematics{^{\scriptscriptstyle0}\kern-.25em/\kern-.2em_{\scriptscriptstyle00}}}
-
 \def\fakepercent
   {\mathematics{^{\scriptscriptstyle0}\kern-.25em/\kern-.2em_{\scriptscriptstyle0}}}
+
+\def\fakeperthousand
+  {\mathematics{^{\scriptscriptstyle0}\kern-.25em/\kern-.2em_{\scriptscriptstyle00}}}
 
 \def\fakepermine
   {\dontleavehmode
    \bgroup
-   \setbox0\hbox
+   \setbox\scratchbox\hbox
      {\mathematics{+}}%
-   \hbox to \wd0
+   \hbox to \wd\scratchbox
      {\hss
       \mathematics{^{\scriptscriptstyle-}\kern-.4em/\kern-.3em_{\scriptscriptstyle-}}%
       \hss}%

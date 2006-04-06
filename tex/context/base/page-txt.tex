@@ -67,6 +67,20 @@
 \def\setuplayouttext
   {\dotripleempty\dosetuplayouttext}
 
+% \def\dosetuplayouttext[#1][#2][#3]%
+%   {\ifthirdargument
+%      \getparameters[\??tk#1#2][#3]%
+%    \else
+%     %\getparameters[\??tk#1\v!text][#2]%
+%      \edef\previoustextstate{\getvalue{\??tk#1\c!state}}%
+%      \getparameters[\??tk#1][#2]%
+%      \doifnotvalue{\??tk#1\c!state}\previoustextstate
+%        {%\checkcurrentlayout % no
+%         \calculatevsizes
+%         \recalculatebackgrounds
+%         \recalculatelogos}%
+%    \fi}
+
 \def\dosetuplayouttext[#1][#2][#3]%
   {\ifthirdargument
      \getparameters[\??tk#1#2][#3]%
@@ -76,9 +90,12 @@
      \getparameters[\??tk#1][#2]%
      \doifnotvalue{\??tk#1\c!state}\previoustextstate
        {%\checkcurrentlayout % no
-        \calculatevsizes
-        \recalculatebackgrounds
-        \recalculatelogos}%
+        \edef\currenttextstate{\getvalue{\??tk#1\c!state}}%
+        % speed optimization (calculating backgrounds takes time)
+        \doifcommon{\previoustextstate,\currenttextstate}{\v!high,\v!none}{%
+          \calculatevsizes
+          \recalculatebackgrounds
+          \recalculatelogos}}%
    \fi}
 
 \def\setuptop    {\dotripleempty\dosetuplayouttext[\v!top]}
@@ -229,7 +246,10 @@
 %D couple of macros.
 
 \def\settextlinestatus  #1{\edef\textlinestatus{\csname\??tk#1\c!state\endcsname}}
-\def\resettextlinestatus#1{\letgvalue{\??tk#1\c!state}\v!normal}
+%def\resettextlinestatus#1{\letgvalue{\??tk#1\c!state}\v!normal}
+
+\def\resettextlinestatus#1% postpone
+  {\setgvalue{\??tk#1\s!reset}{\letgvalue{\??tk#1\c!state}\v!normal}}
 
 \def\placelayouttextline#1% #2
   {\settextlinestatus{#1}%
@@ -264,8 +284,12 @@
 \setvalue{\string\placelayouttextline\v!none}#1#2%
   {}
 
+% \setvalue{\string\placelayouttextline\v!high}#1#2%
+%   {\global\settrue\resyncaftertextline}
+
 \setvalue{\string\placelayouttextline\v!high}#1#2%
-  {\global\settrue\resyncaftertextline}
+  {\global\settrue\resyncaftertextline
+   \resettextlinestatus{#1}}
 
 \setvalue{\string\placelayouttextline\v!empty}#1#2%
   {\resettextlinestatus{#1}}
@@ -298,10 +322,27 @@
 %D The following macro has to be called after a page
 %D is flushed.
 
+% \def\resetlayouttextline#1%
+%   {\doifvalue{\??tk#1\c!state}\v!high
+%      {\global\settrue\resyncaftertextline
+%       \resettextlinestatus{#1}}}
+
 \def\resetlayouttextline#1%
-  {\doifvalue{\??tk#1\c!state}\v!high
-     {\global\settrue\resyncaftertextline
-      \resettextlinestatus{#1}}}
+  {\getvalue {\??tk#1\s!reset}%
+   \letgvalue{\??tk#1\s!reset}\relax}
+
+% \def\resetlayouttextlines
+%   {\resetlayouttextline\v!top
+%    \resetlayouttextline\v!header
+%    \resetlayouttextline\v!text
+%    \resetlayouttextline\v!footer
+%    \resetlayouttextline\v!bottom
+%    \ifconditional\resyncaftertextline
+%      \doglobal\calculatevsizes
+%      \recalculatebackgrounds
+%      \recalculatelogos
+%      \global\setfalse\resyncaftertextline
+%    \fi}
 
 \def\resetlayouttextlines
   {\resetlayouttextline\v!top

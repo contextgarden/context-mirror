@@ -7562,6 +7562,7 @@
       <cd:constant type="seite"/>
       <cd:constant type="gegenueber"/>
       <cd:constant type="immer"/>
+      <cd:constant type="auto"/>
       <cd:constant type="zwinge"/>
       <cd:constant type="lang"/>
       <cd:constant type="zuruecksetzten"/>
@@ -9346,6 +9347,8 @@
       <cd:constant type="cd:name"/>
     </cd:keywords>
     <cd:keywords optional="yes" list="yes">
+      <cd:constant type="cd:name"/>
+      <cd:constant type="alles"/>
     </cd:keywords>
   </cd:arguments>
 </cd:command>

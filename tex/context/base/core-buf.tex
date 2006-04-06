@@ -215,19 +215,28 @@
    \fi
    \next}
 
+\chardef\buffernestmode\plusone % 0: not nested, 1: startbuffer nested, 2: all buffers nested
+
 \def\dododostartbuffer[#1][#2][#3][#4]%
   {%\showmessage\m!systems{15}{#2}%
    \doifelsevalue{\??bu#1\c!paragraph}\v!yes
      {\segmentatebuffertrue}
      {\doifnumberelse{\getvalue{\??bu#1\c!paragraph}}\segmentatebuffertrue\segmentatebufferfalse}%
+   \doifvalue{\??bu#1\c!local}\v!yes
+     {\chardef\buffernestmode\plustwo}% permit nesting
    \doifelsenothing{#4}
      {\letbeundefined{\e!stop\v!buffer}% % \let\stopbuffer=\relax   % \undefined
       \@EA\@EA\@EA\convertargument\@EA\e!start\v!buffer\to\beginofblock % else a space
       \@EA\@EA\@EA\convertargument\@EA\e!stop \v!buffer\to\endofblock
-      \let\processnextblockline\processnextbufferline}
+      \ifcase\buffernestmode \else
+        \let\processnextblockline\processnextbufferline
+      \fi}
      {\letbeundefined{#4}% \letvalue{#4}=\relax     % \undefined
       \@EA\convertargument\csname#3\endcsname\to\beginofblock
-      \@EA\convertargument\csname#4\endcsname\to\endofblock}%
+      \@EA\convertargument\csname#4\endcsname\to\endofblock
+      \ifcase\buffernestmode \or \else
+        \let\processnextblockline\processnextbufferline
+      \fi}%
    \def\closeblock
      {\ifsegmentatebuffer
         \immediate\write\tmpblocks{\string\stopbufferparagraph}%
@@ -313,7 +322,7 @@
      \getparameters[\??bu][#1]%
    \fi}
 
-\def\dodefinebuffer[#1]%
+\def\dodefinebuffer[#1][#2]%
   {\iffirstargument % else problems
      \doglobal\increment\nofdefinedbuffers
      \letvalue{\??bu#1\c!number}\nofdefinedbuffers
@@ -324,10 +333,11 @@
        {\noexpand\dodoprocessTEXbuffer[#1][def-\nofdefinedbuffers]}%
      \setevalue{\e!type#1}%
        {\noexpand\dodotypebuffer[#1][def-\nofdefinedbuffers]}%
+     \getparameters[\??bu#1][#2]%
    \fi}
 
 \def\definebuffer
-  {\dosingleargument\dodefinebuffer}
+  {\dodoubleempty\dodefinebuffer}
 
 % yet another undocumented feature, but who cares:
 
@@ -1037,11 +1047,11 @@
    \setupcopyblock
    \skipblocklineAB}
 
-% the buffer mechanism handles nesting, add some switch
+% \setvalue{\e!start\v!hiding}%
+%   {\dostartbuffer[buf-\nofpostponedblocks]
+%      [\e!start\v!hiding][\e!stop\v!hiding]}
 
-\setvalue{\e!start\v!hiding}%
-  {\dostartbuffer[buf-\nofpostponedblocks]
-     [\e!start\v!hiding][\e!stop\v!hiding]}
+\definebuffer[\v!hiding] \setupbuffer[\v!hiding][\c!local=\v!yes]
 
 \setupbuffer
   [\c!paragraph=\v!no,

@@ -238,106 +238,328 @@
 %
 % Overigens kan een en ander mooier met \halign.
 
+% \def\dodefineparagraphs[#1][#2]%
+%   {\setvalue{\s!do\s!next#1}%
+%      {\def\\{\getvalue{#1}}}%
+%    \setvalue{#1}%
+%      {\getvalue{\s!do\s!next#1}%
+%       \dostartparagraphs{#1}}%
+%    \setvalue{\e!next#1}%
+%      {\getvalue{#1}}%
+%    \setvalue{\e!start#1}%
+%      {\bgroup
+%       \letvalue{\s!do\s!next#1}\empty
+%       \setvalue{\e!stop#1}%
+%         {\getvalue{#1}%
+%          \egroup}%
+%       \getvalue{#1}}%
+%    \getparameters[\??al#1]%
+%      [\c!n=3,
+%       \c!before=\blank,
+%       \c!after=\blank,
+%       \c!distance=1em,
+%       \c!height=\v!fit,
+%       \c!rule=\v!off,
+%       \c!command=,
+%       \c!align=,
+%       \c!tolerance=\v!tolerant,
+%       \c!rulethickness=\linewidth,
+%       \c!style=,
+%       \c!color=,
+%       \c!top=,
+%       \c!top=\vss,
+%       \c!bottom=\vfill,
+%       #2]%
+%    \setvalue{\e!setup#1\e!endsetup}%
+%      {\setupparagraphs[#1]}%
+%    \dorecurse
+%       {\getvalue{\??al#1\c!n}}
+%       {\setupparagraphs[#1][\recurselevel]
+%          [\c!width=,
+%           \c!bottom=\getvalue{\??al#1\c!bottom},
+%           \c!top=\getvalue{\??al#1\c!top},
+%           \c!height=\getvalue{\??al#1\c!height},
+%           \c!style=\getvalue{\??al#1\c!style},
+%           \c!color=\getvalue{\??al#1\c!color},
+%           \c!rule=\getvalue{\??al#1\c!rule},
+%           \c!rulethickness=\getvalue{\??al#1\c!rulethickness},
+%           \c!align=\getvalue{\??al#1\c!align},
+%           \c!tolerance=\getvalue{\??al#1\c!tolerance},
+%           \c!distance=\getvalue{\??al#1\c!distance}]}%
+%    \setupparagraphs[#1][1][\c!distance=0em]}
+%
+% \def\defineparagraphs
+%   {\dodoubleargument\dodefineparagraphs}
+%
+% \def\dosetupparagraphs[#1][#2][#3]%
+%   {\doifelse{#2}\v!each
+%      {\dorecurse
+%         {\getvalue{\??al#1\c!n}}
+%         {\getparameters[\??al#1\recurselevel][#3]}}
+%      {\ConvertToConstant\doifelse{#3}{}
+%         {\getparameters[\??al#1][#2]}
+%         {\def\docommando##1%
+%            {\getparameters[\??al#1##1][#3]}%
+%          \processcommalist[#2]\docommando}}}
+%
+% \def\setupparagraphs
+%   {\dotripleempty\dosetupparagraphs}
+%
+% \newcount\alcounter
+% \newcount\alnsize
+% \newdimen\alhsize
+%
+% \def\doparagraphrule#1#2%
+%   {\doifelsevalue{\??al#2\the\alcounter\c!rule}\v!on
+%      {\linewidth\getvalue{\??al#2\the\alcounter\c!rulethickness}%
+%       \scratchdimen#1%
+%       \advance\scratchdimen-\linewidth
+%       \divide\scratchdimen \plustwo
+%       \hskip\scratchdimen
+%       \vrule\!!width\linewidth
+%       \hskip\scratchdimen}
+%      {\hskip#1}}
+%
+% \def\dostartparagraph#1%
+%   {\doifelsevaluenothing{\??al#1\the\alcounter\c!width}
+%      {\!!widtha\alhsize
+%       \divide\!!widtha \alnsize}
+%      {\!!widtha\getvalue{\??al#1\the\alcounter\c!width}}%
+%    \dostartattributes
+%      {\??al#1\the\alcounter}\c!style\c!color
+%      \empty
+%    \doifelsevalue{\??al#1\the\alcounter\c!height}\v!fit
+%      {\setbox0\vtop}
+%      {\setbox0\vtop to \getvalue{\??al#1\the\alcounter\c!height}}%
+%    \bgroup
+%    \blank[\v!disable]%
+%    \forgetall
+%    \getvalue{\??al#1\the\alcounter\c!top}%
+%    \getvalue{\??al#1\c!inner}%
+%    \hsize\!!widtha  % setting \wd afterwards removed
+%    \getvalue{\??al#1\the\alcounter\c!inner}%
+%    \edef\!!stringa{\getvalue{\??al#1\the\alcounter\c!align}}%  nodig?
+%    \expandafter\setupalign\expandafter[\!!stringa]%
+%    \edef\!!stringa{\getvalue{\??al#1\the\alcounter\c!tolerance}}% nodig?
+%    \expandafter\setuptolerance\expandafter[\!!stringa]%
+%    \ignorespaces
+%    \endgraf
+%    \ignorespaces
+%    %
+%    % Nadeel van de onderstaande constructie is dat \everypar
+%    % binnen een groep kan staan en zo steeds \begstruts
+%    % worden geplaatst. Mooi is anders dus moet het anders!
+%    %
+%    % Hier is \Everypar niet nodig.
+%    %
+%    \everypar{\begstrut\everypar\emptytoks}%
+%    %
+%    \ignorespaces\geenspatie % dubbel: \ignorespaces
+%    \getvalue{\??al#1\the\alcounter\c!command}}
+%
+% \def\dostopparagraph#1%
+%   {\ifvmode
+%      \removelastskip
+%    \else
+%      \unskip\endstrut\endgraf
+%    \fi
+%    \getvalue{\??al#1\the\alcounter\c!bottom}%
+%    \egroup
+%    \ifdim\wd0=\zeropoint % no data
+%      \wd0\!!widtha
+%    \fi
+%    \box0
+%    \dostopattributes
+%    %\ifnum\alcounter<\getvalue{\??al#1\c!n}\relax
+%    %  \def\next{\doparagraphcell{#1}}%
+%    %\else
+%    %  \def\next{\dostopparagraphs{#1}}%
+%    %\fi
+%    %\next}
+%    \ifnum\alcounter<\getvalue{\??al#1\c!n}\relax
+%      \@EA\doparagraphcell
+%    \else
+%      \@EA\dostopparagraphs
+%    \fi{#1}}
+%
+% \def\doparagraphcell#1%
+%   {\global\advance\alcounter \plusone
+%    \doifelsevaluenothing{\??al#1\the\alcounter\c!distance}
+%      {\doifnot{\the\alcounter}{1}
+%         {\hskip\getvalue{\??al#1\c!distance}}}
+%      {\doifelse{\the\alcounter}{1}%
+%         {\hskip\getvalue{\??al#1\the\alcounter\c!distance}}
+%         {\doparagraphrule{\getvalue{\??al#1\the\alcounter\c!distance}}{#1}}}%
+%    \setvalue{#1}{\dostopparagraph{#1}}%
+%    \dostartparagraph{#1}}
+%
+% \def\dostartparagraphs#1%
+%   {\global\alcounter\zerocount
+%    \parindent\zeropoint
+%    \setlocalhsize
+%    \alhsize\localhsize
+%    \alnsize\getvalue{\??al#1\c!n}\relax
+%    \dorecurse
+%      {\getvalue{\??al#1\c!n}}
+%      {\doifelsevaluenothing{\??al#1\recurselevel\c!distance}
+%         {\ifnum\recurselevel=\plusone\else
+%            \global\advance\alhsize -\getvalue{\??al#1\c!distance}\relax
+%          \fi}
+%         {\global\advance\alhsize -\getvalue{\??al#1\recurselevel\c!distance}\relax}%
+%       \doifvaluesomething{\??al#1\recurselevel\c!width}
+%         {\global\advance\alnsize \minusone
+%          \global\advance\alhsize -\getvalue{\??al#1\recurselevel\c!width}\relax}}%
+%    %\whitespace                 % gaat fout bij \framed
+%    \getvalue{\??al#1\c!before}%
+%    \leavevmode                 % gaat wel goed bij \framed, brrr
+%    \setbox\scratchbox\vbox\bgroup\hbox\bgroup\doparagraphcell{#1}}
+%
+% \def\dostopparagraphs#1%
+%   {\egroup
+%    \egroup
+%    \iftrue
+%      \hbox{\raise\strutheight\box\scratchbox}% new
+%    \else
+%      \box\scratchbox % old
+%    \fi
+%    \par
+%    \getvalue{\??al#1\c!after}}%
+
+% there is quite some historic balast in this mechanism, the next variant
+% is a first cleanup
+
+\let\currentparagraph\empty
+
+\newcount\alcounter \newcount\alnsize \newdimen\alhsize
+
+\def\paragraphparameter#1% \checkedparameter\??al\currentparagraph#1
+  {\executeifdefined{\??al\currentparagraph#1}{\executeifdefined{\??al#1}\empty}}
+
+\def\paragraphcellmeter#1#2% \checkedparameter\??al\currentparagraph#1
+  {\executeifdefined{\??al\currentparagraph\number#1#2}{\paragraphparameter{#2}}}
+
 \def\dodefineparagraphs[#1][#2]%
-  {\setvalue{\s!do\s!next#1}%
-     {\def\\{\getvalue{#1}}}%
-   \setvalue{#1}%
+  {\edef\currentparagraph{#1}%
+   \setvalue{\s!do\s!next\currentparagraph}%
+     {\def\\{\getvalue\currentparagraph}}%
+   \setvalue\currentparagraph
      {\getvalue{\s!do\s!next#1}%
-      \dostartalineas{#1}}%
-   \setvalue{\e!next#1}%
+      \dostartparagraphs{#1}}%
+   \setvalue{\e!next\currentparagraph}%
      {\getvalue{#1}}%
-   \setvalue{\e!start#1}%
+   \setvalue{\e!start\currentparagraph}%
      {\bgroup
-      \letvalue{\s!do\s!next#1}\empty
-      \setvalue{\e!stop#1}%
-        {\getvalue{#1}%
-         \egroup}%
-      \getvalue{#1}}%
-   \getparameters[\??al#1]%
-     [\c!n=3,
-      \c!before=\blank,
-      \c!after=\blank,
-      \c!distance=1em,
-      \c!height=\v!fit,
-      \c!rule=\v!off,
-      \c!command=,
-      \c!align=,
-      \c!tolerance=\v!tolerant,
-      \c!style=,
-      \c!color=,
-      \c!top=,
-      \c!top=\vss,
-      \c!bottom=\vfill,
+      \edef\currentparagraph{#1}%
+      \letvalue{\s!do\s!next\currentparagraph}\empty
+      \setvalue{\e!stop\currentparagraph}{\getvalue\currentparagraph\egroup}%
+      \getvalue\currentparagraph}%
+   \getparameters[\??al\currentparagraph]%
+     [%\c!n=3,
+      %\c!before=\blank,
+      %\c!after=\blank,
+      %\c!distance=1em,
+      %\c!height=\v!fit,
+      %\c!rule=\v!off,
+      %\c!command=,
+      %\c!align=,
+      %\c!tolerance=\v!tolerant,
+      %\c!rulethickness=\linewidth,
+      %\c!rulecolor=,
+      %\c!style=,
+      %\c!color=,
+      %\c!top=,
+      %\c!top=\vss,
+      %\c!bottom=\vfill,
       #2]%
    \setvalue{\e!setup#1\e!endsetup}%
      {\setupparagraphs[#1]}%
    \dorecurse
-      {\getvalue{\??al#1\c!n}}
-      {\setupparagraphs[#1][\recurselevel]
+      {\paragraphparameter\c!n}
+      {\setupparagraphs
+         [\currentparagraph]
+         [\recurselevel]
          [\c!width=,
-          \c!bottom=\getvalue{\??al#1\c!bottom},
-          \c!top=\getvalue{\??al#1\c!top},
-          \c!height=\getvalue{\??al#1\c!height},
-          \c!style=\getvalue{\??al#1\c!style},
-          \c!color=\getvalue{\??al#1\c!color},
-          \c!rule=\getvalue{\??al#1\c!rule},
-          \c!align=\getvalue{\??al#1\c!align},
-          \c!tolerance=\getvalue{\??al#1\c!tolerance},
-          \c!distance=\getvalue{\??al#1\c!distance}]}%
-   \setupparagraphs[#1][1][\c!distance=0em]}
+         %\c!bottom=\paragraphparameter\c!bottom,
+         %\c!top=\paragraphparameter\c!top,
+         %\c!height=\paragraphparameter\c!height,
+         %\c!rule=\paragraphparameter\c!rule,
+         %\c!rulethickness=\paragraphparameter\c!rulethickness,
+         %\c!rulecolor=\paragraphparameter\c!rulecolor,
+         %\c!align=\paragraphparameter\c!align,
+         %\c!tolerance=\paragraphparameter\c!tolerance, % obsolete
+         %\c!distance=\paragraphparameter\c!distance,
+          \c!style=\paragraphparameter\c!style,
+          \c!color=\paragraphparameter\c!color]}%
+   \setupparagraphs[\currentparagraph][1][\c!distance=\zeropoint]}
 
 \def\defineparagraphs
   {\dodoubleargument\dodefineparagraphs}
 
 \def\dosetupparagraphs[#1][#2][#3]%
-  {\doifelse{#2}\v!each
-     {\dorecurse
-        {\getvalue{\??al#1\c!n}}
-        {\getparameters[\??al#1\recurselevel][#3]}}
-     {\ConvertToConstant\doifelse{#3}{}
-        {\getparameters[\??al#1][#2]}
-        {\def\docommando##1%
-           {\getparameters[\??al#1##1][#3]}%
-         \processcommalist[#2]\docommando}}}
+  {\edef\currentparagraph{#1}%
+   \ifsecondargument
+     \doifelse{#2}\v!each
+       {\dorecurse
+          {\paragraphparameter\c!n}
+          {\getparameters[\??al\currentparagraph\recurselevel][#3]}}
+       {\doifelsenothing{#3}
+          {\getparameters[\??al\currentparagraph][#2]}
+          {\def\docommand##1{\getparameters[\??al\currentparagraph##1][#3]}%
+           \processcommalist[#2]\docommand}}%
+   \else
+     \getparameters[\??al][#1]%
+   \fi}
 
 \def\setupparagraphs
   {\dotripleempty\dosetupparagraphs}
 
-\newcount\alteller
-\newcount\alnsize
-\newdimen\alhsize
+\setupparagraphs
+  [\c!n=3,
+   \c!before=\blank,
+   \c!after=\blank,
+   \c!distance=1em,
+   \c!height=\v!fit,
+   \c!rule=\v!off,
+   \c!command=,
+   \c!align=,
+   \c!tolerance=\v!tolerant, % obsolete
+   \c!rulethickness=\linewidth,
+   \c!rulecolor=,
+   \c!style=,
+   \c!color=,
+   \c!top=,
+   \c!top=\vss,
+   \c!bottom=\vfill]
 
-\def\doalinealijn#1#2%
-  {\doifelsevalue{\??al#2\the\alteller\c!rule}\v!on
-     {\dimen2=#1\relax
-      \hskip.5\dimen2
-      \hskip-\linewidth
-      \vrule\!!width\linewidth
-      \hskip.5\dimen2}
-     {\hskip#1}}
+\def\doparagraphrule
+  {\doifelse{\paragraphcellmeter\alcounter\c!rule}\v!on
+     {\linewidth\paragraphcellmeter\alcounter\c!rulethickness
+      \scratchdimen\paragraphcellmeter\alcounter\c!distance
+      \advance\scratchdimen-\linewidth
+      \divide\scratchdimen \plustwo
+      \hskip\scratchdimen
+      \color[\paragraphcellmeter\alcounter\c!rulecolor]{\vrule\!!width\linewidth}%
+      \hskip\scratchdimen}
+     {\hskip\paragraphcellmeter\alcounter\c!distance}}
 
-\def\dostartalinea#1%
-  {\doifelsevaluenothing{\??al#1\the\alteller\c!width}
+\def\dostartparagraph
+  {\doifelsenothing{\paragraphcellmeter\alcounter\c!width}
      {\!!widtha\alhsize
       \divide\!!widtha \alnsize}
-     {\!!widtha\getvalue{\??al#1\the\alteller\c!width}}%
-   \dostartattributes
-     {\??al#1\the\alteller}\c!style\c!color
-     \empty
-   \doifelsevalue{\??al#1\the\alteller\c!height}\v!fit
-     {\setbox0\vtop}
-     {\setbox0\vtop to \getvalue{\??al#1\the\alteller\c!height}}%
+     {\!!widtha\paragraphcellmeter\alcounter\c!width}%
+   \dostartattributes{\??al\currentparagraph\number\alcounter}\c!style\c!color\empty
+   \doifelse{\paragraphcellmeter\alcounter\c!height}\v!fit
+     {\setbox\scratchbox\vtop}
+     {\setbox\scratchbox\vtop to \paragraphcellmeter\alcounter\c!height}%
    \bgroup
    \blank[\v!disable]%
    \forgetall
-   \getvalue{\??al#1\the\alteller\c!top}%
-   \getvalue{\??al#1\c!inner}%
-   \hsize\!!widtha  % setting \wd afterwards removed
-   \getvalue{\??al#1\the\alteller\c!inner}%
-   \edef\!!stringa{\getvalue{\??al#1\the\alteller\c!align}}%  nodig?
-   \expandafter\setupalign\expandafter[\!!stringa]%
-   \edef\!!stringa{\getvalue{\??al#1\the\alteller\c!tolerance}}% nodig?
-   \expandafter\setuptolerance\expandafter[\!!stringa]%
+   \paragraphcellmeter\alcounter\c!top
+   \paragraphparameter\c!inner
+   \hsize\!!widtha % setting \wd afterwards removed
+   \paragraphcellmeter\alcounter\c!inner % twice
+   \expanded{\setupalign    [\paragraphcellmeter\alcounter\c!align    ]}% {normal,verytolerant,stretch}
+   \expanded{\setuptolerance[\paragraphcellmeter\alcounter\c!tolerance]}% obsolete
    \ignorespaces
    \endgraf
    \ignorespaces
@@ -350,70 +572,75 @@
    %
    \everypar{\begstrut\everypar\emptytoks}%
    %
-   \ignorespaces\geenspatie % dubbel: \ignorespaces
-   \getvalue{\??al#1\the\alteller\c!command}}
+   \nospace % remove + ignore
+   \paragraphcellmeter\alcounter\c!command}
 
-\def\dostopalinea#1%
+\def\dostopparagraph
   {\ifvmode
      \removelastskip
    \else
      \unskip\endstrut\endgraf
    \fi
-   \getvalue{\??al#1\the\alteller\c!bottom}%
+   \paragraphcellmeter\alcounter\c!bottom
    \egroup
-   \ifdim\wd0=\zeropoint % no data
-     \wd0\!!widtha
+   \ifdim\wd\scratchbox=\zeropoint % no data
+     \wd\scratchbox\!!widtha
    \fi
-   \box0
+   \box\scratchbox
    \dostopattributes
-   %\ifnum\alteller<\getvalue{\??al#1\c!n}\relax
-   %  \def\next{\doalinea{#1}}%
-   %\else
-   %  \def\next{\dostopalineas{#1}}%
-   %\fi
-   %\next}
-   \ifnum\alteller<\getvalue{\??al#1\c!n}\relax
-     \@EA\doalinea
+   \ifnum\alcounter<\paragraphparameter\c!n\relax
+     \@EA\doparagraphcell
    \else
-     \@EA\dostopalineas
-   \fi{#1}}
+     \@EA\dostopparagraphs
+   \fi}
 
-\def\doalinea#1%
-  {\global\advance\alteller \plusone
-   \doifelsevaluenothing{\??al#1\the\alteller\c!distance}
-     {\doifnot{\the\alteller}{1}
-        {\hskip\getvalue{\??al#1\c!distance}}}
-     {\doifelse{\the\alteller}{1}%
-        {\hskip\getvalue{\??al#1\the\alteller\c!distance}}
-        {\doalinealijn{\getvalue{\??al#1\the\alteller\c!distance}}{#1}}}%
-   \setvalue{#1}{\dostopalinea{#1}}%
-   \dostartalinea{#1}}
+\def\doparagraphcell
+  {\global\advance\alcounter \plusone
+   \doifelsenothing{\paragraphcellmeter\alcounter\c!distance}
+     {\ifnum\alcounter=\plusone\else
+        \hskip\paragraphparameter\c!distance
+      \fi}
+     {\ifnum\alcounter=\plusone
+        \hskip\paragraphcellmeter\alcounter\c!distance
+      \else
+        \doparagraphrule
+      \fi}%
+   \letvalue\currentparagraph\dostopparagraph
+   \dostartparagraph}
 
-\def\dostartalineas#1%
-  {\global\alteller\zerocount
+\def\dostartparagraphs#1%
+  {\bgroup
+   \edef\currentparagraph{#1}%
+   \global\alcounter\zerocount
    \parindent\zeropoint
    \setlocalhsize
    \alhsize\localhsize
-   \alnsize\getvalue{\??al#1\c!n}\relax
-   \dorecurse
-     {\getvalue{\??al#1\c!n}}
-     {\doifelsevaluenothing{\??al#1\recurselevel\c!distance}
-        {\doifnot{\recurselevel}{1}
-           {\global\advance\alhsize -\getvalue{\??al#1\c!distance}\relax}}
-        {\global\advance\alhsize -\getvalue{\??al#1\recurselevel\c!distance}\relax}%
-      \doifvaluesomething{\??al#1\recurselevel\c!width}
+   \alnsize\paragraphparameter\c!n\relax
+   \dorecurse \alnsize
+     {\doifelsenothing{\paragraphcellmeter\recurselevel\c!distance}
+        {\ifnum\recurselevel=\plusone\else
+           \global\advance\alhsize -\paragraphparameter\c!distance
+         \fi}
+        {\global\advance\alhsize -\paragraphcellmeter\recurselevel\c!distance}%
+      \doifsomething{\paragraphcellmeter\recurselevel\c!width}
         {\global\advance\alnsize \minusone
-         \global\advance\alhsize -\getvalue{\??al#1\recurselevel\c!width}\relax}}%
-   %\whitespace                 % gaat fout bij \framed
-   \getvalue{\??al#1\c!before}%
-   \leavevmode                 % gaat wel goed bij \framed
-   \vbox\bgroup\hbox\bgroup\doalinea{#1}}
+         \global\advance\alhsize -\paragraphcellmeter\recurselevel\c!width}}%
+   %whitespace % gaat fout bij \framed
+   \paragraphparameter\c!before
+   \leavevmode % gaat wel goed bij \framed, brrr
+   \setbox\scratchbox\vbox\bgroup\hbox\bgroup\doparagraphcell}
 
-\def\dostopalineas#1%
+\def\dostopparagraphs
   {\egroup
    \egroup
+   \iftrue
+     \hbox{\raise\strutheight\box\scratchbox}% new
+   \else
+     \box\scratchbox % old
+   \fi
    \par
-   \getvalue{\??al#1\c!after}}%
+   \paragraphparameter\c!after
+   \egroup}
 
 \def\dosetuptab[#1]%
   {\getparameters[\??ta]
@@ -654,44 +881,79 @@
 \newsignal \subsentencesignal
 \newcounter\subsentencelevel
 
+\let\beforesubsentence\donothing
+\let\aftersubsentence \donothing
+
+% todo: make this language option
+%
+% \def\beforesubsentence{\removeunwantedspaces}
+% \def\aftersubsentence {\ignorespaces}
+
 \def\midsentence
   {\symbol[\c!midsentence]}
 
 \def\beginofsubsentence
-  {\ifdim\lastkern=\subsentencesignal
+  {\beforesubsentence
+   \ifdim\lastkern=\subsentencesignal
      \unskip
      \kern\hspaceamount\currentlanguage{intersentence}%
    \fi
    \doglobal\increment\subsentencelevel
    \ifnum\subsentencelevel=\plusone
-     \leaveoutervmode
+     \dontleavehmode % was \leaveoutervmode
    \fi
-   \symbol[\ifodd\subsentencelevel\c!leftsentence   \else
-                                  \c!leftsubsentence\fi]%
-   \ignorespaces}
+   \symbol[\ifodd\subsentencelevel\c!leftsentence\else\c!leftsubsentence\fi]%
+  }%  \ignorespaces}
 
-\def\beginofsubsentencespacing
-  {\kern\subsentencesignal\ignorespaces}
-
-\def\endofsubsentence
-  {\symbol[\ifodd\subsentencelevel\c!rightsentence   \else
-                                  \c!rightsubsentence\fi]%
+\def\endofsubsentence % relax prevents space gobbling
+  {\symbol[\ifodd\subsentencelevel\c!rightsentence\else\c!rightsubsentence\fi]%
    \doglobal\decrement\subsentencelevel
    \unskip
-   \kern\subsentencesignal}
+   \kern\subsentencesignal\relax
+   \aftersubsentence}
+
+\def\beginofsubsentencespacing % relax prevents space gobbling
+  {\kern\subsentencesignal\relax}% \ignorespaces}
 
 \def\endofsubsentencespacing
   {\ifdim\lastkern=\subsentencesignal
      \unskip
      \hskip\hspaceamount\currentlanguage{intersentence}%
-     \ignorespaces
+     % no good, actually language dependent:
+%     \ignorespaces
    \else
      \unskip
    \fi}
 
-% test |<|test |<|test|>| test|>| test \par
-% test|<|test|<|test|>|test|>|test     \par
-% test |<||<|test|>||>| test           \par
+%D \startbuffer
+%D test |<|test |<|test|>| test|>| test \par
+%D test|<|test|<|test|>|test|>|test \par
+%D test |<||<|test|>||>| test \par
+%D test \directdiscretionary{<}test\directdiscretionary{>} test \par
+%D \stopbuffer
+%D
+%D \typebuffer
+%D \getbuffer
+
+\def\startsubsentence{\beginofsubsentence     \prewordbreak\beginofsubsentencespacing}
+\def\stopsubsentence {\endofsubsentencespacing\prewordbreak\endofsubsentence}
+
+%D \defineXMLenvironment [subsentence]
+%D   {|<|}
+%D   {|>|}
+%D \defineXMLenvironment [subsentence]
+%D   {\directdiscretionary{<}}
+%D   {\directdiscretionary{>}}
+%D \defineXMLenvironment [subsentence]
+%D   {\startsubsentence}
+%D   {\stopsubsentence}
+%D
+%D \startbuffer
+%D test <subsentence>test</subsentence> test
+%D \stopbuffer
+%D
+%D \typebuffer
+%D \processXMLbuffer
 
 \enableactivediscretionaries
 
@@ -954,7 +1216,8 @@
    % \doadaptrightskip{\delimitedtextparameter\c!rightmargin}%
    % backward compatible:
    \doifelsenothing{#1}
-     {\doadaptleftskip {\delimitedtextparameter\c!leftmargin}%
+     {\endgraf
+      \doadaptleftskip {\delimitedtextparameter\c!leftmargin}%
       \doadaptrightskip{\delimitedtextparameter\c!rightmargin}%
       \let\dodostopdelimitedtextpar\endgraf}
      {\startnarrower[#1]\let\dodostopdelimitedtextpar\stopnarrower}%

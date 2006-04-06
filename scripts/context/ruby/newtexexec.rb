@@ -356,7 +356,7 @@ class Commands
         copyortrim(true,'trim')
     end
 
-    def copyortrim(trim=false)
+    def copyortrim(trim=false,what='unknown')
         if job = TEX.new(logger) then
             prepare(job)
             job.cleanuptemprunfiles

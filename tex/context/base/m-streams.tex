@@ -126,7 +126,7 @@
 
 \def\startstreamlayer[#1]%
   {\bgroup
-   \def\startstreamlayer[##1]{\bgroup\let\stopstreamlayer\egroup}%
+%    \def\startstreamlayer[##1]{\bgroup\let\stopstreamlayer\egroup}%
    \edef\currentstreamlayer{#1}%
    \enableoutputstream[main]%
    \synchronizeoutput
@@ -139,16 +139,32 @@
    \egroup
    \disableoutputstream % \enableoutputstream[\s!default]%
    \outputstreambox[main]%
+%    \dostreamsetups{place}%
+%    \dostreamsetups{extras}%
+%    \dostreamsetups{flush}%
+   \egroup}
+
+\def\preparestreamlayer{\dosingleempty\dopreparestreamlayer}
+\def\flushstreamlayer  {\dosingleempty\doflushstreamlayer  }
+\def\placestreamlayer  {\dosingleempty\doplacestreamlayer  }
+
+\def\dopreparestreamlayer[#1]%
+  {\bgroup
+   \edef\currentstreamlayer{\iffirstargument#1\else\currentstreamlayer\fi}%
    \dostreamsetups{place}%
    \dostreamsetups{extras}%
+%  \dostreamsetups{flush}%
+   \egroup}
+
+\def\doflushstreamlayer[#1]%
+  {\bgroup
+   \edef\currentstreamlayer{\iffirstargument#1\else\currentstreamlayer\fi}%
    \dostreamsetups{flush}%
    \egroup}
 
-\def\flushstreamlayer
-  {\dosingleempty\doflushstreamlayer}
-
-\def\doflushstreamlayer[#1]%
-  {\expanded{\tightlayer[\iffirstargument#1\else\currentstreamlayer\fi]}}
+\def\doplacestreamlayer[#1]%
+  {\preparestreamlayer[#1]%
+   \flushstreamlayer[#1]}
 
 \protect
 
@@ -236,6 +252,7 @@
 %D             \item xxx
 %D         \stopitemize
 %D     \stopstreamlayer
+%D     \placestreamlayer[block]
 %D }
 %D
 %D \dorecurse {10} {
@@ -245,6 +262,7 @@
 %D             \input tufte
 %D         \stopcolumns
 %D     \stopstreamlayer
+%D     \placestreamlayer[block]
 %D }
 %D
 %D \stoptext
@@ -324,6 +342,7 @@
 %         \dorecurse{4}{\input tufte \par}
 %     \stopcolumns
 % \stopstreamlayer
+% \placestreamlayer[block]
 
 \dorecurse {10} {
     \startstreamlayer[block]
@@ -340,6 +359,7 @@
             \item xxx
         \stopitemize
     \stopstreamlayer
+    \placestreamlayer[block]
 }
 
 \dorecurse {10} {
@@ -349,6 +369,7 @@
             \input tufte
         \stopcolumns
     \stopstreamlayer
+    \placestreamlayer[block]
 }
 
 \stoptext

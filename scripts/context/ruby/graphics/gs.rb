@@ -13,10 +13,13 @@
 
 require 'base/variables'
 require 'base/system'
+require 'ftools'
 
 class GhostScript
 
     include Variables
+
+    @@pdftrimwhite = 'pdftrimwhite.pl'
 
     @@pstopdfoptions = [
         'AntiAliasColorImages',
@@ -213,7 +216,7 @@ class GhostScript
                 else report("invalid conversion method #{gsmethod}")
             end
         rescue
-            report("job aborted due to some error #{$!}")
+            report("job aborted due to some error: #{$!}")
             begin
                 File.delete(resultfile) if test(?e,resultfile)
             rescue
@@ -338,9 +341,12 @@ class GhostScript
 
     end
 
-    def convertbounded (inpfile, outfile)
-
+    def convertbounded(inpfile, outfile)
         report("converting #{inpfile} bounded")
+        do_convertbounded(inpfile, outfile)
+    end
+
+    def do_convertbounded(inpfile, outfile)
 
         begin
             return false if FileTest.file?(outfile) && (! File.delete(outfile))
@@ -456,13 +462,14 @@ class GhostScript
 
         report("converting #{inpfile} cropped")
 
-        convertbounded(inpfile, @@pdftempfile)
+        do_convertbounded(inpfile, @@pdftempfile)
 
         return unless test(?e,@@pdftempfile)
 
         arguments = " --offset=#{@offset} #{@@pdftempfile} #{outfile}"
 
-        unless ok = System.run('cropcrap',arguments) then
+        report("calling #{@@pdftrimwhite}")
+        unless ok = System.run(@@pdftrimwhite,arguments) then
             report('cropping failed')
             begin
                 File.delete(outfile)
