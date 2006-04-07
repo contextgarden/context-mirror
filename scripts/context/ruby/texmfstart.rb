@@ -32,12 +32,30 @@
 
 $ownpath = File.expand_path(File.dirname($0)) unless defined? $ownpath
 
+# base/kpseremote
+# texmfstart-lib/base/kpseremote
+# ../../texmf-local/scripts/context/ruby
+# ../../texmf/scripts/context/ruby
+
 $: << $ownpath
+$: << File.expand_path("#{$ownpath}/texmfstart-lib")
+$: << File.expand_path("#{$ownpath}/../../texmf-local/scripts/context/ruby")
+$: << File.expand_path("#{$ownpath}/../../texmf/scripts/context/ruby")
 
 require "rbconfig"
 
-require 'base/kpseremote'
-require 'base/kpsedirect'
+['base/kpseremote','base/kpsedirect'].each do |basemodule|
+    begin
+        require basemodule
+    rescue Exception
+        puts("unable to locate #{basemodule} on library paths:\n\n")
+        puts($:.join("\n") + "\n")
+        puts("an option is to copy\n\n")
+        puts("  <texmf-local or texmf>/scripts/context/ruby/base\n\n")
+        puts("to e.g.\n\n")
+        puts("  <path of texmfstart script>/texmfstart-lib/base")
+    end
+end
 
 $mswindows = Config::CONFIG['host_os'] =~ /mswin/
 $separator = File::PATH_SEPARATOR
