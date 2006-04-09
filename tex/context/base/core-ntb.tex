@@ -285,39 +285,6 @@
    \let\eTR\relax % handy in \expanded
    \setupTABLE[\v!row][\maximumrow][#1]}
 
-% \long\def\parseTD[#1][#2]#3\eTD % [#2] is dummy that kills spaces
-%   {\getparameters[\@@tbl][\c!ny=\tblnr,\c!nx=\tblnc,nc=1,nr=1,#1]%
-%    % goto first cell
-%    \doloop
-%      {\increment\currentcol
-%       \doifnottbltag\maximumrow\currentcol\exitloop}%
-%    % fill r*c cells and set span
-%    \let\row\maximumrow
-%    \let\col\currentcol
-%    \dorecurse\tblny
-%      {\let\col\currentcol
-%       \settblcol\row\col\tblnx
-%       \ifnum\tblnx>\maximumrowspan\relax
-%         \let\maximumrowspan\tblnx
-%       \fi
-%       \dorecurse\tblnx
-%         {\settbltag\row\col\tblnone
-%          \increment\col}%
-%       \increment\row}%
-%    % check max column
-%    \decrement\col
-%    \ifnum\col>\maximumcol\relax
-%      \let\maximumcol\col
-%    \fi
-%    % set values
-%    \settbltag\maximumrow\currentcol\tblcell
-%    \settblcol\maximumrow\currentcol\tblnx
-%    \settblrow\maximumrow\currentcol\tblny
-%    % save text
-%    \edef\celltag{{\maximumrow}{\currentcol}}%
-%    \@EA\settbltxt\@EA\maximumrow\@EA\currentcol\@EA
-%      {\@EA\handleTBLcell\celltag[#1]{#3}}}
-
 \long\def\parseTD[#1][#2]#3\eTD % [#2] is dummy that kills spaces
   {\getparameters[\@@tbl][\c!ny=\tblnr,\c!nx=\tblnc,nc=1,nr=1,\c!n=\currentcol,#1]%
    % goto first cell % NEW, n=cellnumber
@@ -326,8 +293,8 @@
      {\ifnum\getvalue{\@@tbl\c!n}=\currentcol\else
         \scratchcounter\getvalue{\@@tbl\c!n}%
         \advance\scratchcounter-\currentcol
-        \advance\scratchcounter\plusone
-        \expanded{\parseTD[][\c!nx=\the\scratchcounter]}\eTD
+        \advance\scratchcounter\minusone
+        \expanded{\parseTD[\c!nx=\the\scratchcounter][]}\eTD
         \getparameters[\@@tbl][\c!ny=\tblnr,\c!nx=\tblnc,nc=1,nr=1,\c!n=\currentcol,#1]%
       \fi}%
    \doloop

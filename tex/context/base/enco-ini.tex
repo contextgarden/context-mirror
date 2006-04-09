@@ -1193,10 +1193,14 @@
 % \def\numcharacter#1{\char#1 }
 % \let\dochar\numcharacter
 
+           \def\thechr#1{\char#1 } % just in case \relax interferes
 \unexpanded\def\numchr#1{\char#1\relax}
 \unexpanded\def\strchr#1{\csname#1\endcsname}
 
 \let\dochar\numchr
+
+\def\startdirectcharacters {\pushmacro\dochar \let\dochar\thechr}
+\def\stopdirectcharacters  {\popmacro \dochar}
 
 \def\definecharacter#1 #2 %
   {\ifundefined{#1}\setvalue{#1}{\dohandlecharacter{#1}}\fi

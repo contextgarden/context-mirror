@@ -1,0 +1,241 @@
+%D \module
+%D   [       file=xtag-pmu,
+%D        version=2001.06.10,
+%D          title=\CONTEXT\ XML Support,
+%D       subtitle=Units,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{Context XML Macros (units)}
+
+%D Quick and dirty in||line units:
+%D
+%D \startbuffer
+%D <phys>
+%D   <cn> 10 </cn>
+%D   <cu> <Newton/> <Square/> <Meter/> <Per/> <Sec/> </cu>
+%D </phys>
+%D \stopbuffer
+%D
+%D \typebuffer \processXMLbuffer
+%D
+%D A more \MATHML||like unit application:
+%D
+%D \startbuffer
+%D <phys> <apply> <unit/>
+%D   <cn> 10 </cn>
+%D   <csymbol> <Square/> <Meter/> <Per/> <Sec/> </csymbol>
+%D </apply> </phys>
+%D \stopbuffer
+%D
+%D \typebuffer \processXMLbuffer
+%D
+%D A bit more compact:
+%D
+%D \startbuffer
+%D <phys> <apply> <unit/>
+%D   <cn> 10 </cn>
+%D   <cu> <Square/> <Meter/> <Per/> <Sec/> </cu>
+%D </apply> </phys>
+%D \stopbuffer
+%D
+%D \typebuffer \processXMLbuffer
+%D
+%D A bit more complicated:
+%D
+%D \startbuffer
+%D <phys> <apply> <unit/>
+%D   <apply> <divide/> <ci> a </ci> <cn> 10 </cn> </apply>
+%D   <cu> <Square/> <Meter/> <Per/> <Sec/> </cu>
+%D </apply> </phys>
+%D \stopbuffer
+%D
+%D \typebuffer \processXMLbuffer
+%D
+%D An alternative (equivalent) for \type {</cu>}:
+%D
+%D \startbuffer
+%D <phys> <apply> <unit/>
+%D   <cn> 10 </cn> <cunseq> <Square/> <Meter/> <Per/> <Sec/> </cunseq>
+%D </apply> </phys>
+%D \stopbuffer
+%D
+%D \typebuffer \processXMLbuffer
+
+\usemodule[units]
+
+\unprotect
+
+\defineXMLargument [phys]  \automathematics
+\defineXMLargument [iphys] \inlinemathematics
+\defineXMLargument [dphys] \displaymathematics
+
+\defineXMLenvironment
+  [unit]
+  {\ignorespaces}
+  {\removeunwantedspaces}
+
+\defineXMLsingular
+  [unit]
+  [label=]
+  {\XMLop{label}}
+
+\defineXMLsingular
+  [unitmeaning]
+  [label=]
+  {\expanded{\unitmeaning{\XMLop{label}}}}
+
+\let\handlePMLunit\firstofoneargument
+
+%D All unit commands are remapped in a similar way.
+
+\defineXMLsingular [Atto]       {\handlePMLunit\Atto}
+\defineXMLsingular [Femto]      {\handlePMLunit\Femto}
+\defineXMLsingular [Pico]       {\handlePMLunit\Pico}
+\defineXMLsingular [Nano]       {\handlePMLunit\Nano}
+\defineXMLsingular [Micro]      {\handlePMLunit\Micro}
+\defineXMLsingular [Milli]      {\handlePMLunit\Milli}
+\defineXMLsingular [Centi]      {\handlePMLunit\Centi}
+\defineXMLsingular [Deci]       {\handlePMLunit\Deci}
+\defineXMLsingular [Hecto]      {\handlePMLunit\Hecto}
+\defineXMLsingular [Kilo]       {\handlePMLunit\Kilo}
+\defineXMLsingular [Mega]       {\handlePMLunit\Mega}
+\defineXMLsingular [Giga]       {\handlePMLunit\Giga}
+\defineXMLsingular [Terra]      {\handlePMLunit\Terra}
+\defineXMLsingular [Peta]       {\handlePMLunit\Peta}
+\defineXMLsingular [Exa]        {\handlePMLunit\Exa}
+
+\defineXMLsingular [Times]      {\handlePMLunit\Times}
+\defineXMLsingular [Solidus]    {\handlePMLunit\Solidus}
+\defineXMLsingular [Per]        {\handlePMLunit\Per}
+\defineXMLsingular [OutOf]      {\handlePMLunit\OutOf}
+
+\defineXMLsingular [Linear]     {\handlePMLunit\Linear}
+\defineXMLsingular [Square]     {\handlePMLunit\Square}
+\defineXMLsingular [Cubic]      {\handlePMLunit\Cubic}
+
+\defineXMLsingular [Inverse]    {\handlePMLunit\Inverse}
+
+\defineXMLsingular [Degrees]    {\handlePMLunit\Degrees}
+\defineXMLsingular [Meter]      {\handlePMLunit\Meter}
+\defineXMLsingular [Liter]      {\handlePMLunit\Liter}
+\defineXMLsingular [Sec]        {\handlePMLunit\Sec}
+\defineXMLsingular [Year]       {\handlePMLunit\Year}
+\defineXMLsingular [Month]      {\handlePMLunit\Month}
+\defineXMLsingular [Week]       {\handlePMLunit\Week}
+\defineXMLsingular [Day]        {\handlePMLunit\Day}
+\defineXMLsingular [Hour]       {\handlePMLunit\Hour}
+\defineXMLsingular [Min]        {\handlePMLunit\Min}
+\defineXMLsingular [Second]     {\handlePMLunit\Sec}
+\defineXMLsingular [Rad]        {\handlePMLunit\Rad}
+\defineXMLsingular [Deg]        {\handlePMLunit\Deg}
+\defineXMLsingular [Hertz]      {\handlePMLunit\Hertz}
+\defineXMLsingular [RevPerSec]  {\handlePMLunit\RevPerSec}
+\defineXMLsingular [RevPerMin]  {\handlePMLunit\RevPerMin}
+\defineXMLsingular [Gram]       {\handlePMLunit\Gram}
+\defineXMLsingular [Atom]       {\handlePMLunit\Atom}
+\defineXMLsingular [Newton]     {\handlePMLunit\Newton}
+\defineXMLsingular [Pascal]     {\handlePMLunit\Pascal}
+\defineXMLsingular [Joule]      {\handlePMLunit\Joule}
+\defineXMLsingular [Watt]       {\handlePMLunit\Watt}
+\defineXMLsingular [Celsius]    {\handlePMLunit\Celsius}
+\defineXMLsingular [Kelvin]     {\handlePMLunit\Kelvin}
+\defineXMLsingular [Fahrenheit] {\handlePMLunit\Fahrenheit}
+\defineXMLsingular [Mol]        {\handlePMLunit\Mol}
+\defineXMLsingular [Molair]     {\handlePMLunit\Molair}
+\defineXMLsingular [Equivalent] {\handlePMLunit\Equivalent}
+\defineXMLsingular [Farad]      {\handlePMLunit\Farad}
+\defineXMLsingular [Ohm]        {\handlePMLunit\Ohm}
+\defineXMLsingular [Siemens]    {\handlePMLunit\Siemens}
+\defineXMLsingular [Ampere]     {\handlePMLunit\Ampere}
+\defineXMLsingular [Coulomb]    {\handlePMLunit\Coulomb}
+\defineXMLsingular [Volt]       {\handlePMLunit\Volt}
+\defineXMLsingular [eVolt]      {\handlePMLunit\eVolt}
+\defineXMLsingular [Tesla]      {\handlePMLunit\Tesla}
+\defineXMLsingular [VoltAC]     {\handlePMLunit\VoltAC}
+\defineXMLsingular [VoltDC]     {\handlePMLunit\VoltDC}
+\defineXMLsingular [Baud]       {\handlePMLunit\Baud}
+\defineXMLsingular [Bit]        {\handlePMLunit\Bit}
+\defineXMLsingular [Byte]       {\handlePMLunit\Byte}
+\defineXMLsingular [Bequerel]   {\handlePMLunit\Bequerel}
+\defineXMLsingular [Sievert]    {\handlePMLunit\Sievert}
+\defineXMLsingular [Candela]    {\handlePMLunit\Candela}
+\defineXMLsingular [Bell]       {\handlePMLunit\Bell}
+\defineXMLsingular [At]         {\handlePMLunit\At}
+\defineXMLsingular [Atm]        {\handlePMLunit\Atm}
+\defineXMLsingular [Bar]        {\handlePMLunit\Bar}
+\defineXMLsingular [EVolt]      {\handlePMLunit\EVolt}
+\defineXMLsingular [Foot]       {\handlePMLunit\Foot}
+\defineXMLsingular [Inch]       {\handlePMLunit\Inch}
+\defineXMLsingular [Cal]        {\handlePMLunit\Cal}
+\defineXMLsingular [Force]      {\handlePMLunit\Force}
+\defineXMLsingular [Lux]        {\handlePMLunit\Lux}
+\defineXMLsingular [Gray]       {\handlePMLunit\Gray}
+\defineXMLsingular [Weber]      {\handlePMLunit\Weber}
+\defineXMLsingular [Henry]      {\handlePMLunit\Henry}
+\defineXMLsingular [Sterant]    {\handlePMLunit\Sterant}
+\defineXMLsingular [Angstrom]   {\handlePMLunit\Angstrom}
+\defineXMLsingular [Gauss]      {\handlePMLunit\Gauss}
+
+\defineXMLsingular [Percent]    {\handlePMLunit\Percent}
+\defineXMLsingular [Promille]   {\handlePMLunit\Promille}
+\defineXMLsingular [Permille]   {\handlePMLunit\Permille}
+
+\defineXMLsingular [Unit]       {\handlePMLunit\Unit}
+\defineXMLsingular [NoUnit]     {\handlePMLunit\NoUnit}
+
+\protect \doifnotmode{demo}{\endinput}
+
+\starttext
+
+\startXMLdata
+<phys>
+  <apply> <times/>
+    <cn> 1 </cn>
+    <ci><unit><Milli/><Sec/><Per/><Square/><Kilo/><Meter/></unit> </ci>
+  </apply>
+</phys>
+\stopXMLdata
+
+\startXMLdata
+<phys>
+  <apply> <divide/>
+    <cn> 2 </cn>
+    <ci> <unit><Unit/><Milli/><Sec/><Per/><Square/><Kilo/><Meter/></unit> </ci>
+  </apply>
+</phys>
+\stopXMLdata
+
+\startXMLdata
+<phys>
+  <apply> <times/>
+    <cn> 3 </cn>
+    <ci> <unit> <Milli/> <Sec/> <Per/> <Square/> <Kilo/> <Meter/> </unit> </ci>
+  </apply>
+</phys>
+\stopXMLdata
+
+\startXMLdata
+<phys>
+  <apply> <times/>
+    <cn> 4 </cn>
+    <ci> <unit><Milli/><Sec/><Per/><Square/><Kilo/><Meter/></unit> </ci>
+  </apply>
+</phys>
+\stopXMLdata
+
+\startXMLdata
+<phys>
+  <apply> <times/>
+    <cn> 5 </cn>
+    <ci> <unit> <Milli/> <Sec/> <Per/> <Square/> <Kilo/> <Meter/> </unit> </ci>
+  </apply>
+</phys>
+\stopXMLdata
+
+\stoptext

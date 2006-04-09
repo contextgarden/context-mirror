@@ -585,15 +585,19 @@
 \endETEX
 
 \def\redofastenablehandling
-  {\edef\fonthandling{\csname\@fha@\@fha@\@fha@\askedfonthandling\endcsname}%
-   \rawprocesscommacommand[\fonthandling]\xfastenablehandling}
+  {\startdirectcharacters
+   \edef\fonthandling{\csname\@fha@\@fha@\@fha@\askedfonthandling\endcsname}%
+   \rawprocesscommacommand[\fonthandling]\xfastenablehandling
+   \stopdirectcharacters}
 
 \def\dofastenablehandling
-  {\the\everyenablefonthandling
+  {\startdirectcharacters
+   \the\everyenablefonthandling
    \edef\fonthandling{\csname\@fha@\@fha@\askedfonthandling\endcsname}%
    \checkfonthandling\filoffonthandling
    \rawprocesscommacommand[\fonthandling]\dodoenablehandling
-   \registerfonthandling\filoffonthandling}
+   \registerfonthandling\filoffonthandling
+   \stopdirectcharacters}
 
 \def\nofastenablehandling
   {\the\everyenablefonthandling

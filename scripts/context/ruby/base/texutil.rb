@@ -516,7 +516,7 @@ end
                 attr_writer :sortkey
 
                 def build(sorter)
-@entry, @key = sorter.normalize(@entry), sorter.normalize(sorter.tokenize{@key})
+@entry, @key = sorter.normalize(@entry), sorter.normalize(sorter.tokenize(@key))
 if false then
                     @entry, @key = [@entry, @key].collect do |target|
                         # +a+b+c &a&b&c a+b+c a&b&c

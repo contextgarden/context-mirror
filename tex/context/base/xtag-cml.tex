@@ -1,6 +1,6 @@
 % see mathml, == \defineXMLdirective [mathml] \setupMMLappearance
 
-\unprotect 
+\unprotect
 
 \def\setupCMLappearance[#1]{\dodoubleargument\getparameters[@@CML#1]}
 
@@ -20,12 +20,12 @@
 \remapXMLsequence [ion]      [CPA] \doCMLion
 \remapXMLsequence [atom]     [CPA] \doCMLatom
 
-\setupCMLappearance [ion] [\c!variant=\v!a]
+\setupCMLappearance [ion] [\c!alternative=\v!a]
 
 \let\CMLtopcaption\empty
 \let\CMLbotcaption\empty
 
-\def\someCMLtext#1% 
+\def\someCMLtext#1%
   {\ifx\CMLtopcaption\empty
      \setbox0\null
    \else
@@ -37,14 +37,14 @@
    \else
      \setbox4\hbox{\txx\setstrut\strut\ignorespaces\CMLbotcaption\unskip}%
    \fi
-   \scratchdimen=\wd2\advance\scratchdimen-.5em 
+   \scratchdimen=\wd2\advance\scratchdimen-.5em
    \ifdim\wd0>\scratchdimen
      \setbox0\hbox spread .5em{\hss\box0\hss}%
    \fi
    \ifdim\wd4>\scratchdimen
      \setbox4\hbox spread .5em{\hss\box4\hss}%
    \fi
-   \setbox6=\vbox 
+   \setbox6=\vbox
      {\offinterlineskip\halign{\hss##\hss\cr\copy0\cr\copy2\cr\copy4\cr}}%
    \hbox{\lower\ht4\hbox{\lower\dp2\box6}}}
 
@@ -80,12 +80,12 @@
       \newcounter\nofCMLatoms
       \getXMLarguments{cml-i}{n="0" charge="0" #1}%
       \doifnotXMLzero{cml-i}{n}\firstofoneargument
-      \doifelse\@@CMLionvariant\v!b
+      \doifelse\@@CMLionalternative\v!b
         {[\ignorespaces\processXMLRchild{atom,bond/,%
             singlebond/,doublebond/,triplebond/}{#2}\unskip]%
          \high{\doifnotXMLzero{cml-i}{charge}\CMLscript}}
         {\countXMLRchild{atom}{\ignorespaces#2\unskip}%
-         \let\nofCMLatoms\nofXMLRchildren   
+         \let\nofCMLatoms\nofXMLRchildren
          \ignorespaces\processXMLRchild{atom,bond/,%
            singlebond/,doublebond/,triplebond/}{#2}\unskip}%
       \egroup}%
@@ -95,7 +95,7 @@
   {\getXMLarguments{cml-a}{n="0" weight="0" protons="0" charge="0" #1}%
    \increment\currentCMLatom
    \resetCMLcaption
-  %\processXMLRchild{caption}{#2}% not here 
+  %\processXMLRchild{caption}{#2}% not here
    \someCMLtext
      {\bgroup
       \lohi
@@ -149,19 +149,19 @@
 \def\doCMLequilibrium#1#2{\resetCMLcaption#2\someCMLequilibrium}
 \def\doCMLmesomeric  #1#2{\resetCMLcaption#2\someCMLmesomeric  }
 
-\def\dosomeCMLarrow#1% 
+\def\dosomeCMLarrow#1%
   {\quad
    \someCMLtext
      {$\vcenter{\offinterlineskip\halign{##\cr\hskip3em\cr#1\cr}}$}%
    \quad}
 
-\def\someCMLgives      
+\def\someCMLgives
   {\someCMLarrow{\rightarrowfill}}
 
 \def\someCMLequilibrium
   {\someCMLarrow{\rightarrowfill\cr\noalign{\nointerlineskip}\leftarrowfill}}
 
-\def\someCMLmesomeric  
+\def\someCMLmesomeric
   {\someCMLarrow{$\leftarrow\hskip-1em$\rightarrowfill}}
 
 \remapXMLsequence [cml] [caption] [CPA] \doCMLcaption
@@ -182,7 +182,7 @@
 
 \resetCMLcaption
 
-\remapXMLsingular [bond]       [CPA] \doCMLbond 
+\remapXMLsingular [bond]       [CPA] \doCMLbond
 \remapXMLsingular [singlebond] [CPA] \doCMLsinglebond
 \remapXMLsingular [doublebond] [CPA] \doCMLdoublebond
 \remapXMLsingular [triplebond] [CPA] \doCMLtriplebond
@@ -197,8 +197,8 @@
      \doCMLtriplebond
    \fi}
 
-\def\someCMLbond%
-  {\hrule \!!width \hsize \!!height .1ex} % .4pt 
+\def\someCMLbond
+  {\hrule \!!width \hsize \!!height .1ex} % .4pt
 
 \def\dosomeCMLbond#1#2#3%
   {{\setbox\scratchbox=\hbox{$M$}%
@@ -208,15 +208,15 @@
        #1\vfill#2\vfill#3%
        \vskip.1\wd\scratchbox}}}
 
-\def\doCMLsinglebond%
+\def\doCMLsinglebond
   {\dosomeCMLbond\relax\someCMLbond\relax}
 
-\def\doCMLdoublebond%
+\def\doCMLdoublebond
   {\dosomeCMLbond\someCMLbond\relax\someCMLbond}
 
-\def\doCMLtriplebond%
+\def\doCMLtriplebond
   {\dosomeCMLbond\someCMLbond\someCMLbond\someCMLbond}
 
-\stopXMLmapping 
+\stopXMLmapping
 
-\protect \endinput 
+\protect \endinput

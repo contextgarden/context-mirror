@@ -306,6 +306,7 @@
      \let\stoplinenumbering\dostopnummerenVERB
      \def\placelinenumber
        {\global\linenumber\verbatimlinenumber
+        \global\advance\linenumber \minusone
         \doplacelinenumber}%
    \fi
    \dostartnummeren}
