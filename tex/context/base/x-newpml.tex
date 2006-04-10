@@ -1,5 +1,5 @@
 %D \module
-%D   [       file=xtag-pmu,
+%D   [       file=xtag-pml,
 %D        version=2001.06.10,
 %D          title=\CONTEXT\ XML Support,
 %D       subtitle=Units,
@@ -12,6 +12,8 @@
 %C details.
 
 \writestatus{loading}{Context XML Macros (units)}
+
+\usemodule[newmml]
 
 %D Quick and dirty in||line units:
 %D
@@ -75,10 +77,16 @@
 \defineXMLargument [iphys] \inlinemathematics
 \defineXMLargument [dphys] \displaymathematics
 
-\defineXMLenvironment
-  [unit]
-  {\ignorespaces}
-  {\removeunwantedspaces}
+\defineXMLcommand [unit] {\directsetup{pml:unit}}
+
+\startsetups pml:unit
+    \flushXMLstackwith\plustwo\relax
+\stopsetups
+
+% \defineXMLenvironment
+%   [unit]
+%   {\ignorespaces}
+%   {\removeunwantedspaces}
 
 \defineXMLsingular
   [unit]
@@ -131,6 +139,7 @@
 \defineXMLsingular [Day]        {\handlePMLunit\Day}
 \defineXMLsingular [Hour]       {\handlePMLunit\Hour}
 \defineXMLsingular [Min]        {\handlePMLunit\Min}
+\defineXMLsingular [Minute]     {\handlePMLunit\Min}
 \defineXMLsingular [Second]     {\handlePMLunit\Sec}
 \defineXMLsingular [Rad]        {\handlePMLunit\Rad}
 \defineXMLsingular [Deg]        {\handlePMLunit\Deg}

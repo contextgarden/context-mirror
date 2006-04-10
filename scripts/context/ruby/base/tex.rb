@@ -125,6 +125,7 @@ class TEX
         'nomapfiles', 'local',
         'arrange', 'noarrange',
         'forcexml', 'foxet',
+'alpha', 'beta',
         'mpyforce', 'forcempy',
         'forcetexutil', 'texutil',
         'globalfile', 'autopath',
@@ -447,6 +448,9 @@ class TEX
     end
 
     def makeformats
+
+        checktestversion
+
         report("using search method '#{Kpse.searchmethod}'")
         if getvariable('fast') then
             report('using existing database')
@@ -1036,7 +1040,40 @@ class TEX
         end
     end
 
+    def checktestversion
+        #
+        # one can set TEXMFALPHA and TEXMFBETA for test versions
+        # but keep in mind that the format as well as the test files
+        # then need the --alpha or --beta flag
+        #
+        done, tree = false, ''
+        ['alpha', 'beta'].each do |what|
+            if getvariable(what) then
+                if ENV["TEXMF#{what.upcase}"] then
+                    done, tree = true, ENV["TEXMF#{what.upcase}"]
+                elsif ENV["TEXMFLOCAL"] then
+                    done, tree = true, File.join(File.dirname(ENV['TEXMFLOCAL']), "texmf-#{what}")
+                end
+            end
+            break if done
+        end
+        if done then
+            tree = tree.strip
+            ENV['TEXMFPROJECT'] = tree
+            report("using test tree '#{tree}'")
+            ['MP', 'MF', 'TX'].each do |ctx|
+                ENV['CTXDEV#{ctx}PATH'] = ''
+            end
+            unless (FileTest.file?(File.join(tree,'ls-r')) || FileTest.file?(File.join(tree,'ls-R'))) then
+                report("no ls-r/ls-R file for tree '#{tree}' (run: mktexlsr #{tree})")
+            end
+        end
+        # puts `kpsewhich --expand-path=$TEXMF`
+        # exit
+    end
+
     def runtex(filename)
+checktestversion
         texengine = validtexengine(getvariable('texengine'))
         texformat = validtexformat(getarrayvariable('texformats').first)
         progname  = validprogname(getvariable('progname'))
@@ -1054,6 +1091,7 @@ class TEX
     end
 
     def runmp(filename,mpx=false)
+checktestversion
         mpsengine = validmpsengine(getvariable('mpsengine'))
         mpsformat = validmpsformat(getarrayvariable('mpsformats').first)
         progname  = validprogname(getvariable('progname'))
@@ -1070,6 +1108,7 @@ class TEX
     end
 
     def runtexmp(filename,filetype='')
+checktestversion
         mpfile = File.suffixed(filename,filetype,'mp')
         if File.atleast?(mpfile,25) then
             # first run needed
@@ -1087,6 +1126,7 @@ class TEX
     end
 
     def runtexmpjob(filename,filetype='')
+checktestversion
         mpfile = File.suffixed(filename,filetype,'mp')
         if File.atleast?(mpfile,25) && (data = File.silentread(mpfile)) then
             textranslation = if data =~ /^\%\s+translate.*?\=([\w\d\-]+)/io then $1 else '' end
@@ -1191,6 +1231,7 @@ class TEX
     def processfile
 
         takeprecautions
+        # checktestversion
 
         report("using search method '#{Kpse.searchmethod}'") if getvariable('verbose')
 

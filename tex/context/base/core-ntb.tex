@@ -286,16 +286,26 @@
    \setupTABLE[\v!row][\maximumrow][#1]}
 
 \long\def\parseTD[#1][#2]#3\eTD % [#2] is dummy that kills spaces
-  {\getparameters[\@@tbl][\c!ny=\tblnr,\c!nx=\tblnc,nc=1,nr=1,\c!n=\currentcol,#1]%
-   % goto first cell % NEW, n=cellnumber
+  {\getparameters[\@@tbl][\c!ny=\tblnr,\c!nx=\tblnc,nc=1,nr=1,\c!n=\currentcol,\c!m=,#1]%
+   % goto first cell % NEW, n/m=cellnumber
    \increment\currentcolpos
    \doifvaluesomething{\@@tbl\c!n}
      {\ifnum\getvalue{\@@tbl\c!n}=\currentcol\else
         \scratchcounter\getvalue{\@@tbl\c!n}%
         \advance\scratchcounter-\currentcol
         \advance\scratchcounter\minusone
-        \expanded{\parseTD[\c!nx=\the\scratchcounter][]}\eTD
-        \getparameters[\@@tbl][\c!ny=\tblnr,\c!nx=\tblnc,nc=1,nr=1,\c!n=\currentcol,#1]%
+        \ifnum\scratchcounter>\zerocount
+          \expanded{\parseTD[\c!nx=\the\scratchcounter,\c!n=,\c!m=,*sq=\v!no][]}\eTD
+        \fi
+        \getparameters[\@@tbl][\c!ny=\tblnr,\c!nx=\tblnc,nc=1,nr=1,#1,\c!n=,\c!m=]%
+      \fi}%
+   \doifvaluesomething{\@@tbl\c!m}
+     {\ifnum\getvalue{\@@tbl\c!m}=\currentcol\else
+        \scratchcounter\getvalue{\@@tbl\c!m}%
+        \advance\scratchcounter-\currentcol
+        \advance\scratchcounter\minusone
+        \dorecurse\scratchcounter{\expanded{\parseTD[\c!n=,\c!m=][]}\eTD}%
+        \getparameters[\@@tbl][\c!ny=\tblnr,\c!nx=\tblnc,nc=1,nr=1,#1,\c!n=,\c!m=]%
       \fi}%
    \doloop
      {\increment\currentcol
@@ -326,6 +336,26 @@
    \edef\celltag{{\maximumrow}{\currentcol}}%
    \@EA\settbltxt\@EA\maximumrow\@EA\currentcol\@EA
      {\@EA\handleTBLcell\celltag[#1]{#3}}}
+
+%D The usage of n and m:
+%D
+%D \startbuffer
+%D \bTABLE[width=3em]
+%D \bTR\bTD d1 \eTD\bTD[n=2] d2 \eTD\bTD[n=5] d5 \eTD\bTD[n=7] d7 \eTD\eTR
+%D \bTR\bTD f1 \eTD\bTD[n=4] f4 \eTD\bTD[n=5] f5 \eTD\bTD[n=7] f7 \eTD\eTR
+%D \eTABLE
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
+%D
+%D \startbuffer
+%D \bTABLE[width=3em]
+%D \bTR\bTD d1 \eTD\bTD[m=2] d2 \eTD\bTD[m=5] d5 \eTD\bTD[m=7] d7 \eTD\eTR
+%D \bTR\bTD f1 \eTD\bTD[m=4] f4 \eTD\bTD[m=5] f5 \eTD\bTD[m=7] f7 \eTD\eTR
+%D \eTABLE
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
 
 \long\def\parseTH[#1]#2\eTH
   {\parseTD[#1,\c!color=\tbltblheadcolor,\c!style=\tbltblheadstyle,\c!aligncharacter=\v!no]#2\eTD}
@@ -1229,7 +1259,9 @@
    \scratchdimen\gettblwid\colTBL\relax
    \ifdim\wd\scratchbox>\scratchdimen
      \ifsqueezeTBLspan
+\doifnotvalue{\@@tbl*sq}\v!no{%
        \ifnum0\number\gettblcol{#1}{#2}>1\relax \settblspn\colTBL \fi
+}%
      \fi
      \doifelsetblspn\colTBL
        \donothing{\settblwid\colTBL{\the\wd\scratchbox}}% auto set

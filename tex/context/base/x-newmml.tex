@@ -130,63 +130,22 @@
 
 \stopXMLmapping
 
-% already generalized
-
-\def\MMCallnamed#1%
-  {\dorecurse\XMLstacklevel
-     {\expanded{\doifinset{\getXMLstackname\recurselevel}{#1}}
-        {\getXMLstackdata\recurselevel}}}
-
-\def\defMMCfirstnamed#1#2% \cs list
-  {\dorecurse\XMLstacklevel
-     {\expanded{\doifinset{\getXMLstackname\recurselevel}{#2}}
-        {\defXMLstackdata#1\recurselevel\exitloop}}}
-
-\def\defMMCfirstnamedtext#1#2% \cs list
-  {\dorecurse\XMLstacklevel
-     {\expanded{\doifinset{\getXMLstackname\recurselevel}{#2}}
-        {\edef#1{\getXMLstacktext\recurselevel}\exitloop}}}
-
-\def\MMCfirstnamed#1%
-  {\dorecurse\XMLstacklevel
-     {\expanded{\doifinset{\getXMLstackname\recurselevel}{#1}}
-        {\getXMLstackdata\recurselevel\exitloop}}}
-
-\def\MMCnotnamed#1%
-  {\dorecurse\XMLstacklevel
-     {\expanded{\doifnotinset{\getXMLstackname\recurselevel}{#1}}
-        {\getXMLstackdata\recurselevel\exitloop}}}
-
-\let\MMCstackposition\!!zerocount
-
-\def\MMCdoifelsefound#1%
-  {\!!doneafalse
-   \let\MMCstackposition\!!zerocount
-   \dorecurse\XMLstacklevel
-     {\expanded{\doifinset{\getXMLstackname\recurselevel}{#1}}
-        {\let\MMCstackposition\recurselevel\!!doneatrue\exitloop}}%
-   \if!!donea
-     \expandafter\firstoftwoarguments
-   \else
-     \expandafter\secondoftwoarguments
-   \fi}
-
 %D Auxiliary MathML macros: (to be generalized)
 
 \def\doifelseMMCfunction
   {\begingroup
-   \MMCdoifelsefound{fn}
+   \XMLdoifonstackelse{fn}
      {\donetrue}
-     {\MMCdoifelsefound{apply}
-        {\defMMCfirstnamedtext\ascii{apply}%
+     {\XMLdoifonstackelse{apply}
+        {\defXMLfirstnamedtext\ascii{apply}%
          \startsavingXMLelements % best use a substack so that we donnot need to \edef
          \ascii
          \stopsavingXMLelements}
         {}%
-      \MMCdoifelsefound{fn}
+      \XMLdoifonstackelse{fn}
         {\donetrue}
         {\defineXMLsave[ci][type=]%
-         \MMCfirstnamed{ci}%
+         \XMLfirstnamed{ci}%
          \doifelse{\XMLpar{ci}{type}{}}{fn}
            {\donetrue}
            {\donefalse}}}%
@@ -690,8 +649,8 @@
     {\directsetup{mmc:condition:stop}}
 
 \startsetups mmc:condition:start
-%     \MMCdoifelsefound{bvar} {
-%         \MMCfirstnamed{bvar}\mid
+%     \XMLdoifonstackelse{bvar} {
+%         \XMLfirstnamed{bvar}\mid
 %     } { }
     \begingroup
     \startsavingXMLelements
@@ -754,10 +713,10 @@
         \ifnum\scratchcounter>\plusone
             \left(\flushXMLnamedstackwith\plusone{bvar}\MMLccomma\right)
         \else
-            \MMCfirstnamed{bvar}
+            \XMLfirstnamed{bvar}
         \fi
         \getXMLentity{mapsto}
-        \MMCfirstnamed{apply,reln,ci,cn}
+        \XMLfirstnamed{apply,reln,ci,cn}
     }
     \endgroup
 \stopsetups
@@ -994,14 +953,14 @@
 \setupMMLappearance[root][\c!symbol=\v!yes]
 
 \startsetups mmc:root
-    \MMCdoifelsefound {degree} {
+    \XMLdoifonstackelse {degree} {
         \root
-            \doifnot\@@MMLrootsymbol\v!no{\MMLcreset\MMCfirstnamed{degree}}
+            \doifnot\@@MMLrootsymbol\v!no{\MMLcreset\XMLfirstnamed{degree}}
         \of
     } {
         \sqrt
     }
-        {\MMLcreset\MMCfirstnamed{apply,reln,ci,cn}}
+        {\MMLcreset\XMLfirstnamed{apply,reln,ci,cn}}
 \stopsetups
 
 % gcd
@@ -1039,10 +998,10 @@
 
 \startsetups mmc:forall-exists
     _{\flushXMLnamedstackwith\plustwo{bvar}\MMLccomma}
-    \MMCdoifelsefound {condition} {
+    \XMLdoifonstackelse {condition} {
         \getXMLentity{ThickSpace}
         \begingroup
-            \MMCfirstnamed{condition}
+            \XMLfirstnamed{condition}
         \endgroup
         \countXMLnamedstack {apply,reln,ci,cn}
         \ifcase\scratchcounter
@@ -1061,7 +1020,7 @@
             \right.
         \fi
     } {
-        :\MMCfirstnamed{apply,reln,ci,cn}
+        :\XMLfirstnamed{apply,reln,ci,cn}
     }
 \stopsetups
 
@@ -1159,19 +1118,19 @@
 
 \startsetups mmc:int
     \MMLcreset
-    \MMCdoifelsefound{domainofapplication} {
-        \int\doMMLlimits{int}_{\MMCfirstnamed{domainofapplication}}\relax
+    \XMLdoifonstackelse{domainofapplication} {
+        \int\doMMLlimits{int}_{\XMLfirstnamed{domainofapplication}}\relax
     } {
-        \MMCdoifelsefound{condition} {
-            \int\doMMLlimits{int}_{\MMCfirstnamed{condition}}\relax
+        \XMLdoifonstackelse{condition} {
+            \int\doMMLlimits{int}_{\XMLfirstnamed{condition}}\relax
         } {
-            \MMCdoifelsefound{lowlimit} {
+            \XMLdoifonstackelse{lowlimit} {
                 \int\doMMLlimits{int}
-                    _{\MMCfirstnamed{lowlimit}}
-                    ^{\MMCfirstnamed{uplimit}}
+                    _{\XMLfirstnamed{lowlimit}}
+                    ^{\XMLfirstnamed{uplimit}}
             } {
                 % funny, why do we have lowlimit/uplimit then
-                \MMCdoifelsefound{interval} {
+                \XMLdoifonstackelse{interval} {
                     \begingroup
                     \startlocalsetups mmc:interval:start %
                         \begingroup
@@ -1185,7 +1144,7 @@
                     \stoplocalsetups
                     \globallet\MMLfirstelement \empty
                     \globallet\MMLsecondelement\empty
-                    \MMCfirstnamed{interval}
+                    \XMLfirstnamed{interval}
                     \endgroup
                     \int\doMMLlimits{int}
                         _{\MMLfirstelement}
@@ -1197,21 +1156,21 @@
         }
     }
     \MMLcreset
-    \MMCdoifelsefound{apply} {
+    \XMLdoifonstackelse{apply} {
         \doifelseMMCfunction {
-            \MMCfirstnamed{apply}
+            \XMLfirstnamed{apply}
         } {
             % if there are too many () now, we need to be more clever
-            \left(\MMCfirstnamed{apply}\right)
+            \left(\XMLfirstnamed{apply}\right)
         }
     } {
-        \MMCfirstnamed{ci}
+        \XMLfirstnamed{ci}
     }
-    \MMCdoifelsefound{bvar} {
+    \XMLdoifonstackelse{bvar} {
         \,% \getXMLentity{ThinSpace}%
 %         {\MMLrm\getXMLentity{mathematicald}}
         \mfunction{\getXMLentity{mathematicald}}
-        \MMCfirstnamed{bvar}
+        \XMLfirstnamed{bvar}
     } {
         % nothing
     }
@@ -1224,9 +1183,9 @@
 
 \startsetups mmc:diff
    \MMLcreset
-   \MMCdoifelsefound{bvar} {
+   \XMLdoifonstackelse{bvar} {
         \frac {
-            \MMCdoifelsefound{degree} {
+            \XMLdoifonstackelse{degree} {
                 \collectXMLnamedstack{degree}\empty
             } {
                 \collectXMLnamedstacknamed{bvar}{degree}+
@@ -1237,13 +1196,13 @@
             \mfunction{\getXMLentity{mathematicald}}
             ^{\the\XMLRtoks}
             \doif\@@MMLdifflocation\v!top {
-                \MMCdoifelsefound{ci} {
-                    \MMCfirstnamed{ci}
+                \XMLdoifonstackelse{ci} {
+                    \XMLfirstnamed{ci}
                 } {
 %                     \doifelseMMCfunction {
-                        \MMLcreset\MMCfirstnamed{apply}
+                        \MMLcreset\XMLfirstnamed{apply}
 %                     } {
-%                         \left(\MMLcreset\MMCfirstnamed{apply}\right)
+%                         \left(\MMLcreset\XMLfirstnamed{apply}\right)
 %                     }
                 }
             }
@@ -1254,14 +1213,14 @@
             \mfunction{\getXMLentity{mathematicald}}
             \begingroup
                 \defineXMLsave[degree]
-                \MMCfirstnamed{bvar}
+                \XMLfirstnamed{bvar}
                 \doifXMLdata{degree} {
                     ^{\XMLflush{degree}}
                 }
             \endgroup
         }
         \doifnot\@@MMLdifflocation\v!top {
-            \left(\MMLcreset\MMCfirstnamed{apply,ci}\right)
+            \left(\MMLcreset\XMLfirstnamed{apply,ci}\right)
         }
     } {
         \flushXMLstackfrom\plustwo^\prime
@@ -1269,18 +1228,18 @@
 \stopsetups
 
 \startsetups mmc:partialdiff
-    \MMCdoifelsefound{list} {
+    \XMLdoifonstackelse{list} {
         \getXMLentity{capitaldifferentiald}_{
             \begingroup
                 \setfalse\MMLlistdelimiters
-                \MMCallnamed{list}
+                \XMLallnamed{list}
             \endgroup
         }
-        \MMCfirstnamed{apply,reln,ci,cn}
+        \XMLfirstnamed{apply,reln,ci,cn}
     } {
-        \MMCdoifelsefound{bvar} {
+        \XMLdoifonstackelse{bvar} {
             \frac {
-                \MMCdoifelsefound{degree} {
+                \XMLdoifonstackelse{degree} {
                     \collectXMLnamedstack{degree}\empty
                 } {
                     \collectXMLnamedstacknamed{bvar}{degree}+
@@ -1289,15 +1248,15 @@
                 % \let\MMLcDEGREE\gobbletwoarguments
                 % \doifelseMMCfunction\MMLcreset\donothing
                 \MMLcreset
-                \MMCfirstnamed{apply,reln,ci,cn}
+                \XMLfirstnamed{apply,reln,ci,cn}
             } {
                 \defineXMLnested[bvar]
                     {\directsetup{mmc:bvar:diff:start}}
                     {\directsetup{mmc:bvar:diff:stop}}
-                \MMCfirstnamed{bvar}
+                \XMLfirstnamed{bvar}
             }
         } {
-            \MMCfirstnamed{apply,reln,ci,cn}
+            \XMLfirstnamed{apply,reln,ci,cn}
         }
     }
 \stopsetups
@@ -1309,9 +1268,9 @@
 
 \startsetups mmc:bvar:diff:stop
     \stopsavingXMLelements
-    \getXMLentity{differentiald}\MMCfirstnamed{apply,reln,ci,cn}
-    \MMCdoifelsefound{degree} {
-        ^{\MMCfirstnamed{degree}}
+    \getXMLentity{differentiald}\XMLfirstnamed{apply,reln,ci,cn}
+    \XMLdoifonstackelse{degree} {
+        ^{\XMLfirstnamed{degree}}
     } {
         % nothing
     }
@@ -1362,8 +1321,8 @@
 
 \startsetups mmc:set:stop
     \stopsavingXMLelements
-    \MMCdoifelsefound{condition} {
-        \left\{\MMCfirstnamed{bvar}\,\middle\vert\,\MMCfirstnamed{condition}\right\}
+    \XMLdoifonstackelse{condition} {
+        \left\{\XMLfirstnamed{bvar}\,\middle\vert\,\XMLfirstnamed{condition}\right\}
     } {
         \left\{\flushXMLstackwith\plusone\MMLccomma\right\}
     }
@@ -1421,22 +1380,22 @@
       \halign{$\scriptstyle\hss##\hss$\cr#1\crcr}}}
 
 \def\MMLcSUMandPRODUCT#1#2%
-  {\MMCdoifelsefound{condition,bvar,lowlimit}
+  {\XMLdoifonstackelse{condition,bvar,lowlimit}
      {\def\MMLcSUMlow
-        {_{\MMCdoifelsefound{condition}
+        {_{\XMLdoifonstackelse{condition}
              {\collectXMLnamedstack{condition}{\crcr}%
               \stackMMLsubscripts{\the\XMLRtoks}}
-             {\MMCdoifelsefound{bvar}
-                {\MMCfirstnamed{bvar}%
-                 \MMCdoifelsefound{lowlimit}{=}{}}%
+             {\XMLdoifonstackelse{bvar}
+                {\XMLfirstnamed{bvar}%
+                 \XMLdoifonstackelse{lowlimit}{=}{}}%
                 {}%
-              \MMCfirstnamed{lowlimit}}}}}
+              \XMLfirstnamed{lowlimit}}}}}
      {\let\MMLcSUMlow\empty}%
-   \MMCdoifelsefound{uplimit}
-     {\def\MMLcSUMup{^{\MMCfirstnamed{uplimit}}}}
+   \XMLdoifonstackelse{uplimit}
+     {\def\MMLcSUMup{^{\XMLfirstnamed{uplimit}}}}
      {\let\MMLcSUMup\empty}%
    \MMLcreset#2\doMMLlimits{#1}\MMLcSUMup\MMLcSUMlow
-   \MMLcreset\MMCfirstnamed{apply,ci}}
+   \MMLcreset\XMLfirstnamed{apply,ci}}
 
 \defineXMLcommand [limit] {\directsetup{mmc:limit}}
 
@@ -1446,17 +1405,17 @@
    \MMLcreset \lim
    \doMMLlimits{limit}_{
       \MMLcreset
-      \MMCdoifelsefound {condition} {
-        \MMCfirstnamed{condition}
+      \XMLdoifonstackelse {condition} {
+        \XMLfirstnamed{condition}
       } {
-        \MMCdoifelsefound {bvar} {
-           \MMCfirstnamed{bvar}\rightarrow
+        \XMLdoifonstackelse {bvar} {
+           \XMLfirstnamed{bvar}\rightarrow
         } {
         }
-        \MMCfirstnamed{lowlimit}
+        \XMLfirstnamed{lowlimit}
       }
    }
-   \MMCfirstnamed{apply}
+   \XMLfirstnamed{apply}
 \stopsetups
 
 \defineXMLcommand [tendsto] [type=default] {\directsetup{mmc:tendsto}}
@@ -1481,17 +1440,17 @@
 \setupMMLappearance[log][\c!location=\v!right]
 
 \startsetups mmc:exp
-    \getXMLentity{exponentiale}^{\MMCfirstnamed{apply,reln,ci,cn}}
+    \getXMLentity{exponentiale}^{\XMLfirstnamed{apply,reln,ci,cn}}
 \stopsetups
 
 \startsetups mmc:log
-   \MMCdoifelsefound {logbase} {
+   \XMLdoifonstackelse {logbase} {
         \doifelse\@@MMLloglocation\v!left {
-            \mathop{{}^{{\defineXMLprocess[logbase]\MMCfirstnamed{logbase}}}
+            \mathop{{}^{{\defineXMLprocess[logbase]\XMLfirstnamed{logbase}}}
             \getXMLentity{NegThinSpace}
             \getXMLentity{log}}
         } {
-            \getXMLentity{log}_{{\defineXMLprocess[logbase]\MMCfirstnamed{logbase}}}
+            \getXMLentity{log}_{{\defineXMLprocess[logbase]\XMLfirstnamed{logbase}}}
         }
     } {
         \getXMLentity{log}
@@ -1516,9 +1475,9 @@
 \defineXMLprocess [momentabout]
 
 \startsetups mmc:moment
-    \left\langle\MMCfirstnamed{apply,reln,ci,cn}^{\MMCfirstnamed{degree}}\right\rangle
-    \MMCdoifelsefound{momentabout} {
-        _{\MMCfirstnamed{momentabout}}
+    \left\langle\XMLfirstnamed{apply,reln,ci,cn}^{\XMLfirstnamed{degree}}\right\rangle
+    \XMLdoifonstackelse{momentabout} {
+        _{\XMLfirstnamed{momentabout}}
     } {
     }
 \stopsetups
@@ -1633,7 +1592,7 @@
 
 \startsetups mmc:semantics:stop
     \stopsavingXMLelements
-    \MMCdoifelsefound {annotation} {
+    \XMLdoifonstackelse {annotation} {
         \flushXMLnamedstackwith\plusone{annotation}\empty
     } {
         \flushXMLnamedstackwith\plusone{apply}\empty
@@ -1713,8 +1672,8 @@
         %
         % best is to grab the apply (independent of order), (*1*), so:
         %
-        \MMCdoifelsefound {apply} {
-            \doifelseMMCfunctioninapply \MMCstackposition \MMLcfunctionlist \donefalse \donetrue
+        \XMLdoifonstackelse {apply} {
+            \doifelseMMCfunctioninapply \XMLstackposition \MMLcfunctionlist \donefalse \donetrue
         } {
             \donefalse
         }

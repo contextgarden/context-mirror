@@ -33,7 +33,7 @@
 \def\resetXMLelements
   {\XMLstacklevel\zerocount}
 
-\def\startsavingXMLelements
+\def\startsavingXMLelements % maybe something with \ignorespaces \\removeunwantedspaces
   {\XMLstacklevel\zerocount
    \let\normalexecuteXMLelement\executeXMLelement
    \def\executeXMLelement{\csname\@@XMLelement:\@@xmlstack\ifcase\kindofXMLelement\or\or\or/\fi\endcsname}}
@@ -117,7 +117,7 @@
         {\ifnum\recurselevel>#1\relax#3\fi
          \getXMLstackdata\recurselevel}}}
 
-\def\countXMLnamedstack#1%
+\def\countXMLnamedstack#1% todo: \nofXMLchildren ! ! ! ! !
   {\scratchcounter\zerocount
    \dorecurse\XMLstacklevel
      {\expanded{\doifinset{\getXMLstackname\recurselevel}{#1}}
@@ -178,5 +178,58 @@
             \XMLcopysave{\@@xmlstack:d:\XMLstackid:\recurselevel}{\@@xmlstack:d:\XMLstackid:\number\scratchcounter}}%
          \advance\XMLstacklevel\minusone
          \exitloop}}}
+
+%D BEWARE: these names may change (get stack in the name)
+
+\def\XMLallnamed#1%
+  {\dorecurse\XMLstacklevel
+     {\expanded{\doifinset{\getXMLstackname\recurselevel}{#1}}
+        {\getXMLstackdata\recurselevel}}}
+
+\def\defXMLfirstnamed#1#2% \cs list
+  {\dorecurse\XMLstacklevel
+     {\expanded{\doifinset{\getXMLstackname\recurselevel}{#2}}
+        {\defXMLstackdata#1\recurselevel\exitloop}}}
+
+\def\defXMLfirstnamedtext#1#2% \cs list
+  {\dorecurse\XMLstacklevel
+     {\expanded{\doifinset{\getXMLstackname\recurselevel}{#2}}
+        {\edef#1{\getXMLstacktext\recurselevel}\exitloop}}}
+
+\def\XMLfirstnamed#1%
+  {\dorecurse\XMLstacklevel
+     {\expanded{\doifinset{\getXMLstackname\recurselevel}{#1}}
+        {\getXMLstackdata\recurselevel\exitloop}}}
+
+\def\XMLnotnamed#1%
+  {\dorecurse\XMLstacklevel
+     {\expanded{\doifnotinset{\getXMLstackname\recurselevel}{#1}}
+        {\getXMLstackdata\recurselevel\exitloop}}}
+
+\let\XMLstackposition\!!zerocount
+
+\def\XMLdoifonstackelse#1% was \XMLdoifelsefound
+  {\!!doneafalse
+   \let\XMLstackposition\!!zerocount
+   \dorecurse\XMLstacklevel
+     {\expanded{\doifinset{\getXMLstackname\recurselevel}{#1}}
+        {\let\XMLstackposition\recurselevel\!!doneatrue\exitloop}}%
+   \if!!donea
+     \expandafter\firstoftwoarguments
+   \else
+     \expandafter\secondoftwoarguments
+   \fi}
+
+%D Handy:
+
+\def\pushXMLmeaning#1% or [#1]
+  {\@EA\pushmacro\csname\@@XMLelement:#1/\endcsname
+   \@EA\pushmacro\csname\@@XMLelement:#1\endcsname
+   \@EA\pushmacro\csname\@@XMLelement:/#1\endcsname}
+
+\def\popXMLmeaning#1% or [#1]
+  {\@EA\popmacro\csname\@@XMLelement:#1/\endcsname
+   \@EA\popmacro\csname\@@XMLelement:#1\endcsname
+   \@EA\popmacro\csname\@@XMLelement:/#1\endcsname}
 
 \protect \endinput

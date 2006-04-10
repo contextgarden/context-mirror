@@ -300,7 +300,7 @@
   {\def\leftdisplayskip{\zeropoint}%
    \def\rightdisplayskip{\zeropoint}}%
 % this was an experiment
-   \doif{\formulaparameter\c!margin}% so we test first
+   \doifsomething{\formulaparameter\c!margin}% so we test first
      {\dosetleftskipadaption{\formulaparameter\c!margin}%
       \edef\leftdisplaymargin{\the\leftskipadaption}}% overloaded
    \long\def\dostartformula##1{\bgroup\let\dostopformula\egroup}%
