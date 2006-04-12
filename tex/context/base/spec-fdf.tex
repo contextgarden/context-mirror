@@ -406,6 +406,9 @@
   \doPDFaddtocatalog{\currentPDFpagemode\currentPDFviewerprefs}%
   \doPDFaddtoinfo{/Trapped /False}%
   \doPDFaddtoinfo{/ConTeXt.Version (\contextversion)}%
+  \doPDFaddtoinfo{/ConTeXt.Time    (\number\normalyear.\twodigits\normalmonth.\twodigits\normalday\space \twodigits\currenthour:\twodigits\currentminute)}%
+  \doPDFaddtoinfo{/ConTeXt.Jobname (\jobname)}%
+  \doPDFaddtoinfo{/ConTeXt.Url     (www.pragma-ade.com)}%
 \to \everyfirstshipout
 
 \def\PDFversion{1.5}

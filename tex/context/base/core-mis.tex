@@ -2087,6 +2087,8 @@
 
 \def\dostartcombination[#1][#2]%
   {\global\setsystemmode{combination}%
+   \doifnothing{#1}\firstargumentfalse  % to be sure (when called in macros)
+   \doifnothing{#2}\secondargumentfalse % to be sure (when called in macros)
    \ifsecondargument
      \def\currentcombination{#1}%
    \else
@@ -2281,8 +2283,24 @@
    \fi
    \next}
 
+% formally ok:
+%
+% \def\stopcombination
+%   {\egroup
+%    \egroup}
+%
+% more robust:
+%
+% \def\stopcombination
+%   {{}{}{}{}{}{}{}{}% catches (at most 4) missing entries
+%    \egroup
+%    \egroup}
+%
+% even better:
+
 \def\stopcombination
-  {\egroup
+  {{\scratchtoks{{}{}{}}\dorecurse\totcombination{\appendtoks{}{}{}{}\to\scratchtoks}\expandafter}\the\scratchtoks
+   \egroup
    \egroup}
 
 \newbox\combinationstack
@@ -2330,6 +2348,41 @@
    \c!color=,
    \c!after=,
    \c!align=\v!middle]
+
+%D \macros
+%D   {startfloatcombination}
+%D
+%D \startbuffer
+%D \placefigure
+%D   [left,none]
+%D   {}
+%D   {\startfloatcombination[2*2]
+%D      \placefigure{alpha}{\externalfigure[cow.pdf][width=1cm]}
+%D      \placefigure{beta} {\externalfigure[cow.pdf][width=2cm]}
+%D      \placefigure{gamma}{\externalfigure[cow.pdf][width=3cm]}
+%D      \placefigure{delta}{\externalfigure[cow.pdf][width=4cm]}
+%D    \stopfloatcombination}
+%D
+%D \input tufte
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
+
+\def\startfloatcombination
+  {\dodoubleempty\dostartfloatcombination}
+
+\def\dostartfloatcombination[#1][#2]%
+  {\vbox\bgroup
+  %\insidecolumnstrue % trick, forces no centering, todo: proper switch/feature
+   \chardef\postcenterfloatmethod\zerocount
+   \forcelocalfloats
+   \def\stopfloatcombination
+     {\scratchtoks\emptytoks
+      \dorecurse\noflocalfloats
+        {\appendetoks{\noexpand\getlocalfloat{\recurselevel}}{}\to\scratchtoks}%
+      \expanded{\startcombination[#1]\the\scratchtoks}\stopcombination
+      \resetlocalfloats
+     \egroup}}
 
 % does not work
 %

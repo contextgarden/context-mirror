@@ -1,6 +1,6 @@
 %D \module
 %D   [       file=t-bib,
-%D        version=2006.02.08,
+%D        version=2006.04.11,
 %D          title=\CONTEXT\ Publication Module,
 %D       subtitle=Publications,
 %D         author=Taco Hoekwater,
@@ -47,6 +47,8 @@
 %D \item French keyword translation, provided by Renaud (08/02/2006)
 %D \item fix underscores in undefined keys (22/02/2006)
 %D \item Destroy interactivity in labels of the publication list (13/03/2006)
+%D \item fix multi-cite list compression (11/4/2006)
+%D \item fix \type{\getcitedata} (11/4/2006)
 %D \stopitemize
 %D
 %D \subject{WISHLIST}
@@ -184,7 +186,7 @@
   %
 \fi \fi \fi
 
-\expanded{\definelist[\biblistname][\biblistname]}
+\expanded{\definelist[\biblistname]}
 
 %D The text string for the publication list header
 
@@ -936,7 +938,9 @@
     {\bgroup
      \addthisref{#4}%
      \dofetchapublication{#4}%
-     \xdef#6{\csname insert#2\endcsname{}{}{}}%
+     \doifdefinedelse{@@pb@bib#2}%
+       {\xdef#6{\getvalue{@@pb@bib#2}}}%
+       {\xdef#6{\getvalue{@@pb@#2}}}%
      \egroup }
 
 
@@ -1152,7 +1156,7 @@
      \ifnum\bibitemwanted = \bibitemcounter\relax
        \global\advance\bibitemwanted \plusone
        \global\bibitemcounter\bibitemwanted\relax
-       \@EA\doglobal\@EA\robustaddtocommalist\@EA{\myauthor}\thebibauthors
+       \@EA\doglobal\@EA\robustaddtocommalist\@EA{{\myauthor}}\thebibauthors
      \fi
    \fi}
 

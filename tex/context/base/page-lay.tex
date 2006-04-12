@@ -314,7 +314,7 @@
 %         {\dodosetuppapersize[#1][#2]}}}
 %
 % The next version is more extensive; here we can
-% associate paper and page with key/value like settinsg,
+% associate paper and page with key/value like settings,
 % which is handy in 'example' when we use setups
 
 \def\setuppaper[#1]%
@@ -354,8 +354,7 @@
    \fi\fi\fi}
 
 \def\dododosetuppapersize[#1][#2]%
-  {\xdef\restorepapersize
-     {\noexpand\setuppapersize[#1][#2]}%
+  {\xdef\restorepapersize{\noexpand\setuppapersize[#1][#2]}%
    \dosetuppaperorientation{#1}\paperlandscape\paperorientation\paperreverse\papermirror
    \dosetuppaperorientation{#2}\printlandscape\printorientation\printreverse\printmirror
    \def\docommando##1%

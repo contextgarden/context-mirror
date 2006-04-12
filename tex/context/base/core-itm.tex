@@ -996,8 +996,8 @@
 % \stopitemize
 
 \def\complexitem[#1]#2\par % todo: no two pass data
-  {\startitemgroup[#1]
-   \complexdoitemgroupitem[]\ignorespaces\begstrut#2\unskip\endstrut\par
+  {\startitemgroup[#1]%
+   \complexdoitemgroupitem[]\begstrut#2\endstrut\par
    \stopitemgroup}
 
 \definecomplexorsimpleempty\item
@@ -1005,7 +1005,7 @@
 
 \def\complexhead[#1]#2\par#3\par
   {\startitemgroup[#1]%
-   \complexdoitemgrouphead[]\ignorespaces#2\par#3\par
+   \complexdoitemgrouphead[]\begstrut#2\endstrut\par\begstrut#3\endstrut\par
    \stopitemgroup}
 
 % \def\complexdoitemgrouphead[#1]#2\par% % beter in \complexdosom hangen met een if

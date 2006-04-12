@@ -342,7 +342,7 @@
 
 \def\getlocalfloats
   {\dorecurse\noflocalfloats
-     {\ifnum\recurselevel=1\relax
+     {\ifnum\recurselevel=\plusone % 1\relax
         \getvalue{\??lf\c!before}%
       \else
         \getvalue{\??lf\c!inbetween}%
@@ -356,7 +356,9 @@
   {\getlocalfloats
    \resetlocalfloats}
 
-\def\getlocalfloat#1{\foundbox{localfloats}{\number#1}}
+\def\getlocalfloat#1{\expanded{\foundbox{localfloats}{\number#1}}}
+
+\def\forcelocalfloats{\let\forcedfloatmethod\v!local}
 
 %D Because many arrangements are possible, we will implement
 %D some examples in a runtime loadable module \type {m-streams}.

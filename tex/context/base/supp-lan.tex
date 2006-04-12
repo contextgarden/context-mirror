@@ -826,9 +826,6 @@
 \definetextmodediscretionary {} % empty case, also handled in parser
   {\prewordbreak\compoundhyphen\allowbreak\postwordbreak}
 
-\definetextmodediscretionary =
-  {\prewordbreak\textmodediscretionary}
-
 \definetextmodediscretionary ~
   {\prewordbreak\discretionary{-}{}{\thinspace}\postwordbreak}
 
@@ -862,8 +859,11 @@
 \definetextmodediscretionary >
   {\endofsubsentencespacing\prewordbreak\endofsubsentence}
 
-\definetextmodediscretionary . % not yet definitive
-  {\prewordbreak\midsentence\prewordbreak}
+% \definetextmodediscretionary . % not yet definitive
+%   {\prewordbreak\midsentence\prewordbreak}
+
+\definetextmodediscretionary =
+  {\prewordbreak\midsentence\prewordbreak} % {\prewordbreak\compoundhyphen}
 
 \definetextmodediscretionary ^
   {\prewordbreak\discretionary{\hbox{$|$}}{}{\hbox{$|$}}%

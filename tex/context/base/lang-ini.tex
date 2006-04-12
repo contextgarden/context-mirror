@@ -350,6 +350,7 @@
    \let\synchronizepatterns\relax % needed?
    \let\enabledmapping     \empty % needed?
    % old (original) patterns
+\let\dochar\thechr
    \doifelsenothing{#3}{\enableencoding[\s!default]}{\enableencoding[#3]}%
    \doifelsenothing{#4}{\enablemapping [\s!default]}{\enablemapping [#4]}%
 %    \iftrue

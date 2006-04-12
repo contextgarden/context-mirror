@@ -140,7 +140,24 @@
 %      \fi
 %    \fi}
 
-\def\dosymbol[#1][#2]%
+% We support both:
+%
+% Test test \symbol[whatever]\ test \symbol[whatever].
+% Test test \symbol{whatever}  test \symbol{whatever}.
+
+\def\dosymbol        % so we also handle \symbol{name}
+  {\iffirstargument  % which is nicer with following spaces
+     \expandafter\donormalsymbol
+   \else
+     \expandafter\dospecialsymbol
+   \fi}
+
+\def\dospecialsymbol[#1][#2]#3%
+  {\firstargumenttrue
+   \secondargumentfalse
+   \donormalsymbol[#3][]}
+
+\def\donormalsymbol[#1][#2]%
   {\nosymboltrue
    \ifsecondargument
      \edef\currentsymbol{#2}%

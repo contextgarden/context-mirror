@@ -43,6 +43,8 @@
 \def\numbers#1{\purenumber{#1}}
 \def\Numbers#1{\purenumber{#1}}
 
+\def\twodigits  #1{\ifnum             #1<10     0\fi\number#1}
+\def\threedigits#1{\ifnum#1<100 \ifnum#1<10 0\fi0\fi\number#1}
 
 %D \macros
 %D   {romannumerals,Romannumerals}

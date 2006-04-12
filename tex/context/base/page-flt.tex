@@ -829,9 +829,9 @@
          \setbox\floatbox\box\globalscratchbox % local !
          % retain special alignments
          \ifinsidecolumns
-             \ifdim\wd\floatbox>\makeupwidth
-                 \wd\floatbox\makeupwidth
-             \fi
+           \ifdim\wd\floatbox>\makeupwidth
+             \wd\floatbox\makeupwidth
+           \fi
          \fi
        \fi
      \else
@@ -946,16 +946,35 @@
 
 % brr, wordt deze niet overladen in page-one? weg er mee
 
-\def\somepagefloat[#1]%  links, rechts, midden, hoog, midden, laag
+% \def\somepagefloat[#1]%  links, rechts, midden, hoog, midden, laag
+%   {%\checkwaitingfloats{#1}%
+%    \global\setbox\collectedpagefloats\vbox
+%      {\unvbox\collectedpagefloats
+%       \vbox to \textheight
+%         {\doifnotinset\v!high{#1}\vfill
+%          \box\floatbox
+%          \doifnotinset\v!low{#1}\vfill}%
+%       \goodbreak}%
+%    \doinsertfloatinfo}
+
+\def\OTRONEsomepagefloat[#1]%
   {%\checkwaitingfloats{#1}%
    \global\setbox\collectedpagefloats\vbox
-     {\unvbox\collectedpagefloats
-      \vbox to \textheight
-        {\doifnotinset\v!high{#1}\vfill
-         \box\floatbox
-         \doifnotinset\v!low{#1}\vfill}%
+     {\ifvoid\collectedpagefloats\else\unvbox\collectedpagefloats\fi
+      \vbox to \textheight % vss and unvbox catch too high and limited floats
+        {\vss
+         \doifnotinset\v!high{#1}\vfill
+         \unvbox\floatbox
+         \doifnotinset\v!low{#1}\vfill
+         \vss}%
       \goodbreak}%
    \doinsertfloatinfo}
+
+% test case:
+%
+% \placefigure[page,none]{}{\blackrule[width=\textwidth,height=0.9\textheight,color=green]}
+% \placefigure[page,none]{}{\blackrule[width=\textwidth,height=1.0\textheight,color=green]}
+% \placefigure[page,none]{}{\blackrule[width=\textwidth,height=1.1\textheight,color=green]}
 
 \def\sometextfloat[#1]%  lang, links, rechts, hoog, midden, laag, offset
   {%\checkwaitingfloats{#1}%
@@ -1593,14 +1612,19 @@
 %   % {\hfill\box\floatbox\hfill}} % geen \hss, gaat mis in kolommen !
 %     {\hss  \box\floatbox\hss  }} % wel \hss, anders mis in colset
 
+\chardef\postcenterfloatmethod\plusone
+
 \def\postcenterfloatbox#1%
-  {\scratchdimen \ifinsidecolumns
-     \ifpostponecolumnfloats\makeupwidth\else#1\fi
-   \else\ifdim#1>\hsize
-     \hsize
-   \else
-     \wd\floatbox
-   \fi\fi
+  {\scratchdimen
+     \ifcase\postcenterfloatmethod
+       #1% \wd\floatbox
+     \or\ifinsidecolumns
+       \ifpostponecolumnfloats\makeupwidth\else#1\fi
+     \else\ifdim#1>\hsize
+       \hsize
+     \else
+       \wd\floatbox
+     \fi\fi\fi
    \global\setbox\floatbox\hbox to \scratchdimen
    % {\hfill\box\floatbox\hfill}} % geen \hss, gaat mis in kolommen !
    % {\hss  \box\floatbox\hss  }} % wel \hss, anders mis in colset
@@ -2152,9 +2176,10 @@
 
 % float strategy, replaces some of the above macros
 
-\let\floatmethod\empty
-\let\floatcolumn\empty
-\let\floatrow   \empty
+\let\floatmethod      \empty
+\let\floatcolumn      \empty
+\let\floatrow         \empty
+\let\forcedfloatmethod\empty
 
 \def\dogetfloatbox#1#2%
   {\ifvisible
@@ -2173,6 +2198,8 @@
         \edef\floatmethod{#2}}%
      \doifundefined{\string\floatmethod\floatmethod}
        {\let\floatmethod\v!here}%
+     \doifsomething\forcedfloatmethod
+       {\edef\floatmethod{\forcedfloatmethod}}%
     %\getvalue{\string\floatmethod\floatmethod}[#1]%
      \getvalue{\string\floatmethod\floatmethod}[\floatmethod,#1]%
    \fi}

@@ -137,6 +137,8 @@
 %   {\doif{#1}\currentencoding
 %     {\immediate\pdfobj useobjnum \getvalue{\pdffontresource} stream {#2}}}
 
+% alternatively we can use object references
+
 \long\def\startpdffontresource[#1]#2\stoppdffontresource
   {\doif{#1}\currentencoding{\doifdefined\pdffontresource
      {\immediate\pdfobj useobjnum \getvalue{\pdffontresource} stream {#2}}}}

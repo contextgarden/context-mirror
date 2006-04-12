@@ -127,9 +127,10 @@
    \setupmakeuplayout
    \makeupparameter\c!commands % hm, what is this one doing here ?
    \startregistercolor[\makeupparameter\c!color]%
+   \forgetall % else indented flush
    \global\setbox\makeupbox\vbox to \makeupparameter\c!height
      \bgroup
-       \forgetall
+%        \forgetall
        \setups[\makeupparameter\c!setups]%
        \hsize\makeupparameter\c!width
        \doifsomething{\makeupparameter\c!align}

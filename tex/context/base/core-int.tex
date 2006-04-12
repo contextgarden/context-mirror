@@ -351,17 +351,16 @@
    \@EA\processcommalist\@EA[\!!stringa]\doprepareidentity
    \global\let\doprepareidentity\relax}
 
-\def\doinitializeidentity#1%
-  {%\iflocation
-     \doprepareidentity
-     \dosetupidentity % no \expanded{..} will be done in special (else no pdfdoc)
-       {\@@iatitle}{\@@iasubtitle}{\@@iaauthor}{#1}%
-       {\@@iadate}{\@@iakeyword}%
-     \global\let\initializeidentity\relax
-  }%\fi}
+%D The Creator field is changed per 12/04/2006 due to user presure. This
+%D means that I need to put my own status info someplace else.
 
-\def\initializeidentity % not to be changed !
-  {\doinitializeidentity{ConTeXt/user/\jobname.tex}}
+\def\initializeidentity
+  {\doprepareidentity
+   \dosetupidentity % no \expanded{..} will be done in special (else no pdfdoc)
+     {\@@iatitle}{\@@iasubtitle}{\@@iaauthor}%
+     {ConTeXt - \contextversion}%
+     {\@@iadate}{\@@iakeyword}%
+   \global\let\initializeidentity\relax}
 
 \appendtoks \initializeidentity \to \everyshipout
 

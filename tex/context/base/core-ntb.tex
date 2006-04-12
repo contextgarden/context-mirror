@@ -1511,4 +1511,30 @@
 
 \appendtoks \chardef\recodeverbatimmode\plustwo \to \everytable
 
+% new (for Olivier Turlier)
+%
+% \defineTABLEsetup [xx] [foregroundcolor=red]
+%
+% \bTABLE
+%     \bTR      \bTD      oeps \eTD  \bTD oeps \eTD \eTR
+%     \bTR      \bTDs[xx] oeps \eTDs \bTD oeps \eTD \eTR
+%     \bTRs[xx] \bTD      oeps \eTD  \bTD oeps \eTD \eTRs
+% \eTABLE
+
+\def\defineTABLEsetup
+  {\dodoubleargument\dodefineTABLEsetup}
+
+\def\dodefineTABLEsetup[#1][#2]%
+  {\setvalue{\@@tbl:set:#1}{#2}}
+
+\long\def\bTDs[#1]#2\eTDs
+  {\doifdefinedelse{\@@tbl:set:#1}
+     {\@EA\@EA\@EA\bTD\@EA\@EA\@EA[\csname\@@tbl:set:#1\endcsname]#2\eTD}
+     {\bTD[]#2\eTD}}
+
+\long\def\bTRs[#1]#2\eTRs
+  {\doifdefinedelse{\@@tbl:set:#1}
+     {\@EA\@EA\@EA\bTR\@EA\@EA\@EA[\csname\@@tbl:set:#1\endcsname]#2\eTR}
+     {\bTR[]#2\eTR}}
+
 \protect \endinput

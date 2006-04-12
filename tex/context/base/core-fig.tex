@@ -2182,6 +2182,24 @@
       \egroup}%
    \hbox}
 
+%D \startbuffer
+%D \startuseMPgraphic{test}
+%D   path p ; p := fullcircle scaled 4cm ;
+%D   draw p withpen pencircle scaled 1cm ;
+%D   setbounds currentpicture to boundingbox p ;
+%D \stopuseMPgraphic
+%D
+%D \hbox to \hsize \bgroup
+%D   \hss
+%D   \ruledhbox{\useMPgraphic{test}}%
+%D   \hss
+%D   \ruledhbox{\clip{\useMPgraphic{test}}}%
+%D   \hss
+%D \egroup
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
+
 \def\clip{\dosingleempty\doclip}
 
 \def\setupclipping

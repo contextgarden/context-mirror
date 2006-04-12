@@ -1307,7 +1307,8 @@
 \defineindentingmethod [\v!yes]    {\parindent\ctxparindent\relax} % no \indent !
 \defineindentingmethod [\v!always] {\parindent\ctxparindent\relax} % no \indent !
 
-\defineindentingmethod [\v!never]  {\parindent\zeropoint\relax}    % no \indent !
+\defineindentingmethod [\v!never]  {\parindent\zeropoint\relax     % no \indent !
+                                    \chardef\indentingtoggle\zerocount}
 
 \defineindentingmethod [\v!odd]    {\chardef\indentingtoggle\plusone}
 \defineindentingmethod [\v!even]   {\chardef\indentingtoggle\plustwo}
@@ -1317,8 +1318,8 @@
                                       \simplesetupindenting
                                     \fi}
 
-\defineindentingmethod [\v!reset]  {\parindent\zeropoint
-                                    \indentfirstparagraphtrue
+\defineindentingmethod [\v!reset]  {\indentfirstparagraphtrue
+                                    \parindent\zerocount
                                     \chardef\indentingtoggle\zerocount}
 
 \def\noindenting{\indenting[\v!no, \v!next ]}
@@ -2428,7 +2429,7 @@
        \normalpenalty\plustenthousand
        \normalhskip\zeropoint
      \fi
-     \ignorespaces
+     \expandafter \ignorespaces
    \fi}
 
 \def\endstrut
