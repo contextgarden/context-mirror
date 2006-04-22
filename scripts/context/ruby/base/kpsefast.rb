@@ -50,7 +50,7 @@ module KpseUtil
         end
         filenames = Array.new
         if ENV['TEXMFCNF'] and not ENV['TEXMFCNF'].empty? then
-            ENV['TEXMFCNF'].split(File::PATH_SEPARATOR).each do |path|
+            ENV['TEXMFCNF'].split_path.each do |path|
                 filenames << File.join(path,@@texmfcnf)
             end
         elsif ENV['SELFAUTOPARENT'] == '.' then
@@ -75,6 +75,18 @@ module KpseUtil
 
     def KpseUtil::environment
         Hash.new.merge(ENV)
+    end
+
+end
+
+class String
+
+    def split_path
+        self.split(/\:\;/)
+    end
+
+    def join_path
+        self.join(FILE::PATH_SEPARATOR)
     end
 
 end
@@ -281,7 +293,7 @@ class KpseFast
             end
             filenames = Array.new
             if @environment['TEXMFCNF'] and not @environment['TEXMFCNF'].empty? then
-                @environment['TEXMFCNF'].split(File::PATH_SEPARATOR).each do |path|
+                @environment['TEXMFCNF'].split_path.each do |path|
                     filenames << File.join(path,@@texmfcnf)
                 end
             elsif @environment['SELFAUTOPARENT'] == '.' then
@@ -600,7 +612,7 @@ class KpseFast
             puts ""
             puts @variables ["KPSE_TEST_PATTERN_#{i}"]
             puts ""
-            puts expand_path("KPSE_TEST_PATTERN_#{i}").split(File::PATH_SEPARATOR)
+            puts expand_path("KPSE_TEST_PATTERN_#{i}").split_path
             puts ""
         end
     end
@@ -612,11 +624,11 @@ class KpseFast
     # kpse stuff
 
     def expand_braces(str) # output variable and brace expansion of STRING.
-        _expanded_path_(original_variable(str).split(";")).join(File::PATH_SEPARATOR)
+        _expanded_path_(original_variable(str).split_path).join_path
     end
 
     def expand_path(str)   # output complete path expansion of STRING.
-        _expanded_path_(expanded_variable(str).split(";")).join(File::PATH_SEPARATOR)
+        _expanded_path_(expanded_variable(str).split_path).join_path
     end
 
     def expand_var(str)    # output variable expansion of STRING.
@@ -624,8 +636,7 @@ class KpseFast
     end
 
     def show_path(str)     # output search path for file type NAME
-        # expanded_path(var_of_format(str)).join(File::PATH_SEPARATOR)
-        expanded_path(str).join(File::PATH_SEPARATOR)
+        expanded_path(str).join_path
     end
 
     def var_value(str)     # output the value of variable $STRING.

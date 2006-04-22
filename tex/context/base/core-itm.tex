@@ -79,7 +79,7 @@
 % #1=level #2=parameter
 
 \def\getitemparameter #1#2{\csname\??op\currentitemgroup#1#2\endcsname}
-\def\setitemparameter #1#2{\@EA\def\csname\??op\currentitemgroup#1#2\endcsname}
+\def\setitemparameter #1#2{\@EA\def\csname\??op\currentitemgroup#1#2\endcsname} % #3 -> {#3}
 \def\letitemparameter #1#2{\@EA\let\csname\??op\currentitemgroup#1#2\endcsname}
 
 % test this: saves hash entries and is also faster
@@ -195,7 +195,7 @@
         \v!serried*=>\setitemparameter{#1}\c!factor{-1},
    #2#3*\v!serried*=>\setitemparameter{#1}\c!factor{-#2#3},
      #2*\v!serried*=>\setitemparameter{#1}\c!factor{-#2},
-        \v!stopper*=>\setitemparameter{#1}\c!placestopper\v!yes,
+        \v!stopper*=>\setitemparameter{#1}\c!placestopper{\v!yes}, % keep {}
        \v!unpacked*=>\setfalse\packlistitem,
          \v!repeat*=>\settrue\repeatlistitem, % new
        \v!standard*=>\dosetupstandarditemgroup{#1}]}
@@ -220,20 +220,10 @@
    \letitemparameter{#1}\c!after     \empty
    \letitemparameter{#1}\c!inbetween \empty}
 
-% \def\dosetupitemgroupconstant[#1][#2]%
-%   {\def\dodosetupitemgroupconstant##1%
-%      {\dododosetupitemgroupconstant[#1][##1*]}%
-%    \processcommacommand[#2]\dodosetupitemgroupconstant} % expansion of #2 is handy for xml
-
 \def\dosetupitemgroupconstant[#1][#2]%
   {\def\dodosetupitemgroupconstant##1% catches empty in [a,b,] handy for xml
      {\doifsomething{##1}{\dododosetupitemgroupconstant[#1][##1*]}}%
    \processcommacommand[#2]\dodosetupitemgroupconstant} % expansion of #2 is handy for xml
-
-%\def\dododododosetupitemgroup[#1][#2]%
-%  {\doifassignmentelse{#2}
-%     {\dosetupitemgroupvariable[#1][#2]}
-%     {\setitemparameter{#1}\empty{\dosetupitemgroupconstant[#1][#2]}}}%
 
 \def\dododododosetupitemgroup[#1][#2]%
   {\doifassignmentelse{#2}%
@@ -276,18 +266,6 @@
   {\ifconditional\sublistitem\else\ifconditional\symbollistitem\else
      \pluscounter{\@@itemcounter\itemlevel}%
    \fi\fi}
-
-% \def\setitemlevel#1%
-%   {\ifnum\itemlevel>0\relax
-%      \settrue\firstlistitem
-%      \doifnotinset\v!verder{#1}
-%        {\resetcounter{\@@itemcounter\itemlevel}}%
-%      \def\tempnumber%
-%        {\countervalue{\@@itemcounter\itemlevel}}%
-%      \doifelse{\getitemparameter\itemlevel\c!plaatsafsluiter}\v!ja
-%        {\def\tempsymbol{\getitemparameter\itemlevel\c!afsluiter}}
-%        {\let\tempsymbol\empty}%
-%    \fi}
 
 \def\setitemlevel#1%
   {\ifnum\itemlevel>\zerocount
@@ -383,121 +361,6 @@
    \fi
    \expanded{\redostartitemgroup[\itemgroupoptions]}}% [#2]
 
-% \def\redostartitemgroup[#1][#2]%
-%   {\setfalse\inlinelistitem % new, no indent (leftskip)
-%    \setfalse\concatnextitem % new, concat
-%    \setfalse\txtlistitem
-%    \ifhmode
-%      \ifconditional\autoconcatnextitem % new, concat
-%        \ifdim\lastskip=\itemsignal     % new, concat
-%          \settrue\concatnextitem       % new, concat
-%        \fi                             % new, concat
-%      \fi                               % new, concat
-%      \ifconditional\textlistitem\else\doifnotinset\v!text{#1}\par\fi % suboptimal
-%    \fi
-%    \begingroup
-%    \ifnum\itemlevel=\plusone % NIEUW
-%      \doadaptleftskip {\getitemparameter1\c!margin}%
-%      \doadaptleftskip {\getitemparameter1\c!leftmargin}%
-%      \doadaptrightskip{\getitemparameter1\c!rightmargin}%
-%    \fi
-%    \dosetraggedcommand{\getitemparameter\itemlevel\c!align}\raggedcommand
-%    \doifsomething{\getitemparameter\itemlevel\c!indenting}
-%      {% is \expanded needed?
-%       \expanded{\setupindenting[\getitemparameter\itemlevel\c!indenting]}}%
-%    \doifinset\v!columns{#1}%
-%      {\ifinsidecolumns\else\ifnum\itemcolumndepth=\zerocount
-%         \globallet\itemcolumndepth\itemlevel
-%         \getitemparameter\itemlevel\c!before
-%         \processfirstactioninset
-%           [#1]
-%           [  \v!one=>\!!counta1\relax,
-%              \v!two=>\!!counta2\relax,
-%            \v!three=>\!!counta3\relax,
-%             \v!four=>\!!counta4\relax,
-%             \v!five=>\!!counta5\relax,
-%          \s!unknown=>\@EA\!!counta\getitemparameter\itemlevel\c!n]%
-%         %
-%         % now handled in column routines
-%         %
-%         % \edef\columneditemleftskip{\the\leftskip}%
-%         % \def\postprocesscolumnbox##1%
-%         %   {\scratchdimen\columneditemleftskip
-%         %    \divide\scratchdimen \nofcolumns
-%         %    \hbox{\hskip\columneditemleftskip\hbox{\box##1}}}%
-%         % \scratchdimen-\columneditemleftskip
-%         % \multiply\scratchdimen \nofcolumns
-%         % \advance\scratchdimen \columneditemleftskip
-%         % \advance\scratchdimen \hsize
-%         % \edef\columntextwidth{\the\scratchdimen}%
-%         % \leftskip\zeropoint
-%         %
-%         \startcolumns
-%           [\c!n=\!!counta, % netter \??op\itemlevel\c!n
-%            \c!height=,
-%            \c!rule=\v!off,
-%            \c!balance=\v!yes,
-%            \c!align=\v!no]%
-%       \fi\fi}%
-%    \doifinsetelse\v!intro{#1}{\settrue\introlistitem}{\setfalse\introlistitem}%
-%    % == \doifinsetelse\v!intro{#1}\settrue\setfalse\introlistitem
-%    \doglobal\increment\noflists
-%    \let\currentlist\noflists
-%    \newcounter\noflistelements
-%    \setfalse\headlistitem
-%    \setfalse\sublistitem
-%    \setfalse\symbollistitem
-%    \let\marsymbol\relax
-%    \globallet\somdestination\empty
-%    \let\symsymbol\empty
-%    \the\itemgroupcommands
-%    \setitemlevel{#1}%
-%   %\getitemparameter\itemlevel\empty
-%    \let\listitem\empty % ** start value
-%    \doifelsenothing{#1} % iffirstargument
-%      {\edef\@@opsymbol{\getitemparameter\itemlevel\c!symbol}%
-%       \letgvalueempty{\@@globalitemsymbol\itemlevel}%
-%       \global\letitemparameter\itemlevel\v!continue\empty
-%     % \setitemmark\@@opsymbol % ** default value
-%       \dosetupitemgroupvariable[\itemlevel][#2]}
-%      {\dosetupitemgroupconstant[\itemlevel][#1]%
-%       \dosetupitemgroupvariable[\itemlevel][#2]%
-%       \doifinsetelse\v!continue{#1}% \noexpand, else problems in non-etex with chinese
-%         {\edef\@@opsymbol{\noexpand\getvalue{\@@globalitemsymbol\itemlevel}}%
-%          \getitemparameter\itemlevel\v!continue}
-%         {\edef\@@opsymbol{\noexpand\getitemparameter{\itemlevel}{\c!symbol}}%
-%          \global\setitemparameter\itemlevel\v!continue
-%            {\dosetupitemgroupconstant[\itemlevel][#1]%
-%             \dosetupitemgroupvariable[\itemlevel][#2]}}%
-%       \def\docommando##1% \setitemmark resets \docommando
-%         {\doifnot{##1}{0}{\setitemmark{##1}}}%
-%     % \processcommalist[#1,\@@opsymbol]\docommando
-%       \processcommalist[#1]\docommando}% ** preset sequence or provided sequence
-%    \ifx\listitem\empty
-%      \setitemmark\@@opsymbol % ** default value
-%      \ifx\listitem\empty
-%        \edef\currentitemsymbol{\itemlevel}% ** fall back
-%      \fi
-%    \fi
-%    \ifconditional\autointrolistitem\ifnum\prevgraf<3
-%      \settrue\introlistitem
-%    \fi\fi
-%    \ifconditional\paragraphlistitem
-%      \ifnum\itemlevel>\plusone
-%        \letitemparameter\itemlevel\c!inbetween\empty
-%      \fi
-%    \else\ifconditional\packlistitem
-%      \letitemparameter\itemlevel\c!inbetween\empty
-%    \fi\fi
-%    \calculatelistwidth\itemlevel{\dimen0}%
-%    \ifdim\dimen0>\zeropoint\relax
-%      \ifconditional\inlinelistitem\else
-%        \advance\leftskip \dimen0\relax
-%      \fi
-%    \fi}
-%
-% column code moved so that it obeys packed and such
-
 \def\redostartitemgroup[#1][#2]%
   {\setfalse\inlinelistitem % new, no indent (leftskip)
    \setfalse\concatnextitem % new, concat
@@ -511,16 +374,6 @@
      \ifconditional\textlistitem\else\doifnotinset\v!text{#1}\par\fi % suboptimal
    \fi
    \begingroup
-   \ifnum\itemlevel=\plusone % NIEUW
-     \doadaptleftskip {\getitemparameter1\c!margin}%
-     \doadaptleftskip {\getitemparameter1\c!leftmargin}%
-     \doadaptrightskip{\getitemparameter1\c!rightmargin}%
-   \fi
-   \dosetraggedcommand{\getitemparameter\itemlevel\c!align}\raggedcommand
-   \doifsomething{\getitemparameter\itemlevel\c!indenting}
-     {% is \expanded needed?
-      \expanded{\setupindenting[\getitemparameter\itemlevel\c!indenting]}}%
-   % old location of column code
    \doifinsetelse\v!intro{#1}{\settrue\introlistitem}{\setfalse\introlistitem}%
    % == \doifinsetelse\v!intro{#1}\settrue\setfalse\introlistitem
    \doglobal\increment\noflists
@@ -533,8 +386,7 @@
    \globallet\somdestination\empty
    \let\symsymbol\empty
    \the\itemgroupcommands
-%\setitemlevel{#1}% moved from here
-  %\getitemparameter\itemlevel\empty
+   % \getitemparameter\itemlevel\empty
    \let\listitem\empty % ** start value
    \doifelsenothing{#1} % iffirstargument
      {\edef\@@opsymbol{\getitemparameter\itemlevel\c!symbol}%
@@ -555,7 +407,18 @@
         {\doifnot{##1}{0}{\setitemmark{##1}}}%
     % \processcommalist[#1,\@@opsymbol]\docommando
       \processcommalist[#1]\docommando}% ** preset sequence or provided sequence
-\setitemlevel{#1}% moved to here
+   % moved to here, after settings
+   \ifnum\itemlevel=\plusone % NIEUW
+     \doadaptleftskip {\getitemparameter1\c!margin}%
+     \doadaptleftskip {\getitemparameter1\c!leftmargin}%
+     \doadaptrightskip{\getitemparameter1\c!rightmargin}%
+   \fi
+   \dosetraggedcommand{\getitemparameter\itemlevel\c!align}\raggedcommand
+   \doifsomething{\getitemparameter\itemlevel\c!indenting}
+     {% is \expanded needed?
+      \expanded{\setupindenting[\getitemparameter\itemlevel\c!indenting]}}%
+   %
+   \setitemlevel{#1}% moved to here
    \ifx\listitem\empty
      \setitemmark\@@opsymbol % ** default value
      \ifx\listitem\empty
@@ -572,7 +435,6 @@
    \else\ifconditional\packlistitem
      \letitemparameter\itemlevel\c!inbetween\empty
    \fi\fi
-   % new location of column code
    \doifinset\v!columns{#1}%
      {\ifinsidecolumns\else\ifnum\itemcolumndepth=\zerocount
         \globallet\itemcolumndepth\itemlevel
@@ -585,21 +447,6 @@
             \v!four=>\!!counta4\relax,
             \v!five=>\!!counta5\relax,
          \s!unknown=>\@EA\!!counta\getitemparameter\itemlevel\c!n]%
-        %
-        % now handled in column routines
-        %
-        % \edef\columneditemleftskip{\the\leftskip}%
-        % \def\postprocesscolumnbox##1%
-        %   {\scratchdimen\columneditemleftskip
-        %    \divide\scratchdimen \nofcolumns
-        %    \hbox{\hskip\columneditemleftskip\hbox{\box##1}}}%
-        % \scratchdimen-\columneditemleftskip
-        % \multiply\scratchdimen \nofcolumns
-        % \advance\scratchdimen \columneditemleftskip
-        % \advance\scratchdimen \hsize
-        % \edef\columntextwidth{\the\scratchdimen}%
-        % \leftskip\zeropoint
-        %
         \startcolumns
           [\c!n=\!!counta, % netter \??op\itemlevel\c!n
            \c!height=,
@@ -607,7 +454,6 @@
            \c!balance=\v!yes,
            \c!align=\v!no]%
       \fi\fi}
-   % end of column code
    \calculatelistwidth\itemlevel{\dimen0}%
    \ifdim\dimen0>\zeropoint\relax
      \ifconditional\inlinelistitem\else
@@ -720,6 +566,28 @@
 \appendtoks \letvalue\v!head \itemgrouphead    \to \itemgroupcommands
 \appendtoks \letvalue\v!its  \itemgroupitems   \to \itemgroupcommands
 \appendtoks \letvalue\v!mar  \itemgroupmargin  \to \itemgroupcommands
+
+% todo : \startitem .. \stopitem
+
+% quick hack ...
+
+\def\v!item{item}
+
+\appendtoks
+    \letvalue{\e!start\v!item}\itemgroupitem
+    \letvalue{\e!stop \v!item}\endgraf
+\to \itemgroupcommands
+
+\appendtoks
+    \setvalue{\e!start\v!head}#1{\itemgrouphead#1\par}%
+    \letvalue{\e!stop \v!head}\endgraf
+\to \itemgroupcommands
+
+% \startitemize
+%   \starthead {xx} test \stophead
+%   \startitem test \stopitem
+%   \startitem test \stopitem
+% \stopitemize
 
 % Sometimes the user demands get pretty weird:
 %

@@ -4431,7 +4431,7 @@
       <cd:parameter name="numerotation">
         <cd:constant type="oui"/>
         <cd:constant type="nonverifie"/>
-      </cd:parameter>
+     </cd:parameter>
       <cd:inherit name="regleencadre"/>
     </cd:assignments>
   </cd:arguments>

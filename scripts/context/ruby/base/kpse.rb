@@ -18,6 +18,18 @@ require 'rbconfig'
 #
 # miktex has mem|fmt|base paths
 
+class String
+
+    def split_path
+        self.split(/\:\;/)
+    end
+
+    def join_path
+        self.join(FILE::PATH_SEPARATOR)
+    end
+
+end
+
 module Kpse
 
     @@located       = Hash.new
@@ -138,7 +150,7 @@ module Kpse
         # maybe we should check for writeability
         unless @@paths.key?('formatpaths') then
             begin
-                setpath('formatpaths',run("--show-path=fmt").gsub(/\\/,'/').split(File::PATH_SEPARATOR))
+                setpath('formatpaths',run("--show-path=fmt").gsub(/\\/,'/').split_path)
             rescue
                 setpath('formatpaths',[])
             end
@@ -195,7 +207,7 @@ module Kpse
                 end
                 # locate writable path
                 if ! formatpath.empty? then
-                    formatpath.split(File::PATH_SEPARATOR).each do |fp|
+                    formatpath.split_path.each do |fp|
                         fp.gsub!(/\\/,'/')
                         # remove funny patterns
                         fp.sub!(/^!!/,'')

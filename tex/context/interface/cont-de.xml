@@ -4431,7 +4431,7 @@
       <cd:parameter name="nummerierung">
         <cd:constant type="ja"/>
         <cd:constant type="nocheck"/>
-      </cd:parameter>
+     </cd:parameter>
       <cd:inherit name="stelleumrahmtein"/>
     </cd:assignments>
   </cd:arguments>

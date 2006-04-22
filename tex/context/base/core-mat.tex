@@ -137,6 +137,8 @@
 \newconditional\handleformulanumber
 \newconditional\incrementformulanumber
 
+\def\formuladistance{\formulaparameter\c!distance}
+
 \def\dododoformulanumber#1#2#3#4% (#1,#2)=outer(ref,sub) (#3,#4)=inner(ref,sub)
   {\hbox\bgroup
    \ifconditional\handleformulanumber
@@ -157,6 +159,7 @@
      \fi
      \doifsomething{#3}{\rawreference\s!for{#3}{\composedsectionnumber\hetsubnummer}}%
      \rm % nodig ?
+     \doif{\formulaparameter\c!location}\v!right{\hskip\formuladistance}%
      \@@fmnumbercommand
        {\dostartattributes\??fm\c!numberstyle\c!numbercolor
         \strut
@@ -166,6 +169,7 @@
           {\ignorespaces\preparednumber\ignorespaces\hetsubnummer\unskip}%
         \@@fmright
         \dostopattributes}%
+      \doif{\formulaparameter\c!location}\v!left{\hskip\formuladistance}%
    \fi
    \egroup}
 
@@ -281,6 +285,13 @@
 \newskip\formulastrutdp
 
 % hm, invoke otr in hmode in order to move skips to mvl, could be an option
+
+%D \startbuffer
+%D \startformula[9pt] x = 1 \stopformula
+%D \startformula[7pt] x = 1 \stopformula
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
 
 \def\dodostartformula[#1][#2]% setting leftskip adaption is slow !
   {% todo: test first
@@ -622,6 +633,7 @@
    \hbox to \localhsize \bgroup
      \hss
      \def\normalstartformula{\vskip-\strutdepth$$}% i hate this
+     \def\normalstartformula{\vskip-\strutdepth$$}% i hate this
      \def\normalstopformula {$$}%
      \def\startformula{$\vcenter\bgroup\normalstartformula}%
      \def\stopformula {\normalstopformula\egroup$\hss}%
@@ -679,7 +691,7 @@
 \def\resetdisplaymatheq
   {\let\normalleqno\relax \let\leqno\relax
    \let\normalreqno\relax \let\eqno \relax
-   \let\doplaceformulanumber\relax}
+   \let\doplaceformulanumber\empty}
 
 \let\normaldispl@y\displ@y
 
@@ -708,8 +720,47 @@
 \def\mathhbox
   {\iftracemath\ruledhbox\else\hbox\fi}
 
-\def\startmathbox#1#2%
+% \def\startmathbox#1#2%
+%   {\hsize\displaywidth
+%    \global\let\@eqno \empty \def\eqno {\gdef\@eqno }%
+%    \global\let\@leqno\empty \def\leqno{\gdef\@leqno}%
+%    % added
+%    \let\normalreqno\eqno
+%    \let\normalleqno\leqno
+%    % added
+%    \doplaceformulanumber
+%    \mathhbox to \displaywidth\bgroup
+%      \mathinnerstrut
+%      $\displaystyle
+%      \ifx\@leqno\empty\else \ifcase#2
+%        \rlap{\@leqno}%
+%      \else
+%        \@leqno\hskip\formulaparameter\c!distance
+%      \fi \fi
+%      #1}
+
+% \def\stopmathbox#1#2%
+%   {$#1%
+%    \ifx\@eqno\empty\else \ifcase#2
+%      \llap{\@eqno}%
+%    \else
+%      \hskip\formulaparameter\c!distance\@eqno
+%    \fi \fi
+%    \egroup}
+
+% \defineinnermathhandler\v!right {\startmathbox\empty1}{\stopmathbox\hfill0}
+% \defineinnermathhandler\v!left  {\startmathbox\hfill0}{\stopmathbox\empty1}
+% \defineinnermathhandler\v!middle{\startmathbox\hfill0}{\stopmathbox\hfill0}
+
+\chardef\mathraggedstatus=0 % normal left center  right
+\chardef\mathnumberstatus=0 % nothing normal shift_right
+\let\mathnumbercorrection\!!zeropoint
+
+\def\startmathbox#1%
   {\hsize\displaywidth
+   \global\chardef\mathnumberstatus\plusone
+   \chardef\mathraggedstatus#1\relax
+   \let\mathnumbercorrection\!!zeropoint
    \global\let\@eqno \empty \def\eqno {\gdef\@eqno }%
    \global\let\@leqno\empty \def\leqno{\gdef\@leqno}%
    % added
@@ -717,28 +768,74 @@
    \let\normalleqno\leqno
    % added
    \doplaceformulanumber
-   \mathhbox to \displaywidth\bgroup
+   \setbox\scratchbox\mathhbox to \displaywidth\bgroup
      \mathinnerstrut
-     $\displaystyle
-     \ifx\@leqno\empty\else \ifcase#2
-       \rlap{\@leqno}%
-     \else
-       \@leqno\hskip\formulaparameter\c!distance
-     \fi \fi
-     #1}
+     $%
+     \displaystyle
+     \ifcase\mathraggedstatus\or\hfill\or\hfill\fi}
 
-\def\stopmathbox#1#2%
-  {$#1%
-   \ifx\@eqno\empty\else \ifcase#2
+\def\llappedmathno
+  {\ifcase\mathraggedstatus\or
+     \@eqno
+   \or
      \llap{\@eqno}%
+   \or
+     \llap{\@eqno}%
+   \fi}
+
+\def\rlappedmathno
+  {\ifcase\mathraggedstatus\or
+     \rlap{\@leqno}%
+   \or
+     \rlap{\@leqno}%
+   \or
+     \@leqno
+   \fi}
+
+\def\stopmathbox
+  {$%
+   \ifcase\mathraggedstatus\or\or\hfill\or\hfill\fi
+   \egroup
+   \setbox0\hbox{\unhcopy\scratchbox}%
+   \scratchdimen\wd0
+   \ifdim\scratchdimen>\displaywidth
+     \donetrue
    \else
-     \hskip\formulaparameter\c!distance\@eqno
-   \fi \fi
+     \donefalse
+   \fi
+   \hbox to \displaywidth\bgroup
+     \ifcase\mathnumberstatus
+       \box\scratchbox
+     \or
+       \ifx\@leqno\empty
+         \ifx\@eqno\empty
+           \box\scratchbox
+         \else
+           \ifdone
+             \vbox{\box\scratchbox\hbox to \displaywidth{\hss\llappedmathno}}%
+           \else
+             \hss\box\scratchbox\llappedmathno % hss makes room for number
+           \fi
+         \fi
+       \else
+         \ifdone
+           \vbox{\hbox to \displaywidth{\rlappedmathno\hss}\box\scratchbox}%
+         \else
+           \rlappedmathno\box\scratchbox\hss % hss makes room for number
+         \fi
+       \fi
+     \or
+        \hskip\mathnumbercorrection
+        \box\scratchbox
+        \hss
+     \else
+        \box\scratchbox
+     \fi
    \egroup}
 
-\defineinnermathhandler\v!right {\startmathbox\empty1}{\stopmathbox\hfill0}
-\defineinnermathhandler\v!left  {\startmathbox\hfill0}{\stopmathbox\empty1}
-\defineinnermathhandler\v!middle{\startmathbox\hfill0}{\stopmathbox\hfill0}
+\defineinnermathhandler\v!left  {\startmathbox\plusone  }{\stopmathbox}
+\defineinnermathhandler\v!middle{\startmathbox\plustwo  }{\stopmathbox}
+\defineinnermathhandler\v!right {\startmathbox\plusthree}{\stopmathbox}
 
 %D [The examples below are in english and don't process in the
 %D  documentation style, which will be english some day.]
@@ -1538,10 +1635,35 @@
 
 % preamble is scanned for tabskips so we need the span to prevent an error message
 
-\def\prepareeqalignno
+\chardef\eqalignmode\plusone
+
+% \def\preparereqalignno
+%   {\!!toksa{\strut\firstineqalign\hfil\leftofeqalign\span\mathineqalign{##}\rightofeqalign\tabskip\zeropoint}%
+%    \!!toksb{&\nextineqalign\leftofeqalign\span\mathineqalign{##}\rightofeqalign\tabskip\zeropoint}%
+%    \!!toksc{\hfil\tabskip\centering&\llap{\span\textineqalign{##}}\tabskip\zeropoint}%
+%    \buildeqalign
+%    \presetdisplaymath
+%    \tabskip\centering}
+
+% \def\prepareleqalignno
+%   {\!!toksa{\strut\firstineqalign\hfil\leftofeqalign\span\mathineqalign{##}\rightofeqalign\tabskip\zeropoint}%
+%    \!!toksb{&\nextineqalign\leftofeqalign\span\mathineqalign{##}\rightofeqalign\tabskip\zeropoint}%
+%    \!!toksc{\hfil\tabskip\centering&\kern-\displaywidth\rlap{\span\textineqalign{##}}\tabskip\displaywidth}%
+%    \buildeqalign
+%    \presetdisplaymath
+%    \tabskip\centering}
+
+\def\preparereqalignno
   {\!!toksa{\strut\firstineqalign\hfil\leftofeqalign\span\mathineqalign{##}\rightofeqalign\tabskip\zeropoint}%
    \!!toksb{&\nextineqalign\leftofeqalign\span\mathineqalign{##}\rightofeqalign\tabskip\zeropoint}%
-   \!!toksc{\hfil\tabskip\centering&\llap{\span\textineqalign{##}}\tabskip\zeropoint}%
+   \ifnum\mathraggedstatus=\plusone
+     \!!toksc{\hfil&\span\textineqalign{##}\tabskip\zeropoint}%
+   \else\ifnum\mathraggedstatus=\plusthree
+     \!!toksc{\hfil\tabskip\zeropoint\!!plus 1\!!fill&\span\textineqalign{##}\tabskip\zeropoint}%
+   \else
+     \!!toksc{\hfil\tabskip\centering&\llap{\span\textineqalign{##}}\tabskip\zeropoint}%
+   \fi\fi
+   \global\chardef\mathnumberstatus\zerocount
    \buildeqalign
    \presetdisplaymath
    \tabskip\centering}
@@ -1549,33 +1671,73 @@
 \def\prepareleqalignno
   {\!!toksa{\strut\firstineqalign\hfil\leftofeqalign\span\mathineqalign{##}\rightofeqalign\tabskip\zeropoint}%
    \!!toksb{&\nextineqalign\leftofeqalign\span\mathineqalign{##}\rightofeqalign\tabskip\zeropoint}%
-   \!!toksc{\hfil\tabskip\centering&\kern-\displaywidth\rlap{\span\textineqalign{##}}\tabskip\displaywidth}%
+   % problem: number is handled after rest and so ends up in the margin
+   \ifnum\mathraggedstatus=\plusone
+     \!!toksc{\hfil&\kern-\displaywidth\rlap{\span\textineqalign{##}}\tabskip\displaywidth}%
+   \else\ifnum\mathraggedstatus=\plusthree
+     \!!toksc{\hfil\tabskip\zeropoint\!!plus 1\!!fill&\kern-\displaywidth\span\mrlap{\span\textineqalign{##}}\tabskip\displaywidth}%
+   \else
+     \!!toksc{\hfil\tabskip\centering&\kern-\displaywidth\rlap{\span\textineqalign{##}}\tabskip\displaywidth}%
+   \fi\fi
+   \global\chardef\mathnumberstatus\zerocount
    \buildeqalign
    \presetdisplaymath
    \tabskip\centering}
 
-\chardef\eqalignmode=1
+\def\dobotheqalignno#1#2%
+  {\ifmmode
+     \displ@y % \let\doplaceformulanumber\relax % strange hack
+     \vcenter\bgroup
+     \let\finishalignno\egroup
+   \else
+     \let\finishalignno\relax
+   \fi
+   #1%
+   \halign \ifcase\eqalignmode \or to \displaywidth \fi \@EA {\the\scratchtoks\crcr#2\crcr}%
+   \finishalignno}
 
-\def\eqalignno#1%
-  {\prepareeqalignno
-   \halign \ifcase\eqalignmode \or to \displaywidth \fi \@EA {\the\scratchtoks\crcr#1\crcr}}
+% \def\dobothaligneqalignno#1%
+%   {\ifmmode
+%      \displ@y % \let\doplaceformulanumber\relax % strange hack
+%      \vcenter\bgroup
+%      \def\finishalignno{\crcr\egroup\egroup}%
+%    \else
+%      \def\finishalignno{\crcr\egroup}%
+%    \fi
+%    #1%
+%    \halign \ifcase\eqalignmode \or to \displaywidth \fi \@EA \bgroup\the\scratchtoks\crcr}
 
-\def\leqalignno#1%
-  {\prepareleqaligno
-   \halign \ifcase\eqalignmode \or to \displaywidth \fi \@EA {\the\scratchtoks\crcr#1\crcr}}
+\def\mrlap#1%
+  {\setbox\scratchbox\hbox{#1}%
+   \ifdim\wd\scratchbox>\mathnumbercorrection
+     \xdef\mathnumbercorrection{\the\wd\scratchbox}%
+   \fi
+   \box\scratchbox
+   \global\chardef\mathnumberstatus\plustwo}
 
-\def\aligneqalignno
-  {\prepareeqalignno
+\def\dobothaligneqalignno#1%
+  {\ifmmode
+    \displ@y
+    \global\chardef\mathnumberstatus\plusone
+     % we're in a mathbox
+     \vcenter\bgroup
+     \def\finishalignno{\crcr\egroup\egroup}%
+   \else
+     \def\finishalignno{\crcr\egroup}%
+   \fi
+   #1%
    \halign \ifcase\eqalignmode \or to \displaywidth \fi \@EA \bgroup\the\scratchtoks\crcr}
 
-\def\alignleqalignno
-  {\prepareleqalignno
-   \halign \ifcase\eqalignmode \or to \displaywidth \fi \@EA \bgroup\the\scratchtoks\crcr}
+\def\reqalignno     {\dobotheqalignno     \preparereqalignno}
+\def\leqalignno     {\dobotheqalignno     \prepareleqalignno}
+\def\alignreqalignno{\dobothaligneqalignno\preparereqalignno}
+\def\alignleqalignno{\dobothaligneqalignno\prepareleqalignno}
+\def\finishalignno  {\crcr\egroup}
 
-\def\finishalignno
-  {\crcr\egroup}
+\let    \equalignno     \reqalignno
+\let\aligneqalignno\alignreqalignno
 
-%D Here we implement teh user interface part.
+%D Here we implement the user interface part.
 
 \def\setupmathalignment
   {\dodoubleempty\dosetupmathalignment}
@@ -1598,7 +1760,7 @@
    \c!distance=1em]
 
 \def\numberedeqalign
-  {\doifelse\@@fmlocation\v!left\alignleqalignno\aligneqalignno}
+  {\doifelse\@@fmlocation\v!left\alignleqalignno\alignreqalignno}
 
 \def\doxxdoubleempty#1#2%
   {\ifx#2[\expandafter\dodoxxdoubleempty\else\expandafter\noxxdoubleempty\fi#1#2}
@@ -1660,7 +1822,9 @@
    \doifelse{#2}{*}{\def\\{&\crcr}}{\def\\{&\doalignNR[+][]\crcr}}%
    % end of compatibility mode
    \eqaligncolumn\zerocount
-   \processcommacommand[\mathalignmentparameter\c!align]{\advance\eqaligncolumn\plusone\doseteqaligncolumn}%
+   \processcommacommand
+     [\mathalignmentparameter\c!align]
+     {\advance\eqaligncolumn\plusone\doseteqaligncolumn}% takes argument
    % the real action
    \global\eqaligncolumn\plusone
    \numberedeqalign}
@@ -1907,13 +2071,13 @@
    \edef\currentmathcases{#1}%
    \doifassignmentelse{#2}{\setupmathcases[#1][#2]}\donothing
    \mathcasesparameter\c!left
-   \vcenter\bgroup
+   \ruledvcenter\bgroup
    \pushmacro\docasesNC
    \let\endmath\relax
    \def\NC{\docasesNC}%
    \def\MC{\docasesNC\ifmmode\else$\def\endmath{$}\fi}%
    \global\let\docasesNC\dodocasesNC
-   \def\NR{\endmath&\global\let\docasesNC\dodocasesNC\doxxdoubleempty\docasesNR}%
+   \def\NR{\unskip\endmath&\global\let\docasesNC\dodocasesNC\doxxdoubleempty\docasesNR}%
    \normalbaselines
    \mathsurround\zeropoint
    \everycr\emptytoks
@@ -1921,8 +2085,11 @@
    \global\eqaligncolumn\plusone
    \halign\bgroup
         $##$\hfil
-       &\hskip\mathcasesparameter\c!distance\relax\popmacro\docasesNC##\hfil
-       &\hskip\mathcasesparameter\c!numberdistance\relax\span\textineqalign{##}%
+       &\hskip\mathcasesparameter\c!distance\relax
+        \popmacro\docasesNC##\hfil
+       &\hskip\mathcasesparameter\c!numberdistance\relax
+        \let\formuladistance\!!zeropoint
+        \span\textineqalign{##}%
      \crcr} % todo: number
 
 \def\dostopmathcases

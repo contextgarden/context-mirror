@@ -4431,7 +4431,7 @@
       <cd:parameter name="numerotare">
         <cd:constant type="da"/>
         <cd:constant type="nocheck"/>
-      </cd:parameter>
+     </cd:parameter>
       <cd:inherit name="seteazainconjurat"/>
     </cd:assignments>
   </cd:arguments>

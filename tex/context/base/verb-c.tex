@@ -1,0 +1,483 @@
+%D \module
+%D   [       file=verb-c,
+%D        version=2006.04.17,
+%D          title=\CONTEXT\ Verbatim Macros,
+%D       subtitle=Pretty C Verbatim,
+%D         author=Nikolai Weibull,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{Context Support Macros / Pretty C Verbatim}
+
+% HH:
+%
+% - extra !!pretty definitions moved to verb-ini
+% - added a c!
+% - did a few small cosmetic things
+
+\unprotect
+
+\doglobal\newif\ifinCsingle
+\doglobal\newif\ifinCdouble
+\doglobal\newif\ifinCcomment
+\doglobal\newif\ifinCsinglelinecomment
+\doglobal\newif\ifinCmultilinecomment
+\doglobal\newif\ifcontinueCsinglelinecomment
+
+\gdef\Csetcontrols
+  {\saveprettycontrols
+   \def\obeyedspace
+     {\endCtypesix
+      \oldobeyedspace}%
+   \def\flushrestofverbatimline
+     {\endCtypesix
+      \ifinCsinglelinecomment
+        \ifcontinueCsinglelinecomment
+          \continueCsinglelinecommentfalse
+        \else
+          \egroup
+          \endofpretty
+          \global\inCsinglelinecommentfalse
+          \global\inCcommentfalse
+        \fi
+      \fi}%
+   \def\obeyedline
+     {\oldobeyedline}%
+   \let\obeytabs\ignoretabs}
+
+\gdef\setupprettyCtype
+  {\def\prettyidentifier{C}%
+   \Csetvariables
+   \Csetcontrols
+   \Csethandlers
+   \Csetspecials
+   \Csetdiagnostics}
+
+\gdef\Csetvariables
+  {\global\inCsinglefalse
+   \global\inCdoublefalse
+   \global\inCcommentfalse
+   \global\continueCsinglelinecommentfalse
+   \global\naturaltextexttrue
+   \global\let\Csequence\empty
+   \global\let\Cprefix\empty}
+
+% TODO: should handle -> as well
+
+\gdef\Csetspecials
+  {\setpretty`\{=10 \setpretty`\}=10
+   \setpretty`\$=20 \setpretty`\@=20
+   \setpretty`\[=30 \setpretty`\]=30 \setpretty`\(=30 \setpretty`\)=30
+   \setpretty`\==30 \setpretty`\~=30 \setpretty`\<=30 \setpretty`\>=30
+   \setpretty`\%=30
+   \setpretty`\-=41 \setpretty`\+=41
+   \setpretty`\|=41 \setpretty`\`=41 \setpretty`\!=41 \setpretty`\?=41
+   \setpretty`\^=41 \setpretty`\&=41
+   \setpretty`\/=43 \setpretty`\*=44
+   \setpretty`\#=45
+   \setpretty`\\=50
+   \setpretty`\1=61 \setpretty`\2=61 \setpretty`\3=61 \setpretty`\4=61 \setpretty`\5=61
+   \setpretty`\6=61 \setpretty`\7=61 \setpretty`\8=61 \setpretty`\9=61 \setpretty`\0=61
+   \setpretty`\A=62 \setpretty`\B=62 \setpretty`\C=62 \setpretty`\D=62 \setpretty`\E=62
+   \setpretty`\F=62 \setpretty`\G=62 \setpretty`\H=62 \setpretty`\I=62 \setpretty`\J=62
+   \setpretty`\K=62 \setpretty`\L=62 \setpretty`\M=62 \setpretty`\N=62 \setpretty`\O=62
+   \setpretty`\P=62 \setpretty`\Q=62 \setpretty`\R=62 \setpretty`\S=62 \setpretty`\T=62
+   \setpretty`\U=62 \setpretty`\V=62 \setpretty`\W=62 \setpretty`\X=62 \setpretty`\Y=62
+   \setpretty`\Z=62
+   \setpretty`\a=62 \setpretty`\b=62 \setpretty`\c=62 \setpretty`\d=62 \setpretty`\e=62
+   \setpretty`\f=62 \setpretty`\g=62 \setpretty`\h=62 \setpretty`\i=62 \setpretty`\j=62
+   \setpretty`\k=62 \setpretty`\l=62 \setpretty`\m=62 \setpretty`\n=62 \setpretty`\o=62
+   \setpretty`\p=62 \setpretty`\q=62 \setpretty`\r=62 \setpretty`\s=62 \setpretty`\t=62
+   \setpretty`\u=62 \setpretty`\v=62 \setpretty`\w=62 \setpretty`\x=62 \setpretty`\y=62
+   \setpretty`\z=62
+   \setpretty`\_=62
+   \setpretty`\;=70 \setpretty`\:=70 \setpretty`\,=70 \setpretty`\.=70
+   \setpretty`\'=80
+   \setpretty`\"=90 }
+
+\gdef\Csethandlers
+  {\installprettyhandler 10 \Ctypeone
+   \installprettyhandler 20 \Ctypetwo
+   \installprettyhandler 30 \Ctypethree
+   \installprettyhandler 41 \Ctypefourone
+   \installprettyhandler 43 \Ctypefourthree
+   \installprettyhandler 44 \Ctypefourfour
+   \installprettyhandler 45 \Ctypefourfive
+   \installprettyhandler 50 \Ctypefive
+   \installprettyhandler 61 \Ctypesixone
+   \installprettyhandler 62 \Ctypesixtwo
+   \installprettyhandler 70 \Ctypeseven
+   \installprettyhandler 80 \Ctypeeight
+   \installprettyhandler 90 \Ctypenine}
+
+\gdef\Ctypeone#1%
+  {\ifinCdouble
+     \ifinCcomment
+       \endCtypesix
+       \getpretty{#1}%
+     \else\ifx\Cprefix\empty
+       \endCtypesix
+       \getpretty{#1}%
+     \else
+       \endCtypesix
+       \xdef\Cprefix{\getpretty{#1}}%
+       \beginofpretty[\!!prettyone]\getpretty{#1}\endofpretty
+     \fi\fi
+   \else
+     \endCtypesix
+     \ifinCcomment
+       \getpretty{#1}%
+     \else\ifinCsingle
+       \getpretty{#1}%
+     \else
+       \beginofpretty[\!!prettyone]\getpretty{#1}\endofpretty
+     \fi\fi
+   \fi}
+
+\gdef\Ctypetwo#1%
+  {\endCtypesix
+   \getpretty{#1}}
+
+\gdef\Ctypethree#1%
+  {\endCtypesix
+   \ifinCcomment
+     \getpretty{#1}%
+   \else\ifinCsingle
+     \getpretty{#1}%
+   \else\ifinCdouble
+     \getprettydata{#1}%
+      \ifx\Cprefix\empty
+        \getpretty{#1}%
+      \else
+        \beginofpretty[\!!prettythree]\getpretty{#1}\endofpretty
+      \fi
+   \else
+     \beginofpretty[\!!prettythree]\getpretty{#1}\endofpretty
+   \fi\fi\fi}
+
+\gdef\Ctypefourone#1%
+  {\endCtypesix
+   \ifinCcomment
+     \getpretty{#1}%
+   \else\ifinCsingle
+     \getpretty{#1}%
+   \else\ifinCdouble
+     \getpretty{#1}%
+   \else
+     \beginofpretty[\!!prettyfour]\getpretty{#1}\endofpretty
+   \fi\fi\fi}
+
+\gdef\doCtypefourtwo#1#2%
+  {\getprettydata{#2}%
+   \ifnum\prettytype=62
+     \expandafter\Ctypetwo
+   \else
+     \expandafter\Ctypefourone
+   \fi
+   {#1}#2}
+
+\gdef\Ctypefourtwo
+  {\handlenextnextpretty\doCtypefourtwo\Ctypefourone}
+
+\gdef\Ctypefourthree
+  {\handlenextnextpretty\doCtypefourthree\Ctypefourtwo}
+
+\gdef\doCtypefourthree#1#2%
+  {\getprettydata{#2}%
+   \ifnum\prettytype=43
+     \let\next\dodoCtypefourthree
+   \else\ifnum\prettytype=44
+     \global\inCcommenttrue
+     \global\inCmultilinecommenttrue
+     \let\next\Cstartcomment
+   \else
+     \let\next\Ctypefourtwo
+   \fi\fi
+   \next{#1}#2}
+
+\gdef\Cstartcomment#1#2%
+  {\beginofpretty[\!!prettyfourthree]\bgroup\ttsl\getpretties{#1}{#2}}
+
+\gdef\dodoCtypefourthree% #1%
+  {\endCtypesix
+   \handlenextnextpretty\dododoCtypefourthree\dodododoCtypefourthree}
+
+\gdef\dododoCtypefourthree
+  {\ifnewpretty\expandafter\handlenewpretty\fi\dodododoCtypefourthree}
+
+\gdef\dodododoCtypefourthree#1#2%
+  {\ifinCcomment
+     \getpretties{#1}{#2}%
+   \else
+     \global\inCcommenttrue
+     \global\inCsinglelinecommenttrue
+     \def\next{\beginofpretty[\!!prettyfourthree]\bgroup\ttsl\getpretties{#1}{#2}}%
+     \expandafter\next
+   \fi}
+
+\gdef\Ctypefourfour
+  {\handlenextnextpretty\doCtypefourfour\Ctypefourtwo}
+
+\gdef\doCtypefourfour#1#2%
+  {\getprettydata{#2}%
+   \ifnum\prettytype=44
+   % \beginofpretty[\!!prettyfour]\getpretty{#1}\endofpretty
+     \ifinCcomment
+       \getpretty{#1}%
+     \else
+       \endCtypesix
+       \beginofpretty[\!!prettyfour]\getpretty{#1}\endofpretty
+     \fi
+     \expandafter#2%
+   \else\ifnum\prettytype=43
+     \getpretties{#1}{#2}%
+     \egroup
+     \endofpretty
+     \global\inCcommentfalse
+     \global\inCmultilinecommentfalse
+   \else\ifinCcomment
+     \getpretty{#1}%
+     \expandafter#2%
+   \else\ifinCsingle
+     \getpretty{#1}%
+     \expandafter#2%
+   \else\ifinCdouble
+     \getpretty{#1}%
+     \expandafter#2%
+   \else
+     \endCtypesix
+     \beginofpretty[\!!prettyfour]\getpretty{#1}\endofpretty
+     \expandafter#2%
+   \fi\fi\fi\fi\fi}
+
+\gdef\Ctypefourfive#1%
+  {\ifinCcomment
+     \getpretty{#1}%
+   \else\ifinCsingle
+     \getpretty{#1}%
+   \else\ifinCdouble
+     \getpretty{#1}%
+   \else
+     \endCtypesix
+     \global\inCcommenttrue
+     \global\inCsinglelinecommenttrue
+     \def\next{\beginofpretty[\!!prettyfourthree]\bgroup\ttsl\getpretty{#1}}%
+     \expandafter\next
+   \fi\fi\fi}
+
+\gdef\doCtypefiveA#1#2%
+  {\endCtypesix
+   \ifinCcomment
+     \getpretties{#1}{#2}%
+   \else\ifinCsingle
+     \getprettydata{#2}%
+     \ifnum\prettytype=50
+       \beginofpretty[\!!prettyfive]\getpretties{#1}{#2}\endofpretty\beginofpretty[\!!prettyeight]%
+     \else\ifnum\prettytype=80
+       \beginofpretty[\!!prettyfive]\getpretties{#1}{#2}\endofpretty\beginofpretty[\!!prettyeight]%
+     \else
+       \getpretties{#1}{#2}%
+     \fi\fi
+   \else\ifinCdouble
+     \beginofpretty[\!!prettyfive]\getpretties{#1}{#2}\endofpretty\beginofpretty[\!!prettynine]%
+   \else
+     \beginofpretty[\!!prettyfive]\getpretties{#1}{#2}\endofpretty
+   \fi\fi\fi}
+
+\gdef\doCtypefiveB#1%
+  {\endCtypesix
+   \ifinCcomment
+     \ifcat#1\relax
+       \continueCsinglelinecommenttrue
+       \getpretty{#1}%
+     \else
+       \getpretty{#1}%
+     \fi
+   \else\ifinCsingle
+     \getpretty{#1}%
+   \else\ifinCdouble
+     \beginofpretty[\!!prettyfive]\getpretty{#1}\endofpretty\beginofpretty[\!!prettynine]%
+   \else
+     \beginofpretty[\!!prettyfive]\getpretty{#1}\endofpretty
+   \fi\fi\fi}
+
+\gdef\Ctypefive
+  {\expandafter\handlenextnextpretty\expandafter\doCtypefiveA\expandafter\doCtypefiveB}
+
+\gdef\endCtypesix
+  {\ifx\Csequence\empty\else
+     \ifinCcomment
+       \Csequence
+     \else\ifinCsingle
+       \Csequence
+     \else\ifinCdouble
+       \Csequence
+     \else\ifx\Cprefix\empty
+       \doendCtypesix\!!prettytwo
+     \else
+       \doendCtypesixtype\!!prettytwo
+     \fi\fi\fi\fi
+     \global\let\Csequence\empty
+     \global\let\Cprefix\empty
+   \fi}
+
+\gdef\doendCtypesix#1%
+  {\doifprettyidentifierelse{\Csequence}{\Ckeywords}
+     {\beginofpretty[#1]%
+         {\prettyidentifierfont\Csequence}%
+       \endofpretty}
+     {\doifprettyidentifierelse{\Csequence}{\Ctypes}
+        {\beginofpretty[\!!prettytwoone]%
+           {\prettyvariablefont\Csequence}%
+         \endofpretty}
+        {\Csequence}}}
+
+\gdef\doendCtypesixtype#1%
+  {\doifprettyidentifierelse{\Cprefix\Csequence}{\Ctypes}
+     {\beginofpretty[#1]%
+        {\prettyvariablefont\Csequence}%
+      \endofpretty}
+     {\Csequence}}
+
+\gdef\Ctypesixone#1%
+  {\ifinCcomment
+     \def\next{\getpretty{#1}}%
+   \else\ifinCsingle
+     \def\next{\getpretty{#1}}%
+   \else\ifinCdouble
+     \def\next{\getpretty{#1}}%
+   \else\ifx\Csequence\empty
+     \def\next{\beginofpretty[\!!prettyeight]\getpretty{#1}\endofpretty}%
+   \else
+     \def\next{\Ctypesixtwo{#1}}%
+   \fi\fi\fi\fi
+   \expandafter\next}
+
+\gdef\Ctypesixtwo#1%
+  {\ifinCcomment
+     \getpretty{#1}%
+   \else\ifinCsingle
+     \getpretty{#1}%
+   \else\ifinCdouble
+     \ifx\Cprefix\empty
+       \getpretty{#1}%
+     \else
+       \xdef\Csequence{\Csequence\getpretty{#1}}%
+     \fi
+   \else
+     \xdef\Csequence{\Csequence\getpretty{#1}}%
+   \fi\fi\fi}
+
+\gdef\Ctypeseven#1%
+  {\endCtypesix
+   \getpretty{#1}}
+
+\gdef\Ctypeeight#1% single quote
+  {\endCtypesix
+   \ifinCcomment
+     \getpretty{#1}%
+   \else\ifinCdouble
+     \getpretty{#1}%
+   \else\ifinCsingle
+     \global\inCsinglefalse
+     \getpretty{#1}%
+     \endofpretty
+   \else
+     \global\inCsingletrue
+     \beginofpretty[\!!prettyeight]\getpretty{#1}
+   \fi\fi\fi}
+
+\gdef\Ctypenine#1% double quote
+  {\endCtypesix
+   \ifinCcomment
+     \getpretty{#1}%
+   \else\ifinCsingle
+     \getpretty{#1}%
+   \else\ifinCdouble
+     \global\inCdoublefalse
+     \getpretty{#1}%
+     \endofpretty
+   \else
+     \global\inCdoubletrue
+     \beginofpretty[\!!prettynine]\getpretty{#1}
+   \fi\fi\fi}
+
+\gdef\doreportprettyCtype#1#2#3#4%
+  {#1%
+     [C \string#2 typing conflict, use \string#3 instead]
+     \writestatus
+       {C typing}
+       {use \string#3 instead of \string#2 to enable propper visualization}%
+     \global#4%
+     \expandafter\doemptyverbatimline
+   \fi}
+
+\gdef\reportprettyCtype
+  {\doreportprettyCtype\ifinCsingle'\'\inCsinglefalse
+   \doreportprettyCtype\ifinCdouble"\"\inCdoublefalse}
+
+\gdef\Csetdiagnostics
+  {\let\normaldoemptyverbatimline\doemptyverbatimline
+   \def\doemptyverbatimline
+     {\normaldoemptyverbatimline
+      \reportprettyCtype}}
+
+\useprettyidentifiers \Ckeywords \Csetspecials
+  break case continue default do else for goto if return sizeof switch while
+
+\useprettyidentifiers \Ctypes \Csetspecials
+  auto char const double enum extern float int long register restrict short
+  signed static struct typedef union unsigned void volatile bool
+
+\installprettytype [C] [C]
+
+\definetyping[C][\c!option=C]
+
+\definecolor [colorprettyone]       [black]
+\definecolor [colorprettytwo]       [r=.46, g=.38, b=.13]
+\definecolor [colorprettytwoone]    [r=.38, g=.18, b=.5]
+\definecolor [colorprettythree]     [black]
+\definecolor [colorprettyfour]      [black]
+\definecolor [colorprettyfourthree] [r=.15, g=.45, r=.15]
+\definecolor [colorprettyfive]      [r=.94, g=.15, b=.15]
+\definecolor [colorprettyeight]     [r=.58, g=.09, b=.09]
+\definecolor [colorprettynine]      [r=.58, g=.09, b=.09]
+
+\definecolor [grayprettyone]        [s=.30]
+\definecolor [grayprettytwo]        [s=.45]
+\definecolor [grayprettythree]      [s=.60]
+\definecolor [grayprettyfour]       [s=.75]
+\definecolor [grayprettyfourthree]  [s=.70]
+
+\definepalet
+  [colorpretty]
+  [       prettyone=colorprettyone,
+          prettytwo=colorprettytwo,
+       prettytwoone=colorprettytwoone,
+        prettythree=colorprettythree,
+         prettyfour=colorprettyfour,
+    prettyfourthree=colorprettyfourthree,
+         prettyfive=colorprettyfive,
+        prettyeight=colorprettyeight,
+         prettynine=colorprettynine]
+
+\definepalet
+  [graypretty]
+  [      prettyone=grayprettyone,
+         prettytwo=grayprettytwo,
+       prettythree=grayprettythree,
+        prettyfour=grayprettyfour,
+   prettyfourthree=grayprettyfourthree]
+
+\definepalet [Ccolorpretty] [colorpretty]
+\definepalet [Cgraypretty]  [graypretty]
+
+\setuptyping
+  [C]
+  [\c!icommand=\tttf]
+
+\protect  \endinput

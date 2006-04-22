@@ -10,13 +10,16 @@
 # info      : j.hagen@xs4all.nl
 # www       : www.pragma-ade.com
 
+# todo : use kpse lib
+
 # This script will harbor some handy manipulations on tex
 # related files.
 
-banner = ['XMLTools', 'version 1.1.1', '2002/2005', 'PRAGMA ADE/POD']
+banner = ['XMLTools', 'version 1.2.0', '2002/2006', 'PRAGMA ADE/POD']
 
 unless defined? ownpath
     ownpath = $0.sub(/[\\\/][a-z0-9\-]*?\.rb/i,'')
+    # ownpath = File.dirname($0)
     $: << ownpath
 end
 
@@ -235,77 +238,150 @@ class Commands
 
     def analyze
 
-        file   = @commandline.argument('first')
-        result = @commandline.option('output')
+        file    = @commandline.argument('first')
+        result  = @commandline.option('output')
+        utf     = @commandline.option('utf')
+        process = @commandline.option('process')
 
         if FileTest.file?(file) then
             if data = IO.read(file) then
-                report("xml file #{file} loaded")
-                elements   = Hash.new
-                attributes = Hash.new
-                entities   = Hash.new
-                data.scan(/<([^>\s\/\!\?]+)([^>]*?)>/o) do
-                    element, attributelist = $1, $2
-                    if elements.key?(element) then
-                        elements[element] += 1
-                    else
-                        elements[element] = 1
-                    end
-                    attributelist.scan(/\s*([^\=]+)\=([\"\'])(.*?)(\2)/) do
-                        key, value = $1, $3
-                        attributes[element] = Hash.new unless attributes.key?(element)
-                        attributes[element][key] = Hash.new unless attributes[element].key?(key)
-                        if attributes[element][key].key?(value) then
-                            attributes[element][key][value] += 1
+                if data =~ /<?xml.*?version\=/ then
+                    report("xml file #{file} loaded")
+                    elements   = Hash.new
+                    attributes = Hash.new
+                    entities   = Hash.new
+                    chars      = Hash.new
+                    unicodes   = Hash.new
+                    names      = Hash.new
+                    data.scan(/<([^>\s\/\!\?]+)([^>]*?)>/o) do
+                        element, attributelist = $1, $2
+                        if elements.key?(element) then
+                            elements[element] += 1
                         else
-                            attributes[element][key][value] = 1
+                            elements[element] = 1
                         end
-                    end
-                end
-                data.scan(/\&([^\;]+)\;/o) do
-                    entity = $1
-                    if entities.key?(entity) then
-                        entities[entity] += 1
-                    else
-                        entities[entity] = 1
-                    end
-                end
-                result = file.gsub(/\..*?$/, '') + '.xlg' if result.empty?
-                if f = File.open(result,'w') then
-                    report("saving report in #{result}")
-                    f.puts "<?xml version='1.0'?>\n"
-                    f.puts "<document>\n"
-                    if entities.length>0 then
-                        f.puts "  <entities>\n"
-                        entities.keys.asort.each do |entity|
-                            f.puts "    <entity name=#{entity.xstring} n=#{entities[entity].to_s.xstring}/>\n"
-                        end
-                        f.puts "  </entities>\n"
-                    end
-                    if elements.length>0 then
-                        f.puts "  <elements>\n"
-                        elements.keys.sort.each do |element|
-                            if attributes.key?(element) then
-                                f.puts "    <element name=#{element.xstring} n=#{elements[element].to_s.xstring}>\n"
-                                if attributes.key?(element) then
-                                    attributes[element].keys.asort.each do |attribute|
-                                        f.puts "      <attribute name=#{attribute.xstring}>\n"
-                                        attributes[element][attribute].keys.asort.each do |value|
-                                            f.puts "        <instance value=#{value.xstring} n=#{attributes[element][attribute][value].to_s.xstring}/>\n"
-                                        end
-                                        f.puts "      </attribute>\n"
-                                    end
-                                end
-                                f.puts "    </element>\n"
+                        attributelist.scan(/\s*([^\=]+)\=([\"\'])(.*?)(\2)/) do
+                            key, value = $1, $3
+                            attributes[element] = Hash.new unless attributes.key?(element)
+                            attributes[element][key] = Hash.new unless attributes[element].key?(key)
+                            if attributes[element][key].key?(value) then
+                                attributes[element][key][value] += 1
                             else
-                                f.puts "    <element name=#{element.xstring} n=#{elements[element].to_s.xstring}/>\n"
+                                attributes[element][key][value] = 1
                             end
                         end
-                        f.puts "  </elements>\n"
                     end
-                    f.puts "</document>\n"
+                    data.scan(/\&([^\;]+)\;/o) do
+                        entity = $1
+                        if entities.key?(entity) then
+                            entities[entity] += 1
+                        else
+                            entities[entity] = 1
+                        end
+                    end
+                    if utf then
+                        data.scan(/(\w)/u) do
+                            chars[$1] = (chars[$1] || 0) + 1
+                        end
+                        if chars.size > 0 then
+                            begin
+                                # todo : use kpse lib
+                                filename, ownpath, foundpath = 'contextnames.txt', File.dirname($0), ''
+                                begin
+                                    foundpath = File.dirname(`kpsewhich -progname=context -format=\"other text files\" #{filename}`.chomp)
+                                rescue
+                                    foundpath = '.'
+                                else
+                                    foundpath = '.' if foundpath.empty?
+                                end
+                                [foundpath,ownpath,File.join(ownpath,'../../../context/data')].each do |path|
+                                    fullname = File.join(path,filename)
+                                    if FileTest.file?(fullname) then
+                                        report("loading '#{fullname}'")
+                                        # rough scan, we assume no valid lines after comments
+                                        IO.read(fullname).scan(/^([0-9A-F][0-9A-F][0-9A-F][0-9A-F])\s*\;\s*(.*?)\s*\;\s*(.*?)\s*\;\s*(.*?)\s*$/) do
+                                            names[$1.hex.to_i.to_s] = [$2,$3,$4]
+                                        end
+                                        break
+                                    end
+                                end
+                            rescue
+                            end
+                        end
+                    end
+                    result = file.gsub(/\..*?$/, '') + '.xlg' if result.empty?
+                    if f = File.open(result,'w') then
+                        report("saving report in #{result}")
+                        f.puts "<?xml version='1.0'?>\n"
+                        f.puts "<document>\n"
+                        if entities.length>0 then
+                            total = 0
+                            entities.each do |k,v|
+                                total += v
+                            end
+                            f.puts "  <entities n=#{total.to_s.xstring}>\n"
+                            entities.keys.asort.each do |entity|
+                                f.puts "    <entity name=#{entity.xstring} n=#{entities[entity].to_s.xstring}/>\n"
+                            end
+                            f.puts "  </entities>\n"
+                        end
+                        if utf && (chars.size > 0) then
+                            total = 0
+                            chars.each do |k,v|
+                                total += v
+                            end
+                            f.puts "  <characters n=#{total.to_s.xstring}>\n"
+                            chars.each do |k,v|
+                                if k.length > 1 then
+                                    begin
+                                        u = k.unpack('U')
+                                        unicodes[u] = (unicodes[u] || 0) + v
+                                    rescue
+                                        report("invalid utf codes")
+                                    end
+                                end
+                            end
+                            unicodes.keys.sort.each do |u|
+                                ustr = u.to_s
+                                if names[ustr] then
+                                    f.puts "    <character number=#{ustr.xstring} pname=#{names[ustr][0].xstring} cname=#{names[ustr][1].xstring} uname=#{names[ustr][2].xstring} n=#{unicodes[u].to_s.xstring}/>\n"
+                                else
+                                    f.puts "    <character number=#{ustr.xstring} n=#{unicodes[u].to_s.xstring}/>\n"
+                                end
+                            end
+                            f.puts "  </characters>\n"
+                        end
+                        if elements.length>0 then
+                            f.puts "  <elements>\n"
+                            elements.keys.sort.each do |element|
+                                if attributes.key?(element) then
+                                    f.puts "    <element name=#{element.xstring} n=#{elements[element].to_s.xstring}>\n"
+                                    if attributes.key?(element) then
+                                        attributes[element].keys.asort.each do |attribute|
+                                            f.puts "      <attribute name=#{attribute.xstring}>\n"
+                                            attributes[element][attribute].keys.asort.each do |value|
+                                                f.puts "        <instance value=#{value.xstring} n=#{attributes[element][attribute][value].to_s.xstring}/>\n"
+                                            end
+                                            f.puts "      </attribute>\n"
+                                        end
+                                    end
+                                    f.puts "    </element>\n"
+                                else
+                                    f.puts "    <element name=#{element.xstring} n=#{elements[element].to_s.xstring}/>\n"
+                                end
+                            end
+                            f.puts "  </elements>\n"
+                        end
+                        f.puts "</document>\n"
+                        f.close
+                        if process then
+                            system("texmfstart texexec --purgeall --pdf --use=xml-analyze #{result}")
+                        end
+                    else
+                        report("unable to open file '#{result}'")
+                    end
                 else
-                    report("unable to open file '#{result}'")
+                    report("invalid xml file '#{file}'")
                 end
             else
                 report("unable to load file '#{file}'")
@@ -322,7 +398,7 @@ commandline = CommandLine.new
 
 commandline.registeraction('dir',     'generate directory listing')
 commandline.registeraction('mmlpages','generate graphic from mathml')
-commandline.registeraction('analyze', 'report entities and elements')
+commandline.registeraction('analyze', 'report entities and elements [--utf --process]')
 
 # commandline.registeraction('dir',     'filename --pattern= --output= [--recurse --stripname --longname --url --root]')
 # commandline.registeraction('mmlpages','filename [--eps --jpg --png --style= --mode=]')
@@ -344,6 +420,8 @@ commandline.registervalue('root')
 commandline.registerflag('eps')
 commandline.registerflag('png')
 commandline.registerflag('jpg')
+commandline.registerflag('utf')
+commandline.registerflag('process')
 commandline.registervalue('style')
 commandline.registervalue('modes')
 

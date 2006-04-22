@@ -225,6 +225,43 @@
    \v!innermargin,\v!outermargin,\v!inneredge,\v!outeredge,%
    \v!text,\v!opposite}% \v!page
 
+% \def\dodocomplexplacefloat[#1][#2][#3]#4%
+%   {\flushnotes
+%    \flushsidefloats % here !
+%    \ifsomefloatwaiting
+%      % this was \checkwaitingfloats spread all over
+%      \doifinsetelse\v!always{#2}
+%        {\showmessage\m!floatblocks5\empty}
+%        {\expanded{\doifcommonelse{#2}{\flushfloatslist}}\doflushfloats\donothing}%
+%      % but which should be done before using box \floatbox
+%    \fi
+%    \ifmargeblokken % waarschijnlijk gebroken ! ! ! !
+%      \doifinset\v!margin{#2}
+%        {\endgraf
+%         \bgroup\everypar{\egroup\the\everypar}%
+%         \hsize\@@mbwidth}%
+%    \fi
+%    \global\insidefloattrue
+%    \begingroup % **
+%    \the\everyinsidefloat
+%    \let\@@extrafloat\empty
+%    \presetmorefloatvariables{#2}%
+%    \dowithnextboxcontent % better a \the\everyfloattoks
+%      {\setlocalfloathsize
+%       \getvalue{\??fl#1\c!inner}%
+%       \fuzzysnappingfalse
+%       \postponenotes} % new
+%      {\xdocompletefloat{#1}{#3}{#1}{#2}{#1}{#4}% ** not yet done
+%        % we need to carry over the par because of side floats
+%       \doifnotinset\v!text{#2}{\carryoverpar\endgroup}%
+%       \global\sidefloatdownshift \zeropoint
+%       \global\sidefloatextrashift\zeropoint
+%       \ifparfloat
+%         \doifinset\v!reset{#2}\forgetsidefloats
+%         \doinhibitblank
+%       \fi}% better move this to side floats
+%      \vbox}
+
 \def\dodocomplexplacefloat[#1][#2][#3]#4%
   {\flushnotes
    \flushsidefloats % here !
@@ -251,7 +288,12 @@
       \getvalue{\??fl#1\c!inner}%
       \fuzzysnappingfalse
       \postponenotes} % new
-     {\xdocompletefloat{#1}{#3}{#1}{#2}{#1}{#4}% ** not yet done
+     {%
+\doifvaluesomething{\??fl#1\c!criterium}
+  {\ifdim\wd\nextbox>\getvalue{\??fl#1\c!criterium}\relax
+     \edef\forcedfloatmethod{\executeifdefined{\??fl#1\c!fallback}\v!here}%
+  \fi}%
+       \xdocompletefloat{#1}{#3}{#1}{#2}{#1}{#4}% ** not yet done
        % we need to carry over the par because of side floats
       \doifnotinset\v!text{#2}{\carryoverpar\endgroup}%
       \global\sidefloatdownshift \zeropoint
@@ -554,7 +596,6 @@
    \fi\fi}
 
 % todo: \floatparameter + \currentfloat - saves many hash entries
-%
 
 \def\dododefinefloat[#1][#2]%
   {\presetlocalframed[\??fl#1]%
@@ -623,6 +664,7 @@
       \c!sectionnumber=\getvalue{\??kj#1\c!sectionnumber},
       \c!conversion=\getvalue{\??kj#1\c!conversion}]%
    \presetlabeltext[#1=\Word{#1}~]%
+   \checkfloatracer{\v!float#1}%
    \dodefinefloatcommands[#1][#2]}
 
 \def\dodefinefloatcommands[#1][#2]%
@@ -707,6 +749,7 @@
 
 \def\dosavefloatdata % \expanded
   {\bgroup
+   \doglobal\increment\noffloatdata
    \edef\dosavefloatdata
      {\writeutilitycommand
         {\twopassentry
@@ -728,48 +771,103 @@
 % Er wordt bij \v!altijd als dat nodig is hernummerd.
 % Daarbij wordt gebruik gemaakt van de opgeslagen nummers en
 % volgorde.
-
-\definetwopasslist\s!float
-
-% \def\dofloatreference
-%   {\doglobal\increment\numberedfloat
-%    \edef\dodofloatreference
-%      {\writeutilitycommand
-%         {\twopassentry
-%            {\s!float}%
-%            {\numberedfloat}%
-%            {\composedsectionnumber}}}%
-%    \dodofloatreference}
-
+%
+% replaced code:
+%
+% \definetwopasslist\s!float
+%
+% \def\dofloatreference#1%
+%   {\doifnot\@@bknumbering\v!nocheck
+%      {\doglobal\increment\numberedfloat
+%       \doifelse\@@bknumbering\v!text % alternative to yes|page
+%         {\let\next\immediatewriteutilitycommand}
+%         {\let\next\writeutilitycommand}%
+%       \expanded{\next
+%         {\noexpand\twopassentry
+%         {\s!float}%
+%         {\numberedfloat}%
+%         {\composedsectionnumber}}}}}
+%
 % \def\redofloatorder#1%
-%   {\doglobal\increment\nofplacedfloats\relax
-%    \gettwopassdata\s!float
-%    \iftwopassdatafound
-%      \doifnot\composedsectionnumber\twopassdata
-%        {\edef\oldcomposedsectionnumber{\composedsectionnumber}%
-%         \xdef\composedsectionnumber{\twopassdata}%
-%         \showmessage\m!floatblocks1{\nofplacedfloats,#1 \oldcomposedsectionnumber,\composedsectionnumber}}%
-%    \fi}
+%   {\doifnot\@@bknumbering\v!nocheck
+%      {\doglobal\increment\nofplacedfloats\relax
+%       \gettwopassdata\s!float
+%       \iftwopassdatafound
+%         \doifnot\composedsectionnumber\twopassdata
+%           {\edef\oldcomposedsectionnumber{\composedsectionnumber}%
+%            \xdef\composedsectionnumber{\twopassdata}%
+%            \showmessage\m!floatblocks1{\nofplacedfloats,#1 \oldcomposedsectionnumber,\composedsectionnumber}}%
+%       \fi}}
+%
+% \def\preparefloatnumber#1%
+%   {\incrementnumber[#1]%
+%    \makesectionnumber[#1]}
+%
+% \def\tracefloatnumber#1%
+%   {\dofloatreference{#1}%
+%    \redofloatorder{#1}}
+%
+% \def\checkfloatracer#1%
+%   {}
 
-\def\dofloatreference
-  {\doifnot\@@bknumbering\v!nocheck
-     {\doglobal\increment\numberedfloat
-      \expanded{\writeutilitycommand
-        {\noexpand\twopassentry
-        {\s!float}%
-        {\numberedfloat}%
-        {\composedsectionnumber}}}}}
+\def\checkfloatracer#1%
+  {\newnodelocation{#1}}
 
-\def\redofloatorder#1%
+\def\tracefloatnumber#1%
   {\doifnot\@@bknumbering\v!nocheck
-     {\doglobal\increment\nofplacedfloats\relax
-      \gettwopassdata\s!float
-      \iftwopassdatafound
-        \doifnot\composedsectionnumber\twopassdata
-          {\edef\oldcomposedsectionnumber{\composedsectionnumber}%
-           \xdef\composedsectionnumber{\twopassdata}%
-           \showmessage\m!floatblocks1{\nofplacedfloats,#1 \oldcomposedsectionnumber,\composedsectionnumber}}%
+     {\checkfloatracer{\v!float#1}% will go
+      \tagnodelocation{\v!float#1}}}
+
+\def\preparefloatnumber#1%
+  {\doifelse\@@bknumbering\v!nocheck
+     {\incrementnumber[#1]%
+      \makesectionnumber[#1]}
+     {\ifinsidecolumns
+        \chardef\nodelocationmode\zerocount
+        % to be perfected:
+        % \chardef\nodelocationmode\plustwo
+      \fi
+      \ifcase\nodelocationmode
+        \incrementnumber[#1]%
+        \makesectionnumber[#1]%
+      \else
+        % force check, so that we get a proper way-sync and
+        % can use the accumulated number
+        % \checknumber[#1]% \incrementnumber does this
+        \incrementnumber[#1]%
+        \savenumber[#1]%
+        % the real work is done here
+        \checkfloatracer{\v!float#1}% will go
+        \nextnodelocation{\v!float#1}% better \nextfloatnumber
+        \analyzenodelocation{\v!float#1}%
+        \scratchcounter\getnodelocationo{\v!float#1}%
+        \advance\scratchcounter\minusone
+        % here we correct for 'per whatever handling'
+        \advance\scratchcounter-\accumulatednumber[#1]%
+        \setnumber[#1]\scratchcounter
+        \incrementnumber[#1]%
+        \makesectionnumber[#1]%
+        \restorenumber[#1]%
+        % now we're back to normal numbering
       \fi}}
+
+%D test case:
+%D
+%D \starttyping
+%D \setupfloat[figure][criterium=\marginwidth,fallback=bottom]
+%D \dorecurse{3}{
+%D     \chapter{test}
+%D     \placefigure[bottom]{1}{\framed{bottom}}
+%D     test
+%D     \placetable[bottom]{1}{\framed{table}}
+%D     test
+%D     \placetable{2}{\framed{table}}
+%D     test
+%D     \placefigure[left]{2}{\framed{left but way too wide}}
+%D     \input tufte
+%D     \placefigure[left]{3}{\framed{left but ok}}
+%D     \input tufte }
+%D \stoptyping
 
 % In \dofloatinfomessage wordt {{ }} gebruikt omdat anders
 % binnen \startpostponing...\stoppostponing geen goede
@@ -1218,27 +1316,50 @@
 \def\setfloatcaption % \dosetfloatcaption already in use
   {\dodoubleempty\dodosetfloatcaption} % beware, name clash
 
+% \def\dodosetfloatcaption[#1][#2]#3% to do namespace for number/ascii
+%   {\ifnofloatnumber               % also handle trialtypesetting
+%      \letgvalue{@fl@r@#1}\relax
+%      \letgvalue{@fl@t@#1}\relax
+%    \else
+%      \incrementnumber[#1]%
+%      \makesectionnumber[#1]%
+%    % \globallet\flcomposedsectionnumber\composedsectionnumber % beware, not unique should be done on a per class base
+%      \letgvalue{@fl@n@#1}\composedsectionnumber
+%      % indirect macro can be more efficient
+%      \setgvalue{@fl@r@#1}%
+%        {\dofloatreference
+%         \redofloatorder{#1}%
+%       % \dowritetolist{#1}{\flcomposedsectionnumber}{#3}{#1}%
+%         \dowritetolist{#1}{\getvalue{@fl@n@#1}}{#3}{#1}%
+%         \doglobal\convertargument#3\to\flasciititle % \asciititle is global
+%       % \doifsomething{#2}{\rawreference\s!flt{#2}{{\flcomposedsectionnumber}{\flasciititle}}}%
+%         \doifsomething{#2}{\rawreference\s!flt{#2}{{\getvalue{@fl@n@#1}}{\flasciititle}}}%
+%         \letgvalue{@fl@r@#1}\relax}% nils
+%      \setgvalue{@fl@t@#1}%
+%      % {\preparethenumber{\??kj#1}\flcomposedsectionnumber\preparednumber
+%        {\preparethenumber{\??kj#1}{\getvalue{@fl@n@#1}}\preparednumber
+%         \doattributes{\??kj#1}\c!style\c!color
+%           {\doattributes{\??kj#1}\c!headstyle\c!headcolor
+%              {\labeltexts{#1}{\preparednumber}}%
+%            \doattributes{\??kj#1}\c!textstyle\c!textcolor
+%              {\dotfskip{\getvalue{\??kj#1\c!distance}}#3}}}%
+%    \fi}
+
 \def\dodosetfloatcaption[#1][#2]#3% to do namespace for number/ascii
   {\ifnofloatnumber               % also handle trialtypesetting
      \letgvalue{@fl@r@#1}\relax
      \letgvalue{@fl@t@#1}\relax
    \else
-     \incrementnumber[#1]%
-     \makesectionnumber[#1]%
-   % \globallet\flcomposedsectionnumber\composedsectionnumber % beware, not unique should be done on a per class base
+     \preparefloatnumber{#1}%
      \letgvalue{@fl@n@#1}\composedsectionnumber
      % indirect macro can be more efficient
      \setgvalue{@fl@r@#1}%
-       {\dofloatreference
-        \redofloatorder{#1}%
-      % \dowritetolist{#1}{\flcomposedsectionnumber}{#3}{#1}%
+       {\tracefloatnumber{#1}%
         \dowritetolist{#1}{\getvalue{@fl@n@#1}}{#3}{#1}%
         \doglobal\convertargument#3\to\flasciititle % \asciititle is global
-      % \doifsomething{#2}{\rawreference\s!flt{#2}{{\flcomposedsectionnumber}{\flasciititle}}}%
         \doifsomething{#2}{\rawreference\s!flt{#2}{{\getvalue{@fl@n@#1}}{\flasciititle}}}%
         \letgvalue{@fl@r@#1}\relax}% nils
      \setgvalue{@fl@t@#1}%
-     % {\preparethenumber{\??kj#1}\flcomposedsectionnumber\preparednumber
        {\preparethenumber{\??kj#1}{\getvalue{@fl@n@#1}}\preparednumber
         \doattributes{\??kj#1}\c!style\c!color
           {\doattributes{\??kj#1}\c!headstyle\c!headcolor
@@ -1448,7 +1569,8 @@
      % float is wider than \hsize
      \dosetraggedvbox\@@kjkjalign
      \setbox\scratchbox\raggedbox % trial run
-       {\hsize\captionhsize
+       {\trialtypesettingtrue
+        \hsize\captionhsize
         \notesenabledfalse
         \putcompletecaption{#4}{#2}{#3}{0}}%
      \ifdim\ht\scratchbox>\lineheight % more lines
@@ -1472,7 +1594,8 @@
        \edef\captionhsize{\the\scratchdimen}%
      \fi
      \setbox\scratchbox\vbox     % test with overshoot
-       {\scratchdimen\captionhsize
+       {\trialtypesettingtrue
+        \scratchdimen\captionhsize
         \advance\scratchdimen \captionovershoot
         \advance\scratchdimen 3em % an average word length
         \ifdim\scratchdimen<\hsize \hsize\scratchdimen \fi
@@ -1735,17 +1858,21 @@
 
 \newcounter\noxfloatlocations
 
+% \long\def\dofloat#1#2#3#4%
+%   {\dosetfloatbox{#1}{#2}{#3}{#4}%
+%    \doifelsevaluenothing{\??fl#4\c!criterium}
+%      {\dogetfloatbox{#1}\empty}
+%      {\ifdim\wd\floatbox>\getvalue{\??fl#4\c!criterium}\relax
+%         \postcenterfloatbox{\wd\floatbox}% else we get left aligned
+%         %dogetfloatbox{#1}\v!here        % see details/pascal
+%         \dogetfloatbox{#1}{\executeifdefined{\??fl#4\c!fallback}\v!here}%
+%       \else
+%         \dogetfloatbox{#1}\empty
+%       \fi}}
+
 \long\def\dofloat#1#2#3#4%
   {\dosetfloatbox{#1}{#2}{#3}{#4}%
-   \doifelsevaluenothing{\??fl#4\c!criterium}
-     {\dogetfloatbox{#1}\empty}
-     {\ifdim\wd\floatbox>\getvalue{\??fl#4\c!criterium}\relax
-        \postcenterfloatbox{\wd\floatbox}% else we get left aligned
-        %dogetfloatbox{#1}\v!here        % see details/pascal
-        \dogetfloatbox{#1}{\executeifdefined{\??fl#4\c!fallback}\v!here}%
-      \else
-        \dogetfloatbox{#1}\empty
-      \fi}}
+   \dogetfloatbox{#1}\empty}
 
 \let\naturalfloatheight\!!zeropoint
 \let\naturalfloatwidth \!!zeropoint
@@ -1755,6 +1882,51 @@
   {\xdef\naturalfloatheight{\the\ht#1}%
    \xdef\naturalfloatwidth {\the\wd#1}%
    \xdef\naturalfloatdepth {\the\dp#1}}
+
+% \long\def\docompletefloat#1#2#3#4#5#6#7% #7 = box number
+%   {%\flushsidefloats % moved
+%    \presetfloatvariables{#1}{#4}{#2}{#6}%
+%    \bgroup
+%    \setnaturalfloatdimensions#7%
+%    \global\setbox\floatbox\vbox
+%      {\executeifdefined{\??fl#1\c!command}\firstofoneargument{\box#7}}%
+%    \setnaturalfloatdimensions\floatbox
+%    \dimen0 \ht\floatbox
+%    \advance\dimen0 \dp\floatbox
+%    \ifdim\dimen0=\zeropoint
+%      \showmessage\m!floatblocks{11}\empty
+%      \global\setbox\floatbox\vbox{\doemptyblock{#3}}%
+%    \fi
+%    \ifnofloatcaption
+%      \global\setbox\floatbox\vbox
+%        {\unvbox\floatbox
+%         \vss % gets rid of the depth (unless tabulate)
+%         \rawpagereference\s!flt{#2}}%
+%       \egroup
+%       \dofloat{#4}{}{#6}{#1}%
+%    \else
+%      \doglobal\convertargument#6\to\asciititle % \asciititle is global
+%      \ifnofloatnumber
+%        \global\setbox\floatbox\vbox
+%          {\unvbox\floatbox % no \vss, keep the depth
+%           \rawreference\s!flt{#2}{{}{\asciititle}}}%
+%        \egroup
+%        \dofloat{#4}{}{#6}{#1}%
+%      \else
+%        \incrementnumber[#1]%
+%        \makesectionnumber[#1]%
+%        \global\setbox\floatbox\vbox
+%          {\unvbox\floatbox % no \vss, keep the depth
+%           \dofloatreference
+%           \redofloatorder{#1}%
+%           \rawreference\s!flt{#2}{{\composedsectionnumber}{\asciititle}}%
+%           \dowritetolist{#3}{\composedsectionnumber}{#6}{#3}}%
+%        \egroup
+%        \preparethenumber{\??kj#1}\composedsectionnumber\preparednumber
+%        \dofloat{#4}{\labeltexts{#5}{\preparednumber}}{#6}{#1}%
+%      \fi
+%    \fi
+%    \global\insidefloatfalse}
 
 \long\def\docompletefloat#1#2#3#4#5#6#7% #7 = box number
   {%\flushsidefloats % moved
@@ -1786,12 +1958,10 @@
        \egroup
        \dofloat{#4}{}{#6}{#1}%
      \else
-       \incrementnumber[#1]%
-       \makesectionnumber[#1]%
+       \preparefloatnumber{#1}%
        \global\setbox\floatbox\vbox
          {\unvbox\floatbox % no \vss, keep the depth
-          \dofloatreference
-          \redofloatorder{#1}%
+          \tracefloatnumber{#1}%
           \rawreference\s!flt{#2}{{\composedsectionnumber}{\asciititle}}%
           \dowritetolist{#3}{\composedsectionnumber}{#6}{#3}}%
        \egroup
@@ -2032,12 +2202,15 @@
 
 % ook (continued)
 
+\newif\ifinsidesplitfloat % will become chardef
+
 \def\dosplitfloat[#1]#2% nog dubbele refs
-  {\ifinsidecolumns         % tzt ook nog figuren splitten
+  {\ifinsidecolumns    % tzt ook nog figuren splitten
      % not yet supported
    \else
      \bgroup
      \insidefloattrue
+     \insidesplitfloattrue
      \getparameters[\??si][#1]%
      \resetnumber[\??si]%
      \def\floatcaptionsuffix{\convertednumber[\??si]}%
@@ -2071,6 +2244,8 @@
 
 \def\splitfloat
   {\dosingleempty\dosplitfloat}
+
+% \splitfloat [settings] {\placetable[optional args]{test}} {content}
 
 \def\dooutput{\sidefloatoutput}           % redefinition of \dooutput
 

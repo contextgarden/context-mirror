@@ -24,8 +24,13 @@
 %D The following modes are supported:
 %D
 %D \starttabulate[|lT|l|]
-%D \NC letter  \NC map the preview on letter size  \NC \NR
-%D \NC compact \NC use an alternative presentation \NC \NR
+%D \NC letter             \NC map the preview on letter size  \NC \NR
+%D \NC compact            \NC use an alternative presentation \NC \NR
+%D \NC clipgrid-distance  \NC add a copy with grid overlayed  \NC \NR
+%D \NC clipgrid-steps     \NC add a copy with grid overlayed  \NC \NR
+%D \NC previewpage-A4     \NC show graphic relative to A4     \NC \NR
+%D \NC previewpage-letter \NC show graphic relative to letter \NC \NR
+%D \NC previewpage-S6     \NC show graphic relative to S6     \NC \NR
 %D \stoptabulate
 %D
 %D The resulting file has the following characteristics:
@@ -60,6 +65,10 @@
 \doifnothing  {\jobfullname}    {\end}
 \doiffileelse {\jobfullname} {} {\end}
 
+\definesymbol     [attachment] [{\bf\color[darkred]{\jobname.xml}}]
+\setupattachments [symbol=attachment]
+\useattachment    [datafile] [\jobname.xml]
+
 \def\StartDescription
   {\bgroup}
 
@@ -74,15 +83,41 @@
      {\NC product      \NC \XMLflush{rl:product}      \NC \NR}{}
    \doifXMLdataelse{rl:comment}
      {\NC comment      \NC \XMLflush{rl:comment}      \NC \NR}{}
+   \NC specification \NC \attachment[datafile] \NC \NR
    \stoptabulate
    \blank[2*big]
    \egroup}
 
-\def\StartFigureA
-  {\bgroup
-   \XMLassign{rl:file}{unknown}}
 
-\defineoverlay[page][\overlaybutton{Description}]
+\def\localexternalfigurereplacement#1#2#3% hack, no reuse of dummies (yet), todo: pass objname
+  {\doifelsenothing{\XMLflush{rl:label}}
+     {\edef\FigureName{\XMLflush{rl:label}}}
+     {\edef\FigureName{\XMLflush{rl:file}}}%
+   \doifobjectfoundelse{rl}\FigureName
+     {}
+     {\setobject{rl}\FigureName\vbox{\normalexternalfigurereplacement{#1}{#2}{#3}}}%
+   \getobject{rl}\FigureName}
+
+\startmode[dummy]
+
+  \useMPlibrary[dum]
+
+  \def\StartFigureA
+    {\bgroup
+     \XMLassign{rl:file}{dummy}}
+
+  \let\normalexternalfigurereplacement\externalfigurereplacement
+  \let\externalfigurereplacement      \localexternalfigurereplacement
+
+\stopmode
+
+\startnotmode[dummy]
+
+  \def\StartFigureA
+    {\bgroup
+     \XMLassign{rl:file}{unknown}}
+
+\stopnotmode
 
 \startbuffer[unknown]
   \framed
@@ -98,6 +133,8 @@
 
 \useexternalfigure[unknown][unknown][type=buffer,object=no]
 
+\defineoverlay[page][\overlaybutton{Description}]
+
 % \def\externalfigurereplacement#1#2#3%
 %   {\getbuffer[rl-unknown]}
 
@@ -105,9 +142,9 @@
   {\doglobal\increment\CurrentPage
    \setupbackgrounds[page][background=page]
    \doifelsenothing{\XMLflush{rl:label}}
-     {\expanded{\definereference[Description][about: \XMLflush{rl:file}]}%
+     {\expanded{\definereference[Description][about:\XMLflush{rl:file}]}%
       \expanded{\pagereference[\XMLflush{rl:file}]}}
-     {\expanded{\definereference[Description][about: \XMLflush{rl:label}]}%
+     {\expanded{\definereference[Description][about:\XMLflush{rl:label}]}%
       \expanded{\pagereference[\XMLflush{rl:label}]}}
    \pagefigure[\XMLflush{rl:file}]
    \setupbackgrounds[page][background=]
@@ -153,7 +190,6 @@
   \enablemode[previewpage-A4]
 \stopnotmode
 
-%startbuffer[paper]
 \startsetups[paper]
 \startmode[previewpage-A4]
   \framed
@@ -174,7 +210,6 @@
     {\externalfigure[\XMLflush{rl:file}][reset=yes]}
 \stopmode
 \stopsetups
-%stopbuffer
 
 \setupbuttons
   [offset=10pt,
@@ -196,8 +231,8 @@
      {\hbox to \hsize
         {\forgetall \dontcomplain
          \doifelsenothing{\XMLflush{rl:label}}
-           {\expanded{\pagereference[about: \XMLflush{rl:file}]}}
-           {\expanded{\pagereference[about: \XMLflush{rl:label}]}}%
+           {\expanded{\pagereference[about:\XMLflush{rl:file}]}}
+           {\expanded{\pagereference[about:\XMLflush{rl:label}]}}%
          % moved here, because descriptions may be absent
          \ifnum\CurrentPage=1 \pagereference[begin]\fi
          %
@@ -238,7 +273,7 @@
               [offset=overlay,
                framecolor=darkred,
                rulethickness=.5pt]
-              {\scale[width=40pt]{\setups[paper]}}% {\disableXML\getbuffer[paper]}}%
+              {\scale[width=40pt]{\setups[paper]}}%
             \startmode[compact]%
               \vfill
               \hbox to \hsize{\hss\strut\bf\CurrentPage\hss}%
@@ -432,9 +467,9 @@
    \setupbackgrounds[page][background=page]
    \startpagefigure[\XMLflush{rl:file}][offset=20pt]%
      \doifelsenothing{\XMLflush{rl:label}}
-       {\expanded{\definereference[Description][about: \XMLflush{rl:file}]}%
+       {\expanded{\definereference[Description][about:\XMLflush{rl:file}]}%
         \expanded{\pagereference[grid:\XMLflush{rl:file}]}}
-       {\expanded{\definereference[Description][about: \XMLflush{rl:label}]}%
+       {\expanded{\definereference[Description][about:\XMLflush{rl:label}]}%
         \expanded{\pagereference[grid:\XMLflush{rl:label}]}}
    \stoppagefigure
   %\pagefigure[\XMLflush{rl:file}][offset=20pt]

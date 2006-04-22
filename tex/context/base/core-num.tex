@@ -74,6 +74,7 @@
       \c!start=0,
       #2]%
     \makecounter{\@@thenumber{#1}}%
+    \setxvalue{\@@thenumber{#1}\c!n}{\countervalue{\@@thenumber{#1}}}%
     \setcounter{\@@thenumber{#1}}{\numberparameter{#1}\c!start}}
 
 \def\setnumber[#1]#2%
@@ -81,9 +82,6 @@
 
 \def\resetnumber[#1]%
   {\setcounter{\@@thenumber{#1}}{0\numberparameter{#1}\c!start}}
-
-\def\dodoreset#1%
-  {\getvalue{\s!reset#1}}%
 
 \def\savenumber[#1]%
   {\savecounter{\@@thenumber{#1}}}
@@ -97,13 +95,16 @@
 \def\doreset[#1]%
   {\processcommalist[#1]\dodoreset}
 
+\def\dodoreset#1%
+  {\getvalue{\s!reset#1}}%
+
 \def\reset
   {\dosingleargument\doreset}
 
 % nieuw, maar kan dit (i.v.m. (sub)page?)
 
 % \def\incrementnumber[#1]%
-%   {\checknummer{#1}%
+%   {\checknumber[#1]%
 %    \doifelse\@@nrstatus\v!start
 %      {\pluscounter{\@@thenumber{#1}}}
 %      {\setcounter{\@@thenumber{#1}}{0\csname\@@thenumber{#1}\c!start\endcsname}}}
@@ -112,7 +113,7 @@
   {\doifelse{\numberparameter{#1}\c!way}{\v!by\v!page}
      {\checkpagechange{#1}%
       \ifpagechanged\resetcounter{\@@thenumber{#1}}\fi}
-     {\checknummer{#1}}%
+     {\checknumber[#1]}%
    \doifelse\@@nrstate\v!start % only here
      {\pluscounter{\@@thenumber{#1}}}
      {\setcounter{\@@thenumber{#1}}{0\numberparameter{#1}\c!start}}}
@@ -132,9 +133,12 @@
 \def\rawnumber[#1]%
   {\countervalue{\@@thenumber{#1}}}
 
+\def\accumulatednumber[#1]%
+  {\getvalue{\@@thenumber{#1}\c!n}}
+
 \let\getnumber\convertednumber
 
-\ifx\checknummer\undefined \let\checknummer\gobbleoneargument \fi
+\ifx\checknumber\undefined \def\checknumber[#1]{} \fi
 
 % ook de pag nummers hierheen halen ivm \@@nrwijze
 

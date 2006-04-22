@@ -14,8 +14,11 @@
 % xmltools --analyze yourfile.xml
 % texexec --use=xml-analyze yourfile.*
 
-\doifnothing  {\inputfilename}    {\end}
-\doiffileelse {\inputfilename} {} {\end}
+% \doifnothing  {\inputfilename}    {\end}
+% \doiffileelse {\inputfilename} {} {\end}
+
+\doifnothing  {\jobfullname}    {\end}
+\doiffileelse {\jobfullname} {} {\end}
 
 \useXMLfilter[ent]
 \useXMLfilter[utf]
@@ -30,6 +33,7 @@
   [SomeElement]
   [ownnumber=yes,
    style=\tfb,
+   numberstyle=\tfxx,
    alternative=margin]
 
 \setuplayout
@@ -41,7 +45,7 @@
    header=0pt]
 
 \setupfootertexts
-  [\inputfilename]
+  [\jobfullname] % [\inputfilename]
 
 \usetypescript[modern][texnansi] \setupbodyfont[modern,tt,10pt]
 
@@ -51,8 +55,8 @@
   {}
 
 \defineXMLpickup
-  [entities]
-  {\page
+  [entities][n=0]
+  {\expanded{\SomeElement{\XMLop{n}}{Entities}}
    \starttabulate[|l|p|]}
   {\stoptabulate}
 
@@ -65,9 +69,34 @@
      \noexpand \NR
    \stopexpanded}
 
+\defineXMLpickup
+  [characters][n=0]
+  {\expanded{\SomeElement{\XMLop{n}}{Characters}}
+   \bgroup
+   \let\nonbreakablespace\empty % messes up the table
+   \starttabulate[|l|r|r|l|l|l|l|]}
+  {\stoptabulate
+   \egroup}
+
+% todo: narrowtt
+
+\defineXMLcommand
+  [character][number=,utf=,n=0,uname=,pname=,cname=]
+  {\startexpanded
+     \noexpand \NC \noexpand \unicodehexnumber{\XMLop{number}}
+     \noexpand \NC \XMLop{number}
+     \noexpand \NC \XMLop{n}
+     \noexpand \NC \noexpand \unicodechar     {\XMLop{number}}
+     \noexpand \NC \tx \lowercase\expandafter{\XMLop{uname}}
+     \noexpand \NC \tx \noexpand \unicodepair     {\XMLop{number}}
+     \noexpand \NC \tx \XMLop{cname}
+     \noexpand \NC
+     \noexpand \NR
+   \stopexpanded}
+
 \defineXMLenvironment
   [elements]
-  {\page}
+  {}
   {}
 
 \newtoks \TabulateToks
@@ -98,6 +127,7 @@
 
 \starttext
 
-\processXMLfilegrouped{\inputfilename}
+% \processXMLfilegrouped{\inputfilename}
+\processXMLfilegrouped{\jobfullname}
 
 \stoptext

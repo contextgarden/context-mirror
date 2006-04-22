@@ -136,11 +136,11 @@
     \removeunwantedspaces
     \begingroup
     \startsavingXMLelements
-\ignorespaces
+    \ignorespaces
 \stopsetups
 
 \startsetups cml:molecule:stop
-\removeunwantedspaces
+    \removeunwantedspaces
     \stopsavingXMLelements
     \resetCMLcaption
     \XMLfirstnamed{caption}
@@ -324,7 +324,7 @@
 
 \ifx\startchemical\undefined
   \def\startchemical   {\hbox{module chemic is not loaded}}
-  \let\stopchemical    {}
+  \let\stopchemical    \relax
   \def\chemical[#1][#2]{}
 \fi
 

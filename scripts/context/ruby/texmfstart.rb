@@ -321,10 +321,10 @@ def expanded(arg) # no "other text files", too restricted
         method, original, resolved = $1, $2, ''
         if $program && ! $program.empty? then
             # pstrings = ["-progname=#{$program}"]
-pstrings = [$program]
+            pstrings = [$program]
         else
             # pstrings = ['','-progname=context']
-pstrings = ['','context']
+            pstrings = ['','context']
         end
         # auto suffix with texinputs as fall back
         if ENV["_CTX_K_V_#{original}_"] then
@@ -342,7 +342,7 @@ pstrings = ['','context']
                         # resolved = `#{command}`.chomp
                         $kpse.progname = pstr
                         $kpse.format = ''
-                        resolved = $kpse.find_file(original)
+                        resolved = $kpse.find_file(original).gsub(/\\/,'/')
                     rescue
                         resolved = ''
                     end
@@ -356,7 +356,7 @@ pstrings = ['','context']
                         # resolved = `#{command}`.chomp
                         $kpse.progname = pstr
                         $kpse.format = 'other text files'
-                        resolved = $kpse.find_file(original)
+                        resolved = $kpse.find_file(original).gsub(/\\/,'/')
                     rescue
                         resolved = ''
                     end
@@ -599,7 +599,7 @@ def find(filename,program)
                     report("using 'kpsewhich' to locate '#{filename}' in suffix space '#{suffix}' (1)")
                     # fullname = `kpsewhich -progname=#{program} -format=texmfscripts #{filename}.#{suffix}`.chomp
                     $kpse.format = 'texmfscripts'
-                    fullname = $kpse.find_file("#{filename}.#{suffix}")
+                    fullname = $kpse.find_file("#{filename}.#{suffix}").gsub(/\\/,'/')
                 rescue
                     report("kpsewhich cannot locate '#{filename}' in suffix space '#{suffix}' (1)")
                     fullname = nil
@@ -612,7 +612,7 @@ def find(filename,program)
                 report("using 'kpsewhich' to locate '#{filename}' in suffix space '#{suffix}' (2)")
                 # fullname = `kpsewhich -progname=#{program} -format="other text files" #{filename}.#{suffix}`.chomp
                 $kpse.format = 'other text files'
-                fullname = $kpse.find_file("#{filename}.#{suffix}")
+                fullname = $kpse.find_file("#{filename}.#{suffix}").gsub(/\\/,'/')
             rescue
                 report("kpsewhich cannot locate '#{filename}' in suffix space '#{suffix}' (2)")
                 fullname = nil

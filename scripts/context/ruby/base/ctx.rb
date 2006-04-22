@@ -52,17 +52,43 @@ class CtxRunner
         end
 
         if not @ctxname then
-            report('provide ctx file')
+            report('no ctx file specified')
             return
         end
 
-        if not FileTest.file?(@ctxname) and defaultname and FileTest.file?(defaultname) then
-            @ctxname = defaultname
-        end
+        # name can be kpse:res-make.ctx
 
         if not FileTest.file?(@ctxname) then
-            report('provide ctx file')
-            return
+            fullname, done = '', false
+            if @ctxname =~ /^kpse:/ then
+                begin
+                    if fullname = Kpse.found(@ctxname.sub(/^kpse:/,'')) then
+                        @ctxname, done = fullname, true
+                    end
+                rescue
+                    # should not happen
+                end
+            else
+                ['..','../..'].each do |path|
+                    begin
+                        fullname = File.join(path,@ctxname)
+                        if FileTest.file?(fullname) then
+                            @ctxname, done = fullname, true
+                        end
+                    rescue
+                        # probably strange join
+                    end
+                    break if done
+                end
+            end
+            if ! done && defaultname && FileTest.file?(defaultname) then
+                report("using default ctxfile #{defaultname}")
+                @ctxname = defaultname
+            end
+            if not done then
+                report('no ctx file found')
+                return false
+            end
         end
 
         @xmldata = IO.read(@ctxname)
@@ -196,17 +222,27 @@ class CtxRunner
                         name = e.attributes.get_attribute(attribute).to_s
                         name = e.text.to_s if name.empty?
                         name.strip! if name
-                        if name and not name.empty? and FileTest.file?(name) then
-                            if f = File.open(name,'r') and i = REXML::Document.new(f) then
-                                report("including ctx file #{name}")
-                                REXML::XPath.each(i.root,"*") do |ii|
-                                    xmldata.root.insert_after(e,ii)
-                                    more = true
+                        done = false
+                        if name and not name.empty? then
+                            ['.',File.dirname(@ctxname),'..','../..'].each do |path|
+                                begin
+                                    fullname = if path == '.' then name else File.join(path,name) end
+                                    if FileTest.file?(fullname) then
+                                        if f = File.open(fullname,'r') and i = REXML::Document.new(f) then
+                                            report("including ctx file #{name}")
+                                            REXML::XPath.each(i.root,"*") do |ii|
+                                                xmldata.root.insert_after(e,ii)
+                                                more = true
+                                            end
+                                        end
+                                        done = true
+                                    end
+                                rescue
                                 end
                             end
-                        else
-                            report("no valid ctx inclusion file #{name}")
+                            break if done
                         end
+                        report("no valid ctx inclusion file #{name}") unless done
                     rescue Exception
                         # skip this file
                     ensure

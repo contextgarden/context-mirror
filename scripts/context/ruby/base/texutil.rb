@@ -122,6 +122,16 @@ class TeXUtil
             end
         end
 
+        def finalizers
+            @plugins.each do |p|
+                begin
+                    eval("#{p}").finalizer(@logger)
+                rescue Exception
+                    @logger.report("fatal error in plugin finalizer #{p} (#{$!})")
+                end
+            end
+        end
+
     end
 
     class Sorter
@@ -342,6 +352,9 @@ end
                 end
             end
 
+            def MyFiles::finalizer(logger)
+            end
+
         end
 
     end
@@ -368,6 +381,9 @@ end
             end
 
             def MyCommands::processor(logger)
+            end
+
+            def MyCommands::finalizer(logger)
             end
 
         end
@@ -399,6 +415,14 @@ end
             end
 
             def MyExtras::processor(logger)
+                @@programs.each do |p|
+                    # cmd = @@programs[p.to_i]
+                    # logger.report("running #{cmd}")
+                    # system(cmd)
+                end
+            end
+
+            def MyExtras::finalizer(logger)
                 @@programs.each do |p|
                     cmd = @@programs[p.to_i]
                     logger.report("running #{cmd}")
@@ -484,6 +508,9 @@ end
                     end
                     @@synonyms[s] = @@synonyms[s].sort
                 end
+            end
+
+            def MySynonyms::finalizer(logger)
             end
 
         end
@@ -742,6 +769,9 @@ end
                 end
             end
 
+            def MyRegisters::finalizer(logger)
+            end
+
         end
 
     end
@@ -777,6 +807,10 @@ end
 
             def MyPlugins::processor(logger)
                 @@plugins.processors if @@plugins
+            end
+
+            def MyPlugins::finalizer(logger)
+                @@plugins.finalizers if @@plugins
             end
 
         end
@@ -830,6 +864,9 @@ end
                 logger.report("expansions: #{@@expansions.size}") # logger.report(@@expansions.inspect)
                 logger.report("reductions: #{@@reductions.size}") # logger.report(@@reductions.inspect)
                 logger.report("divisions : #{@@divisions.size}")  # logger.report(@@divisions.inspect)
+            end
+
+            def MyKeys::finalizer(logger)
             end
 
         end
@@ -898,19 +935,27 @@ end
         def saved(filename=@filename)
             if @fatalerror then
                 report("fatal error, no tuo file saved")
+                return false
             else
-               begin
+                begin
                     if f = File.open(File.suffixed(filename,'tuo'),'w') then
                         @plugins.writers(f)
                         f.close
                     end
                 rescue
                     report("fatal error when saving file (#{$!})")
+                    return false
                 else
                     report("tuo file saved")
+                    return true
                 end
             end
+        end
+
+        def finalized
+            @plugins.finalizers
             @plugins.resets
+            return true # for the moment
         end
 
         def reset

@@ -181,6 +181,27 @@
      \hbox{#1}%
    \fi}
 
+% better, so that we can force a key and share with e.g. renumbering
+%
+% \let\namedtextarea\empty
+%
+% \def\registerMPlocaltextarea#1%
+%   {\ifpositioning
+%      \bgroup
+%      \ifx\namedtextarea\empty
+%        \doglobal\increment\currentMPtextareadata
+%        \edef\namedtextarea{gbd:\currentMPtextareadata}%
+%      \fi
+%      \hpos\namedtextarea{\iftracetextareas\boxrulewidth3pt\ruledhbox\fi{#1}}%
+%      \edef\ascii{RegisterLocalTextArea(%
+%        \MPx\namedtextarea,\MPy\namedtextarea,%
+%        \MPw\namedtextarea,\MPh\namedtextarea,\MPd\namedtextarea);}%
+%      \global\MPlocaltextareadata\@EA{\ascii}%
+%      \egroup
+%    \else
+%      \hbox{#1}%
+%    \fi}
+
 \def\resetMPlocaltextarea
   {\global\MPlocaltextareadata\emptytoks}
 

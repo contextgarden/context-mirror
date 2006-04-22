@@ -4431,7 +4431,7 @@
       <cd:parameter name="numerazione">
         <cd:constant type="si"/>
         <cd:constant type="nocheck"/>
-      </cd:parameter>
+     </cd:parameter>
       <cd:inherit name="impostaincorniciato"/>
     </cd:assignments>
   </cd:arguments>

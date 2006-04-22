@@ -453,10 +453,13 @@
      {\beginofshapebox
         \unvbox\nextbox
       \endofshapebox
-      \global\count1\zerocount
-      \reshapebox{\global\advance\count1\plusone}%
-      \egroup\noflines\count1 }%
-     \vbox}
+      % \global\count1\zerocount
+      % \reshapebox{\global\advance\count1\plusone}%
+      % \egroup\noflines\count1 }%
+      \scratchcounter\zerocount
+      \reshapebox{\global\advance\scratchcounter\plusone}%
+      \expandafter\egroup\expandafter\noflines\the\scratchcounter\relax
+     }\vbox}
 
 %D \macros
 %D   {doiftextelse, doiftext}
@@ -1802,7 +1805,7 @@
 %D
 %D \normalvbox
 %D   \bgroup
-%D     \converthboxtovbox
+%D     \convertvboxtohbox
 %D   \egroup
 %D \stoptyping
 %D
@@ -1877,6 +1880,26 @@
      \ifhbox2
        \setbox0\normalhbox{\box2\unhbox0}%
    \repeat}
+
+% \def\makehboxofhboxes
+%   {\setbox0\normalhbox{}%
+%    \doloop                  % \doloop { .. \exitloop .. }
+%      {% \dorecurse{3}{\unskip\unpenalty}% get rid of ... (better do this in a shapeloop)
+%       \setbox2\lastbox
+%       \ifhbox2
+%         \setbox0\normalhbox{\box2\unhbox0}%
+%       \else
+%         \exitloop
+%       \fi}}
+
+% \def\flushboxesonly % feed this into \makehboxofhboxes
+%   {\dowithnextbox
+%      {\beginofshapebox
+%       \unvbox\nextbox
+%       \endofshapebox
+%       \doreshapebox{\box\shapebox}{}{}{}% get rid of penalties etc
+%       \innerflushshapebox}
+%      \vbox}
 
 \def\removehboxes
   {\setbox0\lastbox

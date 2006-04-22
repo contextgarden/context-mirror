@@ -1799,6 +1799,31 @@
      \bgroup
    \fi}
 
+% \setuplayout[grid=yes] \definecolumnset[example] \showgrid
+
+% \starttext
+%     \startcolumnset[example]
+%         \input knuth \endgraf \input knuth
+%         \placetable{table}{\framed[width=\makeupwidth,height=4cm]{Hello}}
+%         \input knuth \endgraf \input knuth
+%     \stopcolumnset
+%     \input knuth \endgraf \input knuth
+% \stoptext
+
+
+\def\OTRSETflushleftovers % new per 13/4/2006
+  {\OTRSETdoifcellelse{1}{1}
+     {\bgroup
+      \OTRSETcentergridcells
+      \chardef\OTRSETbalancemethod\plusone
+      \OTRSETreducegridbox
+      \global\setbox\OTRfinalpagebox\OTRSETmakegridbox
+      \global\ht\OTRfinalpagebox\textheight % signals output that there is content
+      \OTRSETdofinaloutput
+      \globallet\OTRSETbalht\zeropoint
+      \egroup}
+     {}}
+
 \def\stopcolumnset
   {\relax
    \ifnum\columnsetlevel=\plusone
@@ -1820,6 +1845,7 @@
      \fi
      \global\chardef\OTRSETfinish\zerocount
      \ifsomefloatwaiting \setvsize \pagebreak \setvsize \fi
+     \OTRSETflushleftovers
    \else
      \egroup
    \fi

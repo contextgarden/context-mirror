@@ -781,32 +781,33 @@ class TEX
         if tmp = openedfile(File.suffixed(rawname,'run')) then
             tmp << "\\starttext\n"
             if forcexml then
-                if FileTest.file?(rawname) && (xml = File.open(rawname)) then
-                    xml.each do |line|
-                        case line
-                            when /<\?context\-directive\s+(\S+)\s+(\S+)\s+(\S+)\s*(.*?)\s*\?>/o then
-                                category, key, value, rest = $1, $2, $3, $4
-                                case category
-                                    when 'job' then
-                                        case key
-                                            when 'control' then
-                                                setvariable(value,if rest.empty? then true else rest end)
-                                            when 'mode', 'modes' then
-                                                tmp << "\\enablemode[#{value}]\n"
-                                            when 'stylefile', 'environment' then
-                                                tmp << "\\environment #{value}\n"
-                                            when 'module' then
-                                                tmp << "\\usemodule[#{value}]\n"
-                                            when 'interface' then
-                                                contextinterface = value
-                                        end
-                                end
-                            when /<[a-z]+/io then # beware of order, first pi test
-                                break
-                        end
-                    end
-                    xml.close
-                end
+                # if FileTest.file?(rawname) && (xml = File.open(rawname)) then
+                    # xml.each do |line|
+                        # case line
+                            # when /<\?context\-directive\s+(\S+)\s+(\S+)\s+(\S+)\s*(.*?)\s*\?>/o then
+                                # category, key, value, rest = $1, $2, $3, $4
+                                # case category
+                                    # when 'job' then
+                                        # case key
+                                            # when 'control' then
+                                                # setvariable(value,if rest.empty? then true else rest end)
+                                            # when 'mode', 'modes' then
+                                                # tmp << "\\enablemode[#{value}]\n"
+                                            # when 'stylefile', 'environment' then
+                                                # tmp << "\\environment #{value}\n"
+                                            # when 'module' then
+                                                # tmp << "\\usemodule[#{value}]\n"
+                                            # when 'interface' then
+                                                # contextinterface = value
+                                        # end
+                                # end
+                            # when /<[a-z]+/io then # beware of order, first pi test
+                                # break
+                        # end
+                    # end
+                    # xml.close
+                # end
+                tmp << checkxmlfile(rawname)
                 tmp << "\\processXMLfilegrouped{#{rawname}}\n"
             else
                 tmp << "\\processfile{#{rawname}}\n"
@@ -817,6 +818,40 @@ class TEX
         else
             return File.splitname(rawname)[1]
         end
+    end
+
+    def checkxmlfile(rawname)
+        tmp = ''
+        if FileTest.file?(rawname) && (xml = File.open(rawname)) then
+            xml.each do |line|
+                case line
+                    when /<\?context\-directive\s+(\S+)\s+(\S+)\s+(\S+)\s*(.*?)\s*\?>/o then
+                        category, key, value, rest = $1, $2, $3, $4
+                        case category
+                            when 'job' then
+                                case key
+                                    when 'control' then
+                                        setvariable(value,if rest.empty? then true else rest end)
+                                    when 'mode', 'modes' then
+                                        tmp << "\\enablemode[#{value}]\n"
+                                    when 'stylefile', 'environment' then
+                                        tmp << "\\environment #{value}\n"
+                                    when 'module' then
+                                        tmp << "\\usemodule[#{value}]\n"
+                                    when 'interface' then
+                                        contextinterface = value
+                                    when 'ctxfile' then
+                                        setvariable('ctxfile', value)
+                                        report("using source driven ctxfile #{value}")
+                                end
+                        end
+                    when /<[a-z]+/io then # beware of order, first pi test
+                        break
+                end
+            end
+            xml.close
+        end
+        return tmp
     end
 
 end
@@ -1154,7 +1189,7 @@ checktestversion
                 begin
                     logger = Logger.new('TeXUtil')
                     if tu = TeXUtil::Converter.new(logger) and tu.loaded(fname) then
-                        tu.saved if tu.processed
+                        ok = tu.processed && tu.saved && tu.finalized
                     end
                 rescue
                     Kpse.runscript('texutil',fname,options)
@@ -1289,6 +1324,8 @@ checktestversion
             end
         end
 
+        jobsuffix = makestubfile(rawname,forcexml) if dummyfile || forcexml
+
         # preprocess files
 
         unless getvariable('noctx') then
@@ -1320,8 +1357,6 @@ checktestversion
         end
 
         # end of preprocessing and merging
-
-        jobsuffix = makestubfile(rawname,forcexml) if dummyfile || forcexml
 
         if globalfile || FileTest.file?(rawname) then
 
@@ -1435,6 +1470,8 @@ checktestversion
                 PDFview.open(File.suffixed(if result.empty? then rawname else result end,'pdf'))
             end
 
+        else
+            report("nothing to process")
         end
 
     end

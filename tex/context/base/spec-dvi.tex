@@ -106,7 +106,7 @@
 %
 % \appendtoksonce
 %   \ifspecialbasedsettings
-%     \ifpositioning\installprogram{dvipos \jobname}\fi
+%     \ifpositioning\installprogram{dvipos -o \jobname.tuo \jobname.dvi}\fi
 %   \fi
 % \to \everystoptext
 %
@@ -115,7 +115,7 @@
 \definespecial\dosetpositionpapersize#1#2%
   {\xdef\flushDVIpositionpapersize%
      {\special{pos:papersize #1 #2}%
-      \noexpand\installprogram{dvipos \jobname}%
+      \noexpand\installprogram{dvipos -o \jobname.tuo \jobname.dvi }%
       \global\noexpand\let\noexpand\flushDVIpositionpapersize\relax}}
 
 \prependtoksonce \flushDVIpositionpapersize \to \everyshipout

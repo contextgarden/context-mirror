@@ -80,25 +80,32 @@ class KpseRemote
         @kpse.expand_variables(@tree)
     end
     def expand_braces(str)
-        @kpse.expand_braces(@tree,str)
+        clean_name(@kpse.expand_braces(@tree,str))
     end
     def expand_path(str)
-        @kpse.expand_path(@tree,str)
+        clean_name(@kpse.expand_path(@tree,str))
     end
     def expand_var(str)
-        @kpse.expand_var(@tree,str)
+        clean_name(@kpse.expand_var(@tree,str))
     end
     def show_path(str)
-        @kpse.show_path(@tree,str)
+        clean_name(@kpse.show_path(@tree,str))
     end
     def var_value(str)
-        @kpse.var_value(@tree,str)
+        clean_name(@kpse.var_value(@tree,str))
     end
     def find_file(filename)
-        @kpse.find_file(@tree,filename)
+        clean_name(@kpse.find_file(@tree,filename))
     end
     def find_files(filename,first=false)
+        # dodo: each filename
         @kpse.find_files(@tree,filename,first)
+    end
+
+    private
+
+    def clean_name(str)
+        str.gsub(/\\/,'/')
     end
 
 end

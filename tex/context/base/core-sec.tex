@@ -135,37 +135,40 @@
 \def\dohandleheadnumber#1%
   {\expanded{\separatednumber{#1}}}
 
-\def\dodochecknummer#1#2#3% will become ugly after speed up
+\def\dodochecknumber#1#2#3% will become ugly after speed up
   {\bgroup
    \doifinstringelse{.0}{.#2}
      {\doifnot{#3}\v!by
         {%\debuggerinfo\m!systems{number #1 #3 becomes \getnumbervariable{#1\c!way}}%
          \setevalue{\@@thenumber{#1}\c!way}{#3}% geen \xdef, gaat mis met \subpage
-         \dochecknummer{#1}}} % tricky and ugly
+         \dochecknumber{#1}}} % tricky and ugly
      {\doifnotvalue{\@@thenumber{#1}\s!check}{#2}
-        {\setcounter{\@@thenumber{#1}}{0\getvalue{\@@thenumber{#1}\c!start}}%
-         \setxvalue{\@@thenumber{#1}\c!way\c!local}%
-           {\getvalue{\@@thenumber{#1}\c!way}}%
-         \setxvalue{\@@thenumber{#1}\s!check}%
-           {#2}}}%
+        {% new, calculate accumulated number
+         \scratchcounter\getvalue{\@@thenumber{#1}\c!n}\relax
+         \advance\scratchcounter\countervalue{\@@thenumber{#1}}\relax
+         \setxvalue{\@@thenumber{#1}\c!n}{\the\scratchcounter}%
+         %
+         \setcounter{\@@thenumber{#1}}{0\getvalue{\@@thenumber{#1}\c!start}}%
+         \setxvalue{\@@thenumber{#1}\c!way\c!local}{\getvalue{\@@thenumber{#1}\c!way}}%
+         \setxvalue{\@@thenumber{#1}\s!check}{#2}}}%
    \egroup}
 
-\def\dochecknummer#1%
+\def\dochecknumber#1%
   {\edef\currentsection{\csname\??by\csname\@@thenumber{#1}\c!way\endcsname\endcsname}%
    \ifx\currentsection\empty\else
-     \dodochecknummer
+     \dodochecknumber
        {#1}%
        {\csname\currentsection\c!number\endcsname}%
        {\v!by\previoussection\currentsection}%
    \fi}
 
-\def\checknummer#1%
+\def\checknumber[#1]%
   {\bgroup
   %\ifcase\blocklevel\else
    \ifdoingblocks
      \doifnotvalue{\@@thenumber{#1}\c!blockway}\v!no\setblockcounters
    \fi
-   \dochecknummer{#1}%
+   \dochecknumber{#1}%
    \egroup}
 
 \def\rawsectionnumber#1%
@@ -265,33 +268,36 @@
 \letvalue{\??by\v!by\v!all }\v!text
 \letvalue{\??by\v!by\v!page}\v!text % see footnotes
 
-%%%%%%%%% old
-
-\def\dosetupsection[#1][#2]%
-  {\getparameters[\??se#1][#2]%
-   \doifelsevalue{\??se#1\c!previousnumber}\v!yes
-     {\setvalue{#1\c!number}{\@@longsectionnumber{#1}}}
-     {\setvalue{#1\c!number}{\@@shortsectionnumber{#1}}}}
+\def\sectionofhead#1{\executeifdefined{\??ko#1\c!section}\s!unknown}
 
 \def\setupsection
-  {\dodoubleargument\dosetupsection}
-
-%%%%%%%%% new, multilingual
-
-\def\dosetupsection[#1][#2][#3]%
-  {\ifthirdargument
-     \getparameters[\??se#1#2][#3]%
-   \else
-     \getparameters[\??se#1][#2]%
-   \fi
-   \doifelsevalue{\??se#1\c!previousnumber}\v!yes
-     {\setvalue{#1\c!number}{\@@longsectionnumber {#1}}}
-     {\setvalue{#1\c!number}{\@@shortsectionnumber{#1}}}}
-
-\def\setupsection%
   {\dotripleempty\dosetupsection}
 
-%%%%%%%%%
+\def\dosetupsection[#1]%
+  {\doifdefinedelse{\??se#1}
+     {\dodosetupsection[#1]}%
+     {\dodosetupsection[\sectionofhead{#1}]}}
+
+% \def\dosetupsection[#1][#2][#3]%
+%   {\ifthirdargument
+%      \getparameters[\??se#1#2][#3]%
+%    \else
+%      \getparameters[\??se#1][#2]%
+%    \fi
+%    \doifelsevalue{\??se#1\c!previousnumber}\v!yes
+%      {\setvalue{#1\c!number}{\@@longsectionnumber {#1}}}
+%      {\setvalue{#1\c!number}{\@@shortsectionnumber{#1}}}}
+
+\def\dodosetupsection[#1][#2][#3]%
+  {\doifdefined{\??se#1}
+     {\ifthirdargument
+        \getparameters[\??se#1#2][#3]%
+      \else
+        \getparameters[\??se#1][#2]%
+      \fi
+      \doifelsevalue{\??se#1\c!previousnumber}\v!yes
+        {\setvalue{#1\c!number}{\@@longsectionnumber {#1}}}
+        {\setvalue{#1\c!number}{\@@shortsectionnumber{#1}}}}}
 
 \def\docouplemarking[#1][#2]%
   {\doifdefinedelse{\??ko#2\c!section}
@@ -1170,7 +1176,7 @@
 \newif\ifemptyhead
 \newif\ifwritetolist
 \newif\ifheadnumber
-\newif\ifcontinuoushead
+\newif\ifzushead
 \newif\ifheadnumbercontent      % niet meer wijzigen / wordt mode
 \newif\ifheadprefix
 \newif\ifsomeheadconversion
@@ -1495,16 +1501,16 @@
             \rawreference\s!sec{#2}{{#3}{\asciititle}}%
             \resetsectionmarks\@@sectie
             \setlistparameter\@@koppeling\c!expansion{\getvalue{\??ko#1\c!expansion}}%
-\doifelsevalue{\??ko#1\c!ownnumber}\v!yes % brrr, new per 18/1/2005, sometimes we need
-  {\dowritetolist\@@koppeling{#3}{#4}\v!head} % entries in the list (special purpose) but
-  {\dowritetolist\@@koppeling  {}{#4}\v!head}% not in the header, ok we could pop in a command
-}%            \dowritetolist\@@koppeling{}{#4}\v!head}
+            \doifelsevalue{\??ko#1\c!ownnumber}\v!yes % brrr, new per 18/1/2005, sometimes we need
+              {\dowritetolist\@@koppeling{#3}{#4}\v!head} % entries in the list (special purpose) but
+              {\dowritetolist\@@koppeling  {}{#4}\v!head}% not in the header, ok we could pop in a command
+            }%            \dowritetolist\@@koppeling{}{#4}\v!head}
            {#4}
            {\marking[#1]{#4}%
             \doifelsevalue{\??ko#1\c!ownnumber}\v!yes % brrr
               {\edef\finalsectionnumber{#3}}
               {\determineheadnumber[#1]}%
-% todo : geen markering (leeg maken)
+            % todo : geen markering (leeg maken)
             \expanded{\marking[#1\v!number]{\finalsectionnumber}}}%
          \writesection{#1}{-}{#4}%
        \fi
@@ -1887,72 +1893,6 @@
    \def\localheadsetup{\dolocalheadsetup{#1}}%
    \startsynchronization}
 
-% \def\endheadplacement#1#2%
-%   {\doifelsevalue{\??rf#1\c!state}\v!start
-%      {\doifvaluenothing{\??ko#1\c!file}{\autocrossdocumentfalse}}
-%      {\autocrossdocumentfalse}%
-%    % no message needed here, should be a proper switch
-%    % \let\unknownreference\gobbleoneargument
-%    \ifdisplaysectionhead
-%      \let\headlastlinewidth\!!zeropoint
-%      \snaptogrid[\getvalue{\??ko#1\c!grid}]\hbox
-%        {\hskip\localheadskip
-%         \hskip\getvalue{\??ko#1\c!margin}\relax
-%         \iflocation
-%           \ifautocrossdocument
-%             \doifreferencefoundelse{\getvalue{\??ko#1\c!file}::#1}
-%               {\edef\currentinnerreference{\s!aut:\currenttextreference}% stored in
-%                \gotoouterlocation{}{\box0}}                             % text slot
-%               {\hbox{\box0}}%
-%           \else
-%             \hbox{\box0}%
-%           \fi
-%         \else
-%           \hbox{\box0}%
-%         \fi}%
-%      \doflushnotes % new, not really needed
-%      \endgraf
-%      \nointerlineskip
-%      \dosomebreak\nobreak
-%      #2%
-%    \else
-%      \strut
-%      \doflushnotes % new, here since we're in par mode
-%      \iflocation
-%        \ifautocrossdocument
-%          \hhboxindent=\ifcontinuoushead\headlastlinewidth\else\zeropoint\fi
-%          \unhhbox0\with{\gotobox{\box\hhbox}[\getvalue{\??ko#1\c!file}::#1]}%
-%          \advance\lasthhboxwidth by \numberheaddistance
-%          \xdef\headlastlinewidth{\the\lasthhboxwidth}%
-%        \else
-%          \unhbox0
-%          \globallet\headlastlinewidth\!!zeropoint
-%        \fi
-%      \else
-%        \unhbox0
-%        \globallet\headlastlinewidth\!!zeropoint
-%      \fi
-%      #2%
-%      \dimen0=\numberheaddistance
-%      \hskip\dimen0 \!!plus \dimen0 \!!minus .25\dimen0
-%      \hskip\headsignal\ignorespaces
-%    \fi
-%    \ifdisplaysectionhead \ifvmode
-%      \ifgridsnapping % important, font related depth, see comment
-%        \prevdepth\strutdp
-%      \else
-%        \prevdepth\localheaddepth
-%      \fi
-%    \fi \fi
-%    \stopsynchronization
-%    \egroup
-%    \egroup
-%    \ifdisplaysectionhead
-%      \dochecknextindentation{\??ko#1}%
-%    \else
-%      \nonoindentation % recently added, was a bug
-%    \fi}
-
 % \setuphead[chapter]         [style=\bfd,after=,hang=line] % fit broad 2
 % \setuphead[section]         [style=\bfc,after=,hang=line]
 % \setuphead[subsection]      [style=\bfb,after=,hang=line]
@@ -1988,6 +1928,8 @@
    \ht0 \strutht
    \dp0 \strutdp
    \edef\localheaddepth{\the\strutdp}}
+
+\newconditional\continuoussectionhead % oeps, \newif\ifcontinuoushead got lost
 
 \def\endheadplacement#1#2%
   {\doifelsevalue{\??rf#1\c!state}\v!start
@@ -2037,7 +1979,7 @@
      \doflushnotes % new, here since we're in par mode
      \iflocation
        \ifautocrossdocument
-         \hhboxindent=\ifcontinuoushead\headlastlinewidth\else\zeropoint\fi
+         \hhboxindent=\ifconditional\continuoussectionhead\headlastlinewidth\else\zeropoint\fi
          \unhhbox0\with{\gotobox{\box\hhbox}[\getvalue{\??ko#1\c!file}::#1]}%
          \advance\lasthhboxwidth by \numberheaddistance
          \xdef\headlastlinewidth{\the\lasthhboxwidth}%
@@ -2075,14 +2017,14 @@
      \scratchcounter=\lastpenalty\unpenalty % no beauty in this
      \ifdim\lastskip=\headsignal
        \handlepagebreakC{#1}%
-       \global\continuousheadtrue
+       \global\settrue\continuoussectionhead
      \else
        \penalty\scratchcounter
-       \global\continuousheadfalse
+       \global\setfalse\continuoussectionhead
        #1{#2}%
      \fi
    \else
-     \global\continuousheadfalse
+     \global\setfalse\continuoussectionhead
      #1{#2}%
    \fi}
 

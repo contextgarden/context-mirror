@@ -637,7 +637,7 @@
 
 \chardef\columnedtopflushmethod\plusone
 
-\def\flushcolumnedpage
+\def\flushcolumnedpage#1%
   {\bgroup
    \forgetall
    \setmulticolumnsout
@@ -729,6 +729,22 @@
    \global\finalcolumnheights\ht\columnpagebox
    \getnoflines\finalcolumnheights
    \global\finalcolumnlines\noflines
+   \ifcase#1\else
+     % messy correction, we need to rewrite this module (newcolumns)
+     \setbox\columnpagebox\vbox
+       {\offinterlineskip
+        \scratchdimen\ht\columnpagebox
+        \advance\scratchdimen\dp\columnpagebox % we probably lost that one already
+        \box\columnpagebox
+        \vskip-\scratchdimen}%
+     \scratchdimen\noflines\openlineheight
+     \advance\scratchdimen-\openstrutdepth
+     \advance\scratchdimen-\openlineheight
+     \advance\scratchdimen\topskip
+     \ht\columnpagebox\scratchdimen
+     \dp\columnpagebox\openstrutdepth
+     % end of mess
+   \fi
    \box\columnpagebox
    \egroup}
 
@@ -1038,7 +1054,7 @@
      \dohandleallcolumns
        {\global\ht\currentcolumnbox\dimen0}%
    \fi
-   \setbox\precolumnbox\vbox{\flushcolumnedpage}%
+   \setbox\precolumnbox\vbox{\flushcolumnedpage\zerocount}%
    \finaloutput\box\precolumnbox
    \sethsize
    \setvsize
@@ -1202,7 +1218,7 @@
    \fi
    \global\output{\balancingerror}%
    \b@selinebottomtrue % forces depth in separation rule
-   \flushcolumnedpage
+   \flushcolumnedpage\plusone
    \multicolumnseject
    \egroup}
 
@@ -1688,7 +1704,7 @@
    {\testrulewidth\zeropoint\ruledvskip\textheight} % we misuse a
    \penalty-200                                     % side effect
    \vskip-\textheight
-   \prevdepth-\thousandpoint} % signals top of column to \blank
+   }% bugged : \prevdepth-\thousandpoint} % signals top of column to \blank
 
 \setupcolumns
   [\c!n=2,

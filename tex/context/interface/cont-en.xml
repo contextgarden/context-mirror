@@ -4431,7 +4431,7 @@
       <cd:parameter name="numbering">
         <cd:constant type="yes"/>
         <cd:constant type="nocheck"/>
-      </cd:parameter>
+     </cd:parameter>
       <cd:inherit name="setupframed"/>
     </cd:assignments>
   </cd:arguments>

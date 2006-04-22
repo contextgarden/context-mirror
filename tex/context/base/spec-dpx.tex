@@ -816,6 +816,10 @@
 
 %D 7. Copied codes from \type{spec-dvi}
 
+% coming pdftex versions will provide pos support
+
+% \ifnum\pdftexversion>140 .. \fi
+
 \definespecial\dosetposition#1%
   {\special{pos:pxy "#1"}}
 
@@ -830,7 +834,7 @@
 \definespecial\dosetpositionpapersize#1#2%
   {\xdef\flushDVIpositionpapersize%
      {\special{pos:papersize #1 #2}%
-      \noexpand\installprogram{dvipos \jobname}%
+      \noexpand\installprogram{dvipos -o \jobname.tuo \jobname.dvi }%
       \global\noexpand\let\noexpand\flushDVIpositionpapersize\relax}}
 
 \prependtoksonce \flushDVIpositionpapersize \to \everyshipout

@@ -67,6 +67,7 @@
 \def\eTBLCELL
   {\ifhmode
      \delayedendstrut
+     \par % added 13/4/2006
    \else
      \par
      \ifdim\prevdepth<\zeropoint % =-1000pt ?
@@ -138,6 +139,7 @@
 \let\popTBLparameters \relax
 
 \newif\ifsqueezeTBLspan     \squeezeTBLspantrue % spans one column cell over multi column par cells
+\newif\ifautosqueezeTBLspan \autosqueezeTBLspantrue % unless explicit widths are given
 \newif\ifautoTBLspread      \autoTBLspreadfalse
 \newif\ifautoTBLhsize       \autoTBLhsizetrue
 \newif\ifautoTBLrowspan     \autoTBLrowspantrue
@@ -224,47 +226,112 @@
 
 \let\setupTBLsection\relax
 
+% \def\setupTBLcell#1#2% cell over col over row
+%   {\setupTBLsection % already forgotten
+%    \getvalue{\@@tblprefix\v!each\v!each}%
+%    \getvalue{\@@tblprefix\c!y\v!each}%
+%    \getvalue{\@@tblprefix\c!x\v!each}%
+%    \getvalue{\@@tblprefix\c!y\v!oddeven{#1}}%
+%    \getvalue{\@@tblprefix\c!x\v!oddeven{#2}}%
+%    \getvalue{\@@tblprefix\c!x\v!oddeven{#2}\c!y\v!oddeven{#1}}%
+%    \ifnum#1=\plusone
+%      \getvalue{\@@tblprefix\c!y\v!first}%
+%      \executeifdefined{\@@tblprefix\c!x#2\c!y\v!first}\donothing
+%    \fi
+%    \ifnum#2=\plusone
+%      \getvalue{\@@tblprefix\c!x\v!first}%
+%      \executeifdefined{\@@tblprefix\c!x\v!first\c!y#1}\donothing
+%    \fi
+%    \ifnum#1=\maximumrow\relax
+%      \getvalue{\@@tblprefix\c!y\v!last}%
+%      \executeifdefined{\@@tblprefix\c!x#2\c!y\v!last}\donothing
+%    \fi
+%    \ifnum#2=\maximumcol\relax
+%      \getvalue{\@@tblprefix\c!x\v!last}%
+%      \executeifdefined{\@@tblprefix\c!x\v!last\c!y#1}\donothing
+%    \fi
+%    \ifnum#1=\maximumrow\relax\ifnum#2=\maximumcol\relax
+%      \getvalue{\@@tblprefix\c!x\v!last\c!y\v!last}%
+%    \fi\fi
+%    \ifnum#1=\plusone \ifnum#2=\plusone
+%      \getvalue{\@@tblprefix\c!x\v!first\c!y\v!first}%
+%    \fi\fi
+%    \ifnum#1>\noftblhdnxlines\else
+%      \executeifdefined{\@@tblprefix\v!header\v!each}\donothing
+%      \executeifdefined{\@@tblprefix\v!header#2}\donothing
+%    \fi
+%    \executeifdefined{\@@tblprefix\c!y#1}\donothing
+%    \getvalue{\@@tbl\@@tbl\c!extras}\letvalue{\@@tbl\@@tbl\c!extras}\relax % new, see x-fo
+%    \executeifdefined{\@@tblprefix\c!x#2}\donothing
+%    \getvalue{\@@tbl\@@tbl\c!extras}\letvalue{\@@tbl\@@tbl\c!extras}\relax % new, see x-fo
+%    \executeifdefined{\@@tblprefix\c!x#2\c!y#1}\donothing
+%    \global\letcscsname\@@tblsplitafter\csname\@@tbl\@@tbl\c!after\endcsname
+%    \relax}
+
+
 \def\setupTBLcell#1#2% cell over col over row
   {\setupTBLsection % already forgotten
-\getvalue{\@@tblprefix\v!each\v!each}%
+\edef\positiverow{\number#1}%
+\edef\positivecol{\number#2}%
+\scratchcounter-\maximumrow\advance\scratchcounter#1\advance\scratchcounter\minusone
+\edef\negativerow{\number\scratchcounter}%
+\scratchcounter-\maximumcol\advance\scratchcounter#2\advance\scratchcounter\minusone
+\edef\negativecol{\number\scratchcounter}%
+   \getvalue{\@@tblprefix\v!each\v!each}%
    \getvalue{\@@tblprefix\c!y\v!each}%
    \getvalue{\@@tblprefix\c!x\v!each}%
-   \getvalue{\@@tblprefix\c!y\v!oddeven{#1}}%
-   \getvalue{\@@tblprefix\c!x\v!oddeven{#2}}%
-   \getvalue{\@@tblprefix\c!x\v!oddeven{#2}\c!y\v!oddeven{#1}}%
-   \ifnum#1=\plusone
+   \getvalue{\@@tblprefix\c!y\v!oddeven\positiverow}%
+   \getvalue{\@@tblprefix\c!x\v!oddeven\positivecol}%
+   \getvalue{\@@tblprefix\c!x\v!oddeven\positivecol\c!y\v!oddeven\positiverow}%
+   \ifnum\positiverow=\plusone
      \getvalue{\@@tblprefix\c!y\v!first}%
-     \executeifdefined{\@@tblprefix\c!x#2\c!y\v!first}\donothing
+     \executeifdefined{\@@tblprefix\c!x\positivecol\c!y\v!first}\donothing
    \fi
-   \ifnum#2=\plusone
+   \ifnum\positivecol=\plusone
      \getvalue{\@@tblprefix\c!x\v!first}%
-     \executeifdefined{\@@tblprefix\c!x\v!first\c!y#1}\donothing
+     \executeifdefined{\@@tblprefix\c!x\v!first\c!y\positiverow}\donothing
    \fi
-   \ifnum#1=\maximumrow\relax
+   \ifnum\positiverow=\maximumrow\relax
      \getvalue{\@@tblprefix\c!y\v!last}%
-     \executeifdefined{\@@tblprefix\c!x#2\c!y\v!last}\donothing
+     \executeifdefined{\@@tblprefix\c!x\positivecol\c!y\v!last}\donothing
    \fi
-   \ifnum#2=\maximumcol\relax
+   \ifnum\positivecol=\maximumcol\relax
      \getvalue{\@@tblprefix\c!x\v!last}%
-     \executeifdefined{\@@tblprefix\c!x\v!last\c!y#1}\donothing
+     \executeifdefined{\@@tblprefix\c!x\v!last\c!y\positiverow}\donothing
    \fi
-   \ifnum#1=\maximumrow\relax\ifnum#2=\maximumcol\relax
+   \ifnum\positiverow=\maximumrow\relax\ifnum\positivecol=\maximumcol\relax
      \getvalue{\@@tblprefix\c!x\v!last\c!y\v!last}%
    \fi\fi
-   \ifnum#1=\plusone \ifnum#2=\plusone
+   \ifnum\positiverow=\plusone \ifnum\positivecol=\plusone
      \getvalue{\@@tblprefix\c!x\v!first\c!y\v!first}%
    \fi\fi
    \ifnum#1>\noftblhdnxlines\else
      \executeifdefined{\@@tblprefix\v!header\v!each}\donothing
-     \executeifdefined{\@@tblprefix\v!header#2}\donothing
+     \executeifdefined{\@@tblprefix\v!header\positivecol}\donothing
    \fi
-   \executeifdefined{\@@tblprefix\c!y#1}\donothing
+   \executeifdefined{\@@tblprefix\c!y\positiverow}\donothing
+\executeifdefined{\@@tblprefix\c!y\negativerow}\donothing
    \getvalue{\@@tbl\@@tbl\c!extras}\letvalue{\@@tbl\@@tbl\c!extras}\relax % new, see x-fo
-   \executeifdefined{\@@tblprefix\c!x#2}\donothing
+   \executeifdefined{\@@tblprefix\c!x\positivecol}\donothing
+\executeifdefined{\@@tblprefix\c!x\negativecol}\donothing
    \getvalue{\@@tbl\@@tbl\c!extras}\letvalue{\@@tbl\@@tbl\c!extras}\relax % new, see x-fo
-   \executeifdefined{\@@tblprefix\c!x#2\c!y#1}\donothing
+   \executeifdefined{\@@tblprefix\c!x\positivecol\c!y\positiverow}\donothing
+\executeifdefined{\@@tblprefix\c!x\negativecol\c!y\negativerow}\donothing
    \global\letcscsname\@@tblsplitafter\csname\@@tbl\@@tbl\c!after\endcsname
    \relax}
+
+% we cannot use +n (checking on number/last/first would slow down too much)
+%
+% \setupTABLE[r]  [2][color=red]
+% \setupTABLE[r] [-2][color=red]
+% \setupTABLE[c]  [2][color=green]
+% \setupTABLE[c] [-2][color=green]
+% \setupTABLE[4]  [4][color=blue]
+% \setupTABLE[-4][-4][color=blue]
+%
+% \bTABLE
+% \dorecurse{10}{\bTR \dorecurse{6}{\bTD xxx \eTD} \eTR}
+% \eTABLE
 
 \globallet\@@tblsplitafter\relax
 
@@ -289,11 +356,13 @@
   {\getparameters[\@@tbl][\c!ny=\tblnr,\c!nx=\tblnc,nc=1,nr=1,\c!n=\currentcol,\c!m=,#1]%
    % goto first cell % NEW, n/m=cellnumber
    \increment\currentcolpos
-   \doifvaluesomething{\@@tbl\c!n}
+   \doifelsevaluenothing{\@@tbl\c!n}
+     {\increment(\spnTBL,\tblnx)\relax}
      {\ifnum\getvalue{\@@tbl\c!n}=\currentcol\else
         \scratchcounter\getvalue{\@@tbl\c!n}%
         \advance\scratchcounter-\currentcol
         \advance\scratchcounter\minusone
+\advance\scratchcounter-\spnTBL
         \ifnum\scratchcounter>\zerocount
           \expanded{\parseTD[\c!nx=\the\scratchcounter,\c!n=,\c!m=,*sq=\v!no][]}\eTD
         \fi
@@ -304,6 +373,7 @@
         \scratchcounter\getvalue{\@@tbl\c!m}%
         \advance\scratchcounter-\currentcol
         \advance\scratchcounter\minusone
+% \advance\scratchcounter-\spnTBL
         \dorecurse\scratchcounter{\expanded{\parseTD[\c!n=,\c!m=][]}\eTD}%
         \getparameters[\@@tbl][\c!ny=\tblnr,\c!nx=\tblnc,nc=1,nr=1,#1,\c!n=,\c!m=]%
       \fi}%
@@ -352,6 +422,21 @@
 %D \bTABLE[width=3em]
 %D \bTR\bTD d1 \eTD\bTD[m=2] d2 \eTD\bTD[m=5] d5 \eTD\bTD[m=7] d7 \eTD\eTR
 %D \bTR\bTD f1 \eTD\bTD[m=4] f4 \eTD\bTD[m=5] f5 \eTD\bTD[m=7] f7 \eTD\eTR
+%D \eTABLE
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
+%D
+%D \startbuffer
+%D \bTABLE[frame=on]
+%D \bTR \bTH[nc=3] One \eTH \bTH[m=4] Four \eTH\eTR
+%D \bTR \bTD a \eTD\bTD b \eTD\bTD c \eTD\bTD d \eTD\eTR
+%D \eTABLE
+%D
+%D \bTABLE[frame=on]
+%D \bTR \bTH[nr=2] One \eTH \bTH[m=3] Three \eTH\eTR
+%D \bTR \bTD[m=3] a \eTD\bTD b \eTD\bTD c \eTD\bTD d \eTD\eTR
+%D \bTR \bTD[m=3] a \eTD\bTD b \eTD\bTD c \eTD\bTD d \eTD\eTR
 %D \eTABLE
 %D \stopbuffer
 %D
@@ -626,9 +711,14 @@
 \def\spantblcol
   {\span}
 
+\newcounter\rowTBL
+\newcounter\colTBL
+\newcounter\spnTBL
+
 \def\begintblrow
   {\noalign
-     {\doglobal\increment\rowTBL
+     {\doglobal\increment \rowTBL
+      \doglobal\newcounter\spnTBL
       \doglobal\newcounter\colTBL}%
    \nexttblcol
    \kern\tbltblleftmargindistance
@@ -663,6 +753,7 @@
 \def\begintbl
   {\doglobal\newcounter\colTBL
    \doglobal\newcounter\rowTBL
+   \doglobal\newcounter\spnTBL
    \doglobal\decrement\rowTBL
    \tabskip\zeropoint
    \halign\bgroup
@@ -687,6 +778,7 @@
 \def\begTBL
   {\doglobal\newcounter\rowTBL
    \doglobal\newcounter\colTBL
+   \doglobal\newcounter\spnTBL
    \chardef\TBLpass\zerocount
    \tbltoks\emptytoks
    \appendtoks
@@ -744,8 +836,11 @@
      \fi
    \else\ifautoTBLrowspan\ifnum\maximumrowspan>1 % max ?
      % added jan 2002 because nx=* did no longer work
+\edef\savedhsize{\the\hsize}%
+\hsize\wd0\relax % new per 17/04/2006
      \checktblwidthsone % trial run
      \checktblwidthstwo % real run
+\hsize\savedhsize
      %
      \let\handleTBLcell\dohandleTBLcellC
      \setbox\scratchbox\vbox{\trialtypesettingtrue \the\tbltoks}%
@@ -855,11 +950,25 @@
    \box\finaltblbox
    \afterTABLEbox}
 
+% \def\splittblbox#1%
+%   {\ifinsidefloat
+%      \notsplittblbox{#1}%
+%    \else
+%      \executeifdefined{splittblbox\tbltblsplitmethod}\splittblboxa{#1}%
+%    \fi}
+
 \def\splittblbox#1%
-  {\ifinsidefloat
-     \notsplittblbox{#1}%
+  {\ifinsidesplitfloat
+     \donetrue
+   \else\ifinsidefloat
+     \donefalse
    \else
+     \donetrue
+   \fi\fi
+   \ifdone
      \executeifdefined{splittblbox\tbltblsplitmethod}\splittblboxa{#1}%
+   \else
+     \notsplittblbox{#1}%
    \fi}
 
 \newbox\TABLEsplitbox % public, don't change
@@ -1248,10 +1357,10 @@
 \long\def\dohandleTBLcellA#1#2[#3]#4%
   {\setbox\scratchbox\hbox
      {\setupTBLcell{#1}{#2}%
-\scratchdimen\tbltbldistance\relax
-\ifdim\scratchdimen>\gettbldis{#2}\relax
-  \settbldis{#2}{\the\scratchdimen}%
-\fi
+      \scratchdimen\tbltbldistance\relax
+      \ifdim\scratchdimen>\gettbldis{#2}\relax
+        \settbldis{#2}{\the\scratchdimen}%
+      \fi
       \localframed
         [\@@tbl\@@tbl]
         [#3,\c!background=,\c!frame=\v!off]% 25% faster
@@ -1259,12 +1368,21 @@
    \scratchdimen\gettblwid\colTBL\relax
    \ifdim\wd\scratchbox>\scratchdimen
      \ifsqueezeTBLspan
-\doifnotvalue{\@@tbl*sq}\v!no{%
+% \doifinset\tbltblwidth{\v!fit,\v!fixed,\v!broad,\v!local}{%
+%        \ifnum0\number\gettblcol{#1}{#2}>1\relax \settblspn\colTBL \fi
+% }%
+\ifautosqueezeTBLspan
+\doifinsetelse\tbltblwidth{\v!fit,\v!fixed,\v!broad,\v!local}
+       \donetrue \donefalse
+\else
+  \donetrue
+\fi
+\ifdone
        \ifnum0\number\gettblcol{#1}{#2}>1\relax \settblspn\colTBL \fi
-}%
+\fi
      \fi
      \doifelsetblspn\colTBL
-       \donothing{\settblwid\colTBL{\the\wd\scratchbox}}% auto set
+       \donothing{\ifdim\gettblwid\colTBL<\wd\scratchbox\settblwid\colTBL{\the\wd\scratchbox}\fi}% auto set
    \fi
    \let\rowTBLx\rowTBL\increment\rowTBLx
    \scratchdimen\gettblhei\rowTBLx\relax

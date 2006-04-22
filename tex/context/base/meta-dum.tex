@@ -82,14 +82,16 @@
      \globallet\figurereplacementcycle\!!plusone
    \fi
    \weightGRAYfalse % monochrome anyway
+   \MPcmykcolorsfalse
+   \MPspotcolorsfalse
    \defineoverlay
      [\s!dummy]
      [\useMPgraphic
-        {placeholder}%
-        {width=\figurewidth,
-         height=\figureheight,
-         reduction=\@@efreduction,
-         color=placeholder:\figurereplacementcycle}]%
+       {placeholder}%
+       {width=\figurewidth,
+        height=\figureheight,
+        reduction=\@@efreduction,
+        color=placeholder:\figurereplacementcycle}]%
    \expanded{\localframed
      [\??ef]
      [\c!width=\figurewidth,

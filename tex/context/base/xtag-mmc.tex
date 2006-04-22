@@ -537,8 +537,8 @@ complex-cartesian=>\let\next\MMLccartesian,
    \doifelse\@@MMLtimesauto\v!no
      {\let\@@MMLtimes@@symbol\@@MMLtimessymbol}
      {\doifelseXMLRneighbors{cn}{#3}
-        {\let\@@MMLtimes@@symbol\@@MMLtimesauto}
-        {\let\@@MMLtimes@@symbol\v!no}}%
+        {\let\@@MMLtimes@@symbol\v!yes}
+        {\let\@@MMLtimes@@symbol\@@MMLtimessymbol}}%
    \doifelse\@@MMLtimes@@symbol\v!yes
      {\encapsulateXMLR{}{\times}{}{#3\empty}}
      {\doifelse\@@MMLtimes@@symbol{dot}

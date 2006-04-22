@@ -268,6 +268,44 @@
 %D \stoptext
 %D \stoptyping
 
+
+\def\starttextstreamlayer
+  {\startstreamlayer}
+
+\def\stoptextstreamlayer
+  {\endgraf
+   % maybe depth if no proper depth and no skip
+   \removelastskip
+   \stopstreamlayer}
+
+\def\placetextstreamlayer{\placestreamlayer}
+
+%D \starttyping
+%D \definestreamlayer[whatever][width=12cm]
+%D
+%D \startstreamlayer[whatever]
+%D   \startitemize[columns,two][after=]
+%D     \item one
+%D     \item two
+%D     \item three
+%D     \item four
+%D   \stopitemize
+%D \stopstreamlayer
+%D
+%D \framed[strut=no,align=normal]{\placestreamlayer[whatever]\obeydepth}
+%D
+%D \starttextstreamlayer[whatever]
+%D   \startitemize[columns,two]
+%D     \item one
+%D     \item two
+%D     \item three
+%D     \item four
+%D   \stopitemize
+%D \stoptextstreamlayer
+%D
+%D \framed[strut=no]{\placetextstreamlayer[whatever]}
+%D \stoptyping
+
 \endinput
 
 \setupinterlinespace[top=height]

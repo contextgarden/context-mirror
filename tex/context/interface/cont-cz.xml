@@ -4431,7 +4431,7 @@
       <cd:parameter name="cislovani">
         <cd:constant type="ano"/>
         <cd:constant type="nocheck"/>
-      </cd:parameter>
+     </cd:parameter>
       <cd:inherit name="nastavoramovani"/>
     </cd:assignments>
   </cd:arguments>

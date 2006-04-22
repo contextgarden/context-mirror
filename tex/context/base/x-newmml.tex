@@ -621,10 +621,25 @@
     \endgroup
 \stopsetups
 
-\mapXMLvalue {mmc:int} {closed}      {\left[\getXMLstackdata\plusone,\getXMLstackdata\plustwo\right]}
-\mapXMLvalue {mmc:int} {open-closed} {\left(\getXMLstackdata\plusone,\getXMLstackdata\plustwo\right]}
-\mapXMLvalue {mmc:int} {closed-open} {\left[\getXMLstackdata\plusone,\getXMLstackdata\plustwo\right)}
-\mapXMLvalue {mmc:int} {open}        {\left(\getXMLstackdata\plusone,\getXMLstackdata\plustwo\right)}
+\setupMMLappearance[interval][\c!alternative=\v!a]
+
+\mapXMLvalue {mmc:int} {closed}
+  {\left[\getXMLstackdata\plusone,\getXMLstackdata\plustwo\right]}
+
+\mapXMLvalue {mmc:int} {open-closed}
+  {\doifelse\@@MMLintervalalternative\v!b
+     {\left<\getXMLstackdata\plusone,\getXMLstackdata\plustwo\right]}
+     {\left(\getXMLstackdata\plusone,\getXMLstackdata\plustwo\right]}}
+
+\mapXMLvalue {mmc:int} {closed-open}
+  {\doifelse\@@MMLintervalalternative\v!b
+     {\left[\getXMLstackdata\plusone,\getXMLstackdata\plustwo\right>}
+     {\left[\getXMLstackdata\plusone,\getXMLstackdata\plustwo\right)}}
+
+\mapXMLvalue {mmc:int} {open}
+  {\doifelse\@@MMLintervalalternative\v!b
+     {\left<\getXMLstackdata\plusone,\getXMLstackdata\plustwo\right>}
+     {\left(\getXMLstackdata\plusone,\getXMLstackdata\plustwo\right)}}
 
 % inverse
 
@@ -1176,54 +1191,63 @@
     }
 \stopsetups
 
-\setupMMLappearance[diff][\c!location=\v!top]
+\setupMMLappearance[diff][\c!location=\v!top,\c!alternative=\v!a]
 
 \defineXMLcommand [diff]        {\directsetup{mmc:diff}}
 \defineXMLcommand [partialdiff] {\directsetup{mmc:partialdiff}}
 
+% \setupMMLappearance[diff][alternative=b]
+%
+% \startXMLdata
+% <math><apply><apply><diff/><bvar><ci>x</ci></bvar><ci>f</ci></apply><ci>a</ci></apply></math>
+% <math><apply><apply><diff/><bvar><ci>x</ci></bvar><degree>2</degree><ci>f</ci></apply><ci>a</ci></apply></math>
+% \stopXMLdata
+
 \startsetups mmc:diff
    \MMLcreset
-   \XMLdoifonstackelse{bvar} {
-        \frac {
-            \XMLdoifonstackelse{degree} {
-                \collectXMLnamedstack{degree}\empty
-            } {
-                \collectXMLnamedstacknamed{bvar}{degree}+
-            }
-%             \begingroup
-%                 \MMLrm\getXMLentity{mathematicald}
-%             \endgroup
-            \mfunction{\getXMLentity{mathematicald}}
-            ^{\the\XMLRtoks}
-            \doif\@@MMLdifflocation\v!top {
-                \XMLdoifonstackelse{ci} {
-                    \XMLfirstnamed{ci}
+   \doifelse\@@MMLdiffalternative\v!a {
+        \XMLdoifonstackelse{bvar} {
+            \frac {
+                \XMLdoifonstackelse{degree} {
+                    \collectXMLnamedstack{degree}\empty
                 } {
-%                     \doifelseMMCfunction {
-                        \MMLcreset\XMLfirstnamed{apply}
-%                     } {
-%                         \left(\MMLcreset\XMLfirstnamed{apply}\right)
-%                     }
+                    \collectXMLnamedstacknamed{bvar}{degree}+
                 }
+                \mfunction{\getXMLentity{mathematicald}}
+                ^{\the\XMLRtoks}
+                \doif\@@MMLdifflocation\v!top {
+                    \XMLdoifonstackelse{ci} {
+                        \XMLfirstnamed{ci}
+                    } {
+                        \MMLcreset\XMLfirstnamed{apply}
+                    }
+                }
+            } {
+                \mfunction{\getXMLentity{mathematicald}}
+                \begingroup
+                    \defineXMLsave[degree]
+                    \XMLfirstnamed{bvar}
+                    \doifXMLdata{degree} {
+                        ^{\XMLflush{degree}}
+                    }
+                \endgroup
+            }
+            \doifnot\@@MMLdifflocation\v!top {
+                \left(\MMLcreset\XMLfirstnamed{apply,ci}\right)
             }
         } {
-%             \begingroup
-%                 \MMLrm\getXMLentity{mathematicald}
-%             \endgroup
-            \mfunction{\getXMLentity{mathematicald}}
-            \begingroup
-                \defineXMLsave[degree]
-                \XMLfirstnamed{bvar}
-                \doifXMLdata{degree} {
-                    ^{\XMLflush{degree}}
-                }
-            \endgroup
-        }
-        \doifnot\@@MMLdifflocation\v!top {
-            \left(\MMLcreset\XMLfirstnamed{apply,ci}\right)
+            \flushXMLstackfrom\plustwo^\prime
         }
     } {
-        \flushXMLstackfrom\plustwo^\prime
+      \MMLcreset\XMLfirstnamed{apply,ci}
+        ^{
+            \XMLdoifonstackelse{degree} {
+                \defXMLfirstnamedtext\ascii{degree}
+                \dorecurse\ascii\prime
+            } {
+                \prime
+            }
+        }
     }
 \stopsetups
 
@@ -1607,7 +1631,7 @@
   {\directsetup{mmc:annotation}}
 
 \startsetups mmc:annotation
-    \doif{\XMLpar{annotation}{encoding}{}}{TeX} {
+    \expanded{\doifinset{\XMLpar{annotation}{encoding}{}}{TeX,tex,TEX,ConTeXt,context,CONTEXT}} {
         \XMLtexdata{annotation}
     }
 \stopsetups

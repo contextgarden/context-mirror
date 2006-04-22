@@ -4431,7 +4431,7 @@
       <cd:parameter name="nummeren">
         <cd:constant type="ja"/>
         <cd:constant type="geencontrole"/>
-      </cd:parameter>
+     </cd:parameter>
       <cd:inherit name="stelomlijndin"/>
     </cd:assignments>
   </cd:arguments>

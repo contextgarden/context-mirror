@@ -17,6 +17,27 @@
 %D needed them for manuals and styles. The macros are documented
 %D in a my way document.
 
+%D For Mojca:
+%D
+%D \starttyping
+%D \def\simplethesis
+%D   {\setupsystem[random=1234]
+%D    \title{\fakewords{3}{4}}
+%D    \placelist[chapter,section]
+%D    \dorecurse{6}
+%D      {\chapter{\fakewords{5}{10}}
+%D       \dorecurse{5}
+%D         {\section{\fakewords{2}{5}}
+%D          \dorecurse{2}
+%D            {\dorecurse{3}{\fakewords{100}{200}\endgraf}
+%D             \placefigure{\fakewords{8}{15}}{\fakefigure{5cm}{3cm}{10cm}{5cm}}
+%D             \dorecurse{2}{\fakewords{100}{200}\endgraf}}}}}
+%D
+%D \starttext
+%D   \simplethesis
+%D \stoptext
+%D \stoptyping
+
 \definecolor[fakerulecolor]     [black]
 \definecolor[fakebaselinecolor] [green]
 \definecolor[fakeparindentcolor][blue]

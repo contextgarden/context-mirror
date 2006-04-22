@@ -234,8 +234,15 @@
 \def\dosetupnote[#1][#2]%
   {\edef\currentnote{#1}%
    \ifsecondargument
-     \getparameters
-       [\??vn\currentnote][#2]%
+\ifcase\localnodemode\or
+  \edef\localnode@n{\noteparameter\c!n}%
+  \edef\localnode@l{\noteparameter\c!location}%
+\fi
+     \getparameters[\??vn\currentnote][#2]%
+\ifcase\localnodemode\or
+  \letvalue{\??vn\currentnote\c!n       }\localnode@n
+  \letvalue{\??vn\currentnote\c!location}\localnode@l
+\fi
      \processaction
        [\noteparameter\c!rule]
        [     \v!on=>\letvalue{\??vn\c!rule:\currentnote}\normalnoterule,
@@ -274,7 +281,7 @@
           {\chardef\clevernotes\zerocount}}%
    \ifcase\clevernotes\relax
      % notes not in column areas
-     \ifnum\noteparameter\c!n=\zerocount
+     \ifnum\noteparameter\c!n=\zerocount % no ifcase
        \settextnotes
        \scratchcounter\plusone
      \else
@@ -291,7 +298,7 @@
         \global\bottomnotestrue}% not: \postponenotes, else global
     \else
       % notes in column areas
-      \ifnum\@@kln=\zerocount % brrr dependency on \??kl
+      \ifnum\@@kln=\zerocount % no ifcase / brrr dependency on \??kl
         \scratchcounter\plusone
       \else
         \scratchcounter\footnoteparameter\c!n\relax % **
@@ -393,19 +400,41 @@
                            \ifvbox0\unvbox\else\box\fi0}%
                         \rigidcolumnbalance0\egroup}}
 
+% \def\settextnotes
+%   {\def\startpushnote  {\startvboxtohbox
+%                         \dostartattributes{\??vn\currentnote}\c!style\c!color\empty}%
+%    \def\stoppushnote   {\hskip\noteparameter\c!columndistance % plus.5em minus.5em
+%                         \dostopattributes
+%                         \stopvboxtohbox}%
+%    \def\startpopnotes  {\vbox\bgroup
+%                         \doifnotinset{\noteparameter\c!width}{\v!fit,\v!broad}\setnotehsize
+%                         \beginofshapebox}%
+%    \def\stoppopnotes   {\endofshapebox
+%                         \reshapebox{\ifhbox\shapebox\unhbox\else\box\fi\shapebox\endgraf}%
+%                         \flushshapebox
+%                         \egroup}}
+%
+% this was wrong (for ages)
+
 \def\settextnotes
   {\def\startpushnote  {\startvboxtohbox
                         \dostartattributes{\??vn\currentnote}\c!style\c!color\empty}%
    \def\stoppushnote   {\hskip\noteparameter\c!columndistance % plus.5em minus.5em
                         \dostopattributes
                         \stopvboxtohbox}%
+%    \def\startpopnotes  {\vbox\bgroup
+%                         \doifnotinset{\noteparameter\c!width}{\v!fit,\v!broad}\setnotehsize}
+%    \def\stoppopnotes   {\convertvboxtohbox
+%                         \egroup}%
    \def\startpopnotes  {\vbox\bgroup
                         \doifnotinset{\noteparameter\c!width}{\v!fit,\v!broad}\setnotehsize
                         \beginofshapebox}%
    \def\stoppopnotes   {\endofshapebox
-                        \reshapebox{\ifhbox\shapebox\unhbox\else\box\fi\shapebox\endgraf}%
-                        \flushshapebox
-                        \egroup}}
+                        \doreshapebox{\box\shapebox}{}{}{}% get rid of penalties etc
+                        \innerflushshapebox
+                        \convertvboxtohbox
+                        \egroup}%
+  }
 
 %D The formatting depends on the width of the table, so we
 %D have to set \type {n} to zero.
@@ -473,6 +502,7 @@
 \def\dosetnote[#1][#2][#3]%
   {\unskip
    \def\currentnote{#2}%
+   \dochecknote % sometimes needed for local notes
    \ifcase#1\relax
      \global\notesymbolfalse
    \else
@@ -622,7 +652,7 @@
      \splitmaxdepth\strutdp % not actually needed here
      \leftmargindistance\noteparameter\c!margindistance
      \rightmargindistance\leftmargindistance
-     \ifcase\noteparameter\c!n\relax % new 31-07-99 ; always ?
+     \ifnum\noteparameter\c!n=\zerocount % no ifcase new 31-07-99 ; always ?
        \doifnotinset{\noteparameter\c!width}{\v!fit,\v!broad}\setnotehsize
      \fi
      \startpushnote
@@ -761,11 +791,13 @@
           \setnotebodyfont
 %          % this should be checked, smells like a mix-up
 %          % does not split: \ifcase\noteparameter\c!n\unvbox\else\box\fi\currentnoteins
-%          \ifcase\noteparameter\c!n
+           \ifnum\noteparameter\c!n=\zerocount % no ifcase
+             \unvbox\currentnoteins
+           \or
              \box\currentnoteins
-%          \else
-%            \unvbox\currentnoteins
-%          \fi
+           \else
+             \unvbox\currentnoteins
+           \fi
           % this is too ugly actually
           \stoppopnotes}%
        \setbox2\hbox
@@ -936,7 +968,10 @@
      \startpopnotes % make sure that fake height is killed
      \unvbox#1\endgraf
      \stoppopnotes
-     \setbox0=\lastbox \ifvbox0 \unvbox0\else\box0\fi % enable columns
+     % weird
+     \ifhmode
+        \setbox0=\lastbox \ifvbox0 \unvbox0\else\box0\fi % enable columns
+     \fi
      \noteparameter\c!after
    \fi}
 
@@ -970,9 +1005,12 @@
   {\bgroup % here because we support \vbox\startlocalnotes
    \dosingleempty\dostartlocalnotes}
 
+\chardef\localnodemode\zerocount
+
 \def\dostartlocalnotes[#1]%
   {\let\autopostponenotes\postponenotes
    \let\postponenotes\collectlocalnotes
+   \chardef\localnodemode\plusone % new
    \def\defaultnotewidth{\ifdim\hsize<\makeupwidth\hsize\else\makeupwidth\fi}%
    \processnotes
      {\doifsomething{#1}{\setupnote[\currentnote][#1]}%
@@ -990,12 +1028,17 @@
 
 \def\doplacelocalnotes[#1][#2]%
   {\bgroup
+   \chardef\localnodemode\plusone % new
    \dolocalsetupnotes{#1}{#2}%
-   \processnotes
-     {\ExpandBothAfter\doifinsetelse\v!none{\noteparameter\c!location}
-        \placenotesasnone\placenotesintext\localpostponednotes}%
+   \processnotes\dodoplacelocalnotes
    \egroup
-   \checknotes}
+   \checknotes} % probably not needed
+
+\def\dodoplacelocalnotes
+  {\dochecknote
+   \expanded{\doifinsetelse{\v!none}{\noteparameter\c!location}}
+     \placenotesasnone\placenotesintext
+   \localpostponednotes}
 
 %D These commands can be used like:
 %D
