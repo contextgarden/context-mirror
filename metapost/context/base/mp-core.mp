@@ -350,13 +350,14 @@ enddef ;
 
 numeric nofmultipars ; nofmultipars := 0 ;
 
-boolean obey_multi_par_hang   ; obey_multi_par_hang   := true ;
-boolean obey_multi_par_more   ; obey_multi_par_more   := true ;
-boolean snap_multi_par_tops   ; snap_multi_par_tops   := true ;
-boolean local_multi_par_area  ; local_multi_par_area  := false ;
-boolean ignore_multi_par_page ; ignore_multi_par_page := false ;
-
-boolean one_piece_multi_par   ; one_piece_multi_par   := false ;
+boolean obey_multi_par_hang    ; obey_multi_par_hang    := true  ;
+boolean obey_multi_par_more    ; obey_multi_par_more    := true  ;
+boolean snap_multi_par_tops    ; snap_multi_par_tops    := true  ;
+boolean local_multi_par_area   ; local_multi_par_area   := false ;
+boolean ignore_multi_par_page  ; ignore_multi_par_page  := false ;
+boolean force_multi_par_chain  ; force_multi_par_chain  := true  ;
+boolean one_piece_multi_par    ; one_piece_multi_par    := false ;
+boolean check_multi_par_chain  ; check_multi_par_chain  := true  ; % extra page check
 
 def simplify_multi_pars = % boundingbox ipv shape als optie
   for i := 1 upto nofmultipars :
@@ -753,7 +754,6 @@ fi ;
 
     if (nxy[fpos]=RealPageNumber) and (InsideTextArea(i,par_start_pos)) :
 
-
       % first one in chain
 
       ii := i ;
@@ -940,11 +940,16 @@ snapped_multi_pos(ulxy[tpos]) --
 
   % second loop
 
+if force_multi_par_chain or (ii > 1) :
+
   for i=ii+1 upto nn-1 :
 
     % rest of chain / todo : hang
 
-%if (nxy[fpos]<=RealPageNumber) and (nxy[tpos]>=RealPageNumber) :
+% we need to test, else we get a <lineheight bottom one
+% triggering a whole text frame; weird
+
+if (not check_multi_par_chain) or ((nxy[fpos]<RealPageNumber) and (nxy[tpos]>RealPageNumber)) :
 
     multipar := set_multipar(i) ;
 
@@ -961,9 +966,11 @@ snapped_multi_pos(ulxy[tpos]) --
 
     save_multipar(i,2,multipar) ;
 
-%fi ;
+fi ;
 
   endfor ;
+
+fi ;
 
   % end of normal/fallback
 

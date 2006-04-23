@@ -182,6 +182,21 @@
 %D output.
 
 %D \macros
+%D   {jobsuffix}
+%D
+%D By default, \TEX\ produces \DVI\ files which can be
+%D converted to other filetypes. Sometimes it is handy to
+%D know what the target file will be. In other driver
+%D modules we wil set \type {\jobsuffix} to \type {pdf}.
+
+\def\jobsuffix{dvi}
+
+\def\setjobsuffix#1%
+  {\resetsystemmode\jobsuffix
+   \edef\jobsuffix{#1}%
+   \setsystemmode\jobsuffix}
+
+%D \macros
 %D   {everyresetspecials}
 %D
 %D Now what will this one do? We'll see in a few lines.

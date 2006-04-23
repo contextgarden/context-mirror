@@ -354,7 +354,8 @@
      \bgroup
      \let\par\space
      \iflongMPlines
-       \immediate\write\MPwrite{#1;}%
+      %\immediate\write\MPwrite{#1;}% oeps, ; invalid
+       \immediate\write\MPwrite{#1}%
      \else
        \long\edef\ascii{#1}%
        \expandafter\flushMPgraphicline\ascii\empty;\relax;%

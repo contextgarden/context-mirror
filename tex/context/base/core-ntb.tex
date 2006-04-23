@@ -1354,10 +1354,11 @@
 
 % new, needed for icare first col of 'doeltabel', experimental
 
-\long\def\dohandleTBLcellA#1#2[#3]#4%
-  {\setbox\scratchbox\hbox
-     {\setupTBLcell{#1}{#2}%
-      \scratchdimen\tbltbldistance\relax
+\long\def\dohandleTBLcellA#1#2[#3]#4% grouping added ! ! !
+  {\bgroup
+   \setupTBLcell{#1}{#2}%
+   \setbox\scratchbox\hbox
+     {\scratchdimen\tbltbldistance\relax
       \ifdim\scratchdimen>\gettbldis{#2}\relax
         \settbldis{#2}{\the\scratchdimen}%
       \fi
@@ -1368,21 +1369,21 @@
    \scratchdimen\gettblwid\colTBL\relax
    \ifdim\wd\scratchbox>\scratchdimen
      \ifsqueezeTBLspan
-% \doifinset\tbltblwidth{\v!fit,\v!fixed,\v!broad,\v!local}{%
-%        \ifnum0\number\gettblcol{#1}{#2}>1\relax \settblspn\colTBL \fi
-% }%
-\ifautosqueezeTBLspan
-\doifinsetelse\tbltblwidth{\v!fit,\v!fixed,\v!broad,\v!local}
-       \donetrue \donefalse
-\else
-  \donetrue
-\fi
-\ifdone
-       \ifnum0\number\gettblcol{#1}{#2}>1\relax \settblspn\colTBL \fi
-\fi
+       \ifautosqueezeTBLspan
+         \doifinsetelse\tbltblwidth{\v!fit,\v!fixed,\v!broad,\v!local}
+           \donetrue \donefalse
+       \else
+         \donetrue
+       \fi
+       \ifdone
+         \ifnum0\number\gettblcol{#1}{#2}>1\relax \settblspn\colTBL \fi
+       \fi
      \fi
      \doifelsetblspn\colTBL
-       \donothing{\ifdim\gettblwid\colTBL<\wd\scratchbox\settblwid\colTBL{\the\wd\scratchbox}\fi}% auto set
+       \donothing
+       {\ifdim\gettblwid\colTBL<\wd\scratchbox
+          \settblwid\colTBL{\the\wd\scratchbox}%
+        \fi}% auto set
    \fi
    \let\rowTBLx\rowTBL\increment\rowTBLx
    \scratchdimen\gettblhei\rowTBLx\relax
@@ -1393,8 +1394,8 @@
    \settblwd{#1}{#2}{\the\wd\scratchbox}%
    \ifautoTBLcheckwidth
      \ifdim\wd\scratchbox<.75\hsize
-       \ifdim\ht\scratchbox>2\openlineheight % honor width since this can be a
-         \scratchdimen\gettblaut\colTBL\relax % figure or so
+       \ifdim\ht\scratchbox>2\openlineheight % honor width since this
+         \scratchdimen\gettblaut\colTBL\relax % can be a figure or so
          \ifdim\scratchdimen=\zeropoint
            % side effect: when width is set to 0pt,
            % we can force a span that fits the sum of spans widths
@@ -1403,14 +1404,16 @@
            % unless span
            \settblaut\colTBL{\the\wd\scratchbox}%
            % to be translated
-           \writestatus\m!TABLE{no auto width in (\number#1,\number#2)\space\the\wd\scratchbox/\the\hsize}%
+           \writestatus\m!TABLE
+             {no auto width in (\number#1,\number#2)\space\the\wd\scratchbox/\the\hsize}%
          \fi\fi
        \fi
      \fi
    \fi
    \setbox2\null
    \wd2\wd\scratchbox \ht2\ht\scratchbox \dp2\dp\scratchbox
-   \box2}
+   \box2
+   \egroup}
 
 \long\def\dohandleTBLcellBC#1#2#3[#4]#5%
   {\setbox\scratchbox\hbox

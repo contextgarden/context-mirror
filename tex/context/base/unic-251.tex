@@ -1,0 +1,34 @@
+%D \module
+%D   [       file=unic-251,
+%D        version=2006.04.20,
+%D          title=\CONTEXT\ \UNICODE\ Macros,
+%D       subtitle=Vector 251,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright=PRAGMA-ADE]
+
+\unprotect
+
+\def\ffligature  {ff}
+\def\filigature  {fi}
+\def\flligature  {fl}
+\def\ffiligature {ffi}
+\def\fflligature {ffl}
+\def\ftligature  {ft}
+\def\stligature  {st}
+
+\startunicodevector 251
+  \expandafter\strippedcsname
+  \ifcase\numexpr#1\relax
+    \ffligature         \or   % LATIN SMALL LIGATURE FF
+    \filigature         \or   % LATIN SMALL LIGATURE FI
+    \flligature         \or   % LATIN SMALL LIGATURE FL
+    \ffiligature        \or   % LATIN SMALL LIGATURE FFI
+    \fflligature        \or   % LATIN SMALL LIGATURE FFL
+    \ftligature         \or   % LATIN SMALL LIGATURE FT
+    \stligature         \else % LATIN SMALL LIGATURE ST
+    \unknownchar
+  \fi
+\stopunicodevector
+
+\protect \endinput

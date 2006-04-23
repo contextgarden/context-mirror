@@ -160,6 +160,9 @@
 
 % maybe we should inherit (todo)
 
+\def\@@defaultnotedefloc{\v!inleft}
+\def\@@defaultnotedefdis{\!!zeropoint}
+
 \def\dodefinenote[#1][#2]%
   {\def\currentnote{#1}%
    \ifundefined{\??vn:\currentnote}%
@@ -172,7 +175,8 @@
    \fi
    \definedescription
      [\??vn\??vn\currentnote]
-     [\c!location=\v!inleft,
+     [\c!location=\@@defaultnotedefloc,
+      \c!distance=\@@defaultnotedefdis,
       \c!width=\v!fit,
       \c!headstyle=\noteparameter\c!style,
       \c!headcolor=\noteparameter\c!color,
@@ -268,6 +272,10 @@
        {\processnotes{\setupnote[\currentnote][#1]}}
        {\edef\noteinsertions{#1}}%
    \fi\fi}
+
+% redefined:
+
+% so that it matches:
 
 \def\dochecknote % only to be called locally, some bools will become class-ones
   {% for the moment no mixed text/endnotes modes, so we use
@@ -416,25 +424,43 @@
 %
 % this was wrong (for ages)
 
+% \def\settextnotes
+%   {\def\startpushnote  {\startvboxtohbox
+%                         \dostartattributes{\??vn\currentnote}\c!style\c!color\empty}%
+%    \def\stoppushnote   {\hskip\noteparameter\c!columndistance % plus.5em minus.5em
+%                         \dostopattributes
+%                         \stopvboxtohbox}%
+%   %\def\startpopnotes  {\vbox\bgroup
+%   %                     \doifnotinset{\noteparameter\c!width}{\v!fit,\v!broad}\setnotehsize}
+%   %\def\stoppopnotes   {\convertvboxtohbox
+%   %                     \egroup}%
+%    \def\startpopnotes  {\vbox\bgroup
+%                         \doifnotinset{\noteparameter\c!width}{\v!fit,\v!broad}\setnotehsize
+%                         \beginofshapebox}%
+%    \def\stoppopnotes   {\endofshapebox
+%                         \doreshapebox{\box\shapebox}{}{}{}% get rid of penalties etc
+%                         \innerflushshapebox
+%                         \convertvboxtohbox
+%                         \egroup}%
+%   }
+
 \def\settextnotes
   {\def\startpushnote  {\startvboxtohbox
-                        \dostartattributes{\??vn\currentnote}\c!style\c!color\empty}%
-   \def\stoppushnote   {\hskip\noteparameter\c!columndistance % plus.5em minus.5em
-                        \dostopattributes
+                        \startnotedef}%
+   \def\stoppushnote   {\stopnotedef
+                        \hskip\noteparameter\c!columndistance % plus.5em minus.5em
                         \stopvboxtohbox}%
-%    \def\startpopnotes  {\vbox\bgroup
-%                         \doifnotinset{\noteparameter\c!width}{\v!fit,\v!broad}\setnotehsize}
-%    \def\stoppopnotes   {\convertvboxtohbox
-%                         \egroup}%
    \def\startpopnotes  {\vbox\bgroup
+                        % here, else problems in preroll
+                        \edef\@@defaultnotedefloc{\ifnum\noteparameter\c!n=\zerocount\v!serried\else\v!inleft   \fi}%
+                        \edef\@@defaultnotedefdis{\ifnum\noteparameter\c!n=\zerocount      .5em\else\!!zeropoint\fi}%
                         \doifnotinset{\noteparameter\c!width}{\v!fit,\v!broad}\setnotehsize
                         \beginofshapebox}%
    \def\stoppopnotes   {\endofshapebox
                         \doreshapebox{\box\shapebox}{}{}{}% get rid of penalties etc
                         \innerflushshapebox
                         \convertvboxtohbox
-                        \egroup}%
-  }
+                        \egroup}}
 
 %D The formatting depends on the width of the table, so we
 %D have to set \type {n} to zero.
@@ -791,7 +817,7 @@
           \setnotebodyfont
 %          % this should be checked, smells like a mix-up
 %          % does not split: \ifcase\noteparameter\c!n\unvbox\else\box\fi\currentnoteins
-           \ifnum\noteparameter\c!n=\zerocount % no ifcase
+           \ifcase\noteparameter\c!n\relax
              \unvbox\currentnoteins
            \or
              \box\currentnoteins
