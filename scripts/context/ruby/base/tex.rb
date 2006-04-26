@@ -125,7 +125,7 @@ class TEX
         'nomapfiles', 'local',
         'arrange', 'noarrange',
         'forcexml', 'foxet',
-'alpha', 'beta',
+        'alpha', 'beta',
         'mpyforce', 'forcempy',
         'forcetexutil', 'texutil',
         'globalfile', 'autopath',
@@ -136,7 +136,8 @@ class TEX
         'modefile', 'result', 'suffix', 'response', 'path',
         'filters', 'usemodules', 'environments', 'separation', 'setuppath',
         'arguments', 'input', 'output', 'randomseed', 'modes', 'mode', 'filename',
-        'ctxfile', 'printformat', 'paperformat'
+        'ctxfile', 'printformat', 'paperformat',
+        'timeout'
     ]
     @@standardvars = [
         'mainlanguage', 'bodyfont', 'language'
@@ -858,12 +859,34 @@ end
 
 class TEX
 
+    def timedrun(delay, &block)
+        delay = delay.to_i rescue 0
+        if delay > 0 then
+            begin
+                report("job started with timeout '#{delay}'")
+                timeout(delay) do
+                    yield block
+                end
+            rescue TimeoutError
+                report("job aborted due to timeout '#{delay}'")
+            rescue
+                report("job aborted due to error")
+            else
+                report("job finished within timeout '#{delay}'")
+            end
+        else
+            yield block
+        end
+    end
+
     def processtex # much to do: mp, xml, runs etc
         setvariable('texformats',[getvariable('interface')]) unless getvariable('interface').empty?
         getarrayvariable('files').each do |filename|
             setvariable('filename',filename)
             report("processing document '#{filename}'")
-            processfile
+            timedrun(getvariable('timeout')) do
+                processfile
+            end
         end
         reportruntime
     end

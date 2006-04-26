@@ -7560,6 +7560,8 @@
       <cd:constant type="nizko"/>
       <cd:constant type="prizpusobive"/>
       <cd:constant type="stranka"/>
+      <cd:constant type="levastranka"/>
+      <cd:constant type="pravastranka"/>
       <cd:constant type="naproti"/>
       <cd:constant type="vzdy"/>
       <cd:constant type="auto"/>

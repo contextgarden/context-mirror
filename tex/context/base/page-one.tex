@@ -586,16 +586,20 @@
      \doifinset\v!tall{#1}\flushsidefloatsafterpar
    \fi}
 
-\def\OTRONEsomepagefloat[#1]%
+\def\OTRONEdosomepagefloat#1[#2]%
   {%\checkwaitingfloats{#1}%
-   \global\setbox\collectedpagefloats\vbox
-     {\unvbox\collectedpagefloats
+   \global\setbox#1\vbox
+     {\unvbox#1%
       \vbox to \textheight
-        {\doifnotinset\v!high{#1}\vfill
+        {\doifnotinset\v!high{#2}\vfill
          \box\floatbox
-         \doifnotinset\v!low{#1}\vfill}%
+         \doifnotinset\v!low{#2}\vfill}%
       \goodbreak}%
    \doinsertfloatinfo}
+
+\def\OTRONEsomepagefloat     {\OTRONEdosomepagefloat\collectedpagefloats}
+\def\OTRONEsomeleftpagefloat {\OTRONEdosomepagefloat\collectedleftpagefloats}
+\def\OTRONEsomerightpagefloat{\OTRONEdosomepagefloat\collectedrightpagefloats}
 
 \def\OTRONEsometopsfloat[#1]%
   {\ifdim\topinserted=\zeropoint

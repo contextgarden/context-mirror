@@ -21,11 +21,19 @@ require 'rbconfig'
 class String
 
     def split_path
-        self.split(/\:\;/)
+        if self =~ /\;/ then
+            self.split(";")
+        else
+            self.split(":")
+        end
     end
 
+end
+
+class Array
+
     def join_path
-        self.join(FILE::PATH_SEPARATOR)
+        self.join(File::PATH_SEPARATOR)
     end
 
 end

@@ -2850,8 +2850,8 @@
       \fi}%
    \chardef\currentxfontsize\zerocount}
 
-\def\dodosetfont#1#2%  #1 = set/switch state
-  {\dododosetfont{#1}{#2}{\showmessage\m!fonts4{#2}}}
+\def\dodosetfont#1#2%  #1 = set/switch state | check fo rempty, else space
+  {\doifsomething{#2}{\dododosetfont{#1}{#2}{\showmessage\m!fonts4{#2}}}}
 
 \def\dododosetfont#1#2#3% #1 = set/switch state
   {\doifnumberelse{#2}
@@ -3619,8 +3619,7 @@
 %D because \PLAIN\ \TEX\ is english anyway.
 
 \def\dodefinebodyfontswitch[#1][#2]%
-  {\def\docommando##1%
-     {\setvalue{##1}{\switchtobodyfont[#2]}}%
+  {\def\docommando##1{\setvalue{##1}{\switchtobodyfont[#2]}}%
    \processcommalist[#1]\docommando}
 
 \def\definebodyfontswitch

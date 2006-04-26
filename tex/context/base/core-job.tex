@@ -352,7 +352,7 @@
 
 \def\donextlevel#1#2#3#4#5#6#7\\%
   {\pushmacro\currentcomponent
-   \let\currentcomponent#1
+   \let\currentcomponent#1%
    \setsystemmode\currentcomponent
    \beforesplitstring#7\at.\to#2\relax
    \ifcase\filelevel\relax

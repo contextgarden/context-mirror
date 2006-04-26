@@ -7560,6 +7560,8 @@
       <cd:constant type="jos"/>
       <cd:constant type="ajustat"/>
       <cd:constant type="pagina"/>
+      <cd:constant type="paginastanga"/>
+      <cd:constant type="paginadreapta"/>
       <cd:constant type="opus"/>
       <cd:constant type="totdeauna"/>
       <cd:constant type="auto"/>

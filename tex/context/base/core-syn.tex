@@ -251,10 +251,22 @@
    \endgroup
    \ifutilitydone\else\nowhitespace\fi}
 
+% to be tested
+%
+% \def\doplacelistofsorts#1% NOG EEN RUWE VERSIE MAKEN
+%   {\startpacked
+%    \doutilities{#1}\jobname{#1}\relax\par
+%    \stoppacked}
+
 \def\docompletelistofsorts#1#2%
   {\expanded{\systemsuppliedchapter[#1]{\noexpand\headtext{#2}}}%
    \doplacelistofsorts{#1}%
    \page[\v!yes]}
+
+% todo:
+%
+% \def\placelistofsorts[#1]%
+%   {\doplacelistofsorts{#1}}
 
 \def\processsort#1#2#3%
   {\explicithmode

@@ -27,8 +27,8 @@
 
 \def\checklayerproperty
   {\doifelse{\checkedpropertyparameter\v!printable\currentproperty}\v!no
-     {\def\printviewerlayer{0}}%
-     {\def\printviewerlayer{1}}
+     {\def\printviewerlayer{0}}
+     {\def\printviewerlayer{1}}%
    \dodefineviewerlayer
      \currentproperty % tag
      {\checkedpropertyparameter\c!title\currentproperty}%

@@ -7560,6 +7560,8 @@
       <cd:constant type="tief"/>
       <cd:constant type="passend"/>
       <cd:constant type="seite"/>
+      <cd:constant type="linkerseite"/>
+      <cd:constant type="rechterseite"/>
       <cd:constant type="gegenueber"/>
       <cd:constant type="immer"/>
       <cd:constant type="auto"/>

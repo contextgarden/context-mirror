@@ -7560,6 +7560,8 @@
       <cd:constant type="laag"/>
       <cd:constant type="passend"/>
       <cd:constant type="pagina"/>
+      <cd:constant type="linkerpagina"/>
+      <cd:constant type="rechterpagina"/>
       <cd:constant type="naast"/>
       <cd:constant type="altijd"/>
       <cd:constant type="auto"/>

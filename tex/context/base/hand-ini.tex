@@ -208,15 +208,15 @@
   \def\dosetfontadjusting#1%
     {\iftracefonthandling\showfontadjusting{#1}\fi
      \pdffontexpand\handledfont
-       \csname\@fha@\@fha@#1\c!min \endcsname\space
        \csname\@fha@\@fha@#1\c!max \endcsname\space
+       \csname\@fha@\@fha@#1\c!min \endcsname\space
        \csname\@fha@\@fha@#1\c!step\endcsname\space
        \@@pdfexpandbonus\relax}
 
   \def\showfontadjusting#1%
     {\writestatus\m!handlings{[adjust]\space#1\space
-       \csname\@fha@\@fha@#1\c!min \endcsname/%
        \csname\@fha@\@fha@#1\c!max \endcsname/%
+       \csname\@fha@\@fha@#1\c!min \endcsname/%
        \csname\@fha@\@fha@#1\c!step\endcsname\space
        \fontname\handledfont}}
 \fi

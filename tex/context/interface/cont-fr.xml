@@ -7560,6 +7560,8 @@
       <cd:constant type="bas"/>
       <cd:constant type="adapte"/>
       <cd:constant type="page"/>
+      <cd:constant type="pagegauche"/>
+      <cd:constant type="pagedroite"/>
       <cd:constant type="opposition"/>
       <cd:constant type="toujours"/>
       <cd:constant type="auto"/>

@@ -2071,7 +2071,7 @@
    \edef\currentmathcases{#1}%
    \doifassignmentelse{#2}{\setupmathcases[#1][#2]}\donothing
    \mathcasesparameter\c!left
-   \ruledvcenter\bgroup
+   \vcenter\bgroup
    \pushmacro\docasesNC
    \let\endmath\relax
    \def\NC{\docasesNC}%

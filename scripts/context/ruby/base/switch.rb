@@ -52,7 +52,7 @@ class File
             oldtime = File.stat(oldname).mtime.to_i
             newtime = File.stat(newname).mtime.to_i
             delta = newtime - oldtime
-            (delta  > @@update_eps) || (-delta > @@update_eps)
+            delta < @@update_eps
         rescue
             return true
         end

@@ -571,8 +571,13 @@
          \fi}%
       \dobacktrackcommando\lastsection}}
 
+% \def\ignoresectionconversion % brrr
+%   {\let\@@sectionconversion\secondoftwoarguments}
+
 \def\dosetfilterlevel#1#2% beware: this one is \let
   {\bgroup
+   \let\@@shortsectionnumber\@@sectionvalue
+%    \ignoresectionconversion
    \edef\askedlevel{#1}%
    \edef\askedfilter{#2}%
    \ifx\askedlevel\v!current

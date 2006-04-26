@@ -2539,7 +2539,7 @@
 %D Even more important is that this alternative is fully
 %D expandable!
 
-\long\def\doifnumberelse#1%
+\long\def\doifnumberelse#1% does not accept counters
   {\ifcase0\ifcase1#1\or\or\or\or\or\or\or\or\or\else1\fi\space
      \expandafter\secondoftwoarguments
    \else

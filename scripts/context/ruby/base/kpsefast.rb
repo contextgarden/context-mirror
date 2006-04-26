@@ -10,6 +10,26 @@
 
 # todo: multiple cnf files
 
+class String
+
+    def split_path
+        if self =~ /\;/ then
+            self.split(";")
+        else
+            self.split(":")
+        end
+    end
+
+end
+
+class Array
+
+    def join_path
+        self.join(File::PATH_SEPARATOR)
+    end
+
+end
+
 class File
 
     def File.locate_file(path,name)
@@ -50,7 +70,7 @@ module KpseUtil
         end
         filenames = Array.new
         if ENV['TEXMFCNF'] and not ENV['TEXMFCNF'].empty? then
-            ENV['TEXMFCNF'].split_path.each do |path|
+            ENV['TEXMFCNF'].to_s.split_path.each do |path|
                 filenames << File.join(path,@@texmfcnf)
             end
         elsif ENV['SELFAUTOPARENT'] == '.' then
@@ -75,18 +95,6 @@ module KpseUtil
 
     def KpseUtil::environment
         Hash.new.merge(ENV)
-    end
-
-end
-
-class String
-
-    def split_path
-        self.split(/\:\;/)
-    end
-
-    def join_path
-        self.join(FILE::PATH_SEPARATOR)
     end
 
 end
@@ -293,7 +301,7 @@ class KpseFast
             end
             filenames = Array.new
             if @environment['TEXMFCNF'] and not @environment['TEXMFCNF'].empty? then
-                @environment['TEXMFCNF'].split_path.each do |path|
+                @environment['TEXMFCNF'].to_s.split_path.each do |path|
                     filenames << File.join(path,@@texmfcnf)
                 end
             elsif @environment['SELFAUTOPARENT'] == '.' then

@@ -7560,6 +7560,8 @@
       <cd:constant type="low"/>
       <cd:constant type="fit"/>
       <cd:constant type="page"/>
+      <cd:constant type="leftpage"/>
+      <cd:constant type="rightpage"/>
       <cd:constant type="opposite"/>
       <cd:constant type="always"/>
       <cd:constant type="auto"/>

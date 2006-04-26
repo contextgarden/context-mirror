@@ -11,7 +11,7 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-\newcontextversion{2006.04.23 23:55}
+\newcontextversion{2006.04.27 00:58}
 
 %D This file is loaded at runtime, thereby providing an
 %D excellent place for hacks, patches, extensions and new
@@ -25,6 +25,22 @@
 \unprotect
 
 \writestatus{\m!systems}{beware: some patches loaded from cont-new.tex}
+
+\def\environment #1 % at outermost level only (load only once)
+  {\pushmacro\startenvironment
+   \pushmacro\stopenvironment
+   \def\startenvironment ##1 {}%
+   \let\stopenvironment\relax
+   \startreadingfile
+   \doexecutefileonce{#1}
+   \stopreadingfile
+   \popmacro\startenvironment
+   \popmacro\stopenvironment}
+
+\def\singlewidened     #1{\hbox spread 1em{\hss#1\hss}}
+\def\complexwidened[#1]#2{\hbox spread  #1{\hss#2\hss}}
+
+\definecomplexorsimple\widened
 
 % todo
 %

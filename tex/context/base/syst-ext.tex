@@ -3777,18 +3777,16 @@
 %D \processlist(){=>}\docommando(a=>b=>c=>d)
 %D \stoptyping
 
-\long\def\processlist#1#2#3#4%
+\long\def\processlist#1#2#3#4% no blank skipping !
   {\def\doprocesslist##1#2%
      {\def\dodoprocesslist####1####2#3%
         {\ifx#2####1%
            \let\dodoprocesslist\relax
          \else\ifx#2####2%
            \let\dodoprocesslist\relax
-         \else\ifx\blankspace####2%
-           #4{####1}%
          \else
            #4{####1####2}%
-         \fi\fi\fi
+         \fi\fi
          \dodoprocesslist}%
       \expandafter\dodoprocesslist\gobbleoneargument##1#3#2#3}%
    \def\dodoprocesslist#1%

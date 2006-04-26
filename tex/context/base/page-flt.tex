@@ -1055,18 +1055,18 @@
 %       \goodbreak}%
 %    \doinsertfloatinfo}
 
-\def\OTRONEsomepagefloat[#1]%
-  {%\checkwaitingfloats{#1}%
-   \global\setbox\collectedpagefloats\vbox
-     {\ifvoid\collectedpagefloats\else\unvbox\collectedpagefloats\fi
-      \vbox to \textheight % vss and unvbox catch too high and limited floats
-        {\vss
-         \doifnotinset\v!high{#1}\vfill
-         \unvbox\floatbox
-         \doifnotinset\v!low{#1}\vfill
-         \vss}%
-      \goodbreak}%
-   \doinsertfloatinfo}
+% \def\OTRONEsomepagefloat[#1]%
+%   {%\checkwaitingfloats{#1}%
+%    \global\setbox\collectedpagefloats\vbox
+%      {\ifvoid\collectedpagefloats\else\unvbox\collectedpagefloats\fi
+%       \vbox to \textheight % vss and unvbox catch too high and limited floats
+%         {\vss
+%          \doifnotinset\v!high{#1}\vfill
+%          \unvbox\floatbox
+%          \doifnotinset\v!low{#1}\vfill
+%          \vss}%
+%       \goodbreak}%
+%    \doinsertfloatinfo}
 
 % test case:
 %
@@ -2132,14 +2132,35 @@
 
 % \ifinpostponing: handhaven, want gebruikt in stijlen ! ! ! ! !
 
+\def\flushpagefloats
+  {\doifoddpageelse
+     {\ifvoid\collectedleftpagefloats
+        \ifvoid\collectedrightpagefloats\else
+           \unvbox\collectedrightpagefloats
+           \page
+          %\the\everytopofpage
+        \fi
+      \fi}
+     {\ifvoid\collectedleftpagefloats\else
+        \unvbox\collectedleftpagefloats
+        \page
+       %\the\everytopofpage
+      \fi
+      \ifvoid\collectedrightpagefloats\else
+         \unvbox\collectedrightpagefloats
+         \page
+        %\the\everytopofpage
+      \fi}%
+   \ifvoid\collectedpagefloats\else
+     % message
+     \unvbox\collectedpagefloats
+   \fi}
+
 \def\dopostponeblock
   {\bgroup % new may 2004
    \setsystemmode\v!postponing % new may 2004
    \the\everytopofpage
-   \ifvoid\collectedpagefloats\else
-     % message
-     \unvbox\collectedpagefloats
-   \fi
+   \flushpagefloats
    \donefalse
    \ifinpostponing \else
      \ifcase\nofpostponedblocks     \else \donetrue \fi
@@ -2393,6 +2414,8 @@
 \installfloathandler \v!margin      \somemarginfloat
 \installfloathandler \v!opposite    \somefacefloat
 \installfloathandler \v!page        \somepagefloat
+\installfloathandler \v!leftpage    \someleftpagefloat
+\installfloathandler \v!rightpage   \somerightpagefloat
 \installfloathandler \v!inmargin    \someinmarginfloat
 \installfloathandler \v!inleft      \someinleftmarginfloat
 \installfloathandler \v!inright     \someinrightmarginfloat
@@ -2415,14 +2438,16 @@
 \installfloathandler {fxtb} \someslotfloat
 \installfloathandler {fxbt} \someslotfloat
 
-\def\placesomeslotfloat {\OTRcommand\someslotfloat}
-\def\placesomeherefloat {\OTRcommand\someherefloat}
-\def\placesomefixdfloat {\OTRcommand\somefixdfloat}
-\def\placesomepagefloat {\OTRcommand\somepagefloat}
-\def\placesometopsfloat {\OTRcommand\sometopsfloat}
-\def\placesomebotsfloat {\OTRcommand\somebotsfloat}
-\def\placesomesidefloat {\OTRcommand\somesidefloat}
-\def\placesomefacefloat {\OTRcommand\somefacefloat}
+\def\placesomeslotfloat     {\OTRcommand\someslotfloat}
+\def\placesomeherefloat     {\OTRcommand\someherefloat}
+\def\placesomefixdfloat     {\OTRcommand\somefixdfloat}
+\def\placesomepagefloat     {\OTRcommand\somepagefloat}
+\def\placesomeleftpagefloat {\OTRcommand\someleftpagefloat}
+\def\placesomerightpagefloat{\OTRcommand\somerightpagefloat}
+\def\placesometopsfloat     {\OTRcommand\sometopsfloat}
+\def\placesomebotsfloat     {\OTRcommand\somebotsfloat}
+\def\placesomesidefloat     {\OTRcommand\somesidefloat}
+\def\placesomefacefloat     {\OTRcommand\somefacefloat}
 
 \def\someleftsidefloat     [#1]{\somesidefloat[#1]\presetindentation}
 \def\somerightsidefloat    [#1]{\somesidefloat[#1]}
@@ -2440,9 +2465,11 @@
 \def\somebackspacefloat    [#1]{\somesidefloat[#1]}
 \def\somecutspacefloat     [#1]{\somesidefloat[#1]}
 
-\def\somefixdfloat {\placesomefixdfloat}
-\def\somepagefloat {\placesomepagefloat}
-\def\somefacefloat {\placesomefacefloat}
-\def\someslotfloat {\placesomeslotfloat}
+\def\somefixdfloat     {\placesomefixdfloat}
+\def\somepagefloat     {\placesomepagefloat}
+\def\someleftpagefloat {\placesomeleftpagefloat}
+\def\somerightpagefloat{\placesomerightpagefloat}
+\def\somefacefloat     {\placesomefacefloat}
+\def\someslotfloat     {\placesomeslotfloat}
 
 \protect \endinput

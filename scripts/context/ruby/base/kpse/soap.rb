@@ -77,6 +77,3 @@ class KpseClient
     end
 
 end
-
-
-

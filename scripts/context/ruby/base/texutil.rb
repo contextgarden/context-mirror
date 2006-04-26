@@ -226,9 +226,11 @@ class TeXUtil
 
         def remap(str)
             s = str.dup
-            s.gsub!(/(\d+)/o) do
-                $1.rjust(10,'a') # rest is b .. k
-            end
+if true then # numbers are treated special
+    s.gsub!(/(\d+)/o) do
+        $1.rjust(10,'a') # rest is b .. k
+    end
+end
             if @rexa then
                 s.gsub!(@rexa) do
                     @rep[$1.escaped]
@@ -237,9 +239,9 @@ class TeXUtil
             if @rexb then
                 s.gsub!(@rexb) do
                     token = $1.sub(/\\/o, '')
-if @@downcase then
-    token.downcase!
-end
+                    if @@downcase then
+                        token.downcase!
+                    end
                     if @exp.key?(token) then
                         @exp[token].ljust(@max,' ')
                     elsif @map.key?(token) then
@@ -257,8 +259,7 @@ end
             'A'.upto('Z') do |c| expander(c) ; division(c) end
             expander('1','b') ; expander('2','c') ; expander('3','e') ; expander('4','f')
             expander('5','g') ; expander('6','h') ; expander('7','i') ; expander('8','i')
-            expander('9','j') ; expander('0','a') ; expander('-',"-") ;
-            # end potential move
+            expander('9','j') ; expander('0','a') ; expander('-','-') ;
             shortcuts.each  do |s| shortcut(s[0],s[1]) end
             expansions.each do |e| expander(e[0],e[1]) end
             reductions.each do |r| reducer(r[0],r[1]) end
@@ -452,7 +453,7 @@ end
                 attr_writer :sortkey
 
                 def build(sorter)
-@sortkey = sorter.normalize(sorter.tokenize(@sortkey))
+                    @sortkey = sorter.normalize(sorter.tokenize(@sortkey))
                     @sortkey = sorter.remap(sorter.simplify(@key.downcase))
                     if @sortkey.empty? then
                         @sortkey = sorter.remap(@command.downcase)
@@ -543,7 +544,7 @@ end
                 attr_writer :sortkey
 
                 def build(sorter)
-@entry, @key = sorter.normalize(@entry), sorter.normalize(sorter.tokenize(@key))
+                    @entry, @key = sorter.normalize(@entry), sorter.normalize(sorter.tokenize(@key))
 if false then
                     @entry, @key = [@entry, @key].collect do |target|
                         # +a+b+c &a&b&c a+b+c a&b&c
@@ -560,7 +561,7 @@ if false then
                         # end
                     end
 else
-    @entry, @key = cleanupsplit(@entry), cleanupsplit(@key)
+                    @entry, @key = cleanupsplit(@entry), cleanupsplit(@key)
 end
                     @sortkey = sorter.simplify(@key)
                     @sortkey = @sortkey.split(@@split).collect do |c| sorter.remap(c) end.join(@@split)

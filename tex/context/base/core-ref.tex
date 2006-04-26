@@ -615,10 +615,47 @@
 
 \def\currentfolioreference{0}
 
+% \def\dogetreferenceelements#1#2#3#4#5%
+%   {\chardef\currentreferencetype=\ifx#1\relax0\else#1\fi\relax
+%    \ifnum\currentreferencetype<2
+%      \edef\currentpagereference{#2}%
+%      \ifx\currentpagereference   \empty
+%        \let\currentfolioreference\folio
+%      \else
+%        \def \currentpagereference {\referencepagenumber[#2]}%
+%        \edef\currentfolioreference{\dosplitofffoliopart[#2]}%
+%      \fi
+%      \edef\currentrealreference{#3}%
+%      \settextreferences#4\end
+%      \ifnum0#5<\crossreferencenumber
+%        \forwardreferencetrue
+%      \else
+%        \forwardreferencefalse
+%      \fi
+%    \else
+%      \edef\currentrealreference {#3}%
+%      \def \currentdatareference {#2}%
+%      \let \currentfolioreference\folio
+%      \settextreferences#4\end
+%      \forwardreferencefalse
+%    \fi
+%    \ifodd\currentreferencetype
+%      \realreferencepagefalse
+%    \else
+%      \docheckrealreferencepage\currentrealreference
+%      \ifrealreferencepage \else
+%        \docheckrealreferencepage\currentdatareference
+%      \fi
+%    \fi}
+
+\let\currentlocationreference\empty
+
 \def\dogetreferenceelements#1#2#3#4#5%
   {\chardef\currentreferencetype=\ifx#1\relax0\else#1\fi\relax
-   \ifnum\currentreferencetype<2
+   \ifnum\currentreferencetype<\plustwo
      \edef\currentpagereference{#2}%
+     \let \currentdatareference\empty
+     \edef\currentlocationreference{#2}%
      \ifx\currentpagereference   \empty
        \let\currentfolioreference\folio
      \else
@@ -633,6 +670,7 @@
        \forwardreferencefalse
      \fi
    \else
+     \let \currentlocationreference\empty
      \edef\currentrealreference {#3}%
      \def \currentdatareference {#2}%
      \let \currentfolioreference\folio
@@ -1369,7 +1407,7 @@
 %    \egroup
 %    \doresetgotowhereever} % to prevent problems with direct goto's
 
-\def\doifreferencefoundelse#1#2#3% REF \cs
+\def\doifreferencefoundelse#1#2#3% REF \cs / never more than one group (else \aftergroup usage problems)
   {\checkreferences
    % first we collect the secondary ones
    \bgroup

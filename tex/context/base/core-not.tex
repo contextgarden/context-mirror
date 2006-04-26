@@ -446,14 +446,14 @@
 
 \def\settextnotes
   {\def\startpushnote  {\startvboxtohbox
+                        \edef\@@defaultnotedefloc{\ifnum\noteparameter\c!n=\zerocount\v!serried\else\v!inleft   \fi}%
+                        \edef\@@defaultnotedefdis{\ifnum\noteparameter\c!n=\zerocount      .5em\else\!!zeropoint\fi}%
                         \startnotedef}%
    \def\stoppushnote   {\stopnotedef
                         \hskip\noteparameter\c!columndistance % plus.5em minus.5em
                         \stopvboxtohbox}%
    \def\startpopnotes  {\vbox\bgroup
                         % here, else problems in preroll
-                        \edef\@@defaultnotedefloc{\ifnum\noteparameter\c!n=\zerocount\v!serried\else\v!inleft   \fi}%
-                        \edef\@@defaultnotedefdis{\ifnum\noteparameter\c!n=\zerocount      .5em\else\!!zeropoint\fi}%
                         \doifnotinset{\noteparameter\c!width}{\v!fit,\v!broad}\setnotehsize
                         \beginofshapebox}%
    \def\stoppopnotes   {\endofshapebox

@@ -1,0 +1,287 @@
+%D \module
+%D   [       file=m-database,
+%D        version=2006.04.23,
+%D          title=\CONTEXT\ Modules,
+%D       subtitle=Database Thingies,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright=PRAGMA
+
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+
+\unprotect
+
+% % % to be added to mult-* files
+%
+% % % todo: \dontcollectseparatedlist via k/v
+
+\definesystemvariable{ls}
+\def\c!first{first}
+\def\c!last {last}
+
+% % % so far
+
+% \long\def\processseplist#1#2#3\end
+%   {\def\doprocessseplist####1####2\end
+%      {\ifx\end####1%
+%         \expandafter\gobbleoneargument
+%       \else
+%          #2{####1####2}%
+%       \fi
+%       \doprocessseplist}%
+%    \dodoprocessseplist#3\end}
+
+\def\dodefineprocessseplist#1#2% separator \docommand
+  {\def\dodoprocessseplist##1##2#1%
+     {\ifx\relax##1%
+        \expandafter\nodoprocessseplist
+      \else\ifx##1#1%
+        #2{}%
+        #2{##2}%
+        \expandafter\expandafter\expandafter\dodoprocessseplist
+      \else
+        #2{##1##2}%
+        \expandafter\expandafter\expandafter\dodoprocessseplist
+      \fi\fi}%
+    \def\doprocessseplist##1\relax
+      {\dodoprocessseplist##1#1\relax#1\relax\relax\end}}
+
+\def\nodoprocessseplist#1\end
+  {}
+
+\long\def\processseplist#1#2#3\relax
+  {\dodefineprocessseplist{#1}{#2}%
+   \dodoprocessseplist#3#1\relax#1\relax\relax\end}
+
+% \dodefineprocessseplist{,}\test
+% \dodoprocessseplist{,}a,b,c\relax,\relax\relax\end
+% \doprocessseplista,b,c\relax
+
+% \def\test#1{[#1]}
+% \startlines
+% \processseplist{,}\test ,2,,\relax
+% \processseplist{,}\test ,,,44\relax
+% \processseplist{,}\test ,,33,44\relax
+% \processseplist{,}\test 11,,33,44\relax
+% \processseplist{,}\test 1,2,3,4\relax
+% \stoplines
+
+\newtoks\separatedlistdata
+
+\def\appendseparatedlistparameter#1%
+  {\@EAEAEA\appendtoks\csname\??ls\currentseparatedlist#1\endcsname\to\separatedlistdata}
+
+\def\appendseparatedlistcontent#1%
+  {\appendtoks#1\to\separatedlistdata}
+
+\def\flushseparatedlistdata
+  {\the\separatedlistdata
+   \separatedlistdata\emptytoks}
+
+\def\initializeseparatedlistdata
+  {\separatedlistdata{\egroup}}
+
+\def\dontcollectseparatedlist
+  {\def\dodoprocessseparatedfileline
+     {\the\separatedlistdata
+      \separatedlistdata\emptytoks
+      \doprocessseparatedfileline}%
+   \def\dodoprocessseparatedline
+     {\the\separatedlistdata
+      \separatedlistdata\emptytoks
+      \doprocessseparatedline}%
+   \let\flushseparatedlistdata\egroup
+   \let\initializeseparatedlistdata\donothing}
+
+\chardef\separatedlistmode\zerocount
+
+\bgroup  \obeylines
+
+\gdef\doprocessseparatedfileline%
+  {\ifeof\scratchread%
+     \ifcase\separatedlistmode\appendseparatedlistparameter\c!after\fi%
+     \immediate\closein\scratchread%
+     \expandafter\flushseparatedlistdata%
+   \else\ifx\line\empty%
+     % skip, can be comment
+     \read\scratchread to\line%
+     \@EA\dodoprocessseparatedfileline%
+   \else
+     \appendseparatedlistparameter{\ifcase\separatedlistmode\c!first\else\c!command\fi}%
+     \expandafter\doprocessseplist\line\relax%
+     \ifcase\separatedlistmode\appendseparatedlistparameter\c!last\fi%
+     \read\scratchread to\line%
+     \@EAEAEA\dodoprocessseparatedfileline%
+   \fi\fi}
+
+\gdef\dodoprocessseparatedfileline%
+  {\doprocessseparatedfileline}
+
+\gdef\doprocessseparatedfile[#1][#2]%
+  {\bgroup%
+   \edef\currentseparatedlist{#1}%
+   \doifdefined{\??ls\currentseparatedlist\c!command}{\chardef\separatedlistmode\plusone}%
+   \edef\currentlistseparator{\csname\??ls\currentseparatedlist\c!separator\endcsname}%
+   \ifx\currentlistseparator\empty\def\currentlistseparator{,}\fi%
+   \expandafter\dodefineprocessseplist\expandafter{\currentlistseparator}\doprocessseparateditem%
+   \initializeseparatedlistdata%
+   \directsetup{\currentseparatedlist:\executeifdefined{\??ls\currentseparatedlist\c!setups}\s!default}%
+   \ifcase\separatedlistmode\appendseparatedlistparameter\c!before\fi%
+   \endlinechar\minusone%
+   \ignorelines%
+   \catcode`\#\@@comment
+   \immediate\openin\scratchread=#2\relax% todo: \doopenin
+   \read\scratchread to\line%
+   \doprocessseparatedfileline}
+
+\gdef\dostartseparatedlist#1[#2]%
+  {\bgroup%
+   \edef\currentseparatedlist{#2}%
+   \doifdefined{\??ls\currentseparatedlist\c!command}{\chardef\separatedlistmode\plusone}%
+   \obeylines%
+   \let#1\relax%
+   \def\separateslistend{#1}%
+   \edef\currentlistseparator{\csname\??ls\currentseparatedlist\c!separator\endcsname}%
+   \ifx\currentlistseparator\empty\def\currentlistseparator{,}\fi%
+   \expandafter\dodefineprocessseplist\expandafter{\currentlistseparator}\doprocessseparateditem%
+   \directsetup{\currentseparatedlist:\executeifdefined{\??ls\currentseparatedlist\c!setups}\s!default}%
+   \initializeseparatedlistdata%
+   \ifcase\separatedlistmode\appendseparatedlistparameter\c!before\fi%
+   \dodostartseparatedlist}
+
+\gdef\dodostartseparatedlist#1
+  {\doprocessseparatedline}
+
+\gdef\doprocessseparatedline#1
+  {\def\!!stringa{#1}%
+   \ifx\!!stringa\separateslistend%
+     \ifcase\separatedlistmode\appendseparatedlistparameter\c!after\fi%
+     \expandafter\flushseparatedlistdata%
+   \else%
+     \appendseparatedlistparameter{\ifcase\separatedlistmode\c!first\else\c!command\fi}%
+     \expandafter\doprocessseplist#1\relax%
+     \ifcase\separatedlistmode\appendseparatedlistparameter\c!last\fi%
+     \expandafter\dodoprocessseparatedline%
+   \fi}
+
+\gdef\dodoprocessseparatedline%
+  {\doprocessseparatedline}
+
+\gdef\doprocessseparateditem#1%
+  {\ifcase\separatedlistmode
+     \appendseparatedlistparameter\c!left%
+     \appendseparatedlistcontent{#1}%
+     \appendseparatedlistparameter\c!right
+   \else
+     \appendseparatedlistcontent{{#1}}%
+   \fi}
+
+\egroup
+
+\startsetups CVS:unix
+  \catcode`\#=\@@comment
+\stopsetups
+
+\def\defineseparatedlist
+  {\dodoubleempty\dodefineseparatedlist}
+
+\def\dodefineseparatedlist[#1][#2]%
+  {\setvalue{\e!start#1}{\expandafter\dostartseparatedlist\csname\e!stop#1\endcsname[#1]}%
+   \getparameters
+     [\??ls#1]
+     [\c!separator=,
+      \c!first=,
+      \c!left=,
+      \c!before=,
+      \c!right=,
+      \c!last=,
+      \c!after=,
+%       \c!command=,
+      #2]}
+
+\def\startseparatedlist[#1]%
+  {\dostartseparatedlist\stopseparatedlist[#1]}
+
+\def\processseparatedfile
+  {\dodoubleargument\doprocessseparatedfile}
+
+\protect \endinput
+
+\defineseparatedlist
+  [CVS]
+  [separator={,},
+   first=\bTR,last=\eTR,
+   left=\bTD,right=\eTD,
+   before=\bTABLE,after=\eTABLE]
+
+\startseparatedlist[CVS]
+a,b,c
+d,e,f
+\stopseparatedlist
+
+\startCVS
+a,b,c
+d,e,f
+\stopCVS
+
+\defineseparatedlist
+  [CVS]
+  [separator={,},
+   first=\NC,last=\NR,
+   left=,right=\NC,
+   before={\starttabulate[|l|l|l|]},after=\stoptabulate]
+
+\startCVS
+a,b,c
+d,e,f
+\stopCVS
+
+\defineseparatedlist
+  [CVS]
+  [separator={ },
+   first=\NC,last=\NR,
+   left=,right=\NC,
+   before={\starttabulate[|l|l|l|]},after=\stoptabulate]
+
+\startCVS
+a b c
+d e f
+\stopCVS
+
+\defineseparatedlist
+  [CVS]
+  [setups=unix,
+   first=\NC,last=\NR,
+   left=,right=\NC,
+   before={\starttabulate[|l|l|l|]},after=\stoptabulate]
+
+% \startsetups CVS:unix
+%     \catcode`\#=\@@comment
+% \stopsetups
+
+%  %1,2,3
+%  1,2,3
+%  # 4,5,6
+%  4,5,6
+
+\processseparatedfile[CVS][test.dat]
+
+\defineseparatedlist
+  [CVSX]
+  [command=\Whatever,
+   separator={,},
+   first=\bTR,last=\eTR,
+   left=\bTD,right=\eTD,
+   before=\bTABLE,after=\eTABLE]
+
+\def\Whatever#1#2#3{[#1][#2][#3]\endgraf}
+
+\startseparatedlist[CVSX]
+a,b,c
+d,e,f
+\stopseparatedlist
+
+\stoptext

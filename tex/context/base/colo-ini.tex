@@ -326,64 +326,6 @@
 \def\dodefineglobalcolor{\dododefinecolor\doglobal\setgvalue\setxvalue1}
 \def\dodefinenamedcolor {\dododefinecolor\doglobal\setvalue \setevalue0}
 
-% keep this for readability
-%
-% \def\dodefinecolor[#1][#2]%
-%   {\addtocommalist{#1}\colorlist
-%    \doifassignmentelse{#2}
-%      {\@@resetcolorparameters
-%       \getparameters[\??cl @@][#2]%
-%       \doifelse{\@@cl@@r\@@cl@@g\@@cl@@b}{\@@cl@@z\@@cl@@z\@@cl@@z}
-%         {\doifelse{\@@cl@@c\@@cl@@m\@@cl@@y\@@cl@@k}{\@@cl@@z\@@cl@@z\@@cl@@z\@@cl@@z}
-%            {\doifelse\@@cl@@s\@@cl@@z
-%               {\showmessage\m!colors8{{[#2]},#1}%
-%                \setevalue{\??cr#1}{\colorZpattern}}
-%               {\setevalue{\??cr#1}{\colorSpattern}}}
-%            {\setevalue{\??cr#1}{\colorCpattern}}}
-%         {\setevalue{\??cr#1}{\colorRpattern}}}
-%      {\doifdefinedelse{\??cr#2}
-%         {\doifelse{#1}{#2}
-%            {% this way we can freeze \definecolor[somecolor][somecolor]
-%             % and still prevent cyclic definitions
-%             \iffreezecolors\setevalue{\??cr#1}{\getvalue{\??cr#2}}\fi}
-%            {\iffreezecolors\@EA\setevalue\else\@EA\setvalue\fi
-%               {\??cr#1}{\getvalue{\??cr#2}}}}
-%         {\showmessage\m!colors3{#1}\empty}}%
-%    \unexpanded\setvalue{#1}{\color[#1]}} % \unexpanded toegevoegd
-
-% \def\dododefinecolor#1#2#3#4[#5][#6]% #2==set(g)value #3==set[e|x]value
-%   {#1\addtocommalist{#5}\colorlist % optional
-%    \doifassignmentelse{#6}
-%      {\@@resetcolorparameters
-%       \getparameters[\??cl @@][#6]%
-%       \ifx\@@cl@@h\empty
-%         \doifelse{\@@cl@@r\@@cl@@g\@@cl@@b}{\@@cl@@z\@@cl@@z\@@cl@@z}
-%           {\doifelse{\@@cl@@c\@@cl@@m\@@cl@@y\@@cl@@k}{\@@cl@@z\@@cl@@z\@@cl@@z\@@cl@@z}
-%              {\doifelse\@@cl@@s\@@cl@@z
-%                 {\showmessage\m!colors8{{[#6]},#5}%
-%                  #3{\??cr#5}{\colorZpattern}}
-%                 {#3{\??cr#5}{\colorSpattern}}}
-%              {#3{\??cr#5}{\colorCpattern}}}
-%           {#3{\??cr#5}{\colorRpattern}}%
-%       \else
-%         \setxvalue{\??cr#5}{\colorHpattern}%
-%       \fi
-%       % new: e=external spot color name
-%       \ifx\@@cl@@e\empty \else
-%         \doregisterspotcolorname{#5}\@@cl@@e
-%       \fi}
-%      {\doifdefinedelse{\??cr#6}
-%         {\doifelse{#5}{#6}
-%            {% this way we can freeze \definecolor[somecolor][somecolor]
-%             % and still prevent cyclic definitions
-%             \iffreezecolors#3{\??cr#5}{\getvalue{\??cr#6}}\fi}
-%            {\iffreezecolors\@EA#3\else\@EA#2\fi
-%               {\??cr#5}{\getvalue{\??cr#6}}}}
-%         {\showmessage\m!colors3{#5 (def)}}}%
-%    \ifcase#4\or
-%      \unexpanded#2{#5}{\switchtocolor[#5]}% \unexpanded toegevoegd
-%    \fi}
-
 \def\dododefinecolor#1#2#3#4[#5][#6]% #2==set(g)value #3==set[e|x]value
   {#1\addtocommalist{#5}\colorlist % optional
    \doifassignmentelse{#6}
@@ -416,9 +358,9 @@
            {\doifelse{#5}{#6}
               {% this way we can freeze \definecolor[somecolor][somecolor]
                % and still prevent cyclic definitions
-               \iffreezecolors#3{\??cr#5}{\getvalue{\??cr#6}}\fi}
+               \iffreezecolors#3{\??cr#5}{\csname\??cr#6\endcsname}\fi}
               {\iffreezecolors\@EA#3\else\@EA#2\fi
-                 {\??cr#5}{\getvalue{\??cr#6}}}}
+                 {\??cr#5}{\csname\??cr#6\endcsname}}}
            {\showmessage\m!colors3{#5 (def)}}%
        \fi}%
    \ifcase#4\or
@@ -427,7 +369,7 @@
 
 \def\paletcolorspec#1%
 % {\executeifdefined{\??cr\currentpalet#1}{\executeifdefined{\??cr#1}\empty}}
-  {\getvalue{\??cr\currentpalet#1}}
+  {\csname\??cr\currentpalet#1\endcsname}
 
 %D Hex color support is not enabled by default. You need to say \setupcolor
 %D [hex] to get this working.
@@ -449,6 +391,9 @@
       \edef\@@cl@@n{#2}%
       \getparameters[\??cl @@][#3]%
       \doifnothing\@@cl@@p{\let\@@cl@@p\!!plusone}%
+      \ifx\@@cl@@e\empty \else
+        \doregisterspotcolorname{#2}\@@cl@@e
+      \fi
       \doglobal\addtocommalist{#2}\allspotcolors
       \setxvalue{\??cr#1}{\colorPpattern}% was \setevalue
       \setgvalue{#1}{\switchtocolor[#1]}}} % was \setvalue
@@ -534,14 +479,15 @@
       \processcommalist[#1]\docommand}}
 
 \def\checkmultitonecolor#1%
-  {\getvalue{\??cl#1\s!check}\letgvalue{\??cl#1\s!check}\relax}
+  {\csname\??cl#1\s!check\endcsname\letgvalue{\??cl#1\s!check}\relax}
 
-\def\dodefinespotcolor[#1][#2][#3]% todo: always global
+\def\dodefinespotcolor[#1][#2][#3]% todo: always global (REDEFINED)
   {\doifnot{#1}{#2}
      {\@@resetcolorparameters
       \edef\@@cl@@n{#2}%
       \getparameters[\??cl @@][#3]%
-      \doifnothing\@@cl@@p{\let\@@cl@@p\!!plusone}%
+      \doifnothing  \@@cl@@p{\let\@@cl@@p\!!plusone}%
+      \doifsomething\@@cl@@e{\doregisterspotcolorname{#2}\@@cl@@e}%
       \doglobal\addtocommalist{#2}\allspotcolors
       \setxvalue{\??cr#1}{\colorPpattern}% was \setevalue
       \setgvalue{#1}{\switchtocolor[#1]}}}% was \setvalue
@@ -2174,7 +2120,7 @@
   {\dodoformatcolor{#1}}
 
 \def\doformatcolor#1:%
-  {\getvalue{doformatcolor#1}}
+  {\csname doformatcolor#1\endcsname}
 
 \def\colorvalue
    {\dowithcolor\doformatcolor}
@@ -2197,7 +2143,7 @@
   {\dowithcolor\doformatcolor{#1}}
 
 \def\doformatgray#1:%
-  {\getvalue{doformatgray#1}}
+  {\csname doformatgray#1\endcsname}
 
 \def\grayvalue
   {\dowithcolor\doformatgray}
@@ -2300,28 +2246,28 @@
       \setevalue{\??pa\??pa#1}{#2}%
       \def\dodododefinepalet[##1=##2]%
         {\doifvaluesomething{\??pa#1}
-           {\setevalue{\??pa#1}{\getvalue{\??pa#1},}}%
-         \setevalue{\??pa#1}{\getvalue{\??pa#1}##1}%
+           {\setevalue{\??pa#1}{\csname\??pa#1\endcsname,}}%
+         \setevalue{\??pa#1}{\csname\??pa\endcsname##1}%
          \doifassignmentelse{##2}
            {% == \definepalet[test][xx={y=.4}]
             \definecolor[\??pa#1:##1][##2]%
             \iffreezecolors\@EA\setevalue\else\@EA\setvalue\fi
-              {\??cr#1:##1}{\getvalue{\??cr\??pa#1:##1}}}
+              {\??cr#1:##1}{\csname\??cr\??pa#1:##1\endcsname}}
            {% == \definepalet[test][xx=green]
             \doifdefinedelse{\??cr##2}
               {\iffreezecolors\@EA\setevalue\else\@EA\setvalue\fi
-                 {\??cr#1:##1}{\getvalue{\??cr##2}}}
+                 {\??cr#1:##1}{\csname\??cr##2\endcsname}}
               {\letvalue{\??cr#1:##1}\colorXpattern}}}%
       \def\dododefinepalet##1%
         {\dodododefinepalet[##1]}%
       \processcommalist[#2]\dododefinepalet}
      {\doifdefined{\??pa#2}
-        {\expanded{\dodefinepalet[#1][\getvalue{\??pa\??pa#2}]}}}}
+        {\expanded{\dodefinepalet[#1][\csname\??pa\??pa#2\endcsname]}}}}
 
 \let\paletsize\!!zerocount
 
 \def\getpaletsize[#1]%
-  {\getcommacommandsize[\getvalue{\??pa\??pa#1}]%
+  {\getcommacommandsize[\csname\??pa\??pa#1\endcsname]%
    \edef\paletsize{\number\commalistsize}}
 
 %D Instead of refering to colors, one can also directly specify
@@ -2408,7 +2354,7 @@
        [#2]
        [    \v!cmyk=>\edef\currentcolorspace{C},
              \v!rgb=>\edef\currentcolorspace{R},
-           \v!gray=>\edef\currentcolorspace{S},
+            \v!gray=>\edef\currentcolorspace{S},
             \v!spot=>\edef\currentcolorspace{P},
                \v!s=>\edef\currentcolorspace{S},
          \s!unknown=>\edef\currentcolorspace{R}]%
@@ -2423,7 +2369,7 @@
        {\doloop
           {\doifdefinedelse{\??cr#2:\recurselevel}
              {\setevalue{\??cr#1:\recurselevel}%
-                {\getvalue{\??cr#2:\recurselevel}}}
+                {\csname\??cr#2:\recurselevel\endcsname}}
              {\exitloop}}}%
    \fi}
 
