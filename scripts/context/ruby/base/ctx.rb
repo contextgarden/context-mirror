@@ -23,6 +23,8 @@ class CtxRunner
 
     attr_reader :environments, :modules, :filters
 
+    @@suffix = 'prep'
+
     def initialize(jobname=nil,logger=nil)
         if @logger = logger then
             def report(str='')
@@ -129,13 +131,29 @@ class CtxRunner
             REXML::XPath.each(@xmldata.root,"/ctx:job/ctx:process/ctx:resources/ctx:filter") do |fil|
                 @filters << justtext(fil)
             end
+            commands = Hash.new
+            REXML::XPath.each(@xmldata.root,"/ctx:job/ctx:preprocess/ctx:processors/ctx:processor") do |pre|
+                begin
+                    commands[pre.attributes['name']] = pre
+                rescue
+                end
+            end
+            suffix = @@suffix
+            begin
+                suffix = REXML::XPath.match(@xmldata.root,"/ctx:job/ctx:preprocess/@suffix").to_s
+            rescue
+            puts $!
+                suffix = @@suffix
+            else
+                if suffix && suffix.empty? then suffix = @@suffix end
+            end
             REXML::XPath.each(@xmldata.root,"/ctx:job/ctx:preprocess/ctx:files") do |files|
                 REXML::XPath.each(files,"ctx:file") do |pattern|
                     preprocessor = pattern.attributes['processor']
                     if preprocessor and not preprocessor.empty? then
                         pattern = justtext(pattern)
                         Dir.glob(pattern).each do |oldfile|
-                            newfile = "#{oldfile}.prep"
+                            newfile = "#{oldfile}.#{suffix}"
                             if File.needsupdate(oldfile,newfile) then
                                 begin
                                     File.delete(newfile)
@@ -144,11 +162,17 @@ class CtxRunner
                                 end
                                 # there can be a sequence of processors
                                 preprocessor.split(',').each do |pp|
-                                    if command = REXML::XPath.first(@xmldata.root,"/ctx:job/ctx:preprocess/ctx:processors/ctx:processor[@name='#{pp}']") then
+                                    if command = commands[pp] then
                                         # a lie: no <?xml ...?>
                                         command = REXML::Document.new(command.to_s) # don't infect original
                                         command = command.elements["ctx:processor"]
-                                        report("preprocessing #{oldfile} using #{pp}")
+                                        begin
+                                            if suf = command.attributes['suffix'] then
+                                                newfile = "#{oldfile}.#{suf}"
+                                            end
+                                        rescue
+                                        end
+                                        report("preprocessing #{oldfile} into #{newfile} using #{pp}")
                                         REXML::XPath.each(command,"ctx:old") do |value| replace(value,oldfile) end
                                         REXML::XPath.each(command,"ctx:new") do |value| replace(value,newfile) end
                                         variables['old'] = oldfile

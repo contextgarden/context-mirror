@@ -421,6 +421,12 @@ class Commands
         recurse  = @commandline.option("recurse")
 
         $dontaskprefixes.push(Dir.glob("mpx-*"))
+
+        if purgeall then
+            $dontaskprefixes.push(Dir.glob("*.tex.prep"))
+            $dontaskprefixes.push(Dir.glob("*.xml.prep"))
+        end
+
         $dontaskprefixes.flatten!
         $dontaskprefixes.sort!
 
@@ -433,7 +439,7 @@ class Commands
         if ! pattern || pattern.empty? then
             globbed = if recurse then "**/*.*" else "*.*" end
             files = Dir.glob(globbed)
-            report("purging files : #{globbed}")
+            report("purging#{if all then ' all' end} temporary files : #{globbed}")
         else
             pattern.each do |pat|
                 globbed = if recurse then "**/#{pat}-*.*" else "#{pat}-*.*" end
@@ -441,7 +447,7 @@ class Commands
                 globbed = if recurse then "**/#{pat}.*" else "#{pat}.*" end
                 files.push(Dir.glob(globbed))
             end
-            report("purging files : #{pattern.join(' ')}")
+            report("purging#{if all then ' all' end} temporary files : #{pattern.join(' ')}")
         end
         files.flatten!
         files.sort!
@@ -2142,6 +2148,7 @@ commandline.registeraction('purgefiles'        , 'remove temporary files [--all 
 commandline.registeraction('documentation'     , 'generate documentation [--type=] [filename]')
 commandline.registeraction('filterpages'       ) # no help, hidden temporary feature
 commandline.registeraction('purgeallfiles'     ) # no help, compatibility feature
+commandline.registeraction('purgefiles'        ) # no help, compatibility feature
 commandline.registeraction('patternfiles'      , 'generate pattern files [--all --xml --utf8] [languagecode]')
 commandline.registeraction('dpxmapfiles'       , 'convert pdftex mapfiles to dvipdfmx [--force] [texmfroot]')
 commandline.registeraction('listentities'      , 'create doctype entity definition from enco-uc.tex')

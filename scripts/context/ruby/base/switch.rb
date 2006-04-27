@@ -47,23 +47,49 @@ class File
 
     @@update_eps = 1
 
+    # def File.needsupdate(oldname,newname)
+        # begin
+            # oldtime = File.stat(oldname).mtime.to_i
+            # newtime = File.stat(newname).mtime.to_i
+            # if newtime >= oldtime
+                # return false
+            # elsif oldtime-newtime < @@update_eps then
+                # return false
+            # else
+                # return true
+            # end
+        # rescue
+            # return true
+        # end
+    # end
+
     def File.needsupdate(oldname,newname)
         begin
             oldtime = File.stat(oldname).mtime.to_i
             newtime = File.stat(newname).mtime.to_i
-            delta = newtime - oldtime
-            delta < @@update_eps
+# str =  "o:#{oldtime} n:#{newtime} d:#{newtime-oldtime}"
+            if newtime >= oldtime
+# puts "original is unchanged: #{str}"
+                return false
+            elsif oldtime-newtime < @@update_eps then
+# puts "original is within range: #{str}"
+                return false
+            else
+# puts "original is updated: #{str}"
+                return true
+            end
         rescue
             return true
         end
     end
 
     def File.syncmtimes(oldname,newname)
+        return
         begin
             if $mswindows then
-                # does not work (yet)
-                t = File.mtime(oldname) # i'm not sure if the time is frozen, so we do it here
-                File.utime(0,t,oldname,newname)
+                # does not work (yet) / gives future timestamp
+                # t = File.mtime(oldname) # i'm not sure if the time is frozen, so we do it here
+                # File.utime(0,t,oldname,newname)
             else
                 t = File.mtime(oldname) # i'm not sure if the time is frozen, so we do it here
                 File.utime(0,t,oldname,newname)
