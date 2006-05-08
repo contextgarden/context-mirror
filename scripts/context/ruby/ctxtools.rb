@@ -20,7 +20,7 @@
 # Taco Hoekwater on patterns and lig building (see 'agr'):
 #
 # Any direct use of a ligature (as accessed by \char or through active
-# characters) is wrong and will create faulty hypenation. Normally,
+# characters) is wrong and will create faulty hyphenation. Normally,
 # when TeX sees "office", it has six tokens, and it knows from the
 # patterns that it can hyphenate between the "ff". It will build an
 # internal list of four nodes, like this:
@@ -56,6 +56,7 @@ require 'base/logger'
 require 'base/system'
 
 require 'rexml/document'
+require 'net/http'
 require 'ftools'
 require 'kconv'
 
@@ -414,10 +415,10 @@ class Commands
 
     public
 
-    def purgefiles(all=false)
+    def purgefiles
 
         pattern  = @commandline.arguments
-        purgeall = @commandline.option("all") || all
+        purgeall = @commandline.option("all")
         recurse  = @commandline.option("recurse")
 
         $dontaskprefixes.push(Dir.glob("mpx-*"))
@@ -439,7 +440,7 @@ class Commands
         if ! pattern || pattern.empty? then
             globbed = if recurse then "**/*.*" else "*.*" end
             files = Dir.glob(globbed)
-            report("purging#{if all then ' all' end} temporary files : #{globbed}")
+            report("purging#{if purgeall then ' all' end} temporary files : #{globbed}")
         else
             pattern.each do |pat|
                 globbed = if recurse then "**/#{pat}-*.*" else "#{pat}-*.*" end
@@ -504,10 +505,6 @@ class Commands
             report("reclaimed bytes : #{$reclaimedbytes}")
         end
 
-    end
-
-    def purgeallfiles
-        purgefiles(true) # for old times sake
     end
 
     private
@@ -787,6 +784,56 @@ end
 #
 # Maybe I'll make this hyptools.tex
 
+class String
+
+    def markbraces
+        level = 0
+        self.gsub(/([\{\}])/o) do |chr|
+            if    chr == '{'
+                level = level + 1
+                chr = "((+#{level}))"
+            elsif chr == '}'
+                chr = "((-#{level}))"
+                level = level - 1
+            end
+            chr
+        end
+    end
+
+    def unmarkbraces
+        self.gsub(/\(\(\+\d+?\)\)/o) do
+            "{"
+        end.gsub(/\(\(\-\d+?\)\)/o) do
+            "}"
+        end
+    end
+
+    def getargument(pattern)
+        if self =~ /(#{pattern})\s*\(\(\+(\d+)\)\)(.*?)\(\(\-\2\)\)/ then # no /o
+            return $3
+        else
+            return ""
+        end
+    end
+
+    def withargument(pattern, &block)
+        if self.markbraces =~ /^(.*)(#{pattern}\s*)\(\(\+(\d+)\)\)(.*?)\(\(\-\3\)\)(.*)$/m then # no /o
+            "#{$1.unmarkbraces}#{$2}{#{yield($4.unmarkbraces)}}#{$5.unmarkbraces}"
+        else
+            self
+        end
+    end
+
+    def filterargument(pattern, &block)
+        if self.markbraces =~ /^(.*)(#{pattern}\s*)\(\(\+(\d+)\)\)(.*?)\(\(\-\3\)\)(.*)$/m then # no /o
+            yield($4.unmarkbraces)
+        else
+            self
+        end
+    end
+
+end
+
 class Language
 
     include CommandBase
@@ -829,10 +876,11 @@ class Language
                         begin
                             if fname = located(filename) then
                                 data = IO.read(fname)
-                                @data += data.gsub(/\%.*$/, '')
+                                @data += data.gsub(/\%.*$/, '').gsub(/\\message\{.*?\}/, '')
                                 data.gsub!(/(\\patterns|\\hyphenation)\s*\{.*/mo) do '' end
                                 @read += "\n% preamble of file #{fname}\n\n#{data}\n"
                                 report("file #{fname} is loaded")
+                                @data.gsub!(/^[\s\n]+$/mois, '')
                                 break # next fileset
                             end
                         rescue
@@ -853,21 +901,29 @@ class Language
         if @data then
             n = 0
             if true then
-                @data.gsub!(/\\(patterns|hypenation)\{(.*?)\}/mois) do
-                    command, content = $1, $2
-                    @remapping.each_index do |i|
-                        from, to, m = @remapping[i][0], @remapping[i][1], 0
-                        content.gsub!(from) do
-                            m += 1
-                            "[#{i}]"
+                report("")
+                ["\\patterns","\\hyphenation"].each do |what|
+                    @data = @data.withargument(what) do |content|
+                        report("converting #{what}")
+                        report("")
+                        done = false
+                        @remapping.each_index do |i|
+                            from, to, m = @remapping[i][0], @remapping[i][1], 0
+                            content.gsub!(from) do
+                                done = true
+                                m += 1
+                                "[#{i}]"
+                            end
+                            report("#{m.to_s.rjust(5)} entries remapped to #{to}") unless m == 0
+                            n += m
                         end
-                        report("#{m.to_s.rjust(5)} entries remapped to #{to}") unless m == 0
-                        n += m
+                        content.gsub!(/\[(\d+)\]/o) do
+                            @remapping[$1.to_i][1]
+                        end
+                        report("      nothing remapped") unless done
+                        report("")
+                        content.to_s
                     end
-                    content.gsub!(/\[(\d+)\]/) do
-                        @remapping[$1.to_i][1]
-                    end
-                    "\\#{command}\{#{content}\}"
                 end
             else
                 @remapping.each do |k|
@@ -932,6 +988,7 @@ class Language
     end
 
     def triggerunicode
+        return
         if @commandline.option('utf8') then
             "% xetex needs utf8 encoded patterns and for patterns\n" +
             "% coded as such we need to enable this regime when\n" +
@@ -1030,9 +1087,9 @@ class Language
         begin
             if f = File.open(patname,'w') then
                 data = ''
-                @data.scan(/\\patterns\s*\{\s*(.*?)\s*\}/m) do
+                @data.filterargument('\\patterns') do |content|
                     report("merging patterns")
-                    data += $1 + "\n"
+                    data += content.strip
                 end
                 data.gsub!(/(\s*\n\s*)+/mo, "\n")
 
@@ -1056,9 +1113,9 @@ class Language
         begin
             if f = File.open(hypname,'w') then
                 data = ''
-                @data.scan(/\\hyphenation\s*\{\s*(.*?)\s*\}/m) do
+                @data.filterargument('\\hyphenation') do |content|
                     report("merging exceptions")
-                    data += $1 + "\n"
+                    data += content.strip
                 end
                 data.gsub!(/(\s*\n\s*)+/mo, "\n")
                 f << banner
@@ -1184,6 +1241,8 @@ class Language
                 remap(/X/, "[aeligature]")
                 remap(/Y/, "[ostroke]")
                 remap(/Z/, "[aring]")
+            when 'hu' then
+
             when 'ca' then
                 remap(/\\c\{.*?\}/, "")
             when 'de', 'deo' then
@@ -1195,6 +1254,7 @@ class Language
                 remap(/\"o/, "[odiaeresis]")
                 remap(/\"u/, "[udiaeresis]")
             when 'fr' then
+                remap(/\\n\{\}/, "")
                 remap(/\\ae/, "[adiaeresis]")
                 remap(/\\oe/, "[odiaeresis]")
             when 'la' then
@@ -1405,12 +1465,14 @@ class Language
                     data.scan(/\\definecharacter\s*([a-zA-Z]+)\s*(\d+)\s*/o) do
                         name, number = $1, $2
                         remap(/\^\^#{sprintf("%02x",number)}/, "[#{name}]")
+                        if number.to_i > 127 then
+                            remap(/#{sprintf("\\%03o",number)}/, "[#{name}]")
+                        end
                     end
                 end
             rescue
             end
         end
-
     end
 
 end
@@ -1545,8 +1607,12 @@ class Commands
                                                 report("? #{File.basename(dpxfile)} - dvipdfm(x)")
                                             end
                                         else
-                                            report("- #{File.basename(dpxfile)} - dvipdfm(x)")
-                                            begin File.delete(dpxname) ; rescue ; end
+                                            report("- #{File.basename(dpxfile)} - dvipdfm(x) - no entries")
+                                            # begin File.delete(dpxname) ; rescue ; end
+                                            if f = File.open(dpxfile,'w') then
+                                                f.puts("% no map entries")
+                                                f.close
+                                            end
                                         end
                                     else
                                         report(". #{File.basename(dpxfile)} - dvipdfm(x) - #{n}")
@@ -2134,6 +2200,89 @@ class Commands
 
 end
 
+class Commands
+
+    include CommandBase
+
+    def updatecontext
+
+        def fetchfile(site, name, target=nil)
+            begin
+                http = Net::HTTP.new(site)
+                resp, data = http.get(name.gsub(/^\/*/, '/'))
+            rescue
+                return false
+            else
+                begin
+                    if data then
+                        name = File.basename(name)
+                        File.open(target || name, 'wb') do |f|
+                            f << data
+                        end
+                    else
+                        return false
+                    end
+                rescue
+                    return false
+                else
+                    return true
+                end
+            end
+        end
+
+        def locatedlocaltree
+            return `kpsewhich --expand-var $TEXMFLOCAL`.chomp rescue nil
+        end
+
+        def extractarchive(archive)
+            if FileTest.file?(archive) then
+                begin
+                    system("unzip -uo #{archive}")
+                rescue
+                    return false
+                else
+                    return true
+                end
+            else
+                return false
+            end
+        end
+
+        def remakeformats
+            return system("texmfstart texexec --make --all")
+        end
+
+        if localtree = locatedlocaltree then
+            report("updating #{localtree}")
+            begin
+                Dir.chdir(localtree)
+            rescue
+                report("unable to change to #{localtree}")
+            else
+                archive = 'cont-tmf.zip'
+                report("fetching #{archive}")
+                unless fetchfile("www.pragma-ade.com","/context/latest/#{archive}") then
+                    report("unable to fetch #{archive}")
+                    return
+                end
+                report("extracting #{archive}")
+                unless extractarchive(archive) then
+                    report("unable to extract #{archive}")
+                    return
+                end
+                report("remaking formats")
+                unless remakeformats then
+                    report("unable to remak formats")
+                end
+            end
+        else
+            report("unable to locate local tree")
+        end
+
+    end
+
+end
+
 logger      = Logger.new(banner.shift)
 commandline = CommandLine.new
 
@@ -2147,14 +2296,13 @@ commandline.registeraction('translateinterface', 'generate interface files (xml)
 commandline.registeraction('purgefiles'        , 'remove temporary files [--all --recurse] [basename]')
 commandline.registeraction('documentation'     , 'generate documentation [--type=] [filename]')
 commandline.registeraction('filterpages'       ) # no help, hidden temporary feature
-commandline.registeraction('purgeallfiles'     ) # no help, compatibility feature
-commandline.registeraction('purgefiles'        ) # no help, compatibility feature
 commandline.registeraction('patternfiles'      , 'generate pattern files [--all --xml --utf8] [languagecode]')
 commandline.registeraction('dpxmapfiles'       , 'convert pdftex mapfiles to dvipdfmx [--force] [texmfroot]')
 commandline.registeraction('listentities'      , 'create doctype entity definition from enco-uc.tex')
 commandline.registeraction('brandfiles'        , 'add context copyright notice [--force]')
 commandline.registeraction('platformize'       , 'replace line-endings [--recurse --force] [pattern]')
 commandline.registeraction('dependencies'      , 'analyze depedencies witin context [--compact] [rootfile]')
+commandline.registeraction('updatecontext'     , 'download latest version and remake formats')
 
 commandline.registervalue('type','')
 

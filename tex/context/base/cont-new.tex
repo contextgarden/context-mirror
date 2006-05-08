@@ -11,7 +11,7 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-\newcontextversion{2006.04.27 15:59}
+\newcontextversion{2006.05.08 12:59}
 
 %D This file is loaded at runtime, thereby providing an
 %D excellent place for hacks, patches, extensions and new
@@ -675,6 +675,8 @@
 % \egroup
 %
 % more generic
+%
+% IS THIS STILL OK? TO BE CHECKED (UTF AND SUCH) ! ! ! !
 
 \def\XMLexpanded#1%
   {\bgroup
@@ -1277,8 +1279,8 @@
 \prependtoks \normalenableXML    \to \everyXMLinputmode
 \appendtoks  \processingXMLtrue  \to \everyXMLinputmode
 
-\def\enableXML {\setinputmode[XML]}
-\def\disableXML{\setinputmode[TEX]}
+\unexpanded\def\enableXML {\setinputmode[XML]} % \enableXML is used in edef's and marks
+\unexpanded\def\disableXML{\setinputmode[TEX]}
 
 \beginTEX
 

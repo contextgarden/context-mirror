@@ -4222,6 +4222,9 @@
       <cd:parameter name="seperator">
         <cd:constant type="cd:text"/>
       </cd:parameter>
+      <cd:parameter name="abschnitttrenner">
+        <cd:constant type="cd:text"/>
+      </cd:parameter>
       <cd:parameter name="ausrichtung">
         <cd:constant type="links"/>
         <cd:constant type="rechts"/>
@@ -4323,6 +4326,9 @@
         <cd:constant type="bycd:section"/>
       </cd:parameter>
       <cd:parameter name="seperator">
+        <cd:constant type="cd:text"/>
+      </cd:parameter>
+      <cd:parameter name="abschnitttrenner">
         <cd:constant type="cd:text"/>
       </cd:parameter>
       <cd:parameter name="befehl">

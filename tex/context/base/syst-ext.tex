@@ -1139,10 +1139,20 @@
 \long\def\convertcommand#1\to#2%
   {\dodoglobal\edef#2{\convertedcommand#1}}
 
+\long\def\defconvertedargument#1#2% less sensitive for \to
+  {\long\def#1{#2}% saves a restore
+   \dodoglobal\edef#1{\convertedcommand#1}}
+
+\long\def\defconvertedcommand#1#2% less sensitive for \to
+  {\dodoglobal\edef#1{\convertedcommand#2}}
+
 \endTEX
 
 \def\convertvalue#1\to
   {\expandafter\convertcommand\csname#1\endcsname\to}
+
+\def\defconvertvalue#1#2% less sensitive for \to
+  {\@EA\defconvertcommand\@EA#1\csname#2\endcsname}
 
 %D \macros
 %D   {convertasciiafter}
@@ -1174,7 +1184,13 @@
 %   {\@EA\dodoglobal\@EA\edef\@EA#2\@EA{\@EA\detokenize\@EA{#1}}}
 
 \long\def\convertcommand#1\to#2%
-  {\dodoglobal\edef#2{\@EA\detokenize\@EA{#1}}}
+  {\dodoglobal\edef#2{\@EA\detokenize\@EA{#1}}} % hm, only second is also ok
+
+\long\def\defconvertedargument#1#2% less sensitive for \to
+  {\dodoglobal\edef#1{\detokenize{#2}}}
+
+\long\def\defconvertedcommand#1#2% less sensitive for \to
+  {\dodoglobal\edef#1{\detokenize\@EA{#2}}}
 
 \endETEX
 
@@ -4685,64 +4701,70 @@
 %D I'll implement this when I'm in \quotation {writing dirty
 %D macros mood}.
 
+\def\dofilterfromstr#1#2% max n
+  {\ifcase#1\or
+     \ifcase#2\or
+       \strippedcsname\firstofoneargument
+     \else
+       \strippedcsname\gobbleoneargument
+     \fi
+   \or
+     \ifcase#2\or
+       \strippedcsname\firstoftwoarguments
+     \or
+       \strippedcsname\secondoftwoarguments
+     \else
+       \strippedcsname\gobbletwoarguments
+     \fi
+   \or
+     \ifcase#2\or
+       \strippedcsname\firstofthreearguments
+     \or
+       \strippedcsname\secondofthreearguments
+     \or
+       \strippedcsname\thirdofthreearguments
+     \else
+       \strippedcsname\gobblethreearguments
+     \fi
+   \or
+     \ifcase#2\or
+       \strippedcsname\firstoffourarguments
+     \or
+       \strippedcsname\secondoffourarguments
+     \or
+       \strippedcsname\thirdoffourarguments
+     \or
+       \strippedcsname\fourthoffourarguments
+     \else
+       \strippedcsname\gobblefourarguments
+     \fi
+   \or
+     \ifcase#2\or
+       \strippedcsname\firstoffivearguments
+     \or
+       \strippedcsname\secondoffivearguments
+     \or
+       \strippedcsname\thirdoffivearguments
+     \or
+       \strippedcsname\fourthoffivearguments
+     \or
+       \strippedcsname\fifthoffivearguments
+     \else
+       \strippedcsname\gobblefivearguments
+     \fi
+   \fi}
+
 \def\filterfromvalue#1#2#3% value max n
   {\@EA\@EAEAEA\csname                   % we use the fact that an
      \@EA\ifx\csname#1\endcsname\relax   % undefined cs has become \relax
        \strippedcsname\gobbleoneargument % which we then gobble here
      \else
-       \ifcase#2\or
-         \ifcase#3\or
-           \strippedcsname\firstofoneargument
-         \else
-           \strippedcsname\gobbleoneargument
-         \fi
-       \or
-         \ifcase#3\or
-           \strippedcsname\firstoftwoarguments
-         \or
-           \strippedcsname\secondoftwoarguments
-         \else
-           \strippedcsname\gobbletwoarguments
-         \fi
-       \or
-         \ifcase#3\or
-           \strippedcsname\firstofthreearguments
-         \or
-           \strippedcsname\secondofthreearguments
-         \or
-           \strippedcsname\thirdofthreearguments
-         \else
-           \strippedcsname\gobblethreearguments
-         \fi
-       \or
-         \ifcase#3\or
-           \strippedcsname\firstoffourarguments
-         \or
-           \strippedcsname\secondoffourarguments
-         \or
-           \strippedcsname\thirdoffourarguments
-         \or
-           \strippedcsname\fourthoffourarguments
-         \else
-           \strippedcsname\gobblefourarguments
-         \fi
-       \or
-         \ifcase#3\or
-           \strippedcsname\firstoffivearguments
-         \or
-           \strippedcsname\secondoffivearguments
-         \or
-           \strippedcsname\thirdoffivearguments
-         \or
-           \strippedcsname\fourthoffivearguments
-         \or
-           \strippedcsname\fifthoffivearguments
-         \else
-           \strippedcsname\gobblefivearguments
-         \fi
-       \fi
+       \dofilterfromstr{#2}{#3}%
      \fi
      \endcsname\csname#1\endcsname}
+
+\def\filterfromnext#1#2% max n {..}{..}{..}{..}
+  {\csname\dofilterfromstr{#1}{#2}\endcsname}
 
 %D \macros
 %D   {definemeasure}

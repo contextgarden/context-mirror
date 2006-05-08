@@ -4222,6 +4222,9 @@
       <cd:parameter name="separator">
         <cd:constant type="cd:text"/>
       </cd:parameter>
+      <cd:parameter name="stopper">
+        <cd:constant type="cd:text"/>
+      </cd:parameter>
       <cd:parameter name="aliniere">
         <cd:constant type="stanga"/>
         <cd:constant type="dreapta"/>
@@ -4323,6 +4326,9 @@
         <cd:constant type="bycd:section"/>
       </cd:parameter>
       <cd:parameter name="separator">
+        <cd:constant type="cd:text"/>
+      </cd:parameter>
+      <cd:parameter name="stopper">
         <cd:constant type="cd:text"/>
       </cd:parameter>
       <cd:parameter name="comanda">

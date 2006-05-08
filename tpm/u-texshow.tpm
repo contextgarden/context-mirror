@@ -1,0 +1,30 @@
+<!DOCTYPE rdf:RDF SYSTEM "tpm.dtd">
+<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:TPM="http://texlive.dante.de/">
+  <rdf:Description about="http://dl.contextgarden.net/modules/u-texshow.zip">
+    <TPM:Name>u-texshow</TPM:Name>
+    <TPM:Type>Package</TPM:Type>
+    <TPM:Date>2006/04/05 00:00:00</TPM:Date>
+    <TPM:Version>0.2 beta</TPM:Version>
+    <TPM:Creator>taco</TPM:Creator>
+    <TPM:Title>TeXShow / XML</TPM:Title>
+    <TPM:Description>
+ConTeXt command and parameter reference
+    </TPM:Description>
+    <TPM:Author>Taco Hoekwater</TPM:Author>
+    <TPM:Size>35049</TPM:Size>
+    <TPM:Build/>
+    <TPM:RunFiles size="29401">
+scripts/context/perl/texshow.pl
+tpm/u-texshow.tpm
+    </TPM:RunFiles>
+    <TPM:DocFiles size="5648">
+doc/scripts/context/perl/texshow.1
+doc/scripts/context/perl/texshow.html
+   </TPM:DocFiles>
+    <TPM:Requires>
+      <TPM:Package name="context"/>
+    </TPM:Requires>
+    <TPM:Provides>Package/u-texshow</TPM:Provides>
+  </rdf:Description>
+</rdf:RDF>
+

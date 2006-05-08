@@ -915,7 +915,9 @@ end
                             when /^r (.*)$/o then @plugins.reader('MyRegisters',$1.splitdata)
                             when /^p (.*)$/o then @plugins.reader('MyPlugins',  $1.splitdata)
                             when /^x (.*)$/o then @plugins.reader('MyKeys',     $1.splitdata)
-                            else report("unknown entry #{line[0,1]} in line #{line.chomp}")
+                            when /^r (.*)$/o then # nothing, not handled here
+                        else
+                            # report("unknown entry #{line[0,1]} in line #{line.chomp}")
                         end
                     end
                     f.close

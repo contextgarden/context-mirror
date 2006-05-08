@@ -1,5 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
 
+<!--
+    This style sheet is used in the Math4All project. This project
+    will provide an on-line math method for secondary and tertiary
+    education. In addition to the web-bases content the project
+    provides high quality typeset output as well.
+
+    This style converts some elements to open math alternatives and
+    its sole purpose is to easy the input of inline math.
+
+    <i>x</i>    identifier (use <v>x</v> when possible)
+    <n>5</n>    number
+    <v>5</v>    variable
+    <r>1:2</r>  interval (range)
+    <r>x:y</r>  interval (range) using variables
+
+    This style is dedicated to Frits Spijkers, an open minded math
+    author who patiently tested all the related TeX things.
+
+    Hans Hagen, PRAGMA ADE, Hasselt NL / 2006-04-27
+
+-->
+
 <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
 
     <xsl:output method="xml"/>

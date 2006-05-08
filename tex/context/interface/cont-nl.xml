@@ -4222,6 +4222,9 @@
       <cd:parameter name="scheider">
         <cd:constant type="cd:text"/>
       </cd:parameter>
+      <cd:parameter name="afsluiter">
+        <cd:constant type="cd:text"/>
+      </cd:parameter>
       <cd:parameter name="uitlijnen">
         <cd:constant type="links"/>
         <cd:constant type="rechts"/>
@@ -4323,6 +4326,9 @@
         <cd:constant type="bycd:section"/>
       </cd:parameter>
       <cd:parameter name="scheider">
+        <cd:constant type="cd:text"/>
+      </cd:parameter>
+      <cd:parameter name="afsluiter">
         <cd:constant type="cd:text"/>
       </cd:parameter>
       <cd:parameter name="commando">

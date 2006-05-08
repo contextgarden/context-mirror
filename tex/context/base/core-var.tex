@@ -496,6 +496,35 @@
   {\executeifdefined{\??vars:#1:#2}}% {#3}
 
 %D \macros
+%D   {defineselector,setupselector}
+%D
+%D \starttyping
+%D \defineselector[caption][max=2,n=2]
+%D
+%D \start
+%D     \setupselector[caption][n=1]
+%D     \placelist[figure][criterium=all]
+%D \stop
+%D
+%D \starttext
+%D     \placefigure
+%D       {\select{caption}{zapf}{\input zapf \relax}}
+%D       {}
+%D \stoptext
+%D \stoptyping
+
+\def\defineselector{\dodoubleargument\dodefineselector}
+\def\setupselector {\dodoubleargument\dosetupselector}
+
+\def\dodefineselector[#1][#2]{\getparameters[\??sx#1][\c!max=2,\c!n=1,#2]}
+\def\dosetupselector [#1][#2]{\getparameters[\??sx#1][#2]}
+
+\unexpanded\def\select#1%
+  {\filterfromnext
+     {\executeifdefined{\??sx#1\c!max}1}
+     {\executeifdefined{\??sx#1\c!n  }1}}
+
+%D \macros
 %D   {checkvariables}
 %D
 %D I'll probably forget that this on exists.

@@ -4222,6 +4222,9 @@
       <cd:parameter name="oddelovac">
         <cd:constant type="cd:text"/>
       </cd:parameter>
+      <cd:parameter name="predel">
+        <cd:constant type="cd:text"/>
+      </cd:parameter>
       <cd:parameter name="zarovnani">
         <cd:constant type="vlevo"/>
         <cd:constant type="vpravo"/>
@@ -4323,6 +4326,9 @@
         <cd:constant type="bycd:section"/>
       </cd:parameter>
       <cd:parameter name="oddelovac">
+        <cd:constant type="cd:text"/>
+      </cd:parameter>
+      <cd:parameter name="predel">
         <cd:constant type="cd:text"/>
       </cd:parameter>
       <cd:parameter name="prikaz">

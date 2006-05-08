@@ -1,0 +1,66 @@
+rtxptmb 8r utmb8a 
+rtxptmbo 8r utmb8a -s .167
+rtxptmbi 8r utmbi8a 
+rtxptmr 8r utmr8a 
+rtxptmro 8r utmr8a -s .167
+rtxptmri 8r utmri8a 
+rtxphvr 8r uhv8a 
+rtxphvro 8r uhv8a -s .167
+rtxphvb 8r uhvb8a 
+rtxphvbo 8r uhvb8a -s .167
+rtxr
+rtxsl  rtxr -s .167
+rtxi
+rtxsc
+rtxb
+rtxbsl  rtxb -s .167
+rtxbi
+rtxbsc
+rtcxb
+rtcxbsl  rtcxb -s .167
+rtcxbi
+rtcxi
+rtcxr
+rtcxsl  rtcxr -s .167
+rtxbmi
+rtxmi
+txbex
+txbexa
+txbmia
+txbsy
+txbsya
+txbsyb
+txbsyc
+txex
+txexa
+txmia
+txsy
+txsya
+txsyb
+txsyc
+txtt
+txttsl  txtt -s .167
+txttsc
+txbtt
+txbttsl  txbtt -s .167
+txbttsc
+t1xtt
+t1xttsl  t1xtt -s .167
+t1xttsc
+t1xbtt
+t1xbttsl  t1xbtt -s .167
+t1xbttsc
+tcxtt
+tcxttsl  tcxtt -s .167
+tcxbtt
+tcxbttsl  tcxbtt -s .167
+rtxss
+rtxsssl  rtxss -s .167
+rtxsssc
+rtxbss
+rtxbsssl  rtxbss -s .167
+rtxbsssc
+rtcxss
+rtcxbss
+rtcxsssl  rtcxss -s .167
+rtcxbsso  rtcxbss -s .167

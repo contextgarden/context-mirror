@@ -1,0 +1,133 @@
+Content-type: text/html
+
+<HTML><HEAD><TITLE>Manpage of texshow</TITLE>
+</HEAD><BODY>
+<H1>texshow</H1>
+Section: CONTEXT (1)<BR>Updated: Oct 2000<BR><A HREF="#index">Index</A>
+<A HREF="http://localhost/cgi-bin/man/man2html">Return to Main Contents</A><HR>
+
+<P>
+
+<A NAME="lbAB">&nbsp;</A>
+<H2>NAME </H2>
+
+texshow - ConTeXt command and parameter reference
+<P>
+
+<A NAME="lbAC">&nbsp;</A>
+<H2>SYNOPSIS </H2>
+
+<B>texshow</B> [ <I>OPTION</I> ] [ <I>COMMAND</I> ] 
+[ <I>LANGUAGE</I> ]
+<P>
+
+<A NAME="lbAD">&nbsp;</A>
+<H2>DESCRIPTION </H2>
+
+<P>
+
+<B>texshow</B> uses <B><A HREF="http://localhost/cgi-bin/man/man2html?1+perl">perl</A></B>(1) and PerlTk (see <B>Tk</B>(3pm)) to
+show a overview of the commands and parameters of those.  In the Tk
+window you can search for a command and by switching the interface,
+you can see the equivalent in another interface language.
+<P>
+
+<I>COMMAND</I> is a <B>ConTeXt</B> command to search for in the
+database.  Note that Plain TeX commands are not (yet) in this database
+although they can be used in <B>ConTeXt</B> source files.
+<P>
+
+<I>LANGUAGE</I> can be one of <B>cz</B> (Czech), <B>de</B>
+(German), <B>en</B> (US-English) or <B>nl</B> (Dutch).  The default
+language is Dutch.
+<P>
+
+You can also set the interface language with the
+<B>--interface</B> switch.
+<P>
+
+<A NAME="lbAE">&nbsp;</A>
+<H2>OPTIONS </H2>
+
+<P>
+
+<DL COMPACT>
+<DT><B>--help</B><DD>
+Print a brief syntax summary 
+<DT><B>--interface=</B><I>LANGUAGE</I><DD>
+Primary interface language.
+See DESCRIPTION for <I>LANGUAGE</I> options. 
+</DL>
+<P>
+
+<A NAME="lbAF">&nbsp;</A>
+<H2>FILES </H2>
+
+<P>
+
+<DL COMPACT>
+<DT><I>TEXMF/context/perltk/cont_mis.pm</I><DD>
+Perl module for
+formatting data
+<DT><I>TEXMF/context/perltk/cont_set.pm</I><DD>
+Perl module for
+defining and constructing Tk interface
+<DT><I>TEXMF/context/data/cont-XX</I>.tws<DD>
+The database
+file.  At this writing, <I>XX</I> can be one of <B>cz</B> (Czech),
+<B>de</B> (German), <B>en</B> (English), <B>it</B> (Italian), or
+<B>nl</B> (Dutch).  Which file is used is determined by the
+<I>LANGUAGE</I> specified on the command line.
+</DL>
+<P>
+
+<A NAME="lbAG">&nbsp;</A>
+<H2>SEE ALSO </H2>
+
+<P>
+
+<B><A HREF="http://localhost/cgi-bin/man/man2html?1+texexec">texexec</A></B>(1), <B><A HREF="http://localhost/cgi-bin/man/man2html?1+texutil">texutil</A></B>(1), <B><A HREF="http://localhost/cgi-bin/man/man2html?1+pdfetex">pdfetex</A></B>(1),
+<B><A HREF="http://localhost/cgi-bin/man/man2html?1+pdftex">pdftex</A></B>(1).
+<P>
+
+Web page: &lt;<A HREF="http://www.pragma-ade.com/">http://www.pragma-ade.com/</A>&gt;
+<P>
+
+<A NAME="lbAH">&nbsp;</A>
+<H2>AUTHOR </H2>
+
+<P>
+
+<B>texshow</B> was written by Hans Hagen 
+&lt;<A HREF="mailto:pragma@wxs.nl">pragma@wxs.nl</A>&gt;.
+<P>
+
+This manpage was written by Tobias Burnus
+&lt;<A HREF="mailto:burnus@gmx.de">burnus@gmx.de</A>&gt; and C.M. Connelly
+&lt;c@eskimo.com&gt;.
+<P>
+
+<B>texshow</B> is part of <B>TeXWork</B> and <B>ConTeXt</B> and is available
+from &lt;<A HREF="http://www.pragma-ade.com/pragma-ade/">http://www.pragma-ade.com/pragma-ade/</A>&gt;.
+<P>
+
+<P>
+
+<HR>
+<A NAME="index">&nbsp;</A><H2>Index</H2>
+<DL>
+<DT><A HREF="#lbAB">NAME </A><DD>
+<DT><A HREF="#lbAC">SYNOPSIS </A><DD>
+<DT><A HREF="#lbAD">DESCRIPTION </A><DD>
+<DT><A HREF="#lbAE">OPTIONS </A><DD>
+<DT><A HREF="#lbAF">FILES </A><DD>
+<DT><A HREF="#lbAG">SEE ALSO </A><DD>
+<DT><A HREF="#lbAH">AUTHOR </A><DD>
+</DL>
+<HR>
+This document was created by
+<A HREF="http://localhost/cgi-bin/man/man2html">man2html</A>,
+using the manual pages.<BR>
+Time: 08:17:36 GMT, April 06, 2006
+</BODY>
+</HTML>

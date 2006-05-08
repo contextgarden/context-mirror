@@ -653,6 +653,7 @@
       \c!sectionnumber=\@@kjsectionnumber,
       \c!distance=\@@kjdistance,
       \c!separator=\@@kjseparator,
+      \c!stopper=\@@kjstopper,
       \c!command=\@@kjcommand,
       \c!conversion=\@@kjconversion]%
    \definenumber % \definelabel
@@ -701,7 +702,7 @@
       \c!width,\c!headstyle,\c!headcolor,\c!style,\c!color,
       \c!textstyle,\c!textcolor,\c!minwidth,
       \c!align,\c!number,\c!way,\c!blockway,
-      \c!sectionnumber,\c!separator,\c!distance,\c!conversion]%
+      \c!sectionnumber,\c!separator,\c!stopper,\c!distance,\c!conversion]%
    \definenumber[#1][#3]%
    \presetlabeltext[#1=\labeltext{#3}]%
    \dodefinefloatcommands[#1][#2]}
@@ -1390,29 +1391,6 @@
 
 % \floatparameter
 
-% \def\putcompletecaption#1#2#3#4%
-%   {\noindent
-%    \xdef\lastcaptiontag{\strut#2\floatcaptionsuffix}%
-%    \xdef\floatcaptionnumber{#1}%
-%    \dostartattributes{\??kj#1}\c!style\c!color\empty
-%      \ifnofloatnumber
-%      \else
-%        \hbox{\doattributes{\??kj#1}\c!headstyle\c!headcolor{\strut#2\floatcaptionsuffix}}%
-%        \ifnofloatcaption \else \ifemptyfloatcaption \else
-%          \ifcase#4\relax
-%            \scratchskip\@@kjkjdistance\relax
-%            \dotfskip\scratchskip\emergencystretch.5\scratchskip
-%          \else
-%            \ifx\@@kjkjinbetween\empty\else\unskip\@@kjkjinbetween\fi
-%          \fi
-%        \fi \fi
-%      \fi
-%      \ifnofloatcaption \else
-%        \doattributes{\??kj#1}\c!textstyle\c!textcolor
-%          {\begstrut#3\endstrut\endgraf}%
-%      \fi
-%    \dostopattributes}
-
 \def\putcompletecaption#1#2#3#4%
   {\noindent
    \xdef\lastcaptiontag{\strut#2\floatcaptionsuffix}%
@@ -1420,7 +1398,7 @@
    \dostartattributes{\??kj#1}\c!style\c!color\empty
      \ifnofloatnumber
      \else
-       \hbox{\doattributes{\??kj#1}\c!headstyle\c!headcolor{\strut#2\floatcaptionsuffix}}%
+       \hbox{\doattributes{\??kj#1}\c!headstyle\c!headcolor{\strut#2\floatcaptionsuffix\@@kjkjstopper}}%
        \ifnofloatcaption \else \ifemptyfloatcaption \else
          \ifcase#4\relax
            \scratchskip\@@kjkjdistance\relax
@@ -1825,6 +1803,7 @@
      \edef\@@kjkjminwidth {\getvalue{\??kj#4\c!minwidth}}%   in geval van automatisch
      \edef\@@kjkjdistance {\getvalue{\??kj#4\c!distance}}%
      \edef\@@kjkjalign    {\getvalue{\??kj#4\c!align}}%
+     \def\@@kjkjstopper   {\getvalue{\??kj#4\c!stopper}}%
      \edef\@@flfllocation {\getvalue{\??fl#4\c!location}}%
      \ifparfloat
        \@EA\dosetparfloat % {#1}{#2}{#3}{#4}%
@@ -2325,6 +2304,7 @@
    \c!blockway=\@@nrblockway,
    \c!sectionnumber=\@@nrsectionnumber,
    \c!separator=\@@koseparator,
+   \c!stopper=\@@kostopper,
    \c!distance=1em,
    \c!command=,
    \c!conversion=\v!numbers]

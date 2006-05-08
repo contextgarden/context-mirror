@@ -1,0 +1,170 @@
+<?xml version="1.0" ?>
+
+<?context-block begin grammar ?>
+
+<grammar xmlns="http://relaxng.org/ns/structure/1.0">
+
+  <?context-block end grammar ?>
+
+  <?context-block begin contacts ?>
+
+  <start>
+    <ref name="contacts"/>
+  </start>
+
+  <define name="contacts">
+    <element name="contacts">
+      <zeroOrMore>
+        <choice>
+          <ref name="contacts.contact"/>
+          <ref name="contacts.contactgroup"/>
+          <ref name="contacts.contactfile"/>
+        </choice>
+      </zeroOrMore>
+    </element>
+  </define>
+
+  <?context-block end contacts ?>
+
+  <?context-block begin contact ?>
+
+  <define name="contacts.contact">
+    <element name="contact">
+      <interleave>
+        <optional> <ref name="contact.initials"/>        </optional>
+        <optional> <ref name="contact.formalname"/>      </optional>
+        <optional> <ref name="contact.informalname"/>    </optional>
+        <optional> <ref name="contact.title"/>           </optional>
+        <optional> <ref name="contact.prefix"/>          </optional>
+        <optional> <ref name="contact.suffix"/>          </optional>
+        <optional> <ref name="contact.telephone"/>       </optional>
+        <optional> <ref name="contact.mobiletelephone"/> </optional>
+        <optional> <ref name="contact.telefax"/>         </optional>
+        <optional> <ref name="contact.email"/>           </optional>
+        <optional> <ref name="contact.address"/>         </optional>
+        <optional> <ref name="contact.information"/>     </optional>
+      </interleave>
+      <attribute name="label"/>
+    </element>
+  </define>
+
+  <?context-block end contact ?>
+
+  <?context-block begin fields ?>
+
+  <define name="contact.initials">
+    <element name="initials">
+      <text/>
+    </element>
+  </define>
+
+  <define name="contact.formalname">
+    <element name="formalname">
+      <text/>
+    </element>
+  </define>
+
+  <define name="contact.informalname">
+    <element name="informalname">
+      <text/>
+    </element>
+  </define>
+
+  <define name="contact.title">
+    <element name="title">
+      <text/>
+    </element>
+  </define>
+
+  <define name="contact.prefix">
+    <element name="prefix">
+      <text/>
+    </element>
+  </define>
+
+  <define name="contact.suffix">
+    <element name="suffix">
+      <text/>
+    </element>
+  </define>
+
+  <define name="contact.telephone">
+    <element name="telephone">
+      <text/>
+    </element>
+  </define>
+
+  <define name="contact.mobiletelephone">
+    <element name="mobiletelephone">
+      <text/>
+    </element>
+  </define>
+
+  <define name="contact.telefax">
+    <element name="telefax">
+      <text/>
+    </element>
+  </define>
+
+  <define name="contact.email">
+    <element name="email">
+      <text/>
+    </element>
+  </define>
+
+  <define name="contact.address">
+    <element name="address">
+      <zeroOrMore>
+        <ref name="contact.address.p"/>
+      </zeroOrMore>
+    </element>
+  </define>
+
+  <define name="contact.information">
+    <element name="information">
+      <text/>
+    </element>
+  </define>
+
+  <define name="contact.address.p">
+    <element name="p">
+      <text/>
+    </element>
+  </define>
+
+  <?context-block end fields ?>
+
+  <?context-block begin contactgroup ?>
+
+  <define name="contacts.contactgroup">
+    <element name="contactgroup">
+      <zeroOrMore>
+        <ref name="contactgroup.member"/>
+      </zeroOrMore>
+      <attribute name="label"/>
+    </element>
+  </define>
+
+  <define name="contactgroup.member">
+    <element name="member">
+      <text/>
+    </element>
+  </define>
+
+  <?context-block end contactgroup ?>
+
+  <?context-block begin contactfile ?>
+
+  <define name="contacts.contactfile">
+    <element name="contactfile">
+      <text/>
+    </element>
+  </define>
+
+  <?context-block end contactfile ?>
+
+  <?context-block begin grammar ?>
+
+</grammar>
+
+<?context-block end grammar ?>

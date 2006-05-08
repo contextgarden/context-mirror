@@ -220,20 +220,58 @@
 %D before all other inclusions, the extensions are expanded
 %D only once per run.
 
-\newtoks \MPinitializations % each graphic
+%D The next hack prevents too long lines:
+
+\long\def\obeyMPlines
+  {\ifx\rawcharacter\undefined\else
+     \obeylines
+     \def\obeyedline{\rawcharacter{10}}%
+   \fi}
+
+%D We use two distinguished token registers:
+
 \newtoks \MPextensions      % once per run (can be multiple graphics)
+\newtoks \MPinitializations % each graphic
+
+\let\stopMPextensions     \relax % so that we can use it in \expanded
+\let\stopMPinitializations\relax % so that we can use it in \expanded
+\let\stopMPinclusions     \relax % so that we can use it in \expanded
+
+\def\startMPextensions % no text checking done here !
+  {\begingroup
+   \obeyMPlines
+   \dostartMPextensions}
+
+\def\dostartMPextensions#1\stopMPextensions
+  {\endgroup
+   \MPextensions\expandafter{\the\MPextensions#1}}
+
+\def\startMPinitializations % no text checking done here !
+  {\begingroup
+   \obeyMPlines
+   \dostartMPinitializations}
+
+\def\dostartMPinitializations#1\stopMPinitializations
+  {\endgroup
+   \MPinitializations\expandafter{\the\MPinitializations#1}}
 
 \def\startMPinclusions
-  {\dosingleempty\dostartMPinclusions}
+  {\begingroup
+   \dosingleempty\dostartMPinclusions}
 
-\long\def\dostartMPinclusions[#1]#2\stopMPinclusions % document wide
-  {\doifelse{#1}{+}
+\long\def\dostartMPinclusions
+  {\obeyMPlines
+   \dodostartMPinclusions}
+
+\long\def\dodostartMPinclusions[#1]#2\stopMPinclusions % document wide
+  {\endgroup
+   \doifelse{#1}{+}
      {\@EA\long\@EA\def\@EA\theMPinclusions\@EA
         {\theMPinclusions
          \writeMPgraphic{#2}}}
      {\long\def\theMPinclusions
         {% \expanded !
-         \@EA\expanded\@EA{\@EA\writeMPgraphic\@EA{\the\MPextensions;}}% new
+%          \@EA\expanded\@EA{\@EA\writeMPgraphic\@EA{\the\MPextensions;}}% new
          \writeMPgraphic{#2}}}}
 
 \def\MPinclusions
@@ -241,6 +279,12 @@
 
 \long\def\doMPinclusions[#1]#2%
   {\startMPinclusions[#1]#2\stopMPinclusions}
+
+\def\theMPextensions
+  {\@EA\expanded\@EA{\@EA\writeMPgraphic\@EA{\the\MPextensions;}}}
+
+\def\theMPinitializations
+  {\@EA\expanded\@EA{\@EA\writeMPgraphic\@EA{\the\MPinitializations;}}}
 
 \startMPinclusions \stopMPinclusions
 
@@ -254,7 +298,7 @@
 
 \newwrite\MPwrite
 
-\newif\iflongMPlines
+\newif\iflongMPlines \longMPlinestrue % we now have \obeyMPlines
 
 \ifx \overlaywidth     \undefined \def \overlaywidth     {4cm} \fi
 \ifx \overlayheight    \undefined \def \overlayheight    {3cm} \fi
@@ -586,65 +630,6 @@
 
 \endTEX
 
-% buggy (at least in collected graphics, lazy expansion)
-%
-% \def\startwritingMPgraphic
-%   {\blabelgroup
-%    \global\advance\nofMPgraphics 1
-%    \ifMPrun \else
-%      \allocateMPslot\currentMPgraphic
-%    \fi
-%    \enableincludeMPgraphics
-%    \xdef\MPgraphic{\the\currentMPgraphic}%
-%    \the\everyMPgraphic
-%    \ifrunMPgraphics
-%      \openMPgraphicfile1{runtime}%
-%      % no reset here !
-%      \theMPinclusions
-%    \else
-%      \openMPgraphicfile0{collected}%
-%       % reset here ! global added (due to adding \blabelgroup)
-%      \theMPinclusions
-%      \global\let\theMPinclusions\relax
-%    \fi
-%    \flushMPTEXgraphic
-%    \ifMPrun \else
-%      \immediate\write\MPwrite{let mprunend = end ;}%
-%      \immediate\write\MPwrite{beginfig(\the\currentMPgraphic);}%
-%    \fi
-%    \globallet\flushMPgraphics\closeMPgraphicfiles % \dodostopwritingMPgraphic
-%    \globallet\stopwritingMPgraphic=\dostopwritingMPgraphic}
-
-% \def\startwritingMPgraphic
-%   {\blabelgroup
-%    \global\advance\nofMPgraphics 1
-%    \ifMPrun \else
-%      \allocateMPslot\currentMPgraphic
-%    \fi
-%    \enableincludeMPgraphics
-%    \xdef\MPgraphic{\the\currentMPgraphic}%
-%    \the\everyMPgraphic
-%    \ifrunMPgraphics
-%      \openMPgraphicfile1{runtime}%
-%      % no reset here !
-%      \theMPinclusions
-% \@EA\expanded\@EA{\@EA\writeMPgraphic\@EA{\the\MPinitializations;}}%
-%    \else
-%      \openMPgraphicfile0{collected}%
-%       % reset here ! global added (due to adding \blabelgroup)
-%      \theMPinclusions
-%      \global\let\theMPinclusions\relax
-%    \fi
-%    \flushMPTEXgraphic
-%    \ifMPrun \else
-%      \immediate\write\MPwrite{let mprunend = end ;}%
-%      \immediate\write\MPwrite{beginfig(\the\currentMPgraphic);}%
-% \@EA\expanded\@EA{\@EA\writeMPgraphic\@EA{\the\MPinitializations;}}%
-%    \fi
-%    \globallet\flushMPgraphics\closeMPgraphicfiles % \dodostopwritingMPgraphic
-%    \globallet\stopwritingMPgraphic=\dostopwritingMPgraphic}
-
-
 \def\startwritingMPgraphic
   {\blabelgroup
    \global\advance\nofMPgraphics \plusone
@@ -658,21 +643,26 @@
    \ifrunMPgraphics
      \openMPgraphicfile1{runtime}%
      % no reset here !
+     \theMPextensions
      \theMPinclusions
-     \@EA\expanded\@EA{\@EA\writeMPgraphic\@EA{\the\MPinitializations;}}%
+%      \theMPinitializations
    \else
      \openMPgraphicfile0{collected}%
      % reset here ! global added (due to adding \blabelgroup)
+     \theMPextensions
      \theMPinclusions
+     \global\let\theMPextensions\relax
      \global\let\theMPinclusions\relax
    \fi
-   %\flushMPTEXgraphic
-   \ifMPrun \else
+   \theMPinitializations % always
+   \ifMPrun
+%      \theMPinitializations
+   \else
      \immediate\write\MPwrite{let mprunend = end ;}%
      \immediate\write\MPwrite{beginfig(\the\currentMPgraphic);}%
-     \ifrunMPgraphics \else
-       \@EA\expanded\@EA{\@EA\writeMPgraphic\@EA{\the\MPinitializations;}}%
-     \fi
+%      \ifrunMPgraphics \else
+%        \theMPinitializations
+%      \fi
    \fi
    \globallet\flushMPgraphics\closeMPgraphicfiles % \dodostopwritingMPgraphic
    \globallet\stopwritingMPgraphic\dostopwritingMPgraphic}
@@ -959,6 +949,8 @@
    \getvalue{\@@MPG#1}%
    \elabelgroup}
 
+\let\stopreusableMPgraphic \relax % so that we can use it in \expanded
+
 %D \macros
 %D   {startuseMPgraphic,useMPgraphic}
 %D
@@ -982,17 +974,28 @@
    \deallocateMPslot\currentMPgraphic
    \egroup}
 
-\long\def\startuseMPgraphic#1#2\stopuseMPgraphic
+\long\def\startuseMPgraphic#1%
   {\blabelgroup
-   \long\setgvalue{\@@MPG#1}{\handleuseMPgraphic{#1}{#2}}%
+   \obeyMPlines
+   \dostartuseMPgraphic}
+
+\long\def\dostartuseMPgraphic#1#2\stopuseMPgraphic
+  {\long\setgvalue{\@@MPG#1}{\handleuseMPgraphic{#1}{#2}}%
    \elabelgroup}
 
-\long\def\startusableMPgraphic#1#2\stopusableMPgraphic % dummy
+\long\def\startusableMPgraphic#1%
   {\blabelgroup
-   \long\setgvalue{\@@MPG#1}{\handleuseMPgraphic{#1}{#2}}%
+   \obeyMPlines
+   \dostartusableMPgraphic}
+
+\long\def\dostartusableMPgraphic#1#2\stopusableMPgraphic
+  {\long\setgvalue{\@@MPG#1}{\handleuseMPgraphic{#1}{#2}}%
    \elabelgroup}
 
 \let\useMPgraphic=\reuseMPgraphic
+
+\let\stopuseMPgraphic    \relax % so that we can use it in \expanded
+\let\stopusableMPgraphic \relax % so that we can use it in \expanded
 
 %D \macros
 %D   {doifMPgraphicelse}
@@ -1085,12 +1088,12 @@
   \def\MPOSTformatswitch  {-progname=mpost -mem=}
   \def\MPOSTdriver        {dvips}
 
-  \def\executeMPOST#1%
+  \def\executeMPOST#1% direct call
     {mpost
       \ifcase\interactionmode\MPOSTbatchswitch\or\MPOSTnonstopswitch\fi
       \space\ifuseMETAFUNformat \MPOSTformatswitch metafun \fi #1}
 
-  \def\executeMPTEX#1%
+  \def\executeMPTEX#1% slower, due to nested texexec call
     {\TEXEXECcommand\space
        --batch \ifcase\interactionmode --logfile='mptex.log' \fi
        --output=\MPOSTdriver\space
@@ -1920,7 +1923,16 @@
 %D
 %D this automatically places the graphic
 
-\long\def\startMPcode#1\stopMPcode
-  {\startuseMPgraphic{@@}#1\stopuseMPgraphic\useMPgraphic{@@}}
+\long\def\startMPcode
+  {\begingroup
+   \obeyMPlines
+   \dostartMPcode}
+
+\long\def\dostartMPcode#1\stopMPcode
+  {\startuseMPgraphic{@@}#1\stopuseMPgraphic
+   \useMPgraphic{@@}%
+   \endgroup}
+
+\let\stopMPcode \relax % so that we can use it in \expanded
 
 \protect \endinput

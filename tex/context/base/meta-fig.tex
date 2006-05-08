@@ -49,10 +49,32 @@
 \def\startMPpage
   {\dodoubleempty\dostartMPpage}
 
-\long\def\dostartMPpage[#1][#2]#3\stopMPpage % second arg gobbles space
+% \long\def\dostartMPpage[#1][#2]#3\stopMPpage % second arg gobbles space
+%   {\dostartfittingpage[\??mg][#1]%
+%      \startMPcode#3\stopMPcode
+%    \dostopfittingpage}
+
+\long\def\dostartMPpage[#1][#2]% second arg gobbles space
   {\dostartfittingpage[\??mg][#1]%
-     \startMPcode#3\stopMPcode
+   \obeylines\def\obeyedline{\rawcharacter{13}}%
+   \dodostartMPpage}
+
+% \long\def\dodostartMPpage#1\stopMPpage
+%   {\startMPcode#1\stopMPcode
+%    \dostopfittingpage}
+%
+% more efficient:
+
+\long\def\obeyMPlines
+  {\obeylines
+   \def\obeyedline{\rawcharacter{13}}}
+
+\long\def\dodostartMPpage#1\stopMPpage
+  {\startuseMPgraphic{@@}#1\stopuseMPgraphic
+   \useMPgraphic{@@}%
    \dostopfittingpage}
+
+\let\stopMPpage \relax % so that we can use it in \expanded
 
 \setupMPpage
   [\c!scale=1000,
@@ -63,14 +85,14 @@
    \c!height=\v!fit,
    \c!frame=\v!off]
 
-%D \macros 
+%D \macros
 %D  {MPfigure}
 %D
-%D A bit out of place, here but nevertheless: 
+%D A bit out of place, here but nevertheless:
 
 \def\MPfigure#1#2% test for dup figure
   {\bgroup
-   \getfiguredimensionsonly[#1]% [\c!object=\v!no] already set 
+   \getfiguredimensionsonly[#1]% [\c!object=\v!no] already set
    \freezedimenmacro\naturalfigurewidth
    \freezedimenmacro\naturalfigureheight
    \startMPcode

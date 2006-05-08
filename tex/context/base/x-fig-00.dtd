@@ -1,0 +1,24 @@
+<!-- author : Taco Hoekwater / Hans Hagen 
+     info   : x-fig-00.tex / x-fig-01.tex  
+     usage  : <!DOCTYPE figurelibrary SYSTEM "x-fig-00.dtd">
+  -->
+
+<!ELEMENT figurelibrary (description?,figure*)>
+
+<!ATTLIST figurelibrary   language CDATA #IMPLIED>
+<!ATTLIST dummy           width    CDATA #IMPLIED>
+<!ATTLIST dummy           height   CDATA #IMPLIED>
+
+<!ELEMENT description  (organization?,project?,product?,comment?)>
+<!ELEMENT organization (#PCDATA)>
+<!ELEMENT project      (#PCDATA)>
+<!ELEMENT product      (#PCDATA)>
+
+<!ELEMENT figure       (label,file?,dummy?,copyright?,comment?,status?)>
+<!ELEMENT dummy        (#PCDATA)>
+<!ELEMENT file         (#PCDATA)>
+<!ELEMENT label        (#PCDATA)>
+<!ELEMENT copyright    (#PCDATA)>
+<!ELEMENT status       (#PCDATA)>
+
+<!ELEMENT comment      (#PCDATA)>

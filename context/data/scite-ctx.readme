@@ -1,0 +1,8 @@
+Short note:
+
+- use scite 1.64 of later
+- copy scite-ctx.lua to ..\scite\wscite
+- copy scite-ctx.properties to wherever context.properties lives
+- add "import" to context.properties
+- create path for spell files and put spell files there
+- let environment variable CTXSPELLPATH to spell path

@@ -3101,6 +3101,9 @@ $TotalTime = time - $TotalTime;
 
 unless ($HelpAsked) { print "\n        total run time : $TotalTime seconds\n" }
 
+print "\n" ;
+print "               warning : use 'texmfstart texexec' instead\n" ;
+
 if ($Problems) { exit 1 }
 
 __DATA__

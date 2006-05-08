@@ -432,9 +432,9 @@
 %D The auxiliary \METAPOST\ macros are defined by default,
 %D by saying:
 
-\appendtoks
+\startMPextensions
   if unknown context_core : input mp-core.mp ; fi ;
-\to \MPextensions
+\stopMPextensions
 
 %D Some of these macros are pretty clever but too complicated
 %D to be nice. When things are kind of stable I'll clean up
@@ -619,9 +619,9 @@
 
 %D We need to treat floats in a special way.
 
-\appendtoks
+\startMPinitializations
   local_multi_par_area:=\iflocalpositioning true\else false\fi;
-\to \MPinitializations
+\stopMPinitializations
 
 \def\textbackgroundoverlay#1%
   {\iflocalpositioning\v!local\else\v!text\fi#1}

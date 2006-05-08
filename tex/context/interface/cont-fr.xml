@@ -4222,6 +4222,9 @@
       <cd:parameter name="separateur">
         <cd:constant type="cd:text"/>
       </cd:parameter>
+      <cd:parameter name="taquet">
+        <cd:constant type="cd:text"/>
+      </cd:parameter>
       <cd:parameter name="alignement">
         <cd:constant type="gauche"/>
         <cd:constant type="droite"/>
@@ -4323,6 +4326,9 @@
         <cd:constant type="bycd:section"/>
       </cd:parameter>
       <cd:parameter name="separateur">
+        <cd:constant type="cd:text"/>
+      </cd:parameter>
+      <cd:parameter name="taquet">
         <cd:constant type="cd:text"/>
       </cd:parameter>
       <cd:parameter name="commande">

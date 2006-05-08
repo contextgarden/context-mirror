@@ -82,8 +82,8 @@
 \def\notedefparameter  #1{\csname\??vn\??vn\currentnote#1\endcsname}
 \def\footnoteparameter #1{\csname\??vn      \v!footnote#1\endcsname}
 
-\def\startnotedef        {\csname\e!start\??vn\??vn\currentnote\endcsname}
-\def\stopnotedef         {\csname\e!stop \??vn\??vn\currentnote\endcsname}
+\def\startnotedef        {\resetdescriptions\csname\e!start\??vn\??vn\currentnote\endcsname}
+\def\stopnotedef                           {\csname\e!stop \??vn\??vn\currentnote\endcsname}
 
 \def\noteinsertion     #1{\csname\??vn:#1\endcsname}
 \def\currentnoteins      {\csname\??vn:\currentnote\endcsname}
@@ -590,9 +590,27 @@
      \@EA\gobbletwoarguments
    \fi}
 
-\def\nododonote#1%
-  {\doifnot{#1}{-}{\kern.5em}% quick hack, approximation
-   \gobbleoneargument}
+% \def\nododonote#1%
+%   {\doifnot{#1}{-}{\kern.5em}% quick hack, approximation
+%    \gobbleoneargument}
+%
+% more correct:
+
+\long\def\nododonote#1#2%
+  {\doifnot{#1}{-}
+     {\ifconditional\pagewisenotes
+        \doifreferencefoundelse{\s!fnt:t:\internalfootreference}
+          {\ifnum\currentrealreference>\lastnotepage\relax
+             \globallet\lastnotepage\currentrealreference
+             \resetnumber[\currentnote]%
+           \fi}
+          {}%
+      \fi
+      \incrementnumber[\currentnote]%
+      \makesectionnumber[\currentnote]%
+      \let\lastnotenumber\composedsectionnumber
+      \dolastnotesymbol
+      \decrementnumber[\currentnote]}}
 
 \def\dododonote#1%
   {\doglobal\increment\internalfootreference

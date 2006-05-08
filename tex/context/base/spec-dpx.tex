@@ -65,7 +65,7 @@
 %D    \type{"1 0 0 1 -x -y cm"}.
 %D
 %D 2. \type{pdf:literal direct #1} puts directly the given PDF commands
-%D    #1 without changing the text matrix.
+%D    \type {#1} without changing the text matrix.
 %D
 %D Literal \PDF\ inclusion is implemented as:
 
@@ -264,8 +264,7 @@
 
 \def\assignPDFtransparency#1#2%
   {\def\PDFtransparencyidentifier{/Tr#1}%
-   %\def\PDFtransparencyreference{\PDFobjref{#2}}}
-   \def\PDFtransparencyreference{@TR:#2}}
+   \def\PDFtransparencyreference{@TR:#2}} % todo: \PDFobjref{TR:#2}
 
 \def\presetPDFtransparency#1#2%
   {\initializePDFtransparency
@@ -273,12 +272,9 @@
 
 \def\dopresetPDFtransparency#1#2%
   {\global\advance\PDFcurrenttransparency \plusone
-   %\immediate\pdfobj{\PDFtransparancydictionary{#1}{#2}{}}%
-%   \special{pdf: object @TR:\the\PDFcurrenttransparency\space \PDFtransparancydictionary{#1}{#2}{}}%
    \doPDFreserveDPXobject{TR:\the\PDFcurrenttransparency}{<< >>}%
    \special{pdf:\doPDFcheckedDPXobject{TR:\the\PDFcurrenttransparency}\PDFtransparancydictionary{#1}{#2}{}}%
    \edef\PDFtransparencyidentifier{/Tr\the\PDFcurrenttransparency}%
-   %\edef\PDFtransparencyreference {\PDFobjref\pdflastobj}%
    \edef\PDFtransparencyreference {@TR:\the\PDFcurrenttransparency}%
    \setxvalue{\@@PDT#1:#2}%
      {\noexpand\assignPDFtransparency{\the\PDFcurrenttransparency}{\the\PDFcurrenttransparency}}%
@@ -287,15 +283,11 @@
       \PDFtransparencyreference\space}}
 
 \def\initializePDFtransparency
-  %{\immediate\pdfobj{\PDFtransparancydictionary{1}{1}{/AIS false}}%
-%  {\special{pdf: object @TR:0 \PDFtransparancydictionary{1}{1}{/AIS false}}%
   {\doPDFreserveDPXobject{TR:0}{<< >>}%
    \special{pdf:\doPDFcheckedDPXobject{TR:0}\PDFtransparancydictionary{1}{1}{/AIS false}}%
    \xdef\PDFtransparencyresetidentifier{/Tr0}%
-   %\xdef\PDFtransparencyresetreference{\PDFobjref\pdflastobj}%
    \xdef\PDFtransparencyresetreference{@TR:0}%
    \setxvalue{\@@PDT0:0}%
-     %{\noexpand\assignPDFtransparency{0}{\the\pdflastobj}}%
      {\noexpand\assignPDFtransparency{0}{0}}%
    \appendtoPDFdocumentextgstates
      {\PDFtransparencyresetidentifier\space
@@ -404,34 +396,69 @@
 
 % wd nextbox > #3 ivm offset
 
-\definespecial\dostartobject#1#2#3#4#5%
+% \definespecial\dostartobject#1#2#3#4#5%
+%   {\bgroup
+%    \dowithnextbox
+%      {\dosetobjectreference{#1}{#2}{@#1::#2}%
+%       \scratchdimen#3\edef\width {\the\scratchdimen\space}%
+%       \scratchdimen#4\edef\height{\the\scratchdimen\space}%
+%       \setbox\nextbox\vbox
+%         {\special{pdf:bxobj @#1::#2 width \width height \height}%
+%          % we need to compensate for the box offset (ugly, sigh)
+%          \scratchdimen\nextboxht
+%          \advance\scratchdimen\nextboxdp
+%          \advance\scratchdimen-#4\relax
+%          \nextboxdp\zeropoint
+%          \nextboxht\zeropoint
+%          \hbox to #3{\hss\lower.5\scratchdimen\box\nextbox\hss}%
+%          \ifx\currentPDFresources\empty
+%          \else
+%            \special{pdf:put @resources <<\currentPDFresources>>}%
+%            \global\let\currentPDFresources\empty
+%          \fi
+%          \special{pdf:exobj}}%
+%          \smashbox\nextbox
+%          \flushatshipout{\box\nextbox}%
+%          \egroup}%
+%     \hbox\bgroup}
+
+% \definespecial\dostopobject
+%   {\egroup}
+
+\def\doDVIPDFMXstartobject#1#2#3#4#5#6%
   {\bgroup
    \dowithnextbox
-     {\dosetobjectreference{#1}{#2}{@#1::#2}%
-      \scratchdimen#3\edef\width {\the\scratchdimen\space}%
-      \scratchdimen#4\edef\height{\the\scratchdimen\space}%
+     {\ifcase#1\or\dosetobjectreference{#2}{#3}{@#2::#3}\fi
+      \scratchdimen#4\edef\width {\the\scratchdimen\space}%
+      \scratchdimen#5\edef\height{\the\scratchdimen\space}%
       \setbox\nextbox\vbox
-        {\special{pdf:bxobj @#1::#2 width \width height \height}%
-     % we need to compensate for the box offset (ugly, sigh)
-     \scratchdimen\nextboxht
-     \advance\scratchdimen\nextboxdp
-     \advance\scratchdimen-#4\relax
-     \nextboxdp\zeropoint
-     \nextboxht\zeropoint
-     \hbox to #3{\hss\lower.5\scratchdimen\box\nextbox\hss}%
+        {\special{pdf:bxobj @#2::#3 width \width height \height}%
+         % we need to compensate for the box offset (ugly, sigh)
+         \scratchdimen\nextboxht
+         \advance\scratchdimen\nextboxdp
+         \advance\scratchdimen-#5\relax
+         \nextboxdp\zeropoint
+         \nextboxht\zeropoint
+         \hbox to #4{\hss\lower.5\scratchdimen\box\nextbox\hss}%
          \ifx\currentPDFresources\empty
          \else
-           \special{pdf:put @resources <<\currentPDFresources\the\pdfpageresources>>}%
+           \special{pdf:put @resources <<\currentPDFresources>>}%
            \global\let\currentPDFresources\empty
          \fi
          \special{pdf:exobj}}%
-      \smashbox\nextbox
-      \flushatshipout{\box\nextbox}%
-      \egroup}%
+         \smashbox\nextbox
+         \flushatshipout{\box\nextbox}%
+         \egroup}%
     \hbox\bgroup}
 
-\definespecial\dostopobject
+\def\doDVIPDFMXstopobject
   {\egroup}
+
+\definespecial\dostartobject#1#2#3#4#5%
+  {\doDVIPDFMXstartobject\plusone{#1}{#2}{#3}{#4}{#5}}
+
+\definespecial\dostopobject
+  {\doDVIPDFMXstopobject}
 
 \definespecial\doinsertobject#1#2%
   {\hbox
@@ -764,11 +791,21 @@
 
 \newcounter\MPPDFcounter
 
-\def\setMPPDFobject#1#2%
-  {\ifx\currentPDFresources\empty\else\doPDFpageresource{#1}\fi
-   \def\getMPPDFobject{\box#2}}
+\newcounter\MPPDFobjectcounter
 
-\let\getMPPDFobject\relax
+\def\setMPPDFobject#1#2% resources boxnumber
+  {\doglobal\increment\MPPDFobjectcounter
+   \xdef\getMPPDFobject
+     {\vbox to \the\ht#2%
+        {\vss
+         \hbox to \the\wd#2%
+           {\scratchdimen\wd#2\scratchdimen.5\scratchdimen\hskip-\the\scratchdimen
+            \special{pdf:uxobj @MPPDF::\MPPDFobjectcounter}}}}%
+   \expanded{\doDVIPDFMXstartobject\zerocount{MPPDF}\MPPDFobjectcounter{\the\wd#2}{\the\ht#2}{\the\dp#2}}%
+   \box#2%
+   \doDVIPDFMXstopobject}
+
+\let\getMPPDFobject\gobbletwoarguments
 
 \definespecial\doinsertMPfile#1%
   {\doiffileelse{./#1}{\includeMPasPDF{./#1}}{\message{[MP #1]}}}

@@ -1,12 +1,12 @@
 require 'base/kpsefast'
 
-class KpseRemote
+case ENV['KPSEMETHOD']
+    when /soap/o then require 'base/kpse/soap'
+    when /drb/o  then require 'base/kpse/drb'
+    else              require 'base/kpse/drb'
+end
 
-    case ENV['KPSEMETHOD']
-        when /soap/o then require 'base/kpse/soap'
-        when /drb/o  then require 'base/kpse/drb'
-        else              require 'base/kpse/drb'
-    end
+class KpseRemote
 
     @@port = ENV['KPSEPORT'] || 7000
 
@@ -34,9 +34,13 @@ class KpseRemote
     end
 
     def initialize(port=nil)
-        begin
-            @kpse, @tree = KpseRemote::start_client(port)
-        rescue
+        if KpseRemote::available? then
+            begin
+                @kpse, @tree = KpseRemote::start_client(port)
+            rescue
+                @kpse, @tree = nil, nil
+            end
+        else
             @kpse, @tree = nil, nil
         end
     end

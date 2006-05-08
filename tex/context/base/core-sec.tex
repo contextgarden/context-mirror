@@ -225,7 +225,7 @@
       \let#3#2}
      {% was \unexpanded \edef, but we need it unexpanded !
       \edef\numberseparator{\getvalue{#1\c!separator}}%
-      \edef#3{\@EA\separatednumber\@EA{#2}}}}  % hm, etex
+      \edef#3{\@EA\separatednumber\@EA{#2}\getvalue{#1\c!stopper}}}}  % hm, etex
 
 \def\sectionnumberonly[#1]%
   {\makesectionnumber[#1]%
@@ -2207,6 +2207,7 @@
          \c!alternative=\@@koalternative,
          \c!command=\normalplacehead,
          \c!separator=\@@koseparator,
+         \c!stopper=\@@kostopper,
          \c!align=\@@koalign,
          \c!aligntitle=\@@koaligntitle,
          \c!tolerance=\@@kotolerance,
@@ -2223,7 +2224,7 @@
            {\copyparameters
               [\??ko#1][\??ko\getvalue{\??ko#1\c!default}]
               [\c!before,\c!after,\c!command,\c!file,\c!page,\c!continue,
-               \c!header,\c!text,\c!footer,\c!separator,\c!resetnumber,
+               \c!header,\c!text,\c!footer,\c!separator,\c!stopper,\c!resetnumber,
                \c!number,\c!ownnumber,\c!placehead,\c!incrementnumber,
                \c!style,\c!color,\c!distance,\c!alternative,\c!indentnext,
                % new per 20/03/3002 (o-pbu-l) / was too confusing
@@ -2246,7 +2247,7 @@
            [\??ko#1][\??ko#2]
            [\c!level,\c!section,\c!coupling,\c!prefix,
             \c!before,\c!after,\c!command,\c!file,\c!page,\c!continue,
-            \c!separator,
+            \c!separator,\c!stopper,
             \c!header,\c!text,\c!footer,\c!resetnumber,
             \c!number,\c!ownnumber,\c!placehead,\c!incrementnumber,
             \c!style,\c!color,\c!distance,\c!alternative,\c!indentnext,
@@ -2309,6 +2310,7 @@
   [\c!alternative=\v!normal,
    \c!sectionnumber=\v!yes,
    \c!separator=.,
+   \c!stopper=,
    \c!limittext=\v!yes,
    \c!align=,
    \c!aligntitle=,

@@ -2,7 +2,7 @@
 
 # program   : texmfstart
 # copyright : PRAGMA Advanced Document Engineering
-# version   : 1.8.5 - 2003/2006
+# version   : 1.9.0 - 2003/2006
 # author    : Hans Hagen
 #
 # project   : ConTeXt / eXaMpLe
@@ -38,28 +38,36 @@ $ownpath = File.expand_path(File.dirname($0)) unless defined? $ownpath
 # ../../texmf/scripts/context/ruby
 
 $: << $ownpath
+$: << File.expand_path("#{$ownpath}/../lib")
 $: << File.expand_path("#{$ownpath}/texmfstart-lib")
 $: << File.expand_path("#{$ownpath}/../../texmf-local/scripts/context/ruby")
 $: << File.expand_path("#{$ownpath}/../../texmf/scripts/context/ruby")
 
 require "rbconfig"
 
-['base/kpseremote','base/kpsedirect'].each do |basemodule|
+$kpsereport, $kpseerror, $kpsemodules = "", false, ['base/kpseremote','base/kpsedirect','base/kpsefast']
+
+$kpsemodules.each do |basemodule|
     begin
         require basemodule
     rescue Exception
-        puts("unable to locate #{basemodule} on library paths:\n\n")
-        puts($:.join("\n") + "\n")
-        puts("an option is to copy\n\n")
-        puts("  <texmf-local or texmf>/scripts/context/ruby/base\n\n")
-        puts("to e.g.\n\n")
-        puts("  <path of texmfstart script>/texmfstart-lib/base")
+        $kpseerror = true
     end
+end
+
+if $kpseerror then
+    $kpsereport << "unable to locate #{$kpsemodules.join('|')} on library paths:\n\n"
+    $kpsereport << "  " + $:.join("\n  ") + "\n\n"
+    $kpsereport << "an option is to copy\n\n"
+    $kpsereport << "  <texmf-local or texmf>/scripts/context/ruby/base/kpse*\n\n"
+    $kpsereport << "(including the kpse subpath) to e.g.\n\n"
+    $kpsereport << "  #{$ownpath}/../lib/texmfstart/\n\n"
+    $kpsereport << "or to use a stub instead\n\n"
 end
 
 $mswindows = Config::CONFIG['host_os'] =~ /mswin/
 $separator = File::PATH_SEPARATOR
-$version   = "1.8.5"
+$version   = "1.8.6"
 
 if $mswindows then
     require "win32ole"
@@ -82,9 +90,10 @@ $suffixinputs['lua'] = 'LUAINPUTS'
 $suffixinputs['jar'] = 'JAVAINPUTS'
 $suffixinputs['pdf'] = 'PDFINPUTS'
 
-$predefined['texexec']  = 'texexec.pl'
-$predefined['texutil']  = 'texutil.pl'
+$predefined['texexec']  = 'texexec.rb'
+$predefined['texutil']  = 'texutil.rb'
 $predefined['texfont']  = 'texfont.pl'
+$predefined['texshow']  = 'texshow.pl'
 
 $predefined['makempy']  = 'makempy.pl'
 $predefined['mptopdf']  = 'mptopdf.pl'
@@ -103,8 +112,8 @@ $predefined['mpstools'] = 'mpstools.rb'
 $predefined['exatools'] = 'exatools.rb'
 $predefined['xmltools'] = 'xmltools.rb'
 
-$predefined['newpstopdf']   = 'newpstopdf.rb'
-$predefined['newtexexec']   = 'newtexexec.rb'
+$predefined['newpstopdf']   = 'pstopdf.rb'
+$predefined['newtexexec']   = 'texexec.rb'
 $predefined['pdftrimwhite'] = 'pdftrimwhite.pl'
 
 $makelist = [
@@ -124,13 +133,15 @@ $makelist = [
     'mpstools',
     'tmftools',
     'exatools',
-    'runtools'
+    'runtools',
+    #
+    'texmfstart'
 ]
 
-if ENV['TEXMFSTART_MODE'] = 'experimental' then
-    $predefined['texexec'] = 'newtexexec.rb'
-    $predefined['pstopdf'] = 'newpstopdf.rb'
-end
+# if ENV['TEXMFSTART_MODE'] = 'experimental' then
+    # $predefined['texexec'] = 'newtexexec.rb'
+    # $predefined['pstopdf'] = 'newpstopdf.rb'
+# end
 
 $scriptlist   = 'rb|pl|py|lua|jar'
 $documentlist = 'pdf|ps|eps|htm|html'
@@ -164,17 +175,26 @@ $kpse = nil
 def check_kpse
     if $kpse then
         # already done
-    elsif KpseRemote::available? then
-        $kpse = KpseRemote.new
-        if $kpse.okay? then
-            puts("using remote kpse") if $verbose
-        else
-            $kpse = KpseDirect.new
-            puts("forcing direct kpse") if $verbose
-        end
     else
-        $kpse = KpseDirect.new
-        puts("using direct kpse") if $verbose
+        begin
+            if KpseRemote::available? then
+                $kpse = KpseRemote.new
+                if $kpse.okay? then
+                    puts("using remote kpse") if $verbose
+                else
+                    $kpse = KpseDirect.new
+                    puts("forcing direct kpse") if $verbose
+                end
+            else
+                $kpse = KpseDirect.new
+                puts("using direct kpse") if $verbose
+            end
+        rescue
+            if $verbose then
+                puts("using kpse binary")
+                puts($kpsereport) unless $kpsereport.empty?
+            end
+        end
     end
 end
 
@@ -235,15 +255,48 @@ end
 
 class File
 
+    # def File.needsupdate(oldname,newname)
+        # begin
+            # if $mswindows then
+                # return File.stat(oldname).mtime > File.stat(newname).mtime
+            # else
+                # return File.stat(oldname).mtime != File.stat(newname).mtime
+            # end
+        # rescue
+            # return true
+        # end
+    # end
+
+    @@update_eps = 1
+
     def File.needsupdate(oldname,newname)
         begin
-            if $mswindows then
-                return File.stat(oldname).mtime > File.stat(newname).mtime
+            oldtime = File.stat(oldname).mtime.to_i
+            newtime = File.stat(newname).mtime.to_i
+            if newtime >= oldtime then
+                return false
+            elsif oldtime-newtime < @@update_eps then
+                return false
             else
-                return File.stat(oldname).mtime != File.stat(newname).mtime
+                return true
             end
         rescue
             return true
+        end
+    end
+
+    def File.syncmtimes(oldname,newname)
+        return
+        begin
+            if $mswindows then
+                # does not work (yet) / gives future timestamp
+                # t = File.mtime(oldname) # i'm not sure if the time is frozen, so we do it here
+                # File.utime(0,t,oldname,newname)
+            else
+                t = File.mtime(oldname) # i'm not sure if the time is frozen, so we do it here
+                File.utime(0,t,oldname,newname)
+            end
+        rescue
         end
     end
 
@@ -252,18 +305,6 @@ class File
             "#{File.stat(name).mtime}"
         rescue
             return 'unknown'
-        end
-    end
-
-    def File.syncmtimes(oldname,newname)
-        begin
-            if $mswindows then
-                # does not work (yet)
-            else
-                t = File.mtime(oldname) # i'm not sure if the time is frozen, so we do it here
-                File.utime(0,t,oldname,newname)
-            end
-        rescue
         end
     end
 
@@ -468,16 +509,17 @@ def usage
     print("           texmfstart --browser examplap.pdf\n")
     print("           texmfstart showcase.pdf\n")
     print("           texmfstart --page=2 --file=showcase.pdf\n")
-    print("           texmfstart --program=yourtex yourscript.pl arg-1 arg-2\n")
+    print("           texmfstart --program=yourtex yourscript.rb arg-1 arg-2\n")
     print("           texmfstart --direct xsltproc kpse:somefile.xsl somefile.xml\n")
     print("           texmfstart bin:xsltproc env:somepreset path:somefile.xsl somefile.xml\n")
     print("           texmfstart --iftouched=normal,lowres downsample.rb normal lowres\n")
     print("           texmfstart texmfstart bin:scite kpse:texmf.cnf\n")
     print("           texmfstart --exec bin:scite *.tex\n")
     print("           texmfstart --edit texmf.cnf\n")
-    print("           texmfstart --stubpath=/usr/local/bin --make texexec\n")
-    print("           texmfstart --stubpath=auto --make all\n")
     print("           texmfstart --serve\n")
+    print("\n")
+    print("           texmfstart --stubpath=/usr/local/bin [--make --remove] --verbose all\n")
+    print("           texmfstart --stubpath=auto [--make --remove] all\n")
 end
 
 # somehow registration does not work out (at least not under windows)
@@ -742,7 +784,7 @@ def edit(filename)
     end
 end
 
-def make(filename,windows=false,linux=false)
+def make(filename,windows=false,linux=false,remove=false)
     basename = filename.dup
     basename.sub!(/\.[^.]+?$/, '')
     basename.sub!(/^.*[\\\/]/, '')
@@ -752,32 +794,61 @@ def make(filename,windows=false,linux=false)
         basename = $stubpath + '/' + basename unless $stubpath.empty?
     end
     if basename == filename then
-        report('nothing made')
+        report("nothing made (#{filename})")
     else
         program = nil
         if filename =~ /[\\\/]/ && filename =~ /\.(#{$scriptlist})$/ then
             program = $applications[$1]
         end
         filename = "\"#{filename}\"" if filename =~ /\s/
-        program = 'texmfstart' if $indirect || ! program || program.empty?
+        if filename == 'texmfstart' then
+            program = 'ruby'
+            command = 'kpsewhich --format=texmfscripts --progname=context texmfstart.rb'
+            filename = `#{command}`.chomp
+            if filename.empty? then
+                report("failure: #{command}")
+                return
+            elsif not remove then
+                if windows then
+                    ['bat','exe'].each do |suffix|
+                        if FileTest.file?("#{basename}.#{suffix}") then
+                            report("windows stub '#{basename}.#{suffix}' skipped (already present)")
+                            return
+                        end
+                    end
+                elsif linux && FileTest.file?(basename) then
+                    report("unix stub '#{basename}' skipped (already present)")
+                    return
+                end
+            end
+        else
+            program = 'texmfstart' if $indirect || ! program || program.empty?
+        end
         begin
-            if windows && f = open(basename+'.bat','w') then
-                f.binmode
-                f.write("@echo off\015\012")
-                # f.write("#{program} #{filename} %*\015\012")
-                f.write("#{program} %~n0 %*\015\012")
-                f.close
-                report("windows stub '#{basename}.bat' made")
-            elsif linux && f = open(basename,'w') then
-                f.binmode
-                f.write("#!/bin/sh\012")
-                f.write("#{program} #{filename} $@\012")
-                # f.write("#{program} `basename $0` $@\012")
-                f.close
-                report("unix stub '#{basename}' made")
+            callname = $predefined[filename.sub(/\.*?$/,'')] || filename
+            if remove then
+                if windows && (File.delete(basename+'.bat') rescue false) then
+                    report("windows stub '#{basename}.bat' removed (calls #{callname})")
+                elsif linux && (File.delete(basename) rescue false) then
+                    report("unix stub '#{basename}' removed (calls #{callname})")
+                end
+            else
+                if windows && f = open(basename+'.bat','w') then
+                    f.binmode
+                    f.write("@echo off\015\012")
+                    f.write("#{program} #{callname} %*\015\012")
+                    f.close
+                    report("windows stub '#{basename}.bat' made (calls #{callname})")
+                elsif linux && f = open(basename,'w') then
+                    f.binmode
+                    f.write("#!/bin/sh\012")
+                    f.write("#{program} #{callname} $@\012")
+                    f.close
+                    report("unix stub '#{basename}' made (calls #{callname})")
+                end
             end
         rescue
-            report("failed to make stub '#{basename}'")
+            report("failed to make stub '#{basename}' #{$!}")
         else
             return true
         end
@@ -936,8 +1007,9 @@ def execute(arguments)
     $environment = $directives['environment'] || ''
 
     $make        = $directives['make']        || false
+    $remove      = $directives['remove']      || $directives['delete'] || false
     $unix        = $directives['unix']        || false
-    $windows     = $directives['windows']     || false
+    $windows     = $directives['windows']     || $directives['mswin'] || false
     $stubpath    = $directives['stubpath']    || ''
     $indirect    = $directives['indirect']    || false
 
@@ -979,7 +1051,7 @@ def execute(arguments)
 
     if $serve then
         if ENV['KPSEMETHOD'] && ENV['KPSEPORT'] then
-            require 'base/kpseremote'
+            # require 'base/kpseremote'
             begin
                 KpseRemote::start_server
             rescue
@@ -999,7 +1071,7 @@ def execute(arguments)
         loadtree($tree)
         loadenvironment($environment)
         show_environment()
-        if $make then
+        if $make || $remove then
             if $filename == 'all' then
                 makelist = $makelist
             else
@@ -1007,11 +1079,11 @@ def execute(arguments)
             end
             makelist.each do |filename|
                 if $windows then
-                    make(filename,true,false)
+                    make(filename,true,false,$remove)
                 elsif $unix then
-                    make(filename,false,true)
+                    make(filename,false,true,$remove)
                 else
-                    make(filename,$mswindows,!$mswindows)
+                    make(filename,$mswindows,!$mswindows,$remove)
                 end
             end
         elsif $browser && $filename =~ /^http\:\/\// then

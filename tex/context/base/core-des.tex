@@ -15,6 +15,8 @@
 
 \unprotect
 
+% beware: \insidedescription should be set to zero inside footnotes
+
 % Dit kan en moet dus anders:
 %
 % \start... :  \vbox\bgroup
@@ -51,7 +53,7 @@
 
 \newbox\@@descriptionbox
 
-\def\descriptionparameter       #1{\csname\??dd\currentdescription#1\endcsname}
+\def\descriptionparameter#1{\csname\??dd\currentdescription#1\endcsname}
 
 \def\@@descriptionhandler{\descriptionparameter{\s!do\c!command}}
 
@@ -240,14 +242,14 @@
    \advance\leftskip -\leftskipadaption \relax
    \ifdim\leftskipadaption=\zeropoint
      \leftskipadaption1.5em % just some default
-     \ifnum\insidedefinition=\plusone
+     \ifnum\insidedescription=\plusone
        \ifdim\leftskip>\zeropoint \relax
          \leftskipadaption\leftskip
        \fi
      \fi
    \fi
-   \ifnum\insidedefinition=\plusone
-     \advance\leftskip \leftskipadaption
+   \ifnum\insidedescription>\zerocount % was \ifnum\insidedescription=\plusone
+     \advance\leftskip \leftskipadaption % but we're already further on
    \fi
    \hskip-\leftskipadaption
    \ifhbox\@@descriptionbox\unhcopy\else\copy\fi\@@descriptionbox
@@ -266,7 +268,10 @@
 
 %D A new key 'headalign' in definitions.
 
-\chardef\insidedefinition=0
+\def\resetdescriptions % to be used in e.g. footnotes
+  {\chardef\insidedescription\zerocount}
+
+\resetdescriptions
 
 \let\@@leftdescriptionskip \!!zeropoint
 \let\@@rightdescriptionskip\!!zeropoint
@@ -307,16 +312,16 @@
    \doifelse{\descriptionparameter\c!aligntitle}\v!no
      {\edef\@@leftdescriptionskip {\the\leftskip }%
       \edef\@@rightdescriptionskip{\the\rightskip}}
-     {\ifcase\insidedefinition
+     {\ifcase\insidedescription
         \edef\@@leftdescriptionskip {\the\leftskip }%
         \edef\@@rightdescriptionskip{\the\rightskip}%
       \fi}%
    \expanded{\indenting[\descriptionparameter\c!indenting]}%
    % better a system mode
-   \ifcase\insidedefinition
-     \chardef\insidedefinition\plusone
+   \ifcase\insidedescription
+     \chardef\insidedescription\plusone
    \or
-     \chardef\insidedefinition\plustwo
+     \chardef\insidedescription\plustwo
    \fi} % now happens elsewhere : \noindent\ignorespaces
 
 \def\@@stopdescription#1%
@@ -324,9 +329,10 @@
    % was \par \dostopattributes % here, else problems with interlinespace and font change
    \dostopparbasedattributes % == \settrue\parbasedattributes \dostopattributes
    \endgroup
-   \descriptionparameter\c!after
+   \descriptionparameter\c!after %hm, which currentdescription?
    \egroup % temporary hack
-   \dochecknextindentation{\??dd#1}% \currentdescription}}
+   \def\currentdescription{#1}%
+   \dochecknextindentation{\??dd\currentdescription}%
    \dorechecknextindentation}
 
 \def\@@dodescription
@@ -334,18 +340,6 @@
    \ignorespaces}
 
 % starters:
-
-% \def\@@startdescription[#1][#2]%
-%   {\def\currentdescription{#1}%
-%    \doifelse{\descriptionparameter{\s!do\c!state}}\v!start
-%      {\@@startsomedescription{#1}[#2]{}}
-%      {\dowithwargument{\@@startsomedescription{#1}[#2]}}}
-%
-% \def\@@description[#1][#2]%
-%   {\def\currentdescription{#1}%
-%    \doifelse{\descriptionparameter{\s!do\c!state}}\v!start
-%      {\@@somedescription{#1}[#2]{}}
-%      {\dowithwargument{\@@somedescription{#1}[#2]}}}
 
 \def\@@startdescription[#1][#2]%
   {\def\currentdescription{#1}%
@@ -374,7 +368,8 @@
 % which calls:
 
 \def\@@makedescription#1%
-  {\def\currentdescription{#1}%
+  {\postponefootnotes % new, assumes grouping
+   \def\currentdescription{#1}%
    \executeifdefined
      {@@description\descriptionparameter\c!location}
      {\getvalue{@@description\v!left}}}
@@ -399,20 +394,6 @@
 \def\dodosetupdescriptions[#1]% [#2]%
   {\getparameters[\??dd#1]}   % [#2]}
 
-% \def\dodefinedescription[#1][#2]%
-%   {\copyparameters[\??dd#1][\??dd]
-%      [\c!location,\c!headstyle,\c!style,\c!color,\c!headcolor,
-%       \c!width,\c!hang,\c!sample,\c!before,\c!inbetween,\c!after,\c!margin,
-%       \c!indenting,\c!indentnext,\c!align,\c!text,\c!distance,\c!titledistance,\c!command]%
-%    \getparameters[\??dd#1]
-%      [\s!do\c!state=\v!stop,\s!do\c!command=\normal@@descriptionhandler,\c!level=,#2]%
-%   %\doifvalue{\??dd#1\c!location}\v!top{\doassign[\??dd#1][\c!inbetween=\blank]}%
-%    \doifvalue{\??dd#1\c!location}\v!top % we actually need more granularity
-%      {\doifnotvalue{\??dd#1\c!inbetween}{\doassign[\??dd#1][\c!inbetween=\blank]}}%
-%    \setvalue        {#1}{\dodoubleempty\@@description[#1]}%
-%    \setvalue{\e!start#1}{\dodoubleempty\@@startdescription[#1]}%
-%    \setvalue{\e!stop #1}{\@@stopdescription{#1}}}%
-
 \def\dodefinedescription[#1][#2]%
   {\copyparameters[\??dd#1][\??dd]
      [\c!location,\c!headstyle,\c!style,\c!color,\c!headcolor,\c!title,
@@ -436,62 +417,6 @@
 
 \def\currentdescriptionnumber
   {\csname\??dd\currentdescription\??dd\c!number\endcsname}
-
-% \def\special@@descriptionhandler[#1]#2#3%
-%   {\strut
-%    \doifelse{\descriptionparameter\c!number}\v!no
-%      \!!doneafalse{\doifelse{#1}{-}\!!doneafalse\!!doneatrue}%
-%    \chardef\descriptioncoupling\zerocount
-%    \iflocation
-%      \doifsomething{\descriptionparameter\c!coupling}
-%        {\processaction % genereert > of <
-%           [\descriptionparameter\c!couplingway]
-%           [ \v!local=>\chardef\descriptioncoupling\plusone, % old: default
-%            \v!global=>\chardef\descriptioncoupling\plustwo]}% new: global crosslinking
-%    \fi
-%    \setupnumber % the number is called indirectly
-%      [\currentdescriptionnumber]
-%      [\c!sectionnumber=\descriptionparameter\c!sectionnumber]%
-%    \if!!donea
-%      \makeprecedingsectionnumber[\currentdescriptionnumber]%
-%      \preparethenumber{\??dd\currentdescription}\precedingsectionnumber\preparednumber
-%      \iftrialtypesetting\startlocal\fi
-%      \getvalue{\e!next\currentdescription}% tricky but we need the preroll
-%      \iftrialtypesetting\stoplocal\fi
-%      % \getvalue{\e!next#2#1}%
-%      \iflocation
-%        \bgroup
-%        \letvalue{\??dd\currentdescription\c!sectionnumber}\v!yes
-%        \protectconversion
-%        \makeprecedingsectionnumber[\currentdescriptionnumber]%
-%        \preparethenumber{\??dd\currentdescription}\precedingsectionnumber\preparednumber
-%        \ifcase\descriptioncoupling \or
-%          \xdef\@@internalenumber{\doshowdnnumber}%
-%          \rawreference\s!num{#1:\@@internalenumber}{}%
-%        \or
-%          \xdef\@@internalenumber{\countervalue{\??dd\c!coupling\currentdescription}}%
-%          \rawreference\s!num{\currentdescription:\@@internalenumber}{}%
-%        \fi
-%        \egroup
-%      \fi
-%     %\makeprecedingsectionnumber[\currentdescriptionnumber]%
-%     %\preparethenumber{\??dd\currentdescription}\precedingsectionnumber\preparednumber
-%      \disablepseudocaps   % sorry, uppercase causes troubles
-%      \doattributes        % \nocase primitive needed
-%        {\??dd\currentdescription}\c!headstyle\c!headcolor % todo: sub as well
-%        {\descriptionparameter\c!command{\showdntext\domakednnumber}}% hook for taco
-%      \iflocation\ifcase\descriptioncoupling \else
-%        \edef\localconnection{\descriptionparameter\c!coupling:\@@internalenumber}%
-%        \doifreferencefoundelse\localconnection
-%          {\in[\localconnection]}\donothing % genereert > of <
-%      \fi\fi
-%      \doifnot{#1}{-}{\rawreference\s!num{#1}{\doshowdnnumber}}%
-%    \else % Why was this strange expansion needed?
-%      \edef\!!stringa{\showdnpuretext}% nog eens testen binnen \expanded
-%      \expanded{\doattributes{\??dd\currentdescription}\noexpand\c!headstyle\noexpand\c!headcolor
-%        {\noexpand\descriptionparameter\noexpand\c!command{\!!stringa}}}%
-%      \doifnot{#1}{-}{\rawreference\s!num{#1}{}}%
-%    \fi}
 
 \def\special@@descriptionhandler[#1]#2#3%
   {\strut
@@ -667,49 +592,6 @@
 
 \def\setupenumerations
   {\dodoubleempty\dosetupenumerations}
-
-% \def\dododefineenumeration#1#2#3[#4][#5]%
-%   {\makecounter{\??dd\c!coupling#1}% new: global cross linking
-%    \dodefinedescription[#3#1]%
-%      [\s!do\c!state=\v!start,\c!level=#3,
-%       \s!do\c!command=\special@@descriptionhandler]%
-%    \copyparameters[\??dd#3#1][\??dn]
-%      [\c!location,\c!headstyle,\c!style,\c!color,\c!headcolor,
-%       \c!width,\c!number,\c!distance,\c!command,
-%       \c!sample,\c!hang,\c!align,\c!before,\c!inbetween,\c!after,
-%       \c!levels,\c!way,\c!blockway,\c!separator,\c!margin,
-%       \c!indenting,\c!indentnext,\c!stopper,\c!sectionnumber,
-%       \c!number]%
-%    \doifassignmentelse{#4}
-%      {\getparameters[\??dd#3#1]%
-%         [\c!text=#1,\??dd\c!number=#1,\c!conversion=,
-%          \c!left=,\c!right=,\c!coupling=,\c!couplingway=\v!local,#4]}%
-%      {\doifelsenothing{#4}
-%         {\getparameters[\??dd#3#1]%
-%            [\c!text=#1,\??dd\c!number=#1,\c!conversion=,
-%             \c!stopper=,
-%             \c!left=,\c!right=,\c!coupling=,\c!couplingway=,#4]}%
-%         {\copyparameters[\??dd#3#1][\??dd#3#4]
-%            [\c!location,\c!headstyle,\c!style,\c!color,\c!headcolor,
-%             \c!width,\c!number,\c!distance,\c!command,\c!margin,
-%             \c!sample,\c!hang,\c!align,\c!before,\c!inbetween,\c!after,
-%             \c!stopper,\c!indenting,\c!indentnext,\c!left,\c!right,
-%             \c!coupling,\c!couplingway]%
-%          \getparameters[\??dd#3#1]
-%            [\c!text=#1,\??dd\c!number=#4,\c!conversion=,#5]}}%
-%    \doifvalue{\??dd#3#1\??dd\c!number}{#1}
-%      {\definenumber
-%         [#3#1]
-%         [\c!way=\descriptionparentparameter\c!way,
-%          \c!blockway=\descriptionparentparameter\c!blockway,
-%          \c!sectionnumber=\descriptionparentparameter\c!sectionnumber]%
-%       \doifvalue{\??dd#1\c!levels}{#2}%                              % for
-%         {\doifsomething{\getvalue{\??dd#1\c!conversion}}%            % old
-%            {\setupnumber[#3#1]                                       % times
-%               [\c!conversion=\descriptionparameter\c!conversion]}}}% % sake
-%    \setvalue{\s!set  #3#1}{\dosetenumerationnumber[#1][#3]}%
-%    \setvalue{\s!reset#3#1}{\doresetenumerationnumber[#1][#3]}%
-%    \setvalue{\e!next #3#1}{\dotripleempty\donextenumerationnumber[#1][#3]}}
 
 \def\dododefineenumeration#1#2#3[#4][#5]%
   {\makecounter{\??dd\c!coupling#1}% new: global cross linking

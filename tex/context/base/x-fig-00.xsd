@@ -1,0 +1,77 @@
+<?xml version="1.0"?>
+
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+
+<xsd:annotation>
+  <xsd:documentation xml:lang="en">
+    <p>This schema described the figure database. This base 
+    can be used to collect graphics that later can be used 
+    in applications like ConTeXt.</p>   
+    <p>author: Tobias Burnus &amp; Hans Hagen, copyright:
+    PRAGMA-ADE / Hasselt NL</p> 
+  </xsd:documentation>
+</xsd:annotation>
+
+<xsd:element name="figurelibrary" type="figureLibraryType" />
+
+<xsd:element name="comment" type="nonZeroString" />
+
+<xsd:complexType name="figureLibraryType">
+  <xsd:sequence>
+    <xsd:element name="description" type="descriptionType" />
+    <xsd:element name="figure"      type="figureType" 
+                 minOccurs="0"      maxOccurs="unbounded" />
+  </xsd:sequence>
+  <xsd:attribute name="language" type="xsd:language" />
+</xsd:complexType>
+
+<xsd:complexType name="descriptionType">
+  <xsd:sequence>
+    <xsd:element name="organization" type="nonZeroString" />
+    <xsd:element name="project"      type="nonZeroString" />
+    <xsd:element name="product"      type="nonZeroString" />
+    <xsd:element ref="comment"       minOccurs="0" />
+  </xsd:sequence>
+</xsd:complexType>
+
+<xsd:complexType name="figureType">
+  <xsd:sequence>
+    <xsd:choice>
+      <xsd:element name="file"  type="NZNormalizedString" />
+      <xsd:element name="dummy" type="dummyType" />
+    </xsd:choice>
+    <xsd:element name="label"     type="NZNormalizedString" />
+    <xsd:element name="copyright" type="nonZeroString" />
+    <xsd:element ref="comment"    minOccurs="0" />
+  </xsd:sequence>
+</xsd:complexType>
+
+<xsd:complexType name="dummyType">
+  <xsd:simpleContent>
+    <xsd:extension base="nonZeroString">
+      <xsd:attribute name="width"  type="TeXUnit" use="required" />
+      <xsd:attribute name="height" type="TeXUnit" use="required" />
+    </xsd:extension>
+  </xsd:simpleContent>
+</xsd:complexType>
+
+<xsd:simpleType name="nonZeroString">
+  <xsd:restriction base="xsd:string">
+    <xsd:minLength value="1" />
+  </xsd:restriction>
+</xsd:simpleType>
+
+<xsd:simpleType name="NZNormalizedString">
+  <xsd:restriction base="xsd:normalizedString">
+    <xsd:minLength value="1" />
+  </xsd:restriction>
+</xsd:simpleType>
+
+<xsd:simpleType name="TeXUnit">
+  <xsd:restriction base="xsd:string">
+    <xsd:pattern 
+       value='[0-9]*(,|\.|[0-9])?[0-9]*(cm|mm|in|pt|pc|em|ex|bp|dd|cc|sp)' />
+  </xsd:restriction>
+</xsd:simpleType>
+
+</xsd:schema>

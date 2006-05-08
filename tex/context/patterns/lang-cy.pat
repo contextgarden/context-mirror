@@ -880,7 +880,7 @@ ath3w
 ath3y
 ato2i
 at3ol
-a3t[ocircumflex]
+a3tô
 at3ran
 atr5oc
 at3rod
@@ -909,8 +909,8 @@ awn3a
 awr1
 awr3d
 awy4r3
-3[aacute]u.
-1[acircumflex]
+3áu.
+1â
 bab4i
 bab5yd
 b3ac
@@ -1065,7 +1065,7 @@ casg4e
 3cat
 ca4t3r
 c3au
-c3[aacute]u
+c3áu
 c1b
 cd2
 c1e
@@ -1490,7 +1490,7 @@ di3w4a
 d4iwe
 di5wen
 d3iwyf
-d1[idiaeresis]
+d1ï
 d3ladd
 dladr3
 dl3af
@@ -1761,7 +1761,7 @@ ed3ig
 ed3i4n
 ed3ir
 ed3iw
-3ed[idiaeresis]
+3edï
 2edl1
 ed4lo
 4edr.
@@ -2142,7 +2142,7 @@ e3wyf
 2ey
 e1yc
 ey4en
-1[ediaeresis]
+1ë
 3fa.
 fab3
 fab4i
@@ -2290,7 +2290,7 @@ f4in.
 f3ind
 fin4t
 fisg4
-f2[idiaeresis]
+f2ï
 fl2
 fl3ad
 flaf4
@@ -2619,7 +2619,7 @@ g2n
 gn2i
 gn3io
 g4niw
-g3n[idiaeresis]1
+g3nï1
 gno3e
 gn2of
 gn2u
@@ -2828,7 +2828,7 @@ h1au
 hawe5nas
 hawe5ne
 hawl3
-h2[acircumflex]
+h2â
 h1b2
 hbl4a
 h1d2
@@ -2925,8 +2925,8 @@ hig3y
 hin4t
 hir3
 hi4wa
-h2[idiaeresis]1
-h[idiaeresis]4en
+h2ï1
+hï4en
 hl2
 hl4ad
 hl5adw
@@ -2966,7 +2966,7 @@ h3nad
 h2neg
 h4new
 hn4ie
-h1n[idiaeresis]1
+h1nï1
 hnod3
 h2nol
 hn5ole
@@ -3468,7 +3468,7 @@ ir1
 ir2a
 ir5agl
 ir3an
-ir4[aacute]f
+ir4áf
 ir3b
 irch3
 irdy5na
@@ -3567,8 +3567,8 @@ iwyn3
 2i1ym
 iyn3
 2i1ys
-[idiaeresis]3ae
-[idiaeresis]2i
+ï3ae
+ï2i
 l1ac
 lach3
 2lad.
@@ -3932,7 +3932,7 @@ mdy5re
 4meddia
 4meddwr
 4medi
-4med[idiaeresis]
+4medï
 medr3
 meg3n4
 megni3
@@ -4027,7 +4027,7 @@ m3ne
 m4ned
 mn5edi
 m5niau
-m3n[idiaeresis]3
+m3nï3
 m2od
 m3odd
 mod4ig
@@ -4037,7 +4037,7 @@ m3og
 m4on.
 mon3a
 mon4d
-m4on[idiaeresis]
+m4onï
 mor2
 mor3c
 mordd4
@@ -4404,8 +4404,8 @@ niwl5e
 niwl5o
 niwl5w
 ni5ydd
-n2[idiaeresis]i
-n[idiaeresis]4yc
+n2ïi
+nï4yc
 n1l2
 nladr3
 nlin3
@@ -4457,7 +4457,7 @@ n1or
 norch4
 nor4f
 2nos3
-n[odiaeresis]5es.
+nö5es.
 np4et
 n1r2
 nre4o
@@ -4913,7 +4913,7 @@ o1wy
 o1yc
 oyw3
 oy4we
-[ocircumflex]r3f
+ôr3f
 p1
 p2a
 pab5yd
@@ -5000,7 +5000,7 @@ raed4
 raeddad4
 r4aen
 ra5fann
-ra5f[aacute]n
+ra5fán
 r4aff
 rag1
 ra4ge
@@ -5332,7 +5332,7 @@ rn3i
 rn5iae
 rn4ii
 rn5iol
-r3n2[idiaeresis]1
+r3n2ï1
 rn4os
 rn3y
 rn4yw
@@ -5368,7 +5368,7 @@ r4osf
 rosg4
 ros3o
 2rot
-r[odiaeresis]5edi
+rö5edi
 rp2
 r1pa
 rpar3
@@ -5510,7 +5510,7 @@ sat4a
 sath4
 sathraw4
 s3au
-s[aacute]4it
+sá4it
 s2b2
 sbad4w
 s4bai
@@ -5598,7 +5598,7 @@ s3ir
 s3it
 si4wr
 s2iyn
-2s2[idiaeresis]1
+2s2ï1
 2sl2
 sl4au
 slo3na
@@ -5824,7 +5824,7 @@ ting3
 t4ino
 tion4
 t4iono
-t[idiaeresis]5ol.
+tï5ol.
 tl3a
 tl4ae
 tl1e
@@ -6216,7 +6216,7 @@ wn3de
 wn3di
 wndr3
 wn4ei
-wn4[ecircumflex]l
+wn4êl
 2wn3g
 wngl4
 wn3in
@@ -6667,7 +6667,7 @@ yr1y
 2ysa
 ys3aw
 2ysb
-ysb5[idiaeresis]w
+ysb5ïw
 ys4bl
 ysb3yd
 2yse

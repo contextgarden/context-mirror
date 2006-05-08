@@ -1320,6 +1320,81 @@
 \def\setforcedfontspec#1 #2\relax]%
   {\csname\@fs@#1\endcsname#2\relax}
 
+%D For \XETEX\ we need to support a bit more:
+%D
+%D \starttyping
+%D \definedfont[{cmr10}  at 40pt] test
+%D \definedfont['cmss10' at 40pt] test
+%D \definedfont["cmtt10" at 40pt] test
+%D
+%D \definedfont[{cmr10}  at 40pt] test
+%D \definedfont['cmss10' at 40pt] test
+%D \definedfont["cmtt10" at 40pt] test
+%D
+%D \definedfont["Gentium" at 40pt] test
+%D \stoptyping
+
+\beginXETEX \font
+
+    % actually, we can use "" in pdftex> 1.20 as well
+
+    \def\parsefontspec#1%
+      {\xdef\somefontspec{#1\space}%
+       \@EA\doparsefontspec\somefontspec\relax]% =>#1 \empty]
+       \donoparsefontspec}
+
+    \def\doparsefontspec#1%
+      {\ifx"#1%
+         \@EA\dodqparsefontspec
+       \else\ifx'#1%
+         \@EAEAEA\dosqparsefontspec
+       \else
+         \@EAEAEA\dodoparsefontspec
+       \fi\fi#1}
+
+    \def\dqfontquote{"}
+    \def\sqfontquote{'}
+
+    \def\dodqparsefontspec"#1"#2%
+      {\def\somefontname{#1}%
+       \let\somefontquote\dqfontquote
+       \ifx#2\relax\@EA\setnaturalfontspec\else\@EA\setforcedfontspec\fi#2}
+
+    \def\dosqparsefontspec'#1'#2%
+      {\def\somefontname{#1}%
+       \let\somefontquote\sqfontquote
+       \ifx#2\relax\@EA\setnaturalfontspec\else\@EA\setforcedfontspec\fi#2}
+
+    \def\dodoparsefontspec#1 #2%
+      {\def\somefontname{#1}%
+       \let\somefontquote\empty
+       \ifx\somefontname\empty % space before fontname
+         \@EA\doparsefontspec
+       \else\ifx#2\relax
+         \@EAEAEA\setnaturalfontspec
+       \else
+         \@EAEAEA\setforcedfontspec
+       \fi\fi
+       #2}
+
+    \def\setnaturalfontspec#1]%
+      {\@fs@scaled\plusthousand\relax}
+
+    \def\setforcedfontspec#1 #2\relax]%
+      {\csname\@fs@#1\endcsname#2\relax}
+
+    \def\donoparsefontspec % #1 == \cs
+      {\edef\fontfile{\somefontquote\truefontname\somefontname\somefontquote}%
+       \ifx\fontfile\s!unknown \let\fontfile\defaultfontfile \fi
+       \edef\lastfontname{\fontfile\somefontspec}%
+       \ifx\fontclass\empty
+         \expandafter\definefontlocal
+       \else
+         \expandafter\definefontglobal
+       \fi} % #1 == \cs
+
+\endXETEX
+
 \def\@fs@scaled
   {\afterassignment\do@fs@scaled\scratchcounter}
 

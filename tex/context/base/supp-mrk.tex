@@ -411,9 +411,11 @@
    \normalmarks#1{#2}}
 
 \def\setnormalmark#1#2% using a tok prevents unwanted expansion in mark
-  {\scratchtoks{#2}%
+  {\begingroup % don't ask why, but grouping is needed
+   \scratchtoks{#2}% in order to to mess up scratchtoks
    \@EA\xdef\csname\@@crk\string#1\endcsname{\the\scratchtoks}%
-   \normalmarks#1{\the\scratchtoks}} % one level expansion
+   \normalmarks#1{\the\scratchtoks}% one level expansion
+   \endgroup}
 
 \def\checktopmark#1%
   {%\writestatus{marks}{checking \string#1}\wait

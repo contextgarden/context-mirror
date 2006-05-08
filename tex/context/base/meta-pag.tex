@@ -19,24 +19,24 @@
 
 \unprotect
 
-\appendtoks
+\startMPextensions
   if unknown context_page: input mp-page; fi;
-\to \MPextensions
+\stopMPextensions
 
 %D The next few macros tell \METAPOST\ how the \CONTEXT\
 %D pagebody looks.
 
-\appendtoks
+\startMPextensions
   boolean PageStateAvailable,OnRightPage,InPageBody;
   PageStateAvailable:=true;
-\to \MPextensions
+\stopMPextensions
 
-\appendtoks
+\startMPinitializations
   OnRightPage:=true;
   InPageBody:=\ifinpagebody true \else false \fi;
-\to \MPinitializations
+\stopMPinitializations
 
-\appendtoks
+\startMPinitializations
   def LoadPageState =
     OnRightPage:=\MPonrightpage;
     OnOddPage:=\MPonoddpage;
@@ -85,7 +85,7 @@
     LayoutColumnDistance:=\the\layoutcolumndistance;
     LayoutColumnWidth:=\the\layoutcolumnwidth;
   enddef;
-\to \MPinitializations
+\stopMPinitializations
 
 \def\MPonrightpage{true}
 \def\MPonoddpage  {true}
@@ -205,11 +205,11 @@
 \def\resetMPlocaltextarea
   {\global\MPlocaltextareadata\emptytoks}
 
-\appendtoks
+\startMPextensions
    path PlainTextArea;
-\to \MPextensions
+\stopMPextensions
 
-\appendtoks
+\startMPinitializations
   ResetTextAreas;
   \the\MPsavedtextareadata;
   SaveTextAreas;
@@ -218,7 +218,7 @@
   \the\MPlocaltextareadata;
   PlainTextArea:=boundingbox(\MPxy{text:\realfolio}--\MPxy{text:\realfolio}
     shifted (\MPw{text:\realfolio},\MPh{text:\realfolio}));
-\to \MPinitializations
+\stopMPinitializations
 
 \appendtoks
   \global\MPsavedtextareadata\MPtextareadata

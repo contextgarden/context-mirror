@@ -8,55 +8,57 @@
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
-%C therefore copyrighted by \PRAGMA. See mreadme.pdf for 
-%C details. 
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
 
-%D I finally finished graph support, if only because I could 
-%D not stand the idea that Karel Wesseling would revert to 
-%D \PiCTeX. 
+%D I finally finished graph support, if only because I could
+%D not stand the idea that Karel Wesseling would revert to
+%D \PiCTeX.
 
-% pre 2000.08.06 version  
+% pre 2000.08.06 version
 %
-% \forceMPTEXgraphictrue 
-% 
-% \appendtoks 
+% \forceMPTEXgraphictrue
+%
+% \startMPinitializations
 %   initialize_numbers ; % make sure that pseudo typesetting is set up
-%   input graph ;        % load the graph package 
-%   Autoform := "@g" ;   % change the % template char into @ 
-% \to \MPinitializations 
+%   input graph ;        % load the graph package
+%   Autoform := "@g" ;   % change the % template char into @
+% \stopMPinitializations
 
-%D The latest version does things more automatically (and 
-%D efficiently when no text processing is needed). For 
-%D definitions embedded in your document, you need to 
-%D use \type {@} as template character, in external files, 
-%D \type {%} is also supported. 
+%D The latest version does things more automatically (and
+%D efficiently when no text processing is needed). For
+%D definitions embedded in your document, you need to
+%D use \type {@} as template character, in external files,
+%D \type {%} is also supported.
 
-\appendtoks input graph ; \to \MPinitializations 
+\startMPinitializations
+  input graph ;
+\stopMPinitializations
 
-%D Graphics that have \type {begingraph} in them are 
-%D recognized as such and force handling of embedded \TEX\ 
-%D code. 
+%D Graphics that have \type {begingraph} in them are
+%D recognized as such and force handling of embedded \TEX\
+%D code.
 
 \forceMPTEXcheck{begingraph}
-   
-%D If you run into troubles, try: 
-%D 
-%D \starttyping 
-%D \forceMPTEXgraphictrue 
-%D \stoptyping 
+
+%D If you run into troubles, try:
+%D
+%D \starttyping
+%D \forceMPTEXgraphictrue
+%D \stoptyping
 %D
 %D A demo can be run with:
 %D
 %D \starttyping
 %D texexec --mode=demo --pdf m-graph
-%D \stoptyping 
+%D \stoptyping
 
-% No longer needed, since John will fix it. 
-% 
-% %D For the moment we need the following patch. Adam T. Lindsay 
-% %D found out that the following code produced an error: 
-% %D 
-% %D \starttyping 
+% No longer needed, since John will fix it.
+%
+% %D For the moment we need the following patch. Adam T. Lindsay
+% %D found out that the following code produced an error:
+% %D
+% %D \starttyping
 % %D \startMPcode
 % %D draw begingraph(130mm,35mm);
 % %D   setrange(0,0,10,22000);
@@ -64,7 +66,7 @@
 % %D   autogrid(itick.bot,grid.lft) withcolor .75white ;
 % %D   endgraph;
 % %D \stopMPcode
-% %D 
+% %D
 % %D \startMPcode
 % %D draw begingraph(130mm,35mm);
 % %D   setrange(0,50,10,22000);
@@ -72,7 +74,7 @@
 % %D    autogrid(itick.bot,grid.lft) withcolor .75white ;
 % %D   endgraph;
 % %D \stopMPcode
-% %D 
+% %D
 % %D \startMPcode
 % %D draw begingraph(130mm,35mm);
 % %D   setrange(0,110,10,30000);
@@ -80,42 +82,41 @@
 % %D    autogrid(itick.bot,grid.lft) withcolor .75white ;
 % %D   endgraph;
 % %D \stopMPcode
-% %D \stoptyping 
+% %D \stoptyping
 % %D
-% %D The bug is a rather nasty one and needs some tweaking in 
-% %D the low level graph code. John Hobby suggested for the 
-% %D moment to initialize \type {setrange} as follows: 
-% %D 
-% %D \starttyping  
+% %D The bug is a rather nasty one and needs some tweaking in
+% %D the low level graph code. John Hobby suggested for the
+% %D moment to initialize \type {setrange} as follows:
+% %D
+% %D \starttyping
 % %D  setrange(0,0,"22000","22000")
-% %D \stoptyping 
-% %D 
-% %D Folowing this suggesion, I provide the following 
-% %D extension: 
-% 
-% % \appendtoks 
+% %D \stoptyping
+% %D
+% %D Folowing this suggesion, I provide the following
+% %D extension:
+
 % def begingraph(expr w, h) =
 %   begingroup
 %   save X_, Y_, Gfin_, Gcur_, Gcbb_, Gneedgr_, Gneedfr_, Gdidsc_;
 %   save Gdpic_, Gppic_, Ggl_, Garw_;
 %   picture Gfin_, Gcur_, Gcbb_, Gdpic_, Gppic_, Ggl_[];
 %   boolean Gneedgr_, Gneedfr_, Gdidsc_;
-%   Gfin_ = nullpicture;          
-%   Gcur_ = nullpicture;          
-%   Gcbb_ = nullpicture;          
-%   X_.ctyp = Y_.ctyp = linear;   
-%   Z_.gdim = (w,h);              
-%   X_.sc = Y_.sc = 0;            
-%   Gneedgr_ = true;              
-%   Gneedfr_ = true;              
-%   Gdidsc_ = false;              
-%   Gdpic_ = nullpicture;         
-%   Garw_ = 0;                    
-%   scantokens everybegingraph ; 
+%   Gfin_ = nullpicture;
+%   Gcur_ = nullpicture;
+%   Gcbb_ = nullpicture;
+%   X_.ctyp = Y_.ctyp = linear;
+%   Z_.gdim = (w,h);
+%   X_.sc = Y_.sc = 0;
+%   Gneedgr_ = true;
+%   Gneedfr_ = true;
+%   Gdidsc_ = false;
+%   Gdpic_ = nullpicture;
+%   Garw_ = 0;
+%   scantokens everybegingraph ;
 % enddef;
-% 
-% boolean fixsetrange ; fixsetrange := true ; 
-% 
+%
+% boolean fixsetrange ; fixsetrange := true ;
+%
 % vardef dosetrange(text t) =
 %   interim warningcheck:=0;
 %   save r_; r_=0;
@@ -130,19 +131,18 @@
 %     exitif r_=4;
 %   endfor
 % enddef;
-% 
+%
 % vardef setrange(text t) =
-%   if fixsetrange : dosetrange(0,0,20000,20000) ; fi ; 
+%   if fixsetrange : dosetrange(0,0,20000,20000) ; fi ;
 %   dosetrange(t) ;
-% enddef ; 
-% 
-% if unknown everybegingraph : 
+% enddef ;
+%
+% if unknown everybegingraph :
 %   string everybegingraph ;
-% % everybegingraph := "setrange(0,0,20000,20000)" ; 
-% fi ; 
-% \to \MPinitializations 
+% % everybegingraph := "setrange(0,0,20000,20000)" ;
+% fi ;
 
-\appendtoks 
+\startMPinitializations
   % @# is X_ or Y_; $ is Gxcvlin_ or Gycvlin_; l and h are numeric or string
   % It would not be OK to set (@#low,@#high) to a pair expression because $ might
   % try to rescale @#low when evaluating the right-hand side for @#high.
@@ -156,19 +156,19 @@
       -@\#low  = if abs @\#ctyp<>log: $ fi Mlog_Str h ;
     fi
   enddef ;
-\to \MPinitializations 
+\stopMPinitializations
 
-\doifnotmode {demo} {\endinput} 
+\doifnotmode {demo} {\endinput}
 
-%D You need to have the data files in your path, 
+%D You need to have the data files in your path,
 %D otherwise the run is aborted.
 
 \doiffileelse {agepop91.d}
   {} {\writestatus{graph}{no data files found}\wait\end}
 
-%D The test: 
+%D The test:
 
-\starttext 
+\starttext
 
 \startMPpage
 draw begingraph(3in,2in);

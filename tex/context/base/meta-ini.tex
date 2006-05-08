@@ -69,38 +69,38 @@
 
 \maxnofMPgraphics = 4000 % metafun disables the 4K boundary
 
-\appendtoks
+\startMPextensions
   if unknown context_tool: input mp-tool; fi;
   if unknown context_spec: input mp-spec; fi;
   if unknown context_grph: input mp-grph; fi;
-\to \MPextensions
+\stopMPextensions
 
 %D Since we want lables to follow the document settings, we
 %D also set the font related variables.
 
-\appendtoks % scale is not yet ok
+\startMPinitializations % scale is not yet ok
   defaultfont:="\truefontname{Regular}";
   defaultscale:=\the\bodyfontsize/10pt;
-\to \MPinitializations
+\stopMPinitializations
 
 %D In order to support fancy text features (like outline
 %D fonts), we set:
 
-\appendtoks
+\startMPextensions
   graphictextformat:="context";
   graphictextdirective "\the\everyMPTEXgraphic";
-\to \MPextensions
+\stopMPextensions
 
-% \appendtoks
+% \startMPextensions
 %   textextdirective "\the\everyMPTEXgraphic";
-% \to \MPextensions
+% \stopMPextensions
 
 %D A signal that we're in combines \CONTEXT||\METAFUN mode:
 
-\appendtoks
+\startMPextensions
   string contextversion;
   contextversion:="\contextversion";
-\to \MPextensions
+\stopMPextensions
 
 %D Some safeguards:
 %D
@@ -253,11 +253,15 @@
    \elabelgroup}
 
 \long\def\startuniqueMPgraphic
-  {\dodoublegroupempty\dostartuniqueMPgraphic}
-
-\long\def\dostartuniqueMPgraphic#1#2#3\stopuniqueMPgraphic%
   {\blabelgroup
-   \long\setgvalue{\@@MPG#1}{\handleuniqueMPgraphic{#1}{#2}{#3}}%
+   \dodoublegroupempty\dostartuniqueMPgraphic}
+
+\long\def\dostartuniqueMPgraphic
+  {\obeyMPlines
+   \dodostartuniqueMPgraphic}
+
+\long\def\dodostartuniqueMPgraphic#1#2#3\stopuniqueMPgraphic%
+  {\long\setgvalue{\@@MPG#1}{\handleuniqueMPgraphic{#1}{#2}{#3}}%
    \elabelgroup}
 
 \unexpanded\def\uniqueMPgraphic
@@ -268,6 +272,8 @@
    \setupMPvariables[#1][#2]%
    \getvalue{\@@MPG#1}{}%
    \elabelgroup}
+
+\let\stopuniqueMPcode \relax % so that we can use it in \expanded
 
 \long\def\handleuseMPgraphic#1#2#3%
   {\blabelgroup
@@ -283,19 +289,27 @@
    \elabelgroup}
 
 \long\def\startuseMPgraphic
-  {\dodoublegroupempty\dostartuseMPgraphic}
-
-\long\def\dostartuseMPgraphic#1#2#3\stopuseMPgraphic
   {\blabelgroup
-   \long\setgvalue{\@@MPG#1}{\handleuseMPgraphic{#1}{#2}{#3}}%
+   \dodoublegroupempty\dostartuseMPgraphic}
+
+\long\def\dostartuseMPgraphic
+  {\obeyMPlines
+   \dodostartuseMPgraphic}
+
+\long\def\dodostartuseMPgraphic#1#2#3\stopuseMPgraphic
+  {\long\setgvalue{\@@MPG#1}{\handleuseMPgraphic{#1}{#2}{#3}}%
    \elabelgroup}
 
 \long\def\startusableMPgraphic % redundant but handy
-  {\dodoublegroupempty\dostartusableMPgraphic}
-
-\long\def\dostartusableMPgraphic#1#2#3\stopusableMPgraphic
   {\blabelgroup
-   \long\setgvalue{\@@MPG#1}{\handleuseMPgraphic{#1}{#2}{#3}}%
+   \dodoublegroupempty\dostartusableMPgraphic}
+
+\long\def\dostartusableMPgraphic % redundant but handy
+  {\obeyMPlines
+   \dodostartusableMPgraphic}
+
+\long\def\dodostartusableMPgraphic#1#2#3\stopusableMPgraphic
+  {\long\setgvalue{\@@MPG#1}{\handleuseMPgraphic{#1}{#2}{#3}}%
    \elabelgroup}
 
 \long\def\handlereusableMPgraphic#1#2#3%
@@ -314,16 +328,15 @@
    \elabelgroup}
 
 \long\def\startreusableMPgraphic
-  {\dodoublegroupempty\dostartreusableMPgraphic}
-
-% \long\def\dostartreusableMPgraphic#1#2#3\stopreusableMPgraphic%
-%   {\ifundefined{\@@MPG#1}%
-%      \long\setgvalue{\@@MPG#1}{\handlereusableMPgraphic{#1}{#2}{#3}}%
-%    \fi}
-
-\long\def\dostartreusableMPgraphic#1#2#3\stopreusableMPgraphic
   {\blabelgroup
-   \long\setgvalue{\@@MPG#1}{\handlereusableMPgraphic{#1}{#2}{#3}}%
+   \dodoublegroupempty\dostartreusableMPgraphic}
+
+\def\dostartreusableMPgraphic
+  {\obeyMPlines
+   \dodostartreusableMPgraphic}
+
+\long\def\dodostartreusableMPgraphic#1#2#3\stopreusableMPgraphic
+  {\long\setgvalue{\@@MPG#1}{\handlereusableMPgraphic{#1}{#2}{#3}}%
    \elabelgroup}
 
 \unexpanded\def\useMPgraphic
@@ -336,6 +349,11 @@
    \elabelgroup}
 
 \let\reuseMPgraphic\useMPgraphic
+
+\let\stopuseMPcode      \relax % so that we can use it in \expanded
+\let\stopusableMPcode   \relax % so that we can use it in \expanded
+\let\stopreusableMPcode \relax % so that we can use it in \expanded
+\let\stopuniqueMPcode   \relax % so that we can use it in \expanded
 
 \def\enableincludeMPgraphics
   {\let\handleuseMPgraphic     \thirdofthreearguments
@@ -355,11 +373,15 @@
    :\MPcolor\overlaycolor:\MPcolor\overlaylinecolor}
 
 \long\def\startuniqueMPpagegraphic
-  {\dodoublegroupempty\dostartuniqueMPpagegraphic}
-
-\long\def\dostartuniqueMPpagegraphic#1#2#3\stopuniqueMPpagegraphic
   {\blabelgroup
-   \long\setgvalue{\@@MPG o:#1}{\handleuniqueMPgraphic{o:#1}{#2}{#3}}%
+   \dodoublegroupempty\dostartuniqueMPpagegraphic}
+
+\long\def\dostartuniqueMPpagegraphic
+  {\obeyMPlines
+   \dodostartuniqueMPpagegraphic}
+
+\long\def\dodostartuniqueMPpagegraphic#1#2#3\stopuniqueMPpagegraphic
+  {\long\setgvalue{\@@MPG o:#1}{\handleuniqueMPgraphic{o:#1}{#2}{#3}}%
    \long\setgvalue{\@@MPG e:#1}{\handleuniqueMPgraphic{e:#1}{#2}{#3}}%
    \elabelgroup}
 
@@ -459,13 +481,13 @@
 
 %D We also have to make sure that \METAPOST\ knows this:
 
-\appendtoks
+\startMPextensions
   if not known _data_prefix_:
     string _data_prefix_,_data_suffix_;
   fi;
   _data_prefix_:="\bufferprefix mpd-";
   _data_suffix_:=".mpd";
-\to \MPextensions
+\stopMPextensions
 
 %D \macros
 %D   {getMPdata}
@@ -491,10 +513,10 @@
 
 %D We have to enable this mechanism with:
 
-\appendtoks
+\startMPextensions
   boolean collapse_data; collapse_data:=true;
   _data_suffix_:=".mpd"; % overloads previous one
-\to \MPextensions
+\stopMPextensions
 
 %D For the moment, the next one is a private macro:
 
@@ -506,6 +528,7 @@
      {\doprocessMPbuffer[\jobname]}
      {\bgroup
       \setnormalcatcodes
+      \obeyMPlines
      %\let\par\empty % oeps, this makes dvi mode graphics hang when not found
       \!!toksa\emptytoks
       \def\copyMPbufferline{\expandafter\appendtoks\fileline\to\!!toksa}%
@@ -691,21 +714,21 @@
 \newif\ifMPcmykcolors \MPcmykcolorstrue
 \newif\ifMPspotcolors \MPspotcolorstrue
 
-\appendtoks
+\startMPinitializations
   cmykcolors:=\ifMPcmykcolors true\else false\fi;
   spotcolors:=\ifMPspotcolors true\else false\fi;
-\to \MPinitializations
+\stopMPinitializations
 
 %D In order to communicate conveniently with the \TEX\
 %D engine, we introduce some typesetting variables.
 
 % todo : backgroundoffsets
 
-\appendtoks
+\startMPextensions
   color OverlayColor,OverlayLineColor;
-\to \MPextensions
+\stopMPextensions
 
-\appendtoks
+\startMPinitializations
   OverlayWidth:=\overlaywidth;
   OverlayHeight:=\overlayheight;
   OverlayDepth:=\overlayheight;
@@ -730,7 +753,7 @@
   PageNumber:=\the\pageno;
   RealPageNumber:=\the\realpageno;
   LastPageNumber:= lastpage;
-\to \MPinitializations
+\stopMPinitializations
 
 \appendtoks
   \baselineskip1\baselineskip
@@ -770,9 +793,9 @@
 
 \ifx\undefined\MPprologues \def\MPprologues{0} \fi
 
-\appendtoks
+\startMPinitializations
   prologues:=\MPprologues;
-\to \MPinitializations
+\stopMPinitializations
 
 \appendtoks
   \def\MPprologues{0}%
@@ -868,25 +891,25 @@
 
 %D One more: (still needed?)
 
-\appendtoks
+\startMPextensions
   def initialize_form_numbers =
     do_initialize_numbers;
   enddef;
-\to \MPextensions
+\stopMPextensions
 
-\appendtoks
+\startMPinitializations
   HSize:=\the\hsize ;
   VSize:=\the\vsize ;
-\to \MPinitializations
+\stopMPinitializations
 
-\appendtoks
+\startMPextensions
   vardef ForegroundBox =
     unitsquare xysized(HSize,VSize)
   enddef ;
   vardef PageFraction =
     if \lastpage>1: (\realfolio-1)/(\lastpage-1) else: 1 fi
   enddef ;
-\to \MPextensions
+\stopMPextensions
 
 %D And some more. These are not really needed since we
 %D don't use the normal figure inclusion macros any longer.
@@ -1006,7 +1029,7 @@
   _special_div_ := 1000\ifconditional\manyMPspecials0\fi ;
 \to \MPextensions
 
-%D Needed:
+%D Needed (will become default):
 
 \prependtoks
   \resetlanguagespecifics

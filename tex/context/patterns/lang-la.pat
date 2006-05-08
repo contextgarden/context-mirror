@@ -51,10 +51,10 @@
 2s3dem.
 3p2sic
 3p2neu
-[aeligature]e1
-[oeligature]e1
-[aeligature]1
-[oeligature]1
+æe1
+œe1
+æ1
+œ1
 a1ia
 a1ie
 a1io

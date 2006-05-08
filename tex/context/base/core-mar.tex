@@ -36,12 +36,12 @@
 \beginTEX
 
 \def\mainmarking#1%
-  {\@EA\ifx\csname\??mk#1\c!coupling\endcsname\else
+  {\@EA\ifx\csname\??mk#1\c!coupling\endcsname\relax\else
      \csname\??mk#1\c!coupling\endcsname
    \fi}
 
 \def\fastresetmarker#1%
-  {\@EA\ifx\csname\??mk#1\c!coupling\endcsname\else
+  {\@EA\ifx\csname\??mk#1\c!coupling\endcsname\relax\else
      \@EA\resetmark\csname\??mk\csname\??mk#1\c!coupling\endcsname\endcsname
    \fi}
 
@@ -227,14 +227,14 @@
 
 \endETEX
 
-\def\fetchmark[#1][#2]% % expandable / never use \unexpanded
-  {\ifcsname\??mk::#1\endcsname % saved mark
-     \csname\??mk::\??mk::#2\@EA\@EA\@EA\endcsname
-     \csname\??mk::#1\endcsname
-   \else\ifcsname\??mk#1\c!coupling\endcsname % real mark
-     \csname\??mk\??mk#2\@EA\endcsname
-     \csname\??mk\csname\??mk#1\c!coupling\endcsname\endcsname
-   \fi\fi}
+% \def\fetchmark[#1][#2]% % expandable / never use \unexpanded
+%   {\ifcsname\??mk::#1\endcsname % saved mark
+%      \csname\??mk::\??mk::#2\@EA\@EA\@EA\endcsname
+%      \csname\??mk::#1\endcsname
+%    \else\ifcsname\??mk#1\c!coupling\endcsname % real mark
+%      \csname\??mk\??mk#2\@EA\endcsname
+%      \csname\??mk\csname\??mk#1\c!coupling\endcsname\endcsname
+%    \fi\fi}
 
 \letvalue{\??mk::\??mk::\v!previous}\firstoffourarguments
 \letvalue{\??mk::\??mk::\v!first   }\secondoffourarguments
@@ -362,7 +362,7 @@
 \beginTEX
 
 \def\domarking[#1]#2%
-  {\@EA\ifx\csname\??mk#1\c!coupling\endcsname\else
+  {\@EA\ifx\csname\??mk#1\c!coupling\endcsname\relax\else
      \bgroup
      \doifelsevalue{\??mk#1\c!expansion}\v!yes
        \expandmarkstrue\expandmarksfalse

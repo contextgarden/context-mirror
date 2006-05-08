@@ -11,7 +11,7 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-\unprotect 
+\unprotect
 
 % \defineXMLcommandpush [rl:instance] (todo)
 % \rawframed == [frame=off,offset=overlay]
@@ -19,28 +19,29 @@
 % resource library
 
 \defineXMLprocess [rl:figurelibrary] % not to be used any longer
-\defineXMLprocess [rl:library]   
+\defineXMLprocess [rl:library]
 
-% resource library description 
+% resource library description
 
 \defineXMLignore [rl:description]
 
 \defineXMLpush [rl:organization]
 \defineXMLpush [rl:product]
 \defineXMLpush [rl:project]
+\defineXMLpush [rl:collection]
 
-% resource library entries (better use XMLignore) 
+% resource library entries (better use XMLignore)
 
-\defineXMLignore [rl:applet]      
-\defineXMLignore [rl:application] 
-\defineXMLignore [rl:figure]      
-\defineXMLignore [rl:movie]       
-\defineXMLignore [rl:sound]       
+\defineXMLignore [rl:applet]
+\defineXMLignore [rl:application]
+\defineXMLignore [rl:figure]
+\defineXMLignore [rl:movie]
+\defineXMLignore [rl:sound]
 
-\defineXMLpush [rl:type]       
-\defineXMLpush [rl:state]       
-\defineXMLpush [rl:width]       
-\defineXMLpush [rl:height]       
+\defineXMLpush [rl:type]
+\defineXMLpush [rl:state]
+\defineXMLpush [rl:width]
+\defineXMLpush [rl:height]
 \defineXMLpush [rl:file]
 \defineXMLpush [rl:label]
 \defineXMLpush [rl:original]
@@ -54,13 +55,13 @@
 \defineXMLpush [rl:original]
 \defineXMLpush [rl:manipulation]
 
-% instances 
+% instances
 
 \defineXMLignore [rl:instance]
 
 \defineXMLpush [rl:background]
-\defineXMLpush [rl:viewport] 
-\defineXMLpush [rl:dimension] 
-\defineXMLpush [rl:position] 
+\defineXMLpush [rl:viewport]
+\defineXMLpush [rl:dimension]
+\defineXMLpush [rl:position]
 
-\protect \endinput 
+\protect \endinput

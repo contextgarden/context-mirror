@@ -33,49 +33,17 @@ end
 
 class File
 
-    # def File.needsupdate(oldname,newname)
-        # begin
-            # if $mswindows then # we cannot use != due to some rounding error
-                # return File.stat(oldname).mtime > File.stat(newname).mtime
-            # else
-                # return File.stat(oldname).mtime != File.stat(newname).mtime
-            # end
-        # rescue
-            # return true
-        # end
-    # end
-
     @@update_eps = 1
-
-    # def File.needsupdate(oldname,newname)
-        # begin
-            # oldtime = File.stat(oldname).mtime.to_i
-            # newtime = File.stat(newname).mtime.to_i
-            # if newtime >= oldtime
-                # return false
-            # elsif oldtime-newtime < @@update_eps then
-                # return false
-            # else
-                # return true
-            # end
-        # rescue
-            # return true
-        # end
-    # end
 
     def File.needsupdate(oldname,newname)
         begin
             oldtime = File.stat(oldname).mtime.to_i
             newtime = File.stat(newname).mtime.to_i
-# str =  "o:#{oldtime} n:#{newtime} d:#{newtime-oldtime}"
-            if newtime >= oldtime
-# puts "original is unchanged: #{str}"
+            if newtime >= oldtime then
                 return false
             elsif oldtime-newtime < @@update_eps then
-# puts "original is within range: #{str}"
                 return false
             else
-# puts "original is updated: #{str}"
                 return true
             end
         rescue

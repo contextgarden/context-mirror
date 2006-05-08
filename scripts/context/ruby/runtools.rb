@@ -410,7 +410,7 @@ class Job
     end
 
     # runner = Runner.new
-    # runner.texmfstart('newtexexec.rb','--help')
+    # runner.texmfstart('texexec','--help')
 
     def texmfstart(name,args,verbose=false)
         command = ['texmfstart',"#{'--verbose' if verbose}",name,args].flatten.join(' ')

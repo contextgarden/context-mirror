@@ -411,4 +411,24 @@
 %
 % \defineXMLsingular [gobblespacetokens] {\gobblespacetokens}
 
+%D We automatically switch regimes (beware of nested files!):
+%D
+%D \starttyping
+%D \startXMLdata
+%D <?xml version='1.0' encoding='utf-8'?>
+%D ÀÁÂÃÄÅàáâãäåÆÇæç
+%D ÈÉÊËèéêëÌÍÎÏÞìíîïþ
+%D ÐðÑñÒÓÔÕÖòóôõöØø
+%D ÙÚÛÜùúûÝýÿß
+%D \stopXMLdata
+%D \stoptyping
+
+\defineXMLprocessor [xml]   {\handleXMLbanner}
+
+\def\handleXMLbanner#1%
+  {\getXMLarguments{xml}{\s!encoding='' #1}%
+   \doifsomething{\XMLpar{xml}\s!encoding\empty}
+     {\doif\currentregime\s!default % style regimes will take precedence
+        {\enableregime[\XMLpar{xml}\s!encoding\empty]}\donothing}}
+
 \protect \endinput

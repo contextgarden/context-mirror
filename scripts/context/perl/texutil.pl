@@ -2907,4 +2907,8 @@ elsif  ($FilterPages      ) { FilterPages      }
 elsif  ($ProcessHelp      ) { ShowHelpInfo     } # redundant
 else                        { ShowHelpInfo     }
 
+print "\n" ;
+print "                remark : 'texutil' is now part of 'texexec'\n" ;
+print "               warning : use 'texmfstart texutil' instead\n" ;
+
 #D So far.

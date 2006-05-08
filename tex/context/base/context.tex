@@ -31,7 +31,7 @@
 %D 2004.8.30 the low level interface is english. Watch out and adapt
 %D your styles an modules.
 
-\def\contextversion{2006.04.27 15:59}
+\def\contextversion{2006.05.08 12:59}
 
 %D For those who want to use this:
 
@@ -380,15 +380,13 @@
 
 %D Temporary hack, will go when we move to newtexexec:
 
-\unprotect
-
-\appendtoks % newtexexec/newtexutil, after option file is loaded:
-  \doif{\systemparameter\c!method} {2}
-    {\def\TEXEXECcommand{texmfstart newtexexec} %
-     \readsysfile {sort-ini} {} {}}%
-\to \everyjob
-
-\protect
+% \unprotect
+%     \appendtoks % newtexexec/newtexutil, after option file is loaded:
+%       \doif{\systemparameter\c!method} {2}
+%         {\def\TEXEXECcommand{texmfstart newtexexec} %
+%          \readsysfile {sort-ini} {} {}}%
+%     \to \everyjob
+% \protect
 
 % %D The next two modules implement some additional
 % %D functionality concerning classes of documents and output.

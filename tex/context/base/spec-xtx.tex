@@ -1,4 +1,11 @@
-%D \module%D   [       file=spec-xtx,%D        version=2004.11.08,%D          title=\CONTEXT\ Special Macros,%D       subtitle=\XETEX\ support,%D         author={Adam Lindsay \& Hans Hagen \& \unknown},%D           date=\currentdate,%D      copyright={Adam Lindsay \& Hans Hagen}]
+%D \module
+%D   [       file=spec-xtx,
+%D        version=2004.11.08,
+%D          title=\CONTEXT\ Special Macros,
+%D       subtitle=\XETEX\ support,
+%D         author={Adam Lindsay \& Hans Hagen \& \unknown},
+%D           date=\currentdate,
+%D      copyright={Adam Lindsay \& Hans Hagen}]
 
 \unprotect
 
@@ -15,7 +22,7 @@
 \definespecial\dostartrotation#1%
   {\special{x:gsave}\special{x:rotate #1}}
 
-\definespecial\dostoprotation%
+\definespecial\dostoprotation
   {\special{x:grestore}}
 
 %D Scaling and mirroring are also fine.
@@ -23,13 +30,13 @@
 \definespecial\dostartscaling#1#2%
   {\special{x:gsave}\special{x:scale #1 #2}}
 
-\definespecial\dostopscaling%
+\definespecial\dostopscaling
   {\special{x:grestore}}
 
-\definespecial\dostartmirroring%
+\definespecial\dostartmirroring
   {\special{x:gsave}\special{x:scale -1 1}}
 
-\definespecial\dostopmirroring%
+\definespecial\dostopmirroring
   {\special{x:grestore}}
 
 %D Colors are done with the \DVIPDFMX\ color model, which are
@@ -157,90 +164,4 @@
 
 \stopspecials
 
-\protect
-
-%\endinput
-
-% FOR THE MOMENT HERE
-
-\ifx\dqfontquote\undefined \else \endinput \fi
-
-\unprotect
-
-% actually, we can use "" in pdftex> 1.20 as well
-
-\def\parsefontspec#1%
-  {\xdef\somefontspec{#1\space}%
-   \@EA\doparsefontspec\somefontspec\relax]% =>#1 \empty]
-   \donoparsefontspec}
-
-\def\doparsefontspec#1%
-  {\ifx"#1%
-     \@EA\dodqparsefontspec
-   \else\ifx'#1%
-     \@EAEAEA\dosqparsefontspec
-   \else
-     \@EAEAEA\dodoparsefontspec
-   \fi\fi#1}
-
-\def\dqfontquote{"}
-\def\sqfontquote{'}
-
-\def\dodqparsefontspec"#1"#2%
-  {\def\somefontname{#1}%
-   \let\somefontquote\dqfontquote
-   \ifx#2\relax\@EA\setnaturalfontspec\else\@EA\setforcedfontspec\fi#2}
-
-\def\dosqparsefontspec'#1'#2%
-  {\def\somefontname{#1}%
-   \let\somefontquote\sqfontquote
-   \ifx#2\relax\@EA\setnaturalfontspec\else\@EA\setforcedfontspec\fi#2}
-
-\def\dodoparsefontspec#1 #2%
-  {\def\somefontname{#1}%
-   \let\somefontquote\empty
-   \ifx\somefontname\empty % space before fontname
-     \@EA\doparsefontspec
-   \else\ifx#2\relax
-     \@EAEAEA\setnaturalfontspec
-   \else
-     \@EAEAEA\setforcedfontspec
-   \fi\fi
-   #2}
-
-\def\setnaturalfontspec#1]%
-  {\@fs@scaled\plusthousand\relax}
-
-\def\setforcedfontspec#1 #2\relax]%
-  {\csname\@fs@#1\endcsname#2\relax}
-
-\beginXETEX \font
-
-\def\donoparsefontspec % #1 == \cs
-  {\edef\fontfile{\somefontquote\truefontname\somefontname\somefontquote}%
-   \ifx\fontfile\s!unknown \let\fontfile\defaultfontfile \fi
-   \edef\lastfontname{\fontfile\somefontspec}%
-   \ifx\fontclass\empty
-     \expandafter\definefontlocal
-   \else
-     \expandafter\definefontglobal
-   \fi} % #1 == \cs
-
-\endXETEX
-
 \protect \endinput
-
-\starttext
-
-\definedfont[{cmr10}  at 40pt] test
-\definedfont['cmss10' at 40pt] test
-\definedfont["cmtt10" at 40pt] test
-
-\definedfont[{cmr10}  at 40pt] test
-\definedfont['cmss10' at 40pt] test
-\definedfont["cmtt10" at 40pt] test
-
-% \definedfont["Gentium" at 40pt] test
-
-\stoptext
-

@@ -39,30 +39,32 @@
 %D \starttyping
 %D <!-- texexec --pdf --use=fig-01 figtest.xml -->
 %D
-%D <figurelibrary language="nl">
+%D <?xml version='1.0'?>
 %D
-%D   <description>
-%D     <organization>PRAGMA Advanced Document Engineering</organization>
-%D     <project>Manuals</project>
-%D     <product>Beginners Manual</product>
-%D     <comment>A bunch of figures.</comment>
-%D   </description>
+%D <rl:library language="nl">
 %D
-%D   <figure>
-%D     <file>koe.pdf</file>
-%D     <label>a dutch cow</label>
-%D     <copyright>Corel Draw Suite</copyright>
-%D     <comment>I bet that you've seen this cow before.</comment>
-%D   </figure>
+%D   <rl:description>
+%D     <organization>PRAGMA Advanced Document Engineering</rl:organization>
+%D     <project>Manuals</rl:project>
+%D     <product>Beginners Manual</rl:product>
+%D     <comment>A bunch of figures.</rl:comment>
+%D   </rl:description>
 %D
-%D   <figure>
-%D     <dummy width="4cm" height="3cm">non existent</dummy>
-%D     <label>a european cow</label>
-%D     <copyright>Nobody</copyright>
-%D     <comment>When will we talk about European cows?</comment>
-%D   </figure>
+%D   <rl:figure>
+%D     <rl:file>koe.pdf</rl:file>
+%D     <rl:label>a dutch cow</rl:label>
+%D     <rl:copyright>Corel Draw Suite</rl:copyright>
+%D     <rl:comment>I bet that you've seen this cow before.</rl:comment>
+%D   </rl:figure>
 %D
-%D </figurelibrary>
+%D   <rl:figure>
+%D     <rl:dummy width="4cm" height="3cm">non existent</rl:dummy>
+%D     <rl:label>a european cow</rl:label>
+%D     <rl:copyright>Nobody</rl:copyright>
+%D     <rl:comment>When will we talk about European cows?</rl:comment>
+%D   </rl:figure>
+%D
+%D </rl:library>
 %D \stoptyping
 %D
 %D You can convert this base into a \PDF\ file using
@@ -183,8 +185,8 @@
      \doglobal\newcounter\figurefilepage
      \autoXMLnamespace[rl]
      \startXMLmapping[rl:find]
-       \xdef\figurefilebase{#1}
-       \def\askedlabel{#2}
+       \xdef\figurefilebase{#1}%
+       \def\askedlabel{#2}%
        \doifelseXMLelement{rl:rl:\askedlabel}
          {\enableXMLelements\flushXMLelement{rl:rl:\askedlabel}}
          {\processcommacommand[\figurepathlist]\dogetfigurefilename}%
