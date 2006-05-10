@@ -181,7 +181,7 @@ class Commands
         if @commandline.option("pipe") then
             print version
         else
-            report("context version: #{version}")
+            report("context version: #{version} (#{filename})")
         end
 
     end
@@ -789,10 +789,10 @@ class String
     def markbraces
         level = 0
         self.gsub(/([\{\}])/o) do |chr|
-            if    chr == '{'
+            if    chr == '{' then
                 level = level + 1
                 chr = "((+#{level}))"
-            elsif chr == '}'
+            elsif chr == '}' then
                 chr = "((-#{level}))"
                 level = level - 1
             end
@@ -803,13 +803,13 @@ class String
     def unmarkbraces
         self.gsub(/\(\(\+\d+?\)\)/o) do
             "{"
-        end.gsub(/\(\(\-\d+?\)\)/o) do
+        end .gsub(/\(\(\-\d+?\)\)/o) do
             "}"
         end
     end
 
     def getargument(pattern)
-        if self =~ /(#{pattern})\s*\(\(\+(\d+)\)\)(.*?)\(\(\-\2\)\)/ then # no /o
+        if self =~ /(#{pattern})\s*\(\(\+(\d+)\)\)(.*?)\(\(\-\2\)\)/m then # no /o
             return $3
         else
             return ""
@@ -843,6 +843,7 @@ class Language
         @language = language
         @filenames = filenames
         @remapping = Array.new
+        @demapping = Array.new
         @unicode = Hash.new
         @encoding = encoding
         @data = ''
@@ -866,6 +867,9 @@ class Language
 
     def remap(from, to)
         @remapping.push([from,to])
+    end
+    def demap(from, to)
+        @demapping.push([from,to])
     end
 
     def load(filenames=@filenames)
@@ -906,6 +910,11 @@ class Language
                     @data = @data.withargument(what) do |content|
                         report("converting #{what}")
                         report("")
+                        @demapping.each_index do |i|
+                            content.gsub!(@demapping[i][0], @demapping[i][1])
+                        end
+                        content.gsub!(/\\delete\{.*?\}/o) do '' end
+                        content.gsub!(/\\keep\{(.*?)\}/o) do $1 end
                         done = false
                         @remapping.each_index do |i|
                             from, to, m = @remapping[i][0], @remapping[i][1], 0
@@ -1242,24 +1251,24 @@ class Language
                 remap(/Y/, "[ostroke]")
                 remap(/Z/, "[aring]")
             when 'hu' then
-
+                # nothing
             when 'ca' then
-                remap(/\\c\{.*?\}/, "")
+                demap(/\\c\{/, "\\delete{")
             when 'de', 'deo' then
-                remap(/\\c\{.*?\}/, "")
-                remap(/\\n\{\}/, "")
+                demap(/\\c\{/, "\\delete{")
+                demap(/\\n\{/, "\\keep{")
                 remap(/\\3/, "[ssharp]")
                 remap(/\\9/, "[ssharp]")
                 remap(/\"a/, "[adiaeresis]")
                 remap(/\"o/, "[odiaeresis]")
                 remap(/\"u/, "[udiaeresis]")
             when 'fr' then
-                remap(/\\n\{\}/, "")
+                demap(/\\n\{/, "\\keep{")
                 remap(/\\ae/, "[adiaeresis]")
                 remap(/\\oe/, "[odiaeresis]")
             when 'la' then
                 # \lccode`'=`' somewhere else, todo
-                remap(/\\c\{.*?\}/, "")
+                demap(/\\c\{/, "\\delete{")
                 remap(/\\a\s*/, "[aeligature]")
                 remap(/\\o\s*/, "[oeligature]")
             when 'agr' then
@@ -2202,6 +2211,47 @@ end
 
 class Commands
 
+    @@re_utf_bom = /^\357\273\277/o # just utf-8
+
+    def disarmutfbom
+
+        if @commandline.arguments.empty? then
+            report("provide filename")
+        else
+            @commandline.arguments.each do |filename|
+                report("checking '#{filename}'")
+                if FileTest.file?(filename) then
+                    begin
+                        data = IO.read(filename)
+                        if data.sub!(@@re_utf_bom,'') then
+                            if @commandline.option('force') then
+                                if f = File.open(filename,'wb') then
+                                    f << data
+                                    f.close
+                                    report("bom found and removed")
+                                else
+                                    report("bom found and removed, but saving file fails")
+                                end
+                            else
+                                report("bom found, use '--force' to remove it")
+                            end
+                        else
+                            report("no bom found")
+                        end
+                    rescue
+                        report("bom found, but removing it fails")
+                    end
+                else
+                    report("provide valid filename")
+                end
+            end
+        end
+    end
+
+end
+
+class Commands
+
     include CommandBase
 
     def updatecontext
@@ -2303,6 +2353,7 @@ commandline.registeraction('brandfiles'        , 'add context copyright notice [
 commandline.registeraction('platformize'       , 'replace line-endings [--recurse --force] [pattern]')
 commandline.registeraction('dependencies'      , 'analyze depedencies witin context [--compact] [rootfile]')
 commandline.registeraction('updatecontext'     , 'download latest version and remake formats')
+commandline.registeraction('disarmutfbom'      , 'remove utf bom [==force]')
 
 commandline.registervalue('type','')
 

@@ -158,6 +158,7 @@
        \edef\hetsubnummer{#4}%
      \fi
      \doifsomething{#3}{\rawreference\s!for{#3}{\composedsectionnumber\hetsubnummer}}%
+     \doflushformulalistentry{\composedsectionnumber\hetsubnummer}%
      \rm % nodig ?
      \doif{\formulaparameter\c!location}\v!right{\hskip\formuladistance}%
      \@@fmnumbercommand
@@ -566,6 +567,40 @@
 \def\placesubformula
   {\setfalse\incrementformulanumber
    \dodoubleempty\doplaceformula}
+
+%D Experimental goodie:
+%D
+%D \startbuffer
+%D \placelist[formula][criterium=text] \blank[2*big]
+%D \placenamedformula[one]{first}  \startformula a = 1 \stopformula \endgraf
+%D \placeformula                   \startformula a = 2 \stopformula \endgraf
+%D \placenamedformula     {second} \startformula a = 3 \stopformula \endgraf
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
+
+\definelist[\v!formula]
+
+\global\let\doflushformulalistentry\gobbleoneargument
+
+\def\setformulalistentry#1%
+  {\gdef\doflushformulalistentry##1%
+     {\expanded{\writetolist[\v!formula]{##1}}{#1}%
+      \global\let\doflushformulalistentry\gobbleoneargument}}
+
+\def\placenamedformula
+  {\dosingleempty\doplacenamedformula}
+
+\def\doplacenamedformula[#1]#2%
+  {\iffirstargument
+     \def\next{\placeformula[#1]}%
+   \else
+     \let\next\placeformula
+   \fi
+   \setformulalistentry{#2}%
+   \next}
+
+%D The implementation of placement is a bit ugly:
 
 % \def\doplaceformula[#1][#2]% #2 = dummy, gobbles spaces
 %   {\def\redoplaceformula

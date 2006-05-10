@@ -58,7 +58,9 @@ end
 if $kpseerror then
     $kpsereport << "unable to locate #{$kpsemodules.join('|')} on library paths:\n\n"
     $kpsereport << "  " + $:.join("\n  ") + "\n\n"
-    $kpsereport << "an option is to copy\n\n"
+    $kpsereport << "an option is to point the RUBYLIB variable to\n\n"
+    $kpsereport << "  <texmf-local or texmf>/scripts/context/ruby\n\n"
+    $kpsereport << "or to copy\n\n"
     $kpsereport << "  <texmf-local or texmf>/scripts/context/ruby/base/kpse*\n\n"
     $kpsereport << "(including the kpse subpath) to e.g.\n\n"
     $kpsereport << "  #{$ownpath}/../lib/texmfstart/\n\n"
@@ -74,7 +76,7 @@ if $mswindows then
     require "Win32API"
 end
 
-exit if defined?(REQUIRE2LIB)
+# exit if defined?(REQUIRE2LIB)
 
 $stdout.sync = true
 $stderr.sync = true
@@ -135,7 +137,7 @@ $makelist = [
     'exatools',
     'runtools',
     #
-    'texmfstart'
+    # no, 'texmfstart'
 ]
 
 # if ENV['TEXMFSTART_MODE'] = 'experimental' then
@@ -785,75 +787,69 @@ def edit(filename)
 end
 
 def make(filename,windows=false,linux=false,remove=false)
-    basename = filename.dup
-    basename.sub!(/\.[^.]+?$/, '')
-    basename.sub!(/^.*[\\\/]/, '')
+    basename = File.basename(filename).gsub(/\.[^.]+?$/, '')
     if $stubpath == 'auto' then
         basename = File.dirname($0) + '/' + basename
     else
         basename = $stubpath + '/' + basename unless $stubpath.empty?
     end
-    if basename == filename then
-        report("nothing made (#{filename})")
+    if filename == 'texmfstart' then
+        program = 'ruby'
+        command = 'kpsewhich --format=texmfscripts --progname=context texmfstart.rb'
+        filename = `#{command}`.chomp.gsub(/\\/, '/')
+        if filename.empty? then
+            report("failure: #{command}")
+            return
+        elsif not remove then
+            if windows then
+                ['bat','exe'].each do |suffix|
+                    if FileTest.file?("#{basename}.#{suffix}") then
+                        report("windows stub '#{basename}.#{suffix}' skipped (already present)")
+                        return
+                    end
+                end
+            elsif linux && FileTest.file?(basename) then
+                report("unix stub '#{basename}' skipped (already present)")
+                return
+            end
+        end
     else
         program = nil
         if filename =~ /[\\\/]/ && filename =~ /\.(#{$scriptlist})$/ then
             program = $applications[$1]
         end
         filename = "\"#{filename}\"" if filename =~ /\s/
-        if filename == 'texmfstart' then
-            program = 'ruby'
-            command = 'kpsewhich --format=texmfscripts --progname=context texmfstart.rb'
-            filename = `#{command}`.chomp
-            if filename.empty? then
-                report("failure: #{command}")
-                return
-            elsif not remove then
-                if windows then
-                    ['bat','exe'].each do |suffix|
-                        if FileTest.file?("#{basename}.#{suffix}") then
-                            report("windows stub '#{basename}.#{suffix}' skipped (already present)")
-                            return
-                        end
-                    end
-                elsif linux && FileTest.file?(basename) then
-                    report("unix stub '#{basename}' skipped (already present)")
-                    return
-                end
-            end
-        else
-            program = 'texmfstart' if $indirect || ! program || program.empty?
-        end
-        begin
-            callname = $predefined[filename.sub(/\.*?$/,'')] || filename
-            if remove then
-                if windows && (File.delete(basename+'.bat') rescue false) then
-                    report("windows stub '#{basename}.bat' removed (calls #{callname})")
-                elsif linux && (File.delete(basename) rescue false) then
-                    report("unix stub '#{basename}' removed (calls #{callname})")
-                end
-            else
-                if windows && f = open(basename+'.bat','w') then
-                    f.binmode
-                    f.write("@echo off\015\012")
-                    f.write("#{program} #{callname} %*\015\012")
-                    f.close
-                    report("windows stub '#{basename}.bat' made (calls #{callname})")
-                elsif linux && f = open(basename,'w') then
-                    f.binmode
-                    f.write("#!/bin/sh\012")
-                    f.write("#{program} #{callname} $@\012")
-                    f.close
-                    report("unix stub '#{basename}' made (calls #{callname})")
-                end
-            end
-        rescue
-            report("failed to make stub '#{basename}' #{$!}")
-        else
-            return true
-        end
+        program = 'texmfstart' if $indirect || ! program || program.empty?
     end
-    return false
+    begin
+        callname = $predefined[filename.sub(/\.*?$/,'')] || filename
+        if remove then
+            if windows && (File.delete(basename+'.bat') rescue false) then
+                report("windows stub '#{basename}.bat' removed (calls #{callname})")
+            elsif linux && (File.delete(basename) rescue false) then
+                report("unix stub '#{basename}' removed (calls #{callname})")
+            end
+        else
+            if windows && f = open(basename+'.bat','w') then
+                f.binmode
+                f.write("@echo off\015\012")
+                f.write("#{program} #{callname} %*\015\012")
+                f.close
+                report("windows stub '#{basename}.bat' made (calls #{callname})")
+            elsif linux && f = open(basename,'w') then
+                f.binmode
+                f.write("#!/bin/sh\012")
+                f.write("#{program} #{callname} $@\012")
+                f.close
+                report("unix stub '#{basename}' made (calls #{callname})")
+            end
+        end
+    rescue
+        report("failed to make stub '#{basename}' #{$!}")
+        return false
+    else
+        return true
+    end
 end
 
 def process(&block)

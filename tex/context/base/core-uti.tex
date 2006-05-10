@@ -106,7 +106,11 @@
   \let\checkedutility\docheckedutility
 \to \everybeforeshipout
 
-\edef\testbytesequence{\rawcharacter{7}\rawcharacter{27}\rawcharacter{227}}
+\edef\testbytesequence
+  {\rawcharacter{7}%
+   \rawcharacter{27}%
+   %rawcharacter{227}% invalid in xetex, which expects utf
+   \rawcharacter{195}\rawcharacter{128}} % valid utf code
 
 \def\thisisbytesequence#1%
   {\ifx\testbytesequence\empty\else
@@ -117,6 +121,10 @@
      \fi
    \fi
    \global\let\thisisbytesequence\gobbleoneargument}
+
+\beginXETEX
+    \let\testbytesequence\empty
+\endXETEX
 
 % Better use marks.
 

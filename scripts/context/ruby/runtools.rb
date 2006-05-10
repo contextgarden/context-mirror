@@ -213,11 +213,23 @@ class Job
         end
     end
 
-    def copy_dir(from,to,pattern='*',exclude=[])
+    def copy_dir(from,to,pattern='*',exclude=[]) # recursive
         pattern = '*' if ! pattern or pattern.empty?
         if from and to and File.expand_path(from) != File.expand_path(to) then
             ex = [exclude].flatten
             Dir.glob("#{from}/**/#{pattern}").each do |file|
+                unless ex.include?(File.extname(file)) then
+                    _do_copy_(file,File.join(to,file.sub(/^#{from}/, '')))
+                end
+            end
+        end
+    end
+
+    def copy_path(from,to,pattern='*',exclude=[]) # non-recursive
+        pattern = '*' if ! pattern or pattern.empty?
+        if from and to and File.expand_path(from) != File.expand_path(to) then
+            ex = [exclude].flatten
+            Dir.glob("#{from}/#{pattern}").each do |file|
                 unless ex.include?(File.extname(file)) then
                     _do_copy_(file,File.join(to,file.sub(/^#{from}/, '')))
                 end

@@ -97,13 +97,13 @@ class Commands
                     report("processing record #{nofrecords} (#{variables['file'] || 'noname'}: #{variables.size} entries)")
                     if conversion = variables['conversion'] then
                         report("testing for conversion #{conversion}")
-                        if suffix = variables['suffix'] then
+                        if suffix.downcase = variables['suffix'].downcase then
                             if file = variables['file'] then
                                 report("conversion #{conversion} for suffix #{suffix} for file #{file}")
                             else
                                 report("conversion #{conversion} for suffix #{suffix}")
                             end
-                            pattern = "@name='#{conversion}' and @suffix='#{suffix}'"
+                            pattern = "@name='#{conversion}' and @suffix='#{suffix.downcase}'"
                             if steps = REXML::XPath.first(proc.root,"/rl:manipulators/rl:manipulator[#{pattern}]") then
                                 localsteps = steps.deep_clone
                                 ['rl:old','rl:new'].each do |tag|

@@ -1085,7 +1085,8 @@
 
   \def\MPOSTbatchswitch   {-int=batchmode}
   \def\MPOSTnonstopswitch {-int=nonstopmode}
-  \def\MPOSTformatswitch  {-progname=mpost -mem=}
+%   \def\MPOSTformatswitch  {-progname=mpost -mem=}
+  \def\MPOSTformatswitch  {-mem=}
   \def\MPOSTdriver        {dvips}
 
   \def\executeMPOST#1% direct call
@@ -1934,5 +1935,12 @@
    \endgroup}
 
 \let\stopMPcode \relax % so that we can use it in \expanded
+
+%D Special for \XETEX\ (problem with newlines):
+
+\beginXETEX
+  \let\obeyMPlines\relax
+  \longMPlinesfalse % alas
+\endXETEX
 
 \protect \endinput

@@ -50,6 +50,10 @@ class Array
         end
     end
 
+    def join_path
+        self.join(File::PATH_SEPARATOR)
+    end
+
 end
 
 class TEX
@@ -164,16 +168,22 @@ class TEX
     @@extrastringvars = []
 
     def booleanvars
-        [@@booleanvars,@@extrabooleanvars].flatten
+        [@@booleanvars,@@extrabooleanvars].flatten.uniq
     end
     def stringvars
-        [@@stringvars,@@extrastringvars].flatten
+        [@@stringvars,@@extrastringvars].flatten.uniq
     end
     def standardvars
-        @@standardvars
+        [@@standardvars].flatten.uniq
     end
     def knownvars
-        @@knownvars
+        [@@knownvars].flatten.uniq
+    end
+    def allbooleanvars
+        [@@booleanvars,@@extrabooleanvars].flatten.uniq
+    end
+    def allstringvars
+        [@@stringvars,@@extrastringvars,@@standardvars,@@knownvars].flatten.uniq
     end
 
     def setextrastringvars(vars)
@@ -517,7 +527,8 @@ class TEX
             end
             mpsformats.each do |mpsformat|
                 report("generating mps format #{mpsformat}")
-                command = [quoted(mpsengine),prognameflag(progname),iniflag,tcxflag,mpsformat,mpsmakeextras(mpsformat)].join(' ')
+                # command = [quoted(mpsengine),prognameflag(progname),iniflag,tcxflag,mpsformat,mpsmakeextras(mpsformat)].join(' ')
+                command = [quoted(mpsengine),iniflag,tcxflag,mpsformat,mpsmakeextras(mpsformat)].join(' ')
                 report(command) if getvariable('verbose')
                 system(command)
             end
@@ -1185,7 +1196,7 @@ class TEX
         if mpsengine && mpsformat && progname then
             ENV["MPXCOMMAND"] = "0" unless mpx
             # command = [quoted(mpsengine),prognameflag(progname),formatflag(mpsengine,mpsformat),tcxflag,runoptions(mpsengine),filename,mpsprocextras(mpsformat)].join(' ')
-            command = [quoted(mpsengine),"-progname=mpost",formatflag(mpsengine,mpsformat),tcxflag,runoptions(mpsengine),mpname,mpsprocextras(mpsformat)].join(' ')
+            command = [quoted(mpsengine),formatflag(mpsengine,mpsformat),tcxflag,runoptions(mpsengine),mpname,mpsprocextras(mpsformat)].join(' ')
             report(command) if getvariable('verbose')
             system(command)
             true
@@ -1285,7 +1296,7 @@ class TEX
             report("fixing backend map path for #{backend}") if getvariable('verbose')
             ENV['backend']     = backend ;
             ENV['progname']    = backend unless validtexengine(backend)
-            ENV['TEXFONTMAPS'] = ".;\$TEXMF/fonts/map/{#{backend},pdftex,dvips,}//"
+            ENV['TEXFONTMAPS'] = ['.',"\$TEXMF/fonts/map/{#{backend},pdftex,dvips,}//"].join_path
         else
             report("unable to fix backend map path") if getvariable('verbose')
         end

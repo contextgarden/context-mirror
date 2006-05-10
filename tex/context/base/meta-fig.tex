@@ -49,25 +49,10 @@
 \def\startMPpage
   {\dodoubleempty\dostartMPpage}
 
-% \long\def\dostartMPpage[#1][#2]#3\stopMPpage % second arg gobbles space
-%   {\dostartfittingpage[\??mg][#1]%
-%      \startMPcode#3\stopMPcode
-%    \dostopfittingpage}
-
 \long\def\dostartMPpage[#1][#2]% second arg gobbles space
   {\dostartfittingpage[\??mg][#1]%
-   \obeylines\def\obeyedline{\rawcharacter{13}}%
+   \obeyMPlines
    \dodostartMPpage}
-
-% \long\def\dodostartMPpage#1\stopMPpage
-%   {\startMPcode#1\stopMPcode
-%    \dostopfittingpage}
-%
-% more efficient:
-
-\long\def\obeyMPlines
-  {\obeylines
-   \def\obeyedline{\rawcharacter{13}}}
 
 \long\def\dodostartMPpage#1\stopMPpage
   {\startuseMPgraphic{@@}#1\stopuseMPgraphic

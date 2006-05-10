@@ -348,13 +348,21 @@
 %      \expandafter\endinput
 %    \fi}
 
-\let\currentcomponent\v!text
+\let\currentcomponent    \v!text
+\let\currentcomponentpath\f!currentpath
 
 \def\donextlevel#1#2#3#4#5#6#7\\%
   {\pushmacro\currentcomponent
+   \pushmacro\currentcomponentpath
    \let\currentcomponent#1%
    \setsystemmode\currentcomponent
-   \beforesplitstring#7\at.\to#2\relax
+   \splitfilename{#1}%
+   \ifx\splitoffpath\empty
+     \let\currentcomponentpath\f!currentpath
+   \else
+     \let\currentcomponentpath\splitoffpath
+   \fi
+   \beforesplitstring#7\at.\to#2\relax % can become path + base
    \ifcase\filelevel\relax
      \starttext
      \def\project     ##1 {#3{##1}}%
@@ -366,7 +374,8 @@
    \fullexpandoneargafter\addtocommalist{#1}\loadedfiles}
 
 \def\doprevlevel
-  {\popmacro\currentcomponent
+  {\popmacro\currentcomponentpath
+   \popmacro\currentcomponent
    \setsystemmode\currentcomponent
    \ifnum\filelevel=\plusone
      \expandafter\stoptext

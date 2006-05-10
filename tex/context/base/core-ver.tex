@@ -1306,7 +1306,8 @@
    \doiflocfileelse{#3}
      \donetrue % sets \readfilename
      {\doifinputfileelse{#3}
-        {\donetrue\let\readfilename\filepath}
+        {\donetrue
+         \def\readfilename{\pathplusfile\filepath{#3}}}
         \donefalse}%
    \ifdone
      \startpacked % includes \bgroup
@@ -1318,7 +1319,6 @@
          \settypingparameter\c!option{\prettyidentifier}}%
       \initializetyping
       \startverbatimcolor
-      \makelocreadfilename{#3}%
       \doifundefinedelse{\currenttypingclass#3\v!global\c!start}
         {\scratchcounter\zerocount}
         {\scratchcounter\getvalue{\currenttypingclass#3\v!global\c!start}}%

@@ -603,6 +603,42 @@ if job = TEX.new(logger) then
 
 end
 
+class Commands
+
+    alias saved_help help
+
+    def wrap_help(title, vars)
+        report("")
+        report(title)
+        report("")
+        r, n = '', 0
+        vars.sort.each do |s|
+            if n == 5 then
+                report(r)
+                r, n = '', 1
+            else
+                n += 1
+            end
+            r << '  ' + s
+        end
+        report(r) unless r.empty?
+    end
+
+    def help
+        saved_help
+        if @commandline.option('all') then
+            if job = TEX.new(logger) then
+                wrap_help("boolean switches:", job.allbooleanvars)
+                wrap_help("string switches:", job.allstringvars)
+            end
+        else
+            report('')
+            report('--help --all   shows all switches')
+        end
+    end
+
+end
+
 # todo: register flags -> first one true
 
 commandline.registerflag('pdf')

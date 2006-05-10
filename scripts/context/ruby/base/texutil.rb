@@ -51,12 +51,21 @@ class TeXUtil
             @logger = logger
         end
 
+        def report(str)
+            @logger.report("fatal error in plugin (#{str}): #{$!}")
+            puts("\n")
+            $@.each do |line|
+                puts("  #{line}")
+            end
+            puts("\n")
+        end
+
         def reset(name)
             if @plugins.include?(name) then
                 begin
                     eval("#{name}").reset(@logger)
                 rescue Exception
-                    @logger.report("fatal error in resetting plugin")
+                    report("resetting")
                 end
             else
                @logger.report("no plugin #{name}")
@@ -89,7 +98,7 @@ class TeXUtil
                 begin
                     eval("#{name}").reader(@logger,data.flatten)
                 rescue Exception
-                    @logger.report("fatal error in plugin reader #{name} (#{$!})")
+                    report("reading")
                 end
             else
                @logger.report("no plugin #{name}")
@@ -107,7 +116,7 @@ class TeXUtil
                 begin
                     eval("#{p}").writer(@logger,handle)
                 rescue Exception
-                    @logger.report("fatal error in plugin writer #{p} (#{$!})")
+                    report("writing")
                 end
             end
         end
@@ -117,7 +126,7 @@ class TeXUtil
                 begin
                     eval("#{p}").processor(@logger)
                 rescue Exception
-                    @logger.report("fatal error in plugin processor #{p} (#{$!})")
+                    report("processing")
                 end
             end
         end
@@ -127,7 +136,7 @@ class TeXUtil
                 begin
                     eval("#{p}").finalizer(@logger)
                 rescue Exception
-                    @logger.report("fatal error in plugin finalizer #{p} (#{$!})")
+                    report("finalizing")
                 end
             end
         end
@@ -211,8 +220,12 @@ class TeXUtil
         end
 
         def replace(str)
-            str.gsub(@rexa) do
-                @rep[$1.escaped]
+            if @rexa then
+                str.gsub(@rexa) do
+                    @rep[$1.escaped]
+                end
+            else
+                str
             end
         end
 
@@ -226,11 +239,11 @@ class TeXUtil
 
         def remap(str)
             s = str.dup
-if true then # numbers are treated special
-    s.gsub!(/(\d+)/o) do
-        $1.rjust(10,'a') # rest is b .. k
-    end
-end
+            if true then # numbers are treated special
+                s.gsub!(/(\d+)/o) do
+                    $1.rjust(10,'a') # rest is b .. k
+                end
+            end
             if @rexa then
                 s.gsub!(@rexa) do
                     @rep[$1.escaped]

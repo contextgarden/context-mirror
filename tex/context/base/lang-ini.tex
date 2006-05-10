@@ -339,31 +339,23 @@
      \dodoloadpatterns{#1}{#2}{}{}%
    \fi}
 
+\def\setuphyppatencoding
+  {\pathypsettings
+   \enableregime[utf]}
+
+\beginXETEX
+    \def\setuphyppatencoding
+      {\pathypsettings}
+\endXETEX
+
 \def\dodoloadpatterns#1#2#3#4% beware, loaded language also incr
   {\normallanguage\loadedlanguage % when not really needed
    \bgroup
-   % \startencoding[#3]%
-   % \enablemapping[#4]% hm, does a sync patterns
-   % \doifnothing\currentencoding{\let\currentencoding\s!default}%
-   % \doifnothing\currentmapping {\let\currentmapping \s!default}%
-   % better:
    \let\synchronizepatterns\relax % needed?
    \let\enabledmapping     \empty % needed?
-   % old (original) patterns
-% \let\dochar\thechr
-\pathypsettings
-\enableregime[utf]% just in case (xetex)
    \doifelsenothing{#3}{\enableencoding[\s!default]}{\enableencoding[#3]}%
    \doifelsenothing{#4}{\enablemapping [\s!default]}{\enablemapping [#4]}%
-%    \iftrue
-%      \dostepwiserecurse{0}{255}{1}
-%        {\ifnum\lccode\recurselevel>0
-%           \writestatus{lccodes}{#4: \recurselevel: \the\lccode\recurselevel}%
-%         \fi}
-%    \fi
-   % new patterns
-   % \enableregime[utf]%
-   %
+   \setuphyppatencoding
    \ifundefined{\??la\??la:\currentencoding:\currentmapping:#2}%
      \let\doshowpatterns\relax
      \edef\alreadyloadedlanguage

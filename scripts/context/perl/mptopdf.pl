@@ -88,17 +88,17 @@ if (($pattern eq '')||($Help)) {
             $rest .= " $mplatexswitch" ;
         }
         if ($MetaFun) {
-            $mpbin = 'mpost --progname=mpost --mem=metafun' ;
+            $mpbin = "mpost --progname=mpost --mem=metafun" ;
         } else {
-            $mpbin = 'mpost --mem=mpost' ;
+            $mpbin = "mpost --mem=mpost" ;
         }
     } else {
         if ($Latex) {
             $rest .= " $texlatexswitch" ;
         }
-        $mpbin = 'texexec --mptex $PassOn' ;
+        $mpbin = "texexec --mptex $PassOn" ;
     }
-    print "\n$program : running '$command'" ;
+    print "\n$program : running '$mpbin'\n" ;
     my $error =  system ("$mpbin $rest $pattern") ;
     if ($error) {
         print "\n$program : error while processing mp file\n" ;
