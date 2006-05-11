@@ -37,10 +37,16 @@ $ownpath = File.expand_path(File.dirname($0)) unless defined? $ownpath
 # ../../texmf-local/scripts/context/ruby
 # ../../texmf/scripts/context/ruby
 
+# we may assume a symlink on unix systems, so there the library is
+# at the right spot
+
 $: << $ownpath
 $: << File.expand_path("#{$ownpath}/../lib")
 $: << File.expand_path("#{$ownpath}/texmfstart-lib")
 $: << File.expand_path("#{$ownpath}/../../texmf-local/scripts/context/ruby")
+# $: << File.expand_path("#{$ownpath}/../../texmf.local/scripts/context/ruby")
+# $: << File.expand_path("#{$ownpath}/../../texmf.gwtex/scripts/context/ruby")
+# $: << File.expand_path("#{$ownpath}/../../texmf.tetex/scripts/context/ruby")
 $: << File.expand_path("#{$ownpath}/../../texmf/scripts/context/ruby")
 
 require "rbconfig"
@@ -182,18 +188,19 @@ def check_kpse
             if KpseRemote::available? then
                 $kpse = KpseRemote.new
                 if $kpse.okay? then
-                    puts("using remote kpse") if $verbose
+                    puts("kpse     : remote") if $verbose
                 else
                     $kpse = KpseDirect.new
-                    puts("forcing direct kpse") if $verbose
+                    puts("kpse     : direct (forced)") if $verbose
                 end
             else
                 $kpse = KpseDirect.new
-                puts("using direct kpse") if $verbose
+                puts("kpse     : direct") if $verbose
             end
         rescue
             if $verbose then
                 puts("using kpse binary")
+                puts("")
                 puts($kpsereport) unless $kpsereport.empty?
             end
         end
@@ -522,6 +529,8 @@ def usage
     print("\n")
     print("           texmfstart --stubpath=/usr/local/bin [--make --remove] --verbose all\n")
     print("           texmfstart --stubpath=auto [--make --remove] all\n")
+    print("\n")
+    check_kpse
 end
 
 # somehow registration does not work out (at least not under windows)

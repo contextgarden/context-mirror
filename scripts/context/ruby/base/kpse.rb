@@ -58,12 +58,14 @@ module Kpse
         @@distribution = 'miktex' unless $1 =~ /(texmf\-mswin[\/\\]bin|bin[\/\\]win32)/i
     end
 
-    if ENV['KPSEFAST'] == 'no' then
-        @@usekpserunner = false
-    else
+    @@re_true = /yes|on|true|1/i
+
+    if (ENV['KPSEFAST'] =~ @@re_true) || (ENV['CTXMINIMAL'] =~ @@re_true) then
         @@usekpserunner = true
         require 'base/kpsefast'
         require 'base/kpserunner'
+    else
+        @@usekpserunner = false
     end
 
     if @@crossover then
@@ -215,6 +217,7 @@ module Kpse
                 end
                 # locate writable path
                 if ! formatpath.empty? then
+                    done = false
                     formatpath.split_path.each do |fp|
                         fp.gsub!(/\\/,'/')
                         # remove funny patterns
@@ -226,11 +229,12 @@ module Kpse
                             fpp = fp.sub(/#{engine}\/*$/,'')
                             if FileTest.directory?(fpp) && FileTest.writable?(fpp) then
                                 # use this path
-                                formatpath = fp.dup
+                                formatpath, done = fp.dup, true
                                 break
                             end
                         end
                     end
+                    formatpath = '.' unless done
                 end
                 # needed !
                 begin File.makedirs(formatpath) ; rescue ; end ;

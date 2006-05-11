@@ -59,7 +59,8 @@ end
 
 module KpseUtil
 
-    @@texmfcnf  = 'texmf.cnf'
+    @@texmftrees = ['texmf-local','texmf.local','texmf.gwtex','texmf.tetex','texmf']
+    @@texmfcnf   = 'texmf.cnf'
 
     def KpseUtil::identify
         ownpath = File.expand_path($0)
@@ -76,7 +77,7 @@ module KpseUtil
         elsif ENV['SELFAUTOPARENT'] == '.' then
             filenames << File.join('.',@@texmfcnf)
         else
-            ['texmf-local','texmf'].each do |tree|
+            @@texmftrees.each do |tree|
                 filenames << File.join(ENV['SELFAUTOPARENT'],tree,'web2c',@@texmfcnf)
             end
         end
@@ -89,6 +90,9 @@ module KpseUtil
                 end
             end
             break unless busy
+        end
+        filenames.delete_if do |f|
+            ! FileTest.file?(f)
         end
         return filenames
     end
