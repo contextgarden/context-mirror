@@ -21,7 +21,7 @@ require 'rbconfig'
 class String
 
     def split_path
-        if self =~ /\;/ then
+        if self =~ /\;/o || self =~ /^[a-z]\:/io then
             self.split(";")
         else
             self.split(":")
@@ -217,16 +217,33 @@ module Kpse
                 end
                 # locate writable path
                 if ! formatpath.empty? then
-                    done = false
-                    formatpath.split_path.each do |fp|
-                        fp.gsub!(/\\/,'/')
+                    formatpaths, done = formatpath.split_path, false
+                    formatpaths.collect! do |fp|
+                        fp.gsub!(/\\/o,'/')
+                        fp.gsub!(/\/\/$/o,'/')
                         # remove funny patterns
-                        fp.sub!(/^!!/,'')
-                        fp.sub!(/\/+$/,'')
-                        fp.sub!(/unsetengine/,if enginepath then engine else '' end)
-                        if ! fp.empty? && (fp != '.') then
-                            # strip (possible engine) and test for writeability
-                            fpp = fp.sub(/#{engine}\/*$/,'')
+                        fp.sub!(/^!!/o,'')
+                        fp.sub!(/\/+$/o,'')
+                        fp.sub!(/(unsetengine|unset)/o,if enginepath then engine else '' end)
+                        fp
+                    end
+                    formatpaths.delete_if do |fp|
+                        fp.empty? || fp == '.'
+                    end
+                    # the engine path may not yet be present, find first writable
+                    formatpaths.each do |fp|
+                        # strip (possible engine) and test for writeability
+                        fpp = fp.sub(/#{engine}\/*$/o,'')
+                        if FileTest.directory?(fpp) && FileTest.writable?(fpp) then
+                            # use this path
+                            formatpath, done = fp.dup, true
+                            break
+                        end
+                    end
+                    unless done then
+                        formatpaths.each do |fp|
+                            fpp = fp.sub(/#{engine}\/*$/o,'')
+                            File.makedirs(fpp) rescue false # maybe we don't have an path yet
                             if FileTest.directory?(fpp) && FileTest.writable?(fpp) then
                                 # use this path
                                 formatpath, done = fp.dup, true
@@ -234,15 +251,17 @@ module Kpse
                             end
                         end
                     end
-                    formatpath = '.' unless done
+                    unless done then
+                        formatpath = '.'
+                    end
                 end
                 # needed !
-                begin File.makedirs(formatpath) ; rescue ; end ;
+                File.makedirs(formatpath) rescue false
                 # fall back to current path
                 formatpath = '.' if formatpath.empty? || ! FileTest.writable?(formatpath)
                 # append engine but prevent duplicates
                 formatpath = File.join(formatpath.sub(/\/*#{engine}\/*$/,''), engine) if enginepath
-                begin File.makedirs(formatpath) ; rescue ; end ;
+                File.makedirs(formatpath) rescue false
                 setpath(engine,formatpath)
                 # ENV['engine'] = savedengine
             end

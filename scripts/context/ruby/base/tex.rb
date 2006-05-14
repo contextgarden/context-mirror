@@ -499,19 +499,21 @@ class TEX
             texformatpath = if getvariable('local') then '.' else Kpse.formatpath(texengine,true) end
             # can be empty, to do
             report("using tex format path #{texformatpath}")
-            begin
-                Dir.chdir(texformatpath)
-            rescue
-            end
-            if texformats.length > 0 then
-                makeuserfile
-                makeresponsefile
-            end
-            texformats.each do |texformat|
-                report("generating tex format #{texformat}")
-                command = [quoted(texengine),prognameflag(progname),iniflag,tcxflag,prefixed(texformat,texengine),texmakeextras(texformat)].join(' ')
-                report(command) if getvariable('verbose')
-                system(command)
+            Dir.chdir(texformatpath) rescue false
+            if FileTest.writable?(texformatpath) then
+                if texformats.length > 0 then
+                    makeuserfile
+                    makeresponsefile
+                end
+                texformats.each do |texformat|
+                    report("generating tex format #{texformat}")
+                    command = [quoted(texengine),prognameflag(progname),iniflag,tcxflag,prefixed(texformat,texengine),texmakeextras(texformat)].join(' ')
+                    report(command) if getvariable('verbose')
+                    system(command)
+                end
+            else
+                report("unable to make format due to lack of permissions")
+                texformatpath = ''
             end
         else
             texformatpath = ''
@@ -521,16 +523,18 @@ class TEX
             report("using mp engine #{mpsengine}")
             mpsformatpath = if getvariable('local') then '.' else Kpse.formatpath(mpsengine,false) end
             report("using mps format path #{mpsformatpath}")
-            begin
-                Dir.chdir(mpsformatpath)
-            rescue
-            end
-            mpsformats.each do |mpsformat|
-                report("generating mps format #{mpsformat}")
-                # command = [quoted(mpsengine),prognameflag(progname),iniflag,tcxflag,mpsformat,mpsmakeextras(mpsformat)].join(' ')
-                command = [quoted(mpsengine),iniflag,tcxflag,mpsformat,mpsmakeextras(mpsformat)].join(' ')
-                report(command) if getvariable('verbose')
-                system(command)
+            Dir.chdir(mpsformatpath) rescue false
+            if FileTest.writable?(mpsformatpath) then
+                mpsformats.each do |mpsformat|
+                    report("generating mps format #{mpsformat}")
+                    # command = [quoted(mpsengine),prognameflag(progname),iniflag,tcxflag,mpsformat,mpsmakeextras(mpsformat)].join(' ')
+                    command = [quoted(mpsengine),iniflag,tcxflag,mpsformat,mpsmakeextras(mpsformat)].join(' ')
+                    report(command) if getvariable('verbose')
+                    system(command)
+                end
+            else
+                report("unable to make format due to lack of permissions")
+                mpsformatpath = ''
             end
         else
             mpsformatpath = ''

@@ -160,8 +160,8 @@ commandline.registerflag('verbose')
 commandline.registeraction('help')
 commandline.registeraction('version')
 
-commandline.registeraction('reload')
-commandline.registeraction('serve')
+commandline.registeraction('reload', 'reload file database')
+commandline.registeraction('serve', 'act as kpse server')
 
 commandline.expand
 

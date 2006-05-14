@@ -2087,24 +2087,23 @@
 
 \def\dostartcombination[#1][#2]%
   {\global\setsystemmode{combination}%
-   \doifnothing{#1}\firstargumentfalse  % to be sure (when called in macros)
-   \doifnothing{#2}\secondargumentfalse % to be sure (when called in macros)
+   \doifnothing{#1}\firstargumentfalse      % to be sure (when called in macros)
+   \doifnothing{#2}\secondargumentfalse     % to be sure (when called in macros)
    \ifsecondargument
      \def\currentcombination{#1}%
+     \edef\currentcombinationspec{#2*1*}%
    \else
-     \let\currentcombination\empty
+     \doifinstringelse{*}{#1}
+       {\let\currentcombination\empty
+        \edef\currentcombinationspec{#1*1*}}
+       {\def\currentcombination{#1}%
+        \edef\currentcombinationspec{2*1*}}%
    \fi
    \forgetall
    \doifelse{\combinationparameter\c!height}\v!fit
      \vbox {\vbox to \combinationparameter\c!height}%
    \bgroup
-  %\doifelsenothing{#1}
-  %  {\dodostartcombination[2*1*]}
-  %  {\doifelsenothing{#2}
-  %     {\dodostartcombination[#1*1*]}
-  %     {\dodostartcombination[#2*1*]}}}
-   \expanded{\dodostartcombination
-     [\ifsecondargument#2\else\iffirstargument#1\else2\fi\fi*1*]}}
+   \expanded{\dodostartcombination[\currentcombinationspec]}}
 
 \long\def\dodostartcombination[#1*#2*#3]%
   {\setuphorizontaldivision

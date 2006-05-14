@@ -272,14 +272,14 @@
        {\expanded{\doifcommonelse{#2}{\flushfloatslist}}\doflushfloats\donothing}%
      % but which should be done before using box \floatbox
    \fi
-   \ifmargeblokken % waarschijnlijk gebroken ! ! ! !
-     \doifinset\v!margin{#2}
-       {\endgraf
-        \bgroup\everypar{\egroup\the\everypar}%
-        \hsize\@@mbwidth}%
+   \ifmargeblokken
+     \doifinset\v!margin{#2}\endgraf
    \fi
    \global\insidefloattrue
    \begingroup % **
+   \ifmargeblokken
+     \doifinset\v!margin{#2}{\hsize\@@mbwidth}%
+   \fi
    \the\everyinsidefloat
    \let\@@extrafloat\empty
    \presetmorefloatvariables{#2}%
@@ -288,11 +288,10 @@
       \getvalue{\??fl#1\c!inner}%
       \fuzzysnappingfalse
       \postponenotes} % new
-     {%
-\doifvaluesomething{\??fl#1\c!criterium}
-  {\ifdim\wd\nextbox>\getvalue{\??fl#1\c!criterium}\relax
-     \edef\forcedfloatmethod{\executeifdefined{\??fl#1\c!fallback}\v!here}%
-  \fi}%
+     {\doifvaluesomething{\??fl#1\c!criterium}
+        {\ifdim\wd\nextbox>\getvalue{\??fl#1\c!criterium}\relax
+           \edef\forcedfloatmethod{\executeifdefined{\??fl#1\c!fallback}\v!here}%
+         \fi}%
        \xdocompletefloat{#1}{#3}{#1}{#2}{#1}{#4}% ** not yet done
        % we need to carry over the par because of side floats
       \doifnotinset\v!text{#2}{\carryoverpar\endgroup}%

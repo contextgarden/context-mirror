@@ -517,6 +517,18 @@
 %D \stopMPcode
 %D \stoptyping
 
+%D A goodie for Mojca (the gnuplot wizzard):
+%D
+%D \starttyping
+%D \startMPcode
+%D draw fullcircle scaled 4cm ;
+%D draw \textext{$\sqrt{\frac{3}{2}^3}$} ;
+%D \stopMPcode
+%D \stoptyping
+
+\long\def\textext#1{\normalunexpanded{textext("#1")}} % or \detokenize
+
+
 \def\flushMPTEXgraphic
   {\ifMPTEXgraphic
      \immediate\write\MPwrite{verbatimtex \the\everyMPTEXgraphic\space etex;}%
@@ -1222,7 +1234,7 @@
      \bgroup
      \message{[MP fonts #1]}%
      %\uncatcodespecials
-     \endlinechar=-1
+     \endlinechar\minusone
      \setMPspecials
      \obeyMPspecials
      \setbox\scratchbox\hbox

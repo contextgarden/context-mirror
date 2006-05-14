@@ -97,7 +97,7 @@ class Commands
                     report("processing record #{nofrecords} (#{variables['file'] || 'noname'}: #{variables.size} entries)")
                     if conversion = variables['conversion'] then
                         report("testing for conversion #{conversion}")
-                        if suffix.downcase = variables['suffix'].downcase then
+                        if suffix = variables['suffix'].downcase then
                             if file = variables['file'] then
                                 report("conversion #{conversion} for suffix #{suffix} for file #{file}")
                             else
@@ -176,7 +176,7 @@ class Commands
                     end
                 end
             rescue
-                report('error in manipulating files')
+                report("error in manipulating files: #{$!}")
             end
             begin
                 logname = "#{filename}.log"

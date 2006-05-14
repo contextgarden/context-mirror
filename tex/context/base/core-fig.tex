@@ -346,6 +346,9 @@
 
 %D Here we start scanning the other types:
 
+% TODO: svg, get figuresize from file, but when not supported by
+% backend, don't use it yet (else backend will force replacement).
+
 \def\@@dogetfiguresize{dogetfiguresize}
 
 \def\getfiguredimensionsA
@@ -418,8 +421,14 @@
      \startnointerference
        \startXMLignore
          \defineXMLcommand[svg][width=100,height=75]
-           {\global\dimen1=\XMLop{width}\onebasepoint
-            \global\dimen3=\XMLop{height}\onebasepoint
+%            {\global\dimen1=\XMLpar{svg}{width}{0}\onebasepoint
+%             \global\dimen3=\XMLpar{svg}{height}{0}\onebasepoint
+           {\doifdimensionelse{\XMLop{width}}
+              {\global\dimen1=\XMLop{width}}
+              {\global\dimen1=\XMLop{width}\onebasepoint}%
+            \doifdimensionelse{\XMLop{width}}
+              {\global\dimen3=\XMLop{height}}
+              {\global\dimen3=\XMLop{height}\onebasepoint}%
             \endinput}%
          \processXMLfilegrouped{#1}%
        \stopXMLignore

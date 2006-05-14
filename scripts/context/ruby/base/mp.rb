@@ -152,9 +152,11 @@ EOT
             result.gsub!(/\"(\d+)\"/) do
                 "\"#{strings[$1.to_i]}\""
             end
-            return result
+            # return result # let's catch xetex bug
+            return result.gsub(/\^\^(M|J)/o, "\n")
         else
-            return str
+            # return str # let's catch xetex bug
+            return str.gsub(/\^\^(M|J)/o, "\n")
         end
     end
 

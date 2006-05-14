@@ -30,14 +30,14 @@
 
 \setuplayout
   [topspace=10pt,
-   header=40pt,
+   header=30pt,
    headerdistance=20pt,
    height=middle,
    footerdistance=20pt,
    footer=0pt,
-   bottomdistance=10pt,
+   bottomdistance=20pt,
    bottom=20pt,
-   bottomspace=40pt,
+   bottomspace=50pt,
    backspace=30pt,
    width=middle]
 
@@ -123,7 +123,8 @@
       enlarged 4pt
       withcolor \MPcolor{pagecolor} ;
     fill Field[Text][Text]
-      topenlarged   (TopSpace +4pt)
+      enlarged 10pt
+%       topenlarged   (HeaderHeight+HeaderDistance)
       leftenlarged  (BackSpace+4pt)
       rightenlarged (CutSpace +4pt)
       withcolor OverlayColor ;
@@ -136,6 +137,7 @@
       enlarged 4pt
       withcolor \MPcolor{pagecolor} ;
     fill Field[Text][Text]
+      enlarged 10pt
       leftenlarged  (BackSpace+4pt)
       rightenlarged (CutSpace+4pt)
       withcolor OverlayColor ;

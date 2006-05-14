@@ -288,7 +288,7 @@ class Commands
 
                         if FileTest.directory?(donepath) && FileTest.directory?(resultpath) then
 
-                            resultname = resultpath + '/' + filename.sub(/\..*$/,'') + '.pdf'
+                            resultname = resultpath + '/' + filename.sub(/\.[^\.]*$/,'') + '.pdf'
 
                             @commandline.setoption('inputpath',  filepath)
                             @commandline.setoption('outputpath', resultpath)
@@ -360,7 +360,7 @@ class Commands
         suffix = @commandline.option('suffix')
 
         inpfilename = "#{inppath}#{filename}"
-        outfilename = "#{outpath}#{prefix}#{filename.sub(/\.(.*?)$/, '')}#{suffix}.pdf"
+        outfilename = "#{outpath}#{prefix}#{filename.sub(/\.([^\.]*?)$/, '')}#{suffix}.pdf"
 
         magick.setvariable('inputfile' , inpfilename)
         magick.setvariable('outputfile', outfilename)
@@ -383,7 +383,7 @@ class Commands
         suffix = @commandline.option('suffix')
 
         inpfilename = "#{inppath}#{filename}"
-        outfilename = "#{outpath}#{prefix}#{filename.sub(/\.(.*?)$/, '')}#{suffix}.pdf"
+        outfilename = "#{outpath}#{prefix}#{filename.sub(/\.([^\.]*?)$/, '')}#{suffix}.pdf"
 
         inkscape.setvariable('inputfile' , inpfilename)
         inkscape.setvariable('outputfile', outfilename)
@@ -451,7 +451,7 @@ class Commands
 
         elsif ghostscript.psfile?(filename) then
 
-            if filename =~ /(.*)\.(.*?)$/io then
+            if filename =~ /(.*)\.([^\.]*?)$/io then
                 filename, filesuffix = $1, $2
             else
                 filesuffix = 'eps'

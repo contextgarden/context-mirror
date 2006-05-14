@@ -121,4 +121,23 @@
   [symbol={attach-normal,attach-down},
    textlayer=\StepLayer]
 
+%D Handy:
+
+\def\StartLocalSteps{\ResetStep}
+\def\StopLocalSteps {}
+
+\def\StartLocalStep {\NextStep\StartStep}
+\def\StopLocalStep  {\StopStep}
+
+%D used as (given some definitions):
+%D
+%D \starttyping
+%D \StartLocalSteps
+%D     \startcombination[both]
+%D         {\StartLocalStep\placestreamlayer[left]\StopLocalStep}  {}
+%D         {\StartLocalStep\placestreamlayer[right]\StopLocalStep} {}
+%D     \stopcombination
+%D \StopLocalSteps
+%D \stoptyping
+
 \endinput

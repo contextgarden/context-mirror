@@ -13,7 +13,7 @@
 class String
 
     def split_path
-        if self =~ /\;/ then
+        if self =~ /\;/o || self =~ /^[a-z]\:/io then
             self.split(";")
         else
             self.split(":")
@@ -59,18 +59,31 @@ end
 
 module KpseUtil
 
-    @@texmftrees = ['texmf-local','texmf.local','texmf.gwtex','texmf.tetex','texmf']
+    # to be adapted, see loading cnf file
+
+    @@texmftrees = ['texmf-local','texmf.local','../..','texmf'] # '../..' is for gwtex
     @@texmfcnf   = 'texmf.cnf'
 
     def KpseUtil::identify
+        # we mainly need to identify the local tex stuff and wse assume that
+        # the texmfcnf variable is set; otherwise we need to expand the
+        # TEXMF variable and that takes time since it may involve more
         ownpath = File.expand_path($0)
         if ownpath.gsub!(/texmf.*?$/o, '') then
             ENV['SELFAUTOPARENT'] = ownpath
         else
-            ENV['SELFAUTOPARENT'] = '.'
+            ENV['SELFAUTOPARENT'] = '.' # fall back
+            # may be too tricky:
+            #
+            # (ENV['PATH'] ||'').split_path.each do |p|
+                # if p.gsub!(/texmf.*?$/o, '') then
+                    # ENV['SELFAUTOPARENT'] = p
+                    # break
+                # end
+            # end
         end
         filenames = Array.new
-        if ENV['TEXMFCNF'] and not ENV['TEXMFCNF'].empty? then
+        if ENV['TEXMFCNF'] && ! ENV['TEXMFCNF'].empty? then
             ENV['TEXMFCNF'].to_s.split_path.each do |path|
                 filenames << File.join(path,@@texmfcnf)
             end
@@ -296,6 +309,7 @@ class KpseFast
                     @treepath = @treepath.split(',').collect do |p| File.join(@rootpath,p) end.join(',')
                 end
                 @environment['TEXMF'] = @treepath
+                # only the first one
                 @environment['TEXMFCNF'] = File.join(@treepath.split(',').first,'texmf/web2c')
             end
             unless @rootpath.empty? then
@@ -660,7 +674,7 @@ end
 class KpseFast
 
     def _is_cnf_?(filename)
-        filename == File.basename((@cnffiles.first rescue @@texmfcnf))
+        filename == File.basename((@cnffiles.first rescue @@texmfcnf) || @@texmfcnf)
     end
 
     def find_file(filename)

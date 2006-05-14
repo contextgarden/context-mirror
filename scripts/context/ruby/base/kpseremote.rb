@@ -8,10 +8,11 @@ end
 
 class KpseRemote
 
-    @@port = ENV['KPSEPORT'] || 7000
+    @@port   = ENV['KPSEPORT']   || 7000
+    @@method = ENV['KPSEMETHOD'] || 'drb'
 
     def KpseRemote::available?
-        ENV['KPSEMETHOD'] && ENV['KPSEPORT']
+        @@method && @@port
     end
 
     def KpseRemote::start_server(port=nil)

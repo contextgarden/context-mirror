@@ -163,6 +163,8 @@
      \processcommacommand[\@@svdirectory]\doloadsystemfile
    \fi}
 
+\ifx\disableXML\undefined \let\disableXML\relax \fi
+
 \def\loadsystemfiles
   {\reportprotectionstate
    \readsysfile\f!newfilename
@@ -176,7 +178,10 @@
    \loadallsystemfiles\f!sysfilename
      {\loadallsystemfiles{\f!sysfilename.rme}\donothing % new, fall back
       \doglobal\appendtoks
+        \bgroup
+        \disableXML
         \loadallsystemfiles\f!errfilename\donothing
+        \egroup
       \to\everygoodbye}}
 
   %\loadallsystemfiles\f!modfilename
