@@ -53,9 +53,9 @@ module SelfMerge
         end
     end
 
-    def SelfMerge::merge(filename=@@filename)
+    def SelfMerge::merge
         begin
-            if rbfile = IO.read(filename) then
+            if SelfMerge::ok? && rbfile = IO.read(@@filename) then
                 begin
                     inserts = "#{@@kpsemergestart}\n\n"
                     @@modules.each do |file|
@@ -80,7 +80,7 @@ module SelfMerge
                     return false
                 else
                     begin
-                        File.open(filename,'w') do |f|
+                        File.open(@@filename,'w') do |f|
                             f << rbfile
                         end
                     rescue
@@ -95,9 +95,9 @@ module SelfMerge
         end
     end
 
-    def SelfMerge::cleanup(filename=@@filename)
+    def SelfMerge::cleanup
         begin
-            if rbfile = IO.read(filename) then
+            if rbfile = IO.read(@@filename) then
                 begin
                     rbfile.sub!(/#{@@kpsemergestart}(.*)#{@@kpsemergestop}\s*/mois) do
                         "#{@@kpsemergestart}\n\n#{@@kpsemergestop}\n\n"
@@ -114,7 +114,7 @@ module SelfMerge
                     return false
                 else
                     begin
-                        File.open(filename,'w') do |f|
+                        File.open(@@filename,'w') do |f|
                             f << rbfile
                         end
                     rescue
@@ -129,9 +129,11 @@ module SelfMerge
         end
     end
 
-    def SelfMerge::replace(filename=@@filename)
-        SelfMerge::cleanup(filename)
-        SelfMerge::merge(filename)
+    def SelfMerge::replace
+        if SelfMerge::ok? then
+            SelfMerge::cleanup
+            SelfMerge::merge
+        end
     end
 
 end

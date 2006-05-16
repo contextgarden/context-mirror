@@ -49,7 +49,7 @@ class WWW
     end
 
     def handle_exainterface()
-        check_template_file('text','text-template.htm')
+        check_template_file('text','exalogin-template.htm')
         if id = valid_session() then
             filename = @interface.get('process:uri').to_s # kind of dup
             if ! filename.empty? && filename.sub!(/^.*\//,'') then

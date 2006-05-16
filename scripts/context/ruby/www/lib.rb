@@ -158,8 +158,8 @@ class WWW
         analyze_request()
         update_interface()
 
-        @interface.set('template:message'  , 'text-template.htm')
-        @interface.set('template:status'   , 'text-template.htm')
+        @interface.set('template:message'  , 'exalogin-template.htm')
+        @interface.set('template:status'   , 'exalogin-template.htm')
         @interface.set('template:login'    , 'exalogin.htm')
         @interface.set('process:timeout'   ,  @@session_max_age)
         @interface.set('process:threshold' ,  @@send_threshold)
@@ -278,6 +278,7 @@ class WWW
                 end
             end
         end
+        @interface.set('path:root', File.dirname(@interface.get('path:docroot')))
     end
 
     # name in calling script takes precedence

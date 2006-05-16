@@ -74,7 +74,7 @@ class Watch < Monitor
         @files   = Array.new
         @stats   = Hash.new
         @skips   = Hash.new
-        @root_path = File.expand_path(File.join(File.dirname($0),'..')) if @root_path.empty?
+        @root_path = File.expand_path(File.join(File.dirname($0),'.')) if @root_path.empty?
         @work_path = File.expand_path(File.join(@root_path,'work','watch')) if @work_path.empty?
         @cache_path = File.expand_path(File.join(@root_path,'work','cache')) if @work_path.empty?
         begin File.makedirs(@work_path) ; rescue ; end

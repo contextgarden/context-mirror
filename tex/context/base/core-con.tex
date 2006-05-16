@@ -310,24 +310,32 @@
 %D
 %D Anyhow, the conversion looks like:
 
-\def\doconvertmonth#1%
-  {\labeltext
-     {\ifcase#1%
-      \or \v!january   \or \v!february \or \v!march    \or \v!april
-      \or \v!may       \or \v!june     \or \v!july     \or \v!august
-      \or \v!september \or \v!october  \or \v!november \or \v!december
-      \fi}}
+\def\domonthtag#1%
+  {\ifcase#1%
+     \or \v!january   \or \v!february \or \v!march    \or \v!april
+     \or \v!may       \or \v!june     \or \v!july     \or \v!august
+     \or \v!september \or \v!october  \or \v!november \or \v!december
+   \else
+     \v!unknown
+   \fi}
+
+\def\doconvertmonthlong #1{\labeltext{\domonthtag{#1}}}
+\def\doconvertmonthshort#1{\labeltext{\domonthtag{#1}:\s!mnem}}
+
+\let\doconvertmonth\doconvertmonthlong
 
 %D We redefine the \TEX\ primitive \type{\month} as:
 %D
 %D \showsetup{month}
 %D \showsetup{MONTH}
 
-\def\month
-  {\doconvertmonth}
+\def\monthlong {\doconvertmonthlong}
+\def\monthshort{\doconvertmonthshort}
+\def\month     {\doconvertmonth}
 
-\def\MONTH#1%
-  {{\let\labeltext\LABELTEXT\month{#1}}}
+\def\MONTH     #1{{\let\labeltext\LABELTEXT\month     {#1}}}
+\def\MONTHLONG #1{{\let\labeltext\LABELTEXT\monthlong {#1}}}
+\def\MONTHSHORT#1{{\let\labeltext\LABELTEXT\monthshort{#1}}}
 
 %D We never explicitly needed this, but Tobias Burnus pointed
 %D out that it would be handy to convert to the day of the
@@ -913,6 +921,9 @@
 
 \defineconversion [arabicnumerals]   [\numbers]
 \defineconversion [persiannumerals]  [\numbers]
+
+\defineconversion [month]            [\doconvertmonthlong]
+\defineconversion [month:mnem]       [\doconvertmonthshort]
 
 \beginXETEX \number
 
