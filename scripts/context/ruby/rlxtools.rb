@@ -247,10 +247,83 @@ class Commands
 
 end
 
+class Commands
+
+    include CommandBase
+
+    def identify
+        @commandline.arguments.each do |filename|
+            if state = do_identify(filename) then
+                begin
+                    File.open(filename+'.rli','w') do |f|
+                        f << state
+                    end
+                rescue
+                    report("error in identifying #{filename}")
+                else
+                    report("#{filename} is identified")
+                end
+            end
+        end
+    end
+
+    private
+
+    def do_identify(filename)
+        begin
+            str = nil
+            if FileTest.file?(filename) then
+                result = `identify -format \"x=%x,y=%y,w=%w,h=%h,b=%b\" #{filename}`.chomp.split(',')
+                tags = Hash.new
+                result.each do |r|
+                    if rr = r.split("=") then
+                        tags[rr[0]] = rr[1]
+                    end
+                end
+                size   = (tags['b']||0).to_i
+                width  = unified(tags['w']||0,tags['x']||'1')
+                height = unified(tags['h']||0,tags['y']||'1')
+                if size > 0 then
+                    str = ''
+                    str << "<?xml version='1.0' standalone='yes'?>\n"
+                    str << "<rl:identify name='#{File.basename(filename)}'>\n"
+                    str << "  <rl:size>#{size}</rl:size>\n"
+                    str << "  <rl:path>#{File.dirname(filename).sub(/\\/o,'/')}</rl:path>\n"
+                    str << "  <rl:width>#{width}</rl:width>\n"
+                    str << "  <rl:height>#{height}</rl:height>\n"
+                    str << "</rl:identify>\n"
+                end
+            else
+                str = nil
+            end
+        rescue
+            str = nil
+        end
+        return str
+    end
+
+    def unified(dim,res)
+        case res
+            when /([\d\.]+)\s*PixelsPerInch/io then
+                sprintf("%.4fin",dim.to_f/$1.to_f)
+            when /([\d\.]+)\s*PixelsPerCentimeter/io then
+                sprintf("%.4fcm",dim.to_f/$1.to_f)
+            when /([\d\.]+)\s*PixelsPerMillimeter/io then
+                sprintf("%.4fmm",dim.to_f/$1.to_f)
+            when /([\d\.]+)\s*PixelsPerPoint/io then
+                sprintf("%.4fbp",dim.to_f/$1.to_f)
+            else
+                sprintf("%.4fbp",dim.to_f)
+        end
+    end
+
+end
+
 logger      = Logger.new(banner.shift)
 commandline = CommandLine.new
 
 commandline.registeraction('manipulate', ' [--test] manipulatorfile resourselog')
+commandline.registeraction('identify', 'filename')
 
 commandline.registeraction('help')
 commandline.registeraction('version')

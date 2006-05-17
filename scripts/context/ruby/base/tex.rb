@@ -88,15 +88,17 @@ class TEX
 
     ['pdfetex','pdftex','pdf','pdftex','standard'] .each do |b| @@backends[b]   = 'pdftex'    end
     ['dvipdfmx','dvipdfm','dpx','dpm']             .each do |b| @@backends[b]   = 'dvipdfmx'  end
-    ['xetex','xtx']                                .each do |b| @@backends[b]   = 'dvipdfmx'  end
+    ['xetex','xtx']                                .each do |b| @@backends[b]   = 'xetex'     end
     ['dvips','ps']                                 .each do |b| @@backends[b]   = 'dvips'     end
     ['dvipsone']                                   .each do |b| @@backends[b]   = 'dvipsone'  end
     ['acrobat','adobe','distiller']                .each do |b| @@backends[b]   = 'acrobat'   end
+    ['xdv','xdv2pdf']                              .each do |b| @@backends[b]   = 'xdv2pdf'   end
 
     ['tex','standard']                             .each do |b| @@mappaths[b]   = 'dvips'     end
     ['pdftex','pdfetex']                           .each do |b| @@mappaths[b]   = 'pdftex'    end
-    ['aleph','omega']                              .each do |b| @@mappaths[b]   = 'dvipdfm'   end
-    ['xetex']                                      .each do |b| @@mappaths[b]   = 'dvipdfm'   end
+    ['aleph','omega','xetex']                      .each do |b| @@mappaths[b]   = 'dvipdfm'   end
+    ['dvipdfm', 'dvipdfmx', 'xdvipdfmx']           .each do |b| @@mappaths[b]   = 'dvipdfm'   end
+    ['xdv','xdv2pdf']                              .each do |b| @@mappaths[b]   = 'dvips'     end
 
     # todo norwegian (no)
 
@@ -133,7 +135,8 @@ class TEX
     ['cont-en','cont-nl','cont-de','cont-it',
      'cont-fr','cont-cz','cont-ro','cont-uk']      .each do |f| @@texprocstr[f] = "\\emergencyend"  end
 
-    # @@runoptions['xetex'] = ['--no-pdf'] # from now on we assume (x)dvipdfmx to be used
+  # @@runoptions['xetex'] = ['--output-driver \\\"-d 4 -V 5\\\"'] # we need the pos pass
+    @@runoptions['xetex'] = ['--no-pdf'] # from now on we assume (x)dvipdfmx to be used
 
     @@booleanvars = [
         'batchmode', 'nonstopmode', 'fast', 'fastdisabled', 'silentmode', 'final',
@@ -242,6 +245,12 @@ class TEX
 
     def reportruntime
         report("runtime: #{runtime}")
+    end
+
+    def runcommand(something)
+        command = [something].flatten.join(' ')
+        report("running: #{command}") if getvariable('verbose')
+        system(command)
     end
 
     def inspect(name=nil)
@@ -507,9 +516,7 @@ class TEX
                 end
                 texformats.each do |texformat|
                     report("generating tex format #{texformat}")
-                    command = [quoted(texengine),prognameflag(progname),iniflag,tcxflag,prefixed(texformat,texengine),texmakeextras(texformat)].join(' ')
-                    report(command) if getvariable('verbose')
-                    system(command)
+                    runcommand([quoted(texengine),prognameflag(progname),iniflag,tcxflag,prefixed(texformat,texengine),texmakeextras(texformat)])
                 end
             else
                 report("unable to make format due to lack of permissions")
@@ -527,10 +534,8 @@ class TEX
             if FileTest.writable?(mpsformatpath) then
                 mpsformats.each do |mpsformat|
                     report("generating mps format #{mpsformat}")
-                    # command = [quoted(mpsengine),prognameflag(progname),iniflag,tcxflag,mpsformat,mpsmakeextras(mpsformat)].join(' ')
-                    command = [quoted(mpsengine),iniflag,tcxflag,mpsformat,mpsmakeextras(mpsformat)].join(' ')
-                    report(command) if getvariable('verbose')
-                    system(command)
+                  # runcommand([quoted(mpsengine),prognameflag(progname),iniflag,tcxflag,mpsformat,mpsmakeextras(mpsformat)])
+                    runcommand([quoted(mpsengine),iniflag,tcxflag,mpsformat,mpsmakeextras(mpsformat)])
                 end
             else
                 report("unable to make format due to lack of permissions")
@@ -1183,9 +1188,7 @@ class TEX
         report("progname: #{progname}")
         if texengine && texformat && progname then
             fixbackendvars(@@mappaths[texengine])
-            command = [quoted(texengine),prognameflag(progname),formatflag(texengine,texformat),tcxflag,runoptions(texengine),filename,texprocextras(texformat)].join(' ')
-            report(command) if getvariable('verbose')
-            system(command)
+            runcommand([quoted(texengine),prognameflag(progname),formatflag(texengine,texformat),tcxflag,runoptions(texengine),filename,texprocextras(texformat)])
             true
         else
             false
@@ -1199,10 +1202,8 @@ class TEX
         progname  = validprogname(getvariable('progname'))
         if mpsengine && mpsformat && progname then
             ENV["MPXCOMMAND"] = "0" unless mpx
-            # command = [quoted(mpsengine),prognameflag(progname),formatflag(mpsengine,mpsformat),tcxflag,runoptions(mpsengine),filename,mpsprocextras(mpsformat)].join(' ')
-            command = [quoted(mpsengine),formatflag(mpsengine,mpsformat),tcxflag,runoptions(mpsengine),mpname,mpsprocextras(mpsformat)].join(' ')
-            report(command) if getvariable('verbose')
-            system(command)
+          # runcommand([quoted(mpsengine),prognameflag(progname),formatflag(mpsengine,mpsformat),tcxflag,runoptions(mpsengine),filename,mpsprocextras(mpsformat)])
+            runcommand([quoted(mpsengine),formatflag(mpsengine,mpsformat),tcxflag,runoptions(mpsengine),mpname,mpsprocextras(mpsformat)])
             true
         else
             false
@@ -1311,15 +1312,21 @@ class TEX
             case validbackend(getvariable('backend'))
                 when 'dvipdfmx' then
                     fixbackendvars('dvipdfm')
-                    system("dvipdfmx -d 4 #{File.unsuffixed(rawname)}")
+                    runcommand("dvipdfmx -d 4 -V 5 #{File.unsuffixed(rawname)}")
                 when 'xetex'    then
                     # xetex now runs its own backend
                     xdvfile = File.suffixed(rawname,'xdv')
                     if FileTest.file?(xdvfile) then
-                        fixbackendvars('xetex')
-                        system("xdvipdfmx #{xdvfile}")
+                        fixbackendvars('dvipdfm')
+                        runcommand("xdvipdfmx -d 4 -V 5 #{xdvfile}")
                     end
-                when 'dvips'    then
+                when 'xdv2pdf' then
+                    xdvfile = File.suffixed(rawname,'xdv')
+                    if FileTest.file?(xdvfile) then
+                        fixbackendvars('xdv2pdf')
+                        runcommand("xdv2pdf #{xdvfile}")
+                    end
+                when 'dvips' then
                     fixbackendvars('dvips')
                     mapfiles = ''
                     begin
@@ -1331,7 +1338,7 @@ class TEX
                     rescue
                         mapfiles = ''
                     end
-                    system("dvips #{mapfiles} #{File.unsuffixed(rawname)}")
+                    runcommand("dvips #{mapfiles} #{File.unsuffixed(rawname)}")
                 when 'pdftex'   then
                     # no need for postprocessing
                 else

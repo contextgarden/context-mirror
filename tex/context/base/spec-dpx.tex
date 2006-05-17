@@ -853,7 +853,7 @@
 
 %D 7. Copied codes from \type{spec-dvi}
 
-% coming pdftex versions will provide pos support
+% coming pdftex versions will provide pos support in dvi mode (untested)
 
 % \ifnum\pdftexversion>140 .. \fi
 
@@ -869,10 +869,20 @@
 \let\flushDVIpositionpapersize\relax
 
 \definespecial\dosetpositionpapersize#1#2%
-  {\xdef\flushDVIpositionpapersize%
+  {\xdef\flushDVIpositionpapersize
      {\special{pos:papersize #1 #2}%
       \noexpand\installprogram{dvipos -o \jobname.tuo \jobname.dvi }%
       \global\noexpand\let\noexpand\flushDVIpositionpapersize\relax}}
+
+\beginXETEX
+
+  \definespecial\dosetpositionpapersize#1#2%
+    {\xdef\flushDVIpositionpapersize
+       {\special{pos:papersize #1 #2}%
+        \noexpand\installprogram{dvipos -o \jobname.tuo \jobname.xdv }%
+        \global\noexpand\let\noexpand\flushDVIpositionpapersize\relax}}
+
+\endXETEX
 
 \prependtoksonce \flushDVIpositionpapersize \to \everyshipout
 

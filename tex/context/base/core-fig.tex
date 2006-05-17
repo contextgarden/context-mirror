@@ -461,7 +461,7 @@
      \@EA\DOIF\@EA{\@@effilenametype}{#1} % hm, tzt ook nog eens met pad/naam
        {\getparameters[\??ep][#2]%
         \ExpandBothAfter\doif\@@epe\@@efcurrenttype
-          {\chardef\figurestatus4
+          {\chardef\figurestatus\plusfour
            \let\@@eftype\@@efcurrenttype
            \let\@@effullname\@@efcurrentfile}}%
    \else
@@ -471,24 +471,22 @@
 \def\getfiguredimensionsC
   {\ifconsultutilityfile \ifrunutilityfile
      \ifcase\figurestatus\ifcase\figurefilemode\else
-\doifsomething\@@efcurrentpath
-{%
-      \doifnotinset\@@effiletype{\c!tex,\c!tmp}
-         {\doiffileelse\@@efcurrentfile
-            {\edef\@@effilenametype{\@@effilename.\@@efcurrenttype}%
-             \@@eftrace{running texutil on \@@effilenametype}%
-             \def\@@efloadname{\f!utilityfilename.\f!temporaryextension}%
-             \executesystemcommand{texutil --fig --out=\@@efloadname\space\@@effilenametype}%
-             \@@eftrace{analyzing \@@efloadname\space on \@@effilenametype}%
-             \pushendofline
-             \startreadingfile
-             \let\presetfigure\presetfigureB
-             \readsetfile{.}\@@efloadname\donothing\donothing
-             \stopreadingfile
-             \popendofline
-             \@@eftrace{\ifcase\figurestatus not \fi found}}
-            {}}%
-}%
+       \doifsomething\@@efcurrentpath
+         {\doifnotinset\@@effiletype{\c!tex,\c!tmp}
+            {\doiffileelse\@@efcurrentfile
+               {\edef\@@effilenametype{\@@effilename.\@@efcurrenttype}%
+                \@@eftrace{running texutil on \@@effilenametype}%
+                \def\@@efloadname{\f!utilityfilename.\f!temporaryextension}%
+                \executesystemcommand{texutil --fig --out=\@@efloadname\space\@@effilenametype}%
+                \@@eftrace{analyzing \@@efloadname\space on \@@effilenametype}%
+                \pushendofline
+                \startreadingfile
+                \let\presetfigure\presetfigureB
+                \readsetfile{.}\@@efloadname\donothing\donothing
+                \stopreadingfile
+                \popendofline
+                \@@eftrace{\ifcase\figurestatus not \fi found}}
+               {}}}%
      \fi\fi
    \fi\fi}
 
@@ -503,19 +501,17 @@
 
 \def\doanalyzefigurefilesB
   {\ifconsultutilityfile\ifcase\figurestatus\ifcase\figurefilemode\else
-\doifsomething\@@efcurrentpath
-{%
-     \assignfullfilename\@@efcurrentpath\@@exfile\to\@@efloadname
-     \edef\@@effilenametype{\@@effilename.\figureextension{\@@efcurrenttype}}%
-     \@@eftrace{analyzing \@@efloadname\space on \@@efcurrentpath\space for \@@effilenametype}%
-     \pushendofline
-     \startreadingfile
-     \let\presetfigure\presetfigureC
-     \readsetfile\@@efcurrentpath\@@exfile\donothing\donothing
-     \stopreadingfile
-     \popendofline
-     \@@eftrace{\ifcase\figurestatus not \fi found}%
-}%
+     \doifsomething\@@efcurrentpath
+       {\assignfullfilename\@@efcurrentpath\@@exfile\to\@@efloadname
+        \edef\@@effilenametype{\@@effilename.\figureextension{\@@efcurrenttype}}%
+        \@@eftrace{analyzing \@@efloadname\space on \@@efcurrentpath\space for \@@effilenametype}%
+        \pushendofline
+        \startreadingfile
+        \let\presetfigure\presetfigureC
+        \readsetfile\@@efcurrentpath\@@exfile\donothing\donothing
+        \stopreadingfile
+        \popendofline
+        \@@eftrace{\ifcase\figurestatus not \fi found}}%
    \fi\fi\fi}
 
 \def\presetfigureC[#1][#2]%
@@ -523,7 +519,7 @@
      \@EA\DOIF\@EA{\@@effilenametype}{#1}
        {\getparameters[\??ep][#2]%
         \doif\@@epe\@@efcurrenttype
-          {\chardef\figurestatus4
+          {\chardef\figurestatus\plusfour
            \let\@@eftype\@@efcurrenttype
            \let\@@effullname\@@efcurrentfile}}%
    \else
@@ -535,18 +531,16 @@
 
 \def\doanalyzefigurefilesC
   {\ifconsultutilityfile\ifcase\figurestatus\ifcase\figurefilemode\else
-\doifsomething\@@efcurrentpath
-{%
-     \assignfullfilename\@@efcurrentpath\@@exfile\to\@@efloadname
-     \@@eftrace{analyzing \@@efloadname\space on \@@efcurrentpath\space for \@@effilename.* surrogate}%
-     \pushendofline
-     \startreadingfile
-     \let\presetfigure\presetfigureD
-     \readsetfile\@@efcurrentpath\@@exfile\donothing\donothing
-     \stopreadingfile
-     \popendofline
-     \@@eftrace{\ifcase\figurestatus not \fi found}%
-}%
+     \doifsomething\@@efcurrentpath
+       {\assignfullfilename\@@efcurrentpath\@@exfile\to\@@efloadname
+        \@@eftrace{analyzing \@@efloadname\space on \@@efcurrentpath\space for \@@effilename.* surrogate}%
+        \pushendofline
+        \startreadingfile
+        \let\presetfigure\presetfigureD
+        \readsetfile\@@efcurrentpath\@@exfile\donothing\donothing
+        \stopreadingfile
+        \popendofline
+        \@@eftrace{\ifcase\figurestatus not \fi found}}%
    \fi\fi\fi}
 
 \def\presetfigureD[#1][#2]%

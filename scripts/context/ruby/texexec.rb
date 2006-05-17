@@ -501,15 +501,17 @@ class Commands
         elsif @commandline.oneof('dvipdfmx','dvipdfm','dpx','dpm') then
             job.setvariable('backend','dvipdfmx')
         elsif @commandline.oneof('xetex','xtx') then
-            job.setvariable('backend','dvipdfmx')
+            job.setvariable('backend','xetex')
         elsif @commandline.oneof('aleph') then
             job.setvariable('backend','dvipdfmx')
         elsif @commandline.oneof('dvips','ps') then
             job.setvariable('backend','dvips')
+        elsif @commandline.oneof('xdv') then
+            job.setvariable('backend','xdv')
         else
             case job.getvariable('texengine')
                 when 'pdfetex' then job.setvariable('backend','pdftex')
-                when 'xetex'   then job.setvariable('backend','dvipdfmx')
+                when 'xetex'   then job.setvariable('backend','xetex')
                 when 'aleph'   then job.setvariable('backend','dvipdfmx')
             else
                 job.setvariable('backend','standard')
@@ -655,6 +657,7 @@ commandline.registerflag('ps')
 
 commandline.registerflag('xetex')
 commandline.registerflag('xtx')
+commandline.registerflag('xdv')
 
 commandline.registerflag('aleph')
 

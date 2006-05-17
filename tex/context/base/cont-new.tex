@@ -11,7 +11,7 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-\newcontextversion{2006.05.16 18:35}
+\newcontextversion{2006.05.17 10:08}
 
 %D This file is loaded at runtime, thereby providing an
 %D excellent place for hacks, patches, extensions and new
@@ -25,6 +25,61 @@
 \unprotect
 
 \writestatus{\m!systems}{beware: some patches loaded from cont-new.tex}
+
+% This will move to core-fig asap:
+%
+% todo: process between runs
+
+\startXMLmapping[rli]
+  \defineXMLprocess[rl:identify]
+  \defineXMLsavecontent[rl:width] {\!!zeropoint}
+  \defineXMLsavecontent[rl:height]{\!!zeropoint}
+\stopXMLmapping
+
+\def\getRLIfiguredimensions#1%
+  {\let\rliwidth \!!zeropoint
+   \let\rliheight\!!zeropoint
+   \doiffileelse{\@@effilenametype.rli}
+     {}
+     {% let's try runtime running first
+      \writestatus\m!figures{using rlxtools to determine size of \@@effilenametype}%
+      \executesystemcommand{texmfstart rlxtools --identify \@@effilenametype}}%
+   \doiffileelse{\@@effilenametype.rli}
+     {}
+     {% we assume that runtime running failed
+      \installprogram{texmfstart rlxtools --identify \@@effilenametype}}%
+   \startnointerference
+   \startXMLmapping[rli]%
+     \startXMLignore
+     \processXMLfile{\@@effilenametype.rli}%
+     \edef\rliwidth {\XMLflush{rl:width}}%
+     \edef\rliheight{\XMLflush{rl:height}}%
+     \stopXMLignore
+   \stopXMLmapping
+   \stopnointerference}
+
+\def\getfiguredimensionsC
+  {\ifcase\figurestatus\ifcase\figurefilemode\else
+     \doifsomething\@@efcurrentpath
+       {\doifnotinset\@@effiletype{\c!tex,\c!tmp}
+          {\doiffileelse\@@efcurrentfile
+             {\@@eftrace{using rlxtools to identify \@@effilenametype}%
+              \getRLIfiguredimensions{\@@effilenametype}%
+              \ifdim\rliwidth>\zeropoint \ifdim\rliheight>\zeropoint
+                \geteparameters % e !
+                  [\??ep]
+                  [\c!x=\!!zeropoint,\c!y=\!!zeropoint, % brrr, todo: bbox
+                   \c!w=\rliwidth,\c!h=\rliheight]%
+                \let\@@eftype\@@efcurrenttype
+                \let\@@effullname\@@efcurrentfile
+                \chardef\figurestatus\plusfour % todo, message is wrong now
+              \fi \fi
+              \@@eftrace{\ifcase\figurestatus not \fi found}}
+             {}}}%
+   \fi\fi}
+
+\let\doanalyzefigurefilesB\relax % obsolete
+\let\doanalyzefigurefilesC\relax % obsolete
 
 \def\environment #1 % at outermost level only (load only once)
   {\pushmacro\startenvironment
