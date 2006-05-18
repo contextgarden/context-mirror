@@ -26,10 +26,10 @@
 
     <xsl:output method="xml"/>
 
-    <xsl:template match ="processing-instruction()"><xsl:copy/><xsl:text>
+    <xsl:template match="processing-instruction()"><xsl:copy/><xsl:text>
     </xsl:text></xsl:template>
 
-    <xsl:template match = "node()|@*" >
+    <xsl:template match="node()|@*" >
         <xsl:copy>
             <xsl:apply-templates select = "node()|@*" />
         </xsl:copy>
@@ -39,13 +39,48 @@
 
     <xsl:variable name='openmath-to-content-mathml'><value-of select='$stylesheet-path'/>/x-openmath.xsl</xsl:variable>
 
+    <xsl:template name='om-kind-of-data'>
+        <xsl:param name='arg'/>
+        <xsl:choose>
+            <xsl:when test="contains($arg,'/')">
+                <xsl:element name="OMA">
+                    <xsl:element name="OMS">
+                        <xsl:attribute name="cd">nums1</xsl:attribute>
+                        <xsl:attribute name="name">rational</xsl:attribute>
+                    </xsl:element>
+                    <xsl:call-template name="om-kind-of-data">
+                        <xsl:with-param name='arg' select="substring-before($arg,'/')"/>
+                    </xsl:call-template>
+                    <xsl:call-template name="om-kind-of-data">
+                        <xsl:with-param name='arg' select="substring-after($arg,'/')"/>
+                    </xsl:call-template>
+                </xsl:element>
+            </xsl:when>
+            <xsl:when test="contains($arg,'.') or contains($arg,',')">
+                <xsl:element name="OMF">
+                    <xsl:attribute name="dec"><xsl:value-of select="$arg"/></xsl:attribute>
+                </xsl:element>
+            </xsl:when>
+            <xsl:when test="number($arg)">
+                <xsl:element name="OMI">
+                    <xsl:value-of select="$arg"/>
+                </xsl:element>
+            </xsl:when>
+            <xsl:otherwise>
+                <xsl:element name="OMV">
+                    <xsl:attribute name="name"><xsl:value-of select="$arg"/></xsl:attribute>
+                </xsl:element>
+            </xsl:otherwise>
+        </xsl:choose>
+    </xsl:template>
+
     <xsl:template match='i|n'>
         <xsl:element name="OMOBJ">
             <xsl:attribute name="xmlns">http://www.openmath.org/OpenMath</xsl:attribute>
             <xsl:attribute name="version">2.0</xsl:attribute>
-            <xsl:element name="OMI">
-                <xsl:apply-templates/>
-            </xsl:element>
+            <xsl:call-template name="om-kind-of-data">
+                <xsl:with-param name='arg' select="text()"/>
+            </xsl:call-template>
         </xsl:element>
     </xsl:template>
 
@@ -66,34 +101,45 @@
             <xsl:attribute name="xmlns">http://www.openmath.org/OpenMath</xsl:attribute>
             <xsl:attribute name="version">2.0</xsl:attribute>
             <xsl:element name="OMA">
+                <xsl:variable name='type'>
+                    <xsl:choose>
+                        <xsl:when test="@type=''">
+                            cc
+                        </xsl:when>
+                        <xsl:otherwise>
+                            <xsl:value-of select="@type"/>
+                        </xsl:otherwise>
+                    </xsl:choose>
+                </xsl:variable>
                 <xsl:element name="OMS">
                     <xsl:attribute name="cd">interval1</xsl:attribute>
-                    <xsl:attribute name="name">interval_oo</xsl:attribute>
+                    <xsl:attribute name="name">interval_<xsl:value-of select="$type"/></xsl:attribute>
                 </xsl:element>
-                <xsl:choose>
-                    <xsl:when test="not(number(substring-before(translate(text(),',','.'),':')))">
-                        <xsl:element name="OMV">
-                            <xsl:attribute name="name"><xsl:value-of select="substring-before(text(),':')"/></xsl:attribute>
-                        </xsl:element>
-                    </xsl:when>
-                    <xsl:otherwise>
-                        <xsl:element name="OMI">
-                            <xsl:value-of select="substring-before(text(),':')"/>
-                        </xsl:element>
-                    </xsl:otherwise>
-                </xsl:choose>
-                <xsl:choose>
-                    <xsl:when test="not(number(substring-after(translate(text(),',','.'),':')))">
-                        <xsl:element name="OMV">
-                            <xsl:attribute name="name"><xsl:value-of select="substring-after(text(),':')"/></xsl:attribute>
-                        </xsl:element>
-                    </xsl:when>
-                    <xsl:otherwise>
-                        <xsl:element name="OMI">
-                            <xsl:value-of select="substring-after(text(),':')"/>
-                        </xsl:element>
-                    </xsl:otherwise>
-                </xsl:choose>
+                <xsl:call-template name="om-kind-of-data">
+                    <xsl:with-param name='arg' select="substring-before(text(),':')"/>
+                </xsl:call-template>
+                <xsl:call-template name="om-kind-of-data">
+                    <xsl:with-param name='arg' select="substring-after(text(),':')"/>
+                </xsl:call-template>
+            </xsl:element>
+        </xsl:element>
+    </xsl:template>
+
+    <xsl:template match='c'>
+        <xsl:element name="OMOBJ">
+            <xsl:attribute name="xmlns">http://www.openmath.org/OpenMath</xsl:attribute>
+            <xsl:attribute name="version">2.0</xsl:attribute>
+            <xsl:element name="OMA">
+                <xsl:element name="OMS">
+                    <xsl:attribute name="cd">linalg3</xsl:attribute>
+                    <xsl:attribute name="name">vector</xsl:attribute>
+                </xsl:element>
+                <xsl:call-template name="om-kind-of-data">
+                    <xsl:with-param name='arg' select="substring-before(text(),':')"/>
+                </xsl:call-template>
+                <xsl:call-template name="om-kind-of-data">
+                    <xsl:with-param name='arg' select="substring-after(text(),':')"/>
+                </xsl:call-template>
             </xsl:element>
         </xsl:element>
     </xsl:template>

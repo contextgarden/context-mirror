@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 
-<cd:interface xmlns:cd="http://www.pragma-ade.com/commands" name="context" language="cz" version="2006.05.16 18:35">
+<cd:interface xmlns:cd="http://www.pragma-ade.com/commands" name="context" language="cz" version="2006.05.18 20:03">
 
   <cd:variables>
     <cd:variable name="one" value="jedna"/>
@@ -496,6 +496,7 @@
 
   <cd:variables>
     <cd:variable name="on" value="zap"/>
+    <cd:variable name="test" value="test"/>
     <cd:variable name="serried" value="semknuto"/>
     <cd:variable name="joinedup" value="spojeno"/>
     <cd:variable name="absolute" value="absolutni"/>

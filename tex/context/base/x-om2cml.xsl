@@ -1247,4 +1247,12 @@
     </annotation>
   </xsl:template>
 
+  <xsl:template match="om:OMS[@cd='math4all' and @name]">
+    <csymbol>
+      <xsl:attribute name="definitionURL">
+        <xsl:value-of select="concat(concat(concat('http://www.openmath.org/cd/',@cd),'#'),@name)"/>
+      </xsl:attribute>
+    </csymbol>
+  </xsl:template>
+
 </xsl:stylesheet>

@@ -265,8 +265,8 @@
    \fi
    \let\currentmoduleparameters\empty}
 
-\def\moduleparameter     #1#2{\csname\??md:#1:#2\endcsname}
-\def\currentmoduleparameter#1{\csname\??md:\currentmodule:#1\endcsname}
+\def\moduleparameter     #1#2{\executeifdefined{\??md:#1:#2}\s!empty}
+\def\currentmoduleparameter#1{\executeifdefined{\??md:\currentmodule:#1}\s!empty}
 
 % \usemodule[newmml]
 % \usemodule[newmml][a=b]
@@ -274,9 +274,30 @@
 % \usemodule[x][newmml][a=b]
 %
 % \startmodule [mathml]
-%   \setupmodule[a=c] [\currentmoduleparameter{a}] % user vars will be set afterwards
-%   \setupmodule[a=c] [\currentmoduleparameter{a}] % user vars are now forgotten
+%   \setupmodule[a=c] \relax [\currentmoduleparameter{a}] % user vars will be set afterwards
+%   \setupmodule[a=c] \relax [\currentmoduleparameter{a}] % user vars are now forgotten
 % \stopmodule
+
+% one can introduce test sections with:
+%
+% \enablemode[newmml:test:\currentmoduleparameter{test}]
+% \startmode[newmml:test:yes} ... \stopmode
+%
+% these will be ignored unless test=yes
+%
+% however, a better way is:
+
+\let\stopmoduletestsection\donothing
+
+\def\startmoduletestsection
+  {\bgroup
+   \setupmodule % we need to make sure that the vars are set
+   \doifelse{\currentmoduleparameter\v!test}\v!yes
+     {\egroup
+      \writestatus{\currentmodule}{loading experimental code}}
+     {\egroup
+      \writestatus{\currentmodule}{skipping experimental code}%
+      \gobbleuntil\stopmoduletestsection}}
 
 %D We also support a singular call, which saves us for
 %D frustrations when we do a typo.

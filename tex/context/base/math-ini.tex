@@ -328,8 +328,42 @@
 \def\definemathcharacter
   {\dosixtupleempty\dodefinemathcharacter}
 
+% \def\dodefinemathcharacter[#1][#2][#3][#4][#5][#6]%
+%   {\setmathtoks
+%    \ifdynamicmathfamilies \let\purefamilyhex\relax \fi
+%    \doifnumberelse{#1}
+%      {\scratchcounter#1}
+%      {\scratchcounter\@EA`\string#1}%
+%    \appendetoks
+%       \ifsixthargument
+%         \delcode\the\scratchcounter="%
+%           \ifnum\puremathcode{#2}>7 0\else\puremathcode{#2}\fi
+%           \purefamilyhex{#3}\uchexnumbers{#4}%
+%           \purefamilyhex{#5}\uchexnumbers{#6}\space
+%       \else\iffourthargument
+%         \mathcode\the\scratchcounter="%
+%           \ifnum\puremathcode{#2}>7 0\else\puremathcode{#2}\fi
+%           \purefamilyhex{#3}\uchexnumbers{#4}\space
+%       \fi\fi\to\mathtoks
+%    \let\purefamilyhex\normalpurefamilyhex
+%    \tracemathcharacter{#1}}
+
+\newtoks\mathscratchtoks
+
+\def\definemathcharacter
+  {\chardef\mathcharactermode\zerocount
+   \dosixtupleempty\dodefinemathcharacter}
+
+\def\redefinemathcharacter
+  {\chardef\mathcharactermode\plusone
+   \dosixtupleempty\dodefinemathcharacter}
+
 \def\dodefinemathcharacter[#1][#2][#3][#4][#5][#6]%
-  {\setmathtoks
+  {\ifcase\mathcharactermode
+     \setmathtoks
+   \or
+     \let\mathtoks\mathscratchtoks \mathtoks\emptytoks
+   \fi
    \ifdynamicmathfamilies \let\purefamilyhex\relax \fi
    \doifnumberelse{#1}
      {\scratchcounter#1}
@@ -344,9 +378,16 @@
         \mathcode\the\scratchcounter="%
           \ifnum\puremathcode{#2}>7 0\else\puremathcode{#2}\fi
           \purefamilyhex{#3}\uchexnumbers{#4}\space
-      \fi\fi\to\mathtoks
+      \fi\fi
+   \to \mathtoks
    \let\purefamilyhex\normalpurefamilyhex
-   \tracemathcharacter{#1}}
+   \ifcase\mathcharactermode
+     \expandafter\tracemathcharacter
+   \or
+     \the\mathtoks
+     \mathtoks\emptytoks
+     \expandafter\gobbleoneargument
+   \fi{#1}} % maybe lookahead
 
 \def\tracemathcharacter#1%
   {\iftracemathcollection
@@ -461,25 +502,52 @@
 %D   {ifmathpunctuation, enablemathpunctuation,
 %D    definemathpunctuation}
 %D
+%D This will replace periods by comma's:
+%D
 %D \starttyping
-%D \definemathpunctuation . mathperiod textperiod
-%D \definemathpunctuation , mathcomma  textcomma
+%D \definemathpunctuation . textcomma textperiod
+%D \definemathpunctuation , textcomma textcomma
+%D
+%D \appendtoks
+%D    \redefinemathcharacter [.] [ord] [mi] ["3B]%
+%D \to \everymathpunctuation
 %D \stoptyping
 
-\newif\ifmathpunctuation
+% \newif\ifmathpunctuation
+%
+% \def\enablemathpunctuation{\mathpunctuationtrue}
+%
+% \def\definemathpunctuation #1 #2 #3 %
+%   {\appendtoks
+%      \initializemathpunctuation{#1}{#2}{#3}%
+%    \to\everymathematics}
+%
+% \def\initializemathpunctuation#1#2#3% sloowww
+%   {\ifmathpunctuation % hm move thsi test to everymath, or better a separate token list
+%      \mathcode`#1="8000
+%      \defineactivecharacter #1 {\dohandlemathpunctuation{#2}{#3}}%
+%    \fi}
+%
+% \unexpanded\def\dohandlemathpunctuation#1#2% \if fails in mathml interval
+%   {\def\next{\csname\ifx\space\nexttoken#2\else#1\fi\endcsname}%
+%    \futurelet\nexttoken\next}
 
-\def\enablemathpunctuation{\mathpunctuationtrue}
+\newtoks\everymathpunctuation
+
+\def\enablemathpunctuation % can be called inside math, so after \everymathematics
+  {\the\everymathpunctuation
+   \appendtoksonce
+     \the\everymathpunctuation
+   \to\everymathematics}
 
 \def\definemathpunctuation #1 #2 #3 %
   {\appendtoks
      \initializemathpunctuation{#1}{#2}{#3}%
-   \to\everymath}
+   \to\everymathpunctuation}
 
 \def\initializemathpunctuation#1#2#3% sloowww
-  {\ifmathpunctuation
-     \mathcode`#1="8000
-     \defineactivecharacter #1 {\dohandlemathpunctuation{#2}{#3}}%
-   \fi}
+  {\mathcode`#1="8000
+   \defineactivecharacter #1 {\dohandlemathpunctuation{#2}{#3}}}
 
 \unexpanded\def\dohandlemathpunctuation#1#2% \if fails in mathml interval
   {\def\next{\csname\ifx\space\nexttoken#2\else#1\fi\endcsname}%

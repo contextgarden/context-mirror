@@ -44,7 +44,7 @@
 # it cannot do that (it tries to hyphenate as if the "ffi" was a
 # character), and the result is wrong hyphenation.
 
-banner = ['CtxTools', 'version 1.3.2', '2004/2006', 'PRAGMA ADE/POD']
+banner = ['CtxTools', 'version 1.3.3', '2004/2006', 'PRAGMA ADE/POD']
 
 unless defined? ownpath
     ownpath = $0.sub(/[\\\/][a-z0-9\-]*?\.rb/i,'')
@@ -528,7 +528,7 @@ class Commands
     $forsuresuffixes = [
         "tui", "tup", "ted", "tes", "top",
         "log", "tmp", "run", "bck", "rlg",
-        "mpt", "mpx", "mpd", "mpo"
+        "mpt", "mpx", "mpd", "mpo", "ctl",
     ]
     $texonlysuffixes = [
         "dvi", "ps", "pdf"
@@ -1775,44 +1775,62 @@ class Commands
     # document: <!DOCTYPE something SYSTEM "entities.xml">
 
     def flushentities(handle,entities,doctype=nil) # 'stylesheet'
-        tab = if doctype then "\t" else "" end
-        handle.puts("<!DOCTYPE #{doctype} [") if doctype
-        entities.keys.sort.each do |k|
-            handle.puts("#{tab}<!ENTITY #{k} \"\&\##{entities[k]};\">")
+        if doctype then
+            tab = "\t"
+            handle << "<?xml version='1.0' encoding='utf-8'?>\n\n"
+            handle << "<!-- !DOCTYPE entities SYSTEM 'entities.xml' -->\n\n"
+            handle << "<!DOCTYPE #{doctype} [\n"
+        else
+            tab = ""
         end
-        handle.puts("]>") if doctype
+        entities.keys.sort.each do |k|
+            handle << "#{tab}<!ENTITY #{k} \"\&\#x#{entities[k]};\">\n"
+        end
+        if doctype then
+            handle << "]>\n"
+        end
     end
 
     def listentities
 
-      # filename   = `texmfstart tmftools.rb --progname=context enco-uc.tex`.chomp
-        filename   = `kpsewhich --progname=context enco-uc.tex`.chomp
+        filenames  = ['enco-uc.tex','contextnames.txt']
         outputname = @commandline.argument('first')
+        doctype    = @commandline.option('doctype')
+        entities   = Hash.new
 
-        if filename and not filename.empty? and FileTest.file?(filename) then
-            entities = Hash.new
-            IO.readlines(filename).each do |line|
-                if line =~ /\\definecharacter\s+([a-zA-Z]+)\s+\{\\uchar\{*(\d+)\}*\{(\d+)\}\}/o then
-                    name, low, high = $1, $2.to_i, $3.to_i
-                    entities[name] = low*256 + high
+        filenames.each do |filename|
+          # filename = `texmfstart tmftools.rb --progname=context #{filename}`.chomp
+            filename = `kpsewhich --progname=context #{filename}`.chomp
+            if filename and not filename.empty? and FileTest.file?(filename) then
+                report("loading #{filename.gsub(/\\/,'/')}") unless outputname.empty?
+                IO.readlines(filename).each do |line|
+                    case line
+                        when /^[\#\%]/io then
+                            # skip comment line
+                        when /\\definecharacter\s+([a-z]+)\s+\{\\uchar\{*(\d+)\}*\{(\d+)\}\}/io then
+                            name, code = $1, ($2.to_i*256 + $3.to_i).to_s
+                            entities[name] = code.rjust(4,'0') unless entities.key?(name)
+                        when /^([A-F0-9]+)\;([a-z][a-z]+)\;(.*?)\;(.*?)\s*$/io then
+                            code, name, adobe, comment = $1, $2, $3, $4
+                            entities[name] = code.rjust(4,'0') unless entities.key?(name)
+                    end
                 end
-            end
-            if outputname and not outputname.empty? then
-                if f = File.open(outputname,'w') then
-                    flushentities(f,entities)
-                    f.close
-                else
-                    flushentities($stdout,entities)
-                end
-            else
-                flushentities($stdout,entities)
             end
         end
-
+        if outputname and not outputname.empty? then
+            if f = File.open(outputname,'w') then
+                report("saving #{entities.size} entities in #{outputname}")
+                flushentities(f,entities,doctype)
+                f.close
+            else
+                flushentities($stdout,entities,doctype)
+            end
+        else
+            flushentities($stdout,entities,doctype)
+        end
     end
 
 end
-
 
 class Commands
 
@@ -2289,11 +2307,13 @@ class Commands
                 begin
                     system("unzip -uo #{archive}")
                 rescue
+                    report("fatal error, make sure that you have 'unzip' in your path")
                     return false
                 else
                     return true
                 end
             else
+                report("fatal error, '{archive}' has not been downloaded")
                 return false
             end
         end
@@ -2364,6 +2384,7 @@ commandline.registerflag('all')
 commandline.registerflag('xml')
 commandline.registerflag('log')
 commandline.registerflag('utf8')
+commandline.registerflag('doctype')
 
 # general
 

@@ -1343,7 +1343,8 @@
            {\global\chardef\currentamrealpage0}}% % not found
       \expanded
         {\doglobal\noexpand\appendtoks
-           #1_menu_button(\currentamposition,\the\currentamrealpage,\noexpand\MPpos{#1:\currentamposition}) ;
+%            #1_menu_button(\currentamposition,\the\currentamrealpage,\noexpand\MPpos{#1:\currentamposition}) ;
+           #1_menu_button(\currentamposition,\the\currentamrealpage,\MPpos{#1:\currentamposition}) ;
          \to \MPmenutoks}%
       \hpos{#1:\currentamposition}{#3}}
      {#3}}

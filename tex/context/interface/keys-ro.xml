@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 
-<cd:interface xmlns:cd="http://www.pragma-ade.com/commands" name="context" language="ro" version="2006.05.16 18:35">
+<cd:interface xmlns:cd="http://www.pragma-ade.com/commands" name="context" language="ro" version="2006.05.18 20:03">
 
   <cd:variables>
     <cd:variable name="one" value="unu"/>
@@ -496,6 +496,7 @@
 
   <cd:variables>
     <cd:variable name="on" value="on"/>
+    <cd:variable name="test" value="test"/>
     <cd:variable name="serried" value="serried"/>
     <cd:variable name="joinedup" value="unit"/>
     <cd:variable name="absolute" value="absolut"/>
@@ -703,7 +704,7 @@
     <cd:variable name="symbol" value="simbol"/>
     <cd:variable name="text" value="text"/>
     <cd:variable name="back" value="inapot"/>
-    <cd:variable name="test" value="text"/>
+    <cd:variable name="test" value="test"/>
     <cd:variable name="inbetween" value="intre"/>
     <cd:variable name="type" value="type"/>
     <cd:variable name="off" value="dezactivat"/>

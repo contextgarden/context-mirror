@@ -8505,7 +8505,7 @@
       <cd:parameter name="optiune">
         <cd:constant type="incadrat"/>
         <cd:constant type="gol"/>
-        <cd:constant type="text"/>
+        <cd:constant type="test"/>
       </cd:parameter>
       <cd:parameter name="obiect">
         <cd:constant type="da"/>
@@ -9317,7 +9317,7 @@
   <cd:arguments>
     <cd:assignments interactive="exclusive" list="yes">
       <cd:parameter name="optiune">
-        <cd:constant type="text"/>
+        <cd:constant type="test"/>
       </cd:parameter>
     </cd:assignments>
   </cd:arguments>

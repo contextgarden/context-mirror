@@ -21,7 +21,7 @@
 
 %D Then we start defining the rendering macros:
 
-\writestatus{loading}{Context XML Macros (MathML Rederer)}
+\writestatus{loading}{Context XML Macros (MathML Renderer)}
 
 \startmodule [mathml]
 
@@ -35,6 +35,8 @@
 \unprotect
 
 \def\MMLrm{\mr}
+
+\def\MMLseparator#1{{#1}} % nils space after separator
 
 %D First we define some general formula elements.
 
@@ -105,8 +107,6 @@
   {\ifinner \expandafter \firstofoneargument \else \expandafter \mathinner \fi}
 
 %D A few math related macros:
-
-\def\MMLccomma{{,}} % are the extra {} still needed?
 
 \let\MMLctempresetlist\empty \def\setMMLcreset{\edef\MMLctempresetlist}
 
@@ -244,51 +244,6 @@
     \startsavingXMLelements
 \stopsetups
 
-% \startsetups mmc:apply:stop
-%     \stopsavingXMLelements
-%     \MMLmathinner {
-%         \expanded{\doifinsetelse{\getXMLstackname\plusone}{\MMLcmainresetlist,\MMLctempresetlist}}
-%             \MMLcreset
-%             \donothing
-%         \ifcase\MMLapplydepth \else
-%             \doifXMLparelse{apply}{open} \donothing{\getXMLarguments{apply}{open="("}}% slow
-%             \doifXMLparelse{apply}{close}\donothing{\getXMLarguments{apply}{close=")"}}% slow
-%         \fi
-%         \doifXMLparelse{apply}{open}{\left\XMLpar{apply}{open}{}}\donothing
-%         \advance\MMLapplydepth\plusone
-%         \begingroup
-%             \let\MMLctempresetlist\empty
-%             \doifelse {\getXMLstackname\plusone} {apply} {
-%                 % <apply> <apply> ... </apply> <ci> .. </ci> </apply>
-%                 \MMLcreset
-%                 \getXMLstackdata\plusone
-%                 \ifconditional\somepostponedMMLactions
-%                     \postponedMMLactions
-%                 \else
-%                     \left(\MMLcreset\getXMLstackdata\plustwo\right)
-%                 \fi
-%             } {
-%                 \doifelse {\getXMLstackname\plusone} {fn} {
-%                     % also postpone
-%                     \directsetup{mmc:fn:apply}
-%                 } {
-%                     \doifelse {\getXMLstackname\plusone} {ci} {
-%                         \getXMLstackdata\plusone
-%                         \ifnum\XMLstacklevel>\plusone
-%                             \left(\MMLcreset\flushXMLstackwith\plustwo\MMLccomma\right)
-%                         \fi
-%                     } {
-%                         \getXMLstackdata\plusone
-%                     }
-%                 }
-%             }
-%         \endgroup
-%         \advance\MMLapplydepth\minusone
-%         \doifXMLparelse{apply}{close}{\right\XMLpar{apply}{close}{}}\donothing
-%       }
-%     \endgroup
-% \stopsetups
-
 \startsetups mmc:apply:stop
     \stopsavingXMLelements
     \MMLmathinner {
@@ -305,12 +260,12 @@
             \let\MMLctempresetlist\empty
             \doifelse {\getXMLstackname\plusone} {apply} {
                 % <apply> <apply> ... </apply> <ci> .. </ci> </apply>
-\doifelseMMCfunctioninapply \plusone {plus,minus} {
-    % yet incomplete and rather untested
-    % <apply> <apply> <minus/> <tan/> <cos/> </apply> <ci>x</ci> </apply>
-} {
-                \MMLcreset
-}
+                \doifelseMMCfunctioninapply \plusone {plus,minus} {
+                    % yet incomplete and rather untested
+                    % <apply> <apply> <minus/> <tan/> <cos/> </apply> <ci>x</ci> </apply>
+                } {
+                    \MMLcreset
+                }
                 \getXMLstackdata\plusone
                 \ifconditional\somepostponedMMLactions
                     \postponedMMLactions
@@ -322,13 +277,18 @@
                     % also postpone
                     \directsetup{mmc:fn:apply}
                 } {
-                    \doifelse {\getXMLstackname\plusone} {ci} {
-                        \getXMLstackdata\plusone
-                        \ifnum\XMLstacklevel>\plusone
-                            \left(\MMLcreset\flushXMLstackwith\plustwo\MMLccomma\right)
-                        \fi
+                    \doifelse {\getXMLstackname\plusone} {csymbol} {
+                        % also postpone
+                        \directsetup{mmc:csymbol:apply}
                     } {
-                        \getXMLstackdata\plusone
+                        \doifelse {\getXMLstackname\plusone} {ci} {
+                            \getXMLstackdata\plusone
+                            \ifnum\XMLstacklevel>\plusone
+                               \left(\MMLcreset\flushXMLstackwith\plustwo{\MMLseparator,}\right)
+                            \fi
+                        } {
+                            \getXMLstackdata\plusone
+                        }
                     }
                 }
             }
@@ -395,7 +355,7 @@
             \getXMLstackdata\plusone
             \ifnum\XMLstacklevel>\plusone
                 \getXMLentity{NegThinSpace}
-                \left(\MMLcreset\flushXMLstackwith\plustwo\MMLccomma\right)
+                \left(\MMLcreset\flushXMLstackwith\plustwo{\MMLseparator,}\right)
             \fi
         }
     } {
@@ -462,6 +422,56 @@
 \defineXMLargument [cn]      [type=,base=]   {\XMLval{mmc:cn}{\XMLop{type}}    {\firstofoneargument}}
 \defineXMLargument [csymbol] [encoding=text] {\XMLval{mmc:cs}{\XMLop{encoding}}{\firstofoneargument}}
 
+%D The next definition provide a kind of plug-in mechanism (see
+%D the open math extension module).
+
+\defineXMLsingular
+  [csymbol]
+  [encoding=text,
+   definitionURL=]
+  {}
+
+\startsetups mmc:csymbol:apply
+    \begingroup
+    \startsavingXMLelements
+    \rawXMLstacktext\plusone % still on stack, no check, just attr test
+    \stopsavingXMLelements
+    \doifsetupselse{mmc:csymbol:\XMLpar{csymbol}{definitionURL}{}} {
+        \expanded{\endgroup\noexpand\directsetup{mmc:csymbol:\XMLpar{csymbol}{definitionURL}{}}}
+    } {
+        \endgroup
+        \XMLval{mmc:cs}{\XMLop{encoding}}{\firstofoneargument}
+    }
+\stopsetups
+
+%D Alternative b will convert periods into comma's:
+%D
+%D \startbuffer
+%D \startXMLdata
+%D <imath><apply><cn>1.23</cn></apply></imath>
+%D <dmath><apply><cn>1.23</cn></apply></dmath>
+%D \stopXMLdata
+%D
+%D \setupMMLappearance[cn] [alternative=b]
+%D
+%D \startXMLdata
+%D <imath><apply><cn>1.23</cn></apply></imath>
+%D <dmath><apply><cn>1.23</cn></apply></dmath>
+%D \stopXMLdata
+%D \stopbuffer
+%D
+%D \start \typebuffer \getbuffer \stop
+
+\setupMMLappearance[cn] [\c!alternative=\v!a]
+
+\defineXMLargument[cn][type=,base=]{\MMLdocn}
+
+\def\MMLdocn#1%
+  {\begingroup
+   \doif\@@MMLcnalternative\v!b{\redefinemathcharacter [.][ord][mi]["3B]\relax}%
+   \XMLval{mmc:cn}{\XMLop{type}}{\firstofoneargument}{#1}%
+   \endgroup}
+
 \defineXMLsingular [sep] {\MMLcsep} \def\MMLcsep{\,}
 
 \setupMMLappearance[polar]    [\c!alternative=\v!a]  % a|b|c
@@ -498,7 +508,7 @@
      {#1}}
 
 \def\MMLcdopolara#1%
-  {\def\MMLcsep{\MMLccomma}\getXMLentity{polar}\left(#1\right)}
+  {\def\MMLcsep{\MMLseparator,}\getXMLentity{polar}\left(#1\right)}
 
 \def\MMLcdopolarb#1%
   {\def\MMLcsep##1\empty
@@ -621,25 +631,25 @@
     \endgroup
 \stopsetups
 
-\setupMMLappearance[interval][\c!alternative=\v!a]
+\setupMMLappearance[interval][\c!alternative=\v!a,\c!separator={,}]
 
 \mapXMLvalue {mmc:int} {closed}
-  {\left[\getXMLstackdata\plusone,\getXMLstackdata\plustwo\right]}
+  {\left[\getXMLstackdata\plusone\MMLseparator\@@MMLintervalseparator\getXMLstackdata\plustwo\right]}
 
 \mapXMLvalue {mmc:int} {open-closed}
   {\doifelse\@@MMLintervalalternative\v!b
-     {\left<\getXMLstackdata\plusone,\getXMLstackdata\plustwo\right]}
-     {\left(\getXMLstackdata\plusone,\getXMLstackdata\plustwo\right]}}
+     {\left<\getXMLstackdata\plusone\MMLseparator\@@MMLintervalseparator\getXMLstackdata\plustwo\right]}
+     {\left(\getXMLstackdata\plusone\MMLseparator\@@MMLintervalseparator\getXMLstackdata\plustwo\right]}}
 
 \mapXMLvalue {mmc:int} {closed-open}
   {\doifelse\@@MMLintervalalternative\v!b
-     {\left[\getXMLstackdata\plusone,\getXMLstackdata\plustwo\right>}
-     {\left[\getXMLstackdata\plusone,\getXMLstackdata\plustwo\right)}}
+     {\left[\getXMLstackdata\plusone\MMLseparator\@@MMLintervalseparator\getXMLstackdata\plustwo\right>}
+     {\left[\getXMLstackdata\plusone\MMLseparator\@@MMLintervalseparator\getXMLstackdata\plustwo\right)}}
 
 \mapXMLvalue {mmc:int} {open}
   {\doifelse\@@MMLintervalalternative\v!b
-     {\left<\getXMLstackdata\plusone,\getXMLstackdata\plustwo\right>}
-     {\left(\getXMLstackdata\plusone,\getXMLstackdata\plustwo\right)}}
+     {\left<\getXMLstackdata\plusone\MMLseparator\@@MMLintervalseparator\getXMLstackdata\plustwo\right>}
+     {\left(\getXMLstackdata\plusone\MMLseparator\@@MMLintervalseparator\getXMLstackdata\plustwo\right)}}
 
 % inverse
 
@@ -722,11 +732,11 @@
 \startsetups mmc:lambda:stop
     \stopsavingXMLelements
     \doifelse\@@MMLlambdaalternative\v!a {
-        \getXMLentity{lambda}(\flushXMLstackwith\plusone\MMLccomma)
+        \getXMLentity{lambda}(\flushXMLstackwith\plusone{\MMLseparator,})
     } {
         \countXMLnamedstack{bvar}
         \ifnum\scratchcounter>\plusone
-            \left(\flushXMLnamedstackwith\plusone{bvar}\MMLccomma\right)
+            \left(\flushXMLnamedstackwith\plusone{bvar}{\MMLseparator,}\right)
         \else
             \XMLfirstnamed{bvar}
         \fi
@@ -830,9 +840,9 @@
 \startsetups mmc:minmax
     \doifelse{\getXMLstackdata\plustwo}{bvar} {
         {}_{\getXMLstackdata\plustwo}
-        \left\{\flushXMLstackwith\plusthree\MMLccomma\right\}
+        \left\{\flushXMLstackwith\plusthree{\MMLseparator,}\right\}
     } {
-        \left\{\flushXMLstackwith\plustwo  \MMLccomma\right\}
+        \left\{\flushXMLstackwith\plustwo  {\MMLseparator,}\right\}
     }
 \stopsetups
 
@@ -845,7 +855,7 @@
 
 \startsetups mmc:minus
     \doif \@@MMLsignreduction \v!yes {
-        \setMMLcreset{\MMLcfunctionlist}
+        \setMMLcreset{fn,\MMLcfunctionlist}
     }
     \ifcase\XMLstacklevel
     \or
@@ -859,7 +869,7 @@
 
 \startsetups mmc:plus
     \doifelse \@@MMLsignreduction \v!yes {
-        \setMMLcreset{plus/,minus/,\MMLcfunctionlist,\MMLcconstructlist}
+        \setMMLcreset{fn,plus,minus,\MMLcfunctionlist,\MMLcconstructlist}% was plus/, minus/
         \doifelse{\getXMLstackname\plustwo} {apply} {
             % branch needed, else (a-b) + (c-d) goes wrong
             % reset check in case of (-x) + 37
@@ -980,7 +990,7 @@
 
 % gcd
 
-\defineXMLcommand [gcd] {\gcd\left(\MMLcreset\flushXMLstackwith\plustwo\MMLccomma\right)}
+\defineXMLcommand [gcd] {\gcd\left(\MMLcreset\flushXMLstackwith\plustwo{\MMLseparator,}\right)}
 
 % and or xor implies
 
@@ -1012,7 +1022,7 @@
 \stopsetups
 
 \startsetups mmc:forall-exists
-    _{\flushXMLnamedstackwith\plustwo{bvar}\MMLccomma}
+    _{\flushXMLnamedstackwith\plustwo{bvar}{\MMLseparator,}}
     \XMLdoifonstackelse {condition} {
         \getXMLentity{ThickSpace}
         \begingroup
@@ -1044,7 +1054,7 @@
 \defineXMLcommand [arg]       {\getXMLentity{arg}      \left(\MMLcreset\flushXMLstackfrom\plustwo\right)}
 \defineXMLcommand [real]      {\getXMLentity{real}     \left(\MMLcreset\flushXMLstackfrom\plustwo\right)}
 \defineXMLcommand [imaginary] {\getXMLentity{imaginary}\left(\MMLcreset\flushXMLstackfrom\plustwo\right)}
-\defineXMLcommand [lcm]       {\getXMLentity{lcm}      \left(\flushXMLstackwith\plustwo\MMLccomma\right)}
+\defineXMLcommand [lcm]       {\getXMLentity{lcm}      \left(\flushXMLstackwith\plustwo{\MMLseparator,}\right)}
 \defineXMLcommand [floor]     {\getXMLentity{lfloor}   \flushXMLstackfrom\plustwo \getXMLentity{rfloor}}
 \defineXMLcommand [ceiling]   {\getXMLentity{lceiling} \flushXMLstackfrom\plustwo \getXMLentity{rceiling}}
 
@@ -1348,7 +1358,7 @@
     \XMLdoifonstackelse{condition} {
         \left\{\XMLfirstnamed{bvar}\,\middle\vert\,\XMLfirstnamed{condition}\right\}
     } {
-        \left\{\flushXMLstackwith\plusone\MMLccomma\right\}
+        \left\{\flushXMLstackwith\plusone{\MMLseparator,}\right\}
     }
     \endgroup
 \stopsetups
@@ -1369,7 +1379,7 @@
     \ifconditional\MMLlistdelimiters\left [\fi
     \begingroup
     \settrue\MMLlistdelimiters
-    \flushXMLstackwith\plusone\MMLccomma
+    \flushXMLstackwith\plusone{\MMLseparator,}
     \endgroup
     \ifconditional\MMLlistdelimiters\right]\fi
     \endgroup
@@ -1510,7 +1520,7 @@
 
 \defineXMLcommand [vector] {\directsetup{mmc:vector}} % sequence
 
-\setupMMLappearance [vector] [\c!direction=\v!horizontal]
+\setupMMLappearance [vector] [\c!direction=\v!horizontal,\c!separator={,}]
 
 \defineXMLnested
     [vector]
@@ -1522,12 +1532,11 @@
     \startsavingXMLelements
 \stopsetups
 
-
 \startsetups mmc:vector:stop
     \stopsavingXMLelements
     \ifnum\XMLstacklevel>\plusone
         \doifelse\@@MMLvectordirection\v!horizontal {
-            \left(\flushXMLstackwith\plusone\MMLccomma\right)
+            \left(\flushXMLstackwith\plusone{\MMLseparator\@@MMLvectorseparator}\right)
         } {
             \collectXMLstack\crcr
             \MMLcreset\left(\matrix{\the\XMLRtoks}\right)
@@ -1595,7 +1604,7 @@
 \stopsetups
 
 \startsetups mmc:selector
-    \MMLmathinner{\getXMLstackdata\plustwo}_{\MMLcreset\flushXMLstackwith\plusthree\MMLccomma}
+    \MMLmathinner{\getXMLstackdata\plustwo}_{\MMLcreset\flushXMLstackwith\plusthree{\MMLseparator,}}
 \stopsetups
 
 \defineXMLcommand [vectorproduct] {\getXMLstackdata\plustwo\getXMLentity{vectorproduct}\getXMLstackdata\plusthree}
@@ -1648,9 +1657,6 @@
 \defineXMLcommand [primes]         {\getXMLentity{primes}}
 \defineXMLcommand [exponentiale]   {\getXMLentity{ExponentialE}}
 \defineXMLcommand [imaginaryi]     {\getXMLentity{ImaginaryI}}
-% \defineXMLcommand [notanumber]     {\mathop{\MMLrm NaN}}
-% \defineXMLcommand [true]           {\mathop{\MMLrm true}}
-% \defineXMLcommand [false]          {\mathop{\MMLrm false}}
 \defineXMLcommand [notanumber]     {\mathop{\mfunction{NaN}}}
 \defineXMLcommand [true]           {\mathop{\mfunction{true}}}
 \defineXMLcommand [false]          {\mathop{\mfunction{false}}}
@@ -2351,6 +2357,128 @@
     }
     \endgroup
 \stopsetups
+
+% experimental patches
+
+\startmoduletestsection
+
+\let\MMLdoL\donothing
+\let\MMLdoR\donothing
+
+\startsetups mmc:apply:stop
+    \stopsavingXMLelements
+    \MMLmathinner {
+        \expanded{\doifinsetelse{\getXMLstackname\plusone}{\MMLcmainresetlist,\MMLctempresetlist}}
+           \MMLcreset
+           \donothing
+        \ifcase\MMLapplydepth \else
+           \doifXMLparelse{apply}{open} \donothing{\getXMLarguments{apply}{open="("}}% slow
+           \doifXMLparelse{apply}{close}\donothing{\getXMLarguments{apply}{close=")"}}% slow
+        \fi
+        \doifXMLparelse{apply}{open}
+          {\def\MMLdoL{\left \XMLpar{apply}{open} {(}}
+           \def\MMLdoR{\right\XMLpar{apply}{close}{)}}}
+          {\let\MMLdoL\donothing
+           \let\MMLdoR\donothing}
+        \advance\MMLapplydepth\plusone
+        \begingroup
+            \let\MMLctempresetlist\empty
+            \doifelse {\getXMLstackname\plusone} {apply} {
+                % <apply> <apply> ... </apply> <ci> .. </ci> </apply>
+                \doifelseMMCfunctioninapply \plusone {plus,minus} {
+                    % yet incomplete and rather untested
+                    % <apply> <apply> <minus/> <tan/> <cos/> </apply> <ci>x</ci> </apply>
+                } {
+                    \MMLcreset
+                }
+                \MMLdoL
+                \getXMLstackdata\plusone
+                \ifconditional\somepostponedMMLactions
+                    \postponedMMLactions
+                \else
+                    \left(\MMLcreset\getXMLstackdata\plustwo\right)
+                \fi
+                \MMLdoR
+            } {
+                \doifelse {\getXMLstackname\plusone} {fn} {
+                    % \MMLdoL/R are to be taken care of in the next setup
+                    \directsetup{mmc:fn:apply}
+                } {
+                    \doifelse {\getXMLstackname\plusone} {csymbol} {
+                        % \MMLdoL/R are to be taken care of in the next setup
+                        \directsetup{mmc:csymbol:apply}
+                    } {
+                        \doifelse {\getXMLstackname\plusone} {ci} {
+                            % \MMLdoL/R are to be taken care of in the next setup
+                            \directsetup{mmc:ci:apply}
+                        } {
+                            \MMLdoL
+                            \getXMLstackdata\plusone
+                            \MMLdoR
+                        }
+                    }
+                }
+            }
+        \endgroup
+        \advance\MMLapplydepth\minusone
+        \directsetup{apply:flush}
+      }
+    \endgroup
+\stopsetups
+
+\startsetups mmc:fn:apply
+    \begingroup
+    \startsavingXMLelements
+    \rawXMLstacktext\plusone % still on stack, no check, just fn content
+    \stopsavingXMLelements
+    \doifelse {\getXMLstackname\plusone} {ci} {
+        \flattenXMLcontent{\getXMLstackdata\plusone}
+        \doifsetupselse{mmc:fn:\flattenedXMLcontent} {
+% \MMLdoL/MMLdoR to be handled in plugin
+            \global\defXMLstackdata\XMLfnoperator\plusone
+            \expanded{\endgroup\noexpand\directsetup{mmc:fn:\flattenedXMLcontent}}
+        } {
+            \endgroup
+            \MMLcreset
+\MMLdoL
+            \getXMLstackdata\plusone
+            \ifnum\XMLstacklevel>\plusone
+                \getXMLentity{NegThinSpace}
+                \left(\MMLcreset\flushXMLstackwith\plustwo{\MMLseparator,}\right)
+            \fi
+\MMLdoR
+        }
+    } {
+        \endgroup
+        \MMLcreset
+\MMLdoL
+        \getXMLstackdata\plusone
+\MMLdoR
+    }
+\stopsetups
+
+\startsetups mmc:csymbol:apply
+    \begingroup
+    \startsavingXMLelements
+    \rawXMLstacktext\plusone % still on stack, no check, just attr test
+    \stopsavingXMLelements
+    % \MMLdoL/MMLdoR to be handled in plugin
+    \doifsetupselse{mmc:csymbol:\XMLpar{csymbol}{definitionURL}{}} {
+        \expanded{\endgroup\noexpand\directsetup{mmc:csymbol:\XMLpar{csymbol}{definitionURL}{}}}
+    } {
+        \endgroup
+        \XMLval{mmc:cs}{\XMLop{encoding}}{\firstofoneargument}
+    }
+\stopsetups
+
+\startsetups mmc:ci:apply
+    \getXMLstackdata\plusone
+    \ifnum\XMLstacklevel>\plusone
+       \left(\MMLcreset\flushXMLstackwith\plustwo{\MMLseparator,}\right)
+    \fi
+\stopsetups
+
+\stopmoduletestsection
 
 \stopmodule
 

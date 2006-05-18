@@ -356,7 +356,7 @@ class GhostScript
 
         arguments = ''
         arguments << "\@gsprofile.ini "
-        arguments << "-q -sDEVICE=pdfwrite -dNOPAUSE -dNOCACHE -dBATCH -dSAFER"
+        arguments << "-q -sDEVICE=pdfwrite -dNOPAUSE -dNOCACHE -dBATCH -dSAFER "
         arguments << "#{gscolorswitch} "
         arguments << "#{gsdefaults} "
         arguments << "-sOutputFile=#{outfile} #{gsstream} -c quit "
@@ -432,7 +432,7 @@ class GhostScript
 
         # -dEPSFitPage and -dEPSCrop behave weird (don't work)
 
-        arguments = "-sDEVICE=bbox -dSAFER -dNOPAUSE -dBATCH #{inpfile}"
+        arguments = "-sDEVICE=bbox -dSAFER -dNOPAUSE -dBATCH #{inpfile} "
 
         debug("ghostscript: #{arguments}")
 
