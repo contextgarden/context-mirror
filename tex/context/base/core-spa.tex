@@ -3932,14 +3932,14 @@
 % see later for the real definition, which in the simple case is:
 
 \def\doalignline#1#2% \\ == newline
- {\bgroup
+ {\begingroup
   \setlocalhsize % new
   \def\\{\egroup\par\doalignline{#1}{#2}\bgroup}%
   \dowithnextbox
-    {\noindent
+    {\noindentation % was \ noindent
      \hbox to \localhsize
        {\ifcase\alignstrutmode\or\strut\fi
-         #1\unhbox\nextbox#2}\egroup}
+         #1\unhbox\nextbox#2}\endgroup}
     \hbox}
 
 % directe commando's

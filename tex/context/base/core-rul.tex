@@ -3060,7 +3060,9 @@
 %D Although we could have used a scratch one, we first
 %D declare a boolean.
 
-\newif\ifbackgroundsplit
+% 0=no-split, 1=no-split+indent, 2=split, 3=split+indent
+
+\chardef\backgroundsplitmode\plusthree
 
 %D The \type{\vbox to \lineheight{}\vskip\zeropoint}
 %D construction gives the first real line a decent height by
@@ -3082,62 +3084,73 @@
 %D lineheight. I'll probably forget to apply this trick
 %D elsewhere.
 
-\def\dostopbackground% improved version (i hope)
+\def\dostopbackground % improved version (i hope)
   {\endgraf
    \removelastskip
    \egroup
    \dimen2\leftskip % new **
    \forgetall
-   \splitmaxdepth\boxmaxdepth
-   \splittopskip\topskip
-   \setbox2\vsplit0 to \lineheight % get rid of fake line
-   \loop
-     \ifdim\pagetotal=\zeropoint % empty page
-       \scratchdimen\textheight
-       \chardef\backgroundsplit\plusone % split to max height
-     \else
-       \scratchdimen\pagegoal
-       \setbox\scratchbox\vbox{\@@agbefore}%
-       \advance\scratchdimen -\ht\scratchbox
-       \advance\scratchdimen -\pagetotal
-       \chardef\backgroundsplit\plustwo % split to partial height
-     \fi
-     \advance\scratchdimen -\@@agtopoffset
-     \advance\scratchdimen -\@@agbottomoffset \relax
-     \ifdim\scratchdimen>2\lineheight\relax % reasonable, will be configurable
-       \ifdim\ht0>\scratchdimen % larger than page
-         \setbox2\vsplit0 to \scratchdimen
+   \ifinsidefloat
+     \chardef\backgroundsplitmode\zerocount
+   \fi
+   \ifcase\backgroundsplitmode
+     \localframed[\??ag][\c!offset=\v!overlay]{\box0}%
+   \or
+     \hskip\dimen2
+     \localframed[\??ag][\c!offset=\v!overlay]{\box0}%
+   \else
+     \splitmaxdepth\boxmaxdepth
+     \splittopskip\topskip
+     \setbox2\vsplit0 to \lineheight % get rid of fake line
+     \loop
+       \ifdim\pagetotal=\zeropoint % empty page
+         \scratchdimen\textheight
+         \chardef\backgroundsplit\plusone % split to max height
        \else
-         \setbox2\box0
-         \chardef\backgroundsplit\zerocount % no split
+         \scratchdimen\pagegoal
+         \setbox\scratchbox\vbox{\@@agbefore}%
+         \advance\scratchdimen -\ht\scratchbox
+         \advance\scratchdimen -\pagetotal
+         \chardef\backgroundsplit\plustwo % split to partial height
        \fi
-       \setbox2\vbox \ifcase\backgroundsplit\or to \textheight \fi % max split
-         {\vskip\@@agtopoffset
-          \popsplitproperties
-          \unvcopy2
-          \prevdepth\dp2
-          \obeydepth
-          \vskip\@@agbottomoffset
-          \vfill}
-       \@@agbefore
-       \ifcase\backgroundsplit\or\or % partial split
-         \ifdim\pagegoal<\maxdimen
-           \pagegoal=1.2\pagegoal % be a bit more tolerant
+       \advance\scratchdimen -\@@agtopoffset
+       \advance\scratchdimen -\@@agbottomoffset \relax
+       \ifdim\scratchdimen>2\lineheight\relax % reasonable, will be configurable
+         \ifdim\ht0>\scratchdimen % larger than page
+           \setbox2\vsplit0 to \scratchdimen
+         \else
+           \setbox2\box0
+           \chardef\backgroundsplit\zerocount % no split
          \fi
+         \setbox2\vbox \ifcase\backgroundsplit\or to \textheight \fi % max split
+           {\vskip\@@agtopoffset
+            \popsplitproperties
+            \unvcopy2
+            \prevdepth\dp2
+            \obeydepth
+            \vskip\@@agbottomoffset
+            \vfill}
+         \@@agbefore
+         \ifcase\backgroundsplit\or\or % partial split
+           \ifdim\pagegoal<\maxdimen
+             \pagegoal=1.2\pagegoal % be a bit more tolerant
+           \fi
+         \fi
+         \startlinecorrection
+          %\localframed[\??ag][\c!offset=\v!overlay]{\hskip\@@agleftoffset\box2\hskip\@@agrightoffset}%
+           \ifnum\backgroundsplitmode=\plusthree \hskip\dimen2 \fi %
+           \localframed[\??ag][\c!offset=\v!overlay]{\box2}% new **
+         \stoplinecorrection
+         \ifcase\backgroundsplit % no split
+           \@@agafter
+         \else % some split
+           \vfill\eject % geen \page !
+         \fi
+       \else
+         \page
        \fi
-       \startlinecorrection
-        %\localframed[\??ag][\c!offset=\v!overlay]{\hskip\@@agleftoffset\box2\hskip\@@agrightoffset}%
-         \hskip\dimen2\localframed[\??ag][\c!offset=\v!overlay]{\box2}% new **
-       \stoplinecorrection
-       \ifcase\backgroundsplit % no split
-         \@@agafter
-       \else % some split
-         \vfill\eject % geen \page !
-       \fi
-     \else
-       \page
-     \fi
-   \ifdim\ht0>\zeropoint \repeat
+     \ifdim\ht0>\zeropoint \repeat
+   \fi
    \egroup
    \endgraf}
 

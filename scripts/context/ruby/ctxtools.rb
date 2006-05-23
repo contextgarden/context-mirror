@@ -2373,7 +2373,7 @@ commandline.registeraction('brandfiles'        , 'add context copyright notice [
 commandline.registeraction('platformize'       , 'replace line-endings [--recurse --force] [pattern]')
 commandline.registeraction('dependencies'      , 'analyze depedencies witin context [--compact] [rootfile]')
 commandline.registeraction('updatecontext'     , 'download latest version and remake formats')
-commandline.registeraction('disarmutfbom'      , 'remove utf bom [==force]')
+commandline.registeraction('disarmutfbom'      , 'remove utf bom [--force]')
 
 commandline.registervalue('type','')
 

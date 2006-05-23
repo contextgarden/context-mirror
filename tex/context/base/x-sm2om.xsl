@@ -39,6 +39,25 @@
 
     <xsl:variable name='openmath-to-content-mathml'><value-of select='$stylesheet-path'/>/x-openmath.xsl</xsl:variable>
 
+    <xsl:template name='om-minus'>
+        <OMS cd="arith1" name="unary_minus"/>
+    </xsl:template>
+    <xsl:template name='om-infinity'>
+        <OMS cd="nums1" name="infinity"/>
+    </xsl:template>
+    <xsl:template name='om-interval-oo'>
+        <OMS cd="interval1" name="interval_oo"/>
+    </xsl:template>
+    <xsl:template name='om-interval-oc'>
+        <OMS cd="interval1" name="interval_oc"/>
+    </xsl:template>
+    <xsl:template name='om-interval-co'>
+        <OMS cd="interval1" name="interval_co"/>
+    </xsl:template>
+    <xsl:template name='om-interval-cc'>
+        <OMS cd="interval1" name="interval_cc"/>
+    </xsl:template>
+
     <xsl:template name='om-kind-of-data'>
         <xsl:param name='arg'/>
         <xsl:choose>
@@ -62,9 +81,26 @@
                 </xsl:element>
             </xsl:when>
             <xsl:when test="number($arg)">
-                <xsl:element name="OMI">
-                    <xsl:value-of select="$arg"/>
-                </xsl:element>
+                <xsl:choose>
+                    <xsl:when test="contains($arg,'-')">
+                        <xsl:element name="OMA">
+                            <xsl:call-template name='om-minus'/>
+                            <xsl:element name="OMI">
+                                <xsl:value-of select="substring-after($arg,'-')"/>
+                            </xsl:element>
+                        </xsl:element>
+                    </xsl:when>
+                    <xsl:when test="contains($arg,'+')">
+                        <xsl:element name="OMI">
+                            <xsl:value-of select="substring-after($arg,'+')"/>
+                        </xsl:element>
+                    </xsl:when>
+                    <xsl:otherwise>
+                        <xsl:element name="OMI">
+                            <xsl:value-of select="$arg"/>
+                        </xsl:element>
+                    </xsl:otherwise>
+                </xsl:choose>
             </xsl:when>
             <xsl:otherwise>
                 <xsl:element name="OMV">
@@ -111,16 +147,62 @@
                         </xsl:otherwise>
                     </xsl:choose>
                 </xsl:variable>
-                <xsl:element name="OMS">
-                    <xsl:attribute name="cd">interval1</xsl:attribute>
-                    <xsl:attribute name="name">interval_<xsl:value-of select="$type"/></xsl:attribute>
-                </xsl:element>
-                <xsl:call-template name="om-kind-of-data">
-                    <xsl:with-param name='arg' select="substring-before(text(),':')"/>
-                </xsl:call-template>
-                <xsl:call-template name="om-kind-of-data">
-                    <xsl:with-param name='arg' select="substring-after(text(),':')"/>
-                </xsl:call-template>
+                <xsl:choose>
+                    <xsl:when test="@type='io'">
+                        <xsl:call-template name='om-interval-oo'/>
+                        <xsl:element name="OMA">
+                            <xsl:call-template name='om-minus'/>
+                            <xsl:call-template name='om-infinity'/>
+                        </xsl:element>
+                        <xsl:element name="OMI">
+                            <xsl:call-template name='om-kind-of-data'>
+                                <xsl:with-param name='arg' select='text()'/>
+                            </xsl:call-template>
+                        </xsl:element>
+                    </xsl:when>
+                    <xsl:when test="@type='oi'">
+                        <xsl:call-template name='om-interval-oo'/>
+                        <xsl:element name="OMI">
+                            <xsl:call-template name='om-kind-of-data'>
+                                <xsl:with-param name='arg' select='text()'/>
+                            </xsl:call-template>
+                        </xsl:element>
+                        <xsl:call-template name='om-infinity'/>
+                    </xsl:when>
+                    <xsl:when test="@type='ic'">
+                        <xsl:call-template name='om-interval-oc'/>
+                        <xsl:element name="OMA">
+                            <xsl:call-template name='om-minus'/>
+                            <xsl:call-template name='om-infinity'/>
+                        </xsl:element>
+                        <xsl:element name="OMI">
+                            <xsl:call-template name='om-kind-of-data'>
+                                <xsl:with-param name='arg' select='text()'/>
+                            </xsl:call-template>
+                        </xsl:element>
+                    </xsl:when>
+                    <xsl:when test="@type='ci'">
+                        <xsl:call-template name='om-interval-co'/>
+                        <xsl:element name="OMI">
+                            <xsl:call-template name='om-kind-of-data'>
+                                <xsl:with-param name='arg' select='text()'/>
+                            </xsl:call-template>
+                        </xsl:element>
+                        <xsl:call-template name='om-infinity'/>
+                    </xsl:when>
+                    <xsl:otherwise>
+                        <xsl:element name="OMS">
+                            <xsl:attribute name="cd">interval1</xsl:attribute>
+                            <xsl:attribute name="name">interval_<xsl:value-of select="$type"/></xsl:attribute>
+                        </xsl:element>
+                        <xsl:call-template name="om-kind-of-data">
+                            <xsl:with-param name='arg' select="substring-before(text(),':')"/>
+                        </xsl:call-template>
+                        <xsl:call-template name="om-kind-of-data">
+                            <xsl:with-param name='arg' select="substring-after(text(),':')"/>
+                        </xsl:call-template>
+                    </xsl:otherwise>
+                </xsl:choose>
             </xsl:element>
         </xsl:element>
     </xsl:template>

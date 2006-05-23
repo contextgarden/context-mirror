@@ -97,7 +97,7 @@
      {\edef\utfsortb{\@EA\string\csname\doutfunihash{#1}{\recurselevel}\endcsname}%
       \ifx\utfsortb\utfsorta \else
         \edef\utfsortc{\numbertoutf{\numexpr#1*256+\recurselevel\relax}}%
-        \expanded{\exportsortshortcut{\utfsortc}{\utfsortb}}%
+        \expanded{\exportsortshortcut{\utfsortc}{\utfsortb\space}}% space is really needed
       \fi}%
    \egroup}
 

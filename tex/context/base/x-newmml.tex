@@ -2375,50 +2375,50 @@
            \doifXMLparelse{apply}{open} \donothing{\getXMLarguments{apply}{open="("}}% slow
            \doifXMLparelse{apply}{close}\donothing{\getXMLarguments{apply}{close=")"}}% slow
         \fi
-        \doifXMLparelse{apply}{open}
-          {\def\MMLdoL{\left \XMLpar{apply}{open} {(}}
-           \def\MMLdoR{\right\XMLpar{apply}{close}{)}}}
-          {\let\MMLdoL\donothing
-           \let\MMLdoR\donothing}
         \advance\MMLapplydepth\plusone
         \begingroup
-            \let\MMLctempresetlist\empty
-            \doifelse {\getXMLstackname\plusone} {apply} {
-                % <apply> <apply> ... </apply> <ci> .. </ci> </apply>
-                \doifelseMMCfunctioninapply \plusone {plus,minus} {
-                    % yet incomplete and rather untested
-                    % <apply> <apply> <minus/> <tan/> <cos/> </apply> <ci>x</ci> </apply>
-                } {
-                    \MMLcreset
-                }
-                \MMLdoL
-                \getXMLstackdata\plusone
-                \ifconditional\somepostponedMMLactions
-                    \postponedMMLactions
-                \else
-                    \left(\MMLcreset\getXMLstackdata\plustwo\right)
-                \fi
-                \MMLdoR
+        \doifXMLparelse{apply}{open} % now inside the group
+          {\edef\MMLdoL{\noexpand\left \XMLpar{apply}{open} {(}}
+           \edef\MMLdoR{\noexpand\right\XMLpar{apply}{close}{)}}}
+          {\let\MMLdoL\donothing
+           \let\MMLdoR\donothing}
+        \let\MMLctempresetlist\empty
+        \doifelse {\getXMLstackname\plusone} {apply} {
+            % <apply> <apply> ... </apply> <ci> .. </ci> </apply>
+            \doifelseMMCfunctioninapply \plusone {plus,minus} {
+                % yet incomplete and rather untested
+                % <apply> <apply> <minus/> <tan/> <cos/> </apply> <ci>x</ci> </apply>
             } {
-                \doifelse {\getXMLstackname\plusone} {fn} {
+                \MMLcreset
+            }
+            \MMLdoL
+            \getXMLstackdata\plusone
+            \ifconditional\somepostponedMMLactions
+                \postponedMMLactions
+            \else
+                \left(\MMLcreset\getXMLstackdata\plustwo\right)
+            \fi
+            \MMLdoR
+        } {
+            \doifelse {\getXMLstackname\plusone} {fn} {
+                % \MMLdoL/R are to be taken care of in the next setup
+                \directsetup{mmc:fn:apply}
+            } {
+                \doifelse {\getXMLstackname\plusone} {csymbol} {
                     % \MMLdoL/R are to be taken care of in the next setup
-                    \directsetup{mmc:fn:apply}
+                    \directsetup{mmc:csymbol:apply}
                 } {
-                    \doifelse {\getXMLstackname\plusone} {csymbol} {
+                    \doifelse {\getXMLstackname\plusone} {ci} {
                         % \MMLdoL/R are to be taken care of in the next setup
-                        \directsetup{mmc:csymbol:apply}
+                        \directsetup{mmc:ci:apply}
                     } {
-                        \doifelse {\getXMLstackname\plusone} {ci} {
-                            % \MMLdoL/R are to be taken care of in the next setup
-                            \directsetup{mmc:ci:apply}
-                        } {
-                            \MMLdoL
-                            \getXMLstackdata\plusone
-                            \MMLdoR
-                        }
+                        \MMLdoL
+                        \getXMLstackdata\plusone
+                        \MMLdoR
                     }
                 }
             }
+        }
         \endgroup
         \advance\MMLapplydepth\minusone
         \directsetup{apply:flush}

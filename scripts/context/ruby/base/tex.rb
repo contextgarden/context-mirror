@@ -8,8 +8,11 @@
 # info      : j.hagen@xs4all.nl
 # www       : www.pragma-ade.com
 
-# todo: write systemcall for mpost to file so that it can be run
-# faster
+# todo:
+#
+# - write systemcall for mpost to file so that it can be run faster
+# - use -8bit and -progname
+#
 
 # report ?
 
@@ -83,6 +86,7 @@ class TEX
     ['tex','pdftex','pdfetex','standard']          .each do |e| @@texengines[e] = 'pdfetex'   end
     ['aleph','omega']                              .each do |e| @@texengines[e] = 'aleph'     end
     ['xetex']                                      .each do |e| @@texengines[e] = 'xetex'     end
+    ['luatex']                                     .each do |e| @@texengines[e] = 'luatex'    end
 
     ['metapost','mpost', 'standard']               .each do |e| @@mpsengines[e] = 'mpost'     end
 
@@ -118,7 +122,7 @@ class TEX
     ['plain','mpost']                              .each do |f| @@mpsformats[f] = 'plain'     end
     ['metafun','context','standard']               .each do |f| @@mpsformats[f] = 'metafun'   end
 
-    ['pdfetex','aleph','omega']                    .each do |p| @@prognames[p]  = 'context'   end
+    ['pdfetex','aleph','omega','xetex','luatex']   .each do |p| @@prognames[p]  = 'context'   end
     ['mpost']                                      .each do |p| @@prognames[p]  = 'metafun'   end
 
     ['plain','default','standard','mptopdf']       .each do |f| @@texmethods[f] = 'plain'     end
@@ -137,6 +141,8 @@ class TEX
 
   # @@runoptions['xetex'] = ['--output-driver \\\"-d 4 -V 5\\\"'] # we need the pos pass
     @@runoptions['xetex'] = ['--no-pdf'] # from now on we assume (x)dvipdfmx to be used
+
+    @@runoptions['luatex'] = ['--progname=pdftex']
 
     @@booleanvars = [
         'batchmode', 'nonstopmode', 'fast', 'fastdisabled', 'silentmode', 'final',
@@ -338,7 +344,7 @@ class TEX
 
     def prefixed(format,engine)
         case engine
-            when /etex|eetex|pdfetex|pdfeetex|pdfxtex|xpdfetex|eomega|aleph|xetex/io then
+            when /etex|eetex|pdfetex|pdfeetex|pdfxtex|xpdfetex|eomega|aleph|xetex|luatex/io then
                 "*#{format}"
             else
                 format
@@ -730,13 +736,23 @@ class TEX
                         bomdone = true
                     end
                     if str =~ /^\%\s*(.*)/o then
-                        vars = Hash.new
+                        # we only accept lines with key=value pairs
+                        vars, ok = Hash.new, true
                         $1.split(/\s+/o).each do |s|
                             k, v = s.split('=')
-                            vars[k] = v
+                            if k && v then
+                                vars[k] = v
+                            else
+                                ok = false
+                                break
+                            end
                         end
-                        @@preamblekeys.each do |v|
-                            setvariable(v[1],vars[v[0]]) if vars.key?(v[0])
+                        if ok then
+                            # we have a valid line
+                            @@preamblekeys.each do |v|
+                                setvariable(v[1],vars[v[0]]) if vars.key?(v[0]) && vars[v[0]]
+                            end
+                            break
                         end
                     else
                         break

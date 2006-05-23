@@ -116,8 +116,21 @@
 \def\dopresyncposition[#1][#2]{\setxvalue{\s!preset:\s!syncpos:#1}{\noexpand\dodopresyncposition{#1}{#2}}}
 
 \def\flushsyncpositions % this order !
-  {\the\presetsyncpositions
-   \the\resetsyncpositions}
+  {\begingroup
+   \the\presetsyncpositions
+   \the\resetsyncpositions
+   \endgroup}
+
+\def\flushsyncxxsets#1%
+  {\setbox\scratchbox\hbox{\the#1}%
+   \ifvoid\scratchbox\else
+     \prewordbreak \let\prewordbreak\relax % only once
+     \smashbox\scratchbox
+     \box\scratchbox
+   \fi}
+
+\def\flushsyncresets {\flushsyncxxsets\resetsyncpositions }
+\def\flushsyncpresets{\flushsyncxxsets\presetsyncpositions}
 
 % \appendtoks \flushsyncpositions \to \everypar
 % \appendtoks \flushsyncpositions \to \everyheadstart
@@ -125,16 +138,6 @@
 % \explicitneverypar -> in grid snapper, eerst testen
 %
 % \appendtoks \flushsyncpositions \to \neverypar
-
-\def\flushsyncxxsets#1#2%
-  {\setbox\scratchbox\hbox{\the#1}%
-   \ifvoid\scratchbox\else
-     \smashbox\scratchbox
-     #2\box\scratchbox
-   \fi}
-
-\def\flushsyncresets {\flushsyncxxsets\resetsyncpositions \relax}
-\def\flushsyncpresets{\flushsyncxxsets\presetsyncpositions\prewordbreak} % check prewordbreak
 
 \protect \endinput
 
