@@ -97,9 +97,13 @@ module KpseUtil
         loop do
             busy = false
             filenames.collect! do |f|
-                f.gsub(/\$([a-zA-Z0-9\_\-]*)/o) do
-                    busy = true
-                    ENV[$1] || ("$#{$1}")
+                f.gsub(/\$([a-zA-Z0-9\_\-]+)/o) do
+                    if (! ENV[$1]) || (ENV[$1] == $1) then
+                        "$#{$1}"
+                    else
+                        busy = true
+                        ENV[$1]
+                    end
                 end
             end
             break unless busy

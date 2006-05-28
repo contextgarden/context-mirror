@@ -219,13 +219,29 @@
      {\precedingsectionnumber\convertednumber[#1]}%
    \egroup}
 
+% \def\preparethenumber#1#2#3% {\??id#1} \number \result
+%   {\doifelsevaluenothing{#1\c!separator}
+%      {\let\numberseparator\empty
+%       \let#3#2}
+%      {% was \unexpanded \edef, but we need it unexpanded !
+%       \edef\numberseparator{\getvalue{#1\c!separator}}%
+%       \edef#3{\@EA\separatednumber\@EA{#2}\getvalue{#1\c!stopper}}}}  % hm, etex
+
 \def\preparethenumber#1#2#3% {\??id#1} \number \result
   {\doifelsevaluenothing{#1\c!separator}
      {\let\numberseparator\empty
       \let#3#2}
      {% was \unexpanded \edef, but we need it unexpanded !
       \edef\numberseparator{\getvalue{#1\c!separator}}%
-      \edef#3{\@EA\separatednumber\@EA{#2}\getvalue{#1\c!stopper}}}}  % hm, etex
+      \doifelsenothing{\executeifdefined{#1\c!suffix}\empty}
+        {\edef#3%
+           {\@EA\separatednumber\@EA{#2}%
+            \getvalue{#1\c!stopper}}}
+        {\edef#3%
+           {\@EA\separatednumber\@EA{#2}%
+            \getvalue{#1\c!separator}%
+            \getvalue{#1\c!suffix}%
+            \getvalue{#1\c!stopper}}}}}
 
 \def\sectionnumberonly[#1]%
   {\makesectionnumber[#1]%

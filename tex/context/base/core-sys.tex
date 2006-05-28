@@ -107,20 +107,36 @@
 %D \stoptext
 %D \stoptyping
 
+% \def\setuprandomize[#1]%
+%   {\doifsomething{#1}
+%      {\bgroup
+%       \setrandomseed\minusone % signals thrd-ran to reseed
+%       % tex's time is in minutes
+%       \processaction
+%         [#1]
+%         [  \v!small=>\divide\normaltime 15, %  900,
+%           \v!medium=>\divide\normaltime 30, % 1800,
+%              \v!big=>\divide\normaltime 60, % 3600,
+%           \v!normal=>,
+%          \s!default=>,
+%          \s!unknown=>\normaltime=#1]%
+%       \nextrandom
+%       \egroup}}
+
 \def\setuprandomize[#1]%
   {\doifsomething{#1}
      {\bgroup
-      \setrandomseed\minusone % signals thrd-ran to reseed
       % tex's time is in minutes
+      \scratchcounter\normaltime
       \processaction
         [#1]
-        [  \v!small=>\divide\normaltime 15, %  900,
-          \v!medium=>\divide\normaltime 30, % 1800,
-             \v!big=>\divide\normaltime 60, % 3600,
-          \v!normal=>,
-         \s!default=>,
-         \s!unknown=>\normaltime=#1]%
-      \nextrandom
+        [  \v!small=>\divide\scratchcounter 15, %  900,
+          \v!medium=>\divide\scratchcounter 30, % 1800,
+             \v!big=>\divide\scratchcounter 60, % 3600,
+          \v!normal=>\getnewrandomseed\scratchcounter,
+         \s!default=>\getnewrandomseed\scratchcounter,
+         \s!unknown=>\scratchcounter#1]%
+      \expanded{\setrandomseed{\the\scratchcounter}}%
       \egroup}}
 
 \setupsystem

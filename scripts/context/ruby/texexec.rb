@@ -473,10 +473,10 @@ class Commands
             job.setvariable(k,@commandline.option(k))
         end
         job.stringvars.each do |k|
-            job.setvariable(k,@commandline.option(k))
+            job.setvariable(k,@commandline.option(k)) unless @commandline.option(k).empty?
         end
         job.standardvars.each do |k|
-            job.setvariable(k,@commandline.option(k))
+            job.setvariable(k,@commandline.option(k)) unless @commandline.option(k).empty?
         end
         job.knownvars.each do |k|
             job.setvariable(k,@commandline.option(k)) unless @commandline.option(k).empty?
@@ -649,6 +649,7 @@ end
 commandline.registerflag('pdf')
 commandline.registerflag('pdftex')
 commandline.registerflag('pdfetex')
+commandline.registerflag('luatex')
 
 commandline.registerflag('dvipdfmx')
 commandline.registerflag('dvipdfm')

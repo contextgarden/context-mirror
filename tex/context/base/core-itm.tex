@@ -58,6 +58,7 @@
 \newconditional\symbollistitem    \setfalse\symbollistitem
 \newconditional\headlistitem      \setfalse\headlistitem
 \newconditional\introlistitem     \setfalse\introlistitem
+\newconditional\randomizeitems    \setfalse\randomizeitems
 \newconditional\autointrolistitem \setfalse\autointrolistitem
 \newconditional\optimizelistitem  \settrue \optimizelistitem
 \newconditional\packlistitem      \setfalse\packlistitem
@@ -173,7 +174,8 @@
   {\processaction
      [#2#3#4]
      [   \v!packed*=>\packitems,
-          \v!intro*=>\settrue\introlistitem,
+          \v!intro*=>\settrue\introlistitem, % here? not set to false
+% no:    \v!random*=>\settrue\randomizeitems,% here? not set to false
       \v!autointro*=>\settrue\autointrolistitem,
           \v!broad*=>\setitemparameter{#1}\c!factor{1},
      #2#3*\v!broad*=>\setitemparameter{#1}\c!factor{#2#3},
@@ -361,6 +363,9 @@
    \fi
    \expanded{\redostartitemgroup[\itemgroupoptions]}}% [#2]
 
+\let\startcollectitems\relax
+\let\stopcollectitems \relax
+
 \def\redostartitemgroup[#1][#2]%
   {\setfalse\inlinelistitem % new, no indent (leftskip)
    \setfalse\concatnextitem % new, concat
@@ -375,6 +380,7 @@
    \fi
    \begingroup
    \doifinsetelse\v!intro{#1}{\settrue\introlistitem}{\setfalse\introlistitem}%
+   \doifinsetelse\v!random{#1}{\settrue\randomizeitems}{\setfalse\randomizeitems}%
    % == \doifinsetelse\v!intro{#1}\settrue\setfalse\introlistitem
    \doglobal\increment\noflists
    \let\currentlist\noflists
@@ -459,7 +465,8 @@
      \ifconditional\inlinelistitem\else
        \advance\leftskip \dimen0\relax
      \fi
-   \fi}
+   \fi
+   \startcollectitems}
 
 % test / example
 %
@@ -476,7 +483,8 @@
 % \stopitemize \blank
 
 \def\stopitemgroup
-  {\ifconditional\textlistitem
+  {\stopcollectitems
+   \ifconditional\textlistitem
      \removeunwantedspaces\space\ignorespaces
    \else
      \par

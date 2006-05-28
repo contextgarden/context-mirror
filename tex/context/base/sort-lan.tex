@@ -153,20 +153,49 @@
 % c) sorting rule: "A" < "Á" < "a" < "á" < "C" < "c" < "C" < "c"
 % d) sorting rule: "h" < "ch" < "i" ("c" < "h")
 
-\def\czsortdivisionch{ch}
-\def\czsortdivisionCh{Ch}
-
 \startmode[sortorder-cz]
-    \exportsortexpansion{aacute}{a}
-    \exportsortexpansion{Aacute}{A}
-    \exportsortexpansion{ccaron}{c+1}
-    \exportsortexpansion{Ccaron}{c+1}
-    \exportsortdivision{c+1}{ccaron}
-    \exportsortreduction{ch}{h+1}
-    \exportsortexpansion{ch}{h+1}
-    \exportsortreduction{Ch}{h+1}
-    \exportsortexpansion{Ch}{h+1}
-    \exportsortdivision{h+1}{czsortdivisionch}
+    \exportsortexpansion {aacute} {a+1}
+    \exportsortexpansion {Aacute} {A+1}
+    \exportsortexpansion {ccaron} {c+1}
+    \exportsortexpansion {Ccaron} {C+1}
+    \exportsortdivision  {c+1}    {ccaron}
+    \exportsortexpansion {dcaron} {d+1}
+    \exportsortexpansion {Dcaron} {C+1}
+    \exportsortdivision  {d+1}    {dcaron}
+    \exportsortexpansion {eacute} {e+1}
+    \exportsortexpansion {Eacute} {E+1}
+    \exportsortexpansion {ecaron} {e+2}
+    \exportsortexpansion {Ecaron} {E+2}
+    \exportsortreduction {ch}     {h+1}
+    \exportsortexpansion {ch}     {h+1}
+    \exportsortreduction {Ch}     {h+1}
+    \exportsortexpansion {Ch}     {h+1}
+    \exportsortdivision  {h+1}    {czsortdivisionch}
+    \exportsortexpansion {iacute} {i+1}
+    \exportsortexpansion {Iacute} {I+1}
+    \exportsortexpansion {ncaron} {n+1}
+    \exportsortexpansion {Ncaron} {n+1}
+    \exportsortdivision  {n+1}    {ncaron}
+    \exportsortexpansion {oacute} {o+1}
+    \exportsortexpansion {Oacute} {O+1}
+    \exportsortexpansion {rcaron} {r+1}
+    \exportsortexpansion {Rcaron} {R+1}
+    \exportsortdivision  {r+1}    {rcaron}
+    \exportsortexpansion {scaron} {s+1}
+    \exportsortexpansion {Scaron} {S+1}
+    \exportsortdivision  {s+1}    {scaron}
+    \exportsortexpansion {tcaron} {t+1}
+    \exportsortexpansion {Tcaron} {T+1}
+    \exportsortdivision  {t+1}    {tcaron}
+    \exportsortexpansion {uacute} {u+1}
+    \exportsortexpansion {Uacute} {U+1}
+    \exportsortexpansion {uring}  {u+2}
+    \exportsortexpansion {Uring}  {U+2}
+    \exportsortexpansion {yacute} {y+1}
+    \exportsortexpansion {Yacute} {Y+1}
+    \exportsortexpansion {zcaron} {z+1}
+    \exportsortexpansion {Zcaron} {Z+1}
+    \exportsortdivision  {z+1}    {zcaron}
 \stopmode
 
 \endinput

@@ -142,7 +142,7 @@ class TEX
   # @@runoptions['xetex'] = ['--output-driver \\\"-d 4 -V 5\\\"'] # we need the pos pass
     @@runoptions['xetex'] = ['--no-pdf'] # from now on we assume (x)dvipdfmx to be used
 
-    @@runoptions['luatex'] = ['--progname=pdftex']
+    # @@runoptions['luatex'] = ['--progname=pdftex']
 
     @@booleanvars = [
         'batchmode', 'nonstopmode', 'fast', 'fastdisabled', 'silentmode', 'final',
@@ -236,7 +236,7 @@ class TEX
         setvariable('engine',       'standard') # replaced by tex/mpsengine
         setvariable('backend',      'pdftex')
         setvariable('runs',         '8')
-        setvariable('randomseed',    rand(1440).to_s)
+        setvariable('randomseed',   rand(1440).to_s) # we want the same seed for one run
         # files
         setvariable('files',        [])
         # defaults
@@ -710,6 +710,7 @@ class TEX
 
     @@preamblekeys = [
         ['tex','texengine'],
+        ['engine','texengine'],
         ['program','texengine'],
         ['translate','tcxfilter'],
         ['tcx','tcxfilter'],
@@ -1086,6 +1087,7 @@ class TEX
                     opt << "\\setupenv[#{str}]\n"
                 end
                 if (str = getvariable('randomseed')) && ! str.empty? then
+                    report("using randomseed #{str}")
                     opt << "\\setupsystem[\\c!random=#{str}]\n"
                 end
                 if (str = getvariable('input')) && ! str.empty? then
@@ -1110,7 +1112,7 @@ class TEX
                                 pagelist << page
                             end
                         end
-                        opt << "\\def\\pagestoshipout\{pagelist.join(',')\}\n";
+                        opt << "\\def\\pagestoshipout\{#{pagelist.join(',')}\}\n";
                     end
                 end
                 opt << "\\protect\n";

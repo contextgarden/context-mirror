@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 
-<cd:interface xmlns:cd="http://www.pragma-ade.com/commands" name="context" language="fr" version="2006.05.23 16:32">
+<cd:interface xmlns:cd="http://www.pragma-ade.com/commands" name="context" language="fr" version="2006.05.28 13:28">
 
   <cd:variables>
     <cd:variable name="one" value="un"/>
@@ -126,6 +126,7 @@
   </cd:variables>
 
   <cd:constants>
+    <cd:constant name="suffix" value="suffix"/>
     <cd:constant name="leftquotation" value="citationgauche"/>
     <cd:constant name="rightquotation" value="citationdroite"/>
     <cd:constant name="leftquote" value="citergauche"/>
