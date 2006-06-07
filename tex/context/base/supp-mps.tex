@@ -222,11 +222,25 @@
 
 %D The next hack prevents too long lines:
 
-\long\def\obeyMPlines
-  {\ifx\rawcharacter\undefined\else
+\long\def\runtimeobeyMPlines
+  {\ifx\rawcharacter\undefined
+     \let\obeyedline\space
+   \else
      \obeylines
-     \def\obeyedline{\rawcharacter{10}}%
+     \ifx\systemendofline\undefined
+       \def\obeyedline{\rawcharacter{10}}%
+     \else
+       \let\obeyedline\systemendofline
+     \fi
    \fi}
+
+\long\def\obeyMPlines % anyhow, we end up with ^^M's in the input
+  {\obeylines
+   \let\obeyedline\relax} % delay expansion
+
+\appendtoks
+  \let\obeyMPlines\runtimeobeyMPlines
+\to \everydump
 
 %D We use two distinguished token registers:
 
@@ -1089,7 +1103,7 @@
   \def\executesystemcommand#1{\immediate\write18{#1}}
 \fi
 
-\ifx\TEXEXECcommand \undefined \def\TEXEXECcommand{texexec} \fi
+\ifx\TEXEXECcommand \undefined \def\TEXEXECcommand{texmfstart texexec} \fi
 
 \ifx\undefined\executeMetaPost
 

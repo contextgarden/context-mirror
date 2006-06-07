@@ -80,6 +80,34 @@
 %
 % \index[Ätsch]{Ätsch} test \index{QÄtsch} test \index[ratsch]{RÄtsch} test
 
+% \def\doprocesspageregister[#1]#2#3% key altnum entry
+%   {\begingroup
+%    \thisisnextinternal\s!ind
+%    \ifduplicate\getlastregisterentry{#3}\fi
+%    \convertexpanded{\registerparameter\c!keyexpansion}{#1}\asciiregisterentryA
+%    \convertexpanded{\registerparameter\c!expansion   }{#3}\asciiregisterentryB
+%    \doifsomething{\registerparameter\c!keyexpansion}
+%      {\ifx\asciiregisterentryA\empty
+%        \convertexpanded{\registerparameter\c!keyexpansion}{#3}\asciiregisterentryA
+%       \fi}%
+%    \makesectionformat
+%    \doifelse{\registerparameter\c!ownnumber}\v!yes
+%      \donetrue\donefalse
+%    % the spaces between } { are essential for texutil's split
+%    \expanded
+%      {\writeutility%
+%         {r \ifcase\registerpagestatus\space\or e \or f \or t \fi
+%          {\currentregister} %
+%          {\nextinternalreference} %
+%          {\asciiregisterentryA} %
+%          {\asciiregisterentryB} %
+%          {\sectionformat\sectionseparator\sectionseparator
+%           \ifdone#2\else\noexpand\pagenumber\fi} %
+%          {\noexpand\realfolio}}}%
+%    \getfirstcharacter\currentregister
+%    \registerinfo{> \firstcharacter}{#3}%
+%    \endgroup}
+
 \def\doprocesspageregister[#1]#2#3% key altnum entry
   {\begingroup
    \thisisnextinternal\s!ind
@@ -432,9 +460,13 @@
 %D Don't use \type{\string#2}; another hack is needed, since
 %D \type {#2} can be \type {\string} itself.
 
+% \def\doregisterreference[#1]#2%
+%   {\doifvalue{\??id#1\c!referencing}\v!on
+%      {\pagereference[#1:#2]}}
+
 \def\doregisterreference[#1]#2%
   {\doifvalue{\??id#1\c!referencing}\v!on
-     {\pagereference[#1:#2]}}
+     {\pagereference[#1:\strippedcsname#2]}}
 
 \def\dosetpageregisterletter#1#2%
   {\gdef\c!entryreference
@@ -901,6 +933,10 @@
      \endgroup
    \fi}
 
+\def\doregisterregisterlanguage#1%
+  {\savesortlanguage{\getvalue{\??id#1\s!language}}%
+   \immediatewriteutility{r l {#1} {\getvalue{\??id#1\s!language}}}}
+
 \def\dodefineregister[#1][#2]%
   {\setupregister[#1]%
      [\c!n=2,
@@ -926,7 +962,11 @@
       \c!unknownreference=\v!empty,
       \c!prefix=\v!both,
       \c!expansion=,
-      \c!keyexpansion=]%
+      \c!keyexpansion=,
+      \s!language=\currentmainlanguage]%
+   \doglobal\appendtoksonce
+     \doregisterregisterlanguage{#1}%
+   \to \everysavesortkeys
    \presetheadtext[#1=\Word{#1}]%
    \addutilityreset{#1}%
    \setvalue{#1}{\doregister{#1}}%

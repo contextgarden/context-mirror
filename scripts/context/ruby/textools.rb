@@ -98,7 +98,6 @@ class Commands
         end
     end
 
-
 end
 
 class Commands

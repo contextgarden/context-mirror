@@ -20,7 +20,6 @@
     \exportsortexpansion{Agrave}{A+2}
 \stopmode
 
-
 %D This module replaces existing sort key handling and is meant to be
 %D used with the new texutil functionality. Here we define the language
 %D specific sort rules.
@@ -153,6 +152,9 @@
 % c) sorting rule: "A" < "Á" < "a" < "á" < "C" < "c" < "C" < "c"
 % d) sorting rule: "h" < "ch" < "i" ("c" < "h")
 
+\gdef\czsortdivisionch{ch}
+\gdef\czsortdivisionCh{Ch}
+
 \startmode[sortorder-cz]
     \exportsortexpansion {aacute} {a+1}
     \exportsortexpansion {Aacute} {A+1}
@@ -160,7 +162,7 @@
     \exportsortexpansion {Ccaron} {C+1}
     \exportsortdivision  {c+1}    {ccaron}
     \exportsortexpansion {dcaron} {d+1}
-    \exportsortexpansion {Dcaron} {C+1}
+    \exportsortexpansion {Dcaron} {D+1}
     \exportsortdivision  {d+1}    {dcaron}
     \exportsortexpansion {eacute} {e+1}
     \exportsortexpansion {Eacute} {E+1}
@@ -168,13 +170,13 @@
     \exportsortexpansion {Ecaron} {E+2}
     \exportsortreduction {ch}     {h+1}
     \exportsortexpansion {ch}     {h+1}
-    \exportsortreduction {Ch}     {h+1}
-    \exportsortexpansion {Ch}     {h+1}
+    \exportsortreduction {Ch}     {H+1}
+    \exportsortexpansion {Ch}     {H+1}
     \exportsortdivision  {h+1}    {czsortdivisionch}
     \exportsortexpansion {iacute} {i+1}
     \exportsortexpansion {Iacute} {I+1}
     \exportsortexpansion {ncaron} {n+1}
-    \exportsortexpansion {Ncaron} {n+1}
+    \exportsortexpansion {Ncaron} {N+1}
     \exportsortdivision  {n+1}    {ncaron}
     \exportsortexpansion {oacute} {o+1}
     \exportsortexpansion {Oacute} {O+1}

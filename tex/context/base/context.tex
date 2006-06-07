@@ -31,7 +31,7 @@
 %D 2004.8.30 the low level interface is english. Watch out and adapt
 %D your styles an modules.
 
-\def\contextversion{2006.05.28 13:28}
+\def\contextversion{2006.06.07 23:34}
 
 %D For those who want to use this:
 
@@ -127,10 +127,10 @@
 \input supp-vis.tex
 \input supp-fun.tex
 \input supp-eps.tex
-\input supp-pdf.tex
+%input supp-pdf.tex
 \input supp-spe.tex
 \input supp-mps.tex
-\input supp-mpe.tex
+%input supp-mpe.tex
 \input supp-tpi.tex
 \input supp-mat.tex
 \input supp-ran.tex
@@ -191,6 +191,8 @@
 \input lang-dis.tex % after lang-ctx !
 \input unic-ini.tex
 %input unic-ext.tex % obsolete
+
+% \readfile{lang-url.pat}{}{} % test
 
 \input colo-ini.tex
 \input colo-ext.tex
@@ -292,6 +294,7 @@
 %D support is also organized in its own class of modules.
 
 \input meta-ini.tex
+\input meta-pdf.tex
 \input meta-pag.tex
 \input meta-fig.tex
 
@@ -471,15 +474,15 @@
 
 \startinterface italian
 
-\writestring{Questo pacchetto è basato sul Plain TeX. Usa una versione adattata del}
+\writestring{Questo pacchetto Ã¨ basato sul Plain TeX. Usa una versione adattata del}
 \writestring{meccanismo di marcatura esteso di J. Fox (1987) ad alcune parti del}
 \writestring{meccanismo per gli oggetti mobili laterali di D. Comenetz (1993).}
-\writestring{La maggior parte del Plain TeX (\fmtversion) di D.E. Knuth è disponibile}
-\writestring{e può essere usata senza problemi. Questo pacchetto usa TaBlE,}
+\writestring{La maggior parte del Plain TeX (\fmtversion) di D.E. Knuth Ã¨ disponibile}
+\writestring{e puÃ² essere usata senza problemi. Questo pacchetto usa TaBlE,}
 \writestring{un pacchetto progettato da e con diritti di copia di M.J. Wichura (1988).}
 \writestring{Vengono generati pochi file ausiliari, alcuni dei quali devono essere}
 \writestring{elaborati da TeXUtil (\utilityversion). La versione attuale del blocco}
-\writestring{è \blockversion.}
+\writestring{Ã¨ \blockversion.}
 \writestring{}
 \writestring{L'INTERFACCIA UTENTE ITALIANA E' ANCORA IN VIA DI SVILUPPO!}
 \writestring{THE ITALIAN USER INTERFACE IS STILL UNDER DEVELOPMENT!}

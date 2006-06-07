@@ -134,11 +134,11 @@
       2: -- lagret
       3: -- flyttet
       4: -- plassert
-      5: rekkefølge tilpasset
-      6: maksimalt -- flytblokker øverst
+      5: rekkefÃ¸lge tilpasset
+      6: maksimalt -- flytblokker Ã¸verst
       7: maksimalt -- flytblokker nederst
       8: mindre enn -- linjer
-      9: rekkefølge endret
+      9: rekkefÃ¸lge endret
      10: -- begrenset
      11: ingen blokk oppgitt
      12: udefinert
@@ -1370,6 +1370,7 @@
    \fi}
 
 \def\placefloatcaptiontext     [#1]{\getvalue{@fl@t@#1}}
+\def\placefloatcaptionnumber   [#1]{\getvalue{@fl@n@#1}}
 \def\placefloatcaptionreference[#1]{\getvalue{@fl@r@#1}}
 
 % still needed for uguide
@@ -2216,11 +2217,17 @@
      \getparameters[\??si][#1]%
      \resetnumber[\??si]%
      \def\floatcaptionsuffix{\convertednumber[\??si]}%
-     \TABLEcaptionheight\@@silines\lineheight % brrr
+     % \TABLEcaptionheight\@@silines\lineheight% brrr
+% todo: auto == \getnoflines\captionheight
+\let\extrasplitfloatlines\@@silines
+\the\everysplitfloatsetup
      \simplifypagebreak % \page becomes \goodbreak
+% todo: a preceding float does not count yet
+% so we need a better predictor
      \dowithnextbox
        {\forgetall
         \dontcomplain
+\chardef\nodelocationmode\zerocount
         \doloop
           {\setbox2\vsplit\nextbox to \lineheight
            \setbox2\vbox{\unvbox2}
@@ -2234,10 +2241,12 @@
              \egroup
              \ifdim\nextboxht>\zeropoint
                \page
-               \decrementnumber[\floatcaptionnumber]%
              \fi
            \fi
-           \ifdim\nextboxht>\zeropoint\else
+           \ifdim\nextboxht>\zeropoint
+\decrementnumber[\floatcaptionnumber]
+%\setupnumber[\floatcaptionnumber][\c!state=\v!stop]%
+           \else
              \expandafter\exitloop
            \fi}%
         \egroup}
@@ -2246,6 +2255,26 @@
 
 \def\splitfloat
   {\dosingleempty\dosplitfloat}
+
+\newtoks \everysplitfloatsetup
+
+% will move to core-tab
+
+\appendtoks
+     \TABLEcaptionheight\extrasplitfloatlines\lineheight
+\to \everysplitfloatsetup
+
+% will move to core-ntb
+
+\appendtoks
+    \def\extratblsplitheight{\extrasplitfloatlines\lineheight}%
+\to \everysplitfloatsetup
+
+% todo in core-tbl
+
+\appendtoks
+    % set extra
+\to \everysplitfloatsetup
 
 % \splitfloat [settings] {\placetable[optional args]{test}} {content}
 

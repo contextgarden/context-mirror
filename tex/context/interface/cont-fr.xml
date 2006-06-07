@@ -6124,7 +6124,9 @@
       <cd:constant type="perte"/>
       <cd:constant type="repete"/>
       <cd:constant type="cd:section"/>
+      <cd:constant type="paragraphe"/>
       <cd:constant type="danstexte"/>
+      <cd:constant type="aleatoire"/>
     </cd:keywords>
     <cd:assignments optional="yes" list="yes">
       <cd:parameter name="marge">

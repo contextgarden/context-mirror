@@ -192,7 +192,7 @@
 
 \dorecurse{255}
   {\lccode`a=\recurselevel
-   \lowercase{\xdef\rawcharacter{\rawcharacter a\or}}}
+   \lowercase{\xdef\rawcharacter{\rawcharacter \string a\or}}} % string is needed for XeTeX
 
 \@EA\gdef\@EA\rawcharacter\@EA#\@EA1\@EA
   {\@EA\ifcase\@EA#\@EA1\rawcharacter\fi}

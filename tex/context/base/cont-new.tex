@@ -11,7 +11,7 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-\newcontextversion{2006.05.28 13:28}
+\newcontextversion{2006.06.07 23:34}
 
 %D This file is loaded at runtime, thereby providing an
 %D excellent place for hacks, patches, extensions and new
@@ -91,6 +91,9 @@
   \defineXMLsavecontent[rl:height]{\!!zeropoint}
 \stopXMLmapping
 
+\let\rliwidth \!!zeropoint
+\let\rliheight\!!zeropoint
+
 \def\getRLIfiguredimensions#1%
   {\let\rliwidth \!!zeropoint
    \let\rliheight\!!zeropoint
@@ -111,9 +114,9 @@
         \edef\rliwidth {\XMLflush{rl:width}}%
         \edef\rliheight{\XMLflush{rl:height}}%
         \stopXMLignore
-      \stopXMLmapping}
-     {}%
-   \stopnointerference}
+      \stopXMLmapping
+      \stopnointerference}
+     {}}
 
 \def\getfiguredimensionsC
   {\ifcase\figurestatus\ifcase\figurefilemode\else

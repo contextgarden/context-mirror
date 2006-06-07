@@ -74,6 +74,8 @@
 
 \unprotect
 
+\newevery \everysavesortkeys \relax
+
 \let\currentexportclass\empty
 
 \def\exportsortaction#1#2#3%
@@ -101,15 +103,8 @@
       \fi}%
    \egroup}
 
-% Next we overload some macros defined in enco-ini and core-uti. This
-% will change.
-
-\let\definesortkey\gobblefourarguments
-
-\def\savesortkeys
-  {\globallet\savesortkeys\relax
-   \enablemode[sortorder-\currentmainlanguage]%
-   \bgroup
+\def\savesortdefinitions
+  {\bgroup
      \doifelse \currentregime {utf}
         {\exportutfsortexpansion{0}{128}{255}%
          \exportutfsortexpansion{1}{0}{255}}
@@ -120,9 +115,36 @@
              {\the\executeifdefined{\@reg@\characterencoding}\emptytoks}}%
           {\the\executeifdefined{\@reg@\characterregime}\emptytoks}}%
    \egroup
-   \readfile{\f!sortprefix new}\donothing\donothing % temporary hacks
-   \readfile{\f!sortprefix def}\donothing\donothing % defaults
-   \readfile{\f!sortprefix lan}\donothing\donothing}% language specifics
+   \readfile{\f!sortprefix def}\donothing\donothing % default
+   \global\let\savesortdefinitions\relax}
+
+\def\savesortlanguage#1% language specifics
+  {\doifsomething{#1}
+     {\doifundefined{\f!sortprefix::#1}%
+        {\bgroup
+         \global\letvalue{\f!sortprefix::#1}\empty
+         \def\currentexportclass{#1}%
+         \enablemode[sortorder-#1]%
+         \readfile{\f!sortprefix lan}\donothing\donothing
+         \egroup}}}
+
+\prependtoks
+    \savesortdefinitions
+\to \everysavesortkeys
+
+\def\savesortkeys
+  {\the\everysavesortkeys
+   \global\everysavesortkeys\emptytoks}
+
+% \defineregister[one]
+% \defineregister[two] \setupregister[two][language=cz]
+%
+% \starttext
+%   test \one{one} test \one{two} test \one {\aacute} test \one{alpha} test \one{chow}
+%   test \two{one} test \two{two} test \two {\aacute} test \two{alpha} test \two{chow}
+%   \blank[3*big] \placeregister[one]
+%   \blank[3*big] \placeregister[two]
+% \stoptext
 
 % already done \prependtoks \savesortkeys \to \everystarttext
 

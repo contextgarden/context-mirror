@@ -6124,7 +6124,9 @@
       <cd:constant type="larg"/>
       <cd:constant type="repetat"/>
       <cd:constant type="cd:section"/>
+      <cd:constant type="paragraf"/>
       <cd:constant type="intext"/>
+      <cd:constant type="aleator"/>
     </cd:keywords>
     <cd:assignments optional="yes" list="yes">
       <cd:parameter name="margine">

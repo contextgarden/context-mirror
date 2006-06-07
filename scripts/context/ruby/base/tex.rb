@@ -139,10 +139,11 @@ class TEX
     ['cont-en','cont-nl','cont-de','cont-it',
      'cont-fr','cont-cz','cont-ro','cont-uk']      .each do |f| @@texprocstr[f] = "\\emergencyend"  end
 
-  # @@runoptions['xetex'] = ['--output-driver \\\"-d 4 -V 5\\\"'] # we need the pos pass
-    @@runoptions['xetex'] = ['--no-pdf'] # from now on we assume (x)dvipdfmx to be used
-
-    # @@runoptions['luatex'] = ['--progname=pdftex']
+  # @@runoptions['xetex']   = ['--output-driver \\\"-d 4 -V 5\\\"'] # we need the pos pass
+    @@runoptions['xetex']   = ['--8bit --no-pdf'] # from now on we assume (x)dvipdfmx to be used
+    @@runoptions['pdfetex'] = ['--8bit']
+    @@runoptions['luatex']  = ['--8bit']
+    @@runoptions['aleph']   = ['--8bit']
 
     @@booleanvars = [
         'batchmode', 'nonstopmode', 'fast', 'fastdisabled', 'silentmode', 'final',

@@ -6124,7 +6124,9 @@
       <cd:constant type="los"/>
       <cd:constant type="herhaal"/>
       <cd:constant type="cd:section"/>
+      <cd:constant type="alinea"/>
       <cd:constant type="intekst"/>
+      <cd:constant type="willekeurig"/>
     </cd:keywords>
     <cd:assignments optional="yes" list="yes">
       <cd:parameter name="marge">

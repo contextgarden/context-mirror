@@ -6124,7 +6124,9 @@
       <cd:constant type="lose"/>
       <cd:constant type="wiederholen"/>
       <cd:constant type="cd:section"/>
+      <cd:constant type="absatz"/>
       <cd:constant type="imtext"/>
+      <cd:constant type="zufaellig"/>
     </cd:keywords>
     <cd:assignments optional="yes" list="yes">
       <cd:parameter name="marginalie">

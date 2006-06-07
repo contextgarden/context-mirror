@@ -436,11 +436,18 @@
     \startsavingXMLelements
     \rawXMLstacktext\plusone % still on stack, no check, just attr test
     \stopsavingXMLelements
+    % http://www.publisherswhodontcareaboutcosts.com/SomeName
     \doifsetupselse{mmc:csymbol:\XMLpar{csymbol}{definitionURL}{}} {
         \expanded{\endgroup\noexpand\directsetup{mmc:csymbol:\XMLpar{csymbol}{definitionURL}{}}}
     } {
-        \endgroup
-        \XMLval{mmc:cs}{\XMLop{encoding}}{\firstofoneargument}
+        % SomeName (fallback)
+        \splitfilename{\XMLpar{csymbol}{definitionURL}{}}
+        \doifsetupselse{mmc:csymbol:\splitoffbase} {
+            \expanded{\endgroup\noexpand\directsetup{mmc:csymbol:\splitoffbase}}
+        } {
+            \endgroup
+            \XMLval{mmc:cs}{\XMLop{encoding}}{\firstofoneargument}
+        }
     }
 \stopsetups
 
@@ -1249,8 +1256,12 @@
             \flushXMLstackfrom\plustwo^\prime
         }
     } {
-      \MMLcreset\XMLfirstnamed{apply,ci}
-        ^{
+        \MMLcreset
+        \XMLfirstnamed{apply,ci}
+        % there can be problems with nested diff's: ^^{} error
+        % so we add an empty group here
+        {}^
+        {
             \XMLdoifonstackelse{degree} {
                 \defXMLfirstnamedtext\ascii{degree}
                 \dorecurse\ascii\prime

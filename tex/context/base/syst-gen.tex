@@ -346,6 +346,7 @@
                                       \dimendef\!!dimenh=14 %skipdef\!!skipc=4
                                       \dimendef\!!dimeni=16 %skipdef\!!skipd=6
                                       \dimendef\!!dimenj=18 %skipdef\!!skipe=8
+                                      \dimendef\!!dimenk=20 %skipdef\!!skipf=10
 
 \let\!!stringa=\empty \let\!!stringb=\empty \let\!!stringc=\empty
 \let\!!stringd=\empty \let\!!stringe=\empty \let\!!stringf=\empty
@@ -3253,9 +3254,9 @@
 \def\p!dogetcommalistsize#1%
   {\advance\commalistcounter\plusone}
 
-\def\getcommalistsize[#1]%
+\def\getcommalistsize#1]% don't loose [{#1}]
   {\commalistcounter\zerocount
-   \processcommalist[#1]\p!dogetcommalistsize   % was [{#1}]
+   \processcommalist#1]\p!dogetcommalistsize   % was [{#1}]
    \edef\commalistsize{\the\commalistcounter}}
 
 \def\getcommacommandsize[#1]%

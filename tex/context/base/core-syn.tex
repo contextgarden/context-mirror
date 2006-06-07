@@ -178,6 +178,10 @@
      \dodocomplexsynonym[#2][#1#4]{#4}{#5}%
    \fi}
 
+\def\doregistersynonymlanguage#1%
+  {\savesortlanguage{\getvalue{\??sm#1\s!language}}%
+   \immediatewriteutility{s l {#1} {\getvalue{\??sm#1\s!language}}}}
+
 \def\dodefinesynonyms[#1][#2][#3][#4]%
   {\iffourthargument
      \unexpanded\def#4##1{\getsynonymmeaning{#1}{\??sm:#1:}{##1}}%
@@ -199,7 +203,11 @@
       \c!sample=,\c!hang=,\c!align=,
       \c!before=,\c!inbetween=,\c!after=,
       \c!indentnext=\v!no,
-      \c!expansion=]%
+      \c!expansion=,
+      \s!language=\currentmainlanguage]%
+   \doglobal\appendtoksonce
+     \doregistersynonymlanguage{#1}%
+   \to \everysavesortkeys
    \presetheadtext[#2=\Word{#2}]% changes the \if...argument
    \addutilityreset{#1}%
    \setvalue{\e!setup #2\e!endsetup}{\dodoubleargument\getparameters[\??sm#1]}% to be obsolete
@@ -346,6 +354,10 @@
 
 % if #3=\relax or \v!none, then no command but still protected
 
+\def\doregistersortinglanguage#1%
+  {\savesortlanguage{\getvalue{\??so#1\s!language}}%
+   \immediatewriteutility{s l {#1} {\getvalue{\??so#1\s!language}}}}
+
 \def\dodefinesorting[#1][#2][#3]%
   {\getparameters[\??so#1]
      [%\c!command=, % we test for defined !
@@ -354,7 +366,11 @@
       \c!style=,
       \c!before=,
       \c!after=\endgraf,
-      \c!expansion=]%
+      \c!expansion=,
+      \s!language=\currentmainlanguage]%
+   \doglobal\appendtoksonce
+     \doregistersortinglanguage{#1}%
+   \to \everysavesortkeys
    \ifthirdargument
      \ConvertConstantAfter\doifnot{#3}\v!none
        {\ifx#3\relax \else

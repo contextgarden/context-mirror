@@ -394,9 +394,21 @@
 %D \stoptyping
 %D
 %D This expands to \type{\ifsomething}.
+%D
+%D \starttyping
+%D \def\strippedcsname
+%D   {\expandafter\gobbleoneargument\string}
+%D \stoptyping
+%D
+%D Slower but better:
+
+{\catcode`.=\@@escape .catcode`.\ 12 .xdef.letterbackslash{.string\}} % hack
 
 \def\strippedcsname
-  {\expandafter\gobbleoneargument\string}
+  {\expandafter\dostrippedcsname\string}
+
+\def\dostrippedcsname#1%
+  {\if\noexpand#1\letterbackslash\else#1\fi}
 
 %D \macros
 %D   {savenormalmeaning}

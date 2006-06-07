@@ -529,6 +529,7 @@ class Commands
         "tui", "tup", "ted", "tes", "top",
         "log", "tmp", "run", "bck", "rlg",
         "mpt", "mpx", "mpd", "mpo", "ctl",
+        "tmp.md5", "tmp.out"
     ]
     $texonlysuffixes = [
         "dvi", "ps", "pdf"

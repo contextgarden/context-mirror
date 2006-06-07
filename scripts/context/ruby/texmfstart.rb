@@ -23,6 +23,7 @@
 # --locate        => provides location
 # --exec          => exec instead of system
 # --iftouched=a,b => only if timestamp a<>b
+# --ifchanged=a,b => only if checksum changed
 #
 # file: path: bin:
 
@@ -35,6 +36,7 @@ $ownpath = File.expand_path(File.dirname($0)) unless defined? $ownpath
 $: << $ownpath
 
 require "rbconfig"
+require "md5"
 
 # kpse_merge_done: require 'base/kpseremote'
 # kpse_merge_done: require 'base/kpsedirect'
@@ -1494,6 +1496,7 @@ $makelist = [
     'tmftools',
     'exatools',
     'runtools',
+    'rlxtools',
     #
     # no, 'texmfstart'
 ]
@@ -2107,7 +2110,7 @@ end
 
 def run(fullname)
     if ! fullname || fullname.empty? then
-        report("the file '#{$filename}' is not found")
+        output("the file '#{$filename}' is not found")
     elsif FileTest.file?(fullname) then
         begin
             case fullname
@@ -2221,6 +2224,35 @@ def process(&block)
             File.syncmtimes(oldname,newname)
         else
             report("file #{oldname} is untouched")
+        end
+    elsif $ifchanged then
+        filename = $directives['ifchanged']
+        checkname = filename + ".md5"
+        oldchecksum, newchecksum = "old", "new"
+        begin
+            newchecksum = MD5.new(IO.read(filename)).hexdigest.upcase
+        rescue
+            newchecksum = "new"
+        else
+            begin
+                oldchecksum = IO.read(checkname).chomp
+            rescue
+                oldchecksum = "old"
+            end
+        end
+        if oldchecksum != newchecksum then
+            report("old checksum #{filename}: #{oldchecksum}")
+            report("new checksum #{filename}: #{newchecksum}")
+            report("file is changed, processing started")
+            begin
+                File.open(checkname,'w') do |f|
+                    f << newchecksum
+                end
+            rescue
+            end
+            yield
+        else
+            report("file #{filename} is unchanged")
         end
     else
         yield
@@ -2370,6 +2402,7 @@ def execute(arguments)
     $after       = $directives['after']       || ''
 
     $iftouched   = $directives['iftouched']   || false
+    $ifchanged   = $directives['ifchanged']   || false
 
     $openoffice  = $directives['oo']          || false
 

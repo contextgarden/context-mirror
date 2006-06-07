@@ -72,6 +72,7 @@
       \c!location=, % no longer used here, will go away (was ooit \c!zetwijze)
       \c!conversion=\v!numbers,
       \c!start=0,
+      \c!state=\v!start,
       #2]%
     \makecounter{\@@thenumber{#1}}%
     \setxvalue{\@@thenumber{#1}\c!n}{\countervalue{\@@thenumber{#1}}}%
@@ -109,13 +110,22 @@
 %      {\pluscounter{\@@thenumber{#1}}}
 %      {\setcounter{\@@thenumber{#1}}{0\csname\@@thenumber{#1}\c!start\endcsname}}}
 
+% \def\incrementnumber[#1]% bypage tricky: needs a
+%   {\doifelse{\numberparameter{#1}\c!way}{\v!by\v!page}
+%      {\checkpagechange{#1}%
+%       \ifpagechanged\resetcounter{\@@thenumber{#1}}\fi}
+%      {\checknumber[#1]}%
+%    \doifelse\@@nrstate\v!start % only here
+%      {\pluscounter{\@@thenumber{#1}}}
+%      {\setcounter{\@@thenumber{#1}}{0\numberparameter{#1}\c!start}}}
+
 \def\incrementnumber[#1]% bypage tricky: needs a
   {\doifelse{\numberparameter{#1}\c!way}{\v!by\v!page}
      {\checkpagechange{#1}%
       \ifpagechanged\resetcounter{\@@thenumber{#1}}\fi}
      {\checknumber[#1]}%
    \doifelse\@@nrstate\v!start % only here
-     {\pluscounter{\@@thenumber{#1}}}
+     {\doif{\numberparameter{#1}\c!state}\v!start{\pluscounter{\@@thenumber{#1}}}}
      {\setcounter{\@@thenumber{#1}}{0\numberparameter{#1}\c!start}}}
 
 % \defineenumeration [test] [way=bypage,text=\lastchangedpage]

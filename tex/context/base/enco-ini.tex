@@ -947,43 +947,17 @@
 \def\startencoding
   {\dodoubleempty\dostartencoding}
 
-% \def\dostartencoding[#1][#2]% encoding regime
-%   {\doifelsenothing{#1}
-%      {\let\stopencoding\relax}
-%      {%\protectfontcharacters % problematic in language loading
-%       %\showmessage\m!encodings1{#1}%
-%       \pushmacro\dohandleaccent              % still needed?
-%       \pushmacro\dohandlecommand             % still needed?
-%       \pushmacro\definesortkey
-%       \pushmacro\characterregime
-%       \pushmacro\doautosetregime
-%       \let\dohandleaccent\donthandleaccent   % still needed?
-%       \let\dohandlecommand\donthandlecommand % still needed?
-%       \let\definesortkey\savesortkey
-%       \doifelsenothing{#2}%
-%         {\let\doautosetregime\gobbletwoarguments}
-%         {\def\characterregime{@#2@}}%
-%       \enableencoding[#1]%
-%       \def\stopencoding%
-%         {\popmacro\doautosetregime
-%          \popmacro\characterregime
-%          \popmacro\definesortkey
-%          \popmacro\dohandlecommand           % still needed?
-%          \popmacro\dohandleaccent            % still needed?
-%          \enableencoding[\s!default]%
-%          }}}% \unprotectfontcharacters}}} % ??
-
 \def\dostartencoding[#1][#2]% encoding regime
   {%\showmessage\m!encodings1{#1}%
    \pushmacro\characterencoding
    \pushmacro\characterregime
    \pushmacro\dohandleaccent              % still needed?
    \pushmacro\dohandlecommand             % still needed?
-   \pushmacro\definesortkey
+   %pushmacro\definesortkey
    \pushmacro\doautosetregime
    \let\dohandleaccent\donthandleaccent   % still needed?
    \let\dohandlecommand\donthandlecommand % still needed?
-   \let\definesortkey\savesortkey
+   %let\definesortkey\savesortkey
    \edef\characterencoding{@#1@}%
    \doifelsenothing{#2}%
      {\let\doautosetregime\gobbletwoarguments}
@@ -991,7 +965,7 @@
 
 \def\stopencoding
   {\popmacro\doautosetregime
-   \popmacro\definesortkey
+   %popmacro\definesortkey
    \popmacro\dohandlecommand           % still needed?
    \popmacro\dohandleaccent            % still needed?
    \popmacro\characterregime
@@ -1036,27 +1010,34 @@
 %D This mechanism is currently being tested and subjected to
 %D changes!
 
-\def\savesortkey#1#2#3#4%
-  {\let\flushsortkey\relax % important
-   \edef\!!stringa{sort:\characterencoding}%
-   \ifundefined\!!stringa
-     \let\!!stringb\empty
-   \else
-     \@EA\def\@EA\!!stringb\@EA{\csname\!!stringa\endcsname}%
-   \fi
-   \convertargument#1\to\asciiA \convertargument#2\to\asciiB
-   \convertargument#3\to\asciiC \convertargument#4\to\asciiD
-   \setevalue{\!!stringa}%
-     {\!!stringb\flushsortkey{\asciiA}{\asciiB}{\asciiC}{\asciiD}}}
+%D THS CODE IS OBSOLETE
 
-\def\definesortkey#1#2#3#4%
-  {}
+% \def\savesortkey#1#2#3#4%
+%   {\let\flushsortkey\relax % important
+%    \edef\!!stringa{sort:\characterencoding}%
+%    \ifundefined\!!stringa
+%      \let\!!stringb\empty
+%    \else
+%      \@EA\def\@EA\!!stringb\@EA{\csname\!!stringa\endcsname}%
+%    \fi
+%    \convertargument#1\to\asciiA \convertargument#2\to\asciiB
+%    \convertargument#3\to\asciiC \convertargument#4\to\asciiD
+%    \setevalue{\!!stringa}%
+%      {\!!stringb\flushsortkey{\asciiA}{\asciiB}{\asciiC}{\asciiD}}}
+%
+% \def\definesortkey#1#2#3#4%
+%   {}
+%
+% \def\flushsortkeys
+%   {\enablelanguagespecifics[\currentlanguage]%
+%    \getvalue{sort:\characterencoding}}
+%
+% \let\flushsortkey \relax
 
-\def\flushsortkeys
-  {\enablelanguagespecifics[\currentlanguage]%
-   \getvalue{sort:\characterencoding}}
-
-\let\flushsortkey\relax
+\let\definesortkey\gobblefourarguments
+\let\savesortkey  \gobblefourarguments
+\let\flushsortkeys\relax
+\let\flushsortkey \relax
 
 %D \macros
 %D   {defineaccent, definecharacter, definecommand}

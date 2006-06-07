@@ -230,7 +230,8 @@ class TeXUtil
         end
 
         def normalize(str)
-            replace(str).gsub(/ +/,' ')
+            # replace(str).gsub(/ +/,' ')
+            replace(str).gsub(/\s\s+/," \\space")
         end
 
         def tokenize(str)
@@ -267,16 +268,16 @@ class TeXUtil
             s
         end
 
-        def preset(shortcuts=[],expansions=[],reductions=[],divisions=[])
+        def preset(shortcuts=[],expansions=[],reductions=[],divisions=[],language='')
             'a'.upto('z') do |c| expander(c) ; division(c) end
             'A'.upto('Z') do |c| expander(c) ; division(c) end
             expander('1','b') ; expander('2','c') ; expander('3','e') ; expander('4','f')
             expander('5','g') ; expander('6','h') ; expander('7','i') ; expander('8','i')
             expander('9','j') ; expander('0','a') ; expander('-','-') ;
-            shortcuts.each  do |s| shortcut(s[0],s[1]) end
-            expansions.each do |e| expander(e[0],e[1]) end
-            reductions.each do |r| reducer(r[0],r[1]) end
-            divisions.each  do |d| division(d[0],d[1]) end
+            shortcuts.each  do |s| shortcut(s[1],s[2]) if s[0] == '' || s[0] == language end
+            expansions.each do |e| expander(e[1],e[2]) if e[0] == '' || e[0] == language end
+            reductions.each do |r|  reducer(r[1],r[2]) if r[0] == '' || r[0] == language end
+            divisions.each  do |d| division(d[1],d[2]) if d[0] == '' || d[0] == language end
         end
 
         def simplify(str)
@@ -490,16 +491,23 @@ class TeXUtil
 
             end
 
-            @@synonyms = Hash.new
+            @@synonyms  = Hash.new
+            @@sorter    = Hash.new
+            @@languages = Hash.new
 
             def MySynonyms::reset(logger)
-                @@synonyms = Hash.new
+                @@synonyms  = Hash.new
+                @@sorter    = Hash.new
+                @@languages = Hash.new
             end
 
             def MySynonyms::reader(logger,data)
-                if data[0] == 'e' then
-                    @@synonyms[data[1]] = Array.new unless @@synonyms.key?(data[1])
-                    @@synonyms[data[1]].push(Synonym.new(data[1],data[2],data[3],data[4]))
+                case data[0]
+                    when 'e' then
+                        @@synonyms[data[1]] = Array.new unless @@synonyms.key?(data[1])
+                        @@synonyms[data[1]].push(Synonym.new(data[1],data[2],data[3],data[4]))
+                    when 'l' then
+                        @@languages[data[1]] = data[2] || ''
                 end
             end
 
@@ -513,12 +521,17 @@ class TeXUtil
             end
 
             def MySynonyms::processor(logger)
-                sorter = Sorter.new
-                sorter.preset(eval("MyKeys").shortcuts,eval("MyKeys").expansions,eval("MyKeys").reductions,eval("MyKeys").divisions)
-                sorter.prepare
                 @@synonyms.keys.each do |s|
+                    @@sorter[s] = Sorter.new
+                    @@sorter[s].preset(
+                        eval("MyKeys").shortcuts,
+                        eval("MyKeys").expansions,
+                        eval("MyKeys").reductions,
+                        eval("MyKeys").divisions,
+                        @@languages[s] || '')
+                    @@sorter[s].prepare
                     @@synonyms[s].each_index do |i|
-                        @@synonyms[s][i].build(sorter)
+                        @@synonyms[s][i].build(@@sorter[s])
                     end
                     @@synonyms[s] = @@synonyms[s].sort
                 end
@@ -550,6 +563,7 @@ class TeXUtil
                     @key = @entry.dup if @key.empty?
                     @sortkey = @key.dup
                     @nofentries, @nofpages = 0, 0
+                    @normalizeentry = false
                 end
 
                 attr_reader :state, :type, :location, :key, :entry, :seetoo, :page, :realpage, :texthowto, :pagehowto
@@ -557,7 +571,9 @@ class TeXUtil
                 attr_writer :sortkey
 
                 def build(sorter)
-                    @entry, @key = sorter.normalize(@entry), sorter.normalize(sorter.tokenize(@key))
+                    # @entry, @key = sorter.normalize(@entry), sorter.normalize(sorter.tokenize(@key))
+                    @entry = sorter.normalize(sorter.tokenize(@entry)) if @normalizeentry
+                    @key   = sorter.normalize(sorter.tokenize(@key))
 if false then
                     @entry, @key = [@entry, @key].collect do |target|
                         # +a+b+c &a&b&c a+b+c a&b&c
@@ -738,11 +754,13 @@ end
             end
 
             @@registers = Hash.new
-            @@sorter = Sorter.new
+            @@sorter    = Hash.new
+            @@languages = Hash.new
 
             def MyRegisters::reset(logger)
                 @@registers = Hash.new
-                @@sorter = Sorter.new
+                @@sorter    = Hash.new
+                @@languages = Hash.new
             end
 
             def MyRegisters::reader(logger,data)
@@ -759,6 +777,8 @@ end
                     when 's' then
                         @@registers[data[1]] = Array.new unless @@registers.key?(data[1])
                         @@registers[data[1]].push(Register.new(4,data[1],data[2],data[3],data[4],data[5],data[6],nil))
+                    when 'l' then
+                        @@languages[data[1]] = data[2] || ''
                 end
             end
 
@@ -766,18 +786,24 @@ end
                 if @@registers.size > 0 then
                     @@registers.keys.sort.each do |s|
                         handle << logger.banner("registers: #{s} #{@@registers[s].size}")
-                        Register.flush(@@registers[s],handle,@@sorter)
+                        Register.flush(@@registers[s],handle,@@sorter[s])
                         # report("register #{@@registers[s].class}: #{@@registers[s].@nofentries} entries and #{@@registers[s].@nofpages} pages")
                     end
                 end
             end
 
             def MyRegisters::processor(logger)
-                @@sorter.preset(eval("MyKeys").shortcuts,eval("MyKeys").expansions,eval("MyKeys").reductions,eval("MyKeys").divisions)
-                @@sorter.prepare
                 @@registers.keys.each do |s|
+                    @@sorter[s] = Sorter.new
+                    @@sorter[s].preset(
+                        eval("MyKeys").shortcuts,
+                        eval("MyKeys").expansions,
+                        eval("MyKeys").reductions,
+                        eval("MyKeys").divisions,
+                        @@languages[s] || '')
+                    @@sorter[s].prepare
                     @@registers[s].each_index do |i|
-                        @@registers[s][i].build(@@sorter)
+                        @@registers[s][i].build(@@sorter[s])
                     end
                     @@registers[s] = @@registers[s].sort
                 end
@@ -861,7 +887,7 @@ end
 
             def MyKeys::reader(logger,data)
                 key = data.shift
-                grp = data.shift # language code, todo
+                # grp = data.shift # language code, todo
                 case key
                     when 's' then @@shortcuts.push(data)
                     when 'e' then @@expansions.push(data)

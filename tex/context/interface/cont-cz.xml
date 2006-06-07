@@ -6124,7 +6124,9 @@
       <cd:constant type="uvolnene"/>
       <cd:constant type="opakovat"/>
       <cd:constant type="cd:section"/>
+      <cd:constant type="odstavec"/>
       <cd:constant type="dotextu"/>
+      <cd:constant type="nahodny"/>
     </cd:keywords>
     <cd:assignments optional="yes" list="yes">
       <cd:parameter name="marginalie">

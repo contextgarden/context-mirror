@@ -80,12 +80,12 @@
    \fi
    \processaction
      [\@@svtype]
-     [     mswin=>\def\@@svline{\rawcharacter{13}\rawcharacter{10}}, % crlf
-          darwin=>\def\@@svline{\rawcharacter{13}},                  % cr
-      \s!unknown=>\def\@@svline{\rawcharacter{10}}]%                 % lf
+     [     mswin=>\edef\@@svline{\rawcharacter{13}\rawcharacter{10}}, % crlf
+          darwin=>\edef\@@svline{\rawcharacter{13}},                  % cr
+      \s!unknown=>\edef\@@svline{\rawcharacter{10}}]%                 % lf
    \splitjobfilename}
 
-\def\@@svline{\rawcharacter{10}} % unix is the most critical/sensitive system
+\edef\@@svline{\rawcharacter{10}} % unix is the most critical/sensitive system
 
 \def\systemendofline{\@@svline}
 

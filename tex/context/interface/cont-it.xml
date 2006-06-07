@@ -6124,7 +6124,9 @@
       <cd:constant type="lento"/>
       <cd:constant type="ripeti"/>
       <cd:constant type="cd:section"/>
+      <cd:constant type="capoverso"/>
       <cd:constant type="intesto"/>
+      <cd:constant type="casuale"/>
     </cd:keywords>
     <cd:assignments optional="yes" list="yes">
       <cd:parameter name="margine">

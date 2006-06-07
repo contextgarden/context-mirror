@@ -17,6 +17,32 @@
 
 \unprotect
 
+% \definemessageconstant{math}
+
+% \startmessages  all  library: math
+%   title: math
+%       1: don't use -- here (line \the\inputlineno)
+% \stopmessages
+
+% \def\invalidmathcommand#1{\showmessage\m!math1{#1}}
+
+% \let\normaleqno \eqno
+% \let\normalleqno\leqno
+
+% \appendtoks
+%     \def\eqno {\invalidmathcommand{\string\eqno }}%
+%     \def\leqno{\invalidmathcommand{\string\leqno}}%
+% \to \everydisplay
+
+% \appendtoks
+%     \let\eqno\normaleqno
+%     \let\leqno\normaleqno
+% \to \everymath
+
+% \placeformula\startformula
+% 	H(K|M,C) = H(K|C) - H(M|C)\eqno{\hbox{(\in{}[eq:keyapp])}}
+% \stopformula
+
 \def\mathortext
   {\ifmmode
      \expandafter\firstoftwoarguments

@@ -137,7 +137,8 @@ class Commands
             files = @commandline.arguments.sort
             if files.length > 0 then
                 if f = File.open(job.tempfilename('tex'),'w') then
-                    job.runtexutil(files,"--figures", true)
+                    # will be replaced
+                    Kpse.runscript('texutil',files.join(' '),'--figures')
                     figures     = @commandline.checkedoption('method', 'a').downcase
                     paperoffset = @commandline.checkedoption('paperoffset', '0pt')
                     backspace   = @commandline.checkedoption('backspace', '1.5cm')
@@ -194,8 +195,7 @@ class Commands
                     fnames.each do |ffname|
                         if msuffixes.include?(File.splitname(ffname)[1]) && FileTest.file?(ffname) then
                             if mod = File.open(job.tempfilename('tex'),'w') then
-                                # will become a call to ctxtools
-                                job.runtexutil(ffname,"--documents", true)
+                                Kpse.runscript('ctxtools',ffname,'--document')
                                 if ted = File.silentopen(File.suffixed(ffname,'ted')) then
                                     firstline = ted.gets
                                     if firstline =~ /interface=/o then
