@@ -943,26 +943,30 @@ end
         def loaded(filename)
             begin
                 tuifile = File.suffixed(filename,'tui')
-                report("parsing file #{tuifile}")
-                if f = open(tuifile) then
-                    f.each do |line|
-                        case line.chomp
-                            when /^f (.*)$/o then @plugins.reader('MyFiles',    $1.splitdata)
-                            when /^c (.*)$/o then @plugins.reader('MyCommands', [$1])
-                            when /^e (.*)$/o then @plugins.reader('MyExtras',   $1.splitdata)
-                            when /^s (.*)$/o then @plugins.reader('MySynonyms', $1.splitdata)
-                            when /^r (.*)$/o then @plugins.reader('MyRegisters',$1.splitdata)
-                            when /^p (.*)$/o then @plugins.reader('MyPlugins',  $1.splitdata)
-                            when /^x (.*)$/o then @plugins.reader('MyKeys',     $1.splitdata)
-                            when /^r (.*)$/o then # nothing, not handled here
-                        else
-                            # report("unknown entry #{line[0,1]} in line #{line.chomp}")
+                if FileTest.file?(tuifile) then
+                    report("parsing file #{tuifile}")
+                    if f = open(tuifile) then
+                        f.each do |line|
+                            case line.chomp
+                                when /^f (.*)$/o then @plugins.reader('MyFiles',    $1.splitdata)
+                                when /^c (.*)$/o then @plugins.reader('MyCommands', [$1])
+                                when /^e (.*)$/o then @plugins.reader('MyExtras',   $1.splitdata)
+                                when /^s (.*)$/o then @plugins.reader('MySynonyms', $1.splitdata)
+                                when /^r (.*)$/o then @plugins.reader('MyRegisters',$1.splitdata)
+                                when /^p (.*)$/o then @plugins.reader('MyPlugins',  $1.splitdata)
+                                when /^x (.*)$/o then @plugins.reader('MyKeys',     $1.splitdata)
+                                when /^r (.*)$/o then # nothing, not handled here
+                            else
+                                # report("unknown entry #{line[0,1]} in line #{line.chomp}")
+                            end
                         end
+                        f.close
                     end
-                    f.close
+                else
+                    report("unable to locate #{tuifile}")
                 end
             rescue
-                report("fatal error in parsing #{filename}")
+                report("fatal error in parsing #{tuifile}")
                 @filename = 'texutil'
             else
                 @filename = filename

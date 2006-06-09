@@ -1708,6 +1708,10 @@ def launch(filename)
     end
 end
 
+# env|environment
+# rel|relative
+# loc|locate|kpse|path|file
+
 def expanded(arg) # no "other text files", too restricted
     arg.gsub(/(env|environment)\:([a-zA-Z\-\_\.0-9]+)/o) do
         method, original, resolved = $1, $2, ''
@@ -1718,7 +1722,20 @@ def expanded(arg) # no "other text files", too restricted
             report("environment variable #{original} cannot be resolved") unless $report
             original
         end
-    end . gsub(/(kpse|loc|file|path)\:([a-zA-Z\-\_\.0-9]+)/o) do # was: \S
+    end . gsub(/(rel|relative)\:([a-zA-Z\-\_\.0-9]+)/o) do
+        method, original, resolved = $1, $2, ''
+        ['.','..','../..'].each do |r|
+            if FileTest.file?(File.join(r,original)) then
+                resolved = File.join(r,original)
+                break
+            end
+        end
+        if resolved.empty? then
+            original
+        else
+            resolved
+        end
+    end . gsub(/(kpse|loc|locate|file|path)\:([a-zA-Z\-\_\.0-9]+)/o) do
         method, original, resolved = $1, $2, ''
         if $program && ! $program.empty? then
             # pstrings = ["-progname=#{$program}"]
@@ -1816,8 +1833,11 @@ def runoneof(application,fullname,browserpermitted)
     else
         report("starting #{$filename}") unless $report
         output("\n") if $report && $verbose
-        applications = $applications[application]
-        if applications.class == Array then
+        applications = $applications[application.downcase]
+        if ! applications then
+            output("problems with determining application type")
+            return true
+        elsif applications.class == Array then
             if $report then
                 output([fullname,expanded($arguments)].join(' '))
                 return true
@@ -1858,7 +1878,7 @@ def usage
     print("\n")
     print("usage    : texmfstart [switches] filename [optional arguments]\n")
     print("\n")
-    print("switches : --verbose --report --browser --direct --execute --locate --iftouched\n")
+    print("switches : --verbose --report --browser --direct --execute --locate --iftouched --ifchanged\n")
     print("           --program --file --page --arguments --batch --edit --report --clear\n")
     print("           --make --lmake --wmake --path --stubpath --indirect --before --after\n")
     print("           --tree --autotree --environment --showenv\n")
@@ -1871,11 +1891,14 @@ def usage
     print("           texmfstart --page=2 --file=showcase.pdf\n")
     print("           texmfstart --program=yourtex yourscript.rb arg-1 arg-2\n")
     print("           texmfstart --direct xsltproc kpse:somefile.xsl somefile.xml\n")
+    print("           texmfstart --direct ruby rel:wn-cleanup-1.rb oldfile.xml newfile.xml\n")
     print("           texmfstart bin:xsltproc env:somepreset path:somefile.xsl somefile.xml\n")
     print("           texmfstart --iftouched=normal,lowres downsample.rb normal lowres\n")
-    print("           texmfstart texmfstart bin:scite kpse:texmf.cnf\n")
+    print("           texmfstart --ifchanged=somefile.dat --direct processit somefile.dat\n")
+    print("           texmfstart bin:scite kpse:texmf.cnf\n")
     print("           texmfstart --exec bin:scite *.tex\n")
     print("           texmfstart --edit texmf.cnf\n")
+    print("           texmfstart --edit kpse:texmf.cnf\n")
     print("           texmfstart --serve\n")
     print("\n")
     print("           texmfstart --stubpath=/usr/local/bin [--make --remove] --verbose all\n")
@@ -2114,15 +2137,15 @@ def run(fullname)
     elsif FileTest.file?(fullname) then
         begin
             case fullname
-                when /\.(#{$scriptlist})$/ then
+                when /\.(#{$scriptlist})$/i then
                     return runoneof($1,fullname,false)
-                when /\.(#{$documentlist})$/ then
+                when /\.(#{$documentlist})$/i then
                     return runoneof($1,fullname,true)
                 else
                     return runoneof('unknown',fullname,false)
             end
         rescue
-            report("starting '#{$filename}' in program space '#{$program}' fails")
+            report("starting '#{$filename}' in program space '#{$program}' fails (#{$!})")
         end
     else
         report("the file '#{$filename}' in program space '#{$program}' is not accessible")

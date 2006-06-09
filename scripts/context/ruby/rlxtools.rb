@@ -110,7 +110,7 @@ class Commands
                                     REXML::XPath.each(localsteps,tag) do |extras|
                                         REXML::XPath.each(extras,"rl:value") do |value|
                                             if name = value.attributes['name'] then
-                                                substititute(value,variables[name.to_s])
+                                                substititute(value,variables[name.to_s] || '')
                                             end
                                         end
                                     end
@@ -202,7 +202,7 @@ class Commands
         return str.strip
     end
 
-    def substititute(value,str)
+    def substititute(value,str='')
         if str then
             begin
                 if value.attributes.key?('method') then

@@ -132,7 +132,7 @@ module Tool
         return old unless test(?f,old)
 
         new = old.downcase
-        new.gsub!(/[^A-Za-z0-9\-\.\\\/]/o) do # funny chars
+        new.gsub!(/[^A-Za-z0-9\_\-\.\\\/]/o) do # funny chars
             '-'
         end
         if old =~ /[a-zA-Z]\:/o

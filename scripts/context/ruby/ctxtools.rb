@@ -685,20 +685,25 @@ class Commands
                             else
                                 if skiplevel == 0 then
                                     inlocaldocument = indocument
+                                    inlocaldocument = false # else first line skipped when not empty
                                     someline = str
                                     if indocument then
                                         ted.puts("\\stopdocumentation\n")
                                         indocument = false
                                     end
-                                    if someline.empty? && indefinition then
-                                        ted.puts("\\stopdefinition\n")
-                                        indefinition = false
-                                    elsif indefinition then
-                                        ted.puts("#{someline}\n")
+                                    if indefinition then
+                                        if someline.empty? then
+                                            ted.puts("\\stopdefinition\n")
+                                            indefinition = false
+                                        else
+                                            ted.puts("#{someline}\n")
+                                        end
                                     elsif ! someline.empty? then
                                         ted.puts("\n\\startdefinition\n")
                                         indefinition = true
-                                        unless inlocaldocument then
+                                        if inlocaldocument then
+                                            # nothing
+                                        else
                                             nofdefinitions += 1
                                             ted.puts("#{someline}\n")
                                         end

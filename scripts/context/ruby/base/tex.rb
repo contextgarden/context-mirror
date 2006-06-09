@@ -839,36 +839,10 @@ class TEX
         end
     end
 
-    def makestubfile(rawname,forcexml=false)
-        if tmp = openedfile(File.suffixed(rawname,'run')) then
+    def makestubfile(rawname,rawbase,forcexml=false)
+        if tmp = openedfile(File.suffixed(rawbase,'run')) then
             tmp << "\\starttext\n"
             if forcexml then
-                # if FileTest.file?(rawname) && (xml = File.open(rawname)) then
-                    # xml.each do |line|
-                        # case line
-                            # when /<\?context\-directive\s+(\S+)\s+(\S+)\s+(\S+)\s*(.*?)\s*\?>/o then
-                                # category, key, value, rest = $1, $2, $3, $4
-                                # case category
-                                    # when 'job' then
-                                        # case key
-                                            # when 'control' then
-                                                # setvariable(value,if rest.empty? then true else rest end)
-                                            # when 'mode', 'modes' then
-                                                # tmp << "\\enablemode[#{value}]\n"
-                                            # when 'stylefile', 'environment' then
-                                                # tmp << "\\environment #{value}\n"
-                                            # when 'module' then
-                                                # tmp << "\\usemodule[#{value}]\n"
-                                            # when 'interface' then
-                                                # contextinterface = value
-                                        # end
-                                # end
-                            # when /<[a-z]+/io then # beware of order, first pi test
-                                # break
-                        # end
-                    # end
-                    # xml.close
-                # end
                 tmp << checkxmlfile(rawname)
                 tmp << "\\processXMLfilegrouped{#{rawname}}\n"
             else
@@ -1370,11 +1344,11 @@ class TEX
 
         takeprecautions
         report("using search method '#{Kpse.searchmethod}'") if getvariable('verbose')
-        rawname = getvariable('filename')
-        jobname = getvariable('filename')
-        suffix  = getvariable('suffix')
-        result  = getvariable('result')
-
+        rawname    = getvariable('filename')
+        jobname    = getvariable('filename')
+        suffix     = getvariable('suffix')
+        result     = getvariable('result')
+        forcexml   = getvariable('forcexml')
         runonce    = getvariable('once')
         finalrun   = getvariable('final') || (getvariable('arrange') && ! getvariable('noarrange'))
         globalfile = getvariable('globalfile')
@@ -1400,7 +1374,9 @@ class TEX
 
         PDFview.closeall if getvariable('autopdf')
 
-        forcexml = jobsuffix.match(/^(xml|fo|fox|rlg|exa)$/io) # nil or match
+        if jobsuffix =~ /^(htm|html|xhtml|xml|fo|fox|rlg|exa)$/io then
+            forcexml = true
+        end
 
         dummyfile = false
 
@@ -1417,24 +1393,31 @@ class TEX
 
         rawname = jobname + '.' + jobsuffix
 
+        rawpath = File.dirname(rawname)
+        rawbase = File.basename(rawname)
+
         unless FileTest.file?(rawname) then
             inppath.split(',').each do |ip|
                 break if dummyfile = FileTest.file?(File.join(ip,rawname))
             end
         end
 
-        jobsuffix = makestubfile(rawname,forcexml) if dummyfile || forcexml
+        jobsuffix = makestubfile(rawname,rawbase,forcexml) if dummyfile || forcexml
 
         # preprocess files
 
         unless getvariable('noctx') then
             ctx = CtxRunner.new(rawname,@logger)
             if getvariable('ctxfile').empty? then
-                ctx.manipulate(File.suffixed(rawname,'ctx'),'jobname.ctx')
+                if rawname == rawbase then
+                    ctx.manipulate(File.suffixed(rawname,'ctx'),'jobname.ctx')
+                else
+                    ctx.manipulate(File.suffixed(rawname,'ctx'),File.join(rawpath,'jobname.ctx'))
+                end
             else
                 ctx.manipulate(File.suffixed(getvariable('ctxfile'),'ctx'))
             end
-            ctx.savelog(File.suffixed(rawname,'ctl'))
+            ctx.savelog(File.suffixed(rawbase,'ctl'))
 
             envs = ctx.environments
             mods = ctx.modules
@@ -1465,7 +1448,7 @@ class TEX
             end
             result = File.suffixed(rawname,suffix) unless suffix.empty?
 
-            pushresult(rawname,result)
+            pushresult(rawbase,result)
 
             method = validtexmethod(validtexformat(getvariable('texformats')))
 
@@ -1475,16 +1458,16 @@ class TEX
 
                 when 'context' then
                     if getvariable('simplerun') || runonce then
-                        makeoptionfile(rawname,jobname,orisuffix,true,true,3,1) unless getvariable('nooptionfile')
-                        ok = runtex(rawname)
+                        makeoptionfile(rawbase,jobname,orisuffix,true,true,3,1) unless getvariable('nooptionfile')
+                        ok = runtex(if dummyfile || forcexml then rawbase else rawname end)
                         if ok then
-                            ok = runtexutil(rawname) if getvariable('texutil') || getvariable('forcetexutil')
-                            runbackend(rawname)
-                            popresult(rawname,result)
+                            ok = runtexutil(rawbase) if getvariable('texutil') || getvariable('forcetexutil')
+                            runbackend(rawbase)
+                            popresult(rawbase,result)
                         end
                         if getvariable('keep') then
-                            ['top','log'].each do |suffix|
-                                File.silentrename(File.suffixed(rawname,suffix),File.suffixed(rawname,suffix+'.keep'))
+                            ['top','log','run'].each do |suffix|
+                                File.silentrename(File.suffixed(rawbase,suffix),File.suffixed(rawbase,suffix+'.keep'))
                             end
                         end
                     else
@@ -1492,11 +1475,11 @@ class TEX
                         texruns, nofruns = 0, getvariable('runs').to_i
                         state = FileState.new
                         ['tub','tuo'].each do |s|
-                            state.register(File.suffixed(rawname,s))
+                            state.register(File.suffixed(rawbase,s))
                         end
                         if getvariable('automprun') then # check this
                             ['mprun','mpgraph'].each do |s|
-                                state.register(File.suffixed(rawname,s,'mp'),'randomseed')
+                                state.register(File.suffixed(rawbase,s,'mp'),'randomseed')
                             end
                         end
                         while ! stoprunning && (texruns < nofruns) && ok do
@@ -1504,48 +1487,48 @@ class TEX
                             report("TeX run #{texruns}")
                             unless getvariable('nooptionfile') then
                                 if texruns == nofruns then
-                                    makeoptionfile(rawname,jobname,orisuffix,false,false,4,texruns) # last
+                                    makeoptionfile(rawbase,jobname,orisuffix,false,false,4,texruns) # last
                                 elsif texruns == 1 then
-                                    makeoptionfile(rawname,jobname,orisuffix,false,false,1,texruns) # first
+                                    makeoptionfile(rawbase,jobname,orisuffix,false,false,1,texruns) # first
                                 else
-                                    makeoptionfile(rawname,jobname,orisuffix,false,false,2,texruns) # unknown
+                                    makeoptionfile(rawbase,jobname,orisuffix,false,false,2,texruns) # unknown
                                 end
                             end
-                            ok = runtex(File.suffixed(rawname,jobsuffix))
+                            ok = runtex(File.suffixed(if dummyfile || forcexml then rawbase else rawname end,jobsuffix))
                             if ok && (nofruns > 1) then
                                 unless getvariable('nompmode') then
-                                    mprundone = runtexmpjob(rawname, "mpgraph")
-                                    mprundone = runtexmpjob(rawname, "mprun")
+                                    mprundone = runtexmpjob(rawbase, "mpgraph")
+                                    mprundone = runtexmpjob(rawbase, "mprun")
                                 end
-                                ok = runtexutil(rawname)
+                                ok = runtexutil(rawbase)
                                 state.update
                                 stoprunning = state.stable?
                             end
                         end
-                        ok = runtexutil(rawname) if (nofruns == 1) && getvariable('texutil')
+                        ok = runtexutil(rawbase) if (nofruns == 1) && getvariable('texutil')
                         if ok && finalrun && (nofruns > 1) then
-                            makeoptionfile(rawname,jobname,orisuffix,true,finalrun,4,texruns) unless getvariable('nooptionfile')
+                            makeoptionfile(rawbase,jobname,orisuffix,true,finalrun,4,texruns) unless getvariable('nooptionfile')
                             report("final TeX run #{texruns}")
-                            ok = runtex(File.suffixed(rawname,jobsuffix))
+                            ok = runtex(File.suffixed(if dummyfile || forcexml then rawbase else rawname end,jobsuffix))
                         end
                         if getvariable('keep') then
-                            ['top','log'].each do |suffix|
-                                File.silentrename(File.suffixed(rawname,suffix),File.suffixed(rawname,suffix+'.keep'))
+                            ['top','log','run'].each do |suffix|
+                                File.silentrename(File.suffixed(rawbase,suffix),File.suffixed(rawbase,suffix+'.keep'))
                             end
                         else
-                            File.silentrename(File.suffixed(rawname,'top'),File.suffixed(rawname,'tmp'))
+                            File.silentrename(File.suffixed(rawbase,'top'),File.suffixed(rawbase,'tmp'))
                         end
                         # ['tmp','top','log'].each do |s| # previous tuo file / runtime option file / log file
-                             # File.silentdelete(File.suffixed(rawname,s))
+                             # File.silentdelete(File.suffixed(rawbase,s))
                         # end
                         if ok then
-                            runbackend(rawname)
-                            popresult(rawname,result)
+                            runbackend(rawbase)
+                            popresult(rawbase,result)
                         end
                     end
 
-                    Kpse.runscript('ctxtools',rawname,'--purge')    if getvariable('purge')
-                    Kpse.runscript('ctxtools',rawname,'--purgeall') if getvariable('purgeall')
+                    Kpse.runscript('ctxtools',rawbase,'--purge')    if getvariable('purge')
+                    Kpse.runscript('ctxtools',rawbase,'--purgeall') if getvariable('purgeall')
 
                 when 'latex' then
 
@@ -1557,16 +1540,16 @@ class TEX
 
             end
 
-            if (dummyfile or forcexml) and FileTest.file?(rawname) then
+            if (dummyfile or forcexml) and FileTest.file?(rawbase) then
                 begin
-                    File.delete(File.suffixed(rawname,'run'))
+                    File.delete(File.suffixed(rawbase,'run'))
                 rescue
                     report("unable to delete stub file")
                 end
             end
 
             if ok and getvariable('autopdf') then
-                PDFview.open(File.suffixed(if result.empty? then rawname else result end,'pdf'))
+                PDFview.open(File.suffixed(if result.empty? then rawbase else result end,'pdf'))
             end
 
         else

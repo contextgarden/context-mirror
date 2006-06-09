@@ -59,7 +59,6 @@ class CtxRunner
         end
 
         # name can be kpse:res-make.ctx
-
         if not FileTest.file?(@ctxname) then
             fullname, done = '', false
             if @ctxname =~ /^kpse:/ then
@@ -142,7 +141,6 @@ class CtxRunner
             begin
                 suffix = REXML::XPath.match(@xmldata.root,"/ctx:job/ctx:preprocess/@suffix").to_s
             rescue
-            puts $!
                 suffix = @@suffix
             else
                 if suffix && suffix.empty? then suffix = @@suffix end
@@ -151,10 +149,23 @@ class CtxRunner
                 REXML::XPath.each(files,"ctx:file") do |pattern|
                     preprocessor = pattern.attributes['processor']
                     if preprocessor and not preprocessor.empty? then
+                        begin
+                            variables['old'] = @jobname
+                            variables['new'] = ""
+                            REXML::XPath.each(pattern,"ctx:value") do |value|
+                                if name = value.attributes['name'] then
+                                    substititute(value,variables[name.to_s])
+                                end
+                            end
+                        rescue
+                            report('unable to resolve file pattern')
+                            return
+                        end
                         pattern = justtext(pattern)
                         Dir.glob(pattern).each do |oldfile|
                             newfile = "#{oldfile}.#{suffix}"
                             if File.needsupdate(oldfile,newfile) then
+                                report("#{oldfile} needs preprocessing")
                                 begin
                                     File.delete(newfile)
                                 rescue
@@ -222,7 +233,8 @@ class CtxRunner
                 log << "<?xml version='1.0' standalone='yes'?>\n\n"
                 log << "<ctx:preplist>\n"
                 @prepfiles.keys.sort.each do |prep|
-                    log << "\t<ctx:prepfile done='#{yes_or_no(@prepfiles[prep])}'>#{File.basename(prep)}</ctx:prepfile>\n"
+                    # log << "\t<ctx:prepfile done='#{yes_or_no(@prepfiles[prep])}'>#{File.basename(prep)}</ctx:prepfile>\n"
+                    log << "\t<ctx:prepfile done='#{yes_or_no(@prepfiles[prep])}'>#{prep}</ctx:prepfile>\n"
                 end
                 log << "</ctx:preplist>\n"
                 log.close
@@ -338,7 +350,10 @@ class CtxRunner
             when 'suffix'   then if str =~ /^.*\.(.*?)$/o         then $1 else ''  end
             when 'nosuffix' then if str =~ /^(.*)\..*?$/o         then $1 else str end
             when 'nopath'   then if str =~ /^.*[\\\/](.*?)$/o     then $1 else str end
-            else                                                               str
+            when 'full'     then str
+            when 'complete' then str
+            when 'expand'   then File.expand_path(str).gsub(/\\/,"/")
+            else                 str
         end
     end
 

@@ -512,10 +512,10 @@ class Commands
             job.setvariable('backend','xdv')
         else
             case job.getvariable('texengine')
-                when 'pdfetex' then job.setvariable('backend','pdftex')
-                when 'luatex'  then job.setvariable('backend','pdftex')
-                when 'xetex'   then job.setvariable('backend','xetex')
-                when 'aleph'   then job.setvariable('backend','dvipdfmx')
+                when 'pdfetex'  then job.setvariable('backend','pdftex')
+                when 'luatex'   then job.setvariable('backend','pdftex')
+                when 'xetex'    then job.setvariable('backend','xetex')
+                when 'aleph'    then job.setvariable('backend','dvipdfmx')
             else
                 job.setvariable('backend','standard')
             end

@@ -11,7 +11,7 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-\newcontextversion{2006.06.07 23:34}
+\newcontextversion{2006.06.09 13:05}
 
 %D This file is loaded at runtime, thereby providing an
 %D excellent place for hacks, patches, extensions and new
@@ -97,26 +97,28 @@
 \def\getRLIfiguredimensions#1%
   {\let\rliwidth \!!zeropoint
    \let\rliheight\!!zeropoint
-   \doiffileelse\@@effilenametype
-     {\doiffileelse{\@@effilenametype.rli}
-        {}
-        {% let's try runtime running first
-         \writestatus\m!figures{using rlxtools to determine size of \@@effilenametype}%
-         \executesystemcommand{texmfstart rlxtools --identify \@@effilenametype}}%
-      \doiffileelse{\@@effilenametype.rli}
-        {}
-        {% we assume that runtime running failed
-         \installprogram{texmfstart rlxtools --identify \@@effilenametype}}%
-      \startnointerference
-      \startXMLmapping[rli]%
-        \startXMLignore
-        \processXMLfile{\@@effilenametype.rli}%
-        \edef\rliwidth {\XMLflush{rl:width}}%
-        \edef\rliheight{\XMLflush{rl:height}}%
-        \stopXMLignore
-      \stopXMLmapping
-      \stopnointerference}
-     {}}
+   \doifelsenothing\@@efconversion
+     {\doiffileelse\@@effilenametype
+        {\doiffileelse{\@@effilenametype.rli}
+           {}
+           {% let's try runtime running first
+            \writestatus\m!figures{using rlxtools to determine size of \@@effilenametype}%
+            \executesystemcommand{texmfstart rlxtools --identify \@@effilenametype}}%
+         \doiffileelse{\@@effilenametype.rli}
+           {}
+           {% we assume that runtime running failed
+            \installprogram{texmfstart rlxtools --identify \@@effilenametype}}%
+         \startnointerference
+         \startXMLmapping[rli]%
+           \startXMLignore
+           \processXMLfile{\@@effilenametype.rli}%
+           \edef\rliwidth {\XMLflush{rl:width}}%
+           \edef\rliheight{\XMLflush{rl:height}}%
+           \stopXMLignore
+         \stopXMLmapping
+         \stopnointerference}
+        {}}
+     {}} % no rli when rlx conversion is in place
 
 \def\getfiguredimensionsC
   {\ifcase\figurestatus\ifcase\figurefilemode\else
@@ -244,9 +246,11 @@
 
 \def\docheckprepfile
   {\ifcase\preprocessmethod
+     \iftracefiles\writestatus\m!systems{preprocessing - not needed}\fi
      % no preprocessing
    \or
      % only check for existence
+     \iftracefiles\writestatus\m!systems{preprocessing - check exitence of \readfilename\preprocesssuffix}\fi
      \doiffileexistselse{\readfilename\preprocesssuffix}
        {\chardef\preprocessstate\plusone}
        \donothing
@@ -256,14 +260,21 @@
      \splitfilename\readfilename
      \ifx\splitofftype\empty
        % saveguard and speed up
+       \iftracefiles\writestatus\m!systems{preprocessing - no suffix}\fi
        \egroup
      \else
-       \doifdefinedelse{fp..\splitoffname.\splitofftype}
+       \iftracefiles\writestatus\m!systems{preprocessing - check presence of \readfilename\preprocesssuffix}\fi
+       \doifdefinedelse{fp..\readfilename}
          {\egroup
           \doiffileexistselse{\readfilename\preprocesssuffix}
             {\chardef\preprocessstate\plusone}
             {\chardef\preprocessstate\plustwo}}%
-         {\egroup}%
+         {\doifdefinedelse{fp..\splitoffname.\splitofftype}
+            {\egroup
+             \doiffileexistselse{\readfilename\preprocesssuffix}
+               {\chardef\preprocessstate\plusone}
+               {\chardef\preprocessstate\plustwo}}%
+            {\egroup}}%
      \fi
    \fi}
 

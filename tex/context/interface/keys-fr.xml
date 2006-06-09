@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 
-<cd:interface xmlns:cd="http://www.pragma-ade.com/commands" name="context" language="fr" version="2006.05.28 13:28">
+<cd:interface xmlns:cd="http://www.pragma-ade.com/commands" name="context" language="fr" version="2006.06.09 13:05">
 
   <cd:variables>
     <cd:variable name="one" value="un"/>
@@ -732,7 +732,7 @@
     <cd:variable name="week" value="semaine"/>
     <cd:variable name="weekday" value="joursemaine"/>
     <cd:variable name="WEEKDAY" value="JOURSEMAINE"/>
-    <cd:variable name="random" value="aléatoire"/>
+    <cd:variable name="random" value="aleatoire"/>
     <cd:variable name="white" value="blanc"/>
     <cd:variable name="very" value="tres"/>
     <cd:variable name="verytolerant" value="trestolerant"/>
