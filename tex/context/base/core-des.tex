@@ -508,23 +508,23 @@
 
 \setvalue{showdn\v!sub\c!number}%
   {\getvalue{showdn\c!number}%
-   \descriptionparameter\c!separator
+   \spr{\descriptionparameter\c!separator}%
    \convertednumber[\v!sub\currentdescriptionnumber]}
 
 \setvalue{showdn\v!sub\v!sub\c!number}%
   {\getvalue{showdn\v!sub\c!number}%
-   \descriptionparameter\c!separator
+   \spr{\descriptionparameter\c!separator}%
    \convertednumber[\v!sub\v!sub\currentdescriptionnumber]}
 
 \setvalue{showdn\v!sub\v!sub\v!sub\c!number}%
   {\getvalue{showdn\v!sub\v!sub\c!number}%
-   \descriptionparameter\c!separator
+   \spr{\descriptionparameter\c!separator}%
    \convertednumber[\v!sub\v!sub\v!sub\currentdescriptionnumber]}
 
 \def\domakednnumber
   {\descriptionparameter\c!left
    \strut\doshowdnnumber
-   \descriptionparameter\c!stopper
+   % \descriptionparameter\c!stopper
    \descriptionparameter\c!right}
 
 \setvalue{\??dd\s!set\v!sub\s!sub\s!sub\c!number}#1%
@@ -706,7 +706,8 @@
      {\getvalue{\??ds#1\c!width}}
      {\doattributes
         {\??ds#1}\c!headstyle\c!headcolor
-        {\getvalue{\??ds#1\c!sample}\getvalue{\??ds#1\c!separator}}}
+        {\getvalue{\??ds#1\c!sample}%
+         \spr{\getvalue{\??ds#1\c!separator}}}}
      {\getvalue{\??ds#1\c!distance}}%
    \advance\!!widtha \getvalue{\??ds#1\c!distance}%
    \setbox2\hbox to \!!widtha
@@ -715,7 +716,7 @@
         {\strut
          \getvalue{\??ds#1\c!text}%
          \hss
-         \getvalue{\??ds#1\c!separator}%
+         \spr{\getvalue{\??ds#1\c!separator}}%
          \hskip\getvalue{\??ds#1\c!distance}}}%
    \parindent\zeropoint
    \hskip#2\!!widtha\indent\box2%
@@ -811,7 +812,7 @@
    \c!conversion=,             % to be upward compatible
    \c!way=\v!by\v!text,
    \c!sectionnumber=\v!yes,
-   \c!separator=.,
+   \c!separator=\@@koseparator, % per 2006.06.23, was .
    \c!stopper=,
    \c!number=,
    \c!command=]

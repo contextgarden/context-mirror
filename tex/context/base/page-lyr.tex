@@ -435,6 +435,8 @@
 %D efficient in \ETEX\ since there testing for an undefined
 %D macro does not takes hash space.
 
+% todo: setups before flush, handy hook
+
 \unexpanded\def\flushlayer[#1]%
   {\doifelsevalue{\??ll#1\c!state}\v!next
      {\global\letvalue{\??ll#1\c!state}\v!start} % dangerous, stack-built-up

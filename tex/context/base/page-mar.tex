@@ -574,7 +574,7 @@
         \v!right=>\let\next\dorightmarginblock, % no swapping
         \v!inner=>\def\next{\doinmarginswapped\dorightmarginblock\doleftmarginblock },
         \v!outer=>\def\next{\doinmarginswapped\doleftmarginblock \dorightmarginblock},
-      \s!unknown=>\ifdubbelzijdig
+      \s!unknown=>\ifdoublesided
                     \doifcommonelse{+,-}{#4}
                       {\def\next{\doinmarginswapped\dorightmarginblock\doleftmarginblock }}
                       {\def\next{\doinmarginswapped\doleftmarginblock \dorightmarginblock}}%

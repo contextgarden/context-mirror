@@ -937,7 +937,7 @@ SetInterfaces( "en", "english",      "english" );
 SetInterfaces( "de", "german",       "german" );
 SetInterfaces( "fr", "french",       "french" );
 SetInterfaces( "cz", "czech",        "czech" );
-SetInterfaces( "uk", "brittish",     "english" );
+SetInterfaces( "uk", "british",      "english" );
 SetInterfaces( "it", "italian",      "italian" );
 SetInterfaces( "no", "norwegian",    "norwegian" );
 SetInterfaces( "ro", "romanian",     "romanian" );
@@ -3151,7 +3151,7 @@ interface user interface
 =de German
 =fr French
 =cz Czech
-=uk Brittish
+=uk British
 =it Italian
 -----------
 language main hyphenation language
@@ -3178,7 +3178,7 @@ module typeset tex/pl/mp module
 -----------
 mptex run an MetaPost plus btex-etex cycle
 -----------
-mpxtex generatet an MetaPostmpx file
+mpxtex generate an MetaPost mpx file
 -----------
 noarrange process but ignore arrange
 -----------
@@ -3191,8 +3191,8 @@ automprun MetaPost at runtime when needed
 once run TeX only once (no TeXUtil either)
 -----------
 output specials to use
-=pdftex   Han The Than's pdf backend
-=dvips    Thomas Rokicky's dvi to ps converter
+=pdftex   Han The Thanh's pdf backend
+=dvips    Tomas Rokicky's dvi to ps converter
 =dvipsone YandY's dvi to ps converter
 =dviwindo YandY's windows previewer
 =dvipdfm  Mark Wicks' dvi to pdf converter
@@ -3285,7 +3285,7 @@ verbose shows some additional info
 -----------
 help show this or more, e.g. '--help interface'
 -----------
-alone bypass utilities (e.g. fmtutil for non-standard fmt's)
+alone bypass utilities (e.g. fmtutil for non-standard fmts)
 -----------
 texutil force TeXUtil run
 -----------

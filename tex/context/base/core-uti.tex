@@ -31,6 +31,7 @@
 \edef\utilityversion{1998.07.07} % was: 1996.03.15  % status variables
 \edef\utilityversion{1998.12.20} % was: 1998.07.07  % index attributes
 \edef\utilityversion{2003.07.19} % was: 1998.12.20  % object pages
+\edef\utilityversion{2006.06.23} % was: 2003.07.19  % -- instead of :
 
 % Bepaalde commando's worden als string weggeschreven. Deze
 % zijn aan het eind van deze file gedefinieerd.
@@ -56,10 +57,10 @@
      {\checksectionseparator}
      {\@@utilityerrormessage\resetutilities\endinput}}
 
-\def\checksectionseparator               % catches backward compatibility conflict
-  {\doifnot\sectionseparator:\endinput}  % this dependency may go in a few years
+\def\checksectionseparator                  % catches backward compatibility conflict
+  {}% \doifnot\sectionseparator:\endinput}  % this dependency may go in a few years
 
-\def\dosplitofffoliopart[#1::#2::#3]{#3}
+\def\dosplitofffoliopart[#1--#2--#3]{#3}
 
 \def\thisissectionseparator#1%
   {\bgroup

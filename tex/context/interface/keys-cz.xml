@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 
-<cd:interface xmlns:cd="http://www.pragma-ade.com/commands" name="context" language="cz" version="2006.06.09 13:05">
+<cd:interface xmlns:cd="http://www.pragma-ade.com/commands" name="context" language="cz" version="2006.07.13 22:26">
 
   <cd:variables>
     <cd:variable name="one" value="jedna"/>
@@ -183,6 +183,7 @@
     <cd:constant name="topoffset" value="offsetvrsku"/>
     <cd:constant name="topstate" value="statusvrsku"/>
     <cd:constant name="width" value="sirka"/>
+    <cd:constant name="autowidth" value="autosirka"/>
     <cd:constant name="maxwidth" value="maxsirka"/>
     <cd:constant name="minwidth" value="minsirka"/>
     <cd:constant name="source" value="zdroj"/>

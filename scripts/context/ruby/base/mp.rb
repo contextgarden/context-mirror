@@ -87,7 +87,7 @@ EOT
                     f.puts("")
                     f.puts(@@start[method])
                 end
-                data.gsub!(/%.*?$/mo) do
+                data.gsub!(/[^\\]%.*?$/mo) do
                     ''
                 end
                 data.scan(/(verbatim|b)tex\s*(.*?)\s*etex/mo) do

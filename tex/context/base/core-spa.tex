@@ -2271,30 +2271,33 @@
 %    \edef\strutdepth{\the\strutdimen}%
 %    \dosetstrut}
 
+% interesting, strudepth is 4.05064pt vs 4.05066pt depending on grid
+% nasty rounding problem
+
 \def\setstrut
   {% height
    \strutdimen\normallineheight
-\ifdim\minimumstrutheight>\zeropoint
-  \strutdimen\minimumstrutheight
-\else
-   \strutdimen\strutheightfactor\strutdimen
-\fi
+   \ifdim\minimumstrutheight>\zeropoint
+     \strutdimen\minimumstrutheight
+   \else
+     \strutdimen\strutheightfactor\strutdimen
+   \fi
    \strutdimen\spacingfactor\strutdimen
    \edef\strutheight{\the\strutdimen}%
    % depth
    \strutdimen\normallineheight
    \ifgridsnapping
-\ifdim\minimumstrutdepth>\zeropoint
-  \strutdimen\minimumstrutdepth
-\else
-     \advance\strutdimen-\strutheight
-\fi
+     \ifdim\minimumstrutdepth>\zeropoint
+       \strutdimen\minimumstrutdepth
+     \else
+       \advance\strutdimen-\strutheight
+     \fi
    \else
-\ifdim\minimumstrutdepth>\zeropoint
-  \strutdimen\minimumstrutdepth
-\else
-     \strutdimen\strutdepthfactor\strutdimen
-\fi
+     \ifdim\minimumstrutdepth>\zeropoint
+       \strutdimen\minimumstrutdepth
+     \else
+       \strutdimen\strutdepthfactor\strutdimen
+     \fi
      \strutdimen\spacingfactor\strutdimen
    \fi
    \edef\strutdepth{\the\strutdimen}%
@@ -2456,7 +2459,8 @@
   {\setbox\strutbox\copy\nostrutbox
    \let\strut\empty
    \let\endstrut\empty
-   \let\begstrut\empty}
+   \let\begstrut\empty
+   \let\crlfplaceholder\empty}
 
 % unsave:
 %
@@ -2639,17 +2643,19 @@
    \adjdemerits         \zerocount}
 
 \def\setdefaultpenalties
-  {\setups[\systemsetupsprefix\s!default]}
+  {\directsetup{\systemsetupsprefix\s!default}}
 
-\startsetups [\systemsetupsprefix\v!reset]
+\startsetups [\systemsetupsprefix\s!reset]
   \resetpenalties\widowpenalties
   \resetpenalties\clubpenalties
   \resetpenalties\interlinepenalties
 \stopsetups
 
+% we use \directsetup because it's faster and we know there is no csl
+
 \startsetups [\systemsetupsprefix\s!default]
 
-  \setups[\systemsetupsprefix\s!reset]
+  \directsetup{\systemsetupsprefix\s!reset}
 
   \widowpenalty\defaultwidowpenalty
   \clubpenalty \defaultclubpenalty
@@ -2658,7 +2664,7 @@
 
 \startsetups [\v!grid] [\systemsetupsprefix\s!default]
 
-  \setups[\systemsetupsprefix\v!reset]
+  \directsetup{\systemsetupsprefix\s!reset}
 
   \widowpenalty\defaultgridwidowpenalty
   \clubpenalty \defaultgridclubpenalty
@@ -2669,7 +2675,7 @@
 
 \startsetups [\systemsetupsprefix\v!strict]
 
-   \setups[\v!reset]
+   \directsetup{\systemsetupsprefix\s!reset}
 
    \setpenalties\widowpenalties2\maxdimen
    \setpenalties\clubpenalties 2\maxdimen
@@ -2915,33 +2921,44 @@
      {\getvalue{\@@ragged@@command\v!left}}
      {\getvalue{\@@ragged@@command\v!right}}}
 
+% compare:
+%
+% \framed[width=4cm,align=no]     {\hfil xxx}
+% \framed[width=4cm,align=disable]{\hfil xxx}
+
+\setvalue{\@@ragged@@command\v!disable}% for one liners
+  {\appendtoks\raggedright\parfillskip\zeropoint\to\everyraggedcommand}
+
 \chardef\raggedoneliner\zerocount
 
 \setvalue{\@@ragged@@command\v!line}%
   {\chardef\raggedoneliner\plusone}
 
-\def\@@startraggedoneliner
-  {\ifcase\raggedoneliner\else
-     \dontleavehmode\hbox\bgroup
-     \ifcase\raggedstatus\or\hss\or\hss\fi
-     \ignorespaces
-     \bgroup
-     \aftergroup\removeunwantedspaces
-   \fi}
+%D Unofficial, may disappear. Now handled directly in the
+%D core-rul module.
 
-\def\@@stopraggedoneliner
-  {\ifcase\raggedoneliner\else
-     \egroup
-     \ifcase\raggedstatus\or\hss\or\or\hss\fi
-     \egroup
-     \ignorespaces
-   \fi}
+% \def\@@startraggedoneliner
+%   {\ifcase\raggedoneliner\else
+%      \dontleavehmode\hbox to \hsize \bgroup % hsize added, else useless
+%      \ifcase\raggedstatus\or\hss\or\hss\fi
+%      \ignorespaces
+%      \bgroup
+%      \aftergroup\removeunwantedspaces
+%    \fi}
 
-\def\@@handleoneliner
-  {\ifcase\raggedoneliner\else
-     \@@startraggedoneliner
-     \aftergroup\@@stopraggedoneliner
-   \fi}
+% \def\@@stopraggedoneliner
+%   {\ifcase\raggedoneliner\else
+%      \egroup
+%      \ifcase\raggedstatus\or\or\hss\or\hss\fi
+%      \egroup
+%      \ignorespaces % ? ? ?
+%    \fi}
+
+% \def\@@handleoneliner
+%   {\ifcase\raggedoneliner\else
+%      \@@startraggedoneliner
+%      \aftergroup\@@stopraggedoneliner
+%    \fi}
 
 % Nodig i.v.m. inspringen eerste alineas
 
@@ -3346,13 +3363,13 @@
 %
 % \def\setraggedparagraphmode#1#2% combineren met \ifrightpage
 %   {\ifinpagebody
-%      \ifdubbelzijdig
+%      \ifdoublesided
 %        \ifodd\realpageno\relax#1\else#2\fi
 %      \else
 %        #2\relax
 %      \fi
 %    \else\ifinner
-%      \ifdubbelzijdig
+%      \ifdoublesided
 %        \gettwopassdata\s!paragraph
 %        \iftwopassdatafound
 %          \ifodd\twopassdata\relax#1\else#2\fi
@@ -3370,7 +3387,7 @@
 % \def\doifrightpageelse % watch out: other default ! ! !
 %   {\ifinpagebody
 %      % optimalisation ?
-%      \ifdubbelzijdig
+%      \ifdoublesided
 %        \ifodd\realpageno\relax
 %          \twopassdatafoundtrue \else \twopassdatafoundfalse
 %        \fi
@@ -3378,7 +3395,7 @@
 %        \twopassdatafoundtrue
 %      \fi
 %    \else
-%      \ifdubbelzijdig
+%      \ifdoublesided
 %        \gettwopassdata\s!paragraph
 %        \iftwopassdatafound
 %          \ifodd\twopassdata\relax
@@ -3400,7 +3417,7 @@
 %    \fi}
 %
 % \def\signalrightpage
-%   {\ifdubbelzijdig \ifinpagebody \else
+%   {\ifdoublesided \ifinpagebody \else
 %      \doparagraphreference
 %    \fi \fi}
 
@@ -3412,7 +3429,7 @@
 \chardef    \frozenpagestate      \zerocount
 
 \def\dotrackpagestate#1#2%
-  {\ifdubbelzijdig \ifinpagebody \else
+  {\ifdoublesided \ifinpagebody \else
      \doforcedtrackpagestate{#1}{#2}%
    \fi \fi}
 
@@ -3432,14 +3449,14 @@
      \pagestatemismatchfalse
      \let\realpagestateno\realfolio
      \ifinpagebody
-       \ifdubbelzijdig
+       \ifdoublesided
          \ifodd\realpageno\relax
            \twopassdatafoundtrue \else \twopassdatafoundfalse
          \fi
        \else
          \twopassdatafoundtrue
        \fi
-     \else\ifdubbelzijdig
+     \else\ifdoublesided
        \findtwopassdata{#1}{#2:}%
        \iftwopassdatafound
          \let\realpagestateno\twopassdata

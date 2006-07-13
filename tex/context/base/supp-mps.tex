@@ -1000,7 +1000,7 @@
    \deallocateMPslot\currentMPgraphic
    \egroup}
 
-\long\def\startuseMPgraphic#1%
+\long\def\startuseMPgraphic
   {\blabelgroup
    \obeyMPlines
    \dostartuseMPgraphic}
@@ -1009,7 +1009,7 @@
   {\long\setgvalue{\@@MPG#1}{\handleuseMPgraphic{#1}{#2}}%
    \elabelgroup}
 
-\long\def\startusableMPgraphic#1%
+\long\def\startusableMPgraphic
   {\blabelgroup
    \obeyMPlines
    \dostartusableMPgraphic}
@@ -1111,8 +1111,7 @@
 
   \def\MPOSTbatchswitch   {-int=batchmode}
   \def\MPOSTnonstopswitch {-int=nonstopmode}
-%   \def\MPOSTformatswitch  {-progname=mpost -mem=}
-  \def\MPOSTformatswitch  {-mem=}
+  \def\MPOSTformatswitch  {-progname=metafun -mem=}
   \def\MPOSTdriver        {dvips}
 
   \def\executeMPOST#1% direct call
@@ -1962,7 +1961,24 @@
 
 \let\stopMPcode \relax % so that we can use it in \expanded
 
-%D Special for \XETEX\ (problem with newlines):
+%D \macros
+%D   {startstaticMPgraphic}
+%D
+%D Dedicated to Aditya Mahajan. See meta-ini for usage.
+
+\long\def\startstaticMPgraphic#1#2\stopstaticMPgraphic
+  {\setMPrandomseedfalse
+   \def\MPgraphicfile{#1}% no \jobname here
+   \let\allocateMPslot  \gobbleoneargument
+   \let\deallocateMPslot\gobbleoneargument
+   \let\runMPgraphic    \gobbleoneargument
+   \runMPgraphicstrue
+   \currentMPgraphic\plusone  % hack, else no close
+   \startMPgraphic#2\stopMPgraphic}
+
+%D Special for \XETEX\ (problem with newlines). This will go
+%D away once the version supporting \type {--8bit} is
+%D widespread.
 
 \beginXETEX
   \let\obeyMPlines\relax

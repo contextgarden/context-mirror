@@ -1,0 +1,75 @@
+%D \module
+%D   [       file=t-bibltx,
+%D        version=2005.01.04,
+%D          title=\CONTEXT\ Publication Module,
+%D       subtitle=Publications,
+%D         author={Taco Hoekwater},
+%D           date=\currentdate,
+%D      copyright={Public Domain}]
+%C
+%C Donated to the public domain.
+
+%D \macros{newcommand}
+%D
+%D Just about all databases define something that uses
+%D \type {\newcommand}. This fake version does not cover
+%D everything \type {\newcommand} does, but it should be
+%D enough for simple definitions like the ones found in
+%D \BIBTEX\ files.
+
+\unprotect
+
+\def\@star@or@long#1%
+  {\doifnextcharelse*{\afterassignment#1\let\next=}{#1}}
+
+\def\newcommand
+  {\@star@or@long\new@command}
+
+\def\new@command#1%
+  {\@testopt{\@newcommand#1}0}
+
+\def\@newcommand#1[#2]%
+  {\doifnextcharelse[{\@xargdef#1[#2]}{\@argdef#1[#2]}}
+
+\long\def\@argdef#1[#2]#3%
+  {\@yargdef#1\@ne{#2}{#3}}
+
+\long\def\@xargdef#1[#2][#3]#4%
+  {\@EA\def\@EA#1\@EA{\@EA\do@testopt\@EA#1\csname\string#1\endcsname{#3}}%
+   \@EA\@yargdef\csname\string#1\endcsname\tw@{#2}{#4}}
+
+\def\@testopt#1#2%
+  {\doifnextcharelse[{#1}{#1[#2]}}
+
+\def\do@testopt#1%
+  {\expandafter\@testopt}
+
+\long\def\@yargdef#1#2#3%
+  {\!!counta#3\relax
+   \advance \!!counta \@ne
+   \let\@hash@\relax
+   \edef\!!tempa{\ifx#2\tw@ [\@hash@1]\fi}%
+   \!!countb #2%
+   \loop
+     \ifnum\!!countb <\!!counta
+       \edef\!!tempa{\!!tempa\@hash@\the\!!countb}%
+       \advance\!!countb \@ne
+   \repeat
+   \let\@hash@##%
+   \long\@EA\def\@EA#1\!!tempa}
+
+\long\def\@reargdef#1[#2]%
+  {\@yargdef#1\@ne{#2}}
+
+%D Something like the following is needed to support the
+%D average \LATEX-based \BIBTEX\ databases.
+%D
+%D \starttyping
+%D \let\textsc\kap
+%D \def\emph#1{{\em#1}}
+%D \let\sf\ss
+%D \stoptyping
+%D
+%D But we happily leave that to the user.
+
+\protect \endinput

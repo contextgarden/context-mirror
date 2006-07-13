@@ -11,7 +11,7 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-\newcontextversion{2006.06.09 13:05}
+\newcontextversion{2006.07.13 22:26}
 
 %D This file is loaded at runtime, thereby providing an
 %D excellent place for hacks, patches, extensions and new
@@ -23,6 +23,9 @@
 % caption: grid=top|bottom in xml defs
 
 \unprotect
+
+% \setuplabeltext[\s!itemcount1={{I(},{)}}]
+% \def\labeledcountervalue#1{\labeltexts{#1}{\countervalue{#1}}}
 
 \writestatus{\m!systems}{beware: some patches loaded from cont-new.tex}
 
@@ -849,10 +852,64 @@
   {\expanded{\everyhbox{\the\everyhbox\noexpand\fastenableencoding{\currentencoding}}}%
    \def\dealwithmathtextencoding{\let\characterencoding\nocharacterencoding}%
    \dealwithmathtextencoding}
-
 \appendtoks
   \dealwithmathtextencoding
 \to \everymathematics
+
+\def\dohandlemathtoken#1%
+  {\csname
+     \ifmmode
+       \ifcsname\@mt@\mathcollection:\outerencoding#1\endcsname
+         \@mt@\mathcollection:\outerencoding
+       \else\ifcsname\@mt@\mathcollection#1\endcsname
+         \@mt@\mathcollection
+       \else\ifcsname\@mt@\nomathcollection#1\endcsname
+         \@mt@\nomathcollection
+       \else\ifcsname\characterencoding#1\endcsname
+         \characterencoding
+       \else
+         \nocharacterencoding
+       \fi\fi\fi\fi
+     \else
+       \ifcsname\characterencoding#1\endcsname
+         \characterencoding
+       \else\ifcsname\nocharacterencoding#1\endcsname
+         \nocharacterencoding
+       \else\ifcsname\@mt@\mathcollection:\outerencoding#1\endcsname
+         \@mt@\mathcollection:\outerencoding
+       \else\ifcsname\@mt@\mathcollection#1\endcsname
+         \strippedcsname\mathematics\expandafter\endcsname\csname\@mt@\mathcollection
+       \else\ifcsname\@mt@\nomathcollection#1\endcsname
+         \strippedcsname\mathematics\expandafter\endcsname\csname\@mt@\nomathcollection
+       \else
+         \nocharacterencoding
+       \fi\fi\fi\fi\fi
+     \fi
+   #1\endcsname}
+
+\let\dohandlecommand\dohandlemathtoken
+
+\let\outerencoding\empty
+
+\def\checkoutermathencoding
+  {\ifx\outerencoding\empty
+     \ifx\outerencoding\s!default\else
+       \edef\outerencoding{\currentencoding}%
+     \fi
+   \fi}
+
+\prependtoks
+   \checkoutermathencoding
+\to \everymathematics
+
+% \startmathcollection[euler:texnansi]
+%     \definemathsymbol [breve] [accent] [tf] ["15]
+% \stopmathcollection
+% \startmathcollection[euler:ec]
+%     \definemathsymbol [breve] [accent] [tf] ["08]
+% \stopmathcollection
+%
+% $\breve e$
 
 % \separatestring123 456\to\test [\test]
 
@@ -1558,6 +1615,16 @@
 %   \headsym{xx} test \par test
 % \stopitemize
 
+% \def\removeunwantedspaces
+%   {\ifhmode
+%      \doloop{\ifdim\lastskip>\zeropoint\unskip\else\exitloop\fi}%
+%    \fi}
+
+\def\removeunwantedspaces
+  {\ifhmode \ifdim\lastskip>\zeropoint
+     \unskip \@EAEAEA\removeunwantedspaces
+   \fi \fi}
+
 % wait till bugfix in etex is widespead
 %
 % \beginETEX \lastnodetype

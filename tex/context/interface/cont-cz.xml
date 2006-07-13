@@ -1615,6 +1615,11 @@
         <cd:constant type="lokalne"/>
         <cd:constant type="cd:dimension"/>
       </cd:parameter>
+      <cd:parameter name="autosirka">
+        <cd:constant type="ano"/>
+        <cd:constant type="ne"/>
+        <cd:constant type="sila"/>
+      </cd:parameter>
       <cd:parameter name="offset">
         <cd:constant type="zadny"/>
         <cd:constant type="prekryv"/>
@@ -5245,6 +5250,14 @@
         <cd:constant type="cd:dimension"/>
       </cd:parameter>
       <cd:parameter name="oddelovac">
+        <cd:constant type="cd:text"/>
+      </cd:parameter>
+      <cd:parameter name="konverze">
+        <cd:constant type="cisla"/>
+        <cd:constant type="pismena"/>
+        <cd:constant type="Pismena"/>
+        <cd:constant type="rimskecislice"/>
+        <cd:constant type="Rimskecislice"/>
         <cd:constant type="cd:text"/>
       </cd:parameter>
     </cd:assignments>

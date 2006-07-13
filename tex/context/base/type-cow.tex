@@ -1,0 +1,83 @@
+%D \module
+%D   [       file=type-cow,
+%D        version=2006.06.23,
+%D          title=\CONTEXT\ Typescript Macros,
+%D       subtitle=Cow Fonts,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright=PRAGMA]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D The cow fonts are a project of Duane Bibby, Hans Hagen and Taco
+%D Hoekwater.
+
+\starttypescriptcollection[cow]
+
+\starttypescript [math,serif] [cow,sheep] [default]
+    \setups[font:fallback:serif]
+    \usemathcollection[cow]
+    \loadmapfile[koeieletters.map]
+    \definefontsynonym [Serif]           [Cows]              [encoding=\typescriptthree]
+    \definefontsynonym [SerifContour]    [CowsContour]       [encoding=\typescriptthree]
+    \definefontsynonym [SerifLogo]       [CowsLogo]          [encoding=\typescriptthree]
+    \definefontsynonym [SerifLogoContour][CowsLogoContour]   [encoding=\typescriptthree]
+    \definefontsynonym [MathRoman]       [CowsMathRoman]     [encoding=\typescriptthree]
+    \definefontsynonym [MathItalic]      [CowsMathItalic]    [encoding=\typescriptthree]
+    \definefontsynonym [MathSymbol]      [CowsMathSymbol]    [encoding=\typescriptthree]
+    \definefontsynonym [MathExtension]   [CowsMathExtensions][encoding=\typescriptthree]
+\stoptypescript
+
+\starttypescript [math,serif] [sheep] [default]
+    \setups[font:fallback:serif]
+    \usemathcollection[cow]
+    \loadmapfile[koeieletters.map]
+    \definefontsynonym [Serif]           [Sheep]              [encoding=\typescriptthree]
+    \definefontsynonym [SerifContour]    [SheepContour]       [encoding=\typescriptthree]
+    \definefontsynonym [SerifLogo]       [SheepLogo]          [encoding=\typescriptthree]
+    \definefontsynonym [SerifLogoContour][SheepLogoContour]   [encoding=\typescriptthree]
+    \definefontsynonym [MathRoman]       [SheepMathRoman]     [encoding=\typescriptthree]
+    \definefontsynonym [MathItalic]      [SheepMathItalic]    [encoding=\typescriptthree]
+    \definefontsynonym [MathSymbol]      [SheepMathSymbol]    [encoding=\typescriptthree]
+    \definefontsynonym [MathExtension]   [SheepMathExtensions][encoding=\typescriptthree]
+\stoptypescript
+
+\starttypescript [all] [cow,sheep] [default]
+    \definefontsynonym [Cows]              [koeielett]
+    \definefontsynonym [CowsContour]       [koeielett-contour]
+    \definefontsynonym [CowsLogo]          [koeielogos]
+    \definefontsynonym [CowsLogoContour]   [koeielogos-contour]
+    \definefontsynonym [CowsMathRoman]     [koeielett]
+    \definefontsynonym [CowsMathItalic]    [koeieletter-mi]
+    \definefontsynonym [CowsMathSymbol]    [koeieletter-sy]
+    \definefontsynonym [CowsMathExtensions][koeieletter-ex]
+\stoptypescript
+
+\starttypescript [all] [sheep] [default]
+    \definefontsynonym [Sheep]              [koeielett]
+    \definefontsynonym [SheepContour]       [koeielett-contour]
+    \definefontsynonym [SheepLogo]          [koeielogos]
+    \definefontsynonym [SheepLogoContour]   [koeielogos-contour]
+    \definefontsynonym [SheepMathRoman]     [koeielettx]
+    \definefontsynonym [SheepMathItalic]    [koeieletter-mi]
+    \definefontsynonym [SheepMathSymbol]    [koeieletter-syx]
+    \definefontsynonym [SheepMathExtensions][koeieletter-ex]
+\stoptypescript
+
+\starttypescript [cow] [default]
+    \definetypeface [cow]  [ss][serif][cow]   [default][encoding=default]
+    \definetypeface [cow]  [mm][math] [cow]   [default][encoding=default]
+    \definetypeface [cow]  [tt][mono] [modern][default][encoding=default,rscale=.85]
+\stoptypescript
+
+\starttypescript [sheep] [default]
+    \definetypeface [sheep][ss][serif][sheep] [default][encoding=default]
+    \definetypeface [sheep][mm][math] [sheep] [default][encoding=default]
+    \definetypeface [sheep][tt][mono] [modern][default][encoding=default,rscale=.85]
+\stoptypescript
+
+\stoptypescriptcollection
+
+\endinput

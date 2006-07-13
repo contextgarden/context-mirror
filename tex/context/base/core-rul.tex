@@ -641,7 +641,7 @@
 
 \def\copylocalframed[#1]#2[#3]%
   {\copyparameters[#1][#3]%
-     [\c!width,\c!height,\c!offset,\c!empty,\c!rulethickness,%
+     [\c!width,\c!height,\c!autowidth,\c!offset,\c!empty,\c!rulethickness,%
       \c!radius,\c!corner,\c!depth,\c!frame,\c!framecolor,%
       \c!foregroundstyle,\c!foregroundcolor,\c!lines,\c!orientation,%
       \c!topframe,\c!bottomframe,\c!leftframe,\c!rightframe,%
@@ -740,6 +740,8 @@
    \edef\@@localframing    {\framedparameter\c!frame}%
    \edef\@@locallocation   {\framedparameter\c!location}%
    \edef\@@localorientation{\framedparameter\c!orientation}%
+   %
+   \edef\@@localautowidth  {\framedparameter\c!autowidth}%
    %
    \ifx\@@localframing\v!overlay   % no frame, no offset, no framewidth
      \boxhasframefalse
@@ -1035,14 +1037,21 @@
   {\dontshowcomposition
    \@@stopframedorientation
    \ifboxhasformat
-     \ifx\localwidth\v!fit
+     \ifx\@@localautowidth\v!force
        \ifreshapeframebox\doreshapeframedbox\fi
        \boxhaswidthfalse
-     \else\ifx\localwidth\v!fixed
-       \boxhaswidthfalse
      \else
-       \resetshapeframebox
-     \fi\fi
+       \ifx\localwidth\v!fit
+         \ifx\@@localautowidth\v!yes
+           \ifreshapeframebox\doreshapeframedbox\fi
+         \fi
+         \boxhaswidthfalse
+       \else\ifx\localwidth\v!fixed
+         \boxhaswidthfalse
+       \else
+         \resetshapeframebox
+       \fi\fi
+     \fi
    \else
      \resetshapeframebox
    \fi
@@ -1490,10 +1499,38 @@
 %D or free widths and heights. Each combination gets its own
 %D macro.
 
+%D The following code handles one-liners: \type{align={line,flushright}}.
+%D Beware, since we entered a group and either or not grab the next
+%D bgroup token, we need to finish the group in the oneliner mode.
+
+\ifx\raggedoneliner\undefined \chardef\raggedoneliner\zerocount \fi
+
+\def\doformatonelinerbox % beware: assumes explicit preceding bgroup
+  {\ifcase\raggedoneliner
+     \expandafter\nodoformatonelinerbox
+   \else
+     \expandafter\dodoformatonelinerbox
+   \fi}
+
+\def\dodoformatonelinerbox
+  {\dowithnextboxcontent
+     {\ignorespaces}
+     {\hbox to \hsize
+        {\ifcase\raggedstatus\or\hss\or\hss\fi
+         \unhbox\nextbox \removeunwantedspaces
+         \ifcase\raggedstatus\or    \or\hss\or\hss\fi}%
+      \egroup}
+     \hbox}
+
+\def\nodoformatonelinerbox % grabs {
+  {\let\next=}
+
+%D The handlers:
+
 \def\doformatboxSomeFormat
   {\vbox to \!!heighta
      \bgroup
-        \let\postprocessframebox\relax
+       \let\postprocessframebox\relax
        \forgetall
        \oninterlineskip
        \hsize\!!widtha
@@ -1503,16 +1540,15 @@
        \dobeforeframedbox
        \bgroup
        \localbegstrut
-       \@@handleoneliner
        \aftergroup\localendstrut
        \aftergroup\doafterframedbox
        \aftergroup\egroup
-       \let\next=}
+       \doformatonelinerbox}
 
 \def\doformatboxNoFormat
   {\vbox to \!!heighta
      \bgroup
-        \let\postprocessframebox\relax
+       \let\postprocessframebox\relax
        \forgetall
        \oninterlineskip
        \hsize\!!widtha
@@ -1522,11 +1558,10 @@
        \vss
        \bgroup
        \localbegstrut
-       \@@handleoneliner
        \aftergroup\localendstrut
        \aftergroup\vss
        \aftergroup\egroup
-       \let\next=}
+       \doformatonelinerbox}
 
 \def\doformatboxHeight
   {\vbox to \!!heighta
@@ -1542,8 +1577,7 @@
        \aftergroup\vss
        \aftergroup\egroup
        \localbegstrut
-       \@@handleoneliner
-       \let\next=}
+       \doformatonelinerbox}
 
 \def\doformatboxWidth
   {\vbox
@@ -1557,11 +1591,10 @@
        \dobeforeframedbox
        \bgroup
        \localbegstrut
-       \@@handleoneliner
        \aftergroup\localendstrut
        \aftergroup\doafterframedbox
        \aftergroup\egroup
-       \let\next=}
+       \doformatonelinerbox}
 
 \def\doformatboxVSize
   {\vbox to \!!heighta
@@ -1578,8 +1611,7 @@
          \bgroup
          \aftergroup\egroup
          \localstrut
-         \@@handleoneliner
-         \let\next=}
+         \doformatonelinerbox}
 
 \def\doformatboxHSize
   {\hbox to \!!widtha
@@ -1589,11 +1621,10 @@
        \doframedsetups
        \hss
        \localstrut
-       \@@handleoneliner
        \bgroup
        \aftergroup\hss
        \aftergroup\egroup
-       \let\next=}
+       \doformatonelinerbox}
 
 \def\doformatboxNoSize
   {\hbox
@@ -1601,8 +1632,7 @@
        \let\postprocessframebox\relax
        \doframedsetups
        \localstrut
-       \@@handleoneliner
-       \let\next=}
+       \doformatonelinerbox}
 
 \let\doframedsetups\relax
 
@@ -3349,6 +3379,7 @@
    \c!autostrut=\v!yes,
    \c!location=\v!normal,
    \c!orientation=,
+   \c!autowidth=\v!yes,
    \c!setups=]
 
 \setupscreens

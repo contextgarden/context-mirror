@@ -172,7 +172,7 @@
   {\def\docommando##1{#1[##1]#2#3\letvalue{\@@XMLshow:##1}\empty}%
    \processcommalist[#4]\docommando}
 
-\gdef\showXMLinh[#1]%
+\gdef\showXMLign[#1]%
   {\setXMLshow\defineXMLignore     \relax\relax[#1]%
    \setXMLshow\defineXMLsingular   \relax\relax[#1]}
 
@@ -305,7 +305,7 @@
       \fi}%
     \egroup}
 
-\gdef\showXMLinh#1%
+\gdef\showXMLinh[#1]%
   {\doifsomething{#1}
      {\bgroup\infofont[%
       \dorecurse\XMLdepth

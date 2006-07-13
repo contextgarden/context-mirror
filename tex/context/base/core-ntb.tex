@@ -61,14 +61,41 @@
 %D However, the next alternative also takes care of preceding
 %D and following white space.
 
+% \def\bTBLCELL % why not \doinhibitblank
+%   {\inhibitblank\doconvertfont\tbltblstyle\empty\everypar{\delayedbegstrut}}
+
+% \def\eTBLCELL
+%   {\ifhmode
+%      \delayedendstrut
+%      \par % added 13/4/2006
+%    \else
+%      \par
+%      \ifdim\prevdepth<\zeropoint % =-1000pt ?
+%        \vskip-\strutdp
+%      \else
+%        \removebottomthings
+%      \fi
+%    \fi}
+
+%D \startbuffer
+%D \bTABLE[left={(},right={)},top=\startnarrower,bottom=\stopnarrower]
+%D \bTR \bTD something \eTD \eTR
+%D \eTABLE
+%D
+%D \typebuffer \getbuffer
+
 \def\bTBLCELL % why not \doinhibitblank
-  {\inhibitblank\doconvertfont\tbltblstyle\empty\everypar{\delayedbegstrut}}
+  {\inhibitblank
+   \doconvertfont\tbltblstyle\empty
+   \everypar{\tbltblleft\delayedbegstrut}}
 
 \def\eTBLCELL
   {\ifhmode
      \delayedendstrut
+     \tbltblright
      \par % added 13/4/2006
    \else
+     % not sure yet:\tbltblright
      \par
      \ifdim\prevdepth<\zeropoint % =-1000pt ?
        \vskip-\strutdp
@@ -226,57 +253,15 @@
 
 \let\setupTBLsection\relax
 
-% \def\setupTBLcell#1#2% cell over col over row
-%   {\setupTBLsection % already forgotten
-%    \getvalue{\@@tblprefix\v!each\v!each}%
-%    \getvalue{\@@tblprefix\c!y\v!each}%
-%    \getvalue{\@@tblprefix\c!x\v!each}%
-%    \getvalue{\@@tblprefix\c!y\v!oddeven{#1}}%
-%    \getvalue{\@@tblprefix\c!x\v!oddeven{#2}}%
-%    \getvalue{\@@tblprefix\c!x\v!oddeven{#2}\c!y\v!oddeven{#1}}%
-%    \ifnum#1=\plusone
-%      \getvalue{\@@tblprefix\c!y\v!first}%
-%      \executeifdefined{\@@tblprefix\c!x#2\c!y\v!first}\donothing
-%    \fi
-%    \ifnum#2=\plusone
-%      \getvalue{\@@tblprefix\c!x\v!first}%
-%      \executeifdefined{\@@tblprefix\c!x\v!first\c!y#1}\donothing
-%    \fi
-%    \ifnum#1=\maximumrow\relax
-%      \getvalue{\@@tblprefix\c!y\v!last}%
-%      \executeifdefined{\@@tblprefix\c!x#2\c!y\v!last}\donothing
-%    \fi
-%    \ifnum#2=\maximumcol\relax
-%      \getvalue{\@@tblprefix\c!x\v!last}%
-%      \executeifdefined{\@@tblprefix\c!x\v!last\c!y#1}\donothing
-%    \fi
-%    \ifnum#1=\maximumrow\relax\ifnum#2=\maximumcol\relax
-%      \getvalue{\@@tblprefix\c!x\v!last\c!y\v!last}%
-%    \fi\fi
-%    \ifnum#1=\plusone \ifnum#2=\plusone
-%      \getvalue{\@@tblprefix\c!x\v!first\c!y\v!first}%
-%    \fi\fi
-%    \ifnum#1>\noftblhdnxlines\else
-%      \executeifdefined{\@@tblprefix\v!header\v!each}\donothing
-%      \executeifdefined{\@@tblprefix\v!header#2}\donothing
-%    \fi
-%    \executeifdefined{\@@tblprefix\c!y#1}\donothing
-%    \getvalue{\@@tbl\@@tbl\c!extras}\letvalue{\@@tbl\@@tbl\c!extras}\relax % new, see x-fo
-%    \executeifdefined{\@@tblprefix\c!x#2}\donothing
-%    \getvalue{\@@tbl\@@tbl\c!extras}\letvalue{\@@tbl\@@tbl\c!extras}\relax % new, see x-fo
-%    \executeifdefined{\@@tblprefix\c!x#2\c!y#1}\donothing
-%    \global\letcscsname\@@tblsplitafter\csname\@@tbl\@@tbl\c!after\endcsname
-%    \relax}
-
 
 \def\setupTBLcell#1#2% cell over col over row
   {\setupTBLsection % already forgotten
-\edef\positiverow{\number#1}%
-\edef\positivecol{\number#2}%
-\scratchcounter-\maximumrow\advance\scratchcounter#1\advance\scratchcounter\minusone
-\edef\negativerow{\number\scratchcounter}%
-\scratchcounter-\maximumcol\advance\scratchcounter#2\advance\scratchcounter\minusone
-\edef\negativecol{\number\scratchcounter}%
+   \edef\positiverow{\number#1}%
+   \edef\positivecol{\number#2}%
+   \scratchcounter-\maximumrow\advance\scratchcounter#1\advance\scratchcounter\minusone
+   \edef\negativerow{\number\scratchcounter}%
+   \scratchcounter-\maximumcol\advance\scratchcounter#2\advance\scratchcounter\minusone
+   \edef\negativecol{\number\scratchcounter}%
    \getvalue{\@@tblprefix\v!each\v!each}%
    \getvalue{\@@tblprefix\c!y\v!each}%
    \getvalue{\@@tblprefix\c!x\v!each}%
@@ -310,13 +295,13 @@
      \executeifdefined{\@@tblprefix\v!header\positivecol}\donothing
    \fi
    \executeifdefined{\@@tblprefix\c!y\positiverow}\donothing
-\executeifdefined{\@@tblprefix\c!y\negativerow}\donothing
+   \executeifdefined{\@@tblprefix\c!y\negativerow}\donothing
    \getvalue{\@@tbl\@@tbl\c!extras}\letvalue{\@@tbl\@@tbl\c!extras}\relax % new, see x-fo
    \executeifdefined{\@@tblprefix\c!x\positivecol}\donothing
-\executeifdefined{\@@tblprefix\c!x\negativecol}\donothing
+   \executeifdefined{\@@tblprefix\c!x\negativecol}\donothing
    \getvalue{\@@tbl\@@tbl\c!extras}\letvalue{\@@tbl\@@tbl\c!extras}\relax % new, see x-fo
    \executeifdefined{\@@tblprefix\c!x\positivecol\c!y\positiverow}\donothing
-\executeifdefined{\@@tblprefix\c!x\negativecol\c!y\negativerow}\donothing
+   \executeifdefined{\@@tblprefix\c!x\negativecol\c!y\negativerow}\donothing
    \global\letcscsname\@@tblsplitafter\csname\@@tbl\@@tbl\c!after\endcsname
    \relax}
 
@@ -543,7 +528,8 @@
    \processaction
      [\tbltblsplit]
      [     \v!yes=>\enableTBLbreaktrue,
-        \v!repeat=>\enableTBLbreaktrue\multipleTBLheadstrue]%
+        \v!repeat=>\enableTBLbreaktrue\multipleTBLheadstrue,
+          \v!auto=>\ifinsidesplitfloat\enableTBLbreaktrue\fi]
    \processaction
      [\tbltblheader]
      [\v!repeat=>\multipleTBLheadstrue]%
@@ -966,97 +952,100 @@
      \donetrue
    \fi\fi
    \ifdone
-     \executeifdefined{splittblbox\tbltblsplitmethod}\splittblboxa{#1}%
+     \executeifdefined{dosplittblbox\tbltblsplitmethod}\dosplittblbox{#1}%
    \else
      \notsplittblbox{#1}%
    \fi}
 
 \newbox\TABLEsplitbox % public, don't change
 
-% todo: mode: first|next (of niets)
-
-\def\splittblboxa#1% spacing between rows gets lost in split
-  {\setbox\TABLEsplitbox\vbox{#1}%
-   \setbox8\vbox{\doifsomething\tbltblspaceinbetween{\blank[\tbltblspaceinbetween]}}%
-   \ifmultipleTBLheads
-     \setbox2\vbox{}%
-     \setbox4\vbox{}%
-     \dorecurse\noftblheadlines
-       {\setbox0\vsplit\TABLEsplitbox to \lineheight
-        \setbox2\vbox{\unvcopy2\unvcopy0}}%
-     \dorecurse\noftblnextlines
-       {\setbox0\vsplit\TABLEsplitbox to \lineheight
-        \setbox4\vbox{\unvcopy4\unvcopy0}}%
-     \ifcase\noftblheadlines\else
-       \ifdim\pagegoal<\maxdimen
-         \dimen0\ht2
-         \advance\dimen0\ht8
-         \advance\dimen0\pagetotal\relax
-         \ifdim\dimen0>\pagegoal
-           \bgroup\page\egroup % make sure that local vars are kept
-         \fi
-       \fi
-       \unvcopy2
-       \ifcase\noftblnextlines\else
-         \setbox2\box4
-       \fi
-     \fi
-   \fi
-   \donefalse
-   \!!doneafalse
-   \doloop
-     {\setbox0\vsplit\TABLEsplitbox to \lineheight
-      \if!!donea
-        \ifdim\pagegoal<\maxdimen
-          \setbox0\vbox{\unvbox0}%
-          \ifdim\ht0>\zeropoint
-            \dimen0\ht0
-            \advance\dimen0\ht8
-            \advance\dimen0\pagetotal\relax
-            \ifdim\dimen0>\pagegoal
-              \bgroup\page\egroup % make sure that local vars are kept
-              \ifmultipleTBLheads
-                \ifcase\noftblheadlines\else\unvcopy2\fi
-              \fi
-            \fi
-          \fi
-        \fi
-      \fi
-      \!!doneatrue
-      \ifdone
-        \doifsomething\tbltblspaceinbetween{\blank[\tbltblspaceinbetween]}%
-      \fi
-      \unvbox0
-      %\allowbreak
-      \bgroup
-        % todo: what if tblnextlines ?
-        \scratchcounter\recurselevel
-        \ifmultipleTBLheads
-          \advance\scratchcounter\noftblheadlines
-        \fi
-        \setupTBLcell{\number\scratchcounter}1
-        \ifx\@@tblsplitafter\relax
-          \allowbreak
-        \else
-          \doifelsenothing\@@tblsplitafter
-             \allowbreak
-            {\scratchcounter\realpageno
-             \@@tblsplitafter
-             \ifmultipleTBLheads
-               \ifnum\scratchcounter<\realpageno
-                 \ifcase\noftblheadlines\else\unvcopy2\fi
-               \fi
-             \fi}%
-        \fi
-      \egroup
-      \ifvoid\TABLEsplitbox \exitloop \else \donetrue \fi}}
-
 \let\extratblsplitheight\zeropoint % additional space taken by before/afterTABLEsplitbox
 
-% \def\splittblboxb#1%
-%   {\testpage[2]% quite save since a row is > 1 lineheight and we don't want one-liners
+% todo: mode: first|next (of niets)
+
+% \def\dosplittblboxa#1% spacing between rows gets lost in split
+%   {\setbox\TABLEsplitbox\vbox{#1}%
+%    \setbox8\vbox{\doifsomething\tbltblspaceinbetween{\blank[\tbltblspaceinbetween]}}%
+%    \ifmultipleTBLheads
+%      \setbox2\vbox{}%
+%      \setbox4\vbox{}%
+%      \dorecurse\noftblheadlines
+%        {\setbox0\vsplit\TABLEsplitbox to \lineheight
+%         \setbox2\vbox{\unvcopy2\unvcopy0}}%
+%      \dorecurse\noftblnextlines
+%        {\setbox0\vsplit\TABLEsplitbox to \lineheight
+%         \setbox4\vbox{\unvcopy4\unvcopy0}}%
+%      \ifcase\noftblheadlines\else
+%        \ifdim\pagegoal<\maxdimen
+%          \dimen0\ht2
+%          \advance\dimen0\ht8
+%          \advance\dimen0\pagetotal\relax
+%          \ifdim\dimen0>\pagegoal
+%            \bgroup\page\egroup % make sure that local vars are kept
+%          \fi
+%        \fi
+%        \unvcopy2
+%        \ifcase\noftblnextlines\else
+%          \setbox2\box4
+%        \fi
+%      \fi
+%    \fi
+%    \donefalse
+%    \!!doneafalse
+%    \doloop
+%      {\setbox0\vsplit\TABLEsplitbox to \lineheight
+%       \if!!donea
+%         \ifdim\pagegoal<\maxdimen
+%           \setbox0\vbox{\unvbox0}%
+%           \ifdim\ht0>\zeropoint
+%             \dimen0\ht0
+%             \advance\dimen0\ht8
+%             \advance\dimen0\pagetotal\relax
+%             \ifdim\dimen0>\pagegoal
+%               \bgroup\page\egroup % make sure that local vars are kept
+%               \ifmultipleTBLheads
+%                 \ifcase\noftblheadlines\else\unvcopy2\fi
+%               \fi
+%             \fi
+%           \fi
+%         \fi
+%       \fi
+%       \!!doneatrue
+%       \ifdone
+%         \doifsomething\tbltblspaceinbetween{\blank[\tbltblspaceinbetween]}%
+%       \fi
+%       \unvbox0
+%       %\allowbreak
+%       \bgroup
+%         % todo: what if tblnextlines ?
+%         \scratchcounter\recurselevel
+%         \ifmultipleTBLheads
+%           \advance\scratchcounter\noftblheadlines
+%         \fi
+%         \setupTBLcell{\number\scratchcounter}1
+%         \ifx\@@tblsplitafter\relax
+%           \allowbreak
+%         \else
+%           \doifelsenothing\@@tblsplitafter
+%              \allowbreak
+%             {\scratchcounter\realpageno
+%              \@@tblsplitafter
+%              \ifmultipleTBLheads
+%                \ifnum\scratchcounter<\realpageno
+%                  \ifcase\noftblheadlines\else\unvcopy2\fi
+%                \fi
+%              \fi}%
+%         \fi
+%       \egroup
+%       \ifvoid\TABLEsplitbox \exitloop \else \donetrue \fi}}
+
+% \def\dosplittblboxb#1%
+%   {\scratchdimen-\extratblsplitheight
+%    \advance\scratchdimen-\tbltblsplitoffset
+%    \expanded{\testpage[2][\the\scratchdimen]}% quite save since a row is > 1 lineheight and we don't want one-liners
 %    \setbox\TABLEsplitbox\vbox{#1}%
 %    \setbox8\vbox{\doifsomething\tbltblspaceinbetween{\blank[\tbltblspaceinbetween]}}%
+%    \dimen8\ht8\advance\dimen8\dp8
 %    \ifmultipleTBLheads
 %      \setbox2\vbox{}%
 %      \setbox4\vbox{}%
@@ -1072,33 +1061,57 @@
 %      {\ifdim\pagegoal<\maxdimen
 %         \scratchdimen\pagegoal
 %         \advance\scratchdimen-\pagetotal
+%         \!!donecfalse
 %       \else
 %         \scratchdimen\textheight
+%         \!!donectrue
 %       \fi
-%       \ifmultipleTBLheads
-%         \ifcase\noftblheadlines\else
-%           \advance\scratchdimen-\ht2
-%         \fi
-%       \fi
-%       \advance\scratchdimen-\ht8
-%       \getnoflines\scratchdimen
-%       \ifdim\noflines\lineheight>\scratchdimen
-%         \advance\scratchdimen-\lineheight
-%       \fi
+%       \advance\scratchdimen-\dimen8
 %       \advance\scratchdimen-\extratblsplitheight
+%       \advance\scratchdimen-\tbltblsplitoffset
 %       \setbox\finaltblbox\vbox
 %         {\ifmultipleTBLheads
 %            \ifcase\noftblheadlines\else
-%              \unvcopy2
-%              \doifsomething\tbltblspaceinbetween{\blank[\tbltblspaceinbetween]}%
+%              \unvcopy2 \doifsomething\tbltblspaceinbetween{\blank[\tbltblspaceinbetween]}%
 %            \fi
-%          \fi
-%          \setbox0\vsplit\TABLEsplitbox to\scratchdimen
-%          \unvbox0}%
+%          \fi}%
 %       \if!!donea\else\ifcase\noftblnextlines\else
 %         \setbox2\box4
 %       \fi\fi
 %       \!!doneatrue
+%       % alternatively we could use a kind of balancing like splitter
+%       % first to scratchdimen and then smaller etc; more code and copy -)
+%       \!!counta\zerocount
+%       \doloop
+%         {\setbox\scratchbox\vsplit\TABLEsplitbox to \onepoint
+%          \setbox\scratchbox\vbox{\unvbox\scratchbox}%
+%          \bgroup
+%          \advance\scratchdimen-\ht\scratchbox
+%          \advance\scratchdimen-\dp\scratchbox
+%          \advance\scratchdimen-\ht\finaltblbox
+%          \advance\scratchdimen-\dp\finaltblbox\relax
+%          \ifdim\scratchdimen>\zeropoint
+%            \egroup
+%            \setbox\finaltblbox\vbox
+%               {\unvbox\finaltblbox
+%                \unvbox\scratchbox}%
+%            \ifvoid\TABLEsplitbox \exitloop \fi
+%          \else\if!!donec
+%            % we have text height available, but the (one) cell is too
+%            % large to fit, so, in order to avoid loops/deadcycles we do:
+%            \egroup
+%            \setbox\finaltblbox\vbox
+%               {\unvbox\finaltblbox
+%                \unvbox\scratchbox}%
+%            \exitloop
+%          \else
+%            \egroup
+%            \setbox\TABLEsplitbox\vbox
+%               {\unvbox\scratchbox
+%                \ifvoid\TABLEsplitbox\else\unvbox\TABLEsplitbox\allowbreak\fi}%
+%            \exitloop
+%          \fi\fi}%
+%       %
 %       \postprocessTABLEsplitbox\finaltblbox
 %       \ifvoid\TABLEsplitbox
 %         \beforeTABLEsplitbox
@@ -1107,116 +1120,42 @@
 %         \@@tblsplitafter
 %         \exitloop
 %       \else
-%        % hack
-%         \scratchdimen\pagegoal
-%         \ifdim\scratchdimen<\maxdimen
+%         % hack
+%         \ifdim\pagegoal<\maxdimen
+%           \scratchdimen\pagegoal
 %           \advance\scratchdimen \lineheight
 %           \global\pagegoal\scratchdimen
 %         \fi
 %         % brrr
-%         \beforeTABLEsplitbox
-%         \box\finaltblbox
-%         \afterTABLEsplitbox
-%         \@@tblsplitafter
+%         \ifdim\ht\finaltblbox>\zeropoint
+%           \beforeTABLEsplitbox
+%           \box\finaltblbox
+%           \afterTABLEsplitbox
+%           \@@tblsplitafter
+%         \fi
 %         \page
 %       \fi}}
 
-\def\splittblboxb#1%
-  {\scratchdimen-\extratblsplitheight
-   \advance\scratchdimen-\tbltblsplitoffset
-   \expanded{\testpage[2][\the\scratchdimen]}% quite save since a row is > 1 lineheight and we don't want one-liners
-   \setbox\TABLEsplitbox\vbox{#1}%
-   \setbox8\vbox{\doifsomething\tbltblspaceinbetween{\blank[\tbltblspaceinbetween]}}%
-   \dimen8\ht8\advance\dimen8\dp8
+\def\dosplittblbox#1%
+  {\resettsplit
+   \def\tsplitminimumfreelines{2}%
+   \def\tsplitminimumfreespace{\dimexpr\extratblsplitheight+\tbltblsplitoffset\relax}%
+   \def\tsplitbeforeresult    {\beforeTABLEsplitbox}%
+   \def\tsplitafterresult     {\afterTABLEsplitbox}%
+   \def\tsplitafter           {\@@tblsplitafter}%
+   \setbox\tsplitcontent\vbox{#1}% \the\tbltoks
    \ifmultipleTBLheads
-     \setbox2\vbox{}%
-     \setbox4\vbox{}%
      \dorecurse\noftblheadlines
-       {\setbox0\vsplit\TABLEsplitbox to \lineheight
-        \setbox2\vbox{\unvcopy2\unvcopy0}}%
+       {\setbox\scratchbox\vsplit\tsplitcontent to \lineheight
+        \setbox\tsplithead\vbox{\unvcopy\tsplithead\unvcopy\scratchbox}}%
      \dorecurse\noftblnextlines
-       {\setbox0\vsplit\TABLEsplitbox to \lineheight
-        \setbox4\vbox{\unvcopy4\unvcopy0}}%
+       {\setbox\scratchbox\vsplit\tsplitcontent to \lineheight
+        \setbox\tsplitnext\vbox{\unvcopy\tsplitnext\unvcopy\scratchbox}}%
    \fi
-   \!!doneafalse
-   \doloop
-     {\ifdim\pagegoal<\maxdimen
-        \scratchdimen\pagegoal
-        \advance\scratchdimen-\pagetotal
-        \!!donecfalse
-      \else
-        \scratchdimen\textheight
-        \!!donectrue
-      \fi
-      \advance\scratchdimen-\dimen8
-      \advance\scratchdimen-\extratblsplitheight
-      \advance\scratchdimen-\tbltblsplitoffset
-      \setbox\finaltblbox\vbox
-        {\ifmultipleTBLheads
-           \ifcase\noftblheadlines\else
-             \unvcopy2 \doifsomething\tbltblspaceinbetween{\blank[\tbltblspaceinbetween]}%
-           \fi
-         \fi}%
-      \if!!donea\else\ifcase\noftblnextlines\else
-        \setbox2\box4
-      \fi\fi
-      \!!doneatrue
-      % alternatively we could use a kind of balancing like splitter
-      % first to scratchdimen and then smaller etc; more code and copy -)
-      \!!counta\zerocount
-      \doloop
-        {\setbox\scratchbox\vsplit\TABLEsplitbox to \onepoint
-         \setbox\scratchbox\vbox{\unvbox\scratchbox}%
-         \bgroup
-         \advance\scratchdimen-\ht\scratchbox
-         \advance\scratchdimen-\dp\scratchbox
-         \advance\scratchdimen-\ht\finaltblbox
-         \advance\scratchdimen-\dp\finaltblbox\relax
-         \ifdim\scratchdimen>\zeropoint
-           \egroup
-           \setbox\finaltblbox\vbox
-              {\unvbox\finaltblbox
-               \unvbox\scratchbox}%
-           \ifvoid\TABLEsplitbox \exitloop \fi
-         \else\if!!donec
-           % we have text height available, but the (one) cell is too
-           % large to fit, so, in order to avoid loops/deadcycles we do:
-           \egroup
-           \setbox\finaltblbox\vbox
-              {\unvbox\finaltblbox
-               \unvbox\scratchbox}%
-           \exitloop
-         \else
-           \egroup
-           \setbox\TABLEsplitbox\vbox
-              {\unvbox\scratchbox
-               \ifvoid\TABLEsplitbox\else\unvbox\TABLEsplitbox\allowbreak\fi}%
-           \exitloop
-         \fi\fi}%
-      %
-      \postprocessTABLEsplitbox\finaltblbox
-      \ifvoid\TABLEsplitbox
-        \beforeTABLEsplitbox
-        \box\finaltblbox
-        \afterTABLEsplitbox
-        \@@tblsplitafter
-        \exitloop
-      \else
-        % hack
-        \ifdim\pagegoal<\maxdimen
-          \scratchdimen\pagegoal
-          \advance\scratchdimen \lineheight
-          \global\pagegoal\scratchdimen
-        \fi
-        % brrr
-        \ifdim\ht\finaltblbox>\zeropoint
-          \beforeTABLEsplitbox
-          \box\finaltblbox
-          \afterTABLEsplitbox
-          \@@tblsplitafter
-        \fi
-        \page
-      \fi}}
+   \doifsomething\tbltblspaceinbetween
+     {\def\tsplitinbetween{\blank[\tbltblspaceinbetween]}}%
+   \def\postprocesstsplit{\postprocessTABLEsplitbox{\box\tsplitresult}}%
+   \handletsplit}
 
 % ! ! ! ! TODO: naast \postprocessTABLEsplitbox ook evt \postprocessTABLEbox voor niet split
 
@@ -1235,9 +1174,14 @@
   {\iftraceTABLE\showtblwids{B#1}\fi
    \!!dimena\hsize
    \!!counta\zerocount
+% test, dunno yet
+\advance\!!dimena-\tbltblleftmargindistance
+\advance\!!dimena-\tbltblrightmargindistance
+\advance\!!dimena-\tbltblcolumndistance
    \dorecurse\maximumcol
      {\scratchdimen\gettblaut\recurselevel\relax
-% test: \advance\!!dimena-\gettbldis\recurselevel\relax
+% test, seems to work ok
+\advance\!!dimena-\gettbldis\recurselevel\relax
       \ifdim\scratchdimen>\zeropoint\relax
         \advance\!!dimena -\scratchdimen
       \else
@@ -1498,12 +1442,14 @@
    \c!spaceinbetween=,
    \c!maxwidth=8em,
    \c!textwidth=\hsize,
-   \c!split=\v!no,
+   \c!split=\v!auto,
    \c!splitoffset=0pt,
    \c!distance=\zeropoint,           % individual column
    \c!columndistance=\zeropoint,     % each column (whole table)
    \c!leftmargindistance=\zeropoint, % whole table
    \c!rightmargindistance=\zeropoint,% whole table
+   \c!left=,
+   \c!right=,
    \c!splitmethod=a]
 
 %D We have already prepared the previous macros for nesting,

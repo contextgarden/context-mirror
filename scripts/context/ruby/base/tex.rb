@@ -83,7 +83,27 @@ class TEX
     @@texmethods = Hash.new
     @@mpsmethods = Hash.new
 
-    ['tex','pdftex','pdfetex','standard']          .each do |e| @@texengines[e] = 'pdfetex'   end
+    @@pdftex     = 'pdftex' # new default, pdfetex is gone
+
+    ENV['PATH'].split(File::PATH_SEPARATOR).each do |p|
+        if System.unix? then
+            pp, pe = "#{p}/pdftex"    , "#{p}/pdfetex"
+        else
+            pp, pe = "#{p}/pdftex.exe", "#{p}/pdfetex.exe"
+        end
+        if FileTest.file?(pe) then
+            # we assume no update
+            @@pdftex = 'pdfetex'
+            break
+        elsif FileTest.file?(pp) then
+            # we assume an update
+            @@pdftex = 'pdftex'
+            break
+        end
+    end
+
+    ['etex','pdfetex','standard']                  .each do |e| @@texengines[e] = @@pdftex    end
+    ['tex','pdftex']                               .each do |e| @@texengines[e] = 'pdftex'    end
     ['aleph','omega']                              .each do |e| @@texengines[e] = 'aleph'     end
     ['xetex']                                      .each do |e| @@texengines[e] = 'xetex'     end
     ['luatex']                                     .each do |e| @@texengines[e] = 'luatex'    end
@@ -122,7 +142,8 @@ class TEX
     ['plain','mpost']                              .each do |f| @@mpsformats[f] = 'plain'     end
     ['metafun','context','standard']               .each do |f| @@mpsformats[f] = 'metafun'   end
 
-    ['pdfetex','aleph','omega','xetex','luatex']   .each do |p| @@prognames[p]  = 'context'   end
+    ['pdftex','pdfetex','aleph','omega',
+     'xetex','luatex']                             .each do |p| @@prognames[p]  = 'context'   end
     ['mpost']                                      .each do |p| @@prognames[p]  = 'metafun'   end
 
     ['plain','default','standard','mptopdf']       .each do |f| @@texmethods[f] = 'plain'     end
@@ -140,15 +161,16 @@ class TEX
      'cont-fr','cont-cz','cont-ro','cont-uk']      .each do |f| @@texprocstr[f] = "\\emergencyend"  end
 
   # @@runoptions['xetex']   = ['--output-driver \\\"-d 4 -V 5\\\"'] # we need the pos pass
-    @@runoptions['xetex']   = ['--8bit --no-pdf'] # from now on we assume (x)dvipdfmx to be used
-    @@runoptions['pdfetex'] = ['--8bit']
-    @@runoptions['luatex']  = ['--8bit']
-    @@runoptions['aleph']   = ['--8bit']
+    @@runoptions['xetex']   = ['--8bit  -no-pdf'] # from now on we assume (x)dvipdfmx to be used
+    @@runoptions['pdfetex'] = ['--8bit ']
+    @@runoptions['pdftex']  = ['--8bit ']         # pdftex is now pdfetex
+    @@runoptions['luatex']  = ['--8bit ']
+    @@runoptions['aleph']   = ['--8bit ']
 
     @@booleanvars = [
         'batchmode', 'nonstopmode', 'fast', 'fastdisabled', 'silentmode', 'final',
         'paranoid', 'notparanoid', 'nobanner', 'once', 'allpatterns',
-        'nompmode', 'nomprun', 'automprun',
+        'nompmode', 'nomprun', 'automprun', 'combine',
         'nomapfiles', 'local',
         'arrange', 'noarrange',
         'forcexml', 'foxet',
@@ -244,6 +266,11 @@ class TEX
         setvariable('texengine',    'standard')
         setvariable('mpsengine',    'standard')
         setvariable('backend',      'standard')
+        setvariable('error',        '')
+    end
+
+    def error?
+        not getvariable('error').empty?
     end
 
     def runtime
@@ -344,11 +371,12 @@ class TEX
     end
 
     def prefixed(format,engine)
+        # format
         case engine
-            when /etex|eetex|pdfetex|pdfeetex|pdfxtex|xpdfetex|eomega|aleph|xetex|luatex/io then
-                "*#{format}"
-            else
-                format
+           when /etex|pdftex|pdfetex|aleph|xetex|luatex/io then
+               "*#{format}"
+           else
+               format
         end
     end
 
@@ -608,7 +636,7 @@ class TEX
                     f.close
                     if FileTest.file?(tempfilename('tex')) then
                         format = File.basename(name)
-                        engine = if name =~ /(pdfetex|aleph|xetex)[\/\\]#{format}/ then $1 else '' end
+                        engine = if name =~ /(pdftex|pdfetex|aleph|xetex|luatex)[\/\\]#{format}/ then $1 else '' end
                         if engine.empty? then
                             engineflag = ""
                         else
@@ -843,7 +871,7 @@ class TEX
         if tmp = openedfile(File.suffixed(rawbase,'run')) then
             tmp << "\\starttext\n"
             if forcexml then
-                tmp << checkxmlfile(rawname)
+                # tmp << checkxmlfile(rawname)
                 tmp << "\\processXMLfilegrouped{#{rawname}}\n"
             else
                 tmp << "\\processfile{#{rawname}}\n"
@@ -856,8 +884,48 @@ class TEX
         end
     end
 
+    # def checkxmlfile(rawname)
+        # tmp = ''
+        # if FileTest.file?(rawname) && (xml = File.open(rawname)) then
+            # xml.each do |line|
+                # case line
+                    # when /<\?context\-directive\s+(\S+)\s+(\S+)\s+(\S+)\s*(.*?)\s*\?>/o then
+                        # category, key, value, rest = $1, $2, $3, $4
+                        # case category
+                            # when 'job' then
+                                # case key
+                                    # when 'control' then
+                                        # setvariable(value,if rest.empty? then true else rest end)
+                                    # when 'mode', 'modes' then
+                                        # tmp << "\\enablemode[#{value}]\n"
+                                    # when 'stylefile', 'environment' then
+                                        # tmp << "\\environment #{value}\n"
+                                    # when 'module' then
+                                        # tmp << "\\usemodule[#{value}]\n"
+                                    # when 'interface' then
+                                        # contextinterface = value
+                                    # when 'ctxfile' then
+                                        # setvariable('ctxfile', value)
+                                        # report("using source driven ctxfile #{value}")
+                                # end
+                        # end
+                    # when /<[a-z]+/io then # beware of order, first pi test
+                        # break
+                # end
+            # end
+            # xml.close
+        # end
+        # return tmp
+    # end
+
+    def extendvariable(name,value)
+        set = getvariable(name).split(',')
+        set << value
+        str = set.uniq.join(',')
+        setvariable(name,str)
+    end
+
     def checkxmlfile(rawname)
-        tmp = ''
         if FileTest.file?(rawname) && (xml = File.open(rawname)) then
             xml.each do |line|
                 case line
@@ -868,12 +936,14 @@ class TEX
                                 case key
                                     when 'control' then
                                         setvariable(value,if rest.empty? then true else rest end)
-                                    when 'mode', 'modes' then
-                                        tmp << "\\enablemode[#{value}]\n"
-                                    when 'stylefile', 'environment' then
-                                        tmp << "\\environment #{value}\n"
-                                    when 'module' then
-                                        tmp << "\\usemodule[#{value}]\n"
+                                    when /^(mode)(s|)$/ then
+                                        extendvariable('modes',value)
+                                    when /^(stylefile|environment)(s|)$/ then
+                                        extendvariable('environments',value)
+                                    when /^(use|)(module)(s|)$/ then
+                                        extendvariable('usemodules',value)
+                                    when /^(filter)(s|)$/ then
+                                        extendvariable('filters',value)
                                     when 'interface' then
                                         contextinterface = value
                                     when 'ctxfile' then
@@ -887,7 +957,6 @@ class TEX
             end
             xml.close
         end
-        return tmp
     end
 
 end
@@ -931,6 +1000,87 @@ class TEX
             setvariable('filename',filename)
             report("processing graphic '#{filename}'")
             runtexmp(filename)
+        end
+        reportruntime
+    end
+
+    def processmpgraphic
+        getarrayvariable('files').each do |filename|
+            setvariable('filename',filename)
+            report("processing graphic '#{filename}'")
+            runtexmp(filename)
+            begin
+                data = IO.read(File.suffixed(filename,'log'))
+                basename = filename.sub(/\.mp$/, '')
+                if data =~ /output files* written\:\s*(.*)$/mois then
+                    files, number, range, list = $1.split(/\s+/), 0, false, []
+                    files.each do |fname|
+                        if fname =~ /^.*\.(\d+)$/ then
+                            if range then
+                                (number+1 .. $1.to_i).each do |i|
+                                    list << i
+                                end
+                                range = false
+                            else
+                                number = $1.to_i
+                                list << number
+                            end
+                        elsif fname =~ /\.\./ then
+                            range = true
+                        else
+                            range = false
+                            next
+                        end
+                    end
+                    begin
+                        if getvariable('combine') then
+                            fullname = "#{basename}.#{number}"
+                            File.open("texexec.tex",'w') do |f|
+                                f << "\\setupoutput[pdftex]\n"
+                                f << "\\setupcolors[state=start]\n"
+                                f << "\\starttext\n"
+                                list.each do |number|
+                                    f << "\\startTEXpage\n"
+                                    f << "\\convertMPtoPDF{#{fullname}}{1}{1}"
+                                    f << "\\stopTEXpage\n"
+                                end
+                                f << "\\stoptext\n"
+                            end
+                            report("converting graphic '#{fullname}'")
+                            runtex("texexec.tex")
+                            pdffile = File.suffixed(basename,'pdf')
+                            File.silentrename("texexec.pdf",pdffile)
+                            report ("#{basename}.* converted to #{pdffile}")
+                        else
+                            list.each do |number|
+                                begin
+                                    fullname = "#{basename}.#{number}"
+                                    File.open("texexec.tex",'w') do |f|
+                                        f << "\\setupoutput[pdftex]\n"
+                                        f << "\\setupcolors[state=start]\n"
+                                        f << "\\starttext \\startTEXpage\n"
+                                        f << "\\convertMPtoPDF{#{fullname}}{1}{1}"
+                                        f << "\\stopTEXpage \\stoptext\n"
+                                    end
+                                    report("converting graphic '#{fullname}'")
+                                    runtex("texexec.tex")
+                                    if files.length>1 then
+                                        pdffile = File.suffixed(basename,number.to_s,'pdf')
+                                    else
+                                        pdffile = File.suffixed(basename,'pdf')
+                                    end
+                                    File.silentrename("texexec.pdf",pdffile)
+                                    report ("#{fullname} converted to #{pdffile}")
+                                end
+                            end
+                        end
+                    rescue
+                        report ("error when converting #{fullname} (#{$!})")
+                    end
+                end
+            rescue
+                report("error in converting #{filename}")
+            end
         end
         reportruntime
     end
@@ -1019,7 +1169,7 @@ class TEX
                         opt << "\\setuppapersize[#{$1.upcase}][#{$2.upcase}]\n"
                     else # ...*...
                         pf = str.upcase.split(/[x\*]/o)
-                        pf << pf[0] if pd.size == 1
+                        pf << pf[0] if pf.size == 1
                         opt << "\\setuppapersize[#{pf[0]}][#{pf[1]}]\n"
                     end
                 end
@@ -1102,7 +1252,7 @@ class TEX
                 report("unable to write option file #{topname}")
             end
         rescue
-            report("fatal error in writing option file #{topname}")
+            report("fatal error in writing option file #{topname} (#{$!})")
         end
     end
 
@@ -1182,7 +1332,7 @@ class TEX
         if texengine && texformat && progname then
             fixbackendvars(@@mappaths[texengine])
             runcommand([quoted(texengine),prognameflag(progname),formatflag(texengine,texformat),tcxflag,runoptions(texengine),filename,texprocextras(texformat)])
-            true
+            # true
         else
             false
         end
@@ -1260,7 +1410,7 @@ class TEX
         end
     end
 
-    # 1=tex 2=mptex 3=mpxtex
+    # 1=tex 2=mptex 3=mpxtex 4=mpgraphic
 
     def runtexexec(filename=[], options=[], mode=nil)
         begin
@@ -1278,6 +1428,7 @@ class TEX
                     when 1 then job.processtex
                     when 2 then job.processmptex
                     when 3 then job.processmpxtex
+                    when 4 then job.processmpgraphic
                 end
                 job.inspect && Kpse.inspect if getvariable('verbose')
                 return true
@@ -1402,7 +1553,11 @@ class TEX
             end
         end
 
-        jobsuffix = makestubfile(rawname,rawbase,forcexml) if dummyfile || forcexml
+        if dummyfile || forcexml then
+            jobsuffix = makestubfile(rawname,rawbase,forcexml)
+            checkxmlfile(rawname)
+        end
+
 
         # preprocess files
 
@@ -1504,6 +1659,9 @@ class TEX
                                 state.update
                                 stoprunning = state.stable?
                             end
+                        end
+                        if not ok then
+                            setvariable('error','error in tex file')
                         end
                         ok = runtexutil(rawbase) if (nofruns == 1) && getvariable('texutil')
                         if ok && finalrun && (nofruns > 1) then

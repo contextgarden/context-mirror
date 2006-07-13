@@ -305,16 +305,6 @@
 \newif   \ifTABLEgraydone    % gray line executed
 \newtoks \TABLEgraytoks      % gray line specification
 
-%D A third major extension, besides spacing and color support,
-%D concerns splitting tables over pages. We don't give
-%D examples here, because its a waste of space.
-
-\newdimen\TABLEheight        % These can be \newskimens
-\newdimen\TABLEmaxheight     % given a few \relax's when
-\newdimen\TABLEheadheight    % testing them with \ifdim.
-\newdimen\TABLEtailheight
-\newdimen\TABLEcaptionheight
-
 \newif\ifTABLEinbreak
 
 %D Nog vervangen:
@@ -370,39 +360,6 @@
 %D extensions for my german friends, we do some catcode magic.
 
 \newif\ifForgetTableBarAndQuote \ForgetTableBarAndQuotetrue
-
-% Old crappy code (live has changed):
-%
-% \bgroup
-%
-% \catcode`\|=\@@active
-% \catcode`\"=\@@active
-%
-% \gdef\pushouterbarandquote
-%   {\ifForgetTableBarAndQuote
-%      \ifnum\catcode`\|=\@@active \else
-%        \catcode`\|=\@@active
-%        \def|{\ifmmode\vert\else\char`\|\fi}%
-%      \fi
-%      \let\outertablebar=|%
-%      \ifnum\catcode`\"=\@@active \else
-%        \catcode`\"=\@@active
-%        \def"{\char`\"}%
-%      \fi
-%      \let\outertablequote="%
-%    \fi}
-%
-% \gdef\popouterbarandquote
-%   {\ifForgetTableBarAndQuote
-%      \let|\outertablebar
-%      \let"\outertablequote
-%    \else
-%      \redefinetablebarandquote
-%    \fi}
-%
-% \egroup
-%
-% probably better (untested):
 
 \bgroup
 
@@ -500,7 +457,7 @@
 %D    \ReadFormatKeys}
 %D \stoptyping
 
-\newdimen\TABLEparheight
+% \newdimen\TABLEparheight
 
 \def\BeginTableParBox#1%
   {\setbox\scratchbox\vtop\bgroup % \setbox added
@@ -526,10 +483,10 @@
    \else                                             % of paragraphs
      \egroup
    \fi
-   \getboxheight\scratchdimen\of\box\scratchbox\relax% compensate for
-   \ifdim\scratchdimen>\TABLEparheight               % funny depth of
-     \global\TABLEparheight\scratchdimen             % multi-line box
-   \fi                                               % i.e. vtop
+%    \getboxheight\scratchdimen\of\box\scratchbox\relax% compensate for
+%    \ifdim\scratchdimen>\TABLEparheight               % funny depth of
+%      \global\TABLEparheight\scratchdimen             % multi-line box
+%    \fi                                               % i.e. vtop
    \box\scratchbox}
 
 % We also need to patch away the interfering math switch:
@@ -852,26 +809,6 @@
 \let\TABLEbeforebar\empty
 \let\TABLEafterbar \empty
 
-% \def\!ttInsertVrule
-%   {\hfil
-%    \TABLEbeforebar % added
-%    \startglobalTABLEcolor % added
-%    \vrule \!thWidth
-%      \ifnum\!tgCode=\plusone
-%        \ifx\!tgValue\empty
-%          \LineThicknessFactor
-%        \else
-%          \!tgValue
-%        \fi
-%        \LineThicknessUnit
-%      \else
-%        \!tgValue
-%      \fi
-%    \stopglobalTABLEcolor % added
-%    \TABLEafterbar % added
-%    \hfil
-%    &}
-
 \def\@VLn{1}
 \def\@VLd{.125em}
 
@@ -957,7 +894,7 @@
 \def\!ttuse#1%
   {\ifnum#1>\plusone
      \omit
-\global\TABLEdivisionfalse
+     \global\TABLEdivisionfalse
      \scratchcounter\currentTABLEcolumn                % added
      \advance\scratchcounter #1%                       % added
      \advance\scratchcounter \minusone                 % added
@@ -1025,16 +962,31 @@
 %D
 %D \showsetup{starttable}
 
+\newconditional\tablerepeathead
+\newconditional\tablerepeattail
+
 \def\starttable
   {\bgroup
-   \doifelsenothing\@@tiframe
-     {\ifinsidefloat\else\startbaselinecorrection\fi}
-     {\startframedcontent[\@@tiframe]}%
-   \postponefootnotes
-   \firststagestartTABLE}
+   \doif\@@tisplit\v!auto
+     {\ifinsidesplitfloat\let\@@tisplit\v!yes\fi}%
+   \doifelse\@@tisplit\v!yes
+     {\def\stoptable{\stoptables}%
+      \setfalse\tablerepeathead
+      \setfalse\tablerepeattail
+      \starttables}
+     {\doifelse\@@tisplit\v!repeat
+        {\def\stoptable{\stoptables}%
+         \settrue\tablerepeathead
+         \settrue\tablerepeattail
+         \starttables}
+        {\doifelsenothing\@@tiframe
+           {\ifinsidefloat\else\startbaselinecorrection\fi}
+           {\startframedcontent[\@@tiframe]}%
+         \postponefootnotes
+         \firststagestartTABLE}}}
 
 \def\stoptable
-  {\TABLEtail
+  {\insertTABLEtail
    \globalletempty\@@TABLEhead
    \globalletempty\@@TABLEtail
    \finishTABLE
@@ -1078,17 +1030,6 @@
 %D The implementation of the definition macro is not that
 %D complicated:
 
-%\def\dodefinetabletemplate[#1][#2]%
-%  {\setgvalue{\c!Table#1}{\complexsecondstagestartTABLE[#2]}%
-%   \egroup}
-%
-%\def\definetabletemplate%
-%  {\bgroup
-%   \catcode`\|=\@@other
-%   \dodoubleargument\dodefinetabletemplate}
-
-% \TABLEnoalign{\page}\TABLEhead is valid
-
 \def\douseTABLEtemplate#1#2#3%
   {\gdef\TABLEhead{\getvalue{@@TABLEhead#2}}%
    \gdef\TABLEtail{\getvalue{@@TABLEtail#3}}%
@@ -1129,35 +1070,36 @@
 %D The second half of the next macro prepares table
 %D splitting.
 
-% \def\complexsecondstagestartTABLE#1[#2]%
-%   {\convertargument|\to\asciiA
-%    \convertargument#2\to\asciiB
-%    \doifinstringelse{\asciiA}{\asciiB}
-%      {\gdef\restartTABLE{\thirdstagestartTABLE{#2}}}
-%      {\doifdefinedelse{\c!Table#2}
-%         {\gdef\restartTABLE{\getvalue{\c!Table#2}}}
-%         {\gdef\restartTABLE{\getvalue{#2}}}}%
-%    \prepareTABLEsplitting
-%    \restartTABLE
-%    \TABLEhead}
+\def\insertTABLEhead
+  {\TABLEnoalign{\global\settrue \preventTABLEbreak \global\setfalse\someTABLEhead}%
+   \TABLEhead
+   \TABLEnoalign{\global\setfalse\preventTABLEbreak}}
+
+\def\insertTABLEtail
+  {\TABLEnoalign{\global\settrue \preventTABLEbreak \global\setfalse\someTABLEtail}%
+   \TABLEtail
+   \TABLEnoalign{\global\setfalse\preventTABLEbreak}}
+
+\def\dorestartTABLE#1%
+  {\gdef\restartTABLE{#1}%
+   \restartTABLE
+   \insertTABLEhead
+   \ifsplittables \ifconditional \tablerepeattail
+     \TABLEnoalign{\goodbreak}%
+     \insertTABLEtail
+     \TABLEnoalign{\goodbreak}%
+   \fi \fi}
 
 \def\complexsecondstagestartTABLE#1[#2]%
   {\convertargument|\to\asciiA
    \convertargument#2\to\asciiB
+   \global\setfalse\someTABLEhead
+   \global\setfalse\someTABLEtail
    \doifinstringelse\asciiA\asciiB
-     {\gdef\restartTABLE
-        {\gdef\restartTABLE{\thirdstagestartTABLE{#2}}%
-         \prepareTABLEsplitting
-         \restartTABLE
-         \TABLEhead}}
+     {\gdef\restartTABLE{\dorestartTABLE{\thirdstagestartTABLE{#2}}}}
      {\doifdefinedelse{\c!Table#2}
-        {\gdef\restartTABLE
-           {\getvalue{\c!Table#2}}}
-        {\gdef\restartTABLE
-           {\gdef\restartTABLE{\getvalue{#2}}%
-            \prepareTABLEsplitting
-            \restartTABLE
-            \TABLEhead}}}%
+        {\gdef\restartTABLE{\getvalue{\c!Table#2}}}
+        {\gdef\restartTABLE{\dorestartTABLE{\getvalue{#2}}}}}%
    \restartTABLE}
 
 %D The third stage involves a lot of (re)sets, which we will
@@ -1212,45 +1154,6 @@
    \global\intablefalse
    \egroup}
 
-%D The preparation for split columns concerns some
-%D calculations. Although not explicitly needed, one can
-%D predefine a tablehead as well as a tail. Each table fragment
-%D is preceded by such a head and ends with a tail. This means
-%D that, in order to determine the available height, we have to
-%D take the head and tail into account. Because we want to
-%D support captions too, we will also reserve some space for
-%D those later on.
-
-\def\prepareTABLEsplitting
-  {\global\TABLEheight\zeropoint
-   \ifsplittables
-     \ifx\TABLEhead\empty
-       \global\TABLEheadheight\zeropoint
-     \else
-       \setbox0\vbox
-         \bgroup
-           \def\doEndOfTableLine##1##2##3{\normalTABLElineformat##2##3}%
-           \restartTABLE\TABLEhead
-         \finishTABLE
-         \global\TABLEheadheight\ht0
-     \fi
-     \ifx\TABLEtail\empty
-       \global\TABLEtailheight\zeropoint
-     \else
-       \setbox0\vbox
-         \bgroup
-           \def\doEndOfTableLine##1##2##3{\normalTABLElineformat##2##3}%
-           \restartTABLE\TABLEtail
-         \finishTABLE
-       \global\TABLEtailheight\ht0
-     \fi
-   \else
-     \global\TABLEheadheight\zeropoint
-     \global\TABLEtailheight\zeropoint
-   \fi
-   \global\TABLEheight\zeropoint
-   \calculatemaxTABLEheight\docalculatemaxTABLEheight}
-
 %D \macros
 %D   {starttables}
 %D
@@ -1272,27 +1175,45 @@
 %D \stoptables
 %D \stoptyping
 
+\newbox\tablecontentbox
+
 \def\starttables
   {\bgroup
-   \ifinsidefloat\else
-     \baselinecorrection
-     \flushnotes
-     \topbaselinecorrection
-   \fi
-   \forgetall
-   \globallet\absmaxTABLEheight\zeropoint
    \splittablestrue
+   \flushnotes
+   \setbox\tablecontentbox\vbox\bgroup
+   \forgetall
    \global\TABLEinbreakfalse
    \firststagestartTABLE}
 
 \def\stoptables
-  {\TABLEtail
+  {\ifconditional\tablerepeattail\else\insertTABLEtail\fi
    \finishTABLE
-   \ifinsidefloat\else
-     \flushnotes
-     \botbaselinecorrection
-   \fi
+   \egroup
+   \dosplittablebox\tablecontentbox
+   \flushnotes
    \egroup}
+
+\newdimen\TABLEcaptionheight % obsolete
+
+\def\dosplittablebox#1%
+  {\resettsplit
+   \def\tsplitminimumfreelines{2}%
+   \def\tsplitminimumfreespace{\TABLEcaptionheight}%
+   \setbox\tsplitcontent\box#1%
+   \ifconditional\tablerepeathead \ifconditional\someTABLEhead
+     \setbox\tsplithead\vsplit\tsplitcontent to \lineheight
+     \setbox\tsplithead\vbox{\unvbox\tsplithead}%
+   \fi \fi
+   \ifconditional\tablerepeattail \ifconditional\someTABLEtail
+     \setbox\tsplittail\vsplit\tsplitcontent to \lineheight
+     \setbox\tsplittail\vbox{\unvbox\tsplittail}%
+   \fi \fi
+   \ifinsidefloat\else
+     \def\tsplitbeforeresult{\startbaselinecorrection}%
+     \def\tsplitafterresult {\stopbaselinecorrection}%
+   \fi
+   \handletsplit}
 
 %D When the table in the previous example is split across
 %D pages, only the first gets a head. We could have said
@@ -1344,82 +1265,14 @@
 \def\setTABLEhead{\dodoubleempty\dosetTABLEhead}
 \def\setTABLEtail{\dodoubleempty\dosetTABLEtail}
 
-\def\dosetTABLEhead[#1][#2]#3\end{\setvalue{@@TABLEhead#1}{#3}}
-\def\dosetTABLEtail[#1][#2]#3\end{\setvalue{@@TABLEtail#1}{#3}}
+\newconditional\preventTABLEbreak
+\newconditional\someTABLEhead
+
+\def\dosetTABLEhead[#1][#2]#3\end{\setvalue{@@TABLEhead#1}{\TABLEnoalign{\global\settrue\someTABLEhead}#3}}
+\def\dosetTABLEtail[#1][#2]#3\end{\setvalue{@@TABLEtail#1}{\TABLEnoalign{\global\settrue\someTABLEtail}#3}}
 
 %D Redudant \type{\HL}'s are removed automatically, so
 %D mid||lines can be used without problems.
-
-%D When calculating the available height of a split table, we
-%D try to handle multi||column mode as good as possible. This
-%D algoritm evolved during the development of the split option
-%D and will probably be improved bit by bit.
-
-\def\docalculatemaxTABLEheight
-  {\ifinsidecolumns
-     \getcolumnstatus\column\scratchcounter\total\dimen0\goal\dimen2\\%
-   \else
-     \ifdim\pagegoal<\maxdimen
-       \dimen0\pagetotal
-       \dimen2\pagegoal
-     \else
-       \dimen0\zeropoint
-       \dimen2\textheight
-     \fi
-   \fi
-   \advance\dimen2 -\dimen0
-   \global\TABLEmaxheight\dimen2
-   \global\advance\TABLEmaxheight -\strutdp
-   \ifdim\prevdepth<\maxdimen\ifdim\prevdepth>\zeropoint
-     \global\advance\TABLEmaxheight -\strutdp
-     \global\advance\TABLEmaxheight -\parskip
-   \fi\fi}
-
-\def\nocalculatemaxTABLEheight
-  {\ifinsidecolumns
-     \getcolumnstatus\column\scratchcounter\total\dimen0\goal\dimen2\\%
-   \else
-     \dimen0\zeropoint
-     \dimen2\textheight
-   \fi
-   \advance\dimen2 -\dimen0
-   \global\TABLEmaxheight\dimen2
-   \global\advance\TABLEmaxheight -\strutdp}
-
-\def\calculatemaxTABLEheight#1%
-  {\ifsplittables
-     #1\relax
-     \ifdim\TABLEmaxheight<3\baselineskip \relax % instelbaar maken
-       \ifinsidecolumns
-         \nobreak
-         \kern\dimen2
-         \goodbreak
-       \else
-         \goodbreak % \page
-       \fi
-       \removeTABLEtopskip
-       \nocalculatemaxTABLEheight
-     \fi
-     \ifdim\TABLEmaxheight<\absmaxTABLEheight % forces equal columns
-       \global\TABLEmaxheight\absmaxTABLEheight
-     \else
-       \xdef\absmaxTABLEheight{\the\TABLEmaxheight}%
-     \fi
-     \global\TABLEheight\zeropoint
-   \else
-     \global\TABLEmaxheight\maxdimen
-   \fi}
-
-%D When splitting tables, we have to remove the top skip when
-%D we're in the main vertical list, else we remove whatever
-%D skip \TEX\ adds.
-
-\def\removeTABLEtopskip
-  {\ifinsidefloat
-     \verticalstrut\kern-\struttotal
-   \else
-     \hbox{}\kern-\topskip
-   \fi}
 
 %D We need an alternative for the normal complex or simple
 %D commands, because assignments in these system commands
@@ -1427,7 +1280,6 @@
 %D as efficient as possible.
 
 \def\complexorsimpleTable#1#2%
-% {\getvalue{\if[\noexpand#2\s!complex\else\s!simple\fi\c!Table#1}#2}
   {\csname\if[\noexpand#2\s!complex\else\s!simple\fi\c!Table#1\endcsname#2}
 
 %D The next one is used in \type{\VL} cum suis and honours
@@ -1702,57 +1554,8 @@
 %D we repeat the table head.
 
 \def\handleTABLEbreak#1#2%
-  {\ifsplittables
-     \setbox0\hbox{\AugmentedTableStrut{#1}{#2}}%
-     \getboxheight\dimen0\of\box0\relax
-     \ifdim\TABLEparheight>\dimen0         % new
-       \advance\dimen0-\lineheight         % newer
-       \ifdim\dimen0<\zeropoint            % newer
-         \dimen2\zeropoint                 % newer
-       \fi                                 % newer
-       \advance\dimen0 \TABLEparheight     % new
-       \global\TABLEparheight\zeropoint    % new
-     \fi                                   % new
-     \ifTABLEgrayline \else
-       \global\advance\TABLEheight\dimen0
-     \fi
-     \ifTABLEinbreak
-       \globalletempty\beforeTABLEline
-       \gdef\afterTABLEline{\TABLEnoalign{\nobreak}}%
-     \else
-       \dimen2=\TABLEheight
-       \advance\dimen2 \strutdp
-       \advance\dimen2 \TABLEtailheight
-       \advance\dimen2 \TABLEcaptionheight
-       \advance\dimen2 \lineheight % we're ahead
-       \ifdim\dimen2>\TABLEmaxheight
-         \gdef\beforeTABLEline
-           {\setTABLEforce\TABLEforcelastrow}%
-         \gdef\afterTABLEline
-           {\TABLEnoalign
-              {\nobreak
-               \global\TABLEinbreaktrue}%
-            \TABLEtail
-            \TABLEnoalign
-              {\goodbreak
-               \calculatemaxTABLEheight\nocalculatemaxTABLEheight
-               \removeTABLEtopskip
-               \setTABLEaction\TABLEunknown
-               \setTABLEforce \TABLEunknown}%
-            \TABLEhead
-            \TABLEnoalign
-              {\nobreak
-               \global\TABLEinbreakfalse
-               \setTABLEforce\TABLEforcefirstrow}}%
-       \else
-         \globalletempty\beforeTABLEline
-         \gdef\afterTABLEline{\TABLEnoalign{\nobreak}}%
-       \fi
-     \fi
-   \else
-     \globalletempty\beforeTABLEline
-     \gdef\afterTABLEline{\TABLEnoalign{\nobreak}}%
-   \fi}
+  {\globalletempty\beforeTABLEline
+   \gdef\afterTABLEline{\TABLEnoalign{\ifconditional\preventTABLEbreak\nobreak\else\goodbreak\fi}}}
 
 %D When tables are split, the spacing before and after a
 %D horizontal rule is corrected according to what we expect.
@@ -1770,7 +1573,6 @@
        ->%
      \fi
      \color[#1]{\string#3}%
-     \ifsplittables\space\the\TABLEmaxheight/\the\TABLEheight\fi
      \ifx\TABLEgraylineerror\empty
        \space\TABLEgraylinestatus
      \else
@@ -2027,7 +1829,6 @@
   {\TABLEnoalign
      {\nobreak
       \setbox0\vbox{\blank[\@@tiNL]}%
-      \global\advance\TABLEheight \ht0
       \vskip\ht0
       \nobreak}}
 
@@ -2167,8 +1968,7 @@
       \setTABLEaction\TABLErule}}
 
 \def\accountTABLElinewidth
-  {\scratchdimen\LineThicknessUnit
-   \global\advance\TABLEheight \@@tiHLheight\scratchdimen}
+  {\scratchdimen\LineThicknessUnit}
 
 %D \startitemize[3*ruim]
 %D \sym{\type{\BC}}
@@ -2649,7 +2449,8 @@
    \c!commands=,
    \c!background=\v!screen,
    \c!backgroundscreen=\@@rsscreen,
-   \c!backgroundcolor=]
+   \c!backgroundcolor=,
+   \c!split=\v!auto]
 
 \def\ifintabel{\ifintable} % upward compatible
 

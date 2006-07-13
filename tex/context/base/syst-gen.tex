@@ -405,7 +405,9 @@
 %D \type{\unprotect}, one can use \type{\@EA} as equivalent
 %D of \type{\expandafter}.
 
-\let\@EA    =\expandafter
+\let\@NX\noexpand
+\let\@EA\expandafter
+
 \def\@EAEA  {\expandafter\expandafter}
 \def\@EAEAEA{\expandafter\expandafter\expandafter}
 
@@ -3818,10 +3820,10 @@
          \processcommalist[##1]\dodododoublewithset}}%
    #1\dododoublewithset}%
 
-\def\dodoubleemptywithset%
+\def\dodoubleemptywithset
   {\dodoublewithset\dodoubleempty}
 
-\def\dodoubleargumentwithset%
+\def\dodoubleargumentwithset
   {\dodoublewithset\dodoubleargument}
 
 \def\dotriplewithset#1#2%

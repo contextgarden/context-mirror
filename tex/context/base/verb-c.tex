@@ -39,7 +39,7 @@
         \ifcontinueCsinglelinecomment
           \continueCsinglelinecommentfalse
         \else
-          \egroup
+          \tttf
           \endofpretty
           \global\inCsinglelinecommentfalse
           \global\inCcommentfalse
@@ -200,7 +200,7 @@
    \next{#1}#2}
 
 \gdef\Cstartcomment#1#2%
-  {\beginofpretty[\!!prettyfourthree]\bgroup\ttsl\getpretties{#1}{#2}}
+  {\beginofpretty[\!!prettyfourthree]\ttsl\getpretties{#1}{#2}}
 
 \gdef\dodoCtypefourthree% #1%
   {\endCtypesix
@@ -215,7 +215,7 @@
    \else
      \global\inCcommenttrue
      \global\inCsinglelinecommenttrue
-     \def\next{\beginofpretty[\!!prettyfourthree]\bgroup\ttsl\getpretties{#1}{#2}}%
+     \def\next{\beginofpretty[\!!prettyfourthree]\ttsl\getpretties{#1}{#2}}%
      \expandafter\next
    \fi}
 
@@ -235,7 +235,7 @@
      \expandafter#2%
    \else\ifnum\prettytype=43
      \getpretties{#1}{#2}%
-     \egroup
+     \tttf
      \endofpretty
      \global\inCcommentfalse
      \global\inCmultilinecommentfalse
@@ -265,7 +265,7 @@
      \endCtypesix
      \global\inCcommenttrue
      \global\inCsinglelinecommenttrue
-     \def\next{\beginofpretty[\!!prettyfourthree]\bgroup\ttsl\getpretty{#1}}%
+     \def\next{\beginofpretty[\!!prettyfourthree]\ttsl\getpretty{#1}}%
      \expandafter\next
    \fi\fi\fi}
 
@@ -481,3 +481,4 @@
   [\c!icommand=\tttf]
 
 \protect  \endinput
+

@@ -20,18 +20,36 @@
 %D Because \LATEX\ has no safe package loading mechanism, we
 %D need to take care of possible interference.
 
+% \def\StartLatexHack
+%   {\edef\StopLatexHack
+%      {\catcode`\noexpand/=\the\catcode`/
+%       \catcode`\noexpand-=\the\catcode`-
+%       \catcode`\noexpand:=\the\catcode`:
+%       \catcode`\noexpand;=\the\catcode`;
+%       \catcode`\noexpand"=\the\catcode`"
+%       \catcode`\noexpand<=\the\catcode`<
+%       \catcode`\noexpand>=\the\catcode`>}%
+%   \catcode`/=12 \catcode`-=12
+%   \catcode`:=12 \catcode`;=12
+%   \catcode`"=12 \catcode`<=12 \catcode`>=12 }
+
+%D Adapted conform request from morten.hoegholm@latex-project.org,
+%D i.e. untested by me; using strings makes Babel more happy.
+
 \def\StartLatexHack
   {\edef\StopLatexHack
-     {\catcode`\noexpand/=\the\catcode`/
-      \catcode`\noexpand-=\the\catcode`-
-      \catcode`\noexpand:=\the\catcode`:
-      \catcode`\noexpand;=\the\catcode`;
-      \catcode`\noexpand"=\the\catcode`"
-      \catcode`\noexpand<=\the\catcode`<
-      \catcode`\noexpand>=\the\catcode`>}%
-  \catcode`/=12 \catcode`-=12
-  \catcode`:=12 \catcode`;=12
-  \catcode`"=12 \catcode`<=12 \catcode`>=12 }
+     {\catcode\string`\noexpand/=\the\catcode\string`/
+      \catcode\string`\noexpand-=\the\catcode\string`-
+      \catcode\string`\noexpand:=\the\catcode\string`:
+      \catcode\string`\noexpand;=\the\catcode\string`;
+      \catcode\string`\noexpand"=\the\catcode\string`"
+      \catcode\string`\noexpand<=\the\catcode\string`<
+      \catcode\string`\noexpand>=\the\catcode\string`>
+      \catcode\string`\noexpand`=\the\catcode\string``}%
+  \catcode\string`/=12 \catcode\string`-=12
+  \catcode\string`:=12 \catcode\string`;=12
+  \catcode\string`"=12 \catcode\string`<=12
+  \catcode\string`>=12 \catcode\string``=12 }
 
 %D This hack is needed especially for \LATEX\ users who use
 %D the Babel package. The Germans have active \type {"}'s, the

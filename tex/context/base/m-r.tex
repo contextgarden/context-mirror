@@ -84,17 +84,34 @@
 \def\stopRhidden
   {\doifmode{*\v!first}\runR}
 
+% \def\runR % " " needed to preserve < >
+%   {\executesystemcommand{texmfstart
+%       --ifchanged=\Rfile\space --direct R
+%       "-q --save --restore < \Rfile\space > \Rfile.out"}}
+
 \def\runR
   {\executesystemcommand{texmfstart
-%         --ifchanged=\Rfile\space bin:R
       --ifchanged=\Rfile\space --direct R
-      "-q --save --restore < \Rfile\space > \Rfile.out"}}
+      CMD BATCH -q --save --restore \Rfile\space \Rfile.out}}
 
 \protect \doifnotmode{demo}{\endinput}
 
 % Johan's test file:
 
+\usemodule[r]
+
+\def\R{R}
+
+\setupcolors[state=start]
+
+\setuptyping
+ [Rtype]
+ [color=darkgreen]
+
 \starttext
+
+First a test of whether the workspace is persistent:
+bla
 
 \startR
 a <- "bla"
@@ -102,17 +119,27 @@ b <- "blabla"
 ls()
 \stopR
 
-bla bla
+One \R run ends, another begins.
+
+\startR
+ls()
+\stopR
+
+Now follows a hidden \R run which cleans the R workspace
 
 \startRhidden
 rm(list=ls())
 save.image()
 \stopRhidden
 
-more bla
+What is in the workspace now?
 
 \startR
 ls()
+\stopR
+
+Then a small test of generating a graphic, in this case a pdf
+\startR
 ushape <- c(rexp(500000), 12-rexp(500000))
 pdf("ushape.pdf")
 par(mfrow=c(1,2))
@@ -121,7 +148,12 @@ plot(density(ushape), main="Density")
 dev.off()
 \stopR
 
-\input tufte \par \input knuth
+The graphic \type{ushape.pdf} can be included in the standard \CONTEXT\ way
+\startbuffer
+\placefigure{An ugly distribution}{\externalfigure[ushape]}
+\stopbuffer
+\typebuffer
+\getbuffer
 
 \startR
 x <- rnorm(900)
@@ -135,25 +167,50 @@ xyplot(y~x|f)
 dev.off()
 \stopR
 
-\placefigure{}{\externalfigure[lattice]}
-\placefigure{}{\externalfigure[ushape]}
+With \type{Sweave} lattice graphics calls must be enclosed in
+\type{print()} statements but that is not necessary here.
 
-\input tufte
+\startbuffer
+\placefigure[here]{Lattice graphics}{\externalfigure[lattice]}
+\stopbuffer
+\typebuffer
+\getbuffer
 
+A test string with nasty characters. In \R, the result of a statement
+is not printed by default. Enclosing the statement in parentheses,
+however causes the parser to see only the value of the statement and
+applying the \type{print()} method.
 \startR
-(test <- ".*\\\\ []{}=?!+%#|<|>@$")
+(test <- ".*\\\\ [[{[{]{[{[{}\]\}=?!+%#|<|>@$")
 cat(test)
 \stopR
 
-\input bryson \par \input knuth
+A combination
+\startbuffer
+\placefigure{A combination of two previously used graphics}{
+\startcombination[2*1]
+ {\externalfigure[ushape][width=.4\textwidth]}{The first graphic, rescaled}
+ {\externalfigure[lattice][width=.4\textwidth]}{The second graphic, rescaled}}
+\stopcombination
+\stopbuffer
+\typebuffer
+\getbuffer
+
+Testing a function definition.
 
 \startR
 a.df <- data.frame(a=1:2, b=rnorm(2))
 a.df$a
 testfunction <- function(a=NULL, ...) {
-  for(i in 1:length(a)) {
-    gsub(a[[i]], "([a-r]|[A-R])", "bla")}
-  print(a)}
+ for(i in 1:length(a)) {
+   gsub(a[[i]], "([a-r]|[A-R])", "bla")}
+ print(a)}
+\stopR
+
+What is in the workspace now?
+
+\startR
+ls()
 \stopR
 
 \stoptext

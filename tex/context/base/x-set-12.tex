@@ -32,7 +32,6 @@
 \definecolor[TitleColor][r=.15,g=.20,b=.25]
 \definecolor[TitleColor][r=.15,g=.25,b=.20]
 
-
 \startinterface dutch    \definecolor[LocalColor][r=.75,g=.25,b=.25]    \stopinterface
 \startinterface english  \definecolor[LocalColor][r=.25,g=.75,b=.25]    \stopinterface
 \startinterface german   \definecolor[LocalColor][r=.25,g=.25,b=.75]    \stopinterface
@@ -150,22 +149,17 @@
 \setuplayout
   [titlepage]
 
-\startmakeup[\v!standard]
-  \dontcomplain
-  \startcolor[TitleColor]
-  \definedfont[RegularBold at 100pt]\setstrut
-  \setupalign[\v!left]
-  \strut Con\TeX t \par
-  \definedfont[RegularBold at 50pt]\setstrut
+\startsetups text:commands
   \startinterface dutch    \strut commando's   \par \stopinterface
   \startinterface english  \strut commands     \par \stopinterface
   \startinterface german   \strut befehle      \par \stopinterface
-  \startinterface french   \strut .......      \par \stopinterface
-  \startinterface czech    \strut prikaz\'y    \par \stopinterface
+  \startinterface french   \strut commandes    \par \stopinterface
+  \startinterface czech    \strut p\v{r}ikazy  \par \stopinterface
   \startinterface italian  \strut comandi      \par \stopinterface
   \startinterface romanian \strut comenzile    \par \stopinterface
-  \vfill
-  \definedfont[RegularBold at 150pt]\setstrut
+\stopsetups
+
+\startsetups text:uppercase
   \startinterface dutch    NL\stopinterface
   \startinterface english  EN\stopinterface
   \startinterface german   DE\stopinterface
@@ -173,6 +167,29 @@
   \startinterface czech    CZ\stopinterface
   \startinterface italian  IT\stopinterface
   \startinterface romanian RO\stopinterface
+\stopsetups
+
+\startsetups text:lowercase
+  \startinterface dutch    \strut nl / nederlands     \par \stopinterface
+  \startinterface english  \strut en / english        \par \stopinterface
+  \startinterface german   \strut de / deutsch        \par \stopinterface
+  \startinterface french   \strut fr / fran\c{c}ais   \par \stopinterface
+  \startinterface czech    \strut cz / \v{c}esk\'y    \par \stopinterface
+  \startinterface italian  \strut it / italiano       \par \stopinterface
+  \startinterface romanian \strut ro / rom\^{a}n\u{a} \par \stopinterface
+\stopsetups
+
+\startmakeup[\v!standard]
+  \dontcomplain
+  \startcolor[TitleColor]
+  \definedfont[RegularBold at 100pt]\setstrut
+  \setupalign[\v!left]
+  \strut Con\TeX t \par
+  \definedfont[RegularBold at 50pt]\setstrut
+  \setups[text:commands]
+  \vfill
+  \definedfont[RegularBold at 150pt]\setstrut
+  \setups[text:uppercase]
   \stopcolor
 \stopmakeup
 
@@ -189,22 +206,10 @@
   \setupalign[\v!left]
   \strut Con\TeX t \par
   \definedfont[RegularBold at 50pt]\setstrut
-  \startinterface dutch    \strut commando's     \par \stopinterface
-  \startinterface english  \strut commands       \par \stopinterface
-  \startinterface german   \strut befehle        \par \stopinterface
-  \startinterface french   \strut .......        \par \stopinterface
-  \startinterface czech    \strut prikaz\'y      \par \stopinterface
-  \startinterface italian  \strut comandi        \par \stopinterface
-  \startinterface romanian \strut comenzile      \par \stopinterface
+  \setups[text:commands]
   \vfill
   \definedfont[RegularBold at 24pt]\setupinterlinespace
-  \startinterface dutch    \strut nl / nederlands     \par \stopinterface
-  \startinterface english  \strut en / english        \par \stopinterface
-  \startinterface german   \strut de / deutsch        \par \stopinterface
-  \startinterface french   \strut fr / fran\,c ais    \par \stopinterface
-  \startinterface czech    \strut cz / \^cesk\'y      \par \stopinterface
-  \startinterface italian  \strut it / italiano       \par \stopinterface
-  \startinterface romanian \strut ro / rom\^{a}n\u{a} \par \stopinterface
+  \setups[text:lowercase]
   \par \strut \currentdate \par
   \stopcolor
 \stopmakeup

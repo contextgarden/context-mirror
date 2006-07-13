@@ -938,7 +938,7 @@
 \def\eject         {\par\ifvmode\penalty\ejectpenalty\fi\resetpagebreak} % == {\par\break} % plain
 \def\supereject    {\par\ifvmode\penalty\superpenalty\fi\resetpagebreak} % also plain
 
-\def\doejectpage   {\par\ifvmode\ifdim\pagetotal>\pagegoal\else\normalvfil\fi\fi}
+\def\doejectpage   {\par\ifvmode\ifdim\pagetotal>\pagegoal\else\normalvfil\fi\fi} % pg set to \textheight
 \def\ejectpage     {\doejectpage\eject}
 \def\superejectpage{\doejectpage\supereject}
 
@@ -1570,6 +1570,9 @@
 \def\simplifypagebreak
   {\def\dopagebreak[##1]{\goodbreak}}
 
+\def\disablepagebreaks
+  {\def\dopagebreak[##1]{}}
+
 \def\executepagebreakhandler#1%
   {\edef\@@pagespecification{#1}%
    \doifdefinedelse{\??pe:\@@pagespecification}
@@ -1701,7 +1704,7 @@
    \gotonextpageX % will become \gotonextpage
    \doifbothsidesoverruled
    \orsideone
-     \resetcurrentsectionmarks
+     \resetcurrentsectionmarks % sic
      \ejectdummypage
    \orsidetwo
    \od}
@@ -1712,7 +1715,7 @@
    \doifbothsidesoverruled
    \orsideone
    \orsidetwo
-     \resetcurrentsectionmarks
+     \resetcurrentsectionmarks % sic
      \ejectdummypage
    \od}
 
@@ -1725,7 +1728,7 @@
    \doifoddpageelse\donothing{\resetcurrentsectionmarks\ejectdummypage}}
 
 \installpagebreakhandler \v!quadruple % not yet ok inside columnsets
-  {\ifdubbelzijdig
+  {\ifdoublesided
      \!!counta\realpageno
      \!!countb\realpageno
      \divide\!!counta 4
@@ -1753,7 +1756,7 @@
 
 \installpagebreakhandler \v!lastpage % handy for backpage preceded by empty pages
   {\executepagebreakhandler\v!yes
-   \ifdubbelzijdig
+   \ifdoublesided
      \executepagebreakhandler\v!left
      \executepagebreakhandler\v!empty
      \executepagebreakhandler\v!empty

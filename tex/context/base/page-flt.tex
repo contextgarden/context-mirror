@@ -13,9 +13,6 @@
 
 \writestatus{loading}{Context OTR Macros / Floating Bodies}
 
-%D This module is currently a mess, due to splitting float
-%D handlers over specific otr's. Consider it work in progress.
-
 %D Some of the sidefloat settings should move to page-sid; now it's quite
 %D fuzzy the way the variables are set/reset.
 
@@ -412,7 +409,7 @@
 %\to \everyinsidefloat
 
 %\def\doifrightpagefloatelse % watch out: other default ! ! !
-%  {\ifdubbelzijdig
+%  {\ifdoublesided
 %     \ifodd\purenumber\twopassfloatdata\space
 %       \@EAEAEA\firstoftwoarguments
 %     \else
@@ -423,8 +420,8 @@
 %   \fi}
 
 \def\doifrightpagefloatelse
-  {\ifdubbelzijdig
-     \ifenkelzijdig
+  {\ifdoublesided
+     \ifsinglesided
        \@EAEAEA\firstoftwoarguments
      \else
        \@EAEAEA\doifoddfloatpageelse
@@ -819,10 +816,14 @@
      {\checkfloatracer{\v!float#1}% will go
       \tagnodelocation{\v!float#1}}}
 
+\newconditional\retainfloatnumber
+
 \def\preparefloatnumber#1%
-  {\doifelse\@@bknumbering\v!nocheck
+  {\xdef\floatcaptionnumber{#1}%
+   \doifelse\@@bknumbering\v!nocheck
      {\incrementnumber[#1]%
-      \makesectionnumber[#1]}
+      \makesectionnumber[#1]%
+      \ifconditional\retainfloatnumber\decrementnumber[#1]\fi}
      {\ifinsidecolumns
         \chardef\nodelocationmode\zerocount
         % to be perfected:
@@ -831,6 +832,7 @@
       \ifcase\nodelocationmode
         \incrementnumber[#1]%
         \makesectionnumber[#1]%
+        \ifconditional\retainfloatnumber\decrementnumber[#1]\fi
       \else
         % force check, so that we get a proper way-sync and
         % can use the accumulated number
@@ -995,6 +997,8 @@
    \global\somefloatwaitingtrue
    \dosavefloatinfo}
 
+% better (todo): \savednofsavedfloats
+
 \def\dosavefloatstatus
   {\global\setbox\savedfloatlist\copy\floatlist
    \global\setbox\savedfloatbox \copy\floatbox
@@ -1007,6 +1011,45 @@
 
 \ifx\doflushfloats\undefined \let\doflushfloats\relax \fi
 \ifx\flushfloatbox\undefined \let\flushfloatbox\relax \fi
+
+% needed in the splitter:
+
+\newcount\savedsavednoffloats
+
+\let\dopopsavedfloats\relax
+
+\def\dopushsavedfloats
+  {\global\setbox\savedfloatlist\box\floatlist
+   \global\savedsavednoffloats\savednoffloats
+   \global\savednoffloats\savednoffloats
+   \global\somefloatwaitingfalse
+   \gdef\dopopsavedfloats
+     {\global\advance\savednoffloats\savedsavednoffloats
+      \global\setbox\floatlist\vbox\bgroup
+        \ifvoid\floatlist     \else\unvbox\floatlist     \fi
+        \ifvoid\savedfloatlist\else\unvbox\savedfloatlist\fi
+      \egroup
+      \global\ifcase\savednoffloats
+        \somefloatwaitingfalse\else\somefloatwaitingtrue\fi
+      \globallet\dopopsavedfloats\relax}}
+
+\def\doflushsavedfloats % simplified \OTRONEdodoflushfloats
+  {\doloop
+     {\ifsomefloatwaiting
+        \dogetfloat
+        \dofloatflushedinfo
+        \docheckiffloatfits
+        \ifroomforfloat
+          \doplacefloatbox
+        \else
+          \doreversesavefloat
+          \exitloop
+        \fi
+      \else
+        \exitloop
+      \fi}}
+
+% top and bottom
 
 \newif\iftopofinsert
 \newif\iftestfloatbox
@@ -1317,35 +1360,6 @@
 \def\setfloatcaption % \dosetfloatcaption already in use
   {\dodoubleempty\dodosetfloatcaption} % beware, name clash
 
-% \def\dodosetfloatcaption[#1][#2]#3% to do namespace for number/ascii
-%   {\ifnofloatnumber               % also handle trialtypesetting
-%      \letgvalue{@fl@r@#1}\relax
-%      \letgvalue{@fl@t@#1}\relax
-%    \else
-%      \incrementnumber[#1]%
-%      \makesectionnumber[#1]%
-%    % \globallet\flcomposedsectionnumber\composedsectionnumber % beware, not unique should be done on a per class base
-%      \letgvalue{@fl@n@#1}\composedsectionnumber
-%      % indirect macro can be more efficient
-%      \setgvalue{@fl@r@#1}%
-%        {\dofloatreference
-%         \redofloatorder{#1}%
-%       % \dowritetolist{#1}{\flcomposedsectionnumber}{#3}{#1}%
-%         \dowritetolist{#1}{\getvalue{@fl@n@#1}}{#3}{#1}%
-%         \doglobal\convertargument#3\to\flasciititle % \asciititle is global
-%       % \doifsomething{#2}{\rawreference\s!flt{#2}{{\flcomposedsectionnumber}{\flasciititle}}}%
-%         \doifsomething{#2}{\rawreference\s!flt{#2}{{\getvalue{@fl@n@#1}}{\flasciititle}}}%
-%         \letgvalue{@fl@r@#1}\relax}% nils
-%      \setgvalue{@fl@t@#1}%
-%      % {\preparethenumber{\??kj#1}\flcomposedsectionnumber\preparednumber
-%        {\preparethenumber{\??kj#1}{\getvalue{@fl@n@#1}}\preparednumber
-%         \doattributes{\??kj#1}\c!style\c!color
-%           {\doattributes{\??kj#1}\c!headstyle\c!headcolor
-%              {\labeltexts{#1}{\preparednumber}}%
-%            \doattributes{\??kj#1}\c!textstyle\c!textcolor
-%              {\dotfskip{\getvalue{\??kj#1\c!distance}}#3}}}%
-%    \fi}
-
 \def\dodosetfloatcaption[#1][#2]#3% to do namespace for number/ascii
   {\ifnofloatnumber               % also handle trialtypesetting
      \letgvalue{@fl@r@#1}\relax
@@ -1396,7 +1410,7 @@
   {\noindent
 %    \xdef\lastcaptiontag{\strut#2\floatcaptionsuffix}%
    \xdef\lastcaptiontag{\strut#2}%
-   \xdef\floatcaptionnumber{#1}%
+%    \xdef\floatcaptionnumber{#1}%
    \dostartattributes{\??kj#1}\c!style\c!color\empty
      \ifnofloatnumber
      \else
@@ -2195,89 +2209,6 @@
    \dostartbuffer[pbuf-\nofpostponedblocks]%
      [\e!start\v!postponing][\e!stop\v!postponing]}
 
-\definenumber
-  [\??si]
-  [\c!way=\v!by\v!text,
-   \c!conversion=\@@siconversion]
-
-\def\setupfloatsplitting
-  {\dodoubleargument\getparameters[\??si]}
-
-% ook (continued)
-
-\newif\ifinsidesplitfloat % will become chardef
-
-\def\dosplitfloat[#1]#2% nog dubbele refs
-  {\ifinsidecolumns    % tzt ook nog figuren splitten
-     % not yet supported
-   \else
-     \bgroup
-     \insidefloattrue
-     \insidesplitfloattrue
-     \getparameters[\??si][#1]%
-     \resetnumber[\??si]%
-     \def\floatcaptionsuffix{\convertednumber[\??si]}%
-     % \TABLEcaptionheight\@@silines\lineheight% brrr
-% todo: auto == \getnoflines\captionheight
-\let\extrasplitfloatlines\@@silines
-\the\everysplitfloatsetup
-     \simplifypagebreak % \page becomes \goodbreak
-% todo: a preceding float does not count yet
-% so we need a better predictor
-     \dowithnextbox
-       {\forgetall
-        \dontcomplain
-\chardef\nodelocationmode\zerocount
-        \doloop
-          {\setbox2\vsplit\nextbox to \lineheight
-           \setbox2\vbox{\unvbox2}
-           \ifdim\ht2>\lineheight
-             \incrementnumber[\??si]%
-             \ifcase\rawnumber[\??si]\or \ifdim\nextboxht=\zeropoint
-               \let\floatcaptionsuffix\empty
-             \fi \fi
-             \bgroup
-             #2{\unvbox2}
-             \egroup
-             \ifdim\nextboxht>\zeropoint
-               \page
-             \fi
-           \fi
-           \ifdim\nextboxht>\zeropoint
-\decrementnumber[\floatcaptionnumber]
-%\setupnumber[\floatcaptionnumber][\c!state=\v!stop]%
-           \else
-             \expandafter\exitloop
-           \fi}%
-        \egroup}
-     \vbox
-   \fi}
-
-\def\splitfloat
-  {\dosingleempty\dosplitfloat}
-
-\newtoks \everysplitfloatsetup
-
-% will move to core-tab
-
-\appendtoks
-     \TABLEcaptionheight\extrasplitfloatlines\lineheight
-\to \everysplitfloatsetup
-
-% will move to core-ntb
-
-\appendtoks
-    \def\extratblsplitheight{\extrasplitfloatlines\lineheight}%
-\to \everysplitfloatsetup
-
-% todo in core-tbl
-
-\appendtoks
-    % set extra
-\to \everysplitfloatsetup
-
-% \splitfloat [settings] {\placetable[optional args]{test}} {content}
-
 \def\dooutput{\sidefloatoutput}           % redefinition of \dooutput
 
 \setupmarginblocks
@@ -2376,10 +2307,6 @@
    \c!local=,
    \c!default=\v!figure,
    \c!numbering=\v!yes]
-
-\setupfloatsplitting
-  [\c!conversion=\v!character, % \v!romannumerals
-   \c!lines=3]
 
 % float strategy, replaces some of the above macros
 

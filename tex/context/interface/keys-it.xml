@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 
-<cd:interface xmlns:cd="http://www.pragma-ade.com/commands" name="context" language="it" version="2006.06.09 13:05">
+<cd:interface xmlns:cd="http://www.pragma-ade.com/commands" name="context" language="it" version="2006.07.13 22:26">
 
   <cd:variables>
     <cd:variable name="one" value="uno"/>
@@ -183,6 +183,7 @@
     <cd:constant name="topoffset" value="offsetcima"/>
     <cd:constant name="topstate" value="statocima"/>
     <cd:constant name="width" value="ampiezza"/>
+    <cd:constant name="autowidth" value="autoampiezza"/>
     <cd:constant name="maxwidth" value="ampiezzamax"/>
     <cd:constant name="minwidth" value="ampiezzamin"/>
     <cd:constant name="source" value="origine"/>

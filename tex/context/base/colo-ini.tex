@@ -1360,19 +1360,22 @@
 
 \ifx\initializemaintextcolor\undefined
 
-%  \def\initializemaintextcolor
-%    {\doifsomething\@@cltekstkleur
-%       {\appendtoks\starttextcolor[\@@cltekstkleur]\to\everystarttext
-%        \appendtoks\stoptextcolor                  \to\everystoptext
-%        \let\initializemaintextcolor\relax}}
-
-  % global ?
+  \let\@@clprevcolor\empty
 
   \def\initializemaintextcolor
-    {\doifelsenothing\@@cltextcolor
+    {% saveguard for setting text color to empty after
+     % it has been set
+     \doifnothing\@@cltextcolor
+       {\ifx\@@clprevcolor\empty\else
+          \let\@@cltextcolor\defaulttextcolor
+        \fi}%
+     \doifelsenothing\@@cltextcolor
        {\let\maintextcolor\empty}
-       {\let\maintextcolor\@@themaintextcolor
-        \definecolor[\@@themaintextcolor][\@@cltextcolor]%
+       {\edef\@@clprevcolor{\@@cltextcolor}%
+        \let\maintextcolor\@@themaintextcolor
+        \doifelsenothing\@@cltextcolor % another saveguard
+          {\definecolor[\@@themaintextcolor][\defaulttextcolor]}%
+          {\definecolor[\@@themaintextcolor][\@@cltextcolor]}%
         \doinitializemaintextcolor}}
 
   \def\doinitializemaintextcolor

@@ -1,0 +1,36 @@
+%D \module
+%D   [       file=type-gyr,
+%D        version=2006.06.28,
+%D          title=\CONTEXT\ Typescript Macros,
+%D       subtitle=TeXGyre Collection,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright=PRAGMA]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\starttypescriptcollection[gyre]
+
+% TeXGyrePagella
+%
+% qplr  TeXGyrePagella-Regular
+% qplri TeXGyrePagella-Italic
+% qplb  TeXGyrePagella-Bold
+% qplbi TeXGyrePagella-BoldItalic
+
+\starttypescript [serif] [palatino] [texnansi,ec,8r,t5,qx]
+  \loadmapfile[\typescriptthree-qpl.map]
+
+  \definefontsynonym [Palatino]             [\typescriptthree-qplr]  [encoding=\typescriptthree]
+  \definefontsynonym [Palatino-Italic]      [\typescriptthree-qplri] [encoding=\typescriptthree]
+  \definefontsynonym [Palatino-Bold]        [\typescriptthree-qplb]  [encoding=\typescriptthree]
+  \definefontsynonym [Palatino-BoldItalic]  [\typescriptthree-qplbi] [encoding=\typescriptthree]
+
+  \definefontsynonym [Palatino-Slanted]     [Palatino-Italic]
+  \definefontsynonym [Palatino-BoldSlanted] [Palatino-BoldItalic]
+  \definefontsynonym [Palatino-Caps]        [Palatino]
+\stoptypescript
+
+\stoptypescriptcollection

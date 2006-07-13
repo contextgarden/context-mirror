@@ -167,13 +167,20 @@
 \def\doshipoutmakeup
   {\globalpushmacro\@@pnstate % new
    \makeupparameter\c!before
-   \vbox{\hbox{\color[\makeupparameter\c!color]{\box\makeupbox}}}%
+   \setbox\makeupbox\vbox{\hbox{\color[\makeupparameter\c!color]{\box\makeupbox}}}%
+   % \ifgridsnapping
+   % new per 22/6/2006
+     \ifdim\ht\makeupbox>\vsize
+       \ht\makeupbox\vsize
+     \fi
+   % \fi
+   \box\makeupbox
    \setuppagenumber[\c!state=\makeupparameter\c!pagestate]%
    \setupmakeuplayout
    \page
    \makeupparameter\c!after
    \relax % voor fi
-   \ifdubbelzijdig \ifodd\realpageno\else
+   \ifdoublesided \ifodd\realpageno\else
      \processaction
        [\makeupparameter\c!doublesided]
        [  \v!yes=>\null

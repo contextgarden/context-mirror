@@ -155,7 +155,8 @@
   [\c!text=\v!formula,
    \c!way=\@@fmway,
    \c!blockway=\@@fmblockway,
-   \c!location=\v!intext]
+   \c!location=\v!intext,
+   \c!conversion=\@@fmconversion]
 
 \def\setupformulas
   {\dodoubleargument\getparameters[\??fm]}
@@ -244,6 +245,7 @@
   [\c!way=\@@nrway,
    \c!blockway=,
    \c!sectionnumber=\@@nrsectionnumber,
+   \c!conversion=\v!numbers,
    \c!location=\v!right,
    \c!left=(,
    \c!right=),
@@ -441,9 +443,9 @@
     %\forgetall % otherwise backgrounds fail
      \ifdim\lastskip<\zeropoint\else
        \par
-         \ifvmode \ifdim\parskip>\zeropoint\relax
-           \whitespace \vskip-\parskip % kind of forces and cancels again
-         \fi \fi
+       \ifvmode \ifdim\parskip>\zeropoint\relax
+         \whitespace \vskip-\parskip % kind of forces and cancels again
+       \fi \fi
      \fi
      \doif\displaygridcorrection{-\v!top}{\kern-\strutht}% new, currently only option/default
      \beforedisplayspace
@@ -700,7 +702,7 @@
      \def\stopformula {\normalstopformula\egroup$\hss}%
      #1%
      \egroup
-     \stopdisplaymath
+   \stopdisplaymath
    \egroup}
 
 \def\dispplaceformula[#1]#2$$#3$$%

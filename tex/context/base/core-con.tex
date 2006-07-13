@@ -20,6 +20,21 @@
 %D one and a core one, but to keep things simple as well as
 %D preserve the overview, I decided against splitting.
 
+\let\spr\firstofoneargument % separator
+\let\stp\firstofoneargument % stopper
+
+% cleaner, some day:
+%
+% \def\isolateseparators % etex only, even works with list separator overloading
+%   {\unexpanded\def\spr##1{{##1}}%
+%    \unexpanded\def\stp##1{{##1}}}
+
+% needed for arab :
+
+\def\isolateseparators % even works with list separator overloading
+  {\def\spr##1{{##1}}%
+   \def\stp##1{{##1}}}
+
 %D \macros
 %D   {numbers}
 %D

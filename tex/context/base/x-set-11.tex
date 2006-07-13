@@ -400,7 +400,7 @@
   {\showSETUPrecord}
 
 \def\showSETUPrecord
-  {\getvalue{startsetuptext}
+  {\getvalue{\e!start setuptext}
      \tttf
      \nohyphens
      \veryraggedright
@@ -439,7 +439,7 @@
           \egroup
         \stopXMLmapping}
      \stopXMLmapping
-   \getvalue{stopsetuptext}}
+   \getvalue{\e!stop setuptext}}
 
 \defineXMLenvironmentsave [cd:sequence]  \ignorespaces \ignorespaces
 \defineXMLenvironmentsave [cd:arguments] \ignorespaces \ignorespaces
@@ -785,9 +785,14 @@
 
 \stopXMLmapping
 
-\def\loadsetups
+\def\loadsetups{\complexorsimple\loadsetups}
+
+\def\simpleloadsetups
+  {\complexloadsetups[cont-en.xml]}
+
+\def\complexloadsetups[#1]%
   {\startXMLmapping[zero]
-   \processXMLfilegrouped{cont-en.xml}
+   \processXMLfilegrouped{#1}
    \stopXMLmapping}
 
 \protect \endinput

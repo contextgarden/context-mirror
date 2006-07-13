@@ -48,24 +48,6 @@
 \def\doplacement
   {\dodoubleempty\dodoplacement}
 
-% \def\dodoplacement[#1][#2]% correctie moet mooier
-%   {\bgroup
-%    \dowithnextbox
-%      {\setlocalhsize
-%       \getparameters[#1][#2]%
-%       \getvalue{#1\c!voor}%
-%       \doifvalue{#1\c!regelcorrectie}\v!aan \startbaselinecorrection
-%       \doifinset{\getvalue{#1\c!marge}}{\v!standaard,\v!ja}\noindent
-%       \hbox to \localhsize
-%         {\getvalue{#1\c!links}%
-%          \flushnextbox
-%          \getvalue{#1\c!rechts}}%
-%       \doifvalue{#1\c!dieptecorrectie}\v!aan\baselinecorrection
-%       \doifvalue{#1\c!regelcorrectie }\v!aan\stopbaselinecorrection
-%       \getvalue{#1\c!na}%
-%       \egroup}
-%    \vbox}
-
 \def\dodoplacement[#1][#2]% correctie moet mooier
   {\bgroup
    \dowithnextboxcontent

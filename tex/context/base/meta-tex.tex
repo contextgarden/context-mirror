@@ -1,0 +1,205 @@
+%D \module
+%D   [       file=meta-tex,
+%D        version=2006.06.07,
+%D          title=\CONTEXT\ Support Macros,
+%D       subtitle=\METAPOST\ fast text insertion,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright=\PRAGMA]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D Many thanks to Fabrice Popineau and Taco Hoekwater in helping me
+%D figure out some aspects of the text inclusion method implemented
+%D here. The following code is derived from a more advanced (and to
+%D be used) mechanism where \TEX, \METAPOST\ and \LUA\ play together.
+
+%D Much of this mechanism was written with running live DVD's of
+%D the Dave Matthews band in the background (or the corner of my
+%D screen).
+
+\unprotect
+
+\newwrite\TeXtextwrite
+
+\def\openTeXtexts {\immediate\openout \TeXtextwrite=\currentTeXtext.mpb\relax}
+\def\closeTeXtexts{\immediate\closeout\TeXtextwrite}
+
+\def\currentTeXtext{\jobname-mpgraph}
+
+\initializeboxstack\currentTeXtext
+
+\newtoks\collectedmptexts
+
+\long\def\startTeXtexts#1\stopTeXtexts
+  {\global\collectedmptexts\expandafter{\the\collectedmptexts#1}}
+
+\def\dostartTeXtexts
+  {\global\setfalse\TeXtextdone
+   \startnointerference
+   \the\everyMPTEXgraphic
+   \openTeXtexts
+   \ifrunMPgraphics
+     \initializeboxstack\currentTeXtext
+   \else
+     \global\let\openTeXtexts\relax
+     \global\let\finishTeXtexts\closeTeXtexts
+   \fi}
+
+\def\dostopTeXtexts
+  {\ifrunMPgraphics
+     \closeTeXtexts
+   \fi
+   \stopnointerference}
+
+\let\finishTeXtexts\relax
+
+\appendtoks
+  \finishTeXtexts
+\to \everystoptext
+
+\newconditional\TeXtextdone
+
+% \long\def\TeXtext#1%
+%   {\dowithnextboxcontent
+%      {\setnormalcatcodes}
+%      {\global\settrue\TeXtextdone
+%       \immediate\write\TeXtextwrite{savetxt(#1,\the\wd\nextbox,\the\ht\nextbox,\the\dp\nextbox);}%
+%       \savebox\currentTeXtext{#1}{\box\nextbox}}
+%     \hbox}
+
+\long\def\TeXtext
+  {\dosingleempty\doTeXtext}
+
+\long\def\doTeXtext[#1]#2#3%
+  {\begingroup
+   \setbox\nextbox\hbox
+     {\setnormalcatcodes
+      \newlinechar=`\^^M
+      \everyeof\emptytoks
+     %\def\ascii{#3}%
+     %\scantokens\expandafter{\ascii}}%
+      \scantokens{#3}}%
+   \global\settrue\TeXtextdone
+   \edef\currenttextxt{\number#2}%
+   \executeifdefined{textext::#1}{\getvalue{textext::depth}}%
+   \savebox\currentTeXtext\currenttextxt{\box\nextbox}%
+   \endgroup}
+
+\setvalue{textext::depth}{\immediate\write\TeXtextwrite{savetxt(\currenttextxt,\the\nextboxwd,\the\nextboxht,\the\nextboxdp) shifted (0,-\the\nextboxdp);}}
+\setvalue{textext::nodepth}{\immediate\write\TeXtextwrite{savetxt(\currenttextxt,\the\nextboxwd,\the\nextboxht,\the\nextboxdp);}}
+
+\setvalue{textext::d}{\getvalue{textext::depth}}
+\setvalue{textext::n}{\getvalue{textext::nodepth}}
+
+\newbox\mptextbox
+
+\definefontsynonym[MPtxtfont][texnansi-lmtt10] \loadmapfile[lm-texnansi.map]
+
+\definefont[localMPtxtfont][MPtxtfont at 10bp]
+
+\ifx\getTeXtext\undefined
+
+    % this took a while to figure out
+
+    % \def\getTeXtext
+    %   {\localMPtxtfont
+    %    \setbox\mptextbox\hbox{\foundbox\currentTeXtext{\number\nofTeXtexts}}%
+    %    \setbox\scratchbox\hbox{\MPtextdata}%
+    %    \edef\mpwd{\the\dimexpr\MPtextsize\dimexpr\wd\scratchbox/10\relax\relax}%
+    %    \edef\mpht{\the\dimexpr\MPtextsize\dimexpr\ht\scratchbox/10\relax\relax}%
+    %    \setbox\mptextbox\hbox{\raise\dp\mptextbox\box\mptextbox}%
+    %    \dp\mptextbox\zeropoint
+    %    \scale[\c!width=\mpwd,\c!height=\mpht]{\box\mptextbox}}%
+
+   \def\getTeXtext
+     {\localMPtxtfont
+      \setbox\mptextbox\hbox{\foundbox\currentTeXtext{\number\nofTeXtexts}}%
+      \setbox\scratchbox\hbox{\MPtextdata}%
+      \edef\mpwd{\the\dimexpr\MPtextsize\dimexpr\wd\scratchbox/10\relax\relax}%
+      \edef\mpht{\the\dimexpr\MPtextsize\dimexpr\ht\scratchbox/10\relax\relax}%
+      \setbox\mptextbox\hbox{\raise\dp\mptextbox\box\mptextbox}%
+      \dp\mptextbox\zeropoint
+      \scale[\c!width=\mpwd,\c!height=\mpht]{\box\mptextbox}}
+
+\fi
+
+\setvalue{handleMPtext00001}% only height in tag (00001)
+  {\setbox\scratchbox\hbox
+     {\obeyMPspecials
+      \edef\nofTeXtexts{\number\MPtextnumber}%
+      \getTeXtext}%
+   \setbox\scratchbox\hbox
+     {\hskip\lastMPmoveX\onebasepoint\raise\lastMPmoveY\onebasepoint
+      \box\scratchbox}%
+   \ht\scratchbox\zeropoint
+   \dp\scratchbox\zeropoint
+   \wd\scratchbox\zeropoint
+   \box\scratchbox}
+
+\startMPextensions
+    string txtfile ; txtfile := "\currentTeXtext.mpb" ;
+    string txtfont ; txtfont := "\truefontname{MPtxtfont}" ;
+    string txtpref ; txtpref := "00001::::" ;
+\stopMPextensions
+
+% \long\def\filtersometxt#1\sometxt#2#3#4%
+%   {\ifx#3\empty
+%    \else
+%      \increment\txtcounter
+%      \TeXtext\txtcounter{#2}%
+%      \expandafter\filtersometxt
+%    \fi#3#4}
+
+\long\def\dodofiltersometxt#1#2#3%
+  {\ifx#2\empty
+   \else
+     \increment\txtcounter
+     \TeXtext\txtcounter{#1}%
+     \expandafter\filtersometxt
+   \fi#2#3}
+
+\long\def\redofiltersometxt[#1]#2%
+  {\increment\txtcounter
+   \TeXtext[#1]\txtcounter{#2}%
+   \filtersometxt}
+
+\long\def\filtersometxt#1\sometxt
+  {\doifnextcharelse[\redofiltersometxt\dodofiltersometxt}
+
+% \filtersometxt abc\sometxt{def};hij\sometxt{klm};\sometxt{}\empty\relax
+
+\long\def\flushTeXtexts#1%
+  {\newcounter\txtcounter
+   \dostartTeXtexts
+     \the\collectedmptexts
+     \filtersometxt#1\sometxt{}\empty\relax
+   \dostopTeXtexts
+   \ifconditional\TeXtextdone
+     \immediate\write\MPwrite{loadtxts ; txtnext := 0 ;}%
+     \global\collectedmptexts\emptytoks
+   \fi
+   \newcounter\txtcounter}
+
+% \long\def\sometxt#1{sometxt(nexttxt)} % to be used in mp definitions, no ; here
+
+\long\def\sometxt #1#{\dosometxt}       % grab optional [args]
+\long\def\dosometxt#1{sometxt(nexttxt)} % to be used in mp definitions, no ; here
+
+% we redefine the writer:
+
+\long\def\writecheckedMPgraphic#1%
+  {\ifforceMPTEXgraphic
+     \global\MPTEXgraphictrue
+   \else
+     \global\MPTEXgraphicfalse
+     \edef\ascii{#1}\convertcommand\ascii\to\MPascii
+     \the\MPTEXgraphicchecks\relax % \relax is end condition!
+   \fi
+   \flushMPTEXgraphic% % verbatimtex etc
+   \flushTeXtexts{#1}% added
+   \writeMPgraphic{#1}} % potential optimization: pass \ascii
+
+\protect \endinput

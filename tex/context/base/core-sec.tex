@@ -79,25 +79,25 @@
 % and postprocessed on demand
 
 \def\numberseparator {.} % reasonable default
-\def\sectionseparator{:} % was : but is now -
+\def\sectionseparator{-} % was : but is now -
 
-\def\@@filterfirstpart      [#1::#2]{#1}
-\def\@@filtersecondpart     [#1::#2]{#2}
+\def\@@filterfirstpart      [#1--#2]{#1}
+\def\@@filtersecondpart     [#1--#2]{#2}
 
-\def\@@filterblockpart      [#1::#2::#3]{#1}
-\def\@@filternumberpart     [#1::#2::#3]{#2}
-\def\@@filterpagepart       [#1::#2::#3]{#3}
-\def\@@filterblocknumberpart[#1::#2::#3]{#1::#2}
+\def\@@filterblockpart      [#1--#2--#3]{#1}
+\def\@@filternumberpart     [#1--#2--#3]{#2}
+\def\@@filterpagepart       [#1--#2--#3]{#3}
+\def\@@filterblocknumberpart[#1--#2--#3]{#1--#2}
 
-\def\@@filterheadpart[#1]{\@EA\@@dofilterheadpart\@EA[#1:0]}
-\def\@@filtertailpart[#1]{\@EA\@@dofiltertailpart\@EA[#1:0]}
+\def\@@filterheadpart[#1]{\@EA\@@dofilterheadpart\@EA[#1-0]}
+\def\@@filtertailpart[#1]{\@EA\@@dofiltertailpart\@EA[#1-0]}
 
-\def\@@dofilterheadpart[#1:#2]{#1}
-\def\@@dofiltertailpart[#1:#2]{#2}
+\def\@@dofilterheadpart[#1-#2]{#1}
+\def\@@dofiltertailpart[#1-#2]{#2}
 
-\def\@@filterlevelpart[#1::#2::#3]{\@@dofilterlevelpart[#2:0:0:0:0]}
+\def\@@filterlevelpart[#1--#2--#3]{\@@dofilterlevelpart[#2-0-0-0-0]}
 
-\def\@@dofilterlevelpart[#1:0:0:0:#2]{#1}
+\def\@@dofilterlevelpart[#1-0-0-0-#2]{#1}
 
 \def\gobbleuntilrelax#1\relax{}
 
@@ -174,6 +174,8 @@
 \def\rawsectionnumber#1%
   {\countervalue{\??se#1}}
 
+\def\precedingseparator{\@@koseparator} % brrr
+
 \def\domakeprecedingsectionnumber[#1]% will become ugly after speed up
   {\bgroup % added
    \globallet\precedingsectionnumber\empty
@@ -189,7 +191,8 @@
           \doifnot\currentsection\zerosection
             {\doifnot{\@@sectionvalue\currentsection}{0}
                {\xdef\precedingsectionnumber%
-                  {\getvalue{\currentsection\c!number}.}}}%
+                  {\getvalue{\currentsection\c!number}%
+                   \spr{\precedingseparator}}}}%
         \fi}%
    \fi
    \egroup}
@@ -219,29 +222,21 @@
      {\precedingsectionnumber\convertednumber[#1]}%
    \egroup}
 
-% \def\preparethenumber#1#2#3% {\??id#1} \number \result
-%   {\doifelsevaluenothing{#1\c!separator}
-%      {\let\numberseparator\empty
-%       \let#3#2}
-%      {% was \unexpanded \edef, but we need it unexpanded !
-%       \edef\numberseparator{\getvalue{#1\c!separator}}%
-%       \edef#3{\@EA\separatednumber\@EA{#2}\getvalue{#1\c!stopper}}}}  % hm, etex
-
 \def\preparethenumber#1#2#3% {\??id#1} \number \result
   {\doifelsevaluenothing{#1\c!separator}
      {\let\numberseparator\empty
       \let#3#2}
      {% was \unexpanded \edef, but we need it unexpanded !
-      \edef\numberseparator{\getvalue{#1\c!separator}}%
+      \edef\numberseparator{\spr{\getvalue{#1\c!separator}}}%
       \doifelsenothing{\executeifdefined{#1\c!suffix}\empty}
         {\edef#3%
            {\@EA\separatednumber\@EA{#2}%
-            \getvalue{#1\c!stopper}}}
+            }}%\stp{\getvalue{#1\c!stopper}}}}
         {\edef#3%
            {\@EA\separatednumber\@EA{#2}%
-            \getvalue{#1\c!separator}%
+            \spr{\getvalue{#1\c!separator}}%
             \getvalue{#1\c!suffix}%
-            \getvalue{#1\c!stopper}}}}}
+            \stp{\getvalue{#1\c!stopper}}}}}}
 
 \def\sectionnumberonly[#1]%
   {\makesectionnumber[#1]%
@@ -268,19 +263,19 @@
 \makecounter{\??se\v!text}
 
 \letvalueempty{\??se\v!text\c!before}
-\letvalueempty{\??se\v!text\c!after  }
+\letvalueempty{\??se\v!text\c!after }
 
 \setvalue     {\v!text\c!number}{0}
 \letvalueempty{\v!text\s!format}
 
 \letvalueempty{\??sk\v!text}
-\letvalueempty{\??sk        }
+\letvalueempty{\??sk       }
 
-\letvalue{\??by               }\v!text
-\letvalue{\??by\v!text       }\v!text
-\letvalue{\??by\v!all       }\v!text
-\letvalue{\??by\v!by         }\v!text
-\letvalue{\??by\v!by\v!text }\v!text
+\letvalue{\??by            }\v!text
+\letvalue{\??by\v!text     }\v!text
+\letvalue{\??by\v!all      }\v!text
+\letvalue{\??by\v!by       }\v!text
+\letvalue{\??by\v!by\v!text}\v!text
 \letvalue{\??by\v!by\v!all }\v!text
 \letvalue{\??by\v!by\v!page}\v!text % see footnotes
 
@@ -293,16 +288,6 @@
   {\doifdefinedelse{\??se#1}
      {\dodosetupsection[#1]}%
      {\dodosetupsection[\sectionofhead{#1}]}}
-
-% \def\dosetupsection[#1][#2][#3]%
-%   {\ifthirdargument
-%      \getparameters[\??se#1#2][#3]%
-%    \else
-%      \getparameters[\??se#1][#2]%
-%    \fi
-%    \doifelsevalue{\??se#1\c!previousnumber}\v!yes
-%      {\setvalue{#1\c!number}{\@@longsectionnumber {#1}}}
-%      {\setvalue{#1\c!number}{\@@shortsectionnumber{#1}}}}
 
 \def\dodosetupsection[#1][#2][#3]%
   {\doifdefined{\??se#1}
@@ -332,29 +317,6 @@
 
 \def\decouplemarking[#1]%
   {\couplemarking[#1][]}
-
-% \def\definesection[#1]%
-%   {\doifundefined{\??se#1}
-%      {\doifelsenothing\firstsection
-%         {\def\firstsection{#1}%
-%          \setevalue{\??se#1\c!before}{\v!text}%
-%          \setevalue{\??se\v!text\c!after}{#1}}
-%         {\setevalue{\??se\commalistelement\c!after}{#1}%
-%          \setevalue{\??se#1\c!before}{\lastsection}%
-%          \setevalue{\??se\lastsection\c!after}{#1}}%
-%       \advance\nofsections \plusone
-%       \setevalue{\??se#1\c!level}{\the\nofsections}%
-%       \letvalue{\??se#1\c!after}\empty
-%       \setvalue{\e!next#1}{\@@nextsectionnumber{#1}}%
-%       \setvalue{#1\c!number}{\@@longsectionnumber{#1}}%
-%       \setvalue{#1\s!format}{\@@longformatnumber{#1}}%
-%       \setevalue{\??by#1}{#1}%
-%       \setevalue{\??by\v!by#1}{#1}%
-%       \makecounter{\??se#1}%
-%       \edef\lastsection{#1}%
-%       \setvalue{\??sk#1}{#1}%
-%       \letvalue{\??se#1\c!marking}\empty
-%       \setupsection[#1][\c!previousnumber=\v!yes]}}%
 
 \def\definesection[#1]%
   {\doifundefined{\??se#1}
@@ -395,24 +357,12 @@
      \fi
    \fi}
 
-% \def\@@setsectionnumber#1#2%
-%   {\letgvalueempty{\??se#1\s!start}% signal i.p.v. boolean
-%    \setcounter{\??se#1}{#2}%
-%    \ifconditional\@@resetsubheadnumbers\resetsectioncounters{#1}\fi
-%    \checkpagecounter}
-
 \def\@@setsectionnumber#1#2%
   {\letgvalueempty{\??se#1\s!start}% signal i.p.v. boolean
    \setcounter{\??se#1}{#2}%
    \checkpreservevalueafter{#1}% GB
    \resetsectioncounters{#1}%
    \checkpagecounter}
-
-% \def\@@nextsectionnumber#1%
-%   {\letgvalueempty{\??se#1\s!start}% signal i.p.v. boolean
-%    \pluscounter{\??se#1}%
-%    \ifconditional\@@resetsubheadnumbers\resetsectioncounters{#1}\fi
-%    \checkpagecounter}
 
 \def\@@nextsectionnumber#1% patched by GB
   {\letgvalueempty{\??se#1\s!start}% signal i.p.v. boolean
@@ -428,23 +378,7 @@
 \def\@@sectionvalue#1%       % nog niet overal doorgevoerd
   {\countervalue{\??se#1}}   % zoeken op \??se
 
-% \def\@@sectionconversion#1%
-%   {\getvalue{\??cv\getvalue{\??se#1\@@sectionblock\c!conversion}}}
-
 % suited for chinese too:
-
-% \def\@@sectionconversion#1#2% a doublure with \@@shortsectionnumber
-%   {\ifnum#2=0 0\else % else troubles with \uchar
-%      \@EA\ifx\csname\??se#1\@@sectionblock\c!conversion\endcsname\relax
-%        \@EA\ifx\csname\??se#1\c!conversion\endcsname\relax
-%          #2%
-%        \else
-%          \getvalue{\??cv\getvalue{\??se#1\c!conversion}}{#2}%
-%        \fi
-%      \else
-%        \getvalue{\??cv\getvalue{\??se#1\@@sectionblock\c!conversion}}{#2}%
-%      \fi
-%    \fi}
 
 \def\@@sectionconversion#1#2% a doublure with \@@shortsectionnumber
   {\ifnum#2=0 0\else % else troubles with \uchar
@@ -459,8 +393,11 @@
      \fi
    \fi}
 
+% \def\@@sectionlevel#1%
+%   {\ifundefined{\??se#1\c!level}0\else\getvalue{\??se#1\c!level}\fi}
+
 \def\@@sectionlevel#1%
-  {\ifundefined{\??se#1\c!level}0\else\getvalue{\??se#1\c!level}\fi}
+  {\executeifdefined{\??se#1\c!level}0}
 
 % Omdat een markering kan worden herdefinieerd moeten we
 % eerst testen of er wel een keten||afhankelijkheid is.
@@ -1183,6 +1120,8 @@
      {\expanded{\setupalign[\getvalue{\??ko#1\c!align}]}}%
    \doifvaluesomething{\??ko#1\c!tolerance} % wordt al expanded in spa
      {\expanded{\setuptolerance[\getvalue{\??ko#1\c!tolerance}]}}%
+   \doifvalue{\??ko#1\c!strut}\v!no % wordt al expanded in spa
+     {\setnostrut}% new
    \def\\{\crlf\strut\ignorespaces}}
 
 \def\localkopsetup{\localheadsetup} % kan tzt weg
@@ -1273,33 +1212,6 @@
    \setupheadnumber[#1][\foundsectionnumber]%
    \setupheadnumber[#1][-1]}
 
-% \def\setsomeheadconversion#1#2%
-%    {\someheadconversionfalse
-%     \doifelsevalue{\??ko#1\c!eigennummer}\v!ja
-%       {\def\someheadconversion{#2}}
-%       {\bepaalkopnummer[#1]%
-%        \@EA\ifx\csname\??se\@@sectie\@@sectionblock\c!kopconversie\endcsname\relax
-%          \@EA\ifx\csname\??se\@@sectie\c!kopconversie\endcsname\relax
-%            \def\someheadconversion{#2}%
-%          \else
-%            \@EA\ifx\csname\??se\@@sectie\c!kopconversie\endcsname\empty
-%              \def\someheadconversion{#2}%
-%            \else
-%              \someheadconversiontrue
-%              \def\someheadconversion%
-%                {\fullsectionnumber{#1}{\getvalue{\??se\@@sectie\c!kopconversie}}{#2}}%
-%            \fi
-%          \fi
-%        \else
-%          \@EA\ifx\csname\??se\@@sectie\@@sectionblock\c!kopconversie\endcsname\empty
-%            \def\someheadconversion{#2}%
-%          \else
-%            \someheadconversiontrue
-%            \def\someheadconversion%
-%              {\fullsectionnumber{#1}{\getvalue{\??se\@@sectie\@@sectionblock\c!kopconversie}}{#2}}%
-%          \fi
-%        \fi}}
-%
 % deal with eigennummer
 
 \def\setsomeheadconversion#1#2%
@@ -1405,7 +1317,7 @@
   {\def\currenthead{#1}% dus #1 overal vervangen
    \let\finalsectionnumber\dofinalsectionnumber % overloaded ungrouped -)
    \unexpanded\def\\{\space}%
-   \def\numberseparator{\getvalue{\??ko\currenthead\c!separator}}%
+   \edef\numberseparator{\spr{\getvalue{\??ko\currenthead\c!separator}}}%
    \flushingcolumnfloatsfalse % {number} can be \finalsectionnumber
    \someheadconversionfalse
    \let\fullsectionnumber\limitedfullsectionnumber
@@ -2144,9 +2056,11 @@
   {\vbox
      {\localheadsetup
       \begstrut % use one \strut here!
+      \dontleavehmode % in case there is no strut, else side effects with llap
       \ifheadnumbercontent
-        \llap{\hbox to 5em{\hfill{#1}%
-          \hskip\localheadskip\hskip\leftmargindistance}}%
+        \llap{\hbox to 5em{\hfill{#1}\hskip\localheadskip\hskip\leftmargindistance}}% introduces whitespace
+        % maybe better:
+        % \inleftmargin{\hbox{\hss{#1}\hskip\localheadskip}}%
       \fi
       {#2}}}
 
@@ -2170,7 +2084,7 @@
 \def\placeheadlohi#1#2#3%
   {\ifheadnumbercontent
      \setbox0\hbox{#2}
-     \setbox2#1{\localheadsetup\advance\hsize-\wd0\relax#3}%
+     \setbox2=#1{\localheadsetup\advance\hsize-\wd0\relax#3}%
      \hbox{\box0\hskip\numberheaddistance\box2}%
    \else
      #1{\localheadsetup\noindent#3}%
@@ -2228,6 +2142,7 @@
          \c!aligntitle=\@@koaligntitle,
          \c!tolerance=\@@kotolerance,
          \c!indentnext=\@@koindentnext,
+         \c!strut=\@@kostrut,
          \c!hang=\@@kohang,
          \c!file=,
          \c!expansion=,
@@ -2246,7 +2161,7 @@
                % new per 20/03/3002 (o-pbu-l) / was too confusing
                % \c!numberstyle,\c!textstyle,\c!expansion,
                % again too confusing
-               \c!align,\c!aligntitle,\c!tolerance,\c!grid,\c!hang,
+               \c!align,\c!aligntitle,\c!tolerance,\c!grid,\c!hang,\c!strut,
                \c!numbercommand,\c!textcommand,\c!margintext,\c!margin]}}%
       \getparameters[\??ko#1][#2]%
       \doifsomething{\getvalue{\??ko#1\c!section}}
@@ -2270,7 +2185,7 @@
             % new per 20/03/3002 (o-pbu-l) / was too confusing
             % \c!numberstyle,\c!textstyle,\c!expansion,
             % again too confusing
-            \c!align,\c!aligntitle,\c!tolerance,\c!grid,\c!hang,
+            \c!align,\c!aligntitle,\c!tolerance,\c!grid,\c!hang,\c!strut,
             \c!numbercommand,\c!textcommand,\c!margintext,\c!margin]%
 \getparameters[\??ko#1][\c!expansion=]% iig een value, rather fuzzy
          \definemarking[#1][#2]%
@@ -2331,6 +2246,7 @@
    \c!align=,
    \c!aligntitle=,
    \c!tolerance=,
+   \c!strut=,
    \c!indentnext=\v!no,
    \c!margin=\zeropoint,
    \c!hang=\v!none,

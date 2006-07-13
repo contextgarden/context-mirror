@@ -1,0 +1,104 @@
+%D \module
+%D   [       file=symb-cow,
+%D        version=2006.06.23,
+%D          title=\CONTEXT\ Symbol Libraries,
+%D       subtitle=Cow Symbols,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright=\PRAGMA]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\loadmapfile[koeieletters.map]
+
+\definefontsynonym [Cows]            [koeielett]
+\definefontsynonym [CowsContour]     [koeielett-contour]
+\definefontsynonym [CowsLogo]        [koeielogos]
+\definefontsynonym [CowsLogoContour] [koeielogos-contour]
+
+\definecolor [lsky]    [r=.6,g=.6,b=1]
+\definecolor [dsky]    [r=.1,g=.1,b=1]
+\definecolor [lground] [r=.3,g=.9,b=.3]
+\definecolor [dground] [r=0,g=.5,b=0]
+\definecolor [cspots]  [r=.33,g=.1,b=0]
+
+\definecolor [tlsky]    [t=.5,a=1,r=.6,g=.6,b=1]
+\definecolor [tdsky]    [t=.5,a=1,r=.1,g=.1,b=1]
+\definecolor [tlground] [t=.5,a=1,r=.3,g=.9,b=.3]
+\definecolor [tdground] [t=.5,a=1,r=0,g=.5,b=0]
+\definecolor [tcspots]  [t=.5,a=1,r=.33,g=.1,b=0]
+
+\definepalet
+  [cow]
+  [normal=lground,
+   contour=dground]
+
+\def\ScaledCowOverlay#1#2%
+  {\dontleavehmode\hbox
+     {\color[cow:contour]{\hsmash{\definedfont[CowsContour sa #1]#2}}%
+      \color[cow:normal]         {\definedfont[Cows        sa #1]#2}}}
+
+\def\CowOverlay#1%
+  {\dontleavehmode\hbox
+     {\color[cow:contour]{\hsmash{\getglyph{CowsContour}{#1}}}%
+      \color[cow:normal]         {\getglyph{Cows}       {#1}}}}
+
+\def\CowContour#1%
+  {\dontleavehmode\hbox
+     {\color[cow:contour]{\hsmash{\getglyph{CowsLogoContour}{#1}}}%
+      \color[cow:normal]         {\getglyph{CowsLogo}       {#1}}}}
+
+\def\CowLogo#1%
+  {\getglyph{CowsLogo}{\char#1\relax}}
+
+\startsymbolset[cownormal]
+
+\definesymbol[CowPragma]         [\CowLogo{1}]
+\definesymbol[CowConTeXt]        [\CowLogo{2}]
+\definesymbol[CowConTeXtComplete][\CowLogo{3}]
+\definesymbol[CowConTeXtShadow]  [\CowLogo{4}]
+\definesymbol[CowConTeXtContour] [\CowLogo{5}]
+\definesymbol[CowConTeXtOutline] [\CowLogo{6}]
+\definesymbol[CowConTeXtDots]    [\CowLogo{7}]
+\definesymbol[CowMP]             [\CowLogo{8}]
+\definesymbol[CowMPComplete]     [\CowLogo{9}]
+\definesymbol[CowTeX]            [\CowLogo{10}]
+\definesymbol[CowTeXComplete]    [\CowLogo{11}]
+\definesymbol[CowBoo]            [\CowLogo{12}]
+\definesymbol[CowCow]            [\CowLogo{13}]
+\definesymbol[CowExampleComplete][\CowLogo{14}]
+\definesymbol[CowFoxetComplete]  [\CowLogo{15}]
+\definesymbol[CowMetafun]        [\CowLogo{16}]
+\definesymbol[CowMetafunComplete][\CowLogo{17}]
+\definesymbol[CowTEX]            [\CowLogo{18}]
+\definesymbol[CowWiki]           [\CowLogo{19}]
+
+\stopsymbolset
+
+\startsymbolset[cowcontour]
+
+\definesymbol[CowPragma]         [\CowContour{1}]
+\definesymbol[CowConTeXt]        [\CowContour{2}]
+\definesymbol[CowConTeXtComplete][\CowContour{3}]
+\definesymbol[CowConTeXtShadow]  [\CowContour{4}]
+\definesymbol[CowConTeXtContour] [\CowContour{5}]
+\definesymbol[CowConTeXtOutline] [\CowContour{6}]
+\definesymbol[CowConTeXtDots]    [\CowContour{7}]
+\definesymbol[CowMP]             [\CowContour{8}]
+\definesymbol[CowMPComplete]     [\CowContour{9}]
+\definesymbol[CowTeX]            [\CowContour{10}]
+\definesymbol[CowTeXComplete]    [\CowContour{11}]
+\definesymbol[CowBoo]            [\CowContour{12}]
+\definesymbol[CowCow]            [\CowContour{13}]
+\definesymbol[CowExampleComplete][\CowContour{14}]
+\definesymbol[CowFoxetComplete]  [\CowContour{15}]
+\definesymbol[CowMetafun]        [\CowContour{16}]
+\definesymbol[CowMetafunComplete][\CowContour{17}]
+\definesymbol[CowTEX]            [\CowContour{18}]
+\definesymbol[CowWiki]           [\CowContour{19}]
+
+\stopsymbolset
+
+\endinput

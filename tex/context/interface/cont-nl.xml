@@ -1615,6 +1615,11 @@
         <cd:constant type="lokaal"/>
         <cd:constant type="cd:dimension"/>
       </cd:parameter>
+      <cd:parameter name="autobreedte">
+        <cd:constant type="ja"/>
+        <cd:constant type="nee"/>
+        <cd:constant type="forceer"/>
+      </cd:parameter>
       <cd:parameter name="offset">
         <cd:constant type="geen"/>
         <cd:constant type="overlay"/>
@@ -5245,6 +5250,14 @@
         <cd:constant type="cd:dimension"/>
       </cd:parameter>
       <cd:parameter name="scheider">
+        <cd:constant type="cd:text"/>
+      </cd:parameter>
+      <cd:parameter name="conversie">
+        <cd:constant type="cijfers"/>
+        <cd:constant type="letters"/>
+        <cd:constant type="Letters"/>
+        <cd:constant type="romeins"/>
+        <cd:constant type="Romeins"/>
         <cd:constant type="cd:text"/>
       </cd:parameter>
     </cd:assignments>

@@ -1475,27 +1475,27 @@
      \flushurl\splitbefore\#%
    \else\ifnum\catcode`#1=4
      \flushurl\splitbefore\&%
-   \else\if#1\lettertilde
+   \else\expandafter\if\string#1\lettertilde
      \flushurl\splitbefore\~%
-   \else\if#1\letterpercent
+   \else\expandafter\if\string#1\letterpercent
      \flushurl\splitbefore\%%
-   \else\if#1\letterunderscore
+   \else\expandafter\if\string#1\letterunderscore
      \flushurl\splitbefore\_%
-   \else\if#1\letterquestionmark
+   \else\expandafter\if\string#1\letterquestionmark
      \flushurl\splitafter\letterquestionmark
-   \else\if#1\letterat
+   \else\expandafter\if\string#1\letterat
      \flushurl\splitafter\letterat
-   \else\if#1\letterslash
+   \else\expandafter\if\string#1\letterslash
      \edef\savedurl{\savedurl\letterslash}%
-   \else\if#1+%
+   \else\expandafter\if\string#1+%
      \flushurl\splitafter+%
-   \else\if#1:%
+   \else\expandafter\if\string#1:%
      \flushurl\splitafter:%
-   \else\if#1.%
+   \else\expandafter\if\string#1.%
      \flushurl\splitafter.%
-   \else\if#1(%
+   \else\expandafter\if\string#1(%
      \flushurl\splitbefore(%
-   \else\if#1)%
+   \else\expandafter\if\string#1)%
      \flushurl\splitafter)%
    \else
      \ifx\savedurl\empty\else
@@ -1503,12 +1503,12 @@
        \let\savedurl\empty
      \fi
      \ifcase\urlhyphenmethod
-       #1%
+       \string#1%
      \else
        \ifnum\scratchcounter>\plusthree % so, \http: will not break
-         \edef\savedurl{#1}%
+         \edef\savedurl{\string#1}%
        \else
-         #1%
+         \string#1%
        \fi
      \fi
    \fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi}
@@ -1520,6 +1520,12 @@
 % \hsize1pt\gotoURL{http://www.physik.fu-berlin.de/SomeVeryVeryVeryLongDirectory/And/AQuiteLongFileName.html}
 % \endgraf \chardef\urlhyphenmethod=1
 % \hsize1pt\gotoURL{http://www.physik.fu-berlin.de/SomeVeryVeryVeryLongDirectory/And/AQuiteLongFileName.html}
+% \stoptext
+
+% \useencoding[ffr]
+% \mainlanguage[fr]
+% \starttext
+% \hyphenatedurl{http://somewhere.to/go}
 % \stoptext
 
 %D When Joop Susan asked (on the \CONTEXT\ mailing list) how

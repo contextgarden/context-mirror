@@ -63,6 +63,7 @@ class Commands
             prepare(job)
             job.processtex
             job.inspect && Kpse.inspect if @commandline.option('verbose')
+            exit 1 if job.error?
         end
     end
 
@@ -72,6 +73,7 @@ class Commands
             prepare(job)
             job.processmptex
             job.inspect && Kpse.inspect  if @commandline.option('verbose')
+            exit 1 if job.error?
         end
     end
 
@@ -81,6 +83,17 @@ class Commands
             prepare(job)
             job.processmpxtex
             job.inspect && Kpse.inspect  if @commandline.option('verbose')
+            exit 1 if job.error?
+        end
+    end
+
+    def mpgraphic
+        if job = TEX.new(logger) then
+            job.setvariable('files',@commandline.arguments)
+            prepare(job)
+            job.processmpgraphic
+            job.inspect && Kpse.inspect  if @commandline.option('verbose')
+            exit 1 if job.error?
         end
     end
 
@@ -137,8 +150,8 @@ class Commands
             files = @commandline.arguments.sort
             if files.length > 0 then
                 if f = File.open(job.tempfilename('tex'),'w') then
-                    # will be replaced
-                    Kpse.runscript('texutil',files.join(' '),'--figures')
+                    # will be replaced, does not work any more
+                    Kpse.runscript('texutil.pl',files.join(' '),'--figures')
                     figures     = @commandline.checkedoption('method', 'a').downcase
                     paperoffset = @commandline.checkedoption('paperoffset', '0pt')
                     backspace   = @commandline.checkedoption('backspace', '1.5cm')
@@ -410,6 +423,8 @@ class Commands
         end
     end
 
+    # todo: make this styles
+
     def combineoutput
         if job = TEX.new(logger) then
             prepare(job)
@@ -419,20 +434,24 @@ class Commands
                 if f = File.open(job.tempfilename('tex'),'w') then
                     paperoffset = @commandline.checkedoption('paperoffset', '0cm')
                     combination = @commandline.checkedoption('combination','2*2').split(/[\*x]/o)
-                    paperformat = @commandline.checkedoption('paperoffset', 'A4*A4').split(/[\*x]/o)
+                    paperformat = @commandline.checkedoption('paperformat', 'A4*A4').split(/[\*x]/o)
+                    bannerheight = @commandline.checkedoption('bannerheight', '')
                     nx, ny = combination[0] || '2', combination[1] || combination[0] || '2'
                     from, to = paperformat[0] || 'A4', paperformat[1] || paperformat[0] || 'A4'
                     f << "\\setuppapersize[#{from}][#{to}]\n"
                     f << "\\setuplayout\n"
-                    f << "  [topspace=#{paperoffset},\n"
-                    f << "   backspace=#{paperoffset},\n"
-                    f << "   header=0pt,\n"
-                    f << "   footer=1cm,\n"
-                    f << "   width=middle,\n"
-                    f << "   height=middle]\n"
+                    f << "  [topspace=#{paperoffset},backspace=#{paperoffset},\n"
+                    f << "   header=0pt,footer=0pt,\n"
+                    f << "   width=middle,height=middle]\n"
+                    if bannerheight.empty? then
+                        f << "\\setuplayout[footer=1cm]\n"
+                    else
+                        f << "\\definelayer[page][width=\\paperwidth,height=\\paperheight]\n"
+                        f << "\\setupbackgrounds[page][background=page]\n"
+                    end
                     if @commandline.option('nobanner') then
-                        f << "\\setuplayout\n"
-                        f << "  [footer=0cm]\n"
+                        f << "\\setuplayout[footer=0cm]\n"
+                        f << "\\setupbackgrounds[page][background=]\n"
                     end
                     f << "\\setupexternalfigures\n"
                     f << "  [directory=]\n"
@@ -442,8 +461,15 @@ class Commands
                         if (filename !~ /^texexec/io) && (filename !~ /^#{result}/) then
                             report("combination file: #{filename}")
                             cleanname = cleantexfilename(filename).downcase
-                            f << "\\setupfootertexts\n"
-                            f << "  [\\tttf #{cleanname}\\quad\\quad\\currentdate\\quad\\quad\\pagenumber]\n"
+                            bannerstring = "\\tttf #{cleanname}\\quad\\quad\\currentdate\\quad\\quad\\pagenumber"
+                            if bannerheight.empty? then
+                                f << "\\setupfootertexts\n"
+                                f << "  [#{bannerstring}]\n"
+                            else
+                                # for the moment we lack a better hook
+                                f << "\\setuptexttexts\n"
+                                f << "  [{\\setlayerframed[page][preset=middlebottom][frame=off,height=#{bannerheight}]{#{bannerstring}}}]\n"
+                            end
                             f << "\\combinepages[#{filename}][nx=#{nx},ny=#{ny}]\n"
                             f << "\\page\n"
                         end
@@ -545,11 +571,12 @@ end
 logger      = Logger.new(banner.shift)
 commandline = CommandLine.new
 
-commandline.registeraction('make',    'make formats')
-commandline.registeraction('check',   'check versions')
-commandline.registeraction('process', 'process file')
-commandline.registeraction('mptex',   'process mp file')
-commandline.registeraction('mpxtex',  'process mpx file')
+commandline.registeraction('make',      'make formats')
+commandline.registeraction('check',     'check versions')
+commandline.registeraction('process',   'process file')
+commandline.registeraction('mptex',     'process mp file')
+commandline.registeraction('mpxtex',    'process mpx file')
+commandline.registeraction('mpgraphic', 'process mp file to stand-alone graphics')
 
 commandline.registeraction('listing',    'list of file content')
 commandline.registeraction('figures',    'generate overview of figures')
@@ -577,7 +604,7 @@ end
 # so far for compatibility
 
 @@extrastringvars = [
-    'pages', 'background', 'backspace', 'topspace', 'boxtype', 'tempdir',
+    'pages', 'background', 'backspace', 'topspace', 'boxtype', 'tempdir','bannerheight',
     'printformat', 'paperformat', 'method', 'scale', 'selection',
     'combination', 'paperoffset', 'textwidth', 'addempty', 'logfile',
     'startline', 'endline', 'startcolumn', 'endcolumn', 'scale'

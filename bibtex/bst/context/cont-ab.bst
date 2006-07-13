@@ -686,6 +686,7 @@ FUNCTION {patent}
   format.authors
   format.year
   format.t.title
+  "" "\bibnumber" number do.out
   "" "\city" address do.out
   "" "\nationality" nationality do.out
   "" "\assignee" assignee do.out

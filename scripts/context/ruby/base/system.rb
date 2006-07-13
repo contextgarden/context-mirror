@@ -33,6 +33,13 @@ module System
         if @@mswindows then 'nul' else '/dev/null/' end
     end
 
+    def System.unix?
+        not @@mswindows
+    end
+    def System.mswin?
+        @@mswindows
+    end
+
     def System.binnames(str)
         if @@binnames.key?(str) then
             @@binnames[str]

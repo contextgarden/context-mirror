@@ -229,7 +229,7 @@ class Commands
             else
                 report("error in processing file #{file}")
             end
-            system("texmfstart texutil --purge")
+            system("texmfstart ctxtools --purge")
         else
             report("error in processing file #{file}")
         end
@@ -359,8 +359,16 @@ class Commands
                                     if attributes.key?(element) then
                                         attributes[element].keys.asort.each do |attribute|
                                             f.puts "      <attribute name=#{attribute.xstring}>\n"
-                                            attributes[element][attribute].keys.asort.each do |value|
-                                                f.puts "        <instance value=#{value.xstring} n=#{attributes[element][attribute][value].to_s.xstring}/>\n"
+                                            if attribute =~ /id$/o then
+                                                nn = 0
+                                                attributes[element][attribute].keys.asort.each do |value|
+                                                    nn += attributes[element][attribute][value].to_i
+                                                end
+                                                f.puts "        <instance value=#{"*".xstring} n=#{nn.to_s.xstring}/>\n"
+                                            else
+                                                attributes[element][attribute].keys.asort.each do |value|
+                                                    f.puts "        <instance value=#{value.xstring} n=#{attributes[element][attribute][value].to_s.xstring}/>\n"
+                                                end
                                             end
                                             f.puts "      </attribute>\n"
                                         end
@@ -375,7 +383,7 @@ class Commands
                         f.puts "</document>\n"
                         f.close
                         if process then
-                            system("texmfstart texexec --purgeall --pdf --use=xml-analyze #{result}")
+                            system("texmfstart texexec --purge --pdf --use=xml-analyze #{result}")
                         end
                     else
                         report("unable to open file '#{result}'")
@@ -391,6 +399,105 @@ class Commands
         end
     end
 
+    def cleanup # todo, share loading/saving with previous
+
+        file    = @commandline.argument('first')
+        force   = @commandline.option('force')
+        verbose = @commandline.option('verbose')
+
+        if FileTest.file?(file) then
+            if data = IO.read(file) then
+                if data =~ /<?xml.*?version\=/ then
+                    data = doxmlcleanup(data,verbose)
+                    result = if force then file else file.gsub(/\..*?$/, '') + '.xlg' end
+                    begin
+                        if f = File.open(result,'w') then
+                            f << data
+                            f.close
+                        end
+                    rescue
+                        report("unable to open file '#{result}'")
+                    end
+                else
+                    report("invalid xml file '#{file}'")
+                end
+            else
+                report("unable to load file '#{file}'")
+            end
+        else
+            report("unknown file '#{file}'")
+        end
+
+    end
+
+    def doxmlreport(str,verbose=false)
+        if verbose then
+            result = str
+            report(result)
+            return result
+        else
+            return str
+        end
+    end
+
+    def doxmlcleanup(data="",verbose=false)
+
+        # remove funny spaces (looks cleaner)
+        #
+        # data = "<whatever ></whatever ><whatever />"
+
+        data.gsub!(/\<(\/*\w+)\s*(\/*)>/o) do
+            "<#{$1}#{$2}>"
+        end
+
+        # remove funny ampersands
+        #
+        # data = "<x> B&W </x>"
+
+        data.gsub!(/\&([^\<\>\&]*?)\;/mo) do
+            "<entity name='#{$1}'/>"
+        end
+        data.gsub!(/\&/o) do
+            doxmlreport("&amp;",verbose)
+        end
+        data.gsub!(/\<entity name=\'(.*?)\'\/\>/o) do
+            doxmlreport("&#{$1};",verbose)
+        end
+
+        # remove funny < >
+        #
+        # data = "<x> < 5% </x>"
+
+        data.gsub!(/<([^>].*?)>/o) do
+            tag = $1
+            case tag
+                when /^\//o then
+                    "<#{tag}>" # funny tag but ok
+                when /\/$/o then
+                    "<#{tag}>" # funny tag but ok
+                when /</o then
+                    doxmlreport("&lt;#{tag}>",verbose)
+                else
+                    "<#{tag}>"
+            end
+        end
+
+        # remove funny < >
+        #
+        # data = "<x> > 5% </x>"
+
+        data.gsub!(/<([^>].*?)>([^\>\<]*?)>/o) do
+            doxmlreport("<#{$1}>#{$2}&gt;",verbose)
+        end
+
+        return data
+    end
+
+    # puts doxmlcleanup("<whatever ></whatever ><whatever />")
+    # puts doxmlcleanup("<x> B&W </x>")
+    # puts doxmlcleanup("<x> < 5% </x>")
+    # puts doxmlcleanup("<x> > 5% </x>")
+
 end
 
 logger      = Logger.new(banner.shift)
@@ -399,6 +506,7 @@ commandline = CommandLine.new
 commandline.registeraction('dir',     'generate directory listing')
 commandline.registeraction('mmlpages','generate graphic from mathml')
 commandline.registeraction('analyze', 'report entities and elements [--utf --process]')
+commandline.registeraction('cleanup', 'cleanup xml file [--force]')
 
 # commandline.registeraction('dir',     'filename --pattern= --output= [--recurse --stripname --longname --url --root]')
 # commandline.registeraction('mmlpages','filename [--eps --jpg --png --style= --mode=]')
@@ -424,6 +532,7 @@ commandline.registerflag('utf')
 commandline.registerflag('process')
 commandline.registervalue('style')
 commandline.registervalue('modes')
+commandline.registervalue('verbose')
 
 commandline.expand
 

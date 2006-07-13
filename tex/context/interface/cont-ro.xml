@@ -1615,6 +1615,11 @@
         <cd:constant type="local"/>
         <cd:constant type="cd:dimension"/>
       </cd:parameter>
+      <cd:parameter name="autolatime">
+        <cd:constant type="da"/>
+        <cd:constant type="nu"/>
+        <cd:constant type="fortat"/>
+      </cd:parameter>
       <cd:parameter name="offset">
         <cd:constant type="niciunul"/>
         <cd:constant type="overlay"/>
@@ -5245,6 +5250,14 @@
         <cd:constant type="cd:dimension"/>
       </cd:parameter>
       <cd:parameter name="separator">
+        <cd:constant type="cd:text"/>
+      </cd:parameter>
+      <cd:parameter name="conversie">
+        <cd:constant type="numere"/>
+        <cd:constant type="caractere"/>
+        <cd:constant type="Caractere"/>
+        <cd:constant type="numereromane"/>
+        <cd:constant type="Numereromane"/>
         <cd:constant type="cd:text"/>
       </cd:parameter>
     </cd:assignments>

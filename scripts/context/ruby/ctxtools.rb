@@ -46,6 +46,8 @@
 
 banner = ['CtxTools', 'version 1.3.3', '2004/2006', 'PRAGMA ADE/POD']
 
+# todo dirname
+
 unless defined? ownpath
     ownpath = $0.sub(/[\\\/][a-z0-9\-]*?\.rb/i,'')
     $: << ownpath
@@ -448,7 +450,7 @@ class Commands
                 globbed = if recurse then "**/#{pat}.*" else "#{pat}.*" end
                 files.push(Dir.glob(globbed))
             end
-            report("purging#{if all then ' all' end} temporary files : #{pattern.join(' ')}")
+            report("purging#{if purgeall then ' all' end} temporary files : #{pattern.join(' ')}")
         end
         files.flatten!
         files.sort!
@@ -528,7 +530,8 @@ class Commands
     $forsuresuffixes = [
         "tui", "tup", "ted", "tes", "top",
         "log", "tmp", "run", "bck", "rlg",
-        "mpt", "mpx", "mpd", "mpo", "ctl",
+        "mpt", "mpx", "mpd", "mpo", "mpb",
+        "ctl",
         "tmp.md5", "tmp.out"
     ]
     $texonlysuffixes = [
@@ -2316,6 +2319,13 @@ class Commands
                     report("fatal error, make sure that you have 'unzip' in your path")
                     return false
                 else
+                    if System.unix? then
+                        begin
+                            system("chmod +x scripts/context/unix/stubs/*")
+                        rescue
+                            report("change x-permissions of 'scripts/context/unix/stubs/*' manually")
+                        end
+                    end
                     return true
                 end
             else

@@ -14,10 +14,12 @@
 %D In due time this file will replace \type {supp-pdf} and
 %D \type {supp-mpe}.
 
-\input supp-pdf
-\input supp-mpe
+% \input supp-pdf
+% \input supp-mpe
+%
+% \endinput
 
-\endinput
+% we're going to experiment a bit with new code
 
 %D To be tested: texopt.rb on this file.
 
@@ -703,53 +705,89 @@
 
 \let\MPfshowcommand\empty
 
+% \def\dohandleMPfshow
+%   {\bgroup
+%    \setbox\scratchbox\hbox
+%      {\obeyMPspecials
+%       \let\ \relax % mp breaks long lines and appends a \
+%       \edef\size{\gMPa\nofMParguments}%
+%       \ifx\size\PSnfont % round font size (to pt)
+%         \advance\nofMParguments \minusone
+%         \expandafter\scratchdimen\gMPa\nofMParguments\onepoint\relax
+%         \ifdim\scratchdimen<\onepoint
+%           \def\size{1pt}%
+%         \else
+%           \advance\scratchdimen .5\onepoint
+%           \def\size##1.##2\relax{\def\size{##1pt}}%
+%           \expandafter\size\the\scratchdimen\relax
+%         \fi
+%       \else
+%         \edef\size{\size bp}%
+%       \fi
+%       \advance\nofMParguments \minusone
+%      %\font\temp=\gMPa\nofMParguments\space at \size
+%       \let\temp\relax % to be sure
+%       \setMPfshowfont{\gMPa\nofMParguments}\size
+%       \advance\nofMParguments \minusone
+%       \temp
+%       \MPfshowcommand
+%         {\ifnum\nofMParguments=\plusone
+%            \def\do(##1){##1}%
+%            \dogMPa1%
+%          \else
+%            % we need to catch ( a ) (a a a) (\123 \123 \123) etc
+%            \scratchcounter\plusone
+%            \def\dodo##1% Andreas Fieger's bug: (\304...)
+%              {\edef\!!stringa{##1\empty\empty}% and another one: ( 11) -> \ifx 11
+%               \ifx\!!stringa\MPspacechar\MPspacechar\else\expandafter##1\fi}%
+%            \def\do(##1{\dodo{##1}}%
+%            \dogMPa\scratchcounter\MPspacechar
+%            \let\do\relax
+%            \loop
+%              \advance\scratchcounter \plusone
+%              \ifnum\scratchcounter<\nofMParguments\relax
+%                \gMPa\scratchcounter\MPspacechar
+%            \repeat
+%            \def\do##1){\dodo{##1}}%
+%            \dogMPa\scratchcounter
+%          \fi
+%          \unskip}}%
+%   %
+%   % this fails in some versions of pdftex
+%   %
+%   % \dimen0=\lastMPmoveY bp
+%   % \advance\dimen0 by \ht0
+%   % \ScaledPointsToBigPoints{\number\dimen0}\lastMPmoveY
+%   % \PDFcode{n q 1 0 0 1 \lastMPmoveX\space\lastMPmoveY\space cm}%
+%   % \dimen0=\ht0
+%   % \advance\dimen0 by \dp0
+%   % \box0
+%   % \vskip-\dimen0
+%   % \PDFcode{Q}%
+%   % \egroup}
+%   %
+%    \setbox\scratchbox\hbox
+%      {\hskip\lastMPmoveX\onebasepoint\raise\lastMPmoveY\onebasepoint\box\scratchbox}%
+%    \ht\scratchbox\zeropoint
+%    \dp\scratchbox\zeropoint
+%    \wd\scratchbox\zeropoint
+%    \box\scratchbox
+%    \egroup}
+%
+% \let\handleMPfshow\dohandleMPfshow % so we can overload this one later
+%
+% we will support plug-ins:
+
 \def\dohandleMPfshow
-  {\bgroup
-   \setbox\scratchbox\hbox
+  {\setbox\scratchbox\hbox
      {\obeyMPspecials
-      \let\ \relax % mp breaks long lines and appends a \
-      \edef\size{\gMPa\nofMParguments}%
-      \ifx\size\PSnfont % round font size (to pt)
-        \advance\nofMParguments \minusone
-        \expandafter\scratchdimen\gMPa\nofMParguments\onepoint\relax
-        \ifdim\scratchdimen<\onepoint
-          \def\size{1pt}%
-        \else
-          \advance\scratchdimen .5\onepoint
-          \def\size##1.##2\relax{\def\size{##1pt}}%
-          \expandafter\size\the\scratchdimen\relax
-        \fi
-      \else
-        \edef\size{\size bp}%
-      \fi
-      \advance\nofMParguments \minusone
-     %\font\temp=\gMPa\nofMParguments\space at \size
-      \let\temp\relax % to be sure
-      \setMPfshowfont{\gMPa\nofMParguments}\size
-      \advance\nofMParguments \minusone
-      \temp
-      \MPfshowcommand
-        {\ifnum\nofMParguments=\plusone
-           \def\do(##1){##1}%
-           \dogMPa1%
-         \else
-           % we need to catch ( a ) (a a a) (\123 \123 \123) etc
-           \scratchcounter\plusone
-           \def\dodo##1% Andreas Fieger's bug: (\304...)
-             {\edef\!!stringa{##1\empty\empty}% and another one: ( 11) -> \ifx 11
-              \ifx\!!stringa\MPspacechar\MPspacechar\else\expandafter##1\fi}%
-           \def\do(##1{\dodo{##1}}%
-           \dogMPa\scratchcounter\MPspacechar
-           \let\do\relax
-           \loop
-             \advance\scratchcounter \plusone
-             \ifnum\scratchcounter<\nofMParguments\relax
-               \gMPa\scratchcounter\MPspacechar
-           \repeat
-           \def\do##1){\dodo{##1}}%
-           \dogMPa\scratchcounter
-         \fi
-         \unskip}}%
+      \edef\MPtextsize{\gMPa\nofMParguments}%
+      \def\do(##1){##1}%
+      \edef\MPtextdata{\dogMPa1}% beware, stack can have more
+      \handleMPtext}%
+   \setbox\scratchbox\hbox
+     {\hskip\lastMPmoveX\onebasepoint\raise\lastMPmoveY\onebasepoint
+      \box\scratchbox}%
   %
   % this fails in some versions of pdftex
   %
@@ -764,15 +802,68 @@
   % \PDFcode{Q}%
   % \egroup}
   %
-   \setbox\scratchbox\hbox
-     {\hskip\lastMPmoveX\onebasepoint\raise\lastMPmoveY\onebasepoint\box\scratchbox}%
    \ht\scratchbox\zeropoint
    \dp\scratchbox\zeropoint
    \wd\scratchbox\zeropoint
-   \box\scratchbox
-   \egroup}
+   \box\scratchbox}
 
-\let\handleMPfshow\dohandleMPfshow % so we can overload this one later
+\def\handleMPtext {\handleMPtextnormal} % so we can overload this one later
+\def\handleMPfshow{\dohandleMPfshow   } % so we can overload this one later
+
+\def\handleMPtext
+  {\ifnum\nofMParguments>\plusthree
+     \handleMPtextnormal
+   \else
+     \convertcommand\MPtextdata\to\MPtextdata
+     \expanded{\splitstring\MPtextdata}\at::::\to\MPtexttag\and\MPtextnumber
+     \executeifdefined{handleMPtext\MPtexttag}\handleMPtextnormal
+   \fi}
+
+% elsewhere we will implement \handleMPtextmptxt
+
+\def\handleMPtextnormal
+  {\let\ \relax % mp breaks long lines and appends a \
+   \ifx\MPtextsize\PSnfont % round font size (to pt)
+     \advance\nofMParguments \minusone
+     \expandafter\scratchdimen\gMPa\nofMParguments\onepoint\relax
+     \ifdim\scratchdimen<\onepoint
+       \def\MPtextsize{1pt}%
+     \else
+       \advance\scratchdimen .5\onepoint
+       \def\MPtextsize##1.##2\relax{\def\MPtextsize{##1pt}}%
+       \expandafter\MPtextsize\the\scratchdimen\relax
+     \fi
+   \else
+     \edef\MPtextsize{\MPtextsize bp}%
+   \fi
+   \advance\nofMParguments \minusone
+   \font\temp=\gMPa\nofMParguments\space at \MPtextsize
+   \let\temp\relax % to be sure
+   \setMPfshowfont{\gMPa\nofMParguments}\MPtextsize
+   \advance\nofMParguments \minusone
+   \temp
+   \MPfshowcommand
+     {\ifnum\nofMParguments=\plusone
+        \def\do(##1){##1}%
+        \dogMPa1%
+      \else
+        % we need to catch ( a ) (a a a) (\123 \123 \123) etc
+        \scratchcounter\plusone
+        \def\dodo##1% Andreas Fieger's bug: (\304...)
+          {\edef\!!stringa{##1\empty\empty}% and another one: ( 11) -> \ifx 11
+           \ifx\!!stringa\MPspacechar\MPspacechar\else\expandafter##1\fi}%
+        \def\do(##1{\dodo{##1}}%
+        \dogMPa\scratchcounter\MPspacechar
+        \let\do\relax
+        \loop
+          \advance\scratchcounter \plusone
+          \ifnum\scratchcounter<\nofMParguments\relax
+            \gMPa\scratchcounter\MPspacechar
+        \repeat
+        \def\do##1){\dodo{##1}}%
+        \dogMPa\scratchcounter
+      \fi
+      \unskip}}
 
 %D You could consider the following definition to be the most
 %D natural one.

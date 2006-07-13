@@ -755,27 +755,35 @@
 
 \chardef\tabulatepass=0
 
+\def\tabulateparameter#1{\csname\??tt\currenttabulate#1\endcsname}
+
 \def\dofinalstarttabulate[#1][#2][#3]% identifier sub preamble
   {\edef\currenttabulate{#1::#2}%
    \ifinsidefloat \else
      \whitespace
-     \getvalue{\??tt\currenttabulate\c!before}%
+     \tabulateparameter\c!before
    \fi
    \bgroup
    \resetcharacteralign
    % todo: spacing around tabulate when bodyfont is set
    % expansion en test needed ?
+   \splittabulatefalse
+   \processaction
+     [\tabulateparameter\c!split]
+     [     \v!yes=>\splittabulatetrue,
+      % \v!repeat=>\splittabulatetrue, % todo, default yes
+          \v!auto=>\ifinsidesplitfloat\splittabulatetrue\fi]%
    \doifelsevalue{\??tt\currenttabulate\c!split}\v!yes
-     \splittabulatetrue\splittabulatefalse
+
    \doifvaluesomething{\??tt\currenttabulate\c!bodyfont}
      {\expanded{\switchtobodyfont
-        [\getvalue{\??tt\currenttabulate\c!bodyfont}]}}%
+        [\tabulateparameter\c!bodyfont]}}%
    \postponefootnotes % new, to be tested / will be configurable
    \chardef\tabulatepass\plusone
    \widowpenalty\zerocount % otherwise lines are not broken
    \clubpenalty \zerocount % but overlap in funny ways
    \the\everytabulate
-   \getvalue{\??tt\currenttabulate\c!inner}%
+   \tabulateparameter\c!inner
    \scratchdimen\leftskip
    \advance\scratchdimen \hangindent
    \doifvalue{\??tt\currenttabulate\c!indenting}\v!yes
@@ -817,7 +825,7 @@
 \newif\iftabulatefirstflushed
 
 \def\tabulateEQ
-  {\iftabulatefirstflushed\else\getvalue{\??tt\currenttabulate EQ}\fi
+  {\iftabulatefirstflushed\else\tabulateparameter{EQ}\fi
    \global\tabulateequalfalse}
 
 % \def\tabulatenormalcolumn#1%
@@ -856,7 +864,7 @@
    \let\factor\!!plusone
    \scratchskip\strutdp
    \ExpandFirstAfter\processallactionsinset
-     [\getvalue{\??tt\currenttabulate\c!distance}]
+     [\tabulateparameter\c!distance]
      [ \v!blank=>\scratchskip\bigskipamount,
        \v!depth=>\scratchskip\strutdp,
         \v!small=>\def\factor{.25},
@@ -869,18 +877,10 @@
    \ifconditional\tabulatesomeamble\kern\else\vskip\fi\scratchdimen % new
    \egroup}
 
-% \def\dotabulaterule
-%   {\color
-%      [\getvalue{\??tt\currenttabulate\c!lijnkleur}]
-%      {\scratchdimen\getvalue{\??tt\currenttabulate\c!lijndikte}%
-%       \hrule\!!height.5\scratchdimen\!!depth.5\scratchdimen\relax
-%       \doifvalue{\??tt\currenttabulate\c!afstand}\v!grid
-%         {\kern-\scratchdimen}}} % experimental tm-prikkels
-
 \def\dodotabulaterule#1%
   {\color
-     [\getvalue{\??tt\currenttabulate\c!rulecolor}]
-     {\scratchdimen\getvalue{\??tt\currenttabulate\c!rulethickness}#1}}
+     [\tabulateparameter\c!rulecolor]
+     {\scratchdimen\tabulateparameter\c!rulethickness#1}}
 
 \def\dotabulaterule
   {\dodotabulaterule
@@ -891,7 +891,7 @@
 \def\dotabulatelinerule
   {\multispan\totaltabulatecolumns % \multispan is a plain macro
    % for the moment this one
-   \strut\hskip\getvalue{\??tt\currenttabulate\c!margin}%
+   \strut\hskip\tabulateparameter\c!margin
    % neg values are ok !
    \hskip\tabulateindent % new august 2003
    \dodotabulaterule
@@ -955,12 +955,12 @@
 \chardef\tabulaterepeathead\zerocount
 
 \def\processtabulate[|#1|]% in the process of optimizing
-  {\tabulateunit\getvalue{\??tt\currenttabulate\c!unit}%
+  {\tabulateunit\tabulateparameter\c!unit
    \checkfulltabulatecontent
    \globallet\tabulateruledepth \!!zeropoint
    \globallet\tabulateruleheight\!!zeropoint
    \ExpandFirstAfter\processaction % use \setalignmentswitch instead
-     [\getvalue{\??tt\currenttabulate\c!align}]
+     [\tabulateparameter\c!align]
      [ \v!normal=>\def\@@tabulatealign{0},% = default value
         \v!right=>\def\@@tabulatealign{1},% chardefs gebruiken
          \v!left=>\def\@@tabulatealign{2},%
@@ -977,9 +977,16 @@
    \global\tabulatepwidth\zeropoint
    \global\tabulateequalfalse
    \resettabulatepheight
-   \ifinsidefloat \else
+   \ifinsidesplitfloat
+     \donetrue
+   \else\ifinsidefloat
+     \donefalse
+   \else
+     \donetrue
+   \fi\fi
+   \ifdone
      \processaction
-       [\getvalue{\??tt\currenttabulate\c!header}]
+       [\tabulateparameter\c!header]
        [\v!repeat=>\chardef\tabulaterepeathead\plusone,
           \v!text=>\chardef\tabulaterepeathead\plustwo]%
    \fi
@@ -1033,9 +1040,9 @@
    \global\let\flushtabulated\empty
    \let\savedbar|\let|\nexttabulate
    \tabskip\zeropoint
-   \ifdim\getvalue{\??tt\currenttabulate\c!margin}>\zeropoint
+   \ifdim\tabulateparameter\c!margin>\zeropoint
      \!!toksa{&\flushtabulateindent\strut##%
-               \tabskip\getvalue{\??tt\currenttabulate\c!margin}\strut
+               \tabskip\tabulateparameter\c!margin\strut
               &##\tabskip\zeropoint}%
    \else
      \!!toksa{&\flushtabulateindent\strut##%
@@ -1248,7 +1255,7 @@
       \ifnum\noftabulatelines>\plusone
         \ifnum\noftabulatelines<\minusnoftabulatelines
           \vskip\topskip\allowbreak\vskip-\topskip
-          \vskip-\getvalue{\??tt\currenttabulate\c!rulethickness}%
+          \vskip-\tabulateparameter\c!rulethickness
           \dotabulaterule
         \fi
       \fi
@@ -1267,7 +1274,11 @@
    \chardef\tabulatepass\plustwo
    %
    \ifcase\tabulaterepeathead
-     \startframedcontent[\getvalue{\??tt\currenttabulate\c!frame}]%
+     \ifinsidesplitfloat
+       \setbox\tabulatebox\vbox \bgroup
+      \else
+        \startframedcontent[\tabulateparameter\c!frame]%
+      \fi
    \else
      \setbox\tabulatebox\vbox \bgroup
    \fi
@@ -1278,14 +1289,18 @@
      {\vskip-\strutdp}% experimental tm-prikkels
    %
    \ifcase\tabulaterepeathead
-     \stopframedcontent
+     \ifinsidesplitfloat
+       \egroup \splittabulatebox\tabulatebox
+     \else
+       \stopframedcontent
+     \fi
    \else
      \egroup \splittabulatebox\tabulatebox
    \fi
    %
    \egroup
    \ifinsidefloat \else
-     \getvalue{\??tt\currenttabulate\c!after}%
+     \tabulateparameter\c!after
    \fi
    \egroup}
 
@@ -1304,47 +1319,69 @@
 % \NC test \NC \input tufte \relax \NC \NR
 % \stoptabulate
 
+% \def\splittabulatebox#1% #1 <> 0/2 / derived from the one in core-ntb.tex
+%   {\ifinsidefloat
+%      \unvbox#1%
+%    \else
+%      \ifcase\tabulaterepeathead\or
+%        \setbox2\copy#1%
+%        \setbox2\vsplit2 to \lineheight
+%        \setbox2\vbox{\unvbox2}%
+%      \fi
+%      \doloop
+%        {\setbox0\vsplit#1 to \onepoint % \lineheight
+%         \ifdim\pagegoal<\maxdimen
+%           \donetrue
+%         \else\ifdim\pagetotal=\zeropoint
+%           \donetrue
+%         \else
+%           \donefalse
+%         \fi\fi
+%         \ifdone
+%           \setbox0\vbox{\unvbox0}%
+%           \dimen0\pagetotal
+%           \advance\dimen0\dp0
+%           \advance\dimen0\ht0
+%           \ifdim\dimen0>\pagegoal
+%             \bgroup \page \egroup % make sure that local vars are kept
+%             \ifcase\tabulaterepeathead\or
+%               \unvcopy2
+%             \or
+%               \hbox{\strut\tabulateparameter\c!title}%
+%             \fi
+%           \fi
+%         \fi
+%         % test this on icare checklists / quite hacky ! ! !
+%         \ifdim\ht0>\tabulateparameter\c!rulethickness\else
+%           \kern-2\ht0 % brrrr
+%         \fi
+%         %
+%         \unvbox0
+%         \allowbreak
+%         \ifvoid#1 \exitloop \fi}%
+%    \fi}
+
 \def\splittabulatebox#1% #1 <> 0/2 / derived from the one in core-ntb.tex
-  {\ifinsidefloat
+  {\ifinsidesplitfloat
+     \dosplittabulatebox#1%
+   \else\ifinsidefloat
      \unvbox#1%
    \else
-     \ifcase\tabulaterepeathead\or
-       \setbox2\copy#1%
-       \setbox2\vsplit2 to \lineheight
-       \setbox2\vbox{\unvbox2}%
-     \fi
-     \doloop
-       {\setbox0\vsplit#1 to \onepoint % \lineheight
-        \ifdim\pagegoal<\maxdimen
-          \donetrue
-        \else\ifdim\pagetotal=\zeropoint
-          \donetrue
-        \else
-          \donefalse
-        \fi\fi
-        \ifdone
-          \setbox0\vbox{\unvbox0}%
-          \dimen0\pagetotal
-          \advance\dimen0\dp0
-          \advance\dimen0\ht0
-          \ifdim\dimen0>\pagegoal
-            \bgroup \page \egroup % make sure that local vars are kept
-            \ifcase\tabulaterepeathead\or
-              \unvcopy2
-            \or
-              \hbox{\strut\getvalue{\??tt\currenttabulate\c!title}}%
-            \fi
-          \fi
-        \fi
-        % test this on icare checklists / quite hacky ! ! !
-        \ifdim\ht0>\getvalue{\??tt\currenttabulate\c!rulethickness}\else
-          \kern-2\ht0 % brrrr
-        \fi
-        %
-        \unvbox0
-        \allowbreak
-        \ifvoid#1 \exitloop \fi}%
-   \fi}
+     \dosplittabulatebox#1%
+   \fi\fi}
+
+\def\dosplittabulatebox#1%
+  {\resettsplit
+   \def\tsplitminimumfreelines{2}%
+   \def\tsplitminimumfreespace{0pt}%
+   \setbox\tsplitcontent\box#1%
+   \ifcase\tabulaterepeathead\or
+     \setbox\tsplithead\vsplit\tsplitcontent to \lineheight
+     \setbox\tsplithead\vbox{\unvbox\tsplithead}%
+   \or
+     \setbox\tsplithead\vbox{\hbox{\strut\tabulateparameter\c!title}}%
+   \fi
+   \handletsplit}
 
 %D \starttyping
 %D \setuptabulate[split=no,rule=line]
@@ -1425,7 +1462,7 @@
    \c!distance={\v!depth,\v!medium},
    \c!align=\v!normal,
    \c!margin=\!!zeropoint,
-   \c!split=\v!yes,
+   \c!split=\v!auto,
    \c!header=\v!yes,
    \c!title=,
    \c!indenting=\v!no]

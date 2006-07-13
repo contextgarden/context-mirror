@@ -125,16 +125,48 @@
      #1%
    \fi}
 
+% \chardef\kindofpagetextareas\plusone
+
+\def\doOTRONEregisteredtextareaA#1%
+  {\ifregistertextareas
+     \xypos{pbd:\realfolio:b}% we could save bytes by only saving the y
+     \endgraf
+     \begingroup
+     \scratchdimen\MPy{pbd:\realfolio:b}%
+     \advance\scratchdimen-\MPy{pbd:\realfolio:e}%
+     \setbox\scratchbox\null
+     \wd\scratchbox\makeupwidth
+     \ht\scratchbox\scratchdimen
+     \vsmash{\registeredtextarea00\scratchbox}%
+     \endgroup
+     #1%
+     \endgraf
+     \xypos{pbd:\realfolio:e}%
+   \else
+     #1%
+   \fi}
+
+\def\doOTRONEregisteredtextareaB#1%
+  {\ifregistertextareas
+     \setbox0\vbox{#1}%
+     \wd0\makeupwidth % somehow a space creeps in
+     \vbox{\registeredtextarea000}%
+   \else
+     #1%
+   \fi}
+
 \let\OTRONEregisteredtextareaA\firstofoneargument
 \let\OTRONEregisteredtextareaB\firstofoneargument
 
 \def\OTRONEdopagecontents#1#2% \box<n> \unvbox<n>
   {\bgroup             % niet breedte zetten, kan fractie zijn!
    \ifcase\kindofpagetextareas
-   \or % partial page
-     \let\OTRONEregisteredtextareaA\OTRONEregisteredtextarea
-   \or % whole page
-     \let\OTRONEregisteredtextareaB\OTRONEregisteredtextarea
+   \or % partial page (experimental)
+     \let\OTRONEregisteredtextareaA\doOTRONEregisteredtextareaA
+   \or % whole page   (default)
+     \let\OTRONEregisteredtextareaB\doOTRONEregisteredtextareaB
+   \or % partial page (only works well with no stretch!)
+     \let\OTRONEregisteredtextareaA\doOTRONEregisteredtextareaB
    \fi
    \setbox0\vbox \ifbottomnotes to \textheight \fi
      {\edef\currentpagedepth{\the\dp#2}% still to be derived from #1
@@ -309,16 +341,6 @@
      \OTRONEdosetbotinserts
    \fi}
 
-% \def\OTRONEdotopinsertions
-%   {\ifvoid\topins\else
-%      \ifgridsnapping
-%        \box\topins % not \topsnaptogrid{\box\topins}%
-%      \else
-%        \unvbox\topins
-%      \fi
-%    \fi
-%    \global\topinserted\zeropoint}
-
 \def\OTRONEdotopinsertions
   {\ifvoid\topins\else
      \ifgridsnapping
@@ -358,16 +380,6 @@
      \setbox\floatbox\hbox to \hsize{\hss\box\floatbox\hss}%
    \fi \fi
    \snaptogrid\hbox{\iftestfloatbox\ruledhbox\fi{\copy\floatbox}}}
-
-% \def\OTRONEdodoflushfloats % moet nog beter: als precies passend, niet onder baseline
-%   {\ifsomefloatwaiting
-%      \bgroup % \box\floatbox can be in use!
-%      \dogetfloat
-%      \doplacefloatbox
-%      \egroup
-%      \dofloatflushedinfo
-%      \expandafter\OTRONEdodoflushfloats
-%    \fi}
 
 \def\OTRONEdodoflushfloats % much in common with OTRSET
   {\ifsomefloatwaiting
@@ -423,52 +435,6 @@
      \doplacefloatbox
      \expandafter\OTRONEdodoflushfloats
    \fi}
-
-% \def\OTRONEdocheckiffloatfits % vervangen ivm downward comp
-%   {\ifnofloatpermitted
-%      \global\roomforfloatfalse
-%    \else
-%      \dimen0         \pagetotal
-%      \advance\dimen0 \ht\floatbox
-%      \advance\dimen0 \dp\floatbox
-%      \advance\dimen0 \floattopskip
-% %      \advance\dimen0 -\pageshrink  % toegevoegd
-%     %\message{c:\the\mofcolumns,t:\the\pagetotal,g:\the\pagegoal}%\wait
-%      \ifdim\dimen0>\pagegoal
-%        \global\roomforfloatfalse
-%      \else
-%        \global\roomforfloattrue
-%      \fi
-%    \fi}
-
-% \def\OTRONEdocheckiffloatfits % vervangen ivm downward comp
-%   {\ifnofloatpermitted
-%      \global\roomforfloatfalse
-%    \else
-%      \dimen0         \pagetotal
-%      \advance\dimen0 \ht\floatbox
-%      \advance\dimen0 \dp\floatbox
-%      \advance\dimen0 \floattopskip
-%      \advance\dimen0 -\pageshrink  % toegevoegd
-%     %\message{c:\the\mofcolumns,t:\the\pagetotal,g:\the\pagegoal}%\wait
-%      \dimen2\pagegoal
-%      \relax % needed
-%      \ifcase\textfloatmethod
-%        % method 0 : raw
-%      \or
-%        % method 1 : safe
-%        \dimen2 .99\pagegoal
-%      \or
-%        % method 2 : tight
-%        \advance\dimen0 -\onepoint
-%      \fi
-%      \relax % really needed ! ! ! !
-%      \ifdim\dimen0>\dimen2
-%        \global\roomforfloatfalse
-%      \else
-%        \global\roomforfloattrue
-%      \fi
-%    \fi}
 
 \def\OTRONEdocheckiffloatfits % vervangen ivm downward comp
   {\ifnofloatpermitted

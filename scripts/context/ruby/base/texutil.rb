@@ -468,7 +468,7 @@ class TeXUtil
 
                 def build(sorter)
                     @sortkey = sorter.normalize(sorter.tokenize(@sortkey))
-                    @sortkey = sorter.remap(sorter.simplify(@key.downcase))
+                    @sortkey = sorter.remap(sorter.simplify(@key.downcase)) # ??
                     if @sortkey.empty? then
                         @sortkey = sorter.remap(@command.downcase)
                     end
@@ -550,6 +550,9 @@ class TeXUtil
 
             class Register
 
+@@specialsymbol = "\000"
+@@specialbanner = "" # \\relax"
+
                 @@debug = false
                 @@debug = true
 
@@ -593,7 +596,12 @@ else
                     @entry, @key = cleanupsplit(@entry), cleanupsplit(@key)
 end
                     @sortkey = sorter.simplify(@key)
+# special = @sortkey =~ /^([^a-zA-Z\\])/o
+special = @sortkey =~ /^([\`\~\!\@\#\$\%\^\&\*\(\)\_\-\+\=\{\}\[\]\:\;\"\'\|\<\,\>\.\?\/\d])/o
                     @sortkey = @sortkey.split(@@split).collect do |c| sorter.remap(c) end.join(@@split)
+if special then
+    @sortkey = "#{@@specialsymbol}#{@sortkey}"
+end
                     @sortkey = [
                         @sortkey.downcase,
                         @sortkey,
@@ -667,6 +675,8 @@ end
                                     flushsavedline(handle)
                                     if alpha =~ /^[a-zA-Z]$/o then
                                         character = alpha.dup
+                                    elsif alpha == @@specialsymbol then
+                                        character = @@specialbanner
                                     elsif alpha.length > 1 then
                                         # character = "\\getvalue\{#{alpha}\}"
                                         character = "\\#{alpha}"

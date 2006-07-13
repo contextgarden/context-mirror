@@ -346,7 +346,7 @@
   {\checknumber[\s!page]}
 
 % \getpagestatus
-% \ifrightpage als odd/enkelzijdig
+% \ifrightpage als odd/singlesided
 
 \newif\ifrightpage \rightpagetrue
 
@@ -365,7 +365,7 @@
    \writepagref}
 
 \def\getpagestatus % hierboven gebruiken
-  {\ifdubbelzijdig
+  {\ifdoublesided
      \gettwopassdata\s!page
      \iftwopassdatafound \else
        \let\twopassdata\realpageno
@@ -402,8 +402,8 @@
              \v!right=>\dododosetpagenumberlocation{\v!text\c!righttext},
             \v!inleft=>\dododosetpagenumberlocation{\v!margin\c!lefttext},
            \v!inright=>\dododosetpagenumberlocation{\v!margin\c!righttext},
-          \v!inmargin=>\dododosetpagenumberlocation{\v!margin\ifdubbelzijdig\c!margintext\else\c!righttext\fi},
-            \v!margin=>\dododosetpagenumberlocation{\v!margin\ifdubbelzijdig\c!margintext\else\c!righttext\fi},
+          \v!inmargin=>\dododosetpagenumberlocation{\v!margin\ifdoublesided\c!margintext\else\c!righttext\fi},
+            \v!margin=>\dododosetpagenumberlocation{\v!margin\ifdoublesided\c!margintext\else\c!righttext\fi},
           \v!atmargin=>\dododosetpagenumberlocation{\v!text\c!marginedgetext},
         \v!marginedge=>\dododosetpagenumberlocation{\v!text\c!marginedgetext}]%
      \ifdone \else
@@ -419,14 +419,14 @@
 \def\dosetuppagenumbering[#1]%
   {\getparameters[\??nm][#1]%
    \preparepageprefix\??nm
-   \enkelzijdigfalse
-   \dubbelzijdigfalse
+   \singlesidedfalse
+   \doublesidedfalse
    \ExpandFirstAfter\processallactionsinset
      [\@@nmalternative]
-     [ \v!singlesided=>\enkelzijdigtrue,
-      \v!doublesided=>\dubbelzijdigtrue]%
+     [ \v!singlesided=>\singlesidedtrue,
+       \v!doublesided=>\doublesidedtrue]%
    \ifx\trackingmarginnotestrue\undefined\else
-     \ifdubbelzijdig
+     \ifdoublesided
        \trackingmarginnotestrue
      \else
        \trackingmarginnotesfalse

@@ -1,0 +1,271 @@
+/koeielettersEnc [
+ /parenleft.big        % 0x00
+ /parenright.big  
+ /slash.big	  
+ /bracketleft.big 
+ /backslash.big	  
+ /bracketright.big
+ /braceleft.big	  
+ /bar.big	  
+ /braceright.big  
+ /integral.big
+ /summation.big
+ /radical.big
+ /radical.bigg
+ /radical.Bigg
+ /radical.BIGG
+ /radical.end
+ /radical.extender		% 0x10
+ /radical.alt
+ /integral.alt
+ /summation.alt
+ /parenleft.bigg
+ /parenright.bigg  
+ /slash.bigg	  
+ /bracketleft.bigg 
+ /backslash.bigg	  
+ /bracketright.bigg
+ /braceleft.bigg	  
+ /bar.bigg	  
+ /braceright.bigg  
+ /radical.begin
+ /.notdef
+ /.notdef
+ /space		% 0x20
+ /exclam
+ /quotedbl
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
+ /quotesingle
+ /parenleft
+ /parenright
+ /asterisk
+ /plus
+ /comma
+ /hyphen
+ /period
+ /slash
+ /zero		% 0x30
+ /one
+ /two
+ /three
+ /four
+ /five
+ /six
+ /seven
+ /eight
+ /nine
+ /colon
+ /semicolon
+ /less
+ /equal
+ /greater
+ /question
+ /at		% 0x40
+ /A
+ /B
+ /C
+ /D
+ /E
+ /F
+ /G
+ /H
+ /I
+ /J
+ /K
+ /L
+ /M
+ /N
+ /O
+ /P		% 0x50
+ /Q
+ /R
+ /S
+ /T
+ /U
+ /V
+ /W
+ /X
+ /Y
+ /Z
+ /bracketleft
+ /backslash
+ /bracketright
+ /asciicircum
+ /underscore
+ /grave		% 0x60
+ /a
+ /b
+ /c
+ /d
+ /e
+ /f
+ /g
+ /h
+ /i
+ /j
+ /k
+ /l
+ /m
+ /n
+ /o
+ /p		% 0x70
+ /q
+ /r
+ /s
+ /t
+ /u
+ /v
+ /w
+ /x
+ /y
+ /z
+ /braceleft
+ /bar
+ /braceright
+ /asciitilde
+ /quotedblright  
+ /quoteright     		% 0x80
+ /quoteleft      
+ /breve	       
+ /quotedblleft   
+ /quotesinglbase 
+ /quotedblbase   
+ /second	       
+ /radical	       
+ /circumflex     
+ /tilde	       
+ /dotlessi       
+ /dotlessj       
+ /plus.alt 	       
+ /minus.alt
+ /zero.alt 
+ /one.alt	 
+ /two.alt	 		% 0x90
+ /three.alt
+ /four.alt 
+ /five.alt 
+ /six.alt	 
+ /seven.alt
+ /eight.alt
+ /nine.alt 
+ /endash 
+ /emdash 
+ /dotaccent 
+ /.notdef 
+ /.notdef 
+ /.notdef 
+ /.notdef 
+ /.notdef 
+ /.notdef 			% 0xa0
+ /.notdef 
+ /.notdef 
+ /.notdef 
+ /.notdef 
+ /.notdef 
+ /.notdef 
+ /.notdef 
+ /dieresis
+ /.notdef 
+ /.notdef 
+ /.notdef 
+ /.notdef 
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef		% 0xb0
+ /.notdef
+ /.notdef
+ /.notdef
+ /acute
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef		% 0xc0
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef		% 0xd0
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
+ /multiply
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef		% 0xe0
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef		% 0xf0
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
+] def
+
+
+
+
+
+
+
+
+
+
+
+
+

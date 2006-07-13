@@ -2263,9 +2263,11 @@ def process(&block)
                 oldchecksum = "old"
             end
         end
-        if oldchecksum != newchecksum then
+        if $verbose then
             report("old checksum #{filename}: #{oldchecksum}")
             report("new checksum #{filename}: #{newchecksum}")
+        end
+        if oldchecksum != newchecksum then
             report("file is changed, processing started")
             begin
                 File.open(checkname,'w') do |f|
@@ -2535,3 +2537,5 @@ def execute(arguments)
 end
 
 execute(ARGV)
+
+exit (if ($?.to_i rescue 0) > 0 then 1 else 0 end)

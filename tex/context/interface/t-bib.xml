@@ -22,6 +22,7 @@
       </cd:parameter>
       <cd:parameter name="refcommand">
         <cd:constant type="author"/>
+        <cd:constant type="authornum"/>
         <cd:constant type="authoryear"/>
         <cd:constant type="authoryears" default="yes"/>
         <cd:constant type="key"/>
@@ -52,6 +53,9 @@
       <cd:parameter name="autohang">
         <cd:constant type="yes"/>
         <cd:constant type="no" default="yes"/>
+      </cd:parameter>
+      <cd:parameter name="monthconversion">
+        <cd:constant type="cd:command"/>
       </cd:parameter>
     </cd:assignments>
   </cd:arguments>
@@ -326,6 +330,15 @@
       <cd:constant type="url"/>
       <cd:constant type="num"/>
     </cd:keywords>
+    <cd:reference list="yes"/>
+  </cd:arguments>
+</cd:command>
+
+<cd:command name="nocite" file="t-bib.tex">
+  <cd:sequence>
+    <cd:string value="nocite"/>
+  </cd:sequence>
+  <cd:arguments>
     <cd:reference list="yes"/>
   </cd:arguments>
 </cd:command>

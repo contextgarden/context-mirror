@@ -198,8 +198,9 @@
    \the\everyreference
    \makesectionformat
    \writereference{#2}
-     {\sectionformat\sectionseparator\sectionseparator\noexpand\pagenumber}
-     {\noexpand\realfolio}{#3}%
+     {\sectionformat\sectionseparator\sectionseparator\noexpand\pagenumber}%
+     {\noexpand\realfolio}%
+     {#3}%
    \egroup}
 
 \def\rawpagereference#1#2%
@@ -207,15 +208,18 @@
    \the\everyreference
    \makesectionformat
    \writereference{#2}
-     {\sectionformat\sectionseparator\sectionseparator\noexpand\pagenumber}
-     {\noexpand\realfolio}{}%
+     {\sectionformat\sectionseparator\sectionseparator\noexpand\pagenumber}%
+     {\noexpand\realfolio}%
+     {}%
    \egroup}
 
 \def\rawtextreference#1#2#3%
   {\bgroup
    \the\everyreference
    \writereference{#2}
-     {}{\noexpand\realfolio}{#3}%
+     {}%
+     {\noexpand\realfolio}%
+     {#3}%
    \egroup}
 
 

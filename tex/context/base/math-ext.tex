@@ -1,0 +1,199 @@
+%D \module
+%D   [       file=math-ext,
+%D        version=2006.01.14,
+%D          title=\CONTEXT\ Math Macros,
+%D       subtitle=Extra Macros,
+%D         author={Hans Hagen \& Taco Hoekwater \& Adity Mahajan},
+%D           date=\currentdate,
+%D      copyright=\PRAGMA]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\unprotect
+
+%D These will be generalized!
+
+\def\exmthfont#1{\symbolicsizedfont#1\plusone{MathExtension}}
+
+\def\domthfrac#1#2#3#4%
+  {\begingroup
+   \mathsurround\zeropoint
+   \setbox0\hbox{$#1 #3$}%
+   \setbox2\hbox{$#1 #4$}%
+   \dimen0\wd0
+   \ifdim\wd2>\dimen0 \dimen0\wd2 \fi
+   \setbox4\hbox to \dimen0{\exmthfont#2\char"77\leaders\hbox{\char"75}\hss\char"76}%
+   \mathord{\vcenter{{\offinterlineskip
+     \hbox to \dimen0{\hss\box0\hss}%
+     \kern \ht4%
+     \hbox to \dimen0{\hss\copy4\hss}%
+     \kern \ht4%
+     \hbox to \dimen0{\hss\box2\hss}}}}%
+   \endgroup}
+
+\def\domthsqrt#1#2#3%
+  {\begingroup
+   \mathsurround\zeropoint
+   \setbox0\hbox{$#1 #3$}%
+   \dimen0\wd0
+   \setbox4\hbox to \dimen0{\exmthfont#2\leaders\hbox{\char"75}\hfill\char"76}%
+   \setbox2\hbox{\exmthfont#2\char"70}%
+   \ifdim\dimexpr\dp0+\ht0+\ht2\relax>\dp2 \setbox2\hbox{\exmthfont#2\char"71}\fi
+   \ifdim\dimexpr\dp0+\ht0+\ht2\relax>\dp2 \setbox2\hbox{\exmthfont#2\char"72}\fi
+   \ifdim\dimexpr\dp0+\ht0+\ht2\relax>\dp2 \setbox2\hbox{\exmthfont#2\char"73}\fi
+   \ifdim\dimexpr\dp0+\ht0+\ht2\relax>\dp2 \setbox2\hbox{\exmthfont#2\char"74}\fi
+   \mathord{\vcenter{\hbox{%
+     \raise\dimexpr\dp2-.5\ht2\relax\hbox{\copy2\rlap{\copy4}}%
+     \raise\dp0                     \copy0}}}%
+   \endgroup}
+
+\def\mthfrac#1#2{\mathchoice
+  {\domthfrac\displaystyle     \textface        {#1}{#2}}
+  {\domthfrac\textstyle        \textface        {#1}{#2}}
+  {\domthfrac\scriptstyle      \scriptface      {#1}{#2}}
+  {\domthfrac\scriptscriptstyle\scriptscriptface{#1}{#2}}}
+
+\def\mthsqrt#1{\mathchoice
+  {\domthsqrt\displaystyle     \textface        {#1}}
+  {\domthsqrt\textstyle        \textface        {#1}}
+  {\domthsqrt\scriptstyle      \scriptface      {#1}}
+  {\domthsqrt\scriptscriptstyle\scriptscriptface{#1}}}
+
+% temp here
+
+\def\mtharrfactor{1}
+\def\mtharrextra {0}
+
+\def\domthxarr#1#2#3#4#5% hm, looks like we do a double mathrel
+  {\begingroup
+   \def\mtharrfactor{1}%
+   \def\mtharrextra {0}%
+   \processaction[#1] % will be sped up
+     [  \v!none=>\def\mtharrfactor{0},
+       \v!small=>\def\mtharrextra{10},
+      \v!medium=>\def\mtharrextra{15},
+         \v!big=>\def\mtharrextra{20},
+      \v!normal=>,
+     \v!default=>,
+     \v!unknown=>\doifnumberelse{#1}{\def\mtharrextra{#1}}\donothing]%
+   \mathsurround\zeropoint
+   \muskip0=\thirdoffourarguments  #2mu
+   \muskip2=\fourthoffourarguments #2mu
+   \muskip4=\firstoffourarguments  #2mu
+   \muskip6=\secondoffourarguments #2mu
+   \muskip0=\mtharrfactor\muskip0 \advance\muskip0 \mtharrextra mu
+   \muskip2=\mtharrfactor\muskip2 \advance\muskip2 \mtharrextra mu
+   \setbox0\hbox{$\scriptstyle
+                  \mkern\muskip4\relax
+                  \mkern\muskip0\relax
+                  #5\relax
+                  \mkern\muskip2\relax
+                  \mkern\muskip6\relax
+                 $}%
+   \setbox4\hbox{#3}%
+   \dimen0\wd0
+   \ifdim\wd4>\dimen0 \dimen0\wd4 \fi
+   \setbox2\hbox{$\scriptstyle
+                  \mkern\muskip4\relax
+                  \mkern\muskip0\relax
+                  #4\relax
+                  \mkern\muskip2\relax
+                  \mkern\muskip6\relax
+                 $}%
+   \ifdim\wd2>\dimen0 \dimen0\wd2 \fi
+   \setbox4\hbox to \dimen0{#3}%
+   \mathrel{\mathop{\hbox to \dimen0{\hss\copy4\hss}}\limits^{\box0}_{\box2}}
+   \endgroup}
+
+\let\domthxarrsingle\domthxarr
+
+\def\domthxarrdouble#1#2#3#4#5#6#7% opt l r sp rs top bot
+  {\mathrel
+     {\scratchdimen.22ex\relax
+      \setbox0\hbox{$\domthxarr{#1}{#2}{#4}{\phantom{#6}}{#7}$}%
+      \setbox2\hbox{$\domthxarr{#1}{#3}{#5}{#6}{\phantom{#7}}$}%
+      \raise\scratchdimen\box0
+      \kern-\wd2
+      \lower\scratchdimen\box2}}
+
+\def\definematharrow
+  {\doquadrupleargument\dodefinematharrow}
+
+\def\dodefinematharrow[#1][#2][#3][#4]% name type[none|both] template command
+  {\iffourthargument
+      \executeifdefined{dodefine#2arrow}\gobblethreearguments{#1}{#3}{#4}%
+   \else\ifthirdargument
+      \dodefinebotharrow{#1}{#2}{#3}%
+   \fi\fi}
+
+\def\dodefinebotharrow#1#2#3%
+  {\setvalue{#1}{\dotripleempty\xmtharrow[#2][#3]}}
+
+\def\xmtharrow[#1][#2][#3]% #3 == optional arg
+  {\def\doxmtharrow{\dodoxmtharrow[#1,\empty,\empty][#2,\empty,\empty][#3]}% {##1}{##2}
+   \dodoublegroupempty\doxmtharrow}
+
+\def\dodoxmtharrow[#1,#2,#3][#4,#5,#6][#7]#8#9% [3] is the optional arg
+  {\ifx#2\empty
+     \mathrel{\domthxarrsingle{#7}{#1}{#4}{#8}{#9}}%
+   \else
+     \mathrel{\domthxarrdouble{#7}{#1}{#2}{#4}{#5}{#8}{#9}}%
+   \fi}
+
+% Adapted from amsmath.
+
+\def\mtharrowfill#1#2#3%
+  {$\m@th\thickmuskip0mu\medmuskip\thickmuskip\thinmuskip\thickmuskip
+   \relax#1\mkern-7mu%
+   \cleaders\hbox{$\mkern-2mu#2\mkern-2mu$}\hfill
+   \mkern-7mu#3$}
+
+% Maybe redefine leftarrowfill and rightarrowfill using arrowfill
+
+\def\rightarrowfill       {\mtharrowfill \relbar            \relbar \rightarrow       }
+\def\leftarrowfill        {\mtharrowfill \leftarrow         \relbar \relbar           }
+\def\equalfill            {\mtharrowfill \Relbar            \Relbar \Relbar           }
+\def\Rightarrowfill       {\mtharrowfill \Relbar            \Relbar \Rightarrow       }
+\def\Leftarrowfill        {\mtharrowfill \Leftarrow         \Relbar \Relbar           }
+\def\Leftrightarrowfill   {\mtharrowfill \Leftarrow         \Relbar \Rightarrow       }
+\def\leftrightarrowfill   {\mtharrowfill \leftarrow         \relbar \rightarrow       }
+\def\mapstofill           {\mtharrowfill{\mapstochar\relbar}\relbar \rightarrow       }
+\def\twoheadrightarrowfill{\mtharrowfill \relbar            \relbar \twoheadrightarrow}
+\def\twoheadleftarrowfill {\mtharrowfill \twoheadleftarrow  \relbar \relbar           }
+\def\rightharpoondownfill {\mtharrowfill \relbar            \relbar \rightharpoondown }
+\def\rightharpoonupfill   {\mtharrowfill \relbar            \relbar \rightharpoonup   }
+\def\leftharpoondownfill  {\mtharrowfill \leftharpoondown   \relbar \relbar           }
+\def\leftharpoonupfill    {\mtharrowfill \leftharpoonup     \relbar \relbar           }
+
+% From amsmath.sty, extarrows.sty, extpfel.sty and mathtools.sty(ams)
+
+\definematharrow [xrightarrow]        [0359] [\rightarrowfill]
+\definematharrow [xleftarrow]         [3095] [\leftarrowfill]
+\definematharrow [xequal]             [0099] [\equalfill]
+\definematharrow [xRightarrow]        [0359] [\Rightarrowfill]
+\definematharrow [xLeftarrow]         [3095] [\Leftarrowfill]
+\definematharrow [xLeftrightarrow]    [0099] [\Leftrightarrowfill]
+\definematharrow [xleftrightarrow]    [0099] [\leftrightarrowfill]
+\definematharrow [xmapsto]            [0599] [\mapstofill]
+\definematharrow [xtwoheadrightarrow] [5009] [\twoheadrightarrowfill]
+\definematharrow [xtwoheadleftarrow]  [0590] [\twoheadleftarrowfill]
+\definematharrow [xrightharpoondown]  [0359] [\rightharpoondownfill]
+\definematharrow [xrightharpoonup]    [0359] [\rightharpoonupfill]
+\definematharrow [xleftharpoondown]   [3095] [\leftharpoondownfill]
+\definematharrow [xleftharpoonup]     [3095] [\leftharpoonupfill]
+
+\definematharrow [xleftrightharpoons] [3095,0359] [\leftharpoonupfill,\rightharpoondownfill]
+\definematharrow [xrightleftharpoons] [3095,0359] [\rightharpoonupfill,\leftharpoondownfill]
+
+% \startformula \xrightarrow{}{stuff on top}\stopformula
+% \startformula \xrightarrow{stuff below}{}\stopformula
+% \startformula \xrightarrow{stuff below}{stuff on top}\stopformula
+
+% \startformula \xleftarrow [none]{stuff below}{stuff on top}\stopformula
+% \startformula \xleftarrow [small]{stuff below}{stuff on top}\stopformula
+% \startformula \xleftarrow [medium]{stuff below}{stuff on top}\stopformula
+% \startformula \xleftarrow [big]{stuff below}{stuff on top}\stopformula
+
+\protect \endinput

@@ -863,7 +863,7 @@
 \def\orientpagebodybox#1#2#3%
   {\ifnum#2#3>\zerocount
      \setbox#1\vbox
-       {\edef\somerotation{\ifdubbelzijdig\ifodd\realpageno#2\else#3\fi\else#2\fi}%
+       {\edef\somerotation{\ifdoublesided\ifodd\realpageno#2\else#3\fi\else#2\fi}%
         \dorotatebox\somerotation\hbox{\box#1}}%
    \fi}
 
@@ -940,8 +940,8 @@
    \ifnum\verticalcutmarks  >2 \chardef\colormarkoffset4 \fi
    #1{#2}}
 
-\newif\ifdubbelzijdig \dubbelzijdigfalse
-\newif\ifenkelzijdig  \enkelzijdigtrue
+\newif\ifdoublesided \doublesidedfalse
+\newif\ifsinglesided \singlesidedtrue
 
 % NOG EENS NAGAAN WANNEER NU GLOBAL EN WANNEER NIET
 
@@ -1036,15 +1036,15 @@
 % what are those \relax'es doing there?
 
 \def\doifbothsidesoverruled#1\orsideone#2\orsidetwo#3\od
-  {\ifdubbelzijdig
+  {\ifdoublesided
      \doifoddpageelse{#2}{#3}\relax
    \else
      #1\relax
    \fi}
 
 \def\doifbothsides#1\orsideone#2\orsidetwo#3\od
-  {\ifdubbelzijdig
-     \ifenkelzijdig
+  {\ifdoublesided
+     \ifsinglesided
        #1\relax
      \else
        \doifoddpageelse{#2}{#3}\relax
@@ -1084,8 +1084,8 @@
    \the\everyswapmargins}
 
 \def\rightorleftpageaction
-  {\ifdubbelzijdig
-     \ifenkelzijdig
+  {\ifdoublesided
+     \ifsinglesided
        \@EAEAEA\firstoftwoarguments
      \else
        \@EAEAEA\doifoddpageelse

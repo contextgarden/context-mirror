@@ -225,7 +225,7 @@
 % \def\setbackgroundboxes
 %   {\showmessage\m!layouts8\empty
 %    \setbackgroundbox\leftbackground\relax
-%    \ifdubbelzijdig
+%    \ifdoublesided
 %      \setbackgroundbox\rightbackground\doswapmargins
 %    \fi
 %    \doifnot\@@mastatus\v!herhaal{\global\newbackgroundfalse}}
@@ -590,19 +590,35 @@
      \resetglobal \expandafter\gobbleoneargument
    \fi}
 
+% \def\doaddlocalbackground#1%
+%   {\edef\next
+%      {\noexpand\redoglobal\wd#1\the\wd#1%
+%       \noexpand\redoglobal\ht#1\the\ht#1%
+%       \noexpand\dodoglobal\dp#1\the\dp#1}%
+%    \dodoglobal\setbox#1\hbox
+%      {\fastlocalframed
+%         [\??ma\v!local]
+%         [\c!component=local,\c!frame=\v!off,\c!offset=\v!overlay,\c!setups=,%
+%          \c!width=\wd#1,\c!height=\ht#1,% no \c!depth=\dp#1 in cont-exp.tex, to be checked !
+%          \c!background=\localbackground]%
+%         {\registerMPlocaltextarea{\box#1}}}%
+%    \next
+%    \doglobal\increment\localpositionnumber\relax} % afterwards !
+
 \def\doaddlocalbackground#1%
   {\edef\next
      {\noexpand\redoglobal\wd#1\the\wd#1%
       \noexpand\redoglobal\ht#1\the\ht#1%
-      \noexpand\dodoglobal\dp#1\the\dp#1}%
-   \dodoglobal\setbox#1\hbox
+      \noexpand\redoglobal\dp#1\the\dp#1}%
+   \redoglobal\setbox#1\hbox
      {\fastlocalframed
         [\??ma\v!local]
         [\c!component=local,\c!frame=\v!off,\c!offset=\v!overlay,\c!setups=,%
-         \c!width=\wd#1,hoogte=\ht#1,% no diepte=\dp#1 in cont-exp.tex, to be checked !
+         \c!width=\wd#1,\c!height=\ht#1,% no \c!depth=\dp#1 in cont-exp.tex, to be checked !
          \c!background=\localbackground]%
         {\registerMPlocaltextarea{\box#1}}}%
    \next
+   \resetglobal
    \doglobal\increment\localpositionnumber\relax} % afterwards !
 
 % Test how previous macro behaves with depth:

@@ -1015,6 +1015,57 @@
 %D \ruledhbox{\flushlayer[mp]}
 %D \stoptyping
 
+%D \macros
+%D   {startstaticMPfigure,useMPstaticfigure}
+%D
+%D Static figures are processed only when there has been
+%D something changed. Here is Aditya Mahajan's testcase:
+%D
+%D \startbuffer
+%D \startstaticMPfigure{circle}
+%D   fill fullcircle scaled 1cm withcolor blue;
+%D \stopstaticMPfigure
+%D
+%D \startstaticMPfigure{axis}
+%D   drawarrow (0,0)--(2cm,0) ;
+%D   drawarrow (0,0)--(0,2cm) ;
+%D   label.llft(textext("(0,0)") ,origin) ;
+%D \stopstaticMPfigure
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
+
+\def\usestaticMPfigure[#1]%
+  {\dodoubleempty\externalfigure[\jobname-#1.pdf]}
+
+\def\startstaticMPfigure
+  {\begingroup
+   \obeyMPlines
+   \dostartstaticMPfigure}
+
+\def\dostartstaticMPfigure#1#2\stopstaticMPfigure
+  {\startstaticMPgraphic{\jobname-#1}#2\stopstaticMPgraphic
+   \doifmode{*\v!first}{\executesystemcommand
+     {texmfstart --ifchanged=\MPgraphicfile.mp texexec --mpgraphic \MPgraphicfile.mp}}%
+   \endgroup}
+
+% faster, but more tricky
+%
+% \def\startstaticMPfigure
+%   {\doifmodeelse{*\v!first}
+%      {\begingroup
+%       \obeyMPlines
+%       \dostartstaticMPfigure}
+%      {\gobbleuntil\stopstaticMPfigure}}
+%
+% \def\dostartstaticMPfigure#1#2\stopstaticMPfigure
+%   {\startMPstaticgraphic{\jobname-#1}#2\stopMPstaticgraphic
+%    \executesystemcommand
+%      {texmfstart --ifchanged=\MPgraphicfile.mp texexec --mpgraphic \MPgraphicfile.mp}%
+%    % dirty trick, don't register, so no second main run of texexec:
+%    \global\advance\nofMPgraphics \minusone
+%    \endgroup}}
+
 %D New:
 
 % \appendtoks \closeMPgraphicfiles \to \everystoptext

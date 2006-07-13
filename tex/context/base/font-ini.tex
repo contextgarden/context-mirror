@@ -1048,21 +1048,21 @@
 
 \def\dodosetmathfamily#1#2%
   {\@EA\ifx           \csname\fontclass\fontbody\c!mm\fontfamily\fontsize\endcsname\relax
-   \@EA\ifx           \csname\fontclass\fontbody\c!mm\fontfamily\endcsname         \relax
-   \@EA\ifx           \csname\fontclass\fontbody\backfamily\fontsize\endcsname     \relax
-   \@EA\ifx           \csname\fontclass\fontbody\backfamily\endcsname              \relax
+   \@EA\ifx           \csname\fontclass\fontbody\c!mm\fontfamily         \endcsname\relax
+   \@EA\ifx           \csname\fontclass\fontbody     \backfamily\fontsize\endcsname\relax
+   \@EA\ifx           \csname\fontclass\fontbody     \backfamily         \endcsname\relax
    \@EA\ifx           \csname          \fontbody\c!mm\fontfamily\fontsize\endcsname\relax
-   \@EA\ifx           \csname          \fontbody\c!mm\fontfamily\endcsname         \relax
-   \@EA\ifx           \csname          \fontbody\backfamily\fontsize\endcsname     \relax
-   \@EA\ifx           \csname          \fontbody\backfamily\endcsname              \relax
-   \autofontsizetrue  \nullfont                                        \else
-   \autofontsizetrue  \csname          \fontbody\backfamily\endcsname              \fi \else
-   \autofontsizefalse \csname          \fontbody\backfamily\fontsize\endcsname     \fi \else
-   \autofontsizetrue  \csname          \fontbody\c!mm\fontfamily\endcsname         \fi \else
+   \@EA\ifx           \csname          \fontbody\c!mm\fontfamily         \endcsname\relax
+   \@EA\ifx           \csname          \fontbody     \backfamily\fontsize\endcsname\relax
+   \@EA\ifx           \csname          \fontbody     \backfamily         \endcsname\relax
+   \autofontsizetrue  \nullfont                                                        \else
+   \autofontsizetrue  \csname          \fontbody     \backfamily         \endcsname\fi \else
+   \autofontsizefalse \csname          \fontbody     \backfamily\fontsize\endcsname\fi \else
+   \autofontsizetrue  \csname          \fontbody\c!mm\fontfamily         \endcsname\fi \else
    \autofontsizefalse \csname          \fontbody\c!mm\fontfamily\fontsize\endcsname\fi \else
-   \autofontsizetrue  \csname\fontclass\fontbody\backfamily\endcsname              \fi \else
-   \autofontsizefalse \csname\fontclass\fontbody\backfamily\fontsize\endcsname     \fi \else
-   \autofontsizetrue  \csname\fontclass\fontbody\c!mm\fontfamily\endcsname         \fi \else
+   \autofontsizetrue  \csname\fontclass\fontbody     \backfamily         \endcsname\fi \else
+   \autofontsizefalse \csname\fontclass\fontbody     \backfamily\fontsize\endcsname\fi \else
+   \autofontsizetrue  \csname\fontclass\fontbody\c!mm\fontfamily         \endcsname\fi \else
    \autofontsizefalse \csname\fontclass\fontbody\c!mm\fontfamily\fontsize\endcsname\fi
    #1#2\font}
 
@@ -1103,12 +1103,12 @@
 \def\dodosetmathfamilyA#1#2%
   {\ifcsname          \fontbody\c!mm\fontfamily\fontsize\endcsname \autofontsizefalse
      \csname          \fontbody\c!mm\fontfamily\fontsize\endcsname \else
-   \ifcsname          \fontbody\c!mm\fontfamily\endcsname          \autofontsizetrue
-     \csname          \fontbody\c!mm\fontfamily\endcsname          \else
-   \ifcsname          \fontbody\backfamily\fontsize\endcsname      \autofontsizefalse
-     \csname          \fontbody\backfamily\fontsize\endcsname      \else
-   \ifcsname          \fontbody\backfamily\endcsname               \autofontsizetrue
-     \csname          \fontbody\backfamily\endcsname               \else
+   \ifcsname          \fontbody\c!mm\fontfamily         \endcsname \autofontsizetrue
+     \csname          \fontbody\c!mm\fontfamily         \endcsname \else
+   \ifcsname          \fontbody     \backfamily\fontsize\endcsname \autofontsizefalse
+     \csname          \fontbody     \backfamily\fontsize\endcsname \else
+   \ifcsname          \fontbody     \backfamily         \endcsname \autofontsizetrue
+     \csname          \fontbody     \backfamily         \endcsname \else
                       \nullfont                                    \autofontsizetrue
    \fi\fi\fi\fi
    #1#2\font}
@@ -1116,12 +1116,12 @@
 \def\dodosetmathfamilyB#1#2%
   {\ifcsname\fontclass\fontbody\c!mm\fontfamily\fontsize\endcsname \autofontsizefalse
      \csname\fontclass\fontbody\c!mm\fontfamily\fontsize\endcsname \else
-   \ifcsname\fontclass\fontbody\c!mm\fontfamily\endcsname          \autofontsizetrue
-     \csname\fontclass\fontbody\c!mm\fontfamily\endcsname          \else
-   \ifcsname\fontclass\fontbody\backfamily\fontsize\endcsname      \autofontsizefalse
-     \csname\fontclass\fontbody\backfamily\fontsize\endcsname      \else
-   \ifcsname\fontclass\fontbody\backfamily\endcsname               \autofontsizetrue
-     \csname\fontclass\fontbody\backfamily\endcsname               \else
+   \ifcsname\fontclass\fontbody\c!mm\fontfamily         \endcsname \autofontsizetrue
+     \csname\fontclass\fontbody\c!mm\fontfamily         \endcsname \else
+   \ifcsname\fontclass\fontbody     \backfamily\fontsize\endcsname \autofontsizefalse
+     \csname\fontclass\fontbody     \backfamily\fontsize\endcsname \else
+   \ifcsname\fontclass\fontbody     \backfamily         \endcsname \autofontsizetrue
+     \csname\fontclass\fontbody     \backfamily         \endcsname \else
      \dodosetmathfamilyA#1#2%
    \fi\fi\fi\fi
    #1#2\font}
@@ -1609,6 +1609,9 @@
 % slightly faster, noticable when loading many typefaces,
 %
 % \testfeatureonce{5000}{\definefontsynonym[somefont][somename]} \end
+
+
+\def\classfont#1#2{#1#2} % \definefont[whatever][\classfont{xx}{yy} at 10pt]
 
 \def\definefontsynonym[#1]#2[#3]%
   {\edef\@@fontfile{#3}%
@@ -4320,15 +4323,30 @@
 
 \let\thedefinedfont\relax
 
-\def\symbolicscaledfont#1#2%
-  {\scaledfont\fontbody
-   \scaledfont#1\scaledfont
-   \font\thedefinedfont\truefontname{\glyphfontfile{#2}} at
+% \def\symbolicscaledfont#1#2%
+%   {\scaledfont\fontbody
+%    \scaledfont#1\scaledfont
+%    \font\thedefinedfont\truefontname{\glyphfontfile{#2}} at
+%      \currentfontbodyscale\scaledfont
+%    \thedefinedfont}
+%
+% \unexpanded\def\symbolicfont
+%   {\symbolicscaledfont\plusone}
+%
+% even more control (needed for mthsqrt etc)
+
+\def\symbolicsizedfont#1#2#3%
+  {\scaledfont#1%
+   \scaledfont#2\scaledfont
+   \font\thedefinedfont\truefontname{\glyphfontfile{#3}} at
      \currentfontbodyscale\scaledfont
    \thedefinedfont}
 
+\def\symbolicscaledfont
+  {\symbolicsizedfont\fontbody}
+
 \unexpanded\def\symbolicfont
-  {\symbolicscaledfont\plusone}
+  {\symbolicsizedfont\fontbody\plusone}
 
 \unexpanded\def\getglyph#1#2% slow, faster, much faster
  %{{\definefont[\s!dummy][\glyphfontfile{#1} sa \currentfontscale]\dummy#2}}

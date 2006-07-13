@@ -5,6 +5,7 @@
 \setupcolors[state=start]
 
 \usemodule[bib,set-11,mod-01]
+
 \setuppublications[alternative=num]
 
 \startXMLmapping[zero]
@@ -33,7 +34,7 @@
 \title{\CONTEXT\ Publication Module, The user documententation}
 \pubyear{2006}
 \note{In case you didn't know: it's the document you are reading now}
-\pages{12}
+\pages{14}
 \stoppublication
 \stopbuffer
 
@@ -59,7 +60,7 @@
 The bibliographic module (\type{t-bib.tex}) takes care of references
 to publications and the typesetting of publication lists, as well as
 providing an interface between \BIBTEX and \CONTEXT. This manual
-documents version 2006.03.13.
+documents version 2006.06.16.
 
 The bibliographic subsystem consists of the main module
 \type{t-bib.tex}; four \BIBTEX\ styles (\type{cont-xx.bst}); and a set
@@ -78,7 +79,7 @@ A typical input file obeys following structure:
 main text of the article. The source of these definitions can be
 a combination of:
     \startitemize
-    \item THe \type{\jobname.bbl} file (automatically read at \type{\starttext})
+    \item The \type{\jobname.bbl} file (automatically read at \type{\starttext})
     \item extra bbl files
     \item a file or inline macros before \type{\starttext}
     \stopitemize
@@ -86,7 +87,7 @@ a combination of:
     only important to realize that of all these definitions have to be known
     {\it before} the first citation in the text.
 \item \type{\starttext}
-\item The body text, with a number of \type{\cite} commands.
+\item The body text, with a number of \type{\cite} and \type{\nocite} commands.
 \item The list of publications, called using the command
     \type{\placepublications} or the command\break \type{\completepublications}.
 \item \type{\stoptext}
@@ -138,7 +139,7 @@ allowing you to override specific settings from the chosen style.\NC\NR
      means that all referred-to publications are listed 
      before all others, otherwise (if `sorttype' equals `bbl') you will
      just get a typeset version of the used database(s).\crlf
-     The default for apa is `used'\NC\NR
+     The default for apa is `used'.\NC\NR
 \NC numbering\NC Whether or not the  publication list
      should be labelled and if so, how. \type{yes} uses the item number in
      the publication list as label. \type{short} uses the short
@@ -150,15 +151,20 @@ allowing you to override specific settings from the chosen style.\NC\NR
      hanging indent should be re-calculated based on the real size of the
      label. This option only applies if numbering is turned on.\crlf
      The default is `no'.\NC\NR  
+\NC monthconversion\NC The presentation form of any month field, if it
+     is entered in the database as a numeric value. The default is to
+     typeset the number without any conversion\NC\NR
 \stoptabulate
 
 \subsection{How the entries are formatted: \type{\setuppublicationlist}}
 
 \setup{setuppublicationlist}
 
-The list of publications at the end of the article is essentially a
-normal context `list' that behaves much like the list that defines the
-table of contents, with the following changes:
+The list of publications at the end of the article is comparable with
+a sequence of normal \CONTEXT\ `list items' that behaves much like the
+list that defines the table of contents. {\it In previous versions, it was 
+in fact implemented as a `normal' \CONTEXT\ list, but this is no
+longer the true.\/}
 
 The module defines a set of extra options. These option names are static, they
 do {\it not} change to follow the selected \CONTEXT\ interface language.
@@ -201,7 +207,7 @@ macros provide formatting that looks like this:
 }
 As you can see in the examples, there is a connection between certain
 styles of displaying a name and the punctuation used. Punctuation in
-this document has been set up by the `ap' style, and that style makes
+this document has been set up by the `apa' style, and that style makes
 sure that \type{\invertedshortauthor} looks good, since that is the default
 command for `apa' style. (Keep in mind that the comma at the end of the
 author will be inserted by either `namesep' or `lastnamesep'.)
@@ -224,27 +230,7 @@ but commands can be a lot simpler, like this:
 \setuppublicationlist[editor=\surnameonly]
 \stoptyping
 
-
-Apart from these extra options,
-the module itself sets some of the options to the internal call to
-\type{\setuplist} itself.
-
-To get a reasonable layout for the reference list, the following are
-set as a precaution:
-\starttabulate[|l|p|]
-\NC alternative\NC Always re-initialized to `a'. This makes sure that no
-space is allocated for the page number.\NC\NR
-\NC pagenumber\NC Always re-initialized to `no'. The list is a bit of
-a special one, and page numbers don't make much sense. All entries
-will have the same page number: the number of the page on
-which \type{\placepublications} was called.\NC\NR
-\NC interaction\NC Alway made empty. There should never be any
-interactivity in the list of publications, because the entries all
-point to themselves (this limitation is similar to one for `pagenumber').
-\stoptabulate
-
-
-And also, the following options are initialized depending on the
+The following options are initialized depending on the
 global settings for `numbering' and `autohang':
 \starttabulate[|l|p|]
 \NC width\NC Set to the calculated width of the largest label, but only if autohang is `yes'\NC\NR
@@ -361,9 +347,21 @@ files cannot be found (the \type{.tuo} file is needed to get correct
 page references for \type{\cite[page]}).
 
 
+\subsection{Legacy database support}
+
+Old \BIBTEX\ databases tend to contain \LaTeX-specific commands and,
+especially, command||definitions. To make it easier to handle these
+databases, a support module that defines a simplified version of
+\LaTeX's \type{\newcommand} is shipped alongside the bib module. 
+You can load this support code by adding
+\starttyping
+\usemodule[bibltx]
+\stoptyping
+to your document preamble.
+
 \section{Citations}
 
-Citations are handled through the \type{\cite} command.
+Citations are normally handled through the \type{\cite} command.
 
 \type{\cite} has two basic appearances:
 
@@ -420,6 +418,7 @@ Three of the options are combinations:
 \starttabulate[|l|l|p|]
 \NC authoryear\NC  \cite[authoryear][me]\NC(from `a' and `y')\hfil\NC\NR
 \NC authoryears\NC \cite[authoryears][me]\NC(from `a' and `y')\hfil\NC\NR
+\NC authornum\NC  \cite[authornum][me]\NC(from `a' and `num')\hfil\NC\NR
 \NC data\NC        \vtop{\hsize .45\hsize \cite[data][me]}\NC The data content of the entry\hfil\NC\NR
 \stoptabulate
 
@@ -439,24 +438,40 @@ except for \type{extras}. The argument of `\type{extras}' is typeset
 at the end of the reference, but before a potential `\type{right}', so
 it can be used for e.g. page or chapter specifiers.
 
+\subsection{Invisible citations}
+
+\setup{nocite}
+
+This command registers the references in the argument list, but does
+not generate typeset material. It can be used to force certain entries
+from the database to appear in the typeset list of publications.
 
 \section{Placing the publication list}
 
-This is really simple: use \type{\completepublications} 
-or \type{\placepublications} at the location in your
-text where you want the publication list to appear. As is normal in
-\CONTEXT, \type{\placepublications} gives you a raw list, and
-\type{\completepublications} a list with a heading. The module uses
-the following defaults for the generated head:
+To typset the list of publications, use \type{\completepublications}
+or \type{\placepublications} at the location in your text where you
+want the publication list to appear. As is normal in \CONTEXT,  
+\type{\placepublications} gives you a raw list, and
+\type{\completepublications} a list with a heading. 
+
+
+The default for the publication list is to contain only the `locally'
+referenced items, so if you want to use your own heading instead of
+the default one, you most likely want to call
+\type{\placepublications} with an explicit criterium, like so:
 \starttyping
-\setupheadtext[en][\biblistname=References]
-\setupheadtext[nl][\biblistname=Literatuur]
-\setupheadtext[de][\biblistname=Literatur]
-\setupheadtext[it][\biblistname=Bibliografia]
-\setupheadtext[sl][\biblistname=Literatura]
-\setupheadtext[fr][\biblistname=Bibliographie]
+\placepublications[criterium=all]
 \stoptyping
 
+The module uses the following defaults for the generated head:
+\starttyping
+\setupheadtext[en][pubs=References]
+\setupheadtext[nl][pubs=Literatuur]
+\setupheadtext[de][pubs=Literatur]
+\setupheadtext[it][pubs=Bibliografia]
+\setupheadtext[sl][pubs=Literatura]
+\setupheadtext[fr][pubs=Bibliographie]
+\stoptyping
 These (or new ones) can be redefined as needed.
 
 \section{The bbl file}
@@ -548,8 +563,8 @@ differentiates between these.\NC\NR
 \NC\type{\day}\NC\tfx DAY \NC Date of publication (for a patent)\NC\NR
 \NC\type{\dayfiled}\NC\tfx DAYFILED\NC Filing date for a patent\NC\NR
 \NC\type{\doi}\NC\tfx DOI \NC Document Object Identifier\NC\NR
-\NC\type{\eprint}\NC\tfx EPRINT\NC E-print information\NC\NR
 \NC\type{\edition}\NC\tfx EDITION\NC The edition.\NC\NR
+\NC\type{\eprint}\NC\tfx EPRINT\NC E-print information\NC\NR
 \NC\type{\howpublished}\NC\tfx HOWPUBLISHED\NC \NC\NR
 \NC\type{\isbn}\NC\tfx ISNB\NC isbn number (for books)\NC\NR
 \NC\type{\issn}\NC\tfx ISSN\NC issn number (for journals)\NC\NR
@@ -558,7 +573,7 @@ differentiates between these.\NC\NR
 \NC\type{\keyword}\NC\tfx KEYWORD \NC just text (for use in indices).\NC\NR
 \NC\type{\keywords}\NC\tfx KEYWORDS \NC just text (for use in indices).\NC\NR
 \NC\type{\lang}\NC\tfx LANGUAGE \NC The language of the
-    current bibliographic record (ignored at the moment)\NC\NR 
+    current bibliographic record\NC\NR 
 \NC\type{\month}\NC\tfx MONTH\NC Month of publication\NC\NR
 \NC\type{\monthfiled}\NC\tfx MONTHFILED\NC Filing month for a patent\NC\NR
 \NC\type{\names}\NC\tfx NAMES\NC just text (for use in indices).\NC\NR
@@ -587,6 +602,16 @@ differentiates between these.\NC\NR
     journals.\NC\NR
 \NC\type{\yearfiled}\NC\tfx YEARFILED\NC Filing year for a patent\NC\NR
 \stoptabulate
+
+When the \type{\lang} field's content is a full word instead of a
+two||letter code, correct processing depends on an auxiliary command
+\type{\setbiblanguage}, to be used like this:
+\starttyping
+\setbiblanguage{English}{en}
+\stoptyping
+The first argument is a literal \type{\lang} argument, the second
+argument has to be a two||letter language abbreviation understood by
+\CONTEXT. 
 
 Adding in one of your own fields is reasonably simple:
 
@@ -656,7 +681,7 @@ point.
 
 \section{References}
 
-\placepublications
+\placepublications[criterium=all]
 
 \stopdocumentation
 

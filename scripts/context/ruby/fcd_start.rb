@@ -256,6 +256,8 @@ class FastCD
                         @result = @list.grep(/\/#{@pattern}[^\/]*$/i)
                     end
                 end
+            else
+                puts(Dir.pwd.gsub(/\\/o, '/'))
             end
         rescue
         end
@@ -403,31 +405,37 @@ class FastCD
 
 end
 
+$stdout.sync = true
+
 verbose, action, args = false, :find, Array.new
 
-usage = "fcd [--make|add|show|find] [--verbose] [pattern]"
+usage   = "fcd [--add|clear|find|list|make|show|stub] [--verbose] [pattern]"
+version = "1.0.2"
+
+def quit(message)
+    puts(message)
+    exit
+end
 
 ARGV.each do |a|
     case a
-        when '-v', '--verbose' then verbose = true
-        when '-m', '--make'    then action = :make
-        when '-c', '--clear'   then action = :clear
         when '-a', '--add'     then action = :add
-        when '-s', '--show'    then action = :show
-        when '-l', '--list'    then action = :show
+        when '-c', '--clear'   then action = :clear
         when '-f', '--find'    then action = :find
+        when '-l', '--list'    then action = :show
+        when '-m', '--make'    then action = :make
+        when '-s', '--show'    then action = :show
         when       '--stub'    then action = :stub
-        when '-h', '--help'    then puts "usage: #{usage}" ; exit
-        when /^\-\-.*/         then puts "unknown switch: #{a}" + "\n" + "usage: #{usage}" ; exit
+        when '-v', '--verbose' then verbose = true
+        when       '--version' then quit("version: #{version}")
+        when '-h', '--help'    then quit("usage: #{usage}")
+        when /^\-\-.*/         then quit("error: unknown switch #{a}, try --help")
                                else args << a
     end
 end
 
-$stdout.sync = true
-
 fcd = FastCD.new(verbose)
-
-fcd.report("Fast Change Dir / version 1.0")
+fcd.report("Fast Change Dir / version #{version}")
 
 case action
     when :make then

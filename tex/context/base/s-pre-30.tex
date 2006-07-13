@@ -196,6 +196,19 @@
   \page
 \stopsetups
 
+\startsetups show-usage-lines
+  \subject{usage}
+  \typebuffer
+  \startstreamlayer[resultstream]
+    \subject{result}
+    \startlines
+    \getbuffer
+    \stoplines
+  \stopstreamlayer
+  \placestreamlayer[resultstream]
+  \page
+\stopsetups
+
 \startsetups show-contents
     \startcolumns[n=3]
     \placelist[section][criterium=text]

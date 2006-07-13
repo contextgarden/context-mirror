@@ -8,29 +8,29 @@
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
-%C therefore copyrighted by \PRAGMA. See mreadme.pdf for 
-%C details. 
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
 
 %D When my mailbox started to overflow with messages about
 %D problems with the presentation step mechanism, I looked up
 %D old presentaton, hacked a bit and cooked up an alternative
-%D that is less dependent on \PDF\ trickery. 
+%D that is less dependent on \PDF\ trickery.
 %D
-%D Consider it a cheap trick and prelude to a couple of new 
-%D presentation styles. (At the time of writing this, I 
-%D still have some 10 of those styles to clean up and 
-%D document.) You can give it a try: 
+%D Consider it a cheap trick and prelude to a couple of new
+%D presentation styles. (At the time of writing this, I
+%D still have some 10 of those styles to clean up and
+%D document.) You can give it a try:
 %D
-%D \starttyping 
-%D texexec --pdf --mode=demo s-pre-50 
-%D \stoptyping 
+%D \starttyping
+%D texexec --pdf --mode=demo s-pre-50
+%D \stoptyping
 
 % Basic definitions.
 
 \defineframedtext
   [horizontal]
   [width=\textwidth,
-   frame=off, 
+   frame=off,
    strut=no,
    height=fit,
    align={right,lohi},
@@ -50,7 +50,7 @@
   \setupcollector
     [contribution]
     [voffset=-.25\bodyfontsize]
- 
+
   \setupframedtexts
     [horizontal]
     [background=color,
@@ -59,7 +59,7 @@
 
 \stopmode
 
-%D Structure and trick. 
+%D Structure and trick.
 
 \def\StartSteps
   {\checkutilities}
@@ -74,7 +74,7 @@
    \flushcollector[contribution]
    \page}
 
-%D Trick.
+%D Trick. Nowadays we can use streams.
 
 \installoutput\FlushStep
   {\StartStep\unvbox\normalpagebox\StopStep}

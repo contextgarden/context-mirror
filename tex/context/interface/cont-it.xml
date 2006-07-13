@@ -1615,6 +1615,11 @@
         <cd:constant type="locale"/>
         <cd:constant type="cd:dimension"/>
       </cd:parameter>
+      <cd:parameter name="autoampiezza">
+        <cd:constant type="si"/>
+        <cd:constant type="no"/>
+        <cd:constant type="forza"/>
+      </cd:parameter>
       <cd:parameter name="offset">
         <cd:constant type="nessuno"/>
         <cd:constant type="sovrapponi"/>
@@ -5245,6 +5250,14 @@
         <cd:constant type="cd:dimension"/>
       </cd:parameter>
       <cd:parameter name="separatore">
+        <cd:constant type="cd:text"/>
+      </cd:parameter>
+      <cd:parameter name="conversione">
+        <cd:constant type="numeri"/>
+        <cd:constant type="lettere"/>
+        <cd:constant type="Lettere"/>
+        <cd:constant type="numeriromani"/>
+        <cd:constant type="Numeriromani"/>
         <cd:constant type="cd:text"/>
       </cd:parameter>
     </cd:assignments>

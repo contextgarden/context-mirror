@@ -23,10 +23,15 @@
 %D that we use (unless overloaded) the settings of \type
 %D {mpost}.
 
+%D First we input John Hobby's metapost plain file. However,
+%D because we want to prevent dependency problems and in the
+%D end even may use a patched version, we prefer to use a
+%D copy,
+
 if unknown ahangle :
-  input plain.mp ; % John Hobby's file
+    input mp-base.mp ; % input plain.mp ;
 else :
-  let dump = relax ;
+    let dump = relax ;
 fi ;
 
 input mp-tool.mp ;
@@ -34,6 +39,7 @@ input mp-spec.mp ;
 input mp-core.mp ;
 input mp-page.mp ;
 input mp-text.mp ;
+input mp-txts.mp ;
 input mp-shap.mp ;
 input mp-butt.mp ;
 input mp-char.mp ;

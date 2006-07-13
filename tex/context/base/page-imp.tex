@@ -922,7 +922,7 @@
 
 \def\dofilterpage#1#2%
   {\hbox to \textwidth
-     {\ifdubbelzijdig\ifdim\@@ipwidth>\zeropoint\relax\ifodd\realpageno\else
+     {\ifdoublesided\ifdim\@@ipwidth>\zeropoint\relax\ifodd\realpageno\else
         \hfill
         \def\dowithfigure{\hskip-\@@ipwidth}%
       \fi\fi\fi

@@ -404,7 +404,7 @@
         {\let\splitlistsymbol\currentlistnumber}}% geen \edef ivm  enz
     \doif{\listparameter\c!label}\v!yes{\leftlabeltext\currentlist}%
     \strut
-    \def\numberseparator{\listparameter\c!separator}%
+    \def\numberseparator{\listparameter\c!separator}% overloaded, todo
     \@EA\dohandlelistnumber\@EA{\splitlistsymbol}%
     \listparameter\c!stopper
     \doif{\listparameter\c!label}\v!yes{\rightlabeltext\currentlist}}
