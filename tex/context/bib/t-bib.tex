@@ -1,6 +1,6 @@
 %D \module
 %D   [       file=t-bib,
-%D        version=2006.07.12,
+%D        version=2006.07.14,
 %D          title=\CONTEXT\ Publication Module,
 %D       subtitle=Publications,
 %D         author=Taco Hoekwater,
@@ -76,6 +76,7 @@
 %D \item reset font styles within \type{\cite}, so that font switches
 %D       in \type{left} stay in effect (12/7/2006)
 %D \item guard added against loading bbl files multiple times (13/7/2006)
+%D \item fix \type{\cite[num]} with compression is on. (14/7/2006)
 %D \stopitemize
 %D
 %D \subject{WISHLIST}
@@ -1584,10 +1585,22 @@
 %D so that the macro \type{\expandrefs} is needed.
 
 \def\expandrefs#1%
-  {\doifreferencefoundelse{#1}
-     {\@EA\doglobal\@EA\addtocommalist\@EA{\reftypet}\therefs }
-     {\showmessage\m!bib{5}{#1 unknown}%
-      \doglobal\addtocommalist{0}\therefs}}
+   {\bgroup
+    \preparebibrefprefix
+    \preparebibreflist{#1}%
+    \global\bibreffoundfalse
+    \def\setuplink##1%
+          {\ifbibreffound\else
+           \doifreferencefoundelse
+               {##1}
+               {\global\bibreffoundtrue 
+                \@EA\doglobal\@EA\addtocommalist\@EA{\reftypet}\therefs }%
+               {}\fi}%
+    \processcommacommand[\bibreflist]\setuplink
+    \ifbibreffound \else \showmessage\m!bib{5}{#1 unknown}%
+       \doglobal\addtocommalist{0}\therefs\fi
+    \egroup }
+
 
 %D But at least the actual sorting code is simple (note that sorting
 %D a list with exactly one entry fails to return anything, which
@@ -1613,7 +1626,8 @@
    \bibalternative\v!right}
 
 \def\dosimplebibnumref  #1%
-  {\refsep\ifbibinteractionelse{\inbiblink[#1]}{{\referencingfalse\in[#1]}}}
+  {\refsep\ifbibinteractionelse
+     {\inbiblink[#1]}{{\referencingfalse\inbiblink[#1]}}}
 
 \def\verysimplebibnumref#1{\doverysimplebibnumref#1}
 
@@ -1638,7 +1652,8 @@
       {\getvalue{pbda-#1}%
        \bibalternative\c!inbetween
        \bibalternative\v!left
-       \ifbibinteractionelse{\inbiblink[#1]}{{\referencingfalse\in[#1]}}%
+       \ifbibinteractionelse{\inbiblink[#1]}
+            {{\referencingfalse\inbiblink[#1]}}%
        \bibalternative\v!right}
       {\unknownreference{#1}}}
 

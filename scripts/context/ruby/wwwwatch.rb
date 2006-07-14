@@ -29,7 +29,7 @@ class Watch < Monitor
     @@session_begin   = 'begin exa session'
     @@session_end     = 'end exa session'
 
-    attr_accessor :root_path, :work_path, :delay, :max_threads, :max_age, :verbose
+    attr_accessor :root_path, :work_path, :cache_path, :delay, :max_threads, :max_age, :verbose
 
     def initialize(logger) # we need to register all @vars here becase of the monitor
         @threads     = Hash.new
@@ -45,6 +45,7 @@ class Watch < Monitor
         @max_age     = @@process_timeout
         @logger      = logger
         @verbose     = false
+        @create      = false
         [:INT, :TERM, :EXIT].each do |signal|
             trap(signal) do
                 kill
@@ -74,18 +75,25 @@ class Watch < Monitor
         @files   = Array.new
         @stats   = Hash.new
         @skips   = Hash.new
-        @root_path = File.expand_path(File.join(File.dirname($0),'.')) if @root_path.empty?
+        @root_path = File.expand_path(File.join(File.dirname(Dir.pwd),'.')) if @root_path.empty?
         @work_path = File.expand_path(File.join(@root_path,'work','watch')) if @work_path.empty?
-        @cache_path = File.expand_path(File.join(@root_path,'work','cache')) if @work_path.empty?
-        begin File.makedirs(@work_path) ; rescue ; end
-        begin File.makedirs(@cache_path) ; rescue ; end
+        # @cache_path = File.expand_path(File.join(@root_path,'work','cache')) if @cache_path.empty?
+        @cache_path = File.expand_path(File.join(File.dirname(@work_path),'cache')) if @cache_path.empty?
+        if @create then
+            begin File.makedirs(@work_path)  ; rescue ; end
+            begin File.makedirs(@cache_path) ; rescue ; end
+        end
         unless File.writable?(@work_path) then
             @work_path = File.expand_path(File.join(Dir.tmpdir,'work','watch'))
-            begin File.makedirs(@work_path) ; rescue ; end
+            if @create then
+                begin File.makedirs(@work_path) ; rescue ; end
+            end
         end
         unless File.writable?(@cache_path) then
             @cache_path = File.expand_path(File.join(Dir.tmpdir,'work','cache'))
-            begin File.makedirs(@cache_path) ; rescue ; end
+            if @create then
+                begin File.makedirs(@cache_path) ; rescue ; end
+            end
         end
         unless File.writable?(@work_path) then
             puts "no valid work path: #{@work_path}" ; exit
@@ -422,7 +430,11 @@ class Commands
     include CommandBase
 
     def watch
-        if watch = setup then watch.cycle end
+        if watch = setup then
+            watch.cycle
+        else
+            report("provide valid work path")
+        end
     end
     def main
         watch
@@ -432,9 +444,11 @@ class Commands
 
     def setup
         watch = Watch.new(logger)
-        watch.root_path = @commandline.option('root')
-        watch.work_path = @commandline.option('work')
-        watch.verbose   = @commandline.option('verbose')
+        watch.root_path  = @commandline.option('root')
+        watch.work_path  = @commandline.option('work')
+        watch.cache_path = @commandline.option('cache')
+        watch.create     = @commandline.option('create')
+        watch.verbose    = @commandline.option('verbose')
         begin
             watch.max_threads = @commandline.option('threads').to_i
         rescue
@@ -449,11 +463,14 @@ end
 logger      = Logger.new(banner.shift)
 commandline = CommandLine.new
 
-commandline.registervalue('root' , '')
-commandline.registervalue('work' , '')
-commandline.registervalue('threads' , '5')
+commandline.registervalue('root', '')
+commandline.registervalue('work', '')
+commandline.registervalue('cache', '')
+commandline.registervalue('threads', '5')
 
-commandline.registeraction('watch', '[--work=path] [--root=path]')
+commandline.registerflag('create')
+
+commandline.registeraction('watch', '[--work=path] [--root=path] [--create]')
 
 commandline.registerflag('verbose')
 commandline.registeraction('help')
