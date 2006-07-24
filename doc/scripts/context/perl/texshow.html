@@ -1,9 +1,7 @@
-Content-type: text/html
-
 <HTML><HEAD><TITLE>Manpage of texshow</TITLE>
 </HEAD><BODY>
 <H1>texshow</H1>
-Section: CONTEXT (1)<BR>Updated: Oct 2000<BR><A HREF="#index">Index</A>
+Section: CONTEXT (1)<BR>Updated: Jul 2006<BR><A HREF="#index">Index</A>
 <A HREF="http://localhost/cgi-bin/man/man2html">Return to Main Contents</A><HR>
 
 <P>
@@ -39,7 +37,7 @@ although they can be used in <B>ConTeXt</B> source files.
 
 <I>LANGUAGE</I> can be one of <B>cz</B> (Czech), <B>de</B>
 (German), <B>en</B> (US-English) or <B>nl</B> (Dutch).  The default
-language is Dutch.
+language is English.
 <P>
 
 You can also set the interface language with the
@@ -47,6 +45,17 @@ You can also set the interface language with the
 <P>
 
 <A NAME="lbAE">&nbsp;</A>
+<H2>BINDINGS </H2>
+
+<P>
+
+Most keyboard events are bound to the search widget, with the
+exception of <B>&lt;Page Up&gt;</B> (aka <B>&lt;Prior&gt;</B>) and <B>&lt;Page Down&gt;</B>
+(aka <B>&lt;Next&gt;</B>).  <B>&lt;Control-q&gt;</B>, <B>&lt;Control-x&gt;</B>, and
+<B>&lt;Alt-F4&gt;</B> quit the application.
+<P>
+
+<A NAME="lbAF">&nbsp;</A>
 <H2>OPTIONS </H2>
 
 <P>
@@ -60,46 +69,40 @@ See DESCRIPTION for <I>LANGUAGE</I> options.
 </DL>
 <P>
 
-<A NAME="lbAF">&nbsp;</A>
+<A NAME="lbAG">&nbsp;</A>
 <H2>FILES </H2>
 
 <P>
 
 <DL COMPACT>
-<DT><I>TEXMF/context/perltk/cont_mis.pm</I><DD>
-Perl module for
-formatting data
-<DT><I>TEXMF/context/perltk/cont_set.pm</I><DD>
-Perl module for
-defining and constructing Tk interface
-<DT><I>TEXMF/context/data/cont-XX</I>.tws<DD>
+<DT><I>TEXMF/tex/context/interface/cont-XX</I>.xml<DD>
 The database
 file.  At this writing, <I>XX</I> can be one of <B>cz</B> (Czech),
-<B>de</B> (German), <B>en</B> (English), <B>it</B> (Italian), or
-<B>nl</B> (Dutch).  Which file is used is determined by the
+<B>de</B> (German), <B>en</B> (English), <B>fr</B> (French),  
+<B>it</B> (Italian), <B>nl</B> (Dutch), or <B>ro</B> (Romanian). 
+Which file is used is determined by the
 <I>LANGUAGE</I> specified on the command line.
 </DL>
 <P>
 
-<A NAME="lbAG">&nbsp;</A>
+<A NAME="lbAH">&nbsp;</A>
 <H2>SEE ALSO </H2>
 
 <P>
 
-<B><A HREF="http://localhost/cgi-bin/man/man2html?1+texexec">texexec</A></B>(1), <B><A HREF="http://localhost/cgi-bin/man/man2html?1+texutil">texutil</A></B>(1), <B><A HREF="http://localhost/cgi-bin/man/man2html?1+pdfetex">pdfetex</A></B>(1),
-<B><A HREF="http://localhost/cgi-bin/man/man2html?1+pdftex">pdftex</A></B>(1).
+<B><A HREF="http://localhost/cgi-bin/man/man2html?1+texexec">texexec</A></B>(1), <B><A HREF="http://localhost/cgi-bin/man/man2html?1+pdfetex">pdfetex</A></B>(1), <B><A HREF="http://localhost/cgi-bin/man/man2html?1+pdftex">pdftex</A></B>(1).
 <P>
 
 Web page: &lt;<A HREF="http://www.pragma-ade.com/">http://www.pragma-ade.com/</A>&gt;
 <P>
 
-<A NAME="lbAH">&nbsp;</A>
+<A NAME="lbAI">&nbsp;</A>
 <H2>AUTHOR </H2>
 
 <P>
 
-<B>texshow</B> was written by Hans Hagen 
-&lt;<A HREF="mailto:pragma@wxs.nl">pragma@wxs.nl</A>&gt;.
+This version of <B>texshow</B> was written by Taco Hoekwater
+&lt;<A HREF="mailto:taco@elvenkind.com">taco@elvenkind.com</A>&gt;.
 <P>
 
 This manpage was written by Tobias Burnus
@@ -107,7 +110,7 @@ This manpage was written by Tobias Burnus
 &lt;c@eskimo.com&gt;.
 <P>
 
-<B>texshow</B> is part of <B>TeXWork</B> and <B>ConTeXt</B> and is available
+<B>texshow</B> is part of <B>ConTeXt</B> and is available
 from &lt;<A HREF="http://www.pragma-ade.com/pragma-ade/">http://www.pragma-ade.com/pragma-ade/</A>&gt;.
 <P>
 
@@ -119,15 +122,16 @@ from &lt;<A HREF="http://www.pragma-ade.com/pragma-ade/">http://www.pragma-ade.c
 <DT><A HREF="#lbAB">NAME </A><DD>
 <DT><A HREF="#lbAC">SYNOPSIS </A><DD>
 <DT><A HREF="#lbAD">DESCRIPTION </A><DD>
-<DT><A HREF="#lbAE">OPTIONS </A><DD>
-<DT><A HREF="#lbAF">FILES </A><DD>
-<DT><A HREF="#lbAG">SEE ALSO </A><DD>
-<DT><A HREF="#lbAH">AUTHOR </A><DD>
+<DT><A HREF="#lbAE">BINDINGS </A><DD>
+<DT><A HREF="#lbAF">OPTIONS </A><DD>
+<DT><A HREF="#lbAG">FILES </A><DD>
+<DT><A HREF="#lbAH">SEE ALSO </A><DD>
+<DT><A HREF="#lbAI">AUTHOR </A><DD>
 </DL>
 <HR>
 This document was created by
 <A HREF="http://localhost/cgi-bin/man/man2html">man2html</A>,
 using the manual pages.<BR>
-Time: 08:17:36 GMT, April 06, 2006
+Time: 09:31:15 GMT, July 19, 2006
 </BODY>
 </HTML>

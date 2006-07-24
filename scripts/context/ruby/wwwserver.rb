@@ -110,13 +110,14 @@ class Server
         #
         begin
             @httpd = WEBrick::HTTPServer.new(
-                :DocumentRoot   => @document_root,
-                :DirectoryIndex => ['index.html','index.htm','showcase.pdf'],
-                :Port           => @port_number.to_i,
-                :Logger         => WEBrick::Log.new(@logfile, WEBrick::Log::INFO), # DEBUG
-                :RequestTimeout => @request_timeout,
-                :MaxClients     => @n_of_clients,
-                :AccessLog      => [
+                :DocumentRoot        => @document_root,
+                :DocumentRootOptions => { :FancyIndexing => false },
+                :DirectoryIndex      => ['index.html','index.htm','showcase.pdf'],
+                :Port                => @port_number.to_i,
+                :Logger              => WEBrick::Log.new(@logfile, WEBrick::Log::INFO), # DEBUG
+                :RequestTimeout      => @request_timeout,
+                :MaxClients          => @n_of_clients,
+                :AccessLog           => [
                     [ @accfile, WEBrick::AccessLog::COMMON_LOG_FORMAT  ],
                     [ @accfile, WEBrick::AccessLog::REFERER_LOG_FORMAT ],
                     [ @accfile, WEBrick::AccessLog::AGENT_LOG_FORMAT   ],

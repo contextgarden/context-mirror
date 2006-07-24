@@ -59,6 +59,12 @@
        1: le synonyme de fichier -- est déjà utilisé pour --
 \stopmessages
 
+%D
+
+\let\usedtempfile\gobbleonearguments
+
+\def\registertempfile#1{\immediatewriteutilitycommand{\usedtempfile{#1}}}
+
 %D \macros
 %D   {definefilesynonym}
 %D

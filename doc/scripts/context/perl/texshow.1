@@ -1,4 +1,4 @@
-.TH "texshow" "1" "Oct 2000" "ConTeXt" "CONTEXT" 
+.TH "texshow" "1" "Jul 2006" "ConTeXt" "CONTEXT" 
 .PP 
 .SH "NAME" 
 texshow \- ConTeXt command and parameter reference
@@ -20,10 +20,17 @@ although they can be used in \fBConTeXt\fP source files\&.
 .PP 
 \fILANGUAGE\fP can be one of \fBcz\fP (Czech), \fBde\fP
 (German), \fBen\fP (US-English) or \fBnl\fP (Dutch)\&.  The default
-language is Dutch\&.
+language is English\&.
 .PP 
 You can also set the interface language with the
 \fB--interface\fP switch\&.
+.PP 
+.SH "BINDINGS" 
+.PP
+Most keyboard events are bound to the search widget, with the
+exception of \fB<Page Up>\fP (aka \fB<Prior>\fP) and \fB<Page Down>\fP
+(aka \fB<Next>\fP).  \fB<Control-q>\fP, \fB<Control-x>\fP, and
+\fB<Alt-F4>\fP quit the application\&.
 .PP 
 .SH "OPTIONS" 
 .PP 
@@ -35,35 +42,29 @@ See DESCRIPTION for \fILANGUAGE\fP options\&.
 .PP 
 .SH "FILES" 
 .PP 
-.IP "\fITEXMF/context/perltk/cont_mis\&.pm\fP" 
-Perl module for
-formatting data
-.IP "\fITEXMF/context/perltk/cont_set\&.pm\fP" 
-Perl module for
-defining and constructing Tk interface
-.IP "\fITEXMF/context/data/cont-\fIXX\fP\&.tws\fP" 
+.IP "\fITEXMF/tex/context/interface/cont-\fIXX\fP\&.xml\fP" 
 The database
 file\&.  At this writing, \fIXX\fP can be one of \fBcz\fP (Czech),
-\fBde\fP (German), \fBen\fP (English), \fBit\fP (Italian), or
-\fBnl\fP (Dutch)\&.  Which file is used is determined by the
+\fBde\fP (German), \fBen\fP (English), \fBfr\fP (French),  
+\fBit\fP (Italian), \fBnl\fP (Dutch), or \fBro\fP (Romanian)\&. 
+Which file is used is determined by the
 \fILANGUAGE\fP specified on the command line\&.
 .PP 
 .SH "SEE ALSO" 
 .PP 
-\fBtexexec\fP(1), \fBtexutil\fP(1), \fBpdfetex\fP(1),
-\fBpdftex\fP(1)\&.
+\fBtexexec\fP(1), \fBpdfetex\fP(1), \fBpdftex\fP(1)\&.
 .PP 
 Web page: <http://www\&.pragma-ade\&.com/>
 .PP 
 .SH "AUTHOR" 
 .PP 
-\fBtexshow\fP was written by Hans Hagen 
-<pragma@wxs\&.nl>\&.
+This version of \fBtexshow\fP was written by Taco Hoekwater
+<taco@elvenkind\&.com>\&.
 .PP 
 This manpage was written by Tobias Burnus
 <burnus@gmx\&.de> and C\&.M\&. Connelly
 <c@eskimo\&.com>\&.
 .PP 
-\fBtexshow\fP is part of \fBTeXWork\fP and \fBConTeXt\fP and is available
+\fBtexshow\fP is part of \fBConTeXt\fP and is available
 from <http://www\&.pragma-ade\&.com/pragma-ade/>\&.
 .PP 

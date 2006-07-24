@@ -24,7 +24,7 @@
 
 \newwrite\TeXtextwrite
 
-\def\openTeXtexts {\immediate\openout \TeXtextwrite=\currentTeXtext.mpb\relax}
+\def\openTeXtexts {\immediate\openout \TeXtextwrite\currentTeXtext.mpb\relax}
 \def\closeTeXtexts{\immediate\closeout\TeXtextwrite}
 
 \def\currentTeXtext{\jobname-mpgraph}

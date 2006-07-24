@@ -30,7 +30,7 @@ class WWW
                     message('Status', "option '#{option}' not permitted #{options.inspect}")
                 end
             else
-                message('Status', "unknown task '#{task}")
+                message('Status', "unknown task '#{task}'")
         end
     end
 

@@ -126,7 +126,16 @@
       \executeifdefined{dodefine#2arrow}\gobblethreearguments{#1}{#3}{#4}%
    \else\ifthirdargument
       \dodefinebotharrow{#1}{#2}{#3}%
-   \fi\fi}
+   \else\ifsecondargument
+      \redefinebotharrow{#1}{#2}{#3}%
+   \fi\fi\fi}
+
+\def\redefinebotharrow#1#2#3% real dirty, this overload!
+  {\doifdefined{#1}
+     {\pushmacro\dotripleempty
+      \def\dotripleempty##1[##2][##3]{\setvalue{#1}{\dotripleempty\xmtharrow[#2][##3]}}%
+      \getvalue{#1}%
+      \popmacro\dotripleempty}}
 
 \def\dodefinebotharrow#1#2#3%
   {\setvalue{#1}{\dotripleempty\xmtharrow[#2][#3]}}
@@ -136,10 +145,19 @@
    \dodoublegroupempty\doxmtharrow}
 
 \def\dodoxmtharrow[#1,#2,#3][#4,#5,#6][#7]#8#9% [3] is the optional arg
-  {\ifx#2\empty
-     \mathrel{\domthxarrsingle{#7}{#1}{#4}{#8}{#9}}%
+  {\edef\!!stringa{#2}%
+   \ifx\!!stringa\empty
+     \ifsecondargument
+       \mathrel{\domthxarrsingle{#7}{#1}{#4}{#8}{#9}}%
+     \else
+       \mathrel{\domthxarrsingle{#7}{#1}{#4}{}{#8}}%
+     \fi
    \else
-     \mathrel{\domthxarrdouble{#7}{#1}{#2}{#4}{#5}{#8}{#9}}%
+     \ifsecondargument
+       \mathrel{\domthxarrdouble{#7}{#1}{#2}{#4}{#5}{#8}{#9}}%
+     \else
+       \mathrel{\domthxarrdouble{#7}{#1}{#2}{#4}{#5}{}{#8}}%
+     \fi
    \fi}
 
 % Adapted from amsmath.
@@ -169,24 +187,32 @@
 
 % From amsmath.sty, extarrows.sty, extpfel.sty and mathtools.sty(ams)
 
-\definematharrow [xrightarrow]        [0359] [\rightarrowfill]
-\definematharrow [xleftarrow]         [3095] [\leftarrowfill]
-\definematharrow [xequal]             [0099] [\equalfill]
-\definematharrow [xRightarrow]        [0359] [\Rightarrowfill]
-\definematharrow [xLeftarrow]         [3095] [\Leftarrowfill]
-\definematharrow [xLeftrightarrow]    [0099] [\Leftrightarrowfill]
-\definematharrow [xleftrightarrow]    [0099] [\leftrightarrowfill]
-\definematharrow [xmapsto]            [0599] [\mapstofill]
-\definematharrow [xtwoheadrightarrow] [5009] [\twoheadrightarrowfill]
-\definematharrow [xtwoheadleftarrow]  [0590] [\twoheadleftarrowfill]
-\definematharrow [xrightharpoondown]  [0359] [\rightharpoondownfill]
-\definematharrow [xrightharpoonup]    [0359] [\rightharpoonupfill]
-\definematharrow [xleftharpoondown]   [3095] [\leftharpoondownfill]
-\definematharrow [xleftharpoonup]     [3095] [\leftharpoonupfill]
+\definematharrow [xrightarrow]        [0359]      [\rightarrowfill]
+\definematharrow [xleftarrow]         [3095]      [\leftarrowfill]
+\definematharrow [xequal]             [0099]      [\equalfill]
+\definematharrow [xRightarrow]        [0359]      [\Rightarrowfill]
+\definematharrow [xLeftarrow]         [3095]      [\Leftarrowfill]
+\definematharrow [xLeftrightarrow]    [0099]      [\Leftrightarrowfill]
+\definematharrow [xleftrightarrow]    [0099]      [\leftrightarrowfill]
+\definematharrow [xmapsto]            [3599]      [\mapstofill]
+\definematharrow [xtwoheadrightarrow] [5009]      [\twoheadrightarrowfill]
+\definematharrow [xtwoheadleftarrow]  [0590]      [\twoheadleftarrowfill]
+\definematharrow [xrightharpoondown]  [0359]      [\rightharpoondownfill]
+\definematharrow [xrightharpoonup]    [0359]      [\rightharpoonupfill]
+\definematharrow [xleftharpoondown]   [3095]      [\leftharpoondownfill]
+\definematharrow [xleftharpoonup]     [3095]      [\leftharpoonupfill]
+\definematharrow [xleftrightharpoons] [3399,3399] [\leftharpoonupfill,\rightharpoondownfill]
+\definematharrow [xrightleftharpoons] [3399,3399] [\rightharpoonupfill,\leftharpoondownfill]
 
-\definematharrow [xleftrightharpoons] [3095,0359] [\leftharpoonupfill,\rightharpoondownfill]
-\definematharrow [xrightleftharpoons] [3095,0359] [\rightharpoonupfill,\leftharpoondownfill]
+% Goodies
 
+\def\hookleftfill {\mtharrowfill\leftarrow\relbar{\relbar\joinrel\rhook}}
+\def\hookrightfill{\mtharrowfill{\lhook\joinrel\relbar}\relbar\rightarrow}
+
+\definematharrow [xhookleftarrow]  [3095] [\hookleftfill]
+\definematharrow [xhookrightarrow] [0395] [\hookrightfill]
+
+% \startformula \xrightarrow{stuff on top}\stopformula
 % \startformula \xrightarrow{}{stuff on top}\stopformula
 % \startformula \xrightarrow{stuff below}{}\stopformula
 % \startformula \xrightarrow{stuff below}{stuff on top}\stopformula

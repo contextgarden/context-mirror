@@ -1,6 +1,6 @@
 %D \module
 %D   [       file=t-bib,
-%D        version=2006.07.14,
+%D        version=2006.07.19,
 %D          title=\CONTEXT\ Publication Module,
 %D       subtitle=Publications,
 %D         author=Taco Hoekwater,
@@ -77,6 +77,12 @@
 %D       in \type{left} stay in effect (12/7/2006)
 %D \item guard added against loading bbl files multiple times (13/7/2006)
 %D \item fix \type{\cite[num]} with compression is on. (14/7/2006)
+%D \item test \type{\iflocation} before deciding to use the
+%D       interactive version of cite (18/7/2006)
+%D \item support \type{\setupcite[authoretallimit=1]} (18/7/2006)
+%D \item support use of \type{\cite} within titles and captions by 
+%D       saveguarding the list item extraction and reference placement
+%D       code (19/7/2006)
 %D \stopitemize
 %D
 %D \subject{WISHLIST}
@@ -1087,15 +1093,19 @@
    \getvalue{pbdd-#1}}
 
 %D This new version writes a reference out to the tui file for every
-%D \type{\cite}. This will allow backlinking
+%D \type{\cite}. This will allow backlinking.
+%D
+%D Some special care is needed so that references are not added from
+%D weird locations like in the TOC or within a \type{\setbox} command.
 
 \newcounter\citationnumber
 
 \def\docitation#1{%
   \iftrialtypesetting \else 
-    \doglobal\increment\citationnumber
-    \expanded{\rawreference{}{cite-\jobname-\citationnumber}{#1}}%
-  \fi}
+    \ifdoinpututilities\else
+      \doglobal\increment\citationnumber
+      \expanded{\rawreference{}{cite-\jobname-\citationnumber}{#1}}%
+  \fi \fi }
 
 
 %D \macros{numreferred,doifreferredelse,addthisref,publist}
@@ -1214,7 +1224,9 @@
 \def\docurrentbibauthor#1,#2%
   {\doifemptyelse{#2}
       {\def\currentbibauthor{#1\bibalternative{otherstext}}}
-      {\def\currentbibauthor{#1\bibalternative{andtext}#2}}}
+      {\edef\currentbibauthor{#1%
+        \ifcase0\bibalternative{authoretallimit}\relax\or
+          \bibalternative{otherstext}\else \bibalternative{andtext}#2\fi}}}
 
 %D This is not the one Hans made for me, because I need a global
 %D edef, and the \type{\robustdoifinsetelse} doesn't listen to
@@ -1327,12 +1339,22 @@
 %D does not encounter duplicate named references. On the generation
 %D side, this is not a big problem. \type{\preparebibrefprefix}
 %D creates a suitable string to prepend if a prefix is needed.
+%D
+%D Because this macro is used within \type{\cite } that itself
+%D can be used within lists like the table of contents, it needs
+%D to save and restore \type{\savedalltoclevels} and
+%D \type{\currentlevel} (\type{\dosetfilterlevel} needs to change
+%D their values globally).
 
 \def\preparebibrefprefix
-   {\let\dosetfilterlevel\patcheddosetfilterlevel
+   {\chardef\savedalltoclevels \alltoclevels
+	\let\savedcurrentlevel\currentlevel
+    \let\dosetfilterlevel\patcheddosetfilterlevel
     \dosettoclevel\??li{pubs}%
+    \edef\bibrefprefix{\@@sectiontype\currentlevel\sectionseparator}%
     \let\dosetfilterlevel\normaldosetfilterlevel
-    \edef\bibrefprefix{\@@sectiontype\currentlevel\sectionseparator}}%
+	\global\let\currentlevel\savedcurrentlevel
+    \global\chardef\alltoclevels \savedalltoclevels  }
 
 %D \macros{preparebibreflist}
 %D
@@ -1421,12 +1443,17 @@
 %D \type{\currentbibauthor} and \type{\currentbibyear}.
 
 \def\ifbibinteractionelse%
-  {\edef\test{\bibalternative\c!interaction}%
-   \ifx\test\v!stop
-     \expandafter\secondoftwoarguments
+  {\iflocation
+      \edef\test{\bibalternative\c!interaction}%
+      \ifx\test\v!stop
+        \@EA\@EA\@EA\secondoftwoarguments
+      \else
+       \@EA\@EA\@EA\firstoftwoarguments
+      \fi
     \else
-     \expandafter\firstoftwoarguments
-    \fi}
+       \@EA\secondoftwoarguments
+    \fi
+     }
 
 \def\bibmaybeinteractive#1#2%
   {\ifbibcitecompress #2\else

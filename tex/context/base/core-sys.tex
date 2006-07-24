@@ -80,7 +80,8 @@
    \fi
    \processaction
      [\@@svtype]
-     [     mswin=>\edef\@@svline{\rawcharacter{13}\rawcharacter{10}}, % crlf
+    %[     mswin=>\edef\@@svline{\rawcharacter{13}\rawcharacter{10}}, % crlf
+     [     mswin=>\edef\@@svline{\rawcharacter{13}},                  % cr % crlf
           darwin=>\edef\@@svline{\rawcharacter{13}},                  % cr
       \s!unknown=>\edef\@@svline{\rawcharacter{10}}]%                 % lf
    \splitjobfilename}

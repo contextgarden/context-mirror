@@ -12,6 +12,7 @@ module MPTools
 
     @@definitions, @@start, @@stop, @@before, @@after = Hash.new, Hash.new, Hash.new, Hash.new, Hash.new
 
+
     @@definitions['plain'] = <<EOT
 \\gdef\\mpxshipout{\\shipout\\hbox\\bgroup
   \\setbox0=\\hbox\\bgroup}
@@ -33,6 +34,8 @@ EOT
 
     @@definitions['context'] = <<EOT
 \\ifx\\startMPXpage\\undefined
+
+  \\ifx\\loadallfontmapfiles\\undefined \\let\\loadallfontmapfiles\\relax \\fi
 
   \\gdef\\startMPXpage
     {\\shipout\\hbox
@@ -56,6 +59,7 @@ EOT
     \\egroup
     \\ht0=0pt
     \\dp0=0pt
+    \\loadallfontmapfiles
     \\box0
     \\egroup}
 

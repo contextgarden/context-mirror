@@ -1045,8 +1045,6 @@
 
 \def\dostartstaticMPfigure#1#2\stopstaticMPfigure
   {\startstaticMPgraphic{\jobname-#1}#2\stopstaticMPgraphic
-   \doifmode{*\v!first}{\executesystemcommand
-     {texmfstart --ifchanged=\MPgraphicfile.mp texexec --mpgraphic \MPgraphicfile.mp}}%
    \endgroup}
 
 % faster, but more tricky
@@ -1060,8 +1058,6 @@
 %
 % \def\dostartstaticMPfigure#1#2\stopstaticMPfigure
 %   {\startMPstaticgraphic{\jobname-#1}#2\stopMPstaticgraphic
-%    \executesystemcommand
-%      {texmfstart --ifchanged=\MPgraphicfile.mp texexec --mpgraphic \MPgraphicfile.mp}%
 %    % dirty trick, don't register, so no second main run of texexec:
 %    \global\advance\nofMPgraphics \minusone
 %    \endgroup}}

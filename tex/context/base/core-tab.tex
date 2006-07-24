@@ -986,9 +986,10 @@
          \firststagestartTABLE}}}
 
 \def\stoptable
-  {\insertTABLEtail
-   \globalletempty\@@TABLEhead
-   \globalletempty\@@TABLEtail
+  {\chuckTABLEautorow % before the tail, else noalign problem
+   \insertTABLEtail
+   \TABLEnoalign{\globalletempty\@@TABLEhead}%
+   \TABLEnoalign{\globalletempty\@@TABLEtail}%
    \finishTABLE
    \doifelsenothing\@@tiframe
      {\ifinsidefloat\else

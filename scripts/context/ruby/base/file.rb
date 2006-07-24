@@ -105,12 +105,13 @@ class File
     end
 
     def File.silentdelete(filename)
-        begin File.delete(filename) ; rescue ; end
+        File.delete(filename) rescue false
     end
 
     def File.silentcopy(oldname,newname)
         return if File.expand_path(oldname) == File.expand_path(newname)
-        begin File.copy(oldname,newname) ; rescue ; end
+        File.makedirs(File.dirname(newname)) rescue false
+        File.copy(oldname,newname) rescue false
     end
 
     def File.silentrename(oldname,newname)
@@ -118,11 +119,12 @@ class File
         # maybe working over multiple file systems or
         # apps may have mildly locked files (like gs does)
         return if File.expand_path(oldname) == File.expand_path(newname)
-        begin File.delete(newname) ; rescue ; end
+        File.delete(newname) rescue false
         begin
             File.rename(oldname,newname)
         rescue
-            begin File.copy(oldname,newname) ; rescue ; end
+            File.makedirs(File.dirname(newname)) rescue false
+            File.copy(oldname,newname) rescue false
         end
     end
 

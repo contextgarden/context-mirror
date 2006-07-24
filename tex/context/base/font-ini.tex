@@ -1901,6 +1901,14 @@
 \def\rawfontidentifier{**\lastfontidentifier\fontsize**}
 \def\newfontidentifier{*\fontclass\lastfontidentifier\fontsize*}
 
+% best we can add the style as well because otherwise we get math encoding mixups
+%
+% \setupbodyfont   [8pt] [\currentencoding/\ccaron\scaron\zcaron]
+% \blank
+% \switchtobodyfont[7pt] [\currentencoding/\ccaron\scaron\zcaron]
+
+\def\newfontidentifier{*\fontclass\lastfontidentifier\fontstyle\fontsize*}
+
 \def\dododefinefont#1#2%
   {\edef\lastfontidentifier{#1}%
    \let\localrelativefontsize\defaultrelativefontsize

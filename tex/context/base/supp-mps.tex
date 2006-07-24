@@ -238,9 +238,13 @@
   {\obeylines
    \let\obeyedline\relax} % delay expansion
 
-\appendtoks
-  \let\obeyMPlines\runtimeobeyMPlines
-\to \everydump
+\ifx\everydump\undefined
+    % maybe we're not using context
+\else
+    \appendtoks
+        \let\obeyMPlines\runtimeobeyMPlines
+    \to \everydump
+\fi
 
 %D We use two distinguished token registers:
 
@@ -645,6 +649,17 @@
   \let \} \letterclosebrace
 \to \everyMPgraphic
 
+%D Not the best place but we need to make sure that no funny
+%D active characters creep in. Some day we will move this code.
+
+\ifx\disablediscretionaries\undefined
+  \let\disablediscretionaries\relax
+\fi
+
+\appendtoks
+  \disablediscretionaries
+\to \everyMPgraphic
+
 \def\writeMPgraph
   {\immediate\write\MPwrite{mpgraph:=\the\currentMPgraphic;}}
 
@@ -712,7 +727,7 @@
    \fi
    \@EA\let\@EA\MPwrite\csname\@@MPG\@@MPG\MPgraphicfile\endcsname
    \ifdone
-     \immediate\openout\MPwrite=\MPgraphicfile.mp
+     \immediate\openout\MPwrite\MPgraphicfile.mp\relax
      \ifx\MPinputtranslation\empty\else
        \immediate\write\MPwrite{\MPinputtranslation}%
        \immediate\write\MPwrite{verbatimtex \MPinputtranslation etex ;}%
@@ -1497,18 +1512,18 @@
      \endlinechar\minusone
      \uncatcodespecials
      \donefalse
-     \immediate\openout\scratchwrite=\convertMPcolorpath\convertMPcolorfile
+     \immediate\openout\scratchwrite\convertMPcolorpath\convertMPcolorfile\relax
      \doprocessfile\scratchread{#1}\handleMPcolor
      \immediate\closeout\scratchwrite
      \ifdone
-       \immediate\openout\scratchwrite=\convertMPcolorpath#1\relax
+       \immediate\openout\scratchwrite\convertMPcolorpath#1\relax
        \doprocessfile\scratchread{\convertMPcolorpath \convertMPcolorfile}\handleMPcopy
        \immediate\closeout\scratchwrite
        \message{done]}%
      \else
        \message{not needed]}%
      \fi
-     \immediate\openout\scratchwrite=\convertMPcolorpath\convertMPcolorfile
+     \immediate\openout\scratchwrite\convertMPcolorpath\convertMPcolorfile
      \immediate\closeout\scratchwrite
    \fi
    \egroup}
@@ -1967,14 +1982,31 @@
 %D Dedicated to Aditya Mahajan. See meta-ini for usage.
 
 \long\def\startstaticMPgraphic#1#2\stopstaticMPgraphic
-  {\setMPrandomseedfalse
+  {\bgroup
+   \setMPrandomseedfalse
    \def\MPgraphicfile{#1}% no \jobname here
    \let\allocateMPslot  \gobbleoneargument
    \let\deallocateMPslot\gobbleoneargument
    \let\runMPgraphic    \gobbleoneargument
    \runMPgraphicstrue
+   \enableincludeMPgraphics
    \currentMPgraphic\plusone  % hack, else no close
-   \startMPgraphic#2\stopMPgraphic}
+   \startMPgraphic#2\stopMPgraphic
+   \executeMPgraphicfile
+   \egroup}
+
+
+\ifx\doifmode\undefined
+    \def\executeMPgraphicfile
+      {\executesystemcommand
+        {texmfstart --ifchanged=\MPgraphicfile.mp
+            texexec --mpgraphic \MPgraphicfile.mp}}
+\else
+    \def\executeMPgraphicfile
+      {\doifmode{*\v!first}{\executesystemcommand
+        {texmfstart --ifchanged=\MPgraphicfile.mp
+            texexec --mpgraphic \MPgraphicfile.mp}}}
+\fi
 
 %D Special for \XETEX\ (problem with newlines). This will go
 %D away once the version supporting \type {--8bit} is

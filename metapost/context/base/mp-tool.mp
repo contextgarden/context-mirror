@@ -1175,7 +1175,10 @@ boolean autoarrows ; autoarrows := false ;
 numeric ahfactor   ; ahfactor   := 2.5 ;
 
 def set_ahlength (text t) =
-  ahlength := (ahfactor*pen_size(_op_ t)) ; % _op_ added
+% ahlength := (ahfactor*pen_size(_op_ t)) ; % _op_ added
+% problem: _op_ can contain color so a no-go, we could apply the transform
+% but i need to figure out the best way (fakepicture and take components).
+  ahlength := (ahfactor*pen_size(t)) ;
 enddef ;
 
 vardef pen_size (text t) =

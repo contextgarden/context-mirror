@@ -29,7 +29,7 @@ class Watch < Monitor
     @@session_begin   = 'begin exa session'
     @@session_end     = 'end exa session'
 
-    attr_accessor :root_path, :work_path, :cache_path, :delay, :max_threads, :max_age, :verbose
+    attr_accessor :root_path, :work_path, :create, :cache_path, :delay, :max_threads, :max_age, :verbose
 
     def initialize(logger) # we need to register all @vars here becase of the monitor
         @threads     = Hash.new
@@ -46,15 +46,15 @@ class Watch < Monitor
         @logger      = logger
         @verbose     = false
         @create      = false
-        [:INT, :TERM, :EXIT].each do |signal|
-            trap(signal) do
-                kill
-                exit
-            end
-        end
-        at_exit do
-            kill
-        end
+        # [:INT, :TERM, :EXIT].each do |signal|
+            # trap(signal) do
+                # kill
+                # exit # rescue false
+            # end
+        # end
+        # at_exit do
+            # kill
+        # end
     end
 
     def trace
@@ -96,7 +96,8 @@ class Watch < Monitor
             end
         end
         unless File.writable?(@work_path) then
-            puts "no valid work path: #{@work_path}" ; exit
+            puts "no valid work path: #{@work_path}"
+            exit! rescue false # no checking, no at_exit done
         end
         unless File.writable?(@cache_path) then
             puts "no valid work path: #{@work_path}" ; # no reason to exit
@@ -443,18 +444,19 @@ class Commands
     private
 
     def setup
-        watch = Watch.new(logger)
-        watch.root_path  = @commandline.option('root')
-        watch.work_path  = @commandline.option('work')
-        watch.cache_path = @commandline.option('cache')
-        watch.create     = @commandline.option('create')
-        watch.verbose    = @commandline.option('verbose')
-        begin
-            watch.max_threads = @commandline.option('threads').to_i
-        rescue
-            watch.max_threads = 5
+        if watch = Watch.new(logger) then
+            watch.root_path  = @commandline.option('root')
+            watch.work_path  = @commandline.option('work')
+            watch.cache_path = @commandline.option('cache')
+            watch.create     = @commandline.option('create')
+            watch.verbose    = @commandline.option('verbose')
+            begin
+                watch.max_threads = @commandline.option('threads').to_i
+            rescue
+                watch.max_threads = 5
+            end
+            watch.setup
         end
-        watch.setup
         return watch
     end
 

@@ -351,7 +351,7 @@
 \newif\ifshortsetup
 
 \def\setup     {\shortsetupfalse\dosetup}
-\def\shortsetup{\shortsetuptrue\dosetup}
+\def\shortsetup{\shortsetuptrue \dosetup}
 \def\setupsetup{\dodoubleargument\getparameters[\??stp]}
 
 \setupsetup
@@ -383,6 +383,12 @@
 \let\plaatssetup    \placesetup
 \let\plaatselkesetup\placeeverysetup
 
+% we use :1 as fallback
+%
+% \setup{setupinterlinespace}
+% \setup{setupinterlinespace:1}
+% \setup{setupinterlinespace:2}
+
 \bgroup \catcode`\<=\active
 
 \gdef\dosetup#1%
@@ -390,12 +396,17 @@
    \def<<##1>>{##1}%
    \edef\ascii{#1}%
    \enableXML
-   \expanded{\flushXMLelement{stp:\ascii}}%
+   \doifelseXMLelement{stp:\ascii}
+     {\expanded{\flushXMLelement{stp:\ascii}}}
+     {\doifelseXMLelement{stp:\ascii:1}
+        {\expanded{\flushXMLelement{stp:\ascii:1}}}
+        {\convertargument#1\to\ascii
+         \em unknown setup \quote{\ascii}}}
    \egroup}
 
 \egroup
 
-\defineXMLenvironment [cd:command] [name=,type=,generated=,interactive=]
+\defineXMLenvironment [cd:command] [name=,type=,generated=,interactive=,variant=]
   {}
   {\showSETUPrecord}
 
@@ -772,11 +783,13 @@
 
 \startXMLmapping[zero]
 
-\defineXMLenvironmentsave [cd:command] [name=,type=,generated=,interactive=]
+\defineXMLenvironmentsave [cd:command] [name=,type=,generated=,interactive=,variant=]
   {}
   {\doifelseXMLop{type}{environment}
      {\edef\currentSETUPname{start\getinterfacecomponent{string}{\XMLop{name}}}}
      {\edef\currentSETUPname{\getinterfacecomponent{string}{\XMLop{name}}}}%
+   \doifsomething{\XMLop{variant}}
+     {\edef\currentSETUPname{\currentSETUPname:\XMLop{variant}}}% like setupinterlinespace:1
    \doifXMLop{generated}{yes}
      {\edef\currentSETUPname{\currentSETUPname*}}%
    \doglobal\saveXMLdatainelement{stp:\currentSETUPname}{cd:command}{cd:command}%
@@ -788,11 +801,17 @@
 \def\loadsetups{\complexorsimple\loadsetups}
 
 \def\simpleloadsetups
-  {\complexloadsetups[cont-en.xml]}
+  {\doifnotmode{no-setup-main}
+     {\complexloadsetups[cont-en.xml]}}
 
 \def\complexloadsetups[#1]%
-  {\startXMLmapping[zero]
-   \processXMLfilegrouped{#1}
-   \stopXMLmapping}
+  {\doifnotmode{no-setup-all}
+     {\doifsomething{#1}
+        {\startXMLmapping[zero]
+         \expanded{\processXMLfilegrouped{#1}}%
+         \stopXMLmapping}}}
+
+\defineXMLsingular [cd:include] [file=]
+  {\complexloadsetups[\XMLop{file}]}
 
 \protect \endinput

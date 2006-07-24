@@ -33,7 +33,14 @@
 \definepalet
   [cow]
   [normal=lground,
-   contour=dground]
+   contour=dground,
+   sky=lsky]
+
+\def\CowNormal#1%
+  {\dontleavehmode\hbox{\color[cow:normal]{\getglyph{Cows}{#1}}}}
+
+\def\ScaledCowNormal#1#2%
+  {\dontleavehmode\hbox{\color[cow:normal]{\definedfont[Cows sa #1]#2}}}
 
 \def\ScaledCowOverlay#1#2%
   {\dontleavehmode\hbox
@@ -73,6 +80,7 @@
 \definesymbol[CowMetafun]        [\CowLogo{16}]
 \definesymbol[CowMetafunComplete][\CowLogo{17}]
 \definesymbol[CowTEX]            [\CowLogo{18}]
+\definesymbol[CowTeX]            [\CowLogo{18}]
 \definesymbol[CowWiki]           [\CowLogo{19}]
 
 \stopsymbolset
@@ -97,6 +105,7 @@
 \definesymbol[CowMetafun]        [\CowContour{16}]
 \definesymbol[CowMetafunComplete][\CowContour{17}]
 \definesymbol[CowTEX]            [\CowContour{18}]
+\definesymbol[CowTeX]            [\CowContour{18}]
 \definesymbol[CowWiki]           [\CowContour{19}]
 
 \stopsymbolset

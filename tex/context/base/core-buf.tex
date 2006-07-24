@@ -299,8 +299,7 @@
    \dobuffer{16}[#2]\readjobfile
    \getvalue{\??bu#1\c!after}}
 
-\let\getbuffer \processTEXbuffer % handy
-\let\getbuffer\processTEXbuffer % will move to mult-com.tex
+\let\getbuffer\processTEXbuffer % handy
 
 \def\typebuffer
   {\dodoubleempty\dotypebuffer}
@@ -546,7 +545,7 @@
    \ifcase\blocklevel\doingblocksfalse\else\doingblockstrue\fi}
 
 \def\opentmpblock
-  {\immediate\openout\tmpblocks=\TEXbufferfile{\f!utilityfilename\the\blocklevel}}
+  {\immediate\openout\tmpblocks\TEXbufferfile{\f!utilityfilename\the\blocklevel}}
 
 \def\closetmpblock
   {\immediate\write\tmpblocks{}%   een lege regel is handig voor \par commando's
@@ -576,7 +575,7 @@
 \def\checkcopyingblocks
   {\ifcopyingblocks
    \else
-     \immediate\openout\outblocks\f!utilityfilename.\f!blockextension
+     \immediate\openout\outblocks\f!utilityfilename.\f!blockextension%
      \immediate\write\outblocks{\string\thisisblockversion{\blockversion}}%
      \immediate\write\outblocks{\string\thisissectionseparator{\sectionseparator}}%
      \global\copyingblockstrue

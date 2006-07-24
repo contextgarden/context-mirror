@@ -173,7 +173,7 @@ class Commands
         if FileTest.file?(file+'.xml') then
             style = "--arg=\"style=#{style}\"" unless style.empty?
             modes = "--mode=#{modes}" unless modes.empty?
-            if system("texmfstart texexec.pl --batch --pdf --once --result=#{long} --use=mmlpag #{style} #{modes} #{file}.xml") then
+            if system("texmfstart texexec --batch --pdf --once --result=#{long} --use=mmlpag #{style} #{modes} #{file}.xml") then
                 if eps then
                     if f = open("#{file}-mmlpages.txt") then
                         while line = f.gets do

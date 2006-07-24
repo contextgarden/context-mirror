@@ -319,10 +319,13 @@ class TEX
         begin
             Dir.glob("#{@@temprunfile}*").each do |name|
                 if File.file?(name) && (File.splitname(name)[1] !~ /(pdf|dvi)/o) then
-                    begin File.delete(name) ; rescue ; end
+                    File.delete(name) rescue false
                 end
             end
         rescue
+        end
+        ['mpgraph.mp'].each do |file|
+            (File.delete(file) if (FileTest.size?(file) rescue 10) < 10) rescue false
         end
     end
 
@@ -389,18 +392,24 @@ class TEX
         if str.class == String then str.split(',') else str.flatten end
     end
 
-    def validtexformat(str) validsomething(str,@@texformats) end
-    def validmpsformat(str) validsomething(str,@@mpsformats) end
-    def validtexengine(str) validsomething(str,@@texengines) end
-    def validmpsengine(str) validsomething(str,@@mpsengines) end
+    def validtexformat(str) validsomething(str,@@texformats,'tex')     end
+    def validmpsformat(str) validsomething(str,@@mpsformats,'mp' )     end
+    def validtexengine(str) validsomething(str,@@texengines,'pdfetex') end
+    def validmpsengine(str) validsomething(str,@@mpsengines,'mpost' )  end
 
     def validtexmethod(str) [validsomething(str,@@texmethods)].flatten.first end
     def validmpsmethod(str) [validsomething(str,@@mpsmethods)].flatten.first end
 
-    def validsomething(str,something)
+    def validsomething(str,something,type=nil)
         if str then
             list = [str].flatten.collect do |s|
-                something[s]
+                if something[s] then
+                    something[s]
+                elsif type && s =~ /\.#{type}$/ then
+                    s
+                else
+                    nil
+                end
             end .compact.uniq
             if list.length>0 then
                 if str.class == String then list.first else list end
@@ -538,6 +547,9 @@ class TEX
         # save current path
         savedpath = Dir.getwd
         # generate tex formats
+        unless texformats || mpsformats then
+            report('provide valid format (name.tex, name.mp, ...) or format id (metafun, en, nl, ...)')
+        end
         if texformats && texengine && (progname = validprogname(getvariable('progname'),texengine)) then
             report("using tex engine #{texengine}")
             texformatpath = if getvariable('local') then '.' else Kpse.formatpath(texengine,true) end
@@ -1004,11 +1016,36 @@ class TEX
         reportruntime
     end
 
+    private
+
+    def load_map_files(filename) # tui basename
+        # c \usedmapfile{=}{lm-texnansi}
+        begin
+            str = ""
+            IO.read(filename).scan(/^c\s+\\usedmapfile\{(.*?)\}\{(.*?)\}\s*$/o) do
+                str << "\\loadmapfile[#{$2}.map]\n"
+            end
+        rescue
+            return ""
+        else
+            return str
+        end
+    end
+
+    public
+
     def processmpgraphic
         getarrayvariable('files').each do |filename|
             setvariable('filename',filename)
             report("processing graphic '#{filename}'")
-            runtexmp(filename)
+            runtexmp(filename,'',false) # no purge
+            mapspecs = load_map_files(File.suffixed(filename,'temp','tui'))
+            unless getvariable('keep') then
+                # not enough: purge_mpx_files(filename)
+                Dir.glob(File.suffixed(filename,'temp*','*')).each do |fname|
+                    File.delete(fname) unless File.basename(filename) == File.basename(fname)
+                end
+            end
             begin
                 data = IO.read(File.suffixed(filename,'log'))
                 basename = filename.sub(/\.mp$/, '')
@@ -1038,6 +1075,7 @@ class TEX
                             File.open("texexec.tex",'w') do |f|
                                 f << "\\setupoutput[pdftex]\n"
                                 f << "\\setupcolors[state=start]\n"
+                                f << mapspecs
                                 f << "\\starttext\n"
                                 list.each do |number|
                                     f << "\\startTEXpage\n"
@@ -1058,9 +1096,12 @@ class TEX
                                     File.open("texexec.tex",'w') do |f|
                                         f << "\\setupoutput[pdftex]\n"
                                         f << "\\setupcolors[state=start]\n"
-                                        f << "\\starttext \\startTEXpage\n"
+                                        f << mapspecs
+                                        f << "\\starttext\n"
+                                        f << "\\startTEXpage\n"
                                         f << "\\convertMPtoPDF{#{fullname}}{1}{1}"
-                                        f << "\\stopTEXpage \\stoptext\n"
+                                        f << "\\stopTEXpage\n"
+                                        f << "\\stoptext\n"
                                     end
                                     report("converting graphic '#{fullname}'")
                                     runtex("texexec.tex")
@@ -1089,7 +1130,7 @@ class TEX
         getarrayvariable('files').each do |filename|
             setvariable('filename',filename)
             report("processing text of graphic '#{filename}'")
-            processmpx(filename,false,true)
+            processmpx(filename,false,true,true)
         end
         reportruntime
     end
@@ -1353,18 +1394,18 @@ class TEX
         end
     end
 
-    def runtexmp(filename,filetype='')
+    def runtexmp(filename,filetype='',purge=true)
         checktestversion
         mpname = File.suffixed(filename,filetype,'mp')
         if File.atleast?(mpname,25) then
             # first run needed
             File.silentdelete(File.suffixed(mpname,'mpt'))
-            doruntexmp(mpname)
+            doruntexmp(mpname,nil,true,purge)
             mpgraphics = checkmpgraphics(mpname)
             mplabels = checkmplabels(mpname)
             if mpgraphics || mplabels then
                 # second run needed
-                doruntexmp(mpname,mplabels)
+                doruntexmp(mpname,mplabels,true,purge)
             else
                 # no labels
             end
@@ -1445,7 +1486,7 @@ class TEX
             report("fixing backend map path for #{backend}") if getvariable('verbose')
             ENV['backend']     = backend ;
             ENV['progname']    = backend unless validtexengine(backend)
-            ENV['TEXFONTMAPS'] = ['.',"\$TEXMF/fonts/map/{#{backend},pdftex,dvips,}//"].join_path
+            ENV['TEXFONTMAPS'] = ['.',"\$TEXMF/fonts/map/{#{backend},pdftex,dvips,}//",'./fonts//'].join_path
         else
             report("unable to fix backend map path") if getvariable('verbose')
         end
@@ -1720,7 +1761,7 @@ class TEX
     # into beginfig/endfig. We could as well do this in metafun itself. Maybe some
     # day ... (it may cost a bit of string space but that is cheap nowadays).
 
-    def doruntexmp(mpname,mergebe=nil,context=true)
+    def doruntexmp(mpname,mergebe=nil,context=true,purge=true)
         texfound = false
         mpname = File.suffixed(mpname,'mp')
         mpcopy = File.suffixed(mpname,'mp.copy')
@@ -1752,7 +1793,7 @@ class TEX
                 mp << "\n"
                 mp.close
             end
-            processmpx(mpname,true) if texfound
+            processmpx(mpname,true,true,purge) if texfound
             if getvariable('batchmode') then
                 options = ' --interaction=batch'
             elsif getvariable('nonstopmode') then
@@ -1779,7 +1820,7 @@ class TEX
 
     # todo: use internal mptotext function and/or turn all btex/etex into textexts
 
-    def processmpx(mpname,force=false,context=true)
+    def processmpx(mpname,force=false,context=true,purge=true)
         unless force then
             mpname = File.suffixed(mpname,'mp')
             if File.atleast?(mpname,10) && (data = File.silentread(mpname)) then
@@ -1828,12 +1869,18 @@ class TEX
                     command = "dvitomp #{mpdvi} #{mpmpx}"
                     report(command) if getvariable('verbose')
                     ok = ok && FileTest.file?(mpdvi) && system(command)
-                    [mptex,mpdvi,mplog].each do |mpfil|
-                        File.silentdelete(mpfil)
-                    end
+                    purge_mpx_files(mpname) if purge
                 end
             rescue
                 # error in processing mpx file
+            end
+        end
+    end
+
+    def purge_mpx_files(mpname)
+        unless getvariable('keep') then
+            ['tex', 'log', 'tui', 'tuo', 'top'].each do |suffix|
+                File.silentdelete(File.suffixed(mpname,'temp',suffix))
             end
         end
     end

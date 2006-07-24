@@ -11,6 +11,9 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
+%D When I need this module, I will reimplement it by using the new
+%D sometxt macro. Anyhow, it reflects the state of 2001.
+
 \unprotect
 
 % temp hack :
@@ -28,8 +31,8 @@
 \def\@@STPC{@@STPC} % charts
 \def\@@STPT{@@STPT} % tables
 
-\def\@@STEC{@@STEC} % cells 
-\def\@@STET{@@STET} % tables 
+\def\@@STEC{@@STEC} % cells
+\def\@@STET{@@STET} % tables
 \def\@@STEL{@@STEL} % lines
 
 \def\setupSTEPcharts{\dodoubleargument\getparameters[\@@STPC]}
@@ -41,7 +44,7 @@
 \setupSTEPcharts
   [\c!before=\blank,
    \c!after=\blank,
-  %\c!distance=.25em, % nvt 
+  %\c!distance=.25em, % nvt
    \c!hoffset=1em,
    \c!voffset=1ex,
    \c!method=1,
@@ -52,7 +55,7 @@
   [\c!before=\blank,
    \c!after=\blank,
    \c!distance=.25em,
-  %\c!hoffset=1em, % nvt 
+  %\c!hoffset=1em, % nvt
    \c!voffset=1ex,
    \c!method=1,
    \c!width=4em,
@@ -90,14 +93,14 @@
   {\freezedimenmacro\@@STPCoffset
    \startMPdrawing
      line_v_offset := \@@STPCoffset  ;
-     line_method   := \@@STPCmethod ; % only charts 
+     line_method   := \@@STPCmethod ; % only charts
    \stopMPdrawing}
 
 \def\initializeSTPT
-  {\freezedimenmacro\@@STPToffset  
+  {\freezedimenmacro\@@STPToffset
    \startMPdrawing
      line_h_offset := \@@STPToffset  ;
-     line_method   := \@@STPTmethod ; % only charts 
+     line_method   := \@@STPTmethod ; % only charts
    \stopMPdrawing}
 
 \def\initializeSTET
@@ -111,7 +114,7 @@
 \def\initializeSTEL
   {\freezedimenmacro\@@STELrulethickness}
 
-%D ... 
+%D ...
 
 \defineXMLdirective [stepchart] [charts] \setupSTEPcharts
 \defineXMLdirective [stepchart] [cells]  \setupSTEPcells
@@ -123,7 +126,7 @@
 \defineXMLdirective [steptable] [texts]  \setupSTEPtexts
 \defineXMLdirective [steptable] [lines]  \setupSTEPlines
 
-%D ... 
+%D ...
 
 \presetlocalframed[\@@STPF]
 
@@ -149,8 +152,8 @@
 %D \METAPOST. This method is the cleanest, but has the
 %D disadvantage that one cannot embed hyperlinks or document
 %D dependent definitions in the cells. The implementation
-%D roughly looks as follows: 
-%D 
+%D roughly looks as follows:
+%D
 %D \starttyping
 %D \def\startSTEPchart%
 %D   {\bgroup
@@ -194,15 +197,15 @@
 %D
 %D The second attempt was based on tabulations and used the
 %D build in position tracking mechanism, which uses two
-%D position nodes per cell. 
-%D 
+%D position nodes per cell.
+%D
 %D This method collects the content in token list registers
 %D and build a table from them. In the collecting pass, the
 %D graphics are build stepwise. We need to collect because the
 %D order of definitions is not the same as the order of
 %D typesetting. We show this alternative too because it
-%D demonstrates how to apply backgrounds to table cells. 
-%D 
+%D demonstrates how to apply backgrounds to table cells.
+%D
 %D \starttyping
 %D \newtoks\stepsonetop \newtoks\stepstwotop
 %D \newtoks\stepsonebot \newtoks\stepstwobot
@@ -254,7 +257,7 @@
 %D      {\getMPdrawing}
 %D    \resetMPdrawing
 %D    \increment(\cellcounter,\cellcounter)\decrement\cellcounter
-%D    \setbox2=\vbox 
+%D    \setbox2=\vbox
 %D      {\definetabulate[chart][|*{\cellcounter}{ck0|}] % k0 nills space
 %D       \startchart
 %D       \ifcase\somesteptwotop \the\stepstwotop \NC \NR \noalign{\kern2ex} \fi
@@ -352,30 +355,30 @@
 %D \def\textcellposition#1{\GSC[#1:text]}
 %D \def\stepidentifierposition#1{\GSC[#1:step]}
 %D \stoptyping
-%D 
-%D We abandoned this method after some testing and went for 
-%D a third one. It was this third method that evolved into the 
-%D current mechanism. 
-%D 
+%D
+%D We abandoned this method after some testing and went for
+%D a third one. It was this third method that evolved into the
+%D current mechanism.
+%D
 %D Since this method was not that efficient, a third one was
-%D implemented, which used one position per cell. So, 
+%D implemented, which used one position per cell. So,
 %D
 %D \blank {\bf Here starts the real implementation!} \blank
 %D
 %D Because we want to build one graphic only we need to store
 %D the graphic directives. We also need to collect the cells,
-%D which are not defined in the order they show up. This 
-%D solution uses multiple passes over the definitions. First 
-%D the cells and texts are processed and the associated 
-%D graphics are defined in the \METAPOST\ file. Next the 
-%D lines are flushed. We need to do that in a second pass, 
-%D because in order to determine the nature of the line, 
+%D which are not defined in the order they show up. This
+%D solution uses multiple passes over the definitions. First
+%D the cells and texts are processed and the associated
+%D graphics are defined in the \METAPOST\ file. Next the
+%D lines are flushed. We need to do that in a second pass,
+%D because in order to determine the nature of the line,
 %D \METAPOST\ needs to know if the start and end cells exist.
-%D This need comes from the fact that we store the shapes 
-%D and lines kind of directly with their associated colors and 
+%D This need comes from the fact that we store the shapes
+%D and lines kind of directly with their associated colors and
 %D types, so that we can change the settings in between. So,
-%D changing for instance the line color, can take place 
-%D locally. 
+%D changing for instance the line color, can take place
+%D locally.
 
 \newbox\stepboxone \newbox\stepboxtwo
 \newbox\textboxone \newbox\textboxtwo
@@ -395,11 +398,11 @@
   {\dosingleempty\dostartSTEPchart}
 
 \long\def\dostartSTEPchart[#1]#2\stopSTEPchart
-  {\ifinsidefloat 
-   \else 
-     \whitespace 
-     \@@STPCbefore 
-     \startbaselinecorrection 
+  {\ifinsidefloat
+   \else
+     \whitespace
+     \@@STPCbefore
+     \startbaselinecorrection
      \setlocalhsize
      \noindent
    \fi
@@ -457,7 +460,7 @@
    \setbox2\vbox
      {\offinterlineskip
       \scratchdimen\@@STPCheight
-      \advance\scratchdimen\@@STPCoffset 
+      \advance\scratchdimen\@@STPCoffset
       \advance\scratchdimen\@@STPCoffset
       \ifcase\sometextboxone \box\textboxone \vskip\scratchdimen  \fi
       \ifcase\somestepboxone \box\stepboxone \vskip\@@STPCvoffset \fi
@@ -573,7 +576,7 @@
 
 \def\dodoSTEPcharttextsA#1#2#3#4% #1=number #2=setup
   {\dodoSTEPcharttextsAB{#1}{#2}{#3}{#4}\dodoSTEPcharttextsA
-   \ifnum\textcounter>\cellcounter\relax 
+   \ifnum\textcounter>\cellcounter\relax
      \doglobal\decrement\textcounter\relax
    \else
      \setbox0\hbox{\doifsomething{#3}{\@@steptext{#3}}}%
@@ -585,7 +588,7 @@
        \startMPdrawing
          texts[t][#1][\textcounter] := nullpicture ;
        \stopMPdrawing
-     \else   
+     \else
        \global\chardef\sometextboxone\zerocount
        \edef\stepidentifier{\stepchartprefix#1-\textcounter-t-t}%
        \setbox0\hbox to \@@STPChoffset
@@ -627,7 +630,7 @@
 
 \def\dodoSTEPcharttextsB#1#2#3#4% #1=number #2=setup
   {\dodoSTEPcharttextsAB{#1}{#2}{#3}{#4}\dodoSTEPcharttextsB
-   \ifnum\textcounter>\cellcounter\relax 
+   \ifnum\textcounter>\cellcounter\relax
      \doglobal\decrement\textcounter\relax
    \else
      \bgroup
@@ -653,36 +656,36 @@
 
 \def\MPcharttoplinesgraphic#1#2%
   {image(drawline(
-     \@@STELalternative, get_step_chart_top_line(#1,#2),  
+     \@@STELalternative, get_step_chart_top_line(#1,#2),
      \@@STELrulethickness, \MPcolor{\@@STELcolor} ) )}
 
 \def\MPchartbotlinesgraphic#1#2%
-  {image(drawline( 
-     \@@STELalternative, get_step_chart_bot_line(#1,#2), 
+  {image(drawline(
+     \@@STELalternative, get_step_chart_bot_line(#1,#2),
      \@@STELrulethickness, \MPcolor{\@@STELcolor} ) )}
 
-%D \XML\ coupling. 
+%D \XML\ coupling.
 
-\defineXMLpickup[stepchart][@@STPC] 
+\defineXMLpickup[stepchart][@@STPC]
   {\bgroup
    \defineXMLpush[top]%
    \defineXMLpush[bot]%
-   \defineXMLenvironment[lines][@@STEL] 
-     {\expanded{\startlines[\theXMLarguments{@@STEL}]}} 
+   \defineXMLenvironment[lines][@@STEL]
+     {\expanded{\startlines[\theXMLarguments{@@STEL}]}}
      {\stoplines}%
-   \defineXMLenvironment[cells][@@STEC] 
+   \defineXMLenvironment[cells][@@STEC]
      {\XMLerase{top}\XMLerase{bot}}
      {\expanded{\cells[\theXMLarguments{@@STEC}]{\XMLpop{top}}{\XMLpop{bot}}}}%
-   \defineXMLenvironment[texts][@@STET] 
+   \defineXMLenvironment[texts][@@STET]
      {\XMLerase{top}\XMLerase{bot}}
      {\expanded{\texts[\theXMLarguments{@@STET}]{\XMLpop{top}}{\XMLpop{bot}}}}%
-   \defineXMLenvironmentpush[cell][@@STEC] 
+   \defineXMLenvironmentpush[cell][@@STEC]
      {\XMLerase{cell}}
      {\expanded{\cell [\theXMLarguments{@@STEC}]{\XMLpop{cell}}}}%
-   \defineXMLenvironmentpush [text] [@@STET] 
+   \defineXMLenvironmentpush [text] [@@STET]
      {\XMLerase{text}}
      {\expanded{\text [\theXMLarguments{@@STET}]{\XMLpop{text}}}}%
-   \expanded{\startSTEPchart[\theXMLarguments{@@STPC}]}} 
+   \expanded{\startSTEPchart[\theXMLarguments{@@STPC}]}}
   {\stopSTEPchart
    \egroup}
 
@@ -702,11 +705,11 @@
   {\dodoubleempty\dostartSTEPaligntable[1]}
 
 \def\dostartSTEPaligntable[#1][#2]#3\stopSTEPaligntable % flag settings data
-  {\ifinsidefloat 
-   \else 
-     \whitespace    
-     \@@STPTbefore 
-     \startbaselinecorrection 
+  {\ifinsidefloat
+   \else
+     \whitespace
+     \@@STPTbefore
+     \startbaselinecorrection
      \setlocalhsize
      \noindent
    \fi
@@ -723,7 +726,7 @@
    \initializeSTPT
    \def\startlines{\bgroup\setupSTEPlines}%
    \def\stoplines {\egroup}%
-   \def\prep##1{\ignorespaces##1\unskip\enspace\ignorespaces}% 
+   \def\prep##1{\ignorespaces##1\unskip\enspace\ignorespaces}%
    \def\cell   {\dosingleempty\docell}%
    \def\cells  {\dosingleempty\docells}%
    \def\text   {\dosingleempty\dotext}%
@@ -761,18 +764,18 @@
       \stopMPdrawing
       \egroup}
    \doglobal\newcounter\cellcounter#3
-   % second graphic pass pass, drawing lines 
+   % second graphic pass pass, drawing lines
    \def\docells[##1]##2##3##4%
      {\doglobal\increment\cellcounter}
    \def\dotext[##1]##2%
      {\bgroup
       \initializeSTEL
       \startMPdrawing
-        lines[\cellcounter] := \MPtablelinesgraphic ; 
+        lines[\cellcounter] := \MPtablelinesgraphic ;
       \stopMPdrawing
-      \egroup} 
+      \egroup}
    \doglobal\newcounter\cellcounter#3
-   % finishing graphic touch 
+   % finishing graphic touch
    \startMPdrawing
      nofcells := \cellcounter ;
      end_step_table ;
@@ -783,7 +786,7 @@
      {\setbox0\null}
      {\setbox0\vbox{\MPstaticgraphictrue\getMPdrawing}}%
    \resetMPdrawing
-   % typesetting pass 
+   % typesetting pass
    \dimen6=\@@STPTdistance \dimen6=2\dimen6
    % cell width
    \dimen8=\dimen1
@@ -801,8 +804,8 @@
         {\hbox to \dimen####1{####2\@@stepfake{####3}\strut####4}}%
       \setbox8\hbox
         {\ifcase#1\else
-           \do1\hss{##2}\relax \hskip\@@STPTdistance 
-           \do3\hss{##3}\hss   \hskip\@@STPTdistance 
+           \do1\hss{##2}\relax \hskip\@@STPTdistance
+           \do3\hss{##3}\hss   \hskip\@@STPTdistance
          \fi
          \do5\relax{##4}\hss}%
      \hpos{\steptableprefix\cellcounter-c}{\@@stepcell{\box8}}
@@ -815,11 +818,11 @@
       \advance\hsize-\dimen8
       \advance\hsize-\dimen6 % twice the offset
       \setbox0\hbox{\@@steptext{##2}}%
-% to do 
+% to do
 %     \ifdim\wd0>\hsize
 %       \setbox0=\vbox{\@@steptext{##2}}%
 %     \fi
-% align 
+% align
       \hpos{\steptableprefix\cellcounter-t}{\box0}%
       \endgraf
       \egroup
@@ -839,47 +842,47 @@
   \ifinsidefloat \else \stopbaselinecorrection \@@STPTafter \fi}
 
 \def\MPtablelinesgraphic
-  {image ( drawline ( 
-     \@@STELalternative, get_step_table_line(\cellcounter), 
+  {image ( drawline (
+     \@@STELalternative, get_step_table_line(\cellcounter),
      \@@STELrulethickness, \MPcolor{\@@STELcolor} ) )}
 
 \defineXMLpickup[steptable][@@STPT]
   {\bgroup
-   \defineXMLenvironment[lines][@@STEL] 
-     {\expanded{\startlines[\theXMLarguments{@@STEL}]}} 
+   \defineXMLenvironment[lines][@@STEL]
+     {\expanded{\startlines[\theXMLarguments{@@STEL}]}}
      {\stoplines}%
-   \defineXMLargument[cell][@@STEC]   
-     {\expanded{\cell[\theXMLarguments{@@STEC}]}}% 
+   \defineXMLargument[cell][@@STEC]
+     {\expanded{\cell[\theXMLarguments{@@STEC}]}}%
    \defineXMLargument[text][@@STET]
-     {\expanded{\text[\theXMLarguments{@@STET}]}}% 
+     {\expanded{\text[\theXMLarguments{@@STET}]}}%
    \defineXMLargument[prep]
      {\prep}%
-   \expanded{\startSTEPtable[\theXMLarguments{@@STPT}]}}  
+   \expanded{\startSTEPtable[\theXMLarguments{@@STPT}]}}
   {\stopSTEPtable
    \egroup}
 
 \defineXMLpickup[stepaligntable][@@STPT]
   {\bgroup
-    \defineXMLenvironment[lines][@@STEL] 
-      {\expanded{\setupSTEPlines[\theXMLarguments{@@STEL}]}} 
+    \defineXMLenvironment[lines][@@STEL]
+      {\expanded{\setupSTEPlines[\theXMLarguments{@@STEL}]}}
       {}%
    \defineXMLpush[c1]\defineXMLpush[c2]\defineXMLpush[c3]%
    \defineXMLenvironment[cells][@@STEC]
      {\XMLerase{c1}\XMLerase{c1}\XMLerase{c3}}
      {\expanded{\cells[\theXMLarguments{@@STEC}]{\XMLpop{c1}}{\XMLpop{c2}}{\XMLpop{c3}}}}%
    \defineXMLargument[text][@@STET]
-     {\expanded{\text[\theXMLarguments{@@STET}]}}% 
+     {\expanded{\text[\theXMLarguments{@@STET}]}}%
    \defineXMLargument[prep]
      {\prep}%
-   \expanded{\startSTEPaligntable[\theXMLarguments{@@STPT}]}}  
+   \expanded{\startSTEPaligntable[\theXMLarguments{@@STPT}]}}
   {\stopSTEPaligntable
    \egroup}
 
 \protect \endinput
 
-% A simple paragraph-flow test: 
+% A simple paragraph-flow test:
 
-\starttext 
+\starttext
 
 \startbuffer
 \startSTEPchart
@@ -892,10 +895,10 @@
 \stopSTEPchart
 \stopbuffer
 
-\getbuffer 
+\getbuffer
 
 \startnarrower \getbuffer \stopnarrower
 
 \placefigure[left]{}{} \getbuffer
 
-\stoptext 
+\stoptext

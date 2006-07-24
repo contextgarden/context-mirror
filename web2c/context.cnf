@@ -43,40 +43,40 @@ WEB2C         = $TEXMF/web2c
 
 OSFONTDIR =
 
-TEXPSHEADERS  = .;$TEXMF/{fonts/{enc,map,type1,truetype},dvips,pdftex,tex}//;$TEXMF/{etex,tex,pdftex,dvips,fonts/type1}//
+TEXPSHEADERS  = .;$TEXMF/{fonts/{enc,map,type1,truetype},dvips,pdftex,tex}//;$TEXMF/{etex,tex,pdftex,dvips,fonts/type1}//;./fonts//
 
-TEXFONTMAPS.dvipdfm  = .;$TEXMF/fonts/map/{dvipdfm,dvips,}//
-TEXFONTMAPS.dvipdfmx = .;$TEXMF/fonts/map/{dvipdfm,dvips,}//
-TEXFONTMAPS.pdftex   = .;$TEXMF/fonts/map/{pdftex,dvips,}//
-TEXFONTMAPS.pdfetex  = .;$TEXMF/fonts/map/{pdftex,dvips,}//
-TEXFONTMAPS.xetex    = .;$TEXMF/fonts/map/{xetex,pdftex,dvips,}//
-TEXFONTMAPS.dvips    = .;$TEXMF/fonts/map/{dvips,pdftex,}//
+TEXFONTMAPS.dvipdfm  = .;$TEXMF/fonts/map/{dvipdfm,dvips,}//;./fonts//
+TEXFONTMAPS.dvipdfmx = .;$TEXMF/fonts/map/{dvipdfm,dvips,}//;./fonts//
+TEXFONTMAPS.pdftex   = .;$TEXMF/fonts/map/{pdftex,dvips,}//;./fonts//
+TEXFONTMAPS.pdfetex  = .;$TEXMF/fonts/map/{pdftex,dvips,}//;./fonts//
+TEXFONTMAPS.xetex    = .;$TEXMF/fonts/map/{xetex,pdftex,dvips,}//;./fonts//
+TEXFONTMAPS.dvips    = .;$TEXMF/fonts/map/{dvips,pdftex,}//;./fonts//
 
 # TEXFONTMAPS = .;$TEXMF/fonts/map/{$backend,pdftex,dvips,}//;$TEXMF/{$progname,pdftex,dvips}/{config,}//
-TEXFONTMAPS   = .;$TEXMF/fonts/map/{$progname,pdftex,dvips,}//;$TEXMF/{$progname,pdftex,dvips}/{config,}//
+TEXFONTMAPS   = .;$TEXMF/fonts/map/{$progname,pdftex,dvips,}//;$TEXMF/{$progname,pdftex,dvips}/{config,}//;./fonts//
 
-VFFONTS       = .;$TEXMF/fonts/vf//
-TFMFONTS      = .;{$TEXMF/fonts,$VARTEXFONTS}/tfm//
-T1FONTS       = .;$TEXMF/fonts/{type1,pfb}//;$TEXMF/fonts/misc/hbf//;$OSFONTDIR
-AFMFONTS      = .;$TEXMF/fonts/afm//;$OSFONTDIR
-LIGFONTS      = .;$TEXMF/fonts/lig//
-TTFONTS       = .;$TEXMF/fonts/{truetype,ttf}//;$OSFONTDIR
-TTF2TFMINPUTS = .;$TEXMF/ttf2pk//
-T42FONTS      = .;$TEXMF/fonts/type42//
-MISCFONTS     = .;$TEXMF/fonts/misc//
-% ENCFONTS    = .;$TEXMF/fonts/enc//
-ENCFONTS      = .;$TEXMF/{fonts/enc,dvips,pdftex,dvipdfm}//
-CMAPFONTS     = .;$TEXMF/fonts/cmap//
-SFDFONTS      = .;$TEXMF/fonts/sfd//
-OPENTYPEFONTS = .;$TEXMF/fonts/opentype//;$OSFONTDIR
+VFFONTS       = .;$TEXMF/fonts/vf//;./fonts//
+TFMFONTS      = .;{$TEXMF/fonts,$VARTEXFONTS}/tfm//;./fonts//
+T1FONTS       = .;$TEXMF/fonts/{type1,pfb}//;$TEXMF/fonts/misc/hbf//;$OSFONTDIR;./fonts//
+AFMFONTS      = .;$TEXMF/fonts/afm//;$OSFONTDIR;./fonts//
+LIGFONTS      = .;$TEXMF/fonts/lig//;./fonts//
+TTFONTS       = .;$TEXMF/fonts/{truetype,ttf}//;$OSFONTDIR;./fonts//
+TTF2TFMINPUTS = .;$TEXMF/ttf2pk//;./fonts//
+T42FONTS      = .;$TEXMF/fonts/type42//;./fonts//
+MISCFONTS     = .;$TEXMF/fonts/misc//;./fonts//
+% ENCFONTS    = .;$TEXMF/fonts/enc//;./fonts//
+ENCFONTS      = .;$TEXMF/{fonts/enc,dvips,pdftex,dvipdfm}//;./fonts//
+CMAPFONTS     = .;$TEXMF/fonts/cmap//;./fonts//
+SFDFONTS      = .;$TEXMF/fonts/sfd//;./fonts//
+OPENTYPEFONTS = .;$TEXMF/fonts/opentype//;$OSFONTDIR;./fonts//
 
-OFMFONTS      = .;{$TEXMF/fonts,$VARTEXFONTS}/{ofm,tfm}//;$TFMFONTS
-OPLFONTS      = .;{$TEXMF/fonts,$VARTEXFONTS}/opl//
-OVFFONTS      = .;{$TEXMF/fonts,$VARTEXFONTS}/ovf//
-OVPFONTS      = .;{$TEXMF/fonts,$VARTEXFONTS}/ovp//
+OFMFONTS      = .;{$TEXMF/fonts,$VARTEXFONTS}/{ofm,tfm}//;$TFMFONTS;./fonts//
+OPLFONTS      = .;{$TEXMF/fonts,$VARTEXFONTS}/opl//;./fonts//
+OVFFONTS      = .;{$TEXMF/fonts,$VARTEXFONTS}/ovf//;./fonts//
+OVPFONTS      = .;{$TEXMF/fonts,$VARTEXFONTS}/ovp//;./fonts//
 OTPINPUTS     = .;$TEXMF/omega/otp//
 OCPINPUTS     = .;$TEXMF/omega/ocp//
-OTFFONTS      = .;$TEXMF/fonts/otf/{xetex,}//
+OTFFONTS      = .;$TEXMF/fonts/otf/{xetex,}//;./fonts//
 
 % configurations
 

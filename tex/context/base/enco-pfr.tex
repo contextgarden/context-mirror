@@ -153,15 +153,28 @@
 
 \appendtoksonce \includepdffontresource \to \everyfont
 
+% \def\includepdffontresource
+%   {\ifincludepdffontresources
+%      \ifx\pdffontattr\undefined
+%        % we're not using (a recent version of) pdftex
+%      \else\ifcase\pdfoutput
+%        % we're not in pdf mode
+%      \else
+%        \doincludepdffontresource
+%      \fi\fi
+%    \fi}
+
 \def\includepdffontresource
   {\ifincludepdffontresources
-     \ifx\pdffontattr\undefined
-       % we're not using (a recent version of) pdftex
-     \else\ifcase\pdfoutput
-       % we're not in pdf mode
-     \else
-       \doincludepdffontresource
-     \fi\fi
+     \expandafter\ifx\the\font\nullfont \else
+       \ifx\pdffontattr\undefined
+         % we're not using (a recent version of) pdftex
+       \else\ifcase\pdfoutput
+         % we're not in pdf mode
+       \else
+         \doincludepdffontresource
+       \fi\fi
+     \fi
    \fi}
 
 \def\dododoincludepdffontresource#1% encoding

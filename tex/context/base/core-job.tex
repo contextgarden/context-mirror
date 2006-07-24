@@ -456,7 +456,7 @@
         \currentcomponent,\currentenvironment}
        {\loadedlocalenvironments}
      {\letvalue{\e!stop\v!localenvironment}\relax}
-     {\grabuntil{\e!stop\v!localenvironment}\relax}}
+     {\grabuntil{\e!stop\v!localenvironment}\gobbleoneargument}} % TH: fixed, was \relax
 
 \setvalue{\v!localenvironment}#1 {\doexecutefileonce{#1}}
 

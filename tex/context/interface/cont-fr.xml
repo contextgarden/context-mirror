@@ -4015,12 +4015,11 @@
   </cd:sequence>
 </cd:command>
 
-<cd:command name="setupinterlinespace">
+<cd:command name="setupinterlinespace" variant="1">
   <cd:sequence>
     <cd:string value="regleespacementinterligne"/>
   </cd:sequence>
   <cd:arguments>
-    <cd:choice>
     <cd:keywords optional="yes">
       <cd:constant type="raz"/>
       <cd:constant type="petit" default="yes"/>
@@ -4030,6 +4029,14 @@
       <cd:constant type="actif"/>
       <cd:constant type="desactive"/>
     </cd:keywords>
+  </cd:arguments>
+</cd:command>
+
+<cd:command name="setupinterlinespace" variant="2">
+  <cd:sequence>
+    <cd:string value="regleespacementinterligne"/>
+  </cd:sequence>
+  <cd:arguments>
     <cd:assignments list="yes">
       <cd:parameter name="hauteur">
         <cd:constant type="cd:number"/>
@@ -4047,7 +4054,6 @@
         <cd:constant type="cd:number"/>
       </cd:parameter>
     </cd:assignments>
-    </cd:choice>
   </cd:arguments>
 </cd:command>
 

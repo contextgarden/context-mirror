@@ -325,7 +325,9 @@
 \def\env        {\getvariable       \s!environment}
 \def\envvar     {\getvariabledefault\s!environment}
 
-\bgroup
+\bgroup % some day this will go away
+
+% actually we should handle all discretionaries here
 
 \gdef\cleanedupcolon{:} \catcode`:=\@@active
 

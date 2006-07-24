@@ -3,7 +3,7 @@ eval '(exit $?0)' && eval 'exec perl -w -S $0 ${1+"$@"}' && eval 'exec perl -w -
 
 #D \module
 #D   [       file=texshow.pl,
-#D        version=2005.01.06,
+#D        version=2006.07.19,
 #D          title=TeXShow,
 #D       subtitle=showing \CONTEXT\ commands,
 #D         author=Taco Hoekwater,
@@ -23,6 +23,11 @@ eval '(exit $?0)' && eval 'exec perl -w -S $0 ${1+"$@"}' && eval 'exec perl -w -
 #D one to be used.
 #D
 #D Hans Hagen - Januari 2005
+#D
+#D ChangeLog:
+#D \startitemize
+#D \item Add keyboard bindings for quitting the app: Ctrl-q,Ctrl-x,Alt-F4 (2006/07/19)
+#D \stopitemize
 
 use strict;
 use Getopt::Long ;
@@ -63,7 +68,7 @@ my %crosslinks;
 
 print "\n";
 
-show('TeXShow-XML 0.2 beta','Taco Hoekwater 2004',"/");
+show('TeXShow-XML 0.21 beta','Taco Hoekwater 2006',"/");
 
 print "\n";
 
@@ -220,6 +225,11 @@ sub initialize_display  {
   $mainwindow -> bind ( "<BackSpace>", sub { delete_request() } ) ;
   $mainwindow -> bind ( "<Prior>", sub { prev_command() } ) ;
   $mainwindow -> bind ( "<Next>", sub { next_command() } ) ;
+  $mainwindow -> bind ( "<Control-x>", sub { exit(0) } ) ;
+  $mainwindow -> bind ( "<Control-X>", sub { exit(0) } ) ;
+  $mainwindow -> bind ( "<Control-q>", sub { exit(0) } ) ;
+  $mainwindow -> bind ( "<Control-Q>", sub { exit(0) } ) ;
+  $mainwindow -> bind ( "<Alt-F4>",    sub { exit(0) } ) ;
 }
 
 sub show {

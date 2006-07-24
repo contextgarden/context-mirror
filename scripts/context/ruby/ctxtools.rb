@@ -476,6 +476,9 @@ class Commands
                 end
             end
         end
+        $dummyfiles.each do |file|
+            (File.delete(file) if (FileTest.size?(file) rescue 10) < 10) rescue false
+        end
         $texnonesuffixes.each do |suffix|
             files.each do |file|
                 if file =~ /(.*)\.#{suffix}$/i then
@@ -539,6 +542,9 @@ class Commands
     ]
     $texnonesuffixes = [
         "tuo", "tub", "top"
+    ]
+    $dummyfiles = [
+        "mpgraph"
     ]
 
     def removecontextfile (filename)
