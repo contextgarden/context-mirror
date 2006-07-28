@@ -2222,7 +2222,7 @@ def make(filename,windows=false,linux=false,remove=false)
             elsif linux && f = open(basename,'w') then
                 f.binmode
                 f.write("#!/bin/sh\012")
-                f.write("#{program} #{callname} $@\012")
+                f.write("#{program} #{callname} \"$@\"\012")
                 f.close
                 report("unix stub '#{basename}' made (calls #{callname})")
             end

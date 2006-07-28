@@ -1,2 +1,2 @@
 #!/bin/sh
-texmfstart exatools.rb $@
+texmfstart exatools.rb "$@"

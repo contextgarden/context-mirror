@@ -285,6 +285,7 @@ class Commands
                     f.close
                     job.setvariable('interface','english')
                     job.setvariable('simplerun',true)
+                    job.setvariable('arrange',true)
                     # job.setvariable('nooptionfile',true)
                     job.setvariable('files',[job.tempfilename])
                     job.processtex
@@ -376,7 +377,7 @@ class Commands
             if files.length > 0 then
                 if f = File.open(job.tempfilename('tex'),'w') then
                     scale = @commandline.checkedoption('scale')
-                    scale = (scale * 1000).to_i if scale < 10
+                    scale = (scale * 1000).to_i if scale.to_i < 10
                     paperoffset = @commandline.checkedoption('paperoffset', '0cm')
                     f << "\\starttext\n"
                     files.each do |filename|
@@ -399,7 +400,7 @@ class Commands
                             f <<  "\\setupexternalfigures\n"
                             f <<  "  [directory=]\n"
                             f <<  "\\copypages\n"
-                            f <<  "  [#[filename}]\n"
+                            f <<  "  [#{filename}]\n"
                             f <<  "  [scale=#{scale},\n"
                             f <<  "   marking=on,\n" if @commandline.option('markings')
                             f <<  "   size=trimbox,\n" if trim
@@ -601,12 +602,12 @@ class Commands
 
 end
 
-# so far for compatibility
+# so far for compatibility, will move to tex
 
 @@extrastringvars = [
     'pages', 'background', 'backspace', 'topspace', 'boxtype', 'tempdir','bannerheight',
-    'printformat', 'paperformat', 'method', 'scale', 'selection',
-    'combination', 'paperoffset', 'textwidth', 'addempty', 'logfile',
+    'printformat', 'method', 'scale', 'selection',
+    'combination', 'textwidth', 'addempty', 'logfile',
     'startline', 'endline', 'startcolumn', 'endcolumn', 'scale'
 ]
 

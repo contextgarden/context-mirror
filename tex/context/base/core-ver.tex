@@ -185,8 +185,9 @@
    \doifnumberelse{\typingparameter\c!tab}
      {\def\obeytabs{\setfixedtabskips{\typingparameter\c!tab}}}%
      \donothing
-%    \def\verbatimfont{\typingparameter\c!style\normalnoligatures\font}%
-   \def\verbatimfont{\dosetfontattribute{\currenttypingclass\currenttyping}\c!style\normalnoligatures\font}%
+  %\def\verbatimfont{\typingparameter\c!style\normalnoligatures\font}%
+  % more generic, but beware of the \redoconvertfont (else no typing in titles and such)
+   \def\verbatimfont{\redoconvertfont\dosetfontattribute{\currenttypingclass\currenttyping}\c!style\normalnoligatures\font}%
    \setupverbatimcolor}
 
 \ifx\normalnoligatures\undefined \let\normalnoligatures\gobbleoneargument \fi

@@ -1,2 +1,2 @@
 #!/bin/sh
-texmfstart texexec.rb $@
+texmfstart texexec.rb "$@"

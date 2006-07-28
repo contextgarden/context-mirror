@@ -1,2 +1,2 @@
 #!/bin/sh
-texmfstart makempy.pl $@
+texmfstart makempy.pl "$@"

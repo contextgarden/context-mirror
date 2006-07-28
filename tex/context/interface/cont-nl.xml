@@ -6505,6 +6505,9 @@
         <cd:constant type="eerste"/>
         <cd:constant type="geen"/>
       </cd:parameter>
+      <cd:parameter name="dieptekstcommando">
+        <cd:constant type="cd:oneargument"/>
+      </cd:parameter>
     </cd:assignments>
   </cd:arguments>
 </cd:command>

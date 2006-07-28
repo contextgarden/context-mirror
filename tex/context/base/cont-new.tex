@@ -11,7 +11,7 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-\newcontextversion{2006.07.24 10:49}
+\newcontextversion{2006.07.28 23:56}
 
 %D This file is loaded at runtime, thereby providing an
 %D excellent place for hacks, patches, extensions and new
@@ -28,6 +28,47 @@
 % \def\labeledcountervalue#1{\labeltexts{#1}{\countervalue{#1}}}
 
 \writestatus{\m!systems}{beware: some patches loaded from cont-new.tex}
+
+% we need to overhaul the page modules anyway
+
+\def\settext
+  {\doquintupleempty\dosettext}
+
+\def\dosettext[#1][#2][#3][#4][#5]% header text middle text/text
+  {\iffifthargument
+     \setvalue{\??tk#1#2\executeifdefined{:\c!text:#3:}\c!middletext}%
+       {\dodoubletexts{\??tk#1}{#2}%
+          {\c!leftstyle \c!leftcolor \c!leftwidth }{#4}%
+          {\c!rightstyle\c!rightcolor\c!rightwidth}{#5}}%
+   \else\iffourthargument
+     \setvalue{\??tk#1#2\executeifdefined{:\c!text:#3:}\c!middletext}%
+       {\dodoubletexts{\??tk#1}{#2}%
+          {\c!leftstyle \c!leftcolor \c!leftwidth }{#4}%
+          {\c!rightstyle\c!rightcolor\c!rightwidth}{#4}}%
+   \else\ifthirdargument
+     \setvalue{\??tk#1#2\c!middletext}%
+       {\dodoubletexts{\??tk#1}{#2}%
+          {\c!leftstyle \c!leftcolor \c!leftwidth }{#3}%
+          {\c!rightstyle\c!rightcolor\c!rightwidth}{#3}}%
+   \fi\fi\fi}
+
+\def\resettext
+  {\dotripleempty\doresettext}
+
+\def\doresettext[#1][#2][#3]% header text middle
+  {\ifthirdargument
+     \letvalue{\??tk#1#2\executeifdefined{:\c!text:#3:}\c!middletext}\empty
+   \else\ifsecondargument
+     \letvalue{\??tk#1#2\c!lefttext  }\empty
+     \letvalue{\??tk#1#2\c!middletext}\empty
+     \letvalue{\??tk#1#2\c!righttext }\empty
+   \fi\fi}
+
+\setvalue{:\c!middle:\c!text:}{\c!middletext}
+\setvalue{:\c!left  :\c!text:}{\c!lefttext  }
+\setvalue{:\c!right :\c!text:}{\c!righttext }
+
+% \settext[header][text][middle][xxx][yyy]
 
 %D A nice example of a plugin:
 %D

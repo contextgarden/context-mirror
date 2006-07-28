@@ -6505,6 +6505,9 @@
         <cd:constant type="primul"/>
         <cd:constant type="niciunul"/>
       </cd:parameter>
+      <cd:parameter name="deeptextcommand">
+        <cd:constant type="cd:oneargument"/>
+      </cd:parameter>
     </cd:assignments>
   </cd:arguments>
 </cd:command>

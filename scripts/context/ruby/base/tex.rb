@@ -185,7 +185,7 @@ class TEX
         'modefile', 'result', 'suffix', 'response', 'path',
         'filters', 'usemodules', 'environments', 'separation', 'setuppath',
         'arguments', 'input', 'output', 'randomseed', 'modes', 'mode', 'filename',
-        'ctxfile', 'printformat', 'paperformat',
+        'ctxfile', 'printformat', 'paperformat', 'paperoffset',
         'timeout'
     ]
     @@standardvars = [
@@ -1289,7 +1289,7 @@ class TEX
               # begin getvariable('environments').split(',').uniq.each do |e| opt << "\\useenvironment[#{e}]\n" end ; rescue ; end
                 opt << "\\endinput\n"
                 opt.close
-            else
+           else
                 report("unable to write option file #{topname}")
             end
         rescue
@@ -1726,8 +1726,8 @@ class TEX
                         end
                     end
 
-                    Kpse.runscript('ctxtools',rawbase,'--purge')    if getvariable('purge')
-                    Kpse.runscript('ctxtools',rawbase,'--purgeall') if getvariable('purgeall')
+                    Kpse.runscript('ctxtools',rawbase,'--purge')       if getvariable('purge')
+                    Kpse.runscript('ctxtools',rawbase,'--purge --all') if getvariable('purgeall')
 
                 when 'latex' then
 

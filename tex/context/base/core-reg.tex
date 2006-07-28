@@ -380,12 +380,12 @@
     \fi\fi\fi
     \ifdone
       \begingroup
-%
-\doifelsevalue{\??id#2\c!prefix}\v!none % default v!both
-  {\chardef\pageprefixmode\zerocount}%
-  {\doifvalue{\??id#2\c!prefix}\v!first % only first in range (1.2-4)
-     {\ifnum#1=3 \chardef\pageprefixmode\zerocount \fi}}%
-%
+      %
+      \doifelsevalue{\??id#2\c!prefix}\v!none % default v!both
+        {\chardef\pageprefixmode\zerocount}%
+        {\doifvalue{\??id#2\c!prefix}\v!first % only first in range (1.2-4)
+           {\ifnum#1=3 \chardef\pageprefixmode\zerocount \fi}}%
+      %
       \doifelsevalue{\??id#2\c!interaction}\v!pagenumber
         {\bgroup
          \setbox0\hbox
@@ -393,7 +393,7 @@
          \gotonextinternal{\s!ind}{#4}{#6}{\box0}%{\copy0}%
          \egroup}
         {\hbox{\doregisterpage{#2}[#5]\ifnum#1=2\/\fi}}%
-\endgroup
+      \endgroup
       \ignorespaces
       \global\chardef\lastregisterpagestatus#1\relax
     \fi
@@ -479,6 +479,26 @@
       \global\let\c!entryletter\relax
       \doregistercharacter[#1]{#2}}}
 
+% \def\HowUgly    #1{\doHowUgly#1\relax}
+% \def\doHowUgly#1#2\relax{\iffirstregisterentry{\bf#1}#2\fi#1#2} # handles utf too
+%
+% \setupregister[index][indicator=no,deeptextcommand=\HowUgly]
+%
+% \starttext
+%     \chapter{First Chapter}
+%         Some text...\index{word}
+%         \section {First Section}
+%             Some text...\index{word}
+%             Some text...\index{another entry}
+%             Some text...\index{ansi}
+%             Some text...\index{another entry}
+%     \page[yes]
+%     \completeindex
+% \stoptext
+
+\def\dohandlepageregisterentry#1#2%
+  {\dohandleregisterentry{\executeifdefined{\??id#1\c!deeptextcommand}\firstofoneargument{#2}}}
+
 \def\dosetpageregisterentrya#1#2%
   {\edef\currententrylevel{1}%
    \global\let\c!entryb\relax
@@ -487,7 +507,7 @@
      {\iffirstregisterentry\else\endgraf\fi % new
       \global\firstregisterpagetrue
       \hangindent1em\noindent\c!entryreference
-      \dohandleregisterentry{#2}%
+      \dohandlepageregisterentry{#1}{#2}%
       \global\firstregisterentryfalse
       \global\firstsubentrytrue
       \global\firstsubsubentrytrue}}
@@ -501,7 +521,7 @@
       \global\let\c!entrya\relax
       \iffirstsubentry\nobreak\fi
       \hangindent2em\noindent\c!entryreference\hskip1em\relax
-      \dohandleregisterentry{#2}%
+      \dohandlepageregisterentry{#1}{#2}%
       \global\firstregisterentryfalse
       \global\firstsubentryfalse
       \global\firstsubsubentrytrue}}
@@ -515,7 +535,7 @@
       \global\let\c!entryb\relax
       \iffirstsubsubentry\nobreak\fi
       \hangindent3em\noindent\c!entryreference\hskip2em\relax
-      \dohandleregisterentry{#2}%
+      \dohandlepageregisterentry{#1}{#2}%
       \global\firstregisterentryfalse
       \global\firstsubsubentryfalse}}
 
@@ -562,7 +582,7 @@
     \c!entryletter
     \iflocation
       \getalllistreferences{#1}{#2}%
-% \endgraf
+      % no \endgraf
       \hangindent1em\noindent\c!entryreference
       %
       %\thisissomeinternal{\s!lin}{\internallistreference}%
@@ -619,7 +639,7 @@
          \docommando\lastlistreference\v!next}%
       % tot hier
     \else
-% \endgraf
+      % no \endgraf
       \noindent\c!entryreference
       \limitedregisterentry{#1}{#2}%
     \fi
@@ -647,36 +667,36 @@
       \doglobal\increment\internallistreference}%
    \setvalue{#1\s!from}%
      {\getvalue{#1\s!page}}%
-\ifautoregisterhack
-   \setvalue{#1\s!page}##1##2##3##4%
-     {\doifreglevelelse[##3]
-        {\global\utilitydonetrue
-         \iffirstregisterpage
-           \@EA\xdef\csname\??id#1\??id\currentregisterentry\endcsname
-             {\internallistreference::##4}%
-         \else % catches errors in index
-           \ifcsname\??id#1\??id\currentregisterentry\endcsname
+   \ifautoregisterhack
+     \setvalue{#1\s!page}##1##2##3##4%
+       {\doifreglevelelse[##3]
+          {\global\utilitydonetrue
+           \iffirstregisterpage
              \@EA\xdef\csname\??id#1\??id\currentregisterentry\endcsname
-               {\csname\??id#1\??id\currentregisterentry\endcsname,##4}%
-           \fi
-         \fi}
-        {}}%
-\else
-   \setvalue{#1\s!page}##1##2##3##4%
-     {\doifreglevelelse[##3]
-        {\global\utilitydonetrue
-         \iffirstregisterpage
-           \global\firstregisterpagefalse
-           \@EA\xdef\csname\??id#1\??id\currentregisterentry\endcsname
-             {\internallistreference::##2-##4}%
-         \else % catches errors in index
-           \ifcsname\??id#1\??id\currentregisterentry\endcsname
+               {\internallistreference::##4}%
+           \else % catches errors in index
+             \ifcsname\??id#1\??id\currentregisterentry\endcsname
+               \@EA\xdef\csname\??id#1\??id\currentregisterentry\endcsname
+                 {\csname\??id#1\??id\currentregisterentry\endcsname,##4}%
+             \fi
+           \fi}
+          {}}%
+   \else
+     \setvalue{#1\s!page}##1##2##3##4%
+       {\doifreglevelelse[##3]
+          {\global\utilitydonetrue
+           \iffirstregisterpage
+             \global\firstregisterpagefalse
              \@EA\xdef\csname\??id#1\??id\currentregisterentry\endcsname
-               {\csname\??id#1\??id\currentregisterentry\endcsname,##2-##4}%
-           \fi
-         \fi}
-        {}}%
-\fi}
+               {\internallistreference::##2-##4}%
+           \else % catches errors in index
+             \ifcsname\??id#1\??id\currentregisterentry\endcsname
+               \@EA\xdef\csname\??id#1\??id\currentregisterentry\endcsname
+                 {\csname\??id#1\??id\currentregisterentry\endcsname,##2-##4}%
+             \fi
+           \fi}
+          {}}%
+   \fi}
 
 \def\docoupleregister[#1][#2]%
   {\iflocation
@@ -965,6 +985,7 @@
       \c!prefix=\v!both,
       \c!expansion=,
       \c!keyexpansion=,
+     %\c!deeptextcommand=, % undefined by default !
       \s!language=\currentmainlanguage]%
    \doglobal\appendtoksonce
      \doregisterregisterlanguage{#1}%

@@ -1,2 +1,2 @@
 #!/bin/sh
-texmfstart pstopdf.rb $@
+texmfstart pstopdf.rb "$@"

@@ -2314,31 +2314,28 @@ class Commands
         end
 
         def locatedlocaltree
-            return `kpsewhich --expand-var $TEXMFLOCAL`.chomp rescue nil
+            tree = `kpsewhich --expand-path $TEXMFLOCAL`.chomp rescue nil
+            unless tree && FileTest.directory?(tree) then
+                tree = `kpsewhich --expand-path $TEXMF`.chomp rescue nil
+            end
+            return tree
         end
 
         def extractarchive(archive)
-            if FileTest.file?(archive) then
-                begin
-                    system("unzip -uo #{archive}")
-                rescue
-                    report("fatal error, make sure that you have 'unzip' in your path")
-                    return false
-                else
-                    if System.unix? then
-                        begin
-                            system("chmod +x scripts/context/unix/stubs/*")
-                        rescue
-                            report("change x-permissions of 'scripts/context/unix/stubs/*' manually")
-                        end
-                    end
-                    return true
-                end
-            else
-                report("fatal error, '{archive}' has not been downloaded")
+            unless FileTest.file?(archive) then
+                 report("fatal error, '#{archive}' has not been downloaded")
+                 return false
+            end
+            unless system("unzip -uo #{archive}") then
+                report("fatal error, make sure that you have 'unzip' in your path")
                 return false
             end
-        end
+            stubs = "scripts/context/stubs/unix/*"
+            if System.unix? and not system("chmod +x #{stubs}") then
+                report("change x-permissions of '#{stubs}' manually")
+            end
+            return true
+         end
 
         def remakeformats
             return system("texmfstart texexec --make --all")
