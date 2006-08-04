@@ -1232,7 +1232,7 @@ class TEX
                         arrangement << "\\v!doublesided" unless getvariable('noduplex')
                         case getvariable('printformat')
                             when ''         then arrangement << "\\v!normal"
-                            when /.*up/oi   then arrangement << "\\v!rotated"
+                            when /.*up/oi   then arrangement << ["2UP","\\v!rotated"]
                             when /.*down/oi then arrangement << ["2DOWN","\\v!rotated"]
                             when /.*side/oi then arrangement << ["2SIDE","\\v!rotated"]
                         end

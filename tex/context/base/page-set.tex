@@ -2742,6 +2742,7 @@
         \c!depthcorrection=\v!off,
         \c!n=2,
         \c!nlines=0,
+        \c!indenting=,
         \c!indentnext=\v!yes,
         \c!default=HERE,
         \c!alternative=\v!a,
@@ -2847,7 +2848,7 @@
      % todo : \v!here -> here enzovoorts
      \OTRSETstoreincolumnslot\floatmethod\scratchbox
      % watch out: no \dochecknextindentation{tag}
-     \checknextindentation[\framedtextparameter{cs:#1}\c!indentnext]
+     \checknextindentation[\framedtextparameter{cs:#1}\c!indentnext]%
    \else
      % of course we needed a one-column fall back for tm; brrr, the box has now too
      % much height (try \ruledvbox); don't change this without testing techniek

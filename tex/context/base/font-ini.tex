@@ -2946,7 +2946,8 @@
         {\edef\fontstep{\bodyfontcsname\normalizedbodyfontsize\interfaced{#2}\endcsname}%
          \expanded{\dodododosetfont{#1}{\fontstep}}{#3}}
         {\doifelse{#2}\v!reset
-           {\let\fontsize\empty}
+           {\let\fontstyle\empty % new 31/7/2006
+            \let\fontsize \empty}
            {\doifdefinedelse{\@style@#2}
               {\edef\fontstyle{#2}}
               {\doreadfontdefinitionfile{#1}{#2}}}}}}

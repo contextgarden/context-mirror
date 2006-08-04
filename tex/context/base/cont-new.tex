@@ -11,7 +11,7 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-\newcontextversion{2006.07.28 23:56}
+\newcontextversion{2006.08.04 22:23}
 
 %D This file is loaded at runtime, thereby providing an
 %D excellent place for hacks, patches, extensions and new
@@ -139,8 +139,8 @@
 \let\rliheight\!!zeropoint
 
 \def\getRLIfiguredimensions#1%
-  {\let\rliwidth \!!zeropoint
-   \let\rliheight\!!zeropoint
+  {\global\let\rliwidth \!!zeropoint
+   \global\let\rliheight\!!zeropoint
    \doifelsenothing\@@efconversion
      {\doiffileelse\@@effilenametype
         {\doiffileelse{\@@effilenametype.rli}
@@ -156,8 +156,8 @@
          \startXMLmapping[rli]%
            \startXMLignore
            \processXMLfile{\@@effilenametype.rli}%
-           \edef\rliwidth {\XMLflush{rl:width}}%
-           \edef\rliheight{\XMLflush{rl:height}}%
+           \xdef\rliwidth {\XMLflush{rl:width}}%
+           \xdef\rliheight{\XMLflush{rl:height}}%
            \stopXMLignore
          \stopXMLmapping
          \stopnointerference}

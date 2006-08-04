@@ -30,7 +30,7 @@
                   s=TH2006,
                   n=1,
                   u=http://contextgarden.net/Bibliography]
-\author[]{Taco}[T.]{}{Hoekwater}
+\author{Taco}[T.]{}{Hoekwater}
 \title{\CONTEXT\ Publication Module, The user documententation}
 \pubyear{2006}
 \note{In case you didn't know: it's the document you are reading now}
@@ -60,7 +60,7 @@
 The bibliographic module (\type{t-bib.tex}) takes care of references
 to publications and the typesetting of publication lists, as well as
 providing an interface between \BIBTEX and \CONTEXT. This manual
-documents version 2006.06.16.
+documents version 2006.08.04.
 
 The bibliographic subsystem consists of the main module
 \type{t-bib.tex}; four \BIBTEX\ styles (\type{cont-xx.bst}); and a set
@@ -175,6 +175,13 @@ The first two options provide default widths for `autohang':
 \NC samplesize\NC The longest short label in the list (used for autohang)\NC\NR
 \stoptabulate
 
+A third option can be used to overrule the use of \type{\title} as
+heading for \type{\completepublications}
+
+\starttabulate[|l|p|]
+\NC title\NC The sectioning command.\NC\NR
+\stoptabulate
+
 The other extra options are needed to control micro||typesetting
 of things that are buried deep within macros. There is a separate
 command to handle the larger layout options
@@ -182,18 +189,32 @@ command to handle the larger layout options
 here are the only way to make changes in the formatting used for
 editors', authors', and article authors' names.
 \starttabulate[|l|p|]
-\NC editor    \NC command to typeset one editor  in the publication list.\NC \NR 
 \NC author    \NC command to typeset one author  in the publication list.\NC \NR 
 \NC artauthor \NC command to typeset one article author  in the publication list.\NC \NR 
+\NC editor    \NC command to typeset one editor  in the publication list.\NC \NR 
 \NC namesep   \NC the separation between consecutive names (either
                   editors, authors or artauthors).\NC \NR 
 \NC lastnamesep   \NC the separation before the last name in a list of names.\NC \NR 
-\NC firstnamesep \NC the separation following the fistname or inits within a name in the publication list.\NC \NR 
+\NC firstnamesep \NC the separation following the fistname or inits 
+                      within a name in the publication list.\NC \NR 
 \NC juniorsep     \NC likewise for `junior'.\NC \NR 
 \NC vonsep        \NC likewise for `von'.\NC \NR 
 \NC surnamesep     \NC likewise for surname.\NC \NR 
+\NC authoretallimit \NC Number of authors needed to trigger `et al.' handling.\NC \NR 
+\NC authoretaltext \NC Text to show at the end of an abbreviated list.\NC \NR 
+\NC authoretaldisplay \NC Number of authors to actually display in an abbreviated list.\NC \NR 
+\NC artauthoretallimit \NC Number of authors needed to trigger `et al.' handling.\NC \NR 
+\NC artauthoretaltext \NC Text to show at the end of an abbreviated list.\NC \NR 
+\NC artauthoretaldisplay \NC Number of authors to actually display in an abbreviated list.\NC \NR 
+\NC editoretallimit \NC Number of editors needed to trigger `et al.' handling.\NC \NR 
+\NC editoretaltext    \NC Text to show at the end of an abbreviated list.\NC \NR 
+\NC editoretaldisplay \NC Number of editors to actually display in an abbreviated list.\NC \NR 
+\NC authorcommand \NC A three-argument macro to typeset the list of authors.\NC\NR
+\NC artauthorcommand \NC A three-argument macro to typeset the list of authors.\NC\NR
+\NC editorcommand \NC A three-argument macro to typeset the list of authors.\NC \NR
 \stoptabulate
-The commands after `editor' e.g. are predefined
+
+The commands after `author' e.g. are predefined
 macros that control how a single name is typeset. The four supplied
 macros provide formatting that looks like this:
 
@@ -221,14 +242,37 @@ For example, here is the definition of \type{\normalauthor},
 \def\normalauthor#1#2#3#4#5%
   {\bibdoif{#1}{#1\bibalternative{firstnamesep}}%
    \bibdoif{#2}{#2\bibalternative{vonsep}}%
-   #3\bibalternative{surnamesep}%
-   \bibdoif{#5}{#5\unskip}}
+   #3%
+   \bibdoif{#5}{\bibalternative{surnamesep}#5\unskip}}
 \stoptyping
 but commands can be a lot simpler, like this:
 \starttyping
 \def\surnameonly#1#2#3#4#5{#3}
 \setuppublicationlist[editor=\surnameonly]
 \stoptyping
+
+The three-argument macro after `authorcommand' etc. can be used to
+overrule the typesetting of the list of authors (normally done by the
+internal macro \type{\dospecialbibinsert}). This is mostly a hook for
+duplicated author lists in the publication list, that can be handled
+like so:
+
+\starttyping
+\def\oldlist{}
+\def\AbbreviateAuthors#1#2#3%
+   {\xdef\newlist{#3}%
+    \ifx\oldlist\newlist   \hbox to 2em{\hss---\hss}%
+    \else                  \dospecialbibinsert{#1}{#2}{#3}\fi
+    \global\let\oldlist\newlist }
+
+\setuppublicationlist
+	[artauthorcommand=\AbbreviateAuthors]
+\stoptyping
+The first argument is a list type `author', `artauthor', or `editor',
+the second argument is the number of items that should be typeset,
+and the third argument is a macro containing the commalist of persons,
+in a form suitable for \tex{invertedauthor} and friends.
+
 
 The following options are initialized depending on the
 global settings for `numbering' and `autohang':
@@ -452,7 +496,7 @@ To typset the list of publications, use \type{\completepublications}
 or \type{\placepublications} at the location in your text where you
 want the publication list to appear. As is normal in \CONTEXT,  
 \type{\placepublications} gives you a raw list, and
-\type{\completepublications} a list with a heading. 
+\type{\completepublications} a list with a title. 
 
 
 The default for the publication list is to contain only the `locally'
@@ -516,9 +560,8 @@ the contents of the field.
 
 The three fields that contain names are extra special, because they
 have more than one argument. These are: \type{\artauthor},
-\type{\author} and \type{\editor}.  At the moment, these 
-commands require exactly 5 arguments (of which two look like
-optional arguments, but they are not)
+\type{\author} and \type{\editor}.  These commands require three
+arguments, and there can be two extra optional arguments as well.
 
 
 \starttabulate[|l|l|p|]
@@ -530,6 +573,12 @@ optional arguments, but they are not)
 \NC\tex{editor[\#1]\{\#2\}[\#3]\{\#4\}\{\#5\}}\NC\tfx EDITOR\NC The editor of e.g.
     an edited volume.\NC\NR
 \stoptabulate
+
+The argument lists have this form:
+
+\starttyping
+\author[junior]{firstnames}[inits]{von}{surname}
+\stoptyping
 
 \subsubsection{Simple fields}
 

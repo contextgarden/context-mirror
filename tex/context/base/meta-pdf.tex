@@ -3291,4 +3291,80 @@
 
 \fi
 
+%D Begin of soon obsolete code.
+
+%D \macros
+%D   {dogetPDFmediabox}
+%D
+%D The next macro can be used to find the mediabox of a \PDF\
+%D illustration.
+%D
+%D \starttyping
+%D \dogetPDFmediabox
+%D   {filename}
+%D   {new dimen}{new dimen}{new dimen}{new dimen}
+%D \stoptyping
+%D
+%D Beware of dimen clashes: this macro uses the 5~default
+%D scratch registers! When no file or mediabox is found, the
+%D dimensions are zeroed.
+
+\def\dogetPDFmediabox#1#2#3#4#5%
+  {\bgroup
+   \def\PDFxscale{1}%
+   \def\PDFyscale{1}%
+   \uncatcodespecials
+   \endlinechar\minusone
+   \def\checkPDFtypepage##1/Type /Page##2##3\done%
+     {\ifx##2\relax
+      \else\if##2s% accept /Page and /Pages
+        \let\doprocessPDFline\findPDFmediabox
+      \else
+        \let\doprocessPDFline\findPDFmediabox
+      \fi\fi}%
+   \def\findPDFtypepage
+     {\expandafter\checkPDFtypepage\fileline/Type /Page\relax\done}%
+   \def\checkPDFmediabox##1/MediaBox##2##3\done%
+     {\ifx##2\relax \else
+        \setPDFmediabox##2##3\done
+        \fileprocessedtrue
+      \fi}%
+   \def\findPDFmediabox
+     {\expandafter\checkPDFmediabox\fileline/MediaBox\relax\done}%
+   \let\doprocessPDFline\findPDFtypepage
+   \doprocessfile\scratchread{#1}\doprocessPDFline
+   \egroup
+   \ifx\PDFxoffset\undefined
+     #2\zeropoint
+     #3\zeropoint
+     #4\zeropoint
+     #5\zeropoint
+   \else
+     #2=\PDFxoffset\onebasepoint
+     #3=\PDFyoffset\onebasepoint
+     #4=\PDFwidth
+     #5=\PDFheight
+   \fi}
+
+\def\setPDFboundingbox#1#2#3#4#5#6%
+  {\dimen0=#1\dimen0=#5\dimen0
+   \ScaledPointsToBigPoints{\number\dimen0}\PDFxoffset
+   \dimen0=#3\dimen0=#5\dimen0
+   \xdef\PDFwidth{\the\dimen0}%
+   \dimen0=#2\dimen0=#6\dimen0
+   \ScaledPointsToBigPoints{\number\dimen0}\PDFyoffset
+   \dimen0=#4\dimen0=#6\dimen0
+   \xdef\PDFheight{\the\dimen0}%
+   \global\let\PDFxoffset\PDFxoffset
+   \global\let\PDFyoffset\PDFyoffset}
+
+\def\setPDFmediabox#1[#2 #3 #4 #5]#6\done
+  {\dimen2=#2bp\dimen2=-\dimen2 % \dimen2=-#2bp also works since tex handles --
+   \dimen4=#3bp\dimen4=-\dimen4 % \dimen4=-#3bp also works since tex handles --
+   \dimen6=#4bp\advance\dimen6 \dimen2
+   \dimen8=#5bp\advance\dimen8 \dimen4
+   \setPDFboundingbox{\dimen2}{\dimen4}{\dimen6}{\dimen8}\PDFxscale\PDFyscale}
+
+%D End of soon obsolete code.
+
 \protect \endinput

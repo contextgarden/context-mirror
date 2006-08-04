@@ -1,26 +1,81 @@
-<?xml version="1.0"?>
+<?xml version="1.0" standalone="yes"?>
 
-<!--
-    todo: framed and similar align keys now supports more keys
+<!-- versions:
 
-    <cd:common name='align'>
-        <cd:constant type="sospeso"/>
-        <cd:constant type="nohanging"/>
-        <cd:constant type="hz"/>
-        <cd:constant type="nohz"/>
-        <cd:constant type="spaziatura"/>
-        <cd:constant type="nospacing"/>
-        <cd:constant type="sillabato"/>
-        <cd:constant type="nonsillabato"/>
-        <cd:constant type="tollerante"/>
-        <cd:constant type="moltotollerante"/>
-        <cd:constant type="dilata"/>
-    </cd:common>
+    comment  : user interface definitions of ConTeXt
 
-    <cd:share name='align'/>
+    authors  : Hans Hagen, Taco Hoekwater, Patrick Gundlach
+
+    versions : 2004.11.17 : initial version
+               2006.08.02 : define + resolve
+
 -->
 
-<cd:interface xmlns:cd="http://www.pragma-ade.com/commands" name="context" language="it" version="2004.11.17">
+<cd:interface xmlns:cd="http://www.pragma-ade.com/commands" name="context" language="it" version="2006.08.02">
+
+<cd:define name="align">
+    <cd:constant type="interno"/>
+    <cd:constant type="esterno"/>
+    <cd:constant type="sinistra"/>
+    <cd:constant type="destra"/>
+    <cd:constant type="centro"/>
+    <cd:constant type="normale"/>
+    <cd:constant type="no"/>
+    <cd:constant type="si"/>
+</cd:define>
+
+<cd:define name="indenting">
+    <cd:constant type="mai"/>
+    <cd:constant type="nessuno"/>
+    <cd:constant type="non"/>
+    <cd:constant type="no"/>
+    <cd:constant type="si"/>
+    <cd:constant type="sempre"/>
+    <cd:constant type="primo"/>
+    <cd:constant type="successivo"/>
+    <cd:constant type="piccolo"/>
+    <cd:constant type="medio"/>
+    <cd:constant type="grande"/>
+    <cd:constant type="normale"/>
+    <cd:constant type="dispari"/>
+    <cd:constant type="pari"/>
+    <cd:constant type="cd:dimension"/>
+</cd:define>
+
+<cd:define name="indentnext">
+    <cd:constant type="si"/>
+    <cd:constant type="no"/>
+</cd:define>
+
+<cd:define name="style">
+    <cd:constant type="normale"/>
+    <cd:constant type="grassetto"/>
+    <cd:constant type="inclinato"/>
+    <cd:constant type="grassettoinclinato"/>
+    <cd:constant type="type"/>
+    <cd:constant type="cap"/>
+    <cd:constant type="small..."/>
+    <cd:constant type="cd:command"/>
+</cd:define>
+
+<cd:define name="language">
+      <cd:constant type="nl"/>
+      <cd:constant type="fr"/>
+      <cd:constant type="en"/>
+      <cd:constant type="uk"/>
+      <cd:constant type="de"/>
+      <cd:constant type="es"/>
+      <cd:constant type="cz"/>
+      <cd:constant type=".."/>
+</cd:define>
+
+<cd:define name="texts">
+      <cd:constant type="cd:text"/>
+      <cd:constant type="cd:section"/>
+      <cd:constant type="data"/>
+      <cd:constant type="cd:mark"/>
+      <cd:constant type="numeropagina"/>
+</cd:define>
 
 <cd:command name="installlanguage" file="lang-ini.tex">
   <cd:sequence>
@@ -82,14 +137,7 @@
   </cd:sequence>
   <cd:arguments>
     <cd:keywords>
-      <cd:constant type="nl" default="yes"/>
-      <cd:constant type="fr"/>
-      <cd:constant type="en"/>
-      <cd:constant type="uk"/>
-      <cd:constant type="de"/>
-      <cd:constant type="es"/>
-      <cd:constant type="cz"/>
-      <cd:constant type=".."/>
+      <cd:resolve name="language"/>
     </cd:keywords>
     <cd:assignments list="yes">
       <cd:inherit name="installalingua"/>
@@ -103,14 +151,7 @@
   </cd:sequence>
   <cd:arguments>
     <cd:keywords>
-      <cd:constant type="nl"/>
-      <cd:constant type="fr"/>
-      <cd:constant type="en"/>
-      <cd:constant type="uk"/>
-      <cd:constant type="de"/>
-      <cd:constant type="es"/>
-      <cd:constant type="cz"/>
-      <cd:constant type=".."/>
+      <cd:resolve name="language"/>
     </cd:keywords>
   </cd:arguments>
 </cd:command>
@@ -121,14 +162,7 @@
   </cd:sequence>
   <cd:arguments>
     <cd:keywords>
-      <cd:constant type="nl"/>
-      <cd:constant type="fr"/>
-      <cd:constant type="en"/>
-      <cd:constant type="uk"/>
-      <cd:constant type="de"/>
-      <cd:constant type="es"/>
-      <cd:constant type="cz"/>
-      <cd:constant type=".."/>
+      <cd:resolve name="language"/>
     </cd:keywords>
   </cd:arguments>
 </cd:command>
@@ -689,14 +723,7 @@
         <cd:constant type="nessuno"/>
       </cd:parameter>
       <cd:parameter name="stile">
-        <cd:constant type="normale"/>
-        <cd:constant type="grassetto"/>
-        <cd:constant type="inclinato"/>
-        <cd:constant type="grassettoinclinato"/>
-        <cd:constant type="type"/>
-        <cd:constant type="cap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="colore">
         <cd:constant type="cd:name"/>
@@ -840,18 +867,10 @@
         <cd:constant type="no"/>
       </cd:parameter>
       <cd:parameter name="rientrasuccessivo">
-        <cd:constant type="si"/>
-        <cd:constant type="no"/>
+        <cd:resolve name="indentnext"/>
       </cd:parameter>
       <cd:parameter name="stile">
-        <cd:constant type="normale"/>
-        <cd:constant type="grassetto"/>
-        <cd:constant type="inclinato"/>
-        <cd:constant type="grassettoinclinato"/>
-        <cd:constant type="type"/>
-        <cd:constant type="cap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="colore">
         <cd:constant type="cd:name"/>
@@ -946,14 +965,7 @@
         <cd:constant type="grande"/>
       </cd:parameter>
       <cd:parameter name="stile">
-        <cd:constant type="normale"/>
-        <cd:constant type="grassetto"/>
-        <cd:constant type="inclinato"/>
-        <cd:constant type="grassettoinclinato"/>
-        <cd:constant type="type"/>
-        <cd:constant type="cap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="distanza">
         <cd:constant type="cd:dimension"/>
@@ -980,14 +992,7 @@
         <cd:constant type="cd:number"/>
       </cd:parameter>
       <cd:parameter name="stiletesto">
-        <cd:constant type="normale"/>
-        <cd:constant type="grassetto"/>
-        <cd:constant type="inclinato"/>
-        <cd:constant type="grassettoinclinato"/>
-        <cd:constant type="type"/>
-        <cd:constant type="cap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="coloretesto">
         <cd:constant type="cd:name"/>
@@ -1489,14 +1494,7 @@
   </cd:sequence>
   <cd:arguments>
     <cd:keywords optional="yes">
-      <cd:constant type="nl" default="yes"/>
-      <cd:constant type="fr"/>
-      <cd:constant type="en"/>
-      <cd:constant type="uk"/>
-      <cd:constant type="de"/>
-      <cd:constant type="es"/>
-      <cd:constant type="cz"/>
-      <cd:constant type=".."/>
+      <cd:resolve name="language"/>
     </cd:keywords>
     <cd:assignments>
       <cd:parameter name="cd:name">
@@ -1512,14 +1510,7 @@
   </cd:sequence>
   <cd:arguments>
     <cd:keywords optional="yes">
-      <cd:constant type="nl" default="yes"/>
-      <cd:constant type="fr"/>
-      <cd:constant type="en"/>
-      <cd:constant type="uk"/>
-      <cd:constant type="de"/>
-      <cd:constant type="es"/>
-      <cd:constant type="cz"/>
-      <cd:constant type=".."/>
+      <cd:resolve name="language"/>
     </cd:keywords>
     <cd:assignments>
       <cd:parameter name="cd:name">
@@ -1647,14 +1638,7 @@
         <cd:constant type="locale"/>
       </cd:parameter>
       <cd:parameter name="allinea">
-        <cd:constant type="no"/>
-        <cd:constant type="sinistra"/>
-        <cd:constant type="destra"/>
-        <cd:constant type="centro"/>
-        <cd:constant type="normale"/>
-        <cd:constant type="alto"/>
-        <cd:constant type="basso"/>
-        <cd:constant type="pedap"/>
+        <cd:resolve name="align"/>
       </cd:parameter>
       <cd:parameter name="fondo">
         <cd:constant type="cd:command"/>
@@ -1745,7 +1729,7 @@
         <cd:constant type="cd:name"/>
       </cd:parameter>
       <cd:parameter name="foregroundstyle">
-        <cd:constant type="cd:name"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
     </cd:assignments>
   </cd:arguments>
@@ -1899,13 +1883,7 @@
         <cd:constant type="grande"/>
       </cd:parameter>
       <cd:parameter name="stile">
-        <cd:constant type="normale"/>
-        <cd:constant type="grassetto"/>
-        <cd:constant type="inclinato"/>
-        <cd:constant type="grassettoinclinato"/>
-        <cd:constant type="type"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="sinistra">
         <cd:constant type="cd:command"/>
@@ -1940,6 +1918,9 @@
         <cd:constant type="destra"/>
         <cd:constant type="centro"/>
         <cd:constant type="nessuno"/>
+      </cd:parameter>
+      <cd:parameter name="rientro">
+        <cd:resolve name="indenting"/>
       </cd:parameter>
       <cd:inherit name="impostaincorniciato"/>
     </cd:assignments>
@@ -2066,14 +2047,7 @@
         <cd:constant type="cd:command"/>
       </cd:parameter>
       <cd:parameter name="stile">
-        <cd:constant type="normale"/>
-        <cd:constant type="grassetto"/>
-        <cd:constant type="inclinato"/>
-        <cd:constant type="grassettoinclinato"/>
-        <cd:constant type="type"/>
-        <cd:constant type="cap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="n">
         <cd:constant type="cd:number"/>
@@ -2163,14 +2137,7 @@
         <cd:constant type="cd:name"/>
       </cd:parameter>
       <cd:parameter name="stile">
-        <cd:constant type="normale"/>
-        <cd:constant type="grassetto"/>
-        <cd:constant type="inclinato"/>
-        <cd:constant type="grassettoinclinato"/>
-        <cd:constant type="type"/>
-        <cd:constant type="cap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="colorelinea">
         <cd:constant type="cd:name"/>
@@ -2567,23 +2534,13 @@
         <cd:constant type="destra"/>
       </cd:parameter>
       <cd:parameter name="stile">
-        <cd:constant type="normale"/>
-        <cd:constant type="grassetto"/>
-        <cd:constant type="inclinato"/>
-        <cd:constant type="grassettoinclinato"/>
-        <cd:constant type="type"/>
-        <cd:constant type="cap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="ampiezza">
         <cd:constant type="cd:dimension"/>
       </cd:parameter>
       <cd:parameter name="allinea">
-        <cd:constant type="sinistra"/>
-        <cd:constant type="centro"/>
-        <cd:constant type="destra"/>
-        <cd:constant type="no"/>
+        <cd:resolve name="align"/>
       </cd:parameter>
       <cd:parameter name="cima">
         <cd:constant type="cd:command"/>
@@ -2957,24 +2914,10 @@
     </cd:keywords>
     <cd:assignments list="yes">
       <cd:parameter name="stiletesta">
-        <cd:constant type="normale"/>
-        <cd:constant type="grassetto"/>
-        <cd:constant type="inclinato"/>
-        <cd:constant type="grassettoinclinato"/>
-        <cd:constant type="type"/>
-        <cd:constant type="cap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="stile">
-        <cd:constant type="normale"/>
-        <cd:constant type="grassetto"/>
-        <cd:constant type="inclinato"/>
-        <cd:constant type="grassettoinclinato"/>
-        <cd:constant type="type"/>
-        <cd:constant type="cap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="colore">
         <cd:constant type="cd:name"/>
@@ -2994,9 +2937,7 @@
         <cd:constant type="cd:text"/>
       </cd:parameter>
       <cd:parameter name="allinea">
-        <cd:constant type="sinistra"/>
-        <cd:constant type="centro"/>
-        <cd:constant type="destra"/>
+        <cd:resolve name="align"/>
       </cd:parameter>
       <cd:parameter name="margine">
         <cd:constant type="standard"/>
@@ -3032,17 +2973,10 @@
         <cd:constant type="cd:command"/>
       </cd:parameter>
       <cd:parameter name="rientrasuccessivo">
-        <cd:constant type="si"/>
-        <cd:constant type="no"/>
+        <cd:resolve name="indentnext"/>
       </cd:parameter>
       <cd:parameter name="rientro">
-        <cd:constant type="mai"/>
-        <cd:constant type="non"/>
-        <cd:constant type="no"/>
-        <cd:constant type="si"/>
-        <cd:constant type="sempre"/>
-        <cd:constant type="primo"/>
-        <cd:constant type="successivo"/>
+        <cd:resolve name="indenting"/>
       </cd:parameter>
     </cd:assignments>
   </cd:arguments>
@@ -3137,24 +3071,10 @@
     </cd:keywords>
     <cd:assignments list="yes">
       <cd:parameter name="stile">
-        <cd:constant type="normale"/>
-        <cd:constant type="grassetto"/>
-        <cd:constant type="inclinato"/>
-        <cd:constant type="grassettoinclinato"/>
-        <cd:constant type="type"/>
-        <cd:constant type="cap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="stiletesta">
-        <cd:constant type="normale"/>
-        <cd:constant type="grassetto"/>
-        <cd:constant type="inclinato"/>
-        <cd:constant type="grassettoinclinato"/>
-        <cd:constant type="type"/>
-        <cd:constant type="cap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="ampiezza">
         <cd:constant type="adatta"/>
@@ -3230,14 +3150,7 @@
         <cd:constant type="no"/>
       </cd:parameter>
       <cd:parameter name="stiletesta">
-        <cd:constant type="normale"/>
-        <cd:constant type="grassetto"/>
-        <cd:constant type="inclinato"/>
-        <cd:constant type="grassettoinclinato"/>
-        <cd:constant type="type"/>
-        <cd:constant type="cap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="coloretesta">
         <cd:constant type="cd:name"/>
@@ -3295,9 +3208,7 @@
         <cd:constant type="no"/>
       </cd:parameter>
       <cd:parameter name="allinea">
-        <cd:constant type="si"/>
-        <cd:constant type="no"/>
-        <cd:constant type="cd:text"/>
+        <cd:resolve name="align"/>
       </cd:parameter>
       <cd:parameter name="rigovuoto">
         <cd:constant type="fisso"/>
@@ -3381,34 +3292,13 @@
         <cd:constant type="no"/>
       </cd:parameter>
       <cd:parameter name="stile">
-        <cd:constant type="normale"/>
-        <cd:constant type="grassetto"/>
-        <cd:constant type="inclinato"/>
-        <cd:constant type="grassettoinclinato"/>
-        <cd:constant type="type"/>
-        <cd:constant type="cap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="stilesinistra">
-        <cd:constant type="normale"/>
-        <cd:constant type="grassetto"/>
-        <cd:constant type="inclinato"/>
-        <cd:constant type="grassettoinclinato"/>
-        <cd:constant type="type"/>
-        <cd:constant type="cap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="stiledestra">
-        <cd:constant type="normale"/>
-        <cd:constant type="grassetto"/>
-        <cd:constant type="inclinato"/>
-        <cd:constant type="grassettoinclinato"/>
-        <cd:constant type="type"/>
-        <cd:constant type="cap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="ampiezzasinistra">
         <cd:constant type="cd:dimension"/>
@@ -3505,18 +3395,10 @@
       <cd:constant type="bordo"/>
     </cd:keywords>
     <cd:keywords>
-      <cd:constant type="cd:text"/>
-      <cd:constant type="cd:section"/>
-      <cd:constant type="data"/>
-      <cd:constant type="cd:mark"/>
-      <cd:constant type="numeropagina"/>
+      <cd:resolve name="texts"/>
     </cd:keywords>
     <cd:keywords>
-      <cd:constant type="cd:text"/>
-      <cd:constant type="cd:section"/>
-      <cd:constant type="data"/>
-      <cd:constant type="cd:mark"/>
-      <cd:constant type="numeropagina"/>
+      <cd:resolve name="texts"/>
     </cd:keywords>
   </cd:arguments>
 </cd:command>
@@ -3532,18 +3414,10 @@
       <cd:constant type="bordo"/>
     </cd:keywords>
     <cd:keywords>
-      <cd:constant type="cd:text"/>
-      <cd:constant type="cd:section"/>
-      <cd:constant type="data"/>
-      <cd:constant type="cd:mark"/>
-      <cd:constant type="numeropagina"/>
+      <cd:resolve name="texts"/>
     </cd:keywords>
     <cd:keywords>
-      <cd:constant type="cd:text"/>
-      <cd:constant type="cd:section"/>
-      <cd:constant type="data"/>
-      <cd:constant type="cd:mark"/>
-      <cd:constant type="numeropagina"/>
+      <cd:resolve name="texts"/>
     </cd:keywords>
   </cd:arguments>
 </cd:command>
@@ -3559,18 +3433,10 @@
       <cd:constant type="bordo"/>
     </cd:keywords>
     <cd:keywords>
-      <cd:constant type="cd:text"/>
-      <cd:constant type="cd:section"/>
-      <cd:constant type="data"/>
-      <cd:constant type="cd:mark"/>
-      <cd:constant type="numeropagina"/>
+      <cd:resolve name="texts"/>
     </cd:keywords>
     <cd:keywords>
-      <cd:constant type="cd:text"/>
-      <cd:constant type="cd:section"/>
-      <cd:constant type="data"/>
-      <cd:constant type="cd:mark"/>
-      <cd:constant type="numeropagina"/>
+      <cd:resolve name="texts"/>
     </cd:keywords>
   </cd:arguments>
 </cd:command>
@@ -3586,18 +3452,10 @@
       <cd:constant type="bordo"/>
     </cd:keywords>
     <cd:keywords>
-      <cd:constant type="cd:text"/>
-      <cd:constant type="cd:section"/>
-      <cd:constant type="data"/>
-      <cd:constant type="cd:mark"/>
-      <cd:constant type="numeropagina"/>
+      <cd:resolve name="texts"/>
     </cd:keywords>
     <cd:keywords>
-      <cd:constant type="cd:text"/>
-      <cd:constant type="cd:section"/>
-      <cd:constant type="data"/>
-      <cd:constant type="cd:mark"/>
-      <cd:constant type="numeropagina"/>
+      <cd:resolve name="texts"/>
     </cd:keywords>
   </cd:arguments>
 </cd:command>
@@ -3613,18 +3471,10 @@
       <cd:constant type="bordo"/>
     </cd:keywords>
     <cd:keywords>
-      <cd:constant type="cd:text"/>
-      <cd:constant type="cd:section"/>
-      <cd:constant type="data"/>
-      <cd:constant type="cd:mark"/>
-      <cd:constant type="numeropagina"/>
+      <cd:resolve name="texts"/>
     </cd:keywords>
     <cd:keywords>
-      <cd:constant type="cd:text"/>
-      <cd:constant type="cd:section"/>
-      <cd:constant type="data"/>
-      <cd:constant type="cd:mark"/>
-      <cd:constant type="numeropagina"/>
+      <cd:resolve name="texts"/>
     </cd:keywords>
   </cd:arguments>
 </cd:command>
@@ -3823,14 +3673,7 @@
         <cd:constant type="cd:dimension"/>
       </cd:parameter>
       <cd:parameter name="stile">
-        <cd:constant type="normale"/>
-        <cd:constant type="grassetto"/>
-        <cd:constant type="inclinato"/>
-        <cd:constant type="grassettoinclinato"/>
-        <cd:constant type="type"/>
-        <cd:constant type="cap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="colore">
         <cd:constant type="cd:name"/>
@@ -4086,14 +3929,7 @@
         <cd:constant type="Numeriromani"/>
       </cd:parameter>
       <cd:parameter name="stile">
-        <cd:constant type="normale"/>
-        <cd:constant type="grassetto"/>
-        <cd:constant type="inclinato"/>
-        <cd:constant type="grassettoinclinato"/>
-        <cd:constant type="type"/>
-        <cd:constant type="cap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="sinistra">
         <cd:constant type="cd:text"/>
@@ -4196,14 +4032,7 @@
         <cd:constant type="cd:command"/>
       </cd:parameter>
       <cd:parameter name="stile">
-        <cd:constant type="normale"/>
-        <cd:constant type="grassetto"/>
-        <cd:constant type="inclinato"/>
-        <cd:constant type="grassettoinclinato"/>
-        <cd:constant type="type"/>
-        <cd:constant type="cap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="comandi">
         <cd:constant type="cd:command"/>
@@ -4237,10 +4066,7 @@
         <cd:constant type="cd:text"/>
       </cd:parameter>
       <cd:parameter name="allinea">
-        <cd:constant type="sinistra"/>
-        <cd:constant type="destra"/>
-        <cd:constant type="normale"/>
-        <cd:constant type="ampio"/>
+        <cd:resolve name="align"/>
       </cd:parameter>
       <cd:parameter name="allineatitolo">
         <cd:constant type="si"/>
@@ -4255,8 +4081,7 @@
         <cd:constant type="dilata"/>
       </cd:parameter>
       <cd:parameter name="rientrasuccessivo">
-        <cd:constant type="si"/>
-        <cd:constant type="no"/>
+        <cd:resolve name="indentnext"/>
       </cd:parameter>
       <cd:parameter name="comando">
         <cd:constant type="cd:twoarguments"/>
@@ -4293,24 +4118,10 @@
         <cd:constant type="cd:dimension"/>
       </cd:parameter>
       <cd:parameter name="stiletesta">
-        <cd:constant type="normale"/>
-        <cd:constant type="grassetto"/>
-        <cd:constant type="inclinato"/>
-        <cd:constant type="grassettoinclinato"/>
-        <cd:constant type="type"/>
-        <cd:constant type="cap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="stile">
-        <cd:constant type="normale"/>
-        <cd:constant type="grassetto"/>
-        <cd:constant type="inclinato"/>
-        <cd:constant type="grassettoinclinato"/>
-        <cd:constant type="type"/>
-        <cd:constant type="cap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="numero">
         <cd:constant type="si"/>
@@ -4320,10 +4131,7 @@
         <cd:constant type="cd:command"/>
       </cd:parameter>
       <cd:parameter name="allinea">
-        <cd:constant type="sinistra"/>
-        <cd:constant type="centro"/>
-        <cd:constant type="destra"/>
-        <cd:constant type="no"/>
+        <cd:resolve name="align"/>
       </cd:parameter>
       <cd:parameter name="conversione">
         <cd:constant type="numeri"/>
@@ -4415,8 +4223,7 @@
         <cd:constant type="nessuno"/>
       </cd:parameter>
       <cd:parameter name="rientrasuccessivo">
-        <cd:constant type="si"/>
-        <cd:constant type="no"/>
+        <cd:resolve name="indentnext"/>
       </cd:parameter>
       <cd:parameter name="ncima">
         <cd:constant type="cd:number"/>
@@ -4730,14 +4537,7 @@
   <cd:arguments>
     <cd:assignments list="yes">
       <cd:parameter name="stile">
-        <cd:constant type="normale"/>
-        <cd:constant type="grassetto"/>
-        <cd:constant type="inclinato"/>
-        <cd:constant type="grassettoinclinato"/>
-        <cd:constant type="type"/>
-        <cd:constant type="cap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="alternativaurl">
         <cd:constant type="nessuno"/>
@@ -4966,44 +4766,16 @@
         <cd:constant type="cd:list"/>
       </cd:parameter>
       <cd:parameter name="stile">
-        <cd:constant type="normale"/>
-        <cd:constant type="grassetto"/>
-        <cd:constant type="inclinato"/>
-        <cd:constant type="grassettoinclinato"/>
-        <cd:constant type="type"/>
-        <cd:constant type="cap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="stilenumero">
-        <cd:constant type="normale"/>
-        <cd:constant type="grassetto"/>
-        <cd:constant type="inclinato"/>
-        <cd:constant type="grassettoinclinato"/>
-        <cd:constant type="type"/>
-        <cd:constant type="cap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="stiletesto">
-        <cd:constant type="normale"/>
-        <cd:constant type="grassetto"/>
-        <cd:constant type="inclinato"/>
-        <cd:constant type="grassettoinclinato"/>
-        <cd:constant type="type"/>
-        <cd:constant type="cap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="stilepagina">
-        <cd:constant type="normale"/>
-        <cd:constant type="grassetto"/>
-        <cd:constant type="inclinato"/>
-        <cd:constant type="grassettoinclinato"/>
-        <cd:constant type="type"/>
-        <cd:constant type="cap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="colore">
         <cd:constant type="cd:name"/>
@@ -5216,9 +4988,7 @@
         <cd:constant type="cd:text"/>
       </cd:parameter>
       <cd:parameter name="allinea">
-        <cd:constant type="sinistra"/>
-        <cd:constant type="centro"/>
-        <cd:constant type="destra"/>
+        <cd:resolve name="align"/>
       </cd:parameter>
       <cd:parameter name="opzione">
         <cd:constant type="centro"/>
@@ -5243,8 +5013,7 @@
         <cd:constant type="cd:dimension"/>
       </cd:parameter>
       <cd:parameter name="rientrasuccessivo">
-        <cd:constant type="si"/>
-        <cd:constant type="no"/>
+        <cd:resolve name="indentnext"/>
       </cd:parameter>
       <cd:parameter name="alternativa">
         <cd:constant type="cd:name"/>
@@ -5310,10 +5079,7 @@
         <cd:constant type="cd:command"/>
       </cd:parameter>
       <cd:parameter name="rientro">
-        <cd:constant type="si"/>
-        <cd:constant type="no"/>
-        <cd:constant type="pari"/>
-        <cd:constant type="dispari"/>
+        <cd:resolve name="indenting"/>
       </cd:parameter>
       <cd:parameter name="spazio">
         <cd:constant type="si"/>
@@ -5342,14 +5108,7 @@
         <cd:constant type="riga"/>
       </cd:parameter>
       <cd:parameter name="stile">
-        <cd:constant type="normale"/>
-        <cd:constant type="grassetto"/>
-        <cd:constant type="inclinato"/>
-        <cd:constant type="grassettoinclinato"/>
-        <cd:constant type="type"/>
-        <cd:constant type="cap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="distanza">
         <cd:constant type="cd:dimension"/>
@@ -5386,14 +5145,7 @@
         <cd:constant type="inmargine"/>
       </cd:parameter>
       <cd:parameter name="stile">
-        <cd:constant type="normale"/>
-        <cd:constant type="grassetto"/>
-        <cd:constant type="inclinato"/>
-        <cd:constant type="grassettoinclinato"/>
-        <cd:constant type="type"/>
-        <cd:constant type="cap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="prefisso">
         <cd:constant type="cd:text"/>
@@ -5461,14 +5213,7 @@
         <cd:constant type="entrambi"/>
       </cd:parameter>
       <cd:parameter name="stile">
-        <cd:constant type="normale"/>
-        <cd:constant type="grassetto"/>
-        <cd:constant type="inclinato"/>
-        <cd:constant type="grassettoinclinato"/>
-        <cd:constant type="type"/>
-        <cd:constant type="cap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="prima">
         <cd:constant type="cd:command"/>
@@ -5477,14 +5222,7 @@
         <cd:constant type="cd:command"/>
       </cd:parameter>
       <cd:parameter name="allinea">
-        <cd:constant type="interno"/>
-        <cd:constant type="esterno"/>
-        <cd:constant type="sinistra"/>
-        <cd:constant type="destra"/>
-        <cd:constant type="centro"/>
-        <cd:constant type="normale"/>
-        <cd:constant type="no"/>
-        <cd:constant type="si"/>
+        <cd:resolve name="align"/>
       </cd:parameter>
       <cd:parameter name="riga">
         <cd:constant type="cd:number"/>
@@ -5802,16 +5540,7 @@
   </cd:sequence>
   <cd:arguments>
     <cd:keywords list="yes">
-      <cd:constant type="nessuno" default="yes"/>
-      <cd:constant type="piccolo"/>
-      <cd:constant type="medio"/>
-      <cd:constant type="grande"/>
-      <cd:constant type="successivo"/>
-      <cd:constant type="primo"/>
-      <cd:constant type="normale"/>
-      <cd:constant type="dispari"/>
-      <cd:constant type="pari"/>
-      <cd:constant type="cd:dimension"/>
+        <cd:resolve name="indenting"/>
     </cd:keywords>
   </cd:arguments>
 </cd:command>
@@ -5905,34 +5634,13 @@
     </cd:keywords>
     <cd:assignments list="yes">
       <cd:parameter name="stile">
-        <cd:constant type="normale"/>
-        <cd:constant type="grassetto"/>
-        <cd:constant type="inclinato"/>
-        <cd:constant type="grassettoinclinato"/>
-        <cd:constant type="type"/>
-        <cd:constant type="cap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="stiletesto">
-        <cd:constant type="normale"/>
-        <cd:constant type="grassetto"/>
-        <cd:constant type="inclinato"/>
-        <cd:constant type="grassettoinclinato"/>
-        <cd:constant type="type"/>
-        <cd:constant type="cap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="stilenumero">
-        <cd:constant type="normale"/>
-        <cd:constant type="grassetto"/>
-        <cd:constant type="inclinato"/>
-        <cd:constant type="grassettoinclinato"/>
-        <cd:constant type="type"/>
-        <cd:constant type="cap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="colore">
         <cd:constant type="cd:name"/>
@@ -6200,34 +5908,13 @@
         <cd:constant type="cd:command"/>
       </cd:parameter>
       <cd:parameter name="stiletesta">
-        <cd:constant type="normale"/>
-        <cd:constant type="grassetto"/>
-        <cd:constant type="inclinato"/>
-        <cd:constant type="grassettoinclinato"/>
-        <cd:constant type="type"/>
-        <cd:constant type="cap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="stilemarcatura">
-        <cd:constant type="normale"/>
-        <cd:constant type="grassetto"/>
-        <cd:constant type="inclinato"/>
-        <cd:constant type="grassettoinclinato"/>
-        <cd:constant type="type"/>
-        <cd:constant type="cap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="stilesimbolo">
-        <cd:constant type="normale"/>
-        <cd:constant type="grassetto"/>
-        <cd:constant type="inclinato"/>
-        <cd:constant type="grassettoinclinato"/>
-        <cd:constant type="type"/>
-        <cd:constant type="cap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="stopper">
         <cd:constant type="cd:text"/>
@@ -6239,13 +5926,10 @@
         <cd:constant type="cd:number"/>
       </cd:parameter>
       <cd:parameter name="allinea">
-        <cd:constant type="sinistra"/>
-        <cd:constant type="destra"/>
-        <cd:constant type="normale"/>
+        <cd:resolve name="align"/>
       </cd:parameter>
       <cd:parameter name="rientrasuccessivo">
-        <cd:constant type="si"/>
-        <cd:constant type="no"/>
+        <cd:resolve name="indentnext"/>
       </cd:parameter>
     </cd:assignments>
   </cd:arguments>
@@ -6404,38 +6088,16 @@
         <cd:constant type="no"/>
       </cd:parameter>
       <cd:parameter name="allinea">
-        <cd:constant type="si"/>
-        <cd:constant type="no"/>
+        <cd:resolve name="align"/>
       </cd:parameter>
       <cd:parameter name="stile">
-        <cd:constant type="normale"/>
-        <cd:constant type="grassetto"/>
-        <cd:constant type="inclinato"/>
-        <cd:constant type="grassettoinclinato"/>
-        <cd:constant type="type"/>
-        <cd:constant type="cap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="stilepagina">
-        <cd:constant type="normale"/>
-        <cd:constant type="grassetto"/>
-        <cd:constant type="inclinato"/>
-        <cd:constant type="grassettoinclinato"/>
-        <cd:constant type="type"/>
-        <cd:constant type="cap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="stiletesto">
-        <cd:constant type="normale"/>
-        <cd:constant type="grassetto"/>
-        <cd:constant type="inclinato"/>
-        <cd:constant type="grassettoinclinato"/>
-        <cd:constant type="type"/>
-        <cd:constant type="cap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="indicatore">
         <cd:constant type="si"/>
@@ -6658,24 +6320,10 @@
     </cd:keywords>
     <cd:assignments list="yes">
       <cd:parameter name="stiletesto">
-        <cd:constant type="normale"/>
-        <cd:constant type="grassetto"/>
-        <cd:constant type="inclinato"/>
-        <cd:constant type="grassettoinclinato"/>
-        <cd:constant type="type"/>
-        <cd:constant type="cap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="stilesinonimi">
-        <cd:constant type="normale"/>
-        <cd:constant type="grassetto"/>
-        <cd:constant type="inclinato"/>
-        <cd:constant type="grassettoinclinato"/>
-        <cd:constant type="type"/>
-        <cd:constant type="cap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="luogo">
         <cd:constant type="sinistra"/>
@@ -6791,14 +6439,7 @@
         <cd:constant type="usato"/>
       </cd:parameter>
       <cd:parameter name="stile">
-        <cd:constant type="normale"/>
-        <cd:constant type="grassetto"/>
-        <cd:constant type="inclinato"/>
-        <cd:constant type="grassettoinclinato"/>
-        <cd:constant type="type"/>
-        <cd:constant type="cap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="espansione">
         <cd:constant type="si"/>
@@ -7011,13 +6652,7 @@
   </cd:sequence>
   <cd:arguments>
     <cd:keywords list="yes">
-      <cd:constant type="mai" default="yes"/>
-      <cd:constant type="non"/>
-      <cd:constant type="no"/>
-      <cd:constant type="si"/>
-      <cd:constant type="sempre"/>
-      <cd:constant type="primo"/>
-      <cd:constant type="successivo"/>
+      <cd:resolve name="indenting"/>
     </cd:keywords>
   </cd:arguments>
 </cd:command>
@@ -7506,14 +7141,7 @@
         <cd:constant type="cd:command"/>
       </cd:parameter>
       <cd:parameter name="stile">
-        <cd:constant type="normale"/>
-        <cd:constant type="grassetto"/>
-        <cd:constant type="inclinato"/>
-        <cd:constant type="grassettoinclinato"/>
-        <cd:constant type="type"/>
-        <cd:constant type="cap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="file">
         <cd:constant type="cd:file"/>
@@ -7863,10 +7491,7 @@
         <cd:constant type="cd:command"/>
       </cd:parameter>
       <cd:parameter name="allinea">
-        <cd:constant type="sinistra"/>
-        <cd:constant type="destra"/>
-        <cd:constant type="centro"/>
-        <cd:constant type="margine"/>
+        <cd:resolve name="align"/>
       </cd:parameter>
       <cd:parameter name="dopo">
         <cd:constant type="cd:command"/>
@@ -7919,14 +7544,7 @@
         <cd:constant type="cd:command"/>
       </cd:parameter>
       <cd:parameter name="stile">
-        <cd:constant type="normale"/>
-        <cd:constant type="grassetto"/>
-        <cd:constant type="inclinato"/>
-        <cd:constant type="grassettoinclinato"/>
-        <cd:constant type="type"/>
-        <cd:constant type="cap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="colore">
         <cd:constant type="cd:name"/>
@@ -7992,9 +7610,7 @@
         <cd:constant type="dilata"/>
       </cd:parameter>
       <cd:parameter name="allinea">
-        <cd:constant type="sinistra"/>
-        <cd:constant type="destra"/>
-        <cd:constant type="centro"/>
+        <cd:resolve name="align"/>
       </cd:parameter>
     </cd:assignments>
   </cd:arguments>
@@ -8026,14 +7642,7 @@
     </cd:keywords>
     <cd:assignments list="yes">
       <cd:parameter name="stile">
-        <cd:constant type="normale"/>
-        <cd:constant type="grassetto"/>
-        <cd:constant type="inclinato"/>
-        <cd:constant type="grassettoinclinato"/>
-        <cd:constant type="type"/>
-        <cd:constant type="cap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="ampiezza">
         <cd:constant type="cd:dimension"/>
@@ -8042,10 +7651,7 @@
         <cd:constant type="cd:dimension"/>
       </cd:parameter>
       <cd:parameter name="allinea">
-        <cd:constant type="sinistra"/>
-        <cd:constant type="destra"/>
-        <cd:constant type="centro"/>
-        <cd:constant type="ampiezza"/>
+        <cd:resolve name="align"/>
       </cd:parameter>
       <cd:parameter name="tolleranza">
         <cd:constant type="moltorigido"/>
@@ -8090,14 +7696,7 @@
         <cd:constant type="cd:dimension"/>
       </cd:parameter>
       <cd:parameter name="stiletesta">
-        <cd:constant type="normale"/>
-        <cd:constant type="grassetto"/>
-        <cd:constant type="inclinato"/>
-        <cd:constant type="grassettoinclinato"/>
-        <cd:constant type="type"/>
-        <cd:constant type="cap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="luogo">
         <cd:constant type="sinistra"/>
@@ -8183,8 +7782,7 @@
         <cd:constant type="cd:dimension"/>
       </cd:parameter>
       <cd:parameter name="rientro">
-        <cd:constant type="si"/>
-        <cd:constant type="no"/>
+        <cd:resolve name="indenting"/>
       </cd:parameter>
       <cd:parameter name="prima">
         <cd:constant type="cd:command"/>
@@ -8202,10 +7800,7 @@
         <cd:constant type="cd:name"/>
       </cd:parameter>
       <cd:parameter name="allinea">
-        <cd:constant type="sinistra"/>
-        <cd:constant type="centro"/>
-        <cd:constant type="destra"/>
-        <cd:constant type="normale"/>
+        <cd:resolve name="align"/>
       </cd:parameter>
       <cd:parameter name="spessorelinea">
         <cd:constant type="cd:dimension"/>
@@ -8286,19 +7881,13 @@
         <cd:constant type="cd:name"/>
       </cd:parameter>
       <cd:parameter name="allinea">
-        <cd:constant type="destra"/>
-        <cd:constant type="centro"/>
-        <cd:constant type="sinistra"/>
-        <cd:constant type="normale"/>
+        <cd:resolve name="align"/>
       </cd:parameter>
       <cd:parameter name="comandi">
         <cd:constant type="cd:command"/>
       </cd:parameter>
       <cd:parameter name="allinea">
-        <cd:constant type="sinistra"/>
-        <cd:constant type="centro"/>
-        <cd:constant type="destra"/>
-        <cd:constant type="normale"/>
+        <cd:resolve name="align"/>
       </cd:parameter>
       <cd:parameter name="sfondo">
         <cd:constant type="schermo"/>
@@ -8730,20 +8319,10 @@
         <cd:constant type="destra"/>
       </cd:parameter>
       <cd:parameter name="allinea">
-        <cd:constant type="no"/>
-        <cd:constant type="sinistra"/>
-        <cd:constant type="destra"/>
-        <cd:constant type="centro"/>
-        <cd:constant type="normale"/>
+        <cd:resolve name="align"/>
       </cd:parameter>
       <cd:parameter name="stile">
-        <cd:constant type="normale"/>
-        <cd:constant type="grassetto"/>
-        <cd:constant type="inclinato"/>
-        <cd:constant type="grassettoinclinato"/>
-        <cd:constant type="type"/>
-        <cd:constant type="cap"/>
-        <cd:constant type="small...cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="colore">
         <cd:constant type="cd:name"/>
@@ -8922,13 +8501,7 @@
         <cd:constant type="cd:dimension"/>
       </cd:parameter>
       <cd:parameter name="stile">
-        <cd:constant type="normale"/>
-        <cd:constant type="grassetto"/>
-        <cd:constant type="inclinato"/>
-        <cd:constant type="grassettoinclinato"/>
-        <cd:constant type="type"/>
-        <cd:constant type="cap"/>
-        <cd:constant type="small...cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="colore">
         <cd:constant type="cd:name"/>
@@ -9001,14 +8574,7 @@
         <cd:constant type="locale"/>
       </cd:parameter>
       <cd:parameter name="stile">
-        <cd:constant type="normale"/>
-        <cd:constant type="grassetto"/>
-        <cd:constant type="inclinato"/>
-        <cd:constant type="grassettoinclinato"/>
-        <cd:constant type="type"/>
-        <cd:constant type="cap"/>
-        <cd:constant type="piccolo"/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="colore">
         <cd:constant type="cd:name"/>
@@ -9271,14 +8837,7 @@
         <cd:constant type="cd:dimension"/>
       </cd:parameter>
       <cd:parameter name="stile">
-        <cd:constant type="normale"/>
-        <cd:constant type="grassetto"/>
-        <cd:constant type="inclinato"/>
-        <cd:constant type="grassettoinclinato"/>
-        <cd:constant type="type"/>
-        <cd:constant type="cap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="colore">
         <cd:constant type="cd:name"/>
@@ -9418,14 +8977,7 @@
         <cd:constant type="cd:number"/>
       </cd:parameter>
       <cd:parameter name="stile">
-        <cd:constant type="normale"/>
-        <cd:constant type="grassetto"/>
-        <cd:constant type="inclinato"/>
-        <cd:constant type="grassettoinclinato"/>
-        <cd:constant type="type"/>
-        <cd:constant type="cap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
     </cd:assignments>
   </cd:arguments>
@@ -9883,16 +9435,10 @@
         <cd:constant type="cd:name"/>
       </cd:parameter>
       <cd:parameter name="stile">
-        <cd:constant type="normale"/>
-        <cd:constant type="grassetto"/>
-        <cd:constant type="inclinato"/>
-        <cd:constant type="grassettoinclinato"/>
-        <cd:constant type="type"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="allinea">
-        <cd:constant type="sinistra"/>
-        <cd:constant type="centro"/>
-        <cd:constant type="destra"/>
+        <cd:resolve name="align"/>
       </cd:parameter>
       <cd:parameter name="opzione">
         <cd:constant type="solalettura"/>

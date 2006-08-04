@@ -1,6 +1,6 @@
 %D \module
 %D   [       file=t-bib,
-%D        version=2006.07.19,
+%D        version=2006.08.04,
 %D          title=\CONTEXT\ Publication Module,
 %D       subtitle=Publications,
 %D         author=Taco Hoekwater,
@@ -83,6 +83,13 @@
 %D \item support use of \type{\cite} within titles and captions by 
 %D       saveguarding the list item extraction and reference placement
 %D       code (19/7/2006)
+%D \item support \type{\setuppublicationlist[title=\chapter]} (4/8/2006)
+%D \item use the expansion of \type{\headtext{pubs}} (4/8/2006)
+%D \item hook added for repeated authors in publication list
+%D       \type{\setuppublicationlist[artauthorcommand=\mythreeargscommand]}
+%D       (4/8/2006)
+%D \item make the bracketed arguments of \type{\artauthor}, \type{\author} 
+%D        and \type{\editor} (bbl commands) optional (4/8/2006)
 %D \stopitemize
 %D
 %D \subject{WISHLIST}
@@ -90,7 +97,7 @@
 %D \startitemize
 %D \item link back from publication list to citation
 %D \item export \type {\citation{<cited item>}}
-%D \item sort out different APS versions: PR A/B/L vs. RPM
+%D \item support mlbibtex
 %D \item don't load the whole lot, but filter entries instead
 %D \stopitemize
 
@@ -515,7 +522,7 @@
 %D
 %D \type{\author[junior]{firstnames}[inits]{von}{surname}}
 %D
-%D (bracketed stuff should become optional someday)
+%D (bracketed stuff is optional)
 %D
 %D And not only that, but there also might be more than one of each of
 %D these commands. This is why a special command is needed to insert
@@ -531,35 +538,34 @@
 %D \specialbibinsert{author}{\author@num}{<before>}{<after>}{<not>}
 %D \stoptyping
 
+\def\docomplexbibdef#1%
+   {\def\currentype{#1}%
+    \dosingleempty\dodocomplexbibdef}
+
+\def\dodocomplexbibdef[#1]#2%
+   {\def\firstarg{#1}\def\secondarg{#2}%
+    \dosingleempty\dododocomplexbibdef}
+
+\def\dododocomplexbibdef[#1]#2#3%
+  {\@EA\increment\csname \currentype @num\endcsname
+      \setevalue{\??pb @\currentype\csname \currentype @num\endcsname}%
+        {{\secondarg}{#2}{#3}{#1}{\firstarg}}\ignorespaces}% 
+
 \def\complexbibdef#1%
   {\@EA\newcounter\csname #1@num\endcsname
-   \@EA\def\csname bib@#1\endcsname[##1]##2[##3]##4##5%
-     {\@EA\increment\csname #1@num\endcsname
-      \setvalue{\??pb @#1\csname #1@num\endcsname}%
-        {{##2}{##4}{##5}{##3}{##1}}\ignorespaces}%
+   \@EA\def\csname bib@#1\endcsname{\docomplexbibdef{#1}}%     
    \@EA\def\csname insert#1s\endcsname##1##2##3%
      {\specialbibinsert{#1}{\csname #1@num\endcsname}{##1}{\unskip ##2}{##3}}}
 
 \processcommalist[author,artauthor,editor]\complexbibdef
 
 %D Another level of indirection is needed to control the
-%D typesetting of all of these arguments, which explains the usage
-%D of \type{\tempa} below.
+%D typesetting of all of these arguments.
 
-%D There is some sneaky stuff with \type{\tempa} and \type{\tempb}
-%D going on here to resolve the \type{\csname}'s. It probably could
-%D be done a little bit more elegant, but it works. The basic goal
-%D is to get the command that will actually typeset the name into
-%D the macro \type{\tempb}, and to make sure that that command will actually
-%D recieve five arguments (see the definition of
-%D e.g. \type{\invertedauthor} below).
-
-%D There is a conflict between `author' and the predefined interface
+%D Btw, there is a conflict between `author' and the predefined interface
 %D variable `auteur'. The old version is overruled `auteur' is
 %D overruled by the systemconstant definition at the top of this file!
 
-%D The increment/decrement trick on \type{\scratchcounter} is needed
-%D to decide what name the last one is.
 
 \newcount\etallimitcounter
 \newcount\etaldisplaycounter
@@ -568,8 +574,6 @@
 \def\specialbibinsert#1#2#3#4#5%
   {\bgroup
    \ifnum#2>\zerocount
-     \letcscsname\tempa\csname \??pv data#1\endcsname
-     \def\tempb{\@EA\tempa}%
      \etallimitcounter  =0\bibalternative{#1etallimit}\relax
      \etaldisplaycounter=0\bibalternative{#1etaldisplay}\relax
      \ifnum #2>\etallimitcounter
@@ -581,39 +585,54 @@
      \else
        \todocounter#2\relax
      \fi
-     \scratchcounter\zerocount
      \ifnum\todocounter>\zerocount
-       #3%
-       \doloop
-         {\ifnum \scratchcounter < \todocounter
-            \advance\scratchcounter \plusone
-            \ifnum \scratchcounter = \todocounter
-              \@EA\tempb \csname @@pb@#1\the\scratchcounter\endcsname
-              \ifnum\etallimitcounter<#2 \bibalternative{#1etaltext}\fi #4%
-            \else
-              \@EA\tempb \csname @@pb@#1\the\scratchcounter\endcsname
-              \advance\scratchcounter \plusone
-              \ifnum \scratchcounter = \todocounter
-                 \ifnum \todocounter > \plustwo
-                    \bibalternative\c!finalnamesep
-                 \else
-                    \bibalternative\c!lastnamesep
-                 \fi
-              \else
-                 \bibalternative\c!namesep
-              \fi
-              \advance\scratchcounter \minusone
-            \fi
-          \else
-            \exitloop
-          \fi}%
-      \else
-        #5%
-      \fi
+       % find the current author list
+       \let\templist\empty
+       \dorecurse{#2}
+          {\toks0=\@EA\@EA\@EA{\csname @@pb@#1\recurselevel\endcsname}%
+           \ifx\templist\empty    \edef\templist{\the\toks0}%
+           \else        \edef\templist{\templist,\the\toks0}\fi }%
+       \doifdefinedelse
+          {\??pv data#1\c!command}
+          {\doifemptyelsevalue
+             {\??pv data#1\c!command}
+             {#3\dospecialbibinsert{#1}{\todocounter}{\templist}#4}%
+             {#3\getvalue{\??pv data#1\c!command}{#1}{\todocounter}{\templist}#4}}%
+          {#3\dospecialbibinsert{#1}{\todocounter}{\templist}#4}%
+     \else
+       #5%
+     \fi
    \else
      #5%
    \fi
    \egroup}
+
+%D This macro does the hard work of inserting a list of people in the
+%D output, with proper regard of all the inbetween strings that can
+%D arise depending on length of the list of people.
+
+%D \#1 = type
+%D \#2 = number of items to be typeset
+%D \#3 = commacommand containing authors
+
+\def\dospecialbibinsert#1#2#3%
+    {\getcommacommandsize[#3]%
+     \scratchcounter 0
+     \def\processauthoritem##1%
+       {\advance\scratchcounter1
+       \ifnum \numexpr\scratchcounter-1\relax<#2\relax
+          \getvalue{\??pv data#1}##1%
+          \ifnum \scratchcounter=#2\relax
+             \ifnum\etallimitcounter<\commalistsize \bibalternative{#1etaltext}\fi
+          \else \ifnum\numexpr\scratchcounter+1 = #2\relax
+             \ifnum \commalistsize > \plustwo  \bibalternative\c!finalnamesep
+             \else                            \bibalternative\c!lastnamesep \fi
+          \else
+              \bibalternative\c!namesep
+          \fi \fi 
+        \fi}%
+     \processcommacommand[#3]\processauthoritem }
+
 
 %D \macros{invertedauthor,normalauthor,invertedshortauthor,normalshortauthor}
 %D
@@ -918,7 +937,19 @@
   {%\getparameters[\??pv data][#1]%
    \begingroup
    \setuplist[pubs][\c!criterium=\v!previous,#1]   
-   \expanded{\systemsuppliedtitle[pubs]{\noexpand\headtext{pubs}}}%
+   \begingroup
+   \loggingall
+   \let\handletextprefix\firstoftwoarguments
+   \edef\headtextpubs{\dogetupsometextprefix\headlanguage\c!title{pubs}}%
+   \doifdefinedelse
+      {\??pv data\v!title}
+      {\doifemptyelsevalue
+          {\??pv data\v!title}
+          {\expanded{\systemsuppliedtitle[pubs]{\headtextpubs}}}%
+          {\expanded{\getvalue{\??pv data\v!title}{\headtextpubs}}}%
+       }%
+      {\expanded{\systemsuppliedtitle[pubs]{\headtextpubs}}}%
+   \endgroup
    \dodoplacepublications   }
 
 %D And the portion with the entries only.

@@ -2,7 +2,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands" 
               name="context/third/t-bib" 
-              language="all" version="2006.02.08">
+              language="all" version="2006.08.04">
 
 <cd:command name="setuppublications" file="t-bib.tex">
   <cd:sequence>
@@ -73,13 +73,8 @@
       <cd:parameter name="samplesize">
         <cd:constant type="cd:text"/>
       </cd:parameter>
-      <cd:parameter name="alternative">
-        <cd:constant type="a" default="yes"/>
-        <cd:constant type="b"/>
-        <cd:constant type="c"/>
-        <cd:constant type="..."/>
-        <cd:constant type="none"/>
-        <cd:constant type="command"/>
+      <cd:parameter name="title">
+        <cd:constant type="cd:command"/>
       </cd:parameter>
        <cd:parameter name="criterium">
         <cd:constant type="cd:section"/>
@@ -140,6 +135,9 @@
       <cd:parameter name="authoretaldisplay">
         <cd:constant type="cd:number"/>
       </cd:parameter>
+      <cd:parameter name="authorcommand">
+        <cd:constant type="cd:threearguments"/>
+      </cd:parameter>
       <cd:parameter name="artauthoretallimit">
         <cd:constant type="cd:number"/>
       </cd:parameter>
@@ -149,6 +147,9 @@
       <cd:parameter name="artauthoretaldisplay">
         <cd:constant type="cd:number"/>
       </cd:parameter>
+      <cd:parameter name="artauthorcommand">
+        <cd:constant type="cd:threearguments"/>
+      </cd:parameter>
       <cd:parameter name="editoretallimit">
         <cd:constant type="cd:number"/>
       </cd:parameter>
@@ -157,6 +158,9 @@
       </cd:parameter>
       <cd:parameter name="editoretaldisplay">
         <cd:constant type="cd:number"/>
+      </cd:parameter>
+      <cd:parameter name="editorcommand">
+        <cd:constant type="cd:threearguments"/>
       </cd:parameter>
       <cd:inherit name="setuplist"/>
     </cd:assignments>

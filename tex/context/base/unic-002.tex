@@ -1,6 +1,6 @@
 %D \module
 %D   [       file=unic-002,
-%D        version=2002.12.03,
+%D        version=2006.08.02,
 %D          title=\CONTEXT\ \UNICODE\ Macros,
 %D       subtitle=Vector 2,
 %D         author=Hans Hagen,
@@ -14,18 +14,91 @@
 \unprotect
 
 \startunicodevector 2
+  \expandafter\strippedcsname
+  \ifcase\numexpr#1\relax
+    \Adoublegrave      \or
+    \adoublegrave      \or
+    \Ainvertedbreve    \or
+    \ainvertedbreve    \or
+    \Edoublegrave      \or
+    \edoublegrave      \or
+    \Einvertedbreve    \or
+    \einvertedbreve    \or
+    \Idoublegrave      \or
+    \idoublegrave      \or
+    \Iinvertedbreve    \or
+    \iinvertedbreve    \or
+    \Odoublegrave      \or
+    \odoublegrave      \or
+    \Oinvertedbreve    \or
+    \oinvertedbreve    \or
+    \Rdoublegrave      \or
+    \rdoublegrave      \or
+    \Rinvertedbreve    \or
+    \rinvertedbreve    \or
+    \Udoublegrave      \or
+    \udoublegrave      \or
+    \Uinvertedbreve    \or
+    \uinvertedbreve    \or
+    \Scommaaccent      \or
+    \scommaaccent      \or
+    \Tcommaaccent      \or
+    \tcommaaccent      \or
+    \unknownchar       \or % Yogh
+    \unknownchar       \or % yogh
+    \Hcaron            \or
+    \hcaron            \or
+    \unknownchar       \or % n with long right leg
+    \dcurl             \or
+    \unknownchar       \or % Ou
+    \unknownchar       \or % ou
+    \Zhook             \or
+    \zhook             \or
+    \Adotaccent        \or
+    \adotaccent        \or
+    \Ecedilla          \or
+    \ecedilla          \or
+    \Odiaeresismacron  \or
+    \odiaeresismacron  \or
+    \Otildemacron      \or
+    \otildemacron      \or
+    \Odotaccent        \or
+    \odotaccent        \or
+    \Odotaccentmacron  \or
+    \odotaccentmacron  \or
+    \Ymacron           \or
+    \ymacron           \or
+    \lcurl             \or
+    \ncurl             \or
+    \tcurl             \or
+    \dotlessj          \or
+    \unknownchar       \or % db digraph
+    \unknownchar       \or % qp digraph
+    \Astroke           \or
+    \Cstroke           \or
+    \cstroke           \or
+    \Lbar              \else
+  \ifcase\numexpr#1-83\relax
+    \bhook            \or
+    \unknownchar      \or % open o
+    \ccurl            \or
+    \dtail            \or
+    \dhook            \or
+    \unknownchar      \or % reversed e
+    \schwa            \or
+    \schwahook        \else
   \ifcase\numexpr#1-198\relax
-    \strippedcsname \textcircumflex   \or
-    \strippedcsname \textcaron        \else
+    \textcircumflex   \or
+    \textcaron        \else
   \ifcase\numexpr#1-216\relax
-    \strippedcsname \textbreve        \or
-    \strippedcsname \textdotaccent    \or
-    \strippedcsname \unknownchar      \or
-    \strippedcsname \textogonek       \or
-    \strippedcsname \texttilde        \or
-    \strippedcsname \texthungarumlaut \else
-    \strippedcsname \unknownchar
-  \fi\fi
+    \textbreve        \or
+    \textdotaccent    \or
+    \textring         \or
+    \textogonek       \or
+    \texttilde        \or
+    \texthungarumlaut \else
+    \unknownchar
+  \fi\fi\fi\fi
 \stopunicodevector
 
 \protect \endinput

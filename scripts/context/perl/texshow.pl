@@ -3,7 +3,7 @@ eval '(exit $?0)' && eval 'exec perl -w -S $0 ${1+"$@"}' && eval 'exec perl -w -
 
 #D \module
 #D   [       file=texshow.pl,
-#D        version=2006.07.19,
+#D        version=2006.08.04,
 #D          title=TeXShow,
 #D       subtitle=showing \CONTEXT\ commands,
 #D         author=Taco Hoekwater,
@@ -27,6 +27,7 @@ eval '(exit $?0)' && eval 'exec perl -w -S $0 ${1+"$@"}' && eval 'exec perl -w -
 #D ChangeLog:
 #D \startitemize
 #D \item Add keyboard bindings for quitting the app: Ctrl-q,Ctrl-x,Alt-F4 (2006/07/19)
+#D \item Support for define --resolve (2006/08/04)
 #D \stopitemize
 
 use strict;
@@ -68,7 +69,7 @@ my %crosslinks;
 
 print "\n";
 
-show('TeXShow-XML 0.21 beta','Taco Hoekwater 2006',"/");
+show('TeXShow-XML 0.3 beta','Taco Hoekwater 2006',"/");
 
 print "\n";
 
@@ -322,41 +323,50 @@ sub setups_found {
 
 sub load_setup {
   my ($path,$filename) = @_;
+  my $localdefs = {};
   unless (keys %{$setups{$filename}}) {
     if (open(IN,"<${path}$filename.xml")) {
       my $position = 0 ;
       local $/ = '</cd:command>';
       while (my $data= <IN>) {
-	if ($data =~ /\<\/cd:interface/) {
-	  next;
-	}
-	if ($data =~ /\<cd:interface/) {
-	  $data =~ s/^(.*?)\<cd:command/\<cd:command/sm;
-	  my $meta = $1;
-	}
-	#
-	$data =~ s/\s*\n\s*//g;
-	$data =~ /\<cd:command(.*?)\>/;
-	my $info = $1;
-	my ($name,$environment) = ('','');
-	while ($info =~ s/^\s*(.*?)\s*=\s*(["'])(.*?)\2\s*//) {
-	  my $a = $1; my $b = $3;
-	  if ($a eq 'name') {
-	    $name = $b;
-	  } elsif ($a eq 'type') {
-	    $environment = $b;
+		next if $data =~ /\<\/cd:interface/;
+		if ($data =~ /\<cd:interface/) {
+		  $data =~ s/^(.*?)\<cd:command/\<cd:command/sm;
+		  my $meta = $1;
+		  while ($meta =~ s!<cd:define name=(['"])(.*?)\1>(.*?)</cd:define>!!sm) {
+			my $localdef = $2;
+			my $localval = $3;
+			$localdefs->{$localdef} = $localval;
+		  }
+		}
+		#
+		if (keys %$localdefs) {
+		  while ($data =~ /<cd:resolve/) {
+			$data =~ s/<cd:resolve name=(['"])(.*?)\1\/>/$localdefs->{$2}/ms;
+		  }
+		}
+		$data =~ s/\s*\n\s*//g;
+		$data =~ /\<cd:command(.*?)\>/;
+		my $info = $1;
+		my ($name,$environment) = ('','');
+		while ($info =~ s/^\s*(.*?)\s*=\s*(["'])(.*?)\2\s*//) {
+		  my $a = $1; my $b = $3;
+		  if ($a eq 'name') {
+			$name = $b;
+		  } elsif ($a eq 'type') {
+			$environment = $b;
+		  }
+		}
+		my $cmd = $name;
+		if ($environment) {
+		  $cmd = "start" . $name;
+		}
+		$setups    {$filename}{$cmd}   = $data ;
+		$trees     {$filename}{$cmd}   = undef;
+		$positions {$filename}{$cmd}   = ++$position ;
+		$crosslinks{$filename}[$position] = $cmd ;
 	  }
-	}
-	my $cmd = $name;
-	if ($environment) {
-	  $cmd = "start" . $name;
-	}
-	$setups    {$filename}{$cmd}   = $data ;
-	$trees     {$filename}{$cmd}   = undef;
-	$positions {$filename}{$cmd}   = ++$position ;
-	$crosslinks{$filename}[$position] = $cmd ;
-      }
-      close IN;
+	close IN;
 	  # now get explanations as well ...
 	  my $explname = $filename;
 	  $explname =~ s/cont-/expl-/;

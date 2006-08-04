@@ -659,7 +659,7 @@ class Commands
                         str.chomp!
                         str.sub!(/\s*$/o, '')
                         case str
-                            when /^[%\#]D/io then
+                            when /^[%\#]D($| )/io then
                                 if skiplevel == 0 then
                                     someline = if str.length < 3 then "" else str[3,str.length-1] end
                                     if indocument then
@@ -677,7 +677,7 @@ class Commands
                                         nofdocuments += 1
                                     end
                                 end
-                            when /^[%\#]M/io then
+                            when /^[%\#]M($| )/io then
                                 if skiplevel == 0 then
                                     someline = if str.length < 3 then "" else str[3,str.length-1] end
                                     ted.puts("#{someline}\n")
@@ -866,9 +866,11 @@ class Language
         preload_accents()
         preload_unicode() if @commandline.option('utf8')
         case @encoding.downcase
-            when 't1', 'ec', 'cork' then preload_vector('ec')
-            when 'y', 'texnansi'    then preload_vector('texnansi')
-            when 'agr', 'agreek'    then preload_vector('agr')
+            when 't1', 'ec', 'cork' then preload_vector('ec',       'enco-ec.tex')
+            when 'y', 'texnansi'    then preload_vector('texnansi', 'enco-ans.tex')
+            when 'agr', 'agreek'    then preload_vector('agr',      'enco-agr.tex')
+            when 't2a'              then preload_vector('t2a',      'enco-cyr.tex')
+            when 'cyr'              then preload_vector() # somehow loading t2a does not work out well
         end
     end
 
@@ -1242,7 +1244,7 @@ class Language
 
     end
 
-    def preload_vector(encoding='')
+    def preload_vector(encoding='', filename='')
 
         # funny polish
 
@@ -1478,19 +1480,66 @@ class Language
                 remap(/x/, "[greekxi]")
                 remap(/y/, "[greekpsi]")
                 remap(/z/, "[greekzeta]")
+            when 'ru' then
+                remap(/\xC1/, "[cyrillica]")
+                remap(/\xC2/, "[cyrillicb]")
+                remap(/\xD7/, "[cyrillicv]")
+                remap(/\xC7/, "[cyrillicg]")
+                remap(/\xC4/, "[cyrillicd]")
+                remap(/\xC5/, "[cyrillice]")
+                remap(/\xD6/, "[cyrilliczh]")
+                remap(/\xDA/, "[cyrillicz]")
+                remap(/\xC9/, "[cyrillici]")
+                remap(/\xCA/, "[cyrillicishrt]")
+                remap(/\xCB/, "[cyrillick]")
+                remap(/\xCC/, "[cyrillicl]")
+                remap(/\xCD/, "[cyrillicm]")
+                remap(/\xCE/, "[cyrillicn]")
+                remap(/\xCF/, "[cyrillico]")
+                remap(/\xD0/, "[cyrillicp]")
+                remap(/\xD2/, "[cyrillicr]")
+                remap(/\xD3/, "[cyrillics]")
+                remap(/\xD4/, "[cyrillict]")
+                remap(/\xD5/, "[cyrillicu]")
+                remap(/\xC6/, "[cyrillicf]")
+                remap(/\xC8/, "[cyrillich]")
+                remap(/\xC3/, "[cyrillicc]")
+                remap(/\xDE/, "[cyrillicch]")
+                remap(/\xDB/, "[cyrillicsh]")
+                remap(/\xDD/, "[cyrillicshch]")
+                remap(/\xDF/, "[cyrillichrdsn]")
+                remap(/\xD9/, "[cyrillicery]")
+                remap(/\xD8/, "[cyrillicsftsn]")
+                remap(/\xDC/, "[cyrillicerev]")
+                remap(/\xC0/, "[cyrillicyu]")
+                remap(/\xD1/, "[cyrillicya]")
+                remap(/\xA3/, "[cyrillicyo]")
             else
         end
 
         if ! encoding.empty? then
             begin
-                filename = `kpsewhich -progname=context enco-#{encoding}.tex`
-                if data = IO.read(filename.chomp) then
+                filename = `kpsewhich -progname=context #{filename}`
+                if data = IO.readlines(filename.chomp) then
                     report("preloading #{encoding} character mappings")
-                    data.scan(/\\definecharacter\s*([a-zA-Z]+)\s*(\d+)\s*/o) do
-                        name, number = $1, $2
-                        remap(/\^\^#{sprintf("%02x",number)}/, "[#{name}]")
-                        if number.to_i > 127 then
-                            remap(/#{sprintf("\\%03o",number)}/, "[#{name}]")
+                    accept = false
+                    data.each do |line|
+                        case line.chomp
+                            when /\\start(en|)coding\s*\[(.*?)\]/io then
+                                enc = $2
+                                if accept = (enc == encoding) then
+                                    report("accepting vector #{enc}")
+                                else
+                                    report("skipping vector #{enc}")
+                                end
+                            when /\\stop(en|)coding/io then
+                                accept = false
+                            when accept && /\\definecharacter\s*([a-zA-Z]+)\s*(\d+)\s*/o then
+                                name, number = $1, $2
+                                remap(/\^\^#{sprintf("%02x",number)}/, "[#{name}]")
+                                if number.to_i > 127 then
+                                    remap(/#{sprintf("\\%03o",number)}/, "[#{name}]")
+                                end
                         end
                     end
                 end
@@ -1568,6 +1617,8 @@ class Commands
     @@languagedata['sv' ] = [ 'ec'      , ['svhyph.tex'] ]
     @@languagedata['tr' ] = [ 'ec'      , ['tkhyph.tex'] ]
     @@languagedata['uk' ] = [ 'default' , [['ukhyphen.tex','ukhyph.tex']] ]
+  # @@languagedata['ru' ] = [ 't2a'     , ['ruhyphal.tex'] ] # t2a does not work
+    @@languagedata['ru' ] = [ 'cyr'     , ['ruhyphal.tex'] ]
 end
 
 class Commands

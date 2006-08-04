@@ -699,6 +699,9 @@
 \def\framedparameter#1%
   {\csname\@@framed#1\endcsname}
 
+\newdimen\!!framedwidth
+\newdimen\!!framedheight
+
 \def\startlocalframed[#1][#2]%
   {\bgroup
    \inframedtrue
@@ -790,30 +793,32 @@
      \@@localoffset\localoffset
      \advance\@@localoffset \ruledlinewidth
    \fi\fi
+   \!!framedheight\zeropoint
+   \!!framedwidth \zeropoint
    \ifx\localwidth\v!fit
      \ifboxhasformat
        \boxhaswidthtrue
-       \!!widtha\hsize
+       \!!framedwidth\hsize
      \else
        \boxhaswidthfalse
      \fi
    \else\ifx\localwidth\v!fixed % equals \v!fit but no shapebox
      \ifboxhasformat
        \boxhaswidthtrue
-       \!!widtha\hsize
+       \!!framedwidth\hsize
      \else
        \boxhaswidthfalse
      \fi
    \else\ifx\localwidth\v!broad
      \boxhaswidthtrue
-     \!!widtha\hsize
+     \!!framedwidth\hsize
    \else\ifx\localwidth\v!local
      \boxhaswidthtrue
      \setlocalhsize
-     \!!widtha\localhsize
+     \!!framedwidth\localhsize
    \else
      \boxhaswidthtrue
-     \!!widtha\localwidth
+     \!!framedwidth\localwidth
    \fi\fi\fi\fi
    \ifx\localheight\v!fit
      \boxhasheightfalse % no longer: \boxhasstrutfalse
@@ -821,28 +826,28 @@
      \boxhasheightfalse
    \else
      \boxhasheighttrue
-     \!!heighta\localheight
+     \!!framedheight\localheight
    \fi\fi
    \ifboxhasheight
      % obey user set height, also downward compatible
    \else
      \doifvaluesomething{\@@framed\c!lines}
        {\ifcase\framedparameter\c!lines\else
-          \!!heighta\framedparameter\c!lines\lineheight
-          \edef\localheight{\the\!!heighta}%
+          \!!framedheight\framedparameter\c!lines\lineheight
+          \edef\localheight{\the\!!framedheight}%
           \boxhasheighttrue
         \fi}%
    \fi
    % this is now an option: width=local
    %
-   % \ifdim\!!widtha=\hsize
+   % \ifdim\!!framedwidth=\hsize
    %   \parindent\zeropoint
    %   \setlocalhsize
-   %   \!!widtha\localhsize
+   %   \!!framedwidth\localhsize
    % \fi
    % i.e. disable (colsetbackgroundproblemintechniek)
-   \advance\!!widtha  -2\@@localoffset
-   \advance\!!heighta -2\@@localoffset
+   \advance\!!framedwidth  -2\@@localoffset
+   \advance\!!framedheight -2\@@localoffset
    \ifx\localstrut\v!no
      \boxhasstrutfalse
    \else\ifx\localstrut\v!global
@@ -860,7 +865,7 @@
      \let\localbegstrut\pseudobegstrut % was: \relax
      \let\localendstrut\pseudoendstrut % was: \relax
      \let\localstrut   \pseudostrut    % was: \relax
-    %\ifboxhasheight\ifdim\!!heighta<\strutht % saveguard
+    %\ifboxhasheight\ifdim\!!framedheight<\strutht % saveguard
     %  \let\localbegstrut\relax               % but not that
     %  \let\localstrut   \relax               % save after all
     %\fi\fi
@@ -912,9 +917,9 @@
      \fi
    \fi
    \edef\framedwidth % a new feature, visible for user
-     {\ifdim\!!widtha >\zeropoint\the\!!widtha \else\zeropoint\fi}%
+     {\ifdim\!!framedwidth >\zeropoint\the\!!framedwidth \else\zeropoint\fi}%
    \edef\framedheight% a new feature, visible for user
-     {\ifdim\!!heighta>\zeropoint\the\!!heighta\else\zeropoint\fi}%
+     {\ifdim\!!framedheight>\zeropoint\the\!!framedheight\else\zeropoint\fi}%
    % first alternative
    %\def\dowithframedbox%
    %  {\let\postprocessframebox\relax %new
@@ -974,65 +979,6 @@
 %D ...,bottom=\kern0pt,...
 %D \stoptyping
 
-% \def\stoplocalframed
-%   {\dontshowcomposition
-%    \@@stopframedorientation
-%    \ifboxhasformat
-%      \ifx\localwidth\v!fit
-%        \ifreshapeframebox\doreshapeframedbox\fi
-%        \boxhaswidthfalse
-%      \else\ifx\localwidth\v!fixed
-%        \boxhaswidthfalse
-%      \else
-%        \resetshapeframebox
-%      \fi\fi
-%    \else
-%      \resetshapeframebox
-%    \fi
-%    \ifboxhaswidth
-%      \wd\framebox\!!widtha
-%    \fi
-%    \ifboxhasheight
-%      \ht\framebox\!!heighta
-%    \fi
-%    \doifvalue{\@@framed\c!empty}\v!yes
-%      {\setbox\scratchbox\null
-%       \wd\scratchbox\wd\framebox
-%       \ht\scratchbox\ht\framebox
-%       \dp\scratchbox\dp\framebox
-%       \setbox\framebox\box\scratchbox}%
-%    \stopregistercolor
-%    \docolorframebox
-%    \ifboxhasoffset
-%      \dooffsetframebox
-%    \fi
-%    \ifboxisoverlaid \else
-%      \dolocateframebox
-%    \fi
-%    \ifx\postprocessframebox\relax \else
-%      \let\next\postprocessframebox
-%      \let\postprocessframebox\relax % prevent nesting
-%      \next\framebox
-%    \fi
-%    \edef\overlaylinecolor{\framedparameter\c!framecolor}%
-%    \edef\overlaylinewidth{\the\ruledlinewidth}% \@@...
-%    \ifboxhasframe % real or invisible frame
-%      \doframedbox
-%    \fi
-%    \doifvaluesomething{\@@framed\c!background}\dobackedbox
-%    \ifx\@@locallocation\v!low
-%      \doinlineframedbox
-%    \else\ifx\@@locallocation\v!depth
-%      \doloweredframedbox
-%    \else\ifx\@@locallocation\v!hanging
-%      \dohangingframedbox
-%    \fi\fi\fi
-%    \box\framebox
-%    \egroup
-%    \egroup}
-%
-% new version, installable handler:
-
 \def\stoplocalframed
   {\dontshowcomposition
    \@@stopframedorientation
@@ -1056,10 +1002,10 @@
      \resetshapeframebox
    \fi
    \ifboxhaswidth
-     \wd\framebox\!!widtha
+     \wd\framebox\!!framedwidth
    \fi
    \ifboxhasheight
-     \ht\framebox\!!heighta
+     \ht\framebox\!!framedheight
    \fi
    \doifvalue{\@@framed\c!empty}\v!yes
      {\setbox\scratchbox\null
@@ -1208,9 +1154,9 @@
        \scratchcounter\@@localorientation
        \divide\scratchcounter\plustwo
        \ifodd\scratchcounter
-         \swapmacros\framedwidth\framedheight
-         \swapmacros\localwidth \localheight
-         \swapdimens\!!heighta  \!!widtha
+         \swapmacros\framedwidth   \framedheight
+         \swapmacros\localwidth    \localheight
+         \swapdimens\!!framedheight\!!framedwidth
          \def\@@stopframedorientation{\@@dostopframedorientation\plusone}%
        \else
          \def\@@stopframedorientation{\@@dostopframedorientation\zerocount}%
@@ -1220,9 +1166,9 @@
 
 \def\@@dostopframedorientation#1%
   {\ifcase#1\else
-     \swapmacros\framedwidth\framedheight
-     \swapmacros\localwidth \localheight
-     \swapdimens\!!heighta  \!!widtha
+     \swapmacros\framedwidth   \framedheight
+     \swapmacros\localwidth    \localheight
+     \swapdimens\!!framedheight\!!framedwidth
    \fi
    \setbox\framebox\hbox{\dorotatebox\@@localorientation\hbox{\box\framebox}}}
 
@@ -1528,13 +1474,13 @@
 %D The handlers:
 
 \def\doformatboxSomeFormat
-  {\vbox to \!!heighta
+  {\vbox to \!!framedheight
      \bgroup
        \let\postprocessframebox\relax
        \forgetall
        \oninterlineskip
-       \hsize\!!widtha
-       \vsize\!!heighta
+       \hsize\!!framedwidth
+       \vsize\!!framedheight
        \doframedsetups
        \raggedcommand
        \dobeforeframedbox
@@ -1546,13 +1492,13 @@
        \doformatonelinerbox}
 
 \def\doformatboxNoFormat
-  {\vbox to \!!heighta
+  {\vbox to \!!framedheight
      \bgroup
        \let\postprocessframebox\relax
        \forgetall
        \oninterlineskip
-       \hsize\!!widtha
-       \vsize\!!heighta
+       \hsize\!!framedwidth
+       \vsize\!!framedheight
        \doframedsetups
        \raggedcenter
        \vss
@@ -1564,7 +1510,7 @@
        \doformatonelinerbox}
 
 \def\doformatboxHeight
-  {\vbox to \!!heighta
+  {\vbox to \!!framedheight
      \bgroup
        \let\postprocessframebox\relax
        \forgetall
@@ -1585,7 +1531,7 @@
        \let\postprocessframebox\relax
        \forgetall
        \oninterlineskip
-       \hsize\!!widtha
+       \hsize\!!framedwidth
        \doframedsetups
        \raggedcommand
        \dobeforeframedbox
@@ -1597,11 +1543,11 @@
        \doformatonelinerbox}
 
 \def\doformatboxVSize
-  {\vbox to \!!heighta
+  {\vbox to \!!framedheight
      \bgroup
        \let\postprocessframebox\relax
        \forgetall
-       \vsize\!!heighta
+       \vsize\!!framedheight
        \doframedsetups
        \vss
        \bgroup
@@ -1614,7 +1560,7 @@
          \doformatonelinerbox}
 
 \def\doformatboxHSize
-  {\hbox to \!!widtha
+  {\hbox to \!!framedwidth
      \bgroup
        \let\postprocessframebox\relax
        \forgetall
@@ -2550,6 +2496,7 @@
       \c!depthcorrection=\v!on,
       \c!margin=\v!standard,
       \c!orientation=,
+      \c!indenting=,
       #2]%
    \setvalue{\e!start#1}{\dostartframedtext[#1]}%
    \setvalue{\e!stop #1}{\dostopframedtext     }%
@@ -2603,6 +2550,7 @@
 
 \setfalse\framedtextlocationnone
 
+
 \def\dododostartframedtext[#1][#2][#3]% #3 only passed to framed, not to framedtext
   {\doifsomething{#2}{\setvalue{\??kd#1\c!location}{#2}}% does not listen to #3
    \setfalse\framedtextlocationnone
@@ -2642,6 +2590,7 @@
             \nowhitespace % na vskip ! new 20/05/2004, fails with next content being box (\scale{..})
             }%
          \doinhibitblank % \blank[\v!disable]% plaatst signal
+\setupindenting[\framedtextparameter{#1}\c!indenting]%
          \doconvertfont{\framedtextparameter{#1}\c!style}\empty
          \def\dostopframedtext{\dodostopframedtext{#1}{#2}}}
 

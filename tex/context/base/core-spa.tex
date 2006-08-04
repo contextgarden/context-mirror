@@ -1265,29 +1265,45 @@
 \parindent\ctxparindent
 \chardef\indentingtoggle\zerocount
 
+% \newtoks\savedeverypar \savedeverypar\everypar
+% \def\restoreeverypar{\everypar\savedeverypar}
+
+% we need a better everypar model: for each option a switch, which we
+% set to false with \forgetall and can enable when needed (context 4);
+% that way we can control the order of execution of options
+
+\def\checkeverypar % currently a hack
+  {\ifzeropt\parindent\else
+     \doifsometokselse\everypar\donothing{\appendtoks\checkindentation\to\everypar}%
+   \fi}
+
 \def\complexsetupindenting[#1]%
   {\edef\currentindenting{#1}%
-   % not here: \indentfirstparagraphtrue
-   % not here: \parindent\ctxparindent
-   % not here: \chardef\indentingtoggle\zerocount
-   \processcommalist[#1]\docomplexsetupindenting
-   \ifindentfirstparagraph\else\noindentation\fi % added
-   \toggleindentation}
+   \doifsomething\currentindenting % handy when a parameter is passed
+     {% not here: \indentfirstparagraphtrue
+      % not here: \parindent\ctxparindent
+      % not here: \chardef\indentingtoggle\zerocount
+      % we use commacommand in order to catch #1 being a command (expanded parameter)
+      \processcommacommand[\currentindenting]\docomplexsetupindentingA % catch small, medium, etc
+      \processcommacommand[\currentindenting]\docomplexsetupindentingB % catch rest
+      \checkeverypar % only when non-empty #1
+      \ifindentfirstparagraph\else\noindentation\fi % added
+      \toggleindentation}}
 
-% \def\docomplexsetupindenting#1%
-%   {\edef\!!stringa{#1}% catch #1=\somedimen
-%    \convertcommand\!!stringa\to\!!stringa
-%    \executeifdefined{\??in:\!!stringa}{\edef\currentindentation{#1}\simplesetupindenting}}
-
-\def\docomplexsetupindenting#1%
+\def\docomplexsetupindentingA#1%
   {\edef\!!stringa{#1}% catch #1=\somedimen
    \convertcommand\!!stringa\to\!!stringa
-   \executeifdefined{\??in:\!!stringa}
+   \doifundefined{\??in:\!!stringa}%
      {\edef\currentindentation{#1}%
       \let\normalindentation\currentindentation
       \simplesetupindenting}}
 
-\def\simplesetupindenting % empty case
+\def\docomplexsetupindentingB#1%
+  {\edef\!!stringa{#1}% catch #1=\somedimen
+   \convertcommand\!!stringa\to\!!stringa
+   \executeifdefined{\??in:\!!stringa}\donothing}
+
+\def\simplesetupindenting % empty case, a it strange, needed this way?
   {\assigndimension\currentindentation\ctxparindent{1em}{1.5em}{2em}}
 
 \def\indenting % kind of obsolete
@@ -4671,6 +4687,8 @@
 
 \setupwhitespace
   [\v!none]
+
+% still old-fachioned
 
 \indenting
   [\v!never]

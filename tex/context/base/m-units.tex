@@ -238,8 +238,13 @@
      \ustartmathmode\dimensiontypeface
    \else
      \ustartmathmode\dimensiontypeface
-     \ifdim\scratchdimen=\dimensionsignal\relax
-       \ifspaceddimensions\udimensionhalfspace\fi
+     \ifspaceddimensions
+       \ifdim\scratchdimen=\dimensionsignal\relax
+         \udimensionhalfspace
+\else\ifdim\scratchdimen=\dimensionpowersignal\relax
+  \udimensionhalfspace
+\fi
+       \fi
      \fi
    \fi
    \umathematicstypeface\thedimensionprefix#1%
@@ -267,6 +272,7 @@
    \fi
    \global\let\thedimensionprefix\empty
    \global\let\thedimensionpower\empty}
+
 
 %D \macros
 %D   {dontbreakdimension,

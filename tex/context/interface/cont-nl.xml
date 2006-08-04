@@ -1,26 +1,81 @@
-<?xml version="1.0"?>
+<?xml version="1.0" standalone="yes"?>
 
-<!--
-    todo: framed and similar align keys now supports more keys
+<!-- versions:
 
-    <cd:common name='align'>
-        <cd:constant type="hangend"/>
-        <cd:constant type="nohanging"/>
-        <cd:constant type="hz"/>
-        <cd:constant type="geenhz"/>
-        <cd:constant type="spatiering"/>
-        <cd:constant type="geenspatiering"/>
-        <cd:constant type="afgebroken"/>
-        <cd:constant type="nietafgebroken"/>
-        <cd:constant type="soepel"/>
-        <cd:constant type="zeersoepel"/>
-        <cd:constant type="rek"/>
-    </cd:common>
+    comment  : user interface definitions of ConTeXt
 
-    <cd:share name='align'/>
+    authors  : Hans Hagen, Taco Hoekwater, Patrick Gundlach
+
+    versions : 2004.11.17 : initial version
+               2006.08.02 : define + resolve
+
 -->
 
-<cd:interface xmlns:cd="http://www.pragma-ade.com/commands" name="context" language="nl" version="2004.11.17">
+<cd:interface xmlns:cd="http://www.pragma-ade.com/commands" name="context" language="nl" version="2006.08.02">
+
+<cd:define name="align">
+    <cd:constant type="binnen"/>
+    <cd:constant type="buiten"/>
+    <cd:constant type="links"/>
+    <cd:constant type="rechts"/>
+    <cd:constant type="midden"/>
+    <cd:constant type="normaal"/>
+    <cd:constant type="nee"/>
+    <cd:constant type="ja"/>
+</cd:define>
+
+<cd:define name="indenting">
+    <cd:constant type="nooit"/>
+    <cd:constant type="geen"/>
+    <cd:constant type="niet"/>
+    <cd:constant type="nee"/>
+    <cd:constant type="ja"/>
+    <cd:constant type="altijd"/>
+    <cd:constant type="eerste"/>
+    <cd:constant type="volgende"/>
+    <cd:constant type="klein"/>
+    <cd:constant type="middel"/>
+    <cd:constant type="groot"/>
+    <cd:constant type="normaal"/>
+    <cd:constant type="oneven"/>
+    <cd:constant type="even"/>
+    <cd:constant type="cd:dimension"/>
+</cd:define>
+
+<cd:define name="indentnext">
+    <cd:constant type="ja"/>
+    <cd:constant type="nee"/>
+</cd:define>
+
+<cd:define name="style">
+    <cd:constant type="normaal"/>
+    <cd:constant type="vet"/>
+    <cd:constant type="schuin"/>
+    <cd:constant type="vetschuin"/>
+    <cd:constant type="type"/>
+    <cd:constant type="kap"/>
+    <cd:constant type="small..."/>
+    <cd:constant type="cd:command"/>
+</cd:define>
+
+<cd:define name="language">
+      <cd:constant type="nl"/>
+      <cd:constant type="fr"/>
+      <cd:constant type="en"/>
+      <cd:constant type="uk"/>
+      <cd:constant type="de"/>
+      <cd:constant type="es"/>
+      <cd:constant type="cz"/>
+      <cd:constant type=".."/>
+</cd:define>
+
+<cd:define name="texts">
+      <cd:constant type="cd:text"/>
+      <cd:constant type="cd:section"/>
+      <cd:constant type="datum"/>
+      <cd:constant type="cd:mark"/>
+      <cd:constant type="paginanummer"/>
+</cd:define>
 
 <cd:command name="installlanguage" file="lang-ini.tex">
   <cd:sequence>
@@ -82,14 +137,7 @@
   </cd:sequence>
   <cd:arguments>
     <cd:keywords>
-      <cd:constant type="nl" default="yes"/>
-      <cd:constant type="fr"/>
-      <cd:constant type="en"/>
-      <cd:constant type="uk"/>
-      <cd:constant type="de"/>
-      <cd:constant type="es"/>
-      <cd:constant type="cz"/>
-      <cd:constant type=".."/>
+      <cd:resolve name="language"/>
     </cd:keywords>
     <cd:assignments list="yes">
       <cd:inherit name="installeertaal"/>
@@ -103,14 +151,7 @@
   </cd:sequence>
   <cd:arguments>
     <cd:keywords>
-      <cd:constant type="nl"/>
-      <cd:constant type="fr"/>
-      <cd:constant type="en"/>
-      <cd:constant type="uk"/>
-      <cd:constant type="de"/>
-      <cd:constant type="es"/>
-      <cd:constant type="cz"/>
-      <cd:constant type=".."/>
+      <cd:resolve name="language"/>
     </cd:keywords>
   </cd:arguments>
 </cd:command>
@@ -121,14 +162,7 @@
   </cd:sequence>
   <cd:arguments>
     <cd:keywords>
-      <cd:constant type="nl"/>
-      <cd:constant type="fr"/>
-      <cd:constant type="en"/>
-      <cd:constant type="uk"/>
-      <cd:constant type="de"/>
-      <cd:constant type="es"/>
-      <cd:constant type="cz"/>
-      <cd:constant type=".."/>
+      <cd:resolve name="language"/>
     </cd:keywords>
   </cd:arguments>
 </cd:command>
@@ -689,14 +723,7 @@
         <cd:constant type="geen"/>
       </cd:parameter>
       <cd:parameter name="letter">
-        <cd:constant type="normaal"/>
-        <cd:constant type="vet"/>
-        <cd:constant type="schuin"/>
-        <cd:constant type="vetschuin"/>
-        <cd:constant type="type"/>
-        <cd:constant type="kap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="kleur">
         <cd:constant type="cd:name"/>
@@ -840,18 +867,10 @@
         <cd:constant type="nee"/>
       </cd:parameter>
       <cd:parameter name="springvolgendein">
-        <cd:constant type="ja"/>
-        <cd:constant type="nee"/>
+        <cd:resolve name="indentnext"/>
       </cd:parameter>
       <cd:parameter name="letter">
-        <cd:constant type="normaal"/>
-        <cd:constant type="vet"/>
-        <cd:constant type="schuin"/>
-        <cd:constant type="vetschuin"/>
-        <cd:constant type="type"/>
-        <cd:constant type="kap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="kleur">
         <cd:constant type="cd:name"/>
@@ -946,14 +965,7 @@
         <cd:constant type="groot"/>
       </cd:parameter>
       <cd:parameter name="letter">
-        <cd:constant type="normaal"/>
-        <cd:constant type="vet"/>
-        <cd:constant type="schuin"/>
-        <cd:constant type="vetschuin"/>
-        <cd:constant type="type"/>
-        <cd:constant type="kap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="afstand">
         <cd:constant type="cd:dimension"/>
@@ -980,14 +992,7 @@
         <cd:constant type="cd:number"/>
       </cd:parameter>
       <cd:parameter name="tekstletter">
-        <cd:constant type="normaal"/>
-        <cd:constant type="vet"/>
-        <cd:constant type="schuin"/>
-        <cd:constant type="vetschuin"/>
-        <cd:constant type="type"/>
-        <cd:constant type="kap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="tekstkleur">
         <cd:constant type="cd:name"/>
@@ -1489,14 +1494,7 @@
   </cd:sequence>
   <cd:arguments>
     <cd:keywords optional="yes">
-      <cd:constant type="nl" default="yes"/>
-      <cd:constant type="fr"/>
-      <cd:constant type="en"/>
-      <cd:constant type="uk"/>
-      <cd:constant type="de"/>
-      <cd:constant type="es"/>
-      <cd:constant type="cz"/>
-      <cd:constant type=".."/>
+      <cd:resolve name="language"/>
     </cd:keywords>
     <cd:assignments>
       <cd:parameter name="cd:name">
@@ -1512,14 +1510,7 @@
   </cd:sequence>
   <cd:arguments>
     <cd:keywords optional="yes">
-      <cd:constant type="nl" default="yes"/>
-      <cd:constant type="fr"/>
-      <cd:constant type="en"/>
-      <cd:constant type="uk"/>
-      <cd:constant type="de"/>
-      <cd:constant type="es"/>
-      <cd:constant type="cz"/>
-      <cd:constant type=".."/>
+      <cd:resolve name="language"/>
     </cd:keywords>
     <cd:assignments>
       <cd:parameter name="cd:name">
@@ -1647,14 +1638,7 @@
         <cd:constant type="lokaal"/>
       </cd:parameter>
       <cd:parameter name="uitlijnen">
-        <cd:constant type="nee"/>
-        <cd:constant type="links"/>
-        <cd:constant type="rechts"/>
-        <cd:constant type="midden"/>
-        <cd:constant type="normaal"/>
-        <cd:constant type="hoog"/>
-        <cd:constant type="laag"/>
-        <cd:constant type="laho"/>
+        <cd:resolve name="align"/>
       </cd:parameter>
       <cd:parameter name="onder">
         <cd:constant type="cd:command"/>
@@ -1745,7 +1729,7 @@
         <cd:constant type="cd:name"/>
       </cd:parameter>
       <cd:parameter name="voorgrondletter">
-        <cd:constant type="cd:name"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
     </cd:assignments>
   </cd:arguments>
@@ -1899,13 +1883,7 @@
         <cd:constant type="groot"/>
       </cd:parameter>
       <cd:parameter name="letter">
-        <cd:constant type="normaal"/>
-        <cd:constant type="vet"/>
-        <cd:constant type="schuin"/>
-        <cd:constant type="vetschuin"/>
-        <cd:constant type="type"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="links">
         <cd:constant type="cd:command"/>
@@ -1940,6 +1918,9 @@
         <cd:constant type="rechts"/>
         <cd:constant type="midden"/>
         <cd:constant type="geen"/>
+      </cd:parameter>
+      <cd:parameter name="inspringen">
+        <cd:resolve name="indenting"/>
       </cd:parameter>
       <cd:inherit name="stelomlijndin"/>
     </cd:assignments>
@@ -2066,14 +2047,7 @@
         <cd:constant type="cd:command"/>
       </cd:parameter>
       <cd:parameter name="letter">
-        <cd:constant type="normaal"/>
-        <cd:constant type="vet"/>
-        <cd:constant type="schuin"/>
-        <cd:constant type="vetschuin"/>
-        <cd:constant type="type"/>
-        <cd:constant type="kap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="n">
         <cd:constant type="cd:number"/>
@@ -2163,14 +2137,7 @@
         <cd:constant type="cd:name"/>
       </cd:parameter>
       <cd:parameter name="letter">
-        <cd:constant type="normaal"/>
-        <cd:constant type="vet"/>
-        <cd:constant type="schuin"/>
-        <cd:constant type="vetschuin"/>
-        <cd:constant type="type"/>
-        <cd:constant type="kap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="lijnkleur">
         <cd:constant type="cd:name"/>
@@ -2567,23 +2534,13 @@
         <cd:constant type="rechts"/>
       </cd:parameter>
       <cd:parameter name="letter">
-        <cd:constant type="normaal"/>
-        <cd:constant type="vet"/>
-        <cd:constant type="schuin"/>
-        <cd:constant type="vetschuin"/>
-        <cd:constant type="type"/>
-        <cd:constant type="kap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="breedte">
         <cd:constant type="cd:dimension"/>
       </cd:parameter>
       <cd:parameter name="uitlijnen">
-        <cd:constant type="links"/>
-        <cd:constant type="midden"/>
-        <cd:constant type="rechts"/>
-        <cd:constant type="nee"/>
+        <cd:resolve name="align"/>
       </cd:parameter>
       <cd:parameter name="boven">
         <cd:constant type="cd:command"/>
@@ -2957,24 +2914,10 @@
     </cd:keywords>
     <cd:assignments list="yes">
       <cd:parameter name="kopletter">
-        <cd:constant type="normaal"/>
-        <cd:constant type="vet"/>
-        <cd:constant type="schuin"/>
-        <cd:constant type="vetschuin"/>
-        <cd:constant type="type"/>
-        <cd:constant type="kap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="letter">
-        <cd:constant type="normaal"/>
-        <cd:constant type="vet"/>
-        <cd:constant type="schuin"/>
-        <cd:constant type="vetschuin"/>
-        <cd:constant type="type"/>
-        <cd:constant type="kap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="kleur">
         <cd:constant type="cd:name"/>
@@ -2994,9 +2937,7 @@
         <cd:constant type="cd:text"/>
       </cd:parameter>
       <cd:parameter name="uitlijnen">
-        <cd:constant type="links"/>
-        <cd:constant type="midden"/>
-        <cd:constant type="rechts"/>
+        <cd:resolve name="align"/>
       </cd:parameter>
       <cd:parameter name="marge">
         <cd:constant type="standaard"/>
@@ -3032,17 +2973,10 @@
         <cd:constant type="cd:command"/>
       </cd:parameter>
       <cd:parameter name="springvolgendein">
-        <cd:constant type="ja"/>
-        <cd:constant type="nee"/>
+        <cd:resolve name="indentnext"/>
       </cd:parameter>
       <cd:parameter name="inspringen">
-        <cd:constant type="nooit"/>
-        <cd:constant type="niet"/>
-        <cd:constant type="nee"/>
-        <cd:constant type="ja"/>
-        <cd:constant type="altijd"/>
-        <cd:constant type="eerste"/>
-        <cd:constant type="volgende"/>
+        <cd:resolve name="indenting"/>
       </cd:parameter>
     </cd:assignments>
   </cd:arguments>
@@ -3137,24 +3071,10 @@
     </cd:keywords>
     <cd:assignments list="yes">
       <cd:parameter name="letter">
-        <cd:constant type="normaal"/>
-        <cd:constant type="vet"/>
-        <cd:constant type="schuin"/>
-        <cd:constant type="vetschuin"/>
-        <cd:constant type="type"/>
-        <cd:constant type="kap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="kopletter">
-        <cd:constant type="normaal"/>
-        <cd:constant type="vet"/>
-        <cd:constant type="schuin"/>
-        <cd:constant type="vetschuin"/>
-        <cd:constant type="type"/>
-        <cd:constant type="kap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="breedte">
         <cd:constant type="passend"/>
@@ -3230,14 +3150,7 @@
         <cd:constant type="nee"/>
       </cd:parameter>
       <cd:parameter name="kopletter">
-        <cd:constant type="normaal"/>
-        <cd:constant type="vet"/>
-        <cd:constant type="schuin"/>
-        <cd:constant type="vetschuin"/>
-        <cd:constant type="type"/>
-        <cd:constant type="kap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="kopkleur">
         <cd:constant type="cd:name"/>
@@ -3295,9 +3208,7 @@
         <cd:constant type="nee"/>
       </cd:parameter>
       <cd:parameter name="uitlijnen">
-        <cd:constant type="ja"/>
-        <cd:constant type="nee"/>
-        <cd:constant type="cd:text"/>
+        <cd:resolve name="align"/>
       </cd:parameter>
       <cd:parameter name="blanko">
         <cd:constant type="vast"/>
@@ -3381,34 +3292,13 @@
         <cd:constant type="nee"/>
       </cd:parameter>
       <cd:parameter name="letter">
-        <cd:constant type="normaal"/>
-        <cd:constant type="vet"/>
-        <cd:constant type="schuin"/>
-        <cd:constant type="vetschuin"/>
-        <cd:constant type="type"/>
-        <cd:constant type="kap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="linkerletter">
-        <cd:constant type="normaal"/>
-        <cd:constant type="vet"/>
-        <cd:constant type="schuin"/>
-        <cd:constant type="vetschuin"/>
-        <cd:constant type="type"/>
-        <cd:constant type="kap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="rechterletter">
-        <cd:constant type="normaal"/>
-        <cd:constant type="vet"/>
-        <cd:constant type="schuin"/>
-        <cd:constant type="vetschuin"/>
-        <cd:constant type="type"/>
-        <cd:constant type="kap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="linkerbreedte">
         <cd:constant type="cd:dimension"/>
@@ -3505,18 +3395,10 @@
       <cd:constant type="rand"/>
     </cd:keywords>
     <cd:keywords>
-      <cd:constant type="cd:text"/>
-      <cd:constant type="cd:section"/>
-      <cd:constant type="datum"/>
-      <cd:constant type="cd:mark"/>
-      <cd:constant type="paginanummer"/>
+      <cd:resolve name="texts"/>
     </cd:keywords>
     <cd:keywords>
-      <cd:constant type="cd:text"/>
-      <cd:constant type="cd:section"/>
-      <cd:constant type="datum"/>
-      <cd:constant type="cd:mark"/>
-      <cd:constant type="paginanummer"/>
+      <cd:resolve name="texts"/>
     </cd:keywords>
   </cd:arguments>
 </cd:command>
@@ -3532,18 +3414,10 @@
       <cd:constant type="rand"/>
     </cd:keywords>
     <cd:keywords>
-      <cd:constant type="cd:text"/>
-      <cd:constant type="cd:section"/>
-      <cd:constant type="datum"/>
-      <cd:constant type="cd:mark"/>
-      <cd:constant type="paginanummer"/>
+      <cd:resolve name="texts"/>
     </cd:keywords>
     <cd:keywords>
-      <cd:constant type="cd:text"/>
-      <cd:constant type="cd:section"/>
-      <cd:constant type="datum"/>
-      <cd:constant type="cd:mark"/>
-      <cd:constant type="paginanummer"/>
+      <cd:resolve name="texts"/>
     </cd:keywords>
   </cd:arguments>
 </cd:command>
@@ -3559,18 +3433,10 @@
       <cd:constant type="rand"/>
     </cd:keywords>
     <cd:keywords>
-      <cd:constant type="cd:text"/>
-      <cd:constant type="cd:section"/>
-      <cd:constant type="datum"/>
-      <cd:constant type="cd:mark"/>
-      <cd:constant type="paginanummer"/>
+      <cd:resolve name="texts"/>
     </cd:keywords>
     <cd:keywords>
-      <cd:constant type="cd:text"/>
-      <cd:constant type="cd:section"/>
-      <cd:constant type="datum"/>
-      <cd:constant type="cd:mark"/>
-      <cd:constant type="paginanummer"/>
+      <cd:resolve name="texts"/>
     </cd:keywords>
   </cd:arguments>
 </cd:command>
@@ -3586,18 +3452,10 @@
       <cd:constant type="rand"/>
     </cd:keywords>
     <cd:keywords>
-      <cd:constant type="cd:text"/>
-      <cd:constant type="cd:section"/>
-      <cd:constant type="datum"/>
-      <cd:constant type="cd:mark"/>
-      <cd:constant type="paginanummer"/>
+      <cd:resolve name="texts"/>
     </cd:keywords>
     <cd:keywords>
-      <cd:constant type="cd:text"/>
-      <cd:constant type="cd:section"/>
-      <cd:constant type="datum"/>
-      <cd:constant type="cd:mark"/>
-      <cd:constant type="paginanummer"/>
+      <cd:resolve name="texts"/>
     </cd:keywords>
   </cd:arguments>
 </cd:command>
@@ -3613,18 +3471,10 @@
       <cd:constant type="rand"/>
     </cd:keywords>
     <cd:keywords>
-      <cd:constant type="cd:text"/>
-      <cd:constant type="cd:section"/>
-      <cd:constant type="datum"/>
-      <cd:constant type="cd:mark"/>
-      <cd:constant type="paginanummer"/>
+      <cd:resolve name="texts"/>
     </cd:keywords>
     <cd:keywords>
-      <cd:constant type="cd:text"/>
-      <cd:constant type="cd:section"/>
-      <cd:constant type="datum"/>
-      <cd:constant type="cd:mark"/>
-      <cd:constant type="paginanummer"/>
+      <cd:resolve name="texts"/>
     </cd:keywords>
   </cd:arguments>
 </cd:command>
@@ -3823,14 +3673,7 @@
         <cd:constant type="cd:dimension"/>
       </cd:parameter>
       <cd:parameter name="letter">
-        <cd:constant type="normaal"/>
-        <cd:constant type="vet"/>
-        <cd:constant type="schuin"/>
-        <cd:constant type="vetschuin"/>
-        <cd:constant type="type"/>
-        <cd:constant type="kap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="kleur">
         <cd:constant type="cd:name"/>
@@ -4086,14 +3929,7 @@
         <cd:constant type="Romeins"/>
       </cd:parameter>
       <cd:parameter name="letter">
-        <cd:constant type="normaal"/>
-        <cd:constant type="vet"/>
-        <cd:constant type="schuin"/>
-        <cd:constant type="vetschuin"/>
-        <cd:constant type="type"/>
-        <cd:constant type="kap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="links">
         <cd:constant type="cd:text"/>
@@ -4196,14 +4032,7 @@
         <cd:constant type="cd:command"/>
       </cd:parameter>
       <cd:parameter name="letter">
-        <cd:constant type="normaal"/>
-        <cd:constant type="vet"/>
-        <cd:constant type="schuin"/>
-        <cd:constant type="vetschuin"/>
-        <cd:constant type="type"/>
-        <cd:constant type="kap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="commandos">
         <cd:constant type="cd:command"/>
@@ -4237,10 +4066,7 @@
         <cd:constant type="cd:text"/>
       </cd:parameter>
       <cd:parameter name="uitlijnen">
-        <cd:constant type="links"/>
-        <cd:constant type="rechts"/>
-        <cd:constant type="normaal"/>
-        <cd:constant type="ruim"/>
+        <cd:resolve name="align"/>
       </cd:parameter>
       <cd:parameter name="titeluitlijnen">
         <cd:constant type="ja"/>
@@ -4255,8 +4081,7 @@
         <cd:constant type="rek"/>
       </cd:parameter>
       <cd:parameter name="springvolgendein">
-        <cd:constant type="ja"/>
-        <cd:constant type="nee"/>
+        <cd:resolve name="indentnext"/>
       </cd:parameter>
       <cd:parameter name="commando">
         <cd:constant type="cd:twoarguments"/>
@@ -4293,24 +4118,10 @@
         <cd:constant type="cd:dimension"/>
       </cd:parameter>
       <cd:parameter name="kopletter">
-        <cd:constant type="normaal"/>
-        <cd:constant type="vet"/>
-        <cd:constant type="schuin"/>
-        <cd:constant type="vetschuin"/>
-        <cd:constant type="type"/>
-        <cd:constant type="kap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="letter">
-        <cd:constant type="normaal"/>
-        <cd:constant type="vet"/>
-        <cd:constant type="schuin"/>
-        <cd:constant type="vetschuin"/>
-        <cd:constant type="type"/>
-        <cd:constant type="kap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="nummer">
         <cd:constant type="ja"/>
@@ -4320,10 +4131,7 @@
         <cd:constant type="cd:command"/>
       </cd:parameter>
       <cd:parameter name="uitlijnen">
-        <cd:constant type="links"/>
-        <cd:constant type="midden"/>
-        <cd:constant type="rechts"/>
-        <cd:constant type="nee"/>
+        <cd:resolve name="align"/>
       </cd:parameter>
       <cd:parameter name="conversie">
         <cd:constant type="cijfers"/>
@@ -4415,8 +4223,7 @@
         <cd:constant type="geen"/>
       </cd:parameter>
       <cd:parameter name="springvolgendein">
-        <cd:constant type="ja"/>
-        <cd:constant type="nee"/>
+        <cd:resolve name="indentnext"/>
       </cd:parameter>
       <cd:parameter name="nboven">
         <cd:constant type="cd:number"/>
@@ -4730,14 +4537,7 @@
   <cd:arguments>
     <cd:assignments list="yes">
       <cd:parameter name="letter">
-        <cd:constant type="normaal"/>
-        <cd:constant type="vet"/>
-        <cd:constant type="schuin"/>
-        <cd:constant type="vetschuin"/>
-        <cd:constant type="type"/>
-        <cd:constant type="kap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="urlvariant">
         <cd:constant type="geen"/>
@@ -4966,44 +4766,16 @@
         <cd:constant type="cd:list"/>
       </cd:parameter>
       <cd:parameter name="letter">
-        <cd:constant type="normaal"/>
-        <cd:constant type="vet"/>
-        <cd:constant type="schuin"/>
-        <cd:constant type="vetschuin"/>
-        <cd:constant type="type"/>
-        <cd:constant type="kap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="nummerletter">
-        <cd:constant type="normaal"/>
-        <cd:constant type="vet"/>
-        <cd:constant type="schuin"/>
-        <cd:constant type="vetschuin"/>
-        <cd:constant type="type"/>
-        <cd:constant type="kap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="tekstletter">
-        <cd:constant type="normaal"/>
-        <cd:constant type="vet"/>
-        <cd:constant type="schuin"/>
-        <cd:constant type="vetschuin"/>
-        <cd:constant type="type"/>
-        <cd:constant type="kap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="paginaletter">
-        <cd:constant type="normaal"/>
-        <cd:constant type="vet"/>
-        <cd:constant type="schuin"/>
-        <cd:constant type="vetschuin"/>
-        <cd:constant type="type"/>
-        <cd:constant type="kap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="kleur">
         <cd:constant type="cd:name"/>
@@ -5216,9 +4988,7 @@
         <cd:constant type="cd:text"/>
       </cd:parameter>
       <cd:parameter name="uitlijnen">
-        <cd:constant type="links"/>
-        <cd:constant type="midden"/>
-        <cd:constant type="rechts"/>
+        <cd:resolve name="align"/>
       </cd:parameter>
       <cd:parameter name="optie">
         <cd:constant type="midden"/>
@@ -5243,8 +5013,7 @@
         <cd:constant type="cd:dimension"/>
       </cd:parameter>
       <cd:parameter name="springvolgendein">
-        <cd:constant type="ja"/>
-        <cd:constant type="nee"/>
+        <cd:resolve name="indentnext"/>
       </cd:parameter>
       <cd:parameter name="variant">
         <cd:constant type="cd:name"/>
@@ -5310,10 +5079,7 @@
         <cd:constant type="cd:command"/>
       </cd:parameter>
       <cd:parameter name="inspringen">
-        <cd:constant type="ja"/>
-        <cd:constant type="nee"/>
-        <cd:constant type="even"/>
-        <cd:constant type="oneven"/>
+        <cd:resolve name="indenting"/>
       </cd:parameter>
       <cd:parameter name="spatie">
         <cd:constant type="ja"/>
@@ -5342,14 +5108,7 @@
         <cd:constant type="regel"/>
       </cd:parameter>
       <cd:parameter name="letter">
-        <cd:constant type="normaal"/>
-        <cd:constant type="vet"/>
-        <cd:constant type="schuin"/>
-        <cd:constant type="vetschuin"/>
-        <cd:constant type="type"/>
-        <cd:constant type="kap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="afstand">
         <cd:constant type="cd:dimension"/>
@@ -5386,14 +5145,7 @@
         <cd:constant type="inmarge"/>
       </cd:parameter>
       <cd:parameter name="letter">
-        <cd:constant type="normaal"/>
-        <cd:constant type="vet"/>
-        <cd:constant type="schuin"/>
-        <cd:constant type="vetschuin"/>
-        <cd:constant type="type"/>
-        <cd:constant type="kap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="prefix">
         <cd:constant type="cd:text"/>
@@ -5461,14 +5213,7 @@
         <cd:constant type="beide"/>
       </cd:parameter>
       <cd:parameter name="letter">
-        <cd:constant type="normaal"/>
-        <cd:constant type="vet"/>
-        <cd:constant type="schuin"/>
-        <cd:constant type="vetschuin"/>
-        <cd:constant type="type"/>
-        <cd:constant type="kap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="voor">
         <cd:constant type="cd:command"/>
@@ -5477,14 +5222,7 @@
         <cd:constant type="cd:command"/>
       </cd:parameter>
       <cd:parameter name="uitlijnen">
-        <cd:constant type="binnen"/>
-        <cd:constant type="buiten"/>
-        <cd:constant type="links"/>
-        <cd:constant type="rechts"/>
-        <cd:constant type="midden"/>
-        <cd:constant type="normaal"/>
-        <cd:constant type="nee"/>
-        <cd:constant type="ja"/>
+        <cd:resolve name="align"/>
       </cd:parameter>
       <cd:parameter name="regel">
         <cd:constant type="cd:number"/>
@@ -5802,16 +5540,7 @@
   </cd:sequence>
   <cd:arguments>
     <cd:keywords list="yes">
-      <cd:constant type="geen" default="yes"/>
-      <cd:constant type="klein"/>
-      <cd:constant type="middel"/>
-      <cd:constant type="groot"/>
-      <cd:constant type="volgende"/>
-      <cd:constant type="eerste"/>
-      <cd:constant type="normaal"/>
-      <cd:constant type="oneven"/>
-      <cd:constant type="even"/>
-      <cd:constant type="cd:dimension"/>
+        <cd:resolve name="indenting"/>
     </cd:keywords>
   </cd:arguments>
 </cd:command>
@@ -5905,34 +5634,13 @@
     </cd:keywords>
     <cd:assignments list="yes">
       <cd:parameter name="letter">
-        <cd:constant type="normaal"/>
-        <cd:constant type="vet"/>
-        <cd:constant type="schuin"/>
-        <cd:constant type="vetschuin"/>
-        <cd:constant type="type"/>
-        <cd:constant type="kap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="tekstletter">
-        <cd:constant type="normaal"/>
-        <cd:constant type="vet"/>
-        <cd:constant type="schuin"/>
-        <cd:constant type="vetschuin"/>
-        <cd:constant type="type"/>
-        <cd:constant type="kap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="nummerletter">
-        <cd:constant type="normaal"/>
-        <cd:constant type="vet"/>
-        <cd:constant type="schuin"/>
-        <cd:constant type="vetschuin"/>
-        <cd:constant type="type"/>
-        <cd:constant type="kap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="kleur">
         <cd:constant type="cd:name"/>
@@ -6200,34 +5908,13 @@
         <cd:constant type="cd:command"/>
       </cd:parameter>
       <cd:parameter name="kopletter">
-        <cd:constant type="normaal"/>
-        <cd:constant type="vet"/>
-        <cd:constant type="schuin"/>
-        <cd:constant type="vetschuin"/>
-        <cd:constant type="type"/>
-        <cd:constant type="kap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="marletter">
-        <cd:constant type="normaal"/>
-        <cd:constant type="vet"/>
-        <cd:constant type="schuin"/>
-        <cd:constant type="vetschuin"/>
-        <cd:constant type="type"/>
-        <cd:constant type="kap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="symletter">
-        <cd:constant type="normaal"/>
-        <cd:constant type="vet"/>
-        <cd:constant type="schuin"/>
-        <cd:constant type="vetschuin"/>
-        <cd:constant type="type"/>
-        <cd:constant type="kap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="afsluiter">
         <cd:constant type="cd:text"/>
@@ -6239,13 +5926,10 @@
         <cd:constant type="cd:number"/>
       </cd:parameter>
       <cd:parameter name="uitlijnen">
-        <cd:constant type="links"/>
-        <cd:constant type="rechts"/>
-        <cd:constant type="normaal"/>
+        <cd:resolve name="align"/>
       </cd:parameter>
       <cd:parameter name="springvolgendein">
-        <cd:constant type="ja"/>
-        <cd:constant type="nee"/>
+        <cd:resolve name="indentnext"/>
       </cd:parameter>
     </cd:assignments>
   </cd:arguments>
@@ -6404,38 +6088,16 @@
         <cd:constant type="nee"/>
       </cd:parameter>
       <cd:parameter name="uitlijnen">
-        <cd:constant type="ja"/>
-        <cd:constant type="nee"/>
+        <cd:resolve name="align"/>
       </cd:parameter>
       <cd:parameter name="letter">
-        <cd:constant type="normaal"/>
-        <cd:constant type="vet"/>
-        <cd:constant type="schuin"/>
-        <cd:constant type="vetschuin"/>
-        <cd:constant type="type"/>
-        <cd:constant type="kap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="paginaletter">
-        <cd:constant type="normaal"/>
-        <cd:constant type="vet"/>
-        <cd:constant type="schuin"/>
-        <cd:constant type="vetschuin"/>
-        <cd:constant type="type"/>
-        <cd:constant type="kap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="tekstletter">
-        <cd:constant type="normaal"/>
-        <cd:constant type="vet"/>
-        <cd:constant type="schuin"/>
-        <cd:constant type="vetschuin"/>
-        <cd:constant type="type"/>
-        <cd:constant type="kap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="aanduiding">
         <cd:constant type="ja"/>
@@ -6658,24 +6320,10 @@
     </cd:keywords>
     <cd:assignments list="yes">
       <cd:parameter name="tekstletter">
-        <cd:constant type="normaal"/>
-        <cd:constant type="vet"/>
-        <cd:constant type="schuin"/>
-        <cd:constant type="vetschuin"/>
-        <cd:constant type="type"/>
-        <cd:constant type="kap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="synoniemletter">
-        <cd:constant type="normaal"/>
-        <cd:constant type="vet"/>
-        <cd:constant type="schuin"/>
-        <cd:constant type="vetschuin"/>
-        <cd:constant type="type"/>
-        <cd:constant type="kap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="plaats">
         <cd:constant type="links"/>
@@ -6791,14 +6439,7 @@
         <cd:constant type="gebruikt"/>
       </cd:parameter>
       <cd:parameter name="letter">
-        <cd:constant type="normaal"/>
-        <cd:constant type="vet"/>
-        <cd:constant type="schuin"/>
-        <cd:constant type="vetschuin"/>
-        <cd:constant type="type"/>
-        <cd:constant type="kap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="expansie">
         <cd:constant type="ja"/>
@@ -7011,13 +6652,7 @@
   </cd:sequence>
   <cd:arguments>
     <cd:keywords list="yes">
-      <cd:constant type="nooit" default="yes"/>
-      <cd:constant type="niet"/>
-      <cd:constant type="nee"/>
-      <cd:constant type="ja"/>
-      <cd:constant type="altijd"/>
-      <cd:constant type="eerste"/>
-      <cd:constant type="volgende"/>
+      <cd:resolve name="indenting"/>
     </cd:keywords>
   </cd:arguments>
 </cd:command>
@@ -7506,14 +7141,7 @@
         <cd:constant type="cd:command"/>
       </cd:parameter>
       <cd:parameter name="letter">
-        <cd:constant type="normaal"/>
-        <cd:constant type="vet"/>
-        <cd:constant type="schuin"/>
-        <cd:constant type="vetschuin"/>
-        <cd:constant type="type"/>
-        <cd:constant type="kap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="file">
         <cd:constant type="cd:file"/>
@@ -7863,10 +7491,7 @@
         <cd:constant type="cd:command"/>
       </cd:parameter>
       <cd:parameter name="uitlijnen">
-        <cd:constant type="links"/>
-        <cd:constant type="rechts"/>
-        <cd:constant type="midden"/>
-        <cd:constant type="marge"/>
+        <cd:resolve name="align"/>
       </cd:parameter>
       <cd:parameter name="na">
         <cd:constant type="cd:command"/>
@@ -7919,14 +7544,7 @@
         <cd:constant type="cd:command"/>
       </cd:parameter>
       <cd:parameter name="letter">
-        <cd:constant type="normaal"/>
-        <cd:constant type="vet"/>
-        <cd:constant type="schuin"/>
-        <cd:constant type="vetschuin"/>
-        <cd:constant type="type"/>
-        <cd:constant type="kap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="kleur">
         <cd:constant type="cd:name"/>
@@ -7992,9 +7610,7 @@
         <cd:constant type="rek"/>
       </cd:parameter>
       <cd:parameter name="uitlijnen">
-        <cd:constant type="links"/>
-        <cd:constant type="rechts"/>
-        <cd:constant type="midden"/>
+        <cd:resolve name="align"/>
       </cd:parameter>
     </cd:assignments>
   </cd:arguments>
@@ -8026,14 +7642,7 @@
     </cd:keywords>
     <cd:assignments list="yes">
       <cd:parameter name="letter">
-        <cd:constant type="normaal"/>
-        <cd:constant type="vet"/>
-        <cd:constant type="schuin"/>
-        <cd:constant type="vetschuin"/>
-        <cd:constant type="type"/>
-        <cd:constant type="kap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="breedte">
         <cd:constant type="cd:dimension"/>
@@ -8042,10 +7651,7 @@
         <cd:constant type="cd:dimension"/>
       </cd:parameter>
       <cd:parameter name="uitlijnen">
-        <cd:constant type="links"/>
-        <cd:constant type="rechts"/>
-        <cd:constant type="midden"/>
-        <cd:constant type="breedte"/>
+        <cd:resolve name="align"/>
       </cd:parameter>
       <cd:parameter name="tolerantie">
         <cd:constant type="zeerstreng"/>
@@ -8090,14 +7696,7 @@
         <cd:constant type="cd:dimension"/>
       </cd:parameter>
       <cd:parameter name="kopletter">
-        <cd:constant type="normaal"/>
-        <cd:constant type="vet"/>
-        <cd:constant type="schuin"/>
-        <cd:constant type="vetschuin"/>
-        <cd:constant type="type"/>
-        <cd:constant type="kap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="plaats">
         <cd:constant type="links"/>
@@ -8183,8 +7782,7 @@
         <cd:constant type="cd:dimension"/>
       </cd:parameter>
       <cd:parameter name="inspringen">
-        <cd:constant type="ja"/>
-        <cd:constant type="nee"/>
+        <cd:resolve name="indenting"/>
       </cd:parameter>
       <cd:parameter name="voor">
         <cd:constant type="cd:command"/>
@@ -8202,10 +7800,7 @@
         <cd:constant type="cd:name"/>
       </cd:parameter>
       <cd:parameter name="uitlijnen">
-        <cd:constant type="links"/>
-        <cd:constant type="midden"/>
-        <cd:constant type="rechts"/>
-        <cd:constant type="normaal"/>
+        <cd:resolve name="align"/>
       </cd:parameter>
       <cd:parameter name="lijndikte">
         <cd:constant type="cd:dimension"/>
@@ -8286,19 +7881,13 @@
         <cd:constant type="cd:name"/>
       </cd:parameter>
       <cd:parameter name="uitlijnen">
-        <cd:constant type="rechts"/>
-        <cd:constant type="midden"/>
-        <cd:constant type="links"/>
-        <cd:constant type="normaal"/>
+        <cd:resolve name="align"/>
       </cd:parameter>
       <cd:parameter name="commandos">
         <cd:constant type="cd:command"/>
       </cd:parameter>
       <cd:parameter name="uitlijnen">
-        <cd:constant type="links"/>
-        <cd:constant type="midden"/>
-        <cd:constant type="rechts"/>
-        <cd:constant type="normaal"/>
+        <cd:resolve name="align"/>
       </cd:parameter>
       <cd:parameter name="achtergrond">
         <cd:constant type="raster"/>
@@ -8730,20 +8319,10 @@
         <cd:constant type="rechts"/>
       </cd:parameter>
       <cd:parameter name="uitlijnen">
-        <cd:constant type="nee"/>
-        <cd:constant type="links"/>
-        <cd:constant type="rechts"/>
-        <cd:constant type="midden"/>
-        <cd:constant type="normaal"/>
+        <cd:resolve name="align"/>
       </cd:parameter>
       <cd:parameter name="letter">
-        <cd:constant type="normaal"/>
-        <cd:constant type="vet"/>
-        <cd:constant type="schuin"/>
-        <cd:constant type="vetschuin"/>
-        <cd:constant type="type"/>
-        <cd:constant type="kap"/>
-        <cd:constant type="small...cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="kleur">
         <cd:constant type="cd:name"/>
@@ -8922,13 +8501,7 @@
         <cd:constant type="cd:dimension"/>
       </cd:parameter>
       <cd:parameter name="letter">
-        <cd:constant type="normaal"/>
-        <cd:constant type="vet"/>
-        <cd:constant type="schuin"/>
-        <cd:constant type="vetschuin"/>
-        <cd:constant type="type"/>
-        <cd:constant type="kap"/>
-        <cd:constant type="small...cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="kleur">
         <cd:constant type="cd:name"/>
@@ -9001,14 +8574,7 @@
         <cd:constant type="lokaal"/>
       </cd:parameter>
       <cd:parameter name="letter">
-        <cd:constant type="normaal"/>
-        <cd:constant type="vet"/>
-        <cd:constant type="schuin"/>
-        <cd:constant type="vetschuin"/>
-        <cd:constant type="type"/>
-        <cd:constant type="kap"/>
-        <cd:constant type="klein"/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="kleur">
         <cd:constant type="cd:name"/>
@@ -9271,14 +8837,7 @@
         <cd:constant type="cd:dimension"/>
       </cd:parameter>
       <cd:parameter name="letter">
-        <cd:constant type="normaal"/>
-        <cd:constant type="vet"/>
-        <cd:constant type="schuin"/>
-        <cd:constant type="vetschuin"/>
-        <cd:constant type="type"/>
-        <cd:constant type="kap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="kleur">
         <cd:constant type="cd:name"/>
@@ -9418,14 +8977,7 @@
         <cd:constant type="cd:number"/>
       </cd:parameter>
       <cd:parameter name="letter">
-        <cd:constant type="normaal"/>
-        <cd:constant type="vet"/>
-        <cd:constant type="schuin"/>
-        <cd:constant type="vetschuin"/>
-        <cd:constant type="type"/>
-        <cd:constant type="kap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
     </cd:assignments>
   </cd:arguments>
@@ -9883,16 +9435,10 @@
         <cd:constant type="cd:name"/>
       </cd:parameter>
       <cd:parameter name="letter">
-        <cd:constant type="normaal"/>
-        <cd:constant type="vet"/>
-        <cd:constant type="schuin"/>
-        <cd:constant type="vetschuin"/>
-        <cd:constant type="type"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="uitlijnen">
-        <cd:constant type="links"/>
-        <cd:constant type="midden"/>
-        <cd:constant type="rechts"/>
+        <cd:resolve name="align"/>
       </cd:parameter>
       <cd:parameter name="optie">
         <cd:constant type="alleenleesbaar"/>

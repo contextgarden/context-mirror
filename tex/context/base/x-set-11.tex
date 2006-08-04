@@ -546,6 +546,13 @@
 
 \def\previousSETUPargument{\currentSETUPargument}
 
+\defineXMLenvironmentsave [cd:define] [name=]
+  {}
+  {\setevalue{cd:def:\XMLop{name}}{\XMLflush{cd:define}}}
+
+\defineXMLsingular [cd:resolve] [name=]
+  {\getvalue{cd:def:\XMLop{name}}}
+
 \defineXMLenvironmentsave [cd:assignments]
   {}
   {\xdef\currentSETUPwidth{0pt}%

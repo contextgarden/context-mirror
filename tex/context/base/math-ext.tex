@@ -3,7 +3,7 @@
 %D        version=2006.01.14,
 %D          title=\CONTEXT\ Math Macros,
 %D       subtitle=Extra Macros,
-%D         author={Hans Hagen \& Taco Hoekwater \& Adity Mahajan},
+%D         author={Hans Hagen \& Taco Hoekwater \& Aditya Mahajan},
 %D           date=\currentdate,
 %D      copyright=\PRAGMA]
 %C
@@ -17,14 +17,14 @@
 
 \def\exmthfont#1{\symbolicsizedfont#1\plusone{MathExtension}}
 
-\def\domthfrac#1#2#3#4%
+\def\domthfrac#1#2#3#4#5#6#7%
   {\begingroup
    \mathsurround\zeropoint
-   \setbox0\hbox{$#1 #3$}%
-   \setbox2\hbox{$#1 #4$}%
+   \setbox0\hbox{$#1 #6$}%
+   \setbox2\hbox{$#1 #7$}%
    \dimen0\wd0
    \ifdim\wd2>\dimen0 \dimen0\wd2 \fi
-   \setbox4\hbox to \dimen0{\exmthfont#2\char"77\leaders\hbox{\char"75}\hss\char"76}%
+   \setbox4\hbox to \dimen0{\exmthfont#2#3\leaders\hbox{#4}\hss#5}%
    \mathord{\vcenter{{\offinterlineskip
      \hbox to \dimen0{\hss\box0\hss}%
      \kern \ht4%
@@ -33,33 +33,33 @@
      \hbox to \dimen0{\hss\box2\hss}}}}%
    \endgroup}
 
-\def\domthsqrt#1#2#3%
+\def\domthsqrt#1#2#3#4#5%
   {\begingroup
    \mathsurround\zeropoint
-   \setbox0\hbox{$#1 #3$}%
+   \setbox0\hbox{$#1 #5$}%
+   \dimen0=1.05\ht0 \advance\dimen0 1pt  \ht0 \dimen0
+   \dimen0=1.05\dp0 \advance\dimen0 1pt  \dp0 \dimen0
    \dimen0\wd0
-   \setbox4\hbox to \dimen0{\exmthfont#2\leaders\hbox{\char"75}\hfill\char"76}%
-   \setbox2\hbox{\exmthfont#2\char"70}%
-   \ifdim\dimexpr\dp0+\ht0+\ht2\relax>\dp2 \setbox2\hbox{\exmthfont#2\char"71}\fi
-   \ifdim\dimexpr\dp0+\ht0+\ht2\relax>\dp2 \setbox2\hbox{\exmthfont#2\char"72}\fi
-   \ifdim\dimexpr\dp0+\ht0+\ht2\relax>\dp2 \setbox2\hbox{\exmthfont#2\char"73}\fi
-   \ifdim\dimexpr\dp0+\ht0+\ht2\relax>\dp2 \setbox2\hbox{\exmthfont#2\char"74}\fi
-   \mathord{\vcenter{\hbox{%
-     \raise\dimexpr\dp2-.5\ht2\relax\hbox{\copy2\rlap{\copy4}}%
-     \raise\dp0                     \copy0}}}%
+   \setbox4\hbox to \dimen0{\exmthfont#2\leaders\hbox{#3}\hfill#4}%
+   \delimitershortfall=0pt
+   \nulldelimiterspace=0pt
+   \setbox2\hbox{$\left\delimiter"0270370 \vrule height\ht0 depth \dp0 width0pt
+                  \right.$}%
+   \mathord{\vcenter{\hbox{\copy2
+                           \rlap{\raise\dimexpr\ht2-\ht4\relax\copy4}\copy0}}}%
    \endgroup}
 
-\def\mthfrac#1#2{\mathchoice
-  {\domthfrac\displaystyle     \textface        {#1}{#2}}
-  {\domthfrac\textstyle        \textface        {#1}{#2}}
-  {\domthfrac\scriptstyle      \scriptface      {#1}{#2}}
-  {\domthfrac\scriptscriptstyle\scriptscriptface{#1}{#2}}}
+\def\mthfrac#1#2#3#4#5{\mathchoice
+  {\domthfrac\displaystyle     \textface        {#1}{#2}{#3}{#4}{#5}}
+  {\domthfrac\textstyle        \textface        {#1}{#2}{#3}{#4}{#5}}
+  {\domthfrac\scriptstyle      \scriptface      {#1}{#2}{#3}{#4}{#5}}
+  {\domthfrac\scriptscriptstyle\scriptscriptface{#1}{#2}{#3}{#4}{#5}}}
 
-\def\mthsqrt#1{\mathchoice
-  {\domthsqrt\displaystyle     \textface        {#1}}
-  {\domthsqrt\textstyle        \textface        {#1}}
-  {\domthsqrt\scriptstyle      \scriptface      {#1}}
-  {\domthsqrt\scriptscriptstyle\scriptscriptface{#1}}}
+\def\mthsqrt#1#2#3{\mathchoice
+  {\domthsqrt\displaystyle     \textface    {#1}{#2}{#3}}
+  {\domthsqrt\textstyle        \textface    {#1}{#2}{#3}}
+  {\domthsqrt\scriptstyle      \textface    {#1}{#2}{#3}}
+  {\domthsqrt\scriptscriptstyle\textface    {#1}{#2}{#3}}}
 
 % temp here
 
@@ -162,55 +162,59 @@
 
 % Adapted from amsmath.
 
-\def\mtharrowfill#1#2#3%
-  {$\m@th\thickmuskip0mu\medmuskip\thickmuskip\thinmuskip\thickmuskip
-   \relax#1\mkern-7mu%
-   \cleaders\hbox{$\mkern-2mu#2\mkern-2mu$}\hfill
-   \mkern-7mu#3$}
+\def\mtharrowfill#1#2#3#4#5#6#7%
+  {$\mathsurround 0pt
+    \thickmuskip0mu\medmuskip\thickmuskip\thinmuskip\thickmuskip
+    \relax#5%
+    \mkern-#1mu
+    \cleaders\hbox{$\mkern -#2mu#6\mkern -#3mu$}\hfill
+    \mkern-#4mu#7$}
+
+\def\defaultmtharrowfill{\mtharrowfill 7227}
 
 % Maybe redefine leftarrowfill and rightarrowfill using arrowfill
 
-\def\rightarrowfill       {\mtharrowfill \relbar            \relbar \rightarrow       }
-\def\leftarrowfill        {\mtharrowfill \leftarrow         \relbar \relbar           }
-\def\equalfill            {\mtharrowfill \Relbar            \Relbar \Relbar           }
-\def\Rightarrowfill       {\mtharrowfill \Relbar            \Relbar \Rightarrow       }
-\def\Leftarrowfill        {\mtharrowfill \Leftarrow         \Relbar \Relbar           }
-\def\Leftrightarrowfill   {\mtharrowfill \Leftarrow         \Relbar \Rightarrow       }
-\def\leftrightarrowfill   {\mtharrowfill \leftarrow         \relbar \rightarrow       }
-\def\mapstofill           {\mtharrowfill{\mapstochar\relbar}\relbar \rightarrow       }
-\def\twoheadrightarrowfill{\mtharrowfill \relbar            \relbar \twoheadrightarrow}
-\def\twoheadleftarrowfill {\mtharrowfill \twoheadleftarrow  \relbar \relbar           }
-\def\rightharpoondownfill {\mtharrowfill \relbar            \relbar \rightharpoondown }
-\def\rightharpoonupfill   {\mtharrowfill \relbar            \relbar \rightharpoonup   }
-\def\leftharpoondownfill  {\mtharrowfill \leftharpoondown   \relbar \relbar           }
-\def\leftharpoonupfill    {\mtharrowfill \leftharpoonup     \relbar \relbar           }
+\def\rightarrowfill       {\defaultmtharrowfill \relbar              \relbar \rightarrow       }
+\def\leftarrowfill        {\defaultmtharrowfill \leftarrow           \relbar \relbar           }
+\def\equalfill            {\defaultmtharrowfill \Relbar              \Relbar \Relbar           }
+\def\Rightarrowfill       {\defaultmtharrowfill \Relbar              \Relbar \Rightarrow       }
+\def\Leftarrowfill        {\defaultmtharrowfill \Leftarrow           \Relbar \Relbar           }
+\def\Leftrightarrowfill   {\defaultmtharrowfill \Leftarrow           \Relbar \Rightarrow       }
+\def\leftrightarrowfill   {\defaultmtharrowfill \leftarrow           \relbar \rightarrow       }
+\def\mapstofill           {\defaultmtharrowfill {\mapstochar\relbar} \relbar \rightarrow       }
+\def\twoheadrightarrowfill{\defaultmtharrowfill \relbar              \relbar \twoheadrightarrow}
+\def\twoheadleftarrowfill {\defaultmtharrowfill \twoheadleftarrow    \relbar \relbar           }
+\def\rightharpoondownfill {\defaultmtharrowfill \relbar              \relbar \rightharpoondown }
+\def\rightharpoonupfill   {\defaultmtharrowfill \relbar              \relbar \rightharpoonup   }
+\def\leftharpoondownfill  {\defaultmtharrowfill \leftharpoondown     \relbar \relbar           }
+\def\leftharpoonupfill    {\defaultmtharrowfill \leftharpoonup       \relbar \relbar           }
+
+
+\def\hookleftfill {\defaultmtharrowfill \leftarrow            \relbar{\relbar\joinrel\rhook}}
+\def\hookrightfill{\defaultmtharrowfill{\lhook\joinrel\relbar}\relbar \rightarrow}
 
 % From amsmath.sty, extarrows.sty, extpfel.sty and mathtools.sty(ams)
 
-\definematharrow [xrightarrow]        [0359]      [\rightarrowfill]
-\definematharrow [xleftarrow]         [3095]      [\leftarrowfill]
-\definematharrow [xequal]             [0099]      [\equalfill]
-\definematharrow [xRightarrow]        [0359]      [\Rightarrowfill]
-\definematharrow [xLeftarrow]         [3095]      [\Leftarrowfill]
-\definematharrow [xLeftrightarrow]    [0099]      [\Leftrightarrowfill]
-\definematharrow [xleftrightarrow]    [0099]      [\leftrightarrowfill]
-\definematharrow [xmapsto]            [3599]      [\mapstofill]
-\definematharrow [xtwoheadrightarrow] [5009]      [\twoheadrightarrowfill]
-\definematharrow [xtwoheadleftarrow]  [0590]      [\twoheadleftarrowfill]
-\definematharrow [xrightharpoondown]  [0359]      [\rightharpoondownfill]
-\definematharrow [xrightharpoonup]    [0359]      [\rightharpoonupfill]
-\definematharrow [xleftharpoondown]   [3095]      [\leftharpoondownfill]
-\definematharrow [xleftharpoonup]     [3095]      [\leftharpoonupfill]
+\definematharrow [xrightarrow]        [0359] [\rightarrowfill]
+\definematharrow [xleftarrow]         [3095] [\leftarrowfill]
+\definematharrow [xequal]             [0099] [\equalfill]
+\definematharrow [xRightarrow]        [0359] [\Rightarrowfill]
+\definematharrow [xLeftarrow]         [3095] [\Leftarrowfill]
+\definematharrow [xLeftrightarrow]    [0099] [\Leftrightarrowfill]
+\definematharrow [xleftrightarrow]    [0099] [\leftrightarrowfill]
+\definematharrow [xmapsto]            [3599] [\mapstofill]
+\definematharrow [xtwoheadrightarrow] [5009] [\twoheadrightarrowfill]
+\definematharrow [xtwoheadleftarrow]  [0590] [\twoheadleftarrowfill]
+\definematharrow [xrightharpoondown]  [0359] [\rightharpoondownfill]
+\definematharrow [xrightharpoonup]    [0359] [\rightharpoonupfill]
+\definematharrow [xleftharpoondown]   [3095] [\leftharpoondownfill]
+\definematharrow [xleftharpoonup]     [3095] [\leftharpoonupfill]
+
 \definematharrow [xleftrightharpoons] [3399,3399] [\leftharpoonupfill,\rightharpoondownfill]
 \definematharrow [xrightleftharpoons] [3399,3399] [\rightharpoonupfill,\leftharpoondownfill]
 
-% Goodies
-
-\def\hookleftfill {\mtharrowfill\leftarrow\relbar{\relbar\joinrel\rhook}}
-\def\hookrightfill{\mtharrowfill{\lhook\joinrel\relbar}\relbar\rightarrow}
-
-\definematharrow [xhookleftarrow]  [3095] [\hookleftfill]
-\definematharrow [xhookrightarrow] [0395] [\hookrightfill]
+\definematharrow [xhdefaultookleftarrow]  [3095] [\hookleftfill]
+\definematharrow [xhdefaultookrightarrow] [0395] [\hookrightfill]
 
 % \startformula \xrightarrow{stuff on top}\stopformula
 % \startformula \xrightarrow{}{stuff on top}\stopformula

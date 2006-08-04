@@ -1,26 +1,81 @@
-<?xml version="1.0"?>
+<?xml version="1.0" standalone="yes"?>
 
-<!--
-    todo: framed and similar align keys now supports more keys
+<!-- versions:
 
-    <cd:common name='align'>
-        <cd:constant type="suspend"/>
-        <cd:constant type="nohanging"/>
-        <cd:constant type="hz"/>
-        <cd:constant type="nohz"/>
-        <cd:constant type="espacement"/>
-        <cd:constant type="sansespacement"/>
-        <cd:constant type="hyphenated"/>
-        <cd:constant type="nothyphenated"/>
-        <cd:constant type="tolerant"/>
-        <cd:constant type="trestolerant"/>
-        <cd:constant type="etire"/>
-    </cd:common>
+    comment  : user interface definitions of ConTeXt
 
-    <cd:share name='align'/>
+    authors  : Hans Hagen, Taco Hoekwater, Patrick Gundlach
+
+    versions : 2004.11.17 : initial version
+               2006.08.02 : define + resolve
+
 -->
 
-<cd:interface xmlns:cd="http://www.pragma-ade.com/commands" name="context" language="fr" version="2004.11.17">
+<cd:interface xmlns:cd="http://www.pragma-ade.com/commands" name="context" language="fr" version="2006.08.02">
+
+<cd:define name="align">
+    <cd:constant type="interieur"/>
+    <cd:constant type="exterieur"/>
+    <cd:constant type="gauche"/>
+    <cd:constant type="droite"/>
+    <cd:constant type="milieu"/>
+    <cd:constant type="normal"/>
+    <cd:constant type="non"/>
+    <cd:constant type="oui"/>
+</cd:define>
+
+<cd:define name="indenting">
+    <cd:constant type="jamais"/>
+    <cd:constant type="rien"/>
+    <cd:constant type="pas"/>
+    <cd:constant type="non"/>
+    <cd:constant type="oui"/>
+    <cd:constant type="toujours"/>
+    <cd:constant type="premier"/>
+    <cd:constant type="prochain"/>
+    <cd:constant type="petit"/>
+    <cd:constant type="moyen"/>
+    <cd:constant type="grand"/>
+    <cd:constant type="normal"/>
+    <cd:constant type="impair"/>
+    <cd:constant type="paire"/>
+    <cd:constant type="cd:dimension"/>
+</cd:define>
+
+<cd:define name="indentnext">
+    <cd:constant type="oui"/>
+    <cd:constant type="non"/>
+</cd:define>
+
+<cd:define name="style">
+    <cd:constant type="normal"/>
+    <cd:constant type="gras"/>
+    <cd:constant type="incline"/>
+    <cd:constant type="inclinegras"/>
+    <cd:constant type="type"/>
+    <cd:constant type="cap"/>
+    <cd:constant type="small..."/>
+    <cd:constant type="cd:command"/>
+</cd:define>
+
+<cd:define name="language">
+      <cd:constant type="nl"/>
+      <cd:constant type="fr"/>
+      <cd:constant type="en"/>
+      <cd:constant type="uk"/>
+      <cd:constant type="de"/>
+      <cd:constant type="es"/>
+      <cd:constant type="cz"/>
+      <cd:constant type=".."/>
+</cd:define>
+
+<cd:define name="texts">
+      <cd:constant type="cd:text"/>
+      <cd:constant type="cd:section"/>
+      <cd:constant type="date"/>
+      <cd:constant type="cd:mark"/>
+      <cd:constant type="numeropage"/>
+</cd:define>
 
 <cd:command name="installlanguage" file="lang-ini.tex">
   <cd:sequence>
@@ -82,14 +137,7 @@
   </cd:sequence>
   <cd:arguments>
     <cd:keywords>
-      <cd:constant type="nl" default="yes"/>
-      <cd:constant type="fr"/>
-      <cd:constant type="en"/>
-      <cd:constant type="uk"/>
-      <cd:constant type="de"/>
-      <cd:constant type="es"/>
-      <cd:constant type="cz"/>
-      <cd:constant type=".."/>
+      <cd:resolve name="language"/>
     </cd:keywords>
     <cd:assignments list="yes">
       <cd:inherit name="installelangue"/>
@@ -103,14 +151,7 @@
   </cd:sequence>
   <cd:arguments>
     <cd:keywords>
-      <cd:constant type="nl"/>
-      <cd:constant type="fr"/>
-      <cd:constant type="en"/>
-      <cd:constant type="uk"/>
-      <cd:constant type="de"/>
-      <cd:constant type="es"/>
-      <cd:constant type="cz"/>
-      <cd:constant type=".."/>
+      <cd:resolve name="language"/>
     </cd:keywords>
   </cd:arguments>
 </cd:command>
@@ -121,14 +162,7 @@
   </cd:sequence>
   <cd:arguments>
     <cd:keywords>
-      <cd:constant type="nl"/>
-      <cd:constant type="fr"/>
-      <cd:constant type="en"/>
-      <cd:constant type="uk"/>
-      <cd:constant type="de"/>
-      <cd:constant type="es"/>
-      <cd:constant type="cz"/>
-      <cd:constant type=".."/>
+      <cd:resolve name="language"/>
     </cd:keywords>
   </cd:arguments>
 </cd:command>
@@ -689,14 +723,7 @@
         <cd:constant type="rien"/>
       </cd:parameter>
       <cd:parameter name="style">
-        <cd:constant type="normal"/>
-        <cd:constant type="gras"/>
-        <cd:constant type="incline"/>
-        <cd:constant type="inclinegras"/>
-        <cd:constant type="type"/>
-        <cd:constant type="cap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="couleur">
         <cd:constant type="cd:name"/>
@@ -840,18 +867,10 @@
         <cd:constant type="non"/>
       </cd:parameter>
       <cd:parameter name="indentesuivant">
-        <cd:constant type="oui"/>
-        <cd:constant type="non"/>
+        <cd:resolve name="indentnext"/>
       </cd:parameter>
       <cd:parameter name="style">
-        <cd:constant type="normal"/>
-        <cd:constant type="gras"/>
-        <cd:constant type="incline"/>
-        <cd:constant type="inclinegras"/>
-        <cd:constant type="type"/>
-        <cd:constant type="cap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="couleur">
         <cd:constant type="cd:name"/>
@@ -946,14 +965,7 @@
         <cd:constant type="grand"/>
       </cd:parameter>
       <cd:parameter name="style">
-        <cd:constant type="normal"/>
-        <cd:constant type="gras"/>
-        <cd:constant type="incline"/>
-        <cd:constant type="inclinegras"/>
-        <cd:constant type="type"/>
-        <cd:constant type="cap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="distance">
         <cd:constant type="cd:dimension"/>
@@ -980,14 +992,7 @@
         <cd:constant type="cd:number"/>
       </cd:parameter>
       <cd:parameter name="styletexte">
-        <cd:constant type="normal"/>
-        <cd:constant type="gras"/>
-        <cd:constant type="incline"/>
-        <cd:constant type="inclinegras"/>
-        <cd:constant type="type"/>
-        <cd:constant type="cap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="couleurtexte">
         <cd:constant type="cd:name"/>
@@ -1489,14 +1494,7 @@
   </cd:sequence>
   <cd:arguments>
     <cd:keywords optional="yes">
-      <cd:constant type="nl" default="yes"/>
-      <cd:constant type="fr"/>
-      <cd:constant type="en"/>
-      <cd:constant type="uk"/>
-      <cd:constant type="de"/>
-      <cd:constant type="es"/>
-      <cd:constant type="cz"/>
-      <cd:constant type=".."/>
+      <cd:resolve name="language"/>
     </cd:keywords>
     <cd:assignments>
       <cd:parameter name="cd:name">
@@ -1512,14 +1510,7 @@
   </cd:sequence>
   <cd:arguments>
     <cd:keywords optional="yes">
-      <cd:constant type="nl" default="yes"/>
-      <cd:constant type="fr"/>
-      <cd:constant type="en"/>
-      <cd:constant type="uk"/>
-      <cd:constant type="de"/>
-      <cd:constant type="es"/>
-      <cd:constant type="cz"/>
-      <cd:constant type=".."/>
+      <cd:resolve name="language"/>
     </cd:keywords>
     <cd:assignments>
       <cd:parameter name="cd:name">
@@ -1647,14 +1638,7 @@
         <cd:constant type="local"/>
       </cd:parameter>
       <cd:parameter name="alignement">
-        <cd:constant type="non"/>
-        <cd:constant type="gauche"/>
-        <cd:constant type="droite"/>
-        <cd:constant type="milieu"/>
-        <cd:constant type="normal"/>
-        <cd:constant type="haut"/>
-        <cd:constant type="bas"/>
-        <cd:constant type="baha"/>
+        <cd:resolve name="align"/>
       </cd:parameter>
       <cd:parameter name="inf">
         <cd:constant type="cd:command"/>
@@ -1745,7 +1729,7 @@
         <cd:constant type="cd:name"/>
       </cd:parameter>
       <cd:parameter name="stylepremierplan">
-        <cd:constant type="cd:name"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
     </cd:assignments>
   </cd:arguments>
@@ -1899,13 +1883,7 @@
         <cd:constant type="grand"/>
       </cd:parameter>
       <cd:parameter name="style">
-        <cd:constant type="normal"/>
-        <cd:constant type="gras"/>
-        <cd:constant type="incline"/>
-        <cd:constant type="inclinegras"/>
-        <cd:constant type="type"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="gauche">
         <cd:constant type="cd:command"/>
@@ -1940,6 +1918,9 @@
         <cd:constant type="droite"/>
         <cd:constant type="milieu"/>
         <cd:constant type="rien"/>
+      </cd:parameter>
+      <cd:parameter name="composeenalinea">
+        <cd:resolve name="indenting"/>
       </cd:parameter>
       <cd:inherit name="regleencadre"/>
     </cd:assignments>
@@ -2066,14 +2047,7 @@
         <cd:constant type="cd:command"/>
       </cd:parameter>
       <cd:parameter name="style">
-        <cd:constant type="normal"/>
-        <cd:constant type="gras"/>
-        <cd:constant type="incline"/>
-        <cd:constant type="inclinegras"/>
-        <cd:constant type="type"/>
-        <cd:constant type="cap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="n">
         <cd:constant type="cd:number"/>
@@ -2163,14 +2137,7 @@
         <cd:constant type="cd:name"/>
       </cd:parameter>
       <cd:parameter name="style">
-        <cd:constant type="normal"/>
-        <cd:constant type="gras"/>
-        <cd:constant type="incline"/>
-        <cd:constant type="inclinegras"/>
-        <cd:constant type="type"/>
-        <cd:constant type="cap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="couleurligne">
         <cd:constant type="cd:name"/>
@@ -2567,23 +2534,13 @@
         <cd:constant type="droite"/>
       </cd:parameter>
       <cd:parameter name="style">
-        <cd:constant type="normal"/>
-        <cd:constant type="gras"/>
-        <cd:constant type="incline"/>
-        <cd:constant type="inclinegras"/>
-        <cd:constant type="type"/>
-        <cd:constant type="cap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="largeur">
         <cd:constant type="cd:dimension"/>
       </cd:parameter>
       <cd:parameter name="alignement">
-        <cd:constant type="gauche"/>
-        <cd:constant type="milieu"/>
-        <cd:constant type="droite"/>
-        <cd:constant type="non"/>
+        <cd:resolve name="align"/>
       </cd:parameter>
       <cd:parameter name="sup">
         <cd:constant type="cd:command"/>
@@ -2957,24 +2914,10 @@
     </cd:keywords>
     <cd:assignments list="yes">
       <cd:parameter name="styletete">
-        <cd:constant type="normal"/>
-        <cd:constant type="gras"/>
-        <cd:constant type="incline"/>
-        <cd:constant type="inclinegras"/>
-        <cd:constant type="type"/>
-        <cd:constant type="cap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="style">
-        <cd:constant type="normal"/>
-        <cd:constant type="gras"/>
-        <cd:constant type="incline"/>
-        <cd:constant type="inclinegras"/>
-        <cd:constant type="type"/>
-        <cd:constant type="cap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="couleur">
         <cd:constant type="cd:name"/>
@@ -2994,9 +2937,7 @@
         <cd:constant type="cd:text"/>
       </cd:parameter>
       <cd:parameter name="alignement">
-        <cd:constant type="gauche"/>
-        <cd:constant type="milieu"/>
-        <cd:constant type="droite"/>
+        <cd:resolve name="align"/>
       </cd:parameter>
       <cd:parameter name="marge">
         <cd:constant type="standard"/>
@@ -3032,17 +2973,10 @@
         <cd:constant type="cd:command"/>
       </cd:parameter>
       <cd:parameter name="indentesuivant">
-        <cd:constant type="oui"/>
-        <cd:constant type="non"/>
+        <cd:resolve name="indentnext"/>
       </cd:parameter>
       <cd:parameter name="composeenalinea">
-        <cd:constant type="jamais"/>
-        <cd:constant type="pas"/>
-        <cd:constant type="non"/>
-        <cd:constant type="oui"/>
-        <cd:constant type="toujours"/>
-        <cd:constant type="premier"/>
-        <cd:constant type="prochain"/>
+        <cd:resolve name="indenting"/>
       </cd:parameter>
     </cd:assignments>
   </cd:arguments>
@@ -3137,24 +3071,10 @@
     </cd:keywords>
     <cd:assignments list="yes">
       <cd:parameter name="style">
-        <cd:constant type="normal"/>
-        <cd:constant type="gras"/>
-        <cd:constant type="incline"/>
-        <cd:constant type="inclinegras"/>
-        <cd:constant type="type"/>
-        <cd:constant type="cap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="styletete">
-        <cd:constant type="normal"/>
-        <cd:constant type="gras"/>
-        <cd:constant type="incline"/>
-        <cd:constant type="inclinegras"/>
-        <cd:constant type="type"/>
-        <cd:constant type="cap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="largeur">
         <cd:constant type="adapte"/>
@@ -3230,14 +3150,7 @@
         <cd:constant type="non"/>
       </cd:parameter>
       <cd:parameter name="styletete">
-        <cd:constant type="normal"/>
-        <cd:constant type="gras"/>
-        <cd:constant type="incline"/>
-        <cd:constant type="inclinegras"/>
-        <cd:constant type="type"/>
-        <cd:constant type="cap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="couleurtete">
         <cd:constant type="cd:name"/>
@@ -3295,9 +3208,7 @@
         <cd:constant type="non"/>
       </cd:parameter>
       <cd:parameter name="alignement">
-        <cd:constant type="oui"/>
-        <cd:constant type="non"/>
-        <cd:constant type="cd:text"/>
+        <cd:resolve name="align"/>
       </cd:parameter>
       <cd:parameter name="vide">
         <cd:constant type="fixe"/>
@@ -3381,34 +3292,13 @@
         <cd:constant type="non"/>
       </cd:parameter>
       <cd:parameter name="style">
-        <cd:constant type="normal"/>
-        <cd:constant type="gras"/>
-        <cd:constant type="incline"/>
-        <cd:constant type="inclinegras"/>
-        <cd:constant type="type"/>
-        <cd:constant type="cap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="leftstyle">
-        <cd:constant type="normal"/>
-        <cd:constant type="gras"/>
-        <cd:constant type="incline"/>
-        <cd:constant type="inclinegras"/>
-        <cd:constant type="type"/>
-        <cd:constant type="cap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="styledroit">
-        <cd:constant type="normal"/>
-        <cd:constant type="gras"/>
-        <cd:constant type="incline"/>
-        <cd:constant type="inclinegras"/>
-        <cd:constant type="type"/>
-        <cd:constant type="cap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="largeurgauche">
         <cd:constant type="cd:dimension"/>
@@ -3505,18 +3395,10 @@
       <cd:constant type="bord"/>
     </cd:keywords>
     <cd:keywords>
-      <cd:constant type="cd:text"/>
-      <cd:constant type="cd:section"/>
-      <cd:constant type="date"/>
-      <cd:constant type="cd:mark"/>
-      <cd:constant type="numeropage"/>
+      <cd:resolve name="texts"/>
     </cd:keywords>
     <cd:keywords>
-      <cd:constant type="cd:text"/>
-      <cd:constant type="cd:section"/>
-      <cd:constant type="date"/>
-      <cd:constant type="cd:mark"/>
-      <cd:constant type="numeropage"/>
+      <cd:resolve name="texts"/>
     </cd:keywords>
   </cd:arguments>
 </cd:command>
@@ -3532,18 +3414,10 @@
       <cd:constant type="bord"/>
     </cd:keywords>
     <cd:keywords>
-      <cd:constant type="cd:text"/>
-      <cd:constant type="cd:section"/>
-      <cd:constant type="date"/>
-      <cd:constant type="cd:mark"/>
-      <cd:constant type="numeropage"/>
+      <cd:resolve name="texts"/>
     </cd:keywords>
     <cd:keywords>
-      <cd:constant type="cd:text"/>
-      <cd:constant type="cd:section"/>
-      <cd:constant type="date"/>
-      <cd:constant type="cd:mark"/>
-      <cd:constant type="numeropage"/>
+      <cd:resolve name="texts"/>
     </cd:keywords>
   </cd:arguments>
 </cd:command>
@@ -3559,18 +3433,10 @@
       <cd:constant type="bord"/>
     </cd:keywords>
     <cd:keywords>
-      <cd:constant type="cd:text"/>
-      <cd:constant type="cd:section"/>
-      <cd:constant type="date"/>
-      <cd:constant type="cd:mark"/>
-      <cd:constant type="numeropage"/>
+      <cd:resolve name="texts"/>
     </cd:keywords>
     <cd:keywords>
-      <cd:constant type="cd:text"/>
-      <cd:constant type="cd:section"/>
-      <cd:constant type="date"/>
-      <cd:constant type="cd:mark"/>
-      <cd:constant type="numeropage"/>
+      <cd:resolve name="texts"/>
     </cd:keywords>
   </cd:arguments>
 </cd:command>
@@ -3586,18 +3452,10 @@
       <cd:constant type="bord"/>
     </cd:keywords>
     <cd:keywords>
-      <cd:constant type="cd:text"/>
-      <cd:constant type="cd:section"/>
-      <cd:constant type="date"/>
-      <cd:constant type="cd:mark"/>
-      <cd:constant type="numeropage"/>
+      <cd:resolve name="texts"/>
     </cd:keywords>
     <cd:keywords>
-      <cd:constant type="cd:text"/>
-      <cd:constant type="cd:section"/>
-      <cd:constant type="date"/>
-      <cd:constant type="cd:mark"/>
-      <cd:constant type="numeropage"/>
+      <cd:resolve name="texts"/>
     </cd:keywords>
   </cd:arguments>
 </cd:command>
@@ -3613,18 +3471,10 @@
       <cd:constant type="bord"/>
     </cd:keywords>
     <cd:keywords>
-      <cd:constant type="cd:text"/>
-      <cd:constant type="cd:section"/>
-      <cd:constant type="date"/>
-      <cd:constant type="cd:mark"/>
-      <cd:constant type="numeropage"/>
+      <cd:resolve name="texts"/>
     </cd:keywords>
     <cd:keywords>
-      <cd:constant type="cd:text"/>
-      <cd:constant type="cd:section"/>
-      <cd:constant type="date"/>
-      <cd:constant type="cd:mark"/>
-      <cd:constant type="numeropage"/>
+      <cd:resolve name="texts"/>
     </cd:keywords>
   </cd:arguments>
 </cd:command>
@@ -3823,14 +3673,7 @@
         <cd:constant type="cd:dimension"/>
       </cd:parameter>
       <cd:parameter name="style">
-        <cd:constant type="normal"/>
-        <cd:constant type="gras"/>
-        <cd:constant type="incline"/>
-        <cd:constant type="inclinegras"/>
-        <cd:constant type="type"/>
-        <cd:constant type="cap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="couleur">
         <cd:constant type="cd:name"/>
@@ -4086,14 +3929,7 @@
         <cd:constant type="Chiffresromains"/>
       </cd:parameter>
       <cd:parameter name="style">
-        <cd:constant type="normal"/>
-        <cd:constant type="gras"/>
-        <cd:constant type="incline"/>
-        <cd:constant type="inclinegras"/>
-        <cd:constant type="type"/>
-        <cd:constant type="cap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="gauche">
         <cd:constant type="cd:text"/>
@@ -4196,14 +4032,7 @@
         <cd:constant type="cd:command"/>
       </cd:parameter>
       <cd:parameter name="style">
-        <cd:constant type="normal"/>
-        <cd:constant type="gras"/>
-        <cd:constant type="incline"/>
-        <cd:constant type="inclinegras"/>
-        <cd:constant type="type"/>
-        <cd:constant type="cap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="commandes">
         <cd:constant type="cd:command"/>
@@ -4237,10 +4066,7 @@
         <cd:constant type="cd:text"/>
       </cd:parameter>
       <cd:parameter name="alignement">
-        <cd:constant type="gauche"/>
-        <cd:constant type="droite"/>
-        <cd:constant type="normal"/>
-        <cd:constant type="large"/>
+        <cd:resolve name="align"/>
       </cd:parameter>
       <cd:parameter name="alignementtitre">
         <cd:constant type="oui"/>
@@ -4255,8 +4081,7 @@
         <cd:constant type="etire"/>
       </cd:parameter>
       <cd:parameter name="indentesuivant">
-        <cd:constant type="oui"/>
-        <cd:constant type="non"/>
+        <cd:resolve name="indentnext"/>
       </cd:parameter>
       <cd:parameter name="commande">
         <cd:constant type="cd:twoarguments"/>
@@ -4293,24 +4118,10 @@
         <cd:constant type="cd:dimension"/>
       </cd:parameter>
       <cd:parameter name="styletete">
-        <cd:constant type="normal"/>
-        <cd:constant type="gras"/>
-        <cd:constant type="incline"/>
-        <cd:constant type="inclinegras"/>
-        <cd:constant type="type"/>
-        <cd:constant type="cap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="style">
-        <cd:constant type="normal"/>
-        <cd:constant type="gras"/>
-        <cd:constant type="incline"/>
-        <cd:constant type="inclinegras"/>
-        <cd:constant type="type"/>
-        <cd:constant type="cap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="numero">
         <cd:constant type="oui"/>
@@ -4320,10 +4131,7 @@
         <cd:constant type="cd:command"/>
       </cd:parameter>
       <cd:parameter name="alignement">
-        <cd:constant type="gauche"/>
-        <cd:constant type="milieu"/>
-        <cd:constant type="droite"/>
-        <cd:constant type="non"/>
+        <cd:resolve name="align"/>
       </cd:parameter>
       <cd:parameter name="conversion">
         <cd:constant type="numeros"/>
@@ -4415,8 +4223,7 @@
         <cd:constant type="rien"/>
       </cd:parameter>
       <cd:parameter name="indentesuivant">
-        <cd:constant type="oui"/>
-        <cd:constant type="non"/>
+        <cd:resolve name="indentnext"/>
       </cd:parameter>
       <cd:parameter name="nsup">
         <cd:constant type="cd:number"/>
@@ -4730,14 +4537,7 @@
   <cd:arguments>
     <cd:assignments list="yes">
       <cd:parameter name="style">
-        <cd:constant type="normal"/>
-        <cd:constant type="gras"/>
-        <cd:constant type="incline"/>
-        <cd:constant type="inclinegras"/>
-        <cd:constant type="type"/>
-        <cd:constant type="cap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="alternativeurl">
         <cd:constant type="rien"/>
@@ -4966,44 +4766,16 @@
         <cd:constant type="cd:list"/>
       </cd:parameter>
       <cd:parameter name="style">
-        <cd:constant type="normal"/>
-        <cd:constant type="gras"/>
-        <cd:constant type="incline"/>
-        <cd:constant type="inclinegras"/>
-        <cd:constant type="type"/>
-        <cd:constant type="cap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="stylenumero">
-        <cd:constant type="normal"/>
-        <cd:constant type="gras"/>
-        <cd:constant type="incline"/>
-        <cd:constant type="inclinegras"/>
-        <cd:constant type="type"/>
-        <cd:constant type="cap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="styletexte">
-        <cd:constant type="normal"/>
-        <cd:constant type="gras"/>
-        <cd:constant type="incline"/>
-        <cd:constant type="inclinegras"/>
-        <cd:constant type="type"/>
-        <cd:constant type="cap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="stylepage">
-        <cd:constant type="normal"/>
-        <cd:constant type="gras"/>
-        <cd:constant type="incline"/>
-        <cd:constant type="inclinegras"/>
-        <cd:constant type="type"/>
-        <cd:constant type="cap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="couleur">
         <cd:constant type="cd:name"/>
@@ -5216,9 +4988,7 @@
         <cd:constant type="cd:text"/>
       </cd:parameter>
       <cd:parameter name="alignement">
-        <cd:constant type="gauche"/>
-        <cd:constant type="milieu"/>
-        <cd:constant type="droite"/>
+        <cd:resolve name="align"/>
       </cd:parameter>
       <cd:parameter name="option">
         <cd:constant type="milieu"/>
@@ -5243,8 +5013,7 @@
         <cd:constant type="cd:dimension"/>
       </cd:parameter>
       <cd:parameter name="indentesuivant">
-        <cd:constant type="oui"/>
-        <cd:constant type="non"/>
+        <cd:resolve name="indentnext"/>
       </cd:parameter>
       <cd:parameter name="alternative">
         <cd:constant type="cd:name"/>
@@ -5310,10 +5079,7 @@
         <cd:constant type="cd:command"/>
       </cd:parameter>
       <cd:parameter name="composeenalinea">
-        <cd:constant type="oui"/>
-        <cd:constant type="non"/>
-        <cd:constant type="paire"/>
-        <cd:constant type="impair"/>
+        <cd:resolve name="indenting"/>
       </cd:parameter>
       <cd:parameter name="espace">
         <cd:constant type="oui"/>
@@ -5342,14 +5108,7 @@
         <cd:constant type="ligne"/>
       </cd:parameter>
       <cd:parameter name="style">
-        <cd:constant type="normal"/>
-        <cd:constant type="gras"/>
-        <cd:constant type="incline"/>
-        <cd:constant type="inclinegras"/>
-        <cd:constant type="type"/>
-        <cd:constant type="cap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="distance">
         <cd:constant type="cd:dimension"/>
@@ -5386,14 +5145,7 @@
         <cd:constant type="dansmarge"/>
       </cd:parameter>
       <cd:parameter name="style">
-        <cd:constant type="normal"/>
-        <cd:constant type="gras"/>
-        <cd:constant type="incline"/>
-        <cd:constant type="inclinegras"/>
-        <cd:constant type="type"/>
-        <cd:constant type="cap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="prefixe">
         <cd:constant type="cd:text"/>
@@ -5461,14 +5213,7 @@
         <cd:constant type="lesdeux"/>
       </cd:parameter>
       <cd:parameter name="style">
-        <cd:constant type="normal"/>
-        <cd:constant type="gras"/>
-        <cd:constant type="incline"/>
-        <cd:constant type="inclinegras"/>
-        <cd:constant type="type"/>
-        <cd:constant type="cap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="avant">
         <cd:constant type="cd:command"/>
@@ -5477,14 +5222,7 @@
         <cd:constant type="cd:command"/>
       </cd:parameter>
       <cd:parameter name="alignement">
-        <cd:constant type="interieur"/>
-        <cd:constant type="exterieur"/>
-        <cd:constant type="gauche"/>
-        <cd:constant type="droite"/>
-        <cd:constant type="milieu"/>
-        <cd:constant type="normal"/>
-        <cd:constant type="non"/>
-        <cd:constant type="oui"/>
+        <cd:resolve name="align"/>
       </cd:parameter>
       <cd:parameter name="ligne">
         <cd:constant type="cd:number"/>
@@ -5802,16 +5540,7 @@
   </cd:sequence>
   <cd:arguments>
     <cd:keywords list="yes">
-      <cd:constant type="rien" default="yes"/>
-      <cd:constant type="petit"/>
-      <cd:constant type="moyen"/>
-      <cd:constant type="grand"/>
-      <cd:constant type="prochain"/>
-      <cd:constant type="premier"/>
-      <cd:constant type="normal"/>
-      <cd:constant type="impair"/>
-      <cd:constant type="paire"/>
-      <cd:constant type="cd:dimension"/>
+        <cd:resolve name="indenting"/>
     </cd:keywords>
   </cd:arguments>
 </cd:command>
@@ -5905,34 +5634,13 @@
     </cd:keywords>
     <cd:assignments list="yes">
       <cd:parameter name="style">
-        <cd:constant type="normal"/>
-        <cd:constant type="gras"/>
-        <cd:constant type="incline"/>
-        <cd:constant type="inclinegras"/>
-        <cd:constant type="type"/>
-        <cd:constant type="cap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="styletexte">
-        <cd:constant type="normal"/>
-        <cd:constant type="gras"/>
-        <cd:constant type="incline"/>
-        <cd:constant type="inclinegras"/>
-        <cd:constant type="type"/>
-        <cd:constant type="cap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="stylenumero">
-        <cd:constant type="normal"/>
-        <cd:constant type="gras"/>
-        <cd:constant type="incline"/>
-        <cd:constant type="inclinegras"/>
-        <cd:constant type="type"/>
-        <cd:constant type="cap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="couleur">
         <cd:constant type="cd:name"/>
@@ -6200,34 +5908,13 @@
         <cd:constant type="cd:command"/>
       </cd:parameter>
       <cd:parameter name="styletete">
-        <cd:constant type="normal"/>
-        <cd:constant type="gras"/>
-        <cd:constant type="incline"/>
-        <cd:constant type="inclinegras"/>
-        <cd:constant type="type"/>
-        <cd:constant type="cap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="stylemarquage">
-        <cd:constant type="normal"/>
-        <cd:constant type="gras"/>
-        <cd:constant type="incline"/>
-        <cd:constant type="inclinegras"/>
-        <cd:constant type="type"/>
-        <cd:constant type="cap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="stylesym">
-        <cd:constant type="normal"/>
-        <cd:constant type="gras"/>
-        <cd:constant type="incline"/>
-        <cd:constant type="inclinegras"/>
-        <cd:constant type="type"/>
-        <cd:constant type="cap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="taquet">
         <cd:constant type="cd:text"/>
@@ -6239,13 +5926,10 @@
         <cd:constant type="cd:number"/>
       </cd:parameter>
       <cd:parameter name="alignement">
-        <cd:constant type="gauche"/>
-        <cd:constant type="droite"/>
-        <cd:constant type="normal"/>
+        <cd:resolve name="align"/>
       </cd:parameter>
       <cd:parameter name="indentesuivant">
-        <cd:constant type="oui"/>
-        <cd:constant type="non"/>
+        <cd:resolve name="indentnext"/>
       </cd:parameter>
     </cd:assignments>
   </cd:arguments>
@@ -6404,38 +6088,16 @@
         <cd:constant type="non"/>
       </cd:parameter>
       <cd:parameter name="alignement">
-        <cd:constant type="oui"/>
-        <cd:constant type="non"/>
+        <cd:resolve name="align"/>
       </cd:parameter>
       <cd:parameter name="style">
-        <cd:constant type="normal"/>
-        <cd:constant type="gras"/>
-        <cd:constant type="incline"/>
-        <cd:constant type="inclinegras"/>
-        <cd:constant type="type"/>
-        <cd:constant type="cap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="stylepage">
-        <cd:constant type="normal"/>
-        <cd:constant type="gras"/>
-        <cd:constant type="incline"/>
-        <cd:constant type="inclinegras"/>
-        <cd:constant type="type"/>
-        <cd:constant type="cap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="styletexte">
-        <cd:constant type="normal"/>
-        <cd:constant type="gras"/>
-        <cd:constant type="incline"/>
-        <cd:constant type="inclinegras"/>
-        <cd:constant type="type"/>
-        <cd:constant type="cap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="indicateur">
         <cd:constant type="oui"/>
@@ -6658,24 +6320,10 @@
     </cd:keywords>
     <cd:assignments list="yes">
       <cd:parameter name="styletexte">
-        <cd:constant type="normal"/>
-        <cd:constant type="gras"/>
-        <cd:constant type="incline"/>
-        <cd:constant type="inclinegras"/>
-        <cd:constant type="type"/>
-        <cd:constant type="cap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="stylesynonyme">
-        <cd:constant type="normal"/>
-        <cd:constant type="gras"/>
-        <cd:constant type="incline"/>
-        <cd:constant type="inclinegras"/>
-        <cd:constant type="type"/>
-        <cd:constant type="cap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="emplacement">
         <cd:constant type="gauche"/>
@@ -6791,14 +6439,7 @@
         <cd:constant type="used"/>
       </cd:parameter>
       <cd:parameter name="style">
-        <cd:constant type="normal"/>
-        <cd:constant type="gras"/>
-        <cd:constant type="incline"/>
-        <cd:constant type="inclinegras"/>
-        <cd:constant type="type"/>
-        <cd:constant type="cap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="expansion">
         <cd:constant type="oui"/>
@@ -7011,13 +6652,7 @@
   </cd:sequence>
   <cd:arguments>
     <cd:keywords list="yes">
-      <cd:constant type="jamais" default="yes"/>
-      <cd:constant type="pas"/>
-      <cd:constant type="non"/>
-      <cd:constant type="oui"/>
-      <cd:constant type="toujours"/>
-      <cd:constant type="premier"/>
-      <cd:constant type="prochain"/>
+      <cd:resolve name="indenting"/>
     </cd:keywords>
   </cd:arguments>
 </cd:command>
@@ -7506,14 +7141,7 @@
         <cd:constant type="cd:command"/>
       </cd:parameter>
       <cd:parameter name="style">
-        <cd:constant type="normal"/>
-        <cd:constant type="gras"/>
-        <cd:constant type="incline"/>
-        <cd:constant type="inclinegras"/>
-        <cd:constant type="type"/>
-        <cd:constant type="cap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="fichier">
         <cd:constant type="cd:file"/>
@@ -7863,10 +7491,7 @@
         <cd:constant type="cd:command"/>
       </cd:parameter>
       <cd:parameter name="alignement">
-        <cd:constant type="gauche"/>
-        <cd:constant type="droite"/>
-        <cd:constant type="milieu"/>
-        <cd:constant type="marge"/>
+        <cd:resolve name="align"/>
       </cd:parameter>
       <cd:parameter name="apres">
         <cd:constant type="cd:command"/>
@@ -7919,14 +7544,7 @@
         <cd:constant type="cd:command"/>
       </cd:parameter>
       <cd:parameter name="style">
-        <cd:constant type="normal"/>
-        <cd:constant type="gras"/>
-        <cd:constant type="incline"/>
-        <cd:constant type="inclinegras"/>
-        <cd:constant type="type"/>
-        <cd:constant type="cap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="couleur">
         <cd:constant type="cd:name"/>
@@ -7992,9 +7610,7 @@
         <cd:constant type="etire"/>
       </cd:parameter>
       <cd:parameter name="alignement">
-        <cd:constant type="gauche"/>
-        <cd:constant type="droite"/>
-        <cd:constant type="milieu"/>
+        <cd:resolve name="align"/>
       </cd:parameter>
     </cd:assignments>
   </cd:arguments>
@@ -8026,14 +7642,7 @@
     </cd:keywords>
     <cd:assignments list="yes">
       <cd:parameter name="style">
-        <cd:constant type="normal"/>
-        <cd:constant type="gras"/>
-        <cd:constant type="incline"/>
-        <cd:constant type="inclinegras"/>
-        <cd:constant type="type"/>
-        <cd:constant type="cap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="largeur">
         <cd:constant type="cd:dimension"/>
@@ -8042,10 +7651,7 @@
         <cd:constant type="cd:dimension"/>
       </cd:parameter>
       <cd:parameter name="alignement">
-        <cd:constant type="gauche"/>
-        <cd:constant type="droite"/>
-        <cd:constant type="milieu"/>
-        <cd:constant type="largeur"/>
+        <cd:resolve name="align"/>
       </cd:parameter>
       <cd:parameter name="tolerance">
         <cd:constant type="tresstrict"/>
@@ -8090,14 +7696,7 @@
         <cd:constant type="cd:dimension"/>
       </cd:parameter>
       <cd:parameter name="styletete">
-        <cd:constant type="normal"/>
-        <cd:constant type="gras"/>
-        <cd:constant type="incline"/>
-        <cd:constant type="inclinegras"/>
-        <cd:constant type="type"/>
-        <cd:constant type="cap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="emplacement">
         <cd:constant type="gauche"/>
@@ -8183,8 +7782,7 @@
         <cd:constant type="cd:dimension"/>
       </cd:parameter>
       <cd:parameter name="composeenalinea">
-        <cd:constant type="oui"/>
-        <cd:constant type="non"/>
+        <cd:resolve name="indenting"/>
       </cd:parameter>
       <cd:parameter name="avant">
         <cd:constant type="cd:command"/>
@@ -8202,10 +7800,7 @@
         <cd:constant type="cd:name"/>
       </cd:parameter>
       <cd:parameter name="alignement">
-        <cd:constant type="gauche"/>
-        <cd:constant type="milieu"/>
-        <cd:constant type="droite"/>
-        <cd:constant type="normal"/>
+        <cd:resolve name="align"/>
       </cd:parameter>
       <cd:parameter name="epaisseurligne">
         <cd:constant type="cd:dimension"/>
@@ -8286,19 +7881,13 @@
         <cd:constant type="cd:name"/>
       </cd:parameter>
       <cd:parameter name="alignement">
-        <cd:constant type="droite"/>
-        <cd:constant type="milieu"/>
-        <cd:constant type="gauche"/>
-        <cd:constant type="normal"/>
+        <cd:resolve name="align"/>
       </cd:parameter>
       <cd:parameter name="commandes">
         <cd:constant type="cd:command"/>
       </cd:parameter>
       <cd:parameter name="alignement">
-        <cd:constant type="gauche"/>
-        <cd:constant type="milieu"/>
-        <cd:constant type="droite"/>
-        <cd:constant type="normal"/>
+        <cd:resolve name="align"/>
       </cd:parameter>
       <cd:parameter name="arriereplan">
         <cd:constant type="ecran"/>
@@ -8730,20 +8319,10 @@
         <cd:constant type="droite"/>
       </cd:parameter>
       <cd:parameter name="alignement">
-        <cd:constant type="non"/>
-        <cd:constant type="gauche"/>
-        <cd:constant type="droite"/>
-        <cd:constant type="milieu"/>
-        <cd:constant type="normal"/>
+        <cd:resolve name="align"/>
       </cd:parameter>
       <cd:parameter name="style">
-        <cd:constant type="normal"/>
-        <cd:constant type="gras"/>
-        <cd:constant type="incline"/>
-        <cd:constant type="inclinegras"/>
-        <cd:constant type="type"/>
-        <cd:constant type="cap"/>
-        <cd:constant type="small...cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="couleur">
         <cd:constant type="cd:name"/>
@@ -8922,13 +8501,7 @@
         <cd:constant type="cd:dimension"/>
       </cd:parameter>
       <cd:parameter name="style">
-        <cd:constant type="normal"/>
-        <cd:constant type="gras"/>
-        <cd:constant type="incline"/>
-        <cd:constant type="inclinegras"/>
-        <cd:constant type="type"/>
-        <cd:constant type="cap"/>
-        <cd:constant type="small...cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="couleur">
         <cd:constant type="cd:name"/>
@@ -9001,14 +8574,7 @@
         <cd:constant type="local"/>
       </cd:parameter>
       <cd:parameter name="style">
-        <cd:constant type="normal"/>
-        <cd:constant type="gras"/>
-        <cd:constant type="incline"/>
-        <cd:constant type="inclinegras"/>
-        <cd:constant type="type"/>
-        <cd:constant type="cap"/>
-        <cd:constant type="petit"/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="couleur">
         <cd:constant type="cd:name"/>
@@ -9271,14 +8837,7 @@
         <cd:constant type="cd:dimension"/>
       </cd:parameter>
       <cd:parameter name="style">
-        <cd:constant type="normal"/>
-        <cd:constant type="gras"/>
-        <cd:constant type="incline"/>
-        <cd:constant type="inclinegras"/>
-        <cd:constant type="type"/>
-        <cd:constant type="cap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="couleur">
         <cd:constant type="cd:name"/>
@@ -9418,14 +8977,7 @@
         <cd:constant type="cd:number"/>
       </cd:parameter>
       <cd:parameter name="style">
-        <cd:constant type="normal"/>
-        <cd:constant type="gras"/>
-        <cd:constant type="incline"/>
-        <cd:constant type="inclinegras"/>
-        <cd:constant type="type"/>
-        <cd:constant type="cap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
     </cd:assignments>
   </cd:arguments>
@@ -9883,16 +9435,10 @@
         <cd:constant type="cd:name"/>
       </cd:parameter>
       <cd:parameter name="style">
-        <cd:constant type="normal"/>
-        <cd:constant type="gras"/>
-        <cd:constant type="incline"/>
-        <cd:constant type="inclinegras"/>
-        <cd:constant type="type"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="alignement">
-        <cd:constant type="gauche"/>
-        <cd:constant type="milieu"/>
-        <cd:constant type="droite"/>
+        <cd:resolve name="align"/>
       </cd:parameter>
       <cd:parameter name="option">
         <cd:constant type="lectureseule"/>

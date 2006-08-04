@@ -1,26 +1,81 @@
-<?xml version="1.0"?>
+<?xml version="1.0" standalone="yes"?>
 
-<!--
-    todo: framed and similar align keys now supports more keys
+<!-- versions:
 
-    <cd:common name='align'>
-        <cd:constant type="visici"/>
-        <cd:constant type="nohanging"/>
-        <cd:constant type="hz"/>
-        <cd:constant type="nohz"/>
-        <cd:constant type="mezerovani"/>
-        <cd:constant type="nospacing"/>
-        <cd:constant type="hyphenated"/>
-        <cd:constant type="nothyphenated"/>
-        <cd:constant type="tolerantni"/>
-        <cd:constant type="velmitolerantni"/>
-        <cd:constant type="natahnout"/>
-    </cd:common>
+    comment  : user interface definitions of ConTeXt
 
-    <cd:share name='align'/>
+    authors  : Hans Hagen, Taco Hoekwater, Patrick Gundlach
+
+    versions : 2004.11.17 : initial version
+               2006.08.02 : define + resolve
+
 -->
 
-<cd:interface xmlns:cd="http://www.pragma-ade.com/commands" name="context" language="cz" version="2004.11.17">
+<cd:interface xmlns:cd="http://www.pragma-ade.com/commands" name="context" language="cz" version="2006.08.02">
+
+<cd:define name="align">
+    <cd:constant type="uvnitr"/>
+    <cd:constant type="vnejsi"/>
+    <cd:constant type="vlevo"/>
+    <cd:constant type="vpravo"/>
+    <cd:constant type="nastred"/>
+    <cd:constant type="normalni"/>
+    <cd:constant type="ne"/>
+    <cd:constant type="ano"/>
+</cd:define>
+
+<cd:define name="indenting">
+    <cd:constant type="nikdy"/>
+    <cd:constant type="zadny"/>
+    <cd:constant type="ne"/>
+    <cd:constant type="ne"/>
+    <cd:constant type="ano"/>
+    <cd:constant type="vzdy"/>
+    <cd:constant type="prvni"/>
+    <cd:constant type="dalsi"/>
+    <cd:constant type="male"/>
+    <cd:constant type="stredni"/>
+    <cd:constant type="velke"/>
+    <cd:constant type="normalni"/>
+    <cd:constant type="liche"/>
+    <cd:constant type="sude"/>
+    <cd:constant type="cd:dimension"/>
+</cd:define>
+
+<cd:define name="indentnext">
+    <cd:constant type="ano"/>
+    <cd:constant type="ne"/>
+</cd:define>
+
+<cd:define name="style">
+    <cd:constant type="normalni"/>
+    <cd:constant type="tucne"/>
+    <cd:constant type="sklonene"/>
+    <cd:constant type="tucnesklonene"/>
+    <cd:constant type="opis"/>
+    <cd:constant type="kap"/>
+    <cd:constant type="small..."/>
+    <cd:constant type="cd:command"/>
+</cd:define>
+
+<cd:define name="language">
+      <cd:constant type="nl"/>
+      <cd:constant type="fr"/>
+      <cd:constant type="en"/>
+      <cd:constant type="uk"/>
+      <cd:constant type="de"/>
+      <cd:constant type="es"/>
+      <cd:constant type="cz"/>
+      <cd:constant type=".."/>
+</cd:define>
+
+<cd:define name="texts">
+      <cd:constant type="cd:text"/>
+      <cd:constant type="cd:section"/>
+      <cd:constant type="datum"/>
+      <cd:constant type="cd:mark"/>
+      <cd:constant type="cislostranky"/>
+</cd:define>
 
 <cd:command name="installlanguage" file="lang-ini.tex">
   <cd:sequence>
@@ -82,14 +137,7 @@
   </cd:sequence>
   <cd:arguments>
     <cd:keywords>
-      <cd:constant type="nl" default="yes"/>
-      <cd:constant type="fr"/>
-      <cd:constant type="en"/>
-      <cd:constant type="uk"/>
-      <cd:constant type="de"/>
-      <cd:constant type="es"/>
-      <cd:constant type="cz"/>
-      <cd:constant type=".."/>
+      <cd:resolve name="language"/>
     </cd:keywords>
     <cd:assignments list="yes">
       <cd:inherit name="instalacejazyka"/>
@@ -103,14 +151,7 @@
   </cd:sequence>
   <cd:arguments>
     <cd:keywords>
-      <cd:constant type="nl"/>
-      <cd:constant type="fr"/>
-      <cd:constant type="en"/>
-      <cd:constant type="uk"/>
-      <cd:constant type="de"/>
-      <cd:constant type="es"/>
-      <cd:constant type="cz"/>
-      <cd:constant type=".."/>
+      <cd:resolve name="language"/>
     </cd:keywords>
   </cd:arguments>
 </cd:command>
@@ -121,14 +162,7 @@
   </cd:sequence>
   <cd:arguments>
     <cd:keywords>
-      <cd:constant type="nl"/>
-      <cd:constant type="fr"/>
-      <cd:constant type="en"/>
-      <cd:constant type="uk"/>
-      <cd:constant type="de"/>
-      <cd:constant type="es"/>
-      <cd:constant type="cz"/>
-      <cd:constant type=".."/>
+      <cd:resolve name="language"/>
     </cd:keywords>
   </cd:arguments>
 </cd:command>
@@ -689,14 +723,7 @@
         <cd:constant type="zadny"/>
       </cd:parameter>
       <cd:parameter name="pismeno">
-        <cd:constant type="normalni"/>
-        <cd:constant type="tucne"/>
-        <cd:constant type="sklonene"/>
-        <cd:constant type="tucnesklonene"/>
-        <cd:constant type="opis"/>
-        <cd:constant type="kap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="barva">
         <cd:constant type="cd:name"/>
@@ -840,18 +867,10 @@
         <cd:constant type="ne"/>
       </cd:parameter>
       <cd:parameter name="odsadpristi">
-        <cd:constant type="ano"/>
-        <cd:constant type="ne"/>
+        <cd:resolve name="indentnext"/>
       </cd:parameter>
       <cd:parameter name="pismeno">
-        <cd:constant type="normalni"/>
-        <cd:constant type="tucne"/>
-        <cd:constant type="sklonene"/>
-        <cd:constant type="tucnesklonene"/>
-        <cd:constant type="opis"/>
-        <cd:constant type="kap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="barva">
         <cd:constant type="cd:name"/>
@@ -946,14 +965,7 @@
         <cd:constant type="velke"/>
       </cd:parameter>
       <cd:parameter name="pismeno">
-        <cd:constant type="normalni"/>
-        <cd:constant type="tucne"/>
-        <cd:constant type="sklonene"/>
-        <cd:constant type="tucnesklonene"/>
-        <cd:constant type="opis"/>
-        <cd:constant type="kap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="vzdalenost">
         <cd:constant type="cd:dimension"/>
@@ -980,14 +992,7 @@
         <cd:constant type="cd:number"/>
       </cd:parameter>
       <cd:parameter name="styltextu">
-        <cd:constant type="normalni"/>
-        <cd:constant type="tucne"/>
-        <cd:constant type="sklonene"/>
-        <cd:constant type="tucnesklonene"/>
-        <cd:constant type="opis"/>
-        <cd:constant type="kap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="barvatextu">
         <cd:constant type="cd:name"/>
@@ -1489,14 +1494,7 @@
   </cd:sequence>
   <cd:arguments>
     <cd:keywords optional="yes">
-      <cd:constant type="nl" default="yes"/>
-      <cd:constant type="fr"/>
-      <cd:constant type="en"/>
-      <cd:constant type="uk"/>
-      <cd:constant type="de"/>
-      <cd:constant type="es"/>
-      <cd:constant type="cz"/>
-      <cd:constant type=".."/>
+      <cd:resolve name="language"/>
     </cd:keywords>
     <cd:assignments>
       <cd:parameter name="cd:name">
@@ -1512,14 +1510,7 @@
   </cd:sequence>
   <cd:arguments>
     <cd:keywords optional="yes">
-      <cd:constant type="nl" default="yes"/>
-      <cd:constant type="fr"/>
-      <cd:constant type="en"/>
-      <cd:constant type="uk"/>
-      <cd:constant type="de"/>
-      <cd:constant type="es"/>
-      <cd:constant type="cz"/>
-      <cd:constant type=".."/>
+      <cd:resolve name="language"/>
     </cd:keywords>
     <cd:assignments>
       <cd:parameter name="cd:name">
@@ -1647,14 +1638,7 @@
         <cd:constant type="lokalne"/>
       </cd:parameter>
       <cd:parameter name="zarovnani">
-        <cd:constant type="ne"/>
-        <cd:constant type="vlevo"/>
-        <cd:constant type="vpravo"/>
-        <cd:constant type="nastred"/>
-        <cd:constant type="normalni"/>
-        <cd:constant type="vysoko"/>
-        <cd:constant type="nizko"/>
-        <cd:constant type="nivy"/>
+        <cd:resolve name="align"/>
       </cd:parameter>
       <cd:parameter name="spodek">
         <cd:constant type="cd:command"/>
@@ -1745,7 +1729,7 @@
         <cd:constant type="cd:name"/>
       </cd:parameter>
       <cd:parameter name="foregroundstyle">
-        <cd:constant type="cd:name"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
     </cd:assignments>
   </cd:arguments>
@@ -1899,13 +1883,7 @@
         <cd:constant type="velke"/>
       </cd:parameter>
       <cd:parameter name="pismeno">
-        <cd:constant type="normalni"/>
-        <cd:constant type="tucne"/>
-        <cd:constant type="sklonene"/>
-        <cd:constant type="tucnesklonene"/>
-        <cd:constant type="opis"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="vlevo">
         <cd:constant type="cd:command"/>
@@ -1940,6 +1918,9 @@
         <cd:constant type="vpravo"/>
         <cd:constant type="nastred"/>
         <cd:constant type="zadny"/>
+      </cd:parameter>
+      <cd:parameter name="odsazovani">
+        <cd:resolve name="indenting"/>
       </cd:parameter>
       <cd:inherit name="nastavoramovani"/>
     </cd:assignments>
@@ -2066,14 +2047,7 @@
         <cd:constant type="cd:command"/>
       </cd:parameter>
       <cd:parameter name="pismeno">
-        <cd:constant type="normalni"/>
-        <cd:constant type="tucne"/>
-        <cd:constant type="sklonene"/>
-        <cd:constant type="tucnesklonene"/>
-        <cd:constant type="opis"/>
-        <cd:constant type="kap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="n">
         <cd:constant type="cd:number"/>
@@ -2163,14 +2137,7 @@
         <cd:constant type="cd:name"/>
       </cd:parameter>
       <cd:parameter name="pismeno">
-        <cd:constant type="normalni"/>
-        <cd:constant type="tucne"/>
-        <cd:constant type="sklonene"/>
-        <cd:constant type="tucnesklonene"/>
-        <cd:constant type="opis"/>
-        <cd:constant type="kap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="barvalinky">
         <cd:constant type="cd:name"/>
@@ -2567,23 +2534,13 @@
         <cd:constant type="vpravo"/>
       </cd:parameter>
       <cd:parameter name="pismeno">
-        <cd:constant type="normalni"/>
-        <cd:constant type="tucne"/>
-        <cd:constant type="sklonene"/>
-        <cd:constant type="tucnesklonene"/>
-        <cd:constant type="opis"/>
-        <cd:constant type="kap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="sirka">
         <cd:constant type="cd:dimension"/>
       </cd:parameter>
       <cd:parameter name="zarovnani">
-        <cd:constant type="vlevo"/>
-        <cd:constant type="nastred"/>
-        <cd:constant type="vpravo"/>
-        <cd:constant type="ne"/>
+        <cd:resolve name="align"/>
       </cd:parameter>
       <cd:parameter name="vrsek">
         <cd:constant type="cd:command"/>
@@ -2957,24 +2914,10 @@
     </cd:keywords>
     <cd:assignments list="yes">
       <cd:parameter name="stylhlavicky">
-        <cd:constant type="normalni"/>
-        <cd:constant type="tucne"/>
-        <cd:constant type="sklonene"/>
-        <cd:constant type="tucnesklonene"/>
-        <cd:constant type="opis"/>
-        <cd:constant type="kap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="pismeno">
-        <cd:constant type="normalni"/>
-        <cd:constant type="tucne"/>
-        <cd:constant type="sklonene"/>
-        <cd:constant type="tucnesklonene"/>
-        <cd:constant type="opis"/>
-        <cd:constant type="kap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="barva">
         <cd:constant type="cd:name"/>
@@ -2994,9 +2937,7 @@
         <cd:constant type="cd:text"/>
       </cd:parameter>
       <cd:parameter name="zarovnani">
-        <cd:constant type="vlevo"/>
-        <cd:constant type="nastred"/>
-        <cd:constant type="vpravo"/>
+        <cd:resolve name="align"/>
       </cd:parameter>
       <cd:parameter name="marginalie">
         <cd:constant type="standardni"/>
@@ -3032,17 +2973,10 @@
         <cd:constant type="cd:command"/>
       </cd:parameter>
       <cd:parameter name="odsadpristi">
-        <cd:constant type="ano"/>
-        <cd:constant type="ne"/>
+        <cd:resolve name="indentnext"/>
       </cd:parameter>
       <cd:parameter name="odsazovani">
-        <cd:constant type="nikdy"/>
-        <cd:constant type="ne"/>
-        <cd:constant type="ne"/>
-        <cd:constant type="ano"/>
-        <cd:constant type="vzdy"/>
-        <cd:constant type="prvni"/>
-        <cd:constant type="dalsi"/>
+        <cd:resolve name="indenting"/>
       </cd:parameter>
     </cd:assignments>
   </cd:arguments>
@@ -3137,24 +3071,10 @@
     </cd:keywords>
     <cd:assignments list="yes">
       <cd:parameter name="pismeno">
-        <cd:constant type="normalni"/>
-        <cd:constant type="tucne"/>
-        <cd:constant type="sklonene"/>
-        <cd:constant type="tucnesklonene"/>
-        <cd:constant type="opis"/>
-        <cd:constant type="kap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="stylhlavicky">
-        <cd:constant type="normalni"/>
-        <cd:constant type="tucne"/>
-        <cd:constant type="sklonene"/>
-        <cd:constant type="tucnesklonene"/>
-        <cd:constant type="opis"/>
-        <cd:constant type="kap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="sirka">
         <cd:constant type="prizpusobive"/>
@@ -3230,14 +3150,7 @@
         <cd:constant type="ne"/>
       </cd:parameter>
       <cd:parameter name="stylhlavicky">
-        <cd:constant type="normalni"/>
-        <cd:constant type="tucne"/>
-        <cd:constant type="sklonene"/>
-        <cd:constant type="tucnesklonene"/>
-        <cd:constant type="opis"/>
-        <cd:constant type="kap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="barvahlavicky">
         <cd:constant type="cd:name"/>
@@ -3295,9 +3208,7 @@
         <cd:constant type="ne"/>
       </cd:parameter>
       <cd:parameter name="zarovnani">
-        <cd:constant type="ano"/>
-        <cd:constant type="ne"/>
-        <cd:constant type="cd:text"/>
+        <cd:resolve name="align"/>
       </cd:parameter>
       <cd:parameter name="prazdny">
         <cd:constant type="fixne"/>
@@ -3381,34 +3292,13 @@
         <cd:constant type="ne"/>
       </cd:parameter>
       <cd:parameter name="pismeno">
-        <cd:constant type="normalni"/>
-        <cd:constant type="tucne"/>
-        <cd:constant type="sklonene"/>
-        <cd:constant type="tucnesklonene"/>
-        <cd:constant type="opis"/>
-        <cd:constant type="kap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="stylvlevo">
-        <cd:constant type="normalni"/>
-        <cd:constant type="tucne"/>
-        <cd:constant type="sklonene"/>
-        <cd:constant type="tucnesklonene"/>
-        <cd:constant type="opis"/>
-        <cd:constant type="kap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="stylvpravo">
-        <cd:constant type="normalni"/>
-        <cd:constant type="tucne"/>
-        <cd:constant type="sklonene"/>
-        <cd:constant type="tucnesklonene"/>
-        <cd:constant type="opis"/>
-        <cd:constant type="kap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="sirkavlevo">
         <cd:constant type="cd:dimension"/>
@@ -3505,18 +3395,10 @@
       <cd:constant type="hrana"/>
     </cd:keywords>
     <cd:keywords>
-      <cd:constant type="cd:text"/>
-      <cd:constant type="cd:section"/>
-      <cd:constant type="datum"/>
-      <cd:constant type="cd:mark"/>
-      <cd:constant type="cislostranky"/>
+      <cd:resolve name="texts"/>
     </cd:keywords>
     <cd:keywords>
-      <cd:constant type="cd:text"/>
-      <cd:constant type="cd:section"/>
-      <cd:constant type="datum"/>
-      <cd:constant type="cd:mark"/>
-      <cd:constant type="cislostranky"/>
+      <cd:resolve name="texts"/>
     </cd:keywords>
   </cd:arguments>
 </cd:command>
@@ -3532,18 +3414,10 @@
       <cd:constant type="hrana"/>
     </cd:keywords>
     <cd:keywords>
-      <cd:constant type="cd:text"/>
-      <cd:constant type="cd:section"/>
-      <cd:constant type="datum"/>
-      <cd:constant type="cd:mark"/>
-      <cd:constant type="cislostranky"/>
+      <cd:resolve name="texts"/>
     </cd:keywords>
     <cd:keywords>
-      <cd:constant type="cd:text"/>
-      <cd:constant type="cd:section"/>
-      <cd:constant type="datum"/>
-      <cd:constant type="cd:mark"/>
-      <cd:constant type="cislostranky"/>
+      <cd:resolve name="texts"/>
     </cd:keywords>
   </cd:arguments>
 </cd:command>
@@ -3559,18 +3433,10 @@
       <cd:constant type="hrana"/>
     </cd:keywords>
     <cd:keywords>
-      <cd:constant type="cd:text"/>
-      <cd:constant type="cd:section"/>
-      <cd:constant type="datum"/>
-      <cd:constant type="cd:mark"/>
-      <cd:constant type="cislostranky"/>
+      <cd:resolve name="texts"/>
     </cd:keywords>
     <cd:keywords>
-      <cd:constant type="cd:text"/>
-      <cd:constant type="cd:section"/>
-      <cd:constant type="datum"/>
-      <cd:constant type="cd:mark"/>
-      <cd:constant type="cislostranky"/>
+      <cd:resolve name="texts"/>
     </cd:keywords>
   </cd:arguments>
 </cd:command>
@@ -3586,18 +3452,10 @@
       <cd:constant type="hrana"/>
     </cd:keywords>
     <cd:keywords>
-      <cd:constant type="cd:text"/>
-      <cd:constant type="cd:section"/>
-      <cd:constant type="datum"/>
-      <cd:constant type="cd:mark"/>
-      <cd:constant type="cislostranky"/>
+      <cd:resolve name="texts"/>
     </cd:keywords>
     <cd:keywords>
-      <cd:constant type="cd:text"/>
-      <cd:constant type="cd:section"/>
-      <cd:constant type="datum"/>
-      <cd:constant type="cd:mark"/>
-      <cd:constant type="cislostranky"/>
+      <cd:resolve name="texts"/>
     </cd:keywords>
   </cd:arguments>
 </cd:command>
@@ -3613,18 +3471,10 @@
       <cd:constant type="hrana"/>
     </cd:keywords>
     <cd:keywords>
-      <cd:constant type="cd:text"/>
-      <cd:constant type="cd:section"/>
-      <cd:constant type="datum"/>
-      <cd:constant type="cd:mark"/>
-      <cd:constant type="cislostranky"/>
+      <cd:resolve name="texts"/>
     </cd:keywords>
     <cd:keywords>
-      <cd:constant type="cd:text"/>
-      <cd:constant type="cd:section"/>
-      <cd:constant type="datum"/>
-      <cd:constant type="cd:mark"/>
-      <cd:constant type="cislostranky"/>
+      <cd:resolve name="texts"/>
     </cd:keywords>
   </cd:arguments>
 </cd:command>
@@ -3823,14 +3673,7 @@
         <cd:constant type="cd:dimension"/>
       </cd:parameter>
       <cd:parameter name="pismeno">
-        <cd:constant type="normalni"/>
-        <cd:constant type="tucne"/>
-        <cd:constant type="sklonene"/>
-        <cd:constant type="tucnesklonene"/>
-        <cd:constant type="opis"/>
-        <cd:constant type="kap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="barva">
         <cd:constant type="cd:name"/>
@@ -4086,14 +3929,7 @@
         <cd:constant type="Rimskecislice"/>
       </cd:parameter>
       <cd:parameter name="pismeno">
-        <cd:constant type="normalni"/>
-        <cd:constant type="tucne"/>
-        <cd:constant type="sklonene"/>
-        <cd:constant type="tucnesklonene"/>
-        <cd:constant type="opis"/>
-        <cd:constant type="kap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="vlevo">
         <cd:constant type="cd:text"/>
@@ -4196,14 +4032,7 @@
         <cd:constant type="cd:command"/>
       </cd:parameter>
       <cd:parameter name="pismeno">
-        <cd:constant type="normalni"/>
-        <cd:constant type="tucne"/>
-        <cd:constant type="sklonene"/>
-        <cd:constant type="tucnesklonene"/>
-        <cd:constant type="opis"/>
-        <cd:constant type="kap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="prikazy">
         <cd:constant type="cd:command"/>
@@ -4237,10 +4066,7 @@
         <cd:constant type="cd:text"/>
       </cd:parameter>
       <cd:parameter name="zarovnani">
-        <cd:constant type="vlevo"/>
-        <cd:constant type="vpravo"/>
-        <cd:constant type="normalni"/>
-        <cd:constant type="siroky"/>
+        <cd:resolve name="align"/>
       </cd:parameter>
       <cd:parameter name="zarovnejtitul">
         <cd:constant type="ano"/>
@@ -4255,8 +4081,7 @@
         <cd:constant type="natahnout"/>
       </cd:parameter>
       <cd:parameter name="odsadpristi">
-        <cd:constant type="ano"/>
-        <cd:constant type="ne"/>
+        <cd:resolve name="indentnext"/>
       </cd:parameter>
       <cd:parameter name="prikaz">
         <cd:constant type="cd:twoarguments"/>
@@ -4293,24 +4118,10 @@
         <cd:constant type="cd:dimension"/>
       </cd:parameter>
       <cd:parameter name="stylhlavicky">
-        <cd:constant type="normalni"/>
-        <cd:constant type="tucne"/>
-        <cd:constant type="sklonene"/>
-        <cd:constant type="tucnesklonene"/>
-        <cd:constant type="opis"/>
-        <cd:constant type="kap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="pismeno">
-        <cd:constant type="normalni"/>
-        <cd:constant type="tucne"/>
-        <cd:constant type="sklonene"/>
-        <cd:constant type="tucnesklonene"/>
-        <cd:constant type="opis"/>
-        <cd:constant type="kap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="cislo">
         <cd:constant type="ano"/>
@@ -4320,10 +4131,7 @@
         <cd:constant type="cd:command"/>
       </cd:parameter>
       <cd:parameter name="zarovnani">
-        <cd:constant type="vlevo"/>
-        <cd:constant type="nastred"/>
-        <cd:constant type="vpravo"/>
-        <cd:constant type="ne"/>
+        <cd:resolve name="align"/>
       </cd:parameter>
       <cd:parameter name="konverze">
         <cd:constant type="cisla"/>
@@ -4415,8 +4223,7 @@
         <cd:constant type="zadny"/>
       </cd:parameter>
       <cd:parameter name="odsadpristi">
-        <cd:constant type="ano"/>
-        <cd:constant type="ne"/>
+        <cd:resolve name="indentnext"/>
       </cd:parameter>
       <cd:parameter name="nvrsek">
         <cd:constant type="cd:number"/>
@@ -4730,14 +4537,7 @@
   <cd:arguments>
     <cd:assignments list="yes">
       <cd:parameter name="pismeno">
-        <cd:constant type="normalni"/>
-        <cd:constant type="tucne"/>
-        <cd:constant type="sklonene"/>
-        <cd:constant type="tucnesklonene"/>
-        <cd:constant type="opis"/>
-        <cd:constant type="kap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="urlalternativa">
         <cd:constant type="zadny"/>
@@ -4966,44 +4766,16 @@
         <cd:constant type="cd:list"/>
       </cd:parameter>
       <cd:parameter name="pismeno">
-        <cd:constant type="normalni"/>
-        <cd:constant type="tucne"/>
-        <cd:constant type="sklonene"/>
-        <cd:constant type="tucnesklonene"/>
-        <cd:constant type="opis"/>
-        <cd:constant type="kap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="stylcisla">
-        <cd:constant type="normalni"/>
-        <cd:constant type="tucne"/>
-        <cd:constant type="sklonene"/>
-        <cd:constant type="tucnesklonene"/>
-        <cd:constant type="opis"/>
-        <cd:constant type="kap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="styltextu">
-        <cd:constant type="normalni"/>
-        <cd:constant type="tucne"/>
-        <cd:constant type="sklonene"/>
-        <cd:constant type="tucnesklonene"/>
-        <cd:constant type="opis"/>
-        <cd:constant type="kap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="stylstranky">
-        <cd:constant type="normalni"/>
-        <cd:constant type="tucne"/>
-        <cd:constant type="sklonene"/>
-        <cd:constant type="tucnesklonene"/>
-        <cd:constant type="opis"/>
-        <cd:constant type="kap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="barva">
         <cd:constant type="cd:name"/>
@@ -5216,9 +4988,7 @@
         <cd:constant type="cd:text"/>
       </cd:parameter>
       <cd:parameter name="zarovnani">
-        <cd:constant type="vlevo"/>
-        <cd:constant type="nastred"/>
-        <cd:constant type="vpravo"/>
+        <cd:resolve name="align"/>
       </cd:parameter>
       <cd:parameter name="volba">
         <cd:constant type="nastred"/>
@@ -5243,8 +5013,7 @@
         <cd:constant type="cd:dimension"/>
       </cd:parameter>
       <cd:parameter name="odsadpristi">
-        <cd:constant type="ano"/>
-        <cd:constant type="ne"/>
+        <cd:resolve name="indentnext"/>
       </cd:parameter>
       <cd:parameter name="alternativa">
         <cd:constant type="cd:name"/>
@@ -5310,10 +5079,7 @@
         <cd:constant type="cd:command"/>
       </cd:parameter>
       <cd:parameter name="odsazovani">
-        <cd:constant type="ano"/>
-        <cd:constant type="ne"/>
-        <cd:constant type="sude"/>
-        <cd:constant type="liche"/>
+        <cd:resolve name="indenting"/>
       </cd:parameter>
       <cd:parameter name="mezera">
         <cd:constant type="ano"/>
@@ -5342,14 +5108,7 @@
         <cd:constant type="radek"/>
       </cd:parameter>
       <cd:parameter name="pismeno">
-        <cd:constant type="normalni"/>
-        <cd:constant type="tucne"/>
-        <cd:constant type="sklonene"/>
-        <cd:constant type="tucnesklonene"/>
-        <cd:constant type="opis"/>
-        <cd:constant type="kap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="vzdalenost">
         <cd:constant type="cd:dimension"/>
@@ -5386,14 +5145,7 @@
         <cd:constant type="naokraji"/>
       </cd:parameter>
       <cd:parameter name="pismeno">
-        <cd:constant type="normalni"/>
-        <cd:constant type="tucne"/>
-        <cd:constant type="sklonene"/>
-        <cd:constant type="tucnesklonene"/>
-        <cd:constant type="opis"/>
-        <cd:constant type="kap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="prefix">
         <cd:constant type="cd:text"/>
@@ -5461,14 +5213,7 @@
         <cd:constant type="obe"/>
       </cd:parameter>
       <cd:parameter name="pismeno">
-        <cd:constant type="normalni"/>
-        <cd:constant type="tucne"/>
-        <cd:constant type="sklonene"/>
-        <cd:constant type="tucnesklonene"/>
-        <cd:constant type="opis"/>
-        <cd:constant type="kap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="pred">
         <cd:constant type="cd:command"/>
@@ -5477,14 +5222,7 @@
         <cd:constant type="cd:command"/>
       </cd:parameter>
       <cd:parameter name="zarovnani">
-        <cd:constant type="uvnitr"/>
-        <cd:constant type="vnejsi"/>
-        <cd:constant type="vlevo"/>
-        <cd:constant type="vpravo"/>
-        <cd:constant type="nastred"/>
-        <cd:constant type="normalni"/>
-        <cd:constant type="ne"/>
-        <cd:constant type="ano"/>
+        <cd:resolve name="align"/>
       </cd:parameter>
       <cd:parameter name="radek">
         <cd:constant type="cd:number"/>
@@ -5802,16 +5540,7 @@
   </cd:sequence>
   <cd:arguments>
     <cd:keywords list="yes">
-      <cd:constant type="zadny" default="yes"/>
-      <cd:constant type="male"/>
-      <cd:constant type="stredni"/>
-      <cd:constant type="velke"/>
-      <cd:constant type="dalsi"/>
-      <cd:constant type="prvni"/>
-      <cd:constant type="normalni"/>
-      <cd:constant type="liche"/>
-      <cd:constant type="sude"/>
-      <cd:constant type="cd:dimension"/>
+        <cd:resolve name="indenting"/>
     </cd:keywords>
   </cd:arguments>
 </cd:command>
@@ -5905,34 +5634,13 @@
     </cd:keywords>
     <cd:assignments list="yes">
       <cd:parameter name="pismeno">
-        <cd:constant type="normalni"/>
-        <cd:constant type="tucne"/>
-        <cd:constant type="sklonene"/>
-        <cd:constant type="tucnesklonene"/>
-        <cd:constant type="opis"/>
-        <cd:constant type="kap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="styltextu">
-        <cd:constant type="normalni"/>
-        <cd:constant type="tucne"/>
-        <cd:constant type="sklonene"/>
-        <cd:constant type="tucnesklonene"/>
-        <cd:constant type="opis"/>
-        <cd:constant type="kap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="stylcisla">
-        <cd:constant type="normalni"/>
-        <cd:constant type="tucne"/>
-        <cd:constant type="sklonene"/>
-        <cd:constant type="tucnesklonene"/>
-        <cd:constant type="opis"/>
-        <cd:constant type="kap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="barva">
         <cd:constant type="cd:name"/>
@@ -6200,34 +5908,13 @@
         <cd:constant type="cd:command"/>
       </cd:parameter>
       <cd:parameter name="stylhlavicky">
-        <cd:constant type="normalni"/>
-        <cd:constant type="tucne"/>
-        <cd:constant type="sklonene"/>
-        <cd:constant type="tucnesklonene"/>
-        <cd:constant type="opis"/>
-        <cd:constant type="kap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="stylsnacky">
-        <cd:constant type="normalni"/>
-        <cd:constant type="tucne"/>
-        <cd:constant type="sklonene"/>
-        <cd:constant type="tucnesklonene"/>
-        <cd:constant type="opis"/>
-        <cd:constant type="kap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="stylsymboly">
-        <cd:constant type="normalni"/>
-        <cd:constant type="tucne"/>
-        <cd:constant type="sklonene"/>
-        <cd:constant type="tucnesklonene"/>
-        <cd:constant type="opis"/>
-        <cd:constant type="kap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="predel">
         <cd:constant type="cd:text"/>
@@ -6239,13 +5926,10 @@
         <cd:constant type="cd:number"/>
       </cd:parameter>
       <cd:parameter name="zarovnani">
-        <cd:constant type="vlevo"/>
-        <cd:constant type="vpravo"/>
-        <cd:constant type="normalni"/>
+        <cd:resolve name="align"/>
       </cd:parameter>
       <cd:parameter name="odsadpristi">
-        <cd:constant type="ano"/>
-        <cd:constant type="ne"/>
+        <cd:resolve name="indentnext"/>
       </cd:parameter>
     </cd:assignments>
   </cd:arguments>
@@ -6404,38 +6088,16 @@
         <cd:constant type="ne"/>
       </cd:parameter>
       <cd:parameter name="zarovnani">
-        <cd:constant type="ano"/>
-        <cd:constant type="ne"/>
+        <cd:resolve name="align"/>
       </cd:parameter>
       <cd:parameter name="pismeno">
-        <cd:constant type="normalni"/>
-        <cd:constant type="tucne"/>
-        <cd:constant type="sklonene"/>
-        <cd:constant type="tucnesklonene"/>
-        <cd:constant type="opis"/>
-        <cd:constant type="kap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="stylstranky">
-        <cd:constant type="normalni"/>
-        <cd:constant type="tucne"/>
-        <cd:constant type="sklonene"/>
-        <cd:constant type="tucnesklonene"/>
-        <cd:constant type="opis"/>
-        <cd:constant type="kap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="styltextu">
-        <cd:constant type="normalni"/>
-        <cd:constant type="tucne"/>
-        <cd:constant type="sklonene"/>
-        <cd:constant type="tucnesklonene"/>
-        <cd:constant type="opis"/>
-        <cd:constant type="kap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="indikator">
         <cd:constant type="ano"/>
@@ -6658,24 +6320,10 @@
     </cd:keywords>
     <cd:assignments list="yes">
       <cd:parameter name="styltextu">
-        <cd:constant type="normalni"/>
-        <cd:constant type="tucne"/>
-        <cd:constant type="sklonene"/>
-        <cd:constant type="tucnesklonene"/>
-        <cd:constant type="opis"/>
-        <cd:constant type="kap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="stylsynonyma">
-        <cd:constant type="normalni"/>
-        <cd:constant type="tucne"/>
-        <cd:constant type="sklonene"/>
-        <cd:constant type="tucnesklonene"/>
-        <cd:constant type="opis"/>
-        <cd:constant type="kap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="misto">
         <cd:constant type="vlevo"/>
@@ -6791,14 +6439,7 @@
         <cd:constant type="uzito"/>
       </cd:parameter>
       <cd:parameter name="pismeno">
-        <cd:constant type="normalni"/>
-        <cd:constant type="tucne"/>
-        <cd:constant type="sklonene"/>
-        <cd:constant type="tucnesklonene"/>
-        <cd:constant type="opis"/>
-        <cd:constant type="kap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="expanzen">
         <cd:constant type="ano"/>
@@ -7011,13 +6652,7 @@
   </cd:sequence>
   <cd:arguments>
     <cd:keywords list="yes">
-      <cd:constant type="nikdy" default="yes"/>
-      <cd:constant type="ne"/>
-      <cd:constant type="ne"/>
-      <cd:constant type="ano"/>
-      <cd:constant type="vzdy"/>
-      <cd:constant type="prvni"/>
-      <cd:constant type="dalsi"/>
+      <cd:resolve name="indenting"/>
     </cd:keywords>
   </cd:arguments>
 </cd:command>
@@ -7506,14 +7141,7 @@
         <cd:constant type="cd:command"/>
       </cd:parameter>
       <cd:parameter name="pismeno">
-        <cd:constant type="normalni"/>
-        <cd:constant type="tucne"/>
-        <cd:constant type="sklonene"/>
-        <cd:constant type="tucnesklonene"/>
-        <cd:constant type="opis"/>
-        <cd:constant type="kap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="soubor">
         <cd:constant type="cd:file"/>
@@ -7863,10 +7491,7 @@
         <cd:constant type="cd:command"/>
       </cd:parameter>
       <cd:parameter name="zarovnani">
-        <cd:constant type="vlevo"/>
-        <cd:constant type="vpravo"/>
-        <cd:constant type="nastred"/>
-        <cd:constant type="marginalie"/>
+        <cd:resolve name="align"/>
       </cd:parameter>
       <cd:parameter name="po">
         <cd:constant type="cd:command"/>
@@ -7919,14 +7544,7 @@
         <cd:constant type="cd:command"/>
       </cd:parameter>
       <cd:parameter name="pismeno">
-        <cd:constant type="normalni"/>
-        <cd:constant type="tucne"/>
-        <cd:constant type="sklonene"/>
-        <cd:constant type="tucnesklonene"/>
-        <cd:constant type="opis"/>
-        <cd:constant type="kap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="barva">
         <cd:constant type="cd:name"/>
@@ -7992,9 +7610,7 @@
         <cd:constant type="natahnout"/>
       </cd:parameter>
       <cd:parameter name="zarovnani">
-        <cd:constant type="vlevo"/>
-        <cd:constant type="vpravo"/>
-        <cd:constant type="nastred"/>
+        <cd:resolve name="align"/>
       </cd:parameter>
     </cd:assignments>
   </cd:arguments>
@@ -8026,14 +7642,7 @@
     </cd:keywords>
     <cd:assignments list="yes">
       <cd:parameter name="pismeno">
-        <cd:constant type="normalni"/>
-        <cd:constant type="tucne"/>
-        <cd:constant type="sklonene"/>
-        <cd:constant type="tucnesklonene"/>
-        <cd:constant type="opis"/>
-        <cd:constant type="kap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="sirka">
         <cd:constant type="cd:dimension"/>
@@ -8042,10 +7651,7 @@
         <cd:constant type="cd:dimension"/>
       </cd:parameter>
       <cd:parameter name="zarovnani">
-        <cd:constant type="vlevo"/>
-        <cd:constant type="vpravo"/>
-        <cd:constant type="nastred"/>
-        <cd:constant type="sirka"/>
+        <cd:resolve name="align"/>
       </cd:parameter>
       <cd:parameter name="tolerance">
         <cd:constant type="velmistriktni"/>
@@ -8090,14 +7696,7 @@
         <cd:constant type="cd:dimension"/>
       </cd:parameter>
       <cd:parameter name="stylhlavicky">
-        <cd:constant type="normalni"/>
-        <cd:constant type="tucne"/>
-        <cd:constant type="sklonene"/>
-        <cd:constant type="tucnesklonene"/>
-        <cd:constant type="opis"/>
-        <cd:constant type="kap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="misto">
         <cd:constant type="vlevo"/>
@@ -8183,8 +7782,7 @@
         <cd:constant type="cd:dimension"/>
       </cd:parameter>
       <cd:parameter name="odsazovani">
-        <cd:constant type="ano"/>
-        <cd:constant type="ne"/>
+        <cd:resolve name="indenting"/>
       </cd:parameter>
       <cd:parameter name="pred">
         <cd:constant type="cd:command"/>
@@ -8202,10 +7800,7 @@
         <cd:constant type="cd:name"/>
       </cd:parameter>
       <cd:parameter name="zarovnani">
-        <cd:constant type="vlevo"/>
-        <cd:constant type="nastred"/>
-        <cd:constant type="vpravo"/>
-        <cd:constant type="normalni"/>
+        <cd:resolve name="align"/>
       </cd:parameter>
       <cd:parameter name="tloustkalinky">
         <cd:constant type="cd:dimension"/>
@@ -8286,19 +7881,13 @@
         <cd:constant type="cd:name"/>
       </cd:parameter>
       <cd:parameter name="zarovnani">
-        <cd:constant type="vpravo"/>
-        <cd:constant type="nastred"/>
-        <cd:constant type="vlevo"/>
-        <cd:constant type="normalni"/>
+        <cd:resolve name="align"/>
       </cd:parameter>
       <cd:parameter name="prikazy">
         <cd:constant type="cd:command"/>
       </cd:parameter>
       <cd:parameter name="zarovnani">
-        <cd:constant type="vlevo"/>
-        <cd:constant type="nastred"/>
-        <cd:constant type="vpravo"/>
-        <cd:constant type="normalni"/>
+        <cd:resolve name="align"/>
       </cd:parameter>
       <cd:parameter name="pozadi">
         <cd:constant type="rastr"/>
@@ -8730,20 +8319,10 @@
         <cd:constant type="vpravo"/>
       </cd:parameter>
       <cd:parameter name="zarovnani">
-        <cd:constant type="ne"/>
-        <cd:constant type="vlevo"/>
-        <cd:constant type="vpravo"/>
-        <cd:constant type="nastred"/>
-        <cd:constant type="normalni"/>
+        <cd:resolve name="align"/>
       </cd:parameter>
       <cd:parameter name="pismeno">
-        <cd:constant type="normalni"/>
-        <cd:constant type="tucne"/>
-        <cd:constant type="sklonene"/>
-        <cd:constant type="tucnesklonene"/>
-        <cd:constant type="opis"/>
-        <cd:constant type="kap"/>
-        <cd:constant type="small...cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="barva">
         <cd:constant type="cd:name"/>
@@ -8922,13 +8501,7 @@
         <cd:constant type="cd:dimension"/>
       </cd:parameter>
       <cd:parameter name="pismeno">
-        <cd:constant type="normalni"/>
-        <cd:constant type="tucne"/>
-        <cd:constant type="sklonene"/>
-        <cd:constant type="tucnesklonene"/>
-        <cd:constant type="opis"/>
-        <cd:constant type="kap"/>
-        <cd:constant type="small...cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="barva">
         <cd:constant type="cd:name"/>
@@ -9001,14 +8574,7 @@
         <cd:constant type="lokalne"/>
       </cd:parameter>
       <cd:parameter name="pismeno">
-        <cd:constant type="normalni"/>
-        <cd:constant type="tucne"/>
-        <cd:constant type="sklonene"/>
-        <cd:constant type="tucnesklonene"/>
-        <cd:constant type="opis"/>
-        <cd:constant type="kap"/>
-        <cd:constant type="male"/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="barva">
         <cd:constant type="cd:name"/>
@@ -9271,14 +8837,7 @@
         <cd:constant type="cd:dimension"/>
       </cd:parameter>
       <cd:parameter name="pismeno">
-        <cd:constant type="normalni"/>
-        <cd:constant type="tucne"/>
-        <cd:constant type="sklonene"/>
-        <cd:constant type="tucnesklonene"/>
-        <cd:constant type="opis"/>
-        <cd:constant type="kap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="barva">
         <cd:constant type="cd:name"/>
@@ -9418,14 +8977,7 @@
         <cd:constant type="cd:number"/>
       </cd:parameter>
       <cd:parameter name="pismeno">
-        <cd:constant type="normalni"/>
-        <cd:constant type="tucne"/>
-        <cd:constant type="sklonene"/>
-        <cd:constant type="tucnesklonene"/>
-        <cd:constant type="opis"/>
-        <cd:constant type="kap"/>
-        <cd:constant type="small..."/>
-        <cd:constant type="cd:command"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
     </cd:assignments>
   </cd:arguments>
@@ -9883,16 +9435,10 @@
         <cd:constant type="cd:name"/>
       </cd:parameter>
       <cd:parameter name="pismeno">
-        <cd:constant type="normalni"/>
-        <cd:constant type="tucne"/>
-        <cd:constant type="sklonene"/>
-        <cd:constant type="tucnesklonene"/>
-        <cd:constant type="opis"/>
+        <cd:resolve name="style"/>
       </cd:parameter>
       <cd:parameter name="zarovnani">
-        <cd:constant type="vlevo"/>
-        <cd:constant type="nastred"/>
-        <cd:constant type="vpravo"/>
+        <cd:resolve name="align"/>
       </cd:parameter>
       <cd:parameter name="volba">
         <cd:constant type="pouzeprocteni"/>
