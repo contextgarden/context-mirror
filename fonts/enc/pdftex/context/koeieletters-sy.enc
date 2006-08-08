@@ -111,7 +111,7 @@
  /.notdef
  /backslash
  /.notdef
- /radical		% 0x70
+ /radical.alt		% 0x70
  /.notdef
  /.notdef
  /integral
@@ -128,11 +128,11 @@
  /.notdef
  /.notdef  
  /minus.alt           % 0x80
- /.notdef           
- /.notdef           
- /.notdef           
- /.notdef           
- /.notdef           
+ /arrowleft.lft % this was start of braces
+ /arrowleft.rt
+ /arrowright.lft
+ /arrowright.rt
+ /arrow.mid
  /.notdef           
  /.notdef           
  /.notdef           

@@ -4884,6 +4884,34 @@
   </cd:arguments>
 </cd:command>
 
+<cd:command name="setuplistalternative" file="core-lst.tex">
+  <cd:sequence>
+    <cd:string value="setuplistalternative"/>
+  </cd:sequence>
+  <cd:arguments>
+    <cd:keywords list="no">
+      <cd:constant type="a"/>
+      <cd:constant type="b"/>
+      <cd:constant type="c"/>
+      <!-- cd:constant type="cd:name"/ -->
+    </cd:keywords>
+    <cd:assignments list="yes">
+      <cd:parameter name="command">
+        <cd:constant type="cd:command"/>
+      </cd:parameter>
+      <cd:parameter name="width">
+        <cd:constant type="cd:dimension"/>
+      </cd:parameter>
+      <cd:parameter name="stretch">
+        <cd:constant type="cd:dimension"/>
+      </cd:parameter>
+      <cd:parameter name="distance">
+        <cd:constant type="cd:dimension"/>
+      </cd:parameter>
+    </cd:assignments>
+  </cd:arguments>
+</cd:command>
+
 <cd:command name="definecombinedlist" file="core-lst.tex">
   <cd:sequence>
     <cd:string value="definecombinedlist"/>
@@ -6167,6 +6195,10 @@
         <cd:constant type="first"/>
         <cd:constant type="none"/>
       </cd:parameter>
+      <cd:parameter name="compress">
+        <cd:constant type="no"/>
+        <cd:constant type="yes"/>
+      </cd:parameter>
       <cd:parameter name="deeptextcommand">
         <cd:constant type="cd:oneargument"/>
       </cd:parameter>
@@ -7229,6 +7261,7 @@
       <cd:constant type="line"/>
       <cd:constant type="height"/>
       <cd:constant type="depth"/>
+      <cd:constant type="split"/>
     </cd:keywords>
     <cd:reference optional="yes" list="yes"/>
     <cd:content/>
@@ -8616,7 +8649,7 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="defineinteractionmenu" variant="1" file="core-int.tex">
+<cd:command name="defineinteractionmenu" variant="2" file="core-int.tex">
   <cd:sequence>
     <cd:string value="defineinteractionmenu"/>
   </cd:sequence>

@@ -1,6 +1,6 @@
 %D \module
 %D   [       file=t-bib,
-%D        version=2006.08.04,
+%D        version=2006.08.08,
 %D          title=\CONTEXT\ Publication Module,
 %D       subtitle=Publications,
 %D         author=Taco Hoekwater,
@@ -90,6 +90,9 @@
 %D       (4/8/2006)
 %D \item make the bracketed arguments of \type{\artauthor}, \type{\author} 
 %D        and \type{\editor} (bbl commands) optional (4/8/2006)
+%D \item the constants \type{sorttype}, \type{compress} and
+%D        \type{autohang} have moved to the core (8/8/2006)
+%D \item bibtex is now registered as a program to be run by texexec (8/8/2006)
 %D \stopitemize
 %D
 %D \subject{WISHLIST}
@@ -116,7 +119,7 @@
 \startmessages all library: bib
     title: publications
     1: file -- not found, unknown style ignored
-    2: file -- not found, don't forget to run bibtex
+    2: file -- not found, waiting for bibtex
     3: wrote a new auxiliary file \jobname.aux
     4: loading database from --
     5: warning: cite argument -- on \the\inputlineno
@@ -128,9 +131,6 @@
 \startconstants        dutch                english
 
              database: database             database
-             sorttype: sorttype             sorttype
-             compress: compress             compress
-             autohang: autohang             autohang
             artauthor: artauthor            artauthor
                editor: editor               editor
       authoretallimit: authoretallimit      authoretallimit
@@ -312,12 +312,14 @@
 %D \stopitemize
 
 \def\writeauxfile
-  {\openout \scratchwrite \jobname.aux
-   \write   \scratchwrite {\string\citation{*}}%
-   \write   \scratchwrite {\string\bibstyle{\bibstyle}}%
-   \write   \scratchwrite {\string\bibdata{\@@pbdatabase}}%
-   \closeout\scratchwrite
-   \showmessage\m!bib{3}{}}
+  {\doifmode{*first}
+    {\openout \scratchwrite \jobname.aux
+     \write   \scratchwrite {\string\citation{*}}%
+     \write   \scratchwrite {\string\bibstyle{\bibstyle}}%
+     \write   \scratchwrite {\string\bibdata{\@@pbdatabase}}%
+     \closeout\scratchwrite
+     \showmessage\m!bib{3}{}%
+     \installprogram{bibtex \jobname}}}
 
 %D \macros{ifsortbycite,iftypesetall,ifautohang,ifbibcitecompress}
 %D
@@ -1066,7 +1068,7 @@
        }%
        {\def\@@currentalternative{#1}}%
       \expanded{%
-         \processaction[\csname @@pv\@@currentalternative compress\endcsname]}
+         \processaction[\csname @@pv\@@currentalternative \c!compress\endcsname]}
              [    \v!yes=>\bibcitecompresstrue,
                    \v!no=>\bibcitecompressfalse,
               \s!default=>\bibcitecompresstrue,
@@ -1074,7 +1076,7 @@
       \getvalue{bib\@@currentalternative ref}[#2]%
    \else
      \processcommalist[#1]\docitation
-     \expanded{\processaction[\csname @@pv\@@citedefault compress\endcsname]}
+     \expanded{\processaction[\csname @@pv\@@citedefault \c!compress\endcsname]}
        [    \v!yes=>\bibcitecompresstrue,
              \v!no=>\bibcitecompressfalse,
         \s!default=>\bibcitecompresstrue,

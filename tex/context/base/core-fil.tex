@@ -59,11 +59,20 @@
        1: le synonyme de fichier -- est déjà utilisé pour --
 \stopmessages
 
-%D
+%D Files registered as temporary files will be deleted after a
+%D run by texexec:
 
-\let\usedtempfile\gobbleonearguments
+% \starttext
+%     \immediate\openout\scratchwrite=oeps.tmp
+%     \immediate\write\scratchwrite{oeps}
+%     \immediate\closeout\scratchwrite
+%     \registertempfile{oeps.tmp}
+%     \typefile{oeps.tmp}
+% \stoptext
 
-\def\registertempfile#1{\immediatewriteutilitycommand{\usedtempfile{#1}}}
+\let\usedtempfile\gobbleoneargument
+
+\def\registertempfile#1{\immediatewriteutility{f t {#1}}}
 
 %D \macros
 %D   {definefilesynonym}

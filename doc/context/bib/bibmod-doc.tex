@@ -60,7 +60,7 @@
 The bibliographic module (\type{t-bib.tex}) takes care of references
 to publications and the typesetting of publication lists, as well as
 providing an interface between \BIBTEX and \CONTEXT. This manual
-documents version 2006.08.04.
+documents version 2006.08.08.
 
 The bibliographic subsystem consists of the main module
 \type{t-bib.tex}; four \BIBTEX\ styles (\type{cont-xx.bst}); and a set
@@ -348,33 +348,16 @@ and select the parts that are needed for the current article.
      by \BIBTEX.\NC\NR 
 \stoptabulate
 
-For now, you need to run \BIBTEX\ by hand to create the
-\type{\jobname.bbl} file (\type{texutil} will hopefully do this for
-you in the future). 
+Starting with version 2006.08.08, the module registers \BIBTEX\ as a
+program to be run by texexec, so you no longer need to run \BIBTEX\ by
+hand.
 
-You may want to create the \type{\jobname.bbl} yourself. The
+Still, you may want to create the \type{\jobname.bbl} yourself. The
 \type{.bbl} syntax is explained below. There is no default
 database of course, and you do not {\it have} to use one: it is
 perfectly OK to just \type{\input} a file with the bibliographic
 records, as long as it has the right input syntax. Or even to include
 the definitions themselves in the preamble of your document.
-
-The most efficient calling order when using \BIBTEX\ is:
-\starttyping
-texexec --once myfile
-bibtex myfile
-texexec myfile
-\stoptyping
-
-Texexec should be smart enough to recognize how many
-runs are needed in the final part, but it seems it
-sometimes does one iteration too few. So you might
-have to call texexec one last time to get the page references
-correct. Numbered references always need at least one run more
-than author, year references, because the final number in
-the reference list is usually not decided upon yet at the 
-moment the \type{\cite} command is encountered.
-
 
 \subsection{Borrowing publications: \type{\usepublications}}
 
@@ -565,12 +548,12 @@ arguments, and there can be two extra optional arguments as well.
 
 
 \starttabulate[|l|l|p|]
-\NC\tex{artauthor[\#1]\{\#2\}[\#3]\{\#4\}\{\#5\}}\NC\tfx AUTHOR\NC For an author of any publication
+\NC\tex{artauthor[]\{\}[]\{\}\{\}}\NC\tfx AUTHOR\NC For an author of any publication
     that appears within a larger publication, like an article that appears
     within a journal or as part of a proceedings. \NC\NR
-\NC\tex{author[\#1]\{\#2\}[\#3]\{\#4\}\{\#5\}}\NC\tfx AUTHOR\NC The author of a standalone
+\NC\tex{author[]\{\}[]\{\}\{\}}\NC\tfx AUTHOR\NC The author of a standalone
     publication, like a monograph.\NC\NR
-\NC\tex{editor[\#1]\{\#2\}[\#3]\{\#4\}\{\#5\}}\NC\tfx EDITOR\NC The editor of e.g.
+\NC\tex{editor[]\{\}[]\{\}\{\}}\NC\tfx EDITOR\NC The editor of e.g.
     an edited volume.\NC\NR
 \stoptabulate
 
@@ -579,6 +562,16 @@ The argument lists have this form:
 \starttyping
 \author[junior]{firstnames}[inits]{von}{surname}
 \stoptyping
+
+and the meanings are as follows:
+\starttabulate[|l|p|]
+\NC \type{junior} \NC a designation of lineage, only used if confusion is possible (due to family members having the same name).\NC\NR
+\NC \type{firstnames}  \NC individual (given) name(s)\NC\NR
+\NC \type{inits}  \NC abbreviated form(s) of \type{firstnames}.\NC\NR
+\NC \type{von}    \NC any bits of the family name that are normally disregarded in sorting\NC\NR
+\NC \type{surname}   \NC reaminder of the family (last) name\NC\NR
+\stoptabulate
+
 
 \subsubsection{Simple fields}
 

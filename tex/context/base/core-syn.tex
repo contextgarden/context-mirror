@@ -393,6 +393,33 @@
 \def\definesorting
   {\dotripleempty\dodefinesorting}
 
+%D Here we define a support macro that can sort simple comma
+%D separated lists. It's a multi-list variant of a prototype
+%D written by Taco.
+
+\def\processlistofsorts[#1]%
+  {\doutilities{#1}\jobname{#1}\donothing\donothing}
+
+\newcounter\nofsortedalphalists
+
+\def\sortalphacommacommand#1%
+  {\begingroup
+   \doglobal\increment\nofsortedalphalists
+   \edef\currentsortedalphalist{alpha:\nofsortedalphalists}%
+   \definesorting[\currentsortedalphalist][\currentsortedalphalist]%
+   \processcommacommand[#1]{\getvalue\currentsortedalphalist}%
+   \global\let\sortedcommalist\empty
+   \def\makesortedlist##1{\doglobal\appendtocommalist{##1}\sortedcommalist}%
+   \setupsorting[\currentsortedalphalist][\c!criterium=\v!all,\c!command=\makesortedlist]%
+   \processlistofsorts[\currentsortedalphalist]%
+   \endgroup
+   \dodoglobal\let#1\sortedcommalist}
+
+% \starttext
+%     \def\whatever{a,b,q,d,r,f}       \sortalphacommacommand\whatever \whatever \endgraf
+%     \def\whatever{ax,bx,qx,dx,rx,fx} \sortalphacommacommand\whatever \whatever \endgraf
+% \stoptext
+
 \definesynonyms
   [\v!abbreviation]
   [\v!abbreviations]

@@ -1971,8 +1971,8 @@
       \stopbaselinecorrection}%
    \vbox}
 
-\def\verticalstrut  {\normalvbox{\hsize\zeropoint\strut}}
-\def\horizontalstrut{\normalhbox                {\strut}}
+\def\verticalstrut  {\normalvbox{\hsize\zeropoint\forgetall\strut}}
+\def\horizontalstrut{\normalhbox                          {\strut}}
 
 % Hieronder volgen enkele instellingen en macro's ten behoeve
 % van de interlinie en \strut. De waarden 2.8, 0.07, 0.72 en
@@ -2629,11 +2629,15 @@
 
 \newif\ifgridsnapping % to be sure
 
-\def\defaultwidowpenalty    {2000} % was: 1000
-\def\defaultclubpenalty     {2000} % was:  800
+\def\defaultwidowpenalty         {2000} % was: 1000
+\def\defaultclubpenalty          {2000} % was:  800
+\def\defaultdisplaywidowpenalty    {50}
+\def\defaultbrokenpenalty         {100}
 
-\def\defaultgridwidowpenalty   {0}
-\def\defaultgridclubpenalty    {0}
+\def\defaultgridwidowpenalty        {0}
+\def\defaultgridclubpenalty         {0}
+\def\defaultgriddisplaywidowpenalty {0}
+\def\defaultgridbrokenpenalty       {0}
 
 % The original approach:
 %
@@ -2673,8 +2677,10 @@
 
   \directsetup{\systemsetupsprefix\s!reset}
 
-  \widowpenalty\defaultwidowpenalty
-  \clubpenalty \defaultclubpenalty
+  \widowpenalty       \defaultwidowpenalty
+  \clubpenalty        \defaultclubpenalty
+  \displaywidowpenalty\defaultdisplaywidowpenalty
+  \brokenpenalty      \defaultbrokenpenalty
 
 \stopsetups
 
@@ -2682,8 +2688,10 @@
 
   \directsetup{\systemsetupsprefix\s!reset}
 
-  \widowpenalty\defaultgridwidowpenalty
-  \clubpenalty \defaultgridclubpenalty
+  \widowpenalty       \defaultgridwidowpenalty
+  \clubpenalty        \defaultgridclubpenalty
+  \displaywidowpenalty\defaultgriddisplaywidowpenalty
+  \brokenpenalty      \defaultgridbrokenpenalty
 
 \stopsetups
 

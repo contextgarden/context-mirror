@@ -141,23 +141,62 @@
 
 \addutilityreset{listentries}
 
-\setvalue{\??li\c!alternative a}% nr - tit - pag
-% {\def\listfill {\hskip 1.75em}% was \hskip.5em\hskip 1.25em
-  {\def\listfill {\hskip .25em}% omdat nu check
-   \def\listskip {0em}%
-   \def\listwidth{2em}}
+% old values:
+%
+% a: \def\listfill {\hskip 1.75em}
+% b: \def\listfill {\hskip.5em\hfill}
+% c: \def\listfill {\hskip.5em\listdots\hskip.5em}
 
-\setvalue{\??li\c!alternative b}% nr - tit - fill - pag
-  {\def\listfill {\hfill}%  was \hskip.5em\hfill
-   \def\listskip {5em}%
-   \def\listwidth{2em}}
+% todo: interface them
 
-\setvalue{\??li\c!alternative c}% nr - tit - dots - pag
-  {\def\listfill {\hskip.5em\listdots\hskip.5em}%
-   \def\listskip {5em}%
-   \def\listwidth{0pt}}
+% \setvalue{\??li\c!alternative a}% nr - tit - pag
+%   {\def\listfill   {\hskip.25em\relax}%
+%    \def\listskip   {0pt}%
+%    \def\listwidth  {2em}%
+%    \def\liststretch{10em}}
+
+% \setvalue{\??li\c!alternative b}% nr - tit - fill - pag
+%   {\def\listfill   {\hfill}%
+%    \def\listskip   {5em}%
+%    \def\listwidth  {2em}%
+%    \def\liststretch{10em}}
+
+% \setvalue{\??li\c!alternative c}% nr - tit - dots - pag
+%   {\def\listfill   {\hskip.5em\listdots\hskip.5em\relax}%
+%    \def\listskip   {5em}%
+%    \def\listwidth  {0pt}%
+%    \def\liststretch{10em}}
+
+\def\listalternativeparameter#1%
+  {\csname\??li\??li\listparameter\c!alternative#1\endcsname}
+
+\def\setuplistalternative[#1]%
+  {\dodoubleargument\getparameters[\??li\??li#1]}
+
+ % \listfill cum suis will be replaced by the direct call
+
+\def\listfill   {\listalternativeparameter\c!command }
+\def\listskip   {\listalternativeparameter\c!distance}
+\def\listwidth  {\listalternativeparameter\c!width   }
+\def\liststretch{\listalternativeparameter\c!stretch }
+
+% a : nr - tit - pag
+% b : nr - tit - fill - pag
+% c : nr - tit - dots - pag
+
+\setuplistalternative[a][\c!distance=0pt,\c!width=2em,\c!stretch=10em,\c!command=\hskip.25em\relax]
+\setuplistalternative[b][\c!distance=5em,\c!width=2em,\c!stretch=10em,\c!command=\hfill]
+\setuplistalternative[c][\c!distance=5em,\c!width=0pt,\c!stretch=10em,\c!command=\hskip.5em\listdots\hskip.5em\relax]
 
 \def\listdots{\leaders\hbox to .5em{\hss.\hss}\hfill}
+
+% \starttext
+%     \placelist[section][alternative=c]
+%     \setuplistalternative[c][distance=1em,stretch=0em]
+%     \placelist[section][alternative=c]
+%     \section{test}
+%     \section{\readfile{tufte}{}{}}
+% \stoptext
 
 \setvalue{\??li\c!alternative}{\getvalue{\??li\c!alternative b}}
 
@@ -591,17 +630,15 @@
         {\forgetall
          \dostartlistattributes\c!style\c!color\empty
          \!!widthb\hsize
-\doifelse{\listparameter\c!headnumber}\v!yes{%
-         \setbox2\hbox \ifdim\!!widtha>\zeropoint to \!!widtha \fi
-           {\makelistelement\v!sectionnumber
-              {\donestedlistattributes\c!numberstyle\c!numbercolor
-                 {\listparameter\c!numbercommand{\currentlistsymbol}}%
-            \hfill}}%
-}{%
-        \!!widtha\zeropoint
-        \!!widthc\zeropoint
-        \setbox2\hbox{}%
-}%
+         \doifelse{\listparameter\c!headnumber}\v!yes
+           {\setbox2\hbox \ifdim\!!widtha>\zeropoint to \!!widtha \fi
+              {\makelistelement\v!sectionnumber
+                 {\donestedlistattributes\c!numberstyle\c!numbercolor
+                    {\listparameter\c!numbercommand{\currentlistsymbol}}%
+               \hfill}}}
+           {\!!widtha\zeropoint
+            \!!widthc\zeropoint
+            \setbox2\hbox{}}%
          \setbox4\hbox
            {\doif{\listparameter\c!pagenumber}\v!yes
               {\doifsomething{#5}    % \listwidth is new ; temp hack
@@ -625,7 +662,7 @@
                 % we kunnen gewoon afbreken aan het eind
               \else
                 \ifdim\listskip>\zeropoint\relax
-                  \rightskip\listskip\!!plus10em\relax
+                  \rightskip\listskip\!!plus\liststretch\relax
                   \parfillskip-\rightskip
                 \fi
               \fi

@@ -335,20 +335,18 @@ class TeXUtil
 
         module MyFiles
 
-            @@files = Hash.new
+            @@files, @@temps = Hash.new, Hash.new
 
             def MyFiles::reset(logger)
-                @@files = Hash.new
+                @@files, @@temps = Hash.new, Hash.new
             end
 
             def MyFiles::reader(logger,data)
                 case data[0]
                     when 'b', 'e' then
-                        if @@files.key?(data[1]) then
-                            @@files[data[1]] += 1
-                        else
-                            @@files[data[1]] = 1
-                        end
+                        @@files[data[1]] = (@@files[data[1]] ||0) + 1
+                    when 't' then # temporary file
+                        @@temps[data[1]] = (@@temps[data[1]] ||0) + 1
                 end
             end
 
@@ -357,13 +355,20 @@ class TeXUtil
                 @@files.keys.sort.each do |k|
                     handle << "% > #{k} #{@@files[k]/2}\n"
                 end
+                handle << logger.banner("temporary files: #{@@temps.size}")
+                @@temps.keys.sort.each do |k|
+                    handle << "% > #{k} #{@@temps[k]}\n"
+                end
             end
 
             def MyFiles::processor(logger)
                 @@files.keys.sort.each do |k|
                     unless (@@files[k] % 2) == 0 then
-                        logger.report("check loading of file #{k}, begin/end problem")
+                        logger.report("check loading of file '#{k}', begin/end problem")
                     end
+                end
+                @@temps.keys.sort.each do |k|
+                    # logger.report("temporary file '#{k}' can be deleted")
                 end
             end
 
@@ -550,8 +555,8 @@ class TeXUtil
 
             class Register
 
-@@specialsymbol = "\000"
-@@specialbanner = "" # \\relax"
+                @@specialsymbol = "\000"
+                @@specialbanner = "" # \\relax"
 
                 @@debug = false
                 @@debug = true
@@ -577,31 +582,31 @@ class TeXUtil
                     # @entry, @key = sorter.normalize(@entry), sorter.normalize(sorter.tokenize(@key))
                     @entry = sorter.normalize(sorter.tokenize(@entry)) if @normalizeentry
                     @key   = sorter.normalize(sorter.tokenize(@key))
-if false then
-                    @entry, @key = [@entry, @key].collect do |target|
-                        # +a+b+c &a&b&c a+b+c a&b&c
-                        case target[0,1]
-                            when '&' then target = target.sub(/^./o,'').gsub(/([^\\])\&/o)     do "#{$1}#{@@split}" end
-                            when '+' then target = target.sub(/^./o,'').gsub(/([^\\])\+/o)     do "#{$1}#{@@split}" end
-                            else          target = target              .gsub(/([^\\])[\&\+]/o) do "#{$1}#{@@split}" end
+                    if false then
+                        @entry, @key = [@entry, @key].collect do |target|
+                            # +a+b+c &a&b&c a+b+c a&b&c
+                            case target[0,1]
+                                when '&' then target = target.sub(/^./o,'').gsub(/([^\\])\&/o)     do "#{$1}#{@@split}" end
+                                when '+' then target = target.sub(/^./o,'').gsub(/([^\\])\+/o)     do "#{$1}#{@@split}" end
+                                else          target = target              .gsub(/([^\\])[\&\+]/o) do "#{$1}#{@@split}" end
+                            end
+                            # {a}{b}{c}
+                            # if target =~ /^\{(.*)\}$/o then
+                                # $1.split(/\} \{/o).join(@@split) # space between } { is mandate
+                            # else
+                                target
+                            # end
                         end
-                        # {a}{b}{c}
-                        # if target =~ /^\{(.*)\}$/o then
-                            # $1.split(/\} \{/o).join(@@split) # space between } { is mandate
-                        # else
-                            target
-                        # end
+                    else
+                        @entry, @key = cleanupsplit(@entry), cleanupsplit(@key)
                     end
-else
-                    @entry, @key = cleanupsplit(@entry), cleanupsplit(@key)
-end
                     @sortkey = sorter.simplify(@key)
-# special = @sortkey =~ /^([^a-zA-Z\\])/o
-special = @sortkey =~ /^([\`\~\!\@\#\$\%\^\&\*\(\)\_\-\+\=\{\}\[\]\:\;\"\'\|\<\,\>\.\?\/\d])/o
+                    # special = @sortkey =~ /^([^a-zA-Z\\])/o
+                    special = @sortkey =~ /^([\`\~\!\@\#\$\%\^\&\*\(\)\_\-\+\=\{\}\[\]\:\;\"\'\|\<\,\>\.\?\/\d])/o
                     @sortkey = @sortkey.split(@@split).collect do |c| sorter.remap(c) end.join(@@split)
-if special then
-    @sortkey = "#{@@specialsymbol}#{@sortkey}"
-end
+                    if special then
+                        @sortkey = "#{@@specialsymbol}#{@sortkey}"
+                    end
                     @sortkey = [
                         @sortkey.downcase,
                         @sortkey,

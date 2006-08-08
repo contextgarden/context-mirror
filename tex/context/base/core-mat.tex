@@ -2147,7 +2147,7 @@
    \tabskip\zeropoint
    \global\eqaligncolumn\plusone
    \halign\bgroup
-        $##$\hfil
+        $\mathcasesparameter\c!style##$\hfil
        &\hskip\mathcasesparameter\c!distance\relax
         \popmacro\docasesNC##\hfil
        &\hskip\mathcasesparameter\c!numberdistance\relax
@@ -2258,12 +2258,14 @@
    \expanded{\scratchtoks{\the\scratchtoks\the\!!toksc }}}
 
 \def\preparemathmatrix
-  {\!!toksa{\strut
-            \firstineqalign\leftofeqalign \span \textineqalign{##}\rightofeqalign}%
+  {\!!toksa{\strut \firstineqalign\leftofeqalign \span
+            \textineqalign{\mathmatrixparameter\c!style ##}\rightofeqalign}%
    \!!toksb{&\hskip\mathmatrixparameter\c!distance
-            \nextineqalign\leftofeqalign \span \textineqalign{##}\rightofeqalign}%
+            \nextineqalign\leftofeqalign \span
+            \textineqalign{\mathmatrixparameter\c!style ##}\rightofeqalign}%
    \!!toksc{&&\hskip\mathmatrixparameter\c!distance
-            \leftofeqalign \span \textineqalign{##}\rightofeqalign}%
+            \leftofeqalign \span
+            \textineqalign{\mathmatrixparameter\c!style ##}\rightofeqalign}%
    \buildmathmatrix
    \halign \@EA \bgroup\the\scratchtoks \crcr}
 
@@ -2281,40 +2283,22 @@
 \def\dodomatrixNC
   {\gdef\domatrixNC{\endmath&}}
 
-% \let\domatrixNR\doalignNR
-
-% \def\dostartmathmatrix[#1][#2]%
-%   {\begingroup
-%    \edef\currentmathmatrix{#1}%
-%    \doifassignmentelse{#2}{\setupmathmatrix[#1][#2]}\donothing
-%    \null
-%    \mathmatrixparameter\c!left
-%    \vcenter\bgroup
-%    \pushmacro\domatrixNC
-%    \let\endmath\relax
-%    \def\NC{\domatrixNC}%
-%    \def\MC{\domatrixNC\ifmmode\else$\def\endmath{$}\fi}%
-%    \global\let\domatrixNC\dodomatrixNC
-%   %\def\NR{\endmath&\global\let\domatrixNC\dodomatrixNC\doxxdoubleempty\domatrixNR}%
-%    \def\NR{\endmath\global\let\domatrixNC\dodomatrixNC\crcr}%
-%    \normalbaselines
-%    \mathsurround\zeropoint
-%    \everycr\emptytoks
-%    \tabskip\zeropoint
-%    \global\eqaligncolumn\plusone
-%    \halign\bgroup
-%       \hfil$##$\hfil
-%     &&\hskip\mathmatrixparameter\c!distance\relax\hfil$##$\hfil\crcr
-%       \mathstrut\crcr
-%       \noalign{\kern-\baselineskip}}
-
 \def\dostartmathmatrix[#1][#2]%
   {\begingroup
    \edef\currentmathmatrix{#1}%
    \doifassignmentelse{#2}{\setupmathmatrix[#1][#2]}\donothing
    \null
    \mathmatrixparameter\c!left
-   \vcenter\bgroup
+   \processaction
+      [\mathmatrixparameter\c!location]
+      [   \v!high=>\let\vchbox\vtop,
+           \v!low=>\let\vchbox\vbox,
+          \v!lohi=>\let\vchbox\vcenter,
+           \v!top=>\let\vchbox\vtop,
+        \v!bottom=>\let\vchbox\vbox,
+       \s!default=>\let\vchbox\vcenter,
+       \s!unknown=>\let\vchbox\vcenter]%
+   \vchbox\bgroup
    \pushmacro\domatrixNC
    \let\endmath\relax
    \def\NC{\domatrixNC}%
@@ -2436,12 +2420,15 @@
 \def\startintertext#1\stopintertext
   {\noalign{\dointertext{#1}}}
 
+\def\intertext#1%
+  {\noalign{\dointertext{#1}}}
+
 \unexpanded\def\dointertext#1%
-    {\penalty\postdisplaypenalty
-     \afterdisplayspace
-     \vbox{\forgetall\noindent#1\par}%
-     \penalty\predisplaypenalty
-     \beforedisplayspace}
+  {\penalty\postdisplaypenalty
+   \afterdisplayspace
+   \vbox{\forgetall\noindent#1\par}%
+   \penalty\predisplaypenalty
+   \beforedisplayspace}
 
 %D \macros
 %D   {substack}

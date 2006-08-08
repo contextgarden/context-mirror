@@ -59,6 +59,7 @@
      10: -- begrensd
      11: geen blok opgegeven
      12: niet gedefinieerd
+     13: er is niets te splitsen
 \stopmessages
 
 \startmessages  english  library: floatblocks
@@ -75,6 +76,7 @@
      10: -- limited
      11: no block given
      12: undefined
+     13: there is nothing to split
 \stopmessages
 
 \startmessages  german  library: floatblocks
@@ -91,6 +93,7 @@
      10: -- begrenzt
      11: kein Block gegeben
      12: undefiniert
+     13: there is nothing to split
 \stopmessages
 
 \startmessages  czech  library: floatblocks
@@ -107,6 +110,7 @@
      10: -- omezeno
      11: nedan zadny blok
      12: nedefinovano
+     13: there is nothing to split
 \stopmessages
 
 \startmessages  italian  library: floatblocks
@@ -123,6 +127,7 @@
      10: -- limitato
      11: nessun oggetto specificato
      12: non definito
+     13: there is nothing to split
 \stopmessages
 
 \startmessages  norwegian  library: floatblocks
@@ -139,6 +144,7 @@
      10: -- begrenset
      11: ingen blokk oppgitt
      12: udefinert
+     13: there is nothing to split
 \stopmessages
 
 \startmessages  romanian  library: floatblocks
@@ -155,6 +161,7 @@
      10: -- limitat
      11: nu este dat nici un bloc
      12: nedefinit
+     13: there is nothing to split
 \stopmessages
 
 \startmessages  french  library: floatblocks
@@ -171,6 +178,7 @@
      10: -- limité
      11: pas de bloc donné
      12: indéfini
+     13: there is nothing to split
 \stopmessages
 
 \def\setupfloats
@@ -196,13 +204,23 @@
 \def\doemptyblock#1%
   {\localframed
      [\??fl#1][\c!frame=\v!on]%
-     {\getmessage\m!floatblocks{12}}}
+     {\getmessage\m!floatblocks{12}\empty}}
 
 % A complication is that we may have to handle a pagebreak
 % first, which in turn may issue a (postponed) float.
 % Therefore we may not trust on variable assignments before
 % we're realy dealing with the float. Some day I'll root out
 % the global settings.
+
+% \def\docomplexplacefloat[#1][#2]% [#3]#4%
+%   {\edef\floattype{#1}%
+%    \doifelsenothing\floattype
+%      {\let\floattype\v!figure}
+%      {\doifundefined{\??fl#1\c!default}{\let\floattype\v!figure}}%
+%    \doifelsenothing{#2}
+%      {\edef\floatlocation{\getvalue{\??fl\floattype\c!default}}}
+%      {\edef\floatlocation{#2}}%
+%    \expanded{\dodocomplexplacefloat[\floattype][\floatlocation]}}
 
 \def\docomplexplacefloat[#1][#2]% [#3]#4%
   {\edef\floattype{#1}%
@@ -212,7 +230,12 @@
    \doifelsenothing{#2}
      {\edef\floatlocation{\getvalue{\??fl\floattype\c!default}}}
      {\edef\floatlocation{#2}}%
-   \expanded{\dodocomplexplacefloat[\floattype][\floatlocation]}}
+   \doifinsetelse\v!split{#2}
+     {\expanded{\dodocomplexsplitfloat[\floattype][\floatlocation]}}
+     {\expanded{\dodocomplexplacefloat[\floattype][\floatlocation]}}}
+
+\def\dodocomplexsplitfloat[#1][#2][#3]#4%
+  {\splitfloat{\dodocomplexplacefloat[#1][#2][#3]{#4}}}
 
 \def\flushfloatslist
   {\v!left,\v!right,\v!inner,\v!outer,%
@@ -650,7 +673,7 @@
       \c!distance=\@@kjdistance,
       \c!separator=\@@kjseparator,
       \c!stopper=\@@kjstopper,
-      \c!suffix=\floatcaptionsuffix, % hook
+      \c!suffix=\@@kjsuffix, % hook
       \c!command=\@@kjcommand,
       \c!conversion=\@@kjconversion]%
    \definenumber % \definelabel
@@ -1375,7 +1398,7 @@
         \doifsomething{#2}{\rawreference\s!flt{#2}{{\getvalue{@fl@n@#1}}{\flasciititle}}}%
         \letgvalue{@fl@r@#1}\relax}% nils
      \setgvalue{@fl@t@#1}%
-       {\preparethenumber{\??kj#1}{\getvalue{@fl@n@#1}}\preparednumber
+       {\preparefullnumber{\??kj#1}{\getvalue{@fl@n@#1}}\preparednumber
         \doattributes{\??kj#1}\c!style\c!color
           {\doattributes{\??kj#1}\c!headstyle\c!headcolor
              {\labeltexts{#1}{\preparednumber}}%
@@ -1414,7 +1437,6 @@
    \dostartattributes{\??kj#1}\c!style\c!color\empty
      \ifnofloatnumber
      \else
-%        \hbox{\doattributes{\??kj#1}\c!headstyle\c!headcolor{\strut#2\floatcaptionsuffix\@@kjkjstopper}}%
        \hbox{\doattributes{\??kj#1}\c!headstyle\c!headcolor{\strut#2}}%
        \ifnofloatcaption \else \ifemptyfloatcaption \else
          \ifcase#4\relax
@@ -1820,7 +1842,7 @@
      \edef\@@kjkjminwidth {\getvalue{\??kj#4\c!minwidth}}%   in geval van automatisch
      \edef\@@kjkjdistance {\getvalue{\??kj#4\c!distance}}%
      \edef\@@kjkjalign    {\getvalue{\??kj#4\c!align}}%
-     \def\@@kjkjstopper   {\getvalue{\??kj#4\c!stopper}}%
+      \def\@@kjkjstopper  {\getvalue{\??kj#4\c!stopper}}%
      \edef\@@flfllocation {\getvalue{\??fl#4\c!location}}%
      \ifparfloat
        \@EA\dosetparfloat % {#1}{#2}{#3}{#4}%
@@ -1918,7 +1940,7 @@
 %           \rawreference\s!flt{#2}{{\composedsectionnumber}{\asciititle}}%
 %           \dowritetolist{#3}{\composedsectionnumber}{#6}{#3}}%
 %        \egroup
-%        \preparethenumber{\??kj#1}\composedsectionnumber\preparednumber
+%        \preparefullnumber{\??kj#1}\composedsectionnumber\preparednumber
 %        \dofloat{#4}{\labeltexts{#5}{\preparednumber}}{#6}{#1}%
 %      \fi
 %    \fi
@@ -1961,7 +1983,7 @@
           \rawreference\s!flt{#2}{{\composedsectionnumber}{\asciititle}}%
           \dowritetolist{#3}{\composedsectionnumber}{#6}{#3}}%
        \egroup
-       \preparethenumber{\??kj#1}\composedsectionnumber\preparednumber
+       \preparefullnumber{\??kj#1}\composedsectionnumber\preparednumber
        \dofloat{#4}{\labeltexts{#5}{\preparednumber}}{#6}{#1}%
      \fi
    \fi
@@ -2267,6 +2289,7 @@
    \c!sectionnumber=\@@nrsectionnumber,
    \c!separator=\@@koseparator,
    \c!stopper=\@@kostopper,
+   \c!suffix=\floatcaptionsuffix, % hook
    \c!distance=1em,
    \c!command=,
    \c!conversion=\v!numbers]

@@ -3805,40 +3805,31 @@
 %D Now a whole bunch of variables like \type{\@@xxalfavariable}
 %D and \type{\@@xxbetavariable} is defined.
 
-\def\dosingleargumentwithset#1%
-  {\def\dodosinglewithset[##1]%
-     {\def\dododosinglewithset####1%
-        {#1[####1]}%
-      \processcommalist[##1]\dododosinglewithset}%
-   \dosingleargument\dodosinglewithset}%
+% \def\dosingleargumentwithset#1%
+%   {\def\dodosinglewithset[##1]%
+%      {\def\dododosinglewithset####1{#1[####1]}%
+%       \processcommalist[##1]\dododosinglewithset}%
+%    \dosingleargument\dodosinglewithset}%
 
 \def\dodoublewithset#1#2%
   {\def\dododoublewithset[##1][##2]%
-     {\doifnot{##1}{}
-        {\def\dodododoublewithset####1%
-           {#2[####1][##2]}%
+     {\doifsomething{##1}
+        {\def\dodododoublewithset####1{#2[####1][##2]}%
          \processcommalist[##1]\dodododoublewithset}}%
-   #1\dododoublewithset}%
+   #1\dododoublewithset}
 
-\def\dodoubleemptywithset
-  {\dodoublewithset\dodoubleempty}
-
-\def\dodoubleargumentwithset
-  {\dodoublewithset\dodoubleargument}
+\def\dodoubleemptywithset   {\dodoublewithset\dodoubleempty}
+\def\dodoubleargumentwithset{\dodoublewithset\dodoubleargument}
 
 \def\dotriplewithset#1#2%
   {\def\dodotriplewithset[##1][##2][##3]%
-     {\doifnot{##1}{}
-        {\def\dododotriplewithset####1%
-           {#2[####1][##2][##3]}%
+     {\doifsomething{##1}
+        {\def\dododotriplewithset####1{#2[####1][##2][##3]}%
          \processcommalist[##1]\dododotriplewithset}}%
-   #1\dodotriplewithset}%
+   #1\dodotriplewithset}
 
-\def\dotripleemptywithset%
-  {\dotriplewithset\dotripleempty}
-
-\def\dotripleargumentwithset%
-  {\dotriplewithset\dotripleargument}
+\def\dotripleemptywithset   {\dotriplewithset\dotripleempty}
+\def\dotripleargumentwithset{\dotriplewithset\dotripleargument}
 
 %D \macros
 %D   {strippedcsname}

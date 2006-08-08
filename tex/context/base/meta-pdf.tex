@@ -1923,6 +1923,8 @@
 \def\PDFMPformoffset
   {\ifx\objectoffset\undefined\zeropoint\else\objectoffset\fi}
 
+\chardef\blackoutMPgraphic\plusone % in supp-pdf it's \zerocount
+
 \def\finishMPgraphic
   {\stopMPresources
    \egroup
@@ -1930,6 +1932,7 @@
      {\forgetall
       \hbox
         {\PDFcode{q \MPxscale\space 0 0 \MPyscale\space \MPxoffset\space \MPyoffset\space cm}%
+         \ifcase\blackoutMPgraphic\or\PDFcode{0 g 0 G}\fi
          \lower\MPyshift\box\scratchbox % unscaled shift
          \PDFcode{Q}}}%
    \ht\scratchbox\MPheight

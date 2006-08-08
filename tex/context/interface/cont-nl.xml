@@ -4884,6 +4884,34 @@
   </cd:arguments>
 </cd:command>
 
+<cd:command name="setuplistalternative" file="core-lst.tex">
+  <cd:sequence>
+    <cd:string value="setuplistalternative"/>
+  </cd:sequence>
+  <cd:arguments>
+    <cd:keywords list="no">
+      <cd:constant type="a"/>
+      <cd:constant type="b"/>
+      <cd:constant type="c"/>
+      <!-- cd:constant type="cd:name"/ -->
+    </cd:keywords>
+    <cd:assignments list="yes">
+      <cd:parameter name="commando">
+        <cd:constant type="cd:command"/>
+      </cd:parameter>
+      <cd:parameter name="breedte">
+        <cd:constant type="cd:dimension"/>
+      </cd:parameter>
+      <cd:parameter name="rek">
+        <cd:constant type="cd:dimension"/>
+      </cd:parameter>
+      <cd:parameter name="afstand">
+        <cd:constant type="cd:dimension"/>
+      </cd:parameter>
+    </cd:assignments>
+  </cd:arguments>
+</cd:command>
+
 <cd:command name="definecombinedlist" file="core-lst.tex">
   <cd:sequence>
     <cd:string value="definieersamengesteldelijst"/>
@@ -6167,6 +6195,10 @@
         <cd:constant type="eerste"/>
         <cd:constant type="geen"/>
       </cd:parameter>
+      <cd:parameter name="comprimeren">
+        <cd:constant type="nee"/>
+        <cd:constant type="ja"/>
+      </cd:parameter>
       <cd:parameter name="dieptekstcommando">
         <cd:constant type="cd:oneargument"/>
       </cd:parameter>
@@ -7229,6 +7261,7 @@
       <cd:constant type="regel"/>
       <cd:constant type="hoogte"/>
       <cd:constant type="diepte"/>
+      <cd:constant type="splitsen"/>
     </cd:keywords>
     <cd:reference optional="yes" list="yes"/>
     <cd:content/>
@@ -8616,7 +8649,7 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="defineinteractionmenu" variant="1" file="core-int.tex">
+<cd:command name="defineinteractionmenu" variant="2" file="core-int.tex">
   <cd:sequence>
     <cd:string value="definieerinteractiemenu"/>
   </cd:sequence>

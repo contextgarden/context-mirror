@@ -222,21 +222,66 @@
      {\precedingsectionnumber\convertednumber[#1]}%
    \egroup}
 
-\def\preparethenumber#1#2#3% {\??id#1} \number \result
-  {\doifelsevaluenothing{#1\c!separator}
-     {\let\numberseparator\empty
-      \let#3#2}
-     {% was \unexpanded \edef, but we need it unexpanded !
-      \edef\numberseparator{\spr{\getvalue{#1\c!separator}}}%
-      \doifelsenothing{\executeifdefined{#1\c!suffix}\empty}
-        {\edef#3%
-           {\@EA\separatednumber\@EA{#2}%
-            }}%\stp{\getvalue{#1\c!stopper}}}}
-        {\edef#3%
-           {\@EA\separatednumber\@EA{#2}%
-            \spr{\getvalue{#1\c!separator}}%
-            \getvalue{#1\c!suffix}%
-            \stp{\getvalue{#1\c!stopper}}}}}}
+% \def\preparethenumber#1#2#3% {\??id#1} \number \result
+%   {\doifelsevaluenothing{#1\c!separator}
+%      {\let\numberseparator\empty
+%       \let#3#2}
+%      {% was \unexpanded \edef, but we need it unexpanded !
+%       \edef\numberseparator{\spr{\getvalue{#1\c!separator}}}%
+%       \doifelsenothing{\executeifdefined{#1\c!suffix}\empty}
+%         {\edef#3%
+%            {\@EA\separatednumber\@EA{#2}%
+%             }}%\stp{\getvalue{#1\c!stopper}}}}
+%         {\edef#3%
+%            {\@EA\separatednumber\@EA{#2}%
+%             \spr{\getvalue{#1\c!separator}}%
+%             \getvalue{#1\c!suffix}%
+%             \stp{\getvalue{#1\c!stopper}}}}}}
+%
+% some day we do a real cleanup
+
+\def\analyzenumber#1#2#3% {\??id#1} \(precedingsection)number \result
+  {% was \unexpanded \edef, but we need it unexpanded !
+   \doifelsenothing{\executeifdefined{#1\c!suffix}\empty}
+     {\let \numbersuffix \empty}
+     {\edef\numbersuffix{\spr{\getvalue{#1\c!suffix}}}}%
+   \doifelsenothing{\executeifdefined{#1\c!stopper}\empty}
+     {\let \numberstopper \empty}
+     {\edef\numberstopper{\spr{\getvalue{#1\c!stopper}}}}%
+   \doifelsenothing{\executeifdefined{#1\c!separator}\empty}
+     {\let \numberseparator \empty}
+     {\edef\numberseparator{\spr{\getvalue{#1\c!separator}}}}%
+   \let\numberprefix\empty}
+
+\def\preparefullnumber#1#2#3% {\??id#1} \(precedingsection)number \result
+  {\analyzenumber{#1}#2#3%
+   \ifx\numberseparator\empty
+     \edef\numberprefix{#2}%
+   \else
+     \edef\numberprefix{\@EA\separatednumber\@EA{#2}}%
+   \fi
+   \ifx\numbersuffix\empty
+     \ifx\numberprefix\empty
+        \let #3\empty
+     \else
+        \edef#3{\numberprefix\numberstopper}%
+     \fi
+   \else
+     \ifx\numberprefix\empty
+       \edef#3{\numbersuffix\numberstopper}%
+     \else
+       \edef#3{\numberprefix\numberseparator\numbersuffix\numberstopper}%
+     \fi
+   \fi}
+
+\def\prepareprefixnumber#1#2#3% {\??id#1} \number \result
+  {\analyzenumber{#1}#2#3%
+   \ifx\numberseparator\empty
+     \edef\numberprefix{#2}%
+   \else
+     \edef\numberprefix{\@EA\separatednumber\@EA{#2}}%
+   \fi
+   \let#3\numberprefix}
 
 \def\sectionnumberonly[#1]%
   {\makesectionnumber[#1]%
@@ -1536,7 +1581,8 @@
    \flushingcolumnfloatstrue
    \someheadconversionfalse
    \let\fullsectionnumber\limitedfullsectionnumber
-   \ifdisplaysectionhead\else\expandafter\GotoPar\fi}
+   % ignorespaces prevents spaces creeping in when after=\dontleavehmode
+   \ifdisplaysectionhead\ignorespaces\else\expandafter\GotoPar\fi}
 
 \def\forcesectiontolist#1#2%
   {\ifwritetolist
@@ -2188,7 +2234,7 @@
             % again too confusing
             \c!align,\c!aligntitle,\c!tolerance,\c!grid,\c!hang,\c!strut,
             \c!numbercommand,\c!textcommand,\c!margintext,\c!margin]%
-\getparameters[\??ko#1][\c!expansion=]% iig een value, rather fuzzy
+         \getparameters[\??ko#1][\c!expansion=]% iig een value, rather fuzzy
          \definemarking[#1][#2]%
          \definemarking[#1\v!number][#2\v!number]%
          \doifundefined{\??li#1}{\definelist[#1][#2]}}}%

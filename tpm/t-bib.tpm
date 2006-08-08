@@ -3,17 +3,17 @@
   <rdf:Description about="http://dl.contextgarden.net/modules/t-bib.zip">
     <TPM:Name>t-bib</TPM:Name>
     <TPM:Type>Package</TPM:Type>
-    <TPM:Date>2006/08/04 16:00:00</TPM:Date>
-    <TPM:Version>2006.08.04</TPM:Version>
+    <TPM:Date>2006/08/08 14:40:00</TPM:Date>
+    <TPM:Version>2006.08.08</TPM:Version>
     <TPM:Creator>taco</TPM:Creator>
     <TPM:Title>ConTeXt Bibliographies</TPM:Title>
     <TPM:Description>
 A bibliographic subsystem for ConTeXt
     </TPM:Description>
     <TPM:Author>Taco Hoekwater</TPM:Author>
-    <TPM:Size>552071</TPM:Size>
+    <TPM:Size>551376</TPM:Size>
     <TPM:Build/>
-    <TPM:RunFiles size="248593">
+    <TPM:RunFiles size="248704">
 tex/context/bib/bibl-ams.tex
 tex/context/bib/bibl-apa-de.tex
 tex/context/bib/bibl-apa-fr.tex
@@ -31,7 +31,7 @@ bibtex/bst/context/cont-no.bst
 bibtex/bst/context/cont-ti.bst
 tpm/t-bib.tpm
    </TPM:RunFiles>
-    <TPM:DocFiles size="303478">
+    <TPM:DocFiles size="302672">
 doc/context/bib/bibmod-doc.pdf
 doc/context/bib/bibmod-doc.tex
     </TPM:DocFiles>

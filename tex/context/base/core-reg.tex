@@ -1082,6 +1082,9 @@
      \begingroup
      \edef\currentregister{#1}%
      \setupregister[\currentregister][#2]%
+     \doifelse{\registerparameter\c!compress}\v!yes % new
+        {\chardef\collapseregisterpages\plusone}
+        {\chardef\collapseregisterpages\zerocount}%
      \raggedright
      \startcolumns
        [\c!n=\registerparameter\c!n,
@@ -1129,6 +1132,7 @@
       \c!before=\blank,      % binnen kolommen: \blank[\v!line]
       \c!after=,
       \c!symbol=,
+      \c!compress=\v!no,
       \c!interaction=\v!pagenumber,
       \c!alternative=\v!a,
       \c!distance=1em,

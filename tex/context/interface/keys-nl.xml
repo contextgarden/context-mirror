@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 
-<cd:interface xmlns:cd="http://www.pragma-ade.com/commands" name="context" language="nl" version="2006.08.04 22:23">
+<cd:interface xmlns:cd="http://www.pragma-ade.com/commands" name="context" language="nl" version="2006.08.08 17:52">
 
   <cd:variables>
     <cd:variable name="one" value="een"/>
@@ -126,6 +126,9 @@
   </cd:variables>
 
   <cd:constants>
+    <cd:constant name="sorttype" value="sortering"/>
+    <cd:constant name="compress" value="comprimeren"/>
+    <cd:constant name="autohang" value="autohang"/>
     <cd:constant name="suffix" value="suffix"/>
     <cd:constant name="leftquotation" value="linkercitaat"/>
     <cd:constant name="rightquotation" value="rechtercitaat"/>
@@ -599,6 +602,7 @@
     <cd:variable name="smallboldslanted" value="kleinvetschuin"/>
     <cd:variable name="smallbolditalic" value="kleinvetitalic"/>
     <cd:variable name="smallbodyfont" value="kleinkorps"/>
+    <cd:variable name="split" value="splitsen"/>
     <cd:variable name="toggle" value="toggle"/>
     <cd:variable name="color" value="kleur"/>
     <cd:variable name="column" value="kolom"/>
@@ -626,6 +630,7 @@
     <cd:variable name="MONTH" value="MAAND"/>
     <cd:variable name="month" value="maand"/>
     <cd:variable name="mar" value="mar"/>
+    <cd:variable name="marking" value="markering"/>
     <cd:variable name="margin" value="marge"/>
     <cd:variable name="max" value="max"/>
     <cd:variable name="min" value="min"/>

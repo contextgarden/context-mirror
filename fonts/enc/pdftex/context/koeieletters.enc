@@ -1,34 +1,34 @@
 /koeielettersEnc [
- /parenleft.big        % 0x00
- /parenright.big  
- /slash.big	  
- /bracketleft.big 
- /backslash.big	  
- /bracketright.big
- /braceleft.big	  
- /bar.big	  
- /braceright.big  
- /integral.big
- /summation.big
- /radical.big
- /radical.bigg
- /radical.Bigg
- /radical.BIGG
- /radical.end
- /radical.extender		% 0x10
- /radical.alt
- /integral.alt
- /summation.alt
- /parenleft.bigg
- /parenright.bigg  
- /slash.bigg	  
- /bracketleft.bigg 
- /backslash.bigg	  
- /bracketright.bigg
- /braceleft.bigg	  
- /bar.bigg	  
- /braceright.bigg  
- /radical.begin
+ /.notdef        % 0x00
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef	  
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
+ /dotlessi		% 0x10
+ /dotlessj
+ /grave
+ /acute
+ /hacek
+ /breve
+ /hungarumlaut
+ /macron
+ /ringaccent
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
  /.notdef
  /.notdef
  /space		% 0x20

@@ -435,7 +435,7 @@
      [\c!sectionnumber=\descriptionparameter\c!sectionnumber]%
    \if!!donea
      \makeprecedingsectionnumber[\currentdescriptionnumber]%
-     \preparethenumber{\??dd\currentdescription}\precedingsectionnumber\preparednumber
+     \prepareprefixnumber{\??dd\currentdescription}\precedingsectionnumber\preparednumber
      \iftrialtypesetting\startlocal\fi
      \getvalue{\e!next\currentdescription}% tricky but we need the preroll
      \iftrialtypesetting\stoplocal\fi
@@ -445,7 +445,7 @@
        \letvalue{\??dd\currentdescription\c!sectionnumber}\v!yes
        \protectconversion
        \makeprecedingsectionnumber[\currentdescriptionnumber]%
-       \preparethenumber{\??dd\currentdescription}\precedingsectionnumber\preparednumber
+       \prepareprefixnumber{\??dd\currentdescription}\precedingsectionnumber\preparednumber
        \ifcase\descriptioncoupling \or
          \xdef\@@internalenumber{\doshowdnnumber}%
          \rawreference\s!num{#1:\@@internalenumber}{}%
@@ -456,7 +456,7 @@
        \egroup
      \fi
     %\makeprecedingsectionnumber[\currentdescriptionnumber]%
-    %\preparethenumber{\??dd\currentdescription}\precedingsectionnumber\preparednumber
+    %\prepareprefixnumber{\??dd\currentdescription}\precedingsectionnumber\preparednumber
      \disablepseudocaps   % sorry, uppercase causes troubles
      \doattributes        % \nocase primitive needed
        {\??dd\currentdescription}\c!headstyle\c!headcolor % todo: sub as well
@@ -524,7 +524,7 @@
 \def\domakednnumber
   {\descriptionparameter\c!left
    \strut\doshowdnnumber
-   % \descriptionparameter\c!stopper
+   \descriptionparameter\c!stopper
    \descriptionparameter\c!right}
 
 \setvalue{\??dd\s!set\v!sub\s!sub\s!sub\c!number}#1%

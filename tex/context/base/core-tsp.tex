@@ -104,6 +104,8 @@
 
 \def\dosplitfloat[#1]#2% nog dubbele refs
   {\bgroup
+   \global\setfalse\splitfloatdone
+   \aftergroup\checksplitfloat
    \insidefloattrue
    \insidesplitfloattrue
    \getparameters[\??si][#1]%
@@ -117,6 +119,13 @@
    \dopushsavedfloats
    \@@sibefore
    \let\next} % \bgroup
+
+
+\def\checksplitfloat
+  {\ifconditional\splitfloatdone\else
+      \blank{\tttf \getmessage\m!floatblocks{13}\empty}\blank
+      \showmessage\m!floatblocks{13}\empty
+   \fi}
 
 \settrue \onlyonesplitofffloat
 \setfalse\somenextplitofffloat
@@ -148,10 +157,13 @@
 %D \dorecurse{10}{\input tufte }
 %D \stoptyping
 
+\newconditional\splitfloatdone
+
 \def\dodowithsplitofffloat
   {\dowithnextbox
      {\forgetall
       \dontcomplain
+      \global\settrue\splitfloatdone
       \chardef\nodelocationmode\zerocount % bypass auto-renumbering
       \incrementnumber[\??si]%
       \ifcase\rawnumber[\??si]\or \ifconditional\onlyonesplitofffloat

@@ -701,7 +701,7 @@
      \fi
      \startpushnote
        {\ifx\lastnotenumber\empty \else
-          \preparethenumber{\??vn\currentnote}\lastnotenumber\preparednumber
+          \preparefullnumber{\??vn\currentnote}\lastnotenumber\preparednumber
           \doifelse{\noteparameter\c!interaction}\v!no
             {\noteparameter\c!numbercommand
                {\preparednumber\domovednote\v!nextpage\v!previouspage}}%

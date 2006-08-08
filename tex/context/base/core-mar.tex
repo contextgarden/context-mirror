@@ -327,9 +327,16 @@
 
 % \newtoks \everymarking
 
+% \def\Interesting{\doifmodeelse{*\v!marking}{Interesting}{Boring}}
+% \setupheadertexts[chapter]
+% \starttext
+%     \chapter{This Is \Interesting}
+% \stoptext
+
 \def\dogetmarking[#1][#2][#3]%
   {\doifvalue{\??mk#1\c!state}\v!start
      {\bgroup
+      \setsystemmode\v!marking
       \the\everymarking
      %\def\nomarking##1{\unknown\ }%
       \def\nomarking{\splitsequence{\getvalue{\??mk#1\c!limittext}}}%

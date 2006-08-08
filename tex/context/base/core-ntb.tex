@@ -1488,6 +1488,8 @@
      \doglobal\increment\currenttbl\relax
    \fi
    \doglobal\increment\TBLlevel\relax
+   \pushcharacteralign
+   \resetcharacteralign
    \ifnum\TBLlevel>\plusone
      \resetallTABLEparameters
      \globalpushmacro\colTBL
@@ -1503,7 +1505,22 @@
    \else
      \global\intablefalse
    \fi
+   \popcharacteralign
    \doglobal\decrement\TBLlevel\relax}
+
+% \bgroup
+% \setupTABLE[column][1][aligncharacter=yes, alignmentcharacter={,}]
+% \bTABLE
+%     \bTR  \bTD  1,2 \eTD  \bTD 2 \eTD \eTR
+%     \bTR  \bTD 11,2 \eTD  \bTD
+%         {\setupTABLE[column][1][aligncharacter=yes, alignmentcharacter={,}]
+%          \bTABLE
+%             \bTR  \bTD 1,2 \eTD  \bTD 2 \eTD \eTR
+%             \bTR  \bTD  11,22 \eTD  \bTD 2 \eTD \eTR
+%             \bTR  \bTD 11,2 \eTD  \bTD 2 \eTD \eTR \eTABLE} \eTD \eTR
+%     \bTR  \bTD  11,22 \eTD  \bTD 2 \eTD \eTR
+% \eTABLE
+% \egroup
 
 \newconditional\resetTABLEmode \settrue\resetTABLEmode
 

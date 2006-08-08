@@ -1636,18 +1636,40 @@
 
 % todo 1: shift down option
 
-\startuseMPgraphic{mpos:par:columnset}
-  \iftracepositions show_multi_pars \else draw_multi_pars \fi ;
-  path p ; p := boundingbox currentpicture ;
-  currentpicture := currentpicture shifted (0,-StrutDepth/2) ;
-  setbounds currentpicture to p ;
-\stopuseMPgraphic
+% \startuseMPgraphic{mpos:par:columnset}
+%   \iftracepositions show_multi_pars \else draw_multi_pars \fi ;
+%   path p ; p := boundingbox currentpicture ;
+%   currentpicture := currentpicture shifted (0,-StrutDepth/2) ;
+%   setbounds currentpicture to p ;
+% \stopuseMPgraphic
 
-\setupcolors[state=start]
+\definetextbackground[underline]    [location=text,alternative=1,background=,frame=off]
+\definetextbackground[overstrike]   [location=text,alternative=2,background=,frame=off]
+\definetextbackground[exlines]      [location=text,alternative=3,background=,frame=off]
+\definetextbackground[strikethrough][location=text,alternative=4,background=,frame=off]
 
-\definetextbackground[underline][location=text,alternative=1,background=,frame=off,distance=2pt]
-
-\definestartstop
-  [underline]
+\definestartstop [underline]
   [before={\starttextbackground[underline]},
    after=\stoptextbackground]
+
+\definestartstop
+  [overstrike]
+  [before={\starttextbackground[overstrike]},
+   after=\stoptextbackground]
+
+\definestartstop
+  [exlines]
+  [before={\starttextbackground[exlines]},
+   after=\stoptextbackground]
+
+\definestartstop
+  [strikethrough]
+  [before={\starttextbackground[strikethrough]},
+   after=\stoptextbackground]
+
+\starttext
+    \startunderline     \input tufte \stopunderline      \blank
+    \startoverstrike    \input tufte \stopoverstrike     \blank
+    \startexlines       \input tufte \stopexlines        \blank
+    \startstrikethrough \input tufte \stopstrikethrough  \blank
+\stoptext

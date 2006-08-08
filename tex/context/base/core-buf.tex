@@ -331,7 +331,7 @@
      \setevalue{\e!get#1}%
        {\noexpand\dodoprocessTEXbuffer[#1][def-\nofdefinedbuffers]}%
      \setevalue{\e!type#1}%
-       {\noexpand\dodotypebuffer[#1][def-\nofdefinedbuffers]}%
+       {\noexpand\dotypebuffer[#1][def-\nofdefinedbuffers]}%
      \getparameters[\??bu#1][#2]%
    \fi}
 
@@ -762,8 +762,11 @@
       \c!style=,
       \c!file=\jobname]}
 
+% \def\defineblock
+%   {\dosingleargumentwithset\dodefineblock}
+
 \def\defineblock
-  {\dosingleargumentwithset\dodefineblock}
+  {\dosingleargument\dodefineblock}
 
 \def\dosetupblock[#1][#2]%
   {\getparameters[\??tb#1][#2]}

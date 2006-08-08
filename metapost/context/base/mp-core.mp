@@ -1015,20 +1015,24 @@ enddef ;
 def draw_par  = % 1 2 3 11 12
   do_draw_par(pxy) ; do_draw_par(txy) ; do_draw_par(bxy) ;
   for i = pxy, txy, bxy :
-        if boxgridtype= 1 :
+        if boxgridtype = 1 :
       boxgriddirection := origin ;
       draw baseline_grid (i,boxgriddirection,true ) withcolor boxgridcolor ;
-    elseif boxgridtype= 2 :
+    elseif boxgridtype = 2 :
       boxgriddirection := origin ;
       draw baseline_grid (i,boxgriddirection,false) withcolor boxgridcolor ;
-    elseif boxgridtype= 3 :
+    elseif boxgridtype = 3 :
       boxgriddirection := origin ;
       draw baseline_grid (i,boxgriddirection,true ) withcolor boxgridcolor ;
       draw baseline_grid (i,boxgriddirection,true )
         shifted (0,ExHeight) withcolor boxgridcolor ;
-    elseif boxgridtype=11 :
+    elseif boxgridtype = 4 :
+      boxgriddirection := origin ;
+      draw baseline_grid (i,boxgriddirection,true )
+        shifted (0,ExHeight/2) withcolor boxgridcolor ;
+    elseif boxgridtype = 11 :
       draw graphic_grid(i,boxgriddistance,boxgriddistance,boxgriddistance/2,boxgriddistance/2) ;
-    elseif boxgridtype=12 :
+    elseif boxgridtype = 12 :
       draw graphic_grid(i,boxgriddistance,boxgriddistance,0,0) ;
     fi ;
   endfor ;
@@ -1115,6 +1119,9 @@ def draw_multi_pars  =
       draw baseline_grid (multipars[i],up,true ) withcolor boxgridcolor ;
       draw baseline_grid (multipars[i],up,true )
         shifted (0,ExHeight) withcolor boxgridcolor ;
+    elseif boxgridtype= 4 :
+      draw baseline_grid (multipars[i],up,true )
+        shifted (0,ExHeight/2) withcolor boxgridcolor ;
     elseif boxgridtype=11 :
       draw graphic_grid(multipars[i],boxgriddistance,boxgriddistance,boxgriddistance/2,boxgriddistance/2) ;
     elseif boxgridtype=12 :

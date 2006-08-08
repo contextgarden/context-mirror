@@ -1724,6 +1724,40 @@ class TEX
                             runbackend(rawbase)
                             popresult(rawbase,result)
                         end
+                        if true then # autopurge
+                            begin
+                                File.open(File.suffixed(rawbase, 'tuo')) do |f|
+                                    ok = 0
+                                    f.each do |line|
+                                        case ok
+                                            when 1 then
+                                                # next line is empty
+                                                ok = 2
+                                            when 2 then
+                                                if line =~ /^\%\s+\>\s+(.*?)\s+(\d+)/mois then
+                                                    filename, n = $1, $2
+                                                    done = File.delete(filename) rescue false
+                                                    if done && getvariable('verbose') then
+                                                        report("deleting #{filename} (#{n} times used)")
+                                                    end
+                                                else
+                                                    break
+                                                end
+                                            else
+                                                if line =~ /^\%\s+temporary files\:\s+(\d+)/mois then
+                                                    if $1.to_i == 0 then
+                                                        break
+                                                    else
+                                                        ok = 1
+                                                    end
+                                                end
+                                        end
+                                    end
+                                end
+                            rescue
+                                report("fatal error #{$!}")
+                            end
+                        end
                     end
 
                     Kpse.runscript('ctxtools',rawbase,'--purge')       if getvariable('purge')

@@ -349,7 +349,7 @@
       \fi}
      {\doifelsenothing\currentpalet
          \donefalse
-        {\doifdefinedelse{\??cr\currentpalet#6}\donetrue\donefalse}
+        {\doifdefinedelse{\??cr\currentpalet#6}\donetrue\donefalse}%
       \ifdone
         \doifnot{#5}{#6}
            {#2{\??cr#5}{\paletcolorspec{#6}}}%

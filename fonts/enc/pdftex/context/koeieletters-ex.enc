@@ -47,26 +47,26 @@
  /.notdef
  /slash.bigg	  
  /backslash.bigg	  
- /.notdef		% 0x30
+ /parenleft.top		% 0x30
+ /parenright.top
+ /bracketleft.top
+ /bracketright.top
+ /bracketleft.bot
+ /bracketright.bot
+ /bracketleft.ex
+ /bracketright.ex
+ /.notdef           
+ /.notdef           
+ /.notdef           
+ /.notdef           
+ /.notdef           
  /.notdef
  /.notdef
  /.notdef
- /.notdef
- /.notdef
- /.notdef
- /.notdef
- /.notdef
- /.notdef
- /.notdef
- /.notdef
- /.notdef
- /.notdef
- /.notdef
- /.notdef
- /.notdef		% 0x40
- /.notdef
- /.notdef
- /.notdef
+ /parenleft.bot		% 0x40
+ /parenright.bot
+ /parenleft.ex
+ /parenright.ex
  /.notdef
  /.notdef
  /.notdef
@@ -111,19 +111,19 @@
  /.notdef
  /braceleft.bigg	  
  /braceright.bigg  
- /radical.alt            % 0x70
- /radical.big
+ /radical.big          % 0x70
  /radical.bigg
  /radical.Bigg
  /radical.BIGG
+ /radical.bot
+ /radical.mid
+ /radical.top
+ /.notdef
+ /.notdef
+ /.notdef
  /radical.extender
  /radical.end
- /radical.begin
- /.notdef
- /.notdef
- /.notdef
- /.notdef
- /.notdef
+ /bar.begin
  /.notdef
  /.notdef
  /.notdef
