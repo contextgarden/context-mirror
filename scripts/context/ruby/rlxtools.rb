@@ -12,10 +12,7 @@
 
 banner = ['RlxTools', 'version 1.0.1', '2004/2005', 'PRAGMA ADE/POD']
 
-unless defined? ownpath
-    ownpath = $0.sub(/[\\\/][a-z0-9\-]*?\.rb/i,'')
-    $: << ownpath
-end
+$: << File.expand_path(File.dirname($0)) ; $: << File.join($:.last,'lib') ; $:.uniq!
 
 require 'base/switch'
 require 'base/logger'
@@ -98,6 +95,9 @@ class Commands
                     if conversion = variables['conversion'] then
                         report("testing for conversion #{conversion}")
                         if suffix = variables['suffix'].downcase then
+                            if ! suffix.empty? && variables['file'] && variables['file'] !~ /\.([a-z]+)$/i then
+                                variables['file'] += ".#{suffix}"
+                            end
                             if file = variables['file'] then
                                 report("conversion #{conversion} for suffix #{suffix} for file #{file}")
                             else
@@ -251,17 +251,43 @@ class Commands
 
     include CommandBase
 
-    def identify
-        @commandline.arguments.each do |filename|
-            if state = do_identify(filename) then
-                begin
-                    File.open(filename+'.rli','w') do |f|
-                        f << state
+    @@xmlbanner = "<?xml version='1.0' standalone='yes'?>"
+
+    def identify(resultfile='rlxtools.rli')
+        if @commandline.option('collect') then
+            begin
+                File.open(resultfile,'w') do |f|
+                    f << "#{@@xmlbanner}\n"
+                    f << "<rl:identification>\n"
+                    @commandline.arguments.each do |filename|
+                        if state = do_identify(filename) then
+                            report("#{filename} is identified")
+                            f << state
+                        else
+                            report("unable to identify #{filename}")
+                        end
                     end
-                rescue
-                    report("error in identifying #{filename}")
+                    f << "</rl:identification>\n"
+                    report("result saved in #{resultfile}")
+                end
+            rescue
+                report("error in writing result")
+            end
+        else
+            @commandline.arguments.each do |filename|
+                if state = do_identify(filename) then
+                    begin
+                        File.open(filename+'.rli','w') do |f|
+                            f << "#{@@xmlbanner}\n"
+                            f << state
+                        end
+                    rescue
+                        report("error in identifying #{filename}")
+                    else
+                        report("#{filename} is identified")
+                    end
                 else
-                    report("#{filename} is identified")
+                    report("unable to identify #{filename}")
                 end
             end
         end
@@ -269,11 +295,15 @@ class Commands
 
     private
 
-    def do_identify(filename)
+    def do_identify(filename,centimeters=false)
         begin
             str = nil
             if FileTest.file?(filename) then
-                result = `identify -format \"x=%x,y=%y,w=%w,h=%h,b=%b\" #{filename}`.chomp.split(',')
+                if centimeters then
+                    result = `identify -units PixelsPerCentimeter -format \"x=%x,y=%y,w=%w,h=%h,b=%b\" #{filename}`.chomp.split(',')
+                else
+                    result = `identify -units PixelsPerInch       -format \"x=%x,y=%y,w=%w,h=%h,b=%b\" #{filename}`.chomp.split(',')
+                end
                 tags = Hash.new
                 result.each do |r|
                     if rr = r.split("=") then
@@ -285,7 +315,6 @@ class Commands
                 height = unified(tags['h']||0,tags['y']||'1')
                 if size > 0 then
                     str = ''
-                    str << "<?xml version='1.0' standalone='yes'?>\n"
                     str << "<rl:identify name='#{File.basename(filename)}'>\n"
                     str << "  <rl:size>#{size}</rl:size>\n"
                     str << "  <rl:path>#{File.dirname(filename).sub(/\\/o,'/')}</rl:path>\n"
@@ -322,13 +351,14 @@ end
 logger      = Logger.new(banner.shift)
 commandline = CommandLine.new
 
-commandline.registeraction('manipulate', ' [--test] manipulatorfile resourselog')
-commandline.registeraction('identify', 'filename')
+commandline.registeraction('manipulate', '[--test] manipulatorfile resourselog')
+commandline.registeraction('identify'  , '[--collect] filename')
 
 commandline.registeraction('help')
 commandline.registeraction('version')
 
 commandline.registerflag('test')
+commandline.registerflag('collect')
 
 commandline.expand
 

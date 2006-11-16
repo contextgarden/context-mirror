@@ -147,8 +147,7 @@
 
 \def\pushcharacteralign
   {\ifundefined{@cac@\alignmentclass}%
-     \doglobal
-       \appendetoks\noexpand\do{\alignmentclass}\to\@@characteralignlst
+     \doglobal\appendetoks\noexpand\do{\alignmentclass}\to\@@characteralignlst
    \fi
    \setxvalue{@cac@\alignmentclass}{\noexpand\do
      {\afterassignwidth}{\beforeassignwidth}{\alignmentcharacter}}}
@@ -161,7 +160,7 @@
    \executeifdefined{@cac@\alignmentclass}\donothing}
 
 \def\resetcharacteralign % does not work well nested
-  {\def\do##1{\letbeundefined{@cac@##1}}%
+  {\def\do##1{\global\letbeundefined{@cac@##1}}% global !
    \the\@@characteralignlst
    \global\@@characteralignlst\emptytoks}
 

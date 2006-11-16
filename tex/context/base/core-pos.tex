@@ -86,37 +86,15 @@
 %D \dosetpositionplus      {identifier} {width} {height} {depth} {list}
 %D \dosetpositionpapersize {width} {height}
 %D \stoptyping
-%D
-%D Either directly, when using \PDFTEX, or by means of a
-%D postprocessor, when using \DVI\ output, these end up in the
-%D utility file as:
-%D
-%D \starttyping
-%D \pospxy     {identifier} {page} {x} {y}
-%D \pospxywhd  {identifier} {page} {x} {y} {w} {h} {d}
-%D \pospxylist {identifier} {page} {x} {y} {w} {h} {d} {list}
-%D \stoptyping
-%D
-%D This means that we have to provide both a utility set and
-%D reset macro for positions.
+
+\newbox\positionbox
+\newif \ifpositioning
 
 \def\POSprefix{POS::}
 
-\def\pxypos    {\pospxy}     % obsolete
-\def\pxyposwhd {\pospxywhd}  % obsolete
-\def\pxyposplus{\pospxyplus} % obsolete
-
-\def\resetpositions
-  {\let\pospxy    \gobblefourarguments
-   \let\pospxywhd \gobblesevenarguments
-   \let\pospxyplus\gobbleeightarguments}
-
-\def\setpositions
-  {\let\pospxy    \setpospxy
-   \let\pospxywhd \setpospxywhd
-   \let\pospxyplus\setpospxyplus}
-
-\addutilityreset{positions}
+\let\setpospx     \gobblefourarguments  % suppress errors with mkii tuo file
+\let\setpospxywhd \gobblesevenarguments % suppress errors with mkii tuo file
+\let\setpospxyplus\gobbleeightarguments % suppress errors with mkii tuo file
 
 %D This is real tricky! The page anchor is applied to the
 %D page box and therefore flushed first. So, when present, it
@@ -125,69 +103,15 @@
 \chardef\positionanchormode=0 % don't relocate page origin
 \chardef\positionanchormode=1 % relocate page origin once
 
-\def\pageanchor{page:0}
+%D The core set macros.
 
-% todo: change with each page size change
-
-\def\registerpageposition#1% this one is flushed first !
-  {\ifpositioning\ifcase\realpageno\or
-     \ifdim\printpaperheight=\paperheight\else
-       \ifdim\printpaperwidth=\paperwidth\else
-         \setbox#1\hbox{\hpos\pageanchor{\box#1}}%
-       \fi
-     \fi
-   \fi\fi}
-
-\def\setpospxy#1#2#3#4%
-  {\dosetpositionnm\@@posp{#2}%
-   \dosetpositionxy\@@posx{#3}\MPx
-   \dosetpositionxy\@@posy{#4}\MPy
-   \@EA\xdef\csname\POSprefix#1\endcsname{\@@posp,\@@posx,\@@posy}}
-
-\def\setpospxywhd#1#2#3#4#5#6#7%
-  {\dosetpositionnm\@@posp{#2}%
-   \dosetpositionxy\@@posx{#3}\MPx
-   \dosetpositionxy\@@posy{#4}\MPy
-   \dosetpositionpt\@@posw{#5}%
-   \dosetpositionpt\@@posh{#6}%
-   \dosetpositionpt\@@posd{#7}%
-   \@EA\xdef\csname\POSprefix#1\endcsname{\@@posp,\@@posx,\@@posy,\@@posw,\@@posh,\@@posd}}
-
-\def\setpospxyplus#1#2#3#4#5#6#7#8%
-  {\dosetpositionnm\@@posp{#2}%
-   \dosetpositionxy\@@posx{#3}\MPx
-   \dosetpositionxy\@@posy{#4}\MPy
-   \dosetpositionpt\@@posw{#5}%
-   \dosetpositionpt\@@posh{#6}%
-   \dosetpositionpt\@@posd{#7}%
-   \@EA\xdef\csname\POSprefix#1\endcsname{\@@posp,\@@posx,\@@posy,\@@posw,\@@posh,\@@posd,#8}}
+\let\pospxy    \gobblefourarguments
+\let\pospxywhd \gobblesevenarguments
+\let\pospxyplus\gobbleeightarguments
 
 %D Sometimes we want to trick the position handler a bit:
 
-\def\replacepospxywhd#1#2#3#4#5#6#7%
-  {\begingroup
-   \nosetpositionnm\@@posp{#2}%
-   \nosetpositionpt\@@posx{#3}%
-   \nosetpositionpt\@@posy{#4}%
-   \nosetpositionpt\@@posw{#5}%
-   \nosetpositionpt\@@posh{#6}%
-   \nosetpositionpt\@@posd{#7}%
-   \@EA\xdef\csname\POSprefix#1\endcsname{\@@posp,\@@posx,\@@posy,\@@posw,\@@posh,\@@posd}%
-   \endgroup}
-
-% slower, as many tokens, etc:
-%
-% \def\replacepospxywhd#1#2#3#4#5#6#7%
-%   {\begingroup
-%    \let\dosetpositionnm\nosetpositionnm
-%    \let\dosetpositionpt\nosetpositionpt
-%    \let\dosetpositionxy\nosetpositionpt
-%    \setpospxywhd{#1}{#2}{#3}{#4}{#5}{#6}{#7}%
-%    \endgroup}
-
-%D We need to initialize.
-
-\resetpositions
+\let\replacepospxywhd\gobbleeightarguments
 
 %D For postprocessing purposes, we save the number of
 %D positions.
@@ -221,35 +145,6 @@
   \localpositioningfalse
 \to \everypagebody
 
-%D We save positionional information without dimensions, which
-%D saves some bytes. The conversion too saves some bytes, but
-%D is primarily needed because we want to pass those values to
-%D \METAPOST\ too.
-
-\def\dosetpositionpt#1#2%
-  {\scratchdimen\number#2\scaledpoint
-   \xdef#1{\withoutpt\the\scratchdimen}}
-
-\def\dosetpositionnm#1#2%
-  {\xdef#1{\number#2}}
-
-\def\dosetpositionxy#1#2#3% todo: scaled points
-  {\scratchdimen\number#2\scaledpoint
-   \ifcase\positionanchormode\or
-     \advance\scratchdimen-#3\pageanchor
-   \fi
-   \xdef#1{\withoutpt\the\scratchdimen}}
-
-\def\nosetpositionnm#1#2{\xdef#1{\number#2}}
-\def\nosetpositionpt#1#2{\scratchdimen#2\xdef#1{\withoutpt\the\scratchdimen}}
-
-\beginETEX \dimexpr
-
-  \def\dosetpositionpt#1#2{\xdef#1{\withoutpt\the\dimexpr(\number#2\scaledpoint)}}
-  \def\nosetpositionpt#1#2{\xdef#1{\withoutpt\the\dimexpr(#2)}}
-
-\endETEX
-
 \def\checkpositions
   {\startnointerference
    \protectlabels
@@ -268,29 +163,12 @@
 %D method is implemented in a special driver. If needed, the
 %D driver can fall back on the following macros.
 
-\def\dolazysaveposition#1#2#3#4% tag page x y
-  {\expanded{\writeutilitycommand{\noexpand\pospxy
-     {#1}{#2}{#3}{#4}}}}
-
-\def\dolazysavepositionwhd#1#2#3#4#5#6#7% tag page x y w h d
-  {\expanded{\writeutilitycommand{\noexpand\pospxywhd
-     {#1}{#2}{#3}{#4}{#5}{#6}{#7}}}}
-
-\def\dolazysavepositionplus#1#2#3#4#5#6#7#8% tag page x y w h d list
-  {\expanded{\writeutilitycommand{\noexpand\pospxyplus
-     {#1}{#2}{#3}{#4}{#5}{#6}{#7}{#8}}}}
-
-\def\dosaveposition#1#2#3#4% tag page x y
-  {\expanded{\immediatewriteutilitycommand{\noexpand\pospxy
-     {#1}{#2}{#3}{#4}}}}
-
-\def\dosavepositionwhd#1#2#3#4#5#6#7% tag page x y w h d
-  {\expanded{\immediatewriteutilitycommand{\noexpand\pospxywhd
-     {#1}{#2}{#3}{#4}{#5}{#6}{#7}}}}
-
-\def\dosavepositionplus#1#2#3#4#5#6#7#8% tag page x y w h d list
-  {\expanded{\immediatewriteutilitycommand{\noexpand\pospxyplus
-     {#1}{#2}{#3}{#4}{#5}{#6}{#7}{#8}}}}
+\let\dolazysaveposition    \gobblefourarguments  % tag page x y
+\let\dolazysavepositionwhd \gobblesevenarguments % tag page x y w h d
+\let\dolazysavepositionplus\gobbleeightarguments % tag page x y w h d list
+\let\dosaveposition        \gobblefourarguments  % tag page x y
+\let\dosavepositionwhd     \gobblesevenarguments % tag page x y w h d
+\let\dosavepositionplus    \gobbleeightarguments % tag page x y w h d list
 
 %D \macros
 %D   {MPp, MPx, MPy, MPw, MPh, MPd,
@@ -299,57 +177,18 @@
 %D Access to the positional information is provided by macros
 %D with short names that are clearly meant for \METAPOST.
 
-\def\MPp  {\doMPxyhdwlr\doMPp  }
-\def\MPx  {\doMPxyhdwlr\doMPx  }
-\def\MPy  {\doMPxyhdwlr\doMPy  }
-\def\MPw  {\doMPxyhdwlr\doMPw  }
-\def\MPh  {\doMPxyhdwlr\doMPh  }
-\def\MPd  {\doMPxyhdwlr\doMPd  }
-\def\MPxy {\doMPxyhdwlr\doMPxy }
-\def\MPll {\doMPxyhdwlr\doMPll }
-\def\MPlr {\doMPxyhdwlr\doMPlr }
-\def\MPur {\doMPxyhdwlr\doMPur }
-\def\MPul {\doMPxyhdwlr\doMPul }
-\def\MPpos{\doMPxyhdwlr\doMPpos}
-
-%D So \type {\MPx{identifier}} returns a position, specified
-%D in points. When unknown, \type {0pt} is returned. From the
-%D next definitions, we can see that some positions are
-%D expressions.
-
-\def\doMPp  #1,#2,#3,#4,#5,#6,#7\relax{#1}
-\def\doMPx  #1,#2,#3,#4,#5,#6,#7\relax{#2\s!pt}
-\def\doMPy  #1,#2,#3,#4,#5,#6,#7\relax{#3\s!pt}
-\def\doMPw  #1,#2,#3,#4,#5,#6,#7\relax{#4\s!pt}
-\def\doMPh  #1,#2,#3,#4,#5,#6,#7\relax{#5\s!pt}
-\def\doMPd  #1,#2,#3,#4,#5,#6,#7\relax{#6\s!pt}
-\def\doMPxy #1,#2,#3,#4,#5,#6,#7\relax{(#2\s!pt,#3\s!pt)}
-\def\doMPll #1,#2,#3,#4,#5,#6,#7\relax{(#2\s!pt,#3\s!pt-#6\s!pt)}
-\def\doMPlr #1,#2,#3,#4,#5,#6,#7\relax{(#2\s!pt+#4\s!pt,#3\s!pt-#6\s!pt)}
-\def\doMPur #1,#2,#3,#4,#5,#6,#7\relax{(#2\s!pt+#4\s!pt,#3\s!pt+#5\s!pt)}
-\def\doMPul #1,#2,#3,#4,#5,#6,#7\relax{(#2\s!pt,#3\s!pt+#5\s!pt)}
-\def\doMPpos#1,#2,#3,#4,#5,#6,#7\relax{#1,#2\s!pt,#3\s!pt,#4\s!pt,#5\s!pt,#6\s!pt}
-
-%D As said, we will default to zero (dimensions) when a
-%D position is unknown.
-
-\def\doMPxyhdwlr#1#2%
-  {\ifundefined{\POSprefix#2}%
-     #10,0,0,0,0,0,0\relax
-   \else
-     \@EA\@EA\@EA#1\csname\POSprefix#2\endcsname,0,0,0,0\relax
-   \fi}
-
-\beginETEX
-
-\def\doMPxyhdwlr#1#2% evt kan \s!unknown leeg zijn
-  {\@EA\@EA\@EA#1\csname\POSprefix
-     \ifcsname\POSprefix#2\endcsname#2\else\s!unknown\fi\endcsname
-     ,0,0,0,0\relax}
-
-\setvalue{\POSprefix\s!unknown}{0,0,0}
-
-\endETEX
+\let\MPp  \!!zerocount
+\def\MPx  \!!zeropoint
+\def\MPy  \!!zeropoint
+\def\MPw  \!!zeropoint
+\def\MPh  \!!zeropoint
+\def\MPd  \!!zeropoint
+\def\MPxy \!!zeropoint
+\def\MPll \!!zeropoint
+\def\MPlr \!!zeropoint
+\def\MPur \!!zeropoint
+\def\MPul \!!zeropoint
+\def\MPpos{\!!zerocount,\!!zeropoint,\!!zeropoint,\!!zeropoint,\!!zeropoint,\!!zeropoint}
 
 %D \macros
 %D  {MPplus, MPrest, MPv, MPvv}
@@ -371,57 +210,23 @@
 %D
 %D The extra parameters are not treated.
 
-\def\MPplus  {\MPdoplus\doMPplus}       \let\MPv \MPplus
-\def\MPrest#1{\MPdoplus\doMPrest{#1}{}} \let\MPvv\MPrest
-
-\def\MPdoplus#1#2#3#4%
-  {\ifundefined{\POSprefix#2}#4\else
-     \@EA\@EA\@EA#1\csname\POSprefix#2\endcsname,,,,,,,,,\relax{#3}%
-   \fi}
-
-% \beginETEX
-%
-% \def\MPdoplus#1#2#3#4%
-%   {\ifcsname\POSprefix#2\endcsname
-%      \@EA\@EA\@EA#1\csname\POSprefix#2\endcsname,,,,,,,,,\relax{#3}%
-%    \else
-%      #4%
-%    \fi}
-%
-% \endETEX
-
-\def\doMPplus#1,#2,#3,#4,#5,#6,%
-  {\dodoMPplus}
-
-\def\dodoMPplus#1,#2,#3,#4,#5,#6,#7,#8\relax#9%
-  {\ifcase#9\or#1\or#2\or#3\or#4\or#5\or#6\or#7\else
-     \dododoMPplus#8\relax{#9}\fi}
-
-\def\dododoMPplus#1,#2,#3,#4,#5,#6,#7,#8\relax#9%
-  {\ifcase#9\or  \or  \or  \or  \or  \or  \or  \or
-               #1\or#2\or#3\or#4\or#5\or#6\or#7\fi}
-
-\def\doMPrest#1,#2,#3,#4,#5,#6,#7,,#8\relax#9%
-  {#7}
-
-% We can now remap the normal whd onto this.
+\def\MPplus#1#2{\!!zerocount}  \def\MPv {\MPplus}
+\def\MPrest#1#2{#2}            \def\MPvv{\MPrest}
 
 %D \macros
 %D   {MPanchor}
 %D
 %D For readability we define a few synonyms:
 
-\let\MPanchor\MPpos
+\def\MPanchor{\MPpos}
 
 %D \macros
 %D   {POSp, POSx, POSy, POSh, POSd, POSw}
 %D
 %D and:
 
-\let\POSp\MPp \let\POSx\MPx \let\POSy\MPy
-\let\POSh\MPh \let\POSd\MPd \let\POSw\MPw
-
-\newbox\positionbox \newif\ifpositioning
+\def\POSp{\MPp} \def\POSx{\MPx} \def\POSy{\MPy}
+\def\POSh{\MPh} \def\POSd{\MPd} \def\POSw{\MPw}
 
 %D There are two low level positioning macros. Both store the
 %D position as well as execute an action associated with that
@@ -431,46 +236,10 @@
   {\ifpositioning \else
      \global\positioningtrue
      \dosetpositionpapersize
-       {\number\printpaperwidth}%
-       {\number\printpaperheight }%
+       {\printpaperwidth }%
+       {\printpaperheight}%
    \fi
    \doglobal\increment\currentpositions}
-
-% \def\setposition#1%
-%   {\initializenextposition
-%    \dosetposition{#1}%
-%    \dopositionaction{#1}}
-%
-% \def\setpositionbox#1%
-%   {\dowithnextbox
-%      {\hbox to \nextboxwd
-%         {\initializenextposition
-%          \def\currentposition{#1}%
-%          \dosetpositionwhd \currentposition
-%            {\number\nextboxwd}%
-%            {\number\nextboxht}%
-%            {\number\nextboxdp}%
-%          \traceposstring\llap\green{\currentposition>}%
-%          \setbox\positionbox\flushnextbox
-%          \dopositionaction\currentposition
-%          \box\positionbox
-%          \hss}}}
-%
-% \def\setpositionplus#1#2%
-%   {\dowithnextbox
-%      {\hbox to \nextboxwd
-%         {\initializenextposition
-%          \def\currentposition{#1}%
-%          \dosetpositionplus \currentposition
-%            {\number\nextboxwd}%
-%            {\number\nextboxht}%
-%            {\number\nextboxdp}%
-%            {#2}%
-%          \traceposstring\rlap\magenta{<\currentposition}%
-%          \setbox\positionbox\flushnextbox
-%          \dopositionaction\currentposition
-%          \box\positionbox
-%          \hss}}}
 
 \def\setpositiononly#1%
   {\iftrialtypesetting
@@ -498,9 +267,9 @@
      \hbox
        {\def\currentposition{#1}%
         \dosetpositionwhd\currentposition
-          {\number#2}%
-          {\number#3}%
-          {\number#4}%
+          {\the\dimexpr#2\relax}%
+          {\the\dimexpr#3\relax}%
+          {\the\dimexpr#4\relax}%
         \traceposstring\llap\green{\currentposition>}%
         \dopositionaction\currentposition
         \hss}%
@@ -515,9 +284,9 @@
         \hbox to \nextboxwd
           {\edef\currentposition{#1}%
            \dosetpositionwhd\currentposition
-             {\number\nextboxwd}%
-             {\number\nextboxht}%
-             {\number\nextboxdp}%
+             {\the\nextboxwd}%
+             {\the\nextboxht}%
+             {\the\nextboxdp}%
            \traceposstring\llap\green{\currentposition>}%
            \setbox\positionbox\flushnextbox
            \dopositionaction\currentposition
@@ -531,9 +300,9 @@
      \hbox to \nextboxwd
        {\edef\currentposition{#1}%
         \dosetpositionplus\currentposition
-          {\number#2}%
-          {\number#3}%
-          {\number#4}%
+          {\the\dimexpr#2\relax}%
+          {\the\dimexpr#3\relax}%
+          {\the\dimexpr#4\relax}%
           {#5}%
         \traceposstring\rlap\magenta{<\currentposition}%
         \dopositionaction\currentposition
@@ -549,9 +318,9 @@
         \hbox to \nextboxwd
           {\edef\currentposition{#1}%
            \dosetpositionplus\currentposition
-             {\number\nextboxwd}%
-             {\number\nextboxht}%
-             {\number\nextboxdp}%
+             {\the\nextboxwd}%
+             {\the\nextboxht}%
+             {\the\nextboxdp}%
              {#2}%
            \traceposstring\rlap\magenta{<\currentposition}%
            \setbox\positionbox\flushnextbox
@@ -637,15 +406,7 @@
 %D
 %D Again, this is a global action.
 
-\def\copyposition#1#2%
-  {\bgroup
-  %\edef\to  {\POSprefix#1}%
-   \edef\from{\POSprefix#2}%
-   \ifundefined\from\else
-   % \global\@EA\@EA\@EA\let\@EA\csname\@EA\to\@EA\endcsname\csname\from\endcsname
-     \global\@EA\let\csname\POSprefix#1\@EA\endcsname\csname\from\endcsname
-   \fi
-   \egroup}
+\let\copyposition\gobbletwoarguments
 
 %D The fact that handling positions is a two pass operation, is
 %D one of the reasons why we need to be able to test for
@@ -655,15 +416,7 @@
 %D \doifpositionelse {identifier} {found action} {not found action}
 %D \stoptyping
 
-% \def\doifpositionelse#1%
-%   {\doifdefinedelse{\POSprefix#1}}
-
-\def\doifpositionelse#1%
-  {\ifundefined{\POSprefix#1}%
-     \expandafter\secondoftwoarguments
-   \else
-     \expandafter\firstoftwoarguments
-   \fi}
+\let\doifpositionelse\thirdofthreearguments
 
 %D We have now arrived at a few macros that would make sense as
 %D support macros, but ended up in the core.
@@ -754,9 +507,6 @@
 
 \newif\ifpositioningpar
 
-\def\efficientdimen#1%
-  {\the#1} % \ifdim#1=\zeropoint\string\!!zeropoint\else\the#1\fi}
-
 % we can check for used entries, and if not, then not add one
 
 \def\registerparoptions
@@ -779,15 +529,15 @@
      \rightskip1\rightskip
      \setpositiondataplus
        {p:\parposcounter}%         % identifier
-       {\zeropoint}%
-       {\strutht}%
-       {\strutdp}%
-       {\efficientdimen\hsize     ,% 1
-        \efficientdimen\leftskip  ,% 2
-        \efficientdimen\rightskip ,% 3
-        \efficientdimen\hangindent,% 4
-                   \the\hangafter ,% 5
-        \efficientdimen\parindent }% 6
+       {\the\zeropoint}%
+       {\the\strutht}%
+       {\the\strutdp}%
+       {\the\hsize     ,% 1
+        \the\leftskip  ,% 2
+        \the\rightskip ,% 3
+        \the\hangindent,% 4
+        \the\hangafter ,% 5 (num)
+        \the\parindent }% 6
     %\normalhbox{\registerparsymbol}%
      \registerparsymbol
    \endgroup}
@@ -801,13 +551,14 @@
   {\iftracepositions
      \smashedhbox to \zeropoint
        {\hss
-        \blue
+        \startcolor[blue]%
         \llap{\infofont\number\parposcounter}%
         \scratchdimen\onepoint
         \vrule
           \!!width 4\scratchdimen
           \!!height2\scratchdimen
           \!!depth 2\scratchdimen
+        \stopcolor
         \hss}%
    \fi}
 
@@ -819,17 +570,24 @@
 \def\@@nodeo{node:o:}
 \def\@@nodep{node:p:}
 
+\def\doifelsenodelocation#1%
+  {\ifcsname\@@noden#1\endcsname
+     \expandafter\firstoftwoarguments
+   \else
+     \expandafter\secondoftwoarguments
+   \fi}
+
 \def\nextnodelocation#1%
-  {\pluscounter{\@@noden#1}}
+  {\ifcsname\@@noden#1\endcsname\pluscounter{\@@noden#1}\fi}
 
 \def\newnodelocation#1%
-  {\ifundefined{\@@noden#1}%
+  {\ifcsname\@@noden#1\endcsname
      \setcounter{\@@noden#1}\zerocount
      \letgvalue {\@@nodeo#1}\!!zerocount
    \fi}
 
 \def\tagnodelocation#1%
-  {\xypos{\@@nodep#1:\countervalue{\@@noden#1}}}
+  {\ifcsname\@@noden#1\endcsname\xypos{\@@nodep#1:\countervalue{\@@noden#1}}\fi}
 
 \def\getnodelocationp#1{\MPp{\@@nodep#1:\countervalue{\@@noden#1}}}
 \def\getnodelocationx#1{\MPx{\@@nodep#1:\countervalue{\@@noden#1}}}
@@ -845,7 +603,9 @@
 \chardef\nodelocationmode\plusone
 
 \def\analyzenodelocation#1%
-  {\doanalyzenodelocation{#1}{\getnodelocationn{#1}}\zerocount}
+  {\ifcsname\@@noden#1\endcsname
+     \doanalyzenodelocation{#1}{\getnodelocationn{#1}}\zerocount
+   \fi}
 
 \def\doanalyzenodelocation#1#2#3% class n default
   {\begingroup
@@ -906,13 +666,15 @@
    \endgroup}
 
 \unexpanded\def\shownodelocation#1%
-  {\analyzenodelocation{#1}%
-   (#1,%
-    n:\getnodelocationn{#1},%
-    p:\getnodelocationp{#1},%
-    x:\getnodelocationx{#1},%
-    y:\getnodelocationy{#1},%
-    o:\getnodelocationo{#1})}
+  {\ifcsname\@@noden#1\endcsname
+    \analyzenodelocation{#1}%
+     (#1,%
+      n:\getnodelocationn{#1},%
+      p:\getnodelocationp{#1},%
+      x:\getnodelocationx{#1},%
+      y:\getnodelocationy{#1},%
+      o:\getnodelocationo{#1})%
+   \fi}
 
 %D \macros
 %D   {doifoverlappingelse}
@@ -934,13 +696,13 @@
    \edef\!!stringa{#1}\edef\!!stringb{#2}%
    \ifnum\MPp\!!stringa=\MPp\!!stringb\relax
      \!!dimena\MPx\!!stringa
-     \!!dimenb\MPx\!!stringa\advance\!!dimenb \MPw\!!stringa
-     \!!dimenc\MPy\!!stringa\advance\!!dimenc-\MPd\!!stringa
-     \!!dimend\MPy\!!stringa\advance\!!dimend \MPh\!!stringa
+     \!!dimenb\dimexpr\MPx\!!stringa+\MPw\!!stringa\relax
+     \!!dimenc\dimexpr\MPy\!!stringa-\MPd\!!stringa\relax
+     \!!dimend\dimexpr\MPy\!!stringa+\MPh\!!stringa\relax
      \!!dimene\MPx\!!stringb
-     \!!dimenf\MPx\!!stringb\advance\!!dimenf \MPw\!!stringb
-     \!!dimeng\MPy\!!stringb\advance\!!dimeng-\MPd\!!stringb
-     \!!dimenh\MPy\!!stringb\advance\!!dimenh \MPh\!!stringb
+     \!!dimenf\dimexpr\MPx\!!stringb+\MPw\!!stringb\relax
+     \!!dimeng\dimexpr\MPy\!!stringb-\MPd\!!stringb\relax
+     \!!dimenh\dimexpr\MPy\!!stringb+\MPh\!!stringb\relax
      \ifdim\overlappingmargin=\zeropoint\else
        \advance\!!dimena-\overlappingmargin
        \advance\!!dimenb+\overlappingmargin
@@ -998,13 +760,13 @@
 \def\dodoifpositionsonsamepageelse#1#2#3#4%
   {\bgroup
    \scratchcounter#1\donefalse
-   \def\docommando##1%
+   \def\docommand##1%
      {\ifcase\scratchcounter
         \scratchcounter\MPp{##1}\donetrue
       \else
         \ifnum\scratchcounter=\MPp{##1}\relax\else\donefalse\fi
       \fi}%
-   \rawprocesscommalist[#2]\docommando
+   \rawprocesscommalist[#2]\docommand
    \ifdone\egroup#3\else\egroup#4\fi}
 
 \def\doifpositionsonsamepageelse
@@ -1012,5 +774,17 @@
 
 \def\doifpositionsonthispageelse#1#2#3%
   {\dodoifpositionsonsamepageelse\realfolio}
+
+%D Plugins:
+
+\loadmarkfile{core-pos}
+
+\let\MPv     \MPplus
+\let\MPvv    \MPrest
+
+\let\MPanchor\MPpos
+
+\let\POSp\MPp \let\POSx\MPx \let\POSy\MPy
+\let\POSh\MPh \let\POSd\MPd \let\POSw\MPw
 
 \protect \endinput

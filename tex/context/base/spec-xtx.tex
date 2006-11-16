@@ -76,10 +76,8 @@
 %D \XETEX\ supports \type{\doPDFdestination} and
 %D \type{\doPDFbookmark} inherited straight from \DVIPDFMX.
 
-\definespecial\doinsertfile#1#2#3#4#5#6#7#8#9%
-  {\bgroup
-   \dodoinsertfile{xtx}{#1}{#2}{#3}{#4}{#5}{#6}{#7}{#8}{#9}%
-   \egroup}
+\definespecial\doinsertfile
+  {\dofileinsertion{xtx}\@@DriverImageType}
 
 \definefileinsertion{xtx}{jpg}{\xtxhandleotherimage}
 \definefileinsertion{xtx}{png}{\xtxhandleotherimage}
@@ -87,75 +85,45 @@
 \definefileinsertion{xtx}{tif}{\xtxhandleotherimage}
 \definefileinsertion{xtx}{pdf}{\xtxhandlepdfimage  }
 
-\def\xtxhandleotherimage#1#2#3#4#5#6#7#8#9%
-  {\bgroup % not needed, we load this under a normal catcode regime; \catcode`\"=11
-   \XeTeXpicfile "#1" width #7 height #8\relax%
-   \donetrue
-   \egroup}
+\def\checkpdfimagepagenumber
+  {\edef\pdfimagepagenumber
+     {\ifx\@@DriverImagePage\empty\else\ifnum\@@DriverImagePage>\zerocount
+        \space page\space\@@DriverImagePage\space
+      \fi\fi}}
 
-\def\xtxhandlepdfimage#1#2#3#4#5#6#7#8#9%
-  {\bgroup % not needed, we load this under a normal catcode regime; \catcode`\"=11
-   \checkpdfimagepagenumber{#9}
-   \XeTeXpdffile "#1" \pdfimagepagenumber\space width #7 height #8  \relax%
-   \donetrue
-   \egroup}
+\def\xtxhandleotherimage
+  {\XeTeXpicfile "\@@DriverImageFile"
+     \ifdim\@@DriverImageWidth >\zeropoint \!!width  \@@DriverImageWidth \space\fi
+     \ifdim\@@DriverImageHeight>\zeropoint \!!height \@@DriverImageHeight      \fi
+   \relax}
 
-\def\checkpdfimagepagenumber#1%
-  {\let\pdfimagepagenumber\empty
-   \getfromcommacommand[#1][1]%
-   \doifnumberelse\commalistelement
-     {\ifcase\commalistelement\else
-        \edef\pdfimagepagenumber{page \commalistelement}%
-        %\message{(pdf image \pdfimagepagenumber)}%
-      \fi}
-     {}}
+\def\xtxhandlepdfimage
+  {\checkpdfimagepagenumber
+   \XeTeXpdffile "\@@DriverImageFile"
+     \pdfimagepagenumber
+     \ifdim\@@DriverImageWidth >\zeropoint \!!width  \@@DriverImageWidth \space\fi
+     \ifdim\@@DriverImageHeight>\zeropoint \!!height \@@DriverImageHeight      \fi
+   \relax}
 
-% \type{\getfiguredimensionsA} calls this one.
-% \type{\executedtrue} means it was able to get the desired
-% dogetfiguresizeBLAH method for the image type.
-% \type{\donetrue} means that the image was successfully
-% measured to be more than zero points.
+\def\dogetXTXfiguresize
+  {\setbox\foundexternalfigure\vbox{\XeTeXpicfile "\@@DriverImageFile"}%
+   \xdef\analyzedfigurewidth {\the\wd\foundexternalfigure}%
+   \xdef\analyzedfigureheight{\the\ht\foundexternalfigure}}
 
-\def\dogetXTXfiguresize#1#2#3#4#5#6#7%
-    {#4\zeropoint
-     #5\zeropoint
-     \setbox\foundexternalfigure\vbox{\XeTeXpicfile "#2"}%
-     #6\wd\foundexternalfigure
-     #7\ht\foundexternalfigure
-     \ifdim\wd\foundexternalfigure=\zeropoint % \ifzeropt\wd\foundexternalfigure
-       #1{#2}{#3}{#4}{#5}{#6}{#7}%
-     \fi}
+\def\dogetXTXpdfsize
+  {\checkpdfimagepagenumber
+   \setbox\foundexternalfigure\vbox{\XeTeXpdffile "\@@DriverImageFile" \pdfimagepagenumber}%
+   \xdef\analyzedfigurewidth {\the\wd\foundexternalfigure}%
+   \xdef\analyzedfigureheight{\the\ht\foundexternalfigure}}
 
-\def\dogetXTXpdfsize#1#2#3#4#5#6#7%
-    {#4\zeropoint
-     #5\zeropoint
-     \checkpdfimagepagenumber{#3}
-     \setbox\foundexternalfigure\vbox{\XeTeXpdffile "#2" \pdfimagepagenumber}% \relax not needed
-     #6\wd\foundexternalfigure
-     #7\ht\foundexternalfigure
-     \ifdim\wd\foundexternalfigure=\zeropoint % \ifzeropt\wd\foundexternalfigure
-       #1{#2}{#3}{#4}{#5}{#6}{#7}%
-     \fi}
+\definefilechecker{xtx}{png}{\dogetXTXfiguresize}
+\definefilechecker{xtx}{jpg}{\dogetXTXfiguresize}
+\definefilechecker{xtx}{gif}{\dogetXTXfiguresize}
+\definefilechecker{xtx}{tif}{\dogetXTXfiguresize}
+\definefilechecker{xtx}{pdf}{\dogetXTXpdfsize   }
 
-\let\normaldogetfiguresizepng=\dogetfiguresizepng
-\let\normaldogetfiguresizetif=\dogetfiguresizetif
-\let\normaldogetfiguresizejpg=\dogetfiguresizejpg
-\let\normaldogetfiguresizegif=\dogetfiguresizegif
-\let\normaldogetfiguresizepdf=\dogetfiguresizepdf
-
-\def\dogetfiguresizepng{\dogetXTXfiguresize\normaldogetfiguresizepng}
-\def\dogetfiguresizejpg{\dogetXTXfiguresize\normaldogetfiguresizejpg}
-\def\dogetfiguresizegif{\dogetXTXfiguresize\normaldogetfiguresizegif}
-\def\dogetfiguresizetif{\dogetXTXfiguresize\normaldogetfiguresizetif}
-\def\dogetfiguresizepdf{\dogetXTXpdfsize\normaldogetfiguresizepdf}
-
-\appendtoksonce
-  \let\dogetfiguresizepng\normaldogetfiguresizepng
-  \let\dogetfiguresizetif\normaldogetfiguresizetif
-  \let\dogetfiguresizejpg\normaldogetfiguresizejpg
-  \let\dogetfiguresizegif\normaldogetfiguresizegif
-  \let\dogetfiguresizepdf\normaldogetfiguresizepdf
-\to \everyresetspecials
+\definespecial\dogetfiguresize
+  {\dofilechecker{xtx}\@@DriverImageType}
 
 %D The figure object system caused no end of headaches. They all
 %D went away with this single line:

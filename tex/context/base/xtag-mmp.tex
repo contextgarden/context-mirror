@@ -338,12 +338,12 @@
 \def\MMLpTABLEmapper#1#2#3%
   {\doifXMLparelse{mtable}{#1}
      {\newcounter\MMLcounter
-      \def\docommando##1%
+      \def\docommand##1%
         {\increment\MMLcounter
          \let\MMLpREMAP\doMMLpREMAP
          \def\MMLsetting{##1}#3% remap list
          \expanded{\setupTABLE[column][\MMLcounter][#2=\MMLsetting]}}%
-       \expanded{\processseparatedlist[\XMLpar{mtable}{#1}{}][ ]\noexpand\docommando}}
+       \expanded{\processseparatedlist[\XMLpar{mtable}{#1}{}][ ]\noexpand\docommand}}
      {}}
 
 \def\MMLpTABLEmap#1#2#3%

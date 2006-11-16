@@ -108,11 +108,7 @@
 \def\doitembreak#1{\ifconditional\optimizelistitem\ifconditional\textlistitem\else\dosomebreak#1\fi\fi}
 
 \def\dolistreference
-  {\immediatewriteutilitycommand
-     {\twopassentry
-        {\s!list}%
-        {\currentlist}%
-        {\currentlist:\noflistelements}}}
+  {\savetaggedtwopassdata{\s!list}{\currentlist}{\currentlist}{\noflistelements}}
 
 \def\initializeitemgroupslevel#1%
   {\ifundefined{\@@globalitemsymbol{#1}}%
@@ -258,8 +254,8 @@
    \popmacro\currentitemgroup}
 
 \def\dosetupitemgroup[#1][#2][#3][#4]%
-  {\def\docommando##1{\dodosetupitemgroup[##1][#2][#3][#4]}%
-   \processcommalist[#1]\docommando}
+  {\def\docommand##1{\dodosetupitemgroup[##1][#2][#3][#4]}%
+   \processcommalist[#1]\docommand}
 
 \def\setupitemgroup
   {\doquadrupleempty\dosetupitemgroup}
@@ -289,13 +285,13 @@
 
 \def\unknownitemsymbol{?}
 
-\def\setitemmark#1% % en pas op: resets \docommando
+\def\setitemmark#1% % en pas op: resets \docommand
   {\doifsymboldefinedelse{#1}
      {\edef\currentitemsymbol{#1}%
       \setxvalue{\@@globalitemsymbol\itemlevel}{\currentitemsymbol}%
       \setgvalue{\@@localitemsymbol \itemlevel}{\unknownitemsymbol}%
       \def\listitem{\symbol[\currentitemsymbol]}%
-      \let\@@opsymbol\empty}% \let\docommando\gobbleoneargument}
+      \let\@@opsymbol\empty}% \let\docommand\gobbleoneargument}
      {\doifconversiondefinedelse{#1}
         {\edef\currentitemsymbol{#1}%
          \setxvalue{\@@globalitemsymbol\itemlevel}{\currentitemsymbol}%
@@ -311,7 +307,7 @@
             \getvalue{\@@localitemsymbol\itemlevel}\tempsymbol
             \getitemparameter\itemlevel
               {\ifconditional\textlistitem\c!righttext\else\c!right\fi}}%
-        \let\@@opsymbol\empty}%\let\docommando\gobbleoneargument}
+        \let\@@opsymbol\empty}%\let\docommand\gobbleoneargument}
        {}}}
 
 \def\calculatelistwidth#1#2% distance deals with 'broad'
@@ -366,6 +362,66 @@
 \let\startcollectitems\relax
 \let\stopcollectitems \relax
 
+%D A nice example of a plugin:
+%D
+%D \startbuffer
+%D \startitemize[a,random,packed]
+%D \startitem first  \stopitem \startitem second \stopitem
+%D \startitem third  \stopitem \startitem fourth \stopitem
+%D \stopitemize
+%D
+%D \startitemize[a,random,packed]
+%D \startitem first  \stopitem \startitem second \stopitem
+%D \startitem third  \stopitem \startitem fourth \stopitem
+%D \stopitemize
+%D
+%D \startitemize[a,packed]
+%D \startitem first  \stopitem \startitem second \stopitem
+%D \startitem third  \stopitem \startitem fourth \stopitem
+%D \stopitemize
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
+
+% better collectitems als conditional and a real plugin mechanism (some day)
+
+\@EA\long\@EA\def\@EA\collectitemgroupitem\@EA#\@EA1\csname\e!stop\v!item\endcsname
+  {\increment\itemcollectcounter
+   \long\setvalue{\v!item*\itemcollectcounter}{\item#1\par}}
+
+\def\flushcollecteditems
+  {\ifconditional\randomizeitems
+     \getrandomnumber\itemcollectcounternow\plusone\itemcollectcounter
+   \else
+     \increment\itemcollectcounternow
+   \fi
+   \doifdefined{\v!item*\itemcollectcounternow}
+     {\getvalue{\v!item*\itemcollectcounternow}%
+      \letbeundefined{\v!item*\itemcollectcounternow}%
+      \increment\itemcollectcounterdone}%
+   \ifnum\itemcollectcounterdone<\itemcollectcounter\relax
+     \expandafter\flushcollecteditems
+   \fi}
+
+\def\stopcollectitems
+  {\ifconditional\randomizeitems
+     \newcounter\itemcollectcounterdone
+     \ifnum\itemcollectcounter>\zerocount
+       \@EAEAEA\flushcollecteditems
+     \fi
+   \fi}
+
+\def\startcollectitems
+  {\ifconditional\randomizeitems
+     \newcounter\itemcollectcounter
+     \letvalue{\e!start\v!item}\collectitemgroupitem
+   \fi}
+
+%D End of plugin.
+
+\ifx\startcolumns\undefined \def\startcolumns[#1]{} \fi
+\ifx\stopcolumns \undefined \let\stopcolumns\relax  \fi
+
 \def\redostartitemgroup[#1][#2]%
   {\setfalse\inlinelistitem % new, no indent (leftskip)
    \setfalse\concatnextitem % new, concat
@@ -409,10 +465,10 @@
          \global\setitemparameter\itemlevel\v!continue
            {\dosetupitemgroupconstant[\itemlevel][#1]%
             \dosetupitemgroupvariable[\itemlevel][#2]}}%
-      \def\docommando##1% \setitemmark resets \docommando
+      \def\docommand##1% \setitemmark resets \docommand
         {\doifnot{##1}{0}{\setitemmark{##1}}}%
-    % \processcommalist[#1,\@@opsymbol]\docommando
-      \processcommalist[#1]\docommando}% ** preset sequence or provided sequence
+    % \processcommalist[#1,\@@opsymbol]\docommand
+      \processcommalist[#1]\docommand}% ** preset sequence or provided sequence
    % moved to here, after settings
    \ifnum\itemlevel=\plusone % NIEUW
      \doadaptleftskip {\getitemparameter1\c!margin}%
@@ -565,6 +621,7 @@
    \itemgroupitem}
 
 \appendtoks \let\item        \itemgroupitem    \to \itemgroupcommands
+%appendtoks \letvalue\v!item \itemgroupitem    \to \itemgroupcommands
 \appendtoks \let\itm         \itemgroupitem    \to \itemgroupcommands
 \appendtoks \let\but         \itemgroupbutton  \to \itemgroupcommands
 \appendtoks \let\nop         \itemgroupdummy   \to \itemgroupcommands
@@ -577,18 +634,14 @@
 
 % todo : \startitem .. \stopitem
 
-% quick hack ...
-
-\def\v!item{item}
-
 \appendtoks
-    \letvalue{\e!start\v!item}\itemgroupitem
-    \letvalue{\e!stop \v!item}\endgraf
+  \letvalue{\e!start\v!item}\itemgroupitem
+  \letvalue{\e!stop \v!item}\endgraf
 \to \itemgroupcommands
 
 \appendtoks
-    \setvalue{\e!start\v!head}#1{\itemgrouphead#1\par}%
-    \letvalue{\e!stop \v!head}\endgraf
+  \setvalue{\e!start\v!head}#1{\itemgrouphead#1\par}%
+  \letvalue{\e!stop \v!head}\endgraf
 \to \itemgroupcommands
 
 % \startitemize
@@ -659,9 +712,9 @@
 %    \ignorespaces
    \increment\noflistelements
    \ifnum\itemcolumndepth=\zerocount \ifconditional\optimizelistitem
-     \ifnum\noflistelements=\plusone        % tgv bv kolommen/nesting
-       \findtwopassdata\s!list{\noflists:}% % wordt soms de volgorde
-     \fi                                    % verstoord, vandaar \find
+     \ifnum\noflistelements=\plusone       % tgv bv kolommen/nesting
+       \findtwopassdata\s!list{\noflists}% % wordt soms de volgorde
+     \fi                                   % verstoord, vandaar \find
      \iftwopassdatafound
        \ifcase0\twopassdata\relax \twopassdatafoundfalse \fi
      \fi
@@ -720,7 +773,7 @@
        \calculatelistwidth\itemlevel{\dimen0}%
      \fi
      \ifconditional\textlistitem
-       \hbox{\ifconditional\sublistitem+\fi\box8\hskip\fontdimen2\font}\nobreak
+       \hbox{\ifconditional\sublistitem+\fi\box8\hskip\interwordspace}\nobreak
      \else\ifconditional\inlinelistitem
        \hbox to \dimen0{\ifconditional\sublistitem\llap{+}\fi\box8\hfill}%
      \else\ifconditional\txtlistitem
@@ -828,7 +881,12 @@
        \fi
      \fi
    \else
+\ifconditional\inlinelistitem
+%     \removeunwantedspaces\hskip\interwordspace\!!plus\emwidth\relax % new per 2006/10/20
+    \removeunwantedspaces\hskip\emwidth\!!plus\interwordstretch\!!minus\interwordshrink\relax % new per 2006/10/20
+\else
      \getitemparameter\itemlevel\c!inbetween
+\fi
    \fi
    \ifconditional\concatnextitem % new, concat
      \vskip-\lastskip            % new, concat
@@ -852,6 +910,7 @@
          \egroup}}%
    \strut % added 11-08-99
    \setfalse\concatnextitem % new, concat
+   \nobreak % else problems with intext items
    \hskip\itemsignal        % new, concat
    \getitemparameter\itemlevel\c!command} % \defaultitemcommand
 

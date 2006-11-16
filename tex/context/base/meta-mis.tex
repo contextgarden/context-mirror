@@ -1,0 +1,54 @@
+%D \module
+%D   [       file=meta-mis,
+%D        version=2006.06.06,
+%D          title=\METAPOST\ Graphics,
+%D       subtitle=Misc Test Graphics,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\unprotect
+
+% p/s       1/false  1/true  2/false   2/true
+%
+% MKII      8.5      8.0      8.8      8.5
+% MKIV     16.1      7.2     16.3      7.4
+
+\startuseMPgraphic{mptopdf-test}
+    prologues := 2;
+    mpprocset := 1 ;
+    fill fullcircle scaled 3cm withcolor red ;
+    fill fullcircle scaled 2cm withcolor green ;
+    fill fullcircle scaled 1cm withcolor blue ;
+    currentpicture := currentpicture shifted (-4cm,0) ;
+    fill fullcircle scaled 3cm withcolor cmyk(0,0,1,0) ;
+    fill fullcircle scaled 2cm withcolor cmyk(0,1,0,0) ;
+    fill fullcircle scaled 1cm withcolor cmyk(0,0,1,0) ;
+    currentpicture := currentpicture shifted (-4cm,0) ;
+    draw fullcircle scaled 3cm dashed evenly ;
+    draw fullcircle scaled 2cm dashed withdots  ;
+    draw origin withpen pencircle scaled 3mm;
+    currentpicture := currentpicture shifted (-4cm,0) ;
+    fill fullcircle scaled 2cm shifted (-.5cm,+.5cm) withcolor transparent(1,.5,red);
+    fill fullcircle scaled 2cm shifted (-.5cm,-.5cm) withcolor transparent(1,.5,red);
+    fill fullcircle scaled 2cm shifted (+.5cm,+.5cm) withcolor transparent(1,.5,green);
+    fill fullcircle scaled 2cm shifted (+.5cm,-.5cm) withcolor transparent(1,.5,cmyk(1,0,1,.5));
+    currentpicture := currentpicture shifted (12cm,-4cm) ;
+    draw "o e p s" infont defaultfont scaled 2 shifted (-1cm,0) ;
+    currentpicture := currentpicture shifted (-4cm,0) ;
+    % bug: shift
+    draw fullcircle scaled 3cm withpen pencircle yscaled 3mm xscaled 2mm rotated 30  ;
+    draw fullcircle scaled 2cm withpen pencircle yscaled 3mm xscaled 2mm rotated 20 withcolor red ;
+    filldraw fullcircle scaled 1cm withpen pencircle yscaled 3mm xscaled 2mm rotated 10 withcolor green ;
+    currentpicture := currentpicture shifted (-4cm,0) ;
+    % shade cannot handle shift
+    circular_shade(fullcircle scaled 3cm,0,.2red,.9green) ;
+    circular_shade(fullcircle scaled 3cm shifted(+4cm,0),0,cmyk(1,0,0,0),cmyk(0,1,0,0)) ;
+    filldraw boundingbox currentpicture enlarged (-bbheight(currentpicture)/2+2.5mm) withpen pencircle scaled 1pt withcolor .5white ;
+\stopuseMPgraphic
+
+\protect \endinput

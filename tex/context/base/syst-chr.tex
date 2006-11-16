@@ -1,0 +1,131 @@
+%D \module
+%D   [       file=syst-chr,
+%D        version=1997.01.03, % moved code
+%D          title=\CONTEXT\ System Macros,
+%D       subtitle=Character Related Things,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\unprotect
+
+%D We want to have access to the raw alternatives of the
+%D special characters. We use a \type {\xdef} instead of
+%D \type {\let} because we need an expandable token in a
+%D \type {\write}.
+
+\bgroup
+
+\catcode`B=\@@begingroup
+\catcode`E=\@@endgroup
+\catcode`.=\@@escape
+
+.catcode `.{ 12 .xdef .letteropenbrace       B.string{E
+.catcode `.} 12 .xdef .letterclosebrace      B.string}E
+.catcode `.& 12 .xdef .letterampersand       B.string&E
+.catcode `.< 12 .xdef .letterless            B.string<E
+.catcode `.> 12 .xdef .lettermore            B.string>E
+.catcode `.# 12 .xdef .letterhash            B.string#E
+.catcode `." 12 .xdef .letterdoublequote     B.string"E
+.catcode `.' 12 .xdef .lettersinglequote     B.string'E
+.catcode `.$ 12 .xdef .letterdollar          B.string$E
+.catcode `.% 12 .xdef .letterpercent         B.string%E
+.catcode `.^ 12 .xdef .letterhat             B.string^E
+.catcode `._ 12 .xdef .letterunderscore      B.string_E
+.catcode `.| 12 .xdef .letterbar             B.string|E
+.catcode `.~ 12 .xdef .lettertilde           B.string~E
+.catcode `.\ 12 .xdef .letterbackslash       B.string\E
+.catcode `./ 12 .xdef .letterslash           B.string/E
+.catcode `.? 12 .xdef .letterquestionmark    B.string?E
+.catcode `.! 12 .xdef .letterexclamationmark B.string!E
+.catcode `.@ 12 .xdef .letterat              B.string@E
+.catcode `.: 12 .xdef .lettercolon           B.string:E
+
+         .global .let .letterescape     .letterbackslash
+         .global .let .letterbgroup     .letteropenbrace
+         .global .let .letteregroup     .letterclosebrace
+         .global .let .letterleftbrace  .letteropenbrace
+         .global .let .letterrightbrace .letterclosebrace
+
+.egroup
+
+%D \macros % check this one
+%D   {setcatcodes,uncatcodespecials,
+%D    uncatcodecharacters,uncatcodespacetokens,
+%D    setnaturalcatcodes,
+%D    setverbosecscharacters}
+%D
+%D As its name says, \type{\uncatcodecharacters} resets the
+%D \CATCODE\ of characters. When we use an upper bound of
+%D 127 or 255, depending in \type{\ifeightbitcharacters}. By
+%D counting down, we only have to use one counter. The
+%D macro \type{\setcatcodes} can be uses to set alternative
+%D values. The macro \type{\resetspecialcharacters} resets
+%D characters with special meanings. This macro is not used
+%D in the verbatim macros, but is best defined in this module.
+
+\newtoks\everycommoncatcodes   % gone
+\newtoks\everynaturalcatcodes  % gone
+\newtoks\everynormalcatcodes   % gone
+
+\def\uncatcodespacetokens
+  {\catcode`\   =\@@space
+   \catcode`\^^L=\@@ignore
+   \catcode`\^^M=\@@endofline
+   \catcode`\^^?=\@@ignore}
+
+\def\uncatcodespecials     {\setcatcodetable\nilcatcodes \uncatcodespacetokens}
+\def\setnaturalcatcodes    {\setcatcodetable\nilcatcodes}
+\def\setnormalcatcodes     {\setcatcodetable\ctxcatcodes} % maybe \texcatcodes
+\def\uncatcodecharacters   {\setcatcodetable\nilcatcodes} % was fast version, gone now
+\def\uncatcodeallcharacters{\setcatcodetable\nilcatcodes} % was slow one, with restore
+
+%D Next follows a definition that lets some shortcuts expand to
+%D themselves.
+
+\def\setverbosecscharacter#1%
+  {\edef#1{\string#1}}
+
+\bgroup \catcode`\|=13 \catcode`\~=13
+
+\gdef\setverbosecscharacters % temporary hack
+  {\setverbosecscharacter |\setverbosecscharacter ~% context specific
+   \setverbosecscharacter\|\setverbosecscharacter\~%
+   \setverbosecscharacter\:\setverbosecscharacter\;%
+   \setverbosecscharacter\+\setverbosecscharacter\-%
+   \setverbosecscharacter\[\setverbosecscharacter\]%
+   \setverbosecscharacter\.\setverbosecscharacter\\%
+   \setverbosecscharacter\)\setverbosecscharacter\(%
+   \setverbosecscharacter\0\setverbosecscharacter\1%
+   \setverbosecscharacter\2\setverbosecscharacter\3%
+   \setverbosecscharacter\4\setverbosecscharacter\5%
+   \setverbosecscharacter\6\setverbosecscharacter\7%
+   \setverbosecscharacter\8\setverbosecscharacter\9%
+   \setverbosecscharacter\n\setverbosecscharacter\s%
+   \setverbosecscharacter\/}
+
+\egroup
+
+%D \macros
+%D   {frenchspacing,nonfrenchspacing}
+%D
+%D This code should move.
+
+\def\setfrenchspacing#1%
+  {\sfcode`\.#1 \sfcode`\,#1\relax
+   \sfcode`\?#1 \sfcode`\!#1\relax
+   \sfcode`\:#1 \sfcode`\;#1\relax}
+
+\def\frenchspacing
+  {\setfrenchspacing{1000}}
+
+\def\resetfrenchspacing
+  {\sfcode`\.3000 \sfcode`\,1250
+   \sfcode`\?3000 \sfcode`\!3000
+   \sfcode`\:2000 \sfcode`\;1500 }
+
+\protect \endinput

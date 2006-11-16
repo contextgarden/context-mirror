@@ -222,7 +222,6 @@
      {#3}%
    \egroup}
 
-
 %D As we can see, these macros depend on three other ones,
 %D \type {\makesectionformat}, that generated \type
 %D {\sectionformat}, \type {\pagenumber}. The not yet used
@@ -313,11 +312,12 @@
    \ifx\lastreference\empty \else
      \doiffirstreferenceoccurance\lastreference
        {\thisisdestination{\referenceprefix\lastreference}}%
-     \referentieinfo>\lastreference
-     \edef\dododowritereference
-       {\writeutilitycommand
-          {\mainreference{\referenceprefix}{\lastreference}{#4}{#5}{#6}}}%
-     \dododowritereference
+     \referenceinfo>\lastreference
+%      \edef\dododowritereference
+%        {\writeutilitycommand
+%           {\mainreference{\referenceprefix}{\lastreference}{#4}{#5}{#6}}}%
+%      \dododowritereference
+     \expanded{\writeutilitycommand{\noexpand\mainreference{\referenceprefix}{\lastreference}{#4}{#5}{#6}}}%
    \fi
    \egroup}
 
@@ -328,19 +328,6 @@
 %D loaded, they are saved in a macro, one for each reference.
 %D In practice this comes to giving \type {\mainreference} a
 %D appropriate meaning and loading the utility file.
-
-% \def\setreferences
-%   {\def\mainreference##1##2##3##4##5%
-%      {\doifundefinedelse{\r!cross\fileprefix##1##2}
-%         {\setglobalcrossreference{##1##2}{##3}{##4}{##5}}
-%         {\showmessage\m!references{2}{[##1][##2],##4}}}}
-
-% \def\setreferences
-%   {\the\everyreference % we're grouped anyway
-%    \def\mainreference##1##2##3##4##5%
-%      {\doifundefinedelse{\r!cross\fileprefix##1##2}
-%         {\setglobalcrossreference{##1##2}{##3}{##4}{##5}}
-%         {\ifcase0##4\else\showmessage\m!references{2}{[##1][##2],##4}\fi}}}
 
 %D For a long time the only way to access an external file was
 %D to use the file prefix (\type {somefile::}. However, when
@@ -359,48 +346,31 @@
 
 \chardef\autocrossfilereferences=0
 
-% \def\setreferences % some day, filename will be stored in ref record
-%   {\the\everyreference % we're grouped anyway
-%    \def\mainreference##1##2##3##4##5%
-%      {\doifundefinedelse{\r!cross\fileprefix##1##2}
-%         {\ifcase\autocrossfilereferences
-%            \setglobalcrossreference{##1##2}{##3}{##4}{##5}%
-%          \or
-%            \setglobalcrossreference{##1##2}{##3}{##4}{##5}%
-%            \doifundefinedelse{\r!cross##1##2}
-%              {\expanded{\definereference[##1##2][\fileprefix##1##2]}}
-%              {\showmessage\m!references2{[##1][##2],##4 (auto \currentutilityfilename)}}%
-%          \or
-%            \doifundefinedelse{\r!cross##1##2}
-%              {\expanded{\definereference[##1##2][\noexpand\v!pagina(\fileprefix##4)]}}
-%              {\showmessage\m!references2{[##1][##2],##4 (auto \currentutilityfilename)}}%
-%          \fi}
-%         {\ifcase0##4\else
-%            \showmessage\m!references2{[##1][##2],##4 (\currentutilityfilename)}%
-%          \fi}}}
-
-% optimizing this one makes sense when we have docs with 10K
-% refs.
-
 \def\setreferences% some day, filename will be stored in ref record
   {\the\everyreference % we're grouped anyway
    \def\mainreference##1##2##3##4##5% can be made faster by indirect calls
-     {\ifundefined{\r!cross\fileprefix##1##2}% \ifcsname\r!cross\fileprefix##1##2\endcsname
+     {\ifcsname\r!cross\fileprefix##1##2\endcsname
+        \ifcase0##4\else
+          \showmessage\m!references2{[##1][##2],##4 (\currentutilityfilename)}%
+        \fi
+      \else
         \ifcase\autocrossfilereferences
           \setglobalcrossreference{##1##2}{##3}{##4}{##5}%
         \or
           \setglobalcrossreference{##1##2}{##3}{##4}{##5}%
-          \doifundefinedelse{\r!cross##1##2}
-            {\expanded{\definereference[##1##2][\fileprefix##1##2]}}
-            {\showmessage\m!references2{[##1][##2],##4 (auto \currentutilityfilename)}}%
+          \ifcsname\r!cross##1##2\endcsname
+            \showmessage\m!references2{[##1][##2],##4 (auto \currentutilityfilename)}%
+          \else
+            \expanded{\definereference[##1##2][\fileprefix##1##2]}%
+          \fi
         \or
-          \doifundefinedelse{\r!cross##1##2}
-            {\expanded{\definereference[##1##2][\noexpand\v!page(\fileprefix##4)]}}
-            {\showmessage\m!references2{[##1][##2],##4 (auto \currentutilityfilename)}}%
+          \ifcsname\r!cross##1##2\endcsname
+            \showmessage\m!references2{[##1][##2],##4 (auto \currentutilityfilename)}%
+          \else
+            \expanded{\definereference[##1##2][\noexpand\v!page(\fileprefix##4)]}%
+          \fi
         \fi
-      \else\ifcase0##4\else
-        \showmessage\m!references2{[##1][##2],##4 (\currentutilityfilename)}%
-      \fi\fi}}
+      \fi}}
 
 \def\resetreferences
   {\let\mainreference\gobblefivearguments}
@@ -506,7 +476,7 @@
 
 \def\setglobalcrossreference#1#2#3#4%
   {\scratchtoks{#4}%
-   \global\advance\crossreferenceorder 1
+   \global\advance\crossreferenceorder \plusone
    \@EA\xdef\csname\r!cross\fileprefix#1\endcsname
      {\rt!cross{#2}{#3}{\the\scratchtoks}{\the\crossreferenceorder}}}
 
@@ -515,17 +485,6 @@
 
 \def\setglobalsystemreference#1#2#3%
   {\@EA\xdef\csname\r!cross\fileprefix#2\endcsname{#1{#3}}}
-
-% Maybe I need this some day.
-
-% \def\copycrossreference#1#2#3% file from to
-%   {\bgroup
-%    \def\fileprefix{#1::}%
-%    \def\rt!cross##1##2##3##4%
-%      {\setxvalue{\r!cross\fileprefix#3}%
-%         {\noexpand\rt!cross{##1}{##2}{##3}{##4}}}%
-%    \getvalue{\r!cross\fileprefix#2}%
-%    \egroup}
 
 \def\copycrossreference#1#2#3% file from to / slow
   {\bgroup
@@ -579,13 +538,6 @@
 %D Because internally a reference comes in two disguises, one
 %D with four arguments and one with only two, we need a two
 %D step filter.
-
-%\def\getreferenceelements#1%
-%  {\edef\referenceelements{\getvalue{\r!cross\referenceprefix#1}}%
-%   \expandafter\dogetreferenceelements\referenceelements{}{}{}{}}
-%
-%\def\getreferenceelements#1% only one level expansion permitted!
-%  {\@EA\@EA\@EA\dogetreferenceelements\csname\r!cross\referenceprefix#1\endcsname{}{}{}{}}
 
 \def\getreferenceelements#1% only one level expansion permitted!
   {\@EA\@EA\@EA\dogetreferenceelements\csname\r!cross\referenceprefix#1\endcsname\empty\empty\empty\empty}
@@ -746,32 +698,7 @@
 %D meaning of the original cross reference. In fact,
 %D \type{\rt!cross} is toggled to \type{\rt!done}.
 
-% \def\doiffirstreferenceoccurance#1#2%
-%   {\ifcheckduplicatereferences
-%      \doifundefinedelse{\r!cross\referenceprefix#1}
-%        {#2}
-%        {\getreferenceelements{#1}%
-%         \ifnum\currentreferencetype=\rt!cross
-%           #2%
-%           \bgroup
-%           \def\rt!cross##1##2##3##4%
-%             {\setgvalue{\r!cross\referenceprefix#1}%
-%                {\rt!done{##1}{##2}{##3}{##4}}}%
-%           \getvalue{\r!cross\referenceprefix#1}%
-%           \egroup
-%         \fi}%
-%    \else
-%      #2%
-%    \fi}
-
 \def\rt!crossdone#1#2#3#4{\rt!done{#1}{#2}{#3}{#4}}
-
-% \def\dohandleduplicatereference#1%
-%   {\bgroup
-%    \let\rt!cross\rt!crossdone
-%    \@EA\xdef\csname\r!cross\referenceprefix#1\endcsname
-%      {\csname\r!cross\referenceprefix#1\endcsname}%
-%    \egroup}
 
 \def\dohandleduplicatereference#1%
   {\bgroup
@@ -779,17 +706,6 @@
    \@EA\xdef\csname\r!cross\referenceprefix#1\endcsname % no let !
      {\csname\r!cross\referenceprefix#1\endcsname}%
    \egroup}
-
-% \def\checkfirstreferenceoccurance#1#2% etex
-%   {\ifcsname\r!cross\referenceprefix#1\endcsname
-%      \getreferenceelements{#1}%
-%      \ifnum\currentreferencetype=\rt!cross
-%        \dohandleduplicatereference{#1}%
-%        #2%
-%      \fi
-%    \else
-%      #2%
-%    \fi}
 
 \def\checkfirstreferenceoccurance#1#2% etex
   {\@EA\ifx\csname\r!cross\referenceprefix#1\endcsname\relax % no ifcsname needed here
@@ -1274,7 +1190,7 @@
    \fi}
 
 \def\docheckglobalfilereference#1%
-  {\ifundefined{\r!cross#1::\currentinnerreference}\else
+  {\ifcsname\r!cross#1::\currentinnerreference\endcsname
      \def\currentouterreference{#1}%
      \edef\currentfullreference%
        {\currentouterreference::\currentinnerreference}%
@@ -1315,101 +1231,6 @@
 % lijst, dan de chain doorlopen. Momenteel mag alleen laatste
 % laatste undefined zijn, eigenlijk moet dat overal kunnen met
 % 'geen' zonder melding. Is wel trager. Dus niet.
-%
-% \def\doifreferencefoundelse#1#2#3% \@EA niet nodig
-%   {\doresetgotowhereever
-%    \global\secondaryreferencefalse
-%    {\the\everyreference\xdef\primaryreference{#1}}%
-%    \global\nofsecondaryreferences=0
-%    \def\dopreprocessreference##1,%
-%      {\if]##1\else
-%         \ifsecondaryreference
-%           \ifenablereferencechains \iflocation
-%             {\the\everyreference\xdef\secondaryreference{##1}}%
-%            %\global\advance\nofsecondaryreferences by 1
-%             \@EA\dodoifreferencefoundelse\@EA{\secondaryreference}
-%               {\global\advance\nofsecondaryreferences by 1
-%                #2}
-%               {%\global\advance\nofsecondaryreferences by -1
-%                \dostartnoto#3\dostopnoto}%
-%           \fi \fi
-%         \else
-%           {\the\everyreference\xdef\primaryreference{##1}}%
-%           \global\secondaryreferencetrue
-%         \fi
-%         \expandafter\dopreprocessreference
-%       \fi}%
-%    \dopreprocessreference#1,],%
-%    \global\secondaryreferencefalse
-%    \@EA\dodoifreferencefoundelse\@EA{\primaryreference}{#2}{#3}%
-%    \doresetgotowhereever} % to prevent problems with direct goto's
-
-% \def\doifreferencefoundelse#1#2#3% REF \cs
-%   {\checkreferences
-%    \bgroup
-%      \the\everyreference
-%      \let\referenceprefix\empty
-%      \expandreferences{#1}%
-%    \egroup
-%    \doresetgotowhereever
-%    \global\nofsecondaryreferences 0
-%    \ifcase\nofexpandedreferences\relax % #1 can be number -)
-%      % no ref
-%    \or
-%      % one ref
-%    \or
-%      % two refs
-%      \ifenablereferencechains \iflocation
-%        \global\secondaryreferencetrue
-%        \xdef\secondaryreference{\csname REF::2\endcsname}%
-%        \bgroup
-%          \let\unharmedreferenceprefix\referenceprefix
-%          %\bgroup
-%            \dodoifreferencefoundelse\secondaryreference
-%            \global\nofsecondaryreferences 1
-%            \ifreferencefound
-%              #2%
-%            \else
-%              \dostartnoto#3\dostopnoto
-%            \fi
-%          %\egroup
-%        \egroup
-%      \fi \fi
-%    \else
-%      % more than two refs
-%      \ifenablereferencechains \iflocation
-%        \global\secondaryreferencetrue
-%        \scratchcounter2
-%        \loop
-%          \xdef\secondaryreference{\csname REF::\number\scratchcounter\endcsname}%
-%          \bgroup
-%            \let\unharmedreferenceprefix\referenceprefix
-%            %\bgroup
-%              \dodoifreferencefoundelse\secondaryreference
-%              \global\advance\nofsecondaryreferences 1
-%              \ifreferencefound
-%                #2%
-%              \else
-%                \global\advance\nofsecondaryreferences -1
-%                \dostartnoto#3\dostopnoto
-%              \fi
-%            %\egroup
-%          \egroup
-%          \ifnum\scratchcounter<\nofexpandedreferences\relax
-%            \advance\scratchcounter 1
-%        \repeat
-%      \fi \fi
-%    \fi
-%    \global\secondaryreferencefalse
-%    \xdef\primaryreference{\csname REF::1\endcsname}%
-%    \bgroup
-%      \let\unharmedreferenceprefix\referenceprefix
-%      %\bgroup
-%        \dodoifreferencefoundelse\primaryreference
-%        \ifreferencefound#2\else#3\fi
-%      %\egroup
-%    \egroup
-%    \doresetgotowhereever} % to prevent problems with direct goto's
 
 \def\doifreferencefoundelse#1#2#3% REF \cs / never more than one group (else \aftergroup usage problems)
   {\checkreferences
@@ -1439,7 +1260,7 @@
            \global\nofsecondaryreferences \plusone
            #2%
          \else
-           \dostartnoto#3\dostopnoto
+           \dohandlenoto{#3}%
          \fi
        \egroup
      \fi \fi
@@ -1459,7 +1280,7 @@
              \global\advance\nofsecondaryreferences \plusone
              #2%
            \else
-             \dostartnoto#3\dostopnoto
+             \dohandlenoto{#3}%
            \fi
          \egroup
          \ifnum\scratchcounter<\nofexpandedreferences\relax
@@ -1494,20 +1315,20 @@
   {\dodoifreferencefoundelse{#1}%
    \ifreferencefound\@EA\firstoftwoarguments\else\@EA\secondoftwoarguments\fi}
 
-%D Somewhere else we will properly define \type {\dostartgoto};
+%D Somewhere else we will properly define \type {\dohandlegoto};
 %D the noto alternative takes care of undefined references in
 %D a sequence
 
-\ifx\dostartnoto\undefined
+\ifx\dohandlenoto\undefined
 
-  \def\dostartnoto#1\dostopnoto
+  \def\dohandlenoto#1%
     {\ifsecondaryreference\else{#1}\fi}
 
 \fi
 
-\ifx\dostartgoto\undefined
+\ifx\dohandlegoto\undefined
 
-  \def\dostartgoto\data#1\start#2\stop#3\dostopgoto
+  \def\dohandlegoto#1#2#3%
     {\ifsecondaryreference\else{#1}\fi}
 
 \fi
@@ -1523,10 +1344,11 @@
   {\checkreferences
    \bgroup
    \edef\currentfullreference{#1}%
-   \ifundefined{\r!cross\currentfullreference}%
-     \global\referencefoundfalse #3%
-   \else\getreferenceelements\currentfullreference
-     \global\referencefoundtrue  #2%
+   \ifcsname\r!cross\currentfullreference\endcsname
+     \getreferenceelements\currentfullreference
+     \global\referencefoundtrue#2%
+   \else
+     \global\referencefoundfalse#3%
    \fi
    \egroup}
 
@@ -1537,25 +1359,6 @@
 %D \goto{some text}[reference]
 %D \goto{some text}[prefix:reference]
 %D \stoptyping
-
-%\def\docheckinnerreference%
-%  {\global\let\predefinedreference=\currentinnerreference
-%   \ifx\currentreferencearguments\empty
-%     \doifdefinedelse{\r!cross\referenceprefix\currentfullreference}
-%       {\global\referencefoundtrue}
-%       {\let\referenceprefix\empty
-%        \doifdefinedelse{\r!cross\currentfullreference}
-%          {\global\referencefoundtrue}
-%          {\global\referencefoundfalse}}%
-%   \else % [SomeThing{with,me}]
-%     \let\referenceprefix\empty
-%     \doifdefinedelse{\r!cross\currentinnerreference}
-%       {\global\referencefoundtrue}
-%       {\global\referencefoundfalse}%
-%   \fi
-%   \doifpredefinedreferenceelse{\global\referencefoundfalse}{}}
-
-\beginETEX
 
 \def\docheckinnerreference
   {\global\let\predefinedreference\currentinnerreference
@@ -1580,35 +1383,6 @@
    \fi
    \doifpredefinedreferenceelse{\global\referencefoundfalse}\donothing}
 
-\endETEX
-
-\beginTEX
-
-\def\docheckinnerreference
-  {\global\let\predefinedreference\currentinnerreference
-   \ifx\currentreferencearguments\empty
-     \@EA\ifx\csname\r!cross\referenceprefix\currentfullreference\endcsname\relax
-       \let\referenceprefix\empty
-       \@EA\ifx\csname\r!cross\currentfullreference\endcsname\relax
-         \global\referencefoundfalse
-       \else
-         \global\referencefoundtrue
-       \fi
-     \else
-       \global\referencefoundtrue
-     \fi
-   \else % [SomeThing{with,me}]
-     \let\referenceprefix\empty
-     \@EA\ifx\csname\r!cross\currentinnerreference\endcsname\relax
-       \global\referencefoundfalse
-     \else
-       \global\referencefoundtrue
-     \fi
-   \fi
-   \doifpredefinedreferenceelse{\global\referencefoundfalse}\donothing}
-
-\endTEX
-
 %D References to other files however are treated strict or
 %D tolerant, depending on their loading and availability:
 %D
@@ -1624,66 +1398,7 @@
 %D \type{\setouterreference} as a signal that indeed references
 %D are defined for the outer file.
 
-% \def\docheckouterreference%
-%   {\let\referenceprefix=\empty
-%    \let\unharmedreferenceprefix=\empty
-%    \xdef\predefinedreference%
-%      {\currentouterreference::\currentinnerreference}%
-%    \ifx\innerreference\empty
-%      \global\referencefoundtrue % no checking done
-%    \else
-%      \doifdefinedelse{\r!cross\currentouterreference::}
-%        {\doifdefinedelse{\r!cross\currentfullreference}
-%           {\global\referencefoundtrue}
-%           {\global\referencefoundfalse}}
-%        {\global\referencefoundtrue}% no checking done
-%    \fi
-%    \doifpredefinedreferenceelse{\global\referencefoundfalse}{}}
-
 \newif\ifstrictouterreferences \strictouterreferencesfalse
-
-\beginTEX
-
-\def\dodocheckouterreference
-  {\@EA\ifx\csname\specialREFidentifier\currentfullreference\endcsname\relax
-     \ifstrictouterreferences
-       \global\referencefoundfalse
-     \else
-       % already \global\referencefoundtrue % no checking done
-     \fi
-   \else
-     \@EA\@EA\@EA\splitofffullreference\@EA\@EA\@EA % 1 level
-        {\csname\specialREFidentifier\currentfullreference\endcsname}%
-     \docheckouterreference
-   \fi}
-
-\def\docheckouterreference
-  {\let\referenceprefix\empty
-   \let\unharmedreferenceprefix\empty
-   \xdef\predefinedreference
-     {\currentouterreference::\currentinnerreference}%
-   \ifx\innerreference\empty
-     \global\referencefoundtrue % no checking done
-   \else
-     \@EA\ifx\csname\r!cross\currentouterreference::\endcsname\relax
-       \ifstrictouterreferences
-         \global\referencefoundfalse
-       \else
-         \global\referencefoundtrue % no checking done
-       \fi
-     \else
-       \ifcsname\r!cross\currentfullreference\endcsname
-         \global\referencefoundtrue
-       \else
-         \dodocheckouterreference
-       \fi
-     \fi
-   \fi
-   \doifpredefinedreferenceelse{\global\referencefoundfalse}\donothing}
-
-\endTEX
-
-\beginETEX \ifcsname
 
 \def\dodocheckouterreference
   {\ifcsname\specialREFidentifier\currentfullreference\endcsname
@@ -1720,8 +1435,6 @@
    \fi
    \doifpredefinedreferenceelse{\global\referencefoundfalse}\donothing}
 
-\endETEX
-
 %D Special references are only tested when some test routine is
 %D defined.
 
@@ -1737,24 +1450,6 @@
 
 %D An unknown reference is reported on the screen, in the log
 %D file and, when enabled, in the left margin of the text.
-
-% \def\reportreferenceerror#1#2%
-%   {\bgroup
-%    \the\everyreference % cleanup : etc in french
-%    \ifinpagebody\else
-%      \doifconcepttracing
-%        {\doifsomething{#2}
-%           {\inleft
-%              {\infofont
-%               \scratchdimen\leftmarginwidth
-%               \advance\scratchdimen -2em
-%               \doboundtext{#2}\scratchdimen{..}->}}}%
-%    \fi
-%    \doifpredefinedreferenceelse
-%      \donothing
-%      {\predefinereference
-%       \showmessage\m!references{#1}{[\unharmedreferenceprefix][#2]}}%
-%    \egroup}
 
 \def\reportreferenceerror#1#2%
   {\bgroup
@@ -1794,16 +1489,6 @@
 
 \let\predefinedreference\s!unknown
 
-% \def\predefinereference
-%   {\setgvalue{\r!cross\predefinedreference}{\rt!cross{}{}{}{}}%
-%    \setgvalue{\r!cross\unharmedreferenceprefix\predefinedreference}{\rt!cross{}{}{}{}}}
-
-% \def\dummypredefinedreference{\r!cross{}{}{}{}}
-%
-% \def\predefinereference
-%   {\global\@EA\let\csname\r!cross\predefinedreference    \endcsname\dummypredefinedreference
-%    \global\@EA\let\csname\r!cross\unharmedreferenceprefix\endcsname\dummypredefinedreference} % bug!
-%
 % we need to predefine in order to make dup checking possible (when no ref
 % is defined yet)
 
@@ -1814,15 +1499,6 @@
 \def\dummypredefinedreference{\rt!done{}{}{}{}}
 
 %D Testing on existance then becomes:
-
-% \def\checkpredefinedreference#1#2#3#4% #3 can expand tricky
-%   {{#1}{#2}{#4}}
-%
-% \def\doifpredefinedreferenceelse#1#2% \referenceprefix added
-%   {\bgroup
-%    \let\rt!cross\checkpredefinedreference
-%    \doifelse{\getvalue{\r!cross\referenceprefix\predefinedreference}}{{}{}{}}
-%      {\egroup#1}{\egroup#2}}
 
 \def\doifpredefinedreferenceelse % \referenceprefix added
   {\@EA\ifx\csname\r!cross\referenceprefix\predefinedreference\endcsname\dummypredefinedreference
@@ -1839,23 +1515,6 @@
 %D \stoptyping
 %D
 %D The second argument can be a comma seperated list.
-
-% this will be replaced by a more general mechanis
-
-% \def\doifreferencepermittedelse#1#2#3#4% ref set found notfound
-%   {\doifreferencefoundelse{#1}
-%      {\ifx\currentinnerreference\empty
-%         \ifx\currentouterreference\empty
-%           #3%
-%         \else
-%           \doifinstringelse{\currentouterreference::}{#2}{#4}{#3}%
-%         \fi
-%       \else\ifx\currentouterreference\empty
-%         \doifinstringelse{\currentinnerreference}{#2}{#4}{#3}%
-%       \else
-%         \doifinstringelse{\currentouterreference::\currentinnerreference}{#2}{#4}{#3}%
-%       \fi\fi}
-%      {#4\unknownreference{#1}}}
 
 \let\permittedreferences\empty
 
@@ -1930,11 +1589,7 @@
 %D counterparts. A common component in these is:
 %D
 %D \starttyping
-%D \dostartgoto
-%D   \data  {..}
-%D   \start {..}
-%D   \stop  {..}
-%D \dostopgoto
+%D \dohandlegoto{..}{..}{..}
 %D \stoptyping
 %D
 %D Here data can be whatever needs highlighting, e.g. {\em
@@ -1951,15 +1606,10 @@
      \ifusepagedestinations
        \gotorealpage{#1}{#2}{#4}{#5}%
      \else
-       \dostartgoto
-         \data
-           {#5}%
-         \start
-           \the\everyreference % we are (have to be) grouped !
-           \dostartgotolocation\buttonwidth\buttonheight{#1}{#2}{#3}{#4}%
-         \stop
-           \dostopgotolocation
-       \dostopgoto
+       \dohandlegoto
+         {#5}%
+         {\the\everyreference\dostartgotolocation\buttonwidth\buttonheight{#1}{#2}{#3}{#4}}%
+         {\dostopgotolocation}%
      \fi
    \else
      {#5}%
@@ -1967,14 +1617,10 @@
 
 \def\gotorealpage#1#2#3#4% url file page data
   {\iflocation
-     \dostartgoto
-       \data
-         {#4}%
-       \start
-         \dostartgotorealpage\buttonwidth\buttonheight{#1}{#2}{#3}%
-       \stop
-         \dostopgotorealpage
-     \dostopgoto
+     \dohandlegoto
+       {#4}%
+       {\dostartgotorealpage\buttonwidth\buttonheight{#1}{#2}{#3}}%
+       {\dostopgotorealpage}%
    \else
      {#4}%
    \fi}
@@ -2061,6 +1707,16 @@
    \ifinternalnamedreferences
      \thisisdestination{\s!aut\iftraceinternalreferences:#1\fi:\nextinternalreference}%
    \fi}
+
+% beter:
+%
+% \def\thisisnextinternal#1%
+%   {\iftrialtypesetting\else
+%      \global\advance\locationcount \plusone
+%      \ifinternalnamedreferences
+%        \thisisdestination{\s!aut\iftraceinternalreferences:#1\fi:\nextinternalreference}%
+%      \fi
+%    \fi}
 
 \def\gotonextinternal#1#2#3#4%
   {\ifinternalnamedreferences
@@ -2283,14 +1939,10 @@
 
 \def\executecommand#1#2#3%
   {\iflocation
-     \dostartgoto
-       \data
-         {#3}%
-       \start
-         \dostartexecutecommand\buttonwidth\buttonheight{#1}{#2}%
-       \stop
-         \dostopexecutecommand
-     \dostopgoto
+     \dohandlegoto
+       {#3}%
+       {\dostartexecutecommand\buttonwidth\buttonheight{#1}{#2}}%
+       {\dostopexecutecommand}%
    \else
      {#3}%
    \fi}
@@ -2445,7 +2097,7 @@
 \def\doref[#1][#2]%
   {\ifsecondargument
      \doifreferencefoundelse{#2}
-       {\doifundefinedelse{reftype#1}{\reftypep}{\getvalue{reftype#1}}}
+       {\executeifdefined{reftype#1}\reftypep}
        {\unknownreference{#2}\dummyreference}%
    \else
      \dummyreference
@@ -2494,7 +2146,7 @@
       \dogotospace{\thecurrentsubtextreference}[#1]}
      {\unknownreference{#1}\dummyreference}%
    \@@rfright
-   \referentieinfo{<}{#1}%
+   \referenceinfo{<}{#1}%
    \egroup}
 
 %D Typesetting the reference is a bit more complicated than one
@@ -2571,7 +2223,7 @@
 %         {\egroup\dosymbolreference{#1}{#2}[#3]}
 %         {\egroup\dowantedreference{#1}{#2}[#3]}}
 %      {\dounknownreference{#1}{#2}[#3]}%
-%    \referentieinfo{<}{#3}%
+%    \referenceinfo{<}{#3}%
 %    \egroup}
 
 %D The previously discussed setup macro lets us specify the
@@ -2750,7 +2402,7 @@
 %           {#1}{#2}[#3]%
 %       \fi}
 %      {\dounknownreference{#1}{#2}[#3]}%
-%    \referentieinfo<{#3}%
+%    \referenceinfo<{#3}%
 %    \global\let\leftofreference \empty
 %    \global\let\rightofreference\empty
 %    \global\let\textofreference \empty
@@ -2786,7 +2438,7 @@
           {#1}{#2}[#3]%
       \fi}
      {\dounknownreference{#1}{#2}[#3]}%
-   \referentieinfo<{#3}%
+   \referenceinfo<{#3}%
    \global\let\leftofreference \empty
    \global\let\rightofreference\empty
    \global\let\textofreference \empty
@@ -2816,7 +2468,7 @@
 %        {\dosymbolreference{}{}[#2]}
 %        {\dogotospace{#1}[#2]}}
 %     {\unknownreference{#2}#1}%
-%   \referentieinfo{<}{#2}}
+%   \referenceinfo{<}{#2}}
 
 \def\dogoto#1[#2]%
   {\dontleavehmode
@@ -2829,7 +2481,7 @@
         {\dogotospace{#1}[#2]}}
      {\unknownreference{#2}#1\relax}% \relax catches lookahead
 \egroup
-   \referentieinfo{<}{#2}}
+   \referenceinfo{<}{#2}}
 
 \unexpanded\def\goto#1#2%
   {\dogoto{#1}#2}
@@ -2883,7 +2535,7 @@
    \doifreferencefoundelse{#2}
      {\dogotofixed{#1}[#2]}
      {\hbox{\unknownreference{#2}#1}}%
-   \referentieinfo{<}{#2}%
+   \referenceinfo{<}{#2}%
    \egroup}
 
 %D An reference to another document can be specified as a file
@@ -3087,7 +2739,11 @@
    \edef\otherfile{#2}}%
 
 \def\setouterlocation#1%
-  {\ifundefined{\v!file:::#1}%
+  {\ifcsname\v!file:::#1\endcsname
+     \let\doexternaldocument\setouterfilelocation % will change
+     \let\doexternalurl     \setouterfilelocation % will change
+     \csname\v!file:::#1\endcsname
+   \else
      \ifconditional\forceURLlocation
        \edef\otherURL{#1}%
        \let\otherfile\empty
@@ -3095,10 +2751,6 @@
        \let\otherURL\empty
        \edef\otherfile{#1}%
      \fi
-   \else
-     \let\doexternaldocument\setouterfilelocation % will change
-     \let\doexternalurl     \setouterfilelocation % will change
-     \csname\v!file:::#1\endcsname
    \fi
    \setfalse\forceURLlocation
    \doifparentfileelse\otherfile
@@ -3144,19 +2796,19 @@
    \egroup}
 
 \def\redospecialfrom[#1::#2]%
-  {\ifundefined{\v!file:::#1}%
-     \tttf[#1]%
-   \else
+  {\ifcsname\v!file:::#1\endcsname
      \def\doexternaldocument##1##2##3{\goto{##3}[#1::#2]}%
      \csname\v!file:::#1\endcsname
+   \else
+     \tttf[#1]%
    \fi}
 
 \def\nodospecialfrom[#1]%
-  {\ifundefined{\v!file:::#1}%
-     \tttf[#1]%
-   \else
+  {\ifcsname\v!file:::#1\endcsname
      \def\doexternaldocument##1##2##3{##3}% different than ^
      \csname\v!file:::#1\endcsname
+   \else
+     \tttf[#1]%
    \fi}
 
 %D We also support:
@@ -3248,12 +2900,11 @@
 
 \def\program#1[#2]%
   {\bgroup
-   \ifundefined{\v!program:::#2}%
-     {\tttf[#2]}%
-   \else
-     \def\doprogram##1##2%
-       {\goto{\doifelsenothing{#1}{##2}{#1}}[\v!program(#2)]}%
+   \ifcsname\v!program:::#2\endcsname
+     \def\doprogram##1##2{\goto{\doifelsenothing{#1}{##2}{#1}}[\v!program(#2)]}%
      \csname\v!program:::#2\endcsname
+   \else
+     {\tttf[#2]}%
    \fi
    \egroup}
 
@@ -3262,20 +2913,17 @@
 \definespeciallocation\v!program#1#2%
   {\bgroup
    \iflocation
-     \doifdefinedelse{\v!program:::\currentreferenceoperation}
-       {\def\doprogram##1##2{\def\@@programfile{##1}}%
-        \getvalue{\v!program:::\currentreferenceoperation}}
-       {\let\@@programfile\currentreferenceoperation}%
+     \ifcsname\v!program:::\currentreferenceoperation\endcsname
+       \def\doprogram##1##2{\def\@@programfile{##1}}%
+       \getvalue{\v!program:::\currentreferenceoperation}%
+     \else
+       \let\@@programfile\currentreferenceoperation
+     \fi
      \convertcommand\@@programfile\to\ascii
-     \dostartgoto
-       \data
-         {#2}%
-       \start
-         \dostartrunprogram\buttonwidth\buttonheight
-           {\@@prdirectory\ascii}\currentreferencearguments
-       \stop
-         \dostoprunprogram
-     \dostopgoto
+     \dohandlegoto
+       {#2}%
+       {\dostartrunprogram\buttonwidth\buttonheight{\@@prdirectory\ascii}\currentreferencearguments}%
+       {\dostoprunprogram}%
    \else
      {#2}%
    \fi
@@ -3340,65 +2988,6 @@
 %D Because we combine both methods, we have to take care of
 %D the \type{file::page(n)} as well as \type{page(file::n)}.
 
-% \definespeciallocation\v!pagina#1#2%
-%   {\iflocation
-%      \ifx\currentouterreference\empty
-%        \splitoffreference\currentreferenceoperation
-%      \else
-%        \let\currentinnerreference=\currentreferenceoperation
-%      \fi
-%      \ifx\currentouterreference\empty
-%        \doifnonzeropositiveelse{\currentinnerreference}
-%          {}
-%          {\edef\currentinnerreference{1}}%
-%        \gotorealpage\empty\empty\currentinnerreference{#2}%
-%      \else
-%        \setouterlocation\currentouterreference
-%        \doifnonzeropositiveelse{\currentinnerreference}
-%          {}
-%          {\doifdefinedelse{\v!pagina:::\currentinnerreference}
-%             {\edef\currentinnerreference{\getvalue{\v!pagina:::\currentinnerreference}}}
-%             {\edef\currentinnerreference{1}}}%
-%        \gotorealpage\otherURL\otherfile\currentinnerreference{#2}%
-%      \fi
-%    \else
-%      {#2}%
-%    \fi}
-
-% \definespeciallocation\v!pagina#1#2% page(n) page(+n) page(-n)
-%   {\iflocation
-%      \ifx\currentouterreference\empty
-%        \splitoffreference\currentreferenceoperation
-%      \else
-%        \let\currentinnerreference\currentreferenceoperation
-%      \fi
-%      \ifx\currentouterreference\empty
-%        \doifinstringelse+\currentinnerreference
-%          {\scratchcounter\realpageno
-%           \advance\scratchcounter \currentinnerreference
-%           \edef\currentinnerreference{\the\scratchcounter}}
-%          {\doifinstringelse-\currentinnerreference
-%             {\scratchcounter\realpageno
-%              \advance\scratchcounter \currentinnerreference
-%              \edef\currentinnerreference{\the\scratchcounter}}
-%             \donothing}%
-%        \doifnonzeropositiveelse\currentinnerreference
-%          \donothing
-%          {\edef\currentinnerreference{1}}%
-%        \gotorealpage\empty\empty\currentinnerreference{#2}%
-%      \else
-%        \setouterlocation\currentouterreference
-%        \doifnonzeropositiveelse\currentinnerreference
-%          \donothing
-%          {\doifdefinedelse{\v!pagina:::\currentinnerreference}
-%             {\edef\currentinnerreference{\getvalue{\v!pagina:::\currentinnerreference}}}
-%             {\edef\currentinnerreference{1}}}%
-%        \gotorealpage\otherURL\otherfile\currentinnerreference{#2}%
-%      \fi
-%    \else
-%      {#2}%
-%    \fi}
-
 \definespeciallocation\v!page#1#2% page(n) page(+n) page(-n)
   {\iflocation
      \ifx\currentouterreference\empty
@@ -3407,6 +2996,7 @@
        \let\currentinnerreference\currentreferenceoperation
      \fi
      \ifx\currentouterreference\empty
+% numexpr
        \doifinstringelse+\currentinnerreference
          {\scratchcounter\realpageno
           \advance\scratchcounter \currentinnerreference
@@ -3426,9 +3016,11 @@
        \setouterlocation\currentouterreference
        \doifnonzeropositiveelse\currentinnerreference
          \donothing
-         {\doifdefinedelse{\v!page:::\currentinnerreference}
-            {\edef\currentinnerreference{\getvalue{\v!page:::\currentinnerreference}}}
-            {\edef\currentinnerreference{1}}}%
+         {\ifcsname\v!page:::\currentinnerreference\endcsname
+            \edef\currentinnerreference{\getvalue{\v!page:::\currentinnerreference}}%
+          \else
+            \edef\currentinnerreference{1}%
+          \fi}%
        \gotorealpage\otherURL\otherfile\currentinnerreference{#2}%
      \fi
    \else
@@ -3464,7 +3056,7 @@
           {\dogotospace{#2}[#4]}%
       \fi}
      {\unknownreference{#4}#1/#2}%
-   \referentieinfo{<}{#4}}
+   \referenceinfo{<}{#4}}
 
 \unexpanded\def\atpage[#1]%
   {\dontleavehmode
@@ -3481,7 +3073,7 @@
       \fi}
      {\unknownreference{#1}%
       \labeltexts\v!page\dummyreference}%
-   \referentieinfo{<}{#1}}
+   \referenceinfo{<}{#1}}
 
 %D We can cross link documents by using:
 %D
@@ -3522,10 +3114,10 @@
         \stopnointerference}%
      \douseexternaldocument[#1][#2][#4]%
      \doglobal\addtocommalist{#1}\crossdocumentreferences
-     \def\docommando##1%
+     \def\docommand##1%
        {\letgvalue{\??rf##1\c!state}\v!start % for fast checking
         \doglobal\addtocommalist{##1}\crossdocumentelements}%
-     \processcommalist[#3]\docommando
+     \processcommalist[#3]\docommand
      \ifutilitydone
        \global\autocrossdocumenttrue
      \fi
@@ -3539,8 +3131,7 @@
 
 \def\checkcontrastreference#1%
   {\ifnum\currentreferencetype=\rt!page\ifnum\currentdatareference=\realpageno
-     \doifdefined{#1\c!contrastcolor}
-       {\setevalue{#1\c!color}{\getvalue{#1\c!contrastcolor}}}%
+     \doifdefined{#1\c!contrastcolor}{\setevalue{#1\c!color}{\getvalue{#1\c!contrastcolor}}}%
    \fi\fi}
 
 \def\checkcontrastreference#1%
@@ -3776,8 +3367,6 @@
    \c!global=\v!no,
    \c!expansion=\v!no,
    \c!separator=\nonbreakablespace]
-
-\let\nonbreakablespace=~
 
 \setupurl
   [\c!alternative=\v!both,

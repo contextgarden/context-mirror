@@ -356,6 +356,18 @@
 \def\doflushverbatimline
   {\expandafter\dodoverbatimline\expandafter{\savedverbatimline}}
 
+\def\doverbatimbeginofline#1% linenumber (optional provided by mkiv / todo)
+  {\dontleavehmode
+   \strut
+   \the\everyline}
+
+\def\doverbatimendofline
+  {\par}
+
+\def\doverbatimemptyline
+  {\strut
+   \par}
+
 \let\handleverbatimline=\relax
 
 % \def\initializeverbatimline%
@@ -373,28 +385,6 @@
 \def\initializeverbatimline
   {\global\let\savedverbatimline\empty
    \global\chardef\verbatimstatus\ifskipfirstverbatimline0 \else1 \fi}
-
-% \let\donextemptyverbatimline\relax
-
-% \def\presetemptyverbatimline
-%   {\ifcase\verbatimstatus
-%      \global\chardef\verbatimstatus\plusone
-%    \or
-%    \or
-%      \donextemptyverbatimline
-%    \or
-%      \doflushverbatimline
-%      \global\let\savedverbatimline\empty
-%      \doemptyverbatimline
-%      \global\chardef\verbatimstatus\plustwo
-%    \else
-%      \kern\zeropoint
-%      \doverbatimnobreak
-%      \doflushverbatimline
-%      \global\let\savedverbatimline\empty
-%      \doemptyverbatimline
-%      \global\chardef\verbatimstatus\plustwo
-%    \fi}
 
 \chardef\verbatimemptylinemode\zerocount
 
@@ -443,15 +433,6 @@
      \doflushverbatimline
    \fi
    \global\let\savedverbatimline\verbatimline}
-
-% \def\presetlastverbatimline
-%   {\ifcase\verbatimstatus \or \or \or
-%      \doflushverbatimline
-%    \else
-%      \kern\zeropoint
-%      \doverbatimnobreak
-%      \doflushverbatimline
-%    \fi}
 
 \def\presetlastverbatimline
   {\ifcase \verbatimstatus
@@ -558,202 +539,6 @@
    \obeycharacters
    \the\everysetupverbatim}
 
-%D \macros
-%D   {eightbitcharacters,
-%D    setcatcodes,uncatcodespecials,
-%D    uncatcodecharacters,uncatcodespacetokens,
-%D    setnaturalcatcodes}
-%D
-%D As its name says, \type{\uncatcodecharacters} resets the
-%D \CATCODE\ of characters. When we use an upper bound of
-%D 127 or 255, depending in \type{\ifeightbitcharacters}. By
-%D counting down, we only have to use one counter. The
-%D macro \type{\setcatcodes} can be uses to set alternative
-%D values. The macro \type{\resetspecialcharacters} resets
-%D characters with special meanings. This macro is not used
-%D in the verbatim macros, but is best defined in this module.
-
-\def\doprocesscatcodes#1% using a toks does not speed this up
-  {\scratchcounter\ifeightbitcharacters 255\else 127\fi\relax
-   \loop
-     \savecatcode
-     #1\relax
-     \advance\scratchcounter \minusone
-     \ifnum\scratchcounter>\minusone
-   \repeat
-   \let\savecatcode\relax
-   \let\restorecatcodes\dorestorecatcodes}
-
-\def\uncatcodespecials
-  {\doprocesscatcodes
-     {\ifnum\catcode\scratchcounter=\@@letter\relax\else
-        \catcode\scratchcounter=\@@other
-      \fi}%
-   \uncatcodespacetokens}
-
-\def\uncatcodespacetokens
-  {\catcode`\   =\@@space
-   \catcode`\^^L=\@@ignore
-   \catcode`\^^M=\@@endofline
-   \catcode`\^^?=\@@ignore}
-
-\def\setcatcodes#1%
-  {\doprocesscatcodes{\catcode\scratchcounter=#1}}
-
-\def\uncatcodeallcharacters % slow one, with restore
-  {\setcatcodes\@@letter}
-
-\def\uncatcodecharacters % quick one
-  {\setnaturalcatcodes}
-
-\newtoks\everycommoncatcodes
-\newtoks\everynaturalcatcodes
-\newtoks\everynormalcatcodes
-
-\def\setcommoncatcodes
-  {\catcode`\!\@@other \catcode`\?\@@other \catcode`\@\@@other
-   \catcode`\=\@@other \catcode`\<\@@other \catcode`\>\@@other
-   \catcode`\*\@@other \catcode`\/\@@other
-   \catcode`\-\@@other \catcode`\+\@@other
-   \catcode`\:\@@other \catcode`\;\@@other
-   \catcode`\.\@@other \catcode`\,\@@other
-   \catcode`\'\@@other \catcode`\"\@@other \catcode`\`\@@other
-   \catcode`\(\@@other \catcode`\)\@@other
-   \the\everycommoncatcodes}
-
-\def\setnaturalcatcodes % see elsewhere, merge 'm
-  {\setcommoncatcodes
-   \uncatcodespacetokens
-   \catcode`\#\@@other
-   \catcode`\$\@@other
-   \catcode`\%\@@other
-   \catcode`\&\@@other
-   \catcode`\\\@@other
-   \catcode`\^\@@other
-   \catcode`\_\@@other
-   \catcode`\{\@@other
-   \catcode`\|\@@other
-   \catcode`\}\@@other
-   \catcode`\~\@@other
-   \the\everynaturalcatcodes}
-
-\def\setnormalcatcodes
-  {\setcommoncatcodes
-   \uncatcodespacetokens
-   \catcode`\#\@@parameter
-   \catcode`\$\@@mathshift
-   \catcode`\%\@@comment
-   \catcode`\&\@@alignment
-   \catcode`\\\@@escape
-   \catcode`\^\@@superscript
-   \catcode`\_\@@subscript
-   \catcode`\{\@@begingroup
-   \catcode`\|\@@active
-   \catcode`\}\@@endgroup
-   \catcode`\~\@@active
-   \the\everynormalcatcodes}
-
-%D \macros
-%D   {localcatcodes,
-%D    restorecatcodes,
-%D    beginrestorecatcodes,endrestorecatcodes}
-%D
-%D We're not finished dealing \CATCODES\ yet. In \CONTEXT\ we
-%D use only one auxiliary file, which deals with tables of
-%D contents, registers, two pass tracking, references etc. This
-%D file, as well as files concerning graphics, is processed when
-%D needed, which can be in the mid of typesetting verbatim.
-%D However, when reading in data in verbatim mode, we should
-%D temporary restore the normal \CATCODES, and that's exactly
-%D what the next macros do. Saving the catcodes can be
-%D disabled by saying \type{\localcatcodestrue}.
-
-%D The previous macros call for \type{\savecatcode}, which is
-%D implemented as:
-
-\def\@@aa@@{@@aa@@}
-\def\@@cc@@{@@cc@@}
-
-\newif\iflocalcatcodes
-
-\def\savecatcode
-  {\iflocalcatcodes \else
-     \saverestoreactivecatcode
-       {\@EA\let\csname\@@aa@@\the\scratchcounter\endcsname~}%
-     \@EA\chardef\csname\@@cc@@\the\scratchcounter\endcsname
-       \catcode\scratchcounter
-   \fi}
-
-%D It's counterpart is:
-
-\def\restorecatcode
-  {\@EA\catcode\@EA\scratchcounter
-     \csname\@@cc@@\the\scratchcounter\endcsname
-   \saverestoreactivecatcode
-     {\@EA\let\@EA~\csname\@@aa@@\the\scratchcounter\endcsname}}
-
-%D Especially when we enable pretty printing, we need to
-%D restore the meaning of active characters too. Just think of
-%D using \type{||} in headers and footers.
-
-\def\saverestoreactivecatcode#1%
-  {\edef\saveduccode{\the\uccode`~}%
-   \uccode`~=\scratchcounter
-   \uppercase{#1}%
-   \uccode`~=\saveduccode}
-
-%D When we want to restore \CATCODES\ we call for
-%D \type{\restorecatcodes}, which default to \type{\relax}
-
-\let\restorecatcodes=\relax
-
-%D or when we've saved things calls for:
-
-\def\dorestorecatcodes
-  {\iflocalcatcodes \else
-     \doprocesscatcodes\restorecatcode
-   \fi}
-
-%D We also provide an alternative, that forces grouping
-%D when needed. An application of this macros can be found in
-%D buffering data.
-
-\def\beginrestorecatcodes
-  {\ifx\restorecatcodes\relax
-     \let\endrestorecatcodes\relax
-   \else
-     \bgroup
-     \restorecatcodes
-     \let\beginrestorecatcodes\bgroup
-     \let\endrestorecatcodes  \egroup
-   \fi}
-
-%D \macros
-%D   {makeallother}
-%D
-%D With \type {\makeallother} each character ($>0$) gets the
-%D category code 12.
-%D
-%D The next alternative was okay when memory was still low.
-%D
-%D \starttyping
-%D \def\makeallother
-%D   {\dorecurse{255}{\catcode\recurselevel=\@@other}}
-%D \stoptyping
-%D
-%D Today we prebuild a token list:
-
-\ifx\makeallother\undefined
-
-  \newtoks\makeallothertoks
-
-  \dorecurse{255}
-    {\@EA\appendtoks\@EA\catcode\recurselevel=\@@other\to\makeallothertoks}
-
-  \def\makeallother{\the\makeallothertoks}
-
-\fi
-
 %D The main copying routine of display verbatim does an
 %D ordinary string||compare on the saved closing command and
 %D the current line. The space after \type{#1} in the
@@ -799,22 +584,14 @@
 
 \let\doopenupverbatimline=\empty
 
-% \long\def\dodoverbatimline#1%
-%   {\leavevmode
-%    \doopenupverbatimline
-%    \the\everyline\strut\processverbatimline{#1\relax}%
-%    \EveryPar{}%
-%    \global\lineparfalse
-%    \obeyedline\par}
-
 \let\beginverbatimline\relax
 \let\endverbatimline  \relax
 
 \long\def\dodoverbatimline#1% we don't want to group
   {\bgroup                  % due to pretty status
    \iflinepar\else\EveryPar{}\fi
-   \leavevmode
-   \xdef\dokeepverbatimlinedata
+   \dontleavehmode % \leavevmode
+   \xdef\dokeepverbatimlinedata % why was this?
      {\parindent \the\parindent
       \hangindent\the\hangindent
       \hangafter \the\hangafter
@@ -909,20 +686,6 @@
 
 \chardef\spacespertab=7
 
-%\def\doprocesstabskip%
-%  {\obeyedspace % \hskip.5em  or  \hbox to .5em{}
-%   \ifdone
-%     \advance\scratchcounter 1
-%     \let\next\doprocesstabskip
-%     \donefalse
-%   \else\ifnum\scratchcounter>\spacespertab
-%     \let\next\relax
-%   \else
-%     \advance\scratchcounter 1
-%     \let\next\doprocesstabskip
-%   \fi\fi
-%   \next}
-
 \def\doprocesstabskip
   {\obeyedspace % \hskip.5em  or  \hbox to .5em{}
    \ifdone
@@ -937,27 +700,6 @@
    \fi\fi}
 
 \let\endoftabskipping=\relax % will become obsolete
-
-% \def\doprocesstabskipline#1%
-%   {\bgroup
-%    \scratchcounter1
-%    \dodoprocesstabskipline#1\relax\endoftabskipping
-%    \egroup}
-%
-% \def\dodoprocesstabskipline#1#2\endoftabskipping
-%   {\ifnum\scratchcounter>\spacespertab
-%      \scratchcounter\plusone
-%      \donetrue
-%    \else
-%      \advance\scratchcounter \plusone
-%      \donefalse
-%    \fi
-%    \ifx#1\relax
-%      \let\next\relax
-%    \else
-%      \def\next{#1\dodoprocesstabskipline#2\endoftabskipping}%
-%    \fi
-%    \next}
 
 \def\doprocesstabskipline#1%
   {\bgroup
@@ -990,8 +732,6 @@
 % ^ will be replaced
 
 \chardef\tabskipmode=1 % 0=quit 1=no test 2=test on active>128
-
-%
 
 \long\def\processverbatimline#1{#1} % remove the fake grouping
 
@@ -1512,22 +1252,6 @@
 %D that ends the line and/or does not belong to the verbatim
 %D data.
 
-% \def\handlenextnextpretty#1#2#3%
-%   {\def\dohandlenextnextpretty%
-%      {\ifx\next\bgroup       % something {}
-%         \let\next=#2%
-%       \else\ifx\next\relax   % end of line / signal
-%         \let\next=#2%
-%       %\else\ifx\next\egroup % end of line / no signal
-%       %  \let\next=#2%
-%       %\else\ifx\next\par    % end of line / \par
-%       % \let\next=#2%
-%       \else
-%         \let\next=#1%
-%       \fi\fi%\fi\fi
-%       \next{#3}}%
-%    \futurelet\next\dohandlenextnextpretty}
-
 \def\handlenextnextpretty#1#2#3%
   {\def\dohandlenextnextpretty%
      {\ifx\next\bgroup       % something {}
@@ -1983,31 +1707,6 @@
   \def\permitshiftedendofverbatim
     {\let\doifendofverbatim\doifinstringelse}
 
-%  \def\processdisplayverbatim#1%
-%    {\par
-%     \bgroup
-%     \escapechar=-1
-%     \xdef\verbatimname{\string#1}%
-%     \egroup
-%     \def\endofdisplayverbatim{\csname\verbatimname\endcsname}%
-%     \bgroup
-%     \parindent\zeropoint
-%     \ifdim\lastskip<\parskip
-%       \removelastskip
-%       \vskip\parskip
-%     \fi
-%     \parskip\zeropoint
-%     \processingverbatimtrue
-%     \expandafter\let\csname\verbatimname\endcsname=\relax
-%     \expandafter\convertargument\csname\verbatimname\endcsname
-%       \to\endofverbatimcommand
-%     \verbatimfont
-%     \setverbatimspaceskip
-%     \global\linepartrue % needed for paragraph numbering
-%     \setupcopyverbatim
-%     \initializeverbatimline
-%     \copyverbatimline}
-
   {\obeylines%
    \long\gdef\copyverbatimline#1
      {\convertargument#1 \to\next%
@@ -2025,58 +1724,6 @@
 
 %D As a bonus, we provide the next alternative, which takes
 %D end tags like \type {Hello World!}.
-
-%  \def\processtaggeddisplayverbatim#1%
-%    {\par
-%     \let\endofdisplayverbatim\relax
-%     \convertargument#1\to\endofverbatimcommand
-%     \bgroup
-%     \parindent\zeropoint
-%     \ifdim\lastskip<\parskip
-%       \removelastskip
-%       \vskip\parskip
-%     \fi
-%     \parskip\zeropoint
-%     \processingverbatimtrue
-%     \verbatimfont
-%     \setverbatimspaceskip
-%     \global\linepartrue % needed for paragraph numbering
-%     \setupcopyverbatim
-%     \initializeverbatimline
-%     \copyverbatimline}
-
-%   \def\doprocessdisplayverbatim#1#2%
-%     {\par
-%      \bgroup
-%      \escapechar-1
-%      \xdef\verbatimname{\string#2}%
-%      \egroup
-%      \ifcase#1%
-%        \let\endofdisplayverbatim\relax
-%      \else
-%        \def\endofdisplayverbatim{\csname\verbatimname\endcsname}%
-%      \fi
-%      \bgroup
-%      \parindent\zeropoint
-%      \ifdim\lastskip<\parskip
-%        \removelastskip
-%        \vskip\parskip
-%      \fi
-%      \parskip\zeropoint
-%      \processingverbatimtrue
-%      \ifcase#1%
-%        \convertargument#2\to\endofverbatimcommand
-%      \else
-%        \expandafter\let\csname\verbatimname\endcsname=\relax
-%        \expandafter\convertargument\csname\verbatimname\endcsname
-%          \to\endofverbatimcommand
-%      \fi
-%      \verbatimfont
-%      \setverbatimspaceskip
-%      \global\linepartrue % needed for paragraph numbering
-%      \setupcopyverbatim
-%      \initializeverbatimline
-%      \copyverbatimline}
 
   \def\doprocessdisplayverbatim#1#2%
     {\par
@@ -2131,14 +1778,14 @@
 \def\doinstallprettyescape[#1][#2]#3 #4%
   {\bgroup
    \doglobal\decrement\prettyescapecnt
-   \def\docommando##1%
+   \def\docommand##1%
      {\def\next{\dodoinstallprettyescape{##1}{#3}{#4}}%
       \catcode`#3=\@@active
       \@EA\scantokens\@EA{\next}}%
    \iffirstargument
-     \processcommalist[#1]\docommando
+     \processcommalist[#1]\docommand
    \else
-     \docommando\empty
+     \docommand\empty
    \fi}
 
 \def\dodoinstallprettyescape#1#2#3%

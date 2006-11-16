@@ -19,7 +19,7 @@
 
 banner = ['WWWClient', 'version 1.0.0', '2003-2006', 'PRAGMA ADE/POD']
 
-$: << File.dirname(File.expand_path($0))
+$: << File.expand_path(File.dirname($0)) ; $: << File.join($:.last,'lib') ; $:.uniq!
 
 require 'base/switch'
 require 'base/logger'

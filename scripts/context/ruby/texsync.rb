@@ -16,10 +16,7 @@
 
 banner = ['TeXSync', 'version 1.1.1', '2002/2004', 'PRAGMA ADE/POD']
 
-unless defined? ownpath
-    ownpath = $0.sub(/[\\\/]\w*?\.rb/i,'')
-    $: << ownpath
-end
+$: << File.expand_path(File.dirname($0)) ; $: << File.join($:.last,'lib') ; $:.uniq!
 
 require 'base/switch'
 require 'base/logger'

@@ -145,12 +145,12 @@ class WWW
             dat << "</exa:data>\n"
             if req.empty? then
                 req << "<?xml version='1.0' ?>\n"
-                req << "<exa:request #{@@namespace}'>\n"
+                req << "<exa:request xmlns:exa='#{@@namespace}'>\n"
                 req << "<exa:application>\n"
                 req << "<exa:action>'#{action}</exa:action>\n"     unless action.empty?
                 # req << "<exa:command>'#{command}</exa:command>\n"  unless command.empty?
                 # req << "<exa:url>'#{url}</exa:url>\n"              unless url.empty?
-                req << "<exa:application>\n"
+                req << "</exa:application>\n"
                 req << "<exa:comment>constructed request</exa:comment>\n"
                 req << dat
                 req << "</exa:request>\n"

@@ -1,0 +1,156 @@
+%D \module
+%D   [       file=spec-fdf,
+%D        version=1998.05.18,
+%D          title=\CONTEXT\ \PDF\ Macros,
+%D       subtitle=Support Macros,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\unprotect
+
+\chardef\safePDFcode=`-
+
+\def\setPDFdestination#1%
+  {\bgroup
+   \retainlccodes
+   \lccode`\/\safePDFcode \lccode`\#\safePDFcode
+   \lccode`\<\safePDFcode \lccode`\>\safePDFcode
+   \lccode`\[\safePDFcode \lccode`\]\safePDFcode
+   \lccode`\(\safePDFcode \lccode`\)\safePDFcode
+   \ifovercomePDFspace
+     \lccode`\ \safePDFcode
+   \fi
+   \ifovercomePDFbugs
+     \xdef\PDFdestination{'#1'}%
+   \else
+     \xdef\PDFdestination{#1}%
+   \fi
+   % nicer \xdef\PDFdestination{\ifovercomePDFbugs'\fi#1\ifovercomePDFbugs'\fi}%
+   \lowercase\@EA{\@EA\xdef\@EA\PDFdestination\@EA{\PDFdestination}}%
+   \egroup}
+
+%D This is much faster since we don't have to set the full
+%D range of lc-codes; about 5 sec on a 1000mhz PIII for
+%D 20K named destinations "x(x) x"). Of course when you use
+%D page destinations, the saving is nil.
+
+% \beginETEX \scantokens
+%
+% \doifnotmode{atpragma}{\let\next\setPDFdestination} % experimental
+%
+% \bgroup
+%
+% \catcode`\/=\@@active \catcode`\#=\@@active
+% \catcode`\<=\@@active \catcode`\>=\@@active
+% \catcode`\[=\@@active \catcode`\]=\@@active
+% \catcode`\(=\@@active \catcode`\)=\@@active
+%
+% \gdef\PDFrepchar{-}
+%
+% \gdef\setPDFdcharacters
+%   {\catcode`\/=\@@active \let/\PDFrepchar
+%    \catcode`\#=\@@active \let#\PDFrepchar
+%    \catcode`\<=\@@active \let<\PDFrepchar
+%    \catcode`\>=\@@active \let>\PDFrepchar
+%    \catcode`\[=\@@active \let[\PDFrepchar
+%    \catcode`\]=\@@active \let]\PDFrepchar
+%    \catcode`\(=\@@active \let(\PDFrepchar
+%    \catcode`\)=\@@active \let)\PDFrepchar}
+%
+% \egroup
+%
+% \def\setPDFdestination#1% expansion is needed, otherwise embedded
+%   {\bgroup              % macros will not expand under the new
+%    \setPDFdcharacters   % catcode regime
+%    \ifovercomePDFspace
+%      \catcode32=\@@ignore
+%    \fi
+%    \xdef\PDFdestination{\ifovercomePDFbugs'\fi#1\ifovercomePDFbugs'\fi}%
+%    \scantokens\@EA{\@EA\xdef\@EA\PDFdestination\@EA{\PDFdestination}}%
+%    \egroup}
+%
+% \doifnotmode{atpragma}{\let\setPDFdestination\next} % experimental
+%
+% \endETEX
+
+%D This is a slow one, that uses \type{\lccode}'s to
+%D change the glyph as well as converts sensisitve ones into a
+%D \PDF\ command sequence, so \type{(} becomes \type{\(}.  In
+%D fact we translate the string to lowercase inactive and non
+%D special characters, limit their number and finaly convert
+%D some of the characters to save ones.
+
+\chardef\maxPDFstringsize=60
+
+\def\sanitizePDFstring#1\to#2% bugged
+  {\bgroup
+   \retainlccodes
+   \lccode`( \zerocount \lccode`) \zerocount
+   \lccode`< \zerocount \lccode`> \zerocount
+   \lccode`[ \zerocount \lccode`] \zerocount
+   \lccode`\\\zerocount \lccode`/ \zerocount
+   \lowercase{\convertargument#1\to\ascii}%
+   % by integrating the split in the loop below
+   % \splitofftokens\maxPDFstringsize\from\ascii\to\ascii
+   % we diminish the processing time considerably
+   \scratchcounter\maxPDFstringsize
+   \def\docommand##1%
+     {\ifcase\scratchcounter\else
+        \advance\scratchcounter \minusone
+        \ifcase\lccode`##1\relax
+          \xdef#2{#2\expandafter\string\csname##1\endcsname}%
+        \else
+          \xdef#2{#2##1}%
+        \fi
+      \fi}%
+   %\global\let#2=\empty
+   % or to permit #2 to be \ascii too:
+   \global\@EA\let\@EA#2\@EA\empty
+   \@EA\handletokens\ascii\with\docommand
+   \egroup}
+
+% \beginETEX \scantokens
+%
+% \doifnotmode{atpragma}{\let\next\sanitizePDFstring} % experimental
+%
+% \bgroup
+%
+% \catcode`\.=\@@escape
+%
+% .catcode`./=.@@active
+% .catcode`.<=.@@active .catcode`.>=.@@active
+% .catcode`.[=.@@active .catcode`.]=.@@active
+% .catcode`.(=.@@active .catcode`.)=.@@active
+%
+% .gdef.setPDFscharacters%
+%   {.catcode`.\=.@@other
+%    .catcode`./=.@@active .def/{.noexpand./}%
+%    .catcode`.<=.@@active .def<{.noexpand.<}%
+%    .catcode`.>=.@@active .def>{.noexpand.>}%
+%    .catcode`.[=.@@active .def[{.noexpand.[}%
+%    .catcode`.]=.@@active .def]{.noexpand.]}%
+%    .catcode`.(=.@@active .def({.noexpand.(}%
+%    .catcode`.)=.@@active .def){.noexpand.)}}
+%
+% .gdef.sanitizePDFstring#1.to#2%
+%   {.bgroup
+%    .setPDFscharacters
+%    .catcode`=.@@escape
+%    .edef.next{.strippedcsname#2}%
+%    .scantokens{setxvalue{next}{#1}}%
+%    .egroup}
+%
+% .egroup
+%
+% \doifnotmode{atpragma}{\let\sanitizePDFstring\next} % experimental
+%
+% \endETEX
+%
+% There is an unicode variant in spec-tst!
+
+\protect \endinput

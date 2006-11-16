@@ -371,8 +371,8 @@
 % {\executeifdefined{\??cr\currentpalet#1}{\executeifdefined{\??cr#1}\empty}}
   {\csname\??cr\currentpalet#1\endcsname}
 
-%D Hex color support is not enabled by default. You need to say \setupcolor
-%D [hex] to get this working.
+%D Hex color support is not enabled by default. You need to say \type
+%D {\setupcolor [hex]} to get this working.
 
 \ifx\colorHpattern\undefined \let\colorHpattern\colorZpattern \fi
 
@@ -540,6 +540,10 @@
 %D The names of colors are stored in a comma separated list
 %D only for the purpose of showing them with \type {\showcolor}.
 %D
+%D \startbuffer
+%D \definecolor [SomeKindOfRed] [r=.8,g=.05,b=.05]
+%D \stopbuffer
+%D
 %D \typebuffer
 %D \getbuffer
 %D
@@ -644,11 +648,6 @@
 
 \newif\ifconverttoGRAY
 
-%D This module also needs:
-
-% \newif\ifMPgraphics
-% \newif\ifinpagebody
-
 %D \macros
 %D   {startcolormode,stopcolormode,permitcolormode}
 %D
@@ -659,25 +658,6 @@
 
 \newif\ifpermitcolormode \permitcolormodetrue
 
-%D Since color is used frequently today (at least by the
-%D author of this module) it makes sense to optimize switching
-%D to the max.
-%D
-%D \starttyping
-%D \def\startcolormode#1%
-%D   {\ifincolor\ifpermitcolormode
-%D      \doifcolorelse{#1}
-%D        {\getcurrentcolorspecs{#1}%
-%D         \expandafter\dostartcolormode\currentcolorspecs\od}
-%D        {\nostartcolormode}%
-%D    \fi\fi}
-%D \stoptyping
-%D
-%D So, the more readable alternatives like the one above are
-%D gone now.
-
-\beginETEX \ifcsname
-
 \def\dowithcolor#1#2% #1=\action #2=color
   {\ifincolor\ifpermitcolormode
      \ifcsname\??cr\currentpalet#2\endcsname
@@ -686,23 +666,6 @@
        \handlecolorwith#1\csname\??cr#2\endcsname\od
      \fi\fi
    \fi\fi}
-
-\endETEX
-
-\beginTEX
-
-\def\dowithcolor#1#2% #1=\action #2=color
-  {\ifincolor\ifpermitcolormode
-     \@EA\ifx\csname\??cr\currentpalet#2\endcsname\relax
-       \@EA\ifx\csname\??cr#2\endcsname\relax \else
-         \handlecolorwith#1\csname\??cr#2\endcsname\od
-       \fi
-     \else
-       \handlecolorwith#1\csname\??cr\currentpalet#2\endcsname\od
-     \fi
-   \fi\fi}
-
-\endTEX
 
 \def\startcolormode % includes \ifincolor\ifpermitcolormode
   {%\dostoptransparency % needed for: {test \trans test \notrans test}
@@ -1074,12 +1037,12 @@
 %D be created.
 
 \def\registerspotcolor#1:%
-  {\ifundefined{\??cl:\c!p:\@@cl@@n}%
+  {\ifcsname\??cl:\c!p:\@@cl@@n\endcsname
+     \@EA\dontregisterspotcolor
+   \else
      \letgvalue{\??cl:\c!p:\@@cl@@n}\empty
      %\@EA\@EA\csname registerspotcolor#1\endcsname
      \csname registerspotcolor#1\@EA\endcsname
-   \else
-     \@EA\dontregisterspotcolor
    \fi}
 
 \def\dontregisterspotcolor         #1\od{}
@@ -1112,12 +1075,12 @@
 %D Experimental too (special purpose code).
 
 \def\registerindexcolor#1:%
-  {\ifundefined{\??cl:i:\@@cl@@n}%
+  {\ifcsname\??cl:i:\@@cl@@n\endcsname
+     \@EA\dontregisterindexcolor
+   \else
      \letgvalue{\??cl:i:\@@cl@@n}\empty % signal
      \showmessage\m!colors{12}\@@cl@@n
      \@EA\@EA\csname registerindexcolor#1\endcsname
-   \else
-     \@EA\dontregisterindexcolor
    \fi}
 
 \let\dontregisterindexcolor\dontregisterspotcolor
@@ -1258,10 +1221,6 @@
 
 \def\definetransparency
   {\dodoubleargument\dodefinetransparency}
-
-%\def\dodefinetransparency[#1][#2]%
-%  {\@EA\chardef\csname\??cl-#1\endcsname#2\relax
-%     \ifundefined{\??cl-#2}#2\else\csname\??cl-#2\endcsname\fi}
 
 \def\dodefinetransparency[#1][#2]%
   {\@EA\chardef\csname\??cl-#1\endcsname#2\relax}
@@ -1570,11 +1529,6 @@
 \def\colorsplitsuffix{\ifcase\currentcolorchannel\else-\@@clsplit\fi}
 \def\colorsplitprefix{\ifcase\currentcolorchannel\else\@@clsplit-\fi}
 
-\ifx\resetsystemmode\undefined
-  \let\setsystemmode  \gobbleoneargument
-  \let\resetsystemmode\gobbleoneargument
-\fi
-
 \def\setcolorsplitting
   {\resetsystemmode{\v!color\colorsplitsuffix}%
    \resetcolorsplitting
@@ -1629,7 +1583,7 @@
    \processaction
      [\@@clconversion]
      [    \v!yes=>\preferGRAYtrue,
-      \v!always=>\preferGRAYtrue\RGBsupportedfalse\CMYKsupportedfalse]%
+       \v!always=>\preferGRAYtrue\RGBsupportedfalse\CMYKsupportedfalse]%
    \ifRGBsupported
      \converttoGRAYfalse
      \forcegrayMPcolorsfalse
@@ -1669,27 +1623,12 @@
 
 \let\currentpalet\empty
 
-\beginTEX
-
-\def\doifcolorelse#1%
-  {\@EA\ifx\csname\??cr\@EA\ifx\csname\??cr\currentpalet#1\endcsname\relax\else\currentpalet\fi#1\endcsname\relax
-     \expandafter\secondoftwoarguments
-   \else
-     \expandafter\firstoftwoarguments
-   \fi}
-
-\endTEX
-
-\beginETEX \ifcsname
-
 \def\doifcolorelse#1%
   {\ifcsname\??cr\ifcsname\??cr\currentpalet#1\endcsname\currentpalet\fi#1\endcsname
      \expandafter\firstoftwoarguments
    \else
      \expandafter\secondoftwoarguments
    \fi}
-
-\endETEX
 
 %D \macros
 %D   {localstartcolor,localstopcolor}
@@ -1755,10 +1694,63 @@
 \def\@@currentcolorstop  {\??cl\the\colorlevel S}
 %def\@@currenttransparent{\??cl\the\colorlevel T}
 
-\def\currentcolor
+% \def\currentcolorname
+%   {\csname
+%      \ifcsname\@@currentcolorname\endcsname\@@currentcolorname\else\s!empty\fi
+%    \endcsname}
+
+\letvalue{\??cl*\s!black}\s!black
+
+\def\currentcolorname
   {\csname
-     \ifundefined\@@currentcolorname\s!empty\else\@@currentcolorname\fi
+     \ifcsname\@@currentcolorname\endcsname
+       \expandafter\ifx\csname\@@currentcolorname\endcsname\empty
+         \??cl*\s!black
+       \else
+         \@@currentcolorname
+       \fi
+     \else
+       \??cl*\s!black
+     \fi
    \endcsname}
+
+% \def\outercolorname
+%   {\ifcsname\@@currentcolorname\endcsname currentcolor\else\s!black\fi}
+
+\def\outercolorname
+  {\ifcsname\@@currentcolorname\endcsname
+     \expandafter\ifx\csname\@@currentcolorname\endcsname\empty
+       \s!black
+     \else
+       currentcolor%
+     \fi
+   \else
+     \s!black
+   \fi}
+
+\def\startcurrentcolor{\startcolor[\outercolorname]}
+\def\stopcurrentcolor {\stopcolor}
+
+% not the following, because we need a different tag in order to trick the stack
+%
+% \def\outercolorname{\executeifdefined\@@currentcolorname\s!black}
+%
+% \def\startcurrentcolor{\expanded{\startcolor[\s!black]\noexpand\startcolor[\outercolorname]}}
+% \def\stopcurrentcolor {\stopcolor\stopcolor}
+%
+% test case:
+%
+% \setupcolors[state=start,textcolor=red]
+% \starttext
+%     red
+%         \color[green]{green
+%             \startMPcode
+%                 label(\sometxt{green\color[blue]{blue}green}, origin) withcolor red;
+%                 draw fullcircle scaled 1cm xscaled 2;
+%             \stopMPcode
+%         green}
+%     red
+% \stoptext
 
 \def\dodoglobalstartcolor
   {\global\@EA\let\@EA\@@currentcolor\csname\@@currentcolorname\endcsname
@@ -2244,13 +2236,13 @@
 
 \def\dodefinepalet[#1][#2]%
   {\doifassignmentelse{#2}
-     {\showmessage\m!colors6{#1}%
+     {%\showmessage\m!colors6{#1}%
       \letvalue{\??pa#1}\empty
       \setevalue{\??pa\??pa#1}{#2}%
       \def\dodododefinepalet[##1=##2]%
         {\doifvaluesomething{\??pa#1}
            {\setevalue{\??pa#1}{\csname\??pa#1\endcsname,}}%
-         \setevalue{\??pa#1}{\csname\??pa\endcsname##1}%
+         \setevalue{\??pa#1}{\csname\??pa#1\endcsname##1}%
          \doifassignmentelse{##2}
            {% == \definepalet[test][xx={y=.4}]
             \definecolor[\??pa#1:##1][##2]%
@@ -2298,15 +2290,12 @@
   {\edef\currentpalet{#1}%
    \ifx\currentpalet\empty
      % seems to be a reset
+   \else\ifcsname\??pa\currentpalet\endcsname
+     \edef\currentpalet{#1:}%
    \else
-     % fast enough for tex and etex
-     \@EA\ifx\csname\??pa\currentpalet\endcsname\relax
-       \showmessage\m!colors7\currentpalet
-       \let\currentpalet\empty
-     \else
-       \edef\currentpalet{#1:}%
-     \fi
-   \fi}
+     \showmessage\m!colors7\currentpalet
+     \let\currentpalet\empty
+   \fi\fi}
 
 %D \macros
 %D   {showpalet}
@@ -2518,23 +2507,6 @@
 \newif\ifMPcmykcolors % \MPcmykcolorsfalse
 \newif\ifMPspotcolors % \MPspotcolorsfalse
 
-\beginTEX
-
-\def\scaledMPcolor#1#2%
-  {\ifMPgraphics
-     \handlecolorwith\doMPcolor
-       \csname\??cr\@EA
-         \ifx\csname\??cr\currentpalet#2\endcsname\relax\else\currentpalet\fi
-       #2\endcsname
-     :::::::\end#1\end
-   \else
-     #2%
-   \fi}
-
-\endTEX
-
-\beginETEX \ifcsname
-
 \def\scaledMPcolor#1#2%
   {\ifMPgraphics
      \handlecolorwith\doMPcolor
@@ -2545,8 +2517,6 @@
    \else
      #2%
    \fi}
-
-\endETEX
 
 \def\MPcolor{\scaledMPcolor1}
 
@@ -2566,9 +2536,10 @@
 %D expandabele.
 
 \def\doMPcolor#1:% #1 can be \relax ! ! ! i.e. an empty color
-  {\csname
-     MPc\@EA\ifx\csname MPc\string#1\endcsname\relax B\else#1\fi
-   \endcsname}
+  {\csname MPc\@EA\ifx\csname MPc\string#1\endcsname\relax B\else#1\fi\endcsname}
+
+% \def\doMPcolor#1:% #1 can be \relax ! ! ! i.e. an empty color
+%   {\csname MPc\ifcsname MPc#1\endcsname#1\else B\fi\endcsname}
 
 \def\MPcR{\doMPrgb}
 \def\MPcC{\ifMPcmykcolors\@EA\doMPcmykY\else\@EA\doMPcmykN\fi}
@@ -2765,5 +2736,31 @@
 
 %D As we can see, color support is turned off by default.
 %D Reduction of gray colors to gray scales is turned on.
+
+%D \macros
+%D   {negatecolorcomponent,negatedcolorcomponent}
+%D
+%D These speak for themselves. See \type {colo-ext} for usage.
+
+\def\negatecolorcomponent#1% #1 = \macro
+  {\scratchdimen\onepoint\advance\scratchdimen-#1\onepoint
+   \ifdim\scratchdimen<\zeropoint\scratchdimen\zeropoint\fi
+   \edef#1{\withoutpt\the\scratchdimen}}
+
+\let\negatedcolorcomponent\firstofoneargument
+
+\beginETEX
+
+\def\negatedcolorcomponent#1%
+  {\ifdim\dimexpr\onepoint-#1\onepoint\relax<\zeropoint
+     \!!zerocount
+   \else
+     \expandafter\withoutpt\the\dimexpr\onepoint-#1\onepoint\relax
+   \fi}
+
+\def\negatecolorcomponent#1% #1 = \macro
+  {\edef#1{\negatedcolorcomponent{#1}}}
+
+\endETEX
 
 \protect \endinput

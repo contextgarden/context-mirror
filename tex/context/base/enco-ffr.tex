@@ -18,6 +18,11 @@
 
 \enablemode[activecolon] \usemodule[tryout] % for the moment
 
+\installactivecharacter :
+\installactivecharacter ;
+\installactivecharacter ?
+\installactivecharacter !
+
 \unprotect
 
 \startlanguagespecifics[\s!fr]
@@ -28,10 +33,10 @@
 \stoplanguagespecifics
 
 \startlanguagespecifics[\s!fr]
-  \defineactivecharacter : {\mathortext{:}{\directdiscretionary{:}}}
-  \defineactivecharacter ; {\mathortext{;}{\directdiscretionary{;}}}
-  \defineactivecharacter ! {\mathortext{!}{\directdiscretionary{!}}}
-  \defineactivecharacter ? {\mathortext{?}{\directdiscretionary{?}}}
+    \defineactivecharacter : {\mathortext{:}{\directdiscretionary{:}}}
+    \defineactivecharacter ; {\mathortext{;}{\directdiscretionary{;}}}
+    \defineactivecharacter ! {\mathortext{!}{\directdiscretionary{!}}}
+    \defineactivecharacter ? {\mathortext{?}{\directdiscretionary{?}}}
 \stoplanguagespecifics
 
 % maybe tricky due to possible name clashes:

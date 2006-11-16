@@ -84,7 +84,7 @@ class CtxRunner
             end
             if ! done && defaultname && FileTest.file?(defaultname) then
                 report("using default ctxfile #{defaultname}")
-                @ctxname = defaultname
+                @ctxname, done = defaultname, true
             end
             if not done then
                 report('no ctx file found')
@@ -115,23 +115,34 @@ class CtxRunner
             if @jobname then
                 variables['job'] = @jobname
             end
-            REXML::XPath.each(@xmldata.root,"//ctx:value[@name='job']") do |val|
+            root = @xmldata.root
+            begin
+                REXML::XPath.each(root,"//ctx:block") do |blk|
+                    if @jobname && blk.attributes['pattern'] then
+                        root.delete(blk) unless @jobname =~ /#{blk.attributes['pattern']}/
+                    else
+                        root.delete(blk)
+                    end
+                end
+            rescue
+            end
+            REXML::XPath.each(root,"//ctx:value[@name='job']") do |val|
                 substititute(val,variables['job'])
             end
-            REXML::XPath.each(@xmldata.root,"/ctx:job/ctx:message") do |mes|
+            REXML::XPath.each(root,"/ctx:job//ctx:message") do |mes|
                 report("preprocessing: #{justtext(mes)}")
             end
-            REXML::XPath.each(@xmldata.root,"/ctx:job/ctx:process/ctx:resources/ctx:environment") do |sty|
+            REXML::XPath.each(root,"/ctx:job//ctx:process/ctx:resources/ctx:environment") do |sty|
                 @environments << justtext(sty)
             end
-            REXML::XPath.each(@xmldata.root,"/ctx:job/ctx:process/ctx:resources/ctx:module") do |mod|
+            REXML::XPath.each(root,"/ctx:job//ctx:process/ctx:resources/ctx:module") do |mod|
                 @modules << justtext(mod)
             end
-            REXML::XPath.each(@xmldata.root,"/ctx:job/ctx:process/ctx:resources/ctx:filter") do |fil|
+            REXML::XPath.each(root,"/ctx:job//ctx:process/ctx:resources/ctx:filter") do |fil|
                 @filters << justtext(fil)
             end
             commands = Hash.new
-            REXML::XPath.each(@xmldata.root,"/ctx:job/ctx:preprocess/ctx:processors/ctx:processor") do |pre|
+            REXML::XPath.each(root,"/ctx:job//ctx:preprocess/ctx:processors/ctx:processor") do |pre|
                 begin
                     commands[pre.attributes['name']] = pre
                 rescue
@@ -139,13 +150,13 @@ class CtxRunner
             end
             suffix = @@suffix
             begin
-                suffix = REXML::XPath.match(@xmldata.root,"/ctx:job/ctx:preprocess/@suffix").to_s
+                suffix = REXML::XPath.match(root,"/ctx:job//ctx:preprocess/@suffix").to_s
             rescue
                 suffix = @@suffix
             else
                 if suffix && suffix.empty? then suffix = @@suffix end
             end
-            REXML::XPath.each(@xmldata.root,"/ctx:job/ctx:preprocess/ctx:files") do |files|
+            REXML::XPath.each(root,"/ctx:job//ctx:preprocess/ctx:files") do |files|
                 REXML::XPath.each(files,"ctx:file") do |pattern|
                     preprocessor = pattern.attributes['processor']
                     if preprocessor and not preprocessor.empty? then
@@ -267,7 +278,7 @@ class CtxRunner
                                         if f = File.open(fullname,'r') and i = REXML::Document.new(f) then
                                             report("including ctx file #{name}")
                                             REXML::XPath.each(i.root,"*") do |ii|
-                                                xmldata.root.insert_after(e,ii)
+                                                xmldata.root.insert_before(e,ii)
                                                 more = true
                                             end
                                         end
@@ -275,8 +286,8 @@ class CtxRunner
                                     end
                                 rescue
                                 end
+                                break if done
                             end
-                            break if done
                         end
                         report("no valid ctx inclusion file #{name}") unless done
                     rescue Exception

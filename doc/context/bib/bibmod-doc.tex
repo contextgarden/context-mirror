@@ -46,7 +46,7 @@
 
 \module
   [       file=bibmod-doc,
-       version=2006.03.13,
+       version=2006.11.04,
          title=Module Documentation,
       subtitle=Bibliographies,
         author={Taco Hoekwater},
@@ -60,7 +60,7 @@
 The bibliographic module (\type{t-bib.tex}) takes care of references
 to publications and the typesetting of publication lists, as well as
 providing an interface between \BIBTEX and \CONTEXT. This manual
-documents version 2006.08.08.
+documents version 2006.09.15.
 
 The bibliographic subsystem consists of the main module
 \type{t-bib.tex}; four \BIBTEX\ styles (\type{cont-xx.bst}); and a set
@@ -180,6 +180,14 @@ heading for \type{\completepublications}
 
 \starttabulate[|l|p|]
 \NC title\NC The sectioning command.\NC\NR
+\stoptabulate
+
+A fourth option can be used to nullify the printing of `year suffixes'
+in cases where the author(s) has written multiple works within a
+single year.
+
+\starttabulate[|l|p|]
+\NC maybeyear\NC either \type{on} or \type{off}. Default is \type{on}\NC\NR
 \stoptabulate
 
 The other extra options are needed to control micro||typesetting
@@ -335,6 +343,10 @@ and select the parts that are needed for the current article.
 \setup{setupbibtex}
 
 \starttabulate[|l|p|]
+\NC bibtex\NC The name (with possibly a pathname or even some option settings) 
+   of the bibtex executable. This is passed on to texexec. The default value
+   is simply `bibtex'\NC\NR
+
 \NC database\NC List of bibtex database file names to be
      used. The module will write a very short \type{.aux} file instructing
      \BIBTEX\ to create a (possibly very large) \type{\jobname.bbl} file,
@@ -490,6 +502,15 @@ the default one, you most likely want to call
 \placepublications[criterium=all]
 \stoptyping
 
+If you use a numeric list style combined with multiple , each
+\type{\placepublications} or \type{\completepublications} commands, 
+by default each one restarts the displayed number.  If you do not 
+like that, you can add an option argument like so:
+\starttyping
+\placepublications[option=continue]
+\stoptyping
+
+
 The module uses the following defaults for the generated head:
 \starttyping
 \setupheadtext[en][pubs=References]
@@ -569,7 +590,7 @@ and the meanings are as follows:
 \NC \type{firstnames}  \NC individual (given) name(s)\NC\NR
 \NC \type{inits}  \NC abbreviated form(s) of \type{firstnames}.\NC\NR
 \NC \type{von}    \NC any bits of the family name that are normally disregarded in sorting\NC\NR
-\NC \type{surname}   \NC reaminder of the family (last) name\NC\NR
+\NC \type{surname}   \NC remainder of the family (last) name\NC\NR
 \stoptabulate
 
 

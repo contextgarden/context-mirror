@@ -89,13 +89,12 @@
    \scratchcounter\zerocount
    \doprocessfile\scratchread{#1}\doprocessEPSline
    \egroup
+   % Using \EPSllx bp instead of \dimen0=1bp and \EPSllx\dimen0 is more accurate (.005pt).
    \ifnum\EPSfound>\zerocount
-     #2=\EPSllx bp% Using \EPSllx bp instead of
-     #4=\EPSurx bp% \dimen0=1bp and \EPSllx\dimen0
-     #3=\EPSlly bp% is more accurate (.005pt).
-     #5=\EPSury bp%
-     \scratchdimen\EPSllx bp\advance#4 -\scratchdimen
-     \scratchdimen\EPSlly bp\advance#5 -\scratchdimen
+     #2\dimexpr\EPSllx\onebasepoint   \relax
+     #3\dimexpr\EPSlly\onebasepoint   \relax
+     #4\dimexpr\EPSurx\onebasepoint-#2\relax
+     #5\dimexpr\EPSury\onebasepoint-#3\relax
    \else
      #2\zeropoint
      #3\zeropoint
@@ -186,39 +185,9 @@
      \gdef\EPSury{#4}%
   \fi}
 
-% \def\getEPScreatorspec
-%   {\edef\EPSspecialstring{\EPSspecialcontent. . . .}%
-%    \expandafter\dogetEPScreatorspec\EPSspecialstring\end}
-
-% \def\dogetEPScreatorspec#1#2 . . #3\end
-%   {\edef\EPSspecialstring{#1}%
-%    \ifx\EPSspecialstring\empty
-%      \dogetEPScreatorspec#2 . . #3\end
-%    \else\ifx\EPSspecialstring\space
-%      \dogetEPScreatorspec#2 . . #3\end
-%    \else
-%      \edef\EPScreatorstring{#1#2}%
-%      \global\chardef\EPScreator
-%        \ifx\EPScreatorstring\EPSmetaposttag\plusone\else\zerocount\fi\relax
-%    \fi\fi}
-
-% adapted to new metapost output
-
 \def\getEPScreatorspec
   {\edef\EPSspecialstring{\EPSspecialcontent\space . .}%
    \expandafter\dogetEPScreatorspec\EPSspecialstring\end}
-
-% \def\dogetEPScreatorspec#1#2 #3\end
-%   {\edef\EPSspecialstring{#1}%
-%    \ifx\EPSspecialstring\empty
-%      \dogetEPScreatorspec#2 #3\end
-%    \else\ifx\EPSspecialstring\space
-%      \dogetEPScreatorspec#2 #3\end
-%    \else
-%      \edef\EPScreatorstring{#1#2}%
-%      \global\chardef\EPScreator
-%        \ifx\EPScreatorstring\EPSmetaposttag\plusone\else\zerocount\fi\relax
-%    \fi\fi}
 
 \def\dogetEPScreatorspec#1#2 #3\end
   {\edef\EPScreatorstring{#1#2}%

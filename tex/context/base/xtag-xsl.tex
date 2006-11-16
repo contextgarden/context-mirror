@@ -90,8 +90,8 @@
      \let\doXSLTscript\donormalXSLTscript
      \presetXSLTcharacters
      \donefalse
-     \def\docommando##1{\dodoapplyXSLTscript{##1}{\ifdone#3\else#2\fi}{#3}\donetrue}%
-     \processcommalist[#1]\docommando
+     \def\docommand##1{\dodoapplyXSLTscript{##1}{\ifdone#3\else#2\fi}{#3}\donetrue}%
+     \processcommalist[#1]\docommand
      \egroup
    \else
      \applyXSLTscript[#1][#2][#2]%
@@ -106,7 +106,7 @@
    \doifundefined{\??xl#1}%
      {\writestatus{XSLT}{unknown script #1}}
      {\writestatus{XSLT}{convert #2 into #3 using #1}%
-      \edef\par{\rawcharacter{10}}%
+      \edef\par{\outputnewlinechar}%
       \edef\!!stringc{\getvalue{\??xl#1}}%
       \immediate\openout\scratchwrite=\XSLTscriptfile.xsl
       \immediate\write\scratchwrite{\!!stringc}%

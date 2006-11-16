@@ -241,10 +241,12 @@
   {\EveryPar{\doshowpagebuilder}}
 
 \def\doshowpagebuilder
-  {\strut\llap{\blue                  \vl
-     \high{\infofont v:\the\vsize    }\vl
-     \high{\infofont g:\the\pagegoal }\vl
-     \high{\infofont t:\the\pagetotal}\vl}}
+  {\strut\llap
+     {\startcolor[blue]\vl
+      \high{\infofont v:\the\vsize    }\vl
+      \high{\infofont g:\the\pagegoal }\vl
+      \high{\infofont t:\the\pagetotal}\vl
+      \stopcolor}}
 
 %D \macros
 %D   {makecutbox, cuthbox, cutvbox, cutvtop}
@@ -493,7 +495,7 @@
       \advance\scratchdimen \ruledheight
       \advance\scratchdimen \ruleddepth
       \divide\scratchdimen 21
-      \def\docommando##1%
+      \def\docommand##1%
         {\vbox
            {\hsize3em % \scratchdimen
             \definecolor
@@ -521,7 +523,7 @@
                  \vss}%
             \fi}}%
       \offinterlineskip
-      \processcommalist[1.00,0.95,0.75,0.50,0.25,0.05,0.00]\docommando}}
+      \processcommalist[1.00,0.95,0.75,0.50,0.25,0.05,0.00]\docommand}}
 
 \def\colorrangeB
   {\hbox
@@ -529,7 +531,7 @@
       \multiply\scratchdimen \plustwo
       \advance\scratchdimen \ruledwidth
       \divide\scratchdimen 11
-      \def\docommando ##1 ##2 ##3##4##5##6%
+      \def\docommand ##1 ##2 ##3##4##5##6%
         {\definecolor
            [\s!dummy]
            [\c!c=##3##2\else0\fi,
@@ -554,17 +556,17 @@
                  \hss}
               \vss}%
          \fi}%
-      \docommando C .5 \iftrue \iffalse\iffalse\iffalse
-      \docommando M .5 \iffalse\iftrue \iffalse\iffalse
-      \docommando Y .5 \iffalse\iffalse\iftrue \iffalse
-      \docommando K .5 \iffalse\iffalse\iffalse\iftrue
-      \docommando C 1  \iftrue \iffalse\iffalse\iffalse
-      \docommando G 1  \iftrue \iffalse\iftrue \iffalse
-      \docommando Y 1  \iffalse\iffalse\iftrue \iffalse
-      \docommando R 1  \iffalse\iftrue \iftrue \iffalse
-      \docommando M 1  \iffalse\iftrue \iffalse\iffalse
-      \docommando B 1  \iftrue \iftrue \iffalse\iffalse
-      \docommando K 1  \iffalse\iffalse\iffalse\iftrue}}
+      \docommand C .5 \iftrue \iffalse\iffalse\iffalse
+      \docommand M .5 \iffalse\iftrue \iffalse\iffalse
+      \docommand Y .5 \iffalse\iffalse\iftrue \iffalse
+      \docommand K .5 \iffalse\iffalse\iffalse\iftrue
+      \docommand C 1  \iftrue \iffalse\iffalse\iffalse
+      \docommand G 1  \iftrue \iffalse\iftrue \iffalse
+      \docommand Y 1  \iffalse\iffalse\iftrue \iffalse
+      \docommand R 1  \iffalse\iftrue \iftrue \iffalse
+      \docommand M 1  \iffalse\iftrue \iffalse\iffalse
+      \docommand B 1  \iftrue \iftrue \iffalse\iffalse
+      \docommand K 1  \iffalse\iffalse\iffalse\iftrue}}
 
 \def\colorrangeC
   {\hbox
@@ -573,7 +575,7 @@
       \multiply\scratchdimen 2
       \advance\scratchdimen \ruledwidth
       \divide\scratchdimen 14
-      \def\docommando##1%
+      \def\docommand##1%
         {\definecolor[\s!dummy][\c!s=##1]%
          \localstartcolor[\s!dummy]%
          \vrule
@@ -590,7 +592,7 @@
               \localstopcolor
              \vss}%
          \fi}%
-      \processcommalist[1,.95,.9,.85,.8,.75,.7,.6,.5,.4,.3,.2,.1,0]\docommando}}
+      \processcommalist[1,.95,.9,.85,.8,.75,.7,.6,.5,.4,.3,.2,.1,0]\docommand}}
 
 \def\docolormarkbox#1#2%
   {\edef\ruledheight{\the\ht#2}%
@@ -676,8 +678,8 @@
 
 \else
 
-  \let\supernormalmark  \normalmark  % mark may already superseded
-  \let\supernormalmarks \normalmarks % mark may already superseded
+  \let\supernormalmark  \normalmark  % mark may already been superseded
+  \let\supernormalmarks \normalmarks % mark may already been superseded
 
   \def\showwhatsits
     {\protected\def\normalmark {\visualwhatsit100+m\supernormalmark }%

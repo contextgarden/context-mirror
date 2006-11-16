@@ -21,12 +21,24 @@
   {\doifelse{#1}\contextversion
       {\let\newcontextversion\gobbleoneargument}
       {\writeline
-       \writestatus{Fatal Error}{Your format does not match the base files!}%
+       \writestatus{Fatal    Error}{Your format does not match the base files!}%
        \writeline
-       \writestatus{Format Version}{\contextversion}%
-       \writestatus{Files Version}{#1}%
+       \writestatus{Format Version}{\contextversion\space\contextmark}%
+       \writestatus{Files  Version}{#1}%
        \batchmode
        \normalend}}
+
+%D End of lines to the output. \TEX\ will map this onto the platform specific
+%D line ending. I hate this mess.
+
+%newlinechar=10   \def\outputnewlinechar{\rawcharacter{10}}
+\newlinechar=10  \edef\outputnewlinechar{^^J}
+
+% in case formats are shared:
+
+\appendtoks
+    \bgroup\newlinechar=10\xdef\outputnewlinechar{^^J}\egroup
+\to \everyjob
 
 %D Job names.
 
@@ -34,9 +46,10 @@
 \def\inputfilename  {\@@svinputfile}
 \def\operatingsystem{\@@svtype}
 
+\let\jobfilename  \jobname
 \let\jobfilesuffix\c!tex
 
-\def\splitjobfilename
+\def\splitjobfilename % todo: mkiv
   {\resetsystemmode{suffix-\jobfilesuffix}%
    \edef\ascii{\inputfilename}\convertcommand\ascii\to\ascii
    \splitstring\ascii\at.\to\jobfilename\and\jobfilesuffix
@@ -78,17 +91,17 @@
    \or
      \setsystemmode\v!last    % 4 : (extra) last run
    \fi
-   \processaction
-     [\@@svtype]
-    %[     mswin=>\edef\@@svline{\rawcharacter{13}\rawcharacter{10}}, % crlf
-     [     mswin=>\edef\@@svline{\rawcharacter{13}},                  % cr % crlf
-          darwin=>\edef\@@svline{\rawcharacter{13}},                  % cr
-      \s!unknown=>\edef\@@svline{\rawcharacter{10}}]%                 % lf
+%    \processaction
+%      [\@@svtype]
+%     %[     mswin=>\edef\@@svline{\rawcharacter{13}\rawcharacter{10}}, % crlf
+%      [     mswin=>\edef\@@svline{\rawcharacter{13}},                  % cr % crlf
+%           darwin=>\edef\@@svline{\rawcharacter{13}},                  % cr
+%       \s!unknown=>\edef\@@svline{\rawcharacter{10}}]%                 % lf
    \splitjobfilename}
 
-\edef\@@svline{\rawcharacter{10}} % unix is the most critical/sensitive system
+% \edef\@@svline{\rawcharacter{10}} % unix is the most critical/sensitive system
 
-\def\systemendofline{\@@svline}
+\let\systemendofline\outputnewlinechar % will become obsolete
 
 \def\setupsystem
   {\dosingleargument\dosetupsystem}
@@ -107,22 +120,6 @@
 %D   \typefile{clean-text.xml}
 %D \stoptext
 %D \stoptyping
-
-% \def\setuprandomize[#1]%
-%   {\doifsomething{#1}
-%      {\bgroup
-%       \setrandomseed\minusone % signals thrd-ran to reseed
-%       % tex's time is in minutes
-%       \processaction
-%         [#1]
-%         [  \v!small=>\divide\normaltime 15, %  900,
-%           \v!medium=>\divide\normaltime 30, % 1800,
-%              \v!big=>\divide\normaltime 60, % 3600,
-%           \v!normal=>,
-%          \s!default=>,
-%          \s!unknown=>\normaltime=#1]%
-%       \nextrandom
-%       \egroup}}
 
 \def\setuprandomize[#1]%
   {\doifsomething{#1}
@@ -153,8 +150,6 @@
 %D Remark: windows programs normally handle \type {cr|lf|crlf} but unix
 %D is more picky, so we default to the \type {cr}. I never understood why
 %D \type {crlf} was not used in all systems, since it makes most sense.
-
-%D
 
 \def\dostartglobaldefs#1#2%
   {\edef\!!stringa{\the\globaldefs}%
@@ -209,20 +204,20 @@
       \getvalue{\??be#1\c!after}}}
 
 \def\dodefinestartstop[#1][#2]%
-  {\def\docommando##1{\dododefinestartstop[##1][#2]}%
-   \processcommalist[#1]\docommando}
+  {\def\docommand##1{\dododefinestartstop[##1][#2]}%
+   \processcommalist[#1]\docommand}
 
 \def\definestartstop
   {\dodoubleargument\dodefinestartstop}
 
 \def\dosetupstartstop[#1][#2]%
-  {\def\docommando##1{\getparameters[\??be##1][#2]}%
-   \processcommalist[#1]\docommando}
+  {\def\docommand##1{\getparameters[\??be##1][#2]}%
+   \processcommalist[#1]\docommand}
 
 \def\setupstartstop
   {\dodoubleargument\dosetupstartstop}
 
-% \docommando kan niet worden gebruikt omdat deze macro
+% \docommand kan niet worden gebruikt omdat deze macro
 %  soms lokaal wordt gebruikt
 
 % te zijner tijd:
@@ -278,8 +273,8 @@
 
 \def\usecommands#1%
   {\bgroup
-   \def\docommando##1{\setbox0\hbox{\getvalue{\string##1}##1}}%
-   \processcommalist[#1]\docommando
+   \def\docommand##1{\setbox0\hbox{\getvalue{\string##1}##1}}%
+   \processcommalist[#1]\docommand
    \egroup}
 
 \newif\ifforcefileexpansion % handy for document level overload
@@ -367,5 +362,9 @@
 %
 % \def\herhaler           {\repeater}
 % \def\herhaalmetcommando {\dorepeatwithcommand}
+
+%D Plugins
+
+\loadmarkfile{core-sys}
 
 \protect \endinput

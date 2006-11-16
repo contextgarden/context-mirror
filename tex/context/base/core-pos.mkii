@@ -1,0 +1,184 @@
+%D \module
+%D   [       file=core-pos,
+%D        version=1999.08.01,
+%D          title=\CONTEXT\ Core Macros,
+%D       subtitle=Positioning Support,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\unprotect
+
+%D A unique prefix used for storing data.
+
+\def\POSprefix{POS::}
+
+%D Reading form the utility file.
+
+\def\pxypos    {\pospxy}     % obsolete
+\def\pxyposwhd {\pospxywhd}  % obsolete
+\def\pxyposplus{\pospxyplus} % obsolete
+
+\def\resetpositions
+  {\let\pospxy    \gobblefourarguments
+   \let\pospxywhd \gobblesevenarguments
+   \let\pospxyplus\gobbleeightarguments}
+
+\def\setpositions
+  {\let\pospxy    \setpospxy
+   \let\pospxywhd \setpospxywhd
+   \let\pospxyplus\setpospxyplus}
+
+%D We need to initialize.
+
+\resetpositions
+
+\addutilityreset{positions}
+
+%D Core set macros:
+
+\def\setpospxy#1#2#3#4%
+  {\@EA\xdef\csname\POSprefix#1\endcsname
+     {\number#2,%
+      \the\dimexpr#3\ifnum\positionanchormode=\plusone-\MPx\pageanchor\fi\relax,%
+      \the\dimexpr#4\ifnum\positionanchormode=\plusone-\MPy\pageanchor\fi\relax}}
+
+\def\setpospxywhd#1#2#3#4#5#6#7%
+  {\@EA\xdef\csname\POSprefix#1\endcsname
+     {\number#2,%
+      \the\dimexpr#3\ifnum\positionanchormode=\plusone-\MPx\pageanchor\fi\relax,%
+      \the\dimexpr#4\ifnum\positionanchormode=\plusone-\MPy\pageanchor\fi\relax,%
+      \the\dimexpr#5\relax,%
+      \the\dimexpr#6\relax,%
+      \the\dimexpr#7\relax}}
+
+\def\setpospxyplus#1#2#3#4#5#6#7#8%
+  {\@EA\xdef\csname\POSprefix#1\endcsname
+     {\number#2,%
+      \the\dimexpr#3\ifnum\positionanchormode=\plusone-\MPx\pageanchor\fi\relax,%
+      \the\dimexpr#4\ifnum\positionanchormode=\plusone-\MPy\pageanchor\fi\relax,%
+      \the\dimexpr#5\relax,%
+      \the\dimexpr#6\relax,%
+      \the\dimexpr#7\relax,%
+      #8}}
+
+%D Sometimes we want to trick the position handler a bit:
+
+\def\replacepospxywhd#1#2#3#4#5#6#7%
+  {\@EA\xdef\csname\POSprefix#1\endcsname
+     {\number#2,%
+      \the\dimexpr#3\relax,%
+      \the\dimexpr#4\relax,%
+      \the\dimexpr#5\relax,%
+      \the\dimexpr#6\relax,%
+      \the\dimexpr#7\relax}}
+
+%D Writing to the utility file.
+
+\def\dolazysaveposition#1#2#3#4% tag page x y
+  {\expanded{\writeutilitycommand{\noexpand\pospxy
+     {#1}{#2}{#3}{#4}}}}
+
+\def\dolazysavepositionwhd#1#2#3#4#5#6#7% tag page x y w h d
+  {\expanded{\writeutilitycommand{\noexpand\pospxywhd
+     {#1}{#2}{#3}{#4}{#5}{#6}{#7}}}}
+
+\def\dolazysavepositionplus#1#2#3#4#5#6#7#8% tag page x y w h d list
+  {\expanded{\writeutilitycommand{\noexpand\pospxyplus
+     {#1}{#2}{#3}{#4}{#5}{#6}{#7}{#8}}}}
+
+\def\dosaveposition#1#2#3#4% tag page x y
+  {\expanded{\immediatewriteutilitycommand{\noexpand\pospxy
+     {#1}{#2}{#3}{#4}}}}
+
+\def\dosavepositionwhd#1#2#3#4#5#6#7% tag page x y w h d
+  {\expanded{\immediatewriteutilitycommand{\noexpand\pospxywhd
+     {#1}{#2}{#3}{#4}{#5}{#6}{#7}}}}
+
+\def\dosavepositionplus#1#2#3#4#5#6#7#8% tag page x y w h d list
+  {\expanded{\immediatewriteutilitycommand{\noexpand\pospxyplus
+     {#1}{#2}{#3}{#4}{#5}{#6}{#7}{#8}}}}
+
+\def\MPp  {\doMPxyhdwlr\doMPp  }
+\def\MPx  {\doMPxyhdwlr\doMPx  }
+\def\MPy  {\doMPxyhdwlr\doMPy  }
+\def\MPw  {\doMPxyhdwlr\doMPw  }
+\def\MPh  {\doMPxyhdwlr\doMPh  }
+\def\MPd  {\doMPxyhdwlr\doMPd  }
+\def\MPxy {\doMPxyhdwlr\doMPxy }
+\def\MPll {\doMPxyhdwlr\doMPll }
+\def\MPlr {\doMPxyhdwlr\doMPlr }
+\def\MPur {\doMPxyhdwlr\doMPur }
+\def\MPul {\doMPxyhdwlr\doMPul }
+\def\MPpos{\doMPxyhdwlr\doMPpos}
+
+\def\doMPp  #1,#2,#3,#4,#5,#6,#7\relax{#1}
+\def\doMPx  #1,#2,#3,#4,#5,#6,#7\relax{#2}
+\def\doMPy  #1,#2,#3,#4,#5,#6,#7\relax{#3}
+\def\doMPw  #1,#2,#3,#4,#5,#6,#7\relax{#4}
+\def\doMPh  #1,#2,#3,#4,#5,#6,#7\relax{#5}
+\def\doMPd  #1,#2,#3,#4,#5,#6,#7\relax{#6}
+\def\doMPxy #1,#2,#3,#4,#5,#6,#7\relax{(#2,#3)}
+\def\doMPll #1,#2,#3,#4,#5,#6,#7\relax{(#2,#3-#6)}
+\def\doMPlr #1,#2,#3,#4,#5,#6,#7\relax{(#2+#4,#3-#6)}
+\def\doMPur #1,#2,#3,#4,#5,#6,#7\relax{(#2+#4,#3+#5)}
+\def\doMPul #1,#2,#3,#4,#5,#6,#7\relax{(#2,#3+#5)}
+\def\doMPpos#1,#2,#3,#4,#5,#6,#7\relax{#1,#2,#3,#4,#5,#6}
+
+\def\doMPxyhdwlr#1#2%
+  {\ifcsname\POSprefix#2\endcsname
+     \@EA\@EA\@EA#1\csname\POSprefix#2\endcsname,0pt,0pt,0pt,0pt\relax
+   \else
+     #10,0pt,0pt,0pt,0pt,0pt,0pt\relax
+   \fi}
+
+% \def\doMPxyhdwlr#1#2% evt kan \s!unknown leeg zijn
+%   {\@EA\@EA\@EA#1\csname\POSprefix
+%      \ifcsname\POSprefix#2\endcsname#2\else\s!unknown\fi\endcsname
+%      ,0pt,0pt,0pt,0pt\relax}
+%
+% \setvalue{\POSprefix\s!unknown}{0,0pt,0pt}
+
+\def\MPplus  {\MPdoplus\doMPplus}
+\def\MPrest#1{\MPdoplus\doMPrest{#1}{}}
+
+\def\MPdoplus#1#2#3#4%
+  {\ifcsname\POSprefix#2\endcsname
+     \@EA\@EA\@EA#1\csname\POSprefix#2\endcsname,,,,,,,,,\relax{#3}%
+   \else
+     #4%
+   \fi}
+
+\def\doMPplus#1,#2,#3,#4,#5,#6,%
+  {\dodoMPplus}
+
+\def\dodoMPplus#1,#2,#3,#4,#5,#6,#7,#8\relax#9%
+  {\ifcase#9\or#1\or#2\or#3\or#4\or#5\or#6\or#7\else\dododoMPplus#8\relax{#9}\fi}
+
+\def\dododoMPplus#1,#2,#3,#4,#5,#6,#7,#8\relax#9%
+  {\ifcase#9\or\or\or\or\or\or\or\or#1\or#2\or#3\or#4\or#5\or#6\or#7\fi}
+
+\def\doMPrest#1,#2,#3,#4,#5,#6,#7,,#8\relax#9%
+  {#7}
+
+%D Testing:
+
+\def\doifpositionelse#1%
+  {\ifcsname\POSprefix#1\endcsname
+     \expandafter\firstoftwoarguments
+   \else
+     \expandafter\secondoftwoarguments
+   \fi}
+
+%D Copying:
+
+\def\copyposition#1#2%
+  {\ifcsname\POSprefix#2\endcsname
+     \global\@EA\let\csname\POSprefix#1\@EA\endcsname\csname\POSprefix#2\endcsname
+   \fi}
+
+\protect \endinput

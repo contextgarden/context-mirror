@@ -57,14 +57,15 @@
 \defineXMLpickup
   [entities][n=0]
   {\expanded{\SomeElement{\XMLop{n}}{Entities}}
-   \starttabulate[|l|p|]}
+   \starttabulate[|l|l|l|]}
   {\stoptabulate}
 
-\defineXMLcommand
+\defineXMLcommand % ugly hack (make macro of it)
   [entity][name=,n=0]
   {\startexpanded
      \noexpand \NC \XMLop{name}
      \noexpand \NC \XMLop{n}
+     \noexpand \NC \noexpand\doXMLentity\XMLop{name};
      \noexpand \NC
      \noexpand \NR
    \stopexpanded}

@@ -37,26 +37,22 @@
   \expandafter \endinput
 \endXETEX
 
-\unprotect
+\beginMETATEX
+  \expandafter \endinput
+\endMETATEX
 
-% beware, this may change: \utftwouniglyph rawchar
+\unprotect
 
 \startregime[utf]
 
 \dostepwiserecurse{192}{223}{1}
-  {\expanded{\defineactiveinspector{\recurselevel} % space delimited
-     {\noexpand\utftwouniglph{\recurselevel}}}%
-   }%\letvalue{\@@univector\recurselevel}\gobbleoneargument}
+  {\expanded{\defineactiveinspector{\recurselevel} {\noexpand\utftwouniglph  {\recurselevel}}}} % space delimited
 
 \dostepwiserecurse{224}{239}{1}
-  {\expanded{\defineactiveinspector{\recurselevel} % space delimited
-     {\noexpand\utfthreeuniglph{\recurselevel}}}%
-   }%\letvalue{\@@univector\recurselevel}\gobbetwoarguments}
+  {\expanded{\defineactiveinspector{\recurselevel} {\noexpand\utfthreeuniglph{\recurselevel}}}} % space delimited
 
 \dostepwiserecurse{240}{247}{1}
-  {\expanded{\defineactiveinspector{\recurselevel} % space delimited
-     {\noexpand\utffouruniglph{\recurselevel}}}%
-   }%\letvalue{\@@univector\recurselevel}\gobblethreearguments}
+  {\expanded{\defineactiveinspector{\recurselevel} {\noexpand\utffouruniglph {\recurselevel}}}} % space delimited
 
 \stopregime
 

@@ -1,0 +1,678 @@
+%D \module
+%D   [       file=core-blk, % split off core-buf.tex
+%D        version=2000.01.05,
+%D          title=\CONTEXT\ Core Macros,
+%D       subtitle=Blockmoves,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+% investigate etex's \readline and \scantokens
+
+\writestatus{loading}{Context Core Macros / Blockmoves}
+
+\startmessages  dutch  library: textblocks
+  title: tekstblokken
+      1: nieuwe versie, tweede run nodig
+      2: wegschrijven blokken naar --
+      3: inlezen blokken uit --
+      4: er is een tweede run nodig
+      5: -- niet verborgen
+      6: -- verborgen en verwerkt
+      7: -- verborgen
+      8: -- gehandhaafd
+      9: -- niet gehandhaafd
+     10: -- geladen en verwerkt
+     11: -- geladen en geplaatst
+     12: -- overgeslagen
+\stopmessages
+
+\startmessages  english  library: textblocks
+  title: textblocks
+      1: new version, second pass needed
+      2: writing blocks to --
+      3: reading blocks from --
+      4: second pass needed
+      5: -- not hidden
+      6: -- hidden and processed
+      7: -- hidden
+      8: -- typeset
+      9: -- not typeset
+     10: -- loaded and processed
+     11: -- loaded and typeset
+     12: -- skipped
+\stopmessages
+
+\startmessages  german  library: textblocks
+  title: textblock
+      1: neue Version, zweiter Durchlauf benoetigt
+      2: schreibe Bloecke zu --
+      3: lese Bloecke von --
+      4: zweiter Durchlauf benoetigt
+      5: -- nicht verborgen
+      6: -- verborgen und verarbeitet
+      7: -- verborgen
+      8: -- gesetzt
+      9: -- nicht gesetzt
+     10: -- geladen und verarbeitet
+     11: -- geladen und gesetzt
+     12: -- ausgelassen
+\stopmessages
+
+\startmessages  czech  library: textblocks
+  title: textovyblok
+      1: nova verze, je treba druhy beh
+      2: zapisuji bloky do --
+      3: ctu bloky z --
+      4: je treba druhy beh
+      5: -- neni skryto
+      6: -- skryto a zpracovano
+      7: -- skryto
+      8: -- vysazeno
+      9: -- nevysazeno
+     10: -- nacteno a zpracovano
+     11: -- nacteno a vysazeno
+     12: -- preskoceno
+\stopmessages
+
+\startmessages  italian  library: textblocks
+  title: blocchi di testo
+      1: nuova versione, seconda passata necessaria
+      2: scrittura dei blocchi su --
+      3: lettura dei blocchi da --
+      4: seconda passata necessaria
+      5: -- non nascosto
+      6: -- nascosto ed elaborato
+      7: -- nascosto
+      8: -- composto
+      9: -- non composto
+     10: -- caricato ed elaborato
+     11: -- caricato e composto
+     12: -- saltato
+\stopmessages
+
+\startmessages  norwegian  library: textblocks
+  title: tekstblokker
+      1: ny versjon, andre gjennomkjøring nødvendig
+      2: skriver blokker til --
+      3: leser blokker fra --
+      4: andre gjennomkjøring nødvendig
+      5: -- ikke skjult
+      6: -- skjult og behandlet
+      7: -- skjult
+      8: -- tegnsatt
+      9: -- ikke tegnsatt
+     10: -- lest inn og behandlet
+     11: -- lest inn og tegnsatt
+     12: -- utelatt
+\stopmessages
+
+\startmessages  romanian  library: textblocks
+  title: blocuri de text
+      1: o noua versiune, este nevoie de inca o trecere
+      2: se scriu blocurile in --
+      3: se citesc blocurile din --
+      4: este nevoie de inca o trecere
+      5: -- nu este ascuns
+      6: -- ascuns si procesat
+      7: -- ascuns
+      8: -- cules
+      9: -- nu este cules
+     10: -- incarcat si procesat
+     11: -- incarcat si cules
+     12: -- sarit peste
+\stopmessages
+
+\startmessages  french  library: textblocks
+  title: blocs de texte
+      1: nouvelle version, une seconde passe est nécessaire
+      2: ecriture des blocs vers --
+      3: lecture des blocs en provenance de --
+      4: seconde passe nécessaire
+      5: -- non caché
+      6: -- caché et traité
+      7: -- caché
+      8: -- composé
+      9: -- non composé
+     10: -- chargé et traité
+     11: -- chargé et composé
+     12: -- sauté
+\stopmessages
+
+\unprotect
+
+\def\blockversion {1996.03.10}
+
+\def\@@blockerrormessage
+  {\showmessage\m!textblocks1\empty
+   \global\let\@@blockerrormessage\relax}
+
+\def\thisisblockversion#1%
+  {\doifnot\blockversion{#1}{\@@blockerrormessage\endinput}}
+
+\def\stopcopyingblocks
+  {\ifcopyingblocks
+     \immediate\closeout\outblocks
+     \copyblockfile
+     \global\copyingblocksfalse
+   \fi}
+
+\def\dodosetblockcounters[#1]#2%
+  {\expanded{\setvalue{\??se\s!old#2}{\@@filterheadpart[#1]}}%
+   \doifnot{#2}\lastsection
+     {\expanded{\dodosetblockcounters[\@@filtertailpart[#1]]}%
+        {\getvalue{\??se#2\c!after}}}} % ????
+
+\def\dosetblockcounters[#1]%
+  {\ifblockpermitted
+     \expanded{\dodosetblockcounters[\@@filtersecondpart[#1]]}\firstsection
+     \expanded{\setsectiontype[\@@filterfirstpart[#1]]}%
+     \def\@@sectionvalue##1{\getvalue{\??se\s!old##1}}%
+     \let\@@sectionconversion\secondoftwoarguments
+   \fi}
+
+\let\blockstatus\empty
+
+\def\setblockcounters
+  {\ifx\blockstatus\empty \else
+     \@EA\dosetblockcounters\@EA[\blockstatus]%
+   \fi}
+
+\def\getblockstatus#1%
+  {\dosetfilterlevel{\@@bscriterium}\empty
+   \expanded{\doifblklevelelse[#1\sectionseparator\sectionseparator0]}
+     {\global\blockpermittedtrue}
+     {\global\blockpermittedfalse}%
+   \def\blockstatus{#1}}
+
+\def\setupblockparameters
+  {\dodoubleargument\dosetupblockparameters}
+
+\def\dosetupblockparameters[#1][#2]%
+  {\getparameters[\??tb#1][#2]}
+
+\def\blockparameter#1#2%
+  {\@EA\csname\ifcsname\??tb#1#2\endcsname\??tb#1#2\else\s!empty\fi\endcsname}
+
+\ifx\outblocks\undefined \newwrite\outblocks \fi
+\ifx\inpblocks\undefined \newread \inpblocks \fi
+\ifx\tmpblocks\undefined \newwrite\tmpblocks \fi
+\ifx\blockbox \undefined \newbox  \blockbox  \fi
+
+\newif\ifcopyingblocks
+\newif\ifblockpermitted
+\newif\iftmpblockstarted
+\newif\ifoldinbijlagen
+\newif\ifdoingblocks
+
+\newcount\blocklevel
+
+\def\setblocklevel#1% sign
+  {\global\advance\blocklevel #11
+   \ifcase\blocklevel\doingblocksfalse\else\doingblockstrue\fi}
+
+\def\opentmpblock
+  {\immediate\openout\tmpblocks\TEXbufferfile{\f!utilityfilename\the\blocklevel}}
+
+\def\closetmpblock
+  {\immediate\write\tmpblocks{}%   een lege regel is handig voor \par commando's
+   \immediate\closeout\tmpblocks}
+
+\def\writetmpblock#1%
+  {\iftmpblockstarted
+       \immediate\write\tmpblocks{#1}%
+   \else
+     \doifsomething{#1}
+       {\tmpblockstartedtrue
+        \immediate\write\tmpblocks{\string#1}}%
+   \fi}
+
+\def\startcopyingblocks
+  {\global\copyingblocksfalse}
+
+\def\checkcopyingblocks
+  {\ifcopyingblocks
+   \else
+     \immediate\openout\outblocks\f!utilityfilename.\f!blockextension%
+     \immediate\write\outblocks{\string\thisisblockversion{\blockversion}}%
+     \immediate\write\outblocks{\string\thisissectionseparator{\sectionseparator}}%
+     \global\copyingblockstrue
+   \fi}
+
+\def\stopcopyingblocks
+  {\ifcopyingblocks
+     \immediate\closeout\outblocks
+     \copyblockfile
+     \global\copyingblocksfalse
+   \fi}
+
+\def\nomoreblocks
+  {\stopcopyingblocks}
+
+\def\copyblockfile
+  {\ifcopyingblocks
+     \begingroup
+     \showmessage\m!textblocks2{\jobname.\f!blockextension}%
+     \openlocin\inpblocks{\f!utilityfilename.\f!blockextension}%
+     \immediate\openout\outblocks\jobname.\f!blockextension
+     \setupcopyblock
+     \catcode`\^^M=\@@ignore\relax
+     \def\copynextline
+       {\read\inpblocks to \!!stringa
+        \immediate\write\outblocks{\!!stringa}%
+        \ifeof\inpblocks\else\expandafter\copynextline\fi}%
+     \copynextline
+     \immediate\closein\inpblocks
+     \immediate\closeout\outblocks
+     \immediate\openout\tmpblocks\f!utilityfilename.\f!blockextension
+     \immediate\closeout\tmpblocks
+     \endgroup
+   \fi}
+
+\def\loadallblocks#1%
+  {\beginrestorecatcodes
+   \catcode`\^^M=\@@endofline\relax
+   \readjobfile{#1.\f!blockextension}
+     {\showmessage\m!textblocks3{#1.\f!blockextension}}
+     {\showmessage\m!textblocks4\empty}%
+   \endrestorecatcodes}
+
+\def\setupcopyblock
+  {\setcatcodetable\vrbcatcodes
+   \obeylines}
+
+\def\writeoutblocks
+  {\immediate\write\outblocks}
+
+\long\def\processnextblocklineAB#1% #2#3%
+  {\convertargument#1 \to\next
+   \doifinstringelse\endofblockA\next
+      \firstoftwoarguments
+     {\doifinstringelse\endofblockB\next
+        \firstoftwoarguments\secondoftwoarguments}}
+
+\bgroup
+\obeylines
+\long\gdef\copyblocklineAB#1
+  {\processnextblocklineAB{#1}\closeblock{\writeoutblocks{#1}\writetmpblock{#1}\copyblocklineAB}}
+\long\gdef\skipblocklineAB#1
+  {\processnextblocklineAB{#1}\closeblock\skipblocklineAB}
+\egroup
+
+\long\def\processnextblockline#1% #2#3%
+  {\convertargument#1 \to\next
+   \ifx\next\emptybufferline
+     \expandafter\secondoftwoarguments% #3%
+   \else
+     \emptybufferlinefalse
+     \doifinstringelse\endofblock\next
+       {\expandafter\firstoftwoarguments }% #2}
+       {\expandafter\secondoftwoarguments}% #3}%
+   \fi}
+
+\bgroup
+\obeylines
+\long\gdef\copyblockline#1
+  {\processnextblockline{#1}\closeblock{\writeoutblocks{#1}\writetmpblock{#1}\copyblockline}}
+\long\gdef\skipblockline#1
+  {\processnextblockline{#1}\closeblock\skipblockline}
+\egroup
+
+\def\skipblock#1%
+  {\checkcopyingblocks
+   \@EA\convertargument\string\thiswasblock{#1}\to\endofblock
+   %testen : \expanded{\convertargument\string\thiswasblock{#1}\noexpand\to\noexpand\endofblock}%
+   \let\openblock\begingroup
+   \let\closeblock\endgroup
+   \openblock
+   \setupcopyblock
+   \skipblockline}
+
+\let\doafterblock \gobbletwoarguments
+\let\dobeforeblock\gobbletwoarguments
+
+\def\thisisblock#1%
+  {\executeifdefined{\s!thisisblock#1}{\skipblock{#1}}}
+
+\def\thiswasblock#1%
+  {\getvalue{\s!thiswasblock#1}}
+
+\def\saveblock#1#2%
+  {\checkcopyingblocks
+   \obeylines
+   \@EA\@EA\@EA\convertargument\@EA\string\csname\e!end#1\endcsname\to\endofblockA
+   %testen:  \expanded{\convertargument\string\csname\e!end#1\endcsname\to\endofblockA}%
+   \@EA\convertargument\string\endblock[#1]\to\endofblockB % MULTI LINGUAL MAKEN
+   \def\openblock
+     {\dobeforeblock{#1}{#2}%
+      \opentmpblock
+      \begingroup
+      \makesectionformat
+      \immediate\write\outblocks{}%
+      \immediate\write\outblocks{\string\thisisblock{#1}{\sectionformat}[#2]}}%
+   \def\closeblock
+     {\immediate\write\outblocks{}%   handig voor \par commando's
+      \immediate\write\outblocks{\string\thiswasblock{#1}}%
+      \endgroup
+      \closetmpblock
+      \doafterblock{#1}{#2}%
+      \egroup}%
+   \openblock
+   \setupcopyblock
+   \copyblocklineAB}
+
+\def\copyblock
+  {\let\opentmpblock\empty
+   \let\closetmpblock\empty
+   \let\writetmpblock\gobbleoneargument
+   \saveblock}
+
+\def\loadoneblock
+  {\edef\blockfilename{\TEXbufferfile{\f!utilityfilename\the\blocklevel}}%
+   \setblocklevel+%
+   \readjobfile\blockfilename\donothing\donothing
+   \setblocklevel-}%
+
+\def\dodefineblock[#1]%
+  {\bypassblock[#1]%
+   \keepblocks[#1]%
+   \setupblock
+     [#1]
+     [\c!before=\blank,
+      \c!after=\blank,
+      \c!inner=,
+      \c!style=,
+      \c!file=\jobname]}
+
+% \def\defineblock
+%   {\dosingleargumentwithset\dodefineblock}
+
+\def\defineblock
+  {\dosingleargument\dodefineblock}
+
+\def\dosetupblock[#1][#2]%
+  {\getparameters[\??tb#1][#2]}
+
+\def\setupblock
+  {\dodoubleargumentwithset\dosetupblock}
+
+\def\bypassblock[#1]%
+  {\setvalue{\s!thisisblock#1}##1[##2]{\skipblock{#1}}}
+
+\def\dohideblock[#1][#2][#3]%
+  {\doifassignmentelse{#3}
+     {\dodohideblock[#1][#2][][#3]}
+     {\dodohideblock[#1][#2][#3][]}}
+
+\def\dodohideblock[#1][#2][#3][#4]%
+  {\doifelsenothing{#2}
+     {\global\blockpermittedfalse
+      \edef\blocktitle{#1}}
+     {\doifelsenothing{#3}
+        {\global\blockpermittedtrue
+         \edef\blocktitle{#1}}
+        {\doifcommonelse{#2}{#3}
+           {\global\blockpermittedfalse
+            \edef\blocktitle{#1:#2}}
+           {\global\blockpermittedtrue
+            \edef\blocktitle{#1:#3}}}}%
+   \ifblockpermitted
+     \showwarning\m!textblocks5\blocktitle
+     \def\next
+       {\def\dobeforeblock####1####2%
+          {\begingroup}%
+        \def\doafterblock####1####2%
+          {\endgroup
+           \doexecuteloadedblock{#1}{#4}}%
+        \saveblock{#1}{#3#4}}%
+   \else
+     \doifinsetelse{+}{#3}
+       {\showwarning\m!textblocks6\blocktitle
+        \def\next
+          {\def\dobeforeblock####1####2%
+             {\begingroup
+              \visiblefalse}%
+           \def\doafterblock####1####2%
+             {{\setbox0\vbox
+                 {\catcode`\^^M=\@@endofline\relax
+                  \loadoneblock
+                  \par}}%
+              \endgroup}%
+           \saveblock{#1}{#3#4}}}%
+       {\showwarning\m!textblocks7\blocktitle
+        \def\next
+          {\def\dobeforeblock####1####2%
+             {\begingroup
+              \globaldefs\minusone}%
+           \def\doafterblock####1####2%
+             {\endgroup}%
+           \copyblock{#1}{#3#4}}}%
+   \fi
+   \next}
+
+\def\dohideblocks[#1][#2]%
+  {\def\docommand##1%
+     {\setvalue{\e!begin##1}%
+        {\bgroup\obeylines\dotripleempty\dohideblock[##1][#2]}}%
+   \processcommalist[#1]\docommand}
+
+\def\hideblocks
+  {\dodoubleempty\dohideblocks}
+
+\def\doexecuteloadedblock#1#2%
+  {\blockpermittedtrue % ?
+   \bgroup % before \c!before (think of: \c!before=\startitemize)
+   \dosetupblockparameters[#1][#2]% voor 'voor'?
+   \getvalue{\??tb#1\c!before}%
+   \dostartattributes{\??tb#1}\c!style\c!color\empty
+   \visibletrue
+   \catcode`\^^M=\@@endofline\relax
+   \getvalue{\??tb#1\c!inner}%
+   \ignorespaces
+   \loadoneblock
+   % \par moved
+   \dostopattributes
+   \getvalue{\??tb#1\c!after}%
+   \par
+   \egroup}
+
+\def\dokeepblock[#1][#2][#3]%
+  {\doifassignmentelse{#3}
+     {\dodokeepblock[#1][#2][][#3]}
+     {\dodokeepblock[#1][#2][#3][]}}
+
+\def\dodokeepblock[#1][#2][#3][#4]%
+  {\doifelsenothing{#2}
+     {\global\blockpermittedtrue
+      \edef\blocktitle{#1}}
+     {\doifcommonelse{#2}{#3}
+        {\global\blockpermittedtrue
+         \edef\blocktitle{#1:#2}}
+        {\doifinsetelse\v!all{#2}
+           {\doifelsenothing{#3}
+              {\global\blockpermittedtrue
+               \edef\blocktitle{#1}}
+              {\global\blockpermittedfalse
+               \edef\blocktitle{#1:#3}}}
+           {\global\blockpermittedfalse
+            \doifelsenothing{#3}
+              {\edef\blocktitle{#1}}
+              {\edef\blocktitle{#1:#3}}}}}%
+   \ifblockpermitted
+     \showwarning\m!textblocks8\blocktitle
+     \def\dobeforeblock##1##2%
+       {\begingroup}%
+     \def\doafterblock##1##2%
+       {\endgroup
+        \doexecuteloadedblock{#1}{#4}}%
+   \else
+     \showwarning\m!textblocks9\blocktitle
+   \fi
+   \saveblock{#1}{#3#4}}
+
+\def\dokeepblocks[#1][#2]%
+  {\def\docommand##1%
+     {\setvalue{\e!begin##1}%
+        {\bgroup\obeylines\dotripleempty\dokeepblock[##1][#2]}}%
+   \processcommalist[#1]\docommand}
+
+\def\keepblocks
+  {\dodoubleempty\dokeepblocks}
+
+\newconditional\processblockstatus
+\newconditional\dummyblockstatus
+\newconditional\blockassignmentstatus
+
+\def\dodouseblock#1#2#3#4%
+  {\getblockstatus{#2}%
+   \ifblockpermitted
+     \setfalse\dummyblockstatus
+     \doifassignmentelse{#3}
+       {\settrue \blockassignmentstatus}
+       {\setfalse\blockassignmentstatus}%
+     \doifelsenothing{#4}
+       {\edef\blocktitle{#1}}
+       {\ifconditional\blockassignmentstatus
+          \edef\blocktitle{#1}%
+        \else
+          \doifnotcommon{#3}{#4}
+            {\ifconditional\processblockstatus
+               \settrue\dummyblockstatus
+             \else
+               \global\blockpermittedfalse
+             \fi}%
+          \edef\blocktitle{#1:#3}%
+        \fi}%
+   \else
+     \edef\blocktitle{#1}%
+   \fi
+   \ifblockpermitted
+     \setblocklevel+%
+     \ifconditional\blockassignmentstatus \else
+       \doifinset{-}{#3}{\settrue\dummyblockstatus}%
+     \fi
+     \ifconditional\dummyblockstatus
+       \showwarning\m!textblocks{10}\blocktitle
+       \setvalue{\s!thiswasblock#1}%
+         {\removeunwantedspaces
+          \par
+          \egroup
+          \setblocklevel-}%
+       \def\next
+         {\setbox0\vbox\bgroup
+          \ifconditional\blockassignmentstatus
+            \dosetupblockparameters[#1][#3]%
+          \fi}%
+     \else
+       \showwarning\m!textblocks{11}\blocktitle
+       \setvalue{\s!thiswasblock#1}%
+         {\removeunwantedspaces
+          % \par moved
+          \dostopattributes
+          \getvalue{\??tb#1\c!after}%
+          \par
+          \egroup
+          \setblocklevel-}%
+       \def\next
+         {\bgroup
+          \ifconditional\blockassignmentstatus
+            \dosetupblockparameters[#1][#3]%
+          \fi
+          \getvalue{\??tb#1\c!before}%
+          \dostartattributes{\??tb#1}\c!style\c!color\empty
+          \visibletrue
+          \getvalue{\??tb#1\c!inner}%
+          \ignorespaces}%
+     \fi
+   \else
+     \def\next
+       {\showwarning\m!textblocks{12}\blocktitle
+        \skipblock{#1}}%
+   \fi
+   \next}
+
+\def\douseblock[#1][#2]%
+  {\setvalue{\s!thisisblock#1}##1[##2]{\dodouseblock{#1}{##1}{##2}{#2}}}
+
+\def\dodouseblocks[#1][#2]%
+  {\def\docommand##1%
+     {\douseblock[##1][#2]}%
+   \processcommalist[#1]\docommand
+   \dogetcommalistelement1\from#1\to\commalistelement
+   \doifdefined{\??tb\commalistelement\c!file}
+     {\loadallblocks{\getvalue{\??tb\commalistelement\c!file}}}%
+   \endgroup}
+
+\def\douseblocks
+  {\begingroup
+   \doassign[\??bs][\c!criterium=\v!all]%
+   \dodoubleempty\dodouseblocks}
+
+\def\useblocks
+  {\setfalse\processblockstatus\douseblocks}
+
+\def\processblocks
+  {\settrue \processblockstatus\douseblocks}
+
+\def\doselectblocks[#1][#2][#3]%
+  {\begingroup
+   \doifelsenothing{#3}
+     {\getparameters[\??bs][\c!criterium=\v!all,#2]%
+      \dodouseblocks[#1][]}
+     {\getparameters[\??bs][\c!criterium=\v!all,#3]%
+      \dodouseblocks[#1][#2]}}%
+
+\def\selectblocks
+  {\dotripleempty\doselectblocks}
+
+\def\beginblock[#1]%  % we also check \endblock[..]
+  {\getvalue{\e!begin#1}}
+
+\def\forceblocks[#1]%
+  {\def\docommand##1%
+     {\setvalue{\e!begin##1}%
+        {\setblocklevel+\bgroup
+         \dodoubleempty\doforceblock[##1]}%
+      \setvalue{\e!end##1}%
+        {\dostopattributes
+         \getvalue{\??tb##1\c!after}%
+         \egroup\setblocklevel-}}%
+   \processcommalist[#1]\docommand}
+
+\def\doforceblock[#1][#2]%
+  {\doifassignmentelse{#2}
+     {\settrue \blockassignmentstatus}
+     {\setfalse\blockassignmentstatus}%
+   \ifconditional\blockassignmentstatus
+     \dosetupblockparameters[#1][#2]%
+   \fi
+   \getvalue{\??tb#1\c!before}%
+   \dostartattributes{\??tb#1}\c!style\c!color\empty
+   \getvalue{\??tb#1\c!inner}%
+   \ignorespaces}
+
+\def\bypassblocks[#1]%
+  {\def\docommand##1%
+     {\setvalue{\e!begin##1}%
+        {\setblocklevel+\bgroup
+         \obeylines % here, since we look ahead
+         \dodoubleempty\dobypassblock[##1]}%}%
+      \setvalue{\e!end##1}%
+        {}}%
+   \processcommalist[#1]\docommand}
+
+\def\dobypassblock[#1][#2]%
+  {\def\closeblock
+     {\egroup\setblocklevel-}%
+   \checkcopyingblocks
+   \obeylines
+   \@EA\@EA\@EA\convertargument\@EA\string\csname\e!end#1\endcsname\to\endofblockA
+   \@EA\convertargument\string\endblock[#1]\to\endofblockB % MULTI LINGUAL MAKEN
+   \setupcopyblock
+   \skipblocklineAB}
+
+\protect \endinput

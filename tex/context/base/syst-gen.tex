@@ -99,7 +99,24 @@
 %D And because this module implements \type{\writestatus}, we
 %D just say:
 
-\abortinputifdefined\writestatus
+% \abortinputifdefined\writestatus
+
+%D \macros
+%D   {overloaded, superseded, forwarded, predefined}
+%D
+%D This prefix is used as signal for the \CONTEXT\ dependency
+%D checking features. The first four prefixes don't do anything
+%D useful, apart from signaling parsers.
+
+\def\overloaded{} % local change at the macro  level
+\def\superseded{} % global change at the module level, replaces previous definitions
+\def\predefined{} % defined (first) here, but may be redefined anytime (no need for \overloaded)
+\def\forwarded {} % definition at the module level, only done when undefined
+
+\def\forwarded#1#2{\ifx#2\undefined\else\expandafter\gobbleforwarded\fi#1#2}
+
+\def\gobbleforwarded#1
+    {}
 
 %D Normally we tell the users what module is being loaded.
 %D However, the command that is needed for this is not yet
@@ -154,7 +171,7 @@
 \newcount\protectionlevel
 
 \ifx\protect\undefined
-  \def\protect{\message{<too much protection>}}
+  \def\protect{\writestatus{protection}{too much protection}}
 \else
   % a simple version is already defined
 \fi
@@ -165,90 +182,65 @@
 %D don't take arguments, unless lines are obeyed, I decided
 %D to put it there as a reminder. I only mention this once.
 
-\chardef\protectionthreshold=10
-%chardef\protectionthreshold=0 % for testing
+\ifx\unprotect\undefined
 
-% \def\unprotect
-%   {\ifcase\protectionlevel
-%      \edef\doprotectcharacters%
-%        {\catcode`\noexpand @=\the\catcode`@
-%         \catcode`\noexpand !=\the\catcode`!
-%         \catcode`\noexpand ?=\the\catcode`? }%
-%      \let\protect\doprotect
-%    \fi
-%    \catcode`@=11
-%    \catcode`!=11
-%    \catcode`?=11
-%    \advance\protectionlevel 1
-%    \ifnum\protectionlevel>\protectionthreshold
-%      \message{<unprotect \the\protectionlevel>}%
-%    \fi}
-%
-% \def\doprotect%
-%   {\ifnum\protectionlevel=1
-%      \doprotectcharacters
-%      \let\doprotectcharacters\relax
-%      \let\protect\normalprotect
-%    \fi
-%    \ifnum\protectionlevel>\protectionthreshold
-%      \message{<protect \the\protectionlevel>}%
-%    \fi
-%    \advance\protectionlevel -1 }
+    \chardef\protectionthreshold=10
 
-\def\saveprotectedcharacters
-  {\edef\doprotectcharacters
-     {\catcode`\noexpand @\the\catcode`@
-      \catcode`\noexpand !\the\catcode`!
-      \catcode`\noexpand ?\the\catcode`? }}
+    \def\saveprotectedcharacters
+      {\edef\doprotectcharacters
+         {\catcode`\noexpand @\the\catcode`@
+          \catcode`\noexpand !\the\catcode`!
+          \catcode`\noexpand ?\the\catcode`? }}
 
-\def\setprotectedcharacters
-  {\catcode`@=11
-   \catcode`!=11
-   \catcode`?=11 }
+    \def\setprotectedcharacters
+      {\catcode`@=11
+       \catcode`!=11
+       \catcode`?=11 }
 
-\def\unprotect
-  {\ifcase\protectionlevel
-     \saveprotectedcharacters
-     \let\protect\doprotect
-   \fi
-   \setprotectedcharacters
-   \advance\protectionlevel 1
-   \ifnum\protectionlevel>\protectionthreshold
-     \reportunprotection
-   \fi}
+    \def\unprotect
+      {\ifcase\protectionlevel
+         \saveprotectedcharacters
+         \let\protect\doprotect
+       \fi
+       \setprotectedcharacters
+       \advance\protectionlevel 1
+       \ifnum\protectionlevel>\protectionthreshold
+         \reportunprotection
+       \fi}
 
-\def\doprotect
-  {\ifcase\protectionlevel\or
-     \doprotectcharacters
-     \let\doprotectcharacters\relax
-     \let\protect\normalprotect
-   \fi
-   \ifnum\protectionlevel>\protectionthreshold
-     \reportprotection
-   \fi
-   \advance\protectionlevel -1 }
+    \def\doprotect
+      {\ifcase\protectionlevel\or
+         \doprotectcharacters
+         \let\doprotectcharacters\relax
+         \let\protect\normalprotect
+       \fi
+       \ifnum\protectionlevel>\protectionthreshold
+         \reportprotection
+       \fi
+       \advance\protectionlevel -1 }
 
-\def\reportunprotection   {\message{<unprotect       \protectionstate>}}
-\def\reportprotection     {\message{<protect         \protectionstate>}}
-\def\reportprotectionstate{\message{<protectionstate \protectionstate>}}
+    \def\reportunprotection   {\writestatus{protection}{unprotect \protectionstate}}
+    \def\reportprotection     {\writestatus{protection}{protect   \protectionstate}}
+    \def\reportprotectionstate{\writestatus{protection}{state     \protectionstate}}
 
-\def\protectionstate
-  {\the\protectionlevel
-   \ifcase\protectionthreshold
-     :\space
-     @=\the\catcode`@\space\space
-     !=\the\catcode`!\space\space
-     ?=\the\catcode`?%
-   \fi}
+    \def\protectionstate
+      {\the\protectionlevel
+       \ifcase\protectionthreshold
+         :\space
+         @=\the\catcode`@\space\space
+         !=\the\catcode`!\space\space
+         ?=\the\catcode`?%
+       \fi}
 
-\ifx\everyeof\undefined
-
-  \let\checkprotection\relax
+    \ifx\everyeof\undefined
+        \let\checkprotection\relax
+    \else
+        \def\checkprotection{\everyeof{\writestatus{protection}{state: \protectionstate}}}
+    \fi
 
 \else
 
-  \def\checkprotection
-    {\everyeof{\writestatus{protection}{state: \protectionstate}}}
+    \let\reportprotectionstate\relax
 
 \fi
 
@@ -256,14 +248,6 @@
 %D macro.
 
 \unprotect
-
-%D So, now we can redefine a previously defined macro as
-%D follows:
-
-\def\setprotectedcharacters
-  {\catcode`@\@@letter
-   \catcode`!\@@letter
-   \catcode`?\@@letter}
 
 %D \macros
 %D   {@@escape,@@begingroup,@@endgroup,@@mathshift,@@alignment,
@@ -302,21 +286,35 @@
 %D   {scratchcounter,
 %D    scratchdimen,scratchskip,scratchmuskip,
 %D    scratchbox,
-%D    scratchtoks,
-%D    ifdone}
+%D    scratchtoks}
 %D
 %D Because we often need counters on a temporary basis, we
 %D define the \COUNTER\ \type{\scratchcounter}. This is a
 %D real \COUNTER, and not a pseudo one, as we will meet
 %D further on. We also define some other scratch registers.
 
-\newcount  \scratchcounter
-\newdimen  \scratchdimen
-\newskip   \scratchskip
-\newmuskip \scratchmuskip
-\newbox    \scratchbox
-\newtoks   \scratchtoks
-\newif     \ifdone
+\chardef\newabovelimit=20
+
+\def\stripnewabove#1%
+  {\ifnum10<9#1 #1\else\expandafter\stripnewabove\fi}%
+
+\def\newabove#1#2% \dimen \name
+  {#1#2%
+   \ifnum\expandafter\stripnewabove\meaning#2>\newabovelimit\else
+     \expandafter\newabove\expandafter#1\expandafter#2%
+   \fi}
+
+\newabove \newcount   \scratchcounter   \newabove \newcount  \globalscratchcounter
+\newabove \newdimen   \scratchdimen     \newabove \newdimen  \globalscratchdimen
+\newabove \newskip    \scratchskip      \newabove \newskip   \globalscratchskip
+\newabove \newmuskip  \scratchmuskip    \newabove \newmuskip \globalscratchmuskip
+\newabove \newtoks    \scratchtoks      \newabove \newtoks   \globalscratchtoks
+          \newbox     \scratchbox                 \newbox    \globalscratchbox
+
+%D \macros
+%D   {ifdone}
+
+\newif\ifdone
 
 %D \macros
 %D   {ifCONTEXT}
@@ -348,8 +346,8 @@
                                       \dimendef\!!dimenj=18 %skipdef\!!skipe=8
                                       \dimendef\!!dimenk=20 %skipdef\!!skipf=10
 
-\let\!!stringa=\empty \let\!!stringb=\empty \let\!!stringc=\empty
-\let\!!stringd=\empty \let\!!stringe=\empty \let\!!stringf=\empty
+\let\!!stringa\empty \let\!!stringb\empty \let\!!stringc\empty
+\let\!!stringd\empty \let\!!stringe\empty \let\!!stringf\empty
 
 \newdimen\!!widtha \newdimen\!!heighta \newdimen\!!deptha
 \newdimen\!!widthb \newdimen\!!heightb \newdimen\!!depthb
@@ -358,27 +356,26 @@
 \newif\if!!donea   \newif\if!!doneb    \newif\if!!donec
 \newif\if!!doned   \newif\if!!donee    \newif\if!!donef
 
-\ifx  \z@\undefined \else \let\zeropoint\z@   \fi
-\ifx \@ne\undefined \else \let\plusone  \@ne  \fi
-\ifx\m@ne\undefined \else \let\minusone \m@ne \fi
+\ifx\data\undefined \else \let\data \relax \fi % dep checker
 
-\ifx\zeropoint\undefined \csname newdimen\endcsname\zeropoint \fi % plain
-\ifx\plusone  \undefined \chardef\plusone  =1                 \fi
-\ifx\plustwo  \undefined \chardef\plustwo  =2                 \fi
-\ifx\plusthree\undefined \chardef\plusthree=3                 \fi
-\ifx\plusfour \undefined \chardef\plusfour =4                 \fi
-\ifx\plusfive \undefined \chardef\plusfive =5                 \fi
-\ifx\minusone \undefined \count\minusone \minusone=-1         \fi
+%D Beware: we don't reuse plain counters, too dangerous
+%D when <= 20 (e.g. in supp-pdf this messed up things).
 
-\ifx\@m\undefined \else \let\plusthousand   \@m \fi
-\ifx\@M\undefined \else \let\plusttenhousand\@M \fi
+\newdimen    \zeropoint
+\newcount    \zerocount
+\newcount    \minusone
+             \minusone        =    -1
 
-\ifx\plusten        \undefined \mathchardef\plusten        =   10 \fi
-\ifx\plushundred    \undefined \mathchardef\plushundred    =  100 \fi
-\ifx\plusthousand   \undefined \mathchardef\plusthousand   = 1000 \fi
-\ifx\plustenthousand\undefined \mathchardef\plustenthousand=10000 \fi
+\chardef     \plusone         =     1
+\chardef     \plustwo         =     2
+\chardef     \plusthree       =     3
+\chardef     \plusfour        =     4
+\chardef     \plusfive        =     5
 
-\newcount\zerocount
+\mathchardef \plusten         =    10
+\mathchardef \plushundred     =   100
+\mathchardef \plusthousand    =  1000
+\mathchardef \plustenthousand = 10000
 
 %D \macros
 %D   {s!,c!,e!,p!,v!,@@,??}
@@ -2362,6 +2359,21 @@
      \@EA\gobbleoneargument
    \fi}
 
+\long\def\doifnotinstring#1%%
+  {\edef\@@@instring{#1}% expand #1 here
+   \ifx\@@@instring\empty
+     \@EA\gobbletwoarguments
+   \else
+     \@EA\dodoifnotinstring
+   \fi}
+
+\long\def\dodoifnotinstring#1%
+  {\p!doifinstringelse\@@@instring{#1}%
+     \@EA\gobbleoneargument
+   \else
+     \@EA\firstofoneargument
+   \fi}
+
 %D \starttyping
 %D \beginTEX
 %D
@@ -2682,9 +2694,9 @@
 % not needed
 %
 % \def\rawprocessallactionsinset[#1]#2[#3]%
-%   {\def\docommando##1%
+%   {\def\docommand##1%
 %      {\rawprocessaction[##1][#3]}%
-%    \processcommalist[#1]\docommando}
+%    \processcommalist[#1]\docommand}
 
 %D When we process the list \type{a,b,c,d,e}, the raw routine
 %D takes over 30\% less time, when we feed $20+$ character
@@ -3163,41 +3175,6 @@
      {\def\docopyparameter{\docopyvalue{#1}{#3}}%
      %\def\docopyparameter##1{\docopyvalue{#1}{#3}{##1}}%
       \processcommalist[#5]\docopyparameter}}
-
-%D \macros
-%D   {doifassignmentelse}
-%D
-%D A lot of \CONTEXT\ commands take optional arguments, for
-%D instance:
-%D
-%D \starttyping
-%D \dothisorthat[alfa,beta]
-%D \dothisorthat[first=foo,second=bar]
-%D \dothisorthat[alfa,beta][first=foo,second=bar]
-%D \stoptyping
-%D
-%D Although a combined solution is possible, we prefer a
-%D seperation. The next command takes care of propper
-%D handling of such multi||faced commands.
-%D
-%D \starttyping
-%D \doifassignmentelse {...} {then ...} {else ...}
-%D \stoptyping
-
-% not robust
-%
-% \def\doifassignmentelse%
-%   {\doifinstringelse{=}}
-%
-% readable
-%
-% \def\doifassignmentelse#1%
-%   {\convertargument#1\to\ascii
-%    \doifinstringelse{=}{\ascii}}
-
-\def\doifassignmentelse#1%
-  {\convertargument#1\to\ascii
-   \doifinstringelse=\ascii}
 
 %D \macros
 %D   {ifparameters,checkparameters}
@@ -3768,70 +3745,6 @@
      {\thirdargumentfalse#1[{#2}][{#3}][]}}
 
 %D \macros
-%D   {dosingleargumentwithset,
-%D    dodoubleargumentwithset,dodoubleemptywithset,
-%D    dotripleargumentwithset,dotripleemptywithset}
-%D
-%D These maybe too mysterious macros enable us to handle more
-%D than one setup at once.
-%D
-%D \starttyping
-%D \dosingleargumentwithset \command[#1]
-%D \dodoubleargumentwithset \command[#1][#2]
-%D \dotripleargumentwithset \command[#1][#2][#3]
-%D \dodoubleemptywithset    \command[#1][#2]
-%D \dotripleemptywithset    \command[#1][#2][#3]
-%D \stoptyping
-%D
-%D The first macro calls \type{\command[##1]} for each string
-%D in the set~\type{#1}. The second one calls for
-%D \type{\commando[##1][#2]} and the third, well one may guess.
-%D These commands support constructions like:
-%D
-%D \starttyping
-%D \def\dodefinesomething[#1][#2]%
-%D   {\getparameters[\??xx#1][#2]}
-%D
-%D \def\definesomething%
-%D   {\dodoubleargumentwithset\dodefinesomething}
-%D \stoptyping
-%D
-%D Which accepts calls like:
-%D
-%D \starttyping
-%D \definesomething[alfa,beta,...][variable=...,...]
-%D \stoptyping
-%D
-%D Now a whole bunch of variables like \type{\@@xxalfavariable}
-%D and \type{\@@xxbetavariable} is defined.
-
-% \def\dosingleargumentwithset#1%
-%   {\def\dodosinglewithset[##1]%
-%      {\def\dododosinglewithset####1{#1[####1]}%
-%       \processcommalist[##1]\dododosinglewithset}%
-%    \dosingleargument\dodosinglewithset}%
-
-\def\dodoublewithset#1#2%
-  {\def\dododoublewithset[##1][##2]%
-     {\doifsomething{##1}
-        {\def\dodododoublewithset####1{#2[####1][##2]}%
-         \processcommalist[##1]\dodododoublewithset}}%
-   #1\dododoublewithset}
-
-\def\dodoubleemptywithset   {\dodoublewithset\dodoubleempty}
-\def\dodoubleargumentwithset{\dodoublewithset\dodoubleargument}
-
-\def\dotriplewithset#1#2%
-  {\def\dodotriplewithset[##1][##2][##3]%
-     {\doifsomething{##1}
-        {\def\dododotriplewithset####1{#2[####1][##2][##3]}%
-         \processcommalist[##1]\dododotriplewithset}}%
-   #1\dodotriplewithset}
-
-\def\dotripleemptywithset   {\dotriplewithset\dotripleempty}
-\def\dotripleargumentwithset{\dotriplewithset\dotripleargument}
-
-%D \macros
 %D   {strippedcsname}
 %D
 %D The next macro can be very useful when using \type{\csname}
@@ -4326,8 +4239,8 @@
    \endgroup}
 
 %D \macros
-%D   {writestring,writeline,
-%D    writestatus,statuswidth}
+%D   {writestring,writeline,writebanner,
+%D    writestatus,statuswidth,normalwritestatus}
 %D
 %D Maybe one didn't notice, but we've already introduced a
 %D macro for showing messages. In the multi||lingual modules,
@@ -4344,81 +4257,49 @@
 %D of the identification string with the macro \type
 %D {\statuswidth}.
 
-% \chardef\statuswidth=15
-%
-% \def\writestring%
-%   {\immediate\write16}
-%
-% \def\writeline%
-%   {\writestring{}}
-%
-% \def\dosplitstatus#1#2\end%
-%   {\ifx#1?%
-%      \loop
-%        \advance\scratchcounter by 1
-%        \ifnum\scratchcounter<\statuswidth
-%          \edef\messagecontentA{\messagecontentA\space}%
-%      \repeat
-%    \else
-%      \advance\scratchcounter by 1
-%      \ifnum\scratchcounter<\statuswidth
-%        \edef\messagecontentA{\messagecontentA#1}%
-%      \fi
-%      \dosplitstatus#2\end
-%    \fi}
-%
-% \def\writestatus#1#2%
-%   {\begingroup
-%    \let\messagecontentA=\empty
-%    \edef\messagecontentB{#2}%  maybe it's \the\scratchcounter
-%    \scratchcounter=0
-%    \expandafter\dosplitstatus#1?\end
-%    \writestring{\messagecontentA\space:\space\messagecontentB}%
-%    \endgroup}
-
 \chardef\statuswidth=15
 \chardef\statuswrite=16
 
-\newtoks\everywritestring
+\ifx\writestring\undefined
 
-\def\writestring#1%
-  {\begingroup
-   \the\everywritestring
-   \immediate\write\statuswrite{#1}%
-   \endgroup}
+    \newtoks\everywritestring
 
-\def\writeline
-  {\immediate\write\statuswrite{}}
+    \def\writedirect  {\immediate\write\statuswrite}
+    \def\writeline    {\writedirect{}}
+    \def\writestring#1{\begingroup\the\everywritestring\writedirect{#1}\endgroup}
+
+\fi
 
 %D First we present the normal \TEX\ variant, later we will
 %D show the \ETEX-way.
 
+
 \beginTEX
 
-\newcount\statuscounter
+    \newcount\statuscounter
 
-\def\dosplitstatus#1%
-  {\advance\statuscounter \minusone
-   \ifcase\statuscounter
-     \expandafter\nosplitstatus
-   \else
-     \scratchtoks\@EA{\the\scratchtoks#1}%
-     \expandafter\dosplitstatus
-   \fi}
+    \def\dosplitstatus#1%
+      {\advance\statuscounter \minusone
+       \ifcase\statuscounter
+         \expandafter\nosplitstatus
+       \else
+         \scratchtoks\@EA{\the\scratchtoks#1}%
+         \expandafter\dosplitstatus
+       \fi}
 
-\def\nosplitstatus#1\end
-  {}
+    \def\nosplitstatus#1\end
+      {}
 
-\def\writestatus#1#2%
-  {\begingroup
-   \scratchtoks\emptytoks
-   \statuscounter\statuswidth
-   \expandafter\dosplitstatus#1%
-     \space\space\space\space\space\space\space
-     \space\space\space\space\space\space\space
-     \space\space\space\space\space\space\end
-   \@EA\writestring\@EA{\the\scratchtoks\space:\space#2}%
-   \endgroup}
+    \def\writestatus#1#2%
+      {\begingroup
+       \scratchtoks\emptytoks
+       \statuscounter\statuswidth
+       \expandafter\dosplitstatus#1%
+         \space\space\space\space\space\space\space
+         \space\space\space\space\space\space\space
+         \space\space\space\space\space\space\end
+       \@EA\writestring\@EA{\the\scratchtoks\space:\space#2}%
+       \endgroup}
 
 \endTEX
 
@@ -4453,13 +4334,13 @@
 
 \beginTEX
 
-\def\dosplitstatus#1%
-  {\advance\statuscounter \minusone
-   \ifcase\statuscounter
-     \expandafter\nosplitstatus
-   \fi
-   \scratchtoks\@EA{\the\scratchtoks#1}%
-   \dosplitstatus}
+    \def\dosplitstatus#1%
+      {\advance\statuscounter \minusone
+       \ifcase\statuscounter
+         \expandafter\nosplitstatus
+       \fi
+       \scratchtoks\@EA{\the\scratchtoks#1}%
+       \dosplitstatus}
 
 \endTEX
 
@@ -4470,19 +4351,19 @@
 
 \beginETEX \numexpr
 
-\def\writestatus#1#2%
-  {\writestring{\expandafter\dosplitstatus\expandafter\statuswidth#1%
-     \space\space\space\space\space\space\space
-     \space\space\space\space\space\space\space
-     \space\space\space\space\space\space\end
-     \space:\space#2}}
+    \def\normalwritestatus#1#2%
+      {\writestring{\expandafter\dosplitstatus\expandafter\statuswidth#1%
+         \space\space\space\space\space\space\space
+         \space\space\space\space\space\space\space
+         \space\space\space\space\space\space\end
+         \space:\space#2}}
 
-\def\dosplitstatus#1#2%
-  {\ifcase#1 \expandafter\nosplitstatus\fi#2%
-   \expandafter\dosplitstatus\expandafter{\the\numexpr#1+\minusone\relax}}
+    \def\dosplitstatus#1#2%
+      {\ifcase#1 \expandafter\nosplitstatus\fi#2%
+       \expandafter\dosplitstatus\expandafter{\the\numexpr#1+\minusone\relax}}
 
-\def\nosplitstatus#1\end
-  {}
+    \def\nosplitstatus#1\end
+      {}
 
 \endETEX
 
@@ -4511,6 +4392,9 @@
 
 %D Finally we do what from now on will be done at the top of
 %D the files: we tell the user what we are loading.
+
+\ifx\writestatus\undefined \let\writestatus\normalwritestatus \fi
+\ifx\writebanner\undefined \def\writebanner{\writestring}     \fi
 
 \writestatus{loading}{Context System Macros / General}
 

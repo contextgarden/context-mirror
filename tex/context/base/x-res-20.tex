@@ -1,0 +1,231 @@
+%D \module
+%D   [      file=x-res-20,
+%D        version=2006.08.20,
+%D          title=\CONTEXT\ Style File,
+%D       subtitle=Figure Lists,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D For the beginning we have used \TEXUTIL\ to hels us deal with
+%D graphics whose dimensions could not be determines and|/|or to
+%D provide placeholder info for graphics that were not available.
+%D Much of this functionality is now moved to \RLXTOOLS\ and
+%D therefore it makes sense to reimplement the code that deals with
+%D producing an overview of grapghics as well. At the same time we
+%D move some \TEX\ code from \TEXEXEC\ to here.
+%D
+%D Because the show commands are not used in real documents, but
+%D only for special purposed, it does not harm that this
+%D functionality is now part of a module. We no longer use the
+%D parsing code in \TEXUTIL, but rely on \IMAGEMAGICK's
+%D identify functionility.
+%D
+%D At the end of the file we kept the old code from \type {core-fig}.
+
+\unprotect
+
+\startXMLmapping[rlx:list]
+
+  \defineXMLprocess
+    [rl:identification]
+
+  \defineXMLenvironment
+    [rl:identify] [name=]
+    {\bgroup\ignorespaces}
+    {\removeunwantedspaces\doRLhandlegraphic\egroup}
+
+  \defineXMLsave[rl:size]
+  \defineXMLsave[rl:path]
+  \defineXMLsave[rl:width]
+  \defineXMLsave[rl:height]
+
+\stopXMLmapping
+
+\def\showexternalfigures
+  {\dosingleempty\doshowexternalfigures}
+
+\let\doRLhandlegraphic\relax
+\let\doRLstartgraphics\relax
+\let\doRLstopgraphics \relax
+
+\let\RLfigurewidth \empty
+\let\RLfigureheight\empty
+\let\RLfiguresize  \empty
+\let\RLfigurefile  \empty
+
+\def\doRLpresetgraphic
+  {\edef\RLfigurewidth {\the\dimexpr \XMLflush{rl:width}\relax}%
+   \edef\RLfigureheight{\the\dimexpr \XMLflush{rl:height}\relax}%
+   \edef\RLfiguresize  {\the\numexpr0\XMLflush{rl:size}\relax}%
+   \edef\RLfigurefile  {\XMLpar{rl:identify}{name}{unknown}}}
+
+\def\doshowexternalfigures[#1]%
+  {\bgroup
+   \dontcomplain
+   \setupcolors[\c!state=\v!start]% to prevent mps color conversion
+   \getparameters[\??ex][\c!file=rlxtools.rli,\c!alternative=a,\c!offset=\!!zeropoint,\c!size=,#1]%
+   \getvalue{\strippedcsname\doRLhandlegraphic\@@exalternative}%
+   \startXMLmapping[rlx:list]%
+   \startXMLignore
+   \doRLstartgraphics
+   \processXMLfilegrouped{\@@exfile}% \readjobfile\@@exfile\donothing\donothing
+   \doRLstopgraphics
+   \stopXMLignore
+   \stopXMLmapping
+   \egroup}
+
+\def\doRLhandlegraphica
+  {\def\doRLhandlegraphic
+     {\doRLpresetgraphic
+      \getvalue{\e!start\v!figure\e!text}[\v!left,\v!none][]
+        {}
+        {\hbox
+           {\externalfigure[\RLfigurefile][\c!frame=\v!on,\c!width=6cm,\c!size=\@@exsize]%
+            \quad
+            \framed[\c!width=\figurewidth,\c!height=\figureheight]{}%
+            \quad}}%
+        {\hbox{\tt\tfa\setstrut\strut\expanded{\asciistr{\RLfigurefile}}}}%
+      \blank
+      \tfx
+      \starttabulate[|l|l|]
+      \NC width  \EQ \RLfigurewidth  \NC \NR
+      \NC height \EQ \RLfigureheight \NC \NR
+      \NC size   \EQ \RLfiguresize   \NC \NR
+      \stoptabulate
+      \getvalue{\e!stop\v!figure\e!text}}}
+
+\def\doRLhandlegraphicb
+  {\def\doRLhandlegraphic
+     {\dontleavehmode
+      \vbox
+        {\doRLpresetgraphic
+         \hsize\dimexpr.2\hsize-.8em\relax
+         \cbox{\externalfigure[\RLfigurefile][\c!frame=\v!on,\c!factor=\v!max,\c!width=\hsize,\c!size=\@@exsize]}%
+         \vskip.5\lineheight
+         \midaligned{\tttf\RLfigurefile}}%
+      \vadjust{\vskip.2\lineheight}%
+      \quad\allowbreak}}
+
+\def\doRLhandlegraphicc
+  {\def\doRLhandlegraphic
+     {\doRLpresetgraphic
+      \pagefigure[\RLfigurefile]}}
+
+\def\doRLhandlegraphicd % this one builds a dimension file for metapost/metafun
+  {\def\doRLstartgraphics
+     {\immediate\openout\scratchwrite=mpfigs.mp\relax
+      \immediate\write\scratchwrite{\letterpercent\space graphic dimension file for metapost/metafun}}%
+   \def\doRLstopgraphics
+     {\immediate\closeout\scratchwrite}%
+   \def\doRLhandlegraphic
+     {\doRLpresetgraphic
+      \immediate\write\scratchwrite{registerfigure("\RLfigurefile",\RLfigurewidth,\RLfigureheight);}}}
+
+% \showexternalfigures[alternative=b]
+
+\protect \endinput
+
+%D Old code:
+
+\def\doshowexternalfigures[#1]%
+  {\bgroup
+   \setupcolors[\c!state=\v!start]% to prevent mps color conversion
+   \getparameters[\??ex][\c!alternative=a,\c!offset=\!!zeropoint,\c!size=,#1]%
+   \getvalue{\strippedcsname\showexternalfigure\@@exalternative}%
+   \egroup}
+
+\def\showexternalfigures
+  {\dosingleempty\doshowexternalfigures}
+
+\def\showexternalfigurea
+  {\bgroup
+   \dontcomplain
+   \def\presetfigure[##1][##2]%
+     {\getvalue{\e!start\v!figure\e!text}[\v!left,\v!none][]
+        {}
+        {\hbox
+           {\externalfigure[##1][\c!frame=\v!on,\c!width=6cm,\c!size=\@@exsize][##2]%
+            \tfskip
+            \framed[\c!width=\figurewidth,\c!height=\figureheight]{}}}%
+        {\tt\tfa\expanded{\asciistr{##1}}}%
+        \blank
+        \tfx
+        \def\docommand####1%
+          {\beforesplitstring####1\at=\to\asciia
+           \aftersplitstring ####1\at=\to\asciib
+           \convertcommand\asciib\to\asciib
+           \doifsomething\asciib
+             {\hsmash{\hbox to .75em{\asciia\hss}: \asciib}\endgraf}}%
+        \processcommalist[##2]\docommand
+        \strut
+        \endgraf
+      \getvalue{\e!stop\v!figure\e!text}}%
+   \pushendofline
+   \readjobfile\@@exfile\donothing\donothing
+   \popendofline
+   \egroup}
+
+\def\showexternalfigureb % instelbaar maken
+  {\bgroup
+   \def\total{5}%
+   \globalletempty\allfigures
+   \doglobal\newcounter\figurecounter
+   \dontcomplain
+   \def\docommand##1{##1&}%
+   \def\figurecaptions%
+     {\crcr
+      \noalign{\nobreak\vskip.5em}%
+      \@EA\globalprocesscommalist\@EA[\allfigures]\docommand
+      \globalletempty\allfigures
+      \crcr
+      \noalign{\vskip1em\goodbreak}}%
+   \def\presetfigure[##1][##2]%
+     {\vbox
+        {\divide\hsize \total
+         \advance\hsize -1em
+         \externalfigure
+           [##1]
+           [\c!frame=\v!on,\c!factor=\v!max,\c!width=\hsize,\c!size=\@@exsize][##2]}%
+      \doglobal\addtocommalist{##1}\allfigures
+     %\getvalue{\s!figurepreset}%
+      \doglobal\increment\figurecounter
+      \ifnum\figurecounter=\total
+        \doglobal\newcounter\figurecounter
+        \def\next{\figurecaptions}%
+      \else
+        \def\next{&}%
+      \fi
+      \next}%
+   \pushendofline
+   \tabskip\zeropoint \!!plus 1fill
+   \halign to \hsize
+     {&\hss##\hss\cr\readjobfile\@@exfile\donothing\donothing\crcr
+      \figurecaptions}
+   \popendofline
+   \egroup}
+
+\def\showexternalfigurec
+  {\bgroup
+   \def\presetfigure[##1][##2]{\expanded{\pagefigure[##1][\c!size=\@@exsize]}}% else loop
+   \pushendofline
+   \readjobfile\@@exfile\donothing\donothing
+   \popendofline
+   \egroup}
+
+\def\showexternalfigured % to be documented; this one builds a dimension file for
+  {\bgroup               % metapost/metafun
+   \immediate\openout\scratchwrite=mpfigs.mp
+   \def\presetfigure[##1][##2]%
+     {\getfiguredimensionsonly[##1]% \pagefigure[##1]%
+      \immediate\write\scratchwrite
+         {registerfigure("##1",\figurewidth,\figureheight);}}
+   \pushendofline
+   \readjobfile\@@exfile\donothing\donothing
+   \popendofline
+   \immediate\closeout\scratchwrite
+   \egroup}

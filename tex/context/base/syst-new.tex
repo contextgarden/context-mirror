@@ -1,5 +1,5 @@
 %D \module
-%D   [       file=supp-new,
+%D   [       file=syst-new,
 %D        version=1997.01.03,
 %D          title=\CONTEXT\ Support Macros,
 %D       subtitle=New Ones,
@@ -15,24 +15,6 @@
 %D syst-dat.tex (datastructures).
 
 \unprotect
-
-% moved from core-ntb
-
-\def\v!oddeven#1{\ifodd#1\v!odd\else\v!even\fi}
-
-% For myself
-
-\newcount\nofprofiled
-
-\def\profilemacro#1%
-  {\nofprofiled\zerocount
-   \letvalue{\string#1\string#1}#1%
-   \appendtoks
-     \normalwritestatus\m!systems{profile \string#1: \number\nofprofiled}%
-   \to \everystoptext
-   \unexpanded\def#1%
-     {\global\advance\nofprofiled\plusone
-      \csname\string#1\string#1\endcsname}}
 
 % pretty ugly but fast
 
@@ -55,88 +37,6 @@
    \expanded{\addtocommalist{#2}\@EA\noexpand\csname#1\endcsname}}
 
 % faster, and looks okay
-
-\dostepwiserecurse{0}{255}{1}
-  {\@EA\chardef\csname-\recurselevel\endcsname\recurselevel}
-
-\newtoks\withminorcharacters
-\newtoks\withlowercharacters
-\newtoks\withuppercharacters
-
-% \thewithcharacter#1 % self
-
-\dostepwiserecurse{0}{31}{1}
-  {\expanded
-     {\appendtoks\noexpand\withcharacter\csname-\recurselevel\endcsname
-        \noexpand\to\withminorcharacters}}
-
-\dostepwiserecurse{32}{127}{1}
-  {\expanded
-     {\appendtoks\noexpand\withcharacter\csname-\recurselevel\endcsname
-        \noexpand\to\withlowercharacters}}
-
-\dostepwiserecurse{128}{255}{1}
-  {\expanded
-     {\appendtoks\noexpand\withcharacter\csname-\recurselevel\endcsname
-        \noexpand\to\withuppercharacters}}
-
-\def\doassigncatcodes#1%
-  {\def\withcharacter##1{\catcode##1#1}%
-   \the\withminorcharacters
-   \the\withlowercharacters
-   \ifeightbitcharacters\the\withuppercharacters\fi}
-
-\def\makeallother
-  {\doassigncatcodes\@@other}
-
-\chardef\obeyedlccode=`. % so <32 and >127 chars become .
-
-% \def\obeylccodes
-%   {\def\withcharacter##1{\lccode##1##1}%
-%    \the\withlowercharacters
-%    \def\withcharacter##1{\lccode##1\obeyedlccode}%
-%    \the\withminorcharacters
-%    \ifeightbitcharacters\the\withuppercharacters\fi}
-
-\def\setownlccode   #1{\lccode#1#1}
-\def\setobeyedlccode#1{\lccode#1\obeyedlccode}
-
-\def\obeylccodes % also eightbitcharacters
-  {\let\withcharacter\setownlccode
-   \the\withlowercharacters
-   \let\withcharacter\setobeyedlccode
-   \the\withminorcharacters
-   \the\withuppercharacters
-   \relax}
-
-\def\retainlccodes % also eightbitcharacters
-  {\let\withcharacter\setownlccode
-   \the\withlowercharacters
-   \the\withminorcharacters
-   \the\withuppercharacters
-   \relax}
-
-% not faster
-%
-% \newtoks \retainedlccodes
-% \dostepwiserecurse{0}{255}{1}
-%   {\appendetoks\lccode\recurselevel=\recurselevel\to\retainedlccodes}
-% \appendetoks\relax\to\retainedlccodes
-
-%D This one is much faster in \ETEX. Hm, I misinterpreted
-%D the specs; it does not work.
-%
-% \ifx\normallanguage\undefined \let\normallanguage\language \fi
-% \let\doobeylccodes\obeylccodes
-%
-% \beginETEX \lccode
-%   \begingroup
-%     \normallanguage\zerocount
-%     \doobeylccodes
-%     \patterns{dummy}
-%   \endgroup
-%   \def\obeylccodes{\normallanguage\zerocount}
-% \endETEX
 
 \def\unspaced#1%
   {\dounspaced#1\end}
@@ -209,10 +109,10 @@
 %
 % \def\buildarray[#1][#2]%
 %   {\scratchcounter=0
-%    \def\docommando##1%
+%    \def\docommand##1%
 %      {\advance\scratchcounter by 1
 %       \setvalue{@@aa#1\the\scratchcounter}{##1}}%
-%    \processcommalist[#2]\docommando
+%    \processcommalist[#2]\docommand
 %    \setevalue{@@aa#1}{\the\scratchcounter}}%
 %
 % \def\setarrayelement#1#2{\setvalue{@@aa#1#2}}
@@ -245,9 +145,18 @@
 %   {\bgroup
 %    \afterassignment\dodoifnonzeropositiveelse\scratchcounter=0#1\relax\empty\end}
 
-\def\dodoifnonzeropositiveelse#1#2\end#3#4%
+\def\dodoifnonzeropositiveelse#1#2\end % #3#4%
   {\ifx#1\relax
-     \ifcase\scratchcounter\endgroup#4\else\endgroup#3\fi\else\endgroup#4%
+     \ifcase\scratchcounter
+       \endgroup
+       \@EAEAEA\secondoftwoarguments
+     \else
+       \endgroup
+       \@EAEAEA\firstoftwoarguments
+     \fi
+   \else
+      \endgroup
+      \@EA\secondoftwoarguments
    \fi}
 
 \def\doifnonzeropositiveelse#1%
@@ -284,10 +193,15 @@
  \gdef\SPLITSKIP#1pt plus #2pt minus #3pt%
    {\DOSPLITSKIP#1 #2 #3 }}
 
+% \def\DOSPLITSKIP#1 #2 #3
+%   {\dimen0=#1pt\dimen2=#2pt\dimen4=#3pt
+%    \advance\dimen2 -\onepoint
+%    \advance\dimen4 -\onepoint}
+
 \def\DOSPLITSKIP#1 #2 #3
-  {\dimen0=#1pt\dimen2=#2pt\dimen4=#3pt
-   \advance\dimen2 -\onepoint
-   \advance\dimen4 -\onepoint}
+  {\dimen0=#1\onepoint
+   \dimen2=\dimexpr#2\onepoint-\onepoint\relax
+   \dimen4=\dimexpr#3\onepoint-\onepoint\relax}
 
 % \def\minimaxskip#1#2%
 %   {\splitskip#2\relax
@@ -338,8 +252,7 @@
 %D Standaard kan een spatie (zoals ~) uitrekken. Dit is in
 %D overzichten niet altijd de bedoeling, vandaar:
 
-%\def\fixedspace%
-%  {\hskip\fontdimen2\font\relax}
+% \def\fixedspace{\hskip\interwordspace\relax}
 
 %\def\ExpandSecondAfter#1#2#3%
 %  {\!!toksa={#2}%
@@ -406,10 +319,14 @@
    \writestatus\m!systems{starting feature test}\wait
    \resettimer
    \featuretest\zerocount \dotestfeature
-   \scratchdimen\elapsedtime\s!sp
-   \writestatus\m!systems{feature test done (\expandafter\withoutpt\the\scratchdimen s)}%
+   \writestatus\m!systems{feature test done (\elapsedseconds s)}%
    \wait
    \egroup}
+
+\def\elapsedseconds{\expandafter\withoutpt\the\dimexpr\elapsedtime sp\relax}
+
+\def\showtimer#1%
+  {\writestatus{runtime}{\elapsedseconds\space s / #1}}
 
 %  \edef\elapsedtime{\expandafter\withoutpt\the\dimexpr\elapsedtime\relax s}%
 %  \writestatus\m!systems{feature test done (\elapsedtime)}%
@@ -435,16 +352,16 @@
   {\begingroup
    #2=\zeropoint
    \dimentoaddto\zeropoint
-   \def\docommando%
+   \def\docommand%
      {\advance#2 \dimentoaddto
-      \futurelet\next\dodocommando}%
-   \def\dodocommando%
+      \futurelet\next\dodocommand}%
+   \def\dodocommand%
      {\ifx\next\relax
         \expanded{\endgroup#2=\the#2}%
       \else
-        \@EA\afterassignment\@EA\docommando\@EA\dimentoaddto
+        \@EA\afterassignment\@EA\docommand\@EA\dimentoaddto
       \fi}%
-   \docommando#1\relax}
+   \docommand#1\relax}
 
 \def\adddimenmacro#1\to#2%
   {\adddimenregister#1\to\scratchdimen
@@ -879,4 +796,74 @@
 \def\ignoreimplicitspaces
   {\doifnextcharelse\relax\relax\relax}
 
+%D \macros
+%D   {newconstant}
+
+\beginETEX
+
+\def\newconstant#1%
+  {\def\donewconstant{\xdef#1{\numexpr\the\scratchcounter\relax}}%
+   \afterassignment\donewconstant\scratchcounter}
+
+\endETEX
+
+\beginTEX
+
+\def\newconstant#1%
+  {\def\donewconstant{\xdef#1{\the\scratchcounter\space}}
+   \afterassignment\donewconstant\scratchcounter}
+
+\endTEX
+
+% new
+%
+% \startnointerference
+% all kind of code
+% \stopnointerference
+
+\newbox\nointerferencebox
+
+\def\startnointerference
+  {\setbox\nointerferencebox\vbox
+   \bgroup}
+
+\def\stopnointerference
+  {\egroup
+   \setbox\nointerferencebox\box\voidb@x}
+
 \protect \endinput
+
+
+% \def\appendtovaluelist#1#2%
+%   {\ifcsname#1\endcsname
+%      \expandafter\ifx\csname#1\endcsname\empty
+%        \expandafter\def\csname#1\endcsname{#2}%
+%      \else
+%        \expandafter\def\csname#1\expandafter\expandafter\expandafter\endcsname
+%           \expandafter\expandafter\expandafter{\csname#1\endcsname,#2}%
+%      \fi
+%    \else
+%      \expandafter\def\csname#1\endcsname{#2}%
+%    \fi}
+%
+% or
+%
+% \def\appendtovaluelist#1%
+%   {\ifcsname#1\endcsname
+%      \expandafter\ifx\csname#1\endcsname\empty
+%        \expandafter\noappendtovaluelist\csname#1\expandafter\expandafter\expandafter\endcsname
+%      \else
+%        \expandafter\doappendtovaluelist\csname#1\expandafter\expandafter\expandafter\endcsname
+%      \fi
+%    \else
+%      \expandafter\noappendtovaluelist\csname#1\expandafter\endcsname
+%    \fi}
+
+% \def\doappendtovaluelist#1#2{\expandafter\def\expandafter#1\expandafter{#1,#2}}
+% \def\noappendtovaluelist#1#2{\def#1{#2}}
+
+% \appendtovaluelist{mylist}{aap}
+% \appendtovaluelist{mylist}{noot}
+% \appendtovaluelist{mylist}{mies}
+
+% \showvalue{mylist}

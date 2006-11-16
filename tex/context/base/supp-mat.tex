@@ -12,7 +12,8 @@
 %C details.
 
 %D For practical reasons, I decided to move some math things to
-%D a support module. There is nothing spectacular here.
+%D a support module. There is nothing spectacular here. It may move
+%D back to math-ini.
 
 \writestatus{loading}{Context Support Macros / Math}
 
@@ -78,6 +79,18 @@
 \long\def\displaymathematics#1{\relax\ifmmode#1\else\dostartformula{}#1\dostopformula\fi}
      \let\inlinemathematics    \mathematics
      \def\automathematics     {\relax\ifhmode\@EA\inlinemathematics\else\@EA\displaymathematics\fi}
+
+% better, esp when used in bTABLE ... eTABLE
+
+\def\automathematics
+  {\relax
+   \ifhmode
+     \expandafter\inlinemathematics
+   \else\ifintable
+     \expandafter\expandafter\expandafter\inlinemathematics
+   \else
+     \expandafter\expandafter\expandafter\displaymathematics
+   \fi\fi}
 
 %D \macros
 %D   {dimension, nodimension}

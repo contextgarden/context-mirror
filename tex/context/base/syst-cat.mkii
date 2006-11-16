@@ -1,0 +1,61 @@
+%D \module
+%D   [       file=syst-cat,
+%D        version=2006.09.18,
+%D          title=\CONTEXT\ System Macros,
+%D       subtitle=Catcode Handling,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\unprotect
+
+\def\newcatcodetable#1%
+  {\global\advance\cctdefcounter\plusone
+   \global\mathchardef#1\cctdefcounter
+   \expandafter\xdef\csname @@ccn:\number\cctdefcounter\endcsname{\string#1}% logging
+   \expandafter\newtoks\csname @@cct:\number\cctdefcounter\endcsname}
+
+\mathchardef\currentcatcodetable\zerocount
+
+\newtoks \setdefaultlowercatcodes
+\newtoks \setdefaultuppercatcodes
+
+\def\next#1% we don't have a proper loop defined yet
+  {\edef\nextnext{#1{\the#1\catcode\the\cctcountera\space\ifnum\catcode\cctcountera=11 11\else12\fi}}%
+   \nextnext\ifnum\cctcountera<\cctcounterb \advance\cctcountera\plusone \expandafter\next\expandafter#1\fi}
+
+\cctcountera   0  \cctcounterb 127  \next\setdefaultlowercatcodes
+\cctcountera 128  \cctcounterb 255  \next\setdefaultuppercatcodes
+
+% \chardef\activehackcode=`~
+
+% \def\next#1% we don't have a proper loop defined yet
+%   {\catcode\cctcountera 13
+%    \cctcounterc\uccode\activehackcode
+%    \uccode\activehackcode\cctcountera
+%    \catcode\uccode\activehackcode 13
+%    \uppercase{\edef~{\detokenize{~}}}%
+%    \uccode\activehackcode\cctcounterc
+%    \ifnum\cctcountera<\cctcounterb \advance\cctcountera\plusone \expandafter\next\expandafter#1\fi}
+
+% \cctcountera 128  \cctcounterb 255  \next\setdefaultuppercatcodes
+
+\recatcodeuppercharactersfalse
+
+\def\catcodetable#1%
+  {\mathchardef\currentcatcodetable#1%
+   \the\setdefaultlowercatcodes
+   \ifrecatcodeuppercharacters\the\setdefaultuppercatcodes\fi
+   \the\csname @@cct:\number#1\endcsname}
+
+\long\def\startcatcodetable#1#2\stopcatcodetable
+  {\global\csname @@cct:\number#1\endcsname{#2}}
+
+\long\def\startextendcatcodetable#1#2\stopextendcatcodetable
+  {\global\csname @@cct:\number#1\endcsname\expandafter{\the\csname @@cct:\number#1\endcsname#2}}
+
+\protect \endinput

@@ -286,7 +286,7 @@
 % \fontdimen's opgehoogd. Omdat dit problemen gaf bij
 % scaled fonts, is bij nader inzien gekozen voor de
 % onderstaande oplossing, waarbij de nieuwe waarden worden
-% afgeleid van de x-height (\fontdimen5). De factor 0.70
+% afgeleid van de x-height (\fontexheight). De factor 0.70
 % is min of meer experimenteel vastgesteld. Soms worden de
 % regels iets verder uit elkaar gezet. Jammer. Italic fonts
 % hebben grotere cijfers en vallen min of meer uit de boot.
@@ -307,16 +307,16 @@
 \def\setsubscripts%
   {\beginlatexmathmodehack
    \def\dosetsubscript##1##2##3%
-     {\dimen0=##3\fontdimen5##2%
+     {\dimen0=##3\fontexheight##2%
       \setxvalue{@@\string##1\string##2}{\the##1##2\relax}%
       ##1##2=\dimen0\relax}%
    \def\dodosetsubscript##1##2%
      {\dosetsubscript{##1}{\textfont        2}{##2}%
       \dosetsubscript{##1}{\scriptfont      2}{##2}%
       \dosetsubscript{##1}{\scriptscriptfont2}{##2}}%
-  %\dodosetsubscript{\fontdimen14}{?}%
-   \dodosetsubscript{\fontdimen16}{.7}%
-   \dodosetsubscript{\fontdimen17}{.7}%
+   %dodosetsubscript\mathsupnormal  {?}%
+   \dodosetsubscript\mathsubnormal  {.7}%
+   \dodosetsubscript\mathsubcombined{.7}%
    \global\loweredsubscriptstrue
    \endlatexmathmodehack}
 
@@ -330,9 +330,9 @@
        {\doresetsubscript{##1}{\textfont2}%
         \doresetsubscript{##1}{\scriptfont2}%
         \doresetsubscript{##1}{\scriptscriptfont2}}%
-     %\dodoresetsubscript{\fontdimen14}%
-     \dodoresetsubscript{\fontdimen16}%
-     \dodoresetsubscript{\fontdimen17}%
+     %dodoresetsubscript\mathsupnormal
+     \dodoresetsubscript\mathsubnormal
+     \dodoresetsubscript\mathsubcombined
      \global\loweredsubscriptsfalse
      \endlatexmathmodehack
    \fi}
@@ -603,21 +603,21 @@
    \dimen2=#2\relax
    \dimen4=#3\relax
    \setxvalue{chemical::\the\currentchemical}%
-     {\noexpand\docommando{\the\dimen0}{\the\dimen2}{\the\dimen4}}%
+     {\noexpand\docommand{\the\dimen0}{\the\dimen2}{\the\dimen4}}%
    \egroup}
 
 %\def\getchemicaldimensions#1#2#3%
 %  {\global\advance\currentchemical by 1
-%   \def\docommando##1##2##3%
+%   \def\docommand##1##2##3%
 %     {#1=##1\relax#2=##2\relax#3=##3\relax}%
 %   \doifdefinedelse{chemical::\the\currentchemical}
 %     {\getvalue{chemical::\the\currentchemical}}
-%     {\docommando{6cm}{4cm}{0cm}}}
+%     {\docommand{6cm}{4cm}{0cm}}}
 %
 %\def\savechemicaldimensions%
 %  {\bgroup
 %   \writestatus{ppchtex}{saving dimensions in ppchtex.dim}%
-%   \def\docommando##1##2##3%
+%   \def\docommand##1##2##3%
 %     {\immediate\write\scratchwrite
 %        {\noexpand\setchemicaldimensions{##1}{##2}{##3}}}%
 %   \immediate\openout\scratchwrite=ppchtex.dim
@@ -734,9 +734,9 @@
         \!!countc\!!countd
         \@@chemicalbottom\@@chemicaltop\@@chemicalheight}%
    %
-   \edef\@@chemheight   {\the\!!countc}%
-   \edef\@@chemdepth    {\the\!!countd}%
-   \edef\@@chemicaltop{\the\!!countc}%
+   \edef\@@chemheight    {\the\!!countc}%
+   \edef\@@chemdepth     {\the\!!countd}%
+   \edef\@@chemicaltop   {\the\!!countc}%
    \edef\@@chemicalbottom{\the\!!countd}%
    %
    \doifinsetelse\v!on{\@@chemicalframe,\@@chemicalaxis}

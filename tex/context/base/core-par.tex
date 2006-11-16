@@ -103,7 +103,7 @@
      \setgvalue{\paragraphprefix\totalnofparagraphs}{#1}%
    \else
      \setgvalue{\paragraphprefix\totalnofparagraphs}{\skipparagraph#1\par}%
-    \fi} 
+    \fi}
 
 \long\def\directskipparagraph#1%
   {\doglobal\increment\totalnofparagraphs
@@ -114,14 +114,14 @@
    \ifx#1\undefined
      \let#1\relax
    \fi
-   \convertargument#1\to\asciiA
-   \convertargument{ }\to\asciiB % lege regel
+   \convertargument#1\to\asciia
+   \convertargument{ }\to\asciib % lege regel
    \def\dopushparagraph##1\par
-     {\convertargument##1\to\asciiC
-      \doifelse\asciiC\asciiA
+     {\convertargument##1\to\asciic
+      \doifelse\asciic\asciia
         {#1}
-        {\doifsomething\asciiC % lege paragraaf
-           {\doifnot\asciiC\asciiB
+        {\doifsomething\asciic % lege paragraaf
+           {\doifnot\asciic\asciib
               {\directpushparagraph{#1}}}%
          \dopushparagraph}}%
    \dopushparagraph}

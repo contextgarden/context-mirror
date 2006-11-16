@@ -17,11 +17,7 @@
 
 banner = ['XMLTools', 'version 1.2.0', '2002/2006', 'PRAGMA ADE/POD']
 
-unless defined? ownpath
-    ownpath = $0.sub(/[\\\/][a-z0-9\-]*?\.rb/i,'')
-    # ownpath = File.dirname($0)
-    $: << ownpath
-end
+$: << File.expand_path(File.dirname($0)) ; $: << File.join($:.last,'lib') ; $:.uniq!
 
 require 'base/switch'
 require 'base/logger'
@@ -106,6 +102,11 @@ class Commands
                         output.xputs("<type>#{bt}</type>\n", 6)
                     end
                     output.xputs("<size>#{File.stat(f).size}</size>\n", 6)
+                    permissions = ''
+                    permissions << 'r' if File.readable?(f)
+                    permissions << 'w' if File.writable?(f)
+                    permissions << 'x' if File.executable?(f)
+                    output.xputs("<permissions>#{permissions}</permissions>\n", 6) unless permissions.empty?
                 end
                 output.xputs("<date>#{File.stat(f).mtime.strftime("%Y-%m-%d %H:%M")}</date>\n", 6)
                 output.xputs("</file>\n", 4)

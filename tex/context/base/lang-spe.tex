@@ -79,6 +79,9 @@
 %D precautions that will prevent spurious spaces to creep into
 %D the list.
 
+% We should use token registers, but alas, we run out of them and
+% \ETEX\ has a bug. Well, let's use a token register now (2006).
+
 \def\startlanguagespecifics%                % we use double to
   {\bgroup
    \catcode`\^^I=\@@ignore
@@ -97,40 +100,15 @@
      \characterencoding-%
    \fi}
 
-% \long\def\dostartlanguagespecifics[#1][#2]#3\stoplanguagespecifics%
-%   {\egroup
-%    \long\def\docommando##1%
-%      {\doifdefinedelse{\??la\languageencoding##1\??la}
-%         {\long\def\do####1####2####3%
-%            {\setvalue{\??la\languageencoding####1\??la}{\do{####1}{####2####3}}}%
-%          \getvalue{\??la\languageencoding##1\??la}{#3}}
-%         {\setvalue{\??la\languageencoding##1\??la}{\do{##1}{#3}}}%
-%       \bgroup
-%       \setbox0\hbox{\enablelanguagespecifics[##1]}%
-%       \ifdim\wd0>\zeropoint
-%         \showmessage\m!linguals7{\currentencoding-##1,\the\wd0\space}\wait
-%       \else
-%         \showmessage\m!linguals8{\currentencoding-##1}%
-%       \fi
-%       \egroup
-%       \doif{##1}{\currentmainlanguage}
-%         {\enablelanguagespecifics[##1]}}%
-%    \processcommalist[#1]\docommando}
-
-% This saves 3K in the fmt file.
-
-% This should be a token register, but alas, we run out of them and
-% \ETEX\ has a bug.
-
 \long\def\dostartlanguagespecifics[#1][#2]#3\stoplanguagespecifics
   {\egroup
    \processcommalist[#1]{\dosetlanguagespecifics{#3}}}
 
 % \long\def\dosetlanguagespecifics#1#2%
-%   {\doifdefinedelse{\??la\languageencoding#2\??la}
-%      {\long\def\do##1##2##3{\setvalue{\??la\languageencoding##1\??la}{\do{##1}{##2##3}}}%
-%       \getvalue{\??la\languageencoding#2\??la}{#1}}
-%      {\setvalue{\??la\languageencoding#2\??la}{\do{#2}{#1}}}%
+%   {\ifundefined{\??la\languageencoding#2\??la}\forgetlanguagespecifics[#2]\fi
+%    % the next line catches the case that specifics are enabled *before* they are defined
+%    \expandafter\ifx\csname\??la\languageencoding#2\??la\endcsname\relax\forgetlanguagespecifics[#2]\fi
+%    \appendvalue{\??la\languageencoding#2\??la}{#1}%
 %    \bgroup
 %    \setbox\scratchbox\hbox{\enablelanguagespecifics[#2]}%
 %    \ifdim\wd\scratchbox>\zeropoint
@@ -139,15 +117,15 @@
 %      \showmessage\m!linguals8{\currentencoding-#2}%
 %    \fi
 %    \egroup
-%    \doif{#2}\currentmainlanguage
-%      {\enablelanguagespecifics[#2]}}
+%    \doif{#2}\currentmainlanguage{\enablelanguagespecifics[#2]}}
+
+\def\languagespectag#1{\??la\languageencoding#1\??la}
 
 \long\def\dosetlanguagespecifics#1#2%
-  {%ifundefined{\??la\languageencoding#2\??la}\letvalue{\??la\languageencoding#2\??la}\empty\fi
-   \ifundefined{\??la\languageencoding#2\??la}\forgetlanguagespecifics[#2]\fi
-   % the next line catches the case that specifics are enabled *before* they are defined
-   \expandafter\ifx\csname\??la\languageencoding#2\??la\endcsname\relax\forgetlanguagespecifics[#2]\fi
-   \appendvalue{\??la\languageencoding#2\??la}{#1}%
+  {\ifcsname\languagespectag{#2}\endcsname \else
+      \expandafter\newtoks\csname\languagespectag{#2}\endcsname
+   \fi
+   \csname\languagespectag{#2}\endcsname\@EA{\the\csname\languagespectag{#2}\endcsname#1}%
    \bgroup
    \setbox\scratchbox\hbox{\enablelanguagespecifics[#2]}%
    \ifdim\wd\scratchbox>\zeropoint
@@ -158,58 +136,52 @@
    \egroup
    \doif{#2}\currentmainlanguage{\enablelanguagespecifics[#2]}}
 
+% \def\forgetlanguagespecifics[#1]%
+%   {\letvalue{\??la\languageencoding#1\??la}\empty}
+
 \def\forgetlanguagespecifics[#1]%
-  {\letvalue{\??la\languageencoding#1\??la}\empty}
+  {\csname\languagespectag{#1}\endcsname\emptytoks}
 
 %D Enabling them is rather straightforward. We only have to
 %D define \type{\do} in such a way that \type{{ }} is removed
 %D and the language key is gobbled.
 
-%\def\enablelanguagespecifics[#1]%
-%  {\let\do\secondoftwoarguments
-%   \doifvaluesomething{\??la#1\c!default}
-%     {\getvalue{\??la\getvalue{\??la#1\c!default}\??la}%
-%      \getvalue{\??la\languageencoding\??la}}%
-%   \getvalue{\??la#1\??la}%
-%   \getvalue{\??la\languageencoding#1\??la}}
-%
-% sped up since used often:
-
 \def\enablelanguagespecifics[#1]%
-  {%\let\do\secondoftwoarguments
-   \csname
-     \??la
+  {\the\executeifdefined{\??la
      \@EA\ifx\csname\??la#1\c!default\endcsname\relax
        \languageencoding
      \else
        \csname\??la#1\c!default\endcsname
      \fi
-     \??la
-   \endcsname
-   \csname\??la#1\??la\endcsname
-   \csname\??la\languageencoding#1\??la\endcsname} % dup ?
+     \??la}\emptytoks
+   \the\executeifdefined{\??la#1\??la}\emptytoks
+   \the\executeifdefined{\??la\languageencoding#1\??la}\emptytoks} % dup ?
+
+% check:
+
+% \def\enablelanguagespecifics[#1]%
+%   {\the\executeifdefined{\??la\executeifdefined{\??la#1\c!default}\languageencoding\??la}\emptytoks
+%    \the\executeifdefined{\??la#1\??la}\emptytoks
+%    \the\executeifdefined{\??la\languageencoding#1\??la}\emptytoks} % dup ?
 
 %D \macros
 %D   {deactivatelanguagespecific}
 %D
 %D The next code makes it possible to disable the specifics.
 
-\def\deactivatelanguagespecific#1%
-  {\ifundefined{l g s \string#1}%
-     \letgvalueempty{l g s \string#1}% signal to prevent dup def
-     \bgroup
-     \catcode`#1=\@@active
-     \uccode`~=`#1
-     \uppercase{\doglobal\appendtoks\dodeactivatetoken{~}\to\everyresetlanguagespecifics}%
-     \egroup
-     \expanded{\doglobal\noexpand\appendtoks{#1}{\the\catcode`#1}}\to\everyresetlanguagespecifics
-   \fi}
+% \def\deactivatelanguagespecific#1%
+%   {\ifundefined{l g s \string#1}%
+%      \letgvalueempty{l g s \string#1}% signal to prevent dup def
+%      \bgroup
+%      \catcode`#1=\@@active
+%      \uccode`~=`#1
+%      \uppercase{\doglobal\appendtoks\dodeactivatetoken{~}\to\everyresetlanguagespecifics}%
+%      \egroup
+%      \expanded{\doglobal\noexpand\appendtoks{#1}{\the\catcode`#1}}\to\everyresetlanguagespecifics
+%    \fi}
 
-% \def\dodeactivatetoken#1#2#3%
-%   {\def#1{#2}\catcode`#2=#3\relax}
-
-\def\dodeactivatetoken#1#2#3% test needed to avoid clash with \unprotect
-  {\def#1{#2}\ifnum\catcode`#2=\@@active\catcode`#2=#3\relax\fi}
+% \def\dodeactivatetoken#1#2#3% test needed to avoid clash with \unprotect
+%   {\def#1{#2}\ifnum\catcode`#2=\@@active\catcode`#2=#3\relax\fi}
 
 %D We cannot hook this into the installer since language
 %D specifics can be anything. So far, we have the following
@@ -221,12 +193,12 @@
 
 \protect
 
-\deactivatelanguagespecific "
-\deactivatelanguagespecific /
-\deactivatelanguagespecific :
-\deactivatelanguagespecific ;
-\deactivatelanguagespecific ?
-\deactivatelanguagespecific !
+% \deactivatelanguagespecific "
+% \deactivatelanguagespecific /
+% \deactivatelanguagespecific :
+% \deactivatelanguagespecific ;
+% \deactivatelanguagespecific ?
+% \deactivatelanguagespecific !
 
 \unprotect
 
@@ -243,8 +215,11 @@
 %D difficult to implement. Fortunately dates never exceed the
 %D number~31.
 
-\def\highordinalstr#1{\high{\nocap{#1}}}
-\def\ordinalstr    #1{\nocap{#1}}
+\ifx\high          \undefined \let\high          \firstofoneargument \fi % todo
+\ifx\notsmallcapped\undefined \let\notsmallcapped\firstofoneargument \fi % todo
+
+\def\highordinalstr#1{\high{\notsmallcapped{#1}}}
+\def\ordinalstr    #1{\notsmallcapped{#1}}
 
 \def\ordinaldaynumber#1% \strippedcsname\ordinaldaynumber
   {\expanded{\executeifdefined{\currentlanguage ordinaldaynumber}%

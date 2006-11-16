@@ -11,192 +11,60 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-\newcontextversion{2006.08.08 17:52}
+% it's about time to clean up this file ...
+
+\newcontextversion{2006.11.16 12:02}
 
 %D This file is loaded at runtime, thereby providing an
 %D excellent place for hacks, patches, extensions and new
 %D features.
 
-% \font\f=dummyfont  \rpcode\f0=500 \hbox{..}\char0
+\unprotect
 
+\writestatus{\m!systems}{beware: some patches loaded from cont-new.tex}
+
+% \font\f=dummyfont  \rpcode\f0=500 \hbox{..}\char0
 % todo: mp-new
 % caption: grid=top|bottom in xml defs
+
+\def\dividedsize#1#2#3% size gap n
+  {\dimexpr
+     \ifnum\dimexpr#1\relax>\plusone
+       (\dimexpr#1\relax-\numexpr#3-1\relax\dimexpr#2\relax)/#3\else#1%
+     \fi
+   \relax}
+
+% maybe to be integrated (option=...)
 
-\unprotect
+\def\directexternalfigure
+  {\dodoubleempty\dodirectexternalfigure}
+
+\def\dodirectexternalfigure[#1][#2]%
+  {\bgroup
+   \getparameters[\??ef][\c!type=\splitofftype,\c!page=1,#2]%
+   \sanitizefilename#1\to\expandedfigurename
+   \splitfilename\expandedfigurename
+   \let\@@DriverImageWidth  \!!zeropoint
+   \let\@@DriverImageHeight \!!zeropoint
+   \let\@@DriverImageFile   \splitofffull
+   \let\@@DriverImageType   \@@eftype
+   \let\@@DriverImageMethod \@@eftype
+   \let\@@DriverImageLabel  \empty
+   \let\@@DriverImagePage   \@@efpage
+   \doinsertfile
+   \egroup}
+
+% \directexternalfigure[cow.pdf]
+
+% normally one does not want this to happen nested, maybe there
+% is more; non public vars btw, will become conditionals
+
+\appendtoks \writetoregisterfalse \to \everybeforeutilityread
+\appendtoks \writetolistfalse     \to \everybeforeutilityread
+\appendtoks \notesenabledfalse    \to \everybeforeutilityread
 
 % \setuplabeltext[\s!itemcount1={{I(},{)}}]
 % \def\labeledcountervalue#1{\labeltexts{#1}{\countervalue{#1}}}
-
-\writestatus{\m!systems}{beware: some patches loaded from cont-new.tex}
-
-% we need to overhaul the page modules anyway
-
-\def\settext
-  {\doquintupleempty\dosettext}
-
-\def\dosettext[#1][#2][#3][#4][#5]% header text middle text/text
-  {\iffifthargument
-     \setvalue{\??tk#1#2\executeifdefined{:\c!text:#3:}\c!middletext}%
-       {\dodoubletexts{\??tk#1}{#2}%
-          {\c!leftstyle \c!leftcolor \c!leftwidth }{#4}%
-          {\c!rightstyle\c!rightcolor\c!rightwidth}{#5}}%
-   \else\iffourthargument
-     \setvalue{\??tk#1#2\executeifdefined{:\c!text:#3:}\c!middletext}%
-       {\dodoubletexts{\??tk#1}{#2}%
-          {\c!leftstyle \c!leftcolor \c!leftwidth }{#4}%
-          {\c!rightstyle\c!rightcolor\c!rightwidth}{#4}}%
-   \else\ifthirdargument
-     \setvalue{\??tk#1#2\c!middletext}%
-       {\dodoubletexts{\??tk#1}{#2}%
-          {\c!leftstyle \c!leftcolor \c!leftwidth }{#3}%
-          {\c!rightstyle\c!rightcolor\c!rightwidth}{#3}}%
-   \fi\fi\fi}
-
-\def\resettext
-  {\dotripleempty\doresettext}
-
-\def\doresettext[#1][#2][#3]% header text middle
-  {\ifthirdargument
-     \letvalue{\??tk#1#2\executeifdefined{:\c!text:#3:}\c!middletext}\empty
-   \else\ifsecondargument
-     \letvalue{\??tk#1#2\c!lefttext  }\empty
-     \letvalue{\??tk#1#2\c!middletext}\empty
-     \letvalue{\??tk#1#2\c!righttext }\empty
-   \fi\fi}
-
-\setvalue{:\c!middle:\c!text:}{\c!middletext}
-\setvalue{:\c!left  :\c!text:}{\c!lefttext  }
-\setvalue{:\c!right :\c!text:}{\c!righttext }
-
-% \settext[header][text][middle][xxx][yyy]
-
-%D A nice example of a plugin:
-%D
-%D \startbuffer
-%D \startitemize[a,random,packed]
-%D \startitem first  \stopitem \startitem second \stopitem
-%D \startitem third  \stopitem \startitem fourth \stopitem
-%D \stopitemize
-%D
-%D \startitemize[a,random,packed]
-%D \startitem first  \stopitem \startitem second \stopitem
-%D \startitem third  \stopitem \startitem fourth \stopitem
-%D \stopitemize
-%D
-%D \startitemize[a,packed]
-%D \startitem first  \stopitem \startitem second \stopitem
-%D \startitem third  \stopitem \startitem fourth \stopitem
-%D \stopitemize
-%D \stopbuffer
-%D
-%D \typebuffer \getbuffer
-
-% better collectitems als conditional and a real plugin mechanism (some day)
-
-\@EA\long\@EA\def\@EA\collectitemgroupitem\@EA#\@EA1\csname\e!stop\v!item\endcsname
-  {\increment\itemcollectcounter
-   \long\setvalue{\v!item*\itemcollectcounter}{\item#1\par}}
-
-\def\flushcollecteditems
-  {\ifconditional\randomizeitems
-     \getrandomnumber\itemcollectcounternow\plusone\itemcollectcounter
-   \else
-     \increment\itemcollectcounternow
-   \fi
-   \doifdefined{\v!item*\itemcollectcounternow}
-     {\getvalue{\v!item*\itemcollectcounternow}%
-      \letbeundefined{\v!item*\itemcollectcounternow}%
-      \increment\itemcollectcounterdone}%
-   \ifnum\itemcollectcounterdone<\itemcollectcounter\relax
-     \expandafter\flushcollecteditems
-   \fi}
-
-\def\stopcollectitems
-  {\ifconditional\randomizeitems
-     \newcounter\itemcollectcounterdone
-     \ifnum\itemcollectcounter>\zerocount
-       \@EAEAEA\flushcollecteditems
-     \fi
-   \fi}
-
-\def\startcollectitems
-  {\ifconditional\randomizeitems
-     \newcounter\itemcollectcounter
-     \letvalue{\e!start\v!item}\collectitemgroupitem
-   \fi}
-
-% This will move to core-fig asap:
-%
-% todo: process between runs
-
-\startXMLmapping[rli]
-  \defineXMLprocess[rl:identify]
-  \defineXMLsavecontent[rl:width] {\!!zeropoint}
-  \defineXMLsavecontent[rl:height]{\!!zeropoint}
-\stopXMLmapping
-
-\let\rliwidth \!!zeropoint
-\let\rliheight\!!zeropoint
-
-\def\getRLIfiguredimensions#1%
-  {\global\let\rliwidth \!!zeropoint
-   \global\let\rliheight\!!zeropoint
-   \doifelsenothing\@@efconversion
-     {\doiffileelse\@@effilenametype
-        {\doiffileelse{\@@effilenametype.rli}
-           {}
-           {% let's try runtime running first
-            \writestatus\m!figures{using rlxtools to determine size of \@@effilenametype}%
-            \executesystemcommand{texmfstart rlxtools --identify \@@effilenametype}}%
-         \doiffileelse{\@@effilenametype.rli}
-           {}
-           {% we assume that runtime running failed
-            \installprogram{texmfstart rlxtools --identify \@@effilenametype}}%
-         \startnointerference
-         \startXMLmapping[rli]%
-           \startXMLignore
-           \processXMLfile{\@@effilenametype.rli}%
-           \xdef\rliwidth {\XMLflush{rl:width}}%
-           \xdef\rliheight{\XMLflush{rl:height}}%
-           \stopXMLignore
-         \stopXMLmapping
-         \stopnointerference}
-        {}}
-     {}} % no rli when rlx conversion is in place
-
-\def\getfiguredimensionsC
-  {\ifcase\figurestatus\ifcase\figurefilemode\else
-     \doifsomething\@@efcurrentpath
-       {\doifnotinset\@@effiletype{\c!tex,\c!tmp}
-          {\doiffileelse\@@efcurrentfile
-             {\@@eftrace{using rlxtools to identify \@@effilenametype}%
-              \getRLIfiguredimensions{\@@effilenametype}%
-              \ifdim\rliwidth>\zeropoint \ifdim\rliheight>\zeropoint
-                \geteparameters % e !
-                  [\??ep]
-                  [\c!x=\!!zeropoint,\c!y=\!!zeropoint, % brrr, todo: bbox
-                   \c!w=\rliwidth,\c!h=\rliheight]%
-                \let\@@eftype\@@efcurrenttype
-                \let\@@effullname\@@efcurrentfile
-                \chardef\figurestatus\plusfour % todo, message is wrong now
-              \fi \fi
-              \@@eftrace{\ifcase\figurestatus not \fi found}}
-             {}}}%
-   \fi\fi}
-
-\let\doanalyzefigurefilesB\relax % obsolete
-\let\doanalyzefigurefilesC\relax % obsolete
-
-\def\environment #1 % at outermost level only (load only once)
-  {\pushmacro\startenvironment
-   \pushmacro\stopenvironment
-   \def\startenvironment ##1 {}%
-   \let\stopenvironment\relax
-   \startreadingfile
-   \doexecutefileonce{#1}
-   \stopreadingfile
-   \popmacro\startenvironment
-   \popmacro\stopenvironment}
 
 \def\singlewidened     #1{\hbox spread 1em{\hss#1\hss}}
 \def\complexwidened[#1]#2{\hbox spread  #1{\hss#2\hss}}
@@ -214,203 +82,9 @@
 %
 % \def\getlocation#1{\executeifdefined{loc:#1}{#1}}
 
-\def\convertencodedtokens{\stringifyencodedtokens}
-
-% test case:
-%
-% \enableregime[cp1250]
-% \mainlanguage[cz]
-%
-% \starttext
-%
-% \title{éluùouËcÌ konÏ ˙pÌ}
-% \placelist[chapter][criterium=all]
-%
-% \startbuffer
-% <chapter>
-%     <title>éluùouËcÌ konÏ ˙pÌ</title>
-% </chapter>
-% \stopbuffer
-%
-% \defineXMLenvironment
-%   [chapter]
-%   {\defineXMLsave[title]}
-%   {\expanded{\chapter{\XMLflush{title}}}}
-% \processXMLbuffer
-%
-% \setuphead[chapter][expansion=yes]
-% \defineXMLenvironment
-%   [chapter]
-%   {\defineXMLsave[title]}
-%   {\chapter{\XMLflush{title}}}
-% \processXMLbuffer
-%
-% \stoptext
-
 % just in case we load something from a file (pdfr-ec for instance)
 
 \prependtoks \restoreendofline \to \everybeforeshipout
-
-% \tracefilestrue
-%
-% \unexpanded\def\readfile#1#2#3%
-%   {\readlocfile{#1}{#2}
-%      {\readjobfile{#1}{#2}
-%         {\readsysfile{#1}{#2}{#3}}}}
-
-\unexpanded\def\readfile#1#2#3%
-  {\readlocfile{#1}{#2}{\readsysfile{#1}{#2}{#3}}}
-
-\chardef\preprocessmethod 2 % 0=no check 1=present_check 2=log_check
-\chardef\preprocessstate  0 % 1=found 2=not_present (skip)
-\def    \preprocesssuffix {.prep}
-
-\def\loadctxpreplist
-  {\ifcase\preprocessmethod
-     % no checking
-   \or
-     % simple checking
-   \or
-     \doiffileexistselse{./\jobname.ctl}
-       {\bgroup
-        \defineXMLenvironment[ctx:preplist]
-          {\writestatus\m!systems{loading ctx log file}}
-          {}%
-        \defineXMLenvironmentsave[ctx:prepfile][done=no]
-          {}
-          {\writestatus\m!systems{registering \XMLflush{ctx:prepfile} -> \XMLop{done}}%
-           \setxvalue{fp..\XMLflush{ctx:prepfile}}{\XMLop{done}}}%
-        \processXMLfile{./\jobname.ctl}%
-        \egroup}%
-       {\global\chardef\preprocessmode\plusone}%
-   \fi
-   \global\let\loadctxpreplist\relax}
-
-\appendtoks\loadctxpreplist\to\everystarttext % will become: \prependtoks\loadctxpreplist\to\everyjob
-
-\def\docheckprepfile
-  {\ifcase\preprocessmethod
-     \iftracefiles\writestatus\m!systems{preprocessing - not needed}\fi
-     % no preprocessing
-   \or
-     % only check for existence
-     \iftracefiles\writestatus\m!systems{preprocessing - check exitence of \readfilename\preprocesssuffix}\fi
-     \doiffileexistselse{\readfilename\preprocesssuffix}
-       {\chardef\preprocessstate\plusone}
-       \donothing
-   \or
-     % check when in list, otherwise assume normal file
-     \bgroup
-     \splitfilename\readfilename
-     \ifx\splitofftype\empty
-       % saveguard and speed up
-       \iftracefiles\writestatus\m!systems{preprocessing - no suffix}\fi
-       \egroup
-     \else
-       \iftracefiles\writestatus\m!systems{preprocessing - check presence of \readfilename\preprocesssuffix}\fi
-       \doifdefinedelse{fp..\readfilename}
-         {\egroup
-          \doiffileexistselse{\readfilename\preprocesssuffix}
-            {\chardef\preprocessstate\plusone}
-            {\chardef\preprocessstate\plustwo}}%
-         {\doifdefinedelse{fp..\splitoffname.\splitofftype}
-            {\egroup
-             \doiffileexistselse{\readfilename\preprocesssuffix}
-               {\chardef\preprocessstate\plusone}
-               {\chardef\preprocessstate\plustwo}}%
-            {\egroup}}%
-     \fi
-   \fi}
-
-% beware, \readfilename keeps the original one, but we load and store the
-% suffixed with .prep file (if present)
-
-\def\doreadfile#1#2#3#4% beware, this one already works at format generation time!
-  {\sanitizefilename#2\to\readfilename
-   \ifx\readfilename\empty
-     % silently ignore
-   \else
-     \let\trackedfilename\readfilename
-     \chardef\preprocessstate\zerocount
-     \ifconditional\trackfilenames
-       \doifundefinedelse{fn..\trackedfilename}\donetrue\donefalse
-     \else
-       \donetrue
-     \fi
-     \ifdone
-       \checkfilename\readfilename
-       \ifcase\kindoffile
-         % not a full path or url, check for existence
-         \doifelsenothing{#1}
-           {\iftracefiles\writestatus\m!systems{searching for \readfilename\space on tex path}\fi
-            \def\next{\redoreadfile\readfilename{#3}{#4}}}%
-           {\iftracefiles\writestatus\m!systems{searching for \readfilename\space on #1}\fi
-            \def\next{\redoreadfile{\pathplusfile{#1}{\readfilename}}{#3}{#4}}}%
-       \else
-         % a full path or url, no further checking done
-         \docheckprepfile
-         \ifcase\preprocessstate
-           \doiffileexistselse\readfilename
-             {\iftracefiles\writestatus\m!systems{located \readfilename}\fi
-              \def\next{#3\dodoreadfile}}%
-             {\iftracefiles\writestatus\m!systems{not found \readfilename}\fi
-              \def\next{#4}}%
-         \or
-           \iftracefiles\writestatus\m!systems{located \readfilename\preprocesssuffix}\fi
-           \def\next{#3\dodoreadfile}%
-         \or
-           \iftracefiles\writestatus\m!systems{not found \readfilename\preprocesssuffix}\fi
-           \def\next{#4}%
-         \fi
-       \fi
-     \else
-       \edef\readfilename{\getvalue{fn..\readfilename}}%
-       \iftracefiles\writestatus\m!systems{already located \readfilename}\fi
-       \def\next{#3\dodoreadfile}%
-     \fi
-     \expandafter\next
-   \fi}
-
-\def\redoreadfile#1#2#3%
-  {\docheckprepfile
-   \ifcase\preprocessstate
-     \doiffileexistselse{#1}%
-       {\edef\readfilename{#1}%
-        \iftracefiles\writestatus\m!systems{#1 located}\fi
-        \def\next{#2\dodoreadfile}}%
-       {\iftracefiles\writestatus\m!systems{cannot locate #1}\fi
-        \decrement\readlevel\relax
-        \ifnum\readlevel>\zerocount
-          \edef\readfilename{\pathplusfile{\f!parentpath}{\readfilename}}%
-          \def\next{\redoreadfile\readfilename{#2}{#3}}%
-        \else
-          \def\next{#3}%
-        \fi}%
-   \or
-     \edef\readfilename{#1}%
-     \iftracefiles\writestatus\m!systems{#1\preprocesssuffix\space located}\fi
-     \def\next{#2\dodoreadfile}%
-   \or
-     \def\next{#3}%
-   \fi
-   \next}
-
-\def\dodoreadfile % we provide hooks, for instance for \enableXML
-  {\ifconditional\trackfilenames
-     \setxvalue{fn..\trackedfilename}{\readfilename\ifcase\preprocessstate\or\preprocesssuffix\fi}%
-   \fi
-   \the\everybeforereadfile
-   \ifcase\preprocessstate
-     % no checking or not found when using method 1
-     \normalinput\readfilename
-   \or
-     % found when using method 1 or 2
-     \normalinput\readfilename\preprocesssuffix
-   \or
-     % not found when using method 2
-   \fi
-   \relax
-   \the\everyafterreadfile}
 
 % The following may be a solution for the fact that one cannot
 % change catcodes of characters like : and ; inside an environment.
@@ -436,66 +110,6 @@
 % \appendtoks\let|\normalactivebar  \to\everypagebody
 
 \let\cs\getvalue
-
-%D Krzysztof Leszczynski suggested to provide access to the level by
-%D means of a \type {#1}. I decided to pass the more frquently used
-%D level as \type {#1} and the less favoured depth as \type {#2}. The
-%D intended usage is:
-%D
-%D \starttyping
-%D \dorecurse{3}{\definesymbol[test-#1][xx-#1]}
-%D
-%D \def\test{\dorecurse{3}{\definesymbol[test-##1][xx-##1]}} \test
-%D
-%D \symbol[test-1]\quad\symbol[test-2]\quad\symbol[test-3]
-%D \stoptyping
-%D
-%D Since the hashed arguments are expanded, we don't need tricky
-%D expansion here.
-%D
-%D \starttyping
-%D \dorecurse{3}{\expanded{\definesymbol[test-\recurselevel][xx-\recurselevel]}}
-%D \stoptyping
-
-\def\expandrecursecontent
-  {\csname\@@arecurse\recursedepth\@EA\@EA\@EA\endcsname\@EA\@EA\@EA{\@EA\recurselevel\@EA}\@EA{\recursedepth}}
-
-\long\def\xdorecurse#1#2%
-  {\global\advance\outerrecurse \plusone
-   \long\global\@EA\def\csname\@@arecurse\recursedepth\endcsname##1##2{#2}%
-   \global\@EA\let\csname\@@irecurse\recursedepth\endcsname\recurselevel
-   \@EA\dodorecurse\@EA1\@EA{\number#1}}
-
-\long\def\dostepwiserecurse#1#2#3#4% can be made faster by postponing #4
-  {\global\advance\outerrecurse \plusone
-   \long\global\@EA\def\csname\@@arecurse\recursedepth\endcsname##1##2{#4}%
-   \global\@EA\let\csname\@@irecurse\recursedepth\endcsname\recurselevel
-   \ifnum#3>0\relax
-     \ifnum#2<#1\relax
-       \let\nextrecurse\exitstepwiserecurse
-     \else
-       \let\nextrecurse\dodostepwiserecurse
-     \fi
-   \else
-     \ifnum#3<0\relax
-       \ifnum#1<#2\relax
-         \let\nextrecurse\exitstepwiserecurse
-       \else
-         \let\nextrecurse\dodostepwisereverse
-       \fi
-     \else
-       \let\nextrecurse\exitstepwiserecurse
-     \fi
-   \fi\expanded{\nextrecurse{\number#1}{\number#2}{\number#3}}}
-
-\long\def\doloop#1%
-  {\global\advance\outerrecurse \plusone
-   \long\global\@EA\def\csname\@@arecurse\recursedepth\endcsname##1##2{#1}%
-   \global\@EA\let\csname\@@irecurse\recursedepth\endcsname\recurselevel
-   \let\endofloop\dodoloop
-   \dodoloop1} % no \plusone else \recurselevel wrong
-
-\ifx\normalcompound\undefined \let\normalcompound=| \fi
 
 % experimental so this may change
 
@@ -591,8 +205,6 @@
 %
 % \shapesynonym{eacute}
 
-% new: \forcebaselinecorrection --> core-spa & core-grd
-
 \chardef\baselinecorrectionmode\plusone
 
 \def\onbaselinecorrection   {\chardef\baselinecorrectionmode\plusone  }
@@ -692,47 +304,6 @@
      \normalstartbaselinecorrection
    \fi}
 
-% todo: fast processor
-
-\def\gettwopassdatalist#1%
-  {\loadtwopassdata
-   \ifcsname#1:\s!list\endcsname
-     \letcscsname\twopassdatalist\csname#1:\s!list\endcsname
-   \else
-     \let\twopassdatalist\empty
-   \fi}
-
-% \def\literateencodedtokens
-%   {% \let\dohandleaccent   \keephandleaccent  % assumes named chars % defineaccent    "e {name}
-%    % \let\dohandlecommand  \keephandlecommand % assumes named chars % definecommand crap {name}
-%    \let\dohandlecharacter\keephandlecharacter}
-%
-% \def\convertmeaning#1\to % watch the double expansion !
-%   {\bgroup
-%      \honorunexpanded
-%     %\dontexpandencoding % new
-%      \literateencodedtokens % newer
-%      \xdef\@@globalexpanded{#1}%
-%      \xdef\@@globalexpanded{\@@globalexpanded}%
-%    \egroup
-%    \convertcommand\@@globalexpanded\to}
-
-\def\defXMLattributestring#1#2#3#4%
-  {\ifcsname\@@XMLvariable:#2:#3\endcsname
-     \@EA\convertcommand\csname\@@XMLvariable:#2:#3\endcsname\to#1%
-   \else
-     \convertargument#4\to#1%
-   \fi}
-
-\bgroup \catcode`\<=\active
-
-% usage: \expanded{\rescanXMLatttributes{fo:table-cell}}
-
-\gdef\rescanXMLattributes  #1{\noexpand\dogetXMLarguments{#1}\currentXMLarguments>}
-\gdef\parseXMLattributes #1#2{\dogetXMLarguments{#1}#2>}
-
-\egroup
-
 % \page[left]
 % \definecolumntextarea[intro][left][x=1,y=1,nx=4,ny=20,state=start,background=introlayer]
 % \setupcolumntextareatext[intro][left][\setups{intro}]
@@ -741,23 +312,6 @@
 \def\flushcolumntextareas
   {\initializecolumntextareas
    \setvsize}
-
-% And so, after a few years of keeping this potentially dangerous
-% speedup in cont-exp, we now move it to the kernel: the next
-% patch is 30\% faster on main interface (seconds) (9->7 sec on
-% 1 million calls). Another speed up is still under testing.
-
-\startinterface english
-
-  \def\dosetevalue  #1#2{\@EA\edef\csname#1#2\endcsname}
-  \def\dosetgvalue  #1#2{\@EA\gdef\csname#1#2\endcsname}
-  \def\dosetvalue   #1#2{\@EA\def \csname#1#2\endcsname}
-  \def\docopyvalue#1#2#3{\@EA\def \csname#1#3\@EA\endcsname\@EA{\csname#2#3\endcsname}}
-
-\stopinterface
-
-\def\XMLprocess#1%
-  {\begingroup\enableXML\XMLflush{#1}\endgroup}
 
 %D (Inspired by a discussion on the \CONTEXT\ mailing list)
 %D
@@ -822,6 +376,11 @@
 
 \long\def\rescan#1{\scantokens{#1\ignorespaces}}
 \long\def\rescanwithsetup#1#2{\begingroup\directsetup{#1}\scantokens{#2\ignorespaces}\endgroup}
+
+\ifx\scantextokens\undefined \else
+  \long\def\rescan#1{\scantextokens{#1}}
+  \long\def\rescanwithsetup#1#2{\begingroup\directsetup{#1}\scantextokens{#2}\endgroup}
+\fi
 
 % In 2005 we will abandon support for font encodings that don't have
 % the ascii characters { } $ etc in their normal slot, i.e. latin modern
@@ -853,7 +412,7 @@
    \honorunexpanded
 %    \dontexpandencoding
 %    \dontexpandutf
-   \let\dohandleactivecharacter\donthandleactivecharacter
+   \chardef\activecharactermode\zerocount
    \xdef\@@globalexpanded{#1}%
    \egroup
    \@@globalexpanded}
@@ -861,23 +420,6 @@
 \def\setXMLexpandedmark#1#2% using a tok prevents unwanted expansion in mark
   {\XMLexpanded{\scratchtoks{\enableXML#2}}%
    \expanded{\normalsetnormalmark{#1}{\the\scratchtoks}}}
-
-%D Ok, I got tired of making dedicated clean up macros using the
-%D same mechanism again and again, so now we have:
-%D
-%D \starttyping
-%D \def\xxxx{abc.d} \replacecharacters\xxxx{a.}{-} \xxxx
-%D \stoptyping
-
-\def\replacecharacters#1#2#3% macro characters replacement
-  {\bgroup
-   \edef\ascii{#1}%
-   \retainlccodes
-   \def\docommand##1{\lccode\expandafter`\csname##1\endcsname=\expandafter`\csname#3\endcsname}%
-   \handletokens#2\with\docommand
-   \lowercase\@EA{\@EA\xdef\@EA\globalascii\@EA{\ascii}}%
-   \egroup
-   \dodoglobal\let#1\globalascii}
 
 \ifx\pagediscards\undefined \let\pagediscards\relax \fi
 
@@ -893,43 +435,11 @@
   {\expanded{\everyhbox{\the\everyhbox\noexpand\fastenableencoding{\currentencoding}}}%
    \def\dealwithmathtextencoding{\let\characterencoding\nocharacterencoding}%
    \dealwithmathtextencoding}
+
 \appendtoks
   \dealwithmathtextencoding
 \to \everymathematics
 
-\def\dohandlemathtoken#1%
-  {\csname
-     \ifmmode
-       \ifcsname\@mt@\mathcollection:\outerencoding#1\endcsname
-         \@mt@\mathcollection:\outerencoding
-       \else\ifcsname\@mt@\mathcollection#1\endcsname
-         \@mt@\mathcollection
-       \else\ifcsname\@mt@\nomathcollection#1\endcsname
-         \@mt@\nomathcollection
-       \else\ifcsname\characterencoding#1\endcsname
-         \characterencoding
-       \else
-         \nocharacterencoding
-       \fi\fi\fi\fi
-     \else
-       \ifcsname\characterencoding#1\endcsname
-         \characterencoding
-       \else\ifcsname\nocharacterencoding#1\endcsname
-         \nocharacterencoding
-       \else\ifcsname\@mt@\mathcollection:\outerencoding#1\endcsname
-         \@mt@\mathcollection:\outerencoding
-       \else\ifcsname\@mt@\mathcollection#1\endcsname
-         \strippedcsname\mathematics\expandafter\endcsname\csname\@mt@\mathcollection
-       \else\ifcsname\@mt@\nomathcollection#1\endcsname
-         \strippedcsname\mathematics\expandafter\endcsname\csname\@mt@\nomathcollection
-       \else
-         \nocharacterencoding
-       \fi\fi\fi\fi\fi
-     \fi
-   #1\endcsname}
-
-\let\dohandlecommand\dohandlemathtoken
-
 \let\outerencoding\empty
 
 \def\checkoutermathencoding
@@ -943,10 +453,10 @@
    \checkoutermathencoding
 \to \everymathematics
 
-% \startmathcollection[euler:texnansi]
+% \startmathcollection[eul:texnansi]
 %     \definemathsymbol [breve] [accent] [tf] ["15]
 % \stopmathcollection
-% \startmathcollection[euler:ec]
+% \startmathcollection[eul:ec]
 %     \definemathsymbol [breve] [accent] [tf] ["08]
 % \stopmathcollection
 %
@@ -978,11 +488,6 @@
 % \markpage[nobackgrounds]
 % \doifmarkedpageelse{nobackgrounds}
 
-\def\gettwopassdatalist#1%
-  {\loadtwopassdata
-   \letcscsname\twopassdatalist\csname#1:\s!list\endcsname
-   \ifx\twopassdatalist\relax\let\twopassdatalist\empty\fi}
-
 \newcounter\nofmarkedpages
 
 \def\definemarkedpage[#1]%
@@ -991,13 +496,7 @@
 \def\markpage[#1]% looks very much like domarginreference
   {\iftrialtypesetting\else
      \doglobal\increment\nofmarkedpages\relax
-     \edef\writeparref%
-       {\writeutilitycommand%
-          {\twopassentry%
-             {\v!page:#1}%
-             {\nofmarkedpages}%
-             {\noexpand\realfolio}}}%
-     \writeparref
+     \lazysavetwopassdata{\v!page:#1}{\nofmarkedpages}{\noexpand\realfolio}%
    \fi}
 
 \def\doifmarkedpageelse#1%
@@ -1095,7 +594,7 @@
    \ifx\@@expanded\empty\else
      \bgroup
      \global\percentdimendonefalse
-     \def\%{\dimexpr(#1/100)\global\percentdimendonetrue\ignorespaces}| scantokens add's a space
+     \def\%{\dimexpr#1/100\relax\global\percentdimendonetrue\ignorespaces}| scantokens add's a space
      \catcode`%=\@@active
      \catcode`\\=\@@escape
      \let%\%|
@@ -1150,52 +649,6 @@
    \obeyspaces}
 
 \egroup
-
-% \def\doshowpardata#1#2{\hbox{\string#1: \the#2}\endgraf}
-%
-% \def\showpardata
-%   {\edef\thepardata
-%      {\hbox{font: \fontname\font}\endgraf
-%       \doshowpardata{interword space}{\fontdimen2\font}%
-%       \doshowpardata{interword stretch}{\fontdimen3\font}%
-%       \doshowpardata{interword shrink}{\fontdimen4\font}%
-%       \doshowpardata{quad space}{\fontdimen6\font}%
-%       \doshowpardata{extra space}{\fontdimen7\font}%
-%       \doshowpardata\hsize\hsize
-%       \doshowpardata\leftskip\leftskip
-%       \doshowpardata\rightskip\rightskip
-%       \doshowpardata\spaceskip\spaceskip
-%       \doshowpardata\xspaceskip\xspaceskip
-%       \doshowpardata\parindent\parindent
-%       \doshowpardata\parfillskip\parfillskip
-%       \doshowpardata\hyphenpenalty\hyphenpenalty
-%       \doshowpardata\exhyphenpenalty\exhyphenpenalty
-%       \doshowpardata\displaywidowpenalty\displaywidowpenalty
-%       \doshowpardata\widowpenalty\widowpenalty
-%       \doshowpardata\clubpenalty\clubpenalty
-%       \doshowpardata\brokenpenalty\brokenpenalty
-%       \doshowpardata\doublehyphendemerits\doublehyphendemerits
-%       \doshowpardata\finalhyphendemerits\finalhyphendemerits
-%       \doshowpardata\adjdemerits\adjdemerits}%
-%    \begingroup
-%    \dontshowcomposition
-%    \inleftmargin{\vsmash
-%      {\switchtobodyfont[7pt,tt]%
-%       \framed[\c!align=\v!right]{\thepardata}}}%
-%    \endgroup}
-%
-% \def\startshowpardata
-%   {\begingroup
-%    \showcomposition
-%    \showstruts\tracepositionstrue \tracingparagraphs\maxdimen
-%    \appendtoksonce\showpardata\let\showpardata\relax\to\everypar}
-%
-% \def\stopshowpardata
-%   {\endgraf
-%    \endgroup}
-%
-% \defineXMLenvironment[showpardata] \startshowpardata \stopshowpardata
-% \defineXMLsingular   [showpardata] \showpardata
 
 % todo : test low level translation (nl->en) and optimize script
 
@@ -1308,12 +761,12 @@
 \def\locatefilepath#1%
   {\let\locatedfilepath\empty
    \ifx\allinputpaths\empty \else
-     \def\docommando##1%
+     \def\docommand##1%
        {\doiffileelse{\pathplusfile{##1}{#1}}{\donetrue\def\locatedfilepath{##1}}\donefalse
         \ifdone\expandafter\quitcommalist\fi}%
      \doifparentfileelse{#1} % new
-       {\processcommacommand  [\allinputpaths]\docommando}
-       {\processcommacommand[.,\allinputpaths]\docommando}%
+       {\processcommacommand  [\allinputpaths]\docommand}
+       {\processcommacommand[.,\allinputpaths]\docommand}%
    \fi}
 
 % todo : share symbols
@@ -1482,19 +935,21 @@
 % \readfile{cont-exp}\donothing\donothing % speed up (5-20%)
 
 \def\dimenratio#1#2% etex only
-  {\withoutpt\the\dimexpr(2\dimexpr(#1)/(\dimexpr(#2)/32768))}
+  {\withoutpt\the\dimexpr2\dimexpr(#1)/\dimexpr(#2)/32768\relax\relax}
 
 \def\doxprecurse#1#2%
   {\ifnum#1=\zerocount % no \ifcase
      \expandafter\gobblethreearguments
    \else
      #2\expandafter\expandafter\expandafter\doxprecurse\expandafter
-   \fi\expandafter{\the\numexpr(#1-1)}{#2}}
+   \fi\expandafter{\the\numexpr#1-1\relax}{#2}}
 
 \def\buttonframed{\dodoubleempty\localframed[\??bt]} % goodie
 
 \unexpanded\def\asciistr#1{\convertargument#1\to\ascii{\verbatimfont\ascii}}
 
+% messy, will be improved:
+
 \prependtoks \setnormalcatcodes  \to \everyTEXinputmode
 \appendtoks  \processingXMLfalse \to \everyTEXinputmode
 
@@ -1520,59 +975,14 @@
 
 \endETEX
 
-% Currently there is a bug in \lastnodetype, so we will enable this
-% feature when the bugfix is widespread.
-
-% \beginETEX \lastnodetype
-%
-% \def\dodoreshapebox#1#2#3#4% \shapebox, \shapepenalty, \shapekern, \shapeskip
-%   {\ifnum\lastnodetype=\@@gluenode % \ifcase\lastskip % \ifdim\lastskip=\zeropoint\relax
-%      \shapeskip\lastskip
-%      \global\setbox\tmpshapebox\normalvbox{#4\unvbox\tmpshapebox}%
-%      \unskip
-%    \else\ifnum\lastnodetype=\@@kernnode % \ifcase\lastkern % \ifdim\lastkern=\zeropoint\relax
-%      \shapekern\lastkern
-%      \global\setbox\tmpshapebox\normalvbox{#3\unvbox\tmpshapebox}%
-%      \unkern
-%    \else\ifnum\lastnodetype=\@@penaltynode % \ifcase\lastpenalty % \ifnum\lastpenalty=\zerocount
-%      \shapepenalty\lastpenalty
-%      \global\setbox\tmpshapebox\normalvbox{#2\unvbox\tmpshapebox}%
-%      \unpenalty
-%    \else
-%      \setbox\shapebox\lastbox
-%      \ifvoid\shapebox
-%        \unskip\unpenalty\unkern
-%      \else
-%        \ifdim\wd\shapebox=\shapesignal\relax
-%          \exitloop
-%        \else
-%          \shapecounter\zerocount
-%          \global\setbox\tmpshapebox\normalvbox{#1\unvbox\tmpshapebox}%
-%        \fi
-%      \fi
-%    \fi\fi\fi
-%    \ifnum\shapecounter>100 % can be less
-%      \message{<<forced exit from shapebox>>}%
-%      \global\setbox\tmpshapebox\copy\oldshapebox
-%      \exitloop
-%    \else
-%      \advance\shapecounter \plusone
-%    \fi}
-%
-% \endETEX
-
 \let\normaltype\type
 
 \beginTEX
-
   \unexpanded\def\retype#1{\bgroup\convertargument#1\to\ascii\@EA\normaltype\@EA{\ascii}\egroup}
-
 \endTEX
 
 \beginETEX
-
   \unexpanded\def\retype#1{\scantokens{\normaltype{#1}\ignorespaces}}
-
 \endETEX
 
 \def\simplifytype{\let\type\retype}
@@ -1655,27 +1065,6 @@
 %   \item test
 %   \headsym{xx} test \par test
 % \stopitemize
-
-% \def\removeunwantedspaces
-%   {\ifhmode
-%      \doloop{\ifdim\lastskip>\zeropoint\unskip\else\exitloop\fi}%
-%    \fi}
-
-\def\removeunwantedspaces
-  {\ifhmode \ifdim\lastskip>\zeropoint
-     \unskip \@EAEAEA\removeunwantedspaces
-   \fi \fi}
-
-% wait till bugfix in etex is widespead
-%
-% \beginETEX \lastnodetype
-%
-% \def\removeunwantedspaces
-%   {\ifhmode
-%      \doloop{\ifnum\lastnodetype=\@@gluenode\unskip\else\exitloop\fi}%
-%    \fi}
-%
-% \endETEX
 
 % \def\dodimchoice#1#2#3%
 %   {\ifx#3\relax
@@ -2178,12 +1567,6 @@
 
 \long \def\tableiftextelse#1{\tableifelse{\doiftextelse{#1}}}
 
-\def\overloaded#1#2%
-  {\appendtoks
-     \writestatus\m!systems{overloaded: \string#2}%
-   \to \everybye
-   #1#2}
-
 \def\expandifnonempty#1%
   {\@EA\ifx\csname#1\endcsname\empty
      \expandafter\secondoftwoarguments
@@ -2224,16 +1607,6 @@
 \def\tightvbox{\dowithnextbox{\nextboxdp\zeropoint\flushnextbox}\vbox}
 \def\tightvtop{\dowithnextbox{\nextboxht\zeropoint\flushnextbox}\vtop}
 
-% pretty important (esp since we now ignore shipouts)
-%
-% actually we should nil all writes, marks, specials
-
-\appendtoks \globallet\popproperties     \relax \to \everylastshipout
-\appendtoks \globallet\popsplitproperties\relax \to \everylastshipout
-
-\def\incrementvalue#1{\expandafter\increment\csname#1\endcsname}
-\def\decrementvalue#1{\expandafter\decrement\csname#1\endcsname}
-
 % \translateMPinput{il2-pl}
 %
 % \startMPenvironment[global]
@@ -2245,10 +1618,6 @@
 % \startMPcode
 % draw btex MetaPost: ± ∂ etex scaled 5 ;
 % \stopMPcode
-
-% \startcolumnset[two] \input tufte
-% \startcolumnsetspan[two] \input tufte \stopcolumnsetspan
-% \input tufte \stopcolumnset
 
 % now in cont-loc.tex, for the sake of testing.
 %
@@ -2356,11 +1725,6 @@
   \setinnerparpositions % see "techniek" for application
 \to \everytabulate
 
-\appendtoks \checkcurrentlayout \to \everystarttext
-
-\def\flushfootnotes  {\flushnotes}
-\def\doflushfootnotes{\doflushnotes}
-
 %D This alternative is slower, since it works on top of the
 %D color (stack) mechanism, but it does provide nesting.
 
@@ -2384,6 +1748,8 @@
 
 \def\localstopraster{\ifincolor\localstopcolor\fi}
 \def\stopraster     {\ifincolor\stopcolor\fi}
+
+\def\raster[#1]{\groupedcommand{\startraster[#1]}{\stopraster}}
 
 \def\fontclassname#1#2%
   {\ifcsname\??ff#1#2\endcsname
@@ -2540,136 +1906,6 @@
 %D To be documented, \type {\includemenu[menu]}.
 %D To be documented, \type {\emphbf} cum suis.
 
-%D A prelude to strategies. Note for myself: overloads
-%D previous stuff from local pragma test files.
-
-\def\s!strategy{strategy}
-
-\def\currentstrategypass    {1}
-\def\currentstrategyvariable{0}
-\def\maximumstrategypass    {8}
-
-\newconditional\strategypassneeded
-\newconditional\strategypassforced
-
-\definetwopasslist{\s!strategy}
-
-\def\registerstrategypass%
-  {\ifnum\currentstrategypass>\maximumstrategypass \else
-     \ifconditional\strategypassforced
-       \doglobal\increment\currentstrategypass
-     \else%\ifconditional\strategypassneeded
-       %\doglobal\increment\currentstrategypass
-     \fi%\fi
-   \fi
-   \savecurrentvalue\currentstrategypass{\currentstrategypass}}
-
-\appendtoks \registerstrategypass \to \everybye % \everylastshipout
-
-\def\setstrategyvariable#1#2% key value
-  {%\doifnotstrategyvariable{#1}{\global\settrue\strategypassneeded}%
-   \doglobal\increment\currentstrategyvariable
-   \expanded{\immediatewriteutilitycommand{\noexpand
-     \twopassentry{\s!strategy}{\currentstrategyvariable}{#1::#2}}}}
-
-\def\doifstrategyvariableelse#1#2#3%
-  {\getstrategyvariable{#1}\iftwopassdatafound#2\else#3\fi}
-
-\def\getstrategyvariable#1% key
-  {\findtwopassdata{\s!strategy}{#1::}%
-   \setxvalue{\s!strategy:#1}{\twopassdata}}
-
-\def\retainstrategyvariable#1% key
-  {\expanded{\setstrategyvariable{#1}{\strategyvariable{#1}}}}
-
-\def\strategyvariable#1% key
-  {\csname\s!strategy:#1\endcsname}
-
-\let\stratvar\strategyvariable
-
-\def\forcestrategy{\global\settrue \strategypassforced}
-\def\abortstrategy{\global\setfalse\strategypassforced}
-
-\def\doifstrategyvariableelse#1#2#3%
-  {\getstrategyvariable{#1}\iftwopassdatafound#2\else#3\fi}
-
-\def\doifstrategyvariable   #1#2{\doifstrategyvariableelse{#1}{#2}{}}
-\def\doifnotstrategyvariable#1#2{\doifstrategyvariableelse{#1}{}{#2}}
-
-%D New: only at start of columns; may change ! Rather
-%D interwoven and therefore to be integrated when the multi
-%D column modules are merged.
-
-%  already taken care of: \definesystemvariable{ks}
-
-% is buggy now and does not work any longer
-
-\def\setupcolumnspan[#1]%
-  {\getparameters[\??ks][#1]}
-
-\presetlocalframed
-  [\??ks]
-
-\setupcolumnspan
-  [\c!n=2,
-   \c!offset=\v!overlay,
-   \c!frame=\v!off]
-
-\newbox\columnspanbox \let\postprocesscolumnspanbox\gobbleoneargument
-
-\def\dostartcolumnspan[#1]%
-  {\bgroup
-   \setupcolumnspan[#1]%
-   \forgetall
-   \ifinsidecolumns
-     \advance\hsize \intercolumnwidth
-     \hsize\@@ksn\hsize
-     \advance\hsize -\intercolumnwidth
-   \fi
-   \dowithnextbox
-     {\setbox\columnspanbox\flushnextbox
-      \ifinsidecolumns\wd\columnspanbox\hsize\fi
-      \postprocesscolumnspanbox\columnspanbox
-      \scratchdimen\ht\columnspanbox
-      \setbox\columnspanbox\hbox % depth to be checked, probably option!
-        {\localframed[\??ks][\c!offset=\v!overlay]{\box\columnspanbox}}%
-      \ht\columnspanbox\scratchdimen
-      \dp\columnspanbox\strutdp
-      \wd\columnspanbox\hsize
-      \ifinsidecolumns
-        \ifnum\@@ksn>1
-          \setvsize
-          \dohandleallcolumns
-            {\ifnum\currentcolumn>\@@ksn\else
-               \global\setbox\currenttopcolumnbox=\vbox
-                 {\ifnum\currentcolumn=1
-                    \snaptogrid\vbox{\copy\columnspanbox}
-                  \else
-                    \snaptogrid\vbox{\vphantom{\copy\columnspanbox}}
-                  \fi}%
-               \wd\currenttopcolumnbox\hsize
-               \global\advance\vsize -\ht\currenttopcolumnbox
-             \fi}
-          \global\pagegoal\vsize
-        \else
-          \snaptogrid\vbox{\box\columnspanbox}
-        \fi
-      \else
-        \snaptogrid\vbox{\box\columnspanbox}
-      \fi
-      \endgraf
-      \ifvmode\prevdepth\strutdp\fi
-      \egroup}
-     \vbox\bgroup
-      %\topskipcorrection % becomes an option !
-       \EveryPar{\begstrut\EveryPar{}}} % also !
-
-\def\startcolumnspan
-  {\dosingleempty\dostartcolumnspan}
-
-\def\stopcolumnspan
-  {\egroup}
-
 %D For Ton. To be documented.
 
 \def\plaatsexterndocument[#1]%
@@ -2689,7 +1925,10 @@
 %D live on on my machine and are not distributed, but they may end
 %D up in the distributed files.
 
+\loadmarkfile{cont-new}
+
 \readsysfile {cont-loc} {} {} % local improvements, patches, new features
 \readsysfile {cont-exp} {} {} % experimental features (e.g. local speed-ups)
+\readsysfile {cont-mtx} {} {} % experimental metatex features
 
 \protect \endinput

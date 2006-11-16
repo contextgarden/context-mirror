@@ -1,5 +1,7 @@
 % see mathml, == \defineXMLdirective [mathml] \setupMMLappearance
 
+% will be rewritten avoiding the mapper
+
 \unprotect
 
 \def\setupCMLappearance[#1]{\dodoubleargument\getparameters[@@CML#1]}
@@ -66,8 +68,9 @@
       \newcounter\nofCMLatoms
       \getXMLarguments{cml-m}{n="0" #1}%
       \doifnotXMLzero{cml-m}{n}\firstofoneargument
-      \ignorespaces\processXMLRchild{atom,ion,bond/,%
-        singlebond/,doublebond/,triplebond/}{#2}\unskip
+      \ignorespaces
+      \processXMLRchild{atom,ion,bond/,singlebond/,doublebond/,triplebond/}{#2}%
+      \unskip
       \egroup}%
    \ignorespaces}
 
@@ -81,13 +84,15 @@
       \getXMLarguments{cml-i}{n="0" charge="0" #1}%
       \doifnotXMLzero{cml-i}{n}\firstofoneargument
       \doifelse\@@CMLionalternative\v!b
-        {[\ignorespaces\processXMLRchild{atom,bond/,%
-            singlebond/,doublebond/,triplebond/}{#2}\unskip]%
+        {[\ignorespaces
+          \processXMLRchild{atom,bond/,singlebond/,doublebond/,triplebond/}{#2}%
+          \unskip]%
          \high{\doifnotXMLzero{cml-i}{charge}\CMLscript}}
         {\countXMLRchild{atom}{\ignorespaces#2\unskip}%
          \let\nofCMLatoms\nofXMLRchildren
-         \ignorespaces\processXMLRchild{atom,bond/,%
-           singlebond/,doublebond/,triplebond/}{#2}\unskip}%
+         \ignorespaces
+         \processXMLRchild{atom,bond/,singlebond/,doublebond/,triplebond/}{#2}%
+         \unskip}%
       \egroup}%
    \ignorespaces}
 
@@ -174,7 +179,7 @@
      {\def\CMLtopcaption{##2}%
       \let\doCMLcaption\gobbletwoarguments}}
 
-\def\resetCMLcaption%
+\def\resetCMLcaption
   {\let\CMLtopcaption\empty
    \let\CMLbotcaption\empty
    \let\doCMLcaption\dodoCMLcaption}

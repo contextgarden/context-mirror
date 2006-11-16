@@ -235,24 +235,6 @@
 %D
 %D After this call, the code is available in \type{\JScode}.
 
-\def\setverbosecscharacter#1%
-  {\edef#1{\string#1}}
-
-\def\setverbosecscharacters % temporary hack
-  {\setverbosecscharacter |\setverbosecscharacter ~%
-   \setverbosecscharacter\:\setverbosecscharacter\;%
-   \setverbosecscharacter\+\setverbosecscharacter\-%
-   \setverbosecscharacter\[\setverbosecscharacter\]%
-   \setverbosecscharacter\.\setverbosecscharacter\\%
-   \setverbosecscharacter\)\setverbosecscharacter\(%
-   \setverbosecscharacter\0\setverbosecscharacter\1%
-   \setverbosecscharacter\2\setverbosecscharacter\3%
-   \setverbosecscharacter\4\setverbosecscharacter\5%
-   \setverbosecscharacter\6\setverbosecscharacter\7%
-   \setverbosecscharacter\8\setverbosecscharacter\9%
-   \setverbosecscharacter\n\setverbosecscharacter\s%
-   \setverbosecscharacter\/}
-
 \newif\ifdirectJScode
 
 \def\presetJScode#1#2% #1=operation #2=arguments
@@ -267,7 +249,7 @@
    \ifx\!!stringa\empty \else
      \processcommacommand[\!!stringa]\dopresetJSvariables
    \fi
-   \def\docommando##1%
+   \def\docommand##1%
      {\doifundefinedelse{\r!java\r!java##1}
         {\showmessage\m!javascript2{##1}}
         {\useJSpreamblenow{##1}}}%
@@ -276,7 +258,7 @@
    \def\do##1##2%
      {\xdef\JScode{\ifdirectJScode#1(\JScode)\else\JScode##2\fi}%
      %\xdef\JScode{JS\string_N=\the\scratchcounter;\JScode}%
-      \processcommalist[##1]\docommando}%
+      \processcommalist[##1]\docommand}%
    \getvalue{\r!java#1}}
 
 \def\dopresetJSvariables#1%
@@ -450,7 +432,7 @@
      \globallet\JSpreamble\empty
      \def\@@collectedJSpreamble{\r!java\r!java collected}%
      \letvalue{\@@collectedJSpreamble}=\empty
-     \def\docommando##1%
+     \def\docommand##1%
        {\xdef\JScode{\getvalue{\r!java\r!java##1}}%
         \ifoneJSpreamble % \global\letcdcsname
           \@EA\setxvalue\@EA\@@collectedJSpreamble\@EA
@@ -458,7 +440,7 @@
         \else
           \setxvalue{\r!java\r!java##1}{\JScode}%
         \fi}%
-     \processcommacommand[\allJSpreambles]\docommando
+     \processcommacommand[\allJSpreambles]\docommand
      \ifoneJSpreamble
        \gdef\allJSpreambles{collected}%
      \fi
@@ -726,14 +708,10 @@
            \currentreferenceoperation
            \currentreferencearguments
        \egroup
-       \dostartgoto
-         \data
-           {#2}%
-         \start
-           \dostartgotoJS\buttonwidth\buttonheight\JScode
-         \stop
-           \dostopgotoJS
-       \dostopgoto
+       \dohandlegoto
+         {#2}%
+         {\dostartgotoJS\buttonwidth\buttonheight\JScode}%
+         {\dostopgotoJS}%
      \egroup
    \else
      {#2}%

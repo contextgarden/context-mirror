@@ -108,14 +108,14 @@
      \doifelse \currentregime {utf}
         {\exportutfsortexpansion{0}{128}{255}%
          \exportutfsortexpansion{1}{0}{255}}
-       {\def\defineactivecharacter##1 ##2%
+       {\def\defineactivecharacter##1 ##2% mkii code !
           {\expanded{\exportsortshortcut{\rawcharacter{##1}}}{##2}}%
-        \doifelse{\characterregime}\nocharacterregime
-          {\doifnot{\characterencoding}\nocharacterencoding % to be sure, autoregime
-             {\the\executeifdefined{\@reg@\characterencoding}\emptytoks}}%
-          {\the\executeifdefined{\@reg@\characterregime}\emptytoks}}%
+        \doifelsenothing\currentregime
+          {\doifnot\characterencoding\nocharacterencoding % to be sure, autoregime
+             {\dowalkregime\characterencoding}}%
+          {\dowalkregime\characterencoding}}%
    \egroup
-   \readfile{\f!sortprefix def}\donothing\donothing % default
+   \readsysfile{\f!sortprefix def}\donothing\donothing % default
    \global\let\savesortdefinitions\relax}
 
 \def\savesortlanguage#1% language specifics
@@ -125,7 +125,7 @@
          \global\letvalue{\f!sortprefix::#1}\empty
          \def\currentexportclass{#1}%
          \enablemode[sortorder-#1]%
-         \readfile{\f!sortprefix lan}\donothing\donothing
+         \readsysfile{\f!sortprefix lan}\donothing\donothing
          \egroup}}}
 
 \prependtoks
@@ -146,6 +146,6 @@
 %   \blank[3*big] \placeregister[two]
 % \stoptext
 
-% already done \prependtoks \savesortkeys \to \everystarttext
+\prependtoks \savesortkeys \to \everystarttext
 
 \protect \endinput

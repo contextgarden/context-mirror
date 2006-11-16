@@ -12,7 +12,7 @@
 
 banner = ['PsToPdf', 'version 2.0.1', '2002-2006', 'PRAGMA ADE/POD']
 
-$: << File.expand_path(File.dirname($0))
+$: << File.expand_path(File.dirname($0)) ; $: << File.join($:.last,'lib') ; $:.uniq!
 
 # todo: paden/prefix in magick and inkscape
 # todo: clean up method handling (pass strings, no numbers)

@@ -32,6 +32,7 @@
 \edef\utilityversion{1998.12.20} % was: 1998.07.07  % index attributes
 \edef\utilityversion{2003.07.19} % was: 1998.12.20  % object pages
 \edef\utilityversion{2006.06.23} % was: 2003.07.19  % -- instead of :
+\edef\utilityversion{2006.09.21} % pt in pos
 
 % Bepaalde commando's worden als string weggeschreven. Deze
 % zijn aan het eind van deze file gedefinieerd.
@@ -45,7 +46,7 @@
 %
 % \catcode`\^^M=5  (end of line)
 
-\newwrite\uti
+\newwrite\utility@tui
 \newif\ifutilitydone
 
 \def\@@utilityerrormessage
@@ -65,11 +66,11 @@
 \def\thisissectionseparator#1%
   {\bgroup
    \globallet\checksectionseparator\relax
-   \convertcommand \sectionseparator\to\asciiA
-   \convertargument               #1\to\asciiB
+   \convertcommand \sectionseparator\to\asciia
+   \convertargument               #1\to\asciib
    \expanded{\gdef\noexpand\dosplitofffoliopart[####1\sectionseparator
      \sectionseparator####2\sectionseparator\sectionseparator####3]{####3}}%
-   \ifx\asciiA\asciiB
+   \ifx\asciia\asciib
      \egroup
    \else
      \egroup
@@ -78,8 +79,8 @@
      \endinput
    \fi}
 
-\def\writeutility         {\write\uti}
-\def\writeutilitycommand#1{\write\uti{c \string#1}}
+\def\writeutility         {\write\utility@tui}
+\def\writeutilitycommand#1{\write\utility@tui{c \string#1}}
 
 % less tokens
 %
@@ -88,16 +89,16 @@
 %
 % more flexible (for overloading)
 
-\def\immediatewriteutility         {\immediate\write\uti}
-\def\immediatewriteutilitycommand#1{\immediate\write\uti{c \string#1}}
+\def\immediatewriteutility         {\immediate\write\utility@tui}
+\def\immediatewriteutilitycommand#1{\immediate\write\utility@tui{c \string#1}}
 
 % as in:
 
 \def\cwriteutility#1%
-  {\write\uti{\noexpand\checkedutility{\number\nofshipouts}{#1}}}
+  {\write\utility@tui{\noexpand\checkedutility{\number\nofshipouts}{#1}}}
 
 \def\cwriteutilitycommand#1%
-  {\write\uti{\noexpand\checkedutility{\number\nofshipouts}{c \string#1}}}
+  {\write\utility@tui{\noexpand\checkedutility{\number\nofshipouts}{c \string#1}}}
 
 \let\checkedutility\secondoftwoarguments
 
@@ -107,55 +108,43 @@
   \let\checkedutility\docheckedutility
 \to \everybeforeshipout
 
-\edef\testbytesequence
-  {\rawcharacter{7}%
-   \rawcharacter{27}%
-   %rawcharacter{227}% invalid in xetex, which expects utf
-   \rawcharacter{195}\rawcharacter{128}} % valid utf code
-
-\def\thisisbytesequence#1%
-  {\ifx\testbytesequence\empty\else
-     \convertcommand\testbytesequence\to\testbytesequence
-     \convertargument#1\to\ascii
-     \ifx\testbytesequence\ascii \else
-       \writestatus\m!systems{possible problem with 8 bit output}%
-     \fi
-   \fi
-   \global\let\thisisbytesequence\gobbleoneargument}
-
-\beginXETEX
-    \let\testbytesequence\empty
-\endXETEX
-
 % Better use marks.
 
-\def\checkutilities
-  {\let\writeutility                \cwriteutility
-   \let\writeutilitycommand         \cwriteutilitycommand
-  %\let\immediatewriteutility       \cimmediatewriteutility
-  %\let\immediatewriteutilitycommand\cimmediatewriteutilitycommand
-   \let\checkutilities              \relax}
+\newtoks \everyopenutilities
+\newtoks \everycloseutilities
+\newtoks \everycheckutilities
 
-% this trickery is used in s-pre-50
+\def\openutilities {\the\everyopenutilities }
+\def\closeutilities{\the\everycloseutilities}
+\def\checkutilities{\the\everycheckutilities}
 
-\def\openutilities
-  {\immediate\openout\uti\jobname.\f!inputextension
-   \immediatewriteutilitycommand{\thisissectionseparator{\sectionseparator}}% for the moment
-   \immediatewriteutilitycommand{\thisisutilityversion  {\utilityversion  }}% in this order
-   \immediatewriteutilitycommand{\thisisbytesequence    {\testbytesequence}}}
+\appendtoks
+  \let\writeutility                \cwriteutility
+  \let\writeutilitycommand         \cwriteutilitycommand
+ %\let\immediatewriteutility       \cimmediatewriteutility
+ %\let\immediatewriteutilitycommand\cimmediatewriteutilitycommand
+  \let\checkutilities              \relax
+\to \everycheckutilities
 
-\def\closeutilities
-  {\immediate\closeout\uti % niet echt nodig
-   \reportutilityproblems
-   % should be a message :
-   \let\writeutilitycommand         \gobbleoneargument
-   \let\writeutility                \gobbleoneargument
-   \let\immediatewriteutilitycommand\gobbleoneargument
-   \let\immediatewriteutility       \gobbleoneargument}
+\appendtoks
+  \immediate\openout\utility@tui\jobname.\f!inputextension
+  \immediatewriteutilitycommand{\thisissectionseparator{\sectionseparator}}% for the moment
+  \immediatewriteutilitycommand{\thisisutilityversion  {\utilityversion  }}% in this order
+\to \everyopenutilities
 
-\def\reopenutilities
-  {\immediate\closeout\uti
-   \openutilities}
+\appendtoks
+  \immediate\closeout\utility@tui % niet echt nodig
+  \reportutilityproblems
+  % should be a message :
+  \let\writeutilitycommand         \gobbleoneargument
+  \let\writeutility                \gobbleoneargument
+  \let\immediatewriteutilitycommand\gobbleoneargument
+  \let\immediatewriteutility       \gobbleoneargument
+\to \everycloseutilities
+
+% \def\reopenutilities
+%   {\immediate\closeout\utility@tui
+%    \openutilities}
 
 \def\abortutilitygeneration
   {\immediatewriteutilitycommand\utilitygenerationaborted
@@ -167,39 +156,15 @@
    \gdef\reportutilityproblems{\showmessage\m!systems{22}\empty}%
    \endinput}
 
-\def\savecurrentvalue#1#2%
-  {\immediatewriteutilitycommand{\initializevariable\string#1{#2}}}
+\let\savecurrentvalue  \gobbletwoarguments % mkii/mkiv
+\let\initializevariable\gobbletwoarguments % mkii/mkiv
 
-\let\initializevariable\gdef
+\appendtoks
+    \globallet\initializevariable\gobbletwoarguments
+\to \everyafterutilityread
 
-\def\disableinitializevariables
-  {\globallet\initializevariable\gobbletwoarguments}
-
-\let\reportutilityproblems=\relax
-
-\let\utilityresetlist=\empty
-
-% the original
-%
-% \def\addutilityreset#1%
-%   {\addtocommalist{\s!reset#1}\utilityresetlist}
-%
-% \def\resetutilities%
-%   {\processcommacommand[\utilityresetlist]\getvalue}
-%
-% the more efficient
-%
-% \def\addutilityreset#1%
-%   {\addtocommalist{#1}\utilityresetlist}
-%
-% \def\doresetutility#1%
-%   {\getvalue{\s!reset#1}}
-%
-% \def\resetutilities%
-%   {\processcommacommand[\utilityresetlist]\doresetutility}
-%
-% the fastest, about two times, but who cares, since this
-% can be neglected
+\let\reportutilityproblems\relax
+\let\utilityresetlist     \empty
 
 \newtoks\utilityresetlist
 
@@ -307,286 +272,48 @@
            \type{[\currentmessagetext]}%
            \blank}}%
    \fi
-   \disableinitializevariables
    \endgroup}
 
 % Saving the sort vector:
 
-\def\savesortkeys
-  {\startnointerference
-   \def\flushsortkey##1##2##3##4%
-     {\convertargument{##1}{##2}{##3}{##4}\to\ascii
-      \immediatewriteutility{k {\currentlanguage}{\currentencoding}\ascii}}%
-   \let\definesortkey\flushsortkey
-   \flushsortkeys
-   \globallet\savesortkeys\relax
-   \stopnointerference}
-
-\prependtoks \savesortkeys \to \everystarttext
+% \def\savesortkeys
+%   {\startnointerference
+%    \def\flushsortkey##1##2##3##4%
+%      {\convertargument{##1}{##2}{##3}{##4}\to\ascii
+%       \immediatewriteutility{k {\currentlanguage}{\currentencoding}\ascii}}%
+%    \let\definesortkey\flushsortkey
+%    \flushsortkeys
+%    \globallet\savesortkeys\relax
+%    \stopnointerference}
+%
+% \prependtoks \savesortkeys \to \everystarttext
 
-% Commando's ten behoeve van two-pass lists. In principe
-% kan alles in een keer worden ingelezen. Omdat de macro's
-% groeien is de kans groot dat het (main) geheugen door
-% (de)allocatie volloopt. Vandaar dat we het toch maar niet
-% doen.
-%
-% \definetwopasslist{\s!xxx}
-%
-% \gettwopassdata{\s!xxx}
-% \getfrompassdata{\s!xxx}{n}       n=index (getal)
-% \findtwopassdata{\s!xxx}{tag}     bijvoorbeeld {label:}
-% \iftwopassdatafound
-% \twopassdata
-%
-% \twopassentry{\s!xxx}{nr}{data}   nr alleen voor testdoeleinden
-%
-% also:
-%
-% \definerawpasslist{\s!xxx}
-% \moverawpasslist\s!xxx\to\somemacro
-
-\let\alltwopasslists\empty % with    0,0 -> stepwise commalist
-\let\allrawpasslists\empty % without 0,0 -> raw commalist
-
-\newif\iftwopassdatafound
-
-\def\settwopassentries
-  {\def\twopassentry##1{\executeifdefined{@@##1\s!pass}\gobbletwoarguments}}
-
-\def\resettwopassentries
-  {\let\twopassentry\gobblethreearguments}
-
-\addutilityreset{twopassentries}
-
-\resettwopassentries
-
-% \def\twopassentry#1%
-%   {\executeifdefined{@@#1\s!pass}\gobbletwoarguments}
-
-%\def\appendtwopasselement#1#2#3%
-%  {%\debuggerinfo{\m!systems}{twopass data #1 - #2 = #3}%
-%   \@EA\ifx\csname#1:\s!list\endcsname\empty
-%     \setxvalue{#1:\s!list}{#3}%
-%   \else
-%     \setxvalue{#1:\s!list}{\getvalue{#1:\s!list},#3}%
-%   \fi}
-
-\def\appendtwopasselement#1#2#3% can sometimes become a large list
-  {%\debuggerinfo{\m!systems}{twopass data #1 - #2 = #3}%
-   \expandafter\xdef\csname#1:\s!list\endcsname
-     {\@EA\ifx\csname#1:\s!list\endcsname\empty \else
-        \csname#1:\s!list\endcsname,\fi#3}}
-
-\def\dodefinetwopasslist#1%
-  {\doifundefined{#1:\s!list}
-     {%\debuggerinfo\m!systems{defining twopass class #1}%
-      \doglobal\addutilityreset{#1\s!pass}%
-      \setgvalue{\s!set  #1\s!pass}{\dosettwopasslist  {#1}}%
-      \setgvalue{\s!reset#1\s!pass}{\doresettwopasslist{#1}}%
-      \getvalue {\s!reset#1\s!pass}}}
-
-\def\dosettwopasslist#1%
-  {\letgvalue{\s!set#1\s!pass}\gobbletwoarguments
-   \setgvalue{@@#1\s!pass}{\appendtwopasselement{#1}}}
-
-\def\doresettwopasslist#1%
-  {\letgvalue{@@#1\s!pass}\gobbletwoarguments}
-
-\def\definetwopasslist#1%
-  {\expanded{\dodefinetwopasslist{#1}}%
-   \doglobal\addtocommalist{#1}\alltwopasslists}
-
-\def\definerawpasslist#1%
-  {\expanded{\dodefinetwopasslist{#1}}%
-   \doglobal\addtocommalist{#1}\allrawpasslists}
-
-\def\doloadtwopassdata#1%
-  {\doifundefined{#1:\s!list}
-     {\startnointerference
-      \letgvalueempty{#1:\s!list}%
-      \protectlabels
-      \doutilities{twopassentries,#1\s!pass}\jobname\empty\relax\relax
-      \ifx\twopassdata\empty\else
-        \appendtwopasselement{#1}{0}\twopassdata
-      \fi
-      \stopnointerference}}
-
-\def\loadtwopassdata
-  {\ifx\alltwopasslists\empty\else
-     \def\twopassdata{0,0}% end condition
-     \processcommacommand[\alltwopasslists]\doloadtwopassdata
-     \globallet\alltwopassdata\empty
-   \fi
-   \ifx\allrawpasslists\empty\else
-     \let\twopassdata\empty
-     \processcommacommand[\allrawpasslists]\doloadtwopassdata
-     \globallet\allrawpassdata\empty
-   \fi}
-
-\def\moverawpasslist#1#2% erases the old one, like the others do
-  {\loadtwopassdata
-   \@EA\let\@EA#2\csname#1:\s!list\endcsname
-   \@EA\let\csname#1:\s!list\endcsname\empty}
-
-\let\twopassdata=\empty
-
-%\def\dogettwopassdata[#1,#2]#3%
-%  {\doifelse{#1}{0} % \ifcase truukje gaat fout
-%     {\twopassdatafoundfalse
-%      \let\twopassdata\empty}
-%     {\twopassdatafoundtrue
-%      \setxvalue{#3:\s!list}{#2}%
-%      \edef\twopassdata{#1}}}
-
-\def\notwopassdata{0}
-
-% \def\dogettwopassdata[#1,#2]#3%
-%   {\edef\twopassdata{#1}%
-%    \ifx\twopassdata\notwopassdata
-%      \twopassdatafoundfalse
-%      \let\twopassdata\empty
-%    \else
-%      \twopassdatafoundtrue
-%      \setxvalue{#3:\s!list}{#2}%
-%    \fi}
-%
-% \def\gettwopassdata#1%
-%   {\loadtwopassdata
-%   %\edef\!!stringa{\csname#1:\s!list\endcsname}%
-%   %\debuggerinfo{\m!systems}{twopass get #1 - \!!stringa}%
-%   %\expandafter\dogettwopassdata\expandafter[\!!stringa]{#1}}
-%    \expanded{\dogettwopassdata[\csname#1:\s!list\endcsname]}{#1}}
-%
-% \def\findtwopassdata#1#2%
-%   {\loadtwopassdata
-%    \expanded{\dofindtwopassdata{#1}{#2}}}
-%
-% \def\dofindtwopassdata#1#2%
-%   {\edef\!!stringa{,\csname#1:\s!list\endcsname}%
-%   %\debuggerinfo{\m!systems}{twopass find #2 - \!!stringa}%
-%    \def\dodofindtwopassdata[##1,##2#2##3,##4]%
-%      {\edef\twopassdata{##3}%
-%       \ifx\twopassdata\empty
-%         \twopassdatafoundfalse
-%       \else
-%         \twopassdatafoundtrue
-%       \fi}%
-%    \@EA\dodofindtwopassdata\@EA[\!!stringa,#2,#2,]}
-%
-% \def\getfirsttwopassdata#1%
-%   {\loadtwopassdata
-%    \edef\!!stringa{\getvalue{#1:\s!list}}%
-%    \expandafter\dogetfirsttwopassdata\expandafter[\!!stringa]{#1}}
-%
-% \def\dogetfirsttwopassdata[#1,#2]#3%
-%   {\doifelse{#1}{0}
-%      {\twopassdatafoundfalse
-%       \let\twopassdata\empty}
-%      {\twopassdatafoundtrue
-%       \edef\twopassdata{#1}}}
-%
-% \def\getlasttwopassdata#1%
-%   {\loadtwopassdata
-%    \edef\twopassdata{0}\twopassdatafoundfalse
-%    \newcounter\noftwopassitems
-%    \def\docommando##1%
-%      {\doifnot{##1}{0}
-%         {\increment\noftwopassitems
-%          \edef\twopassdata{##1}\twopassdatafoundtrue}}%
-%    \processcommacommand[\getvalue{#1:\s!list}]\docommando}
-%
-% \def\getfromtwopassdata#1#2%
-%   {\loadtwopassdata
-%    \getfromcommacommand[\csname#1:\s!list\endcsname][#2]%
-%    \doifelsenothing{\commalistelement}
-%      {\twopassdatafoundfalse
-%       \let\twopassdata\empty}
-%      {\twopassdatafoundtrue
-%       \let\twopassdata\commalistelement}}
-
-% todo: store each entry in hash, an load all uti commands at once
-
-% todo: use \expanded
-
-\def\dogettwopassdata[#1,#2]#3#4%
-  {\edef\twopassdata{#1}%
-   \ifx\twopassdata\notwopassdata
-     \twopassdatafoundfalse
-     \let\twopassdata\empty
-   \else
-     \twopassdatafoundtrue
-     \ifcase#4\or\setxvalue{#3:\s!list}{#2}\fi
-   \fi}
-
-\def\gettwopassdata#1%
-  {\loadtwopassdata \@EAEAEA\dogettwopassdata\@EA\@EA\@EA[\csname#1:\s!list\endcsname]{#1}\plusone}
-
-\def\checktwopassdata#1%
-  {\loadtwopassdata \@EAEAEA\dogettwopassdata\@EA\@EA\@EA[\csname#1:\s!list\endcsname]{#1}\zerocount}
-
-\def\findtwopassdata#1#2%
-  {\loadtwopassdata \expanded{\dofindtwopassdata{#1}{#2}}}
-
-\def\dofindtwopassdata#1#2%
-  {\def\dodofindtwopassdata[##1,##2#2##3,##4]{\edef\twopassdata{##3}}%
-   \@EAEAEA\dodofindtwopassdata\@EA\@EA\@EA[\@EA\@EA\@EA,\csname#1:\s!list\endcsname,#2,#2,]%
-   \ifx\twopassdata\empty
-     \twopassdatafoundfalse
-   \else
-     \twopassdatafoundtrue
-   \fi}
-
-\def\getfirsttwopassdata#1%
-  {\loadtwopassdata
-   \@EAEAEA\dogetfirsttwopassdata\@EA\@EA\@EA[\csname#1:\s!list\endcsname]{#1}}
-
-\def\dogetfirsttwopassdata[#1,#2]#3%
-  {\edef\twopassdata{#1}%
-   \ifx\twopassdata\notwopassdata
-     \twopassdatafoundfalse
-     \let\twopassdata\empty
-   \else
-     \twopassdatafoundtrue
-   \fi}
-
-\def\dogetlasttwopassdata#1%
-  {\edef\nexttwopassdata{#1}%
-   \ifx\nexttwopassdata\notwopassdata \else
-     \let\twopassdata\nexttwopassdata
-     \advance\scratchcounter \plusone
-     \twopassdatafoundtrue
-   \fi}
-
-\def\getlasttwopassdata#1%
-  {\loadtwopassdata
-   \scratchcounter\zerocount
-   \@EAEAEA\rawprocesscommalist\@EA\@EA\@EA[\csname#1:\s!list\endcsname]\dogetlasttwopassdata
-   \edef\noftwopassitems{\the\scratchcounter}%
-   \iftwopassdatafound\else
-     \let\twopassdata\empty
-   \fi}
-
-\def\getfromtwopassdata#1#2%
-  {\loadtwopassdata
-   \@EAEAEA\getfromcommalist\@EA\@EA\@EA[\csname#1:\s!list\endcsname][#2]%
-   \ifx\commalistelement\empty
-     \twopassdatafoundfalse
-     \let\twopassdata\empty
-   \else
-     \twopassdatafoundtrue
-     \let\twopassdata\commalistelement
-   \fi}
-
 % Default-instellingen (verborgen)
 
 \prependtoks \resetutilities \to \everyjob
 
 % Experiment
 %
-%\installprogram{Hello World}
+% \installprogram{Hello World}
+% \installprogram[hw]{Hello World}
+% \installedprogram[hw]
 
-\def\installprogram#1%
+\def\installprogram
+  {\dosingleempty\doinstallprogram}
+
+\def\doinstallprogram[#1]#2%
+  {\doifelsenothing{#1}
+     {\dodoinstallprogram{#2}}
+     {\setvalue{\??up#1}{\dodoinstallprogram{#2}}}}
+
+% \def\doinstallprogram[#1][#2]% less code
+%   {\doifsomething{#1}{\setvalue{\??up#1}}{\dodoinstallprogram{#2}}}
+
+\def\dodoinstallprogram#1%
   {\immediatewriteutility{e p {#1}}}
+
+\def\installedprogram[#1]%
+  {\getvalue{\??up#1}}
 
 % \writeplugindata{texutil}{{alpha}}
 % \writeplugindata{texutil}{{beta}}
@@ -640,5 +367,9 @@
   {\addutilityreset          {#1}%
    \long\setvalue{\s!reset#1}{#2}%
    \long\setvalue{\s!set  #1}{#3}}
+
+% plugins
+
+\loadmarkfile{core-uti}
 
 \protect \endinput

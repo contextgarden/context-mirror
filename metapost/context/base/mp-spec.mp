@@ -185,17 +185,60 @@ newinternal shadefactor ; shadefactor := 1 ;
 
 pair shadeoffset ; shadeoffset := origin ;
 
+% vardef define_linear_shade (expr a, b, ca, cb) =
+%   flush_special(30, 15, "0 1 " & decimal shadefactor & " " &
+%     dddecimal ca & " " & ddecimal (a shifted shadeoffset) & " " &
+%     dddecimal cb & " " & ddecimal (b shifted shadeoffset) ) ;
+%   _special_counter_
+% enddef ;
+
+% vardef define_circular_shade (expr a, b, ra, rb, ca, cb) =
+%   flush_special(31, 17, "0 1 " & decimal shadefactor & " " &
+%     dddecimal ca & " " & ddecimal (a shifted shadeoffset) & " " & decimal ra & " " &
+%     dddecimal cb & " " & ddecimal (b shifted shadeoffset) & " " & decimal rb ) ;
+%   _special_counter_
+% enddef ;
+
+vardef _is_cmyk_(expr c) =
+    (redpart c = _special_signal_/_special_div_) and (greenpart c = 1/_special_div_)
+enddef ;
+vardef _is_spot_(expr c) =
+    (redpart c = _special_signal_/_special_div_) and (greenpart c = 2/_special_div_)
+enddef ;
+
+numeric mp_shade_version ; mp_shade_version := 2 ; % more colors, needs new backend
+
 vardef define_linear_shade (expr a, b, ca, cb) =
-  flush_special(30, 15, "0 1 " & decimal shadefactor & " " &
-    dddecimal ca & " " & ddecimal (a shifted shadeoffset) & " " &
-    dddecimal cb & " " & ddecimal (b shifted shadeoffset) ) ;
-  _special_counter_
+    if (mp_shade_version > 1) and _is_cmyk_(ca) and _is_cmyk_(cb) :
+        flush_special(32, 17, "0 1 " & decimal shadefactor & " " &
+            cmykcolorpattern[bluepart ca] & " " & ddecimal (a shifted shadeoffset) & " " &
+            cmykcolorpattern[bluepart cb] & " " & ddecimal (b shifted shadeoffset) ) ;
+    elseif (mp_shade_version > 1) and _is_spot_(ca) and _is_spot_(cb) :
+        flush_special(34, 17, "0 1 " & decimal shadefactor & " " &
+            spotcolorpattern[bluepart ca] & " " & ddecimal (a shifted shadeoffset) & " " &
+            cmykcolorpattern[bluepart cb] & " " & ddecimal (b shifted shadeoffset) ) ;
+    else :
+        flush_special(30, 15, "0 1 " & decimal shadefactor & " " &
+            dddecimal ca & " " & ddecimal (a shifted shadeoffset) & " " &
+            dddecimal cb & " " & ddecimal (b shifted shadeoffset) ) ;
+    fi ;
+    _special_counter_
 enddef ;
 
 vardef define_circular_shade (expr a, b, ra, rb, ca, cb) =
-  flush_special(31, 17, "0 1 " & decimal shadefactor & " " &
-    dddecimal ca & " " & ddecimal (a shifted shadeoffset) & " " & decimal ra & " " &
-    dddecimal cb & " " & ddecimal (b shifted shadeoffset) & " " & decimal rb ) ;
+    if (mp_shade_version > 1) and _is_cmyk_(ca) and _is_cmyk_(cb) :
+        flush_special(33, 19, "0 1 " & decimal shadefactor & " " &
+            cmykcolorpattern[bluepart ca] & " " & ddecimal (a shifted shadeoffset) & " " & decimal ra & " " &
+            cmykcolorpattern[bluepart cb] & " " & ddecimal (b shifted shadeoffset) & " " & decimal rb ) ;
+    elseif (mp_shade_version > 1) and _is_spot_(ca) and _is_spot_(cb) :
+        flush_special(35, 19, "0 1 " & decimal shadefactor & " " &
+            spotcolorpattern[bluepart ca] & " " & ddecimal (a shifted shadeoffset) & " " & decimal ra & " " &
+            spotcolorpattern[bluepart cb] & " " & ddecimal (b shifted shadeoffset) & " " & decimal rb ) ;
+    else :
+        flush_special(31, 17, "0 1 " & decimal shadefactor & " " &
+            dddecimal ca & " " & ddecimal (a shifted shadeoffset) & " " & decimal ra & " " &
+            dddecimal cb & " " & ddecimal (b shifted shadeoffset) & " " & decimal rb ) ;
+    fi ;
   _special_counter_
 enddef ;
 

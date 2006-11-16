@@ -2,7 +2,7 @@
 
 banner = ['WWWWatch', 'version 1.0.0', '2003-2006', 'PRAGMA ADE/POD']
 
-$: << File.dirname(File.expand_path($0))
+$: << File.expand_path(File.dirname($0)) ; $: << File.join($:.last,'lib') ; $:.uniq!
 
 require 'base/switch'
 require 'base/logger'
@@ -46,6 +46,7 @@ class Watch < Monitor
         @logger      = logger
         @verbose     = false
         @create      = false
+        @onlyonerun  = false
         # [:INT, :TERM, :EXIT].each do |signal|
             # trap(signal) do
                 # kill
@@ -100,7 +101,7 @@ class Watch < Monitor
             exit! rescue false # no checking, no at_exit done
         end
         unless File.writable?(@cache_path) then
-            puts "no valid work path: #{@work_path}" ; # no reason to exit
+            puts "no valid cache path: #{@cache_path}" ; # no reason to exit
         end
         @last_action = Time.now
         report("watching path #{@work_path}") if @verbose
@@ -302,7 +303,7 @@ class Watch < Monitor
                                             lck = File.expand_path(sessionfile.sub(/ses$/,'lck'))
                                             start_of_run = Time.now
                                             start_of_job = start_of_run.dup
-                                            max_runtime = @max_age
+                                            max_time = @max_age
                                             begin
                                                 start_of_job = vars['starttime'].to_i || start_of_run
                                                 start_of_job = start_of_run if start_of_job == 0
@@ -356,7 +357,11 @@ class Watch < Monitor
                                 else
                                     report("watchdog: skipping - id (#{vars['id']}) / status (#{vars['status']})") if @verbose
                                 end
-                                @skips[sessionfile] = true
+                                if @onlyonerun then
+                                    @skips[sessionfile] = true
+                                else
+                                    @skips.delete(sessionfile)
+                                end
                             else
                                 # not yet ok
                             end
@@ -379,6 +384,15 @@ class Watch < Monitor
         begin
             # report(Time.now.to_s) if @verbose
             loop do
+                @threads.delete_if do |k,v|
+                    begin
+                        v == nil || v.stop?
+                    rescue
+                        true
+                    else
+                        false
+                    end
+                end
                 if @threads.length == @max_threads then
                     if @delay > @max_threads then
                         sleep(@delay)

@@ -1,0 +1,72 @@
+%D \module
+%D   [       file=core-stg,
+%D        version=2006.08.16,
+%D          title=\CONTEXT\ Core Macros,
+%D       subtitle=Strategies,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D This is a prelude to strategies. It is rather old code
+%D used in a project may years ago. Use with care since I
+%D will pick up this thread. (moved from cont-new)
+
+\unprotect
+
+\def\s!strategy{strategy}
+
+\def\currentstrategypass    {1}
+\def\currentstrategyvariable{0}
+\def\maximumstrategypass    {8}
+
+\newconditional\strategypassneeded
+\newconditional\strategypassforced
+
+\definetwopasslist{\s!strategy}
+
+\def\registerstrategypass%
+  {\ifnum\currentstrategypass>\maximumstrategypass \else
+     \ifconditional\strategypassforced
+       \doglobal\increment\currentstrategypass
+     \else%\ifconditional\strategypassneeded
+       %\doglobal\increment\currentstrategypass
+     \fi%\fi
+   \fi
+   \savecurrentvalue\currentstrategypass{\currentstrategypass}}
+
+\appendtoks \registerstrategypass \to \everybye % \everylastshipout
+
+\def\setstrategyvariable#1#2% key value
+  {%\doifnotstrategyvariable{#1}{\global\settrue\strategypassneeded}%
+   \doglobal\increment\currentstrategyvariable
+   \savetaggedtwopassdata{\s!strategy}{\currentstrategyvariable}{#1}{#2}}
+
+\def\doifstrategyvariableelse#1#2#3%
+  {\getstrategyvariable{#1}\iftwopassdatafound#2\else#3\fi}
+
+\def\getstrategyvariable#1% key
+  {\findtwopassdata{\s!strategy}{#1}%
+   \setxvalue{\s!strategy:#1}{\twopassdata}}
+
+\def\retainstrategyvariable#1% key
+  {\expanded{\setstrategyvariable{#1}{\strategyvariable{#1}}}}
+
+\def\strategyvariable#1% key
+  {\csname\s!strategy:#1\endcsname}
+
+\let\stratvar\strategyvariable
+
+\def\forcestrategy{\global\settrue \strategypassforced}
+\def\abortstrategy{\global\setfalse\strategypassforced}
+
+\def\doifstrategyvariableelse#1#2#3%
+  {\getstrategyvariable{#1}\iftwopassdatafound#2\else#3\fi}
+
+\def\doifstrategyvariable   #1#2{\doifstrategyvariableelse{#1}{#2}{}}
+\def\doifnotstrategyvariable#1#2{\doifstrategyvariableelse{#1}{}{#2}}
+
+\protect \endinput

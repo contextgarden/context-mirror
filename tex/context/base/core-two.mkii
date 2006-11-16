@@ -1,0 +1,149 @@
+%D \module
+%D   [       file=core-two, % moved from core-uti
+%D        version=1997.03.31,
+%D          title=\CONTEXT\ Core Macros,
+%D       subtitle=Two Pass Data,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\unprotect
+
+%D We save two pass information in the utility file.
+
+\def\resettwopassentries
+  {\let\twopassentry\gobblethreearguments}
+
+\addutilityreset{twopassentries}
+
+\resettwopassentries
+
+\def\settwopassentries
+  {\def\twopassentry##1{\executeifdefined{@@##1\s!pass}\gobbletwoarguments}}
+
+\def\savetwopassdata#1#2#3%
+  {\immediatewriteutilitycommand{\twopassentry{#1}{#2}{#3}}}
+
+\def\lazysavetwopassdata#1#2#3% expanded !
+  {\expanded{\writeutilitycommand{\noexpand\twopassentry{#1}{#2}{#3}}}}
+
+\def\savetaggedtwopassdata#1#2#3#4%
+  {\immediatewriteutilitycommand{\twopassentry{#1}{#2}{#3::#4}}}
+
+\def\lazysavetaggedtwopassdata#1#2#3#4% expanded !
+  {\expanded{\writeutilitycommand{\noexpand\twopassentry{#1}{#2}{#3::#4}}}}
+
+\def\appendtwopasselement#1#2#3% can sometimes become a large list
+  {%\debuggerinfo{\m!systems}{twopass data #1 - #2 = #3}%
+   \expandafter\xdef\csname#1:\s!list\endcsname
+     {\@EA\ifx\csname#1:\s!list\endcsname\empty \else
+        \csname#1:\s!list\endcsname,\fi#3}}
+
+\def\dodefinetwopasslist#1%
+  {\doifundefined{#1:\s!list}
+     {%\debuggerinfo\m!systems{defining twopass class #1}%
+      \doglobal\addutilityreset{#1\s!pass}%
+      \setgvalue{\s!set  #1\s!pass}{\dosettwopasslist  {#1}}%
+      \setgvalue{\s!reset#1\s!pass}{\doresettwopasslist{#1}}%
+      \getvalue {\s!reset#1\s!pass}}}
+
+\def\definetwopasslist#1%
+  {\expanded{\dodefinetwopasslist{#1}}%
+   \doglobal\addtocommalist{#1}\alltwopasslists}
+
+\def\dosettwopasslist#1%
+  {\letgvalue{\s!set#1\s!pass}\gobbletwoarguments
+   \setgvalue{@@#1\s!pass}{\appendtwopasselement{#1}}}
+
+\def\doresettwopasslist#1%
+  {\letgvalue{@@#1\s!pass}\gobbletwoarguments}
+
+\def\doloadtwopassdata#1%
+  {\doifundefined{#1:\s!list}
+     {\startnointerference
+      \letgvalueempty{#1:\s!list}%
+      \protectlabels
+      \doutilities{twopassentries,#1\s!pass}\jobname\empty\relax\relax
+      \stopnointerference}}
+
+\def\loadtwopassdata
+  {\ifx\alltwopasslists\empty\else
+     \processcommacommand[\alltwopasslists]\doloadtwopassdata
+     \globallet\alltwopassdata\empty
+   \fi}
+
+\def\dogettwopassdata[#1,#2]#3#4%
+  {\edef\twopassdata{#1}%
+   \ifx\twopassdata\empty
+     \twopassdatafoundfalse
+     \let\twopassdata\empty
+   \else
+     \twopassdatafoundtrue
+     \ifcase#4\or\setxvalue{#3:\s!list}{#2}\fi
+   \fi}
+
+\def\gettwopassdata#1%
+  {\loadtwopassdata \@EAEAEA\dogettwopassdata\@EA\@EA\@EA[\csname#1:\s!list\endcsname,]{#1}\plusone}
+
+\def\checktwopassdata#1%
+  {\loadtwopassdata \@EAEAEA\dogettwopassdata\@EA\@EA\@EA[\csname#1:\s!list\endcsname,]{#1}\zerocount}
+
+\def\findtwopassdata#1#2%
+  {\loadtwopassdata \expanded{\dofindtwopassdata{#1}{#2}}}
+
+\def\dofindtwopassdata#1#2%
+  {\def\dodofindtwopassdata[##1,##2#2::##3,##4]{\edef\twopassdata{##3}}%
+   \@EAEAEA\dodofindtwopassdata\@EA\@EA\@EA[\@EA\@EA\@EA,\csname#1:\s!list\endcsname,#2,#2::,]%
+   \ifx\twopassdata\empty
+     \twopassdatafoundfalse
+   \else
+     \twopassdatafoundtrue
+   \fi}
+
+\let\getfirsttwopassdata\checktwopassdata
+
+\def\getlasttwopassdata#1%
+  {\loadtwopassdata
+   \scratchcounter\zerocount
+   \@EAEAEA\rawprocesscommalist\@EA\@EA\@EA[\csname#1:\s!list\endcsname]\dogetlasttwopassdata
+   \edef\noftwopassitems{\the\scratchcounter}%
+   \iftwopassdatafound\else
+     \let\twopassdata\empty
+   \fi}
+
+\def\dogetlasttwopassdata#1%
+  {\edef\nexttwopassdata{#1}%
+   \ifx\nexttwopassdata\empty \else
+     \let\twopassdata\nexttwopassdata
+     \advance\scratchcounter \plusone
+     \twopassdatafoundtrue
+   \fi}
+
+\def\getfromtwopassdata#1#2%
+  {\loadtwopassdata
+   \@EAEAEA\getfromcommalist\@EA\@EA\@EA[\csname#1:\s!list\endcsname][#2]%
+   \ifx\commalistelement\empty
+     \twopassdatafoundfalse
+     \let\twopassdata\empty
+   \else
+     \twopassdatafoundtrue
+     \let\twopassdata\commalistelement
+   \fi}
+
+\def\gettwopassdatalist#1%
+  {\loadtwopassdata
+   \letcscsname\twopassdatalist\csname#1:\s!list\endcsname
+   \ifx\twopassdatalist\relax\let\twopassdatalist\empty\fi}
+
+\def\gettwopassdatalist
+  {\getnamedtwopassdatalist\twopassdatalist}
+
+\def\doifelseintwopassdata#1#2% tag dat
+  {\gettwopassdatalist{#1}%
+   \expanded{\doifinsetelse{#2}{\twopassdatalist}}}
+
+\protect \endinput

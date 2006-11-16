@@ -392,8 +392,8 @@
 \def\lbrack{[}
 \def\rbrack{]}
 
-\let\endgraf=\par
-\let\endline=\cr
+\let\endgraf\par
+\let\endline\cr
 
 \def\space{ }
 \def\empty{}
@@ -411,13 +411,17 @@
 \let\repeat=\fi
 
 %D The original (no \type {@@pln} there):
-
-\def\@@plniterate{\@@plnbody\let\next\@@plniterate\else\let\next\relax\fi\next}
-
+%D
+%D \starttyping
+%D \def\@@plniterate{\@@plnbody\let\next\@@plniterate\else\let\next\relax\fi\next}
+%D \stoptyping
+%D
 %D A more efficient alternative:
-
-\def\@@plniterate{\@@plnbody\expandafter\@@plniterate\else\expandafter\relax\fi}
-
+%D
+%D \starttyping
+%D \def\@@plniterate{\@@plnbody\expandafter\@@plniterate\else\expandafter\relax\fi}
+%D \stoptyping
+%D
 %D An even more efficient one:
 
 \def\@@plniterate{\@@plnbody\expandafter\@@plniterate\else\fi}
@@ -575,20 +579,6 @@
 
 % end to tab code
 
-%D Users are advised not to use the following macros:
-
-\def\hang
-  {\hangindent\parindent}
-
-\def\textindent#1%
-  {\indent
-   \llap{#1\enspace}%
-   \ignorespaces}
-
-\def\narrower
-  {\advance\leftskip \parindent
-   \advance\rightskip\parindent}
-
 %D Useful, used too, but sometimes dangerous:
 
 \def\leavevmode{\unhbox\voidb@x}
@@ -616,10 +606,6 @@
 
 \def\_{\leavevmode \kern.06em \vbox{\hrule width.3em}}
 
-%D Used at all?
-
-\def\slash{/\penalty\exhyphenpenalty} % a `/' that acts like a `-'
-
 %D Replaced later on:
 
 \def\line        {\hbox to\hsize}
@@ -627,14 +613,9 @@
 \def\rightline #1{\line{\hss#1}}
 \def\centerline#1{\line{\hss#1\hss}}
 
-%D These are used by TaBlE:
-
-\newif\ifh@
-\newif\ifv@
-
 %D Let's end in the plain way:
 
-\def\fmtname   {ConTeXt Minimized Plain TeX}
-\def\fmtversion{3.1415926}
+\ifx\fmtname   \undefined \def\fmtname   {ConTeXt Minimized Plain TeX} \fi
+\ifx\fmtversion\undefined \def\fmtversion{3.1415926}                   \fi
 
 \protect \endinput

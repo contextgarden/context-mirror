@@ -8,85 +8,85 @@
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
-%C therefore copyrighted by \PRAGMA. See mreadme.pdf for 
-%C details. 
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
 
-% \readfile{x-res-04} \donothing \donothing \endinput 
+% \readfile{x-res-04} \donothing \donothing \endinput
 
-% naast label, ook fig als ref en dan naar fig ref springen 
+% naast label, ook fig als ref en dan naar fig ref springen
 
 %D This module implements an interface to a figure database
-%D and file. The database is formatted in \XML\ conforming 
-%D the following \DTD: 
+%D and file. The database is formatted in \XML\ conforming
+%D the following \DTD:
 %D
 %D \typefile{x-fig-00.dtd}
 %D
-%D A figure base coded this way looks like: 
-%D 
+%D A figure base coded this way looks like:
+%D
 %D \starttyping
-%D <!-- texexec --pdf --use=fig-01 figtest.xml --> 
-%D 
-%D <figurelibrary language="nl"> 
-%D 
+%D <!-- texexec --pdf --use=fig-01 figtest.xml -->
+%D
+%D <figurelibrary language="nl">
+%D
 %D   <description>
 %D     <organization>PRAGMA Advanced Document Engineering</organization>
 %D     <project>Manuals</project>
 %D     <product>Beginners Manual</product>
 %D     <comment>A bunch of figures.</comment>
 %D   </description>
-%D 
+%D
 %D   <figure>
 %D     <file>koe.pdf</file>
 %D     <label>a dutch cow</label>
 %D     <copyright>Corel Draw Suite</copyright>
 %D     <comment>I bet that you've seen this cow before.</comment>
 %D   </figure>
-%D 
+%D
 %D   <figure>
 %D     <dummy width="4cm" height="3cm">non existent</dummy>
 %D     <label>a european cow</label>
 %D     <copyright>Nobody</copyright>
 %D     <comment>When will we talk about European cows?</comment>
 %D   </figure>
-%D 
-%D </figurelibrary> 
-%D \stoptyping 
-%D 
-%D You can convert this base into a \PDF\ file using 
-%D \TEXEXEC\ and another module in this suite. 
-%D 
-%D \starttyping 
-%D texexec --pdf --use=fig-make yourfile.xml
-%D \stoptyping 
-%D 
-%D You can now select a graphic from this file using the 
-%D 
-%D \starttyping 
-%D \externalfigure[a dutch cow][width=4cm]
-%D \stoptyping 
 %D
-%D This module overloads this command so that a figure is 
-%D it first searched in the list of databases. 
-%D 
-%D \starttyping 
+%D </figurelibrary>
+%D \stoptyping
+%D
+%D You can convert this base into a \PDF\ file using
+%D \TEXEXEC\ and another module in this suite.
+%D
+%D \starttyping
+%D texexec --pdf --use=fig-make yourfile.xml
+%D \stoptyping
+%D
+%D You can now select a graphic from this file using the
+%D
+%D \starttyping
+%D \externalfigure[a dutch cow][width=4cm]
+%D \stoptyping
+%D
+%D This module overloads this command so that a figure is
+%D it first searched in the list of databases.
+%D
+%D \starttyping
 %D \usemodule     [fig-base]
 %D \usefigurebases[yourfile]
-%D \stoptyping 
-%D 
-%D The special keyword \type {reset} can be used to reset 
+%D \stoptyping
+%D
+%D The special keyword \type {reset} can be used to reset
 %D this list.
 
 \startcommands      dutch                            english
                     german                           czech
                     italian                          romanian
 
-     usefigurebase: gebruikfiguurbestand             usefigurebase 
-                    usefigurebase                    usefigurebase 
-                    usefigurebase                    usefigurebase 
+     usefigurebase: gebruikfiguurbestand             usefigurebase
+                    usefigurebase                    usefigurebase
+                    usefigurebase                    usefigurebase
 
-\stopcommands 
+\stopcommands
 
-\unprotect 
+\unprotect
 
 \consultutilityfilefalse
 
@@ -121,7 +121,7 @@
      \traceXMLelementsfalse
      \startXMLmapping[-][figbase]
        \resetfigurefilebase
-       \XMLerase{file} 
+       \XMLerase{file}
        \XMLerase{dummy}
        \XMLerase{label}
        \xdef\figurefilebase{#1}%
@@ -151,28 +151,69 @@
    \globalletempty\figurefilebasepath
    \globalletempty\figurefilepage}
 
-\let\normalcalculateexternalfigure\calculateexternalfigure
+\ifx\doanalyzefiguredimensionsfromfile\undefined
 
-\def\calculateexternalfigure[#1][#2][#3][#4][#5][#6]%
-  {\resetfigurefilebase
-   \ifx\figurebaselist\empty 
-     \normalcalculateexternalfigure
-       [#1][#2][#3][#4][#5][#6]%
-   \else
-     \def\docommando##1%
-       {\getfigurefilename{##1}{#3}%
-        \ifx\figurefilename\empty\else\quitcommalist\fi}%
-     \processcommacommand[\figurebaselist]\docommando
-     \ifx\figurefilename\empty
-       \stripspaces\from#3\to\figurefilename % to be sure 
-       \normalcalculateexternalfigure
-         [#1][#2][\figurefilename][#4][#5][#6]%
-     \else
-       \let\figurepathlist\figurefilebasepath
-       \normalcalculateexternalfigure
-         [#1][#2][\figurefilebase.pdf][\c!page=\figurefilepage,#4][#5][#6]%
-     \fi
-   \fi}
+    % will become obsolete once the new core-fig is used
+
+    \let\normalcalculateexternalfigure\calculateexternalfigure
+
+    \def\calculateexternalfigure[#1][#2][#3][#4][#5][#6]%
+      {\resetfigurefilebase
+       \ifx\figurebaselist\empty
+         \normalcalculateexternalfigure[#1][#2][#3][#4][#5][#6]%
+       \else
+         \def\docommand##1%
+           {\doshowfigurestate{base : check #3 in ##1}%
+            \getfigurefilename{##1}{#3}%
+            \ifx\figurefilename\empty\else\quitcommalist\fi}%
+         \processcommacommand[\figurebaselist]\docommand
+         \ifx\figurefilename\empty
+           \stripspaces\from#3\to\figurefilename % to be sure
+           \normalcalculateexternalfigure[#1][#2][\figurefilename][#4][#5][#6]%
+         \else
+           \doiffileelse{\figurefilebase.pdf}
+             {\let\figurepathlist\figurefilebasepath
+              \normalcalculateexternalfigure
+                [#1][#2][\figurefilebase.pdf]%
+                [\c!page=\figurefilepage,#4][#5][#6]}
+             {\@EA\stripspaces\@EA\from\figurefilename\to\figurefilename
+              \normalcalculateexternalfigure[#1][#2][\figurefilename][#4][#5][#6]}%
+         \fi
+       \fi}
+
+\else
+
+    % todo: use different internal names, \figurebasepage and such
+
+    \def\doanalyzefiguredimensionsfromfile
+      {\ifcase\figurestatus \ifx\figurebaselist\empty \else
+         \resetfigurefilebase
+         \doshowfigurestate{base list : \figurebaselist}%
+         \processcommacommand[\figurebaselist]\dodoanalyzefiguredimensionsfromfile
+         \ifx\figurefilename\empty
+           \doshowfigurestate{base warning : no matching name found}%
+         \else
+           \doiffileelse{\figurefilebase.pdf}
+             {\doshowfigurestate{base file : \figurefilebase.pdf}%
+              \doshowfigurestate{base page : \figurefilepage}%
+              \let\figurepathlist\figurefilebasepath
+              \analyzefigurefilename{\figurefilebase.pdf}\wantedfigurelabel
+              \let\wantedfigurepage\figurefilepage}
+             {\doshowfigurestate{base missing : \figurefilebase.pdf}}
+         \fi
+         \ifcase\figurestatus
+           \analyzefigurefilename\expandedfigurename\wantedfigurelabel
+         \fi
+       \fi \fi}
+
+    \def\dodoanalyzefiguredimensionsfromfile#1%
+      {\doshowfigurestate{base check : \wantedfigurename\space in #1}%
+       \getfigurefilename{#1}\wantedfigurename
+       \ifx\figurefilename\empty\else
+         \quitcommalist
+       \fi}
+
+\fi
 
 \def\usefigurebase[#1]%
   {\doifelse{#1}\v!reset
@@ -183,7 +224,7 @@
 
 \resetfigurefilebase
 
-\protect \endinput 
+\protect \endinput
 
 \usefigurebase[figtest]
 

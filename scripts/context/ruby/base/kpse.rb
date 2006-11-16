@@ -28,12 +28,22 @@ class String
         end
     end
 
+    def sane_path
+        self.gsub(/\\/,'/')
+    end
+
 end
 
 class Array
 
     def join_path
         self.join(File::PATH_SEPARATOR)
+    end
+
+    def non_empty
+        self.delete_if do |i|
+            (i == nil || i.empty?) rescue false
+        end
     end
 
 end
@@ -96,42 +106,57 @@ module Kpse
         @@scripts.keys.sort.each do |k| puts("scripts : #{k} -> #{@@scripts[k]}\n") end
     end
 
+    def Kpse.used_path(varname)
+        begin
+            if @@mswindows then
+                path = run("--expand-path=\$#{varname}") rescue ''
+            else
+                path = run("--expand-path='$#{varname}'") rescue ''
+            end
+        rescue
+            path = ''
+        end
+        return path.sane_path
+    end
+
     def Kpse.found(filename, progname=nil, format=nil)
         begin
             tag = Kpse.key(filename) # all
             if @@located.key?(tag) then
-                return @@located[tag]
+                return @@located[tag].sane_path
             elsif FileTest.file?(filename) then
                 setvariable(tag,filename)
                 return filename
             elsif FileTest.file?(File.join(@@ownpath,filename)) then
                 setvariable(tag,File.join(@@ownpath,filename))
-                return @@located[tag]
+                return @@located[tag].sane_path
             else
                 [progname,@@progname].flatten.compact.uniq.each do |prg|
                     [format,@@formats].flatten.compact.uniq.each do |fmt|
                         begin
                             tag = Kpse.key(filename,prg,fmt)
                             if @@located.key?(tag) then
-                                return @@located[tag]
+                                return @@located[tag].sane_path
                             elsif p = Kpse.kpsewhich(filename,prg,fmt) then
                                 setvariable(tag,p.chomp)
-                                return @@located[tag]
+                                return @@located[tag].sane_path
                             end
                         rescue
                         end
                     end
                 end
                 setvariable(tag,filename)
-                return filename
+                return filename.sane_path
             end
         rescue
-            filename
+            filename.sane_path
         end
     end
 
     def Kpse.kpsewhich(filename,progname,format)
-        Kpse.run("-progname=#{progname} -format=\"#{format}\" #{filename}")
+        p = if progname && ! progname.empty? then "-progname=#{progname}" else '' end
+        f = if format   && ! format.empty?   then "-format=\"#{format}\"" else '' end
+        Kpse.run("#{p} #{f} #{filename}")
     end
 
     def Kpse.which
@@ -160,7 +185,7 @@ module Kpse
         # maybe we should check for writeability
         unless @@paths.key?('formatpaths') then
             begin
-                setpath('formatpaths',run("--show-path=fmt").gsub(/\\/,'/').split_path)
+                setpath('formatpaths',run("--show-path=fmt").sane_path.split_path)
             rescue
                 setpath('formatpaths',[])
             end

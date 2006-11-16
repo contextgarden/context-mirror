@@ -172,8 +172,8 @@ class WWW
         @interface.set('process:os'        , platform)
         @interface.set('process:texos'     , 'texmf-' + platform)
 
-        @interface.set('trace:run'         , 'yes') if (ENV['EXA:TRACE:RUN']    || '') =~ @@re_true
-        @interface.set('trace:errors'      , 'yes') if (ENV['EXA:TRACE:ERRORS'] || '') =~ @@re_true
+        @interface.set('trace:run'         , 'yes') if (ENV['EXA_TRACE_RUN']    || '') =~ @@re_true
+        @interface.set('trace:errors'      , 'yes') if (ENV['EXA_TRACE_ERRORS'] || '') =~ @@re_true
 
         yield self if block_given?
     end
@@ -1276,12 +1276,19 @@ class WWW
         resultname, replyname = 'result.pdf', 'reply.exa'
         replyfile = File.join(tmp,replyname)
         resultfile = File.join(tmp,resultname)
+        targetname = File.join(cache_root,dir,resultname)
+        # make sure that there is no target left in case of an
+        # error; needed in case of given session name
+        if FileTest.directory?(File.join(cache_root,dir)) then
+            File.delete(targetname) rescue false
+        end
+        # now try to locate the file
         if FileTest.file?(fullname) then
             if indirect?(fullname) then
                 begin
+                    # check if directory exists and (if so) delete left overs
                     File.makedirs(File.join(cache_root,dir))
-                    targetname = File.join(cache_root,dir,resultname)
-                    File.delete(targetname) rescue false # left overs
+                    File.delete(targetname) rescue false
                     File.symlink(fullname,targetname) rescue message('Status',$!)
                     unless FileTest.file?(targetname) then
                         FileUtils::cp(fullname,targetname) rescue false

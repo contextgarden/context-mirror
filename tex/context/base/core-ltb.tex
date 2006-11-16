@@ -472,11 +472,11 @@
    \globallet\noflinetablecolumns\!!zerocount
    \globallet\noflinetableparts\!!zerocount
    \!!counta\zerocount
-   \def\docommando##1%
+   \def\docommand##1%
      {\doglobal\increment\noflinetableparts
       \advance\!!counta##1%
       \setxvalue{\??le::\noflinetableparts}{\the\!!counta}}%
-   \processcommacommand[\linetableparameter\c!n]\docommando
+   \processcommacommand[\linetableparameter\c!n]\docommand
    \initializetableboxes\noflinetableparts
    \ifcase\linetablerepeat
      \globallet\linetablepart\!!plusone

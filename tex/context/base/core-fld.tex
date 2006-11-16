@@ -373,8 +373,8 @@
 %D \def\getmainfieldkids#1%
 %D   {\let\@@DriverFieldKids\empty
 %D    \ifdefinemainfield
-%D      \definerawpasslist{fld:#1}% runtime defined by system
-%D      \moverawpasslist{fld:#1}\@@DriverFieldKids
+%D      \definetwopasslist{fld:#1}% runtime defined by system
+%D      \getnamedtwopassdatalist{fld:#1}\@@DriverFieldKids
 %D    \fi}
 %D \stoptyping
 %D
@@ -385,11 +385,7 @@
 %D
 %D \def\setmainfieldkid#1#2%
 %D   {\doglobal\increment\nofmainfieldkids
-%D    \immediatewriteutilitycommand
-%D      {\twopassentry%
-%D         {fld:#1}%
-%D         {\nofmainfieldkids}%
-%D         {#2}}}
+%D    \savetwopassdata{fld:#1}{\nofmainfieldkids}{#2}}
 %D \stoptyping
 %D
 %D The trade of of this mechanism is that for each cloned or
@@ -552,19 +548,19 @@
        \setfield{#1}{#2}{}{}{#4,\@@DriverFieldKids}{#3}{\@@DriverFieldMode\@@DriverFieldFree\@@DriverFieldAuto}{}{\SavedFieldDefault}%
      \fi
 %
-     \def\docommando##1%
+     \def\docommand##1%
        {\doifelse{##1}\SavedFieldDefault
           {\def\@@DriverFieldDefault{##1}}%
           {\let\@@DriverFieldDefault\empty}%
         \setfield{##1}{#2}{#1}{}{}{#3}{\@@DriverFieldMode\@@DriverFieldFree\@@DriverFieldAuto}{}{\@@DriverFieldDefault}}%
 % when opt works
-%     \def\docommando##1%
+%     \def\docommand##1%
 %       {\@EA\beforesplitstring##1\at=>\to\FieldValue
 %        \doifelse\FieldValue\SavedFieldDefault
 %          {\let\@@DriverFieldDefault\FieldValue}%
 %          {\let\@@DriverFieldDefault\empty}%
 %        \setfield\FieldValue{#2}{#1}{}{}{#3}{\@@DriverFieldMode\@@DriverFieldFree\@@DriverFieldAuto}{}{\@@DriverFieldDefault}}%
-     \processcommalist[#4]\docommando
+     \processcommalist[#4]\docommand
   \else
      \writestatus\m!fields{pass values too}%
   \fi}
@@ -574,7 +570,7 @@
 
 \def\dodefinesubfield[#1][#2][#3]% for the moment only radio ones
   {\ifsecondargument
-     \def\docommando##1%
+     \def\docommand##1%
        {\getfield{##1}%
         \ifx\@@DriverFieldType\empty
           \writestatus\m!fields{unknown field ##1}% to do
@@ -587,7 +583,7 @@
             {\def\@@DriverFieldValues{#3}}%
           \changefield{##1}%
         \fi}%
-      \processcommalist[#1]\docommando
+      \processcommalist[#1]\docommand
    \else
      \writestatus\m!fields{pass fieldname, setupgroup, values and default}%
    \fi}
@@ -600,9 +596,9 @@
        \writestatus\m!fields{unknown field #1}%
      \else
        \let\@@DriverFieldMode\fieldparentmode
-      %\def\docommando##1{\addtocommalist{##1}\@@DriverFieldKids}%
-       \def\docommando##1{\appendtocommalist{##1}\@@DriverFieldKids}%
-       \processcommalist[#2]\docommando
+      %\def\docommand##1{\addtocommalist{##1}\@@DriverFieldKids}%
+       \def\docommand##1{\appendtocommalist{##1}\@@DriverFieldKids}%
+       \processcommalist[#2]\docommand
        \changefield{#1}%
        \let\@@DriverFieldAutoParent\@@DriverFieldAuto
        \def\@@DriverFieldParent{#1}%
@@ -613,12 +609,12 @@
        \def\@@DriverFieldAuto{0}%
        \doifsomething{#3}{\edef\@@DriverFieldGroup{#3}}%
        \doifsomething{#4}{\edef\@@DriverFieldValues{#4}}%
-       \def\docommando##1%
+       \def\docommand##1%
          {\ifcase\@@DriverFieldAutoParent\else
             \setmainfieldkid{\@@DriverFieldParent}{##1}%
           \fi
           \changefield{##1}}%
-       \processcommalist[#2]\docommando
+       \processcommalist[#2]\docommand
      \fi
 \fi
    \else
@@ -636,9 +632,9 @@
        \writestatus\m!fields{unknown field #1}%
      \else
        \let\@@DriverFieldMode\fieldparentmode
-      %\def\docommando##1{\addtocommalist{##1}\@@DriverFieldKids}%
-       \def\docommando##1{\appendtocommalist{##1}\@@DriverFieldKids}%
-       \processcommalist[#2]\docommando
+      %\def\docommand##1{\addtocommalist{##1}\@@DriverFieldKids}%
+       \def\docommand##1{\appendtocommalist{##1}\@@DriverFieldKids}%
+       \processcommalist[#2]\docommand
        \changefield{#1}%
        \let\@@DriverFieldAutoParent\@@DriverFieldAuto
        \def\@@DriverFieldParent{#1}%
@@ -647,12 +643,12 @@
        \let\@@DriverFieldMode\fieldcopymode
        \def\@@DriverFieldFree{0}%
        \def\@@DriverFieldAuto{0}%
-       \def\docommando##1%
+       \def\docommand##1%
          {\ifcase\@@DriverFieldAutoParent\else
             \setmainfieldkid{\@@DriverFieldParent}{##1}%
           \fi
           \changefield{##1}}%
-       \processcommalist[#2]\docommando
+       \processcommalist[#2]\docommand
      \fi
 \fi
    \else
@@ -753,19 +749,19 @@
 
 \def\dosetupfield[#1][#2][#3][#4][#5]%
   {\iffifthargument
-     \def\docommando##1{\dodosetupfield[##1][#2][#3][#4][#5]}%
-     \processcommalist[#1]\docommando
+     \def\docommand##1{\dodosetupfield[##1][#2][#3][#4][#5]}%
+     \processcommalist[#1]\docommand
    \else\ifthirdargument
-     \def\docommando##1{\dodosetupfield[##1][#2][][][#3]}%
-     \processcommalist[#1]\docommando
+     \def\docommand##1{\dodosetupfield[##1][#2][][][#3]}%
+     \processcommalist[#1]\docommand
    \else\ifsecondargument
      \doifelse{#2}\v!reset
-       {\def\docommando##1{\donosetupfield[#1][][][][]}}
-       {\def\docommando##1{\dodosetupfield[##1][][][][#2]}}%
-     \processcommalist[#1]\docommando
+       {\def\docommand##1{\donosetupfield[#1][][][][]}}
+       {\def\docommand##1{\dodosetupfield[##1][][][][#2]}}%
+     \processcommalist[#1]\docommand
    \else\iffirstargument
-     \def\docommando##1{\dodosetupfield[##1][][][][]}%
-     \processcommalist[#1]\docommando
+     \def\docommand##1{\dodosetupfield[##1][][][][]}%
+     \processcommalist[#1]\docommand
    \else
      \writestatus\m!fields{provide either 1, 2, 3 or 5 arguments}%
    \fi\fi\fi\fi}

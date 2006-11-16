@@ -8,14 +8,14 @@
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
-%C therefore copyrighted by \PRAGMA. See mreadme.pdf for 
-%C details. 
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
 
 %D Schema support was implemented right after euro\TeX\ 2001,
 %D when Tobias Burnus send me a schema for the XML figure
 %D base. Since it happened that I needed schemata for other
 %D projects too, I wrote this mapper. Thanks to Tobias for
-%D testing it. 
+%D testing it.
 
 \newcounter\XSDprefix
 \newif\ifXDScomposite
@@ -54,10 +54,10 @@
                      \pagereference[xsd:\XSDprefix:\XSDtemp]%
                    \fi
                    \doXSDtemp},
-            type=>{\doifinstringelse{xsd:}{\XSDtemp} 
+            type=>{\doifinstringelse{xsd:}{\XSDtemp}
                      {\doXSDtemp}
                      {\gotobox{\doXSDtemp}[xsd:\XSDprefix:\XSDtemp]}},
-             ref=>{\doifinstringelse{xsd:}{\XSDtemp} 
+             ref=>{\doifinstringelse{xsd:}{\XSDtemp}
                      {\doXSDtemp}
                      {\gotobox{\doXSDtemp}[xsd:\XSDprefix:\XSDtemp]}},
          unknown=>\doXSDtemp]}%
@@ -65,8 +65,8 @@
    \egroup}
 
 \def\doXSDkeyvals#1#2#3%
-  {\def\docommando##1{\doXSDkeyval{#1}{##1}{#2}{##1}}%
-   \processcommalist[#3]\docommando}
+  {\def\docommand##1{\doXSDkeyval{#1}{##1}{#2}{##1}}%
+   \processcommalist[#3]\docommand}
 
 \def\dodoXSDbanner#1%
   {\framed
@@ -77,7 +77,7 @@
 \def\doXSDtitle#1#2#3%
  {\edef\XSDtemp{\XMLpar{#2}{#3}{}}%
   \dodoXSDbanner
-    {{\bf\ignorespaces#1\unskip}% 
+    {{\bf\ignorespaces#1\unskip}%
      \doifsomething{\XSDtemp}
        {:\space\ignorespaces\XSDtemp\unskip
         \pagereference[xsd:\XSDprefix:\XSDtemp]}}}
@@ -113,7 +113,7 @@
 \defineframedtext [XSDcapsule]        [backgroundcolor=xsd:2]
 \defineframedtext [XSDsequence]       [backgroundcolor=xsd:3]
 
-\def\XDSstructures% handy for external settings 
+\def\XDSstructures% handy for external settings
   {XSDannotation,
    XSDcomplexType,XSDsimpleType,XSDelement,XSDattribute,
    XSDcomplexContent,XSDsimpleContent,XSDattributeGroup,
@@ -129,29 +129,29 @@
    before=\ifinframed\else\blank\fi,
    after=\ifinframed\else\blank\fi,
    depthcorrection=off,
-   rulethickness=1pt,  
+   rulethickness=1pt,
    strut=no]
 
 \definesymbol[xsd][{\blackrule[width=4em]}]
 
 \def\placeXSDlegenda
   {\startbaselinecorrection
-   \starttabulate[|l|l|] 
-   \HL 
-   \NC \bf color                   \NC \bf meaning    \NC \NR 
-   \HL 
-   \NC \color[xsd:1]{\symbol[xsd]} \NC complexContent \unskip\quad 
-                                       simpleContent  \unskip\quad 
-                                       attributeGroup \NC \NR 
-   \NC \color[xsd:2]{\symbol[xsd]} \NC capsule        \NC \NR 
-   \NC \color[xsd:3]{\symbol[xsd]} \NC sequence       \NC \NR 
-   \HL 
-   \NC \color[xsd:5]{\symbol[xsd]} \NC element        \NC \NR 
-   \NC \color[xsd:6]{\symbol[xsd]} \NC attribute      \NC \NR 
-   \NC \color[xsd:7]{\symbol[xsd]} \NC simpleType     \NC \NR 
-   \NC \color[xsd:8]{\symbol[xsd]} \NC complexType    \NC \NR 
-   \HL 
-   \stoptabulate 
+   \starttabulate[|l|l|]
+   \HL
+   \NC \bf color                   \NC \bf meaning    \NC \NR
+   \HL
+   \NC \color[xsd:1]{\symbol[xsd]} \NC complexContent \unskip\quad
+                                       simpleContent  \unskip\quad
+                                       attributeGroup \NC \NR
+   \NC \color[xsd:2]{\symbol[xsd]} \NC capsule        \NC \NR
+   \NC \color[xsd:3]{\symbol[xsd]} \NC sequence       \NC \NR
+   \HL
+   \NC \color[xsd:5]{\symbol[xsd]} \NC element        \NC \NR
+   \NC \color[xsd:6]{\symbol[xsd]} \NC attribute      \NC \NR
+   \NC \color[xsd:7]{\symbol[xsd]} \NC simpleType     \NC \NR
+   \NC \color[xsd:8]{\symbol[xsd]} \NC complexType    \NC \NR
+   \HL
+   \stoptabulate
    \stopbaselinecorrection}
 
 \defineXMLenvironment [xsd:all] [id=]
@@ -168,7 +168,7 @@
   {\stopXSDannotation
    \stopXSDcapsule}
 
-\defineXMLignore [xsd:appInfo] 
+\defineXMLignore [xsd:appInfo]
 
 \defineXMLenvironment [xsd:attribute]
   [id=,name=,ref=,type=,form=,use=,value=]
@@ -374,9 +374,9 @@
   [id=,schemaLocation=]
   [id,schemaLocation]
 
-\defineXSDfacet 
-  [notation] 
-  [id=,name=,public=,system=] 
+\defineXSDfacet
+  [notation]
+  [id=,name=,public=,system=]
   [id,name,public,system]
 
-\endinput 
+\endinput

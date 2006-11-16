@@ -193,41 +193,13 @@
      {\edef#3{#2}}
      {\edef#3{#1\f!pathseparator#2}}}
 
-%D For the moment, we limit sanitizing to taking care of
-%D active \type {/}.
-
-\bgroup % todo: _ cleanup
-
-\catcode`\/=\@@active
-\catcode`\:=\@@active
-\catcode`\~=\@@active
-\catcode`\_=\@@active
-
-\gdef\sanitizefilename#1\to#2%
-  {\bgroup
-   \edef/{\string/}%
-   \edef:{\string:}%
-   \edef~{\string~}%
-   \edef_{\string_}%
-   \retainlccodes
-   \lccode`\\=`\/
-   \lowercase{\expanded{\xdef\noexpand\sanitizedfilename{#1}}}%
-   \egroup
-   % maybe \convertcommand\sanitizedfilename\to#2%
-   \let#2\sanitizedfilename}
-
-\egroup
+\def\sanitizefilename#1\to#2{\def#2{#1}} % overloaded in mk
 
 %D NEW:
 
 \chardef\kindoffile=0 % 0=normal 1=full path spec (or http)
 
-\def\checkfilename#1%
-  {\doifinstringelse{@@/}{@@#1}%    unix: /full/path
-     {\chardef\kindoffile\plusone}
-     {\doifinstringelse{:/}{#1}%  windows: e:/full/path or http://
-        {\chardef\kindoffile\plusone}
-        {\chardef\kindoffile\zerocount}}}
+\def\checkfilename{\chardef\kindoffile\zerocount} % overloaded in mk
 
 %D \macros
 %D   {input, normalinput}
@@ -374,9 +346,33 @@
    \normalinput\readfilename\relax
    \the\everyafterreadfile}
 
-\unexpanded\def\readfile% #1%
-  {\let\readlevel\maxreadlevel
-   \doreadfile\empty} % {#1}
+% too less:
+%
+% \unexpanded\def\readfile% #1%
+%   {\let\readlevel\maxreadlevel
+%    \doreadfile\empty} % {#1}
+%
+% too much:
+%
+% \unexpanded\def\readfile#1#2#3%
+%   {\readlocfile{#1}{#2}
+%      {\readjobfile{#1}{#2}
+%         {\readsysfile{#1}{#2}{#3}}}}
+%
+% just ok:
+
+\unexpanded\def\readfile#1#2#3%
+  {\readlocfile{#1}{#2}{\readsysfile{#1}{#2}{#3}}}
+
+\def\readtexfile#1#2#3%
+  {\pushcatcodetable \catcodetable \ctxcatcodes
+   \readfile{#1}{#2}{#3}%
+   \popcatcodetable}
+
+\def\readxmlfile#1#2#3%
+  {\pushcatcodetable \catcodetable \xmlcatcodes
+   \readfile{#1}{#2}{#3}%
+   \popcatcodetable}
 
 \unexpanded\def\ReadFile#1%
   {\readfile{#1}\donothing\donothing}
@@ -529,8 +525,11 @@
 %D
 %D This command obeys the standard method for locating files.
 
-\long\def\doonlyonce#1#2%
-  {\doifundefined{@@@#1@@@}{\letgvalue{@@@#1@@@}\empty#2}}
+\long\def\doonlyonce#1%
+  {\doifundefinedelse{@@@#1@@@}
+     {\letgvalue{@@@#1@@@}\empty
+      \firstofoneargument}
+     {\gobbleoneargument}}
 
 \def\doinputonce#1%
   {\doonlyonce{#1}{\doiffileelse{#1}{\normalinput#1\relax}\donothing}}
@@ -559,17 +558,7 @@
 
 \ifx\outputfilename\undefined \def\outputfilename{\jobname} \fi
 
-% \def\doifparentfileelse#1#2#3%
-%   {\doifsamestringelse{#1}{\jobname       }{#2}
-%   {\doifsamestringelse{#1}{\jobname.\c!tex}{#2}
-%   {\doifsamestringelse{#1}{\outputfilename}{#2}{#3}}}}
-%
-% todo: split name
-
-\def\doifparentfileelse#1%
-  {\doifsamestringelse{#1}{\jobname       }\firstoftwoarguments
-  {\doifsamestringelse{#1}{\jobname.\c!tex}\firstoftwoarguments
-  {\doifsamestringelse{#1}{\outputfilename}\firstoftwoarguments\secondoftwoarguments}}}
+\let\doifparentfileelse\gobblethreearguments % defined in mk
 
 \def\normalless    {<} % geen \let !
 \def\normalmore    {>} % geen \let !
@@ -593,37 +582,53 @@
 
 %D We need to redo this: catcode sets and such
 
+\newtoks \everystartreadingfile
+\newtoks \everystopreadingfile
+
+% \def\startreadingfile% beter een every en \setnormalcatcodes
+%   {\doglobal\increment\readingfilelevel
+%    \the\everystartreadingfile
+%    \setxvalue{\string\readingfilelevel::\readingfilelevel}%
+%      {\catcode`/ =\the\catcode`/%
+%      %\catcode`_ =\the\catcode`_% math ! ! !
+%       \catcode`" =\the\catcode`"%
+%       \catcode`: =\the\catcode`:%
+%       \catcode`; =\the\catcode`;%
+%       \catcode`< =\the\catcode`<%
+%       \catcode`> =\the\catcode`>%
+%       \catcode`\noexpand\\=\the\catcode`\\%
+%       \catcode`\noexpand\{=\the\catcode`\{%
+%       \catcode`\noexpand\}=\the\catcode`\}%
+%       \catcode`\noexpand\%=\the\catcode`\%}%
+%    \catcode`/ =\@@other
+%   %\catcode`_ =\@@other
+%    \catcode`" =\@@other
+%    \catcode`: =\@@other
+%    \catcode`; =\@@other
+%    \catcode`< =\@@other
+%    \catcode`> =\@@other
+%    \catcode`\\=\@@escape
+%    \catcode`\{=\@@begingroup
+%    \catcode`\}=\@@endgroup
+%    \catcode`\%=\@@comment
+%    \pushendofline
+%    \restoreendofline}
+
+% \def\stopreadingfile
+%   {\popendofline
+%    \getvalue{\string\readingfilelevel::\readingfilelevel}%
+%    \the\everystopreadingfile
+%    \doglobal\decrement\readingfilelevel}
+
 \def\startreadingfile% beter een every en \setnormalcatcodes
   {\doglobal\increment\readingfilelevel
-   \setxvalue{\string\readingfilelevel::\readingfilelevel}%
-     {\catcode`/ =\the\catcode`/%
-     %\catcode`_ =\the\catcode`_% math ! ! !
-      \catcode`" =\the\catcode`"%
-      \catcode`: =\the\catcode`:%
-      \catcode`; =\the\catcode`;%
-      \catcode`< =\the\catcode`<%
-      \catcode`> =\the\catcode`>%
-      \catcode`\noexpand\\=\the\catcode`\\%
-      \catcode`\noexpand\{=\the\catcode`\{%
-      \catcode`\noexpand\}=\the\catcode`\}%
-      \catcode`\noexpand\%=\the\catcode`\%}%
-   \catcode`/ =\@@other
-  %\catcode`_ =\@@other
-   \catcode`" =\@@other
-   \catcode`: =\@@other
-   \catcode`; =\@@other
-   \catcode`< =\@@other
-   \catcode`> =\@@other
-   \catcode`\\=\@@escape
-   \catcode`\{=\@@begingroup
-   \catcode`\}=\@@endgroup
-   \catcode`\%=\@@comment
-   \pushendofline
-   \restoreendofline}
+   \the\everystartreadingfile
+   \beginrestorecatcodes
+   \setcatcodetable\prtcatcodes}
 
 \def\stopreadingfile
-  {\popendofline
-   \getvalue{\string\readingfilelevel::\readingfilelevel}%
+  {\endrestorecatcodes
+   \the\everystopreadingfile
    \doglobal\decrement\readingfilelevel}
 
 \let\normalstartreadingfile\startreadingfile
@@ -658,49 +663,14 @@
 
 \def\splitoffroot{.} \chardef\splitoffkind\zerocount
 
-% \def\splitfilename#1%
-%   {\edef\splitofffull{#1}% normally outside this call: \sanitizefilename#1\to\sanitizedfilename
-%    \greedysplitstring\splitofffull\at/\to\splitoffpath\and\splitoffbase
-%    \ifx\splitoffbase\empty
-%      \let\splitoffpath\empty
-%      \let\splitoffbase\splitofffull
-%    \fi
-%    \greedysplitstring\splitoffbase\at.\to\splitoffname\and\splitofftype
-%    \chardef\splitoffkind % can be used to test if pathpart was empty
-%      \ifx\splitoffpath\empty        \zerocount \else
-%      \ifx\splitoffpath\splitoffroot \plusone   \else
-%                                     \plustwo   \fi\fi
-%    \ifx\splitoffname\empty\let\splitoffname\splitoffbase\fi
-%    \ifx\splitoffpath\empty\let\splitoffpath\splitoffroot\fi}
-%
-% better, since it also handles leading /'s
-%
-% \splitfilename{oeps/test.pdf}  [\splitoffpath\quad\splitoffname\quad\splitofftype]
-% \splitfilename{/oeps/test.pdf} [\splitoffpath\quad\splitoffname\quad\splitofftype]
-% \splitfilename{/test.pdf}      [\splitoffpath\quad\splitoffname\quad\splitofftype]
+\let\splitofffull\empty
+\let\splitoffpath\empty
+\let\splitoffbase\empty
+\let\splitoffname\empty
+\let\splitofftype\empty
 
-\def\splitfilename#1%
-  {\edef\splitofffull{#1}% normally outside this call: \sanitizefilename#1\to\sanitizedfilename
-   \greedysplitstring\splitofffull\at/\to\splitoffpath\and\splitoffbase
-   \ifx\splitoffpath\splitofffull
-     \let\splitoffpath\empty
-   \fi
-   \ifx\splitoffbase\empty
-     \let\splitoffpath\empty
-     \let\splitoffbase\splitofffull
-   \fi
-   \greedysplitstring\splitoffbase\at.\to\splitoffname\and\splitofftype
-   \chardef\splitoffkind % can be used to test if pathpart was empty
-     \ifx\splitoffpath\empty        \zerocount \else
-     \ifx\splitoffpath\splitoffroot \plusone   \else
-                                    \plustwo   \fi\fi
-   \ifx\splitoffname\empty\let\splitoffname\splitoffbase\fi
-   \ifx\splitoffpath\empty\let\splitoffpath\splitoffroot\fi}
-
-\def\splitfiletype#1%
-  {\edef\splitofffull{#1}% normally outside this call: \sanitizefilename#1\to\sanitizedfilename
-   \let\splitoffpath\empty
-   \greedysplitstring\splitofffull\at.\to\splitoffname\and\splitofftype}
+\let\splitfilename\gobbleoneargument % defined in mk
+\let\splitfiletype\gobbleoneargument % defined in mk
 
 %% % gebruikt voor normale (!) files, will change to proper
 %% % installer maybe combined with verb module push/popper
@@ -752,5 +722,7 @@
 %%    \catcode`"=\@@other
 %%    \catcode`<=\@@other
 %%    \catcode`>=\@@other}
+
+\loadmarkfile{supp-fil}
 
 \protect \endinput

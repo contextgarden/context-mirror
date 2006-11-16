@@ -29,57 +29,6 @@
 \def\setuplines
   {\dodoubleargument\getparameters[\??rg]}
 
-% old
-%
-% \def\startlines
-%   {\@@rgbefore
-%    \whitespace
-%   %\page[\v!preference]} gaat mis na koppen, nieuw: later \nobreak
-%    \begingroup
-%    \def \@@rgstepyes  {\parindent\zeropoint}%
-%    \def \@@rgstepno   {\parindent\zeropoint}%
-%    \edef\@@rgparindent{\the\parindent}%
-%    \globallet\@@rglinesteptoggle\!!plusone
-%    \processaction
-%      [\@@rgindenting]
-%      [  \v!yes=>\def\@@rgstepyes{\parindent\@@rgparindent}%
-%                 \def\@@rgstepno {\parindent\@@rgparindent},
-%         \v!odd=>\def\@@rgstepyes{\parindent\zeropoint    }%
-%                 \def\@@rgstepno {\parindent\@@rgparindent},
-%        \v!even=>\def\@@rgstepno {\parindent\zeropoint    }%
-%                 \def\@@rgstepyes{\parindent\@@rgparindent}]%
-%    \typesettinglinestrue
-%    \setupwhitespace[\v!none]%
-%    \obeylines
-%    \let\checkindentation\relax
-%    \@@rgstepno
-%    \ignorespaces
-%    \gdef\afterfirstobeyedline % tzt two pass, net als opsomming
-%      {\gdef\afterfirstobeyedline
-%         {\nobreak
-%          \global\let\afterfirstobeyedline\relax}}%
-%    \def\obeyedline
-%      {\par
-%       \let\checkindentation\relax % else problems with odd/even
-%       \afterfirstobeyedline
-%       \ifdim\lastskip>\zeropoint
-%         \globallet\@@rglinesteptoggle\!!zerocount
-%       \else
-%         \doglobal\increment\@@rglinesteptoggle
-%       \fi
-%       \ifodd\@@rglinesteptoggle\relax
-%         \@@rgstepyes
-%       \else
-%         \@@rgstepno
-%       \fi
-%       \futurelet\next\dobetweenthelines}%
-%    \activatespacehandler\@@rgspace
-%    \GotoPar}
-%
-% \def\stoplines
-%   {\endgroup
-%    \@@rgafter}
-
 \def\startlines
   {\@@rgbefore
    \pushmacro\checkindentation
@@ -158,13 +107,6 @@
 \def\activatespacehandler#1%
   {\executeifdefined{\??sr#1}{\activatespacehandler\v!off}}
 
-% \def\dobetweenthelines%
-%   {\convertcommand \next      \to\!!stringa % very ugly and fuzzy
-%    \convertargument\obeyedline\to\!!stringb % but needed anyway
-%    \ifx\!!stringa\!!stringb                 % but alas, it fails
-%      \@@rgtussen                            % hopelessly in non
-%    \fi}                                     % etex
-
 \def\dobetweenthelines
   {\doifmeaningelse\next\obeyedline\@@rginbetween\donothing}
 
@@ -199,29 +141,6 @@
    \egroup}
 
 \newevery \everylinenumber \relax
-
-% \def\dodoplacelinenumber
-%   {% beware of em's, the font is already switched !
-%    \setbox\scratchbox\hbox
-%      {\setbox0\hbox{\@@rncommand{\completelinenumber}}\vsmashbox0%
-%       \ifcase\linenumberlocation
-%         \rlap{\hbox to \@@rnwidth{\box0\hss}}% was \llap, nog testen !!
-%       \or
-%         \inleftmargin
-%           {\forgetall
-%            \doifelse\@@rnwidth\v!margin
-%              {\hsize\leftmarginwidth}{\hsize\@@rnwidth}%
-%            \alignedline\@@rnalign\v!right{\box0\hskip\@@rndistance}}%
-%       \else
-%         \inrightmargin
-%           {\forgetall
-%            \doifelse\@@rnwidth\v!margin
-%              {\hsize\rightmarginwidth}{\hsize\@@rnwidth}%
-%            \alignedline\@@rnalign\v!left{\hskip\@@rndistance\box0}}%
-%       \fi}%
-%    \vsmashbox\scratchbox
-%    \box\scratchbox
-%    \the\everylinenumber}
 
 \def\dodoplacelinenumber
   {% beware of em's, the font is already switched !
@@ -317,14 +236,17 @@
    \numberinglinestrue
    \complexorsimpleempty\startlinenumbering}
 
+\def\donoplacelinenumber
+  {\the\everylinenumber}
+
 \def\doplacelinenumber
   {\ifnum\linenumber<\@@rnstart\relax
+     \donoplacelinenumber
    \else
-     \!!counta\linenumber
-     \divide\!!counta \@@rnstep
-     \multiply\!!counta \@@rnstep\relax
-     \ifnum\!!counta=\linenumber
+     \ifnum\numexpr(\linenumber/\@@rnstep)*\@@rnstep\relax=\linenumber
        \doattributes\??rn\c!style\c!color\dodoplacelinenumber
+     \else
+       \donoplacelinenumber
      \fi
    \fi}
 

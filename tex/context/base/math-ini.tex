@@ -100,8 +100,8 @@
 
 \ifx\dohandlecommand\undefined \wait \fi % troubles !
 
-\let\mathcharacter\dohandlemathtoken
-\let\textcharacter\dohandlecommand % better \dohandletexttoken
+\def\mathcharacter\dohandlemathtoken
+\def\textcharacter\dohandlecommand % better \dohandletexttoken
 
 % More clever layout:
 %
@@ -234,6 +234,45 @@
 \endTEX
 
 %D Now we redefine the text encoding handler.
+
+%D A better fallback:
+
+% Just ETEX which is the default nowadays.
+
+\beginETEX \ifcsname
+
+\def\dohandlemathtoken#1%
+  {\csname
+     \ifmmode
+       \ifcsname\@mt@\mathcollection:\outerencoding#1\endcsname
+         \@mt@\mathcollection:\outerencoding
+       \else\ifcsname\@mt@\mathcollection#1\endcsname
+         \@mt@\mathcollection
+       \else\ifcsname\@mt@\nomathcollection#1\endcsname
+         \@mt@\nomathcollection
+       \else\ifcsname\characterencoding#1\endcsname
+         \characterencoding
+       \else
+         \nocharacterencoding
+       \fi\fi\fi\fi
+     \else
+       \ifcsname\characterencoding#1\endcsname
+         \characterencoding
+       \else\ifcsname\nocharacterencoding#1\endcsname
+         \nocharacterencoding
+       \else\ifcsname\@mt@\mathcollection:\outerencoding#1\endcsname
+         \@mt@\mathcollection:\outerencoding
+       \else\ifcsname\@mt@\mathcollection#1\endcsname
+         \strippedcsname\mathematics\expandafter\endcsname\csname\@mt@\mathcollection
+       \else\ifcsname\@mt@\nomathcollection#1\endcsname
+         \strippedcsname\mathematics\expandafter\endcsname\csname\@mt@\nomathcollection
+       \else
+         \nocharacterencoding
+       \fi\fi\fi\fi\fi
+     \fi
+   #1\endcsname}
+
+\endETEX
 
 \let\dohandlecommand\dohandlemathtoken
 
@@ -678,43 +717,3 @@
 \setupbodyfont[ams] \enablemathcollection[default] \input math-ams \page
 \setupbodyfont[lbr] \enablemathcollection[lbr]     \input math-lbr \page
 \setupbodyfont[eul] \enablemathcollection[eul]     \input math-eul \stoptext
-
-% to be checked, overloads supp-lan !
-
-\def\defineactivecharacter #1 #2%
-%   {\scratchcounter=\the\uccode`~
-  {\scratchcounter\uccode`~\relax
-   \expandafter\doifnumberelse\expandafter{\string#1}
-     {\catcode #1=\@@active \uccode`~= #1\relax}
-     {\catcode`#1=\@@active \uccode`~=`#1\relax}%
-   \uppercase{\def\next{~}}%
-  % unexpanded goes wrong in pdfdoc
-  %\expandafter\unexpanded\expandafter\def\next{#2}%
-  % better
-  %\expandafter\def\next{#2}%
-  % math aware
-   \expandafter\def\next{\dohandleactivecharacter{#1}{#2}}% new
-   \uccode`~=\scratchcounter}
-
-\def\dohandleactivecharacter
-  {\ifmmode
-     \expandafter\dohandleactivemathcharacter
-   \else
-     \expandafter\secondoftwoarguments
-   \fi}
-
-\def\dohandleactivemathcharacter#1#2#3%
-  {\ifundefined{@ma@\string#2}%
-     \expandafter\firstofoneargument
-   \else
-     \getvalue{@ma@\string#2}%
-     \expandafter\gobbleoneargument
-   \fi{#3}}
-
-% \def\dohandleactivemathcharacter#1#2%
-%   {\ifcsname @ma@\string#1\endcsname
-%      \csname @ma@\string#1\expandafter\endcsname
-%      \expandafter\gobbleoneargument
-%    \else
-%      \expandafter\firstofoneargument
-%    \fi{#2}}

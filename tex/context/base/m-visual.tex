@@ -57,6 +57,10 @@
    \stopcolor
    \allowbreak}
 
+\def\dorandomrecurse#1%
+  {\getrandomcount\scratchcounter{1}{#1}%
+   \dorecurse\scratchcounter}
+
 % can be used in hbox, so %'s are really needed
 
 \unexpanded\def\fakelines#1#2% min max / 3 10

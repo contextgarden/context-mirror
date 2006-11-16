@@ -169,8 +169,8 @@
 \gdef\someXMLline{\par\@XMLlevel+\@XMLelement1\par\@XMLlevel-}
 
 \gdef\setXMLshow#1#2#3[#4]%
-  {\def\docommando##1{#1[##1]#2#3\letvalue{\@@XMLshow:##1}\empty}%
-   \processcommalist[#4]\docommando}
+  {\def\docommand##1{#1[##1]#2#3\letvalue{\@@XMLshow:##1}\empty}%
+   \processcommalist[#4]\docommand}
 
 \gdef\showXMLign[#1]%
   {\setXMLshow\defineXMLignore     \relax\relax[#1]%
@@ -200,8 +200,8 @@
   {\setXMLshow\defineXMLsingular\someXMLword\relax[#1]}
 
 \gdef\showXMLbreak[#1]%
-  {\def\docommando##1{\setvalue{\@@XMLshow::##1}{\hskip\zeropoint}}%
-   \processcommalist[#1]\docommando}
+  {\def\docommand##1{\setvalue{\@@XMLshow::##1}{\hskip\zeropoint}}%
+   \processcommalist[#1]\docommand}
 
 \gdef\doautoshowXMLelement
   {\ifcase\kindofXMLelement

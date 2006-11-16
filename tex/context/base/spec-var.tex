@@ -21,6 +21,11 @@
 
 \unprotect
 
+% This variable holds a comma separated list of (supported) figure
+% types. It may be changes by other modules.
+
+\let\figuretypes\empty
+
 \ifx\undefined\@@DriverFieldName
 
   \letempty \@@DriverFieldName
@@ -64,6 +69,14 @@
 \ifx\undefined\@@DriverImageBox
 
   \letempty \@@DriverImageBox
+  \letempty \@@DriverImageOptions
+  \letempty \@@DriverImageWidth
+  \letempty \@@DriverImageHeight
+  \letempty \@@DriverImageFile
+  \letempty \@@DriverImageLabel
+  \letempty \@@DriverImageType
+  \letempty \@@DriverImageMethod
+  \letempty \@@DriverImagePage
 
 \fi
 

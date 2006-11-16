@@ -27,40 +27,29 @@
 \def\@@insertpostscriptliteral {ps: }
 \def\@@insertpostscriptretain  {" }
 
-%\definefileinsertion{tr}{eps}#1#2#3#4#5#6#7#8#9%
-%  {\PointsToBigPoints{#5}\width
-%   \PointsToBigPoints{#6}\height
-%   \special
-%     {psfile=#1
-%      hscale=#3\space
-%      vscale=#4\space
-%      hoffset=\width\space
-%      voffset=\height}}
-
 %D Ugly but useful:
 
-\definefileinsertion{tr}{eps}#1#2#3#4#5#6#7#8#9%
-  {\PointsToWholeBigPoints{#7}\width
-   \PointsToWholeBigPoints{#8}\height
+\definefileinsertion{tr}{eps}
+  {\bgroup
+   \PointsToWholeBigPoints\@@DriverImageWidth \width
+   \PointsToWholeBigPoints\@@DriverImageHeight\height
    \special
-     {PSfile="#1"\space
+     {PSfile="\@@DriverImageFile"\space
       llx=\EPSllx\space
       lly=\EPSlly\space
       urx=\EPSurx\space
       ury=\EPSury\space
-      rwi=\width0\space
-      rhi=\height0}}
-
-\definefileinsertion{tr}{mps}#1#2#3#4#5#6#7#8#9%
-  {\hbox
-     {%\includeMPfonts{#1}% dvips know mp
-      \convertMPcolors{#1}%
-      \dofileinsertion{tr}{eps}{#1}{#2}{#3}{#4}{#5}{#6}{#7}{#8}{#9}}}
-
-\definespecial\doinsertfile#1#2#3#4#5#6#7#8#9%
-  {\bgroup
-   \dodoinsertfile{tr}{#1}{#2}{#3}{#4}{#5}{#6}{#7}{#8}{#9}%
+      \ifdim\@@DriverImageWidth >\zeropoint rwi=\width 0\space\fi
+      \ifdim\@@DriverImageHeight>\zeropoint rhi=\height0      \fi}%
    \egroup}
+
+\definefileinsertion{tr}{mps}
+  {\hbox
+     {\convertMPcolors\@@DriverImageFile
+      \dofileinsertion{tr}{eps}}}
+
+\definespecial\doinsertfile
+  {\dofileinsertion{tr}\@@DriverImageType}
 
 %D Some MP stuff:
 
@@ -91,14 +80,14 @@
 %D the retain constant into a macro, we can use the already
 %D present \POSTSCRIPT\ definition (see \type{spec-ps}).
 
-\definespecial\doovalbox#1#2#3#4#5#6#7%
+\definespecial\doovalbox#1#2#3#4#5#6#7#8% variant not yet supported
   {\bgroup
    \edef\@@insertpostscriptretain gsave%
      {\@@insertpostscriptliteral
         gsave
           Resolution 72 div
           VResolution 72 div neg scale currentpoint translate}%
-   \dosomeovalbox{#1}{#2}{#3}{#4}{#5}{#6}{#7}%
+   \dosomeovalbox{#1}{#2}{#3}{#4}{#5}{#6}{#7}{#8}%
    \egroup}
 
 %D \macros

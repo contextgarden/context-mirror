@@ -94,7 +94,7 @@
 \def\savenofsubpages
   {\ifsubpaging
      \showmessage\m!layouts6{\newnofsubpages,\the\subpageno}%
-     \immediatewriteutilitycommand{\twopassentry{\s!subpage}{\newnofsubpages}{\the\subpageno}}%
+     \savetwopassdata{\s!subpage}{\newnofsubpages}{\the\subpageno}%
    \fi}
 
 \def\setsubpagenumbers
@@ -125,13 +125,7 @@
        \setsubpagenumbers
        \ifnum\oldsubpage>\zerocount
          \showmessage\m!layouts6{\newnofsubpages,\oldsubpage}%
-         \edef\next % \expanded
-           {\writeutilitycommand%
-              {\twopassentry%
-                 {\s!subpage}%
-                 {\newnofsubpages}%
-                 {\oldsubpage}}}%
-         \next
+         \savetwopassdata{\s!subpage}{\newnofsubpages}{\oldsubpage}%
        \fi
        \doglobal\increment\newnofsubpages\relax
      \fi
@@ -301,23 +295,6 @@
 \def\setuppagenumber
   {\dosingleargument\dosetuppagenumber}
 
-% long time used alternative
-%
-% \def\verlaagpaginanummer
-%   {\doifinset{\@@pnstatus}{\v!start,\v!leeg,\v!geen}
-%      {\decrementnumber[\s!page]%
-%       \setuserpageno{\rawnumber[\s!page]}}}
-%
-% \def\verhoogpaginanummer
-%   {\doifinset{\@@pnstatus}{\v!start,\v!leeg,\v!geen}
-%      {\incrementnumber[\s!page]%
-%       \setuserpageno{\rawnumber[\s!page]}}%
-%    \doifinset{\@@pnstatus}{\v!handhaaf,\v!leeg}
-%      {\global\let\@@pnstatus\v!start}}
-%
-% alternative, saves some 3 sec on 10K pages on a 1G machine
-% (needed during a test / prelude to installable methods)
-
 \def\dodecrementpagenumber
   {\decrementnumber[\s!page]\setuserpageno{\rawnumber[\s!page]}}
 
@@ -327,8 +304,8 @@
 \def\dosynchronizepagenumber
   {\global\let\@@pnstate\v!start}
 
-\def\verlaagpaginanummer{\getvalue{\??pn-\@@pnstate}}
-\def\verhoogpaginanummer{\getvalue{\??pn+\@@pnstate}}
+\def\decrementpagenumber{\getvalue{\??pn-\@@pnstate}}
+\def\incrementpagenumber{\getvalue{\??pn+\@@pnstate}}
 
 \letvalue{\??pn-\v!start   }\dodecrementpagenumber
 \letvalue{\??pn-\v!none    }\dodecrementpagenumber
@@ -356,13 +333,7 @@
 
 \def\dopagesetreference
   {\doglobal\increment\nofpagesets\relax
-   \edef\writepagref
-     {\writeutilitycommand
-        {\twopassentry
-           {\s!page}%
-           {\nofpagesets}%
-           {\noexpand\realfolio}}}%
-   \writepagref}
+   \lazysavetwopassdata{\s!page}{\nofpagesets}{\noexpand\realfolio}}
 
 \def\getpagestatus % hierboven gebruiken
   {\ifdoublesided

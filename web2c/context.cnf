@@ -22,6 +22,8 @@ HOMETEXMF     = /nonexist
 TEXMF         = {!!$TEXMFPROJECT,!!$TEXMFFONTS,!!$TEXMFLOCAL,!!$TEXMFEXTRA,!!$TEXMFMAIN}
 SYSTEXMF      = $TEXMF
 
+TEXMFCACHE    = $TMP;$TEMP;$TMPDIR;$TEMPDIR;$HOME;$TEXMFVAR;$VARTEXMF;.
+
 TEXMFCNF      = .;$TEXMF/texmf{-local,}/web2c
 TEXMFDBS      = $TEXMF;$VARTEXFONTS
 
@@ -49,11 +51,12 @@ TEXFONTMAPS.dvipdfm  = .;$TEXMF/fonts/map/{dvipdfm,dvips,}//;./fonts//
 TEXFONTMAPS.dvipdfmx = .;$TEXMF/fonts/map/{dvipdfm,dvips,}//;./fonts//
 TEXFONTMAPS.pdftex   = .;$TEXMF/fonts/map/{pdftex,dvips,}//;./fonts//
 TEXFONTMAPS.pdfetex  = .;$TEXMF/fonts/map/{pdftex,dvips,}//;./fonts//
+TEXFONTMAPS.luatex   = .;$TEXMF/fonts/map/{pdftex,dvips,}//;./fonts//
 TEXFONTMAPS.xetex    = .;$TEXMF/fonts/map/{xetex,pdftex,dvips,}//;./fonts//
 TEXFONTMAPS.dvips    = .;$TEXMF/fonts/map/{dvips,pdftex,}//;./fonts//
 
 # TEXFONTMAPS = .;$TEXMF/fonts/map/{$backend,pdftex,dvips,}//;$TEXMF/{$progname,pdftex,dvips}/{config,}//
-TEXFONTMAPS   = .;$TEXMF/fonts/map/{$progname,pdftex,dvips,}//;$TEXMF/{$progname,pdftex,dvips}/{config,}//;./fonts//
+TEXFONTMAPS   = .;$TEXMF/fonts/map/{$progname,$engine,pdftex,dvips,}//;$TEXMF/{$progname,$engine,pdftex,dvips}/{config,}//;./fonts//
 
 VFFONTS       = .;$TEXMF/fonts/vf//;./fonts//
 TFMFONTS      = .;{$TEXMF/fonts,$VARTEXFONTS}/tfm//;./fonts//
@@ -92,9 +95,12 @@ CTXDEVTXPATH=rubish
 CTXDEVMPPATH=rubish
 CTXDEVMFPATH=rubish
 
-TEXINPUTS.context = .;{$TXRESOURCES}//;{$CTXDEVTXPATH}//;$TEXMF/{pdftex,pdfetex,etex,xetex,omega,tex}/{context,plain,generic,}//
-MPINPUTS          = .;{$MFRESOURCES}//;{$CTXDEVMPPATH}//;$TEXMF/metapost/{context,base,}//
-MFINPUTS          = .;{$MPRESOURCES}//;{$CTXDEVMFPATH}//;$TEXMF/metafont/{context,base,}//;{$TEXMF/fonts,$VARTEXFONTS}/source//
+% TEXINPUTS.context = .;{$TXRESOURCES}//;{$CTXDEVTXPATH};$TEXMF/{pdftex,pdfetex,etex,xetex,omega,tex}/{context,plain,generic,}//
+% TEXINPUTS.context = .;{$TXRESOURCES}//;{$CTXDEVTXPATH};$TEXMF/{tex,omega}/{context,plain,generic}//
+% TEXINPUTS.context = .;{$TXRESOURCES}//;{$CTXDEVTXPATH};$TEXMF/tex/{context,plain/base,generic/context,generic/hyphen,generic/omega}//
+TEXINPUTS.context = .;{$TXRESOURCES}//;{$CTXDEVTXPATH};$TEXMF/tex/{context,plain/base,generic}//
+MPINPUTS          = .;{$MFRESOURCES}//;{$CTXDEVMPPATH};$TEXMF/metapost/{context,base,}//
+MFINPUTS          = .;{$MPRESOURCES}//;{$CTXDEVMFPATH};$TEXMF/metafont/{context,base,}//;{$TEXMF/fonts,$VARTEXFONTS}/source//
 
 TEXCONFIG     = .;$TEXMF/{fonts/map,dvips,pdftex,dvipdfmx,dvipdfm}//
 PDFTEXCONFIG  = .;$TEXMF/pdftex/{$progname,}//
@@ -109,21 +115,21 @@ CTXDEVJVPATH=rubish
 
 % some old paths; we restrict the search to context paths; new ones as well as old ones
 
-PERLINPUTS   = .;$CTXDEVPLPATH//;$TEXMF/scripts/context/perl//;$TEXMF/{context/perl,context/perltk,perl,perltk}//
-PYTHONINPUTS = .;$CTXDEVPYPATH//;$TEXMF/scripts/context/python//;$TEXMF/{context/python,python}//
-RUBYINPUTS   = .;$CTXDEVRBPATH//;$TEXMF/scripts/context/ruby//;$TEXMF/{context/ruby,ruby}//
-LUAINPUTS    = .;$CTXDEVJVPATH//;$TEXMF/scripts/context/lua//;$TEXMF/{context/lua,lua}//
-JAVAINPUTS   = .;$CTXDEVJVPATH//;$TEXMF/scripts/context/java//;$TEXMF/{context/java,java}//
+PERLINPUTS   = .;$CTXDEVPLPATH;$TEXMF/scripts/context/perl
+PYTHONINPUTS = .;$CTXDEVPYPATH;$TEXMF/scripts/context/python
+RUBYINPUTS   = .;$CTXDEVRBPATH;$TEXMF/scripts/context/ruby
+LUAINPUTS    = .;$CTXDEVJVPATH;$TEXMF/scripts/context/lua
+JAVAINPUTS   = .;$CTXDEVJVPATH;$TEXMF/scripts/context/java
 
-TEXMFSCRIPTS = .;$CTXDEVRBPATH//;$CTXDEVLUPATH//;$CTXDEVPLPATH//;$TEXMF/scripts/context//;$TEXMF/scripts//
+TEXMFSCRIPTS = .;$CTXDEVRBPATH;$CTXDEVLUPATH;$CTXDEVPLPATH;$TEXMF/scripts/context
 
-% RUBYINPUTS   = .;$CTXDEVPLPATH//;$TEXMF/scripts/{$progname,$engine,}/ruby//;$TEXMF/{context/ruby,ruby}//
-% LUAINPUTS    = .;$CTXDEVPYPATH//;$TEXMF/scripts/{$progname,$engine,}/lua//;$TEXMF/{context/lua,lua}//
-% PYTHONINPUTS = .;$CTXDEVRBPATH//;$TEXMF/scripts/{$progname,$engine,}/python//;$TEXMF/{context/python,python}//
-% PERLINPUTS   = .;$CTXDEVJVPATH//;$TEXMF/scripts/{$progname,$engine,}/perl//;$TEXMF/{context/perl,context/perltk,perl,perltk}//
-% JAVAINPUTS   = .;$CTXDEVJVPATH//;$TEXMF/scripts/{$progname,$engine,}/java//;$TEXMF/{context/java,java}//
+% RUBYINPUTS   = .;$CTXDEVPLPATH;$TEXMF/scripts/{$progname,$engine,}/ruby
+% LUAINPUTS    = .;$CTXDEVPYPATH;$TEXMF/scripts/{$progname,$engine,}/lua
+% PYTHONINPUTS = .;$CTXDEVRBPATH;$TEXMF/scripts/{$progname,$engine,}/python
+% PERLINPUTS   = .;$CTXDEVJVPATH;$TEXMF/scripts/{$progname,$engine,}/perl
+% JAVAINPUTS   = .;$CTXDEVJVPATH;$TEXMF/scripts/{$progname,$engine,}/java
 
-% TEXMFSCRIPTS = .;$CTXDEVRBPATH//;$CTXDEVLUPATH//;$CTXDEVPLPATH//;$TEXMF/scripts/{$engine,$progname,}//
+% TEXMFSCRIPTS = .;$CTXDEVRBPATH;$CTXDEVLUPATH;$CTXDEVPLPATH;$TEXMF/scripts/$progname
 
 % features
 
@@ -151,7 +157,7 @@ TEX        = texexec --batch --once --nomp
 % These values are about the same as in the main
 % configuration file (dest_names_size added).
 
-buf_size.context         =  200000 % needed for omega bug
+buf_size.context         = 2000000 % needed for omega bug
 extra_mem_bot.context    = 2000000
 extra_mem_top.context    = 4000000
 font_max.context         =    2000
@@ -160,9 +166,9 @@ hash_extra.context       =  100000
 main_memory.context      = 2000000
 max_strings.context      =  300000
 nest_size.context        =     500
-obj_tab_size.context     =  300000 % 8388607
-pdf_mem_size.context     =  500000 % 524288
-dest_names_size.context  =  300000 % 131072
+obj_tab_size.context     =  300000
+pdf_mem_size.context     =  500000
+dest_names_size.context  =  300000
 param_size.context       =   10000
 pool_free.context        =   47500
 pool_size.context        = 2000000
@@ -198,6 +204,8 @@ mp_buf_size              =   30000
 mf_buf_size              =   30000
 mpost_buf_size           =   30000
 
+max_print_line.pdftex    =     250
+max_print_line.luatex    =     250
 max_print_line.mpost     =     250
 max_print_line.metafun   =     250
 
@@ -207,3 +215,4 @@ extra_mem_bot.mptopdf    = 1000000
 ocp_buf_size             =  500000
 ocp_stack_size           =   10000
 ocp_list_size            =    1000
+

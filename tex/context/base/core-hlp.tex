@@ -81,11 +81,7 @@
 
 \def\dosetpagehelpdata#1%
   {\doglobal\increment\nofhelpdataentries
-   \writeutilitycommand
-     {\twopassentry%
-        {hlp:\realfolio}%
-        {\nofhelpdataentries}%
-        {#1}}}
+   \savetwopassdata{hlp:\realfolio}{\nofhelpdataentries}{#1}}
 
 \setvalue{\e!start\v!helptext}[#1]%
   {\iflocation

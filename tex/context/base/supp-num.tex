@@ -93,6 +93,8 @@
 %D the grouped call, the other branch handles the fuzzy
 %D delimited calls.
 
+\ifx\mbox\undefined \let\mbox\normalhbox \fi
+
 % \unexpanded\def\digits
 %   {\bgroup\let~@\doifnextcharelse\bgroup\dodigits\grabdigit}
 
@@ -219,7 +221,7 @@
 
 
 %D The signs can be made smaller and sqeezed into the width
-%D of a digit. Watch the \type {\fontdimen22} trickery (this
+%D of a digit. Watch the \type {\mathaxisheight} trickery (this
 %D font related register stored the math axis).
 
 % \def\scandigits#1%
@@ -304,9 +306,9 @@
   {\ifcase\digitsignmode#1\else
      \hbox
        {\setbox\scratchbox\hbox{0}%
-        \scratchdimen\fontdimen22\textfont2
+        \scratchdimen\mathaxisheight\textfont2
         \def\digitsgn##1##2%
-          {\advance\scratchdimen-\fontdimen22##12
+          {\advance\scratchdimen-\mathaxisheight##12
            \raise\scratchdimen
            \hbox to \wd\scratchbox{\hss$##2#1$\hss}}%
         \ifcase\digitsignmode\or

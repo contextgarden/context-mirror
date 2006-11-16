@@ -292,7 +292,7 @@
      {\doglobal\newcounter\NOfMarginLines}}
 
 \def\dodomargeaanduidingen[#1]#2%
-  {\def\docommando##1%
+  {\def\docommand##1%
      {\indent\hbox
         {\ifx#2\relax
            \index{##1}%
@@ -302,7 +302,7 @@
          #2{\doboundtext{##1}{\leftmarginwidth}{..}}}%
        \doglobal\increment\NOfMarginLines
        \endgraf}%
-   \processcommalist[#1]\docommando}
+   \processcommalist[#1]\docommand}
 
 \def\margeaanduidingen#1[#2]%
   {\def\domargeaanduidingen##1##2%

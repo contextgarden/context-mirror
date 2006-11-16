@@ -27,19 +27,19 @@
 
 % method = auto
 %
-% \definefileinsertion{tpd}{auto}#1#2#3#4#5#6#7#8#9%
+% \definefileinsertion{tpd}{auto}%
 %   {\executesystemcommand{t:/ruby/pstopdf.rb #2}%
-%    \dodoinsertfile{tpd}{pdf}{#2}{#3}{#4}{#5}{#6}{#7}{#8}{#9}}
+%    \dofileinsertion{tpd}{pdf}}
 
 % \let\PDFdestvoffset\zeropoint
 % \newbox\pdfdestbox
 %
-% \def\doPDFdestination name #1%
+% \def\doPDFdestination#1%
 %   {\ifdim\PDFdestvoffset=\zeropoint\relax
-%      \pdfdest name {#1} \PDFpageviewkey
+%      \pdfdest name {#1}\PDFpageviewkey
 %    \else
 %      \setbox\pdfdestbox\hbox to \zeropoint
-%        {\raise\PDFdestvoffset\hbox{\pdfdest name {#1} \PDFpageviewkey}}%
+%        {\raise\PDFdestvoffset\hbox{\pdfdest name {#1}\PDFpageviewkey}}%
 %      \ht\pdfdestbox\zeropoint
 %      \box\pdfdestbox
 %    \fi}
@@ -208,7 +208,7 @@
 %D This token register is flushed before an ximage is loaded.
 
 \newevery \everyPDFximage \relax
-\let      \everyPDFxform  \everyPDFximage
+\newevery \everyPDFxform  \relax
 
 %D \macros
 %D   {dosetuppaper}
@@ -242,7 +242,8 @@
 
 %D nasty but needed
 
-\appendtoksonce \loadallfontmapfiles \to \everyPDFximage % currently == \everyPDFxform
+\appendtoksonce \loadallfontmapfiles \to \everyPDFximage
+\appendtoksonce \loadallfontmapfiles \to \everyPDFxform
 
 %D \macros
 %D   {doinsertfile,dogetnofinsertpages}
@@ -265,10 +266,8 @@
 %D are hooked into both the figure placement mechanisms of
 %D \CONTEXT\ and the specials inclusion mechanism.
 
-\definespecial\doinsertfile#1#2#3#4#5#6#7#8#9%
-  {\bgroup
-   \dodoinsertfile{tpd}{#1}{#2}{#3}{#4}{#5}{#6}{#7}{#8}{#9}%
-   \egroup}
+\definespecial\doinsertfile
+  {\dofileinsertion{tpd}{\truegraphictype\@@DriverImageType}}
 
 %D The number of pages in (for instance an \PDF) insert
 %D file, can be asked for using:
@@ -283,25 +282,10 @@
 %D for \METAPOST\ graphics, \type{png} and \type{jpg} for
 %D bitmap graphics.
 
-\definefileinsertion{tpd}{mps}#1#2#3#4#5#6#7#8#9%
+\definefileinsertion{tpd}{mps}
   {\hbox
-     {%\convertMPcolors{#1}% plugged in supp-mpe
-      \scratchdimen#3\points \PointsToReal{.01\scratchdimen}\xscale
-      \scratchdimen#4\points \PointsToReal{.01\scratchdimen}\yscale
-      \convertMPtoPDF{#1}\xscale\yscale
+     {\convertMPtoPDF\@@DriverImageFile{1}{1}%
       \global\let\PDFimagereference\empty}}
-
-%D The old, \TEX\ base \PDF\ insertion macro:
-%D
-%D \starttyping
-%D \def\dotpdinsertpdf#1#2#3#4#5#6#7#8#9%
-%D   {\beforesplitstring#1\at.\to\filename
-%D    \scratchdimen=#3pt \PointsToReal{.01\scratchdimen}\xscale
-%D    \scratchdimen=#4pt \PointsToReal{.01\scratchdimen}\yscale
-%D    \convertPDFtoPDF{\filename.pdf}\xscale\yscale{#5}{#6}{#7}{#8}}
-%D \stoptyping
-%D
-%D superseded by the next macros.
 
 \definefileinsertion{tpd}{pdf}{\handlepdfimage}
 \definefileinsertion{tpd}{png}{\handlepdfimage}
@@ -311,17 +295,7 @@
 % \definefileinsertion{tpd}{jpeg} {\handlepdfimage}
 % \definefileinsertion{tpd}{jbig2}{\handlepdfimage}
 
-%definefileinsertion{tpd}{tif}{\handlepdfimage} % unstable and gone
-
 %D Experimental:
-
-% \definefileinsertion{tpd}{svg}{\doPDFinsertsvg}
-% \definefileinsertion{tpd}{svgz}{\doPDFinsertsvg}
-%
-% todo: no placeholder but manipulator of evt autorlx
-
-\def\doPDFinsertsvg#1#2#3#4#5#6#7#8#9%
-  {\externalfigureplaceholder{#1}{#7}{#8}}
 
 %D The main file insertion macro is as follows. Because
 %D \PDFTEX\ does not support arbitrary suffixes, we double
@@ -347,46 +321,41 @@
 
 \ifx\pdflastximagepages\undefined \chardef\pdflastximagepages=1 \fi
 
+\def\checkpdfimagepagenumber
+  {\edef\pdfimagepagenumber
+     {\ifx\@@DriverImagePage\empty\else\ifnum\@@DriverImagePage>\zerocount
+        \space page\space\@@DriverImagePage\space
+      \fi\fi}}
+
 \ifnum\pdftexversion>13
 
-  \def\checkpdfimagepagenumber#1%
-    {\let\pdfimagepagenumber\empty
-     \getfromcommacommand[#1][1]%
-     \doifnumberelse\commalistelement
-       {\ifcase\commalistelement\else
-          \edef\pdfimagepagenumber{page \commalistelement}%
-         %\message{(pdf image \pdfimagepagenumber)}%
-        \fi}
-       {}}
-
-  \def\handlepdfimage#1#2#3#4#5#6#7#8#9%
+  \def\handlepdfimage
     {\bgroup
      \the\everyPDFximage
-     \doifvalidpdfimagefileelse{#1}
-       {\checkpdfimagepagenumber{#9}%
-       %\pdfimmediateximage
+     \doifvalidpdfimagefileelse\@@DriverImageFile
+       {\checkpdfimagepagenumber
         \ifx\pdfimagepagenumber\empty\@EA\pdfimmediateximage\else\@EA\pdfximage\fi
-          \ifdim#7>\zeropoint \!!width  #7\fi
-          \ifdim#8>\zeropoint \!!height #8\fi
+          \ifdim\@@DriverImageWidth >\zeropoint \!!width \@@DriverImageWidth \fi
+          \ifdim\@@DriverImageHeight>\zeropoint \!!height\@@DriverImageHeight\fi
           \pdfimagepagenumber
           \@@DriverImageBox
-          {#1}%
+          {\@@DriverImageFile}
         \xdef\PDFimagereference{\the\pdflastximage}%
         \xdef\nofinsertpages{\the\pdflastximagepages}%
         \pdfrefximage\pdflastximage}
-       {\framed[\c!width=#7,\c!height=#8]{#1}}%
+       {\framed[\c!width=\@@DriverImageWidth,\c!height=\@@DriverImageHeight]{\@@DriverImageFile}}%
      \egroup}
 
 \else
 
-  \def\handlepdfimage#1#2#3#4#5#6#7#8#9%
+  \def\handlepdfimage
     {\bgroup
-     \doifvalidpdfimagefileelse{#1}
+     \doifvalidpdfimagefileelse\@@DriverImageFile
        {\pdfimage
-          \ifdim#7>\zeropoint \!!width  #7\fi
-          \ifdim#8>\zeropoint \!!height #8\fi
-          {#1}}%
-       {\framed[\c!width=#7,\c!height=#8]{#1}}%
+          \ifdim\@@DriverImageWidth >\zeropoint \!!width  \@@DriverImageWidth \fi
+          \ifdim\@@DriverImageHeight>\zeropoint \!!height \@@DriverImageHeight\fi
+          {\@@DriverImageFile}}%
+       {\framed[\c!width=\@@DriverImageWidth,\c!height=\@@DriverImageHeight]{\@@DriverImageFile}}%
      \egroup}
 
 \fi
@@ -407,15 +376,6 @@
 
 \definespecial\doinsertsoundtrack{\doPDFinsertsoundtrack}
 
-%D \macros
-%D   {measureTPDfiguresizetrue}
-%D
-%D Because \PDFTEX\ measures the figure itself, we can use
-%D this feature to bypass the normal prescan. Watch the
-%D double check on the suffix. Else \PDFTEX\ would choke.
-
-\newif\ifmeasureTPDfiguresize \measureTPDfiguresizetrue
-
 %D For the moment we don't test for alternatives that
 %D themselves have alternatives, especially cylcic
 %D dependencies.
@@ -428,25 +388,6 @@
 % \immediate\pdfobj useobjnum \pdflastobj {some spec}
 
 \ifx\@@DriverImageBox\undefined \def\@@DriverImageBox{artbox} \fi
-
-% \def\doguessTPDimagesize#1% does not work as expected
-%   {\ifx\@@DriverImageBox\empty
-%      \global\setbox\foundexternalfigure\hbox{\pdfximage \pdfimagepagenumber ArtBox {#1}\pdfrefximage\pdflastximage}%
-%      \ifdim\ht\foundexternalfigure>\zeropoint
-%        \def\@@DriverImageBox{ArtBox}%
-%      \else
-%        \global\setbox\foundexternalfigure\hbox{\pdfximage \pdfimagepagenumber TrimBox {#1}\pdfrefximage\pdflastximage}%
-%        \ifdim\ht\foundexternalfigure>\zeropoint
-%          \def\@@DriverImageBox{TrimBox}%
-%        \else
-%          \global\setbox\foundexternalfigure\hbox{\pdfximage \pdfimagepagenumber CropBox {#1}\pdfrefximage\pdflastximage}%
-%          \ifdim\ht\foundexternalfigure>\zeropoint
-%            \def\@@DriverImageBox{CropBox}%
-%          \fi
-%        \fi
-%      \fi
-%    \fi
-%    \@@DriverImageBox}
 
 \def\pdfimmediateximage{\immediate\pdfximage}
 
@@ -475,81 +416,60 @@
      \fi\fi
      \global\let\PDFimagecolorreference\empty}
 
-  \def\dogetTPDfiguresize#1#2#3#4#5#6#7%
-    {\ifmeasureTPDfiguresize
-       #4\zeropoint
-       #5\zeropoint
-       \doifvalidpdfimagefileelse{#2}
-         {\ifvoid\foundexternalfigure
-            \donetrue
-          \else\ifx\PDFfigurereference\empty
-            \donetrue
-          \else
-            \doifinstringelse\filesuffix{\c!png,\c!jpg}\donetrue\donefalse
-          \fi\fi}
-         {\donefalse}%
-       \ifdone
-         \the\everyPDFximage
-         \checkpdfimagepagenumber{#3}%
-         \checkpdfimageattributes
-         \checkpdfimagecolorspecs
-         \global\setbox\foundexternalfigure\hbox
-           {\ifx\pdfimagepagenumber\empty\@EA\pdfimmediateximage\else\@EA\pdfximage\fi
-            %\pdfimmediateximage
-              \pdfimageattributes
-              \pdfimagecolorspecs
-              \pdfimagepagenumber
-              \@@DriverImageBox
-              {#2}%
-            \xdef\PDFimagereference{\the\pdflastximage}%
-            \xdef\nofinsertpages{\the\pdflastximagepages}%
-            \pdfrefximage\pdflastximage}%
-         #6\wd\foundexternalfigure
-         #7\ht\foundexternalfigure
-         \global\let\PDFfigurereference\empty
-         \global\let\PDFimageattributes\empty
-       \else
-         #6\zeropoint
-         #7\zeropoint
-       \fi
-    \else
-      #1{#2}{#3}{#4}{#5}{#6}{#7}% \normaldogetfiguresize...
-    \fi}
+  \def\dogetTPDfiguresize
+    {\doifvalidpdfimagefileelse\@@DriverImageFile
+       {\ifvoid\foundexternalfigure
+          \donetrue
+        \else\ifx\PDFfigurereference\empty
+          \donetrue
+        \else
+          % hm, is this still needed
+          \doifinstringelse\filesuffix{\c!png,\c!jpg}\donetrue\donefalse
+        \fi\fi}
+       {\donefalse}%
+     \ifdone
+       \the\everyPDFximage
+       \checkpdfimageattributes
+       \checkpdfimagecolorspecs
+       \checkpdfimagepagenumber
+       \global\setbox\foundexternalfigure\hbox
+         {\ifx\pdfimagepagenumber\empty\@EA\pdfimmediateximage\else\@EA\pdfximage\fi
+            \pdfimageattributes
+            \pdfimagecolorspecs
+            \pdfimagepagenumber
+            \@@DriverImageBox
+            {\@@DriverImageFile}%
+          \xdef\PDFimagereference{\the\pdflastximage}%
+          \xdef\nofinsertpages{\the\pdflastximagepages}%
+          \pdfrefximage\pdflastximage}%
+       \xdef\analyzedfigurewidth {\the\wd\foundexternalfigure}%
+       \xdef\analyzedfigureheight{\the\ht\foundexternalfigure}%
+       \global\let\PDFfigurereference\empty
+       \global\let\PDFimageattributes\empty
+     \else
+       \global\let\analyzedfigurewidth \!!zeropoint
+       \global\let\analyzedfigureheight\!!zeropoint
+     \fi}
 
 \else
 
-  \def\dogetTPDfiguresize#1#2#3#4#5#6#7%
-    {\ifmeasureTPDfiguresize
-       #4\zeropoint
-       #5\zeropoint
-       \doifvalidpdfimagefileelse{#2}
-         {\global\setbox\foundexternalfigure\vbox{\pdfimage{#2}}%
-          #6\wd\foundexternalfigure
-          #7\ht\foundexternalfigure}
-         {#6\zeropoint
-          #7\zeropoint}%
-     \else
-       #1{#2}{#3}{#4}{#5}{#6}{#7}% \normaldogetfiguresize...
-     \fi}
+  \def\dogetTPDfiguresize
+    {\doifvalidpdfimagefileelse\@@DriverImageFile
+       {\global\setbox\foundexternalfigure\vbox{\pdfimage{\@@DriverImageFile}}%
+        \xdef\analyzedfigurewidth {\the\wd\foundexternalfigure}%
+        \xdef\analyzedfigureheight{\the\ht\foundexternalfigure}}
+       {\global\let\analyzedfigurewidth \!!zeropoint
+        \global\let\analyzedfigureheight\!!zeropoint}}
 
 \fi
 
-\let\normaldogetfiguresizepdf=\dogetfiguresizepdf
-\let\normaldogetfiguresizepng=\dogetfiguresizepng
-\let\normaldogetfiguresizetif=\dogetfiguresizetif
-\let\normaldogetfiguresizejpg=\dogetfiguresizejpg
+\definefilechecker{tpd}{pdf}{\dogetTPDfiguresize}
+\definefilechecker{tpd}{png}{\dogetTPDfiguresize}
+\definefilechecker{tpd}{jpg}{\dogetTPDfiguresize}
+\definefilechecker{tpd}{jb2}{\dogetTPDfiguresize}
 
-\def\dogetfiguresizepdf{\dogetTPDfiguresize\normaldogetfiguresizepdf}
-\def\dogetfiguresizepng{\dogetTPDfiguresize\normaldogetfiguresizepng}
-\def\dogetfiguresizetif{\dogetTPDfiguresize\normaldogetfiguresizetif}
-\def\dogetfiguresizejpg{\dogetTPDfiguresize\normaldogetfiguresizejpg}
-
-\appendtoksonce
-  \let\dogetfiguresizepdf\normaldogetfiguresizepdf
-  \let\dogetfiguresizepng\normaldogetfiguresizepng
-  \let\dogetfiguresizetif\normaldogetfiguresizetif
-  \let\dogetfiguresizejpg\normaldogetfiguresizejpg
-\to \everyresetspecials
+\definespecial\dogetfiguresize
+  {\dofilechecker{tpd}{\truegraphictype\@@DriverImageType}}
 
 %D \macros
 %D   {doregisterfigure}
@@ -836,13 +756,13 @@
 \definespecial\doflushJSpreamble#1%
   {\bgroup
    \let\compositeJScode\empty
-   \def\docommando##1%
+   \def\docommand##1%
      {\edef\sanitizedJScode{\getJSpreamble{##1}}%
       \@EA\doPSsanitizeJScode\sanitizedJScode\to\sanitizedJScode
       \immediate\pdfobj {<< /S /JavaScript /JS (\sanitizedJScode) >>}%
       \edef\compositeJScode
         {\compositeJScode\space (##1) \PDFobjref\pdflastobj}}%
-   \processcommalist[#1]\docommando
+   \processcommalist[#1]\docommand
    \immediate\pdfobj{<< /Names [ \compositeJScode ] >>}%
    \pdfnames{/JavaScript \PDFobjref\pdflastobj}%
    \egroup}
@@ -1036,6 +956,11 @@
 
 \fi
 
+\appendtoksonce
+    \collectPDFresources
+    \global\let\currentPDFresources\collectedPDFresources
+\to \everyPDFxform
+
 %D \macros
 %D   {dosetpagetransition}
 %D
@@ -1104,41 +1029,21 @@
 %D \CONTEXT\ only uses relative positions, the origin is of
 %D less importance.
 
-% \def\doTPDsetposition#1#2#3%
-%   {\bgroup
-%    \edef\doTPDsetposition%
-%      {\writeutilitycommand
-%         {#1%
-%          {#2}%
-%          {\noexpand\realfolio}%
-%          {\noexpand\number\pdflastxpos}%
-%          {\noexpand\number\pdflastypos}%
-%          #3}}%
-%    \pdfsavepos
-%    \doTPDsetposition
-%    \egroup}
-%
-% \definespecial\dosetposition#1%
-%   {\doTPDsetposition{\pospxy}{#1}{}}
-%
-% \definespecial\dosetpositionwhd#1#2#3#4%
-%   {\doTPDsetposition{\pospxywhd}{#1}{{#2}{#3}{#4}}}
-
 \definespecial\dosetposition#1%
   {\pdfsavepos
    \dolazysaveposition
      {#1}%
      {\noexpand\realfolio}%
-     {\noexpand\number\pdflastxpos}%
-     {\noexpand\number\pdflastypos}}%
+     {\noexpand\the\dimexpr\pdflastxpos\scaledpoint\relax}%
+     {\noexpand\the\dimexpr\pdflastypos\scaledpoint\relax}}%
 
 \definespecial\dosetpositionwhd#1#2#3#4%
   {\pdfsavepos
    \dolazysavepositionwhd
      {#1}%
      {\noexpand\realfolio}%
-     {\noexpand\number\pdflastxpos}%
-     {\noexpand\number\pdflastypos}%
+     {\noexpand\the\dimexpr\pdflastxpos\scaledpoint\relax}%
+     {\noexpand\the\dimexpr\pdflastypos\scaledpoint\relax}%
      {#2}{#3}{#4}}
 
 \definespecial\dosetpositionplus#1#2#3#4#5%
@@ -1146,8 +1051,8 @@
    \dolazysavepositionplus
      {#1}%
      {\noexpand\realfolio}%
-     {\noexpand\number\pdflastxpos}%
-     {\noexpand\number\pdflastypos}%
+     {\noexpand\the\dimexpr\pdflastxpos\scaledpoint\relax}%
+     {\noexpand\the\dimexpr\pdflastypos\scaledpoint\relax}%
      {#2}{#3}{#4}{#5}}
 
 %D \macros
@@ -1156,8 +1061,8 @@
 %D Finally we implement some low level macros to deal with
 %D flushing \PDF\ code. First we handle the named destinations.
 
-\def\doPDFdestination name #1%
-  {\pdfdest name {#1} \PDFpageviewkey}
+\def\doPDFdestination#1%
+  {\pdfdest name {#1}\PDFpageviewkey}
 
 %D \macros
 %D   {doPDFaction,doPDFannotation,ifsharePDFactions}
@@ -1175,7 +1080,7 @@
 
 \ifnum\pdftexversion>13
 
-  \def\doPDFaction width #1 height #2 action #3%
+  \def\doPDFaction#1#2#3%
     {\ifcollectreferenceactions
        \xdef\lastPDFaction{#3}%
      \else
@@ -1201,7 +1106,7 @@
 
   % less #2 passing
 
-  \def\doPDFaction width #1 height #2 action #3%
+  \def\doPDFaction#1#2#3%
     {\xdef\lastPDFcontent{#3}%
      \ifcollectreferenceactions
        \global\let\lastPDFaction\lastPDFcontent
@@ -1228,7 +1133,7 @@
 
 \else
 
-  \def\doPDFaction width #1 height #2 action #3%
+  \def\doPDFaction#1#2#3%
     {\ifcollectreferenceactions
        \xdef\lastPDFaction{#3}%
      \else
@@ -1257,7 +1162,7 @@
 
 % pdftex and viewers give problems with this one (printing forms)
 %
-%\def\doPDFannotation width #1 height #2 data #3%
+%\def\doPDFannotation#1#2#3%
 %  {\pdfannot width #1sp height -#2sp depth \zeropoint{#3}}
 %
 % This is corrected in version 14. When this version is wide
@@ -1265,12 +1170,12 @@
 
 \ifnum\pdftexversion>13
 
-  \def\doPDFannotation width #1 height #2 data #3%
+  \def\doPDFannotation#1#2#3%
     {\pdfannot width #1 height #2 depth \zeropoint{#3}}
 
 \else
 
-  \def\doPDFannotation width #1 height #2 data #3%
+  \def\doPDFannotation#1#2#3%
     {\hbox{\raise#2\hbox{\pdfannot width #1 height #2 depth \zeropoint{#3}}}}
 
 \fi
@@ -1283,12 +1188,12 @@
 %D the last annotation object number directly), we take the
 %D save route.
 
-\def\doPDFannotationobject class #1 name #2 width #3 height #4 data #5%
-  {\doPDFannotation width #3 height #4 data {#5}%
+\def\doPDFannotationobject#1#2#3#4#5%
+  {\doPDFannotation{#3}{#4}{#5}%
    \dosetobjectreference{#1}{#2}{\the\pdflastannot}}
 
-\def\doPDFactionobject class #1 name #2 width #3 height #4 action #5%
-  {\doPDFaction width {#3} height {#4} action {#5}%
+\def\doPDFactionobject#1#2#3#4#5%
+  {\doPDFaction{#3}{#4}{#5}%
    \dosetobjectreference{#1}{#2}{\the\pdflastannot}}
 
 %D \macros
@@ -1327,19 +1232,19 @@
 
 % obsolete cq. buggy in pdfTeX
 %
-% \def\doPDFbookmark level #1 n #2 text #3 page #4 open #5%
+% \def\doPDFbookmark#1#2#3#4#5%
 %   {\pdfoutline
 %      goto page #4\space
 %      \ifcase#2 \else count \ifcase#5-\fi#2 \fi
 %      {#3}}
 
-% \def\doPDFbookmark level #1 n #2 text #3 page #4 open #5%
+% \def\doPDFbookmark#1#2#3#4#5%
 %   {\pdfoutline
 %      user {<</S /GoTo /D [#4\space\PDFpageviewwrd]>>}%
 %      \ifcase#2 \else count \ifcase#5-\fi#2 \fi
 %      {#3}}
 
-\def\doPDFbookmark level #1 n #2 text #3 page #4 open #5%
+\def\doPDFbookmark#1#2#3#4#5%
   {\doPDFgetpagereference{#4}\PDFobjectreference
    \pdfoutline
      user {<</S /GoTo /D [\PDFobjectreference\space\PDFpageviewwrd]>>}%
@@ -1352,12 +1257,12 @@
 %D Where \PDFTEX\ has only one object primitive, optionally a
 %D stream one, \ACROBAT\ has several operators.
 
-\def\doPDFdictionaryobject class #1 name #2 data #3%
+\def\doPDFdictionaryobject#1#2#3%
   {\flushatshipout
      {\immediate\pdfobj{<< #3 >>}%
       \dosetobjectreference{#1}{#2}{\the\pdflastobj}}}
 
-\def\doPDFarrayobject class #1 name #2 data #3%
+\def\doPDFarrayobject#1#2#3%
   {\flushatshipout
      {\immediate\pdfobj{[ #3 ]}%
       \dosetobjectreference{#1}{#2}{\the\pdflastobj}}}
@@ -1399,7 +1304,7 @@
 %D Here follow some rather obscure macros. They will only
 %D come into action when one wants negated output.
 
-%D Todo: move code to fdf module and
+%D Todo: move code to fdf module
 
 \def\initializePDFnegative
   {\immediate\pdfobj stream attr {/FunctionType 4 /Range [0 1] /Domain [0 1]} {{1 exch sub}}%
@@ -1425,12 +1330,11 @@
 \let\PDFlaststreamobject   \s!unknown
 %def\PDFlaststreamreference{0 0 R}
 
-\def\doPDFfilestreamobject class #1 name #2 file #3 source #4%
+\def\doPDFfilestreamobject#1#2#3#4%
   {\immediate\pdfobj stream file{#4}%
    \edef\PDFlaststreamobject{\the\pdflastobj}%
    \dosetobjectreference{PDFFS}{#2}{\PDFlaststreamobject}%
-   \doPDFdictionaryobject class {#1} name {#2} data
-     {/Type /Filespec /F (#3) /EF <</F \PDFobjref\PDFlaststreamobject>>}}
+   \doPDFdictionaryobject{#1}{#2}{/Type /Filespec /F (#3) /EF <</F \PDFobjref\PDFlaststreamobject>>}}
 
 \def\doPDFgetfilestreamreference#1#2%
   {\doPDFgetobjectreference{PDFFS}{#1}#2}
@@ -1441,9 +1345,9 @@
       \@EA\beforesplitstring\PDFobjectreference\at{ }\to\PDFlaststreamobject
       \PDFlaststreamobject}}
 
-% %D We can set \METAPOST\ prologues to~2:
+% %D We can set \METAPOST\ prologues to~1:
 
-\def\MPprologues{2}
+\def\MPprologues{1}
 
 %D Experimental:
 

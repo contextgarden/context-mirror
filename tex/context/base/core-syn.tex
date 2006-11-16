@@ -63,16 +63,26 @@
    \def\currentsynonym{#1}%
    \definedescription  % nog eens een class van maken, net als framed
      [syndef]
-     [\c!location=\getvalue{\??sm#1\c!location},
-      \c!width=\getvalue{\??sm#1\c!width},
-      \c!distance=\getvalue{\??sm#1\c!distance},
-      \c!sample=\getvalue{\??sm#1\c!sample},
-      \c!hang=\getvalue{\??sm#1\c!hang},
-      \c!align=\getvalue{\??sm#1\c!align},
-      \c!before=\getvalue{\??sm#1\c!before},
-      \c!inbetween=\getvalue{\??sm#1\c!inbetween},
-      \c!after=\getvalue{\??sm#1\c!after},
-      \c!indentnext=\getvalue{\??sm#1\c!indentnext},
+%      [\c!location=\getvalue{\??sm#1\c!location}, % todo \synonymparameter
+%       \c!width=\getvalue{\??sm#1\c!width},
+%       \c!distance=\getvalue{\??sm#1\c!distance},
+%       \c!sample=\getvalue{\??sm#1\c!sample},
+%       \c!hang=\getvalue{\??sm#1\c!hang},
+%       \c!align=\getvalue{\??sm#1\c!align},
+%       \c!before=\getvalue{\??sm#1\c!before},
+%       \c!inbetween=\getvalue{\??sm#1\c!inbetween},
+%       \c!after=\getvalue{\??sm#1\c!after},
+%       \c!indentnext=\getvalue{\??sm#1\c!indentnext},
+     [\c!location=\synonymparameter\c!location,
+      \c!width=\synonymparameter\c!width,
+      \c!distance=\synonymparameter\c!distance,
+      \c!sample=\synonymparameter\c!sample,
+      \c!hang=\synonymparameter\c!hang,
+      \c!align=\synonymparameter\c!align,
+      \c!before=\synonymparameter\c!before,
+      \c!inbetween=\synonymparameter\c!inbetween,
+      \c!after=\synonymparameter\c!after,
+      \c!indentnext=\synonymparameter\c!indentnext,
       \c!headstyle=,
       \c!style=]%
    \setupwhitespace[\v!none]%

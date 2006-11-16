@@ -176,18 +176,18 @@
 % \parskip   = 0pt % no stretch between paragraphs
 % \parindent = 1em % for paragraphs and for the first line of C text
 
-% \font\ninerm       = cmr9
-% \let\mc            = \ninerm                 % medium caps
-% \font\eightrm      = cmr8
-% \let\sc            = \eightrm                % small caps (NOT a caps-and-small-caps font)
-% \let\mainfont      = \tenrm
-% \let\cmntfont      = \tenrm
-% \font\tenss        = cmss10
-% \let\cmntfont      = \tenss                  % alternative comment font
-% \font\titlefont    = cmr7 scaled \magstep4   % title on the contents page
-% \font\ttitlefont   = cmtt10 scaled \magstep2 % typewriter type in title
-% \font\tentex       = cmtex10                 % TeX extended character set (used in strings)
-% \fontdimen7\tentex = 0pt                     % no double space after sentences
+% \font\ninerm           = cmr9
+% \let\mc                = \ninerm                 % medium caps
+% \font\eightrm          = cmr8
+% \let\sc                = \eightrm                % small caps (NOT a caps-and-small-caps font)
+% \let\mainfont          = \tenrm
+% \let\cmntfont          = \tenrm
+% \font\tenss            = cmss10
+% \let\cmntfont          = \tenss                  % alternative comment font
+% \font\titlefont        = cmr7 scaled \magstep4   % title on the contents page
+% \font\ttitlefont       = cmtt10 scaled \magstep2 % typewriter type in title
+% \font\tentex           = cmtex10                 % TeX extended character set (used in strings)
+% \fontextraspace\tentex = 0pt                     % no double space after sentences
 
 %D \macros{mc,sc,cmntfont,eightrm}{}
 %D
@@ -212,7 +212,7 @@
 
 \defCWEBmacro\tentex%
   {\font\next=cmtex10 at \textface
-   \fontdimen7\next=0pt
+   \fontextraspace\next\zeropoint
    \next}
 
 \defCWEBmacro\sevenrm  {\getvalue{\scriptface rmtf}}
@@ -1007,20 +1007,20 @@
 %  {\bgroup
 %   \def\CWEBcomma%
 %     {\def\CWEBcomma{, }}%
-%   \def\docommando##1%
+%   \def\docommand##1%
 %     {\bgroup
 %      \def\[####1]{####1}%
 %      \xdef\CWEBreference{##1}%
 %      \egroup
 %      \CWEBcomma{\naar{\donottest{##1}}[web:\CWEBreference]}}%
-%   \processcommalist[{#1}]\docommando
+%   \processcommalist[{#1}]\docommand
 %   \egroup}
 
 % \def\processCWEBsectionnumbers[#1]%
 %   {\bgroup
 %    \def\CWEBcomma%
 %      {\def\CWEBcomma{, }}%
-%    \def\docommando##1%
+%    \def\docommand##1%
 %      {\bgroup
 %       \def\(####1){####1}%
 %       \xdef\CWEBreference{##1}%
@@ -1031,20 +1031,20 @@
 %    \def\[##1]{\(##1)}\let\(=\relax\xdef\CWEBreferences{#1}%
 %    \egroup
 %    \unexpanded\def\(##1){\[##1]}%
-%    \processcommacommand[\CWEBreferences]\docommando
+%    \processcommacommand[\CWEBreferences]\docommand
 %    \egroup}
 
 \def\processCWEBsectionnumbers[#1]%
   {\bgroup
    \def\CWEBcomma%
      {\def\CWEBcomma{, }}%
-   \def\docommando##1%
+   \def\docommand##1%
      {\bgroup
       \def\[####1]{####1}%
       \xdef\CWEBreference{##1}%
       \egroup
       \CWEBcomma{\localcolortrue\goto{\donottest{##1}}[web:\CWEBreference]}}%
-   \processlist{(}{)}{,}\docommando(#1)
+   \processlist{(}{)}{,}\docommand(#1)
    \egroup}
 
 \def\processCWEBsectionnotes%

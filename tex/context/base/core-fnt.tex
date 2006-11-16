@@ -491,9 +491,9 @@
 
 \def\betweenunderbarwords
   {\bgroup
-   \setbox0\hbox{\dodounderbar{\hskip\fontdimen2\font}}%
+   \setbox0\hbox{\dodounderbar{\hskip\interwordspace}}%
    \nobreak
-   \hskip\zeropoint\!!minus\fontdimen4\font
+   \hskip\zeropoint\!!minus\interwordshrink
    \discretionary{}{}{\box0}%
    \egroup}
 
@@ -548,9 +548,9 @@
 
 \def\betweenoverstrikewords
   {\bgroup
-   \setbox0\hbox{\dooverstrike{\hskip\fontdimen2\font}}%
+   \setbox0\hbox{\dooverstrike{\hskip\interwordspace}}%
    \nobreak
-   \hskip\zeropoint\!!minus\fontdimen4\font
+   \hskip\zeropoint\!!minus\interwordshrink
    \discretionary{}{}{\box0}%
    \egroup}
 
@@ -613,10 +613,10 @@
      \tx
    \fi}
 
-\def\dohighlow#1#2#3#4#5%
+\def\dohighlow#1#2#3#4#5% todo, named fontdimens
   {\dontleavehmode
    \bgroup
-   \scratchdimen\ifdim\fontdimen5\textfont2=1ex\fontdimen#2\textfont2\else#3ex\fi
+   \scratchdimen\ifdim\fontexheight\textfont2=1ex #2\textfont2\else #3ex\fi
    \advance\scratchdimen #4ex
    \kern.1ex
    \setbox\scratchbox\hbox{#1\scratchdimen\hbox{\dodohighlow#5}}%
@@ -625,14 +625,14 @@
    \box\scratchbox
    \egroup}
 
-\unexpanded\def\high{\dohighlow\raise{14}{.86}{0}}
-\unexpanded\def\low {\dohighlow\lower{16}{.48}{0}}
+\unexpanded\def\high{\dohighlow\raise\mathsupnormal{.86}{0}}
+\unexpanded\def\low {\dohighlow\lower\mathsubnormal{.48}{0}}
 
 % \unexpanded\def\lohi#1#2%
 %   {\dontleavehmode
 %    \hbox
-%      {\setbox4=\hbox{\dohighlow\lower{16}{.48}{.1}{#1}}%
-%       \setbox6=\hbox{\dohighlow\raise{14}{.86}{.1}{#2}}%
+%      {\setbox4=\hbox{\dohighlow\lower\mathsubnormal{.48}{.1}{#1}}%
+%       \setbox6=\hbox{\dohighlow\raise\mathsupnormal{.86}{.1}{#2}}%
 %       \ifdim\wd4<\wd6
 %         \wd4=\zeropoint\box4\box6
 %       \else
@@ -645,8 +645,8 @@
 \def\dolohi[#1]#2#3%
   {\dontleavehmode
    \hbox
-     {\setbox4\hbox{\dohighlow\lower{16}{.48}{.1}{#2}}%
-      \setbox6\hbox{\dohighlow\raise{14}{.86}{.1}{#3}}%
+     {\setbox4\hbox{\dohighlow\lower\mathsubnormal{.48}{.1}{#2}}%
+      \setbox6\hbox{\dohighlow\raise\mathsupnormal{.86}{.1}{#3}}%
       \doif{#1}{\v!left}
         {\ifdim\wd4<\wd6
           \setbox4\hbox to \wd6{\hss\box4}%

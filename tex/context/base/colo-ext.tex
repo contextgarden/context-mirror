@@ -29,11 +29,6 @@
 %D
 %D will negate the colors in box zero.
 
-\def\negatecolorcomponent#1% #1 = \macro
-  {\scratchdimen\onepoint\advance\scratchdimen-#1\onepoint
-   \ifdim\scratchdimen<\zeropoint\scratchdimen\zeropoint\fi
-   \edef#1{\withoutpt\the\scratchdimen}}
-
 \def\negatecolorbox#1%
   {\setbox#1\hbox
      {\dostartnegative

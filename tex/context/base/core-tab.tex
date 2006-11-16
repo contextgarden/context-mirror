@@ -368,16 +368,10 @@
 
 \gdef\pushouterbarandquote
   {\ifForgetTableBarAndQuote
-     \ifnum\catcode`\|=\@@active
-        \let\outertablebar|%
-     \else
-        \let\outertablebar\relax
-     \fi
-     \ifnum\catcode`\"=\@@active
-       \let\outertablequote"%
-     \else
-       \let\outertablequote\relax
-     \fi
+     \let|\letterbar
+     \let"\letterdoublequote
+     \ifnum\catcode`\|=\@@active \let\outertablebar  |\else\let\outertablebar  \relax\fi
+     \ifnum\catcode`\"=\@@active \let\outertablequote"\else\let\outertablequote\relax\fi
    \fi}
 
 \gdef\popouterbarandquote
@@ -470,7 +464,7 @@
 
 \def\EndTableParBox
   {\removelastskip                                   % itemize or so
-   \par
+   \endgraf
    \ifnum\prevgraf>\zerocount                        % we want at least
      \verticalstrut \nowhitespace \vskip-\struttotal% one line of text
      \egroup
@@ -545,6 +539,11 @@
   \ifnum \!taRecursionLevel=1
     \!ttInitializeTable
   \fi}
+
+%D The next redefinition is more robust than the original:
+
+\def\SetTableToWidth#1%
+  {\doifelsenothing{#1}{\!taTableSpread\emptytoks}{\!taTableSpread{to #1}}}
 
 % (*) Try this one with \type {direction} and {girection};
 % the \PPCHTEX\ manual is a nice testcase.
@@ -969,21 +968,14 @@
   {\bgroup
    \doif\@@tisplit\v!auto
      {\ifinsidesplitfloat\let\@@tisplit\v!yes\fi}%
-   \doifelse\@@tisplit\v!yes
-     {\def\stoptable{\stoptables}%
-      \setfalse\tablerepeathead
-      \setfalse\tablerepeattail
+   \doifinsetelse\@@tisplit{\v!yes,\v!repeat}
+     {\def\stoptable{\stoptables\egroup}%
       \starttables}
-     {\doifelse\@@tisplit\v!repeat
-        {\def\stoptable{\stoptables}%
-         \settrue\tablerepeathead
-         \settrue\tablerepeattail
-         \starttables}
-        {\doifelsenothing\@@tiframe
-           {\ifinsidefloat\else\startbaselinecorrection\fi}
-           {\startframedcontent[\@@tiframe]}%
-         \postponefootnotes
-         \firststagestartTABLE}}}
+     {\doifelsenothing\@@tiframe
+        {\ifinsidefloat\else\startbaselinecorrection\fi}
+        {\startframedcontent[\@@tiframe]}%
+      \postponefootnotes
+      \firststagestartTABLE}}
 
 \def\stoptable
   {\chuckTABLEautorow % before the tail, else noalign problem
@@ -1081,22 +1073,37 @@
    \TABLEtail
    \TABLEnoalign{\global\setfalse\preventTABLEbreak}}
 
+% \def\dorestartTABLE#1%
+%   {\gdef\restartTABLE{#1}%
+%    \restartTABLE
+%    \insertTABLEhead
+%    \ifsplittables \ifconditional \tablerepeattail
+%      \TABLEnoalign{\goodbreak}%
+%      \insertTABLEtail
+%      \TABLEnoalign{\goodbreak}%
+%    \fi \fi}
+
+\def\verysimpleTableHL
+  {\TABLEnoalign{\expandafter\normalTABLEfullrule\@@tiHLheight}}
+
 \def\dorestartTABLE#1%
   {\gdef\restartTABLE{#1}%
    \restartTABLE
+   \TABLEnoalign{\globalpushmacro\simpleTableHL\global\let\simpleTableHL\verysimpleTableHL}%
    \insertTABLEhead
    \ifsplittables \ifconditional \tablerepeattail
      \TABLEnoalign{\goodbreak}%
      \insertTABLEtail
      \TABLEnoalign{\goodbreak}%
-   \fi \fi}
+   \fi \fi
+   \TABLEnoalign{\globalpopmacro\simpleTableHL}}
 
 \def\complexsecondstagestartTABLE#1[#2]%
-  {\convertargument|\to\asciiA
-   \convertargument#2\to\asciiB
+  {\convertargument|\to\asciia
+   \convertargument#2\to\asciib
    \global\setfalse\someTABLEhead
    \global\setfalse\someTABLEtail
-   \doifinstringelse\asciiA\asciiB
+   \doifinstringelse\asciia\asciib
      {\gdef\restartTABLE{\dorestartTABLE{\thirdstagestartTABLE{#2}}}}
      {\doifdefinedelse{\c!Table#2}
         {\gdef\restartTABLE{\getvalue{\c!Table#2}}}
@@ -1181,6 +1188,9 @@
 \def\starttables
   {\bgroup
    \splittablestrue
+   \doifelse\@@tisplit\v!repeat
+     {\settrue \tablerepeathead\settrue \tablerepeattail}
+     {\setfalse\tablerepeathead\setfalse\tablerepeattail}%
    \flushnotes
    \setbox\tablecontentbox\vbox\bgroup
    \forgetall
@@ -1400,13 +1410,13 @@
 \def\checkTABLErow#1% pure for message purposes
   {\unskip % added
    \ifTABLEgraydone
-     \convertargument         #1\to\asciiA
-     \convertcommand\TABLEendBCL\to\asciiB
-     \ifx\asciiA\asciiB \else
-       \writestatus\m!TABLE{confusing \asciiA\space and \asciiB}%
+     \convertargument         #1\to\asciia
+     \convertcommand\TABLEendBCL\to\asciib
+     \ifx\asciia\asciib \else
+       \writestatus\m!TABLE{confusing \asciia\space and \asciib}%
        \gdef\TABLEgraylineerror%
          {\globalletempty\TABLEgraylineerror
-          [\asciiA\unskip<->\asciiB\unskip]}%
+          [\asciia\unskip<->\asciib\unskip]}%
      \fi
      \global\TABLEgraydonefalse
    \fi}

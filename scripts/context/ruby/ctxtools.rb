@@ -46,16 +46,13 @@
 
 banner = ['CtxTools', 'version 1.3.3', '2004/2006', 'PRAGMA ADE/POD']
 
-# todo dirname
-
-unless defined? ownpath
-    ownpath = $0.sub(/[\\\/][a-z0-9\-]*?\.rb/i,'')
-    $: << ownpath
-end
+$: << File.expand_path(File.dirname($0)) ; $: << File.join($:.last,'lib') ; $:.uniq!
 
 require 'base/switch'
 require 'base/logger'
 require 'base/system'
+require 'base/kpse'
+require 'base/file'
 
 require 'rexml/document'
 require 'net/http'
@@ -86,6 +83,10 @@ class String
         end
     end
 
+    def nosuffix(suffix)
+        self.sub(/\.#{suffix}/,'') # no /o
+    end
+
 end
 
 class Commands
@@ -108,7 +109,7 @@ class Commands
         maincontextfile = 'context.tex'
         unless FileTest.file?(maincontextfile) then
             begin
-                maincontextfile = `kpsewhich -progname=context #{maincontextfile}`.chomp
+                maincontextfile = Kpse.found(maincontextfile,'context')
             rescue
                 maincontextfile = ''
             end
@@ -417,6 +418,8 @@ class Commands
 
     public
 
+    # faster is to glob the whole dir and regexp over that list
+
     def purgefiles
 
         pattern  = @commandline.arguments
@@ -444,13 +447,16 @@ class Commands
             files = Dir.glob(globbed)
             report("purging#{if purgeall then ' all' end} temporary files : #{globbed}")
         else
+            report("purging#{if purgeall then ' all' end} temporary files : #{pattern.join(' ')}")
             pattern.each do |pat|
-                globbed = if recurse then "**/#{pat}-*.*" else "#{pat}-*.*" end
+                nosuf = File.unsuffixed(pat)
+                globbed = if recurse then "**/#{nosuf}-*.*" else "#{nosuf}-*.*" end
+                report("checking files that match '#{globbed}'")
                 files = Dir.glob(globbed)
-                globbed = if recurse then "**/#{pat}.*" else "#{pat}.*" end
+                globbed = if recurse then "**/#{nosuf}.*" else "#{nosuf}.*" end
+                report("checking files that match '#{globbed}'")
                 files.push(Dir.glob(globbed))
             end
-            report("purging#{if purgeall then ' all' end} temporary files : #{pattern.join(' ')}")
         end
         files.flatten!
         files.sort!
@@ -522,6 +528,7 @@ class Commands
     $dontaskprefixes = [
         # "tex-form.tex", "tex-edit.tex", "tex-temp.tex",
         "texexec.tex", "texexec.tui", "texexec.tuo",
+        "texexec.tuc", "texexec.tua",
         "texexec.ps", "texexec.pdf", "texexec.dvi",
         "cont-opt.tex", "cont-opt.bak"
     ]
@@ -531,7 +538,7 @@ class Commands
         "xlscript\\.xsl"
     ]
     $forsuresuffixes = [
-        "tui", "tup", "ted", "tes", "top",
+        "tui", "tua", "tup", "ted", "tes", "top",
         "log", "tmp", "run", "bck", "rlg",
         "mpt", "mpx", "mpd", "mpo", "mpb",
         "ctl",
@@ -541,7 +548,7 @@ class Commands
         "dvi", "ps", "pdf"
     ]
     $texnonesuffixes = [
-        "tuo", "tub", "top"
+        "tuo", "tub", "top", "tuc"
     ]
     $dummyfiles = [
         "mpgraph"
@@ -639,7 +646,7 @@ class Commands
                 nofdocuments, nofdefinitions, nofskips = 0, 0, 0
                 skiplevel, indocument, indefinition, skippingbang = 0, false, false, false
                 if processtype.empty? then
-                  filetype = filesuffix.downcase
+                  filetype = filesuffix.downcase.sub(/^mk.+$/,'tex') # make sure that mkii and mkiv files are handled
                 else
                   filetype = processtype.downcase
                 end
@@ -1049,7 +1056,7 @@ class Language
         commentfile = rmename.dup
 
         begin
-            desfile = `kpsewhich -progname=context #{desname}`.chomp
+            desfile = Kpse.found(desname,'context')
             if f = File.new(desfile) then
                 if doc = REXML::Document.new(f) then
                     if e = REXML::XPath.first(doc.root,"/descriptions/description[@language='#{@language}']") then
@@ -1188,7 +1195,7 @@ class Language
 
     def located(filename)
         begin
-            fname = `kpsewhich -progname=context #{filename}`.chomp
+            fname = Kpse.found(filename, 'context')
             if FileTest.file?(fname) then
                 report("using file #{fname}")
                 return fname
@@ -1519,7 +1526,7 @@ class Language
 
         if ! encoding.empty? then
             begin
-                filename = `kpsewhich -progname=context #{filename}`
+                filename = Kpse.found(filename, 'context')
                 if data = IO.readlines(filename.chomp) then
                     report("preloading #{encoding} character mappings")
                     accept = false
@@ -1865,8 +1872,7 @@ class Commands
         entities   = Hash.new
 
         filenames.each do |filename|
-          # filename = `texmfstart tmftools.rb --progname=context #{filename}`.chomp
-            filename = `kpsewhich --progname=context #{filename}`.chomp
+            filename = Kpse.found(filename, 'context')
             if filename and not filename.empty? and FileTest.file?(filename) then
                 report("loading #{filename.gsub(/\\/,'/')}") unless outputname.empty?
                 IO.readlines(filename).each do |line|
@@ -1874,7 +1880,7 @@ class Commands
                         when /^[\#\%]/io then
                             # skip comment line
                         when /\\definecharacter\s+([a-z]+)\s+\{\\uchar\{*(\d+)\}*\{(\d+)\}\}/io then
-                            name, code = $1, ($2.to_i*256 + $3.to_i).to_s
+                            name, code = $1, sprintf("%04X",$2.to_i*256 + $3.to_i)
                             entities[name] = code.rjust(4,'0') unless entities.key?(name)
                         when /^([A-F0-9]+)\;([a-z][a-z]+)\;(.*?)\;(.*?)\s*$/io then
                             code, name, adobe, comment = $1, $2, $3, $4
@@ -2076,187 +2082,424 @@ class TexDeps
         noInputMode noOutputMode noDefaultInputMode noDefaultOutputMode
     /.split
 
-    @@cs_plain = %q/
-        TeX
-        bgroup egroup endgraf space empty null
-        newcount newdimen newskip newmuskip newbox newtoks newhelp newread newwrite newfam newlanguage newinsert newif
-        maxdimen magstephalf magstep
-        frenchspacing nonfrenchspacing normalbaselines obeylines obeyspaces raggedright ttraggedright
-        thinspace negthinspace enspace enskip quad qquad
-        smallskip medskip bigskip removelastskip topglue vglue hglue
-        break nobreak allowbreak filbreak goodbreak smallbreak medbreak bigbreak
-        line leftline rightline centerline rlap llap underbar strutbox strut
-        cases matrix pmatrix bordermatrix eqalign displaylines eqalignno leqalignno
-        pageno folio tracingall showhyphens fmtname fmtversion
-        hphantom vphantom phantom smash
+    @@cs_metatex = %q/
     /.split
 
-    @@cs_eplain = %q/
-        eTeX
-        newmarks grouptype interactionmode nodetype iftype
-        tracingall loggingall tracingnone
+    @@cs_xetex = %q/
+    /.split
+
+    @@cs_skip = %q/
+        v\! c\! s\! e\! m\! f\!
+        \!tf \!tt \!tq \!ta \?\?
+        csname endcsname relax
+        \!\!string[a-f] \!\!dimen[a-k] \!\!count[a-f] \!\!toks[a-e] \!\!box[a-e]
+        \!\!width[a-c] \!\!height[a-c] \!\!depth[a-c]
+        \!\!done[a-f] if\!\!done[a-f] if\:\!\!done[a-f]
+        scratch globalscratch
+        ascii[a-d] globalascii
+        @@expanded @@globalexpanded @EA @EAEA @EAEAEA
+        bgroup egroup par next nextnext docommand dodocommand dododocommand
+        \!\!width \!\!height \!\!depth \!\!plus \!\!minus \!\!to
+    /.split
+
+    @@cs_skip = %q/
+        [vcsemf]\! \?\?
+        \!t[ftqa]
+        csname endcsname relax
+        \!\!string[a-f] \!\!dimen[a-k] \!\!count[a-f] \!\!toks[a-e] \!\!box[a-e]
+        \!\!width[a-c] \!\!height[a-c] \!\!depth[a-c]
+        \!\!done[a-f] if\!\!done[a-f] if\:\!\!done[a-f]
+        scratch globalscratch
+        ascii[a-d] globalascii
+        @@expanded @@globalexpanded @(EA)+
+        [be]group par next nextnext (do)+command
+        \!\!(width|height|depth|plus|minus|to)
     /.split
 
     # let's ignore \dimendef etc
 
-    @@primitives_def = "def|edef|xdef|gdef|let|newcount|newdimen|newskip|newbox|newtoks|newmarks|chardef|mathchardef|newconditional"
+    @@primitives_def = %q/
+         def edef xdef gdef let
+         newcount newdimen newskip newbox newtoks newmarks newif newinsert newmuskip
+         chardef mathchardef dimendef countdef toksdef
+         newconditional definecomplexorsimple definecomplexorsimpleempty
+         newcounter newpersistentmark
+         installinsertion installspecial\s*\\[* installoutput\s*\\[*
+    /.split
 
-    @@cs_global  = [@@cs_tex,@@cs_etex,@@cs_pdftex,@@cs_omega].sort.flatten
-    @@types      = [['invalid','*'],['okay','='],['forward','>'],['backward','<'],['unknown','?']]
+    @@types = [['invalid','*'],['okay','='],['forward','>'],['backward','<'],['unknown','?']]
 
-    def initialize(logger=nil)
-        @cs_local = Hash.new
-        @cs_new   = Hash.new
-        @cs_defd  = Hash.new
-        @cs_used  = Hash.new
-        @filename = 'context.tex'
-        @files    = Array.new # keep load order !
-        @compact  = false
-        @logger   = logger
+    @@skips = /^(#{@@cs_skip.join('|')})/o
+
+    def initialize(logger=nil,compact=false)
+        @defined      = Hash.new
+        @definitive   = Hash.new
+        @used_before  = Hash.new
+        @used_after   = Hash.new
+        @dependencies = Hash.new
+        @fineorder    = Hash.new
+        @forward      = Hash.new
+        @backward     = Hash.new
+        @disorder     = Hash.new
+        @disordercs   = Hash.new
+        @type         = Hash.new
+        @filename     = 'context.tex'
+        @files        = Array.new # keep load order !
+        @order        = Hash.new
+        @logger       = logger
+        @filefilter   = nil
+        @namefilter   = nil
+        @compact      = compact
+        #
+        @@cs_tex.each     do |cs| @defined[cs] = ['-tex--------'] end
+        @@cs_etex.each    do |cs| @defined[cs] = ['-etex-------'] end
+        @@cs_pdftex.each  do |cs| @defined[cs] = ['-pdftex-----'] end
+        @@cs_omega.each   do |cs| @defined[cs] = ['-omega------'] end
+        @@cs_xetex.each   do |cs| @defined[cs] = ['-xetex------'] end
+        @@cs_metatex.each do |cs| @defined[cs] = ['-metatex----'] end
     end
 
-    def load(filename='context.tex',omitlist=['mult-com.tex'])
+    def report(str)
+        @logger.report(str) rescue false
+    end
+
+    def setfilter(data)
+        data.split(/\s*\,\s*/).each do |d|
+            if d =~ /\.tex$/ then
+                @filefilter = Array.new unless @filefilter
+                @filefilter << d
+            else
+                @namefilter = Array.new unless @namefilter
+                @namefilter << d
+            end
+        end
+    end
+
+    def load(filename='context.tex')
         begin
             @filename = filename
+            n = 0
             File.open(filename) do |f|
                 f.each do |line|
-                    if line =~ /^\\input\s+(\S+)\s*/o then
-                        @files.push($1) unless omitlist.include?(File.basename($1))
+                    if line =~ /^(\\input\s+|\\load[a-z]+\{)([a-z\-\.]+)(\}*)/ then
+                        ante, name, post = $1, $2, $3
+                        @files.push(name)
+                        @order[name] = n += 1
                     end
                 end
             end
         rescue
             @files = Array.new
+            @order = Hash.new
+        end
+    end
+
+    def save(filename='context.tex')
+        unless @filefilter || @namefilter then
+            begin
+                data = IO.readlines(filename).each do |line|
+                    line.gsub!(/^(\\input\s+|\\load[a-z]+\{)([a-z\-\.]+)(\}*)\s*$/) do
+                        ante, name, post = $1, $2, $3
+                        fin = (@fineorder[name]    || [])-[name]
+                        dep = (@dependencies[name] || [])-[name]
+                        dis = (@disorder[name]     || [])-[name]
+                        fin = if fin.size > 0 then " B[#{fin.join(' ')}]" else "" end
+                        dep = if dep.size > 0 then " A[#{dep.join(' ')}]" else "" end
+                        dis = if dis.size > 0 then " D[#{dis.join(' ')}]" else "" end
+                        "#{ante}#{name}#{post} %#{fin}#{dep}#{dis}\n"
+                    end
+                end
+            rescue
+                report("error: #{$!}")
+            else
+                begin
+                    newname = filename.sub(/\..*$/,'.log')
+                    report("")
+                    report("writing to #{newname}")
+                    report("")
+                    File.open(newname,'w') do |f|
+                        f << data
+                    end
+                rescue
+                    report("error: #{$!}")
+                end
+            end
         end
     end
 
     def analyze
+        report('')
+        report("loading files")
+        report('')
+        n = 0
         @files.each do |filename|
             if f = File.open(filename) then
-                @logger.report("loading #{filename}") if @logger
-                defs, uses, n = 0, 0, 0
+                defs, uses, l = 0, 0, 0
+                n += 1
+                report("#{n.to_s.rjust(5,' ')} #{filename}")
                 f.each do |line|
-                    n += 1
+                    l += 1
+                    line.chomp!
+
+
+                    line.sub!(/\%.*$/, '')
+                    line.gsub!(/\\(unexpanded|unprotected|global|protected|long)\s*(\\)/, "\\")
+                    # the superseded, overloaded, forwarded, and predefined macros
+                    # are at the outer level anyway, so there we may ignore leading
+                    # spaces (could be inside an \if); other definitions are only
+                    # accepted when they start at the beginning of a line
                     case line
-                        when /^%/
-                            # skip
-                        when /\\newif\s*\\if([a-zA-Z@\?\!]+)/ then
-                            pushdef(filename,n,"if:#{$1}")
-                        when /\\([a-zA-Z@\?\!]+)(true|false)/ then
-                            pushuse(filename,n,"if:#{$1}")
-                        when /^\s*\\(#{@primitives_def})\\([a-zA-Z@\?\!]{3,})/o
-                            pushdef(filename,n,$2)
-                        when /\\([a-zA-Z@\?\!]{3,})/o
-                            pushuse(filename,n,$1)
+                        when /^\\ifx\s*\\[a-zA-Z\@\!\?]+\s*\\undefined\s*(\\else)*(.*?)$/ then
+                            if $2 =~ /^\s*\\(#{@@primitives_def.join('|')})\s*\\([a-zA-Z\@\?\!]{3,})/o then
+                                pushdef(filename,l,$2,5) # kind of auto-predefined
+                            end
+                        when /^\s*\\superseded\s*\\(#{@@primitives_def.join('|')})\s*\\([a-zA-Z\@\?\!]{3,})(.*)$/o
+                            name, rest = $2, $3
+                            pushdef(filename,l,name,1)
+                            moreuse(filename,l,rest)
+                        when /^\s*\\overloaded\s*\\(#{@@primitives_def.join('|')})\s*\\([a-zA-Z\@\?\!]{3,})(.*)$/o
+                            name, rest = $2, $3
+                            pushdef(filename,l,name,2)
+                            moreuse(filename,l,rest)
+                        when /^\s*\\forwarded\s*\\(#{@@primitives_def.join('|')})\s*\\([a-zA-Z\@\?\!]{3,})(.*)$/o
+                            name, rest = $2, $3
+                            pushdef(filename,l,name,3)
+                            moreuse(filename,l,rest)
+                        when /^\s*\\predefined\s*\\(#{@@primitives_def.join('|')})\s*\\([a-zA-Z\@\?\!]{3,})(.*)$/o
+                            name, rest = $2, $3
+                            pushdef(filename,l,name,4)
+                            moreuse(filename,l,rest)
+                        when /^\\(#{@@primitives_def.join('|')})[\=\s]*\\([a-zA-Z\@\?\!]{3,})(.*)$/o
+                            name, rest = $2, $3 # \=* catches the \let \a = \b
+                            pushdef(filename,l,name,0)
+                            moreuse(filename,l,rest)
+                        when /\\newevery\s*\\([a-zA-Z\@\?\!]+)\s*\\([a-zA-Z\@\?\!]+)/ then
+                            a, b = $1, $2
+                            pushdef(filename,l,a,0)
+                            pushdef(filename,l,b,0)
+                        else
+                            moreuse(filename,l,line)
                     end
                 end
                 f.close
             end
         end
+        @used_after.each do |cs,files|
+            (@defined[cs] || []).each do |name|
+                @dependencies[name] = Array.new unless @dependencies[name]
+                files.each do |file|
+                    @dependencies[name] << file unless @dependencies[name].include?(file)
+                end
+            end
+        end
+        @used_before.each do |cs,files|
+            (@defined[cs] || []).each do |name|
+                @disorder[name]   = Array.new unless @disorder[name]
+                @disordercs[name] = Array.new unless @disordercs[name]
+                @fineorder[name]  = Array.new unless @fineorder[name]
+                files.each do |file|
+                    unless @disorder[name].include?(file) || name == file then
+                        unless @defined[cs].include?(file) then
+                            if @order[name] > @order[file] then
+                                @disorder[name]   << file
+                                @disordercs[name] << "#{file}:#{cs}"
+                            end
+                        end
+                    end
+                    @fineorder[name] << file unless @fineorder[name].include?(file) || name == file
+                end
+            end
+        end
     end
 
-    def feedback(compact=false)
+    def moreuse(filename,l,line)
+        line.scan(/\\if([a-zA-Z@\?\!]{3,})/) do |name, rest| # rest, else array
+            pushuse(filename,l,"if#{name}") unless name =~ /^(true|false)$/
+        end
+        line.scan(/\\([a-zA-Z@\?\!]{3,})/) do |name, rest| # rest, else array
+            if name =~ /(true|false)$/ then
+                pushuse(filename,l,"if#{name}") unless name =~ /^(if|set)$/
+            else
+                pushuse(filename,l,name)
+            end
+        end
+    end
+
+    def feedback
         begin
-            outputfile = File.basename(@filename).sub(/\.tex$/,'')+'.dep'
-            File.open(outputfile,'w') do |f|
-                @compact = compact
-                @logger.report("saving analysis in #{outputfile}") if @logger
-                list, len = @cs_local.keys.sort, 0
-                if @compact then
-                    list.each do |cs|
-                        if cs.length > len then len = cs.length end
-                    end
-                    len += 1
-                else
-                    f.puts "<?xml version='1.0'?>\n"
-                    f.puts "<dependencies xmlns='http://www.pragma-ade.com/schemas/texdeps.rng' rootfile='#{@filename}'>\n"
-                end
-                list.each do |cs|
-                    if @cs_new.key?(cs) then
-                        if @cs_new[cs] == @cs_local[cs] then
-                            f.puts some_struc(cs,len,1,some_str(@cs_new,@cs_defd,cs))
-                        elsif @cs_new[cs].first == @cs_local[cs].first then
-                            f.puts some_struc(cs,len,2,some_str(@cs_new,@cs_defd,cs),some_str(@cs_local,@cs_used,cs))
-                        else
-                            f.puts some_struc(cs,len,3,some_str(@cs_new,@cs_defd,cs),some_str(@cs_local,@cs_used,cs))
+            # get max length
+            l = 0
+            list = @defined.keys.sort
+            list.each do |cs|
+                l = cs.length if cs.length > l
+            end
+            if ! @compact then
+                n = 0
+                report('')
+                report("defined: #{@defined.size}")
+                report('')
+                @defined.keys.sort.each do |cs|
+                    next if @namefilter && ! @namefilter.include?(cs)
+                    next if @filefilter && ! @defined[cs].include?(cs)
+                    if @defined[cs].size > 1 then
+                        dlist = @defined[cs].collect do |d|
+                            if d == @definitive[cs] then d else "[#{d}]" end
                         end
                     else
-                        f.puts some_struc(cs,len,4,some_str(@cs_local,@cs_used,cs))
+                        dlist = @defined[cs]
+                    end
+                    report("#{(n += 1).to_s.rjust(5,' ')} #{cs.ljust(l,' ')} == #{dlist.join(' ')}")
+                end
+            end
+            if true then
+                n = 0
+                report('')
+                report("used before defined: #{@used_before.size}")
+                report('')
+                @used_before.keys.sort.each do |cs|
+                    next if @namefilter && ! @namefilter.include?(cs)
+                    next if @filefilter && (@used_before[cs] & @filefilter).size == 0
+                    used = @used_before[cs] - (@defined[cs] || [])
+                    defined = (@defined[cs] || []).join(' ')
+                    defined = "[ ? ]" if defined.empty?
+                    if used.size > 0 then
+                        report("#{(n += 1).to_s.rjust(5,' ')} #{cs.ljust(l,' ')} == #{defined} -> #{used.join(' ')}")
+                    else
+                        report("#{(n += 1).to_s.rjust(5,' ')} #{cs.ljust(l,' ')} == #{defined}")
                     end
                 end
-                if @compact then
-                    # nothing
-                else
-                    "</dependencies>\n" unless @compact
+                report('      none') if n == 0
+            end
+            if ! @compact then
+                n = 0
+                report('')
+                report("used after defined: #{@used_after.size}")
+                report('')
+                @used_after.keys.sort.each do |cs|
+                    next if @namefilter && ! @namefilter.include?(cs)
+                    next if @filefilter &&  (@used_after[cs] & @filefilter).size == 0
+                    used = @used_after[cs] - (@defined[cs] || [])
+                    defined = (@defined[cs] || []).join(' ')
+                    if used.size > 0 then
+                        report("#{(n += 1).to_s.rjust(5,' ')} #{cs.ljust(l,' ')} == #{defined} <- #{used.join(' ')}")
+                    else
+                        report("#{(n += 1).to_s.rjust(5,' ')} #{cs.ljust(l,' ')} == #{defined}")
+                    end
+                end
+                report('      none') if n == 0
+            end
+            if ! @compact then
+                unless @filefilter || @namefilter then
+                    [false,true].each do |mode|
+                        n = 0
+                        report("")
+                        report("file dependecies #{if mode then '(critical)' end}")
+                        [@dependencies].each do |dependencies|
+                            report("")
+                            dependencies.keys.sort.each do |f|
+                                if dependencies[f].size > 0 then
+                                    dependencies[f].delete(f)
+                                end
+                                if mode then
+                                    dep = dependencies[f].delete_if do |d|
+                                        f[0..3] == d[0..3] # same xxxx- prefix
+                                    end
+                                else
+                                    dep = dependencies[f]
+                                end
+                                if dep.size > 0 then
+                                    name = f.nosuffix('tex').ljust(8,' ')
+                                    list = dep.sort.collect do |k| k.nosuffix('tex') end
+                                    report("#{(n += 1).to_s.rjust(5,' ')} #{name} !! #{list.join(' ')}")
+                                end
+                            end
+                        end
+                        report('      none') if n == 0
+                    end
+                end
+            end
+            if true then
+                unless @filefilter || @namefilter then
+                    [false,true].each do |mode|
+                        [@disorder,@disordercs].each do |disorder|
+                            n = 0
+                            report("")
+                            report("file disorder #{if mode then '(critical)' end}")
+                            report("")
+                            disorder.keys.sort.each do |f|
+                                if disorder[f].size > 0 then
+                                    disorder[f].delete(f)
+                                end
+                                if mode then
+                                    dis = disorder[f].delete_if do |d|
+                                        f[0..3] == d[0..3] # same xxxx- prefix
+                                    end
+                                else
+                                    dis = disorder[f]
+                                end
+                                if dis.size > 0 then
+                                    name = f.nosuffix('tex').ljust(8,' ')
+                                    list = dis.sort.collect do |k| k.nosuffix('tex') end
+                                    report("#{(n += 1).to_s.rjust(3,' ')} #{name} ?? #{list.join(' ')}")
+                                end
+                            end
+                        end
+                        report('      none') if n == 0
+                    end
                 end
             end
         rescue
+            puts("fatal error: #{$!} #{$@.join("\n")}")
         end
     end
 
     private
 
-    def some_struc(cs,len,type=1,defstr='',usestr='')
-        if @compact then
-            "#{cs.ljust(len)} #{@@types[type][1]} #{defstr} #{usestr}"
-        else
-            "<macro name='#{cs}' type='#{type}'>\n" +
-            if defstr.empty? then "  <defined/>\n" else "  <defined>\n#{defstr}  <\defined>\n" end +
-            if usestr.empty? then "  <used/>\n"    else "  <used>#{usestr}\n  <\used>\n" end +
-            "</macro>\n"
-        end
+    def csdefined?(cs,filename)
+        @defined[cs] && @defined[cs].include?(filename)
+    end
+    def csbefore?(cs,filename)
+        @used_before[cs] && @used_before[cs].include?(filename)
+    end
+    def csafter?(cs,filename)
+        @used_after[cs] && @used_after[cs].include?(filename)
     end
 
-    def some_str(files, lines, cs)
-        return '' unless files[cs]
-        if @compact then
-            str = '[ '
-            files[cs].each do |c|
-                str += c
-                str += " (#{lines[cs][c].join(' ')}) " if lines[cs][c]
-                str += ' '
-            end
-            str += ']'
-            str.gsub(/ +/, ' ')
-        else
-            str = ''
-            files[cs].each do |c|
-                if lines[cs][c] then
-                    str += "    <file name='#{c}'>\n"
-                    str += "      "
-                    lines[cs][c].each do |l|
-                        # str += "      <line n='#{l}'/>\n"
-                        str += "<line n='#{l}'/>"
-                    end
-                    str += "\n"
-                    str += "    </file>\n"
+    def csignored?(cs)
+        cs.to_s =~ @@skips
+    end
+
+    def pushdef(filename,n,cs,type)
+        if csignored?(cs) then
+            # nothing
+        elsif @defined[cs] then
+            case type
+                when 5 then
+                    # if test, no definition done
                 else
-                    str += "    <file name='#{c}'/>\n"
-                end
+                    @definitive[cs] = filename
+                    unless @filefilter || @namefilter then
+                        report("#{cs} is redefined") unless csdefined?(cs,filename) || @compact
+                    end
             end
-            str
+            @defined[cs] << filename unless @defined[cs].include?(filename)
+        else
+            @defined[cs] = Array.new
+            @defined[cs] << filename
+            @definitive[cs] = filename
+            @type[cs] = type
         end
-    end
-
-    def pushdef(filename,n,cs)
-        unless @cs_new.key?(cs) then
-            @cs_new[cs] = Array.new
-            @cs_defd[cs] = Hash.new unless @cs_defd.key?(cs)
-        end
-        @cs_defd[cs][filename] = Array.new unless @cs_defd[cs][filename]
-        @cs_new[cs].push(filename) unless @cs_new[cs].include?(filename)
-        @cs_defd[cs][filename] << n
     end
 
     def pushuse(filename,n,cs)
-        unless @@cs_global.include?(cs.to_s) then
-            unless @cs_local[cs] then
-                @cs_local[cs] = Array.new
-                @cs_used[cs] = Hash.new unless @cs_used.key?(cs)
-            end
-            @cs_used[cs][filename] = Array.new unless @cs_used[cs][filename]
-            @cs_local[cs].push(filename) unless @cs_local[cs].include?(filename)
-            @cs_used[cs][filename] << n
+        if csignored?(cs) then
+            # nothing
+        elsif @defined[cs] then
+            @used_after[cs] = Array.new unless @used_after[cs]
+            @used_after[cs] << filename unless csafter?(cs,filename)
+        else
+            @used_before[cs] = Array.new unless @used_before[cs]
+            @used_before[cs] << filename unless csbefore?(cs,filename)
         end
     end
 
@@ -2271,9 +2514,9 @@ class Commands
         filename = if @commandline.arguments.empty? then 'context.tex' else @commandline.arguments.first end
         compact  = @commandline.option('compact')
 
-        ['progname=context',''].each do |progname|
+        ['context',''].each do |progname|
             unless FileTest.file?(filename) then
-                name = `kpsewhich #{progname} #{filename}`.chomp
+                name = Kpse.found(filename, progname)
                 if FileTest.file?(name) then
                     filename = name
                     break
@@ -2281,10 +2524,12 @@ class Commands
             end
         end
 
-        if FileTest.file?(filename) && deps = TexDeps.new(logger) then
+        if FileTest.file?(filename) && deps = TexDeps.new(logger,compact) then
+            deps.setfilter(@commandline.option('filter'))
             deps.load
             deps.analyze
-            deps.feedback(compact)
+            deps.feedback
+            deps.save if @commandline.option('save')
         else
             report("unknown file #{filename}")
         end
@@ -2365,9 +2610,9 @@ class Commands
         end
 
         def locatedlocaltree
-            tree = `kpsewhich --expand-path $TEXMFLOCAL`.chomp rescue nil
+            tree = Kpse.used_path('TEXMFLOCAL')
             unless tree && FileTest.directory?(tree) then
-                tree = `kpsewhich --expand-path $TEXMF`.chomp rescue nil
+                tree = Kpse.used_path('TEXMF')
             end
             return tree
         end
@@ -2377,7 +2622,8 @@ class Commands
                  report("fatal error, '#{archive}' has not been downloaded")
                  return false
             end
-            unless system("unzip -uo #{archive}") then
+            # unless system("unzip -uo #{archive}") then
+            unless system("unzip -o #{archive}") then
                 report("fatal error, make sure that you have 'unzip' in your path")
                 return false
             end
@@ -2441,15 +2687,18 @@ commandline.registeraction('dpxmapfiles'       , 'convert pdftex mapfiles to dvi
 commandline.registeraction('listentities'      , 'create doctype entity definition from enco-uc.tex')
 commandline.registeraction('brandfiles'        , 'add context copyright notice [--force]')
 commandline.registeraction('platformize'       , 'replace line-endings [--recurse --force] [pattern]')
-commandline.registeraction('dependencies'      , 'analyze depedencies witin context [--compact] [rootfile]')
+commandline.registeraction('dependencies'      , 'analyze depedencies within context [--save --compact --filter=[macros|filenames]] [filename]')
 commandline.registeraction('updatecontext'     , 'download latest version and remake formats')
 commandline.registeraction('disarmutfbom'      , 'remove utf bom [--force]')
 
 commandline.registervalue('type','')
+commandline.registervalue('filter','')
 
 commandline.registerflag('recurse')
 commandline.registerflag('force')
+commandline.registerflag('compact')
 commandline.registerflag('pipe')
+commandline.registerflag('save')
 commandline.registerflag('all')
 commandline.registerflag('xml')
 commandline.registerflag('log')

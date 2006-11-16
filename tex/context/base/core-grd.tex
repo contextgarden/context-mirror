@@ -625,11 +625,7 @@
      \dowithnextbox
        {\blank[\v!line]\snaptogrid\vbox{\flushnextbox}\blank[\v!line]}
      \vbox\bgroup
-       \let\setdisplayskips\relax
-       \abovedisplayskip\zeropoint
-       \abovedisplayshortskip\zeropoint
-       \belowdisplayskip\zeropoint
-       \belowdisplayshortskip\zeropoint
+       \forgetdisplayskips
        \@EA\let\@EA\next
    \fi}
 
@@ -763,15 +759,19 @@
    \fi}
 
 \chardef\gridboxlinenomode\plusone
+\chardef\gridboxlinemode  \plusone % 0:nothing 1:all 2:lines 3:frame
+
+\def\gridboxvbox {\ifcase\gridboxlinemode\vbox\or\ruledvbox\or\vbox\or\ruledvbox\else\ruledvbox\fi}
+\def\gridboxwidth{\ifcase\gridboxlinemode0\or.5\or.5\or0\else.5\fi\testrulewidth}
 
 \def\setgridbox#1#2#3%
-  {\setbox#1\ruledvbox to #3 % given size
+  {\setbox#1\gridboxvbox to #3 % given size
      {\forgetall
       \resetteststrut
       \offinterlineskip
       \hsize#2%
       \baselinerulefalse
-      \ruledvbox % calculated size
+      \gridboxvbox % calculated size
         {\getrawnoflines{#3}% \getnoflines{#3}%
          \vskip\topskip
          \vskip-\strutht
@@ -789,9 +789,9 @@
                  \hskip.2\bodyfontsize}%
             \fi
             \vrule
-              \!!height .5\testrulewidth
-              \!!depth  .5\testrulewidth
-              \!!width    \scratchdimen
+              \!!height \gridboxwidth
+              \!!depth  \gridboxwidth
+              \!!width  \scratchdimen
             \par}}
       \vfill}}
 
@@ -867,41 +867,15 @@
 %D    after={\blank[halfline]}]
 %D \stoptyping
 
-\newif\iffuzzysnapdone
-\newif\iffuzzysnapping
-\newif\iffuzzysnapped
-
-\chardef\fuzzysnappedleft=0 % ==1 when fuzzybegin still open
-
+\newif            \iffuzzyvskip
+\newif            \iffuzzysnapdone
+\newif            \iffuzzysnapping
+\newif            \iffuzzysnapped
+\chardef          \fuzzysnappedleft=0 % ==1 when fuzzybegin still open
 \newpersistentmark\fuzzymark % (!)
-\newcount\fuzzymarker
-\newbox\fuzzysnapbox
-\newbox\fuzzysnapsplit
-
-%\def\dosyncfuzzyvskip
-%  {\ifvmode\ifdim\lastskip<\lineheight\ifdim\lastskip>\zeropoint
-%     \bgroup
-%     \endgraf
-%     \forgetall
-%     \verticalstrut
-%     \kern-\struttotal
-%     \kern-\lineheight
-%     \nobreak
-%     \vskip\lineheight
-%     \egroup
-%   \fi\fi\fi}
-
-%\def\fuzzyvskip#1%
-%  {\iffuzzysnapdone
-%     \endfuzzysnapping
-%     \vskip#1\relax
-%     \dosyncfuzzyvskip  % NEW
-%     \global\fuzzysnapdonefalse
-%   \else
-%     \vskip#1\relax
-%     \beginfuzzysnapping
-%     \global\fuzzysnapdonetrue
-%   \fi}
+\newcount         \fuzzymarker
+\newbox           \fuzzysnapbox
+\newbox           \fuzzysnapsplit
 
 \def\dosyncfuzzyvskip
   {\ifvmode\ifdim\lastskip<\lineheight\ifdim\lastskip>\zeropoint

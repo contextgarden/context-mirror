@@ -436,7 +436,7 @@
      \let\parseXMLelement\remapXMLelement
    \else
      % here we need to get rid of the namespace; we also
-     % have to preserve the leaqding / if present
+     % have to preserve the leading / if present
      \@EA\long\@EA\def\@EA\parseXMLelement\@EA
        ##\@EA1\currentXMLnamespace:{\remapXMLelement##1}%
      % ##2 removes leading spaces
@@ -456,10 +456,10 @@
    \catcode`\^^M=\@@space
    \catcode`\^^L=\@@space
    \catcode`\^^Z=\@@space
-\pushmacro\unicodechar
-\let\unicodechar\relax
+   \pushmacro\unicodechar
+   \let\unicodechar\relax
    \xdef\remappedXMLdata{#4\empty}%
-\popmacro\unicodechar
+   \popmacro\unicodechar
    \let\par\endgraf
    \popmacro\doXMLentity % needed ?
    \disableXMLexpansion

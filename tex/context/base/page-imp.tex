@@ -30,12 +30,9 @@
 
 \def\clippedprintbox#1#2% can be made more efficient, see other clipper
   {\ifclipprintbox
-     \!!widthc\pagebackgroundoffset
-     \!!widtha \paperwidth
-     \advance\!!widtha \!!widthc
-     \!!heighta\paperheight
-     \advance\!!heighta\!!widthc
-     \advance\!!heighta\!!widthc
+     \!!widthc \pagebackgroundoffset
+     \!!widtha \dimexpr\paperwidth + \!!widthc\relax
+     \!!heighta\dimexpr\paperheight+2\!!widthc\relax
      \setbox#2\vbox to \paperheight{\vfill\box#2}%
      \ht#2\paperheight
      \wd#2\paperwidth
@@ -80,40 +77,51 @@
      \!!deptha \dp#1%
      \setbox#1\hbox
        {\!!widthb \@@lyclipoffset
-        \advance\!!heighta\!!deptha
-        \advance\!!heighta2\!!widthb
-        \advance\!!widtha  \!!widthb
+        \advance\!!heighta\dimexpr\!!deptha+2\!!widthb\relax
+        \advance\!!widtha \!!widthb
         \doifbothsides
-          \advance\!!widtha\!!widthb
-          \!!widthc-\!!widthb
-          \hskip\!!widthc
-        \orsideone
-          \!!widthc\zeropoint
-        \orsidetwo
-          \!!widthc-\!!widthb
-          \hskip\!!widthc
-        \od
+          {\advance\!!widtha\!!widthb \!!widthc-\!!widthb \hskip\!!widthc}%
+          {\!!widthc\zeropoint}
+          {\!!widthc-\!!widthb \hskip\!!widthc}%
         \lower\!!widthb\hbox
           {\clip
              [\c!hoffset=\!!widthc,
               \c!voffset=-\!!widthb,
-              \c!width=\!!widtha,
-              \c!height=\!!heighta]%
+                \c!width=\!!widtha,
+               \c!height=\!!heighta]%
              {\box#1}}}%
      \wd#1\!!widtha
      \ht#1\!!heighta
      \dp#1\!!deptha
    \fi}
 
+%D \macros
+%D   {starttextdata}
+%D
+%D This is a user macro (appending to every last shipout is not
+%D really user friendly.
+
+\newtoks \collectedtextdata
+
+\long\def\starttextdata#1\stoptextdata
+  {\doglobal\appendtoks#1\to\collectedtextdata}
+
+\def\flushtextdata
+  {\vsmashed{\the\collectedtextdata}% all dimensions zero
+   \global\collectedtextdata\emptytoks
+   \globallet\flushtextdata\donothing}
+
+\prependtoks \flushtextdata \to \everylastshipout
+
 % moved code:
 
 \def\myshipout#1%
-  {\voorpagina % voor de pagebody dus !
+  {\beforeshipout % voor de pagebody dus !
    \dontshowcomposition
    \ifarrangingpages\@EA\actualarrange\else\@EA\actualshipout\fi
      {\thisisrealpage\realfolio#1}%
    \gotonextrealpage
-   \napagina}
+   \aftershipout}
 
 \newbox\postponedcontent
 
@@ -227,7 +235,9 @@
    \global\advance\paperwidth -2\scratchdimen
    \scratchdimen\getvalue{\??pp#1\c!offset}%
    \divide\scratchdimen \arrangedpageY
-   \global\advance\paperheight -2\scratchdimen}
+   \global\advance\paperheight-2\scratchdimen}
+
+\newconditional\arrangedbackgroundokay % more ifs -> conditionals
 
 \def\setuparranging[#1]%
   {\ifarrangingdisabled \else
@@ -250,6 +260,7 @@
                     180=>\gdef\arrangedrotationO{180}\gdef\arrangedrotationE{0},
                     270=>\gdef\arrangedrotationO{270}\gdef\arrangedrotationE{90},
                \s!reset=>\global\arrangingpagesfalse,
+          \v!background=>\global\settrue\arrangedbackgroundokay,
              \s!unknown=>\checkinstalledpagearrangement\commalistelement]%
         % no \s!default=> we can have aaa,,bbb
      \ifx\handlearrangedpage\undefined
@@ -342,8 +353,7 @@
 
 \def\filluparrangedpages % beware: \realpageno is 1 ahead
   {\ifarrangingpages
-     \scratchcounter\realpageno
-     \advance\scratchcounter \minusone
+     \scratchcounter\numexpr\realpageno-\plusone\relax
      \dosetmodulo\scratchcounter\arrangedpageT\scratchcounter
      \ifcase\scratchcounter\else
        \advance\scratchcounter \plusone
@@ -390,7 +400,8 @@
    \ifnegatearranged
      \negatecolorbox{#1}%
    \fi
-   \finishpagebox#1
+   \finishpagebox#1%
+   \ifconditional\arrangedbackgroundokay\addprintbackground#1\fi
    \actualshipout{\box#1}%
    \egroup}
 
@@ -531,8 +542,7 @@
 \def\splitoffarrangedpagesTWO
   {\splittopskip\zeropoint
    \global\setbox\arrangedpageA\vsplit\arrangedpageB to \onepoint
-   \scratchdimen\ht\arrangedpageB
-   \advance\scratchdimen -\onepoint
+   \scratchdimen\dimexpr\ht\arrangedpageB-\onepoint\relax
    \ifdim\scratchdimen>\onepoint
      \setbox\scratchbox\vsplit\arrangedpageB to \scratchdimen
    \fi}
@@ -761,18 +771,16 @@
   {\dosetuparrangement\@@ppnx\@@ppny\@@ppxy\!!zerocount\!!zerocount
      \pusharrangedpageXY\poparrangedpagesXY\relax}
 
-\beginETEX \dimexpr
+%D A crazy definition, don't guess who pushed me for the landscape option.
 
 \definepapersize
   [XY]
-  [\c!width=\dimexpr(\dimexpr(\@@ppwidth-\numexpr(\@@ppnx-1)\dimexpr(\@@ppdx))/\@@ppnx),
-   \c!height =\dimexpr(\dimexpr(\@@ppheight -\numexpr(\@@ppny-1)\dimexpr(\@@ppdy))/\@@ppny)]
+  [\c!height=\dimexpr\dimexpr\@@ppheight-\numexpr\@@ppny-1\relax\dimexpr\@@ppdy\relax\relax/\@@ppny\relax,
+   \c!width =\dimexpr\dimexpr\@@ppwidth -\numexpr\@@ppnx-1\relax\dimexpr\@@ppdx\relax\relax/\@@ppnx\relax]
 
 \setuppaper
-  [\c!width=\dimexpr(\printpaperwidth-2\dimexpr(\@@ppbackspace)),
-   \c!height =\dimexpr(\printpaperheight -2\dimexpr(\@@pptopspace))]
-
-\endETEX
+  [\c!width =\dimexpr\printpaperwidth -2\dimexpr\@@ppbackspace\relax\relax,
+   \c!height=\dimexpr\printpaperheight-2\dimexpr\@@pptopspace \relax\relax]
 
 % \definepageshift[test][horizontal][10pt,20pt,30pt,40pt,50pt]
 % \definepageshift[test][vertical]  [10pt,20pt,30pt,40pt,50pt]
@@ -913,11 +921,11 @@
      {\doifelse{#2}\v!odd
         {\dorecurse\@@ipn
            {\ifodd\recurselevel\relax\dofilterpage{#1}\recurselevel\fi}}
-        {\def\dodocommando##1%
+        {\def\dodocommand##1%
            {\ifnum##1>\@@ipn\else\dofilterpage{#1}{##1}\fi}%
-         \def\docommando##1%
-           {\dowithrange{##1}\dodocommando}%
-         \processcommalist[#2]\docommando}}%
+         \def\docommand##1%
+           {\dowithrange{##1}\dodocommand}%
+         \processcommalist[#2]\docommand}}%
    \egroup}
 
 \def\dofilterpage#1#2%
@@ -1004,81 +1012,116 @@
       \c!before=\page,\c!after=\page,\c!inbetween=\blank,
       \c!frame=,\c!background=,\c!backgroundcolor=,
       #2]%
+   \def\@@ipname{#1}%
    \@@ipbefore
-  %\doglobal\newcounter\combinedpagescounter
-   \globallet\combinedpagescounter\@@ipstart
-   \doifelse\@@ipalternative\v!b\!!doneafalse\!!doneatrue
-   \if!!donea
-     \doloop
-       {\vbox to \textheight
-           {\hsize\textwidth % ? ?
-            \scratchdimen\@@ipdistance
-            \!!widtha\hsize
-            \advance\!!widtha  -\@@ipnx\scratchdimen
-            \advance\!!widtha  \scratchdimen
-            \divide \!!widtha  \@@ipnx
-            \!!heighta\vsize
-            \advance\!!heighta -\@@ipny\scratchdimen
-            \advance\!!heighta         \scratchdimen
-            \divide \!!heighta  \@@ipny
-            \dorecurse\@@ipny
-              {\hbox to \hsize
-                 {\dorecurse\@@ipnx
-                    {\vbox to \!!heighta
-                       {\hsize\!!widtha
-                        \vsize\!!heighta
-                        \@@iptop
-                        \hbox to \hsize
-                          {\@@ipleft
-                           \ifnum\combinedpagescounter>\@@ipstop\relax
-                             \globallet\@@ipn\!!zerocount
-                           \else\ifnum\combinedpagescounter>\@@ipn \else
-                             \externalfigure[#1]
-                               [\c!object=\v!no,
-                                \c!page=\combinedpagescounter,
-                                \c!factor=\v!max,
-                                \c!background=\@@ipbackground,
-                                \c!backgroundcolor=\@@ipbackgroundcolor,
-                                \c!frame=\@@ipframe]%
-                           \fi\fi
-                           \@@ipright}
-                        \@@ipbottom}%
-                     \doglobal\increment\combinedpagescounter
-                     \hfil}%
-                  \hfilneg}
-               \vfil}%
-           \vfilneg}%
-           \page
-        \ifnum\combinedpagescounter>\@@ipn \exitloop\fi}
-   \else
-     \doloop
-       {\startbaselinecorrection
-          \scratchdimen\@@ipdistance
-          \!!widtha\hsize
-          \advance\!!widtha -\@@ipnx\scratchdimen
-          \advance\!!widtha         \scratchdimen
-          \divide \!!widtha  \@@ipnx
-          \hbox to \hsize
-            {\dorecurse\@@ipnx
-               {\doglobal\increment\combinedpagescounter
-                \ifnum\combinedpagescounter>\@@ipn \else
-                   \expanded{\externalfigure[#1]
-                     [\c!page=\combinedpagescounter,
-                      \c!width=\the\!!widtha,% todo \freezedimenmacro
-                      \c!background=\@@ipbackground,
-                      \c!backgroundcolor=\@@ipbackgroundcolor,
-                      \c!frame=\@@ipframe]}%
-                   \hfill
-                \fi}\hfillneg}%
-        \stopbaselinecorrection
-        \ifnum\combinedpagescounter<\@@ipn\relax
-          \@@ipinbetween
-        \else
-          \exitloop
-        \fi}
-   \fi
+   \executeifdefined{\strippedcsname\docombinepages\@@ipalternative}\docombinepagesb
    \@@ipafter
    \egroup}
+
+\def\docombinepagesa
+  {\globallet\combinedpagescounter\@@ipstart
+   \doloop
+     {\vbox to \textheight
+        {\hsize\textwidth % ? ?
+         \scratchdimen\@@ipdistance
+         \!!widtha \dimexpr(\hsize-\@@ipnx\scratchdimen+\scratchdimen)/\@@ipnx\relax
+         \!!heighta\dimexpr(\vsize-\@@ipny\scratchdimen+\scratchdimen)/\@@ipny\relax
+         \dorecurse\@@ipny
+           {\hbox to \hsize
+              {\dorecurse\@@ipnx
+                 {\vbox to \!!heighta
+                    {\hsize\!!widtha
+                     \vsize\!!heighta
+                     \@@iptop
+                     \hbox to \hsize
+                       {\@@ipleft
+                        \ifnum\combinedpagescounter>\@@ipstop\relax
+                          \globallet\@@ipn\!!zerocount
+                        \else\ifnum\combinedpagescounter>\@@ipn \else
+                          \externalfigure[\@@ipname]
+                            [\c!object=\v!no,
+                             \c!page=\combinedpagescounter,
+                             \c!factor=\v!max,
+                             \c!background=\@@ipbackground,
+                             \c!backgroundcolor=\@@ipbackgroundcolor,
+                             \c!frame=\@@ipframe]%
+                        \fi\fi
+                        \@@ipright}
+                     \@@ipbottom}%
+                  \doglobal\increment\combinedpagescounter
+                  \hfil}%
+               \hfilneg}
+            \vfil}%
+         \vfilneg}%
+         \page
+         \ifnum\combinedpagescounter>\@@ipn \exitloop\fi}}
+
+\def\docombinepagesc
+  {\globallet\combinedpagescounter\@@ipstart
+   \doloop
+     {\vbox to \textheight
+        {\hsize\textwidth % ? ?
+         \scratchdimen\@@ipdistance
+         \!!widtha \dimexpr(\hsize-\@@ipnx\scratchdimen+\scratchdimen)/\@@ipnx\relax
+         \!!heighta\dimexpr(\vsize-\@@ipny\scratchdimen+\scratchdimen)/\@@ipny\relax
+         \hbox to \hsize
+           {\dorecurse\@@ipnx
+              {\@@ipleft
+               \vbox to \textheight
+                 {\hsize\!!widtha
+                    {\dorecurse\@@ipny
+                       {\@@iptop
+                        \hbox to \hsize
+                          {\vbox to \!!heighta
+                             {\hsize\!!widtha
+                              \vsize\!!heighta
+                              \ifnum\combinedpagescounter>\@@ipstop\relax
+                                \globallet\@@ipn\!!zerocount
+                              \else\ifnum\combinedpagescounter>\@@ipn \else
+                                \externalfigure[\@@ipname]
+                                  [\c!object=\v!no,
+                                   \c!page=\combinedpagescounter,
+                                   \c!factor=\v!max,
+                                   \c!background=\@@ipbackground,
+                                   \c!backgroundcolor=\@@ipbackgroundcolor,
+                                   \c!frame=\@@ipframe]%
+                              \fi\fi}}
+                         \doglobal\increment\combinedpagescounter
+                         \@@ipbottom}%
+                      \vfil}%
+                   \vfilneg}
+                \hfil}%
+            \hfilneg}}
+         \page
+         \ifnum\combinedpagescounter>\@@ipn \exitloop\fi}}
+
+\let\docombinepageshorizontal\docombinepagesa
+\let\docombinepagesvertical  \docombinepagesc
+
+\def\docombinepagesb
+  {\globallet\combinedpagescounter\@@ipstart
+   \doloop
+     {\startbaselinecorrection
+        \scratchdimen\@@ipdistance
+        \!!widtha\dimexpr(\hsize-\@@ipnx\scratchdimen+\scratchdimen)/\@@ipnx\relax
+        \hbox to \hsize
+          {\dorecurse\@@ipnx
+             {\doglobal\increment\combinedpagescounter
+              \ifnum\combinedpagescounter>\@@ipn \else
+                 \expanded{\externalfigure[\@@ipname]
+                   [\c!page=\combinedpagescounter,
+                    \c!width=\the\!!widtha,% todo \freezedimenmacro
+                    \c!background=\@@ipbackground,
+                    \c!backgroundcolor=\@@ipbackgroundcolor,
+                    \c!frame=\@@ipframe]}%
+                 \hfill
+              \fi}\hfillneg}%
+      \stopbaselinecorrection
+      \ifnum\combinedpagescounter<\@@ipn\relax
+        \@@ipinbetween
+      \else
+        \exitloop
+      \fi}}
 
 %D \macros
 %D   {setuppagecomment,startpagecomment}
@@ -1111,13 +1154,13 @@
       \processaction
         [\@@pclocation]
         [ \v!bottom=>{\setuppapersize[\c!bottom =\vss,\c!top =\vskip\@@pcoffset]},
-          \v!top=>{\setuppapersize[\c!top =\vss,\c!bottom =\vskip\@@pcoffset]},
-          \v!left=>{\setuppapersize[\c!left =\hss,\c!right=\hskip\@@pcoffset]},
-         \v!right=>{\setuppapersize[\c!right=\hss,\c!left =\hskip\@@pcoffset]}]%
+             \v!top=>{\setuppapersize[\c!top =\vss,\c!bottom =\vskip\@@pcoffset]},
+            \v!left=>{\setuppapersize[\c!left =\hss,\c!right=\hskip\@@pcoffset]},
+           \v!right=>{\setuppapersize[\c!right=\hss,\c!left =\hskip\@@pcoffset]}]%
       \definepapersize
         [\v!pagecomment]
         [\c!height=\@@pcpaperheight,
-         \c!width=\@@pcpaperwidth]%
+          \c!width=\@@pcpaperwidth]%
       \let\@@pcprintpapersize\printpapersize
       \setuppapersize[\papersize][\v!pagecomment]%
       \setupbackgrounds[\v!paper][\c!background=\v!pagecomment]}

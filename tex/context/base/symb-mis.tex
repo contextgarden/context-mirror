@@ -132,8 +132,11 @@
 
 %D The next two symbols are for Daniel Flipo:
 
-\definesymbol [Numero] [N\high{\nocap{o}\kern.2em}]
-\definesymbol [numero] [n\high{\nocap{o}\kern.2em}]
+\ifx\high          \undefined \let\high          \firstofoneargument \fi % todo
+\ifx\notsmallcapped\undefined \let\notsmallcapped\firstofoneargument \fi % todo
+
+\definesymbol [Numero] [N\high{\notsmallcapped{o}\kern.2em}]
+\definesymbol [numero] [n\high{\notsmallcapped{o}\kern.2em}]
 
 \def\Numero{\symbol[Numero]}
 \def\numero{\symbol[numero]}

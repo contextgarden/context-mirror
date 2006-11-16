@@ -228,7 +228,7 @@
 %D are needed, but, for critical editions, we may need many
 %D more, so:
 
-\chardef\@@insallocation=32
+\chardef\@@insallocation     =    32
 
 %D However, there's a bug in \ETEX\ versions smaller than 2.2,
 %D so we need to play safe:
@@ -240,11 +240,9 @@
 \def\myalloc@#1#2#3#4#5%
   {\global\advance\count1#1by\@ne
    \ifnum\count1#1>\@@medallocation \else
-     \global\advance\insc@unt by -\@@insallocation
-     \ifnum\count1#1<\insc@unt \else
-       \global\count1#1=\@@medallocation % \wait
+     \ifnum\count1#1<\numexpr\@@medallocation-\@@insallocation\relax\else
+       \global\count1#1=\numexpr\@@medallocation+\@ne\relax % \wait
      \fi
-     \global\advance\insc@unt by +\@@insallocation
    \fi
    \ifnum\count1#1>#4%
      \global\count1#1=#4%
@@ -253,6 +251,16 @@
    \allocationnumber=\count1#1%
    \global#3#5=\allocationnumber
    \wlog{\string#5=\string#2\the\allocationnumber}}
+
+\def\newinsert#1%
+  {\ifnum\insc@unt>\numexpr\@@medallocation-\@@insallocation\relax
+     \global\advance\insc@unt by\m@ne
+     \allocationnumber=\insc@unt
+     \global\chardef#1=\allocationnumber
+     \wlog{\string#1=\string\insert\the\allocationnumber}%
+   \else
+     \errmessage{No room for a new insert \string#1 (\number\insc@unt)}%
+   \fi}
 
 \endETEX
 

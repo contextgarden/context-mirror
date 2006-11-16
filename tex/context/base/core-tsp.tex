@@ -23,9 +23,7 @@
 
 % only to be used with single tokens (will be prim)
 
-\ifx\htdp\undefined
-  \def\htdp#1{\dimexpr\ht#1+\dp#1\relax}
-\fi
+\ifx\htdp\undefined \def\htdp#1{\dimexpr\ht#1+\dp#1\relax} \fi
 
 %D Although the name resembles floats, and therefore this should be
 %D a page module, we decided to make it core functionality because the
@@ -49,52 +47,6 @@
 
 \def\splitfloat
   {\dosingleempty\dosplitfloat}
-
-% \def\dosplitfloat[#1]#2% nog dubbele refs
-%   {\ifinsidecolumns    % tzt ook nog figuren splitten
-%      % not yet supported
-%    \else
-%      \bgroup
-%      \insidefloattrue
-%      \insidesplitfloattrue
-%      \getparameters[\??si][#1]%
-%      \resetnumber[\??si]%
-%      \def\floatcaptionsuffix{\convertednumber[\??si]}%
-%      % \TABLEcaptionheight\@@silines\lineheight% brrr
-%      % todo: auto == \getnoflines\captionheight
-%      \let\extrasplitfloatlines\@@silines
-%      \the\everysplitfloatsetup
-%      \simplifypagebreak % \page becomes \goodbreak, no fails misserably
-%      % todo: a preceding float does not count yet
-%      % so we need a better predictor
-%      \dowithnextbox
-%        {\forgetall
-%         \dontcomplain
-%         \chardef\nodelocationmode\zerocount
-%         \doloop
-%           {\setbox2\vsplit\nextbox to \lineheight
-%            \setbox2\vbox{\unvbox2}
-%            \ifdim\ht2>\lineheight
-%              \incrementnumber[\??si]%
-%              \ifcase\rawnumber[\??si]\or \ifdim\nextboxht=\zeropoint
-%                \let\floatcaptionsuffix\empty
-%              \fi \fi
-%              \bgroup
-%              #2{\unvbox2}
-%              \egroup
-%              \ifdim\nextboxht>\zeropoint
-%                \page
-%                \decrementnumber[\floatcaptionnumber]%
-%              \fi
-%            \fi
-%            \ifdim\nextboxht>\zeropoint
-%              \page
-%            \else
-%              \expandafter\exitloop
-%            \fi}%
-%         \egroup}
-%      \vbox
-%    \fi}
 
 \ifx\floatcaptionsuffix\undefined \else
   \let\floatcaptionsuffix\empty % will become \splitfloatcaptionsuffix
@@ -207,7 +159,7 @@
      \fi
    \fi}
 
-\def\analyzesplitfloatcaption#1% depend son page-flt
+\def\analyzesplitfloatcaption#1% depends on page-flt
   {\doif\extrasplitfloatlines\v!auto
      {\bgroup
       \settrue\retainfloatnumber
@@ -251,8 +203,8 @@
 \newbox\tsplitnext
 \newbox\tsplittail
 
-\def\resettsplit
-  {\def\tsplitminimumfreelines{0}%
+\def\resettsplit{% only \def's starting a a new line are seen by the dep checker
+   \def\tsplitminimumfreelines{0}%
    \def\tsplitminimumfreespace{0pt}%
    \setbox\tsplitcontent  \vbox{}%
    \setbox\tsplitresult   \vbox{}%
@@ -264,7 +216,8 @@
    \let\tsplitinbetween   \donothing
    \let\tsplitbefore      \donothing
    \let\tsplitafter       \donothing
-   \let\postprocesstsplit \donothing}
+   \let\postprocesstsplit \donothing
+}
 
 \resettsplit
 
@@ -317,11 +270,15 @@
       \else
         \!!donedfalse % no tablehead
       \fi
+      \splittopskip\zeropoint
       \doloop
         {\setbox\scratchbox\vsplit\tsplitcontent to \onepoint % \lineheight
          \setbox\scratchbox\vbox{\unvbox\scratchbox}%
          \ifdim\dimexpr\scratchdimen-\htdp\scratchbox-\htdp\tsplitresult\relax>\zeropoint
-           \setbox\tsplitresult\vbox{\unvbox\tsplitresult\unvbox\scratchbox}%
+           \setbox\tsplitresult\vbox
+             {\unvbox\tsplitresult
+              \tsplitinbetween
+              \unvbox\scratchbox}%
            \ifvoid\tsplitcontent \exitloop \fi
          \else\if!!doned
            % we only have a tablehead so far
@@ -330,11 +287,15 @@
          \else\if!!donec
            % we have text height available, but the (one) cell is too
            % large to fit, so, in order to avoid loops/deadcycles we do:
-           \setbox\tsplitresult\vbox{\unvbox\tsplitresult\unvbox\scratchbox}%
+           \setbox\tsplitresult\vbox
+             {\unvbox\tsplitresult
+              \tsplitinbetween
+              \unvbox\scratchbox}%
            \exitloop
          \else
            \setbox\tsplitcontent\vbox
              {\unvbox\scratchbox
+              \tsplitinbetween
               \ifvoid\tsplitcontent\else\unvbox\tsplitcontent\fi}%
            \exitloop
          \fi\fi\fi
@@ -343,7 +304,10 @@
       \postprocesstsplit
       \dochecksplitofffloat\tsplitcontent
       \ifvoid\tsplitcontent
-        \setbox\tsplitresult\vbox{\unvbox\tsplitresult\unvcopy\tsplittail}%
+        \setbox\tsplitresult\vbox
+          {\unvbox\tsplitresult
+           \tsplitinbetween
+           \unvcopy\tsplittail}%
         \dowithsplitofffloat{\tsplitbeforeresult\box\tsplitresult\tsplitafterresult}%
         \doifnotinsidesplitfloat\tsplitafter
         \endgraf
@@ -355,7 +319,10 @@
         \fi
         % brrr
         \ifdim\ht\tsplitresult>\zeropoint
-          \setbox\tsplitresult\vbox{\unvbox\tsplitresult\unvcopy\tsplittail}%
+          \setbox\tsplitresult\vbox
+            {\unvbox\tsplitresult
+             \tsplitinbetween
+             \unvcopy\tsplittail}%
           \dowithsplitofffloat{\tsplitbeforeresult\box\tsplitresult\tsplitafterresult}%
           \doifnotinsidesplitfloat\tsplitafter
           \endgraf

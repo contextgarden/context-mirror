@@ -78,12 +78,10 @@
 \def\MPfigure#1#2% test for dup figure
   {\bgroup
    \getfiguredimensionsonly[#1]% [\c!object=\v!no] already set
-   \freezedimenmacro\naturalfigurewidth
-   \freezedimenmacro\naturalfigureheight
    \startMPcode
      externalfigure "#1"
-       xscaled \naturalfigurewidth\space
-       yscaled \naturalfigureheight\space
+       xscaled \figurewidth\space
+       yscaled \figureheight\space
        #2 ;
    \stopMPcode
    \egroup}

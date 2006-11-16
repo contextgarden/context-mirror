@@ -1578,12 +1578,6 @@
 %
 % \stopcolumns
 
-\newif\ifinsidecolumns
-% \newif\if@@klbalanceren
-% \newif\if@@kluitlijnen
-
-\insidecolumnsfalse
-
 \def\setupcolumns
   {\dosingleempty\dosetupcolumns}
 
@@ -1705,6 +1699,76 @@
    \penalty-200                                     % side effect
    \vskip-\textheight
    }% bugged : \prevdepth-\thousandpoint} % signals top of column to \blank
+
+%D New: only at start of columns; may change ! Rather
+%D interwoven and therefore to be integrated when the multi
+%D column modules are merged. (moved from cont-new.tex)
+
+\def\setupcolumnspan[#1]%
+  {\getparameters[\??ks][#1]}
+
+\presetlocalframed
+  [\??ks]
+
+\setupcolumnspan
+  [\c!n=2,
+   \c!offset=\v!overlay,
+   \c!frame=\v!off]
+
+\newbox\columnspanbox \let\postprocesscolumnspanbox\gobbleoneargument
+
+\def\dostartcolumnspan[#1]%
+  {\bgroup
+   \setupcolumnspan[#1]%
+   \forgetall
+   \ifinsidecolumns
+     \advance\hsize \intercolumnwidth
+     \hsize\@@ksn\hsize
+     \advance\hsize -\intercolumnwidth
+   \fi
+   \dowithnextbox
+     {\setbox\columnspanbox\flushnextbox
+      \ifinsidecolumns\wd\columnspanbox\hsize\fi
+      \postprocesscolumnspanbox\columnspanbox
+      \scratchdimen\ht\columnspanbox
+      \setbox\columnspanbox\hbox % depth to be checked, probably option!
+        {\localframed[\??ks][\c!offset=\v!overlay]{\box\columnspanbox}}%
+      \ht\columnspanbox\scratchdimen
+      \dp\columnspanbox\strutdp
+      \wd\columnspanbox\hsize
+      \ifinsidecolumns
+        \ifnum\@@ksn>1
+          \setvsize
+          \dohandleallcolumns
+            {\ifnum\currentcolumn>\@@ksn\else
+               \global\setbox\currenttopcolumnbox=\vbox
+                 {\ifnum\currentcolumn=1
+                    \snaptogrid\vbox{\copy\columnspanbox}
+                  \else
+                    \snaptogrid\vbox{\vphantom{\copy\columnspanbox}}
+                  \fi}%
+               \wd\currenttopcolumnbox\hsize
+               \global\advance\vsize -\ht\currenttopcolumnbox
+             \fi}
+          \global\pagegoal\vsize
+        \else
+          \snaptogrid\vbox{\box\columnspanbox}
+        \fi
+      \else
+        \snaptogrid\vbox{\box\columnspanbox}
+      \fi
+      \endgraf
+      \ifvmode\prevdepth\strutdp\fi
+      \egroup}
+     \vbox\bgroup
+      %\topskipcorrection % becomes an option !
+       \EveryPar{\begstrut\EveryPar{}}} % also !
+
+\def\startcolumnspan
+  {\dosingleempty\dostartcolumnspan}
+
+\def\stopcolumnspan
+  {\egroup}
 
 \setupcolumns
   [\c!n=2,

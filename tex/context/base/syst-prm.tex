@@ -100,11 +100,29 @@
 
 \fi
 
+\ifx\directlua\undefined
+
+  \long\gdef\beginMETATEX#1\endMETATEX%
+    {}
+
+\else
+
+  \gdef\beginMETATEX%
+    {\bgroup\obeylines\dobeginMETATEX}
+
+  \gdef\dobeginMETATEX#1
+    {\egroup\immediate\write16%
+       {system (METATEX) : [line \the\inputlineno] \detokenize{#1}}}
+
+  \global\let\endMETATEX\relax
+
+\fi
+
 \egroup
 
 %D Let's get rid of this one:
 
-\def\wlog#1{}
+% \def\wlog#1{}
 
 %D Just for tracing purposes we set:
 
@@ -131,22 +149,47 @@
 
 \def\dump{\the\everydump\normaldump}
 
-%D Ligature prevention (for instance, ec encoding has ligatures
-%D in mono spaced fonts). Alas, we need to do some testing in order
-%S to get to the ptex'd one.
+%D \macros
+%D    {bindprimitive}
 
-\def\checkpdftexprimitive #1
-  {\expandafter\ifx\csname     #1\endcsname\relax
-   \expandafter\ifx\csname  pdf#1\endcsname\relax
-   \expandafter\ifx\csname ptex#1\endcsname\relax
-     \expandafter\let\csname normal#1\endcsname            \undefined                   \else
-     \expandafter\let\csname normal#1\expandafter\endcsname\csname ptex#1\endcsname \fi \else
-     \expandafter\let\csname normal#1\expandafter\endcsname\csname  pdf#1\endcsname \fi \else
-     \expandafter\let\csname normal#1\expandafter\endcsname\csname     #1\endcsname \fi}
+\beginTEX
 
-\checkpdftexprimitive quitvmode
-\checkpdftexprimitive noligatures
-\checkpdftexprimitive setrandomseed
-\checkpdftexprimitive uniformdeviate
+\def\bindprimitive#1 #2 % new old
+  {\expandafter\ifx\csname#1\endcsname\relax \expandafter\ifx\csname#2\endcsname\relax \else
+       \expandafter\let\csname#1\expandafter\endcsname\csname#2\endcsname
+   \fi\fi}
+
+\endTEX
+
+\beginETEX
+
+\def\bindprimitive#1 #2 % new old
+  {\ifcsname#1\endcsname \else\ifcsname#2\endcsname
+     \expandafter\let\csname#1\expandafter\endcsname\csname#2\endcsname
+   \fi\fi}
+
+\endETEX
+
+% %D Ligature prevention (for instance, ec encoding has ligatures
+% %D in mono spaced fonts). Alas, we need to do some testing in order
+% %D to get to the ptex'd one.
+
+% \def\checkpdftexprimitive #1
+%   {\expandafter\ifx\csname     #1\endcsname\relax
+%    \expandafter\ifx\csname  pdf#1\endcsname\relax
+%    \expandafter\ifx\csname ptex#1\endcsname\relax
+%      \expandafter\let\csname normal#1\endcsname            \undefined                   \else
+%      \expandafter\let\csname normal#1\expandafter\endcsname\csname ptex#1\endcsname \fi \else
+%      \expandafter\let\csname normal#1\expandafter\endcsname\csname  pdf#1\endcsname \fi \else
+%      \expandafter\let\csname normal#1\expandafter\endcsname\csname     #1\endcsname \fi}
+
+% \checkpdftexprimitive quitvmode
+% \checkpdftexprimitive noligatures
+% \checkpdftexprimitive setrandomseed
+% \checkpdftexprimitive uniformdeviate
+
+%D We preserve \TEX's ending:
+
+\ifx\normalend\undefined \let\normalend\end \fi
 
 \protect \endinput

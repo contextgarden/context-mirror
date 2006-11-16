@@ -38,7 +38,11 @@
 %D \chardef\makeMPintoPDFobject\plusone
 %D \stoptyping
 
-\writestatus{loading}{MetaPost Special Extensions}
+\ifx\writestatus\undefined
+  \immediate\write16{[Loading MPS to PDF extensions.]}
+\else
+  \writestatus{loading}{Context Support Macros / MPS extensions}
+\fi
 
 %D We implement extensions by using the \METAPOST\ special
 %D mechanism. Opposite to \TEX's specials, the \METAPOST\ ones
@@ -176,7 +180,12 @@
 
 \def\handleMPspecialscommentx #1 % version 2
 % {\doifelsedoifelse{#1}{10000}{\settrue\manyMPspecials}{\setfalse\manyMPspecials}% local
-  {\ifnum10000=0#1\relax\settrue\manyMPspecials\else\setfalse\manyMPspecials\fi
+  {\ifnum10000=0#1\relax
+     \settrue \manyMPspecials
+   \else
+     \setfalse\manyMPspecials
+   \fi
+   \setMPextensions
    \handleMPsequence}
 
 % one can say (in meta-ini):
@@ -417,6 +426,11 @@
          \ifnum\MPrgbnumber\lastMPgvalue>10 % really needed
            \scratchcounter\MPrgbnumber\lastMPbvalue
            \edef\currentMPspecial{\the\scratchcounter}%
+\let\previousMPcolorspec\currentMPcolorspec
+\edef\currentMPcolorspec{\lastMPrvalue\lastMPgvalue\lastMPbvalue}%
+\ifx\previousMPcolorspec\currentMPcolorspec \else
+  \revokeMPtransparencyspecial
+\fi
            \ifnum\finiMPpath=2 % to outer level
              \the\invokeMPspecials
            \fi

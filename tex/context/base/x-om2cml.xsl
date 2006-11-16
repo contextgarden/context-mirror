@@ -408,16 +408,16 @@
   <xsl:template match="om:OMA[om:OMS[@cd='interval1']]">
     <interval>
       <xsl:choose>
-	<xsl:when test="om:OMS[1]/@name='interval_oo'">
+        <xsl:when test="om:OMS[1]/@name='interval_oo'">
           <xsl:attribute name='closure'>open</xsl:attribute>
         </xsl:when>
-	<xsl:when test="om:OMS[1]/@name='interval_cc'">
+        <xsl:when test="om:OMS[1]/@name='interval_cc'">
           <xsl:attribute name='closure'>closed</xsl:attribute>
         </xsl:when>
-	<xsl:when test="om:OMS[1]/@name='interval_oc'">
+        <xsl:when test="om:OMS[1]/@name='interval_oc'">
           <xsl:attribute name='closure'>open-closed</xsl:attribute>
         </xsl:when>
-	<xsl:when test="om:OMS[1]/@name='interval_co'">
+        <xsl:when test="om:OMS[1]/@name='interval_co'">
           <xsl:attribute name='closure'>closed-open</xsl:attribute>
         </xsl:when>
       </xsl:choose>
@@ -1247,12 +1247,29 @@
     </annotation>
   </xsl:template>
 
-  <xsl:template match="om:OMS[@cd='math4all' and @name]">
+  <xsl:template match="om:OMS[(@cd='math4all' or @cd='mathadore' or @cd='m4all') and @name]">
     <csymbol>
       <xsl:attribute name="definitionURL">
-        <xsl:value-of select="concat(concat(concat('http://www.openmath.org/cd/',@cd),'#'),@name)"/>
+        <xsl:value-of select="concat(concat('http://www.openmath.org/cd/mathadore','#'),@name)"/>
       </xsl:attribute>
     </csymbol>
+  </xsl:template>
+
+<!--
+  <xsl:template match="om:OMS[@cd='mathadore' and @name]">
+    <csymbol>
+      <xsl:attribute name="definitionURL">
+        <xsl:value-of select="concat(concat(@cd,'#'),@name)"/>
+      </xsl:attribute>
+    </csymbol>
+  </xsl:template>
+-->
+
+  <xsl:template match="om:OMA[om:OMS[@cd='combinat1' and @name='binomial']]">
+    <matrix>
+      <matrixrow><xsl:apply-templates select="*[2]"/></matrixrow>
+      <matrixrow><xsl:apply-templates select="*[3]"/></matrixrow>
+    </matrix>
   </xsl:template>
 
 </xsl:stylesheet>

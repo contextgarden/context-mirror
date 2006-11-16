@@ -176,7 +176,7 @@
 \def\flushdriverresources
   {\ifvoid\driverresources\else\box\driverresources\fi}
 
-\def\dostartgoto\data#1\start#2\stop#3\dostopgoto
+\def\dohandlegoto#1#2#3%
   {\ifsecondaryreference
      \bgroup\setbox0\hbox{#2#3}\egroup
    \else

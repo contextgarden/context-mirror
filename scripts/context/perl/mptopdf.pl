@@ -120,9 +120,9 @@ foreach my $file (@files) {
     $_ = $file ;
     if (s/\.(\d+|mps)$// && -e $file) {
         if ($miktex) {
-            $command = "pdfetex -undump=mptopdf" ;
+            $command = "pdftex -undump=mptopdf" ;
         } else {
-            $command = "pdfetex  -fmt=mptopdf -progname=context" ;
+            $command = "pdftex -fmt=mptopdf -progname=context" ;
         }
         if ($dosish) {
             $command = "$command \\relax $file" ;

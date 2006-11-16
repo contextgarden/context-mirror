@@ -248,7 +248,7 @@
 
 \def\ARABTEXsh@ft#1%
   {\dimen@.00#1ex
-   \multiply\dimen@\fontdimen1\font
+   \multiply\dimen@\slantperpoint
    \kern-.0156\dimen@}
 
 \appendtoks
@@ -377,13 +377,6 @@
 %D screens, it strikes me that like music, \TEX\ too is a
 %D perfect instrument to cross cultural and linguistic
 %D borders. So, let's load Hebrew support as well:
-
-% \unexpanded\def\sethebrewfont#1% strange font dimensions / scale
-%   {\scratchdimen=10\bodyfontsize
-%    \font\hebfont=\truefontname{Hebrew#1} at \currentfontscale\scratchdimen
-%    \fontdimen5\hebfont=.8\fontdimen2\hebfont
-%    \fontdimen6\hebfont=3\fontdimen5\hebfont
-%    \hebfont}
 
 \unexpanded\def\sethebrewfont#1%
   {\setx@skels

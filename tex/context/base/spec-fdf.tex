@@ -2,7 +2,7 @@
 %D   [       file=spec-fdf,
 %D        version=1998.05.18,
 %D          title=\CONTEXT\ \PDF\ Macros,
-%D       subtitle=Adobe \PDF/\FDF\ version 2.1,
+%D       subtitle=Support Macros,
 %D         author=Hans Hagen,
 %D           date=\currentdate,
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
@@ -11,11 +11,14 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-%D For the moment we keep this downward compatible hack:
+%D The name of this module is a bit strange but it started with fields
+%D so we keep the name.
 
-% todo: \depth van symbol appearance controleren
-
-%% see end of file
+%D When dealing with resources, we share the resource dictionaries
+%D between all xforms. This is inefficent in the sense that when no
+%D resources are used, redundant entries take space, but on the other
+%D hand we save redundant dictionaries so it's a nice compromise. Maybe
+%D that in \LUATEX\ I will reimplement most of the code here anyway.
 
 %D We need to check if we can use \type {\driverreferenced}
 %D object in more places.
@@ -47,6 +50,14 @@
 
 \let\PDFswapdir\empty \def\PDFswapdir{\ifcase\inlinedirection\or\or-\fi}
 
+% the pdf spec changed cq. viewers started behaving differently / 5+
+
+\chardef\overcomePDFpage\plusone   % page numbers/ beware: optimizers remove this one
+\chardef\overcomePDFpage\plustwo   % page:number
+%chardef\overcomePDFpage\plusthree % pdftex page ref feature
+
+\ifx\pdfpageref\undefined \else \chardef\overcomePDFpage\plusthree \fi
+
 %D \macros
 %D   {setPDFdestination}
 %D
@@ -60,162 +71,16 @@
 \newif\ifovercomePDFbugs  \overcomePDFbugsfalse % dest sort problem / 3-
 \newif\ifovercomePDFspace \overcomePDFspacetrue % dest sort problem / 3-
 
-% the pdf spec changed cq. viewers started behaving differently / 5+
-
-\chardef\overcomePDFpage\plusone   % page numbers/ beware: optimizers remove this one
-\chardef\overcomePDFpage\plustwo   % page:number
-%chardef\overcomePDFpage\plusthree % pdftex page ref feature
-
-\ifx\pdfpageref\undefined \else \chardef\overcomePDFpage\plusthree \fi
-
-\chardef\safePDFcode=`-
-
-\def\setPDFdestination#1%
-  {\bgroup
-   \retainlccodes
-   \lccode`\/\safePDFcode \lccode`\#\safePDFcode
-   \lccode`\<\safePDFcode \lccode`\>\safePDFcode
-   \lccode`\[\safePDFcode \lccode`\]\safePDFcode
-   \lccode`\(\safePDFcode \lccode`\)\safePDFcode
-   \ifovercomePDFspace
-     \lccode`\ \safePDFcode
-   \fi
-   \ifovercomePDFbugs
-     \xdef\PDFdestination{'#1'}%
-   \else
-     \xdef\PDFdestination{#1}%
-   \fi
-   % nicer \xdef\PDFdestination{\ifovercomePDFbugs'\fi#1\ifovercomePDFbugs'\fi}%
-   \lowercase\@EA{\@EA\xdef\@EA\PDFdestination\@EA{\PDFdestination}}%
-   \egroup}
-
-%D This is much faster since we don't have to set the full
-%D range of lc-codes; about 5 sec on a 1000mhz PIII for
-%D 20K named destinations "x(x) x"). Of course when you use
-%D page destinations, the saving is nil.
-
-% \beginETEX \scantokens
-%
-% \doifnotmode{atpragma}{\let\next\setPDFdestination} % experimental
-%
-% \bgroup
-%
-% \catcode`\/=\@@active \catcode`\#=\@@active
-% \catcode`\<=\@@active \catcode`\>=\@@active
-% \catcode`\[=\@@active \catcode`\]=\@@active
-% \catcode`\(=\@@active \catcode`\)=\@@active
-%
-% \gdef\PDFrepchar{-}
-%
-% \gdef\setPDFdcharacters
-%   {\catcode`\/=\@@active \let/\PDFrepchar
-%    \catcode`\#=\@@active \let#\PDFrepchar
-%    \catcode`\<=\@@active \let<\PDFrepchar
-%    \catcode`\>=\@@active \let>\PDFrepchar
-%    \catcode`\[=\@@active \let[\PDFrepchar
-%    \catcode`\]=\@@active \let]\PDFrepchar
-%    \catcode`\(=\@@active \let(\PDFrepchar
-%    \catcode`\)=\@@active \let)\PDFrepchar}
-%
-% \egroup
-%
-% \def\setPDFdestination#1% expansion is needed, otherwise embedded
-%   {\bgroup              % macros will not expand under the new
-%    \setPDFdcharacters   % catcode regime
-%    \ifovercomePDFspace
-%      \catcode32=\@@ignore
-%    \fi
-%    \xdef\PDFdestination{\ifovercomePDFbugs'\fi#1\ifovercomePDFbugs'\fi}%
-%    \scantokens\@EA{\@EA\xdef\@EA\PDFdestination\@EA{\PDFdestination}}%
-%    \egroup}
-%
-% \doifnotmode{atpragma}{\let\setPDFdestination\next} % experimental
-%
-% \endETEX
+\let\setPDFdestination\gobbleoneargument % a MK specific definition
 
 %D \macros
 %D   {sanitizePDFstring}
 %D
 %D This macro at least tries to convert a arbitrary string
 %D into a sequence of characters valid for \PDF\ bookmarks and
-%D alike. It's a slow one, that uses \type{\lccode}'s to
-%D change the glyph as well as converts sensisitve ones into a
-%D \PDF\ command sequence, so \type{(} becomes \type{\(}.  In
-%D fact we translate the string to lowercase inactive and non
-%D special characters, limit their number and finaly convert
-%D some of the characters to save ones.
+%D alike.
 
-%\beginTEX
-
-\chardef\maxPDFstringsize=60
-
-\def\sanitizePDFstring#1\to#2%
-  {\bgroup
-   \retainlccodes
-   \lccode`( \plusone \lccode`) \plusone
-   \lccode`< \plusone \lccode`> \plusone
-   \lccode`[ \plusone \lccode`] \plusone
-   \lccode`\\\plusone \lccode`/ \plusone
-   \lowercase{\convertargument#1\to\ascii}%
-   % by integrating the split in the loop below
-   % \splitofftokens\maxPDFstringsize\from\ascii\to\ascii
-   % we diminish the processing time considerably
-   \scratchcounter\maxPDFstringsize
-   \def\docommando##1%
-     {\ifcase\scratchcounter\else
-        \advance\scratchcounter \minusone
-        \ifcase\lccode`##1\relax
-          \xdef#2{#2.}% let's show that something is missing
-        \or
-          \xdef#2{#2\expandafter\string\csname##1\endcsname}%
-        \else
-          \xdef#2{#2##1}%
-        \fi
-      \fi}%
-   %\global\let#2=\empty
-   % or to permit #2 to be \ascii too:
-   \global\@EA\let\@EA#2\@EA\empty
-   \@EA\handletokens\ascii\with\docommando
-   \egroup}
-
-%\endTEX
-%
-% \beginETEX \scantokens
-%
-% \doifnotmode{atpragma}{\let\next\sanitizePDFstring} % experimental
-%
-% \bgroup
-%
-% \catcode`\.=\@@escape
-%
-% .catcode`./=.@@active
-% .catcode`.<=.@@active .catcode`.>=.@@active
-% .catcode`.[=.@@active .catcode`.]=.@@active
-% .catcode`.(=.@@active .catcode`.)=.@@active
-%
-% .gdef.setPDFscharacters%
-%   {.catcode`.\=.@@other
-%    .catcode`./=.@@active .def/{.noexpand./}%
-%    .catcode`.<=.@@active .def<{.noexpand.<}%
-%    .catcode`.>=.@@active .def>{.noexpand.>}%
-%    .catcode`.[=.@@active .def[{.noexpand.[}%
-%    .catcode`.]=.@@active .def]{.noexpand.]}%
-%    .catcode`.(=.@@active .def({.noexpand.(}%
-%    .catcode`.)=.@@active .def){.noexpand.)}}
-%
-% .gdef.sanitizePDFstring#1.to#2%
-%   {.bgroup
-%    .setPDFscharacters
-%    .catcode`=.@@escape
-%    .edef.next{.strippedcsname#2}%
-%    .scantokens{setxvalue{next}{#1}}%
-%    .egroup}
-%
-% .egroup
-%
-% \doifnotmode{atpragma}{\let\sanitizePDFstring\next} % experimental
-%
-% \endETEX
+\def\sanitizePDFstring#1\to#2{}
 
 %D \macros
 %D   {doPDFdestination,
@@ -240,22 +105,22 @@
 %D drivers \type{pdf} (\ACROBAT) and \type{tpd} (\PDFTEX).
 %D
 %D \starttyping
-%D \doPDFdestination        name #1
-%D \doPDFaction             width #1 height #2 action #3
-%D \doPDFannotation         width #1 height #2 data #3
-%D \doPDFannotationobject   class #1 name #2 width #3 height #4 data #5
-%D \doPDFdictionaryobject   class #1 name #2 data #3
-%D \doPDFarrayobject        class #1 name #2 data #3
-%D \doPDFaddtocatalog       #1
-%D \doPDFaddtoinfo          #1
-%D \doPDFpageattribute      #1
-%D \doPDFpageresource       #1
-%D \doPDFpagesattribute     #1
-%D \doPDFbookmark           level #1 n #2 text #3 page #4 open #5
+%D \doPDFdestination            #1         name
+%D \doPDFaction                 #1#2#3     width height action
+%D \doPDFannotation             #1#2#3     width height data
+%D \doPDFannotationobject       #1#2#3#4#5 class name width height data
+%D \doPDFdictionaryobject       #1#2#3     class name data
+%D \doPDFarrayobject            #1#2#3     class name data
+%D \doPDFaddtocatalog           #1
+%D \doPDFaddtoinfo              #1
+%D \doPDFpageattribute          #1
+%D \doPDFpageresource           #1
+%D \doPDFpagesattribute         #1
+%D \doPDFbookmark               #1#2#3#4#5 level n text page open
 %D
-%D \defaultobjectreference      #1#2   % class name
-%D \doPDFgetobjectreference     #1#2#3 % class name \PDFobjectreference
-%D \doPDFgetobjectpagereference #1#2#3 % class name \PDFobjectreference
+%D \defaultobjectreference      #1#2       class name
+%D \doPDFgetobjectreference     #1#2#3     class name \PDFobjectreference
+%D \doPDFgetobjectpagereference #1#2#3     class name \PDFobjectreference
 %D \stoptyping
 %D
 %D The keywords reflect their use. For the moment we stick to
@@ -312,8 +177,7 @@
 \def\checkPDFextgstates
   {\ifx\docuPDFextgstates\empty \else
      \ifnum\realpageno=\lastpage\relax
-       \doPDFdictionaryobject class FDF name docuextgstates data
-         {\docuPDFextgstates}%
+       \doPDFdictionaryobject{FDF}{docuextgstates}{\docuPDFextgstates}%
      \fi
      \doPDFgetobjectreference{FDF}{docuextgstates}\PDFobjectreference
      \doPDFpageresource{/ExtGState \PDFobjectreference}%
@@ -333,8 +197,7 @@
 \def\checkPDFcolorspaces
   {\ifx\docuPDFcolorspaces\empty \else
      \ifnum\realpageno=\lastpage\relax
-       \doPDFdictionaryobject class FDF name colorspaces data
-         {\docuPDFcolorspaces}%
+       \doPDFdictionaryobject{FDF}{colorspaces}{\docuPDFcolorspaces}%
      \fi
      \doPDFgetobjectreference{FDF}{colorspaces}\PDFobjectreference
      \doPDFpageresource{/ColorSpace \PDFobjectreference}%
@@ -346,6 +209,26 @@
 
 \def\appendtoPDFdocumentcolorspaces#1%
   {\xdef\docuPDFcolorspaces{\docuPDFcolorspaces\space#1}}
+
+%D And another one (used to be in spec-pdf)
+
+\let\docuPDFshades\empty
+
+\def\checkPDFshades
+  {\ifx\docuPDFshades\empty \else
+     \ifnum\realpageno=\lastpage\relax
+       \doPDFdictionaryobject{FDF}{docushades}{\docuPDFshades}%
+     \fi
+     \doPDFgetobjectreference{FDF}{docushades}\PDFobjectreference
+     \doPDFpageresource{/Shading \PDFobjectreference}%
+   \fi}
+
+\appendtoksonce
+  \checkPDFshades
+\to \everyshipout
+
+\def\appendtoPDFdocumentshades#1%
+  {\xdef\docuPDFshades{\docuPDFshades\space#1}}
 
 %D \macros
 %D   {doPDFsetupscreen,doPDFsetupidentity}
@@ -402,24 +285,25 @@
 
 % not that good if we switch drivers
 
+\def\addPDFdocumentinfo
+  {\doPDFaddtocatalog{\currentPDFpagemode\currentPDFviewerprefs}%
+   \doPDFaddtocatalog{/Version \ifdim\PDFversion00\points>100\points 1.\fi\PDFversion}%
+   \doPDFaddtoinfo{/Trapped /False}%
+   \doPDFaddtoinfo{/ConTeXt.Version (\contextversion)}%
+   \doPDFaddtoinfo{/ConTeXt.Time    (\number\normalyear.\twodigits\normalmonth.\twodigits\normalday\space \twodigits\currenthour:\twodigits\currentminute)}%
+   \doPDFaddtoinfo{/ConTeXt.Jobname (\jobname)}%
+   \doPDFaddtoinfo{/ConTeXt.Url     (www.pragma-ade.com)}}
+
 \appendtoksonce % hack to prevent duplicates
-  \doPDFaddtocatalog{\currentPDFpagemode\currentPDFviewerprefs}%
-  \doPDFaddtoinfo{/Trapped /False}%
-  \doPDFaddtoinfo{/ConTeXt.Version (\contextversion)}%
-  \doPDFaddtoinfo{/ConTeXt.Time    (\number\normalyear.\twodigits\normalmonth.\twodigits\normalday\space \twodigits\currenthour:\twodigits\currentminute)}%
-  \doPDFaddtoinfo{/ConTeXt.Jobname (\jobname)}%
-  \doPDFaddtoinfo{/ConTeXt.Url     (www.pragma-ade.com)}%
+    \addPDFdocumentinfo
 \to \everyfirstshipout
 
 \def\PDFversion{1.5}
 
 \appendtoksonce
   \def\PDFversion{1.5}%
+  \let\addPDFdocumentinfo\relax
 \to \everyresetspecials
-
-\appendtoksonce % we catch both n and 1.n
-  \doPDFaddtocatalog{/Version \ifdim\PDFversion00\points>100\points 1.\fi\PDFversion}%
-\to \everylastshipout
 
 \def\doPDFsetupwhateverbox#1#2#3#4#5#6% watch the extra arguments
   {\bgroup
@@ -541,12 +425,12 @@
 % \to \everylastshipout
 
 %\def\doPDFsetupopenaction%
-%  {\doPDFdictionaryobject class FDF name local:openaction data \lastPDFaction
+%  {\doPDFdictionaryobject{FDF}{local:openaction}\lastPDFaction
 %   \doPDFgetobjectreference{FDF}{local:openaction}\PDFobjectreference
 %   \doPDFaddtocatalog{/OpenAction \PDFobjectreference}}
 %
 %\def\doPDFsetupcloseaction%
-%  {\doPDFdictionaryobject class FDF name local:closeaction data \lastPDFaction
+%  {\doPDFdictionaryobject{FDF}{local:closeaction}\lastPDFaction
 %   \doPDFgetobjectreference{FDF}{local:closeaction}\PDFobjectreference
 %   \doPDFaddtocatalog{/CloseAction \PDFobjectreference}}
 
@@ -587,9 +471,9 @@
   {\bgroup
    \setPDFdestination{#1}%
   %\doifsomething{\PDFdestination}
-  %  {\doPDFdestination name {\PDFdestination}}%
+  %  {\doPDFdestination{\PDFdestination}}%
    \ifx\PDFdestination\empty \else
-     \doPDFdestination name {\PDFdestination}%
+     \doPDFdestination{\PDFdestination}%
    \fi
    \egroup}
 
@@ -642,9 +526,7 @@
        \savesecondaryPDFreference\action
      \else
        \getsecondaryPDFreferences
-       \doPDFaction
-         width \PDFswapdir#1 height #2
-         action {\action \secondaryPDFreferences}%
+       \doPDFaction{\PDFswapdir#1}{#2}{\action \secondaryPDFreferences}%
      \fi
    \fi
    \egroup}
@@ -703,9 +585,7 @@
        \savesecondaryPDFreference\action
      \else
        \getsecondaryPDFreferences
-       \doPDFaction
-         width \PDFswapdir#1 height #2
-         action {\action \secondaryPDFreferences}%
+       \doPDFaction{\PDFswapdir#1}{#2}{\action \secondaryPDFreferences}%
      \fi
    \fi
    \egroup}
@@ -718,7 +598,7 @@
        \bgroup
          \xdef\lastfakedPDFpage{\realfolio}%
          \advance\realpageno \minusone % is \expanded needed ?
-         \expanded{\doPDFdestination name {page:\realfolio}}%
+         \expanded{\doPDFdestination{page:\realfolio}}%
        \egroup
      \fi
    \fi \fi \fi}
@@ -736,9 +616,7 @@
      \savesecondaryPDFreference\action
    \else
      \getsecondaryPDFreferences
-     \doPDFaction
-       width \PDFswapdir#1 height #2
-       action {\action \secondaryPDFreferences}%
+     \doPDFaction{\PDFswapdir#1}{#2}{\action \secondaryPDFreferences}%
    \fi
    \egroup}
 
@@ -835,15 +713,12 @@
 %        \ifx\PDFobjectclass\empty
 %          \let\next\doPDFaction
 %        \else
-%          \edef\next{\doPDFactionobject
-%            class {\PDFobjectclass} name {\PDFobjectname} }%
+%          \edef\next{\doPDFactionobject{\PDFobjectclass}{\PDFobjectname}}%
 %          \globalletempty\PDFobjectclass
 %          \globalletempty\PDFobjectname
 %        \fi
 %        \next
-        \doPDFaction
-          width \PDFswapdir#1 height #2
-          action {\action \secondaryPDFreferences}%
+        \doPDFaction{\PDFswapdir#1}{#2}{\action \secondaryPDFreferences}%
       \fi
       \egroup}}
 
@@ -866,9 +741,7 @@
      \savesecondaryPDFreference\action
    \else
      \getsecondaryPDFreferences
-     \doPDFaction
-       width \PDFswapdir#1 height #2
-       action {\action \secondaryPDFreferences}%
+     \doPDFaction{\PDFswapdir#1}{#2}{\action \secondaryPDFreferences}%
    \fi
    \egroup}
 
@@ -889,9 +762,7 @@
         \savesecondaryPDFreference\action
       \else
         \getsecondaryPDFreferences
-        \doPDFaction
-          width \PDFswapdir#1 height #2
-          action {\action \secondaryPDFreferences}%
+        \doPDFaction{\PDFswapdir#1}{#2}{\action \secondaryPDFreferences}%
       \fi}%
    \egroup}
 
@@ -981,25 +852,24 @@
 
 \let\currentmovie\s!unknown
 
-\def\doPDFinsertmov#1#2#3#4#5#6#7#8#9%
+\def\doPDFinsertmov
   {\bgroup
-   \xdef\currentmovie{#2}% label
-   \PointsToBigPoints{#7}\width
-   \PointsToBigPoints{#8}\height
+   \xdef\currentmovie{\@@DriverImageLabel}%
+   \PointsToBigPoints\@@DriverImageWidth \width
+   \PointsToBigPoints\@@DriverImageHeight\height
    \let\pdf@@options\empty
    \let\pdf@@actions\empty
    \donefalse
-   \@EA\processallactionsinset\@EA
-     [#9]
+   \expanded{\processallactionsinset[\@@DriverImageOptions]}
      [\v!controls=>\donetrue,
         \v!repeat=>\edef\pdf@@actions{\pdf@@actions /Mode /Repeat },
        \v!preview=>\edef\pdf@@options{\pdf@@options /Poster true  }]%
    \edef\pdf@@actions{\pdf@@actions /ShowControls \ifdone true\else false\fi}%
-   \doPDFannotation width #7 height #8 data
+   \doPDFannotation\@@DriverImageWidth\@@DriverImageHeight
      {/Subtype /Movie
       /Border [0 0 0]
       /T (movie \currentmovie)
-      /Movie << /F (#1) /Aspect [\width\space\height] \pdf@@options >>
+      /Movie << /F (\@@DriverImageFile) /Aspect [\width\space\height] \pdf@@options >>
       /A << \pdf@@actions >>}%
    \egroup}
 
@@ -1021,7 +891,7 @@
      [\v!repeat=>\edef\pdf@@actions{\pdf@@actions /Mode /Repeat }]%
 \collectdriverresource
 %    \flushatshipout % since it can be buried in a chained box
-     {\doPDFannotation width 0pt height 0pt data
+     {\doPDFannotation{0pt}{0pt}
         {/Subtype /Movie
          /Border [0 0 0]
          /T (sound \currentsound)
@@ -1032,7 +902,7 @@
 %D \macros
 %D   {doPDFattachfile}
 
-\def\doPDFfilestreamobject class #1 name #2 file #3 source #4%
+\def\doPDFfilestreamobject#1#2#3#4%
   {}
 
 \def\doPDFfilestreamidentifier#1%
@@ -1051,7 +921,7 @@
      \doPDFembedfile\PDFfile{#7}{#8}%
      \doPDFgetembeddedfilereference\PDFfile\PDFobjectreference
      \setFDFlayer\@@DriverAttachmentLayer
-     \doPDFannotation width {\width} height {\totalheight} data
+     \doPDFannotation{\width}{\totalheight}
        {/Subtype /FileAttachment
         /FS \PDFobjectreference\space
         /Contents (#1)
@@ -1066,8 +936,7 @@
 \def\doPDFembedfile#1#2#3% symbolic name | filename | user name
   {\edef\PDFfile{#1}\convertcommand\PDFfile\to\PDFfile
    \doifnotflagged{a:\PDFfile}%
-     {\doPDFfilestreamobject
-        class PDFEF name {\PDFfile} file {#2} source {#3}%
+     {\doPDFfilestreamobject{PDFEF}{\PDFfile}{#2}{#3}%
       \doglobal\setflag{a:\PDFfile}}}
 
 \def\doPDFgetembeddedfilereference#1#2%
@@ -1165,7 +1034,7 @@
 \definespecial\doinsertrendering#1#2#3#4% tag mime file options
   {\ifundefined{PDFMR:#1}%
      \doifinstringelse{://}{#3}\donetrue\donefalse % evt url as keyword
-     \doPDFdictionaryobject class {PDFMF} name {#1} data
+     \doPDFdictionaryobject{PDFMF}{#1}
        {/Type /Rendition
         /S    /MR
         % does not work: /SP << /Type /MediaScreenParam /BE << /B [1 0 0] /O 0.5 >> >>
@@ -1192,7 +1061,7 @@
 \definespecial\doinsertrenderingobject#1#2#3#4% tag class objectname options
   {\ifundefined{PDFMR:#1}%
      \doPDFgetobjectreference{#2}{#3}\PDFobjectreference
-     \doPDFdictionaryobject class {PDFMF} name {#1} data
+     \doPDFdictionaryobject{PDFMF}{#1}
        {/Type /Rendition
         /S    /MR
         /C << /Type /MediaClip
@@ -1221,7 +1090,7 @@
      \doPDFgetobjectreference    {PDFMF}{#2}\PDFobjectreferenceB
      \vss
      \hbox to #3 \bgroup
-       \doPDFannotationobject class {#1} name {#2} width #3 height #4 data
+       \doPDFannotationobject{#1}{#2}{#3}{#4}
          {/Subtype /Screen
           /P \PDFobjectreferenceA
           /A \PDFobjectreferenceB
@@ -1278,7 +1147,7 @@
    \sanitizePDFdocencoding#3\to\bookmarktext % uses scratchcounter
    \stripstring\bookmarktext
   %\sanitizePDFstring#3\to\bookmarktext
-   \doPDFbookmark level #1 n #2 text {\bookmarktext} page {#4} open #5
+   \doPDFbookmark{#1}{#2}{\bookmarktext}{#4}{#5}%
    \egroup}
 
 %D The next section of this module is dedicated to form
@@ -1367,13 +1236,13 @@
   {\bgroup
    \!!counta\zerocount
    \!!countb\zerocount
-   \def\docommando##1%
+   \def\docommand##1%
      {\doifsomething{##1}
         {\advance\!!counta 0\getvalue{\@@FDFflag##1}%
          \setvalue{\@@FDFflag##1}{0}%
          \advance\!!countb 0\getvalue{\@@FDFplus##1}%
          \setvalue{\@@FDFplus##1}{0}}}%
-   \processcommacommand[#1]\docommando
+   \processcommacommand[#1]\docommand
    \xdef\FDFflag{\the\!!counta}%
    \xdef\FDFplus{\the\!!countb}%
    \egroup}
@@ -1407,7 +1276,7 @@
    %\let\FDFdefaultindex\!!zerocount
    %\let\FDFdefaultvalue\empty
    %\scratchcounter\zerocount
-   \def\dodocommando##1=>##2=>##3\end
+   \def\dodocommand##1=>##2=>##3\end
      {\addtocommalist{##1}\FDFkidlist
       %\edef\FDFfirstvalues{\FDFfirstvalues(##1)}%
       %\doif{##1}{#2}{\edef\FDFdefaultindex{\the\scratchcounter}}%
@@ -1419,9 +1288,9 @@
         {\doif{##1}{#2}{\edef\FDFdefaultvalue{##2}}%
          %\edef\FDFsecondvalues{\FDFsecondvalues(##2)}%
          \edef\FDFvalues{\FDFvalues [(##2)(##1)] }}}% ! ##1 is shown
-   \def\docommando##1%
-     {\dodocommando##1=>=>\end}%
-   \expanded{\processcommalist[#1]}\docommando}
+   \def\docommand##1%
+     {\dodocommand##1=>=>\end}%
+   \expanded{\processcommalist[#1]}\docommand}
 
 %D This macro accepts comma separated \type{visual=>result}
 %D pairs.
@@ -1593,8 +1462,8 @@
 
 \def\setFDFaction#1#2%
   {\bgroup
-   \def\docommando{\xdef\FDFactions{\FDFactions /#1 << \lastPDFaction >> }}%
-   \@EA\handlereferenceactions\@EA{#2}\docommando % one level expansion
+   \def\docommand{\xdef\FDFactions{\FDFactions /#1 << \lastPDFaction >> }}%
+   \@EA\handlereferenceactions\@EA{#2}\docommand % one level expansion
    \egroup}
 
 %D \macros
@@ -1638,15 +1507,14 @@
   {\ifbuildFDFdictionary
      \ifx\FDFcollection\empty\else
        \ifbuildFDFencodingvector
-         \doPDFdictionaryobject class FDF name local:encodingvector data
-           \FDFencodingvector
+         \doPDFdictionaryobject{FDF}{local:encodingvector}{\FDFencodingvector}%
        \fi
        \defineFDFfonts
-       \doPDFarrayobject class FDF name local:fields data \FDFcollection
+       \doPDFarrayobject{FDF}{local:fields}{\FDFcollection}%
        \doPDFgetobjectreference{FDF}{local:fields}\PDFobjectreference
        % The /NeedAppearances is pretty important because
        % otherwise Acrobat 5 blows up on cloned radio widgets
-       \doPDFdictionaryobject class FDF name local:acroform data
+       \doPDFdictionaryobject{FDF}{local:acroform}
          {/Fields \PDFobjectreference\space
           /NeedAppearances true
           \doFDFiffieldset\PDFcalculationset{/CO [\doFDFgetfieldset\PDFcalculationset]}
@@ -1692,7 +1560,7 @@
   {\ifbuildFDFencodingvector
      \doPDFgetobjectreference{FDF}{local:encodingvector}\PDFobjectreference
    \fi
-   \doPDFdictionaryobject class FDF name local:#1 data
+   \doPDFdictionaryobject{FDF}{local:#1}
      {/Type /Font
       /Subtype /Type1
       /Name /#1
@@ -1808,10 +1676,10 @@
 
 \def\setFDFkids[#1][#2]% tag commalist
   {\let\FDFkids\empty
-   \def\docommando##1%
+   \def\docommand##1%
      {\doPDFgetobjectreference{FDF}{#1##1}\PDFobjectreference
       \edef\FDFkids{\FDFkids\PDFobjectreference\space}}%
-   \@EA\processcommalist\@EA[#2]\docommando
+   \@EA\processcommalist\@EA[#2]\docommand
    \ifx\FDFkids\empty\else\edef\FDFkids{/Kids [\FDFkids]}\fi
 %    \edef\FDFkids{/Kids [\FDFkids]}%
    }
@@ -1835,7 +1703,7 @@
    \setFDFactions[#9]%
    \expanded{\escapePSstring#4}\to\FDFtext
    \ifcase\currentFDFmode
-     \doPDFannotationobject class FDF name #1 width #2 height #3 data
+     \doPDFannotationobject{FDF}{#1}{#2}{#3}
        {/Subtype /Widget /T (#1) /FT /Tx
         /MaxLen \ifcase0#5 1000 \else#5 \fi
        %/DV (#4) /V (#4) % value added
@@ -1850,7 +1718,7 @@
      \registerFDFobject{#1}%
    \or
      \setFDFkids[kids:][\currentFDFkids]%
-     \doPDFdictionaryobject class FDF name #1 data
+     \doPDFdictionaryobject{FDF}{#1}
        {/T (#1) /FT /Tx
         /MaxLen \ifcase0#5 1000 \else#5 \fi
         \FDFkids\space
@@ -1867,7 +1735,7 @@
    \or
      \doPDFgetobjectreference{FDF}\currentFDFparent\PDFobjectreference
     %\global\objectreferencingtrue
-     \doPDFannotationobject class FDF name kids:#1 width #2 height #3 data
+     \doPDFannotationobject{FDF}{kids:#1}{#2}{#3}
        {/Subtype /Widget
         /Parent \PDFobjectreference
         /Ff \FDFflag\space
@@ -1880,7 +1748,7 @@
    \or
      \doPDFgetobjectreference{FDF}\currentFDFparent\PDFobjectreference
     %\global\objectreferencingtrue
-     \doPDFannotationobject class FDF name kids:#1 width #2 height #3 data
+     \doPDFannotationobject{FDF}{kids:#1}{#2}{#3}
        {/Subtype /Widget
         /Parent \PDFobjectreference
         /F \FDFplus
@@ -1899,7 +1767,7 @@
    \setFDFvalues[#7][#4]%
    \setFDFactions[#8]%
    \ifcase\currentFDFmode
-     \doPDFannotationobject class FDF name #1 width #2 height #3 data
+     \doPDFannotationobject{FDF}{#1}{#2}{#3}
        {/Subtype /Widget
         /T (#1) /FT /Ch
         /DV (#4) /V (#4)
@@ -1913,7 +1781,7 @@
      \registerFDFobject{#1}%
    \or
      \setFDFkids[kids:][\currentFDFkids]%
-     \doPDFdictionaryobject class FDF name #1 data
+     \doPDFdictionaryobject{FDF}{#1}
        {/T (#1) /FT /Ch
         \FDFkids\space
         /DV (#4) /V (#4)
@@ -1928,7 +1796,7 @@
    \or
      \doPDFgetobjectreference{FDF}\currentFDFparent\PDFobjectreference
     %\global\objectreferencingtrue
-     \doPDFannotationobject class FDF name kids:#1 width #2 height #3 data
+     \doPDFannotationobject{FDF}{kids:#1}{#2}{#3}
        {/Subtype /Widget
         /Parent \PDFobjectreference
         /Ff \FDFflag\space
@@ -1940,7 +1808,7 @@
    \or
      \doPDFgetobjectreference{FDF}\currentFDFparent\PDFobjectreference
     %\global\objectreferencingtrue
-     \doPDFannotationobject class FDF name kids:#1 width #2 height #3 data
+     \doPDFannotationobject{FDF}{kids:#1}{#2}{#3}
        {/Subtype /Widget
         /Parent \PDFobjectreference
         /F \FDFplus
@@ -1967,7 +1835,7 @@
      {\def\FDFdefault{Off}}%
    \ifcase\currentFDFmode
      \doFDFappearance{On}{#6}{#8}%
-     \doPDFannotationobject class FDF name #1 width #2 height #3 data
+     \doPDFannotationobject{FDF}{#1}{#2}{#3}
        {/Subtype /Widget /T (#1) /FT /Btn
         \ifFDFvalues
           /DV /\FDFdefault\space
@@ -1984,7 +1852,7 @@
      \registerFDFobject{#1}%
    \or % no appearance and layer ?
      \setFDFkids[kids:][\currentFDFkids]%
-     \doPDFdictionaryobject class FDF name #1 data
+     \doPDFdictionaryobject{FDF}{#1}
        {/T (#1) /FT /Btn
         \FDFkids\space
         \ifFDFvalues
@@ -2000,7 +1868,7 @@
      \doFDFappearance{On}{#6}{#8}%
      \doPDFgetobjectreference{FDF}\currentFDFparent\PDFobjectreference
     %\global\objectreferencingtrue
-     \doPDFannotationobject class FDF name kids:#1 width #2 height #3 data
+     \doPDFannotationobject{FDF}{kids:#1}{#2}{#3}
        {/Subtype /Widget
         /Parent \PDFobjectreference\space
         \ifFDFvalues
@@ -2017,7 +1885,7 @@
      \doFDFappearance{On}{#6}{#8}%
      \doPDFgetobjectreference{FDF}\currentFDFparent\PDFobjectreference
     %\global\objectreferencingtrue
-     \doPDFannotationobject class FDF name kids:#1 width #2 height #3 data
+     \doPDFannotationobject{FDF}{kids:#1}{#2}{#3}
        {/Subtype /Widget
         /Parent \PDFobjectreference\space
         /F \FDFplus\space
@@ -2052,7 +1920,7 @@
    \ifcase\currentFDFmode
      \doFDFappearance{#1}{#7}{1}%
      \doPDFgetobjectreference{FDF}{#6}\PDFobjectreference
-     \doPDFannotationobject class FDF name #1 width #2 height #3 data
+     \doPDFannotationobject{FDF}{#1}{#2}{#3}
        {/Subtype /Widget
         /Parent \PDFobjectreference\space
         /F \FDFplus\space
@@ -2064,7 +1932,7 @@
    \or
      \setFDFkids[kids:][\currentFDFkids]%
      \doPDFgetobjectreference{FDF}{#6}\PDFobjectreference
-     \doPDFdictionaryobject class FDF name #1 data
+     \doPDFdictionaryobject{FDF}{#1}
        {/Parent \PDFobjectreference\space
         \FDFkids\space
         /F \FDFplus\space
@@ -2075,7 +1943,7 @@
      \doFDFappearance{\currentFDFparent}{#7}{1}%
      \doPDFgetobjectreference{FDF}\currentFDFparent\PDFobjectreference
     %\global\objectreferencingtrue % nb
-     \doPDFannotationobject class FDF name kids:#1 width #2 height #3 data
+     \doPDFannotationobject{FDF}{kids:#1}{#2}{#3}
        {/Subtype /Widget
         /Parent \PDFobjectreference\space
         /AS /\FDFdefault\space
@@ -2088,7 +1956,7 @@
      \doFDFappearance{\currentFDFparent}{#7}{1}%
      \doPDFgetobjectreference{FDF}\currentFDFparent\PDFobjectreference
     %\global\objectreferencingtrue
-     \doPDFannotationobject class FDF name kids:#1 width #2 height #3 data
+     \doPDFannotationobject{FDF}{kids:#1}{#2}{#3}
        {/Subtype /Widget
         /Parent \PDFobjectreference\space
         /AS /\FDFdefault\space
@@ -2106,8 +1974,8 @@
 
 %\def\setFDFstrings[#1]%
 %  {\let\FDFstrings\empty
-%   \def\docommando##1{\edef\FDFstrings{\FDFstrings(##1)}}%
-%   \processcommacommand[#1]\docommando}
+%   \def\docommand##1{\edef\FDFstrings{\FDFstrings(##1)}}%
+%   \processcommacommand[#1]\docommand}
 
 % Beware, RadiosInUnison is really needed in the pre 1.5/6 time this
 % was the default but out of a sudden it's no longer the case.  Also
@@ -2136,7 +2004,7 @@
    \expanded{\setFDFkids[][\FDFkidlist]}%
    %
    \setFDFactions[#5]%
-   \doPDFdictionaryobject class FDF name #1 data
+   \doPDFdictionaryobject{FDF}{#1}
      {%/Subtype /Widget
       /FT /Btn /T (#1) /Rect [0 0 0 0]
       % used to be this
@@ -2208,7 +2076,7 @@
       \let\N\empty\let\R\empty\let\D\empty
       \dodoFDFappearance{#1}\yes
       \dodoFDFappearance{Off}\no
-      \doPDFdictionaryobject class FDF name {ap:#1:\yes:\no} data
+      \doPDFdictionaryobject{FDF}{ap:#1:\yes:\no}
         {\ifx\N\empty\else/N \ifFDFvalues<<\N>>\else\N\fi\fi
          \ifx\R\empty\else/R \ifFDFvalues<<\R>>\else\R\fi\fi
          \ifx\D\empty\else/D \ifFDFvalues<<\D>>\else\D\fi\fi}}%
@@ -2257,10 +2125,10 @@
 
 \def\doFDFdefinefieldset#1#2% tag commalist
   {\let\FDFfieldset\empty
-   \def\docommando##1%
+   \def\docommand##1%
      {\doPDFgetobjectreference{FDF}{##1}\PDFobjectreference
       \edef\FDFfieldset{\FDFfieldset\PDFobjectreference\space}}%
-   \processcommacommand[#2]\docommando % nb: command
+   \processcommacommand[#2]\docommand % nb: command
    \setevalue{FDF:set:#1}{\FDFfieldset}}
 
 \def\doFDFgetfieldset#1%
@@ -2433,8 +2301,8 @@
         {\def##1{##2}
          \advance\scratchcounter by 1
          \ifodd\scratchcounter \else
-           \convertcommand\Title\to\asciiA
-           \global\setFDFfield{\asciiA}{\Value}
+           \convertcommand\Title\to\asciia
+           \global\setFDFfield{\asciia}{\Value}
            \doglobal\addtocommalist\Title\allFDFfields
          \fi}
       \ReadFile{#1.fdf}}%
@@ -2460,8 +2328,8 @@
 \def\showFDFfields#1%
   {\bgroup
    \loadFDFfields{#1}
-   \def\docommando##1{\par##1 = \getFDFfield{##1}\par}%
-   \processcommacommand[\allFDFfields]\docommando
+   \def\docommand##1{\par##1 = \getFDFfield{##1}\par}%
+   \processcommacommand[\allFDFfields]\docommand
    \egroup}
 
 %D \macros
@@ -2530,7 +2398,7 @@
 %    \sanitizePDFencoding#8\to\PDFdata
 %    \setbox\scratchbox\vbox to #3
 %      {\vfill
-%       \doPDFannotation width #2 height #3 data
+%       \doPDFannotation{#2}{#3}
 %         {/Subtype /Text
 %          \ifcase#5 \else/Open true\fi
 %          /Contents \ifPDFunicode <\PDFdata> \else(\PDFdata) \fi
@@ -2567,8 +2435,7 @@
          \donefalse
        \ifdone
          \setbox\scratchbox\hbox
-           {\doPDFannotationobject class FDF name {c::\nofFDFcomments}
-                 width #2 height #3 data % text window, size does not work
+           {\doPDFannotationobject{FDF}{c::\nofFDFcomments}{#2}{#3}% text window, size does not work
               {/Subtype /Popup
                /Parent \PDFobjectreference}}%
          \ifcase#7\relax
@@ -2594,8 +2461,7 @@
          {\doPDFgetobjectreference{FDF}{c::\nofFDFcomments}\PDFobjectreference
           \donetrue}
          \donefalse
-       \doPDFannotationobject class FDF name {c:\nofFDFcomments}
-           width {\width} height {\height} data
+       \doPDFannotationobject{FDF}{c:\nofFDFcomments}{\width}{\height}
          {/Subtype /Text
           \ifcase#5 \else/Open true\fi
           % pdftex (efficient)
@@ -2608,7 +2474,7 @@
           \PDFsymbol
           \PDFattributes}%
      \else
-       \doPDFannotation width #2 height #3 data
+       \doPDFannotation{#2}{#3}
          {/Subtype /Text
           \ifcase#5 \else/Open true\fi
           /Contents \ifPDFunicode <\PDFdata> \else(\PDFdata) \fi
@@ -2722,7 +2588,7 @@
    \advance\dimen2 #2\relax
    \PointsToBigPoints{\dimen2}#3}
 
-\def\doPDFovalbox#1#2#3#4#5#6#7% todo: \scratchdimen/\scatchbox
+\def\doPDFovalbox#1#2#3#4#5#6#7#8% todo: \scratchdimen/\scatchbox
   {\bgroup
    \dimen0=#4\divide\dimen0 \plustwo
    \doPDFovalcalc{0pt}{+\dimen0}\xmin
@@ -2738,6 +2604,7 @@
    \doPDFovalcalc{#5}{\zeropoint}\radius
    \edef\dostroke{#6}%
    \edef\dofill{#7}%
+   \edef\mode{\number#8 \space}%
    % no \ifcase, else \relax in pdfcode
    \setbox\scratchbox\hbox
      {\ifnum\dostroke\dofill>\zerocount
@@ -2746,18 +2613,193 @@
         \fi\fi
         \PDFcode
           {q
-           \stroke\space w
-           \xxmin\space \ymin\space  m
-           \xxmax\space \ymin\space  l
-           \xmax \space \ymin\space  \xmax\space  \yymin\space y
-           \xmax \space \yymax\space l
-           \xmax \space \ymax\space  \xxmax\space \ymax\space  y
-           \xxmin\space \ymax\space  l
-           \xmin \space \ymax\space  \xmin\space  \yymax\space y
-           \xmin \space \yymin\space l
-           \xmin \space \ymin\space  \xxmin\space \ymin\space  y
-           \ifnum\dostroke=\plusone S \fi
-           \ifnum\dofill  =\plusone f \fi
+           \stroke\space               w
+           \ifcase\mode
+             \xxmin\space \ymin \space m
+             \xxmax\space \ymin \space l
+             \xmax \space \ymin \space \xmax \space \yymin\space y
+             \xmax \space \yymax\space l
+             \xmax \space \ymax \space \xxmax\space \ymax \space y
+             \xxmin\space \ymax \space l
+             \xmin \space \ymax \space \xmin \space \yymax\space y
+             \xmin \space \yymin\space l
+             \xmin \space \ymin \space \xxmin\space \ymin \space y
+             h
+           \or % 1
+             \xxmin\space \ymin \space m
+             \xxmax\space \ymin \space l
+             \xmax \space \ymin \space \xmax \space \yymin\space y
+             \xmax \space \ymax \space l
+             \xmin \space \ymax \space l
+             \xmin \space \yymin\space l
+             \xmin \space \ymin \space \xxmin\space \ymin \space y
+             h
+           \or % 2
+             \xxmin\space \ymin \space m
+             \xmax \space \ymin \space l
+             \xmax \space \ymax \space l
+             \xxmin\space \ymax \space l
+             \xmin \space \ymax \space \xmin \space \yymax\space y
+             \xmin \space \yymin\space l
+             \xmin \space \ymin \space \xxmin\space \ymin \space y
+             h
+           \or % 3
+             \xmin \space \ymin \space m
+             \xmax \space \ymin \space l
+             \xmax \space \yymax\space l
+             \xmax \space \ymax \space \xxmax\space \ymax \space y
+             \xxmin\space \ymax \space l
+             \xmin \space \ymax \space \xmin \space \yymax\space y
+             \xmin \space \ymin \space l
+             h
+           \or % 4
+             \xmin \space \ymin \space m
+             \xxmax\space \ymin \space l
+             \xmax \space \ymin \space \xmax \space \yymin\space y
+             \xmax \space \yymax\space l
+             \xmax \space \ymax \space \xxmax\space \ymax \space y
+             \xmin \space \ymax \space l
+             \xmin \space \ymin\space l
+             h
+           \or % 5
+             \xmin \space \ymin \space m
+             \xmax \space \ymin \space l
+             \xmax \space \yymax\space l
+             \xmax \space \ymax \space \xxmax\space \ymax \space y
+             \xmin \space \ymax \space l
+             \xmin \space \ymin \space l
+             h
+           \or % 6
+             \xmin \space \ymin \space m
+             \xxmax\space \ymin \space l
+             \xmax \space \ymin \space \xmax \space \yymin\space y
+             \xmax \space \ymax \space l
+             \xmin \space \ymax \space l
+             \xmin \space \ymin \space l
+             h
+           \or
+             \xxmin\space \ymin \space m
+             \xmax \space \ymin \space l
+             \xmax \space \ymax \space l
+             \xmin \space \ymax \space l
+             \xmin \space \yymin\space l
+             \xmin \space \ymin \space \xxmin\space \ymin \space y
+             h
+           \or
+             \xmin \space \ymin \space m
+             \xmax \space \ymin \space l
+             \xmax \space \ymax \space l
+             \xxmin\space \ymax \space l
+             \xmin \space \ymax \space \xmin \space \yymax\space y
+             \xmin \space \ymin \space l
+             h
+           \or % 9 top open
+             \xmin \space \ymax \space m
+             \xmin \space \yymin\space l
+             \xmin \space \ymin \space \xxmin\space \ymin \space y
+             \xxmax\space \ymin \space l
+             \xmax \space \ymin \space \xmax \space \yymin\space y
+             \xmax \space \ymax \space l
+           \or % 10 right open
+             \xmax \space \ymax \space m
+             \xxmin\space \ymax \space l
+             \xmin \space \ymax \space \xmin \space \yymax\space y
+             \xmin \space \yymin\space l
+             \xmin \space \ymin \space \xxmin\space \ymin \space y
+             \xmax\space  \ymin \space l
+           \or % 11 bottom open
+             \xmax \space \ymin \space m
+             \xmax \space \yymax\space l
+             \xmax \space \ymax \space \xxmax \space \ymax\space y
+             \xxmin\space \ymax \space l
+             \xmin \space \ymax \space \xmin \space \yymax\space y
+             \xmin \space \ymin \space l
+           \or % 12 left open
+             \xmin \space \ymax \space m
+             \xxmax\space \ymax \space l
+             \xmax \space \ymax \space \xmax \space \yymax\space y
+             \xmax \space \yymin\space l
+             \xmax \space \ymin \space \xxmax\space \ymin \space y
+             \xmin \space \ymin \space l
+           \or % 13
+             \xmin \space \ymax \space m
+             \xxmax\space \ymax \space l
+             \xmax \space \ymax \space \xmax \space \yymax\space y
+             \xmax\space  \ymin \space l
+           \or % 14
+             \xmax \space \ymax \space m
+             \xmax \space \yymin\space l
+             \xmax \space \ymin \space \xxmax\space \ymin \space y
+             \xmin \space \ymin \space l
+           \or % 15
+             \xmax \space \ymin \space m
+             \xxmin\space \ymin \space l
+             \xmin \space \ymin \space \xmin \space \yymin\space y
+             \xmin \space \ymax \space l
+           \or % 16
+             \xmin \space \ymin \space m
+             \xmin \space \yymax\space l
+             \xmin \space \ymax \space \xxmin\space \ymax \space y
+             \xmax \space \ymax \space l
+           \or % 17
+             \xxmax\space \ymax \space m
+             \xmax \space \ymax \space \xmax \space \yymax\space y
+           \or % 18
+             \xmax \space \yymin\space m
+             \xmax \space \ymin \space \xxmax\space \ymin \space y
+           \or % 19
+             \xxmin\space \ymin \space m
+             \xmin \space \ymin \space \xmin \space \yymin\space y
+           \or % 20
+             \xmin \space \yymax\space m
+             \xmin \space \ymax \space \xxmin\space \ymax \space y
+           \or % 21
+             \xxmax\space \ymax \space m
+             \xmax \space \ymax \space \xmax \space \yymax\space y
+             \xmin \space \yymax\space m
+             \xmin \space \ymax \space \xxmin\space \ymax \space y
+           \or % 22
+             \xxmax\space \ymax \space m
+             \xmax \space \ymax \space \xmax \space \yymax\space y
+             \xmax \space \yymin\space m
+             \xmax \space \ymin \space \xxmax\space \ymin \space y
+           \or % 23
+             \xmax \space \yymin\space m
+             \xmax \space \ymin \space \xxmax\space \ymin \space y
+             \xxmin\space \ymin \space m
+             \xmin \space \ymin \space \xmin \space \yymin\space y
+           \or % 24
+             \xxmin\space \ymin \space m
+             \xmin \space \ymin \space \xmin \space \yymin\space y
+             \xmin \space \yymax\space m
+             \xmin \space \ymax \space \xxmin\space \ymax \space y
+           \or % 25
+             \xxmax\space \ymax \space m
+             \xmax \space \ymax \space \xmax \space \yymax\space y
+             \xmax \space \yymin\space m
+             \xmax \space \ymin \space \xxmax\space \ymin \space y
+             \xxmin\space \ymin \space m
+             \xmin \space \ymin \space \xmin \space \yymin\space y
+             \xmin \space \yymax\space m
+             \xmin \space \ymax \space \xxmin\space \ymax \space y
+           \or % 26
+             \xmax \space \yymin\space m
+             \xmax \space \ymin \space \xxmax\space \ymin \space y
+             \xmin \space \yymax\space m
+             \xmin \space \ymax \space \xxmin\space \ymax \space y
+           \or % 27
+             \xxmax\space \ymax \space m
+             \xmax \space \ymax \space \xmax \space \yymax\space y
+             \xxmin\space \ymin \space m
+             \xmin \space \ymin \space \xmin \space \yymin\space y
+           \or % 28
+           \fi
+           \ifnum\mode>8
+                                       S
+           \else
+             \ifnum\dostroke=\plusone  S \fi
+             \ifnum\dofill  =\plusone  f \fi
+           \fi
            Q}%
       \fi}%
    \wd\scratchbox#1\ht\scratchbox#2\dp\scratchbox#3\box\scratchbox
@@ -3102,8 +3144,8 @@
 % kan zelf ocmd bevatten
 
 \def\doPDFdefinelayer#1#2#3#4#5% tag title visible type printable
-%  {\driverreferenced \doPDFdictionaryobject class PDLN name #1 data
-  {\doPDFdictionaryobject class PDLN name #1 data
+%  {\driverreferenced \doPDFdictionaryobject{PDLN}{#1}
+  {\doPDFdictionaryobject{PDLN}{#1}
      {/Type /OCG
       \ifcase#4 \or
         /Intent /Design % disable layer hiding by user
@@ -3117,8 +3159,8 @@
    \doifelse{#3}\v!start
      {\xdef\PDFvidelayers{\PDFvidelayers\space\PDFobjectreference}}%
      {\xdef\PDFhidelayers{\PDFhidelayers\space\PDFobjectreference}}%
-  %\driverreferenced \doPDFdictionaryobject class PDLD name #1 data
-   \doPDFdictionaryobject class PDLD name #1 data
+  %\driverreferenced \doPDFdictionaryobject{PDLD}{#1}
+   \doPDFdictionaryobject{PDLD}{#1}
      {/Type /OCMD
       /OCGs [\PDFobjectreference]}%
    \doPDFgetobjectreference{PDLD}{#1}\PDFobjectreference
@@ -3126,18 +3168,18 @@
 
 \def\flushPDFtextlayers
   {\ifx\PDFtextlayers\empty \else
-     \driverreferenced \doPDFarrayobject class PDF name textlayers data {\PDFtextlayers}%
+     \driverreferenced \doPDFarrayobject{PDF}{textlayers}{\PDFtextlayers}%
      \doPDFgetobjectreference{PDF}{textlayers}\!!stringa
      \ifx\PDFvidelayers\empty
        \def\!!stringb{[null]}%
      \else
-       \driverreferenced \doPDFarrayobject class PDF name videlayers data {\PDFvidelayers}%
+       \driverreferenced \doPDFarrayobject{PDF}{videlayers}{\PDFvidelayers}%
        \doPDFgetobjectreference{PDF}{videlayers}\!!stringb
      \fi
      \ifx\PDFhidelayers\empty
        \def\!!stringc{[null]}%
      \else
-       \driverreferenced \doPDFarrayobject class PDF name hidelayers data {\PDFhidelayers}%
+       \driverreferenced \doPDFarrayobject{PDF}{hidelayers}{\PDFhidelayers}%
        \doPDFgetobjectreference{PDF}{hidelayers}\!!stringc
      \fi
      \doPDFaddtocatalog
@@ -3168,10 +3210,10 @@
 \def\domakeviewerlayerlist#1%
   {\bgroup
    \globallet\PDFlayeractionlist\empty
-   \def\docommando##1%
+   \def\docommand##1%
      {\doPDFgetobjectreference{PDLN}{##1}\PDFobjectreference
       \xdef\PDFlayeractionlist{\PDFlayeractionlist\space\PDFobjectreference}}%
-   \processcommalist[#1]\docommando
+   \processcommalist[#1]\docommand
    \egroup}
 
 %D Something rather pdf dependent:
@@ -3198,6 +3240,29 @@
 %   {\PDFdirectcode{1 w 0 Tc 0 Tr}}
   {\PDFcode{1 w 0 Tc 0 Tr}}
 
+%D Handy for the \METAPOST\ to \PDF\ converter:
+
+\newevery \everyPDFxform \relax  % we can also use this one in meta-pdf
+
+\appendtoksonce
+    \collectPDFresources
+    \global\let\currentPDFresources\collectedPDFresources
+\to \everyPDFxform
+
+\let\collectedPDFresources\empty
+
+\def\collectPDFresources
+  {\doifobjectreferencefoundelse{FDF}{docushades}
+     {\doPDFgetobjectreference{FDF}{docushades}\PDFobjectreference
+      \xdef\collectedPDFresources{\collectedPDFresources/Shading    \PDFobjectreference}}\donothing
+   \doifobjectreferencefoundelse{FDF}{docuextgstates}
+     {\doPDFgetobjectreference{FDF}{docuextgstates}\PDFobjectreference
+      \xdef\collectedPDFresources{\collectedPDFresources/ExtGState  \PDFobjectreference}}\donothing
+   \doifobjectreferencefoundelse{FDF}{colorspaces}
+     {\doPDFgetobjectreference{FDF}{colorspaces}\PDFobjectreference
+      \xdef\collectedPDFresources{\collectedPDFresources/ColorSpace \PDFobjectreference}}\donothing
+   \global\let\collectPDFresources\relax}
+
 %D And that was all.
 
 \stopspecials
@@ -3212,5 +3277,7 @@
   \let\doPDFstoptransparency\relax
 
 \fi
+
+\loadmarkfile{spec-fdf}
 
 \protect \endinput

@@ -1118,9 +1118,9 @@
 \def\showremaininglistlength
   {\bgroup
    \ifnum\listlengthcounter>\plusone
-     \scratchdimen\pagetotal
      \setbox\scratchbox\vbox
        {\@@llbefore\par\horizontalstrut\par\horizontalstrut\par\@@llafter}%
+     \scratchdimen\pagetotal
      \advance\scratchdimen \ht\scratchbox
      \advance\scratchdimen \dp\scratchbox
      \ifdim\scratchdimen>\pagegoal

@@ -90,6 +90,7 @@
 \definemessageconstant {colors}
 \definemessageconstant {columns}
 \definemessageconstant {encodings}
+\definemessageconstant {regimes}
 \definemessageconstant {figures}
 \definemessageconstant {files}
 \definemessageconstant {floatblocks}
@@ -108,38 +109,8 @@
 \definemessageconstant {verbatims}
 \definemessageconstant {versions}
 
-
-%D The word \type{height} takes 6~token memory cells. The
-%D control sequence \type{\height} on the other hand uses only
-%D one. Knowing this, we can improve the performance of \TEX,
-%D both is terms of speed and memory usage, by using control
-%D sequences instead of the words written in full.
-%D
-%D Where in the \ASCII\ file the second lines takes nine extra
-%D characters, \TEX\ saves us 13~tokens.
-%D
-%D \starttyping
-%D \hrule width 10pt height 2pt depth 1pt
-%D \hrule \!!width 10pt \!!height 2pt \!!depth 1pt
-%D \stoptyping
-%D
-%D One condition is that we have defined \type{\!!height},
-%D \type{\!!width} and \type{\!!depth} as respectively
-%D \type{height}, \type{width} and \type{depth}. Using this
-%D scheme therefore only makes sense when a token sequence is
-%D used more than once. Savings like this should of course be
-%D implemented in english, just because \TEX\ is english.
-
-\def\!!width  {width}
-\def\!!height {height}
-\def\!!depth  {depth}
-\def\!!plus   {plus}
-\def\!!minus  {minus}
-\def\!!fill   {fill}
-\def\!!to     {to}
-
-%D The same goes for some \CONTEXT\ constants, used in the
-%D definition of private commands:
+%D Net come some \CONTEXT\ constants, used in the definition
+%D of private commands:
 
 \definesystemconstant  {next}
 \definesystemconstant  {pickup}
@@ -351,7 +322,6 @@
 \def\!!twelvepoint       {12pt}
 \def\!!fourteenpointfour {14.4pt}
 
-\newdimen \zeropoint      \zeropoint    = 0pt
 \newdimen \onepoint       \onepoint     = 1pt
 \newdimen \onebasepoint   \onebasepoint = 1bp
 \chardef  \scaledpoint                  = 1
@@ -451,6 +421,7 @@
 \definesystemvariable {fi}   % FIle
 \definesystemvariable {fl}   % Floats
 \definesystemvariable {fm}   % ForMules
+\definesystemvariable {fn}   % subformulas
 \definesystemvariable {fp}   % FilegroeP
 \definesystemvariable {fr}   % ForM
 \definesystemvariable {fs}   % FileSynonym
@@ -584,6 +555,7 @@
 \definesystemvariable {uc}   % Unicode
 \definesystemvariable {ui}   % UItvoer
 \definesystemvariable {ur}   % URl
+\definesystemvariable {up}   % Utility Program
 \definesystemvariable {ve}   % VErsie
 \definesystemvariable {vn}   % VoetNoten
 \definesystemvariable {vt}   % VerTical
@@ -643,6 +615,10 @@
 \defineinterfacevariable {b} {b}
 \defineinterfacevariable {c} {c}
 \defineinterfacevariable {d} {d}
+
+%D Special purpose variables:
+
+\def\v!oddeven#1{\ifodd#1\v!odd\else\v!even\fi}
 
 %D The names of files and their extensions are fixed.
 %D \CONTEXT\ uses as less files as possible. Utility files can

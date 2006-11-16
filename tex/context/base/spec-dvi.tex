@@ -101,22 +101,9 @@
 
 \let\flushDVIpositionpapersize\relax
 
-% \definespecial\dosetpositionpapersize#1#2%
-%   {\xdef\flushDVIpositionpapersize%
-%      {\special{pos:papersize #1 #2}%
-%       \global\noexpand\let\noexpand\flushDVIpositionpapersize\relax}}
-%
-% \appendtoksonce
-%   \ifspecialbasedsettings
-%     \ifpositioning\installprogram{dvipos -o \jobname.tuo \jobname.dvi}\fi
-%   \fi
-% \to \everystoptext
-%
-% less tokens:
-
 \definespecial\dosetpositionpapersize#1#2%
   {\xdef\flushDVIpositionpapersize%
-     {\special{pos:papersize #1 #2}%
+     {\special{pos:papersize \number#1 \number#2}%
       \noexpand\installprogram{dvipos -o \jobname.tuo \jobname.dvi }%
       \global\noexpand\let\noexpand\flushDVIpositionpapersize\relax}}
 

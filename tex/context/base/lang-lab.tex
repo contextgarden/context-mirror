@@ -48,16 +48,16 @@
 \def\setuplabeltext{\dosetupsometextprefix[\c!label]}
 
 \def\dosetupsometextprefix
-  {\let\dodocommando\xdosetupsometextprefix
+  {\let\dodocommand\xdosetupsometextprefix
    \dotripleempty\dodosetupsometextprefix}
 
 \def\dodosetupsometextprefix[#1][#2][#3]%
   {\ifthirdargument
-     \def\docommando##1{\dodocommando[#1#2][##1]}%
-     \processcommalist[#3]\docommando
+     \def\docommand##1{\dodocommand[#1#2][##1]}%
+     \processcommalist[#3]\docommand
    \else
-     \def\docommando##1{\dodocommando[#1\currentmainlanguage][##1]}%
-     \processcommalist[#2]\docommando
+     \def\docommand##1{\dodocommand[#1\currentmainlanguage][##1]}%
+     \processcommalist[#2]\docommand
    \fi}
 
 \def\doassignsometextprefix[#1][#2,#3,#4]%
@@ -98,6 +98,8 @@
 
 \def\labellanguage{\defaultlanguage\currentmainlanguage}
 \def\headlanguage {\defaultlanguage\currentmainlanguage}
+
+\appendtoks \let\labellanguage\currentlanguage \to \everycurrentdate
 
 \unexpanded\def\headtext
   {\let\handletextprefix\firstoftwoarguments
@@ -216,7 +218,7 @@
   {\ifundefined{#1#2}\doassignsometextprefix[#1#2][#3,,]\fi}
 
 \def\dopresetsometextprefix
-  {\let\dodocommando\xdopresetsometextprefix
+  {\let\dodocommand\xdopresetsometextprefix
    \dotripleempty\dodosetupsometextprefix}
 
 \def\presetheadtext {\dopresetsometextprefix[\c!title]}

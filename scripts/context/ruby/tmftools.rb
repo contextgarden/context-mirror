@@ -27,10 +27,7 @@
 
 banner = ['TMFTools', 'version 1.1.0 (experimental, no help yet)', '2005/2006', 'PRAGMA ADE/POD']
 
-unless defined? ownpath
-    ownpath = $0.sub(/[\\\/][a-z0-9\-]*?\.rb/i,'')
-    $: << ownpath
-end
+$: << File.expand_path(File.dirname($0)) ; $: << File.join($:.last,'lib') ; $:.uniq!
 
 require 'base/switch'
 require 'base/logger'

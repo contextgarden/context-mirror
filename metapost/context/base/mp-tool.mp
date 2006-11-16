@@ -58,8 +58,9 @@ vardef mpversiongt (expr s) = mpversioncmp(s, ">") enddef ;
 
 %D We always want \EPS\ conforming output, so we say:
 
-prologues    := 2 ; % 1 = troff, 2 = tex
+prologues    := 1 ;
 warningcheck := 0 ;
+mpprocset    := 1 ;
 
 %D Namespace handling:
 

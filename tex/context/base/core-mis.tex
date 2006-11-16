@@ -84,6 +84,7 @@
 
 \appendtoks                                \def\ { }\to\simplifiedcommands
 \appendtoks  \def\type#1{\string\\\strippedcsname#1}\to\simplifiedcommands
+\appendtoks                  \def\tex#1{\string\\#1}\to\simplifiedcommands
 \appendtoks                            \def\TeX{TeX}\to\simplifiedcommands
 \appendtoks                    \def\ConTeXt{ConTeXt}\to\simplifiedcommands
 \appendtoks                  \def\MetaPost{MetaPost}\to\simplifiedcommands
@@ -109,7 +110,7 @@
   {\scratchdimen#1%
    \divide\scratchdimen \nofitems
    \!!counta\zerocount
-   \def\docommando##1%
+   \def\docommand##1%
      {\advance\!!counta \plusone
       \processaction
         [\@@isalign]
@@ -125,7 +126,7 @@
 
 \def\veritems#1#2% #1=breedte #2=commandos
   {\scratchdimen#1%
-   \def\docommando##1%
+   \def\docommand##1%
      {\ifdim\scratchdimen<\zeropoint % the - was a signal
         \hbox to -\scratchdimen{\hss\strut##1}%
       \else\ifdim\scratchdimen>\zeropoint
@@ -151,11 +152,11 @@
      {\edef\nofitems{\@@isn}}%
    \setbox0\hbox
      {\doitems \@@iswidth
-        {\processcommalist[#1]\docommando}}%
+        {\processcommalist[#1]\docommand}}%
    \setbox2\hbox
      {\doitems \@@isbulletbreedte
         {\dorecurse\nofitems
-           {\docommando{\strut\doitembullet\recurselevel}}}}}
+           {\docommand{\strut\doitembullet\recurselevel}}}}}
 
 \def\dostartitems#1#2#3%
   {\let\doitems#2%
@@ -298,9 +299,9 @@
 %         {\getparameters[\??al#1\recurselevel][#3]}}
 %      {\ConvertToConstant\doifelse{#3}{}
 %         {\getparameters[\??al#1][#2]}
-%         {\def\docommando##1%
+%         {\def\docommand##1%
 %            {\getparameters[\??al#1##1][#3]}%
-%          \processcommalist[#2]\docommando}}}
+%          \processcommalist[#2]\docommand}}}
 %
 % \def\setupparagraphs
 %   {\dotripleempty\dosetupparagraphs}
@@ -689,16 +690,16 @@
 \def\setsubscripts
   {\beginlatexmathmodehack
    \def\dosetsubscript##1##2##3%
-     {\dimen0=##3\fontdimen5##2%
+     {\dimen0=##3\fontexheight##2%
       \setxvalue{@@\string##1\string##2}{\the##1##2\relax}%
       ##1##2=\dimen0\relax}%
    \def\dodosetsubscript##1##2%
      {\dosetsubscript{##1}{\textfont2}{##2}%
       \dosetsubscript{##1}{\scriptfont2}{##2}%
       \dosetsubscript{##1}{\scriptscriptfont2}{##2}}%
-  %\dodosetsubscript{\fontdimen14}{?}%
-   \dodosetsubscript{\fontdimen16}{.7}%
-   \dodosetsubscript{\fontdimen17}{.7}%
+   %dodosetsubscript\mathsupnormal  {?}%
+   \dodosetsubscript\mathsubnormal  {.7}%
+   \dodosetsubscript\mathsubcombined{.7}%
    \global\loweredsubscriptstrue
    \endlatexmathmodehack}
 
@@ -712,9 +713,9 @@
        {\doresetsubscript{##1}{\textfont2}%
         \doresetsubscript{##1}{\scriptfont2}%
         \doresetsubscript{##1}{\scriptscriptfont2}}%
-    %\dodoresetsubscript{\fontdimen14}%
-     \dodoresetsubscript{\fontdimen16}%
-     \dodoresetsubscript{\fontdimen17}%
+     %dodoresetsubscript\mathsupnormal
+     \dodoresetsubscript\mathsubnormal
+     \dodoresetsubscript\mathsubcombined
      \global\loweredsubscriptsfalse
      \endlatexmathmodehack
    \fi}
@@ -743,7 +744,7 @@
 
 \unexpanded\def\bedrag#1%
   {\strut\hbox\bgroup
-   \let\normalfixedspace~%
+   \let\normalfixedspace\nonbreakablespace
    \doifelsenothing{#1}
      {\bedragempty}
      {\bedragprefix\digits{#1}\bedragsuffix}%
@@ -839,11 +840,7 @@
 \setuphyphenmark
   [\c!sign=\composedhyphen]
 
-\installdiscretionaries || \@@kpsign
-
-% will become:
-%
-% \installdiscretionaries || \composedhyphen
+\def\defaultdiscretionaryhyphen{\@@kpsign}
 
 \def\composedhyphen
   {\discretionary
@@ -994,100 +991,6 @@
   [\c!middlespeech]
   [\leftboundarycharacter\c!middlespeech{speech}]
 
-% has been replaced by delimitedtext
-%
-% \def\leftquotationmark
-%   {\setbox\scratchbox\hbox{\symbol[\c!leftquotation]}%
-%    \doif\@@cilocation\v!margin{\hskip-\wd\scratchbox}%
-%    \box\scratchbox}
-%
-% \def\rightquotationmark
-%   {\hsmash{\symbol[\c!rightquotation]}}
-%
-% \newsignal\quotationsignal
-%
-% \def\setupquote
-%   {\dodoubleargument\getparameters[\??ci]}
-%
-% \def\startquotation
-%   {\bgroup\dosingleempty\dostartquotation}
-%
-% \def\dostartquotation[#1]%
-%   {\@@cibefore
-%    \doifelsenothing{#1}
-%      {\let\dostopquotation\relax}
-%      {\startnarrower[#1]%
-%       \let\dostopquotation\stopnarrower}%
-%    \dostartattributes\??ci\c!style\c!color\empty
-%    \leftquotationmark
-%    \ignorespaces}
-%
-% \def\stopquotation
-%   {\removeunwantedspaces
-%    \removelastskip
-%    \rightquotationmark
-%    \dostopattributes
-%    \dostopquotation
-%    \@@ciafter
-%    \egroup}
-%
-% \def\dohandlequotation#1#2%
-%   {\ifdim\lastskip=\quotationsignal
-%      \unskip\hskip\hspaceamount\currentlanguage{interquotation}% hardcoded
-%    \else
-%      #2%
-%    \fi
-%    \ifhmode % else funny pagebeaks
-%      \penalty\!!tenthousand\hskip\zeropoint      % == \prewordbreak
-%    \fi
-%    \strut % new, needed below
-%    \symbol[#1]%
-%    \penalty\!!tenthousand\hskip\quotationsignal} % +- \prewordbreak
-%
-% \def\handlequotation#1%
-%   {\dohandlequotation{#1}\relax}
-%
-% \unexpanded\def\quotation
-%   {\groupedcommand
-%      {\dohandlequotation\c!leftquotation \relax}
-%      {\dohandlequotation\c!rightquotation\removelastskip}}
-%
-% \unexpanded\def\quote
-%   {\doifelse\@@cistyle\v!normal\doquotedcite\doattributedcite}
-%
-% \def\doquotedcite
-%   {\groupedcommand
-%      {\dohandlequotation\c!leftquote \relax}
-%      {\dohandlequotation\c!rightquote\removelastskip}}
-%
-% \def\doattributedcite
-%   {\groupedcommand
-%      {\dostartattributes\??ci\c!style\c!color}
-%      {\dostopattributes}}
-
-%D The previous one fails in \placefloat[left]{}{}, so instead
-%D we use the next alternative, where the first one is handled
-%D outside group. Watch the strut.
-
-% has been replaced by delimitedtext
-%
-% \unexpanded\def\quotation
-%   {\dohandlequotation\c!leftquotation\relax
-%    \groupedcommand \donothing
-%      {\dohandlequotation\c!rightquotation\removelastskip}}
-%
-% \def\doquotedcite
-%   {\dohandlequotation\c!leftquote\relax
-%    \groupedcommand \donothing
-%      {\dohandlequotation\c!rightquote\removelastskip}}
-%
-% \setupquote
-%   [\c!location=\v!margin,
-%    \c!style=\v!normal,
-%    \c!color=,
-%    \c!before=\startnarrower,
-%    \c!after=\stopnarrower]
-
 \appendtoks\def\quotation#1{"#1"}\to\simplifiedcommands
 \appendtoks\def\quote    #1{'#1'}\to\simplifiedcommands
 
@@ -1098,50 +1001,17 @@
 %D feature could be build on top of it. The speech opening and
 %D closing symbols are defined per language. Italian is an
 %D example of a language that has them set.
-
-% has been be replaced by delimitedtext
-%
-% \newcounter\speechlevel \newconditional\insidespeech
-%
-% \def\startspeech
-%   {\doglobal\increment\speechlevel\relax
-%    \dohandlequotation\c!leftspeech\relax
-%    \global\settrue\insidespeech
-%    \ignorespaces}
-%
-% \def\stopspeech
-%   {\dohandlequotation\c!rightspeech\removelastskip
-%    \doglobal\decrement\speechlevel\relax
-%    \ifcase\speechlevel\relax \global\setfalse\insidespeech \fi}
-%
-% \def\dohandlespeech % indirect since called in everypar
-%   {\relax % still needed?
-%    \ifcase\speechlevel\or\dodohandlespeech\fi}
-%
-% \def\dodohandlespeech
-%   {\ifconditional\insidespeech
-%      \dohandlequotation\c!middlespeech\relax
-%    \else
-%      \global\settrue\insidespeech
-%    \fi}
-%
-% \unexpanded\def\speech
-%   {\doglobal\increment\speechlevel\relax
-%    \dohandlequotation\c!leftspeech\relax
-%    \groupedcommand \ignorespaces
-%      {\dohandlequotation\c!rightspeech\removelastskip
-%       \doglobal\decrement\speechlevel\relax}}
-
-% \appendtoks \dohandlespeech \to \everypar
 
 % this will replace the quotation and speed definitions
 
 \newsignal\delimitedtextsignal
 
-\def\delimitedtextparameter#1%
-  {\csname\??ci
-     \ifundefined{\??ci\currentdelimitedtext#1}\else\currentdelimitedtext\fi
-   #1\endcsname}
+\let\currentdelimitedtext\s!unknown
+
+\def\delimitedtextparameter#1% will be sped up
+  {\executeifdefined{\??ci\currentdelimitedtext:\csname\??ci\currentdelimitedtext\c!level\endcsname#1}%
+  {\executeifdefined{\??ci\currentdelimitedtext#1}%
+  {\executeifdefined{\??ci#1}\empty}}}
 
 \def\definedelimitedtext
   {\dodoubleempty\dodefinedelimitedtext}
@@ -1174,17 +1044,19 @@
    \doifsomething{#1}
      {\unexpanded\setvalue{#1}{\delimitedtext[#1]}%
       \setvalue{\e!start#1}{\startdelimitedtext[#1]}%
-      \setvalue{\e!stop#1}{\stopdelimitedtext}}}
+      \setvalue{\e!stop #1}{\stopdelimitedtext}}}
 
 \def\setupdelimitedtext
-  {\dodoubleargument\dosetupdelimitedtext}
+  {\dotripleargument\dosetupdelimitedtext}
 
-\def\dosetupdelimitedtext[#1][#2]%
-  {\ifsecondargument
+\def\dosetupdelimitedtext[#1][#2][#3]% #2 = optional level
+  {\ifthirdargument
+     \getparameters[\??ci#1:#2][#3]%
+   \else\ifsecondargument
      \getparameters[\??ci#1][#2]%
    \else
      \getparameters[\??ci][#1]%
-   \fi}
+   \fi\fi}
 
 \def\dorepeatdelimitedtext
   {\relax\ifcase\delimitedtextparameter\c!level\else
@@ -1195,10 +1067,10 @@
 
 \def\startdelimitedtext[#1]%
   {\bgroup
-   \def\currentdelimitedtext{#1}%
+   \pushdelimitedtext{#1}%
    \doifelse{\delimitedtextparameter\c!method}\s!font
-     {\doglobal\decrementvalue{\??ci\currentdelimitedtext\c!level}%
-      \def\dostopdelimitedtext{\removeunwantedspaces\ignoredelimitedtext\c!right}%
+     {\def\dostopdelimitedtext
+        {\removeunwantedspaces\ignoredelimitedtext\c!right}%
       \ignoredelimitedtext\c!left\ignorespaces}
      {\doifelse{\delimitedtextparameter\c!repeat}\v!yes
         {\let\dohandlerepeatdelimitedtext\dorepeatdelimitedtext}%
@@ -1225,7 +1097,6 @@
    \dochecknextindentation{\??ci\currentdelimitedtext}%
    \dostartattributes{\??ci\currentdelimitedtext}\c!style\c!color\empty
    \leftdelimitedtextmark
-   \doglobal\incrementvalue{\??ci\currentdelimitedtext\c!level}%
    \ignorespaces}
 
 \def\dostopdelimitedtextpar
@@ -1251,12 +1122,20 @@
 
 \def\stopdelimitedtext
   {\dostopdelimitedtext
-   \doglobal\decrementvalue{\??ci\currentdelimitedtext\c!level}%
+   \popdelimitedtext
    \egroup}
 
-\def\delimitedtext[#1]%
+\def\pushdelimitedtext#1%
   {\pushmacro\currentdelimitedtext
    \def\currentdelimitedtext{#1}%
+   \doglobal\incrementvalue{\??ci\currentdelimitedtext\c!level}}
+
+\def\popdelimitedtext
+  {\doglobal\decrementvalue{\??ci\currentdelimitedtext\c!level}%
+   \popmacro\currentdelimitedtext}
+
+\def\delimitedtext[#1]%
+  {\pushdelimitedtext{#1}%
    \doifelse{\delimitedtextparameter\c!method}\s!font
      {\dofontdrivendelimited}
      {\doifinsetelse{\delimitedtextparameter\c!location}{\v!paragraph,\v!margin}%
@@ -1305,7 +1184,8 @@
   {\dohandledelimitedtext\c!left\relax
    \groupedcommand
      \donothing
-     {\dohandledelimitedtext\c!right\removelastskip}}
+     {\dohandledelimitedtext\c!right\removelastskip
+      \popdelimitedtext}}
 
 \unexpanded\def\dodelimitedtexttxt
   {\doifelse{\delimitedtextparameter\c!style}\v!normal
@@ -1317,25 +1197,29 @@
      \donothing
      {\dohandledelimitedtext\c!right
       \removelastskip
-      \popmacro\currentdelimitedtext}}
+      \popdelimitedtext}}
 
 \def\doattributeddelimited
   {\groupedcommand
      {\dostartattributes{\??ci\currentdelimitedtext}\c!style\c!color}
      {\dostopattributes
-      \popmacro\currentdelimitedtext}}
-
-% \def\dofontdrivendelimited#1% thanks to Taco for sorting out the kerning interference
-%   {\languageparameter{\c!left\currentdelimitedtext}%
-%    #1% sorry, no verbatim support
-%    \languageparameter{\c!right\currentdelimitedtext}%
-%    \popmacro\currentdelimitedtext}
+      \popdelimitedtext}}
 
 \def\dofontdrivendelimited
   {\simplegroupedcommand
      {\languageparameter{\c!left\currentdelimitedtext}}
      {\languageparameter{\c!right\currentdelimitedtext}%
-      \popmacro\currentdelimitedtext}}
+      \popdelimitedtext}}
+
+% testcase for nesting:
+%
+% \quotation{... \quotation{...} ...}
+% \startquotation ... \startquotation... \quotation{...} \stopquotation\space ...\stopquotation
+% \setupdelimitedtext[quotation][1][left=(,right=)]
+% \setupdelimitedtext[quotation][2][left={[},right={]}]
+% \setupdelimitedtext[quotation][3][left=\{,right=\}]
+% \quotation{... \quotation{...} ...}
+% \startquotation ... \startquotation... \quotation{...} \stopquotation\space ...\stopquotation
 
 \definedelimitedtext
   [\v!quotation]
@@ -1376,6 +1260,8 @@
 \def\setupquote    {\setupdelimitedtext[\v!quote]}
 
 % seldom used, move from kernel to run time module
+
+\ifx\tfx\undefined \let\tfx\relax \fi
 
 \def\basegrid
   {\dosingleempty\dobasegrid}
@@ -2053,6 +1939,8 @@
   \global\resetsystemmode{pairedbox}%
 \to \everyinsidefloat
 
+% todo: \startcombination \startcomb \stopcomb ...
+
 \newcount\horcombination  % counter
 \newcount\totcombination
 
@@ -2085,6 +1973,11 @@
   {\bgroup % so we can grab a group
    \dodoubleempty\dostartcombination}
 
+% \startcombination      {alpha} {a} {beta} {b} \stopcombination
+% \startcombination[2*1] {alpha} {a} {beta} {b} \stopcombination
+% \startcombination[1*2] {alpha} {a} {beta} {b} \stopcombination
+% \startcombination[2]   {alpha} {a} {beta} {b} \stopcombination
+
 \def\dostartcombination[#1][#2]%
   {\global\setsystemmode{combination}%
    \doifnothing{#1}\firstargumentfalse      % to be sure (when called in macros)
@@ -2092,12 +1985,15 @@
    \ifsecondargument
      \def\currentcombination{#1}%
      \edef\currentcombinationspec{#2*1*}%
-   \else
-     \doifinstringelse{*}{#1}
+   \else % better : \doifcombinationelse ... \??co#1\c!location
+      \doifinstringelse{*}{#1}
        {\let\currentcombination\empty
         \edef\currentcombinationspec{#1*1*}}
-       {\def\currentcombination{#1}%
-        \edef\currentcombinationspec{2*1*}}%
+       {\doifnumberelse{#1}
+          {\let\currentcombination\empty
+           \edef\currentcombinationspec{#1*1*}}
+          {\def\currentcombination{#1}%
+           \edef\currentcombinationspec{2*1*}}}%
    \fi
    \forgetall
    \doifelse{\combinationparameter\c!height}\v!fit
@@ -2118,9 +2014,9 @@
      {\halign}{\halign to \combinationparameter\c!width}%
    \bgroup&%
    %\hfil##\hfil% now : location={left,top}
-   \ExpandBothAfter\doifnotinset\v!left{\combinationparameter\c!location}\hfil
+   \expanded{\doifnotinset{\v!left}{\combinationparameter\c!location}}\hfil
    ##%
-   \ExpandBothAfter\doifnotinset\v!right{\combinationparameter\c!location}\hfil
+   \expanded{\doifnotinset{\v!right}{\combinationparameter\c!location}}\hfil
    &\tabskip\zeropoint \!!plus 1fill##\cr
    \docombination}
 
@@ -2246,8 +2142,7 @@
   {\vbox
      {\forgetall % \setupwhitespace[\v!none]%
       \let\next\vbox
-      \ExpandFirstAfter\processallactionsinset
-        [\combinationparameter\c!location]
+      \expanded{\processallactionsinset[\combinationparameter\c!location]}
         [    \v!top=>\let\next\depthonlybox, % \tbox,
           \v!middle=>\let\next\halfwaybox]%
       \next{\copy0}%
@@ -2383,23 +2278,7 @@
       \resetlocalfloats
      \egroup}}
 
-% does not work
-%
-% \def\plaatsondernaastelkaar#1#2%
-%   {\bgroup
-%    \def\doplaatsondernaastelkaar%
-%      {#2\cr\omit\bgroup#2%
-%       \aftergroup#2%
-%       \aftergroup\cr
-%       \aftergroup\egroup
-%       \aftergroup\egroup
-%       \let\next=}%
-%    #1\bgroup##\cr
-%    \omit\bgroup#2%
-%    \aftergroup\doplaatsondernaastelkaar
-%    \let\next=}
-
-\def\plaatsondernaastelkaar#1#2%
+\def\placerelativetoeachother#1#2%
   {\bgroup
    \dowithnextbox
      {\bgroup
@@ -2412,12 +2291,11 @@
         \hbox}
      \hbox}
 
-\def\placeontopofeachother
-  {\plaatsondernaastelkaar\halign\hss}
-
-\def\placesidebyside
-  {\plaatsondernaastelkaar\valign\vss}
+\def\placeontopofeachother{\placerelativetoeachother\halign\hss}
+\def\placesidebyside      {\placerelativetoeachother\valign\vss}
 
+% this will be replaced or go away, never used
+
 \def\douseexternalfiles[#1][#2]%
   {\getparameters
      [\??fi#1]
@@ -2479,83 +2357,6 @@
 %D
 %D \typebuffer \getbuffer
 
-% \presetlocalframed[\??ro]
-%
-% \def\setuprotate
-%   {\dodoubleargument\getparameters[\??ro]}
-%
-% \def\dorotatebox#1% {angle} \hbox/\vbox/\vtop
-%   {\bgroup
-%    \hbox\bgroup % compatibility hack
-%    \dowithnextbox
-%      {\edef\@@rorotation{#1}%
-%       \setbox\nextbox\vbox{\flushnextbox}%
-%       \dostoprotate
-%       \egroup}}
-%
-% \def\dodostoprotate#1#2#3#4#5#6%
-%   {\dontshowcomposition
-%    \scratchdimen\nextboxht\advance\scratchdimen\nextboxdp
-%    \doif\@@rolocation\v!high
-%      {\setbox\nextbox\vbox{\hbox{\raise\nextboxdp\flushnextbox}}}%
-%    \setbox\nextbox\vbox to #1
-%      {#2\relax
-%       \hbox to #4
-%         {#5\relax % \number removes leading spaces too
-%          \edef\@@rorotation{\number\@@rorotation}%
-%          \doifelsenothing\@@rorotation
-%            {\dostartrotation{90}}
-%            {\dostartrotation{\@@rorotation}}%
-%          \nextboxwd\zeropoint
-%          \nextboxht\zeropoint
-%         %\nextboxdp\zeropoint
-%          \flushnextbox
-%          \dostoprotation
-%          #6}
-%       #3}%
-%    \nextboxdp\zeropoint
-%    \flushnextbox
-%    \egroup}
-%
-% \def\dostoprotate
-%   {\!!counta\@@rorotation
-%    \divide\!!counta 90
-%    \ifcase\!!counta
-%      \dodostoprotate\nextboxht\relax\vfill\nextboxwd\relax\hfill
-%    \or
-%     %\dodostoprotate\nextboxwd\vfill\relax\nextboxht\relax\hfill
-%      \dodostoprotate\nextboxwd\vfill\relax\scratchdimen\relax\hfill
-%    \or
-%      \dodostoprotate\nextboxht\vfill\relax\nextboxwd\hfill\relax
-%    \or
-%     %\dodostoprotate\nextboxwd\relax\vfill\nextboxht\hfill\relax
-%      \dodostoprotate\nextboxwd\relax\vfill\scratchdimen\hfill\relax
-%    \or
-%      \dodostoprotate\nextboxht\relax\vfill\nextboxwd\relax\hfill
-%    \else
-%      \def\@@rotation{90}%
-%      \dodostoprotate\nextboxht\relax\vfill\nextboxwd\relax\hfill
-%    \fi}
-%
-% \def\complexrotate[#1]%
-%   {\dowithnextbox
-%      {\getparameters[\??ro][#1]%
-%       \dostoprotate}%
-%    \vbox\localframed[\??ro][#1]}
-%
-% \unexpanded\def\rotate % \bgroup: \rotate kan argument zijn
-%   {\bgroup\complexorsimpleempty\rotate}
-%
-% \setuprotate
-%   [\c!rotation=90,
-%    \c!width=\v!fit,
-%    \c!height=\v!fit,
-%    \c!offset=\v!overlay,
-%    \c!frame=\v!off]
-
-% The previous implementation is replaced by one that supports
-% rotation over arbitrary angles.
-%
 % When we rotate over arbitrary angles, we need to relocate the
 % resulting box because rotation brings that box onto the negative
 % axis. The calculations (mostly sin and cosine) need to be tuned for
@@ -2768,97 +2569,6 @@
 %       \hbox to .2\hsize{\hss\ruledhbox{\rotate[location=high]  {\ruledhbox{\bfb   (high)}}}}}
 %    \stoplinecorrection}
 
-% scale
-
-\def\doscalelikeafigure % quite dirty and potential interference possible
-  {\doifsomething{\@@xyscale\@@xyxscale\@@xyyscale
-                  \@@xyfactor\@@xyhfactor\@@xywfactor
-                  \@@xywidth\@@xyheight\@@xylines}
-     {\let \@@efscale  \@@xyscale
-      \let \@@efxscale \@@xyxscale
-      \let \@@efyscale \@@xyyscale
-      \let \@@effactor \@@xyfactor
-      \let \@@efwfactor\@@xywfactor
-      \let \@@efhfactor\@@xyhfactor
-      \let \@@efwidth  \@@xywidth
-      \let \@@efheight \@@xyheight
-      \let \@@eflines  \@@xylines
-      \let \@@efgrid   \@@xygrid
-      \let \@@epx      \!!zeropoint
-      \let \@@epy      \!!zeropoint
-      \edef\@@epw     {\the\nextboxwd}%
-      \edef\@@eph     {\the\nextboxht}%
-      \figwid\zeropoint \figxsca\plusone % see note * (core-fig)
-      \fighei\zeropoint \figysca\plusone % see note * (core-fig)
-      \checkfiguresettings
-      \setfactorfiguresize
-      \setscalefiguresize
-      \setdimensionfiguresize
-      \convertfigureinsertscale\@@epx\figx\figxsca\scax
-      \convertfigureinsertscale\@@epy\figy\figysca\scay
-      \scratchdimen\scax\points \divide\scratchdimen \plushundred
-      \edef\@@xysx{\withoutpt\the\scratchdimen}%
-      \scratchdimen\scay\points \divide\scratchdimen \plushundred
-      \edef\@@xysy{\withoutpt\the\scratchdimen}}}
-
-\def\doscale[#1]% todo: xscale/yscale
-  {\bgroup
-   \forgetall
-   \getparameters
-     [\??xy]
-     [\c!scale=,\c!xscale=,\c!yscale=,\c!width=,\c!height=,\c!lines=,
-      \c!factor=,\c!hfactor=,\c!wfactor=,\c!grid=,
-      \c!sx=1,\c!sy=1,#1]%
-   \dowithnextbox
-     {\dontshowcomposition
-      \ifdim\nextboxht>\zeropoint \ifdim\nextboxwd>\zeropoint
-        \doscalelikeafigure
-        \dimen0=\@@xysy\nextboxht
-        \dimen2=\@@xysy\nextboxdp
-        \dimen4=\@@xysx\nextboxwd
-        \dimen6=\dimen0\advance\dimen6 \dimen2
-%        \setbox\nextbox\vbox to \dimen6
-%          {\nextboxht\zeropoint
-%           \nextboxdp\zeropoint
-%           \vfill % erbij
-%           \dostartscaling\@@xysx\@@xysy\flushnextbox\dostopscaling}%
-        \setbox\nextbox\hbox
-          {\smashbox\nextbox
-           \dostartscaling\@@xysx\@@xysy\flushnextbox\dostopscaling}%
-        \nextboxht\dimen0
-        \nextboxdp\dimen2
-        \nextboxwd\dimen4
-      \fi \fi
-      \flushnextbox
-      \egroup}
-   \hbox}
-
-\def\scale
-  {\dosingleempty\doscale}
-
-% mirror
-
-\def\domirrorbox % \hbox/\vbox/\vtop
-  {\bgroup
-   \dowithnextbox
-     {\dontshowcomposition
-      \scratchdimen\nextboxwd
-      % better use an hbox (if no \forgetall, leftskip etc may creep in)
-     %\setbox\nextbox\vbox{\forgetall\dostartmirroring\hskip-\nextboxwd\flushnextbox\dostopmirroring}%
-      \setbox\nextbox\hbox{\dostartmirroring\hskip-\nextboxwd\flushnextbox\dostopmirroring}%
-      \nextboxwd\scratchdimen
-      \flushnextbox
-      \egroup}}
-
-\def\mirror
-  {\domirrorbox\hbox}
-
-%\setbox0=\hbox{gans}
-%
-%\ruledhbox{\copy0 \schaal[sx=2,sy=2]{\copy0}}
-%
-%\spiegel{\ruledhbox{\copy0 \schaal{\box0}}}
-
 % to be used in some other places! todo!
 %
 % divides \hsize in fractions, will be made a bit more
@@ -2995,7 +2705,7 @@
    \else
      \let\serializedcommalist\empty
      \scratchcounter\zerocount
-     \def\docommando##1%
+     \def\docommand##1%
        {\advance\scratchcounter \plusone
         \ifnum\scratchcounter=\plusone
           \scratchtoks{\handlecommalistsentence{##1}}%
@@ -3006,7 +2716,7 @@
             \appendtoks\labeltext{and-1}\handlecommalistsentence{##1}\to\scratchtoks
           \fi
         \fi}%
-     \processcommacommand[#1]\docommando
+     \processcommacommand[#1]\docommand
      \edef\serializedcommalist{\the\scratchtoks}%
    \fi
    \serializedcommalist
@@ -3017,5 +2727,46 @@
 \setuplabeltext [\s!nl] [and-1=\textcomma\ , and-2= en ]
 \setuplabeltext [\s!en] [and-1=\textcomma\ , and-2=\textcomma\ and ]
 \setuplabeltext [\s!de] [and-1=\textcomma\ , and-2= und ]
+
+%D \macros
+%D   {\somekindoftab}
+%D
+%D This macro can be used to create tabs:
+%D
+%D \starttyping
+%D \setupheadertexts[{\somekindoftab[alternative=horizontal]{\framed{\realfolio}}}]
+%D \setuptexttexts  [{\somekindoftab[alternative=vertical]  {\framed{\realfolio}}}]
+%D
+%D \starttext
+%D     \showframe \dorecurse{10}{test\page}
+%D \stoptext
+%D \stoptyping
+
+\def\somekindoftab
+  {\dosingleempty\dosomekindoftab}
+
+\def\dosomekindoftab[#1]%
+  {\bgroup
+   \getparameters[xx]
+     [\c!alternative=\v!vertical,
+      \c!width=\textwidth,\c!height=\textheight,
+      \c!n=\lastpage,\c!m=\realpageno,
+      #1]%
+   \doifelse\xxalternative\v!vertical
+     {\dodosomekindoftab\vbox\vskip\xxheight}
+     {\dodosomekindoftab\hbox\hskip\xxwidth }}
+
+\def\dodosomekindoftab#1#2#3#4%
+  {#1 to #3 \bgroup
+     \forgetall
+     \ifnum\xxm>\plusone
+       #2\zeropoint \!!plus \the\numexpr\xxm   -1\relax fill\relax
+     \fi
+     #4%
+     \ifnum\xxm<\xxn\relax
+       #2\zeropoint \!!plus \the\numexpr\xxn-\xxm\relax fill\relax
+     \fi
+   \egroup
+   \egroup}
 
 \protect \endinput

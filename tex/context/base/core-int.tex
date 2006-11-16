@@ -202,13 +202,7 @@
    \else
      \edef\nextlink  {0\getvalue{\s!link:#1:l}}%
    \fi
-   \edef\writelink
-     {\writeutilitycommand
-        {\twopassentry
-           {\s!link:#1}%
-           {\numberoflinks}%
-           {\noexpand\realfolio}}}%
-   \writelink
+   \lazysavetwopassdata{\s!link:#1}{\numberoflinks}{\noexpand\realfolio}%
    \ifnum\noflinks<2
      \locationfalse
    \fi
@@ -264,13 +258,7 @@
      {0\iftwopassdatafound\twopassdata\else\lastlink\fi}%
    \setxvalue{\s!link:#1:}%
      {\firstlink:\lastlink:\noflinks:\currentlink:\nextlink}%
-   \edef\writelink
-     {\writeutilitycommand
-        {\twopassentry
-           {\s!link:#1}%
-           {\numberoflinks}%
-           {\noexpand\realfolio}}}%
-   \writelink
+   \lazysavetwopassdata{\s!link:#1}{\numberoflinks}{\noexpand\realfolio}%
    \ifnum\noflinks<2
      \locationfalse
    \fi
@@ -421,8 +409,8 @@
       \showmessage\m!interactions1{\withoutpt\the\!!widtha,\withoutpt\the\!!heighta}}%
    % needs to be split: dimensions for each page
    % and mode per document and only once !
-   \dosetupscreen \rugoffset\kopoffset\!!widtha\!!heighta{\the\!!counte}%
-   \dosetupcropbox\rugoffset\kopoffset\!!widtha\!!heighta
+   \dosetupscreen \backoffset\topoffset\!!widtha\!!heighta{\the\!!counte}%
+   \dosetupcropbox\backoffset\topoffset\!!widtha\!!heighta
    \egroup}
 
 \def\dosetupinteractionscreen[#1]%
@@ -528,12 +516,12 @@
 \def\doprocessbookmarks[#1]#2%
   {\let\dolistelement#2\relax
    \scratchcounter\zerocount
-   \def\docommando##1%
+   \def\docommand##1%
      {\advance\scratchcounter \plusone
       \getlistlevel[##1]\listlevel{\the\scratchcounter}%
       \setxvalue{\@@bookcount\the\scratchcounter}{1}%
       \setxvalue{\@@booklevel##1}{\listlevel}}%
-   \processcommalist[#1]\docommando
+   \processcommalist[#1]\docommand
    \setxvalue{\@@bookcount0}{1}%
    \global\chardef\currentbookmarklevel\zerocount
    \global\chardef\previousbookmarklevel\zerocount
@@ -572,9 +560,9 @@
    \global\chardef\previousbookmarklevel\currentbookmarklevel}
 
 \def\getbookmarklevelcount
-  {\@EA\def\@EA\docommando\@EA[\@EA##\@EA1\@EA/\bookmarktag:##2/##3]%
+  {\@EA\def\@EA\docommand\@EA[\@EA##\@EA1\@EA/\bookmarktag:##2/##3]%
      {\def\bookmarklevelcount{##2}}%
-   \@EA\@EA\@EA\docommando\@EA\@EA\@EA[\@EA\bookmarklevellist\@EA/\bookmarktag:0/]}
+   \@EA\@EA\@EA\docommand\@EA\@EA\@EA[\@EA\bookmarklevellist\@EA/\bookmarktag:0/]}
 
 \def\dodoputbookmarkelement#1#2#3#4#5#6%
   {\doifelsenothing{#1}
@@ -666,9 +654,8 @@
      {\doifelse{#3}{}
         {\letvalue{\??am##1\c!obstruction}\empty}
         {\edef\interactieblokkade{\getvalue{\??am##1\c!obstruction}}
-         \def\docommando####1%
-           {#1{####1}{\interactieblokkade}}% #1 = \remove or \add
-         \processcommalist[#3]\docommando
+         \def\docommand####1{#1{####1}{\interactieblokkade}}% #1 = \remove or \add
+         \processcommalist[#3]\docommand
          \setevalue{\??am##1\c!obstruction}{\interactieblokkade}}}%
    \processcommalist[#2]\dododisableinteractionmenu}
 
@@ -1004,7 +991,7 @@
   {\ifdim#2>\zeropoint % new
      \dimen2\zeropoint
      \setbox0\hbox
-       {\def\docommando##1%
+       {\def\docommand##1%
           {\doifnotvalue{\??am##1\c!state}\v!none
              {\hskip\dimen2
               \setbox2\hbox to #2
@@ -1015,7 +1002,7 @@
                 {\dimen2=\getvalue{\??am##1\c!distance}}%
               \box2}}%
        \startinteraction
-       \processcommacommand[\getvalue{\??am#1}]\docommando
+       \processcommacommand[\getvalue{\??am#1}]\docommand
        \stopinteraction}%
      \wd0=#2\relax
      \box0\relax
@@ -1025,7 +1012,7 @@
   {\ifdim#2>\zeropoint % new
      \dimen2\zeropoint
      \setbox0\vbox
-       {\def\docommando##1%
+       {\def\docommand##1%
           {\doifnotvalue{\??am##1\c!state}\v!none
              {\vskip\dimen2
               \setbox2\vbox to #2
@@ -1038,7 +1025,7 @@
                 {\dimen2=\getvalue{\??am##1\c!distance}}%
               \box2}}%
         \startinteraction
-        \processcommacommand[\getvalue{\??am#1}]\docommando
+        \processcommacommand[\getvalue{\??am#1}]\docommand
         \stopinteraction}%
      \ht0=#2\relax
      \dp0\zeropoint
@@ -1124,7 +1111,7 @@
    \fi
    \egroup}
 
-\unprotected\def\includemenu[#1]%
+\def\includemenu[#1]%
   {\doifvalue{\??am#1\c!state}\v!local
      {\bgroup
       \letvalue{\??am#1\c!state}\v!start
@@ -1194,8 +1181,8 @@
      {\extendedmenufalse\dointeractionmenu{#1}{#2}}}
 
 \def\dodosetupinteractionmenu[#1][#2]%
-  {\def\docommando##1{\getparameters[\??am##1][#2]}%
-   \processcommalist[#1]\docommando}
+  {\def\docommand##1{\getparameters[\??am##1][#2]}%
+   \processcommalist[#1]\docommand}
 
 \setvalue{\??am\??am\v!yes  }{0}
 \setvalue{\??am\??am\v!empty}{1}
@@ -1866,14 +1853,10 @@
 \def\dofollowprofile#1[#2]%
   {\iflocation
      \hbox
-       {\dostartgoto
-          \data
-            {\dolocationattributes\??ia\c!style\c!color{#1\presetgoto}}%
-          \start
-            \dostartgotoprofile\buttonwidth\buttonheight{#2}%
-          \stop
-            \dostopgotoprofile
-        \dostopgoto}%
+       {\dohandlegoto
+          {\dolocationattributes\??ia\c!style\c!color{#1\presetgoto}}%
+          {\dostartgotoprofile\buttonwidth\buttonheight{#2}}%
+          {\dostopgotoprofile}}%
    \else
      {#1}%
    \fi}
@@ -1900,24 +1883,20 @@
 % het begin (start) en een voor het eind (stop). Nu staat
 % alles in een lijst.
 
-\definetwopasslist{\s!profile}
+\definetwopasslist\s!profile
 
 \newcounter\currentprofile
 
 \def\dosetprofilepage%
   {\doglobal\increment\currentprofile
-   \edef\docommando%
-     {\writeutilitycommand%
-        {\twopassentry%
-           {\s!profile}%
-           {\currentprofile}%
-           {\noexpand\realfolio}}}%
-   \docommando}
+   \lazysavetwopassdata{\s!profile}{\currentprofile}{\noexpand\realfolio}}
 
 \def\dogetprofilepage%
   {\gettwopassdata{\s!profile}%
    \let\profilepage=\twopassdata}
 
+% is this stuff used at all
+
 \newcounter\versionlevel
 \newcounter\versionorder
 
@@ -1930,37 +1909,24 @@
 
 \def\dosetupversions[#1]%
   {\getparameters[\??ve][#1]
-   \stripcharacter.\from\@@venumber\to\minimumversion
-   \setversion}
+   \stripcharacter.\from\@@venumber\to\minimumversion}
 
-\def\setupversions%
+\def\setupversions
   {\dosingleargument\dosetupversions}
 
-\definetwopasslist{\s!versionbegin}
-\definetwopasslist{\s!versionend}
+\definetwopasslist\s!versionbegin
+\definetwopasslist\s!versionend
 
-\def\actualprofile{}
+\let\actualprofile\empty
 
-\def\doresetpageversion%
-  {\edef\docommando%
-     {\writeutilitycommand%
-        {\twopassentry%
-           {\s!versionend}%
-           {\versionorder}%
-           {\noexpand\realfolio}}}%
-   \docommando}
+\def\doresetpageversion
+  {\lazysavetwopassdata{\s!versionend}{\versionorder}{\noexpand\realfolio}}
 
 \def\dosetpageversion#1%
   {\recentversiontrue
    \doglobal\increment\versionorder\relax
-   \edef\docommando%
-     {\writeutilitycommand%
-        {\twopassentry%
-           {\s!versionbegin}%
-           {\versionorder}%
-           {\noexpand\realfolio}}}%
-   \docommando
-   \let\resetpageversion=\doresetpageversion}
+   \lazysavetwopassdata{\s!versionbegin}{\versionorder}{\noexpand\realfolio}%
+   \let\resetpageversion\doresetpageversion}
 
 \def\recentcontributions{}
 
@@ -1972,18 +1938,10 @@
      \iftwopassdatafound
        \!!countb\twopassdata\relax
        \doglobal\increment\versionorder\relax
-       \writeutilitycommand%
-         {\twopassentry%
-            {\s!versionbegin}%
-            {\versionorder}%
-            {\the\!!counta}}%
-       \writeutilitycommand%
-         {\twopassentry%
-            {\s!versionend}%
-            {\versionorder}%
-            {\the\!!countb}}%
-       \for\teller=\!!counta\to\!!countb\step1\do%
-         {\@EA\doglobal\@EA\addtocommalist\@EA{\teller}{\recentcontributions}}%
+       \savetwopassdata{\s!versionbegin}{\versionorder}{\the\!!counta}%
+       \savetwopassdata{\s!versionend  }{\versionorder}{\the\!!countb}%
+       \dostepwiserecurse\!!counta\!!countb\plusone
+         {\@EA\doglobal\@EA\addtocommalist\@EA{\recurselevel}{\recentcontributions}}%
        \let\next\checkrecentcontributions
      \else
        \let\next\relax
@@ -1993,14 +1951,14 @@
    \fi
    \next}
 
-\def\docheckpageversion%
+\def\docheckpageversion
   {\ExpandBothAfter\doifinsetelse{\realfolio}{\recentcontributions}
-     {\geselecteerdtrue}%
-     {\geselecteerdfalse}}
+     {\pageselectedtrue}%
+     {\pageselectedfalse}}
 
-\let\setpageversion   = \gobbleoneargument
-\let\resetpageversion = \relax
-\let\checkpageversion = \relax
+\let\setpageversion   \gobbleoneargument
+\let\resetpageversion \relax
+\let\checkpageversion \relax
 
 \def\complexstartversion[#1]%
   {\bgroup
@@ -2027,7 +1985,7 @@
 
 \definecomplexorsimpleempty\startversion
 
-\def\stopversion%
+\def\stopversion
   {\stopprofile
    \doglobal\decrement\versionlevel
    \ifnum\versionlevel<\zerocount
@@ -2036,20 +1994,6 @@
      \resetpageversion
      \egroup
    \fi}
-
-\bgroup
-\catcode`@=\active
-\gdef\setversion%
-  {\catcode`@=\active        % we can't use \@@active here
-   \long\def@##1##2 %
-     {\ifx##1+%
-        \startversion[##2]%
-      \else\ifx##1-%
-        \stopversion
-      \else
-        \oldatcharacter##1##2 %
-      \fi\fi}}
-\egroup
 
 \def\markversion
   {\showmessage\m!versions2\empty
@@ -2062,8 +2006,7 @@
    \showmessage\m!versions3\recentcontributions
    \let\setpageversio\gobbleoneargument
    \let\resetpageversion\relax
-   \let\checkpageversion\docheckpageversion
-   \setversion}
+   \let\checkpageversion\docheckpageversion}
 
 \def\dodefineversion[#1][#2]%
   {\setvalue{\c!versie!!#1}{#2}%
@@ -2076,9 +2019,9 @@
   {\followprofile}
 
 \def\followprofileversion#1[#2][#3]%
-  {\def\docommando##1%
+  {\def\docommand##1%
      {\defineprofile[#2#3][##1]}%
-   \processcommacommand[\getvalue{\c!versie!!#3}]\docommando
+   \processcommacommand[\getvalue{\c!versie!!#3}]\docommand
    \followprofile#1[#2#3]}
 
 \newcounter\currentpagetransition
@@ -2239,16 +2182,16 @@
   {\bgroup
    \doifelse\@@ccstate\v!start
      {\dopreparecommentaar{#1}{#2}%
-      \long\def\docommando##1%
+      \long\def\docommand##1%
         {\global\setbox\commentbox\frozenhbox
            {\hbox to \zeropoint
               {\struttedbox{\tbox{\dodocomment{##1}}}\hss}%
             \hskip\ifvoid\commentbox\@@ccmargin\else\@@ccdistance\fi
             \box\commentbox}%
          \egroup}}%
-     {\long\def\docommando##1%
+     {\long\def\docommand##1%
         {\egroup}}%
-   \grabuntil{\e!stop\v!comment}\docommando}
+   \grabuntil{\e!stop\v!comment}\docommand}
 
 \letvalue{\e!stop\v!comment}\relax % handy for \expanded{...}
 
@@ -2411,16 +2354,16 @@
    \ifsecondargument
      \setupinteractionmenu
        [#1][\c!unknownreference=\v!yes,\c!samepage=\v!yes]%
-     \def\docommando##1%
+     \def\docommand##1%
        {\registermenucommand{\menubutton[#1]{##1}[#2:##1]}}%
    \else
-     \def\docommando##1%
+     \def\docommand##1%
        {\registermenucommand
           {\button
              [\c!unknownreference=\v!yes,\c!samepage=\v!yes]
              {##1}[#1:##1]}}%
    \fi
-   \handletokens abcdefghijklmnopqrstuvwxyz\with\docommando % moet anders
+   \handletokens abcdefghijklmnopqrstuvwxyz\with\docommand % moet anders
    \egroup}
 
 \def\registermenubuttons

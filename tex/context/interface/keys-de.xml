@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 
-<cd:interface xmlns:cd="http://www.pragma-ade.com/commands" name="context" language="de" version="2006.08.08 17:52">
+<cd:interface xmlns:cd="http://www.pragma-ade.com/commands" name="context" language="de" version="2006.11.16 12:02">
 
   <cd:variables>
     <cd:variable name="one" value="eins"/>
@@ -87,6 +87,8 @@
     <cd:variable name="flushleft" value="flushleft"/>
     <cd:variable name="flushright" value="flushright"/>
     <cd:variable name="center" value="center"/>
+    <cd:variable name="flushouter" value="flushouter"/>
+    <cd:variable name="flushinner" value="flushinner"/>
   </cd:variables>
 
   <cd:variables>
@@ -96,6 +98,7 @@
 
   <cd:variables>
     <cd:variable name="formula" value="formel"/>
+    <cd:variable name="subformula" value="subformel"/>
     <cd:variable name="formulae" value="formeln"/>
     <cd:variable name="figure" value="abbildung"/>
     <cd:variable name="figures" value="abbildungen"/>
@@ -627,9 +630,11 @@
     <cd:variable name="left" value="links"/>
     <cd:variable name="local" value="lokal"/>
     <cd:variable name="new" value="neu"/>
+    <cd:variable name="old" value="old"/>
     <cd:variable name="MONTH" value="MONAT"/>
     <cd:variable name="month" value="monat"/>
     <cd:variable name="mar" value="mar"/>
+    <cd:variable name="item" value="pos"/>
     <cd:variable name="marking" value="beschriftung"/>
     <cd:variable name="margin" value="marginalie"/>
     <cd:variable name="max" value="max"/>
@@ -784,6 +789,8 @@
     <cd:variable name="xml" value="xml"/>
     <cd:variable name="enumeration" value="nummerierung"/>
     <cd:variable name="description" value="beschreibung"/>
+    <cd:variable name="lefthanging" value="lefthanging"/>
+    <cd:variable name="righthanging" value="righthanging"/>
   </cd:variables>
 
   <cd:constants>
@@ -1192,6 +1199,8 @@
     <cd:command name="subpagenumber" value="subpagenumber"/>
     <cd:command name="setuptext" value="stelletextein"/>
     <cd:command name="setuptexttexts" value="stelletexttexteein"/>
+    <cd:command name="settextcontent" value="settext"/>
+    <cd:command name="resettext" value="resettextcontent"/>
     <cd:command name="definetext" value="definieretext"/>
     <cd:command name="pagenumber" value="seitenummer"/>
     <cd:command name="completepagenumber" value="completepagenumber"/>

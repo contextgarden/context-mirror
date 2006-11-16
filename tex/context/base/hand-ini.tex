@@ -290,12 +290,12 @@
     % keep this
 
     % \def\redodefineprotrudefactor#1%
-    %   {\ifdim\fontdimen6\font>\protrudethreshold
-    %      \divide\scratchdimen\fontdimen6\font
+    %   {\ifdim\emwidth>\protrudethreshold
+    %      \divide\scratchdimen\emwidth
     %      \multiply\scratchdimen\fontcharwd\handledfont#1\relax
     %    \else
     %      \multiply\scratchdimen\fontcharwd\handledfont#1\relax
-    %      \divide\scratchdimen\fontdimen6\font
+    %      \divide\scratchdimen\emwidth
     %    \fi}
 
     % \def\dododefineprotrudefactor#1#2#3%
@@ -313,19 +313,19 @@
     \def\dododefineprotrudefactor#1#2#3%
       {\lpcode\handledfont#1\dimexpr#2\lproddimen
          \ifembasedprotruding \else
-           \ifdim\fontdimen6\font>\protrudethreshold
-             /\fontdimen6\font*\fontcharwd\handledfont#1%
+           \ifdim\emwidth>\protrudethreshold
+             /\emwidth*\fontcharwd\handledfont#1%
            \else
-             *\fontcharwd\handledfont#1/\fontdimen6\font
+             *\fontcharwd\handledfont#1/\emwidth
            \fi
          \fi
        \relax
        \rpcode\handledfont#1\dimexpr#3\rproddimen
          \ifembasedprotruding \else
-           \ifdim\fontdimen6\font>\protrudethreshold
-             /\fontdimen6\font*\fontcharwd\handledfont#1%
+           \ifdim\emwidth>\protrudethreshold
+             /\emwidth*\fontcharwd\handledfont#1%
            \else
-             *\fontcharwd\handledfont#1/\fontdimen6\font
+             *\fontcharwd\handledfont#1/\emwidth
            \fi
          \fi
        \relax}
@@ -339,12 +339,12 @@
     \def\protrudethreshold{36\onepoint}
 
     \def\redodefineprotrudefactor
-      {\ifdim\fontdimen6\font>\protrudethreshold
-         \divide\scratchdimen\fontdimen6\font
+      {\ifdim\emwidth>\protrudethreshold
+         \divide\scratchdimen\emwidth
          \multiply\scratchdimen\wd\charbox
        \else
          \multiply\scratchdimen\wd\charbox
-         \divide\scratchdimen\fontdimen6\font
+         \divide\scratchdimen\emwidth
        \fi}
 
     \def\dododefineprotrudefactor#1#2#3%

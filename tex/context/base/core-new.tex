@@ -15,55 +15,12 @@
 
 \unprotect
 
-% \def\setups
-%   {\dosingleargument\dosetups}
-%
-% \def\dosetups[#1]%
-%   {\iffirstargument
-%      \def\next{\dodosetups{#1}}%
-%    \else
-%      \let\next\dodosetups
-%    \fi
-%    \next}
-%
-% \def\dodosetups#1%
-%   {\processcommalist[#1]\dododosetups}
-%
-% \def\dododosetups#1%
-%   {\getvalue{\??su#1}}
-%
-% \def\doifsetupselse#1%
-%   {\doifdefinedelse{\??su#1}}
-%
-% \long\@EA\def\csname\e!start\v!instellingen\endcsname#1 %
-%   {\bgroup
-%    \catcode`\^^M=\@@ignore
-%    \xdostartsetups{#1}}
-%
-% \expanded
-%   {\long\noexpand\def\noexpand\xdostartsetups##1##2\csname\e!stop\v!instellingen\endcsname
-%      {\endgroup
-%       \long\noexpand\setvalue{\??su##1}{##2}}}
-%
-% \def\startsetups % for international purposes
-%   {\begingroup\doifnextcharelse[{\startsetupsA\stopsetups}{\startsetupsB\stopsetups}}
-%
-% \def\startlocalsetups % for nested purposes
-%   {\begingroup\doifnextcharelse[{\startsetupsA\stoplocalsetups}{\startsetupsB\stoplocalsetups}}
-%
-% \def\startsetupsA#1[#2]%
-%   {\catcode`\^^M=\@@ignore
-%    \dostartsetups#1{#2}}
-%
-% \def\startsetupsB#1#2 % space delimited
-%   {\startsetupsA#1[#2]}%
-%
-% \long\def\dostartsetups#1#2% watch out: not \grabuntil
-%   {\dograbuntil#1{\endgroup\long\setvalue{\??su#2}}}
-
 % todo : \startsetups[name][XML] \setups[name][XML]
 
 % todo: \doglobal
+
+\let\startsetups\relax % to please dep checker
+\let\stopsetups \relax % to please dep checker
 
 \expanded
   {\long\def\@EA\noexpand\csname\e!start\v!setups\endcsname
@@ -86,8 +43,12 @@
 \def\dosetupsB[#1]{\cleanuplabel{#1}\processcommacommand[\cleanlabel]\dosetups} % [..]
 \def\dosetupsC[#1]{\cleanuplabel{#1}\dosetups\cleanlabel} % [..]
 
+% \def\dosetups#1% the grid option will be extended to other main modes
+%   {\executeifdefined{\??su\ifgridsnapping\v!grid\fi:#1}{\csname\??su:#1\endcsname}\empty}
+
 \def\dosetups#1% the grid option will be extended to other main modes
-  {\executeifdefined{\??su\ifgridsnapping\v!grid\fi:#1}{\csname\??su:#1\endcsname}\empty}
+  {\executeifdefined{\??su\ifgridsnapping\v!grid\fi:#1}
+  {\executeifdefined{\??su                         :#1}\empty}}
 
 \let\directsetup\dosetups
 
@@ -143,22 +104,6 @@
 %      {\??su:%
 %       \ifundefined{\??su\ifgridsnapping\v!grid\fi:#1}#1\else\ifgridsnapping\v!grid\fi%
 %       #1}}
-
-% new
-%
-% \startnointerference
-% all kind of code
-% \stopnointerference
-
-\newbox\nointerferencebox
-
-\def\startnointerference
-  {\setbox\nointerferencebox\vbox
-   \bgroup}
-
-\def\stopnointerference
-  {\egroup
-   \setbox\nointerferencebox\box\voidb@x}
 
 %D new and beta
 
@@ -324,37 +269,5 @@
 \def\doifnotenv {\doifnotvariable   \s!environment}
 \def\env        {\getvariable       \s!environment}
 \def\envvar     {\getvariabledefault\s!environment}
-
-\bgroup % some day this will go away
-
-% actually we should handle all discretionaries here
-
-\gdef\cleanedupcolon{:} \catcode`:=\@@active
-
-\gdef\cleanuplabel#1%
-  {\begingroup\let:\cleanedupcolon
-   \xdef\cleanlabel{#1}%
-   \endgroup}
-
-\gdef\cleanupprefixedlabel#1#2%
-  {\begingroup\let:\cleanedupcolon
-   \xdef\cleanprefix{#1}%
-   \xdef\cleanlabel {#2}%
-   \endgroup}
-
-\gdef\protectlabels
-  {\let:\cleanedupcolon}
-
-\global\def\blabelgroup {\begingroup \let:\cleanedupcolon}
-\global\let\elabelgroup  \endgroup
-
-\gdef\labelcsname
-  {\begingroup\let:\cleanedupcolon
-   \expandafter\endgroup\csname}
-
-\gdef\labelvalue#1%
-  {\labelcsname#1\endcsname}
-
-\egroup
 
 \protect \endinput

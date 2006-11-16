@@ -71,8 +71,8 @@
   {\dosingleargument\doresetmarking}
 
 \def\dosetupmarking[#1][#2]%
-  {\def\docommando##1{\getparameters[\??mk##1][#2]}%
-   \processcommalist[#1]\docommando}
+  {\def\docommand##1{\getparameters[\??mk##1][#2]}%
+   \processcommalist[#1]\docommand}
 
 \def\setupmarking
   {\dodoubleargument\dosetupmarking}

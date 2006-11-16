@@ -42,7 +42,7 @@
 %    \dimen0=\ht0
 %    \advance\dimen0 1ex
 %    \dimen0=.45\dimen0
-%    \dimen2=\withoutpt\the\fontdimen1\font\dimen0
+%    \dimen2=\withoutpt\the\slantperpoint\dimen0
 %    \advance\dimen2 .5ex
 %    \rlap{\raise\dimen0\hbox{\kern\dimen2\vbox{\hrule\!!height0.1ex\!!width0.3em}}}%
 %    \box0
@@ -53,9 +53,9 @@
 %    \hbox\bgroup
 %    \setbox0\hbox{D}%
 %    \dimen0=.55\ht0
-%    \dimen2=\withoutpt\the\fontdimen1\font\dimen0
+%    \dimen2=\withoutpt\the\slantperpoint\dimen0
 %    \advance\dimen2 .15ex
-%    \advance\dimen2 -.15\fontdimen7\font
+%    \advance\dimen2 -.15\extraspace
 %    \rlap{\raise\dimen0\hbox{\kern\dimen2\vbox{\hrule\!!height0.1ex\!!width0.33em}}}%
 %    \box0
 %    \egroup}
@@ -66,7 +66,7 @@
    \scratchdimen\ht\scratchbox
    \advance\scratchdimen 1ex
    \scratchdimen.45\scratchdimen
-   \dimen2=\withoutpt\the\fontdimen1\font\dimen0
+   \dimen2=\withoutpt\the\slantperpoint\dimen0
    \advance\dimen2 .5ex
    \hbox to \wd\scratchbox
      {\box\scratchbox\hss
@@ -78,9 +78,9 @@
 %    \hbox\bgroup
 %    \setbox\scratchbox\hbox{D}%
 %    \scratchdimen.55\ht\scratchbox
-%    \dimen2=\withoutpt\the\fontdimen1\font\scratchdimen
+%    \dimen2=\withoutpt\the\slantperpoint\scratchdimen
 %    \advance\dimen2 .15ex
-%    \advance\dimen2 -.15\fontdimen7\font
+%    \advance\dimen2 -.15\extraspace
 %    \hbox to \wd\scratchbox
 %      {\box\scratchbox\hss
 %       \raise\scratchdimen\hbox{\kern\dimen2\vbox{\hrule\!!height0.1ex\!!width0.3em}}}%
@@ -91,7 +91,7 @@
    \hbox\bgroup
    \setbox\scratchbox\hbox{D}%
    \dimen2=1.1ex
-   \dimen2=\withoutpt\the\fontdimen1\font\dimen2
+   \dimen2=\withoutpt\the\slantperpoint\dimen2
    \hbox to \wd\scratchbox
      {\rlap
         {\raise.52\ht\scratchbox

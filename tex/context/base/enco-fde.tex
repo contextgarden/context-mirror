@@ -13,9 +13,9 @@
 
 \unprotect
 
-\startlanguagespecifics[\s!de]
+\installactivecharacter "
 
-  \appendtoks \makecharacteractive " \to \everynormalcatcodes
+\startlanguagespecifics[\s!de]
 
   \installcompoundcharacter "a {\aumlaut\midworddiscretionary}
   \installcompoundcharacter "e {\eumlaut\midworddiscretionary}
@@ -87,11 +87,11 @@
 
 % no {\simplifiedcompoundcharacter"}
 
-\startencoding[pdfdoc]
-  \startlanguagespecifics[\s!de]% hm, a % is needed
-    \defineactivecharacter " {\"}
-  \stoplanguagespecifics
-\stopencoding
+% \startencoding[pdfdoc]
+%   \startlanguagespecifics[\s!de]% hm, a % is needed
+%     \defineactivecharacter " {\"}
+%   \stoplanguagespecifics
+% \stopencoding
 
 \startencoding[ec]
   \startlanguagespecifics[\s!de]%

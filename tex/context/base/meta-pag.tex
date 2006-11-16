@@ -92,12 +92,9 @@
 
 \def\freezeMPpagelayout
   {\doifbothsides
-     \def\MPonrightpage{true}%
-   \orsideone
-     \def\MPonrightpage{true}%
-   \orsidetwo
-     \def\MPonrightpage{false}%
-   \od
+     {\def\MPonrightpage{true}}
+     {\def\MPonrightpage{true}}
+     {\def\MPonrightpage{false}}%
    \edef\MPonoddpage{\doifoddpageelse{true}{false}}}
 
 \let\freezeMPlayout\relax % obsolete

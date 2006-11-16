@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 
-<cd:interface xmlns:cd="http://www.pragma-ade.com/commands" name="context" language="fr" version="2006.08.08 17:52">
+<cd:interface xmlns:cd="http://www.pragma-ade.com/commands" name="context" language="fr" version="2006.11.16 12:02">
 
   <cd:variables>
     <cd:variable name="one" value="un"/>
@@ -87,6 +87,8 @@
     <cd:variable name="flushleft" value="flushleft"/>
     <cd:variable name="flushright" value="flushright"/>
     <cd:variable name="center" value="center"/>
+    <cd:variable name="flushouter" value="flushouter"/>
+    <cd:variable name="flushinner" value="flushinner"/>
   </cd:variables>
 
   <cd:variables>
@@ -96,6 +98,7 @@
 
   <cd:variables>
     <cd:variable name="formula" value="formule"/>
+    <cd:variable name="subformula" value="subformule"/>
     <cd:variable name="formulae" value="formules"/>
     <cd:variable name="figure" value="figure"/>
     <cd:variable name="figures" value="figures"/>
@@ -281,7 +284,7 @@
     <cd:constant name="leftmargin" value="margegauche"/>
     <cd:constant name="leftmargindistance" value="distancemargegauche"/>
     <cd:constant name="leftoffset" value="decalagegauche"/>
-    <cd:constant name="leftedge" value="brodgauche"/>
+    <cd:constant name="leftedge" value="bordgauche"/>
     <cd:constant name="leftedgedistance" value="distancebordgauche"/>
     <cd:constant name="lefttext" value="textegauche"/>
     <cd:constant name="left" value="gauche"/>
@@ -627,9 +630,11 @@
     <cd:variable name="left" value="gauche"/>
     <cd:variable name="local" value="local"/>
     <cd:variable name="new" value="nouveau"/>
+    <cd:variable name="old" value="old"/>
     <cd:variable name="MONTH" value="MOIS"/>
     <cd:variable name="month" value="mois"/>
     <cd:variable name="mar" value="mar"/>
+    <cd:variable name="item" value="element"/>
     <cd:variable name="marking" value="marquage"/>
     <cd:variable name="margin" value="marge"/>
     <cd:variable name="max" value="max"/>
@@ -784,6 +789,8 @@
     <cd:variable name="xml" value="xml"/>
     <cd:variable name="enumeration" value="enumeration"/>
     <cd:variable name="description" value="description"/>
+    <cd:variable name="lefthanging" value="lefthanging"/>
+    <cd:variable name="righthanging" value="righthanging"/>
   </cd:variables>
 
   <cd:constants>
@@ -1192,6 +1199,8 @@
     <cd:command name="subpagenumber" value="sousnumeropage"/>
     <cd:command name="setuptext" value="regletexte"/>
     <cd:command name="setuptexttexts" value="regletextestexte"/>
+    <cd:command name="settextcontent" value="settext"/>
+    <cd:command name="resettext" value="resettextcontent"/>
     <cd:command name="definetext" value="definittexte"/>
     <cd:command name="pagenumber" value="numeropage"/>
     <cd:command name="completepagenumber" value="completenumeropage"/>
@@ -1568,7 +1577,7 @@
     <cd:command name="leftmargindistance" value="distancemargegauche"/>
     <cd:command name="rightmargindistance" value="distancemargedroite"/>
     <cd:command name="edgewidth" value="largeurbord"/>
-    <cd:command name="leftedgewidth" value="largeurbrodgauche"/>
+    <cd:command name="leftedgewidth" value="largeurbordgauche"/>
     <cd:command name="rightedgewidth" value="largeurborddroit"/>
     <cd:command name="edgedistance" value="distancebord"/>
     <cd:command name="leftedgedistance" value="distancebordgauche"/>

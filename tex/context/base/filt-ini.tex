@@ -64,6 +64,16 @@
       2: filtre -- inconnu
 \stopmessages
 
+% We need the {\??ot::#1} check because otherwise aleph will crash. Taco's
+% torture test:
+%
+% \ocp\ArabicContext = contextual
+%
+% \dorecurse {5000} {
+%     \message{[\recurselevel]}
+%     \ocplist\Arabic=\addbeforeocplist 1 \ArabicContext \nullocplist
+% }
+
 %D \macros
 %D   {definefiltersynonym}
 
@@ -82,11 +92,15 @@
 %D \macros
 %D   {definefiltersequence}
 
-\def\definefiltersequence%
+\def\definefiltersequence
   {\dodoubleargument\dodefinefiltersequence}
 
+% \def\dodefinefiltersequence[#1][#2]%
+%   {\setvalue{\??ot#1}{#2}}
+
 \def\dodefinefiltersequence[#1][#2]%
-  {\setvalue{\??ot#1}{#2}}
+  {\setxvalue{\??ot#1}{#2}%
+   \letgvalue{\??ot::#1}\v!stop}
 
 %D \macros
 %D   {usefiltersequence}
@@ -121,13 +135,22 @@
      \expandafter\noexpand\csname\??or:\!!stringa\endcsname
    \to \scratchtoks}
 
+% \unexpanded\def\usefiltersequence[#1]%
+%   {\edef\currentfiltersequence{\getvalue{\??ot#1}}%
+%    \scratchtoks\emptytoks
+%    \processcommacommand[\currentfiltersequence]\dodousefiltersequence
+%    % \showthe\scratchtoks
+%    \expanded{\ocplist\csname\??ot:#1\endcsname=\the\scratchtoks}\nullocplist
+%    \expanded{\pushocplist\csname\??ot:#1\endcsname}\relax}
+
 \unexpanded\def\usefiltersequence[#1]%
-  {\edef\currentfiltersequence{\getvalue{\??ot#1}}%
-   \scratchtoks\emptytoks
-   \processcommacommand[\currentfiltersequence]\dodousefiltersequence
-   % \showthe\scratchtoks
-   \expanded{\ocplist\csname\??ot:#1\endcsname=\the\scratchtoks}\nullocplist
-   \expanded{\pushocplist\csname\??ot:#1\endcsname}\relax}
+  {\doifdefined{\??ot::#1}%
+     {\doifvalue{\??ot::#1}\v!stop
+         {\scratchtoks\emptytoks
+          \expanded{\processcommalist[\getvalue{\??ot#1}]}\dodousefiltersequence
+          \expanded{\global\ocplist\csname\??ot:#1\endcsname=\the\scratchtoks}\nullocplist
+          \letgvalue{\??ot::#1}\v!start}%
+       \expanded{\pushocplist\csname\??ot:#1\endcsname}\relax}}
 
 %D \macros
 %D   {usefilter}

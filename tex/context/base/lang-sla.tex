@@ -90,7 +90,7 @@
    \c!rightquote=\upperrightsinglesixquote,
    \c!leftquotation=\lowerleftdoubleninequote,
    \c!rightquotation=\upperrightdoublesixquote,
-   \c!date={\v!day,\ ,\v!month,\ ,\v!year},
+   \c!date={\v!day,{.\,},\v!month,\ ,\v!year},
    \c!state=\v!stop]
 
 \installlanguage
@@ -104,7 +104,7 @@
    \c!rightquote=\upperrightsingleninequote,
    \c!leftquotation=\upperleftdoublesixquote,
    \c!rightquotation=\upperrightdoubleninequote,
-   \c!date={\v!year,\ ,\v!month,\ ,\v!day},
+   \c!date={\v!day,{.\,},\v!month,\ ,\v!year},
    \c!state=\v!stop]
 
 \installlanguage
@@ -275,25 +275,25 @@
 \setuplabeltext [\s!sl] [\v!subsubsubsection=]
 
 \setuplabeltext [\s!pl] [\v!appendix=] % Dodatek
-\setuplabeltext [\s!cz] [\v!appendix=P\rcaron\iacute loha]
-\setuplabeltext [\s!sk] [\v!appendix=Pr\iacute loha]
+\setuplabeltext [\s!cz] [\v!appendix=P\rcaron\iacute loha ]
+\setuplabeltext [\s!sk] [\v!appendix=Pr\iacute loha ]
 \setuplabeltext [\s!hr] [\v!appendix=Dodatak ]
 \setuplabeltext [\s!sl] [\v!appendix=Dodatek ]
 
-\setuplabeltext [\s!pl] [\v!part=Ust\eogonek p]
-\setuplabeltext [\s!cz] [\v!part=\Ccaron \aacute st]
-\setuplabeltext [\s!sk] [\v!part=\Ccaron as\tcaron{}]
-\setuplabeltext [\s!hr] [\v!part=Dio]
+\setuplabeltext [\s!pl] [\v!part=Ust\eogonek p ]
+\setuplabeltext [\s!cz] [\v!part=\Ccaron \aacute st ]
+\setuplabeltext [\s!sk] [\v!part=\Ccaron as\tcaron{} ]
+\setuplabeltext [\s!hr] [\v!part=Dio ]
 \setuplabeltext [\s!sl] [\v!part=Del ]
 
 \setuplabeltext [\s!pl] [\v!line=wiersz ]
-\setuplabeltext [\s!cz] [\v!line=\rcaron\aacute dek]
+\setuplabeltext [\s!cz] [\v!line=\rcaron\aacute dek ]
 \setuplabeltext [\s!sk] [\v!line=riadok ]
 \setuplabeltext [\s!hr] [\v!line=red ]
 \setuplabeltext [\s!sl] [\v!line=vrstica ]
 
 \setuplabeltext [\s!pl] [\v!lines=wiersze ]
-\setuplabeltext [\s!cz] [\v!lines=\rcaron\aacute dky]
+\setuplabeltext [\s!cz] [\v!lines=\rcaron\aacute dky ]
 \setuplabeltext [\s!sk] [\v!lines=riadky ]
 \setuplabeltext [\s!hr] [\v!lines=redovi ]
 \setuplabeltext [\s!sl] [\v!lines=vrstice ]
@@ -431,7 +431,7 @@
 %D \ShowAllLanguageValues [\s!hr] [croatian]  {Croatian}  {heartthrob}
 %D \ShowAllLanguageValues [\s!sl] [slovenian] {Slovenian} {mountains}
 
-%D A present from Brooks Moses and Hans hagen for Mojca Miklavec:
+%D A present from Brooks Moses and Hans Hagen for Mojca Miklavec:
 
 \def\doconvertsloveniancharacters{\dodoconvertcharacters{25}}
 
@@ -461,22 +461,13 @@
 \defineconversion [sl] [AK]         [\smallcapped\sloveniancharacters]
 \defineconversion [sl] [KA]         [\smallcapped\sloveniancharacters]
 
-%D This may move to \type {core-con.tex}.
+% this will become more generic : \languagecharacters{sl}{..}
 
-\def\sloveniancharacter#1%
-  {\ifcase#1\unknowncharacter
-     \or a\or b\or c\or \ccaron\or d\or e\or f\or g\or h\or i\or j\or k\or l\or m%
-     \or n\or o\or p\or r\or s\or \scaron\or t\or u\or v\or z\or \zcaron
-   \else
-     \unknowncharacter
-   \fi}
+\let\sloveniancharacter\gobbleoneargument
+\let\slovenianCharacter\gobbleoneargument
 
-\def\slovenianCharacter#1%
-  {\ifcase#1\unknowncharacter
-     \or A\or B\or C\or \Ccaron\or D\or E\or F\or G\or H\or I\or J\or K\or L\or M%
-     \or N\or O\or P\or R\or S\or \Scaron\or T\or U\or V\or Z\or \Zcaron
-   \else
-     \unknowncharacter
-   \fi}
+%D Plugins:
+
+\loadmarkfile{lang-sla}
 
 \protect \endinput

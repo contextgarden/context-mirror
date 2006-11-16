@@ -52,6 +52,8 @@
 
 \def\@otr@{otr}
 
+\def\OTRSETmakeupwidth{\innermakeupwidth}
+
 \let\OTRSETflushsidefloats      \forgetsidefloats % \relax
 \let\OTRSETsynchronizesidefloats\forgetsidefloats % \relax
 
@@ -474,13 +476,15 @@
      \OTRSETdomakegridbox\nofcolumns\plusone\minusone
    \fi}
 
+\def\OTRSETmakeupwidth{\makeupwidth} % temporary indirectness
+
 \def\OTRSETdomakegridbox#1#2#3%
   {\hbox\bgroup
    \dontcomplain
    \forgetall % can go once in \flush
    \!!heighta \textheight
    % test first !
-   \hbox to \makeupwidth
+   \hbox to \OTRSETmakeupwidth
      {\dostepwiserecurse{#1}{#2}{#3}
         {\mofcolumns\recurselevel
          \localcolumnwidth\OTRSETlocalwidth\mofcolumns
@@ -497,9 +501,9 @@
            \box\scratchbox
            \hskip\OTRSETgetparameter\c!distance\recurselevel
          \fi}}%
-   \hskip-\makeupwidth
+   \hskip-\OTRSETmakeupwidth
    % main text
-   \hbox to \makeupwidth
+   \hbox to \OTRSETmakeupwidth
      {\dostepwiserecurse{#1}{#2}{#3}
         {\mofcolumns\recurselevel
          \localcolumnwidth\OTRSETlocalwidth\mofcolumns
@@ -1650,11 +1654,11 @@
 
 \def\dosetupcolumnset[#1][#2][#3]%
   {\ifthirdargument
-     \def\docommando##1%
+     \def\docommand##1%
        {\doifelse{##1}\v!each
-          {\dorecurse{\getvalue{\??mc#1\c!n}}{\docommando\recurselevel}}
+          {\dorecurse{\getvalue{\??mc#1\c!n}}{\docommand\recurselevel}}
           {\getparameters[\??mc#1##1][#3]}}%
-     \processcommalist[#2]\docommando
+     \processcommalist[#2]\docommand
    \else
      \getparameters[\??mc#1][#2]%
    \fi}
@@ -1787,7 +1791,7 @@
      \saveinterlinespace
      \globallet\columnsetpage\!!plusone
      \def\currentcolumnset{#2}%
-     \insidecolumnstrue % will be different flag
+     \insidecolumnstrue % will be different flag in addition
      \activateotr{SET}{ONE}% andere naam, activate or so
      \doifelsenothing{#1}
        {\globallet\OTRSETlist\s!default}
@@ -1918,11 +1922,11 @@
 %       {\getcommacommandsize[\csname\??mc\OTRSETidentifier\c!regels\endcsname]%
 %        \ifnum\commalistsize>\plusone
 %          \scratchcounter\zerocount
-%          \def\docommando##1%
+%          \def\docommand##1%
 %            {\advance\scratchcounter\plusone
 %             \setvalue{\??mc\OTRSETidentifier\the\scratchcounter\c!regels}{##1}}%
 %          \processcommacommand
-%            [\csname\??mc\OTRSETidentifier\c!regels\endcsname]\docommando
+%            [\csname\??mc\OTRSETidentifier\c!regels\endcsname]\docommand
 %          \setvalue{\??mc\OTRSETidentifier\c!regels}{0}%
 %        \fi}}
 
@@ -2313,8 +2317,8 @@
    \global\setbox\placeholderboxf\columnplaceholder1f}
 
 \def\doOTRSETshowstatus
-  {\llap{\incolortrue \localcolortrue \tt\tfxx\blue
-     (\the\vsize->\number\columnfirstcell\#\number\columnfreecells)%
+  {\llap{\incolortrue \localcolortrue \tt\tfxx
+     \startcolor[blue](\the\vsize->\number\columnfirstcell\#\number\columnfreecells)\stopcolor
      \hskip\leftskip}}
 
 \def\OTRSETshowstatus
@@ -2549,7 +2553,7 @@
    \fi}
 
 \def\doinitializecolumntextareas#1#2%
-  {\def\docommando##1%
+  {\def\docommand##1%
      {\docheckcolumnsetareapage{##1#2}\plusone
       \ifdone
         \donefalse
@@ -2560,7 +2564,7 @@
            \s!unknown=>\doperformtest\commalistelement\donetrue\donefalse]%
         \ifdone\dodoinitializecolumntextareas{##1}{#2}\fi
       \fi}%
-   \processcommacommand[#1]\docommando}
+   \processcommacommand[#1]\docommand}
 
 \def\dodoinitializecolumntextareas#1#2%
   {\doOTRSETsetgridcells
@@ -2579,7 +2583,7 @@
 \def\doplacecolumntextareas#1#2% global ?
   {\bgroup
    \forgetall
-   \def\docommando##1%
+   \def\docommand##1%
      {\docheckcolumnsetareapage{##1#2}\zerocount
       \ifdone
         \donefalse
@@ -2594,7 +2598,7 @@
           \doglobal\removefromcommalist{##1}#1%
         \fi
       \fi}%
-   \processcommacommand[#1]\docommando
+   \processcommacommand[#1]\docommand
    \egroup}
 
 \def\columntextlastbackspace{\backspace}
@@ -2820,14 +2824,13 @@
    \fi
    \dostopframedtext
    \egroup
-   % frozen keeps grid snapping okay
    \setbox\scratchbox\frozenhbox to \hsize
      {\dontcomplain
       \alignedline{\framedtextparameter{cs:#1}\c!location}\v!middle
         {\lower\strutdepth\box\scratchbox}}%
    \dp\scratchbox\zeropoint % else wrong snap insidefloat
 %
-% to be tested first:
+% to be tested first (strange in grid mode)
 %
 % \setbox\scratchbox\frozenhbox to \hsize
 %   {\dontcomplain

@@ -59,22 +59,36 @@
 </cd:define>
 
 <cd:define name="language">
-      <cd:constant type="nl"/>
-      <cd:constant type="fr"/>
-      <cd:constant type="en"/>
-      <cd:constant type="uk"/>
-      <cd:constant type="de"/>
-      <cd:constant type="es"/>
-      <cd:constant type="cz"/>
-      <cd:constant type=".."/>
+    <cd:constant type="nl"/>
+    <cd:constant type="fr"/>
+    <cd:constant type="en"/>
+    <cd:constant type="uk"/>
+    <cd:constant type="de"/>
+    <cd:constant type="es"/>
+    <cd:constant type="cz"/>
+    <cd:constant type=".."/>
 </cd:define>
 
 <cd:define name="texts">
-      <cd:constant type="cd:text"/>
-      <cd:constant type="cd:section"/>
-      <cd:constant type="datum"/>
-      <cd:constant type="cd:mark"/>
-      <cd:constant type="cislostranky"/>
+    <cd:constant type="cd:text"/>
+    <cd:constant type="cd:section"/>
+    <cd:constant type="datum"/>
+    <cd:constant type="cd:mark"/>
+    <cd:constant type="cislostranky"/>
+</cd:define>
+
+<cd:define name="layout-h">
+    <cd:constant type="text" default="yes"/>
+    <cd:constant type="marginalie"/>
+    <cd:constant type="hrana"/>
+</cd:define>
+
+<cd:define name="layout-v">
+    <cd:constant type="vrsek"/>
+    <cd:constant type="zahlavi"/>
+    <cd:constant type="text" default="yes"/>
+    <cd:constant type="upati"/>
+    <cd:constant type="spodek"/>
 </cd:define>
 
 <cd:command name="installlanguage" file="lang-ini.tex">
@@ -1626,6 +1640,7 @@
         <cd:constant type="vrsek"/>
         <cd:constant type="nastred"/>
         <cd:constant type="spodek"/>
+        <cd:constant type="drzet"/>
       </cd:parameter>
       <cd:parameter name="volba">
         <cd:constant type="zadny"/>
@@ -1730,6 +1745,9 @@
       </cd:parameter>
       <cd:parameter name="foregroundstyle">
         <cd:resolve name="style"/>
+      </cd:parameter>
+      <cd:parameter name="tloustkalinky">
+        <cd:constant type="cd:dimension"/>
       </cd:parameter>
     </cd:assignments>
   </cd:arguments>
@@ -3390,9 +3408,7 @@
   </cd:sequence>
   <cd:arguments>
     <cd:keywords optional="yes">
-      <cd:constant type="cd:text" default="yes"/>
-      <cd:constant type="marginalie"/>
-      <cd:constant type="hrana"/>
+      <cd:resolve name="layout-h"/>
     </cd:keywords>
     <cd:keywords>
       <cd:resolve name="texts"/>
@@ -3409,9 +3425,7 @@
   </cd:sequence>
   <cd:arguments>
     <cd:keywords optional="yes">
-      <cd:constant type="cd:text" default="yes"/>
-      <cd:constant type="marginalie"/>
-      <cd:constant type="hrana"/>
+      <cd:resolve name="layout-h"/>
     </cd:keywords>
     <cd:keywords>
       <cd:resolve name="texts"/>
@@ -3428,9 +3442,7 @@
   </cd:sequence>
   <cd:arguments>
     <cd:keywords optional="yes">
-      <cd:constant type="cd:text" default="yes"/>
-      <cd:constant type="marginalie"/>
-      <cd:constant type="hrana"/>
+      <cd:resolve name="layout-h"/>
     </cd:keywords>
     <cd:keywords>
       <cd:resolve name="texts"/>
@@ -3447,9 +3459,7 @@
   </cd:sequence>
   <cd:arguments>
     <cd:keywords optional="yes">
-      <cd:constant type="cd:text" default="yes"/>
-      <cd:constant type="marginalie"/>
-      <cd:constant type="hrana"/>
+      <cd:resolve name="layout-h"/>
     </cd:keywords>
     <cd:keywords>
       <cd:resolve name="texts"/>
@@ -3466,15 +3476,55 @@
   </cd:sequence>
   <cd:arguments>
     <cd:keywords optional="yes">
-      <cd:constant type="cd:text" default="yes"/>
-      <cd:constant type="marginalie"/>
-      <cd:constant type="hrana"/>
+      <cd:resolve name="layout-h"/>
     </cd:keywords>
     <cd:keywords>
       <cd:resolve name="texts"/>
     </cd:keywords>
     <cd:keywords>
       <cd:resolve name="texts"/>
+    </cd:keywords>
+  </cd:arguments>
+</cd:command>
+
+<cd:command name="settextcontent" file="page-txt.tex">
+  <cd:sequence>
+    <cd:string value="settextcontent"/>
+  </cd:sequence>
+  <cd:arguments>
+    <cd:keywords>
+      <cd:resolve name="layout-v"/>
+    </cd:keywords>
+    <cd:keywords>
+      <cd:resolve name="layout-h"/>
+    </cd:keywords>
+    <cd:keywords optional="yes">
+      <cd:resolve name="texts"/>
+    </cd:keywords>
+    <cd:keywords optional="yes">
+      <cd:resolve name="texts"/>
+    </cd:keywords>
+    <cd:keywords optional="yes">
+      <cd:resolve name="texts"/>
+    </cd:keywords>
+  </cd:arguments>
+</cd:command>
+
+<cd:command name="resettextcontent" file="page-txt.tex">
+  <cd:sequence>
+    <cd:string value="resettextcontent"/>
+  </cd:sequence>
+  <cd:arguments>
+    <cd:keywords>
+      <cd:resolve name="layout-v"/>
+    </cd:keywords>
+    <cd:keywords>
+      <cd:resolve name="layout-h"/>
+    </cd:keywords>
+    <cd:keywords optional="yes">
+      <cd:constant name="lefttext"/>
+      <cd:constant name="middletext"/>
+      <cd:constant name="righttext"/>
     </cd:keywords>
   </cd:arguments>
 </cd:command>
@@ -3774,6 +3824,21 @@
   <cd:sequence>
     <cd:string value="ukazmrizku"/>
   </cd:sequence>
+  <cd:arguments>
+    <cd:keywords optional="yes" list="yes">
+      <cd:constant type="reset"/>
+      <cd:constant type="vrsek"/>
+      <cd:constant type="spodek"/>
+      <cd:constant type="zadny"/>
+      <cd:constant type="vse"/>
+      <cd:constant type="radky"/>
+      <cd:constant type="ramecek"/>
+      <cd:constant type="nonumber"/>
+      <cd:constant type="vpravo"/>
+      <cd:constant type="vlevo"/>
+    </cd:keywords>
+    <cd:content/>
+  </cd:arguments>
 </cd:command>
 
 <cd:command name="placeongrid" file="core-grd.tex">
@@ -4106,6 +4171,15 @@
         <cd:constant type="vysoko"/>
         <cd:constant type="nizko"/>
         <cd:constant type="nastred"/>
+        <cd:constant type="vlevo"/>
+        <cd:constant type="nastred"/>
+        <cd:constant type="vpravo"/>
+        <cd:constant type="lefthanging"/>
+        <cd:constant type="righthanging"/>
+        <cd:constant type="levyokraj"/>
+        <cd:constant type="pravyokraj"/>
+        <cd:constant type="innermargin"/>
+        <cd:constant type="outermargin"/>
       </cd:parameter>
       <cd:parameter name="sirka">
         <cd:constant type="prizpusobive"/>
@@ -5034,6 +5108,12 @@
         <cd:constant type="ano"/>
         <cd:constant type="ne"/>
       </cd:parameter>
+      <cd:parameter name="zarovnani">
+        <cd:constant type="flushleft"/>
+        <cd:constant type="flushright"/>
+        <cd:constant type="nastred"/>
+        <cd:constant type="center"/>
+      </cd:parameter>
       <cd:parameter name="levyokraj">
         <cd:constant type="cd:dimension"/>
       </cd:parameter>
@@ -5471,6 +5551,7 @@
       <cd:constant type="otoceno"/>
       <cd:constant type="dvoustranny"/>
       <cd:constant type="negativ"/>
+      <cd:constant type="pozadi"/>
       <cd:constant type="90"/>
       <cd:constant type="180"/>
       <cd:constant type="270"/>

@@ -11,6 +11,8 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
+%D I will clean up this module (a la supp-pdf.tex preamble).
+
 %D Some support modules are more or less independant. This
 %D module, which is not part of plain \CONTEXT, provides the
 %D missing macros and declarations of registers.
@@ -20,23 +22,7 @@
 %D Because \LATEX\ has no safe package loading mechanism, we
 %D need to take care of possible interference.
 
-% \def\StartLatexHack
-%   {\edef\StopLatexHack
-%      {\catcode`\noexpand/=\the\catcode`/
-%       \catcode`\noexpand-=\the\catcode`-
-%       \catcode`\noexpand:=\the\catcode`:
-%       \catcode`\noexpand;=\the\catcode`;
-%       \catcode`\noexpand"=\the\catcode`"
-%       \catcode`\noexpand<=\the\catcode`<
-%       \catcode`\noexpand>=\the\catcode`>}%
-%   \catcode`/=12 \catcode`-=12
-%   \catcode`:=12 \catcode`;=12
-%   \catcode`"=12 \catcode`<=12 \catcode`>=12 }
-
-%D Adapted conform request from morten.hoegholm@latex-project.org,
-%D i.e. untested by me; using strings makes Babel more happy.
-
-\def\StartLatexHack
+\def\StartLatexHack % replace this by the one in supp-pdf
   {\edef\StopLatexHack
      {\catcode\string`\noexpand/=\the\catcode\string`/
       \catcode\string`\noexpand-=\the\catcode\string`-
@@ -189,20 +175,29 @@
   \newdimen\scratchdimen % 21
 \fi
 
-\ifnocontextobject \scratchcounter \do \newcount  \scratchcounter \fi
-\ifnocontextobject \scratchtoks    \do \newtoks   \scratchtoks    \fi
-\ifnocontextobject \scratchdimen   \do \newdimen  \scratchdimen   \fi
-\ifnocontextobject \scratchskip    \do \newskip   \scratchskip    \fi
-\ifnocontextobject \scratchmuskip  \do \newmuskip \scratchmuskip  \fi
-\ifnocontextobject \scratchbox     \do \newbox    \scratchbox     \fi
-\ifnocontextobject \scratchread    \do \newread   \scratchread    \fi
-\ifnocontextobject \scratchwrite   \do \newwrite  \scratchwrite   \fi
+\def\stripnewabove#1%
+  {\ifnum10<9#1 #1\else\expandafter\stripnewabove\fi}%
+
+\def\newabove\csname#1\endcsname#2% \dimen \name
+  {\csname#1\endcsname#2%
+   \ifnum\expandafter\stripnewabove\meaning#2>20\else
+     \newabove\csname#1\endcsname#2%
+   \fi}
+
+\ifnocontextobject \scratchcounter \do \newabove \csname  newcount\endcsname \scratchcounter \fi
+\ifnocontextobject \scratchtoks    \do \newabove \csname   newtoks\endcsname    \scratchtoks \fi
+\ifnocontextobject \scratchdimen   \do \newabove \csname  newdimen\endcsname   \scratchdimen \fi
+\ifnocontextobject \scratchskip    \do \newabove \csname   newskip\endcsname    \scratchskip \fi
+\ifnocontextobject \scratchmuskip  \do \newabove \csname newmuskip\endcsname  \scratchmuskip \fi
+\ifnocontextobject \scratchbox     \do           \csname    newbox\endcsname     \scratchbox \fi
+\ifnocontextobject \scratchread    \do           \csname   newread\endcsname    \scratchread \fi
+\ifnocontextobject \scratchwrite   \do           \csname   newwrite\endcsname  \scratchwrite \fi
 
 %D Watch out, in the past we ran into troubles with \type {\onepoint}
 %D (and others) mening something different in \LATEX\ then here. In
 %D such situations clashes are bound to happen. For this reason the
 %D assignments are no inside the test. We try to catch those situations
-%D but we cannot keep ahead of teh future.
+%D but we cannot keep ahead of the future.
 
 \ifnocontextobject \zeropoint      \do \newdimen  \zeropoint      \zeropoint     =    0pt \fi % else problems with dimen12
 \ifnocontextobject \onepoint       \do \newdimen  \onepoint       \onepoint      =    1pt \fi
@@ -660,7 +655,7 @@
 
 \def\dodohandletokens
   {\ifx\next\end \else
-     \docommando{\next}%
+     \docommand{\next}%
      \expandafter\dohandletokens
    \fi}
 
@@ -668,7 +663,7 @@
   {\afterassignment\dodohandletokens\let\next= }
 
 \long\def\handletokens#1\with#2%
-  {\let\docommando=#2%
+  {\let\docommand=#2%
    \dohandletokens#1\end}
 
 \fi

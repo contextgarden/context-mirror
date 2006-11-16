@@ -105,8 +105,13 @@
 
 \unprotect
 
+\def\overloadtextwidth#1%
+  {\makeupwidth#1\relax
+   \textwidth\makeupwidth
+   \hsize\makeupwidth}
+
 \startsetups streamlayer:default:settings
-  % set hsize etc
+  % set hsize etc, like \overloadtextwidth{12cm}
 \stopsetups
 
 \startsetups streamlayer:default:extras
@@ -126,7 +131,6 @@
     [\c!preset=\v!left\v!top]
     {\outputstreamcopy[\currentstreamlayer]}%
 \stopsetups
-
 
 \startsetups streamlayer:default:reset
    \outputstreambox[\currentstreamlayer]

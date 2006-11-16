@@ -638,6 +638,32 @@
     \endgroup
 \stopsetups
 
+\startsetups mmc:interval:fetch
+    \defineXMLnested [interval]
+        [closure=closed]
+        {\directsetup{mmc:interval:fetch:start}}
+        {\directsetup{mmc:interval:fetch:stop}}
+\stopsetups
+
+\startsetups mmc:interval:fetch:start
+    \begingroup
+    \startsavingXMLelements
+\stopsetups
+
+\startsetups mmc:interval:fetch:stop
+    \stopsavingXMLelements
+    \globallet\MMCintervalfrom\empty
+    \globallet\MMCintervalto  \empty
+    \ifcase\XMLstacklevel
+    \or
+      \xdef\MMCintervalfrom{\getXMLstackdata\plusone}
+    \or
+      \xdef\MMCintervalfrom{\getXMLstackdata\plusone}
+      \xdef\MMCintervalto  {\getXMLstackdata\plustwo}
+    \fi
+    \endgroup
+\stopsetups
+
 \setupMMLappearance[interval][\c!alternative=\v!a,\c!separator={,}]
 
 \mapXMLvalue {mmc:int} {closed}
@@ -750,6 +776,24 @@
         \getXMLentity{mapsto}
         \XMLfirstnamed{apply,reln,ci,cn}
     }
+    \endgroup
+\stopsetups
+
+\startsetups mmc:lambda:simple
+    \defineXMLnested
+        [lambda]
+        {\directsetup{mmc:lambda:simple:start}}
+        {\directsetup{mmc:lambda:simple:stop}}
+\stopsetups
+
+\startsetups mmc:lambda:simple:start
+    \begingroup
+    \startsavingXMLelements
+\stopsetups
+
+\startsetups mmc:lambda:simple:stop
+    \stopsavingXMLelements
+    \XMLfirstnamed{apply}
     \endgroup
 \stopsetups
 
@@ -1425,7 +1469,8 @@
       \halign{$\scriptstyle\hss##\hss$\cr#1\crcr}}}
 
 \def\MMLcSUMandPRODUCT#1#2%
-  {\XMLdoifonstackelse{condition,bvar,lowlimit}
+  {\begingroup
+   \XMLdoifonstackelse{condition,bvar,lowlimit}
      {\def\MMLcSUMlow
         {_{\XMLdoifonstackelse{condition}
              {\collectXMLnamedstack{condition}{\crcr}%
@@ -1439,8 +1484,22 @@
    \XMLdoifonstackelse{uplimit}
      {\def\MMLcSUMup{^{\XMLfirstnamed{uplimit}}}}
      {\let\MMLcSUMup\empty}%
+   \XMLdoifonstackelse{interval} % open math converter gives this
+     {\begingroup
+      \directsetup{mmc:interval:fetch}%
+      \XMLfirstnamed{interval}%
+      \endgroup
+      \ifx\MMCintervalfrom\empty\else
+        \def\MMLcSUMlow{_{\XMLdoifonstackelse{bvar}{\XMLfirstnamed{bvar}{=}}{}\MMCintervalfrom}}%
+      \fi
+      \ifx\MMCintervalto\empty \else
+        \def\MMLcSUMup{^{\MMCintervalto}}%
+      \fi}
+     {}%
    \MMLcreset#2\doMMLlimits{#1}\MMLcSUMup\MMLcSUMlow
-   \MMLcreset\XMLfirstnamed{apply,ci}}
+   \directsetup{mmc:lambda:simple}% a bit of open math conversion mess
+   \MMLcreset\XMLfirstnamed{apply,lambda,ci}%
+   \endgroup}
 
 \defineXMLcommand [limit] {\directsetup{mmc:limit}}
 
@@ -1714,7 +1773,7 @@
         % best is to grab the apply (independent of order), (*1*), so:
         %
         \XMLdoifonstackelse {apply} {
-            \doifelseMMCfunctioninapply \XMLstackposition \MMLcfunctionlist \donefalse \donetrue
+            \doifelseMMCfunctioninapply \XMLstackposition {\MMLcfunctionlist,divide} \donefalse \donetrue
         } {
             \donefalse
         }
@@ -2231,19 +2290,19 @@
 \def\MMLpTABLEmapper#1#2%
   {\doifXMLparelse{mtable}{#1}
      {\newcounter\MMLcounter
-      \def\docommando##1%
+      \def\docommand##1%
         {\increment\MMLcounter
          \expanded{\setupTABLE[column][\MMLcounter][#2=\XMLval{mmp:mtable}{#2:##1}\empty]}}%
-       \expanded{\processseparatedlist[\XMLpar{mtable}{#1}\empty]}[ ]\docommando}
+       \expanded{\processseparatedlist[\XMLpar{mtable}{#1}\empty]}[ ]\docommand}
      {}}
 
 \def\MMLpTABLEsplitter#1#2%
   {\doifXMLparelse{mtable}{#1}
      {\newcounter\MMLcounter
-      \def\docommando##1%
+      \def\docommand##1%
         {\increment\MMLcounter
          \expanded{\setupTABLE[column][\MMLcounter][#2=##1]}}%
-       \expanded{\processseparatedlist[\XMLpar{mtable}{#1}\empty]}[ ]\docommando}
+       \expanded{\processseparatedlist[\XMLpar{mtable}{#1}\empty]}[ ]\docommand}
      {}}
 
 \def\MMLpTABLEmap#1#2%
@@ -2340,9 +2399,9 @@
         % watch the extra {}'s
         \ifdone
             \ifodd\scratchcounter
-                ^{\getXMLstackdata\recurselevel}{}
-            \else
                 _{\getXMLstackdata\recurselevel}
+            \else
+                ^{\getXMLstackdata\recurselevel}{}
             \fi
         \else
             \doif{\getXMLstackname\recurselevel}{mprescripts}{\donetrue{}}
@@ -2486,6 +2545,72 @@
     \getXMLstackdata\plusone
     \ifnum\XMLstacklevel>\plusone
        \left(\MMLcreset\flushXMLstackwith\plustwo{\MMLseparator,}\right)
+    \fi
+\stopsetups
+
+\def\xflushXMLstackwith#1#2#3#4% num bgroup egroup whatever
+  {\dostepwiserecurse{#1}\XMLstacklevel\plusone
+     {#2\relax
+      \ifnum\recurselevel>#1\relax#4\fi
+      \getXMLstackdata\recurselevel
+      #3}}
+
+\def\xflushXMLstackfrom#1#2#3%
+  {\dostepwiserecurse{#1}\XMLstacklevel\plusone
+     {#2\getXMLstackdata\recurselevel#3}}
+
+% <apply><divide/>
+%     <apply><minus/>
+%         <apply><minus/><ci>b</ci></apply>
+%         <apply><minus/><ci>b</ci></apply>
+%         <apply><root/> <ci>a</ci></apply>
+%     </apply>
+%     <apply><minus/>
+%         <apply><minus/><ci>b</ci><ci>b</ci></apply>
+%         <apply><minus/><ci>b</ci></apply>
+%         <apply><root/> <ci>a</ci></apply>
+%     </apply>
+% </apply>
+
+\startsetups mmc:minus
+    \doif \@@MMLsignreduction \v!yes {
+        \setMMLcreset{fn,\MMLcfunctionlist}
+    }
+    \ifcase\XMLstacklevel
+    \or
+       % self
+    \or
+       -\getXMLstackdata\plustwo
+    \else
+        \dostepwiserecurse\plustwo\XMLstacklevel\plusone {
+            \begingroup
+            \doifelse {\getXMLstackname\recurselevel} {apply} {
+                \ifnum\recurselevel=\plustwo
+                    \begingroup
+                    \dodoifelseMMCfunctioninapply \recurselevel {minus} {
+                        \ifnum\XMLstacklevel>\plustwo
+                            \endgroup
+                        \else
+                            \endgroup
+                            \MMLcreset
+                        \fi
+                    } {
+                        \endgroup
+                    }
+                \else
+                    \doifelseMMCfunctioninapply \recurselevel {\MMLcfunctionlist,\MMLcconstructlist} {
+                        \MMLcreset
+                    } {
+                    }
+                \fi
+            } {
+            }
+            \getXMLstackdata\recurselevel
+            \ifnum\recurselevel<\XMLstacklevel\relax
+                -
+            \fi
+            \endgroup
+        }
     \fi
 \stopsetups
 

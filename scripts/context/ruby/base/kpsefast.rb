@@ -9,6 +9,8 @@
 # www       : www.pragma-ade.com
 
 # todo: multiple cnf files
+#
+# todo: cleanup, string or table store (as in lua variant)
 
 class String
 

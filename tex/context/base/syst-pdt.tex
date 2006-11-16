@@ -1,0 +1,48 @@
+%D \module
+%D   [       file=syst-pdt,
+%D        version=2006.08.11,
+%D          title=\CONTEXT\ System Macros,
+%D       subtitle=\PDFTEX\ specifics,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\ifx\pdftexversion\undefined \endinput \fi
+
+\unprotect
+
+% new after 1.10, watch the change in prefix
+
+\bindprimitive quitvmode      ptexquitvmode
+\bindprimitive noligatures    ptexnoligatures
+\bindprimitive setrandomseed  ptexsetrandomseed
+\bindprimitive uniformdeviate ptexuniformdeviate
+
+\bindprimitive quitvmode      pdfquitvmode
+\bindprimitive noligatures    pdfnoligatures
+\bindprimitive setrandomseed  pdfsetrandomseed
+\bindprimitive uniformdeviate pdfuniformdeviate
+
+\bindprimitive resettimer      pdfresettimer
+\bindprimitive elapsedtime     pdfelapsedtime
+
+% new per 1.40
+
+\bindprimitive ifprimitive    ifpdfprimitive
+\bindprimitive primitive      pdfprimitive
+\bindprimitive ifabsdim       ifpdfabsdim
+\bindprimitive ifabsnum       ifpdfabsnum
+
+\ifx\pdfobjcompresslevel\undefined \newcount\pdfobjcompresslevel \fi
+
+\def\nopdfcompression % for myself
+  {\pdfcompresslevel   \zerocount
+   \pdfobjcompresslevel\zerocount}
+
+\let\normalnoligatures\noligatures
+
+\protect

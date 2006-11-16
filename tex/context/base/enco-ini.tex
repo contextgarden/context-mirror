@@ -18,17 +18,6 @@
 %D well as moving plain handling of accents to this module
 %D instead of overloading plain \TEX\ commands.
 
-% \everyuppercase
-% \dotlessi
-% single/double quotes
-% hyphens
-% characterencoding  => encoding
-% charactermapping => mapping
-
-%D Most of this module used to be part of the font and language
-%D modules. While implementing Czech support, I decided to
-%D isolate this code.
-
 %D Patterns are kind of mixed with font encodings and
 %D mappings. Alas.
 
@@ -111,7 +100,7 @@
 \startmessages  romanian  library: encodings
   title: codificari
       1: codificarea --
-      2: codificarea -- este åncarcata
+      2: codificarea -- este Encarcata
       3: codificarea -- este necunoscuta
 \stopmessages
 
@@ -125,247 +114,10 @@
 %D First we define a few local or not yet initialized constants.
 
 \def\@map@{@m@ap@} % mapping prefix
-\def\@reg@{@r@eg@} % regime prefix
 \def\@fha@{@f@ha@} % font prefix
 \def\@cas@{@c@as@} % casecom prefix
 
 \ifx\currentlanguage\undefined \let\currentlanguage\s!en \fi
-
-%D \macros
-%D   {protectregime}
-%D
-%D The next boolean is used later on to prevent unwanted
-%D catcode changes. Use it with care.
-
-\newif\ifprotectregime \protectregimetrue
-
-\def\setregimecode#1#2%
-  {\ifprotectregime\ifnum\catcode#1=\active\else
-     \catcode#1=#2%\relax
-   \fi\else
-     \catcode#1=#2%\relax
-   \fi
-   \relax}
-
-%D \macros
-%D   {startregime, enableregime}
-%D
-%D Sometimes it makes sense to activate the characters in the
-%D upper half of the character table. Such a bundle of
-%D characters can be packages in a regime. Later we will see
-%D encodings (that links characters slots to glyphs) and
-%D mappings (that take care of hyphenation and case changes).
-%D
-%D When character~231 is of category code letter, it
-%D directly maps to glyph~231 (unless of course some virtual
-%D font is used). By making character~231 active, we can map
-%D it onto for instance the glyph in slot 233. This mapping
-%D can in itself be indirect, in the sense that it is for
-%D instance handled by an accent command.
-%D
-%D Regimes are implemented roughly the same as mappings, but
-%D enabled under different circumstances. In the future, the
-%D low level implementation may change.
-
-\def\startregime[#1]%
-  {\pushmacro\characterregime
-   \edef\characterregime{@#1@}%
-   \checkregimetoks}
-
-\def\checkregimetoks
-  {\doifundefined{\@reg@\characterregime}
-     {\@EA\newtoks\csname\@reg@\characterregime\endcsname}}
-
-\def\stopregime
-  {\popmacro\characterregime}
-
-%\long\def\startregime[#1]#2\stopregime{}
-
-\def\setregimetoks
-  {\checkregimetoks
-   \@EA\let\@EA\regimetoks\csname\@reg@\characterregime\endcsname}
-
-\let\enabledregime\empty
-
-% \def\enableregime[#1]%
-%   {\edef\characterregime{@#1@}%
-%    \ifx\enabledregime\characterregime \else
-%      \doifdefined{\@reg@\characterregime}
-%        {\the\csname\@reg@\characterregime\endcsname}%
-%      \let\enabledregime\characterregime
-%    \fi}
-
-% \def\enableregime[#1]%
-%   {\edef\characterregime{@#1@}%
-%    \ifx\enabledregime\characterregime \else
-%      \the\executeifdefined{\@reg@\characterregime}\emptytoks
-%    \fi}
-
-\def\defineregimesynonym
-  {\dodoubleargument\dodefineregimesynonym}
-
-\def\dodefineregimesynonym[#1][#2]%
-  {\setevalue{\@reg@::#1}{#2}}
-
-\def\trueregimename#1%
-  {\executeifdefined{\@reg@::#1}{#1}}
-
-% \def\enableregime[#1]%
-%   {\edef\characterregime{@\trueregimename{#1}@}%
-%    \ifx\enabledregime\characterregime \else
-%      \the\executeifdefined{\@reg@\characterregime}\emptytoks
-%    \fi}
-
-\def\enableregime[#1]%
-  {\edef\characterregime{@\trueregimename{#1}@}%
-   \ifx\enabledregime\characterregime \else
-     \doifundefined{\@reg@\characterregime}
-       {\expanded{\useregime[\pureencodingname\characterregime]}}% auto load
-     \the\executeifdefined{\@reg@\characterregime}\emptytoks
-   \fi}
-
-%D \macros
-%D   {defineactivedecimal, defineactivedecimals, defineactivetoken}
-%D
-%D The following commands are rather ugly ones. It makes a
-%D character active and assigns it a value. When expanded,
-%D the decimal number of the character is passed as first
-%D argument.
-%D
-%D \starttyping
-%D \def\decimalcharacter#1{\message{#1 is now active}}
-%D
-%D \defineactivedecimal 122 {\decimalcharacter}
-%D
-%D \defineactivedecimals 128 to 255 as {\decimalcharacter}
-%D \stoptyping
-%D
-%D This command is typically used in coding definitions,
-%D like the \UNICODE\ one.
-
-%\def\dodefineactivedecimal#1#2% \unexpanded ? pdfdoc encoding
-%  {\catcode#1=\active % maybe \protectregimetrue
-%   \scratchcounter=\the\uccode`~
-%   \uccode`~=#1\relax
-%   \uppercase{\unexpanded\edef~{\noexpand#2{\number#1}}}%
-%   \uccode`~=\scratchcounter}
-
-\def\dodefineactivedecimal#1#2% \unexpanded ? pdfdoc encoding
-  {\catcode#1\active
-   \scratchcounter\uccode\activehackcode
-   \uccode\activehackcode#1\relax
-   \uppercase{\unexpanded\edef~{\noexpand#2{\number#1}}}%
-   \uccode\activehackcode\scratchcounter}
-
-% \long\def\defineactivedecimal#1 #2 %
-%   {\setregimetoks
-%    \appendtoks\dodefineactivedecimal{#1}{#2}\to\regimetoks}
-%
-% \long\def\defineactivedecimals#1 to #2 as #3 %
-%   {\setregimetoks
-%    \dostepwiserecurse{#1}{#2}\plusone
-%      {\@EA\appendtoks\@EA\dodefineactivedecimal\@EA{\recurselevel}{#3}\to\regimetoks}}
-%
-% \long\def\defineactivetoken #1 #2% no {} after #2, else no kern
-%   {\setregimetoks
-%    \appendtoks\defineactivecharacter#1 {#2}\to\regimetoks}
-%
-% \long\def\defineactiveinspector #1 #2% watch the missing {}
-%   {\setregimetoks
-%    \appendtoks\defineactivecharacter#1 {#2}\to\regimetoks}
-%
-% faster:
-
-\long\def\defineactivedecimal#1 #2 %
-  {\setregimetoks
-   \regimetoks\expandafter{\the\regimetoks\dodefineactivedecimal{#1}{#2}}}
-
-\long\def\defineactivedecimals#1 to #2 as #3 %
-  {\setregimetoks
-   \dostepwiserecurse{#1}{#2}\plusone
-     {\regimetoks\@EA\@EA\@EA{\@EA\the\@EA\regimetoks\@EA\dodefineactivedecimal\@EA{\recurselevel}{#3}}}}
-
-\beginETEX
-
-  % much faster, prelude to run time loading
-
-  % \def\doexpandactivedecimal#1#2#3%
-  %   {\ifnum#1>#2 %
-  %      \expandafter\gobblefourarguments
-  %    \else
-  %      \noexpand\dodefineactivedecimal{#1}{#3}%
-  %      \expandafter\expandafter\expandafter\doexpandactivedecimal\expandafter
-  %    \fi\expandafter{\the\numexpr#1+1\relax}{#2}{#3}}
-  %
-  % \long\def\defineactivedecimals#1 to #2 as #3 %
-  %   {\setregimetoks
-  %    \scratchcounter#2\relax
-  %    \scratchtoks{#3}%
-  %    \expanded{\regimetoks{\the\regimetoks\doexpandactivedecimal{#1}{#2}{\the\scratchtoks}}}%
-  %    \ignorespaces}
-
-  \def\doexpandactivedecimal#1%
-    {\ifnum#1>\scratchcounter
-       \expandafter\gobbletwoarguments
-     \else
-       \noexpand\dodefineactivedecimal{#1}{\the\scratchtoks}%
-       \expandafter\expandafter\expandafter\doexpandactivedecimal\expandafter
-     \fi\expandafter{\the\numexpr#1+\plusone\relax}}
-
-  \long\def\defineactivedecimals#1 to #2 as #3 %
-    {\setregimetoks
-     \scratchcounter#2\relax
-     \scratchtoks{#3}%
-     \expanded{\regimetoks{\the\regimetoks\doexpandactivedecimal{#1}}}%
-     \ignorespaces}
-
-\endETEX
-
-\long\def\defineactivetoken #1 #2% no {} after #2, else no kern
-  {\setregimetoks
-   \regimetoks\expandafter{\the\regimetoks\defineactivecharacter#1 {#2}}}
-
-\long\def\defineactiveinspector #1 #2% watch the missing {}
-  {\setregimetoks
-   \regimetoks\expandafter{\the\regimetoks\defineactivecharacter#1 {#2}}}
-
-%D ....
-
-\edef\nocharacterregime{@\s!default @}
-
-\def\definetoken #1 % #1 = rawtoken or number
-  {\doifnumberelse{\string#1}
-     {\expanded{\dodefinetoken{\rawcharacter{#1}}}}
-     {\expanded{\dodefinetoken{\string#1}}}}
-
-\def\dodefinetoken#1#2%
-  {\defineactivecharacter#1 {\dohandletoken{#1}} %
-   \setvalue{\characterregime#1}{#2}}
-
-\beginTEX
-
-\def\dohandletoken#1%
-  {\csname\expandafter\ifx\csname\characterregime#1\endcsname\relax
-     \nocharacterregime\else\characterregime\fi#1\endcsname}
-
-\endTEX
-
-\beginETEX \ifcsname
-
-\def\dohandletoken#1%
-  {\csname\ifcsname\characterregime#1\endcsname
-     \characterregime\else\nocharacterregime\fi#1\endcsname}
-
-\endETEX
-
-%D ....
-
-\def\doautosetregime#1#2%
-  {\ifnum#2>127
-   % \def\!!stringa{#2 }%
-   % \@EA\@EA\@EA\defineactivetoken\@EA\!!stringa\@EA{\csname#1\endcsname}%
-     \expanded{\defineactivetoken #2 \@EA\noexpand\csname#1\endcsname}%
-   \fi}
 
 %D \macros
 %D   {setupencoding}
@@ -425,19 +177,6 @@
 %D So, character 165 becomes 181 in uppercase and 165 in
 %D lowercase. A mapping is activated with \type {\enablemapping}.
 
-% quite slow, esp when done at runtime
-
-% \def\startmapping[#1]%
-%   {\pushmacro\charactermapping
-%    \edef\charactermapping{@#1@}%
-%    \ifundefined{\@map@\charactermapping}%
-%      \expandafter\newtoks\csname\@map@\charactermapping\endcsname
-%    \fi}
-
-% \def\stopmapping
-%   {%\setmappingtoks\showthe\mappingtoks
-%    \popmacro\charactermapping}
-
 \def\startsavingmappingtoks#1%
   {\bgroup
    \edef\charactermapping{@#1@}%
@@ -451,7 +190,7 @@
      {\edef\@@expanded
         {\the\mappingtoks
          \ifnum\recurselevel>127
-           \noexpand\checkregimecode\recurselevel\space
+           \noexpand\settoletterunlessactive{\recurselevel}%
          \fi
          \lccode\recurselevel\ifnum\lccode\recurselevel=\zerocount\zerocount\else\space\the\lccode\recurselevel\space\fi
          \uccode\recurselevel\ifnum\uccode\recurselevel=\zerocount\zerocount\else\space\the\uccode\recurselevel\space\fi
@@ -488,30 +227,6 @@
      \expandafter\newtoks\csname\@cas@\charactermapping\endcsname
    \fi}
 
-\def\checkregimecode#1 %
-  {\ifprotectregime\ifnum\catcode#1=\active\else
-     \catcode#1\@@letter
-   \fi\else
-     \catcode#1\@@letter
-   \fi
-   \relax}
-
-% \def\definecasemap #1 #2 #3 % code lower upper
-%   {\setmappingtoks
-%    \doifelse{#2}{to}
-%      {\appendtoks\presetcaserange{#1}{#3}\to\mappingtoks}
-%      {\appendtoks\setcasemap #1 #2 #3 \to\mappingtoks}%
-%    \ignorespaces}
-%
-% faster
-
-% \def\definecasemap #1 #2 #3 % code lower upper
-%   {\setmappingtoks
-%    \doifelse{#2}{to}
-%      {\mappingtoks\@EA{\the\mappingtoks\presetcaserange{#1}{#3}}}
-%      {\mappingtoks\@EA{\the\mappingtoks\setcasemap #1 #2 #3 }}%
-%    \ignorespaces}
-
 \def\definecasemap #1 #2 #3 % code lower upper
   {\doifelse{#2}{to}
      {\presetcaserange{#1}{#3}}
@@ -521,11 +236,6 @@
 
 %D Saves a few tokens
 
-% \def\definecaseswap #1 #2 % lower upper
-%   {\setmappingtoks
-%    \mappingtoks\@EA{\the\mappingtoks\setcaseswap #1 #2 }%
-%    \ignorespaces}
-
 \def\definecaseswap #1 #2 % lower upper
   {\lccode#1=#1\relax
    \uccode#2=#2\relax
@@ -533,61 +243,13 @@
    \uccode#1=#2\relax
    \ignorespaces}
 
-% \def\definecaseself #1 % lower=upper=self
-%   {\setmappingtoks
-%    \mappingtoks\@EA{\the\mappingtoks\setcaseself #1 }%
-%    \ignorespaces}
-
 \def\definecaseself #1 % lower=upper=self
-  {\lccode #1=#1\relax
-   \uccode #1=#1\relax
+  {\lccode#1=#1\relax
+   \uccode#1=#1\relax
    \ignorespaces}
 
 %D Watch the \type {\definecasemap 127 to 255} option!
 %D Dedicated to Taco there is also:
-
-% \def\definecasemaps #1 to #2 lc #3 uc #4 % from to lc+ uc+
-%   {\dostepwiserecurse{#1}{#2}\plusone
-%      {\!!counta\recurselevel\advance\!!counta #3\relax
-%       \!!countb\recurselevel\advance\!!countb #4\relax
-%       \expanded{\definecasemap
-%         \recurselevel\space\the\!!counta\space\the\!!countb\space}}%
-%    \ignorespaces}
-
-% \beginETEX
-
-%   % much faster, prelude to run time loading
-
-%   % \def\doexpandcasemaps#1#2#3#4%
-%   %   {\ifnum#1>#2 %
-%   %      \expandafter\gobblefivearguments
-%   %    \else
-%   %      \noexpand\setcasemap#1\space\the\numexpr#1+#3\relax\space\the\numexpr#1+#4\relax\space
-%   %      \expandafter\expandafter\expandafter\doexpandcasemaps\expandafter
-%   %    \fi\expandafter{\the\numexpr#1+1\relax}{#2}{#3}{#4}}
-%   %
-%   % \def\definecasemaps #1 to #2 lc #3 uc #4 % from to lc+ uc+
-%   %   {\setmappingtoks
-%   %    \expanded{\mappingtoks{\the\mappingtoks\doexpandcasemaps{#1}{#2}{#3}{#4}}}%
-%   %    \ignorespaces}
-
-%   \def\doexpandcasemaps#1%
-%     {\ifnum#1>\scratchcounter
-%        \expandafter\gobbletwoarguments
-%      \else
-%        \noexpand\setcasemap#1\space\the\numexpr#1+\!!counta\relax\space\the\numexpr#1+\!!countb\relax\space
-%        \expandafter\expandafter\expandafter\doexpandcasemaps\expandafter
-%      \fi\expandafter{\the\numexpr#1+\plusone\relax}}
-
-%   \def\definecasemaps #1 to #2 lc #3 uc #4 % from to lc+ uc+
-%     {\setmappingtoks
-%      \scratchcounter#2\relax
-%      \!!counta#3\relax
-%      \!!countb#4\relax
-%      \expanded{\mappingtoks{\the\mappingtoks\doexpandcasemaps{#1}}}%
-%      \ignorespaces}
-
-% \endETEX
 
 \def\definecasemaps #1 to #2 lc #3 uc #4 % from to lc+ uc+
   {\dostepwiserecurse{#1}{#2}\plusone
@@ -606,70 +268,11 @@
 %D
 %D and saves a lot of typing (copying).
 
-% \def\resetcaserange #1 to #2
-%   {\dostepwiserecurse{#1}{#2}{1}
-%      {\expanded{\definecasemap\recurselevel\space0\space0\space}}}
-
-% \def\resetcaserange #1 to #2
-%  {\setmappingtoks
-%   \dostepwiserecurse{#1}{#2}\plusone
-%     {\edef\@@expanded{\recurselevel\space}%
-%      \@EA\appendtoks\@EA\setcasemap\@@expanded 0 0 \to\mappingtoks}%
-%   \ignorespaces}
-%
-% faster:
-
-% \def\resetcaserange #1 to #2
-%   {\setmappingtoks
-%    \dostepwiserecurse{#1}{#2}\plusone
-%      {\edef\@@expanded{\recurselevel\space}%
-%       \mappingtoks\@EA\@EA\@EA{\@EA\the\@EA\mappingtoks\@EA\setcasemap\@@expanded 0 0 }}%
-%    \ignorespaces}
-
-% \beginETEX
-
-%   % much faster, prelude to run time loading
-
-%   % \def\doexpandcaserange#1#2%
-%   %   {\ifnum#1>#2 %
-%   %      \expandafter\gobblethreearguments
-%   %    \else
-%   %      \noexpand\setcasemap #1 0 0 %
-%   %      \expandafter\expandafter\expandafter\doexpandcaserange\expandafter
-%   %    \fi\expandafter{\the\numexpr#1+1\relax}{#2}}
-%   %
-%   % \def\resetcaserange #1 to #2
-%   %   {\setmappingtoks
-%   %    \expanded{\mappingtoks{\the\mappingtoks\doexpandcaserange{#1}{#2}}}%
-%   %    \ignorespaces}
-
-%   \def\doexpandcaserange#1%
-%     {\ifnum#1>\scratchcounter
-%        \expandafter\gobbletwoarguments
-%      \else
-%        \noexpand\setcasemap #1 0 0 %
-%        \expandafter\expandafter\expandafter\doexpandcaserange\expandafter
-%      \fi\expandafter{\the\numexpr#1+\plusone\relax}}
-
-%   \def\resetcaserange #1 to #2
-%     {\setmappingtoks
-%      \scratchcounter#2\relax
-%      \expanded{\mappingtoks{\the\mappingtoks\doexpandcaserange{#1}}}%
-%      \ignorespaces}
-
-% \endETEX
-
 \def\resetcaserange #1 to #2
   {\dostepwiserecurse{#1}{#2}\plusone
      {\lccode\recurselevel\zerocount
       \uccode\recurselevel\zerocount}%
    \ignorespaces}
-
-% \def\presetcaserange#1#2% could be pre-expanded
-%   {\dostepwiserecurse{#1}{#2}\plusone
-%      {\setregimecode\recurselevel\@@letter
-%       \lccode \recurselevel=\recurselevel
-%       \uccode \recurselevel=\recurselevel}}
 
 \def\presetcaserange#1#2% could be pre-expanded
   {\dostepwiserecurse{#1}{#2}\plusone
@@ -678,76 +281,32 @@
    \ignorespaces}
 
 \def\setcasemap #1 #2 #3 %
-  {\setregimecode{#1}\@@letter
+  {\settoletterunlessactive{#1}%
    \lccode #1=#2
    \uccode #1=#3 }
 
 \def\setcaseswap #1 #2 %
-  {\setregimecode{#1}\@@letter
-   \setregimecode{#2}\@@letter
+  {\settoletterunlessactive{#1}%
+   \settoletterunlessactive{#2}%
    \lccode #1=#1
    \uccode #2=#2
    \lccode #2=#1
    \uccode #1=#2 }
 
 \def\setcaseself #1 %
-  {\setregimecode{#1}\@@letter
+  {\settoletterunlessactive{#1}%
    \lccode #1=#1
    \uccode #1=#1 }
-
-% \def\definespacemap #1 #2 % code sfcode
-%   {\setmappingtoks
-%    \appendtoks\setspacemap #1 #2 \to\mappingtoks
-%    \ignorespaces}
-
-% faster:
-
-% \def\definespacemap #1 #2 % code sfcode
-%   {\setmappingtoks
-%    \mappingtoks\expandafter{\the\mappingtoks\setspacemap #1 #2 }%
-%    \ignorespaces}
 
 \def\definespacemap #1 #2 % code sfcode
   {\sfcode#1=#2%
    \ignorespaces}
 
 \def\setspacemap #1 #2 %
-  {\setregimecode{#1}\@@other
+  {\settootherunlessactive{#1}%
    %\lccode #1=\zerocount
    %\uccode #1=\zerocount
    \sfcode #1=#2 }
-
-% \def\defineuppercasecom#1#2%
-%   {\setmappingtoks
-%    \appendtoks\setuppercasecom#1{#2}\to\mappingtoks
-%    \ignorespaces}
-%
-% \def\definelowercasecom#1#2%
-%   {\setmappingtoks
-%    \appendtoks\setlowercasecom#1{#2}\to\mappingtoks
-%    \ignorespaces}
-%
-% faster
-
-% \def\defineuppercasecom#1#2%
-%   {\setmappingtoks
-%    \mappingtoks\expandafter{\the\mappingtoks\setuppercasecom#1{#2}}%
-%    \ignorespaces}
-
-% \def\definelowercasecom#1#2%
-%   {\setmappingtoks
-%    \mappingtoks\expandafter{\the\mappingtoks\setlowercasecom#1{#2}}%
-%    \ignorespaces}
-
-% \def\defineuppercasecom#1#2%
-%   {\setmappingtoks
-%    \mappingtoks\expandafter{\the\mappingtoks\setuppercasecom#1{#2}}%
-%    \ignorespaces}
-
-% \def\definelowercasecom#1#2%
-%   {\setmappingtoks
-%    \mappingtoks\expandafter{\the\mappingtoks\setlowercasecom#1{#2}}%
-%    \ignorespaces}
 
 \def\defineuppercasecom#1#2%
   {\global\casecomtoks\expandafter{\the\casecomtoks\setuppercasecom#1{#2}}%
@@ -889,7 +448,6 @@
 \edef\characterencoding   {@\s!default @}
 \edef\nocharacterencoding {@\s!default @}
 \edef\charactermapping    {@\s!default @}
-\edef\characterregime     {@\s!default @}
 
 % todo, else \d j == \dj, print file and check
 
@@ -932,12 +490,6 @@
    \edef\nocharacterencoding{@\ifsecondargument#2\else\s!default\fi @}%
    \synchronizepatterns}
 
-%\def\enablesimpleencoding#1% e.g. \enableencoding{raw}
-%  {\edef\characterencoding{@#1@}% handy for XML key=val's
-%   \edef\nocharacterencoding{@\s!default @}} % evt noppes
-
-% in font switch and xml simple k/v remapping
-
 \edef\xnocharacterencoding{@\s!default @}
 
 \def\fastenableencoding#1%
@@ -950,10 +502,9 @@
 \def\dostartencoding[#1][#2]% encoding regime
   {%\showmessage\m!encodings1{#1}%
    \pushmacro\characterencoding
-   \pushmacro\characterregime
+   \pushmacro\currentregime
    \pushmacro\dohandleaccent              % still needed?
    \pushmacro\dohandlecommand             % still needed?
-   %pushmacro\definesortkey
    \pushmacro\doautosetregime
    \let\dohandleaccent\donthandleaccent   % still needed?
    \let\dohandlecommand\donthandlecommand % still needed?
@@ -961,14 +512,13 @@
    \edef\characterencoding{@#1@}%
    \doifelsenothing{#2}%
      {\let\doautosetregime\gobbletwoarguments}
-     {\def\characterregime{@#2@}}}
+     {\def\currentregime{#2}}}
 
 \def\stopencoding
   {\popmacro\doautosetregime
-   %popmacro\definesortkey
    \popmacro\dohandlecommand           % still needed?
    \popmacro\dohandleaccent            % still needed?
-   \popmacro\characterregime
+   \popmacro\currentregime
    \popmacro\characterencoding}
 
 % probably obsolete (hm, not yet)
@@ -1008,31 +558,7 @@
 %D {\flushsortkey}, a macro taking 4~arguments.
 %D
 %D This mechanism is currently being tested and subjected to
-%D changes!
-
-%D THS CODE IS OBSOLETE
-
-% \def\savesortkey#1#2#3#4%
-%   {\let\flushsortkey\relax % important
-%    \edef\!!stringa{sort:\characterencoding}%
-%    \ifundefined\!!stringa
-%      \let\!!stringb\empty
-%    \else
-%      \@EA\def\@EA\!!stringb\@EA{\csname\!!stringa\endcsname}%
-%    \fi
-%    \convertargument#1\to\asciiA \convertargument#2\to\asciiB
-%    \convertargument#3\to\asciiC \convertargument#4\to\asciiD
-%    \setevalue{\!!stringa}%
-%      {\!!stringb\flushsortkey{\asciiA}{\asciiB}{\asciiC}{\asciiD}}}
-%
-% \def\definesortkey#1#2#3#4%
-%   {}
-%
-% \def\flushsortkeys
-%   {\enablelanguagespecifics[\currentlanguage]%
-%    \getvalue{sort:\characterencoding}}
-%
-% \let\flushsortkey \relax
+%D changes! Obsolete:
 
 \let\definesortkey\gobblefourarguments
 \let\savesortkey  \gobblefourarguments
@@ -1059,31 +585,6 @@
      {\setvalue{\accentprefix\characterencoding#1\string#2}{\char#3 }} % space added
      {\setvalue{\accentprefix\characterencoding#1\string#2}{#3}}}
 
-\beginTEX
-
-\def\dohandleaccent#1#2%
-  {\@EA\ifx\csname\accentprefix\characterencoding#1\string#2\empty\endcsname\relax
-     \@EA\ifx\csname\accentprefix\nocharacterencoding#1\string#2\empty\endcsname\relax
-       \@EA\ifx\csname\accentprefix\characterencoding#1\endcsname\relax
-%         \@EA\ifx\csname\accentprefix\nocharacterencoding#1\endcsname\relax
-%           \donormaltextaccent{#1}{#2}%
-%         \else
-           \csname\accentprefix\nocharacterencoding#1\endcsname{#2}%
-%         \fi
-       \else
-         \csname\accentprefix\characterencoding#1\endcsname{#2}%
-       \fi
-     \else
-       \csname\accentprefix\nocharacterencoding#1\string#2\empty\endcsname
-     \fi
-   \else
-     \csname\accentprefix\characterencoding#1\string#2\empty\endcsname
-   \fi}
-
-\endTEX
-
-\beginETEX \ifcsname
-
 \def\dohandleaccent#1#2%
   {\ifcsname\accentprefix\characterencoding#1\string#2\empty\endcsname
      \csname\accentprefix\characterencoding#1\string#2\empty\endcsname
@@ -1097,8 +598,6 @@
 %     \donormaltextaccent{#1}{#2}%
    \fi\fi\fi}%\fi}
 
-\endETEX
-
 %D In patterns, characters have to be bytes. These will be
 %D mapped onto the compact pattern arrays.
 
@@ -1107,16 +606,12 @@
 
 \def\patternchar#1 {\rawcharacter{#1}} % space is part of character definition !
 
-\ifx \enablepatterntokens\undefined
-  \def\handlepatterntoken#1]{\csname#1\endcsname}
-\fi
+% \ifx \enablepatterntokens\undefined
+%   \def\handlepatterntoken#1]{\csname#1\endcsname}
+% \fi
 
 % we need to postpone catcode changes, e.g. hr patterns
 % have \catcode" -> which fails when " is letter
-
-% new patterns, some day
-%
-% \enableregime[utf]%
 
 \def\pathypsettings
   {\ifx \enablepatterntokens\undefined
@@ -1165,16 +660,6 @@
   {\egroup
    \stopreadingfile}
 
-% \def\definecharacter#1 #2 %
-%   {\ifundefined{#1}\setvalue{#1}{\dohandlecharacter{#1}}\fi
-%    \doifnumberelse{\string#2}
-%      {\setvalue{\characterprefix\characterencoding\string#1}{\char#2 }% watch the space
-%       \doautosetregime{#1}{#2}}
-%      {\setvalue{\characterprefix\characterencoding\string#1}{#2}}}
-
-% \def\numcharacter#1{\char#1 }
-% \let\dochar\numcharacter
-
            \def\thechr#1{\char#1 } % just in case \relax interferes
 \unexpanded\def\numchr#1{\char#1\relax}
 \unexpanded\def\strchr#1{\csname#1\endcsname}
@@ -1186,47 +671,14 @@
 
 \def\definecharacter#1 #2 %
   {\ifundefined{#1}\setvalue{#1}{\dohandlecharacter{#1}}\fi
-%    \doifnumberelse{\string#2}
    \doifnumberelse{\string#2}
      {\setvalue{\characterprefix\characterencoding\string#1}{\dochar{#2}}%
       \doautosetregime{#1}{#2}}
      {\setvalue{\characterprefix\characterencoding\string#1}{#2}}}
 
-% better
-%
-% \def\definecharacter#1 #2 %
-%   {\ifundefined{#1}\setvalue{#1}{\dohandlecharacter{#1}}\fi
-%    \doifnumberelse{\string#2}
-%      {\setevalue{\characterprefix\characterencoding\string#1}{\noexpand\charofnum{\number#2}}% watch the space
-%       \doautosetregime{#1}{#2}}
-%      {\setvalue{\characterprefix\characterencoding\string#1}{#2}}}
-%
-% \def\charofnum#1{\char#1 }
-% \def\byteofnum#1{\rawcharacter{#1}}
-
-\beginTEX
-
-\def\dohandlecharacter#1%
-  {\csname\characterprefix\expandafter\ifx\csname\characterprefix\characterencoding#1\endcsname\relax
-     \nocharacterencoding\else\characterencoding\fi#1\endcsname}
-
-% \def\dopatterncharacter#1%
-%   {\csname\expandafter\ifx\csname\characterprefix\characterencoding#1\endcsname\relax
-%      \strippedcsname\fallbackpatternchar\else\characterprefix\characterencoding#1\fi\endcsname}
-
-\endTEX
-
-\beginETEX \ifcsname
-
 \def\dohandlecharacter#1%
   {\csname\characterprefix\ifcsname\characterprefix\characterencoding#1\endcsname
      \characterencoding\else\nocharacterencoding\fi#1\endcsname}
-
-% \def\dopatterncharacter#1%
-%   {\csname\ifcsname\characterprefix\characterencoding#1\endcsname
-%      \characterprefix\characterencoding#1\else\strippedcsname\fallbackpatternchar\fi\endcsname}
-
-\endETEX
 
 % \def\fallbackpatternchar{x} % makes no sense, duplicate patterns
 
@@ -1240,20 +692,6 @@
   %\redefinecommand #1 % just to be sure
    \setvalue{\commandprefix\characterencoding\string#1}{#2}}
 
-% %D This one is needed in order to prevent problems with math (see \type
-% %D {\over} in dutch interface). This became a problem one when going
-% %D low level english.
-
-% \def\doifdefinedascommandelse#1%
-%   {\bgroup
-%    \convertargument\dohandlecommand{#1}\to\asciiA
-%    \@EAEAEA\convertargument\csname#1\endcsname\to\asciiB
-%    \ifx\asciiA\asciiB
-%      \egroup\expandafter\firstoftwoarguments
-%    \else
-%      \egroup\expandafter\secondoftwoarguments
-%    \fi}
-
 %D Here we see that redefining accents is characters is more
 %D or less the same as redefining commands. We also could have
 %D said:
@@ -1262,48 +700,6 @@
 %D \def\defineaccent#1 #2 {\definecommand#1\string#2 \char}
 %D \def\definecharacter#1 {\definecommand#1 \char}
 %D \stoptyping
-
-% obsolete
-%
-% %D \macros
-% %D   {redefineaccent}
-% %D
-% %D Telling \CONTEXT\ how to treat accents and special
-% %D characters is a two stage process. First we signal the
-% %D system which commands are to be adapted, after which we can
-% %D redefine their behavior when needed. We showed this in the
-% %D previous paragraphs. These redefinitions are grouped at the
-% %D end of this file, but we show some examples here.
-% %D
-% %D Accents or accent generating commands are redefined by:
-% %D
-% %D \starttyping
-% %D \redefineaccent  '  % grave
-% %D \redefineaccent  "  % diaeresis
-% %D \redefineaccent  ^  % circumflex
-% %D \redefineaccent  v  % caron
-% %D \stoptyping
-% %D
-% %D The original \PLAIN\ \TEX\ meaning of each accent generating
-% %D command is saved first. Next these commands are redefined to
-% %D do an indirect call to a macro that acts according to the
-% %D encoding vector in use.
-%
-% \def\redefineaccent%
-%   {\protectfontcharacters
-%    \doredefineaccent}
-%
-% \def\doredefineaccent#1 %
-%   {\def\!!stringa{\nocharacterencoding\string#1}%
-%    \doifundefined{\!!stringa}
-%      {\@EA\letvalue\@EA\!!stringa\@EA=\csname\string#1\endcsname}%
-%       % no \unexpanded, else pdfdoc fails
-%       \setvalue{\string#1}{\dohandleaccent#1}%
-%    \unprotectfontcharacters}
-%
-% \def\doredefineaccent#1 %
-%   {\setvalue{#1}{\dohandleaccent{#1}}%
-%    \unprotectfontcharacters}
 
 %D \macros
 %D   {defineaccentcommand}
@@ -1348,53 +744,6 @@
 \let\normalchar  =\char
 \let\normalaccent=\accent
 
-% \beginETEX \ifcsname
-%
-% \unexpanded\def\dohandleaccent#1#2%
-%   {\def\glyph{#2}%
-%    \ifx\glyph\empty
-%       \dohandleaccent#1\relax
-%    \else\ifx\glyph\space
-%      \dohandleaccent#1\relax
-%    \else\ifcsname\characterencoding#1\string#2\empty\endcsname
-%      \csname\characterencoding#1\string#2\endcsname
-%    \else\ifcsname\characterencoding#1\endcsname
-%      \csname\characterencoding#1\endcsname#2%
-%    \else
-%      \csname\nocharacterencoding#1\endcsname#2%
-%    \fi\fi\fi\fi
-%    \relax} % prevents further reading
-%
-% \endETEX
-%
-% \beginTEX
-%
-% \unexpanded\def\dohandleaccent#1#2%
-%   {\def\glyph{#2}%
-%    \ifx\glyph\empty
-%      \dohandleaccent#1\relax
-%    \else\ifx\glyph\space
-%      \dohandleaccent#1\relax
-%    \else\expandafter\ifx\csname\characterencoding#1\string#2\empty\endcsname\relax
-%      \expandafter\ifx\csname\characterencoding#1\endcsname\relax
-%        \csname\nocharacterencoding#1\endcsname#2%
-%      \else
-%        \csname\characterencoding#1\endcsname#2%
-%       \fi
-%    \else
-%      \csname\characterencoding#1\string#2\endcsname
-%    \fi\fi\fi
-%    \relax} % prevents further reading
-%
-% \endTEX
-%
-% %D The trick with \type{\\} is needed to prevent spaces from
-% %D being gobbled after the accented character, should we have
-% %D used \type{\next}, we should have ended up with gobbled
-% %D spaces. The \type {\empty} after \type {#2} takes care of
-% %D empty arguments, so that we can savely say~\type{\"{}}
-% %D and alike.
-
 %D \macros
 %D   {redefinecommand}
 %D
@@ -1420,8 +769,6 @@
   {% no \unexpanded, else pdfdoc fails
    \setvalue{\string#1}{\dohandlecommand{#1}}}%
 
-\beginETEX \ifcsname
-
 \def\dohandlecommand#1%
    {\csname\commandprefix
       \ifcsname\commandprefix\characterencoding#1\endcsname
@@ -1431,45 +778,13 @@
       \fi
     #1\endcsname}
 
-\endETEX
-
-\beginTEX
-
-\def\dohandlecommand#1%
-  {\csname\commandprefix
-     \expandafter\ifx\csname\commandprefix\characterencoding#1\endcsname\relax
-       \nocharacterencoding
-     \else
-       \characterencoding
-     \fi
-   #1\endcsname}
-
-\endTEX
-
-% %D \macros
-% %D   {redefinecharacter}
-% %D
-% %D Special characters, which differ from accented characters
-% %D in that they are to be presented as they are, are redefined
-% %D by
-% %D
-% %D \starttyping
-% %D \redefinecharacter  ae  % ae
-% %D \redefinecharacter  cc  % ccedilla
-% %D \stoptyping
-% %D
-% %D To keep things simple, we just copy this command:
-%
-% \let\redefinecharacter=\redefinecommand
-
 %D \macros
-%D   {currentencoding, currentregime, currentmapping}
+%D   {currentencoding, currentmapping}
 %D
 %D When we show 'm, we don't want to see the protection
 %D measures.
 
 \def\currentencoding{\@EA\dopureencodingname\characterencoding}
-\def\currentregime  {\@EA\dopureencodingname\characterregime  }
 \def\currentmapping {\@EA\dopureencodingname\charactermapping }
 
 \def\dopureencodingname @#1@{#1}
@@ -1623,54 +938,13 @@
 \newevery \everysanitize \EverySanitize
 
 %D \macros
-%D   {retainlccodes}
-%D
-%D One way of manipulating characters is changing the their
-%D \type{\lccode} and applying \type{\lowcase}. An example of
-%D this can be found in \type{spec-mis}.
-
-\ifx\retainlccodes\undefined
-
-  \def\retainlccodes{\dostepwiserecurse{0}{255}{1}{\lccode\recurselevel=\recurselevel}\relax}
-
-\fi
-
-% %D \macros
-% %D   {cc,CC}
-% %D
-% %D Hm, not in plain at all, those \cc's and \CC's.
-%
-% \def\CC{\c{C}}
-% \def\cc{\c{c}}
-%
-% %D \macros
-% %D   {dotlessi,dotlessj}
-% %D
-% %D We also save both dotless~\dotlessi\ and~\dotlessj. This
-% %D way we still have them were we expect them, even when
-% %D macros of font providers redefine them.
-%
-% \let\dotlessi=\i
-% \let\dotlessj=\j
-
-%D \macros
 %D   {defineuclass,defineudigit,udigit}
 %D
 %D The next few macros are experimental and needed for unicoded
 %D chinese characters.
 
-\beginETEX
-    \def\defineuclass #1 #2 #3 %
-      {\setvalue{uc\the\numexpr#2*256+#3\relax}{#1}}
-\endETEX
-
-\beginTEX
-    \def\defineuclass #1 #2 #3 %
-      {\scratchcounter256\relax
-       \multiply\scratchcounter#2\relax
-       \advance\scratchcounter#3\relax
-       \setvalue{uc\the\scratchcounter}{#1}}
-\endTEX
+\def\defineuclass #1 #2 #3 %
+  {\setvalue{uc\the\numexpr#2*256+#3\relax}{#1}}
 
 \def\defineudigit #1 #2 #3 {\setvalue{\characterencoding uc#1}{\uchar{#2}{#3}}}
 
@@ -1686,92 +960,6 @@
 
 \def\octuchar#1#2{\uchar{`#1}{`#2}}
 \def\hexuchar#1#2{\uchar{"#1}{"#2}}
-
-% %D Just to be sure, we save the original values of \type {\ss}.
-%
-% \ifx\undefined\SS \let\SS=\ss \fi
-% \ifx\undefined\sz \let\sz=\ss \fi
-%
-% %D Here come the definitions.
-%
-% \redefineaccent    '   % grave
-% \redefineaccent    `   % acute
-% \redefineaccent    "   % diaeresis
-% \redefineaccent    ^   % circumflex
-% \redefineaccent    ~   % tilde
-% \redefineaccent    v   % caron
-% \redefineaccent    u   % breve
-% \redefineaccent    .   % dotaccent
-% \redefineaccent    H   % hungarumlaut
-% \redefineaccent    t   % ........
-% \redefineaccent    r   % ........
-% \redefineaccent    =
-% \redefineaccent    b
-% \redefineaccent    c
-% \redefineaccent    d
-% \redefineaccent    k
-
-% obsolete (moved)
-%
-% \redefinecharacter ae  % ae
-% \redefinecharacter AE  % AE
-% \redefinecharacter oe  % oe
-% \redefinecharacter OE  % OE
-% \redefinecharacter o   % ostroke
-% \redefinecharacter O   % Ostroke
-% \redefinecharacter sz  % germandbls
-% \redefinecharacter SS  % germandbls
-% \redefinecharacter aa  % aring
-% \redefinecharacter AA  % Aring
-
-% \redefinecharacter th
-% \redefinecharacter TH
-% \redefinecharacter ng
-% \redefinecharacter NG
-% \redefinecharacter ij
-% \redefinecharacter IJ
-%
-% \redefinecharacter i  \redefinecharacter dotlessi
-% \redefinecharacter j  \redefinecharacter dotlessj
-%
-% \redefinecharacter l
-% \redefinecharacter L
-
-% replaced
-%
-% \defineaccent " i {\"\i}  \defineaccent " j {\"\j}
-% \defineaccent ^ i {\^\i}  \defineaccent ^ j {\^\j}
-% \defineaccent ` i {\`\i}  \defineaccent ` j {\`\j}
-% \defineaccent ' i {\'\i}  \defineaccent ' j {\'\j}
-% \defineaccent ~ i {\~\i}  \defineaccent ~ j {\~\j}
-
-% \redefinecharacter leftguillemot
-% \redefinecharacter rightguillemot
-% \redefinecharacter leftsubguillemot
-% \redefinecharacter rightsubguillemot
-
-% obsolete
-%
-% %D Some more:
-%
-% \startmapping[\s!default]
-%
-% \defineuppercasecom \i  {I}
-% \defineuppercasecom \j  {J}
-% \defineuppercasecom \sz {SS}
-% \defineuppercasecom \SS {SS}
-% \defineuppercasecom \l  \L
-% \defineuppercasecom \ae \AE
-% \defineuppercasecom \aa \AA
-% \defineuppercasecom \o  \O
-% \defineuppercasecom \oe \OE
-% \definelowercasecom \L  \l
-% \definelowercasecom \AE \ae
-% \definelowercasecom \AA \aa
-% \definelowercasecom \O  \o
-% \definelowercasecom \OE \oe
-%
-% \stopmapping
 
 %D Basics and fallbacks.
 
@@ -1807,24 +995,6 @@
 
 % will be overloaded later
 
-%\def\definetextaccent#1 #2%
-%  {\setvalue{\string#1}{#2}% will be overloaded
-%   \setvalue{normaltextaccent\string#1}{#2}}
-%
-%\def\donormaltextaccent#1%
-%  {\getvalue{normaltextaccent\string#1}}
-%
-%\definetextaccent ` {\buildtextaccent\textgrave}
-%\definetextaccent ' {\buildtextaccent\textacute}
-%\definetextaccent v {\buildtextaccent\textcaron}
-%\definetextaccent u {\buildtextaccent\textbreve}
-%\definetextaccent = {\buildtextaccent\textmacron}
-%\definetextaccent ^ {\buildtextaccent\textcircumflex}
-%\definetextaccent . {\buildtextaccent\textdotaccent}
-%\definetextaccent H {\buildtextaccent\texthungarumlaut}
-%\definetextaccent ~ {\buildtextaccent\texttilde}
-%\definetextaccent " {\buildtextaccent\textdiaeresis}
-
 \definecommand ` {\buildtextaccent\textgrave}
 \definecommand ' {\buildtextaccent\textacute}
 \definecommand r {\buildtextaccent\textring}
@@ -1853,7 +1023,7 @@
         {##\crcr\hbox{#5}\crcr
          \hidewidth
          \hskip#2\wd0
-         \hskip-#3\fontdimen1\font % in plain 1ex * dimenless value
+         \hskip-#3\slantperpoint % in plain 1ex * dimenless value
          \vbox to .2ex{\box0\vss}\hidewidth
          \crcr}}}
 
@@ -1861,11 +1031,6 @@
 \def\buildtextbottomdot{\bottomaccent{.25ex}{0}{5}{\textbottomdot}}
 \def\buildtextcedilla  {\bottomaccent{0ex}{0}{5}{\textcedilla}}
 \def\buildtextogonek   {\bottomaccent{-.1ex}{.5}{0}{\textogonek}}
-
-%\definetextaccent c {\buildtextcedilla}
-%\definetextaccent b {\buildtextmacron}
-%\definetextaccent d {\buildtextbottomdot}
-%\definetextaccent k {\buildtextogonek}
 
 \definecommand c {\buildtextcedilla}
 \definecommand b {\buildtextmacron}
@@ -1886,7 +1051,7 @@
      \hbox to \wd2 \bgroup
         \hss\copy2\hss
         \hskip-\wd2
-        \hss\hskip#2\wd0\hskip-#3\fontdimen1\font\raise#1\hbox{#4}\hss
+        \hss\hskip#2\wd0\hskip-#3\slantperpoint\raise#1\hbox{#4}\hss
      \egroup
    \egroup}
 
@@ -1922,32 +1087,6 @@
 \ifx\usepdffontresource\undefined
   \def\usepdffontresource #1 {} % this will be defined elsewhere
 \fi
-
-%D Some day \unknown\
-
-% \def\useencodingvector #1 % file tag
-%   {\pushmacro\definecharacter
-%    \pushmacro\startencoding
-%    \pushmacro\stopencoding
-%    \def\definecharacter ##1 ##2 %
-%      {\doifnumberelse{##2}
-%         {\ifnum##2>127
-%            \def\!!stringa{##2 }%
-%            \@EA\@EA\@EA\defineactivetoken\@EA\!!stringa\@EA{\csname##1\endcsname}%
-%          \fi}
-%         {}}%
-%    \def\startencoding[##1]{}
-%    \def\stopencoding{\endinput}
-%    \readfile{xxxx-#1}\donothing\donothing
-%    \popmacro\stopencoding
-%    \popmacro\startencoding
-%    \popmacro\definecharacter}
-%
-% \startregime[ec]
-%   \useencodingvector ec
-% \stopregime
-
-% new, to be documented (oeps, conflicts with existing code)
 
 \def\donthandleaccent        #1{\expandafter\string\csname#1\endcsname\space}
 \def\donthandlecommand       #1{\expandafter\string\csname#1\endcsname\space}
@@ -1994,7 +1133,40 @@
    \def\dohandlecommand  {\uhandlecommand}%
    \def\dohandlecharacter{\uhandlecharacter}}
 
-\def\convertencodedtokens{\dontexpandencoding}
+% no longer: \def\convertencodedtokens{\dontexpandencoding} but:
+
+\def\convertencodedtokens{\stringifyencodedtokens}
+
+% test case:
+%
+% \enableregime[cp1250]
+% \mainlanguage[cz]
+%
+% \starttext
+%
+% \title{éluùouËcÌ konÏ ˙pÌ}
+% \placelist[chapter][criterium=all]
+%
+% \startbuffer
+% <chapter>
+%     <title>éluùouËcÌ konÏ ˙pÌ</title>
+% </chapter>
+% \stopbuffer
+%
+% \defineXMLenvironment
+%   [chapter]
+%   {\defineXMLsave[title]}
+%   {\expanded{\chapter{\XMLflush{title}}}}
+% \processXMLbuffer
+%
+% \setuphead[chapter][expansion=yes]
+% \defineXMLenvironment
+%   [chapter]
+%   {\defineXMLsave[title]}
+%   {\chapter{\XMLflush{title}}}
+% \processXMLbuffer
+%
+% \stoptext
 
 %D Still valid? To be checked:
 

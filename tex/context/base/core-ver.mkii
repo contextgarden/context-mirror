@@ -1,0 +1,298 @@
+%D \module
+%D   [       file=core-ver,
+%D        version=2000.05.09,
+%D          title=\CONTEXT\ Core Macros,
+%D       subtitle=Verbatim,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\unprotect
+
+% uses \prettyidentifier and sets \setupprettytype
+
+\def\mksetupprettiesintype
+  {\doifundefined{setuppretty\prettyidentifier type}%
+     {\startnointerference
+        \restorecatcodes % also needed when loading during \newpretty
+        \startreadingfile % restore < and > if needed
+        \lowercasestring verb-\prettyidentifier.tex\to\filename
+        \readsysfile\filename\donothing\donothing
+        \stopreadingfile
+      \stopnointerference}%
+   \doifdefinedelse{setuppretty\prettyidentifier type}%
+     {\let\uncatcodecharacters\uncatcodeallcharacters % ugly, should be switch / todo
+      \def\mksetupprettytype{\getvalue{setuppretty\prettyidentifier type}}}
+     {\let\mksetupprettytype\relax}}
+
+% not that fast but catches \type{\command} % nothing more after \command
+%
+% \setupcolors[state=start]
+% \setuptype[option=TEX]
+% \setupcolors[textcolor=red]
+%
+% The options \type{before=\startsolutionbackground } and
+% \type{after=\stopsolutionbackground} take care of putting a frame,
+% which can
+%
+% {\blue The options \type{before=\startsolutionbackground } and
+% \type{after=\stopsolutionbackground} take care of putting a frame,
+% which} can
+
+\def\resumecoloraftergroup
+  {\localstartcolor[\s!black]%
+   \localstartcolor[\maintextcolor]%
+   \aftergroup\localstopcolor
+   \aftergroup\localstopcolor}
+
+% the rather messy \type command
+
+\def\mktype#1% was \dotype
+  {\bgroup
+   \resumecoloraftergroup % a problem is that we can still be in color mode, tricky hack
+   \strut % new, enables leading space in \type { abc } at par start
+   \let\currenttypingclass\??ty
+   \edef\currenttyping{#1}%
+   \catcode`\<=\@@other
+   \catcode`\>=\@@other
+   \futurelet\next\dodotype}
+
+\def\dodotypeA
+  {\initializetype
+   \initializetypegrouping
+   \verbatimfont
+   \verbatimcolor
+   \afterassignment\protectfirsttype\let\next=}
+
+\def\dodotypeB
+  {\initializetype
+   \setupnotypegrouping
+   \verbatimfont
+   \verbatimcolor
+   \let\next=}
+
+\def\dodotypeC<#1%
+  {\initializetype
+   \verbatimfont
+   \verbatimcolor
+   \if#1<%
+     \@EA\setupalternativetypegrouping
+   \else
+     \@EA#1%
+   \fi}
+
+\def\dodotypeD#1%
+  {\initializetype
+   \verbatimfont
+   \verbatimcolor
+   \catcode`#1=\@@endgroup}
+
+\def\dodotype
+  {\ifx\next\bgroup
+     \@EA\dodotypeA
+   \else\if\next<%
+     \doifelse{\typingparameter\c!option}\v!none
+       {\@EAEAEA\dodotypeB}{\@EAEAEA\dodotypeC}%
+   \else
+     \@EAEAEA\dodotypeD
+   \fi\fi}
+
+% Verbatim does not work when passed as an argument, so here is a
+% workaround. Beware, spaces are introduced after a \type {\csname}.
+
+\chardef\recodeverbatimmode\zerocount % 0=nothing 1=rescan 2=autorescan
+
+% \appendtoks \chardef\recodeverbatimmode\plustwo \to \everytabulate
+% \appendtoks \chardef\recodeverbatimmode\plustwo \to \everytable
+
+\def\dodotypeA
+  {\initializetype
+   \initializetypegrouping
+   \verbatimfont
+   \verbatimcolor
+   \ifcase\recodeverbatimmode
+     \@EA\dodotypeAA
+   \or
+     \@EA\dodotypeAB
+   \or
+     \ifnum\catcode`\{=\@@active
+       \@EAEAEA\dodotypeAB
+     \else
+       \@EAEAEA\dodotypeAA
+     \fi
+   \else
+     \@EA\dodotypeAA
+   \fi}
+
+\def\dodotypeAA
+  {\afterassignment\protectfirsttype\let\next=}
+
+\def\dodotypeAB
+  {\bgroup
+   \catcode`\}=\@@endgroup
+   \catcode`\{=\@@begingroup
+   \afterassignment\redotypeAB\global\globalscratchtoks}
+
+\def\redotypeAB
+  {\egroup
+   \expandafter\convertargument\the\globalscratchtoks\to\ascii
+   \ifx\scantokens\undefined\ascii\else\everyeof{\hskip-\spaceskip}\scantokens\expandafter{\ascii}\fi
+   \egroup}
+
+\bgroup
+\catcode`\[=\@@begingroup
+\catcode`\]=\@@endgroup
+\catcode`\{=\@@active
+\catcode`\}=\@@active
+\gdef\initializetypegrouping
+  [\ifnum\catcode`\{=\@@active
+     \let\normalactivebgroup{%
+     \let\normalactiveegroup}%
+   \else
+     \catcode`\{=\@@active
+     \catcode`\}=\@@active
+     \let\normalactivebgroup\leftargument
+     \let\normalactiveegroup\rightargument
+   \fi
+   \def\activeleftargument
+     [\bgroup
+      \catcode`\}=\@@active
+      \let}\activerightargument
+      \normalactivebgroup]%
+   \def\activerightargument
+     [\normalactiveegroup
+      \egroup]%
+   \let{=\activeleftargument
+   % not \let}=\egroup, otherwise things go wrong in alignments (???)
+   \catcode`\}=\@@endgroup]
+\egroup
+
+\bgroup
+\catcode`\<=\@@active
+\catcode`\>=\@@active
+\gdef\setupalternativetypegrouping
+  {\catcode`\<=\@@active
+   \catcode`\>=\@@active
+   \def\doless
+     {\ifx<\next
+        \def\next
+          {\bgroup\switchslantedtype
+           \let\next=}%
+      \else
+        \let\next\lesscharacter
+      \fi
+      \next}%
+   \def\domore
+     {\ifx>\next
+        \def\next
+          {\egroup
+           \let\next=}%
+      \else
+        \let\next\morecharacter
+      \fi
+      \next}%
+   \def<{\futurelet\next\doless}%
+   \def>{\futurelet\next\domore}}
+\egroup
+
+\def\setupnotypegrouping
+  {\catcode`\<=\@@begingroup
+   \catcode`\>=\@@endgroup}
+
+\def\doenterdoublelesstype
+  {\ifx\next\egroup
+      \lesscharacter\null\lesscharacter
+   \else
+     \bgroup\switchslantedtype
+     \let\doenterdoublemoretype\egroup
+   \fi}
+
+\def\doenterdoublemoretype
+  {\def\doenterdoubletype
+     {\ifx\next\egroup
+        \morecharacter\null\morecharacter
+      \fi}}
+
+\bgroup
+\catcode`\<=\@@active
+\catcode`\>=\@@active
+\gdef\setupgroupedtype
+  {\catcode`\<=\@@active
+   \catcode`\>=\@@active
+   \def\doless
+     {\ifx<\next
+        \def\next
+          {\def\enterdoubletype{\futurelet\next\doenterdoublelesstype}%
+           \afterassignment\enterdoubletype
+           \let\next=}%
+      \else
+        \let\next\lesscharacter
+      \fi
+      \next}%
+   \def\domore
+     {\ifx>\next
+        \def\next
+          {\def\enterdoubletype{\futurelet\next\doenterdoublemoretype}%
+           \afterassignment\enterdoubletype
+           \let\next=}%
+      \else
+        \let\next\morecharacter
+      \fi
+      \next}%
+   \def<{\futurelet\next\doless}%
+   \def>{\futurelet\next\domore}}
+\egroup
+
+\def\mksetupcommandsintype% can also be \string\
+  {\setupgroupedtype
+   \edef\\{\typingparameter\c!escape}%
+   \letvalue{\\}=\\% for instance \/=/
+   \@EA\catcode\@EA`\\=\@@escape
+   \def\BTEX##1\ETEX##2% ##2 gobbles active space
+     {\naturaltextext##1\unskip\relax}}
+
+\def\mksetupslantedtype
+  {\setupgroupedtype}
+
+\let\protectedfirsttype\string % \relax for special cases
+
+% The next one is safe for: \def\xx#1{\type{#1}} \xx{\ifx}
+
+\bgroup
+\catcode`\<=\active
+\catcode`\>=\active
+\gdef\doprotectfirsttype
+  {\normalifx\next<%
+     \endrobusttest \let\next\relax
+   \normalelse\normalifx\next\bgroup
+     \endrobusttest \let\next\relax
+   \normalelse\normalifx\next\egroup % takes care of \type{}
+     \endrobusttest \let\next\relax
+   \normalelse\normalifx\next\activeleftargument
+     \endrobusttest \let\next\relax
+   \normalelse
+     \endrobusttest \let\next\protectedfirsttype
+   \normalfi\normalfi\normalfi\normalfi
+   \next}
+\egroup
+
+\def\protectfirsttype
+  {\beginrobusttest
+   \futurelet\next\doprotectfirsttype}
+
+% typing:
+
+\def\mktypeblockverbatim#1#2%
+  {\processdisplayverbatim{#2}} % needs to be fixed
+
+% typefile:
+
+\def\mktypefileverbatim     {\processfileverbatim     \readfilename} % #1
+\def\mktypefilelinesverbatim{\processfilelinesverbatim\readfilename} % #1 / #2#3
+
+\protect \endinput
+

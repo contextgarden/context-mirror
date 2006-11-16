@@ -263,15 +263,12 @@
   {\begingroup % why no \bgroup
    \dowithnextbox
      {\setbox\scratchbox\null
-      \ht\scratchbox\ht#1\dp\scratchbox\dp#2\wd\scratchbox\wd#3%
+      \ht\scratchbox\ht#1%
+      \dp\scratchbox\dp#2%
+      \wd\scratchbox\wd#3%
       \box\scratchbox
       \endgroup}
    \normalhbox}
-
-% used in table
-%
-% \let\ifv@\undefined \let\v@true\undefined \let\v@false\undefined
-% \let\ifh@\undefined \let\h@true\undefined \let\h@false\undefined
 
 \let\finph@nt\undefined
 
@@ -473,31 +470,13 @@
 %D \doiftext     {data} {then branch}
 %D \stoptyping
 
-%\def\doiftextelse#1#2#3%
-%  {\bgroup
-%   \setbox0=\normalhbox{#1}%
-%   \ifdim\wd0>\zeropoint
-%     \egroup#2%
-%   \else
-%     \egroup#3%
-%   \fi}
-
-% \def\doiftextelse#1%
-%   {\bgroup
-%    \setbox0\normalhbox{#1}%
-%    \ifdim\wd0>\zeropoint
-%      \egroup\@EA\firstoftwoarguments
-%    \else
-%      \egroup\@EA\secondoftwoarguments
-%    \fi}
-
 \def\doiftextelse#1%
   {\bgroup
-   \setbox0\normalhbox{\ignorespaces#1\removeunwantedspaces}%
-   \ifdim\wd0>\zeropoint
-     \egroup\@EA\firstoftwoarguments
-   \else
+   \setbox\scratchbox\normalhbox{\ignorespaces#1\removeunwantedspaces}%
+   \ifzeropt\wd\scratchbox
      \egroup\@EA\secondoftwoarguments
+   \else
+     \egroup\@EA\firstoftwoarguments
    \fi}
 
 \def\doiftext#1#2%
@@ -541,7 +520,7 @@
 %D is needed because \type{\afterassignment} is executed inside
 %D the box.
 
-\newbox\nextbox
+\ifx\nextbox\undefined \newbox\nextbox \fi
 
 \long\def\dowithnextbox#1%
   {\long\def\dodowithnextbox{#1}%
@@ -813,8 +792,11 @@
 
 \newbox\tmpshapebox
 
+\newif\ifreshapingfailed % may save redundant runs
+
 \def\doreshapebox#1#2#3#4% \shapebox, \shapepenalty, \shapekern, \shapeskip
-  {\ifzeropt\ht\oldshapebox % \ifdim\ht\oldshapebox=\zeropoint
+  {\global\reshapingfailedfalse
+   \ifzeropt\ht\oldshapebox % \ifdim\ht\oldshapebox=\zeropoint
      \setbox\newshapebox\normalvbox{}%
    \else
      \setbox\newshapebox\normalvbox
@@ -824,6 +806,20 @@
         \doloop{\dodoreshapebox{#1}{#2}{#3}{#4}}}%
      \setbox\newshapebox\box\tmpshapebox
    \fi}
+
+\ifx\originalshapebox\undefined \let\originalshapebox\oldshapebox \fi
+
+\beginTEX
+
+\def\insertshapesignal
+  {\normalhbox to \shapesignal{\strut\hss}% plus \strut
+   \prevdepth\strutdp} % never \nointerlineskip
+
+% \def\restoreshapebox
+%   {\global\setbox\tmpshapebox\copy\originalshapebox} % \oldshapebox
+
+\def\restoreshapebox % compensates for the signal
+  {\global\setbox\tmpshapebox\vbox{\vskip-\lineheight\unvcopy\oldshapebox}}
 
 \def\dodoreshapebox#1#2#3#4% \shapebox, \shapepenalty, \shapekern, \shapeskip
   {\ifzeropt\lastskip % \ifdim\lastskip=\zeropoint\relax
@@ -856,27 +852,79 @@
      \unskip
    \fi
    \ifnum\shapecounter>100 % can be less
-     \message{<<forced exit from shapebox>>}%
-     \global\setbox\tmpshapebox\copy\oldshapebox
+     \global\reshapingfailedtrue
+     \message{!!forced exit from shapebox!!}%
+     \restoreshapebox
      \exitloop
    \else
      \advance\shapecounter \plusone
    \fi}
+
+\endTEX
+
+% Now that the lastnode bugfixes are wide spread we can use:
+
+\beginETEX \lastnodetype
+
+\def\insertshapesignal
+  {\normalhbox to \shapesignal{\strut\hss}% plus \strut
+   \prevdepth\strutdp} % never \nointerlineskip
+
+% \def\restoreshapebox
+%   {\global\setbox\tmpshapebox\copy\originalshapebox} % \oldshapebox
+
+\def\restoreshapebox % compensates for the signal
+  {\global\setbox\tmpshapebox\vbox{\vskip-\lineheight\unvcopy\oldshapebox}}
+
+\def\dodoreshapebox#1#2#3#4% \shapebox, \shapepenalty, \shapekern, \shapeskip
+  {\ifnum\lastnodetype=\@@gluenode
+     \shapeskip\lastskip
+     \global\setbox\tmpshapebox\normalvbox{#4\unvbox\tmpshapebox}%
+     \unskip
+   \else\ifnum\lastnodetype=\@@kernnode
+     \shapekern\lastkern
+     \global\setbox\tmpshapebox\normalvbox{#3\unvbox\tmpshapebox}%
+     \unkern
+   \else\ifnum\lastnodetype=\@@penaltynode
+     \shapepenalty\lastpenalty
+     \global\setbox\tmpshapebox\normalvbox{#2\unvbox\tmpshapebox}%
+     \unpenalty
+   \else\ifnum\lastnodetype<\zeropoint
+     \exitloop
+   \else
+     \setbox\shapebox\lastbox
+     \ifvoid\shapebox
+     \else\ifdim\wd\shapebox=\shapesignal\relax
+       \exitloop
+     \else
+       \shapecounter\zerocount
+       \global\setbox\tmpshapebox\normalvbox{#1\unvbox\tmpshapebox}%
+     \fi\fi
+   \fi\fi\fi\fi
+   \ifnum\shapecounter>100 % can be less
+     \global\reshapingfailedtrue
+     \message{!!forced exit from shapebox \the\lastnodetype !!}%
+     \restoreshapebox
+     \exitloop
+   \else
+     \advance\shapecounter \plusone
+   \fi}
+
+\endETEX
 
 \def\beginofshapebox
   {\setbox\oldshapebox\normalvbox
      \bgroup
      \reshapingboxtrue
      \the\everyshapebox
-     \normalhbox to \shapesignal{\strut\hss}% plus \strut
-     \prevdepth\strutdp} % never \nointerlineskip
+     \insertshapesignal}
 
 \def\endofshapebox
   {\endgraf
    \egroup}
 
-\let\beginshapebox=\beginofshapebox
-\let\endshapebox  =\endofshapebox
+\let\beginshapebox\beginofshapebox
+\let\endshapebox  \endofshapebox
 
 \def\flushshapebox
   {\bgroup
@@ -930,8 +978,8 @@
 % \omlijnd[offset=0pt,hoogte=8mm,uitlijnen={rechts,laho}]{\bfa test}
 
 \def\innerflushshapebox
-  {\ifzeropt\ht\newshapebox \else % \ifdim\ht\newshapebox=\zeropoint\relax \else
-     \unvcopy\newshapebox\relax
+  {\ifzeropt\ht\newshapebox \else
+     \unvcopy\newshapebox\relax % unvcopy ! else spacing problem
    % \kern-\dp\newshapebox\relax
    \fi}
 
@@ -1077,6 +1125,73 @@
 %D \stoptyping
 
 %D \macros
+%D   {processtokens}
+%D
+%D We fully agree with (most) typographers that inter||letter
+%D spacing is only permitted in fancy titles, we provide a
+%D macro that can be used to do so. Because this is
+%D (definitely and fortunately) no feature of \TEX, we have to
+%D step through the token list ourselves.
+%D
+%D \starttyping
+%D \processtokens {before} {between} {after} {space} {tokens}
+%D \stoptyping
+%D
+%D An example of a call is:
+%D
+%D \startbuffer
+%D \processtokens {[} {+} {]} {\space} {hello world}
+%D \stopbuffer
+%D
+%D \typebuffer
+%D
+%D This results in:
+%D
+%D \getbuffer
+%D
+%D The list of tokens may contain spaces, while \type{\\},
+%D \type{{}} and \type{\ } are handled as space too.
+
+\def\dodoprocesstokens
+  {\ifx\nextprocessedtoken\lastcharacter
+     \after
+     \let\nextprocessedtoken\relax
+   \else\ifx\nextprocessedtoken\bgroup
+     \def\nextprocessedtoken
+       {\dowithnextbox
+          {\before{\copy\nextbox}% \before can use nextbox several times
+           \let\before\between
+           \doprocesstokens}
+           \hbox\bgroup}%
+   \else
+     \expandafter\if\space\nextprocessedtoken
+       \after\white
+       \let\before\savedbefore
+     \else
+       \before\nextprocessedtoken
+       \let\before\between
+     \fi
+     \let\nextprocessedtoken\doprocesstokens
+   \fi\fi
+   \nextprocessedtoken}
+
+\def\doprocesstokens% the space after = is essential
+  {\afterassignment\dodoprocesstokens\let\nextprocessedtoken= }
+
+\def\processtokens#1#2#3#4#5%
+  {\begingroup
+   \def\lastcharacter{\lastcharacter}%
+   \def\space{ }%
+   \let\\=\space
+   \def\before {#1}%
+   \def\between{#2}%
+   \def\after  {#3}%
+   \def\white  {#4}%
+   \let\savedbefore\before
+   \doprocesstokens#5\lastcharacter
+   \endgroup}
+
+%D \macros
 %D   {doboundtext}
 %D
 %D Sometimes there is not enough room to show the complete
@@ -1153,7 +1268,8 @@
 %D When no width is given, the whole text comes available. The
 %D sentinel is optional. This is about the third version.
 
-\ifx\fakecompoundhyphen\undefined \let\fakecompoundhyphen\relax \fi
+\ifx\fakecompoundhyphen\undefined \let\fakecompoundhyphen\relax      \fi
+\ifx\veryraggedright   \undefined \def\veryraggedright{\raggedright} \fi
 
 %D The simple alternative is as follows:
 %D
@@ -1712,7 +1828,7 @@
 %D De eerste switch bepaald het uitlijnen, de tweede rekt de
 %D individuele kolommen op naar \type{\vsize}.
 
-\def\setrigidcolumnhsize#1#2#3%
+\def\setrigidcolumnhsize#1#2#3% todo: \dimexpr
   {\xdef\savedrigidhsize{\the\hsize}%
    \hsize#1\relax
    \global\chardef\rigidcolumns#3\relax
@@ -2291,16 +2407,16 @@
   {\bgroup
    \sizeofbox\zeropoint
    \scratchdimen\zeropoint
-   \def\docommando
+   \def\docommand
      {\advance\sizeofbox\scratchdimen
-      \futurelet\next\dodocommando}%
-   \def\dodocommando
+      \futurelet\next\dodocommand}%
+   \def\dodocommand
      {\ifx\next\bgroup
         \expanded{\egroup#1 to \the\sizeofbox}%
       \else
-        \@EA\afterassignment\@EA\docommando\@EA\scratchdimen
+        \@EA\afterassignment\@EA\docommand\@EA\scratchdimen
       \fi}%
-   \docommando}
+   \docommand}
 
 %D Some new, still undocumented features:
 
@@ -2630,11 +2746,11 @@
      \@EA\newbox\csname\@@stackbox#1\endcsname
    \else
      \global\setbox\csname\@@stackbox#1\endcsname\normalvbox{}%
-     \def\docommando##1{\global\letbeundefined{\@@stacktag#1:##1}}%
-     \processcommacommand[\getvalue{\@@stacklst#1}]\docommando
+     \def\docommand##1{\global\letbeundefined{\@@stacktag#1:##1}}%
+     \processcommacommand[\getvalue{\@@stacklst#1}]\docommand
    \fi
-   \setgvalue{\@@stacklst#1}{}%
-   \setgvalue{\@@stackmax#1}{0}}
+   \global\letvalue{\@@stacklst#1}\empty
+   \global\letvalue{\@@stackmax#1}\!!zeropoint}
 
 \def\savebox#1#2% stack name
   {\dowithnextbox
@@ -2686,14 +2802,20 @@
    \global\setbox\csname\@@stackbox:#1:#2\endcsname\normalvbox}
 
 \def\initializeboxstack#1%
-  {\def\docommando##1{\setstackbox{#1}{##1}{}}%
+  {\def\docommand##1{\setstackbox{#1}{##1}{}}%
    \ifcsname\@@stacklst#1\endcsname
-     \processcommacommand[\getvalue{\@@stacklst#1}]\docommando
+     \processcommacommand[\getvalue{\@@stacklst#1}]\docommand
    \fi
-   \setgvalue{\@@stacklst#1}{}}
+   \global\letvalue{\@@stacklst#1}\empty}
 
 \def\savebox#1#2% stack name
-  {\setxvalue{\@@stacklst#1}{\getvalue{\@@stacklst#1},#2}%
+  {% beware, \setxvalue defines the cs beforehand so we cannot use the
+   % test inside the { }
+   \ifcsname\@@stacklst#1\endcsname
+     \setxvalue{\@@stacklst#1}{\csname\@@stacklst#1\endcsname,#2}%
+   \else
+     \setxvalue{\@@stacklst#1}{#2}%
+   \fi
    \setstackbox{#1}{#2}}
 
 \def\foundbox#1#2%
@@ -2960,3 +3082,14 @@
       \egroup}}
 
 \protect \endinput
+
+% a bit of test code:
+
+\hbox \bgroup
+    \ruledvbox                {\hbox{\strut gans}}
+    \ruledvbox to \lineheight {\hbox{\strut gans}}
+    \ruledvbox to \lineheight {\hbox       {gans}}
+    \ruledvbox to \strutheight{\hbox       {gans}}
+    \ruledvbox to \strutheight{\hbox{\strut gans}}
+    \ruledvbox to \strutheight{\vss\hbox{gans}}
+\egroup

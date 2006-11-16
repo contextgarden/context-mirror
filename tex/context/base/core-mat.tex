@@ -131,19 +131,6 @@
 \def\belowdisplayshortskipsize% obsolete
   {\displayskipsize\displayshortskipfactor\displayshortskipgluefactor}
 
-\def\setdisplayskip#1#2#3% obsolete
-  {#1=#2\relax
-   \advance#1 -\parskip
-   \advance#1 -#3\relax}
-
-\def\setdisplayskips % obsolete
-  {\setdisplayskip\abovedisplayskip     \abovedisplayskipsize     \zeropoint
-   \setdisplayskip\belowdisplayskip     \belowdisplayskipsize     \zeropoint
-   \setdisplayskip\abovedisplayshortskip\abovedisplayshortskipsize\baselineskip
-   \setdisplayskip\belowdisplayshortskip\belowdisplayshortskipsize\baselineskip}
-
-% so far for unused stuff
-
 \def\forgetdisplayskips % to do
   {\abovedisplayskip     \zeropoint
    \belowdisplayskip     \zeropoint
@@ -192,7 +179,7 @@
        {\dostartattributes\??fm\c!numberstyle\c!numbercolor
         \strut
         \@@fmleft
-        \preparethenumber\??fm\composedsectionnumber\preparednumber
+        \preparefullnumber\??fm\composedsectionnumber\preparednumber
         \labeltexts\v!formula
           {\ignorespaces\preparednumber\ignorespaces\hetsubnummer\unskip}%
         \@@fmright
@@ -350,7 +337,6 @@
    \freezedimenmacro\rightdisplaymargin
    \freezedimenmacro\predisplaysizethreshhold
    \forgetdisplayskips
-   \let\setdisplayskips\relax
    \ifoptimizedisplayspacing
      \ifdim\lastlinewidth>\zeropoint
        \abovedisplayshortskip-\strutht\relax
@@ -380,54 +366,12 @@
    \nonoindentation
    \dochecknextindentation{\??fm\currentformula}%
    \egroup
+   \hangafter\minusone   % added for side floats
+   \hangindent\zeropoint % added for side floats
    \setfalse\handleformulanumber
    \dorechecknextindentation} % here ?
 
 \newif\ifinformula
-
-% \def\startdisplaymath
-%   {\ifgridsnapping
-%      \beforedisplayspace
-%      \snapmathtogrid\vbox
-%      \bgroup
-%      \informulatrue
-%     %\forgetall % breaks side floats
-%    \else
-%      \bgroup
-%      \informulatrue
-%     %\forgetall % otherwise backgrounds fail
-%      \ifdim\lastskip<\zeropoint\else
-%        \par
-%        \ifvmode \ifdim\parskip>\zeropoint\relax
-%          \vskip-\parskip
-%        \fi \fi
-%      \fi
-%      \doif\displaygridcorrection{-\v!boven}{\kern-\strutht}% new, currently only option/default
-%      \beforedisplayspace
-%      \par
-%      \ifvmode
-%        \verticalstrut
-%        \vskip-\struttotal
-%        \vskip-\baselineskip
-%      \fi
-%    \fi
-%    $$\setdisplaydimensions
-%    \setpredisplaysize\lastlinewidth
-%    \startinnermath}
-
-% \def\stopdisplaymath
-%   {\stopinnermath
-%    $$%
-%    \ifgridsnapping
-%      \egroup
-%      \afterdisplayspace
-%    \else
-%      \par\ifvmode\ifdim\parskip>\zeropoint\vskip-\parskip\fi\fi
-%      \afterdisplayspace
-%      \egroup
-%    \fi
-%    \globallet\displaylinecorrection\empty
-%    \gdef\displaygridcorrection{\displaygridsnapping}}
 
 \def\startdisplaymath
   {\ifgridsnapping
@@ -502,17 +446,6 @@
 
 \def\moveformula
   {\dosingleempty\domoveformula}
-
-% \def\domoveformula[#1]% brr gaat mogelijk fout
-%   {\ifgridsnapping
-%      \iffirstargument
-%        \xdef\displaygridcorrection{#1}%
-%      \else
-%        \gdef\displaygridcorrection{-\v!boven}% handy with short preline
-%      \fi
-%    \else
-%      \gdef\displaygridcorrection{\displaygridsnapping}%
-%    \fi}
 
 \def\domoveformula[#1]% brr gaat mogelijk fout
   {\iffirstargument
@@ -596,6 +529,85 @@
   {\setfalse\incrementformulanumber
    \dodoubleempty\doplaceformula}
 
+%D \macros
+%D   {setupsubformulas, startsubformulas}
+%D
+%D New code (by Aditya Mahajan / cleaned up by HH, please check):
+
+% \setupsubformulas[conversion=romannumerals]
+%
+% \placeformula
+% \startsubformulas[Maxwell]
+%     \startformulas
+%      \startformula \startalign
+%        \NC \nabla\cdot\bf E  \NC = \frac{\rho}{\varepsilon_0} \NR[Maxwell 1]
+%        \NC \nabla\times\bf E \NC = - \frac{\partial\bf B}{\partial t} \NR[Maxwell II]
+%        \stopalign \stopformula
+%        \startformula \startalign
+%          \NC \nabla\cdot \bf B \NC = 0 \NR[Maxwell III]
+%          \NC \nabla\times\bf B \NC = \mu_0{\bf j}+\varepsilon_0\mu_0\frac{\partial\bf E}{\partial t} \NR[Maxwell IV]
+%        \stopalign \stopformula
+%    \stopformulas
+% \stopsubformulas
+%
+% Maxwell : \in [Maxwell] and II : \in [Maxwell II]
+
+\def\setupsubformulas
+  {\dodoubleargument\getparameters[\??fn]}
+
+\definenumber[\v!formula*]
+
+\def\subformulaconversion % #1
+  {\getnumber[\v!formula*]\@@fnseparator\convertnumber\@@fnconversion} % #1
+
+\defineconversion[\v!subformula][\subformulaconversion]
+
+\def\startsubformulas
+  {\dosingleempty\dostartsubformulas}
+
+\def\dostartsubformulas[#1]%
+  {\incrementnumber[\v!formula]%
+   \makesectionnumber[\v!formula]%
+   \doflushformulalistentry{\composedsectionnumber}%
+   \doifsomething{#1}{\rawreference\s!for{#1}\composedsectionnumber}%
+   \expanded{\setupnumber
+     [\v!formula*]
+     [\c!start={\rawnumber[\v!formula]},
+      \c!way=\@@fmway,
+      \c!conversion=\@@fmconversion]}%
+   \bgroup
+   \savenumber[\v!formula]%
+   \setupformulas
+     [\c!conversion=\v!subformula,
+      \c!way=\v!by\v!text]%
+   \resetnumber
+     [\v!formula]}
+
+\def\stopsubformulas
+  {\restorenumber[\v!formula]%
+   \egroup
+   \resetlastlinewidth
+   \nonoindentation
+   \dochecknextindentation\??fn
+   \dorechecknextindentation} % here ?
+
+%D Named subformulas
+
+\def\startnamedsubformulas
+  {\dosingleempty\dostartnamedsubformulas}
+
+\def\dostartnamedsubformulas[#1]#2%
+  {\setformulalistentry{#2}%
+   \startsubformulas[#1]}
+
+\def\stopnamedsubformulas
+  {\stopsubformulas}
+
+\setupsubformulas
+  [\c!conversion=\v!character,
+   \c!separator=\@@fmseparator,
+   \c!indentnext=\@@fmindentnext]
+
 %D Experimental goodie:
 %D
 %D \startbuffer
@@ -630,32 +642,6 @@
 
 %D The implementation of placement is a bit ugly:
 
-% \def\doplaceformula[#1][#2]% #2 = dummy, gobbles spaces
-%   {\def\redoplaceformula
-%      {\bgroup\def\dostartformula####1{\relax}%
-%       \ifx\next\bgroup
-%         \@EA\moreplaceformula % [ref]{}
-%       \else
-%         \expandafter\convertargument\e!start\to\asciiA % actually, \next's meaning is \dostartformula
-%         \expandafter\convertargument\next   \to\asciiB
-%         \ExpandBothAfter\doifincsnameelse\asciiA\asciiB
-%           {\egroup \@EA\dodoplaceformula}% [ref]\start
-%           {\egroup \@EA\dispplaceformula}% [ref]$$
-%       \fi[#1]{}}%
-%    \futurelet\next\redoplaceformula}
-%
-% \long\def\moreplaceformula[#1]#2#3#4% #2 dummy #4 gobbles spaces
-%   {\def\redoplaceformula
-%      {\expandafter\convertargument\e!start\to\asciiA
-%       \expandafter\convertargument\next   \to\asciiB
-%       \ExpandBothAfter\doifincsnameelse\asciiA\asciiB
-%         {\egroup \dodoplaceformula}% [ref]\start
-%         {\egroup \dispplaceformula}% [ref]$$
-%       [#1]{#3}}%
-%    \futurelet\next\redoplaceformula#4}
-%
-% BEGIN OF PATCH (CORE-MAT.TEX)
-
 \def\doplaceformula[#1][#2]% #2 = dummy, gobbles spaces
   {\def\redoplaceformula
      {\bgroup
@@ -683,27 +669,30 @@
       [#1]{#3}}%
    \futurelet\next\redoplaceformula#4}
 
-% END OF PATCH
-
 \def\startformulas#1\stopformulas % new / to be internationalized
   {\bgroup
    \forgetdisplayskips
    \startdisplaymath
    \setlocalhsize
-   \long\def\startformula##1\stopformula{\advance\scratchcounter\plusone}%
-   \scratchcounter\zerocount #1% preroll
-   \divide \hsize \scratchcounter
+   \long\def\startformula##1\stopformula
+     {\advance\scratchcounter\plusone}%
+   \scratchcounter\zerocount
+   #1% preroll
+   \ifcase\scratchcounter\else
+     \divide \hsize \scratchcounter
+   \fi
    \hbox to \localhsize \bgroup
      \hss
      \def\normalstartformula{\vskip-\strutdepth$$}% i hate this
-     \def\normalstartformula{\vskip-\strutdepth$$}% i hate this
      \def\normalstopformula {$$}%
-     \def\startformula{$\vcenter\bgroup\normalstartformula}%
-     \def\stopformula {\normalstopformula\egroup$\hss}%
+     \def\startformula      {$\vcenter\bgroup\normalstartformula}%
+     \def\stopformula       {\normalstopformula\egroup$\hss}%
      #1%
      \egroup
    \stopdisplaymath
-   \egroup}
+   \egroup
+   \hangafter\minusone    % added for side floats
+   \hangindent\zeropoint} % added for side floats
 
 \def\dispplaceformula[#1]#2$$#3$$%
   {\dodoplaceformula[#1]{#2}\dostartformula{}#3\dostopformula}
@@ -782,38 +771,6 @@
 
 \def\mathhbox
   {\iftracemath\ruledhbox\else\hbox\fi}
-
-% \def\startmathbox#1#2%
-%   {\hsize\displaywidth
-%    \global\let\@eqno \empty \def\eqno {\gdef\@eqno }%
-%    \global\let\@leqno\empty \def\leqno{\gdef\@leqno}%
-%    % added
-%    \let\normalreqno\eqno
-%    \let\normalleqno\leqno
-%    % added
-%    \doplaceformulanumber
-%    \mathhbox to \displaywidth\bgroup
-%      \mathinnerstrut
-%      $\displaystyle
-%      \ifx\@leqno\empty\else \ifcase#2
-%        \rlap{\@leqno}%
-%      \else
-%        \@leqno\hskip\formulaparameter\c!distance
-%      \fi \fi
-%      #1}
-
-% \def\stopmathbox#1#2%
-%   {$#1%
-%    \ifx\@eqno\empty\else \ifcase#2
-%      \llap{\@eqno}%
-%    \else
-%      \hskip\formulaparameter\c!distance\@eqno
-%    \fi \fi
-%    \egroup}
-
-% \defineinnermathhandler\v!right {\startmathbox\empty1}{\stopmathbox\hfill0}
-% \defineinnermathhandler\v!left  {\startmathbox\hfill0}{\stopmathbox\empty1}
-% \defineinnermathhandler\v!middle{\startmathbox\hfill0}{\stopmathbox\hfill0}
 
 \chardef\mathraggedstatus=0 % normal left center  right
 \chardef\mathnumberstatus=0 % nothing normal shift_right
@@ -896,9 +853,12 @@
      \fi
    \egroup}
 
-\defineinnermathhandler\v!left  {\startmathbox\plusone  }{\stopmathbox}
-\defineinnermathhandler\v!middle{\startmathbox\plustwo  }{\stopmathbox}
-\defineinnermathhandler\v!right {\startmathbox\plusthree}{\stopmathbox}
+\defineinnermathhandler\v!left      {\startmathbox\plusone  }{\stopmathbox}
+\defineinnermathhandler\v!middle    {\startmathbox\plustwo  }{\stopmathbox}
+\defineinnermathhandler\v!right     {\startmathbox\plusthree}{\stopmathbox}
+\defineinnermathhandler\v!flushleft {\startmathbox\plusthree}{\stopmathbox}
+\defineinnermathhandler\v!center    {\startmathbox\plustwo  }{\stopmathbox}
+\defineinnermathhandler\v!flushright{\startmathbox\plusone  }{\stopmathbox}
 
 %D [The examples below are in english and don't process in the
 %D  documentation style, which will be english some day.]
@@ -1074,18 +1034,6 @@
 
 \appendtoks \advance\supersubmode \plusone \to \everysupersub
 
-% \def\dodosuper#1{\normalsuper{\the\everysupersub#1}}
-% \def\dodosuber#1{\normalsuber{\the\everysupersub#1}}
-%
-% \def\dosuper{\ifx\next\bgroup\expandafter\dodosuper\else\normalsuper\fi}
-% \def\dosuber{\ifx\next\bgroup\expandafter\dodosuber\else\normalsuber\fi}
-%
-% \def\super{\futurelet\next\dosuper}
-% \def\suber{\futurelet\next\dosuber}
-%
-% \def\super#1{\normalsuper{\the\everysupersub#1}}
-% \def\suber#1{\normalsuber{\the\everysupersub#1}}
-
 \appendtoks
   \gridsupsubstyle
 \to \everysupersub
@@ -1221,13 +1169,6 @@
 \newconditional\halfcrazymathlines % \settrue\halfcrazymathlines
 \newconditional\crazymathsnapping  % \settrue\crazymathsnapping
 
-% \appendtoks
-%  \doifelse\@@mtgrid\v!ja
-%    {\settrue \crazymathsnapping }{\setfalse\crazymathsnapping}%
-%  \doifelse\@@mtstap\v!halveregel
-%    {\settrue \halfcrazymathlines}{\setfalse\halfcrazymathlines}%
-% \to \everysetuptextformulas
-
 \appendtoks
  \doifelse\@@mtgrid\v!yes        \settrue\setfalse\crazymathsnapping
  \doifelse\@@mtstep\v!halfline\settrue\setfalse\halfcrazymathlines
@@ -1313,13 +1254,13 @@
          {\incolortrue\localcolortrue
           \backgroundline[gray]{\showstruts\strut\flushnextbox}}%
      \fi
-     \def\docommando##1%
+     \def\docommand##1%
        {\doif{##1}-{\settrue \halfcrazymathlines}%
         \doif{##1}+{\setfalse\halfcrazymathlines}%
         \doif{##1}={\!!doneatrue}%
         \doif{##1}<{\!!donedtrue}%
         \doif{##1}>{\!!doneetrue}}%
-     \processcommalist[#1]\docommando
+     \processcommalist[#1]\docommand
 \if!!doneb
   \if!!donec \else
     \setfalse\halfcrazymathlines
@@ -1457,8 +1398,7 @@
             \crazymathindent
             \iftracegridsnapping
               \setbox\scratchbox\hbox
-                {\incolortrue\localcolortrue\blue
-                 \ruledhbox{\box\scratchbox}}%
+                {\incolortrue\localcolortrue\color[blue]{\ruledhbox{\box\scratchbox}}}%
             \fi
             \box\scratchbox
             \endgraf
@@ -1678,17 +1618,6 @@
 \def\mathineqalign#1{$\forgetalign\displaystyle{{}#1{}}$}
 \def\textineqalign#1{$\forgetalign#1$}
 
-% \def\eqalign#1% why no halign here, probably because of displaywidth
-%   {\!!toksa{\strut\hfil$\displaystyle{##}$}%
-%    \!!toksb{&$\displaystyle{{}##{}}$\hfil}%
-%    \!!toksc\emptytoks
-%    \buildeqalign
-%    \null\,\vcenter
-%      {\openup.25\bodyfontsize% was: \openup\jot
-%       \mathsurround\zeropoint
-%       \expandafter \ialign \expandafter {\the\scratchtoks\crcr#1\crcr}%
-%    }\,}
-
 \def\eqalign#1% why no halign here, probably because of displaywidth
   {\null\,\vcenter
      {\openup.25\bodyfontsize% was: \openup\jot
@@ -1699,22 +1628,6 @@
 % preamble is scanned for tabskips so we need the span to prevent an error message
 
 \chardef\eqalignmode\plusone
-
-% \def\preparereqalignno
-%   {\!!toksa{\strut\firstineqalign\hfil\leftofeqalign\span\mathineqalign{##}\rightofeqalign\tabskip\zeropoint}%
-%    \!!toksb{&\nextineqalign\leftofeqalign\span\mathineqalign{##}\rightofeqalign\tabskip\zeropoint}%
-%    \!!toksc{\hfil\tabskip\centering&\llap{\span\textineqalign{##}}\tabskip\zeropoint}%
-%    \buildeqalign
-%    \presetdisplaymath
-%    \tabskip\centering}
-
-% \def\prepareleqalignno
-%   {\!!toksa{\strut\firstineqalign\hfil\leftofeqalign\span\mathineqalign{##}\rightofeqalign\tabskip\zeropoint}%
-%    \!!toksb{&\nextineqalign\leftofeqalign\span\mathineqalign{##}\rightofeqalign\tabskip\zeropoint}%
-%    \!!toksc{\hfil\tabskip\centering&\kern-\displaywidth\rlap{\span\textineqalign{##}}\tabskip\displaywidth}%
-%    \buildeqalign
-%    \presetdisplaymath
-%    \tabskip\centering}
 
 \def\preparereqalignno
   {\!!toksa{\strut\firstineqalign\hfil\leftofeqalign\span\mathineqalign{##}\rightofeqalign\tabskip\zeropoint}%
@@ -1758,17 +1671,6 @@
    #1%
    \halign \ifcase\eqalignmode \or to \displaywidth \fi \@EA {\the\scratchtoks\crcr#2\crcr}%
    \finishalignno}
-
-% \def\dobothaligneqalignno#1%
-%   {\ifmmode
-%      \displ@y % \let\doplaceformulanumber\relax % strange hack
-%      \vcenter\bgroup
-%      \def\finishalignno{\crcr\egroup\egroup}%
-%    \else
-%      \def\finishalignno{\crcr\egroup}%
-%    \fi
-%    #1%
-%    \halign \ifcase\eqalignmode \or to \displaywidth \fi \@EA \bgroup\the\scratchtoks\crcr}
 
 \def\mrlap#1%
   {\setbox\scratchbox\hbox{#1}%
@@ -1852,13 +1754,6 @@
 \def\dodoalignNC
   {\gdef\doalignNC##1{&##1}}
 
-% \def\doalignNR[#1][#2]%
-%   {\doifsomething{#1}
-%      {\doifelse{#1}{+}
-%         {\doformulanumber[][#2][]{}}
-%         {\doformulanumber[#1][#2][]{}}}%
-%    \crcr}
-
 \def\doalignNR[#1][#2]%
   {\donestedformulanumber{#1}{#2}\crcr}
 
@@ -1908,13 +1803,6 @@
 
 \definemathalignment[align]            % default case (this is what amstex users expect)
 \definemathalignment[\v!mathalignment] % prefered case (this is cleaner, less clashing)
-
-% \def\startsplit
-%   {\startalign[*]} % no number by default
-%
-% \def\stopsplit
-%   {&\doalignNR[+][]\crcr % for a number on last line
-%    \stopalign}
 
 %D \startbuffer
 %D \placeformula \startformula \eqalignno {
@@ -2283,22 +2171,86 @@
 \def\dodomatrixNC
   {\gdef\domatrixNC{\endmath&}}
 
+\def\installmathmatrixhandler#1#2%
+  {\setvalue{\??mx:#1}{#2}}
+
+% First alternative:
+%
+% \def\processlowhighmathmatrix#1%
+%   {\def\mathmatrixleft
+%      {\setbox\nextbox}
+%    \def\mathmatrixright
+%      {#1.5\dimexpr\nextboxdp-\nextboxht\relax
+%       \hbox{$\mathmatrixparameter\c!left
+%             \vcenter{\unvbox\nextbox}%
+%             \mathmatrixparameter\c!right$}}%
+%     \let\mathmatrixbox\vbox}
+%
+% \installmathmatrixhandler\v!high  {\processlowhighmathmatrix\raise}
+% \installmathmatrixhandler\v!low   {\processlowhighmathmatrix\lower}
+%
+% \installmathmatrixhandler\v!top   {\processlowhighmathmatrix\raise}
+% \installmathmatrixhandler\v!bottom{\processlowhighmathmatrix\lower}
+%
+% \installmathmatrixhandler\v!lohi
+%   {\def\mathmatrixleft {\mathmatrixparameter\c!left}%
+%    \def\mathmatrixright{\mathmatrixparameter\c!right}%
+%    \let\mathmatrixbox\vcenter}
+%
+% An alternative
+%
+% \let\mathmatrixleft \empty
+% \let\mathmatrixright\empty
+%
+% \def\processlowhighmathmatrix#1%
+%   {\dowithnextbox
+%      {#1.5\dimexpr\nextboxdp-\nextboxht\relax
+%       \hbox{$\mathmatrixparameter\c!left
+%             \vcenter{\unvbox\nextbox}%
+%             \mathmatrixparameter\c!right$}}%
+%    \vbox}
+%
+% \def\processlohimathmatrix
+%   {\dowithnextbox
+%      {\mathmatrixparameter\c!left
+%       \vcenter{\unvbox\nextbox}%
+%       \mathmatrixparameter\c!right}%
+%    \vbox}
+%
+% \installmathmatrixhandler\v!high  {\def\mathmatrixbox{\processlowhighmathmatrix\raise}}
+% \installmathmatrixhandler\v!low   {\def\mathmatrixbox{\processlowhighmathmatrix\lower}}
+% \installmathmatrixhandler\v!top   {\def\mathmatrixbox{\processlowhighmathmatrix\raise}}
+% \installmathmatrixhandler\v!bottom{\def\mathmatrixbox{\processlowhighmathmatrix\lower}}
+% \installmathmatrixhandler\v!lohi  {\let\mathmatrixbox \processlohimathmatrix}
+%
+% Final version
+
+\let\mathmatrixleft \empty % experimental hook
+\let\mathmatrixright\empty % experimental hook
+
+\def\processlowhighmathmatrix#1#2%
+  {\dowithnextbox
+     {\scratchdimen\dimexpr(\nextboxdp-\nextboxht)/2 \ifcase#2\or+\mathaxisheight\textfont2\fi\relax
+      \ifcase#1\relax\or\lower\scratchdimen\or\or\raise\scratchdimen\fi
+      \hbox{$\mathmatrixparameter\c!left
+            \vcenter{\unvbox\nextbox}%
+            \mathmatrixparameter\c!right$}}%
+   \vbox}
+
+\installmathmatrixhandler\v!top   {\def\mathmatrixbox{\processlowhighmathmatrix\plusthree\plusone  }}
+\installmathmatrixhandler\v!high  {\def\mathmatrixbox{\processlowhighmathmatrix\plusthree\zerocount}}
+\installmathmatrixhandler\v!lohi  {\def\mathmatrixbox{\processlowhighmathmatrix\plustwo  \zerocount}}
+\installmathmatrixhandler\v!low   {\def\mathmatrixbox{\processlowhighmathmatrix\plusone  \zerocount}}
+\installmathmatrixhandler\v!bottom{\def\mathmatrixbox{\processlowhighmathmatrix\plusone  \plusone  }}
+
 \def\dostartmathmatrix[#1][#2]%
   {\begingroup
    \edef\currentmathmatrix{#1}%
    \doifassignmentelse{#2}{\setupmathmatrix[#1][#2]}\donothing
    \null
-   \mathmatrixparameter\c!left
-   \processaction
-      [\mathmatrixparameter\c!location]
-      [   \v!high=>\let\vchbox\vtop,
-           \v!low=>\let\vchbox\vbox,
-          \v!lohi=>\let\vchbox\vcenter,
-           \v!top=>\let\vchbox\vtop,
-        \v!bottom=>\let\vchbox\vbox,
-       \s!default=>\let\vchbox\vcenter,
-       \s!unknown=>\let\vchbox\vcenter]%
-   \vchbox\bgroup
+   \executeifdefined{\??mx:\mathmatrixparameter\c!location}{\getvalue{\??mx:\v!lohi}}%
+   \mathmatrixleft
+   \mathmatrixbox\bgroup
    \pushmacro\domatrixNC
    \let\endmath\relax
    \def\NC{\domatrixNC}%
@@ -2322,7 +2274,7 @@
    \egroup
    \popmacro\domatrixNC
    \egroup
-   \mathmatrixparameter\c!right
+   \mathmatrixright
    \endgroup}
 
 %D \startbuffer
@@ -2402,20 +2354,61 @@
 %D \typebuffer \getbuffer
 
 %D \macros
+%D   {startmatrices}
+%D
+%D Just a handy keystroke safer:
+
+\def\startmatrices
+  {\begingroup
+   \setupmathmatrix}
+
+\def\stopmatrices
+  {\endgroup}
+
+%D \startbuffer
+%D \startformula
+%D   \startmatrix[left={\left(},right={\right)}]
+%D     \NC A \NC B \NR \NC C \NC D \NR
+%D   \stopmatrix
+%D   =
+%D   \startmatrix[left={\left(},right={\right)},location=low]
+%D     \NC A \NC B \NR \NC C \NC D \NR
+%D   \stopmatrix
+%D   =
+%D   \startmatrix[left={\left(},right={\right)},location=high]
+%D     \NC A \NC B \NR \NC C \NC D \NR
+%D   \stopmatrix
+%D \stopformula
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
+%D
+%D \startbuffer
+%D \startformula
+%D   \startmatrices[left={\left(},right={\right)}]
+%D     \startmatrix
+%D       \NC A \NC B \NR \NC C \NC D \NR
+%D     \stopmatrix
+%D     =
+%D     \startmatrix[location=bottom]
+%D       \NC A \NC B \NR \NC C \NC D \NR
+%D     \stopmatrix
+%D     =
+%D     \startmatrix[location=top]
+%D       \NC A \NC B \NR \NC C \NC D \NR
+%D     \stopmatrix
+%D   \stopmatrices
+%D \stopformula
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
+
+%D \macros
 %D   {startintertext}
 %D
 %D Preliminary feature:
 %D
 %D {\em example code}
-
-% \def\startintertext#1\stopintertext
-%   {\noalign{\dointertext{#1}}\NR}
-
-% \unexpanded\def\dointertext#1%
-%   {\penalty\postdisplaypenalty
-%    \afterdisplayspace  % the matching \before... is not needed
-%    \vbox{\forgetall\noindent#1\par}%
-%    \penalty\postdisplaypenalty}
 
 \def\startintertext#1\stopintertext
   {\noalign{\dointertext{#1}}}

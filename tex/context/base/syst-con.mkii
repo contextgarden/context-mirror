@@ -1,0 +1,148 @@
+%D \module
+%D   [       file=syst-con,
+%D        version=2000.12.10, % actually very old -)
+%D          title=\CONTEXT\ System Macros,
+%D       subtitle=Conversions,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\unprotect
+
+%D These macros may look slow but are actually rather fast due to
+%D the fact that \TEX\ handles conditional pretty fast. We need
+%D a two step approach in order to stay relax clean in fully
+%D expandable macros.
+
+\def\dolchexnumber#1\relax
+  {\ifcase#1 0\or 1\or 2\or 3\or 4\or 5\or 6\or 7\or
+             8\or 9\or a\or b\or c\or d\or e\or f\else 0\fi}
+
+\def\douchexnumber#1\relax
+  {\ifcase#1 0\or 1\or 2\or 3\or 4\or 5\or 6\or 7\or
+             8\or 9\or A\or B\or C\or D\or E\or F\else 0\fi}
+
+\def\dolchexnumbers#1\relax
+  {\ifcase#1
+     00\or 01\or 02\or 03\or 04\or 05\or 06\or 07\or 08\or 09\or 0a\or 0b\or 0c\or 0d\or 0e\or 0f\or
+     10\or 11\or 12\or 13\or 14\or 15\or 16\or 17\or 18\or 19\or 1a\or 1b\or 1c\or 1d\or 1e\or 1f\or
+     20\or 21\or 22\or 23\or 24\or 25\or 26\or 27\or 28\or 29\or 2a\or 2b\or 2c\or 2d\or 2e\or 2f\or
+     30\or 31\or 32\or 33\or 34\or 35\or 36\or 37\or 38\or 39\or 3a\or 3b\or 3c\or 3d\or 3e\or 3f\or
+     40\or 41\or 42\or 43\or 44\or 45\or 46\or 47\or 48\or 49\or 4a\or 4b\or 4c\or 4d\or 4e\or 4f\or
+     50\or 51\or 52\or 53\or 54\or 55\or 56\or 57\or 58\or 59\or 5a\or 5b\or 5c\or 5d\or 5e\or 5f\or
+     60\or 61\or 62\or 63\or 64\or 65\or 66\or 67\or 68\or 69\or 6a\or 6b\or 6c\or 6d\or 6e\or 6f\or
+     70\or 71\or 72\or 73\or 74\or 75\or 76\or 77\or 78\or 79\or 7a\or 7b\or 7c\or 7d\or 7e\or 7f\or
+     80\or 81\or 82\or 83\or 84\or 85\or 86\or 87\or 88\or 89\or 8a\or 8b\or 8c\or 8d\or 8e\or 8f\or
+     90\or 91\or 92\or 93\or 94\or 95\or 96\or 97\or 98\or 99\or 9a\or 9b\or 9c\or 9d\or 9e\or 9f\or
+     a0\or a1\or a2\or a3\or a4\or a5\or a6\or a7\or a8\or a9\or aa\or ab\or ac\or ad\or ae\or af\or
+     b0\or b1\or b2\or b3\or b4\or b5\or b6\or b7\or b8\or b9\or ba\or bb\or bc\or bd\or be\or bf\or
+     c0\or c1\or c2\or c3\or c4\or c5\or c6\or c7\or c8\or c9\or ca\or cb\or cc\or cd\or ce\or cf\or
+     d0\or d1\or d2\or d3\or d4\or d5\or d6\or d7\or d8\or d9\or da\or db\or dc\or dd\or de\or df\or
+     e0\or e1\or e2\or e3\or e4\or e5\or e6\or e7\or e8\or e9\or ea\or eb\or ec\or ed\or ee\or ef\or
+     f0\or f1\or f2\or f3\or f4\or f5\or f6\or f7\or f8\or f9\or fa\or fb\or fc\or fd\or fe\or ff\fi}
+
+\def\douchexnumbers#1\relax
+  {\ifcase#1
+     00\or 01\or 02\or 03\or 04\or 05\or 06\or 07\or 08\or 09\or 0A\or 0B\or 0C\or 0D\or 0E\or 0F\or
+     10\or 11\or 12\or 13\or 14\or 15\or 16\or 17\or 18\or 19\or 1A\or 1B\or 1C\or 1D\or 1E\or 1F\or
+     20\or 21\or 22\or 23\or 24\or 25\or 26\or 27\or 28\or 29\or 2A\or 2B\or 2C\or 2D\or 2E\or 2F\or
+     30\or 31\or 32\or 33\or 34\or 35\or 36\or 37\or 38\or 39\or 3A\or 3B\or 3C\or 3D\or 3E\or 3F\or
+     40\or 41\or 42\or 43\or 44\or 45\or 46\or 47\or 48\or 49\or 4A\or 4B\or 4C\or 4D\or 4E\or 4F\or
+     50\or 51\or 52\or 53\or 54\or 55\or 56\or 57\or 58\or 59\or 5A\or 5B\or 5C\or 5D\or 5E\or 5F\or
+     60\or 61\or 62\or 63\or 64\or 65\or 66\or 67\or 68\or 69\or 6A\or 6B\or 6C\or 6D\or 6E\or 6F\or
+     70\or 71\or 72\or 73\or 74\or 75\or 76\or 77\or 78\or 79\or 7A\or 7B\or 7C\or 7D\or 7E\or 7F\or
+     80\or 81\or 82\or 83\or 84\or 85\or 86\or 87\or 88\or 89\or 8A\or 8B\or 8C\or 8D\or 8E\or 8F\or
+     90\or 91\or 92\or 93\or 94\or 95\or 96\or 97\or 98\or 99\or 9A\or 9B\or 9C\or 9D\or 9E\or 9F\or
+     A0\or A1\or A2\or A3\or A4\or A5\or A6\or A7\or A8\or A9\or AA\or AB\or AC\or AD\or AE\or AF\or
+     B0\or B1\or B2\or B3\or B4\or B5\or B6\or B7\or B8\or B9\or BA\or BB\or BC\or BD\or BE\or BF\or
+     C0\or C1\or C2\or C3\or C4\or C5\or C6\or C7\or C8\or C9\or CA\or CB\or CC\or CD\or CE\or CF\or
+     D0\or D1\or D2\or D3\or D4\or D5\or D6\or D7\or D8\or D9\or DA\or DB\or DC\or DD\or DE\or DF\or
+     E0\or E1\or E2\or E3\or E4\or E5\or E6\or E7\or E8\or E9\or EA\or EB\or EC\or ED\or EE\or EF\or
+     F0\or F1\or F2\or F3\or F4\or F5\or F6\or F7\or F8\or F9\or FA\or FB\or FC\or FD\or FE\or FF\fi}
+
+\def\dooctnumber#1\relax
+  {\ifcase#1
+     000\or 001\or 002\or 003\or 004\or 005\or 006\or 007\or
+     010\or 011\or 012\or 013\or 014\or 015\or 016\or 017\or
+     020\or 021\or 022\or 023\or 024\or 025\or 026\or 027\or
+     030\or 031\or 032\or 033\or 034\or 035\or 036\or 037\or
+     040\or 041\or 042\or 043\or 044\or 045\or 046\or 047\or
+     050\or 051\or 052\or 053\or 054\or 055\or 056\or 057\or
+     060\or 061\or 062\or 063\or 064\or 065\or 066\or 067\or
+     070\or 071\or 072\or 073\or 074\or 075\or 076\or 077\or
+     100\or 101\or 102\or 103\or 104\or 105\or 106\or 107\or
+     110\or 111\or 112\or 113\or 114\or 115\or 116\or 117\or
+     120\or 121\or 122\or 123\or 124\or 125\or 126\or 127\or
+     130\or 131\or 132\or 133\or 134\or 135\or 136\or 137\or
+     140\or 141\or 142\or 143\or 144\or 145\or 146\or 147\or
+     150\or 151\or 152\or 153\or 154\or 155\or 156\or 157\or
+     160\or 161\or 162\or 163\or 164\or 165\or 166\or 167\or
+     170\or 171\or 172\or 173\or 174\or 175\or 176\or 177\or
+     200\or 201\or 202\or 203\or 204\or 205\or 206\or 207\or
+     210\or 211\or 212\or 213\or 214\or 215\or 216\or 217\or
+     220\or 221\or 222\or 223\or 224\or 225\or 226\or 227\or
+     230\or 231\or 232\or 233\or 234\or 235\or 236\or 237\or
+     240\or 241\or 242\or 243\or 244\or 245\or 246\or 247\or
+     250\or 251\or 252\or 253\or 254\or 255\or 256\or 257\or
+     260\or 261\or 262\or 263\or 264\or 265\or 266\or 267\or
+     270\or 271\or 272\or 273\or 274\or 275\or 276\or 277\or
+     300\or 301\or 302\or 303\or 304\or 305\or 306\or 307\or
+     310\or 311\or 312\or 313\or 314\or 315\or 316\or 317\or
+     320\or 321\or 322\or 323\or 324\or 325\or 326\or 327\or
+     330\or 331\or 332\or 333\or 334\or 335\or 336\or 337\or
+     340\or 341\or 342\or 343\or 344\or 345\or 346\or 347\or
+     350\or 351\or 352\or 353\or 354\or 355\or 356\or 357\or
+     360\or 361\or 362\or 363\or 364\or 365\or 366\or 367\or
+     370\or 371\or 372\or 373\or 374\or 375\or 376\or 377\fi}
+
+\def\lchexnumber #1{\@EA\dolchexnumber \number#1\relax}
+\def\uchexnumber #1{\@EA\douchexnumber \number#1\relax}
+\def\lchexnumbers#1{\@EA\dolchexnumbers\number#1\relax}
+\def\uchexnumbers#1{\@EA\douchexnumbers\number#1\relax}
+\def\octnumber   #1{\@EA\dooctnumber   \number#1\relax}
+
+%D No beauty but ok:
+
+\dostepwiserecurse{0}{9}{1}{\setevalue{@@uc@@\recurselevel}{\recurselevel}}
+
+\setvalue{@@uc@@a}{A} \setvalue{@@uc@@A}{A}
+\setvalue{@@uc@@b}{B} \setvalue{@@uc@@B}{B}
+\setvalue{@@uc@@c}{C} \setvalue{@@uc@@C}{C}
+\setvalue{@@uc@@d}{D} \setvalue{@@uc@@D}{D}
+\setvalue{@@uc@@e}{E} \setvalue{@@uc@@E}{E}
+\setvalue{@@uc@@f}{F} \setvalue{@@uc@@F}{F}
+
+\def\hexstringtonumber#1% {FF}
+  {\dohexstringtonumber#1}
+
+\def\dohexstringtonumber#1#2% FF
+  {"\csname @@uc@@#1\endcsname\csname @@uc@@#2\endcsname}
+
+%D The next conversion macro produces raw characters. We have to
+%D construct the macro in a special way to avoid problems with
+%D characters with special meanings. So, we revert to the
+%D lowercase conversion trick to bypass \TEX's input parser.
+
+\bgroup
+
+\catcode`\^^@=12 % ascii null   == ignored in plain
+\catcode`\^^?=12 % ascii delete == invalid in plain
+
+\let\or\relax
+
+\xdef\rawcharacter{ ^^00\or}
+
+\dorecurse{255}
+  {\lccode`a=\recurselevel
+   \lowercase{\xdef\rawcharacter{\rawcharacter \string a\or}}} % string is needed for XeTeX
+
+\@EA\gdef\@EA\rawcharacter\@EA#\@EA1\@EA
+  {\@EA\ifcase\@EA#\@EA1\rawcharacter\fi}
+
+\egroup
+
+\protect \endinput

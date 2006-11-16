@@ -175,7 +175,7 @@
 %D simply call the start one with zero arguments.
 
 %D \macros
-%D   {doinsertfile,doinsertMPfile}
+%D   {dogetfiguresize,doinsertfile,doinsertMPfile}
 %D
 %D Probably the most problematic special is the following
 %D one. Because we want to be able to support different
@@ -197,6 +197,14 @@
 %D The scale is given percents, the other values are base
 %D points.
 %D
+%D Per 2006 we have simplified this model. The amount of drivers
+%D is not growing and all support scaling. We pass variables via
+%D Driver specific macros.
+%D
+%D \starttyping
+%D \doinsertfile
+%D \stoptyping
+%D
 %D The special is implemented as \type{or}. Because \DVIPSONE\
 %D understands them all, a chain of alternatives would generate
 %D multiple occurrences of the same illustration.
@@ -204,7 +212,8 @@
 %D When option 1 is passed, the viewers is asked to present a
 %D preview, like the first frame of a movie.
 
-\installspecial [\doinsertfile]   [or] [9]
+\installspecial [\dogetfiguresize][or] [0] % now a special
+\installspecial [\doinsertfile]   [or] [0] % [9]
 \installspecial [\doinsertMPfile] [or] [1] % speed up
 
 %D No start||stop construction is needed here, because there in
@@ -333,7 +342,7 @@
 %D one. There are seven arguments.
 %D
 %D \starttyping
-%D \doovalbox {w} {h} {d} {linewidth} {radius} {stroke} {fill}
+%D \doovalbox {w} {h} {d} {linewidth} {radius} {stroke} {fill} {variant}
 %D \stoptyping
 %D
 %D This command has to return a \type{\vbox} which can be used
@@ -341,7 +350,7 @@
 %D degrees, the stroke and fill are~\type{1} (true) of~\type{0}
 %D (false).
 
-\installspecial [\doovalbox] [or] [7]
+\installspecial [\doovalbox] [or] [8]
 
 %D \macros
 %D   {dostartclipping,dostopclipping}
@@ -985,5 +994,7 @@
 %D \starttyping
 %D \setupoutput [pdftex]
 %D \stoptyping
+
+\loadmarkfile{spec-def}
 
 \protect \endinput

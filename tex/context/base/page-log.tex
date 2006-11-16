@@ -163,7 +163,7 @@
 
 \def\dodosetlogobox#1#2%
   {\hbox % width equals \makeupwidth
-     {\def\docommando##1%
+     {\def\docommand##1%
         {\donefalse
          \ifnum\logostatus=3 \ExpandBothAfter
            \doifinset{\getvalue{\??lo#1##1}}\requestedlogos\donetrue
@@ -173,43 +173,40 @@
          \ifdone
            #2{\hbox{\getvalue{\??lo#1##1\c!command}}}%
          \fi}%
-      \def\dodocommando##1##2##3##4##5##6%
+      \def\dodocommand##1##2##3##4##5##6%
         {\hsmash
            {\hskip-\texthoffset
             \hbox to \paperwidth
-              {\rlap{\docommando##1}\hss\llap{\docommando##6}}%
+              {\rlap{\docommand##1}\hss\llap{\docommand##6}}%
             \hskip-\paperwidth
             \hbox to \paperwidth
               {\hskip\texthoffset
                \hskip-\leftmarginwidth
                \hskip-\leftmargindistance
-               \hbox to \leftmarginwidth{\docommando##2\hss}%
+               \hbox to \leftmarginwidth{\docommand##2\hss}%
                \hskip\leftmargindistance
-               \hbox to \makeupwidth{\docommando##3\hss\docommando##4}%
+               \hbox to \makeupwidth{\docommand##3\hss\docommand##4}%
                \hskip\rightmargindistance
-               \hbox to \rightmarginwidth{\hss\docommando##5}%
+               \hbox to \rightmarginwidth{\hss\docommand##5}%
                \hfill}}}%
       \normalbaselines
       \settexthoffset
       \hsmash
-        {\hbox to \makeupwidth{\hss\docommando\c!middle\hss}}%
+        {\hbox to \makeupwidth{\hss\docommand\c!middle\hss}}%
       \hsmash
         {\hskip-\texthoffset
-         \hbox to \paperwidth{\docommando\v!page\hss}}%
+         \hbox to \paperwidth{\docommand\v!page\hss}}%
       \swapmargins
       \doifbothsidesoverruled
-        \dodocommando
+        {\dodocommand
           \v!leftedge \v!leftmargin  \v!left
-          \v!right     \v!rightmargin \v!rightedge
-      \orsideone
-        \dodocommando
+          \v!right     \v!rightmargin \v!rightedge}
+        {\dodocommand
           \v!leftedge \v!leftmargin  \v!left
-          \v!right     \v!rightmargin \v!rightedge
-      \orsidetwo
-        \dodocommando
+          \v!right     \v!rightmargin \v!rightedge}
+        {\dodocommand
           \v!rightedge \v!rightmargin \v!right
-          \v!left       \v!leftmargin  \v!leftedge
-      \od}}
+          \v!left       \v!leftmargin  \v!leftedge}}}
 
 %D The user interface is relatively simple and provides
 %D macros for assigning logos to logo areas as well as

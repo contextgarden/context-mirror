@@ -83,10 +83,10 @@
   {\bgroup
    \sanitizePDFencoding#3\to\bookmarktext % uses scratchcounter
    \stripstring\bookmarktext
-   \doPDFbookmark level #1 n #2 text {\bookmarktext} page {#4} open #5
+   \doPDFbookmark{#1}{#2}{\bookmarktext}{#4}{#5}%
    \egroup}
 
-\def\doPDFbookmark level #1 n #2 text #3 page #4 open #5%
+\def\doPDFbookmark#1#2#3#4#5%
   {\doPDFgetpagereference{#4}\PDFobjectreference
    \pdfoutline
      user {<</S /GoTo /D [\PDFobjectreference\space\PDFpageviewwrd]>>}%

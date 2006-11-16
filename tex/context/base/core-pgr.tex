@@ -21,9 +21,57 @@
 
 % in the future, the depth of tail will reflect page depth
 
-\def\textanchor{text:\realfolio}
-
 \ifx\textheight\undefined \def\textheight{\vsize} \fi
+
+%D The next macros so some housekeeping.
+
+\def\pageanchor{page:0}
+\def\textanchor{text:\realfolio}
+\def\headanchor{head:\realfolio} % virtual position
+\def\tailanchor{tail:\realfolio} % virtual position
+
+%D Anchors:
+
+\def\dopresetpositionanchors % also mkii
+  {\bgroup
+   \!!dimena\ifdim\topskip>\strutht\topskip\else\strutht\fi
+   \!!dimenb\dimexpr\MPy\textanchor+\MPh\textanchor-\!!dimena\relax
+   \!!dimenc\dimexpr\MPy\textanchor+\strutdp\relax
+   \!!dimend\MPx\textanchor
+   \!!dimene\MPw\textanchor
+   \replacepospxywhd\headanchor\realfolio\!!dimend\!!dimenb\!!dimene\!!dimena\strutdp
+   \replacepospxywhd\tailanchor\realfolio\!!dimend\!!dimenc\!!dimene\strutht \strutdp
+   \egroup}
+
+\def\presetpositionanchors% compatibility hack (still needed?)
+  {\ifpositioning
+     \dopresetpositionanchors
+   \fi}
+
+%D The first version of this module implemented head and tail
+%D anchors. Currently we stick to just one anchor and derive
+%D the head and tail anchors from this one.
+
+\def\showanchor#1%
+  {\expanded{\writestatus{#1}
+     {\MPp{#1}\string|\MPx{#1}\string|\MPy{#1}\string|%
+      \MPw{#1}\string|\MPh{#1}\string|\MPd{#1}}}}
+
+%D We set these anchors before and after each page.
+
+\appendtoks \presetpositionanchors \to \beforeeverypage
+\appendtoks \presetpositionanchors \to \aftereverypage
+
+% todo: change with each page size change
+
+\def\registerpageposition#1% this one is flushed first !
+  {\ifpositioning\ifcase\realpageno\or
+     \ifdim\printpaperheight=\paperheight\else
+       \ifdim\printpaperwidth=\paperwidth\else
+         \setbox#1\hbox{\hpos\pageanchor{\box#1}}%
+       \fi
+     \fi
+   \fi\fi}
 
 \def\placepositionanchors % todo : depth pagebox
   {\ifpositioning
@@ -38,47 +86,6 @@
    \else
      \vskip\textheight
    \fi}
-
-%D The first version of this module implemented head and tail
-%D anchors. Currently we stick to just one anchor and derive
-%D the head and tail anchors from this one.
-
-\def\headanchor{head:\realfolio} % virtual position
-\def\tailanchor{tail:\realfolio} % virtual position
-
-\def\presetpositionanchors% compatibility hack (still needed?)
-  {\ifpositioning
-     \dopresetpositionanchors
-   \fi}
-
-\def\dopresetpositionanchors
-  {\bgroup
-   \!!dimena\ifdim\topskip>\strutht\topskip\else\strutht\fi
-   \!!dimenb\MPy\textanchor
-   \!!dimenc\!!dimenb
-   \advance\!!dimenb \MPh\textanchor % space is essential
-   \advance\!!dimenb -\!!dimena
-   \advance\!!dimenc \strutdp
-   \!!dimend\MPx\textanchor
-   \!!dimene\MPw\textanchor
-   \setxvalue{\POSprefix\headanchor}%
-     {\realfolio,\withoutpt\the\!!dimend,\withoutpt\the\!!dimenb,%
-      \withoutpt\the\!!dimene,\withoutpt\the\!!dimena,\withoutpt\the\strutdp}%
-   \setxvalue{\POSprefix\tailanchor}%
-     {\realfolio,\withoutpt\the\!!dimend,\withoutpt\the\!!dimenc,%
-      \withoutpt\the\!!dimene,\withoutpt\the\strutht,\withoutpt\the\strutdp}%
-  %\showanchor\textanchor\showanchor\headanchor\showanchor\tailanchor\wait
-   \egroup}
-
-\def\showanchor#1%
-  {\expanded{\writestatus{#1}
-     {\MPp{#1}\string|\MPx{#1}\string|\MPy{#1}\string|%
-      \MPw{#1}\string|\MPh{#1}\string|\MPd{#1}}}}
-
-%D We set these anchors before and after each page.
-
-\appendtoks \presetpositionanchors \to \beforeeverypage
-\appendtoks \presetpositionanchors \to \aftereverypage
 
 %D \macros
 %D   {positionoverlay,startpositionoverlay}
@@ -258,6 +265,8 @@
   {\long\setgvalue{MPG:#1}% tag list mpcode
      {\useMPpositiongraphic{#1}{#2}{#3}}}
 
+\let\stopMPpositiongraphic\relax
+
 \def\prepareMPpositionvariables
   {\ifundefined{\@@meta self}\setvalue{\@@meta self}{\currentposition}\fi
    \ifundefined{\@@meta from}\setvalue{\@@meta from}{\currentposition}\fi}
@@ -341,6 +350,8 @@
 
 \long\def\startMPpositionmethod#1#2\stopMPpositionmethod
   {\long\setgvalue{MPM:#1}{#2}} % todo: var list here
+
+\let\stopMPpositionmethod\relax
 
 %D Simple one position graphics.
 
@@ -519,35 +530,6 @@
   % snap_multi_par_tops := false ;
 \stopuseMPgraphic
 
-% \startMPpositionmethod{mpos:par}
-%   \doifpositionelse{w:\MPvar{self}}
-%     {\startMPpositiongraphic{mpos:par}%
-%          {fillcolor,filloffset,linecolor,gridcolor,linewidth,gridwidth,lineradius}
-%        initialize_area_par(\MPpos{b:\MPvar{self}},
-%                            \MPpos{e:\MPvar{self}},
-%                            \MPpos{w:\MPvar{self}}) ;
-%        \includeMPgraphic{mpos:par:setup} ;
-%        \includeMPgraphic{mpos:par:extra} ;
-%        \includeMPgraphic{\MPvar{mp}} ; % \includeMPgraphic{mpos:par:shape} ;
-%        anchor_par(\MPanchor{b:\MPvar{self}}) ;
-%      \stopMPpositiongraphic}
-%     {\startMPpositiongraphic{mpos:par}%
-%          {fillcolor,filloffset,linecolor,gridcolor,linewidth,gridwidth,lineradius}
-%        initialize_par(\MPpos{b:\MPvar{self}},
-%                       \MPpos{e:\MPvar{self}},
-%                       \MPpos{text:\realfolio},
-%                       \MPpos{p:\MPparcounter},
-%                       \MPvv {p:\MPparcounter}{0,0,0,0,0,0}) ;
-%        \includeMPgraphic{mpos:par:setup} ;
-%        \includeMPgraphic{mpos:par:extra} ;
-%        \includeMPgraphic{\MPvar{mp}} ; % \includeMPgraphic{mpos:par:shape} ;
-%        anchor_par(\MPanchor{b:\MPvar{self}}) ;
-%      \stopMPpositiongraphic}%
-%   \MPpositiongraphic{mpos:par}{}%
-% \stopMPpositionmethod
-
-%D Less readable but shorter.
-
 \ifx\MPparcounter\undefined \newcounter\MPparcounter \fi
 
 \def\MPself     {\MPvar{self}}
@@ -578,7 +560,7 @@
                       \MPpos\MPeself,
                       \MPpos\textanchor,
                       \MPpos\MPparanchor,
-                      \MPvv \MPparanchor{0,0,0,0,0,0}) ;
+                      \MPvv \MPparanchor{0pt,0pt,0pt,0pt,0,0pt}) ;
        \includeMPgraphic{mpos:par:setup} ;
        \includeMPgraphic{mpos:par:extra} ;
        \includeMPgraphic{\MPvar{mp}} ;
@@ -603,7 +585,7 @@
     \includeMPgraphic{mpos:par:setup} ;
     \includeMPgraphic{mpos:par:extra} ;
     prepare_multi_pars(\MPpos\MPbself,\MPpos\MPeself,\MPpos\MPwself,
-      \MPpos\MPparanchor,\MPvv\MPparanchor{0,0,0,0,0,0}) ;
+      \MPpos\MPparanchor,\MPvv\MPparanchor{0pt,0pt,0pt,0pt,0,0pt}) ;
     relocate_multipars(-\MPxy\MPanchorid) ; % inside layerpos
     \includeMPgraphic{\MPvar{mp}} ;
   \stopMPpositiongraphic
@@ -1264,7 +1246,7 @@
 %D The next hack make sure that margin texts near faulty
 %D strutted lines are handled ok.
 
-\newif\ifrepositionmarginbox % \repositionmarginboxtrue
+\newif\ifrepositionmarginbox \repositionmarginboxtrue
 
 \newcounter\currentmarginpos
 
@@ -1285,29 +1267,83 @@
 %    \vadjust{\box#1}%
 %    \egroup}
 
-\def\dopositionmarginbox#1% how about page boundaries !
+% \def\dopositionmarginbox#1% how about page boundaries !
+%   {\bgroup
+%    \ifrepositionmarginbox
+%      \doglobal\increment\currentmarginpos
+%      \setposition{\s!margin:\currentmarginpos}%
+%      \scratchdimen\MPy{\s!margin:\currentmarginpos}%
+%      \doglobal\increment\currentmarginpos
+%      \advance\scratchdimen -\MPy{\s!margin:\currentmarginpos}%
+%      \advance\scratchdimen -\strutdp
+%      % new
+%      \setbox#1\hbox
+%        {\hskip-\MPx{\s!margin:\currentmarginpos}%
+%         \hskip\MPx{head:\realfolio}%
+%         \box#1}%
+%      % so far
+%      \setbox#1\hbox
+%        {\setposition{\s!margin:\currentmarginpos}%
+%         \raise\scratchdimen\box#1}%
+%      \dp#1\zeropoint
+%      \ht#1\zeropoint
+%    \fi
+%    \graphicvadjust{\box#1}%
+%    \egroup}
+
+\def\dopositionmarginbox#1%
   {\bgroup
    \ifrepositionmarginbox
      \doglobal\increment\currentmarginpos
      \setposition{\s!margin:\currentmarginpos}%
-     \scratchdimen\MPy{\s!margin:\currentmarginpos}%
-     \doglobal\increment\currentmarginpos
-     \advance\scratchdimen -\MPy{\s!margin:\currentmarginpos}%
-     \advance\scratchdimen -\strutdp
-     % new
-     \setbox#1\hbox
-       {\hskip-\MPx{\s!margin:\currentmarginpos}%
-        \hskip\MPx{head:\realfolio}%
-        \box#1}%
-     % so far
-     \setbox#1\hbox
-       {\setposition{\s!margin:\currentmarginpos}%
-        \raise\scratchdimen\box#1}%
+     \ifcase\marginrepositionmethod
+       % nothing
+     \or
+       % nothing
+     \or
+       % stack / page check yet untested
+% \scratchcounter\MPp{\s!margin:\currentmarginpos}\relax
+       \scratchdimen\MPy{\s!margin:\currentmarginpos}%
+       \doglobal\increment\currentmarginpos
+       \advance\scratchdimen -\MPy{\s!margin:\currentmarginpos}%
+       \advance\scratchdimen -\strutdp
+% \ifnum\scratchcounter=\MPp{\s!margin:\currentmarginpos}\relax
+       % new
+       \setbox#1\hbox
+         {\hskip-\MPx{\s!margin:\currentmarginpos}%
+          \hskip\MPx{head:\realfolio}%
+          \box#1}%
+       % so far
+       \setbox#1\hbox
+         {\setposition{\s!margin:\currentmarginpos}%
+          \raise\scratchdimen\box#1}%
+% \fi
+     \or
+       % move up
+       \ifnum\MPp{p:\parposcounter}=\MPp{\s!margin:\currentmarginpos}\relax
+         \scratchdimen\dimexpr\MPy{p:\parposcounter}-\MPy{\s!margin:\currentmarginpos}\relax
+         \expanded{\setbox#1\hbox{\raise\scratchdimen\box#1}\ht#1\the\ht#1\dp#1\the\dp#1}%
+       \fi
+     \or
+       % move up, assume end of par
+       \ifnum\MPp{p:\parposcounter}=\MPp{\s!margin:\currentmarginpos}\relax
+         \getnoflines\margincontentheight
+         \advance\noflines\minusone
+         \scratchdimen\noflines\lineheight
+       \else
+         \scratchdimen\dimexpr\MPy{p:\parposcounter}-\MPy{\s!margin:\currentmarginpos}\relax
+       \fi
+       \expanded{\setbox#1\hbox{\raise\scratchdimen\box#1}\ht#1\the\ht#1\dp#1\the\dp#1}%
+     \fi
      \dp#1\zeropoint
      \ht#1\zeropoint
    \fi
    \graphicvadjust{\box#1}%
    \egroup}
+
+\chardef\marginrepositionmethod\plusone   % sidemethod
+\chardef\margincontentmethod   \plusthree % textmethod  % beware: 1 = old method
+\chardef\marginpagecheckmethod \plusone   % splitmethod
 
 %D For a right menu, a sequence of calls to \type
 %D {right_menu_button} is generated.
@@ -1384,16 +1420,16 @@
   {\doglobal\appendtoks\dodododoGSC[#1:#2]\to\posXCtoks\NC}
 
 \def\dodoGSC[#1]%
-  {\def\docommando##1{\dododoGSC[##1:##1]}%
-   \processcommalist[#1]\docommando}
+  {\def\docommand##1{\dododoGSC[##1:##1]}%
+   \processcommalist[#1]\docommand}
 
 \def\dodododoGFC[#1:#2:#3]%
   {\remappositionframed{#2}{\tbPOSprefix#1}%
    \bpos{\tbPOSprefix#1}}
 
 \def\dododoGFC[#1]%
-  {\def\docommando##1{\dodododoGFC[##1:##1]}%
-   \processcommalist[#1]\docommando}
+  {\def\docommand##1{\dodododoGFC[##1:##1]}%
+   \processcommalist[#1]\docommand}
 
 \def\dodoGFC[#1]%
   {\doglobal\appendtoks\dododoGFC[#1]\to\posXCtoks\NC}
@@ -1402,8 +1438,8 @@
   {\epos{\tbPOSprefix#1}}
 
 \def\dodododoGTC[#1]%
-  {\def\docommando##1{\dododododoGTC[##1:##1]}%
-   \processcommalist[#1]\docommando}
+  {\def\docommand##1{\dododododoGTC[##1:##1]}%
+   \processcommalist[#1]\docommand}
 
 \def\dododoGTC[#1]%
   {\doglobal\appendtoks\dodododoGTC[#1]\to\posXCtoks}

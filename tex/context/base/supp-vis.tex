@@ -265,7 +265,7 @@
 
 \fi
 
-\def~{\normalpenalty\!!tenthousand\ }
+\ifx\contextversion\undefined \def~{\normalpenalty\!!tenthousand\ } \fi
 
 %D \macros
 %D   {makeruledbox}
@@ -352,6 +352,10 @@
 %D of box \type{#1}, we preserve the mode.
 
 \let\dowithruledbox\relax
+
+\let\ruledheight\!!zeropoint
+\let\ruleddepth \!!zeropoint
+\let\ruledwidth \!!zeropoint
 
 \def\makeruledbox#1%
   {\edef\ruledheight{\the\ht#1}%
@@ -1872,7 +1876,7 @@
 \ifx\bodyfontsize\undefined
   \edef\defaulttestrulewidth{\the\testrulewidth}
 \else
-  \def\defaulttestrulewidth{.02\bodyfontsize}  % still dutch
+  \def\defaulttestrulewidth{.02\bodyfontsize}
 \fi
 
 \def\showmakeup

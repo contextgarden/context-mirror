@@ -20,23 +20,28 @@
 
 \ifx\scratchread\undefined \newread\scratchread \fi
 
-\immediate\openin\scratchread=unicode-letters.tex \ifeof\scratchread
-  \immediate\openin\scratchread=xplain.tex \ifeof\scratchread
-    % no initialization file
+\def\setcclcuc #1 #2 #3 %
+  {\global\catcode"#1=11
+   \global\lccode "#1="#2
+   \global\uccode "#1="#3 }
+
+\immediate\openin\scratchread=enco-xtx.tex \ifeof\scratchread
+  \immediate\openin\scratchread=unicode-letters.tex  \ifeof\scratchread
+    \immediate\openin\scratchread=xplain.tex \ifeof\scratchread
+       % no initialization file
+    \else
+      \input xplain.tex
+    \fi
   \else
-    \input xplain.tex\relax
+    \input unicode-letters.tex
   \fi
 \else
-    \input unicode-letters.tex\relax
-    % begin of patch (turkish patterns need this)
-    \begingroup
-        \catcode`\{=1 \catcode`\}=2 \catcode`\#=6
-        \def\C #1 #2 #3 {\global\uccode"#1="#2 \global\lccode"#1="#3 } % case mappings (non-letter)
-        \def\L #1 #2 #3 {\global\catcode"#1=11 \C #1 #2 #3 }           % letter with case mappings
-        \L 201C 201C 201C
-        \L 201D 201D 201D
-    \endgroup
-    % end of patch
+  \input enco-xtx.tex
 \fi
+
+% patch needed for turkish
+
+\setcclcuc 201C 201C 201C
+\setcclcuc 201D 201D 201D
 
 \protect \endinput

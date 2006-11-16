@@ -353,6 +353,8 @@
 %D problems; somehow \type {\numexpr} cannot look beyond this
 %D sign, and expects a number.
 
+\ifx\tttf\undefined \let\tttf\relax \fi
+
 \def\utfunichar   #1{{\tttf U\low{\tx\unicodenumber{#1}}}}
 \def\utfunisplit  #1{{\tttf U\low{\tx\unicodepair{#1}}}}
 \def\utfuniboth   #1{{\tttf U\low{\tx\unicodenumber{#1}->\unicodepair{#1}}}}

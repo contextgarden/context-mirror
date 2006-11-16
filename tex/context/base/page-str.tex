@@ -111,11 +111,19 @@
 
 \let\presetoutputstream\relax
 
-\def\outputstreambox [#1]{\ifvoid\outputstreamtag{#1}\else\box \outputstreamtag{#1}\fi}
-\def\outputstreamcopy[#1]{\ifvoid\outputstreamtag{#1}\else\copy\outputstreamtag{#1}\fi}
 \def\outputstreamht  [#1]{\ht\outputstreamtag{#1}}
 \def\outputstreamdp  [#1]{\dp\outputstreamtag{#1}}
 \def\outputstreamwd  [#1]{\wd\outputstreamtag{#1}}
+
+%def\outputstreambox [#1]{\ifvoid\outputstreamtag{#1}\else\box \outputstreamtag{#1}\fi}
+%def\outputstreamcopy[#1]{\ifvoid\outputstreamtag{#1}\else\copy\outputstreamtag{#1}\fi}
+
+\def\dowithoutputstreambox#1[#2]{\ifvoid\outputstreamtag{#2}\else#1\outputstreamtag{#2}\fi}
+
+\def\outputstreamcopy   {\dowithoutputstreambox\copy   }
+\def\outputstreambox    {\dowithoutputstreambox\box    }
+\def\outputstreamunvcopy{\dowithoutputstreambox\unvcopy}
+\def\outputstreamunvbox {\dowithoutputstreambox\unvbox }
 
 %D Footnotes don't go along with streams, simply because there is no
 %D way to re-split inserts. A dirty way out is to use marks and store
@@ -315,50 +323,50 @@
    \box2\vfill\page
    \egroup}
 
-%D Although one can put floats in a stream, it sometimes makes sense
-%D to keep them apart and this is what local floats do.
+    %D Although one can put floats in a stream, it sometimes makes sense
+    %D to keep them apart and this is what local floats do.
 
-\def\setuplocalfloats
-  {\getparameters[\??lf]}
+    \def\setuplocalfloats
+      {\getparameters[\??lf]}
 
-\setuplocalfloats
-  [%before=\blank,
-   %after=\blank,
-   inbetween=\blank]
+    \setuplocalfloats
+      [%before=\blank,
+       %after=\blank,
+       inbetween=\blank]
 
-\installfloathandler \v!local \somelocalfloat
+    \installfloathandler \v!local \somelocalfloat
 
-\initializeboxstack{localfloats}
+    \initializeboxstack{localfloats}
 
-\newcounter\noflocalfloats
+    \newcounter\noflocalfloats
 
-\def\resetlocalfloats
-  {\doglobal\newcounter\noflocalfloats
-   \initializeboxstack{localfloats}}
+    \def\resetlocalfloats
+      {\doglobal\newcounter\noflocalfloats
+       \initializeboxstack{localfloats}}
 
-\def\somelocalfloat[#1]%
-  {\doglobal\increment\noflocalfloats
-   \savebox{localfloats}{\noflocalfloats}{\box\floatbox}}
+    \def\somelocalfloat[#1]%
+      {\doglobal\increment\noflocalfloats
+       \savebox{localfloats}{\noflocalfloats}{\box\floatbox}}
 
-\def\getlocalfloats
-  {\dorecurse\noflocalfloats
-     {\ifnum\recurselevel=\plusone % 1\relax
-        \getvalue{\??lf\c!before}%
-      \else
-        \getvalue{\??lf\c!inbetween}%
-      \fi
-      \dontleavehmode\hbox{\foundbox{localfloats}\recurselevel}%
-      \ifnum\recurselevel=\noflocalfloats\relax
-        \getvalue{\??lf\c!after}%
-      \fi}}
+    \def\getlocalfloats
+      {\dorecurse\noflocalfloats
+         {\ifnum\recurselevel=\plusone % 1\relax
+            \getvalue{\??lf\c!before}%
+          \else
+            \getvalue{\??lf\c!inbetween}%
+          \fi
+          \dontleavehmode\hbox{\foundbox{localfloats}\recurselevel}%
+          \ifnum\recurselevel=\noflocalfloats\relax
+            \getvalue{\??lf\c!after}%
+          \fi}}
 
-\def\flushlocalfloats
-  {\getlocalfloats
-   \resetlocalfloats}
+    \def\flushlocalfloats
+      {\getlocalfloats
+       \resetlocalfloats}
 
-\def\getlocalfloat#1{\expanded{\foundbox{localfloats}{\number#1}}}
+    \def\getlocalfloat#1{\expanded{\foundbox{localfloats}{\number#1}}}
 
-\def\forcelocalfloats{\let\forcedfloatmethod\v!local}
+    \def\forcelocalfloats{\let\forcedfloatmethod\v!local}
 
 %D Because many arrangements are possible, we will implement
 %D some examples in a runtime loadable module \type {m-streams}.

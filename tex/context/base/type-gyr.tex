@@ -13,6 +13,45 @@
 
 \starttypescriptcollection[gyre]
 
+%D First we define the new ones. Watch how we use the systematic name composition.
+
+\definetypescriptprefix [n:pagella] [TeXGyrePagella]
+\definetypescriptprefix [n:termes]  [TeXGyreTermes]
+\definetypescriptprefix [n:bonum]   [TeXGyreBonum]
+
+\definetypescriptprefix [f:pagella] [pl]
+\definetypescriptprefix [f:termes]  [tm]
+\definetypescriptprefix [f:bonum]   [bk]
+
+\starttypescript [serif] [pagella,termes,bonum] [texnansi,ec,8r,t5,qx]
+  \loadmapfile[\typescriptthree-q\typescriptprefix{f:\typescripttwo}.map]
+
+  \definefontsynonym [\typescriptprefix{n:\typescripttwo}-Regular]     [\typescriptthree-q\typescriptprefix{f:\typescripttwo}r]    [encoding=\typescriptthree]
+  \definefontsynonym [\typescriptprefix{n:\typescripttwo}-Italic]      [\typescriptthree-q\typescriptprefix{f:\typescripttwo}ri]   [encoding=\typescriptthree]
+  \definefontsynonym [\typescriptprefix{n:\typescripttwo}-Bold]        [\typescriptthree-q\typescriptprefix{f:\typescripttwo}b]    [encoding=\typescriptthree]
+  \definefontsynonym [\typescriptprefix{n:\typescripttwo}-BoldItalic]  [\typescriptthree-q\typescriptprefix{f:\typescripttwo}bi]   [encoding=\typescriptthree]
+  \definefontsynonym [\typescriptprefix{n:\typescripttwo}-Caps]        [\typescriptthree-q\typescriptprefix{f:\typescripttwo}r-sc] [encoding=\typescriptthree]
+
+  \definefontsynonym [\typescriptprefix{n:\typescripttwo}-Slanted]     [\typescriptprefix{n:\typescripttwo}-Italic]
+  \definefontsynonym [\typescriptprefix{n:\typescripttwo}-BoldSlanted] [\typescriptprefix{n:\typescripttwo}-BoldItalic]
+\stoptypescript
+
+\starttypescript [serif] [pagella,termes,bonum] [name]
+  \definefontsynonym [Serif]            [\typescriptprefix{n:\typescripttwo}-Regular]
+  \definefontsynonym [SerifItalic]      [\typescriptprefix{n:\typescripttwo}-Italic]
+  \definefontsynonym [SerifBold]        [\typescriptprefix{n:\typescripttwo}-Bold]
+  \definefontsynonym [SerifBoldItalic]  [\typescriptprefix{n:\typescripttwo}-BoldItalic]
+  \definefontsynonym [SerifCaps]        [\typescriptprefix{n:\typescripttwo}-Caps]
+  \definefontsynonym [SerifSlanted]     [\typescriptprefix{n:\typescripttwo}-Slanted]
+  \definefontsynonym [SerifBoldSlanted] [\typescriptprefix{n:\typescripttwo}-BoldSlanted]
+\stoptypescript
+
+\starttypescript [map] [pagella,termes,bonum] [ec,texnansi,t5,8r]
+  \loadmapfile[\typescriptthree-q\typescriptprefix{f:\typescripttwo}.map]
+\stoptypescript
+
+%D Here we overload the older (URW) fonts.
+
 % TeXGyrePagella
 %
 % qplr  TeXGyrePagella-Regular
@@ -23,14 +62,54 @@
 \starttypescript [serif] [palatino] [texnansi,ec,8r,t5,qx]
   \loadmapfile[\typescriptthree-qpl.map]
 
-  \definefontsynonym [Palatino]             [\typescriptthree-qplr]  [encoding=\typescriptthree]
-  \definefontsynonym [Palatino-Italic]      [\typescriptthree-qplri] [encoding=\typescriptthree]
-  \definefontsynonym [Palatino-Bold]        [\typescriptthree-qplb]  [encoding=\typescriptthree]
-  \definefontsynonym [Palatino-BoldItalic]  [\typescriptthree-qplbi] [encoding=\typescriptthree]
+  \definefontsynonym [Palatino]             [\typescriptthree-qplr]    [encoding=\typescriptthree]
+  \definefontsynonym [Palatino-Italic]      [\typescriptthree-qplri]   [encoding=\typescriptthree]
+  \definefontsynonym [Palatino-Bold]        [\typescriptthree-qplb]    [encoding=\typescriptthree]
+  \definefontsynonym [Palatino-BoldItalic]  [\typescriptthree-qplbi]   [encoding=\typescriptthree]
+  \definefontsynonym [Palatino-Caps]        [\typescriptthree-qplr-sc] [encoding=\typescriptthree]
 
   \definefontsynonym [Palatino-Slanted]     [Palatino-Italic]
   \definefontsynonym [Palatino-BoldSlanted] [Palatino-BoldItalic]
-  \definefontsynonym [Palatino-Caps]        [Palatino]
+\stoptypescript
+
+% TeXGyreTermes
+%
+% qtmr  TeXGyreTermes-Regular
+% qtmri TeXGyreTermes-Italic
+% qtmb  TeXGyreTermes-Bold
+% qtmbi TeXGyreTermes-BoldItalic
+
+\starttypescript [serif] [times] [texnansi,ec,8r,t5,qx]
+  \loadmapfile[\typescriptthree-qtm.map]
+
+  \definefontsynonym [Times-Roman]       [\typescriptthree-qtmr]    [encoding=\typescriptthree]
+  \definefontsynonym [Times-Italic]      [\typescriptthree-qtmri]   [encoding=\typescriptthree]
+  \definefontsynonym [Times-Bold]        [\typescriptthree-qtmb]    [encoding=\typescriptthree]
+  \definefontsynonym [Times-BoldItalic]  [\typescriptthree-qtmbi]   [encoding=\typescriptthree]
+  \definefontsynonym [Times-Caps]        [\typescriptthree-qtmr-sc] [encoding=\typescriptthree]
+
+  \definefontsynonym [Times-Slanted]     [Times-Italic]
+  \definefontsynonym [Times-BoldSlanted] [Times-BoldItalic]
+\stoptypescript
+
+% TeXGyreBonum
+%
+% qtmr  TeXGyreBonum-Regular
+% qtmri TeXGyreBonum-Italic
+% qtmb  TeXGyreBonum-Bold
+% qtmbi TeXGyreBonum-BoldItalic
+
+\starttypescript [serif] [bookman] [texnansi,ec,8r,t5,qx]
+  \loadmapfile[\typescriptthree-qbk.map]
+
+  \definefontsynonym [Bookman-Light]           [\typescriptthree-qbkr]    [encoding=\typescriptthree]
+  \definefontsynonym [Bookman-LightItalic]     [\typescriptthree-qbkri]   [encoding=\typescriptthree]
+  \definefontsynonym [Bookman-DemiBold]        [\typescriptthree-qbkb]    [encoding=\typescriptthree]
+  \definefontsynonym [Bookman-DemiBoldItalic]  [\typescriptthree-qbkbi]   [encoding=\typescriptthree]
+  \definefontsynonym [Bookman-Light-Caps]      [\typescriptthree-qbkr-sc] [encoding=\typescriptthree]
+
+  \definefontsynonym [Bookman-LightSlanted]    [Bookman-LightItalic]
+  \definefontsynonym [Bookman-DemiBoldSlanted] [Bookman-DemiBoldItalic]
 \stoptypescript
 
 \stoptypescriptcollection

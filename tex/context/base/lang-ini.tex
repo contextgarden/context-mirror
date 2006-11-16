@@ -20,8 +20,6 @@
 
 \writestatus{loading}{Context Language Macros / Initialization}
 
-\unprotect
-
 \startmessages  dutch  library: linguals
   title: taal
       1: afbreekpatronen -- voor -- geladen (n=--,e=--,m=--)
@@ -135,6 +133,11 @@
       9: la langue -- est active
      10: motifs -- chargés
 \stopmessages
+
+\unprotect
+
+\ifx\nonfrenchspacing\undefined \let\nonfrenchspacing\relax \fi
+\ifx\frenchspacing   \undefined \let\frenchspacing   \relax \fi
 
 %D When loading hyphenation patterns, \TEX\ assign a number to
 %D each loaded table, starting with~0. Switching to a specific
@@ -344,8 +347,7 @@
    \enableregime[utf]}
 
 \beginXETEX
-    \def\setuphyppatencoding
-      {\pathypsettings}
+  \def\setuphyppatencoding{\pathypsettings}
 \endXETEX
 
 \def\dodoloadpatterns#1#2#3#4% beware, loaded language also incr
@@ -979,5 +981,9 @@
 \appendtoks\mainlanguage[\currentlanguage]\to\everyjob
 
 \appendtoks\showmessage\m!linguals9\currentlanguage\to\everyjob
+
+%D Brrr:
+
+% \ifx\@@ladefault\undefined \let\@@ladefault\s!en \fi
 
 \protect \endinput

@@ -418,6 +418,8 @@
 \def\currentdescriptionnumber
   {\csname\??dd\currentdescription\??dd\c!number\endcsname}
 
+\ifx\preparednumber\undefined \let\preparednumber\empty \fi
+
 \def\special@@descriptionhandler[#1]#2#3%
   {\strut
    \doifelse{\descriptionparameter\c!number}\v!no

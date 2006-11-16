@@ -85,6 +85,9 @@ class TEX
 
     @@pdftex     = 'pdftex' # new default, pdfetex is gone
 
+    @@luafiles  = "luafiles.tmp"
+    @@luatarget = "lua/context"
+
     ENV['PATH'].split(File::PATH_SEPARATOR).each do |p|
         if System.unix? then
             pp, pe = "#{p}/pdftex"    , "#{p}/pdfetex"
@@ -113,7 +116,7 @@ class TEX
     ['pdfetex','pdftex','pdf','pdftex','standard'] .each do |b| @@backends[b]   = 'pdftex'    end
     ['dvipdfmx','dvipdfm','dpx','dpm']             .each do |b| @@backends[b]   = 'dvipdfmx'  end
     ['xetex','xtx']                                .each do |b| @@backends[b]   = 'xetex'     end
-    ['dvips','ps']                                 .each do |b| @@backends[b]   = 'dvips'     end
+    ['dvips','ps','dvi']                           .each do |b| @@backends[b]   = 'dvips'     end
     ['dvipsone']                                   .each do |b| @@backends[b]   = 'dvipsone'  end
     ['acrobat','adobe','distiller']                .each do |b| @@backends[b]   = 'acrobat'   end
     ['xdv','xdv2pdf']                              .each do |b| @@backends[b]   = 'xdv2pdf'   end
@@ -164,7 +167,7 @@ class TEX
     @@runoptions['xetex']   = ['--8bit  -no-pdf'] # from now on we assume (x)dvipdfmx to be used
     @@runoptions['pdfetex'] = ['--8bit ']
     @@runoptions['pdftex']  = ['--8bit ']         # pdftex is now pdfetex
-    @@runoptions['luatex']  = ['--8bit ']
+    @@runoptions['luatex']  = ['']
     @@runoptions['aleph']   = ['--8bit ']
 
     @@booleanvars = [
@@ -224,6 +227,29 @@ class TEX
     def setextrabooleanvars(vars)
         @@extrabooleanvars << vars
     end
+
+    # def jobvariables(names=nil)
+        # if [names ||[]].flatten.size == 0 then
+            # names = [allbooleanvars,allstringvars].flatten
+        # end
+        # data = Hash.new
+        # names.each do |name|
+            # if allbooleanvars.include?(name) then
+                # data[name] = if getvariable(name) then "yes" else "no" end
+            # else
+                # data[name] = getvariable(name)
+            # end
+        # end
+        # data
+    # end
+
+    # def setjobvariables(names=nil)
+        # assignments = Array.new
+        # jobvariables(names).each do |k,v|
+            # assignments << "#{k}=\{#{v}\}"
+        # end
+        # "\setvariables[exe][#{assignments.join(", ")}]"
+    # end
 
     @@temprunfile = 'texexec'
     @@temptexfile = 'texexec.tex'
@@ -524,6 +550,41 @@ class TEX
         return version
     end
 
+    def cleanupluafiles
+        File.delete(@@luafiles) rescue false
+    end
+
+    def compileluafiles
+        begin
+            Dir.glob("lua/context/*.luc").each do |luc|
+                File.delete(luc) rescue false
+            end
+        rescue
+        end
+        if data = (IO.readlines(@@luafiles) rescue nil) then
+            report("compiling lua files (using #{File.expand_path(@@luafiles)})")
+            begin
+                Dir.makedirs(@@luatarget) rescue false
+                data.each do |line|
+                    luafile = line.chomp
+                    lucfile = File.basename(luafile).gsub(/\..*?$/,'') + ".luc"
+                    if runcommand(["luac","-s","-o",quoted(File.join(Dir.getwd,@@luatarget,lucfile)),quoted(luafile)]) then
+                        report("#{File.basename(luafile)} converted to #{File.basename(lucfile)}")
+                    else
+                        report("#{File.basename(luafile)} not converted to #{File.basename(lucfile)}")
+                    end
+                end
+            rescue
+                report("fatal error in compilation")
+            end
+        else
+            report("no lua compilations needed")
+        end
+        File.delete(@@luafiles) rescue false
+    end
+
+    # we need engine methods
+
     def makeformats
 
         checktestversion
@@ -561,9 +622,18 @@ class TEX
                     makeuserfile
                     makeresponsefile
                 end
-                texformats.each do |texformat|
-                    report("generating tex format #{texformat}")
-                    runcommand([quoted(texengine),prognameflag(progname),iniflag,tcxflag,prefixed(texformat,texengine),texmakeextras(texformat)])
+                if texengine == 'luatex' then
+                    cleanupluafiles
+                    texformats.each do |texformat|
+                        report("generating tex format #{texformat}")
+run_luatools("--ini --compile #{texformat}")
+                    end
+                    compileluafiles
+                else
+                    texformats.each do |texformat|
+                        report("generating tex format #{texformat}")
+                        runcommand([quoted(texengine),prognameflag(progname),iniflag,tcxflag,prefixed(texformat,texengine),texmakeextras(texformat)])
+                    end
                 end
             else
                 report("unable to make format due to lack of permissions")
@@ -592,8 +662,10 @@ class TEX
             mpsformatpath = ''
         end
         # check for problems
+        report("")
         report("tex engine path: #{texformatpath}") unless texformatpath.empty?
         report("mps engine path: #{mpsformatpath}") unless mpsformatpath.empty?
+        report("")
         [['fmt','tex'],['mem','mps']].each do |f|
             [[texformatpath,'global'],[mpsformatpath,'global'],[savedpath,'current']].each do |p|
                 begin
@@ -601,9 +673,18 @@ class TEX
                 rescue
                 else
                     Dir.glob("*.#{f[0]}").each do |file|
-                        report("#{f[1]}format: #{filestate(file)} > #{File.expand_path(file)}")
+                        report("#{f[1]}: #{filestate(file)} > #{File.expand_path(file)} (#{File.size(file)})")
                     end
                 end
+            end
+        end
+        begin
+            lucdir = File.join(texformatpath,@@luatarget)
+            Dir.chdir(lucdir)
+        rescue
+        else
+            Dir.glob("*.luc").each do |file|
+                report("luc: #{filestate(file)} > #{File.expand_path(file)} (#{File.size(file)})")
             end
         end
         # to be sure, go back to current path
@@ -613,6 +694,7 @@ class TEX
         end
         # finalize
         cleanup
+        report("")
         reportruntime
     end
 
@@ -853,10 +935,10 @@ class TEX
         rname = File.unsuffixed(resultname)
         if ! rname.empty? && (rname != fname) then
             report("outputfile #{rname}")
-            ['tuo','log','dvi','pdf'].each do |s|
+            ['tuo','tuc','log','dvi','pdf'].each do |s|
                 File.silentrename(File.suffixed(fname,s),File.suffixed('texexec',s))
             end
-            ['tuo'].each do |s|
+            ['tuo','tuc'].each do |s|
                 File.silentrename(File.suffixed(rname,s),File.suffixed(fname,s)) if FileTest.file?(File.suffixed(rname,s))
             end
         end
@@ -867,12 +949,12 @@ class TEX
         rname = File.unsuffixed(resultname)
         if ! rname.empty? && (rname != fname) then
             report("renaming #{fname} to #{rname}")
-            ['tuo','log','dvi','pdf'].each do |s|
+            ['tuo','tuc','log','dvi','pdf'].each do |s|
                 File.silentrename(File.suffixed(fname,s),File.suffixed(rname,s))
             end
             report("restoring #{fname}")
             unless $fname == 'texexec' then
-                ['tuo','log','dvi','pdf'].each do |s|
+                ['tuo','tuc','log','dvi','pdf'].each do |s|
                     File.silentrename(File.suffixed('texexec',s),File.suffixed(fname,s))
                 end
             end
@@ -1034,6 +1116,20 @@ class TEX
 
     public
 
+    def run_luatools(args)
+        # dirty trick: we know that the lua path is relative to the ruby path; of course this
+        # will not work well when stubs are used
+        [(ENV["_CTX_K_S_texexec_"] or ENV["_CTX_K_S_THREAD_"] or ENV["TEXMFSTART.THREAD"]), File.dirname($0)].each do |path|
+            if path then
+                script = "#{path}/../lua/luatools.lua"
+                if FileTest.file?(script) then
+                    return runcommand("lua #{script} #{args}")
+                end
+            end
+        end
+        return runcommand("texmfstart luatools #{args}")
+    end
+
     def processmpgraphic
         getarrayvariable('files').each do |filename|
             setvariable('filename',filename)
@@ -1121,6 +1217,38 @@ class TEX
                 end
             rescue
                 report("error in converting #{filename}")
+            end
+        end
+        reportruntime
+    end
+
+    def processmpstatic
+        if filename = getvariable('filename') then
+            filename += ".mp" unless filename =~ /\..+?$/
+            if FileTest.file?(filename) then
+                begin
+                    data = IO.read(filename)
+                    File.open("texexec.tex",'w') do |f|
+                        f << "\\setupoutput[pdftex]\n"
+                        f << "\\setupcolors[state=start]\n"
+                        data.sub!(/^%mpenvironment\:\s*(.*?)$/mois) do
+                            f << $1
+                            "\n"
+                        end
+                        f << "\\starttext\n"
+                        f << "\\startMPpage\n"
+                        f << data.gsub(/end\.*\s*$/m, '') # a bit of a hack
+                        f << "\\stopMPpage\n"
+                        f << "\\stoptext\n"
+                    end
+                    report("converting static '#{filename}'")
+                    runtex("texexec.tex")
+                    pdffile = File.suffixed(filename,'pdf')
+                    File.silentrename("texexec.pdf",pdffile)
+                    report ("#{filename} converted to #{pdffile}")
+                rescue
+                    report("error in converting #{filename} (#{$!}")
+                end
             end
         end
         reportruntime
@@ -1372,7 +1500,11 @@ class TEX
         report("progname: #{progname}")
         if texengine && texformat && progname then
             fixbackendvars(@@mappaths[texengine])
+if texengine == "luatex" then
+    run_luatools("--fmt=#{texformat} #{filename}")
+else
             runcommand([quoted(texengine),prognameflag(progname),formatflag(texengine,texformat),tcxflag,runoptions(texengine),filename,texprocextras(texformat)])
+end
             # true
         else
             false
@@ -1451,7 +1583,25 @@ class TEX
         end
     end
 
-    # 1=tex 2=mptex 3=mpxtex 4=mpgraphic
+    def runluacheck(jobname)
+        if false then
+            # test-pos.tex / 6 meg tua file: 18.6 runtime
+            old, new = File.suffixed(jobname,'tua'), File.suffixed(jobname,'tuc')
+            if FileTest.file?(old) then
+                report("converting #{old} into #{new}")
+                system("luac -s -o #{new} #{old}")
+            end
+        else
+            # test-pos.tex / 6 meg tua file: 17.5 runtime
+            old, new = File.suffixed(jobname,'tua'), File.suffixed(jobname,'tuc')
+            if FileTest.file?(old) then
+                report("renaming #{old} into #{new}")
+                File.rename(old,new) rescue false
+            end
+        end
+    end
+
+    # 1=tex 2=mptex 3=mpxtex 4=mpgraphic 5=mpstatic
 
     def runtexexec(filename=[], options=[], mode=nil)
         begin
@@ -1470,6 +1620,7 @@ class TEX
                     when 2 then job.processmptex
                     when 3 then job.processmpxtex
                     when 4 then job.processmpgraphic
+                    when 5 then job.processmpstatic
                 end
                 job.inspect && Kpse.inspect if getvariable('verbose')
                 return true
@@ -1658,6 +1809,7 @@ class TEX
                         ok = runtex(if dummyfile || forcexml then rawbase else rawname end)
                         if ok then
                             ok = runtexutil(rawbase) if getvariable('texutil') || getvariable('forcetexutil')
+                            runluacheck(rawbase)
                             runbackend(rawbase)
                             popresult(rawbase,result)
                         end
@@ -1667,10 +1819,11 @@ class TEX
                             end
                         end
                     else
+# goto tmp/jobname when present
                         mprundone, ok, stoprunning = false, true, false
                         texruns, nofruns = 0, getvariable('runs').to_i
                         state = FileState.new
-                        ['tub','tuo'].each do |s|
+                        ['tub','tuo','tuc'].each do |s|
                             state.register(File.suffixed(rawbase,s))
                         end
                         if getvariable('automprun') then # check this
@@ -1690,13 +1843,16 @@ class TEX
                                     makeoptionfile(rawbase,jobname,orisuffix,false,false,2,texruns) # unknown
                                 end
                             end
+# goto .
                             ok = runtex(File.suffixed(if dummyfile || forcexml then rawbase else rawname end,jobsuffix))
+# goto tmp/jobname when present
                             if ok && (nofruns > 1) then
                                 unless getvariable('nompmode') then
                                     mprundone = runtexmpjob(rawbase, "mpgraph")
                                     mprundone = runtexmpjob(rawbase, "mprun")
                                 end
                                 ok = runtexutil(rawbase)
+                                runluacheck(rawbase)
                                 state.update
                                 stoprunning = state.stable?
                             end
@@ -1704,11 +1860,16 @@ class TEX
                         if not ok then
                             setvariable('error','error in tex file')
                         end
-                        ok = runtexutil(rawbase) if (nofruns == 1) && getvariable('texutil')
+                        if (nofruns == 1) && getvariable('texutil') then
+                            ok = runtexutil(rawbase)
+                            runluacheck(rawbase)
+                        end
                         if ok && finalrun && (nofruns > 1) then
                             makeoptionfile(rawbase,jobname,orisuffix,true,finalrun,4,texruns) unless getvariable('nooptionfile')
                             report("final TeX run #{texruns}")
+# goto .
                             ok = runtex(File.suffixed(if dummyfile || forcexml then rawbase else rawname end,jobsuffix))
+# goto tmp/jobname when present
                         end
                         if getvariable('keep') then
                             ['top','log','run'].each do |suffix|
@@ -1721,8 +1882,11 @@ class TEX
                              # File.silentdelete(File.suffixed(rawbase,s))
                         # end
                         if ok then
+# goto .
                             runbackend(rawbase)
                             popresult(rawbase,result)
+# goto tmp/jobname when present
+# skip next
                         end
                         if true then # autopurge
                             begin
@@ -1755,14 +1919,14 @@ class TEX
                                     end
                                 end
                             rescue
-                                report("fatal error #{$!}")
+                                # report("fatal error #{$!}")
                             end
                         end
                     end
 
                     Kpse.runscript('ctxtools',rawbase,'--purge')       if getvariable('purge')
                     Kpse.runscript('ctxtools',rawbase,'--purge --all') if getvariable('purgeall')
-
+# till here
                 when 'latex' then
 
                     ok = runtex(rawname)
@@ -1913,7 +2077,7 @@ class TEX
 
     def purge_mpx_files(mpname)
         unless getvariable('keep') then
-            ['tex', 'log', 'tui', 'tuo', 'top'].each do |suffix|
+            ['tex', 'log', 'tui', 'tuo', 'tuc', 'top'].each do |suffix|
                 File.silentdelete(File.suffixed(mpname,'temp',suffix))
             end
         end

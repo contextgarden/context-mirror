@@ -8,46 +8,48 @@
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
-%C therefore copyrighted by \PRAGMA. See mreadme.pdf for 
-%C details. 
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
 
 \writestatus{loading}{Context Support Macros / Pretty METAPOST Verbatim}
 
 % bug: in mp-char.mp the char should not be highlighted
 
-%D This module was first used when I documented our new 
-%D company logo. This interpreter is modeled after the \PERL\ 
-%D one. 
+% can be simplified
+
+%D This module was first used when I documented our new
+%D company logo. This interpreter is modeled after the \PERL\
+%D one.
 %D
 %D \startMP
 %D beginfig(1);
-%D   z1 = (0,0); 
-%D   z2 = (100,0); 
+%D   z1 = (0,0);
+%D   z2 = (100,0);
 %D   z3 = (0,100);
 %D   draw z1--z2--z3--cycle;
 %D endfig;
-%D \stopMP 
+%D \stopMP
 %D
-%D Of course we cannot (yet) provide a nice layout, so some 
-%D formatting is still needed. 
+%D Of course we cannot (yet) provide a nice layout, so some
+%D formatting is still needed.
 
 \unprotect
 
 %D \macros
 %D   {prettyMPvariables}
-%D 
-%D Identifiers and system variables are typeset in a different 
-%D style. One can turn of this mechanism for the variables by 
-%D setting th enext boolean. 
-%D 
+%D
+%D Identifiers and system variables are typeset in a different
+%D style. One can turn of this mechanism for the variables by
+%D setting th enext boolean.
+%D
 
-\doglobal\newif\ifprettyMPvariables 
+\doglobal\newif\ifprettyMPvariables
 
 \global\prettyMPvariablestrue
 
-%D We support \METAFONT\ as well as \METAPOST. 
+%D We support \METAFONT\ as well as \METAPOST.
 
-\gdef\MPsetcontrols%
+\gdef\MPsetcontrols
   {\saveprettycontrols
    \everyprettyend
      {\endMPtypesix}%
@@ -58,8 +60,9 @@
      {\endMPtypesix}%
    \let\obeytabs=\ignoretabs}
 
-\gdef\setupprettyMPtype%
+\gdef\setupprettyMPtype
   {\def\prettyidentifier{MP}%
+   \global\inMPtexmodefalse
    \MPsetvariables
    \MPsetcontrols
    \MPsethandlers
@@ -67,11 +70,11 @@
 
 \doglobal\newif\ifinMPtexmode
 
-\gdef\MPsetvariables%
+\gdef\MPsetvariables
   {\global\inMPtexmodefalse
    \global\let\MPsequence=\empty}
 
-\gdef\MPsetspecials%
+\gdef\MPsetspecials
   {\setpretty`\;=11 \setpretty`\$=12 \setpretty`\@=12 \setpretty`\#=12
    \setpretty`\%=20
    \setpretty`\[=31 \setpretty`\]=31 \setpretty`\(=32 \setpretty`\)=32
@@ -100,7 +103,7 @@
    \setpretty`\'=81 \setpretty`\"=82
    \setpretty`\{=90 \setpretty`\}=90 }
 
-\gdef\MPsethandlers%
+\gdef\MPsethandlers
   {\installprettyhandler 11 \MPtypeone
    \installprettyhandler 12 \MPtypeone
    \installprettyhandler 20 \MPtypetwo
@@ -135,7 +138,7 @@
    \fi
    \next}
 
-\gdef\MPtypetwo%
+\gdef\MPtypetwo
   {\endMPtypesix
    \ifnewpretty\expandafter\handlenewpretty\fi\doMPtypetwo}
 
@@ -171,7 +174,7 @@
      \beginofpretty[\!!prettytwo]\getpretty{#1}\endofpretty
    \fi}
 
-\gdef\endMPtypesix%
+\gdef\endMPtypesix
   {\ifx\MPsequence\empty\else
      \doifprettyidentifierelse{\MPsequence}{\MPidentifiers}
        {\doifprettyidentifierelse{\MPsequence}{\MPbtex}
@@ -184,12 +187,12 @@
                {\global\inMPtexmodefalse}{}%
            \fi
            \beginofpretty[\!!prettytwo]%
-             {\prettyidentifierfont\MPsequence}% 
+             {\prettyidentifierfont\MPsequence}%
            \endofpretty}}
        {\ifprettyMPvariables
           \doifprettyidentifierelse{\MPsequence}{\MPvariables}
             {\beginofpretty[\!!prettytwo]%
-             {\prettyvariablefont\MPsequence}% 
+             {\prettyvariablefont\MPsequence}%
              \endofpretty}
             {\MPsequence}%
         \else
@@ -198,7 +201,7 @@
      \global\let\MPsequence=\empty
    \fi}
 
-\gdef\MPtypesixone%
+\gdef\MPtypesixone
   {\endMPtypesix
    \getpretty}
 
@@ -215,7 +218,7 @@
 
 \gdef\MPtypeeightone#1%
   {\endMPtypesix
-   \ifinMPtexmode%
+   \ifinMPtexmode
      \getpretty{#1}%
    \else
      \beginofpretty[\!!prettythree]\getpretty{#1}\endofpretty
@@ -248,114 +251,114 @@
 \useprettyidentifiers \MPidentifiers \MPsetspecials
   btex etex verbatimtex
 
-%D \METAPOST\ internal variables \& predefined variables: 
+%D \METAPOST\ internal variables \& predefined variables:
 
 \useprettyidentifiers \MPidentifiers \MPsetspecials
-  charcode day linecap linejoin miterlimit month pausing 
-  prologues showstopping time tracingcapsules tracingchoices 
-  tracingcommands tracingequations tracinglostchars 
-  tracingmacros tracingonline tracingoutput tracingrestores 
-  tracingspecs tracingstats tracingtitles truecorners 
-  warningcheck year 
+  charcode day linecap linejoin miterlimit month pausing
+  prologues showstopping time tracingcapsules tracingchoices mpprocset
+  tracingcommands tracingequations tracinglostchars
+  tracingmacros tracingonline tracingoutput tracingrestores
+  tracingspecs tracingstats tracingtitles truecorners
+  warningcheck year
 
 \useprettyidentifiers \MPvariables \MPsetspecials
-  ahangle ahlength bboxmargin defaultpen defaultscale 
-  labeloffset background currentpen currentpicture cuttings 
-  defaultfont extra_beginfig extra_endfig 
+  ahangle ahlength bboxmargin defaultpen defaultscale
+  labeloffset background currentpen currentpicture cuttings
+  defaultfont extra_beginfig extra_endfig
 
 %D \METAPOST\ predefined constants:
 
 \useprettyidentifiers \MPidentifiers \MPsetspecials
-  false nullpicture pencircle true 
+  false nullpicture pencircle true
 
 \useprettyidentifiers \MPvariables \MPsetspecials
-  beveled black blue bp butt cc cm dd ditto down epsilon 
+  beveled black blue bp butt cc cm dd ditto down epsilon
   evenly fullcircle green halfcircle identity in infinity left
-  mitered mm origin pensquare pt quartercircle red right 
-  rounded squared unitsquare up white withdots 
+  mitered mm origin pensquare pt quartercircle red right
+  rounded squared unitsquare up white withdots
 
-%D \METAPOST\ operators: 
+%D \METAPOST\ operators:
 
 \useprettyidentifiers \MPidentifiers \MPsetspecials
-  and angle arclength arctime ASCII bluepart boolean bot 
+  and angle arclength arctime ASCII bluepart boolean bot
   char color cosd cycle decimal directiontime floor fontsize
   greenpart hex infont intersectiontimes known length llcorner
-  lrcorner makepath makepen mexp mlog normaldeviate not 
-  numeric oct odd or path pair pen penoffset picture point 
-  postcontrol precontrol redpart reverse rotated scaled 
-  shifted sind slanted sqrt str string subpath substring 
-  transform transformed ulcorner uniformdeviate unknown 
-  urcorner xpart xscaled xxpart xypart ypart yscaled yxpart 
-  yypart zscaled 
+  lrcorner makepath makepen mexp mlog normaldeviate not
+  numeric oct odd or path pair pen penoffset picture point
+  postcontrol precontrol redpart reverse rotated scaled
+  shifted sind slanted sqrt str string subpath substring
+  transform transformed ulcorner uniformdeviate unknown
+  urcorner xpart xscaled xxpart xypart ypart yscaled yxpart
+  yypart zscaled
 
 \useprettyidentifiers \MPvariables \MPsetspecials
-  abs bbox ceiling center cutafter cutbefore dir 
+  abs bbox ceiling center cutafter cutbefore dir
   directionpoint div dotprod intersectionpoint inverse mod lft
-  round rt unitvector whatever 
+  round rt unitvector whatever
 
 %D \METAPOST\ commands:
 
 \useprettyidentifiers \MPidentifiers \MPsetspecials
-  addto clip input interim let newinternal save setbounds 
-  shipout show showdependencies showtoken showvariable 
-  special 
+  addto clip input interim let newinternal save setbounds
+  shipout show showdependencies showtoken showvariable
+  special
 
 \useprettyidentifiers \MPvariables \MPsetspecials
-  cutdraw draw drawarrow drawdblarrow fill filldraw 
-  loggingall pickup tracingall tracingnone undraw unfill 
-  unfilldraw drawdot 
+  cutdraw draw drawarrow drawdblarrow fill filldraw
+  loggingall pickup tracingall tracingnone undraw unfill
+  unfilldraw drawdot
 
 %D \METAPOST\ macro||like functions:
 
 \useprettyidentifiers \MPvariables \MPsetspecials
   buildcycle dashpattern decr dotlabel dotlabels drawoptions
-  incr label labels max min thelabel z 
+  incr label labels max min thelabel z
 
 %D More \METAPOST:
 
 \useprettyidentifiers \MPidentifiers \MPsetspecials
-  begingroup endgroup of curl tension and controls 
-  reflectedabout rotatedaround interpath on off beginfig 
-  endfig def vardef enddef epxr suffix text primary secondary 
-  tertiary primarydef secondarydef tertiarydef top bottom 
-  ulft urt llft lrt randomseed also contour doublepath 
-  withcolor withpen dashed if else elseif fi for endfor 
+  begingroup endgroup of curl tension and controls
+  reflectedabout rotatedaround interpath on off beginfig
+  endfig def vardef enddef epxr suffix text primary secondary
+  tertiary primarydef secondarydef tertiarydef top bottom
+  ulft urt llft lrt randomseed also contour doublepath
+  withcolor withpen dashed if else elseif fi for endfor
   forsuffixes forever downto upto step until end
 
 %D \METAFONT\ stuff:
 
 \useprettyidentifiers \MPidentifiers \MPsetspecials
-  charlist extensible fontdimen headerbyte kern ligtable 
-  boundarychar chardp charext charht charic charwd designsize 
-  fontmaking charexists 
+  charlist extensible fontdimen headerbyte kern ligtable
+  boundarychar chardp charext charht charic charwd designsize
+  fontmaking charexists
 
 \useprettyidentifiers \MPvariables \MPsetspecials
-  beginchar blacker capsule_end change_width 
-  define_blacker_pixels define_corrected_pixels 
-  define_good_x_pixels define_good_y_pixels 
-  define_horizontal_corrected_pixels define_pixels 
-  define_whole_blacker_pixels define_whole_pixels 
-  define_whole_vertical_blacker_pixels 
-  define_whole_vertical_pixels endchar extra_beginchar 
-  extra_endchar extra_setup font_coding_scheme 
-  font_extra_space 
+  beginchar blacker capsule_end change_width
+  define_blacker_pixels define_corrected_pixels
+  define_good_x_pixels define_good_y_pixels
+  define_horizontal_corrected_pixels define_pixels
+  define_whole_blacker_pixels define_whole_pixels
+  define_whole_vertical_blacker_pixels
+  define_whole_vertical_pixels endchar extra_beginchar
+  extra_endchar extra_setup font_coding_scheme
+  font_extra_space
 
 %D \METAFONT\ no||op stuff:
 
 \useprettyidentifiers \MPidentifiers \MPsetspecials
-  cullit currenttransform gfcorners grayfont hround 
-  imagerules lowres_fix nodisplays notransforms openit 
-  displaying currentwindow screen_rows screen_cols 
-  pixels_per_inch cull display openwindow numspecial 
-  totalweight autorounding fillin proofing tracingpens 
-  xoffset chardx granularity smoothing turningcheck yoffset 
+  cullit currenttransform gfcorners grayfont hround
+  imagerules lowres_fix nodisplays notransforms openit
+  displaying currentwindow screen_rows screen_cols
+  pixels_per_inch cull display openwindow numspecial
+  totalweight autorounding fillin proofing tracingpens
+  xoffset chardx granularity smoothing turningcheck yoffset
   chardy hppp tracingedges vppp
 
 %D \METAPOST\ goodies:
 
 \useprettyidentifiers \MPidentifiers \MPsetspecials
-  extra_beginfig extra_endfig mpxbreak 
+  extra_beginfig extra_endfig mpxbreak
 
-\protect 
+\protect
 
-\endinput 
+\endinput

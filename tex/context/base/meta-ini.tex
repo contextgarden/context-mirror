@@ -406,9 +406,9 @@
 %D
 %D \starttyping
 %D \def\extendMPoverlaystamp#1%
-%D   {\def\docommando##1%
+%D   {\def\docommand##1%
 %D      {\edef\overlaystamp{\overlaystamp:\MPvariable{##1}}}%
-%D    \processcommalist[#1]\docommando}
+%D    \processcommalist[#1]\docommand}
 %D \stoptyping
 
 %D Since we need to feed \METAPOST\ with expanded dimensions,
@@ -589,6 +589,11 @@
 
 \resetMPenvironment
 
+\def\useMPenvironmentbuffer[#1]%
+  {\expanded{\startMPenvironment\noexpand\readfile{\TEXbufferfile{\jobname}}{}{}}\stopMPenvironment}
+
+\useMPenvironmentbuffer[mp]
+
 %D This command takes \type {[reset]} as optional
 %D argument.
 %D
@@ -747,8 +752,8 @@
   CurrentWidth:=\the\hsize;
   CurrentHeight:=\the\vsize;
   %
-  EmWidth:=\the\fontdimen6\font;
-  ExHeight:=\the\fontdimen5\font;
+  EmWidth:=\the\emwidth;
+  ExHeight:=\the\exheight;
   %
   PageNumber:=\the\pageno;
   RealPageNumber:=\the\realpageno;
@@ -756,7 +761,7 @@
 \stopMPinitializations
 
 \appendtoks
-    \expanded{\definecolor[currentcolor][\currentcolor]}%
+    \expanded{\definecolor[currentcolor][\currentcolorname]}%
 \to \everyMPgraphic
 
 \appendtoks
@@ -765,40 +770,13 @@
   \topskip     1\topskip
 \to \everyMPgraphic
 
-% this will become (more efficient)
-%
-% \startuseMPgraphic{init data}
-%   tx1 := \the\baselineskip ;
-%   tx2 := \the\baselineskip ;
-%   tx3 := \the\bodyfontsize ;
-%   tx4 := \strutheight ;
-%   tx5 := \strutdepth ;
-%   tx6 := \the\hsize ;
-%   tx7 := \the\vsize ;
-%   tx8 := \the\fontdimen6\font ;
-%   tx9 := \the\fontdimen5\font ;
-% \stopuseMPgraphic
-%
-% def map_tx_variables =
-%   BaseLineSkip  := tx1 ;
-%   LineHeight    := tx2 ;
-%   BodyFontSize  := tx3 ;
-%   StrutHeight   := tx4 ;
-%   StrutDepth    := tx5 ;
-%   CurrentWidth  := tx6 ;
-%   Currentheight := tx7 ;
-%   EmWidth       := tx8 ;
-%   ExHeight      := tx9 ;
-% enddef ;
-%
-% extra_begin_fig ....
-
 %D Alas, the prologue settings differ per driver.
 
 \ifx\undefined\MPprologues \def\MPprologues{0} \fi
 
 \startMPinitializations
   prologues:=\MPprologues;
+  mpprocset:=1;
 \stopMPinitializations
 
 \appendtoks
@@ -855,16 +833,18 @@
 \def\insertMPfile#1#2% in context #2 is empty
   {\doifelsenothing{#2}{\doinsertMPfile{#1}}{\insertMPfileARG{#1}{#2}}}
 
-\def\includeMPasEPS#1%
+\def\includeMPasEPS#1% untested !!
   {\bgroup
    \message{[MP as EPS #1]}%
    \the\everyinsertMPfile
    \dogetEPSboundingbox{#1}\!!widtha\!!heighta\!!widthb\!!heightb
    \setbox\scratchbox\vbox to \!!heightb
      {\vfill
-      \doinsertfile
-        {\c!mps,\c!mps}{#1,\empty}{100}{100}%
-        \!!widtha\!!heighta\!!widthb\!!heightb\zerocount}%
+      \let \@@DriverImageType  \c!mps
+      \def \@@DriverImageFile  {#1}%
+      \edef\@@DriverImageWidth {\the\!!widthb }%
+      \edef\@@DriverImageHeight{\the\!!heightb}%
+      \doinsertfile}%
    \wd\scratchbox\!!widthb
    \dp\scratchbox\zeropoint
    \box\scratchbox

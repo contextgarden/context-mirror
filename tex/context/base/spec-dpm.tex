@@ -55,32 +55,29 @@
 %D
 %D Only \METAPOST, \JPG\ and \PDF\ inclusion are supported.
 
-\definespecial\doinsertfile#1#2#3#4#5#6#7#8#9%
-  {\dodoinsertfile{dpm}{#1}{#2}{#3}{#4}{#5}{#6}{#7}{#8}{#9}}
+\definespecial\doinsertfile
+  {\dofileinsertion{dpm}\@@DriverImageType}
 
-\definefileinsertion{dpm}{mps}#1#2#3#4#5#6#7#8#9%
-  {\PointsToWholeBigPoints{#7}\width
-   \PointsToWholeBigPoints{#8}\height
-   % brrr, should use #1->#9
+\definefileinsertion{dpm}{mps}%
+  {\PointsToWholeBigPoints\@@DriverImageWidth \width
+   \PointsToWholeBigPoints\@@DriverImageHeight\height
    \special
-     {PSfile="#1"\space
+     {PSfile="\@@DriverImageFile"\space
       llx=\EPSllx\space lly=\EPSlly\space
       urx=\EPSurx\space ury=\EPSury\space
       rwi=\width0\space rhi=\height0}}
 
-\definefileinsertion{dpm}{pdf}#1#2#3#4#5#6#7#8#9%
-  {\bgroup
-   \scratchdimen#7\edef\width {\the\scratchdimen\space}%
-   \scratchdimen#8\edef\height{\the\scratchdimen\space}%
-   \special{pdf: epdf width \width height \height (#1)}%
-   \egroup}
+\definefileinsertion{dpm}{pdf}%
+  {\special{pdf: epdf
+     width  \@@DriverImageWidth \space
+     height \@@DriverImageHeight\space
+     (\@@DriverImageFile)}}
 
-\definefileinsertion{dpm}{jpg}#1#2#3#4#5#6#7#8#9%
-  {\bgroup
-   \scratchdimen#7\edef\width {\the\scratchdimen\space}%
-   \scratchdimen#8\edef\height{\the\scratchdimen\space}%
-   \special{pdf: image width \width height \height (#1)}%
-   \egroup}
+\definefileinsertion{dpm}{jpg}%
+  {\special{pdf: image
+     width  \@@DriverImageWidth \space
+     height \@@DriverImageHeight\space
+     (\@@DriverImageFile)}}
 
 \definefileinsertion{dpm}{mov}{\doPDFinsertmov}
 \definefileinsertion{dpm}{avi}{\doPDFinsertmov}
@@ -160,12 +157,12 @@
 \definespecial\doflushJSpreamble#1%
   {\bgroup
    \let\compositeJScode=\empty
-   \def\docommando##1%
+   \def\docommand##1%
      {\edef\sanitizedJScode{\getJSpreamble{##1}}%
       \@EA\doPSsanitizeJScode\sanitizedJScode\to\sanitizedJScode
       \special{pdf: object @JS:#1 <</S /JavaScript /JS (\sanitizedJScode)>>}%
       \edef\compositeJScode{\compositeJScode\space (##1) @JS:#1}}%
-   \processcommalist[#1]\docommando
+   \processcommalist[#1]\docommand
    \special{pdf: object @JS:JS <</Names [\compositeJScode]>>}%
    \special{pdf: put @names <</JavaScript @JS:JS>>}%
    \egroup}
@@ -320,7 +317,7 @@
 %D \macros
 %D   {doPDFdestination}
 
-\def\doPDFdestination name #1%
+\def\doPDFdestination#1%
   {\special{pdf: dest (#1) [@thispage /View [/Fit]]}}
 
 %D \macros
@@ -358,10 +355,10 @@
      \egroup
    \fi}
 
-\def\doPDFaction width #1 height #2 action #3%
+\def\doPDFaction#1#2#3%
   {\dodoPDFaction\empty{#1}{#2}{#3}}
 
-\def\doPDFannotation width #1 height #2 data #3%
+\def\doPDFannotation#1#2#3%
   {\bgroup
    \scratchdimen#1\edef\width {\the\scratchdimen\space}%
    \scratchdimen#2\edef\height{\the\scratchdimen\space}%
@@ -372,7 +369,7 @@
 %D \macros
 %D   {doPDFannotationobject,doPDFactionobject}
 
-\def\doPDFannotationobject class #1 name #2 width #3 height #4 data #5%
+\def\doPDFannotationobject#1#2#3#4#5%
   {\bgroup
    \scratchdimen#3\edef\width {\the\scratchdimen\space}%
    \scratchdimen#4\edef\height{\the\scratchdimen\space}%
@@ -380,7 +377,7 @@
    \dosetobjectreference{#1}{#2}{@#1::#2}%
    \egroup}
 
-\def\doPDFactionobject class #1 name #2 width #3 height #4 action #5%
+\def\doPDFactionobject#1#2#3#4#5%
   {\dodoPDFaction{@#1::#2}{#3}{#4}{#5}%
    \dosetobjectreference{#1}{#2}{#1::#2}}
 
@@ -403,13 +400,13 @@
 \def\doPDFpageresource#1%
   {\message{[skipping PDF resource]}}
 
-\let\doPDFresetpageresources =\relax
-\let\doPDFresetpageattributes=\relax
+\let\doPDFresetpageresources \relax
+\let\doPDFresetpageattributes\relax
 
 %D \macros
 %D   {doPDFbookmark}
 
-\def\doPDFbookmark level #1 n #2 text #3 page #4 open #5%
+\def\doPDFbookmark#1#2#3#4#5%
   {\ifcase#2\else
      \scratchcounter#4\advance\scratchcounter\minusone
      \special{pdf: out \ifcase#5-\fi#2
@@ -420,10 +417,10 @@
 %D \macros
 %D   {doPDFdictionaryobject,doPDFarrayobject}
 
-\def\doPDFdictionaryobject class #1 name #2 data #3%
+\def\doPDFdictionaryobject#1#2#3%
   {\special{pdf: object @#1::#2 <<#3>>}}
 
-\def\doPDFarrayobject class #1 name #2 data #3%
+\def\doPDFarrayobject#1#2#3%
   {\special{pdf: object @#1::#2 [#3]}}
 
 %D \macros

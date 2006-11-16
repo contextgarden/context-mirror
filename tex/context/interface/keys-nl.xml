@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 
-<cd:interface xmlns:cd="http://www.pragma-ade.com/commands" name="context" language="nl" version="2006.08.08 17:52">
+<cd:interface xmlns:cd="http://www.pragma-ade.com/commands" name="context" language="nl" version="2006.11.16 12:02">
 
   <cd:variables>
     <cd:variable name="one" value="een"/>
@@ -87,6 +87,8 @@
     <cd:variable name="flushleft" value="lijnlinks"/>
     <cd:variable name="flushright" value="lijnrechts"/>
     <cd:variable name="center" value="centreer"/>
+    <cd:variable name="flushouter" value="lijnbuiten"/>
+    <cd:variable name="flushinner" value="lijnbinnen"/>
   </cd:variables>
 
   <cd:variables>
@@ -96,6 +98,7 @@
 
   <cd:variables>
     <cd:variable name="formula" value="formule"/>
+    <cd:variable name="subformula" value="subformule"/>
     <cd:variable name="formulae" value="formules"/>
     <cd:variable name="figure" value="figuur"/>
     <cd:variable name="figures" value="figuren"/>
@@ -627,9 +630,11 @@
     <cd:variable name="left" value="links"/>
     <cd:variable name="local" value="lokaal"/>
     <cd:variable name="new" value="nieuw"/>
+    <cd:variable name="old" value="oud"/>
     <cd:variable name="MONTH" value="MAAND"/>
     <cd:variable name="month" value="maand"/>
     <cd:variable name="mar" value="mar"/>
+    <cd:variable name="item" value="som"/>
     <cd:variable name="marking" value="markering"/>
     <cd:variable name="margin" value="marge"/>
     <cd:variable name="max" value="max"/>
@@ -784,6 +789,8 @@
     <cd:variable name="xml" value="xml"/>
     <cd:variable name="enumeration" value="doornummering"/>
     <cd:variable name="description" value="doordefinitie"/>
+    <cd:variable name="lefthanging" value="linkshangend"/>
+    <cd:variable name="righthanging" value="rechtshangend"/>
   </cd:variables>
 
   <cd:constants>
@@ -1192,6 +1199,8 @@
     <cd:command name="subpagenumber" value="subpaginanummer"/>
     <cd:command name="setuptext" value="steltekstin"/>
     <cd:command name="setuptexttexts" value="stelteksttekstenin"/>
+    <cd:command name="settextcontent" value="steltekstinhoudin"/>
+    <cd:command name="resettext" value="resettekstinhoud"/>
     <cd:command name="definetext" value="definieertekst"/>
     <cd:command name="pagenumber" value="paginanummer"/>
     <cd:command name="completepagenumber" value="volledigepaginanummer"/>

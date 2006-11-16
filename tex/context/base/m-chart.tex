@@ -13,7 +13,7 @@
 
 % to do: \localpushmacro/\localpopmacro (dohandleflowchart etc)
 
-% will be redone with layers
+% will be redone with layers and dimexpr
 
 %D This is an experimental module. Pieces of code will be moved
 %D to other modules. More features are possible but will be
@@ -1049,8 +1049,8 @@
    \fi}
 
 \def\setgetFLOWchart[#1][#2][#3]%
-   {\def\docommando##1{}% cell line focus ?
-    \processcommalist[#2]\docommando
+   {\def\docommand##1{}% cell line focus ?
+    \processcommalist[#2]\docommand
     \getFLOWchart[#1][#3]}
 
 \def\doFLOWchart[#1][#2]%

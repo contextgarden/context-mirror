@@ -200,6 +200,9 @@
 \def\figuresymbol
   {\dodoubleempty\dofiguresymbol}
 
+\ifx\externalfigure      \undefined \def\externalfigure[#1][#2]{#1} \fi
+\ifx\resetexternalfigures\undefined \let\resetexternalfigures\relax \fi
+
 \def\dofiguresymbol[#1][% #2]%
   {\externalfigure[#1][\c!reset=\v!yes,\c!symbol=\v!yes,\c!height=\defaultsymbolheight,}% #2]}
 

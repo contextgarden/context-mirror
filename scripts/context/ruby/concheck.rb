@@ -223,6 +223,7 @@ def some_chr_error(data, filename, left, right)
     levels = Array.new
     for line in 0..data.length-1 do
          str = data[line]
+         # str = data[line].gsub(/\\[\#{left}\#{right}]/,'')
          column = 0
          while column<str.length do
             case str[column].chr
@@ -365,6 +366,7 @@ end
 # todo : language dependent
 
 def check_file_tex (filename)
+    error = false
     if data = load_file(filename) then
         message("checking tex file", filename)
         interface = guess_interface(data)
@@ -372,42 +374,49 @@ def check_file_tex (filename)
         data = cleanup_data(data,interface)
         # data.each do |d| print d  end
         $valid[interface].each do |v|
-            return false if some_wrd_error(data, filename, v[0], v[1] ,$valid_tex)
+            if some_wrd_error(data, filename, v[0], v[1] ,$valid_tex) then
+                error = true
+                break
+            end
         end
         # return false if some_wrd_error(data, filename, '\\\\start'   , '\\\\stop'   , $valid_tex)
         # return false if some_wrd_error(data, filename, '\\\\Start'   , '\\\\Stop'   , $valid_tex)
         # return false if some_wrd_error(data, filename, '\\\\beginvan', '\\\\eindvan', $valid_tex)
         # return false if some_wrd_error(data, filename, '\\\\begin'   , '\\\\end|\\\\eind', $valid_tex)
-        return false if some_sym_error(data, filename, '$', false)
-        return false if some_sym_error(data, filename, '|', true)
-        return false if some_chr_error(data, filename, '{', '}')
-        return false if some_chr_error(data, filename, '[', ']')
-        return false if some_chr_error(data, filename, '(', ')')
-        return false if some_key_error(data, filename, valid)
-        message("no errors in tex code", filename)
-        return true
+        error = true if some_sym_error(data, filename, '$', false)
+        error = true if some_sym_error(data, filename, '|', true)
+        error = true if some_chr_error(data, filename, '{', '}')
+        error = true if some_chr_error(data, filename, '[', ']')
+        error = true if some_chr_error(data, filename, '(', ')')
+        error = true if some_key_error(data, filename, valid)
+        message("no errors in tex code", filename) unless error
+        return error
     else
         return false
     end
 end
 
 def check_file_mp (filename)
+    error = false
     if data = load_file(filename) then
         message("checking metapost file", filename)
         interface = guess_interface(data)
         valid = load_valid(data,interface)
         $valid[interface].each do |v|
-            return false if some_wrd_error(data, filename, v[0], v[1] ,$valid_tex)
+            if some_wrd_error(data, filename, v[0], v[1] ,$valid_tex) then
+                error = true
+                break
+            end
         end
         # return false if some_wrd_error(data, filename, '', 'begin', 'end', $valid_mp)
-        return false if some_chr_error(data, filename, '{', '}')
-        return false if some_chr_error(data, filename, '[', ']')
-        return false if some_chr_error(data, filename, '(', ')')
-        return false if some_key_error(data, filename, valid)
-        message("no errors in metapost code", filename)
-        return true
+        error = true if some_chr_error(data, filename, '{', '}')
+        error = true if some_chr_error(data, filename, '[', ']')
+        error = true if some_chr_error(data, filename, '(', ')')
+        error = true if some_key_error(data, filename, valid)
+        message("no errors in metapost code", filename) unless error
+        return error
     else
-        return true
+        return false
     end
 end
 
@@ -440,7 +449,7 @@ def check_file(filename='')
         when '' then
             message("provide filename")
             return false
-        when /\.tex$/i then
+        when /\.(tex|mk.+)$/i then
             return check_file_tex(filename) # && check_file_text(filename)
         when /\.mp$/i then
             return check_file_mp(filename)
@@ -450,12 +459,13 @@ def check_file(filename='')
     end
 end
 
-if filename = ARGV[0] then
-    if check_file(filename) then
-        exit 0
-    else
-        exit 1
+if ARGV.size > 0 then
+    someerror = false
+    ARGV.each do |filename|
+         somerror = true if check_file(filename)
     end
+    exit (if someerror then 1 else 0 end)
 else
     exit 1
 end
+

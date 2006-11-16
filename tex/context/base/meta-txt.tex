@@ -53,14 +53,14 @@
      \setuptolerance[\v!verytolerant,\v!stretch]%
      \!!counta=0
      \!!toksa=\emptytoks
-     \def\docommando##1%
+     \def\docommand##1%
        {\setbox\scratchbox=\hbox{\useMPgraphic{##1}}%
         \global\chardef\parfirst=0
         \getMPdata % \readlocfile{\MPdatafile}{}{}%
         \setshapecharacteristics
         \advance\!!counta by \parlines
         \expandafter\appendtoks\the\partoks\to\!!toksa}%
-     \processcommalist[#1]\docommando
+     \processcommalist[#1]\docommand
      \global\parseriestrue
      \xdef\totalparlines{\the\!!counta}%
      \global\partoks\!!toksa
@@ -79,7 +79,7 @@
    \getshapecharacteristics}
 
 \def\adaptparshape%
-  {\def\docommando##1%
+  {\def\docommand##1%
      {\ifcase\!!counta
         \expandafter\appendtoks\space##1 \to\!!toksa
       \else
@@ -89,7 +89,7 @@
    \doglobal\decrement(\totalparlines,\!!counta)%
    \multiply\!!counta \plustwo
    \!!toksa\emptytoks
-   \expanded{\processseparatedlist[\the\partoks][\space]}\docommando
+   \expanded{\processseparatedlist[\the\partoks][\space]}\docommand
    \global\partoks\!!toksa
   %\ifx\partoks\emptytoks\else % safeguard
      \expanded{\parshape\totalparlines\the\partoks}%

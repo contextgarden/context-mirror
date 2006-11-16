@@ -36,7 +36,7 @@
 % June 22, 2003, this definition was patched to adapt itself
 % to transparent colors
 
-\startuseMPgraphic{placeholder}{width,height,color}
+\startuseMPgraphic{placeholder}{width,height,reduction,color}
   numeric w, h, d, r ; color c, b, cc ; path p ; boolean t ;
   t := is_transparent(\MPvar{color}) ;
   c := not_transparent(\MPvar{color}) ;

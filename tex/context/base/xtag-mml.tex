@@ -444,13 +444,8 @@
 \defineXMLentity [lparent]      {\getXMLentity{lparenthesis}}
 \defineXMLentity [rparent]      {\getXMLentity{rparenthesis}}
 
-\bgroup
-\catcode`\{=12 \doglobal\convertargument{\to\mmllbrace
-\catcode`\}=12 \doglobal\convertargument}\to\mmlrbrace
-\egroup
-
-\@EA \defineXMLentity \@EA [\mmllbrace] {\getXMLentity{lbrace}}
-\@EA \defineXMLentity \@EA [\mmlrbrace] {\getXMLentity{rbrace}}
+\defineXMLentity [\letterleftbrace ] {\getXMLentity{lbrace}}
+\defineXMLentity [\letterrightbrace] {\getXMLentity{rbrace}}
 
 \defineXMLentity [{[}] {\getXMLentity{lbracket}}
 \defineXMLentity [{]}] {\getXMLentity{rbracket}}

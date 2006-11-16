@@ -439,7 +439,7 @@
    \edef\pretabskip{\the\scratchdimen}%
    \let\postabskip\pretabskip
    \let\gettabulateexit\settabulatepreamble
-       \@EA\settabulatepreamble\next}
+   \@EA\settabulatepreamble\next}
 
 \def\gettabulatesetups#1%
   {\setvalue{\@@tabsetups@@\the\tabulatecolumns}{\setups[#1]}%
@@ -508,10 +508,10 @@
 \def\dogettabulatewidth(#1)%
   {\processallactionsinset
      [#1]%
-     [\v!fit=>\chardef\tabulatemodus\plusthree,
-         \v!fixed=>\chardef\tabulatemodus\plusthree
-                  \tabulatenopbreaktrue,
-      \s!unknown=>\tabulatewidth#1\relax]%
+     [   \v!fit=>\chardef\tabulatemodus\plusthree,
+       \v!fixed=>\chardef\tabulatemodus\plusthree
+                 \tabulatenopbreaktrue,
+     \s!unknown=>\tabulatewidth#1\relax]%
    \ifnum\tabulatedimen=\plusone
      \global\advance\tabulatepwidth\tabulatewidth
    \fi
@@ -865,12 +865,12 @@
      [\tabulateparameter\c!distance]
      [ \v!blank=>\scratchskip\bigskipamount,
        \v!depth=>\scratchskip\strutdp,
-        \v!small=>\def\factor{.25},
-       \v!medium=>\def\factor{.5},
-        \v!big=>,
-         \v!none=>\scratchskip\zeropoint\def\factor{0},
-         \v!grid=>\scratchskip\zeropoint\def\factor{0},
-      \s!unknown=>\scratchskip\commalistelement]%
+       \v!small=>\def\factor{.25},
+      \v!medium=>\def\factor{.5},
+         \v!big=>,
+        \v!none=>\scratchskip\zeropoint\def\factor{0},
+        \v!grid=>\scratchskip\zeropoint\def\factor{0},
+     \s!unknown=>\scratchskip\commalistelement]%
    \scratchdimen\factor\scratchskip
    \ifconditional\tabulatesomeamble\kern\else\vskip\fi\scratchdimen % new
    \egroup}

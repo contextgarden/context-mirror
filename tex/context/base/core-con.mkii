@@ -1,0 +1,286 @@
+%D \module
+%D   [       file=core-con,
+%D        version=1997.26.08,
+%D          title=\CONTEXT\ Core Macros,
+%D       subtitle=Conversion Macros,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\unprotect
+
+%D When upcasing the result, we just follow the text book rules
+%D of expansion. Later on we'll see some more uppercase tricks.
+
+\def\romannumerals#1%
+  {\romannumeral#1}
+
+%D For some years we had \unknown
+%D
+%D \starttyping
+%D \def\Romannumerals#1%
+%D   {\uppercase\expandafter{\romannumeral#1}}
+%D \stoptyping
+%D
+%D \unknown but we need to be fully expandable in order to get
+%D the utility output file right, so now we have the following
+%D solution. It was Patrick Gundlach who first noticed this
+%D ommision.
+
+\def\Romannumerals#1%
+  {\expandafter\doRomannumerals\number#1\relax}
+
+\def\doRomannumerals#1#2\relax % spaces after ifcase prevent \relax
+  {\ifnum#1#2<10
+     \ifcase0#1#2 \or I\or II\or III\or IV\or V\or VI\or VII\or VIII\or IX\fi
+   \else\ifnum#1#2<100
+     \ifcase0#1   \or X\or XX\or XXX\or XL\or L\or LX\or LXX\or LXXX\or XC\fi
+     \doRomannumerals#2\relax
+   \else\ifnum#1#2<1000
+     \ifcase0#1   \or C\or CC\or CCC\or CD\or D\or DC\or DCC\or DCCC\or CM\fi
+     \doRomannumerals#2\relax
+   \else\ifnum#1#2<4000
+     \ifcase0#1   \or M\or MM\or MMM\fi
+     \doRomannumerals#2\relax
+   \else
+     \uppercase\expandafter{\romannumeral#1#2}%
+   \fi\fi\fi\fi}
+
+%D Big case statements but pretty fast:
+
+\def\character#1%
+  {\ifcase#1\unknowncharacter
+     \or a\or b\or c\or d\or e\or f\or g\or h\or i\or j\or k\or l\or m%
+     \or n\or o\or p\or q\or r\or s\or t\or u\or v\or w\or x\or y\or z%
+   \else
+     \unknowncharacter
+   \fi}
+
+\def\Character#1%
+  {\ifcase#1\unknowncharacter
+     \or A\or B\or C\or D\or E\or F\or G\or H\or I\or J\or K\or L\or M%
+     \or N\or O\or P\or Q\or R\or S\or T\or U\or V\or W\or X\or Y\or Z%
+   \else
+     \unknowncharacter
+   \fi}
+
+\def\greeknumerals#1%
+  {% no longer needed: \mathematics
+     {\ifcase#1\unknowncharacter\or
+        \alpha      \or \beta  \or \gamma   \or \delta   \or
+        \varepsilon \or \zeta  \or \eta     \or \theta   \or
+        \iota       \or \kappa \or \lambda  \or \mu      \or
+        \nu         \or \xi    \or \omicron \or \pi      \or
+        \varrho     \or \sigma \or \tau     \or \upsilon \or
+        \phi        \or \chi   \or \psi     \or \omega
+      \else
+        \unknowncharacter
+      \fi}}
+
+\def\Greeknumerals#1%
+  {% no longer needed: \mathematics
+     {\ifcase#1\unknowncharacter \or
+        \Alpha   \or \Beta  \or \Gamma   \or \Delta   \or
+        \Epsilon \or \Zeta  \or \Eta     \or \Theta   \or
+        \Iota    \or \Kappa \or \Lambda  \or \Mu      \or
+        \Nu      \or \Xi    \or \Omicron \or \Pi      \or
+        \Rho     \or \Sigma \or \Tau     \or \Upsilon \or
+        \Phi     \or \Xi    \or \Psi     \or \Omega
+      \else
+        \unknowncharacter
+      \fi}}
+
+\beginTEX
+
+\def\dodoconvertcharacters#1#2#3%
+  {\ifnum#3>#1
+     \bgroup
+     \!!counta#3\relax
+     \ifnum\!!counta>\zerocount
+       \advance\!!counta \minusone
+       \!!countb\!!counta
+       \divide\!!counta #1%
+       \!!countc\!!counta
+       \multiply\!!countc #1%
+       \advance\!!countb -\!!countc
+       \doconvertcharacters#3{\!!counta}%
+       \advance\!!countb \plusone
+       #3{\the\!!countb}%
+     \fi
+     \egroup
+   \else
+     #2{#3}% pure expansion, used in references
+   \fi}
+
+\endTEX
+
+%D A fully expandable alternative:
+
+\beginETEX \numexpr
+
+\def\dodoconvertcharacters#1#2#3%
+  {\ifcase#3\else
+     \ifnum#3>#1
+       \expandafter\doconvertcharacters\expandafter#2\expandafter{\the\numexpr(#3+12)/#1-1\relax}%
+       \expandafter#2\expandafter{\the\numexpr#3-((#3+12)/#1-1)*#1\relax}%
+     \else
+       \expandafter#2\expandafter{\number#3}%
+     \fi
+   \fi}
+
+\endETEX
+
+\def\doconvertcharacters{\dodoconvertcharacters{26}}
+
+\def\characters{\doconvertcharacters\character}
+\def\Characters{\doconvertcharacters\Character}
+
+\def\getdayoftheweek#1#2#3%
+  {\bgroup
+   \!!counta#3\relax
+   \advance\!!counta \minusone
+   \!!countb\!!counta
+   \multiply\!!countb 365
+   \advance\!!countb \ifcase#2\relax
+     0 \or  0 \or 31 \or 59 \or 90 \or120 \or151 \or
+   181 \or212 \or243 \or273 \or304 \or334 \or365 \fi
+   \advance\!!countb #1\relax
+   \ifnum#2>2
+     \doifleapyearelse{#3}{\advance\!!countb 1}{}\relax
+   \fi
+   \!!countc\!!counta
+   \dosetdivision\!!countc4\!!countc
+   \advance\!!countb \!!countc
+   \!!countc\!!counta
+   \dosetdivision\!!countc{100}\!!countc
+   \advance\!!countb -\!!countc
+   \!!countc\!!counta
+   \dosetdivision\!!countc{400}\!!countc
+   \advance\!!countb \!!countc
+   \dosetmodulo\!!countb7\!!countb
+   \advance\!!countb \plusone
+   \@EA\egroup\@EA\normalweekday\the\!!countb\relax}
+
+\def\dayoftheweek#1#2#3%
+  {\getdayoftheweek{#1}{#2}{#3}\doconvertday{\normalweekday}}
+
+\def\doifleapyearelse#1% #2#3%
+  {\bgroup
+   \!!doneafalse
+   \!!counta#1%
+   \dosetmodulo\!!counta4\!!countb
+   \ifcase\!!countb
+     \dosetmodulo\!!counta{100}\!!countb
+     \ifcase\!!countb \else \!!doneatrue \fi
+     \dosetmodulo\!!counta{400}\!!countb
+     \ifcase\!!countb \!!doneatrue \fi
+   \fi
+   \if!!donea
+     \egroup\@EA\firstoftwoarguments  % \def\next{#2}%
+   \else
+     \egroup\@EA\secondoftwoarguments % \def\next{#3}%
+   \fi}                               % \next}
+
+% untested but cleaner:
+%
+% \def\doifleapyearelse#1% #2#3%
+%   {\bgroup
+%    \dosetmodulo{#1}{400}\scratchcounter
+%    \ifcase\scratchcounter
+%    \else
+%      \dosetmodulo{#1}{100}\scratchcounter
+%      \ifcase\scratchcounter
+%        \scratchcounter\plusone
+%      \else
+%        \dosetmodulo{#1}4\scratchcounter
+%      \fi
+%    \fi
+%    \ifcase\scratchcounter
+%      \egroup\@EA\firstoftwoarguments
+%    \else
+%      \egroup\@EA\secondoftwoarguments
+%    \fi}
+
+\def\getdayspermonth#1#2%
+  {\doifleapyearelse{#1}
+     {\def\numberofdays{29}}
+     {\def\numberofdays{28}}%
+   \edef\numberofdays
+     {\ifcase#2 \or31\or\numberofdays\or31\or30\or
+        31\or30\or31\or31\or30\or31\or30\or31\fi}}
+
+\def\calculatecurrenttime
+  {\dosetdivision\time{60}\scratchcounter
+   \edef\currenthour  {\ifnum\scratchcounter<10 0\fi \the\scratchcounter}%
+   \dosetmodulo  \time{60}\scratchcounter
+   \edef\currentminute{\ifnum\scratchcounter<10 0\fi \the\scratchcounter}}
+
+
+%D \macros
+%D   {defineconversionvector,conversionnumber} % bad names so no danger for clash
+%D
+%D For Adam and friends \unknown
+%D
+%D \startitemize[persiannummerals]
+%D \item test \item test \item test \item test
+%D \stopitemize
+
+\def\defineconversionvector#1#2% name base
+  {\bgroup
+   % dirty trick
+   \uccode`\*=`\1
+   % plain:
+   % \uccode`\0=\numexpr#2+0\relax \uccode`\1=\numexpr#2+1\relax
+   % \uccode`\2=\numexpr#2+2\relax \uccode`\3=\numexpr#2+3\relax
+   % \uccode`\4=\numexpr#2+4\relax \uccode`\5=\numexpr#2+5\relax
+   % \uccode`\6=\numexpr#2+6\relax \uccode`\7=\numexpr#2+7\relax
+   % \uccode`\8=\numexpr#2+8\relax \uccode`\9=\numexpr#2+9\relax
+   % context:
+   \dostepwiserecurse091{\expandafter\uccode\expandafter`\recurselevel=\numexpr#2+\recurselevel}%
+   % prepared macro
+   \uppercase\expandafter{\expandafter\gdef\csname::cvn::#1::\endcsname##*%
+     {\ifcase##* 0\or1\or2\or3\or4\or5\or6\or7\or8\or9\fi}}%
+   \egroup}
+
+\def\conversionnumber#1#2%
+  {\ifcsname::cvn::#1::\endcsname
+     \expandafter\doconversionnumber\csname::cvn::#1::\expandafter\endcsname\number#2\relax
+   \else
+      \number#2%
+   \fi}
+
+\def\doconversionnumber#1#2%
+  {\ifx#2\relax
+     \expandafter\gobbleoneargument
+   \else
+     #1{#2}%
+     \expandafter\doconversionnumber
+   \fi#1}
+
+% actually mkiii code
+
+\beginXETEX
+
+\defineconversionvector{arabicnumerals}    {"0660}
+\defineconversionvector{persiannumerals}   {"06F0}
+\defineconversionvector{thainumerals}      {"0E50}
+\defineconversionvector{devanagarinumerals}{"0966}
+\defineconversionvector{gurmurkhinumerals} {"0A66}
+\defineconversionvector{gujaratinumerals}  {"0AE6}
+\defineconversionvector{tibetannumerals}   {"0F20}  % also "half numerals?"
+
+\defineconversion[arabicnumerals]    [\conversionnumber{arabicnumerals}]
+\defineconversion[persiannumerals]   [\conversionnumber{persiannumerals}]
+\defineconversion[thainumerals]      [\conversionnumber{thainumerals}]
+\defineconversion[devanagarinumerals][\conversionnumber{devanagarinumerals}]
+\defineconversion[gurmurkhinumerals] [\conversionnumber{gurmurkhinumerals}]
+\defineconversion[gujaratinumerals]  [\conversionnumber{gujaratinumerals}]
+\defineconversion[tibetannumerals]   [\conversionnumber{tibetannumerals}]
+
+\endXETEX
+
+\protect \endinput

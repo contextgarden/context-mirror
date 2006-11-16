@@ -1,0 +1,55 @@
+%D \module
+%D   [       file=core-lme,
+%D        version=2006.08.14,
+%D          title=\CONTEXT\ Core Macros,
+%D       subtitle=LAst Minute Extensions,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{Context Core Macros / Last Minute Extensions}
+
+%D Things that depend on too much other things.
+
+\unprotect
+
+%D Probably obsolete, depends on \type {\checksidefloat}. May disappear.
+
+\def\checkframedtext
+  {\ifinsidefloat
+     \localhsize\hsize
+   \else\ifdim\sidefloatvsize>\zeropoint % will be proper handle
+   % \strut            % rather clean way to invoke the sidefloat OTR
+   % \setbox0=\lastbox % and get the widths set, so from now on we
+   % \setlocalhsize    % can have framed texts alongside sidefloats
+     \checksidefloat
+     \setlocalhsize
+   \else
+     \localhsize\hsize
+   \fi\fi}
+
+%D For my eyes only:
+
+\newcount\nofprofiled
+
+\def\profilemacro#1%
+  {\nofprofiled\zerocount
+   \letvalue{\string#1\string#1}#1%
+   \appendtoks
+     \normalwritestatus\m!systems{profile \string#1: \number\nofprofiled}%
+   \to \everystoptext
+   \unexpanded\def#1%
+     {\global\advance\nofprofiled\plusone
+      \csname\string#1\string#1\endcsname}}
+
+%D Some plain goodies, they may be moved to \type {m-plain.tex} some day.
+
+\ifx\hang      \undefined \def\hang        {\hangindent\parindent} \fi
+\ifx\textindent\undefined \def\textindent#1{\indent\llap{#1\enspace}\ignorespaces} \fi
+\ifx\narrower  \undefined \def\narrower    {\advance\leftskip \parindent\advance\rightskip\parindent} \fi
+
+\protect \endinput

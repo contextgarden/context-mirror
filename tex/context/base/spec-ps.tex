@@ -155,7 +155,7 @@
    \advance\dimen2 #2%
    \PointsToBigPoints{\dimen2}#3}
 
-\def\dosomeovalbox#1#2#3#4#5#6#7%
+\def\dosomeovalbox#1#2#3#4#5#6#7#8% variant not yet supported
   {\bgroup
    \dimen0=#4\divide\dimen0 2
    \dosomeovalcalc{0pt}{+\dimen0}\xmin
@@ -199,7 +199,7 @@
 %D The indirect call permits a (rather) dirty hack, needed
 %D for \DVIPS\ support.
 
-\definespecial\doovalbox%
+\definespecial\doovalbox
   {\dosomeovalbox}
 
 %D \macros

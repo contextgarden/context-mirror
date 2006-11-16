@@ -58,50 +58,64 @@
       \c!hoffset=\leftmargindistance,
       \c!command=,
       #2]%
-   \setvalue{#1}{\domarginline{#1}}}
+   \unexpanded\setvalue{#1}{\dohandlemarginline{#1}}}
 
-\def\domarginline#1% #2
-  {\getvalue{\s!do\??im\??im\executeifdefined{\??im\??im#1\c!location}\v!left}{#1}} % {#2}
+\def\marginlineparameter  #1{\csname\??im\??im\currentmarginline#1\endcsname}
+\def\marginlineexecuter #1#2{\executeifdefined{\??im\??im\currentmarginline#1}{#2}}
 
-\def\doleftmarginline#1#2%
+\def\dohandlemarginline#1% #2
+  {\def\currentmarginline{#1}%
+   \csname\s!do\??im\??im\executeifdefined{\??im\??im#1\c!location}\v!left\endcsname{#1}} % {#2}
+
+\def\doleftmarginline#1#2% #1 is redundant (we can remove it when we group dohandlemarginline; maybe ...
   {\pushindentation
    \llap
-     {\postsignalrightpage
-      \hsize\getvalue{\??im\??im#1\c!width}\relax
-      \executeifdefined{\??im\??im#1\c!command}\firstofoneargument{#2}\relax
-      \hskip\leftskip
-      \hskip\getvalue{\??im\??im#1\c!hoffset }\relax
-      \hskip\getvalue{\??im\??im#1\c!distance}}%
+     {\def\currentmarginline{#1}%
+      \postsignalrightpage
+      \hsize\marginlineparameter\c!width\relax
+      \marginlineexecuter\c!command\firstofoneargument{#2}\relax
+      \hskip\dimexpr
+        +\leftskip
+        +\compensatedinnermakeupmargin
+        +\marginlineparameter\c!hoffset
+        +\marginlineparameter\c!distance
+      \relax}%
    \popindentation
    \ignorespaces}
 
-\def\dorightmarginline#1#2%
+\def\dorightmarginline#1#2% #1 is redundant
   {\pushindentation
    \rlap
-     {\postsignalrightpage
-      \hskip\hsize
-      \hskip-\rightskip
-      \hskip\getvalue{\??im\??im#1\c!hoffset }\relax
-      \hskip\getvalue{\??im\??im#1\c!distance}\relax
-      \hsize\getvalue{\??im\??im#1\c!width   }\relax
-      \executeifdefined{\??im\??im#1\c!command}\firstofoneargument{#2}}%
+     {\def\currentmarginline{#1}%
+      \postsignalrightpage
+      \hskip\dimexpr
+        +\hsize
+        -\rightskip
+        +\compensatedinnermakeupmargin
+        +\marginlineparameter\c!hoffset
+        +\marginlineparameter\c!distance
+      \relax
+      \hsize\marginlineparameter\c!width
+      \marginlineexecuter\c!command\firstofoneargument{#2}}%
    \popindentation
    \ignorespaces}
 
-\setvalue{\s!do\??im\??im\v!left }{\doleftmarginline}
-\setvalue{\s!do\??im\??im\v!right}{\dorightmarginline}
-\setvalue{\s!do\??im\??im\v!inner}{\presignalrightpage\doifrightpageelse\doleftmarginline \dorightmarginline}
-\setvalue{\s!do\??im\??im\v!outer}{\presignalrightpage\doifrightpageelse\dorightmarginline\doleftmarginline }
+\long\def\installmarginlinehandler#1#2{\setvalue{\s!do\??im\??im#1}{#2}}
 
-\definemarginline[inleftmargin] [\c!location=\v!left, \c!width=\leftmarginwidth, \c!distance=\leftmargindistance,\c!hoffset=\zeropoint]
+\installmarginlinehandler \v!left  {\doleftmarginline}
+\installmarginlinehandler \v!right {\dorightmarginline}
+\installmarginlinehandler \v!inner {\presignalrightpage\doifrightpageelse\doleftmarginline \dorightmarginline}
+\installmarginlinehandler \v!outer {\presignalrightpage\doifrightpageelse\dorightmarginline\doleftmarginline }
+
+\definemarginline[inleftmargin] [\c!location=\v!left, \c!width=\leftmarginwidth, \c!distance=\leftmargindistance, \c!hoffset=\zeropoint]
 \definemarginline[inrightmargin][\c!location=\v!right,\c!width=\rightmarginwidth,\c!distance=\rightmargindistance,\c!hoffset=\zeropoint]
-\definemarginline[inleftedge]   [\c!location=\v!left, \c!width=\leftedgewidth,   \c!distance=\leftedgedistance, \c!hoffset=\leftmargintotal]
-\definemarginline[inrightedge]  [\c!location=\v!right,\c!width=\rightedgewidth,  \c!distance=\rightedgedistance,\c!hoffset=\rightmargintotal]
+\definemarginline[inleftedge]   [\c!location=\v!left, \c!width=\leftedgewidth,   \c!distance=\leftedgedistance,   \c!hoffset=\leftmargintotal]
+\definemarginline[inrightedge]  [\c!location=\v!right,\c!width=\rightedgewidth,  \c!distance=\rightedgedistance,  \c!hoffset=\rightmargintotal]
 
 \definemarginline[inoutermargin][\c!location=\v!outer,\c!width=\outermarginwidth,\c!distance=\outermargindistance,\c!hoffset=\zeropoint]
 \definemarginline[ininnermargin][\c!location=\v!inner,\c!width=\innermarginwidth,\c!distance=\innermargindistance,\c!hoffset=\zeropoint]
-\definemarginline[inouteredge]  [\c!location=\v!outer,\c!width=\outeredgewidth,  \c!distance=\outeredgedistance,\c!hoffset=\outermargintotal]
-\definemarginline[ininneredge]  [\c!location=\v!inner,\c!width=\inneredgewidth,  \c!distance=\inneredgedistance,\c!hoffset=\innermargintotal]
+\definemarginline[inouteredge]  [\c!location=\v!outer,\c!width=\outeredgewidth,  \c!distance=\outeredgedistance,  \c!hoffset=\outermargintotal]
+\definemarginline[ininneredge]  [\c!location=\v!inner,\c!width=\inneredgewidth,  \c!distance=\inneredgedistance,  \c!hoffset=\innermargintotal]
 
 \definemarginline[atleftmargin] [\c!location=\v!left, \c!command=\lrlap,\c!width=\zeropoint,\c!distance=\zeropoint,\c!hoffset=\zeropoint]
 \definemarginline[atrightmargin][\c!location=\v!right,\c!command=\rllap,\c!width=\zeropoint,\c!distance=\zeropoint,\c!hoffset=\zeropoint]
@@ -192,9 +206,17 @@
      \getparameters[\??im][#1]%
    \fi}
 
+% \def\dodosetupinmargin[#1]#2% [settings]{class}
+%   {\checkinmargin[#2]%
+%    \getparameters[\??im#2][#1]}
+
 \def\dodosetupinmargin[#1]#2% [settings]{class}
   {\checkinmargin[#2]%
-   \getparameters[\??im#2][#1]}
+   \getparameters[\??im#2][#1]%
+   % will become an \everyinmarginsetup thing
+   \ifcase\executeifdefined{\??im#2\c!sidemethod}{0}\else
+     \positioningtrue \positioningpartrue % global ?
+   \fi}
 
 \def\checkinmargin[#1]%
   {\ifundefined{\??im#1\c!offset}% this offset is related to framed !
@@ -382,11 +404,26 @@
   %\hbox{\lower\strutdp\box\scratchbox}} % alas, wrong lapping, therefore useless
    \dopositionmarginbox\scratchbox}
 
+% \def\domarginblockskip#1%
+%   {\hskip\margincontenthoffset
+%    \hskip\compensatedinnermakeupmargin\relax
+%    \doifelsenothing\margincontentdistance
+%      {\hskip\getvalue{\??im#1\c!distance}}
+%      {\hskip\margincontentdistance}%
+%    \relax}
+
 \def\domarginblockskip#1%
-  {\hskip\margincontenthoffset
-   \doifelsenothing\margincontentdistance
-     {\hskip\getvalue{\??im#1\c!distance}}
-     {\hskip\margincontentdistance}%
+  {\doifelsenothing\margincontentdistance
+     {\hskip\dimexpr
+        +\margincontenthoffset
+        +\compensatedinnermakeupmargin
+        +\csname\??im#1\c!distance\endcsname
+      \relax}
+     {\dimexpr
+        +\margincontenthoffset
+        +\compensatedinnermakeupmargin
+        +\margincontentdistance
+      \relax}%
    \relax}
 
 \def\doleftmarginblock#1#2%
@@ -559,8 +596,54 @@
 % \placefigure[right]{}{\externalfigure[dummy][width=2cm]}
 % \input tufte \inothermargin{test} \input tufte
 
+% \def\dodoinmargin[#1][#2][#3][#4][#5]#6%
+%   {\bgroup
+%    \forgetall % otherwise sidefloat problems, added 2005/07/20, maybe dangerous
+%    \postponefootnotes % group is (somehow) needed
+%    \doifinsetelse\v!low{#4}
+%      {\chardef\margincontentdisplacement\plusone}
+%      {\chardef\margincontentdisplacement\zerocount}%
+%    \doif\v!reverse{#2}
+%      {\swapmacros\dorightmarginblock\doleftmarginblock}%
+%    \processaction
+%      [#1]
+%      [   \v!left=>\let\next\doleftmarginblock,  % no swapping
+%         \v!right=>\let\next\dorightmarginblock, % no swapping
+%         \v!inner=>\def\next{\doinmarginswapped\dorightmarginblock\doleftmarginblock },
+%         \v!outer=>\def\next{\doinmarginswapped\doleftmarginblock \dorightmarginblock},
+%       \s!unknown=>\ifdoublesided
+%                     \doifcommonelse{+,-}{#4}
+%                       {\def\next{\doinmarginswapped\dorightmarginblock\doleftmarginblock }}
+%                       {\def\next{\doinmarginswapped\doleftmarginblock \dorightmarginblock}}%
+%                   \else
+%                     \let\next\doleftmarginblock
+%                   \fi]%
+%    \next{#3}{#6}%
+%    \rawpagereference\s!mar{#5}% naar binnen ! ! ! !
+%    \flushnotes
+%    \egroup % don't forget the group
+%    \ignorespaces}
+
+% test first
+%
+% setupsystem[random=1235]
+%
+% \setupinmargin[left][sidemethod=3]
+% \dorecurse{10}{test \fakewords{20}{40} test \inleft{test\\test} test \fakewords{20}{40} \par}
+% \page
+% \setupinmargin[left][sidemethod=4]
+% \dorecurse{40}{test \fakewords{50}{80} test \inleft{test\\test} \par}
+% \page
+
 \def\dodoinmargin[#1][#2][#3][#4][#5]#6%
   {\bgroup
+% \tracingall
+   % old stuff, a bit tricky, but now interfaced
+   \edef\currentmargincontent{#1}%
+   \chardef\marginrepositionmethod\executeifdefined{\??im\currentmargincontent\c!sidemethod }\plusone
+   \chardef\margincontentmethod   \executeifdefined{\??im\currentmargincontent\c!textmethod }\plusthree
+   \chardef\marginpagecheckmethod \executeifdefined{\??im\currentmargincontent\c!splitmethod}\plusone
+   % so far
    \forgetall % otherwise sidefloat problems, added 2005/07/20, maybe dangerous
    \postponefootnotes % group is (somehow) needed
    \doifinsetelse\v!low{#4}

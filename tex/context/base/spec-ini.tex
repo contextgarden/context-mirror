@@ -374,9 +374,9 @@
 
 \def\resetspecials
   {\the\everyresetspecials
-   \def\docommando##1%
+   \def\docommand##1%
      {\letvalue{\@@speclst@@##1}\empty}%
-   \processcommacommand[\@@allspecials]\docommando
+   \processcommacommand[\@@allspecials]\docommand
    \ifx\preloadedspecials\empty \else
      \showmessage\m!specials3\preloadedspecials
      \let\preloadedspecials\empty
@@ -674,7 +674,7 @@
         {\showmessage\m!specials7{#1}}}}
 
 \def\setupoutput[#1]%
-  {\ifnum\realpageno<2 % new
+  {\ifnum\realpageno<\plustwo % new
      \resetspecials\processcommacommand[#1]\dosetupoutput
    \fi}
 

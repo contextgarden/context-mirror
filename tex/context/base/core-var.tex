@@ -160,26 +160,13 @@
 \def\dodocheckformode#1%
   {\ifcase0\csname\@mode@#1\endcsname\or\checkedmodetrue\fi}
 
-% \def\docheckformode#1#2#3% will be sped up with a quit
-%   {\protect\checkedmodefalse\rawprocesscommalist[#3]\dodocheckformode
-%    \ifcheckedmode\@EA#1\else\@EA#2\fi}
-%
-% better:
-
 \def\docheckformode#1#2#3% will be sped up with a quit
   {\cleanuplabel{#3}%
    \protect\checkedmodefalse\rawprocesscommacommand[\cleanlabel]\dodocheckformode
    \ifcheckedmode\@EA#1\else\@EA#2\fi}
 
 \def\dodocheckforallmodes#1%
-  {\ifcase0\csname\@mode@#1\endcsname\relax
-     \checkedmodefalse\or\or\checkedmodefalse\fi}
-
-% \def\docheckforallmodes#1#2#3% will be sped up with a quit
-%   {\protect\checkedmodetrue\rawprocesscommalist[#3]\dodocheckforallmodes
-%    \ifcheckedmode\@EA#1\else\@EA#2\fi}
-%
-% better:
+  {\ifcase0\csname\@mode@#1\endcsname\relax\checkedmodefalse\or\or\checkedmodefalse\fi}
 
 \def\docheckforallmodes#1#2#3% will be sped up with a quit
   {\cleanuplabel{#3}%
@@ -221,13 +208,13 @@
 \def\startallmodes   {\unprotect\dostartallmodes}
 \def\startnotallmodes{\unprotect\dostartnotallmodes}
 
-\def\doifallmodeselse
+\def\dodoifallmodeselse
   {\docheckforallmodes\firstoftwoarguments\secondoftwoarguments}
 
-\def\doifallmodes
+\def\dodoifallmodes
   {\docheckforallmodes\firstofoneargument\gobbleoneargument}
 
-\def\doifnotallmodes
+\def\dodoifnotallmodes
   {\docheckforallmodes\gobbleoneargument\firstofoneargument}
 
 \long\def\dostartallmodes[#1]%
@@ -258,13 +245,15 @@
 \newevery \everystoptext           \relax
 \newevery \everyforgetall          \relax
 \newevery \everybeforepagebody     \relax
-\newevery \everyafterpagebody      \relax \let \everypagebody \everybeforepagebody % backward compatible
+\newevery \everyafterpagebody      \relax
 \newevery \everybeforeutilityread  \relax
 \newevery \everyafterutilityread   \relax
 
+\let      \everypagebody           \everybeforepagebody % backward compatible
+
 %newevery \everybeforeutilitywrite \relax
 
-\newevery \everycleanupfeatures    \relax \def\cleanupfeatures{\the\everycleanupfeatures}
+\newevery \everycleanupfeatures    \relax
 \newevery \everyinsidefloat        \relax
 \newevery \everyheadstart          \relax
 \newevery \everyendoftextbody      \relax
@@ -273,6 +262,14 @@
 \newevery \everylistentry          \relax
 \newevery \everymarking            \relax
 \newevery \everysavesortkeys       \relax
+
+\newevery \everyfont               \relax
+\newevery \everybodyfont           \EveryBodyFont
+\newevery \everyfontswitch         \EveryFontSwitch
+\newevery \everydefinedfont        \relax
+
+\def\cleanupfeatures{\the\everycleanupfeatures}
+\def\forgetall      {\the\everyforgetall}
 
 %D For shared \type {\everymath} and \type {\everydisplay}:
 
@@ -304,6 +301,12 @@
 \def\starttextproperties{\the\everystarttextproperties}
 \def\stoptextproperties {\the\everystoptextproperties}
 
+%D This is pretty important (esp since we now ignore shipouts).
+%D Actually we should nil all writes, marks, specials.
+
+\appendtoks \globallet\popproperties     \relax \to \everylastshipout
+\appendtoks \globallet\popsplitproperties\relax \to \everylastshipout
+
 %D \macros
 %D   {defineinputmode,setinputmode}
 %D
@@ -324,25 +327,20 @@
 %D We disable trial typesetting in the output routine,
 %D just to be sure.
 
+% defined in syst-ext
+
 \prependtoks \trialtypesettingfalse \to \everybeforepagebody
 
 %D \macros
-%D   {starttextdata}
-%D
-%D This is a user macro (appending to every last shipout is not
-%D really user friendly.
+%D   {ifinpagebody,ifinsidecolumns,ifdoublesided,ifsinglesided}
 
-\newtoks \collectedtextdata
-
-\long\def\starttextdata#1\stoptextdata
-  {\doglobal\appendtoks#1\to\collectedtextdata}
-
-\def\flushtextdata
-  {\vsmashed{\the\collectedtextdata}% all dimensions zero
-   \global\collectedtextdata\emptytoks
-   \globallet\flushtextdata\donothing}
-
-\prependtoks \flushtextdata \to \everylastshipout
+\newif \ifinpagebody
+\newif \ifinsidecolumns
+\newif \ifdoublesided   \doublesidedfalse
+\newif \ifsinglesided   \singlesidedtrue
+\newif \ifinsidefloat
+\newif \ifdoingblocks
+\newif \ifgridsnapping
 
 %D \macros
 %D   {ifprocessingXML}
@@ -381,8 +379,6 @@
 %D
 %D The command \type {\fastmode} disables some time consuming
 %D typesetting.
-
-\let\normalwritestatus\writestatus
 
 \newevery \everyfastmode \relax
 
@@ -560,5 +556,72 @@
 
 \let\startlayoutcomponent\gobbletwoarguments
 \let\stoplayoutcomponent \relax
+
+%D Label cleanup:
+
+\bgroup % some day this will go away / we could use detokenize as well
+
+% actually we should handle all discretionaries here
+
+\catcode`:=\@@active
+
+\gdef\cleanuplabel#1%
+  {\begingroup
+   \let:\lettercolon
+   \xdef\cleanlabel{#1}%
+   \endgroup}
+
+\gdef\cleanupprefixedlabel#1#2%
+  {\begingroup
+   \let:\lettercolon
+   \xdef\cleanprefix{#1}%
+   \xdef\cleanlabel {#2}%
+   \endgroup}
+
+\gdef\protectlabels
+  {\let:\lettercolon}
+
+\global\def\blabelgroup {\begingroup \let:\lettercolon}
+\global\let\elabelgroup  \endgroup
+
+\gdef\labelcsname
+  {\begingroup\let:\lettercolon
+   \expandafter\endgroup\csname}
+
+\gdef\labelvalue#1%
+  {\labelcsname#1\endcsname}
+
+\egroup
+
+%D TO BE TESTED FIRST (needs changes in usage too)
+
+% \def\cleanuplabel#1%
+%   {\edef\cleanlabel{\detokenize{#1}}}
+%
+% \def\cleanupprefixedlabel#1#2%
+%   {\edef\cleanprefix{\detokenize{#1}}%
+%    \edef\cleanlabel {\detokenize{#2}}}
+%
+% \def\labelvalue#1%
+%   {\csname\detokenize{#1}\endcsname}
+%
+% \let\protectlabels\donothing
+%
+% \def\blabelgroup {\begingroup} % why no \let ?
+% \let\elabelgroup  \endgroup
+
+
+
+
+%D Concepts:
+
+\chardef\conceptmode\zerocount
+
+\def\doifconcepttracing
+  {\ifnum\conceptmode>\plustwo
+     \expandafter\firstofoneargument
+   \else
+     \expandafter\gobbleoneargument
+   \fi}
 
 \protect \endinput

@@ -235,7 +235,11 @@ class TeXUtil
         end
 
         def tokenize(str)
-            str.gsub(/\\strchr\{(.*?)\}/o) do "\\#{$1}" end
+            if str then
+                str.gsub(/\\strchr\{(.*?)\}/o) do "\\#{$1}" end
+            else
+                ""
+            end
         end
 
         def remap(str)
@@ -461,7 +465,6 @@ class TeXUtil
             class Synonym
 
                 @@debug = false
-                @@debug = true
 
                 def initialize(t, c, k, d)
                     @type, @command, @key, @sortkey, @data = t, c, k, k, d
@@ -559,7 +562,6 @@ class TeXUtil
                 @@specialbanner = "" # \\relax"
 
                 @@debug = false
-                @@debug = true
 
                 @@howto = /^(.*?)\:\:(.*)$/o
                 @@split = ' && '
@@ -598,7 +600,8 @@ class TeXUtil
                             # end
                         end
                     else
-                        @entry, @key = cleanupsplit(@entry), cleanupsplit(@key)
+                        # @entry, @key = cleanupsplit(@entry), cleanupsplit(@key)
+@entry, @key = cleanupsplit(@entry), xcleanupsplit(@key)
                     end
                     @sortkey = sorter.simplify(@key)
                     # special = @sortkey =~ /^([^a-zA-Z\\])/o
@@ -613,7 +616,7 @@ class TeXUtil
                         @entry,
                         @texthowto.ljust(10,' '),
                         # @state, # no, messes up things
-                        (@realpage ||'').rjust(6,' ').gsub(/0/,' '),
+                        (@realpage.to_s || '').rjust(6,' ').gsub(/0/,' '),
                         # (@realpage ||'').rjust(6,' '),
                         @pagehowto
                     ].join(@@split)
@@ -627,6 +630,23 @@ class TeXUtil
                         else          target              .gsub(/([^\\])[\&\+]/o) do "#{$1}#{@@split}" end
                     end
                 end
+
+def xcleanupsplit(target) # +a+b+c &a&b&c a+b+c a&b&c
+    t = Array.new
+    case target[0,1]
+        when '&' then
+            t = target.sub(/^./o,'').split(/([^\\])\&/o)
+        when '+' then
+            t = target.sub(/^./o,'').split(/([^\\])\+/o)
+        else
+            # t = target.split(/([^\\])[\&\+]/o)
+            # t = target.split(/[\&\+]/o)
+            t = target.split(/(?!\\)[\&\+]/o) # lookahead
+    end
+    if not t[1] then t[1] = " " end # we need some entry else we get subentries first
+    if not t[2] then t[2] = " " end # we need some entry else we get subentries first
+    return t.join(@@split)
+end
 
                 def <=> (other)
                     @sortkey <=> other.sortkey
@@ -659,11 +679,13 @@ class TeXUtil
                         alphaclass, alpha = '', ''
                         @@savedhowto, @@savedfrom, @@savedto, @@savedentry = '', '', '', ''
                         if @@debug then
+                        # if true then
                             list.each do |entry|
                                 handle << "% [#{entry.sortkey.gsub(/#{@@split}/o,'] [')}]\n"
                             end
                         end
                         list.each do |entry|
+# puts(entry.sortkey.gsub(/\s+/,""))
                             if entry.sortkey =~ /^(\S+)/o then
                                 if sorter.division?($1) then
                                     testalpha = sorter.getdivision($1)
@@ -738,6 +760,7 @@ class TeXUtil
                             elsif @@savedhowto != entry.pagehowto and ! entry.pagehowto.empty? then
                                 @@savedhowto = entry.pagehowto
                             end
+                            # beware, we keep multiple page entries per realpage because of possible prefix usage
                             if copied || ! ((lastpage == entry.page) && (lastrealpage == entry.realpage)) then
                                 nextentry = "{#{entry.type}}{#{previous[0]}}{#{previous[1]}}{#{previous[2]}}{#{entry.pagehowto},#{entry.texthowto}}"
                                 savedline = "{#{entry.type}}{#{@@savedhowto},#{entry.texthowto}}{#{entry.location}}{#{entry.page}}{#{entry.realpage}}"
@@ -791,7 +814,8 @@ class TeXUtil
                         @@registers[data[1]].push(Register.new(3,data[1],data[2],data[3],data[4],nil,data[5],data[6]))
                     when 's' then
                         @@registers[data[1]] = Array.new unless @@registers.key?(data[1])
-                        @@registers[data[1]].push(Register.new(4,data[1],data[2],data[3],data[4],data[5],data[6],nil))
+                        # was this but wrong sort order       (4,data[1],data[2],data[3],data[4],data[5],data[6],nil))
+                        @@registers[data[1]].push(Register.new(4,data[1],data[2],data[3],data[4],data[5],data[6],0))
                     when 'l' then
                         @@languages[data[1]] = data[2] || ''
                 end
@@ -820,6 +844,7 @@ class TeXUtil
                     @@registers[s].each_index do |i|
                         @@registers[s][i].build(@@sorter[s])
                     end
+                    # @@registers[s].uniq!
                     @@registers[s] = @@registers[s].sort
                 end
             end

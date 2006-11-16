@@ -148,7 +148,7 @@
                     {\tf\vbox to 2.5em
                        {\vss
                         \hbox to 2.5em
-                          {\dummy\ifdim\fontdimen2\font=\zeropoint
+                          {\dummy\ifdim\interwordspace=\zeropoint
                              \setbox\scratchbox\hbox
                                {\raise.5\dp\scratchbox\hbox
                                   {\lower.5\ht\scratchbox\copy\scratchbox}}%
@@ -204,7 +204,7 @@
      \bgroup
      \raggedright
      \switchtobodyfont[#1]
-     \def\dodocommando##1##2%
+     \def\dodocommand##1##2%
        {\starttextrule{\tttf #1 ##1 ##2}
         \nobreak \getvalue{##2}%
         \dorecurse{255}
@@ -213,9 +213,9 @@
            \fi}
         \par \nobreak
         \stoptextrule}
-     \def\docommando##1%
-       {\getvalue{##1}\processcommacommand[#3]{\dodocommando{##1}}}
-     \processcommalist[#2]\docommando
+     \def\docommand##1%
+       {\getvalue{##1}\processcommacommand[#3]{\dodocommand{##1}}}
+     \processcommalist[#2]\docommand
      \egroup
    \else\ifsecondargument
                       \showfontstyle[#1][#2][\alternativetextlist]%

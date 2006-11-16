@@ -139,9 +139,39 @@
 
 % alternatively we can use object references
 
+% fails when we switch back and forward between dvi/pdf mode
+%
+% \long\def\startpdffontresource[#1]#2\stoppdffontresource
+%   {\doif{#1}\currentencoding{\doifdefined\pdffontresource
+%      {\immediate\pdfobj useobjnum \getvalue{\pdffontresource} stream {#2}}}}
+
 \long\def\startpdffontresource[#1]#2\stoppdffontresource
   {\doif{#1}\currentencoding{\doifdefined\pdffontresource
-     {\immediate\pdfobj useobjnum \getvalue{\pdffontresource} stream {#2}}}}
+     {\expanded{\doshipoutpdffontresource{\getvalue{\pdffontresource}}{#2}}}}}
+
+\def\doshipoutpdffontresource#1#2%
+  {\ifnum\realpageno<\plustwo
+     \doglobal\appendtoks
+       \ifcase\pdfoutput\else\immediate\pdfobj useobjnum #1 stream {#2}\fi
+     \to\everyfirstshipout
+   \else
+     \ifcase\pdfoutput\else\immediate\pdfobj useobjnum #1 stream {#2}\fi
+   \fi}
+
+% cleaner but not better:
+%
+% \newtoks \collectedpdffontresources
+%
+% \def\doshipoutpdffontresource#1#2%
+%   {\doglobal\appendtoks
+%      \ifcase\pdfoutput\else\immediate\pdfobj useobjnum #1 stream {#2}\fi
+%    \to \collectedpdffontresources}
+%
+% \def\dofluspdffontresources
+%   {\the\collectedpdffontresources
+%    \global\collectedpdffontresources\emptytoks}
+%
+% \appendtoks \dofluspdffontresources \to \everybeforeshipout
 
 %D The reference to such a vector is to be handled at font
 %D definition time, which is why we hook it into the font

@@ -19,44 +19,6 @@
 %D We can combine both variants in one macro definition. Also, we
 %D can minimize the number of runs by checking for a change.
 
-%D \starttyping
-%D \newcounter\Rnumber
-%D \newtoks\everyR
-%D
-%D \appendtoks
-%D   \obeylines
-%D \to \everyR
-%D
-%D \def\startR      {\dostartR\stopR      \plusone}
-%D \def\startRhidden{\dostartR\stopRhidden\zerocount}
-%D
-%D \def\dostartR#1#2%
-%D   {\bgroup
-%D    \ifcase#2\relax\let\typeRout\relax\fi
-%D    \obeylines
-%D    \catcode`\%=\@@letter
-%D    \catcode`\#=\@@letter
-%D    \def\dostartR##1#1%
-%D      {\doglobal\increment\Rnumber
-%D       \edef\Rfile{\bufferprefix R-\Rnumber}%
-%D       \bgroup
-%D       \the\everyR
-%D       \def\par{\rawcharacter{10}}%
-%D       \immediate\openout\scratchwrite=\Rfile.r
-%D       \immediate\write\scratchwrite{##1}%
-%D       \immediate\closeout\scratchwrite
-%D       \egroup
-%D       \doifmode{*\v!first}\runR
-%D       \typefile{\Rfile.rout}%
-%D       \egroup}%
-%D    \doifnextcharelse\relax\dostartR\dostartR}
-%D
-%D \def\runR
-%D   {\executesystemcommand{texmfstart
-%D      --ifchanged=\Rfile.r bin:R
-%D      "-q --save --restore < \Rfile.r > \Rfile.rout"}}
-%D \stoptyping
-
 %D JS: The call to R has \type {-q} in order to prevent banner,
 %D \type {--save} to make sure it saves the workspace after the run,
 %D \type {--restore} to make sure it reads any workspace from a
@@ -65,6 +27,7 @@
 %D An easier and better solution is to use the buffering mechanisms:
 
 \def\Rbufferprefix{r-}
+
 \newcounter\nofRfiles
 
 \def\Rfile{\TEXbufferfile{\Rbufferprefix\nofRfiles}}%
@@ -83,11 +46,6 @@
 
 \def\stopRhidden
   {\doifmode{*\v!first}\runR}
-
-% \def\runR % " " needed to preserve < >
-%   {\executesystemcommand{texmfstart
-%       --ifchanged=\Rfile\space --direct R
-%       "-q --save --restore < \Rfile\space > \Rfile.out"}}
 
 \def\runR
   {\executesystemcommand{texmfstart

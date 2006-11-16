@@ -96,8 +96,8 @@
 %D
 %D Only \METAPOST, \BMP\ \JPG\ \PNG\ and \PDF\ inclusion are supported.
 
-\definespecial\doinsertfile#1#2#3#4#5#6#7#8#9%
-  {\dodoinsertfile{dpx}{#1}{#2}{#3}{#4}{#5}{#6}{#7}{#8}{#9}}
+\definespecial\doinsertfile
+  {\dofileinsertion{dpx}\@@DriverImageType}
 
 %D Even though DVIPDFM supports \METAPOST directly, the funtionality
 %D is not good. It conflicts much with \CONTEXT.
@@ -105,35 +105,30 @@
 %D So, \METAPOST will be treated as the same way as PDFTeX using
 %D MPtoPDF in DVIPDFMx since the version \type{dvipdfmx-20021028}.
 
-%\definefileinsertion{dpx}{mps}#1#2#3#4#5#6#7#8#9%
-%  {\hbox
-%     {%\convertMPcolors{#1}% plugged in supp-mpe
-%      \scratchdimen#3\points \PointsToReal{.01\scratchdimen}\xscale
-%      \scratchdimen#4\points \PointsToReal{.01\scratchdimen}\yscale
-%      \convertMPtoPDF{#1}\xscale\yscale
-%      \global\let\PDFimagereference\empty}}
-
 %D DVIPDFM (and DVIPDFMx too) supports the image files with
 %D the extension, \PDF, \JPG, \PNG, \BMP, and \EPS.
 
-\def\handleepsimage#1#2#3#4#5#6#7#8#9%
-  {\PointsToWholeBigPoints{#7}\width
-   \PointsToWholeBigPoints{#8}\height
-   \special
-     {PSfile="#1"\space
-      llx=\EPSllx\space lly=\EPSlly\space
-      urx=\EPSurx\space ury=\EPSury\space
-      rwi=\width0\space rhi=\height0}}
+% \def\handleepsimage
+%   {\PointsToWholeBigPoints\@@DriverImageWidth \width
+%    \PointsToWholeBigPoints\@@DriverImageHeight\height
+%    \special
+%      {PSfile="\@@DriverImageFile"\space
+%       llx=\EPSllx\space lly=\EPSlly\space
+%       urx=\EPSurx\space ury=\EPSury\space
+%       rwi=\width0\space rhi=\height0}}
 
-\definefileinsertion{dpx}{mps}{\handleepsimage}
-\definefileinsertion{dpx}{eps}{\handleepsimage} % unstable
+% \definefileinsertion{dpx}{mps}{\handleepsimage}
 
-\def\handlebmpimage#1#2#3#4#5#6#7#8#9%
-  {\bgroup
-   \scratchdimen#7\edef\width {\the\scratchdimen\space}%
-   \scratchdimen#8\edef\height{\the\scratchdimen\space}%
-   \special{pdf: image width \width height \height (#1)}%
-   \egroup}
+\definefileinsertion{tpd}{mps}
+  {\hbox
+     {\convertMPtoPDF\@@DriverImageFile{1}{1}%
+      \global\let\PDFimagereference\empty}}
+
+\def\handlebmpimage
+  {\special{pdf: image
+     width  \@@DriverImageWidth \space
+     height \@@DriverImageHeight\space
+     (\@@DriverImageFile)}}
 
 \definefileinsertion{dpx}{pdf}{\handlebmpimage}
 \definefileinsertion{dpx}{jpg}{\handlebmpimage}
@@ -149,54 +144,6 @@
 %D Sounds are supported too.
 
 \definespecial\doinsertsoundtrack{\doPDFinsertsoundtrack}
-
-%D \type{\doPDFovalbox} in \type{spec-fdf} was modifed because
-%D the definition of \type{\PDFcode} was changed in this module.
-%D
-%D \macros
-%D  {doPDFovalbox}
-%D
-%D For drawing ovals we use quite raw \PDF\ code. The next
-%D implementation does not differ that much from the one
-%D implemented in the \POSTSCRIPT\ driver.
-
-\def\doPDFovalbox#1#2#3#4#5#6#7% todo: \scratchdimen/\scatchbox
-  {\bgroup
-   \dimen0=#4\divide\dimen0 2
-   \doPDFovalcalc{0pt}{+\dimen0}\xmin
-   \doPDFovalcalc{#1}{-\dimen0}\xmax
-   \doPDFovalcalc{#2}{-\dimen0}\ymax
-   \doPDFovalcalc{-#3}{+\dimen0}\ymin
-   \advance\dimen0 by #5%
-   \doPDFovalcalc{0pt}{+\dimen0}\xxmin
-   \doPDFovalcalc{#1}{-\dimen0}\xxmax
-   \doPDFovalcalc{#2}{-\dimen0}\yymax
-   \doPDFovalcalc{-#3}{+\dimen0}\yymin
-   \doPDFovalcalc{#4}{\zeropoint}\stroke
-   \doPDFovalcalc{#5}{\zeropoint}\radius
-   \edef\dostroke{#6}%
-   \edef\dofill{#7}%
-   \setbox0\hbox
-     {\ifnum\dostroke\dofill>0
-        \ifPDFstrokecolor\else\ifnum\dostroke=1
-          \writestatus\m!colors{pdf stroke color will fail}\wait
-        \fi\fi
-        \special{pdf:content
-          \stroke\space w
-          \xxmin\space \ymin\space  m
-          \xxmax\space \ymin\space  l
-          \xmax \space \ymin\space  \xmax\space  \yymin\space y
-          \xmax \space \yymax\space l
-          \xmax \space \ymax\space  \xxmax\space \ymax\space  y
-          \xxmin\space \ymax\space  l
-          \xmin \space \ymax\space  \xmin\space  \yymax\space y
-          \xmin \space \yymin\space l
-          \xmin \space \ymin\space  \xxmin\space \ymin\space  y
-          \ifnum\dostroke=1 S \fi
-          \ifnum\dofill=1 f \fi}%
-      \fi}%
-   \wd0=#1\ht0=#2\dp0=#3\box0
-   \egroup}
 
 %D \macros
 %D  {doovalbox}
@@ -322,12 +269,12 @@
 \definespecial\doflushJSpreamble#1%
   {\bgroup
    \let\compositeJScode\empty
-   \def\docommando##1%
+   \def\docommand##1%
      {\edef\sanitizedJScode{\getJSpreamble{##1}}%
       \@EA\doPSsanitizeJScode\sanitizedJScode\to\sanitizedJScode
       \special{pdf:object @JS:##1 <</S /JavaScript /JS (\sanitizedJScode)>>}%
       \edef\compositeJScode{\compositeJScode\space (##1) @JS:##1}}%
-   \processcommalist[#1]\docommando
+   \processcommalist[#1]\docommand
    \special{pdf:names /JavaScript [\compositeJScode]}%
    \egroup}
 
@@ -511,7 +458,7 @@
 %D \macros
 %D   {doPDFdestination}
 
-\def\doPDFdestination name #1%
+\def\doPDFdestination#1%
   {\special{pdf:names /Dests (#1) [@thispage \PDFpageviewwrd]}}
 
 %D \macros
@@ -549,7 +496,7 @@
      \egroup
    \fi}
 
-\def\doPDFaction width #1 height #2 action #3%
+\def\doPDFaction#1#2#3%
   {\dodoPDFaction\empty{#1}{#2}{#3}}
 
 %D \type{\doPDFannotation} in \type{spec-dpm} had a bug.
@@ -557,7 +504,7 @@
 %D \type{\doPDFannotation} conflicts with \type{\doPDFinsertmov},
 %D since width and height also defined in \type{\doPDFinsertmov}.
 
-\def\doPDFannotation width #1 height #2 data #3%
+\def\doPDFannotation#1#2#3%
   {\bgroup
    \edef\data{#3}%
    \scratchdimen#1\edef\width {\the\scratchdimen\space}%
@@ -568,7 +515,7 @@
 %D \macros
 %D   {doPDFannotationobject,doPDFactionobject}
 
-\def\doPDFannotationobject class #1 name #2 width #3 height #4 data #5%
+\def\doPDFannotationobject#1#2#3#4#5%
   {\bgroup
    \scratchdimen#3\edef\width {\the\scratchdimen\space}%
    \scratchdimen#4\edef\height{\the\scratchdimen\space}%
@@ -576,7 +523,7 @@
    \dosetobjectreference{#1}{#2}{@#1::#2}%
    \egroup}
 
-\def\doPDFactionobject class #1 name #2 width #3 height #4 action #5%
+\def\doPDFactionobject#1#2#3#4#5%
   {\dodoPDFaction{@#1::#2}{#3}{#4}{#5}%
    \dosetobjectreference{#1}{#2}{@#1::#2}}
 
@@ -635,7 +582,7 @@
 %D \macros
 %D   {doPDFbookmark}
 
-\def\doPDFbookmark level #1 n #2 text #3 page #4 open #5%
+\def\doPDFbookmark#1#2#3#4#5%
   {\ifcase#1\else
      %\scratchcounter#4\advance\scratchcounter\minusone
      \special{pdf:outline #1 %\ifcase#5 opened\fi
@@ -679,12 +626,12 @@
 
 \doPDFreserveDPXobjectfirst{FDF::docuextgstates}{<< >>}
 
-\def\doPDFdictionaryobject class #1 name #2 data #3%
+\def\doPDFdictionaryobject#1#2#3%
   {\flushatshipout
      {\special{pdf:\doPDFcheckedDPXobject{#1::#2}<<#3>>}%
       \dosetobjectreference{#1}{#2}{@#1::#2}}}
 
-\def\doPDFarrayobject class #1 name #2 data #3%
+\def\doPDFarrayobject#1#2#3%
   {\flushatshipout
      {\special{pdf:\doPDFcheckedDPXobject{#1::#2}[#3]}%
       \dosetobjectreference{#1}{#2}{@#1::#2}}}
@@ -870,7 +817,7 @@
 
 \definespecial\dosetpositionpapersize#1#2%
   {\xdef\flushDVIpositionpapersize
-     {\special{pos:papersize #1 #2}%
+     {\special{pos:papersize \number#1 \number#2}%
       \noexpand\installprogram{dvipos -o \jobname.tuo \jobname.dvi }%
       \global\noexpand\let\noexpand\flushDVIpositionpapersize\relax}}
 
@@ -878,7 +825,7 @@
 
   \definespecial\dosetpositionpapersize#1#2%
     {\xdef\flushDVIpositionpapersize
-       {\special{pos:papersize #1 #2}%
+       {\special{pos:papersize \number#1 \number#2}%
         \noexpand\installprogram{dvipos -o \jobname.tuo \jobname.xdv }%
         \global\noexpand\let\noexpand\flushDVIpositionpapersize\relax}}
 

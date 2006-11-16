@@ -67,20 +67,6 @@
 \def\setuplayouttext
   {\dotripleempty\dosetuplayouttext}
 
-% \def\dosetuplayouttext[#1][#2][#3]%
-%   {\ifthirdargument
-%      \getparameters[\??tk#1#2][#3]%
-%    \else
-%     %\getparameters[\??tk#1\v!text][#2]%
-%      \edef\previoustextstate{\getvalue{\??tk#1\c!state}}%
-%      \getparameters[\??tk#1][#2]%
-%      \doifnotvalue{\??tk#1\c!state}\previoustextstate
-%        {%\checkcurrentlayout % no
-%         \calculatevsizes
-%         \recalculatebackgrounds
-%         \recalculatelogos}%
-%    \fi}
-
 \def\dosetuplayouttext[#1][#2][#3]%
   {\ifthirdargument
      \getparameters[\??tk#1#2][#3]%
@@ -92,10 +78,10 @@
        {%\checkcurrentlayout % no
         \edef\currenttextstate{\getvalue{\??tk#1\c!state}}%
         % speed optimization (calculating backgrounds takes time)
-        \doifcommon{\previoustextstate,\currenttextstate}{\v!high,\v!none}{%
-          \calculatevsizes
-          \recalculatebackgrounds
-          \recalculatelogos}}%
+        \doifcommon{\previoustextstate,\currenttextstate}{\v!high,\v!none}
+          {\calculatevsizes
+           \recalculatebackgrounds
+           \recalculatelogos}}%
    \fi}
 
 \def\setuptop    {\dotripleempty\dosetuplayouttext[\v!top]}
@@ -284,9 +270,6 @@
 \setvalue{\string\placelayouttextline\v!none}#1#2%
   {}
 
-% \setvalue{\string\placelayouttextline\v!high}#1#2%
-%   {\global\settrue\resyncaftertextline}
-
 \setvalue{\string\placelayouttextline\v!high}#1#2%
   {\global\settrue\resyncaftertextline
    \resettextlinestatus{#1}}
@@ -322,27 +305,9 @@
 %D The following macro has to be called after a page
 %D is flushed.
 
-% \def\resetlayouttextline#1%
-%   {\doifvalue{\??tk#1\c!state}\v!high
-%      {\global\settrue\resyncaftertextline
-%       \resettextlinestatus{#1}}}
-
 \def\resetlayouttextline#1%
   {\getvalue {\??tk#1\s!reset}%
    \letgvalue{\??tk#1\s!reset}\relax}
-
-% \def\resetlayouttextlines
-%   {\resetlayouttextline\v!top
-%    \resetlayouttextline\v!header
-%    \resetlayouttextline\v!text
-%    \resetlayouttextline\v!footer
-%    \resetlayouttextline\v!bottom
-%    \ifconditional\resyncaftertextline
-%      \doglobal\calculatevsizes
-%      \recalculatebackgrounds
-%      \recalculatelogos
-%      \global\setfalse\resyncaftertextline
-%    \fi}
 
 \def\resetlayouttextlines
   {\resetlayouttextline\v!top
@@ -356,6 +321,48 @@
      \recalculatelogos
      \global\setfalse\resyncaftertextline
    \fi}
+
+% \settext[header][text][middle][xxx][yyy]
+
+\def\settextcontent
+  {\doquintupleempty\dosettextcontent}
+
+\def\dosettextcontent[#1][#2][#3][#4][#5]% header text middle text/text
+  {\iffifthargument
+     \setvalue{\??tk#1#2\executeifdefined{:\c!text:#3:}\c!middletext}%
+       {\dodoubletexts{\??tk#1}{#2}%
+          {\c!leftstyle \c!leftcolor \c!leftwidth }{#4}%
+          {\c!rightstyle\c!rightcolor\c!rightwidth}{#5}}%
+   \else\iffourthargument
+     \setvalue{\??tk#1#2\executeifdefined{:\c!text:#3:}\c!middletext}%
+       {\dodoubletexts{\??tk#1}{#2}%
+          {\c!leftstyle \c!leftcolor \c!leftwidth }{#4}%
+          {\c!rightstyle\c!rightcolor\c!rightwidth}{#4}}%
+   \else\ifthirdargument
+     \setvalue{\??tk#1#2\c!middletext}%
+       {\dodoubletexts{\??tk#1}{#2}%
+          {\c!leftstyle \c!leftcolor \c!leftwidth }{#3}%
+          {\c!rightstyle\c!rightcolor\c!rightwidth}{#3}}%
+   \fi\fi\fi}
+
+\def\resettextcontent
+  {\dotripleempty\doresettextcontent}
+
+\def\doresettextcontent[#1][#2][#3]% header text middle
+  {\ifthirdargument
+     \letvalue{\??tk#1#2\executeifdefined{:\c!text:#3:}\c!middletext}\empty
+   \else\ifsecondargument
+     \letvalue{\??tk#1#2\c!lefttext  }\empty
+     \letvalue{\??tk#1#2\c!middletext}\empty
+     \letvalue{\??tk#1#2\c!righttext }\empty
+   \fi\fi}
+
+\let\settext  \settextcontent    % downward compatibility
+\let\resettext\resettextcontent  % downward compatibility
+
+\setvalue{:\c!middle:\c!text:}{\c!middletext}
+\setvalue{:\c!left  :\c!text:}{\c!lefttext  }
+\setvalue{:\c!right :\c!text:}{\c!righttext }
 
 %D The next series of macros is not that easy to read,
 %D because they hook into the main page building macros. By
@@ -518,15 +525,9 @@
           %\getvalue{\??tk#1\v!text\c!before}%
            \getvalue{\??tk#1\c!before}%
            \doifbothsidesoverruled
-             \dodoplacelayouttextline#1\c!lefttext\c!middletext\c!righttext
-               \gobbleoneargument\getvalue
-           \orsideone
-             \dodoplacelayouttextline#1\c!lefttext\c!middletext\c!righttext
-               \gobbleoneargument\getvalue
-           \orsidetwo
-             \dodoplacelayouttextline#1\c!righttext\c!middletext\c!lefttext
-               \getvalue\gobbleoneargument
-           \od
+             {\dodoplacelayouttextline#1\c!lefttext \c!middletext\c!righttext\gobbleoneargument\getvalue}
+             {\dodoplacelayouttextline#1\c!lefttext \c!middletext\c!righttext\gobbleoneargument\getvalue}
+             {\dodoplacelayouttextline#1\c!righttext\c!middletext\c!lefttext \getvalue\gobbleoneargument}%
           %\getvalue{\??tk#1\v!text\c!after}%
            \getvalue{\??tk#1\c!after}%
            \kern\zeropoint}% keep the \dp, beware of \vtops, never change this!
@@ -726,7 +727,7 @@
 % \def\dodoresetlayouttekst[#1][#2]%
 %   {...}
 %
-% \def\docommando#1%
+% \def\docommand#1%
 %   {\resetlayouttekst[#1][\v!tekst]%
 %    \resetlayouttekst[#1][\v!marge]%
 %    \resetlayouttekst[#1][\v!rand]}
@@ -734,7 +735,7 @@
 %D We combine a lot of similar settings in a macro that
 %D we will later dispose.
 
-\def\dodocommando[#1][#2]%
+\def\dodocommand[#1][#2]%
   {\getparameters
      [\??tk#1#2]
      [%\c!state=\v!normal, % moved
@@ -756,19 +757,19 @@
    \inheritparameter[\??tk#1#2][\c!leftwidth ][\c!width]%
    \inheritparameter[\??tk#1#2][\c!rightwidth][\c!width]}
 
-\def\docommando#1%
-  {\dodocommando[#1][\v!text]%
-   \dodocommando[#1][\v!margin]%
-   \dodocommando[#1][\v!edge]}
+\def\docommand#1%
+  {\dodocommand[#1][\v!text]%
+   \dodocommand[#1][\v!margin]%
+   \dodocommand[#1][\v!edge]}
 
-\docommando\v!top
-\docommando\v!header
-\docommando\v!footer
-\docommando\v!text
-\docommando\v!bottom
+\docommand\v!top
+\docommand\v!header
+\docommand\v!footer
+\docommand\v!text
+\docommand\v!bottom
 
-\let\docommando  \relax
-\let\dodocommando\relax
+\let\docommand  \relax
+\let\dodocommand\relax
 
 %D While the header and footer lines are moved away from the
 %D main text, the top and bottom lines are centered.

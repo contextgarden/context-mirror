@@ -2,6 +2,8 @@
 
 <rl:manipulators>
 
+    <!-- normally the file tag will also have a suffix! -->
+
     <!-- pstopdf will be made independent of the example framework -->
 
     <!-- rl:manipulator name='pdf' suffix='svg'>

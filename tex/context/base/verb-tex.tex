@@ -8,14 +8,14 @@
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
-%C therefore copyrighted by \PRAGMA. See mreadme.pdf for 
-%C details. 
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
 
 \writestatus{loading}{Context Support Macros / Pretty TEX Verbatim}
 
-%D The original module \type{supp-ver} had the \TEX\ 
-%D interpreter built in. The current implementation is more 
-%D natural and less complicated. 
+%D The original module \type{supp-ver} had the \TEX\
+%D interpreter built in. The current implementation is more
+%D natural and less complicated.
 
 %D \startTEX
 %D \definetyping[niceTEX][option=TEX,paletpalet=graypretty]
@@ -71,15 +71,18 @@
 %D \FC prettyfour    \MC blue     \MC 0.8  \MC 0.8  \MC 0.6  \MC 0.75  \LC\LR
 %D \HL
 %D \stoptable
-%D 
+%D
 %D Outside \CONTEXT\ these colors are defined in
 %D \type{verb-ini}, in \CONTEXT\ their definitions can be found
 %D in \type{core-ver}, where in fact we use the color palet
 %D mechanism. That way we can use different schemes i a quite
-%D natural way. 
+%D natural way.
 
 \gdef\setupprettyTEXtype
   {\def\prettyidentifier{TEX}%
+   \global\inTEXcommandfalse
+   \global\firstinTEXcommandfalse
+   \global\inTEXparameterfalse
    \TEXsetcontrols
    \TEXsethandlers
    \TEXsetspecials}
@@ -269,19 +272,14 @@
    \getpretty}
 
 %\gdef\TEXtypezero
-%  {\disableprettyafterwards % only when enabled of course 
+%  {\disableprettyafterwards % only when enabled of course
 %   \ifnewpretty\expandafter\handlenewpretty\fi\TEXtypethree}
 
-\bgroup
-\catcode`\%=\@@other
-\xdef\texcommentsymbol{%}
-\egroup
-
-\beginETEX \scantokens 
+\beginETEX \scantokens
 
 \long\gdef\naturalTEXtext#1#2\relax% local alternative for \naturaltextext
   {\convertargument#2\to\ascii
-   \doifinstringelse{\texcommentsymbol}{\ascii}
+   \doifinstringelse{\letterpercent}{\ascii}
      {\long\def\next{\TEXtypethree{#1}#2\relax}}
     %{\long\def\next{\bgroup\prettynaturalfont\restorecatcodes\scantokens{\ignorespaces#2}\egroup}}%
      {\long\def\next{\bgroup\prettynaturalfont{\restorecatcodes\scantokens{\ignorespaces#2}}\egroup}}%
@@ -293,8 +291,8 @@
   {\ifnaturaltextext
      \expandafter\naturalTEXtext
    \else
-     \disableprettyafterwards % only when enabled of course 
+     \disableprettyafterwards % only when enabled of course
      \expandafter\handlenewpretty\expandafter\TEXtypethree
    \fi}
 
-\protect \endinput 
+\protect \endinput

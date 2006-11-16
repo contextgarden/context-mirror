@@ -193,7 +193,7 @@ C -1 ; WX 382 ; N bracketleft.ex ; B 25 -504 271 8 ;
 C -1 ; WX 376 ; N bracketright.ex ; B 116 -504 351 8 ;
 C -1 ; WX 382 ; N bracketleft.bot ; B 25 -480 339 8 ;
 C -1 ; WX 376 ; N bracketright.bot ; B 25 -482 351 8 ;
-C -1 ; WX 465 ; N hacek ; B 25 611 440 821 ;
+C -1 ; WX 465 ; N caron ; B 25 611 440 821 ;
 C -1 ; WX 534 ; N macron ; B 25 575 509 707 ;
 C -1 ; WX 483 ; N ringaccent ; B 160 560 370 719 ;
 C -1 ; WX 547 ; N arrowleft.lft ; B 25 49 555 433 ;

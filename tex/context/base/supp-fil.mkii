@@ -1,0 +1,97 @@
+%D \module
+%D   [       file=supp-fil,
+%D        version=1995.10.10,
+%D          title=\CONTEXT\ Support Macros,
+%D       subtitle=Files,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details
+
+\unprotect
+
+%D For the moment, we limit sanitizing to taking care of
+%D active \type {/}.
+
+\bgroup % todo: _ cleanup
+
+\catcode`\/=\@@active
+\catcode`\:=\@@active
+\catcode`\~=\@@active
+\catcode`\_=\@@active
+
+\gdef\sanitizefilename#1\to#2%
+  {\bgroup
+   \edef/{\string/}%
+   \edef:{\string:}%
+   \edef~{\string~}%
+   \edef_{\string_}%
+   \retainlccodes
+   \lccode`\\=`\/
+   \lowercase{\expanded{\xdef\noexpand\sanitizedfilename{#1}}}%
+   \egroup
+   % maybe \convertcommand\sanitizedfilename\to#2%
+   \let#2\sanitizedfilename}
+
+\egroup
+
+\def\checkfilename#1%
+  {\doifinstringelse{@@/}{@@#1}%    unix: /full/path
+     {\chardef\kindoffile\plusone}
+     {\doifinstringelse{:/}{#1}%  windows: e:/full/path or http://
+        {\chardef\kindoffile\plusone}
+        {\chardef\kindoffile\zerocount}}}
+
+% \def\splitfilename#1%
+%   {\edef\splitofffull{#1}% normally outside this call: \sanitizefilename#1\to\sanitizedfilename
+%    \greedysplitstring\splitofffull\at/\to\splitoffpath\and\splitoffbase
+%    \ifx\splitoffbase\empty
+%      \let\splitoffpath\empty
+%      \let\splitoffbase\splitofffull
+%    \fi
+%    \greedysplitstring\splitoffbase\at.\to\splitoffname\and\splitofftype
+%    \chardef\splitoffkind % can be used to test if pathpart was empty
+%      \ifx\splitoffpath\empty        \zerocount \else
+%      \ifx\splitoffpath\splitoffroot \plusone   \else
+%                                     \plustwo   \fi\fi
+%    \ifx\splitoffname\empty\let\splitoffname\splitoffbase\fi
+%    \ifx\splitoffpath\empty\let\splitoffpath\splitoffroot\fi}
+%
+% better, since it also handles leading /'s
+%
+% \splitfilename{oeps/test.pdf}  [\splitoffpath\quad\splitoffname\quad\splitofftype]
+% \splitfilename{/oeps/test.pdf} [\splitoffpath\quad\splitoffname\quad\splitofftype]
+% \splitfilename{/test.pdf}      [\splitoffpath\quad\splitoffname\quad\splitofftype]
+
+\def\splitfilename#1%
+  {\edef\splitofffull{#1}% normally outside this call: \sanitizefilename#1\to\sanitizedfilename
+   \greedysplitstring\splitofffull\at/\to\splitoffpath\and\splitoffbase
+   \ifx\splitoffpath\splitofffull
+     \let\splitoffpath\empty
+   \fi
+   \ifx\splitoffbase\empty
+     \let\splitoffpath\empty
+     \let\splitoffbase\splitofffull
+   \fi
+   \greedysplitstring\splitoffbase\at.\to\splitoffname\and\splitofftype
+   \chardef\splitoffkind % can be used to test if pathpart was empty
+     \ifx\splitoffpath\empty        \zerocount \else
+     \ifx\splitoffpath\splitoffroot \plusone   \else
+                                    \plustwo   \fi\fi
+   \ifx\splitoffname\empty\let\splitoffname\splitoffbase\fi
+   \ifx\splitoffpath\empty\let\splitoffpath\splitoffroot\fi}
+
+\def\splitfiletype#1%
+  {\edef\splitofffull{#1}% normally outside this call: \sanitizefilename#1\to\sanitizedfilename
+   \let\splitoffpath\empty
+   \greedysplitstring\splitofffull\at.\to\splitoffname\and\splitofftype}
+
+\def\doifparentfileelse#1%
+  {\doifsamestringelse{#1}{\jobname       }\firstoftwoarguments
+  {\doifsamestringelse{#1}{\jobname.\c!tex}\firstoftwoarguments
+  {\doifsamestringelse{#1}{\outputfilename}\firstoftwoarguments\secondoftwoarguments}}}
+
+\protect \endinput

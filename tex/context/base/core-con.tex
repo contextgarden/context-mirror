@@ -15,6 +15,9 @@
 
 \unprotect
 
+\ifx\currentlanguage\undefined \let\currentlanguage\empty \fi
+\ifx\labeltext      \undefined \let\labeltext\firstofoneargument \fi
+
 %D This module deals with all kind of conversions from numbers
 %D and dates. I considered splitting this module in a support
 %D one and a core one, but to keep things simple as well as
@@ -58,9 +61,6 @@
 \def\numbers#1{\purenumber{#1}}
 \def\Numbers#1{\purenumber{#1}}
 
-\def\twodigits  #1{\ifnum             #1<10     0\fi\number#1}
-\def\threedigits#1{\ifnum#1<100 \ifnum#1<10 0\fi0\fi\number#1}
-
 %D \macros
 %D   {romannumerals,Romannumerals}
 %D
@@ -71,43 +71,9 @@
 %D
 %D \showsetup{romannumerals}
 %D \showsetup{Romannumerals}
-%D
-%D When upcasing the result, we just follow the text book rules
-%D of expansion. Later on we'll see some more uppercase tricks.
 
-\def\romannumerals#1%
-  {\romannumeral#1}
-
-%D For some years we had \unknown
-%D
-%D \starttyping
-%D \def\Romannumerals#1%
-%D   {\uppercase\expandafter{\romannumeral#1}}
-%D \stoptyping
-%D
-%D \unknown but we need to be fully expandable in order to get
-%D the utility output file right, so now we have the following
-%D solution. It was Patrick Gundlach who first noticed this
-%D ommision.
-
-\def\Romannumerals#1%
-  {\expandafter\doRomannumerals\number#1\relax}
-
-\def\doRomannumerals#1#2\relax % spaces after ifcase prevent \relax
-  {\ifnum#1#2<10
-     \ifcase0#1#2 \or I\or II\or III\or IV\or V\or VI\or VII\or VIII\or IX\fi
-   \else\ifnum#1#2<100
-     \ifcase0#1   \or X\or XX\or XXX\or XL\or L\or LX\or LXX\or LXXX\or XC\fi
-     \doRomannumerals#2\relax
-   \else\ifnum#1#2<1000
-     \ifcase0#1   \or C\or CC\or CCC\or CD\or D\or DC\or DCC\or DCCC\or CM\fi
-     \doRomannumerals#2\relax
-   \else\ifnum#1#2<4000
-     \ifcase0#1   \or M\or MM\or MMM\fi
-     \doRomannumerals#2\relax
-   \else
-     \uppercase\expandafter{\romannumeral#1#2}%
-   \fi\fi\fi\fi}
+\let\romannumerals\gobbleoneargument
+\let\Romannumerals\gobbleoneargument
 
 %D \macros
 %D   {character,Character}
@@ -127,21 +93,8 @@
 
 \def\unknowncharacter{-} % else in lists \relax
 
-\def\character#1%
-  {\ifcase#1\unknowncharacter
-     \or a\or b\or c\or d\or e\or f\or g\or h\or i\or j\or k\or l\or m%
-     \or n\or o\or p\or q\or r\or s\or t\or u\or v\or w\or x\or y\or z%
-   \else
-     \unknowncharacter
-   \fi}
-
-\def\Character#1%
-  {\ifcase#1\unknowncharacter
-     \or A\or B\or C\or D\or E\or F\or G\or H\or I\or J\or K\or L\or M%
-     \or N\or O\or P\or Q\or R\or S\or T\or U\or V\or W\or X\or Y\or Z%
-   \else
-     \unknowncharacter
-   \fi}
+\let\character\gobbleoneargument
+\let\Character\gobbleoneargument
 
 %D \macros
 %D   {characters,Characters}
@@ -153,81 +106,16 @@
 %D \showsetup{characters}
 %D \showsetup{Characters}
 
-\beginTEX
-
-\def\dodoconvertcharacters#1#2#3%
-  {\ifnum#3>#1
-     \bgroup
-     \!!counta#3\relax
-     \ifnum\!!counta>\zerocount
-       \advance\!!counta \minusone
-       \!!countb\!!counta
-       \divide\!!counta #1%
-       \!!countc\!!counta
-       \multiply\!!countc #1%
-       \advance\!!countb -\!!countc
-       \doconvertcharacters#3{\!!counta}%
-       \advance\!!countb \plusone
-       #3{\the\!!countb}%
-     \fi
-     \egroup
-   \else
-     #2{#3}% pure expansion, used in references
-   \fi}
-
-\endTEX
-
-%D A fully expandable alternative:
-
-\beginETEX \numexpr
-
-\def\dodoconvertcharacters#1#2#3%
-  {\ifcase#3\else
-     \ifnum#3>#1
-       \expandafter\doconvertcharacters\expandafter#2\expandafter{\the\numexpr(#3+12)/#1-1\relax}%
-       \expandafter#2\expandafter{\the\numexpr#3-((#3+12)/#1-1)*#1\relax}%
-     \else
-       \expandafter#2\expandafter{\number#3}%
-     \fi
-   \fi}
-
-\endETEX
-
-\def\doconvertcharacters{\dodoconvertcharacters{26}}
-
-\def\characters{\doconvertcharacters\character}
-\def\Characters{\doconvertcharacters\Character}
+\let\characters\gobbleoneargument
+\let\Characters\gobbleoneargument
 
 %D \macros
 %D   {greeknumerals,Greeknumerals}
 %D
 %D Why should we only honour the romans, and not the greek?
 
-\def\greeknumerals#1%
-  {% no longer needed: \mathematics
-     {\ifcase#1\unknowncharacter\or
-        \alpha      \or \beta  \or \gamma   \or \delta   \or
-        \varepsilon \or \zeta  \or \eta     \or \theta   \or
-        \iota       \or \kappa \or \lambda  \or \mu      \or
-        \nu         \or \xi    \or \omicron \or \pi      \or
-        \varrho     \or \sigma \or \tau     \or \upsilon \or
-        \phi        \or \chi   \or \psi     \or \omega
-      \else
-        \unknowncharacter
-      \fi}}
-
-\def\Greeknumerals#1%
-  {% no longer needed: \mathematics
-     {\ifcase#1\unknowncharacter \or
-        \Alpha   \or \Beta  \or \Gamma   \or \Delta   \or
-        \Epsilon \or \Zeta  \or \Eta     \or \Theta   \or
-        \Iota    \or \Kappa \or \Lambda  \or \Mu      \or
-        \Nu      \or \Xi    \or \Omicron \or \Pi      \or
-        \Rho     \or \Sigma \or \Tau     \or \Upsilon \or
-        \Phi     \or \Xi    \or \Psi     \or \Omega
-      \else
-        \unknowncharacter
-      \fi}}
+\let\greeknumerals\gobbleoneargument
+\let\Greeknumerals\gobbleoneargument
 
 %D \macros
 %D   {oldstylenumerals,oldstyleromannumerals}
@@ -240,52 +128,6 @@
 \unexpanded\def\oldstyleromannumerals#1%
   {{\leftrulefalse\rightrulefalse\ss\txx\boxrulewidth.15ex
     \ruledhbox spread .15em{\hss\uppercased{\romannumerals{#1}}\hss}}}
-
-%D \macros
-%D   {defineconversionvector,conversionnumber} % bad names so no danger for clash
-%D
-%D For Adam and friends \unknown
-%D
-%D \startitemize[persiannummerals]
-%D \item test \item test \item test \item test
-%D \stopitemize
-
-% \defineconversionvector{alpha}{`a}
-% \edef\test{\conversionnumber{alpha}{123}}
-
-% \ifx\gobbleoneargument\undefined \long\def\gobbleoneargument#1{} \fi
-
-\def\defineconversionvector#1#2% name base
-  {\bgroup
-   % dirty trick
-   \uccode`\*=`\1
-   % plain:
-   % \uccode`\0=\numexpr#2+0\relax \uccode`\1=\numexpr#2+1\relax
-   % \uccode`\2=\numexpr#2+2\relax \uccode`\3=\numexpr#2+3\relax
-   % \uccode`\4=\numexpr#2+4\relax \uccode`\5=\numexpr#2+5\relax
-   % \uccode`\6=\numexpr#2+6\relax \uccode`\7=\numexpr#2+7\relax
-   % \uccode`\8=\numexpr#2+8\relax \uccode`\9=\numexpr#2+9\relax
-   % context:
-   \dostepwiserecurse091{\expandafter\uccode\expandafter`\recurselevel=\numexpr#2+\recurselevel}%
-   % prepared macro
-   \uppercase\expandafter{\expandafter\gdef\csname::cvn::#1::\endcsname##*%
-     {\ifcase##* 0\or1\or2\or3\or4\or5\or6\or7\or8\or9\fi}}%
-   \egroup}
-
-\def\conversionnumber#1#2%
-  {\ifcsname::cvn::#1::\endcsname
-     \expandafter\doconversionnumber\csname::cvn::#1::\expandafter\endcsname\number#2\relax
-   \else
-      \number#2%
-   \fi}
-
-\def\doconversionnumber#1#2%
-  {\ifx#2\relax
-     \expandafter\gobbleoneargument
-   \else
-     #1{#2}%
-     \expandafter\doconversionnumber
-   \fi#1}
 
 %D \macros
 %D   {protectconversion}
@@ -385,34 +227,8 @@
 
 \newcount\normalweekday
 
-\def\getdayoftheweek#1#2#3%
-  {\bgroup
-   \!!counta#3\relax
-   \advance\!!counta \minusone
-   \!!countb\!!counta
-   \multiply\!!countb 365
-   \advance\!!countb \ifcase#2\relax
-     0 \or  0 \or 31 \or 59 \or 90 \or120 \or151 \or
-   181 \or212 \or243 \or273 \or304 \or334 \or365 \fi
-   \advance\!!countb #1\relax
-   \ifnum#2>2
-     \doifleapyearelse{#3}{\advance\!!countb 1}{}\relax
-   \fi
-   \!!countc\!!counta
-   \dosetdivision\!!countc4\!!countc
-   \advance\!!countb \!!countc
-   \!!countc\!!counta
-   \dosetdivision\!!countc{100}\!!countc
-   \advance\!!countb -\!!countc
-   \!!countc\!!counta
-   \dosetdivision\!!countc{400}\!!countc
-   \advance\!!countb \!!countc
-   \dosetmodulo\!!countb7\!!countb
-   \advance\!!countb \plusone
-   \@EA\egroup\@EA\normalweekday\the\!!countb\relax}
-
-\def\dayoftheweek#1#2#3%
-  {\getdayoftheweek{#1}{#2}{#3}\doconvertday{\normalweekday}}
+\let\getdayoftheweek\gobblethreearguments
+\let\dayoftheweek   \gobblethreearguments
 
 %D Using this macro in
 %D
@@ -485,30 +301,8 @@
 %D The number of days is available in the macro \type
 %D {\numberofdays}.
 
-\def\doifleapyearelse#1% #2#3%
-  {\bgroup
-   \!!doneafalse
-   \!!counta#1%
-   \dosetmodulo\!!counta4\!!countb
-   \ifcase\!!countb
-     \dosetmodulo\!!counta{100}\!!countb
-     \ifcase\!!countb \else \!!doneatrue \fi
-     \dosetmodulo\!!counta{400}\!!countb
-     \ifcase\!!countb \!!doneatrue \fi
-   \fi
-   \if!!donea
-     \egroup\@EA\firstoftwoarguments  % \def\next{#2}%
-   \else
-     \egroup\@EA\secondoftwoarguments % \def\next{#3}%
-   \fi}                               % \next}
-
-\def\getdayspermonth#1#2%
-  {\doifleapyearelse{#1}
-     {\def\numberofdays{29}}
-     {\def\numberofdays{28}}%
-   \edef\numberofdays
-     {\ifcase#2 \or31\or\numberofdays\or31\or30\or
-        31\or30\or31\or31\or30\or31\or30\or31\fi}}
+\def\doifleapyearelse #1{\firstoftwoarguments}
+\def\getdayspermonth#1#2{\let\numberofdays\!!zerocount}
 
 %D \macros
 %D   {currentdate, date}
@@ -579,47 +373,11 @@
      \hskip\datesignal\relax
    \fi}
 
-% \def\complexcurrentdate[#1]%
-%   {\bgroup
-%    \let\labellanguage\currentlanguage
-%    \def\betweendates{\let\betweendates\dobetweendates}%
-%    \lowercase{\edef\!!stringa{#1}}% permits usage in \smallcapped
-%    \@EA\processallactionsinset\@EA
-%      [\!!stringa]
-%      [    \v!day=>\betweendates\the\normalday,
-%         %\v!day+=>\betweendates\ordinaldaynumber\normalday,
-%          \v!day+=>\betweendates\convertnumber{\v!day+}\normalday,
-%         \v!month=>\betweendates\month\normalmonth,
-%          \v!year=>\betweendates\the\normalyear,
-%         \v!space=>\unskip\ \hskip\datesignal,% optimization -)
-%               \ =>\unskip\ \hskip\datesignal,% optimization -)
-%                d=>\convertnumber\v!day\normalday,
-%              %d+=>\ordinaldaynumber\normalday,
-%               d+=>\convertnumber{\v!day+}\normalday,
-%                m=>\convertnumber\v!month\normalmonth,
-%                j=>\convertnumber\v!year\normalyear,
-%                y=>\convertnumber\v!year\normalyear,
-%                w=>\betweendates\dayoftheweek\normalday\normalmonth\normalyear,
-%               dd=>\ifnum\normalday  >9 \else0\fi\the\normalday,
-%             %dd+=>\ordinaldaynumber{\ifnum\normalday >9 \else0\fi\the\normalday},
-%              dd+=>\convertnumber{\v!day+}{\ifnum\normalday >9 \else0\fi\the\normalday},
-%               mm=>\ifnum\normalmonth>9 \else0\fi\the\normalmonth,
-%               jj=>\expandafter\gobbletwoarguments\the\normalyear,
-%               yy=>\expandafter\gobbletwoarguments\the\normalyear,
-%       \v!weekday=>\betweendates\dayoftheweek\normalday\normalmonth\normalyear,
-%      \v!referral=>\expanded{\complexcurrentdate[\kenmerkdatumpatroon]},
-%       \s!unknown=>\unskip
-%                   \commalistelement
-%                   \hskip\datesignal
-%                   \def\betweendates{\let\betweendates\dobetweendates}]%
-%    \ifdim\lastskip=\datesignal\relax
-%      \unskip
-%    \fi
-%    \egroup}
+\newtoks \everycurrentdate
 
 \def\complexcurrentdate[#1]%
   {\bgroup
-   \let\labellanguage\currentlanguage
+   \the\everycurrentdate
    \def\betweendates{\let\betweendates\dobetweendates}%
    % was \processcommacommandp[#1]\docomplexcurrentdate
    \safeedef\ascii{\empty#1}% keep encoded chars
@@ -693,13 +451,10 @@
 %D a pattern similar to the previous date macro using the
 %D keys \type {h}, \type {m} and a separator.
 
-\def\calculatecurrenttime
-% {\DoDiv\time by60to\scratchcounter\edef\currenthour  {\the\scratchcounter}%
-%  \DoMod\time by60to\scratchcounter\edef\currentminute{\the\scratchcounter}}
-  {\dosetdivision\time{60}\scratchcounter
-   \edef\currenthour  {\ifnum\scratchcounter<10 0\fi \the\scratchcounter}%
-   \dosetmodulo  \time{60}\scratchcounter
-   \edef\currentminute{\ifnum\scratchcounter<10 0\fi \the\scratchcounter}}
+\let\calculatecurrenttime\relax
+
+\let\currenthour  \!!plusone
+\let\currentminute\!!plusone
 
 \appendtoks \calculatecurrenttime \to \everyjob
 
@@ -773,10 +528,10 @@
 % \def\dodefineconversion[#1][#2]%
 %   {\ConvertConstantAfter\doifinstringelse{,}{#2}
 %      {\scratchcounter=0
-%       \def\docommando##1%
+%       \def\docommand##1%
 %         {\advance\scratchcounter 1
 %          \setvalue{\??cv#1\the\scratchcounter}{##1}}%
-%       \processcommalist[#2]\docommando
+%       \processcommalist[#2]\docommand
 %       \setvalue{\??cv#1}##1{\csname\??cv#1##1\endcsname}}
 %      {\setvalue{\??cv#1}{#2}}}
 %
@@ -797,10 +552,10 @@
 %D \def\dododefineconversion[#1][#2][#3]%
 %D   {\ConvertConstantAfter\doifinstringelse{,}{#3}
 %D      {\scratchcounter\zerocount
-%D       \def\docommando##1%
+%D       \def\docommand##1%
 %D         {\advance\scratchcounter \plusone
 %D          \setvalue{\??cv#1#2\the\scratchcounter}{##1}}%
-%D       \processcommalist[#3]\docommando
+%D       \processcommalist[#3]\docommand
 %D       \setvalue{\??cv#1#2}##1{\executeifdefined{\??cv#1#2##1}\unknown}} % catch out-of-range numbers
 %D      {\setvalue{\??cv#1#2}{#3}}}
 %D \stoptyping
@@ -812,10 +567,10 @@
 \def\dododefineconversion[#1][#2][#3]%
   {\ConvertConstantAfter\doifinstringelse{,}{#3}
      {\scratchcounter\zerocount
-      \def\docommando##1%
+      \def\docommand##1%
         {\advance\scratchcounter \plusone
          \setvalue{\??cv#1#2\the\scratchcounter}{##1}}%
-      \processcommalist[#3]\docommando
+      \processcommalist[#3]\docommand
       \setevalue{\??cv#1#2}##1%
         {\noexpand\docheckedconversion{#1#2}{\the\scratchcounter}{##1}}}
      {\setvalue{\??cv#1#2}{#3}}}
@@ -885,6 +640,13 @@
 
 \endTEX
 
+\def\doifelseconversionnumber#1#2% slow but seldom used
+  {\doifdefinedelse{\??cv#1#2}}
+
+% \defineconversion[ctx][c,o,n,t,e,x,t]
+%
+% \doloop{\doifelseconversionnumber{ctx}{\recurselevel}{[\recurselevel]}{\exitloop}}
+
 \defineconversion [\s!default] [\number]
 
 %D As longs as symbols are linked to levels or numbers, we can
@@ -940,30 +702,12 @@
 \defineconversion [month]            [\doconvertmonthlong]
 \defineconversion [month:mnem]       [\doconvertmonthshort]
 
-\beginXETEX \number
-
-\defineconversionvector{arabicnumerals}    {"0660}
-\defineconversionvector{persiannumerals}   {"06F0}
-\defineconversionvector{thainumerals}      {"0E50}
-\defineconversionvector{devanagarinumerals}{"0966}
-\defineconversionvector{gurmurkhinumerals} {"0A66}
-\defineconversionvector{gujaratinumerals}  {"0AE6}
-\defineconversionvector{tibetannumerals}   {"0F20}  % also "half numerals?"
-
-\defineconversion[arabicnumerals]    [\conversionnumber{arabicnumerals}]
-\defineconversion[persiannumerals]   [\conversionnumber{persiannumerals}]
-\defineconversion[thainumerals]      [\conversionnumber{thainumerals}]
-\defineconversion[devanagarinumerals][\conversionnumber{devanagarinumerals}]
-\defineconversion[gurmurkhinumerals] [\conversionnumber{gurmurkhinumerals}]
-\defineconversion[gujaratinumerals]  [\conversionnumber{gujaratinumerals}]
-\defineconversion[tibetannumerals]   [\conversionnumber{tibetannumerals}]
-
-\endXETEX
-
 % Some bonus ones:
 
 \defineconversion [\v!empty]         [\gobbleoneargument]
 \defineconversion [\v!none]          [\numbers]
+
+\ifx\symbol\undefined \def\symbol[#1]{#1} \fi % todo
 
 \defineconversion
   [set 0]
@@ -1020,5 +764,9 @@
    \mathematics{\ast},
    \mathematics{\ast\ast},
    \mathematics{\ast\ast\ast}]
+
+%D Plugins:
+
+\loadmarkfile{core-con}
 
 \protect \endinput

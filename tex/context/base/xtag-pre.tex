@@ -199,8 +199,8 @@
   {#1} % {\externalfigure[#1]}
 
 \def\dohandleXMLentityDEFINE#1 %#2 #3 #4 #5 #6>% name replacement
-  {\def\docommando##1>{\expanded{\defineXMLentity[#1]{\the\scratchtoks}}}%
-   \afterassignment\docommando\grabstring}
+  {\def\docommand##1>{\expanded{\defineXMLentity[#1]{\the\scratchtoks}}}%
+   \afterassignment\docommand\grabstring}
 
 %D Such entities can be encapsulated in a \type {DOCTYPE}
 %D element. Therefore we remove the outer level of document

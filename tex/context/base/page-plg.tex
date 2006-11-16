@@ -130,12 +130,9 @@
    \vsize\paperheight
    \setbox\pagebox\vbox
      {\doifbothsidesoverruled
-        \let\!!stringa\v!page
-      \orsideone
-        \let\!!stringa\v!rightpage
-      \orsidetwo
-        \let\!!stringa\v!leftpage
-      \od
+        {\let\!!stringa\v!page}
+        {\let\!!stringa\v!rightpage}
+        {\let\!!stringa\v!leftpage}%
       \getvalue{\??ly\c!method:\!!stringa}}%
    \wd\pagebox\paperwidth
    \ht\pagebox\paperheight
@@ -155,12 +152,9 @@
           {\dodopagearea{#1}{#2}\c!middletext}}%
    \else\ifsecondargument
      \doifbothsidesoverruled
-       \dodopagearea{#1}{#2}\c!righttext
-     \orsideone
-       \dodopagearea{#1}{#2}\c!righttext
-     \orsidetwo
-       \dodopagearea{#1}{#2}\c!lefttext
-     \od
+       {\dodopagearea{#1}{#2}\c!righttext}
+       {\dodopagearea{#1}{#2}\c!righttext}
+       {\dodopagearea{#1}{#2}\c!lefttext }%
    \else
      \doif{#1}\v!text % copy due to trial runs in TABLE
        {\iftrialtypesetting

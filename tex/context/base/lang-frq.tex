@@ -66,17 +66,17 @@
 
 \def\charfreq#1 #2 % character fraction
   {+(\ifcase\charwidthmethod
-     #2\dimexpr(100\onepoint)%
+     #2\dimexpr100\onepoint\relax
    \or
-     #2\dimexpr(.5em)% \fontdimen6\font/2
+     #2\dimexpr.5em\relax % \emwidth/2
    \or
-     #2\dimexpr(\fontdimen5\font)%
+     #2\dimexpr\exheight\relax
    \or
      #2\fontcharwd\font`#1%
    \or
-     \dimexpr(100\fontcharwd\font`#1/\charactertsize\charwidthlanguage)% ugly hack
+     \dimexpr100\fontcharwd\font`#1/\charactertsize\charwidthlanguage\relax % ugly hack
    \else
-     #2\dimexpr(\fontdimen5\font)%
+     #2\dimexpr\exheight\relax
    \fi)}
 
 %D \macros
@@ -123,7 +123,7 @@
 
 \beginTEX
 
-  \def\averagecharwidth{\the\fontdimen6\font}
+  \def\averagecharwidth{\the\emwidth}
 
 \endTEX
 

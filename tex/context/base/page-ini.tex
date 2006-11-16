@@ -13,6 +13,8 @@
 
 \writestatus{loading}{Context Page Macros / Initializations}
 
+% still a dutch/english mess
+
 %D This class of modules implements the output routines and
 %D floating body support. Although the modules are relatively
 %D new, the code herein is rather old. This reordering was
@@ -994,20 +996,6 @@
    \setvsize            % this is needed for interacting components, like floats and multicolumns
    \adaptfuzzypagegoal} % watch this hack!
 
-% \def\dofinaloutput#1#2%
-%   {\beforefinaloutput
-%    \the\everybeforeshipout
-%    \ifspecialbasedsettings
-%      \myshipout{\hbox{\hbox to \zeropoint{\the\pageboundsettings}%
-%                       \hbox{\dopagebody#1#2\setpagecounters}}}%
-%    \else
-%      \the\pageboundsettings
-%      \myshipout{\hbox{\dopagebody#1#2\setpagecounters}}%
-%    \fi
-%    \the\everyaftershipout
-%    \afterfinaloutput
-%    \popproperties}  % ... and here ...
-
 \def\dofinaloutput#1#2% \vbox: prevents spurious spaces in every..pagebody
   {\beforefinaloutput
    \the\everybeforeshipout
@@ -1036,33 +1024,34 @@
    \afterfinaloutput
    \popproperties}  % ... and here
 
-% beware: \ifverwerken is in use
+% beware: \ifprocessingpages is in use
+
+\ifx\checkpageversion\undefined \let\checkpageversion\relax \fi % todo: hook into \everybeforeshipout
+\ifx\doflushspread   \undefined \let\doflushspread   \relax \fi % todo
 
 \def\finaloutput#1#2%
   {\checkpageversion
-   \ifverwerken
-     \ifgeselecteerd
+   \ifprocessingpages
+     \ifpageselected
        \@EAEAEA\dofinaloutput
      \else
        \@EAEAEA\donofinaloutput
      \fi
    \else
-     \ifgeselecteerd
+     \ifpageselected
        \@EAEAEA\donofinaloutput
      \else
        \@EAEAEA\dofinaloutput
      \fi
    \fi#1#2%
    \resetselectiepagina
-   \verhoogpaginanummer
+   \incrementpagenumber
    \checkpagedimensions
    \ifnum\outputpenalty>\superpenalty \else
      \dosupereject
    \fi
    \doflushspread
    \dopostponeblock}
-
-\ifx\doflushspread\undefined \let\doflushspread\relax \fi
 
 \def\dooutput
   {\finaloutput\unvbox\normalpagebox}
@@ -1072,15 +1061,6 @@
 % will be installable tracer; better use chardef
 
 % this needs a real cleanup
-
-\chardef\conceptmode\zerocount
-
-\def\doifconcepttracing
-  {\ifnum\conceptmode>\plustwo
-     \expandafter\firstofoneargument
-   \else
-     \expandafter\gobbleoneargument
-   \fi}
 
 \def\doplaceversiontext#1#2%
   {\doifsomething{#2}
@@ -1168,15 +1148,15 @@
 
 % this will be inserts some day
 
-% \installinsertion\referentieinfobox
+% \installinsertion\referenceinfobox
 % \installinsertion\registerinfobox
 % \installinsertion\floatinfobox
 
-\newbox\referentieinfobox
+\newbox\referenceinfobox
 \newbox\registerinfobox
 \newbox\floatinfobox
 
-\def\referentieinfo{\dotestinfo\referentieinfobox}
+\def\referenceinfo{\dotestinfo\referenceinfobox}
 \def\registerinfo  {\dotestinfo\registerinfobox}
 \def\floatinfo     {\dotestinfo\floatinfobox}
 
@@ -1191,10 +1171,10 @@
         \unvbox\floatinfobox
         \vskip\!!twelvepoint
       \fi
-      \ifvoid\referentieinfobox\else
+      \ifvoid\referenceinfobox\else
         \strut \getmessage\m!systems{25}%
         \vskip\!!sixpoint
-        \unvbox\referentieinfobox
+        \unvbox\referenceinfobox
         \vskip\!!twelvepoint
       \fi
       \ifvoid\registerinfobox\else
@@ -1205,8 +1185,6 @@
       \vss}}
 
 \version[\v!final]
-
-\newif\ifinpagebody
 
 % bewaren tvb documentatie
 %
@@ -1248,26 +1226,30 @@
   {\dosingleempty\doshowgrid}
 
 \def\doshowgrid[#1]%
-  {\chardef\showgridstate\plusone % downward compatible default
-   \processaction
+  {\chardef\showgridstate    \plusone % downward compatible default
+   \chardef\gridboxlinemode  \plusone
+   \chardef\gridboxlinenomode\plusone
+   \processallactionsinset
      [#1]%
-     [\v!reset=>\chardef\showgridstate\zerocount,
-     %\v!bottom=>\chardef\showgridstate\plusone,
-      \v!top=>\chardef\showgridstate\plustwo]}
+     [ \v!reset=>\chardef\showgridstate    \zerocount,
+      \v!bottom=>\chardef\showgridstate    \plusone,
+         \v!top=>\chardef\showgridstate    \plustwo,
+        \v!none=>\chardef\gridboxlinemode  \zerocount,
+         \v!all=>\chardef\gridboxlinemode  \plusone,
+       \v!lines=>\chardef\gridboxlinemode  \plustwo,
+       \v!frame=>\chardef\gridboxlinemode  \plusthree,
+    \v!nonumber=>\chardef\gridboxlinenomode\zerocount,
+       \v!right=>\chardef\gridboxlinenomode\plusone,
+        \v!left=>\chardef\gridboxlinenomode\plustwo]}
 
 \def\buildpagebox#1%
   {\setbox#1\vbox to \paperheight
      {\hsize\paperwidth
       \vskip\topspace
       \doifbothsides
-        \hskip\backspace
-      \orsideone
-        \hskip\backspace
-      \orsidetwo
-        \hskip\paperwidth
-        \hskip-\backspace
-        \hskip-\makeupwidth
-      \od
+        {\hskip\backspace}
+        {\hskip\backspace}
+        {\hskip\paperwidth \hskip-\backspace \hskip-\makeupwidth}%
       \box#1}%
    \dp#1\zeropoint}
 
@@ -1396,13 +1378,13 @@
 %    \shipoutfacingpage
    \checkreferences
    \checkmargeblokken
-   \dotoks\beforeeverypage
+   \the\beforeeverypage
    \flushtoks\beforepage
    \inpagebodytrue\buildpagebody#1#2%
    \flushtoks\afterpage
-   \dotoks\aftereverypage
+   \the\aftereverypage
    \resetpagebreak
-   \updatelistreferences
+   %updatelistreferences % now in aftereverypage
    \resetlayouttextlines % will go to \aftereverypage
    \stoptextproperties
    \the\everyafterpagebody}
@@ -1410,8 +1392,6 @@
 \newtoks\pageboundsettings
 
 \prependtoks \initializepaper \to \pageboundsettings
-
-\let\checkpageversion=\relax
 
 % not here
 
@@ -1702,22 +1682,12 @@
 \installpagebreakhandler \v!left
   {\ejectinsert
    \gotonextpageX % will become \gotonextpage
-   \doifbothsidesoverruled
-   \orsideone
-     \resetcurrentsectionmarks % sic
-     \ejectdummypage
-   \orsidetwo
-   \od}
+   \doifbothsidesoverruled{}{\resetcurrentsectionmarks\ejectdummypage}{}}
 
 \installpagebreakhandler \v!right
   {\ejectinsert
    \gotonextpageX % will become \gotonextpage
-   \doifbothsidesoverruled
-   \orsideone
-   \orsidetwo
-     \resetcurrentsectionmarks % sic
-     \ejectdummypage
-   \od}
+   \doifbothsidesoverruled{}{}{\resetcurrentsectionmarks\ejectdummypage}}
 
 \installpagebreakhandler \v!even
   {\page
@@ -1746,12 +1716,9 @@
    \gotonextpageX % will become \gotonextpage
    \relax
    \doifbothsidesoverruled
-     \shipoutfacingpage
-   \orsideone
-   \orsidetwo
-     \noheaderandfooterlines
-     \ejectdummypage
-   \od
+     {\shipoutfacingpage}
+     {}
+     {\noheaderandfooterlines \ejectdummypage}%
    \filluparrangedpages}
 
 \installpagebreakhandler \v!lastpage % handy for backpage preceded by empty pages
@@ -1878,41 +1845,39 @@
 %   \ignorerestoftext
 % \to \everylastshipout
 
-\newif\ifgeselecteerd \geselecteerdtrue
-\newif\ifselecteren   \selecterenfalse
-\newif\ifverwerken    \verwerkentrue
+\newif\ifpageselected   \pageselectedtrue
+\newif\ifselectingpages \selectingpagesfalse
+\newif\ifprocessingpages\processingpagestrue
 
-\let\selectie   \empty
-\let\paginasoort\empty
-\let\napagina   \relax
-\let\voorpagina \relax
+\let\pageselection       \empty
+\let\currentpageselection\empty
+\let\aftershipout        \relax
+\let\beforeshipout       \relax
 
-\def\dodovoorpagina#1%
-  {\global\let\voorpagina\relax
+\def\dodobeforeshipout#1%
+  {\global\let\beforeshipout\relax
    \getvalue{\??pg#1\c!before}}
 
-\def\dovoorpagina
-  {\doifsomething\paginasoort
-     {\processcommacommand[\paginasoort]\dodovoorpagina}}
+\def\dobeforeshipout
+  {\doifsomething\currentpageselection
+     {\processcommacommand[\currentpageselection]\dodobeforeshipout}}
 
-\def\dododonapagina#1%
-  {\global\let\napagina\relax
-   \global\let\paginasoort\empty
+\def\dododoaftershipout#1%
+  {\global\let\aftershipout\relax
+   \global\let\currentpageselection\empty
    \getvalue{\??pg#1\c!after}}
 
-\def\dodonapagina#1%
+\def\dodoaftershipout#1%
   {\doifelsevalue{\??pg#1\c!option}\v!doublesided
      {\doifbothsidesoverruled
-        \dododonapagina{#1}%
-      \orsideone
-        \dododonapagina{#1}%
-      \orsidetwo
-      \od}
-     {\dododonapagina{#1}}}
+        {\dododoaftershipout{#1}}
+        {\dododoaftershipout{#1}}
+        {}}
+     {\dododoaftershipout{#1}}}
 
-\def\donapagina
-  {\doifsomething\paginasoort
-     {\processcommacommand[\paginasoort]\dodonapagina}}
+\def\doaftershipout
+  {\doifsomething\currentpageselection
+     {\processcommacommand[\currentpageselection]\dodoaftershipout}}
 
 % Dit wordt eigenlijk nooit en moet worden vervangen door
 % het meer algemene mechanisme.
@@ -1920,13 +1885,13 @@
 \def\dopagetype[#1]%
   {\edef\desoortpagina{#1}%
    \ifx\desoortpagina\empty \else
-     \@EA\doglobal\@EA\addtocommalist\@EA{\desoortpagina}\paginasoort
-     \ifselecteren
-       \fullexpandtwoargsafter\doifcommon\desoortpagina\selectie
-         {\global\geselecteerdtrue}%
+     \@EA\doglobal\@EA\addtocommalist\@EA{\desoortpagina}\currentpageselection
+     \ifselectingpages
+       \fullexpandtwoargsafter\doifcommon\desoortpagina\pageselection
+         {\global\pageselectedtrue}%
      \fi
-     \gdef\voorpagina{\dovoorpagina}%
-     \gdef\napagina  {\donapagina  }%
+     \gdef\beforeshipout{\dobeforeshipout}%
+     \gdef\aftershipout {\doaftershipout}%
    \fi}
 
 \def\pagetype
@@ -1939,13 +1904,13 @@
       \c!after=,
       \c!option=,
       #2]%
-   \def\docommando##1%
+   \def\docommand##1%
      {\getparameters
         [\??pg##1]
         [\c!before=\@@pgbefore,
          \c!after=\@@pgafter,
          \c!option=\@@pgoption]}%
-   \processcommalist[#1]\docommando}%
+   \processcommalist[#1]\docommand}%
 
 \def\couplepage
   {\dodoubleargument\docouplepage}
@@ -1953,23 +1918,18 @@
 \def\doprocesspage[#1][#2]%
   {\processaction
      [#2]
-     [\v!yes=>\global\verwerkentrue,
-       \v!no=>\global\verwerkenfalse]%
-   \gdef\selectie{#1}%
-   \global\selecterentrue
-   \global\geselecteerdfalse}
+     [\v!yes=>\global\processingpagestrue,
+       \v!no=>\global\processingpagesfalse]%
+   \gdef\pageselection{#1}%
+   \global\selectingpagestrue
+   \global\pageselectedfalse}
 
 \def\processpage
   {\dodoubleargument\doprocesspage}
 
 \def\resetselectiepagina
-  {\ifselecteren
-     \doifbothsidesoverruled
-       \global\geselecteerdfalse
-     \orsideone
-     \orsidetwo
-       \global\geselecteerdfalse
-     \od
+  {\ifselectingpages
+     \doifbothsidesoverruled{\global\pageselectedfalse}{}{\global\pageselectedfalse}%
    \fi}
 
 \newif\ifregistertextareas

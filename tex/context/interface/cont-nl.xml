@@ -59,22 +59,36 @@
 </cd:define>
 
 <cd:define name="language">
-      <cd:constant type="nl"/>
-      <cd:constant type="fr"/>
-      <cd:constant type="en"/>
-      <cd:constant type="uk"/>
-      <cd:constant type="de"/>
-      <cd:constant type="es"/>
-      <cd:constant type="cz"/>
-      <cd:constant type=".."/>
+    <cd:constant type="nl"/>
+    <cd:constant type="fr"/>
+    <cd:constant type="en"/>
+    <cd:constant type="uk"/>
+    <cd:constant type="de"/>
+    <cd:constant type="es"/>
+    <cd:constant type="cz"/>
+    <cd:constant type=".."/>
 </cd:define>
 
 <cd:define name="texts">
-      <cd:constant type="cd:text"/>
-      <cd:constant type="cd:section"/>
-      <cd:constant type="datum"/>
-      <cd:constant type="cd:mark"/>
-      <cd:constant type="paginanummer"/>
+    <cd:constant type="cd:text"/>
+    <cd:constant type="cd:section"/>
+    <cd:constant type="datum"/>
+    <cd:constant type="cd:mark"/>
+    <cd:constant type="paginanummer"/>
+</cd:define>
+
+<cd:define name="layout-h">
+    <cd:constant type="tekst" default="yes"/>
+    <cd:constant type="marge"/>
+    <cd:constant type="rand"/>
+</cd:define>
+
+<cd:define name="layout-v">
+    <cd:constant type="boven"/>
+    <cd:constant type="hoofd"/>
+    <cd:constant type="tekst" default="yes"/>
+    <cd:constant type="voet"/>
+    <cd:constant type="onder"/>
 </cd:define>
 
 <cd:command name="installlanguage" file="lang-ini.tex">
@@ -1626,6 +1640,7 @@
         <cd:constant type="boven"/>
         <cd:constant type="midden"/>
         <cd:constant type="onder"/>
+        <cd:constant type="handhaaf"/>
       </cd:parameter>
       <cd:parameter name="optie">
         <cd:constant type="geen"/>
@@ -1730,6 +1745,9 @@
       </cd:parameter>
       <cd:parameter name="voorgrondletter">
         <cd:resolve name="style"/>
+      </cd:parameter>
+      <cd:parameter name="lijndikte">
+        <cd:constant type="cd:dimension"/>
       </cd:parameter>
     </cd:assignments>
   </cd:arguments>
@@ -3390,9 +3408,7 @@
   </cd:sequence>
   <cd:arguments>
     <cd:keywords optional="yes">
-      <cd:constant type="cd:text" default="yes"/>
-      <cd:constant type="marge"/>
-      <cd:constant type="rand"/>
+      <cd:resolve name="layout-h"/>
     </cd:keywords>
     <cd:keywords>
       <cd:resolve name="texts"/>
@@ -3409,9 +3425,7 @@
   </cd:sequence>
   <cd:arguments>
     <cd:keywords optional="yes">
-      <cd:constant type="cd:text" default="yes"/>
-      <cd:constant type="marge"/>
-      <cd:constant type="rand"/>
+      <cd:resolve name="layout-h"/>
     </cd:keywords>
     <cd:keywords>
       <cd:resolve name="texts"/>
@@ -3428,9 +3442,7 @@
   </cd:sequence>
   <cd:arguments>
     <cd:keywords optional="yes">
-      <cd:constant type="cd:text" default="yes"/>
-      <cd:constant type="marge"/>
-      <cd:constant type="rand"/>
+      <cd:resolve name="layout-h"/>
     </cd:keywords>
     <cd:keywords>
       <cd:resolve name="texts"/>
@@ -3447,9 +3459,7 @@
   </cd:sequence>
   <cd:arguments>
     <cd:keywords optional="yes">
-      <cd:constant type="cd:text" default="yes"/>
-      <cd:constant type="marge"/>
-      <cd:constant type="rand"/>
+      <cd:resolve name="layout-h"/>
     </cd:keywords>
     <cd:keywords>
       <cd:resolve name="texts"/>
@@ -3466,15 +3476,55 @@
   </cd:sequence>
   <cd:arguments>
     <cd:keywords optional="yes">
-      <cd:constant type="cd:text" default="yes"/>
-      <cd:constant type="marge"/>
-      <cd:constant type="rand"/>
+      <cd:resolve name="layout-h"/>
     </cd:keywords>
     <cd:keywords>
       <cd:resolve name="texts"/>
     </cd:keywords>
     <cd:keywords>
       <cd:resolve name="texts"/>
+    </cd:keywords>
+  </cd:arguments>
+</cd:command>
+
+<cd:command name="settextcontent" file="page-txt.tex">
+  <cd:sequence>
+    <cd:string value="steltekstinhoudin"/>
+  </cd:sequence>
+  <cd:arguments>
+    <cd:keywords>
+      <cd:resolve name="layout-v"/>
+    </cd:keywords>
+    <cd:keywords>
+      <cd:resolve name="layout-h"/>
+    </cd:keywords>
+    <cd:keywords optional="yes">
+      <cd:resolve name="texts"/>
+    </cd:keywords>
+    <cd:keywords optional="yes">
+      <cd:resolve name="texts"/>
+    </cd:keywords>
+    <cd:keywords optional="yes">
+      <cd:resolve name="texts"/>
+    </cd:keywords>
+  </cd:arguments>
+</cd:command>
+
+<cd:command name="resettextcontent" file="page-txt.tex">
+  <cd:sequence>
+    <cd:string value="resettextcontent"/>
+  </cd:sequence>
+  <cd:arguments>
+    <cd:keywords>
+      <cd:resolve name="layout-v"/>
+    </cd:keywords>
+    <cd:keywords>
+      <cd:resolve name="layout-h"/>
+    </cd:keywords>
+    <cd:keywords optional="yes">
+      <cd:constant name="lefttext"/>
+      <cd:constant name="middletext"/>
+      <cd:constant name="righttext"/>
     </cd:keywords>
   </cd:arguments>
 </cd:command>
@@ -3774,6 +3824,21 @@
   <cd:sequence>
     <cd:string value="toongrid"/>
   </cd:sequence>
+  <cd:arguments>
+    <cd:keywords optional="yes" list="yes">
+      <cd:constant type="reset"/>
+      <cd:constant type="boven"/>
+      <cd:constant type="onder"/>
+      <cd:constant type="geen"/>
+      <cd:constant type="alles"/>
+      <cd:constant type="regels"/>
+      <cd:constant type="kader"/>
+      <cd:constant type="geennummer"/>
+      <cd:constant type="rechts"/>
+      <cd:constant type="links"/>
+    </cd:keywords>
+    <cd:content/>
+  </cd:arguments>
 </cd:command>
 
 <cd:command name="placeongrid" file="core-grd.tex">
@@ -4106,6 +4171,15 @@
         <cd:constant type="hoog"/>
         <cd:constant type="laag"/>
         <cd:constant type="midden"/>
+        <cd:constant type="links"/>
+        <cd:constant type="midden"/>
+        <cd:constant type="rechts"/>
+        <cd:constant type="linkshangend"/>
+        <cd:constant type="rechtshangend"/>
+        <cd:constant type="linkermarge"/>
+        <cd:constant type="rechtermarge"/>
+        <cd:constant type="binnenmarge"/>
+        <cd:constant type="buitenmarge"/>
       </cd:parameter>
       <cd:parameter name="breedte">
         <cd:constant type="passend"/>
@@ -5034,6 +5108,12 @@
         <cd:constant type="ja"/>
         <cd:constant type="nee"/>
       </cd:parameter>
+      <cd:parameter name="uitlijnen">
+        <cd:constant type="lijnlinks"/>
+        <cd:constant type="lijnrechts"/>
+        <cd:constant type="midden"/>
+        <cd:constant type="centreer"/>
+      </cd:parameter>
       <cd:parameter name="linkermarge">
         <cd:constant type="cd:dimension"/>
       </cd:parameter>
@@ -5471,6 +5551,7 @@
       <cd:constant type="geroteerd"/>
       <cd:constant type="dubbelzijdig"/>
       <cd:constant type="negatief"/>
+      <cd:constant type="achtergrond"/>
       <cd:constant type="90"/>
       <cd:constant type="180"/>
       <cd:constant type="270"/>

@@ -1,6 +1,6 @@
 %D \module
 %D   [       file=t-bib,
-%D        version=2006.08.08,
+%D        version=2006.11.05,
 %D          title=\CONTEXT\ Publication Module,
 %D       subtitle=Publications,
 %D         author=Taco Hoekwater,
@@ -93,6 +93,19 @@
 %D \item the constants \type{sorttype}, \type{compress} and
 %D        \type{autohang} have moved to the core (8/8/2006)
 %D \item bibtex is now registered as a program to be run by texexec (8/8/2006)
+%D \item fix a bug in \type{\setupcite[authoretallimit=1]} (9/8/2006)
+%D \item fix a bug inside citations that prevented lastpubsep from ever being 
+%D       used due to a volatile \type{\commalistsize} (25/8/2006).
+%D \item added the possibility of \type{\placepublications[option=continue]} 
+%D       (6/9/2006)
+%D \item Mojca translated Master's Thesis to Masterarbeit (bibl-apa-de.tex)
+%D       (12/9/2006)
+%D \item Added \type{\setuppublicationlist[maybeyear=off]} by request from
+%D       Thomas Schmitz (15/9/2006)
+%D \item Removed some spurious spaces pointed out by willi egger (19/9/2006)
+%D \item Add configuration of bibtex executable name (4/11/2006)
+%D \item Fix numbering=short and numbering=bib (spotted by Matthias Wächter) (4/11/2006)
+%D \item third attempt to get a correct release (5/11/2006)
 %D \stopitemize
 %D
 %D \subject{WISHLIST}
@@ -281,7 +294,7 @@
 \def\dosetupbibtex[#1]%
   {\let\@@pbdatabase\empty
    \let\@@pbsort    \empty
-   \getparameters[\??pb][#1]
+   \getparameters[\??pb][#1]%
    \expanded{\processaction[\@@pbsort]}
         [      \v!no=>\def\bibstyle{cont-no},
            \v!author=>\def\bibstyle{cont-au},
@@ -290,6 +303,8 @@
           \s!default=>\def\bibstyle{cont-no},
           \s!unknown=>\def\bibstyle{cont-no}]%
    \ifx\@@pbdatabase\empty\else \writeauxfile \fi}
+
+\dosetupbibtex[bibtex=bibtex]
 
 %D \macros{writeauxfile}
 %D
@@ -319,7 +334,7 @@
      \write   \scratchwrite {\string\bibdata{\@@pbdatabase}}%
      \closeout\scratchwrite
      \showmessage\m!bib{3}{}%
-     \installprogram{bibtex \jobname}}}
+     \expanded{\installprogram{\@@pbbibtex\space\jobname}}}}
 
 %D \macros{ifsortbycite,iftypesetall,ifautohang,ifbibcitecompress}
 %D
@@ -910,18 +925,45 @@
      \fi\fi
      \edef\samplewidth{\the\wd\scratchbox}%
      \setuplist[pubs][\c!width=\samplewidth,\c!distance=0pt]%
-     \def\@@pblimitednumber##1{\hbox to \samplewidth{\@@pbnumbercommand{##1}}}%
+     \ifx\@@pbnumbering\v!short
+       \def\@@pblimitednumber##1{\hbox to \samplewidth
+           {\@@pbnumbercommand{\getvalue{pbds-\@@pbk}}}}%
+     \else \ifx \@@pbnumbering\v!bib
+       \def\@@pblimitednumber##1{\hbox to \samplewidth
+           {\@@pbnumbercommand{\getvalue{pbdn-\@@pbk}}}}%
+     \else
+       \def\@@pblimitednumber##1{\hbox to \samplewidth{\@@pbnumbercommand{##1}}}%
+     \fi \fi
    \else
+     \ifx\@@pbnumbering\v!short
      \doifemptyelse
         {\getvalue{\??li pubs\c!width}}
-        {\def\@@pblimitednumber##1{\hbox{\@@pbnumbercommand{##1}}}}%
-        {\def\@@pblimitednumber##1{\hbox to \getvalue{\??li pubs\c!width}{\@@pbnumbercommand{##1}}}}%
+        {\def\@@pblimitednumber##1{\hbox
+            {\@@pbnumbercommand{\getvalue{pbds-\@@pbk}}}}}%
+        {\def\@@pblimitednumber##1{\hbox to \getvalue{\??li pubs\c!width}%
+            {\@@pbnumbercommand{\getvalue{pbds-\@@pbk}}}}}%
+     \else \ifx \@@pbnumbering\v!bib
+        \doifemptyelse
+          {\getvalue{\??li pubs\c!width}}
+          {\def\@@pblimitednumber##1{\hbox
+            {\@@pbnumbercommand{\getvalue{pbdn-\@@pbk}}}}}%
+          {\def\@@pblimitednumber##1{\hbox to \getvalue{\??li pubs\c!width}%
+            {\@@pbnumbercommand{\getvalue{pbdn-\@@pbk}}}}}%
+       \else
+       \doifemptyelse
+          {\getvalue{\??li pubs\c!width}}
+          {\def\@@pblimitednumber##1{\hbox{\@@pbnumbercommand{##1}}}}%
+          {\def\@@pblimitednumber##1{\hbox to \getvalue{\??li pubs\c!width}{\@@pbnumbercommand{##1}}}}%
+        \fi
+     \fi
    \fi
    \ifx\@@pbnumbering\v!no
-     \setuplist[pubs][\c!numbercommand=,\c!symbol=\v!none,\c!textcommand=\outdented]
+     \setuplist[pubs][\c!numbercommand=,\c!symbol=\v!none,\c!textcommand=\outdented]%
    \else
      \setuplist[pubs][\c!numbercommand=\@@pblimitednumber]%
    \fi
+   \doifelsevalue
+      {\??pv datamaybeyear}{\v!off}{\def\maybeyear##1{}}{\def\maybeyear##1{##1}}%
    \forgetall % bugfix 2005/03/18
 }
 
@@ -962,12 +1004,15 @@
 \def\doplacepublications[#1]%
   {%\getparameters[\??pv data][#1]
    \begingroup
-   \setuplist[pubs][\c!criterium=\v!previous,#1]
+   \setuplist[pubs][\c!criterium=\v!previous,#1]%
    \dodoplacepublications }%
 
 \def\dodoplacepublications%
   {\initializepubslist
-   \global\let\bibcounter\!!zerocount
+   \doifelsevalue
+      {\??li pubs\c!option}{\v!continue}%
+      {}%
+      {\global\let\bibcounter\!!zerocount }%
    \inpublisttrue
    \typesetpubslist
    \inpublistfalse  
@@ -979,14 +1024,22 @@
 
 \unexpanded\def\typesetapublication#1%
   {\doifsomething{#1}{\doglobal\increment\bibcounter 
-    \dodolistelement{pubs}{}{\bibcounter}%
-      {\expanded{\reference[\bibrefprefix#1]{\bibcounter}}%
-       \strut \dotypesetapublication{#1}\strut }{}{}}}
+    \bgroup 
+    \makepbkvalue{#1}%
+    \ifgridsnapping
+      \snaptogrid\vbox{\dodolistelement{pubs}{}{\bibcounter}%
+        {\expanded{\reference[\bibrefprefix#1]{\bibcounter}}%
+         \strut \dotypesetapublication{#1}\strut }{}{}}%
+    \else
+      \dodolistelement{pubs}{}{\bibcounter}%
+        {\expanded{\reference[\bibrefprefix#1]{\bibcounter}}%
+         \strut \dotypesetapublication{#1}\strut }{}{}%
+    \fi
+    \egroup }}
 
 \def\dotypesetapublication#1%
   {\bgroup
    \def\@@currentalternative{data}%
-   \makepbkvalue{#1}%
    \processcommacommand[\bibcommandlist,crossref]\clearbibitem
    \processcommalist   [artauthor,author,editor]\clearbibitemtwo
    \processcommacommand[\bibcommandlist]\bibitemdefs
@@ -1223,6 +1276,7 @@
 \def\dobibauthoryear
   {\scratchcounter\zerocount
    \getcommacommandsize[\thebibauthors]%
+   \edef\authorcount{\commalistsize}%
    \@EA\processcommalist\@EA[\thebibauthors]\dodobibauthoryear}
 
 \def\dodobibauthoryear#1%
@@ -1233,7 +1287,7 @@
    \setcurrentbibauthor{#1}%
    \ifnum\scratchcounter=\plusone
      \ixfirstcommand
-   \else\ifnum \scratchcounter=\commalistsize\relax
+   \else\ifnum \scratchcounter=\authorcount\relax
      \ixlastcommand
    \else
      \ixsecondcommand
@@ -1254,12 +1308,20 @@
   \fi }
 
 
+%D This discovery of authoretallimit is not the best one,
+%D but it will do for now.
+
 \def\docurrentbibauthor#1,#2%
   {\doifemptyelse{#2}
       {\def\currentbibauthor{#1\bibalternative{otherstext}}}
-      {\edef\currentbibauthor{#1%
-        \ifcase0\bibalternative{authoretallimit}\relax\or
-          \bibalternative{otherstext}\else \bibalternative{andtext}#2\fi}}}
+      {\@EA
+       \ifx\csname \??pv\@@currentalternative authoretallimit\endcsname\relax
+          \edef\currentbibauthor{#1\bibalternative{andtext}#2}%
+       \else
+          \edef\currentbibauthor{#1%
+            \ifcase0\bibalternative{authoretallimit}\relax\or
+            \bibalternative{otherstext}\else\bibalternative{andtext}#2\fi}%
+       \fi}}
 
 %D This is not the one Hans made for me, because I need a global
 %D edef, and the \type{\robustdoifinsetelse} doesn't listen to
@@ -1701,7 +1763,7 @@
 %D \type{\citeasnoun}.
 
 \def\bibauthornumref[#1]%
-  {\getcommalistsize[#1]
+  {\getcommalistsize[#1]%
    \global\bibitemcounter\commalistsize
    \firstreftrue
    \processcommalist[#1]\dobibauthornumref }

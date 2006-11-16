@@ -24,8 +24,8 @@
       \setupcolors[\c!state=\v!start]% to prevent mps color conversion
       \dontcomplain
       \def\doshowsymbols% global needed due to grouping in alignment
-        {\expanded{\globalprocesscommalist[\symbolset{#1}]}\docommando}%
-      \def\docommando##1%
+        {\expanded{\globalprocesscommalist[\symbolset{#1}]}\docommand}%
+      \def\docommand##1%
         {\vbox
            {\forgetall
             \tttf

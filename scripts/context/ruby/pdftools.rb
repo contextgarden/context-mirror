@@ -15,10 +15,7 @@
 
 banner = ['PDFTools', 'version 1.2.1', '2003/2005', 'PRAGMA ADE/POD']
 
-unless defined? ownpath
-    ownpath = $0.sub(/[\\\/][a-z0-9\-]*?\.rb/i,'')
-    $: << ownpath
-end
+$: << File.expand_path(File.dirname($0)) ; $: << File.join($:.last,'lib') ; $:.uniq!
 
 require 'base/switch'
 require 'base/logger'

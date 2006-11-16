@@ -13,6 +13,8 @@
 
 \writestatus{loading}{Context Page Macros / Layers}
 
+%D This module is now etex dependent.
+
 % todo : first / last / next / +... => page key
 %        test on left/right box when no doublesided option given
 
@@ -43,16 +45,11 @@
 \def\dodefineoverlay[#1][#2][#3]% overlay [layer] content
   {\ifthirdargument
      \writestatus{BEWARE}{This (overlay definition) has changed!}% temp
-     \def\docommando##1%
-       {\setvalue{\??ov##1}####1####2####3####4####5####6####7%
-          {\setlayer[#2]{\executedefinedoverlay
-             ##1\\#3\\{####1}{####2}{####3}{####4}{####5}{####6}{####7}}}}%
+     \def\docommand##1{\setvalue{\??ov##1}{\setlayer[#2]{\executedefinedoverlay{##1}{#3}}}}
    \else
-     \def\docommando##1%
-       {\setvalue{\??ov##1}{\executedefinedoverlay
-          ##1\\#2\\}}%
+     \def\docommand##1{\setvalue{\??ov##1}{\executedefinedoverlay{##1}{#2}}}%
    \fi
-   \processcommalist[#1]\docommando}
+   \processcommalist[#1]\docommand}
 
 %D When tracing is turned on, a couple of boxes will
 %D show up as well as the reference point.
@@ -113,8 +110,8 @@
   {\dodoubleargument\dosetuplayer}
 
 \def\dosetuplayer[#1][#2]%
-  {\def\docommando##1{\getparameters[\??ll##1][#2]}%
-   \processcommalist[#1]\docommando}
+  {\def\docommand##1{\getparameters[\??ll##1][#2]}%
+   \processcommalist[#1]\docommand}
 
 %D \macros
 %D   {setlayer}
@@ -187,8 +184,12 @@
 
 \newbox\layerbox
 
-\newdimen\@@layerxsiz \newdimen\@@layerxoff \newdimen\@@layerxpos
-\newdimen\@@layerysiz \newdimen\@@layeryoff \newdimen\@@layerypos
+\newdimen\@@layerxsiz
+\newdimen\@@layerysiz
+\newdimen\@@layerxoff
+\newdimen\@@layeryoff
+\newdimen\@@layerxpos
+\newdimen\@@layerypos
 
 \let\lastlayerxpos\!!zeropoint
 \let\lastlayerypos\!!zeropoint
@@ -198,15 +199,20 @@
 
 % todo left/right
 
+% \def\setlastlayerpos#1%
+%   {\edef\layerpage{\MPp{lyr:\currentlayerdata}}%
+%    \scratchdimen\MPx{lyr:#1:\layerpage}%
+%    \scratchdimen-\scratchdimen
+%    \advance\scratchdimen\MPx{lyr:\currentlayerdata}%
+%    \xdef\lastlayerxpos{\the\scratchdimen}%
+%    \scratchdimen\MPy{lyr:#1:\layerpage}%
+%    \advance\scratchdimen-\MPy{lyr:\currentlayerdata}%
+%    \xdef\lastlayerypos{\the\scratchdimen}}
+
 \def\setlastlayerpos#1%
   {\edef\layerpage{\MPp{lyr:\currentlayerdata}}%
-   \scratchdimen\MPx{lyr:#1:\layerpage}%
-   \scratchdimen-\scratchdimen
-   \advance\scratchdimen\MPx{lyr:\currentlayerdata}%
-   \xdef\lastlayerxpos{\the\scratchdimen}%
-   \scratchdimen\MPy{lyr:#1:\layerpage}%
-   \advance\scratchdimen-\MPy{lyr:\currentlayerdata}%
-   \xdef\lastlayerypos{\the\scratchdimen}}
+   \xdef\lastlayerxpos{\the\dimexpr-\MPx{lyr:#1:\layerpage}+\MPx{lyr:\currentlayerdata}\relax}%
+   \xdef\lastlayerypos{\the\dimexpr \MPy{lyr:#1:\layerpage}-\MPy{lyr:\currentlayerdata}\relax}}
 
 \def\definelayerpreset
  {\dodoubleargument\dodefinelayerpreset}
@@ -262,10 +268,9 @@
      {\@@layerxoff\@@layerxsiz}{\@@layerxoff\layerparameter\c!hoffset}%
    \doifelse{\layerparameter\c!voffset}\v!max
      {\@@layeryoff\@@layerysiz}{\@@layeryoff\layerparameter\c!voffset}%
-   \advance\@@layerxoff\layerparameter\c!offset
-   \advance\@@layeryoff\layerparameter\c!offset
-\advance\@@layerxoff\layerparameter\c!dx % internal, can be used in preset
-\advance\@@layeryoff\layerparameter\c!dy % internal, can be used in preset
+   % dx/dy are internal context ones and can be used in preset
+   \advance\@@layerxoff\dimexpr\layerparameter\c!offset+\layerparameter\c!dx\relax
+   \advance\@@layeryoff\dimexpr\layerparameter\c!offset+\layerparameter\c!dy\relax
    \@@layerxpos\layerparameter\c!sx\@@layerxpos
    \@@layerypos\layerparameter\c!sy\@@layerypos
    \@@layerxoff\layerparameter\c!sx\@@layerxoff
@@ -283,11 +288,8 @@
       \globallet\lastlayerypos\!!zeropoint
       \ExpandBothAfter\doifinset\v!bottom{\layerparameter\c!corner}
         {\ifnum\layerparameter\c!line=\zerocount\else % can be < 0
-           \scratchcounter\layerparameter\c!line
-           \scratchcounter-\scratchcounter
-           \advance\scratchcounter\layoutlines
-           \advance\scratchcounter\plusone
-           \setevalue{\??ll\currentlayer\c!line}{\the\scratchcounter}%
+           \setevalue{\??ll\currentlayer\c!line}%
+             {\the\numexpr-\layerparameter\c!line+\layoutlines+\plusone\relax}%
          \fi
          \ifdim\@@layerysiz>\zeropoint
            \advance\@@layerypos-\@@layerysiz
@@ -296,11 +298,8 @@
          \fi}%
       \ExpandBothAfter\doifinset\v!right{\layerparameter\c!corner}
         {\ifnum\layerparameter\c!column=\zerocount\else % can be < 0
-           \scratchcounter\layerparameter\c!column
-           \scratchcounter-\scratchcounter
-           \advance\scratchcounter \layoutcolumns
-           \advance\scratchcounter \plusone
-           \setevalue{\??ll\currentlayer\c!column}{\the\scratchcounter}%
+           \setevalue{\??ll\currentlayer\c!column}%
+             {\the\numexpr-\layerparameter\c!column+\layoutcolumns+\plusone\relax}%
          \fi
          \ifdim\@@layerxsiz>\zeropoint
            \advance\@@layerxpos-\@@layerxsiz
@@ -308,12 +307,8 @@
            \@@layerxoff-\@@layerxoff
          \fi}%
       \ExpandBothAfter\doif\v!middle{\layerparameter\c!corner}
-        {\ifdim\@@layerxsiz>\zeropoint
-           \advance\@@layerxpos.5\@@layerxsiz
-         \fi
-         \ifdim\@@layerysiz>\zeropoint
-           \advance\@@layerypos.5\@@layerysiz
-         \fi}%
+        {\ifdim\@@layerxsiz>\zeropoint \advance\@@layerxpos.5\@@layerxsiz \fi
+         \ifdim\@@layerysiz>\zeropoint \advance\@@layerypos.5\@@layerysiz \fi}%
       \edef\layerpage{\layerparameter\c!page}}%
    \doifsomething\layerpage
      {\edef\layerpage{:\layerpage}%
@@ -353,13 +348,10 @@
         \setbox\nextbox\hbox{\alignedbox[\layerparameter\c!location]\vbox{\flushnextbox}}%
       \fi
       \ifnum\layerparameter\c!line=\zerocount\else % no \ifcase, can be negative
-        \advance\@@layerypos \layerparameter\c!line\lineheight
-        \advance\@@layerypos \topskip
-        \advance\@@layerypos-\lineheight
-        \advance\@@layerypos-\nextboxht
+        \advance\@@layerypos\dimexpr\layerparameter\c!line\lineheight+\topskip-\lineheight-\nextboxht\relax
       \fi
       \ifnum\layerparameter\c!column=\zerocount\else % no \ifcase, can be negative
-        \advance\@@layerxpos \layoutcolumnoffset{\layerparameter\c!column}%
+        \advance\@@layerxpos\layoutcolumnoffset{\layerparameter\c!column}%
       \fi
       \ifdone
         \setbox\nextbox\hbox{\alignedbox[rb]\vbox{\flushnextbox}}%
@@ -381,8 +373,7 @@
       \fi
       % ll compensation
       \ifcase\@@lacome\or % this test will become obsolete
-        \advance\scratchdimen\nextboxht
-        \advance\scratchdimen\nextboxdp
+        \advance\scratchdimen\dimexpr\nextboxht+\nextboxdp\relax
         \nextboxht\ifdim\scratchdimen>\lastlayerheight \scratchdimen \else \lastlayerheight \fi
         \nextboxdp\zeropoint
       \fi
@@ -446,12 +437,9 @@
            {\doifundefinedelse{\@@layerbox#1}%
               {\dodoflushlayerA[#1]}
               {\doifbothsidesoverruled
-                 \dodoflushlayerB\v!left [#1]%  left
-               \orsideone
-                 \dodoflushlayerB\v!right[#1]% right
-               \orsidetwo
-                 \dodoflushlayerB\v!left [#1]%  left
-               \od}}
+                 {\dodoflushlayerB\v!left [#1]}%  left
+                 {\dodoflushlayerB\v!right[#1]}% right
+                 {\dodoflushlayerB\v!left [#1]}}}%  left
            {\dodoflushlayerA[#1]}}}}
 
 \def\dodoflushlayerA[#1]%
@@ -497,13 +485,18 @@
      % stage of additions, i.e. llx/lly accumulate in repeat mode and the
      % compensation may differ each flush depending on added content
      \setbox\nextbox \if!!doneb
+%        \vbox
+%          {\scratchdimen\getboxlly\layerbox
+%           \vskip-\scratchdimen
+%           \scratchdimen\getboxllx\layerbox
+%           \hskip-\scratchdimen
+%           \advance\scratchdimen-\wd\layerbox
+%           \hsize-\scratchdimen
+%           \if!!donec\box\else\copy\fi\layerbox}%
        \vbox
-         {\scratchdimen\getboxlly\layerbox
-          \vskip-\scratchdimen
-          \scratchdimen\getboxllx\layerbox
-          \hskip-\scratchdimen
-          \advance\scratchdimen-\wd\layerbox
-          \hsize-\scratchdimen
+         {\vskip-\getboxlly\layerbox
+          \hskip-\getboxllx\layerbox
+          \hsize-\dimexpr\getboxllx\layerbox-\wd\layerbox\relax
           \if!!donec\box\else\copy\fi\layerbox}%
      \else
         \if!!donec\box\else\copy\fi\layerbox % sorry for the delay due to copying
@@ -738,7 +731,13 @@
 
 \let\normalsettextpagecontent\settextpagecontent
 
-\definelayer[OTRTEXT] \setuplayer[OTRTEXT][\c!width=\makeupwidth,\c!height=\textheight]
+\definelayer
+  [OTRTEXT]
+
+\setuplayer
+  [OTRTEXT]
+  [\c!width=\innermakeupwidth,
+   \c!height=\textheight]
 
 % will be overloaded in page-spr
 

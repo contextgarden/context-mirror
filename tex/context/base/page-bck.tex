@@ -159,13 +159,10 @@
 
 \def\addpagebackground#1%
   {\doifbothsidesoverruled
-     \addsomebackground\v!rightpage#1\paperwidth\paperheight
-   \orsideone
-     \addsomebackground\v!rightpage#1\paperwidth\paperheight
-   \orsidetwo
-     \addsomebackground\v!leftpage #1\paperwidth\paperheight
-   \od
-     \addsomebackground\v!page       #1\paperwidth\paperheight}
+     {\addsomebackground\v!rightpage#1\paperwidth\paperheight}
+     {\addsomebackground\v!rightpage#1\paperwidth\paperheight}
+     {\addsomebackground\v!leftpage #1\paperwidth\paperheight}%
+      \addsomebackground\v!page     #1\paperwidth\paperheight}
 
 %D Then there are the 25 areas that make up the layout: {\em
 %D top, header, text, footer, bottom} times {\em left edge,
@@ -198,19 +195,6 @@
    \fi
    \addsomebackground\v!text#1\makeupwidth\textheight}
 
-% \def\addtextbackground#1%
-%   {\ifconditional\hiddenbackgroundenabled
-%      \addsomebackground\v!verborgen   #1\zetbreedte\teksthoogte % mine !
-%    \fi
-%    \doifbothsidesoverruled
-%      \addsomebackground\v!rechtertekst#1\zetbreedte\teksthoogte
-%    \orsideone
-%      \addsomebackground\v!rechtertekst#1\zetbreedte\teksthoogte
-%    \orsidetwo
-%      \addsomebackground\v!linkertekst #1\zetbreedte\teksthoogte
-%    \od
-%      \addsomebackground\v!tekst       #1\zetbreedte\teksthoogte}
-
 %D The next couple of macros implement the area backgrounds.
 %D As said, these are cached in dedicated boxes. The offsets
 %D and depth of the page are used for alignment purposes.
@@ -218,9 +202,9 @@
 \newdimen\pageoffset % bleed
 \newdimen\pagedepth
 
-\let\pagebackgroundhoffset = \!!zeropoint
-\let\pagebackgroundvoffset = \!!zeropoint
-\let\pagebackgrounddepth   = \!!zeropoint
+\let\pagebackgroundhoffset\!!zeropoint
+\let\pagebackgroundvoffset\!!zeropoint
+\let\pagebackgrounddepth  \!!zeropoint
 
 % \def\setbackgroundboxes
 %   {\showmessage\m!layouts8\empty
@@ -235,8 +219,8 @@
 %D background at the same time since something may have
 %D changed halfway a page.
 
-\chardef\newrightbackground0
-\chardef\newleftbackground 0
+\chardef\newrightbackground\zerocount
+\chardef\newleftbackground \zerocount
 
 \def\recalculatebackgrounds
   {\global\newbackgroundtrue}
@@ -249,26 +233,22 @@
      \global\setbox\rightbackground\emptybox
    \fi
    \doifbothsides
-     \ifcase\newleftbackground \else
-       % \showmessage\m!layouts8\empty
-       \setbackgroundbox\leftbackground\relax
-       \global\chardef\newleftbackground\zerocount
-       \global\chardef\newrightbackground\zerocount
-     \fi
-   \orsideone
-     \ifcase\newleftbackground \else
-       % \showmessage\m!layouts8\empty
-       \setbackgroundbox\leftbackground\relax
-       \global\chardef\newleftbackground\zerocount
-      %\global\chardef\newrightbackground\zerocount
-     \fi
-   \orsidetwo
-     \ifcase\newrightbackground \else
-       % \showmessage\m!layouts8\empty
-       \setbackgroundbox\rightbackground\doswapmargins
-       \global\chardef\newrightbackground\zerocount
-     \fi
-   \od
+     {\ifcase\newleftbackground \else
+        % \showmessage\m!layouts8\empty
+        \setbackgroundbox\leftbackground\relax
+        \global\chardef\newleftbackground\zerocount
+        \global\chardef\newrightbackground\zerocount
+      \fi}
+     {\ifcase\newleftbackground \else
+        % \showmessage\m!layouts8\empty
+        \setbackgroundbox\leftbackground\relax
+        \global\chardef\newleftbackground\zerocount
+      \fi}
+     {\ifcase\newrightbackground \else
+        % \showmessage\m!layouts8\empty
+        \setbackgroundbox\rightbackground\doswapmargins
+        \global\chardef\newrightbackground\zerocount
+      \fi}%
    \ifx\@@mastate\v!repeat\else\global\newbackgroundfalse\fi}
 
 \def\addmainbackground#1% todo: dimension spec
@@ -315,7 +295,7 @@
       \ifconditional\swapbackgroundmargins
         \doifmarginswapelse \donothing
           {\swapmacros\v!rightmargin\v!leftmargin
-           \swapmacros\v!rightedge \v!leftedge}%
+           \swapmacros\v!rightedge  \v!leftedge}%
       \fi
       \calculatereducedvsizes
       \offinterlineskip
@@ -361,8 +341,8 @@
          \doifvaluesomething{\??ma#3#4\c!setups}{\setups[\getvalue{\??ma#3#4\c!setups}]}% should not produce funny spaces !
          \fastlocalframed
            [\??ma#3#4]
-           [\c!component=#3-#4,\c!width=#1,\c!height=#2,\c!offset=\v!overlay,\c!setups=]
-           {\getvalue{\??ma#3#4\c!command}}% {\hsize=#1\vsize=#2....}
+           [\c!component=#3-#4,\c!offset=\v!overlay,\c!setups=]
+           {\vbox to #2{\vss\hbox to#1{\hss\getvalue{\??ma#3#4\c!command}\hss}\vss}}%
        \else
          \hskip#1%
        \fi
@@ -395,21 +375,20 @@
 \def\dosetupbackgrounds[#1][#2][#3]%
   {\ifthirdargument
      \global\somebackgroundtrue
-     \def\docommando##1%
+     \def\docommand##1%
        {\doifinsetelse{##1}{\v!paper,\v!page,\v!leftpage,\v!rightpage}
           {\getparameters[\??ma##1][#3]\checkbackground{##1}}
-          {\def\dodocommando####1%
+          {\def\dodocommand####1%
              {\getparameters[\??ma##1####1][#3]\checkbackground{##1####1}}%
-           \processcommalist[#2]\dodocommando}}%
-     \processcommalist[#1]\docommando
+           \processcommalist[#2]\dodocommand}}%
+     \processcommalist[#1]\docommand
    \else\ifsecondargument
      \global\somebackgroundtrue
      \doifcommonelse{#1}{\v!text,\v!hidden,%
                         %\v!linkertekst,\v!rechtertekst,%
                          \v!paper,\v!page,\v!leftpage,\v!rightpage}
-       {\def\docommando##1%
-          {\getparameters[\??ma##1][#2]\checkbackground{##1}}%
-        \processcommalist[#1]\docommando}%
+       {\def\docommand##1{\getparameters[\??ma##1][#2]\checkbackground{##1}}%
+        \processcommalist[#1]\docommand}%
        {\setupbackgrounds
           [#1]%
           [\v!leftedge,\v!leftmargin,\v!text,\v!rightmargin,\v!rightedge]%
@@ -476,7 +455,7 @@
 %D intermediate commands. The inheritance macro makes sure
 %D that copies are efficient.
 
-\def\dodocommando#1#2%
+\def\dodocommand#1#2%
   {\copylocalframed
      [\??ma#1#2][\??ma\v!page]%
    \getparameters
@@ -491,29 +470,29 @@
 
 %D The stand alone text area inherits from the page too.
 
-\dodocommando\v!text       \empty
-%dodocommando\v!linkertekst \empty
-%dodocommando\v!rechtertekst\empty
-\dodocommando\v!hidden   \empty
+\dodocommand\v!text       \empty
+%dodocommand\v!linkertekst \empty
+%dodocommand\v!rechtertekst\empty
+\dodocommand\v!hidden   \empty
 
 %D We now define all 25 main areas in a row.
 
-\def\docommando#1%
-  {\dodocommando#1\v!leftedge
-   \dodocommando#1\v!leftmargin
-   \dodocommando#1\v!text
-   \dodocommando#1\v!rightmargin
-   \dodocommando#1\v!rightedge}
+\def\docommand#1%
+  {\dodocommand#1\v!leftedge
+   \dodocommand#1\v!leftmargin
+   \dodocommand#1\v!text
+   \dodocommand#1\v!rightmargin
+   \dodocommand#1\v!rightedge}
 
-\docommando\v!top
-\docommando\v!header
-\docommando\v!text
-\docommando\v!footer
-\docommando\v!bottom
+\docommand\v!top
+\docommand\v!header
+\docommand\v!text
+\docommand\v!footer
+\docommand\v!bottom
 
 %D We need some cleanup now.
 
-\let\dodocommando\relax \let\docommando\relax
+\let\dodocommand\relax \let\docommand\relax
 
 %D We now set up the individual areas to use reasonable
 %D defaults.
@@ -534,18 +513,18 @@
    \c!offset=\!!zeropoint, % later set to \v!overlay, watch out !
    \c!depth=\!!zeropoint]
 
-\def\docommando#1%
+\def\docommand#1%
   {\inheritparameter[\??ma][#1\c!frameoffset][\v!page\c!offset]%
    \inheritparameter[\??ma][#1\c!backgroundoffset][\v!page\c!offset]}
 
-\docommando\v!paper
-\docommando\v!page
-\docommando\v!leftpage
-\docommando\v!rightpage
+\docommand\v!paper
+\docommand\v!page
+\docommand\v!leftpage
+\docommand\v!rightpage
 
 %D Again we clean up temporary macros.
 
-\let\docommando\relax
+\let\docommand\relax
 
 %D The hidden layer can be populated by extending the
 %D following comma separated list. This only happens in core
@@ -590,35 +569,15 @@
      \resetglobal \expandafter\gobbleoneargument
    \fi}
 
-% \def\doaddlocalbackground#1%
-%   {\edef\next
-%      {\noexpand\redoglobal\wd#1\the\wd#1%
-%       \noexpand\redoglobal\ht#1\the\ht#1%
-%       \noexpand\dodoglobal\dp#1\the\dp#1}%
-%    \dodoglobal\setbox#1\hbox
-%      {\fastlocalframed
-%         [\??ma\v!local]
-%         [\c!component=local,\c!frame=\v!off,\c!offset=\v!overlay,\c!setups=,%
-%          \c!width=\wd#1,\c!height=\ht#1,% no \c!depth=\dp#1 in cont-exp.tex, to be checked !
-%          \c!background=\localbackground]%
-%         {\registerMPlocaltextarea{\box#1}}}%
-%    \next
-%    \doglobal\increment\localpositionnumber\relax} % afterwards !
-
 \def\doaddlocalbackground#1%
-  {\edef\next
-     {\noexpand\redoglobal\wd#1\the\wd#1%
-      \noexpand\redoglobal\ht#1\the\ht#1%
-      \noexpand\redoglobal\dp#1\the\dp#1}%
-   \redoglobal\setbox#1\hbox
-     {\fastlocalframed
+  {\dodoglobal\setbox#1\hbox
+     {\fastlocalframed % \localframed
         [\??ma\v!local]
         [\c!component=local,\c!frame=\v!off,\c!offset=\v!overlay,\c!setups=,%
-         \c!width=\wd#1,\c!height=\ht#1,% no \c!depth=\dp#1 in cont-exp.tex, to be checked !
+         \c!location=\v!keep,% when we use \localframed instead of \fastlocalframed
          \c!background=\localbackground]%
         {\registerMPlocaltextarea{\box#1}}}%
-   \next
-   \resetglobal
+   \resetglobal % redundant
    \doglobal\increment\localpositionnumber\relax} % afterwards !
 
 % Test how previous macro behaves with depth:

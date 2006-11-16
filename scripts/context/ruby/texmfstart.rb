@@ -31,9 +31,7 @@
 
 # we don't depend on other libs
 
-$ownpath = File.expand_path(File.dirname($0)) unless defined? $ownpath
-
-$: << $ownpath
+$: << File.expand_path(File.dirname($0)) ; $: << File.join($:.last,'lib') ; $:.uniq!
 
 require "rbconfig"
 require "md5"
@@ -176,6 +174,8 @@ end
 # concept   : Hans Hagen
 # info      : j.hagen@xs4all.nl
 
+# todo: multiple cnf files
+#
 
 class String
 
@@ -1429,7 +1429,8 @@ end
 
 $mswindows = Config::CONFIG['host_os'] =~ /mswin/
 $separator = File::PATH_SEPARATOR
-$version   = "2.0.0"
+$version   = "2.0.2"
+$ownpath   = File.dirname($0)
 
 if $mswindows then
     require "win32ole"
@@ -1473,6 +1474,8 @@ $predefined['pdftools'] = 'pdftools.rb'
 $predefined['mpstools'] = 'mpstools.rb'
 $predefined['exatools'] = 'exatools.rb'
 $predefined['xmltools'] = 'xmltools.rb'
+$predefined['luatools'] = 'luatools.lua'
+$predefined['mtxtools'] = 'mtxtools.rb'
 
 $predefined['newpstopdf']   = 'pstopdf.rb'
 $predefined['newtexexec']   = 'texexec.rb'
@@ -1497,6 +1500,8 @@ $makelist = [
     'exatools',
     'runtools',
     'rlxtools',
+    'luatools',
+    'mtxtools',
     #
     # no, 'texmfstart'
 ]
@@ -1509,31 +1514,36 @@ $makelist = [
 $scriptlist   = 'rb|pl|py|lua|jar'
 $documentlist = 'pdf|ps|eps|htm|html'
 
-$editor = ENV['TEXMFSTART_EDITOR'] || ENV['EDITOR'] || ENV['editor'] || 'scite'
+$editor       = ENV['TEXMFSTART_EDITOR'] || ENV['EDITOR'] || ENV['editor'] || 'scite'
 
-$crossover = true # to other tex tools, else only local
+$crossover    = true # to other tex tools, else only local
+$kpse         = nil
 
-$applications['unknown']  = ''
-$applications['perl']     = $applications['pl']  = 'perl'
-$applications['ruby']     = $applications['rb']  = 'ruby'
-$applications['python']   = $applications['py']  = 'python'
-$applications['lua']      = $applications['lua'] = 'lua'
-$applications['java']     = $applications['jar'] = 'java'
+def set_applications(page=1)
 
-if $mswindows then
-    $applications['pdf']  = ['',"pdfopen --page #{$page} --file",'acroread']
-    $applications['html'] = ['','netscape','mozilla','opera','iexplore']
-    $applications['ps']   = ['','gview32','gv','gswin32','gs']
-else
-    $applications['pdf']  = ["pdfopen --page #{$page} --file",'acroread']
-    $applications['html'] = ['netscape','mozilla','opera']
-    $applications['ps']   = ['gview','gv','gs']
+    $applications['unknown']  = ''
+    $applications['perl']     = $applications['pl']  = 'perl'
+    $applications['ruby']     = $applications['rb']  = 'ruby'
+    $applications['python']   = $applications['py']  = 'python'
+    $applications['lua']      = $applications['lua'] = 'lua'
+    $applications['java']     = $applications['jar'] = 'java'
+
+    if $mswindows then
+        $applications['pdf']  = ['',"pdfopen --page #{page} --file",'acroread']
+        $applications['html'] = ['','netscape','mozilla','opera','iexplore']
+        $applications['ps']   = ['','gview32','gv','gswin32','gs']
+    else
+        $applications['pdf']  = ["pdfopen --page #{page} --file",'acroread']
+        $applications['html'] = ['netscape','mozilla','opera']
+        $applications['ps']   = ['gview','gv','gs']
+    end
+
+    $applications['htm']      = $applications['html']
+    $applications['eps']      = $applications['ps']
+
 end
 
-$applications['htm']      = $applications['html']
-$applications['eps']      = $applications['ps']
-
-$kpse = nil
+set_applications()
 
 def check_kpse
     if $kpse then
@@ -1795,6 +1805,21 @@ def expanded(arg) # no "other text files", too restricted
     end
 end
 
+def changeddir?(path)
+    if path.empty? then
+        return true
+    else
+        begin
+            Dir.chdir(path) if ! path.empty?
+        rescue
+            report("unable to change to directory: #{path}")
+        else
+            report("changed to directory: #{path}")
+        end
+        return File.expand_path(Dir.getwd) == File.expand_path(path)
+    end
+end
+
 def runcommand(command)
     if $locate then
         command = command.split(' ').collect do |c|
@@ -1810,20 +1835,10 @@ def runcommand(command)
         print command # to stdout and no newline
     elsif $execute then
         report("using 'exec' instead of 'system' call: #{command}")
-        begin
-            Dir.chdir($path) if ! $path.empty?
-        rescue
-            report("unable to chdir to: #{$path}")
-        end
-        exec(command)
+        exec(command) if changeddir?($path)
     else
         report("using 'system' call: #{command}")
-        begin
-            Dir.chdir($path) if ! $path.empty?
-        rescue
-            report("unable to chdir to: #{$path}")
-        end
-        system(command)
+        system(command) if changeddir?($path)
     end
 end
 
@@ -1961,7 +1976,10 @@ def find(filename,program)
         end
         filename.sub!(/^.*[\\\/]/, '')
         # next we look at the current path and the callerpath
-        [['.','current'],[$ownpath,'caller'],[registered("THREAD"),'thread']].each do |p|
+        [ ['.','current'],
+          [$ownpath,'caller'], ["#{$ownpath}/../#{suffixlist[0]}",'caller'],
+          [registered("THREAD"),'thread'], ["#{registered("THREAD")}/../#{suffixlist[0]}",'thread'],
+        ].each do |p|
             if p && ! p.empty? && ! (p[0] == 'unknown') then
                 suffixlist.each do |suffix|
                     fname = "#{filename}.#{suffix}"
@@ -2125,9 +2143,9 @@ def find(filename,program)
             return ''
         end
     rescue
-        # error, trace = $!, $@.join("\n")
-        # report("fatal error: #{error}\n#{trace}")
-        report("fatal error")
+        error, trace = $!, $@.join("\n")
+        report("fatal error: #{error}\n#{trace}")
+        # report("fatal error")
     end
 end
 
@@ -2402,7 +2420,7 @@ def execute(arguments)
     $program     = $directives['program']     || 'context'
     $direct      = $directives['direct']      || false
     $edit        = $directives['edit']        || false
-    $page        = $directives['page']        || 0
+    $page        = $directives['page']        || 1
     $browser     = $directives['browser']     || false
     $report      = $directives['report']      || false
     $verbose     = $directives['verbose']     || false
@@ -2439,6 +2457,8 @@ def execute(arguments)
     $serve       = $directives['serve']       || false
 
     $verbose = true if (ENV['_CTX_VERBOSE_'] =~ /(y|yes|t|true|on)/io) && ! $locate && ! $report
+
+    set_applications($page)
 
     # private:
 

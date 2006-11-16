@@ -13,7 +13,12 @@
 
 \writestatus{loading}{Context Core Macros / Ruled Content Handling}
 
+%D This module is now etex dependent.
+
 \unprotect
+
+%D We have removed the rather old and out dated raster methods. They
+%D have not been used for ages.
 
 %D \macros
 %D   {linewidth, setuplinewidth}
@@ -36,13 +41,6 @@
 \def\setuplinewidth
   {\dosingleargument\dosetuplinewidth}
 
-% \def\dosetuprules[#1]%
-%  {\getparameters[\??ln][#1]%
-%   \setuplinewidth[\@@lndikte]}
-%
-% \def\setuprules
-%   {\dosingleargument\dosetuprules}
-
 %D \macros
 %D   {ruledlinewidth, inheritruledlinewidth}
 %D
@@ -52,85 +50,80 @@
 
 \newdimen\ruledlinewidth \newif\ifinheritruledlinewidth
 
-%D \TEX\ lacks support for color and even gray scales. The next
-%D macros can provide a sort of poor mans gray scales as well
-%D as give access to more suitable methods of rendering. Such a
-%D method looks like:
-%D
-%D \starttyping
-%D \def\methodegraybox
-%D     \width#1\height#2\depth#3\raster#4\corner#5\radius#6\\%
-%D   { ... }
-%D \stoptyping
-%D
-%D The string \type{graybox} is a common element in the name,
-%D so we can have for instance \type {\postscriptgraybox} or
-%D \type {\texgraybox}. The first three arguments take a
-%D dimension, the fourth one takes a number between~0 and~1,
-%D and the last argument specifies a radius of the box when
-%D rounded corners are used, so:
-%D
-%D \startbuffer
-%D \dotgraybox
-%D   \width.5\hsize\height1cm\depth0cm\raster.85\corner\v!no\radius0pt\\
-%D \stopbuffer
-%D
-%D \typebuffer
-%D
-%D becomes:
-%D
-%D %\startlinecorrection
-%D %  \vbox to 1cm{\getbuffer}
-%D %\stoplinecorrection
-%D
-%D \startlinecorrection
-%D   \unprotect
-%D   \vbox to 1cm
-%D     {\dotgraybox
-%D        \width.5\hsize\height1cm\depth0cm\raster.85\corner\v!no\radius0pt\\}
-%D   \protect
-%D \stoplinecorrection
-%D
-%D There are two predefined methodes, one uses periods and the
-%D other uses small rules. The second method is less
-%D efficient, but sometimes give better results. The dimensions
-%D of the resullting box are set to zero.
-
-\setvalue{\v!dot graybox}{\processraster\symbol\rasterdot}
-\setvalue{\v!rule graybox}{\processraster\symbol\rasterbox}
-
-\def\rasterdot{\rasterfont.}
-\def\rasterbox{\hss\vrule\!!width.4pt\!!height.4pt\!!depth\zeropoint}
-
-%D Now of course we need:
-
-\ifx\rasterfont\undefined \def\rasterfont{\fivepoint} \fi
-
-%D We implement two pure \TEX\ based generators, that use
-%D \type{\leaders} to quickly gerenate the gray pattern. One
-%D should beware of \DIMENSION\ conflicts, so we use some
-%D registers above~8. These macros are memory hungry and byte
-%D spoiling.
-
-\def\processraster
-    \symbol#1\width#2\height#3\depth#4\raster#5\corner#6\radius#7\\%
-  {\bgroup
-   \forgetall
-   \dontcomplain
-   \dimen10=\onepoint
-   \dimen10=\@@rsfactor\dimen10
-   \dimen10=#5\dimen10
-   \setbox2\hbox to #2
-     {\cleaders\hbox to 2\dimen10{#1\hss}\hss}%
-   \dimen12=#3%
-   \advance\dimen12 #4%
-   \setbox0\vbox to \dimen12
-     {\cleaders\vbox to 2\dimen10{\box2\vss}\vss}%
-   \setbox0\hbox
-     {\hskip-.5\dimen10\lower0.5\dimen10\copy0
-      \hskip-\wd0\hskip\dimen10\lower1.5\dimen10\box0}%
-   \box0
-   \egroup}
+% %D \TEX\ lacks support for color and even gray scales. The next
+% %D macros can provide a sort of poor mans gray scales as well
+% %D as give access to more suitable methods of rendering. Such a
+% %D method looks like:
+% %D
+% %D \starttyping
+% %D \def\methodegraybox#1#2#3#4#5#6%
+% %D   { ... }
+% %D \stoptyping
+% %D
+% %D The string \type{graybox} is a common element in the name,
+% %D so we can have for instance \type {\postscriptgraybox} or
+% %D \type {\texgraybox}. The first three arguments take a
+% %D dimension, the fourth one takes a number between~0 and~1,
+% %D and the last argument specifies a radius of the box when
+% %D rounded corners are used, so:
+% %D
+% %D \startbuffer
+% %D \dotgraybox{.5\hsize}{1cm}{0cm}{.85}{\v!no}{0pt}
+% %D \stopbuffer
+% %D
+% %D \typebuffer
+% %D
+% %D becomes:
+% %D
+% %D %\startlinecorrection
+% %D %  \vbox to 1cm{\getbuffer}
+% %D %\stoplinecorrection
+% %D
+% %D \startlinecorrection
+% %D   \unprotect
+% %D   \vbox to 1cm{\dotgraybox{.5\hsize}{1cm}{0cm}{.85}{\v!no}{0pt}}
+% %D   \protect
+% %D \stoplinecorrection
+% %D
+% %D There are two predefined methodes, one uses periods and the
+% %D other uses small rules. The second method is less
+% %D efficient, but sometimes give better results. The dimensions
+% %D of the resullting box are set to zero.
+%
+% \setvalue{\v!dot  graybox}{\processraster\symbol\rasterdot}
+% \setvalue{\v!rule graybox}{\processraster\symbol\rasterbox}
+%
+% \def\rasterdot{\rasterfont.}
+% \def\rasterbox{\hss\vrule\!!width.4pt\!!height.4pt\!!depth\zeropoint}
+%
+% %D Now of course we need:
+%
+% \ifx\rasterfont\undefined \def\rasterfont{\fivepoint} \fi
+%
+% %D We implement two pure \TEX\ based generators, that use
+% %D \type{\leaders} to quickly gerenate the gray pattern. One
+% %D should beware of \DIMENSION\ conflicts, so we use some
+% %D registers above~8. These macros are memory hungry and byte
+% %D spoiling.
+%
+% \def\processraster#1#2#3#4#5#6#7%
+%   {\bgroup
+%    \forgetall
+%    \dontcomplain
+%    \dimen10=\onepoint
+%    \dimen10=\@@rsfactor\dimen10
+%    \dimen10=#5\dimen10
+%    \setbox2\hbox to #2
+%      {\cleaders\hbox to 2\dimen10{#1\hss}\hss}%
+%    \dimen12=#3%
+%    \advance\dimen12 #4%
+% %    \setbox0\vbox to \dimen12
+%      {\cleaders\vbox to 2\dimen10{\box2\vss}\vss}%
+%    \setbox0\hbox
+%      {\hskip-.5\dimen10\lower0.5\dimen10\copy0
+%       \hskip-\wd0\hskip\dimen10\lower1.5\dimen10\box0}%
+%    \box0
+%    \egroup}
 
 %D \macros
 %D   {setupscreens}
@@ -143,107 +136,140 @@
 \def\setupscreens
   {\dodoubleargument\getparameters[\??rs]}
 
-%D The most appropriate way to call for this feature is
-%D using \type{\graybox}, which is defined as:
+% %D The most appropriate way to call for this feature is
+% %D using \type{\graybox}, which is defined as:
+%
+% \def\graybox{\getvalue{\@@rsmethod graybox}}
+%
+% %D We just introduced two pure \TEX\ methods for generating
+% %D rasters. However, it's far more efficient and comfortable in
+% %D terms of speed, memory usage and file size, to use a driver
+% %D supported method.
+%
+% \setvalue{\v!external graybox}{\setgraybox}
+%
+% %D For compatibility reasons we also define the original one:
+%
+% \setvalue{\v!postscript graybox}{\getvalue{\v!external graybox}}
+%
+% %D A quite valid way of letting drivers do the job, is giving
+% %D a solid rule a gray texture.
 
-\def\graybox{\getvalue{\@@rsmethod graybox}}
+%D We will communicate through module specific variables, current
+%D framed parameters and some reserved dimension registers.
 
-%D This macro takes the five arguments mentioned earlier and
-%D obey the user's settings.
-
-%D We just introduced two pure \TEX\ methods for generating
-%D rasters. However, it's far more efficient and comfortable in
-%D terms of speed, memory usage and file size, to use a driver
-%D supported method.
-
-\setvalue{\v!external graybox}\width#1\height#2\depth#3\raster#4\corner#5\radius#6\\%
-  {\setgraybox\width#1\height#2\depth#3\raster#4\corner#5\radius#6\\}
-
-%D For compatibility reasons we also define the original one:
-
-\setvalue{\v!postscript graybox}%
-  {\getvalue{\v!external graybox}}
-
-%D A quite valid way of letting drivers do the job, is giving
-%D a solid rule a gray texture.
-
-\def\raster[#1]%
-  {\groupedcommand{\startraster[#1]}{\stopraster}}
-
-\def\setgraybox\width#1\height#2\depth#3\raster#4\corner#5\radius#6\\%
-  {\doifelsenothing{#4} % avoid black rules when no gray
-     {\dophantombox\width#1\height#2\depth#3\corner#5\radius#6\\}
-     {\raster[#4]%
-     {\dofilledbox \width#1\height#2\depth#3\corner#5\radius#6\\}}}
-
-%D The auxiliary macro is defined as:
-
-\def\dophantombox#1\\{\hphantom{\dofilledbox#1\\}}
+\newdimen \frameddimenwd
+\newdimen \frameddimenht
+\newdimen \frameddimendp
 
 %D We don't have to stick to a \TEX\ drawn rule, but
 %D also can use rounded or even fancier shapes, as we will
 %D see later on.
 
-\def\dofilledbox\width#1\height#2\depth#3\corner#4\radius#5\\%
+\def\dofilledbox
   {\bgroup
-   \doifelse{#4}\v!round
-     {\dimen0=#5\relax   % just in case of .x\bodyfontsize
-      \ifzeropt\dimen0
-        \dofilledlinedbox\width#1\height#2\depth#3\\%
+   \doifelse{\framedparameter\c!backgroundcorner}\v!rectangular
+     {\dofilledlinedbox}
+     {\scratchdimen\framedparameter\c!backgroundradius\relax   % just in case of .x\bodyfontsize
+      \ifzeropt\scratchdimen
+        \dofilledlinedbox
       \else
-        \dofilledroundbox\width#1\height#2\depth#3\radius#5\\%
-      \fi}
-     {\dofilledlinedbox\width#1\height#2\depth#3\\}%
+        \dofilledroundbox
+      \fi}%
    \egroup}
 
-\def\dofilledlinedbox\width#1\height#2\depth#3\\%
-  {\vrule\!!width#1\!!height#2\!!depth#3}%
 
-\def\dofilledroundbox\width#1\height#2\depth#3\radius#4\\%
-  {\ovalbox{#1}{#2}{#3}\ruledlinewidth{#4}\v!off\v!on}
+\def\dophantombox
+  {\hphantom{\dofilledbox}}
 
-\def\ovalbox#1#2#3#4#5#6#7% direct #1 etc passeren
+\def\dofilledlinedbox
+  {\vrule\!!width\frameddimenwd\!!height\frameddimenht\!!depth\frameddimendp\relax}%
+
+\def\dofilledroundbox
+  {\doroundedbox\v!off\v!on{\framedparameter\c!backgroundcorner}}
+
+\def\doroundedbox#1#2#3%
   {\bgroup
-   \scratchdimen#1\edef\ovalwid{\the\scratchdimen}%
-   \scratchdimen#2\edef\ovalhei{\the\scratchdimen}%
-   \scratchdimen#3\edef\ovaldep{\the\scratchdimen}%
-   \scratchdimen#4\edef\ovallin{\the\scratchdimen}%
-   \scratchdimen#5\edef\ovalrad{\the\scratchdimen}%
-   \doifelse{#6}\v!on           % will be a macro that handles
+   \doifelse{#3}\v!round{\let\ovalmod\!!zerocount}{\edef\ovalmod{\number#3}}%
+   \edef\ovalwid{\the\frameddimenwd}%
+   \edef\ovalhei{\the\frameddimenht}%
+   \edef\ovaldep{\the\frameddimendp}%
+   \scratchdimen\ruledlinewidth\edef\ovallin{\the\scratchdimen}%
+   \scratchdimen\framedparameter\c!frameradius\edef\ovalrad{\the\scratchdimen}%
+   \doifelse{#1}\v!on            % will be a macro that handles
      {\let\ovalstr\!!plusone}    % start, stop, ja, nee, aan, uit
      {\let\ovalstr\!!zerocount}% % and something \doif
-   \doifelse{#7}\v!on
+   \doifelse{#2}\v!on
      {\let\ovalfil\!!plusone}
      {\let\ovalfil\!!zerocount}%
-   \doovalbox\ovalwid\ovalhei\ovaldep\ovallin\ovalrad\ovalstr\ovalfil
+   \doovalbox\ovalwid\ovalhei\ovaldep\ovallin\ovalrad\ovalstr\ovalfil\ovalmod
    \egroup}
+
+% a lot of weird corners
+%
+% \startTEXpage
+%     \dontleavehmode\framed
+%         [corner=0,frame=on,framecolor=green,
+%          background=color,backgroundcolor=yellow]{\tttf TEST \twodigits\recurselevel}%
+%     \vskip1em
+%     \dontleavehmode\dostepwiserecurse {1} {4}{1}{\framed
+%         [corner=\recurselevel,frame=on,framecolor=green,
+%          background=color,backgroundcolor=yellow]{\tttf TEST \twodigits\recurselevel}%
+%         \quad}
+%     \vskip1em
+%     \dontleavehmode\dostepwiserecurse {5} {8}{1}{\framed
+%         [corner=\recurselevel,frame=on,framecolor=green,
+%          background=color,backgroundcolor=yellow]{\tttf TEST \twodigits\recurselevel}%
+%         \quad}
+%     \vskip1em
+%     \dontleavehmode\dostepwiserecurse {1} {4}{1}{\framed
+%         [corner=\recurselevel,frame=on,framecolor=green]{\tttf TEST \twodigits\recurselevel}%
+%         \quad}
+%     \vskip1em
+%     \dontleavehmode\dostepwiserecurse {5} {8}{1}{\framed
+%         [corner=\recurselevel,frame=on,framecolor=green]{\tttf TEST \twodigits\recurselevel}%
+%         \quad}
+%     \vskip1em
+%     \dontleavehmode\dostepwiserecurse {9}{12}{1}{\framed
+%         [corner=\recurselevel,frame=on,framecolor=green]{\tttf TEST \twodigits\recurselevel}%
+%         \quad}
+%     \vskip1em
+%     \dontleavehmode\dostepwiserecurse{13}{16}{1}{\framed
+%         [corner=\recurselevel,frame=on,framecolor=green]{\tttf TEST \twodigits\recurselevel}%
+%         \quad}
+%     \vskip1em
+%     \dontleavehmode\dostepwiserecurse{17}{20}{1}{\framed
+%         [corner=\recurselevel,frame=on,framecolor=green]{\tttf TEST \twodigits\recurselevel}%
+%         \quad}
+%     \vskip1em
+%     \dontleavehmode\dostepwiserecurse{21}{24}{1}{\framed
+%         [corner=\recurselevel,frame=on,framecolor=green]{\tttf TEST \twodigits\recurselevel}%
+%         \quad}
+%     \vskip1em
+%     \dontleavehmode\dostepwiserecurse{25}{28}{1}{\framed
+%         [corner=\recurselevel,frame=on,framecolor=green]{\tttf TEST \twodigits\recurselevel}%
+%         \quad}
+% \stopTEXpage
 
 %D The oval box is drawn using a special macro, depending on
 %D the driver in use.
 
+\def\dograybox % avoid black rules when no gray
+  {\doifelsenothing{\framedparameter\c!backgroundscreen}
+     {\dophantombox}
+     {\raster[\framedparameter\c!backgroundscreen]{\dofilledbox}}}
+
 %D It won't be a surprise that we not only provide gray boxes,
 %D but also colored ones. Here it is:
 
-% \def\setcolorbox\width#1\height#2\depth#3\color#4\corner#5\radius#6\\%
-%   {\ifincolor
-%      \doifcolorelse{#4}{\color[#4]%
-%     {\dofilledbox \width#1\height#2\depth#3\corner#5\radius#6\\}}
-%     {\dophantombox\width#1\height#2\depth#3\corner#5\radius#6\\}%
-%    \else
-%      \dophantombox\width#1\height#2\depth#3\corner#5\radius#6\\%
-%    \fi}
-
-\def\setcolorbox\width#1\height#2\depth#3\color#4\corner#5\radius#6\\%
+\def\docolorbox
   {\hbox{\ifincolor
-     \doifcolorelse{#4}{\localcolortrue\color[#4]%
-    {\dofilledbox \width#1\height#2\depth#3\corner#5\radius#6\\}}
-    {\dophantombox\width#1\height#2\depth#3\corner#5\radius#6\\}%
+     \doifcolorelse{\framedparameter\c!backgroundcolor}
+       {\localcolortrue\color[\framedparameter\c!backgroundcolor]{\dofilledbox}}
+       {\dophantombox}%
    \else
-     \dophantombox\width#1\height#2\depth#3\corner#5\radius#6\\%
+     \dophantombox
    \fi}}
-
-\def\colorbox
-  {\setcolorbox}
 
 %D \macros
 %D   {defineoverlay, doifoverlayelse, overlayoffset,
@@ -325,63 +351,34 @@
   {\dodoubleargument\dodefineoverlay}
 
 \def\dodefineoverlay[#1][#2]%
-  {\def\docommando##1%
-     {\setvalue{\??ov##1}{\executedefinedoverlay##1\\#2\\}}%
-   \processcommalist[#1]\docommando}
+  {\def\docommand##1{\setvalue{\??ov##1}{\executedefinedoverlay{##1}{#2}}}%
+   \processcommalist[#1]\docommand}
 
 \prependtoks
   \hsize\overlaywidth
   \vsize\overlayheight
 \to\everyoverlay
 
-% \long\def\executedefinedoverlay#1\\#2\\#3#4#5#6#7#8#9%
-%   {\bgroup
-%    \scratchdimen#3%
-%    \edef\overlaywidth{\the\scratchdimen\space}%
-%    \scratchdimen#4%
-%    \advance\scratchdimen#5%
-%    \edef\overlayheight{\the\scratchdimen\space}%
-%    \scratchdimen#5%
-%    \edef\overlaydepth{\the\scratchdimen\space}%
-%    \edef\overlaycolor{#6}%
-%    \let\overlayoffset\backgroundoffset % we steal this one
-%    %\writestatus
-%    %  {overlay}
-%    %  {#1\space w=\overlaywidth/h+d=\overlayheight/d=\overlaydepth]}%
-%    \setbox\scratchbox\hbox{\lower\overlaydepth\hbox{\the\everyoverlay#2}}%
-%    \dimen0\wd\scratchbox \advance\dimen0 -\overlaywidth
-%    \dimen2\ht\scratchbox \advance\dimen2 -#4% not \overlayheight
-%    %\wd\scratchbox\overlaywidth
-%    %\ht\scratchbox\overlayheight
-%    %\dp\scratchbox\overlaydepth
-%    \setbox\scratchbox\hbox{\hskip-.5\dimen0\raise-.5\dimen2\box\scratchbox}%
-%    \wd\scratchbox\overlaywidth
-%    \ht\scratchbox\overlayheight
-%    \dp\scratchbox\overlaydepth
-%    \box\scratchbox
-%    \egroup}
-
-\long\def\executedefinedoverlay#1\\#2\\#3#4#5#6#7#8#9%
+\long\def\executedefinedoverlay#1#2%
   {\bgroup
-   \scratchdimen#3%
-   \edef\overlaywidth{\the\scratchdimen\space}%
-   \scratchdimen#4%
-   \advance\scratchdimen#5%
-   \edef\overlayheight{\the\scratchdimen\space}%
-   \scratchdimen#5%
-   \edef\overlaydepth{\the\scratchdimen\space}%
-   \edef\overlaycolor{#6}%
+   \edef\overlaywidth {\the\frameddimenwd\space}%
+   \edef\overlayheight{\the\dimexpr\frameddimenht+\frameddimendp\relax\space}%
+   \edef\overlaydepth {\the\frameddimendp\space}%
+   \edef\overlaycolor {\framedparameter\c!backgroundcolor}%
+  %\edef\overlaycorner{\framedparameter\c!backgroundcorner}%
+  %\edef\overlayradius{\framedparameter\c!backgroundradius}%
    \let\overlayoffset\backgroundoffset % we steal this one
    %\writestatus
    %  {overlay}
    %  {#1\space w=\overlaywidth/h+d=\overlayheight/d=\overlaydepth]}%
    \setbox\scratchbox\hbox{\lower\overlaydepth\hbox{\the\everyoverlay#2}}%
-   \dimen0\wd\scratchbox \advance\dimen0 -\overlaywidth
-   \dimen2\ht\scratchbox \advance\dimen2 -#4% not \overlayheight
-   %\wd\scratchbox\overlaywidth
-   %\ht\scratchbox\overlayheight
-   %\dp\scratchbox\overlaydepth
-   \setbox\scratchbox\hbox{\hskip-.5\dimen0\raise-.5\dimen2\box\scratchbox}%
+%    \dimen0=\dimexpr\wd\scratchbox-\overlaywidth \relax
+%    \dimen2=\dimexpr\ht\scratchbox-\frameddimenht\relax % not overlayheight !
+%    \setbox\scratchbox\hbox{\hskip-.5\dimen0\raise-.5\dimen2\box\scratchbox}%
+   \setbox\scratchbox\hbox
+     {\hskip-.5\dimexpr\wd\scratchbox-\overlaywidth \relax
+      \raise-.5\dimexpr\ht\scratchbox-\frameddimenht\relax % not overlayheight !
+      \box\scratchbox}%
    \wd\scratchbox\overlaywidth
    \ht\scratchbox\overlayheight
    \dp\scratchbox\overlaydepth
@@ -401,27 +398,24 @@
 
 %D We predefine two already familiar backgrounds:
 
-\setvalue{\??ov\v!screen}#1#2#3#4#5#6#7%
-  {\graybox\width#1\height#2\depth#3\raster#5\corner#6\radius#7\\}
+\setvalue{\??ov\v!screen}{\dograybox }
+\setvalue{\??ov\v!color }{\docolorbox}
 
-\setvalue{\??ov\v!color}#1#2#3#4#5#6#7%
-  {\colorbox\width#1\height#2\depth#3\color#4\corner#6\radius#7\\}
-
-%D After all these preparations, the background macro does no
-%D bring to many surprises. One has to keep in mind that this
-%D macro starts up a call chain, depending on the background
-%D one needs:
-%D
-%D \startitemize[packed]
-%D \item a raster, color or user defined shape
-%D \item square or round corners
-%D \item a \TEX\ or driver based method
-%D \stopitemize
-%D
-%D The macro can be extended by adding commands to the token
-%D list register \type {\everybackgroundbox}. For this
-%D purpose, the name of the current background is available in
-%D \type {\currentbackgound}.
+% %D After all these preparations, the background macro does no
+% %D bring to many surprises. One has to keep in mind that this
+% %D macro starts up a call chain, depending on the background
+% %D one needs:
+% %D
+% %D \startitemize[packed]
+% %D \item a raster, color or user defined shape
+% %D \item square or round corners
+% %D \item a \TEX\ or driver based method
+% %D \stopitemize
+% %D
+% %D The macro can be extended by adding commands to the token
+% %D list register \type {\everybackgroundbox}. For this
+% %D purpose, the name of the current background is available in
+% %D \type {\currentbackgound}.
 
 \newbox\extraframebox
 
@@ -429,14 +423,12 @@
 
 \let\currentbackground\empty
 
-\def\dodobackgroundbox#1#2#3#4#5#6%
+\def\dodobackgroundbox#1% also less passing, we can get rid of the old method
   {\bgroup
    \def\currentbackground{#1}%
    \the\everybackgroundbox
    \setbox\extraframebox\hbox
-     {\vbox{\moveleft\dimen0\hbox
-        {\executeifdefined{\??ov\currentbackground}\gobblesevenarguments
-           {\dimen2}{\dimen4}{\dimen6}{#3}{#4}{#5}{#6}}}}%
+     {\vbox{\moveleft\backgroundoffset\hbox{\executeifdefined{\??ov\currentbackground}\donothing}}}%
    \wd\extraframebox\zeropoint % \backgroundwidth
    \ht\extraframebox\backgroundheight
    \dp\extraframebox\backgrounddepth
@@ -450,34 +442,31 @@
 
 %  todo: also \def\theforegroundbox{#1}
 
-\def\dobackgroundbox#1\background#2\color#3\raster#4\offset#5\corner
-    #6\radius#7\depth#8\component#9\\%
-  {\vbox
-     {\forgetall\boxmaxdepth\maxdimen
-      \dimen0   #5\relax % space needed
-      \dimen2\wd#1\advance\dimen2 2\dimen0
-      \dimen4\ht#1\advance\dimen4  \dimen0
-      \dimen6\dp#1\advance\dimen6  \dimen0
-      \advance\dimen6 #8\relax
-      \edef\backgroundoffset{\the\dimen0}%
-      \edef\backgroundwidth {\the\wd#1}%
-      \edef\backgroundheight{\the\ht#1}%
-      \edef\backgrounddepth {\the\dp#1}%
+\def\dobackgroundbox#1%
+  {\setbox\framebox\vbox
+     {\forgetall
+      \boxmaxdepth\maxdimen
+      \scratchdimen \framedparameter{#1}\relax
+      \frameddimenwd\dimexpr\wd\framebox+2\scratchdimen\relax
+      \frameddimenht\dimexpr\ht\framebox+ \scratchdimen\relax
+      \frameddimendp\dimexpr\dp\framebox+ \scratchdimen+\framedparameter\c!backgrounddepth\relax
+      \edef\backgroundoffset{\the\scratchdimen}%
+      \edef\backgroundwidth {\the\wd\framebox}%
+      \edef\backgroundheight{\the\ht\framebox}%
+      \edef\backgrounddepth {\the\dp\framebox}%
      %\edef\foregroundbox{\box#1}%
       \def\foregroundbox% fuzzy but needed hack, this \vss, otherwise
-        {\vbox to \backgroundheight{\vss\box#1\vss}}% vertical shift
-      \def\docommando##1%
-        {\dodobackgroundbox{##1}{#1}{#3}{#4}{#6}{#7}}%
-      \edef\component{#9}%
+        {\vbox to \backgroundheight{\vss\box\framebox\vss}}% vertical shift
+      \edef\component{\framedparameter\c!component}%
       \hbox to \backgroundwidth % in case 'foreground' is used as overlay
         {\ifx\component\empty
-           \expanded{\rawprocesscommalist[#2]}\docommando
+           \expanded{\rawprocesscommalist[\framedparameter\c!background]}\dodobackgroundbox
          \else
            \startlayoutcomponent{b:\component}{background \component}%
-           \expanded{\rawprocesscommalist[#2]}\docommando
+           \expanded{\rawprocesscommalist[\framedparameter\c!background]}\dodobackgroundbox
            \stoplayoutcomponent
          \fi
-         \box#1\hss}}}
+         \box\framebox\hss}}}
 
 %D One can explictly insert the foreground box. For that
 %D purpose we introduce the overlay \type {foreground}.
@@ -493,66 +482,60 @@
 %D by \TEX\ itself, the latter one depends on the driver. This
 %D macro also support a negative offset.
 
-\def\dooutlinebox#1\color#2\offset#3\corner#4\radius#5\depth#6\toggle#7\\%
-  {\vbox % rules on top of box
-     {\dimen0   #3\relax % space needed
-      \dimen2\wd#1\advance\dimen2 2\dimen0
-      \dimen4\ht#1\advance\dimen4  \dimen0
-      \dimen6\dp#1\advance\dimen6  \dimen0\advance\dimen6 #6\relax
-      \ifdim\dimen6<\zeropoint
-        \advance\dimen4 \dimen6
-        \dimen8-\dimen6
-        \dimen6\zeropoint
+\def\dooutlinebox
+  {\setbox\framebox\vbox % rules on top of box
+     {\scratchdimen \framedparameter\c!frameoffset\relax
+      \frameddimenwd\dimexpr\wd\framebox+2\scratchdimen\relax
+      \frameddimenht\dimexpr\ht\framebox+ \scratchdimen\relax
+      \frameddimendp\dimexpr\dp\framebox+ \scratchdimen+\framedparameter\c!framedepth\relax
+      \ifdim\frameddimendp<\zeropoint
+        \advance\frameddimenht \frameddimendp
+        \scratchdimen-\frameddimendp
+        \frameddimendp\zeropoint
       \else
-        \dimen8\zeropoint
+        \scratchdimen\zeropoint
       \fi
       \setbox\extraframebox\hbox
-        {\dostrokedbox\width\dimen2\height\dimen4\depth\dimen6%
-           \corner#4\radius#5\toggle#7\\}%
+        {\dostrokedbox}%
       \setbox\extraframebox\hbox
-        {\raise\dimen8\vbox{\moveleft#3\box\extraframebox}}%
-      \wd\extraframebox\wd#1%
-      \ht\extraframebox\ht#1%
-      \dp\extraframebox\dp#1%
+        {\raise\scratchdimen\vbox
+           {\moveleft\framedparameter\c!frameoffset\box\extraframebox}}%
+      \wd\extraframebox\wd\framebox
+      \ht\extraframebox\ht\framebox
+      \dp\extraframebox\dp\framebox
       \hbox
-        {%\copy#1\hskip-\wd#1%
-         \box#1\hskip-\wd\extraframebox % faster
-         \doifelsenothing{#2} % speeds up a little
-           {\box\extraframebox}
-           {\color[#2]{\box\extraframebox}}}}}
+        {\box\framebox\hskip-\wd\extraframebox
+         \doifsomething{\framedparameter\c!framecolor}% no else needed,
+           {\color[\framedparameter\c!framecolor]}%   %
+           {\box\extraframebox}}}}                    % but {} here
 
-\def\dostrokedbox\width#1\height#2\depth#3\corner#4\radius#5\toggle#6\\%
-  {\bgroup
-   \doifelse{#4}\v!round
-     {\dimen0=#5\relax   % just in case of .x\bodyfontsize
-      \ifzeropt\dimen0
-        \dostrokedlinedbox\width#1\height#2\depth#3\toggle#6\\%
+\def\dostrokedbox
+  {\doifelse{\framedparameter\c!framecorner}\v!rectangular
+     {\dostrokedlinedbox}
+     {\ifzeropt\dimexpr\framedparameter\c!frameradius\relax   % just in case of .x\bodyfontsize
+        \dostrokedlinedbox
       \else
-        \dostrokedroundbox\width#1\height#2\depth#3\radius#5\toggle#6\\%
-      \fi}
-     {\dostrokedlinedbox\width#1\height#2\depth#3\toggle#6\\}%
-   \egroup}
+        \dostrokedroundbox
+      \fi}}
 
-%D The toggle argument in these calls concern the individual
-%D rules: left, right, top and bottom. Each can be turned on,
-%D depending on the general state (\type{#4}) or the individual
-%D ones (\type{#5}, \type{#6}, \type{#7} and \type{#8}).
-
-\def\dostrokedlinedbox\width#1\height#2\depth#3\toggle
-    #4\left#5\right#6\top#7\bottom#8\\%
-  {\bgroup
-   \setbox0\null
-   \wd0=#1\ht0=#2\dp0=#3%
-   \setbox2\vbox
-     {\getvalue{t\@@frame@@#4#7}%
-      \hbox
-        {\getvalue{l\@@frame@@#4#5}%
-         \box0%
-         \getvalue{r\@@frame@@#4#6}}
-      \getvalue{b\@@frame@@#4#8}}%
-   \wd2=#1\ht2=#2\dp2=#3%
-   \box2
-   \egroup}
+\def\dostrokedlinedbox
+  {\setbox\scratchbox\null
+   \wd\scratchbox\frameddimenwd
+   \ht\scratchbox\frameddimenht
+   \dp\scratchbox\frameddimendp
+   \setbox\scratchbox\vbox \bgroup
+     \csname   t\@@frame@@\framedparameter\c!frame\framedparameter\c!topframe   \endcsname
+     \hbox \bgroup
+       \csname l\@@frame@@\framedparameter\c!frame\framedparameter\c!leftframe  \endcsname
+       \box\scratchbox
+       \csname r\@@frame@@\framedparameter\c!frame\framedparameter\c!rightframe \endcsname
+     \egroup
+     \csname   b\@@frame@@\framedparameter\c!frame\framedparameter\c!bottomframe\endcsname
+   \egroup
+   \wd\scratchbox\frameddimenwd
+   \ht\scratchbox\frameddimenht
+   \dp\scratchbox\frameddimendp
+   \box\scratchbox}
 
 \def\@@frame@@{@@frame@@}
 
@@ -576,10 +559,10 @@
 %D Before we come to using these macros we yet have to define
 %D the rounded corner alternative, which after all is not that
 %D hard because it uses the previously defined macro \type
-%D {\ovalbox}.
+%D {\doroundedbox}.
 
-\def\dostrokedroundbox\width#1\height#2\depth#3\radius#4\toggle#5\left#6\\%
-  {\doif{#5}\v!on{\ovalbox{#1}{#2}{#3}{\ruledlinewidth}{#4}\v!on\v!off}}
+\def\dostrokedroundbox
+  {\doif{\framedparameter\c!frame}\v!on{\doroundedbox\v!on\v!off{\framedparameter\c!framecorner}}}
 
 %D The next few macros are probably the most misused ones in
 %D \CONTEXT. They deal with putting rules around boxes, provide
@@ -653,8 +636,45 @@
    \copyparameters[#1\c!frame][#1]%
      [\c!radius,\c!corner,\c!depth]}
 
+% \def\setupframed
+%   {\dodoubleargument\getparameters[\??oi]}
+
 \def\setupframed
-  {\dodoubleargument\getparameters[\??oi]}
+  {\dodoubleempty\dosetupframed}
+
+\def\dosetupframed
+  {\ifsecondargument
+     \@EA\dodoublesetupframed
+   \else
+     \@EA\dosinglesetupframed
+   \fi}
+
+\def\dosinglesetupframed[#1][#2]%
+  {\getparameters[\??oi][#1]}
+
+\def\dodoublesetupframed[#1][#2]%
+  {\bgroup
+   \let\dodoubleempty\empty
+   \def\doframed[##1]{\gdef\globalredefinedframed{\dodoubleempty\doframed[##1,#2]}}%
+   \getvalue{#1}%
+   \egroup
+   \letvalue{#1}\globalredefinedframed}
+
+%D \startbuffer
+%D \setupframed [framecolor=yellow]          \framed{A}
+%D \defineframed[myframed] [framecolor=blue] \myframed{B}
+%D \setupframed [myframed] [framecolor=red]  \myframed{C}
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
+%D
+%D \startbuffer
+%D \presetlocalframed[myframed]
+%D \setuplocalframed[myframed][width=4cm,height=2cm]
+%D \localframed[myframed][framecolor=green]{oeps}
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
 
 %D \macros
 %D   {ifinframed}
@@ -674,7 +694,47 @@
   {\bgroup
    \dodoubleempty\startlocalframed}
 
-\let\fastlocalframed\localframed
+%D The next one is faster on multiple backgrounds per page. No
+%D dimensions can be set, only frames and backgrounds.
+
+\def\fastlocalframed[#1]#2[#3]#4% 3-4
+  {\bgroup
+   \inframedtrue
+   \edef\@@framed{#1}%
+   % more bytes
+   % \scratchdimen\framedparameter\c!frameoffset
+   % \setevalue{\@@framed\c!frameoffset}{\the\scratchdimen}%
+   % \doifnotvalue{\@@framed\c!backgroundoffset}\v!frame
+   %   {\scratchdimen\framedparameter\c!backgroundoffset
+   %    \setevalue{\@@framed\c!backgroundoffset}{\the\scratchdimen}}%
+   % less bytes
+   \@EA\freezedimenmacro\csname\@@framed\c!frameoffset\endcsname
+   \doifnotvalue{\@@framed\c!backgroundoffset}\v!frame
+     {\@EA\freezedimenmacro\csname\@@framed\c!backgroundoffset\endcsname}%
+   % so far
+   \setbox\framebox\hbox{#4}%
+   \getparameters[\@@framed][#3]% no \expanded !
+   % no, better in calling macro
+   %
+   %    \edef\doframedsetups{\framedparameter\c!setups}%
+   %    \ifx\doframedsetups\empty\else
+   %      \edef\doframedsetups{\noexpand\setups[\doframedsetups]}%
+   %    \fi
+   \removeframedboxdepth
+   \docolorframebox
+   \edef\overlaylinecolor{\framedparameter\c!framecolor}%
+   \edef\overlaylinewidth{\the\ruledlinewidth}%
+   \edef\@@localframing {\framedparameter\c!frame}%
+   \ifx\@@localframing\v!overlay \else \ifx\@@localframing\v!none \else
+     \doifvaluesomething{\@@framed\c!rulethickness}
+       {\ruledlinewidth\framedparameter\c!rulethickness\relax
+        \ifinheritruledlinewidth\linewidth\ruledlinewidth\fi}%
+     \dooutlinebox % real or invisible frame
+   \fi \fi
+   \doifvaluesomething{\@@framed\c!background}\dobackedbox
+   \restoreframedboxdepth
+   \box\framebox
+   \egroup}
 
 %D Before we go into details, we present (and implement) the
 %D main framing routine. I saw no real reason for splitting the
@@ -710,11 +770,9 @@
    % \doifvaluesomething{\@@framed\c!rulethickness}         % obsolete
    %   {\ruledlinewidth\getvalue{\@@framed\c!rulethickness}}% obsolete
    % this piece of pre expansion is needed (sometimes used circular)
-   \scratchdimen\framedparameter\c!frameoffset
-   \setevalue{\@@framed\c!frameoffset}{\the\scratchdimen}%
+   \setevalue{\@@framed\c!frameoffset}{\the\dimexpr\framedparameter\c!frameoffset\relax}%
    \doifnotvalue{\@@framed\c!backgroundoffset}\v!frame
-     {\scratchdimen\framedparameter\c!backgroundoffset
-      \setevalue{\@@framed\c!backgroundoffset}{\the\scratchdimen}}%
+     {\setevalue{\@@framed\c!backgroundoffset}{\the\dimexpr\framedparameter\c!backgroundoffset\relax}}%
    % to prevent deadlock in case of self refering
    \ifsecondargument % faster
      \getparameters[\@@framed][#2]% here !
@@ -790,8 +848,7 @@
      \else
        \let\defaultframeoffset\localoffset
      \fi
-     \@@localoffset\localoffset
-     \advance\@@localoffset \ruledlinewidth
+     \@@localoffset\dimexpr\localoffset+\ruledlinewidth\relax
    \fi\fi
    \!!framedheight\zeropoint
    \!!framedwidth \zeropoint
@@ -981,7 +1038,8 @@
 
 \def\stoplocalframed
   {\dontshowcomposition
-   \@@stopframedorientation
+   \@@stopframedorientation % hm, wrong place ! should rotatethe result (after reshape)
+   \handleframedlocator\c!before\@@locallocation
    \ifboxhasformat
      \ifx\@@localautowidth\v!force
        \ifreshapeframebox\doreshapeframedbox\fi
@@ -1029,28 +1087,27 @@
    \edef\overlaylinecolor{\framedparameter\c!framecolor}%
    \edef\overlaylinewidth{\the\ruledlinewidth}% \@@...
    \ifboxhasframe % real or invisible frame
-     \doframedbox
+     \dooutlinebox
    \fi
    \doifvaluesomething{\@@framed\c!background}\dobackedbox
-   \handleframedlocator\@@locallocation
+   \handleframedlocator\c!after\@@locallocation
    \box\framebox
    \egroup
    \egroup}
 
-\def\installframedlocator#1#2%
-  {\setvalue{\??ol:\c!location:#1}{#2}}
+\def\installframedlocator#1#2#3%
+  {\setvalue{\??ol:\c!location:\c!before:#1}{#2}%
+   \setvalue{\??ol:\c!location:\c!after :#1}{#3}}
 
-\def\handleframedlocator#1%
-  {\getvalue{\??ol:\c!location:#1}}
+\def\handleframedlocator#1#2%
+  {\getvalue{\??ol:\c!location:#1:#2}}
 
 \def\doprelocframedbox#1%
-  {\scratchdimen#1\relax
-   \advance\scratchdimen \ruledlinewidth
+  {\scratchdimen\dimexpr#1+\ruledlinewidth\relax
    \ifboxhasoffset
      \advance\scratchdimen \framedparameter\c!offset
    \fi
-   \scratchskip\ht\framebox
-   \advance\scratchskip-\scratchdimen}
+   \scratchskip\dimexpr\ht\framebox-\scratchdimen\relax}
 
 % \ruledhbox
 %   {A
@@ -1075,24 +1132,24 @@
 %   B}
 
 \installframedlocator \v!hanging % best with strut=no
+  {}
   {\dp\framebox\ht\framebox
    \ht\framebox\zeropoint}
 
 \installframedlocator \v!depth
-  {\scratchdimen\ht\framebox
-   \advance\scratchdimen -\strutdp
-   \ht\framebox\scratchdimen
+  {}
+  {\ht\framebox\dimexpr\ht\framebox-\strutdp\relax
    \dp\framebox\strutdp
    \box\framebox}
 
 \installframedlocator \v!height
-  {\scratchdimen\ht\framebox
-   \advance\scratchdimen -\strutht
+  {}
+  {\dp\framebox\dimexpr\ht\framebox-\strutht\relax
    \ht\framebox\strutht
-   \dp\framebox\scratchdimen
    \box\framebox}
 
 \installframedlocator \v!high
+  {}
   {\doprelocframedbox\strutht
    \setbox\framebox\hbox{\lower\scratchskip\box\framebox}%
    \ht\framebox\strutht
@@ -1100,12 +1157,14 @@
    \hbox{\box\framebox}}
 
 \installframedlocator \v!line
+  {}
   {\setbox\framebox\hbox{\lower.5\ht\framebox\box\framebox}%
    \ht\framebox.5\lineheight
    \dp\framebox.5\lineheight
    \hbox{\box\framebox}}
 
 \installframedlocator \v!low
+  {}
   {\doprelocframedbox\strutdp
    \setbox\framebox\hbox{\lower\scratchdimen\box\framebox}%
    \ht\framebox\strutht
@@ -1113,6 +1172,7 @@
    \box\framebox}
 
 \installframedlocator \v!top
+  {}
   {\doprelocframedbox\strutht
    \setbox\framebox\hbox{\lower\scratchskip\box\framebox}%
    \ht\framebox\scratchdimen
@@ -1120,6 +1180,7 @@
    \hbox{\box\framebox}}
 
 \installframedlocator \v!middle
+  {}
   {\scratchdimen.5\ht\framebox
    \setbox\framebox\hbox{\lower\scratchdimen\box\framebox}%
    \ht\framebox\scratchdimen
@@ -1127,14 +1188,41 @@
    \hbox{\box\framebox}}
 
 \installframedlocator \v!lohi
-  {\handleframedlocator\v!middle}
+  {\handleframedlocator\c!before\v!middle}
+  {\handleframedlocator\c!after \v!middle}
 
 \installframedlocator \v!bottom
+  {}
   {\doprelocframedbox\strutdp
    \setbox\framebox\hbox{\lower\scratchdimen\box\framebox}%
    \ht\framebox\scratchskip
    \dp\framebox\scratchdimen
    \hbox{\box\framebox}}
+
+\installframedlocator \v!keep % retains height/depth
+  {\removeframedboxdepth}
+  {\restoreframedboxdepth}
+
+% also used in fastlocalframed
+
+\newdimen\originalframedwd
+\newdimen\originalframedht
+\newdimen\originalframeddp
+
+\def\removeframedboxdepth
+  {\originalframedwd\wd\framebox
+   \originalframedht\ht\framebox
+   \originalframeddp\dp\framebox
+   \ifzeropt\originalframeddp\else\setbox\framebox\hbox{\raise\originalframeddp\box\framebox}\fi
+   \wd\framebox\originalframedwd
+   \ht\framebox\dimexpr\originalframedht+\originalframeddp\relax
+   \dp\framebox\zeropoint}
+
+\def\restoreframedboxdepth
+  {\ifzeropt\originalframeddp\else\setbox\framebox\hbox{\lower\originalframeddp\box\framebox}\fi
+   \wd\framebox\originalframedwd
+   \ht\framebox\originalframedht
+   \dp\framebox\originalframeddp}
 
 % \let\@@startframedorientation\relax
 % \let\@@stopframedorientation \relax
@@ -1407,39 +1495,13 @@
 %D additional offset capabilities. The lot of calls to other
 %D macros makes this mechanism not that easy to comprehend.
 
-\def\doframedbox
-  {\setbox\framebox\vbox
-     {\dooutlinebox\framebox
-        \color  \framedparameter\c!framecolor
-        \offset \framedparameter\c!frameoffset
-        \corner \framedparameter\c!framecorner
-        \radius \framedparameter\c!frameradius
-        \depth  \framedparameter\c!framedepth
-        \toggle \framedparameter\c!frame
-          \left   \framedparameter\c!leftframe
-          \right  \framedparameter\c!rightframe
-          \top    \framedparameter\c!topframe
-          \bottom \framedparameter\c!bottomframe\\}}
-
 %D Getting the backgrounds right takes less code. Again we
 %D have to take care of additional offsets.
 
 \def\dobackedbox
   {\doifelsevalue{\@@framed\c!backgroundoffset}\v!frame % new
-     {\dodobackedbox\c!frameoffset}
-     {\dodobackedbox\c!backgroundoffset}}
-
-\def\dodobackedbox#1%
-  {\setbox\framebox\vbox
-     {\dobackgroundbox\framebox
-        \background \framedparameter\c!background
-        \color      \framedparameter\c!backgroundcolor
-        \raster     \framedparameter\c!backgroundscreen
-        \offset     \framedparameter{#1}%
-        \corner     \framedparameter\c!backgroundcorner
-        \radius     \framedparameter\c!backgroundradius
-        \depth      \framedparameter\c!backgrounddepth
-        \component  \framedparameter\c!component\\}}
+     {\dobackgroundbox\c!frameoffset}
+     {\dobackgroundbox\c!backgroundoffset}}
 
 %D We handle left, right or middle alignment as well as fixed
 %D or free widths and heights. Each combination gets its own
@@ -1651,10 +1713,55 @@
 % otherwise we get problems with framed display math and auto
 % width.
 
+% \def\doreshapeframedbox % frozen
+%   {\beginofshapebox
+%    \unvcopy\framebox
+%    \endofshapebox
+%    \global\@@globalwidth\zeropoint
+%    \resetshapeframebox
+%    \reshapebox
+%      {\setbox0\hbox
+%         {\strut\ifhbox\shapebox\unhbox\else\box\fi\shapebox}%
+%       \global\advance\framednoflines \plusone
+%       \ifdim\framedlastlength>\zeropoint\else
+%         \global\framedlastlength\wd0
+%       \fi
+%       \ifdim\wd0>\@@globalwidth
+%         \global\@@globalwidth\wd0
+%       \fi}%
+%    \dosetraggedcommand\localformat
+%    \raggedcommand
+%    \ifboxhasheight
+%      \setbox\framebox\vbox to \localheight
+%        {\hsize\@@globalwidth
+%         \reshapebox{\hbox to \hsize{\ifhbox\shapebox\unhbox\else\box\fi\shapebox}}%
+%         \dobeforeframedbox
+%         \innerflushshapebox
+%         \doafterframedbox}%
+%    \else
+%      \scratchdimen\dp\framebox
+%      \setbox\framebox\vbox to \ht\framebox
+%        {\hsize\@@globalwidth
+%         \reshapebox{\hbox to \hsize{\ifhbox\shapebox\unhbox\else\box\fi\shapebox}}%
+%         \innerflushshapebox}%
+%      \dp\framebox\scratchdimen % \strutdp otherwise problem with math
+%    \fi
+%    \ifdim\framedlastlength=\zeropoint\global\framednoflines\wd\framebox\fi
+%    \ifcase\framednoflines\global\framednoflines\plusone\fi}
+
+\chardef\reshapeframeboxmethod\plusone % 0=no flush, 1=old method 2=no depth messing
+
+\let\framedboxwidth \!!zeropoint
+\let\framedboxheight\!!zeropoint
+\let\framedboxdepth \!!zeropoint
+
 \def\doreshapeframedbox % frozen
   {\beginofshapebox
    \unvcopy\framebox
    \endofshapebox
+   \edef\framedboxwidth {\the\wd\framebox}%
+   \edef\framedboxheight{\the\ht\framebox}%
+   \edef\framedboxdepth {\the\dp\framebox}%
    \global\@@globalwidth\zeropoint
    \resetshapeframebox
    \reshapebox
@@ -1667,29 +1774,48 @@
       \ifdim\wd0>\@@globalwidth
         \global\@@globalwidth\wd0
       \fi}%
-   \dosetraggedcommand\localformat
-   \raggedcommand
-   \ifboxhasheight
-     \setbox\framebox\vbox to \localheight
-       {\hsize\@@globalwidth
-        \reshapebox{\hbox to \hsize{\ifhbox\shapebox\unhbox\else\box\fi\shapebox}}%
-        \dobeforeframedbox
-        \innerflushshapebox
-        \doafterframedbox}%
+   \ifreshapingfailed
+      % no need for anothr pass or finalizer
    \else
-     \scratchdimen\dp\framebox
-     \setbox\framebox\vbox to \ht\framebox
-       {\hsize\@@globalwidth
-        \reshapebox{\hbox to \hsize{\ifhbox\shapebox\unhbox\else\box\fi\shapebox}}%
-        \innerflushshapebox}%
-     \dp\framebox\scratchdimen % \strutdp otherwise problem with math
-   \fi
-   \ifdim\framedlastlength=\zeropoint\global\framednoflines\wd\framebox\fi
-   \ifcase\framednoflines\global\framednoflines\plusone\fi}
+      \dosetraggedcommand\localformat
+      \raggedcommand
+      \ifboxhasheight
+        \setbox\framebox\vbox to \localheight
+          {\hsize\@@globalwidth
+           \reshapebox{\hbox to \hsize{\ifhbox\shapebox\unhbox\else\box\fi\shapebox}}%
+           \dobeforeframedbox
+           \innerflushshapebox
+           \doafterframedbox}%
+      \else
+        \setbox\framebox\vbox to \ht\framebox
+          {\hsize\@@globalwidth
+           \reshapebox{\hbox to \hsize{\ifhbox\shapebox\unhbox\else\box\fi\shapebox}}%
+           \ifcase\reshapeframeboxmethod
+             \or \innerflushshapebox \or \innerflushshapebox
+           \fi}%
+        \ifcase\reshapeframeboxmethod \or
+          \dp\framebox\framedboxdepth % \strutdp otherwise problem with math
+        \fi
+      \fi
+      \ifdim\framedlastlength=\zeropoint\global\framednoflines\wd\framebox\fi
+      \ifcase\framednoflines\global\framednoflines\plusone\fi
+   \fi}
 
 %D The two variables \type {\framednoflines} and \type
 %D {\framedlastlength} can be used in a second pass to
 %D optimized framed material.
+
+% torture test / strange case (much depth) / method 2 needed
+%
+% \startTEXpage[frame=on]
+% \startformula \startalign \NC A \NC B \NR \intertext{test} \NC C \NC D \NR \stopalign \stopformula
+% test outside formula
+% \startformula \startalign \NC A \NC B \NR \intertext{test} \NC C \NC D \NR \stopalign \stopformula
+% \blank[big]
+% \startformula \startalign \NC \int_01 \NC B \NR \intertext{test} \NC \int_01 \NC D \NR \stopalign \stopformula
+% test outside formula
+% \startformula \startalign \NC \int_01 \NC B \NR \intertext{test} \NC \int_01 \NC D \NR \stopalign \stopformula
+% \stopTEXpage
 
 %D The examples on the next page show how one can give the
 %D frame as well as the background an additional offset and
@@ -1751,8 +1877,7 @@
 %D baseline intact outside as well as inside the framed box.
 
 \def\doinlineframedbox
-  {\scratchdimen\strutdp
-   \advance\scratchdimen \ruledlinewidth
+  {\scratchdimen\dimexpr\strutdp+\ruledlinewidth\relax
    \ifboxhasoffset
      \advance\scratchdimen \framedparameter\c!offset
    \fi
@@ -1765,9 +1890,7 @@
 %D line.
 
 \def\doloweredframedbox
-  {\getboxheight\scratchdimen\of\box\framebox
-   \advance\scratchdimen -\strutdp
-   \ht\framebox\scratchdimen
+  {\ht\framebox\dimexpr\ht\framebox+\dp\framebox-\strutdp\relax
    \dp\framebox\strutdp
    \box\framebox}
 
@@ -1781,7 +1904,7 @@
 %D \stoptyping
 
 \def\dohangingframedbox % best with strut=no
-  {\getboxheight\scratchdimen\of\box\framebox
+  {\scratchdimen\dimexpr\ht\framebox+\dp\framebox\relax
    \ht\framebox\zeropoint
    \dp\framebox\scratchdimen}
 
@@ -1808,8 +1931,7 @@
 \def\vboxedhairline
   {\bgroup
    \dimen2=\ifboxhasoffset \localoffset \else \zeropoint \fi
-   \dimen4=\dimen2
-   \advance\dimen4 \ruledlinewidth
+   \dimen4=\dimexpr\dimen2+\ruledlinewidth\relax
    \setbox0\vbox
      {\advance\hsize 2\dimen4
       \vskip\dimen2
@@ -1826,33 +1948,24 @@
    \endgraf\nointerlineskip\localbegstrut
    \egroup}
 
-\def\hboxedhairline
+\def\hboxedhairline % use framed dimen
   {\bgroup
    \dimen2=\ifboxhasoffset \localoffset \else \zeropoint \fi
    \ifboxhasheight
-     \dimen4=\localheight \divide\dimen4 2
-     \dimen6=\dimen4
-     \advance\dimen4   \strutdp
-     \advance\dimen6  -\strutdp
-     \advance\dimen4 -2\ruledlinewidth
-     \advance\dimen6  2\ruledlinewidth
+     \dimen4\dimexpr\localheight/2+\strutdp-2\ruledlinewidth\relax
+     \dimen6\dimexpr\localheight/2-\strutdp+2\ruledlinewidth\relax
    \else
-     \dimen4\strutht
-     \advance\dimen4 \dimen2
-     \dimen6\strutdp
-     \advance\dimen6 \dimen2
+     \dimen4\dimexpr\strutht+\dimen2\relax
+     \dimen6\dimexpr\strutdp+\dimen2\relax
    \fi
    \unskip
-   \setbox0\hbox
+   \setbox\scratchbox\hbox
      {\hskip\dimen2
-      \vrule
-        \!!height\dimen4
-        \!!depth\dimen6
-        \!!width\ruledlinewidth
+      \vrule\!!height\dimen4\!!depth\dimen6\!!width\ruledlinewidth
       \hskip\dimen2}%
-   \ht0\strutht
-   \dp0\strutdp
-   \box0
+   \ht\scratchbox\strutht
+   \dp\scratchbox\strutdp
+   \box\scratchbox
    \ignorespaces
    \egroup}
 
@@ -1935,9 +2048,9 @@
   {\hbox\bgroup
    \getparameters[\??bj][#1]%
    \setstrut
-   \doif\@@bjwidth\v!max{\def\@@bjwidth{1em}}%
-   \doif\@@bjheight \v!max{\def\@@bjheight{\strutht}}%
-   \doif\@@bjdepth \v!max{\def\@@bjdepth{\strutdp}}%
+   \doif\@@bjwidth \v!max{\def\@@bjwidth {1em}}%
+   \doif\@@bjheight\v!max{\def\@@bjheight{\strutht}}%
+   \doif\@@bjdepth \v!max{\def\@@bjdepth {\strutdp}}%
    \localstartcolor[\@@bjcolor]%
      \vrule
        \!!width \@@bjwidth
@@ -2224,27 +2337,33 @@
    \ifdim\linewidth=\zeropoint
      \chardef\ruletype\zerocount
    \else
-     \doifnot\@@dlframe\v!on{\chardef\ruletype=0\relax}%
+     \doifnot\@@dlframe\v!on{\chardef\ruletype\zerocount}%
    \fi
    \ifnum\ruletype=\plusone
      \doif\@@dlheight\v!max{\let\@@dlheight\!!plusone}%
-     \doif\@@dldepth\v!max{\let\@@dldepth\!!plusone}%
+     \doif\@@dldepth \v!max{\let\@@dldepth \!!plusone}%
    \else
      \let\@@dlheight\!!plusone
      \let\@@dldepth\!!plusone
    \fi
    \freezedimensionwithunit\@@dlheight\strutht
    \freezedimensionwithunit\@@dldepth\strutdp
-   \divide\linewidth 2
+   \divide\linewidth \plustwo
    \doifelse\@@dlbackground\v!color
      {\startcolor[\@@dlbackgroundcolor]%
-      \dimen0=\@@dlheight
-      \dimen2=\@@dldepth
-      \ifnum\ruletype=2 % prevent overshoot due to rounding
-        \advance\dimen0 -.5\linewidth
-        \advance\dimen2 -.5\linewidth
+      \ifnum\ruletype=\plustwo % prevent overshoot due to rounding
+        \leaders
+          \hrule
+            \!!height\dimexpr\@@dlheight-.5\linewidth\relax
+            \!!depth \dimexpr\@@dldepth -.5\linewidth\relax
+          \hfill
+      \else
+        \leaders
+          \hrule
+            \!!height\@@dlheight
+            \!!depth \@@dldepth
+          \hfill
       \fi
-      \leaders\hrule\!!height\dimen0\!!depth\dimen2\hfill
       \stopcolor
       \ifcase\ruletype
         % no rule
@@ -2255,10 +2374,8 @@
         \stopcolor
       \or
         \startcolor[\@@dlcolor]%
-        \dimen2=\@@dldepth\dimen0=-\dimen2 \advance\dimen0 \linewidth
-        \hfillneg\leaders\hrule\!!height\dimen0\!!depth\dimen2\hfill
-        \dimen2=\@@dlheight\dimen0=-\dimen2 \advance\dimen0 \linewidth
-        \hfillneg\leaders\hrule\!!height\dimen2\!!depth\dimen0\hfill
+        \hfillneg\leaders\hrule\!!height\dimexpr-\@@dldepth+\linewidth\relax\!!depth\@@dldepth\hfill
+        \hfillneg\leaders\hrule\!!height\@@dlheight\!!depth\dimexpr-\@@dlheight+\linewidth\relax\hfill
         \stopcolor
       \fi}
      {\ifcase\ruletype \else
@@ -2518,8 +2635,8 @@
 
 \def\dosetupframedtexts[#1][#2]%
   {\ifsecondargument
-     \def\docommando##1{\getparameters[\??kd##1][#2]}%
-     \processcommacommand[#1]\docommando % new, #1 may be macro
+     \def\docommand##1{\getparameters[\??kd##1][#2]}%
+     \processcommacommand[#1]\docommand % new, #1 may be macro
    \else
      \getparameters[\??kd\v!framedtext][#1]%
    \fi}
@@ -2535,21 +2652,7 @@
      {\dododostartframedtext[#1][][#2]}
      {\dododostartframedtext[#1][#2][#3]}}
 
-\def\checkframedtext
-  {\ifinsidefloat
-     \localhsize\hsize
-   \else\ifdim\sidefloatvsize>\zeropoint % will be proper handle
-   % \strut            % rather clean way to invoke the sidefloat OTR
-   % \setbox0=\lastbox % and get the widths set, so from now on we
-   % \setlocalhsize    % can have framed texts alongside sidefloats
-     \checksidefloat
-     \setlocalhsize
-   \else
-     \localhsize\hsize
-   \fi\fi}
-
 \setfalse\framedtextlocationnone
-
 
 \def\dododostartframedtext[#1][#2][#3]% #3 only passed to framed, not to framedtext
   {\doifsomething{#2}{\setvalue{\??kd#1\c!location}{#2}}% does not listen to #3
@@ -2734,13 +2837,13 @@
 \def\setuptextrules
   {\dodoubleargument\getparameters[\??tl]}
 
-\def\complextextrule[#1]%
-  {\processaction
+\def\complextextrule[#1]% if needed we can make it installable
+  {\let\next\dobottomtextrule
+   \processaction
      [#1]
-     [  \v!top=>\let\next\dotoptextrule,
-        \v!bottom=>\let\next\dobottomtextrule,
-      \s!default=>\let\next\dobottomtextrule,
-      \s!unknown=>\let\next\dobottomtextrule]%
+     [    \v!top=>\let\next\dotoptextrule,
+       \v!middle=>\let\next\domiddletextrule,
+       \v!bottom=>\let\next\dobottomtextrule]%
    \dosinglegroupempty\next}
 
 \definecomplexorsimple\textrule
@@ -2750,21 +2853,17 @@
 
 \def\docomplextextrule#1%
   {\bgroup
-   \advance\hsize -\rightskip
-   \advance\hsize -\leftskip
+   \advance\hsize\dimexpr-\rightskip-\leftskip\relax
    \setbox\scratchbox\hbox to \hsize
-     {\dimen4=.5ex
-      \dimen6=-.5ex
-      \advance\dimen4 .5\linewidth
-      \advance\dimen6 .5\linewidth
-      \dimen8=\@@tldistance
+     {\dimen4\dimexpr .5ex+.5\linewidth\relax
+      \dimen6\dimexpr-.5ex+.5\linewidth\relax
       \doifnothing{#1}\firstargumentfalse
       \iffirstargument
         \doifelse\@@tllocation\v!inmargin
           {\llap{\doattributes\??tl\c!style\c!color{#1}\hskip\leftmargindistance}}
           {\color[\@@tlrulecolor]
              {\vrule\!!height\dimen4\!!depth\dimen6\!!width\@@tlwidth}%
-           \hbox spread 2\dimen8
+           \hbox spread 2\dimexpr\@@tldistance\relax
              {\hss\doattributes\??tl\c!style\c!color{\strut#1}\hss}}%
       \fi
       \color[\@@tlrulecolor]
@@ -2798,11 +2897,14 @@
    \fi
    \advance\dimen0 .5ex
    \vskip\dimen0
+% ==
+%    \vskip\dimexpr \strutdp + .5ex
+%       \ifdim\prevdepth>\strutdp\else\ifdim\prevdepth>\zeropoint-\prevdepth\fi\fi\relax
+%
    \@@tlinbetween
    \doifelsenothing{#2}
      {\bgroup
-      \advance\hsize -\rightskip
-      \advance\hsize -\leftskip
+      \advance\hsize\dimexpr-\rightskip-\leftskip\relax
       \nointerlineskip
       \moveleft-\leftskip\vbox
         {\color[\@@tlrulecolor]
@@ -2961,12 +3063,11 @@
    \def\par % very dangerous
      {\let\par\endgraf % -)
       \unskip\hfill
-      \dimen0=\@@ivwidth
-      \advance\dimen0 -\@@ivdistance
-      \ifdim\dimen0>\@@ivmargin\else\expandafter\rlap\fi
+      \scratchdimen\dimexpr\@@ivwidth-\@@ivdistance\relax
+      \ifdim\scratchdimen>\@@ivmargin\else\expandafter\rlap\fi
         {\kern\@@ivdistance
          \vrule
-           \!!width   \dimen0
+           \!!width   \scratchdimen
            \!!height.5\linewidth
            \!!depth .5\linewidth}%
       \endgraf % !
@@ -3086,14 +3187,11 @@
          \scratchdimen\textheight
          \chardef\backgroundsplit\plusone % split to max height
        \else
-         \scratchdimen\pagegoal
          \setbox\scratchbox\vbox{\@@agbefore}%
-         \advance\scratchdimen -\ht\scratchbox
-         \advance\scratchdimen -\pagetotal
+         \scratchdimen\dimexpr\pagegoal-\ht\scratchbox-\pagetotal\relax
          \chardef\backgroundsplit\plustwo % split to partial height
        \fi
-       \advance\scratchdimen -\@@agtopoffset
-       \advance\scratchdimen -\@@agbottomoffset \relax
+       \advance\scratchdimen\dimexpr-\@@agtopoffset-\@@agbottomoffset\relax
        \ifdim\scratchdimen>2\lineheight\relax % reasonable, will be configurable
          \ifdim\ht0>\scratchdimen % larger than page
            \setbox2\vsplit0 to \scratchdimen
@@ -3206,8 +3304,8 @@
   {\dodoubleempty\dosetupframedcontent}
 
 \def\dosetupframedcontent[#1][#2]%
-  {\def\docommando##1{\getparameters[\??fc##1][#2]}%
-   \processcommacommand[#1]\docommando}
+  {\def\docommand##1{\getparameters[\??fc##1][#2]}%
+   \processcommacommand[#1]\docommand}
 
 \def\startframedcontent[#1]%
   {\bgroup
@@ -3221,10 +3319,8 @@
   {\setbox\framebox\hbox\bgroup
      \setlocalhsize
      \hsize\localhsize
-     \advance\hsize-\getvalue{\??fc#1\c!leftoffset}%
-     \advance\hsize-\getvalue{\??fc#1\c!rightoffset}%
-     \advance\vsize-\getvalue{\??fc#1\c!topoffset}%
-     \advance\vsize-\getvalue{\??fc#1\c!bottomoffset}%
+     \advance\hsize\dimexpr-\getvalue{\??fc#1\c!leftoffset}-\getvalue{\??fc#1\c!rightoffset} \relax
+     \advance\vsize\dimexpr-\getvalue{\??fc#1\c!topoffset} -\getvalue{\??fc#1\c!bottomoffset}\relax
      \hskip\getvalue{\??fc#1\c!leftoffset}%
      \vbox\bgroup
      \vskip\getvalue{\??fc#1\c!topoffset}%
@@ -3288,12 +3384,6 @@
 
 \let\omcirkeld\encircled
 
-% \def\copyright {\encircled{C}}
-% \def\registered{\encircled{R}}
-
-% \setuprules
-%   [\c!lijndikte=\v!middel]
-
 \setuplinewidth
   [\v!medium]
 
@@ -3332,8 +3422,8 @@
    \c!setups=]
 
 \setupscreens
-  [\c!factor=1.0,
-   \c!method=\v!external,    % \c!method=\v!dot
+  [%\c!factor=1.0,         % obsolete
+   %\c!method=\v!external, % obsolete
    \c!screen=0.95]
 
 \setupblackrules

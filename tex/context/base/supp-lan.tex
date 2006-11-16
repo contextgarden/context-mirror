@@ -11,12 +11,6 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-%D This module needs a drastic update: can be made simplier
-%D and faster; code can move to core module.
-
-%D Also, commenting the previous versions code will clear up
-%D some memory.
-
 %D \gdef\starttest
 %D   {\blank
 %D    \noindent
@@ -328,12 +322,12 @@
 
 \endETEX
 
-\def\dohandlemathmodebar#1%
+\def\domathmodediscretionary#1%
   {\getvalue{\strippedcsname\mathmodediscretionary\string#1}}
 
 \def\discretionarycommand
   {\relax\ifmmode
-     \expandafter\dohandlemathmodebar
+     \expandafter\domathmodediscretionary
    \else
      \expandafter\dotextmodediscretionary
    \fi}
@@ -444,8 +438,8 @@
 %D normally there should be no problems with things like:
 %D
 %D \starttyping
-%D \installdiscretionary || +
-%D \installdiscretionary ++ =
+%D \installdiscretionaries || +
+%D \installdiscretionaries ++ =
 %D \stoptyping
 %D
 %D The real work is done by the next set of macros. We have
@@ -558,7 +552,7 @@
 %D \stoptyping
 
 \def\currentspaceskip
-  {\fontdimen2\font\!!plus\fontdimen3\font\!!minus\fontdimen4\font\relax}
+  {\interwordspace\!!plus\interwordstretch\!!minus\interwordshrink\relax}
 
 % \def\fakecompoundhyphen% wrong
 %   {\def|##1|{\compoundhyphen\nobreak\hskip-\currentspaceskip\allowbreak}}
@@ -711,8 +705,8 @@
 \def\activedotextmodediscretionary#1%
   {\bgroup
    \let\nextnextnext\egroup
-   \def\handlecompoundcharacter##1% new, needed for polish
-     {\getvalue{\@nc@\string##1}}%  where / is active
+%    \def\handlecompoundcharacter##1% new, needed for polish
+%      {\getvalue{\@nc@\string##1}}%  where / is active
    \def\next##1#1%
      {\def\next{\activedododotextmodediscretionary#1{##1}}%
       \futurelet\nextnext\next}%
@@ -1203,19 +1197,6 @@
 \endETEX
 
 %D \macros
-%D   {nonbreakablespace}
-%D
-%D The following macro is taken from plain \TEX.
-
-\def\nonbreakablespace{\penalty\plustenthousand\ }
-
-\let~\nonbreakablespace
-
-% under testing:
-%
-% \unexpanded\def~{\nonbreakablespace}
-
-%D \macros
 %D   {midworddiscretionary}
 %D
 %D If needed, one can add a discretionary hyphen using \type
@@ -1270,83 +1251,6 @@
 
 % Why not convert to ascii first? I will redo this one!
 
-% \unexpanded\gdef\hyphenatedurl#1% {}{} handles accents
-%   {\bgroup
-%    \obeyhyphens
-%    \def\splitbefore##1%
-%      {\setbox\scratchbox=\hbox{##1{}{}}%
-%       \ifcase\urlsplitmode
-%         \box\scratchbox
-%       \or
-%         \postwordbreak\box\scratchbox\prewordbreak
-%       \or
-%         \prewordbreak\discretionary{\box\scratchbox}{}{\box\scratchbox}\prewordbreak
-%       \else
-%         \postwordbreak\box\scratchbox\prewordbreak
-%       \fi}%
-%    \def\splitafter##1%
-%      {\ifcase\urlsplitmode
-%         ##1{}{}%
-%       \or
-%         \prewordbreak\discretionary{##1{}{}}{}{##1{}{}}\prewordbreak
-%       \or
-%         \prewordbreak\discretionary{##1{}{}}{}{##1{}{}}\prewordbreak
-%       \else
-%         \prewordbreak\discretionary{}{##1{}{}}{##1{}{}}\prewordbreak
-%       \fi}%
-%    \def\flushurl%
-%      {\savedurl\let\savedurl\empty}%
-%    \def\\%
-%      {\spliturl\#}%
-%    \let\~=\lettertilde \let~=\~%
-%    \let\/=\letterslash \let/=\/%
-%    \let\savedurl\empty
-%    \handletokens#1\with\scanurl
-%    \egroup}
-%
-% Better (a mere copy with \dohyphens):
-
-% \bgroup \catcode`\~=\active \catcode`\/=\active
-%
-% \unexpanded\gdef\hyphenatedurl#1% {}{} handles accents
-%   {\bgroup
-%    \ifnum\hyphenpenalty<10000 \else
-%      \def\discretionary##1##2##3{##1\allowbreak##2}%
-%    \fi
-%    \obeyhyphens
-%    \def\splitbefore##1%
-%      {\setbox\scratchbox=\hbox{##1{}{}}%
-%       \ifcase\urlsplitmode
-%         \box\scratchbox
-%       \or
-%         \postwordbreak\box\scratchbox\prewordbreak
-%       \or
-%         \prewordbreak\discretionary{\box\scratchbox}{}{\box\scratchbox}\prewordbreak
-%       \else
-%         \postwordbreak\box\scratchbox\prewordbreak
-%       \fi}%
-%    \def\splitafter##1%
-%      {\ifcase\urlsplitmode
-%         ##1{}{}%
-%       \or
-%         \prewordbreak\discretionary{##1{}{}}{}{##1{}{}}\prewordbreak
-%       \or
-%         \prewordbreak\discretionary{##1{}{}}{}{##1{}{}}\prewordbreak
-%       \else
-%         \prewordbreak\discretionary{}{##1{}{}}{##1{}{}}\prewordbreak
-%       \fi}%
-%    \def\flushurl%
-%      {\savedurl\let\savedurl\empty}%
-%    \def\\%
-%      {\spliturl\#}%
-%    \let\~=\lettertilde\let~=\~%
-%    \let\/=\letterslash\let/=\/%
-%    \let\savedurl\empty
-%    \handletokens#1\with\scanurl\savedurl
-%    \egroup}
-%
-% \egroup
-
 \bgroup \catcode`\~=\active \catcode`\/=\active
 
 \unexpanded\gdef\hyphenatedurl#1% {}{} handles accents
@@ -1397,55 +1301,6 @@
 %D \convertargument#1\to\ascii
 %D \expandafter\handletokens\ascii\with\scanurl
 %D \stoptyping
-
-% \def\scanurl#1%
-%   {\ifx#1\~%
-%      \flushurl\splitbefore\~%
-%    \else\ifx#1\#%
-%      \flushurl\splitbefore\#%
-%    \else\ifx#1\&%
-%      \flushurl\splitbefore\&%
-%    \else\ifx#1\%%
-%      \flushurl\splitbefore\%%
-%    \else\ifx#1\_%
-%      \flushurl\splitbefore\_%
-%    \else\if\noexpand#1\relax
-%      #1%
-%    \else\ifnum\catcode`#1=8
-%      \flushurl\splitbefore\_%
-%    \else\ifnum\catcode`#1=6
-%      \flushurl\splitbefore\#%
-%    \else\ifnum\catcode`#1=4
-%      \flushurl\splitbefore\&%
-%    \else\if#1\lettertilde
-%      \flushurl\splitbefore\~%
-%    \else\if#1\letterpercent
-%      \flushurl\splitbefore\%%
-%    \else\if#1\letterunderscore
-%      \flushurl\splitbefore\_%
-%    \else\if#1\letterquestionmark
-%      \flushurl\splitafter\letterquestionmark
-%    \else\if#1\letterat
-%      \flushurl\splitafter\letterat
-%    \else\if#1\letterslash
-%      \edef\savedurl{\savedurl\letterslash}%
-%    \else\if#1+%
-%      \flushurl\splitafter+%
-%    \else\if#1:%
-%      \flushurl\splitafter:%
-%    \else\if#1.%
-%      \flushurl\splitafter.%
-%    \else\if#1(%
-%      \flushurl\splitbefore(%
-%    \else\if#1)%
-%      \flushurl\splitafter)%
-%    \else
-%      \ifx\savedurl\empty\else
-%        \splitbefore\savedurl
-%        \let\savedurl\empty
-%      \fi
-%      #1%
-%    \fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi}
 
 \chardef\urlhyphenmethod=0
 
@@ -1578,5 +1433,12 @@
 
 \def\disablecompoundcharacters
   {\let\handlecompoundcharacter\string}
+
+%D \macros
+%D   {normalcompound}
+%D
+%D Handy in for instance XML:
+
+\ifx\normalcompound\undefined \let\normalcompound=| \fi
 
 \protect \endinput

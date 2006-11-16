@@ -271,63 +271,24 @@
 
 \objectreferenced
 
-\def\checkobjectreferences
-  {\startnointerference
-   \protectlabels
-   \doutilities{objectreferences}\jobname\empty\relax\relax
-   \global\let\checkobjectreferences\relax
-   \stopnointerference}
+% no undefined test ! ! ! ! (pdftex fails on undefined objects)
 
-\def\setobjectreferences
-  {\def\objectreference##1##2##3##4%
-     {\ifundefined{\r!driver##1::##2}%
-        \setxvalue{\r!driver##1::##2}{{##3}{##4}}%
-      \else
-        \showmessage\m!references{31}{[##1 ##2=>##3/##4]}%
-      \fi}}
-
-\def\resetobjectreferences
-  {\let\objectreference\gobblefourarguments}
-
-\resetobjectreferences
-
-\def\dosetobjectreference#1#2#3%
-  {\checkobjectreferences
-   \blabelgroup
-   \ifcase\crossreferenceobject
+\def\dosetobjectreference
+  {\ifcase\crossreferenceobject
      \objectreferenced
+     \expandafter\mkoverloadobjectreference
    \else
-     \edef\dowritereference
-       {\writeutilitycommand{\objectreference{#1}{#2}{#3}{\noexpand\realfolio}}}%
-     \dowritereference
-   \fi
-  %\ifundefined{\r!driver#1::#2}% could have been be replaced !
-     \setxvalue{\r!driver#1::#2}{{#3}{\noexpand\realfolio}}%
-  %\fi % so no test ! ! ! ! (pdftex fails on undefined objects)
-   \elabelgroup}
+     \expandafter\mkregisterobjectreference
+   \fi}
 
 \def\dosetdriverreference
   {\driverreferenced\dosetobjectreference}
 
-\def\defaultobjectreference#1#2{0}
+\def\defaultobjectreference#1#2{0} % driver dependent
 \def\defaultobjectpage     #1#2{\realfolio}
 
-\def\dodogetobjectreference#1#2#3#4#5%
-  {\checkobjectreferences
-   \blabelgroup
-   \ifundefined{\r!driver#3::#4}%
-     \showmessage\m!references{30}{[#3 #4=>#3/#4]}%
-     \xdef#5{#2{#3}{#4}}%
-   \else
-     \xdef#5{\@EAEAEA#1\csname\r!driver#3::#4\endcsname}%
-   \fi
-   \elabelgroup}
-
-\def\dogetobjectreference
-  {\dodogetobjectreference\firstoftwoarguments\defaultobjectreference}
-
-\def\dogetobjectreferencepage
-  {\dodogetobjectreference\secondoftwoarguments\defaultobjectpage}
+\def\dogetobjectreference    {\mkgetobjectreference}
+\def\dogetobjectreferencepage{\mkgetobjectreferencepage}
 
 \def\setobject     {\driverreferenced\dosetobject1}
 \def\settightobject{\driverreferenced\dosetobject0}
@@ -343,27 +304,6 @@
 %D \doifobjectreferencefoundelse{class}{object}{do then}{do else}
 %D \stoptyping
 
-\beginTEX
-
-\def\doifobjectfoundelse#1#2%
-  {\blabelgroup \@EA\ifx\csname\r!object#1::#2\endcsname\relax
-     \elabelgroup \expandafter\secondoftwoarguments
-   \else
-     \elabelgroup \expandafter\firstoftwoarguments
-   \fi}
-
-\def\doifobjectreferencefoundelse#1#2%
-  {\checkobjectreferences
-   \blabelgroup \@EA\ifx\csname\r!driver#1::#2\endcsname\relax
-     \elabelgroup \expandafter\secondoftwoarguments
-   \else
-     \elabelgroup \expandafter\firstoftwoarguments
-   \fi}
-
-\endTEX
-
-\beginETEX
-
 \def\doifobjectfoundelse#1#2%
   {\blabelgroup \ifcsname\r!object#1::#2\endcsname
      \elabelgroup \expandafter\firstoftwoarguments
@@ -371,15 +311,7 @@
      \elabelgroup \expandafter\secondoftwoarguments
    \fi}
 
-\def\doifobjectreferencefoundelse#1#2%
-  {\checkobjectreferences
-   \blabelgroup \ifcsname\r!driver#1::#2\endcsname
-     \elabelgroup \expandafter\firstoftwoarguments
-   \else
-     \elabelgroup \expandafter\secondoftwoarguments
-   \fi}
-
-\endETEX
+\def\doifobjectreferencefoundelse{\mkifobjectreferencefoundelse}
 
 %D \macros
 %D   {doifobjectssupportedelse}
@@ -409,5 +341,9 @@
 %D that we must be careful in loading special drivers that do
 %D support objects while we still want to be able to use the
 %D \DVI\ output.
+
+%D Plugin code:
+
+\loadmarkfile{core-obj}
 
 \protect \endinput

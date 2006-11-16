@@ -76,6 +76,10 @@
       <cd:parameter name="title">
         <cd:constant type="cd:command"/>
       </cd:parameter>
+      <cd:parameter name="maybeyear">
+        <cd:constant type="off"/>
+        <cd:constant type="on" default="yes"/>
+      </cd:parameter>
        <cd:parameter name="criterium">
         <cd:constant type="cd:section"/>
         <cd:constant type="local"/>
@@ -254,6 +258,9 @@
   </cd:sequence>
   <cd:arguments>
     <cd:assignments list="yes">
+      <cd:parameter name="bibtex">
+        <cd:constant type="cd:text"/>
+      </cd:parameter>
       <cd:parameter name="database">
         <cd:constant type="cd:file"/>
       </cd:parameter>

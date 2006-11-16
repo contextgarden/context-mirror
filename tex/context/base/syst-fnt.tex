@@ -1,0 +1,43 @@
+%D \module
+%D   [       file=syst-fnt,
+%D        version=2006.08.11,
+%D          title=\CONTEXT\ System Macros,
+%D       subtitle=Font Things,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+% formal names cf the tb \& tbt
+
+\unprotect
+
+\def\fontslantperpoint   {\fontdimen1}
+\def\fontinterwordspace  {\fontdimen2}
+\def\fontinterwordstretch{\fontdimen3}
+\def\fontinterwordshrink {\fontdimen4}
+\def\fontexheight        {\fontdimen5}
+\def\fontemwidth         {\fontdimen6}
+\def\fontextraspace      {\fontdimen7}
+
+\def\slantperpoint       {\fontdimen1\font}
+\def\interwordspace      {\fontdimen2\font}
+\def\interwordstretch    {\fontdimen3\font}
+\def\interwordshrink     {\fontdimen4\font}
+\def\exheight            {\fontdimen5\font}
+\def\emwidth             {\fontdimen6\font}
+\def\extraspace          {\fontdimen7\font}
+
+\def\mathsupdisplay      {\fontdimen13}
+\def\mathsupnormal       {\fontdimen14}
+\def\mathsupcramped      {\fontdimen15}
+\def\mathsubnormal       {\fontdimen16}
+\def\mathsubcombined     {\fontdimen17}
+\def\mathaxisheight      {\fontdimen22}
+
+\def\currentspaceskip    {\interwordspace\!!plus\interwordstretch\!!minus\interwordshrink\relax}
+
+\protect \endinput

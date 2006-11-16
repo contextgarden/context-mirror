@@ -16,9 +16,7 @@
 %D Beware: don't rely on \longempty things, since this may
 %D change!
 
-%D To be sure:
-
-\newif\ifprocessingXML
+% \newif\ifprocessingXML
 
 \beginTEX
   \writestatus{XML}{sorry, XML is only supported in (pdf)etex}
@@ -26,15 +24,10 @@
   \endinput
 \endTEX
 
-% to be moved
-
-\ifx\globalscratchtoks \undefined \newtoks \globalscratchtoks  \fi
-\ifx\globalscratchdimen\undefined \newdimen\globalscratchdimen \fi
-
 % tzt nog eens child grabber maken; mooier in mathml
 
 %D This module is highly optimized for speed, which sometimes
-%D reads to rather unreadable code. Sorry for this.
+%D leads to rather unreadable code. Sorry for this.
 
 \beginETEX XML
 
@@ -205,6 +198,8 @@
 
 \fi
 
+\let\normal@@XMLelement\@@XMLelement % we may overload this one later inside a group
+
 \newtoks\XMLtoks
 \newtoks\XMLresetlist
 
@@ -244,152 +239,237 @@
 
 % part of this should move to a low level module
 
-\bgroup
-\catcode`\*=\@@comment
-\catcode`\.=\@@escape
-.catcode`.B=.@@begingroup
-.catcode`.E=.@@endgroup
-.catcode`.P=.@@parameter
+% we predefine some macros, just to satisfy the dep parser
 
-.catcode`.&=.@@active * .xdef.letterampersand  B.string&E
-.catcode`.<=.@@active * .xdef.letterless       B.string<E
-                      * .xdef.lettermore       B.string>E
-.catcode`.#=.@@active * .xdef.letterhash       B.string#E
-.catcode`.$=.@@active * .xdef.letterdollar     B.string$E
-.catcode`.%=.@@active * .xdef.letterpercent    B.string%E
-.catcode`.\=.@@active * .xdef.letterbackslash  B.string\E
-.catcode`.^=.@@active * .xdef.letterhat        B.string^E
-.catcode`._=.@@active * .xdef.letterunderscore B.string_E
-.catcode`.{=.@@active * .xdef.letterbgroup     B.string{E
-.catcode`.}=.@@active * .xdef.letteregroup     B.string}E
-.catcode`.|=.@@active * .xdef.letterbar        B.string|E
-.catcode`.~=.@@active * .xdef.lettertilde      B.string~E
+\let\enableXMLexpansion     \relax
+\let\disableXMLexpansion    \relax
+\let\enableXML              \relax
+\let\activateXMLescapetokens\relax
+\let\entitleXMLescapetokens \relax
+\let\reduceXMLescapetokens  \relax
+\let\ignoreXMLescapetokens  \relax
+\let\enableXMLelements      \relax
+\let\disableXMLelements     \relax
 
-.gdef.enableXMLexpansion
-  B.def<B.doXMLelementE.let&=.doXMLentityE
+% \bgroup
+% \catcode`\*=\@@comment
+% \catcode`\.=\@@escape
+% .catcode`.B=.@@begingroup
+% .catcode`.E=.@@endgroup
+% .catcode`.P=.@@parameter
+%
+% .catcode`.&=.@@active
+% .catcode`.<=.@@active
+%
+% .catcode`.#=.@@active
+% .catcode`.$=.@@active
+% .catcode`.%=.@@active
+% .catcode`.\=.@@active
+% .catcode`.^=.@@active
+% .catcode`._=.@@active
+% .catcode`.{=.@@active
+% .catcode`.}=.@@active
+% .catcode`.|=.@@active
+% .catcode`.~=.@@active
+%
+% .gdef.enableXMLexpansion
+%   B.def<B.doXMLelementE.let&=.doXMLentityE
+%
+% .gdef.disableXMLexpansion
+%   B.unexpanded.def<B.doXMLelementE.let&=.doXMLentityE
+%
+% * internally the # becomes two #'s (before expanding, during
+% * the parsing stage) which is why we let the first # gobble
+% * the second one
+% *
+% * since this only takes place when reading arguments, as in
+% * \startXMLdata ... cum, suis, we can take place of it
+% * there; this is needed because reading from file goes wrong
+% * (eating up argument)
+%
+% .unexpanded.gdef.enableXML
+%   B.catcode`.!=.@@other
+%    .catcode`.?=.@@other
+%    .catcode`.:=.@@other * active in french
+%    .catcode`.;=.@@other * active in french
+%    .catcode`.&=.@@active
+%    .catcode`.<=.@@active
+%    .catcode`.>=.@@other
+%    .catcode`."=.@@other
+%    .catcode`./=.@@other
+%    .catcode`.'=.@@other
+%    .catcode`.~=.@@other
+%    .catcode`.#=.@@other
+%    .let           &=.doXMLentity
+%    .unexpanded.def<B.doXMLelementE*
+%    .ifcase.XMLtokensreduction
+%      .entitleXMLescapetokens
+%    .or
+%      .reduceXMLescapetokens
+%    .else
+%      .ignoreXMLescapetokens
+%    .fi
+%    .processingXMLtrue
+%    .the.everyenableXML
+%   E
+%
+% .gdef.activateXMLescapetokens
+%   B.catcode`.$=.@@active
+%    .catcode`.%=.@@active
+%    .catcode`.\=.@@active
+%    .catcode`.^=.@@active
+%    .catcode`._=.@@active
+%    .catcode`.{=.@@active
+%    .catcode`.}=.@@active
+%    .catcode`.|=.@@active
+%   E
+%
+% .xdef.entitleXMLescapetokens
+%   B.noexpand.activateXMLescapetokens
+%    .noexpand.def.noexpand#B.noexpand&.string#035;E*
+%    .noexpand.def.noexpand$B.noexpand&.string#036;E*
+%    .noexpand.def.noexpand%B.noexpand&.string#037;E*
+%    .noexpand.def.noexpand\B.noexpand&.string#092;E*
+%    .noexpand.def.noexpand^B.noexpand&.string#094;E*
+%    .noexpand.def.noexpand_B.noexpand&.string#095;E*
+%    .noexpand.def.noexpand{B.noexpand&.string#123;E*
+%    .noexpand.def.noexpand}B.noexpand&.string#125;E*
+%    .noexpand.def.noexpand|B.noexpand&.string#124;E*
+%   E
+%
+% .gdef.reduceXMLescapetokens
+%   B.activateXMLescapetokens
+%    .def#B.string#E*
+%    .def$B.string$E*
+%    .def%B.string%E*
+%    .def\B.string\E*
+%    .def^B.string^E*
+%    .def_B.string_E*
+%    .def{B.string{E*
+%    .def}B.string}E*
+%    .def|B.string|E*
+%   E
+%
+% .gdef.ignoreXMLescapetokens
+%   B.catcode`.$=.@@other
+%    .catcode`.%=.@@other
+%    .catcode`.\=.@@other
+%    .catcode`.^=.@@other
+%    .catcode`._=.@@other
+%    .catcode`.{=.@@other
+%    .catcode`.}=.@@other
+%    .catcode`.|=.@@other
+%   E
+%
+% * The following macro can be invokes when reading from
+% * an auxiliary file.
+%
+% .unexpanded.gdef.enableXMLelements
+%   B.catcode60=.@@active * .catcode`.<=.@@active
+%    .catcode62=.@@other  * .catcode`.>=.@@other
+%    .unexpanded.def<B.doXMLelementE*
+%    .processingXMLtrue
+%   E
+%
+% .unexpanded.gdef.disableXMLelements
+%   B.catcode60=.@@active * .catcode`.<=.@@active
+%    .catcode62=.@@other  * .catcode`.>=.@@other
+%    .let<.relax * new
+%    .processingXMLfalse
+%   E
+%
+% .global.let<.relax * new
+% .global.let&.relax * new
+%
+% .egroup
+%
+% \def\disableXML
+%   {\setnormalcatcodes\processingXMLfalse}
 
-.gdef.disableXMLexpansion
-  B.unexpanded.def<B.doXMLelementE.let&=.doXMLentityE
+\letcatcodecommand\xmlcatcodesn `\& \doXMLentity
+\letcatcodecommand\xmlcatcodesn `\< \doXMLelement
+\letcatcodecommand\xmlcatcodese `\& \doXMLentity
+\letcatcodecommand\xmlcatcodese `\< \doXMLelement
+\letcatcodecommand\xmlcatcodesr `\& \doXMLentity
+\letcatcodecommand\xmlcatcodesr `\< \doXMLelement
 
-* internally the # becomes two #'s (before expanding, during
-* the parsing stage) which is why we let the first # gobble
-* the second one
-*
-* since this only takes place when reading arguments, as in
-* \startXMLdata ... cum, suis, we can take place of it
-* there; this is needed because reading from file goes wrong
-* (eating up argument)
+\letcatcodecommand\xmlcatcodesr `\# \letterhash
+\letcatcodecommand\xmlcatcodesr `\$ \letterdollar
+\letcatcodecommand\xmlcatcodesr `\% \letterpercent
+\letcatcodecommand\xmlcatcodesr `\\ \letterbackslash
+\letcatcodecommand\xmlcatcodesr `\^ \letterhat
+\letcatcodecommand\xmlcatcodesr `\_ \letterunderscore
+\letcatcodecommand\xmlcatcodesr `\{ \letterleftbrace
+\letcatcodecommand\xmlcatcodesr `\} \letterrightbrace
+\letcatcodecommand\xmlcatcodesr `\| \letterbar
 
-.unexpanded.gdef.enableXML
-  B.catcode`.!=.@@other
-   .catcode`.?=.@@other
-   .catcode`.:=.@@other * active in french
-   .catcode`.;=.@@other * active in french
-   .catcode`.&=.@@active
-   .catcode`.<=.@@active
-   .catcode`.>=.@@other
-   .catcode`."=.@@other
-   .catcode`./=.@@other
-   .catcode`.'=.@@other
-   .catcode`.~=.@@other
-   .catcode`.#=.@@other
-   .let           &=.doXMLentity
-   .unexpanded.def<B.doXMLelementE*
-   .ifcase.XMLtokensreduction
-     .entitleXMLescapetokens
-   .or
-     .reduceXMLescapetokens
-   .else
-     .ignoreXMLescapetokens
-   .fi
-   .processingXMLtrue
-   .the.everyenableXML
-  E
+\bgroup \catcode`\&=13
 
-.gdef.activateXMLescapetokens
-  B.catcode`.$=.@@active
-   .catcode`.%=.@@active
-   .catcode`.\=.@@active
-   .catcode`.^=.@@active
-   .catcode`._=.@@active
-   .catcode`.{=.@@active
-   .catcode`.}=.@@active
-   .catcode`.|=.@@active
-  E
+\xdef\entityhash      {&\string#035;}
+\xdef\entitydollar    {&\string#036;}
+\xdef\entitypercent   {&\string#037;}
+\xdef\entitybackslash {&\string#092;}
+\xdef\entityhat       {&\string#094;}
+\xdef\entityunderscore{&\string#095;}
+\xdef\entityleftbrace {&\string#123;}
+\xdef\entityrightbrace{&\string#125;}
+\xdef\entitybar       {&\string#124;}
 
-* .gdef.entitleXMLescapetokens
-*   B.activateXMLescapetokens
-*    .def#B&tex-hash;E*
-*    .def$B&tex-dollar;E*
-*    .def%B&tex-percent;E*
-*    .def\B&tex-backslash;E*
-*    .def^B&tex-hat;E*
-*    .def_B&tex-underscore;E*
-*    .def{B&tex-leftbrace;E*
-*    .def}B&tex-rightbrace;E*
-*    .def|B&tex-bar;E*
-*   E
+\egroup
 
-.xdef.entitleXMLescapetokens
-  B.noexpand.activateXMLescapetokens
-   .noexpand.def.noexpand#B.noexpand&.string#035;E*
-   .noexpand.def.noexpand$B.noexpand&.string#036;E*
-   .noexpand.def.noexpand%B.noexpand&.string#037;E*
-   .noexpand.def.noexpand\B.noexpand&.string#092;E*
-   .noexpand.def.noexpand^B.noexpand&.string#094;E*
-   .noexpand.def.noexpand_B.noexpand&.string#095;E*
-   .noexpand.def.noexpand{B.noexpand&.string#123;E*
-   .noexpand.def.noexpand}B.noexpand&.string#125;E*
-   .noexpand.def.noexpand|B.noexpand&.string#124;E*
-  E
+\letcatcodecommand\xmlcatcodese `\# \entityhash
+\letcatcodecommand\xmlcatcodese `\$ \entitydollar
+\letcatcodecommand\xmlcatcodese `\% \entitypercent
+\letcatcodecommand\xmlcatcodese `\\ \entitybackslash
+\letcatcodecommand\xmlcatcodese `\^ \entityhat
+\letcatcodecommand\xmlcatcodese `\_ \entityunderscore
+\letcatcodecommand\xmlcatcodese `\{ \entityleftbrace
+\letcatcodecommand\xmlcatcodese `\} \entityrightbrace
+\letcatcodecommand\xmlcatcodese `\| \entitybar
 
-.gdef.reduceXMLescapetokens
-  B.activateXMLescapetokens
-   .def#B.string#E*
-   .def$B.string$E*
-   .def%B.string%E*
-   .def\B.string\E*
-   .def^B.string^E*
-   .def_B.string_E*
-   .def{B.string{E*
-   .def}B.string}E*
-   .def|B.string|E*
-  E
+% we speed things up by explicitly setting the active char's < &
 
-.gdef.ignoreXMLescapetokens
-  B.catcode`.$=.@@other
-   .catcode`.%=.@@other
-   .catcode`.\=.@@other
-   .catcode`.^=.@@other
-   .catcode`._=.@@other
-   .catcode`.{=.@@other
-   .catcode`.}=.@@other
-   .catcode`.|=.@@other
-  E
+\bgroup \catcode`\<=13 \catcode`\&=13
 
-* The following macro can be invokes when reading from
-* an auxiliary file.
+\gdef\enableXML
+  {\ifcase\XMLtokensreduction
+     \setcatcodetable\xmlcatcodese \or
+     \setcatcodetable\xmlcatcodesr \else
+     \setcatcodetable\xmlcatcodesn
+   \fi
+   \let&\doXMLentity
+   \unexpanded\def<{\doXMLelement}%
+   \processingXMLtrue
+   \the\everyenableXML}
 
-.unexpanded.gdef.enableXMLelements
-  B.catcode60=.@@active * .catcode`.<=.@@active
-   .catcode62=.@@other  * .catcode`.>=.@@other
-   .unexpanded.def<B.doXMLelementE*
-   .processingXMLtrue
-  E
+\gdef\disableXML
+  {\setcatcodetable\ctxcatcodes % maybe \texcatcodes
+   \processingXMLfalse}
 
-.unexpanded.gdef.disableXMLelements
-  B.catcode60=.@@active * .catcode`.<=.@@active
-   .catcode62=.@@other  * .catcode`.>=.@@other
-   .let<.relax * new
-   .processingXMLfalse
-  E
+\gdef\enableXMLexpansion
+  {\def<{\doXMLelement}%
+   \let&\doXMLentity}
 
-.global.let<.relax * new
-.global.let&.relax * new
+\gdef\disableXMLexpansion
+  {\unexpanded\def<{\doXMLelement}%
+   \let&\doXMLentity}
 
-.egroup
+\unexpanded\gdef\enableXMLelements
+  {\catcode60=\@@active
+   \catcode62=\@@other
+   \unexpanded\def<{\doXMLelement}%
+   \processingXMLtrue}
 
-\def\disableXML{\setnormalcatcodes\processingXMLfalse}
+\unexpanded\gdef\disableXMLelements
+  {\catcode60=\@@active
+   \catcode62=\@@other
+   \let<\relax
+   \processingXMLfalse}
+
+\global\let<\relax
+\global\let&\relax
+
+\egroup
 
 %D An element can be singular or paired. A singular element is
 %D called an empty element. The following definitions are
@@ -1419,23 +1499,9 @@
      % maybe some day global handling here as well
    \fi}
 
-% \def\dosetXMLattributeC#1%
-%   {\ifx\@@XMLspac\originalXMLnamespace
-%      \@EA\def\csname\@@XMLvariable:\@@XMLclass:\@@XMLname\endcsname{#1}%
-%    \else
-%      \@EA\def\csname\@@XMLvariable:\@@XMLclass:\@@XMLspac:\@@XMLname\endcsname{#1}%
-%    \fi}
-
 \def\dosetXMLattributeC
   {\@EA\def\csname\@@XMLvariable:\@@XMLclass\ifx\@@XMLspac
      \originalXMLnamespace\else:\@@XMLspac\fi:\@@XMLname\endcsname}
-
-% \def\dosetXMLattributeD#1%
-%   {\ifx\@@XMLspac\originalXMLnamespace
-%      \@EA\def\csname\@@XMLvariable:\@@XMLclass:\currentXMLnamespace:\@@XMLname\endcsname{#1}%
-%    \else
-%      \@EA\def\csname\@@XMLvariable:\@@XMLclass:\@@XMLspac:\@@XMLname\endcsname{#1}%
-%    \fi}
 
 \def\dosetXMLattributeD
   {\@EA\def\csname\@@XMLvariable:\@@XMLclass:\ifx\@@XMLspac
@@ -2009,7 +2075,7 @@
 %       \doifsomething{#3}{\long\setvalue{\@@XMLpars:#1}{\getrawparameters[#2][#3]}}}}
 
 \long\def\setXMLarguments#1#2#3% element [tag] settings
-  {\doifassignmentelse{#2}
+  {\doifassignmentelse{#2}  % ROOM FOR OPTIMIZATION
      {\letbeundefined{\@@XMLmap:#1}%
       \long\setvalue{\@@XMLpars:#1}{\getrawparameters[\@@XMLvariable:#1:][#2]}}
      {\long\setvalue{\@@XMLmap:#1}{#2}% later we can init vars by this name
@@ -2574,6 +2640,27 @@
 
 \let\doifXMLparelse\doifXMLvarelse
 \let\doifXMLpar    \doifXMLvar
+
+%D Used in x-fo: I really need to document this!
+
+\bgroup \catcode`\<=\active
+
+% usage: \expanded{\rescanXMLatttributes{fo:table-cell}}
+
+\gdef\rescanXMLattributes  #1{\noexpand\dogetXMLarguments{#1}\currentXMLarguments>}
+\gdef\parseXMLattributes #1#2{\dogetXMLarguments{#1}#2>}
+
+\egroup
+
+\def\defXMLattributestring#1#2#3#4%
+  {\ifcsname\@@XMLvariable:#2:#3\endcsname
+     \@EA\convertcommand\csname\@@XMLvariable:#2:#3\endcsname\to#1%
+   \else
+     \convertargument#4\to#1%
+   \fi}
+
+\def\XMLprocess#1%
+  {\begingroup\enableXML\XMLflush{#1}\endgroup}
 
 \bgroup \catcode`<=\@@active
 

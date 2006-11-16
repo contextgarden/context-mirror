@@ -72,64 +72,37 @@
 \newif\ifPDFstrokecolor \PDFstrokecolortrue
 
 %D \macros
-%D   {dodoinsertfile,dofileinsertion,
-%D    definefileinsertion,doiffileinsertionsupported}
+%D   {dofileinsertion,definefileinsertion,doiffileinsertionsupported}
 %D
 %D File insertion depend on the driver or \TEX\ variant used.
 %D All driver modules use the same scheme for file insertion,
-%D and therefore have the next macro in common:
+%D and therefore have the next macro in common (stupified
+%D per august 2006):
 
-% \def\dododoinsertfile[#1][#2,#3][#4,#5]% \next kan weg
-%   {\def\fileinsertionclass{do#1insert}%
-%    \doifdefinedelse{\fileinsertionclass#3}
-%      {\def\next{\getvalue{\fileinsertionclass#3}}}
-%      {\doifdefinedelse{\fileinsertionclass#2}
-%         {\def\next{\getvalue{\fileinsertionclass#2}}}
-%         {\def\next{\gobbleninearguments}}}%
-%    \next{#4}{#5}}
-%
-% more modern
-%
-% \def\dododoinsertfile[#1][#2,#3][#4,#5]%
-%   {\def\fileinsertionclass{do#1insert}%
-%    \doifdefinedelse{\fileinsertionclass#3}
-%      {\getvalue{\fileinsertionclass#3}}
-%      {\doifdefinedelse{\fileinsertionclass#2}
-%         {\getvalue{\fileinsertionclass#2}}
-%         {\gobbleninearguments}}%
-%    {#4}{#5}}
-%
-% more efficient
-%
-% \def\dododoinsertfile[#1][#2,#3][#4,#5]%
-%   {\def\fileinsertionclass{do#1insert}%
-%    \executeifdefined{\fileinsertionclass#3}
-%      {\executeifdefined{\fileinsertionclass#2}\gobbleninearguments}%
-%    {#4}{#5}}
-%
-% cleaner
+\let\supportedfileinsertions\empty
+\let\supportedfilecheckers  \empty
 
-\def\dododoinsertfile[#1][#2,#3][#4,#5]%
-  {\executeifdefined{do#1insert#3}{\executeifdefined{do#1insert#2}\gobbleninearguments}{#4}{#5}}
-
-\def\dodoinsertfile#1#2#3%
-  {\dododoinsertfile[#1][#2][#3]}
-
-\def\definefileinsertion#1#2%
+\def\definefileinsertion#1#2#3%
   {\addtocommalist{#2}\supportedfileinsertions
-   \setvalue{do#1insert#2}}
+   \setvalue{do#1insert#2}{#3}}
 
-\def\dofileinsertion#1#2%
-  {\getvalue{do#1insert#2}}
+\def\definefilechecker#1#2#3%
+  {\addtocommalist{#2}\supportedfilecheckers
+   \setvalue{do#1check#2}{#3}}
+
+\def\dofileinsertion#1#2{\executeifdefined{do#1insert#2}\donothing}
+\def\dofilechecker  #1#2{\executeifdefined{do#1check#2} \donothing}
 
 \newevery \everyresetspecials \relax
 
 \appendtoks \let\supportedfileinsertions\empty \to \everyresetspecials
+\appendtoks \let\supportedfilecheckers  \empty \to \everyresetspecials
 
-\let\supportedfileinsertions\empty
+% \def\doiffileinsertionsupportedelse#1%
+%   {\expanded{\doifinstringelse{#1}{\c!tex,\c!tmp,\supportedfileinsertions}}}
 
 \def\doiffileinsertionsupportedelse#1%
-  {\ExpandBothAfter\doifinstringelse{#1}{\c!tex,\c!tmp,\supportedfileinsertions}}
+  {\expanded{\doifinstringelse{\truegraphictype{#1}}{\c!tex,\c!tmp,\supportedfileinsertions}}}
 
 %D This macro is called with 10 arguments, where the first
 %D one specifies the driver, like \type{yy} or \type{tr}. The

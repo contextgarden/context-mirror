@@ -42,6 +42,7 @@ use Config ;
 use FindBin ;
 use File::Copy ;
 use Getopt::Long ;
+use Data::Dumper;
 
 $Getopt::Long::passthrough = 1 ; # no error message
 $Getopt::Long::autoabbrev  = 1 ; # partial switch accepted
@@ -146,6 +147,7 @@ my $trace           = 0 ;
 my $afmpl           = 0 ;
 my $trees           = 'TEXMFFONTS,TEXMFLOCAL,TEXMFEXTRA,TEXMFMAIN,TEXMFDIST' ;
 my $pattern         = '' ;
+my $uselmencodings  = 0 ;
 
 my $fontsuffix  = "" ;
 my $namesuffix  = "" ;
@@ -198,6 +200,7 @@ my @cleanup         = () ;    # atl: build list of generated files to delete
     "expert"       => \$expert,
     "afmpl"        => \$afmpl,
     "afm2pl"       => \$afmpl,
+    "lm"           => \$uselmencodings,
     "rootlist=s"   => \$trees,
     "pattern=s"    => \$pattern,
     "trace"        => \$trace,    # --verbose conflicts with --ve
@@ -549,7 +552,6 @@ if ($sourcepath eq "auto") # todo uppercase root
                     foreach my $sub ("tfm","vf")
                       { foreach my $typ ("","-raw")
                           { my $nam = "$path/fonts/$sub/$vendor/$collection/$encoding$varlabel$typ-$file.$sub" ;
-                        #  { my $nam = "$path/fonts/$sub/$vendor/$collection/$encoding$varlabel$typ-$file$fontsuffix.$sub" ;
                             if (-s $nam)
                               { report ("removing : $encoding$varlabel$typ-$file.$sub") ;
                                 unlink $nam } } } }
@@ -558,11 +560,12 @@ if ($sourcepath eq "auto") # todo uppercase root
                   { report ("removing : $nam") ;
                     unlink "$nam" }
                 my $mapfile = "$encoding$varlabel-$vendor-$collection" ;
-                my $maproot = "$fontroot/fonts/map/pdftex/context";
-                if (-e "$maproot$mapfile.map")
-                  { report ("renaming : $mapfile.map -> $mapfile.bak") ;
-                    unlink "$maproot$mapfile.bak" ;
-                    rename "$maproot$mapfile.map", "$maproot$mapfile.bak" }
+				foreach my $map ("pdftex","dvips", "dvipdfm")
+                  { my $maproot = "$fontroot/fonts/map/$map/context/";
+                    if (-e "$maproot$mapfile.map")
+                       { report ("renaming : $mapfile.map -> $mapfile.bak") ;
+                         unlink "$maproot$mapfile.bak" ;
+                         rename "$maproot$mapfile.map", "$maproot$mapfile.bak" } }
                 exit }
             else
               { last } } } }
@@ -576,8 +579,12 @@ my $tfmpath = "$fontroot/fonts/tfm/$vendor/$collection" ;
 my $vfpath  = "$fontroot/fonts/vf/$vendor/$collection" ;
 my $pfbpath = "$fontroot/fonts/type1/$vendor/$collection" ;
 my $ttfpath = "$fontroot/fonts/truetype/$vendor/$collection" ;
-my $mappath = "$fontroot/fonts/map/pdftex/context" ;
+my $otfpath = "$fontroot/fonts/opentype/$vendor/$collection" ;
 my $encpath = "$fontroot/fonts/enc/dvips/context" ;
+
+sub mappath
+  { my $str = shift ;
+    return "$fontroot/fonts/map/$str/context" }
 
 # are not on local path ! ! ! !
 
@@ -597,20 +604,19 @@ if (($fontroot =~ /texmf\-fonts/o) || (-e "$fontroot/ls-R") || (-e "$fontroot/ls
 sub do_make_path
   { my $str = shift ;
     if ($str =~ /^(.*)\/.*?$/)
-      { do_make_path($1) }
+      { do_make_path($1); }
     mkdir $str, 0755 unless -d $str }
 
 sub make_path
   { my $str = shift ;
-    do_make_path("$fontroot/fonts") ;
-    do_make_path("$fontroot/fonts/$str") ;
-    do_make_path("$fontroot/fonts/$str/$vendor") ;
     do_make_path("$fontroot/fonts/$str/$vendor/$collection") }
 
 if ($makepath&&$install)
   { make_path ("afm") ; make_path ("type1") }
 
-do_make_path($mappath) ;
+do_make_path(mappath("pdftex")) ;
+do_make_path(mappath("dvips")) ;
+do_make_path(mappath("dvipdfm")) ;
 do_make_path($encpath) ;
 
 # now fonts/map and fonts/enc
@@ -624,21 +630,23 @@ if ($install)
 
 error ("unknown tfm path $tfmpath") unless -d $tfmpath ;
 error ("unknown vf  path $vfpath" ) unless -d $vfpath  ;
-error ("unknown map path $mappath") unless -d $mappath ;
+error ("unknown map path " . mappath("pdftex"))  unless -d mappath("pdftex");
+error ("unknown map path " . mappath("dvips"))   unless -d mappath("dvips");
+error ("unknown map path " . mappath("dvipdfm")) unless -d mappath("dvipdfm");
 
 my $mapfile = "$identifier.map" ;
 my $bakfile = "$identifier.bak" ;
 my $texfile = "$identifier.tex" ;
 
-                report  "encoding vector : $encoding" ;
+                report "encoding vector : $encoding" ;
 if ($variant) { report "encoding variant : $variant" }
                 report      "vendor name : $vendor" ;
                 report  "    source path : $sourcepath" ;
                 report  "font collection : $collection" ;
                 report  "texmf font root : $lcfontroot" ;
-                report  "pdftex map file : $mapfile" ;
+                report  "  map file name : $mapfile" ;
 
-if ($install)        { report "source path : $sourcepath" }
+if ($install) { report "source path : $sourcepath" }
 
 my $fntlist = "" ;
 
@@ -736,45 +744,74 @@ if ($install)
         copy_files("ttf",$sourcepath,$ttfpath) }
     if ($extension eq "otf")
       { make_path("truetype") ;
-	copy_files("otf",$sourcepath,$ttfpath) } }
+	    copy_files("otf",$sourcepath,$ttfpath) } }
 
 error ("no afm files found") unless @files ;
 
-my $map = my $tex = 0 ; my $mapdata = my $texdata = "" ;
+sub open_mapfile
+  { my $type = shift;
+	my $mappath = mappath($type);
+    my $mapdata = "";
+	my $mapptr = undef;
+	my $fullmapfile = $mapfile;
+	$fullmapfile = "$type-$fullmapfile" unless $type eq "pdftex";
+	if ($install)
+	  { copy ("$mappath/$mapfile","$mappath/$bakfile") ; }
+    if (open ($mapptr,"<$mappath/$mapfile"))
+      { report ("extending map file : $mappath/$mapfile") ;
+        while (<$mapptr>) { unless (/^\%/o) { $mapdata .= $_ } }
+        close ($mapptr) }
+    else
+      { report ("no map file at : $mappath/$mapfile") }
+    #~ unless (open ($mapptr,">$fullmapfile") )
+do_make_path($mappath) ;
+    unless (open ($mapptr,">$mappath/$fullmapfile") )
+      { report "warning : can't open $fullmapfile" }
+    else
+      { if ($type eq "pdftex")
+          { print $mapptr "% This file is generated by the TeXFont Perl script.\n";
+            print $mapptr "%\n" ;
+            print $mapptr "% You need to add the following line to your file:\n" ;
+            print $mapptr "%\n" ;
+            print $mapptr "%   \\pdfmapfile{+$mapfile}\n" ;
+            print $mapptr "%\n" ;
+            print $mapptr "% In ConTeXt you can best use:\n" ;
+            print $mapptr "%\n" ;
+            print $mapptr "%   \\loadmapfile\[$mapfile\]\n\n" } }
+    return ($mapptr,$mapdata) ; }
 
-copy ("$mappath/$mapfile","$mappath/$bakfile") ;
+sub finish_mapfile
+  { my ($type, $mapptr, $mapdata ) = @_;
+	my $fullmapfile = $mapfile;
+	$fullmapfile = "$type-$fullmapfile" unless $type eq "pdftex";
+    if (defined $mapptr)
+      { report ("updating map file : $mapfile (for $type)") ;
+        while ($mapdata =~ s/\n\n+/\n/mois) {} ;
+        $mapdata =~ s/^\s*//gmois ;
+        print $mapptr $mapdata ;
+        close ($mapptr) ;
+        if ($install)
+          { copy ("$fullmapfile", mappath($type) . "/$mapfile") ; } } }
 
-if (open (MAP,"<$mappath/$mapfile"))
-  { report ("extending map file : $mappath/$mapfile") ;
-    while (<MAP>) { unless (/^\%/o) { $mapdata .= $_ } }
-    close (MAP) }
-else
-  { report ("no map file at : $mappath/$mapfile") }
+
+my ($PDFTEXMAP,$pdftexmapdata)   = open_mapfile("pdftex");
+my ($DVIPSMAP,$dvipsmapdata)     = open_mapfile("dvips");
+my ($DVIPDFMMAP,$dvipdfmmapdata) = open_mapfile("dvipdfm");
+
+my $tex = 0 ;
+my $texdata = "" ;
 
 if (open (TEX,"<$texfile"))
   { while (<TEX>) { unless (/stoptext/o) { $texdata .= $_ } }
     close (TEX) }
 
-$map = open (MAP,">$mapfile") ;
 $tex = open (TEX,">$texfile") ;
 
-unless ($map) { report "warning : can't open $mapfile" }
 unless ($tex) { report "warning : can't open $texfile" }
-
-if ($map)
-  { print MAP "% This file is generated by the TeXFont Perl script.\n" ;
-    print MAP "%\n" ;
-    print MAP "% You need to add the following line to your file:\n" ;
-    print MAP "%\n" ;
-    print MAP "%   \\pdfmapfile{+$mapfile}\n" ;
-    print MAP "%\n" ;
-    print MAP "% In ConTeXt you can best use:\n" ;
-    print MAP "%\n" ;
-    print MAP "%   \\loadmapfile\[$mapfile\]\n\n" }
 
 if ($tex)
   { if ($texdata eq "")
-      { print TEX "% output=pdftex interface=en\n" ;
+      { print TEX "% interface=en\n" ;
         print TEX "\n" ;
         print TEX "\\usemodule[fnt-01]\n" ;
         print TEX "\n" ;
@@ -810,6 +847,227 @@ my $encfil = "" ;
 if ($encoding ne "") # evt -progname=context
   { $encfil = `kpsewhich -progname=pdftex $encoding$varlabel.enc` ;
     chomp $encfil ; if ($encfil eq "") { $encfil = "$encoding$varlabel.enc" } }
+
+sub build_pdftex_mapline
+  { my ($option, $usename, $fontname, $rawname, $cleanfont, $encoding, $varlabel, $strange)  = @_;
+    my $cleanname = $fontname;
+	$cleanname =~ s/\_//gio ;
+    $option =~ s/^\s+(.*)/$1/o ;
+    $option =~ s/(.*)\s+$/$1/o ;
+    $option =~ s/  / /g ;
+    if ($option ne "")
+      { $option = "\"$option\" 4" }
+    else
+      { $option = "4" }
+    # adding cleanfont is kind of dangerous
+    my $thename = "";
+	my $str = "";
+    my $theencoding = "" ;
+    if ($strange ne "")
+      { $thename = $cleanname ; $theencoding = "" ; }
+    elsif ($lcdf)
+      { $thename = $usename ; $theencoding = " $encoding$varlabel-$cleanname.enc" }
+    elsif ($afmpl)
+      { $thename = $usename ; $theencoding = " $encoding$varlabel.enc" }
+    elsif ($virtual)
+      { $thename = $rawname ; $theencoding = " $encoding$varlabel.enc" }
+    else
+      { $thename = $usename ; $theencoding = " $encoding$varlabel.enc" }
+if ($uselmencodings) {
+    $theencoding =~ s/^(ec)\.enc/lm\-$1.enc/ ;
+}
+    # quit rest if no type 1 file
+    my $pfb_sourcepath = $sourcepath ;
+    $pfb_sourcepath =~ s@/afm/@/type1/@ ;
+    unless ((-e "$pfbpath/$fontname.$extension")||
+			(-e "$pfb_sourcepath/$fontname.$extension")||
+			(-e "$sourcepath/$fontname.$extension")||
+			(-e "$ttfpath/$fontname.$extension"))
+	  { if ($tex) { $report .= "missing file: \\type \{$fontname.pfb\}\n" }
+		report ("missing pfb file : $fontname.pfb") }
+    # now add entry to map
+    if ($strange eq "") {
+	  if ($extension eq "otf") {
+		if ($lcdf) {
+		  my $mapline = "" ;
+		  if (open(ALTMAP,"texfont.map")) {
+			while (<ALTMAP>) {
+			  chomp ;
+			  # atl: we assume this b/c we always force otftotfm --no-type1
+			  if (/<<(.*)\.otf$/oi) {
+				$mapline = $_ ; last ;
+			  }
+			}
+			close(ALTMAP) ;
+		  } else {
+			report("no mapfile from otftotfm : texfont.map") ;
+		  }
+		  if ($preproc) {
+			$mapline =~ s/<\[/</;
+			$mapline =~ s/<<(\S+)\.otf$/<$1\.pfb/ ;
+		  } else {
+			$mapline =~ s/<<(\S+)\.otf$/<< $ttfpath\/$fontname.$extension/ ;
+		  }
+		  $str = "$mapline\n" ;
+		} else {
+		  if ($preproc) {
+			$str = "$thename $cleanfont $option < $fontname.pfb$theencoding\n" ;
+		  } else {
+			# PdfTeX can't subset OTF files, so we have to include the whole thing
+			# It looks like we also need to be explicit on where to find the file
+			$str = "$thename $cleanfont $option << $ttfpath/$fontname.$extension <$theencoding\n" ;
+		  }
+		}
+	  } else {
+		$str = "$thename $cleanfont $option < $fontname.$extension$theencoding\n" ;
+	  }
+    } else {
+	  $str = "$thename $cleanfont < $fontname.$extension\n" ;
+    }
+    return ($str, $thename); }
+
+sub build_dvips_mapline
+  { my ($option, $usename, $fontname, $rawname, $cleanfont, $encoding, $varlabel, $strange)  = @_;
+    my $cleanname = $fontname;
+	$cleanname =~ s/\_//gio ;
+    $option =~ s/^\s+(.*)/$1/o ;
+    $option =~ s/(.*)\s+$/$1/o ;
+    $option =~ s/  / /g ;
+    # adding cleanfont is kind of dangerous
+    my $thename = "";
+	my $str = "";
+    my $optionencoding = "" ;
+	my $encname = "";
+    my $theencoding = "" ;
+	if ($encoding ne "") # evt -progname=context
+	  { $encfil = `kpsewhich -progname=dvips $encoding$varlabel.enc` ;
+		chomp $encfil ;
+		if ($encfil eq "")
+         { $encfil = "$encoding$varlabel.enc" ; }
+		if (open(ENC,"<$encfil"))
+		  { while (<ENC>)
+			{ if (/^\/([^ ]+)\s*\[/)
+              { $encname = $1;
+                last; } }
+			close ENC; } }
+    if ($strange ne "")
+      { $thename = $cleanname ;
+		$optionencoding = "\"$option\""  if length($option)>1; }
+    elsif ($lcdf)
+      { $thename = $usename ;
+		$optionencoding = "\"$option $encname ReEncodeFont\" <$encoding$varlabel-$cleanname.enc" }
+    elsif ($afmpl)
+      { $thename = $usename ;
+		$optionencoding = "\"$option $encname ReEncodeFont\" <$encoding$varlabel.enc" }
+    elsif ($virtual)
+      { $thename = $rawname ;
+		$optionencoding = "\"$option $encname ReEncodeFont\" <$encoding$varlabel.enc" }
+    else
+      { $thename = $usename ;
+		$optionencoding = "\"$option $encname ReEncodeFont\" <$encoding$varlabel.enc" }
+if ($uselmencodings) {
+    $theencoding =~ s/^(ec)\.enc/lm\-$1.enc/ ;
+}
+    # quit rest if no type 1 file
+    my $pfb_sourcepath = $sourcepath ;
+    $pfb_sourcepath =~ s@/afm/@/type1/@ ;
+    unless ((-e "$pfbpath/$fontname.$extension")||
+			(-e "$pfb_sourcepath/$fontname.$extension")||
+			(-e "$sourcepath/$fontname.$extension")||
+			(-e "$ttfpath/$fontname.$extension"))
+	  { if ($tex) { $report .= "missing file: \\type \{$fontname.pfb\}\n" }
+       report ("missing pfb file : $fontname.pfb") }
+    # now add entry to map
+    if ($strange eq "") {
+	  if ($extension eq "otf") {
+		if ($lcdf) {
+		  my $mapline = "" ;
+		  if (open(ALTMAP,"texfont.map")) {
+			while (<ALTMAP>) {
+			  chomp ;
+			  # atl: we assume this b/c we always force otftotfm --no-type1
+			  if (/<<(.*)\.otf$/oi) {
+				$mapline = $_ ; last ;
+			  }
+			}
+			close(ALTMAP) ;
+		  } else {
+			report("no mapfile from otftotfm : texfont.map") ;
+		  }
+		  if ($preproc) {
+			$mapline =~ s/<\[/</;
+			$mapline =~ s/<<(\S+)\.otf$/<$1\.pfb/ ;
+		  } else {
+			$mapline =~ s/<<(\S+)\.otf$/<< $ttfpath\/$fontname.$extension/ ;
+		  }
+		  $str = "$mapline\n" ;
+		} else {
+		  if ($preproc) {
+			$str = "$thename $cleanfont $optionencoding <$fontname.pfb\n" ;
+		  } else {
+			# dvips can't subset OTF files, so we have to include the whole thing
+			# It looks like we also need to be explicit on where to find the file
+			$str = "$thename $cleanfont $optionencoding << $ttfpath/$fontname.$extension \n" ;
+		  }
+		}
+	  } else {
+		$str = "$thename $cleanfont $optionencoding <$fontname.$extension\n" ;
+	  }
+	} else {
+	  $str = "$thename $cleanfont $optionencoding <$fontname.$extension\n" ;
+	}
+    return ($str, $thename); }
+#	return $str; }
+
+
+sub build_dvipdfm_mapline
+  { my ($option, $usename, $fontname, $rawname, $cleanfont, $encoding, $varlabel, $strange)  = @_;
+    my $cleanname = $fontname;
+	$cleanname =~ s/\_//gio ;
+	$option =~ s/([\d\.]+)\s+SlantFont/ -s $1 /;
+	$option =~ s/([\d\.]+)\s+ExtendFont/ -e $1 /;
+    $option =~ s/^\s+(.*)/$1/o ;
+    $option =~ s/(.*)\s+$/$1/o ;
+    $option =~ s/  / /g ;
+    # adding cleanfont is kind of dangerous
+    my $thename = "";
+	my $str = "";
+    my $theencoding = "" ;
+    if ($strange ne "")
+      { $thename = $cleanname ; $theencoding = "" ; }
+    elsif ($lcdf)
+      { $thename = $usename ; $theencoding = " $encoding$varlabel-$cleanname" }
+    elsif ($afmpl)
+      { $thename = $usename ; $theencoding = " $encoding$varlabel" }
+    elsif ($virtual)
+      { $thename = $rawname ; $theencoding = " $encoding$varlabel" }
+    else
+      { $thename = $usename ; $theencoding = " $encoding$varlabel" }
+if ($uselmencodings) {
+    $theencoding =~ s/^(ec)\.enc/lm\-$1.enc/ ;
+}
+    # quit rest if no type 1 file
+    my $pfb_sourcepath = $sourcepath ;
+    $pfb_sourcepath =~ s@/afm/@/type1/@ ;
+    unless ((-e "$pfbpath/$fontname.$extension")||
+			(-e "$pfb_sourcepath/$fontname.$extension")||
+			(-e "$sourcepath/$fontname.$extension")||
+			(-e "$ttfpath/$fontname.$extension"))
+	  { if ($tex) { $report .= "missing file: \\type \{$fontname.pfb\}\n" }
+		report ("missing pfb file : $fontname.pfb") }
+    # now add entry to map
+    if ($strange eq "") {
+	  if ($extension eq "otf") {
+		#TH: todo
+	  } else {
+		$str = "$thename $theencoding $fontname $option\n" ;
+	  }
+	} else {
+	  $str = "$thename $fontname $option\n" ;
+	}
+    return ($str, $thename); }
+#	return $str; }
+
 
 sub preprocess_font
   { my ($infont,$pfbfont) = @_ ;
@@ -850,20 +1108,20 @@ foreach my $file (@files)
     if ($encoding ne "")
       { $encstr = " -T $encfil" }
     if ($caps ne "")
-      { $vfstr = " -V $raw$cleanname$fontsuffix" }
+      { $vfstr = " -V $use$cleanname$fontsuffix" }
     else # if ($virtual)
-      { $vfstr = " -v $raw$cleanname$fontsuffix" }
+      { $vfstr = " -v $use$cleanname$fontsuffix" }
     my $font = "";
     # let's see what we have here (we force texnansi.enc to avoid error messages)
     if ($lcdf)
       { my $command = "otfinfo -p $file" ;
-        print "$command\n" if $trace ;
+        print "$command\n" if $trace;
         $font = `$command` ;
         chomp $font ;
         $cleanname = $cleanfont = $font }
     else
       { my $command = "afm2tfm \"$file\" -p texnansi.enc texfont.tfm" ;
-        print "$command\n" if $trace ;
+        print "$command (for testing)\n" if $trace ;
         $font = `$command` ;
         UnLink "texfont.tfm" ;
         ($rawfont,$cleanfont,$restfont) = split(/\s/,$font) }
@@ -912,6 +1170,9 @@ foreach my $file (@files)
             if ($afmpl)
               { report "         generating pl : $cleanname$fontsuffix (from $cleanname)" ;
                 $encstr = " -p $encfil" ;
+if ($uselmencodings) {
+    $encstr =~ s/(ec)\.enc$/lm\-$1\.enc/ ;
+}
                 my $command = "afm2pl -f afm2tfm $shape $passon $encstr $file $cleanname$fontsuffix.vpl" ;
                 print "$command\n" if $trace ;
                 my $ok = `$command` ;
@@ -924,28 +1185,28 @@ foreach my $file (@files)
                 my $command = "afm2tfm $file $shape $passon $encstr $vfstr $raw$cleanname$fontsuffix" ;
                 print "$command\n" if $trace ;
                 $font = `$command` }
-                # generate vf file if needed
-                chomp $font ;
-                if ($font =~ /.*?([\d\.]+)\s*ExtendFont/io) { $extend = $1 }
-                if ($font =~ /.*?([\d\.]+)\s*SlantFont/io)  { $slant  = $1 }
-                if ($extend ne "") { $option .= " $1 ExtendFont " }
-                if ($slant ne "")  { $option .= " $1 SlantFont " }
-                if ($noligs) { removeligatures("$raw$cleanname$fontsuffix") }
-                if ($afmpl)
-                  { report "generating new tfm : $use$cleanname$fontsuffix" ;
-                    my $command = "pltotf $cleanname$fontsuffix.vpl $use$cleanname$fontsuffix.tfm" ;
-                    print "$command\n" if $trace ;
-                    my $ok = `$command` }
-                elsif ($virtual)
-                  { report "generating new vf : $use$cleanname$fontsuffix (from $raw$cleanname)" ;
-                    my $command = "vptovf $raw$cleanname$fontsuffix.vpl $use$cleanname$fontsuffix.vf $use$cleanname$fontsuffix.tfm" ;
-                    print "$command\n" if $trace ;
-                    my $ok = `$command` }
-                else
-                  { report "generating new tfm : $use$cleanname$fontsuffix (from $raw$cleanname)" ;
-                    my $command = "pltotf $raw$cleanname$fontsuffix.vpl $use$cleanname$fontsuffix.tfm" ;
-                    print "$command\n" if $trace ;
-                    my $ok = `$command` } } }
+			# generate vf file if needed
+			chomp $font ;
+			if ($font =~ /.*?([\d\.]+)\s*ExtendFont/io) { $extend = $1 }
+			if ($font =~ /.*?([\d\.]+)\s*SlantFont/io)  { $slant  = $1 }
+			if ($extend ne "") { $option .= " $extend ExtendFont " }
+			if ($slant ne "")  { $option .= " $slant SlantFont " }
+			if ($noligs) { removeligatures("$raw$cleanname$fontsuffix") }
+			if ($afmpl)
+			  { report "generating new tfm : $use$cleanname$fontsuffix" ;
+				my $command = "pltotf $cleanname$fontsuffix.vpl $use$cleanname$fontsuffix.tfm" ;
+				print "$command\n" if $trace ;
+				my $ok = `$command` }
+			elsif ($virtual)
+			  { report "generating new vf : $use$cleanname$fontsuffix (from $use$cleanname)" ;
+				my $command = "vptovf $use$cleanname$fontsuffix.vpl $use$cleanname$fontsuffix.vf $use$cleanname$fontsuffix.tfm" ;
+				print "$command\n" if $trace ;
+				my $ok = `$command` }
+			else
+			  { report "generating new tfm : $use$cleanname$fontsuffix (from $raw$cleanname)" ;
+				my $command = "pltotf $raw$cleanname$fontsuffix.vpl $use$cleanname$fontsuffix.tfm" ;
+				print "$command\n" if $trace ;
+				my $ok = `$command` } } }
     elsif (-e "$sourcepath/$cleanname.tfm" )
       { report "using existing tfm : $cleanname.tfm" }
     elsif (($strange eq "expert")&&($expert))
@@ -993,85 +1254,43 @@ foreach my $file (@files)
       { UnLink ("$rawname.$suf", "$usename.$suf") ;
         UnLink ("$cleanname.$suf", "$fontname.$suf") ;
         UnLink ("$cleanname$fontsuffix.$suf", "$fontname$fontsuffix.$suf") }
-    # add line to maps file
-    $option =~ s/^\s+(.*)/$1/o ;
-    $option =~ s/(.*)\s+$/$1/o ;
-    $option =~ s/  / /o ;
-    if ($option ne "")
-      { $option = "\"$option\" 4" }
-    else
-      { $option = "4" }
-    # adding cleanfont is kind of dangerous
-    my $thename = my $str = my $theencoding = "" ;
-    if ($strange ne "")
-      { $thename = $cleanname ; $theencoding = "" ; }
-    elsif ($lcdf)
-      { $thename = $usename ; $theencoding = " $encoding$varlabel-$cleanname.enc" }
-    elsif ($afmpl)
-      { $thename = $usename ; $theencoding = " $encoding$varlabel.enc" }
-    elsif ($virtual)
-      { $thename = $rawname ; $theencoding = " $encoding$varlabel.enc" }
-    else
-      { $thename = $usename ; $theencoding = " $encoding$varlabel.enc" }
-    # quit rest if no type 1 file
-    my $pfb_sourcepath = $sourcepath ;
-    $pfb_sourcepath =~ s@/afm/@/type1/@ ;
-    unless ((-e "$pfbpath/$fontname.$extension")||
-             (-e "$pfb_sourcepath/$fontname.$extension")||
-             (-e "$sourcepath/$fontname.$extension")||
-	    (-e "$ttfpath/$fontname.$extension"))
-     { if ($tex) { $report .= "missing file: \\type \{$fontname.pfb\}\n" }
-       report ("missing pfb file : $fontname.pfb") }
-    # now add entry to map
-    if ($strange eq "") {
-        if ($extension eq "otf") {
-            if ($lcdf) {
-                my $mapline = "" ;
-                if (open(ALTMAP,"texfont.map")) {
-                    while (<ALTMAP>) {
-                        chomp ;
-                        # atl: we assume this b/c we always force otftotfm --no-type1
-                        if (/<<(.*)\.otf$/oi) {
-                            $mapline = $_ ; last ;
-                        }
-                    }
-                    close(ALTMAP) ;
-                } else {
-                    report("no mapfile from otftotfm : texfont.map") ;
-                }
-                if ($preproc) {
-                    $mapline =~ s/<\[/</;
-                    $mapline =~ s/<<(\S+)\.otf$/<$1\.pfb/ ;
-                } else {
-                    $mapline =~ s/<<(\S+)\.otf$/<< $ttfpath\/$fontname.$extension/ ;
-                }
-                $str = "$mapline\n" ;
-            } else {
-                if ($preproc) {
-                    $str = "$thename $cleanfont $option < $fontname.pfb$theencoding\n" ;
-                } else {
-                    # PdfTeX can't subset OTF files, so we have to include the whole thing
-                    # It looks like we also need to be explicit on where to find the file
-                    $str = "$thename $cleanfont $option << $ttfpath/$fontname.$extension <[$theencoding\n" ;
-                }
-            }
-        } else {
-            $str = "$thename $cleanfont $option < $fontname.$extension$theencoding\n" ;
-        }
-    } else {
-        $str = "$thename $cleanfont < $fontname.$extension\n" ;
+    # add line to map files
+	my $str = my $thename = "";
+    ($str, $thename) = build_pdftex_mapline($option, $usename, $fontname, $rawname, $cleanfont, $encoding, $varlabel, $strange);
+	# check for redundant entries
+    if (defined $PDFTEXMAP) {
+	  $pdftexmapdata =~ s/^$thename\s.*?$//gmis ;
+	  if ($afmpl) {
+		if ($pdftexmapdata =~ s/^$rawname\s.*?$//gmis) {
+		  report ("removing raw file : $rawname") ;
+		}
+	  }
+	  $maplist .= $str ;
+	  $pdftexmapdata .= $str ;
     }
-    # check for redundant entries
-    if ($map) {
-        $mapdata =~ s/^$thename\s.*?$//gmis ;
-        if ($afmpl) {
-            if ($mapdata =~ s/^$rawname\s.*?$//gmis) {
-               report ("removing raw file : $rawname") ;
-            }
-        }
-        $maplist .= $str ;
-        $mapdata .= $str ;
+    ($str, $thename) = build_dvips_mapline($option, $usename, $fontname, $rawname, $cleanfont, $encoding, $varlabel, $strange);
+	# check for redundant entries
+    if (defined $DVIPSMAP) {
+	  $dvipsmapdata =~ s/^$thename\s.*?$//gmis ;
+	  if ($afmpl) {
+		if ($dvipsmapdata =~ s/^$rawname\s.*?$//gmis) {
+		  report ("removing raw file : $rawname") ;
+		}
+	  }
+	  $dvipsmapdata .= $str ;
     }
+    ($str, $thename) = build_dvipdfm_mapline($option, $usename, $fontname, $rawname, $cleanfont, $encoding, $varlabel, $strange);
+	# check for redundant entries
+    if (defined $DVIPDFMMAP) {
+	  $dvipdfmmapdata =~ s/^$thename\s.*?$//gmis ;
+	  if ($afmpl) {
+		if ($dvipdfmmapdata =~ s/^$rawname\s.*?$//gmis) {
+		  report ("removing raw file : $rawname") ;
+		}
+	  }
+	  $dvipdfmmapdata .= $str ;
+    }
+
     # write lines to tex file
     if (($strange eq "expert")&&($expert)) {
         $fntlist .= "\\definefontsynonym[$cleanfont$namesuffix][$cleanname] \% expert\n" ;
@@ -1090,14 +1309,13 @@ foreach my $file (@files)
     }
 }
 
-if ($map)
-  { report ("updating map file : $mapfile") ;
-    while ($mapdata =~ s/\n\n+/\n/mois) {} ;
-    $mapdata =~ s/^\s*//gmois ;
-    print MAP $mapdata }
+finish_mapfile("pdftex",  $PDFTEXMAP,  $pdftexmapdata);
+finish_mapfile("dvipdfm", $DVIPDFMMAP, $dvipdfmmapdata);
+finish_mapfile("dvips",   $DVIPSMAP,   $dvipsmapdata);
 
 if ($tex)
-  { $mappath =~ s/\\/\//go ;
+  { my $mappath = mappath("pdftex");
+    $mappath =~ s/\\/\//go ;
     $savedoptions =~ s/^\s+//gmois ; $savedoptions =~ s/\s+$//gmois ;
     $fntlist      =~ s/^\s+//gmois ; $fntlist      =~ s/\s+$//gmois ;
     $maplist      =~ s/^\s+//gmois ; $maplist      =~ s/\s+$//gmois ;
@@ -1127,10 +1345,7 @@ if ($tex)
     print TEX "\n" ;
     print TEX "\\stoptext\n" }
 
-if ($map) { close (MAP) }
 if ($tex) { close (TEX) }
-
-copy ($mapfile,"$mappath/$mapfile") ;
 
 # atl: global cleanup with generated files (afm & ttf don't mix)
 
@@ -1146,9 +1361,9 @@ print "\n" ; system ("mktexlsr $fontroot") ; print "\n" ;
 
 if ($show) { system ("texexec --once --silent $texfile") }
 
-@files = validglob("$identifier.*") ;
+@files = validglob("$identifier.* *-$identifier.map") ;
 
 foreach my $file (@files)
-  { unless ($file =~ /(tex|pdf|log|mp|tmp)$/io) { unlink $file } }
+  { unless ($file =~ /(tex|pdf|log|mp|tmp)$/io) { UnLink ($file) } }
 
 exit ;

@@ -635,12 +635,12 @@
 \unexpanded\def\FirstNCharacters#1#2% \FirstNCharacters{3}{fr{\"o}beln}
   {\bgroup
    \scratchcounter\zerocount
-   \def\docommando##1%
+   \def\docommand##1%
      {\ifnum\scratchcounter=#1\else
         ##1\relax % catches ##1 = \"e and alike
         \advance\scratchcounter\plusone
       \fi}
-   \handletokens#2\with\docommando
+   \handletokens#2\with\docommand
    \egroup}
 
 %D \macros

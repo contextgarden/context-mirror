@@ -105,9 +105,34 @@
 \def\s!complex {complex}      \def\s!start   {start}
 \def\s!simple  {simple}       \def\s!stop    {stop}
 
-\def\!!width   {width}        \def\!!plus    {plus}
-\def\!!height  {height}       \def\!!minus   {minus}
-\def\!!depth   {depth}        \def\!!to      {to}
+%D The word \type{height} takes 6~token memory cells. The
+%D control sequence \type{\height} on the other hand uses only
+%D one. Knowing this, we can improve the performance of \TEX,
+%D both is terms of speed and memory usage, by using control
+%D sequences instead of the words written in full.
+%D
+%D Where in the \ASCII\ file the second lines takes nine extra
+%D characters, \TEX\ saves us 13~tokens.
+%D
+%D \starttyping
+%D \hrule width 10pt height 2pt depth 1pt
+%D \hrule \!!width 10pt \!!height 2pt \!!depth 1pt
+%D \stoptyping
+%D
+%D One condition is that we have defined \type{\!!height},
+%D \type{\!!width} and \type{\!!depth} as respectively
+%D \type{height}, \type{width} and \type{depth}. Using this
+%D scheme therefore only makes sense when a token sequence is
+%D used more than once. Savings like this should of course be
+%D implemented in english, just because \TEX\ is english.
+
+\def\!!width  {width}
+\def\!!height {height}
+\def\!!depth  {depth}
+\def\!!plus   {plus}
+\def\!!minus  {minus}
+\def\!!fill   {fill}
+\def\!!to     {to}
 
 %D \macros
 %D   {defineinterfaceconstant,
@@ -219,17 +244,17 @@
   \def\defaultinterface{english}
 
   \def\selectinterface
-    {\def\docommando##1##2%
+    {\def\docommand##1##2%
        {\bgroup
         \endlinechar\minusone
         \global\read16 to ##1
         \egroup
         \doifnothing\currentinterface{\let##1=##2}%
         \doifundefined{\s!prefix!##1}{\let##1=##2}}%
-     \docommando\currentinterface\defaultinterface
+     \docommand\currentinterface\defaultinterface
      \writestatus{interface}{defining \currentinterface\space interface}%
      \writeline
-     \docommando\currentresponses\currentinterface
+     \docommand\currentresponses\currentinterface
      \writestatus{interface}{using \currentresponses\space messages}%
      \writeline
      \let\selectinterface\relax}
@@ -422,6 +447,8 @@
    \else
      \expandafter\addinterfacemessage
    \fi}
+
+\let\stopmessages\undefined % for dep checker
 
 \def\startmessages #1 library: #2
   {\definemessageconstant{#2}% handy for modules
@@ -1525,15 +1552,14 @@
 
 %D Out of convenience we define the banners here.
 
-\edef\contextbanner
+\def\contextbanner
   {ConTeXt \space
-   ver: \noexpand \contextversion   \space \space
-   fmt: \noexpand \formatversion    \space \space
-   int: \noexpand \currentinterface \space \space
-   mes: \noexpand \currentresponses}
+   ver: \contextversion \space \contextmark \space \space
+   fmt: \formatversion \space \space
+   int: \currentinterface/\currentresponses}
 
 \def\showcontextbanner
-  {\writeline\writestring{\contextbanner}\writeline}
+  {\writeline\writebanner{\contextbanner}\writeline}
 
 \edef\formatversion
   {\ifx\normalyear \undefined\the\year \else\the\normalyear \fi.%
@@ -1541,11 +1567,11 @@
    \ifx\normalday  \undefined\the\day  \else\the\normalday  \fi}
 
 \ifx\contextversion\undefined
-    \def\contextversion{unknown}
+    \def\contextversion      {unknown}
     \def\contextversionnumber{0}
 \else
     \def\contextversionnumber#1.#2.#3 #4:#5\relax{#1\ifnum#2<10 0\fi#2\ifnum#3<10 0\fi#3 #4:#5}
-    \edef\contextversionnumber{\expandafter\contextversionnumber\contextversion\relax}
+    \edef\contextversionnumber{\expandafter\contextversionnumber\contextversion\relax\space\contextmark}
 \fi
 
 \ifx\undefined\normaldump

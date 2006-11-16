@@ -91,8 +91,8 @@ EOT
                     f.puts("")
                     f.puts(@@start[method])
                 end
-                data.gsub!(/[^\\]%.*?$/mo) do
-                    ''
+                data.gsub!(/([^\\])%.*?$/mo) do
+                    $1
                 end
                 data.scan(/(verbatim|b)tex\s*(.*?)\s*etex/mo) do
                     tag, text = $1, $2

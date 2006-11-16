@@ -6,7 +6,7 @@
 
     <!-- newline, temp hack, latest texexec handles it okay -->
 
-    <xsl:template match ="processing-instruction()"><xsl:copy/><xsl:text>
+    <xsl:template match="processing-instruction()"><xsl:copy/><xsl:text>
     </xsl:text></xsl:template>
 
     <!-- xsl:template match="*"><xsl:copy/></xsl:template -->
@@ -20,7 +20,7 @@
     </xsl:template>
 -->
 
-    <xsl:template match = "node()|@*" >
+    <xsl:template match="node()|@*" >
         <xsl:copy>
             <xsl:apply-templates select = "node()|@*" />
         </xsl:copy>

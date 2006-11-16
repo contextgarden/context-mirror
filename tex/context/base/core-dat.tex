@@ -227,10 +227,10 @@
 \def\doprocessrecords[#1][#2][#3]%
   {\bgroup
    \ifx\\\undefined\let\\\relax\fi
-   \def\docommando##1%
+   \def\docommand##1%
      {\resetrecordentry{##1}%
       \appendtoks\resetrecordentry{##1}\to\resetrecordlist}%
-   \processcommacommand[\getvalue{\??db#1\c!velden}]\docommando
+   \processcommacommand[\getvalue{\??db#1\c!velden}]\docommand
    \let\setrecordentry\skiprecord
    \the\resetrecordlist
    \doifelse{#2}\v!all   % 't Is nu eenmaal alles

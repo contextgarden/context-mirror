@@ -64,15 +64,6 @@
 \def\redouseGNUPLOTgraphic[#1][#2]#3%
   {\dodouseGNUPLOTgraphic[#3][]}
 
-% \bgroup
-%     \obeylines
-%     \gdef\fixGNUPLOTnewlines%
-%       {\def\par{;\@@svline}%
-%        \def ^^M{;\@@svline}}
-% \egroup
-
-\ifx\systemendofline\undefined \def\systemendofline{\rawcharacter{10}} \fi
-
 \newtoks\everyGNUPLOTgraphic
 
 % gnuplot only seems to handle lf so we cannot use \mappartolineend
@@ -81,12 +72,12 @@
 
 \appendtoks
     \obeylines
-    \def\obeyedline{;\systemendofline}%
+    \def\obeyedline{;\outputnewlinechar}%
 \to \everyGNUPLOTgraphic
 
 \appendtoks
     \let\%\letterpercent
-    \def\ {\letterbackslash\systemendofline}%
+    \def\ {\letterbackslash\outputnewlinechar}%
 \to \everyGNUPLOTgraphic
 
 \def\dodouseGNUPLOTgraphic[#1][#2]%

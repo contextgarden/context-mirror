@@ -132,19 +132,23 @@
 
 \def\redefinebotharrow#1#2#3% real dirty, this overload!
   {\doifdefined{#1}
-     {\pushmacro\dotripleempty
-      \def\dotripleempty##1[##2][##3]{\setvalue{#1}{\dotripleempty\xmtharrow[#2][##3]}}%
+     {\pushmacro\dohandlemtharrow
+      \def\dohandlemtharrow[##1][##2]{\setvalue{#1}{\dohandlemtharrow[#2][##2]}}%
+      % == \def\dohandlemtharrow[##1][##2]{\dodefinebotharrow{#1}{#2}{##2}}%
       \getvalue{#1}%
-      \popmacro\dotripleempty}}
+      \popmacro\dohandlemtharrow}}
 
 \def\dodefinebotharrow#1#2#3%
-  {\setvalue{#1}{\dotripleempty\xmtharrow[#2][#3]}}
+  {\setvalue{#1}{\dohandlemtharrow[#2][#3]}}
 
-\def\xmtharrow[#1][#2][#3]% #3 == optional arg
-  {\def\doxmtharrow{\dodoxmtharrow[#1,\empty,\empty][#2,\empty,\empty][#3]}% {##1}{##2}
-   \dodoublegroupempty\doxmtharrow}
+\def\dohandlemtharrow
+  {\dotripleempty\doxmtharrow}
 
-\def\dodoxmtharrow[#1,#2,#3][#4,#5,#6][#7]#8#9% [3] is the optional arg
+\def\doxmtharrow[#1][#2][#3]% #3 == optional arg
+  {\def\dodoxmtharrow{\dododoxmtharrow[#1,\empty,\empty][#2,\empty,\empty][#3]}% {##1}{##2}
+   \dodoublegroupempty\dodoxmtharrow}
+
+\def\dododoxmtharrow[#1,#2,#3][#4,#5,#6][#7]#8#9% [3] is the optional arg
   {\edef\!!stringa{#2}%
    \ifx\!!stringa\empty
      \ifsecondargument
@@ -188,7 +192,6 @@
 \def\rightharpoonupfill   {\defaultmtharrowfill \relbar              \relbar \rightharpoonup   }
 \def\leftharpoondownfill  {\defaultmtharrowfill \leftharpoondown     \relbar \relbar           }
 \def\leftharpoonupfill    {\defaultmtharrowfill \leftharpoonup       \relbar \relbar           }
-
 
 \def\hookleftfill {\defaultmtharrowfill \leftarrow            \relbar{\relbar\joinrel\rhook}}
 \def\hookrightfill{\defaultmtharrowfill{\lhook\joinrel\relbar}\relbar \rightarrow}

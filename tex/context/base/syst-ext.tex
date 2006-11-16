@@ -320,6 +320,9 @@
 \def\increment{\doifnextcharelse(\dodoincrement\doincrement}
 \def\decrement{\doifnextcharelse(\dododecrement\dodecrement}
 
+\def\incrementvalue#1{\expandafter\increment\csname#1\endcsname}
+\def\decrementvalue#1{\expandafter\decrement\csname#1\endcsname}
+
 %D \macros
 %D  {newsignal}
 %D
@@ -378,10 +381,12 @@
 %D use the following alternative, which fools \TEX\ about
 %D the new commands being \type {\outer} ones.
 
-\def\newskimen#1%
-  {\ifx#1\undefined
-     \csname new\ifnum\count11>\count12 skip\else dimen\fi\endcsname#1%
-   \fi}
+% \def\newskimen#1%
+%   {\ifx#1\undefined
+%      \csname new\ifnum\count11>\count12 skip\else dimen\fi\endcsname#1%
+%    \fi}
+
+\let\newskimen\newdimen % it's all etex or later now
 
 %D \macros
 %D   {strippedcsname}
@@ -402,10 +407,12 @@
 %D
 %D Slower but better:
 
-{\catcode`.=\@@escape .catcode`.\ 12 .xdef.letterbackslash{.string\}} % hack
+\ifx\letterbackslash\undefined
+    {\catcode`.=0 .catcode`.\ 12 .xdef.letterbackslash{.string\}} % hack
+\fi
 
-\def\strippedcsname
-  {\expandafter\dostrippedcsname\string}
+\def\strippedcsname#1% this permits \strippedcsname{\xxx} and \strippedcsname{xxx}
+  {\expandafter\dostrippedcsname\string#1}
 
 \def\dostrippedcsname#1%
   {\if\noexpand#1\letterbackslash\else#1\fi}
@@ -773,30 +780,6 @@
   {\@EA\let\@EA\recurselevel\csname\@@irecurse\recursedepth\endcsname
    \global\advance\outerrecurse \minusone }
 
-%D The third alternative looks a bit different and uses a
-%D pseudo counter. When this macro is nested, we have to use
-%D different counters. This time we use keywords.
-%D
-%D \starttyping
-%D \def\alfa{2} \def\beta{100} \def\gamma{3}
-%D
-%D \for \n=55    \to 100   \step  1      \do {... \n ...}
-%D \for \n=\alfa \to \beta \step  \gamma \do {... \n ...}
-%D \for \n=\n    \to 120   \step  1      \do {... \n ...}
-%D \for \n=120   \to 100   \step -3      \do {... \n ...}
-%D \for \n=55    \to 100   \step  2      \do {... \n ...}
-%D \stoptyping
-%D
-%D Only in the third example we need to predefine \type{\n}.
-%D The use of \type{\od} as a dilimiter would have made nested
-%D use more problematic.
-
-% maybe this one will become obsolete
-
-\def\for#1=#2\to#3\step#4\do#5%
-  {\dostepwiserecurse{#2}{#3}{#4}
-     {\let#1\recurselevel#5\let#1\recurselevel}}
-
 %D \macros
 %D   {doloop,exitloop}
 %D
@@ -942,6 +925,88 @@
 %D You can also quit a loop immediately, by using \type
 %D {\exitloopnow} instead. Beware, this is more sensitive
 %D for conditional errors.
+
+%D Krzysztof Leszczynski suggested to provide access to the level by
+%D means of a \type {#1}. I decided to pass the more frquently used
+%D level as \type {#1} and the less favoured depth as \type {#2}. The
+%D intended usage is:
+%D
+%D \starttyping
+%D \dorecurse{3}{\definesymbol[test-#1][xx-#1]}
+%D
+%D \def\test{\dorecurse{3}{\definesymbol[test-##1][xx-##1]}} \test
+%D
+%D \symbol[test-1]\quad\symbol[test-2]\quad\symbol[test-3]
+%D \stoptyping
+%D
+%D Since the hashed arguments are expanded, we don't need tricky
+%D expansion here.
+%D
+%D \starttyping
+%D \dorecurse{3}{\expanded{\definesymbol[test-\recurselevel][xx-\recurselevel]}}
+%D \stoptyping
+
+\def\expandrecursecontent
+  {\csname\@@arecurse\recursedepth\@EA\@EA\@EA\endcsname\@EA\@EA\@EA{\@EA\recurselevel\@EA}\@EA{\recursedepth}}
+
+\long\def\xdorecurse#1#2%
+  {\global\advance\outerrecurse \plusone
+   \long\global\@EA\def\csname\@@arecurse\recursedepth\endcsname##1##2{#2}%
+   \global\@EA\let\csname\@@irecurse\recursedepth\endcsname\recurselevel
+   \@EA\dodorecurse\@EA1\@EA{\number#1}}
+
+\long\def\dostepwiserecurse#1#2#3#4% can be made faster by postponing #4
+  {\global\advance\outerrecurse \plusone
+   \long\global\@EA\def\csname\@@arecurse\recursedepth\endcsname##1##2{#4}%
+   \global\@EA\let\csname\@@irecurse\recursedepth\endcsname\recurselevel
+   \ifnum#3>0\relax
+     \ifnum#2<#1\relax
+       \let\nextrecurse\exitstepwiserecurse
+     \else
+       \let\nextrecurse\dodostepwiserecurse
+     \fi
+   \else
+     \ifnum#3<0\relax
+       \ifnum#1<#2\relax
+         \let\nextrecurse\exitstepwiserecurse
+       \else
+         \let\nextrecurse\dodostepwisereverse
+       \fi
+     \else
+       \let\nextrecurse\exitstepwiserecurse
+     \fi
+   \fi\expanded{\nextrecurse{\number#1}{\number#2}{\number#3}}}
+
+\long\def\doloop#1%
+  {\global\advance\outerrecurse \plusone
+   \long\global\@EA\def\csname\@@arecurse\recursedepth\endcsname##1##2{#1}%
+   \global\@EA\let\csname\@@irecurse\recursedepth\endcsname\recurselevel
+   \let\endofloop\dodoloop
+   \dodoloop1} % no \plusone else \recurselevel wrong
+
+%D This alternative looks a bit different and uses a
+%D pseudo counter. When this macro is nested, we have to use
+%D different counters. This time we use keywords.
+%D
+%D \starttyping
+%D \def\alfa{2} \def\beta{100} \def\gamma{3}
+%D
+%D \for \n=55    \to 100   \step  1      \do {... \n ...}
+%D \for \n=\alfa \to \beta \step  \gamma \do {... \n ...}
+%D \for \n=\n    \to 120   \step  1      \do {... \n ...}
+%D \for \n=120   \to 100   \step -3      \do {... \n ...}
+%D \for \n=55    \to 100   \step  2      \do {... \n ...}
+%D \stoptyping
+%D
+%D Only in the third example we need to predefine \type{\n}.
+%D The use of \type{\od} as a dilimiter would have made nested
+%D use more problematic.
+
+%D Don't use this one, it's kind of obsolete.
+
+\def\for#1=#2\to#3\step#4\do#5%
+  {\dostepwiserecurse{#2}{#3}{#4}
+     {\let#1\recurselevel#5\let#1\recurselevel}}
 
 %D \macros
 %D   {newevery,everyline,EveryLine,EveryPar}
@@ -1167,6 +1232,41 @@
   {\@EA\defconvertcommand\@EA#1\csname#2\endcsname}
 
 %D \macros
+%D   {doifassignmentelse}
+%D
+%D A lot of \CONTEXT\ commands take optional arguments, for
+%D instance:
+%D
+%D \starttyping
+%D \dothisorthat[alfa,beta]
+%D \dothisorthat[first=foo,second=bar]
+%D \dothisorthat[alfa,beta][first=foo,second=bar]
+%D \stoptyping
+%D
+%D Although a combined solution is possible, we prefer a
+%D seperation. The next command takes care of propper
+%D handling of such multi||faced commands.
+%D
+%D \starttyping
+%D \doifassignmentelse {...} {then ...} {else ...}
+%D \stoptyping
+
+% not robust
+%
+% \def\doifassignmentelse%
+%   {\doifinstringelse{=}}
+%
+% readable
+%
+% \def\doifassignmentelse#1%
+%   {\convertargument#1\to\ascii
+%    \doifinstringelse{=}{\ascii}}
+
+\def\doifassignmentelse#1%
+  {\convertargument#1\to\ascii
+   \doifinstringelse=\ascii}
+
+%D \macros
 %D   {convertasciiafter}
 %D
 %D Sometimes we need to convert an argument to a string (letters
@@ -1260,6 +1360,17 @@
 
 \def\showvalue#1%
   {\expandafter\show\csname#1\endcsname}
+
+\beginETEX
+
+\def\showvalue#1%
+  {\ifcsname#1\endcsname
+     \expandafter\show\csname#1\endcsname
+   \else
+     \show\undefined
+   \fi}
+
+\endETEX
 
 \long\def\showargument#1%
   {\convertargument#1\to\ascii\show\ascii}
@@ -1452,9 +1563,9 @@
      {}}
 
 \def\ConvertConstantAfter#1#2#3%
-  {\CheckConstantAfter{#2}\asciiA
-   \CheckConstantAfter{#3}\asciiB
-   #1{\asciiA}{\asciiB}}
+  {\CheckConstantAfter{#2}\asciia
+   \CheckConstantAfter{#3}\asciib
+   #1{\asciia}{\asciib}}
 
 %D \macros
 %D   {assignifempty}
@@ -2281,18 +2392,18 @@
 %D
 %D \starttyping
 %D \def\doifintokselse#1#2% #1 en #2 zijn toks
-%D   {\edef\!!stringa{\the#1}\convertcommand\!!stringa\to\asciiA
-%D    \edef\!!stringb{\the#2}\convertcommand\!!stringb\to\asciiB
-%D    \doifinstringelse\asciiA\asciiB}
+%D   {\edef\!!stringa{\the#1}\convertcommand\!!stringa\to\asciia
+%D    \edef\!!stringb{\the#2}\convertcommand\!!stringb\to\asciib
+%D    \doifinstringelse\asciia\asciib}
 %D \stoptyping
 %D
 %D Better:
 %D
 %D \starttyping
 %D \def\doifintokselse#1#2% #1 en #2 zijn toks
-%D   {\edef\!!stringa{\the#1}\convertcommand\!!stringa\to\asciiA
-%D    \edef\!!stringb{\the#2}\convertcommand\!!stringb\to\asciiB
-%D    \doifstringinstringelse\asciiA\asciiB}
+%D   {\edef\!!stringa{\the#1}\convertcommand\!!stringa\to\asciia
+%D    \edef\!!stringb{\the#2}\convertcommand\!!stringb\to\asciib
+%D    \doifstringinstringelse\asciia\asciib}
 %D \stoptyping
 %D
 %D Even better:
@@ -2300,18 +2411,18 @@
 \beginETEX
 
   \def\doifintokselse#1#2% #1 en #2 zijn toks
-    {\@EA\convertargument\the#1\to\asciiA
-     \@EA\convertargument\the#2\to\asciiB
-     \doifstringinstringelse\asciiA\asciiB}
+    {\@EA\convertargument\the#1\to\asciia
+     \@EA\convertargument\the#2\to\asciib
+     \doifstringinstringelse\asciia\asciib}
 
 \endETEX
 
 \beginTEX
 
   \def\doifintokselse#1#2% #1 en #2 zijn toks
-    {\edef\asciiA{\the#1}\convertcommand\asciiA\to\asciiA
-     \edef\asciiB{\the#2}\convertcommand\asciiB\to\asciiB
-     \doifstringinstringelse\asciiA\asciiB}
+    {\edef\asciia{\the#1}\convertcommand\asciia\to\asciia
+     \edef\asciib{\the#2}\convertcommand\asciib\to\asciib
+     \doifstringinstringelse\asciia\asciib}
 
 \endTEX
 
@@ -2322,12 +2433,12 @@
 
 %D Hm.
 
-\def\flushtoks#1%
+\def\flushtoks#1% nb: can reassing to #1 again, hence the indirectness
   {\@@scratchtoks#1\relax
    \dodoglobal#1\emptytoks
    \the\@@scratchtoks\relax}
 
-\let\dotoks=\the
+\let\dotoks\the
 
 %D \macros
 %D   {makecounter,pluscounter,minuscounter,
@@ -2434,7 +2545,7 @@
   {\global\@EA\let\csname#1\endcsname\zerocountervalue} % see earlier
 
 \def\countervalue#1%
-  {\csname#1\endcsname}
+  {\ifcsname#1\endcsname\csname#1\endcsname\fi}
 
 \def\pluscounter#1%
   {\@EA\xdef\csname#1\endcsname{\the\numexpr\csname#1\endcsname+\plusone\relax}}
@@ -2796,7 +2907,7 @@
         \ifx\!!stringd\empty\else
           \edef#3{#3\ifx#3\empty\else,\fi\!!stringd}%
         \fi
-        \def\docommando####1{\edef#3{#3,####1}}%
+        \def\docommand####1{\edef#3{#3,####1}}%
       \else
         \edef#3{#3\ifx#3\empty\else,\fi##1}%
       \fi}%
@@ -2910,10 +3021,10 @@
 \def\withoutunit#1#2%
   {\begingroup
    \scratchdimen#1\relax
-   \@EA\convertargument\the\scratchdimen\to\asciiA
-   \@EA\convertargument#2\to\asciiB
-  %\@EA\@EA\@EA\beforesplitstring\@EA\asciiA\@EA\at\asciiB\to\!!stringa
-   \@EA\beforesplitstring\@EA\asciiA\@EA\at\asciiB\to\!!stringa
+   \@EA\convertargument\the\scratchdimen\to\asciia
+   \@EA\convertargument#2\to\asciib
+  %\@EA\@EA\@EA\beforesplitstring\@EA\asciia\@EA\at\asciib\to\!!stringa
+   \@EA\beforesplitstring\@EA\asciia\@EA\at\asciib\to\!!stringa
    \!!stringa
    \endgroup}
 
@@ -3143,110 +3254,6 @@
 \definecomplexorsimple\setlocalhsize
 
 %D \macros
-%D   {processtokens}
-%D
-%D We fully agree with (most) typographers that inter||letter
-%D spacing is only permitted in fancy titles, we provide a
-%D macro that can be used to do so. Because this is
-%D (definitely and fortunately) no feature of \TEX, we have to
-%D step through the token list ourselves.
-%D
-%D \starttyping
-%D \processtokens {before} {between} {after} {space} {tokens}
-%D \stoptyping
-%D
-%D An example of a call is:
-%D
-%D \startbuffer
-%D \processtokens {[} {+} {]} {\space} {hello world}
-%D \stopbuffer
-%D
-%D \typebuffer
-%D
-%D This results in:
-%D
-%D \getbuffer
-%D
-%D The list of tokens may contain spaces, while \type{\\},
-%D \type{{}} and \type{\ } are handled as space too.
-
-% \def\dodoprocesstokens%
-%   {\ifx\next\lastcharacter
-%      \after
-%      \let\next=\relax
-%    \else\ifx\next\bgroup
-%      \def\next%
-%        {\dowithnextbox
-%           {\before\box\nextbox
-%            \let\before=\between
-%            \doprocesstokens}
-%            \hbox\bgroup}%
-%    \else
-%      \expandafter\if\space\next
-%        \before\white
-%      \else
-%        \before\next
-%      \fi
-%      \let\before=\between
-%      \let\next=\doprocesstokens
-%    \fi\fi
-%    \next}
-%
-% \def\doprocesstokens% the space after = is essential
-%   {\afterassignment\dodoprocesstokens\let\next= }
-%
-% \def\processtokens#1#2#3#4#5%
-%   {\bgroup
-%    \def\lastcharacter{\lastcharacter}%
-%    \def\space{ }%
-%    \let\\=\space
-%    \def\before{#1}%
-%    \def\between{#2}%
-%    \def\after{#3}%
-%    \def\white{#4}%
-%    \doprocesstokens#5\lastcharacter
-%    \egroup}
-
-\def\dodoprocesstokens
-  {\ifx\nextprocessedtoken\lastcharacter
-     \after
-     \let\nextprocessedtoken\relax
-   \else\ifx\nextprocessedtoken\bgroup
-     \def\nextprocessedtoken
-       {\dowithnextbox
-          {\before{\copy\nextbox}% \before can use nextbox several times
-           \let\before\between
-           \doprocesstokens}
-           \hbox\bgroup}%
-   \else
-     \expandafter\if\space\nextprocessedtoken
-       \after\white
-       \let\before\savedbefore
-     \else
-       \before\nextprocessedtoken
-       \let\before\between
-     \fi
-     \let\nextprocessedtoken\doprocesstokens
-   \fi\fi
-   \nextprocessedtoken}
-
-\def\doprocesstokens% the space after = is essential
-  {\afterassignment\dodoprocesstokens\let\nextprocessedtoken= }
-
-\def\processtokens#1#2#3#4#5%
-  {\begingroup
-   \def\lastcharacter{\lastcharacter}%
-   \def\space{ }%
-   \let\\=\space
-   \def\before{#1}%
-   \def\between{#2}%
-   \def\after{#3}%
-   \def\white{#4}%
-   \let\savedbefore\before
-   \doprocesstokens#5\lastcharacter
-   \endgroup}
-
-%D \macros
 %D   {doifvalue,doifnotvalue,doifelsevalue,
 %D    doifnothing,doifsomething,doifelsenothing,
 %D    doifvaluenothing,doifvaluesomething,doifelsevaluenothing}
@@ -3469,6 +3476,64 @@
 \def\DOIFNOT          {\ExpandBothAfter\p!DOIFNOT}
 \def\DOIFELSE         {\ExpandBothAfter\p!DOIFELSE}
 \def\DOIFINSTRINGELSE {\ExpandBothAfter\p!DOIFINSTRINGELSE}
+
+%D \macros
+%D   {dosingleargumentwithset,
+%D    dodoubleargumentwithset,dodoubleemptywithset,
+%D    dotripleargumentwithset,dotripleemptywithset}
+%D
+%D These maybe too mysterious macros enable us to handle more
+%D than one setup at once.
+%D
+%D \starttyping
+%D \dosingleargumentwithset \command[#1]
+%D \dodoubleargumentwithset \command[#1][#2]
+%D \dotripleargumentwithset \command[#1][#2][#3]
+%D \dodoubleemptywithset    \command[#1][#2]
+%D \dotripleemptywithset    \command[#1][#2][#3]
+%D \stoptyping
+%D
+%D The first macro calls \type{\command[##1]} for each string
+%D in the set~\type{#1}. The second one calls for
+%D \type{\commando[##1][#2]} and the third, well one may guess.
+%D These commands support constructions like:
+%D
+%D \starttyping
+%D \def\dodefinesomething[#1][#2]%
+%D   {\getparameters[\??xx#1][#2]}
+%D
+%D \def\definesomething%
+%D   {\dodoubleargumentwithset\dodefinesomething}
+%D \stoptyping
+%D
+%D Which accepts calls like:
+%D
+%D \starttyping
+%D \definesomething[alfa,beta,...][variable=...,...]
+%D \stoptyping
+%D
+%D Now a whole bunch of variables like \type{\@@xxalfavariable}
+%D and \type{\@@xxbetavariable} is defined.
+
+\def\dodoublewithset#1#2%
+  {\def\dododoublewithset[##1][##2]%
+     {\doifsomething{##1}
+        {\def\dodododoublewithset####1{#2[####1][##2]}%
+         \processcommalist[##1]\dodododoublewithset}}%
+   #1\dododoublewithset}
+
+\def\dodoubleemptywithset   {\dodoublewithset\dodoubleempty}
+\def\dodoubleargumentwithset{\dodoublewithset\dodoubleargument}
+
+\def\dotriplewithset#1#2%
+  {\def\dodotriplewithset[##1][##2][##3]%
+     {\doifsomething{##1}
+        {\def\dododotriplewithset####1{#2[####1][##2][##3]}%
+         \processcommalist[##1]\dododotriplewithset}}%
+   #1\dodotriplewithset}
+
+\def\dotripleemptywithset   {\dotriplewithset\dotripleempty}
+\def\dotripleargumentwithset{\dotriplewithset\dotripleargument}
 
 %D \macros
 %D   {stripcharacters,stripspaces}
@@ -3795,14 +3860,14 @@
 %D following one:
 %D
 %D \starttyping
-%D \processlist{beginsym}{endsym}{separator}\docommando list
+%D \processlist{beginsym}{endsym}{separator}\docommand list
 %D \stoptyping
 %D
 %D This one supports arbitrary open and close symbols as well
 %D as user defined separators.
 %D
 %D \starttyping
-%D \processlist(){=>}\docommando(a=>b=>c=>d)
+%D \processlist(){=>}\docommand(a=>b=>c=>d)
 %D \stoptyping
 
 \long\def\processlist#1#2#3#4% no blank skipping !
@@ -4085,13 +4150,13 @@
 %D   {\ifx#1\endoftoken
 %D      \expandafter\nohandletokens
 %D    \else
-%D      \docommando{#1}%
+%D      \docommand{#1}%
 %D      \expandafter\dohandletokens
 %D    \fi
 %D    #2\end}
 %D
 %D \long\def\handletokens#1\with#2%
-%D   {\let\docommando=#2\relax
+%D   {\let\docommand=#2\relax
 %D    \dohandletokens#1\endoftoken\end}
 %D \stoptyping
 %D
@@ -4102,7 +4167,7 @@
 %D \starttyping
 %D \def\dodohandletokens%
 %D   {\ifx\next\end \else
-%D      \docommando{\next}%
+%D      \docommand{\next}%
 %D      \expandafter\dohandletokens
 %D    \fi}
 %D
@@ -4110,7 +4175,7 @@
 %D   {\afterassignment\dodohandletokens\let\next= }
 %D
 %D \long\def\handletokens#1\with#2%
-%D   {\let\docommando=#2%
+%D   {\let\docommand=#2%
 %D    \dohandletokens#1\end}
 %D \stoptyping
 
@@ -4232,7 +4297,7 @@
   {\gdef\dododohandletokens{#2}% permits more complex #2's
    \dohandletokens#1\end}
 
-%D A previous version said \type{\docommando=#2}, but to enable
+%D A previous version said \type{\docommand=#2}, but to enable
 %D use in alignments, I decided to use another placeholder, one
 %D that is not sensitive to the global assignment.
 
@@ -4293,15 +4358,17 @@
 %D \getbuffer[example]
 
 %D \macros
-%D   {iftrialtypesetting}
+%D   {iftrialtypesetting, ifvisible}
 %D
 %D The next boolean is at first sight a strange one. Sometimes
 %D one does a trial typesetting run, for instance to determine
 %D dimensions. Some mechanisms, like object inclusion, can fail
 %D on such trials. Temporary setting the next boolean to true,
-%D helps a lot.
+%D helps a lot. The second boolena can be used to inhibit
+%D processing completely.
 
-\newif\iftrialtypesetting
+\newif\iftrialtypesetting  \trialtypesettingfalse
+\newif\ifvisible           \visibletrue
 
 %D \macros
 %D   {startlocal, startglobal}
@@ -4350,22 +4417,24 @@
 
 \beginTEX
 
-  \def\twodigitrounding#1{#1}
+  \let\integerrounding \firstofoneargument
+  \let\onedigitrounding\firstofoneargument
+  \let\twodigitrounding\firstofoneargument
 
 \endTEX
 
 \beginETEX \dimexpr
 
-  \def\dotwodigitrounding#1.#2#3#4\relax%
-    {\ifx#2*#1\else#1.#2#3\fi}
+  \def\dointegerrounding #1.#2\relax    {#1}
+  \def\doonedigitrounding#1.#2#3\relax  {\ifx#2*#1\else#1.#2\fi}
+  \def\dotwodigitrounding#1.#2#3#4\relax{\ifx#2*#1\else#1.#2#3\fi}
 
-  % \def\twodigitrounding#1%
-  %   {\@EA\@EA\@EA\dotwodigitrounding\@EA\WITHOUTPT
-  %       \the\dimexpr#1pt+.005pt\relax000.*00\relax}
-
+  \def\integerrounding#1%
+    {\@EA\@EA\@EA\dointegerrounding \@EA\WITHOUTPT\the\dimexpr#1\points+32768sp\relax.\relax}
+  \def\onedigitrounding#1%
+    {\@EA\@EA\@EA\doonedigitrounding\@EA\WITHOUTPT\the\dimexpr#1\points+32768sp\relax00.*0\relax}
   \def\twodigitrounding#1%
-    {\@EA\@EA\@EA\dotwodigitrounding\@EA\WITHOUTPT
-       \the\dimexpr#1\points+.005\points\relax000.*00\relax}
+    {\@EA\@EA\@EA\dotwodigitrounding\@EA\WITHOUTPT\the\dimexpr#1\points+32768sp\relax000.*00\relax}
 
 \endETEX
 
@@ -4668,8 +4737,8 @@
 
 \def\serializecommalist[#1]%
   {\let\serializedcommalist\empty
-   \def\docommando##1{\edef\serializedcommalist{\serializedcommalist##1}}%
-   \processcommacommand[#1]\docommando}
+   \def\docommand##1{\edef\serializedcommalist{\serializedcommalist##1}}%
+   \processcommacommand[#1]\docommand}
 
 %D \macros
 %D   {purenumber}

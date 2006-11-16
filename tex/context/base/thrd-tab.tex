@@ -1,22 +1,22 @@
 % Since this file is not available in every distribution, we
-% have copied the original in this file. The manuals to 
-% Wichura's PiCTeX and TaBlE packages are not available on 
+% have copied the original in this file. The manuals to
+% Wichura's PiCTeX and TaBlE packages are not available on
 % line and are distributed by respectively the TeX Users Group
-% and Personal TeX Inc. Many macros of TaBlE are overloaded 
-% and/or extended in core-tab.tex. The extensions concern 
-% splitting over pages, color and consistent spacing. 
+% and Personal TeX Inc. Many macros of TaBlE are overloaded
+% and/or extended in core-tab.tex. The extensions concern
+% splitting over pages, color and consistent spacing.
 
-% TABLE 1.0 
+% TABLE 1.0
 % Copyright Michael J. Wichura August 1988
 
 % The TABLE macros are divided into sections, roughly according to
 % function:
- 
+
 % Section Name        Function
-% a       Allocation  Allocates storage registers for parameters.  
+% a       Allocation  Allocates storage registers for parameters.
 % f       Format      Reads format section; builds preamble for \halign;
 %                      processes \ReFormat command.
-% g       Get Value   Converts "spec"'s (as in spec_{LT}) to 
+% g       Get Value   Converts "spec"'s (as in spec_{LT}) to
 %                      corresponding "values"'s (as in value_{LT}).
 % h       Hacks       Utility macros; error messages; miscellaneous commands.
 % k       Keys        Definition and scanning of format keys.
@@ -24,51 +24,51 @@
 % s       Struts      Macros for struts.
 % t       Tables      Sets up \halign for table; end-of-row processing;
 %                      alternate vertical rules; spanning; horizontal
-%                      lines; stretching and shrinking; repositioning 
+%                      lines; stretching and shrinking; repositioning
 %                      commands.
- 
-% The name of each internal macro begins with the prefix "\!t", the 
-% "!" having category code 11, followed by the letter of the section 
-% in which the macro is defined. For example, a macro beginning "\!th" 
+
+% The name of each internal macro begins with the prefix "\!t", the
+% "!" having category code 11, followed by the letter of the section
+% in which the macro is defined. For example, a macro beginning "\!th"
 % is defined in Section h (Hacks). There a few exceptions:
 % the general purpose macros "\!ttemp", "\!ttempa", "\!ttempb", and
 % "\!tnext" are repeatedly defined on the spot as the need arises.
- 
-% External macros (and active characters) are defined in the following 
+
+% External macros (and active characters) are defined in the following
 % sections:
 %    Macro                    Section
 %    "                        t
 %    \-                       t
 %    \=                       t
-%    \ActivateBarAndQuote     h 
-%    \AugmentedTableStrut     s 
+%    \ActivateBarAndQuote     h
+%    \AugmentedTableStrut     s
 %    \BackSpace               h
 %    \BeginFormat             f
 %    \BeginTable              t
 %    \BeginTableParBox        a
 %    \Center                  t
-%    \ColumnWidthFactor       a 
+%    \ColumnWidthFactor       a
 %    \ColumnWidthUnit         a
-%    \DQuote                  h 
+%    \DQuote                  h
 %    \EndFormat               k  (\EndFormat is actually a key)
 %    \EndTable                t
 %    \EndTableParBox          a
 %    \Enlarge                 s
 %    \enlarge                 s
-%    \EveryTable              a 
+%    \EveryTable              a
 %    \EveryTableParBox        a
 %    \Expand                  t
-%    \InterColumnSpaceFactor  a 
+%    \InterColumnSpaceFactor  a
 %    \InterColumnSpaceUnit    a
 %    \JustCenter              t
 %    \JustLeft                t
 %    \JustRight               t
-%    \KernFactor              a 
-%    \KernUnit                a 
+%    \KernFactor              a
+%    \KernUnit                a
 %    \Left                    t
 %    \LeftTabskip             a
-%    \LineThicknessFactor     a 
-%    \LineThicknessUnit       a 
+%    \LineThicknessFactor     a
+%    \LineThicknessUnit       a
 %    \LongLines               t
 %    \Lower                   h
 %    \MakeStrut               s
@@ -89,41 +89,45 @@
 %    \SetTableToWidth         t
 %    \Smash                   h
 %    \StandardTableStrut      s
-%    \StrutDepthFactor        a 
-%    \StrutHeightFactor       a 
-%    \StrutUnit               a 
+%    \StrutDepthFactor        a
+%    \StrutHeightFactor       a
+%    \StrutUnit               a
 %    \TaBlE                   h
 %    \TracingFormats          a
 %    \TracingKeys             a
 %    \Use                     t
 %    \use                     t
-%    \VBar                    h 
+%    \VBar                    h
 %    \Vspace                  h
-%    \VspaceFactor            a 
+%    \VspaceFactor            a
 %    \WidenTableBy            t
-%    \\                       t 
+%    \\                       t
 %    \_                       t
 %    \|                       t
 %    |                        t
 %    ~                        t
-% 
+%
+
 \catcode `\!=11
 \catcode `\@=11
+
+\newif\ifh@ % normally in plain tex
+\newif\ifv@ % normally in plain tex
 
 % Don't try to read the TABLE macros until after you've read the
 % TABLE manual. The internal documentation of the macros is
 % sketchy; you need the manual to understand what's going on.
 % You should also review the material on \halign s in the TeXbook,
 % since TABLE uses an \halign to perform its alignments.
- 
+
 % In studying the TABLE macros, you should start by skimming the
 % macros in the "miscellaneous hacks", "error messages", and "loops"
 % subsections of Section h, as well as the "\GetValue" macro in
 % Section g; these macros are called many times by the other macros.
-% To continue with a "bottom-up" approach, read next Sections k, 
-% f, and t. (Top-downers should reverse the order.) The other 
+% To continue with a "bottom-up" approach, read next Sections k,
+% f, and t. (Top-downers should reverse the order.) The other
 % Sections can be looked at as the need arises.
- 
+
 
 
 % *********************************************************************
@@ -136,10 +140,10 @@
 % TABLE PARAMETERS: Units
 % *********************************************************************
 
-\newdimen\LineThicknessUnit 
-\newdimen\StrutUnit            
-\newskip \InterColumnSpaceUnit  
-\newdimen\ColumnWidthUnit     
+\newdimen\LineThicknessUnit
+\newdimen\StrutUnit
+\newskip \InterColumnSpaceUnit
+\newdimen\ColumnWidthUnit
 \newdimen\KernUnit
 
 \let\!taLTU=\LineThicknessUnit % Used in preamble
@@ -168,11 +172,11 @@
   \InterColumnSpaceUnit=\the\NormalTICSU
   \ColumnWidthUnit     =\the\NormalTCWU
   \KernUnit            =\the\NormalTKU}
- 
+
 \NormalTableUnits
 
-% The user should issue \NormalTableUnits when setting a table 
-% in a different point size, since the Table...Units themselves 
+% The user should issue \NormalTableUnits when setting a table
+% in a different point size, since the Table...Units themselves
 % are static while the Normal...Units vary with the point size.
 
 
@@ -180,11 +184,11 @@
 % TABLE PARAMETERS: Factors
 % *********************************************************************
 
-\newcount\LineThicknessFactor    
-\newcount\StrutHeightFactor      
-\newcount\StrutDepthFactor       
-\newcount\InterColumnSpaceFactor 
-\newcount\ColumnWidthFactor      
+\newcount\LineThicknessFactor
+\newcount\StrutHeightFactor
+\newcount\StrutDepthFactor
+\newcount\InterColumnSpaceFactor
+\newcount\ColumnWidthFactor
 \newcount\KernFactor
 \newcount\VspaceFactor
 
@@ -212,13 +216,13 @@
 % *********************************************************************
 
 \def\BeginTableParBox#1{%
-  \vtop\bgroup 
+  \vtop\bgroup
     \hsize=#1
-    \normalbaselines 
+    \normalbaselines
     \let~=\!ttTie
     \let\-=\!ttDH
-    \the\EveryTableParBox} 
-  
+    \the\EveryTableParBox}
+
 \def\EndTableParBox{%
     \MakeStrut{0pt}{\StrutDepthFactor\StrutUnit}
   \egroup} % finishes the \vtop begun by \BeginTableParbox
@@ -228,7 +232,7 @@
   \parindent=0pt
   \raggedright
   \rightskip=0pt plus 4em %   Provide more stretch
-  \relax} 
+  \relax}
 
 
 % *********************************************************************
@@ -296,7 +300,7 @@
 % ACTIVATE BAR AND QUOTE: Makes | and " active if they aren't
 % already active (in which case the user will probably have given
 % them special meanings); definitions are provided which effectively
-% undoes the activeness outside a Table. 
+% undoes the activeness outside a Table.
 
 {\catcode`\|=13 \catcode`\"=13
   \gdef\ActivateBarAndQuote{%
@@ -315,11 +319,11 @@
       \catcode`\"=13
       \def"{\char`\"}%
     \fi}}
- 
+
 % ****************************************************************
 % Macros for | and " having category code 12.
 % ****************************************************************
-{\catcode `\|=12 \catcode `\"=12 
+{\catcode `\|=12 \catcode `\"=12
 \gdef\VBar{|}
 \gdef\DQuote{"}}
 
@@ -330,15 +334,15 @@
 
 % MESSAGE <Message>: Writes out <Message> to terminal and log file.
 \def\!thMessage#1{\immediate\write16{#1}\ignorespaces}
- 
+
 % X: Abbreviation for expandafter
 \let\!thx=\expandafter
 
 % GOBBLE: Eats next token
-\def\!thGobble#1{} 
+\def\!thGobble#1{}
 
 % SPACE TOKEN
-\def\\{\let\!thSpaceToken= }\\ 
+\def\\{\let\!thSpaceToken= }\\
 
 % HEIGHT, DEPTH, AND WIDTH
 \def\!thHeight{height}
@@ -377,7 +381,7 @@
     \edef\!ttemp{#2}%
     \errhelp=\!thx{\!ttemp}%
     \!thMessage{%
-      ^^J\!thReadErrorMsg\!thErrorMsgA 
+      ^^J\!thReadErrorMsg\!thErrorMsgA
       ^^J\!thReadErrorMsg\!thErrorMsgB}%
     \errmessage{#1}%
   \endgroup}
@@ -399,7 +403,7 @@
 
 
 % ****************************************************************
-% LOOP MACRO 
+% LOOP MACRO
 % ****************************************************************
 
 % LOOP ... REPEAT macro from TUGboat Vol 8 #2: 1987
@@ -409,7 +413,7 @@
     #1%
     \!thx \!thIterate
     \fi}%
-  \!thIterate 
+  \!thIterate
   \let\!thIterate\relax}
 
 
@@ -427,21 +431,21 @@
   \else
     \expandafter\!thDoVCS
   \fi}
-                      
+
 % DO VCS
 \def\!thDoVCS#1{%
   \setbox\z@\hbox{#1}%
   \!thFinishVCS}
-                      
+
 % DO MATH VCS
 \def\!thDoMathVCS#1#2{%
   \setbox\z@\hbox{$\m@th#1{#2}$}%
   \!thFinishVCS}
-                      
+
 % FINISH VCS
 \def\!thFinishVCS{%
   \vbox to\z@{\vss\box\z@\vss}}
- 
+
 
 % ***************************************************************
 % RAISE AND LOWER
@@ -450,7 +454,7 @@
 % Like TeX's \raise and \lower, except: (1) The first argument
 % to these commands is a dimension expressed in TABLE's usual conventions;
 % the default is (StrutHeightFactor+StrutDepthFactor)*StrutUnit/2
-% (2) like \smash, these commands function in math mode as well 
+% (2) like \smash, these commands function in math mode as well
 % as horizontal mode; (3) again like \smash, the result is declared
 % to have height and depth 0pt
 
@@ -490,12 +494,12 @@
   \else
     \expandafter\!thDoSimpleRaise
   \fi}
-                      
+
 % DO SIMPLE RAISE
 \def\!thDoSimpleRaise#1{%
   \setbox\z@\hbox{\raise \!taDimenA\hbox{#1}}%
   \!thFinishRaise} % From Plain TeX: \ht0=0pt \dp0=0pt \box0
-                      
+
 % DO MATH RAISE
 \def\!thDoMathRaise#1#2{%
   \setbox\z@\hbox{\raise \!taDimenA\hbox{$\m@th#1{#2}$}}%
@@ -504,10 +508,10 @@
 % FINISH RAISE. This is the same as Plain's \finsm@sh; some macro
 % packages redefine \finsm@sh.
 \def\!thFinishRaise{%
-  \ht\z@\z@ 
+  \ht\z@\z@
   \dp\z@\z@
   \box\z@}
-                      
+
 
 % ***************************************************************
 % BACK SPACE
@@ -517,14 +521,14 @@
 
 \def\!thKernBack{%
   \kern -
-  \ifnum \!tgCode=1 
-    \ifx \!tgValue\empty 
+  \ifnum \!tgCode=1
+    \ifx \!tgValue\empty
       \the\KernFactor
     \else
       \!tgValue    % user-specified integer
     \fi
     \KernUnit
-  \else 
+  \else
     \!tgValue      % user-specified dimension
   \fi
   \ignorespaces}%
@@ -540,14 +544,14 @@
 
 \def\!thVspace{%
   \vskip
-    \ifnum \!tgCode=1 
-      \ifx \!tgValue\empty 
+    \ifnum \!tgCode=1
+      \ifx \!tgValue\empty
         \the\VspaceFactor
       \else
         \!tgValue    % user-specified integer
       \fi
       \StrutUnit
-    \else 
+    \else
       \!tgValue      % user-specified skip
     \fi
   \egroup} % Ends the \noalign
@@ -565,25 +569,25 @@
 %     +(n+1)     (rule columns)
 %     + 2        (dummy data columns)
 %     ____
-%      2n+3 
+%      2n+3
 % columns.
-  
+
 % FORMATs job is to create an \halign preamble for the alignment
 % of these (2n+3) columns. The preamble consists of templates
 % for the various columns, strung together with &'s and interlaced
 % with \tabskip glue specifications.
-  
+
 % FORMAT constructs the template for a nomimal data column according
 % to the user-specified format keys. As the keys are read from left
-% to right, the template is built up "from the inside out" (as 
+% to right, the template is built up "from the inside out" (as
 % illustrated in Section 3.1.9 of the manual), the inner-most part
 % being the "#" sign. A "|" in the format terminates template
-% building; the completed template is adjoined to preamble along 
+% building; the completed template is adjoined to preamble along
 % with the template for the following rule column.
 
 % Minimum column widths, if specified, are implemented by creating
-% an "artificial row" with data entries of the form 
-%   \hskip <minimum column width>. 
+% an "artificial row" with data entries of the form
+%   \hskip <minimum column width>.
 % This row has zero height and depth and is completely invisible.
 
 
@@ -591,14 +595,14 @@
 \def\BeginFormat{%
   \catcode`\|=12 % Inhibit expansion if | immediately follows a <number>
   \catcode`\"=12 %  read by \getvalue.
-  \!taPreamble={}% 
+  \!taPreamble={}%
   \!taColumnNumber=0
   \skip0 =\InterColumnSpaceUnit
   \multiply\skip0 \InterColumnSpaceFactor
   \divide\skip0 2
   \!taRuleColumnTemplate=\!thx{%
     \!thx\tabskip\the\skip0 }%
-  \!taLastRegularTabskip=\skip0 
+  \!taLastRegularTabskip=\skip0
   \!taOnceOnlyTabskipfalse
   \!taBeginFormattrue % Used to intercept key "]"
   \def\!tfRowOfWidths{}%  Artificial Table Row with horizontal struts
@@ -618,11 +622,11 @@
              \ifnum \!taCountA<\!taColumnNumber
              \advance\!taCountA 1
              \aftergroup \!tfAOAO
-           \repeat 
+           \repeat
            \aftergroup }%
       \endgroup
     \fi
-  \fi      
+  \fi
   \ifx [\!ttemp % \!tgGetValue sets \!ttemp = token after w
     \!thx\!tfSetWidthText
   \else
@@ -634,22 +638,22 @@
   &\omit&\omit}
 
 % SET WIDTH TEXT
-\def\!tfSetWidthText [#1]{% #1 = specified text 
+\def\!tfSetWidthText [#1]{% #1 = specified text
   \def\!tfWidthText{#1}%
   \ReadFormatKeys}
 
 % SET WIDTH VALUE
 \def\!tfSetWidthValue{%
-  \!taMinimumColumnWidth = 
-    \ifnum \!tgCode=1 
+  \!taMinimumColumnWidth =
+    \ifnum \!tgCode=1
       \ifx\!tgValue\empty % Use default multiplier if user didn't specify one
         \ColumnWidthFactor
       \else
-        \!tgValue 
+        \!tgValue
       \fi
       \ColumnWidthUnit
     \else
-      \!tgValue 
+      \!tgValue
     \fi
   \def\!tfWidthText{}%      Override possible prior `w[sample entry]'
   \ReadFormatKeys}
@@ -659,7 +663,7 @@
 \def\!tfSetTabskip{%
   \ifnum \!tgCode=1
     \skip0 =\InterColumnSpaceUnit
-    \multiply\skip0 
+    \multiply\skip0
       \ifx \!tgValue\empty
         \InterColumnSpaceFactor         % Default integer
       \else
@@ -669,13 +673,13 @@
     \skip0 =\!tgValue                   % User-specified <skip>
   \fi
   \divide\skip0 by 2
-  \ifnum\!taColumnNumber=0 
+  \ifnum\!taColumnNumber=0
     \!thToksEdef\!taRuleColumnTemplate={%
-      \the\!taRuleColumnTemplate 
+      \the\!taRuleColumnTemplate
       \tabskip \the\skip0 }
   \else
     \!thToksEdef\!taDataColumnTemplate={%
-      \the\!taDataColumnTemplate 
+      \the\!taDataColumnTemplate
       \tabskip \the\skip0 }
   \fi
   \if!taOnceOnlyTabskip
@@ -706,10 +710,10 @@
     \noexpand\hfil
     \the\!taRuleColumnTemplate}       % has \tabskips, when column number=0
   \!tfAdjoinPriorColumn}
- 
+
 % SET ALTERNATE VRULE: Invoked by the key "\|", in the form
 %   \|{<template for (rule) column>}. The "{" and "}" are mandatory,
-% and the <template for column> must contain a "#". The key system 
+% and the <template for column> must contain a "#". The key system
 % CAN'T be used to set up this template.  The <template> can have the
 % form  "\span\macro".
 \def\!tfSetAlternateVrule{%
@@ -725,7 +729,7 @@
 \def\!tfAdjoinPriorColumn{%
   \ifnum \!taColumnNumber=0
     \!taPreamble=\!taRuleColumnTemplate % New \tabskip may have been added
-    \ifnum \TracingFormats>0             
+    \ifnum \TracingFormats>0
       \!tfShowRuleTemplate
     \fi
   \else
@@ -754,7 +758,7 @@
   \advance \!taColumnNumber 1
   % Initialize data-column template, restoring last "regular" tabskip
   % after a "once only" tabskip
-  \if!taOnceOnlyTabskip              
+  \if!taOnceOnlyTabskip
     \!thToksEdef\!taDataColumnTemplate={%
        ####\tabskip \the\!taLastRegularTabskip}
   \else
@@ -763,7 +767,7 @@
   % Remaining initializations
   \!taRuleColumnTemplate{}% # is inserted by \SetVrule, or \SetAlternateVrule
   \!taLeftGlue{\hfil}%         % Default positioning is "center"
-  \!taRightGlue{\hfil}%         
+  \!taRightGlue{\hfil}%
   \!taMinimumColumnWidth=0pt
   \def\!tfWidthText{}%
   \!taOnceOnlyTabskipfalse    % Set true by key "o"
@@ -771,7 +775,7 @@
 
 % UPDATE ROW OF WIDTHS
 \def\!tfUpdateRowOfWidths{%
-  % If user had a "w[<Text>]" key, set <Text> according to the 
+  % If user had a "w[<Text>]" key, set <Text> according to the
   % template for this column, and find the width of the result
   \ifx \!tfWidthText\empty
   \else % set specified text according to current template & find width
@@ -818,7 +822,7 @@
     \!thMessage{%
       \space \space w: \the\!taMinimumColumnWidth}
   \fi}
-      
+
 
 % FINISH UP: Invoked by the keys "." and \EndFormat
 \def\!tfFinishFormat{%
@@ -842,7 +846,7 @@
        ^^J\!thReadErrorMsg\!tkFixIt}%
   \fi
   \!thToksEdef\!taPreamble={%
-    ####\tabskip\LeftTabskip 
+    ####\tabskip\LeftTabskip
     &
     \the\!taPreamble \tabskip\RightTabskip
     &
@@ -860,7 +864,7 @@
 
 % ERROR MESSAGE FOR NOT ENOUGH "|"'s
 \!thStoreErrorMsg\!tfTooFewBarsA{%
-  There must be at least 2 "|"'s (and/or "\string \|"'s)}
+  There must be at least 2 "\string|"'s (and/or "\string \|"'s)}
 \!thStoreErrorMsg\!tfTooFewBarsB{%
   between \string\BeginFormat\space and \string\EndFormat\space (or ".").}
 
@@ -871,8 +875,8 @@
 \def\ReFormat[{%
   \omit
   \!taDataColumnTemplate{##}%
-  \!taLeftGlue{}% 
-  \!taRightGlue{}% 
+  \!taLeftGlue{}%
+  \!taRightGlue{}%
   \catcode`\|=12  % Inhibit expansion if | immediately follows a <number>
   \catcode`\"=12  % read by \getvalue. Actually, '|' and '"' shouldn't
   \ReadFormatKeys}% appear in a \ReFormat cmd; this is here as a safeguard.
@@ -880,7 +884,7 @@
 % END REFORMAT: Invoked by the key "]"
 \def\!tfEndReFormat{%
   \ifnum \TracingFormats>0
-    \!thMessage{ReF: 
+    \!thMessage{ReF:
        \the\!taLeftGlue
        \hbox{\the\!taDataColumnTemplate}%   White lie
        \the\!taRightGlue}
@@ -905,11 +909,11 @@
 
 % GET_VALUE{<return macro>}<tokens> functions as follows:
 
-% If <tokens> has the form <(stuff)>, then 
+% If <tokens> has the form <(stuff)>, then
 %    code=2   and   value=<stuff>
 
 % Otherwise <tokens> has the form <DDDXYZ> where <DDD> denotes (a possibly
-% empty) string of consecutive digits (0,1,2,...,9) terminated by the first 
+% empty) string of consecutive digits (0,1,2,...,9) terminated by the first
 % character <X> (possibly a blank) that is not a digit. In this case
 %    code=1   and   value=<DDD>  (= <null>,  if <DDD> is non-empty).
 
@@ -924,10 +928,10 @@
 %  "\GetValue{\macro} (1in)"           1       null
 
 
-% GET_VALUE{<macro to execute after value is found>} 
+% GET_VALUE{<macro to execute after value is found>}
 \def\!tgGetValue#1{%
   \def\!tgReturn{#1}%          Set return
-  \futurelet\!ttemp\!tgCheckForParen}%  Now \!ttemp is the token 
+  \futurelet\!ttemp\!tgCheckForParen}%  Now \!ttemp is the token
                                     %  immediately after {}
 
 % CHECK_PAREN: See if \!ttemp is a (
@@ -951,7 +955,7 @@
   \ifx\!ttemp\!thSpaceToken
     \!thx \!tgReturn        % <blank space> means no value was specified
   \else
-    \!thx \!tgCheckForDigit         
+    \!thx \!tgCheckForDigit
   \fi}
 
 % CHECK_DIGIT: \!ttemp is not a <blank space>; if its a digit (0,1,...,9)
@@ -1000,7 +1004,7 @@
   \if!taDigit
     \!thx \!tgGetNumber
   \else
-    \!thx \!tgReturn 
+    \!thx \!tgReturn
   \fi}
 
 % GET_NUMBER
@@ -1016,20 +1020,20 @@
 % MISCELANEOUS "RETURNS" FROM \getvalue
 % ********************************************************************
 
-% SET UP PAR BOX: Puts \BeginTableParBox{<user-specified \hsize>} 
+% SET UP PAR BOX: Puts \BeginTableParBox{<user-specified \hsize>}
 % to the left of "#" and \EndTableParBox to the right of "#".
 \def\!tgSetUpParBox{%
   \edef\!ttemp{%
     \noexpand \ReadFormatKeys
     b{\noexpand \BeginTableParBox{%
-      \ifnum \!tgCode=1 
-        \ifx \!tgValue\empty 
+      \ifnum \!tgCode=1
+        \ifx \!tgValue\empty
           \the\ColumnWidthFactor
         \else
           \!tgValue    % user-specified integer
         \fi
-        \!taCWU        % \ColumnWidthUnit 
-      \else 
+        \!taCWU        % \ColumnWidthUnit
+      \else
         \!tgValue      % user-specified dimension
       \fi}}}%
   \!ttemp
@@ -1039,14 +1043,14 @@
 \def\!tgInsertKern{%
   \edef\!ttemp{%
     \kern
-    \ifnum \!tgCode=1 
-      \ifx \!tgValue\empty 
+    \ifnum \!tgCode=1
+      \ifx \!tgValue\empty
         \the\KernFactor
       \else
         \!tgValue    % user-specified integer
       \fi
       \!taKU         % \KernUnit
-    \else 
+    \else
       \!tgValue      % user-specified dimension
     \fi}%
   \edef\!ttemp{%
@@ -1067,7 +1071,7 @@
 % DEFINING NEW KEYS
 % ****************************************************************
 
-% NEW FORMAT KEY <Key Letter>: Must be followed by 
+% NEW FORMAT KEY <Key Letter>: Must be followed by
 %   <Parameter Text> <Replacement Text>
 % Sets up a new key letter command by expanding (essentially) to
 %   \expandafter \def \csname !tk<Key Letter>\endcsname
@@ -1081,13 +1085,13 @@
   \fi
   \!thx\ifx \!ttempb \relax
     \!thx\!tkDefineKey
-  \else 
+  \else
     \!thx\!tkRejectKey
   \fi}
 
 % REPORT NEW KEY
 \def\!tkReportNewKey{%
-  \!taToksA\!thx{\!ttempa}%  
+  \!taToksA\!thx{\!ttempa}%
   \!thMessage{NEW KEY: "\the\!taToksA"}}
 
 % DEFINE KEY
@@ -1096,7 +1100,7 @@
 
 % DUPLICATE KEY
 \def\!tkRejectKey{%
-    \!taToksA\!thx{\!ttempa}% 
+    \!taToksA\!thx{\!ttempa}%
     \!thError{Key letter "\the\!taToksA" already used}
       {\!thReadErrorMsg\!tkFixIt}
     \def\!tkGarbage}%
@@ -1117,7 +1121,7 @@
   \ifnum \TracingKeys>1
     \!tkReportKey
   \fi
-  \!thx\ifx \!ttempb\relax 
+  \!thx\ifx \!ttempb\relax
     \!thx\!tkReplaceKey
   \else
     \!thx\!ttempb
@@ -1125,7 +1129,7 @@
 
 % REPORT KEY
 \def\!tkReportKey{%
-  \!taToksA\!thx{\!ttempa}% 
+  \!taToksA\!thx{\!ttempa}%
   \!thMessage{KEY: "\the\!taToksA"}}
 
 % REPLACE KEY
@@ -1172,17 +1176,17 @@
   \!taDataColumnTemplate=\!thx{\!thx{\the\!taDataColumnTemplate}}%
   \ReadFormatKeys}
 
-% Key "*":  "*{N}{KEY LETTERS}" is equivalent to specifying  
+% Key "*":  "*{N}{KEY LETTERS}" is equivalent to specifying
 % <KEY LETTERS>  N  times.
 % KEY LETTERS may contain further * specifications
 \NewFormatKey *#1#2{%
   \!taCountA=#1\relax
   \!taToksA={}%
-  \!thLoop 
+  \!thLoop
     \ifnum \!taCountA > 0
     \!taToksA\!thx{\the\!taToksA #2}%
     \advance\!taCountA -1
-  \repeat 
+  \repeat
   \!thx\ReadFormatKeys\the\!taToksA}
 
 
@@ -1204,19 +1208,19 @@
 
 % Key "c": Centered column.
 \NewFormatKey c{%
-  \ReadFormatKeys 
+  \ReadFormatKeys
   \LeftGlue\hfil
   \RightGlue\hfil}
 
 % Key "l": Left-adjusted column.
 \NewFormatKey l{%
-  \ReadFormatKeys 
+  \ReadFormatKeys
   \LeftGlue{}   % In case more than one positioning key is specified.
   \RightGlue\hfil}
 
 % Key "r": Right-adjusted column.
 \NewFormatKey r{%
-  \ReadFormatKeys 
+  \ReadFormatKeys
   \LeftGlue\hfil
   \RightGlue{}}
 
@@ -1235,19 +1239,19 @@
   \h@true
   \v@false
   \!tgGetValue{\!tgInsertKern}}
-  
+
 % Key "j": Adds a kern to the right of "#"
 \NewFormatKey j{%
   \h@false
   \v@true
   \!tgGetValue{\!tgInsertKern}}
-  
+
 
 % ****************************************************************
 % NUMERIC ITEM KEYS
 % ****************************************************************
 
-% Key "n": numeric item , non-math mode. 
+% Key "n": numeric item , non-math mode.
 \NewFormatKey n{%
   \def\!tnStyle{}%
    \futurelet\!tnext\!tnTestForBracket}
@@ -1330,7 +1334,7 @@
 
 % Key "o": Apply the \tabskip stated for this column ONLY to the
 % inter-column space just to the right of this column; restore the
-% the previous \tabskip for subsequent columns. 
+% the previous \tabskip for subsequent columns.
 \NewFormatKey o{%
   \!taOnceOnlyTabskiptrue
   \!tkTestForBeginFormat o{\!tgGetValue{\!tfSetTabskip}}}
@@ -1355,11 +1359,11 @@
 
 % Key ".":  PERIOD -- end of \BeginFormat section.
 \NewFormatKey .{%
-  \!tkTestForBeginFormat.{\!tfFinishFormat}} 
+  \!tkTestForBeginFormat.{\!tfFinishFormat}}
 
 % Key "\EndFormat": Equivalent to "."
 \NewFormatKey \EndFormat{%
-  \!tkTestForBeginFormat\EndFormat{\!tfFinishFormat}} 
+  \!tkTestForBeginFormat\EndFormat{\!tfFinishFormat}}
 
 % Key "]": End of \ReFormat section
 \NewFormatKey ]{%
@@ -1373,38 +1377,38 @@
 % TEST FOR BEGIN FORMAT{<Key>}{Intended Action}: This test is run
 % on keys that can only be used by \BeginFormat ---  "s",  "o",
 % "|",  "\|",  "w",  ".",  and  "\EndFormat".
-\def\!tkTestForBeginFormat#1#2{% 
-  \if!taBeginFormat  
+\def\!tkTestForBeginFormat#1#2{%
+  \if!taBeginFormat
     \def\!ttemp{#2}%
-    \!thx \!ttemp    
+    \!thx \!ttemp
   \else
-    \toks0={#1}%  
+    \toks0={#1}%
     \toks2=\!thx{\string\ReFormat}%
     \!thx \!tkImproperUse
-  \fi}   
+  \fi}
 
 % TEST FOR RE FORMAT{<Key>}{Intended Action}: This test is run
 % on the key "]", which can only be used by \ReFormat.
-\def\!tkTestForReFormat#1#2{% 
-  \if!taBeginFormat  
-    \toks0={#1}%  
+\def\!tkTestForReFormat#1#2{%
+  \if!taBeginFormat
+    \toks0={#1}%
     \toks2=\!thx{\string\BeginFormat}%
     \!thx \!tkImproperUse
   \else
     \def\!ttemp{#2}%
-    \!thx \!ttemp    
-  \fi}   
+    \!thx \!ttemp
+  \fi}
 
 % IMPROPER USE OF KEY
-\def\!tkImproperUse{% 
+\def\!tkImproperUse{%
   \!thError{\!thReadErrorMsg\!tkBadUseA "\the\toks0 "}%
     {\!thReadErrorMsg\!tkBadUseB \the\toks2 \space command.
     ^^J\!thReadErrorMsg\!tkBadKey}%
   \!tkReplaceKeyA}
- 
-% ERROR MESSAGES FOR IMPROPER USE OF KEY 
-\!thStoreErrorMsg\!tkBadUseA{Improper use of key }  
-\!thStoreErrorMsg\!tkBadUseB{% 
+
+% ERROR MESSAGES FOR IMPROPER USE OF KEY
+\!thStoreErrorMsg\!tkBadUseA{Improper use of key }
+\!thStoreErrorMsg\!tkBadUseB{%
   The key mentioned above can't be used in a }
 
 
@@ -1413,7 +1417,7 @@
 % SECTION n: NUMERIC
 % *********************************************************************
 
-% NOTE: THE SPACE BETWEEN A NUMERIC ENTRY AND THE FOLLOWING '|', '"', 
+% NOTE: THE SPACE BETWEEN A NUMERIC ENTRY AND THE FOLLOWING '|', '"',
 %   OR '\|' IS MANDATORY.
 % EMPTY NUMERIC ENTRIES ARE NOT ALLOWED: USE '{}' OR '\omit' INSTEAD.
 
@@ -1434,7 +1438,7 @@
 \def\!tnConvertCode #1.#2.#3!{%
   \begingroup
     \aftergroup\edef \aftergroup\!ttemp \aftergroup{%
-      \aftergroup[% 
+      \aftergroup[%
       \!taCountA #1
       \!thLoop
         \ifnum \!taCountA>0
@@ -1446,16 +1450,16 @@
       \else
         \aftergroup.
         \!taCountA #2
-        \!thLoop 
+        \!thLoop
           \ifnum \!taCountA>0
           \advance\!taCountA -1
           \aftergroup0
         \repeat
-      \fi 
+      \fi
       \aftergroup]\aftergroup}%
     \endgroup\relax
     \!thx\!tnGetArgument\!ttemp}
-  
+
 % GET ARGUMENT: [<sample left field> <optional .<sample right field>>
 \def\!tnGetArgument[#1]{%
   \!tnMakeNumericTemplate\!tnStyle#1..!}
@@ -1554,7 +1558,7 @@
     \setbox\z@=\hbox{#1}%
   \fi
   \!TsFinishEnlarge}
-    
+
 \def\!TsEnlargeMath#1#2{%
   \setbox\z@=\hbox{$\m@th#1{#2}$}%
   \!TsFinishEnlarge}
@@ -1605,14 +1609,14 @@
 \def\!ttBeginTable{%
   \ifx [\!tnext
     \def\!tnext{\!ttBeginTableA}%
-  \else 
+  \else
     \def\!tnext{\!ttBeginTableA[c]}%
   \fi
   \!tnext}
 
 \def\!ttBeginTableA[#1]{%
   \if #1u%                  % "unboxed" table
-    \ifmmode                 
+    \ifmmode
       \def\!ttEndTable{%    % user had better be in display math mode
         \relax}%            %   and have only one table at the outer level
     \else                   % user had better be in vertical mode
@@ -1656,7 +1660,7 @@
     \catcode`\"=\active
     \catcode`\~=\active
     \def |{\unskip\!ttRightGlue&&}%         Use rule-column template
-    \def\|{\unskip\!ttRightGlue&\omit\!ttAlternateVrule}% 
+    \def\|{\unskip\!ttRightGlue&\omit\!ttAlternateVrule}%
     %                                       Override rule-column template
     \def"{\unskip\!ttRightGlue&\omit&}%     Omit rule-column template
     \def~{\kern .5em}%                      ~ now has the width of a digit
@@ -1672,7 +1676,7 @@
     \the\EveryTable}
 \egroup
 
-\let\!ttRightGlue=\relax  % This may be changed, in a group, by 
+\let\!ttRightGlue=\relax  % This may be changed, in a group, by
                           %   \JustCenter, etc
 
 % DO HALIGN: Invoked by END FORMAT (or the key ".")
@@ -1682,8 +1686,8 @@
   \halign \the\!taTableSpread \bgroup
    \span\the\!taPreamble
    \ifx \!tfRowOfWidths \empty
-   \else 
-     \!tfRowOfWidths \cr % 
+   \else
+     \!tfRowOfWidths \cr %
    \fi}
 
 % END TABLE
@@ -1698,10 +1702,10 @@
 
 % END OF ROW: When followed by
 %   0, inserts no strut
-%   +, inserts an AugmentedTableStrut (with <x-height> and <x-depth> 
+%   +, inserts an AugmentedTableStrut (with <x-height> and <x-depth>
 %      as arguments
 %   anything else, inserts a StandardTableStrut,
-% and finished off the row with a \cr. 
+% and finished off the row with a \cr.
 \def\!ttEndOfRow{%
   \futurelet\!tnext\!ttTestForBlank}
 
@@ -1713,7 +1717,7 @@
   \else
     \!thx\!ttTestForZero
   \fi}
-  
+
 % TEST FOR ZERO
 \def\!ttTestForZero{%
   \ifx 0\!tnext
@@ -1732,16 +1736,16 @@
 
 % DO ZERO: No strut
 \def\!ttDoZero#1{% #1 eats the 0
-  \cr} 
+  \cr}
 
 % DO PLUS: Insert "Extra" strut; #2=extra height, #3=extra depth, both
 % as integers (units of \StrutUnit)
 \def\!ttDoPlus#1#2#3{% #1 eats the +
   \AugmentedTableStrut{#2}{#3}%
-  \cr} 
+  \cr}
 
 % DO STANDARD: Insert standard table strut
-\def\!ttDoStandard{% 
+\def\!ttDoStandard{%
   \StandardTableStrut
   \cr}
 
@@ -1751,7 +1755,7 @@
 % *********************************************************************
 
 % A '\|' can appear in a rule-column in place of a '|', '"', or '&'.
- 
+
 % If '\|' is immediately followed by a blank, a string of digits, or
 % (...) [... had better be a <dimen>], a \vrule is placed in the
 % rule column; the thickness of the \vrule follows TABLE's usual
@@ -1759,14 +1763,14 @@
 
 % If '\|' is immediately followed by a '*', a user-specified default
 % "pseudo"-rule is placed in the rule column. This P.R. is specified
-% by the parameterless macro \PseudoVrule. For example, 
+% by the parameterless macro \PseudoVrule. For example,
 % to place a "double rule" into a rule column, you could make the definition
 %   \def\PseudoVrule{\hfil\vrule \hskip1pt \vrule\hfil}
 
 % If none of the above cases applies, a non-space token follows '\|':
 % that token is placed in the rule-column. To put a '*' in a
 % rule-column, enter '\|{*}'. '\|\PseudoVrule' has the same effect
-% as '\|*'. 
+% as '\|*'.
 
 % ALTERNATE VRULE
 \def\!ttAlternateVrule{%
@@ -1793,7 +1797,7 @@
   \ifx \!ttemp\!thSpaceToken     % blank after "\|"
     \!thx\!ttInsertVrule
   \else
-    \!thx\!ttAVTestForStar 
+    \!thx\!ttAVTestForStar
   \fi}
 
 % TEST FOR STAR
@@ -1806,10 +1810,10 @@
 
 % INSERT VRULE
 \def\!ttInsertVrule{%
-  \hfil 
+  \hfil
   \vrule \!thWidth
     \ifnum \!tgCode=1
-      \ifx \!tgValue\empty 
+      \ifx \!tgValue\empty
         \LineThicknessFactor
       \else
         \!tgValue
@@ -1839,19 +1843,19 @@
 % USE: Version of \multispan for rule-&-column tables
 % *********************************************************************
 
-% USE 
-% \use <number> spans the next <number> data columns. 
+% USE
+% \use <number> spans the next <number> data columns.
 \def\!ttuse#1{%
-  \ifnum #1>\@ne 
-    \omit 
+  \ifnum #1>\@ne
+    \omit
     \mscount=#1 %        \mscount is in Plain
     \advance\mscount by \m@ne
     \advance\mscount by \mscount
-    \!thLoop 
-      \ifnum\mscount>\@ne 
+    \!thLoop
+      \ifnum\mscount>\@ne
       \sp@n %            from Plain (\span\omit \advance\mscount\m@ne)
-    \repeat 
-    \span 
+    \repeat
+    \span
   \fi}
 
 \def\!ttUse#1[{%
@@ -1863,7 +1867,7 @@
 % HRULES
 % *********************************************************************
 
-% FULL HORIZONTAL RULE: Draws a rule across the table, 
+% FULL HORIZONTAL RULE: Draws a rule across the table,
 % using \noalign{\hrule}
 \def\!ttFullHrule{%
   \noalign
@@ -1888,9 +1892,9 @@
   \!ttGetHalfRuleThickness % Sets \dimen0 to half of specified thickness
   \leaders \hrule \!thHeight \dimen0 \!thDepth \dimen0 \hfill
   \null    % prevents an \unskip from annihilating the \leaders
-  \ignorespaces} 
+  \ignorespaces}
 
-% LONG HORIZONTAL RULE: This rule requires special coding. 
+% LONG HORIZONTAL RULE: This rule requires special coding.
 % It must be preceded and followed by '&', instead of the usual
 % '|' or '"'. However, '\_' can follow '\use' in the usual manner.
 % And in fact, to insert long-rules in two or more contiguous columns,

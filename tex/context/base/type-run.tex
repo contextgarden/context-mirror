@@ -35,18 +35,17 @@
       \dochecktypescript{##2}\typescripttwo  \ifdone
       \dochecktypescript{##3}\typescriptthree\ifdone
         \def\next%
-          {\def\stoptypescript%
-             {\egroup\type{\stoptypescript}}
+          {\def\stoptypescript{\egroup\type{\stoptypescript}}
            % what follows now is quite ugly
            \skipfirstverbatimlinefalse
-           \processdisplayverbatim{\stoptypescript}%
            \type{\starttypescript}
            \doifsomething{##1}{\type{[##1]}}
            \doifsomething{##2}{\type{[##2]}}
-           \doifsomething{##3}{\type{[##3]}}}
+           \doifsomething{##3}{\type{[##3]}}
+           \processdisplayverbatim{\stoptypescript}}%
       \fi\fi\fi
       \next}
-  \processcommacommand[\typescriptfiles]\dodousetypescript
+  \processcommacommand[\typescriptfiles]\ReadFile % \dodousetypescript
   \egroup}
 
 \protect \endinput

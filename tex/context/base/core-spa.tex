@@ -17,31 +17,35 @@
 
 \unprotect
 
-\newevery \everybodyfont    \EveryBodyFont   % just to be sure
-\newevery \everyfontswitch  \EveryFontSwitch % just to be sure
-\newevery \everydefinedfont \relax           % just to be sure
+% some will move to core-var
 
-\appendtoks \spacing               1\to \everybodyfont
-\appendtoks \presetnormallineheight \to \everybodyfont
-\appendtoks \setnormalbaselines     \to \everybodyfont % check if redundant
-\appendtoks \setstrut               \to \everybodyfont % check if redundant
-\appendtoks \settopskip             \to \everybodyfont
-\appendtoks \setmaxdepth            \to \everybodyfont
-%appendtoks \spacing               1\to \everybodyfont
-\appendtoks \simplesetupindenting   \to \everybodyfont
-\appendtoks \simplesetupblank       \to \everybodyfont
-\appendtoks \simplesetupwhitespace  \to \everybodyfont
-%appendtoks \checknotes             \to \everybodyfont % not
-\appendtoks \simplesetupspacing     \to \everybodyfont % nieuw
-\appendtoks \setdisplayskips        \to \everybodyfont % nieuw
+\newif \ifgridsnapping
+\newif \iffuzzyvskip
+\let   \fuzzyvskip              \gobbleoneargument
+\let   \removelastfuzzyvskip    \relax
 
+\let   \startbaselinecorrection \relax
+\let   \stopbaselinecorrection  \relax
+\let   \baselinecorrection      \relax
+\let   \offbaselinecorrection   \relax
+
+\appendtoks \spacing                  1\to \everybodyfont
+\appendtoks \presetnormallineheight    \to \everybodyfont
+\appendtoks \setnormalbaselines        \to \everybodyfont % check if redundant
+\appendtoks \setstrut                  \to \everybodyfont % check if redundant
+\appendtoks \settopskip                \to \everybodyfont
+\appendtoks \setmaxdepth               \to \everybodyfont
+%appendtoks \spacing                  1\to \everybodyfont
+\appendtoks \simplesetupindenting      \to \everybodyfont
+\appendtoks \simplesetupblank          \to \everybodyfont
+\appendtoks \simplesetupwhitespace     \to \everybodyfont
+%appendtoks \checknotes                \to \everybodyfont % not
+\appendtoks \simplesetupspacing        \to \everybodyfont % nieuw
 \appendtoks \setrelativeinterlinespace \to \everybodyfont
 
-\appendtoks \updateraggedskips      \to \everyfontswitch  % under test
-
-\prependtoks \let\par\endgraf       \to \everypagebody % see \fillinline
-
-\appendtoks \simplesetupspacing     \to \everydefinedfont
+\appendtoks  \updateraggedskips        \to \everyfontswitch  % under test
+\prependtoks \let\par\endgraf          \to \everypagebody % see \fillinline
+\appendtoks  \simplesetupspacing       \to \everydefinedfont
 
 % if you want to hyphenate the first word of a paragraph ... \appendtoks\hskip0pt\to\everypar
 
@@ -270,7 +274,6 @@
 
 \newif\iflocalblankfixed
 \newif\iflocalblankflexible
-\newif\iffuzzyvskip
 
 \def\geenblanko{\removelastskip} % will become obsolete
 
@@ -493,7 +496,7 @@
 \defineblankmethod     [\v!fixed] {\global\localblankfixedtrue}
 \defineblankmethod      [\v!back] {\global\blankgobacktrue} % {\geenblanko}
 \defineblankmethod  [\v!halfline] {\ifgridsnapping\global\fuzzyvskiptrue\fi
-                                     \global\advance\blankskip .5\lineheight}
+                                   \global\advance\blankskip .5\lineheight}
 
 \defineblankmethod      [\v!none] {\global\blankresettrue}
 \defineblankmethod  [\v!joinedup] {\ifvmode\nointerlineskip\fi}
@@ -1105,8 +1108,8 @@
    }%\let\deblanko\v!big}
 
 \def\dodefineblank[#1][#2]%
-  {\def\docommando##1{\setvalue{\??bo##1}{#2}}%
-   \processcommalist[#1]\docommando}
+  {\def\docommand##1{\setvalue{\??bo##1}{#2}}%
+   \processcommalist[#1]\docommand}
 
 \def\defineblank
   {\dodoubleargument\dodefineblank}
@@ -1509,18 +1512,9 @@
 % \frenchspacing leidt soms tot afbreken tussen -, vandaar
 % de variant \newfrenchspacing.
 
-\def\dofrenchspacing#1%
-  {\sfcode`\.#1 \sfcode`\,#1\relax
-   \sfcode`\?#1 \sfcode`\!#1\relax
-   \sfcode`\:#1 \sfcode`\;#1\relax}
-
-\def\frenchspacing   {\dofrenchspacing{1000}}
-\def\newfrenchspacing{\dofrenchspacing{1050}}
-
-\def\nonfrenchspacing
-  {\sfcode`\.3000 \sfcode`\,1250
-   \sfcode`\?3000 \sfcode`\!3000
-   \sfcode`\:2000 \sfcode`\;1500 }
+\def\frenchspacing   {\setfrenchspacing{1000}}
+\def\newfrenchspacing{\setfrenchspacing{1050}}
+\def\nonfrenchspacing{\resetfrenchspacing}
 
 \def\definespacingmethod[#1]#2{\setvalue{\??sg\??sg#1}{#2}}
 
@@ -1536,9 +1530,9 @@
 
 \definecomplexorsimple\setupspacing
 
-\catcode`\~=\@@active % to be sure
+\unexpanded\def\nonbreakablespace{\penalty\plustenthousand\ }
 
-\unexpanded\def~{\nonbreakablespace}
+\letcatcodecommand \ctxcatcodes `\~ \nonbreakablespace
 
 \def\space          { }
 \def\removelastspace{\ifhmode\unskip\fi}
@@ -1550,31 +1544,32 @@
 %
 % but, since not all fonts have .5em digits:
 
-\def\fixedspace
-  {\setbox\scratchbox\normalhbox\ifmmode{$0$}\else{0}\fi
+\unexpanded\def\fixedspace
+  {\setbox\scratchbox\normalhbox{\mathortext{0}{0}}%
    \hskip\wd\scratchbox\relax}
 
 \def\fixedspaces
-  {\catcode`\~=\@@active
-   \def~{\fixedspace}}
-
-% \def\removeunwantedspaces{\ifhmode\unskip\unskip\unskip\unskip\unskip\fi}
+  {\letcatcodecommand \ctxcatcodes `\~ \fixedspace}
 
 \def\removeunwantedspaces
-  {\ifhmode
-     \doloop{\ifdim\lastskip>\zeropoint\unskip\else\exitloop\fi}%
+  {\ifhmode % we also need to unskip 0pt skips
+     \unskip\unskip\unskip\unskip\unskip
+     \unskip\unskip\unskip\unskip\unskip
    \fi}
 
-% better, but not done:
+% still not fixed in aleph / luatex
 %
-% \def\removelastspace
-%   {\ifhmode \ifdim\lastskip=\spaceamount\relax
-%      \unskip
+% \beginETEX \lastnodetype
+%
+% \def\removeunwantedspaces
+%   {\ifhmode \ifnum\lastnodetype=\@@gluenode
+%       \unskip \@EAEAEA\removeunwantedspaces
 %    \fi \fi}
 %
-% due to backward compability
+% \endETEX
 
-\let\space     \space
+%D For old time sake, will disappear soon.
+
 \let\hardespatie\fixedspace
 \let\geenspatie \nospace
 
@@ -2287,7 +2282,7 @@
 %    \edef\strutdepth{\the\strutdimen}%
 %    \dosetstrut}
 
-% interesting, strudepth is 4.05064pt vs 4.05066pt depending on grid
+% interesting, strutdepth is 4.05064pt vs 4.05066pt depending on grid
 % nasty rounding problem
 
 \def\setstrut
@@ -2753,7 +2748,7 @@
         \s!unknown=>{\dorepeatwithcommand[#1]\dosinglenarrower}]}
 
 \def\complexstartnarrower[#1]%
-  {\par
+  {\@@slbefore % was hard coded \par
    \bgroup
    \global\ctxleftskip \zeropoint
    \global\ctxrightskip\zeropoint
@@ -2765,13 +2760,15 @@
    \advance\rightskip \ctxmidskip
    \seteffectivehsize}
 
+% todo: definenarrower
+
 \def\simplestartnarrower
   {\startnarrower[\v!middle]}
 
 \definecomplexorsimple\startnarrower
 
 \def\stopnarrower
-  {\par % else skips forgotten
+  {\@@slafter % was hard coded \par / needed, else skips forgotten
    \egroup}
 
 \def\setupnarrower
@@ -2810,7 +2807,8 @@
 \def\ibox{\iobox\raggedright\raggedleft}  % innerbox
 
 \def\dosetraggedvbox#1%
-  {\processaction
+  {\let\raggedbox\vbox
+   \processfirstactioninset
      [#1]
      [   \v!left=>\let\raggedbox\lbox,
         \v!right=>\let\raggedbox\rbox,
@@ -2820,12 +2818,11 @@
     \v!flushleft=>\let\raggedbox\rbox,
    \v!flushright=>\let\raggedbox\lbox,
        \v!center=>\let\raggedbox\cbox,
-           \v!no=>\def\raggedbox{\vbox\bgroup\raggedright\let\next=},
-      \s!default=>\let\raggedbox\vbox,
-      \s!unknown=>\let\raggedbox\vbox]}
+           \v!no=>\def\raggedbox{\vbox\bgroup\raggedright\let\next=}]}
 
 \def\dosetraggedhbox#1%
-  {\processaction % slow
+  {\let\raggedbox\hbox
+   \processaction % slow
      [#1]
      [   \v!left=>\def\raggedbox{\doalignedline\v!left  },
         \v!right=>\def\raggedbox{\doalignedline\v!right },
@@ -2834,10 +2831,7 @@
         \v!outer=>\def\raggedbox{\doalignedline\v!outer },
     \v!flushleft=>\def\raggedbox{\doalignedline\v!right },
    \v!flushright=>\def\raggedbox{\doalignedline\v!left  },
-       \v!center=>\def\raggedbox{\doalignedline\v!middle},
-       \v!normal=>\let\raggedbox\hbox,
-      \s!default=>\let\raggedbox\hbox,
-      \s!unknown=>\let\raggedbox\hbox]}
+       \v!center=>\def\raggedbox{\doalignedline\v!middle}]}
 
 \def\dosetraggedcommand#1%
   {\expanded{\dodosetraggedcommand{#1}}}
@@ -2853,7 +2847,9 @@
 %       \!!donectrue
 %       \rawprocesscommalist[#1]\dododosetraggedcommand}}
 
-\newtoks\everyraggedcommand \def\raggedcommand{\the\everyraggedcommand}
+\newtoks\everyraggedcommand
+
+\def\raggedcommand{\the\everyraggedcommand}
 
 \def\dodosetraggedcommand#1% beware: #1=empty is ignored, keep that!
   {\everyraggedcommand     \emptytoks
@@ -3076,9 +3072,6 @@
 
 \def\forgetspacing
   {\emergencystretch\zeropoint}
-
-\def\forgetall
-  {\the\everyforgetall}
 
 \newif\ifforgotten % rather good signal for inner
 
@@ -3371,82 +3364,6 @@
 
 \endETEX
 
-% \definetwopasslist\s!paragraph
-%
-% \newcounter\nofraggedparagraphs
-%
-% \def\doparagraphreference% looks very much like domarginreference
-%   {\doglobal\increment\nofraggedparagraphs
-%    \edef\writeparref%
-%      {\writeutilitycommand%
-%         {\twopassentry%
-%            {\s!paragraph}%
-%            {\nofraggedparagraphs}%
-%            {\noexpand\realfolio}}}%
-%    \writeparref}
-%
-% \def\setraggedparagraphmode#1#2% combineren met \ifrightpage
-%   {\ifinpagebody
-%      \ifdoublesided
-%        \ifodd\realpageno\relax#1\else#2\fi
-%      \else
-%        #2\relax
-%      \fi
-%    \else\ifinner
-%      \ifdoublesided
-%        \gettwopassdata\s!paragraph
-%        \iftwopassdatafound
-%          \ifodd\twopassdata\relax#1\else#2\fi
-%        \else
-%          \ifodd\realpageno\relax#1\else#2\fi
-%        \fi
-%        \doparagraphreference
-%      \else
-%        #2\relax
-%      \fi
-%    \else
-%      #2\relax
-%    \fi\fi}
-%
-% \def\doifrightpageelse % watch out: other default ! ! !
-%   {\ifinpagebody
-%      % optimalisation ?
-%      \ifdoublesided
-%        \ifodd\realpageno\relax
-%          \twopassdatafoundtrue \else \twopassdatafoundfalse
-%        \fi
-%      \else
-%        \twopassdatafoundtrue
-%      \fi
-%    \else
-%      \ifdoublesided
-%        \gettwopassdata\s!paragraph
-%        \iftwopassdatafound
-%          \ifodd\twopassdata\relax
-%            \twopassdatafoundtrue \else \twopassdatafoundfalse
-%          \fi
-%        \else
-%          \ifodd\realpageno\relax
-%            \twopassdatafoundtrue \else \twopassdatafoundfalse
-%          \fi
-%        \fi
-%      \else
-%        \twopassdatafoundtrue
-%      \fi
-%    \fi
-%    \iftwopassdatafound
-%      \@EA\firstoftwoarguments
-%    \else
-%      \@EA\secondoftwoarguments
-%    \fi}
-%
-% \def\signalrightpage
-%   {\ifdoublesided \ifinpagebody \else
-%      \doparagraphreference
-%    \fi \fi}
-
-% slightly adapted implementation
-
 \newcounter \noftrackedpagestates
 \newif      \ifpagestatemismatch
 \let        \realpagestateno      \realfolio
@@ -3459,13 +3376,10 @@
 
 \def\doforcedtrackpagestate#1#2%
   {\ifcase\frozenpagestate
-     \doglobal\increment\noftrackedpagestates
-     \doglobal\increment#2%
-     \edef\dodotrackpagestate
-       {\writeutilitycommand
-          {\twopassentry{#1}{\noftrackedpagestates}{#2:\noexpand\realfolio}}}%
+     \doglobal\increment\noftrackedpagestates\relax
+     \doglobal\increment#2\relax
+     \lazysavetaggedtwopassdata{#1}{\noftrackedpagestates}{#2}{\noexpand\realfolio}%
      %\llap{\infofont\noftrackedpagestates/#2}% tracing
-     \dodotrackpagestate
    \fi}
 
 \def\doifrightpagestateelse#1#2%
@@ -3481,7 +3395,7 @@
          \twopassdatafoundtrue
        \fi
      \else\ifdoublesided
-       \findtwopassdata{#1}{#2:}%
+       \findtwopassdata{#1}{#2}%
        \iftwopassdatafound
          \let\realpagestateno\twopassdata
          \ifnum\twopassdata=\realpageno \else
@@ -3513,7 +3427,7 @@
   {\ifcase\frozenpagestate
      \pagestatemismatchfalse
      \let\realpagestateno\realfolio
-     \findtwopassdata{#1}{#2:}%
+     \findtwopassdata{#1}{#2}%
      \iftwopassdatafound
        \let\realpagestateno\twopassdata
        \ifnum\twopassdata=\realpageno \else
@@ -3563,7 +3477,10 @@
   {\ifcase\pagesignallevel\or\postsignalrightpage\fi
    \decrement\pagesignallevel}
 
-\def\setraggedparagraphmode{\signalrightpage\doifrightpageelse} % move it there
+\def\setraggedparagraphmode
+  {\signalrightpage\doifrightpageelse} % move it there
+
+\ifx\swapmargins\undefined \let\swapmargins\undefined \fi % todo
 
 \def\doifswappedrightpageelse#1#2% alleen in box construction !
   {\doifrightpageelse
@@ -3599,7 +3516,7 @@
 \def\docheckpagestatechange#1#2#3%
   {\pagechangedfalse
    \doforcedtrackpagestate{#2}{#3}%
-   \findtwopassdata{#2}{#3:}%
+   \findtwopassdata{#2}{#3}%
    \iftwopassdatafound
      \ifnum\twopassdata>0\getvalue{#2:p:#1}\relax
        \pagechangedtrue
@@ -3705,6 +3622,10 @@
 
 \def\middleraggedness {.5\hsize} % was: 6\bodyfontsize, fails on: \placefigure{x $x=x$ x}{}
 
+% oeps, hsize can be 0pt in which case we get a strange division
+
+\def\middleraggedness {\ifdim\hsize=\zeropoint6\bodyfontsize\else.5\hsize\fi} % was: 6\bodyfontsize, fails on: \placefigure{x $x=x$ x}{}
+
 %D More hyphenation control, will be combined with align
 %D setup.
 
@@ -3766,19 +3687,65 @@
 % \def\notragged%
 %   {\setraggedskips{0}{0em}{0em}{0em}{0em}{1fil}{\parindent}}
 
-% todo
+% older (context) names:
+
+\let\spaceamount  \interwordspace
+\let\emspaceamount\emwidth
+
+% tracing:
+
+\def\doshowpardata#1%
+  {\ifx#1\relax\else
+     \hbox{\string#1: \the#1}\endgraf
+     \expandafter\doshowpardata
+   \fi}
+
+\def\showpardata
+  {\edef\thepardata
+     {\hbox{font: \fontname\font}\endgraf
+      \doshowpardata
+        \interwordspace \interwordstretch \interwordshrink \emwidth \exheight \extraspace
+        \hsize     \vsize
+        \leftskip  \rightskip
+        \spaceskip \xspaceskip
+        \parindent \parfillskip
+        \hyphenpenalty \exhyphenpenalty
+        \displaywidowpenalty \widowpenalty \clubpenalty \brokenpenalty
+        \doublehyphendemerits \finalhyphendemerits \adjdemerits
+      \relax}%
+   \begingroup
+   \dontshowcomposition
+   \inleftmargin{\vsmash
+     {\switchtobodyfont[7pt,tt]%
+      \framed[\c!align=\v!right]{\thepardata}}}%
+   \endgroup}
+
+\def\startshowpardata
+  {\begingroup
+   \showcomposition
+   \showstruts\tracepositionstrue \tracingparagraphs\maxdimen
+   \appendtoksonce\showpardata\let\showpardata\relax\to\everypar}
+
+\def\stopshowpardata
+  {\endgraf
+   \endgroup}
+
+% \defineXMLenvironment[showpardata] \startshowpardata \stopshowpardata
+% \defineXMLsingular   [showpardata] \showpardata
+
+% defaults
 
 \def\raggedfillamount    {1fil}
 \def\raggedhalffillamount{.5fil}
-\def\raggedspaceamount   {.3333em}
+\def\raggedspaceamount   {\interwordspace} % {.3333em}
 \def\raggedxspaceamount  {.5em}
 
 \def\notragged
   {\chardef\raggedstatus\zerocount
-   \leftskip1\leftskip
-   \rightskip1\rightskip
-   \spaceskip\zeropoint
-   \xspaceskip\zeropoint
+   \leftskip  1\leftskip
+   \rightskip 1\rightskip
+   \spaceskip  \zeropoint
+   \xspaceskip \zeropoint
    \parfillskip\zeropoint\!!plus\raggedfillamount\relax
    \let\updateraggedskips\relax} % new
 
@@ -3851,44 +3818,16 @@
 % test \vfill test \endgraf \strut \endgraf \vskip-\lineheight \removedepth \pagina test
 % \stoptext
 
-% Keep this one:
-%
-% \def\setupalign
-%   {\dosingleargument\dosetupalign}
-%
-% \def\dosetupalign[#1]%
-%   {\expanded{\dodosetupalign[#1]}}
-%
-% \def\dodosetupalign[#1]%
-%   {\doifinsetelse\v!broad {#1}\!!doneatrue\!!doneafalse
-%    \doifinsetelse\v!wide{#1}\!!donebtrue\!!donebfalse
-%    \ExpandFirstAfter\processallactionsinset % expansion redundant
-%      [#1]
-%      [                        \v!line=>\baselinebottom,
-%                             \v!bottom=>\raggedbottom,
-%                             \v!height=>\normalbottom,
-%                              \v!width=>\notragged,
-%                             \v!normal=>\notragged,
-%                                \v!yes=>\notragged,
-%                                 \v!no=>\raggedright,
-% \if@@asragged\v!inner\else\v!outer\fi=>\setraggedparagraphmode\raggedleft\raggedright,
-% \if@@asragged\v!outer\else\v!inner\fi=>\setraggedparagraphmode\raggedright\raggedleft,
-% \if@@asragged\v!left \else\v!right\fi=>\if!!donea\veryraggedleft  \else\raggedleft  \fi,
-% \if@@asragged\v!right\else\v!left \fi=>\if!!donea\veryraggedright \else\raggedright \fi,
-%                             \v!middle=>\if!!doneb\raggedwidecenter\else\if!!donea\veryraggedcenter\else\raggedcenter\fi\fi,
-%                          \v!flushleft=>\if!!donea\veryraggedright \else\raggedright \fi,
-%                         \v!flushright=>\if!!donea\veryraggedleft  \else\raggedleft  \fi,
-%                             \v!center=>\if!!doneb\raggedwidecenter\else\if!!donea\veryraggedcenter\else\raggedcenter\fi\fi,
-%                            \v!hanging=>\enableprotruding,
-%                         \v!nothanging=>\disableprotruding,
-%                                 \v!hz=>\enableadjusting,
-%                               \v!nohz=>\disableadjusting,
-%                         \v!hyphenated=>\dohyphens,
-%                      \v!nothyphenated=>\nohyphens,
-%                                \v!new=>\@@asraggedfalse, % so new will give you consistency
-%                              \v!reset=>\notragged\normalbottom]}
-%
-% The next one is more than three times faster:
+% \setupalign[reset,new,right,old]
+
+
+\def\@@align@@rl{\if!!donea\veryraggedleft  \else\raggedleft  \fi}
+\def\@@align@@rr{\if!!donea\veryraggedright \else\raggedright \fi}
+\def\@@align@@rc{\if!!donea\veryraggedcenter\else\raggedcenter\fi}
+
+\setvalue{@@align@@\v!new          }{\@@asraggedfalse}
+\setvalue{@@align@@\v!old          }{\@@asraggedtrue}
+\setvalue{@@align@@                }{}
 
 \setvalue{@@align@@\v!line         }{\baselinebottom}
 \setvalue{@@align@@\v!bottom       }{\raggedbottom}
@@ -3897,30 +3836,18 @@
 \setvalue{@@align@@\v!normal       }{\notragged}
 \setvalue{@@align@@\v!yes          }{\notragged}
 \setvalue{@@align@@\v!no           }{\raggedright}
-\setvalue{@@align@@\v!inner        }{\if@@asragged
-                                       \setraggedparagraphmode\raggedleft\raggedright
-                                     \else
-                                       \setraggedparagraphmode\raggedright\raggedleft
-                                     \fi}
-\setvalue{@@align@@\v!outer        }{\if@@asragged
-                                       \setraggedparagraphmode\raggedright\raggedleft
-                                     \else
-                                       \setraggedparagraphmode\raggedleft\raggedright
-                                     \fi}
-\setvalue{@@align@@\v!left         }{\if@@asragged
-                                       \if!!donea\veryraggedleft\else\raggedleft\fi
-                                     \else
-                                       \if!!donea\veryraggedright\else\raggedright\fi
-                                     \fi}
-\setvalue{@@align@@\v!right        }{\if@@asragged
-                                       \if!!donea\veryraggedright\else\raggedright\fi
-                                     \else
-                                       \if!!donea\veryraggedleft\else\raggedleft\fi
-                                     \fi}
-\setvalue{@@align@@\v!middle       }{\if!!doneb\raggedwidecenter\else\if!!donea\veryraggedcenter\else\raggedcenter\fi\fi}
-\setvalue{@@align@@\v!flushleft    }{\if!!donea\veryraggedright \else\raggedright \fi}
-\setvalue{@@align@@\v!flushright   }{\if!!donea\veryraggedleft  \else\raggedleft  \fi}
-\setvalue{@@align@@\v!center       }{\if!!doneb\raggedwidecenter\else\if!!donea\veryraggedcenter\else\raggedcenter\fi\fi}
+\setvalue{@@align@@\v!inner        }{\if@@asragged \setraggedparagraphmode\@@align@@rl\@@align@@rr \else
+                                                   \setraggedparagraphmode\@@align@@rr\@@align@@rl \fi}
+\setvalue{@@align@@\v!outer        }{\if@@asragged \setraggedparagraphmode\@@align@@rr\@@align@@rl \else
+                                                   \setraggedparagraphmode\@@align@@rl\@@align@@rr \fi}
+\setvalue{@@align@@\v!left         }{\if@@asragged\@@align@@rl\else\@@align@@rr\fi}
+\setvalue{@@align@@\v!right        }{\if@@asragged\@@align@@rr\else\@@align@@rl\fi}
+\setvalue{@@align@@\v!middle       }{\if!!doneb\raggedwidecenter\else\@@align@@rc\fi}
+\setvalue{@@align@@\v!flushleft    }{\if!!donea\veryraggedright \else\raggedright\fi}
+\setvalue{@@align@@\v!flushright   }{\if!!donea\veryraggedleft  \else\raggedleft \fi}
+\setvalue{@@align@@\v!flushouter   }{\setraggedparagraphmode\raggedleft\raggedright}
+\setvalue{@@align@@\v!flushinner   }{\setraggedparagraphmode\raggedright\raggedleft}
+\setvalue{@@align@@\v!center       }{\if!!doneb\raggedwidecenter\else\@@align@@rc\fi}
 \setvalue{@@align@@\v!hanging      }{\enableprotruding}
 \setvalue{@@align@@\v!nothanging   }{\disableprotruding}
 \setvalue{@@align@@\v!hz           }{\enableadjusting}
@@ -3939,8 +3866,8 @@
 \setvalue{@@ngila@@\v!broad        }{\!!doneatrue}
 \setvalue{@@ngila@@\v!wide         }{\!!donebtrue}
 
-\def\dodosetupalign#1{\getvalue{@@align@@#1}}
-\def\dodosetupngila#1{\getvalue{@@ngila@@#1}}
+\def\dodosetupalign#1{\csname @@align@@#1\endcsname}
+\def\dodosetupngila#1{\csname @@ngila@@#1\endcsname}
 
 \def\setupalign
   {\dosingleargument\dosetupalign}
@@ -3972,16 +3899,23 @@
 
 % see later for the real definition, which in the simple case is:
 
+\newtoks \everyleftofalignedline
+\newtoks \everyrightofalignedline
+
 \def\doalignline#1#2% \\ == newline
- {\begingroup
-  \setlocalhsize % new
-  \def\\{\egroup\par\doalignline{#1}{#2}\bgroup}%
-  \dowithnextbox
-    {\noindentation % was \ noindent
-     \hbox to \localhsize
-       {\ifcase\alignstrutmode\or\strut\fi
-         #1\unhbox\nextbox#2}\endgroup}
-    \hbox}
+  {\begingroup
+   \setlocalhsize % new
+   \def\\{\egroup\par\doalignline{#1}{#2}\bgroup}%
+   \dowithnextbox
+     {\noindentation % was \ noindent
+      \dontleavehmode % added in marrakesch at TUG 2006
+      \hbox to \localhsize
+        {\ifcase\alignstrutmode\or\strut\fi
+         \the\everyleftofalignedline
+         #1\unhbox\nextbox#2\relax
+         \the\everyrightofalignedline}%
+      \endgroup}
+     \hbox}
 
 % directe commando's
 
@@ -3993,10 +3927,9 @@
 
 % indirecte commando's
 
-\letvalue{\s!do\v!line\v!left  }\leftaligned
-\letvalue{\s!do\v!line\v!right }\rightaligned
-\letvalue{\s!do\v!line\v!middle}\midaligned
-
+\letvalue{\s!do\v!line\v!left      }\leftaligned
+\letvalue{\s!do\v!line\v!right     }\rightaligned
+\letvalue{\s!do\v!line\v!middle    }\midaligned
 \letvalue{\s!do\v!line\v!flushleft }\rightaligned
 \letvalue{\s!do\v!line\v!flushright}\leftaligned
 \letvalue{\s!do\v!line\v!center    }\midaligned
@@ -4033,8 +3966,10 @@
       \hbox to \localhsize
         {#1\hskip\ifdone#2\else#3\fi#4%
          \hbox to \localhsize
-           {\ifcase\alignstrutmode\or\strut\fi
-            \ifdone#5\unhbox\nextbox#6\else#6\unhbox\nextbox#5\fi}%
+           {\the\everyleftofalignedline
+            \ifcase\alignstrutmode\or\strut\fi
+            \ifdone#5\unhbox\nextbox#6\else#6\unhbox\nextbox#5\fi
+            \the\everyrightofalignedline}%
          \hss}%
         \egroup}
      \hbox}
@@ -4064,14 +3999,14 @@
 
 \def\doalignedline#1{\csname\s!do\v!line#1\endcsname}
 
-\def\alignedline#1#2% setting default
-  {\csname
-     \s!do\v!line
-     \ifundefined{\s!do\v!line#1}#2\else#1\fi
-   \endcsname}
+% \def\alignedline#1#2% setting default
+%   {\csname
+%      \s!do\v!line
+%      \ifundefined{\s!do\v!line#1}#2\else#1\fi
+%    \endcsname}
 
-% \def\doalignedline#1%
-%   {\alignedline{#1}\v!links}
+\def\alignedline#1#2% setting default
+  {\csname\s!do\v!line\ifcsname\s!do\v!line#1\endcsname#1\else#2\fi\endcsname}
 
 %D ...
 
@@ -4305,9 +4240,6 @@
 
 \def\hspaceamount#1#2%
   {\executeifdefined{\??hs#1:#2}{\executeifdefined{\??hs:#2}\zeropoint}}
-
-\def\emspaceamount{\fontdimen6\font}
-\def\spaceamount  {\fontdimen2\font}
 
 \definehspace [\v!small]   [.25\emspaceamount]
 \definehspace [\v!medium]  [.5\emspaceamount]
@@ -4658,12 +4590,12 @@
    \vtop}
 
 \def\flexiblespaceamount#1#2#3%
-         {#1\fontdimen2\font
-   \!!plus#2\fontdimen3\font
-  \!!minus#3\fontdimen4\font}
+         {#1\interwordspace
+   \!!plus#2\interwordstretch
+  \!!minus#3\interwordshrink}
 
 \def\fixedspaceamount#1%
-  {#1\fontdimen2\font}
+  {#1\interwordspace}
 
 %D This is a dangerous feature because it makes the \TEX\ source
 %D less portable, i.e. any parser now needs to apply exactly the
@@ -4725,7 +4657,9 @@
    \c!stretch=0]
 
 \setupnarrower
-  [\c!left=1.5em,
+  [\c!before=\endgraf,
+   \c!after=\endgraf,
+   \c!left=1.5em,
    \c!right=1.5em,
    \c!middle=1.5em]
 

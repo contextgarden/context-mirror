@@ -13,6 +13,8 @@
 
 \writestatus{loading}{Context Page Macros / Layout Specification}
 
+%D This module is now etex dependent.
+
 % to be translated into english
 
 % hoofdhoogte wordt bij status=hoog niet aangepast op outer
@@ -58,8 +60,8 @@
 \newdimen\headerheight         \headerheight         = 2cm
 \newdimen\footerheight         \footerheight         = \headerheight
 
-\newdimen\kopoffset            \kopoffset            = 0pt
-\newdimen\rugoffset            \rugoffset            = \kopoffset
+\newdimen\topoffset            \topoffset            = 0pt
+\newdimen\backoffset           \backoffset           = \topoffset
 
 \newdimen\leftmarginwidth      \leftmarginwidth      = 3cm
 \newdimen\rightmarginwidth     \rightmarginwidth     = \leftmarginwidth
@@ -103,27 +105,6 @@
 
 %D Look how ugly a speed up looks:
 
-\beginTEX
-
-\def\layoutparameter#1%
-  {\csname\??ly\@EA\ifx\csname
-     \??ly\currentlayout#1\endcsname\relax\else\currentlayout
-   \fi#1\endcsname}
-
-\def\namedlayoutparameter#1#2%
-  {\csname\??ly
-     \@EA\ifx\csname\??ly#1#2\endcsname\relax
-       \@EA\ifx\csname\??ly\currentlayout#2\endcsname\relax
-       \else\currentlayout\fi
-     \else#1\fi
-   \fi#2\endcsname}
-
-\endTEX
-
-%D Its \ETEX\ counterpart is:
-
-\beginETEX \ifcsname
-
 \def\layoutparameter#1%
   {\csname\??ly\ifcsname
      \??ly\currentlayout#1\endcsname\currentlayout
@@ -133,8 +114,6 @@
   {\csname\??ly\ifcsname\??ly            #1#2\endcsname#1\else
                \ifcsname\??ly\currentlayout#2\endcsname\currentlayout
    \fi\fi#2\endcsname}
-
-\endETEX
 
 %D Beause normal \TEX\ has at most 256 dimensions (of which a
 %D substantial part is already in use), we provide a way to
@@ -193,7 +172,9 @@
 
 \def\setlayoutdistances % local in \setreducedvsize
   {\headerdistance\layoutdistance\headerheight\c!headerdistance
-   \footerdistance \layoutdistance\footerheight \c!footerdistance}
+   \footerdistance\layoutdistance\footerheight\c!footerdistance}
+
+% these are wrong in the running text, assumes some swapping, needs a cleanup
 
 \def\outermarginwidth   {\rightorleftpageaction\rightmarginwidth   \leftmarginwidth }
 \def\innermarginwidth   {\rightorleftpageaction\leftmarginwidth    \rightmarginwidth}
@@ -210,25 +191,9 @@
 
 \newtoks\extralayoutcalculations \def\calculatelayoutextras{\the\extralayoutcalculations}
 
-\appendtoks
-  \scratchdimen\leftmarginwidth  \advance\scratchdimen\leftmargindistance  \xdef\leftmargintotal {\the\scratchdimen}%
-  \scratchdimen\rightmarginwidth \advance\scratchdimen\rightmargindistance \xdef\rightmargintotal{\the\scratchdimen}%
-  \scratchdimen\leftedgewidth    \advance\scratchdimen\leftedgedistance    \xdef\leftedgetotal   {\the\scratchdimen}%
-  \scratchdimen\rightedgewidth   \advance\scratchdimen\rightedgedistance   \xdef\rightedgetotal  {\the\scratchdimen}%
-  \scratchdimen\leftmarginwidth  \advance\scratchdimen\leftedgetotal       \xdef\leftsidetotal   {\the\scratchdimen}%
-  \scratchdimen\rightmarginwidth \advance\scratchdimen\rightedgetotal      \xdef\rightsidetotal  {\the\scratchdimen}%
-  \scratchdimen\leftmargintotal  \advance\scratchdimen\leftedgetotal       \xdef\leftcombitotal  {\the\scratchdimen}%
-  \scratchdimen\rightmargintotal \advance\scratchdimen\rightedgetotal      \xdef\rightcombitotal {\the\scratchdimen}%
-  %
-  \scratchdimen\innermarginwidth \advance\scratchdimen\innermargindistance \xdef\innermargintotal{\the\scratchdimen}%
-  \scratchdimen\outermarginwidth \advance\scratchdimen\outermargindistance \xdef\outermargintotal{\the\scratchdimen}%
-  \scratchdimen\inneredgewidth   \advance\scratchdimen\inneredgedistance   \xdef\inneredgetotal  {\the\scratchdimen}%
-  \scratchdimen\outeredgewidth   \advance\scratchdimen\outeredgedistance   \xdef\outeredgetotal  {\the\scratchdimen}%
-  \scratchdimen\innermargintotal \advance\scratchdimen\inneredgetotal      \xdef\innercombitotal {\the\scratchdimen}%
-  \scratchdimen\outermargintotal \advance\scratchdimen\outeredgetotal      \xdef\outercombitotal {\the\scratchdimen}%
-  \scratchdimen\innermarginwidth \advance\scratchdimen\inneredgetotal      \xdef\innersidetotal  {\the\scratchdimen}%
-  \scratchdimen\outermarginwidth \advance\scratchdimen\outeredgetotal      \xdef\outersidetotal  {\the\scratchdimen}%
-\to \extralayoutcalculations
+% \appendtoks
+%   non etex calculations used to go here
+% \to \extralayoutcalculations
 
 \newtoks\everyswapmargins % watch the order !
 
@@ -263,15 +228,21 @@
 \def\definepapersize
   {\dodoubleempty\dodefinepapersize}
 
-\def\dodefinepapersize[#1][#2]%
+\def\definepapersize
+  {\dotripleempty\dodefinepapersize}
+
+\def\dodefinepapersize[#1][#2][#3]%
   {\ifsecondargument
      \doifsomething{#1} % to be sure
-       {\getparameters
-          [\??pp#1] % geen \c!scale, scheelt hash ruimte
-          [\c!width=\@@ppwidth,\c!height=\@@ppheight,\c!offset=\@@ppoffset,#2]}%
+       {\doifassignmentelse{#2}
+          {\getparameters
+             [\??pp#1] % geen \c!scale, scheelt hash ruimte
+             [\c!width=\@@ppwidth,\c!height=\@@ppheight,\c!offset=\@@ppoffset,#2]}
+          {\setvalue{\??pp:1:#1}{#2}%
+           \setvalue{\??pp:2:#1}{#3}}}%
    \else
      \getparameters[\??pp][#1]%
-     \setuppapersize
+     \setuppapersize % hm. this will freeze !
    \fi}
 
 %D For the moment we need to fake this macro.
@@ -286,6 +257,27 @@
 \definepapersize
   [\c!width=210mm,\c!height=297mm,\c!offset=\!!zeropoint]
 
+%D Yet undocumented, let's see if it gets noticed.
+%D
+%D \starttyping
+%D \definepapersize[main] [A4]          [A4]
+%D \definepapersize[extra][A4,landscape][A4,landscape]
+%D
+%D \starttext
+%D     \setuppapersize[main]
+%D     Page 1. \page
+%D     Page 2. \page
+%D     \setuppapersize[extra]
+%D     Page 2 \page
+%D     \setuppapersize[main]
+%D     Page 3. \page
+%D     Page 4. \page
+%D     \adaptpapersize[extra]
+%D     Page 5. \page
+%D     Page 6. \page
+%D \stoptext
+%D \stoptyping
+
 %D \macros
 %D   {setuppaper,setuppapersize}
 %D
@@ -298,7 +290,7 @@
 %D variables.
 
 \chardef\papermirror     =0  \chardef\printmirror     =0
-\chardef\paperorientation=0  \chardef\printorientation=0
+\chardef\paperorientation=0  \chardef\printorientation=0 % beware: later no chardef
 \chardef\paperreverse    =0  \chardef\printreverse    =0
 \chardef\paperlandscape  =0  \chardef\printlandscape  =0
 
@@ -306,24 +298,12 @@
 
 \def\paperscale{1} \newif\ifnegateprintbox
 
-% \def\dosetuppapersize[#1][#2]%
-%   {\doifassignmentelse{#1}
-%      {\getparameters[\??pp][#1]}
-%      {\doifassignmentelse{#2}
-%         {\getparameters[\??pp#1][#2]}
-%         {\dodosetuppapersize[#1][#2]}}}
-%
-% The next version is more extensive; here we can
-% associate paper and page with key/value like settings,
-% which is handy in 'example' when we use setups
-
 \def\setuppaper[#1]%
   {\getparameters[\??pp][\c!paper=,\c!page=,#1]%
-   \scratchcounter\@@ppnx
-   \multiply\scratchcounter\@@ppny
-   \edef\@@ppxy{\the\scratchcounter}%
+   \edef\@@ppxy{\the\numexpr\@@ppnx*\@@ppny\relax}%
    \doifelsenothing\@@pppage
-     {\doifsomething\@@pppaper
+     {\doifelsenothing\@@pppaper
+        {} % {\setuppapersize} % added, removed, no need for, too tricky, mag-01 (fixed by freezing pp's)
         {\dodosetuppapersize[\papersize][\@@pppaper]}}
      {\doifelsenothing\@@pppaper
         {\dodosetuppapersize[\@@pppage][\printpapersize]}
@@ -335,9 +315,26 @@
 \def\dosetuppapersize[#1][#2]%
   {\doifassignmentelse{#1}
      {\setuppaper[#1]}
-     {\doifassignmentelse{#2}
-        {\getparameters[\??pp#1][#2]}
-        {\dodosetuppapersize[#1][#2]}}}
+     {\doifelsenothing{#2}
+        {\expanded{\dodosetuppapersize
+           [\executeifdefined{\??pp:1:#1}{#1}]%
+           [\executeifdefined{\??pp:2:#1}{}]}}
+        {\doifassignmentelse{#2}
+           {\getparameters[\??pp\executeifdefined{\??pp:1:#1}{#1}][#2]}
+           {\expanded{\dodosetuppapersize
+              [\executeifdefined{\??pp:1:#1}{#1}]%
+              [\executeifdefined{\??pp:1:#2}{#2}]}}}}}
+
+\let\reinstatepapersize\relax
+
+\def\adaptpapersize
+  {\global\let\reinstatepapersize\restorepapersize
+   \setuppapersize}
+
+\appendtoks
+  \reinstatepapersize
+  \global\let\reinstatepapersize\relax
+\to \everyaftershipout
 
 \def\dodosetuppapersize[#1][#2]%
   {\ifsecondargument
@@ -353,26 +350,37 @@
      \restorepapersize
    \fi\fi\fi}
 
+% dimen freeze is a bit tricky, but catches local redundant calls
+% with values where e.g width is defined in terms of \paperwidth
+
 \def\dododosetuppapersize[#1][#2]%
   {\xdef\restorepapersize{\noexpand\setuppapersize[#1][#2]}%
    \dosetuppaperorientation{#1}\paperlandscape\paperorientation\paperreverse\papermirror
    \dosetuppaperorientation{#2}\printlandscape\printorientation\printreverse\printmirror
-   \def\docommando##1%
+   \def\docommand##1%
      {\doifsomething{##1}{\doifdefined{\??pp##1\c!width}
-        {\global\paperwidth\getvalue{\??pp##1\c!width}%
+        {\global\paperwidth \getvalue{\??pp##1\c!width}%
          \global\paperheight\getvalue{\??pp##1\c!height}%
+\ifinpagebody
+  \setevalue{\??pp##1\c!height}{\the\paperheight}%
+  \setevalue{\??pp##1\c!width }{\the\paperwidth }%
+\fi
          \calculatepaperoffsets{##1}%
          \xdef\papersize{##1}}}}%
-   \processcommacommand[#1]\docommando
+   \processcommacommand[#1]\docommand
    \doifdefinedelse{\??pp#1\c!scale}
      {\edef\paperscale{\getvalue{\??pp#1\c!scale}}}
      {\edef\paperscale{1}}%
-   \def\docommando##1%
+   \def\docommand##1%
      {\doifsomething{##1}{\doifdefined{\??pp##1\c!width}
-        {\global\printpaperwidth\getvalue{\??pp##1\c!width}%
+        {\global\printpaperwidth \getvalue{\??pp##1\c!width}%
          \global\printpaperheight\getvalue{\??pp##1\c!height}%
+\ifinpagebody
+  \setevalue{\??pp##1\c!height}{\the\printpaperheight}%
+  \setevalue{\??pp##1\c!width }{\the\printpaperwidth}%
+\fi
          \xdef\printpapersize{##1}}}}%
-   \processcommacommand[#2]\docommando
+   \processcommacommand[#2]\docommand
    \global\setdimentoatleast\paperwidth      \onepoint
    \global\setdimentoatleast\paperheight     \onepoint
    \global\setdimentoatleast\printpaperwidth \onepoint
@@ -388,8 +396,12 @@
    \doif\@@ppoption\v!max % \v!fit is
      {\bgroup
       % we need to pre-swap else we get the wrong paper size
-      \doifinset\paperorientation{90,270}{\swapdimens\paperwidth\paperheight}%
-      \doifinset\printorientation{90,270}{\swapdimens\printpaperwidth\printpaperheight}%
+      \ifcase\paperorientation\else
+        \doifinset\paperorientation{90,270}{\swapdimens\paperwidth\paperheight}%
+      \fi
+      \ifcase\printorientation\else
+        \doifinset\printorientation{90,270}{\swapdimens\printpaperwidth\printpaperheight}%
+      \fi
       \ifdim\paperheight>\printpaperheight
         \global\printpaperheight\paperheight
         \writestatus\m!systems{print height forced to paper height}%
@@ -428,13 +440,13 @@
 \let\restorepapersize\relax
 
 \def\checkforems[#1]%
-  {\def\docommando##1%
+  {\def\docommand##1%
      {\beforesplitstring##1\at em\to\asciia
       \doifnot\asciia{##1}
         {\aftersplitstring\asciia\at=\to\asciia
          \doifsomething\asciia
            {\showmessage\m!systems{10}{##1}}}}%
-   \processcommalist[#1]\docommando}
+   \processcommalist[#1]\docommand}
 
 \ifx\setups\undefined \def\setups[#1]{\setdefaultpenalties} \fi
 
@@ -475,33 +487,25 @@
      {\ifdim\cutspace=\zeropoint
         \global\cutspace\backspace
       \fi
-      \global\makeupwidth\paperwidth
-      \global\advance\makeupwidth -\backspace
-      \global\advance\makeupwidth -\cutspace}
+      \global\makeupwidth\dimexpr\paperwidth-\backspace-\cutspace\relax}
      {\doifelse{\layoutparameter\c!width}\v!fit
         {\ifdim\cutspace=\zeropoint
            \global\cutspace\backspace
          \fi
-         \global\makeupwidth\paperwidth
-         \global\advance\makeupwidth -\cutspace
-         \scratchdimen\backspace
-         \advance\scratchdimen -\leftedgewidth
-         \advance\scratchdimen -\leftedgedistance
-         \advance\scratchdimen -\leftmarginwidth
-         \advance\scratchdimen -\leftmargindistance\relax
+         \global\makeupwidth\dimexpr\paperwidth-\cutspace\relax
+         \scratchdimen\dimexpr\backspace
+           -\leftedgewidth  -\leftedgedistance
+           -\leftmarginwidth-\leftmargindistance\relax
          \ifdim\scratchdimen<\zeropoint
            \scratchdimen\zeropoint
          \fi
-         \global\advance\makeupwidth -\rightmargindistance
-         \global\advance\makeupwidth -\rightmarginwidth
-         \global\advance\makeupwidth -\rightedgedistance
-         \global\advance\makeupwidth -\rightedgewidth
-         \global\advance\makeupwidth -\scratchdimen}
+         \global\advance\makeupwidth\dimexpr
+           -\rightmargindistance-\rightmarginwidth
+           -\rightedgedistance  -\rightedgewidth
+           -\scratchdimen\relax}
         {\global\makeupwidth\layoutparameter\c!width\relax
          \ifdim\cutspace=\zeropoint
-           \global\cutspace\paperwidth
-           \global\advance\cutspace-\makeupwidth
-           \global\advance\cutspace-\backspace
+           \global\cutspace\dimexpr\paperwidth-\makeupwidth-\backspace\relax
         % \else
             % A kind of inconsistent specification, but used
             % in for instance s-pre-19.tex; the cutspace is
@@ -519,29 +523,20 @@
        {\ifdim\bottomspace=\zeropoint
           \global\bottomspace\topspace
         \fi
-        \global\makeupheight\paperheight
-        \global\advance\makeupheight -\topspace
-        \global\advance\makeupheight -\bottomspace}
+        \global\makeupheight\dimexpr\paperheight-\topspace-\bottomspace\relax}
        {\doifelse{\layoutparameter\c!height}\v!fit
           {\ifdim\bottomspace=\zeropoint
             \global\bottomspace\topspace
            \fi
-           \global\makeupheight\paperheight
-           \global\advance\makeupheight -\bottomspace
-           \scratchdimen\topspace
-           \advance\scratchdimen -\topheight
-           \advance\scratchdimen -\topdistance\relax
+           \global\makeupheight\dimexpr\paperheight-\bottomspace\relax
+           \scratchdimen\dimexpr\topspace-\topheight-\topdistance\relax
            \ifdim\scratchdimen<\zeropoint
              \scratchdimen\zeropoint
            \fi
-           \global\advance\makeupheight -\bottomdistance
-           \global\advance\makeupheight -\bottomheight
-           \global\advance\makeupheight -\scratchdimen}
+           \global\advance\makeupheight\dimexpr-\bottomdistance-\bottomheight-\scratchdimen\relax}
           {\global\makeupheight\layoutparameter\c!height\relax
            \ifdim\bottomspace=\zeropoint
-             \global\bottomspace\paperheight
-             \global\advance\bottomspace-\makeupheight
-             \global\advance\bottomspace-\topspace
+             \global\bottomspace\dimexpr\paperheight-\makeupheight-\topspace\relax
            \else
              % inconsistent specification
            \fi}}%
@@ -550,19 +545,12 @@
      % a global lineheight is tricky: should we take the bodyfont interlinespace or the one set
      % independent of the bodyfont (before or after a layout spec); way too fuzzy, so we
      % stick to the current method (after a night of experimenting ...2003/10/13)
-     \global\makeupheight\layoutparameter\c!lines\lineheight
-     % new, cleaner
-     \global\advance\makeupheight-\strutheight
-     \global\advance\makeupheight \topskip
-     % new, was a bug
-     \global\advance\makeupheight \headerdistance
-     \global\advance\makeupheight \footerdistance
-     % so far
-     \global\advance\makeupheight \headerheight
-     \global\advance\makeupheight \footerheight
+     \global\makeupheight\dimexpr
+        \layoutparameter\c!lines\lineheight-\strutheight+\topskip+
+        \headerdistance+\headerheight+\footerdistance+\footerheight\relax
    \fi
-   \rugoffset\layoutparameter\c!horoffset
-   \kopoffset\layoutparameter\c!veroffset
+   \backoffset\layoutparameter\c!horoffset
+   \topoffset \layoutparameter\c!veroffset
    \global\setdimentoatleast\makeupwidth\onepoint
    \global\setdimentoatleast\makeupheight \onepoint
    % \checkcurrentlayout % here ?
@@ -578,17 +566,11 @@
 \def\calculatepseudocolumns
   {\global\layoutcolumns\layoutparameter\c!columns
    \global\layoutcolumndistance\layoutparameter\c!columndistance
-   \global\layoutcolumnwidth-\layoutcolumns\layoutcolumndistance
-   \global\advance\layoutcolumnwidth\layoutcolumndistance
-   \global\advance\layoutcolumnwidth\makeupwidth
+   \global\layoutcolumnwidth\dimexpr\makeupwidth-\layoutcolumns\layoutcolumndistance+\layoutcolumndistance\relax
    \global\divide\layoutcolumnwidth\layoutcolumns
    \dorecurse\layoutcolumns
-     {\scratchdimen\layoutcolumnwidth
-      \advance\scratchdimen\layoutcolumndistance
-      \scratchcounter\recurselevel
-      \advance\scratchcounter\minusone
-      \scratchdimen\scratchcounter\scratchdimen
-      \setxvalue{\??ly:c:\recurselevel}{\the\scratchdimen}}}
+     {\setxvalue{\??ly:c:\recurselevel}%
+        {\the\numexpr\recurselevel-\plusone\relax\dimexpr\layoutcolumnwidth+\layoutcolumndistance\relax}}}
 
 %\dorecurse\layoutcolumns
 %  {\setxvalue{\??ly:c:\recurselevel}{\the\dimexpr
@@ -608,43 +590,94 @@
 %
 % \startstandardmakeup[page=blank] ... \stopstandardmakeup
 
-% \def\checkcurrentlayout % public and used in naw, so keep this name
-%   {\ifundefined{\??ly\realfolio\c!state}%
-%      \doifoddpageelse\checkcurrentoddlayout\checkcurrentevenlayout
-%    \else
-%      \doifvalue{\??ly\realfolio\c!state}\v!start
-%        {\xdef\currentlayout{\realfolio}\recalculatelayout}% new, global
-%    \fi}
-
-\def\checkcurrentlayout % public and used in naw, so keep this name
-  {\doifundefinedelse{\??ly\realfolio\c!state}
-     {\doifundefinedelse{\??ly\v!current\c!state}
-        {\doifoddpageelse\checkcurrentoddlayout\checkcurrentevenlayout}
-        {\globallet\currentlayout\v!current\recalculatelayout}}
-     {\doifvalue{\??ly\realfolio\c!state}\v!start
-        {\xdef\currentlayout{\realfolio}\recalculatelayout}}} % new, global
+\def\changetolayout#1%
+  {%\writestatus\m!layouts{changing to layout #1}%
+   \xdef\currentlayout{#1}\recalculatelayout}
 
 \def\checkcurrentoddlayout
   {\ifundefined{\??ly\v!odd\c!state}\else
-     \doifvalue{\??ly\v!odd\c!state}\v!start
-       {\globallet\currentlayout\v!odd\recalculatelayout}% new, global
+     \doifvalue{\??ly\v!odd\c!state}\v!start{\changetolayout\v!odd}%
    \fi}
 
 \def\checkcurrentevenlayout
   {\ifundefined{\??ly\v!even\c!state}\else
-     \doifvalue{\??ly\v!even\c!state}\v!start
-       {\globallet\currentlayout\v!even\recalculatelayout}% new, global
+     \doifvalue{\??ly\v!even\c!state}\v!start{\changetolayout\v!even}%
    \fi}
 
-% \appendtoks \checkcurrentlayout \to \everyaftershipout
+\ifx\lastpage\undefined \def\lastpage{1} \fi
+
+\def\reverserealfolio
+  {\ifnum\lastpage>\plusone
+     \ifnum\lastpage=\realfolio
+       \v!last
+     \else\ifnum\plusone=\realfolio
+       \v!first
+     \else
+       \the\numexpr\realfolio-\lastpage\relax
+     \fi\fi
+   \else
+     \!!zerocount
+   \fi}
+
+% \def\checkcurrentlayout % public and used in naw, so keep this name
+%   {\doifundefinedelse{\??ly\realfolio\c!state}
+%      {\doifundefinedelse{\??ly\reverserealfolio\c!state}
+%         {\doifundefinedelse{\??ly\v!current\c!state}
+%            {\doifoddpageelse\checkcurrentoddlayout\checkcurrentevenlayout}
+%            {\changetolayout\v!current}}
+%         {\doifvalue{\??ly\reverserealfolio\c!state}\v!start
+%            {\changetolayout\reverserealfolio}}}
+%      {\doifvalue{\??ly\realfolio\c!state}\v!start
+%         {\changetolayout\realfolio}}}
+
+\def\checkcurrentlayout % public and used in naw, so keep this name
+  {\ifcsname\??ly\realfolio\c!state\endcsname
+     \doifvalue{\??ly\realfolio\c!state}\v!start{\changetolayout\realfolio}%
+   \else\ifcsname\??ly\reverserealfolio\c!state\endcsname
+     \doifvalue{\??ly\reverserealfolio\c!state}\v!start{\changetolayout\reverserealfolio}%
+   \else\ifcsname\??ly\v!current\c!state\endcsname
+     \changetolayout\v!current % no start test ?
+   \else
+     \doifoddpageelse\checkcurrentoddlayout\checkcurrentevenlayout
+   \fi\fi\fi}
+
+% testcase
+%
+% \setuppagenumbering[alternative=doublesided]
+%
+% \setuplayout         [width=11cm]
+% \definelayout [odd]  [backspace=1cm]
+% \definelayout [even] [backspace=4cm]
+% \definelayout [5]    [backspace=5cm]
+% \definelayout [6]    [backspace=5cm]
+% \definelayout [-2]   [backspace=0cm,cutspace=0cm]
+% \definelayout [last] [backspace=0cm,cutspace=0cm]
+%
+% \checkcurrentlayout \showframe
+%
+% \starttext
+%     \dorecurse{20} {\input knuth \endgraf \input tufte \endgraf}
+% \stoptext
+
+%appendtoks \checkcurrentlayout \to \everyaftershipout % no
+\appendtoks \checkcurrentlayout \to \everystarttext
 
 \appendtoks
-  \ifx\currentlayout\v!current
-    \globallet\currentlayout\empty
-    \global\letbeundefined{\??ly\v!current\c!state}%
-    \checkcurrentlayout
-  \fi
+  \dochecknextlayout
 \to \everyaftershipout
+
+% \def\dochecknextlayout
+%   {\ifx\currentlayout\v!current
+%      % prevent redundant calculations
+%    \else
+%      \globallet\currentlayout\empty
+%      \global\letbeundefined{\??ly\v!current\c!state}%
+%      \checkcurrentlayout
+%    \fi}
+%
+% this breaks after a standardmakeup
+
+\def\dochecknextlayout{\checkcurrentlayout}
 
 \newif\ifdoublesidedprint
 
@@ -670,19 +703,6 @@
   {\ConvertToConstant\doifnot{#2}\v!reset % #2 ?
      {\getparameters[\??ly#1][#2]%
       \checkforems[#2]}}
-
-% \def\dosetuplayout[#1][#2]%
-%   {\let\currentlayout\empty
-%    \ifsecondargument
-%      \dodosetuplayout[#1][#2]%
-%    \else\iffirstargument
-%      \doifassignmentelse{#1}
-%        {\dodosetuplayout[][#1]}
-%        {\doifnot{#1}\v!reset{\def\currentlayout{#1}}}%
-%    \fi\fi
-%    \recalculatelayout
-%    \checkcurrentlayout % here ?
-%    \presetcenterpagebox}
 
 % global needed for non-doublesided standardmakeup
 
@@ -771,10 +791,10 @@
 \def\doadaptlayout[#1][#2]%
   {\doifelsenothing{#2}
      {\dodoadaptlayout[#1]}
-     {\def\docommando##1%
+     {\def\docommand##1%
         {\addtocommalist{##1}\adaptedpages
          \setgvalue{\??za##1}{\dodoadaptlayout[#2]}}%
-      \processcommalist[#1]\docommando
+      \processcommalist[#1]\docommand
       \adaptpagedimensions}}
 
 \def\adaptlayout
@@ -787,23 +807,25 @@
 %D {right} parameters.
 
 \def\centerpagebox#1%
-  {\printpaperwidth\paperscale\printpaperwidth
-   \printpaperheight \paperscale\printpaperheight
+  {\printpaperwidth \paperscale\printpaperwidth
+   \printpaperheight\paperscale\printpaperheight
    \setbox#1\vbox to \printpaperheight
      {\@@pptop
       \hbox to \printpaperwidth
         {\ifdoublesidedprint
-           \doifbothsides \@@ppleft \box#1\@@ppright
-           \orsideone     \@@ppleft \box#1\@@ppright
-           \orsidetwo     \@@ppright\box#1\@@ppleft
-         \od \else        \@@ppleft \box#1\@@ppright
+           \doifbothsides
+             {\@@ppleft \box#1\@@ppright}
+             {\@@ppleft \box#1\@@ppright}
+             {\@@ppright\box#1\@@ppleft }%
+         \else
+              \@@ppleft \box#1\@@ppright
          \fi}%
       \par
       \@@ppbottom}}
 
 \def\offsetprintbox#1%
-  {\ifdim\kopoffset=\zeropoint % \relax
-     \ifdim\rugoffset=\zeropoint
+  {\ifdim\topoffset=\zeropoint % \relax
+     \ifdim\backoffset=\zeropoint
        \donefalse
      \else
        \donetrue
@@ -816,31 +838,11 @@
      \setbox#1\vbox
        {%\forgetall
         \offinterlineskip
-        \vskip\kopoffset
-        \doifbothsides
-          \hskip\rugoffset
-        \orsideone
-          \hskip\rugoffset
-        \orsidetwo
-          \hskip-\rugoffset
-        \od
+        \vskip\topoffset
+        \doifbothsides{\hskip\backoffset}{\hskip\backoffset}{\hskip-\backoffset}%
         \box#1}%
      \next
    \fi}
-
-% \def\replicatebox#1#2#3%
-%   {\setbox#1=\vbox
-%      {%\forgetall
-%       \offinterlineskip
-%       \dorecurse{#3}
-%         {\hbox{\dorecurse{#2}{\copy#1\hskip\@@lydx}\unskip}%
-%          \vskip\@@lydy}
-%       \unskip}}
-%
-% \def\replicatepagebox#1%
-%   {\ifnum\@@lynx>0 \ifnum\@@lyny>0
-%      \replicatebox{#1}{\@@lynx}{\@@lyny}%
-%    \fi\fi}
 
 \def\replicatepagebox#1%
   {\ifnum\@@lynx>\plusone
@@ -940,9 +942,6 @@
    \ifnum\verticalcutmarks  >2 \chardef\colormarkoffset4 \fi
    #1{#2}}
 
-\newif\ifdoublesided \doublesidedfalse
-\newif\ifsinglesided \singlesidedtrue
-
 % NOG EENS NAGAAN WANNEER NU GLOBAL EN WANNEER NIET
 
 \ifx\doifelselayoutsomeline\undefined % defined in page-txt
@@ -952,12 +951,10 @@
 \def\calculatevsizes % global needed in \recalculatelayoutregel
   {\redoglobal\textheight\makeupheight
    \doifelselayoutsomeline \v!header
-     {\redoglobal\advance\textheight -\headerheight
-      \redoglobal\advance\textheight -\headerdistance}%
+     {\redoglobal\advance\textheight-\dimexpr\headerheight+\headerdistance\relax}%
      \donothing
    \doifelselayoutsomeline \v!footer
-     {\redoglobal\advance\textheight -\footerheight
-      \redoglobal\advance\textheight -\footerdistance}%
+     {\redoglobal\advance\textheight-\dimexpr\footerheight+\footerdistance\relax}%
      \donothing
    \ifzeropt\headerheight
      \resetsystemmode\v!header
@@ -975,23 +972,32 @@
 \def\calculatereducedvsizes
   {\textheight\makeupheight
    \doifelselayoutsomeline \v!header
-     {\advance\textheight -\headerheight
-      \advance\textheight -\headerdistance}%
+     {\advance\textheight-\dimexpr\headerheight+\headerdistance\relax}%
      {\headerheight\zeropoint
       \setlayoutdistances}%
    \doifelselayoutsomeline \v!footer
-     {\advance\textheight -\footerheight
-      \advance\textheight -\footerdistance}%
+     {\advance\textheight-\dimexpr\footerheight+\footerdistance\relax}%
      {\footerheight\zeropoint
       \setlayoutdistances}}
 
-\def\freezetextwidth        % \makeupwidth may be set to \textwidth
+\newdimen\innermakeupwidth  % special purpose
+\newdimen\innermakeupmargin % special purpose
+
+\chardef\innermakeupcompensation\plusone
+
+\def\compensatedinnermakeupmargin
+  {\dimexpr\ifnum\innermakeupcompensation=\plusone+\innermakeupmargin\else\zeropoint\fi\relax}
+
+\def\freezetextwidth      % \makeupwidth may be set to \textwidth
   {\textwidth\makeupwidth % which is a tricky but valid value
-   \doifsomething{\layoutparameter\c!textwidth}%
+   \doifsomething{\layoutparameter\c!textwidth}
      {\textwidth\layoutparameter\c!textwidth}%         % local
-   \doifsomething{\layoutparameter\c!textmargin}%
-     {\advance\textwidth-\layoutparameter\c!textmargin    % local
-      \advance\textwidth-\layoutparameter\c!textmargin}}  % local
+   \global\innermakeupwidth\textwidth
+   \doifelsenothing{\layoutparameter\c!textmargin}
+     {\global\innermakeupmargin\zeropoint}
+     {\global\innermakeupmargin\layoutparameter\c!textmargin}%
+   \global\advance\innermakeupwidth-\dimexpr\innermakeupmargin+\innermakeupmargin\relax
+   \advance\textwidth-\dimexpr\innermakeupmargin+\innermakeupmargin\relax}   % local
 
 \def\calculatehsizes
   {\freezetextwidth
@@ -1035,14 +1041,14 @@
 
 % what are those \relax'es doing there?
 
-\def\doifbothsidesoverruled#1\orsideone#2\orsidetwo#3\od
+\def\doifbothsidesoverruled#1#2#3%
   {\ifdoublesided
      \doifoddpageelse{#2}{#3}\relax
    \else
      #1\relax
    \fi}
 
-\def\doifbothsides#1\orsideone#2\orsidetwo#3\od
+\def\doifbothsides#1#2#3%
   {\ifdoublesided
      \ifsinglesided
        #1\relax
@@ -1057,23 +1063,15 @@
 
 \def\settexthoffset
   {\doifbothsides
-     \texthoffset\backspace
-   \orsideone
-     \texthoffset\backspace
-   \orsidetwo
-     \texthoffset\paperwidth
-     \advance\texthoffset-\backspace
-     \advance\texthoffset-\makeupwidth
-   \od}
+     {\texthoffset\backspace}
+     {\texthoffset\backspace}
+     {\texthoffset\dimexpr\paperwidth-\backspace-\makeupwidth\relax}}
 
 \def\goleftonpage
-  {\hskip-\leftmargindistance
-   \hskip-\leftmarginwidth
-   \hskip-\leftedgedistance
-   \hskip-\leftedgewidth}
+  {\hskip-\dimexpr\leftmargindistance+\leftmarginwidth+\leftedgedistance+\leftedgewidth\relax}
 
 \def\doifmarginswapelse#1#2%
-  {\doifbothsides#1\orsideone#1\orsidetwo#2\od}
+  {\doifbothsides{#1}{#1}{#2}}
 
 \def\swapmargins
   {\doifmarginswapelse\relax\doswapmargins}
@@ -1107,29 +1105,25 @@
 \def\outerspacewidth    {\rightorleftpageaction\cutspace \backspace }
 \def\innerspacewidth    {\rightorleftpageaction\backspace\cutspace}
 
-\beginETEX \dimexpr
+\def\leftmargintotal    {\dimexpr\leftmarginwidth +\leftmargindistance \relax}
+\def\rightmargintotal   {\dimexpr\rightmarginwidth+\rightmargindistance\relax}
+\def\leftedgetotal      {\dimexpr\leftedgewidth   +\leftedgedistance   \relax}
+\def\rightedgetotal     {\dimexpr\rightedgewidth  +\rightedgedistance  \relax}
 
-  \def\leftmargintotal {\dimexpr\leftmarginwidth +\leftmargindistance \relax}
-  \def\rightmargintotal{\dimexpr\rightmarginwidth+\rightmargindistance\relax}
-  \def\leftedgetotal   {\dimexpr\leftedgewidth   +\leftedgedistance   \relax}
-  \def\rightedgetotal  {\dimexpr\rightedgewidth  +\rightedgedistance  \relax}
+\def\leftsidetotal      {\dimexpr\leftmarginwidth +\leftedgetotal \relax}
+\def\rightsidetotal     {\dimexpr\rightmarginwidth+\rightedgetotal\relax}
+\def\leftcombitotal     {\dimexpr\leftmargintotal +\leftedgetotal \relax}
+\def\rightcombitotal    {\dimexpr\rightmargintotal+\rightedgetotal\relax}
 
-  \def\leftsidetotal   {\dimexpr\leftmarginwidth +\leftedgetotal \relax}
-  \def\rightsidetotal  {\dimexpr\rightmarginwidth+\rightedgetotal\relax}
-  \def\leftcombitotal  {\dimexpr\leftmargintotal +\leftedgetotal \relax}
-  \def\rightcombitotal {\dimexpr\rightmargintotal+\rightedgetotal\relax}
+\def\innermargintotal   {\dimexpr\innermarginwidth+\innermargindistance\relax}
+\def\outermargintotal   {\dimexpr\outermarginwidth+\outermargindistance\relax}
+\def\inneredgetotal     {\dimexpr\inneredgewidth  +\inneredgedistance  \relax}
+\def\outeredgetotal     {\dimexpr\outeredgewidth  +\outeredgedistance  \relax}
 
-  \def\innermargintotal{\dimexpr\innermarginwidth+\innermargindistance\relax}
-  \def\outermargintotal{\dimexpr\outermarginwidth+\outermargindistance\relax}
-  \def\inneredgetotal  {\dimexpr\inneredgewidth  +\inneredgedistance  \relax}
-  \def\outeredgetotal  {\dimexpr\outeredgewidth  +\outeredgedistance  \relax}
-
-  \def\innercombitotal {\dimexpr\innermargintotal+\inneredgetotal\relax}
-  \def\outercombitotal {\dimexpr\outermargintotal+\outeredgetotal\relax}
-  \def\innersidetotal  {\dimexpr\innermarginwidth+\inneredgetotal\relax}
-  \def\outersidetotal  {\dimexpr\outermarginwidth+\outeredgetotal\relax}
-
-\endETEX
+\def\innercombitotal    {\dimexpr\innermargintotal+\inneredgetotal\relax}
+\def\outercombitotal    {\dimexpr\outermargintotal+\outeredgetotal\relax}
+\def\innersidetotal     {\dimexpr\innermarginwidth+\inneredgetotal\relax}
+\def\outersidetotal     {\dimexpr\outermarginwidth+\outeredgetotal\relax}
 
 %D \macros
 %D   {startlocallayout}
@@ -1383,31 +1377,27 @@
 
 %D A few goodies:
 
-\beginETEX \dimexpr
-
 \definepapersize
   [oversized]
-  [\c!width=\dimexpr(\paperwidth+1.5cm),
-   \c!height=\dimexpr(\paperheight+1.5cm)]
+  [ \c!width=\dimexpr\paperwidth +1.5cm\relax,
+   \c!height=\dimexpr\paperheight+1.5cm\relax]
 
 \definepapersize
   [doublesized]
-  [\c!width=\dimexpr(\paperwidth),
-   \c!height=\dimexpr(2\paperheight)]
+  [ \c!width=\dimexpr \paperwidth \relax,
+   \c!height=\dimexpr2\paperheight\relax]
 
 \definepapersize
   [doubleoversized]
-  [\c!width=\dimexpr(\paperheight+1.5cm),
-   \c!height=\dimexpr(2\paperwidth+1.5cm)]
+  [ \c!width=\dimexpr \paperheight+1.5cm\relax,
+   \c!height=\dimexpr2\paperwidth +1.5cm\relax]
 
 %D For orthogonality:
 
 \definepapersize
   [undersized]
-  [\c!width=\dimexpr(\paperwidth-1.5cm),
-   \c!height=\dimexpr(\paperheight-1.5cm)]
-
-\endETEX
+  [ \c!width=\dimexpr\paperwidth -1.5cm\relax,
+   \c!height=\dimexpr\paperheight-1.5cm\relax]
 
 \definelayout
   [\v!page]

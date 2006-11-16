@@ -8,8 +8,8 @@
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
-%C therefore copyrighted by \PRAGMA. See mreadme.pdf for 
-%C details. 
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
 
 %D \macros
 %D   {dostartgraymode,dostopgraymode,
@@ -23,7 +23,7 @@
 \startspecials[yandy]
 
 \def\@@insertpostscriptliteral {ps: }
-\def\@@insertpostscriptretain  {" } % this was: {postscript} 
+\def\@@insertpostscriptretain  {" } % this was: {postscript}
 
 \definespecial\dostartgraymode#1%
   {\special{color gray #1}}
@@ -43,31 +43,46 @@
 \definespecial\dostopcolormode%
   {\special{color gray 0}}
 
-\definefileinsertion{yy}{eps}#1#2#3#4#5#6#7#8#9%  
-  {\PointsToBigPoints{#5}\width 
-   \PointsToBigPoints{#6}\height 
-   \special 
-     {psfile=#1
-      hscale=#3\space
-      vscale=#4\space
-      hoffset=\width \space
-      voffset=\height}} 
+% \definefileinsertion{yy}{eps}%
+%   {\PointsToBigPoints\@@DriverImageWidth \width
+%    \PointsToBigPoints\@@DriverImageHeight\height
+%    \special
+%      {psfile=\@@DriverImageFile\space
+%      %hscale=100\space
+%      %vscale=100\space
+%       hoffset=\width\space
+%       voffset=\height}}
 
-\definefileinsertion{yy}{mps}#1#2#3#4#5#6#7#8#9%  
-  {\hbox
-     {\includeMPfonts{#1}%
-      \convertMPcolors{#1}%
-      \dofileinsertion{yy}{eps}{#1}{#2}{#3}{#4}{#5}{#6}{#7}{#8}{#9}}}
-
-\definefileinsertion{yy}{tif}#1#2#3#4#5#6#7#8#9%
-  {\special{insertimage: #1 #7 #8}}
-
-\definespecial\doinsertfile#1#2#3#4#5#6#7#8#9%
+\definefileinsertion{tr}{eps}
   {\bgroup
-   \dodoinsertfile{yy}{#1}{#2}{#3}{#4}{#5}{#6}{#7}{#8}{#9}%
+   \PointsToWholeBigPoints\@@DriverImageWidth \width
+   \PointsToWholeBigPoints\@@DriverImageHeight\height
+   \special
+     {PSfile="\@@DriverImageFile"\space
+      llx=\EPSllx\space
+      lly=\EPSlly\space
+      urx=\EPSurx\space
+      ury=\EPSury\space
+      \ifdim\@@DriverImageWidth >\zeropoint rwi=\width 0\space\fi
+      \ifdim\@@DriverImageHeight>\zeropoint rhi=\height0      \fi}%
    \egroup}
 
-\def\MPprologues{2}
+\definefileinsertion{yy}{mps}
+  {\hbox
+     {\includeMPfonts \@@DriverImageFile
+      \convertMPcolors\@@DriverImageFile
+      \dofileinsertion{yy}{eps}}}
+
+\definefileinsertion{yy}{tif}
+  {\special{insertimage:
+     \@@DriverImageFile \space
+     \@@DriverImageWidth\space
+     \@@DriverImageHeight}}
+
+\definespecial\doinsertfile
+  {\dofileinsertion{yy}\@@DriverImageType}
+
+\def\MPprologues{1}
 \def\MPOSTdriver{dvipsone}
 
 \stopspecials

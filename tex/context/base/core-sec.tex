@@ -75,6 +75,32 @@
 
 \unprotect
 
+% new and to be tested
+
+\unexpanded\def\separatorlist#1%
+  {\ifx\sepnumber\undefined\def\sepnumber{0}\fi
+   \increment\sepnumber
+   \getfromcommacommand[#1][\sepnumber]%
+   \ifx\commalistelement\empty
+     \getcommalistsize[#1]%
+     \def\sepnumber{\number\commalistsize}%
+     \getfromcommacommand[#1][\sepnumber]%
+   \fi
+   \commalistelement}
+
+% \setuphead[section]   [separator=\separatorlist{?,!,*}]
+% \setuphead[subsection][separator=\separatorlist{??,!!,**}]
+%
+% \let\spr\separatorlist % this will enable this feature
+%
+% \setuphead[section]   [separator={?,!,*}]
+% \setuphead[subsection][separator={??,!!,**}]
+%
+% \setupheads[separator={A,B,C,D,E,F}]
+% \chapter{test}
+% \section{test} \subsection{test} \subsection{test}
+% \section{test} \subsection{test} \subsection{test}
+
 % from now on, internaly numbers are separated by a period
 % and postprocessed on demand
 
@@ -179,7 +205,7 @@
 \def\domakeprecedingsectionnumber[#1]% will become ugly after speed up
   {\bgroup % added
    \globallet\precedingsectionnumber\empty
-   \ifsectienummer
+   \ifsectionnumber
      \doifvalue{\??sb\@@sectionblock\c!number}\v!yes % added
        {\doifelsevalue{\@@thenumber{#1}\c!sectionnumber}\v!yes
           \donetrue\donefalse
@@ -190,7 +216,7 @@
             {\getvalue{\??by\getvalue{\@@thenumber{#1}\c!way\c!local}}}%
           \doifnot\currentsection\zerosection
             {\doifnot{\@@sectionvalue\currentsection}{0}
-               {\xdef\precedingsectionnumber%
+               {\xdef\precedingsectionnumber
                   {\getvalue{\currentsection\c!number}%
                    \spr{\precedingseparator}}}}%
         \fi}%
@@ -571,6 +597,8 @@
 
 % \def\ignoresectionconversion % brrr
 %   {\let\@@sectionconversion\secondoftwoarguments}
+
+% todo: criterium=appendix|frontmatter|....
 
 \def\dosetfilterlevel#1#2% beware: this one is \let
   {\bgroup
@@ -1050,12 +1078,9 @@
    \expandafter\newif\csname if#2\endcsname % better a mode
    \doglobal\increment\currentsectionblock
    \setsectionblockenvironment{#1}{}%
-   \setevalue{\??sb#1}%
-     {\noexpand\dosetlocalsectionblock{\currentsectionblock}{#1}{#2}}%
-   \setvalue{\e!start#2}%
-     {\dostartsectionblock{#1}{#2}}%
-   \setvalue{\e!stop#2}%
-     {\dostopsectionblock}}
+   \setevalue{\??sb   #1}{\noexpand\dosetlocalsectionblock{\currentsectionblock}{#1}{#2}}%
+   \setvalue {\e!start#2}{\dostartsectionblock{#1}{#2}}%
+   \setvalue {\e!stop #2}{\dostopsectionblock}}
 
 \def\definesectionblock
   {\dotripleargument\dodefinesectionblock}
@@ -1077,7 +1102,7 @@
    \edef\!!stringa{#1}%
    \@EA\writestatus\@EA
      {\!!stringa}
-     {\ifsectienummer#2\else(#2)\fi\normalspace\asciititle}%
+     {\ifsectionnumber#2\else(#2)\fi\normalspace\asciititle}%
    \egroup}
 
 \def\@@kolevel{1}        \def\headlevel{\@@kolevel}
@@ -1175,7 +1200,7 @@
 
 \newif\ifincrementnumber
 \newif\ifreversesectionnumbers  % todo: key/val
-\newif\ifsectienummer           \sectienummertrue
+\newif\ifsectionnumber          \sectionnumbertrue
 \newif\ifdisplaysectionhead     \displaysectionheadtrue
 \newif\ifplacehead
 \newif\ifemptyhead
@@ -1395,17 +1420,17 @@
         \v!list=>\incrementnumberfalse
                   % beware, since no numbers are used, no nested lists are
                   % possible here
-                  \writetolisttrue,
-      \s!unknown=>{\ifx\currentproduct\empty
-                     \findsectionnumber{#1}\commalistelement{#4}%
-                   \fi
-                   \incrementnumbertrue}]%
+                 \writetolisttrue,
+     \s!unknown=>{\ifx\currentproduct\empty
+                    \findsectionnumber{#1}\commalistelement{#4}%
+                  \fi
+                  \incrementnumbertrue}]%
    \edef\numberheaddistance   {\getvalue{\??ko#1\c!distance}}%
    \edef\numberheadalternative{\getvalue{\??ko#1\c!alternative}}%
    \doifelsevalue{\??ko:\numberheadalternative}\v!horizontal
      \displaysectionheadfalse
      \displaysectionheadtrue
-   \ifsectienummer
+   \ifsectionnumber
      \doifelsevalue{\??sb\@@sectionblock\c!number}\v!yes
        {\doifelsevalue{\??ko#1\c!number}\v!yes
           \headnumbertrue
@@ -1620,12 +1645,8 @@
    \doifelse{\currentsectionformat}{}
      {\setglobalcrossreference
         {\e!previous#1}{}{\realfolio}{}}
-%
      {\setglobalsystemreference\rt!list
         {\e!previous#1}{\getvalue{\e!previouslocal#1}}}%
-%
-%         {\definereference[\e!previous#1][\getvalue{\e!previouslocal#1}]%
-%
    \def\stoplistreferences{\dostoplistreferences}}
 
 \def\dostoplistreferences#1%
@@ -1633,20 +1654,20 @@
      \addtocommalist{#1}\updatedlistreferences              % nog global (\doglobal)
      \globallet\updatedlistreferences\updatedlistreferences % een noodverbandje
      \gdef\updatelistreferences%
-       {\def\docommando####1%
-%
+       {\def\docommand####1%
           {\setglobalsystemreference\rt!list
              {\e!previous####1}{\getvalue{\e!currentlocal####1}}}%
-%
-%         {\definereference[\e!previous####1][\getvalue{\e!currentlocal####1}]%
-%
-        \processcommacommand[\updatedlistreferences]\docommando
+        \processcommacommand[\updatedlistreferences]\docommand
         \globallet\updatelistreferences\relax
         \globallet\updatedlistreferences\empty}%
    \fi}
 
-\def\stoplistreferences%
+\def\stoplistreferences
   {\gobbleoneargument}
+
+\appendtoks
+  \updatelistreferences
+\to\aftereverypage
 
 % \prevdepth\strutdp % is belangrijk, vergelijk naast elkaar:
 %
@@ -2263,7 +2284,7 @@
 
 \def\dosetupheads[#1]%
   {\getparameters[\??ko][#1]%
-   \doifelse{\@@kosectionnumber}\v!yes\sectienummertrue\sectienummerfalse}
+   \doifelse{\@@kosectionnumber}\v!yes\sectionnumbertrue\sectionnumberfalse}
 
 \def\setupheads
   {\dosingleargument\dosetupheads}

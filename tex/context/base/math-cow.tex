@@ -13,8 +13,9 @@
 
 \unprotect
 
-\let\COWsqrt\mthsqrt
-\let\COWfrac\mthfrac
+\def\COWsqrt     {\mthsqrt{\char"7A}{\char"7B}}
+\def\COWfrac     {\mthfrac{\char"7C}{\char"7A}{\char"7B}}
+\def\COWarrowfill{\mtharrowfill 1001}
 
 \startmathcollection [cow]
     % todo

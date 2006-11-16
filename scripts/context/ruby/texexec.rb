@@ -1,9 +1,6 @@
 banner = ['TeXExec', 'version 6.2.0', '1997-2006', 'PRAGMA ADE/POD']
 
-unless defined? ownpath
-    ownpath = $0.sub(/[\\\/][a-z0-9\-]*?\.rb/i,'')
-    $: << ownpath
-end
+$: << File.expand_path(File.dirname($0)) ; $: << File.join($:.last,'lib') ; $:.uniq!
 
 require 'ftools'     # needed ?
 
@@ -97,6 +94,16 @@ class Commands
         end
     end
 
+    def mpstatic
+        if job = TEX.new(logger) then
+            job.setvariable('filename',@commandline.arguments.first)
+            prepare(job)
+            job.processmpstatic
+            job.inspect && Kpse.inspect  if @commandline.option('verbose')
+            exit 1 if job.error?
+        end
+    end
+
     # hard coded goodies # to be redone as s-ctx-.. with vars passed as such
 
     def listing
@@ -143,21 +150,21 @@ class Commands
     end
 
     def figures
-        # this one will be redone using rlxtools
+        # we replaced "texutil --figures ..."
         if job = TEX.new(logger) then
             prepare(job)
             job.cleanuptemprunfiles
             files = @commandline.arguments.sort
             if files.length > 0 then
                 if f = File.open(job.tempfilename('tex'),'w') then
-                    # will be replaced, does not work any more
-                    Kpse.runscript('texutil.pl',files.join(' '),'--figures')
+                    Kpse.runscript('rlxtools', ['--identify','--collect'], files.join(' '))
                     figures     = @commandline.checkedoption('method', 'a').downcase
                     paperoffset = @commandline.checkedoption('paperoffset', '0pt')
                     backspace   = @commandline.checkedoption('backspace', '1.5cm')
                     topspace    = @commandline.checkedoption('topspace', '1.5cm')
                     boxtype     = @commandline.checkedoption('boxtype','')
                     f << "% format=english\n";
+                    f << "\\usemodule[res-20]\n"
                     f << "\\setuplayout\n";
                     f << "  [topspace=#{topspace},backspace=#{backspace},\n"
                     f << "   header=1.5cm,footer=0pt,\n";
@@ -175,10 +182,9 @@ class Commands
                     f.close
                     job.setvariable('interface','english')
                     job.setvariable('simplerun',true)
-                    # job.setvariable('nooptionfile',true)
                     job.setvariable('files',[job.tempfilename])
                     job.processtex
-                    File.silentdelete('texutil.tuf')
+                    # File.silentdelete('rlxtools.rli') unless job.getvariable('keep')
                 else
                     report('no figures to show')
                 end
@@ -194,7 +200,7 @@ class Commands
             prepare(job)
             job.cleanuptemprunfiles
             files = @commandline.arguments.sort
-            msuffixes = ['tex','mp','pl','pm','rb']
+            msuffixes = ['tex','mkii','mkiv','mp','pl','pm','rb']
             if files.length > 0 then
                 files.each do |fname|
                     fnames = Array.new
@@ -208,6 +214,11 @@ class Commands
                     fnames.each do |ffname|
                         if msuffixes.include?(File.splitname(ffname)[1]) && FileTest.file?(ffname) then
                             if mod = File.open(job.tempfilename('tex'),'w') then
+if File.suffix(ffname) =~ /^(mkii|mkiv)$/o then
+    markfile = $1
+else
+    markfile = nil
+end
                                 Kpse.runscript('ctxtools',ffname,'--document')
                                 if ted = File.silentopen(File.suffixed(ffname,'ted')) then
                                     firstline = ted.gets
@@ -220,7 +231,7 @@ class Commands
                                 else
                                     mod << "% interface=en\n"
                                 end
-                                mod << "\\usemodule[abr-01,mod-01]\n"
+                                mod << "\\usemodule[mod-01]\n"
                                 mod << "\\def\\ModuleNumber{1}\n"
                                 mod << "\\starttext\n"
                                 # todo: global file too
@@ -231,16 +242,54 @@ class Commands
                                 job.setvariable('simplerun',true)
                                 # job.setvariable('nooptionfile',true)
                                 job.setvariable('files',[job.tempfilename])
+result = File.unsuffixed(File.basename(ffname))
+if markfile then
+    result = result+'-'+markfile
+end
+job.setvariable('result',result)
                                 job.processtex
-                                ["dvi", "pdf","tuo"].each do |s|
-                                    File.silentrename(job.tempfilename(s),File.suffixed(ffname,s));
-                                end
+                                # ["dvi", "pdf","ps"].each do |s|
+                                    # File.silentrename(job.tempfilename(s),File.suffixed(ffname,s));
+                                # end
                             end
                         end
                     end
                 end
             else
                 report('no modules to process')
+            end
+            job.cleanuptemprunfiles
+        end
+    end
+
+    def pdfsplit
+        if job = TEX.new(logger) then
+            prepare(job)
+            job.cleanuptemprunfiles
+            filename = File.expand_path(@commandline.arguments.first)
+            if FileTest.file?(filename) then
+                basename = filename.sub(/\..*?$/,'')
+                tempfile = File.suffixed(job.tempfilename,'tex')
+                if basename != filename then
+                    info = `pdfinfo #{filename}`
+                    if info =~ /Pages:\s*(\d+)/ then
+                        nofpages = $1.to_i
+                        nofpages.times do |i|
+                            if f = File.open(tempfile,"w") then
+                                n = i + 1
+                                report("extracting page #{n}")
+                                f << "\\starttext\\startTEXpage\n"
+                                f << "\\externalfigure[#{filename}][object=no,page=#{n}]\n"
+                                f << "\\stopTEXpage\\stoptext\n"
+                                f.close
+                                job.setvariable('interface','english') # redundant
+                                job.setvariable('simplerun',true)
+                                job.setvariable('files',[tempfile])
+                                job.processtex
+                            end
+                        end
+                    end
+                end
             end
             job.cleanuptemprunfiles
         end
@@ -391,8 +440,8 @@ class Commands
                             f <<  "]\n"
                             f <<  "\\definepapersize\n"
                             f <<  "  [copy]\n"
-                            f <<  "  [width=\\naturalfigurewidth,\n"
-                            f <<  "   height=\\naturalfigureheight]\n"
+                            f <<  "  [width=\\figurewidth,\n"
+                            f <<  "   height=\\figureheight]\n"
                             f <<  "\\setuppapersize\n"
                             f <<  "  [copy][copy]\n"
                             f <<  "\\setuplayout\n"
@@ -578,6 +627,7 @@ commandline.registeraction('process',   'process file')
 commandline.registeraction('mptex',     'process mp file')
 commandline.registeraction('mpxtex',    'process mpx file')
 commandline.registeraction('mpgraphic', 'process mp file to stand-alone graphics')
+commandline.registeraction('mpstatic',  'process mp/ctx file to stand-alone graphics')
 
 commandline.registeraction('listing',    'list of file content')
 commandline.registeraction('figures',    'generate overview of figures')
@@ -587,6 +637,7 @@ commandline.registeraction('pdfselect',  'select pages from file(s)')
 commandline.registeraction('pdfcopy',    'copy pages from file(s)')
 commandline.registeraction('pdftrim',    'trim pages from file(s)')
 commandline.registeraction('pdfcombine', 'combine multiple pages')
+commandline.registeraction('pdfsplit',   'split file in pages')
 
 # compatibility switch
 
