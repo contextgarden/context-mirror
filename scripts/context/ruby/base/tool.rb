@@ -129,7 +129,7 @@ module Tool
 
     def Tool.simplefilename(old)
 
-        return old unless test(?f,old)
+        return old if not FileTest.file?(old)
 
         new = old.downcase
         new.gsub!(/[^A-Za-z0-9\_\-\.\\\/]/o) do # funny chars
@@ -141,9 +141,10 @@ module Tool
                 $1 + ':'
             end
         end
-        new.gsub!(/(.+?)\.(.+?)(\..+)$/o)  do # duplicate .
-            $1 + '-' + $2 + $3
-        end
+        # fragile for a.b.c.d.bla-bla.e.eps
+        # new.gsub!(/(.+?)\.(.+?)(\..+)$/o)  do # duplicate .
+            # $1 + '-' + $2 + $3
+        # end
         new.gsub!(/\-+/o)                  do # duplicate -
             '-'
         end
@@ -244,7 +245,7 @@ module Tool
         new.sub!(/\.ai$/io) do
             '.eps'
         end
-        new.sub!(/\.ai(.*?)$/io) do
+        new.sub!(/\.ai([a-z0-9]*)$/io) do
             '-' + $1 + '.eps'
         end
         new
@@ -253,7 +254,7 @@ module Tool
 
     def Tool.cleanfilename(old,logging=nil)
 
-        return old unless test(?f,old)
+        return old if not FileTest.file?(old)
 
         new = checksuffix(simplefilename(old))
         unless new == old
@@ -266,29 +267,6 @@ module Tool
             end
         end
         return new
-
-    end
-
-    def Tool.preventduplicates(old,logging=nil)
-
-        return false unless test(?f,old)
-
-        if old =~ /\.(tif|jpg|png|tiff)$/io
-            suffix = $1
-            new = old
-            newn, news = new.split('.')
-            if test(?e,'newn.eps')
-                new = newn + '-' + suffix + '.' + suffix
-                begin
-                    File.rename(old,new)
-                    logging.report("renaming duplicate #{old} to #{new}") unless logging
-                    return true
-                rescue
-                    logging.report("unable to rename duplicate #{old} to #{new}") unless logging
-                end
-            end
-        end
-        return false
 
     end
 

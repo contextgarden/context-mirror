@@ -154,10 +154,12 @@ class Commands
         if job = TEX.new(logger) then
             prepare(job)
             job.cleanuptemprunfiles
+            fast = @commandline.option('fast')
             files = @commandline.arguments.sort
-            if files.length > 0 then
+            if fast or (files.length > 0) then
                 if f = File.open(job.tempfilename('tex'),'w') then
-                    Kpse.runscript('rlxtools', ['--identify','--collect'], files.join(' '))
+                    files.delete("texexec.pdf")
+                    Kpse.runscript('rlxtools', ['--identify','--collect'], files.join(' ')) unless fast
                     figures     = @commandline.checkedoption('method', 'a').downcase
                     paperoffset = @commandline.checkedoption('paperoffset', '0pt')
                     backspace   = @commandline.checkedoption('backspace', '1.5cm')

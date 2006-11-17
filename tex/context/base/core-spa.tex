@@ -2729,23 +2729,26 @@
 \newskip\ctxrightskip
 \newskip\ctxmidskip
 
-\def\dosinglenarrower#1%
-  {\processaction
-     [#1]
-     [     \v!left=>\global\advance\ctxleftskip  \@@slleft,
-         \v!middle=>\global\advance\ctxmidskip   \@@slmiddle,
-          \v!right=>\global\advance\ctxrightskip \@@slright,
-           \v!none=>,
-        \s!unknown=>\global\advance\ctxmidskip   \commalistelement]}
+% \def\dosinglenarrower#1%
+%   {\processaction
+%      [#1]
+%      [     \v!left=>\global\advance\ctxleftskip  \@@slleft,
+%          \v!middle=>\global\advance\ctxmidskip   \@@slmiddle,
+%           \v!right=>\global\advance\ctxrightskip \@@slright,
+%            \v!none=>,
+%         \s!unknown=>\global\advance\ctxmidskip   \commalistelement]}
 
-\def\donarrower[#1]%
-  {\processaction
-     [#1]
-     [     \v!left=>\global\advance\ctxleftskip  \@@slleft,
-         \v!middle=>\global\advance\ctxmidskip   \@@slmiddle,
-          \v!right=>\global\advance\ctxrightskip \@@slright,
-           \v!none=>,% handy for delimitedtexts
-        \s!unknown=>{\dorepeatwithcommand[#1]\dosinglenarrower}]}
+% \def\donarrower[#1]% hm, can be dorepeat directly
+%   {\processaction
+%      [#1]
+%      [     \v!left=>\global\advance\ctxleftskip  \@@slleft,
+%          \v!middle=>\global\advance\ctxmidskip   \@@slmiddle,
+%           \v!right=>\global\advance\ctxrightskip \@@slright,
+%            \v!none=>,% handy for delimitedtexts
+%         \s!unknown=>{\dorepeatwithcommand[#1]\dosinglenarrower}]}
+
+\def\donarrower[#1]% hm, can be dorepeat directly
+  {\dorepeatwithcommand[#1]\dosinglenarrower}
 
 \def\complexstartnarrower[#1]%
   {\@@slbefore % was hard coded \par

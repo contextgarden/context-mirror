@@ -11,6 +11,21 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
+% \usetypescriptfile[type-gyr]
+% \definetypeface[pagella][rm][serif][pagella][default][encoding=t5]
+% \setupbodyfont[pagella]
+% \starttext
+% \startlines
+% hello world 123
+% {hello \Var[sc] world 123}
+% {\it hello \Var[sc]world \Var[reset] 123}
+% {\bf hello \Var[osf] {\Var[reset] world} 123}
+% {\bi hello world \Var[osf]123}
+% {\sc hello \Var[sc] world \Var[reset] 123}
+% \stoplines
+% \showfont[SerifItalicCaps]
+% \stoptext
+
 \starttypescriptcollection[gyre]
 
 %D First we define the new ones. Watch how we use the systematic name composition.
@@ -26,24 +41,40 @@
 \starttypescript [serif] [pagella,termes,bonum] [texnansi,ec,8r,t5,qx]
   \loadmapfile[\typescriptthree-q\typescriptprefix{f:\typescripttwo}.map]
 
-  \definefontsynonym [\typescriptprefix{n:\typescripttwo}-Regular]     [\typescriptthree-q\typescriptprefix{f:\typescripttwo}r]    [encoding=\typescriptthree]
-  \definefontsynonym [\typescriptprefix{n:\typescripttwo}-Italic]      [\typescriptthree-q\typescriptprefix{f:\typescripttwo}ri]   [encoding=\typescriptthree]
-  \definefontsynonym [\typescriptprefix{n:\typescripttwo}-Bold]        [\typescriptthree-q\typescriptprefix{f:\typescripttwo}b]    [encoding=\typescriptthree]
-  \definefontsynonym [\typescriptprefix{n:\typescripttwo}-BoldItalic]  [\typescriptthree-q\typescriptprefix{f:\typescripttwo}bi]   [encoding=\typescriptthree]
-  \definefontsynonym [\typescriptprefix{n:\typescripttwo}-Caps]        [\typescriptthree-q\typescriptprefix{f:\typescripttwo}r-sc] [encoding=\typescriptthree]
+  \definefontsynonym [\typescriptprefix{n:\typescripttwo}-Regular]        [\typescriptthree-q\typescriptprefix{f:\typescripttwo}r]     [encoding=\typescriptthree]
+  \definefontsynonym [\typescriptprefix{n:\typescripttwo}-Italic]         [\typescriptthree-q\typescriptprefix{f:\typescripttwo}ri]    [encoding=\typescriptthree]
+  \definefontsynonym [\typescriptprefix{n:\typescripttwo}-Bold]           [\typescriptthree-q\typescriptprefix{f:\typescripttwo}b]     [encoding=\typescriptthree]
+  \definefontsynonym [\typescriptprefix{n:\typescripttwo}-BoldItalic]     [\typescriptthree-q\typescriptprefix{f:\typescripttwo}bi]    [encoding=\typescriptthree]
+  \definefontsynonym [\typescriptprefix{n:\typescripttwo}-Caps]           [\typescriptthree-q\typescriptprefix{f:\typescripttwo}r-sc]  [encoding=\typescriptthree]
+  \definefontsynonym [\typescriptprefix{n:\typescripttwo}-ItalicCaps]     [\typescriptthree-q\typescriptprefix{f:\typescripttwo}ri-sc] [encoding=\typescriptthree]
+  \definefontsynonym [\typescriptprefix{n:\typescripttwo}-BoldCaps]       [\typescriptthree-q\typescriptprefix{f:\typescripttwo}b-sc]  [encoding=\typescriptthree]
+  \definefontsynonym [\typescriptprefix{n:\typescripttwo}-BoldItalicCaps] [\typescriptthree-q\typescriptprefix{f:\typescripttwo}bi-sc] [encoding=\typescriptthree]
 
-  \definefontsynonym [\typescriptprefix{n:\typescripttwo}-Slanted]     [\typescriptprefix{n:\typescripttwo}-Italic]
-  \definefontsynonym [\typescriptprefix{n:\typescripttwo}-BoldSlanted] [\typescriptprefix{n:\typescripttwo}-BoldItalic]
+  \definefontsynonym [\typescriptprefix{n:\typescripttwo}-Slanted]        [\typescriptprefix{n:\typescripttwo}-Italic]
+  \definefontsynonym [\typescriptprefix{n:\typescripttwo}-BoldSlanted]    [\typescriptprefix{n:\typescripttwo}-BoldItalic]
 \stoptypescript
 
 \starttypescript [serif] [pagella,termes,bonum] [name]
-  \definefontsynonym [Serif]            [\typescriptprefix{n:\typescripttwo}-Regular]
-  \definefontsynonym [SerifItalic]      [\typescriptprefix{n:\typescripttwo}-Italic]
-  \definefontsynonym [SerifBold]        [\typescriptprefix{n:\typescripttwo}-Bold]
-  \definefontsynonym [SerifBoldItalic]  [\typescriptprefix{n:\typescripttwo}-BoldItalic]
-  \definefontsynonym [SerifCaps]        [\typescriptprefix{n:\typescripttwo}-Caps]
-  \definefontsynonym [SerifSlanted]     [\typescriptprefix{n:\typescripttwo}-Slanted]
-  \definefontsynonym [SerifBoldSlanted] [\typescriptprefix{n:\typescripttwo}-BoldSlanted]
+  \definefontsynonym [Serif]                [\typescriptprefix{n:\typescripttwo}-Regular]
+  \definefontsynonym [SerifItalic]          [\typescriptprefix{n:\typescripttwo}-Italic]
+  \definefontsynonym [SerifBold]            [\typescriptprefix{n:\typescripttwo}-Bold]
+  \definefontsynonym [SerifBoldItalic]      [\typescriptprefix{n:\typescripttwo}-BoldItalic]
+  \definefontsynonym [SerifCaps]            [\typescriptprefix{n:\typescripttwo}-Caps]
+  \definefontsynonym [SerifSlanted]         [\typescriptprefix{n:\typescripttwo}-Slanted]
+  \definefontsynonym [SerifBoldSlanted]     [\typescriptprefix{n:\typescripttwo}-BoldSlanted]
+
+  \definefontvariant [Serif][osf][Caps]
+  \definefontvariant [Serif][sc] [Caps]
+
+  \definefontsynonym [SerifRegular]         [\typescriptprefix{n:\typescripttwo}-Regular]
+  \definefontsynonym [SerifRegularCaps]     [\typescriptprefix{n:\typescripttwo}-Caps]
+  \definefontsynonym [SerifItalicCaps]      [\typescriptprefix{n:\typescripttwo}-ItalicCaps]
+  \definefontsynonym [SerifBoldCaps]        [\typescriptprefix{n:\typescripttwo}-BoldCaps]
+  \definefontsynonym [SerifBoldItalicCaps]  [\typescriptprefix{n:\typescripttwo}-BoldItalicCaps]
+  \definefontsynonym [SerifCapsCaps]        [\typescriptprefix{n:\typescripttwo}-Caps]
+  \definefontsynonym [SerifSlantedCaps]     [\typescriptprefix{n:\typescripttwo}-ItalicCaps]
+  \definefontsynonym [SerifBoldSlantedCaps] [\typescriptprefix{n:\typescripttwo}-BoldItalicCaps]
+
 \stoptypescript
 
 \starttypescript [map] [pagella,termes,bonum] [ec,texnansi,t5,8r]

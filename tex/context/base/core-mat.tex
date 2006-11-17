@@ -2535,26 +2535,31 @@
 
 \def\dofrac#1#2#3{\relax\mathematics{{{#1{#2}}\over{#1{#3}}}}}
 
-\def\frac      {\dofrac\mathstyle}
-\def\xfrac #1#2{\begingroup
-                \let\xfrac\xxfrac
-                \dofrac\scriptstyle{#1}{#2}%
-                \endgroup}
-\def\xxfrac#1#2{\begingroup
-                \dofrac\scriptscriptstyle{#1}{#2}%
-                \endgroup}
+\unexpanded\def\frac
+  {\dofrac\mathstyle}
+
+\unexpanded\def\xfrac#1#2%
+  {\begingroup
+   \let\xfrac\xxfrac
+   \dofrac\scriptstyle{#1}{#2}%
+   \endgroup}
+
+\unexpanded\def\xxfrac#1#2%
+  {\begingroup
+   \dofrac\scriptscriptstyle{#1}{#2}%
+   \endgroup}
 
 %D The \type {xx} variant looks still ugly, so maybe it's
 %D best to say:
 
-\def\xxfrac#1#2{\begingroup
-                \dofrac\scriptscriptstyle
-                  {#1}{\raise.25ex\hbox{$\scriptscriptstyle#2$}}%
-                \endgroup}
+\unexpanded\def\xxfrac#1#2%
+  {\begingroup
+   \dofrac\scriptscriptstyle{#1}{\raise.25ex\hbox{$\scriptscriptstyle#2$}}%
+   \endgroup}
 
 %D Something low level for scientific calculator notation:
 
-\def\scinot#1#2%
+\unexpanded\def\scinot#1#2%
   {#1\times10^{#2}}
 
 %D The next macro, \type {\ch}, is \PPCHTEX\ aware. In
@@ -2565,7 +2570,7 @@
   \let\mathstyle\relax
 \fi
 
-\def\ch#1%
+\unexpanded\def\ch#1%
   {\ifx\@@chemicalletter\undefined
      \mathstyle{\rm#1}%
    \else
