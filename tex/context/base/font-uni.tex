@@ -450,7 +450,7 @@
    % the following \relax's are realy needed
    \doifvalue{\??uc#1\c!interlinespace}\v!yes
       \setupinterlinespace\relax
-   \doifvalue{\??uc#1\c!strut}\v!yes
+   \doifelsevalue{\??uc#1\c!strut}\v!yes
       {\setunicodestrut\unicodeheight\unicodedepth}
       {\resetunicodestrut}%
    \getvalue{\??uc#1\c!commands}\relax}

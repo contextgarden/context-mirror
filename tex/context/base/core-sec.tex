@@ -1852,7 +1852,7 @@
 %D      [frame=off,offset=.5em,align=middle,width=broad]
 %D      {\sc\def\stretchedspaceamount{.3em}\stretchednormalcase{#1}}}
 %D
-%D \definehead[MySubject]
+%D \definehead[MySubject][subject]
 %D \setuphead [MySubject][deeptextcommand=\StretchedBox]
 %D
 %D \MySubject{feeling stretched feeling stretched feeling stretched feeling stretched}
@@ -2169,7 +2169,7 @@
 
 \let\@@kolist=\empty
 
-\def\dodefinehead[#1][#2]%   % don't preset prefix to much
+\def\dododefinehead#1#2%   % don't preset prefix to much
   {\presetlabeltext[#1=]%
    \getparameters
      [\??ko#1]
@@ -2264,6 +2264,15 @@
    \setevalue{\??by#1}{\getvalue{\??ko#1\c!section}}%
    \setevalue{\??by\v!by#1}{\getvalue{\??ko#1\c!section}}%
    \setvalue{#1}{\dodoubleempty\doconstructhead[#1]}}
+
+\def\dodefinehead[#1][#2]%
+  {\doifelsenothing{#2}
+     {% todo: message that it's an invalid definition
+      \setvalue{#1}{\endgraf[#1]\kern.5em}}
+     {\doifassignmentelse{#2}
+        {\dododefinehead{#1}{#2}}
+        {\doifdefined{\??ko#2\c!section}
+           {\dododefinehead{#1}{#2}}}}}
 
 \def\definehead
   {\dodoubleemptywithset\dodefinehead}

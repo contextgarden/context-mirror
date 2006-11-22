@@ -31,6 +31,7 @@
 
 \long\def\sanitizePDFuniencoding#1\to#2%
   {\enablePDFunicrlf
+   \simplifycommands % added due to Dohyun Kim
    \let\unicodechar\relax % prevent further expansion
    \retainlccodes\lccode32=255 % slooow
    \lowercasestring\PDFunicodetrigger#1\to#2%

@@ -169,6 +169,7 @@ class TEX
     @@runoptions['pdftex']  = ['--8bit ']         # pdftex is now pdfetex
     @@runoptions['luatex']  = ['']
     @@runoptions['aleph']   = ['--8bit ']
+    @@runoptions['mpost']   = ['--8bit ']
 
     @@booleanvars = [
         'batchmode', 'nonstopmode', 'fast', 'fastdisabled', 'silentmode', 'final',
@@ -651,8 +652,8 @@ run_luatools("--ini --compile #{texformat}")
             if FileTest.writable?(mpsformatpath) then
                 mpsformats.each do |mpsformat|
                     report("generating mps format #{mpsformat}")
-                  # runcommand([quoted(mpsengine),prognameflag(progname),iniflag,tcxflag,mpsformat,mpsmakeextras(mpsformat)])
-                    runcommand([quoted(mpsengine),iniflag,tcxflag,mpsformat,mpsmakeextras(mpsformat)])
+                    runcommand([quoted(mpsengine),prognameflag(progname),iniflag,tcxflag,runoptions(mpsengine),mpsformat,mpsmakeextras(mpsformat)])
+                    # runcommand([quoted(mpsengine),iniflag,tcxflag,mpsformat,mpsmakeextras(mpsformat)])
                 end
             else
                 report("unable to make format due to lack of permissions")
@@ -1518,8 +1519,8 @@ end
         progname  = validprogname(getvariable('progname'))
         if mpsengine && mpsformat && progname then
             ENV["MPXCOMMAND"] = "0" unless mpx
-          # runcommand([quoted(mpsengine),prognameflag(progname),formatflag(mpsengine,mpsformat),tcxflag,runoptions(mpsengine),filename,mpsprocextras(mpsformat)])
-            runcommand([quoted(mpsengine),formatflag(mpsengine,mpsformat),tcxflag,runoptions(mpsengine),mpname,mpsprocextras(mpsformat)])
+            runcommand([quoted(mpsengine),prognameflag(progname),formatflag(mpsengine,mpsformat),tcxflag,runoptions(mpsengine),filename,mpsprocextras(mpsformat)])
+            # runcommand([quoted(mpsengine),formatflag(mpsengine,mpsformat),tcxflag,runoptions(mpsengine),mpname,mpsprocextras(mpsformat)])
             true
         else
             false
