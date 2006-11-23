@@ -3226,6 +3226,9 @@
         <cd:constant type="no"/>
       </cd:parameter>
       <cd:parameter name="allinea">
+        <cd:constant type="testo"/>
+        <!-- cd:constant type="yes"/ -->
+        <!-- cd:constant type="no"/ -->
         <cd:resolve name="align"/>
       </cd:parameter>
       <cd:parameter name="rigovuoto">

@@ -145,6 +145,8 @@ class TEX
     ['plain','mpost']                              .each do |f| @@mpsformats[f] = 'plain'     end
     ['metafun','context','standard']               .each do |f| @@mpsformats[f] = 'metafun'   end
 
+    # no 'standard' progname ! / beware, when using texexec we always use the context/metafun values
+
     ['pdftex','pdfetex','aleph','omega',
      'xetex','luatex']                             .each do |p| @@prognames[p]  = 'context'   end
     ['mpost']                                      .each do |p| @@prognames[p]  = 'metafun'   end
@@ -281,7 +283,7 @@ class TEX
         setvariable('distribution', Kpse.distribution)
         setvariable('texformats',   defaulttexformats)
         setvariable('mpsformats',   defaultmpsformats)
-        setvariable('progname',     'context')
+        setvariable('progname',     'standard') # or ''
         setvariable('interface',    'standard')
         setvariable('engine',       'standard') # replaced by tex/mpsengine
         setvariable('backend',      'pdftex')
@@ -456,13 +458,13 @@ class TEX
         end
     end
 
-    def validprogname(str,engine='standard')
-        if str && @@prognames.key?(str) then
-            @@prognames[str]
-        elsif (engine != 'standard') && @@prognames.key?(engine) then
-            @@prognames[engine]
+    def validprogname(str)
+        if str then
+            [str].flatten.each do |s|
+                return @@prognames[s] if @@prognames.key?(s)
+            end
         else
-            str
+            return nil
         end
     end
 
@@ -507,12 +509,8 @@ class TEX
             when /miktex/io then prefix = "-alias"
                             else return ""
         end
-        if progname then
-            if progname = validprogname(progname) then
-                "#{prefix}=#{progname}"
-            else
-                ""
-            end
+        if progname and not progname.empty? then
+            "#{prefix}=#{progname}"
         else
             prefix
         end
@@ -612,7 +610,7 @@ class TEX
         unless texformats || mpsformats then
             report('provide valid format (name.tex, name.mp, ...) or format id (metafun, en, nl, ...)')
         end
-        if texformats && texengine && (progname = validprogname(getvariable('progname'),texengine)) then
+        if texformats && texengine then
             report("using tex engine #{texengine}")
             texformatpath = if getvariable('local') then '.' else Kpse.formatpath(texengine,true) end
             # can be empty, to do
@@ -627,12 +625,13 @@ class TEX
                     cleanupluafiles
                     texformats.each do |texformat|
                         report("generating tex format #{texformat}")
-run_luatools("--ini --compile #{texformat}")
+                        run_luatools("--ini --compile #{texformat}")
                     end
                     compileluafiles
                 else
                     texformats.each do |texformat|
                         report("generating tex format #{texformat}")
+                        progname = validprogname([getvariable('progname'),texformat,texengine])
                         runcommand([quoted(texengine),prognameflag(progname),iniflag,tcxflag,prefixed(texformat,texengine),texmakeextras(texformat)])
                     end
                 end
@@ -644,7 +643,7 @@ run_luatools("--ini --compile #{texformat}")
             texformatpath = ''
         end
         # generate mps formats
-        if mpsformats && mpsengine && (progname = validprogname(getvariable('progname'),mpsengine)) then
+        if mpsformats && mpsengine then
             report("using mp engine #{mpsengine}")
             mpsformatpath = if getvariable('local') then '.' else Kpse.formatpath(mpsengine,false) end
             report("using mps format path #{mpsformatpath}")
@@ -652,8 +651,8 @@ run_luatools("--ini --compile #{texformat}")
             if FileTest.writable?(mpsformatpath) then
                 mpsformats.each do |mpsformat|
                     report("generating mps format #{mpsformat}")
+                    progname = validprogname([getvariable('progname'),mpsformat,mpsengine])
                     runcommand([quoted(mpsengine),prognameflag(progname),iniflag,tcxflag,runoptions(mpsengine),mpsformat,mpsmakeextras(mpsformat)])
-                    # runcommand([quoted(mpsengine),iniflag,tcxflag,mpsformat,mpsmakeextras(mpsformat)])
                 end
             else
                 report("unable to make format due to lack of permissions")
@@ -1285,7 +1284,8 @@ class TEX
                     opt << "\\enableregime[utf]"
                 end
                 opt << "\\setupsystem[\\c!n=#{kindofrun},\\c!m=#{currentrun}]\n"
-                opt << "\\def\\MPOSTformatswitch\{#{prognameflag('metafun')} #{formatflag('mpost')}=\}\n"
+                progname = validprogname(['metafun']) # [getvariable('progname'),mpsformat,mpsengine]
+                opt << "\\def\\MPOSTformatswitch\{#{prognameflag(progname)} #{formatflag('mpost')}=\}\n"
                 if getvariable('batchmode') then
                     opt << "\\batchmode\n"
                 end
@@ -1495,15 +1495,14 @@ class TEX
         checktestversion
         texengine = validtexengine(getvariable('texengine'))
         texformat = validtexformat(getarrayvariable('texformats').first)
-        progname  = validprogname(getvariable('progname'))
         report("tex engine: #{texengine}")
         report("tex format: #{texformat}")
-        report("progname: #{progname}")
-        if texengine && texformat && progname then
+        if texengine && texformat then
             fixbackendvars(@@mappaths[texengine])
 if texengine == "luatex" then
     run_luatools("--fmt=#{texformat} #{filename}")
 else
+            progname = validprogname([getvariable('progname'),texformat,texengine])
             runcommand([quoted(texengine),prognameflag(progname),formatflag(texengine,texformat),tcxflag,runoptions(texengine),filename,texprocextras(texformat)])
 end
             # true
@@ -1516,10 +1515,10 @@ end
         checktestversion
         mpsengine = validmpsengine(getvariable('mpsengine'))
         mpsformat = validmpsformat(getarrayvariable('mpsformats').first)
-        progname  = validprogname(getvariable('progname'))
-        if mpsengine && mpsformat && progname then
+        if mpsengine && mpsformat then
             ENV["MPXCOMMAND"] = "0" unless mpx
-            runcommand([quoted(mpsengine),prognameflag(progname),formatflag(mpsengine,mpsformat),tcxflag,runoptions(mpsengine),filename,mpsprocextras(mpsformat)])
+            progname = validprogname([getvariable('progname'),mpsformat,mpsengine])
+            runcommand([quoted(mpsengine),prognameflag(progname),formatflag(mpsengine,mpsformat),tcxflag,runoptions(mpsengine),mpname,mpsprocextras(mpsformat)])
             # runcommand([quoted(mpsengine),formatflag(mpsengine,mpsformat),tcxflag,runoptions(mpsengine),mpname,mpsprocextras(mpsformat)])
             true
         else

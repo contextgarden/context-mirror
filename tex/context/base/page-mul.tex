@@ -1654,14 +1654,20 @@
        \doifelse\@@klbalance\v!yes
          \balancecolumnstrue
          \balancecolumnsfalse
-       \processaction     % ook nog: laatsteuitlijnen
-         [\@@klalign]
-         [   \v!yes=>\stretchcolumnstrue
-                    \inheritcolumnsfalse,
-            \v!no=>\stretchcolumnsfalse
-                    \inheritcolumnsfalse,
-          \v!text=>\stretchcolumnsfalse
-                    \inheritcolumnstrue]%
+\installalign\v!yes {\stretchcolumnstrue \inheritcolumnsfalse}% todo: new key
+\installalign\v!no  {\stretchcolumnsfalse\inheritcolumnsfalse}% todo: new key
+\installalign\v!text{\stretchcolumnsfalse\inheritcolumnstrue }%
+\stretchcolumnsfalse
+\inheritcolumnstrue
+\doifsomething\@@klalign{\expanded{\setupalign[\@@klalign]}}%
+%        \processaction
+%          [\@@klalign]
+%          [   \v!yes=>\stretchcolumnstrue
+%                     \inheritcolumnsfalse,
+%             \v!no=>\stretchcolumnsfalse
+%                     \inheritcolumnsfalse,
+%           \v!text=>\stretchcolumnsfalse
+%                     \inheritcolumnstrue]%
        \nofcolumns=\@@kln
        %
        % probably more is needed, and how about nesting save's

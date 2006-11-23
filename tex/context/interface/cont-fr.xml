@@ -3226,6 +3226,9 @@
         <cd:constant type="non"/>
       </cd:parameter>
       <cd:parameter name="alignement">
+        <cd:constant type="texte"/>
+        <!-- cd:constant type="yes"/ -->
+        <!-- cd:constant type="no"/ -->
         <cd:resolve name="align"/>
       </cd:parameter>
       <cd:parameter name="vide">

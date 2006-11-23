@@ -388,6 +388,8 @@
    \fi
    \next}
 
+\appendtoks \obeyMPlines \to \everyMPgraphic % more efficient than in each following grouped write
+
 \long\def\writeMPgraphiclongR#1% fast, no scanning
   {\bgroup
    \let\par\space

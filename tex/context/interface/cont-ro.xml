@@ -3226,6 +3226,9 @@
         <cd:constant type="nu"/>
       </cd:parameter>
       <cd:parameter name="aliniere">
+        <cd:constant type="text"/>
+        <!-- cd:constant type="yes"/ -->
+        <!-- cd:constant type="no"/ -->
         <cd:resolve name="align"/>
       </cd:parameter>
       <cd:parameter name="blanc">

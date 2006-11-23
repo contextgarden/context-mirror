@@ -3226,6 +3226,9 @@
         <cd:constant type="nee"/>
       </cd:parameter>
       <cd:parameter name="uitlijnen">
+        <cd:constant type="tekst"/>
+        <!-- cd:constant type="yes"/ -->
+        <!-- cd:constant type="no"/ -->
         <cd:resolve name="align"/>
       </cd:parameter>
       <cd:parameter name="blanko">

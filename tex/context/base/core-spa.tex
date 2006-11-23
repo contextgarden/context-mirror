@@ -3823,51 +3823,52 @@
 
 % \setupalign[reset,new,right,old]
 
-
 \def\@@align@@rl{\if!!donea\veryraggedleft  \else\raggedleft  \fi}
 \def\@@align@@rr{\if!!donea\veryraggedright \else\raggedright \fi}
 \def\@@align@@rc{\if!!donea\veryraggedcenter\else\raggedcenter\fi}
 
-\setvalue{@@align@@\v!new          }{\@@asraggedfalse}
-\setvalue{@@align@@\v!old          }{\@@asraggedtrue}
-\setvalue{@@align@@                }{}
+\setvalue{@@ngila@@\v!broad    }{\!!doneatrue}
+\setvalue{@@ngila@@\v!wide     }{\!!donebtrue}
 
-\setvalue{@@align@@\v!line         }{\baselinebottom}
-\setvalue{@@align@@\v!bottom       }{\raggedbottom}
-\setvalue{@@align@@\v!height       }{\normalbottom}
-\setvalue{@@align@@\v!width        }{\notragged}
-\setvalue{@@align@@\v!normal       }{\notragged}
-\setvalue{@@align@@\v!yes          }{\notragged}
-\setvalue{@@align@@\v!no           }{\raggedright}
-\setvalue{@@align@@\v!inner        }{\if@@asragged \setraggedparagraphmode\@@align@@rl\@@align@@rr \else
-                                                   \setraggedparagraphmode\@@align@@rr\@@align@@rl \fi}
-\setvalue{@@align@@\v!outer        }{\if@@asragged \setraggedparagraphmode\@@align@@rr\@@align@@rl \else
-                                                   \setraggedparagraphmode\@@align@@rl\@@align@@rr \fi}
-\setvalue{@@align@@\v!left         }{\if@@asragged\@@align@@rl\else\@@align@@rr\fi}
-\setvalue{@@align@@\v!right        }{\if@@asragged\@@align@@rr\else\@@align@@rl\fi}
-\setvalue{@@align@@\v!middle       }{\if!!doneb\raggedwidecenter\else\@@align@@rc\fi}
-\setvalue{@@align@@\v!flushleft    }{\if!!donea\veryraggedright \else\raggedright\fi}
-\setvalue{@@align@@\v!flushright   }{\if!!donea\veryraggedleft  \else\raggedleft \fi}
-\setvalue{@@align@@\v!flushouter   }{\setraggedparagraphmode\raggedleft\raggedright}
-\setvalue{@@align@@\v!flushinner   }{\setraggedparagraphmode\raggedright\raggedleft}
-\setvalue{@@align@@\v!center       }{\if!!doneb\raggedwidecenter\else\@@align@@rc\fi}
-\setvalue{@@align@@\v!hanging      }{\enableprotruding}
-\setvalue{@@align@@\v!nothanging   }{\disableprotruding}
-\setvalue{@@align@@\v!hz           }{\enableadjusting}
-\setvalue{@@align@@\v!nohz         }{\disableadjusting}
-\setvalue{@@align@@\v!spacing      }{\enablespacehandling \enablekernhandling}
-\setvalue{@@align@@\v!nospacing    }{\disablespacehandling\disablekernhandling}
-\setvalue{@@align@@\v!hyphenated   }{\dohyphens}
-\setvalue{@@align@@\v!nothyphenated}{\nohyphens}
-\setvalue{@@align@@\v!new          }{\@@asraggedfalse} % so new will give you consistency
-\setvalue{@@align@@\v!reset        }{\notragged\normalbottom}
+\def\installalign#1#2{\setvalue{@@align@@#1}{#2}} % can be used for overloads
 
-\setvalue{@@align@@\v!tolerant    }{\tolerance3000   \relax}
-\setvalue{@@align@@\v!verytolerant}{\tolerance4500   \relax}
-\setvalue{@@align@@\v!stretch     }{\emergencystretch\bodyfontsize}
+\installalign \v!new           {\@@asraggedfalse}
+\installalign \v!old           {\@@asraggedtrue}
+\installalign \empty           {}
 
-\setvalue{@@ngila@@\v!broad        }{\!!doneatrue}
-\setvalue{@@ngila@@\v!wide         }{\!!donebtrue}
+\installalign \v!line          {\baselinebottom}
+\installalign \v!bottom        {\raggedbottom}
+\installalign \v!height        {\normalbottom}
+\installalign \v!width         {\notragged}
+\installalign \v!normal        {\notragged}
+\installalign \v!yes           {\notragged}
+\installalign \v!no            {\raggedright}
+\installalign \v!inner         {\if@@asragged \setraggedparagraphmode\@@align@@rl\@@align@@rr \else
+                                              \setraggedparagraphmode\@@align@@rr\@@align@@rl \fi}
+\installalign \v!outer         {\if@@asragged \setraggedparagraphmode\@@align@@rr\@@align@@rl \else
+                                \setraggedparagraphmode\@@align@@rl\@@align@@rr \fi}
+\installalign \v!left          {\if@@asragged\@@align@@rl\else\@@align@@rr\fi}
+\installalign \v!right         {\if@@asragged\@@align@@rr\else\@@align@@rl\fi}
+\installalign \v!middle        {\if!!doneb\raggedwidecenter\else\@@align@@rc\fi}
+\installalign \v!flushleft     {\if!!donea\veryraggedright \else\raggedright\fi}
+\installalign \v!flushright    {\if!!donea\veryraggedleft  \else\raggedleft \fi}
+\installalign \v!flushouter    {\setraggedparagraphmode\raggedleft\raggedright}
+\installalign \v!flushinner    {\setraggedparagraphmode\raggedright\raggedleft}
+\installalign \v!center        {\if!!doneb\raggedwidecenter\else\@@align@@rc\fi}
+\installalign \v!hanging       {\enableprotruding}
+\installalign \v!nothanging    {\disableprotruding}
+\installalign \v!hz            {\enableadjusting}
+\installalign \v!nohz          {\disableadjusting}
+\installalign \v!spacing       {\enablespacehandling \enablekernhandling}
+\installalign \v!nospacing     {\disablespacehandling\disablekernhandling}
+\installalign \v!hyphenated    {\dohyphens}
+\installalign \v!nothyphenated {\nohyphens}
+\installalign \v!new           {\@@asraggedfalse} % so new will give you consistency
+\installalign \v!reset         {\notragged\normalbottom}
+
+\installalign \v!tolerant      {\tolerance3000   \relax}
+\installalign \v!verytolerant  {\tolerance4500   \relax}
+\installalign \v!stretch       {\emergencystretch\bodyfontsize}
 
 \def\dodosetupalign#1{\csname @@align@@#1\endcsname}
 \def\dodosetupngila#1{\csname @@ngila@@#1\endcsname}
