@@ -494,9 +494,10 @@
      \ifnum\itemlevel>\plusone
        \letitemparameter\itemlevel\c!inbetween\empty
      \fi
-   \else\ifconditional\packlistitem
+   \fi
+   \ifconditional\packlistitem
      \letitemparameter\itemlevel\c!inbetween\empty
-   \fi\fi
+   \fi
    \doifinset\v!columns{#1}%
      {\ifinsidecolumns\else\ifnum\itemcolumndepth=\zerocount
         \globallet\itemcolumndepth\itemlevel
@@ -881,7 +882,7 @@
        \fi
      \fi
    \else
-\ifconditional\inlinelistitem
+\ifconditional\textlistitem % was bugged: \inlinelistitem
 %     \removeunwantedspaces\hskip\interwordspace\!!plus\emwidth\relax % new per 2006/10/20
     \removeunwantedspaces\hskip\emwidth\!!plus\interwordstretch\!!minus\interwordshrink\relax % new per 2006/10/20
 \else

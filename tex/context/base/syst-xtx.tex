@@ -39,6 +39,10 @@
   \input enco-xtx.tex
 \fi
 
+\ifx\XeTeXuseglyphmetrics\undefined \else
+    \XeTeXuseglyphmetrics=1
+\fi
+
 % patch needed for turkish
 
 \setcclcuc 201C 201C 201C

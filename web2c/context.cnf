@@ -216,3 +216,8 @@ ocp_buf_size             =  500000
 ocp_stack_size           =   10000
 ocp_list_size            =    1000
 
+% Just for xetex:
+
+FONTCONFIG_FILE = fonts.conf
+FONTCONFIG_PATH = $TEXMFLOCAL/fonts/conf
+FC_CACHEDIR     = $TMP/fonts/cache

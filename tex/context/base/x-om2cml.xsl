@@ -177,7 +177,29 @@
 
   <!-- Trivial Cases: abs, divide, gcd, lcm, minus, plus -->
   <xsl:template match="om:OMS[@cd='arith1']">
-    <xsl:element name="{@name}"/>
+    <xsl:element name="{@name}">
+        <xsl:choose>
+            <xsl:when test="@name='times'">
+                <xsl:choose>
+                    <xsl:when test="../@style='empty'">
+                        <xsl:attribute name='symbol'></xsl:attribute>
+                    </xsl:when>
+                    <xsl:when test="../@style='cross'">
+                        <xsl:attribute name='symbol'>times</xsl:attribute>
+                    </xsl:when>
+                    <xsl:when test="../@style=''">
+                        <!-- inherit from parent times -->
+                    </xsl:when>
+                    <xsl:otherwise>
+                        <xsl:attribute name='symbol'><xsl:value-of select="../@style"/></xsl:attribute>
+                    </xsl:otherwise>
+                </xsl:choose>
+            </xsl:when>
+            <xsl:otherwise>
+                <!-- forget about it -->
+            </xsl:otherwise>
+        </xsl:choose>
+    </xsl:element>
   </xsl:template>
 
   <!-- unary_minus -->

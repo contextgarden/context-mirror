@@ -319,19 +319,6 @@
         \normalvskip\zeropoint\!!plus\ruleddepth}%
    \fi}
 
-% \def\cutmarksymbols
-%   {\setbox\scratchbox\normalvbox to \cutmarklength
-%      {\normalvfill
-%       \normalhbox to \cutmarklength
-%         {\normalhfill\ssxx\cutmarksymbol\normalhfill}%
-%       \normalvfill}%
-%    \normalhbox to \ruledwidth
-%      {\scratchdimen\cutmarklength
-%       \divide\scratchdimen 2
-%       \llap{\copy\scratchbox\normalhskip\cutmarkoffset\scratchdimen}%
-%       \normalhfill
-%       \rlap{\normalhskip\cutmarkoffset\scratchdimen\copy\scratchbox}}}
-
 \def\cutmarksymbols#1%
   {\normalhbox to \ruledwidth
      {\setbox\scratchbox\normalhbox to \cutmarklength
@@ -347,64 +334,6 @@
             \rlap{\normalhskip\cutmarkoffset\scratchdimen\copy\scratchbox}}%
          \normalvss}%
       \normalhss}}
-
-% \def\makecutbox#1%
-%   {\edef\ruledheight{\the\ht#1}%
-%    \edef\ruleddepth {\the\dp#1}%
-%    \edef\ruledwidth {\the\wd#1}%
-%    \setbox#1\normalhbox
-%      {\dontcomplain
-%       \forgetall
-%       \boxmaxdepth\maxdimen
-%       \offinterlineskip
-%       \scratchdimen\cutmarklength
-%       \divide\scratchdimen 2
-%       \hsize\ruledwidth
-%       \setbox\scratchbox\normalvbox
-%         {\setbox\scratchbox\normalhbox{\horizontalcuts}%
-%          \normalvskip-\cutmarkoffset\scratchdimen
-%          \normalvskip-2\scratchdimen
-%          \copy\scratchbox
-%          \normalvskip\cutmarkoffset\scratchdimen
-%          \hbox to \ruledwidth
-%            {\setbox\scratchbox\normalhbox{\verticalcuts}%
-%             \llap{\copy\scratchbox\normalhskip\cutmarkoffset\scratchdimen}%
-%             \bgroup
-%             \setbox\scratchbox\normalhbox{\baselinecuts}%
-%             \llap{\copy\scratchbox\normalhskip\cutmarkoffset\scratchdimen}%
-%             \normalhfill
-%             \rlap{\normalhskip\cutmarkoffset\scratchdimen\copy\scratchbox}%
-%             \egroup
-%             \rlap{\normalhskip\cutmarkoffset\scratchdimen\copy\scratchbox}}%
-%          \normalvskip\cutmarkoffset\scratchdimen
-%          \copy\scratchbox}%
-%       \ht\scratchbox\ruledheight
-%       \dp\scratchbox\ruleddepth
-%       \wd\scratchbox\zeropoint
-%       \resetcolorseparation
-%       \localstartcolor[\defaulttextcolor]%
-%       \box\scratchbox
-%       \ifx\cutmarksymbol\relax \else
-%         \setbox\scratchbox\normalvbox
-%           {\setbox\scratchbox\normalhbox{\cutmarksymbols}%
-%            \vskip-\cutmarkoffset\scratchdimen
-%            \vskip-\cutmarklength
-%            \copy\scratchbox
-%            \vskip\cutmarkoffset\scratchdimen
-%            \vskip\ruledheight
-%            \vskip\ruleddepth
-%            \vskip\cutmarkoffset\scratchdimen
-%            \copy\scratchbox}%
-%         \ht\scratchbox\ruledheight
-%         \dp\scratchbox\ruleddepth
-%         \wd\scratchbox\zeropoint
-%         \box\scratchbox
-%       \fi
-%       \localstopcolor
-%       \box#1}%
-%    \wd#1=\ruledwidth
-%    \ht#1=\ruledheight
-%    \dp#1=\ruleddepth}
 
 \def\makecutbox#1% simplier with layers, todo
   {\edef\ruledheight{\the\ht#1}%

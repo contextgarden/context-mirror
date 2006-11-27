@@ -100,6 +100,16 @@
 
 \def\setupMMLappearance[#1]{\dodoubleargument\getparameters[@@MML#1]}
 
+\def\startusingMMLarguments % optional maken
+  {\begingroup
+  %\expandXMLta % expand entities first
+   \getXMLta}
+
+\def\stopusingMMLarguments % optional maken
+  {\endgroup}
+
+\def\MMLargumentprefix{@@MML\currentXMLelement}
+
 %D We will apply inner math to all bits and pieces made up by an
 %D \type {apply}.
 
@@ -138,7 +148,7 @@
      {\donetrue}
      {\XMLdoifonstackelse{apply}
         {\defXMLfirstnamedtext\ascii{apply}%
-         \startsavingXMLelements % best use a substack so that we donnot need to \edef
+         \startsavingXMLelements % best use a substack so that we do not need to \edef
          \ascii
          \stopsavingXMLelements}
         {}%
@@ -993,35 +1003,41 @@
 
 \defineXMLcommand [rem] {\flushXMLstackwith\plustwo{\getXMLentity{mod}}}
 
-\defineXMLcommand [times] {\directsetup{mmc:times}}
-
 \setupMMLappearance [times] [\c!symbol=\v!no,\c!auto=\v!yes] % new, auto catches cn cn cn
 
+\defineXMLcommand [times] [\MMLargumentprefix] [] {\directsetup{mmc:times}}
+
 \startsetups mmc:times
-    \setMMLcreset{\MMLcfunctionlist,\MMLcconstructlist}%
-    \doifelse\@@MMLtimesauto\v!no {
-        \let\@@MMLtimes@@symbol\@@MMLtimessymbol
-    } {
-        \countXMLnamedstack {cn}
-        \ifnum\scratchcounter>\plusone
-           \let\@@MMLtimes@@symbol\v!yes
-        \else
-           \let\@@MMLtimes@@symbol\@@MMLtimessymbol
-        \fi
-    }
-    \doifelse\@@MMLtimes@@symbol\v!yes {
-        \flushXMLstackwith\plustwo\times
-    } {
-        \doifelse\@@MMLtimes@@symbol{dot} {
-            \flushXMLstackwith\plustwo\cdot
+    \startusingMMLarguments
+        \setMMLcreset{\MMLcfunctionlist,\MMLcconstructlist}%
+        \doifelse\@@MMLtimesauto\v!no {
+            \let\@@MMLtimes@@symbol\@@MMLtimessymbol
         } {
-            \doifelse\@@MMLtimes@@symbol{times} {
-                \flushXMLstackwith\plustwo\times
+            \countXMLnamedstack {cn}
+            \ifnum\scratchcounter>\plusone
+               \doifinsetelse\@@MMLtimessymbol{\v!yes,\v!no} {
+                    \let\@@MMLtimes@@symbol\v!yes
+                } {
+                    \let\@@MMLtimes@@symbol\@@MMLtimessymbol
+                }
+            \else
+               \let\@@MMLtimes@@symbol\@@MMLtimessymbol
+            \fi
+        }
+        \doifelse\@@MMLtimes@@symbol\v!yes {
+            \flushXMLstackwith\plustwo\times
+        } {
+            \doifelse\@@MMLtimes@@symbol{dot} {
+                \flushXMLstackwith\plustwo\cdot
             } {
-                \flushXMLstackwith\plustwo\empty
+                \doifelse\@@MMLtimes@@symbol{times} {
+                    \flushXMLstackwith\plustwo\times
+                } {
+                    \flushXMLstackwith\plustwo\empty
+                }
             }
         }
-    }
+    \stopusingMMLarguments
 \stopsetups
 
 \defineXMLcommand [root] {\directsetup{mmc:root}}

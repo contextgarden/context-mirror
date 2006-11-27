@@ -143,7 +143,7 @@
 \def\dodopreventmode#1%
   {\@EA\let\csname\@mode@#1\endcsname\preventedmode}
 
-\def\dodoenablemode#1%
+\def\dodoenablemode#1% mode can be relax
   {\ifcase0\csname\@mode@#1\endcsname\relax
      \@EA\let\csname\@mode@#1\endcsname\enabledmode
    \fi}
@@ -152,6 +152,17 @@
   {\ifcase0\csname\@mode@#1\endcsname\or
      \@EA\let\csname\@mode@#1\endcsname\disabledmode
    \fi}
+
+% handy for mp
+
+\def\booleanmodevalue#1% can be \relax
+  {\expandafter\ifx\csname\@mode@#1\endcsname\relax
+     fals%
+   \else\ifnum0\csname\@mode@#1\endcsname=0
+     fals%
+   \else
+     tru%
+   \fi\fi e}
 
 % check macros
 
