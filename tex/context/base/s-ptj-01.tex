@@ -1,6 +1,6 @@
 %D \module
 %D   [      file=s-ptj-01,
-%D        version=2006.11.14,
+%D        version=2006.11.28,
 %D          title=\CONTEXT\ Style File,
 %D       subtitle=PracTeX Journal Style,
 %D         author=Aditya Mahajan,
@@ -17,6 +17,7 @@
 %M \def\PRACTEX{\PracTeX}
 %M \def\TPJ    {The \PRACTEX\ Journal}
 %M \useurl[TPJ][http://www.tug.org/pracjourn/][][\TPJ]
+%M \useurl[texgyre][http://www.gust.org.pl/projects/e-foundry/tex-gyre/]
 
 \writestatus  {loading}   {Context Module for the PracTeX Journal}
 
@@ -30,11 +31,11 @@
 %D A sample document is given at the end of this file. The typeset sample can
 %D be obtained by
 %D \starttyping
-%D texexec --mode=demo s-ptj-01.tex
+%D texmfstart texexec --mode=demo s-ptj-01.tex
 %D \stoptyping
 %D The documentation is written as comments. If you want to see a \PDF\ copy
 %D \starttyping
-%D texexec --module s-ptj-01.tex
+%D texmfstart texexec --module s-ptj-01.tex
 %D \stoptyping
 
 \startmodule[pracjourn]
@@ -72,8 +73,9 @@
 %D used with a 15.5pt baseline skip. Font protrusion is enabled, but font
 %D expansion is not. We follow these conventions, but use Pagella fonts from
 %D \TEX{gyre} project, and scale latin modern fonts by 1.1 for better
-%D matching. Most of the numbers (page numbers, figure numbers, section
-%D numbers) are set in oldstyle.
+%D matching. Right now, the \TEX{gyre} fonts are not distributed with
+%D \CONTEXT. They can be downloaded from \url[texgyre]. Most of the numbers
+%D (page numbers, figure numbers, section numbers) are set in oldstyle.
 
 \usetypescript  [serif,sans,mono] [hanging] [pure]
 \setupalign     [hanging]
@@ -223,8 +225,8 @@
     {\doadditionalinfo{Address}{\getvariable{pracjourn}{address}}}
   \iftitleskipdone  \blank[big] \fi
   \doadditionalinfo{Abstract}%
-    {\setupindenting[yes]
-     \setupinterlinespace
+    {\setupindenting[yes]%
+     \setupinterlinespace%
      \getbuffer[abstract]
      \endgraf}
   \egroup

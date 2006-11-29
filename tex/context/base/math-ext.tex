@@ -63,6 +63,13 @@
 
 % temp here
 
+%D We next define extensible arrows. Extensible arrows are arrows that change
+%D their length accoding to the width of the text to be placed above and below
+%D the arrow. Since we need to define a lot of arrows, we first define some
+%D helper macros. The basic idea is to measure the width of the box to be
+%D placed above and below the arrow, and make the \quotation{body} of the
+%D arrow as long as the bigger of the two widths.
+
 \def\mtharrfactor{1}
 \def\mtharrextra {0}
 
@@ -109,6 +116,9 @@
 
 \let\domthxarrsingle\domthxarr
 
+%D There are some arrows which are created by stacking two arrows. The next
+%D macro helps in defining such \quotation{double arrows}.
+
 \def\domthxarrdouble#1#2#3#4#5#6#7% opt l r sp rs top bot
   {\mathrel
      {\scratchdimen.22ex\relax
@@ -117,6 +127,67 @@
       \raise\scratchdimen\box0
       \kern-\wd2
       \lower\scratchdimen\box2}}
+
+%D \macros{definematharrow}
+%D Macro for defining new arrows. We can define two types of arrows|<|single
+%D arrows and double arrows. Single arrows are defined as
+%D \starttyping
+%D \definematharrow [xrightarrow]        [0359] [\rightarrowfill]
+%D \stoptyping
+%D The first argument is the name of the arrow (\tex{xrightarrow} in this case.)
+%D The second argument consists of a set of 4 numbers and specify the spacing
+%D correction in math units~\type{mu}. These numbers define:
+%D \startlines
+%D   1st number: arrow||tip correction
+%D   2nd number: arrow||tip correction
+%D   3rd number: space (multiplied by \tex{matharrfactor} and advanced by \tex{matharrextra})
+%D   4th number: space (multiplied by \tex{matharrfactor} and advanced by \tex{matharrextra})
+%D \stoplines
+%D 
+%D The third argument is the name of the extensible fill. The third argument
+%D is optional when the arrow is redefined later (this is useful for font
+%D specific tweaking of the skips.) For example,
+%D \startbuffer
+%D \math{\xrightarrow{above}}
+%D \definematharrow[xrightarrow][0000]
+%D \math{\xrightarrow{above}}
+%D \definematharrow[xrightarrow][55{50}{50}]
+%D \math{\xrightarrow{above}}
+%D \stopbuffer
+%D \typebuffer gives {\getbuffer}
+%D
+%D The double arrows are defined as follows
+%D \starttyping
+%D \definematharrow [xrightleftharpoons] [3095,0359] 
+%D                  [\rightharpoonupfill,\leftharpoondownfill]
+%D \stoptyping
+%D The second and the third set of arguments consist of comma separated
+%D values. The first element of the second argument (\type{3095}) corresponds
+%D to the spacing correction of top arrow fill (\tex{rightarrowupfill}).
+%D Similarly, \type{0359} corresponds to bottom arrow fill
+%D \tex{leftharpoondownfill}). Stacking them on top of each other we get
+%D $\xrightleftharpoons[big]{above}{below}$.
+%D The following math arrows are defined
+%D \midaligned{\starttable[|l|m|]
+%D   \NC \tex{xrightarrow        }  \NC \xrightarrow        [big]  \NC \NR
+%D   \NC \tex{xleftarrow         }  \NC \xleftarrow         [big]  \NC \NR
+%D   \NC \tex{xequal             }  \NC \xequal             [big]  \NC \NR
+%D   \NC \tex{xRightarrow        }  \NC \xRightarrow        [big]  \NC \NR
+%D   \NC \tex{xLeftarrow         }  \NC \xLeftarrow         [big]  \NC \NR
+%D   \NC \tex{xLeftrightarrow    }  \NC \xLeftrightarrow    [big]  \NC \NR
+%D   \NC \tex{xleftrightarrow    }  \NC \xleftrightarrow    [big]  \NC \NR
+%D   \NC \tex{xmapsto            }  \NC \xmapsto            [big]  \NC \NR
+%D   \NC \tex{xtwoheadrightarrow }  \NC \xtwoheadrightarrow [big]  \NC \NR
+%D   \NC \tex{xtwoheadleftarrow  }  \NC \xtwoheadleftarrow  [big]  \NC \NR
+%D   \NC \tex{xrightharpoondown  }  \NC \xrightharpoondown  [big]  \NC \NR
+%D   \NC \tex{xrightharpoonup    }  \NC \xrightharpoonup    [big]  \NC \NR
+%D   \NC \tex{xleftharpoondown   }  \NC \xleftharpoondown   [big]  \NC \NR
+%D   \NC \tex{xleftharpoonup     }  \NC \xleftharpoonup     [big]  \NC \NR
+%D   \NC \tex{xhookleftarrow     }  \NC \xhookleftarrow     [big]  \NC \NR
+%D   \NC \tex{xhookrightarrow    }  \NC \xhookrightarrow    [big]  \NC \NR
+%D   \NC \tex{xleftrightharpoons }  \NC \xleftrightharpoons [big]  \NC \NR
+%D   \NC \tex{xrightleftharpoons }  \NC \xrightleftharpoons [big]  \NC \NR
+%D \stoptable}
 
 \def\definematharrow
   {\doquadrupleargument\dodefinematharrow}
@@ -166,6 +237,14 @@
 
 % Adapted from amsmath.
 
+%D \macros{mtharrowfill,defaultmtharrowfill}
+%D To extend the arrows we need to define a \quotation{math arrow fill}. This
+%D command takes 7 arguments: the first four correspond the second argument of
+%D \tex{definematharrow} explained above. The other three specify the tail,
+%D body and head of the arrow. \tex{defaultmtharrowfill} has values tweaked to
+%D match latin modern fonts. For fonts that are significantly different (e.g.
+%D cows) a different set of values need to be determined.
+
 \def\mtharrowfill#1#2#3#4#5#6#7%
   {$\mathsurround 0pt
     \thickmuskip0mu\medmuskip\thickmuskip\thinmuskip\thickmuskip
@@ -176,7 +255,8 @@
 
 \def\defaultmtharrowfill{\mtharrowfill 7227}
 
-% Maybe redefine leftarrowfill and rightarrowfill using arrowfill
+%D We now define some arrow fills that will be used for defining the arrows.
+%D \tex{leftarrowfill} and \tex{rightarrowfill} are redefined using \tex{defaultmtharrowfill}.
 
 \def\rightarrowfill       {\defaultmtharrowfill \relbar              \relbar \rightarrow       }
 \def\leftarrowfill        {\defaultmtharrowfill \leftarrow           \relbar \relbar           }
@@ -196,7 +276,9 @@
 \def\hookleftfill {\defaultmtharrowfill \leftarrow            \relbar{\relbar\joinrel\rhook}}
 \def\hookrightfill{\defaultmtharrowfill{\lhook\joinrel\relbar}\relbar \rightarrow}
 
-% From amsmath.sty, extarrows.sty, extpfel.sty and mathtools.sty(ams)
+%D Now we define most commonly used arrows. These include arrows defined in
+%D \filename{amsmath.sty}, \filename{extarrows.sty}, \filename{extpfel.sty}
+%D and mathtools.sty packages for \LATEX.
 
 \definematharrow [xrightarrow]        [0359] [\rightarrowfill]
 \definematharrow [xleftarrow]         [3095] [\leftarrowfill]
@@ -216,17 +298,21 @@
 \definematharrow [xleftrightharpoons] [3399,3399] [\leftharpoonupfill,\rightharpoondownfill]
 \definematharrow [xrightleftharpoons] [3399,3399] [\rightharpoonupfill,\leftharpoondownfill]
 
-\definematharrow [xhdefaultookleftarrow]  [3095] [\hookleftfill]
-\definematharrow [xhdefaultookrightarrow] [0395] [\hookrightfill]
+\definematharrow [xhookleftarrow]  [3095] [\hookleftfill]
+\definematharrow [xhookrightarrow] [0395] [\hookrightfill]
 
-% \startformula \xrightarrow{stuff on top}\stopformula
-% \startformula \xrightarrow{}{stuff on top}\stopformula
-% \startformula \xrightarrow{stuff below}{}\stopformula
-% \startformula \xrightarrow{stuff below}{stuff on top}\stopformula
-
-% \startformula \xleftarrow [none]{stuff below}{stuff on top}\stopformula
-% \startformula \xleftarrow [small]{stuff below}{stuff on top}\stopformula
-% \startformula \xleftarrow [medium]{stuff below}{stuff on top}\stopformula
-% \startformula \xleftarrow [big]{stuff below}{stuff on top}\stopformula
+%D These arrows can be used as folows:
+%D \startbuffer
+%D \startformula \xrightarrow{stuff on top}\stopformula
+%D \startformula \xrightarrow{}{stuff on top}\stopformula
+%D \startformula \xrightarrow{stuff below}{}\stopformula
+%D \startformula \xrightarrow{stuff below}{stuff on top}\stopformula
+%D
+%D \startformula \xleftarrow [none]{stuff below}{stuff on top}\stopformula
+%D \startformula \xleftarrow [small]{stuff below}{stuff on top}\stopformula
+%D \startformula \xleftarrow [medium]{stuff below}{stuff on top}\stopformula
+%D \startformula \xleftarrow [big]{stuff below}{stuff on top}\stopformula
+%D \stopbuffer
+%D \typebuffer which gives \getbuffer
 
 \protect \endinput

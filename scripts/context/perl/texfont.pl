@@ -137,6 +137,7 @@ my $slant           = "" ;
 my $spaced          = "" ;
 my $caps            = "" ;
 my $noligs          = 0 ;
+my $nofligs         = 0 ;
 my $test            = 0 ;
 my $virtual         = 0 ;
 my $novirtual       = 0 ;
@@ -175,6 +176,7 @@ my @cleanup         = () ;    # atl: build list of generated files to delete
   ( "help"         => \$help,
     "makepath"     => \$makepath,
     "noligs"       => \$noligs,
+    "nofligs"      => \$nofligs,
     "show"         => \$show,
     "install"      => \$install,
     "encoding=s"   => \$encoding,
@@ -357,7 +359,7 @@ if ($help)
     report "--slant=s           : slant glyphs in font by factor (0.0 - 1.5)" ;
     report "--extend=s          : extend glyphs in font by factor (0.0 - 1.5)" ;
     report "--caps=s            : capitalize lowercase chars by factor (0.5 - 1.0)" ;
-    report "--noligs            : remove ligatures" ;
+    report "--noligs --nofligs  : remove ligatures" ;
     print  "\n" ;
     report "--install           : copy files from source to font tree" ;
     report "--listing           : list files on auto sourcepath" ;
@@ -436,7 +438,7 @@ my $outlinepath = $sourcepath ; my $path = "" ;
 
 my $shape = "" ;
 
-if ($noligs)
+if ($noligs||$nofligs)
   { report ("ligatures : removed") ;
     $fontsuffix .= "-unligatured" ;
     $namesuffix .= "-NoLigs" }
@@ -1170,9 +1172,9 @@ foreach my $file (@files)
             if ($afmpl)
               { report "         generating pl : $cleanname$fontsuffix (from $cleanname)" ;
                 $encstr = " -p $encfil" ;
-if ($uselmencodings) {
-    $encstr =~ s/(ec)\.enc$/lm\-$1\.enc/ ;
-}
+                if ($uselmencodings) {
+                    $encstr =~ s/(ec)\.enc$/lm\-$1\.enc/ ;
+                }
                 my $command = "afm2pl -f afm2tfm $shape $passon $encstr $file $cleanname$fontsuffix.vpl" ;
                 print "$command\n" if $trace ;
                 my $ok = `$command` ;
@@ -1191,19 +1193,21 @@ if ($uselmencodings) {
 			if ($font =~ /.*?([\d\.]+)\s*SlantFont/io)  { $slant  = $1 }
 			if ($extend ne "") { $option .= " $extend ExtendFont " }
 			if ($slant ne "")  { $option .= " $slant SlantFont " }
-			if ($noligs) { removeligatures("$raw$cleanname$fontsuffix") }
 			if ($afmpl)
-			  { report "generating new tfm : $use$cleanname$fontsuffix" ;
+			  { if ($noligs||$nofligs) { removeligatures("$cleanname$fontsuffix") }
+                report "generating new tfm : $use$cleanname$fontsuffix" ;
 				my $command = "pltotf $cleanname$fontsuffix.vpl $use$cleanname$fontsuffix.tfm" ;
 				print "$command\n" if $trace ;
 				my $ok = `$command` }
 			elsif ($virtual)
-			  { report "generating new vf : $use$cleanname$fontsuffix (from $use$cleanname)" ;
+			  { if ($noligs||$nofligs) { removeligatures("$use$cleanname$fontsuffix") }
+                report "generating new vf : $use$cleanname$fontsuffix (from $use$cleanname)" ;
 				my $command = "vptovf $use$cleanname$fontsuffix.vpl $use$cleanname$fontsuffix.vf $use$cleanname$fontsuffix.tfm" ;
 				print "$command\n" if $trace ;
 				my $ok = `$command` }
 			else
-			  { report "generating new tfm : $use$cleanname$fontsuffix (from $raw$cleanname)" ;
+			  { if ($noligs||$nofligs) { removeligatures("$raw$cleanname$fontsuffix") }
+                report "generating new tfm : $use$cleanname$fontsuffix (from $raw$cleanname)" ;
 				my $command = "pltotf $raw$cleanname$fontsuffix.vpl $use$cleanname$fontsuffix.tfm" ;
 				print "$command\n" if $trace ;
 				my $ok = `$command` } } }
