@@ -386,12 +386,12 @@
 % \def\disableXML
 %   {\setnormalcatcodes\processingXMLfalse}
 
-\letcatcodecommand\xmlcatcodesn `\& \doXMLentity
-\letcatcodecommand\xmlcatcodesn `\< \doXMLelement
-\letcatcodecommand\xmlcatcodese `\& \doXMLentity
-\letcatcodecommand\xmlcatcodese `\< \doXMLelement
-\letcatcodecommand\xmlcatcodesr `\& \doXMLentity
-\letcatcodecommand\xmlcatcodesr `\< \doXMLelement
+\defcatcodecommand\xmlcatcodese `\& \doXMLentity
+\defcatcodecommand\xmlcatcodese `\< \doXMLelement
+\defcatcodecommand\xmlcatcodesr `\& \doXMLentity
+\defcatcodecommand\xmlcatcodesr `\< \doXMLelement
+\defcatcodecommand\xmlcatcodesn `\& \doXMLentity
+\defcatcodecommand\xmlcatcodesn `\< \doXMLelement
 
 \letcatcodecommand\xmlcatcodesr `\# \letterhash
 \letcatcodecommand\xmlcatcodesr `\$ \letterdollar
@@ -403,7 +403,7 @@
 \letcatcodecommand\xmlcatcodesr `\} \letterrightbrace
 \letcatcodecommand\xmlcatcodesr `\| \letterbar
 
-\bgroup \catcode`\&=13
+\bgroup \catcode`\&=13 \let&\relax
 
 \xdef\entityhash      {&\string#035;}
 \xdef\entitydollar    {&\string#036;}

@@ -358,8 +358,8 @@
 \long\gdef\expandxmlargument#1\to
   {\begingroup
    \let\uppercase\firstofoneargument
-   \def\getXMLhexcharacter##1{\numbertoutf{"##1}}%
-   \def\getXMLdeccharacter##1{\numbertoutf{##1}}%
+   \def\getXMLhexcharacter##1{\numbertoutp{"##1}}% maps to private if needed
+   \def\getXMLdeccharacter##1{\numbertoutp {##1}}% maps to private if needed
    \def\getXMLentity##1{<e>##1</e>}%
    \def<{\noexpand<}%
    \ifcase\xmlexpandmode
@@ -376,6 +376,16 @@
    \convertcommand\@@globalexpanded\to}
 
 \egroup
+
+% test.xml: <test>test % test</test>
+%
+% \starttext
+%     \enableregime[utf] \chardef\XMLtokensreduction=0
+%     \setuphead[chapter][expansion=xml]
+%     \defineXMLargument[test]{\chapter}
+%     \placelist[chapter][criterium=text]
+%     \processXMLfilegrouped{test.xml}
+% \stoptext
 
 \chardef\xmlexpandmode\plusone
 

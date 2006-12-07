@@ -6,6 +6,9 @@
 % and/or extended in core-tab.tex. The extensions concern
 % splitting over pages, color and consistent spacing.
 
+% We've patched this file for catcode ! because in luatex we use
+% catcode tables and using unprotect/protect is cleaner.
+
 % TABLE 1.0
 % Copyright Michael J. Wichura August 1988
 
@@ -108,8 +111,10 @@
 %    ~                        t
 %
 
-\catcode `\!=11
-\catcode `\@=11
+\unprotect
+
+% \catcode `\!=11
+% \catcode `\@=11
 
 \newif\ifh@ % normally in plain tex
 \newif\ifv@ % normally in plain tex
@@ -1959,7 +1964,8 @@
 % Restore meaning of \\, and reset category codes
 % *********************************************************************
 \let\\=\!tacr
-\catcode`\!=12
-\catcode`\@=12
 
-\endinput
+% \catcode`\!=12
+% \catcode`\@=12
+
+\protect \endinput

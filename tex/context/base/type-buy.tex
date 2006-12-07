@@ -885,6 +885,36 @@
   \definefontsynonym [SansSlanted]    [SyntaxLT-Italic]
   \definefontsynonym [SansBold]       [SyntaxLT-Black]
   \definefontsynonym [SansBoldItalic] [SyntaxLT-Black]
+  \definefontsynonym [SansBoldSlanted][SyntaxLT-Black]
+
+\stoptypescript
+
+% linotype linoletter
+
+\starttypescript [serif] [linoletter] [ec,texnansi]
+
+  \loadmapfile[\typescriptthree-linotype-linoletter.map]
+
+  \definefontsynonym[LinoLetterLT-Roman]       [texnansi-lte51129] [encoding=\typescriptthree]
+  \definefontsynonym[LinoLetterLT-Italic]      [texnansi-lte51130] [encoding=\typescriptthree]
+  \definefontsynonym[LinoLetterLT-Bold]        [texnansi-lte51133] [encoding=\typescriptthree]
+  \definefontsynonym[LinoLetterLT-BoldItalic]  [texnansi-lte51134] [encoding=\typescriptthree]
+
+  \definefontsynonym[LinoLetterLT-BlackItalic] [texnansi-lte51136] [encoding=\typescriptthree]
+  \definefontsynonym[LinoLetter-MediumSC]      [texnansi-llmsc]    [encoding=\typescriptthree]
+
+\stoptypescript
+
+\starttypescript [serif] [linoletter] [name]
+
+  \loadmapfile[\typescriptthree-linotype-linoletter.map]
+
+  \definefontsynonym [Serif]           [LinoLetterLT-Roman]
+  \definefontsynonym [SerifItalic]     [LinoLetterLT-Italic]
+  \definefontsynonym [SerifSlanted]    [LinoLetterLT-Italic]
+  \definefontsynonym [SerifBold]       [LinoLetterLT-Bold]
+  \definefontsynonym [SerifBoldItalic] [LinoLetterLT-BoldItalic]
+  \definefontsynonym [SerifBoldSlanted][LinoLetterLT-BoldItalic]
 
 \stoptypescript
 

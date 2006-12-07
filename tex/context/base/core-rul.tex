@@ -2983,16 +2983,17 @@
    \begingroup
    \setupfillinrules[#1]%
    \noindent
-   \doifelse\@@ilwidth\v!fit
-     {\let\@@ildistance\!!zeropoint
-      \hbox}
-     {\doifelse\@@ilwidth\v!broad
-        {\hbox}
-        {\hbox to \@@ilwidth}}
-     \bgroup
-       \doattributes\??il\c!style\c!color{\strut#2\hfill\@@ilseparator}%
-       \hskip\@@ildistance
-     \egroup
+   \doifsomething{#2}
+     {\doifelse\@@ilwidth\v!fit
+        {\let\@@ildistance\!!zeropoint
+         \hbox}
+        {\doifelse\@@ilwidth\v!broad
+           {\hbox}
+           {\hbox to \@@ilwidth}}%
+        \bgroup
+          \doattributes\??il\c!style\c!color{\strut#2\hfill\@@ilseparator}%
+          \hskip\@@ildistance
+       \egroup}%
   %\hangindent=\wd0\relax % tzt hang=yes,n
   %\parindent=\hangindent
   %\box0\relax
@@ -3062,7 +3063,7 @@
    \parfillskip\zeropoint
    \def\par % very dangerous
      {\let\par\endgraf % -)
-      \unskip\hfill
+      \ifhmode\unskip\hfill\fi
       \scratchdimen\dimexpr\@@ivwidth-\@@ivdistance\relax
       \ifdim\scratchdimen>\@@ivmargin\else\expandafter\rlap\fi
         {\kern\@@ivdistance

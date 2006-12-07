@@ -37,21 +37,61 @@
 
 %D Once a catcode is assigned, the next assignments will happen faster.
 
+% (expandable) let
+
 \def\letcatcodecommand {\afterassignment\letcatcodecommanda\cctcountera}
 \def\letcatcodecommanda{\afterassignment\letcatcodecommandb\cctcounterb}
 
-\def\letcatcodecommandb % each time time
-  {\ifcsname CCD:\number\cctcountera:\number\cctcounterb\endcsname
-     \csname CCD:\number\cctcountera:\number\cctcounterb\expandafter\endcsname
+\def\letcatcodecommandb % each time
+  {\ifcsname CCL:\number\cctcountera:\number\cctcounterb\endcsname
+     \csname CCL:\number\cctcountera:\number\cctcounterb\expandafter\endcsname
    \else
      \expandafter\letcatcodecommandc
    \fi}
 
 \def\letcatcodecommandc % only first time
-  {\expandafter\gdef\csname CCD:\number\cctcountera:\number\cctcounterb\expandafter\endcsname\expandafter
+  {\expandafter\gdef\csname CCL:\number\cctcountera:\number\cctcounterb\expandafter\endcsname\expandafter
      {\expandafter\let\csname CCC:\number\cctcountera:\number\cctcounterb\endcsname}%
    \reinstatecatcodecommanda
+   \csname CCL:\number\cctcountera:\number\cctcounterb\endcsname}
+
+% expandable def
+
+\def\defcatcodecommand {\afterassignment\defcatcodecommanda\cctcountera}
+\def\defcatcodecommanda{\afterassignment\defcatcodecommandb\cctcounterb}
+
+\def\defcatcodecommandb % each time
+  {\ifcsname CCD:\number\cctcountera:\number\cctcounterb\endcsname
+     \csname CCD:\number\cctcountera:\number\cctcounterb\expandafter\endcsname
+   \else
+     \expandafter\defcatcodecommandc
+   \fi}
+
+\def\defcatcodecommandc % only first time
+  {\expandafter\gdef\csname CCD:\number\cctcountera:\number\cctcounterb\expandafter\endcsname
+    \expandafter##\expandafter1\expandafter
+     {\expandafter\def\csname CCC:\number\cctcountera:\number\cctcounterb\endcsname{##1}}%
+   \reinstatecatcodecommanda
    \csname CCD:\number\cctcountera:\number\cctcounterb\endcsname}
+
+% un expandable def (e.g. used for discretionaries)
+
+\def\uedcatcodecommand {\afterassignment\uedcatcodecommanda\cctcountera}
+\def\uedcatcodecommanda{\afterassignment\uedcatcodecommandb\cctcounterb}
+
+\def\uedcatcodecommandb % each time
+  {\ifcsname CCU:\number\cctcountera:\number\cctcounterb\endcsname
+     \csname CCU:\number\cctcountera:\number\cctcounterb\expandafter\endcsname
+   \else
+     \expandafter\uedcatcodecommandc
+   \fi}
+
+\def\uedcatcodecommandc % only first time
+  {\expandafter\gdef\csname CCU:\number\cctcountera:\number\cctcounterb\expandafter\endcsname
+     \expandafter##\expandafter1\expandafter
+       {\expandafter\unexpanded\expandafter\def\csname CCC:\number\cctcountera:\number\cctcounterb\endcsname{##1}}%
+   \reinstatecatcodecommanda
+   \csname CCU:\number\cctcountera:\number\cctcounterb\endcsname}
 
 \def\reinstatecatcodecommand{\afterassignment\reinstatecatcodecommanda\cctcounterb}
 

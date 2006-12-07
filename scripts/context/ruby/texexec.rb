@@ -441,8 +441,9 @@ job.setvariable('result',result)
                             report("copying file: #{filename}")
                             f <<  "\\getfiguredimensions\n"
                             f <<  "  [#{filename}]\n"
-                            f <<  "  [page=1"
-                            f <<  ",\n   size=trimbox" if trim
+                            f <<  "  [scale=#{scale},\n"
+                            f <<  "   page=1,\n"
+                            f <<  "   size=trimbox\n" if trim
                             f <<  "]\n"
                             f <<  "\\definepapersize\n"
                             f <<  "  [copy]\n"

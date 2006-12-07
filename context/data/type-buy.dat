@@ -89,6 +89,11 @@
 --en=? --ve=linotype --co=univers --re
 --en=? --ve=linotype --co=univers --so=linotype/univers --ma --in
 
+# linotype linoletter
+
+--en=? --ve=linotype --co=linoletter --re
+--en=? --ve=linotype --co=linoletter --so=linotype/linoletter --ma --in
+
 # adobe utopia
 #
 # --en=? --ve=adobe --co=utopia --re

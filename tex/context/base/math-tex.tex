@@ -551,4 +551,77 @@
 \definemathpunctuation . mathperiod textperiod
 \definemathpunctuation , mathcomma  textcomma
 
+%D The following colon related definitions are provided by Aditya
+%D Mahajan who derived them from \type {mathtools.sty} and \type
+%D {colonequals.sty}.
+
+%D \macros
+%D   {centercolon, colonminus, minuscolon, colonequals, equalscolon,
+%D    colonapprox, approxcolon, colonsim, simcolon, coloncolon,
+%D    coloncolonminus, minuscoloncolon, coloncolonequals,
+%D    equalscoloncolon, coloncolonapprox, approxcoloncolon,
+%D    colonsim, simcoloncolon}
+%D
+%D In $a := b$ the colon is not vertically centered with the equal
+%D to. Also the distance between colon and equal to is a bit large.
+%D So, we define a vertically centered colon \tex {centercolon} and
+%D a few macros for colon and double colon relation symbols.
+%D
+%D \startlines
+%D \formula {A \centercolon       B}
+%D \formula {A \colonminus        B}
+%D \formula {A \minuscolon        B}
+%D \formula {A \colonequals       B}
+%D \formula {A \equalscolon       B}
+%D \formula {A \colonapprox       B}
+%D \formula {A \approxcolon       B}
+%D \formula {A \colonsim          B}
+%D \formula {A \simcolon          B}
+%D \formula {A \coloncolon        B}
+%D \formula {A \coloncolonminus   B}
+%D \formula {A \minuscoloncolon   B}
+%D \formula {A \coloncolonequals  B}
+%D \formula {A \equalscoloncolon  B}
+%D \formula {A \coloncolonapprox  B}
+%D \formula {A \approxcoloncolon  B}
+%D \formula {A \colonsim          B}
+%D \formula {A \simcoloncolon     B}
+%D \stoplines
+
+%D The next macros take care of the space between the colon and the
+%D relation symbol.
+
+\definemathcommand  [colonsep]        {\mkern-1.2mu}
+\definemathcommand  [doublecolonsep]  {\mkern-0.9mu}
+
+%D The next macro vertically centeres its contents.
+
+\def\@center@math#1%
+  {\vcenter{\hbox{$\m@th#1$}}}
+
+\def\@center@colon
+  {\mathpalette\@center@math{\colon}}
+
+%D Now we define all the colon relations.
+
+\definemathcommand [centercolon]      [rel] {\@center@colon}
+\definemathcommand [colonminus]       [rel] {\centercolon\colonsep\mathrel{-}}
+\definemathcommand [minuscolon]       [rel] {\mathrel{-}\colonsep\centercolon}
+\definemathcommand [colonequals]      [rel] {\centercolon\colonsep=}
+\definemathcommand [equalscolon]      [rel] {=\centercolon\colonsep}
+\definemathcommand [colonapprox]      [rel] {\centercolon\colonsep\approx}
+\definemathcommand [approxcolon]      [rel] {\approx\centercolon\colonsep}
+\definemathcommand [colonsim]         [rel] {\centercolon\colonsep\sim}
+\definemathcommand [simcolon]         [rel] {\sim\centercolon\colonsep}
+
+\definemathcommand [coloncolon]       [rel] {\centercolon\doublecolonsep\centercolon}
+\definemathcommand [coloncolonminus]  [rel] {\coloncolon\colonsep\mathrel{-}}
+\definemathcommand [minuscoloncolon]  [rel] {\mathrel{-}\colonsep\coloncolon}
+\definemathcommand [coloncolonequals] [rel] {\coloncolon\colonsep=}
+\definemathcommand [equalscoloncolon] [rel] {=\coloncolon\colonsep}
+\definemathcommand [coloncolonapprox] [rel] {\coloncolon\colonsep\approx}
+\definemathcommand [approxcoloncolon] [rel] {\approx\coloncolon\colonsep}
+\definemathcommand [colonsim]         [rel] {\coloncolon\colonsep\sim}
+\definemathcommand [simcoloncolon]    [rel] {\sim\coloncolon\colonsep}
+
 \protect \endinput

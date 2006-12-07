@@ -735,7 +735,34 @@
 \endTEX
 
 \def\uchartoutf#1#2%
-  {\expandafter\numbertoutf\expandafter{\the\numexpr#1*256+#2\relax}}
+  {\expandafter\numbertoutf\expandafter{\the\numexpr#1*\utf@h+#2\relax}}
+
+%D Here is a mapping trick. By mapping the tex specific characters to
+%D private ones, we can prevent problems with utility files.
+
+\defineunicodecommand{240} {\doprivateunicodechar}
+
+\def\doprivateunicodechar#1#2{\char#2\relax}
+
+\def\registerprivateunicodechar#1 {\letvalue{puc::\number#1}\relax}
+
+\registerprivateunicodechar `\%
+\registerprivateunicodechar `\$
+\registerprivateunicodechar `\{
+\registerprivateunicodechar `\}
+\registerprivateunicodechar `\~
+\registerprivateunicodechar `\_
+\registerprivateunicodechar `\^
+\registerprivateunicodechar `\#
+
+\def\numbertoutp#1{\numbertoutf{\the\numexpr#1\ifcsname puc::\number#1\endcsname+"F000\fi\relax}}
+
+%D In the \XML\ expander we will do:
+%D
+%D \starttyping
+%D \def\getXMLhexcharacter##1{\numbertoutp{"##1}}%
+%D \def\getXMLdeccharacter##1{\numbertoutp {##1}}%
+%D \stoptyping
 
 %D Goodies:
 

@@ -1166,11 +1166,13 @@
        #2%
      \fi
      \ifhmode % else funny pagebeaks
-       \penalty\!!tenthousand\hskip\zeropoint % == \prewordbreak
+       \penalty\!!tenthousand
+       \hskip\zeropoint % == \prewordbreak
      \fi
      \strut % new, needed below
      \delimitedtextparameter#1% unhbox\scratchbox
-     \penalty\!!tenthousand\hskip\delimitedtextsignal % +- \prewordbreak
+     % \penalty\!!tenthousand % else overfull boxes
+     \hskip\delimitedtextsignal % +- \prewordbreak
    \fi
    \endgroup}
 

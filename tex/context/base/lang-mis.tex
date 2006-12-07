@@ -224,7 +224,7 @@
    \setvalue {\@tmd@text@\detokenize{#1}}{#2}%
    \setvalue {\@tmd@both@\detokenize{#1}}{\discretionarycommand#1}%
    \scratchcounter\expandafter`\detokenize{#1}%
-   \@EA\letcatcodecommand\@EA\ctxcatcodes\@EA\scratchcounter\csname\@tmd@both@\detokenize{#1}\endcsname}
+   \@EA\uedcatcodecommand\@EA\ctxcatcodes\@EA\scratchcounter\csname\@tmd@both@\detokenize{#1}\endcsname}
 
 \def\handlemathmodediscretionary#1{\executeifdefined{\@tmd@math@\detokenize{#1}}\donothing}
 \def\handletextmodediscretionary#1{\executeifdefined{\@tmd@text@\detokenize{#1}}\donothing}
