@@ -1429,7 +1429,7 @@ end
 
 $mswindows = Config::CONFIG['host_os'] =~ /mswin/
 $separator = File::PATH_SEPARATOR
-$version   = "2.0.2"
+$version   = "2.0.3"
 $ownpath   = File.dirname($0)
 
 if $mswindows then
@@ -1804,14 +1804,16 @@ def changeddir?(path)
     if path.empty? then
         return true
     else
+        oldpath = File.expand_path(path)
         begin
-            Dir.chdir(path) if ! path.empty?
+            Dir.chdir(path) if not path.empty?
         rescue
             report("unable to change to directory: #{path}")
         else
             report("changed to directory: #{path}")
         end
-        return File.expand_path(Dir.getwd) == File.expand_path(path)
+        newpath = File.expand_path(Dir.getwd)
+        return oldpath == newpath
     end
 end
 
@@ -1971,10 +1973,15 @@ def find(filename,program)
         end
         filename.sub!(/^.*[\\\/]/, '')
         # next we look at the current path and the callerpath
-        [ ['.','current'],
-          [$ownpath,'caller'], ["#{$ownpath}/../#{suffixlist[0]}",'caller'],
-          [registered("THREAD"),'thread'], ["#{registered("THREAD")}/../#{suffixlist[0]}",'thread'],
-        ].each do |p|
+        pathlist = [ ]
+        progpath = $applications[suffixlist[0]]
+        threadok = registered("THREAD") !~ /unknown/
+        pathlist << ['.','current']
+        pathlist << [$ownpath,'caller']                                 if $ownpath != '.'
+        pathlist << ["#{$ownpath}/../#{progpath}",'caller']             if progpath
+        pathlist << [registered("THREAD"),'thread']                     if threadok
+        pathlist << ["#{registered("THREAD")}/../#{progpath}",'thread'] if progpath && threadok
+        pathlist.each do |p|
             if p && ! p.empty? && ! (p[0] == 'unknown') then
                 suffixlist.each do |suffix|
                     fname = "#{filename}.#{suffix}"

@@ -243,7 +243,7 @@ class GhostScript
 
     def pdfmethod? (str)
         case method(str).to_i
-            when 4, 5 then return true
+            when 3, 4, 5 then return true
         end
         return false
     end
@@ -367,7 +367,13 @@ class GhostScript
         @rs = Tool.line_separator(inpfile)
         debug("platform mac") if @rs == "\r"
 
-        return false unless tmp = open(inpfile, 'rb')
+        if FileTest.file?(outfile) and not File.writable?(outfile) then
+            report("output file cannot be written")
+            return false
+        elsif not tmp = open(inpfile, 'rb') then
+            report("input file cannot be opened")
+            return false
+        end
 
         debug('opening pipe/file')
 
@@ -458,34 +464,49 @@ class GhostScript
 
     end
 
+    # def convertcropped (inpfile, outfile)
+        # report("converting #{inpfile} cropped")
+        # do_convertbounded(inpfile, @@pdftempfile)
+        # return unless test(?e,@@pdftempfile)
+        # arguments = " --offset=#{@offset} #{@@pdftempfile} #{outfile}"
+        # report("calling #{@@pdftrimwhite}")
+        # unless ok = System.run(@@pdftrimwhite,arguments) then
+            # report('cropping failed')
+            # begin
+                # File.delete(outfile)
+            # rescue
+            # end
+            # begin
+                # File.move(@@pdftempfile,outfile)
+            # rescue
+                # File.copy(@@pdftempfile,outfile)
+                # File.delete(@@pdftempfile)
+            # end
+        # end
+        # return ok
+    # end
+
     def convertcropped (inpfile, outfile)
-
         report("converting #{inpfile} cropped")
-
-        do_convertbounded(inpfile, @@pdftempfile)
-
-        return unless test(?e,@@pdftempfile)
-
-        arguments = " --offset=#{@offset} #{@@pdftempfile} #{outfile}"
-
-        report("calling #{@@pdftrimwhite}")
-        unless ok = System.run(@@pdftrimwhite,arguments) then
-            report('cropping failed')
-            begin
-                File.delete(outfile)
-            rescue
+        if File.expand_path(inpfile) == File.expand_path(outfile) then
+            report("output filename must be different")
+        elsif inpfile =~ /\.pdf$/io then
+            System.run("pdftops -eps #{inpfile} #{@@pstempfile}")
+            if getdimensions(@@pstempfile) then
+                report("tight boundingbox found")
             end
-            begin
-                File.move(@@pdftempfile,outfile)
-            rescue
-                File.copy(@@pdftempfile,outfile)
-                File.delete(@@pdftempfile)
+            do_convertbounded(@@pstempfile, outfile)
+            File.delete(@@pstempfile) if FileTest.file?(@@pstempfile)
+        else
+            if getdimensions(inpfile) then
+                report("tight boundingbox found")
             end
+            do_convertbounded(inpfile, outfile)
         end
-
-        return ok
-
+        resetdimensions
+        return true
     end
+
 
     def pipebounded (eps, out)
 
@@ -501,12 +522,17 @@ class GhostScript
             end
         end
 
-        debug('locating boundingbox')
-
         # why no BeginData check
 
         eps.rewind
 
+if dimensions? then
+
+        debug('using found boundingbox')
+
+else
+
+        debug('locating boundingbox')
         while str = eps.gets(rs=@rs) do
             case str
                 when /^%%Page:/io then
@@ -520,8 +546,9 @@ class GhostScript
                     setdimensions($1,$2,$3,$4)
             end
         end
-
         debug('no boundingbox found') if @width == 0
+
+end
 
         eps.rewind
 
@@ -594,6 +621,8 @@ class GhostScript
         # ok = $? == 0
         # report('process aborted, broken pipe, fatal error') unless ok
         # return ok
+
+resetdimensions
 
         return true
 

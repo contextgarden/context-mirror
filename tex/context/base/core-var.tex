@@ -451,6 +451,11 @@
    \getvariable{#2}\s!set
    \errorisfatalfalse}
 
+\def\setvariable #1#2#3{\setvalue {\??vars:#1:#2}{#3}}
+\def\setevariable#1#2#3{\setevalue{\??vars:#1:#2}{#3}}
+\def\setgvariable#1#2#3{\setgvalue{\??vars:#1:#2}{#3}}
+\def\setxvariable#1#2#3{\setxvalue{\??vars:#1:#2}{#3}}
+
 \beginTEX
 
 \def\getvariable#1#2% to be sped up

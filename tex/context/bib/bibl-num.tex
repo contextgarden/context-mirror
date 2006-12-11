@@ -148,13 +148,13 @@
 \newif\ifeditedbook
 \setuppublicationlayout[book]{%
    \insertauthors{}{\unskip. }{\inserteditors{}{\unskip, editor%
-                         \ifnum\getvalue{editor@num}> 1 s\fi
+                         \ifnum\getvalue{editor@num}> 1 s\fi.%
                              \ \global\editedbooktrue 
                      }{\insertthekey{}{\unskip. }{}}}%
    \inserttitle
         {\bgroup\it }%
         {\/\egroup 
-         \ifeditedbook
+         \ifeditedbook.%
            \global\editedbookfalse
            \insertvolume
                 { Number~}%
@@ -251,7 +251,7 @@
 }
 
 \setuppublicationlayout[manual]{%
-   \insertauthors{}{ }{\insertthekey{}{. }{}}%
+   \insertauthors{}{\unskip. }{\insertthekey{}{. }{}}%
    \inserttitle
         {\bgroup \it }
         {\/\egroup \insertseries{ (}{)}{}. }
@@ -336,7 +336,7 @@
 
 \setuppublicationlayout[proceedings]{%
    \inserteditors{}{\unskip, editor%
-                         \ifnum\getvalue{editor@num}> 1 s\fi
+                         \ifnum\getvalue{editor@num}> 1 s\fi.%
                              \ \global\editedbooktrue 
                      }{\insertthekey{}{ }{}}%
    \inserttitle
@@ -368,7 +368,7 @@
 }
 
 \setuppublicationlayout[mastersthesis]{%
-   \insertauthors{}{ }{}%
+   \insertauthors{}{\unskip. }{}%
    \inserttitle{\bgroup }{\egroup \insertseries{ (}{)}{}. }{}%
    \insertbibtype{}{, }{Master's thesis, }%
    \insertpublisher
@@ -380,7 +380,7 @@
 }
 
 \setuppublicationlayout[phdthesis]{%
-   \insertauthors{}{ }{}%
+   \insertauthors{}{\unskip. }{}%
    \inserttitle{\bgroup\it }{\egroup \insertseries{ (}{)}{}. }{}%
    \insertbibtype{}{, }{PhD thesis, }%
    \insertpublisher
@@ -392,7 +392,7 @@
 }
 
 \setuppublicationlayout[misc]{%
-   \insertauthors{}{ }{\insertthekey{}{. }{}}%
+   \insertauthors{}{\unskip. }{\insertthekey{}{. }{}}%
    \inserttitle{\bgroup }{\egroup \insertseries{ (}{)}. }{}%
    \insertpublisher
       {}
@@ -402,7 +402,7 @@
 }
 
 \setuppublicationlayout[techreport]{%
-   \insertauthors{}{ }{}%
+   \insertauthors{}{\unskip. }{}%
    \inserttitle{\bgroup }{\egroup \insertseries{ (}{)}{}. }{}%
    \insertbibtype{}{\insertvolume{ }{, }{, }}{Technical Report, }%
    \insertpublisher
@@ -414,7 +414,7 @@
 }
 
 \setuppublicationlayout[unpublished]{%
-   \insertauthors{}{ }{}%
+   \insertauthors{}{\unskip. }{}%
    \inserttitle{\bgroup }{\egroup \insertseries{ (}{)}{}. }{}%
    \insertpublisher
       {}

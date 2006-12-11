@@ -329,12 +329,30 @@
 %D In those situations where the nature of characters is
 %D less predictable, we can use the more direct approach:
 
-\unexpanded\def\directdiscretionary#1%
+\def\directdiscretionary
+  {\csname
+     \ifcase\discretionarymode
+       \strippedcsname\dononemodediscretionary
+     \else
+       \strippedcsname\dodirectdiscretionary
+     \fi
+   \endcsname}
+
+\def\indirectdiscretionary
+  {\csname
+     \ifcase\discretionarymode
+       \strippedcsname\dononemodediscretionary
+     \else
+       \strippedcsname\doindirectdiscretionary
+     \fi
+   \endcsname}
+
+\unexpanded\def\dodirectdiscretionary#1%
   {\edef\discretionarytoken{\detokenize{#1}}%
    \let\textmodediscretionary\compoundhyphen
    \executeifdefined{\@tmd@action@\discretionarytoken}{\indirectdiscretionary{#1}}}
 
-\unexpanded\def\indirectdiscretionary#1%
+\unexpanded\def\doindirectdiscretionary#1%
   {\prewordbreak\discretionary{\hbox{#1}}{}{\hbox{#1}}\allowbreak\postwordbreak}
 
 \def\definetextmodediscretionary #1

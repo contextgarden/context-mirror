@@ -21,7 +21,7 @@ require 'rexml/document'
 
 class CtxRunner
 
-    attr_reader :environments, :modules, :filters
+    attr_reader :environments, :modules, :filters, :flags
 
     @@suffix = 'prep'
 
@@ -42,6 +42,7 @@ class CtxRunner
         @environments = Array.new
         @modules = Array.new
         @filters = Array.new
+        @flags = Array.new
     end
 
     def manipulate(ctxname=nil,defaultname=nil)
@@ -116,6 +117,18 @@ class CtxRunner
                 variables['job'] = @jobname
             end
             root = @xmldata.root
+REXML::XPath.each(root,"/ctx:job//ctx:flags/ctx:flag") do |flg|
+    @flags << justtext(flg)
+end
+REXML::XPath.each(root,"/ctx:job//ctx:resources/ctx:environment") do |sty|
+    @environments << justtext(sty)
+end
+REXML::XPath.each(root,"/ctx:job//ctx:resources/ctx:module") do |mod|
+    @modules << justtext(mod)
+end
+REXML::XPath.each(root,"/ctx:job//ctx:resources/ctx:filter") do |fil|
+    @filters << justtext(fil)
+end
             begin
                 REXML::XPath.each(root,"//ctx:block") do |blk|
                     if @jobname && blk.attributes['pattern'] then
@@ -141,6 +154,9 @@ class CtxRunner
             REXML::XPath.each(root,"/ctx:job//ctx:process/ctx:resources/ctx:filter") do |fil|
                 @filters << justtext(fil)
             end
+REXML::XPath.each(root,"/ctx:job//ctx:process/ctx:flags/ctx:flag") do |flg|
+    @flags << justtext(flg)
+end
             commands = Hash.new
             REXML::XPath.each(root,"/ctx:job//ctx:preprocess/ctx:processors/ctx:processor") do |pre|
                 begin

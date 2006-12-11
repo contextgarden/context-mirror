@@ -343,6 +343,8 @@ class Commands
         elsif magick.supported?(filename) then
             # report("processing non ps/pdf file #{filename}")
             handle_magick(magick,filename)
+        else
+            report("option not suported for #{filename}")
         end
     end
 

@@ -180,7 +180,7 @@ class TEX
         'nomapfiles', 'local',
         'arrange', 'noarrange',
         'forcexml', 'foxet',
-        'alpha', 'beta',
+        'alpha', 'beta', 'luatex',
         'mpyforce', 'forcempy',
         'forcetexutil', 'texutil',
         'globalfile', 'autopath',
@@ -1777,8 +1777,20 @@ end
             end
             ctx.savelog(File.suffixed(rawbase,'ctl'))
 
-            envs = ctx.environments
-            mods = ctx.modules
+            envs  = ctx.environments
+            mods  = ctx.modules
+            flags = ctx.flags
+
+            flags.each do |f|
+                f.sub!(/^\-+/,'')
+                if f =~ /^(.*?)=(.*)$/ then
+                    setvariable($1,$2)
+                else
+                    setvariable(f,true)
+                end
+            end
+
+            report("using flags #{flags.join(' ')}") if flags.size > 0
 
             # merge environment and module specs
 

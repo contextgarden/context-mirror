@@ -61,7 +61,7 @@ eval '(exit $?0)' && eval 'exec perl -S $0 ${1+"$@"}' && eval 'exec perl -S $0 $
 #D \stopuseMPgraphic
 #D
 #D \placefigure
-#D   [here][fig:cropcrap]
+#D   [here][fig:pdftrimwhite]
 #D   {Crops and offsets.}
 #D   {\useMPgraphic{original}}
 #D
@@ -72,40 +72,40 @@ eval '(exit $?0)' && eval 'exec perl -S $0 ${1+"$@"}' && eval 'exec perl -S $0 $
 #D The script is executed as follows:
 #D
 #D \starttyping
-#D cropcrap <original> [<result>] [<switches>]
+#D pdftrimwhite <original> [<result>] [<switches>]
 #D \stoptyping
 #D
 #D The next call crops \type {test.pdf} to its natural
 #D boundingbox.
 #D
 #D \starttyping
-#D cropcrap test
+#D pdftrimwhite test
 #D \stoptyping
 #D
 #D If the file has some crap at the bottom, you can say:
 #D
 #D \starttyping
-#D cropcrap test --bottomcrop=2cm
+#D pdftrimwhite test --bottomcrop=2cm
 #D \stoptyping
 #D
 #D This clips 2cm from the bottom. You can clip on all sides
 #D individually, in combination or at once, like in:
 #D
 #D \starttyping
-#D cropcrap test --bottomcrop=2cm --crop=1cm
+#D pdftrimwhite test --bottomcrop=2cm --crop=1cm
 #D \stoptyping
 #D
 #D The final result is a tightly cropped image. In order to get
 #D a 5mm margin around this image, you can say:
 #D
 #D \starttyping
-#D cropcrap test --bottomcrop=2cm --offset=5mm
+#D pdftrimwhite test --bottomcrop=2cm --offset=5mm
 #D \stoptyping
 #D
 #D By default, the script intercepts logging messages and
 #D writes them to a logfile with the same name as the
 #D resulting image and the prefix \type {log}. If no name is
-#D given, the name \type {cropcrap} is used for all resulting
+#D given, the name \type {pdftrimwhite} is used for all resulting
 #D files.
 #D
 #D By default, \CONTEXT\ is used. When installed properly, you
@@ -114,14 +114,14 @@ eval '(exit $?0)' && eval 'exec perl -S $0 ${1+"$@"}' && eval 'exec perl -S $0 $
 #D is valid:
 #D
 #D \starttyping
-#D cropcrap test result --bot=2cm --off=5mm --plain
+#D pdftrimwhite test result --bot=2cm --off=5mm --plain
 #D \stoptyping
 #D
 #D The current implementation uses an intermediate \POSTSCRIPT\
 #D file. This may change as \GHOSTSCRIPT\ gets more clever with
 #D \PDF\ files.
 #D
-#D In \in {figure} [fig:cropcrap] the green rectangle is the
+#D In \in {figure} [fig:pdftrimwhite] the green rectangle is the
 #D picture we want to keep. Around this picture, we want a
 #D margin, represented by the black rectangle, and specified by
 #D \type {--offset}. The white rectangle is the cropbox
@@ -175,14 +175,14 @@ my $gs    = "gs" ;
 
 my $thisisunix  = $Config{'osname'} !~ /dos|mswin/i ;
 
-#D When no resulting file is given, we use \type {cropcrap}
+#D When no resulting file is given, we use \type {pdftrimwhite}
 #D as name (checked later).
 
 my $figurefile = "" ;
 my $resultfile = "" ;
 my $tempfile   = "" ;
 
-my $programname = "cropcrap" ;
+my $programname = "pdftrimwhite" ;
 
 #D Messages are temporarily saved and written to a log file
 #D afterwards.
@@ -227,7 +227,7 @@ my $width = my $height = my $llx = my $lly = my $urx = my $ury = 0 ;
 sub PrintHelp
   { print "This is PdfTrimWhite\n\n" .
           "usage:\n\n" .
-          "cropcrap [switches] filename result\n\n" .
+          "pdftrimwhite [switches] filename result\n\n" .
           "switches:\n\n" .
           "--crop=<dimen>\n" .
           "--offset=<dimen>\n" .

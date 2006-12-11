@@ -91,4 +91,15 @@
         </rl:step>
     </rl:manipulator>
 
+    <rl:manipulator name='cropped' suffix='pdf'>
+        <rl:old><rl:value name='path'/>/<rl:value name='file'/></rl:old>
+        <rl:new><rl:value name='path'/>/<rl:value name='prefix'/><rl:value name='file'/></rl:new>
+        <rl:step>
+            texmfstart pstopdf --convert --method=3
+            --inputpath=<rl:value name='path'/>
+            --outputpath=<rl:value name='path'/>/<rl:value name='prefix'/>
+            <rl:value name='file'/>
+        </rl:step>
+    </rl:manipulator>
+
 </rl:manipulators>
