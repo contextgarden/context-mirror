@@ -42,7 +42,10 @@ class Commands
     def main
         filename = @commandline.argument('first')
         pattern  = @commandline.option('pattern')
-        globfiles(pattern) if filename.empty? && ! pattern.empty?
+        if filename.empty? && ! pattern.empty? then
+            pattern = "**/#{pattern}" if @commandline.option('recurse')
+            globfiles(pattern)
+        end
         filename = @commandline.argument('first')
         if filename.empty? then
             help
@@ -344,7 +347,7 @@ class Commands
             # report("processing non ps/pdf file #{filename}")
             handle_magick(magick,filename)
         else
-            report("option not suported for #{filename}")
+            report("option not supported for #{filename}")
         end
     end
 
@@ -509,6 +512,7 @@ commandline.registervalue('outputpath')
 
 commandline.registerflag('watch')
 commandline.registerflag('force')
+commandline.registerflag('recurse')
 
 commandline.registervalue('delay',2)
 

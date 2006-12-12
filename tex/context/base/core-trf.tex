@@ -20,7 +20,7 @@
 
 %D Scaling:
 
-\def\scale{\dodoubleempty\doscalenextbox[\??xy]}
+\unexpanded\def\scale{\dodoubleempty\doscalenextbox[\??xy]}
 
 % probably too many dimens / the width calculations can go
 % since we may assume scaling is available (was not true
@@ -533,7 +533,7 @@
       \flushnextbox
       \egroup}}
 
-\def\mirror
+\unexpanded\def\mirror
   {\domirrorbox\hbox}
 
 % \setbox0=\hbox{gans}

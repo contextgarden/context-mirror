@@ -739,12 +739,21 @@ class Commands
     end
 
     def countpages
-        filenames, n = findfiles('pdf'), 0
+        if @commandline.option('pattern') then
+            filenames, n = globfiles(@commandline.option('pattern'),'pdf'), 0
+        else
+            filenames, n = findfiles('pdf'), 0
+        end
+        threshold = @commandline.option('threshold').to_i rescue 0
         filenames.each do |filename|
             if `pdfinfo #{filename}`.chomp =~ /^pages\s*\:\s*(\d+)/mois then
-                report("#{$1.rjust(4)} pages found in #{filename}")
-                n += $1.to_i
-            end
+                p = $1
+                m = p.to_i rescue 0
+                if threshold == 0 or m > threshold then
+                    report("#{p.rjust(4)} pages found in #{filename}")
+                    n += m
+                end
+           end
         end
         report("#{n.to_s.rjust(4)} pages in total")
     end
@@ -791,7 +800,7 @@ commandline.registeraction('colorimage',      'filename --colorspec= [--retain -
 commandline.registeraction('convertimage',    'filename [--retain --subpath]')
 commandline.registeraction('downsampleimage', 'filename [--retain --subpath --lowres --normal]')
 commandline.registeraction('info',            'filename')
-commandline.registeraction('countpages',      'pattern')
+commandline.registeraction('countpages',      '[--pattern --threshold]')
 
 commandline.registeraction('analyzefile' ,    'filename')
 
@@ -801,6 +810,8 @@ commandline.registeraction('version')
 commandline.registervalue('colorname')
 commandline.registervalue('colorspec')
 commandline.registervalue('subpath')
+commandline.registervalue('pattern')
+commandline.registervalue('threshold',0)
 
 commandline.registerflag('lowres')
 commandline.registerflag('medres')

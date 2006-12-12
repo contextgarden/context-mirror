@@ -451,10 +451,10 @@
    \getvariable{#2}\s!set
    \errorisfatalfalse}
 
-\def\setvariable #1#2#3{\setvalue {\??vars:#1:#2}{#3}}
-\def\setevariable#1#2#3{\setevalue{\??vars:#1:#2}{#3}}
-\def\setgvariable#1#2#3{\setgvalue{\??vars:#1:#2}{#3}}
-\def\setxvariable#1#2#3{\setxvalue{\??vars:#1:#2}{#3}}
+\long\def\setvariable #1#2#3{\long\setvalue {\??vars:#1:#2}{#3}}
+\long\def\setevariable#1#2#3{\long\setevalue{\??vars:#1:#2}{#3}}
+\long\def\setgvariable#1#2#3{\long\setgvalue{\??vars:#1:#2}{#3}}
+\long\def\setxvariable#1#2#3{\long\setxvalue{\??vars:#1:#2}{#3}}
 
 \beginTEX
 

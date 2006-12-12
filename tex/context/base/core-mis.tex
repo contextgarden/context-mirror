@@ -1156,12 +1156,26 @@
 \def\rightdelimitedtextmark
   {\hsmash{\delimitedtextparameter\c!right}}
 
+% \starttext
+%     \dorecurse{100}{\hskip300pt\hskip\recurselevel pt test \quote{xxx xxxx}.\par}
+%     \page \setuppapersize[A5][A4]
+%     \quotation {overly beautiful pusillanimous sesquipedalian
+%     longwinded} test test test test test test test test test test test
+%     test test test test test test test test test test test test test
+%     test test test test test test test test test test test test test
+%     test test test test test test test test test test test test test
+%     test test test
+% \stoptext
+
 \def\dohandledelimitedtext#1#2%
   {\begingroup
    \setbox\scratchbox\hbox{\delimitedtextparameter#1}%
    \ifdim\wd\scratchbox>\zeropoint
-     \ifdim\lastskip=\delimitedtextsignal
-       \unskip\hskip\hspaceamount\currentlanguage{interquotation}%
+%      \ifdim\lastskip=\delimitedtextsignal
+%        \unskip
+     \ifdim\lastkern=\delimitedtextsignal
+       \unkern
+       \hskip\hspaceamount\currentlanguage{interquotation}%
      \else
        #2%
      \fi
@@ -1171,8 +1185,8 @@
      \fi
      \strut % new, needed below
      \delimitedtextparameter#1% unhbox\scratchbox
-     % \penalty\!!tenthousand % else overfull boxes
-     \hskip\delimitedtextsignal % +- \prewordbreak
+%      \penalty\!!tenthousand % else overfull boxes, but that's better than dangling periods
+     \kern\delimitedtextsignal % +- \prewordbreak
    \fi
    \endgroup}
 

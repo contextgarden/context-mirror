@@ -224,11 +224,11 @@
 
 %D Some placeholders:
 
-\def\eTeX     {\mathematics{\varepsilon}-\TeX}
-\def\pdfTeX   {pdf\TeX}
-\def\pdfeTeX  {pdfe-\TeX}
-\def\luaTeX   {lua\TeX}
-\def\XeTeX    {X\lower.5ex\hbox{\kern-.15em\mirror{E}}\kern-.1667em\TeX}
+\def\eTeX             {\mathematics{\varepsilon}-\TeX}
+\def\pdfTeX           {pdf\TeX}
+\def\pdfeTeX          {pdfe-\TeX}
+\def\luaTeX           {lua\TeX}
+\unexpanded\def\XeTeX {X\lower.5ex\hbox{\kern-.15em\mirror{E}}\kern-.1667em\TeX}
 
 \let\ETEX     \eTeX
 \let\PDFTEX   \pdfTeX
@@ -243,8 +243,8 @@
 
   \let\NormalTeXLogo\TeX
 
-  \def\TeX  {T\smash[d]{\kern-.1667em\lower.5ex\hbox{E}}\kern-.125emX}
-  \def\XeTeX{X\smash[d]{\lower.5ex\hbox{\kern-.15em\mirror{E}}}\kern-.1667em\TeX}
+  \unexpanded\def\TeX  {T\smash[d]{\kern-.1667em\lower.5ex\hbox{E}}\kern-.125emX}
+  \unexpanded\def\XeTeX{X\smash[d]{\lower.5ex\hbox{\kern-.15em\mirror{E}}}\kern-.1667em\TeX}
 
 \endXETEX
 

@@ -48,6 +48,14 @@
         </rl:step>
     </rl:manipulator>
 
+    <rl:manipulator name='pdf' suffix='eps'>
+        <rl:old><rl:value name='path'/>/<rl:value name='file' method='nosuffix'/>.eps</rl:old>
+        <rl:step>
+            texmfstart pstopdf --convert
+            <rl:value name='old'/>
+        </rl:step>
+    </rl:manipulator>
+
     <rl:manipulator name='pdf' suffix='svgz'>
         <rl:old><rl:value name='path'/>/<rl:value name='file' method='nosuffix'/>.svgz</rl:old>
         <rl:new><rl:value name='path'/>/<rl:value name='prefix'/><rl:value name='file' method='nosuffix'/>.pdf</rl:new>
