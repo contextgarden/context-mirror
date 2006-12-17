@@ -755,6 +755,7 @@ class Commands
                 end
            end
         end
+        report("")
         report("#{n.to_s.rjust(4)} pages in total")
     end
 

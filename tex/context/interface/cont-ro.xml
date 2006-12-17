@@ -5955,6 +5955,9 @@
       <cd:constant type="serried"/>
       <cd:constant type="impachetat"/>
       <cd:constant type="despachetat"/>
+      <cd:constant type="faraalb"/>
+      <cd:constant type="inainte"/>
+      <cd:constant type="dupa"/>
       <cd:constant type="stopper"/>
       <cd:constant type="unit"/>
       <cd:constant type="lamargine"/>

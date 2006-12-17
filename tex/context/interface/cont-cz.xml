@@ -5955,6 +5955,9 @@
       <cd:constant type="semknuto"/>
       <cd:constant type="zhustene"/>
       <cd:constant type="rozbalene"/>
+      <cd:constant type="zadnabila"/>
+      <cd:constant type="pred"/>
+      <cd:constant type="po"/>
       <cd:constant type="predel"/>
       <cd:constant type="spojeno"/>
       <cd:constant type="naokraji"/>

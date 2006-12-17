@@ -5955,6 +5955,9 @@
       <cd:constant type="aanelkaar"/>
       <cd:constant type="opelkaar"/>
       <cd:constant type="vanelkaar"/>
+      <cd:constant type="geenwit"/>
+      <cd:constant type="voor"/>
+      <cd:constant type="na"/>
       <cd:constant type="afsluiter"/>
       <cd:constant type="aansluitend"/>
       <cd:constant type="opmarge"/>

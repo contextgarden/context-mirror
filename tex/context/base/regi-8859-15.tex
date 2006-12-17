@@ -11,16 +11,15 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-%D Support for iso-8859-15/Latin9 input encoding (regime) for West European languages,
-%D almost the same as iso-8859-1 with rarely used symbols (currency symbol,%D fractions, accents) replaced by Euro and some additional letters,%D see also cp1252.
+%D Support for iso-8859-15/Latin9 input encoding (regime) for
+%D West European languages, almost the same as iso-8859-1 with rarely
+%D used symbols (currency symbol,%D fractions, accents) replaced by
+%D Euro and some additional letters,%D see also cp1252.
 %D
-%D Usage:
-%D \type{\enableregime[iso-8859-9]} or
-%D \type{\enableregime[latin9]} or
-%D \type{\enableregime[il9]}
+%D Usage: \type{\enableregime[8859-15]} (see \type {regi-syn} for
+%D alternatives calls).
 
-
-\startregime[iso-8859-15]
+\startregime[8859-15]
 
 \defineactivetoken 128 {\unknownchar}                % 0080 <control>
 \defineactivetoken 129 {\unknownchar}                % 0081 <control>

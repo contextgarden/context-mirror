@@ -562,7 +562,7 @@ if ($sourcepath eq "auto") # todo uppercase root
                   { report ("removing : $nam") ;
                     unlink "$nam" }
                 my $mapfile = "$encoding$varlabel-$vendor-$collection" ;
-				foreach my $map ("pdftex","dvips", "dvipdfm")
+                foreach my $map ("pdftex","dvips", "dvipdfm")
                   { my $maproot = "$fontroot/fonts/map/$map/context/";
                     if (-e "$maproot$mapfile.map")
                        { report ("renaming : $mapfile.map -> $mapfile.bak") ;

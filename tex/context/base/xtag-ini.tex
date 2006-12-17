@@ -2310,6 +2310,12 @@
    \egroup
    \convertcommand\@@XML@@string\to#1}
 
+% this has to expand nicely:
+%
+% <!DOCTYPE XXX SYSTEM "xxx" [ <!ENTITY aaa "../www/"> <!ENTITY bbb SYSTEM "&aaa;mmm.eps"> ]>
+%
+% so keep the following as is!
+
 \def\defXMLclean#1#2%
   {\bgroup
    \enableXMLexpansion

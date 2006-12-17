@@ -65,6 +65,10 @@
 \newconditional\paragraphlistitem \setfalse\paragraphlistitem
 \newconditional\textlistitem      \setfalse\textlistitem
 \newconditional\firstlistitem     \setfalse\firstlistitem
+\newconditional\beforelistitem    \setfalse\beforelistitem
+\newconditional\afterlistitem     \setfalse\afterlistitem
+\newconditional\nowhitelistitem   \setfalse\nowhitelistitem
+\newconditional\joinedlistitem    \setfalse\joinedwhitelistitem
 
 \newcounter\noflists
 \newcounter\itemlevel
@@ -178,9 +182,12 @@
        #2*\v!broad*=>\setitemparameter{#1}\c!factor{#2},
            \v!text*=>\settrue\textlistitem
                      \settrue\inlinelistitem
-                     \dosetuppackeditemgroup{#1}%
+                     \settrue\joinedlistitem % \dosetuppackeditemgroup{#1}%
                      \packitems,
         \v!columns*=>\packitems,
+         \v!before*=>\settrue\beforelistitem,
+          \v!after*=>\settrue\afterlistitem,
+        \v!nowhite*=>\settrue\nowhitelistitem, % \def\packeditemspacing{\nowhitespace},
          \v!margin*=>\setitemparameter{#1}\c!width{-2em}, % signal
        \v!inmargin*=>\setitemparameter{#1}\c!width{-2em}, % signal
        \v!atmargin*=>\doifnot{#1}{1}{\setitemparameter{#1}\c!width{0em}}, % signal
@@ -188,7 +195,7 @@
           \v!loose*=>\setfalse\optimizelistitem,
       \v!paragraph*=>\settrue\paragraphlistitem
                      \packitems,
-       \v!joinedup*=>\dosetuppackeditemgroup{#1}%
+       \v!joinedup*=>\settrue\joinedlistitem % \dosetuppackeditemgroup{#1}%
                      \packitems,
         \v!serried*=>\setitemparameter{#1}\c!factor{-1},
    #2#3*\v!serried*=>\setitemparameter{#1}\c!factor{-#2#3},
@@ -211,12 +218,75 @@
       \c!after=\blank,
       \c!inner=]}
 
-\def\dosetuppackeditemgroup#1%
-  {\letitemparameter{#1}\c!beforehead\empty
-   \letitemparameter{#1}\c!afterhead \empty
-   \letitemparameter{#1}\c!before    \empty
-   \letitemparameter{#1}\c!after     \empty
-   \letitemparameter{#1}\c!inbetween \empty}
+% \def\packeditemspacing{\empty}
+
+% \setupwhitespace[big]
+% \starttext
+%     test \startitemize[joinedup]                \item test \item test \stopitemize test \par
+%     test \startitemize[joinedup,nowhite]        \item test \item test \stopitemize test \par
+%     test \startitemize[joinedup,nowhite,before] \item test \item test \stopitemize test \par
+%     test \startitemize[joinedup,nowhite,after]  \item test \item test \stopitemize test \par
+% \stoptext
+
+\def\itembeforecommand
+  {\ifconditional\nowhitelistitem
+     \ifconditional\beforelistitem
+       \ifcase\itemlevel\or\getitemparameter\itemlevel\c!before\fi
+     \else
+        \nowhitespace
+     \fi
+   \else\ifconditional\joinedlistitem
+     % \empty
+   \else
+     \getitemparameter\itemlevel\c!before
+   \fi\fi}
+
+\def\itemaftercommand
+  {\ifconditional\nowhitelistitem
+     \ifconditional\afterlistitem
+       \ifcase\itemlevel\or\getitemparameter\itemlevel\c!after\fi
+     \else
+        \nowhitespace
+     \fi
+   \else\ifconditional\joinedlistitem
+     % \empty
+   \else
+     \getitemparameter\itemlevel\c!after
+   \fi\fi}
+
+\def\iteminbetweencommand
+  {\ifconditional\nowhitelistitem
+     \nowhitespace
+   \else\ifconditional\joinedlistitem
+     % \empty
+   \else
+     \getitemparameter\itemlevel\c!inbetween
+   \fi\fi}
+
+\def\itembeforeheadcommand
+  {\ifconditional\nowhitelistitem
+     \nowhitespace
+   \else\ifconditional\joinedlistitem
+     % \empty
+   \else
+     \getitemparameter\itemlevel\c!beforehead
+   \fi\fi}
+
+\def\itemafterheadcommand
+  {\ifconditional\nowhitelistitem
+     \nowhitespace
+   \else\ifconditional\joinedlistitem
+     % \empty
+   \else
+     \getitemparameter\itemlevel\c!afterhead
+   \fi\fi}
+
+% \def\dosetuppackeditemgroup#1%
+%   {\setitemparameter{#1}\c!beforehead{\packeditemspacing}%
+%    \setitemparameter{#1}\c!afterhead {\packeditemspacing}%
+%    \setitemparameter{#1}\c!before    {\packeditemspacing}%
+%    \setitemparameter{#1}\c!after     {\packeditemspacing}%
+%    \setitemparameter{#1}\c!inbetween {\packeditemspacing}}
 
 \def\dosetupitemgroupconstant[#1][#2]%
   {\def\dodosetupitemgroupconstant##1% catches empty in [a,b,] handy for xml
@@ -501,7 +571,7 @@
    \doifinset\v!columns{#1}%
      {\ifinsidecolumns\else\ifnum\itemcolumndepth=\zerocount
         \globallet\itemcolumndepth\itemlevel
-        \getitemparameter\itemlevel\c!before
+        \itembeforecommand
         \processfirstactioninset
           [#1]
           [  \v!one=>\!!counta1\relax,
@@ -551,20 +621,20 @@
    \ifnum\itemcolumndepth=\itemlevel\relax
      \stopcolumns
      \doglobal\newcounter\itemcolumndepth
-     \getitemparameter\itemlevel\c!after
+     \itemaftercommand
      \dontrechecknextindentation
    \else
      \ifnum\itemlevel=\plusone
        \doitembreak\allowbreak           % toegevoegd
-       \getitemparameter1\c!after
+       \itemaftercommand % \getitemparameter\itemlevel\c!after
        % was: \dochecknextindentation\??oo, is now:
        \dochecknextindentation{\??op\currentitemgroup\itemlevel}%
      \else
        % nieuw, not yet nobreak handling
        \ifcase\autoitemgroupspacing
-         \getitemparameter\itemlevel\c!after
+         \itemaftercommand
        \or
-         \getitemparameter\itemlevel\c!after
+         \itemaftercommand
        \fi
        \dontrechecknextindentation
      \fi
@@ -863,7 +933,7 @@
      \or % 1
        \ifnum\itemcolumndepth=0\relax
          \ifconditional\introlistitem\doitembreak\nobreak\fi
-         \getitemparameter1\c!before
+         \itembeforecommand % \getitemparameter\itemlevel\c!before
          \ifconditional\introlistitem\doitembreak\nobreak\fi
        \fi
      \else % 2 en hoger
@@ -871,10 +941,10 @@
          \let\previtemlevel\itemlevel
          \decrement\previtemlevel
          \ifcase\autoitemgroupspacing\relax % nieuw
-           \getitemparameter\itemlevel\c!before
+           \itembeforecommand
          \or
-            \doifelsenothing{\getitemparameter\itemlevel\c!before}
-              {\getitemparameter\itemlevel\c!before}
+            \doifelsenothing{\itembeforecommand}
+              {\itembeforecommand}
               {\getitemparameter\previtemlevel\c!inbetween}%
          \else
            \getitemparameter\previtemlevel\c!inbetween % == itemlevel-1
@@ -886,7 +956,7 @@
 %     \removeunwantedspaces\hskip\interwordspace\!!plus\emwidth\relax % new per 2006/10/20
     \removeunwantedspaces\hskip\emwidth\!!plus\interwordstretch\!!minus\interwordshrink\relax % new per 2006/10/20
 \else
-     \getitemparameter\itemlevel\c!inbetween
+     \iteminbetweencommand
 \fi
    \fi
    \ifconditional\concatnextitem % new, concat
@@ -946,7 +1016,7 @@
 
 % \def\complexdoitemgrouphead[#1]#2\par% % beter in \complexdosom hangen met een if
 %   {\ifconditional\firstlistitem\else\doitembreak\allowbreak\fi
-%    \ifconditional\packlistitem\else\getitemparameter\itemlevel\c!beforehead\fi
+%    \ifconditional\packlistitem\else\itembeforeheadcommand\fi
 %    \ifconditional\firstlistitem\ifconditional\introlistitem\else\ifcase\itemlevel % incr in \complexdosom
 %       \doitembreak\allowbreak
 %    \fi\fi\fi
@@ -958,7 +1028,7 @@
 %      \par
 %    \fi
 %    \doitembreak\nobreak
-%    \ifconditional\packlistitem\else\getitemparameter\itemlevel\c!afterhead\fi
+%    \ifconditional\packlistitem\else\itemafterheadcommand\fi
 %    \doitembreak\nobreak
 %    \noindentation}
 %
@@ -969,7 +1039,7 @@
 
 \def\complexdoitemgrouphead[#1]% beter in \complexdosom hangen met een if
   {\ifconditional\firstlistitem\else\doitembreak\allowbreak\fi
-   \ifconditional\packlistitem\else\getitemparameter\itemlevel\c!beforehead\fi
+   \ifconditional\packlistitem\else\itembeforeheadcommand\fi
    \ifconditional\firstlistitem\ifconditional\introlistitem\else\ifcase\itemlevel % incr in \complexdosom
      \doitembreak\allowbreak
    \fi\fi\fi
@@ -989,7 +1059,7 @@
      \par
    \fi
    \doitembreak\nobreak
-   \ifconditional\packlistitem\else\getitemparameter\itemlevel\c!afterhead\fi
+   \ifconditional\packlistitem\else\itemafterheadcommand\fi
    \doitembreak\nobreak
    \noindentation}
 

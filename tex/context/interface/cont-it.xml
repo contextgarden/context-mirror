@@ -5955,6 +5955,9 @@
       <cd:constant type="vicino"/>
       <cd:constant type="impaccato"/>
       <cd:constant type="unpacked"/>
+      <cd:constant type="nobianco"/>
+      <cd:constant type="prima"/>
+      <cd:constant type="dopo"/>
       <cd:constant type="stopper"/>
       <cd:constant type="unito"/>
       <cd:constant type="almargine"/>

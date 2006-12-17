@@ -5955,6 +5955,9 @@
       <cd:constant type="serried"/>
       <cd:constant type="groupe"/>
       <cd:constant type="degroupe"/>
+      <cd:constant type="sansblanc"/>
+      <cd:constant type="avant"/>
+      <cd:constant type="apres"/>
       <cd:constant type="stopper"/>
       <cd:constant type="joinedup"/>
       <cd:constant type="alamarge"/>

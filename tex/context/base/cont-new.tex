@@ -13,7 +13,7 @@
 
 % it's about time to clean up this file ...
 
-\newcontextversion{2006.12.12 23:46}
+\newcontextversion{2006.12.17 17:41}
 
 %D This file is loaded at runtime, thereby providing an
 %D excellent place for hacks, patches, extensions and new
@@ -28,6 +28,16 @@
 % caption: grid=top|bottom in xml defs
 
 \let\then\relax % \ifnum1>2\then -)
+
+\def\defXMLexpanded#1#2%
+  {\begingroup
+   \let\getXMLentity\expandedXMLentity
+   \expanded{\endgroup\edef\noexpand#1{#2}}}
+
+\def\gdefXMLexpanded#1#2%
+  {\begingroup
+   \let\getXMLentity\expandedXMLentity
+   \expanded{\endgroup\xdef\noexpand#1{#2}}}
 
 \def\dividedsize#1#2#3% size gap n
   {\dimexpr

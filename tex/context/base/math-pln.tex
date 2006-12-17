@@ -103,7 +103,9 @@
 \def\!{\mskip-\thinmuskip}
 \def\*{\discretionary{\thinspace\the\textfont2\char2}{}{}}
 
-{\catcode`\'=\active \gdef'{^\bgroup\prim@s}}
+% {\catcode`\'=\active \gdef'{^\bgroup\prim@s}}
+
+\def\activemathquote{^\bgroup\prim@s}
 
 \def\prim@s
  {\prime\futurelet\next\pr@m@s}
@@ -135,7 +137,9 @@
 \def\pr@@@t#1#2%
   {#2\egroup}
 
-{\catcode`\_=\active \global\let_=\_} % _ in math is either subscript or \_
+% {\catcode`\_=\active \global\let_=\_} % _ in math is either subscript or \_
+
+\let\activemathunderscore\_
 
 \def\relbar            {\mathrel{\smash-}} % - has the same height as +
 \def\Relbar            {\mathrel=}
@@ -353,5 +357,31 @@
       &$\@lign\displaystyle{{}##}$\hfil\tabskip\centering
       &\kern-\displaywidth\rlap{$\@lign##$}\tabskip\displaywidth\crcr
       #1\crcr}}
+
+% temporary here
+
+% \startcatcodetable \mthcatcodes
+%     \setcatcodetable\ctxcatcodes
+%     \catcode`\_ = 13
+%     \catcode`\' = 13
+% \stopcatcodetable
+%
+% \letcatcodecommand \mthcatcodes `\_ \activemathunderscore
+% \letcatcodecommand \mthcatcodes `\' \activemathquote
+%
+% \appendtoks \setcatcodetable\mthcatcodes \to \everymath
+
+% tricky, but some day we will reimplement math
+
+\bgroup
+    \catcode`\_ = 13
+    \catcode`\' = 13
+    \doglobal\appendtoks
+        \let_\activemathunderscore
+        \let'\activemathquote
+    \to \everymath
+\egroup
+
+% so far
 
 \protect \endinput

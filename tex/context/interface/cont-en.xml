@@ -5955,6 +5955,9 @@
       <cd:constant type="serried"/>
       <cd:constant type="packed"/>
       <cd:constant type="unpacked"/>
+      <cd:constant type="nowhite"/>
+      <cd:constant type="before"/>
+      <cd:constant type="after"/>
       <cd:constant type="stopper"/>
       <cd:constant type="joinedup"/>
       <cd:constant type="atmargin"/>

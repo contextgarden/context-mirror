@@ -24,7 +24,9 @@
 \def    \preprocesssuffix {.prep}
 
 \def\loadctxpreplist
-  {\ifcase\preprocessmethod
+  {\begingroup
+   \chardef\XMLtokensreduction\plusone
+   \ifcase\preprocessmethod
      % no checking
    \or
      % simple checking
@@ -42,7 +44,8 @@
         \egroup}%
        {\global\chardef\preprocessmode\plusone}%
    \fi
-   \global\let\loadctxpreplist\relax}
+   \global\let\loadctxpreplist\relax
+   \endgroup}
 
 \appendtoks\loadctxpreplist\to\everystarttext % will become: \prependtoks\loadctxpreplist\to\everyjob
 

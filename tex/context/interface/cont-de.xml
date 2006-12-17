@@ -5955,6 +5955,9 @@
       <cd:constant type="kleinerabstand"/>
       <cd:constant type="gepackt"/>
       <cd:constant type="ungepackt"/>
+      <cd:constant type="keinweiss"/>
+      <cd:constant type="vor"/>
+      <cd:constant type="nach"/>
       <cd:constant type="trenner"/>
       <cd:constant type="keinabstand"/>
       <cd:constant type="amrand"/>

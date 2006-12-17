@@ -69,8 +69,8 @@
 
 \def\defcatcodecommandc % only first time
   {\expandafter\gdef\csname CCD:\number\cctcountera:\number\cctcounterb\expandafter\endcsname
-    \expandafter##\expandafter1\expandafter
-     {\expandafter\def\csname CCC:\number\cctcountera:\number\cctcounterb\endcsname{##1}}%
+     \expandafter##\expandafter1\expandafter
+       {\expandafter\def\csname CCC:\number\cctcountera:\number\cctcounterb\endcsname{##1}}%
    \reinstatecatcodecommanda
    \csname CCD:\number\cctcountera:\number\cctcounterb\endcsname}
 
@@ -118,6 +118,7 @@
 \ifx\ctxcatcodes \undefined \newcatcodetable \ctxcatcodes  \fi
 \ifx\vrbcatcodes \undefined \newcatcodetable \vrbcatcodes  \fi
 \ifx\prtcatcodes \undefined \newcatcodetable \prtcatcodes  \fi
+\ifx\mthcatcodes \undefined \newcatcodetable \mthcatcodes  \fi % math
 \ifx\xmlcatcodesn\undefined \newcatcodetable \xmlcatcodesn \fi % normal
 \ifx\xmlcatcodese\undefined \newcatcodetable \xmlcatcodese \fi % entitle
 \ifx\xmlcatcodesr\undefined \newcatcodetable \xmlcatcodesr \fi % reduce

@@ -15,7 +15,7 @@
 # This script will harbor some handy manipulations on tex
 # related files.
 
-banner = ['XMLTools', 'version 1.2.0', '2002/2006', 'PRAGMA ADE/POD']
+banner = ['XMLTools', 'version 1.2.1', '2002/2006', 'PRAGMA ADE/POD']
 
 $: << File.expand_path(File.dirname($0)) ; $: << File.join($:.last,'lib') ; $:.uniq!
 
@@ -400,6 +400,51 @@ class Commands
         end
     end
 
+    def enhance
+        oldname = @commandline.argument('first')
+        newname = @commandline.argument('second')
+        verbose = @commandline.option('verbose')
+        if ! newname || newname.empty? then
+            newname = oldname + ".prep"
+        end
+        if FileTest.file?(oldname) then
+            report("") if verbose
+            data     = IO.read(oldname)
+            elements = Array.new
+            preamble = ""
+            done     = false
+            data.sub!(/^(.*?)\s*(<[a-z])/mois) do
+                preamble = $1
+                $2
+            end
+            data.gsub!(/<(.*?)>/mois) do
+                elements << $1
+                "<#{elements.length}>"
+            end
+            data.gsub!(/([a-z]{3,})([\/\-])([a-z]{3,})/mois) do
+                done = true
+                report("compound: #{$1}#{$2}#{$3}") if verbose
+                "#{$1}<compound token='#{$2}'/>#{$3}"
+            end
+            data.gsub!(/<(\d+)>/mois) do
+                "<#{elements.shift}>"
+            end
+            File.open(newname,'wb') do |f|
+                f << preamble
+                f << "\n"
+                f << data
+            end
+            if verbose then
+                if done then
+                    report("")
+                    report(oldname," converted to ",newname)
+                else
+                    report(oldname," copied to ",newname)
+                end
+            end
+        end
+    end
+
     def cleanup # todo, share loading/saving with previous
 
         file    = @commandline.argument('first')
@@ -508,6 +553,7 @@ commandline.registeraction('dir',     'generate directory listing')
 commandline.registeraction('mmlpages','generate graphic from mathml')
 commandline.registeraction('analyze', 'report entities and elements [--utf --process]')
 commandline.registeraction('cleanup', 'cleanup xml file [--force]')
+commandline.registeraction('enhance', 'enhance xml file')
 
 # commandline.registeraction('dir',     'filename --pattern= --output= [--recurse --stripname --longname --url --root]')
 # commandline.registeraction('mmlpages','filename [--eps --jpg --png --style= --mode=]')
@@ -520,6 +566,7 @@ commandline.registeraction('version')
 commandline.registerflag('stripname')
 commandline.registerflag('longname')
 commandline.registerflag('recurse')
+commandline.registerflag('verbose')
 
 commandline.registervalue('pattern')
 commandline.registervalue('url')
@@ -533,7 +580,6 @@ commandline.registerflag('utf')
 commandline.registerflag('process')
 commandline.registervalue('style')
 commandline.registervalue('modes')
-commandline.registervalue('verbose')
 
 commandline.expand
 
