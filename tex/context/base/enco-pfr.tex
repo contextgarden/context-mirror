@@ -212,6 +212,7 @@
    \edef\currentencoding{#1}%
    \doifvaluesomething\pdffontfileresource
      {\startreadingfile
+        \ignorelines % just in case \par is redefined; this thing can get called anywhere
         \readsysfile{pdfr-\getvalue\pdffontfileresource}\donothing\donothing
       \stopreadingfile
       \letgvalue\pdffontfileresource\empty}%

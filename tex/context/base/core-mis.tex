@@ -1060,7 +1060,7 @@
 
 \def\dorepeatdelimitedtext
   {\relax\ifcase\delimitedtextparameter\c!level\else
-     \dohandledelimitedtext\c!middle
+     \dohandledelimitedtext\c!middle % maybe better \dohandleleftdelimitedtext
    \fi}
 
 \let\dohandlerepeatdelimitedtext\relax
@@ -1109,15 +1109,26 @@
    \doifsomething{\delimitedtextparameter\c!spaceafter}
      {\blank[\delimitedtextparameter\c!spaceafter]}}
 
+% \def\dostartdelimitedtexttxt
+%   {\let\dostopdelimitedtext\dostopdelimitedtexttxt
+%    \dostartattributes{\??ci\currentdelimitedtext}\c!style\c!color\empty
+%    \dohandledelimitedtext\c!left
+%    \ignorespaces}
+
 \def\dostartdelimitedtexttxt
   {\let\dostopdelimitedtext\dostopdelimitedtexttxt
    \dostartattributes{\??ci\currentdelimitedtext}\c!style\c!color\empty
-   \dohandledelimitedtext\c!left
+   \dohandleleftdelimitedtext\c!left
    \ignorespaces}
+
+% \def\dostopdelimitedtexttxt
+%   {\removeunwantedspaces
+%    \dohandledelimitedtext\c!right
+%    \dostopattributes}
 
 \def\dostopdelimitedtexttxt
   {\removeunwantedspaces
-   \dohandledelimitedtext\c!right
+   \dohandlerightdelimitedtext\c!right
    \dostopattributes}
 
 \def\stopdelimitedtext
@@ -1157,6 +1168,8 @@
   {\hsmash{\delimitedtextparameter\c!right}}
 
 % \starttext
+%    \hyphenatedword{groepsvrijstellingsverordeningen}\par
+%    \hyphenatedword{\quote{groepsvrijstellingsverordeningen}}\par
 %     \dorecurse{100}{\hskip300pt\hskip\recurselevel pt test \quote{xxx xxxx}.\par}
 %     \page \setuppapersize[A5][A4]
 %     \quotation {overly beautiful pusillanimous sesquipedalian
@@ -1190,28 +1203,96 @@
    \fi
    \endgroup}
 
+\def\dohandleleftdelimitedtext#1#2%
+  {\begingroup
+   \setbox\scratchbox\hbox{\delimitedtextparameter#1}%
+   \ifdim\wd\scratchbox>\zeropoint
+     \ifdim\lastkern=\delimitedtextsignal
+       \unkern
+       \hskip\hspaceamount\currentlanguage{interquotation}%
+     \else\ifdim\lastskip=\delimitedtextsignal
+       \unskip
+       \hskip\hspaceamount\currentlanguage{interquotation}%
+     \else
+       #2%
+     \fi\fi
+     \strut % new, needed below
+     \ifhmode % else funny pagebeaks
+       \penalty\!!tenthousand
+       \hskip\zeropoint % == \prewordbreak
+     \fi
+     \strut % new, needed below
+     \delimitedtextparameter#1% unhbox\scratchbox
+     \hskip\delimitedtextsignal % +- \prewordbreak
+   \fi
+   \endgroup}
+
+\def\dohandlerightdelimitedtext#1#2%
+  {\begingroup
+   \setbox\scratchbox\hbox{\delimitedtextparameter#1}%
+   \ifdim\wd\scratchbox>\zeropoint
+     \ifdim\lastkern=\delimitedtextsignal
+       \unkern
+       \hskip\hspaceamount\currentlanguage{interquotation}%
+     \else\ifdim\lastskip=\delimitedtextsignal
+       \unskip
+       \hskip\hspaceamount\currentlanguage{interquotation}%
+     \else
+       #2%
+     \fi\fi
+     \ifhmode % else funny pagebeaks
+       \penalty\!!tenthousand
+       \hskip\zeropoint % == \prewordbreak
+     \fi
+     \strut % new, needed below
+     \delimitedtextparameter#1% unhbox\scratchbox
+     \kern\delimitedtextsignal % +- \prewordbreak
+   \fi
+   \endgroup}
+
 \def\ignoredelimitedtext#1%
   {\delimitedtextparameter#1}
 
 \def\handledelimitedtext#1%
   {\dohandledelimitedtext{#1}\relax}
 
+\def\handleleftdelimitedtext#1%
+  {\dohandleleftdelimitedtext{#1}\relax}
+
+\def\handlerightdelimitedtext#1%
+  {\dohandlerightdelimitedtext{#1}\relax}
+
+% \unexpanded\def\dodelimitedtextpar
+%   {\dohandledelimitedtext\c!left\relax
+%    \groupedcommand
+%      \donothing
+%      {\dohandledelimitedtext\c!right\removelastskip
+%       \popdelimitedtext}}
+
 \unexpanded\def\dodelimitedtextpar
-  {\dohandledelimitedtext\c!left\relax
+  {\dohandleleftdelimitedtext\c!left\relax
    \groupedcommand
      \donothing
-     {\dohandledelimitedtext\c!right\removelastskip
+     {\dohandlerightdelimitedtext\c!right\removelastskip
       \popdelimitedtext}}
 
 \unexpanded\def\dodelimitedtexttxt
   {\doifelse{\delimitedtextparameter\c!style}\v!normal
      \doquoteddelimited\doattributeddelimited}
 
+% \def\doquoteddelimited
+%   {\dohandledelimitedtext\c!left\relax
+%    \groupedcommand
+%      \donothing
+%      {\dohandledelimitedtext\c!right
+%       \removelastskip
+%       \popdelimitedtext}}
+
 \def\doquoteddelimited
-  {\dohandledelimitedtext\c!left\relax
+  {\dohandleleftdelimitedtext\c!left\relax
    \groupedcommand
      \donothing
-     {\dohandledelimitedtext\c!right
+     {\dohandlerightdelimitedtext\c!right
       \removelastskip
       \popdelimitedtext}}
 

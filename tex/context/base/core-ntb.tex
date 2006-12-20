@@ -255,21 +255,31 @@
 
 \let\setupTBLsection\relax
 
-% \setupTABLE [y]    [first][background=color,backgroundcolor=blue,frame=off,bottomframe=on,topframe=on,framecolor=white]
+% % \setupTABLE [y]    [first][background=color,backgroundcolor=blue,frame=off,bottomframe=on,topframe=on,framecolor=white]
 % \setupTABLE [first][first][backgroundcorner=2,corner=10,frame=on]
 % \setupTABLE [last] [first][backgroundcorner=4,corner=12,frame=on]
-
+%
 % \setupTABLE [row]  [each] [background=color,backgroundcolor=blue,frame=on,framecolor=white]
 % \setupTABLE [first][2]    [corner=8]
 % \setupTABLE [last] [2]    [corner=5]
 % \setupTABLE [first][last] [corner=7]
 % \setupTABLE [last] [last] [corner=6]
-
+%
 % \startTEXpage
 % \bTABLE[frame=off,align=middle]
 % \bTR \bTD one   \eTD \bTD two    \eTD \bTD three \eTD \eTR
 % \bTR \bTD first \eTD \bTD second \eTD \bTD third \eTD \eTR
 % \bTR \bTD alpha \eTD \bTD beta   \eTD \bTD gamma \eTD \eTR
+% \eTABLE
+% \stopTEXpage
+%
+% \setupTABLE [first] [two][corner=2] % special case
+% \setupTABLE [last]  [two][corner=4] % special case
+%
+% \startTEXpage
+% \bTABLE[frame=off,align=middle]
+% \bTR \bTD one   \eTD \bTD two    \eTD \bTD three \eTD \eTR
+% \bTR \bTD first \eTD \bTD second \eTD \bTD third \eTD \eTR
 % \eTABLE
 % \stopTEXpage
 
@@ -325,6 +335,15 @@
    \ifnum\positiverow=\maximumrow\relax \ifnum\positivecol=\plusone
      \csname\@@tblprefix\c!x\v!first\c!y\v!last\endcsname
    \fi\fi
+   % special case: two rows and last row : two&first and two&last (round corners)
+   \ifnum\maximumrow=\plustwo\relax
+       \ifnum\positiverow=\maximumrow\relax \ifnum\positivecol=\plusone
+         \csname\@@tblprefix\c!x\v!first\c!y\v!two\endcsname
+       \fi\fi
+       \ifnum\positiverow=\maximumrow\relax \ifnum\positivecol=\maximumcol\relax
+         \csname\@@tblprefix\c!x\v!last\c!y\v!two\endcsname
+       \fi\fi
+   \fi
    % header things
    \ifnum#1>\noftblhdnxlines\else
      \executeifdefined{\@@tblprefix\v!header\v!each     }\donothing

@@ -400,10 +400,63 @@ class Commands
         end
     end
 
+    def filter
+
+        require "rexml/document"
+
+        element = @commandline.option('element')
+        files   = @commandline.arguments
+        result  = "xmltools.xlg"
+
+        if element.empty? then
+            report("provide element using --element")
+        elsif files.length == 0 then
+            report("provide filename(s)")
+        else
+            begin
+                File.open(result,'w') do |f|
+                    f << "<?xml version='1.0'?>\n\n"
+                    f << "<xlg:document>\n\n"
+                    total = 0
+                    files.sort.each do |file|
+                        begin
+                            report("loading: #{file}")
+                            data = REXML::Document.new(IO.read(file))
+                        rescue
+                            report("error: invalid xml")
+                        else
+                            found = 0
+                            report("filtering: #{element}")
+                            REXML::XPath.each(data,"//#{element}") do |table|
+                                str = table.to_s
+                                if str.length > 0 then
+                                    total += 1
+                                    found += 1
+                                    report("found: #{total} / #{found} / #{str.length} bytes")
+                                    f << "<xlg:file name='#{file}'>\n\n" unless found > 1
+                                    f << "<xlg:filtered n='#{total}' m='#{found}'>"
+                                    f << "#{str.gsub(/^\s*/m,'').gsub(/\s*$/m,'')}"
+                                    f << "</xlg:filtered>\n\n"
+                                end
+                            end
+                            f << "</xlg:file>\n\n" if found > 0
+                        end
+                    end
+                    f << "</xlg:document>\n"
+                end
+                report("result: #{result}")
+            rescue
+                report("error in opening #{result}")
+            end
+        end
+
+    end
+
     def enhance
         oldname = @commandline.argument('first')
         newname = @commandline.argument('second')
         verbose = @commandline.option('verbose')
+        # todo: options, maybe a config file
         if ! newname || newname.empty? then
             newname = oldname + ".prep"
         end
@@ -417,15 +470,30 @@ class Commands
                 preamble = $1
                 $2
             end
+            # hide elements
             data.gsub!(/<(.*?)>/mois) do
                 elements << $1
                 "<#{elements.length}>"
             end
+            # abc[-/]def
             data.gsub!(/([a-z]{3,})([\/\-])([a-z]{3,})/mois) do
                 done = true
                 report("compound: #{$1}#{$2}#{$3}") if verbose
                 "#{$1}<compound token='#{$2}'/>#{$3}"
             end
+            # (abcd
+            data.gsub!(/(\()([a-z]{4,})/mois) do
+                done = true
+                report("compound: #{$1}#{$2}") if verbose
+                "<compound token='#{$1}'/>#{$2}"
+            end
+            # abcd)
+            data.gsub!(/(\()([a-z]{4,})/mois) do
+                done = true
+                report("compound: #{$1}#{$2}") if verbose
+                "#{$2}<compound token='#{$2}'/>"
+            end
+            # roll back elements
             data.gsub!(/<(\d+)>/mois) do
                 "<#{elements.shift}>"
             end
@@ -553,7 +621,8 @@ commandline.registeraction('dir',     'generate directory listing')
 commandline.registeraction('mmlpages','generate graphic from mathml')
 commandline.registeraction('analyze', 'report entities and elements [--utf --process]')
 commandline.registeraction('cleanup', 'cleanup xml file [--force]')
-commandline.registeraction('enhance', 'enhance xml file')
+commandline.registeraction('enhance', 'enhance xml file (partial)')
+commandline.registeraction('filter', 'filter elements from xml file [element=]')
 
 # commandline.registeraction('dir',     'filename --pattern= --output= [--recurse --stripname --longname --url --root]')
 # commandline.registeraction('mmlpages','filename [--eps --jpg --png --style= --mode=]')
@@ -569,6 +638,7 @@ commandline.registerflag('recurse')
 commandline.registerflag('verbose')
 
 commandline.registervalue('pattern')
+commandline.registervalue('element')
 commandline.registervalue('url')
 commandline.registervalue('output')
 commandline.registervalue('root')
