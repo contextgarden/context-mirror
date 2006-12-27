@@ -166,9 +166,7 @@ hash_extra.context       =  100000
 main_memory.context      = 2000000
 max_strings.context      =  300000
 nest_size.context        =     500
-obj_tab_size.context     =  300000
 pdf_mem_size.context     =  500000
-dest_names_size.context  =  300000
 param_size.context       =   10000
 pool_free.context        =   47500
 pool_size.context        = 2000000
@@ -177,6 +175,9 @@ stack_size.context       =   10000
 string_vacancies.context =  125000
 trie_size.context        =  250000
 hyph_size.context        =    8191 % prime
+
+obj_tab_size.context     =  300000 % obsolete in 1.40+
+dest_names_size.context  =  300000 % obsolete in 1.40+
 
 main_memory.mpost        = 3000000
 pool_size.mpost          = 3000000

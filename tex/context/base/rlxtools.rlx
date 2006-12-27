@@ -107,7 +107,7 @@
             texmfstart pstopdf --convert
             --inputpath=<rl:value name='path'/>
             --outputpath=<rl:value name='cache' default='.'/>
-            <rl:value name='file' method='nosuffix'/>.gif
+            <rl:value name='file' method='nosuffix'/>.tif
         </rl:step>
     </rl:manipulator>
 
@@ -118,7 +118,7 @@
             texmfstart pstopdf --convert
             --inputpath=<rl:value name='path'/>
             --outputpath=<rl:value name='cache' default='.'/>
-            <rl:value name='file' method='nosuffix'/>.gif
+            <rl:value name='file' method='nosuffix'/>.tiff
         </rl:step>
     </rl:manipulator>
 

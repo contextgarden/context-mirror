@@ -93,15 +93,16 @@
    \bracelu\leaders\vrule\!!height\ht\z@\!!depth\z@\hfill\bracerd
    \braceld\leaders\vrule\!!height\ht\z@\!!depth\z@\hfill\braceru$}
 
-\def\bye{\par\vfill\supereject\end}
+\ifx\bye\undefined \def\bye{\par\vfill\supereject\end} \fi
 
-\let\sp=^
-\let\sb=_
-\def\,{\mskip\thinmuskip}
-\def\>{\mskip\medmuskip}
-\def\;{\mskip\thickmuskip}
-\def\!{\mskip-\thinmuskip}
-\def\*{\discretionary{\thinspace\the\textfont2\char2}{}{}}
+\let\sp=^ % will become obsolete
+\let\sb=_ % will become obsolete
+
+\ifx\,\undefined \def\,{\mskip \thinmuskip } \fi
+\ifx\>\undefined \def\>{\mskip \medmuskip  } \fi
+\ifx\;\undefined \def\;{\mskip \thickmuskip} \fi
+\ifx\!\undefined \def\!{\mskip-\thinmuskip } \fi
+\ifx\*\undefined \def\*{\discretionary{\thinspace\the\textfont2\char2}{}{}} \fi
 
 % {\catcode`\'=\active \gdef'{^\bgroup\prim@s}}
 
@@ -379,7 +380,7 @@
     \doglobal\appendtoks
         \let_\activemathunderscore
         \let'\activemathquote
-    \to \everymath
+    \to \everymathematics
 \egroup
 
 % so far
