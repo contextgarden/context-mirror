@@ -2521,6 +2521,12 @@
   {\scratchcounter#2%
    \setxvalue{#1}{\the\scratchcounter}}
 
+\def\incrementcounter#1#2% #1 name #2 value
+   {\setxvalue{#1}{\the\numexpr\csname#1\endcsname+#2\relax}}
+
+\def\decrementcounter#1#2% #1 name #2 value
+   {\setxvalue{#1}{\the\numexpr\csname#1\endcsname-#2\relax}}
+
 %D \macros
 %D   {savecounter,restorecounter}
 %D

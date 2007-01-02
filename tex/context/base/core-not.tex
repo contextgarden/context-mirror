@@ -673,6 +673,13 @@
 
 \newconditional\processingnote
 
+\def\footnotereferencefrom
+  {\rawreference\s!fnt{\s!fnt:f:\internalfootreference}{}}
+
+\def\footnotereferenceto
+  {\global\advance\crossreferencenumber\minusone\relax % else problem, needs further testing
+   \rawreference\s!fnt{\s!fnt:t:\internalfootreference}{}}
+
 \def\dostartnote% nog gobble als in pagebody
   {\bgroup
    \settrue\processingnote
@@ -711,9 +718,9 @@
         \fi
         \doifelse{\noteparameter\c!interaction}\v!no
           {\ifconditional\pagewisenotes
-             \rawreference\s!fnt{\s!fnt:t:\internalfootreference}{}%
+             \footnotereferenceto
            \fi}%
-          {\rawreference\s!fnt{\s!fnt:t:\internalfootreference}{}}}%
+          {\footnotereferenceto}}%
      \bgroup
      \postponenotes
      \aftergroup\dostopnote
@@ -737,12 +744,12 @@
    \doifelse{\noteparameter\c!interaction}\v!no
      {\dodonotesymbol{\lastnotenumber\domovednote\v!previouspage\v!nextpage}%
       \ifconditional\pagewisenotes
-        \rawreference\s!fnt{\s!fnt:f:\internalfootreference}{}%
+        \footnotereferencefrom
       \fi}
      {\gotobox
         {\dodonotesymbol{\lastnotenumber\domovednote\v!previouspage\v!nextpage}}%
         [\s!fnt:t:\internalfootreference]%
-      \rawreference\s!fnt{\s!fnt:f:\internalfootreference}{}}%
+      \footnotereferencefrom}%
    \globallet\lastnotesymbol\relax}
 
 \let\lastnotesymbol\relax

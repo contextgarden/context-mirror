@@ -594,16 +594,16 @@ class TEX
         else
             report('updating file database')
             Kpse.update
-        end
-        if getvariable('luatex') then
-            begin
-                luatools = `texmfstart luatools --format=texmfscripts luatools.lua`.chomp.strip
-                unless luatools.empty? then
-                    runcommand(["luatex","--luaonly=#{luatools}","--generate","--verbose"])
+            if getvariable('luatex') then
+                begin
+                    luatools = `texmfstart luatools --format=texmfscripts luatools.lua`.chomp.strip
+                    unless luatools.empty? then
+                        runcommand(["luatex","--luaonly=#{luatools}","--generate","--verbose"])
+                    end
+                rescue
+                    report("run 'luatex --luaonly=....../luatools.lua --generate' manually")
+                    exit
                 end
-            rescue
-                report("run 'luatex --luaonly=....../luatools.lua --generate' manually")
-                exit
             end
         end
         # goody

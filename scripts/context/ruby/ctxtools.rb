@@ -1612,7 +1612,7 @@ class Commands
     @@languagedata['la' ] = [ 'ec'      , ['lahyph.tex'] ]
     # mnhyph
     @@languagedata['nl' ] = [ 'ec'      , ['nehyph96.tex'] ]
-    @@languagedata['no' ] = [ 'ec'      , ['nohyph.tex'] ]
+    @@languagedata['no' ] = [ 'ec'      , ['nohyphbx.tex','nohyph2.tex','nohyph1.tex','nohyph.tex'] ]
     @@languagedata['agr'] = [ 'agr'     , [['grahyph4.tex','oldgrhyph.tex']] ] # new, todo
     @@languagedata['pl' ] = [ 'ec'      , ['plhyph.tex'] ]
     @@languagedata['pt' ] = [ 'ec'      , ['pthyph.tex'] ]

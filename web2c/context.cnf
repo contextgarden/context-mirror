@@ -205,10 +205,10 @@ mp_buf_size              =   30000
 mf_buf_size              =   30000
 mpost_buf_size           =   30000
 
-max_print_line.pdftex    =     250
-max_print_line.luatex    =     250
-max_print_line.mpost     =     250
-max_print_line.metafun   =     250
+max_print_line.pdftex    =    255
+max_print_line.luatex    =    255
+max_print_line.mpost     =    255
+max_print_line.metafun   =    255
 
 extra_mem_top.mptopdf    = 1000000
 extra_mem_bot.mptopdf    = 1000000
