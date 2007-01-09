@@ -261,7 +261,7 @@
   {\doifnot{\formulaparameter\c!spacebefore}\v!none{\blank[\formulaparameter\c!spacebefore]}}
 
 \def\afterdisplayspace
-  {\doifnot{\formulaparameter\c!spaceafter  }\v!none{\blank[\formulaparameter\c!spaceafter  ]}}
+  {\doifnot{\formulaparameter\c!spaceafter }\v!none{\blank[\formulaparameter\c!spaceafter ]}}
 
 \def\setpredisplaysize#1%
   {\predisplaysize#1\relax
@@ -746,10 +746,31 @@
   {\let\normalleqno\relax \let\leqno\relax
    \let\normalreqno\relax \let\eqno \relax
    \let\doplaceformulanumber\empty}
+
+%D The next code is derived from plain \TEX.
+
+\newif\ifdt@p
+
+\def\displ@y
+  {\global\dt@ptrue
+   \openup\displayopenupvalue % was \openup\jot
+   \everycr
+     {\noalign
+        {\ifdt@p
+           \global\dt@pfalse
+           \ifdim\prevdepth>-1000\p@
+             \vskip-\lineskiplimit
+             \vskip\normallineskiplimit
+           \fi
+         \else
+           \penalty\interdisplaylinepenalty
+         \fi}}}
 
 \let\normaldispl@y\displ@y
 
 \def\displ@y{\resetdisplaymatheq\normaldispl@y}
+
+\def\m@th{\mathsurround\z@}
 
 %D Here we implement a basic math alignment mechanism. Numbers
 %D are also handled. The macros \type {\startinnermath} and

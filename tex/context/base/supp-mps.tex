@@ -2079,21 +2079,27 @@
    \writeMPgraphic{#2}%
    \writeMPgraphic{endfig; end.}%
    \immediate\closeout\MPwrite
-   \immediate\closeout\MPwrite
-   \runMPgraphicstrue
    \executeMPgraphicfile
    \elabelgroup}
 
+% this will go to meta-ini
+
+\def\delaysystemcommand
+  {\ifx\installprogram\undefined
+     \expandafter\executesystemcommand
+   \else
+     \expandafter\installprogram
+   \fi}
+
+\def\MPgraphicfilerunner
+  {texmfstart --ifchanged=\MPgraphicfile.mp texexec --mpstatic \MPgraphicfile.mp}
+
 \ifx\doifmode\undefined
-    \def\executeMPgraphicfile
-      {\executesystemcommand
-        {texmfstart --ifchanged=\MPgraphicfile.mp
-            texexec --mpstatic \MPgraphicfile.mp}}
+  \def\executeMPgraphicfile
+    {\ifrunMPgraphics\@EA\executesystemcommand\else\@EA\delaysystemcommand\fi{\MPgraphicfilerunner}}
 \else
-    \def\executeMPgraphicfile
-      {\doifmode{*\v!first}{\executesystemcommand
-        {texmfstart --ifchanged=\MPgraphicfile.mp
-            texexec --mpstatic \MPgraphicfile.mp}}}
+  \def\executeMPgraphicfile{\doifmode{*\v!first}
+    {\ifrunMPgraphics\@EA\executesystemcommand\else\@EA\delaysystemcommand\fi{\MPgraphicfilerunner}}}
 \fi
 
 %D Special for \XETEX\ (problem with newlines). This will go

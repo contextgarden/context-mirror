@@ -1,0 +1,11 @@
+% This file belongs to the TeX Gyre collection of fonts. The work is released
+% under the GUST Font License. See the MANIFEST-TeX-Gyre-Schola.txt
+% and README-TeX-Gyre-Schola.txt files for the details.
+% For the most recent version of this license see
+% http://www.gust.org.pl/fonts/licenses/GUST-FONT-LICENSE.txt or
+% http://tug.org/fonts/licenses/GUST-FONT-LICENSE.txt
+% 
+t2b-qcsr TeXGyreSchola-Regular "encqt2b ReEncodeFont" <q-t2b.enc <qcsr.pfb
+t2b-qcsri TeXGyreSchola-Italic "encqt2b ReEncodeFont" <q-t2b.enc <qcsri.pfb
+t2b-qcsb TeXGyreSchola-Bold "encqt2b ReEncodeFont" <q-t2b.enc <qcsb.pfb
+t2b-qcsbi TeXGyreSchola-BoldItalic "encqt2b ReEncodeFont" <q-t2b.enc <qcsbi.pfb

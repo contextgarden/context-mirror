@@ -897,6 +897,7 @@ class Language
     end
 
     def load(filenames=@filenames)
+        found = false
         begin
             if filenames then
                 @filenames.each do |fileset|
@@ -907,8 +908,9 @@ class Language
                                 @data += data.gsub(/\%.*$/, '').gsub(/\\message\{.*?\}/, '')
                                 data.gsub!(/(\\patterns|\\hyphenation)\s*\{.*/mo) do '' end
                                 @read += "\n% preamble of file #{fname}\n\n#{data}\n"
-                                report("file #{fname} is loaded")
                                 @data.gsub!(/^[\s\n]+$/mois, '')
+                                report("file #{fname} is loaded")
+                                found = true
                                 break # next fileset
                             end
                         rescue
@@ -919,6 +921,7 @@ class Language
             end
         rescue
         end
+        return found
     end
 
     def valid?
@@ -1184,10 +1187,11 @@ class Language
             commandline.report("processing language #{language}")
             commandline.report("")
             language = Language.new(commandline,language,filenames,encoding)
-            language.load
-            language.convert
-            language.save
-            commandline.report("")
+            if language.load then
+                language.convert
+                language.save
+                commandline.report("")
+            end
         end
     end
 
@@ -1604,15 +1608,16 @@ class Commands
     # ghyphen.readme ghyph31.readme grphyph
     @@languagedata['hr' ] = [ 'ec'      , ['hrhyph.tex'] ]
     @@languagedata['hu' ] = [ 'ec'      , ['huhyphn.tex'] ]
-    @@languagedata['en' ] = [ 'default' , [['ushyphmax.tex','ushyph.tex','hyphen.tex']] ]
-    @@languagedata['us' ] = [ 'default' , [['ushyphmax.tex','ushyph.tex','hyphen.tex']] ]
+    @@languagedata['en' ] = [ 'default' , ['ushyphmax.tex'],['ushyph.tex'],['hyphen.tex'] ]
+    @@languagedata['us' ] = [ 'default' , ['ushyphmax.tex'],['ushyph.tex'],['hyphen.tex'] ]
     # inhyph.tex
     @@languagedata['is' ] = [ 'ec'      , ['ishyph.tex'] ]
     @@languagedata['it' ] = [ 'ec'      , ['ithyph.tex'] ]
     @@languagedata['la' ] = [ 'ec'      , ['lahyph.tex'] ]
     # mnhyph
     @@languagedata['nl' ] = [ 'ec'      , ['nehyph96.tex'] ]
-    @@languagedata['no' ] = [ 'ec'      , ['nohyphbx.tex','nohyph2.tex','nohyph1.tex','nohyph.tex'] ]
+    # @@languagedata['no' ] = [ 'ec'      , ['nohyphbx.tex'],['nohyphb.tex'],['nohyph2.tex'],['nohyph1.tex'],['nohyph.tex'] ]
+    @@languagedata['no' ] = [ 'ec'      , ['asxsx.tex','nohyphbx.tex'],['nohyphb.tex'],['nohyph2.tex'],['nohyph1.tex'],['nohyph.tex'] ]
     @@languagedata['agr'] = [ 'agr'     , [['grahyph4.tex','oldgrhyph.tex']] ] # new, todo
     @@languagedata['pl' ] = [ 'ec'      , ['plhyph.tex'] ]
     @@languagedata['pt' ] = [ 'ec'      , ['pthyph.tex'] ]
@@ -1623,7 +1628,7 @@ class Commands
     # srhyphc.tex / cyrillic
     @@languagedata['sv' ] = [ 'ec'      , ['svhyph.tex'] ]
     @@languagedata['tr' ] = [ 'ec'      , ['tkhyph.tex'] ]
-    @@languagedata['uk' ] = [ 'default' , [['ukhyphen.tex','ukhyph.tex']] ]
+    @@languagedata['uk' ] = [ 'default' , [['ukhyphen.tex'],['ukhyph.tex']] ]
   # @@languagedata['ru' ] = [ 't2a'     , ['ruhyphal.tex'] ] # t2a does not work
     @@languagedata['ru' ] = [ 'cyr'     , ['ruhyphal.tex'] ]
 end

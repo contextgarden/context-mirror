@@ -11,6 +11,10 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
+\beginXETEX
+    \endinput
+\endXETEX
+
 \ifx\pdffontresource\undefined\else\endinput\fi
 
 \writestatus{loading}{Context Encoding Macros (pdf)}
@@ -45,14 +49,30 @@
 %D of the fonts and either flush the information at shipout
 %D time, or at the end of the document.
 
-\unprotect
-
 %D \macros
 %D   {ifincludepdffontresources}
 %D
 %D You can turn of this feature using the following switch.
 
 \newif\ifincludepdffontresources \includepdffontresourcestrue
+
+\ifx\pdfglyphtounicode\undefined \else \loadmarkfile{enco-pfr} \fi
+
+% somehow we cannot preload this beast; also, it's mk dependent
+%
+% \appendtoks
+%   \doifelse{\jobsuffix}{pdf}{\loadmkiifile{pdfr-def.tex}}%
+% \to \everystarttext
+
+% ugly, this should go to the driver spec-tpd
+
+\ifx\pdfgentounicode\undefined \else
+    \ifcase\pdfgentounicode \else
+        \expandafter \expandafter \expandafter \endinput
+    \fi
+\fi
+
+\unprotect
 
 % a problem is that there is always an ec vector added even when
 % we switch to texnansi early; this has to do with the fact that
@@ -195,16 +215,20 @@
 %    \fi}
 
 \def\includepdffontresource
-  {\ifincludepdffontresources
-     \expandafter\ifx\the\font\nullfont \else
-       \ifx\pdffontattr\undefined
-         % we're not using (a recent version of) pdftex
-       \else\ifcase\pdfoutput
-         % we're not in pdf mode
-       \else
-         \doincludepdffontresource
-       \fi\fi
+  {\ifcase\pdfgentounicode
+     \ifincludepdffontresources
+       \expandafter\ifx\the\font\nullfont \else
+         \ifx\pdffontattr\undefined
+           % we're not using (a recent version of) pdftex
+         \else\ifcase\pdfoutput
+           % we're not in pdf mode
+         \else
+           \doincludepdffontresource
+         \fi\fi
+       \fi
      \fi
+   \or
+     \global\let\includepdffontresource\relax % automatic, built in
    \fi}
 
 \def\dododoincludepdffontresource#1% encoding

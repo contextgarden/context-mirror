@@ -57,8 +57,8 @@
      {\color[cow:contour]{\hsmash{\getglyph{CowsLogoContour}{#1}}}%
       \color[cow:normal]         {\getglyph{CowsLogo}       {#1}}}}
 
-\def\CowLogo#1%
-  {\getglyph{CowsLogo}{\char#1\relax}}
+\def\CowLogo       #1{\getglyph{CowsLogo}       {\char#1\relax}}
+\def\CowContourLogo#1{\getglyph{CowsLogoContour}{\char#1\relax}}
 
 \chardef\CowPragmaNormal= 1
 \chardef\CowPragmaShaded=20
@@ -98,34 +98,34 @@
 
 \startsymbolset[cowcontour]
 
-\definesymbol[CowPragmaADE]        [\CowLogo{0}]
-\definesymbol[CowPragma]           [\CowLogo{1}]
-\definesymbol[CowConTeXt]          [\CowLogo{2}]
-\definesymbol[CowConTeXtComplete]  [\CowLogo{3}]
-\definesymbol[CowConTeXtShadow]    [\CowLogo{4}]
-\definesymbol[CowConTeXtContour]   [\CowLogo{5}]
-\definesymbol[CowConTeXtOutline]   [\CowLogo{6}]
-\definesymbol[CowConTeXtDots]      [\CowLogo{7}]
-\definesymbol[CowMP]               [\CowLogo{8}]
-\definesymbol[CowMPComplete]       [\CowLogo{9}]
-\definesymbol[CowTeX]              [\CowLogo{10}]
-\definesymbol[CowTeXComplete]      [\CowLogo{11}]
-\definesymbol[CowBoo]              [\CowLogo{12}]
-\definesymbol[CowCow]              [\CowLogo{13}]
-\definesymbol[CowExampleComplete]  [\CowLogo{14}]
-\definesymbol[CowFoxetComplete]    [\CowLogo{15}]
-\definesymbol[CowMetafun]          [\CowLogo{16}]
-\definesymbol[CowMetafunComplete]  [\CowLogo{17}]
-\definesymbol[CowTEXComplete]      [\CowLogo{18}]
-\definesymbol[CowWikiComplete]     [\CowLogo{19}]
-\definesymbol[CowPragmaADEComplete][\CowLogo{20}]
-\definesymbol[CowPragmaComplete]   [\CowLogo{21}]
-\definesymbol[CowExample]          [\CowLogo{22}]
-\definesymbol[CowFoxet]            [\CowLogo{23}]
-\definesymbol[CowTEX]              [\CowLogo{24}]
-\definesymbol[CowWiki]             [\CowLogo{25}]
-\definesymbol[CowCowTeXtComplete]  [\CowLogo{26}]
-\definesymbol[CowCowTeXt]          [\CowLogo{27}]
+\definesymbol[CowPragmaADE]        [\CowContourLogo{0}]
+\definesymbol[CowPragma]           [\CowContourLogo{1}]
+\definesymbol[CowConTeXt]          [\CowContourLogo{2}]
+\definesymbol[CowConTeXtComplete]  [\CowContourLogo{3}]
+\definesymbol[CowConTeXtShadow]    [\CowContourLogo{4}]
+\definesymbol[CowConTeXtContour]   [\CowContourLogo{5}]
+\definesymbol[CowConTeXtOutline]   [\CowContourLogo{6}]
+\definesymbol[CowConTeXtDots]      [\CowContourLogo{7}]
+\definesymbol[CowMP]               [\CowContourLogo{8}]
+\definesymbol[CowMPComplete]       [\CowContourLogo{9}]
+\definesymbol[CowTeX]              [\CowContourLogo{10}]
+\definesymbol[CowTeXComplete]      [\CowContourLogo{11}]
+\definesymbol[CowBoo]              [\CowContourLogo{12}]
+\definesymbol[CowCow]              [\CowContourLogo{13}]
+\definesymbol[CowExampleComplete]  [\CowContourLogo{14}]
+\definesymbol[CowFoxetComplete]    [\CowContourLogo{15}]
+\definesymbol[CowMetafun]          [\CowContourLogo{16}]
+\definesymbol[CowMetafunComplete]  [\CowContourLogo{17}]
+\definesymbol[CowTEXComplete]      [\CowContourLogo{18}]
+\definesymbol[CowWikiComplete]     [\CowContourLogo{19}]
+\definesymbol[CowPragmaADEComplete][\CowContourLogo{20}]
+\definesymbol[CowPragmaComplete]   [\CowContourLogo{21}]
+\definesymbol[CowExample]          [\CowContourLogo{22}]
+\definesymbol[CowFoxet]            [\CowContourLogo{23}]
+\definesymbol[CowTEX]              [\CowContourLogo{24}]
+\definesymbol[CowWiki]             [\CowContourLogo{25}]
+\definesymbol[CowCowTeXtComplete]  [\CowContourLogo{26}]
+\definesymbol[CowCowTeXt]          [\CowContourLogo{27}]
 
 \stopsymbolset
 

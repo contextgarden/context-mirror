@@ -437,30 +437,34 @@ job.setvariable('result',result)
                     f << "\\starttext\n"
                     files.each do |filename|
                         result = @commandline.checkedoption('result','texexec')
-                        if (filename !~ /^texexec/io) && (filename !~ /^#{result}/) then
-                            report("copying file: #{filename}")
-                            f <<  "\\getfiguredimensions\n"
-                            f <<  "  [#{filename}]\n"
-                            f <<  "  [scale=#{scale},\n"
-                            f <<  "   page=1,\n"
-                            f <<  "   size=trimbox\n" if trim
-                            f <<  "]\n"
-                            f <<  "\\definepapersize\n"
-                            f <<  "  [copy]\n"
-                            f <<  "  [width=\\figurewidth,\n"
-                            f <<  "   height=\\figureheight]\n"
-                            f <<  "\\setuppapersize\n"
-                            f <<  "  [copy][copy]\n"
-                            f <<  "\\setuplayout\n"
-                            f <<  "  [page]\n"
-                            f <<  "\\setupexternalfigures\n"
-                            f <<  "  [directory=]\n"
-                            f <<  "\\copypages\n"
-                            f <<  "  [#{filename}]\n"
-                            f <<  "  [scale=#{scale},\n"
-                            f <<  "   marking=on,\n" if @commandline.option('markings')
-                            f <<  "   size=trimbox,\n" if trim
-                            f <<  "   offset=#{paperoffset}]\n"
+                        begin
+                            if (filename !~ /^texexec/io) && (filename !~ /^#{result}/) then
+                                report("copying file: #{filename}")
+                                f <<  "\\getfiguredimensions\n"
+                                f <<  "  [#{filename}]\n"
+                                f <<  "  [scale=#{scale},\n"
+                                f <<  "   page=1,\n"
+                                f <<  "   size=trimbox\n" if trim
+                                f <<  "]\n"
+                                f <<  "\\definepapersize\n"
+                                f <<  "  [copy]\n"
+                                f <<  "  [width=\\figurewidth,\n"
+                                f <<  "   height=\\figureheight]\n"
+                                f <<  "\\setuppapersize\n"
+                                f <<  "  [copy][copy]\n"
+                                f <<  "\\setuplayout\n"
+                                f <<  "  [page]\n"
+                                f <<  "\\setupexternalfigures\n"
+                                f <<  "  [directory=]\n"
+                                f <<  "\\copypages\n"
+                                f <<  "  [#{filename}]\n"
+                                f <<  "  [scale=#{scale},\n"
+                                f <<  "   marking=on,\n" if @commandline.option('markings')
+                                f <<  "   size=trimbox,\n" if trim
+                                f <<  "   offset=#{paperoffset}]\n"
+                            end
+                        rescue
+                            report("wrong specification")
                         end
                     end
                     f << "\\stoptext\n"

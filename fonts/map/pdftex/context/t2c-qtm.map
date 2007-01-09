@@ -1,0 +1,11 @@
+% This file belongs to the TeX Gyre collection of fonts. The work is released
+% under the GUST Font License. See the MANIFEST-TeX-Gyre-Termes.txt
+% and README-TeX-Gyre-Termes.txt files for the details.
+% For the most recent version of this license see
+% http://www.gust.org.pl/fonts/licenses/GUST-FONT-LICENSE.txt or
+% http://tug.org/fonts/licenses/GUST-FONT-LICENSE.txt
+% 
+t2c-qtmr TeXGyreTermes-Regular "encqt2c ReEncodeFont" <q-t2c.enc <qtmr.pfb
+t2c-qtmri TeXGyreTermes-Italic "encqt2c ReEncodeFont" <q-t2c.enc <qtmri.pfb
+t2c-qtmb TeXGyreTermes-Bold "encqt2c ReEncodeFont" <q-t2c.enc <qtmb.pfb
+t2c-qtmbi TeXGyreTermes-BoldItalic "encqt2c ReEncodeFont" <q-t2c.enc <qtmbi.pfb

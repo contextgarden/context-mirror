@@ -738,6 +738,40 @@ class Commands
 
     end
 
+    # name                                 type         emb sub uni object ID
+    # ------------------------------------ ------------ --- --- --- ---------
+    # EOPLBP+TimesNewRomanPSMT             TrueType     yes yes no     167  0
+    # Times-Roman                          TrueType     no  no  no      95  0
+    # EPBAAB+Helvetica                     Type 1C      yes yes yes    108  0
+    # EPBMLE+Helvetica-Oblique             Type 1C      yes yes yes    111  0
+    # Helvetica                            TrueType     no  no  no     112  0
+
+    def checkembedded
+        $stderr = $stdout
+        $stdout.flush
+        if @commandline.option('pattern') then
+            # **/*.pdf
+            filenames, n = globfiles(@commandline.option('pattern'),'pdf'), 0
+        else
+            filenames, n = findfiles('pdf'), 0
+        end
+        filenames.sort.each do |file|
+            report("= checking #{File.expand_path(file)}")
+            result = `pdffonts #{file}`.chomp
+            lines = result.split(/\n/)
+            if result =~ /emb\s+sub\s+uni/io then
+                lines.each do |line|
+                    report("! #{line}") if line =~ /no\s+(no|yes)\s+(no|yes)/io
+                end
+            else
+                lines.each do |line|
+                    report("? #{line}")
+                end
+            end
+            report("")
+        end
+    end
+
     def countpages
         if @commandline.option('pattern') then
             filenames, n = globfiles(@commandline.option('pattern'),'pdf'), 0
@@ -802,6 +836,7 @@ commandline.registeraction('convertimage',    'filename [--retain --subpath]')
 commandline.registeraction('downsampleimage', 'filename [--retain --subpath --lowres --normal]')
 commandline.registeraction('info',            'filename')
 commandline.registeraction('countpages',      '[--pattern --threshold]')
+commandline.registeraction('checkembedded',   '[--pattern]')
 
 commandline.registeraction('analyzefile' ,    'filename')
 

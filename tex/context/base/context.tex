@@ -42,7 +42,7 @@
 %D your styles an modules.
 
 \edef\contextformat {\jobname}
-\edef\contextversion{2007.01.02 10:34}
+\edef\contextversion{2007.01.09 20:04}
 
 %D For those who want to use this:
 
@@ -383,11 +383,15 @@
 %D content. Here we also redefine \type{\it} as {\it italic}
 %D instead of italian.
 
+\loadmkivfile{font-set.tex}
+
 \loadcorefile{font-ini.tex}
 \loadcorefile{font-uni.tex}
 \loadcorefile{font-bfm.tex}
 
 \loadcorefile{enco-pfr.tex}
+
+%loadmkiifile{pdfr-def.tex} -- dvi/pdf bugged, must be done runtime anyway
 
 \loadcorefile{type-ini.tex}
 \loadcorefile{type-def.tex}

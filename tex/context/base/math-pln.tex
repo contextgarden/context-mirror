@@ -16,7 +16,8 @@
 
 \unprotect
 
-\def\m@th{\mathsurround\z@}
+\ifx\displ@y\unefined \let\displ@y\relax\fi
+\ifx\m@th   \unefined \let\m@th   \relax\fi
 
 \newbox\rootbox
 
@@ -47,15 +48,10 @@
   {\lineskiplimit-\maxdimen
    \oalign}
 
-{\catcode`p=12 \catcode`t=12 \gdef\\#1pt{#1}} \let\getf@ctor=\\
-
 \def\sh@ft#1% kern by #1 times the current slant
   {\dimen@#1%
-   \kern\expandafter\getf@ctor\the\slantperpoint
+   \kern\expandafter\withoutpt\the\slantperpoint
    \dimen@}
-
-% \def\copyright % will be overloaded
-%   {{\ooalign{\hfil\raise.07ex\hbox{c}\hfil\crcr\Orb}}}
 
 \def\dots
   {\relax\ifmmode\ldots\else$\m@th\ldots\,$\fi}
@@ -93,8 +89,6 @@
    \bracelu\leaders\vrule\!!height\ht\z@\!!depth\z@\hfill\bracerd
    \braceld\leaders\vrule\!!height\ht\z@\!!depth\z@\hfill\braceru$}
 
-\ifx\bye\undefined \def\bye{\par\vfill\supereject\end} \fi
-
 \let\sp=^ % will become obsolete
 \let\sb=_ % will become obsolete
 
@@ -110,18 +104,6 @@
 
 \def\prim@s
  {\prime\futurelet\next\pr@m@s}
-
-% \def\pr@m@s
-%   {\ifx'\next
-%      \let\nxt\pr@@@s
-%    \else
-%      \ifx^\next
-%        \let\nxt\pr@@@t
-%      \else
-%        \let\nxt\egroup
-%      \fi
-%    \fi
-%    \nxt}
 
 \def\pr@m@s
   {\ifx'\next
@@ -312,23 +294,6 @@
         {\strut\hfil$\displaystyle{##}$&$\displaystyle{{}##}$\hfil\crcr
          #1\crcr}}%
    \,}
-
-\newif\ifdt@p
-
-\def\displ@y
-  {\global\dt@ptrue
-   \openup\displayopenupvalue % was \openup\jot
-   \everycr
-     {\noalign
-        {\ifdt@p
-           \global\dt@pfalse
-           \ifdim\prevdepth>-1000\p@
-             \vskip-\lineskiplimit
-             \vskip\normallineskiplimit
-           \fi
-         \else
-           \penalty\interdisplaylinepenalty
-         \fi}}}
 
 \def\@lign % restore inside \displ@y
   {\tabskip\z@skip

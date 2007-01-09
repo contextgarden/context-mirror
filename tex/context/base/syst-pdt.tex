@@ -37,7 +37,8 @@
 \bindprimitive ifabsdim       ifpdfabsdim
 \bindprimitive ifabsnum       ifpdfabsnum
 
-\ifx\pdfobjcompresslevel\undefined \newcount\pdfobjcompresslevel \fi
+\ifx\pdfobjcompresslevel\undefined \newcount\pdfobjcompresslevel \else \pdfobjcompresslevel=3 \fi
+\ifx\pdfgentounicode    \undefined \newcount\pdfgentounicode     \else \pdfgentounicode    =1 \fi
 
 \def\nopdfcompression % for myself
   {\pdfcompresslevel   \zerocount

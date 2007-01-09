@@ -1,15 +1,15 @@
-euromo   <euromo.pfb
-euromob  <euromob.pfb
-euromoi  <euromoi.pfb
-euromobi <euromobi.pfb
-eurosa   <eurosa.pfb
-eurosab  <eurosab.pfb
-eurosai  <eurosai.pfb
-eurosabi <eurosebi.pfb
-eurose   <eurose.pfb
-euroseb  <euroseb.pfb
-eurosei  <eurosei.pfb
-eurosebi <eurosebi.pfb
+euromo   EuroMono-Regular      <euromo.pfb
+euromob  EuroMono-Bold         <euromob.pfb
+euromoi  EuroMono-Italic       <euromoi.pfb
+euromobi EuroMono-BoldItalic   <euromobi.pfb
+eurosa   EuroSans-Regular      <eurosa.pfb
+eurosab  EuroSans-Bold         <eurosab.pfb
+eurosai  EuroSans-Italic       <eurosai.pfb
+eurosabi EuroSans-BoldItalic   <eurosebi.pfb
+eurose   EuroSerif-Regular     <eurose.pfb
+euroseb  EuroSerif-Bold        <euroseb.pfb
+eurosei  EuroSerif-Italic      <eurosei.pfb
+eurosebi EuroSerif-BoldItalic  <eurosebi.pfb
 
 % euromo   <_2______.pfb
 % euromob  <_2b_____.pfb

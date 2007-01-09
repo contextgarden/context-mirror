@@ -1,0 +1,11 @@
+% This file belongs to the TeX Gyre collection of fonts. The work is released
+% under the GUST Font License. See the MANIFEST-TeX-Gyre-Bonum.txt
+% and README-TeX-Gyre-Bonum.txt files for the details.
+% For the most recent version of this license see
+% http://www.gust.org.pl/fonts/licenses/GUST-FONT-LICENSE.txt or
+% http://tug.org/fonts/licenses/GUST-FONT-LICENSE.txt
+% 
+t2a-qbkr TeXGyreBonum-Regular "encqt2a ReEncodeFont" <q-t2a.enc <qbkr.pfb
+t2a-qbkri TeXGyreBonum-Italic "encqt2a ReEncodeFont" <q-t2a.enc <qbkri.pfb
+t2a-qbkb TeXGyreBonum-Bold "encqt2a ReEncodeFont" <q-t2a.enc <qbkb.pfb
+t2a-qbkbi TeXGyreBonum-BoldItalic "encqt2a ReEncodeFont" <q-t2a.enc <qbkbi.pfb

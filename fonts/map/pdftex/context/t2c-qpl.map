@@ -1,0 +1,11 @@
+% This file belongs to the TeX Gyre collection of fonts. The work is released
+% under the GUST Font License. See the MANIFEST-TeX-Gyre-Pagella.txt
+% and README-TeX-Gyre-Pagella.txt files for the details.
+% For the most recent version of this license see
+% http://www.gust.org.pl/fonts/licenses/GUST-FONT-LICENSE.txt or
+% http://tug.org/fonts/licenses/GUST-FONT-LICENSE.txt
+% 
+t2c-qplr TeXGyrePagella-Regular "encqt2c ReEncodeFont" <q-t2c.enc <qplr.pfb
+t2c-qplri TeXGyrePagella-Italic "encqt2c ReEncodeFont" <q-t2c.enc <qplri.pfb
+t2c-qplb TeXGyrePagella-Bold "encqt2c ReEncodeFont" <q-t2c.enc <qplb.pfb
+t2c-qplbi TeXGyrePagella-BoldItalic "encqt2c ReEncodeFont" <q-t2c.enc <qplbi.pfb

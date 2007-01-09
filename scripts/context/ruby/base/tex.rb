@@ -67,26 +67,27 @@ class TEX
 
     include Variables
 
-    @@texengines = Hash.new
-    @@mpsengines = Hash.new
-    @@backends   = Hash.new
-    @@mappaths   = Hash.new
-    @@runoptions = Hash.new
-    @@texformats = Hash.new
-    @@mpsformats = Hash.new
-    @@prognames  = Hash.new
-    @@texmakestr = Hash.new
-    @@texprocstr = Hash.new
-    @@mpsmakestr = Hash.new
-    @@mpsprocstr = Hash.new
+    @@texengines   = Hash.new
+    @@mpsengines   = Hash.new
+    @@backends     = Hash.new
+    @@mappaths     = Hash.new
+    @@runoptions   = Hash.new
+    @@draftoptions = Hash.new
+    @@texformats   = Hash.new
+    @@mpsformats   = Hash.new
+    @@prognames    = Hash.new
+    @@texmakestr   = Hash.new
+    @@texprocstr   = Hash.new
+    @@mpsmakestr   = Hash.new
+    @@mpsprocstr   = Hash.new
 
-    @@texmethods = Hash.new
-    @@mpsmethods = Hash.new
+    @@texmethods   = Hash.new
+    @@mpsmethods   = Hash.new
 
-    @@pdftex     = 'pdftex' # new default, pdfetex is gone
+    @@pdftex       = 'pdftex' # new default, pdfetex is gone
 
-    @@luafiles  = "luafiles.tmp"
-    @@luatarget = "lua/context"
+    @@luafiles     = "luafiles.tmp"
+    @@luatarget    = "lua/context"
 
     ENV['PATH'].split(File::PATH_SEPARATOR).each do |p|
         if System.unix? then
@@ -166,16 +167,18 @@ class TEX
      'cont-fr','cont-cz','cont-ro','cont-uk']      .each do |f| @@texprocstr[f] = "\\emergencyend"  end
 
   # @@runoptions['xetex']   = ['--output-driver \\\"-d 4 -V 5\\\"'] # we need the pos pass
-    @@runoptions['xetex']   = ['--8bit  -no-pdf'] # from now on we assume (x)dvipdfmx to be used
-    @@runoptions['pdfetex'] = ['--8bit ']
-    @@runoptions['pdftex']  = ['--8bit ']         # pdftex is now pdfetex
-    @@runoptions['luatex']  = ['']
-    @@runoptions['aleph']   = ['--8bit ']
-    @@runoptions['mpost']   = ['--8bit ']
+    @@runoptions['xetex']   = ['--8bit,-no-pdf'] # from now on we assume (x)dvipdfmx to be used
+    @@runoptions['pdfetex'] = ['--8bit']
+    @@runoptions['pdftex']  = ['--8bit']         # pdftex is now pdfetex
+    @@runoptions['luatex']  = ['--file-line-error']
+    @@runoptions['aleph']   = ['--8bit']
+    @@runoptions['mpost']   = ['--8bit']
+
+    @@draftoptions['pdftex'] = ['--draftmode']
 
     @@booleanvars = [
         'batchmode', 'nonstopmode', 'fast', 'fastdisabled', 'silentmode', 'final',
-        'paranoid', 'notparanoid', 'nobanner', 'once', 'allpatterns',
+        'paranoid', 'notparanoid', 'nobanner', 'once', 'allpatterns', 'draft',
         'nompmode', 'nomprun', 'automprun', 'combine',
         'nomapfiles', 'local',
         'arrange', 'noarrange',
@@ -192,7 +195,7 @@ class TEX
         'filters', 'usemodules', 'environments', 'separation', 'setuppath',
         'arguments', 'input', 'output', 'randomseed', 'modes', 'mode', 'filename',
         'ctxfile', 'printformat', 'paperformat', 'paperoffset',
-        'timeout'
+        'timeout', 'passon'
     ]
     @@standardvars = [
         'mainlanguage', 'bodyfont', 'language'
@@ -377,7 +380,18 @@ class TEX
     def mpsmethod(format) @@mpsmethods[str] || @@mpsmethods['standard'] end
 
     def runoptions(engine)
-        if @@runoptions.key?(engine) then @@runoptions[engine].join(' ') else '' end
+        options = if getvariable('draft') then @@draftoptions[engine] else [] end
+        begin
+            if str = getvariable('passon') then
+                options = [options,str.split(' ')].flatten
+            end
+        rescue
+        end
+        if @@runoptions.key?(engine) then
+            [options,@@runoptions[engine]].flatten.join(' ')
+        else
+            options.join(' ')
+        end
     end
 
     # private

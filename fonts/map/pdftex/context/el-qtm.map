@@ -1,0 +1,15 @@
+% This file belongs to the TeX Gyre collection of fonts. The work is released
+% under the GUST Font License. See the MANIFEST-TeX-Gyre-Termes.txt
+% and README-TeX-Gyre-Termes.txt files for the details.
+% For the most recent version of this license see
+% http://www.gust.org.pl/fonts/licenses/GUST-FONT-LICENSE.txt or
+% http://tug.org/fonts/licenses/GUST-FONT-LICENSE.txt
+% 
+el-qtmr TeXGyreTermes-Regular "encqel ReEncodeFont" <q-el.enc <qtmr.pfb
+el-qtmri TeXGyreTermes-Italic "encqel ReEncodeFont" <q-el.enc <qtmri.pfb
+el-qtmb TeXGyreTermes-Bold "encqel ReEncodeFont" <q-el.enc <qtmb.pfb
+el-qtmbi TeXGyreTermes-BoldItalic "encqel ReEncodeFont" <q-el.enc <qtmbi.pfb
+el-qtmr-sc TeXGyreTermes-Regular "encqelsc ReEncodeFont" <q-el-sc.enc <qtmr.pfb
+el-qtmri-sc TeXGyreTermes-Italic "encqelsc ReEncodeFont" <q-el-sc.enc <qtmri.pfb
+el-qtmb-sc TeXGyreTermes-Bold "encqelsc ReEncodeFont" <q-el-sc.enc <qtmb.pfb
+el-qtmbi-sc TeXGyreTermes-BoldItalic "encqelsc ReEncodeFont" <q-el-sc.enc <qtmbi.pfb

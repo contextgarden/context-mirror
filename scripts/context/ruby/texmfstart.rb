@@ -1520,7 +1520,7 @@ def set_applications(page=1)
     $applications['perl']     = $applications['pl']  = 'perl'
     $applications['ruby']     = $applications['rb']  = 'ruby'
     $applications['python']   = $applications['py']  = 'python'
-    $applications['lua']      = $applications['lua'] = 'lua'
+    $applications['lua']      = $applications['lua'] = 'luatex --luaonly'
     $applications['java']     = $applications['jar'] = 'java'
 
     if $mswindows then

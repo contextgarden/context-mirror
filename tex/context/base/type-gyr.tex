@@ -33,12 +33,14 @@
 \definetypescriptprefix [n:pagella] [TeXGyrePagella]
 \definetypescriptprefix [n:termes]  [TeXGyreTermes]
 \definetypescriptprefix [n:bonum]   [TeXGyreBonum]
+\definetypescriptprefix [n:schola]  [TeXGyreSchola]
 
 \definetypescriptprefix [f:pagella] [pl]
 \definetypescriptprefix [f:termes]  [tm]
 \definetypescriptprefix [f:bonum]   [bk]
+\definetypescriptprefix [f:schola]  [cs]
 
-\starttypescript [serif] [pagella,termes,bonum] [texnansi,ec,8r,t5,qx]
+\starttypescript [serif] [pagella,termes,bonum,schola] [ec,texnansi,cs,el,qx,rm,t5,t2a,t2b,t2c,l7x]
   \loadmapfile[\typescriptthree-q\typescriptprefix{f:\typescripttwo}.map]
 
   \definefontsynonym [\typescriptprefix{n:\typescripttwo}-Regular]        [\typescriptthree-q\typescriptprefix{f:\typescripttwo}r]     [encoding=\typescriptthree]
@@ -54,7 +56,7 @@
   \definefontsynonym [\typescriptprefix{n:\typescripttwo}-BoldSlanted]    [\typescriptprefix{n:\typescripttwo}-BoldItalic]
 \stoptypescript
 
-\starttypescript [serif] [pagella,termes,bonum] [name]
+\starttypescript [serif] [pagella,termes,bonum,schola] [name]
   \definefontsynonym [Serif]                [\typescriptprefix{n:\typescripttwo}-Regular]
   \definefontsynonym [SerifItalic]          [\typescriptprefix{n:\typescripttwo}-Italic]
   \definefontsynonym [SerifBold]            [\typescriptprefix{n:\typescripttwo}-Bold]
@@ -77,7 +79,7 @@
 
 \stoptypescript
 
-\starttypescript [map] [pagella,termes,bonum] [ec,texnansi,t5,8r]
+\starttypescript [map] [pagella,termes,bonum,schola] [ec,texnansi,cs,el,qx,rm,t5,t2a,t2b,t2c,l7x]
   \loadmapfile[\typescriptthree-q\typescriptprefix{f:\typescripttwo}.map]
 \stoptypescript
 
@@ -90,7 +92,7 @@
 % qplb  TeXGyrePagella-Bold
 % qplbi TeXGyrePagella-BoldItalic
 
-\starttypescript [serif] [palatino] [texnansi,ec,8r,t5,qx]
+\starttypescript [serif] [palatino] [ec,texnansi,cs,el,qx,rm,t5,t2a,t2b,t2c,l7x]
   \loadmapfile[\typescriptthree-qpl.map]
 
   \definefontsynonym [Palatino]             [\typescriptthree-qplr]    [encoding=\typescriptthree]
@@ -110,7 +112,7 @@
 % qtmb  TeXGyreTermes-Bold
 % qtmbi TeXGyreTermes-BoldItalic
 
-\starttypescript [serif] [times] [texnansi,ec,8r,t5,qx]
+\starttypescript [serif] [times] [ec,texnansi,cs,el,qx,rm,t5,t2a,t2b,t2c,l7x]
   \loadmapfile[\typescriptthree-qtm.map]
 
   \definefontsynonym [Times-Roman]       [\typescriptthree-qtmr]    [encoding=\typescriptthree]
@@ -130,7 +132,7 @@
 % qtmb  TeXGyreBonum-Bold
 % qtmbi TeXGyreBonum-BoldItalic
 
-\starttypescript [serif] [bookman] [texnansi,ec,8r,t5,qx]
+\starttypescript [serif] [bookman] [ec,texnansi,cs,el,qx,rm,t5,t2a,t2b,t2c,l7x]
   \loadmapfile[\typescriptthree-qbk.map]
 
   \definefontsynonym [Bookman-Light]           [\typescriptthree-qbkr]    [encoding=\typescriptthree]
@@ -141,6 +143,26 @@
 
   \definefontsynonym [Bookman-LightSlanted]    [Bookman-LightItalic]
   \definefontsynonym [Bookman-DemiBoldSlanted] [Bookman-DemiBoldItalic]
+\stoptypescript
+
+% TeXGyreScola
+%
+% qcsr  TeXGyreSchola-Regular
+% qcsri TeXGyreSchola-Italic
+% qcsb  TeXGyreSchola-Bold
+% qcsbi TeXGyreSchola-BoldItalic
+
+\starttypescript [serif] [schoolbook] [ec,texnansi,cs,el,qx,rm,t5,t2a,t2b,t2c,l7x]
+  \loadmapfile[\typescriptthree-qcs.map]
+
+  \definefontsynonym [Schoolbook-Roman]       [\typescriptthree-qcsr]    [encoding=\typescriptthree]
+  \definefontsynonym [Schoolbook-Italic]      [\typescriptthree-qcsri]   [encoding=\typescriptthree]
+  \definefontsynonym [Schoolbook-Bold]        [\typescriptthree-qcsb]    [encoding=\typescriptthree]
+  \definefontsynonym [Schoolbook-BoldItalic]  [\typescriptthree-qcsbi]   [encoding=\typescriptthree]
+  \definefontsynonym [Schoolbook-Roman-Caps]  [\typescriptthree-qcsr-sc] [encoding=\typescriptthree]
+
+  \definefontsynonym [Schoolbook-Slanted]     [Schoolbook-Italic]
+  \definefontsynonym [Schoolbook-BoldSlanted] [Schoolbook-BoldItalic]
 \stoptypescript
 
 \stoptypescriptcollection

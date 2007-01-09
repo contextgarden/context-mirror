@@ -944,6 +944,8 @@
 \def\ejectpage     {\doejectpage\eject}
 \def\superejectpage{\doejectpage\supereject}
 
+\ifx\bye\undefined \def\bye{\par\vfill\supereject\end} \fi % plain tex command
+
 % floats
 %
 % \def\ejectinsert
