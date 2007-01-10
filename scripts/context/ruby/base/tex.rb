@@ -634,6 +634,7 @@ class TEX
         # generate tex formats
         unless texformats || mpsformats then
             report('provide valid format (name.tex, name.mp, ...) or format id (metafun, en, nl, ...)')
+            setvariable('error','no format specified')
         end
         if texformats && texengine then
             report("using tex engine #{texengine}")
@@ -677,11 +678,14 @@ class TEX
                 mpsformats.each do |mpsformat|
                     report("generating mps format #{mpsformat}")
                     progname = validprogname([getvariable('progname'),mpsformat,mpsengine])
-                    runcommand([quoted(mpsengine),prognameflag(progname),iniflag,tcxflag,runoptions(mpsengine),mpsformat,mpsmakeextras(mpsformat)])
+                    if not runcommand([quoted(mpsengine),prognameflag(progname),iniflag,tcxflag,runoptions(mpsengine),mpsformat,mpsmakeextras(mpsformat)]) then
+                        setvariable('error','no format made')
+                    end
                 end
             else
                 report("unable to make format due to lack of permissions")
                 mpsformatpath = ''
+                setvariable('error','file permission problem')
             end
         else
             mpsformatpath = ''

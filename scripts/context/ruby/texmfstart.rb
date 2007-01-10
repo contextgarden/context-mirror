@@ -2490,27 +2490,35 @@ def execute(arguments)
     if $selfmerge then
         output("ruby libraries are cleaned up") if SelfMerge::cleanup
         output("ruby libraries are merged")     if SelfMerge::merge
+        return true
     elsif $selfcleanup then
         output("ruby libraries are cleaned up") if SelfMerge::cleanup
+        return true
     elsif $serve then
         if ENV['KPSEMETHOD'] && ENV['KPSEPORT'] then
             # # kpse_merge_done: require 'base/kpseremote'
             begin
                 KpseRemote::start_server
             rescue
+                return false
+            else
+                return true
             end
         else
             usage
             puts("")
             puts("message  : set 'KPSEMETHOD' and 'KPSEPORT' variables")
+            return false
         end
     elsif $help || ! $filename || $filename.empty? then
         usage
         loadtree($tree)
         loadenvironment($environment)
         show_environment()
+        return true
     elsif $batch && $filename && ! $filename.empty? then
         # todo, take commands from file and avoid multiple starts and checks
+        return false
     else
         report("texmfstart version #{$version}")
         loadtree($tree)
@@ -2531,33 +2539,42 @@ def execute(arguments)
                     make(filename,$mswindows,!$mswindows,$remove)
                 end
             end
+            return true # guess
         elsif $browser && $filename =~ /^http\:\/\// then
-            launch($filename)
+            return launch($filename)
         else
             begin
                 process do
                     if $direct || $filename =~ /^bin\:/ then
-                        direct($filename)
+                        return direct($filename)
                     elsif $edit && ! $editor.empty? then
-                        edit($filename)
+                        return edit($filename)
                     else # script: or no prefix
                         command = find(shortpathname($filename),$program)
                         if command then
                             register("THREAD",File.dirname(File.expand_path(command)))
-                            run(command)
+                            return run(command)
                         else
                             report('unable to locate program')
+                            return false
                         end
                     end
                 end
             rescue
                 report('fatal error in starting process')
+                return false
             end
         end
     end
 
 end
 
-execute(ARGV)
+if execute(ARGV) then
+    report("\nexecution was successful") if $verbose
+    exit(1)
+else
+    report("\nexecution failed") if $verbose
+    exit(0)
+end
 
-exit (if ($?.to_i rescue 0) > 0 then 1 else 0 end)
+# exit (if ($?.to_i rescue 0) > 0 then 1 else 0 end)

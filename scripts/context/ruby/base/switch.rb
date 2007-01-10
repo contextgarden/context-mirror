@@ -86,7 +86,7 @@ module CommandBase
 
     def initialize(commandline,logger,banner)
         @commandline, @logger, @banner = commandline, logger, banner
-        @forcenewline, @versiondone = false, false
+        @forcenewline, @versiondone, @error = false, false, false
         version if @commandline.option('version')
     end
 
@@ -115,6 +115,23 @@ module CommandBase
 
     def report(*str)
         initlogger ; @logger.report(str)
+    end
+
+    def seterror
+        @error = true
+    end
+
+    def error?
+        return @error
+    end
+
+    def exit
+        if @error then Kernel.exit(1) else Kernel.exit(0) end
+    end
+
+    def execute(str=nil)
+        send(str || action || 'main')
+        exit
     end
 
     def debug(*str)

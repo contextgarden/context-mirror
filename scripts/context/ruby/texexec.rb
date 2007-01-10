@@ -36,6 +36,7 @@ class Commands
             end
             job.makeformats
             job.inspect && Kpse.inspect if @commandline.option('verbose')
+            seterror if job.error?
         end
     end
 
@@ -60,7 +61,7 @@ class Commands
             prepare(job)
             job.processtex
             job.inspect && Kpse.inspect if @commandline.option('verbose')
-            exit 1 if job.error?
+            seterror if job.error?
         end
     end
 
@@ -70,7 +71,7 @@ class Commands
             prepare(job)
             job.processmptex
             job.inspect && Kpse.inspect  if @commandline.option('verbose')
-            exit 1 if job.error?
+            seterror if job.error?
         end
     end
 
@@ -80,7 +81,7 @@ class Commands
             prepare(job)
             job.processmpxtex
             job.inspect && Kpse.inspect  if @commandline.option('verbose')
-            exit 1 if job.error?
+            seterror if job.error?
         end
     end
 
@@ -90,7 +91,7 @@ class Commands
             prepare(job)
             job.processmpgraphic
             job.inspect && Kpse.inspect  if @commandline.option('verbose')
-            exit 1 if job.error?
+            seterror if job.error?
         end
     end
 
@@ -100,7 +101,7 @@ class Commands
             prepare(job)
             job.processmpstatic
             job.inspect && Kpse.inspect  if @commandline.option('verbose')
-            exit 1 if job.error?
+            seterror if job.error?
         end
     end
 
@@ -216,11 +217,11 @@ class Commands
                     fnames.each do |ffname|
                         if msuffixes.include?(File.splitname(ffname)[1]) && FileTest.file?(ffname) then
                             if mod = File.open(job.tempfilename('tex'),'w') then
-if File.suffix(ffname) =~ /^(mkii|mkiv)$/o then
-    markfile = $1
-else
-    markfile = nil
-end
+                                if File.suffix(ffname) =~ /^(mkii|mkiv)$/o then
+                                    markfile = $1
+                                else
+                                    markfile = nil
+                                end
                                 Kpse.runscript('ctxtools',ffname,'--document')
                                 if ted = File.silentopen(File.suffixed(ffname,'ted')) then
                                     firstline = ted.gets
@@ -244,11 +245,11 @@ end
                                 job.setvariable('simplerun',true)
                                 # job.setvariable('nooptionfile',true)
                                 job.setvariable('files',[job.tempfilename])
-result = File.unsuffixed(File.basename(ffname))
-if markfile then
-    result = result+'-'+markfile
-end
-job.setvariable('result',result)
+                                result = File.unsuffixed(File.basename(ffname))
+                                if markfile then
+                                    result = result+'-'+markfile
+                                end
+                                job.setvariable('result',result)
                                 job.processtex
                                 # ["dvi", "pdf","ps"].each do |s|
                                     # File.silentrename(job.tempfilename(s),File.suffixed(ffname,s));
@@ -767,4 +768,4 @@ commandline.registerflag('verbose')
 
 commandline.expand
 
-Commands.new(commandline,logger,banner).send(commandline.action || 'main')
+Commands.new(commandline,logger,banner).execute(commandline.action || 'main') # or just execute()
