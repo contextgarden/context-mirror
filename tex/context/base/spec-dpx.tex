@@ -798,41 +798,6 @@
    \box\scratchbox
    \elabelgroup}
 
-%D 7. Copied codes from \type{spec-dvi}
-
-% coming pdftex versions will provide pos support in dvi mode (untested)
-
-% \ifnum\pdftexversion>140 .. \fi
-
-\definespecial\dosetposition#1%
-  {\special{pos:pxy "#1"}}
-
-\definespecial\dosetpositionwhd#1#2#3#4%
-  {\special{pos:pxywhd "#1" #2 #3 #4}}
-
-\definespecial\dosetpositionplus#1#2#3#4#5%
-  {\special{pos:pxyplus "#1" #2 #3 #4 #5}}
-
-\let\flushDVIpositionpapersize\relax
-
-\definespecial\dosetpositionpapersize#1#2%
-  {\xdef\flushDVIpositionpapersize
-     {\special{pos:papersize \number#1 \number#2}%
-      \noexpand\installprogram{dvipos -o \jobname.tuo \jobname.dvi }%
-      \global\noexpand\let\noexpand\flushDVIpositionpapersize\relax}}
-
-\beginXETEX
-
-  \definespecial\dosetpositionpapersize#1#2%
-    {\xdef\flushDVIpositionpapersize
-       {\special{pos:papersize \number#1 \number#2}%
-        \noexpand\installprogram{dvipos -o \jobname.tuo \jobname.xdv }%
-        \global\noexpand\let\noexpand\flushDVIpositionpapersize\relax}}
-
-\endXETEX
-
-\prependtoksonce \flushDVIpositionpapersize \to \everyshipout
-
 \stopspecials
 
 \protect \endinput

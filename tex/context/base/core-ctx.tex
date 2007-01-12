@@ -21,6 +21,7 @@
 
 \chardef\preprocessmethod 2 % 0=no check 1=present_check 2=log_check
 \chardef\preprocessstate  0 % 1=found 2=not_present (skip)
+\chardef\preprocesslocal  0 % 0=no 1=yes
 \def    \preprocesssuffix {.prep}
 
 \def\loadctxpreplist
@@ -33,13 +34,21 @@
    \or
      \doiffileexistselse{./\jobname.ctl}
        {\bgroup
-        \defineXMLenvironment[ctx:preplist]
-          {\writestatus\m!systems{loading ctx log file}}
-          {}%
+        \defineXMLenvironment[ctx:preplist][local=no]
+          {\doifelse{\XMLop{local}}{yes}
+              {\global\chardef\preprocesslocal\plusone
+               \writestatus\m!systems{loading ctx log file (local)}}%
+              {\writestatus\m!systems{loading ctx log file (specified)}}}
+          \donothing
         \defineXMLenvironmentsave[ctx:prepfile][done=no]
-          {}
-          {\writestatus\m!systems{registering \XMLflush{ctx:prepfile} -> \XMLop{done}}%
-           \setxvalue{fp..\XMLflush{ctx:prepfile}}{\XMLop{done}}}%
+          \donothing
+          {\edef\readfilename{\XMLflush{ctx:prepfile}}%
+           \ifcase\preprocesslocal\else
+              \splitfilename\readfilename
+              \let\readfilename\splitoffbase
+           \fi
+           \writestatus\m!systems{registering \readfilename\space -> \XMLop{done}}%
+           \setxvalue{fp..\readfilename}{\XMLop{done}}}%
         \processXMLfile{./\jobname.ctl}%
         \egroup}%
        {\global\chardef\preprocessmode\plusone}%
@@ -67,21 +76,29 @@
        % saveguard and speed up
        \iftracefiles\writestatus\m!systems{preprocessing - no suffix}\fi
        \egroup
-     \else
+     \else\ifcase\preprocesslocal
        \iftracefiles\writestatus\m!systems{preprocessing - check presence of \readfilename\preprocesssuffix}\fi
        \doifdefinedelse{fp..\readfilename}
          {\egroup
           \doiffileexistselse{\readfilename\preprocesssuffix}
             {\chardef\preprocessstate\plusone}
             {\chardef\preprocessstate\plustwo}}%
-         {\doifdefinedelse{fp..\splitoffname.\splitofftype}
+         {\doifdefinedelse{fp..\splitoffbase}%
             {\egroup
              \doiffileexistselse{\readfilename\preprocesssuffix}
                {\chardef\preprocessstate\plusone}
                {\chardef\preprocessstate\plustwo}}%
             {\egroup}}%
+     \else
+       \iftracefiles\writestatus\m!systems{preprocessing - check local presence of \readfilename\preprocesssuffix}\fi
+       \doifdefinedelse{fp..\readfilename}
+         {\egroup
+          \doiffileexistselse{\readfilename\preprocesssuffix}
+            {\chardef\preprocessstate\plusone}
+            {\chardef\preprocessstate\plustwo}}%
+         {\egroup}%
      \fi
-   \fi}
+   \fi\fi}
 
 % beware, \readfilename keeps the original one, but we load and store the
 % suffixed with .prep file (if present)
@@ -125,7 +142,7 @@
          \fi
        \fi
      \else
-       \edef\readfilename{\getvalue{fn..\readfilename}}%
+       \edef\readfilename{\getvalue{fn..\readfilename}}% ??? is done !
        \iftracefiles\writestatus\m!systems{already located \readfilename}\fi
        \def\next{#3\dodoreadfile}%
      \fi
@@ -148,7 +165,11 @@
           \def\next{#3}%
         \fi}%
    \or
-     \edef\readfilename{#1}%
+     \ifcase\preprocesslocal
+       \edef\readfilename{#1}% nor found
+     \else
+       % no path prepending
+     \fi
      \iftracefiles\writestatus\m!systems{#1\preprocesssuffix\space located}\fi
      \def\next{#2\dodoreadfile}%
    \or

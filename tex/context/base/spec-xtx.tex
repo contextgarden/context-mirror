@@ -130,6 +130,14 @@
 
 \setupexternalfigures[\c!object=\v!no]
 
+%D
+
+\ifx\pdfpagewidth\undefined \else
+    \definespecial\dosetuppaper#1#2#3%
+      {\global\pdfpagewidth #2\relax
+       \global\pdfpageheight#3\relax}
+\fi
+
 \stopspecials
 
 \protect \endinput

@@ -207,4 +207,73 @@
   \let\handleMPfshow\dohandleMPfshow
 \to \everyresetspecials
 
+%D
+
+%D \macros
+%D   {dosetposition, dosetpositionwdh, dosetpositionplus}
+%D
+%D Opposite to its \DVI\ counterpart, the \PDFTEX\ backend
+%D can provide positional information directly. Since
+%D \CONTEXT\ only uses relative positions, the origin is of
+%D less importance. Nowadays \XETEX\ also supports this
+%D feature.
+
+\ifx\pdfsavepos\undefined
+
+    % only for ancient pdftex, less old xetex and current aleph
+
+    \def\dosetposition            #1{\special{pos:pxy     "#1"}}
+    \def\dosetpositionwhd   #1#2#3#4{\special{pos:pxywhd  "#1" #2 #3 #4}}
+    \def\dosetpositionplus#1#2#3#4#5{\special{pos:pxyplus "#1" #2 #3 #4 #5}}
+
+    \let\flushDVIpositionpapersize\relax
+
+    \def\dosetpositionpapersize#1#2%
+      {\xdef\flushDVIpositionpapersize
+         {\special{pos:papersize \number#1 \number#2}%
+          \noexpand\installprogram{dvipos -o \jobname.tuo \jobname.dvi }%
+          \global\noexpand\let\noexpand\flushDVIpositionpapersize\relax}}
+
+    \beginXETEX
+      \def\dosetpositionpapersize#1#2%
+        {\xdef\flushDVIpositionpapersize
+           {\special{pos:papersize \number#1 \number#2}%
+            \noexpand\installprogram{dvipos -o \jobname.tuo \jobname.xdv }%
+            \global\noexpand\let\noexpand\flushDVIpositionpapersize\relax}}
+    \endXETEX
+
+    \prependtoksonce \flushDVIpositionpapersize \to \everyshipout
+
+\else
+
+    \def\dosetposition#1%
+      {\pdfsavepos
+       \dolazysaveposition
+         {#1}%
+         {\noexpand\realfolio}%
+         {\noexpand\the\dimexpr\pdflastxpos\scaledpoint\relax}%
+         {\noexpand\the\dimexpr\pdflastypos\scaledpoint\relax}}%
+
+    \def\dosetpositionwhd#1#2#3#4%
+      {\pdfsavepos
+       \dolazysavepositionwhd
+         {#1}%
+         {\noexpand\realfolio}%
+         {\noexpand\the\dimexpr\pdflastxpos\scaledpoint\relax}%
+         {\noexpand\the\dimexpr\pdflastypos\scaledpoint\relax}%
+         {#2}{#3}{#4}}
+
+    \def\dosetpositionplus#1#2#3#4#5%
+      {\pdfsavepos
+       \dolazysavepositionplus
+         {#1}%
+         {\noexpand\realfolio}%
+         {\noexpand\the\dimexpr\pdflastxpos\scaledpoint\relax}%
+         {\noexpand\the\dimexpr\pdflastypos\scaledpoint\relax}%
+         {#2}{#3}{#4}{#5}}
+
+    \let\dosetpositionpapersize\gobbletwoarguments
+
+\fi
+
 \protect \endinput

@@ -425,7 +425,7 @@ class KpseFast
         @rootpath    = ''
         @treepath    = ''
         @progname    = 'kpsewhich'
-        @engine      = 'pdfetex'
+        @engine      = 'pdftex'
         @variables   = Hash.new
         @expansions  = Hash.new
         @files       = Hash.new
@@ -1074,7 +1074,7 @@ end
     # puts k.expansion("$TEXMF")
     # puts k.expanded_path("TEXINPUTS","context")
 
-    # k.progname, k.engine, k.format = 'context', 'pdfetex', 'tfm'
+    # k.progname, k.engine, k.format = 'context', 'pdftex', 'tfm'
     # k.scandisk = false # == must_exist
     # k.expand_variables
 
@@ -2571,10 +2571,10 @@ end
 
 if execute(ARGV) then
     report("\nexecution was successful") if $verbose
-    exit(1)
+    exit(0)
 else
     report("\nexecution failed") if $verbose
-    exit(0)
+    exit(1)
 end
 
 # exit (if ($?.to_i rescue 0) > 0 then 1 else 0 end)

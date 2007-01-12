@@ -197,7 +197,7 @@ module Kpse
         [progname,format,filename].join('-')
     end
 
-    def Kpse.formatpath(engine='pdfetex',enginepath=true)
+    def Kpse.formatpath(engine='pdftex',enginepath=true)
 
         # because engine support in distributions is not always
         # as we expect, we need to check for it;

@@ -260,7 +260,7 @@ class KpseFast
         @rootpath    = ''
         @treepath    = ''
         @progname    = 'kpsewhich'
-        @engine      = 'pdfetex'
+        @engine      = 'pdftex'
         @variables   = Hash.new
         @expansions  = Hash.new
         @files       = Hash.new
@@ -910,7 +910,7 @@ end
     # puts k.expansion("$TEXMF")
     # puts k.expanded_path("TEXINPUTS","context")
 
-    # k.progname, k.engine, k.format = 'context', 'pdfetex', 'tfm'
+    # k.progname, k.engine, k.format = 'context', 'pdftex', 'tfm'
     # k.scandisk = false # == must_exist
     # k.expand_variables
 

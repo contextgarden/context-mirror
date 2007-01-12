@@ -903,10 +903,19 @@
 %D This is one of the few specials where when using \PDFTEX\
 %D the driver directly deals with the utility file.
 
-\installspecial [\dosetposition]          [or] [1]
-\installspecial [\dosetpositionwhd]       [or] [4]
-\installspecial [\dosetpositionplus]      [or] [5]
-\installspecial [\dosetpositionpapersize] [or] [2]
+%D Support is moved to spec-mis.tex. The whole idea originates
+%D and was implemented first in \PDFTEX. Later \DVIPDFMX\
+%D supported the \CONTEXT\ specific specials and nowadays
+%D \PDFTEX\ supports this feature in \DVI\ mode and \XETEX\
+%D implements it as well. This means that only \ALEPH\ is
+%D still dependent on specials, but that variant of \TEX\ has
+%D become obsolete anyway.
+
+% \installspecial [\dosetposition]          [or] [1]
+% \installspecial [\dosetpositionwhd]       [or] [4]
+% \installspecial [\dosetpositionplus]      [or] [5]
+
+% \installspecial [\dosetpositionpapersize] [or] [2]
 
 %D \macros
 %D   {dostarttransparency,dostoptransparency}

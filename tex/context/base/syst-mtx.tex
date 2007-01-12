@@ -15,6 +15,18 @@
 
 \unprotect
 
+\ifnum\contextmarkmode=2
+
+    \input enco-utf.tex
+
+    % patch needed for turkish
+
+    \setcclcuc 201C 201C 201C
+    \setcclcuc 201D 201D 201D
+
+\fi
+
+
 %D Since the number of chars exceed 256 now, we can use \type
 %D {\chardef} instead of the more limited \type {\mathchardef}.
 

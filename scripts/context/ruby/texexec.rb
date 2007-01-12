@@ -573,7 +573,7 @@ class Commands
         if (str = @commandline.option('engine')) && ! str.standard? && ! str.empty? then
             job.setvariable('texengine',str)
         elsif @commandline.oneof('pdfetex','pdftex','pdf') then
-            job.setvariable('texengine','pdfetex')
+            job.setvariable('texengine','pdftex')
         elsif @commandline.oneof('xetex','xtx') then
             job.setvariable('texengine','xetex')
         elsif @commandline.oneof('aleph') then
@@ -601,6 +601,7 @@ class Commands
         else
             case job.getvariable('texengine')
                 when 'pdfetex'  then job.setvariable('backend','pdftex')
+                when 'pdftex'   then job.setvariable('backend','pdftex')
                 when 'luatex'   then job.setvariable('backend','pdftex')
                 when 'xetex'    then job.setvariable('backend','xetex')
                 when 'aleph'    then job.setvariable('backend','dvipdfmx')

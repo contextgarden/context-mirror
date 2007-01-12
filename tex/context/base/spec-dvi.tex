@@ -87,27 +87,31 @@
 %D The postprocessor should, of course, provide the \type
 %D {page}, \type {x}, and \type {y} values.
 
-\definespecial\dosetposition#1%
-  {\special{pos:pxy "#1"}}
+%D Now in spec-mis.tex:
 
-\definespecial\dosetpositionwhd#1#2#3#4%
-  {\special{pos:pxywhd "#1" #2 #3 #4}}
-
-\definespecial\dosetpositionplus#1#2#3#4#5%
-  {\special{pos:pxyplus "#1" #2 #3 #4 #5}}
+% \definespecial\dosetposition#1%
+%   {\special{pos:pxy "#1"}}
+%
+% \definespecial\dosetpositionwhd#1#2#3#4%
+%   {\special{pos:pxywhd "#1" #2 #3 #4}}
+%
+% \definespecial\dosetpositionplus#1#2#3#4#5%
+%   {\special{pos:pxyplus "#1" #2 #3 #4 #5}}
 
 %D The next special tells the position postprocessor what
 %D page dimensions were used.
 
-\let\flushDVIpositionpapersize\relax
+%D Also in spec-mis.tex:
 
-\definespecial\dosetpositionpapersize#1#2%
-  {\xdef\flushDVIpositionpapersize%
-     {\special{pos:papersize \number#1 \number#2}%
-      \noexpand\installprogram{dvipos -o \jobname.tuo \jobname.dvi }%
-      \global\noexpand\let\noexpand\flushDVIpositionpapersize\relax}}
-
-\prependtoksonce \flushDVIpositionpapersize \to \everyshipout
+% \let\flushDVIpositionpapersize\relax
+%
+% \definespecial\dosetpositionpapersize#1#2%
+%   {\xdef\flushDVIpositionpapersize%
+%      {\special{pos:papersize \number#1 \number#2}%
+%       \noexpand\installprogram{dvipos -o \jobname.tuo \jobname.dvi }%
+%       \global\noexpand\let\noexpand\flushDVIpositionpapersize\relax}}
+%
+% \prependtoksonce \flushDVIpositionpapersize \to \everyshipout
 
 \stopspecials
 

@@ -43,6 +43,7 @@ class CtxRunner
         @modules = Array.new
         @filters = Array.new
         @flags = Array.new
+        @local = false
     end
 
     def manipulate(ctxname=nil,defaultname=nil)
@@ -117,18 +118,18 @@ class CtxRunner
                 variables['job'] = @jobname
             end
             root = @xmldata.root
-REXML::XPath.each(root,"/ctx:job//ctx:flags/ctx:flag") do |flg|
-    @flags << justtext(flg)
-end
-REXML::XPath.each(root,"/ctx:job//ctx:resources/ctx:environment") do |sty|
-    @environments << justtext(sty)
-end
-REXML::XPath.each(root,"/ctx:job//ctx:resources/ctx:module") do |mod|
-    @modules << justtext(mod)
-end
-REXML::XPath.each(root,"/ctx:job//ctx:resources/ctx:filter") do |fil|
-    @filters << justtext(fil)
-end
+            REXML::XPath.each(root,"/ctx:job//ctx:flags/ctx:flag") do |flg|
+                @flags << justtext(flg)
+            end
+            REXML::XPath.each(root,"/ctx:job//ctx:resources/ctx:environment") do |sty|
+                @environments << justtext(sty)
+            end
+            REXML::XPath.each(root,"/ctx:job//ctx:resources/ctx:module") do |mod|
+                @modules << justtext(mod)
+            end
+            REXML::XPath.each(root,"/ctx:job//ctx:resources/ctx:filter") do |fil|
+                @filters << justtext(fil)
+            end
             begin
                 REXML::XPath.each(root,"//ctx:block") do |blk|
                     if @jobname && blk.attributes['pattern'] then
@@ -154,9 +155,9 @@ end
             REXML::XPath.each(root,"/ctx:job//ctx:process/ctx:resources/ctx:filter") do |fil|
                 @filters << justtext(fil)
             end
-REXML::XPath.each(root,"/ctx:job//ctx:process/ctx:flags/ctx:flag") do |flg|
-    @flags << justtext(flg)
-end
+            REXML::XPath.each(root,"/ctx:job//ctx:process/ctx:flags/ctx:flag") do |flg|
+                @flags << justtext(flg)
+            end
             commands = Hash.new
             REXML::XPath.each(root,"/ctx:job//ctx:preprocess/ctx:processors/ctx:processor") do |pre|
                 begin
@@ -171,6 +172,11 @@ end
                 suffix = @@suffix
             else
                 if suffix && suffix.empty? then suffix = @@suffix end
+            end
+            if (REXML::XPath.first(root,"/ctx:job//ctx:preprocess/ctx:processors/@local").to_s =~ /(yes|true)/io rescue false) then
+                @local = true
+            else
+                @local = false
             end
             REXML::XPath.each(root,"/ctx:job//ctx:preprocess/ctx:files") do |files|
                 REXML::XPath.each(files,"ctx:file") do |pattern|
@@ -189,9 +195,14 @@ end
                             return
                         end
                         pattern = justtext(pattern)
-                        Dir.glob(pattern).each do |oldfile|
+                        oldfiles = Dir.glob(pattern)
+                        if oldfiles.length == 0 then
+                            report("no files match #{pattern}")
+                        end
+                        oldfiles.each do |oldfile|
                             newfile = "#{oldfile}.#{suffix}"
-                            if File.needsupdate(oldfile,newfile) then
+                            newfile = File.basename(newfile) if @local
+                            if File.expand_path(oldfile) != File.expand_path(newfile) && File.needsupdate(oldfile,newfile) then
                                 report("#{oldfile} needs preprocessing")
                                 begin
                                     File.delete(newfile)
@@ -205,14 +216,16 @@ end
                                         command = REXML::Document.new(command.to_s) # don't infect original
                                         command = command.elements["ctx:processor"]
                                         begin
-                                            if suf = command.attributes['suffix'] then
-                                                newfile = "#{oldfile}.#{suf}"
-                                            end
+                                            newfile = "#{oldfile}.#{suf}" if suf = command.attributes['suffix']
                                         rescue
                                         end
-                                        report("preprocessing #{oldfile} into #{newfile} using #{pp}")
+                                        begin
+                                            newfile = File.basename(newfile) if @local
+                                        rescue
+                                        end
                                         REXML::XPath.each(command,"ctx:old") do |value| replace(value,oldfile) end
                                         REXML::XPath.each(command,"ctx:new") do |value| replace(value,newfile) end
+                                        report("preprocessing #{oldfile} into #{newfile} using #{pp}")
                                         variables['old'] = oldfile
                                         variables['new'] = newfile
                                         REXML::XPath.each(command,"ctx:value") do |value|
@@ -225,15 +238,19 @@ end
                                         unless ok = System.run(command) then
                                             report("error in preprocessing file #{oldfile}")
                                         end
+                                        begin
+                                            oldfile = File.basename(oldfile) if @local
+                                        rescue
+                                        end
                                     end
                                 end
                                 if FileTest.file?(newfile) then
                                     File.syncmtimes(oldfile,newfile)
                                 else
-                                    report("preprocessing #{oldfile} gave no #{newfile}")
+                                    report("check target location of #{newfile}")
                                 end
                             else
-                                report("#{oldfile} needs no preprocessing")
+                                report("#{oldfile} needs no preprocessing (same file)")
                             end
                             @prepfiles[oldfile] = FileTest.file?(newfile)
                         end
@@ -258,7 +275,11 @@ end
         if @prepfiles.length > 0 then
             if log = File.open(ctlname,'w') then
                 log << "<?xml version='1.0' standalone='yes'?>\n\n"
-                log << "<ctx:preplist>\n"
+                if @local then
+                    log << "<ctx:preplist local='yes'>\n"
+                else
+                    log << "<ctx:preplist local='no'>\n"
+                end
                 @prepfiles.keys.sort.each do |prep|
                     # log << "\t<ctx:prepfile done='#{yes_or_no(@prepfiles[prep])}'>#{File.basename(prep)}</ctx:prepfile>\n"
                     log << "\t<ctx:prepfile done='#{yes_or_no(@prepfiles[prep])}'>#{prep}</ctx:prepfile>\n"

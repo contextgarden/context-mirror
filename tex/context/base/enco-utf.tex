@@ -1,4 +1,4 @@
-% filename : enco-xtx.tex
+% filename : enco-utf.tex
 % comment  : poor man's alternative for a proper enco file
 % author   : Hans Hagen, PRAGMA-ADE, Hasselt NL
 % copyright: PRAGMA ADE / ConTeXt Development Team
@@ -7,8 +7,8 @@
 \ifx\setcclcuc\undefined
 
   \def\setcclcuc #1 #2 #3 %
-    {\global\catcode"#1=11 
-     \global\lccode "#1="#2 
+    {\global\catcode"#1=11
+     \global\lccode "#1="#2
      \global\uccode "#1="#3 }
 
 \fi

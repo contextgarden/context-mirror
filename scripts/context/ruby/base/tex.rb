@@ -89,25 +89,27 @@ class TEX
     @@luafiles     = "luafiles.tmp"
     @@luatarget    = "lua/context"
 
-    ENV['PATH'].split(File::PATH_SEPARATOR).each do |p|
-        if System.unix? then
-            pp, pe = "#{p}/pdftex"    , "#{p}/pdfetex"
-        else
-            pp, pe = "#{p}/pdftex.exe", "#{p}/pdfetex.exe"
-        end
-        if FileTest.file?(pe) then
-            # we assume no update
-            @@pdftex = 'pdfetex'
-            break
-        elsif FileTest.file?(pp) then
-            # we assume an update
-            @@pdftex = 'pdftex'
-            break
-        end
-    end
+    # we now drop pdfetex definitely
 
-    ['etex','pdfetex','standard']                  .each do |e| @@texengines[e] = @@pdftex    end
-    ['tex','pdftex']                               .each do |e| @@texengines[e] = 'pdftex'    end
+    # ENV['PATH'].split(File::PATH_SEPARATOR).each do |p|
+        # if System.unix? then
+            # pp, pe = "#{p}/pdftex"    , "#{p}/pdfetex"
+        # else
+            # pp, pe = "#{p}/pdftex.exe", "#{p}/pdfetex.exe"
+        # end
+        # if    FileTest.file?(pe) then # we assume no update
+            # @@pdftex = 'pdfetex'
+            # break
+        # elsif FileTest.file?(pp) then # we assume an update
+            # @@pdftex = 'pdftex'
+            # break
+        # end
+    # end
+
+    # ['etex','pdfetex','standard']                .each do |e| @@texengines[e] = @@pdftex    end
+    # ['tex','pdftex']                             .each do |e| @@texengines[e] = 'pdftex'    end
+
+    ['tex','etex','pdftex','pdfetex','standard']   .each do |e| @@texengines[e] = 'pdftex'    end
     ['aleph','omega']                              .each do |e| @@texengines[e] = 'aleph'     end
     ['xetex']                                      .each do |e| @@texengines[e] = 'xetex'     end
     ['luatex']                                     .each do |e| @@texengines[e] = 'luatex'    end
@@ -166,10 +168,11 @@ class TEX
     ['cont-en','cont-nl','cont-de','cont-it',
      'cont-fr','cont-cz','cont-ro','cont-uk']      .each do |f| @@texprocstr[f] = "\\emergencyend"  end
 
-  # @@runoptions['xetex']   = ['--output-driver \\\"-d 4 -V 5\\\"'] # we need the pos pass
-    @@runoptions['xetex']   = ['--8bit,-no-pdf'] # from now on we assume (x)dvipdfmx to be used
-    @@runoptions['pdfetex'] = ['--8bit']
-    @@runoptions['pdftex']  = ['--8bit']         # pdftex is now pdfetex
+    # @@runoptions['xetex']   = ['--output-driver \\\"-d 4 -V 5\\\"'] # we need the pos pass
+    # @@runoptions['xetex']   = ['--8bit','-no-pdf'] # from now on we assume (x)dvipdfmx to be used
+    @@runoptions['xetex']   = ['--8bit','-output-driver=\"xdvipdfmx -q -E -d 4 -V 5\"']
+    @@runoptions['pdfetex'] = ['--8bit']           # obsolete
+    @@runoptions['pdftex']  = ['--8bit']           # pdftex is now pdfetex
     @@runoptions['luatex']  = ['--file-line-error']
     @@runoptions['aleph']   = ['--8bit']
     @@runoptions['mpost']   = ['--8bit']
@@ -188,7 +191,8 @@ class TEX
         'forcetexutil', 'texutil',
         'globalfile', 'autopath',
         'purge', 'purgeall', 'keep', 'autopdf', 'xpdf', 'simplerun', 'verbose',
-        'nooptionfile', 'nobackend', 'noctx', 'utfbom'
+        'nooptionfile', 'nobackend', 'noctx', 'utfbom',
+        'mkii',
     ]
     @@stringvars = [
         'modefile', 'result', 'suffix', 'response', 'path',
@@ -326,6 +330,7 @@ class TEX
         str = '' # allocate
         [name].flatten.each do |n|
             if str = getvariable(n) then
+                str = str.join(" ") if str.class == Array
                 unless (str.class == String) && str.empty? then
                     report("option '#{n}' is set to '#{str}'")
                 end
@@ -435,10 +440,10 @@ class TEX
         if str.class == String then str.split(',') else str.flatten end
     end
 
-    def validtexformat(str) validsomething(str,@@texformats,'tex')     end
-    def validmpsformat(str) validsomething(str,@@mpsformats,'mp' )     end
-    def validtexengine(str) validsomething(str,@@texengines,'pdfetex') end
-    def validmpsengine(str) validsomething(str,@@mpsengines,'mpost' )  end
+    def validtexformat(str) validsomething(str,@@texformats,'tex')    end
+    def validmpsformat(str) validsomething(str,@@mpsformats,'mp' )    end
+    def validtexengine(str) validsomething(str,@@texengines,'pdftex') end
+    def validmpsengine(str) validsomething(str,@@mpsengines,'mpost' ) end
 
     def validtexmethod(str) [validsomething(str,@@texmethods)].flatten.first end
     def validmpsmethod(str) [validsomething(str,@@mpsmethods)].flatten.first end
@@ -612,10 +617,10 @@ class TEX
                 begin
                     luatools = `texmfstart luatools --format=texmfscripts luatools.lua`.chomp.strip
                     unless luatools.empty? then
-                        runcommand(["luatex","--luaonly=#{luatools}","--generate","--verbose"])
+                        runcommand(["luatex","--luaonly #{luatools}","--generate","--verbose"])
                     end
                 rescue
-                    report("run 'luatex --luaonly=....../luatools.lua --generate' manually")
+                    report("run 'luatex --luaonly pathto/luatools.lua --generate' manually")
                     exit
                 end
             end
@@ -651,7 +656,10 @@ class TEX
                     cleanupluafiles
                     texformats.each do |texformat|
                         report("generating tex format #{texformat}")
-                        run_luatools("--ini --compile #{texformat}")
+                        flags = ['--ini','--compile']
+                        flags << '--verbose' if getvariable('verbose')
+                        flags << '--mkii'    if getvariable('mkii')
+                        run_luatools("#{flags.join(" ")} #{texformat}")
                     end
                     compileluafiles
                 else
@@ -1152,7 +1160,7 @@ class TEX
             if path then
                 script = "#{path}/../lua/luatools.lua"
                 if FileTest.file?(script) then
-                    return runcommand("lua #{script} #{args}")
+                    return runcommand("luatex --luaonly #{script} #{args}")
                 end
             end
         end
@@ -1528,12 +1536,16 @@ class TEX
         report("tex format: #{texformat}")
         if texengine && texformat then
             fixbackendvars(@@mappaths[texengine])
-if texengine == "luatex" then
-    run_luatools("--fmt=#{texformat} #{filename}")
-else
-            progname = validprogname([getvariable('progname'),texformat,texengine])
-            runcommand([quoted(texengine),prognameflag(progname),formatflag(texengine,texformat),tcxflag,runoptions(texengine),filename,texprocextras(texformat)])
-end
+            if texengine == "luatex" then
+                # currently we use luatools to start luatex but some day we should
+                # find a clever way to directly call luatex (problem is that we need
+                # to feed the explicit location of the format and lua initialization
+                # file)
+                run_luatools("--fmt=#{texformat} #{filename}")
+            else
+                progname = validprogname([getvariable('progname'),texformat,texengine])
+                runcommand([quoted(texengine),prognameflag(progname),formatflag(texengine,texformat),tcxflag,runoptions(texengine),filename,texprocextras(texformat)])
+            end
             # true
         else
             false
@@ -1683,7 +1695,7 @@ end
                     xdvfile = File.suffixed(rawname,'xdv')
                     if FileTest.file?(xdvfile) then
                         fixbackendvars('dvipdfm')
-                        runcommand("xdvipdfmx -d 4 -V 5 #{xdvfile}")
+                        runcommand("xdvipdfmx -q -d 4 -V 5 -E #{xdvfile}")
                     end
                 when 'xdv2pdf' then
                     xdvfile = File.suffixed(rawname,'xdv')

@@ -42,7 +42,7 @@
 %D your styles an modules.
 
 \edef\contextformat {\jobname}
-\edef\contextversion{2007.01.10 11:18}
+\edef\contextversion{2007.01.12 15:56}
 
 %D For those who want to use this:
 
@@ -66,22 +66,43 @@
 
 \ifx\normalinput\undefined \let\normalinput\input \fi
 
-\edef\mksuffix {mk\ifx\directlua\undefined ii\else iv\fi}
+% trick:
+
+\ifx\directlua\undefined
+    \chardef\contextmarkmode = 2
+\else
+    \chardef\contextmarkmode = \directlua 0 { do
+        if arg then
+            local mkii = 4
+            for k,v in pairs(arg) do
+                if v == "--mkii" then mkii = 2 break end
+            end
+            tex.sprint(mkii)
+        else
+            tex.sprint(2)
+        end
+    end }
+    % \ifnum\contextmarkmode=2
+    %   \immediate\write16{}
+    %   \immediate\write16{>> Quitting LuaTeX, test mode only! <<}
+    %   \immediate\write16{}
+    %   \def\next{\errorstopmode \dump \endinput}
+    %   \expandafter \expandafter \expandafter \next
+    % \fi
+\fi
 
 \def\loadcorefile#1{\normalinput#1\relax}
 \def\loadmarkfile#1{\normalinput#1.\mksuffix\relax}
 
-\ifx\directlua\undefined
-  \def\loadmarkivfile#1{} \let\loadmarkiifile\loadcorefile
+\ifnum\contextmarkmode=4
+  \def\loadmarkiifile#1{} \let\loadmarkivfile\loadcorefile \edef\mksuffix {mkiv} \edef\contextmark{MKIV}
 \else
-  \def\loadmarkiifile#1{} \let\loadmarkivfile\loadcorefile
+  \def\loadmarkivfile#1{} \let\loadmarkiifile\loadcorefile \edef\mksuffix {mkii} \edef\contextmark{MKII}
 \fi
 
 \let\loadmkiifile\loadmarkiifile
 \let\loadmkivfile\loadmarkivfile
 \let\loadmkfile  \loadmarkfile
-
-\edef\contextmark{MK \ifx\directlua\undefined II\else IV\fi}
 
 %D Welcome to the main module. When this module is ran through
 %D \type{initex} or \type {tex -i} or \type {whatevertex} using

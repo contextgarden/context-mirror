@@ -1022,40 +1022,6 @@
 \definespecial\doregistercalculationset{\doFDFregistercalculationset}
 
 %D \macros
-%D   {dosetposition, dosetpositionwdh, dosetpositionplus}
-%D
-%D Opposite to its \DVI\ counterpart, the \PDFTEX\ backend
-%D can provide positional information directly. Since
-%D \CONTEXT\ only uses relative positions, the origin is of
-%D less importance.
-
-\definespecial\dosetposition#1%
-  {\pdfsavepos
-   \dolazysaveposition
-     {#1}%
-     {\noexpand\realfolio}%
-     {\noexpand\the\dimexpr\pdflastxpos\scaledpoint\relax}%
-     {\noexpand\the\dimexpr\pdflastypos\scaledpoint\relax}}%
-
-\definespecial\dosetpositionwhd#1#2#3#4%
-  {\pdfsavepos
-   \dolazysavepositionwhd
-     {#1}%
-     {\noexpand\realfolio}%
-     {\noexpand\the\dimexpr\pdflastxpos\scaledpoint\relax}%
-     {\noexpand\the\dimexpr\pdflastypos\scaledpoint\relax}%
-     {#2}{#3}{#4}}
-
-\definespecial\dosetpositionplus#1#2#3#4#5%
-  {\pdfsavepos
-   \dolazysavepositionplus
-     {#1}%
-     {\noexpand\realfolio}%
-     {\noexpand\the\dimexpr\pdflastxpos\scaledpoint\relax}%
-     {\noexpand\the\dimexpr\pdflastypos\scaledpoint\relax}%
-     {#2}{#3}{#4}{#5}}
-
-%D \macros
 %D   {doPDFdestination}
 %D
 %D Finally we implement some low level macros to deal with
