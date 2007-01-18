@@ -974,6 +974,8 @@ class Commands
         donepaths.keys.sort.each do |d|
             pathfiles = Dir.glob("#{path}/#{d}/**/*")
             pathfiles.each do |p|
+# puts(File.dirname(p))
+# if donepaths[File.dirname(p)] then
                 r = File.join(root,d,File.basename(p))
                 if FileTest.file?(p) and not FileTest.file?(r) and not copiedfiles.key?(File.expand_path(p)) then
                     if delete then
@@ -988,6 +990,7 @@ class Commands
                     end
                 end
             end
+# end
         end
 
     end

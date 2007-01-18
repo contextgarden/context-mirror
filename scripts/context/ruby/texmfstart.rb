@@ -1920,6 +1920,7 @@ def usage
 end
 
 # somehow registration does not work out (at least not under windows)
+# the . is also not accepted by unix as seperator
 
 def tag(name)
     if $crossover then "_CTX_K_S_#{name}_" else "TEXMFSTART.#{name}" end
@@ -2576,5 +2577,3 @@ else
     report("\nexecution failed") if $verbose
     exit(1)
 end
-
-# exit (if ($?.to_i rescue 0) > 0 then 1 else 0 end)

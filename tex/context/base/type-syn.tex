@@ -46,59 +46,92 @@
 % \stoptypescript
 
 % Computer Modern Roman : Donald Knuth
+% Latin Modern: LM Font Revision Team
+
+% LM math vs CM math (analysis by Taco):
+%
+% lmex10.tfm  % identical
+% lmmi5.tfm   % identical
+% lmmi6.tfm   % identical
+% lmmi7.tfm   % identical
+% lmmi8.tfm   % identical
+% lmmi9.tfm   % identical
+% lmmi10.tfm  % identical
+% lmmi12.tfm  % identical
+% lmmib10.tfm % identical
+% lmsy5.tfm   % extra chars: 254,255 (octal)
+% lmsy6.tfm   % extra chars: 254,255 (octal)
+% lmsy7.tfm   % extra chars: 254,255 (octal)
+% lmsy8.tfm   % extra chars: 254,255 (octal)
+% lmsy9.tfm   % extra chars: 254,255 (octal)
+% lmsy10.tfm  % extra chars: 254,255 (octal)
+% lmbsy10.tfm % extra chars: 254,255 (octal)
+%
+% From the 'AMS' set:
+%
+% lmmib5.tfm  % identical
+% lmmib7.tfm  % identical
+% lmbsy5.tfm  % extra chars: 254,255 (octal)
+% lmbsy7.tfm  % extra chars: 254,255 (octal)
+%
+% The two extra characters are:
+%
+%   /lessorequalslant
+%   /greaterorequalslant
 
 \starttypescript [serif] [modern,computer-modern,latin-modern] [name]
-  \definefontsynonym [Serif]            [ComputerModern]
-  \definefontsynonym [SerifBold]        [ComputerModern-Bold]
-  \definefontsynonym [SerifItalic]      [ComputerModern-Italic]
-  \definefontsynonym [SerifSlanted]     [ComputerModern-Slanted]
-  \definefontsynonym [SerifBoldItalic]  [ComputerModern-BoldItalic]
-  \definefontsynonym [SerifBoldSlanted] [ComputerModern-BoldSlanted]
-  \definefontsynonym [SerifCaps]        [ComputerModern-Caps]
-  \definefontsynonym [SerifCapsSlanted] [ComputerModern-CapsSlanted]
+  \definefontsynonym [Serif]            [LMRoman-Regular]
+  \definefontsynonym [SerifBold]        [LMRoman-Bold]
+  \definefontsynonym [SerifItalic]      [LMRoman-Italic]
+  \definefontsynonym [SerifSlanted]     [LMRoman-Oblique]
+  \definefontsynonym [SerifBoldItalic]  [LMRoman-BoldItalic]
+  \definefontsynonym [SerifBoldSlanted] [LMRoman-BoldOblique]
+  \definefontsynonym [SerifCaps]        [LMRoman-CapsRegular]
+  \definefontsynonym [SerifCapsSlanted] [LMRoman-CapsOblique]
 \stoptypescript
 
 \starttypescript [sans] [modern,computer-modern,latin-modern] [name]
-  \definefontsynonym [Sans]             [ComputerModernSans]
-  \definefontsynonym [SansBold]         [ComputerModernSans-Bold]
-  \definefontsynonym [SansItalic]       [ComputerModernSans-Italic]
-  \definefontsynonym [SansSlanted]      [ComputerModernSans-Slanted]
-  \definefontsynonym [SansBoldItalic]   [ComputerModernSans-BoldItalic]
-  \definefontsynonym [SansBoldSlanted]  [ComputerModernSans-BoldSlanted]
-  \definefontsynonym [SansCaps]         [ComputerModernSans-Caps]
-  \definefontsynonym [SansCapsSlanted]  [ComputerModernSans-CapsSlanted]
+  \definefontsynonym [Sans]             [LMSans-Regular]
+  \definefontsynonym [SansBold]         [LMSans-Bold]
+  \definefontsynonym [SansItalic]       [LMSans-Oblique]
+  \definefontsynonym [SansSlanted]      [LMSans-Oblique]
+  \definefontsynonym [SansBoldItalic]   [LMSans-BoldOblique]
+  \definefontsynonym [SansBoldSlanted]  [LMSans-BoldOblique]
+  \definefontsynonym [SansCaps]         [LMSans-Regular]
+  \definefontsynonym [SansCapsSlanted]  [LMSans-Oblique]
 \stoptypescript
 
 \starttypescript [mono] [modern,computer-modern,latin-modern] [name]
-  \definefontsynonym [Mono]             [ComputerModernMono]
-  \definefontsynonym [MonoBold]         [ComputerModernMono-Bold]
-  \definefontsynonym [MonoItalic]       [ComputerModernMono-Italic]
-  \definefontsynonym [MonoSlanted]      [ComputerModernMono-Slanted]
-  \definefontsynonym [MonoBoldItalic]   [ComputerModernMono-BoldItalic]
-  \definefontsynonym [MonoBoldSlanted]  [ComputerModernMono-BoldSlanted]
-  \definefontsynonym [MonoCaps]         [ComputerModernMono-Caps]
-  \definefontsynonym [MonoCapsSlanted]  [ComputerModernMono-CapsSlanted]
+  \definefontsynonym [Mono]             [LMTypewriter-Regular]
+  \definefontsynonym [MonoBold]         [LMTypewriter-Dark]
+  \definefontsynonym [MonoItalic]       [LMTypewriter-Italic]
+  \definefontsynonym [MonoSlanted]      [LMTypewriter-Oblique]
+  \definefontsynonym [MonoBoldItalic]   [LMTypewriter-DarkOblique]
+  \definefontsynonym [MonoBoldSlanted]  [LMTypewriter-DarkOblique]
+  \definefontsynonym [MonoCaps]         [LMTypewriter-CapsRegular]
+  \definefontsynonym [MonoCapsSlanted]  [LMTypewriter-CapsOblique]
+  \definefontsynonym [MonoVariable]     [LMTypewriterVarWd-Regular]
 \stoptypescript
 
 \starttypescript [math] [modern,computer-modern,latin-modern] [name]
-  \definefontsynonym [MathRoman]        [ComputerModernMath-Roman]
-  \definefontsynonym [MathExtension]    [ComputerModernMath-Extension]
-  \definefontsynonym [MathItalic]       [ComputerModernMath-Italic]
-  \definefontsynonym [MathSymbol]       [ComputerModernMath-Symbol]
+  \definefontsynonym [MathRoman]        [LMRoman-Regular]
+  \definefontsynonym [MathExtension]    [LMMathExtension-Regular]
+  \definefontsynonym [MathItalic]       [LMMathItalic-Italic]
+  \definefontsynonym [MathSymbol]       [LMMathSymbols-Italic]
 \stoptypescript
 
 \starttypescript [boldmath] [modern,computer-modern,latin-modern] [name]
-  \definefontsynonym [MathRoman]        [ComputerModernMath-Roman-Bold]
-  \definefontsynonym [MathExtension]    [ComputerModernMath-Extension]
-  \definefontsynonym [MathItalic]       [ComputerModernMath-Italic-Bold]
-  \definefontsynonym [MathSymbol]       [ComputerModernMath-Symbol-Bold]
+  \definefontsynonym [MathRoman]        [LMRoman-Bold]
+  \definefontsynonym [MathExtension]    [LMMathExtension-Regular]
+  \definefontsynonym [MathItalic]       [LMMathItalic-BoldItalic]
+  \definefontsynonym [MathSymbol]       [LMMathSymbols-BoldItalic]
 \stoptypescript
 
 \starttypescript [bfmath] [modern,computer-modern,latin-modern] [name]
-  \definefontsynonym [MathRomanBold]    [ComputerModernMath-Roman-Bold]
-  \definefontsynonym [MathExtension]    [ComputerModernMath-Extension]
-  \definefontsynonym [MathItalicBold]   [ComputerModernMath-Italic-Bold]
-  \definefontsynonym [MathSymbolBold]   [ComputerModernMath-Symbol-Bold]
+  \definefontsynonym [MathRomanBold]    [LMRoman-Bold]
+  \definefontsynonym [MathExtension]    [LMMathExtension-Regular]
+  \definefontsynonym [MathItalicBold]   [LMMathItalic-BoldItalic]
+  \definefontsynonym [MathSymbolBold]   [LMMathSymbols-BoldItalic]
 \stoptypescript
 
 \starttypescript [serif] [modern-vari,computer-modern-vari,latin-modern-vari] [name]

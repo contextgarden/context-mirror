@@ -7349,6 +7349,9 @@
       <cd:constant type="altezza"/>
       <cd:constant type="profondita"/>
       <cd:constant type="separa"/>
+      <cd:constant type="90"/>
+      <cd:constant type="180"/>
+      <cd:constant type="270"/>
     </cd:keywords>
     <cd:reference optional="yes" list="yes"/>
     <cd:content/>

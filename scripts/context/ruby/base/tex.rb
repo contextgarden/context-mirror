@@ -140,7 +140,7 @@ class TEX
     ['cont-fr','fr','french']                      .each do |f| @@texformats[f] = 'cont-fr'   end
     ['cont-cz','cz','czech']                       .each do |f| @@texformats[f] = 'cont-cz'   end
     ['cont-ro','ro','romanian']                    .each do |f| @@texformats[f] = 'cont-ro'   end
-    ['cont-uk','uk','brittish']                    .each do |f| @@texformats[f] = 'cont-uk'   end
+    ['cont-uk','uk','british']                     .each do |f| @@texformats[f] = 'cont-uk'   end
     ['mptopdf']                                    .each do |f| @@texformats[f] = 'mptopdf'   end
 
     ['latex']                                      .each do |f| @@texformats[f] = 'latex.ltx' end
@@ -168,9 +168,8 @@ class TEX
     ['cont-en','cont-nl','cont-de','cont-it',
      'cont-fr','cont-cz','cont-ro','cont-uk']      .each do |f| @@texprocstr[f] = "\\emergencyend"  end
 
-    # @@runoptions['xetex']   = ['--output-driver \\\"-d 4 -V 5\\\"'] # we need the pos pass
-    # @@runoptions['xetex']   = ['--8bit','-no-pdf'] # from now on we assume (x)dvipdfmx to be used
-    @@runoptions['xetex']   = ['--8bit','-output-driver=\"xdvipdfmx -q -E -d 4 -V 5\"']
+  # @@runoptions['xetex']   = ['--8bit','-output-driver="xdvipdfmx -E -d 4 -V 5 -q"']
+    @@runoptions['xetex']   = ['--8bit','-output-driver="xdvipdfmx -E -d 4 -V 5"']
     @@runoptions['pdfetex'] = ['--8bit']           # obsolete
     @@runoptions['pdftex']  = ['--8bit']           # pdftex is now pdfetex
     @@runoptions['luatex']  = ['--file-line-error']
@@ -1448,9 +1447,10 @@ class TEX
                     end
                 end
                 opt << "\\protect\n";
-                begin getvariable('filters'     ).split(',').uniq.each do |f| opt << "\\useXMLfilter[#{f}]\n"   end ; rescue ; end
-                begin getvariable('usemodules'  ).split(',').uniq.each do |m| opt << "\\usemodule[#{m}]\n"      end ; rescue ; end
-                begin getvariable('environments').split(',').uniq.each do |e| opt << "\\environment #{e}\n"     end ; rescue ; end
+              # begin getvariable('modes'       ).split(',').uniq.each do |e| opt << "\\enablemode  [#{e}]\n" end ; rescue ; end
+                begin getvariable('filters'     ).split(',').uniq.each do |f| opt << "\\useXMLfilter[#{f}]\n" end ; rescue ; end
+                begin getvariable('usemodules'  ).split(',').uniq.each do |m| opt << "\\usemodule   [#{m}]\n" end ; rescue ; end
+                begin getvariable('environments').split(',').uniq.each do |e| opt << "\\environment  #{e} \n" end ; rescue ; end
               # this will become:
               # begin getvariable('environments').split(',').uniq.each do |e| opt << "\\useenvironment[#{e}]\n" end ; rescue ; end
                 opt << "\\endinput\n"
@@ -1810,6 +1810,7 @@ class TEX
             envs  = ctx.environments
             mods  = ctx.modules
             flags = ctx.flags
+            mdes  = ctx.modes
 
             flags.each do |f|
                 f.sub!(/^\-+/,'')
@@ -1826,16 +1827,21 @@ class TEX
 
             envs << getvariable('environments') unless getvariable('environments').empty?
             mods << getvariable('modules')      unless getvariable('modules')     .empty?
+            mdes << getvariable('modes')        unless getvariable('modes')       .empty?
 
             envs = envs.uniq.join(',')
             mods = mods.uniq.join(',')
+            mdes = mdes.uniq.join(',')
 
             report("using search method '#{Kpse.searchmethod}'") if getvariable('verbose')
+
             report("using environments #{envs}") if envs.length > 0
             report("using modules #{mods}")      if mods.length > 0
+            report("using modes #{mdes}")        if mdes.length > 0
 
             setvariable('environments', envs)
             setvariable('modules',      mods)
+            setvariable('modes',        mdes)
         end
 
         # end of preprocessing and merging

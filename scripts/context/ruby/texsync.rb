@@ -14,6 +14,8 @@
 # distribution. In due time I will add a few more options, like
 # synchronization of the iso image.
 
+# taco's sync: rsync -au -v rsync://www.pragma-ade.com/all ./htdocs
+
 banner = ['TeXSync', 'version 1.1.1', '2002/2004', 'PRAGMA ADE/POD']
 
 $: << File.expand_path(File.dirname($0)) ; $: << File.join($:.last,'lib') ; $:.uniq!
@@ -28,7 +30,7 @@ class Commands
 
     include CommandBase
 
-    @@formats = ['en','nl','de','cz','it','ro']
+    @@formats = ['en','nl','de','cz','it','ro', 'fr']
     @@always  = ['metafun','mptopdf','en','nl']
     @@rsync   = 'rsync -r -z -c --progress --stats  "--exclude=*.fmt" "--exclude=*.efmt" "--exclude=*.mem"'
 

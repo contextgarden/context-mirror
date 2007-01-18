@@ -21,7 +21,7 @@ require 'rexml/document'
 
 class CtxRunner
 
-    attr_reader :environments, :modules, :filters, :flags
+    attr_reader :environments, :modules, :filters, :flags, :modes
 
     @@suffix = 'prep'
 
@@ -43,6 +43,7 @@ class CtxRunner
         @modules = Array.new
         @filters = Array.new
         @flags = Array.new
+        @modes = Array.new
         @local = false
     end
 
@@ -130,6 +131,9 @@ class CtxRunner
             REXML::XPath.each(root,"/ctx:job//ctx:resources/ctx:filter") do |fil|
                 @filters << justtext(fil)
             end
+            REXML::XPath.each(root,"/ctx:job//ctx:resources/ctx:mode") do |fil|
+                @modes << justtext(fil)
+            end
             begin
                 REXML::XPath.each(root,"//ctx:block") do |blk|
                     if @jobname && blk.attributes['pattern'] then
@@ -154,6 +158,9 @@ class CtxRunner
             end
             REXML::XPath.each(root,"/ctx:job//ctx:process/ctx:resources/ctx:filter") do |fil|
                 @filters << justtext(fil)
+            end
+            REXML::XPath.each(root,"/ctx:job//ctx:process/ctx:resources/ctx:mode") do |fil|
+                @modes << justtext(fil)
             end
             REXML::XPath.each(root,"/ctx:job//ctx:process/ctx:flags/ctx:flag") do |flg|
                 @flags << justtext(flg)

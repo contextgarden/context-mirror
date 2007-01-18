@@ -7349,6 +7349,9 @@
       <cd:constant type="inaltime"/>
       <cd:constant type="adancime"/>
       <cd:constant type="split"/>
+      <cd:constant type="90"/>
+      <cd:constant type="180"/>
+      <cd:constant type="270"/>
     </cd:keywords>
     <cd:reference optional="yes" list="yes"/>
     <cd:content/>

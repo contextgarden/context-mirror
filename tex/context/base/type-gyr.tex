@@ -26,6 +26,11 @@
 % \showfont[SerifItalicCaps]
 % \stoptext
 
+% Beware, because tetex demanded a different map file naming scheme, we ship
+% alternatively named files as well, just to make sure that older installations
+% still work (where users may load their own instances). In due time we will
+% follow that scheme (well, in due time we will drop map files anyway).
+
 \starttypescriptcollection[gyre]
 
 %D First we define the new ones. Watch how we use the systematic name composition.
@@ -41,7 +46,8 @@
 \definetypescriptprefix [f:schola]  [cs]
 
 \starttypescript [serif] [pagella,termes,bonum,schola] [ec,texnansi,cs,el,qx,rm,t5,t2a,t2b,t2c,l7x]
-  \loadmapfile[\typescriptthree-q\typescriptprefix{f:\typescripttwo}.map]
+% \loadmapfile[\typescriptthree-q\typescriptprefix{f:\typescripttwo}.map]
+  \loadmapfile[q\typescriptprefix{f:\typescripttwo}-\typescriptthree.map]
 
   \definefontsynonym [\typescriptprefix{n:\typescripttwo}-Regular]        [\typescriptthree-q\typescriptprefix{f:\typescripttwo}r]     [encoding=\typescriptthree]
   \definefontsynonym [\typescriptprefix{n:\typescripttwo}-Italic]         [\typescriptthree-q\typescriptprefix{f:\typescripttwo}ri]    [encoding=\typescriptthree]
@@ -80,7 +86,8 @@
 \stoptypescript
 
 \starttypescript [map] [pagella,termes,bonum,schola] [ec,texnansi,cs,el,qx,rm,t5,t2a,t2b,t2c,l7x]
-  \loadmapfile[\typescriptthree-q\typescriptprefix{f:\typescripttwo}.map]
+% \loadmapfile[\typescriptthree-q\typescriptprefix{f:\typescripttwo}.map]
+  \loadmapfile[q\typescriptprefix{f:\typescripttwo}-\typescriptthree.map]
 \stoptypescript
 
 %D Here we overload the older (URW) fonts.
@@ -93,7 +100,8 @@
 % qplbi TeXGyrePagella-BoldItalic
 
 \starttypescript [serif] [palatino] [ec,texnansi,cs,el,qx,rm,t5,t2a,t2b,t2c,l7x]
-  \loadmapfile[\typescriptthree-qpl.map]
+% \loadmapfile[\typescriptthree-qpl.map]
+  \loadmapfile[qpl-\typescriptthree.map]
 
   \definefontsynonym [Palatino]             [\typescriptthree-qplr]    [encoding=\typescriptthree]
   \definefontsynonym [Palatino-Italic]      [\typescriptthree-qplri]   [encoding=\typescriptthree]
@@ -113,7 +121,8 @@
 % qtmbi TeXGyreTermes-BoldItalic
 
 \starttypescript [serif] [times] [ec,texnansi,cs,el,qx,rm,t5,t2a,t2b,t2c,l7x]
-  \loadmapfile[\typescriptthree-qtm.map]
+% \loadmapfile[\typescriptthree-qtm.map]
+  \loadmapfile[qtm-\typescriptthree.map]
 
   \definefontsynonym [Times-Roman]       [\typescriptthree-qtmr]    [encoding=\typescriptthree]
   \definefontsynonym [Times-Italic]      [\typescriptthree-qtmri]   [encoding=\typescriptthree]
@@ -133,7 +142,8 @@
 % qtmbi TeXGyreBonum-BoldItalic
 
 \starttypescript [serif] [bookman] [ec,texnansi,cs,el,qx,rm,t5,t2a,t2b,t2c,l7x]
-  \loadmapfile[\typescriptthree-qbk.map]
+% \loadmapfile[\typescriptthree-qbk.map]
+  \loadmapfile[qbk-\typescriptthree.map]
 
   \definefontsynonym [Bookman-Light]           [\typescriptthree-qbkr]    [encoding=\typescriptthree]
   \definefontsynonym [Bookman-LightItalic]     [\typescriptthree-qbkri]   [encoding=\typescriptthree]
@@ -153,7 +163,8 @@
 % qcsbi TeXGyreSchola-BoldItalic
 
 \starttypescript [serif] [schoolbook] [ec,texnansi,cs,el,qx,rm,t5,t2a,t2b,t2c,l7x]
-  \loadmapfile[\typescriptthree-qcs.map]
+% \loadmapfile[\typescriptthree-qcs.map]
+  \loadmapfile[qcs-\typescriptthree.map]
 
   \definefontsynonym [Schoolbook-Roman]       [\typescriptthree-qcsr]    [encoding=\typescriptthree]
   \definefontsynonym [Schoolbook-Italic]      [\typescriptthree-qcsri]   [encoding=\typescriptthree]

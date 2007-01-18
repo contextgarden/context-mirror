@@ -30,39 +30,39 @@
 
   % fallbacks, no math in latin modern
 
-  \definefontsynonym[lmbsy10] [cmbsy10]
-  \definefontsynonym[lmbsy5]  [cmbsy5]
-  \definefontsynonym[lmbsy6]  [cmbsy7]
-  \definefontsynonym[lmbsy7]  [cmbsy7]
-  \definefontsynonym[lmbsy8]  [cmbsy7]
-  \definefontsynonym[lmbsy9]  [cmbsy10]
+% \definefontsynonym[lmbsy10] [cmbsy10]
+% \definefontsynonym[lmbsy5]  [cmbsy5]
+% \definefontsynonym[lmbsy6]  [cmbsy7]
+% \definefontsynonym[lmbsy7]  [cmbsy7]
+% \definefontsynonym[lmbsy8]  [cmbsy7]
+% \definefontsynonym[lmbsy9]  [cmbsy10]
   \definefontsynonym[lmdunh10][cmdunh10]
-  \definefontsynonym[lmex10]  [cmex10]
-  \definefontsynonym[lmex7]   [cmex10]
-  \definefontsynonym[lmex8]   [cmex10]
-  \definefontsynonym[lmex9]   [cmex10]
+% \definefontsynonym[lmex10]  [cmex10]
+% \definefontsynonym[lmex7]   [cmex10]
+% \definefontsynonym[lmex8]   [cmex10]
+% \definefontsynonym[lmex9]   [cmex10]
   \definefontsynonym[lmff10]  [cmff10]
   \definefontsynonym[lmfi10]  [cmfi10]
   \definefontsynonym[lmfib8]  [cmfib8]
-  \definefontsynonym[lmmi10]  [cmmi10]
-  \definefontsynonym[lmmi12]  [cmmi12]
-  \definefontsynonym[lmmi5]   [cmmi5]
-  \definefontsynonym[lmmi6]   [cmmi6]
-  \definefontsynonym[lmmi7]   [cmmi7]
-  \definefontsynonym[lmmi8]   [cmmi8]
-  \definefontsynonym[lmmi9]   [cmmi9]
-  \definefontsynonym[lmmib10] [cmmib10]
-  \definefontsynonym[lmmib5]  [cmmib5]
-  \definefontsynonym[lmmib6]  [cmmib7]
-  \definefontsynonym[lmmib7]  [cmmib7]
-  \definefontsynonym[lmmib8]  [cmmib7]
-  \definefontsynonym[lmmib9]  [cmmib10]
-  \definefontsynonym[lmsy10]  [cmsy10]
-  \definefontsynonym[lmsy5]   [cmsy5]
-  \definefontsynonym[lmsy6]   [cmsy6]
-  \definefontsynonym[lmsy7]   [cmsy7]
-  \definefontsynonym[lmsy8]   [cmsy8]
-  \definefontsynonym[lmsy9]   [cmsy9]
+% \definefontsynonym[lmmi10]  [cmmi10]
+% \definefontsynonym[lmmi12]  [cmmi12]
+% \definefontsynonym[lmmi5]   [cmmi5]
+% \definefontsynonym[lmmi6]   [cmmi6]
+% \definefontsynonym[lmmi7]   [cmmi7]
+% \definefontsynonym[lmmi8]   [cmmi8]
+% \definefontsynonym[lmmi9]   [cmmi9]
+% \definefontsynonym[lmmib10] [cmmib10]
+% \definefontsynonym[lmmib5]  [cmmib5]
+% \definefontsynonym[lmmib6]  [cmmib7]
+% \definefontsynonym[lmmib7]  [cmmib7]
+% \definefontsynonym[lmmib8]  [cmmib7]
+% \definefontsynonym[lmmib9]  [cmmib10]
+% \definefontsynonym[lmsy10]  [cmsy10]
+% \definefontsynonym[lmsy5]   [cmsy5]
+% \definefontsynonym[lmsy6]   [cmsy6]
+% \definefontsynonym[lmsy7]   [cmsy7]
+% \definefontsynonym[lmsy8]   [cmsy8]
+% \definefontsynonym[lmsy9]   [cmsy9]
   \definefontsynonym[lmtex10] [cmtex10]
   \definefontsynonym[lmtex8]  [cmtex8]
   \definefontsynonym[lmtex9]  [cmtex9]
@@ -189,6 +189,37 @@
 
 \stoptypescript
 
+\starttypescript [math] [modern,latin-modern]
+
+  \definefontsynonym [LMMathSymbols5-BoldItalic] [lmbsy5]
+  \definefontsynonym [LMMathSymbols7-BoldItalic] [lmbsy7]
+  \definefontsynonym [LMMathSymbols10-BoldItalic][lmbsy10]
+  \definefontsynonym [LMMathSymbols5-Italic]     [lmsy5]
+  \definefontsynonym [LMMathSymbols6-Italic]     [lmsy6]
+  \definefontsynonym [LMMathSymbols7-Italic]     [lmsy7]
+  \definefontsynonym [LMMathSymbols8-Italic]     [lmsy8]
+  \definefontsynonym [LMMathSymbols9-Italic]     [lmsy9]
+  \definefontsynonym [LMMathSymbols10-Italic]    [lmsy10]
+  \definefontsynonym [LMMathExtension10-Regular] [lmex10]
+  \definefontsynonym [LMMathItalic5-Italic]      [lmmi5]
+  \definefontsynonym [LMMathItalic6-Italic]      [lmmi6]
+  \definefontsynonym [LMMathItalic7-Italic]      [lmmi7]
+  \definefontsynonym [LMMathItalic8-Italic]      [lmmi8]
+  \definefontsynonym [LMMathItalic9-Italic]      [lmmi9]
+  \definefontsynonym [LMMathItalic10-Italic]     [lmmi10]
+  \definefontsynonym [LMMathItalic12-Italic]     [lmmi12]
+  \definefontsynonym [LMMathItalic5-BoldItalic]  [lmmib5]
+  \definefontsynonym [LMMathItalic7-BoldItalic]  [lmmib7]
+  \definefontsynonym [LMMathItalic10-BoldItalic] [lmmib10]
+
+  \definefontsynonym [LMMathSymbols-BoldItalic]  [LMMathSymbols10-BoldItalic]
+  \definefontsynonym [LMMathSymbols-Italic]      [LMMathSymbols10-Italic]
+  \definefontsynonym [LMMathExtension-Regular]   [LMMathExtension10-Regular]
+  \definefontsynonym [LMMathItalic-Italic]       [LMMathItalic10-Italic]
+  \definefontsynonym [LMMathItalic-BoldItalic]   [LMMathItalic10-BoldItalic]
+
+\stoptypescript
+
 % todo: map these onto verbose names
 
 \starttypescript [serif] [modern,latin-modern,computer-modern] [texnansi,ec,qx,t5]
@@ -271,6 +302,31 @@
   \definefontsynonym [cmvtti10] [\typescriptthree-lmvtto]   [encoding=\typescriptthree]
 
   \definefontsynonym [cmtcsc10] [\typescriptthree-lmtcsc10] [encoding=\typescriptthree]
+
+\stoptypescript
+
+\starttypescript [math] [modern,latin-modern,computer-modern]
+
+  \definefontsynonym [cmbsy5]  [lmbsy5]
+  \definefontsynonym [cmbsy7]  [lmbsy7]
+  \definefontsynonym [cmbsy10] [lmbsy10]
+  \definefontsynonym [cmsy5]   [lmsy5]
+  \definefontsynonym [cmsy6]   [lmsy6]
+  \definefontsynonym [cmsy7]   [lmsy7]
+  \definefontsynonym [cmsy8]   [lmsy8]
+  \definefontsynonym [cmsy9]   [lmsy9]
+  \definefontsynonym [cmsy10]  [lmsy10]
+  \definefontsynonym [cmex10]  [lmex10]
+  \definefontsynonym [cmmi5]   [lmmi5]
+  \definefontsynonym [cmmi6]   [lmmi6]
+  \definefontsynonym [cmmi7]   [lmmi7]
+  \definefontsynonym [cmmi8]   [lmmi8]
+  \definefontsynonym [cmmi9]   [lmmi9]
+  \definefontsynonym [cmmi10]  [lmmi10]
+  \definefontsynonym [cmmi12]  [lmmi12]
+  \definefontsynonym [cmmib5]  [lmmib5]
+  \definefontsynonym [cmmib7]  [lmmib7]
+  \definefontsynonym [cmmib10] [lmmib10]
 
 \stoptypescript
 
@@ -541,18 +597,18 @@
 
 \starttypescript [math] [modern,computer-modern,latin-modern] % [default]
   % watch the space, it prevents remapping
-  \definefontsynonym [ComputerModernMath-Roman]     [cmr10 ]
-  \definefontsynonym [ComputerModernMath-Extension] [cmex10]
-  \definefontsynonym [ComputerModernMath-Italic]    [cmmi10]
-  \definefontsynonym [ComputerModernMath-Symbol]    [cmsy10]
+  \definefontsynonym [ComputerModernMath-Roman]     [lmr10 ]
+  \definefontsynonym [ComputerModernMath-Extension] [lmex10]
+  \definefontsynonym [ComputerModernMath-Italic]    [lmmi10]
+  \definefontsynonym [ComputerModernMath-Symbol]    [lmsy10]
 \stoptypescript
 
 \starttypescript [boldmath,bfmath] [modern,computer-modern,latin-modern] % [default]
   % watch the space, it prevents remapping
-  \definefontsynonym [ComputerModernMath-Roman-Bold]  [cmb10 ]
-  \definefontsynonym [ComputerModernMath-Extension]   [cmex10]
-  \definefontsynonym [ComputerModernMath-Italic-Bold] [cmmib10]
-  \definefontsynonym [ComputerModernMath-Symbol-Bold] [cmbsy10]
+  \definefontsynonym [ComputerModernMath-Roman-Bold]  [lmb10 ]
+  \definefontsynonym [ComputerModernMath-Extension]   [lmex10]
+  \definefontsynonym [ComputerModernMath-Italic-Bold] [lmmib10]
+  \definefontsynonym [ComputerModernMath-Symbol-Bold] [lmbsy10]
 \stoptypescript
 
 % Till we have cyrilic in lm:
