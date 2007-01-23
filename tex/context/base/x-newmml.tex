@@ -439,16 +439,17 @@
   [csymbol]
   [encoding=text,
    definitionURL=]
-  {}
+  {\doifsomething{\XMLop{definitionURL}}{\directsetup{mmc:csymbol:apply}}}
 
 \startsetups mmc:csymbol:apply
     \begingroup
     \startsavingXMLelements
     \rawXMLstacktext\plusone % still on stack, no check, just attr test
     \stopsavingXMLelements
-    % http://www.publisherswhodontcareaboutcosts.com/SomeName
-    \doifsetupselse{mmc:csymbol:\XMLpar{csymbol}{definitionURL}{}} {
-        \expanded{\endgroup\noexpand\directsetup{mmc:csymbol:\XMLpar{csymbol}{definitionURL}{}}}
+    % http://www.publishers.com/SomeName
+    \lowercasestring\XMLpar{csymbol}{definitionURL}{}\to\mmcSymbolURL
+    \doifsetupselse{mmc:csymbol:} {\mmcSymbolURL} {
+        \expanded{\endgroup\noexpand\directsetup{mmc:csymbol:\mmcSymbolURL}}
     } {
         % SomeName (fallback)
         \splitfilename{\XMLpar{csymbol}{definitionURL}{}}
@@ -880,16 +881,20 @@
 
 \defineXMLcommand [divide] {\directsetup{mmc:divide}}
 
-\setupMMLappearance [divide] [\c!level=\!!maxcard]
+\setupMMLappearance [divide] [\c!level=\!!maxcard,\c!alternative=\v!a]
 
 \startsetups mmc:divide
     \increment\MMLcDIVIDElevel
-    \ifnum\MMLcDIVIDElevel>\@@MMLdividelevel\space
+    \doifelse \@@MMLdividealternative\v!b {
         \getXMLstackdata\plustwo/\getXMLstackdata\plusthree
-    \else
-        \MMLcreset
-        \frac{\MMLcreset\getXMLstackdata\plustwo}{\MMLcreset\getXMLstackdata\plusthree}%
-    \fi
+    } {
+        \ifnum\MMLcDIVIDElevel>\@@MMLdividelevel\space
+            \getXMLstackdata\plustwo/\getXMLstackdata\plusthree
+        \else
+            \MMLcreset
+            \frac{\MMLcreset\getXMLstackdata\plustwo}{\MMLcreset\getXMLstackdata\plusthree}%
+        \fi
+    }
     \decrement\MMLcDIVIDElevel
 \stopsetups
 
@@ -2451,6 +2456,11 @@
 \let\MMLdoL\donothing
 \let\MMLdoR\donothing
 
+\startsetups mmc:apply:start
+    \begingroup
+    \startsavingXMLelements
+\stopsetups
+
 \startsetups mmc:apply:stop
     \stopsavingXMLelements
     \MMLmathinner {
@@ -2472,9 +2482,11 @@
         \doifelse {\getXMLstackname\plusone} {apply} {
             % <apply> <apply> ... </apply> <ci> .. </ci> </apply>
             \doifelseMMCfunctioninapply \plusone {plus,minus} {
+% [a]
                 % yet incomplete and rather untested
                 % <apply> <apply> <minus/> <tan/> <cos/> </apply> <ci>x</ci> </apply>
             } {
+% [b]
                 \MMLcreset
             }
             \MMLdoL
@@ -2487,17 +2499,21 @@
             \MMLdoR
         } {
             \doifelse {\getXMLstackname\plusone} {fn} {
+% [c]
                 % \MMLdoL/R are to be taken care of in the next setup
                 \directsetup{mmc:fn:apply}
             } {
                 \doifelse {\getXMLstackname\plusone} {csymbol} {
                     % \MMLdoL/R are to be taken care of in the next setup
+% [d]
                     \directsetup{mmc:csymbol:apply}
                 } {
                     \doifelse {\getXMLstackname\plusone} {ci} {
+% [e]
                         % \MMLdoL/R are to be taken care of in the next setup
                         \directsetup{mmc:ci:apply}
                     } {
+% [f]
                         \MMLdoL
                         \getXMLstackdata\plusone
                         \MMLdoR
@@ -2520,41 +2536,53 @@
     \doifelse {\getXMLstackname\plusone} {ci} {
         \flattenXMLcontent{\getXMLstackdata\plusone}
         \doifsetupselse{mmc:fn:\flattenedXMLcontent} {
-% \MMLdoL/MMLdoR to be handled in plugin
+          % \MMLdoL/MMLdoR to be handled in plugin
             \global\defXMLstackdata\XMLfnoperator\plusone
             \expanded{\endgroup\noexpand\directsetup{mmc:fn:\flattenedXMLcontent}}
         } {
             \endgroup
             \MMLcreset
-\MMLdoL
+            \MMLdoL
             \getXMLstackdata\plusone
             \ifnum\XMLstacklevel>\plusone
                 \getXMLentity{NegThinSpace}
                 \left(\MMLcreset\flushXMLstackwith\plustwo{\MMLseparator,}\right)
             \fi
-\MMLdoR
+            \MMLdoR
         }
     } {
         \endgroup
         \MMLcreset
-\MMLdoL
+        \MMLdoL
         \getXMLstackdata\plusone
-\MMLdoR
+        \MMLdoR
     }
 \stopsetups
 
 \startsetups mmc:csymbol:apply
     \begingroup
-    \startsavingXMLelements
-    \rawXMLstacktext\plusone % still on stack, no check, just attr test
-    \stopsavingXMLelements
+    \defineXMLsave[csymbol][definitionURL=,encoding=]
+    \rawXMLstackdata\plusone % was text % still on stack, no check, just attr test
     % \MMLdoL/MMLdoR to be handled in plugin
-    \doifsetupselse{mmc:csymbol:\XMLpar{csymbol}{definitionURL}{}} {
-        \expanded{\endgroup\noexpand\directsetup{mmc:csymbol:\XMLpar{csymbol}{definitionURL}{}}}
+    \lowercasestring\XMLpar{csymbol}{definitionURL}{}\to\mmcSymbolURL
+    \doifsetupselse{mmc:csymbol:\mmcSymbolURL} {
+        \expanded{\endgroup\noexpand\directsetup{mmc:csymbol:\mmcSymbolURL}}
     } {
         \endgroup
-        \XMLval{mmc:cs}{\XMLop{encoding}}{\firstofoneargument}
+       %\XMLval{mmc:cs}{\XMLop{encoding}}{\firstofoneargument}% fails when no content
+        \XMLval{mmc:cs}{\XMLop{encoding}}{}
     }
+\stopsetups
+
+\defineXMLsingular
+  [csymbol]
+  [encoding=text,
+   definitionURL=]
+  {\directsetup{mmc:csymbol:apply:singular}}
+
+\startsetups mmc:csymbol:apply:singular
+    \lowercasestring\XMLpar{csymbol}{definitionURL}{}\to\mmcSymbolURL
+    \directsetup{mmc:csymbol:\mmcSymbolURL}
 \stopsetups
 
 \startsetups mmc:ci:apply

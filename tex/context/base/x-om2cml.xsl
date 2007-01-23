@@ -195,6 +195,13 @@
                     </xsl:otherwise>
                 </xsl:choose>
             </xsl:when>
+            <xsl:when test="@name='divide'">
+                <xsl:choose>
+                    <xsl:when test="../@style='inline'">
+                        <xsl:attribute name='alternative'>b</xsl:attribute>
+                    </xsl:when>
+                </xsl:choose>
+            </xsl:when>
             <xsl:otherwise>
                 <!-- forget about it -->
             </xsl:otherwise>
@@ -1292,6 +1299,18 @@
       <matrixrow><xsl:apply-templates select="*[2]"/></matrixrow>
       <matrixrow><xsl:apply-templates select="*[3]"/></matrixrow>
     </matrix>
+  </xsl:template>
+
+  <!-- <OMS cd="units_siprefix1" name="centi" cdbase="mathadore"/> -->
+  <!-- <OMS cd="units_metric1"   name="metre" cdbase="mathadore"/> -->
+
+  <xsl:template match="om:OMS[contains(@cd,'units_')]">
+    <csymbol>
+      <xsl:attribute name="definitionURL">
+        <xsl:value-of select="concat(concat(concat(concat(
+            'http://www.openmath.org/cd/mathadore','#'),@cd),'@'),@name)"/>
+      </xsl:attribute>
+    </csymbol>
   </xsl:template>
 
 </xsl:stylesheet>

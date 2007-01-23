@@ -59,7 +59,8 @@ TEXFONTMAPS.dvips    = .;$TEXMF/fonts/map/{dvips,pdftex,}//;./fonts//
 TEXFONTMAPS   = .;$TEXMF/fonts/map/{$progname,$engine,pdftex,dvips,}//;$TEXMF/{$progname,$engine,pdftex,dvips}/{config,}//;./fonts//
 
 VFFONTS       = .;$TEXMF/fonts/vf//;./fonts//
-TFMFONTS      = .;{$TEXMF/fonts,$VARTEXFONTS}/tfm//;./fonts//
+#~ TFMFONTS   = .;{$TEXMF/fonts,$VARTEXFONTS}/tfm//;./fonts//
+TFMFONTS      = .;$TEXMF/fonts/tfm//;./fonts//
 T1FONTS       = .;$TEXMF/fonts/{type1,pfb}//;$TEXMF/fonts/misc/hbf//;$OSFONTDIR;./fonts//
 AFMFONTS      = .;$TEXMF/fonts/afm//;$OSFONTDIR;./fonts//
 LIGFONTS      = .;$TEXMF/fonts/lig//;./fonts//
@@ -73,10 +74,14 @@ CMAPFONTS     = .;$TEXMF/fonts/cmap//;./fonts//
 SFDFONTS      = .;$TEXMF/fonts/sfd//;./fonts//
 OPENTYPEFONTS = .;$TEXMF/fonts/opentype//;$OSFONTDIR;./fonts//
 
-OFMFONTS      = .;{$TEXMF/fonts,$VARTEXFONTS}/{ofm,tfm}//;$TFMFONTS;./fonts//
-OPLFONTS      = .;{$TEXMF/fonts,$VARTEXFONTS}/opl//;./fonts//
-OVFFONTS      = .;{$TEXMF/fonts,$VARTEXFONTS}/ovf//;./fonts//
-OVPFONTS      = .;{$TEXMF/fonts,$VARTEXFONTS}/ovp//;./fonts//
+#~ OFMFONTS   = .;{$TEXMF/fonts,$VARTEXFONTS}/{ofm,tfm}//;$TFMFONTS;./fonts//
+#~ OPLFONTS   = .;{$TEXMF/fonts,$VARTEXFONTS}/opl//;./fonts//
+#~ OVFFONTS   = .;{$TEXMF/fonts,$VARTEXFONTS}/ovf//;./fonts//
+#~ OVPFONTS   = .;{$TEXMF/fonts,$VARTEXFONTS}/ovp//;./fonts//
+OFMFONTS      = .;$TEXMF/fonts/{ofm,tfm}//;$TFMFONTS;./fonts//
+OPLFONTS      = .;$TEXMF/fonts/opl//;./fonts//
+OVFFONTS      = .;$TEXMF/fonts/ovf//;./fonts//
+OVPFONTS      = .;$TEXMF/fonts/ovp//;./fonts//
 OTPINPUTS     = .;$TEXMF/omega/otp//
 OCPINPUTS     = .;$TEXMF/omega/ocp//
 OTFFONTS      = .;$TEXMF/fonts/otf/{xetex,}//;./fonts//
@@ -85,22 +90,23 @@ OTFFONTS      = .;$TEXMF/fonts/otf/{xetex,}//;./fonts//
 
 % resource paths, can be used in paranoid situations (can be env vars)
 
-TXRESOURCES=rubish
+TXRESOURCES=unset
 MPRESOURCES=$TXRESOURCES
 MFRESOURCES=$MPRESOURCES
 
 % some extra paths for development trees (can be env vars)
 
-CTXDEVTXPATH=rubish
-CTXDEVMPPATH=rubish
-CTXDEVMFPATH=rubish
+CTXDEVTXPATH=unset
+CTXDEVMPPATH=unset
+CTXDEVMFPATH=unset
 
 % TEXINPUTS.context = .;{$TXRESOURCES}//;{$CTXDEVTXPATH};$TEXMF/{pdftex,pdfetex,etex,xetex,omega,tex}/{context,plain,generic,}//
 % TEXINPUTS.context = .;{$TXRESOURCES}//;{$CTXDEVTXPATH};$TEXMF/{tex,omega}/{context,plain,generic}//
 % TEXINPUTS.context = .;{$TXRESOURCES}//;{$CTXDEVTXPATH};$TEXMF/tex/{context,plain/base,generic/context,generic/hyphen,generic/omega}//
 TEXINPUTS.context = .;{$TXRESOURCES}//;{$CTXDEVTXPATH};$TEXMF/tex/{context,plain/base,generic}//
 MPINPUTS          = .;{$MFRESOURCES}//;{$CTXDEVMPPATH};$TEXMF/metapost/{context,base,}//
-MFINPUTS          = .;{$MPRESOURCES}//;{$CTXDEVMFPATH};$TEXMF/metafont/{context,base,}//;{$TEXMF/fonts,$VARTEXFONTS}/source//
+#~ MFINPUTS       = .;{$MPRESOURCES}//;{$CTXDEVMFPATH};$TEXMF/metafont/{context,base,}//;{$TEXMF/fonts,$VARTEXFONTS}/source//
+MFINPUTS          = .;{$MPRESOURCES}//;{$CTXDEVMFPATH};$TEXMF/metafont/{context,base,}//;$TEXMF/fonts/source//
 
 TEXCONFIG     = .;$TEXMF/{fonts/map,dvips,pdftex,dvipdfmx,dvipdfm}//
 PDFTEXCONFIG  = .;$TEXMF/pdftex/{$progname,}//
@@ -108,10 +114,10 @@ DVIPDFMINPUTS = .;$TEXMF/{fonts/{map,enc,lig}/dvipdfm,fonts/type1,dvips,pdftex,d
 
 % this way we can hook in development paths
 
-CTXDEVPLPATH=rubish
-CTXDEVPYPATH=rubish
-CTXDEVRBPATH=rubish
-CTXDEVJVPATH=rubish
+CTXDEVPLPATH=unset
+CTXDEVPYPATH=unset
+CTXDEVRBPATH=unset
+CTXDEVJVPATH=unset
 
 % some old paths; we restrict the search to context paths; new ones as well as old ones
 

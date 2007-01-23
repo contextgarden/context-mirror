@@ -31,7 +31,7 @@
 %D
 %D \typebuffer \processXMLbuffer
 
-\startsetups mmc:csymbol:http://www.openmath.org/cd/nums1\string#rational
+\startsetups mmc:csymbol:http://www.openmath.org/cd/nums1\letterhash rational
     \MMLcreset
     \getXMLstackdata\plustwo/\getXMLstackdata\plusthree
 \stopsetups
@@ -48,7 +48,7 @@
 %D
 %D \typebuffer \processXMLbuffer
 
-\startsetups mmc:csymbol:http://www.openmath.org/cd/mathadore\string#diffquot
+\startsetups mmc:csymbol:http://www.openmath.org/cd/mathadore\letterhash diffquot
     \MMLcreset
     \frac {
         \Delta\getXMLstackdata\plustwo
@@ -97,7 +97,7 @@
 %D
 %D \typebuffer \processXMLbuffer
 
-\startsetups mmc:csymbol:http://www.openmath.org/cd/mathadore\string#difference
+\startsetups mmc:csymbol:http://www.openmath.org/cd/mathadore\letterhash difference
     \MMLcreset
     \Delta\getXMLstackdata\plustwo
 \stopsetups
@@ -114,13 +114,85 @@
 %D
 %D \typebuffer \processXMLbuffer
 
-\startsetups mmc:csymbol:http://www.openmath.org/cd/mathadore\string#diff
+\startsetups mmc:csymbol:http://www.openmath.org/cd/mathadore\letterhash diff
     \MMLcreset
     \frac {
         \mfunction{\getXMLentity{mathematicald}}\getXMLstackdata\plustwo
     } {
         \mfunction{\getXMLentity{mathematicald}}\getXMLstackdata\plusthree
     }
+\stopsetups
+
+%D A unit mess.
+
+\startsetups mmc:csymbol:http://www.openmath.org/cd/mathadore\letterhash units_time1@second        {\mr s}\stopsetups
+\startsetups mmc:csymbol:http://www.openmath.org/cd/mathadore\letterhash units_time1@minute        {\mr m}\stopsetups
+\startsetups mmc:csymbol:http://www.openmath.org/cd/mathadore\letterhash units_time1@hour          {\mr h}\stopsetups
+\startsetups mmc:csymbol:http://www.openmath.org/cd/mathadore\letterhash units_time1@day           {\mr d}\stopsetups
+\startsetups mmc:csymbol:http://www.openmath.org/cd/mathadore\letterhash units_time1@week          {\mr w}\stopsetups
+\startsetups mmc:csymbol:http://www.openmath.org/cd/mathadore\letterhash units_time1@month         {\mr m}\stopsetups
+\startsetups mmc:csymbol:http://www.openmath.org/cd/mathadore\letterhash units_time1@year          {\mr y}\stopsetups
+
+\startsetups mmc:csymbol:http://www.openmath.org/cd/mathadore\letterhash units_metric1@meter       {\mr m}\stopsetups
+\startsetups mmc:csymbol:http://www.openmath.org/cd/mathadore\letterhash units_metric1@gram        {\mr g}\stopsetups
+\startsetups mmc:csymbol:http://www.openmath.org/cd/mathadore\letterhash units_metric1@liter       {\mr l}\stopsetups
+
+\startsetups mmc:csymbol:http://www.openmath.org/cd/mathadore\letterhash units_metric1@watt        {\mr W}\stopsetups
+\startsetups mmc:csymbol:http://www.openmath.org/cd/mathadore\letterhash units_metric1@pascal      {\mr P}\stopsetups
+\startsetups mmc:csymbol:http://www.openmath.org/cd/mathadore\letterhash units_metric1@kelvin      {\mr K}\stopsetups
+\startsetups mmc:csymbol:http://www.openmath.org/cd/mathadore\letterhash units_metric1@celsius     {\mr C}\stopsetups
+\startsetups mmc:csymbol:http://www.openmath.org/cd/mathadore\letterhash units_metric1@newton      {\mr N}\stopsetups
+\startsetups mmc:csymbol:http://www.openmath.org/cd/mathadore\letterhash units_metric1@byte        {\mr B}\stopsetups
+
+\startsetups mmc:csymbol:http://www.openmath.org/cd/mathadore\letterhash units_siprefix1@pico  {\mr p}\getXMLstackdata\plustwo\stopsetups
+\startsetups mmc:csymbol:http://www.openmath.org/cd/mathadore\letterhash units_siprefix1@micro     \mu\getXMLstackdata\plustwo\stopsetups
+\startsetups mmc:csymbol:http://www.openmath.org/cd/mathadore\letterhash units_siprefix1@milli {\mr m}\getXMLstackdata\plustwo\stopsetups
+\startsetups mmc:csymbol:http://www.openmath.org/cd/mathadore\letterhash units_siprefix1@centi {\mr c}\getXMLstackdata\plustwo\stopsetups
+\startsetups mmc:csymbol:http://www.openmath.org/cd/mathadore\letterhash units_siprefix1@deci  {\mr d}\getXMLstackdata\plustwo\stopsetups
+\startsetups mmc:csymbol:http://www.openmath.org/cd/mathadore\letterhash units_siprefix1@deca  {\mr d}\getXMLstackdata\plustwo\stopsetups
+\startsetups mmc:csymbol:http://www.openmath.org/cd/mathadore\letterhash units_siprefix1@hecto {\mr h}\getXMLstackdata\plustwo\stopsetups
+\startsetups mmc:csymbol:http://www.openmath.org/cd/mathadore\letterhash units_siprefix1@kilo  {\mr k}\getXMLstackdata\plustwo\stopsetups
+\startsetups mmc:csymbol:http://www.openmath.org/cd/mathadore\letterhash units_siprefix1@mega  {\mr m}\getXMLstackdata\plustwo\stopsetups
+\startsetups mmc:csymbol:http://www.openmath.org/cd/mathadore\letterhash units_siprefix1@giga  {\mr g}\getXMLstackdata\plustwo\stopsetups
+\startsetups mmc:csymbol:http://www.openmath.org/cd/mathadore\letterhash units_siprefix1@tera  {\mr t}\getXMLstackdata\plustwo\stopsetups
+
+\startsetups mmc:csymbol:http://www.openmath.org/cd/mathadore\letterhash procent   \procent\stopsetups
+\startsetups mmc:csymbol:http://www.openmath.org/cd/mathadore\letterhash promille \promille\stopsetups
+\startsetups mmc:csymbol:http://www.openmath.org/cd/mathadore\letterhash degree      ^\circ\stopsetups
+
+% whatever
+
+\startsetups mmc:csymbol:http://www.openmath.org/cd/mathadore\letterhash triangle
+    \Delta\,
+\stopsetups
+
+% crap
+
+\startsetups mmc:csymbol:http://www.openmath.org/cd/mathadore\letterhash units_metric1@degree_celsius
+    \directsetup{mmc:csymbol:http://www.openmath.org/cd/mathadore\letterhash units_metric1@celsius}
+\stopsetups
+\startsetups mmc:csymbol:http://www.openmath.org/cd/mathadore\letterhash units_metric1@degree_kelvin
+    \directsetup{mmc:csymbol:http://www.openmath.org/cd/mathadore\letterhash units_metric1@kelvin}
+\stopsetups
+
+\startsetups mmc:csymbol:http://www.openmath.org/cd/mathadore\letterhash units_metric1@metre
+    \directsetup{mmc:csymbol:http://www.openmath.org/cd/mathadore\letterhash units_metric1@meter}
+\stopsetups
+\startsetups mmc:csymbol:http://www.openmath.org/cd/mathadore\letterhash units_metric1@gramme
+    \directsetup{mmc:csymbol:http://www.openmath.org/cd/mathadore\letterhash units_metric1@gram}
+\stopsetups
+\startsetups mmc:csymbol:http://www.openmath.org/cd/mathadore\letterhash units_metric1@litre
+    \directsetup{mmc:csymbol:http://www.openmath.org/cd/mathadore\letterhash units_metric1@liter}
+\stopsetups
+\startsetups mmc:csymbol:http://www.openmath.org/cd/mathadore\letterhash units_time1@calendar_month
+    \directsetup{mmc:csymbol:http://www.openmath.org/cd/mathadore\letterhash units_time1@month}
+\stopsetups
+\startsetups mmc:csymbol:http://www.openmath.org/cd/mathadore\letterhash units_time1@calendar_year
+    \directsetup{mmc:csymbol:http://www.openmath.org/cd/mathadore\letterhash units_time1@year}
+\stopsetups
+
+\startsetups mmc:csymbol:http://www.openmath.org/cd/mathadore\letterhash degree_angle
+    \directsetup{mmc:csymbol:http://www.openmath.org/cd/mathadore\letterhash degree}
 \stopsetups
 
 \protect \endinput

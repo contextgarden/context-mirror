@@ -860,7 +860,7 @@
      \resetMPmoveto
      \PDFcode{\!MPgMPs1 \!MPgMPs2 \!MPgMPs3 \!MPgMPs4 \!MPgMPs5 \!MPgMPs6 c}%
    \or
-     \ifx\lastMPmoveX\empty \else % bugged
+     \ifx\lastMPmoveX\empty \else % we assume 0,0 rlineto
        \flushMPmoveto
        \PDFcode{\!MP\lastMPmoveX\space \!MP\lastMPmoveY\space l S}%
        \resetMPmoveto
@@ -891,12 +891,13 @@
      \PDFcode{\!MP\a\space\!MP\b\space
               \!MP\c\space\!MP\d\space
               \!MP\e\space\!MP\f\space c}%
-   \or
+   \or % rather mp specific ... rline always has 0,0
      \bgroup
      \noMPtranslate
      \flushMPconcatmoveto
+     % next should be \lastMPmoveX+\a,\lastMPmoveY+\b but we know it's 0,0
+     \PDFcode{\!MP\lastMPmoveX\space\!MP\lastMPmoveY\space l S}%
      \resetMPmoveto
-     \PDFcode{\!MP\a\space\!MP\b\space l S}%
      \egroup
    \or
 %      \flushMPconcatmoveto

@@ -13,7 +13,7 @@
 
 % it's about time to clean up this file ...
 
-\newcontextversion{2007.01.18 12:57}
+\newcontextversion{2007.01.23 13:32}
 
 %D This file is loaded at runtime, thereby providing an
 %D excellent place for hacks, patches, extensions and new
@@ -28,6 +28,30 @@
 % caption: grid=top|bottom in xml defs
 
 \let\then\relax % \ifnum1>2\then -)
+
+\chardef\baselinegridmode=0 % option in layout / 1=permit_half_lines
+
+\def\dodosetupwhitespace
+  {\ifgridsnapping
+     \witruimteflexibelfalse
+     \ctxparskip1\ctxparskip
+     \ifdim\ctxparskip>\zeropoint
+       \ifcase\baselinegridmode
+         \ctxparskip\baselineskip % normal ! ! ! ! !!
+       \or
+         \ifdim\scratchdimen=\baselineskip % maybe range
+           \ctxparskip\baselineskip % normal ! ! ! ! !!
+         \else
+           \ctxparskip\numexpr\ctxparskip/\dimexpr.5\lineheight\relax\relax\dimexpr.5\lineheight\relax
+         \fi
+       \else
+         \ctxparskip\baselineskip % normal ! ! ! ! !!
+       \fi
+     \fi
+   \else
+     \ifwitruimteflexibel \else \ctxparskip1\ctxparskip \fi
+   \fi
+   \parskip\ctxparskip}
 
 \def\defXMLexpanded#1#2%
   {\begingroup

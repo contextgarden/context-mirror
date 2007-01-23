@@ -1602,7 +1602,7 @@ class Commands
     @@languagedata['da' ] = [ 'ec'      , ['dkspecial.tex','dkcommon.tex'] ]
     # elhyph.tex
     @@languagedata['es' ] = [ 'ec'      , ['eshyph.tex'] ]
-    @@languagedata['fi' ] = [ 'ec'      , ['ethyph.tex'] ]
+    @@languagedata['et' ] = [ 'ec'      , ['ethyph.tex'] ]
     @@languagedata['fi' ] = [ 'ec'      , ['fihyph.tex'] ]
     @@languagedata['fr' ] = [ 'ec'      , ['frhyph.tex'] ]
     # ghyphen.readme ghyph31.readme grphyph
@@ -1622,7 +1622,7 @@ class Commands
     @@languagedata['pl' ] = [ 'ec'      , ['plhyph.tex'] ]
     @@languagedata['pt' ] = [ 'ec'      , ['pthyph.tex'] ]
     @@languagedata['ro' ] = [ 'ec'      , ['rohyph.tex'] ]
-    @@languagedata['sl' ] = [ 'ec'      , ['sihyph.tex'] ]
+    @@languagedata['sl' ] = [ 'ec'      , ['slhyph.tex'], ['sihyph.tex'] ]
     @@languagedata['sk' ] = [ 'ec'      , ['skhyphen.tex','skhyphen.ex'] ]
     # sorhyph.tex / upper sorbian
     # srhyphc.tex / cyrillic

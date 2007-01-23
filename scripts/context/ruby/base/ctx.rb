@@ -187,6 +187,14 @@ class CtxRunner
             end
             REXML::XPath.each(root,"/ctx:job//ctx:preprocess/ctx:files") do |files|
                 REXML::XPath.each(files,"ctx:file") do |pattern|
+                    suffix = @@suffix
+                    begin
+                        suffix = REXML::XPath.match(root,"/ctx:job//ctx:preprocess/@suffix").to_s
+                    rescue
+                        suffix = @@suffix
+                    else
+                        if suffix && suffix.empty? then suffix = @@suffix end
+                    end
                     preprocessor = pattern.attributes['processor']
                     if preprocessor and not preprocessor.empty? then
                         begin
@@ -221,10 +229,10 @@ class CtxRunner
                                     if command = commands[pp] then
                                         # a lie: no <?xml ...?>
                                         command = REXML::Document.new(command.to_s) # don't infect original
+                                        # command = command.deep_clone() # don't infect original
                                         command = command.elements["ctx:processor"]
-                                        begin
-                                            newfile = "#{oldfile}.#{suf}" if suf = command.attributes['suffix']
-                                        rescue
+                                        if suf = command.attributes['suffix'] then
+                                            newfile = "#{oldfile}.#{suf}"
                                         end
                                         begin
                                             newfile = File.basename(newfile) if @local

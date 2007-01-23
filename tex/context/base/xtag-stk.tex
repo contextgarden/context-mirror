@@ -100,7 +100,7 @@
   {\defXMLstackiddata#1\XMLstackid}
 
 \def\showXMLstacknames
-  {\hbox{[\space\dorecurse\XMLstacklevel{\getXMLstackname\recurselevel\space}]}}
+  {\hbox{[\space\dorecurse\XMLstacklevel{\recurselevel:\getXMLstackname\recurselevel\space}]}}
 
 \def\flushXMLstackfrom#1%
   {\dostepwiserecurse{#1}\XMLstacklevel\plusone
