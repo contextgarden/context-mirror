@@ -1,4 +1,4 @@
-#!/usr/env ruby
+#!/usr/bin/env ruby
 
 banner = ['WWWServer', 'version 1.0.0', '2003-2006', 'PRAGMA ADE/POD']
 

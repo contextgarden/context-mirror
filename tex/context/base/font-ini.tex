@@ -14,6 +14,8 @@
 
 \writestatus{loading}{Context Font Macros (ini)}
 
+\loadmarkfile{font-ini}
+
 \unprotect
 
 % \def\fontrange#1%
@@ -899,7 +901,7 @@
 \def\synchronizesymb % stylish math stuff in mmode
   {\ifsynchronizemathfonts\the\symbstrategies\fi} % \if...\fam\minusone\fi}
 
-%D By not setting the family we can append a font switch to \tyep
+%D By not setting the family we can append a font switch to \type
 %D {\everymath}. On the other hand, one never knows in what family
 %D state the strategies brought us.
 %D
@@ -1336,66 +1338,66 @@
 %D \definedfont["Gentium" at 40pt] test
 %D \stoptyping
 
-\beginXETEX \font
+% \beginXETEX \font
 
-    % actually, we can use "" in pdftex> 1.20 as well
+%     % actually, we can use "" in pdftex> 1.20 as well
 
-    \def\parsefontspec#1%
-      {\xdef\somefontspec{#1\space}%
-       \@EA\doparsefontspec\somefontspec\relax]% =>#1 \empty]
-       \donoparsefontspec}
+%     \def\parsefontspec#1%
+%       {\xdef\somefontspec{#1\space}%
+%        \@EA\doparsefontspec\somefontspec\relax]% =>#1 \empty]
+%        \donoparsefontspec}
 
-    \def\doparsefontspec#1%
-      {\ifx"#1%
-         \@EA\dodqparsefontspec
-       \else\ifx'#1%
-         \@EAEAEA\dosqparsefontspec
-       \else
-         \@EAEAEA\dodoparsefontspec
-       \fi\fi#1}
+%     \def\doparsefontspec#1%
+%       {\ifx"#1%
+%          \@EA\dodqparsefontspec
+%        \else\ifx'#1%
+%          \@EAEAEA\dosqparsefontspec
+%        \else
+%          \@EAEAEA\dodoparsefontspec
+%        \fi\fi#1}
 
-    \def\dqfontquote{"}
-    \def\sqfontquote{'}
+%     \def\dqfontquote{"}
+%     \def\sqfontquote{'}
 
-    \def\dodqparsefontspec"#1"#2%
-      {\def\somefontname{#1}%
-       \let\somefontquote\dqfontquote
-       \ifx#2\relax\@EA\setnaturalfontspec\else\@EA\setforcedfontspec\fi#2}
+%     \def\dodqparsefontspec"#1"#2%
+%       {\def\somefontname{#1}%
+%        \let\somefontquote\dqfontquote
+%        \ifx#2\relax\@EA\setnaturalfontspec\else\@EA\setforcedfontspec\fi#2}
 
-    \def\dosqparsefontspec'#1'#2%
-      {\def\somefontname{#1}%
-       \let\somefontquote\sqfontquote
-       \ifx#2\relax\@EA\setnaturalfontspec\else\@EA\setforcedfontspec\fi#2}
+%     \def\dosqparsefontspec'#1'#2%
+%       {\def\somefontname{#1}%
+%        \let\somefontquote\sqfontquote
+%        \ifx#2\relax\@EA\setnaturalfontspec\else\@EA\setforcedfontspec\fi#2}
 
-    \def\dodoparsefontspec#1 #2%
-      {\def\somefontname{#1}%
-       \let\somefontquote\empty
-       \ifx\somefontname\empty % space before fontname
-         \@EA\doparsefontspec
-       \else\ifx#2\relax
-         \@EAEAEA\setnaturalfontspec
-       \else
-         \@EAEAEA\setforcedfontspec
-       \fi\fi
-       #2}
+%     \def\dodoparsefontspec#1 #2%
+%       {\def\somefontname{#1}%
+%        \let\somefontquote\empty
+%        \ifx\somefontname\empty % space before fontname
+%          \@EA\doparsefontspec
+%        \else\ifx#2\relax
+%          \@EAEAEA\setnaturalfontspec
+%        \else
+%          \@EAEAEA\setforcedfontspec
+%        \fi\fi
+%        #2}
 
-    \def\setnaturalfontspec#1]%
-      {\@fs@scaled\plusthousand\relax}
+%     \def\setnaturalfontspec#1]%
+%       {\@fs@scaled\plusthousand\relax}
 
-    \def\setforcedfontspec#1 #2\relax]%
-      {\csname\@fs@#1\endcsname#2\relax}
+%     \def\setforcedfontspec#1 #2\relax]%
+%       {\csname\@fs@#1\endcsname#2\relax}
 
-    \def\donoparsefontspec % #1 == \cs
-      {\edef\fontfile{\somefontquote\truefontname\somefontname\somefontquote}%
-       \ifx\fontfile\s!unknown \let\fontfile\defaultfontfile \fi
-       \edef\lastfontname{\fontfile\somefontspec}%
-       \ifx\fontclass\empty
-         \expandafter\definefontlocal
-       \else
-         \expandafter\definefontglobal
-       \fi} % #1 == \cs
+%     \def\donoparsefontspec % #1 == \cs
+%       {\edef\fontfile{\somefontquote\truefontname\somefontname\somefontquote}%
+%        \ifx\fontfile\s!unknown \let\fontfile\defaultfontfile \fi
+%        \edef\lastfontname{\fontfile\somefontspec}%
+%        \ifx\fontclass\empty
+%          \expandafter\definefontlocal
+%        \else
+%          \expandafter\definefontglobal
+%        \fi} % #1 == \cs
 
-\endXETEX
+% \endXETEX
 
 \def\@fs@scaled
   {\afterassignment\do@fs@scaled\scratchcounter}
@@ -1476,10 +1478,15 @@
 
 \let\fontfile\s!unknown
 
+\ifx\checkfontfilename\undefined \let\checkfontfilename\relax \fi
+
+\def\checkedfontfile{\fontfile} % default
+
 \def\donoparsefontspec % #1 == \cs
   {\edef\fontfile{\truefontname\somefontname}%
    \ifx\fontfile\s!unknown \let\fontfile\defaultfontfile \fi
-   \edef\lastfontname{\fontfile\somefontspec}%
+   \checkfontfilename
+   \edef\lastfontname{\checkedfontfile\somefontspec}%
    \ifx\fontclass\empty
      \expandafter\definefontlocal
    \else
@@ -1749,7 +1756,9 @@
 
 \def\dostartfontclass[#1]%
   {\pushmacro\fontclass
-   \doifsomething{#1}{\def\fontclass{#1}}}
+   \doifelse{#1}{\v!each}
+     {\let\fontclass\empty}
+     {\doifsomething{#1}{\def\fontclass{#1}}}}
 
 \def\stopfontclass
   {\popmacro\fontclass}
@@ -3557,7 +3566,7 @@
 
 % \enableencodinginmath % too untested to enable by default
 
-%D \startyping
+%D \starttyping
 %D $\cases{& \ccaron}$ $x=\hbox{\ccaron $x=\hbox{\ccaron}$}$
 %D \stoptyping
 
@@ -3589,7 +3598,9 @@
       \fi}%
      {\lastfontidentifier}%
    \the\everyfont
-   \synchronizepatterns}
+   \synchronizepatternswithfont}
+
+\ifx\synchronizepatternswithfont\undefined \def\synchronizepatternswithfont{\synchronizepatterns} \fi
 
 %D The next auxilliary macro is an alternative to \type
 %D {\fontname}.

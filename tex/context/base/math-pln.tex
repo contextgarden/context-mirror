@@ -203,11 +203,13 @@
 \def\doteq
   {\buildrel\textstyle.\over=}
 
+\ifx\mfunction\undefined \def\mfunction#1{\mathbin{\rm#1}} \fi
+
 \def\bmod
   {\nonscript
    \mskip-\medmuskip
    \mkern5mu
-   \mathbin{\rm mod}%
+   \mfunction{mod}%
    \penalty900
    \mkern5mu
    \nonscript
@@ -216,7 +218,7 @@
 \def\pmod#1%
   {\allowbreak
    \mkern18mu
-   ({\rm mod}\,\,#1)}
+   (\mfunction{mod}\,\,#1)}
 
 \def\cases#1%
   {\left\{%

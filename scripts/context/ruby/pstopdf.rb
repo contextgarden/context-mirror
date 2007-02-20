@@ -76,7 +76,7 @@ class Commands
 
         @commandline.arguments.each do |filename|
 
-            filename = Tool.cleanfilename(filename,@commandline)
+            filename = Tool.cleanfilename(filename,@commandline) # brrrr
             inppath = @commandline.option('inputpath')
             if inppath.empty? then
                inppath = '.'

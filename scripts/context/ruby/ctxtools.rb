@@ -1643,7 +1643,11 @@ class Commands
 
         texmfroot = @commandline.argument('first')
         texmfroot = '.' if texmfroot.empty?
-        maproot   = "#{texmfroot.gsub(/\\/,'/')}/fonts/map/pdftex/context"
+        if @commandline.option('maproot') then
+            maproot = @commandline.option('maproot')
+        else
+            maproot = "#{texmfroot.gsub(/\\/,'/')}/fonts/map/pdftex/context"
+        end
 
         if File.directory?(maproot) then
             files = Dir.glob("#{maproot}/*.map")
@@ -1737,7 +1741,7 @@ class Array
 
     def add_shebang(filename,program)
         unless self[0] =~ /^\#/ then
-            self.insert(0,"\#!/usr/env #{program}")
+            self.insert(0,"\#!/usr/bin/env #{program}")
         end
         unless self[2] =~ /^\#.*?copyright\=/ then
             self.insert(1,"\#")
@@ -2698,6 +2702,7 @@ commandline.registeraction('disarmutfbom'      , 'remove utf bom [--force]')
 
 commandline.registervalue('type','')
 commandline.registervalue('filter','')
+commandline.registervalue('maproot','')
 
 commandline.registerflag('recurse')
 commandline.registerflag('force')

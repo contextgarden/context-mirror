@@ -11,6 +11,9 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
+%D Quite some code will be moved to the mk files once we're ready
+%D for it.
+
 %D This module is a reimplementation of the module that handled
 %D composed characters and non \ASCII\ characters. The changed
 %D are not that fundamental, and mainly concerns moving
@@ -1194,12 +1197,17 @@
 
 %D We preload several encodings:
 
-\useencoding[def,acc,raw,com,cas,mis] % mis should come first
+\useencoding[def] % defaults (partly simplified)
+\useencoding[acc] % accent commands
+\useencoding[raw] % simplified (incomplete)
+\useencoding[com] % a few commands
+\useencoding[cas] % case mapping, not needed in mkiv
+\useencoding[mis] % a few commands
 
-\useencoding[ans,il2,ec,tbo,pdf,uc,pol,qx,t5,cyr,agr] % pol and il2 will go away
+\loadmarkfile{enco-ini}
 
-\useencoding[032,033,037]
-
-\setupencoding[\s!default=ec] % was: [\s!default=\s!default]
+% \useencoding[ans,il2,ec,tbo,pdf,uc,pol,qx,t5,cyr,agr] % pol and il2 will go away, not needed in mkiv
+% \useencoding[032,033,037] % fallbacks for some unicode chars
+% \setupencoding[\s!default=ec] % was: [\s!default=\s!default]
 
 \protect \endinput

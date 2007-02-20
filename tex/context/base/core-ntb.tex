@@ -277,6 +277,8 @@
 % \setupTABLE [first] [two][corner=2] % special case
 % \setupTABLE [last]  [two][corner=4] % special case
 %
+% % % \setupTABLE [one] [first] ... special case of span
+%
 % \startTEXpage
 % \bTABLE[frame=off,align=middle]
 % \bTR \bTD one   \eTD \bTD two    \eTD \bTD three \eTD \eTR
@@ -345,6 +347,14 @@
          \csname\@@tblprefix\c!x\v!last\c!y\v!two\endcsname
        \fi\fi
    \fi
+\ifnum\gettblcol\positiverow\positivecol=\maximumcol\relax % top span over whole width
+    \ifnum\positiverow=\plusone
+        \csname\@@tblprefix\c!x\v!one\c!y\v!first\endcsname
+    \fi
+    \ifnum\positiverow=\maximumrow\relax
+        \csname\@@tblprefix\c!x\v!one\c!y\v!last\endcsname
+    \fi
+\fi
    % header things
    \ifnum#1>\noftblhdnxlines\else
      \executeifdefined{\@@tblprefix\v!header\v!each     }\donothing

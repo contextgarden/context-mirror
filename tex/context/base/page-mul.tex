@@ -657,6 +657,7 @@
      {\hbox to \finalcolumntextwidth
         {\hskip\colleftskip\relax % new, \relax needed
          \ifreversecolumns
+           \popsplitproperties % else wrong color stack
            \@EA\dohandlerevcolumns
          \else
            \@EA\dohandleallcolumns
@@ -1586,7 +1587,7 @@
    \nofcolumns\@@kln\relax
    \processaction
      [\@@klrule]
-     [    \v!on=>\let\betweencolumns\linebetweencolumns,
+     [     \v!on=>\let\betweencolumns\linebetweencolumns,
           \v!off=>\let\betweencolumns\spacebetweencolumns,
       \s!default=>\let\betweencolumns\spacebetweencolumns,
       \s!unknown=>\let\betweencolumns\@@klrule]}

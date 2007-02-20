@@ -27,8 +27,8 @@
 \bindprimitive setrandomseed  pdfsetrandomseed
 \bindprimitive uniformdeviate pdfuniformdeviate
 
-\bindprimitive resettimer      pdfresettimer
-\bindprimitive elapsedtime     pdfelapsedtime
+\bindprimitive resettimer     pdfresettimer
+\bindprimitive elapsedtime    pdfelapsedtime
 
 % new per 1.40
 
@@ -44,6 +44,7 @@
   {\pdfcompresslevel   \zerocount
    \pdfobjcompresslevel\zerocount}
 
+\let\normalquitvmode  \quitvmode
 \let\normalnoligatures\noligatures
 
 \protect

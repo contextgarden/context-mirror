@@ -29,6 +29,9 @@
 %D
 %D This commands generate \type{\s!word} and \type{\m!word}.
 
+\definesystemconstant {hans}
+\definesystemconstant {taco}
+
 %D First we define some system constants used for both the
 %D multi||lingual interface and multi||linguag typesetting.
 
@@ -660,8 +663,8 @@
 %D The next two files specify user settings as well as
 %D \TEXEXEC\ settings when generating a format.
 
-\definefileconstant {usrfilename} {cont-usr}
-\definefileconstant {fmtfilename} {cont-fmt}
+\definefileconstant {usrfilename} {cont-usr} % .tex
+\definefileconstant {fmtfilename} {cont-fmt} % .tex
 
 %D The setup files for the language, font, color and special
 %D subsystems have a common prefix. This means that we have at

@@ -341,12 +341,33 @@
      \OTRONEdosetbotinserts
    \fi}
 
+% \def\OTRONEdotopinsertions
+%   {\ifvoid\topins\else
+%      \ifgridsnapping
+%        \box\topins
+%        \vskip-\topskip \vskip\strutheight % [xx] new: see icare topbleed
+%      \else
+%        \unvbox\topins
+%      \fi
+%    \fi
+%    \global\topinserted\zeropoint}
+
+\chardef\topinserttopskipmode=0 % 1 no topskip
+
 \def\OTRONEdotopinsertions
   {\ifvoid\topins\else
      \ifgridsnapping
        \box\topins
-       \vskip-\topskip \vskip\strutheight % [xx] new: see icare topbleed
+       \vskip-\topskip
+       \vskip\strutheight % [xx] new: see icare topbleed
      \else
+       \ifcase\topinserttopskipmode
+         % 0: default, do nothing
+       \or
+         % 1: no topskip (crossed fingers)
+         \vskip-\topskip
+         \vskip\strutheight
+       \fi
        \unvbox\topins
      \fi
    \fi

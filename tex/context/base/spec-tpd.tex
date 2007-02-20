@@ -226,7 +226,9 @@
 \ifx\pdfmapfile\undefined \let\pdfmapfile\gobbletwoarguments \fi
 \ifx\pdfmapline\undefined \let\pdfmapline\gobbletwoarguments \fi
 
-\definespecial\doresetmapfilelist{\pdfmapfile{original-empty.map}}
+\definespecial\doresetmapfilelist
+  {\global\let\doresetmapfilelist\relax
+   \pdfmapfile{original-empty.map}}
 
 \ifnum\pdftexversion<120
 

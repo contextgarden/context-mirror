@@ -570,7 +570,12 @@ end
                 if ! epsbbox && str =~ /^%%(Page:|EndProlog)/io then
                     out.puts(str) if $1 == "EndProlog"
                     debug('faking papersize')
-                    out.puts("<< /PageSize [#{@width} #{@height}] >> setpagedevice\n")
+                    # out.puts("<< /PageSize [#{@width} #{@height}] >> setpagedevice\n")
+                    if ! dimensions? then
+                        out.puts("<< /PageSize [1 1] >> setpagedevice\n")
+                    else
+                        out.puts("<< /PageSize [#{@width} #{@height}] >> setpagedevice\n")
+                    end
                     out.puts("gsave #{@xoffset} #{@yoffset} translate\n")
                     epsbbox = true
                 elsif str =~ /^%%BeginBinary\:\s*\d+\s*$/o then

@@ -129,6 +129,8 @@ module Tool
 
     def Tool.simplefilename(old)
 
+        return old # too fragile
+
         return old if not FileTest.file?(old)
 
         new = old.downcase
@@ -258,7 +260,7 @@ module Tool
 
         new = checksuffix(simplefilename(old))
         unless new == old
-            begin
+            begin # bugged, should only be name, not path
                 File.rename(old,new)
                 logging.report("renaming fuzzy name #{old} to #{new}") unless logging
                 return old

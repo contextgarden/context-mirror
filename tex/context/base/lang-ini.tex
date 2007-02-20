@@ -347,11 +347,17 @@
    \enableregime[utf]}
 
 \beginXETEX
-  \def\setuphyppatencoding{\pathypsettings}
+    \def\synchronizepatternswithfont{}
+    \def\doloadpatterns         #1#2{\dodoloadpatterns{#1}{#2}\s!default\s!default}
+    \def\setnormallanguage        #1{\dosetnormallanguage{:\s!default:\s!default:}#1\empty}
+    \def\setuphyppatencoding        {\pathypsettings}
 \endXETEX
 
 \beginMETATEX
-  \def\setuphyppatencoding{\pathypsettings}
+    \def\synchronizepatternswithfont{}
+    \def\doloadpatterns         #1#2{\dodoloadpatterns{#1}{#2}\s!default\s!default}
+    \def\setnormallanguage        #1{\dosetnormallanguage{:\s!default:\s!default:}#1\empty}
+    \def\setuphyppatencoding        {\pathypsettings}
 \endMETATEX
 
 \def\dodoloadpatterns#1#2#3#4% beware, loaded language also incr
@@ -409,6 +415,8 @@
   \gdef\doloadpatterns{\doglobal\increment\loadedlanguage\gobbletwoarguments}%
   \globallet\dodoloadpatterns\gobblefourarguments
 \to \everydump
+
+% \loadmarkfile{lang-ini} % not yet
 
 %D \macros
 %D   {setuplanguage}
@@ -519,7 +527,8 @@
 
 % new, encoding specific patterns
 
-\ifx\synchronizepatterns\undefined \let\synchronizepatterns\relax \fi
+\ifx\synchronizepatterns        \undefined \let\synchronizepatterns\relax                         \fi
+\ifx\synchronizepatternswithfont\undefined \def\synchronizepatternswithfont{\synchronizepatterns} \fi
 
 \beginTEX
 

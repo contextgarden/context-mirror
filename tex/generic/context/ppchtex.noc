@@ -32,6 +32,7 @@
 
 \input supp-mis.tex  \let\writestatus\undefined
 \input syst-gen.tex
+\input syst-fnt.tex
 
 %D after which we can go on with:
 

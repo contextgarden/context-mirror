@@ -3081,7 +3081,7 @@
 
 <cd:command name="setupindentations" file="core-des.tex">
   <cd:sequence>
-    <cd:string value="nastavodsazovani"/>
+    <cd:string value="nastavodsazeni"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords optional="yes" list="yes">
@@ -3129,7 +3129,7 @@
       <cd:constant type="cd:name"/>
     </cd:keywords>
     <cd:assignments list="yes">
-      <cd:inherit name="nastavodsazovani"/>
+      <cd:inherit name="nastavodsazeni"/>
     </cd:assignments>
   </cd:arguments>
 </cd:command>

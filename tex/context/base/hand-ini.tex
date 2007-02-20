@@ -680,6 +680,23 @@
 %   [\s!default]
 %   [\c!links=1,\c!rechts=1,\c!min=20,\c!max=20,\c!stap=5]
 
+% Beware of fonttoks:
+%
+% \startfonthandling[morespacing]
+%     \appendtoks
+%         \fontdimen2\handledfont=.50em
+%         \fontdimen3\handledfont=.25em
+%         \fontdimen4\handledfont=.25em
+%     \to \fonttoks
+% \stopfonthandling
+%
+% \definefonthandling [morespacing] [morespacing]
+%
+% \definefontsynonym[xtexnansi-lmr7][texnansi-lmr7][handling=morespacing]
+% \definefont[crap][texnansi-lmr7]
+%
+% \crap \the\fontdimen2\font, \the\fontdimen3\font, \the\fontdimen4\font
+
 \usehandling [def]
 
 \protect \endinput

@@ -476,23 +476,23 @@ class Commands
                 "<#{elements.length}>"
             end
             # abc[-/]def
-            data.gsub!(/([a-z]{3,})([\/\-])([a-z]{3,})/mois) do
+            data.gsub!(/([a-z]{3,})([\/\-\(\)])([a-z]{3,})/mois) do
                 done = true
                 report("compound: #{$1}#{$2}#{$3}") if verbose
                 "#{$1}<compound token='#{$2}'/>#{$3}"
             end
             # (abcd
-            data.gsub!(/(\()([a-z]{4,})/mois) do
-                done = true
-                report("compound: #{$1}#{$2}") if verbose
-                "<compound token='#{$1}'/>#{$2}"
-            end
+            # data.gsub!(/(\()([a-z]{4,})/mois) do
+                # done = true
+                # report("compound: #{$1}#{$2}") if verbose
+                # "<compound token='#{$1}'/>#{$2}"
+            # end
             # abcd)
-            data.gsub!(/(\()([a-z]{4,})/mois) do
-                done = true
-                report("compound: #{$1}#{$2}") if verbose
-                "#{$2}<compound token='#{$2}'/>"
-            end
+            # data.gsub!(/(\()([a-z]{4,})/mois) do
+                # done = true
+                # report("compound: #{$1}#{$2}") if verbose
+                # "#{$2}<compound token='#{$2}'/>"
+            # end
             # roll back elements
             data.gsub!(/<(\d+)>/mois) do
                 "<#{elements.shift}>"

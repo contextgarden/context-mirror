@@ -37,9 +37,7 @@
 \definesymbol [euro] [\getglyph{Euro}{\char160}]
 
 \startencoding[default]
-
   \definecharacter texteuro {\symbol[euro]}
-
 \stopencoding
 
 \unexpanded\def\euro{\doiftextelse\texteuro\texteuro{\symbol[euro]}}

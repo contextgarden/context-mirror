@@ -3,7 +3,7 @@
 %D        version=2006.03.27, % 1998.12.07
 %D          title=\CONTEXT\ Core Macros,
 %D       subtitle=Math Fundamentals,
-%D         author={Hans Hagen \& Taco Hoekwater},
+%D         author={Hans Hagen, Taco Hoekwater \& Aditya Mahajan},
 %D           date=\currentdate,
 %D      copyright=PRAGMA]
 %C
@@ -49,6 +49,8 @@
    \else
      \expandafter\secondoftwoarguments
    \fi}
+
+% \defineactivecharacter _ {\mathortext{_}{\_}} text_text  $a^2$
 
 % force text mode, will be overloaded later
 
@@ -2363,7 +2365,6 @@
 %D
 %D \startbuffer
 %D \startformula
-%D \startformula
 %D    \text{Let }{\cal R} = \bigcup_{P_{X_1},P_{X_2}}
 %D    \left\{ (R_1, R_2) :
 %D    \startmatrix[distance=1em,align={left,left,right}]
@@ -2682,6 +2683,58 @@
 \def\disablefiller   {\let\normalorfiller\firstoftwoarguments}
 
 \def\mathopnolimits#1{\mathop{\rm#1}\nolimits}
+
+%D \macros{overset, underset}
+%D
+%D The macros \type{\overset} and \type{\underset} are provided by
+%D \AMS\ packages in \LATEX. These macro allows you to place a symbol
+%D above or below another symbol, irrespective of whether the other
+%D symbol is a relation or something else, and without influencing the
+%D spacing.  For most cases there is a better way to do such things
+%D (declaring a math command with limop option, or using accents), but
+%D occasionally these macros can be useful, for example:
+%D
+%D \startbuffer
+%D \startformula
+%D \overset{*}{X} \underset{*}{X}
+%D \stopformula
+%D \stopbuffer
+%D \typebuffer \getbuffer
+%D
+%D Use these macros sparingly. Remember, \TEX\ was designed for
+%D mathematics, so there is usually a proper method for typesetting
+%D common math notation.
+
+%D These macros are a clearer version of \type{\binrel@} and
+%D \type{\binrel@@} macros in \AMSTEX\ packages.
+
+\def\preparebinrel#1%
+  {\begingroup
+   \setbox\scratchbox\hbox
+     {\thinmuskip   0mu
+      \medmuskip   -1mu
+      \thickmuskip -1mu
+      \setbox\scratchbox\hbox{$#1\mathsurround\zeropoint$}%
+      \kern-\wd\scratchbox
+      ${}#1{}\mathsurround\zeropoint$}%
+   \expanded
+     {\endgroup
+      \let\noexpand\currentbinrel
+      \ifdim\wd\scratchbox<\zeropoint
+        \mathbin
+      \else\ifdim\wd\scratchbox>\zeropoint
+        \mathrel
+      \else
+        \relax
+      \fi\fi}}
+
+\unexpanded\def\overset#1#2%
+  {\preparebinrel{#2}%
+   \currentbinrel{\mathop{\kern\zeropoint#2}\limits^{#1}}}
+
+\unexpanded\def\underset#1#2%
+  {\preparebinrel{#2}%
+   \currentbinrel{\mathop{\kern\zeropoint#2}\limits_{#1}}}
 
 %D How negative such a symbol looks is demonstrated in:
 %D $\negative 10^{\negative 10^{\negative 10}}$.

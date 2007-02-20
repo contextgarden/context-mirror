@@ -308,7 +308,7 @@ def some_wrd_error(data, filename, start, stop, ignore)
     end
 end
 
-def some_sym_error (data, filename, symbol,template=false)
+def some_sym_error (data, filename, symbol, template=false)
     saved = Array.new
     inside = false
     level = 0

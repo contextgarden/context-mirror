@@ -22,6 +22,8 @@
 %D want to play safe, use \typ {texexec --make --alone
 %D --all}.
 
+% \preloadallpatterns % will load them all
+
 % \installlanguage [\s!af] [\c!state=\v!start] % afrikaans
 % \installlanguage [\s!ca] [\c!state=\v!start] % catalan
 % \installlanguage [\s!cz] [\c!state=\v!start] % czech

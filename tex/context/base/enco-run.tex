@@ -104,7 +104,7 @@
   {\bgroup
    \localcolortrue
    \dorecurse{255}
-     {\ifnum\fontcharwd\font\recurselevel>\zeropoint
+     {\ifdim\fontcharwd\font\recurselevel>\zeropoint
         \noindent\ruledhbox{\darkgray\char\recurselevel}\space
       \fi}\unskip
    \egroup}

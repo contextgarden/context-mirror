@@ -108,10 +108,11 @@
   \loadmapfile[original-ams-euler.map]
 
   \loadmapfile[original-public-lm.map]
-  \loadmapfile[texnansi-public-lm.map]
-  \loadmapfile[ec-public-lm.map]
-  \loadmapfile[qx-public-lm.map]
-  \loadmapfile[t5-public-lm.map]
+
+  %loadmapfile[texnansi-public-lm.map]
+  %loadmapfile[ec-public-lm.map]
+  %loadmapfile[qx-public-lm.map]
+  %loadmapfile[t5-public-lm.map]
   %loadmapfile[pl0-public-lm.map]
   %loadmapfile[il2-public-lm.map]
 

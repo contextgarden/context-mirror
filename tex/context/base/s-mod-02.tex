@@ -21,12 +21,15 @@
 % todo: internationalize + setups
 
 \setuphead[paragraaf][expansion=command]
+\setuphead[section][expansion=command]
 
 \def\complexmodule[#1]% redefined
   {\startglobal % i.v.m. \bgroup in \startdocumentation
    \getparameters[Module][#1]
    \stopglobal  % i.v.m. \bgroup in \startdocumentation
-   \section{\Modulesubtitle}
+   %%\section{\Modulesubtitle}
+   \xdef\Temp{\Modulesubtitle}%%Modulesubtitle:\framed{BEGIN \Modulesubtitle END} :#1 !}
+   \@EA\section\@EA{\Temp}
    \WriteLists}
 
 \def\stopmodule % redefined
@@ -54,7 +57,7 @@
   {\doglobal\increment\ModuleNumber
 %    \immediate\write\BatchFile{call modu-run \FileName\space \ModuleNumber}}
 %    \immediate\write\BatchFile{texmfstart texutil --modu \FileName}}
-   \immediate\write\BatchFile{texmfstart texexec --pdf --modu \FileName}}
+   \immediate\write\BatchFile{texmfstart texexec --pdf --modu --batch \FileName }}
 
 \newif\ifProcessingPublic
 

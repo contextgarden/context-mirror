@@ -671,6 +671,7 @@ class TEX
             else
                 report("unable to make format due to lack of permissions")
                 texformatpath = ''
+                setvariable('error','no permissions to write')
             end
         else
             texformatpath = ''
@@ -821,7 +822,7 @@ class TEX
         mainlanguage = getvariable('mainlanguage')
         bodyfont = getvariable('bodyfont')
         if f = openedfile("cont-fmt.tex") then
-            f << "\\unprotect"
+            f << "\\unprotect\n"
             case language
                 when 'all' then
                     f << "\\preloadallpatterns\n"
@@ -1103,8 +1104,10 @@ class TEX
                 end
             rescue TimeoutError
                 report("job aborted due to timeout '#{delay}'")
+                setvariable('error','timeout')
             rescue
                 report("job aborted due to error")
+                setvariable('error','fatal error')
             else
                 report("job finished within timeout '#{delay}'")
             end

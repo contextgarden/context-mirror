@@ -330,7 +330,6 @@ function wrap_text()
     local endcolumn   = props['SelectionEndColumn']   - 1
 
     local indentation = string.rep(' ', startcolumn)
---  local selection   = string.gsub(editor:GetSelText(),"[\n\r][\n\r]+", ' ' .. magicstring .. ' ')
     local selection   = string.gsub(editor:GetSelText(),"[\n\r][\n\r]", "\n")
     local selection   = string.gsub(selection,"\n\n+", ' ' .. magicstring .. ' ')
     local replacement = ''
@@ -348,7 +347,7 @@ function wrap_text()
         elseif string.len(templine) == 0 then
             templine = indentation .. snippet
         else
-            templine = templine .. ' ' .. snippet
+            templine = string.len(templine) .. ' ' .. snippet
         end
     end
 
