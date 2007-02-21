@@ -13,6 +13,9 @@
 
 \unprotect
 
+\def\openinputfile #1#2{\immediate\openin #1="#2"\relax} \def\closeinputfile #1{\immediate\closein #1}
+\def\openoutputfile#1#2{\immediate\openout#1="#2"\relax} \def\closeoutputfile#1{\immediate\closeout#1}
+
 %D For the moment, we limit sanitizing to taking care of
 %D active \type {/}.
 

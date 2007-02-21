@@ -184,10 +184,12 @@
    \the\everybeforereadfile
    \ifcase\preprocessstate
      % no checking or not found when using method 1
-     \normalinput\readfilename
+%      \normalinput\readfilename
+     \inputgivenfile\readfilename
    \or
      % found when using method 1 or 2
-     \normalinput\readfilename\preprocesssuffix
+%      \normalinput\readfilename\preprocesssuffix
+     \inputgivenfile{\readfilename\preprocesssuffix}%
    \or
      % not found when using method 2
    \fi

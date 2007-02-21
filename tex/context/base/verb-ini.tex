@@ -758,7 +758,7 @@
   {\par
    \bgroup
    \processingverbatimtrue
-   \global\verbatimlinenumber0
+   \global\verbatimlinenumber\zerocount
    \global\linepartrue
    \beginofverbatimlines
    \bgroup
@@ -779,7 +779,8 @@
    \obeycharacters
    \ignoreeofs
    \catcode`\^^M=\@@ignore % \par is already taken care of
-   \openin\verbatiminput=#1\relax
+%    \openin\verbatiminput=#1\relax
+   \openinputfile\verbatiminput{#1}%
    \skipfirstverbatimlinefalse
    \initializeverbatimline
    \def\readline%

@@ -11,7 +11,7 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-%  todo: directory : system -> \allinputpaths
+%  todo: directory : system -> \allinputpaths (so that we can \usesubpath)
 
 %D It may be that some functionality got lost. If it concerns
 %D defined features, let me know and it will be sorted out.
@@ -908,6 +908,7 @@
      \resetwantedconversionvariables
      \doifsomething\@@efconversion
        {\global\advance\nofconversionfigures\plusone
+        \doshowfigurestate{n-of-conversions : \number\nofconversionfigures}%
         \edef\wantedfigureconversion{\@@efconversion}%
         \edef\wantedconversioncache {\@@efcache}%
         \edef\wantedconversionprefix{\@@efprefix}%
@@ -915,8 +916,8 @@
         \processcommacommand[\figurepathlist]\dolocatefigureconversionfile
         \ifcase\figurestatus
           \doshowfigurestate{remark : no conversion file found}%
-       \else
-         \doshowfigurestate{remark : conversion file found}%
+        \else
+          \doshowfigurestate{remark : conversion file found}%
           \chardef\figurestatus\zerocount
         \fi
         \let\wantedconversionname\wantedfigurename
@@ -924,12 +925,23 @@
         \ifx\wantedconversioncache\empty
           \let \wantedfigurepath \wantedconversionpath
         \else
-          \edef\wantedfigurepath{\wantedconversionpath/\@@efcache}%
+          \checkfilename\@@efcache
+          \ifnum\kindoffile=\plusone
+            \let\wantedfigurepath\@@efcache % root related path
+          \else
+            \edef\wantedfigurepath{\wantedconversionpath/\@@efcache}%
+          \fi
         \fi
         \let\wantedfiguretype    \empty
         \let\wantedfiguretypelist\figuretypes % hm, why needed
         \doshowfigurestate{conversion path : \wantedconversionpath}%
         \doshowfigurestate{conversion name : \wantedconversionname}}%
+\ifx\figurepathlist\empty
+    \let\figurepathlist\wantedfigurepath
+\else
+    \edef\figurepathlist{\wantedfigurepath,\figurepathlist}%
+\fi
+        \doshowfigurestate{new figure path : \wantedfigurepath}%
    \fi}
 
 \def\dolocatefigureconversionfile#1%

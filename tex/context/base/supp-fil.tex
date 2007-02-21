@@ -42,8 +42,14 @@
 %D
 %D We save a few primitives first.
 
-\let\normalwrite\write
+\let\normalwrite    \write
 \let\normalimmediate\immediate
+
+% \def\openinputfile #1#2{\immediate\openin #1="#2"\relax} \def\closeinputfile #1{\immediate\closein #1}
+% \def\openoutputfile#1#2{\immediate\openout#1="#2"\relax} \def\closeoutputfile#1{\immediate\closeout#1}
+
+\def\openinputfile #1#2{\immediate\openin #1=#2\relax} \def\closeinputfile #1{\immediate\closein #1}
+\def\openoutputfile#1#2{\immediate\openout#1=#2\relax} \def\closeoutputfile#1{\immediate\closeout#1}
 
 %D \macros
 %D   {pushendofline,popendofline}
@@ -109,7 +115,8 @@
 %D one.
 
 \def\unlinkfile#1%
-  {\immediate\openout\scratchwrite=#1\immediate\closeout\scratchwrite}
+  {\openoutputfile \scratchwrite{#1}%
+   \closeoutputfile\scratchwrite}
 
 %D \macros
 %D   {writeln}
@@ -121,12 +128,12 @@
 \def\doiffileexistselse#1%
   {\doifelsenothing{#1}
      {\secondoftwoarguments}
-     {\immediate\openin\scratchread=#1\relax
+     {\openinputfile\scratchread{#1}%
       \ifeof\scratchread
-        \immediate\closein\scratchread
+        \closeinputfile\scratchread
         \expandafter\secondoftwoarguments
       \else
-        \immediate\closein\scratchread
+        \closeinputfile\scratchread
         \expandafter\firstoftwoarguments
       \fi}}
 
@@ -151,14 +158,14 @@
 \let\fileline\empty
 
 \def\doprocessfile#1#2#3%
-  {\immediate\openin#1=#2\relax
+  {\openinputfile{#1}{#2}%
    \ifeof#1%
      \fileprocessedfalse
-     \immediate\closein#1%
+     \closeinputfile#1%
    \else
      \fileprocessedtrue
      \gdef\dofinishfile
-       {\immediate\closein#1%
+       {\closeinputfile#1%
         \global\let\doprocessline\relax}%
      \gdef\doprocessline
        {\ifeof#1%
@@ -213,6 +220,8 @@
 \ifx\normalinput\undefined \let\normalinput\input \fi
 
 \unexpanded\def\input{\normalinput}
+
+\def\inputgivenfile#1{\normalinput"#1"\relax}
 
 %D \macros
 %D   {readfile,ReadFile,maxreadlevel}
@@ -343,7 +352,8 @@
      \setxvalue{fn..\trackedfilename}{\readfilename}%
    \fi
    \the\everybeforereadfile
-   \normalinput\readfilename\relax
+%    \normalinput\readfilename\relax
+   \inputgivenfile\readfilename
    \the\everyafterreadfile}
 
 % too less:
@@ -452,11 +462,11 @@
    \checkfilename\readfilename
    \ifcase\kindoffile
      \increment\readlevel
-     \immediate\openin#1=\readfilename\relax
+     \openinputfile{#1}\readfilename
      \ifeof#1% \relax
        \ifnum\readlevel>\maxreadlevel % \relax
        \else
-         \immediate\closein#1% \relax
+         \closeinputfile#1% \relax
          \doopenin{#1}{\pathplusfile\f!parentpath{#2}}%
        \fi
      \fi
@@ -532,7 +542,8 @@
      {\gobbleoneargument}}
 
 \def\doinputonce#1%
-  {\doonlyonce{#1}{\doiffileelse{#1}{\normalinput#1\relax}\donothing}}
+%   {\doonlyonce{#1}{\doiffileelse{#1}{\normalinput#1\relax}\donothing}}
+  {\doonlyonce{#1}{\doiffileelse{#1}{\inputgivenfile{#1}}\donothing}}
 
 \def\doendinputonce#1%
   {\doifdefined{@@@#1@@@}\endinput}
