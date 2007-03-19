@@ -783,12 +783,12 @@ class TEX
                                 result = runtexexec([tempfilename], flags, 1)
                                 if FileTest.file?("#{@@temprunfile}.log") then
                                     logdata = IO.read("#{@@temprunfile}.log")
-                                    if logdata =~ /^\s*This is (.*?)[\s\,]+(.*?)$/mois then
+                                    if logdata =~ /^\s*This is (.*?)[\s\,]+(.*?)$/moi then
                                         if validtexengine($1.downcase) then
                                             results.push("#{$1} #{$2.gsub(/\(format.*$/,'')}".strip)
                                         end
                                     end
-                                    if logdata =~ /^\s*(ConTeXt)\s+(.*int:\s+[a-z]+.*?)\s*$/mois then
+                                    if logdata =~ /^\s*(ConTeXt)\s+(.*int:\s+[a-z]+.*?)\s*$/moi then
                                         results.push("#{$1} #{$2}".gsub(/\s+/,' ').strip)
                                     end
                                 else
@@ -1184,7 +1184,7 @@ class TEX
             begin
                 data = IO.read(File.suffixed(filename,'log'))
                 basename = filename.sub(/\.mp$/, '')
-                if data =~ /output files* written\:\s*(.*)$/mois then
+                if data =~ /output files* written\:\s*(.*)$/moi then
                     files, number, range, list = $1.split(/\s+/), 0, false, []
                     files.each do |fname|
                         if fname =~ /^.*\.(\d+)$/ then
@@ -1270,7 +1270,7 @@ class TEX
                     File.open("texexec.tex",'w') do |f|
                         f << "\\setupoutput[pdftex]\n"
                         f << "\\setupcolors[state=start]\n"
-                        data.sub!(/^%mpenvironment\:\s*(.*?)$/mois) do
+                        data.sub!(/^%mpenvironment\:\s*(.*?)$/moi) do
                             f << $1
                             "\n"
                         end
@@ -1488,7 +1488,14 @@ class TEX
             [getvariable('runpath'),getvariable('path')].each do |pat|
                 unless pat.empty? then
                     if ENV.key?(res) then
-                        ENV[res] = if ENV[res].empty? then pat else pat + ":" + ENV[res] end
+                        # ENV[res] = if ENV[res].empty? then pat else pat + ":" + ENV[res] end
+if ENV[res].empty? then
+    ENV[res] = pat
+elsif ENV[res] == pat || ENV[res] =~ /^#{pat}\:/ || ENV[res] =~ /\:#{pat}\:/ then
+    # skip
+else
+    ENV[res] = pat + ":" + ENV[res]
+end
                     else
                         ENV[res] = pat
                     end
@@ -1731,14 +1738,9 @@ class TEX
 
         takeprecautions
         report("using search method '#{Kpse.searchmethod}'") if getvariable('verbose')
+
         rawname    = getvariable('filename')
         jobname    = getvariable('filename')
-        suffix     = getvariable('suffix')
-        result     = getvariable('result')
-        forcexml   = getvariable('forcexml')
-        runonce    = getvariable('once')
-        finalrun   = getvariable('final') || (getvariable('arrange') && ! getvariable('noarrange'))
-        globalfile = getvariable('globalfile')
 
         if getvariable('autopath') then
             jobname = File.basename(jobname)
@@ -1751,18 +1753,11 @@ class TEX
 
         jobname = File.unixfied(jobname)
         inppath = File.unixfied(inppath)
-        result  = File.unixfied(result)
 
         orisuffix = jobsuffix # still needed ?
 
-        setvariable('nomprun',true) if orisuffix == 'mpx' # else cylic run
-
-        PDFview.setmethod('xpdf') if getvariable('xpdf')
-
-        PDFview.closeall if getvariable('autopdf')
-
         if jobsuffix =~ /^(htm|html|xhtml|xml|fo|fox|rlg|exa)$/io then
-            forcexml = true
+            setvariable('forcexml',true)
         end
 
         dummyfile = false
@@ -1779,7 +1774,6 @@ class TEX
         # we can have funny names, like 2005.10.10 (given without suffix)
 
         rawname = jobname + '.' + jobsuffix
-
         rawpath = File.dirname(rawname)
         rawbase = File.basename(rawname)
 
@@ -1789,16 +1783,22 @@ class TEX
             end
         end
 
-        if dummyfile || forcexml then
-            jobsuffix = makestubfile(rawname,rawbase,forcexml)
-            checkxmlfile(rawname)
-        end
+        forcexml   = getvariable('forcexml')
 
+        # if dummyfile || forcexml then # after ctx?
+            # jobsuffix = makestubfile(rawname,rawbase,forcexml)
+            # checkxmlfile(rawname)
+        # end
 
         # preprocess files
 
         unless getvariable('noctx') then
             ctx = CtxRunner.new(rawname,@logger)
+            if pth = getvariable('path') then
+                pth.split(',').each do |p|
+                    ctx.register_path(p)
+                end
+            end
             if getvariable('ctxfile').empty? then
                 if rawname == rawbase then
                     ctx.manipulate(File.suffixed(rawname,'ctx'),'jobname.ctx')
@@ -1829,7 +1829,7 @@ class TEX
             # merge environment and module specs
 
             envs << getvariable('environments') unless getvariable('environments').empty?
-            mods << getvariable('modules')      unless getvariable('modules')     .empty?
+            mods << getvariable('usemodules')   unless getvariable('usemodules')  .empty?
             mdes << getvariable('modes')        unless getvariable('modes')       .empty?
 
             envs = envs.uniq.join(',')
@@ -1843,11 +1843,29 @@ class TEX
             report("using modes #{mdes}")        if mdes.length > 0
 
             setvariable('environments', envs)
-            setvariable('modules',      mods)
+            setvariable('usemodules',   mods)
             setvariable('modes',        mdes)
         end
 
         # end of preprocessing and merging
+
+        setvariable('nomprun',true) if orisuffix == 'mpx' # else cylic run
+        PDFview.setmethod('xpdf') if getvariable('xpdf')
+        PDFview.closeall if getvariable('autopdf')
+
+        runonce    = getvariable('once')
+        finalrun   = getvariable('final') || (getvariable('arrange') && ! getvariable('noarrange'))
+        suffix     = getvariable('suffix')
+        result     = getvariable('result')
+        globalfile = getvariable('globalfile')
+        forcexml   = getvariable('forcexml') # can be set in ctx file
+
+        if dummyfile || forcexml then # after ctx?
+            jobsuffix = makestubfile(rawname,rawbase,forcexml)
+            checkxmlfile(rawname)
+        end
+
+        result     = File.unixfied(result)
 
         if globalfile || FileTest.file?(rawname) then
 
@@ -1960,7 +1978,7 @@ class TEX
                                                 # next line is empty
                                                 ok = 2
                                             when 2 then
-                                                if line =~ /^\%\s+\>\s+(.*?)\s+(\d+)/mois then
+                                                if line =~ /^\%\s+\>\s+(.*?)\s+(\d+)/moi then
                                                     filename, n = $1, $2
                                                     done = File.delete(filename) rescue false
                                                     if done && getvariable('verbose') then
@@ -1970,7 +1988,7 @@ class TEX
                                                     break
                                                 end
                                             else
-                                                if line =~ /^\%\s+temporary files\:\s+(\d+)/mois then
+                                                if line =~ /^\%\s+temporary files\:\s+(\d+)/moi then
                                                     if $1.to_i == 0 then
                                                         break
                                                     else

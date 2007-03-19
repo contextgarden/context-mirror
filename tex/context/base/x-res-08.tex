@@ -118,8 +118,8 @@
   \else
     \writestatus\m!systems{registering rlxtools (manipulator)}%
     \doiflocfileelse{\jobname.rlx}
-      {\installprogram{texmfstart rlxtools --manipulate kpse:\jobname.rlx \jobname.rlg}}
-      {\installprogram{texmfstart rlxtools --manipulate kpse:\getvariabledefault{rl:manipulate}{file}{rlxtools.rlx} \jobname.rlg}}%
+      {\installprogram{texmfstart rlxtools --manipulate "kpse:\jobname.rlx" "\jobname.rlg"}}
+      {\installprogram{texmfstart rlxtools --manipulate "kpse:\getvariabledefault{rl:manipulate}{file}{rlxtools.rlx}" "\jobname.rlg"}}%
   \fi
 \to \everybye % \everylastshipout
 

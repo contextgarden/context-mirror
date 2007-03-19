@@ -64,14 +64,13 @@
 
 \def\fontfilename#1{"#1"}
 \def\fontfilefile#1{"#1"}
-\def\fontfilesome#1{"#1"}
+\def\fontfilesome#1{#1}
 
 \beginXETEX
-
-    \def\fontfilename#1{"#1"}
     \def\fontfilefile#1{"[#1]"}
-    \def\fontfilesome#1{"[#1]"}
-
 \endXETEX
+
+\def\mkdefinefontfeature#1% #2
+  {\setvalue{\??fa#1}} % {#2}
 
 \protect \endinput

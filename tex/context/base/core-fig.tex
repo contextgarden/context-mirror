@@ -962,7 +962,10 @@
          \let\figurefilename\wantedconversionname
          \let\figurefiletype\wantedconversiontype
          \let\figurefileconversion\wantedfigureconversion
-         \def\figurefullname{\wantedconversionpath/\wantedconversionname.\wantedconversiontype}}}}
+         \def\figurefullname
+           {\ifx\wantedconversionpath\empty\else\wantedconversionpath/\fi
+            \wantedconversionname
+            \ifx\wantedconversiontype\empty\else.\wantedconversiontype\fi}}}}
 
 %D In \PDF\ one can specify an alternative graphic. This means
 %D that for instance a low resolution graphic can be used for
@@ -1141,7 +1144,7 @@
 \let\dogetfiguresizemps\dogetfiguresizeeps
 
 \def\dogetfiguresizesvg
-  {\doifinset\wantedfiguretypespec{\c!svg}
+  {\doifinset\wantedfiguretypespec\c!svg
      {\startnointerference
       \startXMLignore
       \defineXMLcommand[svg][width=100,height=75]

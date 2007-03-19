@@ -14,8 +14,14 @@
 \unprotect
 
 \startunicodevector 3
-  \ifcase\numexpr#1-132\relax
-    % special greek
+  \ifcase\numexpr#1-126\relax
+     % special greek
+    \strippedcsname \greekquestionmark       \or
+    \strippedcsname \unknownchar             \or
+    \strippedcsname \unknownchar             \or
+    \strippedcsname \unknownchar             \or
+    \strippedcsname \unknownchar             \or
+    \strippedcsname \unknownchar             \or
     \strippedcsname \greektonos              \or
     \strippedcsname \greekdialytikatonos     \or
     \strippedcsname \greekAlphatonos         \or

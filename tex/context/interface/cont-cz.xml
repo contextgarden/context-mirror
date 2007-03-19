@@ -6803,6 +6803,7 @@
       <cd:constant type="fixne"/>
       <cd:constant type="prizpusobive"/>
       <cd:constant type="zadny"/>
+      <cd:constant type="vzdy"/>
     </cd:keywords>
   </cd:arguments>
 </cd:command>

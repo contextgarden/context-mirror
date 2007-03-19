@@ -6803,6 +6803,7 @@
       <cd:constant type="fest"/>
       <cd:constant type="flexibel"/>
       <cd:constant type="kein"/>
+      <cd:constant type="immer"/>
     </cd:keywords>
   </cd:arguments>
 </cd:command>

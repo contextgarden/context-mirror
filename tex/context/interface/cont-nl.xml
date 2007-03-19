@@ -6803,6 +6803,7 @@
       <cd:constant type="vast"/>
       <cd:constant type="flexibel"/>
       <cd:constant type="geen"/>
+      <cd:constant type="altijd"/>
     </cd:keywords>
   </cd:arguments>
 </cd:command>

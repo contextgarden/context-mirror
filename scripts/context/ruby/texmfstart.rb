@@ -1349,7 +1349,7 @@ module SelfMerge
                     end
                     inserts << "#{@@kpsemergestop}\n\n"
                     # no gsub! else we end up in SelfMerge
-                    rbfile.sub!(/#{@@kpsemergestart}\s*#{@@kpsemergestop}/mois) do
+                    rbfile.sub!(/#{@@kpsemergestart}\s*#{@@kpsemergestop}/moi) do
                         inserts
                     end
                     rbfile.gsub!(/^(.*)(require [\"\'].*?#{@@modroot}.*)$/) do
@@ -1383,7 +1383,7 @@ module SelfMerge
         begin
             if rbfile = IO.read(@@filename) then
                 begin
-                    rbfile.sub!(/#{@@kpsemergestart}(.*)#{@@kpsemergestop}\s*/mois) do
+                    rbfile.sub!(/#{@@kpsemergestart}(.*)#{@@kpsemergestop}\s*/moi) do
                         "#{@@kpsemergestart}\n\n#{@@kpsemergestop}\n\n"
                     end
                     rbfile.gsub!(/^(.*#{@@kpsemergedone}.*)$/) do
@@ -1445,6 +1445,7 @@ $stderr.sync = true
 $applications = Hash.new
 $suffixinputs = Hash.new
 $predefined   = Hash.new
+$runners      = Hash.new
 
 $suffixinputs['pl']  = 'PERLINPUTS'
 $suffixinputs['rb']  = 'RUBYINPUTS'
@@ -1517,10 +1518,10 @@ $kpse         = nil
 def set_applications(page=1)
 
     $applications['unknown']  = ''
-    $applications['perl']     = $applications['pl']  = 'perl'
     $applications['ruby']     = $applications['rb']  = 'ruby'
+    $applications['lua']      = $applications['lua'] = 'lua'
+    $applications['perl']     = $applications['pl']  = 'perl'
     $applications['python']   = $applications['py']  = 'python'
-    $applications['lua']      = $applications['lua'] = 'luatex --luaonly'
     $applications['java']     = $applications['jar'] = 'java'
 
     if $mswindows then
@@ -1535,6 +1536,8 @@ def set_applications(page=1)
 
     $applications['htm']      = $applications['html']
     $applications['eps']      = $applications['ps']
+
+    $runners['lua']           = "luatex --luaonly"
 
 end
 
@@ -1675,6 +1678,33 @@ class File
 
 end
 
+# def hashed (arr=[])
+    # arg = if arr.class == String then arr.split(' ') else arr.dup end
+    # hsh = Hash.new
+    # if arg.length > 0
+        # hsh['arguments'] = ''
+        # done = false
+        # arg.each do |s|
+            # if done then
+                # if s =~ / / then
+                   # hsh['arguments'] += " \"#{s}\"" # maybe split on =
+                # else
+                   # hsh['arguments'] += " #{s}"
+                # end
+            # else
+                # kvl = s.split('=')
+                # if kvl[0].sub!(/^\-+/,'') then
+                    # hsh[kvl[0]] = if kvl.length > 1 then kvl[1] else true end
+                # else
+                    # hsh['file'] = s
+                    # done = true
+                # end
+            # end
+        # end
+    # end
+    # return hsh
+# end
+
 def hashed (arr=[])
     arg = if arr.class == String then arr.split(' ') else arr.dup end
     hsh = Hash.new
@@ -1683,7 +1713,18 @@ def hashed (arr=[])
         done = false
         arg.each do |s|
             if done then
-                hsh['arguments'] += ' ' + s
+                if s =~ /\s/ then
+                    kvl = s.split('=')
+                    if kvl[1] and kvl[1] !~ /^[\"\']/ then
+                        hsh['arguments'] += ' ' + kvl[0] + "=" + '"' + kvl[1] + '"'
+                    elsif s =~ /\s/ then
+                        hsh['arguments'] += ' "' + s + '"'
+                    else
+                        hsh['arguments'] += ' ' + s
+                    end
+                else
+                    hsh['arguments'] += ' ' + s
+                end
             else
                 kvl = s.split('=')
                 if kvl[0].sub!(/^\-+/,'') then
@@ -1697,6 +1738,7 @@ def hashed (arr=[])
     end
     return hsh
 end
+
 
 def launch(filename)
     if $browser && $mswindows then
@@ -1717,15 +1759,25 @@ end
 # rel|relative
 # loc|locate|kpse|path|file
 
+def quoted(str)
+    if str =~ /^\"/ then
+        return str
+    elsif str =~ / / then
+        return "\"#{str}\""
+    else
+        return str
+    end
+end
+
 def expanded(arg) # no "other text files", too restricted
     arg.gsub(/(env|environment)\:([a-zA-Z\-\_\.0-9]+)/o) do
         method, original, resolved = $1, $2, ''
         if resolved = ENV[original] then
             report("environment variable #{original} expands to #{resolved}") unless $report
-            resolved
+            quoted(resolved)
         else
             report("environment variable #{original} cannot be resolved") unless $report
-            original
+            quoted(original)
         end
     end . gsub(/(rel|relative)\:([a-zA-Z\-\_\.0-9]+)/o) do
         method, original, resolved = $1, $2, ''
@@ -1736,9 +1788,9 @@ def expanded(arg) # no "other text files", too restricted
             end
         end
         if resolved.empty? then
-            original
+            quoted(original)
         else
-            resolved
+            quoted(resolved)
         end
     end . gsub(/(kpse|loc|locate|file|path)\:([a-zA-Z\-\_\.0-9]+)/o) do
         method, original, resolved = $1, $2, ''
@@ -1753,7 +1805,7 @@ def expanded(arg) # no "other text files", too restricted
         if ENV["_CTX_K_V_#{original}_"] then
             resolved = ENV["_CTX_K_V_#{original}_"]
             report("environment provides #{original} as #{resolved}") unless $report
-            resolved
+            quoted(resolved)
         else
             check_kpse
             pstrings.each do |pstr|
@@ -1789,12 +1841,12 @@ def expanded(arg) # no "other text files", too restricted
                 original = File.dirname(original) if method =~ /path/
                 report("#{original} is not resolved") unless $report
                 ENV["_CTX_K_V_#{original}_"] = original if $crossover
-                original
+                quoted(original)
             else
                 resolved = File.dirname(resolved) if method =~ /path/
                 report("#{original} is resolved to #{resolved}") unless $report
                 ENV["_CTX_K_V_#{original}_"] = resolved if $crossover
-                resolved
+                quoted(resolved)
             end
         end
     end
@@ -1839,6 +1891,11 @@ def runcommand(command)
     end
 end
 
+def join_command(args)
+    args[0] = $runners[args[0]] || args[0]
+    [args].join(' ')
+end
+
 def runoneof(application,fullname,browserpermitted)
     if browserpermitted && launch(fullname) then
         return true
@@ -1851,26 +1908,26 @@ def runoneof(application,fullname,browserpermitted)
             return true
         elsif applications.class == Array then
             if $report then
-                output([fullname,expanded($arguments)].join(' '))
+                output(join_command([fullname,expanded($arguments)]))
                 return true
             else
                 applications.each do |a|
-                    return true if runcommand([a,fullname,expanded($arguments)].join(' '))
+                    return true if runcommand(join_command([a,fullname,expanded($arguments)]))
                 end
             end
         elsif applications.empty? then
             if $report then
-                output([fullname,expanded($arguments)].join(' '))
+                output(join_command([fullname,expanded($arguments)]))
                 return true
             else
-                return runcommand([fullname,expanded($arguments)].join(' '))
+                return runcommand(join_command([fullname,expanded($arguments)]))
             end
         else
             if $report then
-                output([applications,fullname,expanded($arguments)].join(' '))
+                output(join_command([applications,fullname,expanded($arguments)]))
                 return true
             else
-                return runcommand([applications,fullname,expanded($arguments)].join(' '))
+                return runcommand(join_command([applications,fullname,expanded($arguments)]))
             end
         end
         return false
@@ -2414,7 +2471,6 @@ end
 def execute(arguments)
 
     arguments = arguments.split(/\s+/) if arguments.class == String
-
     $directives = hashed(arguments)
 
     $help        = $directives['help']        || false

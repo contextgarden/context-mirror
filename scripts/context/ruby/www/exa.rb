@@ -156,32 +156,32 @@ class WWW
                 req << "</exa:request>\n"
             else
                 # better use rexml but slower
-                if req =~ /<exa:request[^>]*>.*?\s*<exa:threshold>\s*(.*?)\s*<\/exa:threshold>\s*.*?<\/exa:request>/mois then
+                if req =~ /<exa:request[^>]*>.*?\s*<exa:threshold>\s*(.*?)\s*<\/exa:threshold>\s*.*?<\/exa:request>/moi then
                     threshold = $1
                     unless threshold.empty? then
                         @interface.set('process:threshold', threshold)
                         @session.set('threshold', threshold)
                     end
                 end
-                req.sub!(/(<exa:request[^>]*>.*?)\s*<exa:option>\s*\-\-action\=(.*?)\s*<\/exa:option>\s*(.*?<\/exa:request>)/mois) do
+                req.sub!(/(<exa:request[^>]*>.*?)\s*<exa:option>\s*\-\-action\=(.*?)\s*<\/exa:option>\s*(.*?<\/exa:request>)/moi) do
                     pre, act, pos = $1, $2, $3
                     action = act.sub(/\.exa$/,'') if action.empty?
                     str = "#{pre}<exa:action>#{action}</exa:action>#{pos}"
-                    str.sub(/\s*<exa:command>.*?<\/exa:command>\s*/mois ,'')
+                    str.sub(/\s*<exa:command>.*?<\/exa:command>\s*/moi ,'')
                 end
-                req.sub!(/(<exa:request[^>]*>.*?)<exa:action>\s*(.*?)\s*<\/exa:action>(.*?<\/exa:request>)/mois) do
+                req.sub!(/(<exa:request[^>]*>.*?)<exa:action>\s*(.*?)\s*<\/exa:action>(.*?<\/exa:request>)/moi) do
                     pre, act, pos = $1, $2, $3
                     action = act.sub(/\.exa$/,'') if action.empty?
                     str = "#{pre}<exa:action>#{action}</exa:action>#{pos}"
-                    str.sub(/\s*<exa:command>.*?<\/exa:command>\s*/mois ,'')
+                    str.sub(/\s*<exa:command>.*?<\/exa:command>\s*/moi ,'')
                 end
-                unless req =~ /<exa:data>(.*?)<\/exa:data>/mois then
+                unless req =~ /<exa:data>(.*?)<\/exa:data>/moi then
                     req.sub!(/(<\/exa:request>)/) do dat + $1 end
                 end
             end
-            req.sub!(/<exa:filename>.*?<\/exa:filename>/mois, '')
+            req.sub!(/<exa:filename>.*?<\/exa:filename>/moi, '')
             unless @variables.empty?('exa:filename') then
-                req.sub!(/(<\/exa:application>)/mois) do
+                req.sub!(/(<\/exa:application>)/moi) do
                     "<exa:filename>#{@variables.get('exa:filename')}<\/exa:filename>" + $1
                 end
             end
@@ -312,13 +312,13 @@ class WWW
             end
             unless req.empty? then
                 # better use rexml but slower / reuse these : command = filter_from_request('exa:command')
-                if req =~ /<exa:request[^>]*>.*?\s*<exa:command>\s*(.*?)\s*<\/exa:command>\s*.*?<\/exa:request>/mois then
+                if req =~ /<exa:request[^>]*>.*?\s*<exa:command>\s*(.*?)\s*<\/exa:command>\s*.*?<\/exa:request>/moi then
                     command = $1
                 end
-                if req =~ /<exa:request[^>]*>.*?\s*<exa:url>\s*(.*?)\s*<\/exa:url>\s*.*?<\/exa:request>/mois then
+                if req =~ /<exa:request[^>]*>.*?\s*<exa:url>\s*(.*?)\s*<\/exa:url>\s*.*?<\/exa:request>/moi then
                     url = $1
                 end
-                if req =~ /<exa:request[^>]*>.*?\s*<exa:threshold>\s*(.*?)\s*<\/exa:threshold>\s*.*?<\/exa:request>/mois then
+                if req =~ /<exa:request[^>]*>.*?\s*<exa:threshold>\s*(.*?)\s*<\/exa:threshold>\s*.*?<\/exa:request>/moi then
                     threshold = $1
                     unless threshold.empty? then
                         @interface.set('process:threshold', threshold)

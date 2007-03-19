@@ -828,6 +828,10 @@
 \def\placenoteinserts
   {\processnotes\doplacenoteinserts}
 
+% testcase for split bottom alignment see (a) below
+%
+% \dorecurse{6}{\input tufte\footnote{\input ward \input tufte \relax}}
+
 \def\doplacenoteinserts
   {%\ifvoid\currentnoteins \else % unsafe, strange
    \relax\ifdim\ht\currentnoteins>\zeropoint\relax
@@ -846,6 +850,7 @@
              \unvbox\currentnoteins
            \or
              \box\currentnoteins
+             \obeydepth % (a) added , since split footnotes will not align properly
            \else
              \unvbox\currentnoteins
            \fi

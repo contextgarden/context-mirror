@@ -6803,6 +6803,7 @@
       <cd:constant type="fixat"/>
       <cd:constant type="flexibil"/>
       <cd:constant type="niciunul"/>
+      <cd:constant type="totdeauna"/>
     </cd:keywords>
   </cd:arguments>
 </cd:command>

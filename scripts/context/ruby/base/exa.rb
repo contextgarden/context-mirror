@@ -45,7 +45,7 @@ module ExaEncrypt
                         "#{pre}#{password}#{post}"
                     end
                 else
-                    data.gsub!(/<exa:password([^>]*?)>(.*?)<\/exa:password>/mois) do
+                    data.gsub!(/<exa:password([^>]*?)>(.*?)<\/exa:password>/moi) do
                         attributes, password = $1, $2
                         unless password =~ /^([0-9A-F][0-9A-F])+$/ then
                             done = true
@@ -238,11 +238,11 @@ module ExaModes
             binln, einln = "<inlinetexmath>" , "</inlinetexmath>"
             egraf        = "<p/>"
         end
-        str.gsub!(/\n\s*\n+/mois, "\\ENDGRAF ")
+        str.gsub!(/\n\s*\n+/moi, "\\ENDGRAF ")
         str.gsub!(/(\[\[)\s*(.*?)\s*(\]\])/mos) do
             $1 + docalculatortexmath($2) + $3
         end
-        str.gsub!(/(\\ENDGRAF)+\s*(\[\[)\s*(.*?)\s*(\]\])/mois) do
+        str.gsub!(/(\\ENDGRAF)+\s*(\[\[)\s*(.*?)\s*(\]\])/moi) do
             $1 + bdisp + $3 + edisp
         end
         str.gsub!(/(\[\[)\s*(.*?)\s*(\]\])/o) do

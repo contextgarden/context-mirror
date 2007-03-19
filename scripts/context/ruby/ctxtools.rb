@@ -908,7 +908,7 @@ class Language
                                 @data += data.gsub(/\%.*$/, '').gsub(/\\message\{.*?\}/, '')
                                 data.gsub!(/(\\patterns|\\hyphenation)\s*\{.*/mo) do '' end
                                 @read += "\n% preamble of file #{fname}\n\n#{data}\n"
-                                @data.gsub!(/^[\s\n]+$/mois, '')
+                                @data.gsub!(/^[\s\n]+$/moi, '')
                                 report("file #{fname} is loaded")
                                 found = true
                                 break # next fileset

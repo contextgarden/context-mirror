@@ -45,6 +45,11 @@ class CtxRunner
         @flags = Array.new
         @modes = Array.new
         @local = false
+        @paths = Array.new
+    end
+
+    def register_path(str)
+        @paths << str
     end
 
     def manipulate(ctxname=nil,defaultname=nil)
@@ -59,6 +64,10 @@ class CtxRunner
         if not @ctxname then
             report('no ctx file specified')
             return
+        end
+
+        if @ctxname !~ /\.[a-z]+$/ then
+            @ctxname += ".ctx"
         end
 
         # name can be kpse:res-make.ctx
@@ -83,6 +92,12 @@ class CtxRunner
                         # probably strange join
                     end
                     break if done
+                end
+                if ! done then
+                    fullname = Kpse.found(@ctxname)
+                    if FileTest.file?(fullname) then
+                        @ctxname, done = fullname, true
+                    end
                 end
             end
             if ! done && defaultname && FileTest.file?(defaultname) then
@@ -211,12 +226,25 @@ class CtxRunner
                         end
                         pattern = justtext(pattern)
                         oldfiles = Dir.glob(pattern)
+                        pluspath = false
                         if oldfiles.length == 0 then
                             report("no files match #{pattern}")
+                            if @paths.length > 0 then
+                                @paths.each do |p|
+                                    oldfiles = Dir.glob("#{p}/#{pattern}")
+                                    if oldfiles.length > 0 then
+                                        pluspath = true
+                                        break
+                                    end
+                                end
+                                if oldfiles.length == 0 then
+                                    report("no files match #{pattern} on path")
+                                end
+                            end
                         end
                         oldfiles.each do |oldfile|
                             newfile = "#{oldfile}.#{suffix}"
-                            newfile = File.basename(newfile) if @local
+                            newfile = File.basename(newfile) if @local # or pluspath
                             if File.expand_path(oldfile) != File.expand_path(newfile) && File.needsupdate(oldfile,newfile) then
                                 report("#{oldfile} needs preprocessing")
                                 begin
@@ -413,6 +441,7 @@ class CtxRunner
             when 'suffix'   then if str =~ /^.*\.(.*?)$/o         then $1 else ''  end
             when 'nosuffix' then if str =~ /^(.*)\..*?$/o         then $1 else str end
             when 'nopath'   then if str =~ /^.*[\\\/](.*?)$/o     then $1 else str end
+            when 'base'     then if str =~ /^.*[\\\/](.*?)$/o     then $1 else str end
             when 'full'     then str
             when 'complete' then str
             when 'expand'   then File.expand_path(str).gsub(/\\/,"/")

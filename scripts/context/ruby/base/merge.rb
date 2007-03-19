@@ -65,7 +65,7 @@ module SelfMerge
                     end
                     inserts << "#{@@kpsemergestop}\n\n"
                     # no gsub! else we end up in SelfMerge
-                    rbfile.sub!(/#{@@kpsemergestart}\s*#{@@kpsemergestop}/mois) do
+                    rbfile.sub!(/#{@@kpsemergestart}\s*#{@@kpsemergestop}/moi) do
                         inserts
                     end
                     rbfile.gsub!(/^(.*)(require [\"\'].*?#{@@modroot}.*)$/) do
@@ -99,7 +99,7 @@ module SelfMerge
         begin
             if rbfile = IO.read(@@filename) then
                 begin
-                    rbfile.sub!(/#{@@kpsemergestart}(.*)#{@@kpsemergestop}\s*/mois) do
+                    rbfile.sub!(/#{@@kpsemergestart}(.*)#{@@kpsemergestop}\s*/moi) do
                         "#{@@kpsemergestart}\n\n#{@@kpsemergestop}\n\n"
                     end
                     rbfile.gsub!(/^(.*#{@@kpsemergedone}.*)$/) do

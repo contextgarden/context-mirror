@@ -397,20 +397,20 @@ class SpotColorImage
                                             if data =~ /(\d+)\s+0\s+obj\s+\[\/Separation\s+\/#{@colorname}/mos then
                                                 @command.report("replacing separation color")
                                                 object = $1
-                                                data.gsub!(/(\/Type\s+\/XObject.*?)(\/ColorSpace\s*(\/DeviceGray|\/DeviceCMYK|\/DeviceRGB|\d+\s+\d+\s+R))/mois) do
+                                                data.gsub!(/(\/Type\s+\/XObject.*?)(\/ColorSpace\s*(\/DeviceGray|\/DeviceCMYK|\/DeviceRGB|\d+\s+\d+\s+R))/moi) do
                                                     $1 + "/ColorSpace #{object} 0 R".ljust($2.length)
                                                 end
                                             elsif data =~ /(\d+)\s+0\s+obj\s+\[\/Indexed\s*\[/mos then
                                                 @command.report("replacing indexed color")
                                                 # todo: more precise check on color
                                                 object = $1
-                                                data.gsub!(/(\/Type\s+\/XObject.*?)(\/ColorSpace\s*(\/DeviceGray|\/DeviceCMYK|\/DeviceRGB|\d+\s+\d+\s+R))/mois) do
+                                                data.gsub!(/(\/Type\s+\/XObject.*?)(\/ColorSpace\s*(\/DeviceGray|\/DeviceCMYK|\/DeviceRGB|\d+\s+\d+\s+R))/moi) do
                                                     $1 + "/ColorSpace #{object} 0 R".ljust($2.length)
                                                 end
                                             elsif data =~ /(\d+)\s+0\s+obj\s+\[\/Separation/mos then
                                                 @command.report("replacing separation color")
                                                 object = $1
-                                                data.gsub!(/(\/Type\s+\/XObject.*?)(\/ColorSpace\s*(\/DeviceGray|\/DeviceCMYK|\/DeviceRGB|\d+\s+\d+\s+R))/mois) do
+                                                data.gsub!(/(\/Type\s+\/XObject.*?)(\/ColorSpace\s*(\/DeviceGray|\/DeviceCMYK|\/DeviceRGB|\d+\s+\d+\s+R))/moi) do
                                                     $1 + "/ColorSpace #{object} 0 R".ljust($2.length)
                                                 end
                                             end
@@ -663,7 +663,7 @@ class Commands
                         pairs = Hash.new
 
                         data.each do |d|
-                            if (d =~ /^\s*(.*?)\s*\:\s*(.*?)\s*$/mois) then
+                            if (d =~ /^\s*(.*?)\s*\:\s*(.*?)\s*$/moi) then
                                 key, val = $1, $2
                                 pairs[key.downcase.sub(/ /,'')] = val
                             end
@@ -780,7 +780,7 @@ class Commands
         end
         threshold = @commandline.option('threshold').to_i rescue 0
         filenames.each do |filename|
-            if `pdfinfo #{filename}`.chomp =~ /^pages\s*\:\s*(\d+)/mois then
+            if `pdfinfo #{filename}`.chomp =~ /^pages\s*\:\s*(\d+)/moi then
                 p = $1
                 m = p.to_i rescue 0
                 if threshold == 0 or m > threshold then

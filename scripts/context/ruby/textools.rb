@@ -713,7 +713,7 @@ class Commands
                 f << "\n"
                 f << "/#{encoding.gsub(/[^a-zA-Z]/,'')}encoding [\n"
                 256.times do |i|
-                    f << "  /#{chars[i] || '.notdef'}\n"
+                    f << "  /#{chars[i] || '.notdef'} % #{i}\n"
                 end
                 f << "] def\n"
                 f.close

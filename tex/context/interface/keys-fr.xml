@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 
-<cd:interface xmlns:cd="http://www.pragma-ade.com/commands" name="context" language="fr" version="2007.02.21 11:55">
+<cd:interface xmlns:cd="http://www.pragma-ade.com/commands" name="context" language="fr" version="2007.03.19 11:20">
 
   <cd:variables>
     <cd:variable name="one" value="un"/>
@@ -417,6 +417,7 @@
     <cd:constant name="text" value="texte"/>
     <cd:constant name="listtext" value="texteliste"/>
     <cd:constant name="textwidth" value="largeurtexte"/>
+    <cd:constant name="numberwidth" value="numberwidth"/>
     <cd:constant name="textcommand" value="commandetexte"/>
     <cd:constant name="textsize" value="tailletexte"/>
     <cd:constant name="textcolor" value="couleurtexte"/>
@@ -727,6 +728,7 @@
     <cd:variable name="continue" value="continue"/>
     <cd:variable name="vertical" value="verticale"/>
     <cd:variable name="bold" value="gras"/>
+    <cd:variable name="sansbold" value="sansgras"/>
     <cd:variable name="boldslanted" value="inclinegras"/>
     <cd:variable name="bolditalic" value="italiquegras"/>
     <cd:variable name="quadruple" value="quadruple"/>

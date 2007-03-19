@@ -198,7 +198,12 @@
       \fakepagenotes}% was \fakenotes, but wrong! (check with \setupalign[height])
    \ifbottomnotes
      \ifgridsnapping
-       \getnoflines\textheight
+\ifcase\layoutlines % todo: make macro of this
+    \getrawnoflines\textheight
+\else
+    \noflines\layoutlines
+\fi
+%        \getnoflines\textheight
        \advance\noflines \minusone
        \scratchdimen\noflines\lineheight
        \advance\scratchdimen \topskip

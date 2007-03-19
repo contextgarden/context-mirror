@@ -142,14 +142,28 @@
 \def\writetoregister[#1]% to be documented
   {\doregister{#1}}
 
-\def\startregister
-  {\dotripleempty\dostartregister}
+% \def\startregister
+%   {\dotripleempty\dostartregister}
 
-\def\dostartregister[#1][#2][#3]#4%
-  {\chardef\registerpagestatus\plustwo
-   \def\currentregister{#1}%
-   \setgvalue{\??id#1\??id#2}{\dodostopregister[#1][#3]{#4}}%
-   \dodoregister[#3]{}{#4}}
+% \def\dostartregister[#1][#2][#3]#4%
+%   {\chardef\registerpagestatus\plustwo
+%    \def\currentregister{#1}%
+%    \setgvalue{\??id#1\??id#2}{\dodostopregister[#1][#3]{#4}}%
+%    \dodoregister[#3]{}{#4}}
+
+\def\startregister
+   {\doquadrupleempty\dostartregister}
+
+\def\dostartregister[#1][#2][#3][#4]#5%  % 3 args:  #3 is sortkey
+   {\chardef\registerpagestatus\plustwo  % 4 args:  #3 is type, #4 is sortkey
+    \def\currentregister{#1}%
+    \iffourarguments
+      \setgvalue{\??id#1\??id#2}{\dodostopregister[#1][#4]{#5}}%
+      \dodoregister[#4]{#3}{#5}%
+    \else
+      \setgvalue{\??id#1\??id#2}{\dodostopregister[#1][#3]{#5}}%
+      \dodoregister[#3]{}{#5}%
+    \fi}
 
 \def\stopregister
   {\dodoubleargument\dostopregister}

@@ -13,7 +13,7 @@
 
 \writestatus{loading}{Context Spacing Macros}
 
-% to be sorted out: dependencies, order of initialization
+% to be sorted out: dependencies, order of initialization / also some dutch code here
 
 \unprotect
 
@@ -500,6 +500,8 @@
 
 \defineblankmethod      [\v!none] {\global\blankresettrue}
 \defineblankmethod  [\v!joinedup] {\ifvmode\nointerlineskip\fi}
+
+\defineblankmethod [\v!always] {\redowhitespace} % experimental
 
 % happens often, so we speed this up:
 %
@@ -1732,9 +1734,9 @@
 
 \newif\ifwitruimteflexibel \witruimteflexibeltrue
 
-\def\blankokleinmaat  {\smallskipamount}
-\def\blankomiddelmaat {\medskipamount}
-\def\blankogrootmaat  {\bigskipamount}
+\def\blankokleinmaat   {\smallskipamount}
+\def\blankomiddelmaat  {\medskipamount}
+\def\blankogrootmaat   {\bigskipamount}
 \def\currentwhitespace {\zeropoint}
 
 % \def\stelwitruimteopnieuwin
@@ -1819,11 +1821,11 @@
 \definewhitespacemethod [\v!line]     {\ctxparskip  \baselineskip}
 \definewhitespacemethod [\v!halfline] {\ctxparskip.5\baselineskip}
 \definewhitespacemethod [\v!none]     {\ctxparskip  \zeropoint}
-\definewhitespacemethod [\v!big]      {\ctxparskip  \blankogrootmaat}
-\definewhitespacemethod [\v!medium]   {\ctxparskip  \blankomiddelmaat}
-\definewhitespacemethod [\v!small]    {\ctxparskip  \blankokleinmaat}
+\definewhitespacemethod [\v!big]      {\ctxparskip  \bigskipamount}
+\definewhitespacemethod [\v!medium]   {\ctxparskip  \medskipamount}
+\definewhitespacemethod [\v!small]    {\ctxparskip  \smallskipamount}
 
-\definewhitespacemethod [\s!default]  {\stelwitruimteopnieuwin}
+\definewhitespacemethod [\s!default]  {\simplesetupwhitespace} % {\stelwitruimteopnieuwin}
 
 \def\dowhitespacemethod#1%
   {\executeifdefined{\??ws\??ws#1}{\ctxparskip#1}\relax}
@@ -1834,6 +1836,16 @@
      \else
        \vskip-\parskip
      \fi
+   \fi}
+
+\def\nowhitespaceunlessskip
+  {\ifdim\lastskip>\zeropoint \else
+     \nowhitespace
+   \fi}
+
+\def\redowhitespace
+  {\ifdim\lastskip>-\parskip \else
+     \vskip\parskip
    \fi}
 
 \def\savecurrentwhitespace

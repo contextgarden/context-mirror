@@ -144,7 +144,7 @@ EOT
             result.gsub!(/(.{80,})(\-\-\-|\-\-|\.\.\.|\.\.)/) do
                 "#{$1}#{$2}\n"
             end
-            result.gsub!(/\n[\s\n]+/mois) do
+            result.gsub!(/\n[\s\n]+/moi) do
                 "\n"
             end
             result.gsub!(/btex\((\d+)\)/) do

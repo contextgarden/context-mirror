@@ -242,7 +242,7 @@ class Commands
                                 mod << "\\stoptext\n"
                                 mod.close
                                 job.setvariable('interface','english') # redundant
-                                job.setvariable('simplerun',true)
+                                # job.setvariable('simplerun',true)
                                 # job.setvariable('nooptionfile',true)
                                 job.setvariable('files',[job.tempfilename])
                                 result = File.unsuffixed(File.basename(ffname))

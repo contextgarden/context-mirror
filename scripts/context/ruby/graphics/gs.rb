@@ -452,10 +452,10 @@ class GhostScript
 
         debug('bbox spec', bbox)
 
-        if bbox =~ /(Exact|HiRes)BoundingBox:#{@@bboxspec}/mois then
+        if bbox =~ /(Exact|HiRes)BoundingBox:#{@@bboxspec}/moi then
             debug("high res bbox #{$2} #{$3} #{$4} #{$5}")
             setdimensions($2,$3,$4,$5)
-        elsif bbox =~ /BoundingBox:#{@@bboxspec}/mois
+        elsif bbox =~ /BoundingBox:#{@@bboxspec}/moi
             debug("low res bbox #{$1} #{$2} #{$3} #{$4}")
             setdimensions($1,$2,$3,$4)
         end

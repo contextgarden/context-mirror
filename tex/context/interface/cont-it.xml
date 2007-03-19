@@ -6803,6 +6803,7 @@
       <cd:constant type="fisso"/>
       <cd:constant type="flessibile"/>
       <cd:constant type="nessuno"/>
+      <cd:constant type="sempre"/>
     </cd:keywords>
   </cd:arguments>
 </cd:command>

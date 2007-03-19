@@ -15,7 +15,7 @@
 # This script will harbor some handy manipulations on tex
 # related files.
 
-banner = ['XMLTools', 'version 1.2.1', '2002/2006', 'PRAGMA ADE/POD']
+banner = ['XMLTools', 'version 1.2.2', '2002/2007', 'PRAGMA ADE/POD']
 
 $: << File.expand_path(File.dirname($0)) ; $: << File.join($:.last,'lib') ; $:.uniq!
 
@@ -466,35 +466,35 @@ class Commands
             elements = Array.new
             preamble = ""
             done     = false
-            data.sub!(/^(.*?)\s*(<[a-z])/mois) do
+            data.sub!(/^(.*?)\s*(<[a-z])/moi) do
                 preamble = $1
                 $2
             end
             # hide elements
-            data.gsub!(/<(.*?)>/mois) do
+            data.gsub!(/<([^>]*?)>/moi) do
                 elements << $1
                 "<#{elements.length}>"
             end
             # abc[-/]def
-            data.gsub!(/([a-z]{3,})([\/\-\(\)])([a-z]{3,})/mois) do
+            data.gsub!(/([a-z]{3,})([\/\-\(\)])([a-z]{3,})/moi) do
                 done = true
                 report("compound: #{$1}#{$2}#{$3}") if verbose
                 "#{$1}<compound token='#{$2}'/>#{$3}"
             end
             # (abcd
-            # data.gsub!(/(\()([a-z]{4,})/mois) do
+            # data.gsub!(/(\()([a-z]{4,})/moi) do
                 # done = true
                 # report("compound: #{$1}#{$2}") if verbose
                 # "<compound token='#{$1}'/>#{$2}"
             # end
             # abcd)
-            # data.gsub!(/(\()([a-z]{4,})/mois) do
+            # data.gsub!(/(\()([a-z]{4,})/moi) do
                 # done = true
                 # report("compound: #{$1}#{$2}") if verbose
                 # "#{$2}<compound token='#{$2}'/>"
             # end
             # roll back elements
-            data.gsub!(/<(\d+)>/mois) do
+            data.gsub!(/<(\d+)>/moi) do
                 "<#{elements.shift}>"
             end
             File.open(newname,'wb') do |f|

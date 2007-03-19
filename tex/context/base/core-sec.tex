@@ -102,7 +102,7 @@
 % \section{test} \subsection{test} \subsection{test}
 
 % from now on, internaly numbers are separated by a period
-% and postprocessed on demand
+% and postprocessed on demand; this will change to {} {} {}
 
 \def\numberseparator {.} % reasonable default
 \def\sectionseparator{-} % was : but is now -
@@ -1185,7 +1185,7 @@
 \def\localheadlineheight{\lineheight}
 
 \def\dolocalheadsetup#1%  koppeling met standaard kopcommando / engels
-  {\forgetall         %  traag dus ...
+  {\forgetall          %  traag dus ...
    \doifvaluesomething{\??ko#1\c!align} % wordt al expanded in spa
      {\expanded{\setupalign[\getvalue{\??ko#1\c!align}]}}%
    \doifvaluesomething{\??ko#1\c!tolerance} % wordt al expanded in spa
@@ -1381,7 +1381,7 @@
 \let\localkopprefix\empty
 
 \def\headparameter#1% to do: everywhere in core-sec
-  {\csname\??ko\currenthead#1\endcsname}
+  {\executeifdefined{\??ko\currenthead#1}\empty}
 
 \def\dodododoconstructhead#1[#2]#3#4% [ref] {number} {title}
   {\def\currenthead{#1}% dus #1 overal vervangen
@@ -2104,20 +2104,74 @@
      {\localheadsetup
       \begstrut\ifheadnumbercontent#1\hskip\numberheaddistance\fi#2}}
 
+% \defineheadplacement[\v!normal][\v!vertical]#1#2%
+%   {\ifheadnumbercontent
+%      \setbox0\hbox{{#1}\hskip\numberheaddistance}%
+%      \vbox
+%        {\localheadsetup
+%         \hangindent 1\wd0
+%         \hangafter 1
+%         \noindent
+%         \unhbox0    %  don't use \strut's here!
+%         #2}%
+%    \else
+%      \vbox
+%        {\localheadsetup\noindent#2}%
+%    \fi}
+%
+% enhanced version:
+
+% \setuphead
+%   [chapter]
+%   [numberwidth=2cm,hang=line,after={\blank[3*line]}]
+%
+% \chapter{Oeps oeps oeps} \input tufte   \section{Oeps}
+% \chapter{Oeps oeps oeps} \section{Oeps} \input tufte
+
 \defineheadplacement[\v!normal][\v!vertical]#1#2%
-  {\ifheadnumbercontent
-     \setbox0\hbox{{#1}\hskip\numberheaddistance}%
-     \vbox
-       {\localheadsetup
-        \hangindent 1\wd0
-        \hangafter 1
+  {\vbox
+     {\localheadsetup
+      \edef\headwidth      {\headparameter\c!width      }%
+      \edef\headnumberwidth{\headparameter\c!numberwidth}%
+      \edef\headtextwidth  {\headparameter\c!textwidth  }%
+      \ifheadnumbercontent
+        \ifx\headwidth\empty
+        \else
+          \ifx\headnumberwidth\empty
+            \ifx\headtextwidth\empty\else
+              \edef\headnumberwidth{\the\dimexpr\headwidth-\headtextwidth\relax}%
+            \fi
+          \else
+            \ifx\headtextwidth\empty
+              \edef\headtextwidth{\the\dimexpr\headwidth-\headnumberwidth\relax}%
+            \fi
+          \fi
+          \hsize\headwidth
+        \fi
+        \ifx\headnumberwidth\empty\else
+          \let\numberheaddistance\!!zeropoint
+        \fi
+        \setbox\scratchbox\hbox \ifx\headnumberwidth\empty\else to \headnumberwidth\fi{{#1}}%
+        \scratchdimen\dimexpr\wd\scratchbox+\numberheaddistance\relax
+        \ifx\headtextwidth\empty\else
+          \hsize\dimexpr\scratchdimen+\headparameter\c!textwidth\relax
+        \fi
+        \hangindent\scratchdimen
+        \hangafter \plusone
         \noindent
-        \unhbox0    %  don't use \strut's here!
-        #2}%
-   \else
-     \vbox
-       {\localheadsetup\noindent#2}%
-   \fi}
+        \box\scratchbox\hskip\numberheaddistance
+      \else
+        \ifx\headtextwidth\empty
+          \ifx\headwidth\empty
+          \else
+            \hsize\headwidth
+          \fi
+        \else
+          \hsize\headtextwidth
+        \fi
+        \noindent
+      \fi
+      #2}}
 
 \def\placeheadmargin#1#2%
   {\vbox
