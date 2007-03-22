@@ -2371,6 +2371,12 @@ enddef ;
 %     p
 % enddef ;
 
+%D Handy:
+
+def break =
+    exitif true fi ;
+enddef ;
+
 % done
 
 endinput ;

@@ -2596,7 +2596,17 @@ class Commands
 
         def fetchfile(site, name, target=nil)
             begin
-                http = Net::HTTP.new(site)
+                proxy = @commandline.option('proxy')
+                if proxy && ! proxy.empty? then
+                    address, port = proxy.split(":")
+                    if address && port then
+                        http = Net::HTTP::Proxy(address, port).new(site)
+                    else
+                        http = Net::HTTP::Proxy(proxy, 80).new(site)
+                    end
+                else
+                    http = Net::HTTP.new(site)
+                end
                 resp, data = http.get(name.gsub(/^\/*/, '/'))
             rescue
                 return false
@@ -2697,12 +2707,13 @@ commandline.registeraction('listentities'      , 'create doctype entity definiti
 commandline.registeraction('brandfiles'        , 'add context copyright notice [--force]')
 commandline.registeraction('platformize'       , 'replace line-endings [--recurse --force] [pattern]')
 commandline.registeraction('dependencies'      , 'analyze depedencies within context [--save --compact --filter=[macros|filenames]] [filename]')
-commandline.registeraction('updatecontext'     , 'download latest version and remake formats')
+commandline.registeraction('updatecontext'     , 'download latest version and remake formats [--proxy]')
 commandline.registeraction('disarmutfbom'      , 'remove utf bom [--force]')
 
 commandline.registervalue('type','')
 commandline.registervalue('filter','')
 commandline.registervalue('maproot','')
+commandline.registervalue('proxy','')
 
 commandline.registerflag('recurse')
 commandline.registerflag('force')

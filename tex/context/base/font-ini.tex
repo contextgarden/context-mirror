@@ -1451,6 +1451,7 @@
      \expandafter\dogetglobalfontparameter
    \fi}
 
+\let\@@fontresource\empty
 \let\@@fontencoding\empty
 \let\@@fontmapping \empty
 \let\@@fonthandling\empty
@@ -1838,11 +1839,12 @@
 %   {\edef\fontdata{\truefontdata{\truefontname{#1}}}%
 %    \expanded{\getparameters[\@@currentfontfile][\fontdata]}}
 
-\def\getfontfileparameters#1%
+\def\getfontfileparameters#1% can be simpler for mkii
   {\edef\@@truefontname{\truefontname{#1}}%
    \edef\currentfontfileencoding{\truefontdata\@@truefontname\s!encoding}%
    \edef\currentfontfilemapping {\truefontdata\@@truefontname\s!mapping }%
    \edef\currentfontfilehandling{\truefontdata\@@truefontname\s!handling}%
+   \edef\currentfontfileresource{\truefontdata\@@truefontname\s!resource}%
    \edef\currentfontfilefeatures{\truefontdata\@@truefontname\s!features}}
 
 %D \macros
@@ -3564,11 +3566,12 @@
 
 %D The font specific features are bound to the filename.
 
-\def\updatefontparameters
+\def\updatefontparameters % can be simpler for mkii (and mkiv no font encoding)
   {\edef\@@fontencoding{\truefontdata\fontfile    \s!encoding}%
    \edef\@@fontmapping {\truefontdata\fontfile    \s!mapping }%
    \edef\@@fonthandling{\truefontdata\somefontname\s!handling}%
    \edef\@@fontfeatures{\truefontdata\fontfile    \s!features}%
+   \edef\@@fontresource{\truefontdata\fontfile    \s!resource}%
    \edef\@@fontskewchar{\truefontdata\fontfile    \s!skewchar}}
 
 \def\setfontcharacteristics

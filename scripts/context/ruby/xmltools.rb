@@ -476,7 +476,7 @@ class Commands
                 "<#{elements.length}>"
             end
             # abc[-/]def
-            data.gsub!(/([a-z]{3,})([\/\-\(\)])([a-z]{3,})/moi) do
+            data.gsub!(/([a-z]{3,})([\/\-\(\)]+)([a-z]{3,})/moi) do
                 done = true
                 report("compound: #{$1}#{$2}#{$3}") if verbose
                 "#{$1}<compound token='#{$2}'/>#{$3}"
