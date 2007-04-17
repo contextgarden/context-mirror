@@ -140,7 +140,8 @@
      \assignfullfilename{#1}\figurefilebase\to\filename
      \expanded{\processXMLfilegrouped{\filename.xml}}%
      \ifx\figurefilename\empty\else
-       \globallet\figurefilebase\figurefilebase
+%        \globallet\figurefilebase\figurefilebase
+       \globallet\figurefilebase\filename % hm, bad omen that this is needed
      \fi
      \egroup
    \fi}

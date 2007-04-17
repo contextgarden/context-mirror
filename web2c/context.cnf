@@ -71,7 +71,7 @@ MISCFONTS     = .;$TEXMF/fonts/misc//
 ENCFONTS      = .;$TEXMF/{fonts/{data,enc},dvips,pdftex,dvipdfm}//
 CMAPFONTS     = .;$TEXMF/fonts/cmap//
 SFDFONTS      = .;$TEXMF/fonts/sfd//
-OPENTYPEFONTS = .;$TEXMF/fonts/opentype//;$OSFONTDIR
+OPENTYPEFONTS = .;$TEXMF/fonts/{data,opentype}//;$OSFONTDIR
 
 OFMFONTS      = .;$TEXMF/fonts/{ofm,tfm}//
 OPLFONTS      = .;$TEXMF/fonts/opl//;
@@ -95,7 +95,8 @@ CTXDEVTXPATH=unset
 CTXDEVMPPATH=unset
 CTXDEVMFPATH=unset
 
-TEXINPUTS = .;{$TXRESOURCES}//;{$CTXDEVTXPATH};$TEXMF/{pdftex,pdfetex,etex,xetex,omega,tex}/{context,plain,generic,}//
+#~ TEXINPUTS = .;{$TXRESOURCES}//;{$CTXDEVTXPATH};$TEXMF/{pdftex,pdfetex,etex,xetex,omega,tex}/{context,plain,generic,}//
+TEXINPUTS = .;{$TXRESOURCES}//;{$CTXDEVTXPATH};$TEXMF/{pdftex,pdfetex,etex,xetex,omega,tex}/{$progname,plain,generic,}//
 
 % TEXINPUTS.context = .;{$TXRESOURCES}//;{$CTXDEVTXPATH};$TEXMF/{pdftex,pdfetex,etex,xetex,omega,tex}/{context,plain,generic,}//
 % TEXINPUTS.context = .;{$TXRESOURCES}//;{$CTXDEVTXPATH};$TEXMF/{tex,omega}/{context,plain,generic}//
@@ -160,6 +161,25 @@ TEX        = texexec --batch --once --nomp
 % These values are about the same as in the main
 % configuration file (dest_names_size added).
 
+buf_size                 = 1000000
+extra_mem_bot            = 1000000
+extra_mem_top            = 2000000
+font_max                 =    2500
+font_mem_size            = 1000000
+hash_extra               =   50000
+main_memory              = 2000000
+max_strings              =  150000
+nest_size                =     500
+pdf_mem_size             =  250000
+param_size               =   10000
+pool_free                =   47500
+pool_size                = 1000000
+save_size                =   10000
+stack_size               =    5000
+string_vacancies         =  100000
+trie_size                =  500000
+hyph_size                =    8191
+
 buf_size.context         = 4000000 % needed for omega bug
 extra_mem_bot.context    = 2000000
 extra_mem_top.context    = 4000000
@@ -176,7 +196,7 @@ pool_size.context        = 2000000
 save_size.context        =   50000
 stack_size.context       =   10000
 string_vacancies.context =  125000
-trie_size.context        =  250000
+trie_size.context        =  500000
 hyph_size.context        =    8191 % prime
 
 obj_tab_size.context     =  300000 % obsolete in 1.40+

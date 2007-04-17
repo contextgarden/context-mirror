@@ -37,12 +37,11 @@ my $PassOn = '' ;
     "passon"  => \$PassOn,
     "latex"   => \$Latex ) ;
 
-my $program = "MPtoPDF 1.3.2" ;
+my $program = "MPtoPDF 1.3.3" ;
 my $pattern = "@ARGV" ; # was $ARGV[0]
 my $miktex  = 0 ;
 my $done    = 0 ;
 my $report  = '' ;
-my $texlatexswitch = " --tex=latex --format=latex " ;
 my $mplatexswitch = " --tex=latex " ;
 
 my $dosish      = ($Config{'osname'} =~/^(ms)?dos|^os\/2|^mswin/i) ;
@@ -94,12 +93,15 @@ if (($pattern eq '')||($Help)) {
         }
     } else {
         if ($Latex) {
-            $rest .= " $texlatexswitch" ;
+            $rest .= " $mplatexswitch" ;
+            $mpbin = "mpost --mem=mpost" ;
+        } else {
+            $mpbin = "texexec --mptex $PassOn " ;
         }
-        $mpbin = "texexec --mptex $PassOn" ;
     }
-    print "\n$program : running '$mpbin'\n" ;
-    my $error =  system ("$mpbin $rest $pattern") ;
+    my $runner = "$mpbin $rest $pattern" ;
+    print "\n$program : running '$runner'\n" ;
+    my $error =  system ($runner) ;
     if ($error) {
         print "\n$program : error while processing mp file\n" ;
         exit ;

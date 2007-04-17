@@ -388,6 +388,7 @@
 \def\dodefinespotcolor[#1][#2][#3]% todo: always global
   {\doifnot{#1}{#2}
      {\@@resetcolorparameters
+\doglobal\addtocommalist{#1}\colorlist % optional
       \edef\@@cl@@n{#2}%
       \getparameters[\??cl @@][#3]%
       \doifnothing\@@cl@@p{\let\@@cl@@p\!!plusone}%
@@ -484,6 +485,7 @@
 \def\dodefinespotcolor[#1][#2][#3]% todo: always global (REDEFINED)
   {\doifnot{#1}{#2}
      {\@@resetcolorparameters
+\doglobal\addtocommalist{#1}\colorlist % optional
       \edef\@@cl@@n{#2}%
       \getparameters[\??cl @@][#3]%
       \doifnothing  \@@cl@@p{\let\@@cl@@p\!!plusone}%
@@ -2309,6 +2311,15 @@
 %D \showsetup{showpalet}
 
 \fetchruntimecommand \showpalet {\f!colorprefix\s!run}
+
+%D \macros
+%D   {showcolorcomponents}
+%D
+%D \starttyping
+%D \showcolorcomponents[color-1,color-2]
+%D \stoptyping
+
+\fetchruntimecommand \showcolorcomponents {\f!colorprefix\s!run}
 
 %D \macros
 %D   {definecolorgroup}

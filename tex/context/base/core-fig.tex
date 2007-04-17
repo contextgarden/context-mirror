@@ -732,7 +732,7 @@
      \xdef\noffigurepages{\number\nofinsertpages}%
    \else
      \ifdim\naturalfigurewidth>\zeropoint
-       \ifnum\figurestatus>9
+       \ifnum\figurestatus>\!!ten\relax
          \doshowfiguremessage3\expandedfigurename
        \else
          \doshowfiguremessage4\expandedfigurename

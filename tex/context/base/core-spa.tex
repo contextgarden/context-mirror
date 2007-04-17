@@ -3010,7 +3010,7 @@
 % \voorkeur … la \blanko
 %
 % Om ongewenste witruimte te voorkomen kan met \dosomebreak{\break}
-% een \penalty v¢¢r witruimte worden geplaatst.
+% een \penalty voor witruimte worden geplaatst.
 
 \def\removelastskip % a redefinition of plain
   {\ifvmode\ifdim\lastskip=\zeropoint\else\vskip-\lastskip\fi\fi}
@@ -3028,18 +3028,18 @@
 %
 % don't change the next improvement:
 
-\def\dosomebreak#1%
-  {\endgraf % beware, this forces a newline
-   \ifvmode
-     \ifdim\lastskip=\zeropoint
-       #1\relax
-     \else
-       \scratchskip\lastskip
-       \removelastskip
-       #1\relax
-       \vskip\scratchskip
-     \fi
-   \fi}
+% \def\dosomebreak#1%
+%   {\endgraf % beware, this forces a newline
+%    \ifvmode
+%      \ifdim\lastskip=\zeropoint
+%        #1\relax
+%      \else
+%        \scratchskip\lastskip
+%        \removelastskip
+%        #1\relax
+%        \vskip\scratchskip
+%      \fi
+%    \fi}
 
 % beter, vooral in \vbox; nog in \pagina toepassen s!
 
@@ -4644,7 +4644,7 @@
 \setupwhitespace
   [\v!none]
 
-% still old-fachioned
+% still old-fashioned
 
 \indenting
   [\v!never]

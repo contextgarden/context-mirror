@@ -157,7 +157,7 @@
 \def\dostartregister[#1][#2][#3][#4]#5%  % 3 args:  #3 is sortkey
    {\chardef\registerpagestatus\plustwo  % 4 args:  #3 is type, #4 is sortkey
     \def\currentregister{#1}%
-    \iffourarguments
+    \iffourthargument
       \setgvalue{\??id#1\??id#2}{\dodostopregister[#1][#4]{#5}}%
       \dodoregister[#4]{#3}{#5}%
     \else

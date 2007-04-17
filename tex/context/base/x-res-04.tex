@@ -213,7 +213,8 @@
         \processXMLfilegrouped\filename}
        \donothing
      \ifx\figurefilename\empty \else
-       \global\let\figurefilebase\figurefilebase
+%        \global\let\figurefilebase\figurefilebase
+       \globallet\figurefilebase\filename % hm, bad omen that this is needed
      \fi
      \egroup
    \fi}

@@ -300,6 +300,7 @@ class Commands
         begin
             str = nil
             if FileTest.file?(filename) then
+                # todo: use pdfinto for pdf files, identify is bugged
                 if centimeters then
                     result = `identify -units PixelsPerCentimeter -format \"x=%x,y=%y,w=%w,h=%h,b=%b\" #{filename}`.chomp.split(',')
                 else

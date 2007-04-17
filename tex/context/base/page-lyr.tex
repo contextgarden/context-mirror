@@ -249,6 +249,14 @@
    % preroll
    \getparameters[\??ll\currentlayer][#3]%
    % presets and real roll
+% maybe todo:
+% \doif{\layerparameter\c!method}\v!fit
+%   {\@@layerxsiz\thelayerwidth \currentlayer
+%    \@@layerysiz\thelayerheight\currentlayer
+%    \layerwidth \@@layerxsiz
+%    \layerheight\@@layerysiz
+%    }%
+   % etc
    \executeifdefined{\??ll\??ll\layerparameter\c!preset}\gobbletwoarguments\currentlayer{#3}%
    % that was real slow
    \doif{\layerparameter\c!position}\v!overlay  % slow

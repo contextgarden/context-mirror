@@ -1116,6 +1116,29 @@
 %
 % \placefigure[left]{}{} \section{\dorecurse{10}{bagger }} \input tufte
 
+% \def\dohandlepagebreakAB#1% will be replaced by a more clever (signaling) mechanism (in beta)
+%   {\doifnotvalue{\??ko#1\c!aligntitle}\v!float\flushsidefloats
+%    \getvalue{\??ko#1\c!before}%
+%    % \whitespace vervangen door \noindent elders
+%    \relax
+%    \ifpaginageblokkeerd
+%      \global\paginageblokkeerdfalse
+%    \else
+%      \!!countb\getvalue{\??se\@@sectie\c!level}\relax
+%      \ifnum\!!countb>\@@kolevel\relax
+%        \!!counta20000
+%        \multiply\!!countb 500
+%        \advance\!!counta \!!countb
+%        \dosomebreak{\penalty\!!counta}%
+%      \else
+%        \dosomebreak\allowbreak
+%      \fi
+%    \fi
+%    \doifvalue{\??ko#1\c!aligntitle}\v!float\indent
+%    \xdef\@@kolevel{\getvalue{\??se\@@sectie\c!level}}}
+
+\chardef\somebreakmethod\plusone
+
 \def\dohandlepagebreakAB#1% will be replaced by a more clever (signaling) mechanism (in beta)
   {\doifnotvalue{\??ko#1\c!aligntitle}\v!float\flushsidefloats
    \getvalue{\??ko#1\c!before}%
@@ -1124,14 +1147,24 @@
    \ifpaginageblokkeerd
      \global\paginageblokkeerdfalse
    \else
-     \!!countb\getvalue{\??se\@@sectie\c!level}\relax
-     \ifnum\!!countb>\@@kolevel\relax
-       \!!counta20000
-       \multiply\!!countb 500
-       \advance\!!counta \!!countb
-       \dosomebreak{\penalty\!!counta}%
+     \ifcase\somebreakmethod
+        % 0 = nothing
+     \or
+        % 1 = old weighted version
+       \!!countb\getvalue{\??se\@@sectie\c!level}\relax
+       \ifnum\!!countb>\@@kolevel\relax
+         \!!counta20000
+         \multiply\!!countb 500
+         \advance\!!counta \!!countb
+         \dosomebreak{\penalty\!!counta}%
+       \else
+         \dosomebreak\allowbreak % brr
+       \fi
+     \or
+        % 2 = strict version
+       \dosomebreak{\penalty\maxdimen}%
      \else
-       \dosomebreak\allowbreak
+        % nothing
      \fi
    \fi
    \doifvalue{\??ko#1\c!aligntitle}\v!float\indent
@@ -1938,7 +1971,7 @@
    % no message needed here, should be a proper switch
    \noflines\zerocount
    \ifdisplaysectionhead
-     % new
+     % new (tod tight == one following line up)
      \processaction
        [\getvalue{\??ko#1\c!hang}]
        [    \v!line=>\hangheadplacement\noflines\zerocount,

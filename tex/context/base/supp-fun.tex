@@ -137,6 +137,7 @@
    \ExpandBothAfter\doifinstringelse\asciia\asciib
      {\noindentation
       \dontleavehmode
+      \checkindentation % redo this one
      %\ifhmode\hskip-\parindent\fi % sensitive for context mechanism
       \keeplinestogether{#6}%
       \setbox0\hbox{\definedfont[#2 at #3]#1{#7}\hskip#4}%
@@ -163,7 +164,9 @@
         \globaldropcaps\chardef\DroppedStatus\plustwo
         \globaldropcaps\hangindent\DroppedIndent
         \globaldropcaps\hangafter-\DroppedLines
-        \noindent
+%         \noindent
+        \noindentation
+        \checkindentation % redo this one
         \hskip-\DroppedIndent
       \fi
       \vbox{\forgetall\box0}%
@@ -257,7 +260,7 @@
          \globaldropcaps\hangindent\DroppedIndent
          \globaldropcaps\hangafter-\DroppedLines
          \globaldropcaps\advance\hangafter \droppedlines
-         \hskip-\parindent
+         \hskip-\parindent % brrr
          \let\next\AutoDroppedNext
        \else
          \globaldropcaps\chardef\DroppedStatus\zerocount

@@ -447,10 +447,12 @@ class TeXUtil
             end
 
             def MyExtras::finalizer(logger)
-                @@programs.each do |p|
-                    cmd = @@programs[p.to_i]
-                    logger.report("running #{cmd}")
-                    system(cmd)
+unless (ENV["CTX.TEXUTIL.EXTRAS"] =~ /^(no|off|false|0)$/io) || (ENV["CTX_TEXUTIL_EXTRAS"] =~ /^(no|off|false|0)$/io) then
+                    @@programs.each do |p|
+                        cmd = @@programs[p.to_i]
+                        logger.report("running #{cmd}")
+                        system(cmd)
+end
                 end
             end
 

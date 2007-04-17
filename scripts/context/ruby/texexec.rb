@@ -570,6 +570,8 @@ class Commands
             job.setvariable(k,@commandline.option(k)) unless @commandline.option(k).empty?
         end
 
+job.setvariable('given.backend',job.getvariable('backend'))
+
         if (str = @commandline.option('engine')) && ! str.standard? && ! str.empty? then
             job.setvariable('texengine',str)
         elsif @commandline.oneof('pdfetex','pdftex','pdf') then

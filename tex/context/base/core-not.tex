@@ -847,12 +847,15 @@
 %          % this should be checked, smells like a mix-up
 %          % does not split: \ifcase\noteparameter\c!n\unvbox\else\box\fi\currentnoteins
            \ifcase\noteparameter\c!n\relax
-             \unvbox\currentnoteins
+\iftrialtypesetting\unvcopy\else\unvbox\fi\currentnoteins
+%              \unvbox\currentnoteins
            \or
-             \box\currentnoteins
+\iftrialtypesetting\copy\else\box\fi\currentnoteins
+%              \box\currentnoteins
              \obeydepth % (a) added , since split footnotes will not align properly
            \else
-             \unvbox\currentnoteins
+\iftrialtypesetting\unvcopy\else\unvbox\fi\currentnoteins
+%              \unvbox\currentnoteins
            \fi
           % this is too ugly actually
           \stoppopnotes}%

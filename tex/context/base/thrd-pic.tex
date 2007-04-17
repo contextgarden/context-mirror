@@ -1339,7 +1339,7 @@ should have been specified.}    %.A.................
 \def\plot{%
   \!ifnextchar"{\!plotfromfile}{\!drawcurve}}
 \def\!plotfromfile"#1"{%
-  \expandafter\!drawcurve \input #1 /}
+  \expandafter\!drawcurve \normalinput #1 /}
 
 % Command to set piecewise quadratic mode
 % See Subsections 5.1, 7.3, and 7.4 of the manual.
@@ -2344,7 +2344,7 @@ should have been specified.}    %.A.................
   \!setputobject{#1}{#2}%
   \!ifnextchar"{\!putfromfile}{\!multiput}}
 \def\!putfromfile"#1"{%
-  \expandafter\!multiput \input #1 /}
+  \expandafter\!multiput \normalinput #1 /}
 \def\!multiput{%
   \futurelet\!nextchar\!!multiput}
 \def\!!multiput{%
@@ -2634,7 +2634,7 @@ should have been specified.}    %.A.................
 % **   on "FILE_NAME"
 % ** See Subsection 5.6 of the manual.
 \def\replot"#1" {%
-  \expandafter\!replot\input #1 /}
+  \expandafter\!replot\normalinput #1 /}
 \def\!replot#1,#2. {%
   \!dimenA=#1sp
   \kern\!dimenA\raise#2sp\copy\!plotsymbol\kern-\!dimenA

@@ -4436,11 +4436,11 @@
   \def\dotwodigitrounding#1.#2#3#4\relax{\ifx#2*#1\else#1.#2#3\fi}
 
   \def\integerrounding#1%
-    {\@EA\@EA\@EA\dointegerrounding \@EA\WITHOUTPT\the\dimexpr#1\points+32768sp\relax.\relax}
+    {\@EA\@EA\@EA\dointegerrounding \@EA\WITHOUTPT\the\dimexpr#1\points+.5\points\relax.\relax}
   \def\onedigitrounding#1%
-    {\@EA\@EA\@EA\doonedigitrounding\@EA\WITHOUTPT\the\dimexpr#1\points+32768sp\relax00.*0\relax}
+    {\@EA\@EA\@EA\doonedigitrounding\@EA\WITHOUTPT\the\dimexpr#1\points+.05\points\relax00.*0\relax}
   \def\twodigitrounding#1%
-    {\@EA\@EA\@EA\dotwodigitrounding\@EA\WITHOUTPT\the\dimexpr#1\points+32768sp\relax000.*00\relax}
+    {\@EA\@EA\@EA\dotwodigitrounding\@EA\WITHOUTPT\the\dimexpr#1\points+.005\points\relax000.*00\relax}
 
 \endETEX
 

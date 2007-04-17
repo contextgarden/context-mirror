@@ -355,28 +355,11 @@
 %D dimensions are influenced by bodyfont switches inside
 %D multi||column mode.
 
-% \def\setcolumnvsize
-%   {%\global\vsize\columntextheight
-%    \global\vsize-\columntextoffset
-%    \global\multiply\vsize \plustwo
-%    \global\advance\vsize \columntextheight
-%    \ifdim\precolumnboxheight>\zeropoint
-%      \global\advance\vsize -\precolumnboxheight
-%    \fi
-%   %\getinsertionheights\to\dimen0\\%
-%   %\global\advance\vsize -\dimen0
-%    \settotalinsertionheight
-%    \global\advance\vsize -\totalinsertionheight
-%      %%%\ifgridsnapping % evt altijd, nog testen, testing now, see columned tocs
-%        \getnoflines\vsize
-%        \vsize\noflines\openlineheight
-%        \advance\vsize .5\openlineheight % collect enough data
-%      %%%\fi
-%    \global\vsize\nofcolumns\vsize
-%    \global\pagegoal\vsize} % let's do it only here
-
 \newdimen\mcscratchdimen
 \newcount\nofcolumnlines
+
+\chardef\multicolumnlinemethod\zerocount % 0: overshoot (old default), 1: tight
+% \chardef\multicolumnlinemethod\plusone
 
 \def\getmulticolumnlines
   {\mcscratchdimen-\columntextoffset
@@ -387,38 +370,22 @@
    \fi
    \settotalinsertionheight
    \advance\mcscratchdimen -\totalinsertionheight
-   \getnoflines\mcscratchdimen
+   \ifcase\multicolumnlinemethod \getnoflines\mcscratchdimen
+   \or                           \getrawnoflines\mcscratchdimen
+   \else                         \getrawnoflines\mcscratchdimen
+   \fi
    % added 30/7/2004
    \ifnum\layoutlines>\zerocount \ifnum\noflines>\layoutlines
      \noflines\layoutlines
    \fi \fi
    \nofcolumnlines\noflines}
 
-% probaby better, test first, don't replace yet
-%
-% \def\getmulticolumnlines
-%   {\mcscratchdimen-\columntextoffset
-%    \multiply\mcscratchdimen \plustwo
-% %  \advance\mcscratchdimen \columntextheight
-%    \ifdim\precolumnboxheight>\zeropoint
-%       \advance\mcscratchdimen -\precolumnboxheight
-%    \fi
-%    \settotalinsertionheight
-%    \advance\mcscratchdimen -\totalinsertionheight
-%    \getnoflines\mcscratchdimen
-% \ifnum\layoutlines>\zerocount
-% \noflines-\noflines
-% \advance\noflines\layoutlines
-% \ifnum\noflines<\zerocount
-%    \noflines\zerocount
-% \fi
-% \fi
-%    \nofcolumnlines\noflines}
+\def\multicolumnovershootratio{.5} % {\ifgridsnapping0\else.5\fi}
 
 \def\setcolumnvsize
   {\getmulticolumnlines
    \mcscratchdimen\nofcolumnlines\openlineheight
-   \advance\mcscratchdimen .5\openlineheight % collect enough data
+   \advance\mcscratchdimen \multicolumnovershootratio\openlineheight % collect enough data
    \global\vsize\nofcolumns\mcscratchdimen
    \global\pagegoal\vsize} % let's do it only here
 
@@ -521,47 +488,25 @@
 %D e.g. when there is no text given between \type{\begin..}
 %D and \type{\end..}. The \type{\par} is needed!
 
-% \def\endmulticolumns
-%   {%\par
-%    \vskip\lineheight\vskip-\lineheight % take footnotes into account
-%    \dontshowcomposition
-%    \doflushcolumnfloat  % added recently
-%   %\doflushcolumnfloats % no, since it results in wrong top floats
-%    \flushnotes          % before start of columns
-%    \par
-%    \ifbalancecolumns
-%      \global\output{\continuousmulticolumnsout}%
-%      \goodbreak
-%      \global\output{\balancedmulticolumnsout}%
-%    \else
-%      \goodbreak
-%    \fi
-%    \eject                 % the prevdepth is important, try e.g. toclist in
-%    \prevdepth\zeropoint % columns before some noncolumned text text
-%    \global\output\singlecolumnout
-%     \global\output{\the\mainoutput}% % % % % todo
-%    \ifvoid\precolumnbox\else
-%      \unvbox\precolumnbox
-%    \fi
-%    \global\precolumnboxheight\zeropoint
-%    \endgroup % here
-%    \nofcolumns\plusone
-%    \setvsize % the outer one!
-%    \checkendcolumnfootnotes
-%    \dosomebreak\allowbreak
-%    \restoresavedfloats}
+\chardef\multicolumnendsyncmethod\plusone % 1: old sync 2: new sync (cont-loc/project)
 
 \def\endmulticolumns
   {%\par
-   \vskip\lineheight\vskip-\lineheight % take footnotes into account
+   \ifnum\multicolumnendsyncmethod=\plustwo
+     \synchronizeoutput
+   \else
+     \vskip\lineheight\vskip-\lineheight % take footnotes into account
+   \fi
    \dontshowcomposition
    \doflushcolumnfloat  % added recently
   %\doflushcolumnfloats % no, since it results in wrong top floats
    \flushnotes          % before start of columns
    \par
    \ifbalancecolumns
-     \global\output{\continuousmulticolumnsout}%
-     \goodbreak
+     \ifnum\multicolumnendsyncmethod=\plusone
+       \global\output{\continuousmulticolumnsout}%
+       \goodbreak
+     \fi
      \global\output{\balancedmulticolumnsout}%
    \else
      \goodbreak
@@ -635,10 +580,30 @@
         \edef\maxcolumndepth{\the\dp\currentcolumnbox}%
       \fi}}
 
-\chardef\columnedtopflushmethod\plusone
+
+\chardef\multicolumntopflushmethod\plusone % 0: no correction, 1: correction when topstuff, 2: correction, 3: correction++
+\chardef\multicolumntopalignmethod\plustwo % 0: nothing, 1: force grid, 2: follow grid
+
+\def\flushprecolumnboxnogrid
+  {\unvbox\precolumnbox}
+
+\def\flushprecolumnboxongrid
+  {\scratchdimen\savedpagetotal
+   \advance\scratchdimen -\ht\precolumnbox
+   \advance\scratchdimen -\dp\precolumnbox
+   \advance\scratchdimen -\topskip
+   \box\precolumnbox
+   \kern\scratchdimen}
+
+\newconditional\someprecolumncontent
 
 \def\flushcolumnedpage#1%
   {\bgroup
+   \ifvoid\precolumnbox
+     \setfalse\someprecolumncontent % will be set elsewhere
+   \else
+     \settrue\someprecolumncontent
+   \fi
    \forgetall
    \setmulticolumnsout
    \showcomposition
@@ -686,41 +651,54 @@
       \hskip-\columntextwidth
       \restoretextcolor{\box\scratchbox}}%
    \postprocesscolumnpagebox % new, acts upon \box\columnpagebox
-   \ifvoid\precolumnbox
-   \else
+   \ifconditional\someprecolumncontent
+     \settrue\someprecolumncontent
      % next some incredible crappy code
-     \ifgridsnapping
-        % somehow this junk fails in pascal
-        \scratchdimen\savedpagetotal
-        \advance\scratchdimen -\ht\precolumnbox
-        \advance\scratchdimen -\dp\precolumnbox
-        \advance\scratchdimen -\topskip
-        \box\precolumnbox
-        \kern\scratchdimen
+     \ifcase\multicolumntopalignmethod
+       \flushprecolumnboxnogrid % not on grid
+     \or
+       \flushprecolumnboxongrid % force on grid
+     \else\ifgridsnapping % somehow this junk fails in pascal
+       \flushprecolumnboxongrid % obey grid settings, force on grid
      \else
-       \unvbox\precolumnbox
-     \fi
+       \flushprecolumnboxnogrid % ignore grid settings, not on grid
+     \fi \fi
    \fi
    \global\precolumnboxheight\zeropoint
    \setvsize
-   \dosomebreak\nobreak
-   \ifgridsnapping \else
-     \ifcase\columnedtopflushmethod
+   \dosomebreak\nobreak % hm, only needed when topstuff
+   \ifgridsnapping
+   \else
+     \ifcase\multicolumntopflushmethod
        % sometimes method 1 goes wrong, so we need a way out; best sort this out
        % when we run into it again
      \or
        % \input tufte \startcolumns \showbaselines \input tufte \stopcolumns \input tufte
-       \scratchdimen\topskip
-       \advance\scratchdimen -\openstrutheight
+       \ifconditional\someprecolumncontent
+%          \scratchdimen\topskip
+%          \advance\scratchdimen -\openstrutheight
+%          \nointerlineskip
+%          \vskip-\scratchdimen
+         \nointerlineskip
+         \vskip\dimexpr\openstrutheight-\topskip\relax
+       \fi
+     \or
+%        \scratchdimen\topskip
+%        \advance\scratchdimen -\openstrutheight
+%        \nointerlineskip
+%        \vskip-\scratchdimen
        \nointerlineskip
-       \vskip-\scratchdimen
+       \vskip\dimexpr\openstrutheight-\topskip\relax
      \or
        % untested but maybe handy
-       \scratchdimen\topskip
-       \advance\scratchdimen -\openstrutheight
+%        \scratchdimen\topskip
+%        \advance\scratchdimen -\openstrutheight
+%        \nointerlineskip
+%        \vskip-\scratchdimen
+%        \vskip-\lineheight
+%        \vbox{\strut}%
        \nointerlineskip
-       \vskip-\scratchdimen
-       \vskip-\lineheight
+       \vskip\dimexpr\openstrutheight-\topskip-\lineheight\relax
        \vbox{\strut}%
      \fi
    \fi
@@ -920,34 +898,6 @@
        \advance#2 -\totalnoteheight
      \fi
    \fi}
-
-% \def\overlaycolumnfootnotes % VERVANGEN !!!
-%   {\relax
-%    \ifcase\clevernotes\else
-%      \checknotepresence
-%      \ifnotespresent
-%        % the note box has the depth of the notefont
-%        % because a column (i.e. first column has no depth,
-%        % we need to anchor top down)
-%        \bgroup
-%        \scratchdimen\ht\firstcolumnbox
-%        \advance\scratchdimen -\openstrutdepth % \strutdp
-%        \getnoflines\scratchdimen
-%        \advance\noflines -2
-%        \scratchdimen\noflines\lineheight
-%        \advance\scratchdimen \topskip
-%        \setbox0\hbox
-%          {\lower\scratchdimen\vbox{\placenoteinserts}}%
-%        \ht0=\openstrutheight % \strutht
-%        \dp0=\openstrutdepth  % \strutdp
-%        \scratchdimen\ht\lastcolumnbox
-%        \global\setbox\lastcolumnbox\vbox to \scratchdimen
-%          {\box\lastcolumnbox
-%           \vskip-\scratchdimen
-%           \restoretextcolor{\box0}}%
-%        \egroup
-%      \fi
-%    \fi}
 
 \def\overlaycolumnfootnotes
   {\relax
@@ -1214,6 +1164,7 @@
        \egroup
      \fi
    \else
+     % a one liner is not properly handled here, so best rewrite the text then
      \showmessage\m!columns{10}\empty
      \global\setbox\firstcolumnbox\vbox{\unvbox0}%
    \fi

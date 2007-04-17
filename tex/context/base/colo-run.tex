@@ -222,4 +222,29 @@
          \endgraf}
       \dorecurse\!!counta{\dododocomparecolorgroup\recurselevel}}}
 
+\gdef\dogetcolorcomponents#1%
+  {\startnointerference
+   \localcolortrue
+   \def\doexeccolorR    ##1:##2:##3:##4:##5\od{\global\globalscratchtoks{\NC\Od#1 \NC#1\NC a=\Do##4 \enspace t=\Do##5 \NC r=\Do##1 \enspace g=\Do##2 \enspace b=\Do##3 \NC\NR}}%
+   \def\doexeccolorC##1:##2:##3:##4:##5:##6\od{\global\globalscratchtoks{\NC\Od#1 \NC#1\NC a=\Do##5 \enspace t=\Do##6 \NC c=\Do##1 \enspace m=\Do##2 \enspace y=\Do##3 \enspace k=\Do##4 \NC\NR}}%
+   \def\doexeccolorS            ##1:##2:##3\od{\global\globalscratchtoks{\NC\Od#1 \NC#1\NC a=\Do##2 \enspace t=\Do##3 \NC s=\Do##1 \NC\NR}}%
+  %\def\doexeccolorP##1:##2:##3:##4:##5:##6\od{\global\globalscratchtoks{\NC\Od#1 \NC#1\NC a=\Do##5 \enspace t=\Do##6 \NC p=\Do##4 \enspace f=\Do##2 \enspace d=\Do##3 \enspace n=##1 \NC\NR}}%
+   \def\doexeccolorP##1:##2:##3:##4:##5:##6\od{\global\globalscratchtoks{\NC\Od#1 \NC#1\NC a=\Do##5 \enspace t=\Do##6 \NC p=\Do##4 \enspace n=##1 \NC\NR}}%
+   \let\doexeccolorPindex\doexeccolorP
+   \backgroundline[#1]{}%
+   \stopnointerference
+   \appendetoks\the\globalscratchtoks\to\scratchtoks}
+
+\gdef\showcolorcomponents[#1]%
+  {\bgroup
+   \def\Od##1 {\backgroundline[##1]{\strut\quad \color[white]{white}\quad\color[black]{black}\quad\quad}}%
+   \def\Do##1 {\twodigitrounding{##1}}%
+   \scratchtoks\emptytoks
+   \appendtoks\starttabulate[|l|l|l|l|]\to\scratchtoks
+   \appendtoks\NC color \NC name \NC transparency \NC specification \NC\NR\TB\to\scratchtoks
+   \processcommacommand[#1]\dogetcolorcomponents
+   \appendtoks\stoptabulate\to\scratchtoks
+   \tt\the\scratchtoks
+   \egroup}
+
 \protect \endinput

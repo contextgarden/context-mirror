@@ -297,7 +297,7 @@
 % and/or LaTeX2e we had to force \@@dochemicalstyle. Otherwise
 % some weird \nullfont error comes up.
 
-\def\beginlatexmathmodehack%
+\def\beginlatexmathmodehack
   {\ifmmode
      \let\endlatexmathmodehack=\relax
    \else
@@ -320,7 +320,7 @@
    \global\loweredsubscriptstrue
    \endlatexmathmodehack}
 
-\def\resetsubscripts%
+\def\resetsubscripts
   {\ifloweredsubscripts
      \beginlatexmathmodehack
      \def\doresetsubscript##1##2%
@@ -337,14 +337,14 @@
      \endlatexmathmodehack
    \fi}
 
-\def\doresetsubscripts%
+\def\doresetsubscripts
   {\resetsubscripts}
 
-\def\sethighsubscripts%
+\def\sethighsubscripts
   {\resetsubscripts
    \let\dosetsubscripts=\relax}
 
-\def\setlowsubscripts%
+\def\setlowsubscripts
   {\def\dosetsubscripts{\setsubscripts}}
 
 \setlowsubscripts
@@ -771,7 +771,7 @@
    \def\@@chemicalpostponed{}%
    \complexorsimpleempty\startchemical}
 
-\def\startchemical%
+\def\startchemical
   {\bgroup % t.b.v. ungrouped floats
 %   \loadchemicaldimensions
 %   \ifskipchemical
@@ -785,7 +785,7 @@
 %   \fi
    \dostartchemical}
 
-\def\stopchemical%
+\def\stopchemical
   {%\ifskipchemical
    %  \getchemicaldimensions{\dimen0}{\dimen2}{\dimen4}%
    %  \dimen8=\dimen2\advance\dimen8 by \dimen4
@@ -864,7 +864,7 @@
      \setcoordinatesystem point at {\the\horchemical} {\the\verchemical}
    \fi}
 
-\def\resetchemicalcoordinates%
+\def\resetchemicalcoordinates
   {\horchemical=0
    \verchemical=0
    \edef\chemicalxoffset{0}%
@@ -875,7 +875,7 @@
      \setcoordinatesystem point at 0 0
    \fi}
 
-\def\restorechemicalcoordinates%
+\def\restorechemicalcoordinates
   {%\writestatus{ppchtex}{restoring \the\horchemical,\the\verchemical}%
    \edef\chemicalxoffset{\the\horchemical}%
    \edef\chemicalyoffset{\the\verchemical}%
@@ -1745,7 +1745,7 @@
   {$\simplechemical{#1}{#2}{#3}$%
    \egroup} % erbij
 
-\def\simplechemical%
+\def\simplechemical
   {\ifinner
      \innerchemicaltrue
    \else

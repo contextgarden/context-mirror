@@ -356,10 +356,13 @@
   {\ifforcepresnap
      \ifvmode \else \par \fi % new
      % we don't want top of page space  when 'top' option
-     %\verticalstrut\nobreak\vskip-\struttotal
-     %\verticalstrut\vskip-\struttotal
-     % nobreak really needed
-     \dosomebreak\allowbreak\verticalstrut\nobreak\vskip-\struttotal % new: \dosomebreak
+     % \verticalstrut\nobreak\vskip-\struttotal
+     % \verticalstrut\vskip-\struttotal
+     % \nobreak really needed
+     % \dosomebreak\allowbreak % no: spoils heads, so only under know situation, not in snapper
+     \verticalstrut
+     \nobreak
+     \vskip-\struttotal
      %\ifdim\pagetotal>\topskip \else
        % eigenlijk signal
        %\writestatus{grid}{removing dummy at top of page}%

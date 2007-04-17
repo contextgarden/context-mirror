@@ -256,6 +256,7 @@
            {\externalfigure
               [\XMLflush{rl:file}]
               [maxheight=80pt,frame=off,maxwidth=130pt,factor=max]}%
+%               [factor=max]}%
            [GridPg]%
          \let\FigWid\figurenaturalwidth
          \let\FigHei\figurenaturalheight
@@ -292,8 +293,8 @@
             \doifXMLdata{rl:copyright}
               {\NC copyright \NC \XMLflush{rl:copyright} \NC \NR}
             \doifXMLdata{rl:status}
-              {\doif{\XMLflush{rl:status}}{obsolete}
-                 {\NC status \NC \bf\darkred\XMLflush{rl:status} \NC \NR}
+              {\doifelse{\XMLflush{rl:status}}{obsolete}
+                 {\NC status \NC \dontleavehmode \color[darkred]{\bf\XMLflush{rl:status}} \NC \NR}
                  {\NC status \NC \XMLflush{rl:status} \NC \NR}}
             \doifXMLdata{rl:comment}
               {\NC comment \NC \XMLflush{rl:comment} \NC \NR}

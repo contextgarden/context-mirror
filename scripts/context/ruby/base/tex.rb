@@ -153,11 +153,12 @@ class TEX
     ['pdftex','pdfetex','aleph','omega',
      'xetex','luatex']                             .each do |p| @@prognames[p]  = 'context'   end
     ['mpost']                                      .each do |p| @@prognames[p]  = 'metafun'   end
+    ['latex','pdflatex']                           .each do |p| @@prognames[p]  = 'latex'     end
 
     ['plain','default','standard','mptopdf']       .each do |f| @@texmethods[f] = 'plain'     end
     ['cont-en','cont-nl','cont-de','cont-it',
      'cont-fr','cont-cz','cont-ro','cont-uk']      .each do |f| @@texmethods[f] = 'context'   end
-    ['latex']                                      .each do |f| @@texmethods[f] = 'latex'     end
+    ['latex','pdflatex']                           .each do |f| @@texmethods[f] = 'latex'     end
 
     ['plain','default','standard']                 .each do |f| @@mpsmethods[f] = 'plain'     end
     ['metafun']                                    .each do |f| @@mpsmethods[f] = 'metafun'   end
@@ -479,8 +480,10 @@ class TEX
     def validprogname(str)
         if str then
             [str].flatten.each do |s|
+                s = s.sub(/\.\S*/,"")
                 return @@prognames[s] if @@prognames.key?(s)
             end
+            return str[0].sub(/\.\S*/,"")
         else
             return nil
         end
@@ -496,11 +499,7 @@ class TEX
                             else return ""
         end
         if format then
-            # if engine then
-                # "#{prefix}=#{engine}/#{format}"
-            # else
-                "#{prefix}=#{format}"
-            # end
+            "#{prefix}=#{format.sub(/\.\S+$/,"")}"
         else
             prefix
         end
@@ -910,9 +909,14 @@ class TEX
                         end
                         if ok then
                             # we have a valid line
+
                             @@preamblekeys.each do |v|
                                 setvariable(v[1],vars[v[0]]) if vars.key?(v[0]) && vars[v[0]]
                             end
+
+if getvariable('given.backend') == "standard" or getvariable('given.backend') == "" then
+    setvariable('backend',@@backends[getvariable('texengine')] || 'standard')
+end
                             break
                         end
                     else

@@ -170,6 +170,7 @@
    % preparations
    \checkscaleboxsettings
    % calculators
+   % beware, they operate in sequence, and calculate missing dimensions / messy
    %setscaleboxbynature % when? needed?
    \setscaleboxbyfactor
    \setscaleboxbyscale
@@ -219,21 +220,21 @@
      {\doapplyscaleboxsize
       \ifdim\scaleboxsizex>\scaleboxsizey
         \docalculatescaleboxnorm  \scaleboxdimx\c!factor\c!maxwidth\hsize\scaleboxhsize
-        \docalculatescaleboxscales\scaleboxdimx\scaleboxsizex\scaleboxdimy\scaleboxsizey
+% not here: \docalculatescaleboxscales\scaleboxdimx\scaleboxsizex\scaleboxdimy\scaleboxsizey
       \else
         \docalculatescaleboxnorm  \scaleboxdimy\c!factor\c!maxheight\scaleboxoutervsize\scaleboxvsize
-        \docalculatescaleboxscales\scaleboxdimy\scaleboxsizey\scaleboxdimx\scaleboxsizex
+% not here: \docalculatescaleboxscales\scaleboxdimy\scaleboxsizey\scaleboxdimx\scaleboxsizex
       \fi
       \donetrue}
      {\doifinsetelse{\scaleparameter\c!hfactor}{\v!max,\v!fit,\v!broad}
         {\doapplyscaleboxsize
          \docalculatescaleboxnorm  \scaleboxdimy\c!hfactor\c!maxheight\scaleboxoutervsize\scaleboxvsize
-         \docalculatescaleboxscales\scaleboxdimy\scaleboxsizey\scaleboxdimx\scaleboxsizex
+% not here: \docalculatescaleboxscales\scaleboxdimy\scaleboxsizey\scaleboxdimx\scaleboxsizex
          \donetrue}
         {\doifinsetelse{\scaleparameter\c!wfactor}{\v!max,\v!fit,\v!broad}
            {\doapplyscaleboxsize
             \docalculatescaleboxnorm  \scaleboxdimx\c!wfactor\c!maxwidth\hsize\scaleboxhsize
-            \docalculatescaleboxscales\scaleboxdimx\scaleboxsizex\scaleboxdimy\scaleboxsizey
+% not here: \docalculatescaleboxscales\scaleboxdimx\scaleboxsizex\scaleboxdimy\scaleboxsizey
             \donetrue}
            {\docalculatescaleboxnorm\scaleboxdimy\c!factor \c!height \textheight\scaleboxvsize
             \docalculatescaleboxnorm\scaleboxdimy\c!hfactor\c!height \textheight\scaleboxvsize

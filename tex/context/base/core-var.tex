@@ -452,20 +452,34 @@
 %    \errorisfatalfalse}
 %
 % permit nested definitions while preventing nested set/reset
+%
+% wrong:
+%
+% \long\def\dosetvariables[#1][#2][#3]%
+%   {\errorisfataltrue
+%    \getrawparameters[\??vars:*:][\s!reset=*,\s!set=*,#3]%
+%    \doifelse{\getvalue{\??vars:*:\s!reset}\getvalue{\??vars:*:\s!set}}{**}
+%       {\doifelse{#2}\currentvariableclass
+%          {#1[\??vars:#2:][#3]}
+%          {\pushmacro\currentvariableclass
+%           \def\currentvariableclass{#2}%
+%           \getvariable{#2}\s!reset
+%           #1[\??vars:#2:][#3]%
+%           \getvariable{#2}\s!set
+%           \popmacro\currentvariableclass}}%
+%       {#1[\??vars:#2:][#3]}%
+%    \errorisfatalfalse}
 
-\long\def\dosetvariables[#1][#2][#3]%
+\long\def\dosetvariables[#1][#2][#3]% tricky, test on s-pre-60
   {\errorisfataltrue
-   \getrawparameters[\??vars:*:][\s!reset=*,\s!set=*,#3]%
-   \doifelse{\getvalue{\??vars:*:\s!reset}\getvalue{\??vars:*:\s!set}}{**}
-      {\doifelse{#2}\currentvariableclass
-         {#1[\??vars:#2:][#3]}
-         {\pushmacro\currentvariableclass
-          \def\currentvariableclass{#2}%
-          \getvariable{#2}\s!reset
-          #1[\??vars:#2:][#3]%
-          \getvariable{#2}\s!set
-          \popmacro\currentvariableclass}}%
-      {#1[\??vars:#2:][#3]}%
+   \doifelse{#2}\currentvariableclass
+     {#1[\??vars:#2:][#3]}%
+     {\pushmacro\currentvariableclass
+      \def\currentvariableclass{#2}%
+      \getvariable{#2}\s!reset
+      #1[\??vars:#2:][#3]%
+      \getvariable{#2}\s!set
+      \popmacro\currentvariableclass}%
    \errorisfatalfalse}
 
 \long\def\setvariable #1#2#3{\long\setvalue {\??vars:#1:#2}{#3}}
