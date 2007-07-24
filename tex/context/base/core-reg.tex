@@ -81,6 +81,14 @@
 
 \newif\ifwritetoregister \writetoregistertrue
 
+\ifx\undefined\mkdefineregister
+    \let\mkdefineregister      \gobbleoneargument
+    \let\mksaveregistervariable\gobblethreearguments
+    \let\mksaveregisterentry   \gobblesevenarguments
+    \let\mksaveregistersee     \gobblesevenarguments
+    \let\mkloadregister        \gobbleoneargument
+\fi
+
 \def\doprocesspageregister[#1]#2#3% key altnum entry
   {\ifwritetoregister
      \begingroup
@@ -95,17 +103,15 @@
      \makesectionformat
      \doifelse{\registerparameter\c!ownnumber}\v!yes
        \donetrue\donefalse
-     % the spaces between } { are essential for texutil's split
-     \expanded
-       {\writeutility%
-          {r \ifcase\registerpagestatus\space\or e \or f \or t \fi
-           {\currentregister} %
-           {\nextinternalreference} %
-           {\asciiregisterentryA} %
-           {\asciiregisterentryB} %
-           {\sectionformat\sectionseparator\sectionseparator
-            \ifdone#2\else\noexpand\pagenumber\fi} %
-           {\noexpand\realfolio}}}%
+     \mksaveregisterentry
+       {\currentregister}
+       {\ifcase\registerpagestatus\space\or e\or f\or t\fi}
+       {\nextinternalreference}
+       {\asciiregisterentryA}
+       {\asciiregisterentryB}
+       {\sectionformat\sectionseparator\sectionseparator
+        \ifdone#2\else\noexpand\pagenumber\fi}
+       {\noexpand\realfolio}%
      \getfirstcharacter\currentregister
      \registerinfo{> \firstcharacter}{#3}%
      \endgroup
@@ -189,15 +195,14 @@
           \convertexpanded{\registerparameter\c!keyexpansion}{#2}\asciiregisterentryA
         \fi}%
      \makesectionformat
-     \expanded
-       {\writeutility%
-          {r s %
-           {\currentregister} %
-           {\nextinternalreference} %
-           {\asciiregisterentryA} %
-           {\asciiregisterentryB} %
-           {\asciiregisterentryC} %
-           {\sectionformat}}}%
+     \mksaveregistersee
+       {\currentregister}
+       {s}
+       {\nextinternalreference}
+       {\asciiregisterentryA}
+       {\asciiregisterentryB}
+       {\asciiregisterentryC}
+       {\sectionformat}%
      \endgroup
      \registerinfo{> see}{#2}%
    \fi}
@@ -825,7 +830,7 @@
        \let\dosetregister\doloadregisterlinks
        \def\currentregister{#1}%
        \setupregister[#1][#2]%
-       \doutilities{#1}{\registerparameter\c!file}{#1}\relax\relax
+       \mkloadregister\currentregister
        \endgroup
        \ifautoregisterhack
          \doinitializeautoregister{#1}%
@@ -1041,7 +1046,7 @@
         \c!align=\registerparameter\c!align]%
      \dontcomplain
      \startpacked[\v!blank]%
-     \doutilities\currentregister{\registerparameter\c!file}\currentregister\dobeforeplaceregister\doafterplaceregister
+     \mkloadregister\currentregister
      \stoppacked
      \stopcolumns
      \endgroup
@@ -1071,7 +1076,7 @@
 
 \def\doregisterregisterlanguage#1%
   {\savesortlanguage{\getvalue{\??id#1\s!language}}%
-   \immediatewriteutility{r l {#1} {\getvalue{\??id#1\s!language}}}}
+   \mksaveregistervariable{#1}{l}{\getvalue{\??id#1\s!language}}}
 
 \def\dodefineregister[#1][#2]%
   {\setupregister[#1]%
@@ -1107,7 +1112,7 @@
      \doregisterregisterlanguage{#1}%
    \to \everysavesortkeys
    \presetheadtext[#1=\Word{#1}]%
-   \addutilityreset{#1}%
+   \mkdefineregister{#1}%
    \setvalue{#1}{\doregister{#1}}%
    \setvalue{\e!coupled#1}{\dolinkedregister{#1}}%
    \setvalue{\s!set#1}{\dosetregister{#1}}%
@@ -1137,7 +1142,7 @@
          \global\utilitydonetrue}
         {}}%
    \doglobal\newcounter\utilityregisterlength
-   \setbox0\vbox{\doutilities{#1}{\registerparameter\c!file}{#1}\relax\relax}%
+   \setbox0\vbox{\mkloadregister\currentregister}%
    \endgroup
    \ifregistergeplaatst
      \setsystemmode  \v!register
@@ -1147,6 +1152,12 @@
 
 \def\determineregistercharacteristics
   {\dodoubleempty\dodetermineregistercharacteristics}
+
+%D Plugins.
+
+\loadmarkfile{core-reg}
+
+%D Default index:
 
 \defineregister
   [\v!index]

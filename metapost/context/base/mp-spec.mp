@@ -13,6 +13,27 @@
 
 % Spot colors are not handled by mptopdf !
 
+% let graycolor    = numeric ;
+% let greycolor    = numeric ;
+% let withanycolor = withcolor ;
+
+% rgbcolor  red     ; red        := (1,0,0) ;
+% rgbcolor  green   ; green      := (0,1,0) ;
+% rgbcolor  blue    ; blue       := (0,0,1) ;
+% cmykcolor cyan    ; cyan       := (1,0,0,0) ;
+% cmykcolor magenta ; magenta    := (0,1,0,0) ;
+% cmykcolor yellow  ; yellow     := (0,0,1,0) ;
+% graycolor black   ; black      := 0 ; % (0) ;
+% graycolor white   ; white      := 1 ; % (1) ;
+
+% primarydef p withcolor c =
+%     p withanycolor (c)
+% enddef ;
+
+% fill fullcircle scaled 10cm withcolor  cyan ;
+% fill fullcircle scaled  7cm withcolor   red ;
+% fill fullcircle scaled  4cm withcolor white ;
+
 % (r,g,b) => cmyk             : r=123 g=   1 b=hash
 %         => spot             : r=123 g=   2 b=hash
 %         => transparent rgb  : r=123 g=   3 b=hash

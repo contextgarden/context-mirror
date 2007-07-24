@@ -112,6 +112,7 @@
 
     <xsl:template match='i|n'>
         <xsl:element name="OMOBJ">
+            <xsl:attribute name="style">inline</xsl:attribute>
             <xsl:attribute name="xmlns">http://www.openmath.org/OpenMath</xsl:attribute>
             <xsl:attribute name="version">2.0</xsl:attribute>
             <xsl:call-template name="om-kind-of-data">
@@ -122,6 +123,7 @@
 
     <xsl:template match='v'>
         <xsl:element name="OMOBJ">
+            <xsl:attribute name="style">inline</xsl:attribute>
             <xsl:attribute name="xmlns">http://www.openmath.org/OpenMath</xsl:attribute>
             <xsl:attribute name="version">2.0</xsl:attribute>
             <xsl:element name="OMV">
@@ -134,6 +136,7 @@
 
     <xsl:template match='r'>
         <xsl:element name="OMOBJ">
+            <xsl:attribute name="style">inline</xsl:attribute>
             <xsl:attribute name="xmlns">http://www.openmath.org/OpenMath</xsl:attribute>
             <xsl:attribute name="version">2.0</xsl:attribute>
             <xsl:element name="OMA">
@@ -209,6 +212,7 @@
 
     <xsl:template match='c'>
         <xsl:element name="OMOBJ">
+            <xsl:attribute name="style">inline</xsl:attribute>
             <xsl:attribute name="xmlns">http://www.openmath.org/OpenMath</xsl:attribute>
             <xsl:attribute name="version">2.0</xsl:attribute>
             <xsl:element name="OMA">

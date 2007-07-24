@@ -430,10 +430,11 @@ class Commands
                 if f = File.open(job.tempfilename('tex'),'w') then
                     scale = @commandline.checkedoption('scale')
                     begin
-                        scale = (scale.to_i * 1000).to_i if scale.to_i < 10
+                        scale = (scale.to_f * 1000.0).to_i if scale.to_i < 10
                     rescue
                         scale = 1000
                     end
+                    scale = scale.to_i
                     paperoffset = @commandline.checkedoption('paperoffset', '0cm')
                     f << "\\starttext\n"
                     files.each do |filename|

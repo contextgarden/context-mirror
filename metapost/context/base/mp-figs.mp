@@ -22,7 +22,7 @@ def registerfigure(expr name,width,height) =
   begingroup ;
   save s ; string s ; s := cleanstring(name) ;
   scantokens( s & "_width := " & decimal(width)) ;
-  scantokens( s & "_height := " & decimal(width)) ;
+  scantokens( s & "_height := " & decimal(height)) ;
   endgroup ;
 enddef ;
 

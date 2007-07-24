@@ -46,14 +46,72 @@
 %D \setupbodyfont[basic]
 %D \stoptyping
 
+%D This file is hacked by Taco Hoekwater in an attempt to figure out the right approach
+%D to font loading in \XeTeX.  (jun19,2007)
+
+%D The General \XeTeX\ low-level font syntax is (at least) as follows.
+%D
+%D Named font:
+%D \starttyping
+%D \font\x = "<fontname><engine-options>:<featurelist>" <at or scaled>
+%D \stoptyping
+%D \type{<fontname>} = Font name as seen in a system font menu or the output of fc-list
+%D
+%D \type{<engine-options>} = \type{/B} or \type{/I} or \tupe{/BI}, and||or \type{/S=<X>}.
+%D That last one selects an optical scaled variant for size \type{<X>}
+%D (it is a bare number, the unit is points).
+%D
+%D \type{<featurelist>} = comma- or semicolon- separated list of font features.
+%D
+%D Opentype features are selected using \type{+<tag>}, and deselected using \type{-<tag>},
+%D except that key||value pairs are used for \type{script=<tag>} and \type{language=<tag>}
+%D
+%D AAT features are always key||value pairs, often including spaces.
+%D
+%D \XETEX's own features are key||value pairs, and can be applied to both OpenType
+%D and AAT fonts:
+%D \type{mapping=<font map>} for glyph remapping
+%D \type{color=RRGGBB[TT]} for color (hex numbers, with  optional transparancy),
+%D \type{letterspace=<x>} to add \type{<x>/<fontsize>}  intercharacter spacing.
+%D
+%D Full example showing all parts of the syntax for an OTF font:
+%D \starttyping
+%D \font\f= "Warnock Pro/I/S=5:+smcp,-liga,mapping=tex-text,script=latn"
+%D \stoptyping
+
+%D Non-installed (filename-based) fonts :
+%D
+%D \starttyping
+%D \font\x = "[<fontname>]:<featurelist>" <at or scaled>
+%D \stoptyping
+%D
+%D Here, there are no \type{<engine-options>}, because there is no
+%D font discovery engine available to be queried.
+
+
+%D TH: This \type{\xetexcolon} definition seems needed because the name/file \
+%D parser otherwise drops the rest of the argument into oblivion.
+
+\unexpanded\def\xetexcolon{:}
+
 \starttypescriptcollection[xetex]
 
 \starttypescript[Xserif][all][name]
 
-\definefontsynonym[Dummy]          ['\typescripttwo:mapping=tex-text']   [encoding=uc]
-\definefontsynonym[DummyItalic]    ['\typescripttwo/I:mapping=tex-text'] [encoding=uc]
-\definefontsynonym[DummyBold]      ['\typescripttwo/B:mapping=tex-text'] [encoding=uc]
-\definefontsynonym[DummyBoldItalic]['\typescripttwo/BI:mapping=tex-text'][encoding=uc]
+%D TH: I removed all single quotes because they don't seem to add anything. And I added
+%D the \type{name:} everywhere, because passing that information on \type{\typescripttwo}
+%D doesn't work either (maybe  \type{\typescripttwo} is expanded incorrectly)
+%D
+%D And even if that would have worked, \type{file:} will not work properly anyway
+%D in this case since tricks like \type{/I} will never, ever work for local fonts,
+%D so there is really only one choice.
+
+%D HH: todo, define feature set swith mapping=tex-tex
+
+\definefontsynonym[Dummy]          [name:\typescripttwo\xetexcolon mapping=tex-text]   [encoding=uc]
+\definefontsynonym[DummyItalic]    [name:\typescripttwo/I\xetexcolon mapping=tex-text] [encoding=uc]
+\definefontsynonym[DummyBold]      [name:\typescripttwo/B\xetexcolon mapping=tex-text] [encoding=uc]
+\definefontsynonym[DummyBoldItalic][name:\typescripttwo/BI\xetexcolon mapping=tex-text][encoding=uc]
 
 \definefontsynonym[Serif]           [Dummy]
 \definefontsynonym[SerifBold]       [DummyBold]
@@ -67,10 +125,10 @@
 
 \starttypescript[Xsans][all][name]
 
-\definefontsynonym[DummySans]          ['\typescripttwo:mapping=tex-text']   [encoding=uc]
-\definefontsynonym[DummySansItalic]    ['\typescripttwo/I:mapping=tex-text'] [encoding=uc]
-\definefontsynonym[DummySansBold]      ['\typescripttwo/B:mapping=tex-text'] [encoding=uc]
-\definefontsynonym[DummySansBoldItalic]['\typescripttwo/BI:mapping=tex-text'][encoding=uc]
+\definefontsynonym[DummySans]          [name:\typescripttwo\xetexcolon mapping=tex-text]   [encoding=uc]
+\definefontsynonym[DummySansItalic]    [name:\typescripttwo/I\xetexcolon mapping=tex-text] [encoding=uc]
+\definefontsynonym[DummySansBold]      [name:\typescripttwo/B\xetexcolon mapping=tex-text] [encoding=uc]
+\definefontsynonym[DummySansBoldItalic][name:\typescripttwo/BI\xetexcolon mapping=tex-text][encoding=uc]
 
 \definefontsynonym[Sans]           [DummySans]
 \definefontsynonym[SansBold]       [DummySansBold]
@@ -84,10 +142,10 @@
 
 \starttypescript[Xmono][all][name]
 
-\definefontsynonym[DummyMono]          ['\typescripttwo']   [encoding=uc]
-\definefontsynonym[DummyMonoItalic]    ['\typescripttwo/I'] [encoding=uc]
-\definefontsynonym[DummyMonoBold]      ['\typescripttwo/B'] [encoding=uc]
-\definefontsynonym[DummyMonoBoldItalic]['\typescripttwo/BI'][encoding=uc]
+\definefontsynonym[DummyMono]          [name:\typescripttwo]   [encoding=uc]
+\definefontsynonym[DummyMonoItalic]    [name:\typescripttwo/I] [encoding=uc]
+\definefontsynonym[DummyMonoBold]      [name:\typescripttwo/B] [encoding=uc]
+\definefontsynonym[DummyMonoBoldItalic][name:\typescripttwo/BI][encoding=uc]
 
 \definefontsynonym[Mono]           [DummyMono]
 \definefontsynonym[MonoBold]       [DummyMonoBold]
@@ -101,8 +159,8 @@
 
 \starttypescript[Xserif][default][size]
   \definebodyfont
-    [4pt,5pt,6pt,7pt,8pt,9pt,10pt,11pt,12pt,14.4pt,17.3pt]
-    [rm] [default]
+  [4pt,5pt,6pt,7pt,8pt,9pt,10pt,11pt,12pt,14.4pt,17.3pt] [rm]
+  [default]
 \stoptypescript
 
 \starttypescript[Xsans][default][size]
@@ -146,10 +204,10 @@
 
 \starttypescript[serif][times][uc]
 
-\definefontsynonym[Times-Roman]     ['Times Roman:mapping=tex-text']       [encoding=uc]
-\definefontsynonym[Times-Italic]    ['Times Italic:mapping=tex-text']      [encoding=uc]
-\definefontsynonym[Times-Bold]      ['Times Bold:mapping=tex-text']        [encoding=uc]
-\definefontsynonym[Times-BoldItalic]['Times Bold Italic:mapping=tex-text;'][encoding=uc]
+\definefontsynonym[Times-Roman]     [name:Times Roman\xetexcolon mapping=tex-text]       [encoding=uc]
+\definefontsynonym[Times-Italic]    [name:Times Italic\xetexcolon mapping=tex-text]      [encoding=uc]
+\definefontsynonym[Times-Bold]      [name:Times Bold\xetexcolon mapping=tex-text]        [encoding=uc]
+\definefontsynonym[Times-BoldItalic][name:Times Bold Italic\xetexcolon mapping=tex-text;][encoding=uc]
 
 \stoptypescript
 
@@ -157,10 +215,10 @@
 
 \starttypescript[serif][palatino][uc]
 
-\definefontsynonym[Palatino]            ['Book Antiqua:mapping=tex-text']            [encoding=uc]
-\definefontsynonym[Palatino-Italic]     ['Book Antiqua Italic:mapping=tex-text']     [encoding=uc]
-\definefontsynonym[Palatino-Bold]       ['Book Antiqua Bold:mapping=tex-text']       [encoding=uc]
-\definefontsynonym[Palatino-BoldItalic] ['Book Antiqua Bold Italic:mapping=tex-text'][encoding=uc]
+\definefontsynonym[Palatino]            [name:Book Antiqua\xetexcolon mapping=tex-text]            [encoding=uc]
+\definefontsynonym[Palatino-Italic]     [name:Book Antiqua Italic\xetexcolon mapping=tex-text]     [encoding=uc]
+\definefontsynonym[Palatino-Bold]       [name:Book Antiqua Bold\xetexcolon mapping=tex-text]       [encoding=uc]
+\definefontsynonym[Palatino-BoldItalic] [name:Book Antiqua Bold Italic\xetexcolon mapping=tex-text][encoding=uc]
 
 \definefontsynonym[Palatino-Slanted]    [Palatino-Italic]
 \definefontsynonym[Palatino-BoldSlanted][Palatino-BoldItalic]
@@ -173,10 +231,10 @@
 
 \starttypescript[sans][helvetica][uc]
 
-\definefontsynonym[Helvetica]            ['Helvetica Neue:mapping=tex-text']            [encoding=uc]
-\definefontsynonym[Helvetica-Oblique]    ['Helvetica Neue Italic:mapping=tex-text']     [encoding=uc]
-\definefontsynonym[Helvetica-Bold]       ['Helvetica Neue Bold:mapping=tex-text']       [encoding=uc]
-\definefontsynonym[Helvetica-BoldOblique]['Helvetica Neue Bold Italic:mapping=tex-text'][encoding=uc]
+\definefontsynonym[Helvetica]            [name:Helvetica Neue\xetexcolon mapping=tex-text]            [encoding=uc]
+\definefontsynonym[Helvetica-Oblique]    [name:Helvetica Neue Italic\xetexcolon mapping=tex-text]     [encoding=uc]
+\definefontsynonym[Helvetica-Bold]       [name:Helvetica Neue Bold\xetexcolon mapping=tex-text]       [encoding=uc]
+\definefontsynonym[Helvetica-BoldOblique][name:Helvetica Neue Bold Italic\xetexcolon mapping=tex-text][encoding=uc]
 
 \stoptypescript
 
@@ -186,30 +244,30 @@
 
 \starttypescript[mono][courier][uc]
 
-\definefontsynonym[Courier]            ['Courier:mapping=tex-text']     [encoding=uc]
+\definefontsynonym[Courier]            [name:Courier\xetexcolon mapping=tex-text]     [encoding=uc]
 \definefontsynonym[Courier-Oblique]    [Courier]
-\definefontsynonym[Courier-Bold]       ['Courier Bold:mapping=tex-text'][encoding=uc]
+\definefontsynonym[Courier-Bold]       [name:Courier Bold\xetexcolon mapping=tex-text][encoding=uc]
 \definefontsynonym[Courier-BoldOblique][Courier-Bold]
 
 \stoptypescript
 
 %D The following fonts go beyond the usual four variants that
 %D are accessible via the above wildcard typescripts, so they
-%D get a more expanded treatment here:
+%D get a more expanded treatment here\xetexcolon
 
 \starttypescript[serif][hoefler][uc]
 
-\definefontsynonym[Hoefler]      ['Hoefler Text:mapping=tex-text;
-                   Ligatures=Diphthongs']  [encoding=uc]
-\definefontsynonym[HoeflerItalic]['Hoefler Text Italic:mapping=tex-text;
-                   Ligatures=Diphthongs']  [encoding=uc]
-\definefontsynonym[HoeflerBlack] ['Hoefler Text Black:mapping=tex-text;
-                   Ligatures=Diphthongs']  [encoding=uc]
-\definefontsynonym[HoeflerBlackItalic]['Hoefler Text Black Italic:mapping=tex-text;
-                   Ligatures=Diphthongs']  [encoding=uc]
-\definefontsynonym[HoeflerSmCap] ['Hoefler Text:mapping=tex-text;
-                   Ligatures=Diphthongs;
-                   Letter Case=Small Caps'][encoding=uc]
+\definefontsynonym[Hoefler]      [name:Hoefler Text\xetexcolon mapping=tex-text;%
+                   Ligatures=Diphthongs]  [encoding=uc]
+\definefontsynonym[HoeflerItalic][name:Hoefler Text Italic\xetexcolon mapping=tex-text;%
+                   Ligatures=Diphthongs]  [encoding=uc]
+\definefontsynonym[HoeflerBlack] [name:Hoefler Text Black\xetexcolon mapping=tex-text;%
+                   Ligatures=Diphthongs]  [encoding=uc]
+\definefontsynonym[HoeflerBlackItalic][name:Hoefler Text Black Italic\xetexcolon mapping=tex-text;%
+                   Ligatures=Diphthongs]  [encoding=uc]
+\definefontsynonym[HoeflerSmCap] [name:Hoefler Text\xetexcolon mapping=tex-text;%
+                   Ligatures=Diphthongs;%
+                   Letter Case=Small Caps][encoding=uc]
 \stoptypescript
 
 \starttypescript[serif][hoefler][name]
@@ -226,8 +284,8 @@
 
 \starttypescript[sans][lucidagrande][uc]
 
-\definefontsynonym[LucidaGrande]    ['Lucida Grande:mapping=tex-text']     [encoding=uc]
-\definefontsynonym[LucidaGrandeBold]['Lucida Grande Bold:mapping=tex-text'][encoding=uc]
+\definefontsynonym[LucidaGrande]    [name:Lucida Grande\xetexcolon mapping=tex-text]     [encoding=uc]
+\definefontsynonym[LucidaGrandeBold][name:Lucida Grande Bold\xetexcolon mapping=tex-text][encoding=uc]
 
 \stoptypescript
 
@@ -244,11 +302,11 @@
 \stoptypescript
 
 \starttypescript[sans][optima][uc]
-\definefontsynonym[Optima]          ['Optima Regular:mapping=tex-text']    [encoding=uc]
-\definefontsynonym[OptimaItalic]    ['Optima Italic:mapping=tex-text']     [encoding=uc]
-\definefontsynonym[OptimaBold]      ['Optima Bold:mapping=tex-text']       [encoding=uc]
-\definefontsynonym[OptimaBoldItalic]['Optima Bold Italic:mapping=tex-text'][encoding=uc]
-\definefontsynonym[OptimaBlack]     ['Optima ExtraBlack:mapping=tex-text'] [encoding=uc]
+\definefontsynonym[Optima]          [name:Optima Regular\xetexcolon mapping=tex-text]    [encoding=uc]
+\definefontsynonym[OptimaItalic]    [name:Optima Italic\xetexcolon mapping=tex-text]     [encoding=uc]
+\definefontsynonym[OptimaBold]      [name:Optima Bold\xetexcolon mapping=tex-text]       [encoding=uc]
+\definefontsynonym[OptimaBoldItalic][name:Optima Bold Italic\xetexcolon mapping=tex-text][encoding=uc]
+\definefontsynonym[OptimaBlack]     [name:Optima ExtraBlack\xetexcolon mapping=tex-text] [encoding=uc]
 \stoptypescript
 
 \starttypescript[sans][optima][name]
@@ -265,12 +323,12 @@
 
 \starttypescript[sans][gillsans,gillsanslt][uc]
 
-\definefontsynonym[GillSans]           ['Gill Sans:mapping=tex-text']             [encoding=uc]
-\definefontsynonym[GillSansItalic]     ['Gill Sans Italic:mapping=tex-text']      [encoding=uc]
-\definefontsynonym[GillSansBold]       ['Gill Sans Bold:mapping=tex-text']        [encoding=uc]
-\definefontsynonym[GillSansBoldItalic] ['Gill Sans Bold Italic:mapping=tex-text'] [encoding=uc]
-\definefontsynonym[GillSansLight]      ['Gill Sans Light:mapping=tex-text']       [encoding=uc]
-\definefontsynonym[GillSansLightItalic]['Gill Sans Light Italic:mapping=tex-text'][encoding=uc]
+\definefontsynonym[GillSans]           [name:Gill Sans\xetexcolon mapping=tex-text]             [encoding=uc]
+\definefontsynonym[GillSansItalic]     [name:Gill Sans Italic\xetexcolon mapping=tex-text]      [encoding=uc]
+\definefontsynonym[GillSansBold]       [name:Gill Sans Bold\xetexcolon mapping=tex-text]        [encoding=uc]
+\definefontsynonym[GillSansBoldItalic] [name:Gill Sans Bold Italic\xetexcolon mapping=tex-text] [encoding=uc]
+\definefontsynonym[GillSansLight]      [name:Gill Sans Light\xetexcolon mapping=tex-text]       [encoding=uc]
+\definefontsynonym[GillSansLightItalic][name:Gill Sans Light Italic\xetexcolon mapping=tex-text][encoding=uc]
 
 \stoptypescript
 
@@ -300,13 +358,13 @@
 
 \starttypescript[serif,handwriting][zapfino][uc]
 
-\definefontsynonym[ZapfinoOne]  ['Zapfino:mapping=tex-text']                  [encoding=uc]
-\definefontsynonym[ZapfinoTwo]  ['Zapfino:mapping=tex-text;
-                                 Stylistic Variants=First variant glyph set'] [encoding=uc]
-\definefontsynonym[ZapfinoThree]['Zapfino:mapping=tex-text;
-                                 Stylistic Variants=Second variant glyph set'][encoding=uc]
-\definefontsynonym[ZapfinoFour] ['Zapfino:mapping=tex-text;
-                                 Stylistic Variants=Third variant glyph set'] [encoding=uc]
+\definefontsynonym[ZapfinoOne]  [name:Zapfino\xetexcolon mapping=tex-text]                  [encoding=uc]
+\definefontsynonym[ZapfinoTwo]  [name:Zapfino\xetexcolon mapping=tex-text;%
+                                 Stylistic Variants=First variant glyph set] [encoding=uc]
+\definefontsynonym[ZapfinoThree][name:Zapfino\xetexcolon mapping=tex-text;%
+                                 Stylistic Variants=Second variant glyph set][encoding=uc]
+\definefontsynonym[ZapfinoFour] [name:Zapfino\xetexcolon mapping=tex-text;%
+                                 Stylistic Variants=Third variant glyph set] [encoding=uc]
 \stoptypescript
 
 \starttypescript[handwriting][zapfino][name]
@@ -329,24 +387,24 @@
 
 \starttypescript[serif,calligraphy][applechancery][uc]
 
-\definefontsynonym[AppleChanceryOne]    ['Apple Chancery:mapping=tex-text;
-                   Number Case=Old Styles']                [encoding=uc]
-\definefontsynonym[AppleChanceryTwo]    ['Apple Chancery:mapping=tex-text;
-                   Number Case=Old Styles;
-                   Design Complexity=Elegant Design Level'][encoding=uc]
-\definefontsynonym[AppleChanceryThree]  ['Apple Chancery:mapping=tex-text;
-                   Number Case=Old Styles;
-                   Design Complexity=Flourishes Set A']    [encoding=uc]
-\definefontsynonym[AppleChanceryFour]   ['Apple Chancery:mapping=tex-text;
-                   Number Case=Old Styles;
-                   Design Complexity=Flourishes Set B']    [encoding=uc]
-\definefontsynonym[AppleChanceryCaps]   ['Apple Chancery:mapping=tex-text;
-                   Number Case=Old Styles;
-                   Letter Case=Small Caps']                [encoding=uc]
-\definefontsynonym[AppleChanceryCapsTwo]['Apple Chancery:mapping=tex-text;
-                   Number Case=Old Styles;
-                   Letter Case=Small Caps;
-                   Design Complexity=Flourishes Set B']    [encoding=uc]
+\definefontsynonym[AppleChanceryOne]    [name:Apple Chancery\xetexcolon mapping=tex-text;%
+                   Number Case=Old Styles]                [encoding=uc]
+\definefontsynonym[AppleChanceryTwo]    [name:Apple Chancery\xetexcolon mapping=tex-text;%
+                   Number Case=Old Styles;%
+                   Design Complexity=Elegant Design Level][encoding=uc]
+\definefontsynonym[AppleChanceryThree]  [name:Apple Chancery\xetexcolon mapping=tex-text;%
+                   Number Case=Old Styles;%
+                   Design Complexity=Flourishes Set A]    [encoding=uc]
+\definefontsynonym[AppleChanceryFour]   [name:Apple Chancery\xetexcolon mapping=tex-text;%
+                   Number Case=Old Styles;%
+                   Design Complexity=Flourishes Set B]    [encoding=uc]
+\definefontsynonym[AppleChanceryCaps]   [name:Apple Chancery\xetexcolon mapping=tex-text;%
+                   Number Case=Old Styles;%
+                   Letter Case=Small Caps]                [encoding=uc]
+\definefontsynonym[AppleChanceryCapsTwo][name:Apple Chancery\xetexcolon mapping=tex-text;%
+                   Number Case=Old Styles;%
+                   Letter Case=Small Caps;%
+                   Design Complexity=Flourishes Set B]    [encoding=uc]
 \stoptypescript
 
 \starttypescript[calligraphy][applechancery][name]
@@ -372,10 +430,10 @@
 
 \starttypescript[serif][timesnewroman][uc]
 
-\definefontsynonym[MSTimes]          ['Times New Roman:mapping=tex-text']            [encoding=uc]
-\definefontsynonym[MSTimesItalic]    ['Times New Roman Italic:mapping=tex-text']     [encoding=uc]
-\definefontsynonym[MSTimesBold]      ['Times New Roman Bold:mapping=tex-text']       [encoding=uc]
-\definefontsynonym[MSTimesBoldItalic]['Times New Roman Bold Italic:mapping=tex-text'][encoding=uc]
+\definefontsynonym[MSTimes]          [name:Times New Roman\xetexcolon mapping=tex-text]            [encoding=uc]
+\definefontsynonym[MSTimesItalic]    [name:Times New Roman Italic\xetexcolon mapping=tex-text]     [encoding=uc]
+\definefontsynonym[MSTimesBold]      [name:Times New Roman Bold\xetexcolon mapping=tex-text]       [encoding=uc]
+\definefontsynonym[MSTimesBoldItalic][name:Times New Roman Bold Italic\xetexcolon mapping=tex-text][encoding=uc]
 
 \stoptypescript
 
@@ -393,10 +451,10 @@
 
 \starttypescript[sans][arial][uc]
 
-\definefontsynonym[Arial]          ['Arial:mapping=tex-text']            [encoding=uc]
-\definefontsynonym[ArialItalic]    ['Arial Italic:mapping=tex-text']     [encoding=uc]
-\definefontsynonym[ArialBold]      ['Arial Bold:mapping=tex-text']       [encoding=uc]
-\definefontsynonym[ArialBoldItalic]['Arial Bold Italic:mapping=tex-text'][encoding=uc]
+\definefontsynonym[Arial]          [name:Arial\xetexcolon mapping=tex-text]            [encoding=uc]
+\definefontsynonym[ArialItalic]    [name:Arial Italic\xetexcolon mapping=tex-text]     [encoding=uc]
+\definefontsynonym[ArialBold]      [name:Arial Bold\xetexcolon mapping=tex-text]       [encoding=uc]
+\definefontsynonym[ArialBoldItalic][name:Arial Bold Italic\xetexcolon mapping=tex-text][encoding=uc]
 
 \stoptypescript
 
@@ -418,10 +476,10 @@
 
 \starttypescript [serif] [lucida] [uc]
 
-  \definefontsynonym [LucidaBright]              ['Lucida Bright:mapping=tex-text']         [encoding=uc]
-  \definefontsynonym [LucidaBright-Demi]         ['Lucida Bright Demibold:mapping=tex-text'][encoding=uc]
-  \definefontsynonym [LucidaBright-DemiItalic]   ['Lucida Bright Demibold:mapping=tex-text'][encoding=uc]
-  \definefontsynonym [LucidaBright-Italic]       ['Lucida Bright:mapping=tex-text']         [encoding=uc]
+  \definefontsynonym [LucidaBright]              [name:Lucida Bright\xetexcolon mapping=tex-text]         [encoding=uc]
+  \definefontsynonym [LucidaBright-Demi]         [name:Lucida Bright Demibold\xetexcolon mapping=tex-text][encoding=uc]
+  \definefontsynonym [LucidaBright-DemiItalic]   [name:Lucida Bright Demibold\xetexcolon mapping=tex-text][encoding=uc]
+  \definefontsynonym [LucidaBright-Italic]       [name:Lucida Bright\xetexcolon mapping=tex-text]         [encoding=uc]
 
   \definefontsynonym [LucidaBrightSmallcaps]     [LucidaBright]
   \definefontsynonym [LucidaBrightSmallcaps-Demi][LucidaBright-Demi]
@@ -430,10 +488,10 @@
 \stoptypescript
 
 \starttypescript [sans] [lucida] [uc]
-  \definefontsynonym [LucidaSans]           ['Lucida Sans Regular:mapping=tex-text']        [encoding=uc]
-  \definefontsynonym [LucidaSans-Demi]      ['Lucida Sans Demibold Roman:mapping=tex-text'] [encoding=uc]
-  \definefontsynonym [LucidaSans-DemiItalic]['Lucida Sans Demibold Italic:mapping=tex-text'][encoding=uc]
-  \definefontsynonym [LucidaSans-Italic]    ['Lucida Sans Italic:mapping=tex-text']         [encoding=uc]
+  \definefontsynonym [LucidaSans]           [name:Lucida Sans Regular\xetexcolon mapping=tex-text]        [encoding=uc]
+  \definefontsynonym [LucidaSans-Demi]      [name:Lucida Sans Demibold Roman\xetexcolon mapping=tex-text] [encoding=uc]
+  \definefontsynonym [LucidaSans-DemiItalic][name:Lucida Sans Demibold Italic\xetexcolon mapping=tex-text][encoding=uc]
+  \definefontsynonym [LucidaSans-Italic]    [name:Lucida Sans Italic\xetexcolon mapping=tex-text]         [encoding=uc]
 
   \definefontsynonym [LucidaSans-Bold]      [LucidaSans-Demi]
   \definefontsynonym [LucidaSans-BoldItalic][LucidaSans-DemiItalic]
@@ -442,16 +500,16 @@
 
 \starttypescript [mono] [lucida] [uc]
 
-  \definefontsynonym [LucidaSans-Typewriter]           ['Lucida Sans Typewriter Regular']     [encoding=uc]
-  \definefontsynonym [LucidaSans-TypewriterBold]       ['Lucida Sans Typewriter Bold']        [encoding=uc]
-  \definefontsynonym [LucidaSans-TypewriterBoldOblique]['Lucida Sans Typewriter Bold Oblique'][encoding=uc]
-  \definefontsynonym [LucidaSans-TypewriterOblique]    ['Lucida Sans Typewriter Oblique']     [encoding=uc]
+  \definefontsynonym [LucidaSans-Typewriter]           [name:Lucida Sans Typewriter Regular]     [encoding=uc]
+  \definefontsynonym [LucidaSans-TypewriterBold]       [name:Lucida Sans Typewriter Bold]        [encoding=uc]
+  \definefontsynonym [LucidaSans-TypewriterBoldOblique][name:Lucida Sans Typewriter Bold Oblique][encoding=uc]
+  \definefontsynonym [LucidaSans-TypewriterOblique]    [name:Lucida Sans Typewriter Oblique]     [encoding=uc]
 
 \stoptypescript
 
 \starttypescript [calligraphy] [lucida] [uc]
 
-  \definefontsynonym[LucidaCalligraphy-Italic]['Lucida Calligraphy Italic:mapping=tex-text'][encoding=uc]
+  \definefontsynonym[LucidaCalligraphy-Italic][name:Lucida Calligraphy Italic\xetexcolon mapping=tex-text][encoding=uc]
 
 \stoptypescript
 
@@ -459,16 +517,16 @@
 
 \starttypescript[handwriting][lucida][uc]
 
-  \definefontsynonym[LucidaHandwriting-Italic]['Lucida Handwriting Italic:mapping=tex-text'][encoding=uc]
+  \definefontsynonym[LucidaHandwriting-Italic][name:Lucida Handwriting Italic\xetexcolon mapping=tex-text][encoding=uc]
 
 \stoptypescript
 
 \starttypescript[fax][lucida][uc]
 
-  \definefontsynonym[LucidaFax]           ['Lucida Fax Regular:mapping=tex-text']        [encoding=uc]
-  \definefontsynonym[LucidaFax-Demi]      ['Lucida Fax Demibold:mapping=tex-text']       [encoding=uc]
-  \definefontsynonym[LucidaFax-DemiItalic]['Lucida Fax Demibold Italic:mapping=tex-text'][encoding=uc]
-  \definefontsynonym[LucidaFax-Italic]    ['Lucida Fax Italic:mapping=tex-text']         [encoding=uc]
+  \definefontsynonym[LucidaFax]           [name:Lucida Fax Regular\xetexcolon mapping=tex-text]        [encoding=uc]
+  \definefontsynonym[LucidaFax-Demi]      [name:Lucida Fax Demibold\xetexcolon mapping=tex-text]       [encoding=uc]
+  \definefontsynonym[LucidaFax-DemiItalic][name:Lucida Fax Demibold Italic\xetexcolon mapping=tex-text][encoding=uc]
+  \definefontsynonym[LucidaFax-Italic]    [name:Lucida Fax Italic\xetexcolon mapping=tex-text]         [encoding=uc]
 
 \stoptypescript
 
@@ -478,8 +536,8 @@
 
 \starttypescript[serif][gentium][uc]
 
-\definefontsynonym[Gentium]      ['Gentium:mapping=tex-text']       [encoding=uc]
-\definefontsynonym[GentiumItalic]['Gentium Italic:mapping=tex-text'][encoding=uc]
+\definefontsynonym[Gentium]      [name:Gentium\xetexcolon mapping=tex-text]       [encoding=uc]
+\definefontsynonym[GentiumItalic][name:Gentium Italic\xetexcolon mapping=tex-text][encoding=uc]
 
 \stoptypescript
 

@@ -15,6 +15,10 @@
 %D filter. In due time it will replace the older renderer (which
 %D we will keep around for sentimental reasons).
 
+\def\inlinemathematics   {\dontleavehmode\mathematics} % already in kernel
+\long\def\inlinemath #1{\dontleavehmode\relax\ifmmode#1\else $#1$\fi}
+
+
 % \defineXMLentity[x000AF]{\normalorfiller{x}\hrulefill}
 % CHECK FOR: \xmlrent
 % \enablemathpunctuation
@@ -785,6 +789,7 @@
             \XMLfirstnamed{bvar}
         \fi
         \getXMLentity{mapsto}
+        \MMLcreset
         \XMLfirstnamed{apply,reln,ci,cn}
     }
     \endgroup
@@ -804,6 +809,7 @@
 
 \startsetups mmc:lambda:simple:stop
     \stopsavingXMLelements
+    \MMLcreset % new
     \XMLfirstnamed{apply}
     \endgroup
 \stopsetups
@@ -840,7 +846,13 @@
 
 \setupMMLappearance[piece][\c!separator=]
 
-\def\MMLcPIECEseparator{\doif\@@MMLpieceseparator\v!yes,}
+\def\setMMLcPIECEseparator
+  {\processaction
+     [\@@MMLpieceseparator]
+     [    \v!yes=>\def\theMMLpieceseparator{,\@col@amp@},
+           \v!no=>\let\theMMLpieceseparator\@col@amp@,
+      \s!default=>\let\theMMLpieceseparator\@col@amp@,
+      \s!unknown=>\def\theMMLpieceseparator{\,\,\hbox{\@@MMLpieceseparator}\,\,}]}
 
 \defineXMLargument[piecewise] {\cases}
 
@@ -856,12 +868,13 @@
 
 \startsetups mmc:piece:start
     \startsavingXMLelements
+    \setMMLcPIECEseparator
 \stopsetups
 
 \startsetups mmc:piece:stop
     \stopsavingXMLelements
     \edef\ascii{\getXMLstackdata\plusone}
-    \@EA\XMLRtoks\@EA{\ascii\MMLcPIECEseparator\@col@amp@}
+    \@EA\XMLRtoks\@EA{\ascii\theMMLpieceseparator}
     \edef\ascii{\getXMLstackdata\plustwo}
     \@EA\appendtoks\@EA\mathematics\@EA{\ascii}\to\XMLRtoks
     \the\XMLRtoks\crcr
@@ -879,23 +892,25 @@
 
 \defineXMLcommand [factorial] {\getXMLstackdata\plustwo !}
 
-\defineXMLcommand [divide] {\directsetup{mmc:divide}}
+\defineXMLcommand [divide] [\MMLargumentprefix] [] {\directsetup{mmc:divide}} % brr not nested
 
 \setupMMLappearance [divide] [\c!level=\!!maxcard,\c!alternative=\v!a]
 
 \startsetups mmc:divide
-    \increment\MMLcDIVIDElevel
-    \doifelse \@@MMLdividealternative\v!b {
-        \getXMLstackdata\plustwo/\getXMLstackdata\plusthree
-    } {
-        \ifnum\MMLcDIVIDElevel>\@@MMLdividelevel\space
+    \startusingMMLarguments
+        \increment\MMLcDIVIDElevel
+        \doifelse \@@MMLdividealternative\v!b {
             \getXMLstackdata\plustwo/\getXMLstackdata\plusthree
-        \else
-            \MMLcreset
-            \frac{\MMLcreset\getXMLstackdata\plustwo}{\MMLcreset\getXMLstackdata\plusthree}%
-        \fi
-    }
-    \decrement\MMLcDIVIDElevel
+        } {
+            \ifnum\MMLcDIVIDElevel>\@@MMLdividelevel\space
+                \getXMLstackdata\plustwo/\getXMLstackdata\plusthree
+            \else
+                \MMLcreset
+                \frac{\MMLcreset\getXMLstackdata\plustwo}{\MMLcreset\getXMLstackdata\plusthree}%
+            \fi
+        }
+        \decrement\MMLcDIVIDElevel
+    \stopusingMMLarguments
 \stopsetups
 
 % min max
@@ -914,9 +929,10 @@
 
 % minus plus
 
-\defineXMLcommand [minus] {\directsetup{mmc:minus}}
-\defineXMLcommand [plus]  {\directsetup{mmc:plus}}
+\defineXMLcommand [minus]                         {\directsetup{mmc:minus}}
+\defineXMLcommand [plus]  [\MMLargumentprefix] [] {\directsetup{mmc:plus}}
 
+\setupMMLappearance [plus] [\c!alternative=\v!a] % b = no sign -> 3 1/4
 \setupMMLappearance [sign] [\c!reduction=\v!yes]
 
 \startsetups mmc:minus
@@ -934,49 +950,60 @@
 \stopsetups
 
 \startsetups mmc:plus
-    \doifelse \@@MMLsignreduction \v!yes {
-        \setMMLcreset{fn,plus,minus,\MMLcfunctionlist,\MMLcconstructlist}% was plus/, minus/
-        \doifelse{\getXMLstackname\plustwo} {apply} {
-            % branch needed, else (a-b) + (c-d) goes wrong
-            % reset check in case of (-x) + 37
-            \begingroup
-            \dodoifelseMMCfunctioninapply \plustwo {minus} {
-                \ifnum\XMLstacklevel>\plustwo
+    \startusingMMLarguments
+        \doifelse \@@MMLsignreduction \v!yes {
+            \setMMLcreset{fn,plus,minus,\MMLcfunctionlist,\MMLcconstructlist}% was plus/, minus/
+            \doifelse{\getXMLstackname\plustwo} {apply} {
+                % branch needed, else (a-b) + (c-d) goes wrong
+                % reset check in case of (-x) + 37
+                \begingroup
+                \dodoifelseMMCfunctioninapply \plustwo {minus} {
+                    \ifnum\XMLstacklevel>\plustwo
+                        \endgroup
+                    \else
+                        \endgroup
+                        \MMLcreset
+                    \fi
+                } {
                     \endgroup
-                \else
-                    \endgroup
-                    \MMLcreset
-                \fi
+                }
+                \doifelse \@@MMLplusalternative \v!b {
+                    \getXMLstackdata\plustwo \,
+                } {
+                    \flushXMLstackwith\plustwo +
+                }
+
             } {
-                \endgroup
-            }
-            \flushXMLstackwith\plustwo +
-        } {
-            \flushXMLstackwith\plustwo {
-                \doifelse {\getXMLstackname\recurselevel} {apply} {
-                    \begingroup
-                    \dodoifelseMMCfunctioninapply \recurselevel {minus} {
-                        \ifnum\XMLstacklevel>\plustwo +\fi
+                \flushXMLstackwith\plustwo {
+                    \doifelse {\getXMLstackname\recurselevel} {apply} {
+                        \begingroup
+                        \dodoifelseMMCfunctioninapply \recurselevel {minus} {
+                            \ifnum\XMLstacklevel>\plustwo +\fi
+                        } {
+                            \doifelse \@@MMLplusalternative \v!b {
+                                \, % maybe 2 1/3
+                            } {
+                                +
+                            }
+                        }
+                        \endgroup
+                        \MMLcreset
                     } {
                         +
                     }
-                    \endgroup
-                    \MMLcreset
-                } {
-                    +
                 }
             }
+        } {
+            \ifcase\XMLstacklevel
+            \or
+                % self
+            \or
+                +\getXMLstackdata\plustwo
+            \else
+                \flushXMLstackwith\plustwo+
+            \fi
         }
-    } {
-        \ifcase\XMLstacklevel
-        \or
-            % self
-        \or
-            +\getXMLstackdata\plustwo
-        \else
-            \flushXMLstackwith\plustwo+
-        \fi
-    }
+    \stopusingMMLarguments
 \stopsetups
 
 % power
@@ -1132,20 +1159,22 @@
 
 % relations
 
-\defineXMLcommand [eq]         {\MMLcrelation=}
-\defineXMLcommand [neq]        {\MMLcrelation\neq}
-\defineXMLcommand [gt]         {\MMLcrelation>}
-\defineXMLcommand [lt]         {\MMLcrelation<}
-\defineXMLcommand [geq]        {\MMLcrelation\geq}
-\defineXMLcommand [leq]        {\MMLcrelation\leq}
-\defineXMLcommand [equivalent] {\MMLcrelation\equiv}
-\defineXMLcommand [approx]     {\MMLcrelation\approx}
-\defineXMLcommand [factorof]   {\MMLcrelation\mid}
+\defineXMLcommand [eq]         [\MMLargumentprefix] [\c!align=] {\MMLcrelation=}
+\defineXMLcommand [neq]        [\MMLargumentprefix] [\c!align=] {\MMLcrelation\neq}
+\defineXMLcommand [gt]         [\MMLargumentprefix] [\c!align=] {\MMLcrelation>}
+\defineXMLcommand [lt]         [\MMLargumentprefix] [\c!align=] {\MMLcrelation<}
+\defineXMLcommand [geq]        [\MMLargumentprefix] [\c!align=] {\MMLcrelation\geq}
+\defineXMLcommand [leq]        [\MMLargumentprefix] [\c!align=] {\MMLcrelation\leq}
+\defineXMLcommand [equivalent] [\MMLargumentprefix] [\c!align=] {\MMLcrelation\equiv}
+\defineXMLcommand [approx]     [\MMLargumentprefix] [\c!align=] {\MMLcrelation\approx}
+\defineXMLcommand [factorof]   [\MMLargumentprefix] [\c!align=] {\MMLcrelation\mid}
 
 \setupMMLappearance[relation][\c!align=\v!no]
 
 \def\MMLcrelation
-  {\MMLcreset
+  {\startusingMMLarguments
+   \MMLcreset
+   \edef\@@MMLrelationalign{\executeifdefined{\MMLargumentprefix\c!align}\@@MMLrelationalign}%
    \processaction
      [\@@MMLrelationalign]
      [\v!last=>\let\next\lastMMLcrelation ,
@@ -1158,7 +1187,8 @@
    \next}
 
 \def\noMMLcrelation#1%
-  {\flushXMLstackwith\plustwo{#1}}
+  {\flushXMLstackwith\plustwo{#1}
+   \stopusingMMLarguments}
 
 \def\lastMMLcrelation#1%
   {\XMLRtoks\emptytoks
@@ -1169,19 +1199,23 @@
       \else\ifnum\recurselevel=\numexpr\XMLstacklevel-1\relax
         \appendtoks\@col@amp@#1\to\XMLRtoks
       \fi\fi}%
-   \eqalign{\the\XMLRtoks\crcr}}
+   \eqalign{\the\XMLRtoks\crcr}%
+   \stopusingMMLarguments}
 
 \def\firstMMLcrelation#1%
   {\collectXMLstackrows\plusthree{\crcr\@col@amp@#1}%
-   \eqalign{\getXMLstackdata\plustwo\@col@amp@#1\the\XMLRtoks}}
+   \eqalign{\getXMLstackdata\plustwo\@col@amp@#1\the\XMLRtoks}%
+   \stopusingMMLarguments}
 
 \def\leftMMLcrelation#1%
   {\collectXMLstackrows\plustwo{\@col@amp@#1\crcr}%
-   \eqalign{\the\XMLRtoks}}
+   \eqalign{\the\XMLRtoks}%
+   \stopusingMMLarguments}
 
 \def\rightMMLcrelation#1%
   {\collectXMLstackrows\plustwo{\crcr#1{}\@col@amp@}%
-   \eqalign{\@col@amp@\the\XMLRtoks\crcr}}
+   \eqalign{\@col@amp@\the\XMLRtoks\crcr}%
+   \stopusingMMLarguments}
 
 \defineXMLcommand [becomes] {\MMLcrelation{:=}}
 
@@ -1285,40 +1319,64 @@
 % <math><apply><apply><diff/><bvar><ci>x</ci></bvar><degree>2</degree><ci>f</ci></apply><ci>a</ci></apply></math>
 % \stopXMLdata
 
+% d^y/dx^2
+%
+% \startXMLdata
+% <math><apply><diff/>
+%   <bvar><ci>x</ci><cn type="integer">2</cn></bvar>
+%   <lambda><bvar><ci>x</ci></bvar><ci>y</ci></lambda>
+% </apply></math>
+% \stopXMLdata
+
 \startsetups mmc:diff
    \MMLcreset
    \doifelse\@@MMLdiffalternative\v!a {
-        \XMLdoifonstackelse{bvar} {
-            \frac {
-                \XMLdoifonstackelse{degree} {
-                    \collectXMLnamedstack{degree}\empty
+        \XMLdoifonstackelse{lambda} {
+            % a special case (mathadore/openmath)
+            \begingroup
+                \defineXMLsave[ci]
+                \defineXMLsave[cn]
+                \defineXMLprocess[lambda]
+                \defineXMLprocess[bvar]
+                \frac {
+                    d^{\XMLfirstnamed{bvar}\XMLflush{cn}}{\XMLfirstnamed{lambda}\XMLflush{ci}}
                 } {
-                    \collectXMLnamedstacknamed{bvar}{degree}+
+                    d{\XMLfirstnamed{bvar}\XMLflush{ci}}^{\XMLfirstnamed{bvar}\XMLflush{cn}}
                 }
-                \mfunction{\getXMLentity{mathematicald}}
-                ^{\the\XMLRtoks}
-                \doif\@@MMLdifflocation\v!top {
-                    \XMLdoifonstackelse{ci} {
-                        \XMLfirstnamed{ci}
+            \endgroup
+        } {
+            \XMLdoifonstackelse{bvar} {
+                \frac {
+                    \XMLdoifonstackelse{degree} {
+                        \collectXMLnamedstack{degree}\empty
                     } {
-                        \MMLcreset\XMLfirstnamed{apply}
+                        \collectXMLnamedstacknamed{bvar}{degree}+
                     }
+                    \mfunction{\getXMLentity{mathematicald}}
+                    ^{\the\XMLRtoks}
+                    \doif\@@MMLdifflocation\v!top {
+                        \XMLdoifonstackelse{ci} {
+                            \XMLfirstnamed{ci}
+                        } {
+                            \MMLcreset\XMLfirstnamed{apply}
+                        }
+                    }
+                } {
+                    \mfunction{\getXMLentity{mathematicald}}
+                    \begingroup
+                        \defineXMLsave[degree]
+                        \XMLfirstnamed{bvar}
+                        \doifXMLdata{degree} {
+                            ^{\XMLflush{degree}}
+                        }
+                    \endgroup
+                }
+                \doifnot\@@MMLdifflocation\v!top {
+                    \left(\MMLcreset\XMLfirstnamed{apply,ci}\right)
                 }
             } {
-                \mfunction{\getXMLentity{mathematicald}}
-                \begingroup
-                    \defineXMLsave[degree]
-                    \XMLfirstnamed{bvar}
-                    \doifXMLdata{degree} {
-                        ^{\XMLflush{degree}}
-                    }
-                \endgroup
+                \flushXMLstackfrom\plustwo^\prime
             }
-            \doifnot\@@MMLdifflocation\v!top {
-                \left(\MMLcreset\XMLfirstnamed{apply,ci}\right)
-            }
-        } {
-            \flushXMLstackfrom\plustwo^\prime
         }
     } {
         \MMLcreset
@@ -1407,8 +1465,30 @@
 \defineXMLcommand [laplacian]  {\getXMLentity {laplacian}\directsetup{mmc:donamedfunction}}
 
 \defineXMLcommand [ident]      {\getXMLentity  {identity}\directsetup{mmc:donamedfunction}}
-\defineXMLcommand [domain]     {\getXMLentity    {domain}\directsetup{mmc:donamedfunction}}
-\defineXMLcommand [codomain]   {\getXMLentity  {codomain}\directsetup{mmc:donamedfunction}}
+% \defineXMLcommand [domain]     {\getXMLentity    {domain}\directsetup{mmc:donamedfunction}}
+% \defineXMLcommand [codomain]   {\getXMLentity  {codomain}\directsetup{mmc:donamedfunction}}
+
+\defineXMLcommand[domain]  {\directsetup{mmc:domain:action}}
+\defineXMLcommand[codomain]{\directsetup{mmc:codomain:action}}
+
+\setupMMLappearance[domain]  [symbol=]
+\setupMMLappearance[codomain][symbol=]
+
+\startsetups mmc:domain:action
+    \doifelsenothing\@@MMLdomainsymbol {
+        \getXMLentity{domain}\directsetup{mmc:donamedfunction}
+    } {
+        \@@MMLdomainsymbol_{\flushXMLstackfrom\plustwo}
+    }
+\stopsetups
+\startsetups mmc:codomain:action
+    \doifelsenothing\@@MMLcodomainsymbol {
+        \getXMLentity{codomain}\directsetup{mmc:donamedfunction}
+    } {
+        \@@MMLcodomainsymbol_{\flushXMLstackfrom\plustwo}
+    }
+\stopsetups
+
 
 \startsetups mmc:donamedfunction
 %     \left(
@@ -1540,7 +1620,11 @@
         \XMLfirstnamed{lowlimit}
       }
    }
-   \XMLfirstnamed{apply}
+   \begingroup
+   \MMLcreset
+   \directsetup{mmc:lambda:simple}% a bit of open math conversion mess
+   \XMLfirstnamed{apply,lambda}% lambda needed for openmath
+   \endgroup
 \stopsetups
 
 \defineXMLcommand [tendsto] [type=default] {\directsetup{mmc:tendsto}}

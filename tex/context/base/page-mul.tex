@@ -427,7 +427,7 @@
    \ifsomefloatwaiting
      \showmessage\m!columns6{\the\savednoffloats}%
      \global\setbox\savedfloatlist\box\floatlist
-     \xdef\restoresavedfloats%
+     \xdef\restoresavedfloats
        {\global\savednoffloats\the\savednoffloats
         \global\setbox\floatlist\box\savedfloatlist
         \global\noexpand\somefloatwaitingtrue}%
@@ -488,7 +488,7 @@
 %D e.g. when there is no text given between \type{\begin..}
 %D and \type{\end..}. The \type{\par} is needed!
 
-\chardef\multicolumnendsyncmethod\plusone % 1: old sync 2: new sync (cont-loc/project)
+\chardef\multicolumnendsyncmethod\plusone % 1: old sync 2: new sync (cont-loc/project) / may fail ! ! ! !
 
 \def\endmulticolumns
   {%\par
@@ -608,6 +608,8 @@
    \setmulticolumnsout
    \showcomposition
    \setmaxcolumndimensions
+   \dohandleallcolumns
+     {\mkprocesscolumncontents\currentcolumnbox}%
    \postprocesscolumns
    \dohandleallcolumns % \hbox i.v.m. \showcomposition
      {\global\setbox\currentcolumnbox\hbox to \localcolumnwidth

@@ -2954,6 +2954,27 @@
       <cd:parameter name="tekst">
         <cd:constant type="cd:text"/>
       </cd:parameter>
+      <cd:parameter name="sluitsymbool">
+        <cd:constant type="cd:text"/>
+      </cd:parameter>
+      <cd:parameter name="sluitcommando">
+        <cd:constant type="cd:oneargument"/>
+      </cd:parameter>
+      <cd:parameter name="titellinks">
+        <cd:constant type="cd:text"/>
+      </cd:parameter>
+      <cd:parameter name="titelrechts">
+        <cd:constant type="cd:text"/>
+      </cd:parameter>
+      <cd:parameter name="titelafstand">
+        <cd:constant type="cd:dimension"/>
+      </cd:parameter>
+      <cd:parameter name="titelletter">
+        <cd:resolve name="style"/>
+      </cd:parameter>
+      <cd:parameter name="titelkleur">
+        <cd:constant type="cd:name"/>
+      </cd:parameter>
       <cd:parameter name="uitlijnen">
         <cd:resolve name="align"/>
       </cd:parameter>
@@ -5969,6 +5990,7 @@
       <cd:constant type="alinea"/>
       <cd:constant type="intekst"/>
       <cd:constant type="willekeurig"/>
+      <cd:constant type="omgekeerd"/>
     </cd:keywords>
     <cd:assignments optional="yes" list="yes">
       <cd:parameter name="marge">
@@ -6893,9 +6915,29 @@
       <cd:constant type="niethangend"/>
       <cd:constant type="afgebroken"/>
       <cd:constant type="nietafgebroken"/>
+      <cd:constant type="lesshyphens"/>
+      <cd:constant type="morehyphens"/>
+      <cd:constant type="nieuw"/>
+      <cd:constant type="oud"/>
+      <cd:constant type="normaal"/>
+      <cd:constant type="ja"/>
+      <cd:constant type="nee"/>
+      <cd:constant type="lijnlinks"/>
+      <cd:constant type="lijnrechts"/>
+      <cd:constant type="lijnbuiten"/>
+      <cd:constant type="lijnbinnen"/>
+      <cd:constant type="centreer"/>
+      <cd:constant type="hz"/>
+      <cd:constant type="geenhz"/>
+      <cd:constant type="spatiering"/>
+      <cd:constant type="geenspatiering"/>
+      <cd:constant type="soepel"/>
+      <cd:constant type="zeersoepel"/>
+      <cd:constant type="rek"/>
     </cd:keywords>
   </cd:arguments>
 </cd:command>
+
 
 <cd:command name="alignment" type="environment">
   <cd:sequence>

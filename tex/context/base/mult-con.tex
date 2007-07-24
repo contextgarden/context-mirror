@@ -18,6 +18,13 @@
 
 \startlogginginterface context.con
 
+%D Todo:
+
+\startvariables all
+    lesshyphenation: lesshyphenation
+    morehyphenation: morehyphenation
+\stopvariables
+
 %D First come some variables. These are used as keywords and
 %D therefore need a different treatment.
 
@@ -1650,6 +1657,16 @@ subsubsubsubsubsubject: subsubsubsubsubonderwerp                 subsubsubsubsub
                            symbol                    symbol
                            simbolo                   simbol
                            symbole
+
+              closesymbol: sluitsymbool              closesymbol
+                           closesymbol               closesymbol
+                           closesymbol               closesymbol
+                           closesymbol
+             closecommand: sluitcommando             closecommand
+                           closecommand              closecommand
+                           closecommand              closecommand
+                           closecommand
+
                 symbolset: symboolset                symbolset
                            symbolset                 sadasymbolu
                            setsimboli                setsimbol
@@ -1738,6 +1755,20 @@ numberwidth: nummerbreedte numberwidth
                            titelabstand              vzdalenosttitulek
                            distanzatitolo            distantatitlu
                            distancetitre
+
+                titleleft: titellinks                titleleft    % new
+                           titleleft                 titleleft
+                           titleleft                 titleleft
+                           titleleft
+               titleright: titelrechts               titleright   % new
+                           titleright                titleright
+                           titleright                titleright
+                           titleright
+             titlecommand: titelcommando             titlecommand % new
+                           titlecommand              titlecommand
+                           titlecommand              titlecommand
+                           titlecommand
+
                aligntitle: titeluitlijnen            aligntitle
                            titelausrichten           zarovnejtitul
                            allineatitolo             alinieretitlu
@@ -1890,6 +1921,11 @@ numberwidth: nummerbreedte numberwidth
                            selbeseite                stejnastranka
                            stessapagina              aceeasipagina
                            memepage
+% new
+itemalign: itemuitlijnen             itemalign
+           itemalign                 itemalign
+           itemalign                 itemalign
+           itemalign
                 sidealign: zijuitlijnen              sidealign
                            sidealign                 sidealign
                            sidealign                 sidealign
@@ -2268,6 +2304,10 @@ numberwidth: nummerbreedte numberwidth
                            gritter                   mrizka
                            griglia                   grila
                            grille
+                   nogrid: geengrid                  nogrid
+                           nogrid                    nogrid
+                           nogrid                    nogrid
+                           nogrid
                       big: groot                     big
                            gross                     velke
                            grande                    mare
@@ -2704,6 +2744,10 @@ numberwidth: nummerbreedte numberwidth
                            passend                   prizpusobive
                            adatta                    ajustat
                            adapte
+nofit: nietpassend             nofit
+       nofit                   nofit
+       nofit                   nofit
+       nofit
                postscript: postscript                postscript
                            postscript                postscript
                            postscript                postscript
@@ -3840,6 +3884,15 @@ numberwidth: nummerbreedte numberwidth
                            ToggleLayer               ToggleLayer
                            ToggleLayer               ToggleLayer
                            ToggleLayer
+
+               ShowThumbs: ShowThumbs                ShowThumbs
+                           ShowThumbs                UkazNahledy
+                           MostraThumbs              ShowThumbs
+                           ShowThumbs
+            ShowBookmarks: ShowBookmarks             ShowBookmarks
+                           ShowBookmarks             UkazZalozky
+                           MostraSegnalibro          ShowBookmarks
+                           ShowBookmarks
 
 \stopvariables
 

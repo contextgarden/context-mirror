@@ -69,6 +69,9 @@
 \newconditional\afterlistitem     \setfalse\afterlistitem
 \newconditional\nowhitelistitem   \setfalse\nowhitelistitem
 \newconditional\joinedlistitem    \setfalse\joinedwhitelistitem
+\newconditional\reverselistitem   \setfalse\reverselistitem
+\newconditional\continuelistitems \setfalse\continuelistitems
+\newconditional\fittinglistitems  \setfalse\fittinglistitems
 
 \newcounter\noflists
 \newcounter\itemlevel
@@ -77,7 +80,88 @@
 
 \definetwopasslist\s!list
 
-\let\currentitemgroup\empty
+\let\currentitemgroup  \empty
+\let\currentnofitems   \!!zerocount
+\let\currentmaxnofitems\!!zerocount
+\let\currentminnofitems\!!zerocount
+\let\currentitemoffset \!!zerocount
+\def\currentitemnumber{\countervalue{\@@itemcounter\itemlevel}}
+
+\def\dolistreference
+  {\ifconditional\continuelistitems
+     \savetaggedtwopassdata\s!list\currentlist\currentlist{\itemlevel:\noflistelements:c:\getitemparameter\itemlevel\c!maxwidth}%
+   \else
+     \savetaggedtwopassdata\s!list\currentlist\currentlist{\itemlevel:\noflistelements:n:\getitemparameter\itemlevel\c!maxwidth}%
+   \fi}
+
+\def\splititemtwopassdata#1%
+   {\expanded{\findtwopassdata{\s!list}{\number#1}}%
+    \expandafter\dosplititemtwopassdata\twopassdata:0:0:0:0:0\relax}
+
+\def\dosplititemtwopassdata#1:#2:#3:#4:#5\relax
+  {\edef\itemdatal{#1}\edef\itemdatan{#2}\edef\itemdatat{#3}\edef\itemdataw{#4}}
+
+\def\checkcurrentnofitems
+  {\splititemtwopassdata\noflists
+   \iftwopassdatafound
+     \ifcase\scratchcounter
+       \let\currentnofitems   \!!zerocount
+       \let\currentminnofitems\!!zerocount
+       \let\currentmaxnofitems\!!zerocount
+     \else
+       \scratchcounter\itemdatan\relax
+       \edef\currentnofitems{\the\scratchcounter}%
+       \let\currentitemtag\itemdatat
+       \doloop
+         {\splititemtwopassdata{\numexpr\noflists+\recurselevel\relax}%
+          \iftwopassdatafound
+            \ifnum\itemdatal=\itemlevel\relax
+              \doifelse{c}\itemdatat
+                {\advance\scratchcounter\itemdatan\relax}
+                {\exitloop}%
+            \fi
+          \else
+            \exitloop
+          \fi}%
+       \edef\currentmaxnofitems{\the\scratchcounter}%
+       \scratchcounter\zerocount
+       \doif{c}\currentitemtag
+         {\doloop
+            {\splititemtwopassdata{\numexpr\noflists-\recurselevel\relax}%
+             \iftwopassdatafound
+               \ifnum\itemdatal=\itemlevel\relax
+                 \doifelse{c}\itemdatat
+                   {\advance\scratchcounter\itemdatan\relax}
+                   {\advance\scratchcounter\itemdatan\exitloop}%
+               \fi
+             \else
+               \exitloop
+             \fi}}%
+       \advance\scratchcounter\plusone
+       \edef\currentminnofitems{\the\scratchcounter}%
+     % [[\currentnofitems,\currentminnofitems,\currentmaxnofitems]]
+     \fi
+   \fi}
+
+% \startitemize[n,packed]
+% \item test \item test \item test
+% \stopitemize
+%
+% \startitemize[n,packed,reverse]
+% \item test \item test \item test
+% \stopitemize
+%
+% \startitemize[n,packed,reverse] \item test \item test \stopitemize
+% \startitemize[continue]
+% \item test \startitemize[n,packed] \item test \item test \stopitemize
+% \item test
+% \item test
+% \stopitemize
+% \startitemize[continue] \item test \stopitemize
+%
+% \startitemize[n,packed] \item test \item test \stopitemize
+% \startitemize[continue] \item test            \stopitemize
+% \startitemize[continue] \item test            \stopitemize
 
 \def\unknownitemreference{0} \let\itemreferences\unknownitemreference
 
@@ -110,9 +194,6 @@
 % s-pre-61 / pre-dis, test extensively, 2004/5
 
 \def\doitembreak#1{\ifconditional\optimizelistitem\ifconditional\textlistitem\else\dosomebreak#1\fi\fi}
-
-\def\dolistreference
-  {\savetaggedtwopassdata{\s!list}{\currentlist}{\currentlist}{\noflistelements}}
 
 \def\initializeitemgroupslevel#1%
   {\ifundefined{\@@globalitemsymbol{#1}}%
@@ -171,7 +252,8 @@
 \newconditional\inlinelistitem \setfalse\inlinelistitem
 
 \def\dododosetupitemgroupconstant[#1][#2#3#4]% * permits [2]
-  {\processaction
+  {\global\setitemparameter\itemlevel\c!maxwidth{0}%
+   \processaction
      [#2#3#4]
      [   \v!packed*=>\packitems,
           \v!intro*=>\settrue\introlistitem, % here? not set to false
@@ -193,6 +275,8 @@
        \v!atmargin*=>\doifnot{#1}{1}{\setitemparameter{#1}\c!width{0em}}, % signal
          \v!intext*=>\settrue\inlinelistitem, % new
           \v!loose*=>\setfalse\optimizelistitem,
+            \v!fit*=>\settrue\fittinglistitems,
+          \v!nofit*=>\setfalse\fittinglistitems,
       \v!paragraph*=>\settrue\paragraphlistitem
                      \packitems,
        \v!joinedup*=>\settrue\joinedlistitem % \dosetuppackeditemgroup{#1}%
@@ -203,6 +287,7 @@
         \v!stopper*=>\setitemparameter{#1}\c!placestopper{\v!yes}, % keep {}
        \v!unpacked*=>\setfalse\packlistitem,
          \v!repeat*=>\settrue\repeatlistitem, % new
+        \v!reverse*=>\settrue\reverselistitem,
        \v!standard*=>\dosetupstandarditemgroup{#1}]}
 
 \def\dosetupstandarditemgroup#1%
@@ -335,21 +420,47 @@
      \pluscounter{\@@itemcounter\itemlevel}%
    \fi\fi}
 
+% \def\setitemlevel#1%
+%   {\ifnum\itemlevel>\zerocount
+%      \settrue\firstlistitem
+%      \doifnotinset\v!continue{#1}
+%        {\doifinset{0}{#1}{\setitemparameter\itemlevel\c!start{0}}%
+%         \doifsomething{\getitemparameter\itemlevel\c!start}
+%           {\setcounter{\@@itemcounter\itemlevel}{\getitemparameter\itemlevel\c!start}%
+%            \minuscounter{\@@itemcounter\itemlevel}%
+%            \letitemparameter\itemlevel\c!start\empty}}%
+%      \def\tempnumber
+%        {\countervalue{\@@itemcounter\itemlevel}}%
+%      \doifelse{\getitemparameter\itemlevel\c!placestopper}\v!yes
+%        {\def\tempsymbol{\getitemparameter\itemlevel\c!stopper}}
+%        {\let\tempsymbol\empty}%
+%    \fi}
+
 \def\setitemlevel#1%
   {\ifnum\itemlevel>\zerocount
      \settrue\firstlistitem
-     \doifnotinset\v!continue{#1}
-       {\doifinset{0}{#1}{\setitemparameter\itemlevel\c!start{0}}%
-        \doifsomething{\getitemparameter\itemlevel\c!start}
-          {\setcounter{\@@itemcounter\itemlevel}{\getitemparameter\itemlevel\c!start}%
-           \minuscounter{\@@itemcounter\itemlevel}%
-           \letitemparameter\itemlevel\c!start\empty}}%
+     %
+     \expanded{\setitemparameter{\itemlevel}{\c!start}{1}}%
+     \doifinset{0}{#1}{\setitemparameter\itemlevel\c!start{0}}%
+     \setcounter{\@@itemcounter\itemlevel}{0}%
+     \doifelsenothing{\getitemparameter\itemlevel\c!start}
+       {\def\currentitemoffset{1}}
+       {\def\currentitemoffset{\getitemparameter\itemlevel\c!start}%
+        \letitemparameter\itemlevel\c!start\empty}%
+     %
      \def\tempnumber
        {\countervalue{\@@itemcounter\itemlevel}}%
      \doifelse{\getitemparameter\itemlevel\c!placestopper}\v!yes
        {\def\tempsymbol{\getitemparameter\itemlevel\c!stopper}}
        {\let\tempsymbol\empty}%
    \fi}
+
+\def\actualitemnumber
+  {\ifconditional\reverselistitem
+     \convertnumber\currentitemsymbol{\numexpr\currentmaxnofitems+\currentitemoffset-\currentitemnumber+1\relax}%
+   \else
+     \convertnumber\currentitemsymbol{\numexpr\currentminnofitems+\currentitemoffset+\currentitemnumber-1\relax}%
+    \fi}
 
 % PAS OP: ook 'opelkaar' en zo worden getest, nog eens afvangen!
 
@@ -365,8 +476,7 @@
      {\doifconversiondefinedelse{#1}
         {\edef\currentitemsymbol{#1}%
          \setxvalue{\@@globalitemsymbol\itemlevel}{\currentitemsymbol}%
-         \setgvalue{\@@localitemsymbol \itemlevel}%
-           {\convertnumber{\currentitemsymbol}{\countervalue{\@@itemcounter\itemlevel}}}%
+         \setgvalue{\@@localitemsymbol\itemlevel }{\actualitemnumber }%
          \ifconditional\textlistitem
            \doifsomething{\getitemparameter\itemlevel\c!lefttext}
              {\let\tempsymbol\empty}%
@@ -505,8 +615,19 @@
      \ifconditional\textlistitem\else\doifnotinset\v!text{#1}\par\fi % suboptimal
    \fi
    \begingroup
-   \doifinsetelse\v!intro{#1}{\settrue\introlistitem}{\setfalse\introlistitem}%
-   \doifinsetelse\v!random{#1}{\settrue\randomizeitems}{\setfalse\randomizeitems}%
+% new where, ok or not / we should integrate random, intro, continue here
+% beware, the following no longer inherit from the previous level, is this ok?
+\setfalse\reverselistitem
+\setfalse\introlistitem
+\setfalse\autointrolistitem
+\setfalse\beforelistitem
+\setfalse\afterlistitem
+\setfalse\nowhitelistitem
+\setfalse\randomizeitems
+%
+   \doifinsetelse\v!intro   {#1}{\settrue\introlistitem    }{\setfalse\introlistitem    }%
+   \doifinsetelse\v!random  {#1}{\settrue\randomizeitems   }{\setfalse\randomizeitems   }%
+   \doifinsetelse\v!continue{#1}{\settrue\continuelistitems}{\setfalse\continuelistitems}%
    % == \doifinsetelse\v!intro{#1}\settrue\setfalse\introlistitem
    \doglobal\increment\noflists
    \let\currentlist\noflists
@@ -518,6 +639,7 @@
    \globallet\somdestination\empty
    \let\symsymbol\empty
    \the\itemgroupcommands
+\checkcurrentnofitems
    % \getitemparameter\itemlevel\empty
    \let\listitem\empty % ** start value
    \doifelsenothing{#1} % iffirstargument
@@ -586,7 +708,13 @@
            \c!rule=\v!off,
            \c!balance=\v!yes,
            \c!align=\v!no]%
-      \fi\fi}
+      \fi\fi}%
+\ifconditional\fittinglistitems
+    \splititemtwopassdata\noflists
+    \ifdim\itemdataw sp>\zeropoint
+      \expanded{\setitemparameter{\itemlevel}{\c!width}{\itemdataw sp}}%
+    \fi
+\fi
    \calculatelistwidth\itemlevel{\dimen0}%
    \ifdim\dimen0>\zeropoint\relax
      \ifconditional\inlinelistitem\else
@@ -616,7 +744,8 @@
    \else
      \par
    \fi
-   \ifnum\itemcolumndepth=\zerocount \dolistreference \fi % beware !
+  %\ifnum\itemcolumndepth=\zerocount \dolistreference \fi % beware !
+   \dolistreference
    \ifconditional\firstlistitem \else \endgroup \fi % toegevoegd, eerste \som opent groep
    \ifnum\itemcolumndepth=\itemlevel\relax
      \stopcolumns
@@ -729,6 +858,19 @@
 %   \headsym{xx} test \par test
 % \stopitemize
 
+% aligned items
+%
+% \startitemize[n,fit,broad][itemalign=flushright]
+%      \dorecurse{100}{\item The first item.}
+% \stopitemize
+%
+% \setupitemgroup[itemize][each][fit]
+% \setupitemgroup[itemize][each][distance=.5em,factor=1,itemalign=flushright]
+%
+% \startitemize[n]
+%      \dorecurse{100}{\item The first item.}
+% \stopitemize
+
 \appendtoks \let\headsym    \itemgroupheadsym \to \itemgroupcommands
 
 \def\itemgroupheadsym#1%
@@ -774,6 +916,31 @@
    \llap{\hbox to \dimen0{\ifconditional\sublistitem\llap{+}\fi\box8\hfill}}%
    \hskip\scratchdimen}
 
+\def\optimizelistitemsbreak
+  {\ifnum\itemcolumndepth=\zerocount \ifconditional\optimizelistitem
+     \ifcase \currentnofitems \else
+       \ifnum\currentnofitems=\plusthree
+         \ifnum\noflistelements>\plusone
+           \doitembreak\itemnobreak
+         \fi
+       \else\ifnum\currentnofitems>\plusthree
+         \ifnum\noflistelements=\plustwo
+           \ifconditional\introlistitem
+             \doitembreak\nobreak
+           \else
+             \doitembreak\itemnobreak
+           \fi
+         \else\ifnum\currentnofitems=\noflistelements\relax
+           \doitembreak\itemnobreak
+         \else\ifnum\noflistelements>\plustwo
+           \doitembreak\itembreak
+         \else
+           \ifconditional\introlistitem\else\doitembreak\itembreak\fi
+         \fi\fi\fi
+       \fi\fi
+     \fi
+   \fi\fi}
+
 \def\dolistitem % evt aantal items opslaan per niveau, scheelt zoeken
   {\ifconditional\textlistitem
     % begin of item
@@ -782,35 +949,7 @@
    \fi
 %    \ignorespaces
    \increment\noflistelements
-   \ifnum\itemcolumndepth=\zerocount \ifconditional\optimizelistitem
-     \ifnum\noflistelements=\plusone       % tgv bv kolommen/nesting
-       \findtwopassdata\s!list{\noflists}% % wordt soms de volgorde
-     \fi                                   % verstoord, vandaar \find
-     \iftwopassdatafound
-       \ifcase0\twopassdata\relax \twopassdatafoundfalse \fi
-     \fi
-     \iftwopassdatafound
-       \ifnum\twopassdata=3
-         \ifnum\noflistelements>1
-           \doitembreak\itemnobreak
-         \fi
-       \else\ifnum\twopassdata>3
-         \ifnum\noflistelements=2
-           \ifconditional\introlistitem
-             \doitembreak\nobreak
-           \else
-             \doitembreak\itemnobreak
-           \fi
-         \else\ifnum\twopassdata=\noflistelements\relax
-           \doitembreak\itemnobreak
-         \else\ifnum\noflistelements>2
-           \doitembreak\itembreak
-         \else
-           \ifconditional\introlistitem\else\doitembreak\itembreak\fi
-         \fi\fi\fi
-       \fi\fi
-     \fi
-   \fi\fi
+   \optimizelistitemsbreak
    \noindent
    \setbox8\hbox
      {\ifconditional\headlistitem
@@ -826,6 +965,15 @@
           \doitemattributes\itemlevel\c!style\c!color{\listitem}%
         \fi
       \fi}%
+\ifconditional\fittinglistitems
+    \ifdim\wd8>\getitemparameter\itemlevel\c!maxwidth sp\relax
+      \expanded{\global\noexpand\setitemparameter{\itemlevel}{\c!maxwidth}{\number\wd8}}%
+    \fi
+    \splititemtwopassdata\noflists
+    \ifdim\itemdataw sp>\zeropoint
+       \setbox8\simplealignedbox{\getitemparameter\itemlevel\c!itemalign}{\itemdataw sp}{\box8}%
+    \fi
+\fi
    \doifsomething\somdestination
      {\setbox8\hbox{\goto{\box8}[\somdestination]}}%
    \globallet\somdestination\empty

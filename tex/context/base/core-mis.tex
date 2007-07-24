@@ -1079,35 +1079,37 @@
         {\dosingleempty\dostartdelimitedtextpar}\dostartdelimitedtexttxt}}
 
 \def\dostartdelimitedtextpar[#1]%
-  {\let\dostopdelimitedtext\dostopdelimitedtextpar
-   \doifsomething{\delimitedtextparameter\c!spacebefore}
-     {\blank[\delimitedtextparameter\c!spacebefore]}%
-   \delimitedtextparameter\c!before
-   % nicer:
-   % \doadaptleftskip {\delimitedtextparameter\c!leftmargin}%
-   % \doadaptrightskip{\delimitedtextparameter\c!rightmargin}%
-   % backward compatible:
-   \doifelsenothing{#1}
-     {\endgraf
-      \doadaptleftskip {\delimitedtextparameter\c!leftmargin}%
-      \doadaptrightskip{\delimitedtextparameter\c!rightmargin}%
-      \let\dodostopdelimitedtextpar\endgraf}
-     {\startnarrower[#1]\let\dodostopdelimitedtextpar\stopnarrower}%
-   % so far
-   \dochecknextindentation{\??ci\currentdelimitedtext}%
-   \dostartattributes{\??ci\currentdelimitedtext}\c!style\c!color\empty
-   \leftdelimitedtextmark
-   \ignorespaces}
+   {\let\dostopdelimitedtext\dostopdelimitedtextpar
+    \doifsomething{\delimitedtextparameter\c!spacebefore}
+      {\blank[\delimitedtextparameter\c!spacebefore]}%
+    \delimitedtextparameter\c!before
+    % nicer:
+    % \doadaptleftskip {\delimitedtextparameter\c!leftmargin}%
+    % \doadaptrightskip{\delimitedtextparameter\c!rightmargin}%
+    % backward compatible:
+    \doifelsenothing{#1}
+      {\endgraf
+       \doadaptleftskip {\delimitedtextparameter\c!leftmargin}%
+       \doadaptrightskip{\delimitedtextparameter\c!rightmargin}%
+       \let\dodostopdelimitedtextpar\endgraf}
+      {\startnarrower[#1]\let\dodostopdelimitedtextpar\stopnarrower}%
+    % so far
+    % \dochecknextindentation{\??ci\currentdelimitedtext}% AM: not here
+    \dostartattributes{\??ci\currentdelimitedtext}\c!style\c!color\empty
+    \leftdelimitedtextmark
+    \ignorespaces}
 
 \def\dostopdelimitedtextpar
-  {\removeunwantedspaces
-   \removelastskip
-   \rightdelimitedtextmark
-   \dostopattributes
-   \dodostopdelimitedtextpar
-   \delimitedtextparameter\c!after
-   \doifsomething{\delimitedtextparameter\c!spaceafter}
-     {\blank[\delimitedtextparameter\c!spaceafter]}}
+   {\removeunwantedspaces
+    \removelastskip
+    \rightdelimitedtextmark
+    \dostopattributes
+    \dodostopdelimitedtextpar
+    \delimitedtextparameter\c!after
+    \doifsomething{\delimitedtextparameter\c!spaceafter}
+      {\blank[\delimitedtextparameter\c!spaceafter]}%
+    \dochecknextindentation{\??ci\currentdelimitedtext}% AM: here
+    \dorechecknextindentation}% AM: This was missing!
 
 % \def\dostartdelimitedtexttxt
 %   {\let\dostopdelimitedtext\dostopdelimitedtexttxt
@@ -2343,7 +2345,7 @@
 %D \macros
 %D   {startfloatcombination}
 %D
-%D \setupexternalfigures[directory={../sample}] 
+%D \setupexternalfigures[directory={../sample}]
 %D \startbuffer
 %D \placefigure
 %D   [left,none]

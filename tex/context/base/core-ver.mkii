@@ -54,7 +54,7 @@
 \def\mktype#1% was \dotype
   {\bgroup
    \resumecoloraftergroup % a problem is that we can still be in color mode, tricky hack
-   \strut % new, enables leading space in \type { abc } at par start
+   \begstrut % new, enables leading space in \type { abc } at par start / begstrut else no hyphenation
    \let\currenttypingclass\??ty
    \edef\currenttyping{#1}%
    \catcode`\<=\@@other

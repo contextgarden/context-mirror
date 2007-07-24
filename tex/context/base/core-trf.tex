@@ -76,6 +76,7 @@
 
 \def\dodoscalenextbox#1%
   {\edef\currentscaletag{#1}%
+   \doif{\scaleparameter\c!depth}\v!no{\setbox\nextbox\hbox{\raise\nextboxdp\box\nextbox}}% new
    \forgetall
    \dontshowcomposition
    \dontcomplain

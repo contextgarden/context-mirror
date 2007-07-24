@@ -632,6 +632,9 @@
 
 \fi
 
+\ifx\mkprocesscolumncontents\undefined\let\mkprocesscolumncontents\gobbleoneargument\fi
+\ifx\mkprocesspagecontents  \undefined\let\mkprocesspagecontents  \gobbleoneargument\fi
+
 \def\normalejectpenalty{-\@M}   \let\ejectpenalty\normalejectpenalty
 \def\normalsuperpenalty{-\@MM}  \let\superpenalty\normalsuperpenalty
 
@@ -774,6 +777,13 @@
    \outputmessage-{normal}\outputpenalty}
 
 \mainoutput{\invokeoutputroutine} \output{\inotrtrue\the\mainoutput}
+
+%D Some hooks:
+
+\newtoks \everybeforeoutput
+\newtoks \everyafteroutput
+
+\output{\inotrtrue\the\everybeforeoutput\the\mainoutput\the\everyafteroutput}
 
 \installoutput\synchronizeoutput % maybe add pagediscards
   {\ifvoid\normalpagebox\else\unvbox\normalpagebox\fi}
@@ -1000,7 +1010,7 @@
 
 \def\dofinaloutput#1#2% \vbox: prevents spurious spaces in every..pagebody
   {\beforefinaloutput
-   \the\everybeforeshipout
+   \the\everybeforeshipout % brrr not in shipout
    \ifspecialbasedsettings
      \myshipout{\hbox{\hbox to \zeropoint{\the\pageboundsettings}%
                       \hbox{\vbox{\dopagebody#1#2\setpagecounters}}}}%
@@ -1823,6 +1833,7 @@
 
 \def\noshipout
   {\writestatus\m!systems{ignoring further shipouts}%
+   \global\advance\realpageno\minusone % else no flush of resources
    \dowithnextbox{\deadcycles\zerocount}}
 
 % \def\doignorerestoftext

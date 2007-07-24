@@ -80,7 +80,11 @@
 \defineXMLsingular [context:compound] [token=]
   {\mathortext % disc comm looks ahead, so \relax
      {\doifXMLop{token}{\XMLop{token}}\compoundhyphen}%
-     {\expanded{\discretionarycommand\noexpand|\XMLop{token}}|\relax}}
+     {\expanded{\directdiscretionary{\XMLop{token}}}\relax}}
+
+\defineXMLenvironmentsave [context:cp]
+  {}
+  {\expanded{\directdiscretionary{\XMLflush{cp}}}\relax}
 
 %D \elements {p}
 %D
@@ -242,7 +246,7 @@
    \egroup}
 
 %D \elements {fixed}
-%D \setupexternalfigures[directory={../sample}] 
+%D \setupexternalfigures[directory={../sample}]
 %D \startbuffer
 %D Something fixed will end up at the place where it defined in the input
 %D stream. The main idea behind this element is that it gives you control
@@ -275,7 +279,7 @@
    \egroup}
 
 %D \elements {float}
-%D \setupexternalfigures[directory={../sample}] 
+%D \setupexternalfigures[directory={../sample}]
 %D \startbuffer
 %D A floating body will be placed at the first location available, unless
 %D a location is specified. As with the <element>fixed</element> element,

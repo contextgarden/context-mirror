@@ -1498,7 +1498,7 @@
 %D Now let's see if things work all right and show the example
 %D files that are part of the \METAPOST\ distribution:
 %D
-%D \setupexternalfigures[directory={../sample}] 
+%D \setupexternalfigures[directory={../sample}]
 %D \startlinecorrection
 %D \setupalign[middle]
 %D \leavevmode
@@ -1872,8 +1872,7 @@
 
 \long\def\startMPclip#1#2\stopMPclip
   {\blabelgroup
-   \long\setgvalue{MPC:#1}%
-     {\startMPgraphic#2\stopMPgraphic\dograbMPclippath}%
+   \long\setgvalue{MPC:#1}{\startMPgraphic#2\stopMPgraphic\dograbMPclippath}%
    \elabelgroup}
 
 \let\stopMPclip\relax
@@ -1900,6 +1899,22 @@
 %D and the \type {%} triggers the grabber. Next we filter the
 %D clipping path, or actually, the first path.
 
+% \bgroup
+% \catcode`\%=\@@active
+% \catcode`\/=\@@comment
+% \gdef\dograbMPclippath/
+%   {\setbox\scratchbox=\hbox\bgroup/
+%    \catcode`\%=\@@active
+%    \obeylines\let\obeyedline\space
+%    \def\do##1newpath##2closepath##3\od/
+%      {\xdef\MPclippath{##2}\endinput}/
+%    \def%##1%%EOF/
+%      {\do##1newpathclosepath\od\endinput}/
+%    \readfile{\MPgraphicfile.\the\currentMPgraphic}{}{}/
+%    \deallocateMPslot\currentMPgraphic / new
+%    \egroup}
+% \egroup
+
 \bgroup
 \catcode`\%=\@@active
 \catcode`\/=\@@comment
@@ -1907,11 +1922,18 @@
   {\setbox\scratchbox=\hbox\bgroup/
    \catcode`\%=\@@active
    \obeylines\let\obeyedline\space
-   \def\do##1newpath##2closepath##3\od/
+   \def\do##1q n##2p W##3\od/
      {\xdef\MPclippath{##2}\endinput}/
    \def%##1%%EOF/
-     {\do##1newpathclosepath\od\endinput}/
+     {\do##1q np W\od\endinput}/
    \readfile{\MPgraphicfile.\the\currentMPgraphic}{}{}/
+   \ifx\MPclippath\empty
+     \def\do##1newpath##2closepath##3\od/
+       {\xdef\MPclippath{##2}\endinput}/
+     \def%##1%%EOF/
+       {\do##1newpathclosepath\od\endinput}/
+     \readfile{\MPgraphicfile.\the\currentMPgraphic}{}{}/
+   \fi
    \deallocateMPslot\currentMPgraphic / new
    \egroup}
 \egroup

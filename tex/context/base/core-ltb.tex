@@ -69,6 +69,8 @@
 \edef\??ler{\??le:r:}
 \edef\??lec{\??le:c:}
 \edef\??lew{\??le:w:}
+\edef\??leh{\??le:h:}
+\edef\??led{\??le:d:}
 
 \newif\iflinetablepreroll
 \newif\ifinlinetable
@@ -249,6 +251,28 @@
      \dostartattributes{\??lec\number\linetablecolumn}\c!style\c!color\empty
      \begstrut \ignorespaces}
 
+% \def\stoplinetablecell
+%   {\unskip \endstrut
+%    \dostopattributes
+%    \ifcase\linetablemode
+%      \endgraf
+%    \else
+%      \ifcase\alignmentswitch\else\hss\fi
+%    \fi
+%    \egroup
+%    \hskip\linetablecparameter\c!rightoffset
+%    \egroup
+%    \iflinetablepreroll
+%      \box\scratchbox
+%    \else
+%      \doif{\linetablecparameter\c!background}\v!color
+%        {\backgroundline[\linetablecparameter\c!backgroundcolor]}%
+%        {\box\scratchbox}%
+%    \fi
+%    \egroup}
+
+\newconditional\linetableautoheight  \settrue\linetableautoheight
+
 \def\stoplinetablecell
   {\unskip \endstrut
    \dostopattributes
@@ -263,11 +287,58 @@
    \iflinetablepreroll
      \box\scratchbox
    \else
-     \doif{\linetablecparameter\c!background}\v!color
-       {\backgroundline[\linetablecparameter\c!backgroundcolor]}%
+     \doifelse{\linetablecparameter\c!background}\v!color
+       {\ifconditional\linetableautoheight
+          \hbox{\blackrule
+            [ \c!color=\linetablecparameter\c!backgroundcolor,
+             \c!height=\linetablerparameter{x\c!height},
+              \c!depth=\linetablerparameter{x\c!depth},
+              \c!width=\wd\scratchbox]%
+           \hskip-\wd\scratchbox\box\scratchbox}%
+         \else
+           \backgroundline[\linetablecparameter\c!backgroundcolor]{\box\scratchbox}%
+         \fi}%
        {\box\scratchbox}%
    \fi
    \egroup}
+
+% \def\stoplinetablecell
+%   {\unskip \endstrut
+%    \dostopattributes
+%    \ifcase\linetablemode
+%      \endgraf
+%    \else
+%      \ifcase\alignmentswitch\else\hss\fi
+%    \fi
+%    \egroup
+%    \hskip\linetablecparameter\c!rightoffset
+%    \egroup
+%    \iflinetablepreroll
+%      \box\scratchbox
+%    \else
+%      \doifelse{\linetablecparameter\c!background}\v!color
+%        {\ifconditional\linetableautoheight
+%         %           \hbox{\blackrule
+%         %             [ \c!color=\linetablecparameter\c!backgroundcolor,
+%         %              \c!height=\linetablerparameter{x\c!height},
+%         %               \c!depth=\linetablerparameter{x\c!depth},
+%         %               \c!width=\wd\scratchbox]%
+%         %            \hskip-\wd\scratchbox\box\scratchbox}%
+%           \dp\scratchbox\linetablerparameter{x\c!depth}%
+%           \ht\scratchbox\linetablerparameter{x\c!height}%
+%           \framed
+%             [\c!offset=\v!overlay,
+%              \c!frameoffset=.5\linewidth,
+%              \c!leftframe=\v!off,\c!rightframe=\v!off,
+%              \c!background=\v!color,
+%              \c!backgroundcolor=\linetablecparameter\c!backgroundcolor%
+%             ]{\box\scratchbox}%
+%          \else
+%            \backgroundline[\linetablecparameter\c!backgroundcolor]{\box\scratchbox}%
+%          \fi}%
+%        {\box\scratchbox}%
+%    \fi
+%    \egroup}
 
 \def\savelinetablepart
   {\global\setbox\tablebox\linetablepart
@@ -541,15 +612,29 @@
 %      \setxvalue{\??lew\number\linetablecolumn}{\the\wd\linetablecell}%
 %    \fi}
 
-\def\checklinecolumnwidth
-  {\expandafter\xdef\csname\??lew\number\linetablecolumn\endcsname
-     {\expandafter\ifx\csname\??lew\number\linetablecolumn\endcsname\relax
-        \the\wd\linetablecell
-      \else\ifdim\csname\??lew\number\linetablecolumn\endcsname<\wd\linetablecell
-        \the\wd\linetablecell
+% \def\checklinecolumnwidth
+%   {\expandafter\xdef\csname\??lew\number\linetablecolumn\endcsname
+%      {\expandafter\ifx\csname\??lew\number\linetablecolumn\endcsname\relax
+%         \the\wd\linetablecell
+%       \else\ifdim\csname\??lew\number\linetablecolumn\endcsname<\wd\linetablecell
+%         \the\wd\linetablecell
+%       \else
+%         \csname\??lew\number\linetablecolumn\endcsname
+%       \fi\fi}}
+
+\def\checklinecolumndimension#1#2#3%
+  {\expandafter\xdef\csname#1\number#3\endcsname
+     {\expandafter\ifx\csname#1\number#3\endcsname\relax
+        \the#2\linetablecell
+      \else\ifdim\csname#1\number#3\endcsname<#2\linetablecell
+        \the#2\linetablecell
       \else
-        \csname\??lew\number\linetablecolumn\endcsname
+        \csname#1\number#3\endcsname
       \fi\fi}}
+
+\def\checklinecolumnwidth {\checklinecolumndimension\??lew\wd\linetablecolumn}
+\def\checklinecolumnheight{\checklinecolumndimension\??leh\ht\linetablerow}
+\def\checklinecolumndepth {\checklinecolumndimension\??led\dp\linetablerow}
 
 \def\linetableBR
   {\dosingleempty\dolinetableBR}
@@ -596,6 +681,8 @@
   {\stoplinetablecell
    \iflinetablepreroll
      \checklinecolumnwidth
+     \checklinecolumnheight
+     \checklinecolumndepth
    \fi
    \checklinetablepart}
 
@@ -669,6 +756,12 @@
   {\stoplinetablerun
    \egroup
    \globallet\noflinetablerows\linetablerows
+   \dorecurse\noflinetablerows % global, from last run {\linetableparameter\c!n}
+     {%\writestatus{linetable}{\recurselevel->\getvalue{\??lew\recurselevel}}%
+      \setevalue{\??ler\recurselevel x\c!height}{\getvalue{\??leh\recurselevel}}%
+      \setevalue{\??ler\recurselevel x\c!depth }{\getvalue{\??led\recurselevel}}%
+      \letgvalue{\??leh\recurselevel}\!!zeropoint
+      \letgvalue{\??led\recurselevel}\!!zeropoint}
    \dorecurse\noflinetablecolumns % global, from last run {\linetableparameter\c!n}
      {%\writestatus{linetable}{\recurselevel->\getvalue{\??lew\recurselevel}}%
       \setevalue{\??lec\recurselevel\c!width}{\getvalue{\??lew\recurselevel}}%

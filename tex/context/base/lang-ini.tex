@@ -416,7 +416,7 @@
   \globallet\dodoloadpatterns\gobblefourarguments
 \to \everydump
 
-% \loadmarkfile{lang-ini} % not yet
+\loadmarkfile{lang-ini} % not yet
 
 %D \macros
 %D   {setuplanguage}
@@ -585,6 +585,12 @@
    \dosetnormallanguage{:\s!default      :\currentmapping:}#1{%
    \dosetnormallanguage{:\s!default      :\s!default     :}#1\empty}}}}
 
+\def\sethyphenationvariables
+  {\lefthyphenmin 0\languageparameter\s!lefthyphenmin \relax
+   \righthyphenmin0\languageparameter\s!righthyphenmin\relax
+   \lefthyphenmin \numexpr\lefthyphenmin +\hyphenminoffset\relax
+   \righthyphenmin\numexpr\righthyphenmin+\hyphenminoffset\relax}
+
 \def\docomplexlanguage% assumes that \currentlanguage is set
   {\edef\currentdefaultlanguage{\defaultlanguage\currentlanguage}%
    % called quite often, so we use \csname
@@ -619,8 +625,9 @@
    %   \ifx\languagemapping\empty\else
    %     \fastenablemapping\languagemapping
    %   \fi
-   \lefthyphenmin 0\languageparameter\s!lefthyphenmin
-   \righthyphenmin0\languageparameter\s!righthyphenmin
+   \sethyphenationvariables
+   %\lefthyphenmin 0\languageparameter\s!lefthyphenmin
+   %\righthyphenmin0\languageparameter\s!righthyphenmin
    \relax
    % will be definable and move to core-spa !
    \doifelse{\languageparameter\c!spacing}\v!broad

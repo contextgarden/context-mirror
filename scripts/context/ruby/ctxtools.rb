@@ -534,7 +534,7 @@ class Commands
     ]
     $dontasksuffixes = [
         "mp(graph|run)\\.mp", "mp(graph|run)\\.mpd", "mp(graph|run)\\.mpo", "mp(graph|run)\\.mpy",
-        "mp(graph|run)\\.\\d+",
+        "mp(graph|run)\\.\\d+", "mp(graph|run)\\.mp.keep",
         "xlscript\\.xsl"
     ]
     $forsuresuffixes = [

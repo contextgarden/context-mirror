@@ -195,4 +195,16 @@
     \directsetup{mmc:csymbol:http://www.openmath.org/cd/mathadore\letterhash degree}
 \stopsetups
 
+\defineXMLargument
+    [ci]
+    {\checkMMLciSYMBOL}
+
+\def\checkMMLciSYMBOL#1%
+   {\convertargument#1\to\ascii
+    \executeifdefined{ci:symbol:crap:\ascii}{#1}}
+
+\setvalue{ci:symbol:crap:alpha}{\alpha}
+\setvalue{ci:symbol:crap:beta}{\beta}
+\setvalue{ci:symbol:crap:gamma}{\gamma}
+
 \protect \endinput

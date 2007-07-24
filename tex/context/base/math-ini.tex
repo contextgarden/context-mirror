@@ -710,6 +710,49 @@
 %D \showmathtoken{Gamma} $\Gamma \Delta \alpha \delta \zeta$
 %D \stoptyping
 
+%D \macros
+%D   {nonknuthmode, donknuthmode}
+%D
+%D The underscore is frequently used in manuals but unfortunately \TEX\ prefers
+%D it to be a math specific character. And since computer modern fonts didn't
+%D have an underscore, one had to use commands to fake one. Nowadays we do
+%D have underscores in latin modern, and since all other fonts have them, we
+%D decided to get away from the restriction to use the underscore character in
+%D text mode.
+%D
+%D \starttyping
+%D \def\test#1{#1}
+%D
+%D \nonknuthmode $x_2$ x_2 \test{$x_2$} \test{x_2}
+%D
+%D \donknuthmode $x_2$ x_2 \test{$x_2$} \test{x_2}
+%D \stoptyping
+%D
+%D The result is as expected: the first line typesets ok, while the second
+%D one triggers an error message.
+
+\bgroup
+
+    \ifx\normalsuber\undefined \def\normalsuber{_} \fi
+    \ifx\normalsuper\undefined \def\normalsuper{^} \fi
+
+    \catcode`_=\active
+    \catcode`^=\active
+
+    \gdef\nonknuthmode
+      {\appendtoks\let_\normalsuber\let^\normalsuper\to\everymathematics
+       \mathcode`_="8000
+       \mathcode`^="8000
+       \catcode`_=\@@other
+       \catcode`^=\@@other
+       \let\nonknuthmode\relax}
+
+    \gdef\donknuthmode
+      {\catcode`_=\@@subscript
+       \catcode`^=\@@superscript}
+
+\egroup
+
 \protect \endinput
 
 \tracemathcollectiontrue

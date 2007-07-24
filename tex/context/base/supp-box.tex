@@ -626,16 +626,24 @@
 %D   {llap, rlap, tlap, blap, clap}
 %D
 %D Some well known friends, but we implement them our own
-%D way.
+%D way. We want the macros to work in both math and text mode.
 
-\def\rlap{\begingroup\dowithnextbox{\normalhbox to \zeropoint
-  {\flushnextbox\normalhss}\endgroup}\normalhbox}
+\def\dorlap{\begingroup\dowithnextbox{\normalhbox to \zeropoint
+   {\flushnextbox\normalhss}\endgroup}\normalhbox}
 
-\def\llap{\begingroup\dowithnextbox{\normalhbox to \zeropoint
-  {\normalhss\flushnextbox}\endgroup}\normalhbox}
+\def\dollap{\begingroup\dowithnextbox{\normalhbox to \zeropoint
+   {\normalhss\flushnextbox}\endgroup}\normalhbox}
 
-\def\clap{\begingroup\dowithnextbox{\normalhbox to \zeropoint
-  {\normalhss\flushnextbox\normalhss}\endgroup}\normalhbox}
+\def\doclap{\begingroup\dowithnextbox{\normalhbox to \zeropoint
+   {\normalhss\flushnextbox\normalhss}\endgroup}\normalhbox}
+
+\def\domathclap{\mathpalette\dodomathclap} \def\dodomathclap#1#2{\doclap{$\m@th#1#2$}}
+\def\domathllap{\mathpalette\dodomathllap} \def\dodomathllap#1#2{\dollap{$\m@th#1#2$}}
+\def\domathrlap{\mathpalette\dodomathrlap} \def\dodomathrlap#1#2{\dorlap{$\m@th#1#2$}}
+
+\unexpanded\def\rlap{\mathortext\domathrlap\dorlap}
+\unexpanded\def\llap{\mathortext\domathllap\dollap}
+\unexpanded\def\clap{\mathortext\domathclap\doclap}
 
 \def\tlap{\begingroup\dowithnextbox{\normalvbox to \zeropoint
   {\normalvss\flushnextbox}\endgroup}\normalvbox}
@@ -1067,7 +1075,7 @@
       \exhyphenpenalty\zerocount
       \setbox0\normalvbox
         {\hsize\zeropoint
-         \hskip\zeropoint % really needed
+         \hskip\zeropoint\relax % really needed
          \ifnum#1<\zeropoint
            \obeyspaces
            \obeylines
@@ -2339,7 +2347,7 @@
 %D The alternatives \type {\tbox} and \type {\bbox} can be used
 %D to properly align boxes, like in:
 %D
-%D \setupexternalfigures[directory={../sample}] 
+%D \setupexternalfigures[directory={../sample}]
 %D \startbuffer
 %D \starttable[|||]
 %D \HL

@@ -2954,6 +2954,27 @@
       <cd:parameter name="text">
         <cd:constant type="cd:text"/>
       </cd:parameter>
+      <cd:parameter name="closesymbol">
+        <cd:constant type="cd:text"/>
+      </cd:parameter>
+      <cd:parameter name="closecommand">
+        <cd:constant type="cd:oneargument"/>
+      </cd:parameter>
+      <cd:parameter name="titleleft">
+        <cd:constant type="cd:text"/>
+      </cd:parameter>
+      <cd:parameter name="titleright">
+        <cd:constant type="cd:text"/>
+      </cd:parameter>
+      <cd:parameter name="distantatitlu">
+        <cd:constant type="cd:dimension"/>
+      </cd:parameter>
+      <cd:parameter name="stiltitlu">
+        <cd:resolve name="style"/>
+      </cd:parameter>
+      <cd:parameter name="culoaretitlu">
+        <cd:constant type="cd:name"/>
+      </cd:parameter>
       <cd:parameter name="aliniere">
         <cd:resolve name="align"/>
       </cd:parameter>
@@ -5969,6 +5990,7 @@
       <cd:constant type="paragraf"/>
       <cd:constant type="intext"/>
       <cd:constant type="aleator"/>
+      <cd:constant type="reverse"/>
     </cd:keywords>
     <cd:assignments optional="yes" list="yes">
       <cd:parameter name="margine">
@@ -6893,9 +6915,29 @@
       <cd:constant type="nothanging"/>
       <cd:constant type="despsilabe"/>
       <cd:constant type="nedespsilabe"/>
+      <cd:constant type="lesshyphens"/>
+      <cd:constant type="morehyphens"/>
+      <cd:constant type="nou"/>
+      <cd:constant type="old"/>
+      <cd:constant type="normal"/>
+      <cd:constant type="da"/>
+      <cd:constant type="nu"/>
+      <cd:constant type="flushleft"/>
+      <cd:constant type="flushright"/>
+      <cd:constant type="flushouter"/>
+      <cd:constant type="flushinner"/>
+      <cd:constant type="center"/>
+      <cd:constant type="hz"/>
+      <cd:constant type="nohz"/>
+      <cd:constant type="spatiere"/>
+      <cd:constant type="nospacing"/>
+      <cd:constant type="tolerant"/>
+      <cd:constant type="foartetolerant"/>
+      <cd:constant type="dilatat"/>
     </cd:keywords>
   </cd:arguments>
 </cd:command>
+
 
 <cd:command name="alignment" type="environment">
   <cd:sequence>

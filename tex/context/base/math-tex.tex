@@ -636,4 +636,35 @@
 \definemathcommand [colonsim]         [rel] {\coloncolon\colonsep\sim}
 \definemathcommand [simcoloncolon]    [rel] {\sim\coloncolon\colonsep}
 
+%D More integrals (AM):
+
+\def\dointkern{\mkern-6mu\mathchoice{\mkern-3mu}{}{}{}}
+
+\definemathcommand [iint]   {\repeatintegral\plusone  }
+\definemathcommand [iiint]  {\repeatintegral\plustwo  }
+\definemathcommand [iiiint] {\repeatintegral\plusthree}
+
+\def\repeatintegral#1%
+  {\scratchtoks\emptytoks
+   \let\dointlimits\nolimits
+   \dorecurse{#1}{\appendtoks \intop \dointkern \to \scratchtoks}
+   \appendtoks \intop \dointlimits \to \scratchtoks
+   \edef\dodorepeatintegral{\the\scratchtoks}%
+   \futurelet\next\dorepeatintegral}
+
+%D If the \type{\limits} option is used after \type{\iint}, use
+%D \type{\mathop} and fudge the left hand space a bit to make the
+%D subscript visually centered.
+
+\def\dorepeatintegral
+   {\ifx\next\limits        \dointlimitcorrection \else
+    \ifx\next\displaylimits \dointlimitcorrection \fi\fi
+    \dodorepeatintegral}
+
+\def\dointlimitcorrection
+  {\mkern-7mu\mathchoice{\mkern-2mu}{}{}{}%
+   \mathop\bgroup
+     \mkern7mu\mathchoice{\mkern2mu}{}{}{}%
+     \let\dointlimits\egroup}
+
 \protect \endinput

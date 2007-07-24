@@ -228,9 +228,58 @@
 
 \def\currentutilityfilename{\jobname}
 
+% \long\def\doutilities#1#2#3#4#5% % introduceren in utility file
+%   {\restorecatcodes
+%    \resetutilities
+%    % more than one utility thing can be handled in one pass,
+%    % for instance lists, so we process ##1 as list
+%    \def\douticommand##1{\csname\s!set##1\endcsname}%
+%    \processcommacommand[#1]\douticommand
+%    \begingroup
+%    \def\currentutilityfilename{#2}%
+%    \notesenabledfalse
+%    \doinpututilitiestrue
+%    \global\utilitydonefalse
+%    \catcode`\\=\@@escape
+%    \catcode`\{=\@@begingroup
+%    \catcode`\}=\@@endgroup
+%    \catcode`\%=\@@comment\relax
+%    \pushendofline % geeft problemen zodra andere file wordt ingelezen
+%    \ifunprotectutilities % nog nodig ?
+%      \unprotect
+%    \fi
+%    \ifnum\catcode`\@=\@@active \else
+%      \catcode`\@=\@@letter % permits expanded commands with \@'s
+%    \fi
+%    \ifnum\catcode`\!=\@@active \else
+%      \catcode`\!=\@@letter % permits multilingual constants
+%    \fi
+%    #4%
+%    \the\everybeforeutilityread
+%    \readjobfile{#2.\f!outputextension}\donothing\donothing
+%    \the\everyafterutilityread
+%    #5%
+%    \relax
+%    \ifunprotectutilities
+%      \protect
+%    \fi
+%    \popendofline
+%    \ifutilitydone\else
+%      \doifsomething{#3}
+%        {\showmessage\m!systems9{{#3}}%
+%         \doifconcepttracing
+%           {\blank
+%            \type{[\currentmessagetext]}%
+%            \blank}}%
+%    \fi
+%    \endgroup}
+
+% we need to pop and push, else problems with reading
+% utility files (toc) in xml mode and (e.g.) in a toc
+% entry doing a doifmode
+
 \long\def\doutilities#1#2#3#4#5% % introduceren in utility file
-  {\restorecatcodes
-   \resetutilities
+  {\resetutilities
    % more than one utility thing can be handled in one pass,
    % for instance lists, so we process ##1 as list
    \def\douticommand##1{\csname\s!set##1\endcsname}%
@@ -240,24 +289,17 @@
    \notesenabledfalse
    \doinpututilitiestrue
    \global\utilitydonefalse
-   \catcode`\\=\@@escape
-   \catcode`\{=\@@begingroup
-   \catcode`\}=\@@endgroup
-   \catcode`\%=\@@comment\relax
    \pushendofline % geeft problemen zodra andere file wordt ingelezen
+   \pushcatcodetable
+   \setcatcodetable\ctxcatcodes
    \ifunprotectutilities % nog nodig ?
      \unprotect
-   \fi
-   \ifnum\catcode`\@=\@@active \else
-     \catcode`\@=\@@letter % permits expanded commands with \@'s
-   \fi
-   \ifnum\catcode`\!=\@@active \else
-     \catcode`\!=\@@letter % permits multilingual constants
    \fi
    #4%
    \the\everybeforeutilityread
    \readjobfile{#2.\f!outputextension}\donothing\donothing
    \the\everyafterutilityread
+   \popcatcodetable
    #5%
    \relax
    \ifunprotectutilities

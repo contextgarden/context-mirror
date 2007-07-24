@@ -147,6 +147,10 @@
   {\getvalue{\@@thenumber{#1}\c!n}}
 
 \let\getnumber\convertednumber
+
+\def\doifdefinednumber    #1{\doifdefined    {\csname\s!number#1\c!number\endcsname}}
+\def\doifundefinednumber  #1{\doifundefined  {\csname\s!number#1\c!number\endcsname}}
+\def\doifdefinednumberelse#1{\doifdefinedelse{\csname\s!number#1\c!number\endcsname}}
 
 \ifx\checknumber\undefined \def\checknumber[#1]{} \fi
 

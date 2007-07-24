@@ -681,7 +681,8 @@
    \rawreference\s!fnt{\s!fnt:t:\internalfootreference}{}}
 
 \def\dostartnote% nog gobble als in pagebody
-  {\bgroup
+  {\pushsomestates
+   \bgroup
    \settrue\processingnote
   %\restorecatcodes % to be tested first
    \iftypesettinglines % otherwise problems with \type <crlf> {xxx}
@@ -732,7 +733,8 @@
    \stoppushnote
    \egroup
    \stoplocalnoteinsert
-   \kern\notesignal\relax} % \relax is needed to honor spaces
+   \kern\notesignal\relax % \relax is needed to honor spaces
+   \popsomestates}
 
 \def\dolastnotesymbol
   {\removeunwantedspaces

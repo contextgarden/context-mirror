@@ -433,8 +433,8 @@ class TeXUtil
 
             def MyExtras::writer(logger,handle)
                 handle << logger.banner("programs: #{@@programs.size}")
-                @@programs.each do |p|
-                    handle << "% #{p} (#{@@programs[p.to_i]})\n"
+                @@programs.each_with_index do |cmd, p|
+                    handle << "% #{p+1} (#{cmd})\n"
                 end
             end
 
@@ -447,12 +447,11 @@ class TeXUtil
             end
 
             def MyExtras::finalizer(logger)
-unless (ENV["CTX.TEXUTIL.EXTRAS"] =~ /^(no|off|false|0)$/io) || (ENV["CTX_TEXUTIL_EXTRAS"] =~ /^(no|off|false|0)$/io) then
-                    @@programs.each do |p|
-                        cmd = @@programs[p.to_i]
+                unless (ENV["CTX.TEXUTIL.EXTRAS"] =~ /^(no|off|false|0)$/io) || (ENV["CTX_TEXUTIL_EXTRAS"] =~ /^(no|off|false|0)$/io) then
+                    @@programs.each do |cmd|
                         logger.report("running #{cmd}")
                         system(cmd)
-end
+                    end
                 end
             end
 

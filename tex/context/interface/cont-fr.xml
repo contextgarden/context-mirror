@@ -2954,6 +2954,27 @@
       <cd:parameter name="texte">
         <cd:constant type="cd:text"/>
       </cd:parameter>
+      <cd:parameter name="closesymbol">
+        <cd:constant type="cd:text"/>
+      </cd:parameter>
+      <cd:parameter name="closecommand">
+        <cd:constant type="cd:oneargument"/>
+      </cd:parameter>
+      <cd:parameter name="titleleft">
+        <cd:constant type="cd:text"/>
+      </cd:parameter>
+      <cd:parameter name="titleright">
+        <cd:constant type="cd:text"/>
+      </cd:parameter>
+      <cd:parameter name="distancetitre">
+        <cd:constant type="cd:dimension"/>
+      </cd:parameter>
+      <cd:parameter name="styletitre">
+        <cd:resolve name="style"/>
+      </cd:parameter>
+      <cd:parameter name="couleurtitre">
+        <cd:constant type="cd:name"/>
+      </cd:parameter>
       <cd:parameter name="alignement">
         <cd:resolve name="align"/>
       </cd:parameter>
@@ -5969,6 +5990,7 @@
       <cd:constant type="paragraphe"/>
       <cd:constant type="danstexte"/>
       <cd:constant type="aleatoire"/>
+      <cd:constant type="inverse"/>
     </cd:keywords>
     <cd:assignments optional="yes" list="yes">
       <cd:parameter name="marge">
@@ -6893,9 +6915,29 @@
       <cd:constant type="nonsuspendu"/>
       <cd:constant type="hyphenated"/>
       <cd:constant type="nothyphenated"/>
+      <cd:constant type="lesshyphens"/>
+      <cd:constant type="morehyphens"/>
+      <cd:constant type="nouveau"/>
+      <cd:constant type="old"/>
+      <cd:constant type="normal"/>
+      <cd:constant type="oui"/>
+      <cd:constant type="non"/>
+      <cd:constant type="flushleft"/>
+      <cd:constant type="flushright"/>
+      <cd:constant type="flushouter"/>
+      <cd:constant type="flushinner"/>
+      <cd:constant type="center"/>
+      <cd:constant type="hz"/>
+      <cd:constant type="nohz"/>
+      <cd:constant type="espacement"/>
+      <cd:constant type="sansespacement"/>
+      <cd:constant type="tolerant"/>
+      <cd:constant type="trestolerant"/>
+      <cd:constant type="etire"/>
     </cd:keywords>
   </cd:arguments>
 </cd:command>
+
 
 <cd:command name="alignment" type="environment">
   <cd:sequence>

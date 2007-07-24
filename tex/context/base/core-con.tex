@@ -588,9 +588,13 @@
 %D Taco's modulo code is implemented in the system module
 %D \type {syst-con}.
 
+%D If a conversion is just a font switch then we need to make sure
+%D that the number is indeed end up as number in the input, so we
+%D need to handle the second argument.
+
 \beginETEX \ifcsname
 
-\def\convertnumber#1%
+\def\convertnumber#1#2%
   {\csname\??cv
      \ifcsname\??cv\currentlanguage#1\endcsname
        \currentlanguage#1%
@@ -599,7 +603,7 @@
      \else
        \s!default
      \fi\fi
-   \endcsname}
+   \endcsname{\number#2}}
 
 \def\doifconversiondefinedelse#1%
   {\ifcsname\??cv\currentlanguage#1\endcsname
@@ -614,7 +618,7 @@
 
 \beginTEX
 
-\def\convertnumber#1%
+\def\convertnumber#1#2%
   {\csname\??cv
      \@EA\ifx\csname\??cv\currentlanguage#1\endcsname\relax
        \@EA\ifx\csname\??cv#1\endcsname\relax
@@ -625,7 +629,7 @@
      \else
        \currentlanguage#1%
      \fi
-   \endcsname}
+   \endcsname{\number#2}}
 
 \def\doifconversiondefinedelse#1%
   {\@EA\ifx\csname\??cv\currentlanguage#1\endcsname\relax

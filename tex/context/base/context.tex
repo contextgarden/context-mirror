@@ -42,7 +42,7 @@
 %D your styles an modules.
 
 \edef\contextformat {\jobname}
-\edef\contextversion{2007.04.17 12:51}
+\edef\contextversion{2007.07.24 14:36}
 
 %D For those who want to use this:
 
@@ -203,7 +203,11 @@
 \loadmkivfile{char-def.tex}
 \loadmkivfile{char-utf.tex}
 
+\loadmkivfile{toks-ini.tex}
+
+\loadmkivfile{attr-ini.tex}
 \loadmkivfile{node-ini.tex}
+
 
 %D We also use some third party macros. These are loaded by
 %D saying:
@@ -406,7 +410,7 @@
 %D content. Here we also redefine \type{\it} as {\it italic}
 %D instead of italian.
 
-\loadmkivfile{font-set.tex}
+% \loadmkivfile{font-set.tex} -- experimental but now obsolete
 
 \loadcorefile{font-ini.tex}
 \loadcorefile{font-uni.tex}

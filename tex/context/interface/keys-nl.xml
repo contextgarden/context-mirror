@@ -1,6 +1,11 @@
 <?xml version="1.0"?>
 
-<cd:interface xmlns:cd="http://www.pragma-ade.com/commands" name="context" language="nl" version="2007.03.22 13:34">
+<cd:interface xmlns:cd="http://www.pragma-ade.com/commands" name="context" language="nl" version="2007.07.24 14:36">
+
+  <cd:variables>
+    <cd:variable name="lesshyphenation" value="lesshyphenation"/>
+    <cd:variable name="morehyphenation" value="morehyphenation"/>
+  </cd:variables>
 
   <cd:variables>
     <cd:variable name="one" value="een"/>
@@ -406,6 +411,8 @@
     <cd:constant name="sub" value="sub"/>
     <cd:constant name="subtitle" value="subtitel"/>
     <cd:constant name="symbol" value="symbool"/>
+    <cd:constant name="closesymbol" value="sluitsymbool"/>
+    <cd:constant name="closecommand" value="sluitcommando"/>
     <cd:constant name="symbolset" value="symboolset"/>
     <cd:constant name="symcolor" value="symkleur"/>
     <cd:constant name="symstyle" value="symletter"/>
@@ -428,6 +435,9 @@
     <cd:constant name="titlestyle" value="titelletter"/>
     <cd:constant name="titlecolor" value="titelkleur"/>
     <cd:constant name="titledistance" value="titelafstand"/>
+    <cd:constant name="titleleft" value="titellinks"/>
+    <cd:constant name="titleright" value="titelrechts"/>
+    <cd:constant name="titlecommand" value="titelcommando"/>
     <cd:constant name="aligntitle" value="titeluitlijnen"/>
     <cd:constant name="tolerance" value="tolerantie"/>
     <cd:constant name="inbetween" value="tussen"/>
@@ -466,6 +476,7 @@
     <cd:constant name="yscale" value="yschaal"/>
     <cd:constant name="ystep" value="ystap"/>
     <cd:constant name="samepage" value="zelfdepagina"/>
+    <cd:constant name="itemalign" value="itemuitlijnen"/>
     <cd:constant name="sidealign" value="zijuitlijnen"/>
     <cd:constant name="side" value="zij"/>
     <cd:constant name="fieldlayer" value="veldlaag"/>
@@ -559,6 +570,7 @@
     <cd:variable name="mirrored" value="gespiegeld"/>
     <cd:variable name="global" value="globaal"/>
     <cd:variable name="grid" value="grid"/>
+    <cd:variable name="nogrid" value="geengrid"/>
     <cd:variable name="big" value="groot"/>
     <cd:variable name="bigbodyfont" value="grootkorps"/>
     <cd:variable name="bigpreference" value="grotevoorkeur"/>
@@ -668,6 +680,7 @@
     <cd:variable name="display" value="scherm"/>
     <cd:variable name="reverse" value="omgekeerd"/>
     <cd:variable name="fit" value="passend"/>
+    <cd:variable name="nofit" value="nietpassend"/>
     <cd:variable name="postscript" value="postscript"/>
     <cd:variable name="preview" value="preview"/>
     <cd:variable name="program" value="programma"/>
@@ -935,6 +948,8 @@
     <cd:variable name="HideLayer" value="VerbergLaag"/>
     <cd:variable name="VideLayer" value="ToonLaag"/>
     <cd:variable name="ToggleLayer" value="WisselLaag"/>
+    <cd:variable name="ShowThumbs" value="ShowThumbs"/>
+    <cd:variable name="ShowBookmarks" value="ShowBookmarks"/>
   </cd:variables>
 
   <cd:variables>

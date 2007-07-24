@@ -1,0 +1,203 @@
+%D \module
+%D   [       file=sort-lan,
+%D        version=2005.08.08,
+%D          title=\CONTEXT\ Sort Macros,
+%D       subtitle=Language Definitions,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+% for testing:
+
+\startmode[sortorder-en]
+    \exportsortexpansion{aacute}{a+1}
+    \exportsortexpansion{Aacute}{A+2}
+    \exportsortexpansion{agrave}{a+1}
+    \exportsortexpansion{Agrave}{A+2}
+\stopmode
+
+%D This module replaces existing sort key handling and is meant to be
+%D used with the new texutil functionality. Here we define the language
+%D specific sort rules.
+
+% slovenian
+%
+% a-c, ccaron, cacute, d, dstroke, e-s, scaron, t-z, zcaron
+
+% \enableregime[utf]
+% \mainlanguage[sl]
+% \starttext
+%     \ccaron\index{\ccaron\space 1}
+%     \Ccaron\index{\Ccaron\space 1}
+%     ƒç\index{ƒç 2}
+%     ƒå\index{ƒå 2}
+%     \v c\index{\v c 3}
+%     \v C\index{\v C 3}
+%     \placeindex
+% \stoptext
+
+% \startmode[sortorder-sl]
+%     \exportsortexpansion {ccaron}  {cz}
+%     \exportsortexpansion {cacute}  {czz}
+%     \exportsortexpansion {dstroke} {dz}
+%     \exportsortexpansion {scaron}  {sz}
+%     \exportsortexpansion {zacron}  {zz}
+
+%     \exportsortdivision  {cz}  {ccaron}
+%     \exportsortdivision  {czz} {cacute}
+%     \exportsortdivision  {dz}  {dstroke}
+%     \exportsortdivision  {sz}  {scaron}
+%     \exportsortdivision  {zz}  {zacron}
+% \stopmode
+%
+% \startmode[sortorder-sl]
+%     \exportsortexpansion {ccaron}  {c+1}
+%     \exportsortexpansion {cacute}  {c+2}
+%     \exportsortexpansion {dstroke} {d+1}
+%     \exportsortexpansion {scaron}  {s+1}
+%     \exportsortexpansion {zacron}  {z+1}
+%
+%     \exportsortdivision  {c+1} {ccaron}
+%     \exportsortdivision  {c+2} {cacute}
+%     \exportsortdivision  {d+1} {dstroke}
+%     \exportsortdivision  {s+1} {scaron}
+%     \exportsortdivision  {z+1} {zacron}
+% \stopmode
+
+\startmode[sortorder-sl]
+    \exportsortrule {ccaron}  {c+1}
+    \exportsortrule {cacute}  {c+2}
+    \exportsortrule {dstroke} {d+1}
+    \exportsortrule {scaron}  {s+1}
+    \exportsortrule {zacron}  {z+1}
+\stopmode
+
+% finnish
+%
+% a-u, v+w sorted together, x-z, aring, adiaeresis, odiaeresis
+
+\startmode[sortorder-fi]
+    \exportsortrule {v}          {w}
+    \exportsortrule {aring}      {z+1}
+    \exportsortrule {adiaeresis} {z+2}
+    \exportsortrule {odiaeresis} {z+3}
+\stopmode
+
+% swedish
+%
+% a-z, aring, adiaeresis, odiaeresis
+
+% \mainlanguage[sv]
+% \starttext
+%     a\index{a}
+%     a\index{a}
+%     z\index{z}
+%     z\index{z}
+%     q\index{q}
+%     q\index{q}
+%     Â\index{Â}
+%     Â\index{Â}
+%     Â\index{Â}
+%     ‰\index{‰}
+%     ‰\index{‰}
+%     ‰\index{‰}
+%     ‰\index{‰}
+%     ˆ\index{ˆ}
+%     ˆ\index{ˆ}
+%     \aring\index{\aring}
+%     \adiaeresis\index{\adiaeresis}
+%     \odiaeresis\index{\odiaeresis}
+%     A\index{A}
+%     ≈\index{≈}
+%     ƒ\index{ƒ}
+%     ÷\index{÷}
+%     \Aring\index{\Aring}
+%     \Adiaeresis\index{\Adiaeresis}
+%     \Odiaeresis\index{\Odiaeresis}
+%     \placeindex
+% \stoptext
+
+\startmode[sortorder-sv]
+    \exportsortrule {aring}      {z+1}
+    \exportsortrule {adiaeresis} {z+2}
+    \exportsortrule {odiaeresis} {z+3}
+\stopmode
+
+% norwegian, danish
+%
+% a-z, aeligature, oslash, aring
+
+\startmode[sortorder-no,sortorder-da]
+    \exportsortrule {aeligature} {z+1}
+    \exportsortrule {oslash}     {z+2}
+    \exportsortrule {aring}      {z+3}
+\stopmode
+
+% islandic
+%
+% a, aacute, b, c, d, eth, e, eacute, f-i, iacute, j-o, oacute, p-u, uacute, v, w (?), x, y, yacute, z, aeligature, oslash, thorn
+
+% estonian
+%
+% a-s, scaron, z, zcaron, t-w, otilde, adiaeresis, odiaeresis, udiaeresis, x, y
+
+% czech
+%
+% a) make a single group for: "a", "·", "A", "¡"
+% b) make a different two groups for: "c", "C" and "c", "C"
+% c) sorting rule: "A" < "¡" < "a" < "·" < "C" < "c" < "C" < "c"
+% d) sorting rule: "h" < "ch" < "i" ("c" < "h")
+
+\gdef\czsortdivisionch{ch}
+\gdef\czsortdivisionCh{Ch}
+
+\startmode[sortorder-cz]
+    \exportsortexpansion {aacute} {a+1}
+    \exportsortexpansion {Aacute} {A+1}
+    \exportsortexpansion {ccaron} {c+1}
+    \exportsortexpansion {Ccaron} {C+1}
+    \exportsortdivision  {c+1}    {ccaron}
+    \exportsortexpansion {dcaron} {d+1}
+    \exportsortexpansion {Dcaron} {D+1}
+    \exportsortdivision  {d+1}    {dcaron}
+    \exportsortexpansion {eacute} {e+1}
+    \exportsortexpansion {Eacute} {E+1}
+    \exportsortexpansion {ecaron} {e+2}
+    \exportsortexpansion {Ecaron} {E+2}
+    \exportsortreduction {ch}     {h+1}
+    \exportsortexpansion {ch}     {h+1}
+    \exportsortreduction {Ch}     {H+1}
+    \exportsortexpansion {Ch}     {H+1}
+    \exportsortdivision  {h+1}    {czsortdivisionch}
+    \exportsortexpansion {iacute} {i+1}
+    \exportsortexpansion {Iacute} {I+1}
+    \exportsortexpansion {ncaron} {n+1}
+    \exportsortexpansion {Ncaron} {N+1}
+    \exportsortdivision  {n+1}    {ncaron}
+    \exportsortexpansion {oacute} {o+1}
+    \exportsortexpansion {Oacute} {O+1}
+    \exportsortexpansion {rcaron} {r+1}
+    \exportsortexpansion {Rcaron} {R+1}
+    \exportsortdivision  {r+1}    {rcaron}
+    \exportsortexpansion {scaron} {s+1}
+    \exportsortexpansion {Scaron} {S+1}
+    \exportsortdivision  {s+1}    {scaron}
+    \exportsortexpansion {tcaron} {t+1}
+    \exportsortexpansion {Tcaron} {T+1}
+    \exportsortdivision  {t+1}    {tcaron}
+    \exportsortexpansion {uacute} {u+1}
+    \exportsortexpansion {Uacute} {U+1}
+    \exportsortexpansion {uring}  {u+2}
+    \exportsortexpansion {Uring}  {U+2}
+    \exportsortexpansion {yacute} {y+1}
+    \exportsortexpansion {Yacute} {Y+1}
+    \exportsortexpansion {zcaron} {z+1}
+    \exportsortexpansion {Zcaron} {Z+1}
+    \exportsortdivision  {z+1}    {zcaron}
+\stopmode
+
+\endinput

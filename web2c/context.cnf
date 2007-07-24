@@ -119,21 +119,21 @@ CTXDEVJVPATH=unset
 
 % some old paths; we restrict the search to context paths; new ones as well as old ones
 
-PERLINPUTS   = .;$CTXDEVPLPATH;$TEXMF/scripts/context/perl
-PYTHONINPUTS = .;$CTXDEVPYPATH;$TEXMF/scripts/context/python
-RUBYINPUTS   = .;$CTXDEVRBPATH;$TEXMF/scripts/context/ruby
-LUAINPUTS    = .;$CTXDEVJVPATH;$TEXMF/scripts/context/lua
-JAVAINPUTS   = .;$CTXDEVJVPATH;$TEXMF/scripts/context/java
+PERLINPUTS     = .;$CTXDEVPLPATH;$TEXMF/scripts/context/perl
+PYTHONINPUTS   = .;$CTXDEVPYPATH;$TEXMF/scripts/context/python
+RUBYINPUTS     = .;$CTXDEVRBPATH;$TEXMF/scripts/context/ruby
+% LUAINPUTS    = .;$CTXDEVLUPATH;$TEXMF/scripts/context/lua
+JAVAINPUTS     = .;$CTXDEVJVPATH;$TEXMF/scripts/context/java
 
-TEXMFSCRIPTS = .;$CTXDEVRBPATH;$CTXDEVLUPATH;$CTXDEVPLPATH;$TEXMF/scripts/context
+% LUAINPUTS    = .;$TEXINPUTS;$TEXMFSCRIPTS
+LUAINPUTS      = .;$CTXDEVLUPATH;$TEXINPUTS;$TEXMF/scripts/context/lua.;
+TEXMFSCRIPTS   = .;$CTXDEVLUPATH;$TEXINPUTS;$CTXDEVRBPATH;$CTXDEVPLPATH;$TEXMF/scripts/context
 
 % RUBYINPUTS   = .;$CTXDEVPLPATH;$TEXMF/scripts/{$progname,$engine,}/ruby
 % LUAINPUTS    = .;$CTXDEVPYPATH;$TEXMF/scripts/{$progname,$engine,}/lua
 % PYTHONINPUTS = .;$CTXDEVRBPATH;$TEXMF/scripts/{$progname,$engine,}/python
 % PERLINPUTS   = .;$CTXDEVJVPATH;$TEXMF/scripts/{$progname,$engine,}/perl
 % JAVAINPUTS   = .;$CTXDEVJVPATH;$TEXMF/scripts/{$progname,$engine,}/java
-
-% TEXMFSCRIPTS = .;$CTXDEVRBPATH;$CTXDEVLUPATH;$CTXDEVPLPATH;$TEXMF/scripts/$progname
 
 % features
 

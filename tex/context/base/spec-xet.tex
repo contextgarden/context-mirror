@@ -39,13 +39,13 @@
    \relax}
 
 \def\dogetXTXfiguresize
-  {\setbox\foundexternalfigure\vbox{\XeTeXpicfile "\@@DriverImageFile"}%
+  {\setbox\foundexternalfigure\vbox{\XeTeXpicfile "\@@DriverImageFile"\relax}%
    \xdef\analyzedfigurewidth {\the\wd\foundexternalfigure}%
    \xdef\analyzedfigureheight{\the\ht\foundexternalfigure}}
 
 \def\dogetXTXpdfsize
   {\checkpdfimagepagenumber
-   \setbox\foundexternalfigure\vbox{\XeTeXpdffile "\@@DriverImageFile" \pdfimagepagenumber}%
+   \setbox\foundexternalfigure\vbox{\XeTeXpdffile "\@@DriverImageFile" \pdfimagepagenumber\relax}%
    \xdef\analyzedfigurewidth {\the\wd\foundexternalfigure}%
    \xdef\analyzedfigureheight{\the\ht\foundexternalfigure}}
 

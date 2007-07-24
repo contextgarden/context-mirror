@@ -610,15 +610,12 @@ class TEX
             report('using existing database')
         else
             report('updating file database')
-            Kpse.update
+            Kpse.update # obsolete here
             if getvariable('luatex') then
                 begin
-                    luatools = `texmfstart luatools --format=texmfscripts luatools.lua`.chomp.strip
-                    unless luatools.empty? then
-                        runcommand(["luatex","--luaonly #{luatools}","--generate","--verbose"])
-                    end
+                    runcommand(["luatools","--generate","--verbose"])
                 rescue
-                    report("run 'luatex --luaonly pathto/luatools.lua --generate' manually")
+                    report("run 'luatools --generate' manualy")
                     exit
                 end
             end
@@ -816,7 +813,7 @@ class TEX
 
     private
 
-    def makeuserfile
+    def makeuserfile # not used in luatex (yet)
         language = getvariable('language')
         mainlanguage = getvariable('mainlanguage')
         bodyfont = getvariable('bodyfont')
@@ -1159,18 +1156,22 @@ class TEX
 
     public
 
-    def run_luatools(args)
+    # def run_luatools(args)
         # dirty trick: we know that the lua path is relative to the ruby path; of course this
         # will not work well when stubs are used
-        [(ENV["_CTX_K_S_texexec_"] or ENV["_CTX_K_S_THREAD_"] or ENV["TEXMFSTART.THREAD"]), File.dirname($0)].each do |path|
-            if path then
-                script = "#{path}/../lua/luatools.lua"
-                if FileTest.file?(script) then
-                    return runcommand("luatex --luaonly #{script} #{args}")
-                end
-            end
-        end
-        return runcommand("texmfstart luatools #{args}")
+        # [(ENV["_CTX_K_S_texexec_"] or ENV["_CTX_K_S_THREAD_"] or ENV["TEXMFSTART.THREAD"]), File.dirname($0)].each do |path|
+            # if path then
+                # script = "#{path}/../lua/luatools.lua"
+                # if FileTest.file?(script) then
+                    # return runcommand("luatex --luaonly #{script} #{args}")
+                # end
+            # end
+        # end
+        # return runcommand("texmfstart luatools #{args}")
+    # end
+
+    def run_luatools(args)
+        return runcommand("luatools #{args}")
     end
 
     def processmpgraphic
@@ -1789,10 +1790,10 @@ end
 
         forcexml   = getvariable('forcexml')
 
-        # if dummyfile || forcexml then # after ctx?
-            # jobsuffix = makestubfile(rawname,rawbase,forcexml)
-            # checkxmlfile(rawname)
-        # end
+if dummyfile || forcexml then # after ctx?
+    jobsuffix = makestubfile(rawname,rawbase,forcexml)
+    checkxmlfile(rawname)
+end
 
         # preprocess files
 
@@ -1864,10 +1865,10 @@ end
         globalfile = getvariable('globalfile')
         forcexml   = getvariable('forcexml') # can be set in ctx file
 
-        if dummyfile || forcexml then # after ctx?
-            jobsuffix = makestubfile(rawname,rawbase,forcexml)
-            checkxmlfile(rawname)
-        end
+if dummyfile || forcexml then # after ctx?
+    jobsuffix = makestubfile(rawname,rawbase,forcexml)
+    checkxmlfile(rawname)
+end
 
         result     = File.unixfied(result)
 

@@ -313,10 +313,6 @@
      \doiffirstreferenceoccurance\lastreference
        {\thisisdestination{\referenceprefix\lastreference}}%
      \referenceinfo>\lastreference
-%      \edef\dododowritereference
-%        {\writeutilitycommand
-%           {\mainreference{\referenceprefix}{\lastreference}{#4}{#5}{#6}}}%
-%      \dododowritereference
      \expanded{\writeutilitycommand{\noexpand\mainreference{\referenceprefix}{\lastreference}{#4}{#5}{#6}}}%
    \fi
    \egroup}
@@ -1934,6 +1930,9 @@
 \setglobalsystemreference \rt!exec \v!QueryAgain       {queryagain}
 \setglobalsystemreference \rt!exec \v!FitWidth         {fitwidth}
 \setglobalsystemreference \rt!exec \v!FitHeight        {fitheight}
+
+\setglobalsystemreference \rt!exec \v!ShowThumbs       {thumbnails}
+\setglobalsystemreference \rt!exec \v!ShowBookmarks    {bookmarks}
 
 %D Executing the command looks alike the previous goto macros.
 

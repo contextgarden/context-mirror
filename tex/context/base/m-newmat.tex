@@ -53,7 +53,7 @@
 %D have the symbol available. \symbol[qed]
 
 \def\QED{\symbol[qed]}
-
+
 %D \macros
 %D   {genfrac}
 %D
@@ -102,20 +102,20 @@
 %\def\tfrac {\genfrac\empty\empty\empty\textstyle}
 %\def\frac  {\genfrac\empty\empty\empty\donothing}
 
-\def\dfrac {\genfrac{}{}{}\displaystyle}
-\def\tfrac {\genfrac{}{}{}\textstyle}
-\def\frac  {\genfrac{}{}{}\donothing}
+\def\dfrac {\genfrac\empty\empty\empty\displaystyle}
+\def\tfrac {\genfrac\empty\empty\empty\textstyle}
+\def\frac  {\genfrac\empty\empty\empty\donothing}
 
 \def\dbinom{\genfrac()\zeropoint\displaystyle}
 \def\tbinom{\genfrac()\zeropoint\textstyle}
 \def\binom {\genfrac()\zeropoint\donothing}
 
-\def\xfrac {\genfrac{}{}{}\scriptstyle}
-\def\xxfrac{\genfrac{}{}{}\scriptscriptstyle}
+\def\xfrac {\genfrac\empty\empty\empty\scriptstyle}
+\def\xxfrac{\genfrac\empty\empty\empty\scriptscriptstyle}
 
 %D Better:
 
-\unexpanded\def\frac#1#2{\mathematics{\genfrac{}{}{}\donothing{#1}{#2}}}
+\unexpanded\def\frac#1#2{\mathematics{\genfrac\empty\empty\empty\donothing{#1}{#2}}}
 
 %D [HH] This shows up as:
 %D
@@ -127,7 +127,7 @@
 %D \typebuffer
 %D
 %D \getbuffer
-
+
 %D \macros
 %D   {text}
 %D
@@ -174,7 +174,7 @@
 %D \typebuffer
 %D
 %D \getbuffer
-
+
 %D \macros
 %D  {mathhexbox}
 %D
@@ -191,7 +191,7 @@
 
 \def\boxed
   {\ifmmode\expandafter\mframed\else\expandafter\framed\fi}
-
+
 %D \macros
 %D   {cfrac}
 %D
@@ -243,9 +243,45 @@
 %D \typebuffer
 %D
 %D \getbuffer
-
+
+%D \macros
+%D   {splitfrac, splitdfrac}
+%D
+%D Occasionally one needs to typeset multi||line fractions.
+%D These commands use \tex{genfrac} to create such fractions.
+%D
+%D \startbuffer
+%D \startformula
+%D      a=\frac{
+%D          \splitfrac{xy + xy + xy + xy + xy}
+%D                    {+ xy + xy + xy + xy}
+%D        }
+%D        {z}
+%D      =\frac{
+%D          \splitdfrac{xy + xy + xy + xy + xy}
+%D                    {+ xy + xy + xy + xy}
+%D        }
+%D        {z}
+%D \stopformula
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
+%D
+%D These macros are based on Michael J.~Downes posting on
+%D comp.text.tex on 2001/12/06
+
+\def\splitfrac#1#2%
+  {\genfrac\empty\empty\zeropoint\textstyle%
+     {\textstyle#1\quad\hfill}%
+     {\textstyle\hfill\quad\mathstrut#2}}
+
+\def\splitdfrac#1#2%
+  {\genfrac\empty\empty\zeropoint\displaystyle%
+     {#1\quad\hfill}
+     {\hfill\quad\mathstrut #2}}
+
 \protect \endinput
-
+
 %D \macros
 %D   {startsubarray,substack,startsmallmatrix}
 %D

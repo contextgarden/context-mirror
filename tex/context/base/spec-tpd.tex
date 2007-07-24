@@ -651,7 +651,7 @@
 %D   {dostarttransparency,dostoptransparency}
 %D
 %D For transparency, we need to implement a couple of
-%D auxiliary macros. If needed, we will generalize tham later.
+%D auxiliary macros. If needed, we will generalize them later.
 
 \definespecial\dostarttransparency{\doPDFstarttransparency}
 \definespecial\dostoptransparency {\doPDFstoptransparency}
@@ -1235,6 +1235,27 @@
      {\immediate\pdfobj{[ #3 ]}%
       \dosetobjectreference{#1}{#2}{\the\pdflastobj}}}
 
+% no, we sometimes need to keep track of the page number too
+%
+% \def\doPDFdictionaryobject#1#2#3%
+%   {\immediate\pdfobj{<< #3 >>}%
+%    \dosetobjectreference{#1}{#2}{\the\pdflastobj}}
+% \def\doPDFarrayobject#1#2#3%
+%   {\immediate\pdfobj{[ #3 ]}%
+%    \dosetobjectreference{#1}{#2}{\the\pdflastobj}}
+
+\def\doreservePDFobject#1#2%
+  {\pdfobj reserveobjnum{}%
+   \driverreferenced\dosetobjectreference{#1}{#2}{\the\pdflastobj}}
+
+\def\doPDFreserveddictionaryobject#1#2#3%
+  {\doPDFgetobjectnumber{#1}{#2}\PDFobjectnumber
+   \immediate\pdfobj useobjnum \PDFobjectnumber {<< #3 >>}}
+
+\def\doPDFreservedarrayobject#1#2#3%
+  {\doPDFgetobjectnumber{#1}{#2}\PDFobjectnumber
+   \immediate\pdfobj useobjnum \PDFobjectnumber {[ #3 ]}}
+
 %D \macros
 %D   {defaultobjectreference,doPDFgetobjectreference}
 %D
@@ -1248,6 +1269,10 @@
 \def\doPDFgetobjectreference#1#2#3%
   {\dogetobjectreference{#1}{#2}#3%
    \edef#3{\ifx#3\empty null\else\PDFobjref{#3}\fi}}
+
+\def\doPDFgetobjectnumber#1#2#3%
+  {\dogetobjectreference{#1}{#2}#3%
+   \edef#3{\ifx#3\empty 0\else#3\fi}}
 
 % \def\doPDFgetobjectpage         #1#2#3{..}
 % \def\doPDFgetobjectpagereference#1#2#3{..}

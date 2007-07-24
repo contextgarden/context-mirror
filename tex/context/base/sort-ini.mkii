@@ -1,0 +1,137 @@
+%D \module
+%D   [       file=sort-ini,
+%D        version=2005.08.08,
+%D          title=\CONTEXT\ Sort Macros,
+%D       subtitle=Initialization,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+% todo: autokeyexpansion => igv utf: \setupregister[index][keyexpansion=yes]
+
+%D This module replaces existing sort key handling and is meant to be
+%D used with the new texutil functionality. This module defines a few
+%D auxiliary macros.
+
+\ifx\exportsortaction\undefined \else \endinput \fi
+
+%D The sorting method is largely bases on the one used in the old version
+%D of texutil but i've changed the interface a bit. It all boils down to
+%D a bunch of substitutions. The reimplementation makes it easier to extend
+%D the rules. Currently we have multipass substitution and onepass sorting,
+%D but we may change this some day. Since there is a plugin mechanism, using
+%D an external sorter is also possible.
+
+% test file:
+%
+% \mainlanguage[sl] \readfile{sort-ini}{}{}
+%
+% \starttext
+%     test \index {aa1}  test \index {ab1}         test \index {aa2}
+%     test \index {ab2}  test \index {aa10}        test \index {aa8}
+%     test \index {aa9}  test \index {aa11}        test \index {aa10}
+%     test \index {cccc} test \index {\ccaron ccc} test \index {\cacute ccc}
+%     test \index {caaa} test \index {\ccaron aaa} test \index {\cacute aaa}
+%     \placeindex
+% \stoptext
+
+% definitions:
+%
+% \exportsortshortcut{\\\'\\i}{iacute}
+% \exportsortshortcut{\\\'i}  {iacute}
+% \exportsortshortcut{\\\"e}  {ediaeresis}
+% \exportsortshortcut{\\\'o}  {oacute}
+%
+% \exportsortexpansion{aeligature}{ae}
+% \exportsortexpansion{ijligature}{y}
+% \exportsortexpansion{oacute}    {oz}
+% \exportsortexpansion{eacute}    {ezzz} % or e3
+% \exportsortexpansion{egrave}    {ezz}  % or e2
+% \exportsortexpansion{ediaeresis}{ez}   % or e1
+% \exportsortexpansion{adiaeresis}{az}
+% \exportsortreduction{ch}        {c}
+% \exportsortreduction{ij}        {y}
+%
+% \exportsortexpansion{ccaron}  {cz}
+% \exportsortexpansion{cacute}  {czz}
+% \exportsortexpansion{dstroke} {dz}
+% \exportsortexpansion{scaron}  {sz}
+% \exportsortexpansion{zcaron}  {zz}
+%
+% \exportsortreduction{ch}{c}
+% \exportsortreduction{ij}{y}
+%
+% \exportsortexpansion {ccaron} {c+1}
+% \exportsortdivision  {c+1} {ccaron}
+%           ==
+% \exportsortrule {ccaron} {c+1}
+
+\unprotect
+
+\let\currentexportclass\empty
+
+\def\exportsortaction#1#2#3%
+  {\convertargument#2\to\asciia
+   \convertargument#3\to\asciib
+   \immediatewriteutility{x #1 {\currentexportclass} {\asciia} {\asciib}}}
+
+\def\exportsortshortcut {\exportsortaction s}
+\def\exportsortexpansion{\exportsortaction e}
+\def\exportsortreduction{\exportsortaction r}
+\def\exportsortdivision {\exportsortaction d}
+
+\def\exportsortrule#1#2%
+  {\exportsortexpansion{#1}{#2}%
+   \exportsortdivision {#2}{#1}}
+
+\def\exportutfsortexpansion#1#2#3%
+  {\bgroup
+   \edef\utfsorta{\string\unknownchar}%
+   \dostepwiserecurse{#2}{#3}\plusone
+     {\edef\utfsortb{\@EA\string\csname\doutfunihash{#1}{\recurselevel}\endcsname}%
+      \ifx\utfsortb\utfsorta \else
+        \edef\utfsortc{\numbertoutf{\numexpr#1*256+\recurselevel\relax}}%
+        \expanded{\exportsortshortcut{\utfsortc}{\utfsortb\space}}% space is really needed
+      \fi}%
+   \egroup}
+
+\def\savesortdefinitions
+  {\bgroup
+     \doifelse \currentregime {utf}
+        {\exportutfsortexpansion{0}{128}{255}%
+         \exportutfsortexpansion{1}{0}{255}}
+       {\def\defineactivecharacter##1 ##2% mkii code !
+          {\expanded{\exportsortshortcut{\rawcharacter{##1}}}{##2}}%
+        \doifelsenothing\currentregime
+          {\doifnot\characterencoding\nocharacterencoding % to be sure, autoregime
+             {\dowalkregime\characterencoding}}%
+          {\dowalkregime\characterencoding}}%
+   \egroup
+   \readsysfile{\f!sortprefix def}\donothing\donothing % default
+   \global\let\savesortdefinitions\relax}
+
+\def\savesortlanguage#1% language specifics
+  {\doifsomething{#1}
+     {\doifundefined{\f!sortprefix::#1}%
+        {\bgroup
+         \global\letvalue{\f!sortprefix::#1}\empty
+         \def\currentexportclass{#1}%
+         \enablemode[sortorder-#1]%
+         \readsysfile{\f!sortprefix lan}\donothing\donothing
+         \egroup}}}
+
+% \defineregister[one]
+% \defineregister[two] \setupregister[two][language=cz]
+%
+% \starttext
+%   test \one{one} test \one{two} test \one {\aacute} test \one{alpha} test \one{chow}
+%   test \two{one} test \two{two} test \two {\aacute} test \two{alpha} test \two{chow}
+%   \blank[3*big] \placeregister[one]
+%   \blank[3*big] \placeregister[two]
+% \stoptext
+
+\protect \endinput

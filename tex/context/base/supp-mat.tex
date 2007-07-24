@@ -48,7 +48,7 @@
 
 \long\def\mathematics#1{\relax\ifmmode#1\else $#1$\fi} % lookahead bug reported by brooks
 \long\def\displaymath#1{\relax\ifmmode#1\else$$#1$$\fi}
-\long\def\inlinemath #1{\relax\ifmmode#1\else $#1$\fi}
+\long\def\inlinemath #1{\dontleavehmode\relax\ifmmode#1\else $#1$\fi}
 
 \let\stopmathmode\relax
 
@@ -77,7 +77,7 @@
 %D An example of usage of the following can be found in the MathML module:
 
 \long\def\displaymathematics#1{\relax\ifmmode#1\else\dostartformula{}#1\dostopformula\fi}
-     \let\inlinemathematics    \mathematics
+     \def\inlinemathematics   {\dontleavehmode\mathematics}
      \def\automathematics     {\relax\ifhmode\@EA\inlinemathematics\else\@EA\displaymathematics\fi}
 
 % better, esp when used in bTABLE ... eTABLE
@@ -188,5 +188,99 @@
        \scriptscriptstyle
      \fi
    \fi}
+
+%D \macros
+%D   {cramped}
+%D
+%D \TEX provides no primitive to force in cramped math mode. Here is
+%D a macro that does so. It is based on a solution by Don Knuth (\userul
+%D {http://www.ctan.org/tex-archive/digests/tex-implementors/042}).
+
+\def\cramped
+  {\mathpalette\docramped}
+
+%D We force a cramped style by issuing a non||existing radical (box).
+%D After that we make sure the height is correct. (Comment taken from
+%D Morten Høgholm's mathtools package.) Macro suggested by AM and
+%D cleaned up a bit by HH.
+
+% original
+%
+% \def\docramped#1#2%
+%   {\setbox\scratchbox\hbox
+%     {\nulldelimiterspace\zeropoint
+%      $\m@th#1\radical\zerocount{#2}$}%
+%    \ifx#1\displaystyle
+%       \scratchdimen\fontdimen8\textfont3
+%       \advance\scratchdimen .25\fontdimen5\textfont2
+%    \else
+%       \scratchdimen1.25\fontdimen8
+%       \ifx#1\textstyle\textfont
+%       \else
+%         \ifx#1\scriptstyle\scriptfont\else\scriptscriptfont\fi
+%       \fi
+%       3
+%     \fi
+%     \advance\scratchdimen-\ht\scratchbox
+%     \ht\scratchbox-\scratchdimen
+%     \box\scratchbox}
+
+\def\docramped#1#2%
+  {\begingroup % added HH, made even more cramped
+   \setbox\scratchbox\hbox
+     {\nulldelimiterspace\zeropoint
+      $\m@th#1\radical\zerocount{#2}$}%
+   \ht\scratchbox-\dimexpr
+     \ifx#1\displaystyle
+       \fontdimen8\textfont3
+       +.25\fontdimen5\textfont2
+     \else
+        1.25\fontdimen8
+          \ifx#1\textstyle
+            \textfont
+          \else\ifx#1\scriptstyle
+            \scriptfont
+          \else
+            \scriptscriptfont
+          \fi \fi
+          \plusthree
+     \fi
+     -\ht\scratchbox
+   \relax
+   \box\scratchbox
+   \endgroup}
+
+%D \macros
+%D    {cramedllap, crampedrlap, crampedclap}
+%D
+%D In many cases, one wants to use the \tex {clap} macro in
+%D math mode while using subscripts. Normally, subscripts are
+%D in cramped mode, and these macros allow you to go to
+%D cramped mode. For example:
+%D
+%D \startbuffer
+%D \startformula
+%D   \sum_{a^2 < b^2 < c^2} \quad
+%D   \sum_{\clap{a^2 < b^2 < c^2}} \quad
+%D   \sum_{\crampedclap{a^2 < b^2 < c^2}}
+%D \stopformula
+%D \stopbuffer
+%D
+%D \start
+%D   \typebuffer
+%D   \switchtobodyfont[24pt]
+%D   \getbuffer
+%D \stop
+%D
+%D Notice that \type {\clap{\cramped ... }} would also work,
+%D but it requires \TEX\ to typeset it arguments 16 times.
+
+\def\docrampedllap#1#2{{}\dollap{\docramped #1{#2}}}
+\def\docrampedrlap#1#2{{}\dorlap{\docramped #1{#2}}}
+\def\docrampedclap#1#2{{}\doclap{\docramped #1{#2}}}
+
+\def\crampedllap{\mathpalette\docrampedllap}
+\def\crampedrlap{\mathpalette\docrampedrlap}
+\def\crampedclap{\mathpalette\docrampedclap}
 
 \protect \endinput

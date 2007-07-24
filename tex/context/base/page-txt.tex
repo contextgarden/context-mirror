@@ -67,7 +67,7 @@
 \def\setuplayouttext
   {\dotripleempty\dosetuplayouttext}
 
-\def\dosetuplayouttext[#1][#2][#3]%
+\def\dosetuplayouttext[#1][#2][#3]% beware, non global
   {\ifthirdargument
      \getparameters[\??tk#1#2][#3]%
    \else
@@ -428,6 +428,7 @@
            \fi
            \hskip\leftmargindistance
          \egroup
+         \mkprocesspagecontents{#2}%
          \settextpagecontent\scratchpagebox{#1}{#2}%
 \setbox\scratchpagebox\vbox
   {\startlayoutcomponent{textbody}{text body}%

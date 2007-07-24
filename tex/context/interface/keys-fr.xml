@@ -1,6 +1,11 @@
 <?xml version="1.0"?>
 
-<cd:interface xmlns:cd="http://www.pragma-ade.com/commands" name="context" language="fr" version="2007.03.22 13:34">
+<cd:interface xmlns:cd="http://www.pragma-ade.com/commands" name="context" language="fr" version="2007.07.24 14:36">
+
+  <cd:variables>
+    <cd:variable name="lesshyphenation" value="lesshyphenation"/>
+    <cd:variable name="morehyphenation" value="morehyphenation"/>
+  </cd:variables>
 
   <cd:variables>
     <cd:variable name="one" value="un"/>
@@ -406,6 +411,8 @@
     <cd:constant name="sub" value="sous"/>
     <cd:constant name="subtitle" value="soustitre"/>
     <cd:constant name="symbol" value="symbole"/>
+    <cd:constant name="closesymbol" value="closesymbol"/>
+    <cd:constant name="closecommand" value="closecommand"/>
     <cd:constant name="symbolset" value="jeusymbole"/>
     <cd:constant name="symcolor" value="couleursym"/>
     <cd:constant name="symstyle" value="stylesym"/>
@@ -428,6 +435,9 @@
     <cd:constant name="titlestyle" value="styletitre"/>
     <cd:constant name="titlecolor" value="couleurtitre"/>
     <cd:constant name="titledistance" value="distancetitre"/>
+    <cd:constant name="titleleft" value="titleleft"/>
+    <cd:constant name="titleright" value="titleright"/>
+    <cd:constant name="titlecommand" value="titlecommand"/>
     <cd:constant name="aligntitle" value="alignementtitre"/>
     <cd:constant name="tolerance" value="tolerance"/>
     <cd:constant name="inbetween" value="entre"/>
@@ -466,6 +476,7 @@
     <cd:constant name="yscale" value="yscale"/>
     <cd:constant name="ystep" value="ystep"/>
     <cd:constant name="samepage" value="memepage"/>
+    <cd:constant name="itemalign" value="itemalign"/>
     <cd:constant name="sidealign" value="sidealign"/>
     <cd:constant name="side" value="cote"/>
     <cd:constant name="fieldlayer" value="calquechamp"/>
@@ -559,6 +570,7 @@
     <cd:variable name="mirrored" value="reflete"/>
     <cd:variable name="global" value="global"/>
     <cd:variable name="grid" value="grille"/>
+    <cd:variable name="nogrid" value="nogrid"/>
     <cd:variable name="big" value="grand"/>
     <cd:variable name="bigbodyfont" value="grandepolicecorp"/>
     <cd:variable name="bigpreference" value="grandepreference"/>
@@ -668,6 +680,7 @@
     <cd:variable name="display" value="affichage"/>
     <cd:variable name="reverse" value="inverse"/>
     <cd:variable name="fit" value="adapte"/>
+    <cd:variable name="nofit" value="nofit"/>
     <cd:variable name="postscript" value="postscript"/>
     <cd:variable name="preview" value="previsualisation"/>
     <cd:variable name="program" value="programme"/>
@@ -935,6 +948,8 @@
     <cd:variable name="HideLayer" value="CacheCalque"/>
     <cd:variable name="VideLayer" value="VideLayer"/>
     <cd:variable name="ToggleLayer" value="ToggleLayer"/>
+    <cd:variable name="ShowThumbs" value="ShowThumbs"/>
+    <cd:variable name="ShowBookmarks" value="ShowBookmarks"/>
   </cd:variables>
 
   <cd:variables>

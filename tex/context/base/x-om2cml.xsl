@@ -78,12 +78,27 @@
   <!-- ****************** Basic Elements ****************** -->
   <!-- **************************************************** -->
 
-  <!-- OMOBJ (D. Carlisle) -->
-  <xsl:template match="om:OMOBJ">
-    <math>
-      <xsl:apply-templates/>
-    </math>
-  </xsl:template>
+  <!-- OMOBJ (D. Carlisle) / adapted by HH -->
+
+<xsl:template match="om:OMOBJ">
+    <xsl:choose>
+        <xsl:when test="@style='inline'">
+            <imath>
+              <xsl:apply-templates/>
+            </imath>
+        </xsl:when>
+        <xsl:when test="@style='display'">
+            <dmath>
+              <xsl:apply-templates/>
+            </dmath>
+        </xsl:when>
+        <xsl:otherwise>
+            <math>
+              <xsl:apply-templates/>
+            </math>
+        </xsl:otherwise>
+    </xsl:choose>
+</xsl:template>
 
   <!-- OMI (D. Carlisle) -->
   <xsl:template match="om:OMI">
@@ -198,6 +213,13 @@
             <xsl:when test="@name='divide'">
                 <xsl:choose>
                     <xsl:when test="../@style='inline'">
+                        <xsl:attribute name='alternative'>b</xsl:attribute>
+                    </xsl:when>
+                </xsl:choose>
+            </xsl:when>
+            <xsl:when test="@name='plus'">
+                <xsl:choose>
+                    <xsl:when test="../@style='empty'">
                         <xsl:attribute name='alternative'>b</xsl:attribute>
                     </xsl:when>
                 </xsl:choose>
@@ -830,7 +852,11 @@
   <!-- Trivial cases: all -->
 
   <xsl:template match="om:OMS[@cd='relation1']">
-    <xsl:element name="{@name}"/>
+    <xsl:element name="{@name}">
+      <xsl:if test="../@style!=''">
+        <xsl:attribute name='align'><xsl:value-of select="../@style"/></xsl:attribute>
+      </xsl:if>
+    </xsl:element>
   </xsl:template>
 
   <!-- Content Dictionary: setname1 -->
@@ -1052,7 +1078,7 @@
   <!-- Content Dictionary: altenc -->
   <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
 
-  <!-- This CD contains: LaTeX_encoding, MathML_encoding -->
+  <!-- This CD contains: TeX_encoding, MathML_encoding -->
 
   <!-- Trivial cases: none -->
 
@@ -1071,9 +1097,9 @@
     </annotation-xml>
   </xsl:template>
 
-  <!-- LaTeX_encoding -->
-  <xsl:template match="om:OMS[@cd='altenc' and @name='LaTeX_encoding']">
-    <annotation encoding="LaTeX">
+  <!-- TeX_encoding -->
+  <xsl:template match="om:OMS[@cd='altenc' and @name='TeX_encoding']">
+    <annotation encoding="TeX">
       <xsl:value-of select="normalize-space(following::om:OMSTR)"/>
     </annotation>
   </xsl:template>

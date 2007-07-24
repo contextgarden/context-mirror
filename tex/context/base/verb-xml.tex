@@ -105,10 +105,9 @@
    \setpretty`\7=17 \setpretty`\8=17 \setpretty`\9=17
    \setpretty`\==16
    \setpretty`\"=20
-   \setpretty`\(=30 \setpretty`\)=30 \setpretty`\,=30
-   \setpretty`\*=30 \setpretty`\+=30 \setpretty`\#=30
-%  \setpretty`\:=30
-   \setpretty`\:=10 % better for tags
+   \setpretty`\(=31 \setpretty`\)=31 \setpretty`\,=31
+   \setpretty`\*=31 \setpretty`\+=31 \setpretty`\#=31
+   \setpretty`\:=32
    \setpretty`\&=41 \setpretty`\;=42 }
 
 \gdef\XMLsethandlers%
@@ -121,7 +120,8 @@
    \installprettyhandler 15 \XMLtypeonefive
    \installprettyhandler 16 \XMLtypeonesix
    \installprettyhandler 20 \XMLdoublequote
-   \installprettyhandler 30 \XMLtypethree
+   \installprettyhandler 31 \XMLtypethreeone
+   \installprettyhandler 32 \XMLtypethreetwo
    \installprettyhandler 41 \XMLbampersand
    \installprettyhandler 42 \XMLeampersand }
 
@@ -256,7 +256,7 @@
    \ifnum\prettytype=11 % >
      \expandafter\dododoXMLtypeonetwo
    \else % treat as `green' character
-     \expandafter\XMLtypethree
+     \expandafter\XMLtypethreeone
    \fi
    {#1}#2}
 
@@ -386,7 +386,7 @@
 
 % symbols like `(', `)' and `,' should be green
 
-\gdef\XMLtypethree#1%
+\gdef\XMLtypethreeone#1%
   {\ifinXMLcomment
      \getpretty{#1}%
    \else
@@ -402,6 +402,22 @@
        \getpretty{#1}%
      \fi
    \fi}
+
+% \gdef\XMLtypethreetwo#1%
+%   {\ifinXMLcomment
+%      \getpretty{#1}%
+%    \else
+%      \ifinXMLtagname
+%        \endofpretty
+%        \beginofpretty[\!!prettythree]\getpretty{#1}\endofpretty
+%        \beginofpretty[\!!prettyone]%
+%      \else
+%        \getpretty{#1}%
+%      \fi
+%    \fi}
+
+\gdef\XMLtypethreetwo#1%
+  {\getpretty{#1}}
 
 % special characters with `&'
 

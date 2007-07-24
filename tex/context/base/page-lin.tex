@@ -104,6 +104,11 @@
    \let\obeyedspace\normalspace
    \let\ =\normalspace}
 
+\installspacehandler \v!fixed
+  {\obeyspaces
+   \def\obeyedspace{\mathortext\normalspace{\dontleavehmode\fixedspace}}%
+   \let\ =\obeyedspace}
+
 \def\activatespacehandler#1%
   {\executeifdefined{\??sr#1}{\activatespacehandler\v!off}}
 

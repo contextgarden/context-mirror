@@ -168,7 +168,8 @@
 
 \def\loaduserspecifications
   {\readsysfile\f!usrfilename{\showmessage\m!systems2\f!usrfilename}\donothing
-   \readjobfile\f!fmtfilename{\showmessage\m!systems2\f!fmtfilename}\donothing}
+   \readjobfile\f!fmtfilename{\showmessage\m!systems2\f!fmtfilename}\donothing
+   \ifx\directlua\undefined\else\preloadallpatterns\fi} % temp hack, we will do runtime loading later
 
 %D We don't want multiple jobfiles to interfere.
 

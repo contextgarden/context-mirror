@@ -1,0 +1,450 @@
+%D \module
+%D   [       file=sort-def,
+%D        version=2005.08.08,
+%D          title=\CONTEXT\ Sort Macros,
+%D       subtitle=Defaults,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D This module replaces existing sort key handling and is meant to be
+%D used with the new texutil functionality. Here we define the default
+%D mappings
+
+\exportsortexpansion{aeligature}  {ae}
+\exportsortexpansion{AEligature}  {AE}
+\exportsortexpansion{ijligature}  {ij}
+\exportsortexpansion{IJligature}  {IJ}
+\exportsortexpansion{oeligature}  {oe}
+\exportsortexpansion{OEligature}  {OE}
+
+\exportsortexpansion{ssharp}      {ss}
+\exportsortexpansion{Ssharp}      {SS}
+
+\exportsortexpansion{thorn}       {}
+\exportsortexpansion{Thorn}       {}
+
+\exportsortexpansion{eth}         {}
+\exportsortexpansion{Eth}         {}
+
+\exportsortexpansion{dj}          {dstroke}
+\exportsortexpansion{Dj}          {Dstroke}
+
+\exportsortexpansion{Acircumflex} {}
+\exportsortexpansion{acircumflex} {}
+\exportsortexpansion{Ccircumflex} {}
+\exportsortexpansion{ccircumflex} {}
+\exportsortexpansion{Ecircumflex} {}
+\exportsortexpansion{ecircumflex} {}
+\exportsortexpansion{Gcircumflex} {}
+\exportsortexpansion{gcircumflex} {}
+\exportsortexpansion{Hcircumflex} {}
+\exportsortexpansion{hcircumflex} {}
+\exportsortexpansion{Icircumflex} {}
+\exportsortexpansion{icircumflex} {}
+\exportsortexpansion{Jcircumflex} {}
+\exportsortexpansion{jcircumflex} {}
+\exportsortexpansion{Ocircumflex} {}
+\exportsortexpansion{ocircumflex} {}
+\exportsortexpansion{Scircumflex} {}
+\exportsortexpansion{scircumflex} {}
+\exportsortexpansion{Ucircumflex} {}
+\exportsortexpansion{ucircumflex} {}
+\exportsortexpansion{Wcircumflex} {}
+\exportsortexpansion{wcircumflex} {}
+\exportsortexpansion{Ycircumflex} {}
+\exportsortexpansion{ycircumflex} {}
+
+\exportsortexpansion{Agrave} {}
+\exportsortexpansion{agrave} {}
+\exportsortexpansion{Egrave} {}
+\exportsortexpansion{egrave} {}
+\exportsortexpansion{Igrave} {}
+\exportsortexpansion{igrave} {}
+\exportsortexpansion{Ograve} {}
+\exportsortexpansion{ograve} {}
+\exportsortexpansion{Ugrave} {}
+\exportsortexpansion{ugrave} {}
+\exportsortexpansion{Ygrave} {}
+\exportsortexpansion{ygrave} {}
+
+\exportsortexpansion{Atilde} {}
+\exportsortexpansion{atilde} {}
+\exportsortexpansion{Itilde} {}
+\exportsortexpansion{itilde} {}
+\exportsortexpansion{Ntilde} {}
+\exportsortexpansion{ntilde} {}
+\exportsortexpansion{Otilde} {}
+\exportsortexpansion{otilde} {}
+\exportsortexpansion{Utilde} {}
+\exportsortexpansion{utilde} {}
+\exportsortexpansion{Ytilde} {}
+\exportsortexpansion{ytilde} {}
+
+\exportsortexpansion{Adiaeresis} {}
+\exportsortexpansion{adiaeresis} {}
+\exportsortexpansion{Ediaeresis} {}
+\exportsortexpansion{ediaeresis} {}
+\exportsortexpansion{Idiaeresis} {}
+\exportsortexpansion{idiaeresis} {}
+\exportsortexpansion{Odiaeresis} {}
+\exportsortexpansion{odiaeresis} {}
+\exportsortexpansion{Udiaeresis} {}
+\exportsortexpansion{udiaeresis} {}
+\exportsortexpansion{Ydiaeresis} {}
+\exportsortexpansion{ydiaeresis} {}
+
+\exportsortexpansion{Aacute} {}
+\exportsortexpansion{aacute} {}
+\exportsortexpansion{Cacute} {}
+\exportsortexpansion{cacute} {}
+\exportsortexpansion{Eacute} {}
+\exportsortexpansion{eacute} {}
+\exportsortexpansion{Iacute} {}
+\exportsortexpansion{iacute} {}
+\exportsortexpansion{Lacute} {}
+\exportsortexpansion{lacute} {}
+\exportsortexpansion{Nacute} {}
+\exportsortexpansion{nacute} {}
+\exportsortexpansion{Oacute} {}
+\exportsortexpansion{oacute} {}
+\exportsortexpansion{Racute} {}
+\exportsortexpansion{racute} {}
+\exportsortexpansion{Sacute} {}
+\exportsortexpansion{sacute} {}
+\exportsortexpansion{Uacute} {}
+\exportsortexpansion{uacute} {}
+\exportsortexpansion{Yacute} {}
+\exportsortexpansion{yacute} {}
+\exportsortexpansion{Zacute} {}
+\exportsortexpansion{zacute} {}
+
+\exportsortexpansion{dstroke} {}
+\exportsortexpansion{Dstroke} {}
+\exportsortexpansion{Hstroke} {}
+\exportsortexpansion{hstroke} {}
+\exportsortexpansion{Tstroke} {}
+\exportsortexpansion{tstroke} {}
+
+\exportsortexpansion{Cdotaccent} {}
+\exportsortexpansion{cdotaccent} {}
+\exportsortexpansion{Edotaccent} {}
+\exportsortexpansion{edotaccent} {}
+\exportsortexpansion{Gdotaccent} {}
+\exportsortexpansion{gdotaccent} {}
+\exportsortexpansion{Idotaccent} {}
+\exportsortexpansion{idotaccent} {}
+\exportsortexpansion{Zdotaccent} {}
+\exportsortexpansion{zdotaccent} {}
+
+\exportsortexpansion{Amacron} {}
+\exportsortexpansion{amacron} {}
+\exportsortexpansion{Emacron} {}
+\exportsortexpansion{emacron} {}
+\exportsortexpansion{Imacron} {}
+\exportsortexpansion{imacron} {}
+\exportsortexpansion{Omacron} {}
+\exportsortexpansion{omacron} {}
+\exportsortexpansion{Umacron} {}
+\exportsortexpansion{umacron} {}
+
+\exportsortexpansion{Ccedilla} {}
+\exportsortexpansion{ccedilla} {}
+\exportsortexpansion{Kcedilla} {}
+\exportsortexpansion{kcedilla} {}
+\exportsortexpansion{Lcedilla} {}
+\exportsortexpansion{lcedilla} {}
+\exportsortexpansion{Ncedilla} {}
+\exportsortexpansion{ncedilla} {}
+\exportsortexpansion{Rcedilla} {}
+\exportsortexpansion{rcedilla} {}
+\exportsortexpansion{Scedilla} {}
+\exportsortexpansion{scedilla} {}
+\exportsortexpansion{Tcedilla} {}
+\exportsortexpansion{tcedilla} {}
+
+\exportsortexpansion{Ohungarumlaut} {}
+\exportsortexpansion{ohungarumlaut} {}
+\exportsortexpansion{Uhungarumlaut} {}
+\exportsortexpansion{uhungarumlaut} {}
+
+\exportsortexpansion{Aogonek} {}
+\exportsortexpansion{aogonek} {}
+\exportsortexpansion{Eogonek} {}
+\exportsortexpansion{eogonek} {}
+\exportsortexpansion{Iogonek} {}
+\exportsortexpansion{iogonek} {}
+\exportsortexpansion{Uogonek} {}
+\exportsortexpansion{uogonek} {}
+
+\exportsortexpansion{Aring} {}
+\exportsortexpansion{aring} {}
+\exportsortexpansion{Uring} {}
+\exportsortexpansion{uring} {}
+
+\exportsortexpansion{Abreve} {}
+\exportsortexpansion{abreve} {}
+\exportsortexpansion{Ebreve} {}
+\exportsortexpansion{ebreve} {}
+\exportsortexpansion{Gbreve} {}
+\exportsortexpansion{gbreve} {}
+\exportsortexpansion{Ibreve} {}
+\exportsortexpansion{ibreve} {}
+\exportsortexpansion{Obreve} {}
+\exportsortexpansion{obreve} {}
+\exportsortexpansion{Ubreve} {}
+\exportsortexpansion{ubreve} {}
+
+\exportsortexpansion{Ccaron} {}
+\exportsortexpansion{ccaron} {}
+\exportsortexpansion{Dcaron} {}
+\exportsortexpansion{dcaron} {}
+\exportsortexpansion{Ecaron} {}
+\exportsortexpansion{ecaron} {}
+\exportsortexpansion{Lcaron} {}
+\exportsortexpansion{lcaron} {}
+\exportsortexpansion{Ncaron} {}
+\exportsortexpansion{ncaron} {}
+\exportsortexpansion{Rcaron} {}
+\exportsortexpansion{rcaron} {}
+\exportsortexpansion{Scaron} {}
+\exportsortexpansion{scaron} {}
+\exportsortexpansion{Tcaron} {}
+\exportsortexpansion{tcaron} {}
+\exportsortexpansion{Ycaron} {}
+\exportsortexpansion{ycaron} {}
+\exportsortexpansion{Zcaron} {}
+\exportsortexpansion{zcaron} {}
+
+\exportsortexpansion{Lstroke} {}
+\exportsortexpansion{lstroke} {}
+\exportsortexpansion{Ostroke} {}
+\exportsortexpansion{ostroke} {}
+
+\exportsortexpansion{aumlaut} {}
+\exportsortexpansion{eumlaut} {}
+\exportsortexpansion{iumlaut} {}
+\exportsortexpansion{oumlaut} {}
+\exportsortexpansion{uumlaut} {}
+
+\exportsortexpansion{Aumlaut} {}
+\exportsortexpansion{Eumlaut} {}
+\exportsortexpansion{Iumlaut} {}
+\exportsortexpansion{Oumlaut} {}
+\exportsortexpansion{Uumlaut} {}
+
+\exportsortexpansion{scommaaccent} {}
+\exportsortexpansion{Scommaaccent} {}
+\exportsortexpansion{tcommaaccent} {}
+\exportsortexpansion{Tcommaaccent} {}
+
+\exportsortexpansion{Etilde} {}
+\exportsortexpansion{etilde} {}
+
+\exportsortexpansion{Ahook} {}
+\exportsortexpansion{ahook} {}
+\exportsortexpansion{Ehook} {}
+\exportsortexpansion{ehook} {}
+\exportsortexpansion{Ihook} {}
+\exportsortexpansion{ihook} {}
+\exportsortexpansion{Ohook} {}
+\exportsortexpansion{ohook} {}
+\exportsortexpansion{Uhook} {}
+\exportsortexpansion{uhook} {}
+\exportsortexpansion{Yhook} {}
+\exportsortexpansion{yhook} {}
+
+\exportsortexpansion{Acircumflexgrave} {}
+\exportsortexpansion{Acircumflexacute} {}
+\exportsortexpansion{Acircumflextilde} {}
+\exportsortexpansion{Acircumflexhook}  {}
+\exportsortexpansion{acircumflexgrave} {}
+\exportsortexpansion{acircumflexacute} {}
+\exportsortexpansion{acircumflextilde} {}
+\exportsortexpansion{acircumflexhook}  {}
+\exportsortexpansion{Ecircumflexgrave} {}
+\exportsortexpansion{Ecircumflexacute} {}
+\exportsortexpansion{Ecircumflextilde} {}
+\exportsortexpansion{Ecircumflexhook}  {}
+\exportsortexpansion{ecircumflexgrave} {}
+\exportsortexpansion{ecircumflexacute} {}
+\exportsortexpansion{ecircumflextilde} {}
+\exportsortexpansion{ecircumflexhook}  {}
+\exportsortexpansion{Ocircumflexgrave} {}
+\exportsortexpansion{Ocircumflexacute} {}
+\exportsortexpansion{Ocircumflextilde} {}
+\exportsortexpansion{Ocircumflexhook}  {}
+\exportsortexpansion{ocircumflexgrave} {}
+\exportsortexpansion{ocircumflexacute} {}
+\exportsortexpansion{ocircumflextilde} {}
+\exportsortexpansion{ocircumflexhook}  {}
+
+\exportsortexpansion{Abrevegrave} {}
+\exportsortexpansion{Abreveacute} {}
+\exportsortexpansion{Abrevetilde} {}
+\exportsortexpansion{Abrevehook}  {}
+\exportsortexpansion{abrevegrave} {}
+\exportsortexpansion{abreveacute} {}
+\exportsortexpansion{abrevetilde} {}
+\exportsortexpansion{abrevehook}  {}
+
+\exportsortexpansion{Adotbelow}     {}
+\exportsortexpansion{adotbelow}     {}
+\exportsortexpansion{Edotbelow}     {}
+\exportsortexpansion{edotbelow}     {}
+\exportsortexpansion{Idotbelow}     {}
+\exportsortexpansion{idotbelow}     {}
+\exportsortexpansion{Odotbelow}     {}
+\exportsortexpansion{odotbelow}     {}
+\exportsortexpansion{Udotbelow}     {}
+\exportsortexpansion{udotbelow}     {}
+\exportsortexpansion{Ydotbelow}     {}
+\exportsortexpansion{ydotbelow}     {}
+\exportsortexpansion{Ohorndotbelow} {}
+\exportsortexpansion{ohorndotbelow} {}
+\exportsortexpansion{Uhorndotbelow} {}
+\exportsortexpansion{uhorndotbelow} {}
+
+\exportsortexpansion{Acircumflexdotbelow} {}
+\exportsortexpansion{acircumflexdotbelow} {}
+\exportsortexpansion{Ecircumflexdotbelow} {}
+\exportsortexpansion{ecircumflexdotbelow} {}
+\exportsortexpansion{Ocircumflexdotbelow} {}
+\exportsortexpansion{ocircumflexdotbelow} {}
+\exportsortexpansion{Abrevedotbelow}      {}
+\exportsortexpansion{abrevedotbelow}      {}
+
+\exportsortexpansion{Ohorn}      {}
+\exportsortexpansion{Ohorngrave} {}
+\exportsortexpansion{Ohornacute} {}
+\exportsortexpansion{Ohorntilde} {}
+\exportsortexpansion{Ohornhook } {}
+\exportsortexpansion{ohorn}      {}
+\exportsortexpansion{ohorngrave} {}
+\exportsortexpansion{ohornacute} {}
+\exportsortexpansion{ohorntilde} {}
+\exportsortexpansion{ohornhook } {}
+\exportsortexpansion{Uhorn}      {}
+\exportsortexpansion{Uhorngrave} {}
+\exportsortexpansion{Uhornacute} {}
+\exportsortexpansion{Uhorntilde} {}
+\exportsortexpansion{Uhornhook } {}
+\exportsortexpansion{uhorn}      {}
+\exportsortexpansion{uhorngrave} {}
+\exportsortexpansion{uhornacute} {}
+\exportsortexpansion{uhorntilde} {}
+\exportsortexpansion{uhornhook}  {}
+
+\exportsortexpansion{eszett}  {ssharp}
+\exportsortexpansion{Eszett}  {Ssharp}
+
+\exportsortexpansion{lslash}  {lstroke}
+\exportsortexpansion{Lslash}  {Lstroke}
+\exportsortexpansion{dslash}  {dstroke}
+\exportsortexpansion{Dslash}  {Dstroke}
+\exportsortexpansion{oslash}  {ostroke}
+\exportsortexpansion{Oslash}  {Ostroke}
+
+\exportsortexpansion{dcroat}  {dstroke}
+\exportsortexpansion{Dcroat}  {Dstroke}
+
+% more
+
+\exportsortshortcut{\^ A} {\Acircumflex}   \exportsortshortcut{\^ a} {\acircumflex}
+\exportsortshortcut{\^ C} {\Ccircumflex}   \exportsortshortcut{\^ c} {\ccircumflex}
+\exportsortshortcut{\^ E} {\Ecircumflex}   \exportsortshortcut{\^ e} {\ecircumflex}
+\exportsortshortcut{\^ G} {\Gcircumflex}   \exportsortshortcut{\^ g} {\gcircumflex}
+\exportsortshortcut{\^ H} {\Hcircumflex}   \exportsortshortcut{\^ h} {\hcircumflex}
+\exportsortshortcut{\^ I} {\Icircumflex}   \exportsortshortcut{\^ i} {\icircumflex}  \exportsortshortcut{\^\i} {\icircumflex}
+\exportsortshortcut{\^ J} {\Jcircumflex}   \exportsortshortcut{\^ j} {\jcircumflex}  \exportsortshortcut{\^\j} {\jcircumflex}
+\exportsortshortcut{\^ O} {\Ocircumflex}   \exportsortshortcut{\^ o} {\ocircumflex}
+\exportsortshortcut{\^ S} {\Scircumflex}   \exportsortshortcut{\^ s} {\scircumflex}
+\exportsortshortcut{\^ U} {\Ucircumflex}   \exportsortshortcut{\^ u} {\ucircumflex}
+\exportsortshortcut{\^ W} {\Wcircumflex}   \exportsortshortcut{\^ w} {\wcircumflex}
+\exportsortshortcut{\^ Y} {\Ycircumflex}   \exportsortshortcut{\^ y} {\ycircumflex}
+
+\exportsortshortcut{\` A} {\Agrave}        \exportsortshortcut{\` a} {\agrave}
+\exportsortshortcut{\` E} {\Egrave}        \exportsortshortcut{\` e} {\egrave}
+\exportsortshortcut{\` I} {\Igrave}        \exportsortshortcut{\` i} {\igrave}       \exportsortshortcut{\`\i} {\igrave}
+\exportsortshortcut{\` O} {\Ograve}        \exportsortshortcut{\` o} {\ograve}
+\exportsortshortcut{\` U} {\Ugrave}        \exportsortshortcut{\` u} {\ugrave}
+\exportsortshortcut{\` Y} {\Ygrave}        \exportsortshortcut{\` y} {\ygrave}
+
+\exportsortshortcut{\~ A} {\Atilde}        \exportsortshortcut{\~ a} {\atilde}
+\exportsortshortcut{\~ I} {\Itilde}        \exportsortshortcut{\~ i} {\itilde}       \exportsortshortcut{\~\i} {\itilde}
+\exportsortshortcut{\~ O} {\Otilde}        \exportsortshortcut{\~ o} {\otilde}
+\exportsortshortcut{\~ U} {\Utilde}        \exportsortshortcut{\~ u} {\utilde}
+
+\exportsortshortcut{\" A} {\Adiaeresis}    \exportsortshortcut{\" a} {\adiaeresis}
+\exportsortshortcut{\" E} {\Ediaeresis}    \exportsortshortcut{\" e} {\ediaeresis}
+\exportsortshortcut{\" I} {\Idiaeresis}    \exportsortshortcut{\" i} {\idiaeresis}   \exportsortshortcut{\"\i} {\idiaeresis}
+\exportsortshortcut{\" O} {\Odiaeresis}    \exportsortshortcut{\" o} {\odiaeresis}
+\exportsortshortcut{\" U} {\Udiaeresis}    \exportsortshortcut{\" u} {\udiaeresis}
+\exportsortshortcut{\" Y} {\Ydiaeresis}    \exportsortshortcut{\" y} {\ydiaeresis}
+
+\exportsortshortcut{\' A} {\Aacute}        \exportsortshortcut{\' a} {\aacute}
+\exportsortshortcut{\' C} {\Cacute}        \exportsortshortcut{\' c} {\cacute}
+\exportsortshortcut{\' E} {\Eacute}        \exportsortshortcut{\' e} {\eacute}
+\exportsortshortcut{\' I} {\Iacute}        \exportsortshortcut{\' i} {\iacute}       \exportsortshortcut{\'\i} {\iacute}
+\exportsortshortcut{\' L} {\Lacute}        \exportsortshortcut{\' l} {\lacute}
+\exportsortshortcut{\' N} {\Nacute}        \exportsortshortcut{\' n} {\nacute}
+\exportsortshortcut{\' O} {\Oacute}        \exportsortshortcut{\' o} {\oacute}
+\exportsortshortcut{\' R} {\Racute}        \exportsortshortcut{\' r} {\racute}
+\exportsortshortcut{\' S} {\Sacute}        \exportsortshortcut{\' s} {\sacute}
+\exportsortshortcut{\' U} {\Uacute}        \exportsortshortcut{\' u} {\uacute}
+\exportsortshortcut{\' Y} {\Yacute}        \exportsortshortcut{\' y} {\yacute}
+\exportsortshortcut{\' Z} {\Zacute}        \exportsortshortcut{\' z} {\zacute}
+
+\exportsortshortcut{\. C} {\Cdotaccent}    \exportsortshortcut{\. c} {\cdotaccent}
+\exportsortshortcut{\. E} {\Edotaccent}    \exportsortshortcut{\. e} {\edotaccent}
+\exportsortshortcut{\. G} {\Gdotaccent}    \exportsortshortcut{\. g} {\gdotaccent}
+\exportsortshortcut{\. I} {\Idotaccent}    \exportsortshortcut{\. i} {\idotaccent}   \exportsortshortcut{\.\i} {\idotaccent}
+\exportsortshortcut{\. Z} {\Zdotaccent}    \exportsortshortcut{\. z} {\zdotaccent}
+
+\exportsortshortcut{\= A} {\Amacron}       \exportsortshortcut{\= a} {\amacron}
+\exportsortshortcut{\= E} {\Emacron}       \exportsortshortcut{\= e} {\emacron}
+\exportsortshortcut{\= I} {\Imacron}       \exportsortshortcut{\= i} {\imacron}      \exportsortshortcut{\=\i} {\imacron}
+\exportsortshortcut{\= O} {\Omacron}       \exportsortshortcut{\= o} {\omacron}
+\exportsortshortcut{\= U} {\Umacron}       \exportsortshortcut{\= u} {\umacron}
+
+\exportsortshortcut{\c C} {\Ccedilla}      \exportsortshortcut{\c c} {\ccedilla}
+\exportsortshortcut{\c K} {\Kcedilla}      \exportsortshortcut{\c k} {\kcedilla}
+\exportsortshortcut{\c L} {\Lcedilla}      \exportsortshortcut{\c l} {\lcedilla}
+\exportsortshortcut{\c N} {\Ncedilla}      \exportsortshortcut{\c n} {\ncedilla}
+\exportsortshortcut{\c R} {\Rcedilla}      \exportsortshortcut{\c r} {\rcedilla}
+\exportsortshortcut{\c S} {\Scedilla}      \exportsortshortcut{\c s} {\scedilla}
+\exportsortshortcut{\c T} {\Tcedilla}      \exportsortshortcut{\c t} {\tcedilla}
+
+\exportsortshortcut{\H O} {\Ohungarumlaut} \exportsortshortcut{\H o} {\ohungarumlaut}
+\exportsortshortcut{\H u} {\uhungarumlaut} \exportsortshortcut{\H U} {\Uhungarumlaut}
+
+\exportsortshortcut{\k A} {\Aogonek}       \exportsortshortcut{\k a} {\aogonek}
+\exportsortshortcut{\k E} {\Eogonek}       \exportsortshortcut{\k e} {\eogonek}
+\exportsortshortcut{\k I} {\Iogonek}       \exportsortshortcut{\k i} {\iogonek}
+\exportsortshortcut{\k U} {\Uogonek}       \exportsortshortcut{\k u} {\uogonek}
+
+\exportsortshortcut{\r A} {\Aring}         \exportsortshortcut{\r a} {\aring}
+\exportsortshortcut{\r U} {\Uring}         \exportsortshortcut{\r u} {\uring}
+
+\exportsortshortcut{\u A} {\Abreve}        \exportsortshortcut{\u a} {\abreve}
+\exportsortshortcut{\u E} {\Ebreve}        \exportsortshortcut{\u e} {\ebreve}
+\exportsortshortcut{\u G} {\Gbreve}        \exportsortshortcut{\u g} {\gbreve}
+\exportsortshortcut{\u I} {\Ibreve}        \exportsortshortcut{\u i} {\ibreve}       \exportsortshortcut{\u\i} {\ibreve}
+\exportsortshortcut{\u O} {\Obreve}        \exportsortshortcut{\u o} {\obreve}
+\exportsortshortcut{\u U} {\Ubreve}        \exportsortshortcut{\u u} {\ubreve}
+
+\exportsortshortcut{\v C} {\Ccaron}        \exportsortshortcut{\v c} {\ccaron}
+\exportsortshortcut{\v D} {\Dcaron}        \exportsortshortcut{\v d} {\dcaron}
+\exportsortshortcut{\v E} {\Ecaron}        \exportsortshortcut{\v e} {\ecaron}
+\exportsortshortcut{\v L} {\Lcaron}        \exportsortshortcut{\v l} {\lcaron}
+\exportsortshortcut{\v N} {\Ncaron}        \exportsortshortcut{\v n} {\ncaron}
+\exportsortshortcut{\v R} {\Rcaron}        \exportsortshortcut{\v r} {\rcaron}
+\exportsortshortcut{\v S} {\Scaron}        \exportsortshortcut{\v s} {\scaron}
+\exportsortshortcut{\v T} {\Tcaron}        \exportsortshortcut{\v t} {\tcaron}
+\exportsortshortcut{\v Z} {\Zcaron}        \exportsortshortcut{\v z} {\zcaron}
+
+\endinput

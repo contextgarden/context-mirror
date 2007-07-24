@@ -264,23 +264,33 @@
 
 %newevery \everybeforeutilitywrite \relax
 
-\newevery \everycleanupfeatures    \relax
-\newevery \everyinsidefloat        \relax
-\newevery \everyheadstart          \relax
-\newevery \everyendoftextbody      \relax
-\newevery \everybeginofpar         \relax
-\newevery \everyendofpar           \relax
-\newevery \everylistentry          \relax
-\newevery \everymarking            \relax
-\newevery \everysavesortkeys       \relax
+\newevery \everycleanupfeatures      \relax
+\newevery \everyinsidefloat          \relax
+\newevery \everyheadstart            \relax
+\newevery \everyendoftextbody        \relax
+\newevery \everybeginofpar           \relax
+\newevery \everyendofpar             \relax
+\newevery \everylistentry            \relax
+\newevery \everymarking              \relax
+\newevery \everysavesortkeys         \relax
 
-\newevery \everyfont               \relax
-\newevery \everybodyfont           \EveryBodyFont
-\newevery \everyfontswitch         \EveryFontSwitch
-\newevery \everydefinedfont        \relax
+\newevery \everyfont                 \relax
+\newevery \everybodyfont             \EveryBodyFont
+\newevery \everyfontswitch           \EveryFontSwitch
+\newevery \everydefinedfont          \relax
+
+\newevery \everybeforedisplayformula \relax
 
 \def\cleanupfeatures{\the\everycleanupfeatures}
 \def\forgetall      {\the\everyforgetall}
+
+%D State mess:
+
+\newtoks \everypushsomestate
+\newtoks \everypopsomestate
+
+\def\pushsomestates{\the\everypushsomestate}
+\def\popsomestates {\the\everypopsomestate }
 
 %D For shared \type {\everymath} and \type {\everydisplay}:
 

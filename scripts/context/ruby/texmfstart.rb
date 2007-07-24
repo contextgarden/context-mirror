@@ -43,7 +43,7 @@ require "md5"
 
 # kpse_merge_start
 
-# kpse_merge_file: 'C:/data/develop/context/ruby/base/kpseremote.rb'
+# kpse_merge_file: 'c:/data/develop/context/ruby/base/kpseremote.rb'
 
 # kpse_merge_done: require 'base/kpsefast'
 
@@ -163,7 +163,7 @@ class KpseRemote
 end
 
 
-# kpse_merge_file: 'C:/data/develop/context/ruby/base/kpsefast.rb'
+# kpse_merge_file: 'c:/data/develop/context/ruby/base/kpsefast.rb'
 
 # module    : base/kpsefast
 # copyright : PRAGMA Advanced Document Engineering
@@ -1097,7 +1097,7 @@ end
 
 
 
-# kpse_merge_file: 'C:/data/develop/context/ruby/base/kpse/drb.rb'
+# kpse_merge_file: 'c:/data/develop/context/ruby/base/kpse/drb.rb'
 
 require 'drb'
 # kpse_merge_done: require 'base/kpse/trees'
@@ -1157,7 +1157,7 @@ end
 #
 
 
-# kpse_merge_file: 'C:/data/develop/context/ruby/base/kpse/trees.rb'
+# kpse_merge_file: 'c:/data/develop/context/ruby/base/kpse/trees.rb'
 
 require 'monitor'
 # kpse_merge_done: require 'base/kpsefast'
@@ -1245,7 +1245,7 @@ class KpseTrees < Monitor
 end
 
 
-# kpse_merge_file: 'C:/data/develop/context/ruby/base/kpsedirect.rb'
+# kpse_merge_file: 'c:/data/develop/context/ruby/base/kpsedirect.rb'
 
 class KpseDirect
 
@@ -1283,7 +1283,7 @@ class KpseDirect
 end
 
 
-# kpse_merge_file: 'C:/data/develop/context/ruby/base/merge.rb'
+# kpse_merge_file: 'c:/data/develop/context/ruby/base/merge.rb'
 
 # module    : base/merge
 # copyright : PRAGMA Advanced Document Engineering
@@ -1475,8 +1475,8 @@ $predefined['pdftools'] = 'pdftools.rb'
 $predefined['mpstools'] = 'mpstools.rb'
 $predefined['exatools'] = 'exatools.rb'
 $predefined['xmltools'] = 'xmltools.rb'
-$predefined['luatools'] = 'luatools.lua'
-$predefined['mtxtools'] = 'mtxtools.rb'
+# $predefined['luatools'] = 'luatools.lua'
+# $predefined['mtxtools'] = 'mtxtools.rb'
 
 $predefined['newpstopdf']   = 'pstopdf.rb'
 $predefined['newtexexec']   = 'texexec.rb'
@@ -1501,8 +1501,8 @@ $makelist = [
     'exatools',
     'runtools',
     'rlxtools',
-    'luatools',
-    'mtxtools',
+    # 'luatools',
+    # 'mtxtools',
     #
     # no, 'texmfstart'
 ]
@@ -1537,7 +1537,7 @@ def set_applications(page=1)
     $applications['htm']      = $applications['html']
     $applications['eps']      = $applications['ps']
 
-    $runners['lua']           = "luatex --luaonly"
+    $runners['lua']           = "texlua"
 
 end
 

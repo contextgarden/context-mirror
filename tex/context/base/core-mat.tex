@@ -283,6 +283,8 @@
   {\displayindent\leftdisplayskip
    \advance\displayindent\leftdisplaymargin
    \displaywidth\hsize
+% \setlocalhsize
+% \displaywidth\localhsize
    \ifdim\hangindent>\zeropoint
      \advance\displayindent\hangindent
    \else
@@ -317,7 +319,8 @@
    % \ifdim\lastskip>\zeropoint
    %   \resetlastlinewidth % else problems with in between stuff without \epar
    % \fi
-   \bgroup
+   \bgroup % HERE
+   \the\everybeforedisplayformula
    \formulaparskip\parskip
    \formulastrutdp\strutdepth
    \formulastrutht\strutheight
@@ -1687,17 +1690,32 @@
    \presetdisplaymath
    \tabskip\centering}
 
-\def\dobotheqalignno#1#2%
+% \def\dobotheqalignno#1#2%
+%   {\ifmmode
+%      \displ@y % \let\doplaceformulanumber\relax % strange hack
+%      \vcenter\bgroup
+%      \let\finishalignno\egroup
+%    \else
+%      \let\finishalignno\relax
+%    \fi
+%    #1%
+%    \halign \ifcase\eqalignmode \or to \displaywidth \fi \@EA {\the\scratchtoks\crcr#2\crcr}%
+%    \finishalignno}
+
+\def\dobothaligneqalignno#1%
   {\ifmmode
-     \displ@y % \let\doplaceformulanumber\relax % strange hack
-     \vcenter\bgroup
-     \let\finishalignno\egroup
-   \else
-     \let\finishalignno\relax
+    \displ@y
+    \global\chardef\mathnumberstatus\plusone
+    \ifcase\mathraggedstatus
+       \def\finishalignno{\crcr\egroup}%
+    \else
+       % we're in a mathbox
+       \vcenter\bgroup
+       \def\finishalignno{\crcr\egroup\egroup}%
+    \fi
    \fi
    #1%
-   \halign \ifcase\eqalignmode \or to \displaywidth \fi \@EA {\the\scratchtoks\crcr#2\crcr}%
-   \finishalignno}
+   \halign \ifcase\eqalignmode \or to \displaywidth \fi \@EA \bgroup\the\scratchtoks\crcr}
 
 \def\mrlap#1%
   {\setbox\scratchbox\hbox{#1}%
@@ -2449,12 +2467,53 @@
    \penalty\predisplaypenalty
    \beforedisplayspace}
 
+% %D \macros
+% %D   {substack}
+% %D
+% %D Preliminary code:
+% %D
+% %D \starttyping
+% %D \startformula
+% %D    \sum_{%
+% %D      \startsubstack
+% %D       i = 1 \NR
+% %D       i \neq n \NR
+% %D       i \neq m
+% %D       \stopsubstack
+% %D     }a_i
+% %D \stopformula
+% %D \stoptyping
+
+% \def\startsubstack
+%    {\begingroup
+%     \null
+%     \vcenter\bgroup
+%     \pushmacro\domatrixNC
+%     \let\stopmathmode\relax
+%     \def\NC{\domatrixNC}%
+%     \def\MC{\domatrixNC\startmathmode}%
+%     \global\let\domatrixNC\dodomatrixNC
+%     \def\NR
+%       {\stopmathmode
+%        \global\let\domatrixNC\dodomatrixNC
+%        \crcr\noalign{\nointerlineskip}}%
+%     \mathsurround\zeropoint
+%     \everycr\emptytoks
+%     \halign\bgroup\hfil$\scriptstyle\mathstrut##$\hfil\crcr}
+
+% \def\stopsubstack
+%    {\crcr
+%     \egroup
+%     \popmacro\domatrixNC
+%     \egroup
+%     \endgroup}
+
 %D \macros
 %D   {substack}
 %D
 %D Preliminary code:
 %D
-%D \starttyping
+%D \startbuffer
 %D \startformula
 %D    \sum_{%
 %D      \startsubstack
@@ -2464,31 +2523,44 @@
 %D       \stopsubstack
 %D     }a_i
 %D \stopformula
-%D \stoptyping
+%D \stopbuffer
+%D
+%D \getbuffer which was typed as \typebuffer
+%D
+%D Notice that these macros give the correct spacing for
+%D subscripts. Compare for example
+%D
+%D \startbuffer
+%D \startformula
+%D \sum_{\startsubstack a \NR b \NR \stopsubstack}
+%D \text{ and }
+%D \sum_{\scriptstyle a \atop \scriptstyle}
+%D \stopformula
+%D \typebuffer which gives \getbuffer
 
 \def\startsubstack
-   {\begingroup
-    \null
-    \vcenter\bgroup
-    \pushmacro\domatrixNC
-    \let\stopmathmode\relax
-    \def\NC{\domatrixNC}%
-    \def\MC{\domatrixNC\startmathmode}%
-    \global\let\domatrixNC\dodomatrixNC
-    \def\NR
-      {\stopmathmode
-       \global\let\domatrixNC\dodomatrixNC
-       \crcr\noalign{\nointerlineskip}}%
-    \mathsurround\zeropoint
-    \everycr\emptytoks
-    \halign\bgroup\hfil$\scriptstyle\mathstrut##$\hfil\crcr}
+  {\begingroup
+   \vcenter\bgroup
+   \baselineskip\dimexpr\fontdimen10 \scriptfont\plustwo + \fontdimen12 \scriptfont\plustwo\relax
+   \lineskip\plusthree\fontdimen8 \scriptfont\plusthree
+   \lineskiplimit\lineskip
+   \let\stopmathmode\relax
+   \def\NC{\domatrixNC}%
+   \def\MC{\domatrixNC\startmathmode}%
+   \global\let\domatrixNC\dodomatrixNC
+   \def\NR
+     {\stopmathmode
+      \global\let\domatrixNC\dodomatrixNC
+      \crcr}%
+   \mathsurround\zeropoint
+   \everycr\emptytoks
+   \halign\bgroup\hfil$\scriptstyle##$\hfil\crcr}
 
 \def\stopsubstack
-   {\crcr
-    \egroup
-    \popmacro\domatrixNC
-    \egroup
-    \endgroup}
+  {\crcr
+   \egroup
+   \egroup
+   \endgroup}
 
 %D \macros
 %D   {frac, xfrac, xxfrac}
@@ -2736,6 +2808,30 @@
 \unexpanded\def\underset#1#2%
   {\preparebinrel{#2}%
    \currentbinrel{\mathop{\kern\zeropoint#2}\limits_{#1}}}
+
+%D \macros
+%D   {boldsymbol}
+%D
+%D The math definition is inspired by amsmath.
+%D
+%D \startbuffer
+%D \definetypeface [boldmath] [mm] [boldmath] [latin-modern] [modern] [encoding=texnansi]
+%D
+%D $a \times b$ $a \boldsymbol{\times} b$
+%D \stopbuffer
+%D
+%D \typebuffer \start \getbuffer \stop
+
+\def\mathboldsymbol#1%
+  {\preparebinrel{#1}%
+   \currentbinrel{\mathchoice
+      {\hbox{\switchtoformulabodyfont             [boldmath]$\m@th#1$}}
+      {\hbox{\switchtoformulabodyfont             [boldmath]$\m@th#1$}}
+      {\hbox{\switchtoformulabodyfont      [boldmath,script]$\m@th#1$}}
+      {\hbox{\switchtoformulabodyfont[boldmath,scriptscript]$\m@th#1$}}}}
+
+\def\boldsymbol
+  {\mathortext\mathboldsymbol\bold}
 
 %D How negative such a symbol looks is demonstrated in:
 %D $\negative 10^{\negative 10^{\negative 10}}$.

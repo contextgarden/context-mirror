@@ -213,7 +213,6 @@
 \def\setupcaption
   {\dodoubleargument\dosetupcaption}
 
-
 \def\doemptyblock#1%
   {\localframed
      [\??fl#1]
@@ -1531,7 +1530,8 @@
 
 \def\dosettempcaptionbox
   {\setbox\tempcaptionbox\vbox\bgroup
-    \expanded{\setupalign[\v!new,\v!reset,\floatcaptionparameter\c!align,\v!old]}%
+   %expanded{\setupalign[\v!new,\v!reset,\floatcaptionparameter\c!align,\v!old]}% wrong! see icare
+    \expanded{\setupalign[\v!reset,\floatcaptionparameter\c!align]}% i need to check what reset does
     \let\next}
 
 \def\dopreparesideautocaption#1#2#3#4%
@@ -2409,8 +2409,7 @@
 \def\dodostartpostponing
   {\doglobal\increment\nofpostponedblocks
    \showmessage\m!layouts3\nofpostponedblocks
-   \dostartbuffer[pbuf-\nofpostponedblocks]%
-     [\e!start\v!postponing][\e!stop\v!postponing]}
+   \expanded{\dostartbuffer[pbuf-\nofpostponedblocks][\e!start\v!postponing][\e!stop\v!postponing]}}
 
 \def\dooutput{\sidefloatoutput}           % redefinition of \dooutput
 

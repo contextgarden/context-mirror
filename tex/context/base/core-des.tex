@@ -13,9 +13,27 @@
 
 \writestatus{loading}{Context Core Macros / Descriptions}
 
-\unprotect
+%D In order to be more flexible with theorems Aditya Mahajan added
+%D support for titles and endsymbols. At the same time we some more
+%D flexible support for inheriting numbers was added.
 
-% beware: \insidedescription should be set to zero inside footnotes
+%D \startbuffer
+%D \defineenumeration[one]
+%D \defineenumeration[two]   [one]
+%D \defineenumeration[three] [number=one,style=slanted]
+%D \defineenumeration[four]  [three]
+%D \defineenumeration[five]  [three] [number=five]
+%D
+%D \startone   test test 1 \stopone
+%D \starttwo   test test 2 \stoptwo
+%D \startthree test test 3 \stopthree
+%D \startfour  test test 4 \stopfour
+%D \startfive  test test 1 \stopfive
+%D \stopbuffer
+%D
+%D \typebuffer \start \getbuffer \stop
+
+\unprotect
 
 % Dit kan en moet dus anders:
 %
@@ -242,13 +260,13 @@
    \advance\leftskip -\leftskipadaption \relax
    \ifdim\leftskipadaption=\zeropoint
      \leftskipadaption1.5em % just some default
-     \ifnum\insidedescription=\plusone
+     \ifnum\nesteddescriptionstate=\plusone
        \ifdim\leftskip>\zeropoint \relax
          \leftskipadaption\leftskip
        \fi
      \fi
    \fi
-   \ifnum\insidedescription>\zerocount % was \ifnum\insidedescription=\plusone
+   \ifnum\nesteddescriptionstate>\zerocount % was \ifnum\nesteddescriptionstate=\plusone
      \advance\leftskip \leftskipadaption % but we're already further on
    \fi
    \hskip-\leftskipadaption
@@ -269,7 +287,7 @@
 %D A new key 'headalign' in definitions.
 
 \def\resetdescriptions % to be used in e.g. footnotes
-  {\chardef\insidedescription\zerocount}
+  {\chardef\nesteddescriptionstate\zerocount}
 
 \resetdescriptions
 
@@ -312,20 +330,22 @@
    \doifelse{\descriptionparameter\c!aligntitle}\v!no
      {\edef\@@leftdescriptionskip {\the\leftskip }%
       \edef\@@rightdescriptionskip{\the\rightskip}}
-     {\ifcase\insidedescription
+     {\ifcase\nesteddescriptionstate
         \edef\@@leftdescriptionskip {\the\leftskip }%
         \edef\@@rightdescriptionskip{\the\rightskip}%
       \fi}%
    \expanded{\indenting[\descriptionparameter\c!indenting]}%
    % better a system mode
-   \ifcase\insidedescription
-     \chardef\insidedescription\plusone
+   \ifcase\nesteddescriptionstate
+     \chardef\nesteddescriptionstate\plusone
    \or
-     \chardef\insidedescription\plustwo
-   \fi} % now happens elsewhere : \noindent\ignorespaces
+     \chardef\nesteddescriptionstate\plustwo
+   \fi% now happens elsewhere : \noindent\ignorespaces
+   \@@resetdescriptionclosesymbol}
 
 \def\@@stopdescription#1%
   {\def\currentdescription{#1}%
+   \@@placedescriptionclosesymbol
    % was \par \dostopattributes % here, else problems with interlinespace and font change
    \dostopparbasedattributes % == \settrue\parbasedattributes \dostopattributes
    \endgroup
@@ -344,13 +364,17 @@
 \def\@@startdescription[#1][#2]%
   {\def\currentdescription{#1}%
    \doifelse{\descriptionparameter\c!title}\v!yes
-     {\dowithwargument{\@@startsomedescription{#1}[#2]}}
+  %  {\dowithwargument{\@@startsomedescription{#1}[#2]}} % patched for theorems
+     {\permitspacesbetweengroups
+      \dodoublegroupempty{\@@startsomedescription{#1}[#2]}}
      {\@@startsomedescription{#1}[#2]{}}}
 
 \def\@@description[#1][#2]%
   {\def\currentdescription{#1}%
    \doifelse{\descriptionparameter\c!title}\v!yes
-     {\dowithwargument{\@@somedescription{#1}[#2]}}
+   % {\dowithwargument{\@@somedescription{#1}[#2]}} % patched for theorems
+     {\permitspacesbetweengroups
+      \dodoublegroupempty{\@@somedescription{#1}[#2]}}
      {\@@somedescription{#1}[#2]{}}}
 
 % these call:
@@ -398,11 +422,12 @@
   {\copyparameters[\??dd#1][\??dd]
      [\c!location,\c!headstyle,\c!style,\c!color,\c!headcolor,\c!title,
       \c!width,\c!hang,\c!sample,\c!before,\c!inbetween,\c!after,\c!margin,
-      \c!indenting,\c!indentnext,\c!align,\c!text,\c!distance,\c!titledistance,\c!command]%
+      \c!indenting,\c!indentnext,\c!align,\c!text,\c!distance,\c!titledistance,\c!command,
+      \c!titleleft,\c!titleright,\c!closesymbol,\c!closecommand]%
    \getparameters[\??dd#1]
      [\c!title=\v!yes,\s!do\c!command=\normal@@descriptionhandler,
       \c!type=\v!description,\c!list=,\c!listtext=,
-      \c!level=,#2]%
+      \c!level=,#2]%AM?? Why do we have title=yes here?
   %\doifvalue{\??dd#1\c!location}\v!top{\doassign[\??dd#1][\c!inbetween=\blank]}%
    \doifvalue{\??dd#1\c!location}\v!top % we actually need more granularity
      {\doifnotvalue{\??dd#1\c!inbetween}{\doassign[\??dd#1][\c!inbetween=\blank]}}%
@@ -464,12 +489,12 @@
        {\??dd\currentdescription}\c!headstyle\c!headcolor % todo: sub as well
        {\descriptionparameter\c!command
           {\showdntext
-           \domakednnumber
-           \doif{\descriptionparameter\c!title}\v!yes % new, for david antos
-             {\doattributes{\??dd\currentdescription}\c!titlestyle\c!titlecolor
-                {\hskip\descriptionparameter\c!titledistance\begstrut#2\endstrut}}%
-           }}% \c!command is hook for taco
-     \doifsomething{\descriptionparameter\c!list} % also for david antos
+           \descriptionparameter\c!left
+           \strut\doshowdnnumber
+           \showdntitle{#2}%
+           \descriptionparameter\c!stopper
+           \descriptionparameter\c!right}}%
+     \doifsomething{\descriptionparameter\c!list}
        {\dowritetolist
           {\descriptionparameter\c!type:\descriptionparameter\c!list}
           {\showdnlisttext\doshowdnnumber}{#2}{\currentdescription}}%
@@ -478,13 +503,27 @@
        \doifreferencefoundelse\localconnection
          {\in[\localconnection]}\donothing % genereert > of <
      \fi\fi
-     \doifnot{#1}{-}{\rawreference\s!num{#1}{\doshowdnnumber}}%
-  \else % Why was this strange expansion needed?
-     \edef\!!stringa{\showdnpuretext}% nog eens testen binnen \expanded
-     \expanded{\doattributes{\??dd\currentdescription}\noexpand\c!headstyle\noexpand\c!headcolor
-       {\noexpand\descriptionparameter\noexpand\c!command{\!!stringa}}}%
-     \doifnot{#1}{-}{\rawreference\s!num{#1}{}}%
+     \doifnot{#1}{-}{\rawreference\s!num{#1}{{\doshowdnnumber}{#2}}}%
+  \else
+     \doattributes{\??dd\currentdescription}\c!headstyle\c!headcolor
+      {\descriptionparameter\c!command
+         {\showdnpuretext
+         \descriptionparameter\c!left
+         \showdntitle{#2}%
+         \descriptionparameter\c!stopper
+         \descriptionparameter\c!right}}%
+     \doifnot{#1}{-}{\rawreference\s!num{#1}{{}{#2}}}%
    \fi}
+
+\def\showdntitle#1%
+  {\doif{\descriptionparameter\c!title}\v!yes % new, for david antos
+   {\doifsomething{#1}
+     {\doattributes{\??dd\currentdescription}\c!titlestyle\c!titlecolor
+        {\hskip\descriptionparameter\c!titledistance
+        \descriptionparameter\c!titleleft
+        \begstrut#1\endstrut
+        \descriptionparameter\c!titleright}}}}
+
 
 \def\showdnpuretext
   {\strut\descriptionparameter\c!text} % geen spatie
@@ -595,6 +634,14 @@
 \def\setupenumerations
   {\dodoubleempty\dosetupenumerations}
 
+\def\docheckenumerationnumber#1#2#3%
+  {\processaction
+     [\getvalue{\??dd#2\c!number}]
+     [    \v!yes=>\setvalue{\??dd#2\??dd\c!number}{#3},%
+           \v!no=>\setvalue{\??dd#2\??dd\c!number}{#3},%
+      \v!default=>\setvalue{\??dd#2\??dd\c!number}{#3},%
+      \v!unknown=>\letvalue{\??dd#2\??dd\c!number}\commalistelement]}
+
 \def\dododefineenumeration#1#2#3[#4][#5]%
   {\makecounter{\??dd\c!coupling#1}% new: global cross linking
    \dodefinedescription[#3#1]%
@@ -606,29 +653,35 @@
       \c!sample,\c!hang,\c!align,\c!before,\c!inbetween,\c!after,
       \c!levels,\c!way,\c!blockway,\c!separator,\c!margin,
       \c!indenting,\c!indentnext,\c!stopper,\c!sectionnumber,
-      \c!number]%
+      \c!title,\c!titleleft,\c!titleright,\c!closesymbol,\c!closecommand]%
    \doifassignmentelse{#4}
      {\getparameters[\??dd#3#1]%
         [\c!text=#1,\??dd\c!number=#1,\c!conversion=,\c!listtext=#1\space,
-         \c!left=,\c!right=,\c!coupling=,\c!couplingway=\v!local,#4]}%
+         \c!left=,\c!right=,\c!coupling=,\c!couplingway=\v!local,#4]%
+      \docheckenumerationnumber{#1}{#3#1}{#1}}%
      {\doifelsenothing{#4}
         {\getparameters[\??dd#3#1]%
            [\c!text=#1,\??dd\c!number=#1,\c!conversion=,
             \c!stopper=,
-            \c!left=,\c!right=,\c!coupling=,\c!couplingway=,#4]}%
+            \c!left=,\c!right=,\c!coupling=,\c!couplingway=,#4]%
+         \docheckenumerationnumber{#1}{#3#1}{#1}}%
         {\copyparameters[\??dd#3#1][\??dd#3#4]
            [\c!location,\c!headstyle,\c!style,\c!color,\c!headcolor,
             \c!width,\c!number,\c!distance,\c!titledistance,\c!command,\c!margin,
             \c!sample,\c!hang,\c!align,\c!before,\c!inbetween,\c!after,
             \c!stopper,\c!indenting,\c!indentnext,\c!left,\c!right,
-            \c!coupling,\c!couplingway]%
+            \c!coupling,\c!couplingway,
+            \c!title,\c!titleleft,\c!titleright,\c!closesymbol,\c!closecommand]%
          \getparameters[\??dd#3#1]
-           [\c!text=#1,\??dd\c!number=#4,\c!conversion=,#5]}}%
+           [\c!text=#1,\??dd\c!number=#4,\c!conversion=,#5]%
+         %docheckenumerationnumber{#1}{#3#1}{#4}}}%
+         \docheckenumerationnumber{#1}{#3#1}{\getvalue{\??dd#3#4\??dd\c!number}}}}%
    \doifvalue{\??dd#3#1\??dd\c!number}{#1}
      {\definenumber
         [#3#1]
         [\c!way=\descriptionparentparameter\c!way,
          \c!blockway=\descriptionparentparameter\c!blockway,
+         \c!conversion=\descriptionparentparameter\c!conversion,
          \c!sectionnumber=\descriptionparentparameter\c!sectionnumber]%
       \doifvalue{\??dd#1\c!levels}{#2}%                              % for
         {\doifsomething{\getvalue{\??dd#1\c!conversion}}%            % old
@@ -665,6 +718,17 @@
 \def\donextenumerationnumber[#1][#2][#3]%
   {\pluscounter{\??dd\c!coupling#1}% new: global crosslinking
    \getvalue{\??dd\e!next#2\c!number}[#3]}%
+
+\def\@@resetdescriptionclosesymbol
+  {\global\@EA\settrue\csname\??dd\currentdescription:mrk\endcsname
+   \let\placeclosesymbol\@@placedescriptionclosesymbol
+   \let\qed             \@@placedescriptionclosesymbol}
+
+\def\@@placedescriptionclosesymbol
+  {\ifconditional\csname\??dd\currentdescription:mrk\endcsname
+     \global\@EA\setfalse\csname\??dd\currentdescription:mrk\endcsname
+     \doifsomething{\descriptionparameter\c!closesymbol}{\descriptionparameter\c!closecommand{\descriptionparameter\c!closesymbol}}%
+   \fi}
 
 %  Het default-mechanisme kan mooier: leegtest, enz.
 %
@@ -774,12 +838,14 @@
 \setupdescriptions
   [\c!location=\v!left,
    \c!headstyle=\v!bold,
+   \c!titlestyle=\v!bold,
    \c!style=\v!normal,
    \c!color=,
    \c!headcolor=,
+   \c!titlecolor=,
    \c!width=8em,
    \c!distance=0pt,
-   \c!titledistance=0pt,
+   \c!titledistance=0.5em,
    \c!hang=,
    \c!sample=,
    \c!align=,
@@ -789,17 +855,23 @@
    \c!after=\blank,
    \c!indentnext=\v!yes,
    \c!indenting=\v!never,
+   \c!titleleft=(,
+   \c!titleright=),
+   \c!closesymbol=,
+   \c!closecommand=\wordright,
    \c!command=]
 
 \setupenumerations
   [\c!location=\v!top,
    \c!headstyle=\v!bold,
    \c!headcolor=,
+   \c!titlestyle=\v!bold,
+   \c!titlecolor=,
    \c!style=\v!normal,
    \c!color=,
    \c!width=8em,
    \c!distance=0pt,
-   \c!titledistance=0pt,
+   \c!titledistance=0.5em,
    \c!hang=,
    \c!sample=,
    \c!align=,
@@ -816,6 +888,10 @@
    \c!sectionnumber=\v!yes,
    \c!separator=\@@koseparator, % per 2006.06.23, was .
    \c!stopper=,
+   \c!titleleft=(,
+   \c!titleright=),
+   \c!closesymbol=,
+   \c!closecommand=\wordright,
    \c!number=,
    \c!command=]
 

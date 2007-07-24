@@ -121,19 +121,54 @@
    \c!date={\v!day,\ ,\v!month,\ ,\v!year},
    \c!state=\v!stop]
 
+%D The default quotation marks for Slovenian were chosen as
+%D \lowerleftdoubleninequote these ones\upperrightdoublesixquote\
+%D which was probably due to the strong influence computers
+%D had on typesetting, but \rightguillemot these ones\leftguillemot\
+%D are \quotation{more correct}.
+%D
+%D If you still want the other quotation marks, use this:
+%D
+%D \starttyping
+%D \installlanguage
+%D   [sl]
+%D   [leftquote=\lowerleftsingleninequote,
+%D    rightquote=\upperrightsinglesixquote,
+%D    leftquotation=\lowerleftdoubleninequote,
+%D    rightquotation=\upperrightdoublesixquote]
+%D \stoptyping
+%D
+%D If you disagree with the change, please send an email to Mojca, but
+%D best use some pretty strong arguments because she loves S{\sl love}nia
+%D to much to comprimise on this.
+%D
+%D German faces approximately the same problem. I (MM) would prefer to
+%D have something like:
+%D
+%D \starttyping
+%D \mainlanguage[sl][quotationstyle=guillemot|doublequote] % better name needed
+%D \stoptyping
+%D
+%D but users are expected to respect the rules of nice and correct
+%D typography anyway.
+
 \installlanguage
-  [\s!sl]
-  [\c!spacing=\v!packed,
-   \c!leftsentence={\hbox{--~}},
-   \c!rightsentence={\hbox{~--}},
-   \c!leftsubsentence={--},
-   \c!rightsubsentence={--},
-   \c!leftquote=\lowerleftsingleninequote,
-   \c!rightquote=\upperrightsinglesixquote,
-   \c!leftquotation=\lowerleftdoubleninequote,
-   \c!rightquotation=\upperrightdoublesixquote,
-   \c!date={\v!day,{.},\ ,\v!month,\ ,\v!year},
-   \c!state=\v!stop]
+ [\s!sl]
+ [\c!spacing=\v!packed,
+  \c!leftsentence={\hbox{--~}},
+  \c!rightsentence={\hbox{~--}},
+  \c!leftsubsentence={--},
+  \c!rightsubsentence={--},
+  %\c!leftquote=\lowerleftsingleninequote,
+  %\c!rightquote=\upperrightsinglesixquote,
+  %\c!leftquotation=\lowerleftdoubleninequote,
+  %\c!rightquotation=\upperrightdoublesixquote,
+  \c!leftquote=\guilsingleright,
+  \c!rightquote=\guilsingleleft,
+  \c!leftquotation=\rightguillemot,
+  \c!rightquotation=\leftguillemot,
+  \c!date={\v!day,{.},\ ,\v!month,\ ,\v!year},
+  \c!state=\v!stop]
 
 \installlanguage [polish]    [\s!pl]
 \installlanguage [czech]     [\s!cz]
