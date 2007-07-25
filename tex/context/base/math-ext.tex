@@ -1,6 +1,6 @@
 %D \module
 %D   [       file=math-ext,
-%D        version=2006.01.14,
+%D        version=2007.07.19,
 %D          title=\CONTEXT\ Math Macros,
 %D       subtitle=Extra Macros,
 %D         author={Hans Hagen \& Taco Hoekwater \& Aditya Mahajan},
@@ -10,6 +10,7 @@
 %C This module is part of the \CONTEXT\ macro||package and is
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
+%M \input math-ext
 
 \unprotect
 
@@ -63,12 +64,13 @@
 
 % temp here
 
-%D We next define extensible arrows. Extensible arrows are arrows that change
-%D their length accoding to the width of the text to be placed above and below
-%D the arrow. Since we need to define a lot of arrows, we first define some
-%D helper macros. The basic idea is to measure the width of the box to be
-%D placed above and below the arrow, and make the \quotation{body} of the
-%D arrow as long as the bigger of the two widths.
+%D We next define extensible arrows. Extensible arrows are arrows that
+%D change their length according to the width of the text to be placed
+%D above and below the arrow. Since we need to define a lot of arrows,
+%D we first define some helper macros. The basic idea is to measure
+%D the width of the box to be placed above and below the arrow, and
+%D make the \quotation{body} of the arrow as long as the bigger of the
+%D two widths.
 
 \def\mtharrfactor{1}
 \def\mtharrextra {0}
@@ -99,7 +101,7 @@
                   \mkern\muskip2\relax
                   \mkern\muskip6\relax
                  $}%
-   \setbox4\hbox{#3}%
+   \setbox4\hbox{#3\displaystyle}%
    \dimen0\wd0
    \ifdim\wd4>\dimen0 \dimen0\wd4 \fi
    \setbox2\hbox{$\scriptstyle
@@ -110,7 +112,7 @@
                   \mkern\muskip6\relax
                  $}%
    \ifdim\wd2>\dimen0 \dimen0\wd2 \fi
-   \setbox4\hbox to \dimen0{#3}%
+   \setbox4\hbox to \dimen0{#3\displaystyle}%
    \mathrel{\mathop{\hbox to \dimen0{\hss\copy4\hss}}\limits^{\box0}_{\box2}}
    \endgroup}
 
@@ -129,24 +131,31 @@
       \lower\scratchdimen\box2}}
 
 %D \macros{definematharrow}
-%D Macro for defining new arrows. We can define two types of arrows|<|single
-%D arrows and double arrows. Single arrows are defined as
+%D
+%D Macro for defining new arrows. We can define two types of
+%D arrows|<|single arrows and double arrows. Single arrows are defined
+%D as
+%D
 %D \starttyping
 %D \definematharrow [xrightarrow]        [0359] [\rightarrowfill]
 %D \stoptyping
-%D The first argument is the name of the arrow (\tex{xrightarrow} in this case.)
-%D The second argument consists of a set of 4 numbers and specify the spacing
-%D correction in math units~\type{mu}. These numbers define:
+%D
+%D The first argument is the name of the arrow (\tex{xrightarrow} in
+%D this case.) The second argument consists of a set of 4 numbers and
+%D specify the spacing correction in math units~\type{mu}. These
+%D numbers define:
+%D
 %D \startlines
 %D   1st number: arrow||tip correction
 %D   2nd number: arrow||tip correction
 %D   3rd number: space (multiplied by \tex{matharrfactor} and advanced by \tex{matharrextra})
 %D   4th number: space (multiplied by \tex{matharrfactor} and advanced by \tex{matharrextra})
 %D \stoplines
-%D 
-%D The third argument is the name of the extensible fill. The third argument
-%D is optional when the arrow is redefined later (this is useful for font
-%D specific tweaking of the skips.) For example,
+%D
+%D The third argument is the name of the extensible fill. The third
+%D argument is optional when the arrow is redefined later (this is
+%D useful for font specific tweaking of the skips.) For example,
+%D
 %D \startbuffer
 %D \math{\xrightarrow{above}}
 %D \definematharrow[xrightarrow][0000]
@@ -157,18 +166,21 @@
 %D \typebuffer gives {\getbuffer}
 %D
 %D The double arrows are defined as follows
+%D
 %D \starttyping
-%D \definematharrow [xrightleftharpoons] [3095,0359] 
+%D \definematharrow [xrightleftharpoons] [3095,0359]
 %D                  [\rightharpoonupfill,\leftharpoondownfill]
 %D \stoptyping
-%D The second and the third set of arguments consist of comma separated
-%D values. The first element of the second argument (\type{3095}) corresponds
-%D to the spacing correction of top arrow fill (\tex{rightarrowupfill}).
-%D Similarly, \type{0359} corresponds to bottom arrow fill
-%D \tex{leftharpoondownfill}). Stacking them on top of each other we get
-%D $\xrightleftharpoons[big]{above}{below}$.
+%D
+%D The second and the third set of arguments consist of comma
+%D separated values. The first element of the second argument
+%D (\type{3095}) corresponds to the spacing correction of top arrow
+%D fill (\tex{rightarrowupfill}).  Similarly, \type{0359} corresponds
+%D to bottom arrow fill \tex{leftharpoondownfill}). Stacking them on
+%D top of each other we get $\xrightleftharpoons[big]{above}{below}$.
 %D The following math arrows are defined
-%D \midaligned{\starttable[|l|m|]
+%D
+%D \placetable[none]{}{\starttable[|l|m|]
 %D   \NC \tex{xrightarrow        }  \NC \xrightarrow        [big]  \NC \NR
 %D   \NC \tex{xleftarrow         }  \NC \xleftarrow         [big]  \NC \NR
 %D   \NC \tex{xequal             }  \NC \xequal             [big]  \NC \NR
@@ -238,25 +250,28 @@
 % Adapted from amsmath.
 
 %D \macros{mtharrowfill,defaultmtharrowfill}
-%D To extend the arrows we need to define a \quotation{math arrow fill}. This
-%D command takes 7 arguments: the first four correspond the second argument of
-%D \tex{definematharrow} explained above. The other three specify the tail,
-%D body and head of the arrow. \tex{defaultmtharrowfill} has values tweaked to
-%D match latin modern fonts. For fonts that are significantly different (e.g.
-%D cows) a different set of values need to be determined.
+%D
+%D To extend the arrows we need to define a \quotation{math arrow
+%D fill}. This command takes 7 arguments: the first four correspond
+%D the second argument of \tex{definematharrow} explained above. The
+%D other three specify the tail, body and head of the arrow.
+%D \tex{defaultmtharrowfill} has values tweaked to match latin modern
+%D fonts. For fonts that are significantly different (e.g.  cows) a
+%D different set of values need to be determined.
 
-\def\mtharrowfill#1#2#3#4#5#6#7%
+\def\mtharrowfill#1#2#3#4#5#6#7#8%
   {$\mathsurround 0pt
     \thickmuskip0mu\medmuskip\thickmuskip\thinmuskip\thickmuskip
-    \relax#5%
+    \relax#8#5%
     \mkern-#1mu
-    \cleaders\hbox{$\mkern -#2mu#6\mkern -#3mu$}\hfill
+    \cleaders\hbox{$#8\mkern -#2mu#6\mkern -#3mu$}\hfill
     \mkern-#4mu#7$}
 
 \def\defaultmtharrowfill{\mtharrowfill 7227}
 
-%D We now define some arrow fills that will be used for defining the arrows.
-%D \tex{leftarrowfill} and \tex{rightarrowfill} are redefined using \tex{defaultmtharrowfill}.
+%D We now define some arrow fills that will be used for defining the
+%D arrows. \tex{leftarrowfill} and \tex{rightarrowfill} are redefined
+%D using \tex{defaultmtharrowfill}.
 
 \def\rightarrowfill       {\defaultmtharrowfill \relbar              \relbar \rightarrow       }
 \def\leftarrowfill        {\defaultmtharrowfill \leftarrow           \relbar \relbar           }
@@ -276,9 +291,10 @@
 \def\hookleftfill {\defaultmtharrowfill \leftarrow            \relbar{\relbar\joinrel\rhook}}
 \def\hookrightfill{\defaultmtharrowfill{\lhook\joinrel\relbar}\relbar \rightarrow}
 
-%D Now we define most commonly used arrows. These include arrows defined in
-%D \filename{amsmath.sty}, \filename{extarrows.sty}, \filename{extpfel.sty}
-%D and mathtools.sty packages for \LATEX.
+%D Now we define most commonly used arrows. These include arrows
+%D defined in \filename{amsmath.sty}, \filename{extarrows.sty},
+%D \filename{extpfel.sty} and \filename{mathtools.sty} packages for
+%D \LATEX.
 
 \definematharrow [xrightarrow]        [0359] [\rightarrowfill]
 \definematharrow [xleftarrow]         [3095] [\leftarrowfill]
@@ -301,7 +317,8 @@
 \definematharrow [xhookleftarrow]  [3095] [\hookleftfill]
 \definematharrow [xhookrightarrow] [0395] [\hookrightfill]
 
-%D These arrows can be used as folows:
+%D These arrows can be used as follows:
+%D
 %D \startbuffer
 %D \startformula \xrightarrow{stuff on top}\stopformula
 %D \startformula \xrightarrow{}{stuff on top}\stopformula
@@ -313,6 +330,90 @@
 %D \startformula \xleftarrow [medium]{stuff below}{stuff on top}\stopformula
 %D \startformula \xleftarrow [big]{stuff below}{stuff on top}\stopformula
 %D \stopbuffer
+%D
 %D \typebuffer which gives \getbuffer
+
+%D \macros{definemathoverarrow,defineunderarrow}
+%D
+%D These macros for define math-overarrows are adapted from
+%D \filename{amsmath.sty}
+
+\def\definemathoverarrow
+  {\dotripleargument\dodefinemathoverarrow}
+
+\def\dodefinemathoverarrow[#1][#2][#3]%
+  {\ifthirdargument
+      \setvalue{#1}{\dohandlemathoverarrow[#2][#3]}%
+    \else
+      \setvalue{#1}{\dohandlemathoverarrow[\zeropoint][#2]}%
+    \fi}
+
+\def\dohandlemathoverarrow[#1][#2]%
+  {\mathpalette{\dodohandlemathoverarrow{#1}{#2}}}
+
+%D Note: \filename{math-pln.tex} has \type{\kern-\onepoint} and
+%D \filename{amsmath.sty} does not. We keep the kern amount
+%D configurable. This is useful for harpoons.
+
+\def\dodohandlemathoverarrow#1#2#3#4%
+  {\vbox{\ialign{##\crcr
+   #2#3\crcr
+   \noalign{\kern#1\nointerlineskip}%
+   $\m@th\hfil#3#4\hfil$\crcr}}}
+
+%D Now the under arrows
+
+\def\definemathunderarrow
+  {\dotripleargument\dodefinemathunderarrow}
+
+%D For underarrows the default kern is 0.3ex
+
+\def\dodefinemathunderarrow[#1][#2][#3]%
+  {\ifthirdargument
+      \setvalue{#1}{\dohandlemathunderarrow[#2][#3]}%
+    \else
+      \setvalue{#1}{\dohandlemathunderarrow[0.3ex][#2]}%
+    \fi}
+
+\def\dohandlemathunderarrow[#1][#2]%
+  {\mathpalette{\dodohandlemathunderarrow{#1}{#2}}}
+
+\def\dodohandlemathunderarrow#1#2#3#4%
+  {\vtop{\ialign{##\crcr
+   $\m@th\hfil#3#4\hfil$\crcr
+   \noalign{\nointerlineskip\kern#1}%
+   #2#3\crcr}}}
+
+%D Now we define the arrows
+
+\definemathoverarrow  [overleftarrow]         [\leftarrowfill]
+\definemathoverarrow  [overrightarrow]        [\rightarrowfill]
+\definemathoverarrow  [overleftrightarrow]    [\leftrightarrowfill]
+\definemathoverarrow  [overtwoheadrightarrow] [\twoheadrightarrowfill]
+\definemathoverarrow  [overtwoheadleftarrow]  [\twoheadleftarrowfill]
+\definemathoverarrow  [overrightharpoondown]  [1pt] [\rightharpoondownfill]
+\definemathoverarrow  [overrightharpoonup]    [\rightharpoonupfill]
+\definemathoverarrow  [overleftharpoondown]   [1pt] [\leftharpoondownfill]
+\definemathoverarrow  [overleftharpoonup]     [\leftharpoonupfill]
+
+\definemathunderarrow [underleftarrow]        [\leftarrowfill]
+\definemathunderarrow [underrightarrow]       [\rightarrowfill]
+\definemathunderarrow [underleftrightarrow]   [\leftrightarrowfill]
+\definemathunderarrow [undertwoheadrightarrow][\twoheadrightarrowfill]
+\definemathunderarrow [undertwoheadleftarrow] [\twoheadleftarrowfill]
+\definemathunderarrow [underrightharpoondown] [\rightharpoondownfill]
+\definemathunderarrow [underrightharpoonup]   [\rightharpoonupfill]
+\definemathunderarrow [underleftharpoondown]  [\leftharpoondownfill]
+\definemathunderarrow [underleftharpoonup]    [\leftharpoonupfill]
+
+%D These can be used as follows:
+%D
+%D \startbuffer
+%D  $\overleftarrow{A}$ $\overleftarrow{ABC}$
+%D  $a_{\overleftarrow{A}}$ $b_{\overleftarrow{ABC}}$
+%D \stopbuffer
+%D \typebuffer which gives \getbuffer
+
+%D TODO: Possibly have a single arrow command define all the arrows.
 
 \protect \endinput

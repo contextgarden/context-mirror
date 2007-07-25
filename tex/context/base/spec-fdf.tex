@@ -2912,17 +2912,51 @@
 
 \definespecial\doregisterspotcolorname{\doPDFregisterspotcolorname}
 
-\def\doPDFregisterrgbspotcolor#1#2#3#4#5#6#7% name noffractions names p's r g b
+\def\dodoPDFregisterrgbspotcolor#1#2#3#4#5#6#7% name noffractions names p's r g b
   {\doPDFregistersomespotcolor{#1}{#2}{#3}{#4}{RGB}{0.0 1.0 0.0 1.0 0.0 1.0}%
      {\ifcase#2\or dup #5 mul exch dup #6 mul exch #7 mul\else#5 #6 #7\fi}}
 
-\def\doPDFregistercmykspotcolor#1#2#3#4#5#6#7#8% name noffractions names p's c m y k
+\def\dodoPDFregistercmykspotcolor#1#2#3#4#5#6#7#8% name noffractions names p's c m y k
   {\doPDFregistersomespotcolor{#1}{#2}{#3}{#4}{CMYK}{0.0 1.0 0.0 1.0 0.0 1.0 0.0 1.0}%
      {\ifcase#2\or dup #5 mul exch dup #6 mul exch dup #7 mul exch #8 mul\else #5 #6 #7 #8\fi}}
 
-\def\doPDFregistergrayspotcolor#1#2#3#4#5% name noffractions names p's s
+\def\dodoPDFregistergrayspotcolor#1#2#3#4#5% name noffractions names p's s
   {\doPDFregistersomespotcolor{#1}{#2}{#3}{#4}{Gray}{0.0 1.0}%
-     {\ifcase#2\or pop\else#5\fi}}
+     {\ifcase#2\or #5 mul\else #5\fi}}
+
+% \let\doPDFregisterrgbspotcolor \dodoPDFregisterrgbspotcolor
+% \let\doPDFregistercmykspotcolor\dodoPDFregistercmykspotcolor
+% \let\doPDFregistergrayspotcolor\dodoPDFregistergrayspotcolor
+
+\def\doPDFregisterrgbspotcolor#1#2#3#4#5#6#7% name noffractions names p's r g b
+  {\ifRGBsupported
+     \dodoPDFregisterrgbspotcolor{#1}{#2}{#3}{#4}{#5}{#6}{#7}%
+   \else
+     \edef\@@cl@@r{#5}\edef\@@cl@@g{#6}\edef\@@cl@@b{#7}%
+     \ifCMYKsupported
+       \convertRGBtoCMYK\@@cl@@r\@@cl@@g\@@cl@@b
+       \dodoPDFregistercmykspotcolor{#1}{#2}{#3}{#4}\@@cl@@c\@@cl@@m\@@cl@@y\@@cl@@k
+     \else
+       \convertRGBtoGRAY\@@cl@@r\@@cl@@g\@@cl@@b
+       \dodoPDFregistergrayspotcolor{#1}{#2}{#3}{#4}\@@cl@@s
+     \fi
+   \fi}
+
+\def\doPDFregistercmykspotcolor#1#2#3#4#5#6#7#8% name noffractions names p's c m y k
+  {\ifCMYKsupported
+     \dodoPDFregistercmykspotcolor{#1}{#2}{#3}{#4}{#5}{#6}{#7}{#8}%
+   \else
+     \edef\@@cl@@c{#5}\edef\@@cl@@m{#6}\edef\@@cl@@y{#7}\edef\@@cl@@k{#8}%
+     \ifRGBsupported
+       \convertCMYKtoRGB\@@cl@@c\@@cl@@m\@@cl@@y\@@cl@@k
+       \dodoPDFregisterrgbspotcolor{#1}{#2}{#3}{#4}\@@cl@@r\@@cl@@g\@@cl@@b
+     \else
+       \convertCMYKtoGRAY\@@cl@@c\@@cl@@m\@@cl@@y\@@cl@@k
+       \dodoPDFregistergrayspotcolor{#1}{#2}{#3}{#4}\@@cl@@s
+     \fi
+   \fi}
+
+\def\doPDFregistergrayspotcolor{\dodoPDFregistergrayspotcolor}
 
 %D New and very experimental.
 

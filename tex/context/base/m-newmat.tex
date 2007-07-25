@@ -102,20 +102,20 @@
 %\def\tfrac {\genfrac\empty\empty\empty\textstyle}
 %\def\frac  {\genfrac\empty\empty\empty\donothing}
 
-\def\dfrac {\genfrac\empty\empty\empty\displaystyle}
-\def\tfrac {\genfrac\empty\empty\empty\textstyle}
-\def\frac  {\genfrac\empty\empty\empty\donothing}
+\def\dfrac {\genfrac\empty\empty{}\displaystyle}
+\def\tfrac {\genfrac\empty\empty{}\textstyle}
+\def\frac  {\genfrac\empty\empty{}\donothing}
 
 \def\dbinom{\genfrac()\zeropoint\displaystyle}
 \def\tbinom{\genfrac()\zeropoint\textstyle}
 \def\binom {\genfrac()\zeropoint\donothing}
 
-\def\xfrac {\genfrac\empty\empty\empty\scriptstyle}
-\def\xxfrac{\genfrac\empty\empty\empty\scriptscriptstyle}
+\def\xfrac {\genfrac\empty\empty{}\scriptstyle}
+\def\xxfrac{\genfrac\empty\empty{}\scriptscriptstyle}
 
 %D Better:
 
-\unexpanded\def\frac#1#2{\mathematics{\genfrac\empty\empty\empty\donothing{#1}{#2}}}
+\unexpanded\def\frac#1#2{\mathematics{\genfrac\empty\empty{}\donothing{#1}{#2}}}
 
 %D [HH] This shows up as:
 %D

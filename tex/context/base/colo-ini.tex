@@ -838,6 +838,7 @@
      \dostartspotcolormode\@@cl@@n\@@cl@@p
    \else
      \doingspotcolortrue
+     \normalizespotcolor\@@cl@@p
      \let\spotcolorfactor\@@cl@@p
      \factorizecolortrue            % using counter and array
      \dowithcolor\execcolorRCSP\@@cl@@n
@@ -962,10 +963,6 @@
   {\edef\@@cl@@s{#1}%
    \dohidecolor\@@cl@@s\@@cl@@o}
 
-% \def\noexeccolorP#1:#2:#3\od
-%   {\edef\@@cl@@p{#2}%
-%    \dohidecolor\@@cl@@p\@@cl@@z}
-
 \def\noexeccolorP#1:#2:#3:#4:#5\od
   {\edef\@@cl@@p{#4}%
    \dohidecolor\@@cl@@p\@@cl@@z}
@@ -981,20 +978,28 @@
 
 \def\spotcolorfactor{1}
 
+% \def\normalizecolor#1%
+%   {\colordimen#1\thousandpoint
+%    \colordimen\spotcolorfactor\colordimen
+%    \colorcount\colordimen
+%    \advance\colorcount \medcard
+%    \divide\colorcount \maxcard
+%    \edef#1{\realcolorvalue\colorcount}}
+
 \def\normalizecolor#1%
-  {\colordimen#1\thousandpoint
-   \colordimen\spotcolorfactor\colordimen
-   \colorcount\colordimen
-   \advance\colorcount \medcard
-   \divide\colorcount \maxcard
+  {\colorcount\numexpr(\dimexpr\spotcolorfactor\dimexpr#1\thousandpoint\relax\relax+\medcard)/\maxcard\relax
    \edef#1{\realcolorvalue\colorcount}}
 
+% \def\normalizespotcolor#1%
+%   {\colordimen-#1\thousandpoint
+%    \advance\colordimen\thousandpoint
+%    \colorcount\colordimen
+%    \advance\colorcount \medcard
+%    \divide\colorcount \maxcard
+%    \edef#1{\realcolorvalue\colorcount}}
+
 \def\normalizespotcolor#1%
-  {\colordimen-#1\thousandpoint
-   \advance\colordimen\thousandpoint
-   \colorcount\colordimen
-   \advance\colorcount \medcard
-   \divide\colorcount \maxcard
+  {\colorcount\numexpr(\dimexpr\thousandpoint-#1\thousandpoint\relax+\medcard)/\maxcard\relax
    \edef#1{\realcolorvalue\colorcount}}
 
 \def\donormalizeRGB
@@ -1046,6 +1051,8 @@
      %\@EA\@EA\csname registerspotcolor#1\endcsname
      \csname registerspotcolor#1\@EA\endcsname
    \fi}
+
+% todo: convert to rgb if needed, will will do this in mkiv
 
 \def\dontregisterspotcolor         #1\od{}
 \def\registerspotcolorR   #1:#2:#3:#4\od{\doregisterrgbspotcolor \@@cl@@n\@@cl@@f\@@cl@@d\@@cl@@p{#1}{#2}{#3}}
@@ -1426,18 +1433,26 @@
                           1\fi\fi\fi
    \else                  0\fi}
 
+% \def\doconvertCMYKtoRGB#1\k#2\to#3%
+%   {\ifdim#2\points>#1\points% >= problem, repaired 2/12/2002
+%      \let#3\@@cl@@z % k >= color
+%    \else
+%      \colordimen\onepoint
+%      \advance\colordimen -#1\points
+%      \advance\colordimen -#2\points
+%      \multiply\colordimen \plusthousand
+%      \colorcount\colordimen
+%      \advance\colorcount \medcard
+%      \divide\colorcount \maxcard
+%      \edef#3{\realcolorvalue\colorcount}%
+%    \fi}
+
 \def\doconvertCMYKtoRGB#1\k#2\to#3%
-  {\ifdim#2\points>#1\points% >= problem, repaired 2/12/2002
-     \let#3\@@cl@@z % k >= color
-   \else
-     \colordimen\onepoint
-     \advance\colordimen -#1\points
-     \advance\colordimen -#2\points
-     \multiply\colordimen \plusthousand
-     \colorcount\colordimen
-     \advance\colorcount \medcard
-     \divide\colorcount \maxcard
+  {\colorcount\numexpr(\dimexpr\plusthousand\dimexpr\onepoint-#1\points-#2\points\relax\relax+\medcard)/\maxcard\relax
+   \ifnum\colorcount>\zeropoint
      \edef#3{\realcolorvalue\colorcount}%
+   \else
+     \let#3\@@cl@@z
    \fi}
 
 \def\convertCMYKtoRGB#1#2#3#4%
@@ -1445,14 +1460,18 @@
    \doconvertCMYKtoRGB#2\k#4\to\@@cl@@g
    \doconvertCMYKtoRGB#3\k#4\to\@@cl@@b}
 
+% \def\doconvertRGBtoCMYK#1\to#2%
+%   {\colordimen#1\points
+%    \multiply\colordimen \plusthousand
+%    \colorcount\colordimen
+%    \advance\colorcount \medcard
+%    \divide\colorcount \maxcard
+%    \colorcount-\colorcount
+%    \advance\colorcount \plusthousand
+%    \edef#2{\realcolorvalue\colorcount}}
+
 \def\doconvertRGBtoCMYK#1\to#2%
-  {\colordimen#1\points
-   \multiply\colordimen \plusthousand
-   \colorcount\colordimen
-   \advance\colorcount \medcard
-   \divide\colorcount \maxcard
-   \colorcount-\colorcount
-   \advance\colorcount \plusthousand
+  {\colorcount\numexpr\plusthousand-(\dimexpr\plusthousand\dimexpr#1\points\relax\relax+\medcard)/\maxcard\relax
    \edef#2{\realcolorvalue\colorcount}}
 
 \def\convertRGBtoCMYK#1#2#3%
@@ -1471,37 +1490,54 @@
 \def\gGRAYfactor{\ifweightGRAY590\else\nGRAYfactor\fi}
 \def\bGRAYfactor{\ifweightGRAY110\else\nGRAYfactor\fi}
 
+% \def\convertRGBtoGRAY#1#2#3%
+%   {\colordimen#1\points
+%    \colordimen\rGRAYfactor\colordimen
+%    \colorcount\colordimen
+%    \colordimen#2\points
+%    \colordimen\gGRAYfactor\colordimen
+%    \advance\colorcount \colordimen
+%    \colordimen#3\points
+%    \colordimen\bGRAYfactor\colordimen
+%    \advance\colorcount \colordimen
+%    \advance\colorcount \medcard
+%    \divide\colorcount \maxcard
+%    \edef\@@cl@@s{\realcolorvalue\colorcount}}
+
 \def\convertRGBtoGRAY#1#2#3%
-  {\colordimen#1\points
-   \colordimen\rGRAYfactor\colordimen
-   \colorcount\colordimen
-   \colordimen#2\points
-   \colordimen\gGRAYfactor\colordimen
-   \advance\colorcount \colordimen
-   \colordimen#3\points
-   \colordimen\bGRAYfactor\colordimen
-   \advance\colorcount \colordimen
-   \advance\colorcount \medcard
-   \divide\colorcount \maxcard
+  {\colorcount\numexpr
+     (\dimexpr\rGRAYfactor\dimexpr#1\points\relax\relax+
+      \dimexpr\gGRAYfactor\dimexpr#2\points\relax\relax+
+      \dimexpr\bGRAYfactor\dimexpr#3\points\relax\relax+
+      \medcard)/\maxcard
+   \relax
    \edef\@@cl@@s{\realcolorvalue\colorcount}}
 
 \def\convertCMYKtoGRAY#1#2#3#4%
   {\convertCMYKtoRGB{#1}{#2}{#3}{#4}%
    \convertRGBtoGRAY\@@cl@@r\@@cl@@g\@@cl@@b}
 
+% \def\doconvertCMYKtoCMY#1\k#2\to#3%
+%   {\colordimen#1\points
+%    \advance\colordimen #2\points\relax
+%    \ifdim\colordimen>\onepoint
+%      \colordimen\onepoint
+%    %\else
+%    % \colordimen\colordimen
+%    \fi
+%    \multiply\colordimen \plusthousand
+%    \colorcount\colordimen
+%    \advance\colorcount \medcard
+%    \divide\colorcount \maxcard
+%    \edef#3{\realcolorvalue\colorcount}}
+
 \def\doconvertCMYKtoCMY#1\k#2\to#3%
-  {\colordimen#1\points
-   \advance\colordimen #2\points\relax
-   \ifdim\colordimen>\onepoint
-     \colordimen\onepoint
-   %\else
-   % \colordimen\colordimen
-   \fi
-   \multiply\colordimen \plusthousand
-   \colorcount\colordimen
-   \advance\colorcount \medcard
-   \divide\colorcount \maxcard
-   \edef#3{\realcolorvalue\colorcount}}
+  {\colorcount\numexpr(\dimexpr\plusthousand\dimexpr#1\points+#2\points\relax\relax+\medcard)/\maxcard\relax
+   \ifnum\colorcount>\plusthousand
+     \let#3\@@cl@@o
+   \else
+     \edef#3{\realcolorvalue\colorcount}%
+   \fi}
 
 \def\convertCMYKtoCMY#1#2#3#4%
   {\doconvertCMYKtoCMY#1\k#4\to\@@cl@@c
@@ -2050,7 +2086,7 @@
   {\groupedcommand{\startcolor[#1]}\stopcolor}
 
 \unexpanded\def\graycolor[#1]% not \gray because this is a color
-  {\groupedcommand{\RGBsupportedfalse\CMYKsupportedfalse\startcolor[#1]}\stopcolor}
+  {\groupedcommand{\RGBsupportedfalse\CMYKsupportedfalse\SPOTsupportedfalse\startcolor[#1]}\stopcolor}
 
 \let\grey\graycolor
 
@@ -2116,11 +2152,17 @@
 \def\doformatcolorS#1:#2:#3\od
   {\dodoformatcolor{#1}}
 
+\def\doformatcolorP#1:#2:#3:#4:#5:#6\od
+  {#1\colorformatseparator
+   \dodoformatcolor{#2}\colorformatseparator
+   \dodoformatcolor{#3}\colorformatseparator
+   \dodoformatcolor{#4}\colorformatseparator}
+
 \def\doformatcolor#1:%
   {\csname doformatcolor#1\endcsname}
 
 \def\colorvalue
-   {\dowithcolor\doformatcolor}
+  {\dowithcolor\doformatcolor}
 
 \def\doformatgrayR#1:#2:#3:#4:#5\od
   {\convertRGBtoGRAY{#1}{#2}{#3}%
@@ -2133,11 +2175,12 @@
 \def\doformatgrayS#1:#2:#3\od
   {\dodoformatcolor{#1}}
 
-% \def\doformatgrayP#1:#2:#3:#4\od
-%   {\dowithcolor\doformatcolor{#1}}
+% \def\doformatgrayP#1:#2:#3:#4:#5:#6\od
+%   {\convertSPOTtoGRAY{#1}{#2}{#3}{#4}%
+%    \dodoformatcolor\@@cl@@s}
 
 \def\doformatgrayP#1:#2:#3:#4:#5:#6\od
-  {\dowithcolor\doformatcolor{#1}}
+  {todo}
 
 \def\doformatgray#1:%
   {\csname doformatgray#1\endcsname}

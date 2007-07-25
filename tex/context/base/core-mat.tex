@@ -1690,17 +1690,17 @@
    \presetdisplaymath
    \tabskip\centering}
 
-% \def\dobotheqalignno#1#2%
-%   {\ifmmode
-%      \displ@y % \let\doplaceformulanumber\relax % strange hack
-%      \vcenter\bgroup
-%      \let\finishalignno\egroup
-%    \else
-%      \let\finishalignno\relax
-%    \fi
-%    #1%
-%    \halign \ifcase\eqalignmode \or to \displaywidth \fi \@EA {\the\scratchtoks\crcr#2\crcr}%
-%    \finishalignno}
+\def\dobotheqalignno#1#2%
+  {\ifmmode
+     \displ@y % \let\doplaceformulanumber\relax % strange hack
+     \vcenter\bgroup
+     \let\finishalignno\egroup
+   \else
+     \let\finishalignno\relax
+   \fi
+   #1%
+   \halign \ifcase\eqalignmode \or to \displaywidth \fi \@EA {\the\scratchtoks\crcr#2\crcr}%
+   \finishalignno}
 
 \def\dobothaligneqalignno#1%
   {\ifmmode
@@ -1725,18 +1725,18 @@
    \box\scratchbox
    \global\chardef\mathnumberstatus\plustwo}
 
-\def\dobothaligneqalignno#1%
-  {\ifmmode
-    \displ@y
-    \global\chardef\mathnumberstatus\plusone
-     % we're in a mathbox
-     \vcenter\bgroup
-     \def\finishalignno{\crcr\egroup\egroup}%
-   \else
-     \def\finishalignno{\crcr\egroup}%
-   \fi
-   #1%
-   \halign \ifcase\eqalignmode \or to \displaywidth \fi \@EA \bgroup\the\scratchtoks\crcr}
+% \def\dobothaligneqalignno#1%
+%   {\ifmmode
+%     \displ@y
+%     \global\chardef\mathnumberstatus\plusone
+%      we're in a mathbox
+%      \vcenter\bgroup
+%      \def\finishalignno{\crcr\egroup\egroup}%
+%    \else
+%      \def\finishalignno{\crcr\egroup}%
+%    \fi
+%    #1%
+%    \halign \ifcase\eqalignmode \or to \displaywidth \fi \@EA \bgroup\the\scratchtoks\crcr}
 
 \def\reqalignno     {\dobotheqalignno     \preparereqalignno}
 \def\leqalignno     {\dobotheqalignno     \prepareleqalignno}

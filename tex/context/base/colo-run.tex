@@ -13,6 +13,19 @@
 
 \unprotect
 
+% temp hack (not do be documented)
+
+% \gdef\doformatcolorP#1:#2:#3:#4:#5:#6\od % was undefined in colo-ini
+%   {#1\colorformatseparator
+%    \dodoformatcolor{#2}\colorformatseparator
+%    \dodoformatcolor{#3}\colorformatseparator
+%    \dodoformatcolor{#4}\colorformatseparator}
+
+% \gdef\doformatgrayP#1:#2:#3:#4:#5:#6\od
+%   {todo}
+
+% so far
+
 \gdef\showpalet
   {\dodoubleargument\doshowpalet}
 
@@ -60,8 +73,9 @@
             \processpalet[#1]\doshowpalet}\cr
          \doifinset\v!name{#2}{#1\hskip.5em}%
          \def\doshowpalet##1%
-           {&\color[##1]{\vrule\!!width\!!widtha\!!height\strutht\!!depth\zeropoint}}%
+           {&\strut\color[##1]{\vrule\!!width\!!widtha\!!height\strutht\!!depth\zeropoint}}%
          \processpalet[#1]\doshowpalet\crcr
+         \noalign{\vskip-\strutdepth}%
          \def\doshowpalet##1%
            {&\graycolor[##1]{\vrule\!!width\!!widtha\!!height\zeropoint\!!depth\strutdp}}%
          \processpalet[#1]\doshowpalet\crcr
@@ -221,6 +235,8 @@
               {\hss\dorecurse\!!counta{#1[#2:\recurselevel]{\rule}\hss}}}
          \endgraf}
       \dorecurse\!!counta{\dododocomparecolorgroup\recurselevel}}}
+
+% \def\execcolorRCSP#1:{\csname execcolor#1\endcsname} -> \execcolorR
 
 \gdef\dogetcolorcomponents#1%
   {\startnointerference
