@@ -359,8 +359,7 @@
               {% this way we can freeze \definecolor[somecolor][somecolor]
                % and still prevent cyclic definitions
                \iffreezecolors#3{\??cr#5}{\csname\??cr#6\endcsname}\fi}
-              {\iffreezecolors\@EA#3\else\@EA#2\fi
-                 {\??cr#5}{\csname\??cr#6\endcsname}}}
+              {\iffreezecolors\@EA#3\else\@EA#2\fi{\??cr#5}{\csname\??cr#6\endcsname}}}
            {\showmessage\m!colors3{#5 (def)}}%
        \fi}%
    \ifcase#4\or
@@ -526,6 +525,8 @@
 
 %D We now redefine the color definition macro so that you
 %D can define both normal and spotcolors.
+
+%D This messy method will become obsolete in mkiv.
 
 \def\definecolor
   {\dotripleempty\dodefinewhatevercolor}
@@ -1101,14 +1102,14 @@
 
 \def\predefinecolor[#1]%
   {\bgroup
-   \flushatshipout{\hbox{\localcolortrue\color[#1]}}% real ones
+   \flushatshipout{\hbox{\localcolortrue\color[#1]{}}}% real ones
    \egroup}
 
 \def\predefineindexcolor[#1]%
   {\bgroup
-   \flushatshipout{\hbox{\localcolortrue\color[#1]}}% real ones
+   \flushatshipout{\hbox{\localcolortrue\color[#1]{}}}% real ones
    \let\doexeccolorP\doexeccolorPindex
-   \flushatshipout{\hbox{\localcolortrue\color[#1]}}% index one
+   \flushatshipout{\hbox{\localcolortrue\color[#1]{}}}% index one
    \egroup}
 
 % \def\checkpredefinedcolor[#1]%
@@ -1150,15 +1151,6 @@
    \else
      \expandafter\noexectransparency
    \fi}
-
-%\def\doexectransparency#1:#2\od
-%  {\global\@EA\chardef\csname\@@currenttransparent\endcsname % nasty
-%   \ifcase#1\space
-%     \zerocount
-%   \else
-%     \plusone
-%     \dostarttransparency{#1}{#2}%
-%   \fi}
 
 \def\doexectransparency#1:#2\od
   {\ifcase#1\space

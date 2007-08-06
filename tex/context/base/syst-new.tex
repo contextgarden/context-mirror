@@ -65,6 +65,21 @@
 
 \def\unspaceafter#1#2%
   {\edef\ascii{\dounspaced#2\end}\@EA#1\@EA{\ascii}}
+
+% sometimes handy:
+
+\def\doifhasspaceelse#1%
+  {\edef\!!stringa{#1}%
+   \expanded{\dodoifhasspaceelse#1\space}\empty\relax}
+
+\def\dodoifhasspaceelse#1 #2#3\relax % \space\empty\relax
+  {\ifx\!!stringa\space
+     \@EA\firstoftwoarguments
+   \else\ifx#2\empty
+     \@EAEAEA\secondoftwoarguments
+   \else
+     \@EAEAEA\firstoftwoarguments
+   \fi\fi}
 
 % this will replace loadfile once and alike !!! todo
 

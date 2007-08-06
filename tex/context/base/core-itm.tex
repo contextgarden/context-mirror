@@ -87,6 +87,10 @@
 \let\currentitemoffset \!!zerocount
 \def\currentitemnumber{\countervalue{\@@itemcounter\itemlevel}}
 
+% tricky ... we cannot use trialtypesetting here because there can be
+% multiple itemizes in e.g. a table, so we need something more advanced
+% where counters etc are reset to pre-outertrial values
+
 \def\dolistreference
   {\ifconditional\continuelistitems
      \savetaggedtwopassdata\s!list\currentlist\currentlist{\itemlevel:\noflistelements:c:\getitemparameter\itemlevel\c!maxwidth}%
@@ -104,9 +108,9 @@
 \def\checkcurrentnofitems
   {\splititemtwopassdata\noflists
    \iftwopassdatafound
-     \ifcase\scratchcounter
+     \ifcase\itemdatan\relax % \scratchcounter
        \let\currentnofitems   \!!zerocount
-       \let\currentminnofitems\!!zerocount
+       \let\currentminnofitems\!!plusone
        \let\currentmaxnofitems\!!zerocount
      \else
        \scratchcounter\itemdatan\relax
@@ -615,16 +619,16 @@
      \ifconditional\textlistitem\else\doifnotinset\v!text{#1}\par\fi % suboptimal
    \fi
    \begingroup
-% new where, ok or not / we should integrate random, intro, continue here
-% beware, the following no longer inherit from the previous level, is this ok?
-\setfalse\reverselistitem
-\setfalse\introlistitem
-\setfalse\autointrolistitem
-\setfalse\beforelistitem
-\setfalse\afterlistitem
-\setfalse\nowhitelistitem
-\setfalse\randomizeitems
-%
+   % new where, ok or not / we should integrate random, intro, continue here
+   % beware, the following no longer inherit from the previous level, is this ok?
+   \setfalse\reverselistitem
+   \setfalse\introlistitem
+   \setfalse\autointrolistitem
+   \setfalse\beforelistitem
+   \setfalse\afterlistitem
+   \setfalse\nowhitelistitem
+   \setfalse\randomizeitems
+   %
    \doifinsetelse\v!intro   {#1}{\settrue\introlistitem    }{\setfalse\introlistitem    }%
    \doifinsetelse\v!random  {#1}{\settrue\randomizeitems   }{\setfalse\randomizeitems   }%
    \doifinsetelse\v!continue{#1}{\settrue\continuelistitems}{\setfalse\continuelistitems}%
@@ -636,7 +640,7 @@
    \setfalse\sublistitem
    \setfalse\symbollistitem
    \let\marsymbol\relax
-   \globallet\somdestination\empty
+   \globallet\doitemdestination\empty
    \let\symsymbol\empty
    \the\itemgroupcommands
 \checkcurrentnofitems
@@ -781,7 +785,7 @@
   {\doitemgroupitem}
 
 \def\itemgroupbutton[#1]%
-  {\gdef\somdestination{#1}%
+  {\gdef\doitemdestination{#1}%
    \itemgroupitem}
 
 \def\itemgroupdummy
@@ -974,9 +978,9 @@
        \setbox8\simplealignedbox{\getitemparameter\itemlevel\c!itemalign}{\itemdataw sp}{\box8}%
     \fi
 \fi
-   \doifsomething\somdestination
-     {\setbox8\hbox{\goto{\box8}[\somdestination]}}%
-   \globallet\somdestination\empty
+   \doifsomething\doitemdestination
+     {\setbox8\hbox{\goto{\box8}[\doitemdestination]}}%
+   \globallet\doitemdestination\empty
    \dimen2=\getitemparameter\itemlevel\c!width\relax
    % new, prevents loops when symbol is (not yet found) graphic
    \ht8=\strutheight

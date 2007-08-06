@@ -18,47 +18,111 @@
 \definefontsynonym [DefaultFont] [cmvtt10]
 
 \startsetups [font:fallback:serif]
-  \definefontsynonym [Serif]            [DefaultFont]
-  \definefontsynonym [SerifBold]        [Serif]
-  \definefontsynonym [SerifItalic]      [Serif]
-  \definefontsynonym [SerifSlanted]     [SerifItalic]
-  \definefontsynonym [SerifBoldItalic]  [Serif]
-  \definefontsynonym [SerifBoldSlanted] [SerifBoldItalic]
-  \definefontsynonym [SerifCaps]        [Serif]
+    \definefontsynonym [Serif]            [DefaultFont]
+    \definefontsynonym [SerifBold]        [Serif]
+    \definefontsynonym [SerifItalic]      [Serif]
+    \definefontsynonym [SerifSlanted]     [SerifItalic]
+    \definefontsynonym [SerifBoldItalic]  [Serif]
+    \definefontsynonym [SerifBoldSlanted] [SerifBoldItalic]
+    \definefontsynonym [SerifCaps]        [Serif]
 \stopsetups
 
 \startsetups [font:fallback:sans]
-  \definefontsynonym [Sans]            [DefaultFont]
-  \definefontsynonym [SansBold]        [Sans]
-  \definefontsynonym [SansItalic]      [Sans]
-  \definefontsynonym [SansSlanted]     [SansItalic]
-  \definefontsynonym [SansBoldItalic]  [Sans]
-  \definefontsynonym [SansBoldSlanted] [SansBoldItalic]
-  \definefontsynonym [SansCaps]        [Sans]
+    \definefontsynonym [Sans]            [DefaultFont]
+    \definefontsynonym [SansBold]        [Sans]
+    \definefontsynonym [SansItalic]      [Sans]
+    \definefontsynonym [SansSlanted]     [SansItalic]
+    \definefontsynonym [SansBoldItalic]  [Sans]
+    \definefontsynonym [SansBoldSlanted] [SansBoldItalic]
+    \definefontsynonym [SansCaps]        [Sans]
 \stopsetups
 
 \startsetups [font:fallback:mono]
-  \definefontsynonym [Mono]            [DefaultFont]
-  \definefontsynonym [MonoBold]        [Mono]
-  \definefontsynonym [MonoItalic]      [Mono]
-  \definefontsynonym [MonoSlanted]     [MonoItalic]
-  \definefontsynonym [MonoBoldItalic]  [Mono]
-  \definefontsynonym [MonoBoldSlanted] [MonoBoldItalic]
-  \definefontsynonym [MonoCaps]        [Mono]
+    \definefontsynonym [Mono]            [DefaultFont]
+    \definefontsynonym [MonoBold]        [Mono]
+    \definefontsynonym [MonoItalic]      [Mono]
+    \definefontsynonym [MonoSlanted]     [MonoItalic]
+    \definefontsynonym [MonoBoldItalic]  [Mono]
+    \definefontsynonym [MonoBoldSlanted] [MonoBoldItalic]
+    \definefontsynonym [MonoCaps]        [Mono]
 \stopsetups
 
 \startsetups [font:allbold:serif]
-  \definefontsynonym [Serif]            [SerifBold]
-  \definefontsynonym [SerifItalic]      [SerifBoldItalic]
-  \definefontsynonym [SerifSlanted]     [SerifBoldSlanted]
-  %definefontsynonym [SerifCaps]        [SerifBold]
+    \definefontsynonym [Serif]            [SerifBold]
+    \definefontsynonym [SerifItalic]      [SerifBoldItalic]
+    \definefontsynonym [SerifSlanted]     [SerifBoldSlanted]
+    %definefontsynonym [SerifCaps]        [SerifBold]
 \stopsetups
 
 \startsetups [font:allbold:sans]
-  \definefontsynonym [Sans]            [SansBold]
-  \definefontsynonym [SansItalic]      [SansBoldItalic]
-  \definefontsynonym [SansSlanted]     [SansBoldSlanted]
-  %definefontsynonym [SansCaps]        [SansBold]
+    \definefontsynonym [Sans]            [SansBold]
+    \definefontsynonym [SansItalic]      [SansBoldItalic]
+    \definefontsynonym [SansSlanted]     [SansBoldSlanted]
+    %definefontsynonym [SansCaps]        [SansBold]
 \stopsetups
+
+\starttypescript [serif] [simple] [name]
+    \definefontsynonym [Serif]            [Simple]
+    \definefontsynonym [SerifBold]        [Serif]
+    \definefontsynonym [SerifItalic]      [Serif]
+    \definefontsynonym [SerifSlanted]     [Serif]
+    \definefontsynonym [SerifBoldItalic]  [Serif]
+    \definefontsynonym [SerifBoldSlanted] [Serif]
+    \definefontsynonym [SerifCaps]        [Serif]
+\stoptypescript
+
+\starttypescript [sans] [simple] [name]
+    \definefontsynonym [Sans]            [Simple]
+    \definefontsynonym [SansBold]        [Sans]
+    \definefontsynonym [SansItalic]      [Sans]
+    \definefontsynonym [SansSlanted]     [Sans]
+    \definefontsynonym [SansBoldItalic]  [Sans]
+    \definefontsynonym [SansBoldSlanted] [Sans]
+    \definefontsynonym [SansCaps]        [Sans]
+\stoptypescript
+
+\starttypescript [mono] [simple] [name]
+    \definefontsynonym [Mono]            [Simple]
+    \definefontsynonym [MonoBold]        [Mono]
+    \definefontsynonym [MonoItalic]      [Mono]
+    \definefontsynonym [MonoSlanted]     [Mono]
+    \definefontsynonym [MonoBoldItalic]  [Mono]
+    \definefontsynonym [MonoBoldSlanted] [Mono]
+    \definefontsynonym [MonoCaps]        [Mono]
+\stoptypescript
+
+% handy
+
+% \starttypescript [serif] [simple] [name]
+%   \definefontsynonym [Simple] [cmvtt10]
+%   \setupfontsynonym  [Simple] [handling=pure]
+% \stoptypescript
+
+\starttypescript [serif,sans,mono] [handling,hanging] [pure,normal]
+  \setupfontsynonym [\typescriptprefix\typescriptone ]            [handling=\typescriptthree]
+  \setupfontsynonym [\typescriptprefix\typescriptone Bold]        [handling=\typescriptthree bold]
+  \setupfontsynonym [\typescriptprefix\typescriptone Slanted]     [handling=\typescriptthree slanted]
+  \setupfontsynonym [\typescriptprefix\typescriptone Italic]      [handling=\typescriptthree italic]
+  \setupfontsynonym [\typescriptprefix\typescriptone BoldSlanted] [handling=\typescriptthree boldslanted]
+  \setupfontsynonym [\typescriptprefix\typescriptone BoldItalic]  [handling=\typescriptthree bolditalic]
+\stoptypescript
+
+\starttypescript [serif,sans,mono] [handling,hz] [hz,quality,highquality]
+  \setupfontsynonym [\typescriptprefix\typescriptone ]            [handling=\typescriptthree]
+  \setupfontsynonym [\typescriptprefix\typescriptone Bold]        [handling=\typescriptthree]
+  \setupfontsynonym [\typescriptprefix\typescriptone Slanted]     [handling=\typescriptthree]
+  \setupfontsynonym [\typescriptprefix\typescriptone Italic]      [handling=\typescriptthree]
+  \setupfontsynonym [\typescriptprefix\typescriptone BoldSlanted] [handling=\typescriptthree]
+  \setupfontsynonym [\typescriptprefix\typescriptone BoldItalic]  [handling=\typescriptthree]
+\stoptypescript
+
+\starttypescript [serif,sans,mono] [handling] [noligs,prespacing,flexspacing]
+  \setupfontsynonym [\typescriptprefix\typescriptone ]            [handling=\typescriptthree]
+  \setupfontsynonym [\typescriptprefix\typescriptone Bold]        [handling=\typescriptthree]
+  \setupfontsynonym [\typescriptprefix\typescriptone Slanted]     [handling=\typescriptthree]
+  \setupfontsynonym [\typescriptprefix\typescriptone Italic]      [handling=\typescriptthree]
+  \setupfontsynonym [\typescriptprefix\typescriptone BoldSlanted] [handling=\typescriptthree]
+  \setupfontsynonym [\typescriptprefix\typescriptone BoldItalic]  [handling=\typescriptthree]
+\stoptypescript
 
 \endinput

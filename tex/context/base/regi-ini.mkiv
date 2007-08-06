@@ -1,0 +1,39 @@
+%D \module
+%D   [       file=char-reg,
+%D        version=2005.04.25,
+%D          title=\CONTEXT\ Lua Macros,
+%D       subtitle=Regime Support,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright=PRAGMA]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\unprotect
+
+%D First some initialization code:
+
+\registerctxluafile{regi-ini}{1.001}
+
+\def\mkloadregime   #1{\ctxlua{regimes.load("#1")}}
+\def\mkenableregime #1{\ctxlua{regimes.enable("#1")}}
+\def\mkdisableregime  {\ctxlua{regimes.disable()}}
+\def\mkshowregime   #1{\ctxlua{regimes.context.show("#1")}}
+
+\appendtoks
+  \pushmacro\currentregime
+  \disableregime
+\to \everystartreadingfile
+
+\appendtoks
+  \popmacro\currentregime
+  \enableregime[\currentregime]%
+\to \everystopreadingfile
+
+\protect \endinput
+
+% \starttext
+%     \showregimetable{cp1250}
+% \stoptext

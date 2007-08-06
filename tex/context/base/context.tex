@@ -42,7 +42,7 @@
 %D your styles an modules.
 
 \edef\contextformat {\jobname}
-\edef\contextversion{2007.07.25 12:35}
+\edef\contextversion{2007.08.07 01:37}
 
 %D For those who want to use this:
 
@@ -621,6 +621,15 @@
    PRAGMA ADE / J. Hagen - A.F. Otten}
 
 \writeline\writebanner{\copyrightversion}\writeline
+
+\unprotect
+\beginLUATEX
+    \appendtoks
+        \writestatus\m!lua{used config path - \ctxlua{tex.print(cache.configpath(texmf.instance))}}%
+        \writestatus\m!lua{used cache path  - \ctxlua{tex.print(cache.path)}}%
+    \to \everydump
+\endLUATEX
+\protect
 
 % %D Except from english, no hyphenation patterns are loaded
 % %D yet. Users can specify their needs in the next module:

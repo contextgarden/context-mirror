@@ -3111,7 +3111,7 @@
      \PDFcode{/GSknockout gs}% wrong
    \fi}
 
-%D Transparency support (experimental):
+%D Transparency support:
 
 \newif\ifPDFtransparencysupported
 
@@ -3126,11 +3126,9 @@
 
 \def\dodoPDFstarttransparency#1#2%
   {\presetPDFtransparency{#1}{#2}%
-%    \PDFdirectcode{\PDFtransparencyidentifier\space gs }}
    \PDFcode{\PDFtransparencyidentifier\space gs }}
 
 \def\dodoPDFstoptransparency
-%   {\PDFdirectcode{/Tr0 gs }}
   {\PDFcode{/Tr0 gs }}
 
 \def\doPDFstarttransparency

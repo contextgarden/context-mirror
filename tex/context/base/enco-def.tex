@@ -895,4 +895,20 @@
 
 \stopencoding
 
+%D Goodie (makes more sense):
+
+\def\normalcontrolspace
+  {\getglyph{ComputerModernMono}{\char32}}
+
+\def\fakedcontrolspace % can be virtual in luatex
+  {\dontleavehmode\hbox
+     {\scratchdimen.1ex%
+      \kern\scratchdimen
+      \vrule \!!width\scratchdimen \!!height5.5\scratchdimen \!!depth3\scratchdimen
+      \vrule \!!width\dimexpr.5em-4\scratchdimen\relax \!!height-2\scratchdimen \!!depth3\scratchdimen
+      \vrule \!!width\scratchdimen \!!height5.5\scratchdimen \!!depth3\scratchdimen
+      \kern\scratchdimen}}
+
+\def\fakecontrolspace{\let\normalcontrolspace\fakedcontrolspace}
+
 \endinput

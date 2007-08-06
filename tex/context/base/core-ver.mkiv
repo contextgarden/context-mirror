@@ -1,0 +1,207 @@
+%D \module
+%D   [       file=core-ver,
+%D        version=2000.10.13,
+%D          title=\CONTEXT\ Core Macros,
+%D       subtitle=Verbatim,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\unprotect
+
+\def\mksetupprettiesintype
+  {\begingroup
+   \lowercasestring verb-\prettyidentifier\to\filename
+   \doonlyonce\filename{\ctxluafileload\filename\empty}%
+   \endgroup}
+
+% todo: obeytabs|spaces|lines|pages
+
+\def\mksetupprettytype % todo check
+  {\processingverbatimtrue % will move
+   \ctxlua{buffers.doifelsevisualizer("\prettyidentifier")}
+     {\ctxlua{buffers.setvisualizer("\prettyidentifier")}%
+      \localcolortrue % tricky, maybe not here
+      \def\obs{\obeyedspace}%
+      \def\bop{\bgroup\beginofpretty}%
+      \def\eop{\endofpretty\egroup}%
+      \def\sop{\endofpretty\egroup\bgroup\beginofpretty}}
+     {\def\obs{\obeyedspace}}}
+
+\def\mkinitializeverbatim
+  {\ctxlua{buffers.visualizers.reset()}%
+   \def\obs{\obeyedspace}%
+   \verbatimfont
+   \obeycharacters}
+
+% \ctxluafileload{verb-tex}{}
+% \ctxluafileload{verb-mp} {}
+
+% \registerctxluafile{core-buf-tex}{}
+% \registerctxluafile{core-buf-mp} {}
+
+% \def\mktype#1%
+%   {\bgroup
+%    \begstrut % new, enables leading space in \type { abc } at par start
+%    \let\currenttypingclass\??ty
+%    \edef\currenttyping{#1}%
+%    \initializetype % probably too much
+%    \verbatimcolor
+%    \setcatcodetable \vrbcatcodes
+%    \catcode`\{=\plusone
+%    \catcode`\}=\plustwo
+%    \dodotype}
+
+% \def\dodotype#1%
+%   {\obeycharacters % everyinitializeverbatim
+%    \ctxlua{buffers.hooks.flush_line(\!!bs\detokenize{#1}\!!es)}%
+%    \egroup}
+
+\let\mksetupslantedtype   \relax
+
+\def\mksetupcommandsintype% can also be \string\
+  {\ctxlua{
+     buffers.visualizers.enableescape = true
+     buffers.visualizers.escapetoken  = \!!bs\typingparameter\c!escape\!!es
+   }%
+   \setevalue{\typingparameter\c!escape}{\typingparameter\c!escape}}
+
+\def\mktype#1% was \dotype
+  {\bgroup
+   \begstrut % new, enables leading space in \type { abc } at par start / begstrut else no hyphenation
+   \let\currenttypingclass\??ty
+   \edef\currenttyping{#1}%
+   \catcode`\<=\@@other
+   \catcode`\>=\@@other
+   \futurelet\next\dodotype}
+
+\def\dodotype
+  {\ifx\next\bgroup
+     \@EA\dodotypeA
+   \else\if\next<%
+     \doifelse{\typingparameter\c!option}\v!none
+       {\@EAEAEA\dodotypeB}{\@EAEAEA\dodotypeC}%
+   \else
+     \@EAEAEA\dodotypeD
+   \fi\fi}
+
+\def\dodotypeA
+  {\initializetype % probably too much
+   \verbatimcolor
+   \setcatcodetable \vrbcatcodes
+   \catcode`\{=\plusone
+   \catcode`\}=\plustwo
+   \dodotypeAA}
+
+\def\dodotypeAA#1%
+  {\mkinitializeverbatim
+\def\obs{\obeyedspace}%
+   \ctxlua{buffers.hooks.flush_line(\!!bs\detokenize{#1}\!!es)}%
+   \egroup}
+
+\def\dodotypeB#1%
+  {\initializetype
+   \verbatimcolor
+   \setcatcodetable \vrbcatcodes
+   \catcode`\<=\plusone
+   \catcode`\>=\plustwo
+   \dodotypeBB}
+
+\def\dodotypeBB#1%
+  {\mkinitializeverbatim
+   \ctxlua{buffers.visualizers.flush_nested(\!!bs\detokenize{#1}\!!es,false)}%
+   \egroup
+   \gobbleoneargument} % grab last >
+
+\def\dodotypeC#1%
+  {\initializetype
+   \verbatimcolor
+   \setcatcodetable \vrbcatcodes
+   \catcode`\<=\plusone
+   \catcode`\>=\plustwo
+   \dodotypeCC}
+
+\def\dodotypeCC#1%
+  {\mkinitializeverbatim
+   \ifx\obeycharacters\setupprettytype % temp hack, we need a proper signal
+     \ctxlua{buffers.hooks.flush_line([\!!bs\detokenize{#1}\!!es,true)}%
+   \else
+     \def\obs{\obeyedspace}%
+     \ctxlua{buffers.visualizers.flush_nested(\!!bs\detokenize{#1}\!!es,true)}%
+   \fi
+   \egroup
+   \gobbleoneargument} % grab last >
+
+\def\dodotypeD#1%
+  {\initializetype
+   \verbatimcolor
+   \setcatcodetable \vrbcatcodes
+   \def\dodotypeDD##1#1{\dodotypeAA{##1}}%
+   \dodotypeDD}
+
+\def\dodotypeDD#1%
+  {\mkinitializeverbatim
+   \ctxlua{buffers.hooks.flush_line(\!!bs\detokenize{#1}\!!es,true)}%
+   \egroup
+   \gobbleoneargument} % grab last >
+
+% \typing:
+
+\def\mktypeblockverbatim#1#2%
+   {\dowithbuffer{_typing_}{#1}{#2}
+      {}
+      {\mkinitializeverbatim
+       \beginofverbatimlines
+       \ctxlua{buffers.type("_typing_")}%
+       \endofverbatimlines
+       \getvalue{\strippedcsname#2}}}
+
+% \typefile:
+
+\def\mktypefileverbatim
+  {\mkinitializeverbatim
+   \ctxlua{buffers.typefile("\readfilename")}}
+
+\def\mktypefilelinesverbatim#1#2%
+  {#1%
+   \mkinitializeverbatim
+   \ctxlua{buffers.typefile("\readfilename")}%
+   #2}
+
+% patched from verb-ini (todo)
+
+\let\beginverbatimline   \relax
+\let\endverbatimline     \relax
+\let\doopenupverbatimline\empty
+
+\def\doverbatimbeginofline#1% linenumber
+  {\bgroup                  % due to pretty status
+   \iflinepar\else\EveryPar{}\fi
+   \dontleavehmode % \leavevmode
+   \xdef\dokeepverbatimlinedata % hm, still needed?
+     {\parindent \the\parindent
+      \hangindent\the\hangindent
+      \hangafter \the\hangafter
+      \leftskip  \the\leftskip
+      \rightskip \the\rightskip}%
+   \egroup
+   \dokeepverbatimlinedata
+   \doopenupverbatimline
+   \the\everyline\strut
+   \beginverbatimline}
+
+\def\doverbatimendofline
+  {\endverbatimline
+   \global\lineparfalse
+   \obeyedline\par}
+
+\def\doverbatimemptyline
+  {\strut
+   \par
+   \global\linepartrue}
+
+\protect \endinput

@@ -33,6 +33,8 @@
 % number uses the text container. We use reference mapping
 % (define reference) to keep track of the current ref.
 
+% \@@sectie == current level
+
 \def\dowritetolist#1%
   {\doifelsevalue{\??li#1\c!state}\v!start
      \dodowritetolist\gobblefourarguments{#1}}

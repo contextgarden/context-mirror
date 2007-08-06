@@ -76,25 +76,39 @@
      {\splitfiletype{#1}%
       \addtocommalist\splitoffname\typescriptfiles}}
 
-\usetypescriptfile[\f!typeprefix exa] % some examples
-\usetypescriptfile[\f!typeprefix syn] % font file synonyms
-\usetypescriptfile[\f!typeprefix enc] % files and encodings
-%usetypescriptfile[\f!typeprefix dis] % funny name remappings, obsolete
-\usetypescriptfile[\f!typeprefix siz] % specific font sizes
-\usetypescriptfile[\f!typeprefix map] % pdftex mapping
-\usetypescriptfile[\f!typeprefix spe] % special macros
-\usetypescriptfile[\f!typeprefix akb] % adobe karl berry names
+% \usetypescriptfile[\f!typeprefix exa] % some examples
+% \usetypescriptfile[\f!typeprefix syn] % font file synonyms
+% \usetypescriptfile[\f!typeprefix enc] % files and encodings
+% %usetypescriptfile[\f!typeprefix dis] % funny name remappings, obsolete
+% \usetypescriptfile[\f!typeprefix siz] % specific font sizes
+% \usetypescriptfile[\f!typeprefix map] % pdftex mapping
+% \usetypescriptfile[\f!typeprefix spe] % special macros
+% \usetypescriptfile[\f!typeprefix akb] % adobe karl berry names
+%
+% \beginXETEX \font
+%   \usetypescriptfile[\f!typeprefix xtx] % xetex definitions
+% \endXETEX
+
+\usetypescriptfile[\f!typeprefix tmf]
+\usetypescriptfile[\f!typeprefix siz]
+
+\beginOLDTEX \font
+    \usetypescriptfile[\f!typeprefix one]
+    %usetypescriptfile[\f!typeprefix gyr] % to be merged into one
+    \usetypescriptfile[\f!typeprefix akb] % will go away when gyre is merged
+\endOLDTEX
+
+\beginNEWTEX \font
+  \usetypescriptfile[\f!typeprefix otf]
+\endNEWTEX
 
 \beginXETEX \font
-
-  \usetypescriptfile[\f!typeprefix xtx] % xetex definitions
-
+  \usetypescriptfile[\f!typeprefix xtx]
 \endXETEX
 
-\usetypescriptfile[\f!typeprefix loc] % local scripts
+\usetypescriptfile[\f!typeprefix loc]
 
-%usetypescriptfile[\f!typeprefix pre] % predefined scripts (compatible)
-%usetypescriptfile[typeface]          % project scripts
+% SO FAR
 
 \let\currenttypescripts\empty
 
@@ -147,6 +161,7 @@
 % \def\dododousetypescript#1%
 %   {\startreadingfile
 %    \pushmacro\currenttypefile
+%    \def\currenttypefile{#1}%
 %    \def\currenttypefile{#1}%
 %    \readfile\currenttypefile\donothing\donothing
 %    \popmacro\currenttypefile
@@ -535,22 +550,26 @@
 
 % we can use \rawgetparameters or \rawgeteparameters
 
+\ifx\mkdodefinetypeface\undefined
+    \let\mkdodefinetypeface\gobblefivearguments
+\fi
+
 \def\dodefinetypeface[#1][#2][#3][#4][#5][#6]%
   {\dododefinetypeface[#1][#2]%
    \iffifthargument % sixth is optional
      % we need to expand since in #6 there can be a \typescripttwo
-     \expanded{\getparameters[\??ts][\s!rscale=\plusone,\s!encoding=\defaultencoding,\s!text=,#6]}% \geteparameters
+     \expanded{\getparameters[\??ts][\s!rscale=\plusone,\s!encoding=\defaultencoding,\s!features=,\s!text=,#6]}% \geteparameters
      \pushmacro\relativefontsize
      \pushmacro\typefaceencoding
      \pushmacro\fontclass
      \let\relativefontsize\@@tsrscale
      \let\typefaceencoding\@@tsencoding
      \setcurrentfontclass{#1}%
+     \letvalue{\fontclass\s!features}\@@tsfeatures % new per 16/6/2007
      \saverelativefontsize{#2}\relativefontsize % fall back
      \savemathtextstyle\@@tstext % math text style (new per 28/4/2006)
      \iftracetypescripts\writestatus\m!fonts{define: [#1] [#2] [#3] [#4] / \typefaceencoding}\fi
-     %\usetypescript[map][\typefaceencoding]% latest versions of pdftex can load after first page
-     \usetypescript[#3,\t!map][#4][\t!name,\t!default,\typefaceencoding,\t!special]% is default needed
+     \usetypescript[#3,\t!map][#4][\t!name,\t!default,\typefaceencoding,\t!special]% map is needed for backward cmp
      \usetypescript[#3][#5][\t!size]%
      \popmacro\fontclass
      \popmacro\typefaceencoding

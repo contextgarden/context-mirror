@@ -38,7 +38,7 @@ module SelfMerge
     @@modules  = $".collect do |file| File.expand_path(file) end
 
     @@modules.delete_if do |file|
-        file !~ /^#{@@ownpath}\/#{@@modroot}.*$/
+        file !~ /^#{@@ownpath}\/#{@@modroot}.*$/i
     end
 
     def SelfMerge::ok?

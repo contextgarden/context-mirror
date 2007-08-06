@@ -394,15 +394,18 @@
 
 \starttypescript [math] [modern,computer-modern,latin-modern] [size]
 
-  % hack to prevent mapping of filenames, watch the space!
+  % hack to prevent mapping of filenames, watch the space! before
+  % latin modern came aroudn we needed this trick to make sure that
+  % we loaded the raw cmr12 etc instead of the ones mapped onto
+  % an encoding
 
-  \definefontsynonym[xcmr12][cmr12 ]
-  \definefontsynonym[xcmr10][cmr10 ]
-  \definefontsynonym[xcmr9] [cmr9 ]
-  \definefontsynonym[xcmr8] [cmr8 ]
-  \definefontsynonym[xcmr7] [cmr7 ]
-  \definefontsynonym[xcmr6] [cmr6 ]
-  \definefontsynonym[xcmr5] [cmr5 ]
+  % \definefontsynonym[xcmr12][cmr12 ]
+  % \definefontsynonym[xcmr10][cmr10 ]
+  % \definefontsynonym[xcmr9] [cmr9 ]
+  % \definefontsynonym[xcmr8] [cmr8 ]
+  % \definefontsynonym[xcmr7] [cmr7 ]
+  % \definefontsynonym[xcmr6] [cmr6 ]
+  % \definefontsynonym[xcmr5] [cmr5 ]
 
   \definebodyfont [12pt] [mm]
     [mr=xcmr12,

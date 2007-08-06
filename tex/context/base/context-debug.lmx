@@ -1,0 +1,108 @@
+<!--
+    -- filename : comm-deb.xml
+    -- comment  : companion to comm-xml.tex
+    -- author   : Hans Hagen, PRAGMA-ADE, Hasselt NL
+    -- copyright: PRAGMA ADE / ConTeXt Development Team
+    -- license  : see context related readme files
+
+-->
+
+<html>
+    <title><?lua pv('title') ?></title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <style type="text/css">
+        <!--
+            <?lmx-include context.css ?>
+            #type {
+                text-align: center ;
+            }
+            #variable {
+                width: 10em ;
+                text-align: right ;
+                margin-right: 1em ;
+            }
+            #value {
+                text-align: left ;
+            }
+        -->
+    </style>
+    <script language="JavaScript">
+        <!--
+            window.focus();
+        -->
+    </script>
+    <body>
+        <div id="top"><div id="top-one"><div id="top-two">
+            <?lua pv('title') ?>
+        </div></div></div>
+        <div id="left"><div id="left-one"><div id="left-two">
+            <!-- empty -->
+        </div></div></div>
+        <div id="right"><div id="right-safari"><div id="right-one"><div id="right-two"><div id="right-three"><div id="right-four"><div id="right-five">
+            <!-- empty -->
+        </div></div></div></div></div></div></div>
+        <div id="right"><div id="right-safari"><div id="right-one"><div id="right-two"><div id="right-three"><div id="right-four"><div id="right-five"></div></div></div></div></div></div></div>
+        <div id="main"><div id='main-settings'>
+        <?lua if trace.knownlist('scratch') then ?>
+            <h1>Scratch Variables</h1>
+            <table>
+                <tr>
+                    <th align='middle'>index</th>
+                    <th align='middle'>&nbsp;&nbsp;&nbsp;dimen</th>
+                    <th align='middle'>&nbsp;&nbsp;&nbsp;count</th>
+                    <th align='left'  >&nbsp;&nbsp;&nbsp;toks</th>
+                </tr>
+            <?lua for k,v in pairs(trace.list['scratch']) do ?>
+                <tr>
+                    <th align='middle'><?lua t(v) ?></th>
+                    <th align='middle'>&nbsp;&nbsp;&nbsp;<?lua t(trace.dimen(v)) ?></th>
+                    <th align='middle'>&nbsp;&nbsp;&nbsp;<?lua t(trace.count(v)) ?></th>
+                    <th align='left'  >&nbsp;&nbsp;&nbsp;<?lua t(trace.toks (v)) ?></th>
+                </tr>
+            <?lua end ?>
+            </table>
+            <br/>
+        <?lua end ?>
+        <?lmx-define-begin tvv-head ?>
+                <tr>
+                    <th><div id="type"    >type    </div></th>
+                    <th><div id="variable">variable</div></th>
+                    <th><div id="value"   >value   </div></th>
+                </tr>
+        <?lmx-define-end ?>
+        <?lmx-define-begin tvv-body ?>
+                <tr>
+                    <th><div id="type"    ><?lua t(trace.type(v)) ?></div></th>
+                    <th><div id="variable"><?lua t(trace.name(v)) ?></div></th>
+                    <th><div id="value"   ><?lua t(trace.cs(v))   ?></div></th>
+                </tr>
+        <?lmx-define-end ?>
+        <?lua if trace.knownlist('internals') then ?>
+            <h1>Internal Variables</h1>
+            <table>
+                <?lmx-resolve tvv-head ?>
+            <?lua for k,v in pairs(trace.list['internals']) do ?>
+                <?lmx-resolve tvv-body ?>
+            <?lua end ?>
+            </table>
+            <br/>
+        <?lua end ?>
+        <?lua if trace.knownlist('context') then ?>
+            <h1>ConTeXt Variables</h1>
+            <table>
+                <?lmx-resolve tvv-head ?>
+            <?lua for k,v in pairs(trace.list['context']) do ?>
+                <?lmx-resolve tvv-body ?>
+            <?lua end ?>
+            </table>
+            <br/>
+        <?lua end ?>
+        </div></div>
+        <div id="bottom"><div id="bottom-one"><div id="bottom-two">
+            Job Name: <?lua p(environment.jobname) ?> &nbsp;&nbsp;&nbsp;
+            ConTeXt Version: <?lua p(environment.version) ?> &nbsp;&nbsp;&nbsp;
+            Real Page: <?lua p(trace.cs('c:realpageno')) ?> &nbsp;&nbsp;&nbsp;
+            Page: <?lua p(trace.cs('c:pageno')) ?> &nbsp;&nbsp;&nbsp;
+        </div></div></div>
+    </body>
+</html>

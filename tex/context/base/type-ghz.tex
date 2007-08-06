@@ -59,8 +59,6 @@
 
 \starttypescript [sans] [optima,optima-nova] [texnansi,ec,8r]
 
-  \loadmapfile[\typescriptthree-linotype-optima.map]
-
   \definefontsynonym [OptimaLT]                  [\typescriptthree-lte50019] [encoding=\typescriptthree]
   \definefontsynonym [OptimaLT-Italic]           [\typescriptthree-lte52401] [encoding=\typescriptthree]
   \definefontsynonym [OptimaLT-Bold]             [\typescriptthree-lte50021] [encoding=\typescriptthree]
@@ -75,12 +73,16 @@
   \definefontsynonym [OptimaLT-ExtraBlack]       [\typescriptthree-lte53511] [encoding=\typescriptthree]
   \definefontsynonym [OptimaLT-ExtraBlackItalic] [\typescriptthree-lte53512] [encoding=\typescriptthree]
 
-\stoptypescript
-
-\starttypescript [map] [optima,optima-nova] [texnansi,ec,8r]
-
   \loadmapfile[\typescriptthree-linotype-optima.map]
 
+\stoptypescript
+
+\starttypescript [optima] [texnansi,ec,qx]
+    \definetypeface[optima][ss][sans] [optima-nova][default][encoding=\typescripttwo]
+    \definetypeface[optima][rm][serif][palatino]   [default][encoding=\typescripttwo]
+    \definetypeface[optima][tt][mono] [modern]     [default][encoding=\typescripttwo,rscale=1.1]
+    \definetypeface[optima][mm][math] [palatino]   [default][encoding=\typescripttwo]
+    \quittypescriptscanning
 \stoptypescript
 
 % optima nova
@@ -172,8 +174,6 @@
 
 \starttypescript [sans] [optima-nova,optima-nova-light,optima-nova-medium,optima-nova-os] [texnansi,ec,8r]
 
-  \loadmapfile[\typescriptthree-linotype-optima-nova.map]
-
   \definefontsynonym[OptimaNovaLT-Light]          [\typescriptthree-lt55476][encoding=\typescriptthree]
   \definefontsynonym[OptimaNovaLT-LightSC]        [\typescriptthree-lt55477][encoding=\typescriptthree]
   \definefontsynonym[OptimaNovaLT-LightOsF]       [\typescriptthree-lt55478][encoding=\typescriptthree]
@@ -215,10 +215,8 @@
   \definefontsynonym[OptimaNovaLT-Black]          [\typescriptthree-lt55514][encoding=\typescriptthree]
   \definefontsynonym[OptimaNovaLT-BlackItalic]    [\typescriptthree-lt55515][encoding=\typescriptthree]
 
-\stoptypescript
-
-\starttypescript [map] [optima-nova,optima-nova-light,optima-nova-medium,optima-nova-os] [texnansi,ec,8r]
   \loadmapfile[\typescriptthree-linotype-optima-nova.map]
+
 \stoptypescript
 
 % palatino
@@ -238,8 +236,6 @@
 
 \starttypescript [serif] [palatino] [texnansi,ec,8r]
 
-  \loadmapfile[\typescriptthree-linotype-palatino.map]
-
   \definefontsynonym[PalatinoLT-Roman]        [\typescriptthree-lte50001] [encoding=\typescriptthree]
   \definefontsynonym[PalatinoLT-Italic]       [\typescriptthree-lte50002] [encoding=\typescriptthree]
   \definefontsynonym[PalatinoLT-Bold]         [\typescriptthree-lte50003] [encoding=\typescriptthree]
@@ -257,10 +253,8 @@
 
   \definefontsynonym[PalatinoSC]              [\typescriptthree-posc]     [encoding=\typescriptthree]
 
-\stoptypescript
-
-\starttypescript [map] [palatino] [texnansi,ec,8r]
   \loadmapfile[\typescriptthree-linotype-palatino.map]
+
 \stoptypescript
 
 % palatino nova
@@ -313,8 +307,6 @@
 
 \starttypescript [serif] [palatino-nova,palatino-nova-light,palatino-nova-medium] [texnansi,ec,8r]
 
-  \loadmapfile[\typescriptthree-linotype-palatino-nova.map]
-
   \definefontsynonym[PalatinoNova-Light]       [\typescriptthree-PalatinoNova-Light]       [encoding=\typescriptthree]
   \definefontsynonym[PalatinoNova-LightItalic] [\typescriptthree-PalatinoNova-LightItalic] [encoding=\typescriptthree]
   \definefontsynonym[PalatinoNova-Regular]     [\typescriptthree-PalatinoNova-Regular]     [encoding=\typescriptthree]
@@ -325,8 +317,6 @@
   \definefontsynonym[PalatinoNova-BoldItalic]  [\typescriptthree-PalatinoNova-BoldItalic]  [encoding=\typescriptthree]
   \definefontsynonym[PalatinoNova-Imperial]    [\typescriptthree-PalatinoNova-Imperial]    [encoding=\typescriptthree]
   \definefontsynonym[PalatinoNova-Titling]     [\typescriptthree-PalatinoNova-Titling]     [encoding=\typescriptthree]
-
-  \loadmapfile[\typescriptthree-sc-linotype-palatino-nova.map]
 
   \definefontsynonym[PalatinoNova-LightSC]       [\typescriptthree-sc-PalatinoNova-Light]       [encoding=\typescriptthree]
   \definefontsynonym[PalatinoNova-LightItalicSC] [\typescriptthree-sc-PalatinoNova-LightItalic] [encoding=\typescriptthree]
@@ -339,12 +329,9 @@
   \definefontsynonym[PalatinoNova-ImperialSC]    [\typescriptthree-sc-PalatinoNova-Imperial]    [encoding=\typescriptthree]
   \definefontsynonym[PalatinoNova-TitlingSC]     [\typescriptthree-sc-PalatinoNova-Titling]     [encoding=\typescriptthree]
 
-\stoptypescript
-
-\starttypescript [map] [palatino-nova,palatino-nova-light,palatino-nova-medium] [texnansi,ec,8r]
   \loadmapfile[\typescriptthree-linotype-palatino-nova.map]
   \loadmapfile[\typescriptthree-sc-linotype-palatino-nova.map]
-% \loadmapfile[\typescriptthree-os-linotype-palatino-nova.map]
+
 \stoptypescript
 
 % aldusnova
@@ -373,27 +360,20 @@
 
 \starttypescript [serif] [aldus-nova] [texnansi,ec,8r]
 
-  \loadmapfile[\typescriptthree-linotype-aldus-nova.map]
-
   \definefontsynonym[AldusNova-Book]       [\typescriptthree-AldusNova-Book]       [encoding=\typescriptthree]
   \definefontsynonym[AldusNova-BookItalic] [\typescriptthree-AldusNova-BookItalic] [encoding=\typescriptthree]
   \definefontsynonym[AldusNova-Bold]       [\typescriptthree-AldusNova-Bold]       [encoding=\typescriptthree]
   \definefontsynonym[AldusNova-BoldItalic] [\typescriptthree-AldusNova-BoldItalic] [encoding=\typescriptthree]
-
-  \loadmapfile[\typescriptthree-sc-linotype-aldus-nova.map]
 
   \definefontsynonym[AldusNova-BookSC]       [\typescriptthree-sc-AldusNova-Book]       [encoding=\typescriptthree]
   \definefontsynonym[AldusNova-BookItalicSC] [\typescriptthree-sc-AldusNova-BookItalic] [encoding=\typescriptthree]
   \definefontsynonym[AldusNova-BoldSC]       [\typescriptthree-sc-AldusNova-Bold]       [encoding=\typescriptthree]
   \definefontsynonym[AldusNova-BoldItalicSC] [\typescriptthree-sc-AldusNova-BoldItalic] [encoding=\typescriptthree]
 
-\stoptypescript
-
-\starttypescript [map] [aldus-nova] [texnansi,ec,8r]
   \loadmapfile[\typescriptthree-linotype-aldus-nova.map]
   \loadmapfile[\typescriptthree-sc-linotype-aldus-nova.map]
-\stoptypescript
 
+\stoptypescript
 
 % melior
 
@@ -415,17 +395,13 @@
 
 \starttypescript [serif] [melior] [texnansi,ec,8r]
 
-  \loadmapfile[\typescriptthree-linotype-melior.map]
-
   \definefontsynonym [MeliorLT]            [texnansi-lte50062] [encoding=\typescriptthree]
   \definefontsynonym [MeliorLT-Italic]     [texnansi-lte50063] [encoding=\typescriptthree]
   \definefontsynonym [MeliorLT-Bold]       [texnansi-lte50064] [encoding=\typescriptthree]
   \definefontsynonym [MeliorLT-BoldItalic] [texnansi-lte50065] [encoding=\typescriptthree]
 
-\stoptypescript
-
-\starttypescript [map] [melior] [texnansi,ec,8r]
   \loadmapfile[\typescriptthree-linotype-melior.map]
+
 \stoptypescript
 
 \stoptypescriptcollection

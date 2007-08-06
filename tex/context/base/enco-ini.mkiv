@@ -1,0 +1,69 @@
+%D \module
+%D   [       file=enco-ini,
+%D        version=2007.02.19,
+%D          title=\CONTEXT\ Encoding Macros,
+%D       subtitle=Initialization,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright=\PRAGMA]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D In the end we will cleanup enco-ini.tex!
+
+\unprotect
+
+% could also be a new kind of table \definecharacter {name} {char} {fallback}
+
+\startruntimectxluacode
+    characters.context.rehash()
+\stopruntimectxluacode
+
+\ctxlua { characters.context.define() } % redefines all \characters
+
+\useencoding[032,033,037] % fallbacks for some unicode chars, todo
+
+\setupencoding[\s!default=ec] % for the moment keep it this way, till fonts are there
+
+\protect \endinput
+
+When dealing with characters we have four cases to take into account when moving
+from mkii to mkiv:
+
+1. <byte 200>   => ref to slot 200 in current font
+2. \char 200    => ref to slot 200 in current font
+3. <active 200> => can (e.g.) map to another slot in current font
+4. \namedglyph  => can map to some slot in some font
+
+Using case 2 for special characters is doomed to fail because we are not going
+to intercept these on the fly as happens automatically with traditional font
+encoding handling. We could do that in a node pass but it's not worth the effort
+because we seldom use this case in a document source.
+
+We can consider using utf as internal format for mkii. The main reason for not
+doing this before was that it was slow. On the other hand, it would make dealing
+with utility files easier.
+
+These are the only cases where char references are used:
+
+enco-def.tex :  46 : \definecharacter dotlessi         {\char"10 }
+enco-def.tex :  47 : \definecharacter dotlessj         {\char"11 }
+enco-def.tex :  54 : \definecharacter aeligature       {\char26 } % "1A
+enco-def.tex :  55 : \definecharacter AEligature       {\char29 } % "1D
+enco-def.tex :  58 : \definecharacter oeligature       {\char27 } % "1B
+enco-def.tex :  59 : \definecharacter OEligature       {\char30 } % "1E
+enco-def.tex :  61 : \definecharacter ssharp           {\char25 } % "19
+enco-def.tex : 336 : \definecharacter Lstroke          {\hsmash{\char32}L}
+enco-def.tex : 337 : \definecharacter lstroke          {\hsmash{\char32}l}
+enco-def.tex : 338 : \definecharacter Ostroke          {\char31 } % "1F
+enco-def.tex : 339 : \definecharacter ostroke          {\char28 } % "1C
+enco-il2.tex : 147 :   {\dontleavehmode{\char32l}}
+enco-il2.tex : 152 :    \hbox to\wd0{\hss\char32L}%
+symb-eur.tex :  37 : \definesymbol [euro] [\getglyph{Euro}{\char160}]
+symb-glm.tex :  61 : \definesymbol [xleftguillemot]   [\getglyph{Guil}{\char19}]
+symb-glm.tex :  62 : \definesymbol [xrightguillemot]  [\getglyph{Guil}{\char20}]
+symb-glm.tex :  64 : \definesymbol [xguilsingleleft]  [\getglyph{Guil}{\char14}]
+symb-glm.tex :  65 : \definesymbol [xguilsingleright] [\getglyph{Guil}{\char15}]
+

@@ -1,0 +1,54 @@
+%D \module
+%D   [       file=char-utf,
+%D        version=2006.12.05,
+%D          title=\CONTEXT\ Lua Macros,
+%D       subtitle=Unicode Support (UTF),
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright=PRAGMA]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{Unicode Support (utf)}
+
+%D After a bit of experimenting we reached a clean state where \UTF\
+%D 8, 16 and 32 were supported as well as collapsing (combining
+%D sequences). Writing the code was a relaxed experience, not in the
+%D last place because it was accompanied by listening to those nice
+%D Vienna Teng cd's (who decided that making music was more fun than
+%D programming, but then, she may not know \TEX\ and \LUA).
+
+\unprotect
+
+\registerctxluafile{char-utf}{1.001}
+
+%D We enable collapsing (combining characters) by default, but
+%D since the source files are rather simple, we postpone the
+%D initialization till runtime.
+
+\appendtoks
+    \ctxlua {
+        characters.filters.utf.collapsing = true
+        input.filters.utf_translator      = characters.filters.utf.collapse
+    }%
+\to \everyjob
+
+%D This is a hack, and only meant for special situations. We don't
+%D support this in for instance verbatim. The active characters map
+%D onto the \CONTEXT\ names and font handling etc. is up to the user.
+
+\registerctxluafile{char-act}{1.001}
+
+\def\enableactiveutf {\ctxlua{characters.active.enable()}}
+\def\disableactiveutf{\ctxlua{characters.active.disable()}}
+\def\testactiveutf #1{\ctxlua{characters.active.test("#1")}}
+
+%D Usage:
+%D
+%D \starttyping
+%D \enableactiveutf \testactiveutf{eacute}
+%D \stoptyping
+
+\protect

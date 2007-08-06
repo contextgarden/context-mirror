@@ -102,19 +102,51 @@
 
 \ifx\directlua\undefined
 
-  \long\gdef\beginMETATEX#1\endMETATEX%
+  \long\gdef\beginLUATEX#1\endLUATEX%
     {}
 
 \else
 
-  \gdef\beginMETATEX%
-    {\bgroup\obeylines\dobeginMETATEX}
+  \gdef\beginLUATEX%
+    {\bgroup\obeylines\dobeginLUATEX}
 
-  \gdef\dobeginMETATEX#1
+  \gdef\dobeginLUATEX#1
     {\egroup\immediate\write16%
-       {system (METATEX) : [line \the\inputlineno] \detokenize{#1}}}
+       {system (LUATEX) : [line \the\inputlineno] \detokenize{#1}}}
 
-  \global\let\endMETATEX\relax
+  \global\let\endLUATEX\relax
+
+\fi
+
+% traditional tex's vs de utf tex's
+
+\ifx\XeTeXversion\undefined \ifx\directlua\undefined
+
+  \gdef\beginOLDTEX%
+    {\bgroup\obeylines\dobeginOLDTEX}
+
+  \gdef\dobeginOLDTEX#1
+    {\egroup\immediate\write16%
+       {system (OLDTEX) : [line \the\inputlineno] \detokenize{#1}}}
+
+  \global\let\endOLDTEX\relax
+
+  \long\gdef\beginNEWTEX#1\endNEWTEX%
+    {}
+
+\fi \fi \ifx\beginOLDTEX\undefined
+
+  \long\gdef\beginOLDTEX#1\endOLDTEX%
+    {}
+
+  \gdef\beginNEWTEX%
+    {\bgroup\obeylines\dobeginNEWTEX}
+
+  \gdef\dobeginNEWTEX#1
+    {\egroup\immediate\write16%
+       {system (NEWTEX) : [line \the\inputlineno] \detokenize{#1}}}
+
+  \global\let\endNEWTEX\relax
 
 \fi
 

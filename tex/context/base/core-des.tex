@@ -423,7 +423,7 @@
      [\c!location,\c!headstyle,\c!style,\c!color,\c!headcolor,\c!title,
       \c!width,\c!hang,\c!sample,\c!before,\c!inbetween,\c!after,\c!margin,
       \c!indenting,\c!indentnext,\c!align,\c!text,\c!distance,\c!titledistance,\c!command,
-      \c!titleleft,\c!titleright,\c!closesymbol,\c!closecommand]%
+      \c!titleleft,\c!titleright,\c!titlecommand,\c!closesymbol,\c!closecommand]%
    \getparameters[\??dd#1]
      [\c!title=\v!yes,\s!do\c!command=\normal@@descriptionhandler,
       \c!type=\v!description,\c!list=,\c!listtext=,
@@ -520,9 +520,10 @@
    {\doifsomething{#1}
      {\doattributes{\??dd\currentdescription}\c!titlestyle\c!titlecolor
         {\hskip\descriptionparameter\c!titledistance
-        \descriptionparameter\c!titleleft
-        \begstrut#1\endstrut
-        \descriptionparameter\c!titleright}}}}
+         \descriptionparameter\c!titlecommand
+            {\descriptionparameter\c!titleleft
+             \begstrut#1\endstrut
+             \descriptionparameter\c!titleright}}}}}
 
 
 \def\showdnpuretext
@@ -653,7 +654,7 @@
       \c!sample,\c!hang,\c!align,\c!before,\c!inbetween,\c!after,
       \c!levels,\c!way,\c!blockway,\c!separator,\c!margin,
       \c!indenting,\c!indentnext,\c!stopper,\c!sectionnumber,
-      \c!title,\c!titleleft,\c!titleright,\c!closesymbol,\c!closecommand]%
+      \c!title,\c!titleleft,\c!titleright,\c!titlecommand,\c!closesymbol,\c!closecommand]%
    \doifassignmentelse{#4}
      {\getparameters[\??dd#3#1]%
         [\c!text=#1,\??dd\c!number=#1,\c!conversion=,\c!listtext=#1\space,
@@ -671,7 +672,7 @@
             \c!sample,\c!hang,\c!align,\c!before,\c!inbetween,\c!after,
             \c!stopper,\c!indenting,\c!indentnext,\c!left,\c!right,
             \c!coupling,\c!couplingway,
-            \c!title,\c!titleleft,\c!titleright,\c!closesymbol,\c!closecommand]%
+            \c!title,\c!titleleft,\c!titleright,\c!titlecommand,\c!closesymbol,\c!closecommand]%
          \getparameters[\??dd#3#1]
            [\c!text=#1,\??dd\c!number=#4,\c!conversion=,#5]%
          %docheckenumerationnumber{#1}{#3#1}{#4}}}%
@@ -859,7 +860,8 @@
    \c!titleright=),
    \c!closesymbol=,
    \c!closecommand=\wordright,
-   \c!command=]
+   \c!command=,
+   \c!titlecommand=]
 
 \setupenumerations
   [\c!location=\v!top,
@@ -893,7 +895,8 @@
    \c!closesymbol=,
    \c!closecommand=\wordright,
    \c!number=,
-   \c!command=]
+   \c!command=,
+   \c!titlecommand=]
 
 \setupindentations
   [\c!style=\v!normal,

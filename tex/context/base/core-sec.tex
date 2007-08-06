@@ -1416,6 +1416,9 @@
 \def\headparameter#1% to do: everywhere in core-sec
   {\executeifdefined{\??ko\currenthead#1}\empty}
 
+% todo: write to list etc in both args or in enclosing h/vbox else it gets
+% lost when no #1 or #2 is typeset
+
 \def\dodododoconstructhead#1[#2]#3#4% [ref] {number} {title}
   {\def\currenthead{#1}% dus #1 overal vervangen
    \let\finalsectionnumber\dofinalsectionnumber % overloaded ungrouped -)

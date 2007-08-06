@@ -1,0 +1,199 @@
+%D \module
+%D   [       file=attr-ini,
+%D        version=2007.06.06,
+%D          title=\CONTEXT\ Attribute Macros,
+%D       subtitle=Initialization,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright=PRAGMA-ADE]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{Context Attribute Macros / initialization}
+
+%D Although it's still somewhat experimental, here we introduce code
+%D related to attributes.
+
+\unprotect
+
+\registerctxluafile{attr-ini}{1.001}
+
+\newcount\attdefcounter
+
+% \def\newattribute#1%
+%   {\global\advance\attdefcounter\plusone
+%    \global\attributedef#1\attdefcounter
+%    \ctxlua{attributes.define("\strippedcsname#1",\number\attdefcounter)}}
+
+% \newattribute\statusattribute
+% \newattribute\colorattribute
+% \newattribute\skipattribute
+% \newattribute\penaltyattribute
+
+\newtoks \attributesresetlist
+
+\def\defineattribute[#1]% alternatively we can let lua do the housekeeping
+  {\global\advance\attdefcounter\plusone
+          \expandafter        \xdef\csname :attr:#1\endcsname{\number\attdefcounter}%
+   \global\expandafter\attributedef\csname @attr@#1\endcsname        \attdefcounter
+   \writestatus\m!systems{defining attribute #1 with number \the\attdefcounter}%
+   \appendetoks\csname @attr@#1\endcsname\minusone\to\attributesresetlist
+   \ctxlua{attributes.define("#1",\number\attdefcounter)}}
+
+\def\dosetattribute#1#2{\csname @attr@#1\endcsname#2\relax}
+\def\doresetattribute#1{\csname @attr@#1\endcsname\minusone}
+\def\dogetattribute  #1{\number\csname @attr@#1\endcsname}
+\def\dogetattributeid#1{\csname :attr:#1\endcsname}
+
+\let\dompattribute\gobbletwoarguments
+
+\defineattribute[mark]
+\defineattribute[status]
+% \defineattribute[language]
+\defineattribute[skip]
+\defineattribute[penalty]
+
+% \dosetattribute{status}{1}
+
+% temp here / will be indirect ! just for testing
+
+\defineattribute[colormodel]
+\defineattribute[color]
+
+% todo: no need for 'color' argument, we can set that once at startup; currently
+% a bit inconsistent
+
+% 1=off  2=gray  3=spot  4=rgb  5=cmyk  6=cmy % only 1/2/4/5 are supported
+%
+% we could combine this in one attribute but this is not faster and also
+% less flexible because sometimes we want to freeze the attribute bit
+
+\newcount\currentcolormodel
+
+\def\setcolormodel#1%
+  {\currentcolormodel\ctxlua{tex.print(colors.setmodel('colormodel','#1'))}%
+   \dosetattribute{colormodel}{\the\currentcolormodel}}
+
+\setcolormodel{all} % when no color, reset ! !
+
+\def\registerrgbcolor#1#2#3#4%  r g b -- print or sprint
+  {\scratchcounter\ctxlua{tex.print(colors.register('color','#1','rgb',#2,#3,#4))}%
+   \setevalue{(ca:#1)}{\number\scratchcounter}%
+   \setevalue{(cv:#1)}{\ctxlua{tex.print(colors.filter(\number\scratchcounter))}}%
+   \setevalue{(cs:#1)}{\dosetattribute{color}{\the\scratchcounter}}}
+
+\def\registercmykcolor#1#2#3#4#5%  c m y k
+  {\scratchcounter\ctxlua{tex.print(colors.register('color','#1','cmyk',#2,#3,#4,#5))}%
+   \setevalue{(ca:#1)}{\number\scratchcounter}%
+   \setevalue{(cv:#1)}{\ctxlua{tex.print(colors.filter(\number\scratchcounter))}}%
+   \setevalue{(cs:#1)}{\dosetattribute{color}{\the\scratchcounter}}}
+
+\def\registergraycolor#1#2% s
+  {\scratchcounter\ctxlua{tex.print(colors.register('color','#1','gray',#2))}%
+   \setevalue{(ca:#1)}{\number\scratchcounter}%
+   \setevalue{(cv:#1)}{\ctxlua{tex.print(colors.filter(\number\scratchcounter))}}%
+   \setevalue{(cs:#1)}{\dosetattribute{color}{\the\scratchcounter}}}
+
+\def\registerspotcolor#1#2#3% p name
+  {\scratchcounter\ctxlua{tex.print(colors.register('color','#1','spot',#2,#3))}%
+   \setevalue{(ca:#1)}{\number\scratchcounter}%
+   \setevalue{(cv:#1)}{\ctxlua{tex.print(colors.filter(\number\scratchcounter))}}%
+   \setevalue{(cs:#1)}{\dosetattribute{color}{\the\scratchcounter}}}
+
+\def\somecolorvalue    #1{\csname(cv:#1)\endcsname}
+\def\somecolorswitch   #1{\csname(cs:#1)\endcsname}
+\def\somecolorattribute#1{\csname(ca:#1)\endcsname}
+
+\def\getMPcolorspec#1%
+  {\expandafter\expandafter\expandafter\dogetMPcolorspec\csname (cv:#1)\endcsname\relax}
+
+\def\dogetMPcolorspec#1:#2:#3:#4:#5:#6:#7:#8:#9\relax % some day we will just pass a attribute number in pre/post
+  {\ifcase\currentcolormodel\or
+     \ifcase#1\or#2\or(#3,#4,#5)\or(#6,#7,#8,#9)\fi\or#2\or(#3,#4,#5)\or(#6,#7,#8,#9)%
+   \fi}
+
+% \registerrgbcolor  {red}     {1}{0}{0}
+% \registerrgbcolor  {green}   {0}{1}{0}
+% \registerrgbcolor  {blue}    {0}{0}{1}
+% \registercmykcolor {cyan}    {1}{0}{0}{0}
+% \registercmykcolor {magenta} {0}{1}{0}{0}
+% \registercmykcolor {yellow}  {0}{0}{1}{0}
+% \registergraycolor {black}   {0}
+
+% transparency
+
+\defineattribute[transparency]
+
+\def\registertransparency#1#2#3% we need to fake a name in the current setup, same as color
+  {\setevalue{(ts:#1)}{\dosetattribute{transparency}{\ctxlua{tex.print(transparencies.register(#2,#3))}}}}
+
+\def\sometransparencyswitch#1{\csname(ts:#1)\endcsname}
+
+% \registertransparency {one} {1} {.5}
+% \registertransparency {two} {1} {.6}
+
+% overprint
+
+\defineattribute[overprint]
+
+\def\registeroverprint#1#2%
+  {\initializePDFoverprint % temp here
+   \setvalue{(os:#1)}{\dosetattribute{overprint}{\ctxlua{tex.print(overprints.register('#2'))}}}}
+
+% \registeroverprint{knockout} {knockout}
+% \registeroverprint{overprint}{overprint}
+
+% negative
+
+\defineattribute[negative]
+
+\def\registernegative#1#2%
+  {\initializePDFnegative % temp here
+   \setvalue{(ns:#1)}{\dosetattribute{negative}{\ctxlua{tex.print(negatives.register('#2'))}}}}
+
+% \registernegative{positive}{positive}
+% \registernegative{negative}{negative}
+
+% effect
+
+\defineattribute[effect]
+
+\def\registereffect#1%
+  {\setevalue{(es:#1)}{\dosetattribute{effect}{\ctxlua{tex.print(effects.register('#1'))}}}}
+
+% \registereffect{normal}
+% \registereffect{inner}
+% \registereffect{outer}
+% \registereffect{both}
+% \registereffect{hidden}
+
+% ugly solution
+%
+% \def\shipout
+%   {%\writestatus{SHIPOUT}{CALLED AT PAGE \realfolio}%
+%    \dowithnextbox
+%      {\ctxlua{callbacks.push('hpack_filter',nodes.process_page)}%
+%      %\writestatus{SHIPOUT}{START PACKAGING}%
+%       \setbox\nextbox\hbox{\box\nextbox}%
+%      %\writestatus{SHIPOUT}{STOP PACKAGING}%
+%       \ctxlua{callbacks.pop('hpack_filter')}%
+%       \primitive\shipout\box\nextbox}}
+
+% \def\shipout
+%   {\dowithnextbox
+%      {\ctxlua{nodes.process_page(tex.box[\number\nextbox])}%
+%       \primitive\shipout\box\nextbox}}
+
+\def\processshipoutbox#1% % hack till we have access to pdf backend
+  {\setbox\nextbox\hbox{#1}%
+   \ctxlua{nodes.process_page(tex.box[\number\nextbox])}%
+   \hbox{\ctxlua{states.flush()}\box\nextbox}}
+
+% \def\shipout
+%   {\dowithnextbox{\ctxlua{tex.primitive('shipout', nodes.process_page(tex.nextbox)}}}
+
+\let\normalshipout\shipout
+
+\protect \endinput

@@ -1,0 +1,57 @@
+%D \module
+%D   [       file=core-reg,
+%D        version=2007.05.07,
+%D          title=\CONTEXT\ Core Macros,
+%D       subtitle=Register Management,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\unprotect
+
+\registerctxluafile{core-reg}{1.001}
+
+\appendtoks
+    \immediatewriteutilitytua{if not job.registers then job.registers = { } end}%
+    \immediatewriteutilitytua{local jr = job.registers}%
+\to \everyopenutilities
+
+\let\allregisters\empty
+
+\appendtoks
+    \processcommacommand[\allregisters]\mkdodefineregister
+    \globallet\allregisters\empty
+\to \everyopenutilities
+
+\def\mkdodefineregister#1% class
+  {\ctxlua{job.defineregister('#1')}%
+   \immediatewriteutilitytua{job.defineregister('#1')}}
+
+\def\mkdefineregister#1% class
+  {\mkdodefineregister{#1}%
+   \doglobal\addtocommalist{#1}\allregisters}
+
+\def\mksaveregisterentry#1#2#3#4#5#6#7% class type reference key entry pagespec realpage
+  {\expanded{\writeutilitytua{table.insert(jr['#1'],{'#2','#3',\!!bs#4\!!es,\!!bs#5\!!es,'#6','#7'})}}}
+
+\def\mksaveregistersee#1#2#3#4#5#6#7% class type reference key entry see pagespec
+  {\expanded{\writeutilitytua{table.insert(jr['#1'],{'#2','#3',\!!bs#4\!!es,\!!bs#5\!!es,'#6','#7'})}}}
+
+\def\mksaveregistervariable#1#2#3% class type value
+  {\expanded{\immediatewriteutilitytua{table.insert(jr['#1'],{'#2','#3'})}}}
+
+% Beware, we have no filename support here. For that we need to save the resulting
+% tex code in a file. No big deal.
+
+\def\mkloadregister#1% class, todo: loader macro just like mkii
+  {\bgroup
+   \getvalue{\s!set#1}%
+   \ctxlua{job.loadregister('#1')}\par % par needed for hanging indentation
+   \getvalue{\s!reset#1}%
+   \egroup}
+
+\protect \endinput

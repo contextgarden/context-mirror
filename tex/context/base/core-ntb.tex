@@ -884,11 +884,11 @@
      \fi
    \else\ifautoTBLrowspan\ifnum\maximumrowspan>1 % max ?
      % added jan 2002 because nx=* did no longer work
-\edef\savedhsize{\the\hsize}%
-\hsize\wd0\relax % new per 17/04/2006
+     \edef\savedhsize{\the\hsize}%
+     \hsize\wd0\relax % new per 17/04/2006
      \checktblwidthsone % trial run
      \checktblwidthstwo % real run
-\hsize\savedhsize
+     \hsize\savedhsize
      %
      \let\handleTBLcell\dohandleTBLcellC
      \setbox\scratchbox\vbox{\trialtypesettingtrue \the\tbltoks}%
@@ -901,7 +901,7 @@
       \dorecurse{\gettblcol{##1}{##2}}
         {\advance\dimen2 \gettblwid\colTBL
          \advance\dimen2 \tbltblcolumndistance
-\ifnum\recurselevel<\gettblcol{##1}{##2}\relax \advance\dimen2  \gettbldis\colTBL\fi
+         \ifnum\recurselevel<\gettblcol{##1}{##2}\relax \advance\dimen2  \gettbldis\colTBL\fi
          \increment\colTBL}%
       \advance\dimen2 -\tbltblcolumndistance
       \edef\widthTBL{\the\dimen2}%

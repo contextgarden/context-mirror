@@ -293,7 +293,7 @@
 
 \def\obeyhyphens
   {\def\obeyedspace {\hskip\interwordspace}% better than spaceskip
-   \def\controlspace{\hskip\zeropoint\hbox{\char32}\hskip\zeropoint}%
+   \def\controlspace{\hskip\zeropoint\hbox{\normalcontrolspace}\hskip\zeropoint}%
    \spaceskip.25em\relax} % hm a bit of stretch !
 
 \def\obeybreakpoints
@@ -302,7 +302,7 @@
 
 \def\ignorehyphens
   {\def\obeyedspace {\null\hskip\interwordspace\null}% better than spaceskip
-   \def\controlspace{\null\hskip\zeropoint\hbox{\char32}\hskip\zeropoint\null}%
+   \def\controlspace{\null\hskip\zeropoint\hbox{\normalcontrolspace}\hskip\zeropoint\null}%
    \spaceskip.5em\relax}
 
 \unexpanded\def\typ

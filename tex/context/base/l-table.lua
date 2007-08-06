@@ -1,0 +1,492 @@
+-- filename : l-table.lua
+-- comment  : split off from luat-lib
+-- author   : Hans Hagen, PRAGMA-ADE, Hasselt NL
+-- copyright: PRAGMA ADE / ConTeXt Development Team
+-- license  : see context related readme files
+
+if not versions then versions = { } end versions['l-table'] = 1.001
+
+table.join = table.concat
+
+function table.strip(tab)
+    local lst = { }
+    for k, v in ipairs(tab) do
+     -- s = string.gsub(v, "^%s*(.-)%s*$", "%1")
+        s = v:gsub("^%s*(.-)%s*$", "%1")
+        if s == "" then
+            -- skip this one
+        else
+            lst[#lst+1] = s
+        end
+    end
+    return lst
+end
+
+--~ function table.sortedkeys(tab)
+--~     local srt = { }
+--~     for key,_ in pairs(tab) do
+--~         srt[#srt+1] = key
+--~     end
+--~     table.sort(srt)
+--~     return srt
+--~ end
+
+function table.sortedkeys(tab)
+    local srt, kind = { }, 0 -- 0=unknown 1=string, 2=number 3=mixed
+    for key,_ in pairs(tab) do
+        srt[#srt+1] = key
+        if kind == 3 then
+            -- no further check
+        elseif type(key) == "string" then
+            if kind == 2 then kind = 3 else kind = 1 end
+        elseif type(key) == "number" then
+            if kind == 1 then kind = 3 else kind = 2 end
+        else
+            kind = 3
+        end
+    end
+    if kind == 0 or kind == 3 then
+        table.sort(srt,function(a,b) return (tostring(a) < tostring(b)) end)
+    else
+        table.sort(srt)
+    end
+    return srt
+end
+
+function table.append(t, list)
+    for _,v in pairs(list) do
+        table.insert(t,v)
+    end
+end
+
+function table.prepend(t, list)
+    for k,v in pairs(list) do
+        table.insert(t,k,v)
+    end
+end
+
+if not table.fastcopy then
+
+    function table.fastcopy(old) -- fast one
+        if old then
+            local new = { }
+            for k,v in pairs(old) do
+                if type(v) == "table" then
+                    new[k] = table.copy(v)
+                else
+                    new[k] = v
+                end
+            end
+            return new
+        else
+            return { }
+        end
+    end
+
+end
+
+if not table.copy then
+
+    function table.copy(t, _lookup_table) -- taken from lua wiki
+        _lookup_table = _lookup_table or { }
+        local tcopy = {}
+        if not _lookup_table[t] then
+            _lookup_table[t] = tcopy
+        end
+        for i,v in pairs(t) do
+            if type(i) == "table" then
+                if _lookup_table[i] then
+                    i = _lookup_table[i]
+                else
+                    i = table.copy(i, _lookup_table)
+                end
+            end
+            if type(v) ~= "table" then
+                tcopy[i] = v
+            else
+                if _lookup_table[v] then
+                    tcopy[i] = _lookup_table[v]
+                else
+                    tcopy[i] = table.copy(v, _lookup_table)
+                end
+            end
+        end
+        return tcopy
+    end
+
+end
+
+-- rougly: copy-loop : unpack : sub == 0.9 : 0.4 : 0.45 (so in critical apps, use unpack)
+
+function table.sub(t,i,j)
+    return { unpack(t,i,j) }
+end
+
+function table.replace(a,b)
+    for k,v in pairs(b) do
+        a[k] = v
+    end
+end
+
+-- slower than #t on indexed tables (#t only returns the size of the numerically indexed slice)
+
+function table.is_empty(t)
+    return not t or not next(t)
+end
+
+function table.one_entry(t)
+    local n = next(t)
+    return n and not next(t,n)
+end
+
+function table.starts_at(t)
+    return ipairs(t,1)(t,0)
+end
+
+do
+
+    -- 34.055.092 32.403.326 arabtype.tma
+    --  1.620.614  1.513.863 lmroman10-italic.tma
+    --  1.325.585  1.233.044 lmroman10-regular.tma
+    --  1.248.157  1.158.903 lmsans10-regular.tma
+    --    194.646    153.120 lmtypewriter10-regular.tma
+    --  1.771.678  1.658.461 palatinosanscom-bold.tma
+    --  1.695.251  1.584.491 palatinosanscom-regular.tma
+    -- 13.736.534 13.409.446 zapfinoextraltpro.tma
+
+    -- 13.679.038 11.774.106 arabtype.tmc
+    --    886.248    754.944 lmroman10-italic.tmc
+    --    729.828    466.864 lmroman10-regular.tmc
+    --    688.482    441.962 lmsans10-regular.tmc
+    --    128.685     95.853 lmtypewriter10-regular.tmc
+    --    715.929    582.985 palatinosanscom-bold.tmc
+    --    669.942    540.126 palatinosanscom-regular.tmc
+    --  1.560.588  1.317.000 zapfinoextraltpro.tmc
+
+    table.serialize_functions = true
+    table.serialize_compact   = true
+    table.serialize_inline    = true
+
+    local function key(k)
+        if type(k) == "number" then -- or k:find("^%d+$") then
+            return "["..k.."]"
+        elseif noquotes and k:find("^%a[%a%d%_]*$") then
+            return k
+        else
+            return '["'..k..'"]'
+        end
+    end
+
+    local function simple_table(t)
+        if #t > 0 then
+            local n = 0
+            for _,v in pairs(t) do
+                n = n + 1
+            end
+            if n == #t then
+                local tt = { }
+                for _,v in ipairs(t) do
+                    local tv = type(v)
+                    if tv == "number" or tv == "boolean" then
+                        tt[#tt+1] = tostring(v)
+                    elseif tv == "string" then
+                        tt[#tt+1] = ("%q"):format(v)
+                    else
+                        tt = nil
+                        break
+                    end
+                end
+                return tt
+            end
+        end
+        return nil
+    end
+
+    local function serialize(root,name,handle,depth,level,reduce,noquotes,indexed)
+        handle = handle or print
+        reduce = reduce or false
+        if depth then
+            depth = depth .. " "
+            if indexed then
+                handle(("%s{"):format(depth))
+            else
+                handle(("%s%s={"):format(depth,key(name)))
+            end
+        else
+            depth = ""
+            if type(name) == "string" then
+                if name == "return" then
+                    handle("return {")
+                else
+                    handle(name .. "={")
+                end
+            elseif type(name) == "number" then
+                handle("[" .. name .. "]={")
+            elseif type(name) == "boolean" then
+                if name then
+                    handle("return {")
+                else
+                    handle("{")
+                end
+            else
+                handle("t={")
+            end
+        end
+        if root and next(root) then
+            local compact = table.serialize_compact
+            local inline  = compact and table.serialize_inline
+            local first, last = nil, 0 -- #root cannot be trusted here
+            if compact then
+                for k,v in ipairs(root) do
+                    if not first then first = k end
+                    last = last + 1
+                end
+            end
+            for _,k in pairs(table.sortedkeys(root)) do
+                local v = root[k]
+                local t = type(v)
+                if compact and first and type(k) == "number" and k >= first and k <= last then
+                    if t == "number" then
+                        handle(("%s %s,"):format(depth,v))
+                    elseif t == "string" then
+                        if reduce and (v:find("^[%-%+]?[%d]-%.?[%d+]$") == 1) then
+                            handle(("%s %s,"):format(depth,v))
+                        else
+                            handle(("%s %q,"):format(depth,v))
+                        end
+                    elseif t == "table" then
+                        if not next(v) then
+                            handle(("%s {},"):format(depth))
+                        elseif inline then
+                            local st = simple_table(v)
+                            if st then
+                                handle(("%s { %s },"):format(depth,table.concat(st,", ")))
+                            else
+                                serialize(v,k,handle,depth,level+1,reduce,noquotes,true)
+                            end
+                        else
+                            serialize(v,k,handle,depth,level+1,reduce,noquotes,true)
+                        end
+                    elseif t == "boolean" then
+                        handle(("%s %s,"):format(depth,tostring(v)))
+                    elseif t == "function" then
+                        if table.serialize_functions then
+                            handle(('%s loadstring(%q),'):format(depth,string.dump(v)))
+                        else
+                            handle(('%s "function",'):format(depth))
+                        end
+                    else
+                        handle(("%s %q,"):format(depth,tostring(v)))
+                    end
+                elseif k == "__p__" then -- parent
+                    if false then
+                        handle(("%s __p__=nil,"):format(depth))
+                    end
+                elseif t == "number" then
+                    handle(("%s %s=%s,"):format(depth,key(k),v))
+                elseif t == "string" then
+                    if reduce and (v:find("^[%-%+]?[%d]-%.?[%d+]$") == 1) then
+                        handle(("%s %s=%s,"):format(depth,key(k),v))
+                    else
+                        handle(("%s %s=%q,"):format(depth,key(k),v))
+                    end
+                elseif t == "table" then
+                    if not next(v) then
+                        handle(("%s %s={},"):format(depth,key(k)))
+                    elseif inline then
+                        local st = simple_table(v)
+                        if st then
+                            handle(("%s %s={ %s },"):format(depth,key(k),table.concat(st,", ")))
+                        else
+                            serialize(v,k,handle,depth,level+1,reduce,noquotes)
+                        end
+                    else
+                        serialize(v,k,handle,depth,level+1,reduce,noquotes)
+                    end
+                elseif t == "boolean" then
+                    handle(("%s %s=%s,"):format(depth,key(k),tostring(v)))
+                elseif t == "function" then
+                    if table.serialize_functions then
+                        handle(('%s %s=loadstring(%q),'):format(depth,key(k),string.dump(v)))
+                    else
+                        handle(('%s %s="function",'):format(depth,key(k)))
+                    end
+                else
+                    handle(("%s %s=%q,"):format(depth,key(k),tostring(v)))
+                --  handle(('%s %s=loadstring(%q),'):format(depth,key(k),string.dump(function() return v end)))
+                end
+            end
+            if level > 0 then
+                handle(("%s},"):format(depth))
+            else
+                handle(("%s}"):format(depth))
+            end
+        else
+            handle(("%s}"):format(depth))
+        end
+    end
+
+    --~ name:
+    --~
+    --~ true     : return     { }
+    --~ false    :            { }
+    --~ nil      : t        = { }
+    --~ string   : string   = { }
+    --~ 'return' : return     { }
+    --~ number   : [number] = { }
+
+    function table.serialize(root,name,reduce,noquotes)
+        local t = { }
+        local function flush(s)
+            t[#t+1] = s
+        end
+        serialize(root, name, flush, nil, 0, reduce, noquotes)
+        return table.concat(t,"\n")
+    end
+
+    function table.tohandle(handle,root,name,reduce,noquotes)
+        serialize(root, name, handle, nil, 0, reduce, noquotes)
+    end
+
+    -- sometimes tables are real use (zapfino extra pro is some 85M) in which
+    -- case a stepwise serialization is nice; actually, we could consider:
+    --
+    -- for line in table.serializer(root,name,reduce,noquotes) do
+    --    ...(line)
+    -- end
+    --
+    -- so this is on the todo list
+
+    table.tofile_maxtab = 2*1024
+
+    function table.tofile(filename,root,name,reduce,noquotes)
+        local f = io.open(filename,'w')
+        if f then
+            local concat = table.concat
+            local maxtab = table.tofile_maxtab
+            if maxtab > 1 then
+                local t = { }
+                local function flush(s)
+                    t[#t+1] = s
+                    if #t > maxtab then
+                        f:write(concat(t,"\n"),"\n") -- hm, write(sometable) should be nice
+                        t = { }
+                    end
+                end
+                serialize(root, name, flush, nil, 0, reduce, noquotes)
+                f:write(concat(t,"\n"),"\n")
+            else
+                local function flush(s)
+                    f:write(s,"\n")
+                end
+                serialize(root, name, flush, nil, 0, reduce, noquotes)
+            end
+            f:close()
+        end
+    end
+
+end
+
+--~ t = {
+--~     b = "123",
+--~     a = "x",
+--~     c = 1.23,
+--~     d = "1.23",
+--~     e = true,
+--~     f = {
+--~         d = "1.23",
+--~         a = "x",
+--~         b = "123",
+--~         c = 1.23,
+--~         e = true,
+--~         f = {
+--~             e = true,
+--~             f = {
+--~                 e = true
+--~             },
+--~         },
+--~     },
+--~     g = function() end
+--~ }
+
+--~ print(table.serialize(t), "\n")
+--~ print(table.serialize(t,"name"), "\n")
+--~ print(table.serialize(t,false), "\n")
+--~ print(table.serialize(t,true), "\n")
+--~ print(table.serialize(t,"name",true), "\n")
+--~ print(table.serialize(t,"name",true,true), "\n")
+
+do
+
+    local function flatten(t,f,complete)
+        for _,v in ipairs(t) do
+            if type(v) == "table" then
+                if complete or type(v[1]) == "table" then
+                    flatten(v,f,complete)
+                else
+                    f[#f+1] = v
+                end
+            else
+                f[#f+1] = v
+            end
+        end
+    end
+
+    function table.flatten(t)
+        local f = { }
+        flatten(t,f,true)
+        return f
+    end
+
+    function table.unnest(t) -- bad name
+        local f = { }
+        flatten(t,f,false)
+        return f
+    end
+
+    table.flatten_one_level = table.unnest
+
+end
+
+function table.insert_before_value(t,value,str)
+    for i=1,#t do
+        if t[i] == value then
+            table.insert(t,i,str)
+            return
+        end
+    end
+    table.insert(t,1,str)
+end
+
+function table.insert_after_value(t,value,str)
+    for i=1,#t do
+        if t[i] == value then
+            table.insert(t,i+1,str)
+            return
+        end
+    end
+    t[#t+1] = str
+end
+
+function table.are_equal(a,b,n,m)
+    if #a == #b then
+        n = n or 1
+        m = m or #a
+        for i=n,m do
+            local ai, bi = a[i], b[i]
+            if (ai==bi) or (type(ai)=="table" and type(bi)=="table" and table.are_equal(ai,bi)) then
+                -- continue
+            else
+                return false
+            end
+        end
+        return true
+    else
+        return false
+    end
+end
+
+--~ function table.are_equal(a,b)
+--~     return table.serialize(a) == table.serialize(b)
+--~ end
+

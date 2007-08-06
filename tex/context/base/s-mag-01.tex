@@ -377,6 +377,13 @@
 \definetyping[xtyping] [style=\ttx]
 \definetyping[xxtyping][style=\ttxx]
 
+\definetypeface
+  [narrowtt] [tt]
+  [mono] [modern-cond] [default] [encoding=\defaultencoding]
+
+\definetyping[ntyping] \setuptyping[ntyping][style=\narrowtt]
+\definetype  [ntype]   \setuptype  [ntype]  [style=\narrowtt]
+
 \doifnotmode{demo}{\endinput}
 
 \startbuffer[abstract]

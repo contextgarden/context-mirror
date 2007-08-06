@@ -1,0 +1,126 @@
+%D \module
+%D   [       file=core-spa,
+%D        version=1997.03.31,
+%D          title=\CONTEXT\ Core Macros,
+%D       subtitle=Spacing,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{Context Core Macros / Buffers}
+
+\unprotect
+
+% category:
+%
+% 0 == discard
+% 1 == only if larger
+% 2 == force even if smaller
+% 3 == only take penalty component
+% 4 == add to existing skip
+
+% penalty:
+%
+% larger wins
+
+% order:
+%
+% larger wins
+
+\defineattribute[kern-chars]
+
+\defineattribute[skip-category]
+\defineattribute[skip-penalty]
+\defineattribute[skip-order]
+
+\defineattribute[snap-category]
+
+\defineattribute[display-math]
+
+\registerctxluafile{core-spa}{1.001}
+
+% \start \dosetstretch{.25em} \setuptolerance[tolerant,stretch] \input tufte \endgraf \stop
+% \start \dosetstretch{.5em} effe flink doorfietsen \stop
+
+\def\dosetstretch#1% to be interfaces
+  {\relax\ifdim#1>\zeropoint
+     \dosetattribute{kern-chars}{\number\dimexpr#1\relax}%
+   \else
+     \doresetattribute{kern-chars}%
+   \fi}
+
+\appendtoks\doresetattribute{kern-chars}\to\everyforgetall
+
+\def\mksetupgridsnapping
+  {\ctxlua{nodes.setsnapvalue(1,\number\openstrutheight,\number\openstrutdepth)}}
+
+\def\mkenablegridsnapping
+  {\dosetattribute{snap-category}{1}%
+   \topskip\strutht
+   \offinterlineskip}
+
+\def\mkdisablegridsnapping
+  {\doresetattribute{snap-category}%
+   % reset topskip
+   \oninterlineskip}
+
+\protect \endinput
+
+\starttext
+
+\dorecurse{2}{
+    $2^{2^{2^{2}}}$ $2_{2_{2_{2}}}^{2^{2^{2^{2^{2^{2^{2^{2^{2}}}}}}}}}$
+    \input tufte \inframed {tufte}
+    \par
+}
+
+\dorecurse{100} {
+
+    \kern \recurselevel pt
+
+    \vbox {
+        \endgraf \strut first \endgraf
+        {\dosetattribute{skip-category}{1}\vskip10pt}
+        {\dosetattribute{skip-category}{1}\vskip40pt}
+        {\dosetattribute{skip-category}{1}\vskip20pt}
+        {\dosetattribute{skip-category}{2}\vskip10pt}
+        \endgraf \strut second \endgraf
+    }
+
+    \endgraf \strut first \endgraf
+    {\dosetattribute{skip-category}{1}\vskip10pt}
+    {\dosetattribute{skip-category}{1}\vskip40pt}
+    {\dosetattribute{skip-category}{1}\vskip20pt}
+    {\dosetattribute{skip-category}{1}\vskip40pt}
+    \endgraf \strut second \endgraf
+
+    {\dosetattribute{skip-category}{0}\vskip10pt} % remove
+    {\dosetattribute{skip-category}{1}\vskip10pt} % take largest
+    {\dosetattribute{skip-category}{1}\vskip40pt}
+    {\dosetattribute{skip-category}{1}\vskip40pt}
+    {\dosetattribute{skip-category}{1}\vskip40pt}
+    {\dosetattribute{skip-category}{1}\vskip40pt}
+    {\dosetattribute{skip-category}{1}\vskip40pt}
+    {\dosetattribute{skip-category}{1}\dosetattribute{skip-order}{10}\vskip20pt}
+    {\dosetattribute{skip-category}{4}\dosetattribute{skip-order}{10}\vskip20pt}
+    {\dosetattribute{skip-category}{1}\vskip60pt}
+    {\dosetattribute{skip-category}{1}\vskip20pt}
+    {\dosetattribute{skip-category}{0}\vskip10pt}
+
+    third (no break after this)
+
+    {\dosetattribute{skip-category}{1}\dosetattribute{skip-penalty}{100000}\vskip10pt}
+    {\dosetattribute{skip-category}{1}\dosetattribute{skip-penalty}{100000}\vskip20pt}
+    {\dosetattribute{skip-category}{1}\vskip10pt}
+    {\dosetattribute{skip-category}{1}\vskip20pt}
+
+    fourth
+    \vskip10pt
+    fifth
+}
+
+\stoptext

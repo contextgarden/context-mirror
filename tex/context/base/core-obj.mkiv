@@ -1,0 +1,55 @@
+%D \module
+%D   [       file=core-obj,
+%D        version=2006.10.16,
+%D          title=\CONTEXT\ Core Macros,
+%D       subtitle=Object Handling,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\unprotect
+
+\let\objectreference\gobblefourarguments % catch mkii tuo stuff
+
+\registerctxluafile{core-obj}{1.001}
+
+\appendtoks
+    \immediatewriteutilitytua{if not job.objects then job.objects = { } end}%
+    \immediatewriteutilitytua{local ob = job.objects}%
+\to \everyopenutilities
+
+\def\mkregisterobjectreference#1#2#3%
+  {\blabelgroup
+   \expanded{\writeutilitytua{ob['#1::#2']={"#3","\noexpand\realfolio"}}}%
+   \expanded{\ctxlua{job.objects['#1::#2']={"#3","\noexpand\realfolio"}}}%
+   \elabelgroup}
+
+\def\mkoverloadobjectreference#1#2#3%
+  {\blabelgroup
+   \expanded{\ctxlua{job.objects['#1::#2']={"#3","\noexpand\realfolio"}}}%
+   \elabelgroup}
+
+\def\mkgetobjectreference#1#2#3%
+  {\blabelgroup
+   \xdef#3{\ctxlua{job.getobjectreference    ('#1::#2',"\defaultobjectreference{#1}{#2}")}}%
+   \elabelgroup}
+
+\def\mkgetobjectreferencepage#1#2#3%
+  {\blabelgroup
+   \xdef#3{\ctxlua{job.getobjectreferencepage('#1::#2',"\defaultobjectpage{#1}{#2}")}}%
+   \elabelgroup}
+
+% \def\doifobjectreferencefoundelse#1#2
+%   {\ctxlua{job.doifobjectreference('#1::#2')}}
+
+\def\doifobjectreferencefoundelse#1#2%
+  {\blabelgroup
+   \ctxlua{job.doifobjectreference('#1::#2')}%
+     {\elabelgroup\firstoftwoarguments}
+     {\elabelgroup\secondoftwoarguments}}
+
+\protect \endinput

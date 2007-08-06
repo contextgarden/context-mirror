@@ -334,7 +334,7 @@ class Commands
             report("generating #{keyfile}")
 
             begin
-                one = "texexec --make --alone --all #{interface}"
+                one = "texexec --make --all #{interface}"
                 two = "texexec --batch --silent --interface=#{interface} x-set-01"
                 if @commandline.option("force") then
                     system(one)
@@ -1639,23 +1639,22 @@ class Commands
 
     def dpxmapfiles
 
-        force  = @commandline.option("force")
+        force = @commandline.option("force")
 
         texmfroot = @commandline.argument('first')
         texmfroot = '.' if texmfroot.empty?
-        if @commandline.option('maproot') then
+        if @commandline.option('maproot') != "" then
             maproot = @commandline.option('maproot')
         else
             maproot = "#{texmfroot.gsub(/\\/,'/')}/fonts/map/pdftex/context"
         end
-
         if File.directory?(maproot) then
             files = Dir.glob("#{maproot}/*.map")
             if files.size > 0 then
                 files.each do |pdffile|
                     next if File.basename(pdffile) == 'pdftex.map'
                     pdffile = File.expand_path(pdffile)
-                    dpxfile = File.expand_path(pdffile.sub(/pdftex/i,'dvipdfm'))
+                    dpxfile = File.expand_path(pdffile.sub(/(dvips|pdftex)/i,'dvipdfm'))
                     unless pdffile == dpxfile then
                         begin
                             if data = File.read(pdffile) then
@@ -2654,7 +2653,13 @@ class Commands
          end
 
         def remakeformats
-            return system("texmfstart texexec --make --all")
+            return system("mktexlsr")
+            return system("luatools --selfupdate")
+            return system("mtxrun --selfupdate")
+            return system("luatools --generate")
+            return system("texmfstart texexec --make --all  --fast --pdftex")
+            return system("texmfstart texexec --make --all  --fast --luatex")
+            return system("texmfstart texexec --make --all  --fast --xetex")
         end
 
         if localtree = locatedlocaltree then

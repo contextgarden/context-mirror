@@ -11,64 +11,7 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-% \starttext
-%     \definefont
-%         [blabla]
-%         [name:Latin Modern Something]
-%     \definefont
-%         [blabla]
-%         [file:texnansi-lmr10]
-%     \blabla test
-%     \definefont
-%         [blabla]
-%         [texnansi-lmtt10]
-%     \blabla test
-% \stoptext
-
 \unprotect
-
-% \definefontsynonym
-%     [blabla]
-%     [name:Latin Modern Something]
-% \definefontsynonym
-%     [blabla]
-%     [file:texnansi-lmr10]
-%     [encoding=texnansi]
-% \definedfont[blabla] test \currentencoding/\fontfile \par
-% \definefontsynonym
-%     [blabla]
-%     [texnansi-lmtt10]
-%     [encoding=texnansi]
-% \definedfont[blabla] test \currentencoding/\fontfile \par
-% \definefontsynonym
-%     [blabla]
-%     [ec-lmtt10]
-%     [encoding=ec]
-% \definedfont[blabla] test \currentencoding/\fontfile \par
-
-\def\checkfontfilename
-  {\expandafter\docheckfontfilename\fontfile:\empty:\empty\relax}
-
-\def\docheckfontfilename#1:#2:#3#4\relax
-  {\edef\!!stringa{#1}%
-   \edef\!!stringb{#2}%
-   \ifx\!!stringb\empty
-      \edef\checkedfontfile{\fontfilesome\!!stringa}%
-   \else\ifx\!!stringa\v!file
-      \edef\checkedfontfile{\fontfilefile\!!stringb}%
-   \else\ifx\!!stringa\v!name
-      \edef\checkedfontfile{\fontfilename\!!stringb}%
-   \else
-      \edef\checkedfontfile{\fontfilesome\!!stringb}%
-   \fi\fi\fi}
-
-\def\fontfilename#1{"#1"}
-\def\fontfilefile#1{"#1"}
-\def\fontfilesome#1{#1}
-
-\beginXETEX
-    \def\fontfilefile#1{"[#1]"}
-\endXETEX
 
 \def\mkdefinefontfeature#1% #2
   {\setvalue{\??fa#1}} % {#2}
