@@ -116,6 +116,13 @@ end
 function utils.lua.compile(luafile, lucfile)
  -- utils.report("compiling",luafile,"into",lucfile)
     os.remove(lucfile)
-    return (os.execute("luac -s -o " .. string.quote(lucfile) .. " " .. string.quote(luafile)) == 0)
+    local command = "-s -o " .. string.quote(lucfile) .. " " .. string.quote(luafile)
+    if os.execute("texluac " .. command) == 0 then
+        return true
+    elseif os.execute("luac " .. command) == 0 then
+        return true
+    else
+        return false
+    end
 end
 

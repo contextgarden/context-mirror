@@ -40,7 +40,7 @@ interface.</p>
 fonts.define.method        = 3 -- 1: tfm  2: tfm and if not then afm  3: afm and if not then tfm
 fonts.define.auto_afm      = true
 fonts.define.auto_otf      = true
-fonts.define.specify       = { }
+fonts.define.specify       = fonts.define.specify or { }
 fonts.define.splitsymbols  = ""
 fonts.define.methods       = fonts.define.methods or { }
 
@@ -190,9 +190,15 @@ function fonts.tfm.read(specification)
     if not tfmtable then
         if specification.forced and specification.forced ~= "" then
             tfmtable = fonts.tfm.readers[specification.forced](specification)
+            if not tfmtable then
+                logs.error("define font",string.format("forced type %s of %s not found",specification.forced,specification.name))
+            end
         else
             for _, reader in ipairs(fonts.tfm.readers.sequence) do
                 if fonts.tfm.readers[reader] then -- not really needed
+                    if fonts.trace then
+                        logs.report("define font",string.format("trying type %s for %s with file %s",reader,specification.name,specification.filename or "unknown"))
+                    end
                     tfmtable = fonts.tfm.readers[reader](specification)
                     if tfmtable then break end
                 end
@@ -209,6 +215,9 @@ function fonts.tfm.read(specification)
     end
     input.stop_timing(fonts)
     garbagecollector.pop()
+    if not tfmtable then
+        logs.error("define font",string.format("font with name %s is not found",specification.name))
+    end
     return tfmtable
 end
 
@@ -254,8 +263,8 @@ function fonts.tfm.readers.opentype(specification,suffix,what)
         local fullname, tfmtable = nil, nil
         fullname = input.findbinfile(texmf.instance,specification.name,suffix)
         if fullname and fullname ~= "" then
-            specification.filename, specification.format = fullname, what
-            tfmtable = fonts.tfm.read_from_open_type(specification)
+            specification.filename, specification.format = fullname, what -- hm, so we do set the filename, then
+            tfmtable = fonts.tfm.read_from_open_type(specification)       -- we need to do it for all matches / todo
             fonts.logger.save(tfmtable,suffix,specification)
         end
         return tfmtable
@@ -268,23 +277,24 @@ function fonts.tfm.readers.otf(specification) return fonts.tfm.readers.opentype(
 function fonts.tfm.readers.ttf(specification) return fonts.tfm.readers.opentype(specification,"ttf","truetype") end
 function fonts.tfm.readers.ttc(specification) return fonts.tfm.readers.opentype(specification,"ttf","truetype") end -- !!
 
-function fonts.tfm.readers.afm(specification)
+function fonts.tfm.readers.afm(specification,method)
     local fullname, tfmtable = nil, nil
-    if fonts.define.method == 2 then
+    method = method or fonts.define.method
+    if method == 2 then
         fullname = input.findbinfile(texmf.instance,specification.name,"ofm") -- ?
-        if not (fullname and fullname ~= "") then
-            specification.filename = fullname
+        if not fullname or fullname == "" then
             tfmtable = fonts.tfm.read_from_afm(specification)
             fonts.logger.save(tfmtable,'afm',specification)
+        else
+            specification.filename = fullname
+            tfmtable = fonts.tfm.read_from_tfm(specification)
         end
-    elseif fonts.define.method == 3 then
--- maybe also findbinfile here
+    elseif method == 3 then -- maybe also findbinfile here
         if fonts.define.auto_afm then
             tfmtable = fonts.tfm.read_from_afm(specification)
             fonts.logger.save(tfmtable,'afm',specification)
         end
-    elseif fonts.define.method == 4 then
--- maybe also findbinfile here
+    elseif method == 4 then -- maybe also findbinfile here
         tfmtable = fonts.tfm.read_from_afm(specification)
         fonts.logger.save(tfmtable,'afm',specification)
     end
@@ -361,7 +371,7 @@ end
 
 fonts.define.register_split(":", fonts.define.specify.colonized)
 
-fonts.define.specify.context_setups =  fonts.define.specify.context_setups or { }
+fonts.define.specify.context_setups = fonts.define.specify.context_setups or { }
 
 input.storage.register(false,"fonts/setups", fonts.define.specify.context_setups, "fonts.define.specify.context_setups")
 
@@ -447,6 +457,9 @@ function fonts.define.read(name,size,id)
         end
         fonts.tfm.id[id] = fontdata
         fonts.tfm.internalized[hash] = id
+    end
+    if not fontdata then
+        logs.error("defining font", string.format("name: %s, loading aborted",specification.name))
     end
     return fontdata
 end

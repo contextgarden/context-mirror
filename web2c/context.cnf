@@ -126,8 +126,8 @@ RUBYINPUTS     = .;$CTXDEVRBPATH;$TEXMF/scripts/context/ruby
 JAVAINPUTS     = .;$CTXDEVJVPATH;$TEXMF/scripts/context/java
 
 % LUAINPUTS    = .;$TEXINPUTS;$TEXMFSCRIPTS
-LUAINPUTS      = .;$CTXDEVLUPATH;$TEXINPUTS;$TEXMF/scripts/context/lua.;
-TEXMFSCRIPTS   = .;$CTXDEVLUPATH;$TEXINPUTS;$CTXDEVRBPATH;$CTXDEVPLPATH;$TEXMF/scripts/context
+LUAINPUTS      = .;$CTXDEVLUPATH;$TEXINPUTS;$TEXMF/scripts/context/lua
+TEXMFSCRIPTS   = .;$CTXDEVLUPATH;$TEXINPUTS;$CTXDEVRBPATH;$CTXDEVPLPATH;$TEXMF/scripts/context//
 
 % RUBYINPUTS   = .;$CTXDEVPLPATH;$TEXMF/scripts/{$progname,$engine,}/ruby
 % LUAINPUTS    = .;$CTXDEVPYPATH;$TEXMF/scripts/{$progname,$engine,}/lua

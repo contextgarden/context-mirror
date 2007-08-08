@@ -2653,13 +2653,14 @@ class Commands
          end
 
         def remakeformats
-            return system("mktexlsr")
-            return system("luatools --selfupdate")
-            return system("mtxrun --selfupdate")
-            return system("luatools --generate")
-            return system("texmfstart texexec --make --all  --fast --pdftex")
-            return system("texmfstart texexec --make --all  --fast --luatex")
-            return system("texmfstart texexec --make --all  --fast --xetex")
+            system("mktexlsr")
+            system("luatools --selfupdate")
+            system("mtxrun --selfupdate")
+            system("luatools --generate")
+            system("texmfstart texexec --make --all  --fast --pdftex")
+            system("texmfstart texexec --make --all  --fast --luatex")
+            system("texmfstart texexec --make --all  --fast --xetex")
+            return true
         end
 
         if localtree = locatedlocaltree then

@@ -1643,7 +1643,7 @@ do
             end
             local lookupdata = otfdata.lookups[lookupname]
             if not lookupdata then
-                texio.write_nl(string.format("error, missing lookupdata table %s",lookupname))
+                logs.error("otf process", string.format("missing lookupdata table %s",lookupname))
             elseif lookupdata.rules then
                 for nofrules, rule in ipairs(lookupdata.rules) do
                     local coverage = rule.coverage

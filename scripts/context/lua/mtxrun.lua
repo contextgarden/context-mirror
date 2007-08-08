@@ -1111,8 +1111,12 @@ function file.extname(name)
     return name:match("^.+%.(.-)$") or  ""
 end
 
-function file.join(...) -- args
-    return (string.gsub(table.concat({...},"/"),"\\","/"))
+function file.join(...)
+    local t = { ... }
+    for i=1,#t do
+        t[i] = (t[i]:gsub("\\","/")):gsub("/+$","")
+    end
+    return table.concat(t,"/")
 end
 
 function file.is_writable(name)
@@ -1135,16 +1139,31 @@ function file.is_readable(name)
     end
 end
 
+--~ function file.split_path(str)
+--~     if str:find(';') then
+--~         return str:splitchr(";")
+--~     else
+--~         return str:splitchr(io.pathseparator)
+--~     end
+--~ end
+
+-- todo: lpeg
+
 function file.split_path(str)
-    if str:find(';') then
-        return str:splitchr(";")
-    else
-        return str:splitchr(io.pathseparator)
+    local t = { }
+    str = str:gsub("\\", "/")
+    str = str:gsub("(%a):([;/])", "%1\001%2")
+    for name in str:gmatch("([^;:]+)") do
+        if name ~= "" then
+            name = name:gsub("\001",":")
+            t[#t+1] = name
+        end
     end
+    return t
 end
 
 function file.join_path(tab)
-    return table.concat(tab,io.pathseparator)
+    return table.concat(tab,io.pathseparator) -- can have trailing //
 end
 
 --~ print('test'           .. " == " .. file.collapse_path("test"))
@@ -1433,7 +1452,14 @@ end
 function utils.lua.compile(luafile, lucfile)
  -- utils.report("compiling",luafile,"into",lucfile)
     os.remove(lucfile)
-    return (os.execute("luac -s -o " .. string.quote(lucfile) .. " " .. string.quote(luafile)) == 0)
+    local command = "-s -o " .. string.quote(lucfile) .. " " .. string.quote(luafile)
+    if os.execute("texluac " .. command) == 0 then
+        return true
+    elseif os.execute("luac " .. command) == 0 then
+        return true
+    else
+        return false
+    end
 end
 
 
@@ -1600,7 +1626,9 @@ end
 -- (any case), rest paths (so no need for optimization). Or maybe a
 -- separate table that matches lowercase names to mixed case when
 -- present. In that case the lower() cases can go away. I will do that
--- only when we run into problems with names.
+-- only when we run into problems with names ... well ... Iwona-Regular.
+
+-- Beware, loading and saving is overloaded in luat-tmp!
 
 if not versions    then versions    = { } end versions['luat-inp'] = 1.001
 if not environment then environment = { } end
@@ -1664,12 +1692,14 @@ input.suffixes['lua'] = { 'lua', 'luc', 'tma', 'tmc' }
 -- here we catch a few new thingies
 
 function input.checkconfigdata(instance)
-    if input.env(instance,"LUAINPUTS") == "" then
-        instance.environment["LUAINPUTS"] = ".;$TEXINPUTS;$TEXMFSCRIPTS"
+    function fix(varname,default)
+        local proname = varname .. "." .. instance.progname or "crap"
+        if not instance.environment[proname] and not instance.variables[proname] == "" and not instance.environment[varname] and not instance.variables[varname] == "" then
+            instance.variables[varname] = default
+        end
     end
-    if input.env(instance,"FONTFEATURES") == "" then
-        instance.environment["FONTFEATURES"] = ".;$OPENTYPEFONTS;$TTFONTS;$T1FONTS;$AFMFONTS"
-    end
+    fix("LUAINPUTS"   , ".;$TEXINPUTS;$TEXMFSCRIPTS")
+    fix("FONTFEATURES", ".;$OPENTYPEFONTS;$TTFONTS;$T1FONTS;$AFMFONTS")
 end
 
 -- backward compatible ones
@@ -1705,6 +1735,7 @@ function input.reset()
     instance.variables       = { }
     instance.expansions      = { }
     instance.files           = { }
+    instance.remap           = { }
     instance.configuration   = { }
     instance.found           = { }
     instance.foundintrees    = { }
@@ -1825,7 +1856,7 @@ function input.reportlines(str)
     for _,v in pairs(str) do input.report(v) end
 end
 
-input.settrace(os.getenv("MTX.INPUT.TRACE") or os.getenv("MTX_INPUT_TRACE") or input.trace or 0)
+input.settrace(tonumber(os.getenv("MTX.INPUT.TRACE") or os.getenv("MTX_INPUT_TRACE") or input.trace or 0))
 
 -- These functions can be used to test the performance, especially
 -- loading the database files.
@@ -2206,6 +2237,10 @@ function input.generators.tex(instance,specification)
                             end
                         else
                             files[name] = path
+                            local lower = name:lower()
+                            if name ~= lower then
+                                files["remap:"..lower] = name
+                            end
                         end
                     end
                 end
@@ -2236,6 +2271,10 @@ function input.generators.tex(instance,specification)
                         end
                     else
                         files[line] = path -- string
+                        local lower = line:lower()
+                        if line ~= lower then
+                            files["remap:"..lower] = line
+                        end
                     end
                 else
                     path = line:match("%.%/(.-)%:$") or path -- match could be nil due to empty line
@@ -2696,8 +2735,8 @@ function input.aux.expanded_path(instance,pathlist)
                     local pre, mid, post = v:match(pattern)
                     if pre and mid and post then
                         more = true
-                     -- for _,vv in ipairs(mid:splitchr(',')) do
-                        for vv in string.gmatch(mid..',',"(.-),") do
+--~                         for vv in string.gmatch(mid..',',"(.-),") do
+                        for vv in string.gmatch(mid,"([^,]+)") do
                             if vv == '.' then
                                 t[#t+1] = pre..post
                             else
@@ -2771,11 +2810,20 @@ function input.aux.collect_files(instance,names)
             end
             for _, hash in pairs(instance.hashes) do
                 local blobpath = hash.tag
-                if blobpath and instance.files[blobpath] then
+                local files = blobpath and instance.files[blobpath]
+                if files then
                     if input.trace > 2 then
                         input.logger('? blobpath do',blobpath .. " (" .. bname ..")")
                     end
-                    local blobfile = instance.files[blobpath][bname]
+                    local blobfile = files[bname]
+                    if not blobfile then
+                        local rname = "remap:"..bname
+                        blobfile = files[rname]
+                        if blobfile then
+                            bname = files[rname]
+                            blobfile = files[bname]
+                        end
+                    end
                     if blobfile then
                         if type(blobfile) == 'string' then
                             if not dname or blobfile:find(dname) then
@@ -3403,14 +3451,16 @@ end
 -- beware: i need to check where we still need a / on windows:
 
 function input.clean_path(str)
- -- return string.gsub(string.gsub(string.gsub(str,"\\","/"),"^!+",""),"//$","/")
-    return (string.gsub(string.gsub(str,"\\","/"),"^!+",""))
+--~     return (((str:gsub("\\","/")):gsub("^!+","")):gsub("//+","//"))
+    return ((str:gsub("\\","/")):gsub("^!+",""))
 end
+
 function input.do_with_path(name,func)
     for _, v in pairs(input.expanded_path_list(instance,name)) do
         func("^"..input.clean_path(v))
     end
 end
+
 function input.do_with_var(name,func)
     func(input.aux.expanded_var(name))
 end
@@ -3479,16 +3529,16 @@ cache = cache  or { }
 dir   = dir    or { }
 texmf = texmf  or { }
 
-cache.path   = nil
+cache.path   = cache.path or nil
 cache.base   = cache.base or "luatex-cache"
 cache.more   = cache.more or "context"
 cache.direct = false -- true is faster but may need huge amounts of memory
 cache.trace  = false
 cache.tree   = false
-cache.temp   = os.getenv("TEXMFCACHE") or os.getenv("HOME") or os.getenv("HOMEPATH") or os.getenv("VARTEXMF") or os.getenv("TEXMFVAR") or os.getenv("TMP") or os.getenv("TEMP") or os.getenv("TMPDIR") or nil
-cache.paths  = { cache.temp }
+cache.temp   = cache.temp or os.getenv("TEXMFCACHE") or os.getenv("HOME") or os.getenv("HOMEPATH") or os.getenv("VARTEXMF") or os.getenv("TEXMFVAR") or os.getenv("TMP") or os.getenv("TEMP") or os.getenv("TMPDIR") or nil
+cache.paths  = cache.paths or { cache.temp }
 
-if not cache.temp then
+if not cache.temp or cache.temp == "" then
     print("\nFATAL ERROR: NO VALID TEMPORARY PATH\n")
     os.exit()
 end
@@ -3522,6 +3572,7 @@ function cache.setpath(instance,...)
         if not cache.path then
             cache.path = cache.temp
         end
+        cache.path = input.clean_path(cache.path) -- to be sure
         if lfs then
             cache.tree = cache.tree or cache.treehash(instance)
             if cache.tree then
@@ -4557,7 +4608,7 @@ elseif environment.argument("selfclean") then
     -- remove embedded libraries
     utils.merger.selfclean(own.name)
 elseif environment.arguments["selfupdate"] then
-    input.my_prepare_b(instance)
+    input.runners.my_prepare_b(instance)
     input.verbose = true
     input.update_script(own.name,"mtxrun")
 elseif environment.argument("ctxlua") or environment.argument("internal") then

@@ -6,6 +6,10 @@ texmf.instance = instance -- we need to get rid of this / maybe current instance
 scripts       = scripts       or { }
 scripts.fonts = scripts.fonts or { }
 
+function scripts.fonts.reload()
+    fonts.names.load(true)
+end
+
 function scripts.fonts.list(pattern,reload,all)
     if reload then
         logs.report("fontnames","reloading font database")
@@ -68,15 +72,17 @@ end
 banner = banner .. " | font tools "
 
 messages.help = [[
+--reload              generate new font database
 --list                list installed fonts
 --save                save open type font in raw table
 
 --pattern=str         filter files
---reload              generate new font database
 --all                 provide alternatives
 ]]
 
-if environment.argument("list") then
+if environment.argument("reload") then
+    scripts.fonts.reload()
+elseif environment.argument("list") then
     local pattern = environment.argument("pattern") or environment.files[1] or ""
     local all     = environment.argument("all")
     local reload  = environment.argument("reload")

@@ -406,7 +406,7 @@ function fonts.afm.set_features(tfmdata)
 end
 
 function fonts.afm.afm_to_tfm(specification)
-    local afmfile  = specification.filename
+    local afmfile  = specification.filename or specification.name
     local features = specification.features.normal
     local cache_id = specification.hash
     local tfmdata  = containers.read(fonts.tfm.cache, cache_id) -- cache with features applied
@@ -455,7 +455,6 @@ function fonts.tfm.read_from_afm(specification)
         filename = name
     end
     if filename ~= "" then
-        specification.filename = filename .. ".afm"
         tfmtable = fonts.afm.afm_to_tfm(specification)
         if tfmtable then
             tfmtable.name = name

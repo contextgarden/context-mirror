@@ -36,8 +36,12 @@ function file.extname(name)
     return name:match("^.+%.(.-)$") or  ""
 end
 
-function file.join(...) -- args
-    return (string.gsub(table.concat({...},"/"),"\\","/"))
+function file.join(...)
+    local t = { ... }
+    for i=1,#t do
+        t[i] = (t[i]:gsub("\\","/")):gsub("/+$","")
+    end
+    return table.concat(t,"/")
 end
 
 function file.is_writable(name)
@@ -60,16 +64,31 @@ function file.is_readable(name)
     end
 end
 
+--~ function file.split_path(str)
+--~     if str:find(';') then
+--~         return str:splitchr(";")
+--~     else
+--~         return str:splitchr(io.pathseparator)
+--~     end
+--~ end
+
+-- todo: lpeg
+
 function file.split_path(str)
-    if str:find(';') then
-        return str:splitchr(";")
-    else
-        return str:splitchr(io.pathseparator)
+    local t = { }
+    str = str:gsub("\\", "/")
+    str = str:gsub("(%a):([;/])", "%1\001%2")
+    for name in str:gmatch("([^;:]+)") do
+        if name ~= "" then
+            name = name:gsub("\001",":")
+            t[#t+1] = name
+        end
     end
+    return t
 end
 
 function file.join_path(tab)
-    return table.concat(tab,io.pathseparator)
+    return table.concat(tab,io.pathseparator) -- can have trailing //
 end
 
 --~ print('test'           .. " == " .. file.collapse_path("test"))

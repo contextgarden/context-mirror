@@ -91,6 +91,10 @@
 
 \newif\ifinobject
 
+\ifx\mkcheckobjectreferences\undefined \let\mkcheckobjectreferences\relax \fi
+
+\def\checkobjectreferences{\mkcheckobjectreferences}
+
 \def\objectplaceholder{NOT YET FLUSHED}%
 
 \def\presetobject#1#2% \global added

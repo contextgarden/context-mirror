@@ -26,16 +26,16 @@ cache = cache  or { }
 dir   = dir    or { }
 texmf = texmf  or { }
 
-cache.path   = nil
+cache.path   = cache.path or nil
 cache.base   = cache.base or "luatex-cache"
 cache.more   = cache.more or "context"
 cache.direct = false -- true is faster but may need huge amounts of memory
 cache.trace  = false
 cache.tree   = false
-cache.temp   = os.getenv("TEXMFCACHE") or os.getenv("HOME") or os.getenv("HOMEPATH") or os.getenv("VARTEXMF") or os.getenv("TEXMFVAR") or os.getenv("TMP") or os.getenv("TEMP") or os.getenv("TMPDIR") or nil
-cache.paths  = { cache.temp }
+cache.temp   = cache.temp or os.getenv("TEXMFCACHE") or os.getenv("HOME") or os.getenv("HOMEPATH") or os.getenv("VARTEXMF") or os.getenv("TEXMFVAR") or os.getenv("TMP") or os.getenv("TEMP") or os.getenv("TMPDIR") or nil
+cache.paths  = cache.paths or { cache.temp }
 
-if not cache.temp then
+if not cache.temp or cache.temp == "" then
     print("\nFATAL ERROR: NO VALID TEMPORARY PATH\n")
     os.exit()
 end
@@ -69,6 +69,7 @@ function cache.setpath(instance,...)
         if not cache.path then
             cache.path = cache.temp
         end
+        cache.path = input.clean_path(cache.path) -- to be sure
         if lfs then
             cache.tree = cache.tree or cache.treehash(instance)
             if cache.tree then

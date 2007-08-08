@@ -17,6 +17,7 @@ fonts.logger     = fonts.logger     or { }
 fonts.loadtime   = 0
 fonts.tfm        = fonts.tfm        or { }
 fonts.triggers   = fonts.triggers   or { } -- brrr
+fonts.trace      = false
 
 --[[ldx--
 <p>The next function encapsulates the standard <l n='tfm'/> loader as
@@ -24,7 +25,30 @@ supplied by <l n='luatex'/>.</p>
 --ldx]]--
 
 function fonts.tfm.read_from_tfm(specification)
-    return font.read_tfm(specification.name,specification.size)
+    local fname, tfmdata = specification.filename, nil
+    if fname then
+        -- safeguard, we use tfm as fallback
+        local suffix = file.extname(fname)
+        if suffix ~= "" and suffix ~= "tfm" then
+            fname = ""
+        end
+    end
+    if not fname or fname == "" then
+        fname = input.findbinfile(texmf.instance, specification.name, 'ofm')
+    else
+        fname = input.findbinfile(texmf.instance, fname, 'ofm')
+    end
+    if fname and fname ~= "" then
+        if fonts.trace then
+            logs.report("define font",string.format("loading tfm file %s at size %s",fname,specification.size))
+        end
+        tfmdata = font.read_tfm(fname,specification.size)
+    else
+        if fonts.trace then
+            logs.report("define font",string.format("loading tfm with name %s fails",specification.name))
+        end
+    end
+    return tfmdata
 end
 
 --[[ldx--

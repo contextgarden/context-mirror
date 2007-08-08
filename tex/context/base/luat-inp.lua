@@ -14,7 +14,9 @@
 -- (any case), rest paths (so no need for optimization). Or maybe a
 -- separate table that matches lowercase names to mixed case when
 -- present. In that case the lower() cases can go away. I will do that
--- only when we run into problems with names.
+-- only when we run into problems with names ... well ... Iwona-Regular.
+
+-- Beware, loading and saving is overloaded in luat-tmp!
 
 if not versions    then versions    = { } end versions['luat-inp'] = 1.001
 if not environment then environment = { } end
@@ -78,12 +80,14 @@ input.suffixes['lua'] = { 'lua', 'luc', 'tma', 'tmc' }
 -- here we catch a few new thingies
 
 function input.checkconfigdata(instance)
-    if input.env(instance,"LUAINPUTS") == "" then
-        instance.environment["LUAINPUTS"] = ".;$TEXINPUTS;$TEXMFSCRIPTS"
+    function fix(varname,default)
+        local proname = varname .. "." .. instance.progname or "crap"
+        if not instance.environment[proname] and not instance.variables[proname] == "" and not instance.environment[varname] and not instance.variables[varname] == "" then
+            instance.variables[varname] = default
+        end
     end
-    if input.env(instance,"FONTFEATURES") == "" then
-        instance.environment["FONTFEATURES"] = ".;$OPENTYPEFONTS;$TTFONTS;$T1FONTS;$AFMFONTS"
-    end
+    fix("LUAINPUTS"   , ".;$TEXINPUTS;$TEXMFSCRIPTS")
+    fix("FONTFEATURES", ".;$OPENTYPEFONTS;$TTFONTS;$T1FONTS;$AFMFONTS")
 end
 
 -- backward compatible ones
@@ -119,6 +123,7 @@ function input.reset()
     instance.variables       = { }
     instance.expansions      = { }
     instance.files           = { }
+    instance.remap           = { }
     instance.configuration   = { }
     instance.found           = { }
     instance.foundintrees    = { }
@@ -239,7 +244,7 @@ function input.reportlines(str)
     for _,v in pairs(str) do input.report(v) end
 end
 
-input.settrace(os.getenv("MTX.INPUT.TRACE") or os.getenv("MTX_INPUT_TRACE") or input.trace or 0)
+input.settrace(tonumber(os.getenv("MTX.INPUT.TRACE") or os.getenv("MTX_INPUT_TRACE") or input.trace or 0))
 
 -- These functions can be used to test the performance, especially
 -- loading the database files.
@@ -620,6 +625,10 @@ function input.generators.tex(instance,specification)
                             end
                         else
                             files[name] = path
+                            local lower = name:lower()
+                            if name ~= lower then
+                                files["remap:"..lower] = name
+                            end
                         end
                     end
                 end
@@ -650,6 +659,10 @@ function input.generators.tex(instance,specification)
                         end
                     else
                         files[line] = path -- string
+                        local lower = line:lower()
+                        if line ~= lower then
+                            files["remap:"..lower] = line
+                        end
                     end
                 else
                     path = line:match("%.%/(.-)%:$") or path -- match could be nil due to empty line
@@ -1110,8 +1123,8 @@ function input.aux.expanded_path(instance,pathlist)
                     local pre, mid, post = v:match(pattern)
                     if pre and mid and post then
                         more = true
-                     -- for _,vv in ipairs(mid:splitchr(',')) do
-                        for vv in string.gmatch(mid..',',"(.-),") do
+--~                         for vv in string.gmatch(mid..',',"(.-),") do
+                        for vv in string.gmatch(mid,"([^,]+)") do
                             if vv == '.' then
                                 t[#t+1] = pre..post
                             else
@@ -1185,11 +1198,20 @@ function input.aux.collect_files(instance,names)
             end
             for _, hash in pairs(instance.hashes) do
                 local blobpath = hash.tag
-                if blobpath and instance.files[blobpath] then
+                local files = blobpath and instance.files[blobpath]
+                if files then
                     if input.trace > 2 then
                         input.logger('? blobpath do',blobpath .. " (" .. bname ..")")
                     end
-                    local blobfile = instance.files[blobpath][bname]
+                    local blobfile = files[bname]
+                    if not blobfile then
+                        local rname = "remap:"..bname
+                        blobfile = files[rname]
+                        if blobfile then
+                            bname = files[rname]
+                            blobfile = files[bname]
+                        end
+                    end
                     if blobfile then
                         if type(blobfile) == 'string' then
                             if not dname or blobfile:find(dname) then
@@ -1817,14 +1839,16 @@ end
 -- beware: i need to check where we still need a / on windows:
 
 function input.clean_path(str)
- -- return string.gsub(string.gsub(string.gsub(str,"\\","/"),"^!+",""),"//$","/")
-    return (string.gsub(string.gsub(str,"\\","/"),"^!+",""))
+--~     return (((str:gsub("\\","/")):gsub("^!+","")):gsub("//+","//"))
+    return ((str:gsub("\\","/")):gsub("^!+",""))
 end
+
 function input.do_with_path(name,func)
     for _, v in pairs(input.expanded_path_list(instance,name)) do
         func("^"..input.clean_path(v))
     end
 end
+
 function input.do_with_var(name,func)
     func(input.aux.expanded_var(name))
 end
