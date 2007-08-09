@@ -15,7 +15,8 @@ if not modules then modules = { } end modules ['font-ini'] = {
 
 fonts = fonts or { }
 
-fonts.mode = 'base'
+fonts.trace = false -- true
+fonts.mode  = 'base'
 
 fonts.methods = {
     base = { tfm = { }, afm = { }, otf = { }, vtf = { }, fix = { } },

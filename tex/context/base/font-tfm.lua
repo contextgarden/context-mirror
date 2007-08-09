@@ -17,7 +17,6 @@ fonts.logger     = fonts.logger     or { }
 fonts.loadtime   = 0
 fonts.tfm        = fonts.tfm        or { }
 fonts.triggers   = fonts.triggers   or { } -- brrr
-fonts.trace      = false
 
 --[[ldx--
 <p>The next function encapsulates the standard <l n='tfm'/> loader as
@@ -43,6 +42,32 @@ function fonts.tfm.read_from_tfm(specification)
             logs.report("define font",string.format("loading tfm file %s at size %s",fname,specification.size))
         end
         tfmdata = font.read_tfm(fname,specification.size)
+        if tfmdata then
+--~ fonts.logger.save(tfmdata,'tfm',specification)
+--~ if false then
+            fname = input.findbinfile(texmf.instance, specification.name, 'ovf')
+            if fname and fname ~= "" then
+callback.register('find_vf_file', nil)
+                local vfdata = font.read_vf(fname,specification.size)
+                if vfdata then
+                    local chars = tfmdata.characters
+                    for k,v in ipairs(vfdata.characters) do
+                        chars[k].commands = v.commands
+                    end
+--~                     tfmdata.type = 'virtual'
+                    local fnts = vfdata.fonts
+                    for k,v in ipairs(fnts) do
+                        local dummy, id = fonts.tfm.read_and_define(v.name,v.size)
+                        fnts[k].id = id
+                        if fonts.trace then
+                            logs.report("define font",string.format("vf file %s needs tfm file %s (id %s)", fname, v.name, id))
+                        end
+                    end
+                    tfmdata.fonts = fnts
+                end
+            end
+--~ end
+        end
     else
         if fonts.trace then
             logs.report("define font",string.format("loading tfm with name %s fails",specification.name))

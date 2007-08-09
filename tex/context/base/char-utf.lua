@@ -127,7 +127,7 @@ do
         ug("(.)", cfup.high)
     end
 
-    for _, ch in pairs({ '~', '#', '$', '%', '^', '&', '_', '{', '}' }) do
+    for _, ch in ipairs({ '~', '#', '$', '%', '^', '&', '_', '{', '}' }) do
         cfup.set(ch)
     end
 
@@ -200,10 +200,12 @@ callback.register('process_input_buffer', characters.filters.process)
 </typing>
 
 <p>The following helper functions may disappear (or become optional)
-in the future.</p>
+in the future. Well, they are now.</p>
 --ldx]]--
 
-characters.filters.sequences = { }
+--[[obsolete--
+
+characters.filters.sequences = characters.filters.sequences or { }
 characters.filters.activated = false
 
 function characters.filters.append(name)
@@ -215,7 +217,7 @@ function characters.filters.prepend(name)
 end
 
 function characters.filters.remove(name)
-    for k,v in pairs(characters.filters.sequences) do
+    for k,v in ipairs(characters.filters.sequences) do
         if v == name then
             table.remove(characters.filters.sequences,k)
         end
@@ -223,25 +225,28 @@ function characters.filters.remove(name)
 end
 
 function characters.filters.replace(name_1,name_2)
-    for k,v in pairs(characters.filters.sequences) do
-        if v == name then
+    for k,v in ipairs(characters.filters.sequences) do
+        if v == name_1 then
             characters.filters.sequences[k] = name_2
+            break
         end
     end
 end
 
 function characters.filters.insert_before(name_1,name_2)
-    for k,v in pairs(characters.filters.sequences) do
+    for k,v in ipairs(characters.filters.sequences) do
         if v == name_1 then
             table.insert(characters.filters.sequences,k,name_2)
+            break
         end
     end
 end
 
 function characters.filters.insert_after(name_1,name_2)
-    for k,v in pairs(characters.filters.sequences) do
+    for k,v in ipairs(characters.filters.sequences) do
         if v == name_1 then
             table.insert(characters.filters.sequences,k+1,name_2)
+            break
         end
     end
 end
@@ -260,6 +265,8 @@ function characters.filters.process(str)
         return nil -- luatex callback optimalisation
     end
 end
+
+--obsolete]]--
 
 --[[ldx--
 <p>The following code is no longer needed and replaced by token

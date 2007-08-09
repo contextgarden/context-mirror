@@ -1630,6 +1630,8 @@ end
 
 -- Beware, loading and saving is overloaded in luat-tmp!
 
+-- todo: instances.[hashes,cnffiles,configurations,522] -> ipairs (alles check, sneller)
+
 if not versions    then versions    = { } end versions['luat-inp'] = 1.001
 if not environment then environment = { } end
 if not file        then file        = { } end
@@ -1737,6 +1739,7 @@ function input.reset()
     instance.files           = { }
     instance.remap           = { }
     instance.configuration   = { }
+    instance.order           = { }
     instance.found           = { }
     instance.foundintrees    = { }
     instance.kpsevars        = { }
@@ -1991,14 +1994,14 @@ function input.load_cnf(instance)
 end
 
 function input.loadconfigdata(instance)
-    for _, fname in pairs(instance.cnffiles) do
+    for _, fname in ipairs(instance.cnffiles) do
         input.aux.load_cnf(instance,fname)
     end
 end
 
 if os.env then
     function input.aux.collapse_cnf_data(instance)
-        for _,c in pairs(instance.configuration) do
+        for _,c in ipairs(instance.order) do
             for k,v in pairs(c) do
                 if not instance.variables[k] then
                     if instance.environment[k] then
@@ -2013,7 +2016,7 @@ if os.env then
     end
 else
     function input.aux.collapse_cnf_data(instance)
-        for _,c in pairs(instance.configuration) do
+        for _,c in ipairs(instance.order) do
             for k,v in pairs(c) do
                 if not instance.variables[k] then
                     local e = os.getenv(k)
@@ -2036,7 +2039,11 @@ function input.aux.load_cnf(instance,fname)
     local f = io.open(lname)
     if f then
         f:close()
-        input.aux.load_data(instance,file.dirname(lname),'configuration',file.basename(lname))
+        local dname = file.dirname(fname)
+        if not instance.configuration[dname] then
+            input.aux.load_data(instance,dname,'configuration',file.basename(lname))
+            instance.order[#instance.order+1] = instance.configuration[dname]
+        end
     else
         f = io.open(fname)
         if f then
@@ -2045,6 +2052,7 @@ function input.aux.load_cnf(instance,fname)
             local dname = file.dirname(fname)
             if not instance.configuration[dname] then
                 instance.configuration[dname] = { }
+                instance.order[#instance.order+1] = instance.configuration[dname]
             end
             local data = instance.configuration[dname]
             while true do
@@ -2200,7 +2208,7 @@ function input.generators.tex(instance,specification)
         input.report("scanning path",specification)
         instance.files[tag] = { }
         local files = instance.files[tag]
-        local n, m = 0, 0
+        local n, m, r = 0, 0, 0
         local spec = specification .. '/'
         local attributes = lfs.attributes
         local directory = lfs.dir
@@ -2240,6 +2248,7 @@ function input.generators.tex(instance,specification)
                             local lower = name:lower()
                             if name ~= lower then
                                 files["remap:"..lower] = name
+                                r = r + 1
                             end
                         end
                     end
@@ -2247,7 +2256,7 @@ function input.generators.tex(instance,specification)
             end
         end
         action()
-        input.report(n,"files found on",m,"directories")
+        input.report(string.format("%s files found on %s directories with %s uppercase remappings",n,m,r))
     else
         local fullname = file.join(specification,input.lsrname)
         local path     = '.'
@@ -2298,7 +2307,7 @@ end
 -- is more convenient.
 
 function input.splitconfig(instance)
-    for i,c in pairs(instance.configuration) do
+    for i,c in ipairs(instance.order) do
         for k,v in pairs(c) do
             if type(v) == 'string' then
                 local t = file.split_path(v)
@@ -2310,7 +2319,7 @@ function input.splitconfig(instance)
     end
 end
 function input.joinconfig(instance)
-    for i,c in pairs(instance.configuration) do
+    for i,c in ipairs(instance.order) do
         for k,v in pairs(c) do
             if type(v) == 'table' then
                 c[k] = file.join_path(v)
@@ -2423,10 +2432,12 @@ function input.aux.save_data(instance, dataname, check)
 end
 
 function input.loadconfig(instance)
-    instance.configuration, instance.loaderror = { }, false
+    instance.configuration, instance.order, instance.loaderror = { }, { }, false
     if not instance.renewcache then
-        for _, cnf in pairs(instance.cnffiles) do
-            input.aux.load_data(instance,file.dirname(cnf),'configuration')
+        for _, cnf in ipairs(instance.cnffiles) do
+            local dname = file.dirname(cnf)
+            input.aux.load_data(instance,dname,'configuration')
+            instance.order[#instance.order+1] = instance.configuration[dname]
             if instance.loaderror then break end
         end
     end
@@ -2582,7 +2593,7 @@ function input.list_configurations(instance)
     for _,key in pairs(table.sortedkeys(instance.kpsevars)) do
         if not instance.pattern or (instance.pattern=="") or key:find(instance.pattern) then
             print(key.."\n")
-            for i,c in pairs(instance.configuration) do
+            for i,c in ipairs(instance.order) do
                 local str = c[key]
                 if str then
                     print("\t" .. i .. "\t\t" .. input.aux.tabstr(str))
@@ -2735,8 +2746,7 @@ function input.aux.expanded_path(instance,pathlist)
                     local pre, mid, post = v:match(pattern)
                     if pre and mid and post then
                         more = true
---~                         for vv in string.gmatch(mid..',',"(.-),") do
-                        for vv in string.gmatch(mid,"([^,]+)") do
+                        for vv in string.gmatch(mid..',',"(.-),") do
                             if vv == '.' then
                                 t[#t+1] = pre..post
                             else
@@ -2751,13 +2761,12 @@ function input.aux.expanded_path(instance,pathlist)
                 if not more then break end
             end
         end
-        for _,v in pairs(oldlist) do
+        for _,v in ipairs(oldlist) do
             v = file.collapse_path(v)
             if v ~= "" and not v:find(instance.dummy_path_expr) then newlist[#newlist+1] = v end
         end
     else
-        for _,v in pairs(pathlist) do
-         -- for _,vv in pairs(v:split(",")) do
+        for _,v in ipairs(pathlist) do
             for vv in string.gmatch(v..',',"(.-),") do
                 vv = file.collapse_path(v)
                 if vv ~= "" then newlist[#newlist+1] = vv end
@@ -2808,7 +2817,7 @@ function input.aux.collect_files(instance,names)
             else
                 dname = "/" .. dname .. "$"
             end
-            for _, hash in pairs(instance.hashes) do
+            for _, hash in ipairs(instance.hashes) do
                 local blobpath = hash.tag
                 local files = blobpath and instance.files[blobpath]
                 if files then
@@ -2942,15 +2951,15 @@ function input.aux.find_file(instance,filename) -- todo : plugin (scanners, chec
         local filetype, extra, done, wantedfiles, ext = '', nil, false, { }, file.extname(filename)
         if ext == "" then
             if not instance.force_suffixes then
-                table.insert(wantedfiles, filename)
+                wantedfiles[#wantedfiles+1] = filename
             end
         else
-            table.insert(wantedfiles, filename)
+            wantedfiles[#wantedfiles+1] = filename
         end
         if instance.format == "" then
             if ext == "" then
                 local forcedname = filename .. '.tex'
-                table.insert(wantedfiles, forcedname)
+                wantedfiles[#wantedfiles+1] = forcedname
                 filetype = input.format_of_suffix(forcedname)
                 input.logger('! forcing filetype',filetype)
             else
@@ -2960,7 +2969,7 @@ function input.aux.find_file(instance,filename) -- todo : plugin (scanners, chec
         else
             if ext == "" then
                 for _, s in pairs(input.suffixes_of_format(instance.format)) do
-                    table.insert(wantedfiles, filename .. "." .. s)
+                    wantedfiles[#wantedfiles+1] = filename .. "." .. s
                 end
             end
             filetype = instance.format
@@ -2978,7 +2987,7 @@ function input.aux.find_file(instance,filename) -- todo : plugin (scanners, chec
             for _, fname in pairs(wantedfiles) do
                 if fname and input.is_readable.file(fname) then
                     filename, done = fname, true
-                    table.insert(result, file.join('.',fname))
+                    result[#result+1] = file.join('.',fname)
                     break
                 end
             end
@@ -2986,7 +2995,7 @@ function input.aux.find_file(instance,filename) -- todo : plugin (scanners, chec
             local filelist = input.aux.collect_files(instance,wantedfiles)
             filename = filelist and filelist[1]
             if filename then
-                table.insert(result, filename)
+                result[#result+1] = filename
                 done = true
             end
         else
@@ -3018,7 +3027,7 @@ function input.aux.find_file(instance,filename) -- todo : plugin (scanners, chec
                             if input.trace > 2 then
                                 input.logger('= found in hash',f)
                             end
-                            table.insert(result,f)
+                            result[#result+1] = f
                             input.aux.register_in_trees(instance,f) -- for tracing used files
                             done = true
                             if not instance.allresults then break end
@@ -3040,7 +3049,7 @@ function input.aux.find_file(instance,filename) -- todo : plugin (scanners, chec
                                         if input.trace > 2 then
                                             input.logger('= found by scanning',fname)
                                         end
-                                        table.insert(result,fname)
+                                        result[#result+1] = fname
                                         done = true
                                         if not instance.allresults then break end
                                     end
@@ -3131,15 +3140,23 @@ end
 
 function input.find_given_files(instance,filename)
     local bname, result = file.basename(filename), { }
-    for k, hash in pairs(instance.hashes) do
+    for k, hash in ipairs(instance.hashes) do
         local blist = instance.files[hash.tag][bname]
+        if not blist then
+            local rname = "remap:"..bname
+            blist = files[rname]
+            if blist then
+                bname = files[rname]
+                blist = files[bname]
+            end
+        end
         if blist then
             if type(blist) == 'string' then
-                table.insert(result,input.concatinators[hash.type](hash.tag,blist,bname) or "")
+                result[#result+1] = input.concatinators[hash.type](hash.tag,blist,bname) or ""
                 if not instance.allresults then break end
             else
                 for kk,vv in pairs(blist) do
-                    table.insert(result,input.concatinators[hash.type](hash.tag,vv,bname) or "")
+                    result[#result+1] = input.concatinators[hash.type](hash.tag,vv,bname) or ""
                     if not instance.allresults then break end
                 end
             end
@@ -3152,35 +3169,7 @@ function input.find_given_file(instance,filename)
     return (input.find_given_files(instance,filename)[1] or "")
 end
 
---~ function input.find_wildcard_files(instance,filename)
---~     local result = { }
---~     local bname, dname = file.basename(filename), file.dirname(filename)
---~     local expr = dname:gsub("^*/","")
---~     expr = expr:gsub("*",".*")
---~     expr = expr:gsub("-","%-")
---~     for k, hash in pairs(instance.hashes) do
---~         local blist = instance.files[hash.tag][bname]
---~         if blist then
---~             if type(blist) == 'string' then
---~                 -- make function and share code
---~                 if blist:find(expr) then
---~                     table.insert(result,input.concatinators[hash.type](hash.tag,blist,bname) or "")
---~                     if not instance.allresults then break end
---~                 end
---~             else
---~                 for kk,vv in pairs(blist) do
---~                     if vv:find(expr) then
---~                         table.insert(result,input.concatinators[hash.type](hash.tag,vv,bname) or "")
---~                         if not instance.allresults then break end
---~                     end
---~                 end
---~             end
---~         end
---~     end
---~     return result
---~ end
-
-function input.find_wildcard_files(instance,filename)
+function input.find_wildcard_files(instance,filename) -- todo: remap:
     local result = { }
     local bname, dname = file.basename(filename), file.dirname(filename)
     local path = dname:gsub("^*/","")
@@ -3200,13 +3189,13 @@ function input.find_wildcard_files(instance,filename)
             if type(blist) == 'string' then
                 -- make function and share code
                 if (blist:lower()):find(path) then
-                    table.insert(result,input.concatinators[hash.type](hash.tag,blist,bname) or "")
+                    result[#result+1] = input.concatinators[hash.type](hash.tag,blist,bname) or ""
                     done = true
                 end
             else
                 for kk,vv in pairs(blist) do
                     if (vv:lower()):find(path) then
-                        table.insert(result,input.concatinators[hash.type](hash.tag,vv,bname) or "")
+                        result[#result+1] = input.concatinators[hash.type](hash.tag,vv,bname) or ""
                         done = true
                         if not allresults then break end
                     end
@@ -3217,7 +3206,7 @@ function input.find_wildcard_files(instance,filename)
     end
     local files, allresults, done = instance.files, instance.allresults, false
     if name:find("%*") then
-        for k, hash in pairs(instance.hashes) do
+        for k, hash in ipairs(instance.hashes) do
             for kk, hh in pairs(files[hash.tag]) do
                 if (kk:lower()):find(name) then
                     if doit(hh,kk,hash,allresults) then done = true end
@@ -3226,7 +3215,7 @@ function input.find_wildcard_files(instance,filename)
             end
         end
     else
-        for k, hash in pairs(instance.hashes) do
+        for k, hash in ipairs(instance.hashes) do
             if doit(files[hash.tag][bname],bname,hash,allresults) then done = true end
             if done and not allresults then break end
         end
@@ -3466,17 +3455,24 @@ function input.do_with_var(name,func)
 end
 
 function input.with_files(instance,pattern,handle)
-    for _, hash in pairs(instance.hashes) do
+    for _, hash in ipairs(instance.hashes) do
         local blobpath = hash.tag
         local blobtype = hash.type
-        if blobpath and instance.files[blobpath] then -- sort them?
-            for k,v in pairs(instance.files[blobpath]) do
-                if k:find(pattern) then
-                    if type(v) == "string" then
-                        handle(blobtype,blobpath,v,k)
-                    else
-                        for _,vv in pairs(v) do
-                            handle(blobtype,blobpath,vv,k)
+        if blobpath then
+            local files = instance.files[blobpath]
+            if files then
+                for k,v in pairs(files) do
+                    if k:find("^remap:") then
+                        k = files[k]
+                        v = files[k] -- chained
+                    end
+                    if k:find(pattern) then
+                        if type(v) == "string" then
+                            handle(blobtype,blobpath,v,k)
+                        else
+                            for _,vv in pairs(v) do
+                                handle(blobtype,blobpath,vv,k)
+                            end
                         end
                     end
                 end
@@ -4577,6 +4573,8 @@ function input.runners.execute_ctx_script(instance,filename)
             return true
         end
     else
+        input.verbose = true
+        input.report("unknown script: " .. filename)
         return false
     end
 end

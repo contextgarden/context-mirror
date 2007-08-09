@@ -235,9 +235,16 @@ function fonts.tfm.read_and_define(name,size) -- no id
     local id = fonts.tfm.internalized[hash]
     if not id then
         local fontdata = fonts.tfm.read(specification)
-        id = font.define(fontdata)
-        fonts.tfm.id[id] = fontdata
-        fonts.tfm.internalized[hash] = id
+        if not fonts.tfm.internalized[hash] then
+            id = font.define(fontdata)
+            fonts.tfm.id[id] = fontdata
+            fonts.tfm.internalized[hash] = id
+            if fonts.trace then
+                logs.report("define font", string.format("at 1 id %s, hash: %s",id,hash))
+            end
+        else
+            id = fonts.tfm.internalized[hash]
+        end
     end
     return fonts.tfm.id[id], id
 end
@@ -285,9 +292,10 @@ function fonts.tfm.readers.afm(specification,method)
         if not fullname or fullname == "" then
             tfmtable = fonts.tfm.read_from_afm(specification)
             fonts.logger.save(tfmtable,'afm',specification)
-        else
+        else -- redundant
             specification.filename = fullname
             tfmtable = fonts.tfm.read_from_tfm(specification)
+            fonts.logger.save(tfmdata,'tfm',specification)
         end
     elseif method == 3 then -- maybe also findbinfile here
         if fonts.define.auto_afm then
@@ -445,7 +453,7 @@ function fonts.define.read(name,size,id)
     if true then
         local fontdata = containers.read(fonts.cache,hash) -- for tracing purposes
     end
-    local fontdata = fonts.tfm.internalized[hash]
+    local fontdata = fonts.tfm.internalized[hash] -- id
     if not fontdata then
         if specification.features.vtf and specification.features.vtf.preset then
             fontdata = fonts.tfm.make(specification)
@@ -455,8 +463,15 @@ function fonts.define.read(name,size,id)
         if true then
             fontdata = containers.write(fonts.cache,hash,fontdata) -- for tracing purposes
         end
-        fonts.tfm.id[id] = fontdata
-        fonts.tfm.internalized[hash] = id
+        if not fonts.tfm.internalized[hash] then
+            fonts.tfm.id[id] = fontdata
+            fonts.tfm.internalized[hash] = id
+            if fonts.trace then
+                logs.report("define font", string.format("at 2 id %s, hash: %s",id,hash))
+            end
+        else
+            fontdata = fonts.tfm.internalized[hash]
+        end
     end
     if not fontdata then
         logs.error("defining font", string.format("name: %s, loading aborted",specification.name))
@@ -475,10 +490,11 @@ end
 --~ end
 
 function fonts.vf.find(name)
-    if fonts.logger.format(name) == 'tfm' then
+    local format = fonts.logger.format(name)
+    if format == 'tfm' or format == 'ofm' then
         return input.findbinfile(texmf.instance,name,"ovf")
     else
-        return ""
+        return nil -- ""
     end
 end
 
