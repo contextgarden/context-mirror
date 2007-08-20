@@ -19,7 +19,7 @@ away.</p>
 
 fonts                      = fonts     or { }
 fonts.afm                  = fonts.afm or { }
-fonts.afm.version          = 1.10 -- incrementing this number one up will force a re-cache
+fonts.afm.version          = 1.13 -- incrementing this number one up will force a re-cache
 fonts.afm.syncspace        = true -- when true, nicer stretch values
 fonts.afm.enhance_data     = true -- best leave this set to true
 fonts.afm.trace_features   = false
@@ -54,7 +54,7 @@ do
         if designsize then data.designsize = tonumber(designsize) end
     end
 
-    local function get_charmetrics(characters,charmetrics)
+    local function get_charmetrics(data,charmetrics,vector)
         local characters = data.characters
         local chr, str, ind = { }, "", 0
         for k,v in charmetrics:gmatch("([%a]+) +(.-) *;") do
@@ -82,10 +82,12 @@ do
                 chr.ligatures[plus] = becomes
             end
         end
-        if str ~= "" then characters[str] = chr end
+        if str ~= "" then
+            characters[str] = chr
+        end
     end
 
-    local function get_kernpairs(characters,kernpairs)
+    local function get_kernpairs(data,kernpairs)
         local characters = data.characters
         for one, two, value in kernpairs:gmatch("KPX +(.-) +(.-) +(.-)\n") do
             local chr = characters[one]
@@ -102,17 +104,41 @@ do
         end
     end
 
+    local function get_indexes(data,filename)
+        local pfbname = input.find_file(texmf.instance,file.removesuffix(file.basename(filename))..".pfb","pfb") or ""
+        if pfbname ~= "" then
+            data.luatex = data.luatex or { }
+            data.luatex.filename = pfbname
+            local pfbblob = fontforge.open(pfbname)
+            if pfbblob then
+                local characters = data.characters
+                local pfbdata = fontforge.to_table(pfbblob)
+                if pfbdata and pfbdata.glyphs then
+                    for index, glyph in pairs(pfbdata.glyphs) do
+                        local name = glyph.name
+                        if name then
+                            local char = characters[name]
+                            if char then
+                                char.index = index
+                            end
+                        end
+                    end
+                end
+           end
+        end
+    end
+
     function fonts.afm.read_afm(filename)
         local ok, afmblob, size = input.loadbinfile(texmf.instance,filename) -- has logging
     --  local ok, afmblob = true, file.readdata(filename)
         if ok and afmblob then
-            data = {
+            local data = {
                 version = version or '0',
                 characters = { },
                 filename = file.removesuffix(file.basename(filename))
             }
             afmblob = afmblob:gsub("StartCharMetrics(.-)EndCharMetrics", function(charmetrics)
-                get_charmetrics(data,charmetrics)
+                get_charmetrics(data,charmetrics,vector)
                 return ""
             end)
             afmblob = afmblob:gsub("StartKernPairs(.-)EndKernPairs", function(kernpairs)
@@ -124,6 +150,7 @@ do
                 get_variables(data,fontmetrics)
                 return ""
             end)
+            get_indexes(data,filename)
             return data
         else
             return nil
@@ -268,11 +295,12 @@ function fonts.afm.copy_to_tfm(data)
                 tfm.characters[t.unicode] = t
             end
         end
-        tfm.encodingbytes      = 2
-        tfm.units              = 1000
-        tfm.name               = data.filename
-        tfm.type               = "real"
+        tfm.encodingbytes      = data.encodingbytes or 2
         tfm.fullname           = data.fullname
+        tfm.filename           = data.filename
+        tfm.name               = data.name
+        tfm.type               = "real"
+        tfm.units              = 1000
         tfm.stretch            = stretch
         tfm.slant              = slant
         tfm.direction          = 0
@@ -341,10 +369,6 @@ function fonts.afm.copy_to_tfm(data)
     end
 end
 
-
---~ function set_x(w,h) return  h*slant+w*stretch       end
---~ function set_y(h)   return  h                       end
-
 --[[ldx--
 <p>Originally we had features kind of hard coded for <l n='afm'/>
 files but since I expect to support more font formats, I decided
@@ -367,7 +391,7 @@ function fonts.afm.set_features(tfmdata)
         local mode = tfmdata.mode or fonts.mode
         local fi = fonts.initializers[mode]
         if fi and fi.afm then
-            function initialize(list) -- using tex lig and kerning
+            local function initialize(list) -- using tex lig and kerning
                 if list then
                     for _, f in ipairs(list) do
                         local value = features[f]
@@ -387,7 +411,7 @@ function fonts.afm.set_features(tfmdata)
         end
         local fm = fonts.methods[mode]
         if fm and fm.afm then
-            function register(list) -- node manipulations
+            local function register(list) -- node manipulations
                 if list then
                     for _, f in ipairs(list) do
                         if features[f] and fm.afm[f] then -- brr
@@ -406,25 +430,46 @@ function fonts.afm.set_features(tfmdata)
 end
 
 function fonts.afm.afm_to_tfm(specification)
-    local afmfile  = specification.filename or specification.name
-    local features = specification.features.normal
-    local cache_id = specification.hash
-    local tfmdata  = containers.read(fonts.tfm.cache, cache_id) -- cache with features applied
-    if not tfmdata then
-        local afmdata = fonts.afm.load(afmfile)
-        if not table.is_empty(afmdata) then
-            tfmdata = fonts.afm.copy_to_tfm(afmdata)
-            if not table.is_empty(tfmdata) then
-                tfmdata.shared = tfmdata.shared or { }
-                tfmdata.unique = tfmdata.unique or { }
-                tfmdata.shared.afmdata  = afmdata
-                tfmdata.shared.features = features
-                fonts.afm.set_features(tfmdata)
-            end
+    local afmname = specification.filename or specification.name
+    local encoding, filename = afmname:match("^(.-)%-(.*)$") -- context: encoding-name.*
+    if encoding and filename and fonts.enc.known[encoding] then
+-- only when no bla-name is found
+        fonts.tfm.set_normal_feature(specification,'encoding',encoding) -- will go away
+        if fonts.trace then
+            logs.report("define font", string.format("stripping encoding prefix from filename %s",afmname))
         end
-        tfmdata = containers.write(fonts.tfm.cache,cache_id,tfmdata)
+        afmname = filename
+    else
+        local tfmname = input.findbinfile(texmf.instance,afmname,"ofm") or ""
+        if tfmname ~= "" then
+            if fonts.trace then
+                logs.report("define font", string.format("fallback from afm to tfm for %s",afmname))
+            end
+            afmname = ""
+        end
     end
-    return tfmdata
+    if afmname == "" then
+        return nil
+    else
+        local features = specification.features.normal
+        local cache_id = specification.hash
+        local tfmdata  = containers.read(fonts.tfm.cache, cache_id) -- cache with features applied
+        if not tfmdata then
+            local afmdata = fonts.afm.load(afmname)
+            if not table.is_empty(afmdata) then
+                tfmdata = fonts.afm.copy_to_tfm(afmdata)
+                if not table.is_empty(tfmdata) then
+                    tfmdata.shared = tfmdata.shared or { }
+                    tfmdata.unique = tfmdata.unique or { }
+                    tfmdata.shared.afmdata  = afmdata
+                    tfmdata.shared.features = features
+                    fonts.afm.set_features(tfmdata)
+                end
+            end
+            tfmdata = containers.write(fonts.tfm.cache,cache_id,tfmdata)
+        end
+        return tfmdata
+    end
 end
 
 --[[ldx--
@@ -446,39 +491,36 @@ function fonts.tfm.set_normal_feature(specification,name,value)
 end
 
 function fonts.tfm.read_from_afm(specification)
-    local name, size, tfmtable = specification.name, specification.size, nil
-    local encoding, filename = name:match("^(.-)%-(.*)$") -- context: encoding-name.*
-    if filename and encoding and fonts.enc.known[encoding] then
-        fonts.tfm.set_normal_feature(specification,'encoding',encoding)
-    else
-        encoding = nil -- fonts.tfm.default_encoding
-        filename = name
-    end
-    if filename ~= "" then
-        tfmtable = fonts.afm.afm_to_tfm(specification)
-        if tfmtable then
-            tfmtable.name = name
-            tfmtable = fonts.tfm.scale(tfmtable, size)
-            filename = input.findbinfile(texmf.instance,filename,"pfb")
-            if filename then
-                tfmtable.format, tfmtable.filename = 'type1', filename
-            else
-                tfmtable.format, tfmtable.filename = 'pk', nil
-            end
-            if fonts.dontembed[filename] then
-                tfmtable.file = nil
-            end
-            -- begin of map hack
+    local tfmtable = fonts.afm.afm_to_tfm(specification)
+    if tfmtable then
+        tfmtable.name = specification.name
+        tfmtable = fonts.tfm.scale(tfmtable, specification.size)
+        local afmdata = tfmtable.shared.afmdata
+        local filename = afmdata and afmdata.luatex and afmdata.luatex.filename
+        if not filename then
+            -- try to locate anyway and set afmdata.luatex.filename
+        end
+        if filename then
+            tfmtable.encodingbytes = 2
+            tfmtable.filename = input.findbinfile(texmf.instance,filename,"") or filename
+            tfmtable.fullname = afmdata.fullname or afmdata.fontname
+            tfmtable.format   = 'type1'
+            tfmtable.name     = afmdata.luatex.filename or tfmtable.name
+        end
+        if fonts.dontembed[filename] then
+            tfmtable.file = nil
+        end
+        if false then -- no afm with pk
             local mapentry = {
                 name     = tfmtable.name,
                 fullname = tfmtable.fullname,
                 stretch  = tfmtable.stretch,
                 slant    = tfmtable.slant,
-                file     = tfmtable.filename,
+                fontfile = tfmtable.filename,
             }
-            -- end of map hack
-            fonts.map.data[name] = mapentry
+            fonts.map.data[specification.name] = mapentry
         end
+        fonts.logger.save(tfmtable,'afm',specification)
     end
     return tfmtable
 end

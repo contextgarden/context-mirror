@@ -17,14 +17,6 @@
 
 \unprotect
 
-% \def\checklayerproperty
-%   {\dodefineviewerlayer
-%      \currentproperty % tag
-%      {\checkedpropertyparameter\c!title\currentproperty}%
-%      {\checkedpropertyparameter\c!state\v!start}% visible or hidden
-%      {0}% type (1=frozen)
-%      {0}}% printable
-
 \def\checklayerproperty
   {\doifelse{\checkedpropertyparameter\v!printable\currentproperty}\v!no
      {\def\printviewerlayer{0}}

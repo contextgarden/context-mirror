@@ -11,8 +11,8 @@ if not modules then modules = { } end modules ['node-ini'] = {
 implement a few helper functions.</p>
 --ldx]]--
 
-nodes            = nodes or { }
-nodes.trace      = false
+nodes       = nodes or { }
+nodes.trace = false
 
 -- handy helpers
 
@@ -59,7 +59,7 @@ nodes.processors.char = { }
 nodes.processors.char.proc = { }
 
 function nodes.report(t,done)
-    if nodes.trace then
+    if nodes.trace then -- best also test this before calling
         if done then
             if status.output_active then
                 texio.write(string.format("<++ %s>",nodes.count(t)))
@@ -295,6 +295,309 @@ end
 if not fonts        then fonts        = { } end
 if not fonts.tfm    then fonts.tfm    = { } end
 if not fonts.tfm.id then fonts.tfm.id = { } end
+
+do
+
+    local glyph, hlist, vlist = node.id('glyph'), node.id('hlist'), node.id('vlist')
+    local pushmarks  = false
+
+    function nodes.process_glyphs(head)
+        if status.output_active then  -- not ok, we need a generic blocker, pagebody ! / attr tex.attibutes
+            -- 25% calls
+            return true
+        elseif not head then
+            -- 25% calls
+            return true
+        elseif not head.next and (head.id == hlist or head.id == vlist) then
+            return head
+        else
+            -- either next or not, but definitely no already processed list
+            input.start_timing(nodes)
+            local usedfonts, found, fontdata, done = { }, false, fonts.tfm.id, false
+            for n in node.traverse_id(glyph,head) do
+                local font = n.font
+                if not usedfonts[font] then
+                    local shared = fontdata[font].shared
+                    if shared and shared.processors then
+                        usedfonts[font], found = shared.processors, true
+                    end
+                end
+            end
+            if found then
+                local tail = head
+                if head.next then
+                    tail = node.slide(head)
+                else
+                    head.prev = nil
+                end
+                for font, processors in pairs(usedfonts) do
+                    if pushmarks then
+                        local h, d = fonts.pushmarks(head,font)
+                        head, done = head or h, done or d
+                    end
+                    for _, processor in ipairs(processors) do
+                        local h, d = processor(head,font)
+                        head, done = head or h, done or d
+                    end
+                    if pushmarks then
+                        local h, d = fonts.popmarks(head,font)
+                        head, done = head or h, done or d
+                    end
+                end
+            end
+            input.stop_timing(nodes)
+            if nodes.trace then
+                nodes.report(head,done)
+            end
+            if done then
+                return head  -- something changed
+            elseif head then
+                return true  -- nothing changed
+            else
+                return false -- delete list
+            end
+        end
+    end
+
+end
+
+-- vbox: grouptype: vbox vtop output split_off split_keep  | box_type: exactly|aditional
+-- hbox: grouptype: hbox adjusted_hbox(=hbox_in_vmode)     | box_type: exactly|aditional
+
+do
+
+    local contains, set, attribute = node.has_attribute, node.set_attribute, tex.attribute
+
+    function nodes.inherit_attributes(n)
+        if n then
+            local i = 1
+            while true do
+                local a = attribute[i]
+                if a < 0 then
+                    break
+                else
+                    local ai = contains(n,i)
+                    if not ai then
+                        set(n,i,a)
+                    end
+                    i = i + 1
+                end
+            end
+        end
+    end
+
+end
+
+callback.register('pre_linebreak_filter', nodes.process_glyphs)
+callback.register('hpack_filter',         nodes.process_glyphs)
+
+--~ callback.register('pre_linebreak_filter', function(t,...)
+--~     print("pre_linebreak_filter",...)
+--~     return nodes.process_glyphs(t)
+--~ end )
+--~ callback.register('hpack_filter',         function(t,...)
+--~     print("hpack_filter",...)
+--~     return nodes.process_glyphs(t)
+--~ end )
+
+function nodes.length(head)
+    if head then
+        local m = 0
+        for n in node.traverse(head) do
+            m = m + 1
+        end
+        return m
+    else
+        return 0
+    end
+end
+
+do
+
+--~     function nodes.totable(n)
+--~         local function totable(n)
+--~             local f, tt = node.fields(n.id,n.subtype), { }
+--~             for _,v in ipairs(f) do
+--~                 local nv = n[v]
+--~                 if nv then
+--~                     local tnv = type(nv)
+--~                     if tnv == "string" or tnv == "number" then
+--~                         tt[v] = nv
+--~                     else -- userdata
+--~                         tt[v] = nodes.totable(nv)
+--~                     end
+--~                 end
+--~             end
+--~             return tt
+--~         end
+--~         local t = { }
+--~         while n do
+--~             t[#t+1] = totable(n)
+--~             n = n.next
+--~         end
+--~         return t
+--~     end
+
+    local expand = {
+        list = true,
+        pre = true,
+        post = true,
+        spec = true,
+        attr = true,
+        components = true,
+    }
+
+    -- flat: don't use next, but indexes
+    -- verbose: also add type
+
+    function nodes.totable(n,flat,verbose)
+        local function totable(n,verbose)
+            local f = node.fields(n.id,n.subtype)
+            local tt = { }
+            for _,v in ipairs(f) do
+                if n[v] then
+                    if v == "ref_count" then
+                        -- skip
+                    elseif expand[v] then -- or: type(n[v]) ~= "string" or type(n[v]) ~= "number"
+                        tt[v] = nodes.totable(n[v],flat,verbose)
+                    else
+                        tt[v] = n[v]
+                    end
+                end
+            end
+            if verbose then
+                tt.type = node.type(tt.id)
+            end
+            return tt
+        end
+        if n then
+            if flat then
+                local t = { }
+                while n do
+                    t[#t+1] = totable(n,verbose)
+                    n = n.next
+                end
+                return t
+            else
+                local t = totable(n,verbose)
+                if n.next then
+                    t.next = nodes.totable(n.next,flat,verbose)
+                end
+                return t
+            end
+        else
+            return { }
+        end
+    end
+
+    local function key(k)
+        if type(k) == "number" then
+            return "["..k.."]"
+        else
+            return k
+        end
+    end
+
+    local function serialize(root,name,handle,depth,m)
+        handle = handle or print
+        if depth then
+            depth = depth .. " "
+            handle(("%s%s={"):format(depth,key(name)))
+        else
+            depth = ""
+            if type(name) == "string" then
+                if name == "return" then
+                    handle("return {")
+                else
+                    handle(name .. "={")
+                end
+            elseif type(name) == "number" then
+                handle("[" .. name .. "]={")
+            else
+                handle("t={")
+            end
+        end
+        if root then
+            local fld
+            if root.id then
+                fld = node.fields(root.id,root.subtype)
+            else
+                fld = table.sortedkeys(root)
+            end
+            if type(root) == 'table' and root['type'] then -- userdata or table
+                handle(("%s %s=%q,"):format(depth,'type',root['type']))
+            end
+            for _,k in ipairs(fld) do
+                if k then
+                    local v = root[k]
+                    local t = type(v)
+                    if t == "number" then
+                        handle(("%s %s=%s,"):format(depth,key(k),v))
+                    elseif t == "string" then
+                        handle(("%s %s=%q,"):format(depth,key(k),v))
+                    elseif v then -- userdata or table
+                        serialize(v,k,handle,depth,m+1)
+                    end
+                end
+            end
+            if root['next'] then -- userdata or table
+                serialize(root['next'],'next',handle,depth,m+1)
+            end
+        end
+        if m and m > 0 then
+            handle(("%s},"):format(depth))
+        else
+            handle(("%s}"):format(depth))
+        end
+    end
+
+    function nodes.serialize(root,name)
+        local t = { }
+        local function flush(s)
+            t[#t+1] = s
+        end
+        serialize(root, name, flush, nil, 0)
+        return table.concat(t,"\n")
+    end
+
+    function nodes.serializebox(n,flat,verbose)
+        return nodes.serialize(nodes.totable(tex.box[n],flat,verbose))
+    --  return nodes.serialize(tex.box[n])
+    end
+
+    function nodes.visualizebox(...)
+    --  tex.sprint(tex.ctxcatcodes,"\\starttyping\n" .. nodes.serializebox(...) .. "\n\\stoptyping\n")
+        tex.print(tex.ctxcatcodes,"\\starttyping")
+        tex.print(nodes.serializebox(...))
+        tex.print("\\stoptyping")
+    end
+
+end
+
+if not node.list_has_attribute then
+
+    function node.list_has_attribute(list,attribute)
+        if list and attribute then
+            for n in node.traverse(list) do
+                local a = has_attribute(n,attribute)
+                if a then return a end
+            end
+        end
+        return false
+    end
+
+end
+
+function nodes.pack_list(head)
+    local t = { }
+    for n in node.traverse(head) do
+        t[#t+1] = tostring(n)
+    end
+    return t
+end
+
+-- old code
+
 
 --~ function nodes.do_process_glyphs(stack)
 --~     if not stack or #stack == 0 then
@@ -634,272 +937,3 @@ if not fonts.tfm.id then fonts.tfm.id = { } end
 --~     end
 
 --~ end
-
-do
-
-    local glyph      = node.id('glyph')
-    local pushmarks  = false
-
-    function do_process_glyphs(head) -- beware, we need to handle shifted heads -- todo
-        if not head then
-            return head
-        end
-        local usedfonts, found, fontdata = { }, false, fonts.tfm.id
-        for n in node.traverse_id(glyph,head) do
-            local font = n.font
-            if not usedfonts[font] then
-                local shared = fontdata[font].shared
-                if shared and shared.processors then
-                    usedfonts[font], found = shared.processors, true
-                end
-            end
-        end
-        if not found then
-            return head, false
-        else
-            local tail, done = node.slide(head), false
-            for font, processors in pairs(usedfonts) do
-                if pushmarks then
-                    local h, d = fonts.pushmarks(head,font)
-                    head, done = head or h, done or d
-                end
-                for _, processor in ipairs(processors) do
-                    local h, d = processor(head,font)
-                    head, done = head or h, done or d
-                end
-                if pushmarks then
-                    local h, d = fonts.popmarks(head,font)
-                    head, done = head or h, done or d
-                end
-            end
-            return head, done
-        end
-    end
-
-    function nodes.process_glyphs(head)
-        if status.output_active then  -- not ok, we need a generic blocker, pagebody ! / attr tex.attibutes
-            return true
-        else
-            input.start_timing(nodes)
-            local head, done = do_process_glyphs(head)
-            input.stop_timing(nodes)
-            nodes.report(head,done)
-            if done then
-                return head  -- something changed
-            elseif head then
-                return true  -- nothing changed
-            else
-                return false -- delete list
-            end
-        end
-    end
-
-end
-
--- vbox: grouptype: vbox vtop output split_off split_keep  | box_type: exactly|aditional
--- hbox: grouptype: hbox adjusted_hbox(=hbox_in_vmode)     | box_type: exactly|aditional
-
-callback.register('pre_linebreak_filter', nodes.process_glyphs)
-callback.register('hpack_filter',         nodes.process_glyphs)
-
---~ callback.register('pre_linebreak_filter', function(t,...)
---~     print("pre_linebreak_filter",...)
---~     return nodes.process_glyphs(t)
---~ end )
---~ callback.register('hpack_filter',         function(t,...)
---~     print("hpack_filter",...)
---~     return nodes.process_glyphs(t)
---~ end )
-
-function nodes.length(head)
-    if head then
-        local m = 0
-        for n in node.traverse(head) do
-            m = m + 1
-        end
-        return m
-    else
-        return 0
-    end
-end
-
-do
-
---~     function nodes.totable(n)
---~         function totable(n)
---~             local f, tt = node.fields(n.id,n.subtype), { }
---~             for _,v in ipairs(f) do
---~                 local nv = n[v]
---~                 if nv then
---~                     local tnv = type(nv)
---~                     if tnv == "string" or tnv == "number" then
---~                         tt[v] = nv
---~                     else -- userdata
---~                         tt[v] = nodes.totable(nv)
---~                     end
---~                 end
---~             end
---~             return tt
---~         end
---~         local t = { }
---~         while n do
---~             t[#t+1] = totable(n)
---~             n = n.next
---~         end
---~         return t
---~     end
-
-    local expand = {
-        list = true,
-        pre = true,
-        post = true,
-        spec = true,
-        attr = true,
-        components = true,
-    }
-
-    -- flat: don't use next, but indexes
-    -- verbose: also add type
-
-    function nodes.totable(n,flat,verbose)
-        function totable(n,verbose)
-            local f = node.fields(n.id,n.subtype)
-            local tt = { }
-            for _,v in ipairs(f) do
-                if n[v] then
-                    if v == "ref_count" then
-                        -- skip
-                    elseif expand[v] then -- or: type(n[v]) ~= "string" or type(n[v]) ~= "number"
-                        tt[v] = nodes.totable(n[v],flat,verbose)
-                    else
-                        tt[v] = n[v]
-                    end
-                end
-            end
-            if verbose then
-                tt.type = node.type(tt.id)
-            end
-            return tt
-        end
-        if flat then
-            local t = { }
-            while n do
-                t[#t+1] = totable(n,verbose)
-                n = n.next
-            end
-            return t
-        else
-            local t = totable(n,verbose)
-            if n.next then
-                t.next = nodes.totable(n.next,flat,verbose)
-            end
-            return t
-        end
-    end
-
-    local function key(k)
-        if type(k) == "number" then
-            return "["..k.."]"
-        else
-            return k
-        end
-    end
-
-    local function serialize(root,name,handle,depth,m)
-        handle = handle or print
-        if depth then
-            depth = depth .. " "
-            handle(("%s%s={"):format(depth,key(name)))
-        else
-            depth = ""
-            if type(name) == "string" then
-                if name == "return" then
-                    handle("return {")
-                else
-                    handle(name .. "={")
-                end
-            elseif type(name) == "number" then
-                handle("[" .. name .. "]={")
-            else
-                handle("t={")
-            end
-        end
-        if root then
-            local fld
-            if root.id then
-                fld = node.fields(root.id,root.subtype)
-            else
-                fld = table.sortedkeys(root)
-            end
-            if type(root) == 'table' and root['type'] then -- userdata or table
-                handle(("%s %s=%q,"):format(depth,'type',root['type']))
-            end
-            for _,k in ipairs(fld) do
-                if k then
-                    local v = root[k]
-                    local t = type(v)
-                    if t == "number" then
-                        handle(("%s %s=%s,"):format(depth,key(k),v))
-                    elseif t == "string" then
-                        handle(("%s %s=%q,"):format(depth,key(k),v))
-                    elseif v then -- userdata or table
-                        serialize(v,k,handle,depth,n+1)
-                    end
-                end
-            end
-            if root['next'] then -- userdata or table
-                serialize(root['next'],'next',handle,depth,n+1)
-            end
-        end
-        if m and m > 0 then
-            handle(("%s},"):format(depth))
-        else
-            handle(("%s}"):format(depth))
-        end
-    end
-
-    function nodes.serialize(root,name)
-        local t = { }
-        local function flush(s)
-            t[#t+1] = s
-        end
-        serialize(root, name, flush, nil, nil)
-        return table.concat(t,"\n")
-    end
-
-    function nodes.serializebox(n,flat,verbose)
-        return nodes.serialize(nodes.totable(tex.box[n],flat,verbose))
-    --  return nodes.serialize(tex.box[n])
-    end
-
-    function nodes.visualizebox(...)
-    --  tex.sprint(tex.ctxcatcodes,"\\starttyping\n" .. nodes.serializebox(...) .. "\n\\stoptyping\n")
-        tex.print(tex.ctxcatcodes,"\\starttyping")
-        tex.print(nodes.serializebox(...))
-        tex.print("\\stoptyping")
-    end
-
-end
-
-if not node.list_has_attribute then
-
-    function node.list_has_attribute(list,attribute)
-        if list and attribute then
-            for n in node.traverse(list) do
-                local a = has_attribute(n,attribute)
-                if a then return a end
-            end
-        end
-        return false
-    end
-
-end
-
-function nodes.pack_list(head)
-    local t = { }
-    for n in node.traverse(head) do
-        t[#t+1] = tostring(n)
-    end
-    return t
-end
-

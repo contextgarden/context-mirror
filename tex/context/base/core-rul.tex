@@ -482,7 +482,34 @@
 %D by \TEX\ itself, the latter one depends on the driver. This
 %D macro also support a negative offset.
 
-\def\dooutlinebox
+% \def\dooutlinebox
+%   {\setbox\framebox\vbox % rules on top of box
+%      {\scratchdimen \framedparameter\c!frameoffset\relax
+%       \frameddimenwd\dimexpr\wd\framebox+2\scratchdimen\relax
+%       \frameddimenht\dimexpr\ht\framebox+ \scratchdimen\relax
+%       \frameddimendp\dimexpr\dp\framebox+ \scratchdimen+\framedparameter\c!framedepth\relax
+%       \ifdim\frameddimendp<\zeropoint
+%         \advance\frameddimenht \frameddimendp
+%         \scratchdimen-\frameddimendp
+%         \frameddimendp\zeropoint
+%       \else
+%         \scratchdimen\zeropoint
+%       \fi
+%       \setbox\extraframebox\hbox
+%         {\dostrokedbox}%
+%       \setbox\extraframebox\hbox
+%         {\raise\scratchdimen\vbox
+%            {\moveleft\framedparameter\c!frameoffset\box\extraframebox}}%
+%       \wd\extraframebox\wd\framebox
+%       \ht\extraframebox\ht\framebox
+%       \dp\extraframebox\dp\framebox
+%       \hbox
+%         {\box\framebox\hskip-\wd\extraframebox
+%          \doifsomething{\framedparameter\c!framecolor}% no else needed,
+%            {\color[\framedparameter\c!framecolor]}%   %
+%            {\box\extraframebox}}}}                    % but {} here
+
+\def\dooutlinebox % we needed to move the color command in order to apply attributes properly
   {\setbox\framebox\vbox % rules on top of box
      {\scratchdimen \framedparameter\c!frameoffset\relax
       \frameddimenwd\dimexpr\wd\framebox+2\scratchdimen\relax
@@ -496,18 +523,15 @@
         \scratchdimen\zeropoint
       \fi
       \setbox\extraframebox\hbox
-        {\dostrokedbox}%
+        {\doifsomething{\framedparameter\c!framecolor}{\color[\framedparameter\c!framecolor]}{\dostrokedbox}}%
       \setbox\extraframebox\hbox
         {\raise\scratchdimen\vbox
-           {\moveleft\framedparameter\c!frameoffset\box\extraframebox}}%
+           {\moveleft\framedparameter\c!frameoffset
+            \box\extraframebox}}%
       \wd\extraframebox\wd\framebox
       \ht\extraframebox\ht\framebox
       \dp\extraframebox\dp\framebox
-      \hbox
-        {\box\framebox\hskip-\wd\extraframebox
-         \doifsomething{\framedparameter\c!framecolor}% no else needed,
-           {\color[\framedparameter\c!framecolor]}%   %
-           {\box\extraframebox}}}}                    % but {} here
+      \hbox{\box\framebox\hskip-\wd\extraframebox\box\extraframebox}}}
 
 \def\dostrokedbox
   {\doifelse{\framedparameter\c!framecorner}\v!rectangular
@@ -779,8 +803,6 @@
    \fi
    % new, experimental dirty hook
    \framedparameter\c!extras
-   % we need to register the (outer) color
-   \startregistercolor[\framedparameter\c!foregroundcolor]%
    % to get the right spacing
    \doifvaluesomething{\@@framed\c!foregroundstyle}
      {\@EA\doconvertfont\csname\@@framed\c!foregroundstyle\endcsname\empty}%
@@ -912,9 +934,9 @@
    \else\ifx\localstrut\v!local
      \setfontstrut
    \else
+     \setstrut
    \fi\fi\fi
    \ifboxhasstrut
-     \setstrut
      \let\localbegstrut\begstrut
      \let\localendstrut\endstrut
      \let\localstrut   \strut
@@ -977,6 +999,8 @@
      {\ifdim\!!framedwidth >\zeropoint\the\!!framedwidth \else\zeropoint\fi}%
    \edef\framedheight% a new feature, visible for user
      {\ifdim\!!framedheight>\zeropoint\the\!!framedheight\else\zeropoint\fi}%
+   % we need to register the (outer) color
+   \startregistercolor[\framedparameter\c!foregroundcolor]%
    % first alternative
    %\def\dowithframedbox%
    %  {\let\postprocessframebox\relax %new
@@ -989,7 +1013,6 @@
    %   \let\postprocessframebox\relax %new
    %   \stoplocalframed}
    %  \next}
-   % third alternative
    \@@startframedorientation
    \afterassignment\dodowithframebox
    \setbox\framebox\next}
@@ -1039,6 +1062,7 @@
 \def\stoplocalframed
   {\dontshowcomposition
    \@@stopframedorientation % hm, wrong place ! should rotatethe result (after reshape)
+   \stopregistercolor
    \handleframedlocator\c!before\@@locallocation
    \ifboxhasformat
      \ifx\@@localautowidth\v!force
@@ -1071,7 +1095,6 @@
       \ht\scratchbox\ht\framebox
       \dp\scratchbox\dp\framebox
       \setbox\framebox\box\scratchbox}%
-   \stopregistercolor
    \docolorframebox
    \ifboxhasoffset
      \dooffsetframebox

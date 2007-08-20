@@ -336,6 +336,18 @@ end
 --~ print(is_number("-.1"))
 --~ print(is_number("+.1"))
 
+function string:split_settings() -- no {} handling, see l-aux for lpeg variant
+    if self:find("=") then
+        local t = { }
+        for k,v in self:gmatch("(%a+)=([^%,]*)") do
+            t[k] = v
+        end
+        return t
+    else
+        return nil
+    end
+end
+
 
 -- filename : l-table.lua
 -- comment  : split off from luat-lib
@@ -402,6 +414,24 @@ function table.prepend(t, list)
     for k,v in pairs(list) do
         table.insert(t,k,v)
     end
+end
+
+function table.merge(t, ...)
+    for _, list in ipairs({...}) do
+        for k,v in pairs(list) do
+            t[k] = v
+        end
+    end
+end
+
+function table.merged(...)
+    local tmp = { }
+    for _, list in ipairs({...}) do
+        for k,v in pairs(list) do
+            tmp[k] = v
+        end
+    end
+    return tmp
 end
 
 if not table.fastcopy then
@@ -825,6 +855,24 @@ function table.are_equal(a,b,n,m)
     end
 end
 
+function table.compact(t)
+    if t then
+        for k,v in pairs(t) do
+            if not next(v) then
+                t[k] = nil
+            end
+        end
+    end
+end
+
+function table.tohash(t)
+    local h = { }
+    for _, v in pairs(t) do -- no ipairs here
+        h[v] = true
+    end
+    return h
+end
+
 --~ function table.are_equal(a,b)
 --~     return table.serialize(a) == table.serialize(b)
 --~ end
@@ -1170,7 +1218,7 @@ end
 --~ print("a/a"            .. " == " .. file.collapse_path("a/b/c/../../a"))
 
 function file.collapse_path(str)
-    local ok = false
+    local ok, n = false, 0
     while not ok do
         ok = true
         str, n = str:gsub("[^%./]+/%.%./", function(s)
@@ -1828,6 +1876,7 @@ input.formats['pfb'] = 'T1FONTS'        input.suffixes['pfb'] = { 'pfb', 'pfa' }
 input.formats['vf']  = 'VFFONTS'        input.suffixes['vf']  = { 'vf' }
 
 input.formats['fea'] = 'FONTFEATURES'   input.suffixes['fea'] = { 'fea' }
+input.formats['cid'] = 'FONTCIDMAPS'    input.suffixes['cid'] = { 'cid', 'cidmap' }
 
 input.formats ['texmfscripts'] = 'TEXMFSCRIPTS' -- new
 input.suffixes['texmfscripts'] = { 'rb', 'pl', 'py' } -- 'lua'
@@ -1835,10 +1884,10 @@ input.suffixes['texmfscripts'] = { 'rb', 'pl', 'py' } -- 'lua'
 input.formats ['lua'] = 'LUAINPUTS' -- new
 input.suffixes['lua'] = { 'lua', 'luc', 'tma', 'tmc' }
 
--- here we catch a few new thingies
+-- here we catch a few new thingies (todo: add these paths to context.tmf)
 
 function input.checkconfigdata(instance)
-    function fix(varname,default)
+    local function fix(varname,default)
         local proname = varname .. "." .. instance.progname or "crap"
         if not instance.environment[proname] and not instance.variables[proname] == "" and not instance.environment[varname] and not instance.variables[varname] == "" then
             instance.variables[varname] = default
@@ -1846,6 +1895,7 @@ function input.checkconfigdata(instance)
     end
     fix("LUAINPUTS"   , ".;$TEXINPUTS;$TEXMFSCRIPTS")
     fix("FONTFEATURES", ".;$OPENTYPEFONTS;$TTFONTS;$T1FONTS;$AFMFONTS")
+    fix("FONTCIDMAPS" , ".;$OPENTYPEFONTS;$TTFONTS;$T1FONTS;$AFMFONTS")
 end
 
 -- backward compatible ones
@@ -1854,6 +1904,8 @@ input.alternatives = { }
 
 input.alternatives['map files']            = 'map'
 input.alternatives['enc files']            = 'enc'
+input.alternatives['cid files']            = 'cid'
+input.alternatives['fea files']            = 'fea'
 input.alternatives['opentype fonts']       = 'otf'
 input.alternatives['truetype fonts']       = 'ttf'
 input.alternatives['truetype collections'] = 'ttc'
@@ -2365,8 +2417,11 @@ function input.generators.tex(instance,specification)
                 full = spec
             end
             for name in directory(full) do
-                if name == '.' or name == ".." then
-                    -- skip
+                if name:find("^%.") then
+                  -- skip
+                elseif name:find("[%~%`%!%#%$%%%^%&%*%(%)%=%{%}%[%]%:%;\"\'%|%|%<%>%,%?\n\r\t]") then
+                  -- texio.write_nl("skipping " .. name)
+                  -- skip
                 else
                     mode = attributes(full..name,'mode')
                     if mode == "directory" then
@@ -3163,7 +3218,7 @@ function input.aux.find_file(instance,filename) -- todo : plugin (scanners, chec
                     pathname = pathname:gsub("([%-%.])","%%%1") -- this also influences
                     pathname = pathname:gsub("/+$", '/.*')      -- later usage of pathname
                     pathname = pathname:gsub("//", '/.-/')
-                    expr = "^" .. pathname
+                    local expr = "^" .. pathname
                     -- input.debug('?',expr)
                     for _, f in pairs(filelist) do
                         if f:find(expr) then
@@ -3285,7 +3340,8 @@ end
 function input.find_given_files(instance,filename)
     local bname, result = file.basename(filename), { }
     for k, hash in ipairs(instance.hashes) do
-        local blist = instance.files[hash.tag][bname]
+        local files = instance.files[hash.tag]
+        local blist = files[bname]
         if not blist then
             local rname = "remap:"..bname
             blist = files[rname]
@@ -3352,9 +3408,11 @@ function input.find_wildcard_files(instance,filename) -- todo: remap:
     if name:find("%*") then
         for k, hash in ipairs(instance.hashes) do
             for kk, hh in pairs(files[hash.tag]) do
-                if (kk:lower()):find(name) then
-                    if doit(hh,kk,hash,allresults) then done = true end
-                    if done and not allresults then break end
+                if not kk:find("^remap:") then
+                    if (kk:lower()):find(name) then
+                        if doit(hh,kk,hash,allresults) then done = true end
+                        if done and not allresults then break end
+                    end
                 end
             end
         end
@@ -3568,7 +3626,7 @@ function input.validators.visibility.context(path, name)
     path = path[1] or path -- some day a loop
     return not (
         path:find("latex")    or
-        path:find("doc")      or
+--      path:find("doc")      or
         path:find("tex4ht")   or
         path:find("source")   or
 --      path:find("config")   or
@@ -3625,17 +3683,49 @@ function input.with_files(instance,pattern,handle)
     end
 end
 
-function input.update_script(oldname,newname) -- oldname -> own.name, not per se a suffix
+--~ function input.update_script(oldname,newname) -- oldname -> own.name, not per se a suffix
+--~     newname = file.addsuffix(newname,"lua")
+--~     local newscript = input.clean_path(input.find_file(instance, newname))
+--~     local oldscript = input.clean_path(oldname)
+--~     input.report("old script", oldscript)
+--~     input.report("new script", newscript)
+--~     if oldscript ~= newscript and (oldscript:find(file.removesuffix(newname).."$") or oldscript:find(newname.."$")) then
+--~         local newdata = io.loaddata(newscript)
+--~         if newdata then
+--~             input.report("old script content replaced by new content")
+--~             io.savedata(oldscript,newdata)
+--~         end
+--~     end
+--~ end
+
+function input.update_script(instance,oldname,newname) -- oldname -> own.name, not per se a suffix
+    local scriptpath = "scripts/context/lua"
     newname = file.addsuffix(newname,"lua")
-    newscript = input.clean_path(input.find_file(instance, newname))
-    oldscript = input.clean_path(oldname)
-    input.report("old script", oldscript)
-    input.report("new script", newscript)
-    if oldscript ~= newscript and (oldscript:find(file.removesuffix(newname).."$") or oldscript:find(newname.."$")) then
-        newdata = io.loaddata(newscript)
-        if newdata then
-            input.report("old script content replaced by new content")
-            io.savedata(oldscript,newdata)
+    local oldscript = input.clean_path(oldname)
+    input.report("to be replaced old script", oldscript)
+    local newscripts = input.find_files(instance, newname) or { }
+    if #newscripts == 0 then
+        input.report("unable to locate new script")
+    else
+        for _, newscript in ipairs(newscripts) do
+            newscript = input.clean_path(newscript)
+            input.report("checking new script", newscript)
+            if oldscript == newscript then
+                input.report("old and new script are the same")
+            elseif not newscript:find(scriptpath) then
+                input.report("new script should come from",scriptpath)
+            elseif not (oldscript:find(file.removesuffix(newname).."$") or oldscript:find(newname.."$")) then
+                input.report("invalid new script name")
+            else
+                local newdata = io.loaddata(newscript)
+                if newdata then
+                    input.report("old script content replaced by new content")
+                    io.savedata(oldscript,newdata)
+                    break
+                else
+                    input.report("unable to load new script")
+                end
+            end
         end
     end
 end
@@ -3665,30 +3755,30 @@ being written at the same time is small. We also need to extend
 luatools with a recache feature.</p>
 --ldx]]--
 
-cache = cache  or { }
-dir   = dir    or { }
-texmf = texmf  or { }
+caches = caches  or { }
+dir    = dir    or { }
+texmf  = texmf  or { }
 
-cache.path   = cache.path or nil
-cache.base   = cache.base or "luatex-cache"
-cache.more   = cache.more or "context"
-cache.direct = false -- true is faster but may need huge amounts of memory
-cache.trace  = false
-cache.tree   = false
-cache.temp   = cache.temp or os.getenv("TEXMFCACHE") or os.getenv("HOME") or os.getenv("HOMEPATH") or os.getenv("VARTEXMF") or os.getenv("TEXMFVAR") or os.getenv("TMP") or os.getenv("TEMP") or os.getenv("TMPDIR") or nil
-cache.paths  = cache.paths or { cache.temp }
+caches.path   = caches.path or nil
+caches.base   = caches.base or "luatex-cache"
+caches.more   = caches.more or "context"
+caches.direct = false -- true is faster but may need huge amounts of memory
+caches.trace  = false
+caches.tree   = false
+caches.temp   = caches.temp or os.getenv("TEXMFCACHE") or os.getenv("HOME") or os.getenv("HOMEPATH") or os.getenv("VARTEXMF") or os.getenv("TEXMFVAR") or os.getenv("TMP") or os.getenv("TEMP") or os.getenv("TMPDIR") or nil
+caches.paths  = caches.paths or { caches.temp }
 
-if not cache.temp or cache.temp == "" then
+if not caches.temp or caches.temp == "" then
     print("\nFATAL ERROR: NO VALID TEMPORARY PATH\n")
     os.exit()
 end
 
-function cache.configpath(instance)
+function caches.configpath(instance)
     return input.expand_var(instance,"TEXMFCNF")
 end
 
-function cache.treehash(instance)
-    local tree = cache.configpath(instance)
+function caches.treehash(instance)
+    local tree = caches.configpath(instance)
     if not tree or tree == "" then
         return false
     else
@@ -3696,49 +3786,49 @@ function cache.treehash(instance)
     end
 end
 
-function cache.setpath(instance,...)
-    if not cache.path then
+function caches.setpath(instance,...)
+    if not caches.path then
         if lfs and instance then
-            for _,v in  pairs(cache.paths) do
+            for _,v in  pairs(caches.paths) do
                 for _,vv in pairs(input.expanded_path_list(instance,v)) do
                     if lfs.isdir(vv) then
-                        cache.path = vv
+                        caches.path = vv
                         break
                     end
                 end
-                if cache.path then break end
+                if caches.path then break end
             end
         end
-        if not cache.path then
-            cache.path = cache.temp
+        if not caches.path then
+            caches.path = caches.temp
         end
-        cache.path = input.clean_path(cache.path) -- to be sure
+        caches.path = input.clean_path(caches.path) -- to be sure
         if lfs then
-            cache.tree = cache.tree or cache.treehash(instance)
-            if cache.tree then
-                cache.path = dir.mkdirs(cache.path,cache.base,cache.more,cache.tree)
+            caches.tree = caches.tree or caches.treehash(instance)
+            if caches.tree then
+                caches.path = dir.mkdirs(caches.path,caches.base,caches.more,caches.tree)
             else
-                cache.path = dir.mkdirs(cache.path,cache.base,cache.more)
+                caches.path = dir.mkdirs(caches.path,caches.base,caches.more)
             end
         end
     end
-    if not cache.path then
-        cache.path = '.'
+    if not caches.path then
+        caches.path = '.'
     end
-    cache.path = input.clean_path(cache.path)
+    caches.path = input.clean_path(caches.path)
     if lfs and not table.is_empty({...}) then
-        local pth = dir.mkdirs(cache.path,...)
+        local pth = dir.mkdirs(caches.path,...)
         return pth
     end
-    return cache.path
+    return caches.path
 end
 
-function cache.setluanames(path,name)
+function caches.setluanames(path,name)
     return path .. "/" .. name .. ".tma", path .. "/" .. name .. ".tmc"
 end
 
-function cache.loaddata(path,name)
-    local tmaname, tmcname = cache.setluanames(path,name)
+function caches.loaddata(path,name)
+    local tmaname, tmcname = caches.setluanames(path,name)
     local loader = loadfile(tmcname) or loadfile(tmaname)
     if loader then
         return loader()
@@ -3747,18 +3837,18 @@ function cache.loaddata(path,name)
     end
 end
 
-function cache.is_writable(filepath,filename)
-    local tmaname, tmcname = cache.setluanames(filepath,filename)
+function caches.is_writable(filepath,filename)
+    local tmaname, tmcname = caches.setluanames(filepath,filename)
     return file.is_writable(tmaname)
 end
 
-function cache.savedata(filepath,filename,data,raw) -- raw needed for file cache
-    local tmaname, tmcname = cache.setluanames(filepath,filename)
+function caches.savedata(filepath,filename,data,raw) -- raw needed for file cache
+    local tmaname, tmcname = caches.setluanames(filepath,filename)
     local reduce, simplify = true, true
     if raw then
         reduce, simplify = false, false
     end
-    if cache.direct then
+    if caches.direct then
         file.savedata(tmaname, table.serialize(data,'return',true,true))
     else
         table.tofile (tmaname,                 data,'return',true,true) -- maybe not the last true
@@ -3770,7 +3860,7 @@ end
 
 if tex and texconfig and texconfig.formatname and texconfig.formatname == "" then
     if not texconfig.luaname then texconfig.luaname = "cont-en.lua" end
-    texconfig.formatname = cache.setpath(instance,"format") .. "/" .. texconfig.luaname:gsub("%.lu.$",".fmt")
+    texconfig.formatname = caches.setpath(instance,"format") .. "/" .. texconfig.luaname:gsub("%.lu.$",".fmt")
 end
 
 --[[ldx--
@@ -3792,7 +3882,7 @@ containers.trace = false
 do -- local report
 
     local function report(container,tag,name)
-        if cache.trace or containers.trace or container.trace then
+        if caches.trace or containers.trace or container.trace then
             logs.report(string.format("%s cache",container.subcategory),string.format("%s: %s",tag,name or 'invalid'))
         end
     end
@@ -3806,7 +3896,7 @@ do -- local report
                 enabled = enabled,
                 version = version or 1.000,
                 trace = false,
-                path = cache.setpath(texmf.instance,category,subcategory),
+                path = caches.setpath(texmf.instance,category,subcategory),
             }
         else
             return nil
@@ -3814,7 +3904,7 @@ do -- local report
     end
 
     function containers.is_usable(container, name)
-        return container.enabled and cache.is_writable(container.path, name)
+        return container.enabled and caches.is_writable(container.path, name)
     end
 
     function containers.is_valid(container, name)
@@ -3828,7 +3918,7 @@ do -- local report
 
     function containers.read(container,name)
         if container.enabled and not container.storage[name] then
-            container.storage[name] = cache.loaddata(container.path,name)
+            container.storage[name] = caches.loaddata(container.path,name)
             if containers.is_valid(container,name) then
                 report(container,"loaded",name)
             else
@@ -3847,7 +3937,7 @@ do -- local report
             if container.enabled then
                 local unique, shared = data.unique, data.shared
                 data.unique, data.shared = nil, nil
-                cache.savedata(container.path, name, data)
+                caches.savedata(container.path, name, data)
                 report(container,"saved",name)
                 data.unique, data.shared = unique, shared
             end
@@ -3872,7 +3962,7 @@ function input.aux.save_data(instance, dataname, check)
     for cachename, files in pairs(instance[dataname]) do
         local name
         if input.usecache then
-            name = file.join(cache.setpath(instance,"trees"),md5.hex(cachename))
+            name = file.join(caches.setpath(instance,"trees"),md5.hex(cachename))
         else
             name = file.join(cachename,dataname)
         end
@@ -3964,7 +4054,7 @@ end
 function input.aux.load_data(instance,pathname,dataname,filename)
     local luaname, lucname, pname, fname
     if input.usecache then
-        pname, fname = cache.setpath(instance,"trees"), md5.hex(pathname)
+        pname, fname = caches.setpath(instance,"trees"), md5.hex(pathname)
         filename = file.join(pname,fname)
     else
         if not filename or (filename == "") then
@@ -4000,7 +4090,7 @@ input.automounted = input.automounted or { }
 function input.automount(instance,usecache)
     local mountpaths = input.simplified_list(input.expansion(instance,'TEXMFMOUNT'))
     if table.is_empty(mountpaths) and usecache then
-        mountpaths = { cache.setpath(instance,"mount") }
+        mountpaths = { caches.setpath(instance,"mount") }
     end
     if not table.is_empty(mountpaths) then
         input.starttiming(instance)
@@ -4980,7 +5070,7 @@ messages.help = [[
 function input.my_make_format(instance,texname)
     if texname and texname ~= "" then
         if input.usecache then
-            local path = file.join(cache.setpath(instance,"formats")) -- maybe platform
+            local path = file.join(caches.setpath(instance,"formats")) -- maybe platform
             if path and lfs then
                 lfs.chdir(path)
             end
@@ -5073,7 +5163,7 @@ function input.my_run_format(instance,name,data)
         local barename = name:gsub("%.%a+$","")
         local fmtname = ""
         if input.usecache then
-            local path = file.join(cache.setpath(instance,"formats")) -- maybe platform
+            local path = file.join(caches.setpath(instance,"formats")) -- maybe platform
             fmtname = file.join(path,barename..".fmt") or ""
         end
         if fmtname == "" then
@@ -5115,7 +5205,7 @@ elseif environment.arguments["selfclean"] then
 elseif environment.arguments["selfupdate"] then
     input.my_prepare_b(instance)
     input.verbose = true
-    input.update_script(own.name,"luatools")
+    input.update_script(instance,own.name,"luatools")
 elseif environment.arguments["generate"] then
     instance.renewcache = true
     input.verbose = true
@@ -5170,7 +5260,7 @@ elseif environment.arguments["find-file"] then
 --~     input.report(input.first_writable_path(instance,environment.files[1] or "."))
 elseif environment.arguments["format-path"] then
     input.my_prepare_b(instance)
-    input.report(cache.setpath(instance,"format"))
+    input.report(caches.setpath(instance,"format"))
 elseif environment.arguments["pattern"] then
     input.my_prepare_b(instance)
     instance.format = environment.arguments["format"] or instance.format

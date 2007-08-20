@@ -15,7 +15,7 @@
     \writestatus\m!lua{tfm over afm, wide fonts not yet supported}
 \to \everystoptext
 
-\ctxlua { fonts.define.method = 2 }  % normally 3
+% \ctxlua { fonts.define.method = 2 }  % normally 3
 
 \unprotect
 
@@ -26,20 +26,29 @@
 % texmf.instance will become just texmf
 
 \appendtoks
-    \writestatus\m!lua{input load time         - \ctxlua{input.loadtime(texmf.instance)} seconds}%
-    \writestatus\m!lua{fonts load time         - \ctxlua{input.loadtime(fonts)} seconds}%
-    \writestatus\m!lua{mps conversion time     - \ctxlua{input.loadtime(mptopdf)} seconds}%
-    \writestatus\m!lua{node processing time    - \ctxlua{input.loadtime(nodes)} second}%
-    \writestatus\m!lua{used config path        - \ctxlua{tex.print(cache.configpath(texmf.instance))}}%
-    \writestatus\m!lua{used cache path         - \ctxlua{tex.print(cache.path)}}%
-    \writestatus\m!lua{modules/dumps/instances - \ctxlua{tex.print((status.luabytecodes-500).."/"..input.storage.done.."/"..status.luastates)}}%
-    \writestatus\m!lua{current memory usage    - \ctxlua{tex.print(status.luastate_bytes)} bytes}%
-    \writestatus\m!lua{loaded fonts            - \ctxlua{tex.print(fonts.logger.report())}}%
+    \writestatus\m!lua{input load time           - \ctxlua{input.loadtime(texmf.instance)} seconds}%
+    \writestatus\m!lua{fonts load time           - \ctxlua{input.loadtime(fonts)} seconds}%
+    \writestatus\m!lua{mps conversion time       - \ctxlua{input.loadtime(mptopdf)} seconds}%
+    \writestatus\m!lua{node processing time      - \ctxlua{input.loadtime(nodes)} seconds}%
+    \writestatus\m!lua{attribute processing time - \ctxlua{input.loadtime(attributes)} seconds}%
+    \writestatus\m!lua{used config path          - \ctxlua{tex.print(caches.configpath(texmf.instance))}}%
+    \writestatus\m!lua{used cache path           - \ctxlua{tex.print(caches.path)}}%
+    \writestatus\m!lua{modules/dumps/instances   - \ctxlua{tex.print((status.luabytecodes-500).."/"..input.storage.done.."/"..status.luastates)}}%
+    \writestatus\m!lua{current memory usage      - \ctxlua{tex.print(status.luastate_bytes)} bytes}%
+    \writestatus\m!lua{loaded fonts              - \ctxlua{tex.print(fonts.logger.report())}}%
 \to \everystoptext
 
 \def\resettimer    {\ctxlua{environment.starttime = os.clock()}}
 \def\elapsedtime   {\ctxlua{tex.sprint(os.clock()-environment.starttime)}}
 \let\elapsedseconds \elapsedtime
+
+%D For me.
+
+\def\traceluausage
+  {\ctxlua{debugger.enable()}%
+   \appendtoks
+     \ctxlua{debugger.disable() debugger.showstats(texio.write,5000)}%
+    \to \everybye}
 
 %D Fonts (experimental AFM loading}
 
@@ -56,10 +65,7 @@
 \appendtoksonce \loadallXfontmapfiles \to \everystarttext
 \appendtoksonce \loadallXfontmapfiles \to \everybeforepagebody
 
-\def\loadallXfontmapfiles{\ctxlua {
-    local s = fonts.map.flushlines("pdftex","")
-    tex.sprint(tex.ctxcatcodes,s)
-}}
+\def\loadallXfontmapfiles{\ctxlua{fonts.map.flush("pdftex")}}
 
 % \ctxlua{
 %     do
@@ -95,3 +101,6 @@
 % }
 
 \protect \endinput
+
+% \expanded{\defineactivecharacter \number"2000E} {\textdir TRT\relax}
+% \expanded{\defineactivecharacter \number"2000F} {\textdir TLT\relax}

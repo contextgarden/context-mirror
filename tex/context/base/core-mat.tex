@@ -2308,7 +2308,7 @@
    \tabskip\zeropoint
    \eqaligncolumn\zerocount % could be \scratchcounter
    \processcommacommand[\mathmatrixparameter\c!align]{\advance\eqaligncolumn\plusone\dosetmatrixcolumn}%
-   \scratchcounter=\ifnum\eqaligncolumn>\scratchcounter \eqaligncolumn \else \plusone \fi
+   \scratchcounter=\ifnum\eqaligncolumn>\zerocount \eqaligncolumn \else \plusone \fi
    \global\eqaligncolumn\plusone
    \preparemathmatrix } % uses scratchcounter
 

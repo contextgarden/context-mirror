@@ -811,7 +811,7 @@
      {\global\let\MPresolvedspace\MPcmykspace
       \xdef\MPresolvedcolor{##1 ##2 ##3 ##4}}%
    \def\dostartspotcolormode##1##2%
-     {\global\let\MPspotspace\empty
+     {\global\let\MPspotspace\empty % left over ?
       \xdef\MPresolvedspace{##1}%
       \xdef\MPresolvedcolor{##2}%
       \global\let\MPspotspace\MPresolvedspace}% signal
@@ -960,5 +960,52 @@
 %     circular_shade(fullcircle scaled 3cm shifted(+4cm,0),0,cmyk(1,0,0,0),cmyk(0,1,0,0)) ;
 %     filldraw boundingbox currentpicture enlarged -3cm withpen pencircle scaled 1pt withcolor .5white ;
 % \stopMPcode
+
+% This code will move to meta-pdf.mkiv and the call to lua will move to the
+% converter code (saves a lua call). We will do this when we made the final
+% move to attribute bases color .
+
+\ifx\colorversion\undefined \else \ifnum\colorversion>\plusone
+
+    \def\dohandleMPgraycolor     #1{\dosetattribute{color}{\ctxlua{tex.sprint(colors.register('color',nil,'gray',#1))}}}
+    \def\dohandleMPrgbcolor  #1#2#3{\dosetattribute{color}{\ctxlua{tex.sprint(colors.register('color',nil,'rgb' ,#1,#2,#3))}}}
+    \def\dohandleMPcmykcolor#1#2#3#4{\dosetattribute{color}{\ctxlua{tex.sprint(colors.register('color',nil,'cmyk',#1,#2,#3,#4))}}}
+    \def\dohandleMPspotcolor#1#2#3#4{\dosetattribute{color}{\ctxlua{tex.sprint(colors.register('color',nil,'spot',"#1",#2,"#3","#4"))}}}
+
+    \def\dohandleMPgraytransparency      #1#2#3{\dosetattribute{color}{\ctxlua{tex.sprint(colors.register('color',nil,'gray',#1))}}%
+                                                \dosetattribute{transparency}{\ctxlua{tex.sprint(transparencies.register(nil,#2,#3))}}}
+    \def\dohandleMPrgbtransparency   #1#2#3#4#5{\dosetattribute{color}{\ctxlua{tex.sprint(colors.register('color',nil,'rgb' ,#1,#2,#3))}}%
+                                                \dosetattribute{transparency}{\ctxlua{tex.sprint(transparencies.register(nil,#4,#5))}}}
+    \def\dohandleMPcmyktransparency#1#2#3#4#5#6{\dosetattribute{color}{\ctxlua{tex.sprint(colors.register('color',nil,'cmyk',#1,#2,#3,#4))}}%
+                                                \dosetattribute{transparency}{\ctxlua{tex.sprint(transparencies.register(nil,#5,#6))}}}
+    \def\dohandleMPspottransparency#1#2#3#4#5#6{\dosetattribute{color}{\ctxlua{tex.sprint(colors.register('color',nil,'spot',"#1",#2,"#3","#4"))}}%
+                                                \dosetattribute{transparency}{\ctxlua{tex.sprint(transparencies.register(nil,#5,#6))}}}
+
+    % \dostartgraycolormode\!!zerocount} % kind of hackery initialization
+
+    \def\resolveMPgraycolor#1\to#2%
+      {\global\let\MPresolvedspace\MPgrayspace
+       \edef#2{\ctxlua{tex.sprint(ctx.pdfcolorvalue(\number\currentcolormodel,colors.register('color',nil,'gray',#1)))}}}
+
+    \def\resolveMPrgbcolor#1#2#3\to#4%
+      {\global\let\MPresolvedspace\MPrgbspace
+       \edef#4{\ctxlua{tex.sprint(ctx.pdfcolorvalue(\number\currentcolormodel,colors.register('color',nil,'rgb' ,#1,#2,#3)))}}}
+
+    \def\resolveMPcmykcolor#1#2#3#4\to#5%
+      {\global\let\MPresolvedspace\MPcmykspace
+       \edef#5{\ctxlua{tex.sprint(ctx.pdfcolorvalue(\number\currentcolormodel,colors.register('color',nil,'cmyk',#1,#2,#3,#4)))}}}
+
+    \def\resolveMPspotcolor#1#2#3#4\to#5%
+      {\xdef\MPresolvedspace{#1}%
+       \xdef\MPresolvedcolor{#4}%
+       \global\let\MPspotspace\MPresolvedspace
+       \edef#5{\ctxlua{tex.sprint(ctx.pdfcolorvalue(\number\currentcolormodel,colors.register('color',nil,'spot',"#1",#2,"#3","#4")))}}}
+
+    \let\MPSgray\dohandleMPgraycolor
+    \let\MPSrgb \dohandleMPrgbcolor
+    \let\MPScmyk\dohandleMPcmykcolor
+    \let\MPspot \dohandleMPspotcolor
+
+\fi \fi
 
 \protect \endinput

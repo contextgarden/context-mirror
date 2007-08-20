@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 
-<cd:interface xmlns:cd="http://www.pragma-ade.com/commands" name="context" language="cz" version="2007.08.09 13:04">
+<cd:interface xmlns:cd="http://www.pragma-ade.com/commands" name="context" language="cz" version="2007.08.20 10:21">
 
   <cd:variables>
     <cd:variable name="lesshyphenation" value="lesshyphenation"/>
@@ -182,6 +182,7 @@
     <cd:constant name="auto" value="auto"/>
     <cd:constant name="autofile" value="autofile"/>
     <cd:constant name="balance" value="rovnovaha"/>
+    <cd:constant name="bookmark" value="zalozka"/>
     <cd:constant name="wfactor" value="sfaktor"/>
     <cd:constant name="inner" value="vnitrni"/>
     <cd:constant name="blank" value="prazdny"/>
@@ -287,6 +288,8 @@
     <cd:constant name="leftcolor" value="barvavlevo"/>
     <cd:constant name="leftstyle" value="stylvlevo"/>
     <cd:constant name="leftmargin" value="levyokraj"/>
+    <cd:constant name="innermargin" value="innermargin"/>
+    <cd:constant name="outermargin" value="outermargin"/>
     <cd:constant name="leftmargindistance" value="vzdalenostlevehookraje"/>
     <cd:constant name="leftoffset" value="levyoffset"/>
     <cd:constant name="leftedge" value="levahrana"/>

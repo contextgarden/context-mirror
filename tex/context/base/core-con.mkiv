@@ -15,47 +15,47 @@
 
 \registerctxluafile{core-con}{1.001}
 
-\def\romannumerals#1{\ctxlua{convert.romannumerals(\number#1)}}
-\def\Romannumerals#1{\ctxlua{convert.Romannumerals(\number#1)}}
+\def\romannumerals#1{\ctxlua{converters.romannumerals(\number#1)}}
+\def\Romannumerals#1{\ctxlua{converters.Romannumerals(\number#1)}}
 
-\def\greeknumerals#1{\ctxlua{convert.alphabetic(\number#1,"gr")}}
-\def\Greeknumerals#1{\ctxlua{convert.Alphabetic(\number#1,"gr")}}
+\def\greeknumerals#1{\ctxlua{converters.alphabetic(\number#1,"gr")}}
+\def\Greeknumerals#1{\ctxlua{converters.Alphabetic(\number#1,"gr")}}
 
-\def\character #1{\ctxlua{convert.character (\number#1)}}
-\def\Character #1{\ctxlua{convert.Character (\number#1)}}
-\def\characters#1{\ctxlua{convert.characters(\number#1)}}
-\def\Characters#1{\ctxlua{convert.Characters(\number#1)}}
+\def\character #1{\ctxlua{converters.character (\number#1)}}
+\def\Character #1{\ctxlua{converters.Character (\number#1)}}
+\def\characters#1{\ctxlua{converters.characters(\number#1)}}
+\def\Characters#1{\ctxlua{converters.Characters(\number#1)}}
 
-\def\languagecharacters#1{\ctxlua{convert.alphabetic(\number#1,"\currentlanguage")}} % new
-\def\languageCharacters#1{\ctxlua{convert.Alphabetic(\number#1,"\currentlanguage")}} % new
+\def\languagecharacters#1{\ctxlua{converters.alphabetic(\number#1,"\currentlanguage")}} % new
+\def\languageCharacters#1{\ctxlua{converters.Alphabetic(\number#1,"\currentlanguage")}} % new
 
-\def\getdayoftheweek#1#2#3{\normalweekday\ctxlua{convert.weekday(\number#1,\number#2,\number#3)}}
-\def\dayoftheweek   #1#2#3{\doconvertday{\ctxlua{convert.weekday(\number#1,\number#2,\number#3)}}}
+\def\getdayoftheweek#1#2#3{\normalweekday\ctxlua{converters.weekday(\number#1,\number#2,\number#3)}}
+\def\dayoftheweek   #1#2#3{\doconvertday{\ctxlua{converters.weekday(\number#1,\number#2,\number#3)}}}
 
 \def\doifleapyearelse#1%
-  {\ifcase\ctxlua{convert.leapyear(\number#1)}
+  {\ifcase\ctxlua{converters.leapyear(\number#1)}
      \@EA\secondoftwoarguments
    \else
      \@EA\firstoftwoarguments
    \fi}
 
 \def\getdayspermonth#1#2%
-  {\edef\numberofdays{\ctxlua{convert.nofdays(\number#1,\number#2)}}}
+  {\edef\numberofdays{\ctxlua{converters.nofdays(\number#1,\number#2)}}}
 
 \def\dayspermonth#1#2%
-  {\ctxlua{convert.nofdays(\number#1,\number#2)}}
+  {\ctxlua{converters.nofdays(\number#1,\number#2)}}
 
 \def\calculatecurrenttime
-  {\edef\currenthour  {\ctxlua{convert.hour  ()}}%
-   \edef\currentminute{\ctxlua{convert.minute()}}%
-   \edef\currentsecond{\ctxlua{convert.second()}}}
+  {\edef\currenthour  {\ctxlua{converters.hour  ()}}%
+   \edef\currentminute{\ctxlua{converters.minute()}}%
+   \edef\currentsecond{\ctxlua{converters.second()}}}
 
 % problem is that we calculate with those numbers
 %
-% \def\time {\numexpr\ctxlua{convert.textime()}\relax}
-% \def\year {\numexpr\ctxlua{convert.year   ()}\relax}
-% \def\month{\numexpr\ctxlua{convert.month  ()}\relax}
-% \def\day  {\numexpr\ctxlua{convert.day    ()}\relax}
+% \def\time {\numexpr\ctxlua{converters.textime()}\relax}
+% \def\year {\numexpr\ctxlua{converters.year   ()}\relax}
+% \def\month{\numexpr\ctxlua{converters.month  ()}\relax}
+% \def\day  {\numexpr\ctxlua{converters.day    ()}\relax}
 
 % \dayoftheweek{2006}{9}{15}
 % \doifleapyearelse{2000}{OK}{NOT OK}
@@ -67,17 +67,17 @@
 
 % we could use an auxiliary macro to save some bytes in the format
 %
-% \def\dolanguagecharacters#1#2{\ctxlua{convert.alphabetic(\number#2,"#1")}}
+% \def\dolanguagecharacters#1#2{\ctxlua{converters.alphabetic(\number#2,"#1")}}
 
 % this does not belong here, but in a lang-module
 
-\def\arabicnumerals    #1{\ctxlua{convert.alphabetic(\number#1,"arabic")}}
-\def\persiannumerals   #1{\ctxlua{convert.alphabetic(\number#1,"persian")}}
-\def\thainumerals      #1{\ctxlua{convert.alphabetic(\number#1,"thai")}}
-\def\devanagarinumerals#1{\ctxlua{convert.alphabetic(\number#1,"devanagari")}}
-\def\gurmurkhinumerals #1{\ctxlua{convert.alphabetic(\number#1,"gurmurkhi")}}
-\def\gujaratinumerals  #1{\ctxlua{convert.alphabetic(\number#1,"gujarati")}}
-\def\tibetannumerals   #1{\ctxlua{convert.alphabetic(\number#1,"tibetan")}}
+\def\arabicnumerals    #1{\ctxlua{converters.alphabetic(\number#1,"arabic")}}
+\def\persiannumerals   #1{\ctxlua{converters.alphabetic(\number#1,"persian")}}
+\def\thainumerals      #1{\ctxlua{converters.alphabetic(\number#1,"thai")}}
+\def\devanagarinumerals#1{\ctxlua{converters.alphabetic(\number#1,"devanagari")}}
+\def\gurmurkhinumerals #1{\ctxlua{converters.alphabetic(\number#1,"gurmurkhi")}}
+\def\gujaratinumerals  #1{\ctxlua{converters.alphabetic(\number#1,"gujarati")}}
+\def\tibetannumerals   #1{\ctxlua{converters.alphabetic(\number#1,"tibetan")}}
 
 \defineconversion[arabicnumerals]    [\arabicnumerals]
 \defineconversion[persiannumerals]   [\persiannumerals]

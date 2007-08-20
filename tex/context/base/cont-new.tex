@@ -11,7 +11,7 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-\newcontextversion{2007.08.09 13:04}
+\newcontextversion{2007.08.20 10:21}
 
 %D This file is loaded at runtime, thereby providing an
 %D excellent place for hacks, patches, extensions and new
@@ -30,6 +30,31 @@
 % caption: grid=top|bottom in xml defs
 
 \let\then\relax % \ifnum1>2\then -)
+
+% \setupcaption [figure]   [align=flushleft]
+% \setupcaption [figure-1] [align=flushleft,leftmargin=10mm]
+% \setupcaption [figure-2] [align=flushleft,leftmargin=10mm,rightmargin=-10mm,width=\textwidth]
+%
+% \startsetups somefigure
+%     \ifdim\floatsetupwidth>\textwidth
+%         \placesetupfloat[figure-2]
+%     \else
+%         \placesetupfloat[figure-1]
+%     \fi
+% \stopsetups
+%
+% \placefloatwithsetups[somefigure]{}{\externalfigure[dummy][width=5cm,height=2cm]}
+
+\def\placefloatwithsetups
+  {\dotripleempty\doplacefloatwithsetups}
+
+\def\doplacefloatwithsetups[#1][#2][#3]#4%
+  {\def\floatsetupcaption   {#4}%
+   \def\floatsetupcontent   {\copy\nextbox}%
+   \def\floatsetupwidth     {\wd\nextbox}%
+   \def\floatsetupheight    {\ht\nextbox}%
+   \def\placesetupfloat[##1]{\placefloat[##1][#2][#3]{\floatsetupcaption}{\floatsetupcontent}}%
+   \dowithnextbox{\setups[#1]}\vbox}
 
 \chardef\baselinegridmode=0 % option in layout / 1=permit_half_lines
 
@@ -1762,32 +1787,6 @@
 \appendtoks
   \setinnerparpositions % see "techniek" for application
 \to \everytabulate
-
-%D This alternative is slower, since it works on top of the
-%D color (stack) mechanism, but it does provide nesting.
-
-\def\dosetrastercolor#1%
-  {\edef\@@cl@@s{#1}%
-   \ifx\@@cl@@s\empty
-     \let\@@cl@@s\@@rsscreen
-   \fi
-   \let\@@cl@@t\@@cl@@z % else we get rogue
-   \let\@@cl@@a\@@cl@@z % transpancies
-   \setevalue{\??cr\??rs}{\colorSpattern}}
-
-% beware, don't add extra grouping, else color in tables
-% fails
-
-\def\localstartraster[#1]%
-  {\ifincolor\dosetrastercolor{#1}\localstartcolor[\??rs]\fi}
-
-\def\startraster[#1]%
-  {\ifincolor\dosetrastercolor{#1}\startcolor[\??rs]\fi}
-
-\def\localstopraster{\ifincolor\localstopcolor\fi}
-\def\stopraster     {\ifincolor\stopcolor\fi}
-
-\def\raster[#1]{\groupedcommand{\startraster[#1]}{\stopraster}}
 
 \def\fontclassname#1#2%
   {\ifcsname\??ff#1#2\endcsname

@@ -101,7 +101,7 @@ end
 --~ print("a/a"            .. " == " .. file.collapse_path("a/b/c/../../a"))
 
 function file.collapse_path(str)
-    local ok = false
+    local ok, n = false, 0
     while not ok do
         ok = true
         str, n = str:gsub("[^%./]+/%.%./", function(s)

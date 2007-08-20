@@ -11,38 +11,39 @@ if not modules then modules = { } end modules ['font-map'] = {
 of obsolete. Some code may move to runtime or auxiliary modules.</p>
 --ldx]]--
 
-fonts            = fonts            or { }
-fonts.map        = fonts.map        or { }
-fonts.map.data   = fonts.map.data   or { }
-fonts.map.done   = fonts.map.done   or { }
-fonts.map.line   = fonts.map.line   or { }
-fonts.map.loaded = fonts.map.loaded or { }
-fonts.map.direct = fonts.map.direct or { }
+fonts               = fonts               or { }
+fonts.map           = fonts.map           or { }
+fonts.map.data      = fonts.map.data      or { }
+fonts.map.encodings = fonts.map.encodings or { }
+fonts.map.done      = fonts.map.done      or { }
+fonts.map.loaded    = fonts.map.loaded    or { }
+fonts.map.direct    = fonts.map.direct    or { }
+fonts.map.line      = fonts.map.line      or { }
 
 function fonts.map.line.pdfmapline(tag,str)
     return "\\loadmapline[" .. tag .. "][" .. str .. "]"
 end
 
 function fonts.map.line.pdftex(e) -- so far no combination of slant and stretch
-    if e.name and e.file then
+    if e.name and e.fontfile then
         local fullname = e.fullname or ""
-        if e.slant and tonumber(e.slant) ~= 0 then
+        if e.slant and e.slant ~= 0 then
             if e.encoding then
-                return fonts.map.line.pdfmapline("=",string.format('%s %s "%g SlantFont" <%s <%s',e.name,fullname,e.slant,e.encoding,e.file))
+                return fonts.map.line.pdfmapline("=",string.format('%s %s "%g SlantFont" <%s <%s',e.name,fullname,e.slant,e.encoding,e.fontfile))
             else
-                return fonts.map.line.pdfmapline("=",string.format('%s %s "%g SlantFont" <%s',e.name,fullname,e.slant,e.file))
+                return fonts.map.line.pdfmapline("=",string.format('%s %s "%g SlantFont" <%s',e.name,fullname,e.slant,e.fontfile))
             end
-        elseif e.stretch and tonumber(e.stretch) ~= 1 and tonumber(e.stretch) ~= 0 then
+        elseif e.stretch and e.stretch ~= 1 and e.stretch ~= 0 then
             if e.encoding then
-                return fonts.map.line.pdfmapline("=",string.format('%s %s "%g ExtendFont" <%s <%s',e.name,fullname,e.stretch,e.encoding,e.file))
+                return fonts.map.line.pdfmapline("=",string.format('%s %s "%g ExtendFont" <%s <%s',e.name,fullname,e.stretch,e.encoding,e.fontfile))
             else
-                return fonts.map.line.pdfmapline("=",string.format('%s %s "%g ExtendFont" <%s',e.name,fullname,e.stretch,e.file))
+                return fonts.map.line.pdfmapline("=",string.format('%s %s "%g ExtendFont" <%s',e.name,fullname,e.stretch,e.fontfile))
             end
         else
             if e.encoding then
-                return fonts.map.line.pdfmapline("=",string.format('%s %s <%s <%s',e.name,fullname,e.encoding,e.file))
+                return fonts.map.line.pdfmapline("=",string.format('%s %s <%s <%s',e.name,fullname,e.encoding,e.fontfile))
             else
-                return fonts.map.line.pdfmapline("=",string.format('%s %s <%s',e.name,fullname,e.file))
+                return fonts.map.line.pdfmapline("=",string.format('%s %s <%s',e.name,fullname,e.fontfile))
             end
         end
     else
@@ -50,123 +51,71 @@ function fonts.map.line.pdftex(e) -- so far no combination of slant and stretch
     end
 end
 
-function fonts.map.flushlines(backend,separator)
-    local t = { }
-    for k,v in pairs(fonts.map.data) do
-        if not fonts.map.done[k] then
-            local str = fonts.map.line[backend](v)
-            if str then
-                t[#t+1] = str
-            end
-            fonts.map.done[k] = true
-        end
+function fonts.map.flush(backend) -- will also erase the accumulated data
+    local flushline = fonts.map.line[backend or "pdftex"] or fonts.map.line.pdftex
+    for _, e in pairs(fonts.map.data) do
+        tex.sprint(tex.ctxcatcodes,flushline(e))
     end
-    return table.join(t,separator or "")
+    fonts.map.data = { }
 end
 
-fonts.map.line.dvips    = fonts.map.line.pdftex
-fonts.map.line.dvipdfmx = function() end
-
-function fonts.map.process_entries(filename, backend, handle)
-    local root = xml.load(filename,true)
-    if root then
-        if not handle then handle = texio.write_nl end
-        xml.process_attributes(root, "/fontlist/font", function(e,k)
-            local str = fonts.map.line[backend](e)
-            if str then
-                handle(str)
-            end
-        end)
-    end
-end
+fonts.map.line.dvips     = fonts.map.line.pdftex
+fonts.map.line.dvipdfmx  = function() end
 
 function fonts.map.convert_entries(filename)
     if not fonts.map.loaded[filename] then
-        local root = xml.load(filename,true) -- todo: stop garbage collector
-        if root then
-            garbagecollector.push()
-            xml.process_attributes(root, "/fontlist/font", function(e,k)
-                if e.name and e.file then
-                    fonts.map.data[e.name] = e
-                --  fonts.map.data[e.name].name = nil -- beware, deletes xml entry as well
-                end
-            end)
-            garbagecollector.pop()
-        end
+        fonts.map.data, fonts.map.encodings = fonts.map.load_file(filename,fonts.map.data, fonts.map.encodings)
         fonts.map.loaded[filename] = true
     end
 end
 
-function fonts.map.direct.pdftex(filename)
-    fonts.map.process_entries(filename,'pdftex',function(str)
-        tex.sprint(tex.ctxcatcodes,str)
-    end)
-end
-
--- the next one will go to a runtime module, no need to put this in the format
-
-function fonts.map.convert_file(filename, handle) -- when handle is string, then assume file
-    local f, g = io.open(filename), nil
+function fonts.map.load_file(filename, entries, encodings)
+    entries   = entries   or { }
+    encodings = encodings or { }
+    local f = io.open(filename)
     if f then
-        if not handle then
-            handle = print
-        elseif type(handle) == "string" then
-            g = io.open(handle,"w")
-            function handle(str)
-                g:write(str .. "\n")
-            end
-        end
-        handle("<?xml version='1.0' standalone='yes'?>\n")
-        handle(string.format("<!-- %s -->\n", "generated by context"))
-        handle(string.format("<fontlist original='%s'>\n", filename))
-        for line in f:lines() do
-            local comment = line:match("^[%#%%]%s*(.*)%s*$")
-            if comment then -- todo: optional
-                handle(string.format("  <!-- %s -->", comment))
-            elseif line:find("^\s*$") then
-                handle("")
-            else
-                name, fullname, spec, encoding, file = line:match("^(%S+)%s+(%S-)%s*\"([^\"]-)\"%s*<%s*(%S-)%s*<%s*(%S-)%s*$")
-                if not name then
-                    name, fullname, spec, file = line:match("^(%S+)%s+(%S-)%s*\"([^\"]-)\"%s*<%s*(%S-)%s*$")
-                end
-                if not name then
-                    name, fullname, encoding, file = line:match("^(%S+)%s+(%S-)%s*<%s*(%S-)%s*<%s*(%S-)%s*$")
-                end
-                if not name then
-                    name, fullname, file = line:match("^(%S+)%s+(%S-)%s*<%s*(%S-)%s*$")
-                end
-                if name and name ~= "" and file and file ~= "" then
-                    t = { }
-                    if name                        then t[#t+1] = string.format("name='%s'"    , name)     end
-                    if fullname and fullname ~= "" then t[#t+1] = string.format("fullname='%s'", fullname) end
-                    if encoding and encoding ~= "" then t[#t+1] = string.format("encoding='%s'", encoding) end
-                    if file                        then t[#t+1] = string.format("file='%s'"    , file)     end
-                    if spec then
-                        local a, b = spec:match("^([%d%.])%s+(%a+)$")
-                        if a and b and b == "ExtendFont" then t[#t+1] = string.format("slant='%s'"  , a) end
-                        if a and b and b == "SlantFont"  then t[#t+1] = string.format("stretch='%s'", a) end
+        local data = f:read("*a")
+        if data then
+            for line in data:gmatch("(.-)[\n\t]") do
+                if line:find("^[%#%%%s]") then
+                    -- print(line)
+                else
+                    local stretch, slant, name, fullname, fontfile, encoding
+                    line = line:gsub('"(.+)"', function(s)
+                        stretch = s:find('"([^"]+) ExtendFont"')
+                        slant = s:find('"([^"]+) SlantFont"')
+                        return ""
+                    end)
+                    if not name then
+                        -- name fullname encoding fontfile
+                        name, fullname, encoding, fontfile = line:match("^(%S+)%s+(%S*)[%s<]+(%S*)[%s<]+(%S*)%s*$")
                     end
-                    handle(string.format("  <font %s/>",table.concat(t," ")))
+                    if not name then
+                        -- name fullname (flag) fontfile encoding
+                        name, fullname, fontfile, encoding = line:match("^(%S+)%s+(%S*)[%d%s<]+(%S*)[%s<]+(%S*)%s*$")
+                    end
+                    if not name then
+                        -- name fontfile
+                        name, fontfile = line:match("^(%S+)%s+[%d%s<]+(%S*)%s*$")
+                    end
+                    if name then
+                        if encoding == "" then encoding = nil end
+                        entries[name] = {
+                            name     = name, -- handy
+                            fullname = fullname,
+                            encoding = encoding,
+                            fontfile = fontfile,
+                            slant    = tonumber(slant),
+                            stretch  = tonumber(stretch)
+                        }
+                        encodings[name] = encoding
+                    elseif line ~= "" then
+                    --  print(line)
+                    end
                 end
             end
         end
-        handle("\n</fontlist>")
         f:close()
-        if g then g:close() end
     end
+    return entries, encodings
 end
-
---~ fonts.map.convert_file("c:/data/develop/tex/texmf/fonts/map/dvips/lm/lm-ec.map")
---~ fonts.map.convert_file("maptest.map")
---~ fonts.map.convert_file("maptest.map", "maptest-1.xml")
---~ fonts.map.convert_file("c:/data/develop/tex/texmf/fonts/map/pdftex/updmap/pdftex.map")
---~ fonts.map.convert_file("c:/data/develop/tex/texmf/fonts/map/pdftex/updmap/pdftex.map", "maptest-2.xml")
-
---~ fonts.map.convert_entries('maptest-2.xml')
---~ fonts.map.process_entries('maptest.xml','pdftex')
-
---~ print(table.serialize(fonts.map.data))
-
---~ tex.sprint(fonts.map.flushlines("pdftex","\n"))
---~ str = fonts.map.flushlines("pdftex")

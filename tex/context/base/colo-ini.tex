@@ -13,9 +13,6 @@
 
 \writestatus{loading}{Context Color Macros / initialization}
 
-%D To do: stroke versus fill color
-%D 1000 100 10 -> constants
-
 %D Possible optimization: store level in mark instead of name
 
 \unprotect
@@ -367,7 +364,6 @@
    \fi}
 
 \def\paletcolorspec#1%
-% {\executeifdefined{\??cr\currentpalet#1}{\executeifdefined{\??cr#1}\empty}}
   {\csname\??cr\currentpalet#1\endcsname}
 
 %D Hex color support is not enabled by default. You need to say \type
@@ -660,6 +656,12 @@
 %D switching, like in colored verbatim,
 
 \newif\ifpermitcolormode \permitcolormodetrue
+
+\def\startregistercolor[#1]%
+  {\permitcolormodefalse\startcolor[#1]\permitcolormodetrue}
+
+\def\stopregistercolor
+  {\permitcolormodefalse\stopcolor\permitcolormodetrue}
 
 \def\dowithcolor#1#2% #1=\action #2=color
   {\ifincolor\ifpermitcolormode
@@ -1572,7 +1574,7 @@
                g=>\chardef\currentcolorchannel6,%
                b=>\chardef\currentcolorchannel7,%
                s=>\chardef\currentcolorchannel8,%
-          \v!no=>,%      \currentcolorchannel0,% all colors
+           \v!no=>,%      \currentcolorchannel0,% all colors
       \s!default=>,%      \currentcolorchannel0,% all colors
       \s!unknown=>\filterspotcolortrue
                   \edef\currentspotcolor{\commalistelement}]%
@@ -1658,6 +1660,13 @@
      \expandafter\firstoftwoarguments
    \else
      \expandafter\secondoftwoarguments
+   \fi}
+
+\def\doifcolor#1%
+  {\ifcsname\??cr\ifcsname\??cr\currentpalet#1\endcsname\currentpalet\fi#1\endcsname
+     \expandafter\firstofoneargument
+   \else
+     \expandafter\gobbleoneargument
    \fi}
 
 %D \macros
@@ -2191,17 +2200,45 @@
 %D don't cross page boundaries in the way color does. Therefore
 %D we don't need stacks and marks. Just to be compatible with
 %D color support we offer both 'global' and 'local' commands.
+%D
+%D \starttyping
+%D \def\localstartraster[#1]%
+%D   {\doifelsenothing{#1}
+%D      {\dostartgraymode\@@rsscreen}
+%D      {\dostartgraymode{#1}}}
+%D
+%D \def\localstopraster
+%D   {\dostopgraymode}
+%D
+%D \let\startraster\localstartraster
+%D \let\stopraster \localstopraster
+%D \stoptyping
+%D
+%D The next alternative is slower, since it works on top of the
+%D color (stack) mechanism, but it does provide nesting.
+
+\def\dosetrastercolor#1%
+  {\edef\@@cl@@s{#1}%
+   \ifx\@@cl@@s\empty
+     \let\@@cl@@s\@@rsscreen
+   \fi
+   \let\@@cl@@t\@@cl@@z % else we get rogue
+   \let\@@cl@@a\@@cl@@z % transpancies
+   \setevalue{\??cr\??rs}{\colorSpattern}}
+
+% beware, don't add extra grouping, else color in tables
+% fails
 
 \def\localstartraster[#1]%
-  {\doifelsenothing{#1}
-     {\dostartgraymode\@@rsscreen}
-     {\dostartgraymode{#1}}}
+  {\ifincolor\dosetrastercolor{#1}\localstartcolor[\??rs]\fi}
 
-\def\localstopraster
-  {\dostopgraymode}
+\def\startraster[#1]%
+  {\ifincolor\dosetrastercolor{#1}\startcolor[\??rs]\fi}
 
-\let\startraster\localstartraster
-\let\stopraster \localstopraster
+\def\localstopraster{\ifincolor\localstopcolor\fi}
+\def\stopraster     {\ifincolor\stopcolor\fi}
+
+\def\raster[#1]{\groupedcommand{\startraster[#1]}{\stopraster}}
 
 %D In this documentation we will not go into too much details
 %D on palets. Curious users can find more information on this
@@ -2280,21 +2317,22 @@
         {\doifvaluesomething{\??pa#1}
            {\setevalue{\??pa#1}{\csname\??pa#1\endcsname,}}%
          \setevalue{\??pa#1}{\csname\??pa#1\endcsname##1}%
-         \doifassignmentelse{##2}
-           {% == \definepalet[test][xx={y=.4}]
-            \definecolor[\??pa#1:##1][##2]%
-            \iffreezecolors\@EA\setevalue\else\@EA\setvalue\fi
-              {\??cr#1:##1}{\csname\??cr\??pa#1:##1\endcsname}}
-           {% == \definepalet[test][xx=green]
-            \doifdefinedelse{\??cr##2}
-              {\iffreezecolors\@EA\setevalue\else\@EA\setvalue\fi
-                 {\??cr#1:##1}{\csname\??cr##2\endcsname}}
-              {\letvalue{\??cr#1:##1}\colorXpattern}}}%
+         \dodefinepaletcolor{#1}{##1}{##2}}%
       \def\dododefinepalet##1%
         {\dodododefinepalet[##1]}%
       \processcommalist[#2]\dododefinepalet}
      {\doifdefined{\??pa#2}
         {\expanded{\dodefinepalet[#1][\csname\??pa\??pa#2\endcsname]}}}}
+
+\def\dodefinepaletcolor#1#2#3%
+  {\doifassignmentelse{#3}
+     {% == \definepalet[test][xx={y=.4}]
+      \definecolor[\??pa#1:#2][#3]%
+       \iffreezecolors\@EA\setevalue\else\@EA\setvalue\fi{\??cr#1:#2}{\csname\??cr\??pa#1:#2\endcsname}}
+     {% == \definepalet[test][xx=green]
+      \doifdefinedelse{\??cr#3}
+        {\iffreezecolors\@EA\setevalue\else\@EA\setvalue\fi{\??cr#1:#2}{\csname\??cr#3\endcsname}}
+        {\letvalue{\??cr#1:#2}\colorXpattern}}}
 
 \let\paletsize\!!zerocount
 
@@ -2386,28 +2424,51 @@
 \def\definecolorgroup
   {\dotripleempty\dodefinecolorgroup}
 
-\def\dodefinecolorgroup[#1][#2][#3]%
+% \def\dodefinecolorgroup[#1][#2][#3]%
+%   {\ifthirdargument
+%      \processaction
+%        [#2]
+%        [    \v!cmyk=>\edef\currentcolorspace{C},
+%              \v!rgb=>\edef\currentcolorspace{R},
+%             \v!gray=>\edef\currentcolorspace{S},
+%             \v!spot=>\edef\currentcolorspace{P},
+%                \v!s=>\edef\currentcolorspace{S},
+%          \s!unknown=>\edef\currentcolorspace{R}]%
+%      \colorcount\zerocount
+%      \def\dododefinecolorgroup##1%
+%        {\advance\colorcount \plusone
+%         \setevalue{\??cr#1:\the\colorcount}{\currentcolorspace:##1:0:0}}%
+%      \processcommalist[#3]\dododefinecolorgroup
+%    \else
+%      \doifinstringelse{:}{#2}
+%        {\definecolorgroup[#1][\v!rgb][#2]}
+%        {\doloop
+%           {\doifdefinedelse{\??cr#2:\recurselevel}
+%              {\setevalue{\??cr#1:\recurselevel}%
+%                 {\csname\??cr#2:\recurselevel\endcsname}}
+%              {\exitloop}}}%
+%    \fi}
+
+\def\dododefinecolorgroupgray         [#1][#2:#3]{\definecolor   [#1:\the\colorcount][s=#2]}
+\def\dododefinecolorgrouprgb    [#1][#2:#3:#4:#5]{\definecolor   [#1:\the\colorcount][r=#2,g=#3,b=#4]}
+\def\dododefinecolorgroupcmyk[#1][#2:#3:#4:#5:#6]{\definecolor   [#1:\the\colorcount][c=#2,m=#3=,y=#4,k=#5]}
+\def\dododefinecolorgroupspot      [#1][#2:#3:#4]{\definespotolor[#1:\the\colorcount][#2][p=#3]}
+
+\def\dododefinecolorgroup#1#2%
+  {\advance\colorcount\plusone
+   \getvalue{dododefinecolorgroup\currentcolorspace}[#1][#2:0:0:0:0]}
+
+\def\dodefinecolorgroup[#1][#2][#3]% obsolete, just use palets
   {\ifthirdargument
-     \processaction
-       [#2]
-       [    \v!cmyk=>\edef\currentcolorspace{C},
-             \v!rgb=>\edef\currentcolorspace{R},
-            \v!gray=>\edef\currentcolorspace{S},
-            \v!spot=>\edef\currentcolorspace{P},
-               \v!s=>\edef\currentcolorspace{S},
-         \s!unknown=>\edef\currentcolorspace{R}]%
+     \doifelsenothing{#2}{\let\currentcolorspace\v!rgb}{\def\currentcolorspace{#2}}%
      \colorcount\zerocount
-     \def\dododefinecolorgroup##1%
-       {\advance\colorcount \plusone
-        \setevalue{\??cr#1:\the\colorcount}{\currentcolorspace:##1:0:0}}%
-     \processcommalist[#3]\dododefinecolorgroup
+     \processcommalist[#3]{\dododefinecolorgroup{#1}}%
    \else
      \doifinstringelse{:}{#2}
        {\definecolorgroup[#1][\v!rgb][#2]}
        {\doloop
           {\doifdefinedelse{\??cr#2:\recurselevel}
-             {\setevalue{\??cr#1:\recurselevel}%
-                {\csname\??cr#2:\recurselevel\endcsname}}
+             {\setevalue{\??cr#1:\recurselevel}{\csname\??cr#2:\recurselevel\endcsname}}
              {\exitloop}}}%
    \fi}
 
@@ -2443,11 +2504,11 @@
 %D \hbox to \hsize
 %D   {\hss
 %D    \showcolorgroup [red]    [vertical,name,number]\hss
-%D    \showcolorgroup [green]   [vertical,name]\hss
+%D    \showcolorgroup [green]  [vertical,name]\hss
 %D    \showcolorgroup [blue]   [vertical,name]\hss
 %D    \showcolorgroup [cyan]   [vertical,name]\hss
-%D    \showcolorgroup [magenta] [vertical,name]\hss
-%D    \showcolorgroup [yellow]    [vertical,name]\hss}
+%D    \showcolorgroup [magenta][vertical,name]\hss
+%D    \showcolorgroup [yellow] [vertical,name]\hss}
 %D \stoplinecorrection
 %D
 %D These groups are used to define palets {\em alfa} upto {\em
@@ -2584,9 +2645,6 @@
 \def\doMPcolor#1:% #1 can be \relax ! ! ! i.e. an empty color
   {\csname MPc\@EA\ifx\csname MPc\string#1\endcsname\relax B\else#1\fi\endcsname}
 
-% \def\doMPcolor#1:% #1 can be \relax ! ! ! i.e. an empty color
-%   {\csname MPc\ifcsname MPc#1\endcsname#1\else B\fi\endcsname}
-
 \def\MPcR{\doMPrgb}
 \def\MPcC{\ifMPcmykcolors\@EA\doMPcmykY\else\@EA\doMPcmykN\fi}
 \def\MPcS{\doMPgray}
@@ -2599,8 +2657,6 @@
 \def\rgbMP         {scaledrgb}
 \def\grayMP        {scaledgray}
 \def\spotMP        {spotcolor}
-
-\let\processMP\spotMP % for some time, will become obsolete
 
 \def\doMPtransparent#1#2:#3:#4\end
   {\ifcase#2\space(#1)\else\transparentMP(#2,#3,(#1))\fi}
@@ -2617,12 +2673,6 @@
 \def\doMPcmykN#1:#2:#3:#4:#5\end#6\end
   {\doMPtransparent{\cmykASrgbMP(#1,#2,#3,#4,#6)}#5\end}
 
-% \def\doMPspotY#1:#2:#3\end#4\end
-%   {\doMPtransparent{\spotMP("#1",#2)}#3\end}
-%
-% \def\doMPspotN#1:#2:#3\end#4\end
-%   {\scaledMPcolor{#2}{#1}}
-
 \def\doMPspotY#1:#2:#3:#4:#5\end#6\end % best make #3 same as #1 when empty
   {\doMPtransparent{multitonecolor("#1",#2,"#3","#4")}#5\end}
 
@@ -2635,6 +2685,8 @@
 \def\unknownMPcolor
   {(0,0,0)}
 
+\let\processMP\spotMP % for some time, will become obsolete, brrr
+
 %D \macros
 %D   {PDFcolor,FDFcolor}
 %D
@@ -2643,30 +2695,6 @@
 \def\PDFcolor     #1{\handlecolorwith\doPDFcolor     \csname\??cr#1\endcsname:::::::\end}
 \def\PDFcolorvalue#1{\handlecolorwith\doPDFcolorvalue\csname\??cr#1\endcsname:::::::\end}
 \def\FDFcolor     #1{\handlecolorwith\doFDFcolor     \csname\??cr#1\endcsname:::::::\end}
-
-% \def\doPDFcolor#1:#2:#3:#4:#5:#6:#7:#8\end
-%   {\if     #1R#2 #3 #4 rg%
-%    \else\if#1C#2 #3 #4 #5 k%
-%    \else\if#1S#2 g%
-%    \else\if#1P#3 g% todo
-%    \else       0 g%
-%    \fi\fi\fi\fi}
-%
-% \def\doPDFcolorvalue#1:#2:#3:#4:#5:#6:#7:#8\end
-%   {\if     #1R#2 #3 #4%
-%    \else\if#1C#2 #3 #4 #5%
-%    \else\if#1S#2%
-%    \else\if#1P#3%
-%    \else       0%
-%    \fi\fi\fi\fi}
-%
-% \def\doFDFcolor#1:#2:#3:#4:#5:#6:#7:#8\end
-%   {[\if     #1R#2 #3 #4%
-%     \else\if#1C#2 #3 #4 #5%
-%     \else\if#1S#2%
-%     \else\if#1P#3% todo
-%     \else       0%
-%     \fi\fi\fi\fi]}
 
 \def\doPDFcolor#1:#2:#3:#4:#5:#6:#7:#8\end
   {\if     #1R#2 #3 #4 rg%
@@ -2795,8 +2823,6 @@
 
 \let\negatedcolorcomponent\firstofoneargument
 
-\beginETEX
-
 \def\negatedcolorcomponent#1%
   {\ifdim\dimexpr\onepoint-#1\onepoint\relax<\zeropoint
      \!!zerocount
@@ -2806,7 +2832,5 @@
 
 \def\negatecolorcomponent#1% #1 = \macro
   {\edef#1{\negatedcolorcomponent{#1}}}
-
-\endETEX
 
 \protect \endinput

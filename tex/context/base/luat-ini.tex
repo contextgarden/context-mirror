@@ -41,27 +41,25 @@
 
 %D A few more goodies:
 
-\def\dostartlua#1%
+\long\def\dostartlua#1%
   {\begingroup
    \obeylualines
-   \directlua#1\iftrue{\else}\fi}
+   \dodostartlua{#1}}
 
-\def\dostoplua
-  {\iffalse{\else}\fi
-   \endgroup}
+\long\def\dodostartlua#1#2\stoplua
+  {\expanded{\endgroup\noexpand\directlua#1{#2}}}
 
-\def\dostartluacode#1%
+\long\def\dostartluacode#1%
   {\begingroup
    \obeylualines
    \obeyluatokens
-   \directlua#1\iftrue{\else}\fi}
+   \dodostartluacode{#1}}
 
-\def\dostopluacode % no unexpanded, else no } seen
-  {\iffalse{\else}\fi
-   \endgroup}
+\long\def\dodostartluacode#1#2\stopluacode
+  {\expanded{\endgroup\noexpand\directlua#1{#2}}}
 
-\def\startlua    {\dostartlua    \zerocount} \def\stoplua     {\dostoplua}
-\def\startluacode{\dostartluacode\zerocount} \def\stopluacode {\dostopluacode}
+\def\startlua    {\dostartlua    \zerocount}
+\def\startluacode{\dostartluacode\zerocount}
 
 %D Some delayed definitions:
 

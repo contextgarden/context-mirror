@@ -51,9 +51,14 @@
 
 \defineattribute[mark]
 \defineattribute[status]
+\defineattribute[trigger] % feature inheritance
 % \defineattribute[language]
 \defineattribute[skip]
 \defineattribute[penalty]
+
+\startruntimectxluacode
+    nodes.trigger = \dogetattributeid{trigger}
+\stopruntimectxluacode
 
 % \dosetattribute{status}{1}
 
@@ -67,8 +72,10 @@
 
 % 1=off  2=gray  3=spot  4=rgb  5=cmyk  6=cmy % only 1/2/4/5 are supported
 %
-% we could combine this in one attribute but this is not faster and also
-% less flexible because sometimes we want to freeze the attribute bit
+% We could combine this in one attribute but this is not faster and also
+% less flexible because sometimes we want to freeze the attribute bit.
+%
+% Watch out: real color support will be implemented later.
 
 \newcount\currentcolormodel
 
@@ -76,51 +83,11 @@
   {\currentcolormodel\ctxlua{tex.print(colors.setmodel('colormodel','#1'))}%
    \dosetattribute{colormodel}{\the\currentcolormodel}}
 
-\setcolormodel{all} % when no color, reset ! !
+\setcolormodel{all}
 
-\def\registerrgbcolor#1#2#3#4%  r g b -- print or sprint
-  {\scratchcounter\ctxlua{tex.print(colors.register('color','#1','rgb',#2,#3,#4))}%
-   \setevalue{(ca:#1)}{\number\scratchcounter}%
-   \setevalue{(cv:#1)}{\ctxlua{tex.print(colors.filter(\number\scratchcounter))}}%
-   \setevalue{(cs:#1)}{\dosetattribute{color}{\the\scratchcounter}}}
-
-\def\registercmykcolor#1#2#3#4#5%  c m y k
-  {\scratchcounter\ctxlua{tex.print(colors.register('color','#1','cmyk',#2,#3,#4,#5))}%
-   \setevalue{(ca:#1)}{\number\scratchcounter}%
-   \setevalue{(cv:#1)}{\ctxlua{tex.print(colors.filter(\number\scratchcounter))}}%
-   \setevalue{(cs:#1)}{\dosetattribute{color}{\the\scratchcounter}}}
-
-\def\registergraycolor#1#2% s
-  {\scratchcounter\ctxlua{tex.print(colors.register('color','#1','gray',#2))}%
-   \setevalue{(ca:#1)}{\number\scratchcounter}%
-   \setevalue{(cv:#1)}{\ctxlua{tex.print(colors.filter(\number\scratchcounter))}}%
-   \setevalue{(cs:#1)}{\dosetattribute{color}{\the\scratchcounter}}}
-
-\def\registerspotcolor#1#2#3% p name
-  {\scratchcounter\ctxlua{tex.print(colors.register('color','#1','spot',#2,#3))}%
-   \setevalue{(ca:#1)}{\number\scratchcounter}%
-   \setevalue{(cv:#1)}{\ctxlua{tex.print(colors.filter(\number\scratchcounter))}}%
-   \setevalue{(cs:#1)}{\dosetattribute{color}{\the\scratchcounter}}}
-
-\def\somecolorvalue    #1{\csname(cv:#1)\endcsname}
-\def\somecolorswitch   #1{\csname(cs:#1)\endcsname}
-\def\somecolorattribute#1{\csname(ca:#1)\endcsname}
-
-\def\getMPcolorspec#1%
-  {\expandafter\expandafter\expandafter\dogetMPcolorspec\csname (cv:#1)\endcsname\relax}
-
-\def\dogetMPcolorspec#1:#2:#3:#4:#5:#6:#7:#8:#9\relax % some day we will just pass a attribute number in pre/post
-  {\ifcase\currentcolormodel\or
-     \ifcase#1\or#2\or(#3,#4,#5)\or(#6,#7,#8,#9)\fi\or#2\or(#3,#4,#5)\or(#6,#7,#8,#9)%
-   \fi}
-
-% \registerrgbcolor  {red}     {1}{0}{0}
-% \registerrgbcolor  {green}   {0}{1}{0}
-% \registerrgbcolor  {blue}    {0}{0}{1}
-% \registercmykcolor {cyan}    {1}{0}{0}{0}
-% \registercmykcolor {magenta} {0}{1}{0}{0}
-% \registercmykcolor {yellow}  {0}{0}{1}{0}
-% \registergraycolor {black}   {0}
+\def\registerrgbcolor   #1#2#3#4{\ctxlua{colors.register('color','#1','rgb' ,#2,#3,#4)}}
+\def\registercmykcolor#1#2#3#4#5{\ctxlua{colors.register('color','#1','cmyk',#2,#3,#4,#5)}}
+\def\registergraycolor      #1#2{\ctxlua{colors.register('color','#1','gray',#2)}}
 
 % transparency
 
@@ -139,8 +106,11 @@
 \defineattribute[overprint]
 
 \def\registeroverprint#1#2%
-  {\initializePDFoverprint % temp here
+  {\initializePDFoverprint % temp here, to be tested in la code (states.collect)
    \setvalue{(os:#1)}{\dosetattribute{overprint}{\ctxlua{tex.print(overprints.register('#2'))}}}}
+
+\def\dotriggeroverprint#1%
+  {\csname(os:#1)\endcsname}
 
 % \registeroverprint{knockout} {knockout}
 % \registeroverprint{overprint}{overprint}
@@ -150,8 +120,11 @@
 \defineattribute[negative]
 
 \def\registernegative#1#2%
-  {\initializePDFnegative % temp here
+  {\initializePDFnegative % temp here, to be tested in la code (states.collect)
    \setvalue{(ns:#1)}{\dosetattribute{negative}{\ctxlua{tex.print(negatives.register('#2'))}}}}
+
+\def\dotriggernegative#1%
+  {\csname(ns:#1)\endcsname}
 
 % \registernegative{positive}{positive}
 % \registernegative{negative}{negative}
@@ -160,8 +133,13 @@
 
 \defineattribute[effect]
 
-\def\registereffect#1%
-  {\setevalue{(es:#1)}{\dosetattribute{effect}{\ctxlua{tex.print(effects.register('#1'))}}}}
+\def\registereffect#1#2#3% #2=stretch #3=rulethickness
+  {\setxvalue{(es:#1:#2:\number\dimexpr#3\relax)}%
+     {\dosetattribute{effect}{\ctxlua{tex.print(effects.register('#1',#2,\number\dimexpr#3\relax))}}}}
+
+\def\dotriggereffect#1#2#3%
+  {\ifcsname(es:#1:#2:\number\dimexpr#3\relax)\endcsname\else\registereffect{#1}{#2}{#3}\fi
+   \csname(es:#1:#2:\number\dimexpr#3\relax)\endcsname}
 
 % \registereffect{normal}
 % \registereffect{inner}
@@ -186,14 +164,48 @@
 %      {\ctxlua{nodes.process_page(tex.box[\number\nextbox])}%
 %       \primitive\shipout\box\nextbox}}
 
-\def\processshipoutbox#1% % hack till we have access to pdf backend
-  {\setbox\nextbox\hbox{#1}%
-   \ctxlua{nodes.process_page(tex.box[\number\nextbox])}%
-   \hbox{\ctxlua{states.flush()}\box\nextbox}}
+\newbox\finalizedshipoutbox
+
+\def\finalizeshipoutbox#1% % hack till we have access to pdf backend
+  {\global\setbox\finalizedshipoutbox\hbox{#1}%
+   \ctxlua{nodes.process_page(tex.box[\number\finalizedshipoutbox])}%
+   \hbox{\ctxlua{states.flush()}\box\finalizedshipoutbox}}
 
 % \def\shipout
 %   {\dowithnextbox{\ctxlua{tex.primitive('shipout', nodes.process_page(tex.nextbox)}}}
 
 \let\normalshipout\shipout
+
+% Objects are processed indepently \unknown\ actually we may need a proper callback.
+
+\def\finalizeobjectbox#1%
+  {\ctxlua{nodes.process_page(tex.box[\number#1])}}
+
+% tricky stuff:
+
+\newcount\attributeboxcount
+
+\edef\startinheritattributes{\dosetattribute  {trigger}{1}}
+\edef\stopinheritattributes {\doresetattribute{trigger}}
+
+\def\doattributedcopy  {\afterassignment\dodoattributedcopy\attributeboxcount}
+\def\doattributedbox   {\afterassignment\dodoattributedbox \attributeboxcount}
+
+\def\dodoattributedcopy{\startinheritattributes\ifvbox\attributeboxcount\vbox\else\hbox\fi{\unhcopy\attributeboxcount}\stopinheritattributes}
+\def\dodoattributedbox {\startinheritattributes\ifvbox\attributeboxcount\vbox\else\hbox\fi{\unhbox \attributeboxcount}\stopinheritattributes}
+
+\def\enableattributeinheritance
+  {\ctxlua{nodes.triggering=true}%
+   \let\attributedcopy\doattributedcopy
+   \let\attributedbox \doattributedbox}
+
+\def\disableattributeinheritance
+  {\ctxlua{nodes.triggering=false}%
+   \let\attributedcopy\copy
+   \let\attributedbox \box}
+
+\disableattributeinheritance
+
+% \enableattributeinheritance % will become default
 
 \protect \endinput

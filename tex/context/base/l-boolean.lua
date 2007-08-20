@@ -16,6 +16,8 @@ function toboolean(str)
         return str == "true" or str == "yes" or str == "on" or str == "1"
     elseif type(str) == "number" then
         return tonumber(str) ~= 0
+    elseif type(str) == "nil" then
+        return false
     else
         return str
     end

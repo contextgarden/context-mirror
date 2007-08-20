@@ -1196,22 +1196,32 @@
    \dosomebreak{\penalty\!!counta}%
    \egroup}
 
-\def\handlepagebreak#1%
-  {\dohandlepagebreakAA{#1}%
-   \ifnum\countervalue{\??se\previoussection\@@sectie}>\zerocount\relax
-     \ifnum\countervalue{\??se\@@sectie}>\zerocount
-       \dohandlepagebreakB{#1}%
-     \else
-       \doifnotvalue{\??ko#1\c!continue}\v!yes{\dohandlepagebreakB{#1}}%
-     \fi
-   \else
-     \dohandlepagebreakB{#1}%
-   \fi
-   \dohandlepagebreakAB{#1}}
+\newconditional\ignorehandlepagebreak
 
-\def\handlepagebreakC#1%
-  {\xdef\@@kolevel{\getvalue{\??se\@@sectie\c!level}}%
-   \nobreak}
+\def\handlepagebreak#1%
+  {\ifconditional\ignorehandlepagebreak
+     \setfalse\ignorehandlepagebreak
+   \else
+     \dohandlepagebreakAA{#1}%
+     \ifnum\countervalue{\??se\previoussection\@@sectie}>\zerocount\relax
+       \ifnum\countervalue{\??se\@@sectie}>\zerocount
+         \dohandlepagebreakB{#1}%
+       \else
+         \doifnotvalue{\??ko#1\c!continue}\v!yes{\dohandlepagebreakB{#1}}%
+       \fi
+     \else
+       \dohandlepagebreakB{#1}%
+     \fi
+     \dohandlepagebreakAB{#1}%
+   \fi}
+
+\def\handlenopagebreak#1%
+  {\ifconditional\ignorehandlepagebreak
+     \setfalse\ignorehandlepagebreak
+   \else
+     \xdef\@@kolevel{\getvalue{\??se\@@sectie\c!level}}%
+     \nobreak
+   \fi}
 
 \def\localheadheight    {\strutht}
 \def\localheaddepth     {\strutdp}
@@ -1418,6 +1428,8 @@
 
 % todo: write to list etc in both args or in enclosing h/vbox else it gets
 % lost when no #1 or #2 is typeset
+
+% we will use variables here
 
 \def\dodododoconstructhead#1[#2]#3#4% [ref] {number} {title}
   {\def\currenthead{#1}% dus #1 overal vervangen
@@ -1641,6 +1653,7 @@
    \fi
    \flushingcolumnfloatstrue
    \someheadconversionfalse
+   \setfalse\ignorehandlepagebreak
    \let\fullsectionnumber\limitedfullsectionnumber
    % ignorespaces prevents spaces creeping in when after=\dontleavehmode
    \ifdisplaysectionhead\ignorespaces\else\expandafter\GotoPar\fi}
@@ -2052,7 +2065,7 @@
   {\ifhmode
      \scratchcounter=\lastpenalty\unpenalty % no beauty in this
      \ifdim\lastskip=\headsignal
-       \handlepagebreakC{#1}%
+       \handlenopagebreak{#1}%
        \global\settrue\continuoussectionhead
      \else
        \penalty\scratchcounter

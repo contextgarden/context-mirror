@@ -23,6 +23,35 @@ fonts.triggers   = fonts.triggers   or { } -- brrr
 supplied by <l n='luatex'/>.</p>
 --ldx]]--
 
+fonts.tfm.resolve_vf = true -- false
+
+function fonts.tfm.enhance(tfmdata,specification)
+    local name, size = specification.name, specification.size
+    local encoding, filename = name:match("^(.-)%-(.*)$") -- context: encoding-name.*
+    if filename and encoding and fonts.enc.known[encoding] then
+        local data = fonts.enc.load(encoding)
+        if data then
+            local characters = tfmdata.characters
+            tfmdata.encoding = encoding
+            local vector = data.vector
+            for k, v in pairs(characters) do
+                v.name = vector[k]
+                v.index = k
+            end
+            for k,v in pairs(data.unicodes) do
+                if k ~= v then
+                --  if not characters[k] then
+                        if fonts.trace then
+                            logs.report("define font",string.format("mapping %s onto %s",k,v))
+                        end
+                        characters[k] = characters[v]
+                --  end
+                end
+            end
+        end
+    end
+end
+
 function fonts.tfm.read_from_tfm(specification)
     local fname, tfmdata = specification.filename, nil
     if fname then
@@ -41,32 +70,24 @@ function fonts.tfm.read_from_tfm(specification)
         if fonts.trace then
             logs.report("define font",string.format("loading tfm file %s at size %s",fname,specification.size))
         end
-        tfmdata = font.read_tfm(fname,specification.size)
+        tfmdata = font.read_tfm(fname,specification.size) -- not cached, fast enough
         if tfmdata then
---~ fonts.logger.save(tfmdata,'tfm',specification)
---~ if false then
-            fname = input.findbinfile(texmf.instance, specification.name, 'ovf')
-            if fname and fname ~= "" then
-callback.register('find_vf_file', nil)
-                local vfdata = font.read_vf(fname,specification.size)
-                if vfdata then
-                    local chars = tfmdata.characters
-                    for k,v in ipairs(vfdata.characters) do
-                        chars[k].commands = v.commands
-                    end
---~                     tfmdata.type = 'virtual'
-                    local fnts = vfdata.fonts
-                    for k,v in ipairs(fnts) do
-                        local dummy, id = fonts.tfm.read_and_define(v.name,v.size)
-                        fnts[k].id = id
-                        if fonts.trace then
-                            logs.report("define font",string.format("vf file %s needs tfm file %s (id %s)", fname, v.name, id))
+            if fonts.tfm.resolve_vf then
+                fonts.logger.save(tfmdata,file.extname(fname),specification) -- strange, why here
+                fname = input.findbinfile(texmf.instance, specification.name, 'ovf')
+                if fname and fname ~= "" then
+                    local vfdata = font.read_vf(fname,specification.size) -- not cached, fast enough
+                    if vfdata then
+                        local chars = tfmdata.characters
+                        for k,v in pairs(vfdata.characters) do -- no ipairs, can have holes
+                            chars[k].commands = v.commands
                         end
+                        tfmdata.type = 'virtual'
+                        tfmdata.fonts = vfdata.fonts
                     end
-                    tfmdata.fonts = fnts
                 end
             end
---~ end
+            fonts.tfm.enhance(tfmdata,specification)
         end
     else
         if fonts.trace then
@@ -123,13 +144,13 @@ function fonts.tfm.scale(tfmtable, scaledpoints)
     local tc = t.characters
     for k,v in pairs(tfmtable.characters) do
         local chr = {
-            unicode     = v.unicode,
-            name        = v.name,
-            index       = v.index or k,
-            width       = scale(v.width , delta),
-            height      = scale(v.height, delta),
-            depth       = scale(v.depth , delta),
-            class       = v.class
+            unicode = v.unicode,
+            name    = v.name,
+            index   = v.index or k,
+            width   = scale(v.width , delta),
+            height  = scale(v.height, delta),
+            depth   = scale(v.depth , delta),
+            class   = v.class
         }
         local b = v.boundingbox -- maybe faster to have llx etc not in table
         if b then
@@ -158,13 +179,15 @@ function fonts.tfm.scale(tfmtable, scaledpoints)
             tp[k] = scale(v,delta)
         end
     end
---~     t.encodingbytes = tfmtable.encodingbytes or 2
+--~     t.encodingbytes = tfmtable.encodingbytes or 1
+--~     t.filename      = t.filename or tfmtable.filename or tfmtable.file or nil
+--~     t.fullname      = t.fullname or tfmtable.fullname or tfmtable.full or nil
+--~     t.name          = t.name or tfmtable.name or nil
     t.size          = scaledpoints
     t.italicangle   = tfmtable.italicangle
     t.ascender      = scale(tfmtable.ascender  or 0,delta)
     t.descender     = scale(tfmtable.descender or 0,delta)
-    -- new / some data will move here
-    t.shared = tfmtable.shared or { }
+    t.shared        = tfmtable.shared or { }
     if t.unique then
         t.unique = table.fastcopy(tfmtable.unique)
     else
@@ -180,8 +203,11 @@ we now have several readers it may be handy to know what reader is
 used for which font.</p>
 --ldx]]--
 
-function fonts.logger.save(tfmtable,source,specification)
+function fonts.logger.save(tfmtable,source,specification) -- save file name in spec here ! ! ! ! ! !
     if tfmtable and specification and specification.specification then
+        if fonts.trace then
+            logs.report("define font",string.format("registering %s as %s",specification.name,source))
+        end
         specification.source = source
         fonts.loaded[specification.specification] = specification
         fonts.used[specification.name] = source

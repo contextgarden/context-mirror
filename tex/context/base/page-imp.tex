@@ -144,7 +144,7 @@
 \let\pagestoshipout\empty      % {1,3,6}
 \chardef\whichpagetoshipout=0  % 0=all 1=odd 2=even
 
-\ifx\processshipoutbox\undefined \let\processshipoutbox\firstofoneargument \fi
+\ifx\finalizeshipoutbox\undefined \let\finalizeshipoutbox\firstofoneargument \fi
 
 \def\actualshipout#1%
   {\global\advance\shippedoutpages\plusone
@@ -172,7 +172,7 @@
         \vskip\scratchdimen
         \hskip\scratchdimen
         \hbox % \setbox0=\box.. is nicer
-          {\setbox0\hbox{\processshipoutbox{#1}}% just in case there are objects there, hook for testing
+          {\setbox0\hbox{\finalizeshipoutbox{#1}}% just in case there are objects there, hook for testing
            \setbox\scratchbox\hbox
              {% before the main one !
               \ifcase\realfolio \or

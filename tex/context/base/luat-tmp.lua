@@ -22,30 +22,30 @@ being written at the same time is small. We also need to extend
 luatools with a recache feature.</p>
 --ldx]]--
 
-cache = cache  or { }
-dir   = dir    or { }
-texmf = texmf  or { }
+caches = caches  or { }
+dir    = dir    or { }
+texmf  = texmf  or { }
 
-cache.path   = cache.path or nil
-cache.base   = cache.base or "luatex-cache"
-cache.more   = cache.more or "context"
-cache.direct = false -- true is faster but may need huge amounts of memory
-cache.trace  = false
-cache.tree   = false
-cache.temp   = cache.temp or os.getenv("TEXMFCACHE") or os.getenv("HOME") or os.getenv("HOMEPATH") or os.getenv("VARTEXMF") or os.getenv("TEXMFVAR") or os.getenv("TMP") or os.getenv("TEMP") or os.getenv("TMPDIR") or nil
-cache.paths  = cache.paths or { cache.temp }
+caches.path   = caches.path or nil
+caches.base   = caches.base or "luatex-cache"
+caches.more   = caches.more or "context"
+caches.direct = false -- true is faster but may need huge amounts of memory
+caches.trace  = false
+caches.tree   = false
+caches.temp   = caches.temp or os.getenv("TEXMFCACHE") or os.getenv("HOME") or os.getenv("HOMEPATH") or os.getenv("VARTEXMF") or os.getenv("TEXMFVAR") or os.getenv("TMP") or os.getenv("TEMP") or os.getenv("TMPDIR") or nil
+caches.paths  = caches.paths or { caches.temp }
 
-if not cache.temp or cache.temp == "" then
+if not caches.temp or caches.temp == "" then
     print("\nFATAL ERROR: NO VALID TEMPORARY PATH\n")
     os.exit()
 end
 
-function cache.configpath(instance)
+function caches.configpath(instance)
     return input.expand_var(instance,"TEXMFCNF")
 end
 
-function cache.treehash(instance)
-    local tree = cache.configpath(instance)
+function caches.treehash(instance)
+    local tree = caches.configpath(instance)
     if not tree or tree == "" then
         return false
     else
@@ -53,49 +53,49 @@ function cache.treehash(instance)
     end
 end
 
-function cache.setpath(instance,...)
-    if not cache.path then
+function caches.setpath(instance,...)
+    if not caches.path then
         if lfs and instance then
-            for _,v in  pairs(cache.paths) do
+            for _,v in  pairs(caches.paths) do
                 for _,vv in pairs(input.expanded_path_list(instance,v)) do
                     if lfs.isdir(vv) then
-                        cache.path = vv
+                        caches.path = vv
                         break
                     end
                 end
-                if cache.path then break end
+                if caches.path then break end
             end
         end
-        if not cache.path then
-            cache.path = cache.temp
+        if not caches.path then
+            caches.path = caches.temp
         end
-        cache.path = input.clean_path(cache.path) -- to be sure
+        caches.path = input.clean_path(caches.path) -- to be sure
         if lfs then
-            cache.tree = cache.tree or cache.treehash(instance)
-            if cache.tree then
-                cache.path = dir.mkdirs(cache.path,cache.base,cache.more,cache.tree)
+            caches.tree = caches.tree or caches.treehash(instance)
+            if caches.tree then
+                caches.path = dir.mkdirs(caches.path,caches.base,caches.more,caches.tree)
             else
-                cache.path = dir.mkdirs(cache.path,cache.base,cache.more)
+                caches.path = dir.mkdirs(caches.path,caches.base,caches.more)
             end
         end
     end
-    if not cache.path then
-        cache.path = '.'
+    if not caches.path then
+        caches.path = '.'
     end
-    cache.path = input.clean_path(cache.path)
+    caches.path = input.clean_path(caches.path)
     if lfs and not table.is_empty({...}) then
-        local pth = dir.mkdirs(cache.path,...)
+        local pth = dir.mkdirs(caches.path,...)
         return pth
     end
-    return cache.path
+    return caches.path
 end
 
-function cache.setluanames(path,name)
+function caches.setluanames(path,name)
     return path .. "/" .. name .. ".tma", path .. "/" .. name .. ".tmc"
 end
 
-function cache.loaddata(path,name)
-    local tmaname, tmcname = cache.setluanames(path,name)
+function caches.loaddata(path,name)
+    local tmaname, tmcname = caches.setluanames(path,name)
     local loader = loadfile(tmcname) or loadfile(tmaname)
     if loader then
         return loader()
@@ -104,18 +104,18 @@ function cache.loaddata(path,name)
     end
 end
 
-function cache.is_writable(filepath,filename)
-    local tmaname, tmcname = cache.setluanames(filepath,filename)
+function caches.is_writable(filepath,filename)
+    local tmaname, tmcname = caches.setluanames(filepath,filename)
     return file.is_writable(tmaname)
 end
 
-function cache.savedata(filepath,filename,data,raw) -- raw needed for file cache
-    local tmaname, tmcname = cache.setluanames(filepath,filename)
+function caches.savedata(filepath,filename,data,raw) -- raw needed for file cache
+    local tmaname, tmcname = caches.setluanames(filepath,filename)
     local reduce, simplify = true, true
     if raw then
         reduce, simplify = false, false
     end
-    if cache.direct then
+    if caches.direct then
         file.savedata(tmaname, table.serialize(data,'return',true,true))
     else
         table.tofile (tmaname,                 data,'return',true,true) -- maybe not the last true
@@ -127,7 +127,7 @@ end
 
 if tex and texconfig and texconfig.formatname and texconfig.formatname == "" then
     if not texconfig.luaname then texconfig.luaname = "cont-en.lua" end
-    texconfig.formatname = cache.setpath(instance,"format") .. "/" .. texconfig.luaname:gsub("%.lu.$",".fmt")
+    texconfig.formatname = caches.setpath(instance,"format") .. "/" .. texconfig.luaname:gsub("%.lu.$",".fmt")
 end
 
 --[[ldx--
@@ -149,7 +149,7 @@ containers.trace = false
 do -- local report
 
     local function report(container,tag,name)
-        if cache.trace or containers.trace or container.trace then
+        if caches.trace or containers.trace or container.trace then
             logs.report(string.format("%s cache",container.subcategory),string.format("%s: %s",tag,name or 'invalid'))
         end
     end
@@ -163,7 +163,7 @@ do -- local report
                 enabled = enabled,
                 version = version or 1.000,
                 trace = false,
-                path = cache.setpath(texmf.instance,category,subcategory),
+                path = caches.setpath(texmf.instance,category,subcategory),
             }
         else
             return nil
@@ -171,13 +171,13 @@ do -- local report
     end
 
     function containers.is_usable(container, name)
-        return container.enabled and cache.is_writable(container.path, name)
+        return container.enabled and caches.is_writable(container.path, name)
     end
 
     function containers.is_valid(container, name)
         if name and name ~= "" then
-            local cs = container.storage[name]
-            return cs and not table.is_empty(cs) and cs.cache_version == container.version
+            local storage = container.storage[name]
+            return storage and not table.is_empty(storage) and storage.cache_version == container.version
         else
             return false
         end
@@ -185,7 +185,7 @@ do -- local report
 
     function containers.read(container,name)
         if container.enabled and not container.storage[name] then
-            container.storage[name] = cache.loaddata(container.path,name)
+            container.storage[name] = caches.loaddata(container.path,name)
             if containers.is_valid(container,name) then
                 report(container,"loaded",name)
             else
@@ -204,7 +204,7 @@ do -- local report
             if container.enabled then
                 local unique, shared = data.unique, data.shared
                 data.unique, data.shared = nil, nil
-                cache.savedata(container.path, name, data)
+                caches.savedata(container.path, name, data)
                 report(container,"saved",name)
                 data.unique, data.shared = unique, shared
             end
@@ -229,7 +229,7 @@ function input.aux.save_data(instance, dataname, check)
     for cachename, files in pairs(instance[dataname]) do
         local name
         if input.usecache then
-            name = file.join(cache.setpath(instance,"trees"),md5.hex(cachename))
+            name = file.join(caches.setpath(instance,"trees"),md5.hex(cachename))
         else
             name = file.join(cachename,dataname)
         end
@@ -321,7 +321,7 @@ end
 function input.aux.load_data(instance,pathname,dataname,filename)
     local luaname, lucname, pname, fname
     if input.usecache then
-        pname, fname = cache.setpath(instance,"trees"), md5.hex(pathname)
+        pname, fname = caches.setpath(instance,"trees"), md5.hex(pathname)
         filename = file.join(pname,fname)
     else
         if not filename or (filename == "") then
@@ -357,7 +357,7 @@ input.automounted = input.automounted or { }
 function input.automount(instance,usecache)
     local mountpaths = input.simplified_list(input.expansion(instance,'TEXMFMOUNT'))
     if table.is_empty(mountpaths) and usecache then
-        mountpaths = { cache.setpath(instance,"mount") }
+        mountpaths = { caches.setpath(instance,"mount") }
     end
     if not table.is_empty(mountpaths) then
         input.starttiming(instance)

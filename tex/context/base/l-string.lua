@@ -305,3 +305,15 @@ end
 --~ print(is_number("+0.1"))
 --~ print(is_number("-.1"))
 --~ print(is_number("+.1"))
+
+function string:split_settings() -- no {} handling, see l-aux for lpeg variant
+    if self:find("=") then
+        local t = { }
+        for k,v in self:gmatch("(%a+)=([^%,]*)") do
+            t[k] = v
+        end
+        return t
+    else
+        return nil
+    end
+end

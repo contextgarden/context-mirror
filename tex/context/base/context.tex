@@ -42,7 +42,7 @@
 %D your styles an modules.
 
 \edef\contextformat {\jobname}
-\edef\contextversion{2007.08.09 13:04}
+\edef\contextversion{2007.08.20 10:21}
 
 %D For those who want to use this:
 
@@ -208,7 +208,6 @@
 \loadmkivfile{attr-ini.tex}
 \loadmkivfile{node-ini.tex}
 
-
 %D We also use some third party macros. These are loaded by
 %D saying:
 
@@ -300,7 +299,7 @@
 \loadcorefile{spec-def.tex}
 \loadcorefile{spec-var.tex}
 
-\loadcorefile{colo-ini.tex}
+\doiffileelse{colo-new.tex}{\loadcorefile{colo-new.tex}}{\loadcorefile{colo-ini.tex}}
 \loadcorefile{colo-ext.tex}
 
 %D For the moment we load a lot of languages. In the future
@@ -481,6 +480,8 @@
 %D These macros are loaded last since they overload and|/|or
 %D extend previously defined ones.
 
+\loadmkivfile{lxml-ini.tex}
+
 \loadcorefile{xtag-ini.tex}
 \loadcorefile{xtag-ext.tex}
 \loadcorefile{xtag-prs.tex}
@@ -625,8 +626,8 @@
 \unprotect
 \beginLUATEX
     \appendtoks
-        \writestatus\m!lua{used config path - \ctxlua{tex.print(cache.configpath(texmf.instance))}}%
-        \writestatus\m!lua{used cache path  - \ctxlua{tex.print(cache.path)}}%
+        \writestatus\m!lua{used config path - \ctxlua{tex.print(caches.configpath(texmf.instance))}}%
+        \writestatus\m!lua{used cache path  - \ctxlua{tex.print(caches.path)}}%
     \to \everydump
 \endLUATEX
 \protect

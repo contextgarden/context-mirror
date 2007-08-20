@@ -12,8 +12,8 @@ them in tables. But we may do so some day, for consistency.</p>
 --ldx]]--
 
 fonts.enc         = fonts.enc or { }
-fonts.enc.version = 1.01
-fonts.enc.cache   = containers.define("fonts", "enc", fonts.enc.version, false)
+fonts.enc.version = 1.03
+fonts.enc.cache   = containers.define("fonts", "enc", fonts.enc.version, true)
 
 fonts.enc.known = {
     texnansi = true,
@@ -52,12 +52,13 @@ will be used.</p>
 function fonts.enc.load(filename)
     local name = file.removesuffix(filename)
     local data = containers.read(fonts.enc.cache,name)
-    if data then
-        local vector, tag, hash = { }, "", { }
+    if not data then
+        local vector, tag, hash, unicodes = { }, "", { }, { }
         local foundname = input.find_file(texmf.instance,filename,'enc')
         if foundname and foundname ~= "" then
             local ok, encoding, size = input.loadbinfile(texmf.instance,foundname)
             if ok and encoding then
+                local enccodes = characters.context.enccodes
                 encoding = encoding:gsub("%%(.-)\n","")
                 local tag, vec = encoding:match("/(%w+)%s*%[(.*)%]%s*def")
                 local i = 0
@@ -69,12 +70,22 @@ function fonts.enc.load(filename)
                         else
                             -- duplicate, play safe for tex ligs and take first
                         end
+                        if enccodes[ch] then
+                            unicodes[enccodes[ch]] = i
+                        end
                     end
                     i = i + 1
                 end
             end
         end
-        data = containers.write(fonts.enc.cache, name, { name=name, tag=tag, vector=vector, hash=hash })
+        local data = {
+            name=name,
+            tag=tag,
+            vector=vector,
+            hash=hash,
+            unicodes=unicodes
+        }
+        data = containers.write(fonts.enc.cache, name, data)
     end
     return data
 end

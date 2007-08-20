@@ -238,8 +238,10 @@ do
         end
     end
 
-    function collapser(head,where)
-        if head then
+    -- local free = node.free
+
+    local function collapser(head,where)
+        if head and head.next then
             local trace = nodes.trace_collapse
             local current, tail = head, nil
             local glue_order, glue_data = 0, nil
@@ -364,21 +366,21 @@ do
     local head, tail = nil, nil
 
     function nodes.flush_vertical_spacing()
-        input.start_timing(nodes)
         if head then
-            t = collapser(head)
+            input.start_timing(nodes)
+            local t = collapser(head)
             head = nil
         --  tail = nil
+            input.stop_timing(nodes)
+            return t
         else
-            t = nil
+            return nil
         end
-        input.stop_timing(nodes)
-        return t
     end
 
     function nodes.handle_page_spacing(t, where)
     --  we need to add the latest t too, else we miss skips and such
-        if t then
+        if t and t.next then
             local tt = node.slide(t)
             local id = tt.id
             if id == glue then -- or id == penalty then -- or maybe: if not hlist or vlist
@@ -409,8 +411,12 @@ do
     end
 
     function nodes.handle_vbox_spacing(t)
-        local tail = node.slide(t)
-        return collapser(t,'whole')
+        if t and t.next then
+            local tail = node.slide(t)
+            return collapser(t,'whole')
+        else
+            return t
+        end
     end
 
 end

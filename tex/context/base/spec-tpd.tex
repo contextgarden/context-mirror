@@ -906,6 +906,7 @@
           % won't work in xforms; some day I will optimize
           % this.
           \the\everyPDFxform
+          \finalizeobjectbox\nextbox
           \immediate\pdfxform
             resources {\currentPDFresources\the\pdfpageresources}%
             \nextbox
@@ -1360,6 +1361,7 @@
 
   \def\setMPPDFobject#1#2% resources boxnumber
     {\the\everyPDFxform
+     \finalizeobjectbox{#2}%
      \immediate\pdfxform resources{#1}#2%
      \edef\getMPPDFobject{\noexpand\pdfrefxform\the\pdflastxform}}
 

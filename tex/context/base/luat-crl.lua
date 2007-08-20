@@ -4,10 +4,10 @@
 -- copyright: PRAGMA ADE / ConTeXt Development Team
 -- license  : see context related readme files
 
-if not versions    then versions    = { } end versions['luat-crl'] = 1.001
-if not curl        then curl        = { } end
+if not versions then versions = { } end versions['luat-crl'] = 1.001
+if not curl     then curl     = { } end
 
-curl.cachepath = cache.setpath(texmf.instance,"curl")
+curl.cachepath = caches.setpath(texmf.instance,"curl")
 
 curl.cached = { }
 

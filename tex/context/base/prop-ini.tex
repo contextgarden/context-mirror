@@ -39,14 +39,6 @@
   {\csname\s!check\currentpropertytype property\endcsname
    \global\expandafter\let\csname\??py\s!check\currentproperty\endcsname\empty}
 
-% \def\checkproperty[#1]%
-%   {\bgroup
-%    \def\currentproperty{#1}%
-%    \docheckproperty
-%    \egroup}
-%
-% oeps, was wrong, no reset
-
 \def\checkproperty[#1]%
   {\bgroup
    \def\currentproperty{#1}%
@@ -122,14 +114,14 @@
    \doifelsevalue{\??py#1\c!method}\v!command
      {\doifelsevalue{\??py#1\c!global}\v!yes
         {\setgvalue{\e!start#1}{\dostartproperty{#1}}%
-         \letgvalue{\e!stop#1}\dostopproperty}%
+         \letgvalue{\e!stop #1}\dostopproperty}%
         {\setgvalue{\e!start#1}{\dostartgproperty{#1}}%
-         \letgvalue{\e!stop#1}\dostopgproperty}}%
+         \letgvalue{\e!stop #1}\dostopgproperty}}%
      {\doifelsevalue{\??py#1\c!global}\v!yes
         {\setgvalue{\e!start#2}[##1]{\dostartproperty{##1}}%
-         \letgvalue{\e!stop#2}\dostopproperty}%
+         \letgvalue{\e!stop #2}\dostopproperty}%
         {\setgvalue{\e!start#2}[##1]{\dostartgproperty{##1}}%
-         \letgvalue{\e!stop#2}\dostopgproperty}}}
+         \letgvalue{\e!stop #2}\dostopgproperty}}}
 
 \def\nododefineproperty[#1][#2][#3]%
   {}
@@ -145,17 +137,6 @@
    \else
      \getparameters[\??py][#1]%
    \fi}
-
-% \def\propertyparameter#1% expands to #1 when not defined (see \define...)
-%   {\csname\??py
-%      \ifcsname\??py\currentproperty#1\endcsname
-%        \currentproperty#1%
-%      \else\ifcsname\??py\currentpropertytype#1\endcsname
-%        \currentpropertytype#1%
-%      \else
-%        :n:\currentproperty
-%      \fi\fi
-%    \endcsname}
 
 \letvalue{\??py\s!empty}\empty
 

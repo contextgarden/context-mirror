@@ -105,7 +105,7 @@ end
 
 function mptopdf.steps.convert()
     mptopdf.data = mptopdf.data:gsub("%c%((.-)%) (.-) (.-) fshow", function(str,font,scale)
-        table.insert(mptopdf.texts,{mptopdf.steps.descape(str), font, scale})
+        mptopdf.texts[mptopdf.texts+1] = {mptopdf.steps.descape(str), font, scale}
         return "\n" .. #mptopdf.texts .. " textext"
     end)
     mptopdf.data = mptopdf.data:gsub("%[%s*(.-)%s*%]", function(str)
@@ -165,17 +165,17 @@ function mptopdf.flushpath(cmd)
             local function concat(px, py)
                 return (sy*(px-tx)-ry*(py-ty))/d, (sx*(py-ty)-rx*(px-tx))/d
             end
-            for _,v in pairs(mptopdf.stack.path) do
+            for _,v in ipairs(mptopdf.stack.path) do
                 v[1],v[2] = concat(v[1],v[2])
                 if #v == 7 then
                     v[3],v[4] = concat(v[3],v[4])
                     v[5],v[6] = concat(v[5],v[6])
                 end
-                table.insert(path, table.concat(v," "))
+                path[#path+1] = table.concat(v," ")
             end
         else
-            for _,v in pairs(mptopdf.stack.path) do
-                table.insert(path, table.concat(v," "))
+            for _,v in ipairs(mptopdf.stack.path) do
+                path[#path+1] = table.concat(v," ")
             end
         end
         mptopdf.flushconcat()
@@ -363,23 +363,52 @@ end
 --~     end
 --~ end
 
-function mp.setrgbcolor(r,g,b) -- extra check
-    r, g = tonumber(r), tonumber(g) -- needed when we use lpeg
-    if r == 0.0123 and g < 0.01 then
-        mptopdf.texcode("\\MPSspecial{" .. g*10000 .. "}{" .. b*10000 .. "}")
-    elseif r == 0.123 and r < 0.1 then
-        mptopdf.texcode("\\MPSspecial{" .. g* 1000 .. "}{" .. b* 1000 .. "}")
-    else
-        mptopdf.texcode("\\MPSrgb{" .. r .. "}{" .. g .. "}{" .. b .. "}")
+if ctx and ctx.aux and ctx.aux.definecolor then
+
+    logs.report("mptopdf", "using attribute based mps colors")
+
+    -- todo: convert pdf specials to lua code
+
+    function mp.setrgbcolor(r,g,b) -- extra check
+        r, g, b = tonumber(r), tonumber(g), tonumber(b) -- needed when we use lpeg
+        if r == 0.0123 and g < 0.01 then
+            mptopdf.texcode("\\doresetattribute{transparency}\\MPSspecial{" .. g*10000 .. "}{" .. b*10000 .. "}")
+        elseif r == 0.123 and r < 0.1 then
+            mptopdf.texcode("\\doresetattribute{transparency}\\MPSspecial{" .. g* 1000 .. "}{" .. b* 1000 .. "}")
+        else
+            mptopdf.texcode("\\doresetattribute{transparency}\\dosetattribute{color}{" .. colors.register('color',nil,'rgb',r,g,b) .. "}")
+        end
     end
-end
 
-function mp.setcmykcolor(c,m,y,k)
-    mptopdf.texcode("\\MPScmyk{" .. c .. "}{" .. m .. "}{" .. y .. "}{" .. k .. "}")
-end
+    function mp.setcmykcolor(c,m,y,k)
+        mptopdf.texcode("\\doresetattribute{transparency}\\dosetattribute{color}{" .. colors.register('color',nil,'cmyk',tonumber(c),tonumber(m),tonumber(y),tonumber(k)) .. "}")
+    end
 
-function mp.setgray(s)
-    mptopdf.texcode("\\MPSgray{" .. s .. "}")
+    function mp.setgray(s)
+        mptopdf.texcode("\\doresetattribute{transparency}\\dosetattribute{color}{" .. colors.register('color',nil,'gray',tonumber(s)) .. "}")
+    end
+
+else
+
+    function mp.setrgbcolor(r,g,b) -- extra check
+        r, g = tonumber(r), tonumber(g) -- needed when we use lpeg
+        if r == 0.0123 and g < 0.01 then
+            mptopdf.texcode("\\MPSspecial{" .. g*10000 .. "}{" .. b*10000 .. "}")
+        elseif r == 0.123 and r < 0.1 then
+            mptopdf.texcode("\\MPSspecial{" .. g* 1000 .. "}{" .. b* 1000 .. "}")
+        else
+            mptopdf.texcode("\\MPSrgb{" .. r .. "}{" .. g .. "}{" .. b .. "}")
+        end
+    end
+
+    function mp.setcmykcolor(c,m,y,k)
+        mptopdf.texcode("\\MPScmyk{" .. c .. "}{" .. m .. "}{" .. y .. "}{" .. k .. "}")
+    end
+
+    function mp.setgray(s)
+        mptopdf.texcode("\\MPSgray{" .. s .. "}")
+    end
+
 end
 
 function mp.specials(version,signal,factor) -- 2.0 123 1000

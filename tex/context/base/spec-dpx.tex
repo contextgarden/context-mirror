@@ -393,6 +393,7 @@
            \global\let\currentPDFresources\empty
          \fi
          \special{pdf:exobj}}%
+         \finalizeobjectbox\nextbox
          \smashbox\nextbox
          \flushatshipout{\box\nextbox}%
          \egroup}%
@@ -749,6 +750,7 @@
            {\scratchdimen\wd#2\scratchdimen.5\scratchdimen\hskip-\the\scratchdimen
             \special{pdf:uxobj @MPPDF::\MPPDFobjectcounter}}}}%
    \expanded{\doDVIPDFMXstartobject\zerocount{MPPDF}\MPPDFobjectcounter{\the\wd#2}{\the\ht#2}{\the\dp#2}}%
+   \finalizeobjectbox#2%
    \box#2%
    \doDVIPDFMXstopobject}
 

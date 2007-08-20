@@ -108,7 +108,7 @@ do
     local bynode = node.traverse
     local bychar = string.utfcharacters
 
-    function reconstruct(prev,str,fnt)
+    local function reconstruct(prev,str,fnt)
         local done = false
         if #str < 4 then
             -- too short

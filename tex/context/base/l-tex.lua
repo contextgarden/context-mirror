@@ -89,7 +89,7 @@ end
 
 if lua then do
 
-    delayed = { } -- could also be done with closures
+    local delayed = { } -- could also be done with closures
 
     function lua.delay(f)
         delayed[#delayed+1] = f

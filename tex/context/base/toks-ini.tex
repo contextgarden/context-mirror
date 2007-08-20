@@ -15,11 +15,11 @@
 
 \registerctxluafile{toks-ini}{1.001}
 
-\def\starttokens  [#1]{\ctxlua{collector.install("#1", "stoptokens")}}
+\def\starttokens  [#1]{\ctxlua{collectors.install("#1", "stoptokens")}}
 \let\stoptokens        \relax
-\def\flushtokens  [#1]{\ctxlua{collector.flush("#1")}}
-\def\showtokens   [#1]{\ctxlua{collector.show("#1")}}
-\def\testtokens   [#1]{\ctxlua{collector.with_words("#1")}}
-\def\registertoken  #1{\ctxlua{collector.register("#1")}}
+\def\flushtokens  [#1]{\ctxlua{collectors.flush("#1")}}
+\def\showtokens   [#1]{\ctxlua{collectors.show("#1")}}
+\def\testtokens   [#1]{\ctxlua{collectors.with_words("#1")}}
+\def\registertoken  #1{\ctxlua{collectors.register("#1")}}
 
 \endinput

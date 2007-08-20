@@ -1363,9 +1363,12 @@ $makelist = [
     'exatools',
     'runtools',
     'rlxtools',
-    # 'luatools',
-    # 'mtxtools',
+    'pdftrimwhite',
+    'texfind',
+    'texshow'
     #
+    # no 'luatools',
+    # no 'mtxtools',
     # no, 'texmfstart'
 ]
 

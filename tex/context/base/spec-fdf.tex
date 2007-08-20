@@ -329,12 +329,9 @@
 
 \def\doPDFsetupwhateverbox#1#2#3#4#5#6% watch the extra arguments
   {\bgroup
-   \!!widtha#5%
-   \advance\!!widtha#3%
-   \!!heighta-#6%
-   \!!heightb#2% extra argument
-   \advance\!!heightb -#4%
-   \advance\!!heighta \!!heightb
+   \!!widtha \dimexpr#5+#3\relax
+   \!!heightb\dimexpr#2-#4\relax
+   \!!heighta\dimexpr\!!heightb-#6\relax
    % sometimes whole values give better results
    % \PointsToWholeBigPoints{#3}\left
    % \PointsToWholeBigPoints\!!heighta\bottom
@@ -2971,12 +2968,6 @@
 \def\doPDFregistergrayindexcolor#1#2#3#4#5% name noffractions names p's s
   {\doPDFregistersomeindexcolor{#1}{#2}{#3}{#4}{Gray}{0.0 1.0}%
      {pop}}
-
-% \def\doPDFregisterfigurecolor#1%
-%   {\dogetobjectreference
-%      {PDF\ifcase\internalspotcolorsize{#1} CS\or CS\else IX\fi}
-%      {\internalspotcolorname{#1}}
-%      \PDFimagecolorreference}
 
 \let\checkpredefinedcolor\predefineindexcolor % we need an index in order to negate bitmaps
 

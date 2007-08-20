@@ -10,7 +10,7 @@ do
 
     hash = { }
 
-    function set(key,value)
+    local function set(key,value)
         hash[key] = value
     end
 
@@ -34,6 +34,50 @@ do
         return hash
     end
 
+    local pattern = lpeg.Ct((space * value * comma)^1)
+
+    function aux.settings_to_array(str)
+        return lpeg.match(pattern,str)
+    end
+
 end
 
---~ print(table.serialize(aux.settings_to_hash("aaa=bbb, ccc={d,d,d}")))
+--~ do
+--~     str = "a=1, b=2, c=3, d={abc}"
+
+--~     for k,v in pairs(aux.settings_to_hash (str)) do print(k,v) end
+--~     for k,v in pairs(aux.settings_to_array(str)) do print(k,v) end
+--~ end
+
+function aux.hash_to_string(h,separator,yes,no,strict)
+    if h then
+        local t = { }
+        for _,k in ipairs(table.sortedkeys(h)) do
+            local v = h[k]
+            if type(v) == "boolean" then
+                if yes and no then
+                    if v then
+                        t[#t+1] = k .. '=' .. yes
+                    elseif not strict then
+                        t[#t+1] = k .. '=' .. no
+                    end
+                elseif v or not strict then
+                    t[#t+1] = k .. '=' .. tostring(v)
+                end
+            else
+                t[#t+1] = k .. '=' .. v
+            end
+        end
+        return table.concat(t,separator or ",")
+    else
+        return ""
+    end
+end
+
+function aux.array_to_string(a,separator)
+    if a then
+        return table.concat(a,separator or ",")
+    else
+        return ""
+    end
+end

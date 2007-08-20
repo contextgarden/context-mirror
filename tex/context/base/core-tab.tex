@@ -366,13 +366,21 @@
 \catcode`\|=\@@active
 \catcode`\"=\@@active
 
+% \gdef\pushouterbarandquote
+%   {\ifForgetTableBarAndQuote
+%      \let|\letterbar
+%      \let"\letterdoublequote
+%      \ifnum\catcode`\|=\@@active \let\outertablebar  |\else\let\outertablebar  \relax\fi
+%      \ifnum\catcode`\"=\@@active \let\outertablequote"\else\let\outertablequote\relax\fi
+%    \fi}
+
 \gdef\pushouterbarandquote
-  {\ifForgetTableBarAndQuote
-     \let|\letterbar
-     \let"\letterdoublequote
-     \ifnum\catcode`\|=\@@active \let\outertablebar  |\else\let\outertablebar  \relax\fi
-     \ifnum\catcode`\"=\@@active \let\outertablequote"\else\let\outertablequote\relax\fi
-   \fi}
+   {\ifForgetTableBarAndQuote
+      \ifnum\catcode`\|=\@@active \let\outertablebar  |\else\let\outertablebar  \relax\fi
+      \ifnum\catcode`\"=\@@active \let\outertablequote"\else\let\outertablequote\relax\fi
+      \let|\letterbar
+      \let"\letterdoublequote
+    \fi}
 
 \gdef\popouterbarandquote
   {\ifForgetTableBarAndQuote
@@ -1197,13 +1205,22 @@
    \global\TABLEinbreakfalse
    \firststagestartTABLE}
 
+% \def\stoptables
+%   {\ifconditional\tablerepeattail\else\insertTABLEtail\fi
+%    \finishTABLE
+%    \egroup
+%    \dosplittablebox\tablecontentbox
+%    \flushnotes
+%    \egroup}
+
 \def\stoptables
-  {\ifconditional\tablerepeattail\else\insertTABLEtail\fi
-   \finishTABLE
-   \egroup
-   \dosplittablebox\tablecontentbox
-   \flushnotes
-   \egroup}
+   {\chuckTABLEautorow % AM: before the tail, else noalign problem
+    \ifconditional\tablerepeattail\else\insertTABLEtail\fi
+    \finishTABLE
+    \egroup
+    \dosplittablebox\tablecontentbox
+    \flushnotes
+    \egroup}
 
 \newdimen\TABLEcaptionheight % obsolete
 

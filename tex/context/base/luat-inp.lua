@@ -72,6 +72,7 @@ input.formats['pfb'] = 'T1FONTS'        input.suffixes['pfb'] = { 'pfb', 'pfa' }
 input.formats['vf']  = 'VFFONTS'        input.suffixes['vf']  = { 'vf' }
 
 input.formats['fea'] = 'FONTFEATURES'   input.suffixes['fea'] = { 'fea' }
+input.formats['cid'] = 'FONTCIDMAPS'    input.suffixes['cid'] = { 'cid', 'cidmap' }
 
 input.formats ['texmfscripts'] = 'TEXMFSCRIPTS' -- new
 input.suffixes['texmfscripts'] = { 'rb', 'pl', 'py' } -- 'lua'
@@ -79,10 +80,10 @@ input.suffixes['texmfscripts'] = { 'rb', 'pl', 'py' } -- 'lua'
 input.formats ['lua'] = 'LUAINPUTS' -- new
 input.suffixes['lua'] = { 'lua', 'luc', 'tma', 'tmc' }
 
--- here we catch a few new thingies
+-- here we catch a few new thingies (todo: add these paths to context.tmf)
 
 function input.checkconfigdata(instance)
-    function fix(varname,default)
+    local function fix(varname,default)
         local proname = varname .. "." .. instance.progname or "crap"
         if not instance.environment[proname] and not instance.variables[proname] == "" and not instance.environment[varname] and not instance.variables[varname] == "" then
             instance.variables[varname] = default
@@ -90,6 +91,7 @@ function input.checkconfigdata(instance)
     end
     fix("LUAINPUTS"   , ".;$TEXINPUTS;$TEXMFSCRIPTS")
     fix("FONTFEATURES", ".;$OPENTYPEFONTS;$TTFONTS;$T1FONTS;$AFMFONTS")
+    fix("FONTCIDMAPS" , ".;$OPENTYPEFONTS;$TTFONTS;$T1FONTS;$AFMFONTS")
 end
 
 -- backward compatible ones
@@ -98,6 +100,8 @@ input.alternatives = { }
 
 input.alternatives['map files']            = 'map'
 input.alternatives['enc files']            = 'enc'
+input.alternatives['cid files']            = 'cid'
+input.alternatives['fea files']            = 'fea'
 input.alternatives['opentype fonts']       = 'otf'
 input.alternatives['truetype fonts']       = 'ttf'
 input.alternatives['truetype collections'] = 'ttc'
@@ -609,8 +613,11 @@ function input.generators.tex(instance,specification)
                 full = spec
             end
             for name in directory(full) do
-                if name == '.' or name == ".." then
-                    -- skip
+                if name:find("^%.") then
+                  -- skip
+                elseif name:find("[%~%`%!%#%$%%%^%&%*%(%)%=%{%}%[%]%:%;\"\'%|%|%<%>%,%?\n\r\t]") then
+                  -- texio.write_nl("skipping " .. name)
+                  -- skip
                 else
                     mode = attributes(full..name,'mode')
                     if mode == "directory" then
@@ -1407,7 +1414,7 @@ function input.aux.find_file(instance,filename) -- todo : plugin (scanners, chec
                     pathname = pathname:gsub("([%-%.])","%%%1") -- this also influences
                     pathname = pathname:gsub("/+$", '/.*')      -- later usage of pathname
                     pathname = pathname:gsub("//", '/.-/')
-                    expr = "^" .. pathname
+                    local expr = "^" .. pathname
                     -- input.debug('?',expr)
                     for _, f in pairs(filelist) do
                         if f:find(expr) then
@@ -1529,7 +1536,8 @@ end
 function input.find_given_files(instance,filename)
     local bname, result = file.basename(filename), { }
     for k, hash in ipairs(instance.hashes) do
-        local blist = instance.files[hash.tag][bname]
+        local files = instance.files[hash.tag]
+        local blist = files[bname]
         if not blist then
             local rname = "remap:"..bname
             blist = files[rname]
@@ -1596,9 +1604,11 @@ function input.find_wildcard_files(instance,filename) -- todo: remap:
     if name:find("%*") then
         for k, hash in ipairs(instance.hashes) do
             for kk, hh in pairs(files[hash.tag]) do
-                if (kk:lower()):find(name) then
-                    if doit(hh,kk,hash,allresults) then done = true end
-                    if done and not allresults then break end
+                if not kk:find("^remap:") then
+                    if (kk:lower()):find(name) then
+                        if doit(hh,kk,hash,allresults) then done = true end
+                        if done and not allresults then break end
+                    end
                 end
             end
         end
@@ -1812,7 +1822,7 @@ function input.validators.visibility.context(path, name)
     path = path[1] or path -- some day a loop
     return not (
         path:find("latex")    or
-        path:find("doc")      or
+--      path:find("doc")      or
         path:find("tex4ht")   or
         path:find("source")   or
 --      path:find("config")   or
@@ -1869,17 +1879,49 @@ function input.with_files(instance,pattern,handle)
     end
 end
 
-function input.update_script(oldname,newname) -- oldname -> own.name, not per se a suffix
+--~ function input.update_script(oldname,newname) -- oldname -> own.name, not per se a suffix
+--~     newname = file.addsuffix(newname,"lua")
+--~     local newscript = input.clean_path(input.find_file(instance, newname))
+--~     local oldscript = input.clean_path(oldname)
+--~     input.report("old script", oldscript)
+--~     input.report("new script", newscript)
+--~     if oldscript ~= newscript and (oldscript:find(file.removesuffix(newname).."$") or oldscript:find(newname.."$")) then
+--~         local newdata = io.loaddata(newscript)
+--~         if newdata then
+--~             input.report("old script content replaced by new content")
+--~             io.savedata(oldscript,newdata)
+--~         end
+--~     end
+--~ end
+
+function input.update_script(instance,oldname,newname) -- oldname -> own.name, not per se a suffix
+    local scriptpath = "scripts/context/lua"
     newname = file.addsuffix(newname,"lua")
-    newscript = input.clean_path(input.find_file(instance, newname))
-    oldscript = input.clean_path(oldname)
-    input.report("old script", oldscript)
-    input.report("new script", newscript)
-    if oldscript ~= newscript and (oldscript:find(file.removesuffix(newname).."$") or oldscript:find(newname.."$")) then
-        newdata = io.loaddata(newscript)
-        if newdata then
-            input.report("old script content replaced by new content")
-            io.savedata(oldscript,newdata)
+    local oldscript = input.clean_path(oldname)
+    input.report("to be replaced old script", oldscript)
+    local newscripts = input.find_files(instance, newname) or { }
+    if #newscripts == 0 then
+        input.report("unable to locate new script")
+    else
+        for _, newscript in ipairs(newscripts) do
+            newscript = input.clean_path(newscript)
+            input.report("checking new script", newscript)
+            if oldscript == newscript then
+                input.report("old and new script are the same")
+            elseif not newscript:find(scriptpath) then
+                input.report("new script should come from",scriptpath)
+            elseif not (oldscript:find(file.removesuffix(newname).."$") or oldscript:find(newname.."$")) then
+                input.report("invalid new script name")
+            else
+                local newdata = io.loaddata(newscript)
+                if newdata then
+                    input.report("old script content replaced by new content")
+                    io.savedata(oldscript,newdata)
+                    break
+                else
+                    input.report("unable to load new script")
+                end
+            end
         end
     end
 end

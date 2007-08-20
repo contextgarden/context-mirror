@@ -49,7 +49,8 @@ do
     local unset_attribute = node.unset_attribute
 
     function fonts.color.set(n,c)
-        set_attribute(n,attribute,mapping[c] or -1)
+    --  local mc = mapping[c] if mc then unset_attribute((n,attribute) else set_attribute(n,attribute,mc) end
+        set_attribute(n,attribute,mapping[c] or -1) -- also handles -1 now
     end
     function fonts.color.reset(n)
         unset_attribute(n,attribute)

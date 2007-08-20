@@ -98,7 +98,7 @@
   {\dodoubleargument\doshowcolorgroup}
 
 \gdef\doshowcolorgroup[#1][#2]%
-  {\doifdefined{\??cr#1:1}
+  {\doifcolor{#1:1}
      {\doifinsetelse\v!vertical{#2}
         {\showverticalcolorgroup[#1][#2]}
         {\showhorizontalcolorgroup[#1][#2]}}}
@@ -119,8 +119,8 @@
             \graycolor[#1:##1]{\vrule\!!width4em\!!height\zeropoint\!!depth\strutdp}\cr
             \doifinset\v!value{#2}{\colorvalue{#1:##1}\strut}\crcr}}
       \def\doshowgroup##1%
-        {\doifdefined{\??cr#1:##1}
-           {\vbox{\dodoshowgroup{##1}}}}
+        {\doifcolor{#1:##1}
+           {\vbox{\dodoshowgroup{##1}}}}%
       \hbox
         {\doifinset\v!name{#2}
            {\strut
@@ -137,12 +137,12 @@
       \setuppalet
       \tabskip\zeropoint
       \def\rule
-        {\vrule\!!width2.5em\!!height\strutht\!!depth\strutdp}
+        {\vrule\!!width2.5em\!!height\strutht\!!depth\strutdp}%
       \def\doshowgroup##1%
-        {\doifdefined{\??cr#1:##1}
+        {\doifcolor{#1:##1}
            {\doifinset\v!number{#2}{##1\hskip.5em}&
             \color[#1:##1]{\rule}\graycolor[#1:##1]{\rule}&
-            \doifinset\v!value{#2}{\hskip.5em\colorvalue{#1:##1}}\crcr}}
+            \doifinset\v!value{#2}{\hskip.5em\colorvalue{#1:##1}}\crcr}}%
       \halign
         {\hss##&\hss##\hss&##\hss\cr
          &\doifinset\v!name{#2}{\strut#1}&\crcr
@@ -210,7 +210,7 @@
   {\dosingleargument\docomparecolorgroup}
 
 \gdef\docomparecolorgroup[#1]%
-  {\doifdefined{\??cr#1:1}
+  {\doifcolor{#1:1}
      {\hbox
         {\dodocomparecolorgroup\color[#1]%
          \quad
@@ -220,7 +220,7 @@
   {\localvbox
      {\!!counta\zerocount
       \dorecurse{15}
-        {\doifdefined{\??cr#2:\recurselevel}{\advance\!!counta\plusone}}
+        {\doifcolor{#2:\recurselevel}{\advance\!!counta\plusone}}
       \!!widtha2em\relax
       \hsize\!!counta\!!widtha
       \def\rule
@@ -236,36 +236,37 @@
          \endgraf}
       \dorecurse\!!counta{\dododocomparecolorgroup\recurselevel}}}
 
-% \def\execcolorRCSP#1:{\csname execcolor#1\endcsname} -> \execcolorR
-
 \gdef\dogetcolorcomponents#1%
   {\doifelsenothing{#1}
-     {\global\globalscratchtoks{\TB}}
-     {\startnointerference
-      \localcolortrue
-      \def\doexeccolorR    ##1:##2:##3:##4:##5\od{\global\globalscratchtoks{\NC\Od#1 \NC\Nm #1 \NC a=\Do##4 \enspace t=\Do##5 \NC r=\Do##1 \enspace g=\Do##2 \enspace b=\Do##3 \NC\NR}}%
-      \def\doexeccolorC##1:##2:##3:##4:##5:##6\od{\global\globalscratchtoks{\NC\Od#1 \NC\Nm #1 \NC a=\Do##5 \enspace t=\Do##6 \NC c=\Do##1 \enspace m=\Do##2 \enspace y=\Do##3 \enspace k=\Do##4 \NC\NR}}%
-      \def\doexeccolorS            ##1:##2:##3\od{\global\globalscratchtoks{\NC\Od#1 \NC\Nm #1 \NC a=\Do##2 \enspace t=\Do##3 \NC s=\Do##1 \NC\NR}}%
-     %\def\doexeccolorP##1:##2:##3:##4:##5:##6\od{\global\globalscratchtoks{\NC\Od#1 \NC\Nm #1 \NC a=\Do##5 \enspace t=\Do##6 \NC p=\Do##4 \enspace f=\Do##2 \enspace d=\Do##3 \enspace n=##1 \NC\NR}}%
-      \def\doexeccolorP##1:##2:##3:##4:##5:##6\od{\global\globalscratchtoks{\NC\Od#1 \NC\Nm #1 \NC a=\Do##5 \enspace t=\Do##6 \NC p=\Do##4 \enspace n=##1 \NC\NR}}%
-      \let\doexeccolorPindex\doexeccolorP
-      \backgroundline[#1]{}%
-      \stopnointerference}%
-   \appendetoks\the\globalscratchtoks\to\scratchtoks}
+     {\appendtoks
+        \TB
+      \to \scratchtoks}
+     {\appendtoks
+        \NC\showcolorbar[#1]\NC#1\NC\transparencycomponents{#1}\NC\colorcomponents{#1}\NC \NR
+      \to \scratchtoks}}
 
-\newdimen\colorcomponentwidth % for my eyes only
+% \gdef\showcolorcomponents[#1]%
+%   {\bgroup
+%    \def\bars##1{\backgroundline[##1]{\strut\enspace\color[white]{white}\enspace\color[black]{black}\enspace}}%
+%    \scratchtoks\emptytoks
+%    \appendtoks\starttabulate[|l|l|l|l|]\to\scratchtoks
+%    \appendtoks\NC color \NC name \NC transparency \NC specification \NC\NR\TB\to\scratchtoks
+%    \processcommacommand[#1]\dogetcolorcomponents
+%    \appendtoks\stoptabulate\to\scratchtoks
+%    \tt\the\scratchtoks
+%    \egroup}
+
+\gdef\showcolorbar[#1]%
+  {\backgroundline[#1]{\strut\enspace\color[white]{white}\enspace\color[black]{black}\enspace}}
 
 \gdef\showcolorcomponents[#1]%
-  {\bgroup
-   \def\Od##1 {\backgroundline[##1]{\strut\enspace\color[white]{white}\enspace\color[black]{black}\enspace}}%
-   \def\Do##1 {\twodigitrounding{##1}}%
-   \def\Nm##1 {\ifdim\colorcomponentwidth>\zeropoint\hbox to \colorcomponentwidth\fi{##1}}%
-   \scratchtoks\emptytoks
-   \appendtoks\starttabulate[|l|l|l|p|]\to\scratchtoks
-   \appendtoks\NC color \NC name \NC transparency \NC specification \NC\NR\TB\to\scratchtoks
+  {\begingroup
+   \scratchtoks{\TB}%
    \processcommacommand[#1]\dogetcolorcomponents
-   \appendtoks\stoptabulate\to\scratchtoks
-   \tt\the\scratchtoks
-   \egroup}
+   \starttabulate[|lT|lT|lT|lT|]
+   \NC color \NC name \NC transparency \NC specification \NC\NR
+   \the\scratchtoks
+   \stoptabulate
+   \endgroup}
 
 \protect \endinput

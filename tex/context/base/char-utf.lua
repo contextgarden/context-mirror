@@ -62,7 +62,9 @@ end
 
 function characters.filters.utf.collapse(str)
     if characters.filters.utf.collapsing and str and #str > 1 then
-        characters.filters.utf.initialize()
+        if not characters.filters.utf.initialized then -- saves a call
+            characters.filters.utf.initialize()
+        end
         local tokens, first, done = { }, false, false
         local cg = characters.graphemes
         for second in string.utfcharacters(str) do
@@ -152,7 +154,9 @@ do
     function characters.filters.utf.collapse(str)
         if characters.filters.utf.collapsing and str then
             if #str > 1 then
-                characters.filters.utf.initialize()
+                if not characters.filters.utf.initialized then -- saves a call
+                    characters.filters.utf.initialize()
+                end
                 local tokens, first, done = { }, false, false
                 for second in string.utfcharacters(str) do
                     if cr[second] then
@@ -257,7 +261,7 @@ end
 
 function characters.filters.process(str)
     if characters.filters.activated then
-        for _,v in pairs(characters.filters.sequences) do
+        for _,v in ipairs(characters.filters.sequences) do
             str = v(str)
         end
         return str

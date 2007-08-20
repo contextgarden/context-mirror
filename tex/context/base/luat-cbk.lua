@@ -104,7 +104,7 @@ do
     garbagecollector.trace = false
     garbagecollector.tune  = false -- for the moment
 
-    function report(format)
+    local function report(format)
         if garbagecollector.trace then
          -- texio.write_nl(string.format(format,level,status.luastate_bytes))
             texio.write_nl(string.format(format,level,collectgarbage("count")))

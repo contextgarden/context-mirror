@@ -31,12 +31,14 @@
 
 \def\otfchar#1{\ctxlua{fonts.otf.char("#1")}}
 
-\registerrgbcolor {font:init} {1}{0}{0}%
-\registerrgbcolor {font:medi} {0}{1}{0}%
-\registerrgbcolor {font:fina} {0}{0}{1}%
-\registerrgbcolor {font:isol} {0}{1}{1}%
-\registerrgbcolor {font:mark} {1}{0}{1}%
-\registerrgbcolor {font:rest} {1}{1}{0}%
+%D: We cannot yet inherit because no colors are predefined.
+
+\definecolor[font:init][r=.75]
+\definecolor[font:medi][g=.75]
+\definecolor[font:fina][b=.75]
+\definecolor[font:isol][y=.75]
+\definecolor[font:mark][m=.75]
+\definecolor[font:rest][c=.75]
 
 %D goodies:
 %D
@@ -68,5 +70,13 @@
 
 \def\doinstallfontfeature[#1][#2]%
   {\ctxlua{fonts.install_feature("#1","#2")}}
+
+%D Not yet in \MKII.
+
+\def\fontfeatureslist
+  {\dodoubleargument\dofontfeatureslist}
+
+\def\dofontfeatureslist[#1][#2]% todo: arg voor type
+  {\ctxlua{tex.sprint(tex.ctxcatcodes,fonts.define.specify.context_tostring("#1","otf","\luaescapestring{#2}","yes","no",true))}}
 
 \protect \endinput

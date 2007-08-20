@@ -20,7 +20,7 @@ fonts.vf     = fonts.vf     or { }
 fonts.used   = fonts.used   or { }
 
 fonts.tfm.version = 1.01
-fonts.tfm.cache   = containers.define("fonts", "tfm", fonts.tfm.version, false)
+fonts.tfm.cache   = containers.define("fonts", "tfm", fonts.tfm.version, false) -- better in font-tfm
 
 --[[ldx--
 <p>Choosing a font by name and specififying its size is only part of the
@@ -73,8 +73,9 @@ and prepares a table that will move along as we proceed.</p>
 --ldx]]--
 
 function fonts.define.analyze(name, size, id)
-    local specification = name or 'unknown'
-    local lookup, rest = name:match("^(.-):(.+)$")
+    name = name or 'unknown'
+    local specification = name
+    local lookup, rest = specification:match("^(.-):(.+)$")
     local sub = ""
     if lookup == 'file' or lookup == 'name' then
         name = rest
@@ -235,15 +236,19 @@ function fonts.tfm.read_and_define(name,size) -- no id
     local id = fonts.tfm.internalized[hash]
     if not id then
         local fontdata = fonts.tfm.read(specification)
-        if not fonts.tfm.internalized[hash] then
-            id = font.define(fontdata)
-            fonts.tfm.id[id] = fontdata
-            fonts.tfm.internalized[hash] = id
-            if fonts.trace then
-                logs.report("define font", string.format("at 1 id %s, hash: %s",id,hash))
+        if fontdata then
+            if not fonts.tfm.internalized[hash] then
+                id = font.define(fontdata)
+                fonts.tfm.id[id] = fontdata
+                fonts.tfm.internalized[hash] = id
+                if fonts.trace then
+                    logs.report("define font", string.format("at 1 id %s, hash: %s",id,hash))
+                end
+            else
+                id = fonts.tfm.internalized[hash]
             end
         else
-            id = fonts.tfm.internalized[hash]
+            id = 0  -- signal
         end
     end
     return fonts.tfm.id[id], id
@@ -272,7 +277,6 @@ function fonts.tfm.readers.opentype(specification,suffix,what)
         if fullname and fullname ~= "" then
             specification.filename, specification.format = fullname, what -- hm, so we do set the filename, then
             tfmtable = fonts.tfm.read_from_open_type(specification)       -- we need to do it for all matches / todo
-            fonts.logger.save(tfmtable,suffix,specification)
         end
         return tfmtable
     else
@@ -288,23 +292,19 @@ function fonts.tfm.readers.afm(specification,method)
     local fullname, tfmtable = nil, nil
     method = method or fonts.define.method
     if method == 2 then
-        fullname = input.findbinfile(texmf.instance,specification.name,"ofm") -- ?
-        if not fullname or fullname == "" then
+        fullname = input.findbinfile(texmf.instance,specification.name,"ofm") or ""
+        if fullname == "" then
             tfmtable = fonts.tfm.read_from_afm(specification)
-            fonts.logger.save(tfmtable,'afm',specification)
         else -- redundant
             specification.filename = fullname
             tfmtable = fonts.tfm.read_from_tfm(specification)
-            fonts.logger.save(tfmdata,'tfm',specification)
         end
     elseif method == 3 then -- maybe also findbinfile here
         if fonts.define.auto_afm then
             tfmtable = fonts.tfm.read_from_afm(specification)
-            fonts.logger.save(tfmtable,'afm',specification)
         end
     elseif method == 4 then -- maybe also findbinfile here
         tfmtable = fonts.tfm.read_from_afm(specification)
-        fonts.logger.save(tfmtable,'afm',specification)
     end
     return tfmtable
 end
@@ -312,7 +312,6 @@ end
 function fonts.tfm.readers.tfm(specification)
     local fullname, tfmtable = nil, nil
     tfmtable = fonts.tfm.read_from_tfm(specification)
-    fonts.logger.save(tfmtable,'tfm',specification)
     return tfmtable
 end
 
@@ -394,6 +393,10 @@ function fonts.define.specify.preset_context(name,features)
     fonts.define.specify.context_setups[name] = t
 end
 
+function fonts.define.specify.context_tostring(name,kind,separator,yes,no,strict)
+    return aux.hash_to_string(table.merged(fonts[kind].features.default or {},fonts.define.specify.context_setups[name] or {}),separator,yes,no,strict)
+end
+
 function fonts.define.specify.split_context(features)
     if fonts.define.specify.context_setups[features] then
         return fonts.define.specify.context_setups[features]
@@ -472,9 +475,19 @@ function fonts.define.read(name,size,id)
         else
             fontdata = fonts.tfm.internalized[hash]
         end
+
     end
     if not fontdata then
-        logs.error("defining font", string.format("name: %s, loading aborted",specification.name))
+        logs.error("define font", string.format("name: %s, loading aborted",specification.name))
+    elseif fonts.trace and type(fontdata) == "table" then
+        logs.report("use font",string.format("%s font n:%s s:%s b:%s e:%s p:%s f:%s",
+            fontdata.type          or "unknown",
+            fontdata.name          or "?",
+            fontdata.size          or "default",
+            fontdata.encodingbytes or "?",
+            fontdata.encodingname  or "unicode",
+            fontdata.fullname      or "?",
+            file.basename(fontdata.filename or "?")))
     end
     return fontdata
 end
@@ -490,11 +503,25 @@ end
 --~ end
 
 function fonts.vf.find(name)
-    local format = fonts.logger.format(name)
-    if format == 'tfm' or format == 'ofm' then
-        return input.findbinfile(texmf.instance,name,"ovf")
+    name = file.removesuffix(file.basename(name))
+    if fonts.tfm.resolve_vf then
+        local format = fonts.logger.format(name)
+        if format == 'tfm' or format == 'ofm' then
+            if fonts.trace then
+                logs.report("define font",string.format("locating vf for %s",name))
+            end
+            return input.findbinfile(texmf.instance,name,"ovf")
+        else
+            if fonts.trace then
+                logs.report("define font",string.format("vf for %s is already taken care of",name))
+            end
+            return nil -- ""
+        end
     else
-        return nil -- ""
+        if fonts.trace then
+            logs.report("define font",string.format("locating vf for %s",name))
+        end
+        return input.findbinfile(texmf.instance,name,"ovf")
     end
 end
 
@@ -503,4 +530,4 @@ end
 --ldx]]--
 
 callback.register('define_font' , fonts.define.read)
-callback.register('find_vf_file', fonts.vf.find    )
+callback.register('find_vf_file', fonts.vf.find    ) -- not that relevant any more

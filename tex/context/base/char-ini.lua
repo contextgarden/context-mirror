@@ -23,10 +23,15 @@ characters         = characters         or { }
 characters.data    = characters.data    or { }
 characters.context = characters.context or { }
 
-_empty_table_         = { }
-_empty_table_.__index = function(t,k) return "" end
+do
+    local _empty_table_ = { __index = function(t,k) return "" end }
 
-setmetatable(characters.data,_empty_table_)
+    function table.set_empty_metatable(t)
+        setmetatable(t,_empty_table_)
+    end
+end
+
+table.set_empty_metatable(characters.data)
 
 --[[ldx--
 <p>At this point we assume that the big data table is loaded. From this

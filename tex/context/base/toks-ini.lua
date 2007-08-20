@@ -48,8 +48,8 @@ tokens.letters = function(str)
     return t
 end
 
-collector       = collector      or { }
-collector.data  = collector.data or { }
+collectors       = collectors      or { }
+collectors.data  = collectors.data or { }
 
 function tex.printlist(data)
     callbacks.push('token_filter', function ()
@@ -58,27 +58,27 @@ function tex.printlist(data)
     end)
 end
 
-function collector.flush(tag)
-    tex.printlist(collector.data[tag])
+function collectors.flush(tag)
+    tex.printlist(collectors.data[tag])
 end
 
-function collector.test(tag)
-    tex.printlist(collector.data[tag])
+function collectors.test(tag)
+    tex.printlist(collectors.data[tag])
 end
 
-collector.registered = { }
+collectors.registered = { }
 
-function collector.register(name)
-    collector.registered[token.csname_id(name)] = name
+function collectors.register(name)
+    collectors.registered[token.csname_id(name)] = name
 end
 
-function collector.install(tag,end_cs)
-    collector.data[tag] = { }
-    local data   = collector.data[tag]
+function collectors.install(tag,end_cs)
+    collectors.data[tag] = { }
+    local data   = collectors.data[tag]
     local call   = token.command_id("call")
     local relax  = token.command_id("relax")
     local endcs  = token.csname_id(end_cs)
-    local expand = collector.registered
+    local expand = collectors.registered
     local get    = token.get_next -- so no callback!
     while true do
         local t = get()
@@ -93,13 +93,13 @@ function collector.install(tag,end_cs)
     end
 end
 
-collector.show_methods = { }
+collectors.show_methods = { }
 
-function collector.show(tag, method)
+function collectors.show(tag, method)
     if type(tag) == "table" then
-        collector.show_methods[method or 'a'](tag)
+        collectors.show_methods[method or 'a'](tag)
     else
-        collector.show_methods[method or 'a'](collector.data[tag])
+        collectors.show_methods[method or 'a'](collectors.data[tag])
     end
 end
 
@@ -108,7 +108,7 @@ commands = commands or { }
 commands.letter = token.command_id("letter")
 commands.other  = token.command_id("other_char")
 
-function collector.default_words(t,str)
+function collectors.default_words(t,str)
     t[#t+1] = tokens.bgroup
     t[#t+1] = token.create("red")
     for k,v in ipairs(str) do
@@ -117,10 +117,10 @@ function collector.default_words(t,str)
     t[#t+1] = tokens.egroup
 end
 
-function collector.with_words(tag,handle)
+function collectors.with_words(tag,handle)
     local t, w = { }, { }
-    handle = handle or collector.default_words
-    for _,v in ipairs(collector.data[tag]) do
+    handle = handle or collectors.default_words
+    for _,v in ipairs(collectors.data[tag]) do
         if v[1] == commands.letter then
             w[#w+1] = v[2]
         else
@@ -134,10 +134,10 @@ function collector.with_words(tag,handle)
     if #w > 0 then
         handle(t,w)
     end
-    collector.data[tag] = t
+    collectors.data[tag] = t
 end
 
-function collector.show_token(t)
+function collectors.show_token(t)
     if t then
         local cmd, chr, id, cs, name = t[1], t[2], t[3], nil, token.command_name(t) or ""
         if cmd == commands.letter or cmd == commands.other then
@@ -159,13 +159,13 @@ function collector.show_token(t)
     end
 end
 
-function collector.trace()
+function collectors.trace()
     local t = token.get_next()
-    texio.write_nl(collector.show_token(t))
+    texio.write_nl(collectors.show_token(t))
     return t
 end
 
-collector.show_methods.a = function(data) -- no need to store the table, just pass directly
+collectors.show_methods.a = function(data) -- no need to store the table, just pass directly
     local flush, ct = tex.sprint, tex.ctxcatcodes
     local template = "\\NC %s\\NC %s\\NC %s\\NC %s\\NC %s\\NC\\NR "
     flush(ct, "\\starttabulate[|T|Tr|cT|Tr|T|]")
@@ -192,7 +192,7 @@ collector.show_methods.a = function(data) -- no need to store the table, just pa
     flush(ct, "\\stoptabulate")
 end
 
-collector.show_methods.b_c = function(data,swap) -- no need to store the table, just pass directly
+collectors.show_methods.b_c = function(data,swap) -- no need to store the table, just pass directly
     local flush, ct = tex.sprint, tex.ctxcatcodes
     local template = "\\NC %s\\NC %s\\NC %s\\NC\\NR"
     if swap then
@@ -228,5 +228,5 @@ collector.show_methods.b_c = function(data,swap) -- no need to store the table, 
     flush(ct, "\\stoptabulate")
 end
 
-collector.show_methods.b = function(tag) collector.show_methods.b_c(tag,false) end
-collector.show_methods.c = function(tag) collector.show_methods.b_c(tag,true ) end
+collectors.show_methods.b = function(tag) collectors.show_methods.b_c(tag,false) end
+collectors.show_methods.c = function(tag) collectors.show_methods.b_c(tag,true ) end

@@ -54,6 +54,10 @@ function fonts.names.filters.afm(name)
     end
 end
 
+function fonts.names.filters.pfb(name)
+    return fontforge.info(name)
+end
+
 --[[ldx--
 <p>The scanner loops over the filters using the information stored in
 the file databases. Watch how we check not only for the names, but also
@@ -61,7 +65,7 @@ for combination with the weight of a font.</p>
 --ldx]]--
 
 fonts.names.filters.list = {
-    "otf", "ttf", "ttc", "afm"
+    "otf", "ttf", "ttc", "afm" -- pfb is quite messy, too many messages, maybe broken
 }
 
 fonts.names.filters.fixes = {

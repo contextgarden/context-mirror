@@ -15,13 +15,13 @@
 
 \unprotect
 
-\def\lchexnumber      #1{\ctxlua{convert.lchexnumber(\number#1)}}
-\def\uchexnumber      #1{\ctxlua{convert.uchexnumber(\number#1)}}
-\def\lchexnumbers     #1{\ctxlua{convert.lchexnumbers(\number#1)}}
-\def\uchexnumbers     #1{\ctxlua{convert.uchexnumbers(\number#1)}}
-\def\octnumber        #1{\ctxlua{convert.octnumber(\number#1)}}
-\def\hexstringtonumber#1{\ctxlua{convert.hexstringtonumber("#1")}}
-\def\octstringtonumber#1{\ctxlua{convert.octstringtonumber("#1")}}
-\def\rawcharacter     #1{\ctxlua{convert.rawcharacter(\number#1)}}
+\def\lchexnumber      #1{\ctxlua{converters.lchexnumber(\number#1)}}
+\def\uchexnumber      #1{\ctxlua{converters.uchexnumber(\number#1)}}
+\def\lchexnumbers     #1{\ctxlua{converters.lchexnumbers(\number#1)}}
+\def\uchexnumbers     #1{\ctxlua{converters.uchexnumbers(\number#1)}}
+\def\octnumber        #1{\ctxlua{converters.octnumber(\number#1)}}
+\def\hexstringtonumber#1{\ctxlua{converters.hexstringtonumber("#1")}}
+\def\octstringtonumber#1{\ctxlua{converters.octstringtonumber("#1")}}
+\def\rawcharacter     #1{\ctxlua{converters.rawcharacter(\number#1)}}
 
 \protect \endinput

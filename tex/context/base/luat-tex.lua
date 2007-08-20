@@ -60,7 +60,7 @@ if texconfig and not texlua then
             t = {
                 utftype = u, -- may go away
                 lines = l,
-                current = 0,
+                current = 0, -- line number, not really needed
                 handle = nil,
                 noflines = #l,
                 close = function()
@@ -68,15 +68,23 @@ if texconfig and not texlua then
                     input.show_close(filename)
                 end,
                 reader = function(self)
-                    if not self then self = t end
-                    if self.current >= #self.lines then
+                    self = self or t
+                    local current, lines = self.current, self.lines
+                    if current >= #lines then
                         return nil
                     else
-                        self.current = self.current + 1
-                        if input.filters.utf_translator then
-                            return input.filters.utf_translator(self.lines[t.current])
+                        self.current = current + 1
+                        local line = lines[self.current]
+                        if line == "" then
+                            return ""
                         else
-                            return self.lines[self.current]
+                            local translator = input.filters.utf_translator
+                        --  return (translator and translator(line)) or line
+                            if translator then
+                                return translator(line)
+                            else
+                                return line
+                            end
                         end
                     end
                 end
@@ -86,13 +94,15 @@ if texconfig and not texlua then
             -- todo: file;name -> freeze / eerste regel scannen -> freeze
             t = {
                 reader = function(self)
-                    if not self then self = t end -- not used
-                    if input.filters.dynamic_translator then
-                        return input.filters.dynamic_translator(file_handle:read())
+                    local line = file_handle:read()
+                    if line == "" then
+                        return ""
                     elseif input.filters.utf_translator then
-                        return input.filters.utf_translator(file_handle:read())
+                        return input.filters.utf_translator(line)
+                    elseif input.filters.dynamic_translator then
+                        return input.filters.dynamic_translator(line)
                     else
-                        return file_handle:read()
+                        return line
                     end
                 end,
                 close = function()

@@ -65,6 +65,24 @@ function table.prepend(t, list)
     end
 end
 
+function table.merge(t, ...)
+    for _, list in ipairs({...}) do
+        for k,v in pairs(list) do
+            t[k] = v
+        end
+    end
+end
+
+function table.merged(...)
+    local tmp = { }
+    for _, list in ipairs({...}) do
+        for k,v in pairs(list) do
+            tmp[k] = v
+        end
+    end
+    return tmp
+end
+
 if not table.fastcopy then
 
     function table.fastcopy(old) -- fast one
@@ -484,6 +502,24 @@ function table.are_equal(a,b,n,m)
     else
         return false
     end
+end
+
+function table.compact(t)
+    if t then
+        for k,v in pairs(t) do
+            if not next(v) then
+                t[k] = nil
+            end
+        end
+    end
+end
+
+function table.tohash(t)
+    local h = { }
+    for _, v in pairs(t) do -- no ipairs here
+        h[v] = true
+    end
+    return h
 end
 
 --~ function table.are_equal(a,b)

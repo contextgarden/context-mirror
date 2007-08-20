@@ -118,6 +118,16 @@
   {\checkobjectreferences
    \letbeundefined{\r!object#1::#2}}
 
+%D \macros
+%D   {finalizeobjectbox}
+%D
+%D This one provides a hook for last minute object box processing
+%D we need this in \MKIV.
+
+\ifx\finalizeobjectbox\undefined
+    \let\finalizeobjectbox\gobbleoneargument
+\fi
+
 %D Somehow there is a rounding error problem in either \PDFTEX\
 %D or in viewers, or maybe it is conforming the specs. The next
 %D variable compensate for it by removing the rather tight
